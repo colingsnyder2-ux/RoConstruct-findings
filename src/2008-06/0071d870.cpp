@@ -1,0 +1,11 @@
+// roc 2008-06 0071d870  unit: CXTPMouseManager  size: 5 bytes
+// Make this compile to the exact bytes below, then: roc check 2008-06 0071d870
+//
+// 0071d870  e905f00900           jmp 0x7bc87a
+// auto-matched from its assembly shape
+
+extern void G1_func_0071d870();
+void func_0071d870()
+{
+    G1_func_0071d870();
+}

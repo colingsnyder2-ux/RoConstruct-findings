@@ -1,0 +1,11 @@
+// roc 2010-06 00747fa0  unit: RBX::MovingStage  size: 6 bytes
+// Make this compile to the exact bytes below, then: roc check 2010-06 00747fa0
+//
+// 00747fa0  b806000000           mov eax, 6
+// 00747fa5  c3                   ret 
+// auto-matched from its assembly shape
+
+unsigned int func_00747fa0()
+{
+    return 6u;
+}

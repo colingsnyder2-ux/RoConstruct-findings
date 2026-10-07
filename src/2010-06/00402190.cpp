@@ -1,0 +1,11 @@
+// roc 2010-06 00402190  unit: RBX::VTaskSchedulerSettings::?$FactoryProduct::Creator  size: 5 bytes
+// Make this compile to the exact bytes below, then: roc check 2010-06 00402190
+//
+// 00402190  e97bfeffff           jmp 0x402010
+// auto-matched from its assembly shape
+
+extern void G1_func_00402190();
+void func_00402190()
+{
+    G1_func_00402190();
+}

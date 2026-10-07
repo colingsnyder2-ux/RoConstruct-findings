@@ -1,0 +1,22 @@
+// roc 2009-06 00896c20  unit: seg_00890000  size: 25 bytes
+// Make this compile to the exact bytes below, then: roc check 2009-06 00896c20
+//
+// 00896c20  a1b839a400           mov eax, dword ptr [0xa439b8]
+// 00896c25  50                   push eax
+// 00896c26  e8071ee8ff           call 0x718a32
+// 00896c2b  83c404               add esp, 4
+// 00896c2e  c705a039a40030d28a00 mov dword ptr [0xa439a0], 0x8ad230
+// 00896c38  c3                   ret 
+// auto-matched from its assembly shape
+
+extern char G;
+
+extern int G1_VALUE;
+extern int G2_VALUE;
+extern char G3_OBJ;
+extern int __cdecl G4_func_00896c20(int);
+void func_00896c20()
+{
+    G4_func_00896c20(G1_VALUE);
+    G2_VALUE = (int)&G3_OBJ;
+}

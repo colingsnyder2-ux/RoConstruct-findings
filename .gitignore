@@ -4,9 +4,9 @@ clients/*
 !clients/clients.json
 !clients/sources.json
 
-# Matched sources reproduce Roblox code. Kept local until the group decides to
-# publish them (takedown risk). Delete this line to track src/.
-src/
+# Matched-source findings are published separately from proprietary client
+# payloads. Keep binaries and local client folders ignored; track src/ when
+# explicitly included in a findings release.
 
 # Local runtime state and output
 work/

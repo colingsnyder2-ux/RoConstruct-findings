@@ -1,0 +1,103 @@
+// roc 2008-06 0047f2a0  unit: G3D::Win32Window  size: 868 bytes
+// Make this compile to the exact bytes below, then: roc check 2008-06 0047f2a0
+//
+// 0047f2a0  680c050000           push 0x50c
+// 0047f2a5  6a00                 push 0
+// 0047f2a7  6878f09600           push 0x96f078
+// 0047f2ac  e853242200           call 0x6a1704
+// 0047f2b1  b860000000           mov eax, 0x60
+// 0047f2b6  83c40c               add esp, 0xc
+// 0047f2b9  c70598f0960008000000 mov dword ptr [0x96f098], 8
+// 0047f2c3  c7059cf0960009000000 mov dword ptr [0x96f09c], 9
+// 0047f2cd  c705a8f096000c000000 mov dword ptr [0x96f0a8], 0xc
+// 0047f2d7  c705acf096000d000000 mov dword ptr [0x96f0ac], 0xd
+// 0047f2e1  c705c4f0960013000000 mov dword ptr [0x96f0c4], 0x13
+// 0047f2eb  c705e4f096001b000000 mov dword ptr [0x96f0e4], 0x1b
+// 0047f2f5  c705f8f0960020000000 mov dword ptr [0x96f0f8], 0x20
+// 0047f2ff  c705f0f3960027000000 mov dword ptr [0x96f3f0], 0x27
+// 0047f309  c70568f396002c000000 mov dword ptr [0x96f368], 0x2c
+// 0047f313  c7056cf396002d000000 mov dword ptr [0x96f36c], 0x2d
+// 0047f31d  c70570f396002e000000 mov dword ptr [0x96f370], 0x2e
+// 0047f327  c70574f396002f000000 mov dword ptr [0x96f374], 0x2f
+// 0047f331  c70538f1960030000000 mov dword ptr [0x96f138], 0x30
+// 0047f33b  c7053cf1960031000000 mov dword ptr [0x96f13c], 0x31
+// 0047f345  c70540f1960032000000 mov dword ptr [0x96f140], 0x32
+// 0047f34f  c70544f1960033000000 mov dword ptr [0x96f144], 0x33
+// 0047f359  c70548f1960034000000 mov dword ptr [0x96f148], 0x34
+// 0047f363  c7054cf1960035000000 mov dword ptr [0x96f14c], 0x35
+// 0047f36d  c70550f1960036000000 mov dword ptr [0x96f150], 0x36
+// 0047f377  c70554f1960037000000 mov dword ptr [0x96f154], 0x37
+// 0047f381  c70558f1960038000000 mov dword ptr [0x96f158], 0x38
+// 0047f38b  c7055cf1960039000000 mov dword ptr [0x96f15c], 0x39
+// 0047f395  c70560f396003b000000 mov dword ptr [0x96f360], 0x3b
+// 0047f39f  c70564f396003d000000 mov dword ptr [0x96f364], 0x3d
+// 0047f3a9  c705e4f396005b000000 mov dword ptr [0x96f3e4], 0x5b
+// 0047f3b3  c705e8f396005c000000 mov dword ptr [0x96f3e8], 0x5c
+// 0047f3bd  c705ecf396005d000000 mov dword ptr [0x96f3ec], 0x5d
+// 0047f3c7  a378f39600           mov dword ptr [0x96f378], eax
+// 0047f3cc  a3f4f39600           mov dword ptr [0x96f3f4], eax
+// 0047f3d1  c70530f196007f000000 mov dword ptr [0x96f130], 0x7f
+// 0047f3db  c705f8f1960000010000 mov dword ptr [0x96f1f8], 0x100
+// 0047f3e5  c705fcf1960001010000 mov dword ptr [0x96f1fc], 0x101
+// 0047f3ef  c70500f2960002010000 mov dword ptr [0x96f200], 0x102
+// 0047f3f9  c70504f2960003010000 mov dword ptr [0x96f204], 0x103
+// 0047f403  c70508f2960004010000 mov dword ptr [0x96f208], 0x104
+// 0047f40d  c7050cf2960005010000 mov dword ptr [0x96f20c], 0x105
+// 0047f417  c70510f2960006010000 mov dword ptr [0x96f210], 0x106
+// 0047f421  c70514f2960007010000 mov dword ptr [0x96f214], 0x107
+// 0047f42b  c70518f2960008010000 mov dword ptr [0x96f218], 0x108
+// 0047f435  c7051cf2960009010000 mov dword ptr [0x96f21c], 0x109
+// 0047f43f  c70530f296000a010000 mov dword ptr [0x96f230], 0x10a
+// 0047f449  c70534f296000b010000 mov dword ptr [0x96f234], 0x10b
+// 0047f453  c70520f296000c010000 mov dword ptr [0x96f220], 0x10c
+// 0047f45d  c7052cf296000d010000 mov dword ptr [0x96f22c], 0x10d
+// 0047f467  c70524f296000e010000 mov dword ptr [0x96f224], 0x10e
+// 0047f471  c70510f1960011010000 mov dword ptr [0x96f110], 0x111
+// 0047f47b  c70518f1960012010000 mov dword ptr [0x96f118], 0x112
+// 0047f485  c70514f1960013010000 mov dword ptr [0x96f114], 0x113
+// 0047f48f  c7050cf1960014010000 mov dword ptr [0x96f10c], 0x114
+// 0047f499  c7052cf1960015010000 mov dword ptr [0x96f12c], 0x115
+// 0047f4a3  c70508f1960016010000 mov dword ptr [0x96f108], 0x116
+// 0047f4ad  c70504f1960017010000 mov dword ptr [0x96f104], 0x117
+// 0047f4b7  c705fcf0960018010000 mov dword ptr [0x96f0fc], 0x118
+// 0047f4c1  c70500f1960019010000 mov dword ptr [0x96f100], 0x119
+// 0047f4cb  c70538f296001a010000 mov dword ptr [0x96f238], 0x11a
+// 0047f4d5  c7053cf296001b010000 mov dword ptr [0x96f23c], 0x11b
+// 0047f4df  c70540f296001c010000 mov dword ptr [0x96f240], 0x11c
+// 0047f4e9  c70544f296001d010000 mov dword ptr [0x96f244], 0x11d
+// 0047f4f3  c70548f296001e010000 mov dword ptr [0x96f248], 0x11e
+// 0047f4fd  c7054cf296001f010000 mov dword ptr [0x96f24c], 0x11f
+// 0047f507  c70550f2960020010000 mov dword ptr [0x96f250], 0x120
+// 0047f511  c70554f2960021010000 mov dword ptr [0x96f254], 0x121
+// 0047f51b  c70558f2960022010000 mov dword ptr [0x96f258], 0x122
+// 0047f525  c7055cf2960023010000 mov dword ptr [0x96f25c], 0x123
+// 0047f52f  c70560f2960024010000 mov dword ptr [0x96f260], 0x124
+// 0047f539  c70564f2960025010000 mov dword ptr [0x96f264], 0x125
+// 0047f543  c70568f2960026010000 mov dword ptr [0x96f268], 0x126
+// 0047f54d  c7056cf2960027010000 mov dword ptr [0x96f26c], 0x127
+// 0047f557  c70570f2960028010000 mov dword ptr [0x96f270], 0x128
+// 0047f561  c705b8f296002c010000 mov dword ptr [0x96f2b8], 0x12c
+// 0047f56b  c705c8f096002d010000 mov dword ptr [0x96f0c8], 0x12d
+// 0047f575  c705bcf296002e010000 mov dword ptr [0x96f2bc], 0x12e
+// 0047f57f  c705fcf296002f010000 mov dword ptr [0x96f2fc], 0x12f
+// 0047f589  c705f8f2960030010000 mov dword ptr [0x96f2f8], 0x130
+// 0047f593  c70504f3960031010000 mov dword ptr [0x96f304], 0x131
+// 0047f59d  b83c010000           mov eax, 0x13c
+// 0047f5a2  c70500f3960032010000 mov dword ptr [0x96f300], 0x132
+// 0047f5ac  c7050cf3960033010000 mov dword ptr [0x96f30c], 0x133
+// 0047f5b6  c70508f3960034010000 mov dword ptr [0x96f308], 0x134
+// 0047f5c0  c705e8f1960038010000 mov dword ptr [0x96f1e8], 0x138
+// 0047f5ca  c705e4f1960037010000 mov dword ptr [0x96f1e4], 0x137
+// 0047f5d4  c70534f196003b010000 mov dword ptr [0x96f134], 0x13b
+// 0047f5de  a320f19600           mov dword ptr [0x96f120], eax
+// 0047f5e3  a328f19600           mov dword ptr [0x96f128], eax
+// 0047f5e8  c70584f096003e010000 mov dword ptr [0x96f084], 0x13e
+// 0047f5f2  c705ecf196003f010000 mov dword ptr [0x96f1ec], 0x13f
+// 0047f5fc  c60585f5960001       mov byte ptr [0x96f585], 1
+// 0047f603  c3                   ret 
+// library g3d-6.09/GLG3Dcpp\Win32Window.cpp (function ?initWin32KeyMap@G3D@@YAXXZ)
+
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: g3d-6.09 GLG3Dcpp/Win32Window.cpp
