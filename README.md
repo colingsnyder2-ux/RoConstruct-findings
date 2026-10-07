@@ -11,6 +11,12 @@
 
 ---
 
+## Findings download
+
+Download only the recovered `src/` findings as a ZIP:
+[roconstruct-findings-src.zip](https://github.com/colingsnyder2-ux/RoConstruct-findings/releases/download/findings-latest/roconstruct-findings-src.zip).
+GitHub replaces this asset automatically after each findings update.
+
 ## What is this?
 
 The old Roblox clients only survive as compiled `.exe` files. Compiling throws away names, types and structure, so normal decompilers only give approximate code that can't be rebuilt into the same program.

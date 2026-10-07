@@ -1,0 +1,32 @@
+name: Package findings ZIP
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  package:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Zip only recovered source
+        run: |
+          mkdir -p dist
+          (cd src && zip -qr ../dist/roconstruct-findings-src.zip .)
+          sha256sum dist/roconstruct-findings-src.zip > dist/roconstruct-findings-src.zip.sha256
+
+      - name: Update stable release asset
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release view findings-latest >/dev/null 2>&1 || \
+            gh release create findings-latest --title "Latest findings" \
+              --notes "Auto-generated ZIP of src/ only. Updated on every main push." \
+              --prerelease
+          gh release upload findings-latest dist/roconstruct-findings-src.zip \
+            dist/roconstruct-findings-src.zip.sha256 --clobber
