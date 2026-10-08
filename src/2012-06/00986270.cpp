@@ -1,0 +1,21 @@
+// from server: 100% by auto
+// roc 2012-06 00986270  unit: CPatchedControlComboBox  size: 39 bytes
+// Make this compile to the exact bytes below, then: roc check 2012-06 00986270
+//
+// 00986270  8bc1                 mov eax, ecx
+// 00986272  33c9                 xor ecx, ecx
+// 00986274  894804               mov dword ptr [eax + 4], ecx
+// 00986277  89480c               mov dword ptr [eax + 0xc], ecx
+// 0098627a  894810               mov dword ptr [eax + 0x10], ecx
+// 0098627d  894814               mov dword ptr [eax + 0x14], ecx
+// 00986280  8b4c2404             mov ecx, dword ptr [esp + 4]
+// 00986284  c70030cec000         mov dword ptr [eax], 0xc0ce30
+// 0098628a  c7400811000000       mov dword ptr [eax + 8], 0x11
+// 00986291  894818               mov dword ptr [eax + 0x18], ecx
+// 00986294  c20400               ret 4
+// library xtp-15.2.1/Source\Calendar\XTPCalendarController.cpp (function ??0?$CMap@JJUXTPDayInfo@CXTPDayInfoCache@CXTPCalendarController@@AAU123@@@QAE@H@Z)
+
+// roc-lang: cpp
+// roc-cl: 30729
+// roc-flags: /O2 /GS- /MD
+// roc-lib: xtp-15.2.1 Source/Calendar/XTPCalendarController.cpp

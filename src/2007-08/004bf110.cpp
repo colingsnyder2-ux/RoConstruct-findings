@@ -1,0 +1,34 @@
+// from server: 63% by colin
+// roc 2007-08 004bf110  unit: RakPeer  size: 39 bytes
+// Make this compile to the exact bytes below, then: roc check 2007-08 004bf110
+//
+// 004bf110  8b44240c             mov eax, dword ptr [esp + 0xc]
+// 004bf114  8b542408             mov edx, dword ptr [esp + 8]
+// 004bf118  6a01                 push 1
+// 004bf11a  6a00                 push 0
+// 004bf11c  50                   push eax
+// 004bf11d  52                   push edx
+// 004bf11e  e85ddaffff           call 0x4bcb80
+// 004bf123  85c0                 test eax, eax
+// 004bf125  740d                 je 0x4bf134
+// 004bf127  8b4c2404             mov ecx, dword ptr [esp + 4]
+// 004bf12b  51                   push ecx
+// 004bf12c  8d4818               lea ecx, [eax + 0x18]
+// 004bf12f  e87c590000           call 0x4c4ab0
+// 004bf134  c20c00               ret 0xc
+
+struct RakPeer {
+    int f(int, int, int);
+};
+
+extern "C" int __stdcall sub_4bcb80(int, int, int, int);
+extern "C" void __stdcall sub_4c4ab0(int, int);
+
+int RakPeer::f(int a, int b, int c)
+{
+    int r = sub_4bcb80(b, a, 0, 1);
+    if (r != 0) {
+        sub_4c4ab0(r + 0x18, c);
+    }
+    return r;
+}

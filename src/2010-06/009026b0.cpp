@@ -1,0 +1,21 @@
+// from server: 100% by auto
+// roc 2010-06 009026b0  unit: Ogre::RbxArchiveFactory  size: 30 bytes
+// Make this compile to the exact bytes below, then: roc check 2010-06 009026b0
+//
+// 009026b0  8b442408             mov eax, dword ptr [esp + 8]
+// 009026b4  8b542404             mov edx, dword ptr [esp + 4]
+// 009026b8  50                   push eax
+// 009026b9  83c108               add ecx, 8
+// 009026bc  51                   push ecx
+// 009026bd  8b4c2410             mov ecx, dword ptr [esp + 0x10]
+// 009026c1  51                   push ecx
+// 009026c2  52                   push edx
+// 009026c3  e838ffffff           call 0x902600
+// 009026c8  83c410               add esp, 0x10
+// 009026cb  c20800               ret 8
+// library boost-1.34.1/libs\program_options\src\cmdline.cpp (function ?_Destroy@?$vector@V?$function1@V?$vector@V?$basic_option@D@program_options@boost@@V?$allocator@V?$basic_option@D@program_options@boost@@@std@@@std@@AAV?$vector@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@@2@V?$allocator@Vfunction_base@boost@@@2@@boost@@V?$allocator@V?$function1@V?$vector@V?$basic_option@D@program_options@boost@@V?$allocator@V?$basic_option@D@program_options@boost@@@std@@@std@@AAV?$vector@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@@2@V?$allocator@Vfunction_base@boost@@@2@@boost@@@std@@@std@@IAEXPAV?$function1@V?$vector@V?$basic_option@D@program_options@boost@@V?$allocator@V?$basic_option@D@program_options@boost@@@std@@@std@@AAV?$vector@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@@2@V?$allocator@Vfunction_base@boost@@@2@@boost@@0@Z)
+
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: boost-1.34.1 libs/program_options/src/cmdline.cpp
