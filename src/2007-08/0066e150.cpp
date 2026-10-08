@@ -4,9 +4,14 @@
 // 0066e150  8b81d0000000         mov eax, dword ptr [ecx + 0xd0]
 // 0066e156  83c044               add eax, 0x44
 // 0066e159  c3                   ret 
-// library xtp-11.2.2-vc8/Source\DockingPane\XTPDockingPaneManager.cpp (function ?GetPaneStack@CXTPDockingPaneManager@@QBEAAV?$CList@PAVCXTPDockingPaneBase@@PAV1@@@XZ)
+// auto-matched from its assembly shape
 
-// roc-lang: cpp
-// roc-cl: 50727
-// roc-flags: /O2 /GS- /MD
-// roc-lib: xtp-11.2.2-vc8 Source/DockingPane/XTPDockingPaneManager.cpp
+struct S_func_0066e150 {
+    char pad0[208];
+    int m_x;
+    int f();
+};
+int S_func_0066e150::f()
+{
+    return m_x + 0x44;
+}

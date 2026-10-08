@@ -1,5 +1,4 @@
 // roc 2007-08 006760e0  unit: CXTPCustomizeOptionsPage  size: 6 bytes
-// roc-flags: /O2 /GS- /EHsc /MD
 // Make this compile to the exact bytes below, then: roc check 2007-08 006760e0
 //
 // 006760e0  b820cb7c00           mov eax, 0x7ccb20

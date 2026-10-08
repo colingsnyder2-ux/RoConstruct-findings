@@ -1,5 +1,4 @@
 // roc 2007-08 00689630  unit: CXTPTabManagerAtom  size: 11 bytes
-// roc-flags: /O2 /GS- /EHsc /MD
 // Make this compile to the exact bytes below, then: roc check 2007-08 00689630
 //
 // 00689630  c701d4f77c00         mov dword ptr [ecx], 0x7cf7d4

@@ -1,5 +1,4 @@
 // roc 2007-08 00663eb0  unit: VCXTPReportRows::?$CXTPHeapObjectT  size: 21 bytes
-// roc-flags: /O2 /GS- /EHsc /MD
 // Make this compile to the exact bytes below, then: roc check 2007-08 00663eb0
 //
 // 00663eb0  c70174967c00         mov dword ptr [ecx], 0x7c9674

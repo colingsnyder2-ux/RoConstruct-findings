@@ -1,5 +1,4 @@
 // roc 2007-08 00523f20  unit: G3D::LineSegment  size: 7 bytes
-// roc-flags: /O2 /GS- /EHsc /MD
 // Make this compile to the exact bytes below, then: roc check 2007-08 00523f20
 //
 // 00523f20  c70184447a00         mov dword ptr [ecx], 0x7a4484

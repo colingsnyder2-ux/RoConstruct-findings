@@ -1,5 +1,4 @@
 // roc 2007-08 006a12e0  unit: CXTPDockBar  size: 21 bytes
-// roc-flags: /O2 /GS- /EHsc /MD
 // Make this compile to the exact bytes below, then: roc check 2007-08 006a12e0
 //
 // 006a12e0  c701c4327d00         mov dword ptr [ecx], 0x7d32c4

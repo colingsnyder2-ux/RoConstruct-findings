@@ -1,5 +1,4 @@
 // roc 2007-08 005b4580  unit: RBX::Ball  size: 4 bytes
-// roc-flags: /O2 /GS- /EHsc /MD
 // Make this compile to the exact bytes below, then: roc check 2007-08 005b4580
 //
 // 005b4580  d94110               fld dword ptr [ecx + 0x10]

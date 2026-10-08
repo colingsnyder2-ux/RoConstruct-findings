@@ -1,5 +1,4 @@
 // roc 2007-08 006d70f0  unit: CXTMemDC  size: 8 bytes
-// roc-flags: /O2 /GS- /EHsc /MD
 // Make this compile to the exact bytes below, then: roc check 2007-08 006d70f0
 //
 // 006d70f0  c7411400000000       mov dword ptr [ecx + 0x14], 0

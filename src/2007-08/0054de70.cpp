@@ -1,5 +1,4 @@
 // roc 2007-08 0054de70  unit: boost::iostreams::DUoutput::V?$basic_null_device::?$stream_buffer  size: 4 bytes
-// roc-flags: /O2 /GS- /EHsc /MD
 // Make this compile to the exact bytes below, then: roc check 2007-08 0054de70
 //
 // 0054de70  8d4140               lea eax, [ecx + 0x40]

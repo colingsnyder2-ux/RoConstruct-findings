@@ -1,5 +1,4 @@
 // roc 2007-08 005766e0  unit: RBX::PartInstance  size: 7 bytes
-// roc-flags: /O2 /GS- /EHsc /MD
 // Make this compile to the exact bytes below, then: roc check 2007-08 005766e0
 //
 // 005766e0  8b81d8010000         mov eax, dword ptr [ecx + 0x1d8]

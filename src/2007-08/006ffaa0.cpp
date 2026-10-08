@@ -1,5 +1,4 @@
 // roc 2007-08 006ffaa0  unit: CXTSplitterWnd  size: 7 bytes
-// roc-flags: /O2 /GS- /EHsc /MD
 // Make this compile to the exact bytes below, then: roc check 2007-08 006ffaa0
 //
 // 006ffaa0  8b8108010000         mov eax, dword ptr [ecx + 0x108]

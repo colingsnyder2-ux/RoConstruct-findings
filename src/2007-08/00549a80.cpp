@@ -1,5 +1,4 @@
 // roc 2007-08 00549a80  unit: std::D::DU?$char_traits::?$basic_ifstream  size: 5 bytes
-// roc-flags: /O2 /GS- /EHsc /MD
 // Make this compile to the exact bytes below, then: roc check 2007-08 00549a80
 //
 // 00549a80  e91bffffff           jmp 0x5499a0

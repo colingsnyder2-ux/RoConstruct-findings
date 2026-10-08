@@ -1,5 +1,4 @@
 // roc 2007-08 0055204d  unit: std::D::V?$allocator::U?$basic_zlib_decompressor::?$stream_buffer  size: 6 bytes
-// roc-flags: /O2 /GS- /EHsc /MD
 // Make this compile to the exact bytes below, then: roc check 2007-08 0055204d
 //
 // 0055204d  b853205500           mov eax, 0x552053

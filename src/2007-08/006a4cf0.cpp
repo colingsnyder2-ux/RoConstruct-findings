@@ -1,5 +1,4 @@
 // roc 2007-08 006a4cf0  unit: CXTPShortcutManager::CKeyHelper  size: 23 bytes
-// roc-flags: /O2 /GS- /EHsc /MD
 // Make this compile to the exact bytes below, then: roc check 2007-08 006a4cf0
 //
 // 006a4cf0  8bc1                 mov eax, ecx

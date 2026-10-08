@@ -1,5 +1,4 @@
 // roc 2007-08 006318b3  unit: std::bad_alloc  size: 3 bytes
-// roc-flags: /O2 /GS- /EHsc /MD
 // Make this compile to the exact bytes below, then: roc check 2007-08 006318b3
 //
 // 006318b3  33c0                 xor eax, eax

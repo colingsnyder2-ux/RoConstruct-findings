@@ -1,5 +1,4 @@
 // roc 2007-08 0069d740  unit: CXTPPropertyGridView  size: 5 bytes
-// roc-flags: /O2 /GS- /EHsc /MD
 // Make this compile to the exact bytes below, then: roc check 2007-08 0069d740
 //
 // 0069d740  e96bfeffff           jmp 0x69d5b0

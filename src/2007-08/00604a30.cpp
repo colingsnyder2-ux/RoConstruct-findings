@@ -1,5 +1,4 @@
 // roc 2007-08 00604a30  unit: RBX::SleepStage  size: 8 bytes
-// roc-flags: /O2 /GS- /EHsc /MD
 // Make this compile to the exact bytes below, then: roc check 2007-08 00604a30
 //
 // 00604a30  8b4908               mov ecx, dword ptr [ecx + 8]

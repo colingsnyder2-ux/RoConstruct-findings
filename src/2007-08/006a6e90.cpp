@@ -1,5 +1,4 @@
 // roc 2007-08 006a6e90  unit: CXTPMenuBar  size: 6 bytes
-// roc-flags: /O2 /GS- /EHsc /MD
 // Make this compile to the exact bytes below, then: roc check 2007-08 006a6e90
 //
 // 006a6e90  b8e4457d00           mov eax, 0x7d45e4

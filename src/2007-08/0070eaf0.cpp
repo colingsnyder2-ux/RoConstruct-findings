@@ -1,5 +1,4 @@
 // roc 2007-08 0070eaf0  unit: CXTSplitterWndThemeOfficeXP  size: 5 bytes
-// roc-flags: /O2 /GS- /EHsc /MD
 // Make this compile to the exact bytes below, then: roc check 2007-08 0070eaf0
 //
 // 0070eaf0  e9dbffffff           jmp 0x70ead0

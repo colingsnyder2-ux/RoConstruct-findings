@@ -1,0 +1,14 @@
+// roc 2007-03 005a96a0  unit: seg_005a0000  size: 23 bytes
+// Make this compile to the exact bytes below, then: roc check 2007-03 005a96a0
+//
+// 005a96a0  68288f8b00           push 0x8b8f28
+// 005a96a5  68e0d04900           push 0x49d0e0
+// 005a96aa  e8a1d11700           call 0x726850
+// 005a96af  83c408               add esp, 8
+// 005a96b2  e9692cefff           jmp 0x49c320
+// library rbxgs/util\Name.cpp (function ?mutex@Name@RBX@@CAAAV0boost@@XZ)
+
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+// roc-lib: rbxgs util/Name.cpp

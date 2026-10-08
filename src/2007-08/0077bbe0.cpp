@@ -1,5 +1,4 @@
 // roc 2007-08 0077bbe0  unit: seg_00770000  size: 10 bytes
-// roc-flags: /O2 /GS- /EHsc /MD
 // Make this compile to the exact bytes below, then: roc check 2007-08 0077bbe0
 //
 // 0077bbe0  b900658c00           mov ecx, 0x8c6500

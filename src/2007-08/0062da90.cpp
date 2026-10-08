@@ -1,5 +1,4 @@
 // roc 2007-08 0062da90  unit: RBX::AdornG3D  size: 8 bytes
-// roc-flags: /O2 /GS- /EHsc /MD
 // Make this compile to the exact bytes below, then: roc check 2007-08 0062da90
 //
 // 0062da90  8b4904               mov ecx, dword ptr [ecx + 4]

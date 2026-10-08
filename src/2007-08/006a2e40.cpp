@@ -1,5 +1,4 @@
 // roc 2007-08 006a2e40  unit: CXTPHookManagerHookAble  size: 21 bytes
-// roc-flags: /O2 /GS- /EHsc /MD
 // Make this compile to the exact bytes below, then: roc check 2007-08 006a2e40
 //
 // 006a2e40  c70120357d00         mov dword ptr [ecx], 0x7d3520

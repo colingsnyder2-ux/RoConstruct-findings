@@ -1,5 +1,4 @@
 // roc 2007-08 005c5957  unit: lua_exception  size: 6 bytes
-// roc-flags: /O2 /GS- /EHsc /MD
 // Make this compile to the exact bytes below, then: roc check 2007-08 005c5957
 //
 // 005c5957  b878595c00           mov eax, 0x5c5978

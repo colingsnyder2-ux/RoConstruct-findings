@@ -1,5 +1,4 @@
 // roc 2007-08 006daa10  unit: CXTPDockingPaneAutoHidePanel::CAutoHidePanelTabManager  size: 4 bytes
-// roc-flags: /O2 /GS- /EHsc /MD
 // Make this compile to the exact bytes below, then: roc check 2007-08 006daa10
 //
 // 006daa10  8b4118               mov eax, dword ptr [ecx + 0x18]

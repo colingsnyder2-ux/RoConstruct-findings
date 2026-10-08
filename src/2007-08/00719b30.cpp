@@ -1,5 +1,4 @@
 // roc 2007-08 00719b30  unit: CXTPRibbonControlSystemPopupBarListCaption  size: 6 bytes
-// roc-flags: /O2 /GS- /EHsc /MD
 // Make this compile to the exact bytes below, then: roc check 2007-08 00719b30
 //
 // 00719b30  b834a78b00           mov eax, 0x8ba734

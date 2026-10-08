@@ -1,5 +1,4 @@
 // roc 2007-08 00486880  unit: G3D::GWindow  size: 7 bytes
-// roc-flags: /O2 /GS- /EHsc /MD
 // Make this compile to the exact bytes below, then: roc check 2007-08 00486880
 //
 // 00486880  8a8124010000         mov al, byte ptr [ecx + 0x124]

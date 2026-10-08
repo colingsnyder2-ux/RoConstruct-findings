@@ -3,17 +3,14 @@
 //
 // 0060cc60  8b09                 mov ecx, dword ptr [ecx]
 // 0060cc62  e989df0400           jmp 0x65abf0
+// auto-matched from its assembly shape
 
-struct Body {
-    void Step();
+struct P_func_0060cc60 { void g(); };
+struct S_func_0060cc60 {
+    P_func_0060cc60* m_p;
+    void f();
 };
-
-struct BallBlockContact {
-    Body* m_body;
-    void Step();
-};
-
-void BallBlockContact::Step()
+void S_func_0060cc60::f()
 {
-    m_body->Step();
+    m_p->g();
 }

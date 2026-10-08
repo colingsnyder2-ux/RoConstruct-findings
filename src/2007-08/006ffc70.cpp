@@ -1,5 +1,4 @@
 // roc 2007-08 006ffc70  unit: CXTPTabPaintManager::CAppearanceSetPropertyPage2003  size: 6 bytes
-// roc-flags: /O2 /GS- /EHsc /MD
 // Make this compile to the exact bytes below, then: roc check 2007-08 006ffc70
 //
 // 006ffc70  b815000000           mov eax, 0x15

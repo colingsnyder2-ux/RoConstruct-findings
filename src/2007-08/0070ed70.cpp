@@ -1,5 +1,4 @@
 // roc 2007-08 0070ed70  unit: CXTPRichRender::XTextHost  size: 3 bytes
-// roc-flags: /O2 /GS- /EHsc /MD
 // Make this compile to the exact bytes below, then: roc check 2007-08 0070ed70
 //
 // 0070ed70  c21c00               ret 0x1c

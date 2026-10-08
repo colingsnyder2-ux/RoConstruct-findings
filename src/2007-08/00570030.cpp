@@ -1,5 +1,4 @@
 // roc 2007-08 00570030  unit: RBX::W4NormalId::?$EnumDesc  size: 7 bytes
-// roc-flags: /O2 /GS- /EHsc /MD
 // Make this compile to the exact bytes below, then: roc check 2007-08 00570030
 //
 // 00570030  c701e4a07a00         mov dword ptr [ecx], 0x7aa0e4

@@ -1,5 +1,4 @@
 // roc 2007-08 006f0fd0  unit: CXTPImageEditorPicker  size: 11 bytes
-// roc-flags: /O2 /GS- /EHsc /MD
 // Make this compile to the exact bytes below, then: roc check 2007-08 006f0fd0
 //
 // 006f0fd0  c70100837800         mov dword ptr [ecx], 0x788300

@@ -1,5 +1,4 @@
 // roc 2007-08 0065b680  unit: VCXTPReportRow::V?$CXTPSmartPtrInternalT::?$CArray  size: 7 bytes
-// roc-flags: /O2 /GS- /EHsc /MD
 // Make this compile to the exact bytes below, then: roc check 2007-08 0065b680
 //
 // 0065b680  8b09                 mov ecx, dword ptr [ecx]

@@ -1,5 +1,4 @@
 // roc 2007-08 005b7e40  unit: RBX::$00::?$SurfaceDescriptor  size: 5 bytes
-// roc-flags: /O2 /GS- /EHsc /MD
 // Make this compile to the exact bytes below, then: roc check 2007-08 005b7e40
 //
 // 005b7e40  32c0                 xor al, al

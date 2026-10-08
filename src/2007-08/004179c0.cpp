@@ -1,5 +1,4 @@
 // roc 2007-08 004179c0  unit: std::D::DU?$char_traits::$$A6AXV?$basic_string::V?$function::?$holder  size: 6 bytes
-// roc-flags: /O2 /GS- /EHsc /MD
 // Make this compile to the exact bytes below, then: roc check 2007-08 004179c0
 //
 // 004179c0  b8183c8800           mov eax, 0x883c18

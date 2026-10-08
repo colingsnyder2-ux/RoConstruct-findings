@@ -1,5 +1,4 @@
 // roc 2007-08 00651830  unit: CXTPToolBar  size: 5 bytes
-// roc-flags: /O2 /GS- /EHsc /MD
 // Make this compile to the exact bytes below, then: roc check 2007-08 00651830
 //
 // 00651830  e9ebffffff           jmp 0x651820

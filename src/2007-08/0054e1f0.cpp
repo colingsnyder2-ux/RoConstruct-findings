@@ -1,5 +1,4 @@
 // roc 2007-08 0054e1f0  unit: std::D::V?$allocator::V?$basic_gzip_decompressor::?$stream_buffer  size: 13 bytes
-// roc-flags: /O2 /GS- /EHsc /MD
 // Make this compile to the exact bytes below, then: roc check 2007-08 0054e1f0
 //
 // 0054e1f0  8b442404             mov eax, dword ptr [esp + 4]

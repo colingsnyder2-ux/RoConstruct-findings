@@ -3,15 +3,10 @@
 //
 // 00754f10  c701444e8600         mov dword ptr [ecx], 0x864e44
 // 00754f16  e91531ceff           jmp 0x438030
+// auto-matched from its assembly shape
 
-struct CXTPCmdTarget {
-    virtual ~CXTPCmdTarget();
-};
-
-struct CXTPDockingPaneBase : CXTPCmdTarget {
-    ~CXTPDockingPaneBase();
-};
-
-CXTPDockingPaneBase::~CXTPDockingPaneBase()
+struct B_func_00754f10 { virtual ~B_func_00754f10(); };
+struct S_func_00754f10 : B_func_00754f10 { ~S_func_00754f10(); };
+S_func_00754f10::~S_func_00754f10()
 {
 }

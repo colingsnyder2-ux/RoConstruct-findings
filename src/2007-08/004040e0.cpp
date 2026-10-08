@@ -1,5 +1,4 @@
 // roc 2007-08 004040e0  unit: ATL::CRegObject  size: 8 bytes
-// roc-flags: /O2 /GS- /EHsc /MD
 // Make this compile to the exact bytes below, then: roc check 2007-08 004040e0
 //
 // 004040e0  b801400080           mov eax, 0x80004001

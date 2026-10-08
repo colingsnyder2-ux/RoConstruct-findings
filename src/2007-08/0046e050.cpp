@@ -1,5 +1,4 @@
 // roc 2007-08 0046e050  unit: RBX::LDraw2Lua::LuaWriter  size: 11 bytes
-// roc-flags: /O2 /GS- /EHsc /MD
 // Make this compile to the exact bytes below, then: roc check 2007-08 0046e050
 //
 // 0046e050  c701d4657900         mov dword ptr [ecx], 0x7965d4

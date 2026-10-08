@@ -1,5 +1,4 @@
 // roc 2007-08 00709cd0  unit: CXTColorPageStandard  size: 11 bytes
-// roc-flags: /O2 /GS- /EHsc /MD
 // Make this compile to the exact bytes below, then: roc check 2007-08 00709cd0
 //
 // 00709cd0  c701a4d57d00         mov dword ptr [ecx], 0x7dd5a4

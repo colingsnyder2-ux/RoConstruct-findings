@@ -1,5 +1,4 @@
 // roc 2007-08 006a80a0  unit: CXTPRibbonBar  size: 11 bytes
-// roc-flags: /O2 /GS- /EHsc /MD
 // Make this compile to the exact bytes below, then: roc check 2007-08 006a80a0
 //
 // 006a80a0  8b8960020000         mov ecx, dword ptr [ecx + 0x260]

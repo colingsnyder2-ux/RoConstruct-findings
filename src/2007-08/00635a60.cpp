@@ -1,5 +1,4 @@
 // roc 2007-08 00635a60  unit: CXTPEdit  size: 6 bytes
-// roc-flags: /O2 /GS- /EHsc /MD
 // Make this compile to the exact bytes below, then: roc check 2007-08 00635a60
 //
 // 00635a60  b8a8547c00           mov eax, 0x7c54a8

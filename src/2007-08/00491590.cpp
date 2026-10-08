@@ -1,5 +1,4 @@
 // roc 2007-08 00491590  unit: RBX::Network::VPlayer::?$SignalDesc  size: 7 bytes
-// roc-flags: /O2 /GS- /EHsc /MD
 // Make this compile to the exact bytes below, then: roc check 2007-08 00491590
 //
 // 00491590  8b8148010000         mov eax, dword ptr [ecx + 0x148]

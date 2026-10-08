@@ -9,16 +9,15 @@
 // 006a30ee  e857d8ffff           call 0x6a094a
 // 006a30f3  59                   pop ecx
 // 006a30f4  c3                   ret 
+// auto-matched from its assembly shape
 
-extern "C" void __cdecl FreeBuffer(void* p);
-
-struct CRobloxControlColorSelector {
-    virtual ~CRobloxControlColorSelector();
-    void* m_buffer;
+extern "C" void __cdecl G1_func_006a30e0(void*);
+struct S_func_006a30e0 {
+    virtual ~S_func_006a30e0();
+    void* m_p;
 };
-
-CRobloxControlColorSelector::~CRobloxControlColorSelector()
+S_func_006a30e0::~S_func_006a30e0()
 {
-    if (m_buffer)
-        FreeBuffer(m_buffer);
+    if (m_p)
+        G1_func_006a30e0(m_p);
 }

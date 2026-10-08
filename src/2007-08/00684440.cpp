@@ -1,5 +1,4 @@
 // roc 2007-08 00684440  unit: RBX::PAVSoundChannel::?$sp_counted_impl_pd  size: 6 bytes
-// roc-flags: /O2 /GS- /EHsc /MD
 // Make this compile to the exact bytes below, then: roc check 2007-08 00684440
 //
 // 00684440  b8f8f17c00           mov eax, 0x7cf1f8

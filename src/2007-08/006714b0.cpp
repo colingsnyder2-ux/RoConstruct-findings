@@ -1,5 +1,4 @@
 // roc 2007-08 006714b0  unit: CXTPAccessible::XAccessible  size: 8 bytes
-// roc-flags: /O2 /GS- /EHsc /MD
 // Make this compile to the exact bytes below, then: roc check 2007-08 006714b0
 //
 // 006714b0  b801400080           mov eax, 0x80004001

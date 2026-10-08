@@ -1,5 +1,4 @@
 // roc 2007-08 006f8c70  unit: CXTPPropertyGridInplaceEdit  size: 5 bytes
-// roc-flags: /O2 /GS- /EHsc /MD
 // Make this compile to the exact bytes below, then: roc check 2007-08 006f8c70
 //
 // 006f8c70  e9ebffffff           jmp 0x6f8c60

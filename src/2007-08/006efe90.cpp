@@ -1,5 +1,4 @@
 // roc 2007-08 006efe90  unit: CXTPShadowsManager::PAVCShadowWnd::?$CList  size: 5 bytes
-// roc-flags: /O2 /GS- /EHsc /MD
 // Make this compile to the exact bytes below, then: roc check 2007-08 006efe90
 //
 // 006efe90  e9cbffffff           jmp 0x6efe60

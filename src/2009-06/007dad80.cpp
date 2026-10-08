@@ -1,0 +1,13 @@
+// roc 2009-06 007dad80  unit: CXTPDockingPaneSplitterContainer  size: 10 bytes
+// Make this compile to the exact bytes below, then: roc check 2009-06 007dad80
+//
+// 007dad80  8b4910               mov ecx, dword ptr [ecx + 0x10]
+// 007dad83  8b01                 mov eax, dword ptr [ecx]
+// 007dad85  8b5004               mov edx, dword ptr [eax + 4]
+// 007dad88  ffe2                 jmp edx
+// library xtp-15.2.1/Source\DockingPane\XTPDockingPanePaintManager.cpp (function ?InvalidateRect@CXTPDockingPaneCaptionButton@@QAEXXZ)
+
+// roc-lang: cpp
+// roc-cl: 30729
+// roc-flags: /O2 /GS- /MD
+// roc-lib: xtp-15.2.1 Source/DockingPane/XTPDockingPanePaintManager.cpp

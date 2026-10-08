@@ -1,5 +1,4 @@
 // roc 2007-08 00684e90  unit: CXTPPropExchange  size: 8 bytes
-// roc-flags: /O2 /GS- /EHsc /MD
 // Make this compile to the exact bytes below, then: roc check 2007-08 00684e90
 //
 // 00684e90  c7413001000000       mov dword ptr [ecx + 0x30], 1

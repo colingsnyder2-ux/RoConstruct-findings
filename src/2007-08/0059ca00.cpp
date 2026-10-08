@@ -1,5 +1,4 @@
 // roc 2007-08 0059ca00  unit: RBX::UserInputBase  size: 7 bytes
-// roc-flags: /O2 /GS- /EHsc /MD
 // Make this compile to the exact bytes below, then: roc check 2007-08 0059ca00
 //
 // 0059ca00  8b8158010000         mov eax, dword ptr [ecx + 0x158]

@@ -1,5 +1,4 @@
 // roc 2007-08 0066c640  unit: CXTPCustomizeSheet::CCustomizeEdit  size: 21 bytes
-// roc-flags: /O2 /GS- /EHsc /MD
 // Make this compile to the exact bytes below, then: roc check 2007-08 0066c640
 //
 // 0066c640  c70198b07c00         mov dword ptr [ecx], 0x7cb098

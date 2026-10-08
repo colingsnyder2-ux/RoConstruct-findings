@@ -1,5 +1,4 @@
 // roc 2007-08 00493ea0  unit: RBX::VInstance::$$A6AXV?$shared_ptr::V?$function::?$holder  size: 6 bytes
-// roc-flags: /O2 /GS- /EHsc /MD
 // Make this compile to the exact bytes below, then: roc check 2007-08 00493ea0
 //
 // 00493ea0  b898e58800           mov eax, 0x88e598

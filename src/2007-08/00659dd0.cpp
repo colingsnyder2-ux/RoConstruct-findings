@@ -1,5 +1,4 @@
 // roc 2007-08 00659dd0  unit: VCXTPReportRow::?$CXTPSmartPtrInternalT  size: 11 bytes
-// roc-flags: /O2 /GS- /EHsc /MD
 // Make this compile to the exact bytes below, then: roc check 2007-08 00659dd0
 //
 // 00659dd0  c70144857c00         mov dword ptr [ecx], 0x7c8544

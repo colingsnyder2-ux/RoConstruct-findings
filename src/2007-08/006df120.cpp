@@ -1,5 +1,4 @@
 // roc 2007-08 006df120  unit: CXTPDockingPaneMiniWnd  size: 21 bytes
-// roc-flags: /O2 /GS- /EHsc /MD
 // Make this compile to the exact bytes below, then: roc check 2007-08 006df120
 //
 // 006df120  c70150997d00         mov dword ptr [ecx], 0x7d9950

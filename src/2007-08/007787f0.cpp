@@ -1,5 +1,4 @@
 // roc 2007-08 007787f0  unit: seg_00770000  size: 25 bytes
-// roc-flags: /O2 /GS- /EHsc /MD
 // Make this compile to the exact bytes below, then: roc check 2007-08 007787f0
 //
 // 007787f0  a1c8e88b00           mov eax, dword ptr [0x8be8c8]

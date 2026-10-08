@@ -1,5 +1,4 @@
 // roc 2007-08 004b7010  unit: Exposer  size: 8 bytes
-// roc-flags: /O2 /GS- /EHsc /MD
 // Make this compile to the exact bytes below, then: roc check 2007-08 004b7010
 //
 // 004b7010  b808677900           mov eax, 0x796708

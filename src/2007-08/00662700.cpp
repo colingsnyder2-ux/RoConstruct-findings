@@ -1,5 +1,4 @@
 // roc 2007-08 00662700  unit: PluginInterface  size: 8 bytes
-// roc-flags: /O2 /GS- /EHsc /MD
 // Make this compile to the exact bytes below, then: roc check 2007-08 00662700
 //
 // 00662700  b801000000           mov eax, 1

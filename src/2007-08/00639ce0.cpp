@@ -1,5 +1,4 @@
 // roc 2007-08 00639ce0  unit: CXTPControlComboBoxAutoCompleteWnd  size: 5 bytes
-// roc-flags: /O2 /GS- /EHsc /MD
 // Make this compile to the exact bytes below, then: roc check 2007-08 00639ce0
 //
 // 00639ce0  e931e60f00           jmp 0x738316

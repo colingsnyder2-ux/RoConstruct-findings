@@ -1,5 +1,4 @@
 // roc 2007-08 005ff510  unit: RBX::BallBallContact  size: 7 bytes
-// roc-flags: /O2 /GS- /EHsc /MD
 // Make this compile to the exact bytes below, then: roc check 2007-08 005ff510
 //
 // 005ff510  8b09                 mov ecx, dword ptr [ecx]

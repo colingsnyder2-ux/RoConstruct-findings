@@ -1,5 +1,4 @@
 // roc 2007-08 00557240  unit: ChatEnter  size: 4 bytes
-// roc-flags: /O2 /GS- /EHsc /MD
 // Make this compile to the exact bytes below, then: roc check 2007-08 00557240
 //
 // 00557240  8b4178               mov eax, dword ptr [ecx + 0x78]

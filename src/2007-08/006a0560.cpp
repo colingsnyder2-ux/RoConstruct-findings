@@ -1,5 +1,4 @@
 // roc 2007-08 006a0560  unit: CXTPNewToolbarDlg  size: 5 bytes
-// roc-flags: /O2 /GS- /EHsc /MD
 // Make this compile to the exact bytes below, then: roc check 2007-08 006a0560
 //
 // 006a0560  e9dbd0d7ff           jmp 0x41d640

@@ -1,5 +1,4 @@
 // roc 2007-08 006f5f90  unit: CXTPPropertyGridInplaceButton  size: 21 bytes
-// roc-flags: /O2 /GS- /EHsc /MD
 // Make this compile to the exact bytes below, then: roc check 2007-08 006f5f90
 //
 // 006f5f90  c701f0c27d00         mov dword ptr [ecx], 0x7dc2f0

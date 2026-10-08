@@ -1,5 +1,4 @@
 // roc 2007-08 005da650  unit: RBX::Network::Server  size: 5 bytes
-// roc-flags: /O2 /GS- /EHsc /MD
 // Make this compile to the exact bytes below, then: roc check 2007-08 005da650
 //
 // 005da650  b001                 mov al, 1

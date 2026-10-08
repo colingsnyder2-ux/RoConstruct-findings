@@ -1,5 +1,4 @@
 // roc 2007-08 00601530  unit: RBX::ScriptMouseCommand  size: 8 bytes
-// roc-flags: /O2 /GS- /EHsc /MD
 // Make this compile to the exact bytes below, then: roc check 2007-08 00601530
 //
 // 00601530  8b4920               mov ecx, dword ptr [ecx + 0x20]

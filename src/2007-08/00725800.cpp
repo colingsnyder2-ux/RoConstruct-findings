@@ -1,5 +1,4 @@
 // roc 2007-08 00725800  unit: boost::lock_error  size: 6 bytes
-// roc-flags: /O2 /GS- /EHsc /MD
 // Make this compile to the exact bytes below, then: roc check 2007-08 00725800
 //
 // 00725800  b858517e00           mov eax, 0x7e5158

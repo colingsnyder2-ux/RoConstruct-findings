@@ -1,5 +1,4 @@
 // roc 2007-08 0064edf0  unit: CXTPToolBar  size: 7 bytes
-// roc-flags: /O2 /GS- /EHsc /MD
 // Make this compile to the exact bytes below, then: roc check 2007-08 0064edf0
 //
 // 0064edf0  8b81d8000000         mov eax, dword ptr [ecx + 0xd8]

@@ -1,5 +1,4 @@
 // roc 2007-08 0068f1b0  unit: CXTPDockingPane  size: 7 bytes
-// roc-flags: /O2 /GS- /EHsc /MD
 // Make this compile to the exact bytes below, then: roc check 2007-08 0068f1b0
 //
 // 0068f1b0  8b81e4000000         mov eax, dword ptr [ecx + 0xe4]

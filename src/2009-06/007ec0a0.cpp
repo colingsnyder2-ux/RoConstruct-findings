@@ -1,0 +1,12 @@
+// roc 2009-06 007ec0a0  unit: VCEdit::?$CXTMaskEditT  size: 11 bytes
+// Make this compile to the exact bytes below, then: roc check 2009-06 007ec0a0
+//
+// 007ec0a0  6aff                 push -1
+// 007ec0a2  ff15a8ed8900         call dword ptr [0x89eda8]
+// 007ec0a8  c20800               ret 8
+// library xtp-15.2.1/Source\Controls\Deprecated\XTFlatComboBox.cpp (function ?NotifyInvalidCharacter@?$CXTPMaskEditT@VCEdit@@@@MAEXDD@Z)
+
+// roc-lang: cpp
+// roc-cl: 30729
+// roc-flags: /O2 /GS- /MD
+// roc-lib: xtp-15.2.1 Source/Controls/Deprecated/XTFlatComboBox.cpp

@@ -1,5 +1,4 @@
 // roc 2007-08 006ea550  unit: XTPDockingPanePaintThemes::CXTPDockingPaneOffice2003Theme  size: 5 bytes
-// roc-flags: /O2 /GS- /EHsc /MD
 // Make this compile to the exact bytes below, then: roc check 2007-08 006ea550
 //
 // 006ea550  e9abb6ffff           jmp 0x6e5c00

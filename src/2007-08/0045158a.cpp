@@ -1,5 +1,4 @@
 // roc 2007-08 0045158a  unit: ReportAbuseVerb  size: 6 bytes
-// roc-flags: /O2 /GS- /EHsc /MD
 // Make this compile to the exact bytes below, then: roc check 2007-08 0045158a
 //
 // 0045158a  b890154500           mov eax, 0x451590

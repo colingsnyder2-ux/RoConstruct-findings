@@ -1,5 +1,4 @@
 // roc 2007-08 0057aa50  unit: RBX::IScriptOwner  size: 3 bytes
-// roc-flags: /O2 /GS- /EHsc /MD
 // Make this compile to the exact bytes below, then: roc check 2007-08 0057aa50
 //
 // 0057aa50  c20800               ret 8

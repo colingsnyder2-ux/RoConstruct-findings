@@ -1,5 +1,4 @@
 // roc 2007-08 006b5e30  unit: CXTPControlGalleryPaintManager  size: 21 bytes
-// roc-flags: /O2 /GS- /EHsc /MD
 // Make this compile to the exact bytes below, then: roc check 2007-08 006b5e30
 //
 // 006b5e30  c70134637d00         mov dword ptr [ecx], 0x7d6334

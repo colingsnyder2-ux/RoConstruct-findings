@@ -1,5 +1,4 @@
 // roc 2007-08 0050d790  unit: G3D::BinaryInput  size: 5 bytes
-// roc-flags: /O2 /GS- /EHsc /MD
 // Make this compile to the exact bytes below, then: roc check 2007-08 0050d790
 //
 // 0050d790  e9fbfcffff           jmp 0x50d490

@@ -1,5 +1,4 @@
 // roc 2007-08 0057b300  unit: RBX::RootInstance  size: 5 bytes
-// roc-flags: /O2 /GS- /EHsc /MD
 // Make this compile to the exact bytes below, then: roc check 2007-08 0057b300
 //
 // 0057b300  e9fbf8ffff           jmp 0x57ac00

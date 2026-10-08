@@ -1,5 +1,4 @@
 // roc 2007-08 005b4d40  unit: RBX::Geometry  size: 4 bytes
-// roc-flags: /O2 /GS- /EHsc /MD
 // Make this compile to the exact bytes below, then: roc check 2007-08 005b4d40
 //
 // 005b4d40  8b4108               mov eax, dword ptr [ecx + 8]

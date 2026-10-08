@@ -1,5 +1,4 @@
 // roc 2007-08 00631c20  unit: CXTPCommandBars  size: 11 bytes
-// roc-flags: /O2 /GS- /EHsc /MD
 // Make this compile to the exact bytes below, then: roc check 2007-08 00631c20
 //
 // 00631c20  8b89bc000000         mov ecx, dword ptr [ecx + 0xbc]

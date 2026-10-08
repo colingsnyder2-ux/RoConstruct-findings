@@ -1,5 +1,4 @@
 // roc 2007-08 004d2750  unit: RBX::Render::VAggregateChunk::?$WeakReferenceCountedPointer  size: 11 bytes
-// roc-flags: /O2 /GS- /EHsc /MD
 // Make this compile to the exact bytes below, then: roc check 2007-08 004d2750
 //
 // 004d2750  c70114f17900         mov dword ptr [ecx], 0x79f114

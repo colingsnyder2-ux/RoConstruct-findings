@@ -1,5 +1,4 @@
 // roc 2007-08 00461dd0  unit: CSelectionCaption  size: 5 bytes
-// roc-flags: /O2 /GS- /EHsc /MD
 // Make this compile to the exact bytes below, then: roc check 2007-08 00461dd0
 //
 // 00461dd0  e91ddf1c00           jmp 0x62fcf2

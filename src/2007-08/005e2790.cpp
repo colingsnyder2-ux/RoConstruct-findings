@@ -7,9 +7,21 @@
 // 005e279a  894804               mov dword ptr [eax + 4], ecx
 // 005e279d  894808               mov dword ptr [eax + 8], ecx
 // 005e27a0  c3                   ret 
-// library g3d-6.09/GLG3Dcpp\Renderbuffer.cpp (function ??0ReferenceCountedObject@G3D@@IAE@XZ)
+// auto-matched from its assembly shape
 
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: g3d-6.09 GLG3Dcpp/Renderbuffer.cpp
+extern char G;
+
+extern char G;
+struct S_func_005e2790
+{
+    void* p0;
+    int z0;
+    int z1;
+    S_func_005e2790();
+};
+S_func_005e2790::S_func_005e2790()
+{
+    p0 = (void*)&G;
+    z0 = 0;
+    z1 = 0;
+}

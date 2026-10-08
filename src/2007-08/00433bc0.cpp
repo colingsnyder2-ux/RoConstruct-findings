@@ -1,5 +1,4 @@
 // roc 2007-08 00433bc0  unit: CMultiPlayerPane  size: 11 bytes
-// roc-flags: /O2 /GS- /EHsc /MD
 // Make this compile to the exact bytes below, then: roc check 2007-08 00433bc0
 //
 // 00433bc0  c7016cbb7800         mov dword ptr [ecx], 0x78bb6c

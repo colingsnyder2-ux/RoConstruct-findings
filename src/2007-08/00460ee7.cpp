@@ -1,5 +1,4 @@
 // roc 2007-08 00460ee7  unit: RBX::VInstance::?$MarshaledListener::EventData  size: 6 bytes
-// roc-flags: /O2 /GS- /EHsc /MD
 // Make this compile to the exact bytes below, then: roc check 2007-08 00460ee7
 //
 // 00460ee7  b8ed0e4600           mov eax, 0x460eed

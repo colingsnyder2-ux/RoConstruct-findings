@@ -1,5 +1,4 @@
 // roc 2007-08 005da880  unit: RBX::MotorFeature  size: 5 bytes
-// roc-flags: /O2 /GS- /EHsc /MD
 // Make this compile to the exact bytes below, then: roc check 2007-08 005da880
 //
 // 005da880  e9dbf5ffff           jmp 0x5d9e60

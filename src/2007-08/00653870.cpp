@@ -1,5 +1,4 @@
 // roc 2007-08 00653870  unit: G3D::Win32Window  size: 4 bytes
-// roc-flags: /O2 /GS- /EHsc /MD
 // Make this compile to the exact bytes below, then: roc check 2007-08 00653870
 //
 // 00653870  8b4128               mov eax, dword ptr [ecx + 0x28]

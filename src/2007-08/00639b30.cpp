@@ -1,5 +1,4 @@
 // roc 2007-08 00639b30  unit: CXTPControlComboBoxEditCtrl  size: 5 bytes
-// roc-flags: /O2 /GS- /EHsc /MD
 // Make this compile to the exact bytes below, then: roc check 2007-08 00639b30
 //
 // 00639b30  e97bffffff           jmp 0x639ab0

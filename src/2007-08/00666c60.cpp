@@ -1,5 +1,4 @@
 // roc 2007-08 00666c60  unit: VCPtrList::?$CTypedPtrList  size: 11 bytes
-// roc-flags: /O2 /GS- /EHsc /MD
 // Make this compile to the exact bytes below, then: roc check 2007-08 00666c60
 //
 // 00666c60  c701e4a57c00         mov dword ptr [ecx], 0x7ca5e4

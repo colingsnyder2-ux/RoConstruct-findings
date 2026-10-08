@@ -1,5 +1,4 @@
 // roc 2007-08 006d5e80  unit: CXTPReportTip  size: 5 bytes
-// roc-flags: /O2 /GS- /EHsc /MD
 // Make this compile to the exact bytes below, then: roc check 2007-08 006d5e80
 //
 // 006d5e80  e9ebffffff           jmp 0x6d5e70

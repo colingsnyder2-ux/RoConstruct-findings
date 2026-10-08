@@ -3,14 +3,14 @@
 //
 // 0057d240  8b8194010000         mov eax, dword ptr [ecx + 0x194]
 // 0057d246  c3                   ret 
+// auto-matched from its assembly shape
 
-struct SignalDesc {
-    char pad[0x194];
-    void* m_desc;
-    void* Get();
+struct S_func_0057d240 {
+    char pad0[404];
+    int m_x;
+    int f();
 };
-
-void* SignalDesc::Get()
+int S_func_0057d240::f()
 {
-    return m_desc;
+    return m_x;
 }

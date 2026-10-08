@@ -1,5 +1,4 @@
 // roc 2007-08 0065e560  unit: CXTPReportControl  size: 4 bytes
-// roc-flags: /O2 /GS- /EHsc /MD
 // Make this compile to the exact bytes below, then: roc check 2007-08 0065e560
 //
 // 0065e560  8b413c               mov eax, dword ptr [ecx + 0x3c]

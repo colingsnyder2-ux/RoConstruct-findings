@@ -1,5 +1,4 @@
 // roc 2007-08 004980a0  unit: RBX::Network::Players::Plugin  size: 5 bytes
-// roc-flags: /O2 /GS- /EHsc /MD
 // Make this compile to the exact bytes below, then: roc check 2007-08 004980a0
 //
 // 004980a0  e91be8ffff           jmp 0x4968c0

@@ -1,5 +1,4 @@
 // roc 2007-08 006828f0  unit: CXTPPrintingDialog  size: 11 bytes
-// roc-flags: /O2 /GS- /EHsc /MD
 // Make this compile to the exact bytes below, then: roc check 2007-08 006828f0
 //
 // 006828f0  c701d4ed7c00         mov dword ptr [ecx], 0x7cedd4

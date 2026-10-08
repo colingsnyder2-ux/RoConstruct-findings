@@ -1,5 +1,4 @@
 // roc 2007-08 0054c7b0  unit: UString_sink::?$stream_buffer  size: 6 bytes
-// roc-flags: /O2 /GS- /EHsc /MD
 // Make this compile to the exact bytes below, then: roc check 2007-08 0054c7b0
 //
 // 0054c7b0  b8b6c75400           mov eax, 0x54c7b6

@@ -1,5 +1,4 @@
 // roc 2007-08 006ad450  unit: CXTPRibbonTheme  size: 5 bytes
-// roc-flags: /O2 /GS- /EHsc /MD
 // Make this compile to the exact bytes below, then: roc check 2007-08 006ad450
 //
 // 006ad450  e93bda0600           jmp 0x71ae90

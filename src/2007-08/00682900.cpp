@@ -1,5 +1,4 @@
 // roc 2007-08 00682900  unit: CXTPPropertyGridToolBar  size: 5 bytes
-// roc-flags: /O2 /GS- /EHsc /MD
 // Make this compile to the exact bytes below, then: roc check 2007-08 00682900
 //
 // 00682900  e9d7d4faff           jmp 0x62fddc

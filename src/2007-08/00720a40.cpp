@@ -1,5 +1,4 @@
 // roc 2007-08 00720a40  unit: std::D::V?$allocator::U?$basic_zlib_decompressor::?$stream_buffer  size: 10 bytes
-// roc-flags: /O2 /GS- /EHsc /MD
 // Make this compile to the exact bytes below, then: roc check 2007-08 00720a40
 //
 // 00720a40  8b442404             mov eax, dword ptr [esp + 4]

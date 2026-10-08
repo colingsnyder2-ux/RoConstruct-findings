@@ -1,5 +1,4 @@
 // roc 2007-08 00684070  unit: CXTPPropertyGrid  size: 21 bytes
-// roc-flags: /O2 /GS- /EHsc /MD
 // Make this compile to the exact bytes below, then: roc check 2007-08 00684070
 //
 // 00684070  c701b8f07c00         mov dword ptr [ecx], 0x7cf0b8

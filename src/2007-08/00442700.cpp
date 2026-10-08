@@ -1,5 +1,4 @@
 // roc 2007-08 00442700  unit: CPropGrid  size: 4 bytes
-// roc-flags: /O2 /GS- /EHsc /MD
 // Make this compile to the exact bytes below, then: roc check 2007-08 00442700
 //
 // 00442700  8b410c               mov eax, dword ptr [ecx + 0xc]

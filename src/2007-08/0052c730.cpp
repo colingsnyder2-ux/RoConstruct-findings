@@ -1,5 +1,4 @@
 // roc 2007-08 0052c730  unit: seg_00520000  size: 5 bytes
-// roc-flags: /O2 /GS- /EHsc /MD
 // Make this compile to the exact bytes below, then: roc check 2007-08 0052c730
 //
 // 0052c730  e99bffffff           jmp 0x52c6d0

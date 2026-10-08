@@ -1,5 +1,4 @@
 // roc 2007-08 00720c70  unit: CXTCaptionButtonTheme  size: 11 bytes
-// roc-flags: /O2 /GS- /EHsc /MD
 // Make this compile to the exact bytes below, then: roc check 2007-08 00720c70
 //
 // 00720c70  c7019c237e00         mov dword ptr [ecx], 0x7e239c

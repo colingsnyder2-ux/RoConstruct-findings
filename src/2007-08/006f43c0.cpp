@@ -1,5 +1,4 @@
 // roc 2007-08 006f43c0  unit: CXTPImageEditorPicture  size: 5 bytes
-// roc-flags: /O2 /GS- /EHsc /MD
 // Make this compile to the exact bytes below, then: roc check 2007-08 006f43c0
 //
 // 006f43c0  e9dbffffff           jmp 0x6f43a0

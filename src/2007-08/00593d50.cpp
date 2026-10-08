@@ -1,5 +1,4 @@
 // roc 2007-08 00593d50  unit: RBX::VVisit::?$BoundFuncDesc  size: 5 bytes
-// roc-flags: /O2 /GS- /EHsc /MD
 // Make this compile to the exact bytes below, then: roc check 2007-08 00593d50
 //
 // 00593d50  e90bf9ffff           jmp 0x593660

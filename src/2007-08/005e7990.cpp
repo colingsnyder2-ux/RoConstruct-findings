@@ -1,5 +1,4 @@
 // roc 2007-08 005e7990  unit: RBX::VFlag::?$FactoryProduct  size: 7 bytes
-// roc-flags: /O2 /GS- /EHsc /MD
 // Make this compile to the exact bytes below, then: roc check 2007-08 005e7990
 //
 // 005e7990  d9810c010000         fld dword ptr [ecx + 0x10c]

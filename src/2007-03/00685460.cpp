@@ -1,0 +1,12 @@
+// roc 2007-03 00685460  unit: seg_00680000  size: 18 bytes
+// Make this compile to the exact bytes below, then: roc check 2007-03 00685460
+//
+// 00685460  c7017ce67c00         mov dword ptr [ecx], 0x7ce67c
+// 00685466  c741201ce67c00       mov dword ptr [ecx + 0x20], 0x7ce61c
+// 0068546d  e9cefeffff           jmp 0x685340
+// library ogre-1.6.4/OgreDefaultSceneQueries.cpp (function ??1DefaultIntersectionSceneQuery@Ogre@@UAE@XZ)
+
+// roc-lang: cpp
+// roc-cl: 50727
+// roc-flags: /O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MT
+// roc-lib: ogre-1.6.4 OgreDefaultSceneQueries.cpp

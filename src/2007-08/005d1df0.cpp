@@ -1,5 +1,4 @@
 // roc 2007-08 005d1df0  unit: RBX::Tool  size: 5 bytes
-// roc-flags: /O2 /GS- /EHsc /MD
 // Make this compile to the exact bytes below, then: roc check 2007-08 005d1df0
 //
 // 005d1df0  e9ebfcffff           jmp 0x5d1ae0

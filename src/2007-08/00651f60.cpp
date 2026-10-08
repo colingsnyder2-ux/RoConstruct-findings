@@ -1,5 +1,4 @@
 // roc 2007-08 00651f60  unit: CXTPReportViewPrintOptions  size: 5 bytes
-// roc-flags: /O2 /GS- /EHsc /MD
 // Make this compile to the exact bytes below, then: roc check 2007-08 00651f60
 //
 // 00651f60  e98b390000           jmp 0x6558f0

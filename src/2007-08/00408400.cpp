@@ -1,5 +1,4 @@
 // roc 2007-08 00408400  unit: RBX::VLocalScript::?$FactoryProduct::Creator  size: 7 bytes
-// roc-flags: /O2 /GS- /EHsc /MD
 // Make this compile to the exact bytes below, then: roc check 2007-08 00408400
 //
 // 00408400  8b81ec000000         mov eax, dword ptr [ecx + 0xec]

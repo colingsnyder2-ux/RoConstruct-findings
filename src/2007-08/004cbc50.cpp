@@ -1,5 +1,4 @@
 // roc 2007-08 004cbc50  unit: seg_004c0000  size: 4 bytes
-// roc-flags: /O2 /GS- /EHsc /MD
 // Make this compile to the exact bytes below, then: roc check 2007-08 004cbc50
 //
 // 004cbc50  8d4160               lea eax, [ecx + 0x60]

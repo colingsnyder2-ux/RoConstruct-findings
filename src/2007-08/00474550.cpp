@@ -1,5 +1,4 @@
 // roc 2007-08 00474550  unit: G3D::VARArea  size: 7 bytes
-// roc-flags: /O2 /GS- /EHsc /MD
 // Make this compile to the exact bytes below, then: roc check 2007-08 00474550
 //
 // 00474550  8d81a8070000         lea eax, [ecx + 0x7a8]

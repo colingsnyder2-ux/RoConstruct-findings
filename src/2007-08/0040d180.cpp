@@ -1,5 +1,4 @@
 // roc 2007-08 0040d180  unit: CGdiObject  size: 7 bytes
-// roc-flags: /O2 /GS- /EHsc /MD
 // Make this compile to the exact bytes below, then: roc check 2007-08 0040d180
 //
 // 0040d180  8d81c8000000         lea eax, [ecx + 0xc8]

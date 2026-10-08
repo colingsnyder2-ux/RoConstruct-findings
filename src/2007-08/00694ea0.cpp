@@ -1,5 +1,4 @@
 // roc 2007-08 00694ea0  unit: CXTPToolTipContext::CStandardToolTip  size: 21 bytes
-// roc-flags: /O2 /GS- /EHsc /MD
 // Make this compile to the exact bytes below, then: roc check 2007-08 00694ea0
 //
 // 00694ea0  c701ac0e7d00         mov dword ptr [ecx], 0x7d0eac

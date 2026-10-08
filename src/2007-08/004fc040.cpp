@@ -1,5 +1,4 @@
 // roc 2007-08 004fc040  unit: RBX::Render::AggregateChunk  size: 4 bytes
-// roc-flags: /O2 /GS- /EHsc /MD
 // Make this compile to the exact bytes below, then: roc check 2007-08 004fc040
 //
 // 004fc040  8a4154               mov al, byte ptr [ecx + 0x54]

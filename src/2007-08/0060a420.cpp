@@ -1,5 +1,4 @@
 // roc 2007-08 0060a420  unit: RBX::MultiJoint  size: 5 bytes
-// roc-flags: /O2 /GS- /EHsc /MD
 // Make this compile to the exact bytes below, then: roc check 2007-08 0060a420
 //
 // 0060a420  e90bedffff           jmp 0x609130

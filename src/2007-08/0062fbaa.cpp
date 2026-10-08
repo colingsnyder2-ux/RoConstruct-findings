@@ -1,5 +1,4 @@
 // roc 2007-08 0062fbaa  unit: RBX::IndexBox  size: 6 bytes
-// roc-flags: /O2 /GS- /EHsc /MD
 // Make this compile to the exact bytes below, then: roc check 2007-08 0062fbaa
 //
 // 0062fbaa  b8b0fb6200           mov eax, 0x62fbb0

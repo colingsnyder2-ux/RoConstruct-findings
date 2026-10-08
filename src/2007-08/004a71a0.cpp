@@ -1,5 +1,4 @@
 // roc 2007-08 004a71a0  unit: RBX::Network::Replicator  size: 5 bytes
-// roc-flags: /O2 /GS- /EHsc /MD
 // Make this compile to the exact bytes below, then: roc check 2007-08 004a71a0
 //
 // 004a71a0  e9cbe8ffff           jmp 0x4a5a70

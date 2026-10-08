@@ -1,5 +1,4 @@
 // roc 2007-08 006efe60  unit: CXTPShadowsManager::CShadowWnd  size: 11 bytes
-// roc-flags: /O2 /GS- /EHsc /MD
 // Make this compile to the exact bytes below, then: roc check 2007-08 006efe60
 //
 // 006efe60  c70164b17d00         mov dword ptr [ecx], 0x7db164

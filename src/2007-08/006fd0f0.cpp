@@ -1,5 +1,4 @@
 // roc 2007-08 006fd0f0  unit: CXTPTabManagerItem  size: 6 bytes
-// roc-flags: /O2 /GS- /EHsc /MD
 // Make this compile to the exact bytes below, then: roc check 2007-08 006fd0f0
 //
 // 006fd0f0  b894cd7d00           mov eax, 0x7dcd94

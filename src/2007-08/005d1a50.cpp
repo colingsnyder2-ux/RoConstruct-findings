@@ -1,5 +1,4 @@
 // roc 2007-08 005d1a50  unit: RBX::LocalBackpack  size: 5 bytes
-// roc-flags: /O2 /GS- /EHsc /MD
 // Make this compile to the exact bytes below, then: roc check 2007-08 005d1a50
 //
 // 005d1a50  e9ebf90200           jmp 0x601440

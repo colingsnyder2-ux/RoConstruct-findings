@@ -1,5 +1,4 @@
 // roc 2007-08 0042f5b0  unit: CXTPToolBar::CControlButtonExpand  size: 7 bytes
-// roc-flags: /O2 /GS- /EHsc /MD
 // Make this compile to the exact bytes below, then: roc check 2007-08 0042f5b0
 //
 // 0042f5b0  8b8168010000         mov eax, dword ptr [ecx + 0x168]

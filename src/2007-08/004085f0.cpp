@@ -1,5 +1,4 @@
 // roc 2007-08 004085f0  unit: VCApp::?$CComObject  size: 10 bytes
-// roc-flags: /O2 /GS- /EHsc /MD
 // Make this compile to the exact bytes below, then: roc check 2007-08 004085f0
 //
 // 004085f0  b924be8b00           mov ecx, 0x8bbe24

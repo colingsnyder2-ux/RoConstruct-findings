@@ -1,5 +1,4 @@
 // roc 2007-08 006a39a0  unit: CXTPKeyboardManager  size: 21 bytes
-// roc-flags: /O2 /GS- /EHsc /MD
 // Make this compile to the exact bytes below, then: roc check 2007-08 006a39a0
 //
 // 006a39a0  c70158357d00         mov dword ptr [ecx], 0x7d3558

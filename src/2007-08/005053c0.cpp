@@ -1,5 +1,4 @@
 // roc 2007-08 005053c0  unit: G3D::Log  size: 11 bytes
-// roc-flags: /O2 /GS- /EHsc /MD
 // Make this compile to the exact bytes below, then: roc check 2007-08 005053c0
 //
 // 005053c0  c70184317900         mov dword ptr [ecx], 0x793184

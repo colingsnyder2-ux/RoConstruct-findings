@@ -1,5 +1,4 @@
 // roc 2007-08 006b7f50  unit: CXTPControlGallery  size: 5 bytes
-// roc-flags: /O2 /GS- /EHsc /MD
 // Make this compile to the exact bytes below, then: roc check 2007-08 006b7f50
 //
 // 006b7f50  e93bb3f8ff           jmp 0x643290

@@ -1,5 +1,4 @@
 // roc 2007-08 006321c0  unit: MyXTPCommandBars  size: 5 bytes
-// roc-flags: /O2 /GS- /EHsc /MD
 // Make this compile to the exact bytes below, then: roc check 2007-08 006321c0
 //
 // 006321c0  e98b2c0500           jmp 0x684e50

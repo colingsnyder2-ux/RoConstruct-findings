@@ -1,5 +1,4 @@
 // roc 2007-08 006f7080  unit: VCEdit::?$CXTMaskEditT  size: 21 bytes
-// roc-flags: /O2 /GS- /EHsc /MD
 // Make this compile to the exact bytes below, then: roc check 2007-08 006f7080
 //
 // 006f7080  c70170c67d00         mov dword ptr [ecx], 0x7dc670

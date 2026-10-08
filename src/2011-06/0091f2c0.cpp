@@ -1,0 +1,39 @@
+// roc 2011-06 0091f2c0  unit: RBX::ViewRbxGfx  size: 111 bytes
+// Make this compile to the exact bytes below, then: roc check 2011-06 0091f2c0
+//
+// 0091f2c0  6aff                 push -1
+// 0091f2c2  6838839f00           push 0x9f8338
+// 0091f2c7  64a100000000         mov eax, dword ptr fs:[0]
+// 0091f2cd  50                   push eax
+// 0091f2ce  64892500000000       mov dword ptr fs:[0], esp
+// 0091f2d5  51                   push ecx
+// 0091f2d6  56                   push esi
+// 0091f2d7  8bf1                 mov esi, ecx
+// 0091f2d9  8b4c2418             mov ecx, dword ptr [esp + 0x18]
+// 0091f2dd  83ec28               sub esp, 0x28
+// 0091f2e0  8bc4                 mov eax, esp
+// 0091f2e2  c70600000000         mov dword ptr [esi], 0
+// 0091f2e8  8d542444             lea edx, [esp + 0x44]
+// 0091f2ec  8964242c             mov dword ptr [esp + 0x2c], esp
+// 0091f2f0  8908                 mov dword ptr [eax], ecx
+// 0091f2f2  8d4804               lea ecx, [eax + 4]
+// 0091f2f5  52                   push edx
+// 0091f2f6  c744243c00000000     mov dword ptr [esp + 0x3c], 0
+// 0091f2fe  e81df0ffff           call 0x91e320
+// 0091f303  8bce                 mov ecx, esi
+// 0091f305  e836ffffff           call 0x91f240
+// 0091f30a  8d4c241c             lea ecx, [esp + 0x1c]
+// 0091f30e  c7442410ffffffff     mov dword ptr [esp + 0x10], 0xffffffff
+// 0091f316  e8b548e5ff           call 0x773bd0
+// 0091f31b  8b4c2408             mov ecx, dword ptr [esp + 8]
+// 0091f31f  8bc6                 mov eax, esi
+// 0091f321  64890d00000000       mov dword ptr fs:[0], ecx
+// 0091f328  5e                   pop esi
+// 0091f329  83c410               add esp, 0x10
+// 0091f32c  c22c00               ret 0x2c
+// library rbxgs-net/Players.cpp (function ??$?0V?$bind_t@W4work_result@worker_thread@RBX@@P6A?AW4123@V?$shared_ptr@Udata@AbuseReporter@Network@RBX@@@boost@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@ZV?$list2@V?$value@V?$shared_ptr@Udata@AbuseReporter@Network@RBX@@@boost@@@_bi@boost@@V?$value@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@23@@_bi@5@@_bi@boost@@@?$function0@W4work_result@worker_thread@RBX@@V?$allocator@Vfunction_base@boost@@@std@@@boost@@QAE@V?$bind_t@W4work_result@worker_thread@RBX@@P6A?AW4123@V?$shared_ptr@Udata@AbuseReporter@Network@RBX@@@boost@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@ZV?$list2@V?$value@V?$shared_ptr@Udata@AbuseReporter@Network@RBX@@@boost@@@_bi@boost@@V?$value@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@23@@_bi@5@@_bi@1@H@Z)
+
+// roc-lang: cpp
+// roc-cl: 50727
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+// roc-lib: rbxgs-net Players.cpp

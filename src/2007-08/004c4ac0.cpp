@@ -1,5 +1,4 @@
 // roc 2007-08 004c4ac0  unit: RakPeer  size: 7 bytes
-// roc-flags: /O2 /GS- /EHsc /MD
 // Make this compile to the exact bytes below, then: roc check 2007-08 004c4ac0
 //
 // 004c4ac0  8b81e0030000         mov eax, dword ptr [ecx + 0x3e0]

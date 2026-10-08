@@ -1,5 +1,4 @@
 // roc 2007-08 006f5820  unit: CXTPControlCustom  size: 16 bytes
-// roc-flags: /O2 /GS- /EHsc /MD
 // Make this compile to the exact bytes below, then: roc check 2007-08 006f5820
 //
 // 006f5820  56                   push esi

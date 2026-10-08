@@ -1,5 +1,4 @@
 // roc 2007-08 00717470  unit: CXTPRibbonControlTab  size: 6 bytes
-// roc-flags: /O2 /GS- /EHsc /MD
 // Make this compile to the exact bytes below, then: roc check 2007-08 00717470
 //
 // 00717470  b898a58b00           mov eax, 0x8ba598

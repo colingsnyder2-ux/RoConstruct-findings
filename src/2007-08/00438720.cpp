@@ -1,5 +1,4 @@
 // roc 2007-08 00438720  unit: CDataModelPropGrid  size: 6 bytes
-// roc-flags: /O2 /GS- /EHsc /MD
 // Make this compile to the exact bytes below, then: roc check 2007-08 00438720
 //
 // 00438720  b878d37800           mov eax, 0x78d378

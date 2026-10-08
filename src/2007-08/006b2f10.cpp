@@ -1,5 +1,4 @@
 // roc 2007-08 006b2f10  unit: CXTPResourceManager  size: 5 bytes
-// roc-flags: /O2 /GS- /EHsc /MD
 // Make this compile to the exact bytes below, then: roc check 2007-08 006b2f10
 //
 // 006b2f10  668b410c             mov ax, word ptr [ecx + 0xc]

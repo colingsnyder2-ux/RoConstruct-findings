@@ -1,5 +1,4 @@
 // roc 2007-08 006567a0  unit: CXTPReportRow_Batch  size: 4 bytes
-// roc-flags: /O2 /GS- /EHsc /MD
 // Make this compile to the exact bytes below, then: roc check 2007-08 006567a0
 //
 // 006567a0  8b4120               mov eax, dword ptr [ecx + 0x20]

@@ -1,5 +1,4 @@
 // roc 2007-08 006a5830  unit: CXTPShortcutManager  size: 4 bytes
-// roc-flags: /O2 /GS- /EHsc /MD
 // Make this compile to the exact bytes below, then: roc check 2007-08 006a5830
 //
 // 006a5830  8b4130               mov eax, dword ptr [ecx + 0x30]

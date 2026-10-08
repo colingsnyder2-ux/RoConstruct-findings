@@ -1,5 +1,4 @@
 // roc 2007-08 0070ea50  unit: CXTColorBase  size: 6 bytes
-// roc-flags: /O2 /GS- /EHsc /MD
 // Make this compile to the exact bytes below, then: roc check 2007-08 0070ea50
 //
 // 0070ea50  b8d8e17d00           mov eax, 0x7de1d8

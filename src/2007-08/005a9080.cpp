@@ -1,5 +1,4 @@
 // roc 2007-08 005a9080  unit: RBX::VHumanoid::?$SignalDesc  size: 8 bytes
-// roc-flags: /O2 /GS- /EHsc /MD
 // Make this compile to the exact bytes below, then: roc check 2007-08 005a9080
 //
 // 005a9080  8b4930               mov ecx, dword ptr [ecx + 0x30]

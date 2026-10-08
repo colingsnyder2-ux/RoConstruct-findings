@@ -1,5 +1,4 @@
 // roc 2007-08 00458670  unit: CRobloxWnd  size: 5 bytes
-// roc-flags: /O2 /GS- /EHsc /MD
 // Make this compile to the exact bytes below, then: roc check 2007-08 00458670
 //
 // 00458670  e9fbfaffff           jmp 0x458170

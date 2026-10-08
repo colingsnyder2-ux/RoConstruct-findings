@@ -1,5 +1,4 @@
 // roc 2007-08 004f30d0  unit: boost::bad_lexical_cast  size: 12 bytes
-// roc-flags: /O2 /GS- /EHsc /MD
 // Make this compile to the exact bytes below, then: roc check 2007-08 004f30d0
 //
 // 004f30d0  c70184f57900         mov dword ptr [ecx], 0x79f584

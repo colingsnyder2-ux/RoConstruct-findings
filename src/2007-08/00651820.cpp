@@ -1,5 +1,4 @@
 // roc 2007-08 00651820  unit: CXTPDialogBar  size: 6 bytes
-// roc-flags: /O2 /GS- /EHsc /MD
 // Make this compile to the exact bytes below, then: roc check 2007-08 00651820
 //
 // 00651820  b88c757c00           mov eax, 0x7c758c

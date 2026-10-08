@@ -1,5 +1,4 @@
 // roc 2007-08 0045bc80  unit: CPublishAsPlaceDialog  size: 6 bytes
-// roc-flags: /O2 /GS- /EHsc /MD
 // Make this compile to the exact bytes below, then: roc check 2007-08 0045bc80
 //
 // 0045bc80  b8083e7900           mov eax, 0x793e08

@@ -1,5 +1,4 @@
 // roc 2007-08 00414220  unit: std::D::DU?$char_traits::V?$basic_string::?$holder  size: 5 bytes
-// roc-flags: /O2 /GS- /EHsc /MD
 // Make this compile to the exact bytes below, then: roc check 2007-08 00414220
 //
 // 00414220  e9cbf7ffff           jmp 0x4139f0

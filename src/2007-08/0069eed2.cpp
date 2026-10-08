@@ -1,5 +1,4 @@
 // roc 2007-08 0069eed2  unit: CXTPPropertyGridItemEnum  size: 6 bytes
-// roc-flags: /O2 /GS- /EHsc /MD
 // Make this compile to the exact bytes below, then: roc check 2007-08 0069eed2
 //
 // 0069eed2  b8d8ee6900           mov eax, 0x69eed8

@@ -1,5 +1,4 @@
 // roc 2007-08 004cd690  unit: 0RBX::View  size: 10 bytes
-// roc-flags: /O2 /GS- /EHsc /MD
 // Make this compile to the exact bytes below, then: roc check 2007-08 004cd690
 //
 // 004cd690  8b4108               mov eax, dword ptr [ecx + 8]

@@ -1,5 +1,4 @@
 // roc 2007-08 006ca540  unit: CXTPToolBar::CControlButtonHide  size: 5 bytes
-// roc-flags: /O2 /GS- /EHsc /MD
 // Make this compile to the exact bytes below, then: roc check 2007-08 006ca540
 //
 // 006ca540  e9bb25f7ff           jmp 0x63cb00

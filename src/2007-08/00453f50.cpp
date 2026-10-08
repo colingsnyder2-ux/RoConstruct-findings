@@ -1,5 +1,4 @@
 // roc 2007-08 00453f50  unit: CRobloxReportView  size: 6 bytes
-// roc-flags: /O2 /GS- /EHsc /MD
 // Make this compile to the exact bytes below, then: roc check 2007-08 00453f50
 //
 // 00453f50  b860217900           mov eax, 0x792160

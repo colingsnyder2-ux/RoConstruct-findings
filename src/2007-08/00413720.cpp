@@ -1,5 +1,4 @@
 // roc 2007-08 00413720  unit: std::runtime_error  size: 7 bytes
-// roc-flags: /O2 /GS- /EHsc /MD
 // Make this compile to the exact bytes below, then: roc check 2007-08 00413720
 //
 // 00413720  c701bc707800         mov dword ptr [ecx], 0x7870bc

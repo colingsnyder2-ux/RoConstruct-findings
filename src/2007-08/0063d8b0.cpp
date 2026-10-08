@@ -1,5 +1,4 @@
 // roc 2007-08 0063d8b0  unit: CXTPPaintManager  size: 11 bytes
-// roc-flags: /O2 /GS- /EHsc /MD
 // Make this compile to the exact bytes below, then: roc check 2007-08 0063d8b0
 //
 // 0063d8b0  c701084a7900         mov dword ptr [ecx], 0x794a08

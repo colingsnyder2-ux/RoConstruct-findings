@@ -1,5 +1,4 @@
 // roc 2007-08 005989c0  unit: RBX::PlayerController  size: 6 bytes
-// roc-flags: /O2 /GS- /EHsc /MD
 // Make this compile to the exact bytes below, then: roc check 2007-08 005989c0
 //
 // 005989c0  b807000000           mov eax, 7

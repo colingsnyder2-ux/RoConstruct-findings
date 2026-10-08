@@ -1,5 +1,4 @@
 // roc 2007-08 00574800  unit: RBX::P8PartInstance::?$GetSetImpl  size: 5 bytes
-// roc-flags: /O2 /GS- /EHsc /MD
 // Make this compile to the exact bytes below, then: roc check 2007-08 00574800
 //
 // 00574800  e99bf0ffff           jmp 0x5738a0

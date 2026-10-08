@@ -1,5 +1,4 @@
 // roc 2007-08 0052fd20  unit: RBX::ICameraSubject  size: 7 bytes
-// roc-flags: /O2 /GS- /EHsc /MD
 // Make this compile to the exact bytes below, then: roc check 2007-08 0052fd20
 //
 // 0052fd20  8d8168010000         lea eax, [ecx + 0x168]

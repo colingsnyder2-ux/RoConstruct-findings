@@ -1,5 +1,4 @@
 // roc 2007-08 0069dd10  unit: CXTPPropertyGridItemColor::?8??OnInplaceButtonDown::CPropertyGridItemColorColorPopup  size: 5 bytes
-// roc-flags: /O2 /GS- /EHsc /MD
 // Make this compile to the exact bytes below, then: roc check 2007-08 0069dd10
 //
 // 0069dd10  e9ebffffff           jmp 0x69dd00

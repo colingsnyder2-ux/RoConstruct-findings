@@ -1,5 +1,4 @@
 // roc 2007-08 00439830  unit: RBX::VSoundId::?$XItem  size: 5 bytes
-// roc-flags: /O2 /GS- /EHsc /MD
 // Make this compile to the exact bytes below, then: roc check 2007-08 00439830
 //
 // 00439830  e9ebf6ffff           jmp 0x438f20

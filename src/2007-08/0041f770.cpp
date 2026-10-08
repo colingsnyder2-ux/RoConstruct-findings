@@ -1,5 +1,4 @@
 // roc 2007-08 0041f770  unit: CRobloxTreeCtrl  size: 6 bytes
-// roc-flags: /O2 /GS- /EHsc /MD
 // Make this compile to the exact bytes below, then: roc check 2007-08 0041f770
 //
 // 0041f770  b820827800           mov eax, 0x788220

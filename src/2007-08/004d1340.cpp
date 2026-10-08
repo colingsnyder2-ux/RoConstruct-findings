@@ -1,5 +1,4 @@
 // roc 2007-08 004d1340  unit: RBX::View::Part  size: 16 bytes
-// roc-flags: /O2 /GS- /EHsc /MD
 // Make this compile to the exact bytes below, then: roc check 2007-08 004d1340
 //
 // 004d1340  56                   push esi

@@ -1,5 +1,4 @@
 // roc 2007-08 00631398  unit: std::bad_alloc  size: 5 bytes
-// roc-flags: /O2 /GS- /EHsc /MD
 // Make this compile to the exact bytes below, then: roc check 2007-08 00631398
 //
 // 00631398  e9ad050000           jmp 0x63194a

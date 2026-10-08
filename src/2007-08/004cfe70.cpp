@@ -1,5 +1,4 @@
 // roc 2007-08 004cfe70  unit: RBX::TextureProxyBase  size: 7 bytes
-// roc-flags: /O2 /GS- /EHsc /MD
 // Make this compile to the exact bytes below, then: roc check 2007-08 004cfe70
 //
 // 004cfe70  8d81ec000000         lea eax, [ecx + 0xec]

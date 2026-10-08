@@ -1,5 +1,4 @@
 // roc 2007-08 00776220  unit: seg_00770000  size: 12 bytes
-// roc-flags: /O2 /GS- /EHsc /MD
 // Make this compile to the exact bytes below, then: roc check 2007-08 00776220
 //
 // 00776220  6830ca7700           push 0x77ca30

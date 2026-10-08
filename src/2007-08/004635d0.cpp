@@ -1,5 +1,4 @@
 // roc 2007-08 004635d0  unit: DxUserInput  size: 7 bytes
-// roc-flags: /O2 /GS- /EHsc /MD
 // Make this compile to the exact bytes below, then: roc check 2007-08 004635d0
 //
 // 004635d0  c701545b7900         mov dword ptr [ecx], 0x795b54

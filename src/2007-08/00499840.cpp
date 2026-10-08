@@ -1,5 +1,4 @@
 // roc 2007-08 00499840  unit: RBX::Network::Client  size: 5 bytes
-// roc-flags: /O2 /GS- /EHsc /MD
 // Make this compile to the exact bytes below, then: roc check 2007-08 00499840
 //
 // 00499840  e92bfbffff           jmp 0x499370

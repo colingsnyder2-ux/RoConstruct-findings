@@ -1,5 +1,4 @@
 // roc 2007-08 00499300  unit: RBX::Render::Chunk  size: 3 bytes
-// roc-flags: /O2 /GS- /EHsc /MD
 // Make this compile to the exact bytes below, then: roc check 2007-08 00499300
 //
 // 00499300  c21000               ret 0x10

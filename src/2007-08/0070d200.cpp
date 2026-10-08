@@ -1,5 +1,4 @@
 // roc 2007-08 0070d200  unit: CXTColorWnd  size: 11 bytes
-// roc-flags: /O2 /GS- /EHsc /MD
 // Make this compile to the exact bytes below, then: roc check 2007-08 0070d200
 //
 // 0070d200  c7015cdd7d00         mov dword ptr [ecx], 0x7ddd5c

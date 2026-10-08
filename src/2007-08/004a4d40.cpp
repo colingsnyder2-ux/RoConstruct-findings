@@ -1,5 +1,4 @@
 // roc 2007-08 004a4d40  unit: RBX::VNetworkSettings::?$GlobalSettingsItem  size: 5 bytes
-// roc-flags: /O2 /GS- /EHsc /MD
 // Make this compile to the exact bytes below, then: roc check 2007-08 004a4d40
 //
 // 004a4d40  e97b7b1000           jmp 0x5ac8c0

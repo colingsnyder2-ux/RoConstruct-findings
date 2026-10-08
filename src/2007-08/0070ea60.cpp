@@ -1,5 +1,4 @@
 // roc 2007-08 0070ea60  unit: CXTColorWnd  size: 5 bytes
-// roc-flags: /O2 /GS- /EHsc /MD
 // Make this compile to the exact bytes below, then: roc check 2007-08 0070ea60
 //
 // 0070ea60  e9cbffffff           jmp 0x70ea30

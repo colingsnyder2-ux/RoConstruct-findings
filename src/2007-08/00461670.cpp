@@ -1,5 +1,4 @@
 // roc 2007-08 00461670  unit: CScriptEditor  size: 6 bytes
-// roc-flags: /O2 /GS- /EHsc /MD
 // Make this compile to the exact bytes below, then: roc check 2007-08 00461670
 //
 // 00461670  b82c4e7900           mov eax, 0x794e2c

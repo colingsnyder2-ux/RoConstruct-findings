@@ -1,5 +1,4 @@
 // roc 2007-08 00635d20  unit: CXTPControlComboBox  size: 6 bytes
-// roc-flags: /O2 /GS- /EHsc /MD
 // Make this compile to the exact bytes below, then: roc check 2007-08 00635d20
 //
 // 00635d20  b88c538b00           mov eax, 0x8b538c

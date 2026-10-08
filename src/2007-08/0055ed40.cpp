@@ -1,5 +1,4 @@
 // roc 2007-08 0055ed40  unit: RBX::WatchCameraCommand  size: 5 bytes
-// roc-flags: /O2 /GS- /EHsc /MD
 // Make this compile to the exact bytes below, then: roc check 2007-08 0055ed40
 //
 // 0055ed40  e9ebf8ffff           jmp 0x55e630

@@ -1,5 +1,4 @@
 // roc 2007-08 0067f8c0  unit: CXTPPrintPageHeaderFooter  size: 6 bytes
-// roc-flags: /O2 /GS- /EHsc /MD
 // Make this compile to the exact bytes below, then: roc check 2007-08 0067f8c0
 //
 // 0067f8c0  b8a4ea7c00           mov eax, 0x7ceaa4

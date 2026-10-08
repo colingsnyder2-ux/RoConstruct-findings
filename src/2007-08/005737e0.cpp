@@ -1,5 +1,4 @@
 // roc 2007-08 005737e0  unit: RBX::NullController  size: 7 bytes
-// roc-flags: /O2 /GS- /EHsc /MD
 // Make this compile to the exact bytes below, then: roc check 2007-08 005737e0
 //
 // 005737e0  c701aca87a00         mov dword ptr [ecx], 0x7aa8ac

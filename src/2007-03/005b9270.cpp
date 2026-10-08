@@ -1,0 +1,20 @@
+// roc 2007-03 005b9270  unit: seg_005b0000  size: 34 bytes
+// Make this compile to the exact bytes below, then: roc check 2007-03 005b9270
+//
+// 005b9270  8b442404             mov eax, dword ptr [esp + 4]
+// 005b9274  8b4808               mov ecx, dword ptr [eax + 8]
+// 005b9277  8901                 mov dword ptr [ecx], eax
+// 005b9279  c7410808000000       mov dword ptr [ecx + 8], 8
+// 005b9280  8b4810               mov ecx, dword ptr [eax + 0x10]
+// 005b9283  83400810             add dword ptr [eax + 8], 0x10
+// 005b9287  33d2                 xor edx, edx
+// 005b9289  394170               cmp dword ptr [ecx + 0x70], eax
+// 005b928c  0f94c2               sete dl
+// 005b928f  8bc2                 mov eax, edx
+// 005b9291  c3                   ret 
+// library lua-5.1.1/lapi.c (function _lua_pushthread)
+
+// roc-lang: c
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /MD
+// roc-lib: lua-5.1.1 lapi.c

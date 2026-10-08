@@ -1,5 +1,4 @@
 // roc 2007-08 004ef780  unit: RBX::Render::VMaterial::?$WeakReferenceCountedPointer  size: 8 bytes
-// roc-flags: /O2 /GS- /EHsc /MD
 // Make this compile to the exact bytes below, then: roc check 2007-08 004ef780
 //
 // 004ef780  c7410400000000       mov dword ptr [ecx + 4], 0

@@ -1,5 +1,4 @@
 // roc 2007-08 0044d000  unit: CRobloxDHtmlDialog  size: 5 bytes
-// roc-flags: /O2 /GS- /EHsc /MD
 // Make this compile to the exact bytes below, then: roc check 2007-08 0044d000
 //
 // 0044d000  e917361e00           jmp 0x63061c

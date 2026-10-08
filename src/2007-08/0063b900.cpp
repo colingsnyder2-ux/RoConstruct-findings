@@ -1,5 +1,4 @@
 // roc 2007-08 0063b900  unit: CPatchedControlComboBox  size: 21 bytes
-// roc-flags: /O2 /GS- /EHsc /MD
 // Make this compile to the exact bytes below, then: roc check 2007-08 0063b900
 //
 // 0063b900  c7019c627c00         mov dword ptr [ecx], 0x7c629c

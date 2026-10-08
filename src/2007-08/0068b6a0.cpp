@@ -1,5 +1,4 @@
 // roc 2007-08 0068b6a0  unit: CXTPTabClientWnd  size: 13 bytes
-// roc-flags: /O2 /GS- /EHsc /MD
 // Make this compile to the exact bytes below, then: roc check 2007-08 0068b6a0
 //
 // 0068b6a0  8b8184000000         mov eax, dword ptr [ecx + 0x84]

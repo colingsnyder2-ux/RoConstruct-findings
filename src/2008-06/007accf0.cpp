@@ -3,11 +3,9 @@
 //
 // 007accf0  c701e0e18100         mov dword ptr [ecx], 0x81e1e0
 // 007accf6  c3                   ret 
+// auto-matched from its assembly shape
 
-struct Level {
-    virtual ~Level();
-};
-
-Level::~Level()
+struct S_func_007accf0 { virtual ~S_func_007accf0(); };
+S_func_007accf0::~S_func_007accf0()
 {
 }

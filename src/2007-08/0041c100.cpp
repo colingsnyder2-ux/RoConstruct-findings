@@ -1,5 +1,4 @@
 // roc 2007-08 0041c100  unit: VDHTMLWindow::?$SignalDesc  size: 5 bytes
-// roc-flags: /O2 /GS- /EHsc /MD
 // Make this compile to the exact bytes below, then: roc check 2007-08 0041c100
 //
 // 0041c100  e94bfdffff           jmp 0x41be50

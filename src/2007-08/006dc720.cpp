@@ -1,5 +1,4 @@
 // roc 2007-08 006dc720  unit: CXTPDockingPaneWindowSelect  size: 11 bytes
-// roc-flags: /O2 /GS- /EHsc /MD
 // Make this compile to the exact bytes below, then: roc check 2007-08 006dc720
 //
 // 006dc720  c70154947d00         mov dword ptr [ecx], 0x7d9454

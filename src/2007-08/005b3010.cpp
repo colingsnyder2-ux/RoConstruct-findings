@@ -1,5 +1,4 @@
 // roc 2007-08 005b3010  unit: RBX::Assembly  size: 8 bytes
-// roc-flags: /O2 /GS- /EHsc /MD
 // Make this compile to the exact bytes below, then: roc check 2007-08 005b3010
 //
 // 005b3010  8b4908               mov ecx, dword ptr [ecx + 8]

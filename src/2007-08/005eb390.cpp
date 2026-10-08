@@ -1,5 +1,4 @@
 // roc 2007-08 005eb390  unit: RBX::FlagStand  size: 10 bytes
-// roc-flags: /O2 /GS- /EHsc /MD
 // Make this compile to the exact bytes below, then: roc check 2007-08 005eb390
 //
 // 005eb390  c6811801000000       mov byte ptr [ecx + 0x118], 0

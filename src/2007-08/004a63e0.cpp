@@ -1,5 +1,4 @@
 // roc 2007-08 004a63e0  unit: FilePacketLogger  size: 7 bytes
-// roc-flags: /O2 /GS- /EHsc /MD
 // Make this compile to the exact bytes below, then: roc check 2007-08 004a63e0
 //
 // 004a63e0  8b81f8000000         mov eax, dword ptr [ecx + 0xf8]

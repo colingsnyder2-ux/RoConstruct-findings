@@ -1,5 +1,4 @@
 // roc 2007-08 00632d60  unit: MyXTPCommandBars  size: 21 bytes
-// roc-flags: /O2 /GS- /EHsc /MD
 // Make this compile to the exact bytes below, then: roc check 2007-08 00632d60
 //
 // 00632d60  c701d4507c00         mov dword ptr [ecx], 0x7c50d4

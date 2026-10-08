@@ -1,5 +1,4 @@
 // roc 2007-08 00580e80  unit: RBX::Log  size: 7 bytes
-// roc-flags: /O2 /GS- /EHsc /MD
 // Make this compile to the exact bytes below, then: roc check 2007-08 00580e80
 //
 // 00580e80  8d8100010000         lea eax, [ecx + 0x100]

@@ -1,5 +1,4 @@
 // roc 2007-08 0063a130  unit: CRobloxControlColorSelector  size: 7 bytes
-// roc-flags: /O2 /GS- /EHsc /MD
 // Make this compile to the exact bytes below, then: roc check 2007-08 0063a130
 //
 // 0063a130  8b81d4000000         mov eax, dword ptr [ecx + 0xd4]

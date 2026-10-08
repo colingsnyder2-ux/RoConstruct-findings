@@ -1,5 +1,4 @@
 // roc 2007-08 00671e70  unit: CPropertyGridItemBrickColor  size: 5 bytes
-// roc-flags: /O2 /GS- /EHsc /MD
 // Make this compile to the exact bytes below, then: roc check 2007-08 00671e70
 //
 // 00671e70  e93bf5ffff           jmp 0x6713b0

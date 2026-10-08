@@ -1,5 +1,4 @@
 // roc 2007-08 00653c50  unit: CInstanceRecord::CNameItem  size: 6 bytes
-// roc-flags: /O2 /GS- /EHsc /MD
 // Make this compile to the exact bytes below, then: roc check 2007-08 00653c50
 //
 // 00653c50  8b4158               mov eax, dword ptr [ecx + 0x58]

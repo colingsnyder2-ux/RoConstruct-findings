@@ -3,14 +3,14 @@
 //
 // 007222e0  8b8144020000         mov eax, dword ptr [ecx + 0x244]
 // 007222e6  c3                   ret 
+// auto-matched from its assembly shape
 
-struct CXTPRibbonBar {
-    char pad[0x244];
-    int m_value;
-    int GetValue();
+struct S_func_007222e0 {
+    char pad0[580];
+    int m_x;
+    int f();
 };
-
-int CXTPRibbonBar::GetValue()
+int S_func_007222e0::f()
 {
-    return m_value;
+    return m_x;
 }

@@ -1,5 +1,4 @@
 // roc 2007-08 006921f0  unit: CXTPStatusBarPane  size: 4 bytes
-// roc-flags: /O2 /GS- /EHsc /MD
 // Make this compile to the exact bytes below, then: roc check 2007-08 006921f0
 //
 // 006921f0  8b4134               mov eax, dword ptr [ecx + 0x34]

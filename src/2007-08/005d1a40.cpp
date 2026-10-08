@@ -1,5 +1,4 @@
 // roc 2007-08 005d1a40  unit: RBX::LocalBackpack  size: 7 bytes
-// roc-flags: /O2 /GS- /EHsc /MD
 // Make this compile to the exact bytes below, then: roc check 2007-08 005d1a40
 //
 // 005d1a40  8d8174010000         lea eax, [ecx + 0x174]

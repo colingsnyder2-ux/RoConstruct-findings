@@ -1,5 +1,4 @@
 // roc 2007-08 006ea0e0  unit: XTPDockingPanePaintThemes::CXTPDockingPaneVisualStudio2005SecondTheme  size: 11 bytes
-// roc-flags: /O2 /GS- /EHsc /MD
 // Make this compile to the exact bytes below, then: roc check 2007-08 006ea0e0
 //
 // 006ea0e0  c7017ca77d00         mov dword ptr [ecx], 0x7da77c

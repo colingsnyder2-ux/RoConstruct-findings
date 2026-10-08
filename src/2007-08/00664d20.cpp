@@ -1,5 +1,4 @@
 // roc 2007-08 00664d20  unit: CXTTreeCtrl  size: 6 bytes
-// roc-flags: /O2 /GS- /EHsc /MD
 // Make this compile to the exact bytes below, then: roc check 2007-08 00664d20
 //
 // 00664d20  b8a8977c00           mov eax, 0x7c97a8
