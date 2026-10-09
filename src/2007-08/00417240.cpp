@@ -52,11 +52,9 @@ int __cdecl func_00417240(int a, int b)
     }
     if (b == 0) {
         int p = func_0062fef6(1);
-        if (p != 0) {
+        if (p != 0)
             *(char*)p = *(char*)a;
-            return p;
-        }
-        return 0;
+        return p;
     }
     func_0062fc62(a);
     return 0;

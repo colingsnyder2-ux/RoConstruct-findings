@@ -34,7 +34,7 @@
 // 004034ad  c20400               ret 4
 
 extern "C" void __cdecl _free(void*);
-extern "C" void __cdecl _op_delete(void*, unsigned int, int, void (*)(void*));
+extern "C" void __stdcall _op_delete(void*, unsigned int, int, void (*)(void*));
 
 struct CRegObject {
     void Cleanup(void* p);
