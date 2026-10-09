@@ -18,10 +18,9 @@
 // 005fa558  c3                   ret 
 
 struct S {
-    void f(void*, int);
 };
 
-void S::f(void* a, int b)
+void __cdecl f(void* a, int b)
 {
     char* p = (char*)a;
     int* q = *(int**)(p + 0x10);

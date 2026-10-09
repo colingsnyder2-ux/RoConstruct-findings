@@ -36,10 +36,9 @@
 // 00629ef0  c3                   ret 
 
 struct S {
-    void f(int* a, unsigned char* b, unsigned int n);
 };
 
-void S::f(int* a, unsigned char* b, unsigned int n)
+void __cdecl f(int* a, unsigned char* b, unsigned int n)
 {
     unsigned int i = 0;
     unsigned int h = 0xf8c9;

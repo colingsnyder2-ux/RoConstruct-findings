@@ -56,14 +56,13 @@ void* func_0057bbf0(void* self, int mode, void* arg)
     }
     if (mode == 0) {
         void* mem = op_new(0x10);
-        if (mem) {
+        if (mem != 0) {
             *(int*)((char*)mem + 0) = *(int*)((char*)arg + 0);
             *(int*)((char*)mem + 4) = *(int*)((char*)arg + 4);
             *(int*)((char*)mem + 8) = *(int*)((char*)arg + 8);
             *(int*)((char*)mem + 12) = *(int*)((char*)arg + 12);
-            return mem;
         }
-        return 0;
+        return mem;
     }
     op_delete(arg);
     return 0;

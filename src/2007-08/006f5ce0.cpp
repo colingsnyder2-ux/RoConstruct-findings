@@ -26,14 +26,14 @@
 // 006f5d39  c20400               ret 4
 
 struct CXTPPropertyGridInplaceButton {
-    void construct(unsigned int);
+    void* construct(unsigned int);
 };
 
 extern "C" void __cdecl sub_73833a();
 extern "C" int __stdcall GetSystemMetrics(int);
 extern "C" int __stdcall SetRectEmpty(void*);
 
-void CXTPPropertyGridInplaceButton::construct(unsigned int arg) {
+void* CXTPPropertyGridInplaceButton::construct(unsigned int arg) {
     sub_73833a();
     *(int*)this = 0x7dc284;
     SetRectEmpty((char*)this + 0x48);
@@ -45,4 +45,6 @@ void CXTPPropertyGridInplaceButton::construct(unsigned int arg) {
     *(int*)((char*)this + 0x20) = 0;
     *(int*)((char*)this + 0x44) = GetSystemMetrics(0xa);
     *(int*)((char*)this + 0x4c) = -1;
+
+    return this;
 }

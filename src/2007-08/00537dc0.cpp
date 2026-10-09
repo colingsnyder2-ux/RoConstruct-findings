@@ -55,12 +55,11 @@ void* __cdecl f(int a1, int a2)
     }
     if (a2 == 0) {
         void* p = (void*)func_0062fef6(8);
-        if (p) {
+        if (p != 0) {
             *(int*)p = *(int*)a1;
             *(int*)((char*)p + 4) = *(int*)(a1 + 4);
-            return p;
         }
-        return 0;
+        return p;
     }
     func_0062fc62((void*)a1);
     return 0;

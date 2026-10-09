@@ -60,14 +60,13 @@ void* __cdecl f(void* a, int b)
     }
     if (b == 0) {
         void* p = operator_new(0x10);
-        if (p) {
+        if (p != 0) {
             *(int*)((char*)p + 0) = *(int*)((char*)a + 0);
             *(int*)((char*)p + 4) = *(int*)((char*)a + 4);
             *(int*)((char*)p + 8) = *(int*)((char*)a + 8);
             *(int*)((char*)p + 12) = *(int*)((char*)a + 12);
-            return p;
         }
-        return 0;
+        return p;
     }
     operator_delete(a);
     return 0;

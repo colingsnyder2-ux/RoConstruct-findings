@@ -20,7 +20,6 @@
 
 struct CXTPReportControlLocale
 {
-    void AddTimespec(const void* p, unsigned int a, unsigned int b);
 };
 
 struct Sub656db0
@@ -31,7 +30,7 @@ struct Sub656db0
 extern unsigned int G_8c87d8;
 extern unsigned int G_8c87d0;
 
-void CXTPReportControlLocale::AddTimespec(const void* p, unsigned int a, unsigned int b)
+void __cdecl AddTimespec(const void* p, unsigned int a, unsigned int b)
 {
     unsigned int local[3];
     local[0] = (unsigned int)p;

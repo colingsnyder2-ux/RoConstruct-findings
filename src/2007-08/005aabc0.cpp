@@ -8,10 +8,9 @@ extern float g_8c5a18;
 extern unsigned int g_8c5a1c;
 
 struct World {
-    float f(int a);
 };
 
-float World::f(int a)
+float __cdecl f(int a)
 {
     unsigned char b = (unsigned char)a;
     int v = (int)b;

@@ -4,10 +4,9 @@
 
 struct CXTPCommandBars
 {
-    void Construct(int a, int b);
 };
 
-void CXTPCommandBars::Construct(int a, int b)
+void __cdecl Construct(int a, int b)
 {
     struct Local
     {

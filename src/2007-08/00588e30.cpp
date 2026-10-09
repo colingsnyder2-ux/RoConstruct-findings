@@ -38,11 +38,10 @@ void* __cdecl Sound_scalar_deleting_dtor(Sound* self, unsigned int flags)
     }
     if (flags == 0) {
         SoundId* p = (SoundId*)operator_new(8);
-        if (p) {
+        if (p != 0) {
             *p = *(SoundId*)self;
-            return p;
         }
-        return 0;
+        return p;
     }
     operator_delete(self);
     return 0;

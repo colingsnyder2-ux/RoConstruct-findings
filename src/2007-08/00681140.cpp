@@ -42,7 +42,7 @@
 
 struct CXTPDrawHelpers
 {
-    void AdjustWindowRectEx(int* pRect, int a2, int a3);
+    void __cdecl AdjustWindowRectEx(int* pRect, int a2, int a3);
 };
 
 extern "C" int __stdcall GetWindowRect(int hWnd, int* lpRect);

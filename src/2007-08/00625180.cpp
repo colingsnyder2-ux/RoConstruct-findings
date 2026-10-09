@@ -15,10 +15,9 @@
 extern "C" void* __cdecl sub_00573D40(void*);
 
 struct ArrowButton {
-    bool checkSomething(void* arg);
 };
 
-bool ArrowButton::checkSomething(void* arg)
+bool __cdecl checkSomething(void* arg)
 {
     char* p = (char*)sub_00573D40(arg);
     return p[0x1a0] == 0;

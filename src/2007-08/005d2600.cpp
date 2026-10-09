@@ -31,27 +31,21 @@
 // 005d264b  c3                   ret 
 
 struct S_func_005d2600 {
-    int m(int, int);
 };
 
 extern "C" void* __cdecl func_0062fef6(unsigned int);
 extern "C" void __cdecl func_0062fc62(void*);
 
-int S_func_005d2600::m(int a, int b)
+int __cdecl m(int a, int b)
 {
     if (b == 0) {
         void* p = func_0062fef6(0x18);
-        if (p == 0) {
-            return 0;
+        if (p != 0) {
+            int* src = (int*)a;
+            int* dst = (int*)p;
+            dst[0] = src[0]; dst[1] = src[1]; dst[2] = src[2];
+            dst[3] = src[3]; dst[4] = src[4]; dst[5] = src[5];
         }
-        int* src = (int*)a;
-        int* dst = (int*)p;
-        dst[0] = src[0];
-        dst[1] = src[1];
-        dst[2] = src[2];
-        dst[3] = src[3];
-        dst[4] = src[4];
-        dst[5] = src[5];
         return (int)p;
     }
     func_0062fc62((void*)a);

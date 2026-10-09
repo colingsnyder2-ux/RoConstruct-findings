@@ -34,12 +34,11 @@
 
 struct RBX_ScoreHud {
     char pad[4];
-    int func_0061eda0(int a, int b, int c, int d, int e);
 };
 
 extern "C" int __cdecl func_0061e450(int, int, int, int, int, int);
 
-int RBX_ScoreHud::func_0061eda0(int a, int b, int c, int d, int e)
+int __cdecl func_0061eda0(int a, int b, int c, int d, int e)
 {
     char local = 0;
     func_0061e450(a, b, c, d, e, *(int*)&local);

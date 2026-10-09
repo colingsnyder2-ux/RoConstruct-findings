@@ -30,14 +30,13 @@ void* Reflection::get(const Descriptor* desc, int mode) {
     }
     if (mode == 0) {
         Descriptor* n = (Descriptor*)operator_new(0x10);
-        if (n) {
+        if (n != 0) {
             n->a = desc->a;
             n->b = desc->b;
             n->c = desc->c;
             n->d = desc->d;
-            return n;
         }
-        return 0;
+        return n;
     }
     operator_delete((void*)desc);
     return 0;

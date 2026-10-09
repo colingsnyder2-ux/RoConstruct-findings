@@ -44,7 +44,7 @@ extern "C" int __cdecl feof(void*);
 extern "C" unsigned int __cdecl fread(void*, unsigned int, unsigned int, void*);
 
 struct S {
-    int f(int* a, int* b);
+    int __cdecl f(int* a, int* b);
 };
 
 int S::f(int* a, int* b)

@@ -59,14 +59,13 @@ void* S::f(int mode, void* arg)
     }
     if (mode == 0) {
         void* p = operator_new(0x10);
-        if (p) {
+        if (p != 0) {
             *(int*)p = *(int*)arg;
             *(int*)((char*)p + 4) = *(int*)((char*)arg + 4);
             *(int*)((char*)p + 8) = *(int*)((char*)arg + 8);
             *(int*)((char*)p + 12) = *(int*)((char*)arg + 12);
-            return p;
         }
-        return 0;
+        return p;
     }
     operator_delete(arg);
     return 0;

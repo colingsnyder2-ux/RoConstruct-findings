@@ -56,13 +56,11 @@ void* func_00459600(void* self, int a, int b)
     if (b == 0)
     {
         void* p = sub_62FEF6(8);
-        if (p)
-        {
+        if (p != 0) {
             *(int*)p = *(int*)self;
             *(int*)((char*)p + 4) = *(int*)((char*)self + 4);
-            return p;
         }
-        return 0;
+        return p;
     }
     sub_62FC62(self);
     return 0;

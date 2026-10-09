@@ -22,10 +22,10 @@
 // 005dd0bb  c20400               ret 4
 
 struct RefPropDescriptor {
-    void construct(const char* name);
+    void* construct(const char* name);
 };
 
-void RefPropDescriptor::construct(const char* name) {
+void* RefPropDescriptor::construct(const char* name) {
     extern void __stdcall base_construct(void*, const char*);
     base_construct(this, name);
     *(int*)((char*)this + 0) = 0x7bc804;
@@ -38,4 +38,6 @@ void RefPropDescriptor::construct(const char* name) {
     *(int*)((char*)this + 0x74) = 0x7bc7a4;
     *(int*)((char*)this + 0x8c) = 0x7bc794;
     *(int*)((char*)this + 0xe8) = 0x7bc77c;
+
+    return this;
 }

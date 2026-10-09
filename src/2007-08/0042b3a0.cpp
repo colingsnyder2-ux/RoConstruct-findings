@@ -25,14 +25,13 @@ void* __cdecl get(const Descriptor& descriptor, int mode)
     }
     if (mode == 0) {
         Descriptor* p = (Descriptor*)malloc(0x10);
-        if (p) {
+        if (p != 0) {
             p->a = descriptor.a;
             p->b = descriptor.b;
             p->c = descriptor.c;
             p->d = descriptor.d;
-            return p;
         }
-        return 0;
+        return p;
     }
     free((void*)&descriptor);
     return 0;

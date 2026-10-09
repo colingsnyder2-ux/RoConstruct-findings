@@ -59,15 +59,14 @@ void* S_TextureProxy::f(int a1, const void* a2)
     }
     if (a1 == 0) {
         void* p = operator_new(0xc);
-        if (p) {
+        if (p != 0) {
             const int* src = (const int*)a2;
             int* dst = (int*)p;
             dst[0] = src[0];
             dst[1] = src[1];
             dst[2] = src[2];
-            return p;
         }
-        return 0;
+        return p;
     }
     operator_delete((void*)a2);
     return 0;
