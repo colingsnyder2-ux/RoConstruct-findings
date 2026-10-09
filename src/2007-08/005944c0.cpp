@@ -35,7 +35,7 @@ struct DataModel {
 };
 
 extern "C" void* __cdecl func_00631392(void*);
-extern "C" void __stdcall func_0077e708(void*, void*);
+extern "C" bool (__thiscall *func_0077e708)(void*, void*);
 
 bool VWeldTool::isEnabled() const
 {
@@ -44,8 +44,7 @@ bool VWeldTool::isEnabled() const
     void* p = *(void**)((char*)dm + 0x318);
     if (p) {
         void* q = func_00631392(p);
-        func_0077e708((void*)0x8a4e34, q);
-        return true;
+        return func_0077e708((void*)0x8a4e34, q);
     }
     return false;
 }

@@ -45,6 +45,10 @@ struct VNode {
     int ref;
 };
 
+struct VNodeCall {
+    virtual void release(int);
+};
+
 ThreadRef::ThreadRef(LiveThreadRef* ref)
 {
     liveThreadRef = sub_0056dcc0();
@@ -58,6 +62,6 @@ ThreadRef::ThreadRef(LiveThreadRef* ref)
     void* old = node;
     node = n;
     if (old) {
-        (*(void (__stdcall **)(int))(*(int*)old))(1);
+        ((VNodeCall*)old)->release(1);
     }
 }

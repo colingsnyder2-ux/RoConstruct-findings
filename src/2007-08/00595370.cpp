@@ -17,9 +17,7 @@
 // 00595399  32c0                 xor al, al
 // 0059539b  c3                   ret 
 
-struct type_info {
-    bool operator==(const type_info&) const;
-};
+struct type_info {};
 
 struct SubObject {
     char pad[0x318];
@@ -39,7 +37,7 @@ struct Outer {
 };
 
 extern "C" void* __cdecl sub_631392(void*);
-extern "C" void* __stdcall sub_77e708(void*, void*);
+extern "C" bool (__thiscall *sub_77e708)(const type_info*, const type_info*);
 
 extern type_info typeinfo_8a57c4;
 
@@ -49,7 +47,7 @@ bool Outer::isSelected() const {
     void* p = s->field318;
     if (p) {
         void* q = sub_631392(p);
-        return typeinfo_8a57c4 == *(type_info*)q;
+        return sub_77e708(&typeinfo_8a57c4, (const type_info*)q);
     }
     return false;
 }

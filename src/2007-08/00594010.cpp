@@ -38,7 +38,9 @@ struct Outer {
 };
 
 extern "C" void* __cdecl sub_631392(void*);
-extern "C" void* __stdcall sub_77e708(void*, void*);
+struct CallObject {
+};
+extern "C" bool (__thiscall *sub_77e708)(CallObject*, void*);
 
 bool Outer::f() {
     Mid* m = fieldC;
@@ -46,8 +48,7 @@ bool Outer::f() {
     type_info* t = s->field318;
     if (t) {
         void* r = sub_631392(t);
-        sub_77e708((void*)0x8a4bc8, r);
-        return true;
+        return sub_77e708((CallObject*)0x8a4bc8, r);
     }
     return false;
 }

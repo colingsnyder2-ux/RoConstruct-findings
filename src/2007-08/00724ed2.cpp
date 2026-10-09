@@ -16,7 +16,7 @@
 // 00724eed  688c0000c0           push 0xc000008c
 // 00724ef2  ff150cd37700         call dword ptr [0x77d30c]
 
-extern "C" __declspec(noreturn) void __stdcall RaiseException(unsigned long, unsigned long, unsigned long, const unsigned long*);
+extern "C" __declspec(dllimport) __declspec(noreturn) void __stdcall RaiseException(unsigned long, unsigned long, unsigned long, const unsigned long*);
 
 struct CXTIconHandle {
     int* data;
@@ -27,6 +27,9 @@ struct CXTIconHandle {
 int* CXTIconHandle::get(int index)
 {
     if (index < 0 || index >= size)
+    {
         RaiseException(0xc000008c, 1, 0, 0);
+        __assume(0);
+    }
     return data + index;
 }

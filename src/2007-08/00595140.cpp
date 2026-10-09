@@ -32,7 +32,7 @@ struct TToolVerb : Verb
 };
 
 extern "C" const char* __cdecl sub_631392(void*);
-extern "C" void __stdcall sub_77e708(const char*, const char*);
+extern "C" bool (__thiscall *sub_77e708)(const char*, const char*);
 
 bool TToolVerb::isEnabled() const
 {
@@ -41,8 +41,7 @@ bool TToolVerb::isEnabled() const
     if (p)
     {
         const char* r = sub_631392(p);
-        sub_77e708((const char*)0x8A5664, r);
-        return true;
+        return sub_77e708((const char*)0x8A5664, r);
     }
     return false;
 }

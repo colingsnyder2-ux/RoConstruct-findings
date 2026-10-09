@@ -42,7 +42,7 @@ struct TToolVerb : RunStateVerb {
 };
 
 extern "C" void* __cdecl sub_631392(void*);
-extern "C" void* __stdcall sub_77e708(void*, void*);
+extern "C" bool (__thiscall *sub_77e708)(void*, void*);
 
 bool TToolVerb::isEnabled() const {
     DataModel* dm = *(DataModel**)((char*)this + 0xc);
@@ -50,8 +50,7 @@ bool TToolVerb::isEnabled() const {
     void* p = *(void**)((char*)ws + 0x318);
     if (p) {
         void* q = sub_631392(p);
-        sub_77e708((void*)0x8a4ed4, q);
-        return true;
+        return sub_77e708((void*)0x8a4ed4, q);
     }
     return false;
 }

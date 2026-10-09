@@ -25,7 +25,7 @@ extern "C" void* __cdecl sub_631392(void*);
 
 extern type_info type_info_8a5014_;
 
-extern "C" bool (__stdcall *sub_77e708)(const type_info*, const type_info*);
+extern "C" bool (__thiscall *sub_77e708)(const type_info*, const type_info*);
 
 struct VHingeTool_TToolVerb {
     char pad[0xc];

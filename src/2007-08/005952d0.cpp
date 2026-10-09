@@ -29,16 +29,14 @@ struct TToolVerb {
 };
 
 extern "C" int __cdecl sub_00631392(void*);
-extern "C" void* __stdcall sub_0077e708(void*);
+extern "C" bool (__thiscall *sub_0077e708)(void*, int);
 extern char g_8a5768;
 
 bool TToolVerb::isEnabled() const {
     void* p = this->mouseCommand->field_188;
     void* q = *reinterpret_cast<void**>(reinterpret_cast<char*>(p) + 0x318);
     if (q) {
-        sub_00631392(q);
-        sub_0077e708(&g_8a5768);
-        return true;
+        return sub_0077e708(&g_8a5768, sub_00631392(q));
     }
     return false;
 }

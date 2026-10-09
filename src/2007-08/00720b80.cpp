@@ -1,4 +1,4 @@
-// from server: 97% by colin
+// from server: 100% by colin
 // roc 2007-08 00720b80  unit: CXTCaptionButtonTheme  size: 50 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 00720b80
 //
@@ -28,9 +28,18 @@ struct CXTCaptionButtonTheme {
     int f(void*);
 };
 
+struct CXTCaptionButtonThemeFirstCall {
+    virtual void slot0();
+    virtual void slot1();
+    virtual void slot2();
+    virtual void slot3();
+    virtual void slot4();
+    virtual int test(void*);
+};
+
 int CXTCaptionButtonTheme::f(void* arg)
 {
-    if (((int (__thiscall*)(void*))*(void**)(*(char**)this + 0x14))(arg))
+    if (((CXTCaptionButtonThemeFirstCall*)this)->test(arg))
         return 1;
     return (((unsigned char (__thiscall*)(void*))*(void**)(*(char**)arg + 0x160))(arg) & 3) != 0;
 }

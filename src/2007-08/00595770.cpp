@@ -34,7 +34,7 @@ struct Outer {
 };
 
 extern "C" void* __cdecl func_00631392(void*);
-extern "C" void* __stdcall func_0077e708(void*, void*);
+extern "C" bool (__thiscall *func_0077e708)(void*, void*);
 
 bool Outer::method()
 {
@@ -43,8 +43,7 @@ bool Outer::method()
     void* p = i->field318;
     if (p != 0) {
         void* q = func_00631392(p);
-        func_0077e708((void*)0x8a59f0, q);
-        return true;
+        return func_0077e708((void*)0x8a59f0, q);
     }
     return false;
 }

@@ -36,7 +36,7 @@ struct VInletTool_318 {
 };
 
 extern "C" void* __cdecl sub_631392(void*);
-extern "C" void* __stdcall sub_77e708(void*, const void*);
+extern "C" bool (__thiscall *sub_77e708)(const void*, void*);
 
 extern const char str_8a4f74[];
 
@@ -47,8 +47,7 @@ bool TToolVerb::isEnabled() const
     if (q != 0)
     {
         void* r = sub_631392(q);
-        sub_77e708(r, str_8a4f74);
-        return true;
+        return sub_77e708(str_8a4f74, r);
     }
     return false;
 }

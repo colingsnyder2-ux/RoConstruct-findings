@@ -28,13 +28,13 @@
 struct CChildFrame {
     char pad[0x20];
     int field_20;
+    int sub_6303B2(int);
     int method(int);
 };
 
 extern "C" void* (__stdcall *GetParent)(void*);
 extern "C" void* (__stdcall *GetWindow)(void*, unsigned int);
 extern "C" void* __stdcall sub_6301C0(void*);
-extern "C" int __stdcall sub_6303B2(void*, int);
 
 int CChildFrame::method(int arg) {
     void* p = GetParent((void*)field_20);
@@ -47,5 +47,5 @@ int CChildFrame::method(int arg) {
     } else {
         result = arg;
     }
-    return sub_6303B2(this, result);
+    return sub_6303B2(result);
 }

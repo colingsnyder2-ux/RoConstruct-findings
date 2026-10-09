@@ -37,7 +37,7 @@ struct Outer {
 };
 
 extern "C" void* __cdecl sub_631392(void*);
-extern "C" bool (__stdcall *sub_77e708)(void*, const type_info*);
+extern "C" bool (__thiscall *sub_77e708)(const type_info*, const type_info*);
 
 struct VArrowTool {
     bool isEnabled() const;
@@ -50,7 +50,7 @@ bool VArrowTool::isEnabled() const
     void* p = inner->field_318;
     if (p) {
         void* q = sub_631392(p);
-        return sub_77e708(q, (const type_info*)0x8a19c4);
+        return sub_77e708((const type_info*)0x8a19c4, (const type_info*)q);
     }
     return false;
 }

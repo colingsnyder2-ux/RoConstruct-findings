@@ -40,7 +40,7 @@ struct Verb {
 };
 
 extern "C" void* __cdecl sub_631392(void*);
-extern "C" void* __stdcall sub_77e708(const Verb*, void*);
+extern "C" bool (__thiscall *sub_77e708)(const Verb*, void*);
 
 bool TToolVerb::m()
 {
@@ -48,8 +48,7 @@ bool TToolVerb::m()
     void* p = inner->field318;
     if (p) {
         void* q = sub_631392(p);
-        sub_77e708((const Verb*)0x8a5880, q);
-        return true;
+        return sub_77e708((const Verb*)0x8a5880, q);
     }
     return false;
 }

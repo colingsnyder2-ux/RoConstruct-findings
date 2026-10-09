@@ -38,7 +38,7 @@ struct VNullToolInner2 {
 };
 
 extern "C" void* __cdecl sub_631392(void*);
-extern "C" bool (__stdcall *sub_77e708)(void*, const type_info*);
+extern "C" bool (__thiscall *sub_77e708)(void*, const type_info*);
 extern type_info type_info_8a570c;
 
 bool VNullTool::isEnabled() const {
