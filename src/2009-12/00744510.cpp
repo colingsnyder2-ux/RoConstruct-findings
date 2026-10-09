@@ -1,0 +1,37 @@
+// roc 2009-12 00744510  unit: RBX::Flag  size: 83 bytes
+// Make this compile to the exact bytes below, then: roc check 2009-12 00744510
+//
+// 00744510  51                   push ecx
+// 00744511  6a18                 push 0x18
+// 00744513  c744240400000000     mov dword ptr [esp + 4], 0
+// 0074451b  e840f30a00           call 0x7f3860
+// 00744520  83c404               add esp, 4
+// 00744523  85c0                 test eax, eax
+// 00744525  7424                 je 0x74454b
+// 00744527  c70010329e00         mov dword ptr [eax], 0x9e3210
+// 0074452d  8b4c240c             mov ecx, dword ptr [esp + 0xc]
+// 00744531  894808               mov dword ptr [eax + 8], ecx
+// 00744534  8b542410             mov edx, dword ptr [esp + 0x10]
+// 00744538  89500c               mov dword ptr [eax + 0xc], edx
+// 0074453b  8b4c2414             mov ecx, dword ptr [esp + 0x14]
+// 0074453f  894810               mov dword ptr [eax + 0x10], ecx
+// 00744542  8b542418             mov edx, dword ptr [esp + 0x18]
+// 00744546  895014               mov dword ptr [eax + 0x14], edx
+// 00744549  eb02                 jmp 0x74454d
+// 0074454b  33c0                 xor eax, eax
+// 0074454d  56                   push esi
+// 0074454e  8b74240c             mov esi, dword ptr [esp + 0xc]
+// 00744552  6a00                 push 0
+// 00744554  8906                 mov dword ptr [esi], eax
+// 00744556  e8fff20a00           call 0x7f385a
+// 0074455b  83c404               add esp, 4
+// 0074455e  8bc6                 mov eax, esi
+// 00744560  5e                   pop esi
+// 00744561  59                   pop ecx
+// 00744562  c3                   ret 
+// library rbxgs/script\Script.cpp (function ??$getset@P8Script@RBX@@BEABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@XZP812@AEXABV34@@Z@?$PropDescriptor@VScript@RBX@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@Reflection@RBX@@SA?AV?$auto_ptr@VGetSet@?$TypedPropertyDescriptor@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@Reflection@RBX@@@std@@P8Script@2@BEABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@4@XZP852@AEXABV64@@Z@Z)
+
+// roc-lang: cpp
+// roc-cl: 30729
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+// roc-lib: rbxgs script/Script.cpp
