@@ -22,13 +22,13 @@
 // 005b1eeb  c20400               ret 4
 
 struct RBX_VRotateP_FactoryProduct {
-    void construct(int);
+    RBX_VRotateP_FactoryProduct* construct(int);
     char pad[0x100];
 };
 
 extern "C" void __stdcall func_005b1a20(int);
 
-void RBX_VRotateP_FactoryProduct::construct(int arg)
+RBX_VRotateP_FactoryProduct* RBX_VRotateP_FactoryProduct::construct(int arg)
 {
     func_005b1a20(arg);
     *(int*)((char*)this + 0x00) = 0x7b76f4;
@@ -41,4 +41,5 @@ void RBX_VRotateP_FactoryProduct::construct(int arg)
     *(int*)((char*)this + 0x74) = 0x7b7694;
     *(int*)((char*)this + 0x8c) = 0x7b7684;
     *(int*)((char*)this + 0xe8) = 0x7b766c;
+    return this;
 }

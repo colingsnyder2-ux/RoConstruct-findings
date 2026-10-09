@@ -35,7 +35,7 @@
 
 typedef bool (__cdecl *Pred)(int, int);
 
-int* find_if(int* first, int* last, Pred pred, int value)
+int* find_if(int* first, int* last, Pred pred, int unused, int value)
 {
     while (first != last)
     {

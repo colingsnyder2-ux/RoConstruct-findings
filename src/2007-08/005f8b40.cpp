@@ -21,7 +21,7 @@
 // 005f8b91  c20400               ret 4
 
 struct SignalDesc {
-    void construct(int);
+    SignalDesc* construct(int);
     void* vtbl0;
     void* vtbl4;
     char pad8[8];
@@ -43,7 +43,7 @@ struct Base {
     void sub_5426B0(int);
 };
 
-void SignalDesc::construct(int a)
+SignalDesc* SignalDesc::construct(int a)
 {
     ((Base*)this)->sub_5426B0(a);
     vtbl0 = (void*)0x7c1b3c;
@@ -55,4 +55,5 @@ void SignalDesc::construct(int a)
     vtbl5c = (void*)0x7c1aec;
     vtbl74 = (void*)0x7c1adc;
     vtbl8c = (void*)0x7c1acc;
+    return this;
 }

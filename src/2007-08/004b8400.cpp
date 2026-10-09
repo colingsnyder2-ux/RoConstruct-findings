@@ -35,7 +35,7 @@ void ClientPhysics::method_4b8400(int a1, int a2, int a3)
     double d = func_004fff30(this);
     void* p = func_00498f60();
     float f = *(float*)((char*)p + 0xf0);
-    if ((double)f + field_8 <= d) {
+    if ((double)f + field_8 < d) {
         method_4b8310();
     }
 }
