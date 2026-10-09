@@ -29,12 +29,12 @@
 // 006a2e05  c20800               ret 8
 
 struct CXTPHookManagerHookAble {
-    int find(void* key, void* unused);
+    int find(void* unused, void* key);
 };
 
 extern "C" int __stdcall compare_key(void* a, void* b);
 
-int CXTPHookManagerHookAble::find(void* key, void* unused)
+int CXTPHookManagerHookAble::find(void* unused, void* key)
 {
     void* node;
     if (key == 0)
@@ -43,7 +43,7 @@ int CXTPHookManagerHookAble::find(void* key, void* unused)
         node = *(void**)key;
 
     while (node != 0) {
-        if (compare_key((char*)node + 8, &key) != 0)
+        if (compare_key((char*)node + 8, &unused) != 0)
             return (int)node;
         node = *(void**)node;
     }

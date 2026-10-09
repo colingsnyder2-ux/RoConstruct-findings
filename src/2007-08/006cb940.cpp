@@ -32,10 +32,10 @@ struct CXTPReportPaintManager {
     int offset_238;
     char pad_23c[0x28c - 0x23c];
     int offset_28c;
-    int GetRowHeight(void* pRow, int nIndex);
+    int GetRowHeight(int nIndex, void* pRow);
 };
 
-int CXTPReportPaintManager::GetRowHeight(void* pRow, int nIndex)
+int CXTPReportPaintManager::GetRowHeight(int nIndex, void* pRow)
 {
     int result = (*(int (__thiscall **)(void*))((*(int*)pRow) + 0x88))(pRow);
     if (result == 0)

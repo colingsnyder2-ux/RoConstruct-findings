@@ -21,7 +21,8 @@ struct FollowCameraCommand {
 
 struct Inner {
     char pad0[0x228];
-    void* m_vtbl;
+    virtual void dummy();
+    virtual void* f();
 };
 
 struct Obj {
@@ -32,10 +33,7 @@ struct Obj {
 bool FollowCameraCommand::f()
 {
     Inner* inner = (Inner*)m_ptr;
-    void** vtbl = (void**)inner->m_vtbl;
-    typedef void (__thiscall *Fn)(void*);
-    Fn fn = (Fn)vtbl[1];
-    fn((char*)inner + 0x228);
-    Obj* obj = (Obj*)inner;
+    void* result = ((Inner*)((char*)inner + 0x228))->f();
+    Obj* obj = (Obj*)result;
     return obj->m_state == 4;
 }

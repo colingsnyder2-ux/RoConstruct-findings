@@ -33,7 +33,7 @@
 // 00448604  5b                   pop ebx
 // 00448605  c20400               ret 4
 
-extern "C" __declspec(dllimport) void __stdcall RaiseException(unsigned long, unsigned long, unsigned long, const unsigned long*);
+extern "C" __declspec(noreturn) __declspec(dllimport) void __stdcall RaiseException(unsigned long, unsigned long, unsigned long, const unsigned long*);
 extern "C" void __cdecl sub_62FC62(void*);
 
 struct Node {

@@ -54,15 +54,15 @@ long CRobloxModule::CreateInstance(void** ppv)
     if (m_pUnknown == 0)
     {
         hr = CoCreateInstance((void*)0x7c4e5c, 0, 1, (void*)0x79063c, &m_pUnknown);
-        if (hr < 0)
-            return hr;
     }
 
-    *ppv = m_pUnknown;
-    void* p = m_pUnknown;
-    void** vtbl = *(void***)p;
-    void (__stdcall *fn)(void*) = (void (__stdcall *)(void*))vtbl[1];
-    fn(p);
-
+    if (hr >= 0)
+    {
+        *ppv = m_pUnknown;
+        void* p = m_pUnknown;
+        void** vtbl = *(void***)p;
+        void (__stdcall *fn)(void*) = (void (__stdcall *)(void*))vtbl[1];
+        fn(p);
+    }
     return hr;
 }
