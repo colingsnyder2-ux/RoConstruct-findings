@@ -1,0 +1,30 @@
+// roc 2009-12 00768750  unit: RBX::VInstance::?$NonFactoryProduct  size: 58 bytes
+// Make this compile to the exact bytes below, then: roc check 2009-12 00768750
+//
+// 00768750  56                   push esi
+// 00768751  8b742418             mov esi, dword ptr [esp + 0x18]
+// 00768755  57                   push edi
+// 00768756  8b3d60b79800         mov edi, dword ptr [0x98b760]
+// 0076875c  8d642400             lea esp, [esp]
+// 00768760  8b44240c             mov eax, dword ptr [esp + 0xc]
+// 00768764  85c0                 test eax, eax
+// 00768766  7406                 je 0x76876e
+// 00768768  3b442414             cmp eax, dword ptr [esp + 0x14]
+// 0076876c  7402                 je 0x768770
+// 0076876e  ffd7                 call edi
+// 00768770  8b442410             mov eax, dword ptr [esp + 0x10]
+// 00768774  3b442418             cmp eax, dword ptr [esp + 0x18]
+// 00768778  740d                 je 0x768787
+// 0076877a  ff06                 inc dword ptr [esi]
+// 0076877c  8d4c240c             lea ecx, [esp + 0xc]
+// 00768780  e8db4ae6ff           call 0x5cd260
+// 00768785  ebd9                 jmp 0x768760
+// 00768787  5f                   pop edi
+// 00768788  5e                   pop esi
+// 00768789  c3                   ret 
+// library rbxgs-render/AggregatingSceneManager.cpp (function ??$_Distance2@Viterator@?$_Tree@V?$_Tset_traits@V?$WeakReferenceCountedPointer@VChunk@Render@RBX@@@G3D@@U?$less@V?$WeakReferenceCountedPointer@VChunk@Render@RBX@@@G3D@@@std@@V?$allocator@V?$WeakReferenceCountedPointer@VChunk@Render@RBX@@@G3D@@@4@$0A@@std@@@std@@I@std@@YAXViterator@?$_Tree@V?$_Tset_traits@V?$WeakReferenceCountedPointer@VChunk@Render@RBX@@@G3D@@U?$less@V?$WeakReferenceCountedPointer@VChunk@Render@RBX@@@G3D@@@std@@V?$allocator@V?$WeakReferenceCountedPointer@VChunk@Render@RBX@@@G3D@@@4@$0A@@std@@@0@0AAIUbidirectional_iterator_tag@0@@Z)
+
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+// roc-lib: rbxgs-render AggregatingSceneManager.cpp
