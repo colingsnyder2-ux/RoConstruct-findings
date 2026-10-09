@@ -44,13 +44,12 @@ struct type_info {
 };
 
 struct S {
-    void* f(void* a, int b);
 };
 
 void* __cdecl operator_new(unsigned int);
 void __cdecl operator_delete(void*);
 
-void* S::f(void* a, int b)
+void* __cdecl f(void* a, int b)
 {
     if (b == 2) {
         void* p = a;

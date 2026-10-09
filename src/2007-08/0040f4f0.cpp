@@ -13,10 +13,9 @@ struct String {
 };
 
 struct CutVerb {
-    Elem* copy_range(Elem* first, Elem* last, Elem* dest);
 };
 
-Elem* CutVerb::copy_range(Elem* first, Elem* last, Elem* dest) {
+Elem* __cdecl copy_range(Elem* first, Elem* last, Elem* dest) {
     if (first != last) {
         do {
             *(String*)dest = *(const String*)first;

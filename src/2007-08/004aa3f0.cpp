@@ -12,10 +12,9 @@
 // 004aa401  c3                   ret 
 
 struct S {
-    char f(void* arg);
 };
 
-char S::f(void* arg)
+char __cdecl f(void* arg)
 {
     return *reinterpret_cast<char*>(
         reinterpret_cast<char*(*)(void*)>(

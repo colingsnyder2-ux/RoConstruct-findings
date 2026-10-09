@@ -10,10 +10,9 @@ struct Element {
 };
 
 struct S {
-    void copy(Element* begin, Element* end, Element* dst);
 };
 
-void S::copy(Element* begin, Element* end, Element* dst)
+void __cdecl copy(Element* begin, Element* end, Element* dst)
 {
     if (begin != end) {
         do {

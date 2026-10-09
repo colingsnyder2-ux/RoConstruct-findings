@@ -30,12 +30,11 @@ struct type_info {
 };
 
 struct S_func_00559c90 {
-    int f(int a1, int a2);
 };
 
 extern "C" int __cdecl sub_00559b10(int, int, int);
 
-int S_func_00559c90::f(int a1, int a2)
+int __cdecl f(int a1, int a2)
 {
     if (a2 == 2) {
         type_info* p = (type_info*)0x89e368;

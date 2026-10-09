@@ -6,10 +6,9 @@ extern "C" int __cdecl sub_630d36(int, int, int, int, int);
 extern "C" int __cdecl sub_5bd420();
 
 struct IScriptOwner {
-    int getScript(int arg);
 };
 
-int IScriptOwner::getScript(int arg) {
+int __cdecl getScript(int arg) {
     int result = sub_630d36(arg, 0, 0x881f4c, 0x898ee8, 0);
     if (result) {
         return sub_5bd420();

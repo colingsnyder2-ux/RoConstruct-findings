@@ -38,7 +38,7 @@
 
 struct CDeclarationView
 {
-    void constructView(char* out, int a, int b, int c, int d, int e, int f);
+    void __cdecl constructView(char* out, int a, int b, int c, int d, int e, int f);
 };
 
 void CDeclarationView::constructView(char* out, int a, int b, int c, int d, int e, int f)

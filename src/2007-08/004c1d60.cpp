@@ -27,10 +27,9 @@ extern "C" int __cdecl sub_4ca340();
 extern "C" char __cdecl sub_4c0d50(void* p, int n);
 
 struct RakPeer {
-    void f(void* p);
 };
 
-void RakPeer::f(void* p) {
+void __cdecl f(void* p) {
     int* arr = (int*)p;
     for (;;) {
         int i = 0;

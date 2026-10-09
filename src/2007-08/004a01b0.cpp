@@ -25,7 +25,6 @@
 // 004a01e3  c3                   ret 
 
 struct BoundFuncDesc {
-    void invoke(void* args);
 };
 
 struct FuncDescBase {
@@ -34,7 +33,7 @@ struct FuncDescBase {
 
 extern "C" int __cdecl func_0049fd90(int*, int, int);
 
-void BoundFuncDesc::invoke(void* args)
+void __cdecl invoke(void* args)
 {
     int* a = (int*)args;
     FuncDescBase* obj = (FuncDescBase*)a[0];

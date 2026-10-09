@@ -29,12 +29,11 @@
 // 0044c0d6  c3                   ret 
 
 struct CRobloxControlColorSelector {
-    void assign_range(CRobloxControlColorSelector* first, CRobloxControlColorSelector* last, const CRobloxControlColorSelector* src);
 };
 
 extern "C" void __stdcall func_77d434(void*, const void*);
 
-void CRobloxControlColorSelector::assign_range(CRobloxControlColorSelector* first, CRobloxControlColorSelector* last, const CRobloxControlColorSelector* src)
+void __cdecl assign_range(CRobloxControlColorSelector* first, CRobloxControlColorSelector* last, const CRobloxControlColorSelector* src)
 {
     while (first != last) {
         *(int*)first = *(const int*)src;

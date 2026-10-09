@@ -14,7 +14,7 @@ struct RBX_NetworkSettings_String {
 
 extern RBX_NetworkSettings_String g_8BE4B0;
 
-void __stdcall sub_4992B0(const char* name)
+void __cdecl sub_4992B0(const char* name)
 {
     g_8BE4B0.assign(name);
     sub_4991B0();

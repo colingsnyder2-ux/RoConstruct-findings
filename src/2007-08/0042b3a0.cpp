@@ -14,10 +14,9 @@ struct Descriptor {
 };
 
 struct Reflection {
-    void* get(const Descriptor& descriptor, int mode);
 };
 
-void* Reflection::get(const Descriptor& descriptor, int mode)
+void* __cdecl get(const Descriptor& descriptor, int mode)
 {
     if (mode == 2) {
         if (type_info_equal(&descriptor, (void*)0x8866f0))

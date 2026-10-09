@@ -15,10 +15,9 @@
 extern "C" void* __cdecl malloc(unsigned int size);
 
 struct RakPeerInterface {
-    void* construct(unsigned int a, unsigned int b);
 };
 
-void* RakPeerInterface::construct(unsigned int a, unsigned int b) {
+void* __cdecl construct(unsigned int a, unsigned int b) {
     char* p = (char*)malloc(0x1c);
     *(unsigned int*)(p + 0x14) = b;
     *(unsigned int*)(p + 0xc) = a;

@@ -15,10 +15,9 @@
 // 0042b8d8  c3                   ret 
 
 struct VPropBinding {
-    void invoke(void* arg);
 };
 
-void VPropBinding::invoke(void* arg) {
+void __cdecl invoke(void* arg) {
     void (*fn)(void*, void*, void*) = *(void (**)(void*, void*, void*))arg;
     fn(*(void**)((char*)arg + 4), *(void**)((char*)arg + 8), *(void**)((char*)arg + 12));
 }

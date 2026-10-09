@@ -36,7 +36,7 @@
 // 0042155b  c3                   ret 
 
 struct CSelectionTreeCtrl {
-    void Unk(int* out, int first, int last, int a, int b, int c, int d);
+    void __cdecl Unk(int* out, int first, int last, int a, int b, int c, int d);
 };
 
 void CSelectionTreeCtrl::Unk(int* out, int first, int last, int a, int b, int c, int d) {

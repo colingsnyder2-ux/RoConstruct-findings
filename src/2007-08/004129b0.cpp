@@ -36,10 +36,9 @@
 
 struct VCContent_CComAggObject
 {
-    unsigned short GetValue(int index);
 };
 
-unsigned short VCContent_CComAggObject::GetValue(int index)
+unsigned short __cdecl GetValue(int index)
 {
     switch (index)
     {

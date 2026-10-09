@@ -43,10 +43,9 @@ extern "C" void* __cdecl malloc(unsigned int);
 extern "C" void __cdecl free(void*);
 
 struct S_func_00537d40 {
-    void* f(int a1, int a2);
 };
 
-void* S_func_00537d40::f(int a1, int a2)
+void* __cdecl f(int a1, int a2)
 {
     if (a2 == 2) {
         void* p = (void*)a1;

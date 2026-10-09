@@ -44,7 +44,7 @@ struct type_info {
 };
 
 struct S {
-    void* f(int, void*);
+    void* __cdecl f(int, void*);
 };
 
 extern "C" void* __cdecl operator_new(unsigned int);

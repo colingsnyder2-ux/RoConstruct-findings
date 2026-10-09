@@ -45,7 +45,7 @@ extern "C" void* __cdecl operator_new(unsigned int);
 extern "C" void __cdecl operator_delete(void*);
 
 struct S_TextureProxy {
-    void* f(int a1, const void* a2);
+    void* __cdecl f(int a1, const void* a2);
 };
 
 void* S_TextureProxy::f(int a1, const void* a2)

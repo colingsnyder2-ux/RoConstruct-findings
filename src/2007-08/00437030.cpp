@@ -39,10 +39,9 @@ extern "C" int __stdcall swprintf_s(wchar_t*, unsigned int, const wchar_t*, ...)
 extern "C" int __cdecl memcpy_s(void*, unsigned int, const void*, unsigned int);
 
 struct VStandardOutListener {
-    int method(unsigned short, void*);
 };
 
-int VStandardOutListener::method(unsigned short a, void* b) {
+int __cdecl method(unsigned short a, void* b) {
     wchar_t buf[9];
     int n = swprintf_s(buf, 9, L"t$Wh", a);
     memcpy_s(b, 0x12, buf, 0x10);

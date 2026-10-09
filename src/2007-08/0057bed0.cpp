@@ -31,7 +31,7 @@
 // 0057bf0a  c3                   ret 
 
 struct S_func_0057bed0 {
-    void f(int a, int b, int c, int d, int e, int f);
+    void __cdecl f(int a, int b, int c, int d, int e, int f);
 };
 
 void S_func_0057bed0::f(int a, int b, int c, int d, int e, int f)

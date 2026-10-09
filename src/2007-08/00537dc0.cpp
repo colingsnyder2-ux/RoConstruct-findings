@@ -36,7 +36,6 @@
 // 00537e12  c3                   ret 
 
 struct S_func_00537dc0 {
-    void* f(int a1, int a2);
 };
 
 extern "C" int __cdecl func_0062fef6(unsigned int);
@@ -49,7 +48,7 @@ struct type_info {
 extern type_info G_typeinfo_00899ce0;
 extern bool (__thiscall *G_ptr_0077e708)(const type_info*, const type_info*);
 
-void* S_func_00537dc0::f(int a1, int a2)
+void* __cdecl f(int a1, int a2)
 {
     if (a2 == 2) {
         return (G_ptr_0077e708(&G_typeinfo_00899ce0, (const type_info*)a1)) ? (void*)a1 : 0;

@@ -45,10 +45,9 @@ extern "C" void __cdecl operator_delete(void*);
 struct TextureProxy {
     void* field0;
     void* field4;
-    void* createTextureProxy(int, int);
 };
 
-void* TextureProxy::createTextureProxy(int a, int b)
+void* __cdecl createTextureProxy(int a, int b)
 {
     if (b == 2) {
         type_info* ti = (type_info*)0x8971b0;

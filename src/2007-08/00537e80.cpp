@@ -51,10 +51,9 @@ struct VNode {
 };
 
 struct S {
-    void* f(void* a1, int a2);
 };
 
-void* S::f(void* a1, int a2)
+void* __cdecl f(void* a1, int a2)
 {
     if (a2 == 2) {
         void* p = a1;

@@ -32,10 +32,9 @@
 // 0056042c  c3                   ret 
 
 struct FilteredSelection {
-    void for_each_impl(void (*fn)(void*, int), void* ctx, int* begin, int* end, int* out);
 };
 
-void FilteredSelection::for_each_impl(void (*fn)(void*, int), void* ctx, int* begin, int* end, int* out)
+void __cdecl for_each_impl(void (*fn)(void*, int), void* ctx, int* begin, int* end, int* out)
 {
     int* it = begin;
     if (it != end) {

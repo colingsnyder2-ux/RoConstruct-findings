@@ -46,10 +46,9 @@ extern void* __cdecl func_0062fef6(unsigned int);
 extern void __cdecl func_0062fc62(void*);
 
 struct S_004d2590 {
-    void* f(void* a1, int a2);
 };
 
-void* S_004d2590::f(void* a1, int a2)
+void* __cdecl f(void* a1, int a2)
 {
     if (a2 == 2) {
         void* p = a1;

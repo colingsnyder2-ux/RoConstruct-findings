@@ -50,10 +50,9 @@
 extern "C" bool __cdecl sub_4a00e0(double);
 
 struct RBX_Render_SceneManager {
-    bool method(float (*matrix)[3]);
 };
 
-bool RBX_Render_SceneManager::method(float (*matrix)[3]) {
+bool __cdecl method(float (*matrix)[3]) {
     int row = 0;
     while (row < 3) {
         int col = 0;

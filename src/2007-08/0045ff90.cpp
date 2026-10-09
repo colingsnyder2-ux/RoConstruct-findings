@@ -29,13 +29,11 @@ struct CScriptEditor {
     int method_45bf60(int);
     int method_45ca50(int, int);
     int method_45c2e0(int, int);
-
-    int method_45ff90(int arg);
 };
 
 extern CScriptEditor* __cdecl func_45d230();
 
-int CScriptEditor::method_45ff90(int arg)
+int __cdecl method_45ff90(int arg)
 {
     CScriptEditor* p = func_45d230();
     int a = p->method_45bf60(1);

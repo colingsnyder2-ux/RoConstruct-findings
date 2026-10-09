@@ -32,7 +32,7 @@ struct CScriptEditor {
 
 extern "C" void* __cdecl func_0045d230();
 
-void __stdcall func_00460000(void* arg)
+void __cdecl func_00460000(void* arg)
 {
     void* obj = func_0045d230();
     void* a = ((CScriptEditor*)obj)->method1(1);
