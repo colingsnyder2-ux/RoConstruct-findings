@@ -1,0 +1,13 @@
+// roc 2009-12 008b0790  unit: CXTPDockingPane  size: 12 bytes
+// Make this compile to the exact bytes below, then: roc check 2009-12 008b0790
+//
+// 008b0790  33c0                 xor eax, eax
+// 008b0792  394c2404             cmp dword ptr [esp + 4], ecx
+// 008b0796  0f94c0               sete al
+// 008b0799  c20400               ret 4
+// library xtp-15.2.1/Source\Controls\Dialog\XTPTaskDialogClient.cpp (function ?IsEqual@CXTPMarkupObject@@UBEHPBV1@@Z)
+
+// roc-lang: cpp
+// roc-cl: 30729
+// roc-flags: /O2 /GS- /MD
+// roc-lib: xtp-15.2.1 Source/Controls/Dialog/XTPTaskDialogClient.cpp
