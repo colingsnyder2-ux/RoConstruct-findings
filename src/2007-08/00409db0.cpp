@@ -28,10 +28,10 @@
 
 struct VCApp_CComObject {
     void* f(int);
+    void sub_409290();
 };
 
 extern "C" void __cdecl sub_62FC62(void*);
-extern "C" void __stdcall sub_409290();
 
 struct GlobalObj_8BAE44 {
     virtual void v0();

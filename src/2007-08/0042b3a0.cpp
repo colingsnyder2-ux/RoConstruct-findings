@@ -4,7 +4,7 @@
 
 extern "C" void* __cdecl malloc(unsigned int);
 extern "C" void __cdecl free(void*);
-extern "C" bool __stdcall type_info_equal(const void*, const void*);
+extern "C" bool (__thiscall *type_info_equal)(const void*, const void*);
 
 struct Descriptor {
     int a;
@@ -19,7 +19,7 @@ struct Reflection {
 void* __cdecl get(const Descriptor& descriptor, int mode)
 {
     if (mode == 2) {
-        if (type_info_equal(&descriptor, (void*)0x8866f0))
+        if (type_info_equal((void*)0x8866f0, &descriptor))
             return (void*)&descriptor;
         return 0;
     }
