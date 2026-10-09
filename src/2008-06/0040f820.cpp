@@ -1,0 +1,25 @@
+// roc 2008-06 0040f820  unit: UIEnumConnectionPoints::V?$CComEnum::?$CComObject  size: 15 bytes
+// Make this compile to the exact bytes below, then: roc check 2008-06 0040f820
+//
+// 0040f820  8b442404             mov eax, dword ptr [esp + 4]
+// 0040f824  8b4808               mov ecx, dword ptr [eax + 8]
+// 0040f827  894810               mov dword ptr [eax + 0x10], ecx
+// 0040f82a  33c0                 xor eax, eax
+// 0040f82c  c20400               ret 4
+// copied from an identical function in another client (function ?copyField@ns_ROCX000025@@YGHPAUS@1@@Z)
+
+namespace ns_ROCX000025 {
+struct S {
+    int m0;
+    int m4;
+    int m8;
+    int mc;
+    int m10;
+};
+
+int __stdcall copyField(S* s)
+{
+    s->m10 = s->m8;
+    return 0;
+}
+}
