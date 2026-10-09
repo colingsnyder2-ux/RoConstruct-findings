@@ -1,4 +1,4 @@
-// from server: 91% by colin
+// from DeepSeek/server: 100% by colin
 // roc 2007-08 004b8aa0  unit: RakPeer  size: 41 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 004b8aa0
 //
@@ -20,18 +20,25 @@
 
 extern "C" void __cdecl free(void*);
 
-struct RakPeer {
+extern void* free_ptr;
+
+struct RakPeer
+{
     char pad[0x14];
-    void* ptr14;
-    char pad2[0x4];
-    char flag18;
+    void* field_14;
+    char field_18;
+
+    void func_004b8aa0(RakPeer* p);
 };
 
-void __stdcall destroy(RakPeer* p) {
-    if (p != 0) {
-        if (p->flag18 != 0) {
-            free(p->ptr14);
+void RakPeer::func_004b8aa0(RakPeer* p)
+{
+    if (p)
+    {
+        if (p->field_18)
+        {
+            free(p->field_14);
         }
-        free(p);
+        ((void (__cdecl*)(void*))free_ptr)(p);
     }
 }

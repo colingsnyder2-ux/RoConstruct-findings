@@ -1,4 +1,4 @@
-// from server: 94% by colin
+// from DeepSeek/server: 100% by colin
 // roc 2007-08 00580f90  unit: RBX::Accoutrement  size: 25 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 00580f90
 //
@@ -12,16 +12,17 @@
 // 00580fa5  5e                   pop esi
 // 00580fa6  c20400               ret 4
 
-struct Accoutrement {
-    char pad[0x100];
-    void* field_100;
-    void* setSomething(void* value);
+struct Sub {
+    int method(int a, int b);
 };
 
-void* Accoutrement::setSomething(void* value) {
-    void* result = value;
-    void* target = (char*)this + 0x100;
-    extern void __stdcall helper(void*, void*, int);
-    helper(target, value, 1);
-    return result;
+struct Accoutrement {
+    char pad[0x100];
+    Sub sub;
+    int func(int value);
+};
+
+int Accoutrement::func(int value) {
+    sub.method(value, 1);
+    return value;
 }

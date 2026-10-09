@@ -1,4 +1,4 @@
-// from server: 92% by colin
+// from DeepSeek/server: 100% by colin
 // roc 2007-08 004aca90  unit: RBX::Network::Replicator::DeleteInstanceItem  size: 89 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 004aca90
 //
@@ -38,7 +38,7 @@ struct DeleteInstanceItem {
     void write(int a, int b);
 };
 
-extern "C" char __stdcall sub_4879D0(int* a);
+extern "C" char __cdecl sub_4879D0(int* a);
 extern "C" void* __cdecl sub_62FEF6(unsigned int size);
 
 void DeleteInstanceItem::write(int a, int b)

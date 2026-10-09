@@ -1,4 +1,4 @@
-// from server: 94% by colin
+// from DeepSeek/server: 100% by colin
 // roc 2007-08 004d06b0  unit: RBX::View::PartChunk  size: 42 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 004d06b0
 //
@@ -35,5 +35,5 @@ bool __stdcall compareChunks(PartChunk* a, PartChunk* b)
         return true;
     if (a->field_c > b->field_c)
         return false;
-    return a < b;
+    return a < b ? true : false;
 }

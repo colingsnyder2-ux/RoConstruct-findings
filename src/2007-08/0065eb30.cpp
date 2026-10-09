@@ -1,4 +1,4 @@
-// from server: 94% by colin
+// from DeepSeek/server: 100% by colin
 // roc 2007-08 0065eb30  unit: CXTPReportColumn  size: 38 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 0065eb30
 //
@@ -30,10 +30,14 @@ struct CXTPReportColumn
 
 int CXTPReportColumn::getValue()
 {
+    int r;
     if (field_0x64 == 0)
     {
-        int r = getSomething();
-        return field_0xa0 + r;
+        r = getSomething();
     }
-    return field_0xa0;
+    else
+    {
+        r = 0;
+    }
+    return field_0xa0 + r;
 }

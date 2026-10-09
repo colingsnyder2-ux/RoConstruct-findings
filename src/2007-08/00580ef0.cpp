@@ -11,13 +11,13 @@
 // 00580f05  e946741a00           jmp 0x728350
 
 struct Sub {
+    char pad[0x14];
     void destroy();
 };
 
 struct Accoutrement {
     char pad[0x150];
     Sub a;
-    char pad2[0x10];
     Sub b;
     void f();
 };

@@ -1,4 +1,4 @@
-// from server: 91% by colin
+// from DeepSeek/server: 100% by colin
 // roc 2007-08 00460190  unit: CScriptEditor  size: 43 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 00460190
 //
@@ -23,17 +23,17 @@
 // 004601b8  c20400               ret 4
 
 struct CScriptEditor {
-    void m(void*);
+    void sub_460190(int);
 };
 
-extern "C" void* __cdecl func_0045d230(int, int);
-extern "C" int __cdecl func_0045c460();
+extern "C" void* __stdcall sub_45D230(int, int);
+extern "C" int __fastcall sub_45C460(void*);
 
-void CScriptEditor::m(void* arg)
-{
-    void* p = *(void**)arg;
-    void* q = func_0045d230(1, 1);
-    int r = func_0045c460();
-    int s = (r != 0) ? 1 : 0;
-    ((void (__thiscall*)(void*, int))*(void**)((char*)p + 4))(arg, s);
+void CScriptEditor::sub_460190(int a2) {
+    int* p = (int*)a2;
+    int* obj = (int*)*p;
+    void* r = sub_45D230(1, 1);
+    int ok = sub_45C460(r);
+    int flag = ok != 0;
+    ((void (__thiscall*)(void*, int))obj[1])(p, flag);
 }

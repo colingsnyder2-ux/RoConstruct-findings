@@ -1,4 +1,4 @@
-// from server: 92% by colin
+// from DeepSeek/server: 100% by colin
 // roc 2007-08 00549000  unit: seg_00540000  size: 34 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 00549000
 
@@ -8,6 +8,8 @@ struct IStringStream {
 
 extern "C" void __cdecl sub_62FC62(void* p);
 
+extern void* (__thiscall* const g_destroy)(void*);
+
 struct S {
     char pad[0x50];
     void* f(unsigned int flags);
@@ -16,7 +18,7 @@ struct S {
 void* S::f(unsigned int flags)
 {
     S* self = (S*)((char*)this - 0x50);
-    ((IStringStream*)self)->destroy();
+    g_destroy(self);
     if (flags & 1) {
         sub_62FC62(self);
     }

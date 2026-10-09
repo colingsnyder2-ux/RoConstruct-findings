@@ -1,4 +1,4 @@
-// from server: 95% by colin
+// from DeepSeek/server: 100% by colin
 // roc 2007-08 004356b0  unit: CDeclarationView  size: 22 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 004356b0
 //
@@ -11,19 +11,14 @@
 // 004356c4  5e                   pop esi
 // 004356c5  c3                   ret 
 
-struct QTextBrowser
-{
-    void setOpenLinks();
-    void setOpenExternalLinks(int value);
+struct CDeclarationView {
+    void method_6300b8();
+    void method_630670(int);
+    void sub_4356b0();
 };
 
-struct DeclarationView : QTextBrowser
+void CDeclarationView::sub_4356b0()
 {
-    DeclarationView();
-};
-
-DeclarationView::DeclarationView()
-{
-    setOpenLinks();
-    setOpenExternalLinks(0xd2);
+    method_6300b8();
+    method_630670(0xd2);
 }

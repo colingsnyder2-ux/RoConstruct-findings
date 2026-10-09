@@ -1,4 +1,4 @@
-// from server: 95% by colin
+// from DeepSeek/server: 100% by colin
 // roc 2007-08 006692b0  unit: CXTPColorManager  size: 52 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 006692b0
 //
@@ -20,24 +20,23 @@
 // 006692e1  c20400               ret 4
 
 struct CXTPColorManager {
-    void *vtable;
+    void* m_vtable;
     char pad1[0x0C];
-    char field10[0x0C];
-    float field1C;
-
-    CXTPColorManager *Construct(int arg);
+    char field_10[12];
+    float field_1c;
+    void sub_6684a0();
+    void sub_668ec0(void* arg);
+    CXTPColorManager* construct(void* arg);
 };
 
-extern "C" void __fastcall sub_6684A0(void *);
-extern "C" void __fastcall sub_668EC0(void *, int);
+extern float g_797e9c;
 
-extern float dword_797E9C;
-
-CXTPColorManager *CXTPColorManager::Construct(int arg) {
-    this->vtable = (void *)0x7CA684;
-    sub_6684A0((char *)this + 4);
-    sub_6684A0((char *)this + 0x10);
-    this->field1C = dword_797E9C;
-    sub_668EC0(this, arg);
+CXTPColorManager* CXTPColorManager::construct(void* arg)
+{
+    m_vtable = (void*)0x7ca684;
+    ((CXTPColorManager*)((char*)this + 4))->sub_6684a0();
+    ((CXTPColorManager*)((char*)this + 0x10))->sub_6684a0();
+    field_1c = g_797e9c;
+    sub_668ec0(arg);
     return this;
 }

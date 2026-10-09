@@ -1,4 +1,4 @@
-// from server: 95% by colin
+// from DeepSeek/server: 100% by colin
 // roc 2007-08 0043e550  unit: G3D::VColor3::?$XItem  size: 69 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 0043e550
 //
@@ -26,7 +26,7 @@ struct Descriptor {
 };
 
 struct VColor3Item : Descriptor {
-    char pad[0x11c - 8];
+    char pad[0x124 - 8];
     int field_0x11c;
     int field_0x120;
     int field_0x124;

@@ -1,4 +1,4 @@
-// from server: 92% by colin
+// from DeepSeek/server: 100% by colin
 // roc 2007-08 0063dcb0  unit: CXTPPaintManager  size: 33 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 0063dcb0
 //
@@ -14,15 +14,14 @@
 // 0063dccf  5e                   pop esi
 // 0063dcd0  c3                   ret 
 
-extern "C" int __cdecl sub_63DB30(int);
-extern "C" int __cdecl sub_63CF10(int);
+extern "C" int __cdecl sub_0063db30(int);
+extern "C" int __cdecl sub_0063cf10(int);
 
-extern int dword_8C86D8;
+extern int* g_8c86d8;
 
-int __cdecl sub_63DCB0(int a1)
+void __cdecl sub_0063dcb0(int a1)
 {
-    int v1 = sub_63DB30(a1);
-    int v2 = sub_63CF10(v1);
-    *(int *)(dword_8C86D8 + 0x124) = a1;
-    return v2;
+    int v = sub_0063db30(a1);
+    sub_0063cf10(v);
+    g_8c86d8[0x124 / 4] = a1;
 }

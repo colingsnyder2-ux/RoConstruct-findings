@@ -1,4 +1,4 @@
-// from server: 91% by colin
+// from DeepSeek/server: 100% by colin
 // roc 2007-08 0059c7d0  unit: RBX::UserInputBase  size: 83 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 0059c7d0
 //
@@ -48,11 +48,11 @@ void UserInputBase::getSteerThrottle(float* out, const float* in, int steerMode,
     out[0] = 0.0f;
     out[1] = 0.0f;
 
-    switch (steerMode - 2) {
-    case 0:
+    switch (steerMode) {
+    case 2:
         out[0] = in[0] + this->unk0;
         break;
-    case 1:
+    case 3:
         out[0] = this->unk8 - in[0];
         break;
     }

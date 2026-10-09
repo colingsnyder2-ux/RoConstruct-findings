@@ -39,11 +39,11 @@ struct CXTPControlSelector {
     void func_0067d8b0(CXTPControlSelector* other, int arg);
 };
 
-extern "C" void __stdcall sub_0063cb00(CXTPControlSelector* self, CXTPControlSelector* other, int arg);
+extern "C" void __stdcall sub_0063cb00(CXTPControlSelector* other, int arg);
 
 void CXTPControlSelector::func_0067d8b0(CXTPControlSelector* other, int arg)
 {
-    sub_0063cb00(this, other, arg);
+    sub_0063cb00(other, arg);
     this->field_168 = other->field_168;
     this->field_16c = other->field_16c;
     this->field_170 = other->field_170;

@@ -1,4 +1,4 @@
-// from server: 92% by colin
+// from DeepSeek/server: 100% by colin
 // roc 2007-08 006a3fe0  unit: PAUHWND__::?$CArray  size: 79 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 006a3fe0
 //
@@ -30,16 +30,8 @@
 // 006a402d  5e                   pop esi
 // 006a402e  c3                   ret 
 
-struct Sub1 {
-    void sub_632d80();
-};
-
-struct Sub2 {
-    void sub_6a3980();
-};
-
-struct C {
-    void* vtable0;
+struct CXTPReBar {
+    void* vftable;
     int field4;
     char pad8[0x14];
     int field1c;
@@ -49,25 +41,41 @@ struct C {
     char pad2c[0x14];
     int field40;
     int field44;
-    void sub_6a3f20(int);
-    C* construct();
+    CXTPReBar();
+    void Init(int);
 };
 
-C* C::construct() {
-    this->vtable0 = (void*)0x7d35a0;
-    Sub1* s1 = (Sub1*)((char*)this + 8);
-    s1->sub_632d80();
-    *(void**)((char*)this + 8) = (void*)0x7d3570;
-    Sub2* s2 = (Sub2*)((char*)this + 0x2c);
-    s2->sub_6a3980();
-    *(void**)((char*)this + 0x2c) = (void*)0x7d3588;
-    this->field1c = 0;
-    this->field4 = 0;
-    this->field24 = 0;
-    this->field28 = 0;
-    this->field20 = 0;
-    this->field40 = 0;
-    this->field44 = 0;
-    this->sub_6a3f20(1);
-    return this;
+struct Sub8 {
+    void* vftable;
+    void Init();
+};
+
+struct Sub2c {
+    void* vftable;
+    void Init();
+};
+
+void __stdcall sub_632d80();
+void __stdcall sub_6a3980();
+
+CXTPReBar::CXTPReBar()
+{
+    Sub8* p8;
+    Sub2c* p2c;
+
+    vftable = (void*)0x7d35a0;
+    p8 = (Sub8*)((char*)this + 8);
+    p8->Init();
+    p8->vftable = (void*)0x7d3570;
+    p2c = (Sub2c*)((char*)this + 0x2c);
+    p2c->Init();
+    p2c->vftable = (void*)0x7d3588;
+    field1c = 0;
+    field4 = 0;
+    field24 = 0;
+    field28 = 0;
+    field20 = 0;
+    field40 = 0;
+    field44 = 0;
+    Init(1);
 }

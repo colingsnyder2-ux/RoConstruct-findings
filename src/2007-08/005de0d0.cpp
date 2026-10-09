@@ -28,22 +28,18 @@
 // 005de101  c20800               ret 8
 
 struct S {
-    bool f(int a, int b);
+    bool f(int* a, int* b);
 };
 
-bool S::f(int a, int b)
+bool S::f(int* a, int* b)
 {
     int i = 0;
-    int diff = b - a;
     while (i < 3) {
-        int lhs = *(int*)(diff + a);
-        int rhs = *(int*)a;
-        if (lhs < rhs)
+        if (a[i] < b[i])
             return true;
-        if (lhs > rhs)
+        if (a[i] > b[i])
             return false;
-        i++;
-        a += 4;
+        ++i;
     }
     return false;
 }

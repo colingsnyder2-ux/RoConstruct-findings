@@ -1,4 +1,4 @@
-// from server: 96% by colin
+// from DeepSeek/server: 100% by colin
 // roc 2007-08 00690a90  unit: CXTSplitterWnd  size: 69 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 00690a90
 //
@@ -26,7 +26,7 @@
 // 00690ad1  5e                   pop esi
 // 00690ad2  c20800               ret 8
 
-extern "C" int __stdcall SystemParametersInfoA(unsigned int, unsigned int, void*, unsigned int);
+extern "C" int (__stdcall *SystemParametersInfoA)(unsigned int, unsigned int, void*, unsigned int);
 
 struct CXTSplitterWnd
 {

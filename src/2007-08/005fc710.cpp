@@ -1,4 +1,4 @@
-// from server: 95% by colin
+// from DeepSeek/server: 100% by colin
 // roc 2007-08 005fc710  unit: RBX::SlingshotTool  size: 20 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 005fc710
 //
@@ -9,17 +9,17 @@
 // 005fc71c  e91ffeffff           jmp 0x5fc540
 // 005fc721  c20400               ret 4
 
-struct RBX_SlingshotTool {
+struct SlingshotTool {
     char pad[0x28];
     bool flag28;
     char pad2[0x30 - 0x29];
     int field30;
-    void method540();
-    void method(int);
+    void sub_5fc540(int);
+    void func(int);
 };
 
-void RBX_SlingshotTool::method(int)
-{
-    if (flag28 && field30 == 0)
-        method540();
+void SlingshotTool::func(int a) {
+    if (flag28 && field30 == 0) {
+        sub_5fc540(a);
+    }
 }

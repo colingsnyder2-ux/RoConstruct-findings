@@ -1,4 +1,4 @@
-// from server: 90% by colin
+// from DeepSeek/server: 100% by colin
 // roc 2007-08 0042d840  unit: boost::any::_N::?$holder  size: 83 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 0042d840
 //
@@ -43,9 +43,9 @@
 // 0042d892  c3                   ret 
 
 struct AnyHolder {
-    void* m_p;
+    virtual void destroy(int);
     virtual void* clone() const;
-    virtual void destroy();
+    virtual void* clone2() const;
 };
 
 struct AnyValue {
@@ -63,13 +63,13 @@ AnyValue* __cdecl copy_backward(AnyValue* first, AnyValue* last, AnyValue* dest)
             AnyHolder* src = last->m_holder;
             void* cloned;
             if (src)
-                cloned = src->clone();
+                cloned = src->clone2();
             else
                 cloned = 0;
             AnyHolder* old = dest->m_holder;
             dest->m_holder = (AnyHolder*)cloned;
             if (old)
-                old->destroy();
+                old->destroy(1);
         } while (last != first);
     }
     return dest;

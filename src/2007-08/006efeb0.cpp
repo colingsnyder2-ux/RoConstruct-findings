@@ -1,4 +1,4 @@
-// from server: 93% by colin
+// from DeepSeek/server: 100% by colin
 // roc 2007-08 006efeb0  unit: CXTPShadowsManager::PAVCShadowWnd::?$CList  size: 80 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 006efeb0
 //
@@ -61,5 +61,6 @@ void CXTPShadowsManager::func_006efeb0(void* p)
     list->func_006a2d90(v);
     void** vt = *(void***)w;
     ((void (__thiscall*)(void*))vt[0x68/4])(w);
-    ((void (__thiscall*)(void*, int))vt[1])(w, 1);
+    void** vt2 = *(void***)w;
+    ((void (__thiscall*)(void*, int))vt2[1])(w, 1);
 }

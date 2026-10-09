@@ -1,4 +1,4 @@
-// from server: 92% by colin
+// from DeepSeek/server: 100% by colin
 // roc 2007-08 0041faa0  unit: CSelectionTreeCtrl  size: 82 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 0041faa0
 //
@@ -45,15 +45,23 @@
 // 0041faee  5b                   pop ebx
 // 0041faef  c21000               ret 0x10
 
-extern "C" int __stdcall sub_630430(int, int, int, int);
+struct CSelectionTreeCtrl;
 
-extern int dword_8BAE2C;
+extern "C" int __stdcall func_00630430(int, int, int, int);
 
-int __stdcall sub_41FAA0(int a, int b, int c, int d)
+extern CSelectionTreeCtrl* G1_008bae2c;
+
+struct CSelectionTreeCtrl
 {
-    if (sub_630430(a, b, c, d))
+    int m(int, int, int, int);
+};
+
+int CSelectionTreeCtrl::m(int a, int b, int c, int d)
+{
+    if (func_00630430(a, b, c, d))
         return 1;
-    if (dword_8BAE2C != 0)
+    CSelectionTreeCtrl* p = G1_008bae2c;
+    if (!p)
         return 0;
-    return (*(int (__stdcall **)(int, int, int, int))(*(int *)dword_8BAE2C + 0x14))(a, b, c, d);
+    return ((int (__thiscall*)(CSelectionTreeCtrl*, int, int, int, int))(*(void***)p)[5])(p, a, b, c, d);
 }

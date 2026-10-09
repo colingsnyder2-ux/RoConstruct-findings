@@ -1,4 +1,4 @@
-// from server: 90% by colin
+// from DeepSeek/server: 100% by colin
 // roc 2007-08 0044a1d0  unit: CRobloxModule  size: 86 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 0044a1d0
 //
@@ -34,8 +34,8 @@
 // 0044a222  5e                   pop esi
 // 0044a223  c20400               ret 4
 
-extern "C" void __stdcall DeleteCriticalSection(void*);
-extern "C" void __cdecl sub_4485C0(void*);
+extern "C" __declspec(dllimport) void __stdcall DeleteCriticalSection(void*);
+extern "C" void __stdcall sub_4485C0(void*);
 extern "C" void __cdecl sub_62FC62(void*);
 
 struct CRobloxModule {

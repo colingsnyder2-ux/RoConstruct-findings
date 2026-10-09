@@ -1,4 +1,4 @@
-// from server: 93% by colin
+// from DeepSeek/server: 100% by colin
 // roc 2007-08 0064ec50  unit: CXTPToolBar::CControlButtonCustomize  size: 84 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 0064ec50
 //
@@ -32,26 +32,28 @@
 // 0064eca2  5e                   pop esi
 // 0064eca3  c3                   ret 
 
-struct CXTPToolBar_CControlButtonCustomize {
-    char pad0[0xfc];
-    void* m_pList;
-    int f();
+struct CXTPToolBar {
+    int GetCount();
+    void* GetAt(int index);
+    char pad[0xfc];
+    void* m_pControls;
+
+    int CControlButtonCustomize();
 };
 
-extern "C" int __fastcall sub_00644710(void* self);
-extern "C" void* __fastcall sub_00644720(void* self, int index);
-
-int CXTPToolBar_CControlButtonCustomize::f()
+int CXTPToolBar::CControlButtonCustomize()
 {
-    int count = sub_00644710(m_pList);
     int i = 0;
-    if (count > 0) {
-        do {
-            void* p = sub_00644720(m_pList, i);
+    int count = ((CXTPToolBar*)m_pControls)->GetCount();
+    if (count > 0)
+    {
+        do
+        {
+            void* p = ((CXTPToolBar*)m_pControls)->GetAt(i);
             if (*(int*)((char*)p + 0xd0) == 2)
                 return 1;
             i++;
-        } while (i < sub_00644710(m_pList));
+        } while (i < ((CXTPToolBar*)m_pControls)->GetCount());
     }
     return 0;
 }

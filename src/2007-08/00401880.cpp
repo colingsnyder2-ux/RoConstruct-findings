@@ -1,4 +1,4 @@
-// from server: 94% by colin
+// from DeepSeek/server: 100% by colin
 // roc 2007-08 00401880  unit: CAboutRobloxDialog  size: 36 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 00401880
 //
@@ -16,11 +16,11 @@
 // 004018a0  83c414               add esp, 0x14
 // 004018a3  c3                   ret 
 
-extern "C" void* (__stdcall *memcpy_s_import)(void*, unsigned int, const void*, unsigned int);
-extern "C" void __cdecl sub_4016E0(void*);
+extern "C" void* (__cdecl *memcpy_s_import)(void*, unsigned int, const void*, unsigned int);
+extern "C" void* __cdecl sub_4016E0(void*);
 
-void __cdecl sub_401880(void* dst, unsigned int size, const void* src, unsigned int count)
+void* __cdecl sub_401880(void* dst, unsigned int size, const void* src, unsigned int count)
 {
     void* p = memcpy_s_import(dst, size, src, count);
-    sub_4016E0(p);
+    return sub_4016E0(p);
 }

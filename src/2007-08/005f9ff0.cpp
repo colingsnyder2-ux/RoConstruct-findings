@@ -1,4 +1,4 @@
-// from server: 95% by colin
+// from DeepSeek/server: 100% by colin
 // roc 2007-08 005f9ff0  unit: RBX::VSeat::?$FactoryProduct  size: 61 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 005f9ff0
 //
@@ -26,7 +26,7 @@ struct S {
 };
 
 extern "C" void __stdcall sub_005f9e70();
-extern "C" void __cdecl free(void*);
+extern "C" void (__cdecl *p_free)(void*);
 
 S* S::f(int a)
 {
@@ -36,7 +36,7 @@ S* S::f(int a)
     int v = p[1];
     *(int*)(v + (int)this + 0x298) = 0x7a4ca4;
     if (a & 1) {
-        free(this);
+        p_free(this);
     }
     return this;
 }

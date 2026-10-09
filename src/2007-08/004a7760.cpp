@@ -33,8 +33,8 @@ struct JointsService {
     void* destroy(int);
 };
 
-extern "C" void __cdecl free(void*);
 extern "C" void __cdecl sub_5402b0();
+extern "C" void (__cdecl *free)(void*);
 
 void* JointsService::destroy(int flag)
 {

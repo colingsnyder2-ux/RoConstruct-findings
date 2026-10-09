@@ -1,4 +1,4 @@
-// from server: 91% by colin
+// from DeepSeek/server: 100% by colin
 // roc 2007-08 00712bd0  unit: CXTShadowHook  size: 56 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 00712bd0
 //
@@ -28,21 +28,18 @@
 // 00712c04  5b                   pop ebx
 // 00712c05  c20c00               ret 0xc
 
-struct CXTShadowHook
-{
+struct CXTShadowHook {
     char pad[0x10];
-    void* field_10;
-    int method(int, int, int);
+    int field_0x10;
+    int method_7204e0(int, int, int);
+    int method_712630(int, int*, int*);
+    int target(int, int, int);
 };
 
-extern "C" int __stdcall sub_7204E0(int, int, int);
-extern "C" int __stdcall sub_712630(void*, int, int*, int*);
-
-int CXTShadowHook::method(int a, int b, int c)
-{
-    int v = sub_7204E0(a, b, c);
+int CXTShadowHook::target(int a, int b, int c) {
+    int result = method_7204e0(a, b, c);
     int x;
     int y;
-    sub_712630(field_10, a, &x, &y);
-    return v;
+    ((CXTShadowHook*)field_0x10)->method_712630(a, &x, &y);
+    return result;
 }

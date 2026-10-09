@@ -1,4 +1,4 @@
-// from server: 94% by colin
+// from DeepSeek/server: 100% by colin
 // roc 2007-08 004c1b50  unit: RakPeer  size: 86 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 004c1b50
 //
@@ -43,7 +43,7 @@ struct RakPeer {
     void method(int, int);
 };
 
-extern "C" void __stdcall sub_4C09C0(
+extern "C" void __cdecl sub_4C09C0(
     int, int,
     void*, void*,
     void*, void*,
@@ -53,7 +53,7 @@ extern "C" void __stdcall sub_4C09C0(
 void RakPeer::method(int a, int b) {
     if (flag80 != 0) {
         sub_4C09C0(
-            a, b,
+            b, a,
             field84, fieldC4,
             fieldF4, field124,
             fieldD4, fieldE4,

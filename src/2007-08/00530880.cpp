@@ -1,4 +1,4 @@
-// from server: 90% by colin
+// from DeepSeek/server: 100% by colin
 // roc 2007-08 00530880  unit: RBX::VModelInstance::?$FactoryProduct  size: 66 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 00530880
 //
@@ -28,19 +28,22 @@
 // 005308c0  5e                   pop esi
 // 005308c1  c3                   ret 
 
-struct S {
-    int f();
+struct VModelInstance {
+    char pad[0xbc];
+    void* field_bc;
+    int isModel();
 };
 
-extern "C" int __cdecl sub_630D36(int, int, int, int, int);
-extern "C" int __cdecl sub_52FF30();
+extern "C" void* __cdecl sub_630d36(void* a, void* b, void* c, void* d, void* e);
+extern "C" void* __fastcall sub_52ff30(VModelInstance* self);
 
-int S::f() {
-    int v = sub_630D36(*(int*)((char*)this + 0xbc), 0, 0x881f4c, 0x898fc0, 0);
-    if (v != 0) {
-        int t = *(int*)((char*)this + 0xbc);
-        int r = sub_52FF30();
-        if (r != t) {
+int VModelInstance::isModel()
+{
+    void* p = sub_630d36(field_bc, 0, (void*)0x881f4c, (void*)0x898fc0, 0);
+    if (p != 0) {
+        void* saved = field_bc;
+        void* r = sub_52ff30(this);
+        if (r != saved) {
             return 0;
         }
     }

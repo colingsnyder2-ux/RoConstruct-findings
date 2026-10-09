@@ -1,4 +1,4 @@
-// from server: 92% by colin
+// from DeepSeek/server: 100% by colin
 // roc 2007-08 0041eb40  unit: CSettingsExplorer  size: 65 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 0041eb40
 //
@@ -26,21 +26,24 @@
 // 0041eb7b  5e                   pop esi
 // 0041eb7c  e9bf21ffff           jmp 0x410d40
 
-struct Instance {
+struct CSettingsExplorer {
     char pad[0xbc];
-    Instance* field_bc;
+    CSettingsExplorer* field_bc;
 };
 
-extern "C" void* __cdecl sub_00630d36(Instance*, int, const char*, const char*, int);
-extern "C" void* __cdecl sub_00410d40(void*);
+extern "C" int __cdecl sub_630d36(CSettingsExplorer*, int, int, int, int);
+extern "C" int __fastcall sub_410d40(int);
 
-Instance* find(Instance* inst) {
-    while (inst != 0) {
-        void* result = sub_00630d36(inst, 0, (const char*)0x881f4c, (const char*)0x884e04, 0);
-        if (result != 0) {
-            return (Instance*)sub_00410d40(result);
+int __cdecl sub_41eb40(CSettingsExplorer* p)
+{
+    while (p != 0)
+    {
+        int r = sub_630d36(p, 0, 0x881f4c, 0x884e04, 0);
+        if (r != 0)
+        {
+            return sub_410d40(r);
         }
-        inst = inst->field_bc;
+        p = p->field_bc;
     }
     return 0;
 }

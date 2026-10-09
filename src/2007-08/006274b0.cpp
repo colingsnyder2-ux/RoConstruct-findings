@@ -1,4 +1,4 @@
-// from server: 92% by colin
+// from DeepSeek/server: 100% by colin
 // roc 2007-08 006274b0  unit: RBX::SeparateStage  size: 63 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 006274b0
 //
@@ -42,7 +42,14 @@ struct StageTarget {
     virtual void v5();
 };
 
-extern "C" void __stdcall sub_605b30(void*, void*);
+struct ChildHolder {
+    char pad[0x1c];
+    void addChild(void**);
+};
+
+struct FinalTarget {
+    void finalize(SeparateStage*);
+};
 extern "C" void __stdcall sub_609140(void*, void*);
 
 void SeparateStage::doStage(void* arg) {
@@ -54,7 +61,7 @@ void SeparateStage::doStage(void* arg) {
     int r = t->v3();
     if (r == 1) {
         void* tmp = t;
-        sub_605b30((char*)this + 0x1c, &tmp);
+        ((ChildHolder*)((char*)this + 0x1c))->addChild(&tmp);
     }
-    sub_609140(t, this);
+    ((FinalTarget*)t)->finalize(this);
 }

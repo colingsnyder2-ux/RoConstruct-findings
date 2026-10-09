@@ -25,9 +25,9 @@
 
 struct CXTPCustomizeSheet {
     void sub_62FEEA(int);
-    void* sub_63096A(int, int);
+    int sub_63096A(int, int);
     void sub_6302EC();
-    void* sub_675880();
+    int sub_675880();
     char pad[0x88];
     int field_0x88;
     void func();
@@ -35,10 +35,8 @@ struct CXTPCustomizeSheet {
 
 void CXTPCustomizeSheet::func() {
     sub_62FEEA(1);
-    int flag = (field_0x88 == 0) ? 1 : 0;
-    void* p = sub_63096A(0x65, flag);
-    sub_6302EC();
-    void* q = sub_675880();
-    int* r = *(int**)((char*)q + 0x74);
-    r[0x20 / 4] = field_0x88;
+    int p = sub_63096A(0x65, field_0x88 == 0);
+    ((CXTPCustomizeSheet*)p)->sub_6302EC();
+    int q = sub_675880();
+    *(int *)(*(int *)(q + 0x74) + 0x20) = field_0x88;
 }

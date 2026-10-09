@@ -1,4 +1,4 @@
-// from server: 93% by colin
+// from DeepSeek/server: 100% by colin
 // roc 2007-08 0069dac0  unit: CXTPPropertyGridItemColor::?8??OnInplaceButtonDown::CPropertyGridItemColorColorPopup  size: 44 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 0069dac0
 //
@@ -21,22 +21,18 @@
 
 struct CXTPPropertyGridItemColor
 {
+    void sub_63023e();
+    bool sub_710fd0();
     void OnInplaceButtonDown(int, int);
 };
 
-extern "C" void __stdcall sub_0063023e();
-extern "C" bool __stdcall sub_00710fd0();
-
 void CXTPPropertyGridItemColor::OnInplaceButtonDown(int a, int b)
 {
-    sub_0063023e();
-    if (a == 0)
-    {
-        if (!sub_00710fd0())
-        {
-            void (__thiscall *fn)(CXTPPropertyGridItemColor*, int);
-            fn = *(void (__thiscall **)(CXTPPropertyGridItemColor*, int))((*(int*)this) + 0x13c);
-            fn(this, -1);
+    sub_63023e();
+    if (a == 0) {
+        if (!sub_710fd0()) {
+            void (CXTPPropertyGridItemColor::*pmf)(int) = *(void (CXTPPropertyGridItemColor::**)(int))((char*)(*(void**)this) + 0x13c);
+            (this->*pmf)(-1);
         }
     }
 }

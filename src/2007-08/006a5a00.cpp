@@ -1,4 +1,4 @@
-// from server: 95% by colin
+// from DeepSeek/server: 100% by colin
 // roc 2007-08 006a5a00  unit: CXTPMenuBar  size: 36 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 006a5a00
 //
@@ -21,9 +21,10 @@ struct CXTPMenuBar {
     int method(int, int, int, int);
 };
 
-extern "C" int __stdcall sub_67D1E0(void*, int, int, int, int, int);
+struct Sub {
+    int method(int, int, int, int, int);
+};
 
 int CXTPMenuBar::method(int a, int b, int c, int d) {
-    void* p = field_f8;
-    return sub_67D1E0(p, a, b, c, d, 1);
+    return ((Sub*)field_f8)->method(a, b, c, d, 1);
 }

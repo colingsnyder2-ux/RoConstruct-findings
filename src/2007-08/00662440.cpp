@@ -1,4 +1,4 @@
-// from server: 93% by colin
+// from DeepSeek/server: 100% by colin
 // roc 2007-08 00662440  unit: CXTPReportRecordItemNumber  size: 88 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 00662440
 //
@@ -39,8 +39,8 @@ struct CXTPReportRecordItemNumber
     int Compare(int a, int b);
 };
 
-extern "C" void* __stdcall sub_00662370(int);
-extern "C" void* __stdcall sub_00630202(void*);
+extern "C" void* __cdecl sub_00662370(int);
+extern "C" void* __cdecl sub_00630202(void*);
 
 int CXTPReportRecordItemNumber::Compare(int a, int b)
 {
@@ -48,9 +48,9 @@ int CXTPReportRecordItemNumber::Compare(int a, int b)
     void* q = sub_00630202(p);
     if (q == 0)
         return 0;
-    if (*(double*)((char*)q + 0x80) == *(double*)((char*)this + 0x80))
+    if (*(double*)((char*)this + 0x80) == *(double*)((char*)q + 0x80))
         return 0;
-    if (*(double*)((char*)q + 0x80) > *(double*)((char*)this + 0x80))
+    if (*(double*)((char*)this + 0x80) > *(double*)((char*)q + 0x80))
         return 1;
     return -1;
 }

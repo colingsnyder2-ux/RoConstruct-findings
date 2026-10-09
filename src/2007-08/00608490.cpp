@@ -1,4 +1,4 @@
-// from server: 95% by colin
+// from DeepSeek/server: 100% by colin
 // roc 2007-08 00608490  unit: RBX::ClumpStage  size: 42 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 00608490
 //
@@ -34,5 +34,5 @@ void ClumpStage::func(int a) {
         sub_6083B0(v);
     }
     sub_608420(a);
-    sub_609140(a);
+    ((ClumpStage*)a)->sub_609140((int)this);
 }

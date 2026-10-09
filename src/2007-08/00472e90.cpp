@@ -1,4 +1,4 @@
-// from server: 90% by colin
+// from DeepSeek/server: 100% by colin
 // roc 2007-08 00472e90  unit: G3D::VARArea  size: 73 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 00472e90
 //
@@ -29,6 +29,7 @@
 
 struct VARArea {
     void cleanup();
+    virtual void release(int);
     void removeAll(int, int);
 };
 
@@ -41,11 +42,9 @@ void VARArea::cleanup()
     if (g_varAreaCount > 0) {
         do {
             g_varAreas[i]->cleanup();
-            VARArea* a = g_varAreas[i];
-            void (__thiscall *fn)(VARArea*, int) = *(void (__thiscall **)(VARArea*, int))a;
-            fn(a, 0);
+            g_varAreas[i]->release(0);
             ++i;
         } while (i < g_varAreaCount);
     }
-    g_varAreas[0]->removeAll(0, 1);
+    ((VARArea*)0x8bd0b8)->removeAll(0, 1);
 }

@@ -1,4 +1,4 @@
-// from server: 92% by colin
+// from DeepSeek/server: 100% by colin
 // roc 2007-08 006c79f0  unit: CXTPCustomizeSheet::CCustomizeEdit  size: 67 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 006c79f0
 //
@@ -23,8 +23,8 @@
 // 006c7a2d  5e                   pop esi
 // 006c7a2e  e90df2ffff           jmp 0x6c6c40
 
-extern "C" void* __stdcall GetFocus();
-extern "C" long __stdcall SendMessageA(void* hWnd, unsigned int msg, unsigned int wParam, long lParam);
+extern "C" void* (__stdcall *GetFocus)();
+extern "C" long (__stdcall *SendMessageA)(void* hWnd, unsigned int msg, unsigned int wParam, long lParam);
 
 struct CXTPCustomizeSheet_CCustomizeEdit {
     char pad[0x20];

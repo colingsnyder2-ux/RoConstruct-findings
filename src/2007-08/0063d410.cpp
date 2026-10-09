@@ -36,6 +36,6 @@ int CXTPPaintManager::method(int arg) {
             eax = ((CXTPPaintManager*)ecx)->sub_63A580();
         }
     }
-    int val = (eax != 0) ? 0xf : 0x9;
+    int val = (eax != 0) ? 0x5 : 0xf;
     return sub_63CD70(val);
 }
