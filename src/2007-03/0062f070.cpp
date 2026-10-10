@@ -1,5 +1,19 @@
-// from server: 58% by colin
-// roc-lang: cpp
-// roc-cl: 50727
-// roc-flags: /O2 /GS- /MD
-// roc-lib: mfc-8.0 atlmfc/src/mfc/afxstate.cpp
+// from server: 100% by tester
+struct CXTPCommandBarsOptions
+{
+    void Add(int);
+    void AddRange(int* items, int count);
+};
+
+void CXTPCommandBarsOptions::AddRange(int* items, int count)
+{
+    int i = 0;
+    if (count > 0)
+    {
+        do
+        {
+            Add(items[i]);
+            ++i;
+        } while (i < count);
+    }
+}

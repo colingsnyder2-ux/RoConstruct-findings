@@ -1,5 +1,10 @@
-// from server: 92% by colin
-// roc-lang: cpp
-// roc-cl: 50727
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: openrbx-client App/v8datamodel/PartInstance.cpp
+// from server: 100% by tester
+struct RotatePJoint {
+    char pad[0x110];
+    void* field_f8;
+    float getBaseAngle() const;
+};
+
+float RotatePJoint::getBaseAngle() const {
+    return *(float*)((char*)field_f8 + 0x88);
+}

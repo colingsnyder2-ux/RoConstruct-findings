@@ -1,5 +1,15 @@
-// from server: 60% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs util/Name.cpp
+// from server: 100% by tester
+struct SlingshotTool {
+    char pad[0x28];
+    bool flag28;
+    char pad2[0x30 - 0x29];
+    int field30;
+    void sub_5fc540(int);
+    void func(int);
+};
+
+void SlingshotTool::func(int a) {
+    if (flag28 && field30 == 0) {
+        sub_5fc540(a);
+    }
+}
