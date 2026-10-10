@@ -1,19 +1,24 @@
-// from server: 91% by why2
-struct type_info;
-
-extern "C" {
-    typedef bool (__stdcall *type_info_equal_fn)(const type_info*, const type_info*);
-}
-
-struct Descriptor {
-    void* field0;
-    bool equals(const type_info& other);
+// from server: 100% by tester
+struct type_info {
+    bool operator==(const type_info&) const;
 };
 
-extern type_info_equal_fn g_type_info_equal;
-extern type_info g_vector3_type_info;
+struct holder {
+    void* vtable;
+    void* pad;
+    type_info* info;
+};
 
-bool Descriptor::equals(const type_info& other) {
-    type_info* self = *(type_info**)this;
-    return g_type_info_equal(self, &g_vector3_type_info);
+extern type_info type_info_8827f8;
+
+bool (type_info::*type_info_eq)(const type_info&) const;
+
+struct bad_any_cast {
+    holder* h;
+    bool matches() const;
+};
+
+bool bad_any_cast::matches() const {
+    holder* p = h;
+    return (type_info_8827f8.*type_info_eq)(*p->info);
 }

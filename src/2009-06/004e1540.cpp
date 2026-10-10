@@ -1,5 +1,11 @@
-// from server: 70% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs-render AggregatingSceneManager.cpp
+// from server: 100% by tester
+extern "C" int __cdecl sub_4fe620();
+
+int g_4fe688;
+int g_4fe68c;
+
+void sub_4fe680()
+{
+    if (++g_4fe68c == 1)
+        g_4fe688 = sub_4fe620();
+}

@@ -1,17 +1,24 @@
-// from server: 83% by why2
+// from server: 100% by tester
 struct type_info {
-    bool __thiscall operator==(const type_info&) const;
+    bool operator==(const type_info&) const;
 };
 
-extern type_info type_info_9f0390;
-extern bool (__stdcall *type_info_eq_89e9a4)(const type_info*, const type_info*);
-
-struct S {
-    void f();
+struct holder {
+    void* vtable;
+    void* pad;
+    type_info* info;
 };
 
-void S::f() {
-    char* p = *(char**)this;
-    void* v = *(void**)(p + 8);
-    type_info_eq_89e9a4((const type_info*)v, &type_info_9f0390);
+extern type_info type_info_8827f8;
+
+bool (type_info::*type_info_eq)(const type_info&) const;
+
+struct bad_any_cast {
+    holder* h;
+    bool matches() const;
+};
+
+bool bad_any_cast::matches() const {
+    holder* p = h;
+    return (type_info_8827f8.*type_info_eq)(*p->info);
 }

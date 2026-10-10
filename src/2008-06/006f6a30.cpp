@@ -1,5 +1,17 @@
-// from server: 82% by colin
-// roc-lang: cpp
-// roc-cl: 30729
-// roc-flags: /O2 /GS- /MD
-// roc-lib: xtp-11.2.2 Source/CommandBars/XTPControlExt.cpp
+// from server: 100% by tester
+struct CXTPControlSelector {
+    void* field0;
+    void* field4;
+    void* field8;
+    void Release();
+};
+
+extern "C" void* (__stdcall *SelectObject)(void*, void*);
+
+void CXTPControlSelector::Release()
+{
+    void* p8 = field8;
+    field0 = (void*)0x7ceae0;
+    void* p4 = field4;
+    SelectObject(p4, p8);
+}

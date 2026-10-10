@@ -1,5 +1,15 @@
-// from server: 78% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs v8tree/EnumProperty.cpp
+// from server: 100% by tester
+struct S {
+    bool f(int, int);
+};
+
+bool S::f(int, int)
+{
+    struct VTable {
+        char pad[0x18];
+        void (__thiscall *fn)(S*);
+    };
+    VTable* vt = *(VTable**)this;
+    vt->fn(this);
+    return false;
+}

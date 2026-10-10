@@ -1,5 +1,19 @@
-// from server: 67% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs util/Name.cpp
+// from server: 100% by tester
+struct S_func_005fe120 {
+    float* f();
+};
+
+float* S_func_005fe120::f()
+{
+    static unsigned int init = 0;
+    static float a;
+    static float b;
+    static float c;
+    if (!(init & 1)) {
+        init |= 1;
+        a = 1.0f;
+        b = *(float*)0x7aa8b4;
+        c = a;
+    }
+    return &a;
+}

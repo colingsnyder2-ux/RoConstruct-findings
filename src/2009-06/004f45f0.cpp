@@ -1,5 +1,13 @@
-// from server: 93% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs-raknet PacketLogger.cpp
+// from server: 100% by tester
+extern "C" int (__cdecl *printf)(const char*, ...);
+
+extern char G_format[];
+
+struct Exposer {
+    int Show(int value);
+};
+
+int Exposer::Show(int value)
+{
+    return printf(G_format, value);
+}

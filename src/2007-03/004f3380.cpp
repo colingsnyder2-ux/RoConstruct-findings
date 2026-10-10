@@ -1,5 +1,8 @@
-// from server: 79% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs gui/GUI.cpp
+// from server: 100% by colin
+// roc-flags: /O2 /GS- /EHsc /MD
+extern void tail_fn(int);
+void func_004f3380(void* p)
+{
+    if (p)
+        tail_fn(*(int*)((char*)p - 4));
+}

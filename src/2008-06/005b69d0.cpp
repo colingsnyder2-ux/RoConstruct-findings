@@ -1,5 +1,11 @@
-// from server: 76% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: openrbx-client App/script/LuaInstanceBridge.cpp
+// from server: 100% by tester
+struct EnumDescriptor {
+    unsigned char pad[0x165];
+    unsigned char b0 : 1;
+    unsigned char b1 : 1;
+    bool get() const;
+};
+
+bool EnumDescriptor::get() const {
+    return b1;
+}

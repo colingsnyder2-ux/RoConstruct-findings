@@ -1,10 +1,11 @@
-// from server: 74% by atomic.potato
-struct MegaTextureProxy
-{
-    void __thiscall f(int *value, int unused, int unused2);
+// from server: 100% by tester
+struct MegaTextureProxy {
+    void func(int a, int b, int c);
 };
 
-void __thiscall MegaTextureProxy::f(int *value, int unused, int unused2)
+void MegaTextureProxy::func(int a, int b, int c)
 {
-    value[0] = 0;
+    volatile int local = 0;
+    int *p = (int *)a;
+    *p = 0;
 }

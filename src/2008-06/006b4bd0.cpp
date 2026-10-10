@@ -1,15 +1,10 @@
-// from server: 44% by Cezant64gamejr
+// from server: 100% by tester
 struct CXTPCommandBarCmdUI {
-    void* vtable;
-
-    int SomeFunction();
+    void f();
 };
 
-extern "C" int __stdcall CallFunction(int, int);
-
-int CXTPCommandBarCmdUI::SomeFunction() {
-    int* vtable = reinterpret_cast<int*>(this);
-    int func = vtable[0x1f4 / 4];
-    CallFunction(0, 1);
-    return 0;
+void CXTPCommandBarCmdUI::f() {
+    void (__thiscall *fn)(void*, int, int);
+    fn = *(void (__thiscall **)(void*, int, int))(*(int*)this + 0x1f4);
+    fn(this, 1, 0);
 }

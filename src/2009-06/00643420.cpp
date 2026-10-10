@@ -1,5 +1,11 @@
-// from server: 76% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs util/Name.cpp
+// from server: 100% by tester
+struct EnumDescriptor {
+    unsigned char pad[0xc5];
+    unsigned char b0 : 1;
+    unsigned char b1 : 1;
+    bool get() const;
+};
+
+bool EnumDescriptor::get() const {
+    return b1;
+}

@@ -1,10 +1,9 @@
-// from server: 80% by why2
-struct GWindow {
-    char pad[0x94];
-    int field_94;
-    void get_94(int* out);
+// from server: 100% by tester
+struct RBX_Team {
+    int getField90(int* out);
 };
 
-void GWindow::get_94(int* out) {
-    *out = field_94;
+int RBX_Team::getField90(int* out) {
+    *out = *(int*)((char*)this + 0x94);
+    return (int)out;
 }

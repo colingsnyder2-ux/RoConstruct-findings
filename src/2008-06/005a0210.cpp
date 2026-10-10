@@ -1,5 +1,10 @@
-// from server: 75% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: openrbx-client App/script/LuaInstanceBridge.cpp
+// from server: 100% by tester
+struct S {
+    virtual void v0();
+    virtual char* v1();
+    char* f();
+};
+
+char* S::f() {
+    return v1() + 0x130;
+}

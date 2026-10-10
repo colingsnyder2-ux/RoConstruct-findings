@@ -1,19 +1,20 @@
-// from server: 65% by atomic.potato
-extern "C" int __stdcall HeapDestroy(void *);
-
-struct CXTIconHandle
-{
-    unsigned char initialized;
-    void *heap;
-    unsigned char reserved;
-    void f();
+// from server: 100% by tester
+struct CXTIconHandle {
+    void* m_vtable;
+    void* m_ptr;
+    char m_flag;
+    void Destroy();
 };
 
-void CXTIconHandle::f()
+extern "C" void (__stdcall *HeapDestroy)(void*);
+
+void CXTIconHandle::Destroy()
 {
-    if (reserved)
-        return;
-    *(unsigned long *)this = 0x871f58;
-    if (initialized && heap)
-        HeapDestroy(heap);
+    m_vtable = (void*)0x7e50d0;
+    if (m_flag != 0) {
+        void* p = m_ptr;
+        if (p != 0) {
+            HeapDestroy(p);
+        }
+    }
 }

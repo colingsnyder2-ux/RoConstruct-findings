@@ -1,5 +1,5 @@
-// from server: 41% by colin
-// roc-lang: cpp
-// roc-cl: 30729
-// roc-flags: /O2 /GS- /MD
-// roc-lib: xtp-11.2.2 Source/CommandBars/XTPDialogBar.cpp
+// from server: 100% by colin
+// roc-flags: /O2 /GS /EHsc /MD
+struct Derived { Derived(); char pad[0x1f0]; };
+struct X { Derived* create(); };
+Derived* X::create() { Derived* p = new Derived(); return p; }

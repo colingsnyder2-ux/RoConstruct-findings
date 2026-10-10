@@ -1,12 +1,5 @@
-// from server: 56% by atomic.potato
-typedef unsigned int uint32_t;
-
-extern "C" void __cdecl func_006a1dd2(uint32_t);
-
-extern "C" void __cdecl func_006a14c0();
-
-uint32_t func_007df0ce(uint32_t value)
-{
-    func_006a1dd2(*(uint32_t *)(value - 4) ^ value);
-    return 0x901060;
-}
+// from server: 100% by tester
+// roc-lang: cpp
+// roc-cl: 30729
+// roc-flags: /O2 /GS /EHsc /MD
+// roc-lib: ogre-1.7.0 OgreShadowCaster.cpp

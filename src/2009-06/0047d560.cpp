@@ -1,10 +1,8 @@
-// from server: 69% by why2
-struct ManualObject {
-    void f();
+// from server: 100% by tester
+struct S {
+    int f();
 };
 
-void ManualObject::f() {
-    void (*fn)(ManualObject*);
-    fn = *(void (**)(ManualObject*))((*(char**)this) + 0x1bc);
-    fn(this);
+int S::f() {
+    return (*(int (__thiscall **)(S *))(*(int *)this + 0x1bc))(this);
 }

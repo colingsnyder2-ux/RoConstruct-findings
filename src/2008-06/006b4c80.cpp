@@ -1,5 +1,9 @@
-// from server: 48% by colin
-// roc-lang: cpp
-// roc-cl: 30729
-// roc-flags: /O2 /GS- /MD
-// roc-lib: xtp-11.2.2 Source/CommandBars/XTPCustomizeMenusPage.cpp
+// from server: 100% by tester
+struct CXTPCommandBar {
+    void SetVisible(int bVisible);
+};
+
+void CXTPCommandBar::SetVisible(int bVisible) {
+    *(int*)(*(int*)((char*)this + 0x178) + 0x14) = bVisible;
+    (*(void (__thiscall**)(CXTPCommandBar*, int, int))(*(int*)this + 0x1ac))(this, 0, 1);
+}

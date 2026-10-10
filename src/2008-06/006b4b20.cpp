@@ -1,5 +1,12 @@
-// from server: 60% by colin
-// roc-lang: cpp
-// roc-cl: 30729
-// roc-flags: /O1 /GS- /MD
-// roc-lib: xtp-15.2.1 Source/DockingPane/XTPDockingPaneSidePanel.cpp
+// from server: 100% by tester
+struct CXTPCommandBar
+{
+    void f();
+};
+
+void CXTPCommandBar::f()
+{
+    void (__thiscall *fn)(CXTPCommandBar*, int, int);
+    fn = *(void (__thiscall **)(CXTPCommandBar*, int, int))((*(char**)this) + 0x150);
+    fn(this, -1, 0);
+}
