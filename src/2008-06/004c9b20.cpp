@@ -1,4 +1,4 @@
-// from server: 76% by atomic.potato
+// from server: 80% by tester
 struct S
 {
     void f(void*, void*);
@@ -13,7 +13,8 @@ void S::f(void* a, void* b)
     }
     else
     {
-        *(void**)0 = *(void**)b;
-        *(void**)b = 0;
+        void* p = 0;
+        *(void**)p = *(void**)b;
+        *(void**)b = p;
     }
 }

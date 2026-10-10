@@ -1,5 +1,9 @@
-// from server: 87% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: openrbx-client App/v8world/IPipelined.cpp
+// from server: 100% by tester
+struct RBX_Primitive_00645850 {
+    void func_006457e0(int);
+    void wrapper();
+};
+
+void RBX_Primitive_00645850::wrapper() {
+    func_006457e0(7);
+}
