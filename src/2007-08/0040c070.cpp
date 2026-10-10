@@ -1,4 +1,4 @@
-// from server: 18% by colin
+// from server: 90% by colin
 // roc 2007-08 0040c070  unit: VCBrowserViewExternal::?$CComObjectNoLock  size: 38 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 0040c070
 //
@@ -16,9 +16,14 @@
 // 0040c08e  e88d9cffff           call 0x405d20
 // 0040c093  c21800               ret 0x18
 
-extern "C" int __stdcall sub_00405d20(int, int, int, int, int, int);
+extern "C" int __stdcall sub_405d20(int, int, int, int, int);
 
-int __stdcall sub_0040c070(int a1, int a2, int a3, int a4, int a5, int a6)
+struct VCBrowserViewExternal
 {
-    return sub_00405d20(a1, a2, a3, a4, a5, a6);
+    int __stdcall CComObjectNoLock(int, int, int, int, int);
+};
+
+int __stdcall VCBrowserViewExternal::CComObjectNoLock(int a1, int a2, int a3, int a4, int a5)
+{
+    return sub_405d20(a1, a2, a3, a4, a5);
 }

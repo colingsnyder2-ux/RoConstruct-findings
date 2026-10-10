@@ -1,35 +1,25 @@
-// from server: 81% by colin
-// roc 2007-08 005fb370  unit: RBX::FlatTool  size: 81 bytes
-// Make this compile to the exact bytes below, then: roc check 2007-08 005fb370
-
-struct Vector3 {
-    float x;
-    float y;
-    float z;
-};
-
+// from server: 90% by colin
 struct FlatTool {
     char pad[0x1c];
-    void* field1c;
-    char pad2[0x28 - 0x20];
-    void* field28;
-    void doAction(int arg);
+    int field1c;
+    char pad2[0x8];
+    int field28;
+    void doAction(int);
 };
 
 extern "C" void* __cdecl sub_50B150();
-extern "C" void* __cdecl sub_575510(void* a, int b, void* c, void* d);
-extern "C" void __cdecl sub_62E9E0(void* a);
+extern "C" void __cdecl sub_575510(void*, int, float*);
+extern "C" void __cdecl sub_62E9E0(void*);
 
-void FlatTool::doAction(int arg)
-{
+void FlatTool::doAction(int arg) {
     if (field1c != 0) {
-        void* p = sub_50B150();
-        Vector3 v;
-        v.x = *(float*)((char*)p + 0);
-        v.y = *(float*)((char*)p + 4);
-        v.z = *(float*)((char*)p + 8);
-        float w = 1.0f;
-        void* r = sub_575510(field28, arg, &v, &w);
-        sub_62E9E0(r);
+        float* v = (float*)sub_50B150();
+        float local[4];
+        local[0] = v[0];
+        local[1] = v[1];
+        local[2] = v[2];
+        local[3] = 1.0f;
+        sub_575510((void*)field1c, arg, local);
+        sub_62E9E0((void*)field28);
     }
 }

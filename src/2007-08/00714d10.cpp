@@ -1,34 +1,104 @@
-// from server: 67% by colin
-// roc 2007-08 00714d10  unit: CXTCaptionButton  size: 38 bytes
-// Make this compile to the exact bytes below, then: roc check 2007-08 00714d10
-//
-// 00714d10  56                   push esi
-// 00714d11  8bf1                 mov esi, ecx
-// 00714d13  8b06                 mov eax, dword ptr [esi]
-// 00714d15  8b9064010000         mov edx, dword ptr [eax + 0x164]
-// 00714d1b  ffd2                 call edx
-// 00714d1d  85c0                 test eax, eax
-// 00714d1f  7411                 je 0x714d32
-// 00714d21  8bce                 mov ecx, esi
-// 00714d23  e868c2ffff           call 0x710f90
-// 00714d28  8b10                 mov edx, dword ptr [eax]
-// 00714d2a  5e                   pop esi
-// 00714d2b  8bc8                 mov ecx, eax
-// 00714d2d  8b523c               mov edx, dword ptr [edx + 0x3c]
-// 00714d30  ffe2                 jmp edx
-// 00714d32  5e                   pop esi
-// 00714d33  c20400               ret 4
-
+// from server: 100% by colin
 struct CXTCaptionButton {
-    virtual int vfunc_0x164();
-    int method_0x710f90();
-    int target(int);
+    virtual int vfunc_0();
+    virtual int vfunc_1();
+    virtual int vfunc_2();
+    virtual int vfunc_3();
+    virtual int vfunc_4();
+    virtual int vfunc_5();
+    virtual int vfunc_6();
+    virtual int vfunc_7();
+    virtual int vfunc_8();
+    virtual int vfunc_9();
+    virtual int vfunc_10();
+    virtual int vfunc_11();
+    virtual int vfunc_12();
+    virtual int vfunc_13();
+    virtual int vfunc_14();
+    virtual int vfunc_15();
+    virtual int vfunc_16();
+    virtual int vfunc_17();
+    virtual int vfunc_18();
+    virtual int vfunc_19();
+    virtual int vfunc_20();
+    virtual int vfunc_21();
+    virtual int vfunc_22();
+    virtual int vfunc_23();
+    virtual int vfunc_24();
+    virtual int vfunc_25();
+    virtual int vfunc_26();
+    virtual int vfunc_27();
+    virtual int vfunc_28();
+    virtual int vfunc_29();
+    virtual int vfunc_30();
+    virtual int vfunc_31();
+    virtual int vfunc_32();
+    virtual int vfunc_33();
+    virtual int vfunc_34();
+    virtual int vfunc_35();
+    virtual int vfunc_36();
+    virtual int vfunc_37();
+    virtual int vfunc_38();
+    virtual int vfunc_39();
+    virtual int vfunc_40();
+    virtual int vfunc_41();
+    virtual int vfunc_42();
+    virtual int vfunc_43();
+    virtual int vfunc_44();
+    virtual int vfunc_45();
+    virtual int vfunc_46();
+    virtual int vfunc_47();
+    virtual int vfunc_48();
+    virtual int vfunc_49();
+    virtual int vfunc_50();
+    virtual int vfunc_51();
+    virtual int vfunc_52();
+    virtual int vfunc_53();
+    virtual int vfunc_54();
+    virtual int vfunc_55();
+    virtual int vfunc_56();
+    virtual int vfunc_57();
+    virtual int vfunc_58();
+    virtual int vfunc_59();
+    virtual int vfunc_60();
+    virtual int vfunc_61();
+    virtual int vfunc_62();
+    virtual int vfunc_63();
+    virtual int vfunc_64();
+    virtual int vfunc_65();
+    virtual int vfunc_66();
+    virtual int vfunc_67();
+    virtual int vfunc_68();
+    virtual int vfunc_69();
+    virtual int vfunc_70();
+    virtual int vfunc_71();
+    virtual int vfunc_72();
+    virtual int vfunc_73();
+    virtual int vfunc_74();
+    virtual int vfunc_75();
+    virtual int vfunc_76();
+    virtual int vfunc_77();
+    virtual int vfunc_78();
+    virtual int vfunc_79();
+    virtual int vfunc_80();
+    virtual int vfunc_81();
+    virtual int vfunc_82();
+    virtual int vfunc_83();
+    virtual int vfunc_84();
+    virtual int vfunc_85();
+    virtual int vfunc_86();
+    virtual int vfunc_87();
+    virtual int vfunc_88();
+    virtual int vfunc_89();
+    int method_710f90();
+    int method_714d10(int arg);
 };
 
-int CXTCaptionButton::target(int arg) {
-    if (this->vfunc_0x164() != 0) {
-        CXTCaptionButton* p = (CXTCaptionButton*)this->method_0x710f90();
-        return ((int (__thiscall*)(CXTCaptionButton*))((*(int**)p)[0x3c / 4]))(p);
+int CXTCaptionButton::method_714d10(int arg)
+{
+    if (this->vfunc_89() != 0)
+    {
+        CXTCaptionButton* p = (CXTCaptionButton*)this->method_710f90();
+        return ((int (__thiscall*)(CXTCaptionButton*, int))((*(int**)p)[0x3c / 4]))(p, arg);
     }
-    return 0;
 }

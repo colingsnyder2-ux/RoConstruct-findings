@@ -1,36 +1,41 @@
-// from server: 83% by colin
-// roc 2007-08 00643bf0  unit: CXTPCommandBar  size: 19 bytes
-// Make this compile to the exact bytes below, then: roc check 2007-08 00643bf0
-//
-// 00643bf0  e88bfdffff           call 0x643980
-// 00643bf5  85c0                 test eax, eax
-// 00643bf7  7501                 jne 0x643bfa
-// 00643bf9  c3                   ret 
-// 00643bfa  8b10                 mov edx, dword ptr [eax]
-// 00643bfc  8bc8                 mov ecx, eax
-// 00643bfe  8b4264               mov eax, dword ptr [edx + 0x64]
-// 00643c01  ffe0                 jmp eax
-
+// from server: 100% by colin
 struct CXTPCommandBar;
 
-struct CXTPCommandBarVtbl
-{
-    char pad[0x64];
-    void* (__stdcall* fn64)();
+extern "C" CXTPCommandBar* __cdecl sub_643980();
+
+struct CXTPCommandBar {
+    virtual int vfunc_0();
+    virtual int vfunc_1();
+    virtual int vfunc_2();
+    virtual int vfunc_3();
+    virtual int vfunc_4();
+    virtual int vfunc_5();
+    virtual int vfunc_6();
+    virtual int vfunc_7();
+    virtual int vfunc_8();
+    virtual int vfunc_9();
+    virtual int vfunc_10();
+    virtual int vfunc_11();
+    virtual int vfunc_12();
+    virtual int vfunc_13();
+    virtual int vfunc_14();
+    virtual int vfunc_15();
+    virtual int vfunc_16();
+    virtual int vfunc_17();
+    virtual int vfunc_18();
+    virtual int vfunc_19();
+    virtual int vfunc_20();
+    virtual int vfunc_21();
+    virtual int vfunc_22();
+    virtual int vfunc_23();
+    virtual int vfunc_24();
+    virtual int vfunc_25();
 };
 
-struct CXTPCommandBar
+int sub_643bf0()
 {
-    CXTPCommandBarVtbl* vtbl;
-};
-
-extern "C" CXTPCommandBar* __cdecl sub_00643980();
-
-void* __cdecl sub_00643bf0()
-{
-    CXTPCommandBar* p = sub_00643980();
+    CXTPCommandBar* p = sub_643980();
     if (p == 0)
         return 0;
-    CXTPCommandBarVtbl* v = p->vtbl;
-    return ((void* (__stdcall*)())v->fn64)();
+    return ((int (__thiscall*)(CXTPCommandBar*))(*((int**)p))[25])(p);
 }

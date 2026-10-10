@@ -1,4 +1,4 @@
-// from server: 91% by colin
+// from server: 92% by colin
 // roc 2007-08 005db160  unit: RBX::VVelocityMotor::?$FactoryProduct  size: 81 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 005db160
 //
@@ -42,10 +42,10 @@ struct FactoryProduct {
     void* vtable;
     void* field4;
     void* field8;
-    void construct(void* arg0, void* arg1, void* arg2, void* arg3);
+    void construct(void* arg0, void* arg1, void* arg2, void* arg3, void* arg4);
 };
 
-void FactoryProduct::construct(void* arg0, void* arg1, void* arg2, void* arg3)
+void FactoryProduct::construct(void* arg0, void* arg1, void* arg2, void* arg3, void* arg4)
 {
     if (sub_4879D0(&arg0)) {
         return;

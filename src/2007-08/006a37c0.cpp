@@ -1,26 +1,27 @@
-// from server: 41% by colin
-// roc 2007-08 006a37c0  unit: CXTPKeyboardManager  size: 52 bytes
-// Make this compile to the exact bytes below, then: roc check 2007-08 006a37c0
-
-extern "C" void __cdecl sub_62ff20();
-
+// from server: 99% by colin
 struct CXTPKeyboardManager {
-    int FindIndex(int value);
-    int m_array;  // +4
-    int m_count;  // +8
+    int field0;
+    int* field4;
+    int field8;
+    int Find(int key);
 };
 
-int CXTPKeyboardManager::FindIndex(int value) {
-    int count = m_count;
+int CXTPKeyboardManager::Find(int key) {
+    int count = field8;
     int i = 0;
     if (count > 0) {
         do {
-            if (i < 0 || i >= count)
-                sub_62ff20();
-            if (((int*)m_array)[i] == value)
+            if (i < 0 || i >= count) {
+                goto fail;
+            }
+            if (key == field4[i]) {
                 return i;
-            ++i;
+            }
+            i++;
         } while (i < count);
     }
     return -1;
+fail:
+    __declspec(noreturn) void fail_func();
+    fail_func();
 }

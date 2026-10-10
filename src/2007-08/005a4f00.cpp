@@ -1,26 +1,31 @@
-// from server: 74% by colin
-// roc 2007-08 005a4f00  unit: seg_005a0000  size: 57 bytes
-// Make this compile to the exact bytes below, then: roc check 2007-08 005a4f00
-
+// from server: 100% by colin
 struct GetSetImpl {
-    char pad0[0x18];
-    int field18;
-    int field1c;
-    int field20;
-    void invoke(void* arg1, unsigned char* arg2);
+    int pad0;
+    int pad1;
+    int pad2;
+    int pad3;
+    int pad4;
+    int pad5;
+    int field_0x18;
+    int field_0x1c;
+    int field_0x20;
+    void invoke(int, int);
 };
 
-void GetSetImpl::invoke(void* arg1, unsigned char* arg2) {
-    char* p = (char*)arg1;
-    if (p != 0) {
-        p -= 4;
-    } else {
-        p = 0;
-    }
-    unsigned char idx = *arg2;
-    int off = *(int*)(p + 0x108);
-    int val = *(int*)(off + field20);
-    val += field1c;
-    int (*fn)(void*, unsigned char) = (int (*)(void*, unsigned char))field18;
-    fn((void*)(val + (int)p + 0x108), idx);
+void GetSetImpl::invoke(int a, int b)
+{
+    int obj = a;
+    if (obj != 0)
+        obj -= 4;
+    else
+        obj = 0;
+
+    unsigned char idx = *(unsigned char*)b;
+    int off = *(int*)(obj + 0x108);
+    int v = *(int*)(off + field_0x20);
+    v += field_0x1c;
+    v += obj + 0x108;
+
+    void (__thiscall *fn)(int, int) = (void (__thiscall *)(int, int))field_0x18;
+    fn(v, idx);
 }

@@ -1,5 +1,5 @@
-// from server: 73% by colin
-// roc 2007-08 0054d050  unit: UString_sink::?$stream_buffer  size: 42 bytes
+// from server: 84% by colin
+// roc 2007-08 0054d050  unit: seg_00540000  size: 42 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 0054d050
 //
 // 0054d050  f6415801             test byte ptr [ecx + 0x58], 1
@@ -16,23 +16,29 @@
 // 0054d071  ff15fce47700         call dword ptr [0x77e4fc]
 // 0054d077  c20400               ret 4
 
-struct UString_sink_stream_buffer {
-    char pad[0x48];
-    void* field_48;
-    char pad2[0x58 - 0x4c];
-    unsigned char flags_58;
-    void imbue(const void* loc);
+struct locale {
+    char data[4];
 };
 
-extern "C" void* __stdcall pubimbue_impl(void* buf, const void* loc);
-extern "C" void __stdcall locale_dtor(void* loc);
+struct streambuf {
+    char pad[0x48];
+    streambuf* field_48;
+    char pad2[0x58 - 0x4c];
+    unsigned char flags_58;
+    locale pubimbue(const locale& loc);
 
-void UString_sink_stream_buffer::imbue(const void* loc)
+    void imbue(const locale& loc);
+};
+
+extern "C" void __stdcall locale_dtor(locale* self);
+
+void streambuf::imbue(const locale& loc)
 {
-    if ((flags_58 & 1) && field_48)
-    {
-        char buf[4];
-        pubimbue_impl(buf, loc);
-        locale_dtor(buf);
+    if ((flags_58 & 1) != 0) {
+        streambuf* inner = field_48;
+        if (inner != 0) {
+            locale tmp = inner->pubimbue(loc);
+            locale_dtor(&tmp);
+        }
     }
 }

@@ -1,35 +1,44 @@
-// from server: 89% by colin
-// roc 2007-08 006d4440  unit: CXTPReportRow_Batch  size: 85 bytes
-// Make this compile to the exact bytes below, then: roc check 2007-08 006d4440
-
-extern "C" int __stdcall SetRectEmpty(int *);
-
+// from server: 100% by colin
 struct CXTPReportRow_Batch {
-    int f();
+    char pad0[0x20];
+    int field20;
+    int field24;
+    int field28;
+    char pad2c[0x10];
+    char field3c[0x10];
+    int field4c;
+    int field50;
+    int field54;
+    int field58;
+    int field5c;
+    int field60;
+    int field64;
+    int field68;
+    int field6c;
+    void sub_73833a();
+    CXTPReportRow_Batch* construct();
 };
 
-int CXTPReportRow_Batch::f()
-{
-    char *self = (char *)this;
-    int *p;
-    int (*fn)(int *);
+extern void (__stdcall *g_SetRectEmpty)(void*);
 
-    (*(void (__thiscall **)(char *))(*(int *)self + 0))(self);
-    fn = *(int (**)(int *))0x77ee14;
-    *(int *)self = 0x7d83d4;
-    *(int *)(self + 0x20) = 0;
-    *(int *)(self + 0x24) = 0;
-    *(int *)(self + 0x4c) = 0;
-    *(int *)(self + 0x50) = 0;
-    *(int *)(self + 0x54) = 0;
-    *(int *)(self + 0x58) = 0;
-    *(int *)(self + 0x5c) = 0;
-    *(int *)(self + 0x60) = 0;
-    *(int *)(self + 0x64) = 1;
-    fn((int *)(self + 0x2c));
-    fn((int *)(self + 0x3c));
-    *(int *)(self + 0x68) = 0;
-    *(int *)(self + 0x28) = -1;
-    *(int *)(self + 0x6c) = -1;
-    return (int)self;
+CXTPReportRow_Batch* CXTPReportRow_Batch::construct()
+{
+    sub_73833a();
+    void (__stdcall *fn)(void*) = g_SetRectEmpty;
+    *(int*)this = 0x7d83d4;
+    field20 = 0;
+    field24 = 0;
+    field4c = 0;
+    field50 = 0;
+    field54 = 0;
+    field58 = 0;
+    field5c = 0;
+    field60 = 0;
+    field64 = 1;
+    fn((void*)((char*)this + 0x2c));
+    fn((void*)((char*)this + 0x3c));
+    field68 = 0;
+    field28 = -1;
+    field6c = -1;
+    return this;
 }

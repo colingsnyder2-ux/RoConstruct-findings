@@ -1,4 +1,4 @@
-// from server: 75% by colin
+// from server: 96% by colin
 // roc 2007-08 00605110  unit: RBX::SleepStage  size: 102 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 00605110
 
@@ -15,21 +15,23 @@ struct SleepStage {
 };
 
 void SleepStage::remove(int value) {
-    int* first = this->begin;
+    void (__stdcall *handler)() = *(void (__stdcall **)())0x77e6d8;
     int* last = this->end;
-    if (first > last) {
-        _invalid_parameter_noinfo();
+    if (this->begin > last) {
+        handler();
     }
-    int* p = this->begin;
-    if (p > this->end) {
-        _invalid_parameter_noinfo();
+    int* first = this->begin;
+    if (first > this->end) {
+        handler();
     }
-    int* found = p;
-    while (found != last) {
-        if (*found == value) {
-            break;
-        }
-        ++found;
+    int* found = first;
+    if (found != last) {
+        do {
+            if (*found == value) {
+                break;
+            }
+            ++found;
+        } while (found != last);
     }
     int* next = found + 1;
     int count = (int)((this->end - next) >> 2);

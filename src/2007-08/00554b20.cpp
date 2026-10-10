@@ -1,10 +1,10 @@
-// from server: 69% by colin
-// roc 2007-08 00554b20  unit: RBX::ServiceProvider  size: 40 bytes
-// Make this compile to the exact bytes below, then: roc check 2007-08 00554b20
+// from server: 93% by colin
+struct Mutex {
+    void lock();
+    void unlock();
+};
 
-extern "C" void __stdcall sub_725750();
-extern "C" void __stdcall sub_725770();
-
+extern Mutex g_mutex_8C1DB0;
 extern int dword_8C1D68;
 
 struct ServiceProvider {
@@ -13,9 +13,10 @@ struct ServiceProvider {
 
 int ServiceProvider::incrementCounter()
 {
-    sub_725750();
+    g_mutex_8C1DB0.lock();
     int old = dword_8C1D68;
-    dword_8C1D68 = old + 1;
-    sub_725770();
+    int next = old + 1;
+    g_mutex_8C1DB0.unlock();
+    dword_8C1D68 = next;
     return old;
 }

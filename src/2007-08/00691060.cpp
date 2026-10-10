@@ -1,4 +1,4 @@
-// from server: 80% by colin
+// from server: 88% by colin
 // roc 2007-08 00691060  unit: CXTSplitterWnd  size: 55 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 00691060
 //
@@ -23,8 +23,8 @@
 // 00691094  c20400               ret 4
 
 extern "C" void* __stdcall GetStockObject(int);
-extern "C" void* __cdecl sub_63062E(void*);
-extern "C" void* __cdecl sub_7388EC();
+extern "C" void* __stdcall sub_63062E(void*);
+extern "C" void* __stdcall sub_7388EC();
 
 struct CXTSplitterWnd {
     int f(int);
@@ -37,7 +37,7 @@ int CXTSplitterWnd::f(int arg) {
     } else {
         p = sub_7388EC();
     }
-    void* (__thiscall *fn)(void*, void*, int);
-    fn = *(void* (__thiscall **)(void*, void*, int))((char*)(*(void**)this) + 0x1d4);
-    return (int)fn(this, p, arg);
+    void* (__thiscall *fn)(void*, int, void*);
+    fn = *(void* (__thiscall **)(void*, int, void*))((char*)(*(void**)this) + 0x1d4);
+    return (int)fn(this, arg, p);
 }

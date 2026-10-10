@@ -1,4 +1,4 @@
-// from server: 37% by colin
+// from server: 63% by colin
 // roc 2007-08 006358b0  unit: MyXTPCommandBars  size: 42 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 006358b0
 //
@@ -20,32 +20,23 @@
 // 006358d5  5b                   pop ebx
 // 006358d6  59                   pop ecx
 // 006358d7  c20800               ret 8
+// library xtp-11.2.2-vc8/Source\CommandBars\XTPCommandBars.cpp (function ?OnUpdateCmdUI@MyXTPCommandBars@@...)
 
-extern "C" int __stdcall sub_00685720(int, int, int, int, int, int, int, int);
-extern "C" int __stdcall sub_00631b60(int, int);
+// roc-lang: cpp
+// roc-cl: 50727
+// roc-flags: /O2 /GS- /MD
+// roc-lib: xtp-11.2.2-vc8 Source/CommandBars/XTPCommandBars.cpp
 
-struct MyXTPCommandBars
-{
-    int field_0;
-    int field_4;
-    int field_8;
-    int field_c;
-    int field_10;
-    int field_14;
-    int field_18;
-    int field_1c;
-    int field_20;
-    int field_24;
-    int method(int, int);
+extern "C" void __stdcall sub_685720();
+extern "C" void __stdcall sub_631b60();
+
+struct MyXTPCommandBars {
+    void OnUpdateCmdUI(int, int);
 };
 
-int MyXTPCommandBars::method(int a, int b)
-{
-    sub_00685720(0, 0, 0, 0, 0, 0, 0, 0);
-    if (this->field_24 != 0)
-    {
-        int v = *(int*)this->field_0;
-        sub_00631b60(v, 0);
+void MyXTPCommandBars::OnUpdateCmdUI(int a, int b) {
+    sub_685720();
+    if (*(int*)((char*)this + 0x24) != 0) {
+        sub_631b60();
     }
-    return 0;
 }

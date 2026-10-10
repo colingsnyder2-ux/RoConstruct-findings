@@ -1,4 +1,4 @@
-// from server: 34% by colin
+// from server: 58% by colin
 // roc 2007-08 00592300  unit: RBX::VVisit::?$FactoryProduct  size: 93 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 00592300
 //
@@ -32,18 +32,24 @@
 // 00592352  64890d00000000       mov dword ptr fs:[0], ecx
 // 00592359  83c410               add esp, 0x10
 // 0059235c  c3                   ret 
+// library rbxgs v8datamodel/Visit.cpp (function ?$FactoryProduct@VVisit@RBX@@...)
 
-struct FactoryProduct {
-    void construct(const FactoryProduct& other);
+// roc-lang: cpp
+// roc-cl: 50727
+// roc-flags: /O2 /GS /EHsc /MD
+// roc-lib: rbxgs v8datamodel/Visit.cpp
+
+struct RBXString {
+    void assign(const RBXString& other);
+    char pad[0x20];
 };
 
-extern "C" void __stdcall MSVCP80_basic_string_copy(void*, const void*);
+struct FactoryProduct {
+    RBXString value;
+    FactoryProduct(const FactoryProduct& other);
+};
 
-void FactoryProduct::construct(const FactoryProduct& other)
+FactoryProduct::FactoryProduct(const FactoryProduct& other)
 {
-    if (this != 0) {
-        *(int*)((char*)this + 0) = *(int*)((char*)&other + 0);
-        MSVCP80_basic_string_copy((char*)this + 4, (char*)&other + 4);
-        *(int*)((char*)this + 0x1c) = *(int*)((char*)&other + 0x1c);
-    }
+    value.assign(other.value);
 }

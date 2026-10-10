@@ -1,43 +1,4 @@
-// from server: 84% by colin
-// roc 2007-08 00719160  unit: CXTPRibbonGroupControlPopup  size: 69 bytes
-// Make this compile to the exact bytes below, then: roc check 2007-08 00719160
-//
-// 00719160  8b442404             mov eax, dword ptr [esp + 4]
-// 00719164  56                   push esi
-// 00719165  57                   push edi
-// 00719166  8bf9                 mov edi, ecx
-// 00719168  8b4820               mov ecx, dword ptr [eax + 0x20]
-// 0071916b  8b11                 mov edx, dword ptr [ecx]
-// 0071916d  8b4258               mov eax, dword ptr [edx + 0x58]
-// 00719170  ffd0                 call eax
-// 00719172  8bf0                 mov esi, eax
-// 00719174  85f6                 test esi, esi
-// 00719176  7428                 je 0x7191a0
-// 00719178  8b16                 mov edx, dword ptr [esi]
-// 0071917a  8b828c010000         mov eax, dword ptr [edx + 0x18c]
-// 00719180  8bce                 mov ecx, esi
-// 00719182  ffd0                 call eax
-// 00719184  85c0                 test eax, eax
-// 00719186  7418                 je 0x7191a0
-// 00719188  8b8784000000         mov eax, dword ptr [edi + 0x84]
-// 0071918e  50                   push eax
-// 0071918f  8bce                 mov ecx, esi
-// 00719191  e81a21f9ff           call 0x6ab2b0
-// 00719196  85c0                 test eax, eax
-// 00719198  7406                 je 0x7191a0
-// 0071919a  898778010000         mov dword ptr [edi + 0x178], eax
-// 007191a0  5f                   pop edi
-// 007191a1  5e                   pop esi
-// 007191a2  c20400               ret 4
-
-struct CXTPRibbonGroupControlPopup {
-    char pad[0x84];
-    int field84;
-    char pad2[0x178 - 0x88];
-    int field178;
-    void func(int);
-};
-
+// from server: 90% by colin
 struct Inner {
     virtual int f0();
     virtual int f1();
@@ -141,11 +102,19 @@ struct Inner {
     virtual int f99();
 };
 
+struct CXTPRibbonGroupControlPopup {
+    char pad[0x84];
+    int field84;
+    char pad2[0x178 - 0x88];
+    int field178;
+    void func(int);
+};
+
 extern "C" int __stdcall sub_6AB2B0(int, int);
 
 void CXTPRibbonGroupControlPopup::func(int arg) {
     Inner* p = *(Inner**)(arg + 0x20);
-    int result = p->f58();
+    int result = p->f22();
     if (result != 0) {
         Inner* q = (Inner*)result;
         int r2 = q->f99();

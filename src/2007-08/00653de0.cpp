@@ -1,21 +1,23 @@
-// from server: 73% by colin
-// roc 2007-08 00653de0  size: 41 bytes
-// library rbxgs
+// from server: 100% by colin
+// roc 2007-08 00653de0  unit: XTP_REPORTRECORDITEM_METRICS  size: 41 bytes
+// Make this compile to the exact bytes below, then: roc check 2007-08 00653de0
 
-extern "C" void __stdcall sub_77ddbc();
+extern "C" void __fastcall sub_63069a(void*);
 extern "C" void __cdecl sub_62fc62(void*);
-extern "C" void __cdecl sub_63069a();
+
+typedef void (__fastcall *FuncPtr77ddbc)(void*);
+extern FuncPtr77ddbc g_77ddbc;
 
 struct XTP_REPORTRECORDITEM_METRICS {
     char pad[0x2c];
     int field_2c;
-    void* destroy(char flag);
+    XTP_REPORTRECORDITEM_METRICS* destroy(unsigned int flags);
 };
 
-void* XTP_REPORTRECORDITEM_METRICS::destroy(char flag) {
-    sub_77ddbc();
-    sub_63069a();
-    if (flag & 1) {
+XTP_REPORTRECORDITEM_METRICS* XTP_REPORTRECORDITEM_METRICS::destroy(unsigned int flags) {
+    g_77ddbc((void*)((char*)this + 0x2c));
+    sub_63069a(this);
+    if (flags & 1) {
         sub_62fc62(this);
     }
     return this;

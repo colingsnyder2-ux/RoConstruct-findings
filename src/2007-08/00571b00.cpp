@@ -1,26 +1,25 @@
-// from server: 52% by colin
-// roc 2007-08 00571b00  unit: RBX::worker_thread::Udata  size: 59 bytes
-// Make this compile to the exact bytes below, then: roc check 2007-08 00571b00
-
-typedef unsigned int size_t;
-
-class type_info {
-public:
-    bool operator==(const type_info& rhs) const;
+// from server: 92% by tester
+struct type_info
+{
+    bool operator==(const type_info&) const;
 };
 
-extern "C" bool __stdcall type_info_equal(const type_info* lhs, const type_info* rhs);
+extern "C" void __cdecl sub_571AA0(void*, int, int);
 
-void* __cdecl worker_thread_get(void* key, unsigned int id);
-
-void* __cdecl worker_thread_get(void* key, unsigned int id)
+struct S
 {
-    if (id == 2) {
-        void* p = key;
-        if (!type_info_equal((const type_info*)0x89fb58, (const type_info*)p)) {
-            p = 0;
-        }
-        return p;
+};
+
+void* __cdecl f(void* a, int b)
+{
+    if (b == 2)
+    {
+        type_info* t = (type_info*)0x89fb58;
+        void* p = a;
+        bool r = (*t == *(type_info*)p);
+        return r ? p : 0;
     }
+    char local = 0;
+    sub_571AA0(a, b, *(int*)&local);
     return 0;
 }

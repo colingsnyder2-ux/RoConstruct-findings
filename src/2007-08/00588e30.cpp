@@ -1,48 +1,37 @@
-// from server: 88% by colin
+// from server: 95% by atomic.potato
 // roc 2007-08 00588e30  unit: seg_00580000  size: 83 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 00588e30
-
-extern "C" void* __cdecl operator_new(unsigned int);
-extern "C" void __cdecl operator_delete(void*);
 
 struct type_info {
     bool __thiscall operator==(const type_info&) const;
 };
+
+extern "C" void* __cdecl sub_62FEF6(unsigned int);
+extern "C" void __cdecl sub_62FC62(void*);
 
 struct SoundId {
     int a;
     int b;
 };
 
-struct Sound {
-    void* fmod_sound;
-    void* system;
-    int refCount;
-    bool isStreaming;
-    SoundId id;
-    bool is3D;
+extern type_info* type_info_8A3038;
 
-    void* scalar_deleting_dtor(unsigned int);
-};
-
-extern type_info type_info_SoundId;
-
-void* __cdecl Sound_scalar_deleting_dtor(Sound* self, unsigned int flags)
+void* __cdecl Sound_scalar_deleting_dtor(SoundId* self, unsigned int flags)
 {
     if (flags == 2) {
-        Sound* p = self;
-        if (type_info_SoundId == *(type_info*)&type_info_SoundId) {
+        SoundId* p = self;
+        if (type_info_8A3038->operator==(*(type_info*)p)) {
             return p;
         }
         return 0;
     }
     if (flags == 0) {
-        SoundId* p = (SoundId*)operator_new(8);
-        if (p != 0) {
-            *p = *(SoundId*)self;
+        SoundId* p = (SoundId*)sub_62FEF6(8);
+        if (p) {
+            *p = *self;
         }
         return p;
     }
-    operator_delete(self);
+    sub_62FC62(self);
     return 0;
 }

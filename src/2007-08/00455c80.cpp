@@ -1,18 +1,16 @@
-// from server: 30% by colin
-// roc-lang: cpp
-// roc-cl: 50727
-// roc-flags: /O2 /GS /EHsc /MD
-
+// from server: 31% by colin
 struct CRobloxReportPaneView
 {
-    void sub_455AB0();
+    char pad[0x318];
+    int field_318;
+    void sub_00455ab0();
     ~CRobloxReportPaneView();
 };
 
-extern "C" void __cdecl sub_4073F0(void*);
+extern "C" void __stdcall sub_004073f0(int* p);
 
 CRobloxReportPaneView::~CRobloxReportPaneView()
 {
-    sub_4073F0((char*)this + 0x318);
-    sub_455AB0();
+    sub_004073f0(&field_318);
+    sub_00455ab0();
 }

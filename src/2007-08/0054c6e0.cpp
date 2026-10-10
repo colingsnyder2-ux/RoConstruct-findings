@@ -1,26 +1,25 @@
-// from server: 18% by colin
-// roc 2007-08 0054c6e0  unit: UString_sink::?$stream_buffer  size: 70 bytes
-// Make this compile to the exact bytes below, then: roc check 2007-08 0054c6e0
-
-extern "C" int __stdcall pubsunc_helper(void*);
-
-struct stream_buffer_base {
-    int sync();
-};
-
-struct stream_buffer_derived : stream_buffer_base {
-    int sync();
-};
-
-int stream_buffer_derived::sync()
+// from server: 23% by colin
+struct UString_sink_stream_buffer
 {
-    if (*(int*)((char*)this + 4) & 2) {
-        int* p = *(int**)this;
-        int* q = *(int**)p;
-        int* r = *(int**)((char*)q + 8);
-        int* s = *(int**)((char*)r + 4);
-        int* t = *(int**)((char*)s + (int)q + 0x30);
-        return pubsunc_helper(t);
+    int sync();
+};
+
+int UString_sink_stream_buffer::sync()
+{
+    int result;
+    char* p = *(char**)((char*)this + 4);
+    if ((*(unsigned char*)((char*)this + 4) & 2) == 0)
+    {
+        result = 0;
     }
-    return 0;
+    else
+    {
+        char* q = *(char**)((char*)this);
+        char* r = *(char**)(q);
+        char* s = *(char**)(r + 8);
+        char* t = *(char**)(s + 4);
+        int (*fn)(void*) = *(int (**)(void*))(t + (int)r + 0x30);
+        result = fn((void*)((char*)this + 8));
+    }
+    return result;
 }

@@ -1,5 +1,5 @@
-// from server: 47% by colin
-// roc 2007-08 005a1bd0  unit: RBX::VShirt::?$FactoryProduct  size: 74 bytes
+// from server: 56% by colin
+// roc 2007-08 005a1bd0  unit: RBX::VShirt  size: 74 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 005a1bd0
 //
 // 005a1bd0  53                   push ebx
@@ -30,42 +30,47 @@
 // 005a1c15  5e                   pop esi
 // 005a1c16  5b                   pop ebx
 // 005a1c17  c20400               ret 4
+// library rbxgs/v8datamodel/CharacterAppearance.cpp (function ?$FactoryProduct@VShirt@RBX@@)
 
-struct RBXName {
-    char pad[0x1c];
-    void* field_1c;
+// roc-lang: cpp
+// roc-cl: 50727
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+// roc-lib: rbxgs v8datamodel/CharacterAppearance.cpp
+
+struct RBX_String {
+    void assign(const RBX_String& other);
+    char data[0x20];
 };
 
-struct FactoryProduct {
+struct RBX_Object {
+    void constructFrom(const RBX_String& s);
+};
+
+struct RBX_Instance {
+    void* getSomething();
+    RBX_Object* getObject();
+};
+
+struct RBX_VShirt {
     char pad[0xe8];
-    RBXName name;
-
-    void sub_5A1BD0(void* arg);
+    RBX_String name;
+    void FactoryProduct(RBX_Instance* inst);
 };
 
-struct Creator {
-    void* sub_5A5C60(void*);
-    void* sub_5A1960();
-    void sub_573040();
-};
+extern "C" void* __stdcall sub_5A5C60(RBX_Instance* inst);
+extern "C" void* __stdcall sub_5A1960(void* p);
+extern "C" void __stdcall sub_573040(void* p, RBX_Object* obj);
+extern "C" void __stdcall sub_77E69C(RBX_String* dst, const RBX_String* src);
 
-extern "C" void* __cdecl sub_5A5C60(void*);
-extern "C" void* __cdecl sub_5A1960(void*);
-extern "C" void __cdecl sub_573040(void*);
-extern "C" void __cdecl sub_77E69C(void*, void*);
-
-void FactoryProduct::sub_5A1BD0(void* arg)
+void RBX_VShirt::FactoryProduct(RBX_Instance* inst)
 {
-    void* p = sub_5A5C60(arg);
-    if (p) {
-        void* q = sub_5A1960(p);
-        if (q) {
-            char buf[0x20];
-            void* pbuf = buf;
-            RBXName* n = &this->name;
-            sub_77E69C(buf, n);
-            *(void**)(buf + 0x1c) = n->field_1c;
-            sub_573040(q);
-        }
-    }
+    void* a = sub_5A5C60(inst);
+    if (!a) return;
+    void* b = sub_5A1960(a);
+    if (!b) return;
+    RBX_String tmp;
+    sub_77E69C(&tmp, &this->name);
+    RBX_Object* obj = (RBX_Object*)b;
+    obj->constructFrom(tmp);
+    sub_573040(b, obj);
 }

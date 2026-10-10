@@ -1,27 +1,27 @@
-// from server: 36% by colin
-// roc 2007-08 005f1f10  size: 96 bytes
+// from server: 40% by colin
+struct Vector3 { float x, y, z, w; };
 
-extern "C" void* __cdecl func_62fef6(unsigned int size);
-
-struct Inner {
-    void init(void* p);
+struct Holder {
+    void construct(Vector3* v);
 };
 
-struct Outer {
-    char pad[4];
-    Inner inner;
-    void* create();
+struct Alloc {
+    void* alloc(unsigned int size);
 };
 
-void Inner::init(void* p) {
-    func_62fef6(0);
-}
+extern Alloc* g_alloc;
 
-void* Outer::create() {
-    void* mem = func_62fef6(0x10);
-    if (mem) {
-        inner.init(&inner);
-        return mem;
+struct Container {
+    void* field0;
+    Vector3 vec;
+    void* field10;
+    void init();
+};
+
+void Container::init()
+{
+    void* mem = g_alloc->alloc(0x10);
+    if (mem != 0) {
+        ((Holder*)mem)->construct(&this->vec);
     }
-    return 0;
 }

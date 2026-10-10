@@ -1,5 +1,5 @@
-// from server: 66% by colin
-// roc 2007-08 00596cd0  unit: RBX::LaserTool  size: 48 bytes
+// from server: 87% by colin
+// roc 2007-08 00596cd0  unit: seg_00590000  size: 48 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 00596cd0
 //
 // 00596cd0  8b442404             mov eax, dword ptr [esp + 4]
@@ -18,18 +18,21 @@
 // 00596cfa  83c414               add esp, 0x14
 // 00596cfd  c20400               ret 4
 
-struct S {
-    int f(int* p);
+extern "C" int __cdecl sub_596AE0(int, double, const char*, int);
+
+extern double g_78B130;
+extern const char g_78D3A0[];
+
+struct RBX_LaserTool
+{
+    int sub_596CD0(int* p);
 };
 
-extern "C" void __cdecl sub_596AE0(const char*, double, int);
-
-int S::f(int* p) {
+int RBX_LaserTool::sub_596CD0(int* p)
+{
     int v = *p;
     double d = (double)v;
-    if (v < 0) {
-        d += *(double*)0x78b130;
-    }
-    sub_596AE0((const char*)0x78d3a0, d, v);
-    return v;
+    if (v < 0)
+        d += g_78B130;
+    return sub_596AE0((int)this, d, g_78D3A0, v);
 }

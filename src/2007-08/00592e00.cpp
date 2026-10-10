@@ -1,5 +1,5 @@
-// from server: 44% by colin
-// roc 2007-08 00592e00  unit: RBX::VVisit::?$BoundFuncDesc  size: 85 bytes
+// from server: 46% by colin
+// roc 2007-08 00592e00  unit: RBX::VVisit::BoundFuncDesc  size: 85 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 00592e00
 //
 // 00592e00  89642458             mov dword ptr [esp + 0x58], esp
@@ -31,34 +31,36 @@
 // 00592e4e  5e                   pop esi
 // 00592e4f  83c428               add esp, 0x28
 // 00592e52  c20800               ret 8
+// library g3d-6.09/G3Dcpp\debugAssert.cpp (function ?setAssertionHook@G3D@@YAXP6A_NPBDABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@0HAA_N_N@Z@Z)
 
-struct BoundFuncDesc {
-    void invoke(int a, int b);
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: g3d-6.09 G3Dcpp/debugAssert.cpp
+
+extern "C" void* __stdcall GetCurrentSEH(void*);
+
+struct RefCounted {
+    virtual void release(int);
 };
 
-extern "C" void* __stdcall GetCurrentThread(void);
+struct BoundFuncDesc {
+    char pad0[0x28];
+    void (*fn)(void*);
+    char* ctx;
+    void destroy();
+};
 
-void BoundFuncDesc::invoke(int a, int b)
+void BoundFuncDesc::destroy()
 {
-    void* saved = (void*)0;
-    void* sp;
-    sp = (void*)&sp;
-    (void)sp;
-    GetCurrentThread();
-    void (*fn)(void*) = *(void (**)(void*))((char*)this + 0x28);
-    void* arg = *(void**)((char*)this + 0x2c);
-    arg = (void*)((char*)arg + (int)&saved);
-    fn(arg);
-    void* p1 = *(void**)((char*)&a + 0);
-    if (p1) {
-        void** vt = *(void***)p1;
-        void (*f)(void*, int) = (void (*)(void*, int))vt[0];
-        f(p1, 1);
+    void* seh = GetCurrentSEH(0);
+    fn((char*)ctx + (int)seh);
+    RefCounted* a = *(RefCounted**)((char*)this + 0x0c);
+    if (a) {
+        a->release(1);
     }
-    void* p2 = *(void**)((char*)&b + 0);
-    if (p2) {
-        void** vt = *(void***)p2;
-        void (*f)(void*, int) = (void (*)(void*, int))vt[0];
-        f(p2, 1);
+    RefCounted* b = *(RefCounted**)((char*)this + 0x14);
+    if (b) {
+        b->release(1);
     }
 }

@@ -1,21 +1,12 @@
-// from server: 87% by colin
-// roc 2007-08 00651da0  unit: CRobloxReportView  size: 17 bytes
-// Make this compile to the exact bytes below, then: roc check 2007-08 00651da0
-//
-// 00651da0  8b01                 mov eax, dword ptr [ecx]
-// 00651da2  8b908c010000         mov edx, dword ptr [eax + 0x18c]
-// 00651da8  ffd2                 call edx
-// 00651daa  8b80b0000000         mov eax, dword ptr [eax + 0xb0]
-// 00651db0  c3                   ret 
-
+// from server: 88% by colin
 struct CRobloxReportView {
-    int getValue();
+    void* getSomething();
 };
 
-int CRobloxReportView::getValue()
+void* CRobloxReportView::getSomething()
 {
-    int (*fn)(void);
-    fn = *(int (**)(void))((*(int*)this) + 0x18c);
-    int result = fn();
-    return *(int*)(result + 0xb0);
+    void* p = *(void**)this;
+    void* (__thiscall *fn)(void*) = *(void* (__thiscall **)(void*))((char*)p + 0x18c);
+    void* r = fn(this);
+    return *(void**)((char*)r + 0xb0);
 }

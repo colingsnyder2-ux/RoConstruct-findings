@@ -1,21 +1,20 @@
-// from server: 82% by colin
-// roc 2007-08 00572180  size: 53 bytes
-// Make this compile to the exact bytes below, then: roc check 2007-08 00572180
+// from server: 90% by colin
+extern "C" void __cdecl func_00725520(int, int);
+extern "C" int __cdecl func_00725f70(int);
 
-extern "C" void __cdecl sub_725520(const char*, const char*);
-extern "C" void* __cdecl sub_725f70();
+extern int G_008C2548;
+extern int G_008C254C;
+extern int G_0089FE8C;
 
-extern void* g_8c2548;
-extern void* g_89fe8c;
-
-void* sub_572180()
+int func_00572180()
 {
-    sub_725520((const char*)0x8c254c, (const char*)0x572070);
-    void* p = sub_725f70();
-    if (p != 0) {
-        if (*(unsigned int*)((char*)p + 0x18) >= 0x10)
-            return *(void**)((char*)p + 4);
-        return (void*)((char*)p + 4);
+    func_00725520(0x8C254C, 0x572070);
+    int result = func_00725f70(G_008C2548);
+    if (result != 0) {
+        if (*(unsigned int*)(result + 0x18) >= 0x10) {
+            return *(int*)(result + 4);
+        }
+        return result + 4;
     }
-    return g_89fe8c;
+    return G_0089FE8C;
 }

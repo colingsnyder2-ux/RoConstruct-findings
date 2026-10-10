@@ -1,4 +1,4 @@
-// from server: 58% by colin
+// from server: 67% by tester
 // roc 2007-08 005dadf0  unit: seg_00500000  size: 95 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 005dadf0
 
@@ -12,7 +12,7 @@ extern "C" void* __cdecl operator_new(unsigned int size);
 extern "C" void __cdecl some_free(void* p);
 
 struct RBX_VelocityMotor {
-    void* f(int a, int b);
+    void* __cdecl f(int a, int b);
 };
 
 void* RBX_VelocityMotor::f(int a, int b)

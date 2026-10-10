@@ -1,50 +1,67 @@
-// from server: 43% by colin
-// roc 2007-08 005f2170  unit: G3D::$$A6AXVVector3::V?$function::?$holder  size: 59 bytes
-// Make this compile to the exact bytes below, then: roc check 2007-08 005f2170
-//
-// 005f2170  8b442408             mov eax, dword ptr [esp + 8]
-// 005f2174  83f802               cmp eax, 2
-// 005f2177  7519                 jne 0x5f2192
-// 005f2179  56                   push esi
-// 005f217a  8b742408             mov esi, dword ptr [esp + 8]
-// 005f217e  56                   push esi
-// 005f217f  b958188b00           mov ecx, 0x8b1858
-// 005f2184  ff1508e77700         call dword ptr [0x77e708]
-// 005f218a  f6d8                 neg al
-// 005f218c  1bc0                 sbb eax, eax
-// 005f218e  23c6                 and eax, esi
-// 005f2190  5e                   pop esi
-// 005f2191  c3                   ret 
-// 005f2192  8b542404             mov edx, dword ptr [esp + 4]
-// 005f2196  c644240800           mov byte ptr [esp + 8], 0
-// 005f219b  8b4c2408             mov ecx, dword ptr [esp + 8]
-// 005f219f  51                   push ecx
-// 005f21a0  50                   push eax
-// 005f21a1  52                   push edx
-// 005f21a2  e849ffffff           call 0x5f20f0
-// 005f21a7  83c40c               add esp, 0xc
-// 005f21aa  c3                   ret 
-
+// from server: 71% by colin
 struct type_info;
 
 extern "C" {
-    int __stdcall MSVCR80_type_info_operator_equal(const type_info*, const type_info*);
+    int __cdecl _strcmp_placeholder();
 }
 
-struct SignalDescImpl {
-    int compare_type(const type_info* ti, int value);
+namespace MSVCR80 {
+    bool __stdcall type_info_equal(const type_info* a, const type_info* b);
+}
+
+struct type_info {
+    bool __stdcall operator==(const type_info& rhs) const;
 };
 
-int SignalDescImpl::compare_type(const type_info* ti, int value)
-{
-    if (value != 2) {
-        int result;
-        if (MSVCR80_type_info_operator_equal((const type_info*)0x8b1858, ti)) {
-            result = 0;
-        } else {
-            result = value;
+struct GenericSlotAdapter {
+    int field0;
+    int field4;
+};
+
+struct SignalDescImpl {
+    static type_info* type();
+};
+
+struct Reflection {
+    struct RBX {
+        struct GenericSlotAdapter {
+            static type_info* type();
+        };
+    };
+};
+
+extern "C" {
+    bool __stdcall type_info_compare(const type_info* a, const type_info* b);
+}
+
+struct G3D {
+    struct Vector3 {
+        float x;
+        float y;
+        float z;
+    };
+};
+
+struct SlotAdapter {
+    int field0;
+    int field4;
+};
+
+extern "C" {
+    int __cdecl sub_5f20f0(int a, int b, int c);
+}
+
+struct S {
+    int __cdecl f(int a, int b, int c);
+};
+
+int S::f(int a, int b, int c) {
+    if (c == 2) {
+        int v = a;
+        if (type_info_compare((const type_info*)0x8b1858, (const type_info*)v)) {
+            return v;
         }
-        return result;
+        return 0;
     }
-    return 0;
+    return sub_5f20f0(a, b, c);
 }

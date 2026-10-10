@@ -1,5 +1,5 @@
-// from server: 37% by colin
-// roc 2007-08 00544e60  unit: RBX::VDebugSettings::?$GlobalSettingsItem  size: 101 bytes
+// from server: 40% by colin
+// roc 2007-08 00544e60  unit: RBX::VDebugSettings  size: 101 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 00544e60
 //
 // 00544e60  6aff                 push -1
@@ -28,24 +28,23 @@
 // 00544eb9  5b                   pop ebx
 // 00544eba  64890d00000000       mov dword ptr fs:[0], ecx
 // 00544ec1  83c428               add esp, 0x28
-// 00544ec4  c3                   ret 
+// 00544ec4  c3                   ret
 
-struct S_func_00544e60 {
-    char pad0[4];
-    char m_str[28];
-    int f();
+struct S {
+    bool f();
 };
 
-extern "C" int __stdcall func_77e638(int, int, void*);
-extern "C" int __stdcall func_77e5f8(void*, const char*);
-extern "C" void __stdcall func_77e6ac(void*);
+extern "C" {
+    void* __stdcall sub_77E638(void*, int, int);
+    int __stdcall sub_77E5F8(const char*, void*);
+    void __stdcall sub_77E6AC(void*);
+}
 
-int S_func_00544e60::f()
+bool S::f()
 {
-    char local[28];
-    int result;
-    func_77e638(0, 0xb, local);
-    result = func_77e5f8(local, "rbxasset://");
-    func_77e6ac(local);
-    return result;
+    char buf[12];
+    sub_77E638(buf, 0, 11);
+    bool r = sub_77E5F8("rbxasset://", buf) != 0;
+    sub_77E6AC(buf);
+    return r;
 }

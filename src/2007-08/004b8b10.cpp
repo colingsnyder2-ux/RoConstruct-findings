@@ -1,30 +1,16 @@
-// from server: 72% by colin
-// roc 2007-08 004b8b10  unit: RakPeer  size: 39 bytes
-// Make this compile to the exact bytes below, then: roc check 2007-08 004b8b10
-//
-// 004b8b10  8b442404             mov eax, dword ptr [esp + 4]
-// 004b8b14  85c0                 test eax, eax
-// 004b8b16  741c                 je 0x4b8b34
-// 004b8b18  803800               cmp byte ptr [eax], 0
-// 004b8b1b  7417                 je 0x4b8b34
-// 004b8b1d  8b542408             mov edx, dword ptr [esp + 8]
-// 004b8b21  85d2                 test edx, edx
-// 004b8b23  740f                 je 0x4b8b34
-// 004b8b25  6a01                 push 1
-// 004b8b27  52                   push edx
-// 004b8b28  50                   push eax
-// 004b8b29  81c1fc060000         add ecx, 0x6fc
-// 004b8b2f  e88c140100           call 0x4c9fc0
-// 004b8b34  c20800               ret 8
-
-struct RakPeer {
-    void m(const char*, unsigned int);
+// from server: 88% by colin
+struct RakPeer
+{
+    char pad[0x6fc];
+    void func_004b8b10(const char* a, const char* b);
 };
 
-extern "C" void __stdcall sub_4c9fc0(const char*, unsigned int, int);
+extern "C" void __stdcall sub_004c9fc0(char* a, const char* b, const char* c, int d);
 
-void RakPeer::m(const char* a, unsigned int b)
+void RakPeer::func_004b8b10(const char* a, const char* b)
 {
     if (a != 0 && *a != 0 && b != 0)
-        sub_4c9fc0(a, b, 1);
+    {
+        sub_004c9fc0((char*)this + 0x6fc, a, b, 1);
+    }
 }

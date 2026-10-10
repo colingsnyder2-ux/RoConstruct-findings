@@ -1,0 +1,44 @@
+// from server: 46% by colin
+extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
+#pragma intrinsic(_InterlockedExchangeAdd)
+
+struct RefCounted {
+    void* vptr;
+    volatile long refCount;
+    volatile long weakRefCount;
+};
+
+struct CreatorResult {
+    void* ptr;
+    RefCounted* ref;
+};
+
+struct FactoryProductCreator {
+    CreatorResult* __thiscall create(CreatorResult* result);
+};
+
+extern "C" void* __cdecl sub_4AE8F0(void** out);
+
+CreatorResult* FactoryProductCreator::create(CreatorResult* result) {
+    void* temp = 0;
+    sub_4AE8F0(&temp);
+    void** src = (void**)temp;
+    result->ptr = src[0];
+    RefCounted* r = (RefCounted*)src[1];
+    result->ref = r;
+    if (r) {
+        _InterlockedExchangeAdd(&r->refCount, 1);
+    }
+    RefCounted* old = (RefCounted*)temp;
+    if (old) {
+        if (_InterlockedExchangeAdd(&old->refCount, -1) == 1) {
+            void** vt = (void**)old->vptr;
+            typedef void (__thiscall *Fn)(RefCounted*);
+            ((Fn)vt[1])(old);
+            if (_InterlockedExchangeAdd(&old->weakRefCount, -1) == 1) {
+                ((Fn)vt[2])(old);
+            }
+        }
+    }
+    return result;
+}

@@ -1,23 +1,27 @@
-// from server: 48% by colin
-// roc 2007-08 005b7d00  unit: RBX::$00::?$SurfaceDescriptor  size: 40 bytes
-// Make this compile to the exact bytes below, then: roc check 2007-08 005b7d00
-
-extern "C" void* __cdecl sub_573890(void* p);
-extern "C" void __cdecl sub_5b9630(void* self, int a, int b);
-
-struct SurfaceDescriptor
-{
-    void assign(int a, int b, int c);
+// from server: 100% by tester
+struct S_func_00573890 {
+    char pad0[420];
+    int m_x;
+    int* f();
 };
 
-void SurfaceDescriptor::assign(int a, int b, int c)
+struct S_func_005b9630 {
+    void g(int a1, int a2);
+};
+
+struct S_func_005b7d00 {
+    void h(int a1, int a2, int a3);
+};
+
+void S_func_005b7d00::h(int a1, int a2, int a3)
 {
-    int* p = (int*)a;
-    int* q;
-    if (p)
-        q = p - 1;
-    else
-        q = 0;
-    void* r = sub_573890(q);
-    sub_5b9630(r, b, c);
+    S_func_00573890* p;
+    if (a1 != 0) {
+        p = (S_func_00573890*)(a1 - 4);
+    } else {
+        p = 0;
+    }
+    int* r = p->f();
+    S_func_005b9630* q = (S_func_005b9630*)r;
+    q->g(a2, a3);
 }

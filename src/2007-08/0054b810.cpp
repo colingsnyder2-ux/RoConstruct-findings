@@ -1,4 +1,4 @@
-// from server: 44% by colin
+// from server: 94% by colin
 // roc 2007-08 0054b810  unit: UString_sink::?$stream_buffer  size: 66 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 0054b810
 //
@@ -34,17 +34,31 @@
 // 0054b84e  5b                   pop ebx
 // 0054b84f  c20800               ret 8
 
-struct stream_buffer {
-    int write(const char* s, int n);
+struct streambuf
+{
+    int sputn(const char* s, int n);
 };
 
-int stream_buffer::write(const char* s, int n)
+struct UString_sink
+{
+    void* vtable;
+    int write(const char* data, int count);
+};
+
+int UString_sink::write(const char* data, int count)
 {
     int total = 0;
-    if (n > 0) {
-        while (total < n) {
-            int written = ((int (__stdcall*)(const char*, int))0x77e600)(s + total, n - total);
-            total += written;
+    if (count > 0)
+    {
+        while (total < count)
+        {
+            void* vt = *(void**)this;
+            void* p1 = *(void**)vt;
+            void* p2 = *(void**)((char*)p1 + 8);
+            void* p3 = *(void**)((char*)p2 + 4);
+            streambuf* buf = *(streambuf**)((char*)p3 + (int)p1 + 0x30);
+            int n = buf->sputn(data + total, count - total);
+            total += n;
         }
     }
     return total;

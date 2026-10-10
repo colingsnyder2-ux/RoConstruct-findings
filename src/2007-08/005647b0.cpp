@@ -1,33 +1,32 @@
-// from server: 61% by colin
-// roc 2007-08 005647b0  unit: seg_00560000  size: 79 bytes
-// Make this compile to the exact bytes below, then: roc check 2007-08 005647b0
-
+// from server: 73% by colin
 struct ControllerCommand {
     char pad[0x14];
     int field14;
     char pad2[0x8];
     int field20;
-    bool f();
+    bool method();
 };
 
-extern "C" int __stdcall sub_562300(int, int);
-extern "C" int __stdcall sub_5618E0(int);
-extern "C" int __stdcall sub_55F610(int, int);
+extern "C" int __fastcall sub_562300(int, int);
+extern "C" int __fastcall sub_5618e0(int);
+extern "C" int __fastcall sub_55f610(int, int);
 
-bool ControllerCommand::f()
-{
-    int v = sub_562300((int)(this->pad + 0x14), 1);
-    int* p = *(int**)(v + 0x104);
-    int count = p[1];
-    if (count == 0)
-        return false;
-    if ((p[2] - count) >> 3 == 0)
-        return false;
-    int r;
-    if (this->field20 != 0)
-        r = sub_5618E0(this->field20);
-    else
-        r = 0;
-    r = sub_55F610(r, 0x55e540);
-    return r != 0;
+bool ControllerCommand::method() {
+    int p = sub_562300((int)this + 0x14, 1);
+    int q = *(int*)(p + 0x104);
+    int begin = *(int*)(q + 4);
+    if (begin != 0) {
+        int end = *(int*)(q + 8);
+        if ((end - begin) >> 3 != 0) {
+            int r;
+            if (this->field20 != 0) {
+                r = sub_5618e0(this->field20);
+            } else {
+                r = 0;
+            }
+            int result = sub_55f610(r, 0x55e540);
+            return result != 0;
+        }
+    }
+    return false;
 }

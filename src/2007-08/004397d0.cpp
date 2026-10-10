@@ -1,56 +1,52 @@
-// from server: 56% by colin
-// roc 2007-08 004397d0  unit: RBX::VSoundId::XItem  size: 83 bytes
-// Make this compile to the exact bytes below, then: roc check 2007-08 004397d0
-
-struct RBX_Name {
-    void* data;
+// from server: 79% by colin
+struct ContentId {
+    char pad[4];
+    void* ptr;
 };
 
-struct RBX_ContentId {
-    void* data;
+struct SoundId {
+    char pad[0xe4];
+    void* field_e4;
 };
 
-struct RBX_EnumDescriptor;
+struct Descriptor {
+    void* field_0;
+};
 
-struct RBX_EnumItem {
-    void* vtable;
-    RBX_Name* name;
-    int attributes;
+struct EnumDescriptor;
+
+struct Item : Descriptor {
+    const EnumDescriptor* owner;
     int value;
     unsigned int index;
-    RBX_EnumDescriptor* owner;
 };
 
-struct RBX_EnumDescriptor {
-    void* vtable;
-    void* allItems[4];
-    unsigned int enumCount;
-    unsigned int enumCountMSB;
+struct Name {
+    void* field_0;
 };
 
-extern "C" {
-    const char* __stdcall RBX_Name_c_str(RBX_Name* self);
-    RBX_EnumDescriptor* __stdcall RBX_EnumDescriptor_lookupDescriptor(RBX_ContentId* name);
-    void* __stdcall RBX_EnumDescriptor_convertToValue(RBX_EnumDescriptor* self, unsigned int index);
-    void* __stdcall RBX_EnumDescriptor_convertToString(RBX_EnumDescriptor* self, unsigned int index);
-    void* __stdcall RBX_EnumItem_ctor(RBX_EnumItem* self, const char* name, int attributes, int value, unsigned int index, RBX_EnumDescriptor* owner);
-}
+extern "C" void* __stdcall func_77e6a8(void*);
 
-struct RBX_VSoundId_XItem {
-    bool convertToValue(RBX_ContentId* value) const;
+void* __fastcall func_682a20(void* self, void* name);
+void* __fastcall func_699040(void* self);
+void* __fastcall func_69d6e0(void* self, int val);
+void* __fastcall func_698420(void* self);
+
+struct SoundId2 {
+    void* ctor(const Name* name);
 };
 
-bool RBX_VSoundId_XItem::convertToValue(RBX_ContentId* value) const {
-    const RBX_EnumItem* self = (const RBX_EnumItem*)this;
-    RBX_Name* name = (RBX_Name*)((char*)value + 4);
-    const char* str = RBX_Name_c_str(name);
-    RBX_EnumDescriptor* desc = RBX_EnumDescriptor_lookupDescriptor((RBX_ContentId*)str);
-    void* result = RBX_EnumDescriptor_convertToValue(desc, self->index);
-    if (result == 0) {
-        const char* str2 = RBX_Name_c_str(name);
-        RBX_EnumDescriptor* desc2 = RBX_EnumDescriptor_lookupDescriptor((RBX_ContentId*)str2);
-        void* result2 = RBX_EnumDescriptor_convertToString(desc2, self->index);
-        return result2 != 0;
+void* SoundId2::ctor(const Name* name)
+{
+    void* p = func_77e6a8((void*)((char*)name + 4));
+    void* obj = func_682a20(this, p);
+    void* r = func_699040(*(void**)((char*)obj + 0xe4));
+    if (r == 0) {
+        void* p2 = func_77e6a8((void*)((char*)name + 4));
+        void* obj2 = func_682a20(this, p2);
+        void* r2 = func_69d6e0(obj2, 0);
+        func_698420(r2);
+        return r2;
     }
-    return true;
+    return r;
 }

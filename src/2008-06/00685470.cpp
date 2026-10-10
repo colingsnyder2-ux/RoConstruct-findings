@@ -1,21 +1,13 @@
-// from server: 25% by colin
+// from server: 42% by Intel
 // roc-repair: genuine WinNT.h definitions (no SDK shipped)
 typedef unsigned long DWORD;
-struct RbxSubEntityShadowRenderable {
-    DWORD* vtable;
-    DWORD* someData;
-    DWORD* anotherData;
-
-    DWORD getSomeData() const;
-    DWORD getAnotherData() const;
+struct S {
+    int f();
 };
 
-extern "C" __declspec(dllimport) void someFunction(DWORD*);
-
-DWORD RbxSubEntityShadowRenderable::getSomeData() const {
-    return someData[0];
-}
-
-DWORD RbxSubEntityShadowRenderable::getAnotherData() const {
-    return anotherData[0];
+int S::f() {
+    DWORD* thisPtr = reinterpret_cast<DWORD*>(this);
+    DWORD* subEntityPtr = reinterpret_cast<DWORD*>(*thisPtr + 0x6c);
+    DWORD* shadowRenderablePtr = reinterpret_cast<DWORD*>(*subEntityPtr + 0x18);
+    return *shadowRenderablePtr;
 }
