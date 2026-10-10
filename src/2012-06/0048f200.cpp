@@ -1,5 +1,11 @@
-// from server: 69% by colin
-// roc-lang: cpp
-// roc-cl: 50727
-// roc-flags: /O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MT
-// roc-lib: ogre-1.6.4 OgreRenderQueueSortingGrouping.cpp
+// from server: 100% by colin
+// roc-flags: /O2 /GS- /EHsc /MD /Ob2 /Oy /GF
+struct Value { int x; };
+extern struct Desc0 { int pad[8]; } g_00badd08;
+Value& sub_0067f2e0(void*);
+
+Value& func_0048f200()
+{
+    static Value& value = sub_0067f2e0(&g_00badd08);
+    return value;
+}

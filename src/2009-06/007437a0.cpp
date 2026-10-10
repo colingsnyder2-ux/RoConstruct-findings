@@ -1,5 +1,5 @@
-// from server: 67% by colin
+// from server: 100% by tester
 // roc-lang: cpp
-// roc-cl: 50727
-// roc-flags: /O2 /GS- /MD
-// roc-lib: xtp-11.2.2-vc8 Source/ReportControl/XTPReportControl.cpp
+// roc-cl: 30729
+// roc-flags: /O2 /GS- /MD /Ob1 /Oy-
+// roc-lib: xtp-13.2.1 Source/ReportControl/XTPReportControl.cpp

@@ -1,5 +1,11 @@
-// from server: 69% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs util/Name.cpp
+// from server: 100% by tester
+struct S_func_006657e0 {
+    char pad0[0x288];
+    int m_field;
+    bool f();
+};
+
+bool S_func_006657e0::f()
+{
+    return m_field == 1;
+}

@@ -1,5 +1,11 @@
-// from server: 46% by colin
-// roc-lang: cpp
-// roc-cl: 30729
-// roc-flags: /O2 /GS- /MD
-// roc-lib: xtp-11.2.2 Source/PropertyGrid/XTPPropertyGridItemBool.cpp
+// from server: 100% by colin
+// roc-flags: /O2 /GS- /EHsc /MD /Ob2 /Oy /GF
+struct Value { int x; };
+extern struct Desc0 { int pad[8]; } g_00a0eab0;
+Value& sub_005cd6b0(void*);
+
+Value& func_004317e0()
+{
+    static Value& value = sub_005cd6b0(&g_00a0eab0);
+    return value;
+}

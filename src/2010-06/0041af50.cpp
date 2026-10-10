@@ -1,5 +1,11 @@
-// from server: 77% by colin
-// roc-lang: cpp
-// roc-cl: 30729
-// roc-flags: /O2 /GS- /MD
-// roc-lib: xtp-13.2.1 Source/Calendar/XTPCalendarControl.cpp
+// from server: 100% by tester
+extern "C" long (__stdcall *InterlockedDecrement)(long volatile*);
+
+struct CInstanceRecord_CNameItem {
+    void Release();
+};
+
+void CInstanceRecord_CNameItem::Release() {
+    *(int*)this = 0x8afff4;
+    InterlockedDecrement((long volatile*)0xa3a1bc);
+}

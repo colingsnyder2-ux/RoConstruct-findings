@@ -1,5 +1,11 @@
-// from server: 69% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: boost-1.34.1 libs/regex/src/cregex.cpp
+// from server: 100% by colin
+// roc-flags: /O2 /GS- /EHsc /MD /Ob2 /Oy /GF
+struct Value { int x; };
+extern struct Desc0 { int pad[8]; } g_00bb83bc;
+Value& sub_00594140(void*);
+
+Value& func_00467020()
+{
+    static Value& value = sub_00594140(&g_00bb83bc);
+    return value;
+}

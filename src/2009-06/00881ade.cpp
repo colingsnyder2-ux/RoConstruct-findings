@@ -1,5 +1,5 @@
-// from server: 72% by colin
+// from server: 100% by tester
 // roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs util/RunStateOwner.cpp
+// roc-cl: 30729
+// roc-flags: /O2 /GS /EHsc /MD
+// roc-lib: ogre-1.7.0 OgreShadowCaster.cpp

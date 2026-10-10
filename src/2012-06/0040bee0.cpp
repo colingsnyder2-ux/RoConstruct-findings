@@ -1,5 +1,11 @@
-// from server: 55% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: boost-1.36.0 libs/thread/src/win32/thread.cpp
+// from server: 100% by colin
+// roc-flags: /O2 /GS- /EHsc /MD /Ob2 /Oy /GF
+struct Value { int x; };
+extern struct Desc0 { int pad[8]; } g_00b57680;
+Value& sub_0067f2e0(void*);
+
+Value& func_0040bee0()
+{
+    static Value& value = sub_0067f2e0(&g_00b57680);
+    return value;
+}

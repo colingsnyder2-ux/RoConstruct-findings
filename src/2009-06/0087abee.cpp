@@ -1,13 +1,5 @@
-// from server: 60% by atomic.potato
-extern "C" void __cdecl sub_0071A57A(int);
-
-struct S
-{
-    int __cdecl f(int);
-};
-
-int S::f(int value)
-{
-    sub_0071A57A(*(int *)((char *)value - 4) ^ value);
-    return 0x9B8854;
-}
+// from server: 100% by tester
+// roc-lang: cpp
+// roc-cl: 30729
+// roc-flags: /O2 /GS /EHsc /MD
+// roc-lib: ogre-1.7.0 OgreShadowCaster.cpp

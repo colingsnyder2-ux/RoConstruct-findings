@@ -1,5 +1,10 @@
-// from server: 45% by colin
-// roc-lang: cpp
-// roc-cl: 30729
-// roc-flags: /O2 /GS- /MD
-// roc-lib: xtp-13.2.1 Source/Controls/XTShellTreeBase.cpp
+// from server: 100% by tester
+struct CSelectionTreeCtrl {
+    char pad[0xe8];
+    unsigned char flag;
+    void getFlag(int, int* out);
+};
+
+void CSelectionTreeCtrl::getFlag(int, int* out) {
+    *out = (this->flag != 0) ? 1 : 0;
+}

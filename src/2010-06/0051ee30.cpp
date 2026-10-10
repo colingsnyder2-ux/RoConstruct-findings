@@ -1,5 +1,15 @@
-// from server: 57% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: boost-1.34.1 libs/filesystem/src/operations.cpp
+// from server: 100% by tester
+extern "C" int (__stdcall *WSAStartup)(unsigned short, void*);
+
+static int g_initCount;
+
+void InitWSA()
+{
+    char wsaData[0x190];
+    int count = g_initCount + 1;
+    g_initCount = count;
+    if (count == 1)
+    {
+        WSAStartup(0x202, wsaData);
+    }
+}

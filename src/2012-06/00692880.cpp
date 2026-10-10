@@ -1,17 +1,11 @@
-// from server: 55% by tester
-extern "C" int __cdecl sub_0067F2E0(const char*);
+// from server: 100% by colin
+// roc-flags: /O2 /GS- /EHsc /MD /Ob2 /Oy /GF
+struct Value { int x; };
+extern struct Desc0 { int pad[8]; } g_00b908e4;
+Value& sub_0067f2e0(void*);
 
-int g_00692880_0;
-int g_00692880_1;
-
-int f_00692880()
+Value& func_00692880()
 {
-    __try {
-        if ((g_00692880_1 & 1) == 0) {
-            g_00692880_1 |= 1;
-            g_00692880_0 = sub_0067F2E0("333?Unknown error.");
-        }
-    } __except (1) {
-    }
-    return g_00692880_0;
+    static Value& value = sub_0067f2e0(&g_00b908e4);
+    return value;
 }

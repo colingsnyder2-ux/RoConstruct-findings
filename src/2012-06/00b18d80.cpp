@@ -1,5 +1,12 @@
-// from server: 83% by colin
-// roc-lang: cpp
-// roc-cl: 21022
+// from server: 100% by colin
 // roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: g3d-6.09 GLG3Dcpp/IFSModel.cpp
+extern "C" __declspec(dllimport) void __stdcall release_00b18d80(void*);
+extern "C" void* _InterlockedExchange(void* volatile* target, void* value);
+extern void* g_pool_00b18d80;
+
+void func_00b18d80()
+{
+    void* p = _InterlockedExchange((void* volatile*)&g_pool_00b18d80, 0);
+    if (p)
+        release_00b18d80(p);
+}

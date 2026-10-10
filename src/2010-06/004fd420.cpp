@@ -1,5 +1,10 @@
-// from server: 68% by colin
-// roc-lang: cpp
-// roc-cl: 50727
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs-net Replicator.cpp
+// from server: 100% by tester
+struct Replicator {
+    void f(int, int);
+};
+
+void Replicator::f(int a, int b) {
+    void (__thiscall *fn)(Replicator*, int);
+    fn = *(void (__thiscall **)(Replicator*, int))(*(int*)this + 0x64);
+    fn(this, a);
+}

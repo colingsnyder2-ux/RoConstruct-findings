@@ -1,13 +1,11 @@
-// from server: 91% by atomic.potato
-extern "C" long __stdcall InterlockedDecrement(long volatile*);
+// from server: 100% by tester
+extern "C" long (__stdcall *InterlockedDecrement)(long volatile*);
 
-struct EventDesc
-{
-    void f();
+struct CInstanceRecord_CNameItem {
+    void Release();
 };
 
-void EventDesc::f()
-{
-    *(long*)this = 0xa2cd08;
-    InterlockedDecrement((long volatile*)0xc23840);
+void CInstanceRecord_CNameItem::Release() {
+    *(int*)this = 0x8afff4;
+    InterlockedDecrement((long volatile*)0xa3a1bc);
 }

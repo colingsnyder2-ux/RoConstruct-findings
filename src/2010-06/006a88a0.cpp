@@ -1,5 +1,10 @@
-// from server: 76% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: boost-1.34.1 libs/date_time/src/gregorian/greg_month.cpp
+// from server: 100% by tester
+struct S {
+    void f();
+};
+
+void S::f()
+{
+    if (*(unsigned char*)((char*)this + 8))
+        *(unsigned char*)((char*)this + 8) = 0;
+}

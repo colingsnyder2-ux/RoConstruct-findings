@@ -1,11 +1,10 @@
-// from server: 80% by atomic.potato
-struct S_func_0059f260 {
-    char pad0[152];
-    int m_value;
-    void f(int* out);
+// from server: 100% by tester
+// roc-flags: /O2 /GS- /EHsc /MD
+struct seg_004c0000 {
+    int get_19c(int *out);
 };
 
-void S_func_0059f260::f(int* out)
-{
-    *out = m_value;
+int seg_004c0000::get_19c(int *out) {
+    *out = *(int *)((char *)this + 0x98);
+    return (int)out;
 }

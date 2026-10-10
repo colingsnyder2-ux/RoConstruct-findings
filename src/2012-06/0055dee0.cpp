@@ -1,20 +1,11 @@
-// from server: 53% by tester
-extern "C" int __cdecl func_0067f2e0(const char*);
+// from server: 100% by colin
+// roc-flags: /O2 /GS- /EHsc /MD /Ob2 /Oy /GF
+struct Value { int x; };
+extern struct Desc0 { int pad[8]; } g_00bc49dc;
+Value& sub_0067f2e0(void*);
 
-int g_00e23df4;
-int g_00e23df8;
-
-void func_0055dee0()
+Value& func_0055dee0()
 {
-    __try
-    {
-        if ((g_00e23df8 & 1) == 0)
-        {
-            g_00e23df8 |= 1;
-            g_00e23df4 = func_0067f2e0((const char*)0x00bc49dc);
-        }
-    }
-    __except (1)
-    {
-    }
+    static Value& value = sub_0067f2e0(&g_00bc49dc);
+    return value;
 }

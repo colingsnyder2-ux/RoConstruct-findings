@@ -1,5 +1,11 @@
-// from server: 63% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: g3d-6.09 GLG3Dcpp/Draw.cpp
+// from server: 100% by colin
+// roc-flags: /O2 /GS- /EHsc /MD /Ob2 /Oy /GF
+struct Value { int x; };
+extern struct Desc0 { int pad[8]; } g_009f0780;
+Value& sub_005cd6b0(void*);
+
+Value& func_004b39e0()
+{
+    static Value& value = sub_005cd6b0(&g_009f0780);
+    return value;
+}

@@ -1,5 +1,10 @@
-// from server: 80% by colin
-// roc-lang: cpp
-// roc-cl: 30729
-// roc-flags: /O2 /GS- /MD
-// roc-lib: mfc-9.0 atlmfc/src/mfc/afxbutton.cpp
+// from server: 100% by tester
+struct RakPeer {
+    char pad[0xad];
+    bool flag;
+    void setFlag(bool value);
+};
+
+void RakPeer::setFlag(bool value) {
+    flag = value;
+}

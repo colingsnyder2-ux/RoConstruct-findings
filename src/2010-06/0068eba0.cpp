@@ -1,5 +1,9 @@
-// from server: 72% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs util/Math.cpp
+// from server: 100% by tester
+struct Mechanism {
+    char pad[0x18];
+    int field_18;
+};
+
+bool isPositive(Mechanism* m, int arg) {
+    return m->field_18 > 0;
+}

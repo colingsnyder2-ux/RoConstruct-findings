@@ -1,5 +1,11 @@
-// from server: 41% by colin
-// roc-lang: cpp
-// roc-cl: 30729
-// roc-flags: /O2 /GS- /MD
-// roc-lib: xtp-15.2.1 Source/Calendar/XTPCalendarControlView.cpp
+// from server: 100% by colin
+// roc-flags: /O2 /GS- /EHsc /MD /Ob2 /Oy /GF
+struct Value { int x; };
+extern struct Desc0 { int pad[8]; } g_00b986c4;
+Value& sub_0067f2e0(void*);
+
+Value& func_00427540()
+{
+    static Value& value = sub_0067f2e0(&g_00b986c4);
+    return value;
+}

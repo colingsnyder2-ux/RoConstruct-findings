@@ -1,5 +1,11 @@
-// from server: 52% by colin
-// roc-lang: cpp
-// roc-cl: 30729
-// roc-flags: /O2 /GS- /MD
-// roc-lib: xtp-11.2.2 Source/DockingPane/XTPDockingPaneAutoHidePanel.cpp
+// from server: 100% by colin
+// roc-flags: /O2 /GS- /EHsc /MD /Ob2 /Oy /GF
+struct Value { int x; };
+extern struct Desc0 { int pad[8]; } g_00aa49b8;
+Value& sub_00592b40(void*);
+
+Value& func_004e44b0()
+{
+    static Value& value = sub_00592b40(&g_00aa49b8);
+    return value;
+}

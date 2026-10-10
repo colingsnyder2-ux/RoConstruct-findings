@@ -1,10 +1,10 @@
-// from server: 86% by why2
-struct CXTPCommandBar__CCommandBarCmdUI {
+// from server: 100% by tester
+struct CXTPCommandBarCmdUI {
     void f();
 };
 
-void CXTPCommandBar__CCommandBarCmdUI::f() {
-    void (__stdcall *fn)(int, int);
-    fn = *(void (__stdcall **)(int, int))(*(int *)this + 0x1f4);
-    fn(1, 0);
+void CXTPCommandBarCmdUI::f() {
+    void (__thiscall *fn)(void*, int, int);
+    fn = *(void (__thiscall **)(void*, int, int))(*(int*)this + 0x1f4);
+    fn(this, 1, 0);
 }

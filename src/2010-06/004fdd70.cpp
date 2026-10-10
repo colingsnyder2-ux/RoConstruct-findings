@@ -1,5 +1,9 @@
-// from server: 94% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs-net Streaming.cpp
+// from server: 100% by tester
+struct IdSerializer {
+    unsigned short value;
+    bool equals(const IdSerializer* other) const;
+};
+
+bool IdSerializer::equals(const IdSerializer* other) const {
+    return value == other->value;
+}

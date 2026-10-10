@@ -1,5 +1,11 @@
-// from server: 65% by colin
-// roc-lang: cpp
-// roc-cl: 50727
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs-net Replicator.cpp
+// from server: 100% by colin
+// roc-flags: /O2 /GS- /EHsc /MD /Ob2 /Oy /GF
+struct Value { int x; };
+extern struct Desc0 { int pad[8]; } g_00aa5bf0;
+Value& sub_00592b40(void*);
+
+Value& func_004f43d0()
+{
+    static Value& value = sub_00592b40(&g_00aa5bf0);
+    return value;
+}
