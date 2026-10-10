@@ -1,57 +1,52 @@
-// from server: 78% by colin
-// roc 2007-08 006a0e30  unit: CXTPNewToolbarDlg  size: 138 bytes
-// Make this compile to the exact bytes below, then: roc check 2007-08 006a0e30
-
-extern "C" {
-    typedef struct { long x; long y; } POINT;
-    typedef void* HCURSOR;
-    typedef void* HWND;
-
-    __declspec(dllimport) int __stdcall GetCursorPos(POINT* lpPoint);
-    __declspec(dllimport) HCURSOR __stdcall LoadCursorA(HWND hInstance, const char* lpCursorName);
-    __declspec(dllimport) HWND __stdcall SetCapture(HWND hWnd);
-    __declspec(dllimport) int __stdcall ReleaseCapture(void);
-    __declspec(dllimport) HCURSOR __stdcall SetCursor(HCURSOR hCursor);
-}
-
+// from server: 92% by tester
 struct CXTPNewToolbarDlg {
-    void* m_p0;
-    void* m_p4;
-    int m_n8;
-    void* m_pC;
-    void* m_p10;
-    char m_pad14[0x20];
-    void* m_p34;
-    char m_pad38[0x18];
-    POINT m_pt50;
-    int sub_6a0b00();
-    int sub_6a0e30(void* p1, void* p2);
+    int field0;
+    int field4;
+    int field8;
+    int fieldC;
+    int field10;
+    int field14;
+    char pad18[0x1C];
+    int field34;
+    int sub_6A0B00(int, int);
+    int sub_6A0E30(int, int);
 };
 
-int CXTPNewToolbarDlg::sub_6a0e30(void* p1, void* p2) {
-    void* eax = m_p0;
-    if (m_p0 == 0) {
-        eax = *(void**)((char*)m_p34 + 0xa0);
+extern "C" {
+    int __stdcall GetCursorPos(void*);
+    void* __stdcall LoadCursorA(void*, const char*);
+    int __stdcall ReleaseCapture();
+    void* __stdcall SetCapture(void*);
+    void* __stdcall SetCursor(void*);
+    int __stdcall sub_62FF02();
+}
+
+int CXTPNewToolbarDlg::sub_6A0E30(int a1, int a2)
+{
+    int eax;
+    int edi;
+
+    eax = this->field14;
+    if (eax == 0) {
+        eax = this->field34;
+        eax = *(int*)(eax + 0xA0);
     }
-    m_p4 = p1;
+    this->field4 = a1;
     if (eax != 0) {
-        eax = *(void**)((char*)eax + 0x20);
+        eax = *(int*)(eax + 0x20);
     }
-    m_p0 = eax;
-    SetCapture((HWND)eax);
-    m_n8 = 0;
-    m_p10 = 0;
-    m_pC = p2;
-    GetCursorPos(&m_pt50);
-    int result = sub_6a0b00();
-    void* ecx = m_p10;
-    if (ecx != 0) {
-        void** vtbl = *(void***)ecx;
-        void (*fn)(void*) = *(void (**)(void*))((char*)vtbl + 0x16c);
-        fn(ecx);
+    this->field0 = eax;
+    SetCapture((void*)eax);
+    this->field8 = 0;
+    this->field10 = 0;
+    this->fieldC = a2;
+    GetCursorPos((void*)((char*)this + 0x18));
+    edi = this->sub_6A0B00(0, 0);
+    if (this->field10 != 0) {
+        (*(void(__thiscall**)(int))(*(int*)this->field10 + 0x16C))(this->field10);
     }
     ReleaseCapture();
-    LoadCursorA(0, (const char*)0x7f00);
-    SetCursor(0);
-    return result;
+    sub_62FF02();
+    SetCursor(LoadCursorA(0, (const char*)0x7F00));
+    return edi;
 }

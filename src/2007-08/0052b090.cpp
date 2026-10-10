@@ -1,5 +1,10 @@
-// from server: 78% by colin
-// roc-lang: cpp
-// roc-cl: 50727
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs script/LuaInstanceBridge.cpp
+// from server: 80% by tester
+struct S {
+    int f(int, int);
+};
+
+extern "C" int __stdcall sub_0052B040(int, int, int);
+
+int S::f(int a, int b) {
+    return sub_0052B040(a, b, 0);
+}

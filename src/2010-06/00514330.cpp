@@ -1,5 +1,16 @@
-// from server: 64% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: boost-1.36.0 libs/regex/src/wide_posix_api.cpp
+// from server: 100% by tester
+struct RakPeer {
+    char pad0[4];
+    char field4;
+    char pad5[0xb15 - 5];
+    char field895;
+    char get();
+};
+
+char RakPeer::get() {
+    char result = field4;
+    if (result != 0) {
+        field895 = 0;
+    }
+    return result;
+}

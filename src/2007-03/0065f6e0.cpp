@@ -1,5 +1,20 @@
-// from server: 56% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /GS /EHsc /MD
-// roc-lib: g3d-6.09 GLG3Dcpp/Shape.cpp
+// from server: 100% by tester
+struct CXTPCustomizeSheet {
+    char pad[0xb8];
+    void* m_pSomething;
+    void ClearActivePage();
+};
+
+void CXTPCustomizeSheet::ClearActivePage()
+{
+    void* p = *(void**)((char*)m_pSomething + 0x58);
+    if (p)
+    {
+        *(int*)((char*)p + 0x90) = 0;
+        void* q = *(void**)((char*)p + 0xfc);
+        void** vtbl = *(void***)q;
+        typedef void (__thiscall *Fn)(void*);
+        Fn fn = (Fn)vtbl[0x17c / 4];
+        fn(q);
+    }
+}

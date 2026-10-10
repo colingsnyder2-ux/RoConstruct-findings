@@ -1,5 +1,14 @@
-// from server: 93% by colin
-// roc-lang: cpp
-// roc-cl: 30729
-// roc-flags: /O2 /GS- /MD
-// roc-lib: xtp-15.2.1 Source/ReportControl/XTPReportInplaceEdit.cpp
+// from server: 100% by tester
+extern "C" unsigned long (__stdcall *GetSysColorBrush)(int);
+
+struct CXTPReportInplaceEdit {
+    int field_0x88;
+    void SetColor(int, int);
+};
+
+void CXTPReportInplaceEdit::SetColor(int a, int b)
+{
+    int brush = *(int*)((char*)this + 0x88);
+    (*(void (__thiscall**)(int, int))(*(int*)a + 0x38))(a, brush);
+    GetSysColorBrush(5);
+}

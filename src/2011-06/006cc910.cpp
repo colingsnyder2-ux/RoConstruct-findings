@@ -1,5 +1,14 @@
-// from server: 71% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs util/Math.cpp
+// from server: 100% by tester
+struct S_func_0067e3d0 {
+    char pad[0x28];
+    void* m_ptr;
+    void* f();
+};
+
+void* S_func_0067e3d0::f()
+{
+    void* p = m_ptr;
+    if (p)
+        return (char*)p - 8;
+    return 0;
+}

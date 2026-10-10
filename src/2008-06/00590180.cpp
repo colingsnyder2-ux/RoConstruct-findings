@@ -1,5 +1,13 @@
-// from server: 91% by colin
-// roc-lang: cpp
-// roc-cl: 50727
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs v8datamodel/RootInstance.cpp
+// from server: 100% by tester
+struct S {
+    char pad[0x2b0];
+    unsigned char flag;
+    void f();
+    void g();
+};
+
+void S::f()
+{
+    flag = 1;
+    g();
+}

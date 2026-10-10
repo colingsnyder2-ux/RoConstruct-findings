@@ -1,5 +1,12 @@
-// from server: 44% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: boost-1.34.1 libs/regex/src/cregex.cpp
+// from server: 100% by tester
+struct CMainFrame {
+    char pad[0xfc];
+    unsigned char field_0xe0;
+    void method(int*);
+};
+
+void CMainFrame::method(int* p) {
+    unsigned char v = field_0xe0;
+    void (__thiscall *fn)(int*, unsigned char) = *(void (__thiscall **)(int*, unsigned char))(*(int*)p + 4);
+    fn(p, v);
+}

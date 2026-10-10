@@ -1,4 +1,4 @@
-// from server: 71% by colin
+// from server: 73% by tester
 extern "C" int __stdcall pubsync_stub();
 
 struct S {
@@ -12,7 +12,7 @@ struct S {
     char pad2[0x40 - 0x38];
     char buf40[0x60];
     int* pA0;
-    int f(int a, int b, int c, int d, int e, int f);
+    int __cdecl f(int a, int b, int c, int d, int e, int f);
 };
 
 int S::f(int a, int b, int c, int d, int e, int f)

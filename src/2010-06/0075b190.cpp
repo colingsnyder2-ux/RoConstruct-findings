@@ -1,5 +1,15 @@
-// from server: 73% by colin
-// roc-lang: cpp
-// roc-cl: 30729
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs v8tree/Instance.cpp
+// from server: 100% by tester
+struct PrismPoly {
+    static void destroy(PrismPoly* p);
+};
+
+extern "C" void __cdecl sub_90BFB0(void*, void*);
+extern "C" void __cdecl sub_982114(void*);
+
+void PrismPoly::destroy(PrismPoly* p)
+{
+    if (p) {
+        sub_90BFB0(p, *(void**)((char*)p + 0xc));
+        sub_982114(p);
+    }
+}

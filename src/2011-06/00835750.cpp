@@ -1,5 +1,14 @@
-// from server: 61% by colin
-// roc-lang: cpp
-// roc-cl: 30729
-// roc-flags: /O2 /GS- /MD
-// roc-lib: xtp-15.2.1 Source/CommandBars/XTPMessageBar.cpp
+// from server: 100% by tester
+struct CXTPReportControl {
+    void sub_738580();
+    void sub_657410();
+    void target();
+};
+
+void CXTPReportControl::target() {
+    sub_738580();
+    int* p = *(int**)((char*)this + 0x100);
+    void (__thiscall *fn)(void*) = *(void (__thiscall **)(void*))((char*)*p + 0x58);
+    fn(p);
+    sub_657410();
+}

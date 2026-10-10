@@ -1,5 +1,15 @@
-// from server: 61% by colin
-// roc-lang: cpp
-// roc-cl: 50727
-// roc-flags: /O2 /GS- /MD
-// roc-lib: xtp-11.2.2-vc8 Source/CommandBars/XTPPaintManager.cpp
+// from server: 100% by tester
+struct CRobloxControlColorSelector {
+    void notifyChange();
+    void setValue(int value);
+    char pad_0[0x10c];
+    int field_108;
+};
+
+void CRobloxControlColorSelector::setValue(int value)
+{
+    if (value != field_108) {
+        field_108 = value;
+        notifyChange();
+    }
+}

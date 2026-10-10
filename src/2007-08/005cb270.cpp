@@ -1,4 +1,4 @@
-// from server: 69% by colin
+// from server: 70% by tester
 extern "C" {
     int __cdecl isdigit(int c);
     char* __cdecl strchr(const char* s, int c);
@@ -7,10 +7,9 @@ extern "C" {
 }
 
 struct Formatter {
-    char* parse(char* fmt, char* out);
 };
 
-char* Formatter::parse(char* fmt, char* out) {
+char* __cdecl parse(char* fmt, char* out) {
     char* p = fmt;
     int (*isdigit_fn)(int) = isdigit;
     while (isdigit_fn((char)*p)) {

@@ -1,5 +1,20 @@
-// from server: 60% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: boost-1.34.1 libs/regex/src/instances.cpp
+// from server: 100% by tester
+struct InnerVtbl {
+    char pad[0x10];
+    void (__stdcall *fn)(void*);
+};
+
+struct Inner {
+    InnerVtbl* vtbl;
+};
+
+struct Outer {
+    char pad0[0x30];
+    Inner* m_inner;
+};
+
+void __stdcall func(Outer* p, int* out)
+{
+    p->m_inner->vtbl->fn(p);
+    *out = 0;
+}

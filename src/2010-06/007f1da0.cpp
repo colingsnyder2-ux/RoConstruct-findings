@@ -1,5 +1,20 @@
-// from server: 50% by colin
-// roc-lang: cpp
-// roc-cl: 30729
-// roc-flags: /O2 /GS- /MD
-// roc-lib: xtp-13.2.1 Source/CommandBars/XTPControlExt.cpp
+// from server: 100% by tester
+struct CXTPCustomizeSheet {
+    char pad[0xb8];
+    void* m_p;
+    void SetActivePage();
+};
+
+void CXTPCustomizeSheet::SetActivePage()
+{
+    void* p = *(void**)((char*)m_p + 0x58);
+    if (p)
+    {
+        *(int*)((char*)p + 0x14c) = 3;
+        void* q = *(void**)((char*)p + 0x100);
+        void** vt = *(void***)q;
+        typedef void (__thiscall *Fn)(void*);
+        Fn fn = (Fn)vt[0x184 / 4];
+        fn(q);
+    }
+}

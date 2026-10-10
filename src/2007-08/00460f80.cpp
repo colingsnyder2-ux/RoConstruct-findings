@@ -1,36 +1,37 @@
-// from server: 33% by colin
+// from server: 43% by tester
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
 
-struct RefCountedBase {
+struct Inner {
     void* vptr;
-    long refCount;
+    long refcount;
+    long weakrefcount;
 };
 
-struct EventData {
+struct Outer {
     void* vptr;
-    void* field_4;
-    RefCountedBase* field_8;
-    void* field_c;
-    ~EventData();
+    void* unknown;
+    Inner* inner;
+    void* owner;
+    void dtor();
 };
 
-extern "C" void __cdecl func_00437b80(void*);
+extern void __cdecl sub_437b80(void*);
 
-EventData::~EventData()
+void Outer::dtor()
 {
     this->vptr = (void*)0x794b94;
-    if (this->field_c) {
-        func_00437b80(this);
+    if (this->owner != 0) {
+        sub_437b80(this);
     }
-    RefCountedBase* p = this->field_8;
-    if (p) {
-        if (_InterlockedExchangeAdd(&p->refCount, -1) == 1) {
-            void** vt = *(void***)p;
-            ((void (__thiscall*)(RefCountedBase*))vt[1])(p);
-            if (_InterlockedExchangeAdd(&p->refCount, -1) == 1) {
-                void** vt2 = *(void***)p;
-                ((void (__thiscall*)(RefCountedBase*))vt2[2])(p);
+    Inner* p = this->inner;
+    if (p != 0) {
+        if (_InterlockedExchangeAdd((volatile long*)((char*)p + 4), -1) == 1) {
+            void (__thiscall *f1)(Inner*) = *(void (__thiscall **)(Inner*))((char*)p->vptr + 4);
+            f1(p);
+            if (_InterlockedExchangeAdd((volatile long*)((char*)p + 8), -1) == 1) {
+                void (__thiscall *f2)(Inner*) = *(void (__thiscall **)(Inner*))((char*)p->vptr + 8);
+                f2(p);
             }
         }
     }

@@ -1,17 +1,18 @@
-// from server: 78% by colin
-// roc 2007-08 0077adc0  size: 55 bytes
+// from server: 80% by tester
+struct T_0077adc0 {
+    void m();
+};
 
-extern "C" void __cdecl sub_00725520(int, int);
-extern "C" int __cdecl sub_0058d830();
-extern "C" int __cdecl sub_00407410(int*);
-extern "C" int __cdecl sub_00407220(int);
+extern "C" void __stdcall f_00725520(void*, void*);
+extern "C" void* __stdcall f_0058d830();
+extern "C" void* __stdcall f_00407410(void*);
+extern "C" void __stdcall f_00407220();
 
-void sub_0077adc0()
+void T_0077adc0::m()
 {
-    int local;
     *(int*)0x8a4510 = 0x7af704;
-    sub_00725520(0x58dd90, 0x8c37c4);
-    local = sub_0058d830();
-    sub_00407410(&local);
-    sub_00407220(local);
+    f_00725520((void*)0x8c37c4, (void*)0x58dd90);
+    void* p = f_0058d830();
+    void* q = f_00407410(&p);
+    f_00407220();
 }

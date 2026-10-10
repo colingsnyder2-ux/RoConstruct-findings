@@ -1,5 +1,22 @@
-// from server: 61% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs-net ClientPhysics.cpp
+// from server: 100% by tester
+struct S {
+    char pad[0x2c];
+    int field_2c;
+
+    int get();
+};
+
+struct Inner {
+    char pad[0x2c];
+    int field_2c;
+};
+
+struct Outer {
+    char pad[0xf4];
+    Inner* inner;
+};
+
+int S::get() {
+    Outer* o = *(Outer**)((char*)this - 0x130);
+    return o->inner->field_2c;
+}

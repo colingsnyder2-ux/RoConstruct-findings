@@ -1,53 +1,83 @@
-// from server: 26% by colin
+// from server: 37% by tester
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
 
-struct Node {
-    char pad[0xc];
-    unsigned char flags;
-    char pad2[0x1c - 0xd];
-    int field1c;
-    int field20;
-    int field2c;
+extern "C" const char* __stdcall c_str_helper(const void*);
+extern "C" char* __stdcall strncpy_helper(char*, const char*, unsigned int);
+
+struct RefCounted {
+    long refcount;
+    long weakrefcount;
+    virtual void destroy();
+    virtual void destroy2();
 };
+
+struct Inner {
+    virtual void* getSomething(void* out);
+};
+
+struct Node {
+    char pad0[0xc];
+    unsigned char flags;
+    char pad1[0xf];
+    char* dest;
+    char pad2[0x8];
+    int field2c;
+    char pad3[0x4];
+    Inner* inner;
+};
+
+struct TreeCtrl {
+    char pad0[0xc];
+    void* field0c;
+    char pad1[0x20];
+    Node* node;
+};
+
+struct StringHolder {
+    char pad0[0x10];
+    RefCounted* ptr;
+};
+
+struct LocalString {
+    char pad0[0x10];
+    RefCounted* ptr;
+};
+
+extern "C" void __stdcall unknown_77e6a8(void*);
+extern "C" void* __stdcall unknown_77e978(void*, void*, void*);
 
 struct CRobloxTreeCtrlNode {
-    char pad[0x30];
-    void* field30;
-    int method(Node* node);
+    void __cdecl func(Node* node);
 };
 
-int CRobloxTreeCtrlNode::method(Node* node)
-{
+void CRobloxTreeCtrlNode::func(Node* node) {
     if (node->flags & 1) {
-        void* p = this->field30;
-        void* (*getInner)(void*, void*) = *(void*(**)(void*, void*))p;
-        void* inner = getInner(p, 0);
-        char* innerObj = (char*)inner;
-        if (*(long*)(innerObj + 4) != 0) {
-            _InterlockedExchangeAdd((volatile long*)(innerObj + 4), 1);
+        Inner* inner = ((TreeCtrl*)this)->node->inner;
+        void* out = 0;
+        void* result = inner->getSomething(&out);
+        RefCounted* rc = *(RefCounted**)result;
+        RefCounted* rc2 = *(RefCounted**)((char*)result + 4);
+        if (rc2) {
+            _InterlockedExchangeAdd(&rc2->refcount, 1);
         }
-        char local[0x18];
-        void (*ctor)(void*) = (void (*)(void*))0x40d550;
-        ctor(local);
-        if (innerObj != 0) {
-            if (_InterlockedExchangeAdd((volatile long*)(innerObj + 4), -1) == 1) {
-                void (*dtor)(void*) = *(void(**)(void*))innerObj;
-                dtor(innerObj);
-                if (_InterlockedExchangeAdd((volatile long*)(innerObj + 8), -1) == 1) {
-                    void (*dtor2)(void*) = *(void(**)(void*))((char*)(*(void**)innerObj) + 8);
-                    dtor2(innerObj);
+        LocalString ls;
+        ls.ptr = rc;
+        if (rc2) {
+            if (_InterlockedExchangeAdd(&rc2->refcount, -1) == 1) {
+                rc2->destroy();
+                if (_InterlockedExchangeAdd(&rc2->weakrefcount, -1) == 1) {
+                    rc2->destroy2();
                 }
             }
         }
-        void* dc = ((void* (*)(void*))0x77e6a8)((char*)this->field30 + 0xc8);
-        ((int (*)(void*, const char*, int))0x77e978)(dc, (const char*)node->field1c, node->field20);
-        void (*cleanup)(void*) = (void (*)(void*))0x5595a0;
-        cleanup(local);
+        void* h = ((TreeCtrl*)this)->field0c;
+        unknown_77e6a8((char*)h + 0xc8);
+        unknown_77e978(node->dest, (void*)0, node->dest);
+        ls.ptr = 0;
     }
     if (node->flags & 0x40) {
-        char result = ((char (*)(void))0x422770)();
-        node->field2c = (result != 0) ? 1 : 0;
+        char al = ((char (__thiscall*)(CRobloxTreeCtrlNode*))0x422770)(this);
+        node->field2c = (al != 0) ? 1 : 0;
     }
-    return 0;
 }

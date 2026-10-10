@@ -1,15 +1,16 @@
-// from server: 81% by Cezant64gamejr
-struct RBX {
-    struct RotatePJoint {
-        float getFloat() {
-            float* ptr = *(float**)((char*)this + 0x150);
-            return *ptr;
-        }
-    };
+// from server: 100% by tester
+struct ConstraintAlign2Axes {
+    char pad_0[0x8c];
+    float baseAngle;
 };
 
-int main() {
-    RBX::RotatePJoint rpj;
-    float value = rpj.getFloat();
-    return 0;
+struct Joint {
+    char pad_0[0x150];
+    ConstraintAlign2Axes* alignmentConstraint;
+
+    float getBaseAngle();
+};
+
+float Joint::getBaseAngle() {
+    return alignmentConstraint->baseAngle;
 }

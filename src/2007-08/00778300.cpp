@@ -1,16 +1,17 @@
-// from server: 80% by colin
-// roc 2007-08 00778300  size: 55 bytes
+// from server: 87% by tester
+struct T_func_00778300 { void m(); };
 
-extern "C" void __cdecl sub_00725520(void*, void*);
-extern "C" void* __cdecl sub_00486ef0();
-extern "C" void* __cdecl sub_00407410(void*);
-extern "C" void __cdecl sub_00407220(void*);
+struct T_func_00407220 { void m(); };
+extern T_func_00407220* func_00407410(void*);
 
-void sub_00778300()
+extern "C" void __stdcall func_00725520(void*, void*);
+extern "C" void* __cdecl func_00486ef0();
+
+void T_func_00778300::m()
 {
-    *(int*)0x88e308 = 0x79b014;
-    sub_00725520((void*)0x8bdca4, (void*)0x487950);
-    void* p = sub_00486ef0();
-    void* q = sub_00407410(&p);
-    sub_00407220(q);
+    *(unsigned long*)0x88e308 = 0x79b014;
+    func_00725520((void*)0x8bdca4, (void*)0x487950);
+    void* p = func_00486ef0();
+    T_func_00407220* q = func_00407410(&p);
+    q->m();
 }

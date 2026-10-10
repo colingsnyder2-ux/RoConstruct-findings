@@ -1,15 +1,20 @@
-// from server: 25% by colin
-struct FactoryProduct {
-    void* operator new(unsigned int);
-    void FactoryProduct_ctor();
-    static void* CreateInstance();
+// from server: 29% by tester
+struct ICreator {
+    virtual void v0();
+    virtual void v1();
 };
 
-void* FactoryProduct::CreateInstance()
+struct FactoryProductCreator : ICreator {
+    void construct();
+};
+
+extern "C" void* __cdecl operator_new(unsigned int size);
+extern "C" void __cdecl construct_creator(FactoryProductCreator* p);
+
+void FactoryProductCreator::construct()
 {
-    FactoryProduct* p = (FactoryProduct*)operator new(0x7c);
-    if (p != 0) {
-        p->FactoryProduct_ctor();
+    FactoryProductCreator* p = (FactoryProductCreator*)operator_new(0x7c);
+    if (p) {
+        construct_creator(p);
     }
-    return p;
 }

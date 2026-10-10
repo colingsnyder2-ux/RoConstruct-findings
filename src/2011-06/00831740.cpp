@@ -1,5 +1,20 @@
-// from server: 98% by colin
-// roc-lang: cpp
-// roc-cl: 50727
-// roc-flags: /O2 /GS- /MD
-// roc-lib: xtp-11.2.2-vc8 Source/ReportControl/XTPReportControl.cpp
+// from server: 100% by tester
+struct CXTPReportControl {
+    char m_pad[0x108];
+    int m_nValue;
+    void SetValue(int nValue);
+};
+
+extern "C" void __stdcall sub_738544(int, int, int);
+
+void CXTPReportControl::SetValue(int nValue)
+{
+    if (nValue != this->m_nValue)
+    {
+        if (nValue < 0)
+            nValue = 0;
+        this->m_nValue = nValue;
+        sub_738544(1, nValue, 1);
+        (*(void (__thiscall **)(CXTPReportControl *))(*(int *)this + 0x164))(this);
+    }
+}

@@ -1,5 +1,17 @@
-// from server: 96% by colin
-// roc-lang: cpp
-// roc-cl: 30729
-// roc-flags: /O2 /GS- /MD
-// roc-lib: xtp-15.2.1 Source/SyntaxEdit/XTPSyntaxEditColorComboBox.cpp
+// from server: 100% by tester
+struct CXTColorBase {
+    void f();
+    char pad[0x54];
+    char flag5c;
+};
+
+extern "C" void __fastcall sub_62fcd4(void* p);
+
+void CXTColorBase::f() {
+    sub_62fcd4(this);
+    if (flag5c) {
+        void** vt = *(void***)this;
+        void (__fastcall *fn)(void*) = (void (__fastcall *)(void*))vt[0x150 / 4];
+        fn(this);
+    }
+}

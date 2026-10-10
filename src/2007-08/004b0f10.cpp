@@ -1,6 +1,6 @@
-// from server: 15% by colin
+// from server: 16% by tester
 struct VReplicatorSignalDesc {
-    void construct(int a, int b);
+    void construct(int a, int b, int c);
 };
 
 extern "C" void __stdcall sub_4B0240();
@@ -12,7 +12,7 @@ extern "C" void __stdcall sub_415240();
 extern "C" void __stdcall sub_414670();
 extern "C" void __stdcall sub_56D840();
 
-void VReplicatorSignalDesc::construct(int a, int b)
+void VReplicatorSignalDesc::construct(int a, int b, int c)
 {
     sub_4B0240();
     sub_570410();

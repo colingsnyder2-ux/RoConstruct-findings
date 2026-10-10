@@ -1,5 +1,13 @@
-// from server: 71% by colin
-// roc-lang: cpp
-// roc-cl: 30729
-// roc-flags: /O2 /GS- /MD
-// roc-lib: xtp-15.2.1 Source/FlowGraph/XTPFlowGraphControl.cpp
+// from server: 100% by tester
+struct CXTPReportControl {
+    void sub_63023E();
+    void sub_657410();
+    void Method(int arg);
+};
+
+void CXTPReportControl::Method(int arg) {
+    sub_63023E();
+    void (CXTPReportControl::*pmf)() = *(void (CXTPReportControl::**)())(*(int*)this + 0x214);
+    (this->*pmf)();
+    sub_657410();
+}

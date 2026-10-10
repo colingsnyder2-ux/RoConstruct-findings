@@ -1,5 +1,14 @@
-// from server: 94% by colin
-// roc-lang: cpp
-// roc-cl: 30729
-// roc-flags: /O2 /GS- /MD
-// roc-lib: xtp-15.2.1 Source/CommandBars/XTPControlComboBox.cpp
+// from server: 100% by tester
+struct CXTPControlComboBoxList {
+    char pad[0x180];
+    void* m_pList;
+    void OnSelectionChanged(int, int, int);
+};
+
+void CXTPControlComboBoxList::OnSelectionChanged(int a, int b, int c) {
+    void* p = m_pList;
+    void** vt = *(void***)p;
+    ((void (__thiscall*)(void*))vt[0x164 / 4])(p);
+    vt = *(void***)p;
+    ((void (__thiscall*)(void*))vt[0x98 / 4])(p);
+}

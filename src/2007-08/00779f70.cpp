@@ -1,5 +1,17 @@
-// from server: 82% by colin
-// roc-lang: cpp
-// roc-cl: 50727
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs v8datamodel/Gyro.cpp
+// from server: 100% by tester
+struct C {
+    void* f();
+    void g(int);
+    void h(void*);
+};
+
+extern C obj_8bbea4;
+
+void func_00777d10()
+{
+    void* p = obj_8bbea4.f();
+    if (p != 0) {
+        obj_8bbea4.g(0);
+        obj_8bbea4.h(p);
+    }
+}

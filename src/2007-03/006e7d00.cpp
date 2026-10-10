@@ -1,5 +1,12 @@
-// from server: 90% by colin
-// roc-lang: cpp
-// roc-cl: 30729
-// roc-flags: /O2 /GS- /MD
-// roc-lib: xtp-11.2.2 Source/DockingPane/XTPDockingPanePaintManager.cpp
+// from server: 100% by tester
+struct CXTPTabPaintManager {
+    char pad0[0x100];
+    int m_value;
+    void SetValue(int value);
+};
+
+void CXTPTabPaintManager::SetValue(int value)
+{
+    m_value = value;
+    (*(void (__thiscall **)(void *))(*(int *)this + 0x6c))(this);
+}

@@ -1,5 +1,15 @@
-// from server: 66% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs v8kernel/Body.cpp
+// from server: 100% by tester
+struct RBX_Assembly {
+    char pad[0x28];
+    void* field_24;
+    void* get();
+};
+
+void* RBX_Assembly::get() {
+    char* p = (char*)field_24;
+    char* q = *(char**)(p + 0x20);
+    if (q != 0) {
+        return q - 8;
+    }
+    return 0;
+}

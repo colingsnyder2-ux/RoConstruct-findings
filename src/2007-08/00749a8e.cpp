@@ -1,12 +1,11 @@
-// from server: 64% by colin
+// from server: 68% by tester
 struct seg_00740000 {
-    void Method(int arg);
 };
 
 extern "C" void __cdecl sub_630A1E(int);
 extern "C" void __cdecl sub_630A18();
 
-void seg_00740000::Method(int arg) {
+void __cdecl Method(int arg) {
     int* p = (int*)((char*)&arg + 4);
     int v = *p;
     int x = v ^ (int)p;

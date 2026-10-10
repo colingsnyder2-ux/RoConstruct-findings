@@ -1,5 +1,13 @@
-// from server: 66% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs util/Name.cpp
+// from server: 100% by tester
+struct RBX_ArrowTool {
+    char pad[0x14];
+    bool flag;
+    void method();
+};
+
+void RBX_ArrowTool::method()
+{
+    if (flag) {
+        (*(void (__thiscall **)(void *))(*(int *)this + 0x38))(this);
+    }
+}

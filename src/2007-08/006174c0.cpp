@@ -1,4 +1,4 @@
-// from server: 54% by colin
+// from server: 56% by tester
 extern "C" int __stdcall iscntrl(int c);
 extern void __cdecl func_0060ee90(int a, const char* b);
 
@@ -10,7 +10,7 @@ const char g_str_7c3950[] = "char(%d)";
 struct S {
     char pad[0x34];
     int field_34;
-    int func_006174c0(int c);
+    int __cdecl func_006174c0(int c);
 };
 
 int S::func_006174c0(int c)

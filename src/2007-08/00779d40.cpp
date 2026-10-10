@@ -1,18 +1,21 @@
-// from server: 80% by colin
-// roc 2007-08 00779d40  unit: seg_00770000  size: 55 bytes
-// Make this compile to the exact bytes below, then: roc check 2007-08 00779d40
+// from server: 84% by tester
+struct S_00779d40 {
+    void m();
+};
 
-extern "C" void __cdecl sub_00725520(int, int);
-extern "C" int __cdecl sub_0055e6a0();
-extern "C" int __cdecl sub_00407410(int*);
-extern "C" void __cdecl sub_00407220();
+struct S_00407220 {
+    void f(void*);
+};
 
-void __cdecl sub_00779d40()
+extern "C" void __stdcall f_00725520(void*, void*);
+extern "C" void* __stdcall f_0055e6a0();
+extern "C" void* __stdcall f_00407410(void*);
+
+void S_00779d40::m()
 {
-    int local;
-    *(int*)0x89f37c = 0x7a95a8;
-    sub_00725520(0x8c2320, 0x55ed50);
-    local = sub_0055e6a0();
-    sub_00407410(&local);
-    sub_00407220();
+    *(void**)0x89f37c = (void*)0x7a95a8;
+    f_00725520((void*)0x8c2320, (void*)0x55ed50);
+    void* p = f_0055e6a0();
+    S_00407220* q = (S_00407220*)f_00407410(&p);
+    q->f(&p);
 }

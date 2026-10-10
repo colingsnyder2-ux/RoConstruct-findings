@@ -1,5 +1,15 @@
-// from server: 72% by colin
-// roc-lang: cpp
-// roc-cl: 30729
-// roc-flags: /O2 /GS- /MD
-// roc-lib: xtp-11.2.2 Source/ReportControl/XTPReportControl.cpp
+// from server: 100% by tester
+typedef unsigned long DWORD;
+
+struct CXTPReportControl {
+    char pad[0x94];
+    DWORD field_90;
+
+    void SomeMethod();
+};
+
+void __stdcall sub_65e4a0(DWORD);
+
+void CXTPReportControl::SomeMethod() {
+    sub_65e4a0(this->field_90);
+}

@@ -1,5 +1,13 @@
-// from server: 97% by colin
-// roc-lang: cpp
-// roc-cl: 30729
-// roc-flags: /O2 /GS- /MD
-// roc-lib: xtp-11.2.2 Source/CommandBars/XTPControlComboBox.cpp
+// from server: 100% by tester
+struct CXTPControlComboBoxList {
+    void* sub_6377b0();
+    void* method(int);
+};
+
+void* CXTPControlComboBoxList::method(int arg) {
+    void* p = sub_6377b0();
+    void** vtbl = *(void***)p;
+    void (__thiscall *fn)(void*, void*, int) = (void (__thiscall *)(void*, void*, int))vtbl[0x1dc / 4];
+    fn(p, this, arg);
+    return p;
+}

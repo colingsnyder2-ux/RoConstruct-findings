@@ -1,5 +1,17 @@
-// from server: 70% by colin
-// roc-lang: cpp
-// roc-cl: 30729
-// roc-flags: /O2 /GS- /MD
-// roc-lib: xtp-11.2.2 Source/Controls/XTWndHook.cpp
+// from server: 100% by tester
+extern "C" int (__stdcall *IsWindow)(void*);
+
+struct CXTColorSelectorCtrl {
+    char pad[0x160];
+    void* m_hwnd;
+    int IsVisible();
+};
+
+int CXTColorSelectorCtrl::IsVisible()
+{
+    if (m_hwnd != 0) {
+        if (IsWindow(*(void**)((char*)m_hwnd + 0x20)) != 0)
+            return 1;
+    }
+    return 0;
+}

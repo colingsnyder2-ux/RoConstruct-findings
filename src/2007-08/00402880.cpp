@@ -1,34 +1,23 @@
-// from server: 80% by colin
-// roc 2007-08 00402880  unit: std::bad_alloc  size: 37 bytes
-// Make this compile to the exact bytes below, then: roc check 2007-08 00402880
+// from server: 100% by tester
+// roc 2008-06 006fd910  unit: CXTCaptionButtonTheme  size: 37 bytes
+// Make this compile to the exact bytes below, then: roc check 2008-06 006fd910
 //
-// 00402880  8b442404             mov eax, dword ptr [esp + 4]
-// 00402884  56                   push esi
-// 00402885  50                   push eax
-// 00402886  8bf1                 mov esi, ecx
-// 00402888  ff15d0e67700         call dword ptr [0x77e6d0]
-// 0040288e  83c404               add esp, 4
-// 00402891  85c0                 test eax, eax
-// 00402893  750a                 jne 0x40289f
-// 00402895  680e000780           push 0x8007000e
-// 0040289a  e861e7ffff           call 0x401000
-// 0040289f  8906                 mov dword ptr [esi], eax
-// 004028a1  5e                   pop esi
-// 004028a2  c20400               ret 4
+// 006fd910  8b442404             mov eax, dword ptr [esp + 4]
+// 006fd914  56                   push esi
+// 006fd915  50                   push eax
+// 006fd916  8bf1                 mov esi, ecx
+// 006fd918  ff15b0288000         call dword ptr [0x8028b0]
+// 006fd91e  83c404               add esp, 4
+// 006fd921  85c0                 test eax, eax
+// 006fd923  750a                 jne 0x6fd92f
+// 006fd925  680e000780           push 0x8007000e
+// 006fd92a  e8d136d0ff           call 0x401000
+// 006fd92f  8906                 mov dword ptr [esi], eax
+// 006fd931  5e                   pop esi
+// 006fd932  c20400               ret 4
+// library xtp-11.2.2-shared-mfc/Source\Calendar\XTPCalendarThemeOffice2007.cpp (function ?AllocateHeap@?$CTempBuffer@D$0IA@VCCRTAllocator@ATL@@@ATL@@AAEXI@Z)
 
-extern "C" void* __cdecl malloc(unsigned int);
-
-void __stdcall sub_401000(unsigned int code);
-
-struct S {
-    void* field0;
-    void __thiscall assign(void* p);
-};
-
-void S::assign(void* p)
-{
-    void* q = malloc((unsigned int)p);
-    if (q == 0)
-        sub_401000(0x8007000e);
-    field0 = q;
-}
+// roc-lang: cpp
+// roc-cl: 30729
+// roc-flags: /O2 /GS- /MD
+// roc-lib: xtp-11.2.2-shared-mfc Source/Calendar/XTPCalendarThemeOffice2007.cpp

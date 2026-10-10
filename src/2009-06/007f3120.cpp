@@ -1,5 +1,14 @@
-// from server: 95% by colin
-// roc-lang: cpp
-// roc-cl: 30729
-// roc-flags: /O2 /GS- /MD
-// roc-lib: xtp-15.2.1 Source/PropertyGrid/XTPPropertyGridInplaceList.cpp
+// from server: 100% by tester
+struct CXTPPropertyGridInplaceList {
+    void f(unsigned int);
+};
+
+extern "C" void __cdecl sub_63023e();
+extern "C" void __cdecl sub_682740(int);
+
+void CXTPPropertyGridInplaceList::f(unsigned int arg) {
+    sub_63023e();
+    sub_682740(0);
+    (*(void (__thiscall **)(void *))(*(int *)this + 0x168))(this);
+    (*(void (__thiscall **)(void *))(*(int *)this + 0x68))(this);
+}

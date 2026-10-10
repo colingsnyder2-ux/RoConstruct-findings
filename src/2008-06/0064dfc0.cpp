@@ -1,5 +1,14 @@
-// from server: 68% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs util/Name.cpp
+// from server: 100% by tester
+struct ToolMouseCommand {
+    char pad[0x13a];
+    short field_f4;
+    int getValue();
+};
+
+void helper_601390();
+
+int ToolMouseCommand::getValue()
+{
+    helper_601390();
+    return this->field_f4;
+}

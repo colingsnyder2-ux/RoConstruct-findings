@@ -1,5 +1,15 @@
-// from server: 58% by colin
-// roc-lang: cpp
-// roc-cl: 50727
-// roc-flags: /O2 /Ob1 /GS- /MT
-// roc-lib: wildmagic-2-core Containment/WmlConvexHull2.cpp
+// from server: 100% by tester
+struct CRobloxControlColorSelector {
+    void notifyChange();
+    void setValue(int value);
+    char pad_0[0x10c];
+    int field_108;
+};
+
+void CRobloxControlColorSelector::setValue(int value)
+{
+    if (value != field_108) {
+        field_108 = value;
+        notifyChange();
+    }
+}

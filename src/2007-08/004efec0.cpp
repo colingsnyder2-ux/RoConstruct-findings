@@ -1,8 +1,8 @@
-// from server: 47% by colin
+// from server: 49% by tester
 extern "C" __declspec(dllimport) long __stdcall InterlockedIncrement(long volatile*);
 
 struct WeakReferenceCountedPointer {
-    void assign(unsigned int count, void** dst, void** src);
+    void __cdecl assign(unsigned int count, void** dst, void** src);
 };
 
 void WeakReferenceCountedPointer::assign(unsigned int count, void** dst, void** src) {

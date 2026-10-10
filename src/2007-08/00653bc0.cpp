@@ -1,31 +1,33 @@
-// from server: 65% by colin
-struct CNameItem {
-    char pad_0x00[0x4c];
-    int field_0x4c;
-    char pad_0x50[0x08];
-    int field_0x58;
-    char pad_0x5c[0x6d4];
-    int field_0x730;
-    int compare(const CNameItem& other, int arg) const;
+// from server: 81% by tester
+struct CNameItem
+{
+    int Compare(CNameItem* other, int arg);
 };
 
-extern "C" int __stdcall sub_77dcd0(int);
+extern "C" int __stdcall sub_77DCD0(void*);
 
-int CNameItem::compare(const CNameItem& other, int arg) const {
-    int a = this->field_0x58;
-    if (a != -1) {
-        return a - other.field_0x58;
+int CNameItem::Compare(CNameItem* other, int arg)
+{
+    int v = *(int*)((char*)this + 0x58);
+    if (v != -1)
+    {
+        return v - *(int*)((char*)other + 0x58);
     }
-    if (sub_77dcd0((int)(this + 0x5c))) {
-        int r = ((int (__thiscall *)(const CNameItem*, int))*(int*)(*(int*)this + 0x78))(this, arg);
-        if (r > 0) {
-            int r2 = ((int (__thiscall *)(const CNameItem*, int))*(int*)(*(int*)&other + 0x78))(&other, arg);
-            return r - r2;
-        }
-        ((void (__thiscall *)(const CNameItem*, int, int))*(int*)(*(int*)this + 0x80))(this, arg, 0);
-        return 0;
+
+    if (!sub_77DCD0((char*)this + 0x5c))
+    {
+        int edx = *(int*)((char*)this + 0x4c);
+        int ecx = *(int*)(edx + 0x50);
+        int eax = *(int*)ecx;
+        int fn = *(int*)(eax + 0x5c);
+        return ((int (__thiscall*)(void*, void*, void*))fn)((void*)ecx, (char*)this + 0x5c, (char*)other + 0x5c);
     }
-    int p = *(int*)(this->field_0x4c + 0x50);
-    int f = *(int*)(*(int*)p + 0x5c);
-    return ((int (__thiscall *)(int, int, int))f)(p, (int)(this + 0x5c), (int)(&other + 0x5c));
+
+    int r = ((int (__thiscall*)(CNameItem*, int))*(void**)(*(int*)this + 0x78))(this, arg);
+    if (r > 0)
+    {
+        int r2 = ((int (__thiscall*)(CNameItem*, int))*(void**)(*(int*)other + 0x78))(other, arg);
+        return r - r2;
+    }
+    return ((int (__thiscall*)(CNameItem*, int, int))*(void**)(*(int*)this + 0x80))(this, arg, *(int*)((char*)other + 0x58));
 }

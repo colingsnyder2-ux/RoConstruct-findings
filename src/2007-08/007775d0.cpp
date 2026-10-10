@@ -1,19 +1,16 @@
-// from server: 80% by colin
-struct seg_00770000_007775d0
-{
-    void func_007775d0();
-};
+// from server: 84% by tester
+struct T_func_007775d0 { void m(); };
 
-extern "C" void __stdcall sub_00725520(void*, void*);
-extern "C" void* __stdcall sub_0041bf50();
-extern "C" void __stdcall sub_00407410(void*);
-extern "C" void __stdcall sub_00407220();
+extern "C" void __stdcall func_00725520(void*, void*);
+extern "C" void* __cdecl func_0041bf50();
+extern "C" void* __stdcall func_00407410(void*);
+extern "C" void __stdcall func_00407220(void*);
 
-void seg_00770000_007775d0::func_007775d0()
+void T_func_007775d0::m()
 {
-    *(int*)0x884a50 = 0x787aa0;
-    sub_00725520((void*)0x41c120, (void*)0x8bb484);
-    void* p = sub_0041bf50();
-    sub_00407410(&p);
-    sub_00407220();
+    *(void**)0x884a50 = (void*)0x787aa0;
+    func_00725520((void*)0x8bb484, (void*)0x41c120);
+    void* p = func_0041bf50();
+    void* q = func_00407410(&p);
+    func_00407220(q);
 }

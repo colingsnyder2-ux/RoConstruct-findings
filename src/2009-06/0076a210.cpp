@@ -1,5 +1,14 @@
-// from server: 58% by colin
-// roc-lang: cpp
-// roc-cl: 30729
-// roc-flags: /O2 /GS- /MD
-// roc-lib: xtp-15.2.1 Source/CommandBars/XTPGalleryListBox.cpp
+// from server: 100% by tester
+struct CXTPPopupBar {
+    void* GetSite();
+    void* GetPopupSite(int);
+};
+
+void* CXTPPopupBar::GetPopupSite(int n)
+{
+    void* p = GetSite();
+    void* vtable = *(void**)p;
+    void (__thiscall* fn)(void*, void*, int) = *(void (__thiscall**)(void*, void*, int))((char*)vtable + 0x1dc);
+    fn(p, this, n);
+    return p;
+}

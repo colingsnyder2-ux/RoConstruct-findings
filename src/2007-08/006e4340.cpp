@@ -1,4 +1,4 @@
-// from server: 38% by colin
+// from server: 40% by tester
 // roc 2007-08 006e4340  unit: CXTPDockingPaneSplitterContainer  size: 207 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 006e4340
 
@@ -7,7 +7,7 @@ struct CXTPDockingPaneSplitterContainer {
     int m_nTop;
     int m_nRight;
     int m_nBottom;
-    int Calc(int a, int b, int c, int d, int e, int f, int g, int h, int i, int j, int k, int l, int m, int n, int o, int p, int q, int r);
+    int __cdecl Calc(int a, int b, int c, int d, int e, int f, int g, int h, int i, int j, int k, int l, int m, int n, int o, int p, int q, int r);
 };
 
 extern "C" int __stdcall sub_6e40b0(int, int, int, int, int, int, int, int, int, int, int, int, int, int, int, int, int, int);

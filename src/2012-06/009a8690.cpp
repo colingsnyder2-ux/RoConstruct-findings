@@ -1,5 +1,18 @@
-// from server: 58% by colin
-// roc-lang: cpp
-// roc-cl: 30729
-// roc-flags: /O1 /GS- /MD
-// roc-lib: xtp-11.2.2 Source/ReportControl/XTPReportColumn.cpp
+// from server: 100% by tester
+struct CXTPReportColumn {
+    int GetWidth();
+};
+
+int CXTPReportColumn::GetWidth()
+{
+    if (*(int*)((char*)this + 0x68) == 0 && *(int*)((char*)this + 0xa8) == 0)
+    {
+        int n = *(int*)((char*)this + 0xa4);
+        return n + this->GetWidth();
+    }
+    else
+    {
+        int n = *(int*)((char*)this + 0x8c);
+        return n + this->GetWidth();
+    }
+}

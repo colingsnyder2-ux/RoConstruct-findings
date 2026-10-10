@@ -1,5 +1,16 @@
-// from server: 70% by colin
-// roc-lang: cpp
-// roc-cl: 30729
-// roc-flags: /O1 /GS- /MD
-// roc-lib: xtp-15.2.1 Source/CommandBars/XTPControlComboBoxExt.cpp
+// from server: 100% by tester
+struct VAuthoringSettings_FactoryProduct {
+    char pad[0x38];
+    void* field_0x48;
+    void method(int, int);
+};
+
+void VAuthoringSettings_FactoryProduct::method(int a, int b) {
+    void* p = field_0x48;
+    if (p) {
+        void** vtbl = *(void***)p;
+        typedef void (__thiscall *Fn)(void*, int, int);
+        Fn f = (Fn)vtbl[0x48 / 4];
+        f(p, a, b);
+    }
+}

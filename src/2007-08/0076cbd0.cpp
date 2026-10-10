@@ -1,19 +1,24 @@
-// from server: 78% by colin
+// from server: 81% by tester
+// roc 2007-08 0076cbd0  unit: seg_00760000  size: 63 bytes
+// Make this compile to the exact bytes below, then: roc check 2007-08 0076cbd0
+
+extern "C" int __cdecl sub_00725520(int, int);
+extern "C" int __cdecl sub_0041fd40();
+extern "C" int __cdecl sub_00407410(int*);
+extern "C" int __cdecl sub_00630d23(int);
+extern "C" int __cdecl sub_004339d0();
+
 struct CrashReporter {
-    void* field0;
+    void init();
 };
 
-extern "C" void __cdecl sub_725520(int, int);
-extern "C" void* __cdecl sub_41fd40();
-extern "C" void* __cdecl sub_407410(void*);
-extern "C" void* __cdecl sub_4339d0(void*);
-extern "C" void __cdecl sub_630d23(void*, int);
-
-void CrashReporter_ctor() {
-    sub_725520(0x8bb4c4, 0x420660);
-    void* p = sub_41fd40();
-    void* q = sub_407410(&p);
-    void* r = sub_4339d0(q);
+void CrashReporter::init()
+{
+    sub_00725520(0x8bb4c4, 0x420660);
+    int v = sub_0041fd40();
+    int* p = &v;
+    int r = sub_00407410(p);
+    sub_004339d0();
     *(int*)r = 0x886358;
-    sub_630d23(r, 0x777880);
+    sub_00630d23(0x777880);
 }

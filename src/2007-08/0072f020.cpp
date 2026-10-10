@@ -1,8 +1,8 @@
-// from server: 36% by colin
+// from server: 40% by tester
 extern "C" float __cdecl func_00630e0c(float);
 
 struct S {
-    void f(float a, float b, float c, float d, float e, float f2, float g);
+    void __cdecl f(float a, float b, float c, float d, float e, float f2, float g);
 };
 
 void S::f(float a, float b, float c, float d, float e, float f2, float g)

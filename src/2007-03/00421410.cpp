@@ -1,5 +1,20 @@
-// from server: 73% by colin
-// roc-lang: cpp
-// roc-cl: 30729
-// roc-flags: /O2 /GS- /MD
-// roc-lib: mfc-9.0 atlmfc/src/mfc/afxcolorbar.cpp
+// from server: 100% by tester
+struct InnerVtbl {
+    char pad[0x18];
+    void (__stdcall *fn)(void*);
+};
+
+struct Inner {
+    InnerVtbl* vtbl;
+};
+
+struct Outer {
+    char pad0[0x30];
+    Inner* m_inner;
+};
+
+void __stdcall func(Outer* p, int* out)
+{
+    p->m_inner->vtbl->fn(p);
+    *out = 0;
+}

@@ -1,5 +1,14 @@
-// from server: 47% by colin
-// roc-lang: cpp
-// roc-cl: 30729
-// roc-flags: /O1 /GS- /MD
-// roc-lib: xtp-15.2.1 Source/DockingPane/XTPDockingPaneSidePanel.cpp
+// from server: 100% by tester
+struct CXTPCommandBar {
+    char pad[0xf0];
+    unsigned int m_dwStyle;
+    void SetFlag(int bSet);
+};
+
+void CXTPCommandBar::SetFlag(int bSet)
+{
+    if (bSet != 0)
+        m_dwStyle |= 0x400000;
+    else
+        m_dwStyle &= 0xffbfffff;
+}

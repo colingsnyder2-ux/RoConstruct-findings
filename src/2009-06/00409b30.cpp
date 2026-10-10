@@ -1,5 +1,14 @@
-// from server: 84% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: openrbx-client App/v8tree/Instance.cpp
+// from server: 100% by tester
+struct TypedPropertyDescriptor {
+    void construct();
+};
+
+void TypedPropertyDescriptor::construct()
+{
+    *(int*)((char*)this + 0x00) = 0x8ad2bc;
+    *(int*)((char*)this + 0x14) = 0x8ad2ac;
+    *(int*)((char*)this + 0x18) = 0x8ad2a4;
+    *(int*)((char*)this + 0x20) = 0x8ad29c;
+    extern void __stdcall sub_5d2b60();
+    sub_5d2b60();
+}

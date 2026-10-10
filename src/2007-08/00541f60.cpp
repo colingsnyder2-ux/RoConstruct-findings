@@ -1,42 +1,59 @@
-// from server: 57% by colin
-// roc 2007-08 00541f60  unit: RBX::VInstance::?$NonFactoryProduct  size: 91 bytes
-// Make this compile to the exact bytes below, then: roc check 2007-08 00541f60
-
+// from server: 80% by tester
 struct VInstance {
     char pad[0xbc];
     void* field_bc;
     void* field_c0;
-
-    void someMethod();
+    int hasElements();
+    void process();
 };
 
-struct Container {
-    void* begin;
-    void* end;
-};
+extern "C" int __stdcall sub_487c10(void* p);
 
-extern "C" void __stdcall invalid_parameter_noinfo();
-
-void* __fastcall sub_487c10(VInstance* self);
-void __fastcall sub_541630(void* self, void* arg);
-
-void VInstance::someMethod()
+int VInstance::hasElements()
 {
-    if (sub_487c10(this) != 0) {
-        void (__stdcall *fn)() = invalid_parameter_noinfo;
-        for (;;) {
-            Container* c = (Container*)field_c0;
-            void* b = field_bc;
-            if (c->begin != 0) {
-                if (((char*)c->end - (char*)c->begin) >> 3 != 0) {
-                    goto do_call;
-                }
+    void* p = field_c0;
+    if (p == 0)
+        return 0;
+    char* begin = *(char**)((char*)p + 4);
+    if (begin == 0)
+        return 0;
+    char* end = *(char**)((char*)p + 8);
+    return (int)((end - begin) >> 3);
+}
+
+void VInstance::process()
+{
+    if (sub_487c10(this) == 0)
+        return;
+
+    void (__stdcall *fn)() = *(void (__stdcall**)())0x77e6d8;
+
+    for (;;)
+    {
+        void* p = field_c0;
+        void* begin = *(void**)((char*)p + 4);
+        void* fieldbc = field_bc;
+        if (begin != 0)
+        {
+            void* end = *(void**)((char*)p + 8);
+            if (((char*)end - (char*)begin) >> 3 != 0)
+            {
             }
-            fn();
-        do_call:
-            sub_541630(*(void**)c->begin, b);
-            if (sub_487c10(this) == 0)
-                break;
+            else
+            {
+                fn();
+            }
         }
+        else
+        {
+            fn();
+        }
+
+        void* first = *(void**)((char*)p + 4);
+        void* obj = *(void**)first;
+        ((void (__thiscall*)(void*, void*))0x541630)(obj, fieldbc);
+
+        if (sub_487c10(this) == 0)
+            break;
     }
 }

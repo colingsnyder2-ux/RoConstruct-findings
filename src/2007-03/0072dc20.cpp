@@ -1,5 +1,7 @@
-// from server: 86% by colin
-// roc-lang: c
-// roc-cl: 50727
-// roc-flags: /O2 /GS- /MD
-// roc-lib: zlib-1.2.3 inflate.c
+// from server: 100% by tester
+extern void __stdcall func_0072d1f0(int, int, int, int);
+
+void __stdcall func_0072d2c0(int a, int b, int c)
+{
+    func_0072d1f0(a, 0xf, b, c);
+}

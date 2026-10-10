@@ -1,5 +1,10 @@
-// from server: 94% by colin
-// roc-lang: cpp
-// roc-cl: 30729
-// roc-flags: /O2 /GS- /MD
-// roc-lib: xtp-15.2.1 Source/SkinFramework/XTPSkinObjectFrame.cpp
+// from server: 100% by tester
+struct CXTPPropertyGridInplaceButton {
+    char pad[0x18];
+    void* m_pItem;
+    int IsSelected() const;
+};
+
+int CXTPPropertyGridInplaceButton::IsSelected() const {
+    return *(CXTPPropertyGridInplaceButton**)((char*)m_pItem + 0xbc) == this;
+}

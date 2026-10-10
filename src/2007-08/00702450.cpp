@@ -1,185 +1,142 @@
-// from server: 34% by colin
+// from server: 49% by tester
 // roc 2007-08 00702450  unit: CXTPTabPaintManager  size: 497 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 00702450
 
-extern "C" void* __cdecl operator_new(unsigned int);
-extern "C" void __cdecl operator_delete(void*);
+extern "C" void __cdecl free(void*);
+extern "C" void* __cdecl malloc(unsigned int);
 extern "C" void __cdecl qsort(void*, unsigned int, unsigned int, int (__cdecl*)(const void*, const void*));
 
 struct CXTPTabPaintManager {
-    int GetItemCount();
-    void LayoutItems(int, int);
+    int sub_6fe5d0();
+    void Sort(int, int);
 };
 
-int __cdecl CompareItems(const void* a, const void* b);
+int __cdecl compare_702400(const void* a, const void* b);
 
-static CXTPTabPaintManager* g_pManager;
-
-int CXTPTabPaintManager::GetItemCount()
+int CXTPTabPaintManager::sub_6fe5d0()
 {
     return 0;
 }
 
-void CXTPTabPaintManager::LayoutItems(int nStart, int nTotal)
+void CXTPTabPaintManager::Sort(int nStart, int nEnd)
 {
-    int nCount = GetItemCount();
-    int nItems = *(int*)((char*)this + 0x5c);
-    int nRemaining = nTotal - nStart;
+    int nCount = *(int*)((char*)this + 0x5c);
+    int nFirst = sub_6fe5d0();
+    int nDiff = nEnd - nStart;
 
-    if (nStart >= nCount)
+    if (nStart >= nFirst)
         return;
 
-    if (nItems == 1)
-    {
-        if (nItems > 0)
-        {
-            int* pArr = *(int**)((char*)this + 0x58);
-            int* pItem = (int*)pArr[0];
-            *(int*)((char*)pItem + 0x20) = nStart;
-        }
-        else
-        {
-            *(int*)(0x20) = nStart;
+    if (nCount == 1) {
+        if (nCount > 0) {
+            int* p = *(int**)((char*)this + 0x58);
+            int* pItem = *(int**)p;
+            pItem[8] = nStart;
         }
         return;
     }
 
-    int* pIndices = (int*)operator_new(nItems * 4);
-    for (int i = 0; i < nItems; i++)
+    int* pIndices = (int*)malloc(nCount * 4);
+    for (int i = 0; i < nCount; i++)
         pIndices[i] = i;
 
-    g_pManager = this;
-    qsort(pIndices, nItems, 4, CompareItems);
+    *(void**)0x8c974c = this;
+    qsort(pIndices, nCount, 4, compare_702400);
 
-    nRemaining -= nStart;
-    int i = 0;
-    while (i < nItems)
-    {
+    nDiff -= nStart;
+    int nRemaining = nDiff;
+
+    for (int i = 0; i < nCount; i++) {
         int idx = pIndices[i];
         int* pItem;
         if (idx >= 0 && idx < *(int*)((char*)this + 0x5c))
-        {
-            int* pArr = *(int**)((char*)this + 0x58);
-            pItem = (int*)pArr[idx];
-        }
+            pItem = *(int**)(*(int*)((char*)this + 0x58) + idx * 4);
         else
-        {
             pItem = 0;
-        }
-        int nWidth = *(int*)((char*)pItem + 0x20);
+        int nVal = pItem[8];
 
         int j = i + 1;
-        while (j < nItems)
-        {
+        while (j < nCount) {
             int idx2 = pIndices[j];
             int* pItem2;
             if (idx2 >= 0 && idx2 < *(int*)((char*)this + 0x5c))
-            {
-                int* pArr2 = *(int**)((char*)this + 0x58);
-                pItem2 = (int*)pArr2[idx2];
-            }
+                pItem2 = *(int**)(*(int*)((char*)this + 0x58) + idx2 * 4);
             else
-            {
                 pItem2 = 0;
-            }
-            if (*(int*)((char*)pItem2 + 0x20) != nWidth)
+            if (pItem2[8] != nVal)
                 break;
             j++;
         }
 
-        if (j >= nItems)
-        {
-            int k = 0;
-            while (k < nItems)
-            {
+        if (j >= nCount) {
+            int nEach = nRemaining / nCount;
+            for (int k = 0; k < nCount; k++) {
                 int idx3 = pIndices[k];
                 int* pItem3;
                 if (idx3 >= 0 && idx3 < *(int*)((char*)this + 0x5c))
-                {
-                    int* pArr3 = *(int**)((char*)this + 0x58);
-                    pItem3 = (int*)pArr3[idx3];
-                }
+                    pItem3 = *(int**)(*(int*)((char*)this + 0x58) + idx3 * 4);
                 else
-                {
                     pItem3 = 0;
-                }
-                *(int*)((char*)pItem3 + 0x20) = nRemaining / nItems;
-                k++;
+                pItem3[8] = nEach;
             }
-            break;
+            free(pIndices);
+            return;
         }
 
-        int idx4 = pIndices[i];
-        int* pItem4;
-        if (idx4 >= 0 && idx4 < *(int*)((char*)this + 0x5c))
-        {
-            int* pArr4 = *(int**)((char*)this + 0x58);
-            pItem4 = (int*)pArr4[idx4];
-        }
+        int idx3 = pIndices[j];
+        int* pItem3;
+        if (idx3 >= 0 && idx3 < *(int*)((char*)this + 0x5c))
+            pItem3 = *(int**)(*(int*)((char*)this + 0x58) + idx3 * 4);
         else
-        {
-            pItem4 = 0;
-        }
-        int nItemWidth = *(int*)((char*)pItem4 + 0x20);
+            pItem3 = 0;
+        int nNextVal = pItem3[8];
 
-        int nGroupWidth = (nWidth - nItemWidth) * i;
-        if (nGroupWidth < nRemaining)
-        {
-            nRemaining -= nGroupWidth;
-            for (int m = 0; m < i; m++)
-            {
-                int idx5 = pIndices[m];
+        int nSpan = (nNextVal - nVal) * j;
+        if (nSpan < nRemaining) {
+            nRemaining -= nSpan;
+            for (int k = 0; k < j; k++) {
+                int idx4 = pIndices[k];
+                int* pItem4;
+                if (idx4 >= 0 && idx4 < *(int*)((char*)this + 0x5c))
+                    pItem4 = *(int**)(*(int*)((char*)this + 0x58) + idx4 * 4);
+                else
+                    pItem4 = 0;
+                pItem4[8] = nNextVal;
+            }
+            i = j - 1;
+        } else {
+            int nEach = nRemaining / j;
+            for (int k = 0; k < j; k++) {
+                int idx5 = pIndices[k];
                 int* pItem5;
                 if (idx5 >= 0 && idx5 < *(int*)((char*)this + 0x5c))
-                {
-                    int* pArr5 = *(int**)((char*)this + 0x58);
-                    pItem5 = (int*)pArr5[idx5];
-                }
+                    pItem5 = *(int**)(*(int*)((char*)this + 0x58) + idx5 * 4);
                 else
-                {
                     pItem5 = 0;
-                }
-                *(int*)((char*)pItem5 + 0x20) = nItemWidth;
+                pItem5[8] -= nEach;
             }
-            i = 0;
-            continue;
+            free(pIndices);
+            return;
         }
-
-        for (int m = 0; m < i; m++)
-        {
-            int idx6 = pIndices[m];
-            int* pItem6;
-            if (idx6 >= 0 && idx6 < *(int*)((char*)this + 0x5c))
-            {
-                int* pArr6 = *(int**)((char*)this + 0x58);
-                pItem6 = (int*)pArr6[idx6];
-            }
-            else
-            {
-                pItem6 = 0;
-            }
-            *(int*)((char*)pItem6 + 0x20) -= nRemaining / i;
-        }
-        break;
     }
 
-    operator_delete(pIndices);
+    free(pIndices);
 }
 
-int __cdecl CompareItems(const void* a, const void* b)
+int __cdecl compare_702400(const void* a, const void* b)
 {
     int ia = *(const int*)a;
     int ib = *(const int*)b;
-    int* pArr = *(int**)((char*)g_pManager + 0x58);
+    CXTPTabPaintManager* pThis = *(CXTPTabPaintManager**)0x8c974c;
     int* pItemA;
-    if (ia >= 0 && ia < *(int*)((char*)g_pManager + 0x5c))
-        pItemA = (int*)pArr[ia];
+    if (ia >= 0 && ia < *(int*)((char*)pThis + 0x5c))
+        pItemA = *(int**)(*(int*)((char*)pThis + 0x58) + ia * 4);
     else
         pItemA = 0;
     int* pItemB;
-    if (ib >= 0 && ib < *(int*)((char*)g_pManager + 0x5c))
-        pItemB = (int*)pArr[ib];
+    if (ib >= 0 && ib < *(int*)((char*)pThis + 0x5c))
+        pItemB = *(int**)(*(int*)((char*)pThis + 0x58) + ib * 4);
     else
         pItemB = 0;
-    return *(int*)((char*)pItemA + 0x20) - *(int*)((char*)pItemB + 0x20);
+    return pItemA[8] - pItemB[8];
 }

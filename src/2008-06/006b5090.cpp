@@ -1,5 +1,10 @@
-// from server: 43% by colin
-// roc-lang: cpp
-// roc-cl: 30729
-// roc-flags: /O1 /GS- /MD
-// roc-lib: xtp-15.2.1 Source/DockingPane/XTPDockingPaneSidePanel.cpp
+// from server: 100% by tester
+struct CXTPCommandBar {
+    unsigned char padding[0xec];
+    unsigned int m_nFlags;
+    void ApplyFlags(unsigned int set, unsigned int clear);
+};
+
+void CXTPCommandBar::ApplyFlags(unsigned int set, unsigned int clear) {
+    m_nFlags = (m_nFlags | set) & ~clear;
+}

@@ -1,5 +1,13 @@
-// from server: 69% by colin
-// roc-lang: cpp
-// roc-cl: 50727
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs v8datamodel/PartInstance.cpp
+// from server: 100% by tester
+struct PartInstance {
+    char pad[0x198];
+    void* field_118;
+    void* getSomething();
+};
+
+extern "C" void* __fastcall sub_670f10(void* p);
+
+void* PartInstance::getSomething() {
+    void* p = sub_670f10(field_118);
+    return (char*)p + 0x24;
+}

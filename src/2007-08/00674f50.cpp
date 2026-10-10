@@ -1,70 +1,55 @@
-// from server: 58% by colin
-extern "C" {
-    int __stdcall IsWindow(void*);
-    int __stdcall IsWindowEnabled(void*);
-    int __stdcall MessageBoxA(void*, const char*, const char*, unsigned int);
-    int __stdcall EnableWindow(void*, int);
-}
-
-extern void* __cdecl func_0062ff02();
-
-struct Helper {
-    void func_00738748(int);
-};
-
+// from server: 64% by tester
 struct CXTPCustomizeSheet {
     char pad[0x20];
-    void* field_20;
+    void* m_pWnd;
     char pad2[0x94];
-    void* field_b8;
-    int func_00674f50(int, int);
+    void* m_pSomething;
+    void Func(int, int);
 };
 
-int CXTPCustomizeSheet::func_00674f50(int arg1, int arg2)
+struct Helper {
+    void Method(int);
+};
+
+extern "C" void* __stdcall sub_62FF02();
+extern "C" int __stdcall IsWindow(void*);
+extern "C" int __stdcall IsWindowEnabled(void*);
+extern "C" int __stdcall MessageBoxA(void*, const char*, const char*, unsigned int);
+extern "C" void __stdcall EnableWindow(void*, int);
+
+void CXTPCustomizeSheet::Func(int a, int b)
 {
-    void* v1;
-    void* v2;
-    void* v3;
-    void* v4;
-    int result;
-    int flag;
+    ((Helper*)*(void**)((char*)sub_62FF02() + 4))->Method(0);
 
-    v1 = (void*)((char*)func_0062ff02() + 4);
-    ((Helper*)v1)->func_00738748(0);
+    void* p = *(void**)((char*)m_pSomething + 0xa0);
+    void* ebx = *(void**)((char*)this + 0x20);
+    void* edi;
+    if (p)
+        edi = *(void**)((char*)p + 0x20);
+    else
+        edi = 0;
 
-    v2 = *(void**)((char*)this + 0xb8);
-    v2 = *(void**)((char*)v2 + 0xa0);
-    v3 = *(void**)((char*)this + 0x20);
-    if (v2 == 0) {
-        v4 = 0;
-    } else {
-        v4 = *(void**)((char*)v2 + 0x20);
-    }
+    EnableWindow(ebx, 0);
 
-    EnableWindow(v3, 0);
-
-    flag = 0;
-    if (v4 != 0) {
-        if (IsWindow(v4) != 0) {
-            EnableWindow(v4, 0);
-            flag = 1;
+    int esi = 0;
+    if (edi)
+    {
+        if (IsWindow(edi))
+        {
+            EnableWindow(edi, esi);
+            esi = 1;
         }
     }
 
-    v1 = (void*)((char*)func_0062ff02() + 4);
-    v1 = *(void**)((char*)v1 + 0x50);
-    result = MessageBoxA(v3, (const char*)v1, (const char*)arg2, arg1);
+    void* eax = *(void**)((char*)sub_62FF02() + 4);
+    void* ecx = *(void**)((char*)eax + 0x50);
+    int r = MessageBoxA(ebx, (const char*)ecx, (const char*)a, b);
 
-    if (flag != 0) {
-        EnableWindow(v4, 1);
-    }
+    if (esi)
+        EnableWindow(edi, 1);
 
-    if (IsWindowEnabled(v3) != 0) {
-        EnableWindow(v3, 1);
-    }
+    if (IsWindowEnabled(ebx))
+        EnableWindow(ebx, 1);
 
-    v1 = (void*)((char*)func_0062ff02() + 4);
-    ((Helper*)v1)->func_00738748(1);
-
-    return result;
+    ((Helper*)*(void**)((char*)sub_62FF02() + 4))->Method(1);
 }

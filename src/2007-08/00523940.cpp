@@ -1,4 +1,4 @@
-// from server: 43% by colin
+// from server: 44% by tester
 // roc 2007-08 00523940  unit: seg_00520000  size: 475 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 00523940
 
@@ -21,7 +21,7 @@ struct S {
     char pad70[0x11c - 0x70];
     char buf11c[0x100];
     int field21c;
-    int method(int a, int b);
+    int __cdecl method(int a, int b);
 };
 
 int S::method(int a, int b)

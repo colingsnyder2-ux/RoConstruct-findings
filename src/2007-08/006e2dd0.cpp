@@ -1,4 +1,4 @@
-// from server: 83% by colin
+// from server: 90% by tester
 struct CXTPDockingPaneTabbedContainer
 {
     int field_0;
@@ -16,10 +16,6 @@ struct CXTPDockingPaneTabbedContainer
     void func_6e2dd0(int, int, int);
 };
 
-extern "C" int __stdcall func_6e0540_helper(int);
-extern "C" int __stdcall func_66ed20_helper(int);
-extern "C" int __stdcall func_66e3d0_helper(int);
-
 void CXTPDockingPaneTabbedContainer::func_6e2dd0(int a1, int a2, int a3)
 {
     int result = func_6e14a0(a2, a3);
@@ -30,8 +26,8 @@ void CXTPDockingPaneTabbedContainer::func_6e2dd0(int a1, int a2, int a3)
         typedef int (__thiscall *Fn)(void*, int);
         Fn fn = (Fn)(*(int*)((char*)vtbl + 0x13c));
         fn(this, v);
-        int r = func_6e0540_helper((int)((char*)this + 0x54));
-        func_66ed20_helper(r);
+        int r = ((CXTPDockingPaneTabbedContainer*)((char*)this + 0x54))->func_6e0540();
+        ((CXTPDockingPaneTabbedContainer*)r)->func_66ed20();
     }
     if (field_1a0 != 0)
     {
@@ -44,9 +40,9 @@ void CXTPDockingPaneTabbedContainer::func_6e2dd0(int a1, int a2, int a3)
     {
         func_630004();
     }
-    int r2 = func_6e0540_helper((int)((char*)this + 0x54));
-    func_66e3d0_helper(r2);
-    int r3 = func_6e0540_helper((int)((char*)this + 0x54));
+    int r2 = ((CXTPDockingPaneTabbedContainer*)((char*)this + 0x54))->func_6e0540();
+    ((CXTPDockingPaneTabbedContainer*)r2)->func_66e3d0();
+    int r3 = ((CXTPDockingPaneTabbedContainer*)((char*)this + 0x54))->func_6e0540();
     int* vtbl3 = *(int**)r3;
     typedef int (__thiscall *Fn3)(void*, int, int);
     Fn3 fn3 = (Fn3)(*(int*)((char*)vtbl3 + 0x140));

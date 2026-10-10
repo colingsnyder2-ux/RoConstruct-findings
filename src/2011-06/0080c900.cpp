@@ -1,5 +1,23 @@
-// from server: 96% by colin
-// roc-lang: cpp
-// roc-cl: 30729
-// roc-flags: /O2 /GS- /MD
-// roc-lib: xtp-11.2.2 Source/CommandBars/XTPControl.cpp
+// from server: 100% by tester
+struct Inner;
+
+struct InnerVtbl {
+    char pad[0x15c];
+    void* (__thiscall *fn)(Inner*, Inner*);
+};
+
+struct Inner {
+    InnerVtbl* vtbl;
+};
+
+struct Outer {
+    char pad[0x100];
+    Inner* inner;
+    Inner* method(Inner* arg);
+};
+
+Inner* Outer::method(Inner* arg) {
+    Inner* p = inner;
+    p->vtbl->fn(p, arg);
+    return arg;
+}

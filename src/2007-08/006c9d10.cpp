@@ -1,4 +1,4 @@
-// from server: 74% by colin
+// from server: 93% by tester
 struct Inner {
     virtual int f(int, int);
 };
@@ -8,15 +8,12 @@ struct Outer {
     Inner* inner;
 };
 
-struct S {
-};
+extern "C" void __stdcall g(int, int, int);
 
-int __cdecl m(Outer* o, int a, int b)
+void __cdecl m(Outer* o, int a, int b)
 {
     int r = o->inner->f(a, b);
     if (r != b) {
-        extern void __stdcall g(int, int, int);
         g(0xe, -1, 0);
     }
-    return r;
 }

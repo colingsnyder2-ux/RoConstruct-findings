@@ -1,4 +1,13 @@
-// from server: 48% by colin
+// from server: 51% by tester
+struct BoundFuncDesc {
+    int field0;
+    int field4;
+    int field8;
+    void* fieldC;
+    unsigned char field10;
+    BoundFuncDesc* init();
+};
+
 struct Client {
     char pad[0x2c];
     unsigned int field_2c;
@@ -20,7 +29,7 @@ bool Client::func_00499a50(int arg)
     if (arg <= this->field_2c)
         return true;
 
-    if (!sub_4a34b0((int)(this + 0x34), 0x88f6f0))
+    if (!sub_4a34b0((int)((char*)this + 0x34), 0x88f6f0))
         return false;
 
     int diff = arg - this->field_30 - this->field_2c + 0x64;

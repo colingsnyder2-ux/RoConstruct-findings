@@ -1,5 +1,16 @@
-// from server: 88% by colin
-// roc-lang: cpp
-// roc-cl: 30729
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs script/Script.cpp
+// from server: 100% by tester
+struct Inner {
+    virtual void v();
+};
+
+struct S {
+    char pad[40];
+    Inner* m_p;
+    void f();
+};
+
+void S::f()
+{
+    Inner* p = m_p;
+    p->v();
+}

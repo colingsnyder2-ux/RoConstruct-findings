@@ -1,5 +1,14 @@
-// from server: 89% by colin
-// roc-lang: cpp
-// roc-cl: 50727
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs script/ScriptContext.cpp
+// from server: 100% by tester
+struct FactoryProduct {
+    int get() const;
+    char pad[0x138];
+    void* field_8c;
+};
+
+int FactoryProduct::get() const {
+    void* p = field_8c;
+    if (p != 0) {
+        return **(int**)((char*)p - 0xc);
+    }
+    return 0;
+}

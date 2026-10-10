@@ -1,22 +1,26 @@
-// from server: 58% by colin
+// from server: 64% by tester
 struct CXTPRibbonBarCControlCaptionButton {
-    void OnClick(int);
+    void func_006a84c0(int);
 };
 
-extern "C" void __fastcall sub_6a79e0(void*);
+extern "C" void __fastcall G1_func_006a79e0(void*);
 
-void CXTPRibbonBarCControlCaptionButton::OnClick(int arg) {
+void CXTPRibbonBarCControlCaptionButton::func_006a84c0(int arg) {
     int flag;
     if (*(int*)((char*)this + 0x9c) != 0) {
         int* p = *(int**)((char*)this + 0x168);
-        flag = (p[6] != 0) ? 1 : 0;
+        if (p[6] != 0) {
+            flag = 1;
+        } else {
+            flag = 0;
+        }
     } else {
         flag = 0;
     }
 
-    void* ecx = *(void**)((char*)this + 0xfc);
-    sub_6a79e0(ecx);
-    int* ebx = (int*)0;
+    void* ecx_val = *(void**)((char*)this + 0xfc);
+    G1_func_006a79e0(ecx_val);
+    void* ebx = ecx_val;
 
     int v14 = *(int*)((char*)this + 0xc0);
     int v18 = *(int*)((char*)this + 0xc4);
@@ -24,15 +28,15 @@ void CXTPRibbonBarCControlCaptionButton::OnClick(int arg) {
     int v1c = *(int*)((char*)this + 0xc8);
     int v20 = *(int*)((char*)this + 0xcc);
 
-    int* vt = *(int**)this;
-    int (*fn78)(void*, int) = (int (*)(void*, int))vt[0x78/4];
-    int r1 = fn78(this, flag);
+    int* edi = *(int**)ebx;
+    edi = (int*)((char*)edi + 0x128);
 
-    vt = *(int**)this;
-    int (*fn6c)(void*) = (int (*)(void*))vt[0x6c/4];
-    int r2 = fn6c(this);
+    int (__thiscall *f78)(void*, int) = *(int (__thiscall**)(void*, int))((*(int*)this) + 0x78);
+    int r78 = f78(this, flag);
 
-    int* obj = (int*)((char*)ebx + 0x128);
-    int (*fn)(void*, int, int, int, int, int, int, int) = (int (*)(void*, int, int, int, int, int, int, int))obj[0];
-    fn(ebx, r2, ebp, v14, v18, v1c, v20, r1);
+    int (__thiscall *f6c)(void*) = *(int (__thiscall**)(void*))((*(int*)this) + 0x6c);
+    int r6c = f6c(this);
+
+    int (__thiscall *fedi)(void*, int, int, int, int, int, int) = *(int (__thiscall**)(void*, int, int, int, int, int, int))edi;
+    fedi(ebx, v14, v18, v1c, v20, ebp, r6c);
 }

@@ -1,5 +1,12 @@
-// from server: 63% by colin
-// roc-lang: cpp
-// roc-cl: 50727
-// roc-flags: /O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MT
-// roc-lib: ogre-1.6.4 OgreAutoParamDataSource.cpp
+// from server: 100% by tester
+struct RakPeer {
+    void clearIfEqual(void* p);
+    char pad[0xa7c];
+    void* field_0x72c;
+};
+
+void RakPeer::clearIfEqual(void* p) {
+    if (field_0x72c == p) {
+        field_0x72c = 0;
+    }
+}

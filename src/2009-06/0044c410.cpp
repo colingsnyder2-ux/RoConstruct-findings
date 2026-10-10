@@ -1,17 +1,19 @@
-// from server: 75% by colin
-struct S_func_0044c410 {
-    int f(int a1, int a2);
+// from server: 100% by tester
+struct CRobloxControlColorSelector
+{
+    char pad[0x174];
+    int field_168;
+    int sub_44BBD0(int, int);
+    void sub_63A690(int);
+    void sub_44BF20(int, int);
 };
 
-extern "C" int __stdcall sub_0044c0f0(int a1, int a2);
-extern "C" void __stdcall sub_0071ffb0(int a1);
-
-int S_func_0044c410::f(int a1, int a2)
+void CRobloxControlColorSelector::sub_44BF20(int a, int b)
 {
-    int r = sub_0044c0f0(a1, a2);
-    if (r != -1) {
-        *(int *)((char *)this + 0x174) = r;
-        sub_0071ffb0(1);
+    int r = sub_44BBD0(a, b);
+    if (r != -1)
+    {
+        field_168 = r;
+        sub_63A690(1);
     }
-    return r;
 }

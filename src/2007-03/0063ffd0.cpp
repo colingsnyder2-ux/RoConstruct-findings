@@ -1,5 +1,9 @@
-// from server: 95% by colin
-// roc-lang: cpp
-// roc-cl: 30729
-// roc-flags: /O2 /GS- /MD
-// roc-lib: xtp-15.2.1 Source/Calendar/XTPCalendarControlView.cpp
+// from server: 100% by tester
+struct XTP_REPORTRECORDITEM_DRAWARGS {
+    void f();
+};
+
+void XTP_REPORTRECORDITEM_DRAWARGS::f() {
+    void* p = (*(void*(__thiscall**)(void*))(*(void***)this + 0x18c / 4))(this);
+    (*(void(__thiscall**)(void*))(*(void***)p + 0x15c / 4))(p);
+}

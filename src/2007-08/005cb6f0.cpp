@@ -1,4 +1,4 @@
-// from server: 79% by colin
+// from server: 91% by tester
 extern "C" {
     int __cdecl __iob_func();
     int __cdecl fputs(const char*, int*);
@@ -16,10 +16,9 @@ extern "C" int __cdecl sub_005be290(int, int, int);
 extern "C" int __cdecl sub_005be8e0(int, int);
 
 struct S {
-    int f(int);
 };
 
-int S::f(int a) {
+int __cdecl f(int a) {
     int count;
     int i;
     int result;

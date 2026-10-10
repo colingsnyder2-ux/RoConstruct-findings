@@ -1,21 +1,23 @@
-// from server: 44% by colin
+// from server: 52% by tester
 struct S {
-    void* field0;
-    void* f(int a, int b);
+    void* p;
+    void* f(void* a, void* b);
 };
 
-extern "C" void* __cdecl sub_62fef6(unsigned int size);
+extern "C" void* __cdecl sub_62FEF6(unsigned int size);
 
-void* S::f(int a, int b) {
-    void* p = sub_62fef6(0x14);
-    if (p) {
-        *(int*)((char*)p + 4) = 1;
-        *(int*)((char*)p + 8) = 1;
-        *(int*)p = 0x7bb894;
-        *(int*)((char*)p + 0xc) = a;
+void* S::f(void* a, void* b) {
+    void* mem;
+    this->p = 0;
+    mem = sub_62FEF6(0x14);
+    if (mem != 0) {
+        *(int*)((char*)mem + 4) = 1;
+        *(int*)((char*)mem + 8) = 1;
+        *(int*)mem = 0x7bb894;
+        *(void**)((char*)mem + 0xc) = a;
     } else {
-        p = 0;
+        mem = 0;
     }
-    this->field0 = p;
+    this->p = mem;
     return this;
 }

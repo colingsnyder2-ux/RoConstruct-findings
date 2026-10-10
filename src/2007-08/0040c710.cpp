@@ -1,23 +1,34 @@
-// from server: 38% by colin
-struct CBrowserView {
+// from server: 49% by tester
+struct CBrowserView
+{
     char pad[0x2b8];
     void* field_2b8;
-    void construct();
+    CBrowserView* func_0040c710();
 };
 
-extern "C" void __stdcall sub_40C410();
-extern "C" void* __stdcall sub_40A730();
-extern "C" void* __stdcall sub_40AA00(void*, void*, void*);
-extern "C" void __stdcall sub_77D434(void*, void*);
-extern "C" void __stdcall sub_77DDBC(void*);
+extern "C" void __stdcall sub_40c410();
+extern "C" void* __stdcall sub_40a730();
+extern "C" void* __stdcall sub_40aa00(void*, void*, void*);
+extern "C" void __stdcall sub_77d434(void*, void*);
+extern "C" void __stdcall sub_77ddbc(void*);
 
-void CBrowserView::construct()
+extern char g_7861b4;
+extern char g_7861a4;
+extern char g_739c1a;
+
+CBrowserView* CBrowserView::func_0040c710()
 {
-    sub_40C410();
-    *(void**)this = (void*)0x7861b4;
-    void* p = sub_40A730();
-    void* q = sub_40AA00(&p, (void*)0x7861a4, 0);
-    sub_77D434(&field_2b8, q);
-    sub_77DDBC(&p);
-    sub_77DDBC(&q);
+    void* v1;
+    void* v2;
+    void* v3;
+    void* v4;
+
+    sub_40c410();
+    *(void**)this = &g_7861b4;
+    v1 = sub_40a730();
+    v2 = sub_40aa00(&v3, &g_7861a4, v1);
+    sub_77d434(&this->field_2b8, v2);
+    sub_77ddbc(&v4);
+    sub_77ddbc(&v3);
+    return this;
 }

@@ -1,5 +1,17 @@
-// from server: 68% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: openrbx-client App/util/Guid.cpp
+// from server: 100% by tester
+struct Sub {
+    char pad[0x1b4];
+    int state;
+    Sub* get();
+};
+
+struct ArrowButton {
+    char pad[0x188];
+    Sub* sub;
+    bool isPressed();
+};
+
+bool ArrowButton::isPressed()
+{
+    return sub->get()->state == 1;
+}

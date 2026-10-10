@@ -1,46 +1,55 @@
-// from server: 85% by colin
-struct CPatchedControlComboBox
-{
-    int sub_637320();
-    void sub_637350(int);
+// from server: 99% by tester
+struct CPatchedControlComboBox {
+    char pad[0x168];
+    int field_168;
+    char pad2[0xc];
+    int field_178;
+    char pad3[0x8];
+    int field_184;
+    char pad4[0x2c];
+    int field_1b4;
+    char pad5[0xc];
+    int field_1c4;
+    int getValue();
+    void setValue(int);
     void sub_63c4a0(int);
-    void sub_670f70(void*);
-    void sub_635ce0();
-    void sub_630004();
-    void sub_6373a0(void*);
+    void sub_670f70(int);
 };
 
-void CPatchedControlComboBox::sub_6373a0(void* arg)
+extern "C" void __fastcall sub_635ce0(int);
+extern "C" void __fastcall sub_630004(int);
+
+void CPatchedControlComboBox::setValue(int value)
 {
-    if (arg != 0)
-    {
-        *(int*)((char*)this + 0x1b4) = 0;
-        *(int*)((char*)this + 0x184) = sub_637320();
-    }
-    else
-    {
-        int r = (*(int (__thiscall**)(void))(*(int*)this + 0x74))();
-        if (r == 0 && *(int*)((char*)this + 0x178) == 0 && *(int*)((char*)this + 0x1b4) == 0)
-        {
-            sub_637350(*(int*)((char*)this + 0x184));
+    if (value != 0) {
+        this->field_1b4 = 0;
+        this->field_184 = this->getValue();
+    } else {
+        int r = ((int (__thiscall *)(CPatchedControlComboBox *))*(void **)(*(int *)this + 0x74))(this);
+        if (r != 0) {
+            goto after;
         }
-        if (*(int*)((char*)this + 0x1b4) == 0)
-        {
-            sub_63c4a0(10);
+        if (this->field_178 != 0) {
+            goto after;
+        }
+        if (this->field_1b4 != 0) {
+            goto done;
+        }
+        this->setValue(this->field_184);
+    }
+after:
+    if (this->field_1b4 == 0) {
+        this->sub_63c4a0(0xa);
+    }
+done:
+    if (this->field_1c4 != 0 && value != 0) {
+        sub_635ce0(this->field_1c4);
+    }
+    this->field_168 = value;
+    if (value != 0) {
+        if (this->field_178 != 0) {
+            sub_630004(this->field_178);
         }
     }
-
-    if (*(int*)((char*)this + 0x1c4) != 0 && arg != 0)
-    {
-        sub_635ce0();
-    }
-
-    *(void**)((char*)this + 0x168) = arg;
-
-    if (arg != 0 && *(int*)((char*)this + 0x178) != 0)
-    {
-        sub_630004();
-    }
-
-    sub_670f70(arg);
+    this->sub_670f70(value);
 }

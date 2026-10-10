@@ -1,5 +1,11 @@
-// from server: 94% by colin
-// roc-lang: cpp
-// roc-cl: 30729
-// roc-flags: /O2 /GS- /MD
-// roc-lib: xtp-15.2.1 Source/Ribbon/XTPRibbonBar.cpp
+// from server: 100% by tester
+struct CXTPRibbonBar {
+    int GetSomething(int arg1, int arg2);
+};
+
+int CXTPRibbonBar::GetSomething(int arg1, int arg2) {
+    typedef int (__stdcall *Fn)(int, int);
+    Fn fn = *(Fn*)(*(char**)this + 0x1c4);
+    arg2 = 0;
+    return fn(arg1, arg2);
+}

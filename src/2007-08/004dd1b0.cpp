@@ -1,4 +1,4 @@
-// from server: 41% by colin
+// from server: 43% by tester
 // roc 2007-08 004dd1b0  unit: seg_004d0000  size: 152 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 004dd1b0
 
@@ -9,7 +9,7 @@ struct T {
 };
 
 struct S {
-    void f(int, int, int, int, int);
+    void __cdecl f(int, int, int, int, int);
 };
 
 void S::f(int a, int b, int c, int d, int e)

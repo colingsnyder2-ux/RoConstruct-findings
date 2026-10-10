@@ -1,5 +1,13 @@
-// from server: 40% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs v8world/Primitive.cpp
+// from server: 100% by tester
+struct RBX_Primitive {
+    char pad[0x98];
+    int* data;
+    int count;
+    int get();
+};
+
+int RBX_Primitive::get() {
+    if (count > 0)
+        return *data;
+    return 0;
+}

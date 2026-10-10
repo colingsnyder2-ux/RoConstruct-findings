@@ -1,19 +1,20 @@
-// from server: 81% by colin
-extern "C" void __cdecl sub_725520(void*, void*);
-extern "C" void* __cdecl sub_5F0700();
-extern "C" void* __cdecl sub_407410(void**);
-extern "C" void __cdecl sub_4339D0();
-extern "C" void __cdecl sub_630D23(void*);
+// from server: 85% by tester
+struct S_00775cf0 {
+    void m();
+};
 
-extern void* dword_8B3ACC;
+extern "C" void __stdcall sub_00725520(void*, void*);
+extern "C" void* __cdecl sub_005f0700();
+extern "C" void* __cdecl sub_00407410(void*);
+extern "C" void* __fastcall sub_004339d0(void*);
+extern "C" void __stdcall sub_00630d23(void*);
 
-void sub_775CF0()
+void S_00775cf0::m()
 {
-    void* p;
-    sub_725520((void*)0x8C77F8, (void*)0x5F0C60);
-    p = sub_5F0700();
-    void* q = sub_407410(&p);
-    sub_4339D0();
-    *(void**)q = (void*)0x8B3ACC;
-    sub_630D23((void*)0x77C660);
+    sub_00725520((void*)0x8c77f8, (void*)0x5f0c60);
+    void* p = sub_005f0700();
+    void* q = sub_00407410(&p);
+    void* r = sub_004339d0(q);
+    *(unsigned int*)r = 0x8b3acc;
+    sub_00630d23((void*)0x77c660);
 }

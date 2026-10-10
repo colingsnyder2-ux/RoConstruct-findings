@@ -1,16 +1,15 @@
-// from server: 74% by why2
+// from server: 100% by tester
 struct CSelectionTreeCtrl {
     char pad[0x12c];
-    void* field_12c;
-    void* get();
+    void* m_ptr;
+    int GetSelected();
 };
 
-extern void sub_00415b60();
+extern int __fastcall sub_410d40(void* p);
 
-void* CSelectionTreeCtrl::get()
+int CSelectionTreeCtrl::GetSelected()
 {
-    void* p = field_12c;
-    if (p)
-        sub_00415b60();
+    if (m_ptr)
+        return sub_410d40(m_ptr);
     return 0;
 }

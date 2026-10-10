@@ -1,10 +1,13 @@
-// from server: 95% by why2
+// from server: 100% by tester
 struct VProfilingItem_BoundFuncDesc {
-    int f();
+    char pad[4];
+    unsigned char field6;
+    unsigned char field7;
+    int getter();
 };
 
-int VProfilingItem_BoundFuncDesc::f() {
-    if (*(unsigned char*)((char*)this + 4) != 0)
+int VProfilingItem_BoundFuncDesc::getter() {
+    if (field6 != 0)
         return 1;
-    return -(int)*(unsigned char*)((char*)this + 5);
+    return field7 != 0 ? -1 : 0;
 }

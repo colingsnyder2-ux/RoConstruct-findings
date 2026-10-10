@@ -1,113 +1,118 @@
-// from server: 16% by colin
+// from server: 37% by tester
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
 
-extern "C" {
-    void* __stdcall GetModuleHandleA(const char*);
-    unsigned long __stdcall GetCurrentThreadId();
-    void* __stdcall CreateFileA(const char*, unsigned long, unsigned long, void*, unsigned long, unsigned long, void*);
-    int __cdecl sprintf(char*, const char*, ...);
-    void* __cdecl fopen(const char*, const char*);
-    void __cdecl fclose(void*);
-    void* __cdecl memcpy(void*, const void*, unsigned int);
-    unsigned int __cdecl strlen(const char*);
-    void* __cdecl malloc(unsigned int);
-    void __cdecl free(void*);
-}
+extern "C" int __cdecl sprintf(char*, const char*, ...);
+extern "C" void* __cdecl fopen(const char*, const char*);
 
-struct RBXString {
+struct String {
     char pad[0x10];
     unsigned int len;
     unsigned int cap;
-    char* ptr;
+    char buf[8];
 };
 
-struct RBXStringRef {
-    char* data;
-    unsigned int len;
-};
-
-struct VWorld {
-    void* vtable;
-    char pad1[0x208];
-    void* packetLog;
-    void VWorld_ctor();
-    void VWorld_dtor();
-    void logPacket(const char* name, int a, int b);
+struct VWorldListener {
+    void* vptr;
+    char pad[0x208];
+    void* field_20c;
 };
 
 struct RefCounted {
-    long refcount;
-    long weakrefcount;
+    void* vptr;
+    volatile long ref1;
+    volatile long ref2;
 };
-
-extern "C" void __cdecl RBX_String_ctor(RBXString*);
-extern "C" void __cdecl RBX_String_dtor(RBXString*);
-extern "C" void __cdecl RBX_String_assign(RBXString*, const char*);
-extern "C" void __cdecl RBX_String_copy(RBXString*, const RBXString*);
-extern "C" void __cdecl RBX_String_erase(RBXString*, unsigned int, unsigned int);
-extern "C" unsigned int __cdecl RBX_String_rfind(RBXString*, const char*, unsigned int, unsigned int);
-extern "C" void __cdecl RBX_String_append(RBXString*, const char*);
 
 extern "C" void __cdecl sub_4b6ca0();
 extern "C" void __cdecl sub_4b7f70();
-extern "C" void __cdecl sub_56c0a0();
+extern "C" void __cdecl sub_56c0a0(void*, int, const char*, const char*);
 extern "C" void __cdecl sub_56c3b0();
 extern "C" void __cdecl sub_630a1e();
 
-extern "C" void* __stdcall GetEnvironmentStrings();
-extern "C" void* __stdcall GetModuleFileNameA(void*, char*, unsigned long);
-extern "C" unsigned long __stdcall GetCurrentDirectoryA(unsigned long, char*);
-extern "C" void* __stdcall FindFirstFileA(const char*, void*);
-extern "C" int __stdcall FindNextFileA(void*, void*);
-extern "C" int __stdcall FindClose(void*);
-extern "C" void* __stdcall CreateDirectoryA(const char*, void*);
-extern "C" unsigned long __stdcall GetLastError();
-extern "C" void* __stdcall GetProcessHeap();
-extern "C" void* __stdcall HeapAlloc(void*, unsigned long, unsigned long);
-extern "C" int __stdcall HeapFree(void*, unsigned long, void*);
+extern "C" void* __stdcall sub_77e69c(const char*);
+extern "C" void* __stdcall sub_77e578(void*, const char*, int);
+extern "C" void* __stdcall sub_77e640(void*, void*, int);
+extern "C" void* __stdcall sub_77e660(void*, void*);
+extern "C" int __stdcall sub_77e910(const char*, const char*);
+extern "C" void* __stdcall sub_77e968(char*, const char*, const char*);
+extern "C" void* __stdcall sub_77e6ac(void*);
 
-void VWorld::VWorld_ctor() {
+extern "C" void* __cdecl sub_8c30ec_get();
+
+void VWorldListener_ctor(VWorldListener* self, int arg);
+
+void VWorldListener_ctor(VWorldListener* self, int arg)
+{
     sub_4b6ca0();
-    *(void**)this = (void*)0x79d224;
-    packetLog = 0;
+    *(void**)self = (void*)0x79d224;
+    *(void**)((char*)self + 0x20c) = 0;
 
-    RBXString path;
-    RBX_String_ctor(&path);
-
-    void* env = GetEnvironmentStrings();
-    if (env) {
-        RBX_String_assign(&path, (const char*)env);
+    void* p = sub_8c30ec_get();
+    void* q;
+    if (p) {
+        q = (*(void*(**)(void*))p)(p);
+    } else {
+        q = 0;
     }
+    q = (char*)q + 8;
 
-    RBXString temp;
-    RBX_String_ctor(&temp);
+    String s1;
+    sub_77e69c((const char*)q);
 
-    char buf[0x100];
-    buf[0] = '\\';
-    GetModuleFileNameA(0, buf + 1, 0x100);
-    unsigned int len = strlen(buf);
-    RBX_String_assign(&temp, buf);
+    char* base = *(char**)0x77e63c;
+    sub_77e578(&s1, base, 1);
+    s1.buf[0] = '\\';
 
-    RBX_String_append(&path, "\\");
-    RBX_String_append(&path, temp.ptr);
+    char* base2 = *(char**)0x77e63c;
+    sub_77e640(&s1, base2, 1);
 
     sub_4b7f70();
-    char fullpath[0x100];
-    sprintf(fullpath, "PacketLog%i.csv", GetCurrentThreadId());
+    char temp[0x20];
+    sub_77e968(temp, "PacketLog%i.csv", (const char*)0x79d544);
 
-    RBX_String_append(&path, "\\");
-    RBX_String_append(&path, fullpath);
+    String s2;
+    sub_77e660(&s2, temp);
 
-    void* f = fopen(path.ptr, "w");
-    packetLog = f;
-
-    if (f) {
-        logPacket("Logging packets to %s", 1, 0);
+    const char* cstr;
+    if (s2.cap >= 0x10) {
+        cstr = *(const char**)&s2;
     } else {
-        logPacket("Failed to create log file %s", 2, 0);
+        cstr = s2.buf;
     }
 
-    RBX_String_dtor(&temp);
-    RBX_String_dtor(&path);
+    int r = sub_77e910(cstr, "Logging packets to %s");
+    *(int*)((char*)self + 0x20c) = r;
+
+    if (r) {
+        sub_56c3b0();
+        const char* cstr2;
+        if (s2.cap >= 0x10) {
+            cstr2 = *(const char**)&s2;
+        } else {
+            cstr2 = s2.buf;
+        }
+        sub_56c0a0((void*)r, 1, "Logging packets to %s", cstr2);
+    } else {
+        sub_56c3b0();
+        const char* cstr3;
+        if (s2.cap >= 0x10) {
+            cstr3 = *(const char**)&s2;
+        } else {
+            cstr3 = s2.buf;
+        }
+        sub_56c0a0(0, 2, "Failed to create log file %s", cstr3);
+    }
+
+    RefCounted* rc = (RefCounted*)s2.buf;
+    if (rc) {
+        if (_InterlockedExchangeAdd(&rc->ref1, -1) == 1) {
+            (*(void(**)(RefCounted*))rc->vptr)(rc);
+            if (_InterlockedExchangeAdd(&rc->ref2, -1) == 1) {
+                (*(void(**)(RefCounted*))((char*)rc->vptr + 8))(rc);
+            }
+        }
+    }
+
+    sub_77e6ac(&s1);
 }

@@ -1,5 +1,18 @@
-// from server: 75% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: openrbx-client App/script/Script.cpp
+// from server: 100% by tester
+extern unsigned char g_flag;
+extern void helper();
+
+struct CMainFrame {
+    unsigned char pad[261];
+    unsigned char field_ed;
+    void func();
+};
+
+void CMainFrame::func()
+{
+    if (!g_flag)
+    {
+        field_ed = 1;
+        helper();
+    }
+}

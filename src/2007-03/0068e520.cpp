@@ -1,5 +1,11 @@
-// from server: 69% by colin
-// roc-lang: cpp
-// roc-cl: 50727
-// roc-flags: /O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MT
-// roc-lib: ogre-1.6.4 OgreAutoParamDataSource.cpp
+// from server: 100% by tester
+struct CXTPRibbonTheme {
+    char pad[0x2c];
+    int* field_2c;
+    int get(int);
+};
+
+int CXTPRibbonTheme::get(int)
+{
+    return *(int*)((char*)field_2c + 0x62c) + 1;
+}

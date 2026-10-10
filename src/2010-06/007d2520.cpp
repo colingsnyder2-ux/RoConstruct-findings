@@ -1,5 +1,13 @@
-// from server: 89% by colin
-// roc-lang: cpp
-// roc-cl: 30729
-// roc-flags: /O2 /GS- /MD /Ob1 /Oy-
-// roc-lib: xtp-13.2.1 Source/ReportControl/XTPReportControl.cpp
+// from server: 100% by tester
+struct CXTPReportControl {
+    char pad[0x288];
+    void* field_200;
+    void sub_655af0(void*);
+    void f();
+};
+
+void CXTPReportControl::f() {
+    void* p = field_200;
+    void* q = *(void**)((char*)p + 0x94);
+    sub_655af0(q);
+}

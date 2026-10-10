@@ -1,4 +1,4 @@
-// from server: 83% by colin
+// from server: 87% by tester
 struct VMotorFeature {
     char pad0[8];
     int field8;
@@ -25,13 +25,12 @@ void VMotorFeature::setVector(const float* v) {
     fieldBC = v[2];
     fieldC0 = v[3];
     fieldC4 = v[4];
-    int c = g_counter + 1;
     fieldC8 = v[5];
-    g_counter = c;
+    int c = g_counter + 1;
     if (c == 0x7fffffff) {
         c = 1;
-        g_counter = c;
     }
+    g_counter = c;
     field80 = c;
     int* p = (int*)field20;
     if (p != 0) {

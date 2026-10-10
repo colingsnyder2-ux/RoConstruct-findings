@@ -1,5 +1,13 @@
-// from server: 65% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs util/Name.cpp
+// from server: 100% by tester
+struct FactoryProduct {
+    int method_00442bb0(int, int);
+    int method_00442c60(int, int);
+};
+
+int FactoryProduct::method_00442c60(int a, int b) {
+    int p = *(int*)((char*)this + 0x94);
+    if (p != 0) {
+        return ((FactoryProduct*)p)->method_00442bb0(a, b);
+    }
+    return 0;
+}

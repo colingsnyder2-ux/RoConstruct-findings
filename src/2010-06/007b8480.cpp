@@ -1,5 +1,14 @@
-// from server: 52% by colin
-// roc-lang: cpp
-// roc-cl: 30729
-// roc-flags: /O2 /GS- /MD
-// roc-lib: xtp-11.2.2 Source/Common/XTPImageManager.cpp
+// from server: 100% by tester
+struct CXTPCommandBar {
+    char pad[0xf0];
+    unsigned int m_dwStyle;
+    void SetFlag(int bSet);
+};
+
+void CXTPCommandBar::SetFlag(int bSet)
+{
+    if (bSet != 0)
+        m_dwStyle |= 0x400000;
+    else
+        m_dwStyle &= 0xffbfffff;
+}

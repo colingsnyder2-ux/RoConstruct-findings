@@ -1,5 +1,16 @@
-// from server: 78% by colin
-// roc-lang: cpp
-// roc-cl: 30729
-// roc-flags: /O2 /GS- /MD /Ob1 /Oy-
-// roc-lib: xtp-15.2.1 Source/CommandBars/XTPMenuBar.cpp
+// from server: 100% by tester
+struct CXTPMenuBar {
+    char pad[52];
+    int sub_6a6af0(int);
+    int sub_6a2ce0(int);
+    int sub_6301e4();
+    void func(int);
+};
+
+void CXTPMenuBar::func(int arg) {
+    int result = sub_6a6af0(arg);
+    if (result != 0) {
+        ((CXTPMenuBar*)((char*)this + 0x20))->sub_6a2ce0(arg);
+        ((CXTPMenuBar*)result)->sub_6301e4();
+    }
+}

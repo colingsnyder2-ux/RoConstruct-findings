@@ -1,40 +1,53 @@
-// from server: 47% by colin
-struct S {
-    int f(int, int);
+// from server: 50% by tester
+// roc 2007-08 004fef70  unit: std::D::DU?$char_traits::V?$basic_string::?$Table  size: 215 bytes
+// Make this compile to the exact bytes below, then: roc check 2007-08 004fef70
+
+extern "C" __declspec(dllimport) long __stdcall InterlockedDecrement(long volatile*);
+extern "C" void* __cdecl operator_new(unsigned int);
+extern "C" void __cdecl operator_delete(void*);
+extern "C" void __cdecl memset(void*, int, unsigned int);
+
+struct CNameItem {
+    void assign(void*);
 };
 
-extern "C" void __stdcall sub_474F70(int);
-extern "C" void* __stdcall sub_500060(unsigned int, unsigned int);
-extern "C" void __stdcall sub_500580(void*, int, unsigned int);
-extern "C" void __stdcall sub_457DD0();
-extern "C" int __stdcall sub_77D2E8(void*);
+struct GImage {
+    void release();
+};
 
-int S::f(int a, int b)
-{
-    int* p;
-    int* q;
-    int r;
-    int v;
+struct Target {
+    int field0;
+    int field4;
+    int field8;
+    CNameItem name;
+    int field10;
+    unsigned char field14;
+    int field18;
+    int field1c;
+    int field20;
+    int field24;
 
-    *(int*)((char*)this + 0) = 0x797984;
-    *(int*)((char*)this + 4) = 0;
-    *(int*)((char*)this + 8) = 0;
-    *(int*)((char*)this + 0) = 0x79f90c;
-    *(int*)((char*)this + 0xc) = 0;
-    sub_474F70(b);
-    *(int*)((char*)this + 0x10) = a;
-    *(char*)((char*)this + 0x14) = 1;
-    *(int*)((char*)this + 0x18) = 0x79f8dc;
-    *(int*)((char*)this + 0x24) = 10;
-    *(int*)((char*)this + 0x1c) = 0;
-    p = (int*)sub_500060(0x28, 0x10);
-    *(int*)((char*)this + 0x20) = (int)p;
-    sub_500580(p, 0, (unsigned int)(*(int*)((char*)this + 0x24) * 4));
-    if (b != 0) {
-        if (sub_77D2E8((void*)(b + 4)) == 0) {
-            sub_457DD0();
-            (*(void(__thiscall**)(int, int))*(int*)b)(b, 1);
+    Target* construct(void* a, int b);
+};
+
+Target* Target::construct(void* a, int b) {
+    this->field0 = 0x797984;
+    this->field4 = 0;
+    this->field8 = 0;
+    this->field0 = 0x79f90c;
+    this->name.assign(a);
+    this->field10 = b;
+    this->field14 = 1;
+    this->field18 = 0x79f8dc;
+    this->field24 = 10;
+    this->field1c = 0;
+    this->field20 = (int)operator_new(0x28);
+    memset((void*)this->field20, 0, this->field24 * 4);
+    if (a != 0) {
+        if (InterlockedDecrement((long volatile*)((char*)a + 4)) == 0) {
+            ((GImage*)a)->release();
+            (*(void (__thiscall**)(void*, int))*(int*)a)(a, 1);
         }
     }
-    return (int)this;
+    return this;
 }

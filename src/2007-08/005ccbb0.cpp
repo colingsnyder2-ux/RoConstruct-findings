@@ -1,22 +1,24 @@
-// from server: 87% by colin
+// from server: 88% by tester
 struct S {
     char pad[0x10];
-    int* field10;
-    int* get(int index);
+    int* field_10;
+    int get(int index);
 };
 
-int* S::get(int index) {
+extern int g_table1[];
+extern int g_table2[];
+
+int S::get(int index) {
     if (index < 0xc) {
         int q = index / 4;
         int r = index % 4;
-        int* base = (int*)0x7c2ea8;
-        int v = base[r + q * 4];
-        return field10 + v * 3;
+        int v = g_table1[r + q * 4];
+        return *(int*)((char*)field_10 + (v + v * 2) * 4);
     } else {
-        int q = (index - 0xc) / 4;
-        int r = (index - 0xc) % 4;
-        int* base = (int*)0x7c2eac;
-        int v = base[r + q * 4];
-        return field10 + v * 3;
+        int i = index - 0xc;
+        int q = i / 4;
+        int r = i % 4;
+        int v = g_table2[r + q * 4];
+        return *(int*)((char*)field_10 + (v + v * 2) * 4);
     }
 }

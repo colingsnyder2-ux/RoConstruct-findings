@@ -1,5 +1,10 @@
-// from server: 94% by colin
-// roc-lang: cpp
-// roc-cl: 50727
-// roc-flags: /O2 /GS- /MD
-// roc-lib: xtp-11.2.2-vc8 Source/ReportControl/XTPReportControl.cpp
+// from server: 100% by tester
+struct CXTPReportControl {
+    int getSomeValue() const;
+};
+
+int CXTPReportControl::getSomeValue() const {
+    int value = *(int*)((char*)this + 0x178);
+    value = (value != 0) ? 2 : 0;
+    return value | 0x81;
+}

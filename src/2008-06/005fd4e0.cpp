@@ -1,5 +1,17 @@
-// from server: 68% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs util/RunStateOwner.cpp
+// from server: 100% by tester
+struct Sub {
+    void method();
+};
+
+struct Tool {
+    char pad[0x240];
+    Sub sub1cc;
+    char pad2[0x254 - 0x240 - sizeof(Sub)];
+    Sub sub1e0;
+    void func();
+};
+
+void Tool::func() {
+    sub1cc.method();
+    sub1e0.method();
+}

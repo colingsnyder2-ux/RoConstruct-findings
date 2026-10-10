@@ -1,5 +1,8 @@
-// from server: 75% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs gui/GUI.cpp
+// from server: 100% by tester
+struct CXTPControlTabWorkspace {
+    int f();
+};
+
+int CXTPControlTabWorkspace::f() {
+    return *(int*)((char*)this - 0x7c);
+}

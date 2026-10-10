@@ -1,5 +1,10 @@
-// from server: 50% by colin
-// roc-lang: cpp
-// roc-cl: 30729
-// roc-flags: /O2 /GS- /MD
-// roc-lib: xtp-13.2.1 Source/CommandBars/XTPCommandBars.cpp
+// from server: 100% by tester
+struct CXTPCommandBar {
+    unsigned char padding[0xec];
+    unsigned int m_nFlags;
+    void ApplyFlags(unsigned int set, unsigned int clear);
+};
+
+void CXTPCommandBar::ApplyFlags(unsigned int set, unsigned int clear) {
+    m_nFlags = (m_nFlags | set) & ~clear;
+}

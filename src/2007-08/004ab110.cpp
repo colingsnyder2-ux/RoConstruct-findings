@@ -1,6 +1,4 @@
-// from server: 23% by colin
-// roc 2007-08 004ab110  unit: RBX::Network::Peer  size: 185 bytes
-
+// from server: 26% by tester
 struct Node {
     Node* left;
     Node* parent;
@@ -10,60 +8,61 @@ struct Node {
     int key;
 };
 
-struct Tree {
-    Node* header;
-};
-
-struct Peer {
-    Tree tree;
-    int insert_unique(Node* hint, Node* node);
-    int insert_unique_impl(Node* hint, Node* node);
-    void rotate_left(Node* x);
-    void rotate_right(Node* x);
-    int insert_result(Node* hint, Node* node);
-};
-
-struct Result {
+struct Pair {
     Node* first;
     Node* second;
     char inserted;
     char pad[3];
 };
 
-int __stdcall sub_4a5200();
-int __stdcall sub_4a9d70();
+struct Tree {
+    Node* header;
+    Node* root;
+    Pair insert_unique_hint(Node* hint, Node* value);
+};
 
-int Peer::insert_unique(Node* hint, Node* node)
-{
-    Node* header = tree.header;
-    Node* y = header->parent;
+struct Peer {
+    Tree tree;
+    Pair insert_unique(Node* value);
+};
+
+Pair Tree::insert_unique_hint(Node* hint, Node* value) {
+    Pair result;
+    result.first = hint;
+    result.second = value;
+    result.inserted = 1;
+    return result;
+}
+
+Pair Peer::insert_unique(Node* value) {
+    Node* y = tree.header;
+    Node* x = tree.header->parent;
     char comp = 1;
-    Node* x;
-    if (y->color == 0) {
-        while (1) {
-            if (node->key < y->key) {
-                x = y->left;
-                comp = 1;
-            } else {
-                x = y->right;
-                comp = 0;
-            }
-            if (x->color != 0)
-                break;
-            y = x;
+    while (x->color == 0) {
+        y = x;
+        if (value->key < x->key) {
+            comp = 1;
+            x = x->left;
+        } else {
+            comp = 0;
+            x = x->right;
         }
     }
-    Node* pos = y;
+    Node* j = y;
+    Pair result;
+    result.first = j;
+    result.second = 0;
     if (comp) {
-        if (y == header->left) {
-            Result* r = (Result*)this->insert_unique_impl(y, node);
-            return 0;
+        if (j == tree.header->left) {
+            return tree.insert_unique_hint(j, value);
         }
-        sub_4a5200();
+        j = j->parent;
     }
-    if (y->key < node->key) {
-        Result* r = (Result*)this->insert_unique_impl(y, node);
-        return 0;
+    if (j->key < value->key) {
+        return tree.insert_unique_hint(j, value);
     }
-    return 0;
+    result.first = j;
+    result.second = 0;
+    result.inserted = 0;
+    return result;
 }

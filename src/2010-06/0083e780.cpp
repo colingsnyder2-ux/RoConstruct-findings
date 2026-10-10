@@ -1,5 +1,16 @@
-// from server: 92% by colin
-// roc-lang: cpp
-// roc-cl: 30729
-// roc-flags: /O2 /GS- /MD
-// roc-lib: xtp-13.2.1 Source/CommandBars/XTPControlEdit.cpp
+// from server: 100% by tester
+struct Inner {
+    void method();
+};
+
+struct Outer {
+    char pad[0x100];
+    Inner* inner;
+    void method();
+};
+
+void Outer::method()
+{
+    inner->method();
+    (*(void (__thiscall**)(Outer*, int))(*(int*)this + 0x70))(this, 1);
+}

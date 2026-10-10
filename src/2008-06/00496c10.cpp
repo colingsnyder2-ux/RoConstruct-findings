@@ -1,5 +1,14 @@
-// from server: 61% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs v8xml/XmlSerializer.cpp
+// from server: 100% by tester
+struct S_func_004c4b90 {
+    char pad[0x198];
+    void* field_d4;
+    int f();
+};
+
+int S_func_004c4b90::f()
+{
+    char* p = *(char**)((char*)this + 0x198);
+    int a = *(int*)(p + 0x10);
+    int b = *(int*)(p + 0xc);
+    return (a - b) >> 3;
+}

@@ -1,4 +1,4 @@
-// from server: 58% by colin
+// from server: 59% by tester
 struct S_func_005cce70 {
     char pad0[0x64];
     void* m_ptr64;
@@ -6,7 +6,7 @@ struct S_func_005cce70 {
     float m_fa8;
     float m_fac;
     float m_fb0;
-    void f(S_func_005cce70* other);
+    void __cdecl f(S_func_005cce70* other);
 };
 
 extern "C" void __stdcall sub_00530100(void* p);

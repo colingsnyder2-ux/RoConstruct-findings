@@ -1,5 +1,15 @@
-// from server: 56% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: boost-1.34.1 libs/regex/src/instances.cpp
+// from server: 100% by tester
+struct CSelectionTreeCtrl {
+    char pad[0x124];
+    void* m_ptr;
+    int GetSelected();
+};
+
+extern int __fastcall sub_410d40(void* p);
+
+int CSelectionTreeCtrl::GetSelected()
+{
+    if (m_ptr)
+        return sub_410d40(m_ptr);
+    return 0;
+}

@@ -1,9 +1,8 @@
-// from server: 63% by colin
+// from server: 66% by tester
 struct RootInstance {
-    RootInstance* getParentChainRoot(RootInstance* start);
 };
 
-RootInstance* RootInstance::getParentChainRoot(RootInstance* start)
+RootInstance* __cdecl getParentChainRoot(RootInstance* start)
 {
     RootInstance* p = *(RootInstance**)((char*)start + 0xbc);
     RootInstance* q = p;

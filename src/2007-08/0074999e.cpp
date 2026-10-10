@@ -1,12 +1,11 @@
-// from server: 66% by colin
+// from server: 69% by tester
 extern "C" void __cdecl sub_630a1e(void*);
 extern "C" void __cdecl sub_630a18(void*);
 
 struct S {
-    void f(void* a, void* b);
 };
 
-void S::f(void* a, void* b)
+void __cdecl f(void* a, void* b)
 {
     int* p = (int*)b;
     int v = *(int*)((char*)p - 4);
