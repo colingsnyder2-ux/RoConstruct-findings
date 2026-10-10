@@ -1,77 +1,73 @@
-// from server: 52% by colin
+// from server: 71% by tester
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
 
-struct RefCounted {
-    void* vfptr;
-    long refcount;
-    long weakrefcount;
-};
-
-struct Sub {
-    void* vfptr;
+struct InnerList {
+    void* field0;
     void* field4;
+    void clear();
 };
 
-struct Obj {
-    void* vfptr;
+struct RefCounted {
+    virtual void slot0();
+    virtual void slot1();
+    virtual void slot2();
+    long ref1;
+    long ref2;
+};
+
+struct Base {
+    virtual ~Base();
+};
+
+struct VCLuaFunction : Base {
     char pad[0xf4 - 4];
-    void* field_f4;
+    RefCounted* ptr_f4;
     char pad2[0x100 - 0xf8];
-    RefCounted* field_100;
-    RefCounted* field_108;
-    Sub field_10c;
+    RefCounted* ptr_100;
+    RefCounted* ptr_108;
+    InnerList list_10c;
+    ~VCLuaFunction();
 };
 
-extern "C" void __cdecl sub_62FC62(void*);
-extern "C" void __cdecl sub_42BAD0(void*);
-extern "C" void __cdecl sub_461C80(void*);
+void __cdecl sub_62FC62(void* p);
 
-void Obj_dtor(Obj* self);
-
-void Obj_dtor(Obj* self)
+void InnerList::clear()
 {
-    self->vfptr = (void*)0x78a344;
+    void* p = this->field4;
+    sub_62FC62(p);
+    this->field4 = 0;
+}
 
-    sub_42BAD0(&self->field_10c);
-    sub_62FC62(self->field_10c.field4);
-    self->field_10c.field4 = 0;
+VCLuaFunction::~VCLuaFunction()
+{
+    *(void**)this = (void*)0x78a344;
+    this->list_10c.clear();
 
-    {
-        RefCounted* p = self->field_108;
-        if (p) {
-            if (_InterlockedExchangeAdd(&p->refcount, -1) == 1) {
-                void** vt = (void**)p->vfptr;
-                ((void (__thiscall*)(RefCounted*))vt[1])(p);
-                if (_InterlockedExchangeAdd(&p->weakrefcount, -1) == 1) {
-                    void** vt2 = (void**)p->vfptr;
-                    ((void (__thiscall*)(RefCounted*))vt2[2])(p);
-                }
+    RefCounted* p108 = this->ptr_108;
+    if (p108 != 0) {
+        if (_InterlockedExchangeAdd(&p108->ref1, -1) == 1) {
+            p108->slot1();
+            if (_InterlockedExchangeAdd(&p108->ref2, -1) == 1) {
+                p108->slot2();
             }
         }
     }
 
-    {
-        RefCounted* p = self->field_100;
-        if (p) {
-            if (_InterlockedExchangeAdd(&p->refcount, -1) == 1) {
-                void** vt = (void**)p->vfptr;
-                ((void (__thiscall*)(RefCounted*))vt[1])(p);
-                if (_InterlockedExchangeAdd(&p->weakrefcount, -1) == 1) {
-                    void** vt2 = (void**)p->vfptr;
-                    ((void (__thiscall*)(RefCounted*))vt2[2])(p);
-                }
+    RefCounted* p100 = this->ptr_100;
+    if (p100 != 0) {
+        if (_InterlockedExchangeAdd(&p100->ref1, -1) == 1) {
+            p100->slot1();
+            if (_InterlockedExchangeAdd(&p100->ref2, -1) == 1) {
+                p100->slot2();
             }
         }
     }
 
-    {
-        void* p = self->field_f4;
-        if (p) {
-            void** vt = (void**)p;
-            ((void (__thiscall*)(void*))vt[2])(p);
-        }
+    RefCounted* pF4 = this->ptr_f4;
+    if (pF4 != 0) {
+        pF4->slot2();
     }
 
-    sub_461C80(self);
+    Base::~Base();
 }

@@ -1,47 +1,58 @@
-// from server: 30% by colin
-struct LogManager {
-    void* vtable;
-    int field4;
+// from server: 35% by tester
+struct DxUserInput {
+    unsigned short w0;
+    unsigned short w2;
+    int d4;
+    int d8;
+    int dC;
+    int d10;
+    DxUserInput* init();
+    void reset();
+};
+
+extern "C" void __cdecl free_ptr(void* p);
+
+struct ThreadLogManager {
+    char pad0[8];
     char name[0x100];
-    char field108[0x80];
-    char field188[0x644];
+    char pad108[0x80];
+    char path[0x100];
+    char pad288[0x544];
     int field7cc;
+    void construct(const char* a, const char* b, const char* c, int d);
 };
 
-struct ThreadLogManager : LogManager {
-    ThreadLogManager(const char* a, const char* b, const char* c);
-};
+extern ThreadLogManager* g_threadLogManager;
+extern DxUserInput* g_dxUserInput;
+extern void* g_somePtr;
 
-extern "C" void __stdcall sub_466330(void* p);
-extern "C" void __stdcall sub_466620(void* p, void* q);
-extern "C" void __stdcall sub_466580(void* p, void* q);
-extern "C" void __stdcall sub_4665f0(void* p);
-extern "C" void* __stdcall sub_77dd98(void* p);
-extern "C" void __stdcall sub_77ddbc(void* p);
+extern "C" void* __stdcall get_something();
+extern "C" void __stdcall release_something(void* p);
 
-extern void* g_8c9828;
-extern void* g_8be2e8;
-
-ThreadLogManager::ThreadLogManager(const char* a, const char* b, const char* c)
+void ThreadLogManager::construct(const char* a, const char* b, const char* c, int d)
 {
-    g_8be2e8 = this;
-    field7cc = (int)c;
-    vtable = (void*)0x789fb8;
-    field4 = 0xc;
+    g_threadLogManager = this;
+    this->field7cc = d;
+    *(void**)this = (void*)0x789fb8;
+    *(int*)((char*)this + 4) = 0xc;
+
     char* dst = (char*)this + 0x108;
     const char* src = a;
     while ((*dst++ = *src++) != 0) {}
+
     dst = (char*)this + 8;
     src = b;
     while ((*dst++ = *src++) != 0) {}
-    char buf[0x30];
-    sub_466330(buf);
-    sub_466620(buf, g_8c9828);
-    sub_466580(buf, (char*)this + 0x34);
-    void* p = sub_77dd98((char*)this + 0x34);
-    char* d2 = (char*)this + 0x88;
-    const char* s2 = (const char*)p;
-    while ((*d2++ = *s2++) != 0) {}
-    sub_77ddbc((char*)this + 0x34);
-    sub_4665f0(buf);
+
+    DxUserInput local;
+    local.init();
+
+    void* p = g_somePtr;
+    local.reset();
+
+    char* dst2 = (char*)this + 0x88;
+    const char* src2 = c;
+    while ((*dst2++ = *src2++) != 0) {}
+
+    local.reset();
 }

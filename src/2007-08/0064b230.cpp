@@ -1,21 +1,19 @@
-// from server: 73% by colin
-// roc 2007-08 0064b230  unit: CXTPImageManagerIcon  size: 24 bytes
-// Make this compile to the exact bytes below, then: roc check 2007-08 0064b230
+// from server: 100% by tester
+// roc 2008-06 006bc7b0  unit: KKPAVCXTPImageManagerResource::?$CMap  size: 24 bytes
+// Make this compile to the exact bytes below, then: roc check 2008-06 006bc7b0
 //
-// 0064b230  0fb7442404           movzx eax, word ptr [esp + 4]
-// 0064b235  50                   push eax
-// 0064b236  6a02                 push 2
-// 0064b238  50                   push eax
-// 0064b239  e83a52feff           call 0x630478
-// 0064b23e  50                   push eax
-// 0064b23f  e81ce0ffff           call 0x649260
-// 0064b244  83c408               add esp, 8
-// 0064b247  c3                   ret 
+// 006bc7b0  0fb7442404           movzx eax, word ptr [esp + 4]
+// 006bc7b5  50                   push eax
+// 006bc7b6  6a02                 push 2
+// 006bc7b8  50                   push eax
+// 006bc7b9  e86e47feff           call 0x6a0f2c
+// 006bc7be  50                   push eax
+// 006bc7bf  e82ce6ffff           call 0x6badf0
+// 006bc7c4  83c408               add esp, 8
+// 006bc7c7  c3                   ret 
+// library xtp-11.2.2-shared-mfc/Source\Common\XTPImageManager.cpp (function ?LoadAlphaBitmap@CXTPImageManagerIcon@@SAPAUHBITMAP__@@I@Z)
 
-extern "C" int __stdcall sub_630478(unsigned short, int, unsigned short);
-extern "C" int __cdecl sub_649260(int);
-
-int __stdcall sub_64b230(unsigned short a)
-{
-    return sub_649260(sub_630478(a, 2, a));
-}
+// roc-lang: cpp
+// roc-cl: 30729
+// roc-flags: /O2 /GS- /MD
+// roc-lib: xtp-11.2.2-shared-mfc Source/Common/XTPImageManager.cpp

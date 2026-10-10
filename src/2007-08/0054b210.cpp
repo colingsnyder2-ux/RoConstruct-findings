@@ -1,20 +1,29 @@
-// from server: 45% by colin
-struct S_func_0054b210
-{
-    void f();
+// from server: 53% by tester
+
+
+
+
+extern "C" {
+    typedef unsigned int DWORD;
+    typedef void* HMODULE;
+}
+
+struct std_string {
+    void* data[4];
+    std_string(const char*);
+    ~std_string();
 };
 
-extern "C" void __stdcall sub_77E698(void*);
-extern "C" void __stdcall sub_77E6AC(void*);
-extern "C" void __stdcall sub_412DC0(void*, void*);
+struct chain_client {
+    void* vtable;
+    void construct(std_string*);
+};
 
-void S_func_0054b210::f()
-{
-    char buf[32];
-    *(void**)buf = 0;
-    sub_77E698(buf);
-    sub_412DC0(this, buf);
-    *(void**)this = (void*)0x7a783c;
-    *(char*)(buf + 24) = 0;
-    sub_77E6AC(buf);
+extern "C" void* __stdcall get_module_handle(const char*);
+extern "C" void* __stdcall get_proc_address(void*, const char*);
+
+void chain_client::construct(std_string* s) {
+    std_string local("no read access");
+    this->vtable = (void*)0x7a783c;
+    local.~std_string();
 }

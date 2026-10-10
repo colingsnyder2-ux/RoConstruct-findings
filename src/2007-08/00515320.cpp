@@ -1,6 +1,6 @@
-// from server: 81% by colin
+// from server: 93% by tester
 struct G3D_DialogTemplate {
-    void method_515320(int, int);
+    void __cdecl method_515320(int, int);
 };
 
 extern "C" void __cdecl sub_514F70(void*, int, int, int);

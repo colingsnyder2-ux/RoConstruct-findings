@@ -1,52 +1,38 @@
-// from server: 35% by colin
+// from server: 37% by tester
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
 
-struct RBX_RefCounted {
-    void* m_vptr;
-    volatile long m_refCount;
-    volatile long m_weakRefCount;
+struct RefCounted {
+    void* vptr;
+    long refcount;
+    long weakcount;
 };
 
-struct RBX_SharedPtr {
-    void* m_ptr;
-    RBX_RefCounted* m_control;
+struct Holder {
+    void* ptr;
+    RefCounted* ref;
 };
 
-struct RBX_Creator {
-    RBX_SharedPtr* getSharedPtr(RBX_SharedPtr* result);
-};
+extern "C" void* __cdecl sub_4082A0(void*);
 
-struct S_func_00408330 {
-    RBX_SharedPtr* f(RBX_SharedPtr* result);
-};
-
-RBX_SharedPtr* S_func_00408330::f(RBX_SharedPtr* result)
+void __stdcall sub_408330(Holder* out)
 {
-    RBX_SharedPtr tmp;
-    tmp.m_ptr = 0;
-    tmp.m_control = 0;
-
-    RBX_Creator* creator = (RBX_Creator*)this;
-    creator->getSharedPtr(&tmp);
-
-    result->m_ptr = tmp.m_ptr;
-    result->m_control = tmp.m_control;
-    if (result->m_control != 0) {
-        _InterlockedExchangeAdd(&result->m_control->m_refCount, 1);
+    void* tmp = 0;
+    void* result = sub_4082A0(&tmp);
+    out->ptr = *(void**)result;
+    RefCounted* r = *(RefCounted**)((char*)result + 4);
+    out->ref = r;
+    if (r) {
+        _InterlockedExchangeAdd(&r->refcount, 1);
     }
-
-    if (tmp.m_control != 0) {
-        if (_InterlockedExchangeAdd(&tmp.m_control->m_refCount, -1) == 1) {
-            void** vtbl = *(void***)tmp.m_control;
-            typedef void (__thiscall *Fn)(void*);
-            ((Fn)vtbl[1])(tmp.m_control);
-            if (_InterlockedExchangeAdd(&tmp.m_control->m_weakRefCount, -1) == 1) {
-                void** vtbl2 = *(void***)tmp.m_control;
-                ((Fn)vtbl2[2])(tmp.m_control);
+    RefCounted* old = (RefCounted*)tmp;
+    if (old) {
+        if (_InterlockedExchangeAdd(&old->refcount, -1) == 1) {
+            old->vptr;
+            ((void (__stdcall*)(RefCounted*))((void**)old->vptr)[1])(old);
+            if (_InterlockedExchangeAdd(&old->weakcount, -1) == 1) {
+                ((void (__stdcall*)(RefCounted*))((void**)old->vptr)[2])(old);
             }
         }
     }
-
-    return result;
 }

@@ -1,4 +1,4 @@
-// from server: 28% by colin
+// from server: 29% by tester
 struct VerbContainer;
 
 struct Verb {
@@ -21,7 +21,7 @@ void* operator_new(unsigned int size);
 void Verb_ctor(Verb* self, VerbContainer* container, const char* name, bool blacklisted);
 
 struct TToolVerbHolder {
-    TToolVerb* construct(DataModel* dataModel, bool toggle, bool blacklisted);
+    TToolVerb* __cdecl construct(DataModel* dataModel, bool toggle, bool blacklisted);
 };
 
 TToolVerb* TToolVerbHolder::construct(DataModel* dataModel, bool toggle, bool blacklisted)

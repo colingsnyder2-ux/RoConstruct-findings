@@ -1,5 +1,5 @@
-// from server: 58% by colin
+// from server: 100% by tester
 // roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD /arch:SSE2 /fp:fast
-// roc-lib: rbxgs-g3d GLG3Dcpp/ToneMap.cpp
+// roc-cl: 30729
+// roc-flags: /O2 /GS /EHsc /MD
+// roc-lib: ogre-1.7.0 OgreShadowCaster.cpp

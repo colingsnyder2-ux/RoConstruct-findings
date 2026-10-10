@@ -1,4 +1,4 @@
-// from server: 46% by colin
+// from server: 50% by tester
 struct Vector3 {
     float x, y, z;
 };
@@ -10,14 +10,13 @@ struct BodyVelocity {
     Vector3 velocity;
     Vector3 maxForce;
     Vector3 force;
-    char pad1[0x64 - 0x48];
 
     void computeForce(float dt, void* world);
 };
 
 extern "C" void __stdcall sub_530100(void* p);
 extern "C" float __stdcall sub_624d80(void* p);
-extern "C" void* __stdcall sub_4a04a0(void* out, Vector3* in);
+extern "C" Vector3* __stdcall sub_4a04a0(Vector3* out, Vector3* a, Vector3* b);
 extern "C" void __stdcall sub_5cf030(Vector3* out, Vector3* in);
 
 void BodyVelocity::computeForce(float dt, void* world)
@@ -53,11 +52,10 @@ void BodyVelocity::computeForce(float dt, void* world)
     negVel.y = -velocity.y;
     negVel.z = -velocity.z;
 
-    Vector3 result;
-    sub_4a04a0(&result, &negVel);
-    force.x = result.x;
-    force.y = result.y;
-    force.z = result.z;
+    Vector3* result = sub_4a04a0(&negVel, &velocity, &maxForce);
+    force.x = result->x;
+    force.y = result->y;
+    force.z = result->z;
 
     void* j2 = *(void**)((char*)q + 4);
     sub_530100(j2);

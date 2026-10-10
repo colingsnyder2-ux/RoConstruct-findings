@@ -1,11 +1,12 @@
-// from server: 28% by colin
+// from server: 29% by tester
+extern "C" void* __cdecl malloc(unsigned int size);
+
 struct CChildFrame
 {
     void sub_40EF20(void*, void*);
     void construct();
 };
 
-extern "C" void* __stdcall malloc(unsigned int size);
 extern "C" void __cdecl sub_4479C0(void*);
 
 void CChildFrame::construct()

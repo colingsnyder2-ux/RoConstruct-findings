@@ -1,68 +1,50 @@
-// from server: 42% by colin
+// from server: 43% by tester
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
 
-struct RefCounted {
-    void* vptr;
-    volatile long refcount;
+struct VMarkerSignalDesc {
+    int field0;
+    int field4;
+    char pad8[0x20];
+    void construct(int* src);
 };
 
-struct Inner {
-    int a;
-    int b;
-    int c;
-    int d;
-    int e;
-    int f;
-    char g;
-};
+extern "C" void __cdecl sub_4b3030();
+extern "C" void* __cdecl sub_62fef6(unsigned int size);
+extern "C" void __cdecl sub_4181b0(void* p);
+extern "C" void __cdecl sub_728830();
 
-struct Outer {
-    void* field0;
-    void* field4;
-    char field8[0x14];
-    void* field1c;
-
-    Outer(void* arg);
-};
-
-extern "C" void __stdcall sub_4b3030(void*);
-extern "C" void* __cdecl sub_62fef6(unsigned int);
-extern "C" void __stdcall sub_4181b0(void*, void*);
-extern "C" void __stdcall sub_728830(void*);
-
-Outer::Outer(void* arg)
+void VMarkerSignalDesc::construct(int* src)
 {
-    void** src = (void**)arg;
-    void* p0 = src[0];
-    void* p1 = src[1];
+    field0 = 0;
+    field4 = 0;
 
-    this->field0 = 0;
-    this->field4 = 0;
+    int* p = src;
+    int v0 = p[0];
+    int v1 = p[1];
 
-    void* local[2];
-    local[0] = p0;
-    local[1] = p1;
+    int* tmp = (int*)&pad8[0];
+    tmp[0] = v0;
+    tmp[1] = v1;
 
-    if (p1 != 0) {
-        _InterlockedExchangeAdd((volatile long*)((char*)p1 + 4), 1);
+    if (v1 != 0) {
+        _InterlockedExchangeAdd((volatile long*)(v1 + 4), 1);
     }
 
-    sub_4b3030(this->field8);
+    sub_4b3030();
 
-    Inner* inner = (Inner*)sub_62fef6(0x20);
-    if (inner != 0) {
-        inner->a = 0;
-        inner->b = 0;
-        inner->c = 0;
-        inner->d = 0;
-        inner->e = 0;
-        inner->f = 0;
-        inner->g = 0;
+    void* obj = sub_62fef6(0x20);
+    if (obj != 0) {
+        *(int*)((char*)obj + 4) = 0;
+        *(int*)((char*)obj + 8) = 0;
+        *(int*)((char*)obj + 0xc) = 0;
+        *(int*)((char*)obj + 0x14) = 0;
+        *(int*)((char*)obj + 0x18) = 0;
+        *(char*)((char*)obj + 0x1c) = 0;
     } else {
-        inner = 0;
+        obj = 0;
     }
 
-    sub_4181b0(this, inner);
-    sub_728830(this);
+    sub_4181b0(obj);
+    sub_728830();
 }

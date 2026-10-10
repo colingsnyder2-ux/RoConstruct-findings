@@ -1,70 +1,57 @@
-// from server: 33% by colin
+// from server: 67% by tester
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
 
-struct RefCounted
-{
-    void (__stdcall *vtable[3])();
-    volatile long refCount1;
-    volatile long refCount2;
+struct RefCounted {
+    void** vptr;
+    volatile long ref1;
+    volatile long ref2;
+    void Release();
 };
 
-struct AbuseReporterData
+void RefCounted::Release()
 {
-    int field0;
-    int field4;
+    if (_InterlockedExchangeAdd(&ref1, -1) == 1) {
+        (*(void (__thiscall**)(RefCounted*))((char*)vptr + 4))(this);
+    }
+    if (_InterlockedExchangeAdd(&ref2, -1) == 1) {
+        (*(void (__thiscall**)(RefCounted*))((char*)vptr + 8))(this);
+    }
+}
+
+struct Guard {
+    void* field0;
+    char field4;
+    Guard();
+    ~Guard();
 };
 
-extern int g_8be2f8;
-extern int g_8c1c50;
+extern Guard g_guard;
+extern volatile long g_flag;
+extern void* g_ptr;
 
-extern void __stdcall func_00498ed0(void*);
-extern void __stdcall func_0054a950(void*);
-extern void __stdcall func_00541630(void*, void*);
-extern void __stdcall func_00725750(void*);
-extern void __stdcall func_00725770(void*);
+void __stdcall sub_498ED0(void** out);
+void* __stdcall sub_54A950(void* p);
+void __stdcall sub_541630(void* a, void* b);
 
-void func_00498f60()
+void __stdcall sub_498F60()
 {
-    func_00725750(&g_8c1c50);
+    Guard local;
+    void* tmp = 0;
+    void* obj = 0;
 
-    if (g_8be2f8 == 0)
-    {
-        AbuseReporterData data;
-        func_00498ed0(&data);
-
-        void* ptr = 0;
-        func_0054a950(&ptr);
-
-        void* val = *(void**)ptr;
-        func_00541630(&data, val);
-
-        RefCounted* r1 = (RefCounted*)ptr;
-        if (r1)
-        {
-            if (_InterlockedExchangeAdd(&r1->refCount1, -1) == 1)
-            {
-                r1->vtable[1]();
-                if (_InterlockedExchangeAdd(&r1->refCount2, -1) == 1)
-                {
-                    r1->vtable[2]();
-                }
-            }
+    if (g_flag == 0) {
+        sub_498ED0(&tmp);
+        void* v = sub_54A950(&obj);
+        sub_541630(*(void**)v, tmp);
+        if (obj) {
+            RefCounted* r = (RefCounted*)obj;
+            r->Release();
         }
-
-        RefCounted* r2 = (RefCounted*)data.field0;
-        if (r2)
-        {
-            if (_InterlockedExchangeAdd(&r2->refCount1, -1) == 1)
-            {
-                r2->vtable[1]();
-                if (_InterlockedExchangeAdd(&r2->refCount2, -1) == 1)
-                {
-                    r2->vtable[2]();
-                }
-            }
+        if (tmp) {
+            RefCounted* r = (RefCounted*)tmp;
+            r->Release();
         }
     }
-
-    func_00725770(&g_8c1c50);
+    g_ptr = (void*)g_flag;
 }

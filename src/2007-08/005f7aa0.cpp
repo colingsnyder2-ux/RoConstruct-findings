@@ -1,55 +1,47 @@
-// from server: 28% by colin
+// from server: 49% by tester
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
 
 struct RefCounted {
     void* vptr;
-    volatile long refcount;
+    long refcount;
 };
 
-struct Creator {
+struct Inner {
     void* vptr;
+    long refcount;
 };
 
-struct FactoryProduct {
-    Creator* creator;
-    RefCounted* value;
-    FactoryProduct* ctor(void* arg);
+struct Holder {
+    void* ptr;
+    Inner* inner;
 };
 
-extern "C" void __cdecl sub_5F7140(void* out, void* in);
+extern "C" void __cdecl sub_5f7140(Holder* out, void* arg);
 
-FactoryProduct* FactoryProduct::ctor(void* arg)
-{
-    void* local8 = 0;
-    void* local10 = 0;
-    void* local14 = 0;
-    void* local1c = 0;
-    int local18 = 0;
+struct S {
+    Holder* f(void* arg);
+};
 
-    sub_5F7140(&local8, arg);
-
-    this->creator = *(Creator**)&local8;
-    this->value = *(RefCounted**)&local10;
-
-    if (this->value) {
-        _InterlockedExchangeAdd(&this->value->refcount, 1);
+Holder* S::f(void* arg) {
+    Holder* result = (Holder*)arg;
+    Holder tmp;
+    sub_5f7140(&tmp, arg);
+    result->ptr = tmp.ptr;
+    result->inner = tmp.inner;
+    if (result->inner != 0) {
+        _InterlockedExchangeAdd(&result->inner->refcount, 1);
     }
-
-    RefCounted* old = (RefCounted*)local10;
-    local1c = 0;
-    local18 = 1;
-
-    if (old) {
+    Inner* old = tmp.inner;
+    if (old != 0) {
         if (_InterlockedExchangeAdd(&old->refcount, -1) == 1) {
-            void** vt = *(void***)old;
-            ((void (__thiscall*)(RefCounted*))vt[1])(old);
-            if (_InterlockedExchangeAdd((volatile long*)((char*)old + 8), -1) == 1) {
-                void** vt2 = *(void***)old;
-                ((void (__thiscall*)(RefCounted*))vt2[2])(old);
+            void** vt = (void**)old->vptr;
+            ((void (__stdcall*)(Inner*))vt[1])(old);
+            if (_InterlockedExchangeAdd(&((long*)old)[2], -1) == 1) {
+                void** vt2 = (void**)old->vptr;
+                ((void (__stdcall*)(Inner*))vt2[2])(old);
             }
         }
     }
-
-    return this;
+    return result;
 }

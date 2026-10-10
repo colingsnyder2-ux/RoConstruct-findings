@@ -1,24 +1,27 @@
-// from server: 26% by colin
+// from server: 34% by tester
+extern "C" void __cdecl func_0040cc20();
 extern "C" void* __cdecl func_0062fef6(unsigned int);
-extern "C" void __cdecl func_0040cc20(void*, void*, void*);
+
+struct T {
+    void func_0054bcf0(int, int);
+    void func_0054cd90(void*);
+};
 
 struct S {
     void* field0;
     void* field4;
-    void method(void* a, void* b);
+    void func_0054ee90(int, int);
 };
 
-extern "C" void* __cdecl func_0054bcf0(void* self, void* a, void* b);
-extern "C" void __cdecl func_0054cd90(void* self, void* p);
-
-void S::method(void* a, void* b)
+void S::func_0054ee90(int a, int b)
 {
-    void* mem = func_0062fef6(0x28);
-    void* obj = 0;
-    if (mem != 0) {
-        obj = func_0054bcf0(mem, a, b);
+    void* p = func_0062fef6(0x28);
+    void* q = 0;
+    if (p == 0) {
+        ((T*)p)->func_0054bcf0(a, b);
+        q = p;
     }
-    this->field0 = obj;
-    func_0054cd90(&this->field4, obj);
-    func_0040cc20(&this->field4, obj, obj);
+    this->field0 = q;
+    ((T*)&this->field4)->func_0054cd90(q);
+    func_0040cc20();
 }

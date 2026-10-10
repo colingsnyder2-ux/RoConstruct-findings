@@ -1,4 +1,4 @@
-// from server: 77% by colin
+// from server: 79% by tester
 extern "C" int __stdcall sub_77E604();
 
 struct S {
@@ -14,7 +14,7 @@ struct S {
     char pad38[0x8];
     char buf40[0x4];
     int* p44;
-    int f(int a, int b, int c, int d, int e, int g);
+    int __cdecl f(int a, int b, int c, int d, int e, int g);
 };
 
 int S::f(int a, int b, int c, int d, int e, int g)

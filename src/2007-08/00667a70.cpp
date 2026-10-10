@@ -1,4 +1,4 @@
-// from server: 57% by colin
+// from server: 63% by tester
 struct CRobloxTreeCtrl {
     char pad[0x18];
     int field_18;
@@ -14,11 +14,11 @@ int CRobloxTreeCtrl::sub_667a70(void* arg) {
     int result;
     sub_630b8c(buf, 0, 0x3c);
     result = -1;
-    if (this->sub_667770(this->field_18, arg) == 0) {
-        result = -1;
-    } else {
-        result = *(int*)(buf + 0x34);
+    if (sub_667770(field_18, arg) == 0) {
+        sub_630a1e();
+        return -1;
     }
+    result = *(int*)(buf + 0x34);
     sub_630a1e();
     return result;
 }

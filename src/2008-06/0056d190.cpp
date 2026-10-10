@@ -1,14 +1,24 @@
-// from server: 68% by atomic.potato
-struct S
-{
-    void f();
+// from server: 100% by tester
+struct type_info {
+    bool operator==(const type_info&) const;
 };
 
-extern "C" void imported_type_info_compare(void *, void *);
+struct holder {
+    void* vtable;
+    void* pad;
+    type_info* info;
+};
 
-void S::f()
-{
-    void *p = *(void **)this;
-    void *q = *(void **)((char *)p + 8);
-    imported_type_info_compare(q, (void *)0x946364);
+extern type_info type_info_8827f8;
+
+bool (type_info::*type_info_eq)(const type_info&) const;
+
+struct bad_any_cast {
+    holder* h;
+    bool matches() const;
+};
+
+bool bad_any_cast::matches() const {
+    holder* p = h;
+    return (type_info_8827f8.*type_info_eq)(*p->info);
 }

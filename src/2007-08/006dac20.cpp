@@ -1,4 +1,4 @@
-// from server: 35% by colin
+// from server: 37% by tester
 // roc 2007-08 006dac20  unit: CXTPReportControl::CReportDropTarget  size: 493 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 006dac20
 
@@ -55,7 +55,7 @@ struct CReportDropTarget {
     char pad4[0xac];
     int m_nMode;
     void* m_pDropTarget;
-    int OnDrop(void* pDataObject, int x, int y, int grfKeyState, int* pdwEffect);
+    int __cdecl OnDrop(void* pDataObject, int x, int y, int grfKeyState, int* pdwEffect);
 };
 
 extern "C" void __stdcall sub_630490(void*);

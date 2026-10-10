@@ -1,5 +1,10 @@
-// from server: 64% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs v8world/Block.cpp
+// from server: 100% by tester
+// roc-flags: /O2 /GS- /EHsc /MD
+struct seg_004c0000 {
+    int get_19c(int *out);
+};
+
+int seg_004c0000::get_19c(int *out) {
+    *out = *(int *)((char *)this + 0x1e4);
+    return (int)out;
+}

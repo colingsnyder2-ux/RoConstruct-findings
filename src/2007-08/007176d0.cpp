@@ -1,23 +1,13 @@
-// from server: 84% by colin
-struct Inner;
-
-struct Vtbl {
-    char pad[0x19c];
-    int (*fn)();
-};
-
-struct Inner {
-    Vtbl* vtbl;
-};
-
-struct Outer {
-    char pad[0x7c];
-    Inner* inner;
-    int method();
-};
-
-int Outer::method()
+// from server: 100% by tester
+struct CXTPControlTabWorkspace
 {
-    Inner* p = *(Inner**)((char*)this - 0x7c);
-    return p->vtbl->fn();
+    int getValue();
+};
+
+int CXTPControlTabWorkspace::getValue()
+{
+    int* p = *(int**)((char*)this - 0x7c);
+    int* vt = *(int**)p;
+    int (*fn)(void*) = *(int (**)(void*))((char*)vt + 0x19c);
+    return ((int (__fastcall*)(void*))fn)(p);
 }

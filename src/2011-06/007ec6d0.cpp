@@ -1,5 +1,10 @@
-// from server: 69% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs util/Name.cpp
+// from server: 100% by colin
+// roc-flags: /O2 /GS- /EHsc /MD /Ob2 /Oy /GF
+struct Value { int x; };
+Value& sub_00592b40(int);
+
+Value& func_007ec6d0()
+{
+    static Value& value = sub_00592b40(11267732);
+    return value;
+}

@@ -1,24 +1,28 @@
-// from server: 29% by colin
+// from server: 54% by tester
+struct RBX_RocketTool {
+    RBX_RocketTool* construct(void* a, char b, int c);
+};
+
 struct VerbContainer;
 
-struct Verb {
-    void* vtable;
-    void* vtable2;
-    Verb(VerbContainer* container, const char* name, bool blacklisted);
+struct TToolVerb {
+    char pad[0xc];
+    void* fieldc;
+    void* method();
 };
 
-struct TToolVerb : Verb {
-    TToolVerb(VerbContainer* container, bool toggle, bool blacklisted);
-};
+extern "C" void* __cdecl func_0062fef6(unsigned int size);
 
-extern "C" void* __cdecl operator_new(unsigned int size);
-
-struct DataModel {
-    char pad[0x188];
-    VerbContainer* container;
-};
-
-TToolVerb::TToolVerb(VerbContainer* container, bool toggle, bool blacklisted)
-    : Verb(container, "Tool", blacklisted)
+void* TToolVerb::method()
 {
+    void* mem = func_0062fef6(0x34);
+    void* result = 0;
+    if (mem != 0) {
+        void* p = *(void**)((char*)this->fieldc + 0x188);
+        ((RBX_RocketTool*)mem)->construct(p, 0x5a, 0);
+        *(int*)((char*)mem + 0) = 0x7b0e44;
+        *(int*)((char*)mem + 4) = 0x7b0e2c;
+        result = mem;
+    }
+    return result;
 }

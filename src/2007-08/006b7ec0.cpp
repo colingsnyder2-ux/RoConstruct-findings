@@ -1,4 +1,4 @@
-// from server: 90% by tester
+// from server: 100% by tester
 struct CXTPControlGallery
 {
     char pad_0x0[0x178];
@@ -24,7 +24,7 @@ void CXTPControlGallery::func_006b7ec0(int a, int b)
 
     sub_006b7d80(a, b);
 
-    int r = sub_0071d5a0(a, b);
+    int r = ((CXTPControlGallery*)((char*)this + 0x178))->sub_0071d5a0(a, b);
     if (r != field_0x1d0)
     {
         field_0x1d0 = r;

@@ -1,131 +1,63 @@
-// from server: 46% by colin
-struct CXTPReportControl;
-
-struct CXTPReportRow {
-    void* vtable;
-    char pad[0x30];
-    int field34;
-    int field38;
-    char pad2[0x10];
-    int field4c;
-};
-
-struct CXTPReportRecord {
-    void* vtable;
-};
-
+// from server: 59% by tester
 struct CXTPReportControl {
-    char pad[0xb0];
-    void* fieldb0;
-    char pad2[0xb0];
-    int field164;
-    int GetCount();
-    CXTPReportRow* GetRow(int index);
-    void* GetPaintManager();
-    void* GetRecord();
-    void AddRow(CXTPReportRow* row);
-    void RecalcRows();
-    void OnRowChanged(CXTPReportRow* row);
-    void Method188(CXTPReportRow* row);
-    void Method158(void* a, void* b);
-    int Method18c(CXTPReportRow* row);
-    void Method198();
-    void Method1b8(CXTPReportRow* row);
-
-    void ProcessRows(int a, int b, int c);
+    char m_pad[0xb0];
+    int m_pFieldB0;
+    char m_pad2[0xb0];
+    int m_nField164;
+    void Traverse(int nIndex);
 };
 
-extern "C" {
-    int __stdcall sub_663c50(CXTPReportControl* ctrl);
-    CXTPReportRow* __stdcall sub_661700(CXTPReportControl* ctrl, int index);
-    int __stdcall sub_661ce0(CXTPReportRow* row);
-    int __stdcall sub_661f30(CXTPReportRow* row);
-}
+struct CItem {
+    char m_pad[0x34];
+    int m_nField34;
+    int m_nField38;
+};
 
-int CXTPReportControl::GetCount() {
-    return sub_663c50(this);
-}
+struct CObj {
+    char m_pad[0x4c];
+    int m_nField4c;
+};
 
-CXTPReportRow* CXTPReportControl::GetRow(int index) {
-    return sub_661700(this, index);
-}
+extern "C" int __cdecl sub_663C50(void *p);
+extern "C" void *__cdecl sub_661700(void *p, int nIndex);
+extern "C" int __cdecl sub_661CE0(void *p);
+extern "C" int __cdecl sub_661F30(void *p);
 
-void CXTPReportControl::Method158(void* a, void* b) {
-}
-
-int CXTPReportControl::Method18c(CXTPReportRow* row) {
-    return 0;
-}
-
-void CXTPReportControl::Method198() {
-}
-
-void CXTPReportControl::Method1b8(CXTPReportRow* row) {
-}
-
-void CXTPReportControl::AddRow(CXTPReportRow* row) {
-}
-
-void CXTPReportControl::RecalcRows() {
-}
-
-void CXTPReportControl::OnRowChanged(CXTPReportRow* row) {
-}
-
-void CXTPReportControl::Method188(CXTPReportRow* row) {
-}
-
-void CXTPReportControl::ProcessRows(int a, int b, int c) {
-    int count = sub_663c50(this);
-    if (count <= 0) return;
-    for (int i = 0; i < count; i++) {
-        CXTPReportRow* row = sub_661700(this, i);
-        if (row->field38 == 0) {
-            if (row->field34 == 0) {
-                continue;
-            }
-            void* pm = *(void**)((char*)this->fieldb0 + 0x250);
-            void* vt = *(void**)this;
-            void (*fn)(void*, void*, void*) = *(void (**)(void*, void*, void*))((char*)vt + 0x158);
-            fn(this, pm, 0);
-            int (*fn2)(void*, CXTPReportRow*) = *(int (**)(void*, CXTPReportRow*))((char*)vt + 0x18c);
-            if (fn2(this, row) != 0) {
-                continue;
+void CXTPReportControl::Traverse(int nIndex)
+{
+    int i = 0;
+    while (i < sub_663C50(*(void **)((char *)this + 0xb0)))
+    {
+        CItem *pItem = (CItem *)sub_661700(*(void **)((char *)this + 0xb0), i);
+        int nVal = 0;
+        if (pItem->m_nField38 == 0)
+        {
+            if (pItem->m_nField34 == 0)
+                goto next;
+            nVal = *(int *)(*(int *)((char *)this + 0xb0) + 0x250);
+            (*(void (__thiscall **)(CXTPReportControl *, int *, int))(*(int *)this + 0x158))(this, &nVal, nVal);
+            if ((*(int (__thiscall **)(CXTPReportControl *, CItem *))(*(int *)this + 0x18c))(this, pItem) != 0)
+                goto next;
+        }
+        CObj *pObj = (CObj *)(*(void *(__thiscall **)(CXTPReportControl *))(*(int *)this + 0x198))(this);
+        (*(void (__thiscall **)(CObj *, CXTPReportControl *, CItem *))(*(int *)pObj + 0x58))(pObj, this, pItem);
+        pObj->m_nField4c = nVal;
+        (*(void (__thiscall **)(CObj *, CObj *))(*(int *)pObj + 0x60))(pObj, pObj);
+        if (sub_661CE0(pItem) != 0)
+        {
+            int nSub = sub_661F30(pItem);
+            int nRet = (*(int (__thiscall **)(CObj *, CObj *))(*(int *)pObj + 0xb8))(pObj, pObj);
+            Traverse(nRet);
+            if ((*(int (__thiscall **)(CObj *, CObj *))(*(int *)pObj + 0xb8))(pObj, pObj) != 0)
+            {
+                if (this->m_nField164 != 0)
+                {
+                    int nRet2 = (*(int (__thiscall **)(CObj *, CObj *))(*(int *)pObj + 0xb8))(pObj, pObj);
+                    (*(void (__thiscall **)(CXTPReportControl *, int))(*(int *)this + 0x188))(this, nRet2);
+                }
             }
         }
-        void* vt = *(void**)this;
-        void (*fn3)(void*) = *(void (**)(void*))((char*)vt + 0x198);
-        fn3(this);
-        CXTPReportRow* r = row;
-        void* vt2 = *(void**)r;
-        void (*fn4)(void*, CXTPReportRow*, CXTPReportControl*) = *(void (**)(void*, CXTPReportRow*, CXTPReportControl*))((char*)vt2 + 0x58);
-        fn4(r, row, this);
-        r->field4c = c;
-        void* vt3 = *(void**)r;
-        void (*fn5)(void*, CXTPReportRow*) = *(void (**)(void*, CXTPReportRow*))((char*)vt3 + 0x60);
-        fn5(r, r);
-        if (sub_661ce0(row) == 0) {
-            continue;
-        }
-        int val = sub_661f30(row);
-        void* vt4 = *(void**)r;
-        void* (*fn6)(void*, CXTPReportRow*) = *(void* (**)(void*, CXTPReportRow*))((char*)vt4 + 0xb8);
-        void* result = fn6(r, r);
-        ProcessRows((int)result, b, c);
-        void* vt5 = *(void**)r;
-        void* (*fn7)(void*, CXTPReportRow*) = *(void* (**)(void*, CXTPReportRow*))((char*)vt5 + 0xb8);
-        void* result2 = fn7(r, r);
-        if (result2 == 0) {
-            continue;
-        }
-        if (this->field164 == 0) {
-            continue;
-        }
-        void* vt6 = *(void**)r;
-        void* (*fn8)(void*, CXTPReportRow*) = *(void* (**)(void*, CXTPReportRow*))((char*)vt6 + 0xb8);
-        void* result3 = fn8(r, r);
-        void* vt7 = *(void**)this;
-        void (*fn9)(void*, void*) = *(void (**)(void*, void*))((char*)vt7 + 0x188);
-        fn9(this, result3);
+next:
+        i++;
     }
 }

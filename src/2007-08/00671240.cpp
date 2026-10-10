@@ -1,51 +1,26 @@
-// from server: 88% by colin
-// roc 2007-08 00671240  unit: CXTPToolBar::CControlButtonExpand  size: 45 bytes
-// Make this compile to the exact bytes below, then: roc check 2007-08 00671240
+// from server: 100% by tester
+// roc 2008-06 006e8130  unit: CXTPToolBar::CControlButtonExpand  size: 45 bytes
+// Make this compile to the exact bytes below, then: roc check 2008-06 006e8130
 //
-// 00671240  56                   push esi
-// 00671241  8bf1                 mov esi, ecx
-// 00671243  8d4e04               lea ecx, [esi + 4]
-// 00671246  c70670b67c00         mov dword ptr [esi], 0x7cb670
-// 0067124c  ff15acdd7700         call dword ptr [0x77ddac]
-// 00671252  33c0                 xor eax, eax
-// 00671254  894608               mov dword ptr [esi + 8], eax
-// 00671257  89460c               mov dword ptr [esi + 0xc], eax
-// 0067125a  894610               mov dword ptr [esi + 0x10], eax
-// 0067125d  894614               mov dword ptr [esi + 0x14], eax
-// 00671260  894618               mov dword ptr [esi + 0x18], eax
-// 00671263  89461c               mov dword ptr [esi + 0x1c], eax
-// 00671266  894620               mov dword ptr [esi + 0x20], eax
-// 00671269  8bc6                 mov eax, esi
-// 0067126b  5e                   pop esi
-// 0067126c  c3                   ret 
+// 006e8130  56                   push esi
+// 006e8131  8bf1                 mov esi, ecx
+// 006e8133  8d4e04               lea ecx, [esi + 4]
+// 006e8136  c706506e8500         mov dword ptr [esi], 0x856e50
+// 006e813c  ff15043f8000         call dword ptr [0x803f04]
+// 006e8142  33c0                 xor eax, eax
+// 006e8144  894608               mov dword ptr [esi + 8], eax
+// 006e8147  89460c               mov dword ptr [esi + 0xc], eax
+// 006e814a  894610               mov dword ptr [esi + 0x10], eax
+// 006e814d  894614               mov dword ptr [esi + 0x14], eax
+// 006e8150  894618               mov dword ptr [esi + 0x18], eax
+// 006e8153  89461c               mov dword ptr [esi + 0x1c], eax
+// 006e8156  894620               mov dword ptr [esi + 0x20], eax
+// 006e8159  8bc6                 mov eax, esi
+// 006e815b  5e                   pop esi
+// 006e815c  c3                   ret 
+// library xtp-11.2.2-shared-mfc/Source\Common\XTPSystemHelpers.cpp (function ??0CXTPModuleHandle@@QAE@XZ)
 
-struct CXTPToolBar_CControlButtonExpand
-{
-    void* vtable;
-    int field_4;
-    int field_8;
-    int field_C;
-    int field_10;
-    int field_14;
-    int field_18;
-    int field_1C;
-    int field_20;
-
-    CXTPToolBar_CControlButtonExpand* construct();
-};
-
-extern "C" void __stdcall sub_77ddac();
-
-CXTPToolBar_CControlButtonExpand* CXTPToolBar_CControlButtonExpand::construct()
-{
-    vtable = (void*)0x7cb670;
-    sub_77ddac();
-    field_8 = 0;
-    field_C = 0;
-    field_10 = 0;
-    field_14 = 0;
-    field_18 = 0;
-    field_1C = 0;
-    field_20 = 0;
-    return this;
-}
+// roc-lang: cpp
+// roc-cl: 30729
+// roc-flags: /O2 /GS- /MD
+// roc-lib: xtp-11.2.2-shared-mfc Source/Common/XTPSystemHelpers.cpp

@@ -1,21 +1,21 @@
-// from server: 32% by colin
+// from server: 33% by tester
 // roc 2007-08 00663850  unit: CXTPReportRecordItemDateTime  size: 105 bytes
+// Make this compile to the exact bytes below, then: roc check 2007-08 00663850
 
-extern "C" void* __cdecl sub_654D90(unsigned int);
+extern "C" void* __cdecl sub_654D90(unsigned int size);
+extern "C" void __cdecl sub_6625B0(void* p, const char* name);
 
-struct Inner {
-    void Init(const char*);
-};
-
-struct CXTPReportRecordItemDateTime {
+struct CXTPReportRecordItemDateTime
+{
     void* CreateClone();
 };
 
 void* CXTPReportRecordItemDateTime::CreateClone()
 {
-    Inner* p = (Inner*)sub_654D90(0x80);
-    if (p != 0) {
-        p->Init((const char*)0x785954);
+    void* p = sub_654D90(0x80);
+    if (p != 0)
+    {
+        sub_6625B0(p, (const char*)0x785954);
     }
     return p;
 }

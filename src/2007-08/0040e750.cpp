@@ -1,21 +1,12 @@
-// from server: 37% by colin
+// from server: 39% by tester
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
 
 extern "C" void __stdcall _invalid_parameter_noinfo();
 
-struct Name;
-
-struct CreatorBase {
-    virtual void v0();
-    virtual void v1();
-    virtual void v2();
-};
-
 struct Obj {
     char pad0[0x134];
     void* begin;
-    char pad1[4];
     void* end;
 };
 

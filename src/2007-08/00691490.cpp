@@ -1,79 +1,86 @@
-// from server: 43% by colin
+// from server: 46% by tester
+// roc-repair: genuine WinNT.h definitions (no SDK shipped)
+struct HDC__; typedef struct HDC__ *HDC;
+struct CXTTreeBase {
+    int Get(int index);
+};
+
 struct CXTSplitterWnd {
-    char pad0[0x20];
-    void* m_hwnd;
-    char pad1[0x104 - 0x24];
-    int m_bSplit;
-    unsigned char m_flags;
-    char pad2[0x108 - 0x105];
-    int f(void* p1, int nCode, void* p3);
+    char pad[0x20];
+    void* field20;
+    char pad2[0x104 - 0x24];
+    int field104;
+    unsigned char field108;
+    void OnDraw(HDC hdc, int a2, int a3, int a4);
 };
 
 extern "C" {
     int __stdcall InflateRect(void* rect, int dx, int dy);
     int __stdcall RedrawWindow(void* hwnd, void* rect, void* rgn, unsigned int flags);
-    void* __cdecl sub_668F70();
-    void* __stdcall sub_668770(void* p, int n);
-    void __stdcall sub_6308AA(void* p, void* a, void* b);
-    void __stdcall sub_6308B0(void* p, void* a, void* b);
-    void* __stdcall sub_690280();
 }
 
-int CXTSplitterWnd::f(void* p1, int nCode, void* p3)
+void CXTSplitterWnd::OnDraw(HDC hdc, int a2, int a3, int a4)
 {
-    void* v1;
-    void* v2;
-    int edi;
-    int ebx;
-    int rect[4];
-    int* pr;
+    int v1 = ((CXTTreeBase*)this)->Get(0);
+    int v2 = ((CXTTreeBase*)this)->Get(0);
+    int ebx = *(int*)((char*)v2 + 0x18);
+    int edi = *(int*)((char*)v1 + 0x14);
 
-    v1 = sub_690280();
-    edi = *(int*)((char*)v1 + 0x14);
-    v2 = sub_690280();
-    ebx = *(int*)((char*)v2 + 0x18);
-
-    if (p1 == 0) {
-        RedrawWindow(m_hwnd, 0, p3, 0x41);
-        return 0;
+    if (a2 == 0) {
+        RedrawWindow(field20, 0, (void*)a4, 0x41);
+        return;
     }
 
-    pr = (int*)p3;
-    rect[0] = pr[0];
-    rect[1] = pr[1];
-    rect[2] = pr[2];
-    rect[3] = pr[3];
+    int r[4];
+    r[0] = *(int*)((char*)a4 + 0);
+    r[1] = *(int*)((char*)a4 + 4);
+    r[2] = *(int*)((char*)a4 + 8);
+    r[3] = *(int*)((char*)a4 + 12);
 
-    if (nCode == 0) {
-        if (m_bSplit != 0) {
-            sub_6308AA(p1, rect, (void*)edi);
-            InflateRect(rect, -1, -1);
-            sub_6308AA(p1, rect, sub_668770(sub_668F70(), 0x14));
-            InflateRect(rect, -1, -1);
+    if (a3 == 0) {
+        if (field104 != 0) {
+            ((CXTTreeBase*)a2)->Get(0);
+            InflateRect(r, -1, -1);
+            int v = ((CXTTreeBase*)a2)->Get(0x14);
+            ((CXTTreeBase*)a2)->Get(0x14);
+            ((CXTTreeBase*)a2)->Get(0);
+            InflateRect(r, -1, -1);
         } else {
-            sub_6308AA(p1, rect, sub_668770(sub_668F70(), 6));
-            InflateRect(rect, -1, -1);
-            sub_6308AA(p1, rect, sub_668770(sub_668F70(), 0x14));
-            InflateRect(rect, -1, -1);
+            int v = ((CXTTreeBase*)a2)->Get(6);
+            ((CXTTreeBase*)a2)->Get(6);
+            ((CXTTreeBase*)a2)->Get(0);
+            InflateRect(r, -1, -1);
+            int v2 = ((CXTTreeBase*)a2)->Get(0x14);
+            ((CXTTreeBase*)a2)->Get(0x14);
+            ((CXTTreeBase*)a2)->Get(0);
+            InflateRect(r, -1, -1);
         }
-    } else if (nCode == 3) {
-        if (m_bSplit != 0) {
-            if ((m_flags & 4) != 0) {
-                sub_6308AA(p1, rect, (void*)edi);
-                InflateRect(rect, -1, -1);
-                sub_6308AA(p1, rect, (void*)edi);
+    } else if (a3 == 3) {
+        if (field104 != 0) {
+            if (field108 & 4) {
+                ((CXTTreeBase*)a2)->Get(0);
+                InflateRect(r, -1, -1);
+                ((CXTTreeBase*)a2)->Get(0);
+                ((CXTTreeBase*)a2)->Get(0);
+                ((CXTTreeBase*)a2)->Get(0);
             } else {
-                sub_6308AA(p1, rect, (void*)edi);
-                InflateRect(rect, -1, -1);
-                sub_6308AA(p1, rect, sub_668770(sub_668F70(), 0x14));
+                ((CXTTreeBase*)a2)->Get(0);
+                InflateRect(r, -1, -1);
+                int v = ((CXTTreeBase*)a2)->Get(0x14);
+                ((CXTTreeBase*)a2)->Get(0x14);
+                ((CXTTreeBase*)a2)->Get(0);
             }
         } else {
-            sub_6308AA(p1, rect, sub_668770(sub_668F70(), 0x14));
-            InflateRect(rect, -1, -1);
-            sub_6308AA(p1, rect, sub_668770(sub_668F70(), 6));
+            int v = ((CXTTreeBase*)a2)->Get(0x14);
+            ((CXTTreeBase*)a2)->Get(0x14);
+            ((CXTTreeBase*)a2)->Get(0);
+            InflateRect(r, -1, -1);
+            int v2 = ((CXTTreeBase*)a2)->Get(6);
+            ((CXTTreeBase*)a2)->Get(6);
+            ((CXTTreeBase*)a2)->Get(0);
         }
+    } else {
+        ((CXTTreeBase*)a2)->Get(0);
+        ((CXTTreeBase*)a2)->Get(0);
     }
-
-    sub_6308B0(p1, rect, (void*)edi);
-    return 0;
 }

@@ -1,4 +1,4 @@
-// from server: 24% by colin
+// from server: 26% by tester
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
 
@@ -82,9 +82,13 @@ int SignalDesc::f(int a1, int a2, int a3, int a4, int a5, int a6, int a7, int a8
     sub_77e6ac(&local68);
     if (rc) {
         if (_InterlockedExchangeAdd(&rc->refs, -1) == 1) {
-            ((void (__stdcall*)(RefCounted*))rc->vptr)(rc);
+            void** vtbl = (void**)rc->vptr;
+            void (*dtor)(void*) = (void (*)(void*))vtbl[1];
+            dtor(rc);
             if (_InterlockedExchangeAdd(&rc->weakRefs, -1) == 1) {
-                ((void (__stdcall*)(RefCounted*))rc->vptr)(rc);
+                void** vtbl2 = (void**)rc->vptr;
+                void (*dtor2)(void*) = (void (*)(void*))vtbl2[2];
+                dtor2(rc);
             }
         }
     }

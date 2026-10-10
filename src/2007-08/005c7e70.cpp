@@ -1,70 +1,65 @@
-// from server: 19% by colin
-extern "C" {
-    int __cdecl _errno();
-    int __cdecl fprintf(void*, const char*, ...);
-    unsigned int __cdecl fwrite(const void*, unsigned int, unsigned int, void*);
-    char* __cdecl strerror(int);
-}
+// from server: 43% by tester
+struct lua_State;
 
-extern "C" {
-    int __stdcall GetLastError();
-    void* __stdcall GetStdHandle(unsigned long);
-    int __stdcall WriteFile(void*, const void*, unsigned long, unsigned long*, void*);
-    int __stdcall FormatMessageA(unsigned long, const void*, unsigned long, unsigned long, char*, unsigned long, void*);
-}
+extern "C" int __cdecl lua_gettop(lua_State*);
+extern "C" int __cdecl lua_type(lua_State*, int);
+extern "C" double __cdecl lua_tonumber(lua_State*, int);
+extern "C" const char* __cdecl lua_tolstring(lua_State*, int, unsigned int*);
+extern "C" void __cdecl lua_pushnil(lua_State*);
+extern "C" int __cdecl lua_pushfstring(lua_State*, const char*, ...);
+extern "C" void __cdecl lua_pushvalue(lua_State*, int);
+extern "C" int __cdecl lua_pcall(lua_State*, int, int, int);
+
+extern "C" int* __cdecl _errno(void);
+extern "C" int __cdecl fprintf(void*, const char*, ...);
+extern "C" unsigned int __cdecl fwrite(const void*, unsigned int, unsigned int, void*);
+extern "C" char* __cdecl strerror(int);
 
 struct lua_exception {
-    int f(int, int);
+    int __cdecl report(lua_State* L, void* f);
 };
 
-int lua_exception::f(int a, int b) {
-    int i;
-    int j;
-    int k;
-    int result;
-    int err;
-    int written;
-    char buf[4];
-    int count;
-    int flag;
-    int handle;
-    int lastError;
-    int fmtResult;
-    char* msg;
-
-    result = 0;
-    flag = 1;
-    i = 0;
-    j = 0;
-    k = 0;
-
-    count = 0;
-    while (count != 0) {
-        count--;
-        if (flag) {
-            double d = 0.0;
-            if (fprintf((void*)a, "%.14g", d) > 0) {
-                flag = 1;
-            } else {
-                flag = 0;
+int lua_exception::report(lua_State* L, void* f)
+{
+    int status = 1;
+    int n = lua_gettop(L) - 1;
+    while (n != 0) {
+        n = n - 1;
+        if (lua_type(L, -1) == 3) {
+            if (status) {
+                double d = lua_tonumber(L, -1);
+                if (fprintf(f, "%.14g", d) > 0) {
+                    status = 1;
+                    goto next;
+                }
             }
+            status = 0;
+        } else {
+            unsigned int len;
+            const char* s = lua_tolstring(L, -1, &len);
+            if (status) {
+                if (fwrite(s, 1, len, f) == len) {
+                    status = 1;
+                    goto next;
+                }
+            }
+            status = 0;
         }
-        i++;
-        if (count == 0) break;
+    next:
+        lua_pushnil(L);
+        n = lua_gettop(L) - 1;
     }
-
-    handle = (int)GetStdHandle(0xFFFFFFF4);
-    lastError = *(int*)handle;
-
-    if (flag) {
-        fwrite("HD;H@Wr", 1, 8, (void*)b);
-        return 1;
+    {
+        int* err = _errno();
+        int e = *err;
+        if (status) {
+            lua_pushvalue(L, -1);
+            lua_pcall(L, 1, 0, 0);
+            return 1;
+        }
+        lua_pushfstring(L, "HRESULT = %d: %s", e, strerror(e));
+        lua_pushvalue(L, -1);
+        lua_pcall(L, 1, 0, 0);
+        return 3;
     }
-
-    fwrite("HD;H@r", 1, 8, (void*)b);
-    err = _errno();
-    msg = strerror(err);
-    fprintf((void*)b, "HRESULT = %d: %s", err, msg);
-    fwrite("L$8QSW", 1, 6, (void*)b);
-    return 3;
 }

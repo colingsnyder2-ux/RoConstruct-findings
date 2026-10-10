@@ -1,80 +1,74 @@
-// from server: 46% by colin
-struct GetSet {
-    virtual bool isReadOnly() const;
-    virtual bool isWriteOnly() const;
-    virtual void getValue(void* object, void* result) const;
-    virtual void setValue(void* object, const void* value) const;
+// from server: 48% by tester
+// roc 2007-08 005bc1c0  unit: RBX::VPVInstance::?$EnumPropDescriptor  size: 295 bytes
+// Make this compile to the exact bytes below, then: roc check 2007-08 005bc1c0
+
+struct XmlNameValuePair {
+    int type;
+    int value;
+    bool isValueType() const;
+    bool isString() const;
+    bool getString(void* out) const;
+    bool getInt(int* out) const;
 };
 
-struct EnumPropDescriptor {
+struct String {
+    char buf[0x1c];
+    String();
+    ~String();
+};
+
+struct PropDescriptor {
     void* vtable;
-    int field4;
-    int field8;
-    int fieldC;
-    int field10;
-    int field14;
-    int field18;
-    int field1C;
-    GetSet* getset;
-    const void* enumDesc;
-
-    bool setValue(void* object, const void* value);
+    void* field_4;
+    void* field_8;
+    void* field_c;
+    void* field_10;
+    void* field_14;
+    void* field_18;
+    void* field_1c;
+    bool sub_5bc1c0(void* a, void* b, void* c);
 };
 
-struct DescribedBase {
-    bool isA(const void* type) const;
-};
+extern "C" {
+    void __stdcall GetSystemTimeAsFileTime(void*);
+    void __stdcall SystemTimeToFileTime(void*);
+}
 
-struct std_string {
-    std_string();
-    ~std_string();
-};
-
-extern "C" bool __stdcall unknown_55d8a0();
-extern "C" bool __stdcall unknown_55d300();
-extern "C" bool __stdcall unknown_55d310(void* arg);
-extern "C" bool __stdcall unknown_55d5f0(void* arg);
-extern "C" void __stdcall unknown_5bbc50(void* a, void* b);
-extern "C" bool __stdcall unknown_5dc2a0();
-extern "C" void __stdcall GetSystemTimeAsFileTime(void* lpSystemTimeAsFileTime);
-
-bool EnumPropDescriptor::setValue(void* object, const void* value) {
-    if (static_cast<DescribedBase*>(object)->isA(0)) {
+bool PropDescriptor::sub_5bc1c0(void* a, void* b, void* c) {
+    XmlNameValuePair* pair = (XmlNameValuePair*)a;
+    if (pair->isValueType()) {
         return false;
     }
-    void* obj2 = static_cast<char*>(object) + 0xC;
-    if (unknown_55d300()) {
-        std_string str;
-        GetSystemTimeAsFileTime(&str);
-        int local = 0;
-        if (unknown_55d310(&str)) {
-            void* prop = 0;
-            unknown_5bbc50(&prop, &str);
-            if (unknown_5dc2a0()) {
-                void* v = prop;
-                GetSet* gs = this->getset;
-                gs->setValue(object, &v);
-                str.~std_string();
+    XmlNameValuePair* pair2 = (XmlNameValuePair*)((char*)a + 0xc);
+    if (pair2->isString()) {
+        String str;
+        if (pair2->getString(&str)) {
+            int val;
+            if (pair2->getInt(&val)) {
+                void* p = *(void**)((char*)this + 0x1c);
+                void** vt = *(void***)p;
+                void (*fn)(void*, void*, void*) = (void (*)(void*, void*, void*))vt[2];
+                fn(p, b, &val);
+                str.~String();
                 return true;
             }
-            if (local != 0) {
-                if (this->vtable) {
-                    typedef bool (__thiscall *Fn)(EnumPropDescriptor*, void*, int);
-                    Fn fn = *(Fn*)(*(int*)this + 0x28);
-                    if (fn(this, object, 0)) {
-                        str.~std_string();
-                        return true;
-                    }
+            if (val == 0) {
+                void** vt = *(void***)this;
+                bool (*fn)(void*, void*, int) = (bool (*)(void*, void*, int))vt[10];
+                if (fn(this, b, 0)) {
+                    str.~String();
+                    return true;
                 }
             }
         }
-        str.~std_string();
+        str.~String();
     }
-    void* prop2 = 0;
-    if (unknown_55d5f0(&prop2)) {
-        void* v = prop2;
-        GetSet* gs = this->getset;
-        gs->setValue(object, &v);
+    int val2;
+    if (pair2->getInt(&val2)) {
+        void* p = *(void**)((char*)this + 0x1c);
+        void** vt = *(void***)p;
+        void (*fn)(void*, void*, void*) = (void (*)(void*, void*, void*))vt[2];
+        fn(p, b, &val2);
     }
     return false;
 }

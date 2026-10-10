@@ -1,7 +1,7 @@
-// from server: 39% by colin
+// from server: 40% by tester
 struct CXTPDrawHelpers
 {
-    void DrawPolygon(void* pDC, void* pPoints, int nCount);
+    void __cdecl DrawPolygon(void* pDC, void* pPoints, int nCount);
 };
 
 extern "C" int __stdcall Polygon(void*, void*, int, int, int);

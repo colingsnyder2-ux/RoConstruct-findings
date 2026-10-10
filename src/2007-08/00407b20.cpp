@@ -1,4 +1,4 @@
-// from server: 27% by colin
+// from server: 29% by tester
 extern "C" void* __stdcall malloc(unsigned int size);
 
 struct Inner {
@@ -11,7 +11,7 @@ struct Creator {
 
 struct Outer {
     void* field0;
-    void method(void* a, int b);
+    void __cdecl method(void* a, int b);
 };
 
 void Outer::method(void* a, int b)

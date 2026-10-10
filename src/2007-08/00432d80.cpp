@@ -1,51 +1,41 @@
-// from server: 23% by colin
+// from server: 35% by tester
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
 
 struct RefCounted {
-    void* vptr;
-    volatile long refCount;
+    void** vptr;
+    long refcount1;
+    long refcount2;
 };
 
-struct SharedPtr {
+struct Holder {
     void* ptr;
-    RefCounted* ctrl;
+    RefCounted* ref;
 };
 
-struct Creator {
-    SharedPtr* getShared();
+extern "C" Holder* __cdecl sub_432CF0(Holder* out);
+
+struct VAccoutrementFactoryProductCreator {
+    Holder* __thiscall Create(Holder* out);
 };
 
-struct FactoryProduct {
-    SharedPtr* getCreator(SharedPtr* out);
-};
-
-SharedPtr* FactoryProduct::getCreator(SharedPtr* out)
-{
-    SharedPtr local;
-    local.ptr = 0;
-    local.ctrl = 0;
-
-    SharedPtr* src = ((Creator*)this)->getShared();
-
-    out->ptr = src->ptr;
-    RefCounted* c = src->ctrl;
-    out->ctrl = c;
-    if (c) {
-        _InterlockedExchangeAdd(&c->refCount, 1);
+Holder* VAccoutrementFactoryProductCreator::Create(Holder* out) {
+    Holder tmp;
+    tmp.ptr = 0;
+    tmp.ref = 0;
+    sub_432CF0(&tmp);
+    out->ptr = tmp.ptr;
+    out->ref = tmp.ref;
+    if (out->ref != 0) {
+        _InterlockedExchangeAdd(&out->ref->refcount1, 1);
     }
-
-    RefCounted* old = local.ctrl;
-    if (old) {
-        if (_InterlockedExchangeAdd(&old->refCount, -1) == 1) {
-            void (*dtor)(void*) = *(void (**)(void*))((*(void***)old)[1]);
-            dtor(old);
-            if (_InterlockedExchangeAdd((volatile long*)((char*)old + 8), -1) == 1) {
-                void (*dtor2)(void*) = *(void (**)(void*))((*(void***)old)[2]);
-                dtor2(old);
+    if (tmp.ref != 0) {
+        if (_InterlockedExchangeAdd(&tmp.ref->refcount1, -1) == 1) {
+            ((void (__thiscall*)(RefCounted*))tmp.ref->vptr[1])(tmp.ref);
+            if (_InterlockedExchangeAdd(&tmp.ref->refcount2, -1) == 1) {
+                ((void (__thiscall*)(RefCounted*))tmp.ref->vptr[2])(tmp.ref);
             }
         }
     }
-
     return out;
 }

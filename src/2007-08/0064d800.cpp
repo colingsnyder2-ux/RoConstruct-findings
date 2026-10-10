@@ -1,38 +1,37 @@
-// from server: 43% by colin
-// roc 2007-08 0064d800  unit: CXTPImageManager  size: 234 bytes
-// Make this compile to the exact bytes below, then: roc check 2007-08 0064d800
-
-struct CXTPImageManager;
-
+// from server: 65% by tester
 struct CXTPImageManager {
-    int sub_64D4F0(int, int, int, int, int, int, int);
-    int sub_64D800(int, int, int, int, int, int);
+    int method(int, int, int, int, int, int);
 };
 
-extern "C" int __stdcall sub_64AFA0(int, int);
+struct B_func_0041f680 {
+    virtual ~B_func_0041f680();
+};
+
+struct S_func_0041f680 : B_func_0041f680 {
+    ~S_func_0041f680();
+};
+
+extern "C" int __stdcall sub_64afa0(int, void*);
 extern "C" int __stdcall sub_630238(int);
-extern "C" void __stdcall sub_41F680(int);
-extern "C" int __stdcall sub_64D4F0_helper();
+extern "C" int __stdcall sub_64d4f0(int, int, int, int, int, int, void*);
 
-int CXTPImageManager::sub_64D800(int a1, int a2, int a3, int a4, int a5, int a6)
+int CXTPImageManager::method(int a1, int a2, int a3, int a4, int a5, int a6)
 {
-    int local8 = 0;
-    int localC = 0x788300;
-    int local10 = 0;
-    int local1C = 0;
+    S_func_0041f680 local;
+    int result;
+    int v8 = 0;
+    int v9 = 0;
+    int v10 = 0x788300;
+    int v11 = 0;
 
-    int v = sub_64AFA0(a1, (int)&local8);
-    if (v == 0) {
-        local1C = -1;
-        localC = 0x788300;
-        sub_41F680((int)&localC);
+    if (sub_64afa0(a1, &v8) == 0)
+    {
+        v10 = 0x788300;
         return 0;
     }
 
-    int r = sub_630238(v);
-    int result = this->sub_64D4F0(a2, a3, a4, a5, a6, r, (int)&local8);
-    local1C = -1;
-    localC = 0x788300;
-    sub_41F680((int)&localC);
+    sub_630238(v8);
+    result = sub_64d4f0(a2, a3, a4, a5, a6, v8, &v11);
+    v10 = 0x788300;
     return result;
 }

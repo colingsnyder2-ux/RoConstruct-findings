@@ -1,4 +1,4 @@
-// from server: 38% by colin
+// from server: 58% by tester
 struct CXTPPropertyGridView {
     void* m_pData;
     void GetTextExtent(int, int, int, int, int*);
@@ -19,9 +19,28 @@ struct CSize {
     int cy;
 };
 
-extern "C" {
-    int __stdcall GetTextExtentPoint32A(void*, const char*, int, CSize*);
-}
+struct CXTPBitmapDC {
+    void* vtable;
+    int field4;
+    int field8;
+    int fieldC;
+    CXTPBitmapDC(int a, int b);
+    ~CXTPBitmapDC();
+};
+
+struct I_func_0069ab30 {
+    char pad[316];
+    int m_x;
+};
+
+struct S_func_0069ab30 {
+    char pad[176];
+    I_func_0069ab30* m_p;
+    int f();
+};
+
+extern "C" int __stdcall GetTextExtentPoint32A(void*, const char*, int, CSize*);
+extern "C" int __stdcall sub_67F2F0(int);
 
 extern void* g_pFont;
 extern void* g_pDC;
@@ -30,6 +49,8 @@ void CXTPPropertyGridView::GetTextExtent(int a, int b, int c, int d, int* pResul
 {
     CString str;
     CSize size;
+    CXTPBitmapDC dc(0, 0);
+    S_func_0069ab30* pObj;
     void* pFont;
     void* pDC;
     void* pOldFont;
@@ -39,18 +60,11 @@ void CXTPPropertyGridView::GetTextExtent(int a, int b, int c, int d, int* pResul
     pFont = g_pFont;
     pDC = g_pDC;
 
-    // Build string via virtual call
-    // (placeholder for the actual string construction)
-    str.m_pData = 0;
-    str.m_nLength = 0;
-    str.m_nAllocLength = 0;
+    pObj = (S_func_0069ab30*)this->m_pData;
+    pObj->f();
 
-    // Get text extent
-    pOldFont = 0;
     GetTextExtentPoint32A(pDC, str.m_pData, str.m_nLength, &size);
 
     pResult[0] = size.cx;
     pResult[1] = size.cy;
-
-    str.~CString();
 }

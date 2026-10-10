@@ -1,5 +1,15 @@
-// from server: 93% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs util/RunStateOwner.cpp
+// from server: 100% by colin
+// roc-flags: /O2 /GS- /EHsc /MD
+struct IRunView { virtual void onEvent(int); };
+struct Tool {
+    void* m_a;
+    void* m_b;
+    IRunView* m_view;
+    void method();
+};
+void Tool::method()
+{
+    IRunView* v = m_view;
+    if (v)
+        v->onEvent(1);
+}

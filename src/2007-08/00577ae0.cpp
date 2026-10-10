@@ -1,117 +1,137 @@
-// from server: 8% by colin
+// from server: 19% by tester
 // roc 2007-08 00577ae0  unit: RBX::VPartInstance::?$EnumPropDescriptor  size: 295 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 00577ae0
 
-struct DescribedBase;
-
-struct EnumPropDescriptor {
-    char pad0[0x1c];
-    void* getset;
-    bool setValue(DescribedBase* object, const void* value) const;
-    bool getValue(DescribedBase* object, void* value) const;
+struct XmlNameValuePair {
+    int type;
+    int value;
+    bool isValueType() const;
+    bool getStringValue(void* out) const;
+    bool getIntValue(int* out) const;
+    bool isString() const;
 };
 
-struct DescribedBase {
-    char pad0[0xc];
-    bool isA(const char* name) const;
-    bool hasProperty(const char* name) const;
-    bool getProperty(const char* name, void* value) const;
-    bool getPropertyValue(const char* name, void* value) const;
+struct XmlElement {
+    char pad[0x18];
+    XmlNameValuePair* firstChild;
+    bool isNameValuePair() const;
+    bool hasChildren() const;
+    bool getChildString(void* out) const;
+    bool getChildInt(int* out) const;
 };
 
-struct EnumDesc {
-    bool convertToValue(const void* str, int* out) const;
-};
-
-struct String {
+struct PropDescriptor {
     char pad[0x1c];
-    String();
-    ~String();
+    void* prop;
+    bool setValue(void* instance, void* value);
+    bool setValueInt(void* instance, int value);
 };
 
-struct PropertyDescriptor {
-    bool setValue(DescribedBase* object, const void* value);
+struct VPartInstance {
+    char pad[0x1c];
+    void* prop;
+    bool setValue(void* instance, void* value);
+    bool setValueInt(void* instance, int value);
+
+    bool EnumPropDescriptor(void* instance, void* value, int arg3);
 };
 
 extern "C" {
-    void __stdcall String_ctor(String* self);
-    void __stdcall String_dtor(String* self);
+    void __stdcall string_ctor(void* str);
+    void __stdcall string_dtor(void* str);
 }
 
-bool DescribedBase::isA(const char* name) const {
+bool XmlNameValuePair::isValueType() const {
+    return type == 2;
+}
+
+bool XmlNameValuePair::getStringValue(void* out) const {
+    if (type == 5) {
+        *(int*)out = value;
+        return true;
+    }
     return false;
 }
 
-bool DescribedBase::hasProperty(const char* name) const {
+bool XmlNameValuePair::getIntValue(int* out) const {
+    if (type == 5) {
+        *out = value;
+        return true;
+    }
     return false;
 }
 
-bool DescribedBase::getProperty(const char* name, void* value) const {
+bool XmlNameValuePair::isString() const {
+    return type == 2;
+}
+
+bool XmlElement::isNameValuePair() const {
+    return firstChild != 0;
+}
+
+bool XmlElement::hasChildren() const {
+    return firstChild != 0;
+}
+
+bool XmlElement::getChildString(void* out) const {
+    if (firstChild) {
+        return firstChild->getStringValue(out);
+    }
     return false;
 }
 
-bool DescribedBase::getPropertyValue(const char* name, void* value) const {
+bool XmlElement::getChildInt(int* out) const {
+    if (firstChild) {
+        return firstChild->getIntValue(out);
+    }
     return false;
 }
 
-bool EnumDesc::convertToValue(const void* str, int* out) const {
+bool VPartInstance::setValue(void* instance, void* value) {
     return false;
 }
 
-bool EnumPropDescriptor::setValue(DescribedBase* object, const void* value) const {
-    if (object->isA("Enum")) {
+bool VPartInstance::setValueInt(void* instance, int value) {
+    return false;
+}
+
+bool PropDescriptor::setValue(void* instance, void* value) {
+    return false;
+}
+
+bool PropDescriptor::setValueInt(void* instance, int value) {
+    return false;
+}
+
+bool VPartInstance::EnumPropDescriptor(void* instance, void* value, int arg3) {
+    XmlElement* elem = (XmlElement*)instance;
+    if (elem->isNameValuePair()) {
         return false;
     }
-    if (!object->hasProperty("Value")) {
-        return false;
-    }
-    String str;
-    String_ctor(&str);
-    if (object->getProperty("Value", &str)) {
-        int enumValue;
-        if (EnumDesc().convertToValue(&str, &enumValue)) {
-            if (getset) {
-                ((PropertyDescriptor*)getset)->setValue(object, &enumValue);
+    XmlElement* child = (XmlElement*)((char*)elem + 0xc);
+    if (child->hasChildren()) {
+        char str[0x20];
+        string_ctor(str);
+        if (child->getChildString(str)) {
+            int intVal;
+            if (child->getChildInt(&intVal)) {
+                if (this->setValueInt(instance, intVal)) {
+                    string_dtor(str);
+                    return true;
+                }
             }
-            String_dtor(&str);
-            return true;
-        }
-        if (getset) {
-            if (((PropertyDescriptor*)getset)->setValue(object, value)) {
-                String_dtor(&str);
-                return true;
-            }
-        }
-    }
-    String_dtor(&str);
-    return false;
-}
-
-bool EnumPropDescriptor::getValue(DescribedBase* object, void* value) const {
-    if (object->isA("Enum")) {
-        return false;
-    }
-    if (!object->hasProperty("Value")) {
-        return false;
-    }
-    String str;
-    String_ctor(&str);
-    if (object->getPropertyValue("Value", &str)) {
-        int enumValue;
-        if (EnumDesc().convertToValue(&str, &enumValue)) {
-            if (getset) {
-                ((PropertyDescriptor*)getset)->setValue(object, &enumValue);
-            }
-            String_dtor(&str);
-            return true;
-        }
-        if (getset) {
-            if (((PropertyDescriptor*)getset)->setValue(object, value)) {
-                String_dtor(&str);
-                return true;
+            if (child->getChildInt(&intVal)) {
+                if (this->setValueInt(instance, intVal)) {
+                    string_dtor(str);
+                    return true;
+                }
             }
         }
+        string_dtor(str);
     }
-    String_dtor(&str);
+    int intVal2;
+    if (child->getChildInt(&intVal2)) {
+        this->setValueInt(instance, intVal2);
+    }
     return false;
 }

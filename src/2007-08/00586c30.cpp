@@ -1,4 +1,4 @@
-// from server: 83% by colin
+// from server: 85% by tester
 // roc 2007-08 00586c30  unit: RBX::ModelSetPrimaryPartTool  size: 72 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 00586c30
 
@@ -8,10 +8,10 @@ extern "C" void* __stdcall sub_630D36(void*);
 extern "C" void __fastcall sub_531A00(void*, void*, void*);
 
 struct ModelSetPrimaryPartTool {
-    void execute(void*);
+    int execute(void*);
 };
 
-void ModelSetPrimaryPartTool::execute(void* arg)
+int ModelSetPrimaryPartTool::execute(void* arg)
 {
     void* p = sub_5E3DC0(arg, 0, (const char*)0x8C6EE4);
     if (p) {
@@ -21,4 +21,5 @@ void ModelSetPrimaryPartTool::execute(void* arg)
             sub_531A00(r, p, 0);
         }
     }
+    return 0;
 }

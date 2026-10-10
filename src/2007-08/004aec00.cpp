@@ -1,41 +1,51 @@
-// from server: 35% by colin
+// from server: 50% by tester
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
 
 struct RefCounted {
-    void** vptr;
+    void* vptr;
     long refcount;
-    long weakcount;
+    long weakrefcount;
 };
 
-struct SharedPtr {
-    void* px;
-    RefCounted* pn;
+struct Inner {
+    void* vptr;
+    RefCounted* ptr;
 };
 
-struct Creator {
-    SharedPtr* create(SharedPtr* result);
+struct Holder {
+    void* vptr;
+    RefCounted* ptr;
 };
 
-extern "C" void* __cdecl sub_4AEB70(void* out);
+extern "C" void __cdecl sub_4aeb70(Inner* out);
 
-SharedPtr* Creator::create(SharedPtr* result) {
-    SharedPtr tmp;
-    tmp.px = 0;
-    tmp.pn = 0;
-    sub_4AEB70(&tmp);
-    result->px = tmp.px;
-    result->pn = tmp.pn;
-    if (tmp.pn) {
-        _InterlockedExchangeAdd(&tmp.pn->refcount, 1);
+struct Factory {
+    Holder* create(Holder* result);
+};
+
+Holder* Factory::create(Holder* result) {
+    Inner inner;
+    inner.vptr = 0;
+    sub_4aeb70(&inner);
+
+    result->vptr = inner.vptr;
+    result->ptr = inner.ptr;
+    if (result->ptr) {
+        _InterlockedExchangeAdd(&result->ptr->refcount, 1);
     }
-    if (tmp.pn) {
-        if (_InterlockedExchangeAdd(&tmp.pn->refcount, -1) == 1) {
-            ((void (__thiscall*)(RefCounted*))tmp.pn->vptr[1])(tmp.pn);
-            if (_InterlockedExchangeAdd(&tmp.pn->weakcount, -1) == 1) {
-                ((void (__thiscall*)(RefCounted*))tmp.pn->vptr[2])(tmp.pn);
+
+    RefCounted* old = inner.ptr;
+    if (old) {
+        if (_InterlockedExchangeAdd(&old->refcount, -1) == 1) {
+            void (*dtor)(RefCounted*) = *(void (**)(RefCounted*))((char*)old->vptr + 4);
+            dtor(old);
+            if (_InterlockedExchangeAdd(&old->weakrefcount, -1) == 1) {
+                void (*dtor2)(RefCounted*) = *(void (**)(RefCounted*))((char*)old->vptr + 8);
+                dtor2(old);
             }
         }
     }
+
     return result;
 }

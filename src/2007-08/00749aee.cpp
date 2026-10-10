@@ -1,12 +1,5 @@
-// from server: 69% by colin
-extern "C" void __cdecl sub_630a1e(int);
-extern "C" void __cdecl sub_630a18(int);
-
-void __cdecl sub_749aee(int arg1, int arg2)
-{
-    int* p = (int*)arg2;
-    int v = p[-1];
-    v ^= (int)p;
-    sub_630a1e(v);
-    sub_630a18(0x8504e4);
-}
+// from server: 100% by tester
+// roc-lang: cpp
+// roc-cl: 30729
+// roc-flags: /O2 /GS /EHsc /MD
+// roc-lib: ogre-1.7.0 OgreShadowCaster.cpp

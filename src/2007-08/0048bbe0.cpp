@@ -1,4 +1,4 @@
-// from server: 46% by colin
+// from server: 49% by tester
 struct ICreator {
     void* vtable;
 };
@@ -7,12 +7,12 @@ struct Creator : ICreator {
     void* field4;
     void* field8;
     void* fieldC;
-    Creator(void* arg);
+    Creator(void* arg, int unused);
 };
 
 extern "C" void* __cdecl operator_new(unsigned int size);
 
-Creator::Creator(void* arg)
+Creator::Creator(void* arg, int unused)
 {
     this->vtable = 0;
     void* mem = operator_new(0x14);

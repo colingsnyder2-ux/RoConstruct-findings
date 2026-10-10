@@ -1,17 +1,14 @@
-// from server: 40% by colin
-struct DescribedBase;
-
-struct GetSet {
-    virtual bool isReadOnly() const;
-    virtual bool isWriteOnly() const;
-    virtual void getValue(const DescribedBase* object) const;
-    virtual void setValue(DescribedBase* object, const void* value) const;
-};
-
+// from server: 51% by tester
 struct VItem {
     char pad[0xc0];
     void* m_list;
     bool f(const void* value);
+};
+
+struct List {
+    void* begin;
+    void* end;
+    unsigned int size();
 };
 
 extern "C" int __stdcall string_compare(const void* a, const void* b);
@@ -19,21 +16,21 @@ extern "C" void __stdcall invalid_parameter_noinfo();
 
 bool VItem::f(const void* value)
 {
-    void* list = m_list;
-    if (!list)
+    List* lst = (List*)m_list;
+    if (!lst)
         return false;
 
-    unsigned int count = ((unsigned int (__thiscall*)(void*))0x40ccc0)(list);
+    unsigned int count = lst->size();
     unsigned int i = 0;
     while (i < count) {
-        void** items = *(void***)((char*)list + 4);
-        if (!items || i >= (unsigned int)((*(char**)((char*)list + 8) - (char*)items) >> 3))
+        void** items = (void**)lst->begin;
+        if (!items || i >= (unsigned int)(((char*)lst->end - (char*)items) >> 3))
             invalid_parameter_noinfo();
-        void* item = *(void**)((char*)items + i * 8);
+        void* item = items[i];
         if (string_compare((char*)item + 0xc8, value))
             return true;
         i++;
-        count = ((unsigned int (__thiscall*)(void*))0x40ccc0)(list);
+        count = lst->size();
     }
     return false;
 }

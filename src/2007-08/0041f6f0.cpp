@@ -1,4 +1,4 @@
-// from server: 62% by colin
+// from server: 63% by tester
 struct CSettingsExplorer {
     char pad[0xbc];
     void* field_bc;
@@ -20,7 +20,7 @@ int CSettingsExplorer::sub_41F6F0()
 
     void* q = sub_630D36(this->field_bc, 0, (void*)0x881f4c, (void*)0x884e54, 0);
     CSettingsExplorer* r = (CSettingsExplorer*)q;
-    if (r->sub_41F6F0() == 0)
+    if (r->sub_41F6F0() != 0)
         return 0;
 
     return 1;

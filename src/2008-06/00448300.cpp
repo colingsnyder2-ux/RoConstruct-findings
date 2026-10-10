@@ -1,5 +1,11 @@
-// from server: 61% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs util/Name.cpp
+// from server: 100% by tester
+struct CRenderSettingsItem {
+    int field_0;
+    int field_4;
+    int field_8;
+    int field_c;
+};
+
+bool equals(const CRenderSettingsItem* self, int other) {
+    return self->field_c == other;
+}

@@ -1,22 +1,24 @@
-// from server: 31% by colin
+// from server: 48% by tester
+struct CXTPStatusBar
+{
+    void OnUpdateCmdUI(void* pCmdUI, int bDisableIfNoHndler);
+};
+
 struct CStatusCmdUI
 {
-    int f(int);
+    char pad[0x14];
+    CXTPStatusBar* m_pStatusBar;
+    void Enable(int bOn);
 };
 
-struct CStatusBar
-{
-    void DoUpdate(int, int, int);
-};
+extern "C" void __stdcall sub_77DDB8(void*);
+extern "C" void __stdcall sub_77DDBC(void*);
 
-extern "C" void __stdcall sub_77DDB8(int);
-extern "C" void __stdcall sub_77DDBC(int);
-
-int CStatusCmdUI::f(int a)
+void CStatusCmdUI::Enable(int bOn)
 {
-    int local = 0;
-    sub_77DDB8(a);
-    ((CStatusBar*)0)->DoUpdate(0, 0, 0);
-    sub_77DDBC(0);
-    return 0;
+    char buf[0x14];
+    sub_77DDB8(buf);
+    *(int*)(buf + 0x14) = 0;
+    m_pStatusBar->OnUpdateCmdUI(this, 1);
+    sub_77DDBC(buf);
 }

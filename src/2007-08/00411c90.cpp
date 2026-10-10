@@ -1,4 +1,4 @@
-// from server: 35% by colin
+// from server: 36% by tester
 // roc 2007-08 00411c90  unit: boost::bad_any_cast  size: 173 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 00411c90
 
@@ -24,7 +24,7 @@ struct basic_string {
 };
 
 struct S {
-    ContentId* f(ContentId* src);
+    ContentId* __cdecl f(ContentId* src);
 };
 
 ContentId* S::f(ContentId* src) {

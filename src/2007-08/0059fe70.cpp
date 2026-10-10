@@ -1,22 +1,23 @@
-// from server: 95% by colin
-extern "C" void __cdecl free(void*);
-
-struct RBX_VSpawnLocation_FactoryProduct {
+// from server: 100% by tester
+struct S {
     char pad[0x294];
-    int field_294;
-    int field_298;
-    void sub_0059fcf0();
-    void* destroy(char flag);
+    int m_294;
+    int m_298;
+    S* f(int);
 };
 
-void* RBX_VSpawnLocation_FactoryProduct::destroy(char flag) {
-    sub_0059fcf0();
-    int* p = *(int**)((char*)this + 0x298);
-    *(int*)((char*)this + 0x294) = 0x7a4cac;
-    int* q = *(int**)((char*)p + 4);
-    *(int*)((char*)q + (int)this + 0x298) = 0x7a4ca4;
-    if (flag & 1) {
-        free(this);
+extern "C" void __stdcall sub_005f9e70();
+extern "C" void (__cdecl *p_free)(void*);
+
+S* S::f(int a)
+{
+    sub_005f9e70();
+    m_294 = 0x7a4cac;
+    int* p = (int*)m_298;
+    int v = p[1];
+    *(int*)(v + (int)this + 0x298) = 0x7a4ca4;
+    if (a & 1) {
+        p_free(this);
     }
     return this;
 }

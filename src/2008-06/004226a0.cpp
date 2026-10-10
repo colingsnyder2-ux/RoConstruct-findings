@@ -1,5 +1,22 @@
-// from server: 50% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: boost-1.34.1 libs/regex/src/instances.cpp
+// from server: 100% by tester
+struct CSelectionTreeCtrl
+{
+    char pad[0x5c];
+    void* field_5c;
+};
+
+struct Inner
+{
+    virtual void vfunc0();
+    virtual void vfunc1();
+    virtual void vfunc2();
+    virtual void vfunc3();
+    virtual void vfunc4(void*);
+};
+
+void __stdcall func_0041f7e0(CSelectionTreeCtrl* self, int* arg2)
+{
+    Inner* p = (Inner*)self->field_5c;
+    p->vfunc4(*(void**)((char*)self + 0xc));
+    *arg2 = 0;
+}

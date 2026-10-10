@@ -1,0 +1,116 @@
+// from server: 96% by atomic.potato
+extern void G1_func_007f3e30();
+
+struct CXTCaptionPopupWnd
+{
+    virtual void func_0150();
+    virtual void func_0151();
+    virtual void func_0152();
+    virtual void func_0153();
+    virtual void func_0154();
+    virtual void func_0155();
+    virtual void func_0156();
+    virtual void func_0157();
+    virtual void func_0158();
+    virtual void func_0159();
+    virtual void func_0160();
+    virtual void func_0161();
+    virtual void func_0162();
+    virtual void func_0163();
+    virtual void func_0164();
+    virtual void func_0165();
+    virtual void func_0166();
+    virtual void func_0167();
+    virtual void func_0168();
+    virtual void func_0169();
+    virtual void func_0170();
+    virtual void func_0171();
+    virtual void func_0172();
+    virtual void func_0173();
+    virtual void func_0174();
+    virtual void func_0175();
+    virtual void func_0176();
+    virtual void func_0177();
+    virtual void func_0178();
+    virtual void func_0179();
+    virtual void func_0180();
+    virtual void func_0181();
+    virtual void func_0182();
+    virtual void func_0183();
+    virtual void func_0184();
+    virtual void func_0185();
+    virtual void func_0186();
+    virtual void func_0187();
+    virtual void func_0188();
+    virtual void func_0189();
+    virtual void func_0190();
+    virtual void func_0191();
+    virtual void func_0192();
+    virtual void func_0193();
+    virtual void func_0194();
+    virtual void func_0195();
+    virtual void func_0196();
+    virtual void func_0197();
+    virtual void func_0198();
+    virtual void func_0199();
+    virtual void func_0200();
+    virtual void func_0201();
+    virtual void func_0202();
+    virtual void func_0203();
+    virtual void func_0204();
+    virtual void func_0205();
+    virtual void func_0206();
+    virtual void func_0207();
+    virtual void func_0208();
+    virtual void func_0209();
+    virtual void func_0210();
+    virtual void func_0211();
+    virtual void func_0212();
+    virtual void func_0213();
+    virtual void func_0214();
+    virtual void func_0215();
+    virtual void func_0216();
+    virtual void func_0217();
+    virtual void func_0218();
+    virtual void func_0219();
+    virtual void func_0220();
+    virtual void func_0221();
+    virtual void func_0222();
+    virtual void func_0223();
+    virtual void func_0224();
+    virtual void func_0225();
+    virtual void func_0226();
+    virtual void func_0227();
+    virtual void func_0228();
+    virtual void func_0229();
+    virtual void func_0230();
+    virtual void func_0231();
+    virtual void func_0232();
+    virtual void func_0233();
+    virtual void func_0234();
+    virtual void func_0235();
+    virtual void func_0236();
+    virtual void func_0237();
+    virtual void func_0238();
+    virtual void func_0239();
+    virtual void func_0240();
+    virtual void func_0241();
+    virtual void func_0242();
+    virtual void func_0243();
+    virtual void func_0244();
+    virtual void func_0245();
+    virtual void func_0246();
+    virtual void func_0247();
+    virtual void func_0248();
+    virtual void func_0249();
+    virtual void func_0250();
+    void func_008e6c10(int);
+};
+
+void CXTCaptionPopupWnd::func_008e6c10(int value)
+{
+    if (value == 1)
+        func_0250();
+    else
+        G1_func_007f3e30();
+}

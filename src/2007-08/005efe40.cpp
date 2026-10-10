@@ -1,19 +1,20 @@
-// from server: 22% by colin
-struct Message {
-    void construct(int);
+// from server: 42% by tester
+struct BodyMover {
+    BodyMover* construct(int);
 };
 
-struct Hint : Message {
-    void construct(int);
-    int field_0c;
+extern "C" void __stdcall sub_5426B0(int);
+extern "C" void* __stdcall sub_58E2B0();
+
+struct Hint {
+    char pad[0x90];
+    void* field_0x0c;
+    Hint* construct(int);
 };
 
-void Message::construct(int) {}
-
-void Hint::construct(int arg) {
-    Message::construct(arg);
-    field_0c = 0;
-    *(int*)((char*)this + 0x0c) = 0;
+Hint* Hint::construct(int a) {
+    BodyMover* bm = (BodyMover*)this;
+    bm->construct(a);
     *(int*)((char*)this + 0x00) = 0x7bfee4;
     *(int*)((char*)this + 0x04) = 0x7bfedc;
     *(int*)((char*)this + 0x10) = 0x7bfed4;
@@ -23,5 +24,6 @@ void Hint::construct(int arg) {
     *(int*)((char*)this + 0x5c) = 0x7bfe94;
     *(int*)((char*)this + 0x74) = 0x7bfe84;
     *(int*)((char*)this + 0x8c) = 0x7bfe74;
-    *(int*)((char*)this + 0x0c) = 0;
+    field_0x0c = sub_58E2B0();
+    return this;
 }

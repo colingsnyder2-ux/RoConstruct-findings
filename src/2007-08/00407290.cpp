@@ -1,94 +1,75 @@
-// from server: 38% by colin
-struct IUnknownLike {
-    virtual int QueryInterface(void*, void**) = 0;
-    virtual unsigned long AddRef() = 0;
-    virtual unsigned long Release() = 0;
+// from server: 44% by tester
+extern "C" int __stdcall sub_4022A0(int, int, int, int);
+extern "C" int __stdcall sub_404400(int, int, int, int, int);
+extern "C" int __stdcall sub_406120(int, int);
+
+struct S {
+    int f(int, int);
 };
 
-struct Inner {
-    int f0;
-    int f4;
-    int f8;
-    int fc;
-    int f10;
-};
-
-struct Outer {
-    int f0;
-    int f4;
-    int f8;
-    int fc;
-    int f10;
-    int f14;
-};
-
-extern "C" int __stdcall sub_406120(void**);
-extern "C" int __stdcall sub_404400(void*, int, int, int, int);
-extern "C" int __stdcall sub_4022a0(void*, void*, void*, void*);
-
-int __stdcall func_00407290(void* p1, void* p2, void* p3, void* p4)
-{
-    int result = -2147467259;
-    void* local = 0;
+int S::f(int a, int b) {
+    int result = -2147467261;
+    int sp18 = 0;
+    int sp14 = 0;
+    int sp2c = 0;
+    int sp24 = 0;
+    int sp30 = 0;
     int flag = 0;
-    void* inner = 0;
-    int hr;
-
-    if (p1 == 0)
+    int* p = (int*)a;
+    if (p == 0) {
         return result;
-
-    *(int*)p1 = 0;
-
-    hr = sub_406120(&local);
-    if (hr < 0)
-        return hr;
-
-    Outer* outer = (Outer*)p2;
-
-    if (outer->f14 & 2) {
-        IUnknownLike* unk = *(IUnknownLike**)outer;
-        int (__stdcall *fn)(void*) = *(int (__stdcall **)(void*))(*(int*)unk + 4);
-        inner = outer;
-        fn(outer);
+    }
+    *p = 0;
+    result = sub_406120((int)&sp18, (int)p);
+    if (result < 0) {
+        return result;
+    }
+    int* obj = (int*)b;
+    if ((*(unsigned char*)((char*)obj + 0x14) & 2) != 0) {
+        int* vtbl = (int*)*obj;
+        int (*fn)(int) = (int (*)(int))vtbl[1];
+        sp30 = b;
+        fn(b);
+        sp24 = 0;
         flag = 1;
+        sp2c = (int)&sp30;
+        sp14 = flag;
     } else {
-        inner = (char*)outer + 4;
+        sp2c = (int)((char*)obj + 4);
     }
-
-    int a = *(int*)inner;
-    int b = outer->f8;
-    void* c = local;
-    int d = outer->fc;
-
-    hr = sub_404400(c, b, a, d, 0);
-
-    if (flag & 1) {
-        if (inner) {
-            IUnknownLike* unk2 = *(IUnknownLike**)inner;
-            int (__stdcall *fn2)(void*) = *(int (__stdcall **)(void*))(*(int*)unk2 + 8);
-            fn2(inner);
+    int v1 = *(int*)sp2c;
+    int v2 = *(int*)((char*)obj + 8);
+    int v3 = sp18;
+    int v4 = *(int*)((char*)obj + 0xc);
+    result = sub_404400(v3, v2, v4, v1, 0);
+    int ret = result;
+    sp24 = -1;
+    if ((flag & 1) != 0) {
+        int* q = (int*)sp30;
+        if (q != 0) {
+            int* vtbl2 = (int*)*q;
+            int (*fn2)(int) = (int (*)(int))vtbl2[2];
+            fn2((int)q);
         }
     }
-
-    if (hr >= 0) {
-        void* e = p3;
-        int f = outer->f10;
-        ((Outer*)c)->f10 = f;
-        hr = sub_4022a0(c, (void*)0x784e28, (void*)0x784e40, e);
-        if (hr < 0) {
-            if (c) {
-                IUnknownLike* unk3 = *(IUnknownLike**)c;
-                int (__stdcall *fn3)(void*, int) = *(int (__stdcall **)(void*, int))(*(int*)unk3 + 0x1c);
-                fn3(c, 1);
-            }
+    if (ret < 0) {
+        if (v3 != 0) {
+            int* vtbl3 = (int*)*(int*)v3;
+            int (*fn3)(int, int) = (int (*)(int, int))vtbl3[7];
+            fn3(v3, 1);
         }
-    } else {
-        if (c) {
-            IUnknownLike* unk4 = *(IUnknownLike**)c;
-            int (__stdcall *fn4)(void*, int) = *(int (__stdcall **)(void*, int))(*(int*)unk4 + 0x1c);
-            fn4(c, 1);
+        return ret;
+    }
+    int v5 = sp30;
+    int v6 = *(int*)((char*)obj + 0x10);
+    *(int*)(v3 + 0x10) = v6;
+    ret = sub_4022A0(v3, 0x784e28, 0x784e40, v5);
+    if (ret < 0) {
+        if (v3 != 0) {
+            int* vtbl4 = (int*)*(int*)v3;
+            int (*fn4)(int, int) = (int (*)(int, int))vtbl4[7];
+            fn4(v3, 1);
         }
     }
-
-    return hr;
+    return ret;
 }

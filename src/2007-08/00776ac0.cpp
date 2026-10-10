@@ -1,24 +1,17 @@
-// from server: 87% by colin
-// roc 2007-08 00776ac0  unit: seg_00770000  size: 28 bytes
-// Make this compile to the exact bytes below, then: roc check 2007-08 00776ac0
+// from server: 100% by tester
+// roc 2008-06 007f99b0  unit: seg_007f0000  size: 28 bytes
+// Make this compile to the exact bytes below, then: roc check 2008-06 007f99b0
 //
-// 00776ac0  6854597800           push 0x785954
-// 00776ac5  b944938c00           mov ecx, 0x8c9344
-// 00776aca  ff15b8dd7700         call dword ptr [0x77ddb8]
-// 00776ad0  68e0cc7700           push 0x77cce0
-// 00776ad5  e849a2ebff           call 0x630d23
-// 00776ada  59                   pop ecx
-// 00776adb  c3                   ret
+// 007f99b0  6816b78000           push 0x80b716
+// 007f99b5  b9cced9700           mov ecx, 0x97edcc
+// 007f99ba  ff15103f8000         call dword ptr [0x803f10]
+// 007f99c0  68e0188000           push 0x8018e0
+// 007f99c5  e8e57deaff           call 0x6a17af
+// 007f99ca  59                   pop ecx
+// 007f99cb  c3                   ret 
+// library xtp-11.2.2-shared-mfc/Source\Controls\XTRegistryManager.cpp (function ??__E?m_strINIFileName@CXTRegistryManager@@1V?$CStringT@DV?$StrTraitMFC_DLL@DV?$ChTraitsCRT@D@ATL@@@@@ATL@@A@@YAXXZ)
 
-struct S {
-    void f();
-};
-
-extern "C" void __fastcall sub_77DDB8(int ecx, int edx);
-extern "C" void __cdecl sub_630D23(void* p);
-
-void S::f()
-{
-    sub_77DDB8(0x8C9344, 0x785954);
-    sub_630D23((void*)0x77CCE0);
-}
+// roc-lang: cpp
+// roc-cl: 30729
+// roc-flags: /O2 /GS- /MD
+// roc-lib: xtp-11.2.2-shared-mfc Source/Controls/XTRegistryManager.cpp

@@ -1,69 +1,72 @@
-// from server: 50% by colin
+// from server: 54% by tester
 struct CXTColorSelectorCtrl
 {
     char pad0[0x54];
     char field_54[0x7c];
-    int field_7c;
-    char field_80;
-    char field_81;
-    char pad82[0x0a];
-    int field_8c;
-    int field_90;
-    int field_94;
-    char pad98[0x34];
-    int field_cc;
-    char padD0[0xbc];
+    int field_d0;
+    char field_d4[0x8];
+    char field_dc[0xb0];
     int field_18c;
+
+    void sub_69f5a0();
 };
 
-extern "C" void __stdcall sub_77DDAC();
-extern "C" void __stdcall sub_77DD6C(const char*);
-extern "C" int __stdcall sub_77EE58(int);
+extern "C" void __cdecl sub_6305da();
+extern "C" void __cdecl sub_6304c0();
+extern "C" void __cdecl sub_69f1e0();
+extern "C" void __cdecl sub_69f1a0();
+extern "C" void* __cdecl sub_6978f0();
+extern "C" void __stdcall sub_692160(void*);
+extern "C" unsigned long __stdcall GetSysColor(int);
+extern "C" void* __stdcall sub_77ee58(int);
 
-void sub_6305DA();
-void sub_6304C0();
-void sub_692160();
-void sub_69F1E0();
-void sub_69F1A0();
-int sub_6978F0();
-
-CXTColorSelectorCtrl* CXTColorSelectorCtrl_ctor(CXTColorSelectorCtrl* self);
-
-CXTColorSelectorCtrl* CXTColorSelectorCtrl_ctor(CXTColorSelectorCtrl* self)
+void CXTColorSelectorCtrl::sub_69f5a0()
 {
-    sub_6305DA();
-    *(int*)self = 0x7cc674;
-    *(int*)((char*)self + 0x54) = 0;
-    sub_69F1E0();
-    sub_692160();
-    *(int*)((char*)self + 0x54) = 0x7d2e84;
-    *(int*)self = 0x7d2e94;
-    sub_77DDAC();
-    sub_6304C0();
-    sub_69F1A0();
-    sub_77DD6C((const char*)0x785954);
-    *(char*)((char*)self + 0x81) = 0;
-    *(char*)((char*)self + 0x80) = 0;
-    *(int*)((char*)self + 0xcc) = 0;
-    *(int*)((char*)self + 0x84) = 0;
-    *(int*)((char*)self + 0x88) = 0;
-    *(int*)((char*)self + 0x8c) = 0;
-    *(int*)((char*)self + 0x18c) = 0;
-    *(int*)((char*)self + 0x7c) = 0;
-    *(int*)((char*)self + 0x6c) = 0;
-    int v = sub_6978F0();
-    if (*(int*)(v + 0xc0) < 0x10)
-        *(int*)((char*)self + 0x90) = *(int*)(v + 0xc0);
+    sub_6305da();
+    *(int*)this = 0x7cc674;
+    *(int*)((char*)this + 0x1c) = 0;
+    sub_69f1e0();
+    sub_692160((char*)this + 0x54);
+    *(int*)((char*)this + 0x54) = 0x7d2e84;
+    *(int*)this = 0x7d2e94;
+    GetSysColor(0);
+    sub_6304c0();
+    sub_69f1a0();
+    *(char*)((char*)this + 0x81) = 0;
+    *(char*)((char*)this + 0x80) = 0;
+    *(int*)((char*)this + 0xcc) = 0;
+    *(int*)((char*)this + 0x84) = 0;
+    *(int*)((char*)this + 0x88) = 0;
+    *(int*)((char*)this + 0x8c) = 0;
+    *(int*)((char*)this + 0x18c) = 0;
+    *(int*)((char*)this + 0x7c) = 0;
+    *(int*)((char*)this + 0x6c) = 0;
+    void* p = sub_6978f0();
+    int v = *(int*)((char*)p + 0xc0);
+    if (v < 0x10)
+    {
+        p = sub_6978f0();
+        v = *(int*)((char*)p + 0xc0);
+    }
     else
-        *(int*)((char*)self + 0x90) = 0x10;
-    v = sub_6978F0();
-    if (*(int*)(v + 0xc4) < 0x10)
-        *(int*)((char*)self + 0x94) = *(int*)(v + 0xc4);
+    {
+        v = 0x10;
+    }
+    *(int*)((char*)this + 0x90) = v;
+    p = sub_6978f0();
+    v = *(int*)((char*)p + 0xc4);
+    if (v < 0x10)
+    {
+        p = sub_6978f0();
+        v = *(int*)((char*)p + 0xc4);
+    }
     else
-        *(int*)((char*)self + 0x94) = 0x10;
-    *(int*)((char*)self + 0xc8) = 0;
-    *(int*)((char*)self + 0x78) = sub_77EE58(0x12);
-    *(int*)((char*)self + 0x70) = sub_77EE58(0xf);
-    *(int*)((char*)self + 0x74) = sub_77EE58(0xf);
-    return self;
+    {
+        v = 0x10;
+    }
+    *(int*)((char*)this + 0x94) = v;
+    *(int*)((char*)this + 0xc8) = 0;
+    *(int*)((char*)this + 0x78) = (int)sub_77ee58(0x12);
+    *(int*)((char*)this + 0x70) = (int)sub_77ee58(0xf);
+    *(int*)((char*)this + 0x74) = (int)sub_77ee58(0xf);
 }

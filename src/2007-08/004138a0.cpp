@@ -1,33 +1,33 @@
-// from server: 58% by colin
-// roc 2007-08 004138a0  unit: DHTMLWindowService  size: 118 bytes
-// Make this compile to the exact bytes below, then: roc check 2007-08 004138a0
-
-extern "C" void* __stdcall sub_56D350();
-extern "C" void* __stdcall sub_56D6F0(void*);
-extern "C" void* __stdcall sub_52C940(void*, int, void*);
-extern "C" void* __stdcall sub_56D400(void*, void*);
-extern "C" void* __stdcall sub_56DA00(void*);
-
-struct DHTMLWindowService {
+// from server: 64% by tester
+struct S {
     char pad[0x14];
-    void* field14;
+    int field14;
     char pad2[0x18];
-    char field30;
-    char field38;
-    char field40;
-    void init(void* a, void* b, void* c);
+    int field30;
+    int field34;
+    int field38;
+    int field3c;
+    int field40;
+    void func(int, int, int);
 };
 
-void DHTMLWindowService::init(void* a, void* b, void* c) {
-    void* p;
-    field14 = sub_56D350();
-    p = sub_56D6F0(&field30);
-    p = sub_52C940(a, -1, p);
-    sub_56D400(&field14, p);
-    p = sub_56DA00(&field38);
-    p = sub_52C940(b, -1, p);
-    sub_56D400(&field14, p);
-    p = sub_56DA00(&field40);
-    p = sub_52C940(c, -1, p);
-    sub_56D400(&field14, p);
+extern "C" int __cdecl sub_56d350();
+extern "C" int __cdecl sub_56d6f0(int*);
+extern "C" int __cdecl sub_56da00(int*);
+extern "C" int __cdecl sub_52c940(int, int, int);
+extern "C" int __cdecl sub_56d400(int*, int);
+
+void S::func(int a, int b, int c)
+{
+    int* p = &field14;
+    *p = sub_56d350();
+    int v1 = sub_56d6f0(&field30);
+    int v2 = sub_52c940(a, -1, v1);
+    sub_56d400(p, v2);
+    int v3 = sub_56da00(&field38);
+    int v4 = sub_52c940(b, -1, v3);
+    sub_56d400(p, v4);
+    int v5 = sub_56da00(&field40);
+    int v6 = sub_52c940(c, -1, v5);
+    sub_56d400(p, v6);
 }

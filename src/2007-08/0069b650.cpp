@@ -1,55 +1,42 @@
-// from server: 49% by colin
-// roc 2007-08 0069b650  unit: CXTPPropertyGridView  size: 158 bytes
-// Make this compile to the exact bytes below, then: roc check 2007-08 0069b650
-
-struct CRect {
-    int left;
-    int top;
-    int right;
-    int bottom;
-};
-
-struct CPoint {
-    int x;
-    int y;
-};
-
-struct CSize {
-    int cx;
-    int cy;
-};
-
+// from server: 54% by tester
 struct CXTPPropertyGridView {
     void sub_63023E();
-    void sub_7383AC(void*);
-    void sub_67FFA0(void*);
     void* sub_69AB30();
-    void sub_7383A6();
-    void Method();
+    void func();
 };
 
-extern "C" void __stdcall OffsetRect(CRect* rect, int dx, int dy);
+struct Helper1 {
+    int a;
+    int b;
+    void ctor(void*);
+    void dtor();
+};
 
-void CXTPPropertyGridView::Method()
-{
-    CRect rect;
-    CPoint pt;
-    CSize size;
+struct Helper2 {
+    int x;
+    int y;
+    void ctor(void*);
+};
 
+extern "C" void __stdcall OffsetRect(void*, int, int);
+
+void CXTPPropertyGridView::func() {
     sub_63023E();
-    sub_7383AC(this);
-    sub_67FFA0(this);
 
-    pt.x = -pt.x;
-    pt.y = -pt.y;
+    Helper1 h1;
+    h1.ctor(this);
 
-    OffsetRect(&rect, pt.x, pt.y);
+    Helper2 h2;
+    h2.ctor(this);
+
+    int v1 = -h2.x;
+    int v2 = -h2.y;
+    OffsetRect(&h1, v2, v1);
 
     void* p = sub_69AB30();
     void** vtbl = *(void***)p;
-    typedef void (__thiscall *Fn)(void*, CRect*, CPoint*, int);
-    Fn fn = (Fn)vtbl[6];
-    fn(p, &rect, &pt, 0);
+    typedef void (__thiscall *Fn)(void*, void*, void*, int);
+    ((Fn)vtbl[6])(p, &h1, &h2, 0);
 
-    sub_7383A6();
+    h1.dtor();
 }

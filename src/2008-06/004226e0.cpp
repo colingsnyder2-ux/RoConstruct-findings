@@ -1,5 +1,10 @@
-// from server: 53% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: boost-1.34.1 libs/regex/src/instances.cpp
+// from server: 100% by tester
+struct CSelectionTreeCtrl {
+    char pad[0xe0];
+    unsigned char flag;
+    void getFlag(int, int* out);
+};
+
+void CSelectionTreeCtrl::getFlag(int, int* out) {
+    *out = (this->flag != 0) ? 1 : 0;
+}

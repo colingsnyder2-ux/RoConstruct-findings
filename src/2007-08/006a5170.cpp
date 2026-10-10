@@ -1,42 +1,29 @@
-// from server: 76% by colin
-// roc 2007-08 006a5170  unit: CXTPShortcutManager  size: 52 bytes
-// Make this compile to the exact bytes below, then: roc check 2007-08 006a5170
+// from server: 100% by tester
+// roc 2008-06 0071ea80  unit: CXTPShortcutManager  size: 52 bytes
+// Make this compile to the exact bytes below, then: roc check 2008-06 0071ea80
 //
-// 006a5170  51                   push ecx
-// 006a5171  8d442408             lea eax, [esp + 8]
-// 006a5175  50                   push eax
-// 006a5176  8b44240c             mov eax, dword ptr [esp + 0xc]
-// 006a517a  8d542404             lea edx, [esp + 4]
-// 006a517e  52                   push edx
-// 006a517f  50                   push eax
-// 006a5180  e84b300300           call 0x6d81d0
-// 006a5185  85c0                 test eax, eax
-// 006a5187  7504                 jne 0x6a518d
-// 006a5189  59                   pop ecx
-// 006a518a  c20800               ret 8
-// 006a518d  8b4c240c             mov ecx, dword ptr [esp + 0xc]
-// 006a5191  83c004               add eax, 4
-// 006a5194  50                   push eax
-// 006a5195  ff1534d47700         call dword ptr [0x77d434]
-// 006a519b  b801000000           mov eax, 1
-// 006a51a0  59                   pop ecx
-// 006a51a1  c20800               ret 8
+// 0071ea80  51                   push ecx
+// 0071ea81  8d442408             lea eax, [esp + 8]
+// 0071ea85  50                   push eax
+// 0071ea86  8b44240c             mov eax, dword ptr [esp + 0xc]
+// 0071ea8a  8d542404             lea edx, [esp + 4]
+// 0071ea8e  52                   push edx
+// 0071ea8f  50                   push eax
+// 0071ea90  e8eb95feff           call 0x708080
+// 0071ea95  85c0                 test eax, eax
+// 0071ea97  7504                 jne 0x71ea9d
+// 0071ea99  59                   pop ecx
+// 0071ea9a  c20800               ret 8
+// 0071ea9d  8b4c240c             mov ecx, dword ptr [esp + 0xc]
+// 0071eaa1  83c004               add eax, 4
+// 0071eaa4  50                   push eax
+// 0071eaa5  ff1544318000         call dword ptr [0x803144]
+// 0071eaab  b801000000           mov eax, 1
+// 0071eab0  59                   pop ecx
+// 0071eab1  c20800               ret 8
+// library xtp-11.2.2-shared-mfc/Source\CommandBars\XTPShortcutManager.cpp (function ?Lookup@?$CMap@IIV?$CStringT@DV?$StrTraitMFC_DLL@DV?$ChTraitsCRT@D@ATL@@@@@ATL@@V12@@@QBEHIAAV?$CStringT@DV?$StrTraitMFC_DLL@DV?$ChTraitsCRT@D@ATL@@@@@ATL@@@Z)
 
-extern "C" int __stdcall sub_6D81D0(int a, int* b, int* c);
-extern "C" int (__stdcall *g_fn)(void*);
-
-struct CXTPShortcutManager
-{
-    int sub_6A5170(int a, int b);
-};
-
-int CXTPShortcutManager::sub_6A5170(int a, int b)
-{
-    int local1;
-    int local2;
-    int result = sub_6D81D0(a, &local1, &local2);
-    if (result == 0)
-        return 0;
-    g_fn((void*)(result + 4));
-    return 1;
-}
+// roc-lang: cpp
+// roc-cl: 30729
+// roc-flags: /O2 /GS- /MD
+// roc-lib: xtp-11.2.2-shared-mfc Source/CommandBars/XTPShortcutManager.cpp

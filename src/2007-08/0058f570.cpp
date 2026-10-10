@@ -1,44 +1,41 @@
-// from server: 36% by colin
+// from server: 42% by tester
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
 
 struct RefCounted {
-    long refcount;
-    long weakcount;
-    virtual void destroy();
-    virtual void destroyWeak();
+    void* vptr;
+    volatile long ref1;
+    volatile long ref2;
 };
+
+struct FactoryResult {
+    void* ptr;
+    RefCounted* ref;
+};
+
+extern "C" FactoryResult* __cdecl sub_58F4F0(FactoryResult* out);
 
 struct Creator {
-    void* field0;
-    RefCounted* field4;
+    FactoryResult* create(FactoryResult* out);
 };
 
-extern "C" void* __cdecl sub_58F4F0(void* out);
-
-void __stdcall Creator_ctor(Creator* self, Creator* other);
-
-void __stdcall Creator_ctor(Creator* self, Creator* other)
-{
-    Creator tmp;
-    tmp.field0 = 0;
-    tmp.field4 = 0;
-
+FactoryResult* Creator::create(FactoryResult* out) {
+    FactoryResult tmp;
     sub_58F4F0(&tmp);
-
-    self->field0 = tmp.field0;
-    self->field4 = tmp.field4;
-    if (self->field4) {
-        _InterlockedExchangeAdd((volatile long*)((char*)self->field4 + 4), 1);
+    out->ptr = tmp.ptr;
+    out->ref = tmp.ref;
+    if (out->ref) {
+        _InterlockedExchangeAdd(&out->ref->ref1, 1);
     }
-
-    RefCounted* old = other->field4;
-    if (old) {
-        if (_InterlockedExchangeAdd((volatile long*)((char*)old + 4), -1) == 1) {
-            old->destroy();
-            if (_InterlockedExchangeAdd((volatile long*)((char*)old + 8), -1) == 1) {
-                old->destroyWeak();
+    if (tmp.ref) {
+        if (_InterlockedExchangeAdd(&tmp.ref->ref1, -1) == 1) {
+            void** vt = (void**)tmp.ref->vptr;
+            typedef void (__thiscall *Fn)(RefCounted*);
+            ((Fn)vt[1])(tmp.ref);
+            if (_InterlockedExchangeAdd(&tmp.ref->ref2, -1) == 1) {
+                ((Fn)vt[2])(tmp.ref);
             }
         }
     }
+    return out;
 }
