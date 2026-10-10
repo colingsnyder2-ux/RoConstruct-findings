@@ -1,21 +1,24 @@
-// from server: 63% by atomic.potato
-typedef int BOOL;
-
-struct TypeInfo;
-
-struct TypeInfoEqual
-{
-    BOOL operator()(TypeInfo *);
+// from server: 100% by tester
+struct type_info {
+    bool operator==(const type_info&) const;
 };
 
-struct S
-{
-    int f();
+struct holder {
+    void* vtable;
+    void* pad;
+    type_info* info;
 };
 
-int S::f()
-{
-    TypeInfo *p = *(TypeInfo **)this;
-    TypeInfo *q = *(TypeInfo **)((char *)p + 8);
-    return TypeInfoEqual().operator()(q);
+extern type_info type_info_8827f8;
+
+bool (type_info::*type_info_eq)(const type_info&) const;
+
+struct bad_any_cast {
+    holder* h;
+    bool matches() const;
+};
+
+bool bad_any_cast::matches() const {
+    holder* p = h;
+    return (type_info_8827f8.*type_info_eq)(*p->info);
 }

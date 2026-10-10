@@ -1,20 +1,18 @@
-// from server: 80% by colin
-extern char G_8c37bc;
-extern char G_58dd70;
-extern int G_8a4508;
-extern int G_7af6cc;
+// from server: 100% by colin
 
-extern "C" int __cdecl func_00725520(int, int);
-extern "C" int __cdecl func_0058d750();
-extern "C" int __cdecl func_00407410(int*);
-extern "C" int __cdecl func_00407220();
-
+// roc-flags: /O2 /GS- /EHsc /MD
+struct Obj { void f4(void*); };
+extern "C" void reg_fn(void*, void*);
+extern "C" void* make_fn(void);
+extern "C" Obj* init_fn();
+extern void (*g_cb)(void);
+extern void fn_a();
+extern void fn_b();
+extern void fn_c();
 void func_0077ae40()
 {
-    int local;
-    G_8a4508 = (int)&G_7af6cc;
-    func_00725520((int)&G_58dd70, (int)&G_8c37bc);
-    local = func_0058d750();
-    func_00407410(&local);
-    func_00407220();
+    g_cb = &fn_c;
+    reg_fn(&fn_a, &fn_b);
+    void* local = make_fn();
+    init_fn()->f4(&local);
 }

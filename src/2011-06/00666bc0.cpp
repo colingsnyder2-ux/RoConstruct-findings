@@ -1,14 +1,13 @@
-// from server: 95% by atomic.potato
-struct S_func_00666bc0 {
+// from server: 100% by tester
+struct VProfilingItem_BoundFuncDesc {
     char pad[6];
-    unsigned char m_enabled;
-    unsigned char m_value;
-    int f();
+    unsigned char field6;
+    unsigned char field7;
+    int getter();
 };
 
-int S_func_00666bc0::f()
-{
-    if (m_enabled)
+int VProfilingItem_BoundFuncDesc::getter() {
+    if (field6 != 0)
         return 1;
-    return -(int)m_value;
+    return field7 != 0 ? -1 : 0;
 }

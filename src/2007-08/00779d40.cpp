@@ -1,21 +1,18 @@
-// from server: 84% by tester
-struct S_00779d40 {
-    void m();
-};
+// from server: 100% by colin
 
-struct S_00407220 {
-    void f(void*);
-};
-
-extern "C" void __stdcall f_00725520(void*, void*);
-extern "C" void* __stdcall f_0055e6a0();
-extern "C" void* __stdcall f_00407410(void*);
-
-void S_00779d40::m()
+// roc-flags: /O2 /GS- /EHsc /MD
+struct Obj { void f4(void*); };
+extern "C" void reg_fn(void*, void*);
+extern "C" void* make_fn(void);
+extern "C" Obj* init_fn();
+extern void (*g_cb)(void);
+extern void fn_a();
+extern void fn_b();
+extern void fn_c();
+void func_00779d40()
 {
-    *(void**)0x89f37c = (void*)0x7a95a8;
-    f_00725520((void*)0x8c2320, (void*)0x55ed50);
-    void* p = f_0055e6a0();
-    S_00407220* q = (S_00407220*)f_00407410(&p);
-    q->f(&p);
+    g_cb = &fn_c;
+    reg_fn(&fn_a, &fn_b);
+    void* local = make_fn();
+    init_fn()->f4(&local);
 }

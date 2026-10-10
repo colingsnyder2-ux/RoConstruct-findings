@@ -1,14 +1,18 @@
-// from server: 80% by colin
-extern "C" void __cdecl sub_00725520(void*, void*);
-extern "C" void* __cdecl sub_005F0770();
-extern "C" void* __cdecl sub_00407410(void*);
-extern "C" void __cdecl sub_00407220(void*);
+// from server: 100% by colin
 
-void sub_0077C620()
+// roc-flags: /O2 /GS- /EHsc /MD
+struct Obj { void f4(void*); };
+extern "C" void reg_fn(void*, void*);
+extern "C" void* make_fn(void);
+extern "C" Obj* init_fn();
+extern void (*g_cb)(void);
+extern void fn_a();
+extern void fn_b();
+extern void fn_c();
+void func_0077c620()
 {
-    *(int*)0x8B3AD0 = 0x7C087C;
-    sub_00725520((void*)0x8C77FC, (void*)0x5F0C70);
-    void* p = sub_005F0770();
-    void* q = sub_00407410(&p);
-    sub_00407220(q);
+    g_cb = &fn_c;
+    reg_fn(&fn_a, &fn_b);
+    void* local = make_fn();
+    init_fn()->f4(&local);
 }

@@ -1,18 +1,18 @@
-// from server: 84% by tester
-struct CNullDoc {
-    void Init();
-};
+// from server: 100% by colin
 
-extern "C" void __stdcall sub_725520(void*, void*);
-extern "C" void* __stdcall sub_408620();
-extern "C" void* __stdcall sub_407410(void*);
-extern "C" void __stdcall sub_407220(void*);
-
-void CNullDoc::Init()
+// roc-flags: /O2 /GS- /EHsc /MD
+struct Obj { void f4(void*); };
+extern "C" void reg_fn(void*, void*);
+extern "C" void* make_fn(void);
+extern "C" Obj* init_fn();
+extern void (*g_cb)(void);
+extern void fn_a();
+extern void fn_b();
+extern void fn_c();
+void func_00777320()
 {
-    *(void**)0x881808 = (void*)0x7854b0;
-    sub_725520((void*)0x8baf40, (void*)0x408cb0);
-    void* p = sub_408620();
-    void* q = sub_407410(&p);
-    sub_407220(q);
+    g_cb = &fn_c;
+    reg_fn(&fn_a, &fn_b);
+    void* local = make_fn();
+    init_fn()->f4(&local);
 }

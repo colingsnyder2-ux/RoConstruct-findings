@@ -1,15 +1,24 @@
-// from server: 64% by atomic.potato
-struct S
-{
-    int f();
+// from server: 100% by tester
+struct type_info {
+    bool operator==(const type_info&) const;
 };
 
-extern "C" int __stdcall type_info_equal(void *, void *);
-extern void *g_type_info;
+struct holder {
+    void* vtable;
+    void* pad;
+    type_info* info;
+};
 
-int S::f()
-{
-    void *p = *(void **)this;
-    void *q = *(void **)((char *)p + 8);
-    return type_info_equal(g_type_info, q);
+extern type_info type_info_8827f8;
+
+bool (type_info::*type_info_eq)(const type_info&) const;
+
+struct bad_any_cast {
+    holder* h;
+    bool matches() const;
+};
+
+bool bad_any_cast::matches() const {
+    holder* p = h;
+    return (type_info_8827f8.*type_info_eq)(*p->info);
 }

@@ -1,21 +1,18 @@
-// from server: 81% by colin
-// roc 2007-08 007773a0  unit: seg_00770000  size: 55 bytes
-// Make this compile to the exact bytes below, then: roc check 2007-08 007773a0
+// from server: 100% by colin
 
-extern "C" void __stdcall sub_725520(int, int);
-extern "C" int __cdecl sub_40cd00();
-extern "C" int __cdecl sub_407410(int*);
-extern "C" void __cdecl sub_407220(int);
-
-struct CChildFrame {
-    void init();
-};
-
-void CChildFrame::init() {
-    *(int*)0x8824c0 = 0x78688c;
-    sub_725520(0x40d270, 0x8baf80);
-    int v = sub_40cd00();
-    int* p = &v;
-    int r = sub_407410(p);
-    sub_407220(r);
+// roc-flags: /O2 /GS- /EHsc /MD
+struct Obj { void f4(void*); };
+extern "C" void reg_fn(void*, void*);
+extern "C" void* make_fn(void);
+extern "C" Obj* init_fn();
+extern void (*g_cb)(void);
+extern void fn_a();
+extern void fn_b();
+extern void fn_c();
+void func_007773a0()
+{
+    g_cb = &fn_c;
+    reg_fn(&fn_a, &fn_b);
+    void* local = make_fn();
+    init_fn()->f4(&local);
 }

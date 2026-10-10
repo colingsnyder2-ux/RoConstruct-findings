@@ -1,16 +1,18 @@
-// from server: 78% by tester
-extern "C" void __stdcall sub_725520(int, int);
-extern "C" int __cdecl sub_486ff0();
-extern "C" int __cdecl sub_407410(int*);
-extern "C" void __fastcall sub_407220(int);
+// from server: 100% by colin
 
-struct S {
-    void f();
-};
-
-void S::f() {
-    sub_725520(0x487970, 0x8bdcac);
-    *(int*)0x88e310 = 0x79b04c;
-    int v = sub_486ff0();
-    sub_407220(sub_407410(&v));
+// roc-flags: /O2 /GS- /EHsc /MD
+struct Obj { void f4(void*); };
+extern "C" void reg_fn(void*, void*);
+extern "C" void* make_fn(void);
+extern "C" Obj* init_fn();
+extern void (*g_cb)(void);
+extern void fn_a();
+extern void fn_b();
+extern void fn_c();
+void func_00778280()
+{
+    g_cb = &fn_c;
+    reg_fn(&fn_a, &fn_b);
+    void* local = make_fn();
+    init_fn()->f4(&local);
 }
