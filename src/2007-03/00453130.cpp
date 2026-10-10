@@ -1,5 +1,10 @@
-// from server: 76% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /GS- /MD
-// roc-lib: scintilla-mfc-1.20 ScintillaDocView.cpp
+// from server: 100% by tester
+struct InsertModelFromRobloxVerb {
+    char pad[0x2c];
+    void* field_c;
+    bool method();
+};
+
+bool InsertModelFromRobloxVerb::method() {
+    return *(int*)((char*)field_c + 0x1d0) != 0;
+}

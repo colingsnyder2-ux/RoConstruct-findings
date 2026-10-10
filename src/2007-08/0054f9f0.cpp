@@ -1,10 +1,5 @@
-// from server: 41% by colin
-extern "C" int __stdcall sub_0054F8A0(int, int, int, int, int);
-
-int __stdcall sub_0054F9F0(int a, int b, int c, int d)
-{
-    int sum = d + c;
-    int q = sum / b;
-    int r = sum % b;
-    return sub_0054F8A0(b, q + c, r + d, 0, 3);
-}
+// from server: 100% by tester
+// roc-lang: cpp
+// roc-cl: 50727
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: templates-boost-1_34_1 client-rtti-bf08f30a8aa6090dc7b7.cpp

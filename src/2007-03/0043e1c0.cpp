@@ -1,5 +1,17 @@
-// from server: 68% by colin
-// roc-lang: cpp
-// roc-cl: 50727
-// roc-flags: /O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MT
-// roc-lib: ogre-1.6.4 OgreAutoParamDataSource.cpp
+// from server: 100% by tester
+struct Descriptor {
+    Descriptor(const char*, unsigned int);
+};
+
+struct XBoolItem : Descriptor {
+    XBoolItem(const char*, unsigned int);
+    char pad[0x43c2d0];
+};
+
+XBoolItem::XBoolItem(const char* name, unsigned int attributes)
+    : Descriptor(name, attributes)
+{
+    *(void**)this = (void*)0x78d664;
+    *(void**)((char*)this + 0x20) = (void*)0x78d604;
+    *(void**)((char*)this + 0x108) = (void*)0x78d5fc;
+}

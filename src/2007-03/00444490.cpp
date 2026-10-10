@@ -1,5 +1,10 @@
-// from server: 75% by colin
-// roc-lang: cpp
-// roc-cl: 50727
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs v8datamodel/Camera.cpp
+// from server: 100% by tester
+// roc-flags: /O2 /GS- /EHsc /MD
+struct seg_004c0000 {
+    int get_19c(int *out);
+};
+
+int seg_004c0000::get_19c(int *out) {
+    *out = *(int *)((char *)this + 0x124);
+    return (int)out;
+}

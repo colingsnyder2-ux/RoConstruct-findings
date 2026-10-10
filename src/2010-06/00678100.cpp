@@ -1,5 +1,12 @@
-// from server: 69% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs v8world/Primitive.cpp
+// from server: 100% by atomic.potato
+struct Primitive
+{
+    void get();
+};
+
+void Primitive::get()
+{
+    void *p = *(void **)((char *)this + 0xf0);
+    void **vtable = *(void ***)p;
+    ((void (__thiscall *)(void *))vtable[6])(p);
+}

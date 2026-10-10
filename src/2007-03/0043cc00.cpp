@@ -1,5 +1,13 @@
-// from server: 91% by colin
-// roc-lang: cpp
-// roc-cl: 50727
-// roc-flags: /O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MT
-// roc-lib: ogre-1.6.4 OgreAutoParamDataSource.cpp
+// from server: 100% by tester
+struct VVector3 {
+    float x;
+    float y;
+    float z;
+};
+
+int __stdcall equal(const VVector3* a, const VVector3* b)
+{
+    if (a->x == b->x && a->y == b->y && a->z == b->z)
+        return 1;
+    return 0;
+}

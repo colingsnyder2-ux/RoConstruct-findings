@@ -1,5 +1,7 @@
-// from server: 72% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs util/RunStateOwner.cpp
+// from server: 100% by tester
+extern "C" int __cdecl sub_004660D0(int, int, int, int, int, float);
+
+int __cdecl sub_00466220(int a1, int a2, int a3, int a4)
+{
+    return sub_004660D0(a1, a2, a3, a4, 6, 0.0f);
+}
