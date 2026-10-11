@@ -1,4 +1,4 @@
-// from server: 68% by colin
+// from server: 72% by colin
 // roc 2007-08 0045dbd0  unit: HH::?$CArray  size: 36 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 0045dbd0
 //
@@ -18,12 +18,13 @@
 struct HH_CArray {
     char pad[0x88];
     int m_nGrowBy;
-    void* SetAt(int nIndex, void* pNewElement);
+    void* SetAt(void* pNewElement);
 };
 
 extern "C" void* __stdcall HH_CArray_SetAtHelper(void*, int, void*);
 
-void* HH_CArray::SetAt(int nIndex, void* pNewElement) {
-    HH_CArray_SetAtHelper(this, m_nGrowBy, pNewElement);
+void* HH_CArray::SetAt(void* pNewElement) {
+    void* result = 0;
+    HH_CArray_SetAtHelper(&result, m_nGrowBy, pNewElement);
     return pNewElement;
 }

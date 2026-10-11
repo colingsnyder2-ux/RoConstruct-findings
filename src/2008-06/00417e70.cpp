@@ -1,18 +1,24 @@
-// from server: 66% by colin
-// roc-repair: genuine WinNT.h definitions (no SDK shipped)
-typedef unsigned long DWORD;
-struct VCContent {
-    struct CComObject {
-        void IncrementRef() {
-            DWORD* refCount = reinterpret_cast<DWORD*>(reinterpret_cast<DWORD>(this) + 8);
-            (*refCount)++;
-            return;
-        }
-    };
+// from server: 100% by tester
+// roc 2008-06 00417e70  unit: VCContent::?$CComObject  size: 13 bytes
+// Make this compile to the exact bytes below, then: roc check 2008-06 00417e70
+//
+// 00417e70  8b442404             mov eax, dword ptr [esp + 4]
+// 00417e74  ff4008               inc dword ptr [eax + 8]
+// 00417e77  8b4008               mov eax, dword ptr [eax + 8]
+// 00417e7a  c20400               ret 4
+
+struct VCContent_CComObject {
+    int AddRefHelper();
 };
 
-extern "C" __declspec(dllimport) void G1_func_005cf5c0();
+int VCContent_CComObject::AddRefHelper() {
+    return 0;
+}
 
-void func_00417e70(VCContent::CComObject* obj) {
-    obj->IncrementRef();
+extern "C" int __stdcall VCContent_AddRef(void* p);
+
+int __stdcall VCContent_AddRef(void* p) {
+    int* q = (int*)p;
+    ++q[2];
+    return q[2];
 }

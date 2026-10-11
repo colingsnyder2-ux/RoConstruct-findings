@@ -1,4 +1,4 @@
-// from server: 88% by colin
+// from server: 100% by colin
 // roc 2007-08 0045d880  unit: Scintilla::CScintillaView  size: 35 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 0045d880
 //
@@ -19,15 +19,14 @@
 
 struct CScintillaView {
     char pad[0x58];
-    int field_58;
-    int sub_45CA50(int, int);
-    int sub_45CF60(int, int);
-    int func(int*);
+    struct Inner {
+        int f(int, int);
+        int g(int, int);
+    } inner;
+    int SetDocPointer(int);
 };
 
-int CScintillaView::func(int* p) {
-    int* self = (int*)((char*)this + 0x58);
-    int v = p[3];
-    int r = ((CScintillaView*)self)->sub_45CA50(v, 1);
-    return ((CScintillaView*)self)->sub_45CF60(r, 1);
+int CScintillaView::SetDocPointer(int doc) {
+    int r = inner.f(*(int*)((char*)doc + 0xc), 1);
+    return inner.g(r, 1);
 }

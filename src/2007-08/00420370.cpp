@@ -1,4 +1,4 @@
-// from server: 93% by colin
+// from server: 100% by colin
 // roc 2007-08 00420370  unit: CRobloxTreeCtrl  size: 51 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 00420370
 //
@@ -22,17 +22,18 @@
 // 004203a0  c20400               ret 4
 
 struct CRobloxTreeCtrl {
-    int sub_420370(unsigned int* param);
     char pad[0x90];
+    char field_90;
+    int sub_62FCF2(void*);
+    int func_00420370(void*);
 };
 
-extern "C" int __stdcall sub_62fcf2(void*, unsigned int*);
-
-int CRobloxTreeCtrl::sub_420370(unsigned int* param)
+int CRobloxTreeCtrl::func_00420370(void* arg)
 {
-    param[8] = (param[8] & 0xffffffef) | 0x2d;
-    if (sub_62fcf2(this, param) == 0)
+    int* p = (int*)arg;
+    p[8] = (p[8] & 0xffffffef) | 0x2d;
+    if (sub_62FCF2(arg) == 0)
         return 0;
-    *(char*)((char*)this + 0x90) = 0;
+    field_90 = 0;
     return 1;
 }

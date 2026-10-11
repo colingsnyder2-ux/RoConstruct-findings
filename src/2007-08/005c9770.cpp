@@ -1,4 +1,4 @@
-// from server: 62% by colin
+// from server: 66% by colin
 // roc 2007-08 005c9770  unit: lua_exception  size: 54 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 005c9770
 //
@@ -33,6 +33,7 @@ int __cdecl sub_5C9770(int a)
 {
     sub_5BF410(a, 1);
     double d = (double)a;
+    d = d * 1.4426950408889634;
     sub_5BDB70(a, d);
     return 1;
 }

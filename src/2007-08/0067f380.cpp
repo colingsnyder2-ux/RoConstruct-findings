@@ -1,4 +1,4 @@
-// from server: 73% by colin
+// from server: 100% by colin
 // roc 2007-08 0067f380  unit: CXTPControlSelector  size: 35 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 0067f380
 //
@@ -19,23 +19,17 @@
 // 0067f3a2  c3                   ret 
 
 struct CXTPControlSelector {
-    void Release();
-    int m_nID;
-    void* m_pControl;
-    int m_nIndex;
+    void m();
+    int field_0;
+    int field_4;
+    int field_8;
+    int field_c;
 };
 
-void CXTPControlSelector::Release()
+void CXTPControlSelector::m()
 {
-    if (m_pControl != 0)
-    {
-        if (m_nIndex != -1)
-        {
-            void** vtbl = *(void***)m_pControl;
-            typedef void (__stdcall *Fn)(void*, int);
-            Fn fn = (Fn)vtbl[14];
-            fn(m_pControl, m_nIndex);
-            m_nIndex = -1;
-        }
+    if (field_4 != 0 && field_c != -1) {
+        (*(void (__thiscall **)(int, int))(*(int *)field_4 + 0x38))(field_4, field_c);
+        field_c = -1;
     }
 }

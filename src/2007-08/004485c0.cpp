@@ -1,4 +1,4 @@
-// from server: 98% by colin
+// from server: 100% by atomic.potato
 // roc 2007-08 004485c0  unit: CIDEDocManager  size: 72 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 004485c0
 //
@@ -33,7 +33,7 @@
 // 00448604  5b                   pop ebx
 // 00448605  c20400               ret 4
 
-extern "C" __declspec(noreturn) __declspec(dllimport) void __stdcall RaiseException(unsigned long, unsigned long, unsigned long, const unsigned long*);
+extern "C" __declspec(dllimport) __declspec(noreturn) void __stdcall RaiseException(unsigned long, unsigned long, unsigned long, const unsigned long*);
 extern "C" void __cdecl sub_62FC62(void*);
 
 struct Node {

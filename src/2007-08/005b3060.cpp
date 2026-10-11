@@ -1,4 +1,4 @@
-// from server: 55% by colin
+// from server: 100% by colin
 // roc 2007-08 005b3060  unit: RBX::Assembly  size: 39 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 005b3060
 //
@@ -20,14 +20,21 @@
 // 005b3083  5b                   pop ebx
 // 005b3084  c20400               ret 4
 
+struct Assembly;
+
 struct Assembly {
-    int getAssembly(int);
+    Assembly* getAssembly();
+    Assembly* getAssemblyConst();
+    Assembly* getAssemblyFromPrimitive(int);
 };
 
-int Assembly::getAssembly(int a) {
-    int* p = (int*)a;
-    int r1 = ((Assembly*)p[2])->getAssembly(0);
-    int r2 = ((Assembly*)p[3])->getAssembly(0);
-    if (r1 == (int)this) return r2;
+Assembly* Assembly::getAssemblyFromPrimitive(int a)
+{
+    Assembly* p1 = *(Assembly**)(a + 8);
+    Assembly* r1 = p1->getAssembly();
+    Assembly* p2 = *(Assembly**)(a + 12);
+    Assembly* r2 = p2->getAssembly();
+    if (r1 == this)
+        return r2;
     return r1;
 }

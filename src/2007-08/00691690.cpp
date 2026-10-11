@@ -1,4 +1,4 @@
-// from server: 89% by colin
+// from server: 100% by colin
 // roc 2007-08 00691690  unit: CXTSplitterWnd  size: 43 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 00691690
 //
@@ -20,18 +20,16 @@
 // 006916b7  5e                   pop esi
 // 006916b8  c20c00               ret 0xc
 
-extern "C" int __stdcall sub_738B02(int, int, int);
-extern "C" int __stdcall InvalidateRect(void*, const void*, int);
-
-struct CXTSplitterWnd
-{
-    char pad[0x20];
-    void* field_20;
-    void func_00691690(int, int, int);
+struct CXTSplitterWnd {
+    char m_pad[0x20];
+    void* m_hWnd;
+    void SetRowInfo(int, int, int);
 };
 
-void CXTSplitterWnd::func_00691690(int a, int b, int c)
+extern "C" int (__stdcall *g_pfnInvalidateRect)(void*, const void*, int);
+
+void CXTSplitterWnd::SetRowInfo(int a, int b, int c)
 {
-    sub_738B02(a, b, c);
-    InvalidateRect(field_20, 0, 1);
+    SetRowInfo(a, b, c);
+    g_pfnInvalidateRect(m_hWnd, 0, 1);
 }

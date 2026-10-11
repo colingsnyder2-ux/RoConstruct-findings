@@ -1,22 +1,4 @@
-// from server: 81% by colin
-// roc 2007-08 007719e0  size: 63 bytes
-
-extern "C" void __cdecl sub_725520(int, int);
-extern "C" int __cdecl sub_55e630();
-extern "C" void* __cdecl sub_407410(void*);
-extern "C" void __cdecl sub_630d23(int);
-extern "C" void __cdecl sub_4339d0();
-
-struct S {
-    void f();
-};
-
-void S::f()
-{
-    sub_725520(0x8c231c, 0x55ed40);
-    int v = sub_55e630();
-    void* p = sub_407410(&v);
-    sub_4339d0();
-    *(int*)p = 0x89f378;
-    sub_630d23(0x779d80);
-}
+// from server: 100% by colin
+// roc-flags: /O2 /Ob2 /Oy /GF- /GS- /EHsc /MD
+struct Obj_007719e0 { Obj_007719e0* get(); }; extern "C" void reg_007719e0(void*,void*); extern "C" void* make_007719e0(); extern "C" Obj_007719e0* __stdcall wrap_007719e0(void*); extern "C" void final_007719e0(void*);
+void func_007719e0() { void* local; reg_007719e0((void*)0x55ed40,(void*)0x8c231c); local=make_007719e0(); Obj_007719e0* o=wrap_007719e0(&local)->get(); *(void**)o=(void*)0x89f378; final_007719e0((void*)0x779d80); }

@@ -1,4 +1,4 @@
-// from server: 64% by colin
+// from server: 78% by colin
 // roc 2007-08 00698940  unit: CXTPPropertyGridItem  size: 36 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 00698940
 //
@@ -15,18 +15,20 @@
 // 00698962  5e                   pop esi
 // 00698963  c3                   ret 
 
-struct CXTPPropertyGridItem {
+struct CXTPPropertyGridItem
+{
     char pad[0xa0];
     int field_a0;
     int field_a4;
-    int f();
+    int IsSelected();
 };
 
-extern "C" int __stdcall sub_77dd98(int);
-extern "C" int __stdcall sub_77dcb8(int);
+extern "C" int __stdcall sub_77DD98(int);
+extern "C" int __stdcall sub_77DCB8(int);
 
-int CXTPPropertyGridItem::f() {
-    int a = sub_77dd98(this->field_a0);
-    int b = sub_77dcb8(this->field_a4);
-    return (b == a) ? 1 : 0;
+int CXTPPropertyGridItem::IsSelected()
+{
+    int a = sub_77DD98(field_a0);
+    int b = sub_77DCB8(field_a4);
+    return (b != 0) ? 1 : 0;
 }

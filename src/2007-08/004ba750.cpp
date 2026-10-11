@@ -1,4 +1,3 @@
-// from server: 63% by colin
 // roc 2007-08 004ba750  unit: RakPeer  size: 75 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 004ba750
 //
@@ -34,38 +33,9 @@
 // 004ba796  5e                   pop esi
 // 004ba797  5b                   pop ebx
 // 004ba798  c20400               ret 4
+// library openrbx-raknet/RakPeer.cpp (function ?AttachPlugin@RakPeer@@UAEXPAVPluginInterface@@@Z)
 
-struct RakPeer {
-    char pad[0x2a8];
-    unsigned int count;
-    void* items[1];
-    void RemovePeer(void* peer);
-};
-
-void RakPeer::RemovePeer(void* peer) {
-    unsigned int i = 0;
-    if (count > 0) {
-        void** p = items;
-        while (i < count) {
-            if (*p == peer) {
-                if (i != 0xffffffffu) {
-                    return;
-                }
-                break;
-            }
-            i++;
-            p++;
-        }
-    }
-    if (i == 0xffffffffu || i >= count) {
-        // not found
-    }
-    // call 0x4b92e0 with peer
-    extern void __stdcall sub_4b92e0(void*);
-    sub_4b92e0(peer);
-    // virtual call: peer->vtable[1](this)
-    void** vtbl = *(void***)peer;
-    typedef void (__thiscall *Fn)(void*, RakPeer*);
-    Fn fn = (Fn)vtbl[1];
-    fn(peer, this);
-}
+// roc-lang: cpp
+// roc-cl: 50727
+// roc-flags: /O2 /EHsc /MD
+// roc-lib: openrbx-raknet RakPeer.cpp

@@ -1,4 +1,4 @@
-// from server: 91% by colin
+// from server: 100% by tester
 // roc 2007-08 0044c3e0  unit: CRobloxControlColorSelector  size: 37 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 0044c3e0
 //
@@ -18,18 +18,22 @@
 // 0044c401  5e                   pop esi
 // 0044c402  c20800               ret 8
 
-struct S {
-    void f(void* a, void* b);
+typedef void *(__thiscall *Fn)(void *);
+
+extern Fn g_fn_009ecef0;
+
+struct CRobloxControlMaterialSelector
+{
+    void f(void *, void *);
 };
 
-extern "C" void __stdcall sub_77ddbc(void*);
-
-void S::f(void* a, void* b)
+void CRobloxControlMaterialSelector::f(void *first, void *last)
 {
-    char* p = (char*)a;
-    char* q = (char*)b;
-    while (p != q) {
-        sub_77ddbc(p + 8);
+    char *p = (char *)first;
+    char *end = (char *)last;
+    while (p != end)
+    {
+        g_fn_009ecef0(p + 8);
         p += 12;
     }
 }

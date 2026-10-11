@@ -1,4 +1,4 @@
-// from server: 81% by colin
+// from server: 100% by colin
 // roc 2007-08 00402c80  unit: VCWorkspace::?$CComObject  size: 28 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 00402c80
 //
@@ -16,9 +16,9 @@ struct S {
     void f(int a, int b, int c);
 };
 
-extern "C" void __cdecl helper(int, int, int);
+extern "C" void __stdcall helper(int, int, int, int);
 
 void S::f(int a, int b, int c)
 {
-    helper(a, b, c);
+    helper(a, 0x784b88, b, c);
 }

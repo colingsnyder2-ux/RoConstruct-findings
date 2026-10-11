@@ -1,4 +1,4 @@
-// from server: 94% by colin
+// from server: 100% by colin
 // roc 2007-08 006a8160  unit: CXTPRibbonBar  size: 18 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 006a8160
 //
@@ -8,13 +8,12 @@
 // 006a8170  ffe0                 jmp eax
 
 struct CXTPRibbonBar {
-    void* m_pVtable;
-    int GetSomething(int arg);
+    int GetSomething(int arg1, int arg2);
 };
 
-int CXTPRibbonBar::GetSomething(int arg) {
-    typedef int (__stdcall *Fn)(int);
+int CXTPRibbonBar::GetSomething(int arg1, int arg2) {
+    typedef int (__stdcall *Fn)(int, int);
     Fn fn = *(Fn*)(*(char**)this + 0x1c8);
-    arg = 0;
-    return fn(arg);
+    arg2 = 0;
+    return fn(arg1, arg2);
 }

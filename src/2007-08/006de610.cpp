@@ -1,4 +1,4 @@
-// from server: 83% by colin
+// from server: 100% by colin
 // roc 2007-08 006de610  unit: CXTPDockingPaneAutoHidePanel  size: 24 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 006de610
 //
@@ -23,15 +23,13 @@ struct CXTPDockingPaneAutoHidePanel {
     int field18;
     int field1C;
     int field20;
-
-    void method();
+    void sub_630436();
+    void sub_6de610();
 };
 
-void CXTPDockingPaneAutoHidePanel::method() {
-    if (this->field20 != 0) {
-        (*(void (__thiscall **)(CXTPDockingPaneAutoHidePanel *))(*(int *)this + 0x68))(this);
+void CXTPDockingPaneAutoHidePanel::sub_6de610() {
+    if (field20 != 0) {
+        (*(void (__thiscall**)(CXTPDockingPaneAutoHidePanel*))(*(int*)this + 0x68))(this);
     }
-    // tail call to 0x630436
-    extern void __stdcall helper(CXTPDockingPaneAutoHidePanel *);
-    helper(this);
+    sub_630436();
 }

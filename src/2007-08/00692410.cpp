@@ -1,4 +1,4 @@
-// from server: 93% by colin
+// from server: 100% by colin
 // roc 2007-08 00692410  unit: CXTPStatusBar  size: 32 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 00692410
 //
@@ -17,14 +17,14 @@
 
 struct CXTPStatusBar {
     int sub_6923D0();
-    int sub_63023E();
-    int func(int arg);
+    void sub_63023E();
+    int func(int);
 };
 
 int CXTPStatusBar::func(int arg) {
     if (this->sub_6923D0() == 0) {
         this->sub_63023E();
-        return 0;
+    } else {
+        return 1;
     }
-    return 1;
 }

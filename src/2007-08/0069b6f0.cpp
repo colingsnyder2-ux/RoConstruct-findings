@@ -1,4 +1,4 @@
-// from server: 69% by colin
+// from server: 100% by colin
 // roc 2007-08 0069b6f0  unit: CXTPPropertyGridView  size: 37 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 0069b6f0
 //
@@ -19,16 +19,15 @@
 // 0069b712  c20800               ret 8
 
 struct CXTPPropertyGridView {
-    void sub_69B6F0(int, int);
+    void* sub_69AB30();
+    void sub_63023E();
+    void func(int a, int b);
 };
 
-extern "C" void __stdcall sub_63023E(void*);
-extern "C" void* __stdcall sub_69AB30();
-
-void CXTPPropertyGridView::sub_69B6F0(int a, int b) {
+void CXTPPropertyGridView::func(int a, int b) {
     void* p = sub_69AB30();
     void** vtbl = *(void***)p;
-    void (__stdcall *fn)(void*, int, int, int) = (void (__stdcall *)(void*, int, int, int))vtbl[6];
-    fn(p, 0, a, 1);
-    sub_63023E(this);
+    typedef void (__thiscall *Fn)(void*, int, int, int);
+    ((Fn)vtbl[6])(p, 0, b, 1);
+    sub_63023E();
 }

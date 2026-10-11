@@ -1,4 +1,4 @@
-// from server: 32% by colin
+// from server: 74% by colin
 // roc 2007-08 0041cea0  unit: InsertDecal  size: 40 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 0041cea0
 //
@@ -18,19 +18,18 @@
 // 0041cec4  59                   pop ecx
 // 0041cec5  c20400               ret 4
 
-struct InsertDecal {
-    void* getSomething();
-    void construct(void*);
+struct S {
+    void* f(void*);
 };
 
-void* InsertDecal::getSomething()
-{
-    return 0;
-}
+extern "C" void* __stdcall sub_77E69C(void*, const void*);
 
-void InsertDecal::construct(void* arg)
+void* S::f(void* arg)
 {
-    void* p = getSomething();
-    void* q = (char*)p + 4;
-    *(void**)((char*)this + 0) = q;
+    void* p = 0;
+    void* v = (*(void***)this)[1];
+    void* r = ((void* (__thiscall*)(void*, void**))v)(this, &p);
+    void* src = (void*)((char*)r + 4);
+    sub_77E69C(arg, src);
+    return arg;
 }

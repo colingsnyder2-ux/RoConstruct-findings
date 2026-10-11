@@ -1,4 +1,4 @@
-// from server: 54% by colin
+// from server: 65% by colin
 // roc 2007-08 0071c310  unit: CXTPTabPaintManager::CColorSetOffice2003  size: 49 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 0071c310
 //
@@ -23,20 +23,18 @@
 // 0071c33d  83c408               add esp, 8
 // 0071c340  c3                   ret 
 
-struct CXTPTabPaintManager_CColorSetOffice2003
-{
-    void f();
+struct CXTPTabPaintManagerColorSetOffice2003 {
+    void method_71C310();
 };
 
-extern "C" void __cdecl sub_668770();
-extern "C" void __cdecl sub_668EC0();
-extern "C" void __cdecl sub_668F70();
+extern "C" void* __cdecl sub_668770(int);
+extern "C" void __cdecl sub_668EC0(void*, void*);
+extern "C" void* __cdecl sub_668F70();
 
-void CXTPTabPaintManager_CColorSetOffice2003::f()
-{
-    sub_668770();
-    sub_668EC0();
-    sub_668F70();
-    sub_668770();
-    sub_668EC0();
+void CXTPTabPaintManagerColorSetOffice2003::method_71C310() {
+    void* a = sub_668770(0);
+    sub_668EC0(this, a);
+    void* b = sub_668F70();
+    void* c = sub_668770(0xf);
+    sub_668EC0(b, c);
 }

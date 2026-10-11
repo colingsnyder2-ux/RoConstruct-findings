@@ -1,4 +1,4 @@
-// from server: 91% by colin
+// from server: 100% by colin
 // roc 2007-08 0071fa90  unit: CXTPDockingPaneAutoHidePanel  size: 42 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 0071fa90
 //
@@ -22,12 +22,13 @@ struct CXTPDockingPaneAutoHidePanel {
     void func_006e0730(int, int);
     void func_0066f110(int);
     void* func_0071fa90(int, int);
+    char pad[0x38];
 };
 
 void* CXTPDockingPaneAutoHidePanel::func_0071fa90(int a, int b)
 {
     func_006e0730(a, b);
     *(int*)this = 0x7e211c;
-    func_0066f110(0xa);
+    ((CXTPDockingPaneAutoHidePanel*)((char*)this + 0x38))->func_0066f110(0xa);
     return this;
 }

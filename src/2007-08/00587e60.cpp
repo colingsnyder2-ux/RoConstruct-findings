@@ -1,4 +1,4 @@
-// from server: 85% by colin
+// from server: 100% by colin
 // roc 2007-08 00587e60  unit: RBX::VSoundChannel::?$FactoryProduct  size: 51 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 00587e60
 //
@@ -20,17 +20,17 @@ struct SoundChannel {
     char pad[0xec];
     int fmod_channel;
     char pad2[0x100 - 0xf0];
-    float x100;
-    float x104;
-    float x108;
-    void setPosition(int);
+    float f100;
+    float f104;
+    float f108;
+    void method(int);
 };
 
-extern "C" void __stdcall FMOD_Channel_SetPosition(int channel, int pos, float x, float y, float z);
+extern "C" void __stdcall sub_62fbde(int, float, float, float);
 
-void SoundChannel::setPosition(int pos)
-{
-    if (fmod_channel) {
-        FMOD_Channel_SetPosition(fmod_channel, pos, x100, x104, x108);
+void SoundChannel::method(int arg) {
+    int ch = fmod_channel;
+    if (ch != 0) {
+        sub_62fbde(ch, f100, f104, f108);
     }
 }

@@ -1,4 +1,3 @@
-// from server: 78% by colin
 // roc 2007-08 004b9a80  unit: RakPeer  size: 51 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 004b9a80
 //
@@ -26,18 +25,9 @@
 // 004b9aaf  b001                 mov al, 1
 // 004b9ab1  5e                   pop esi
 // 004b9ab2  c3                   ret 
+// library openrbx-raknet/RakPeer.cpp (function ??$ugreater@$$BY07I@big@@YA_NAAY07I0@Z)
 
-struct RakPeer {
-    unsigned int data[8];
-    bool lessThan(const RakPeer& other) const;
-};
-
-bool RakPeer::lessThan(const RakPeer& other) const {
-    const unsigned int* a = &data[7];
-    const unsigned int* b = &other.data[7];
-    for (int i = 7; i >= 0; --i) {
-        if (b[i] > a[i]) return true;
-        if (b[i] < a[i]) return false;
-    }
-    return false;
-}
+// roc-lang: cpp
+// roc-cl: 50727
+// roc-flags: /O2 /EHsc /MD
+// roc-lib: openrbx-raknet RakPeer.cpp

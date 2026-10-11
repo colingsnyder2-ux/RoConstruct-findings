@@ -1,4 +1,4 @@
-// from server: 88% by colin
+// from server: 100% by colin
 // roc 2007-08 005fc6e0  unit: RBX::SlingshotTool  size: 34 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 005fc6e0
 //
@@ -18,28 +18,13 @@
 // 005fc6ff  c20400               ret 4
 
 struct SlingshotTool {
-    void* field0;
-    void* field4;
-    void* field8;
-    void* fieldC;
-    void* field10;
-    void* field14;
-    void* field18;
-    void* field1C;
-    void* field20;
-    void* field24;
-    void* field28;
-    void* field2C;
-    void* field30;
-    void sub_5FC540(void* arg);
-    SlingshotTool* method(void* arg);
+    void sub_5FC540(int);
+    SlingshotTool* method(int);
 };
 
-SlingshotTool* SlingshotTool::method(void* arg) {
-    void (*fn)(void);
-    fn = *(void (**)(void))((*(char**)this) + 0x20);
-    fn();
-    if (this->field30 == 0) {
+SlingshotTool* SlingshotTool::method(int arg) {
+    (*(void (__thiscall **)(SlingshotTool*))(*(int*)this + 0x20))(this);
+    if (*(int*)((char*)this + 0x30) == 0) {
         this->sub_5FC540(arg);
     }
     return this;

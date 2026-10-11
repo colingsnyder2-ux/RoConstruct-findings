@@ -1,5 +1,14 @@
-// from server: 48% by colin
-// roc-lang: cpp
-// roc-cl: 21022
+// from server: 100% by colin
+
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs util/RunStateOwner.cpp
+namespace RBX {
+class Instance { public: virtual ~Instance(); char pad[0x44]; Instance* next; };
+class ServiceProvider : public Instance { public: ServiceProvider* finish(); };
+}
+RBX::ServiceProvider* func_004c0760(RBX::Instance* p) {
+    while (p) {
+        if (RBX::ServiceProvider* q = dynamic_cast<RBX::ServiceProvider*>(p)) return q->finish();
+        p = p->next;
+    }
+    return 0;
+}

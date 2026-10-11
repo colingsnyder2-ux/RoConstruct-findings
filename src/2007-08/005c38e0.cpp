@@ -1,4 +1,4 @@
-// from server: 90% by colin
+// from server: 100% by colin
 // roc 2007-08 005c38e0  unit: RBX::Lua::LuaArguments  size: 31 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 005c38e0
 //
@@ -15,7 +15,7 @@
 // 005c38fe  c3                   ret 
 
 struct LuaArguments {
-    void construct(int a1);
+    int construct(int a1);
 };
 
 extern int g_luaState;
@@ -26,8 +26,9 @@ struct Helper {
     void method();
 };
 
-void LuaArguments::construct(int a1)
+int __cdecl LuaArguments_construct(int a1)
 {
     int r = sub_5BF240(a1, 1, g_luaState);
     ((Helper*)r)->method();
+    return 0;
 }

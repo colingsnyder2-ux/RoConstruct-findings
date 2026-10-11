@@ -1,4 +1,4 @@
-// from server: 88% by colin
+// from server: 100% by colin
 // roc 2007-08 00557220  unit: ChatEnter  size: 18 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 00557220
 //
@@ -9,11 +9,12 @@
 
 struct ChatEnter {
     char pad[0x1b8];
-    void assign();
+    void SetProgress();
 };
 
-extern "C" void* __stdcall string_assign(void*, const char*);
+extern "C" void* (__thiscall *g_stringAssign)(void*, const char*);
+extern char g_progressString[];
 
-void ChatEnter::assign() {
-    string_assign((char*)this + 0x1b8, "[[[progress]]]");
+void ChatEnter::SetProgress() {
+    g_stringAssign((char*)this + 0x1b8, g_progressString);
 }

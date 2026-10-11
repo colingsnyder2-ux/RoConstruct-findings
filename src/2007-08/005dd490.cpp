@@ -1,4 +1,4 @@
-// from server: 68% by colin
+// from server: 77% by colin
 // roc 2007-08 005dd490  unit: RBX::VVelocityMotor::?$FactoryProduct  size: 51 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 005dd490
 //
@@ -18,16 +18,22 @@
 
 struct VVelocityMotor {
     char pad[0xf8];
-    void* field_f8;
+    struct Inner* ptr;
     void setDesiredAngle(float angle);
 };
 
+struct Inner {
+    char pad[0x90];
+    float value;
+};
+
 void VVelocityMotor::setDesiredAngle(float angle) {
-    void* p = field_f8;
-    float current = *(float*)((char*)p + 0x90);
-    if (angle != current) {
-        *(float*)((char*)p + 0x90) = angle;
-        extern void someFunc();
-        someFunc();
+    Inner* p = ptr;
+    float old = p->value;
+    if (old == angle) {
+        return;
     }
+    p->value = angle;
+    extern void __stdcall someFunc(float);
+    someFunc(angle);
 }

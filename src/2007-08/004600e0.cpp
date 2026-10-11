@@ -1,4 +1,4 @@
-// from server: 67% by colin
+// from server: 100% by colin
 // roc 2007-08 004600e0  unit: CScriptEditor  size: 49 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 004600e0
 //
@@ -25,19 +25,22 @@
 // 00460110  c3                   ret 
 
 struct CScriptEditor {
-    void sub_4600E0();
+    void init();
+};
+
+struct Helper {
+    int f1(int a, int b);
+    int f2(int a, int b, int c);
 };
 
 extern "C" void* __cdecl sub_45D230();
-extern "C" int __cdecl sub_45C460(void* self, int a, int b);
-extern "C" int __cdecl sub_45C410(void* self, int a, int b);
 
-void CScriptEditor::sub_4600E0()
+void CScriptEditor::init()
 {
-    void* p = sub_45D230();
-    if (sub_45C460(p, 2, 1)) {
-        sub_45C410(p, 2, 0);
+    Helper* p = (Helper*)sub_45D230();
+    if (p->f1(2, 1)) {
+        p->f2(2, 0, 1);
     } else {
-        sub_45C410(p, 2, 0x10);
+        p->f2(2, 0x10, 1);
     }
 }

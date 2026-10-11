@@ -1,4 +1,4 @@
-// from server: 84% by colin
+// from server: 100% by colin
 // roc 2007-08 005c21f0  unit: RBX::Lua::LuaArguments  size: 74 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 005c21f0
 //
@@ -45,10 +45,10 @@ extern "C" void __cdecl sub_5be160(void*, int);
 
 extern void* dword_8ABE7C;
 
-int LuaArguments::construct(void* a, int b) {
+int __cdecl construct_impl(void* a, int b) {
     void* local;
-    sub_586810(&local);
-    void* v = *(void**)&local;
+    void* r = sub_586810(&local);
+    void* v = *(void**)r;
     void* p = sub_5be5b0(a, 4);
     if (p) {
         *(void**)p = v;
@@ -56,4 +56,8 @@ int LuaArguments::construct(void* a, int b) {
     sub_5bde00(a, -10000, dword_8ABE7C);
     sub_5be160(a, -2);
     return 1;
+}
+
+int LuaArguments::construct(void* a, int b) {
+    return construct_impl(a, b);
 }

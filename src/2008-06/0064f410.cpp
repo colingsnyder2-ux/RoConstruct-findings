@@ -1,13 +1,4 @@
-// from server: 89% by atomic.potato
-struct ImageButton {
-    void *field_14c;
-    int f(void *value);
-};
-
-extern "C" void __fastcall sub_642690(void *object, void *value);
-
-int ImageButton::f(void *value)
-{
-    sub_642690((char *)this + 0x14c, value);
-    return (int)value;
-}
+// from server: 100% by colin
+// roc-flags: /O2 /Ob2 /Oy /GF- /GS- /EHsc /MD
+struct B{void sub(void*);}; struct S{void* func(void*);};
+void* S::func(void* p){((B*)((char*)this+332))->sub(p); return p;}

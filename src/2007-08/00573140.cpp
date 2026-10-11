@@ -1,4 +1,4 @@
-// from server: 75% by colin
+// from server: 77% by colin
 // roc 2007-08 00573140  unit: RBX::VTexture::?$FactoryProduct  size: 52 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 00573140
 //
@@ -28,9 +28,10 @@ void VTexture::setSize(float size) {
     if (size == field_0x114) {
         return;
     }
-    if (size >= 0.0f) {
-        field_0x114 = size;
-        extern void updateTexture();
-        updateTexture();
+    if (!(size > 0.0f)) {
+        return;
     }
+    field_0x114 = size;
+    extern void updateTexture();
+    updateTexture();
 }

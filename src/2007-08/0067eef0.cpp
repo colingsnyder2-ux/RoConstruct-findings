@@ -1,4 +1,4 @@
-// from server: 91% by colin
+// from server: 100% by colin
 // roc 2007-08 0067eef0  unit: CXTPControlLabel  size: 36 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 0067eef0
 //
@@ -20,15 +20,16 @@
 // 0067ef11  c20400               ret 4
 
 struct CXTPControlLabel {
-    void* sub_67EE70();
-    void sub_67EF20(int);
-    void* sub_67EEF0(int);
+    void* method(int);
 };
 
-void* CXTPControlLabel::sub_67EEF0(int arg) {
-    void* p = sub_67EE70();
-    void** vtbl = *(void***)p;
-    void (*fn)(void*, void*, int) = (void (*)(void*, void*, int))vtbl[0x38];
+extern "C" void* __fastcall sub_0067ee70(void*);
+
+void* CXTPControlLabel::method(int arg)
+{
+    void* p = sub_0067ee70(this);
+    void** vt = *(void***)p;
+    void (__thiscall* fn)(void*, void*, int) = (void (__thiscall*)(void*, void*, int))vt[0x38];
     fn(p, this, arg);
     return p;
 }

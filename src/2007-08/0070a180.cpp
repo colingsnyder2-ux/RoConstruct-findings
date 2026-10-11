@@ -1,4 +1,4 @@
-// from server: 56% by colin
+// from server: 100% by colin
 // roc 2007-08 0070a180  unit: CXTColorHex::PAUHEXCOLOR_CELL::?$CList  size: 49 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 0070a180
 //
@@ -23,24 +23,34 @@
 // 0070a1ad  5e                   pop esi
 // 0070a1ae  c20400               ret 4
 
-struct CXTColorHex
-{
-    char pad[0x7c];
-    void* list;
-    void SetColor(unsigned int color);
-    void* Find(unsigned int idx);
+struct Inner {
+    char pad[8];
+    Inner* field8;
 };
 
-void* CXTColorHex_Find(void* list, unsigned int idx);
+struct Inner2 {
+    int field0;
+    int field4;
+};
 
-void CXTColorHex::SetColor(unsigned int color)
-{
-    if (color == 0xffffffff)
+struct Helper {
+    Inner* find(int);
+};
+
+struct CXTColorHex {
+    char pad[0x7c];
+    Helper helper;
+    void sub_709f50(int, int);
+    void method(int);
+};
+
+void CXTColorHex::method(int index) {
+    if (index == -1)
         return;
-    void* node = CXTColorHex_Find((char*)this + 0x7c, color);
-    void* item = *(void**)((char*)node + 8);
-    if (item == 0)
+    Inner* p = helper.find(index);
+    p = p->field8;
+    if (p == 0)
         return;
-    unsigned int* p = *(unsigned int**)((char*)item + 0x14);
-    SetColor(p[0]);
+    Inner2* q = *(Inner2**)((char*)p + 0x14);
+    sub_709f50(q->field0, q->field4);
 }

@@ -1,4 +1,4 @@
-// from server: 86% by colin
+// from server: 100% by colin
 // roc 2007-08 0068bb00  unit: CXTPControlTabWorkspace  size: 36 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 0068bb00
 //
@@ -20,15 +20,15 @@
 // 0068bb21  c20400               ret 4
 
 struct CXTPControlTabWorkspace {
-    void* method68ba90();
-    void* method68bb00(void* arg);
+    void* sub_68BA90();
+    void* method_68BB00(int);
 };
 
-void* CXTPControlTabWorkspace::method68bb00(void* arg)
-{
-    void* p = method68ba90();
+void* CXTPControlTabWorkspace::method_68BB00(int arg) {
+    void* p = sub_68BA90();
     void** vtbl = *(void***)p;
-    void (__thiscall *fn)(void*, void*) = (void (__thiscall *)(void*, void*))vtbl[0xe0 / 4];
-    fn(p, arg);
+    typedef void (__thiscall *Fn)(void*, void*, int);
+    Fn fn = (Fn)vtbl[0x38];
+    fn(p, this, arg);
     return p;
 }

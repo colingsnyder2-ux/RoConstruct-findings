@@ -1,4 +1,4 @@
-// from server: 69% by colin
+// from server: 100% by colin
 // roc 2007-08 00671d80  unit: CPropertyGridItemBrickColor  size: 45 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 00671d80
 //
@@ -23,16 +23,16 @@
 
 struct CPropertyGridItemBrickColor
 {
-    void sub_00671CC0(int* pt);
+    void sub_00671CC0(int* pt, int* local);
     int* method(int* pt);
 };
 
-extern "C" int __stdcall GetCursorPos(int* lpPoint);
+extern "C" int (__stdcall *GetCursorPos)(int* lpPoint);
 
 int* CPropertyGridItemBrickColor::method(int* pt)
 {
     int local[2];
     GetCursorPos(local);
-    sub_00671CC0(local);
+    sub_00671CC0(pt, local);
     return pt;
 }

@@ -1,4 +1,4 @@
-// from server: 66% by colin
+// from server: 77% by colin
 // roc 2007-08 00402ed0  unit: VCWorkspace::?$CComContainedObject  size: 18 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 00402ed0
 //
@@ -9,24 +9,17 @@
 // 00402edd  8b5108               mov edx, dword ptr [ecx + 8]
 // 00402ee0  ffe2                 jmp edx
 
-struct Inner {
-    virtual int f0();
-    virtual int f1();
-    virtual int f2();
-};
-
-struct Outer {
+struct VCWorkspace_CComContainedObject {
     char pad[0x30];
-    Inner* inner;
+    void* field30;
+
+    void* func(void* arg);
 };
 
-struct S {
-    int method(Outer* p);
-};
-
-int S::method(Outer* p)
+void* VCWorkspace_CComContainedObject::func(void* arg)
 {
-    Inner* i = p->inner;
-    int (Inner::*pmf)() = &Inner::f2;
-    return (i->*pmf)();
+    void* p = *(void**)((char*)arg + 0x30);
+    void** vtbl = *(void***)p;
+    void* (__stdcall *fn)(void*) = (void* (__stdcall *)(void*))vtbl[2];
+    return fn(p);
 }

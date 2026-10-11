@@ -1,4 +1,4 @@
-// from server: 96% by colin
+// from server: 100% by colin
 // roc 2007-08 00580ef0  unit: RBX::Accoutrement  size: 26 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 00580ef0
 //

@@ -1,4 +1,4 @@
-// from server: 63% by colin
+// from server: 100% by Intel
 // roc 2008-06 00645840  unit: RBX::Primitive  size: 12 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 00645840
 //
@@ -7,12 +7,13 @@
 // 00645846  895104               mov dword ptr [ecx + 4], edx
 // 00645849  c20400               ret 4
 
-struct Primitive {
-    int worldIndex;
-    void setWorldIndex(int newIndex);
+struct S {
+    int field0;
+    int field4;
+    void f(int);
 };
 
-void Primitive::setWorldIndex(int newIndex) {
-    int* worldIndexPtr = (int*)((char*)this + 4);
-    *worldIndexPtr = newIndex;
+void S::f(int)
+{
+    field4 = *reinterpret_cast<int*>(field4 + 4);
 }

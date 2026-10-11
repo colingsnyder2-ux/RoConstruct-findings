@@ -1,4 +1,4 @@
-// from server: 62% by colin
+// from server: 78% by colin
 // roc 2007-08 0065e960  unit: CXTPReportColumn  size: 55 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 0065e960
 //
@@ -22,23 +22,25 @@
 // 0065e991  83c408               add esp, 8
 // 0065e994  c20400               ret 4
 
-struct CXTPReportColumn {
-    char pad[0x20];
-    struct {
-        int dummy;
-    } m_szText;
-    int GetTextExtentPoint32A(int, int, int, int, int);
-    int GetTextExtent(int);
-    int GetTextExtent2(int);
+struct CXTPReportColumn
+{
+    char pad0[0x20];
+    struct Inner
+    {
+        int f1(void*);
+        int f2(int);
+    } inner;
+    int f3(void*);
 };
 
-extern "C" int __stdcall GetTextExtentPoint32A(int, int, int, int, int);
+extern "C" int __stdcall GetTextExtentPoint32A(void*, const char*, int, void*);
 
-int CXTPReportColumn::GetTextExtent(int a) {
-    int sz[2];
-    int* p = sz;
-    int r1 = ((int (__stdcall*)(int*, int))0x77dcc8)(p, 0);
-    int r2 = ((int (__stdcall*)(int, int))0x77dd98)(r1, 0);
-    int r3 = ((int (__stdcall*)(int, int, int))0x77d0b8)(r2, *(int*)(a + 8), 0);
-    return sz[0];
+int CXTPReportColumn::f3(void* a)
+{
+    int local[2];
+    int r1 = inner.f1(local);
+    int r2 = inner.f2(r1);
+    int r3 = *(int*)((char*)a + 8);
+    GetTextExtentPoint32A((void*)r3, (const char*)r2, 0, local);
+    return local[0];
 }

@@ -1,4 +1,4 @@
-// from server: 31% by colin
+// from server: 35% by colin
 // roc 2007-08 0072512c  unit: CXTIconHandle  size: 56 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 0072512c
 //
@@ -27,20 +27,24 @@
 // 00725161  c20800               ret 8
 
 struct CXTIconHandle {
-    int compare(const CXTIconHandle& rhs);
-    void* m_domIcon;
+    void* m_p;
+    void* m_q;
+    void assign(void* a, void* b);
 };
 
 extern "C" void* __stdcall HeapReAlloc(void*, unsigned long, void*, unsigned long);
 
-int CXTIconHandle::compare(const CXTIconHandle& rhs)
+void CXTIconHandle::assign(void* a, void* b)
 {
-    if (this->m_domIcon != 0) {
-        return ((int (__thiscall*)(void*, const CXTIconHandle&))((void**)rhs.m_domIcon)[0])(rhs.m_domIcon, rhs);
+    if (a == 0) {
+        void** vt = *(void***)this;
+        typedef void (__thiscall *Fn)(void*, void*);
+        ((Fn)vt[0])(this, b);
+    } else if (b == 0) {
+        void** vt = *(void***)this;
+        typedef void (__thiscall *Fn)(void*, void*);
+        ((Fn)vt[1])(this, a);
+    } else {
+        HeapReAlloc(0, 0, m_q, (unsigned long)a);
     }
-    if (rhs.m_domIcon == 0) {
-        ((void (__thiscall*)(void*, void*))((void**)this->m_domIcon)[1])(this->m_domIcon, this->m_domIcon);
-        return 0;
-    }
-    return (int)HeapReAlloc(0, 0, this->m_domIcon, (unsigned long)rhs.m_domIcon);
 }

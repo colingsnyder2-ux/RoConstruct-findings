@@ -1,5 +1,5 @@
-// from server: 57% by colin
-// roc 2007-08 0055fdb0  unit: RBX::VModelInstance::?$FilteredSelection  size: 47 bytes
+// from server: 70% by colin
+// roc 2007-08 0055fdb0  unit: seg_00550000  size: 47 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 0055fdb0
 //
 // 0055fdb0  8b442404             mov eax, dword ptr [esp + 4]
@@ -17,20 +17,24 @@
 // 0055fdd9  8bc6                 mov eax, esi
 // 0055fddb  5e                   pop esi
 // 0055fddc  c20400               ret 4
+// library rbxgs/v8datamodel\Selection.cpp (function ??0FilteredSelection@RBX@@QAE@XZ)
+
+// roc-lang: cpp
+// roc-cl: 50727
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: rbxgs v8datamodel/Selection.cpp
 
 struct FilteredSelection {
-    void construct(char*);
+    void* vftable;
+    void construct(const char* name);
+    FilteredSelection(const char* name);
 };
 
-extern "C" void __stdcall basic_string_ctor(void*, const char*);
-extern char sFilteredSelectionName[];
-extern char sFilteredSelectionVtable[];
-extern void base_construct();
+extern "C" void* __stdcall basic_string_ctor(void* self, const char* s);
+extern "C" void __cdecl construct_helper(FilteredSelection* self, const char* name);
 
-void FilteredSelection::construct(char* name)
-{
-    char buf[28];
-    basic_string_ctor(buf, sFilteredSelectionName);
-    base_construct();
-    *(void**)this = sFilteredSelectionVtable;
+FilteredSelection::FilteredSelection(const char* name) {
+    basic_string_ctor(this, "Duplicate");
+    construct_helper(this, name);
+    this->vftable = (void*)0x7a940c;
 }

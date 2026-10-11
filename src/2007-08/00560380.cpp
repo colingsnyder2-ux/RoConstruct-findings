@@ -1,4 +1,4 @@
-// from server: 49% by colin
+// from server: 50% by atomic.potato
 // roc 2007-08 00560380  unit: RBX::VModelInstance::?$FilteredSelection  size: 103 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 00560380
 //
@@ -49,7 +49,7 @@ extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 
 struct FilteredSelection
 {
-    void for_each_helper(int a, int b, int c, int d, int e, int f);
+    void __cdecl for_each_helper(int a, int b, int c, int d, int e, int f);
 };
 
 void FilteredSelection::for_each_helper(int a, int b, int c, int d, int e, int f)

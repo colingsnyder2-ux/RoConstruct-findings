@@ -1,5 +1,5 @@
-// from server: 53% by colin
+// from server: 100% by tester
 // roc-lang: cpp
 // roc-cl: 30729
-// roc-flags: /O1 /GS- /MD
-// roc-lib: xtp-11.2.2 Source/TabManager/XTPTabManager.cpp
+// roc-flags: /O2 /MD /GS /EHsc
+// roc-lib: xtp-11.2.2-shared-mfc Source/TabManager/XTPTabManager.cpp

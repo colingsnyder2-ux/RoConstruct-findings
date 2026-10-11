@@ -1,4 +1,4 @@
-// from server: 18% by colin
+// from server: 75% by colin
 // roc 2007-08 0064c940  unit: CXTPImageManagerIconSet  size: 28 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 0064c940
 //
@@ -15,31 +15,20 @@
 // 0064c95a  5e                   pop esi
 // 0064c95b  c3                   ret 
 
-struct CXTPImageManagerIconSet;
-
-struct Inner {
-    int method648600();
-};
-
 struct CXTPImageManagerIconSet {
     char pad[0x50];
-    Inner inner;
-    int method64bbc0();
-    Inner* method64c940();
+    int field_50;
+
+    int* sub_64c940();
 };
 
-int Inner::method648600() {
-    return 0;
-}
+extern "C" int __fastcall sub_648600(int* p);
+extern "C" void __fastcall sub_64bbc0(CXTPImageManagerIconSet* self);
 
-int CXTPImageManagerIconSet::method64bbc0() {
-    return 0;
-}
-
-Inner* CXTPImageManagerIconSet::method64c940() {
-    Inner* p = &inner;
-    if (p->method648600() != 0) {
-        method64bbc0();
-    }
+int* CXTPImageManagerIconSet::sub_64c940()
+{
+    int* p = &this->field_50;
+    if (sub_648600(p) != 0)
+        sub_64bbc0(this);
     return p;
 }

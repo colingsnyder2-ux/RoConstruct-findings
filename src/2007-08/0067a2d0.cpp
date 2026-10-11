@@ -1,4 +1,4 @@
-// from server: 71% by colin
+// from server: 100% by colin
 // roc 2007-08 0067a2d0  unit: CXTPControlComboBoxGalleryPopupBar  size: 42 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 0067a2d0
 //
@@ -15,14 +15,16 @@
 
 struct CXTPControlComboBoxGalleryPopupBar
 {
-    void Construct();
+    void func_0067a190();
+    CXTPControlComboBoxGalleryPopupBar* func_0067a2d0();
 };
 
-void CXTPControlComboBoxGalleryPopupBar::Construct()
+CXTPControlComboBoxGalleryPopupBar* CXTPControlComboBoxGalleryPopupBar::func_0067a2d0()
 {
-    ((void (__thiscall *)(CXTPControlComboBoxGalleryPopupBar *))0x67a190)(this);
-    *(int *)this = 0x7cd604;
-    *(int *)((char *)this + 0x54) = 0x7cd5f4;
-    *(int *)((char *)this + 0x5c) = 0x7cd594;
-    *(int *)((char *)this + 0xf4) = 1;
+    func_0067a190();
+    *(int*)this = 0x7cd604;
+    *(int*)((char*)this + 0x54) = 0x7cd5f4;
+    *(int*)((char*)this + 0x5c) = 0x7cd594;
+    *(int*)((char*)this + 0xf4) = 1;
+    return this;
 }

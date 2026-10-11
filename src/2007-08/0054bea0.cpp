@@ -1,4 +1,4 @@
-// from server: 57% by colin
+// from server: 78% by colin
 // roc 2007-08 0054bea0  unit: boost::iostreams::DUoutput::V?$basic_null_device::?$stream_buffer  size: 42 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 0054bea0
 //
@@ -16,26 +16,21 @@
 // 0054bec1  ff15fce47700         call dword ptr [0x77e4fc]
 // 0054bec7  c20400               ret 4
 
-struct streambuf_base {
+struct DUoutput_stream_buffer {
     char pad[0x44];
-    void* ptr44;
-    char pad2[0x54 - 0x44 - 4];
-    unsigned char flags54;
+    void* field_44;
+    char pad2[0x54 - 0x48];
+    unsigned char field_54;
+    void imbue(const void* loc);
 };
 
-extern "C" {
-    void* __stdcall sub_77e4f8(void*);
-    void __stdcall sub_77e4fc(void*);
-}
+extern "C" void __stdcall pubimbue_wrapper(void* buf, void* out, const void* loc);
+extern "C" void __stdcall locale_dtor(void* loc);
 
-struct DUoutput_stream_buffer : streambuf_base {
-    void pubimbue(const void* loc);
-};
-
-void DUoutput_stream_buffer::pubimbue(const void* loc) {
-    if ((flags54 & 1) && ptr44) {
-        void* tmp;
-        sub_77e4f8(&tmp);
-        sub_77e4fc(&tmp);
+void DUoutput_stream_buffer::imbue(const void* loc) {
+    if ((field_54 & 1) && field_44) {
+        char tmp[4];
+        pubimbue_wrapper(field_44, tmp, loc);
+        locale_dtor(tmp);
     }
 }

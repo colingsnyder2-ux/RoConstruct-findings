@@ -1,12 +1,4 @@
-// from server: 71% by why2
-extern "C" void __stdcall sub_0040C2D0(int);
-
-struct S_func_00660490 {
-    char pad[0x9c];
-    void func();
-};
-
-void S_func_00660490::func()
-{
-    sub_0040C2D0(0xa4cf00);
-}
+// from server: 100% by colin
+// roc-flags: /O2 /Ob2 /Oy /GF- /GS- /EHsc /MD
+struct B{void sub(void*);}; struct S{void func();};
+void S::func(){((B*)((char*)this+-156))->sub((void*)0xa4cf00);}

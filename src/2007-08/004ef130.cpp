@@ -1,4 +1,4 @@
-// from server: 95% by colin
+// from server: 100% by colin
 // roc 2007-08 004ef130  unit: RBX::Render::SceneManager  size: 100 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 004ef130
 //

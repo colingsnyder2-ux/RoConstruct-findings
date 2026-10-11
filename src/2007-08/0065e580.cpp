@@ -1,4 +1,4 @@
-// from server: 57% by colin
+// from server: 69% by colin
 // roc 2007-08 0065e580  unit: CXTPReportControl  size: 25 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 0065e580
 //
@@ -13,19 +13,17 @@
 // 0065e596  8bc2                 mov eax, edx
 // 0065e598  c3                   ret 
 
-struct Inner {
-    char pad[0x24];
-    int field24;
-};
-
-struct Outer {
+struct CXTPReportControl {
     char pad[0x54];
-    Inner* ptr54;
-    int method();
+    void* field_54;
+    int sub_65E580_helper();
 };
 
-extern "C" int __stdcall sub_6d3630(void* p);
+extern "C" int __stdcall sub_6D3630(void*, void*);
 
-int Outer::method() {
-    return sub_6d3630(this) != -1;
+int CXTPReportControl::sub_65E580_helper()
+{
+    void* p = field_54;
+    int r = sub_6D3630(this, *(void**)((char*)p + 0x24));
+    return r != -1;
 }

@@ -1,4 +1,4 @@
-// from server: 63% by colin
+// from server: 71% by colin
 // roc 2007-08 00458d00  unit: CRobloxWnd  size: 39 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 00458d00
 //
@@ -16,19 +16,19 @@
 // 00458d24  c20400               ret 4
 
 struct CRobloxWnd {
+    void sub_458C00();
+    void sub_63023E();
+    void sub_463AF0();
     char pad[0x74];
     void* field_74;
-    void sub_00458c00();
-    void sub_0063023e();
-    void sub_00463af0(int);
-    void func_00458d00(int);
+    void func(int);
 };
 
-void CRobloxWnd::func_00458d00(int arg)
-{
-    sub_00458c00();
-    sub_0063023e();
+void CRobloxWnd::func(int) {
+    sub_458C00();
+    sub_63023E();
     if (field_74 != 0) {
-        sub_00463af0(0);
+        field_74 = 0;
+        sub_463AF0();
     }
 }

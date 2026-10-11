@@ -1,4 +1,4 @@
-// from server: 74% by colin
+// from server: 76% by colin
 // roc 2007-08 0054e410  unit: std::D::V?$allocator::V?$basic_gzip_decompressor::?$stream_buffer  size: 48 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 0054e410
 //
@@ -16,24 +16,21 @@
 // 0054e437  ff15fce47700         call dword ptr [0x77e4fc]
 // 0054e43d  c20400               ret 4
 
-struct streambuf_holder
-{
+struct S {
     char pad[0xa0];
-    void* stream;
-    char pad2[0x0c];
-    unsigned int flags;
-    void imbue(const void* loc);
+    void* field_a0;
+    char pad2[0xc];
+    unsigned char field_b0;
+    void imbue(void* loc);
 };
 
-extern "C" void* __stdcall pubimbue_impl(void*, const void*);
-extern "C" void __stdcall locale_dtor(void*);
+extern "C" void __stdcall locale_dtor(void* loc);
+extern "C" void* __stdcall locale_ctor(void* loc, void* other);
 
-void streambuf_holder::imbue(const void* loc)
-{
-    if ((flags & 1) != 0 && stream != 0)
-    {
-        void* tmp;
-        pubimbue_impl(stream, loc);
-        locale_dtor(&tmp);
+void S::imbue(void* loc) {
+    if ((field_b0 & 1) != 0 && field_a0 != 0) {
+        char buf[4];
+        locale_ctor(buf, loc);
+        locale_dtor(buf);
     }
 }

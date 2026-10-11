@@ -1,3 +1,16 @@
+// from server: 100% by auto
+// roc 2007-08 0074b761  unit: seg_00740000  size: 24 bytes
+// Make this compile to the exact bytes below, then: roc check 2007-08 0074b761
+//
+// 0074b761  6830314300           push 0x433130
+// 0074b766  6a01                 push 1
+// 0074b768  6a18                 push 0x18
+// 0074b76a  8b45f0               mov eax, dword ptr [ebp - 0x10]
+// 0074b76d  053c020000           add eax, 0x23c
+// 0074b772  50                   push eax
+// 0074b773  e87f53eeff           call 0x630af7
+// 0074b778  c3                   ret 
+
 // from server: 79% by colin
 // roc 2007-08 00744fe4  unit: seg_00740000  size: 24 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 00744fe4

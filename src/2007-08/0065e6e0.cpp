@@ -1,4 +1,4 @@
-// from server: 76% by colin
+// from server: 100% by colin
 // roc 2007-08 0065e6e0  unit: CXTPReportColumn  size: 35 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 0065e6e0
 //
@@ -22,7 +22,7 @@ struct CXTPReportColumn {
     void SetWidth(int nWidth);
 };
 
-extern "C" void* __stdcall sub_006d3460(void* p);
+extern "C" void* __fastcall sub_006d3460(void* p);
 
 void CXTPReportColumn::SetWidth(int nWidth)
 {
@@ -30,6 +30,8 @@ void CXTPReportColumn::SetWidth(int nWidth)
     {
         m_nWidth = nWidth;
         void* p = sub_006d3460(m_pOwner);
-        (*(void (__stdcall **)(void*))(*(int*)p + 0x90))(p);
+        void** vtbl = *(void***)p;
+        void (__thiscall *fn)(void*) = (void (__thiscall*)(void*))vtbl[0x90 / 4];
+        fn(p);
     }
 }

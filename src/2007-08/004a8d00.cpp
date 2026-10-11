@@ -1,4 +1,4 @@
-// from server: 41% by colin
+// from server: 64% by colin
 // roc 2007-08 004a8d00  unit: RBX::Network::VClient::?$FactoryProduct  size: 37 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 004a8d00
 //
@@ -17,15 +17,15 @@
 // 004a8d24  c3                   ret 
 
 struct S {
-    void f(int, int);
+    void f(int, int, int);
 };
 
-extern void __cdecl func_004a0c60(void*, int);
-extern void __cdecl func_004a8160(void*);
+extern void __cdecl func_004a0c60(int*, int);
+extern void __cdecl func_004a8160(int*);
 
-void S::f(int a, int b)
+void S::f(int a, int b, int c)
 {
-    char buf[12];
-    func_004a0c60(buf, b);
-    func_004a8160(buf);
+    int tmp[3];
+    func_004a0c60(tmp, b);
+    func_004a8160(tmp);
 }

@@ -1,4 +1,4 @@
-// from server: 59% by colin
+// from server: 74% by colin
 // roc 2007-08 00461d50  unit: VCSecureHtmlView::?$CXTPCommandBarsSiteBase  size: 54 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 00461d50
 //
@@ -21,23 +21,19 @@
 // 00461d82  5e                   pop esi
 // 00461d83  c20400               ret 4
 
-extern "C" __declspec(dllimport) void* __stdcall LoadCursorA(void*, const char*);
+extern "C" void* __stdcall LoadCursorA(void*, const char*);
 extern "C" void* __stdcall sub_6304F6(void*, int);
 extern "C" void __stdcall sub_630664(void*, void*);
 
 struct VCSecureHtmlView {
-    char pad[0x20];
-    unsigned int flags;
-    void* cursor;
-    void __stdcall InitCursor(void* param);
+    void sub_461D50(void*);
 };
 
-void __stdcall VCSecureHtmlView::InitCursor(void* param)
+void VCSecureHtmlView::sub_461D50(void* arg)
 {
-    void* hcur = LoadCursorA(0, (const char*)0x7f00);
-    void* obj = sub_6304F6(hcur, 8);
-    obj = (void*)((char*)obj);
-    *(unsigned int*)((char*)obj + 0x20) |= 0x6000000;
-    *(void**)((char*)obj + 0x28) = hcur;
-    sub_630664(this, obj);
+    void* h = LoadCursorA(0, (const char*)0x7f00);
+    void* p = sub_6304F6(h, 8);
+    *(unsigned int*)((char*)arg + 0x20) |= 0x6000000;
+    *(void**)((char*)arg + 0x28) = p;
+    sub_630664(this, arg);
 }

@@ -1,4 +1,4 @@
-// from server: 88% by colin
+// from server: 100% by colin
 // roc 2007-08 00661820  unit: PAVCXTPReportRecord::?$CArray  size: 47 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 00661820
 //
@@ -22,19 +22,20 @@
 // 0066184b  5e                   pop esi
 // 0066184c  c20400               ret 4
 
-struct S_func_00661820 {
+struct S_00661820 {
     void f(int);
+    int sub_00663c50();
+    int sub_00661700(int);
 };
 
-extern "C" int __fastcall sub_00663C50(S_func_00661820* self);
-extern "C" void* __fastcall sub_00661700(S_func_00661820* self, int index);
-
-void S_func_00661820::f(int idx)
+void S_00661820::f(int a)
 {
-    int i = idx;
-    while (i < sub_00663C50(this)) {
-        void* p = sub_00661700(this, i);
-        *(int*)((char*)p + 0x4c) = i;
-        i++;
+    int i = a;
+    if (i < sub_00663c50()) {
+        do {
+            int* p = (int*)sub_00661700(i);
+            p[0x13] = i;
+            i++;
+        } while (i < sub_00663c50());
     }
 }

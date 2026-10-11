@@ -1,4 +1,4 @@
-// from server: 55% by colin
+// from server: 100% by colin
 // roc 2007-08 00448760  unit: CRbxDocTemplate  size: 36 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 00448760
 //
@@ -17,13 +17,17 @@
 // 00448781  c20800               ret 8
 
 struct CRbxDocTemplate {
-    void sub_448760(int, int);
+    void sub_630796(int, int);
+    void func(int, int);
 };
 
-extern void sub_448120(int);
-extern void sub_630796();
+struct GlobalObj {
+    void sub_448120(int);
+};
 
-void CRbxDocTemplate::sub_448760(int a, int b) {
-    sub_448120(1);
-    sub_630796();
+extern GlobalObj g_obj;
+
+void CRbxDocTemplate::func(int a, int b) {
+    g_obj.sub_448120(1);
+    sub_630796(a, b);
 }

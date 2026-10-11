@@ -1,4 +1,4 @@
-// from server: 93% by colin
+// from server: 100% by colin
 // roc 2007-08 006faa00  unit: XTPPropertyGridPaintThemes::CXTPPropertyGridDelphiTheme  size: 40 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 006faa00
 //
@@ -22,15 +22,18 @@ struct CXTPPropertyGridDelphiTheme {
     void* field_34;
 };
 
+struct Helper {
+    void* method(int);
+};
+
 extern "C" void __stdcall sub_6f9380();
 extern "C" void* __stdcall sub_668f70();
-extern "C" void* __stdcall sub_668770(void*, int);
 
 void CXTPPropertyGridDelphiTheme::Init()
 {
     sub_6f9380();
-    void* p = sub_668f70();
-    void* q = sub_668770(p, 0xf);
+    Helper* p = (Helper*)sub_668f70();
+    void* q = p->method(0xf);
     void* r = *(void**)((char*)this + 0x34);
     *(void**)((char*)r + 0x74) = q;
     void* s = *(void**)((char*)this + 0x34);

@@ -1,15 +1,5 @@
-// from server: 86% by why2
-struct Viewport {
-    int getActualWidth();
-};
-
-struct AdornRbxGfx {
-    char pad[4];
-    Viewport* field4;
-    int getWidth();
-};
-
-int AdornRbxGfx::getWidth() {
-    Viewport* p = *(Viewport**)((char*)field4 + 0x2c);
-    return p->getActualWidth();
-}
+// from server: 100% by colin
+// roc-flags: /O2 /GS- /EHsc /MD
+struct S{char pad[0x4]; void* vp; int f() const;};
+typedef int(__thiscall* Fn)(void*); extern Fn fn;
+int S::f()const{return fn(*(void**)((char*)vp+0x2c));}

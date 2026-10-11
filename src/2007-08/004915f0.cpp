@@ -1,5 +1,5 @@
-// from server: 68% by colin
-// roc 2007-08 004915f0  unit: seg_00490000  size: 47 bytes
+// from server: 100% by colin
+// roc 2007-08 004915f0  unit: RBX::Network::VPlayer::?$SignalDesc  size: 47 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 004915f0
 //
 // 004915f0  56                   push esi
@@ -26,11 +26,12 @@
 extern "C" int __cdecl sub_486830(int);
 extern "C" char __cdecl sub_49AF30(int, int);
 
-bool __cdecl sub_4915F0(int a, int b)
+int __cdecl sub_4915F0(int a, int b)
 {
-    if (!sub_486830(a))
-        return false;
-    if (sub_49AF30(a, b))
-        return false;
-    return true;
+    if (sub_486830(a) != 0) {
+        if (sub_49AF30(a, b) == 0) {
+            return 1;
+        }
+    }
+    return 0;
 }

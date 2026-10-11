@@ -1,4 +1,4 @@
-// from server: 74% by colin
+// from server: 98% by colin
 // roc 2007-08 0055ece0  unit: RBX::FollowCameraCommand  size: 35 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 0055ece0
 //
@@ -13,27 +13,29 @@
 // 0055ed00  8ac1                 mov al, cl
 // 0055ed02  c3                   ret 
 
-struct FollowCameraCommand {
-    char pad0[0xc];
-    void* m_ptr;
+struct Inner {
+    char pad[0x228];
+    int field228;
+};
+
+struct Outer {
+    char pad[0xc];
+    Inner* ptr;
+};
+
+struct S {
+    char pad[0xc];
+    Inner* inner;
     bool f();
 };
 
-struct Inner {
-    char pad0[0x228];
-    virtual void dummy();
-    virtual void* f();
-};
-
-struct Obj {
-    char pad0[0x18c];
-    int m_state;
-};
-
-bool FollowCameraCommand::f()
+bool S::f()
 {
-    Inner* inner = (Inner*)m_ptr;
-    void* result = ((Inner*)((char*)inner + 0x228))->f();
-    Obj* obj = (Obj*)result;
-    return obj->m_state == 4;
+    Inner* p = this->inner;
+    int* q = (int*)((char*)p + 0x228);
+    int v = *q;
+    typedef int (__thiscall *Fn)(void*, int);
+    Fn fn = *(Fn*)(v + 4);
+    int r = fn(q, v);
+    return *(int*)(r + 0x18c) == 4;
 }

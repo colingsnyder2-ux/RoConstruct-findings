@@ -1,4 +1,4 @@
-// from server: 62% by colin
+// from server: 76% by colin
 // roc 2007-08 005f92d0  unit: RBX::VDebrisService::?$FactoryProduct  size: 59 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 005f92d0
 //
@@ -26,24 +26,22 @@
 // 005f930a  c3                   ret 
 
 struct type_info {
-    bool operator==(const type_info&) const;
+    bool __thiscall operator==(const type_info&) const;
 };
 
 struct FactoryProduct {
-    static type_info typeInfo;
-    static void* createInstance(int, void*, int);
-    void* createByName(int, void*, int);
+    void* func(int a, int b);
 };
 
-type_info FactoryProduct::typeInfo;
+extern "C" void* __cdecl sub_5F9250(void*, int, int);
 
-void* FactoryProduct::createByName(int a, void* b, int c) {
-    if (c == 2) {
-        void* p = b;
-        if (typeInfo == *(type_info*)0x8b3bc0) {
-            return p;
-        }
-        return 0;
+void* FactoryProduct::func(int a, int b)
+{
+    if (b == 2) {
+        type_info* ti = (type_info*)0x8B3BC0;
+        bool r = ti->operator==(*(const type_info*)&a);
+        return (void*)(r ? a : 0);
     }
-    return createInstance(a, b, c);
+    char local = 0;
+    return sub_5F9250((void*)a, b, *(int*)&local);
 }

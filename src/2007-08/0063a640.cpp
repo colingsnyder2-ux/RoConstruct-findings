@@ -1,5 +1,5 @@
-// from server: 92% by colin
-// roc 2007-08 0063a640  unit: CXTPControl  size: 32 bytes
+// from server: 100% by colin
+// roc 2007-08 0063a640  unit: seg_00630000  size: 32 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 0063a640
 //
 // 0063a640  8b442408             mov eax, dword ptr [esp + 8]
@@ -18,14 +18,14 @@
 
 struct CXTPControl
 {
-    CXTPControl* sub_63A000(CXTPControl* p, int a, int b);
+    CXTPControl* sub_63A000(CXTPControl* p, int a, int b, int c);
     void sub_63D450();
     CXTPControl* func_0063A640(CXTPControl* p, int a);
 };
 
 CXTPControl* CXTPControl::func_0063A640(CXTPControl* p, int a)
 {
-    CXTPControl* r = this->sub_63A000(p, a, 0);
+    CXTPControl* r = this->sub_63A000(p, a, (int)this, 0);
     r->sub_63D450();
     return p;
 }

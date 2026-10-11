@@ -1,4 +1,4 @@
-// from server: 80% by colin
+// from server: 100% by colin
 // roc 2007-08 004667c0  unit: CWebToolbox  size: 31 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 004667c0
 //
@@ -14,19 +14,18 @@
 // 004667db  5e                   pop esi
 // 004667dc  c20400               ret 4
 
-struct CWebToolbox
-{
+struct CWebToolbox {
     char pad[0xf4];
     void* field_f4;
-    void method_004667c0(int);
+    void sub_630004();
+    void sub_630124(int);
+    void func_004667c0(int);
 };
 
-extern void __stdcall sub_00630004(void*);
-extern void __stdcall sub_00630124(void*, int);
-
-void CWebToolbox::method_004667c0(int arg)
+void CWebToolbox::func_004667c0(int arg)
 {
-    if (field_f4 != 0)
-        sub_00630004(field_f4);
-    sub_00630124(this, 0);
+    if (field_f4 != 0) {
+        ((CWebToolbox*)field_f4)->sub_630004();
+    }
+    sub_630124(0);
 }

@@ -1,4 +1,4 @@
-// from server: 58% by colin
+// from server: 61% by colin
 // roc 2007-08 0055fd80  unit: RBX::VModelInstance::?$FilteredSelection  size: 47 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 0055fd80
 //
@@ -19,17 +19,14 @@
 // 0055fdac  c20400               ret 4
 
 struct FilteredSelection {
-    void construct(char*);
+    FilteredSelection(const char*);
 };
 
-extern "C" void __stdcall G1_func_00791950();
-extern "C" void __stdcall G2_func_0077e698();
-extern void G3_func_0055fc40();
+extern "C" void __stdcall std_string_ctor(void*, const char*);
+extern void __stdcall base_ctor();
 
-void FilteredSelection::construct(char* name)
-{
-    G1_func_00791950();
-    G2_func_0077e698();
-    G3_func_0055fc40();
+FilteredSelection::FilteredSelection(const char* name) {
+    std_string_ctor(this, name);
+    base_ctor();
     *(int*)this = 0x7a93f4;
 }

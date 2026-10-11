@@ -1,4 +1,4 @@
-// from server: 87% by colin
+// from server: 100% by colin
 // roc 2007-08 004203f0  unit: CRobloxTreeCtrl  size: 57 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 004203f0
 //
@@ -24,19 +24,17 @@
 // 00420426  c20800               ret 8
 
 extern "C" __declspec(dllimport) void *__stdcall SendMessageA(void *, unsigned int, unsigned int, long);
-extern "C" void *__cdecl sub_6301C0(void *);
+extern "C" void *__stdcall sub_6301C0(void *);
 
 struct CRobloxTreeCtrl {
     char pad[0x20];
-    void *field_0x20;
-    void sub_4203F0(unsigned int, unsigned int *);
+    void *field_20;
+    void method(int, int *);
 };
 
-void CRobloxTreeCtrl::sub_4203F0(unsigned int a1, unsigned int *a2) {
-    void *hWnd = this->field_0x20;
-    void *result = (void *)SendMessageA(hWnd, 0x110F, 0, 0);
-    void *obj = sub_6301C0(result);
-    void *hWnd2 = *(void **)((char *)obj + 0x20);
-    SendMessageA(hWnd2, 0xC5, 0x20, 0);
-    *a2 = 0;
+void CRobloxTreeCtrl::method(int a, int *b) {
+    void *h = SendMessageA(field_20, 0x110f, 0, 0);
+    void *r = sub_6301C0(h);
+    SendMessageA(*(void **)((char *)r + 0x20), 0xc5, 0x20, 0);
+    *b = 0;
 }

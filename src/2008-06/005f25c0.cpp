@@ -1,4 +1,4 @@
-// from server: 25% by colin
+// from server: 100% by Cezant64gamejr
 // roc 2008-06 005f25c0  unit: boost::iostreams::Uinput::V?$chain::?$chain_client  size: 11 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 005f25c0
 //
@@ -7,30 +7,20 @@
 // 005f25c6  c6410100             mov byte ptr [ecx + 1], 0
 // 005f25ca  c3                   ret 
 
-struct Uinput {
-    struct V {
-        struct chain {
-            struct chain_client {
-                char flag;
-                void setFlag() {
-                    if (this->flag == 0) {
-                        this->flag = 1;
-                    } else {
-                        this->flag = 0;
-                    }
-                }
-            };
-        };
-    };
+struct S {
+    void f() {
+        if (this->byteAtOffset1() != 0) {
+            this->byteAtOffset1() = 0;
+        }
+    }
+
+    unsigned char& byteAtOffset1() {
+        return *(unsigned char*)((char*)this + 1);
+    }
 };
 
-extern "C" __declspec(dllimport) void __stdcall SetFlag(Uinput::V::chain::chain_client* client);
-
-void func_005f25c0(Uinput::V::chain::chain_client* client) {
-    if (client->flag == 0) {
-        client->flag = 1;
-    } else {
-        client->flag = 0;
-    }
-    SetFlag(client);
+int main() {
+    S s;
+    s.f();
+    return 0;
 }

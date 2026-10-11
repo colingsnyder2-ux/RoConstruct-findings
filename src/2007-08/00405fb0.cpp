@@ -1,4 +1,4 @@
-// from server: 64% by colin
+// from server: 68% by colin
 // roc 2007-08 00405fb0  unit: UIEnumConnections::V?$CComEnum::?$CComObject  size: 58 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 00405fb0
 //
@@ -28,21 +28,19 @@
 
 struct UIEnumConnections {
     char pad[0xc];
-    int* begin;
-    int* end;
-    int Set(int count);
+    int field_c;
+    int field_10;
+    int method(int, int);
 };
 
-int UIEnumConnections::Set(int count) {
-    if (count == 0) {
+int UIEnumConnections::method(int a, int b)
+{
+    if (b == 0)
         return 0x80070057;
-    }
-    int* p = this->end;
-    int avail = (int)((char*)this->begin - (char*)p) >> 3;
-    int n = count;
-    if ((unsigned)count > (unsigned)avail) {
-        n = avail;
-    }
-    this->end = p + n * 2;
-    return (count != n) ? 1 : 0;
+    int start = field_c;
+    int end = field_10;
+    int count = (end - start) >> 3;
+    int idx = (unsigned)b <= (unsigned)count ? b : count;
+    field_10 = start + idx * 8;
+    return b != idx;
 }

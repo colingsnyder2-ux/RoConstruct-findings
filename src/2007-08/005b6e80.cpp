@@ -1,4 +1,4 @@
-// from server: 53% by colin
+// from server: 100% by colin
 // roc 2007-08 005b6e80  unit: RBX::$03W4SurfaceType::?$SurfaceGetSet  size: 50 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 005b6e80
 //
@@ -22,23 +22,30 @@
 // 005b6eae  5e                   pop esi
 // 005b6eaf  c20400               ret 4
 
-struct SurfaceGetSet {
-    int get;
-    int set;
-    void setValue(int* instance, const int& value) const;
+struct DescribedBase {
+    void* vtable;
 };
 
-extern "C" int* __stdcall sub_573890(int* p);
+struct GetSet {
+    void* vtable;
+    void* get;
+    void* set;
+};
 
-void SurfaceGetSet::setValue(int* instance, const int& value) const
+struct SurfaceGetSet : GetSet {
+    void setValue(DescribedBase* instance) const;
+};
+
+extern "C" void* __fastcall sub_573890(void* p);
+
+void SurfaceGetSet::setValue(DescribedBase* instance) const
 {
-    int* p;
+    void* p;
     if (instance != 0) {
-        p = sub_573890(instance - 1);
+        p = sub_573890((char*)instance - 4);
     } else {
         p = sub_573890(0);
     }
-    int* obj = p + 2;
-    int fn = this->set;
-    ((void (__thiscall*)(int*, int, const int&))fn)(obj, 0, value);
+    void* fn = *(void**)((char*)this + 4);
+    ((void (__fastcall*)(void*))fn)((char*)p + 8);
 }

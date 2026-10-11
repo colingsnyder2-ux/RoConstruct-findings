@@ -1,16 +1,5 @@
-// from server: 80% by colin
-struct CXTPTabManagerItem
-{
-    char pad[0x60];
-    void* field_60;
-    void* method_006fd120(void* arg);
-};
-
-void* CXTPTabManagerItem::method_006fd120(void* arg)
-{
-    void* p = field_60;
-    void** vtbl = *(void***)p;
-    void* fn = vtbl[3];
-    ((void (__thiscall*)(void*, void*, void*))fn)(p, arg, this);
-    return arg;
-}
+// from server: 100% by tester
+// roc-lang: cpp
+// roc-cl: 30729
+// roc-flags: /O2 /MD /GS /EHsc
+// roc-lib: xtp-11.2.2-shared-mfc Source/TabManager/XTPTabManager.cpp

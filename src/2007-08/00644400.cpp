@@ -1,4 +1,4 @@
-// from server: 73% by colin
+// from server: 74% by colin
 // roc 2007-08 00644400  unit: CXTPCommandBar  size: 33 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 00644400
 //
@@ -16,12 +16,17 @@
 // 0064441f  5e                   pop esi
 // 00644420  c3                   ret 
 
-struct CXTPCommandBar {
-    void sub_644400();
+struct CXTPCommandBar
+{
+    void func_00644400();
 };
 
-void CXTPCommandBar::sub_644400() {
-    if (*(int*)((char*)this + 0x128) == 0) {
-        (*(void (__thiscall**)(void*, int, int))(*(int*)this + 0x148))(this, -1, 0);
-    }
+void CXTPCommandBar::func_00644400()
+{
+    if (*(unsigned char*)((char*)this + 0x00) != 0)
+        return;
+    if (*(int*)((char*)this + 0x128) != 0)
+        return;
+    void (__thiscall *fn)(CXTPCommandBar*, int, int) = *(void (__thiscall **)(CXTPCommandBar*, int, int))((*(char**)this) + 0x148);
+    fn(this, -1, 0);
 }

@@ -1,4 +1,4 @@
-// from server: 77% by colin
+// from server: 79% by colin
 // roc 2007-08 0065e4e0  unit: CXTPReportControl  size: 55 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 0065e4e0
 //
@@ -27,12 +27,13 @@ struct CXTPReportControl {
     void sub_65e4e0();
 };
 
-extern void* __stdcall sub_6d3460(void*);
-extern char* __stdcall sub_65ed00(void*);
+extern void* __fastcall sub_6d3460(void*);
+extern char* __fastcall sub_65ed00(void*);
 
 void CXTPReportControl::sub_65e4e0()
 {
-    if (*(int*)((char*)this + 0x94) == -1)
+    int v = *(int*)((char*)this + 0x94);
+    if (v == -1)
     {
         void* p = sub_6d3460(*(void**)((char*)this + 0x54));
         char* q = sub_65ed00(p);

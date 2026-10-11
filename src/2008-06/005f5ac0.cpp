@@ -1,4 +1,4 @@
-// from server: 92% by colin
+// from server: 100% by atomic.potato
 // roc 2008-06 005f5ac0  unit: std::D::V?$allocator::V?$basic_gzip_decompressor::?$stream_buffer  size: 13 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 005f5ac0
 //
@@ -7,13 +7,12 @@
 // 005f5ac9  83e001               and eax, 1
 // 005f5acc  c3                   ret 
 
-struct S {
+struct S
+{
     int f();
 };
 
-int S::f() {
-    int eax = *(int*)((char*)this + 0xb0);
-    eax >>= 4;
-    eax &= 1;
-    return eax;
+int S::f()
+{
+    return (*(unsigned int*)((char*)this + 0xb0) >> 4) & 1;
 }

@@ -1,4 +1,4 @@
-// from server: 74% by colin
+// from server: 100% by colin
 // roc 2007-08 006f8f10  unit: CXTPPropertyGridPaintManager  size: 40 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 006f8f10
 //
@@ -17,20 +17,23 @@
 // 006f8f35  c20400               ret 4
 
 struct CXTPPropertyGridPaintManager {
-    void DrawItem(int);
+    char pad[0x20];
+    void* field_0x20;
+
+    void func_006f8f10(void* arg);
 };
 
-extern "C" void* __fastcall sub_682A20(void*);
+extern "C" void* __fastcall sub_682a20(void*);
 extern "C" char __fastcall sub_738412(void*);
 
-void CXTPPropertyGridPaintManager::DrawItem(int arg)
+void CXTPPropertyGridPaintManager::func_006f8f10(void* arg)
 {
-    void* p = sub_682A20(*(void**)((char*)this + 0x20));
+    void* p = sub_682a20(field_0x20);
     char flags = sub_738412(p);
     if (flags & 0x20) {
-        void* obj = *(void**)((char*)&arg + 0x14);
-        void** vtbl = *(void***)obj;
-        void (*fn)(void*) = (void (*)(void*))vtbl[0x74 / 4];
-        fn(obj);
+        void* v = *(void**)((char*)arg + 0x14);
+        void** vtbl = *(void***)v;
+        void (__stdcall *fn)(void*) = (void (__stdcall *)(void*))vtbl[0x74 / 4];
+        fn(arg);
     }
 }

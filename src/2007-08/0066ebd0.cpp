@@ -1,4 +1,4 @@
-// from server: 83% by colin
+// from server: 100% by colin
 // roc 2007-08 0066ebd0  unit: CXTPDockingPaneManager  size: 34 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 0066ebd0
 //
@@ -18,19 +18,20 @@
 // 0066ebf1  c3                   ret 
 
 struct CXTPDockingPaneManager {
-    void func_0066ebd0();
+    void f();
 };
 
-extern "C" void* __cdecl func_0066e160();
-extern "C" void __cdecl func_0068fc90(void*);
+extern "C" void* __stdcall func_0066e160();
+extern "C" void __fastcall func_0068fc90(void*);
 
-void CXTPDockingPaneManager::func_0066ebd0()
+void CXTPDockingPaneManager::f()
 {
     void* p = func_0066e160();
     void* node = *(void**)((char*)p + 4);
     while (node != 0) {
         void* cur = node;
+        void* arg = *(void**)((char*)cur + 8);
         node = *(void**)cur;
-        func_0068fc90(*(void**)((char*)cur + 8));
+        func_0068fc90(arg);
     }
 }

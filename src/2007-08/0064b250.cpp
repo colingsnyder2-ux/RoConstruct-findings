@@ -1,4 +1,4 @@
-// from server: 92% by colin
+// from server: 100% by colin
 // roc 2007-08 0064b250  unit: CXTPImageManagerIcon  size: 35 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 0064b250
 //
@@ -20,9 +20,10 @@ struct CXTPImageManagerIcon {
     char pad1[4];
     int m_bLoaded;
     void sub_648640();
-    int sub_649a10(int);
     void Init(int);
 };
+
+extern "C" int __cdecl sub_649a10(int);
 
 void CXTPImageManagerIcon::Init(int nWidth)
 {

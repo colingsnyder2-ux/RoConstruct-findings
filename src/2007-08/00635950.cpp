@@ -1,4 +1,4 @@
-// from server: 95% by colin
+// from server: 100% by colin
 // roc 2007-08 00635950  unit: CXTPCommandBarsOptions  size: 46 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 00635950
 //
@@ -28,10 +28,10 @@
 struct CXTPCommandBarsOptions
 {
     void Add(int);
-    void AddRange(int, int*);
+    void AddRange(int* items, int count);
 };
 
-void CXTPCommandBarsOptions::AddRange(int count, int* items)
+void CXTPCommandBarsOptions::AddRange(int* items, int count)
 {
     int i = 0;
     if (count > 0)

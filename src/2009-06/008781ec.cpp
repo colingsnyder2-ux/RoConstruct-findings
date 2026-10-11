@@ -1,12 +1,5 @@
-// from server: 60% by atomic.potato
-extern "C" void __cdecl sub_0071a57a(int);
-
-struct S
-{
-};
-
-int __cdecl f(int, int value)
-{
-    sub_0071a57a(*(int *)((char *)value - 4) ^ value);
-    return 0x9b6280;
-}
+// from server: 100% by tester
+// roc-lang: cpp
+// roc-cl: 30729
+// roc-flags: /O2 /MD /GS /EHsc
+// roc-lib: xtp-11.2.2-shared-mfc Source/DockingPane/XTPDockingPaneManager.cpp

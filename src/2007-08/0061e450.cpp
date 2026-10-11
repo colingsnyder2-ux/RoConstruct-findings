@@ -1,4 +1,4 @@
-// from server: 24% by colin
+// from server: 69% by colin
 // roc 2007-08 0061e450  unit: RBX::ScoreHud  size: 67 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 0061e450
 //
@@ -30,29 +30,29 @@
 // 0061e492  c3                   ret 
 
 struct ScoreHud {
-    void swapRange(int* first, int* last);
+    void swapRange(int* first, int* last, int* other);
 };
 
-void ScoreHud::swapRange(int* first, int* last)
+void ScoreHud::swapRange(int* first, int* last, int* other)
 {
-    int* a = first;
-    int* b = last;
-    if (a == b)
+    if (first == last)
         return;
     do {
-        int tmp = a[-3];
-        int tmp2 = b[-3];
-        a -= 4;
-        b -= 4;
-        b[1] = tmp;
-        a[1] = tmp2;
-        int tmp3 = a[2];
-        int tmp4 = b[2];
-        b[2] = tmp3;
-        a[2] = tmp4;
-        int tmp5 = a[3];
-        int tmp6 = b[3];
-        b[3] = tmp5;
-        a[3] = tmp6;
-    } while (a != first);
+        int* a = first - 4;
+        int* b = other - 4;
+        first = a;
+        other = b;
+        int t0 = a[1];
+        int t1 = b[1];
+        a[1] = t1;
+        b[1] = t0;
+        int t2 = a[2];
+        int t3 = b[2];
+        a[2] = t3;
+        b[2] = t2;
+        int t4 = a[3];
+        int t5 = b[3];
+        a[3] = t5;
+        b[3] = t4;
+    } while (first != last);
 }

@@ -1,14 +1,4 @@
-// from server: 76% by why2
-struct S_func_0067e6a0 {
-    char pad0[0xb8];
-    void *m_ptr;
-    void f();
-};
-
-void S_func_0067e6a0::f()
-{
-    void **p = (void **)m_ptr;
-    void **vtable = (void **)*p;
-    void (*fn)() = (void (*)())vtable[2];
-    fn();
-}
+// from server: 100% by colin
+// roc-flags: /O2 /Ob2 /Oy /GF- /GS- /EHsc /MD
+struct B{virtual void v0();virtual void v1();virtual void v2();}; struct S{char pad[0xb8]; B* p; void f();};
+void S::f(){p->v2();}

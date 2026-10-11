@@ -1,5 +1,4 @@
-// from server: 99% by colin
-// roc-lang: c
-// roc-cl: 21022
+// from server: 100% by colin
 // roc-flags: /O2 /GS- /MD
-// roc-lib: lua-5.1.4 lmathlib.c
+extern double get(void*,int); extern void push(void*,double); extern double g;
+int func(void* s){double x=get(s,1); x*=g; push(s,x); return 1;}

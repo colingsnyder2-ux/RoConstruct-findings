@@ -1,4 +1,4 @@
-// from server: 69% by colin
+// from server: 72% by colin
 // roc 2007-08 0042a4b0  unit: MainLogManager  size: 36 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 0042a4b0
 //
@@ -24,6 +24,7 @@ struct LogManager {
 struct MainLogManager {
     char pad0[4];
     LogManager mgr;
+    char pad1[4];
     unsigned long threadID;
     int getLog();
 };

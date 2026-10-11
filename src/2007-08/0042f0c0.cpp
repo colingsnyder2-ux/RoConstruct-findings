@@ -1,4 +1,4 @@
-// from server: 46% by colin
+// from server: 100% by tester
 // roc 2007-08 0042f0c0  unit: CWrapperView  size: 24 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 0042f0c0
 //
@@ -10,16 +10,14 @@
 // 0042f0d2  89442404             mov dword ptr [esp + 4], eax
 // 0042f0d6  ffe2                 jmp edx
 
-struct CWrapperView {
+struct CMainFrame {
     char pad[0xec];
-    unsigned char field_ec;
-    void invoke(void* arg);
+    unsigned char field_0xe0;
+    void method(int*);
 };
 
-void CWrapperView::invoke(void* arg)
-{
-    unsigned char value = field_ec;
-    void** vtbl = *(void***)arg;
-    void (__stdcall *fn)(void*, unsigned char) = (void (__stdcall *)(void*, unsigned char))vtbl[1];
-    fn(arg, value);
+void CMainFrame::method(int* p) {
+    unsigned char v = field_0xe0;
+    void (__thiscall *fn)(int*, unsigned char) = *(void (__thiscall **)(int*, unsigned char))(*(int*)p + 4);
+    fn(p, v);
 }

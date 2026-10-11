@@ -1,4 +1,4 @@
-// from server: 95% by colin
+// from server: 100% by colin
 // roc 2007-08 0068f230  unit: CXTPDockingPane  size: 65 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 0068f230
 //
@@ -48,9 +48,9 @@ void CXTPDockingPane::Show(int nCmdShow) {
         Inner* p = &field_20;
         void* obj = p->GetSomething();
         void* vtable = *(void**)obj;
-        typedef void (__thiscall *Fn)(void*, void*, int);
+        typedef void (__thiscall *Fn)(void*, int, void*);
         Fn fn = *(Fn*)((char*)vtable + 0x140);
-        fn(obj, this, 1);
+        fn(obj, 1, this);
     }
     void* hwnd = *(void**)((char*)this + 0xb4);
     if (hwnd) {

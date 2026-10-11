@@ -1,4 +1,4 @@
-// from server: 79% by colin
+// from server: 100% by colin
 // roc 2007-08 006e0bd0  unit: CXTPDockingPaneTabbedContainer  size: 51 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 006e0bd0
 //
@@ -15,28 +15,22 @@
 // 006e0bfb  e94af3f4ff           jmp 0x62ff4a
 // 006e0c00  c20400               ret 4
 
-struct CXTPDockingPaneTabbedContainer
-{
-    char pad_0000[0x14];
-    int  m_field14;
-    int  m_field18;
-    char pad_001c[0x140 - 0x1c];
-    int  m_field140;
-
-    void Assign(CXTPDockingPaneTabbedContainer* other);
+struct CXTPDockingPaneTabbedContainer {
+    char pad[0x14];
+    int field_14;
+    char pad2[0x140 - 0x18];
+    int field_140;
+    void sub_62ff4a(int);
+    void func_006e0bd0(int*);
 };
 
-extern "C" void __stdcall sub_62ff4a(void* p);
-
-void CXTPDockingPaneTabbedContainer::Assign(CXTPDockingPaneTabbedContainer* other)
+void CXTPDockingPaneTabbedContainer::func_006e0bd0(int* param)
 {
-    m_field14 = other->m_field14;
-    m_field140 = 1;
-    if (other->m_field18 == 5)
-    {
-        if (*(int*)((char*)this - 0x34) != 0)
-        {
-            sub_62ff4a((char*)this - 0x54);
+    field_14 = param[5];
+    field_140 = 1;
+    if (param[6] == 5) {
+        if (*(int*)((char*)this - 0x34) != 0) {
+            ((CXTPDockingPaneTabbedContainer*)((char*)this - 0x54))->sub_62ff4a(0);
         }
     }
 }

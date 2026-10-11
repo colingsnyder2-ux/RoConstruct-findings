@@ -1,4 +1,4 @@
-// from server: 45% by colin
+// from server: 100% by colin
 // roc 2007-08 0065e6b0  unit: CXTPReportColumn  size: 43 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 0065e6b0
 //
@@ -21,22 +21,32 @@
 // 0065e6d9  5e                   pop esi
 // 0065e6da  c3                   ret 
 
-struct CXTPReportColumn {
+struct CXTPReportColumn
+{
     char pad[0x54];
     void* field_54;
-    bool IsVisible() const;
+    int isSomething();
 };
 
-extern "C" void* __stdcall sub_6D3460(void*);
+struct Helper
+{
+    int __thiscall getSomething();
+};
 
-bool CXTPReportColumn::IsVisible() const {
-    if (field_54 == 0)
-        return false;
-    void* p = sub_6D3460(field_54);
-    if (p == 0)
-        return false;
-    void* q = sub_6D3460(field_54);
-    if (*(void**)((char*)q + 0x38) != (void*)this)
-        return false;
-    return true;
+extern int __fastcall sub_006d3460(void*);
+
+int CXTPReportColumn::isSomething()
+{
+    void* p = field_54;
+    if (p != 0)
+    {
+        if (sub_006d3460(p) != 0)
+        {
+            void* q = field_54;
+            int r = sub_006d3460(q);
+            if (*(int*)(r + 0x38) == (int)this)
+                return 1;
+        }
+    }
+    return 0;
 }

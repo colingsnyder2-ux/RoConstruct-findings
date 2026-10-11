@@ -1,4 +1,4 @@
-// from server: 37% by colin
+// from server: 47% by colin
 // roc 2007-08 00619990  unit: RBX::PointToPointBreakConnector  size: 58 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 00619990
 //
@@ -32,7 +32,7 @@ struct Point {
     float z;
 };
 
-struct RBX_PointToPointBreakConnector {
+struct PointToPointBreakConnector {
     char pad0[8];
     Point* point0;
     Point* point1;
@@ -40,16 +40,14 @@ struct RBX_PointToPointBreakConnector {
     float potentialEnergy();
 };
 
-float RBX_PointToPointBreakConnector::potentialEnergy()
+float PointToPointBreakConnector::potentialEnergy()
 {
-    float dx = point1->x - point0->x;
-    float dy = point1->y - point0->y;
-    float dz = point1->z - point0->z;
+    Point* p0 = point0;
+    Point* p1 = point1;
+    float dx = p1->x - p0->x;
+    float dy = p1->y - p0->y;
+    float dz = p1->z - p0->z;
     float dist = dx * dx + dy * dy + dz * dz;
-    float len = 0.0f;
-    len = dist;
-    float result = len;
-    result = result * k;
-    result = result * 0.5f;
-    return result;
+    float len = dist;
+    return k * len * 0.5f;
 }

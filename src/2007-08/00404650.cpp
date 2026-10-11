@@ -1,70 +1,46 @@
-// from server: 78% by colin
-// roc 2007-08 00404650  unit: ATL::CRegObject  size: 77 bytes
-// Make this compile to the exact bytes below, then: roc check 2007-08 00404650
+// from server: 100% by tester
+// roc 2007-03 00404550  unit: seg_00400000  size: 77 bytes
+// Make this compile to the exact bytes below, then: roc check 2007-03 00404550
 //
-// 00404650  56                   push esi
-// 00404651  57                   push edi
-// 00404652  8b7c240c             mov edi, dword ptr [esp + 0xc]
-// 00404656  8b07                 mov eax, dword ptr [edi]
-// 00404658  50                   push eax
-// 00404659  8bf1                 mov esi, ecx
-// 0040465b  e800f2ffff           call 0x403860
-// 00404660  84c0                 test al, al
-// 00404662  7532                 jne 0x404696
-// 00404664  85f6                 test esi, esi
-// 00404666  8b07                 mov eax, dword ptr [edi]
-// 00404668  7507                 jne 0x404671
-// 0040466a  5f                   pop edi
-// 0040466b  33c0                 xor eax, eax
-// 0040466d  5e                   pop esi
-// 0040466e  c20400               ret 4
-// 00404671  85c0                 test eax, eax
-// 00404673  8b3e                 mov edi, dword ptr [esi]
-// 00404675  c70600000000         mov dword ptr [esi], 0
-// 0040467b  740d                 je 0x40468a
-// 0040467d  8b08                 mov ecx, dword ptr [eax]
-// 0040467f  8b11                 mov edx, dword ptr [ecx]
-// 00404681  56                   push esi
-// 00404682  68144f7800           push 0x784f14
-// 00404687  50                   push eax
-// 00404688  ffd2                 call edx
-// 0040468a  85ff                 test edi, edi
-// 0040468c  7408                 je 0x404696
-// 0040468e  8b07                 mov eax, dword ptr [edi]
-// 00404690  8b4808               mov ecx, dword ptr [eax + 8]
-// 00404693  57                   push edi
-// 00404694  ffd1                 call ecx
-// 00404696  8b06                 mov eax, dword ptr [esi]
-// 00404698  5f                   pop edi
-// 00404699  5e                   pop esi
-// 0040469a  c20400               ret 4
+// 00404550  56                   push esi
+// 00404551  57                   push edi
+// 00404552  8b7c240c             mov edi, dword ptr [esp + 0xc]
+// 00404556  8b07                 mov eax, dword ptr [edi]
+// 00404558  50                   push eax
+// 00404559  8bf1                 mov esi, ecx
+// 0040455b  e880f1ffff           call 0x4036e0
+// 00404560  84c0                 test al, al
+// 00404562  7532                 jne 0x404596
+// 00404564  85f6                 test esi, esi
+// 00404566  8b07                 mov eax, dword ptr [edi]
+// 00404568  7507                 jne 0x404571
+// 0040456a  5f                   pop edi
+// 0040456b  33c0                 xor eax, eax
+// 0040456d  5e                   pop esi
+// 0040456e  c20400               ret 4
+// 00404571  85c0                 test eax, eax
+// 00404573  8b3e                 mov edi, dword ptr [esi]
+// 00404575  c70600000000         mov dword ptr [esi], 0
+// 0040457b  740d                 je 0x40458a
+// 0040457d  8b08                 mov ecx, dword ptr [eax]
+// 0040457f  8b11                 mov edx, dword ptr [ecx]
+// 00404581  56                   push esi
+// 00404582  68143f7800           push 0x783f14
+// 00404587  50                   push eax
+// 00404588  ffd2                 call edx
+// 0040458a  85ff                 test edi, edi
+// 0040458c  7408                 je 0x404596
+// 0040458e  8b07                 mov eax, dword ptr [edi]
+// 00404590  8b4808               mov ecx, dword ptr [eax + 8]
+// 00404593  57                   push edi
+// 00404594  ffd1                 call ecx
+// 00404596  8b06                 mov eax, dword ptr [esi]
+// 00404598  5f                   pop edi
+// 00404599  5e                   pop esi
+// 0040459a  c20400               ret 4
+// library atl-8.0/atl.cpp (function ??$?4UITypeInfo2@@@?$CComPtr@UITypeInfo@@@ATL@@QAEPAUITypeInfo@@ABV?$CComPtr@UITypeInfo2@@@1@@Z)
 
-struct CRegObject {
-    void* m_p;
-    void* f(void* p);
-};
-
-extern "C" char __stdcall sub_403860(void* p);
-
-void* CRegObject::f(void* p)
-{
-    void* old;
-    if (sub_403860(*(void**)p)) {
-        return m_p;
-    }
-    if (this == 0) {
-        return 0;
-    }
-    old = m_p;
-    m_p = 0;
-    if (*(void**)p != 0) {
-        void* v = *(void**)p;
-        void** vt = *(void***)v;
-        ((void (__stdcall*)(void*, void*, void*))vt[0])(v, (void*)0x784f14, this);
-    }
-    if (old != 0) {
-        void** vt = *(void***)old;
-        ((void (__stdcall*)(void*))vt[2])(old);
-    }
-    return m_p;
-}
+// roc-lang: cpp
+// roc-cl: 50727
+// roc-flags: /O2 /GS- /MD
+// roc-lib: atl-8.0 atl.cpp

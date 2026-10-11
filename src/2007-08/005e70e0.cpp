@@ -1,4 +1,4 @@
-// from server: 92% by colin
+// from server: 100% by colin
 // roc 2007-08 005e70e0  unit: RBX::VFlag::?$FactoryProduct  size: 65 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 005e70e0
 //
@@ -32,7 +32,7 @@ struct RBX_Instance {
 };
 
 extern "C" int __cdecl sub_630D36(int, int, int, int, int);
-extern "C" int __cdecl sub_5E6F10(int);
+extern "C" int __fastcall sub_5E6F10(int);
 
 int __cdecl sub_5E70E0(RBX_Instance* p)
 {

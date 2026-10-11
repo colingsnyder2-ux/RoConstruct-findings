@@ -1,4 +1,4 @@
-// from server: 70% by colin
+// from server: 72% by colin
 // roc 2007-08 00673720  unit: CXTPCustomizeSheet  size: 54 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 00673720
 //
@@ -24,23 +24,22 @@
 // 00673755  c3                   ret 
 
 struct CXTPCustomizeSheet {
-    char pad[0xb8];
-    void* field_b8;
-    void f();
+    void m();
 };
 
-void CXTPCustomizeSheet::f() {
-    void* p = field_b8;
-    int* esi = *(int**)((char*)p + 0x58);
-    if (esi == 0) {
-        return;
+void CXTPCustomizeSheet::m()
+{
+    char* p = *(char**)((char*)this + 0xb8);
+    char* q = *(char**)(p + 0x58);
+    if (q)
+    {
+        int (__stdcall *fn1)(void*, int);
+        fn1 = *(int (__stdcall **)(void*, int))(*(int*)q + 0x64);
+        int flag = (*(int*)(q + 0x98) == 0) ? 1 : 0;
+        fn1(q, flag);
+        char* r = *(char**)(q + 0xfc);
+        int (__stdcall *fn2)(void*);
+        fn2 = *(int (__stdcall **)(void*))(*(int*)r + 0x17c);
+        fn2(r);
     }
-    int* vtbl = *(int**)esi;
-    int (*fn)(void*, int) = *(int (**)(void*, int))((char*)vtbl + 0x64);
-    int flag = (*(int*)((char*)esi + 0x98) == 0) ? 1 : 0;
-    fn(esi, flag);
-    int* ecx2 = *(int**)((char*)esi + 0xfc);
-    int* vtbl2 = *(int**)ecx2;
-    int (*fn2)(void*) = *(int (**)(void*))((char*)vtbl2 + 0x17c);
-    fn2(ecx2);
 }

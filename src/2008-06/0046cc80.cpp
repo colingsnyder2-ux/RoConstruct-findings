@@ -1,46 +1,41 @@
-// from server: 30% by colin
+// from server: 39% by colin
 // roc 2008-06 0046cc80  unit: RBX::LDraw2Lua::LDraw2RobloxColorMap  size: 344 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 0046cc80
 
 extern "C" {
-    void __stdcall sub_802458(void*);
-    void __stdcall sub_802468(void*);
+void __stdcall sub_802458(void*);
+void __stdcall sub_802468(void*);
+int __cdecl sub_46f9f0(void*, void*);
 }
-
-int __stdcall sub_46f9f0(void*, void*);
 
 struct S {
     int f(int, int, int, int, int, int, int);
 };
 
-int S::f(int a, int b, int c, int d, int e, int f, int g)
+int S::f(int a1, int a2, int a3, int a4, int a5, int a6, int a7)
 {
-    char buf1[4];
-    char buf2[4];
-    char buf3[4];
-    char buf4[4];
-    char buf5[4];
-    char buf6[4];
-    char buf7[4];
-    int result;
+    char buf1[28];
+    char buf2[28];
+    bool b;
 
     sub_802458(buf1);
-    result = sub_46f9f0(buf2, buf3);
+    b = (sub_46f9f0(buf2, buf1) == 0);
     sub_802468(buf1);
-    if (result == 0)
+    if (b)
         return 0;
 
     sub_802458(buf1);
-    result = sub_46f9f0(buf2, buf3);
+    b = (sub_46f9f0(buf2, buf1) == 0);
     sub_802468(buf1);
-    if (result == 0)
+    if (b)
         return 1;
 
     sub_802458(buf1);
-    result = sub_46f9f0(buf2, buf3);
+    b = (sub_46f9f0(buf2, buf1) == 0);
     sub_802468(buf1);
     sub_802468(buf1);
-    if (result == 0)
+
+    if (b)
         return 2;
     return 0x3e7;
 }

@@ -1,4 +1,4 @@
-// from server: 73% by colin
+// from server: 100% by colin
 // roc 2007-08 00643950  unit: CXTPCommandBar  size: 39 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 00643950
 //
@@ -20,20 +20,19 @@
 // 00643975  5e                   pop esi
 // 00643976  c3                   ret 
 
-struct CXTPCommandBar
-{
-    virtual CXTPCommandBar* vfunc_0184();
-    CXTPCommandBar* find();
+struct CXTPCommandBar {
+    void* GetNext();
 };
 
-CXTPCommandBar* CXTPCommandBar::find()
+void* CXTPCommandBar::GetNext()
 {
-    CXTPCommandBar* p = this;
-    CXTPCommandBar* r = p->vfunc_0184();
-    while (r != 0)
-    {
-        p = r;
-        r = r->vfunc_0184();
+    void* p = this;
+    void* r = ((void* (__thiscall *)(void*))((*(void***)p)[0x184 / 4]))(p);
+    if (r != 0) {
+        do {
+            p = r;
+            r = ((void* (__thiscall *)(void*))((*(void***)p)[0x184 / 4]))(p);
+        } while (r != 0);
     }
     return p;
 }

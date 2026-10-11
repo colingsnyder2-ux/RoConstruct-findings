@@ -1,4 +1,4 @@
-// from server: 90% by colin
+// from server: 100% by colin
 // roc 2007-08 00674380  unit: CXTPCustomizeSheet  size: 68 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 00674380
 //
@@ -24,24 +24,28 @@
 // 006743bc  b801000000           mov eax, 1
 // 006743c1  c20800               ret 8
 
-extern "C" int __stdcall PostMessageA(void*, unsigned int, unsigned int, int);
+extern "C" __declspec(dllimport) int __stdcall PostMessageA(void*, unsigned int, unsigned int, int);
 
 struct CXTPCustomizeSheet {
     char pad[0x20];
-    void* field20;
-    char pad2[0xb4 - 0x24];
-    void* fieldb4;
-    int func(void* p, int);
+    void* field_20;
+    char pad2[0x90];
+    void* field_b4;
+    int Check(int unused, void* p);
 };
 
-int CXTPCustomizeSheet::func(void* p, int) {
-    int* q = (int*)p;
-    if (q != 0 && q[2] == 0x86) {
-        void* v = fieldb4;
-        if (v != 0)
-            v = *(void**)((char*)v + 0x20);
-        if (q[3] == (int)v && q[1] != 0) {
-            PostMessageA(field20, 0x8130, 0, 0);
+int CXTPCustomizeSheet::Check(int unused, void* p) {
+    if (p != 0) {
+        if (*(unsigned int*)((char*)p + 8) == 0x86) {
+            void* v = field_b4;
+            if (v != 0) {
+                v = *(void**)((char*)v + 0x20);
+            }
+            if (*(void**)((char*)p + 0xc) == v) {
+                if (*(void**)((char*)p + 4) != 0) {
+                    PostMessageA(field_20, 0x8130, 0, 0);
+                }
+            }
         }
     }
     return 1;

@@ -1,4 +1,4 @@
-// from server: 95% by colin
+// from server: 100% by atomic.potato
 // roc 2007-08 00593e20  unit: RBX::VArrowTool::?$TToolVerb  size: 44 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 00593e20
 //
@@ -37,7 +37,7 @@ struct Outer {
 };
 
 extern "C" void* __cdecl sub_631392(void*);
-extern "C" bool (__thiscall *sub_77e708)(const type_info*, const type_info*);
+extern "C" bool (__thiscall *sub_77e708)(const type_info*, void*);
 
 struct VArrowTool {
     bool isEnabled() const;
@@ -50,7 +50,7 @@ bool VArrowTool::isEnabled() const
     void* p = inner->field_318;
     if (p) {
         void* q = sub_631392(p);
-        return sub_77e708((const type_info*)0x8a19c4, (const type_info*)q);
+        return sub_77e708((const type_info*)0x8a19c4, q);
     }
     return false;
 }

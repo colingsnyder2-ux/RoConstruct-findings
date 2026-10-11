@@ -1,4 +1,4 @@
-// from server: 91% by colin
+// from server: 100% by colin
 // roc 2007-08 0070c9d0  unit: CXTColorBase  size: 55 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 0070c9d0
 //
@@ -32,12 +32,14 @@ struct CXTColorBase {
     int field60;
     int field64;
     int field68;
+    int field6c;
     int field70;
+    int field74;
     int field78;
     void SetColor(int a, int b);
 };
 
-extern "C" int __stdcall InvalidateRect(void*, const void*, int);
+extern "C" int (__stdcall *InvalidateRect)(void*, const void*, int);
 extern "C" void __cdecl sub_70c650(int, int*, int*, int*);
 
 void CXTColorBase::SetColor(int a, int b)

@@ -1,26 +1,11 @@
-// from server: 97% by colin
-struct type_info;
-
-extern "C" int __cdecl sub_631392(int);
-
-extern "C" void __stdcall sub_77E708(const type_info*);
-
-extern type_info type_info_8A55C4;
-
-struct VFillTool {
-    char pad[0xc];
-    void* field_c;
-    bool isEnabled() const;
-};
-
-bool VFillTool::isEnabled() const {
-    char* p = *(char**)((char*)this + 0xc);
-    char* q = *(char**)(p + 0x188);
-    int v = *(int*)(q + 0x318);
-    if (v != 0) {
-        int r = sub_631392(v);
-        sub_77E708(&type_info_8A55C4);
-        return true;
-    }
-    return false;
-}
+// from server: 100% by colin
+// roc-flags: /O2 /Ob2 /Oy /GF- /GS- /EHsc /MD
+struct P3 { char pad[0x318]; void* value; };
+struct P2 { char pad[0x188]; P3* p; };
+struct Obj { char pad[0xc]; P2* p; bool f(); };
+struct C {};
+extern "C" void* helper(void*);
+extern C c;
+typedef bool (__thiscall *Fn)(C*,void*);
+extern Fn slot;
+bool Obj::f(){ void* x=p->p->value; if(x){ x=helper(x); return slot(&c,x); } return false; }

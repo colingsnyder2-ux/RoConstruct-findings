@@ -1,4 +1,4 @@
-// from server: 68% by colin
+// from server: 100% by colin
 // roc 2007-08 005a9380  unit: RBX::VHumanoid::?$SignalDesc  size: 14 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 005a9380
 //
@@ -25,6 +25,6 @@ struct Outer {
 int Outer::get()
 {
     Inner* p = inner;
-    p->f3();
-    return *(int*)((char*)p + 0x20);
+    int r = p->f3();
+    return *(int*)((char*)r + 0x20);
 }

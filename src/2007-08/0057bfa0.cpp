@@ -1,4 +1,4 @@
-// from server: 87% by colin
+// from server: 100% by colin
 // roc 2007-08 0057bfa0  unit: RBX::Workspace  size: 45 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 0057bfa0
 //
@@ -18,17 +18,17 @@
 // 0057bfc9  5e                   pop esi
 // 0057bfca  c20800               ret 8
 
-struct Workspace
-{
-    void sub_0057BFA0(int, int);
+struct Workspace {
+    char pad[0x2d4];
+    int field_2d4;
+    void sub_0053e2a0(int, int);
+    void sub_00558b60(int);
+    void sub_0057bfa0(int, int);
 };
 
-extern "C" void __stdcall sub_0053E2A0(int, int);
-extern "C" void __stdcall sub_00558B60(void*, int);
-
-void Workspace::sub_0057BFA0(int a, int b)
+void Workspace::sub_0057bfa0(int a, int b)
 {
-    sub_0053E2A0(a, b);
-    char zero = 0;
-    sub_00558B60((char*)this + 0x2d4, *(int*)&zero);
+    sub_0053e2a0(a, b);
+    char flag = 0;
+    ((Workspace*)((char*)this + 0x2d4))->sub_00558b60(*(int*)&flag);
 }

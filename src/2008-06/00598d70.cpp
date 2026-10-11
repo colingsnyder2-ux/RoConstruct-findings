@@ -1,5 +1,4 @@
-// from server: 91% by colin
-// roc-lang: cpp
-// roc-cl: 50727
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs v8datamodel/PartInstance.cpp
+// from server: 100% by colin
+// roc-flags: /O2 /Ob2 /Oy /GF- /GS- /EHsc /MD
+struct B{void sub(void*);}; struct S{void* func(void*);};
+void* S::func(void* p){((B*)((char*)this+552))->sub(p); return p;}

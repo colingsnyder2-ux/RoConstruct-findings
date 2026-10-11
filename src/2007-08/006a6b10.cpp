@@ -1,15 +1,5 @@
-// from server: 29% by colin
-struct CXTPMenuBarMDIMenus {
-    void construct();
-};
-
-extern "C" void* __cdecl operator_new(unsigned int size);
-
-void* CXTPMenuBarMDIMenus_alloc()
-{
-    CXTPMenuBarMDIMenus* p = (CXTPMenuBarMDIMenus*)operator_new(0x1c4);
-    if (p == 0) {
-        p->construct();
-    }
-    return p;
-}
+// from server: 100% by tester
+// roc-lang: cpp
+// roc-cl: 50727
+// roc-flags: /O2 /MD /GS /EHsc
+// roc-lib: xtp-11.2.2-vc8-shared-mfc Source/CommandBars/XTPMenuBar.cpp

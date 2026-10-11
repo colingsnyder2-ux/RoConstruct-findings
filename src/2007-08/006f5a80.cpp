@@ -1,4 +1,4 @@
-// from server: 81% by colin
+// from server: 100% by colin
 // roc 2007-08 006f5a80  unit: CXTPControlCustom  size: 36 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 006f5a80
 //
@@ -19,26 +19,17 @@
 // 006f5aa0  5e                   pop esi
 // 006f5aa1  c20400               ret 4
 
-struct CXTPControlCustom;
-
-struct CXTPControlCustomVtbl {
-    void* padding[56];
-    void (__stdcall *fnE0)(CXTPControlCustom*, int);
-};
-
 struct CXTPControlCustom {
-    CXTPControlCustomVtbl* vtable;
+    void* func_006f5a10();
+    void* func_006f5a80(void* param);
 };
 
-struct S_func_006f5a80 {
-    CXTPControlCustom* f(int a1);
-};
-
-CXTPControlCustom* __stdcall sub_006f5a10();
-
-CXTPControlCustom* S_func_006f5a80::f(int a1)
+void* CXTPControlCustom::func_006f5a80(void* param)
 {
-    CXTPControlCustom* p = sub_006f5a10();
-    p->vtable->fnE0(p, a1);
+    void* p = func_006f5a10();
+    void** vtbl = *(void***)p;
+    typedef void (__thiscall *Fn)(void*, CXTPControlCustom*, void*);
+    Fn fn = (Fn)vtbl[0x38];
+    fn(p, this, param);
     return p;
 }

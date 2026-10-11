@@ -1,4 +1,4 @@
-// from server: 92% by colin
+// from server: 100% by colin
 // roc 2007-08 00710fd0  unit: CXTColorSelectorCtrl  size: 33 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 00710fd0
 //
@@ -15,7 +15,7 @@
 // 00710fee  33c0                 xor eax, eax
 // 00710ff0  c3                   ret 
 
-extern "C" int __stdcall IsWindow(void*);
+extern "C" int (__stdcall *IsWindow)(void*);
 
 struct CXTColorSelectorCtrl {
     char pad[0x160];

@@ -1,4 +1,4 @@
-// from server: 98% by colin
+// from server: 100% by colin
 // roc 2007-08 005b1e90  unit: RBX::VRotateP::?$FactoryProduct  size: 94 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 005b1e90
 //
@@ -22,15 +22,13 @@
 // 005b1eeb  c20400               ret 4
 
 struct RBX_VRotateP_FactoryProduct {
-    RBX_VRotateP_FactoryProduct* construct(int);
-    char pad[0x100];
+    RBX_VRotateP_FactoryProduct* construct(int arg);
 };
 
-extern "C" void __stdcall func_005b1a20(int);
+extern "C" void __stdcall sub_5B1A20(int arg);
 
-RBX_VRotateP_FactoryProduct* RBX_VRotateP_FactoryProduct::construct(int arg)
-{
-    func_005b1a20(arg);
+RBX_VRotateP_FactoryProduct* RBX_VRotateP_FactoryProduct::construct(int arg) {
+    sub_5B1A20(arg);
     *(int*)((char*)this + 0x00) = 0x7b76f4;
     *(int*)((char*)this + 0x04) = 0x7b76ec;
     *(int*)((char*)this + 0x10) = 0x7b76e4;

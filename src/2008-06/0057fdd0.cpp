@@ -1,53 +1,60 @@
-// from server: 40% by colin
+// from server: 49% by colin
 // roc 2008-06 0057fdd0  unit: RBX::VModelInstance::?$FilteredSelection  size: 174 bytes
 
 extern "C" void __stdcall _invalid_parameter_noinfo();
 
-struct Vec8 {
-    void* a;
-    void* b;
-};
+void* __stdcall make_value_0057d860();
 
-struct Container {
+void* func_0057d860()
+{
+    static void* value = make_value_0057d860();
+    return value;
+}
+
+void __stdcall sub_00557330(void*, void*);
+void __stdcall sub_004124c0(void*, int, void*);
+
+struct Inner {
     char pad[0xc];
-    Vec8* begin;
-    Vec8* end;
-    Vec8* cap;
+    void* begin;
+    void* end;
+    char pad2[0x10];
+    void* begin2;
+    void* end2;
 };
 
 struct Outer {
     char pad[0x190];
-    Container c;
+    Inner inner;
 };
-
-void __stdcall sub_557330(void*, void*);
-void* __stdcall sub_57d860();
-void __stdcall sub_4124c0(Vec8*, int, Vec8*);
 
 struct S {
-    char pad[0x190];
-    Container c;
-    void* f();
+    char pad[0x19c];
+    void* field_19c;
+    void* field_1a0;
+    void f();
 };
 
-void* S::f() {
-    sub_557330((void*)0x9753c8, (void*)0x57ddb0);
-    int idx = (int)sub_57d860();
-    Container* p = &this->c;
-    int n = (int)((p->end - p->begin));
-    if ((unsigned)(idx + 1) > (unsigned)n) {
-        Vec8 tmp;
-        tmp.a = 0;
-        tmp.b = 0;
-        sub_4124c0(&tmp, idx + 1, p->end);
-        return 0;
+void S::f()
+{
+    sub_00557330((void*)0x9753c8, (void*)0x57ddb0);
+    void* p = func_0057d860();
+    int idx = (int)p;
+    Outer* o = (Outer*)((char*)this + 0x190);
+    int count = (int)(((char*)o->inner.end - (char*)o->inner.begin) >> 3);
+    if (idx + 1 > count) {
+        void* tmp[2];
+        tmp[0] = 0;
+        tmp[1] = 0;
+        sub_004124c0(o, idx + 1, tmp);
+        return;
     }
-    if ((unsigned)idx >= (unsigned)((p->cap - p->begin))) {
+    int count2 = (int)(((char*)o->inner.end2 - (char*)o->inner.begin2) >> 3);
+    if (idx >= count2) {
         _invalid_parameter_noinfo();
     }
-    Vec8* e = &p->begin[idx];
-    void* r = e->a;
-    if (r != 0) {
+    void** arr = (void**)o->inner.begin2;
+    void* v = arr[idx];
+    if (v != 0) {
     }
-    return r;
 }

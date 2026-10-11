@@ -1,4 +1,4 @@
-// from server: 96% by colin
+// from server: 100% by colin
 // roc 2007-08 00405b20  unit: UIEnumConnectionPoints::V?$CComEnum::?$CComObject  size: 28 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 00405b20
 //
@@ -16,9 +16,9 @@ struct S {
     void f(int a, int b, int c);
 };
 
-extern "C" void __stdcall helper(int a, int b, const void* p, int c);
+extern "C" void __stdcall helper(int a, const void* p, int b, int c);
 
 void S::f(int a, int b, int c)
 {
-    helper(a, b, (const void*)0x784fc8, c);
+    helper(a, (const void*)0x784fc8, b, c);
 }

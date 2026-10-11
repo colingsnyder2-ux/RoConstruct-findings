@@ -1,5 +1,8 @@
-// from server: 87% by colin
-// roc-lang: cpp
-// roc-cl: 21022
+// from server: 100% by colin
+
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: openrbx-client App/script/LuaInstanceBridge.cpp
+void* __stdcall make_value_004ab470();
+void* func_004ab470() {
+    static void* value = make_value_004ab470();
+    return value;
+}

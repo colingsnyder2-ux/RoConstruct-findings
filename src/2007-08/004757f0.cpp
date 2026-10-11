@@ -1,4 +1,4 @@
-// from server: 90% by colin
+// from server: 100% by colin
 // roc 2007-08 004757f0  unit: CInstanceRecord::CNameItem  size: 43 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 004757f0
 //
@@ -17,28 +17,29 @@
 // 00475815  5e                   pop esi
 // 00475816  e955fcffff           jmp 0x475470
 
-struct CNameItem {
+struct CInstanceRecord_CNameItem {
     char pad[0x30];
     int field30;
     int field34;
     char pad2[0x38];
     int field70;
-    int field74;
+    char pad3[4];
     int field78;
-    char pad3[0x94];
+    char pad4[0x94];
     unsigned char field110;
+    void sub_475470();
+    void sub_474c30(int, int);
     void method();
 };
 
-extern "C" void __cdecl sub_474C30(int, int);
-extern "C" void __stdcall glEnd(void);
-extern "C" void __cdecl sub_475470(void);
+extern "C" void (__stdcall *glEnd)();
 
-void CNameItem::method() {
+void CInstanceRecord_CNameItem::method()
+{
     int v = field34;
     field78 += v;
     field70 += v;
-    sub_474C30(field30, v);
+    sub_474c30(field30, v);
     glEnd();
     field110 = 0;
     sub_475470();

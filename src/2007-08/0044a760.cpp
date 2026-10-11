@@ -1,4 +1,4 @@
-// from server: 66% by colin
+// from server: 67% by colin
 // roc 2007-08 0044a760  unit: CRobloxApp  size: 59 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 0044a760
 //
@@ -38,11 +38,11 @@ extern "C" int __cdecl sub_429650(int, int, char);
 int CRobloxApp::f(int a, int b, int c)
 {
     if (c == 2) {
-        int v = a;
+        int v = b;
         if (*(const type_info*)0x889160 == *(const type_info*)v) {
             return v;
         }
         return 0;
     }
-    return sub_429650(a, b, 0);
+    return sub_429650(a, c, 0);
 }

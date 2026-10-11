@@ -1,4 +1,4 @@
-// from server: 63% by colin
+// from server: 100% by colin
 // roc 2007-08 006e0a90  unit: CXTPDockingPaneAutoHidePanel  size: 56 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 006e0a90
 //
@@ -37,14 +37,10 @@ extern "C" void* __fastcall sub_6e0550(void*);
 
 int CXTPDockingPaneAutoHidePanel::method_6e0a90()
 {
-    if (field_194 != 0)
-        return 0;
-    if (field_1a0 == 0)
-        return 0;
-    if ((sub_68f5e0(field_1a0) & 8) != 0)
-        return 0;
-    void* p = sub_6e0550(field_54);
-    if (*(int*)((char*)p + 0x2c) == 0)
-        return 0;
-    return 1;
+    if (field_194 != 0 && field_1a0 != 0 && (sub_68f5e0(field_1a0) & 8) == 0) {
+        void* p = sub_6e0550(field_54);
+        if (*(int*)((char*)p + 0x2c) != 0)
+            return 1;
+    }
+    return 0;
 }

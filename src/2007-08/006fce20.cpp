@@ -1,4 +1,4 @@
-// from server: 81% by colin
+// from server: 100% by colin
 // roc 2007-08 006fce20  unit: CXTPPropertyGridInplaceList  size: 43 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 006fce20
 //
@@ -20,17 +20,15 @@
 // 006fce48  c20400               ret 4
 
 struct CXTPPropertyGridInplaceList {
-    void sub_63023e();
-    void sub_682740(int);
-    void sub_160();
-    void sub_68();
-    void func_006fce20(int);
+    void f(unsigned int);
 };
 
-void CXTPPropertyGridInplaceList::func_006fce20(int)
-{
+extern "C" void __cdecl sub_63023e();
+extern "C" void __cdecl sub_682740(int);
+
+void CXTPPropertyGridInplaceList::f(unsigned int arg) {
     sub_63023e();
     sub_682740(0);
-    (this->*(*(void (CXTPPropertyGridInplaceList::**)(void))((char*)this + 0x160)))();
-    (this->*(*(void (CXTPPropertyGridInplaceList::**)(void))((char*)this + 0x68)))();
+    (*(void (__thiscall **)(void *))(*(int *)this + 0x160))(this);
+    (*(void (__thiscall **)(void *))(*(int *)this + 0x68))(this);
 }

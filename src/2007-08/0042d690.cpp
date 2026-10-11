@@ -1,4 +1,4 @@
-// from server: 90% by colin
+// from server: 100% by colin
 // roc 2007-08 0042d690  unit: boost::any::M::?$holder  size: 35 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 0042d690
 //
@@ -19,20 +19,22 @@
 // 0042d6b2  c3                   ret 
 
 struct Holder {
-    void* m_pVtbl;
-    float m_value;
-    void* clone();
+    void* vtable;
+    float value;
+};
+
+struct Any {
+    void* makeHolder();
 };
 
 extern "C" void* __cdecl operator_new(unsigned int size);
 
-void* Holder::clone()
-{
-    Holder* p = (Holder*)operator_new(8);
-    if (p != 0)
-    {
-        p->m_pVtbl = (void*)0x78a5ec;
-        p->m_value = m_value;
+void* Any::makeHolder() {
+    Holder* h = (Holder*)operator_new(8);
+    if (h) {
+        h->vtable = (void*)0x78a5ec;
+        h->value = *(float*)((char*)this + 4);
+        return h;
     }
-    return p;
+    return 0;
 }

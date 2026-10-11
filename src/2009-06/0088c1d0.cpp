@@ -1,5 +1,4 @@
-// from server: 94% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs util/RunStateOwner.cpp
+// from server: 100% by colin
+// roc-flags: /O2 /Ob2 /Oy /GF- /GS- /EHsc /MD
+struct Obj{void run(void*,void*,int);}; extern Obj obj; extern int a,b,e; extern "C" void tail(void*);
+void func(){obj.run((void*)&a,(void*)&b,204);tail((void*)&e);}

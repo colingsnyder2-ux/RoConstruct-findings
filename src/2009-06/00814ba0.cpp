@@ -1,5 +1,5 @@
-// from server: 93% by colin
+// from server: 100% by tester
 // roc-lang: cpp
 // roc-cl: 30729
 // roc-flags: /O2 /GS- /MD
-// roc-lib: xtp-13.2.1 Source/Ribbon/XTPRibbonControlTab.cpp
+// roc-lib: xtp-11.2.2-shared-mfc Source/Ribbon/XTPRibbonControlTab.cpp

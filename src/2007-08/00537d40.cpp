@@ -1,4 +1,4 @@
-// from server: 83% by colin
+// from server: 89% by colin
 // roc 2007-08 00537d40  unit: RBX::Lua::ThreadRef::VNode::V?$shared_ptr::?$TItem  size: 83 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 00537d40
 //
@@ -43,9 +43,10 @@ extern "C" void* __cdecl malloc(unsigned int);
 extern "C" void __cdecl free(void*);
 
 struct S_func_00537d40 {
+    void* __cdecl f(int a1, int a2);
 };
 
-void* __cdecl f(int a1, int a2)
+void* __cdecl S_func_00537d40::f(int a1, int a2)
 {
     if (a2 == 2) {
         void* p = (void*)a1;

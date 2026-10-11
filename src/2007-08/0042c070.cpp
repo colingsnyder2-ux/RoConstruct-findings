@@ -1,4 +1,4 @@
-// from server: 57% by colin
+// from server: 64% by colin
 // roc 2007-08 0042c070  unit: VCLuaFunction::?$CComObjectNoLock  size: 55 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 0042c070
 //
@@ -28,25 +28,28 @@
 // 0042c0a5  5b                   pop ebx
 // 0042c0a6  c3                   ret 
 
-struct S_func_0042c070 {
-    void f(void* a, void* b, void* c, void* d, void* e);
+struct Node {
+    Node* next;
+    char pad[4];
+    int value;
 };
 
-void S_func_0042c070::f(void* a, void* b, void* c, void* d, void* e)
+struct Result {
+    void* f0;
+    void* f4;
+    void* f8;
+};
+
+void process(Node* first, Node* last, void* fn, void* arg, Result* out);
+
+void process(Node* first, Node* last, void* fn, void* arg, Result* out)
 {
-    void* esi = a;
-    void* ebp = b;
-    void* ebx = c;
-    void* edi = d;
-    void* eax = e;
-
-    while (esi != ebp) {
-        void* ecx = *(void**)((char*)esi + 8);
-        ((void (__stdcall*)(void*))ebx)(edi);
-        esi = *(void**)esi;
+    Node* cur = first;
+    while (cur != last) {
+        ((void (__stdcall*)(int, void*))fn)(cur->value, arg);
+        cur = cur->next;
     }
-
-    *(void**)eax = ebx;
-    *(void**)((char*)eax + 4) = *(void**)((char*)&eax + 4);
-    *(void**)((char*)eax + 8) = edi;
+    out->f0 = fn;
+    out->f4 = arg;
+    out->f8 = last;
 }

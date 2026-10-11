@@ -1,4 +1,4 @@
-// from server: 60% by colin
+// from server: 100% by colin
 // roc 2007-08 007190f0  unit: CXTPRibbonGroupControlPopup  size: 49 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 007190f0
 //
@@ -24,15 +24,17 @@
 struct CXTPRibbonGroupControlPopup {
     char pad[0xfc];
     void* field_fc;
-    void Method(int);
+    void OnPopup(int);
 };
 
-extern "C" void* __stdcall sub_643a40(void*);
+extern "C" void* __fastcall sub_00643a40(void*);
 
-void CXTPRibbonGroupControlPopup::Method(int arg) {
-    void* p = sub_643a40(field_fc);
-    void** vtbl = *(void***)p;
-    void (__stdcall *fn)(void*, int*, int, void*, int) = (void (__stdcall *)(void*, int*, int, void*, int))vtbl[0x13c / 4];
-    int local = 0;
-    fn(p, &local, arg, this, 1);
+void CXTPRibbonGroupControlPopup::OnPopup(int a)
+{
+    void* p = sub_00643a40(field_fc);
+    void** vt = *(void***)p;
+    typedef void (__thiscall *Fn)(void*, int*, int, void*, int);
+    Fn fn = (Fn)vt[0x13c / 4];
+    int local[2];
+    fn(p, local, a, this, 1);
 }

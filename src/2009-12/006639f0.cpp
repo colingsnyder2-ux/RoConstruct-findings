@@ -67,4 +67,4 @@
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: openrbx-client App/reflection/reflection_object.cpp
+// roc-lib: openrbx-client-dll App/reflection/reflection_object.cpp

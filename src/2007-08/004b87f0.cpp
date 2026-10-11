@@ -1,4 +1,3 @@
-// from server: 88% by colin
 // roc 2007-08 004b87f0  unit: RakPeerInterface  size: 30 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 004b87f0
 //
@@ -11,16 +10,9 @@
 // 004b8806  89500c               mov dword ptr [eax + 0xc], edx
 // 004b8809  c6401801             mov byte ptr [eax + 0x18], 1
 // 004b880d  c3                   ret 
+// library openrbx-raknet/RakPeer.cpp (function ?AllocPacket@@YAPAUPacket@@IPAE@Z)
 
-extern "C" void* __cdecl malloc(unsigned int size);
-
-struct RakPeerInterface {
-};
-
-void* __cdecl construct(unsigned int a, unsigned int b) {
-    char* p = (char*)malloc(0x1c);
-    *(unsigned int*)(p + 0x14) = b;
-    *(unsigned int*)(p + 0xc) = a;
-    *(unsigned char*)(p + 0x18) = 1;
-    return p;
-}
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /EHsc /MD
+// roc-lib: openrbx-raknet RakPeer.cpp

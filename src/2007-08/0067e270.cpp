@@ -1,4 +1,4 @@
-// from server: 75% by colin
+// from server: 100% by atomic.potato
 // roc 2007-08 0067e270  unit: CXTPControlOleItems  size: 36 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 0067e270
 //
@@ -19,15 +19,19 @@
 // 0067e290  5e                   pop esi
 // 0067e291  c20400               ret 4
 
-struct CXTPControlOleItems {
-    void* getItem(int index);
-    void* getItemData(int index);
+struct CXTPControlOleItems
+{
+    void* field_0;
+    void* func_0067e200();
+    void* func_0067e270(void* arg);
 };
 
-void* CXTPControlOleItems::getItemData(int index) {
-    CXTPControlOleItems* pThis = this;
-    void* item = pThis->getItem(index);
-    void* vtable = *(void**)item;
-    void* result = ((void* (__thiscall*)(void*, void*))*(void**)((char*)vtable + 0xe0))(item, pThis);
-    return item;
+void* CXTPControlOleItems::func_0067e270(void* arg)
+{
+    void* p = func_0067e200();
+    void** vtbl = *(void***)p;
+    typedef void (__thiscall *Fn)(void*, void*, void*);
+    Fn fn = (Fn)vtbl[0xe0 / 4];
+    fn(p, this, arg);
+    return p;
 }

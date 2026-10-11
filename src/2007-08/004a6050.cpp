@@ -1,4 +1,4 @@
-// from server: 95% by colin
+// from server: 100% by colin
 // roc 2007-08 004a6050  unit: RBX::JointsService  size: 36 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 004a6050
 //
@@ -15,13 +15,15 @@
 // 004a606f  f7d8                 neg eax
 // 004a6071  c20400               ret 4
 
-extern "C" int __stdcall sub_630d36(int, int, int, int, int);
+extern "C" int __cdecl sub_00630D36(int, int, int, int, int);
 
-struct RBX_JointsService {
-    int isA(const char* className);
+struct RBX_JointsService
+{
+    bool method_004a6050(int arg);
 };
 
-int RBX_JointsService::isA(const char* className) {
-    int result = sub_630d36((int)className, 0, 0x881f4c, 0x891534, 0);
+bool RBX_JointsService::method_004a6050(int arg)
+{
+    int result = sub_00630D36(arg, 0, 0x881f4c, 0x891534, 0);
     return result != 0;
 }

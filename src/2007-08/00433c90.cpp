@@ -1,4 +1,4 @@
-// from server: 77% by colin
+// from server: 79% by colin
 // roc 2007-08 00433c90  unit: CMultiPlayerPane  size: 49 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 00433c90
 //
@@ -25,16 +25,16 @@
 struct CMultiPlayerPane {
     char pad[0x54];
     void* field_54;
-    void func_00433c90(int, int, int);
+    void sub_00433c90(int, int, int);
 };
 
-extern "C" void __stdcall sub_00630034(void*, void*, int, int, int);
-extern "C" void __stdcall sub_0063023e(void*);
+extern "C" void __stdcall func_00630034(void*, void*, int, int, int);
+extern "C" void __stdcall func_0063023e(void*);
 
-void CMultiPlayerPane::func_00433c90(int a, int b, int c)
+void CMultiPlayerPane::sub_00433c90(int a1, int a2, int a3)
 {
-    if (a != 1 && field_54 != 0) {
-        sub_00630034(field_54, 0, b, c, 1);
+    if (a1 != 1 && field_54 != 0) {
+        func_00630034(0, 0, a2, a3, 1);
     }
-    sub_0063023e(this);
+    func_0063023e(this);
 }

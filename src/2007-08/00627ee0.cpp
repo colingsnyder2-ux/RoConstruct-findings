@@ -1,4 +1,4 @@
-// from server: 66% by colin
+// from server: 74% by colin
 // roc 2007-08 00627ee0  unit: RBX::AssemblyStage  size: 60 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 00627ee0
 //
@@ -27,8 +27,9 @@
 // 00627f16  83c40c               add esp, 0xc
 // 00627f19  c20400               ret 4
 
-struct Assembly;
-struct World;
+struct AssemblyStage {
+    void onFixedAssemblyRootAdded(void* a);
+};
 
 struct IStage {
     virtual void v0();
@@ -39,20 +40,23 @@ struct IStage {
 
 struct EdgeBuffer {
     char pad[0x1c];
-    void addEdge(Assembly* a, Assembly** out);
+    void addEdge(void* a, void* b);
 };
 
-struct AssemblyStage : EdgeBuffer {
-    void onEngineChanging(Assembly* a);
+struct AssemblyStageFull : EdgeBuffer {
+    void onFixedAssemblyRootAdded(void* a);
 };
 
-void __stdcall sub_6271A0(Assembly* a);
+extern "C" void __stdcall func_006271a0(void* a);
 
-void AssemblyStage::onEngineChanging(Assembly* a) {
-    sub_6271A0(a);
-    int r = ((IStage*)a)->v3();
-    if (r == 0) {
-        Assembly* tmp;
-        addEdge(a, &tmp);
+void AssemblyStageFull::onFixedAssemblyRootAdded(void* a)
+{
+    func_006271a0(a);
+    IStage* s = (IStage*)a;
+    if (s->v3() == 0) {
+        void* tmp1;
+        void* tmp2;
+        tmp2 = a;
+        addEdge(&tmp1, &tmp2);
     }
 }

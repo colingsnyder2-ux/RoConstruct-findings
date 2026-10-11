@@ -1,4 +1,4 @@
-// from server: 80% by colin
+// from server: 100% by colin
 // roc 2007-08 00573d60  unit: RBX::VPartInstance::?$FactoryProduct  size: 32 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 00573d60
 //
@@ -16,22 +16,22 @@
 // 00573d7e  5e                   pop esi
 // 00573d7f  c3                   ret 
 
-struct Base {
-    void method(int);
-};
-
-struct S {
+struct VPartInstance {
     char pad[0x1d8];
-    int field_1d8;
-    void target();
+    void* field_1d8;
+    void sub_573D60();
 };
 
-extern "C" void* __stdcall sub_57D530(void*);
-extern "C" void __stdcall sub_5A9B00(void*, int);
+struct Helper {
+    void sub_5A9B00(void*);
+};
 
-void S::target() {
+extern "C" void* __cdecl sub_57D530(void*);
+
+void VPartInstance::sub_573D60()
+{
     void* p = sub_57D530(this);
     if (p) {
-        sub_5A9B00(p, this->field_1d8);
+        ((Helper*)p)->sub_5A9B00(this->field_1d8);
     }
 }

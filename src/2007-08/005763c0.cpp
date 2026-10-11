@@ -1,4 +1,4 @@
-// from server: 85% by colin
+// from server: 100% by colin
 // roc 2007-08 005763c0  unit: RBX::VPartInstance::?$FactoryProduct  size: 48 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 005763c0
 //
@@ -17,24 +17,20 @@
 // 005763ee  5e                   pop esi
 // 005763ef  c3                   ret 
 
-struct FactoryProduct {
-    void* field0;
-    void* field4;
-    void* field8;
-    void* fieldC;
-    void* field10;
-    void destroy();
+struct S {
+    void f();
 };
 
-extern "C" void __cdecl sub_62FC62(void*);
+extern "C" void __cdecl sub_62fc62(void*);
 
-void FactoryProduct::destroy()
+void S::f()
 {
-    field0 = (void*)0x7aaab4;
-    if (field8) {
-        sub_62FC62(field8);
+    *(int*)this = 0x7aaab4;
+    int* p = (int*)((char*)this + 8);
+    if (*p) {
+        sub_62fc62((void*)*p);
     }
-    field8 = 0;
-    fieldC = 0;
-    field10 = 0;
+    *(int*)((char*)this + 8) = 0;
+    *(int*)((char*)this + 0xc) = 0;
+    *(int*)((char*)this + 0x10) = 0;
 }

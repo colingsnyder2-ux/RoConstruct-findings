@@ -1,4 +1,4 @@
-// from server: 89% by colin
+// from server: 100% by colin
 // roc 2007-08 0062b130  unit: RBX::GroupDragTool  size: 36 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 0062b130
 //
@@ -17,15 +17,18 @@
 // 0062b150  5e                   pop esi
 // 0062b151  c20400               ret 4
 
+struct MegaDragger {
+    void release();
+};
+
 struct GroupDragTool
 {
     char pad0[0x20];
-    void* megaDragger;
+    MegaDragger* megaDragger;
     char pad24[0x8];
     bool dragging;
     char pad2d[0x3];
 
-    void sub_5e0fa0();
     int func(int);
 };
 
@@ -33,7 +36,7 @@ int GroupDragTool::func(int)
 {
     if (dragging)
     {
-        sub_5e0fa0();
+        megaDragger->release();
         dragging = false;
     }
     (*(void (__thiscall**)(GroupDragTool*))(*(int*)this + 0x24))(this);

@@ -1,4 +1,4 @@
-// from server: 85% by colin
+// from server: 87% by tester
 // roc 2007-08 00460000  unit: CScriptEditor  size: 55 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 00460000
 //

@@ -1,4 +1,4 @@
-// from server: 86% by colin
+// from server: 100% by colin
 // roc 2007-08 00682b00  unit: CXTPPropertyGrid  size: 22 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 00682b00
 //
@@ -11,20 +11,33 @@
 // 00682b13  5e                   pop esi
 // 00682b14  ffe2                 jmp edx
 
-struct CXTPPropertyGrid
-{
+struct CXTPPropertyGrid {
     char pad[0x13c];
-    void* m_pSomething;
-    void SomeMethod();
+    struct Inner* m_pInner;
+    void Func();
 };
 
-extern "C" void __cdecl sub_738580();
+struct Inner {
+    virtual void VFunc0();
+    virtual void VFunc1();
+    virtual void VFunc2();
+    virtual void VFunc3();
+    virtual void VFunc4();
+    virtual void VFunc5();
+    virtual void VFunc6();
+    virtual void VFunc7();
+    virtual void VFunc8();
+    virtual void VFunc9();
+    virtual void VFunc10();
+    virtual void VFunc11();
+    virtual void VFunc12();
+    virtual void VFunc13();
+};
 
-void CXTPPropertyGrid::SomeMethod()
+extern void sub_738580();
+
+void CXTPPropertyGrid::Func()
 {
     sub_738580();
-    void** p = (void**)m_pSomething;
-    void* vtable = *p;
-    void (*fn)() = *(void (**)())((char*)vtable + 0x34);
-    fn();
+    m_pInner->VFunc13();
 }

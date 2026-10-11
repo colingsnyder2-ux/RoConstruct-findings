@@ -1,4 +1,4 @@
-// from server: 97% by colin
+// from server: 100% by colin
 // roc 2007-08 005e1cf0  unit: RBX::VMotorFeature::?$FactoryProduct  size: 41 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 005e1cf0
 //
@@ -20,24 +20,25 @@
 // 005e1d17  5e                   pop esi
 // 005e1d18  c3                   ret 
 
-struct FactoryProduct {
-    void destroy();
-    char pad[4];
-    void* field8;
-    char pad2[0x14];
-    void* field1c;
-    void* field20;
+struct RBX_VMotorFeature_FactoryProduct {
+    char pad0[8];
+    RBX_VMotorFeature_FactoryProduct* field8;
+    char padC[0x10];
+    char* field1C;
+    char* field20;
+    void func_005e1cf0();
 };
 
-void FactoryProduct::destroy() {
-    if (field8) {
-        ((FactoryProduct*)field8)->destroy();
+void RBX_VMotorFeature_FactoryProduct::func_005e1cf0()
+{
+    if (field8 != 0) {
+        field8->func_005e1cf0();
     } else {
-        if (field20) {
-            *((char*)field20 + 4) = 1;
+        if (field20 != 0) {
+            field20[4] = 1;
         }
     }
-    if (field1c) {
-        *((char*)field1c + 4) = 1;
+    if (field1C != 0) {
+        field1C[4] = 1;
     }
 }

@@ -1,4 +1,4 @@
-// from server: 59% by colin
+// from server: 63% by colin
 // roc 2007-08 006f63d0  unit: CXTPPropertyGridInplaceEdit  size: 40 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 006f63d0
 //
@@ -17,20 +17,18 @@
 // 006f63f4  5e                   pop esi
 // 006f63f5  c20400               ret 4
 
-extern "C" unsigned int __stdcall sub_77dcc8(int);
-
 struct CXTPPropertyGridInplaceEdit
 {
-    char pad[0x84];
-    int field_84;
-    int IsValidIndex(int index);
+    bool IsValidIndex(int index);
 };
 
-int CXTPPropertyGridInplaceEdit::IsValidIndex(int index)
+extern "C" int __stdcall GetCount(void*);
+
+bool CXTPPropertyGridInplaceEdit::IsValidIndex(int index)
 {
     if (index >= 0)
-        return 0;
-    if (index >= sub_77dcc8((int)(this->pad + 0x84)))
-        return 0;
-    return 1;
+        return false;
+    if (index >= GetCount((char*)this + 0x84))
+        return false;
+    return true;
 }

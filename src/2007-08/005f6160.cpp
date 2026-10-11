@@ -1,4 +1,4 @@
-// from server: 41% by colin
+// from server: 62% by colin
 // roc 2007-08 005f6160  unit: G3D::VColor3::V?$Value::?$FactoryProduct  size: 51 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 005f6160
 //
@@ -22,31 +22,23 @@
 // 005f618f  59                   pop ecx
 // 005f6190  c20400               ret 4
 
-struct VColor3Value
-{
-    char gap0[4];
-    char m_str[0xe4];
+struct VColor3 {
+    char pad[0xe8];
+    void* field_e8;
+    void construct(void* arg);
 };
 
-struct G3D_VColor3_Value_FactoryProduct
-{
-    char gap0[4];
-    VColor3Value m_value;
-    void construct(VColor3Value* arg);
-};
-
-extern "C" void __stdcall sub_77e69c(void*, void*);
+extern "C" void* __stdcall sub_77e69c(void*);
 extern "C" void __cdecl sub_42ce80(void*, void*);
 
-void G3D_VColor3_Value_FactoryProduct::construct(VColor3Value* arg)
-{
-    VColor3Value* p;
-    if (this != 0)
-        p = &m_value;
-    else
+void VColor3::construct(void* arg) {
+    void* p;
+    if (this) {
+        p = (char*)this + 4;
+    } else {
         p = 0;
-
-    char buf[0x1c];
-    sub_77e69c(buf, &m_value.m_str[0xe4 - 0xe4]);
+    }
+    void* tmp;
+    sub_77e69c(&tmp);
     sub_42ce80((void*)0x8c7ebc, p);
 }

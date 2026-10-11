@@ -1,4 +1,4 @@
-// from server: 55% by colin
+// from server: 65% by colin
 // roc 2007-08 0041ef67  unit: CSettingsExplorer  size: 54 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 0041ef67
 //
@@ -24,28 +24,28 @@
 // 0041ef96  ff1590d27700         call dword ptr [0x77d290]
 // 0041ef9c  c3                   ret 
 
-extern "C" __declspec(dllimport) unsigned long __stdcall GetLastError();
-extern "C" __declspec(dllimport) void __stdcall SetLastError(unsigned long);
+extern "C" unsigned long __stdcall GetLastError();
+extern "C" void __stdcall SetLastError(unsigned long);
 
-extern "C" void __cdecl sub_62FF38(int, int);
+extern "C" void __cdecl sub_62FF38(unsigned long, unsigned long);
 
-void __cdecl sub_41EF67(int edi, int ebx, int ebp_20)
+void __fastcall sub_41EF67(int edi, int ebx, unsigned long arg)
 {
     if (edi == 2)
         return;
 
     int esi = (ebx == -1) ? 1 : 0;
 
-    int saved;
+    unsigned long saved;
     if (esi) {
-        saved = (int)GetLastError();
+        saved = GetLastError();
     } else {
         saved = 0;
     }
 
-    sub_62FF38(ebp_20, 0);
+    sub_62FF38(arg, 0);
 
     if (esi) {
-        SetLastError((unsigned long)saved);
+        SetLastError(saved);
     }
 }

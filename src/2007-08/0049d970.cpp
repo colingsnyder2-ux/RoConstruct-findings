@@ -1,4 +1,4 @@
-// from server: 50% by colin
+// from server: 58% by colin
 // roc 2007-08 0049d970  unit: RBX::Network::VServer::?$FactoryProduct  size: 33 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 0049d970
 //
@@ -16,14 +16,14 @@
 // 0049d98f  59                   pop ecx
 // 0049d990  c3                   ret 
 
-struct FactoryProduct {
-    char pad0[4];
-    void construct(int, int, int);
-    void init();
+struct S {
+    void f(int, int, int);
 };
 
-void FactoryProduct::init()
+extern void __stdcall g(int, int, int, int);
+
+void S::f(int a, int b, int c)
 {
     char flag = 0;
-    construct(*(int*)&flag, 0, 0);
+    g(*(int*)&flag, a, b, c);
 }

@@ -1,4 +1,4 @@
-// from server: 98% by colin
+// from server: 100% by atomic.potato
 // roc 2007-08 00446c80  unit: CRenderSettings::W4AASamples::?$EnumDesc  size: 56 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 00446c80
 //
@@ -35,7 +35,7 @@
 
 typedef bool (__cdecl *Pred)(int, int);
 
-int* find_if(int* first, int* last, Pred pred, int unused, int value)
+int* find_if(int* first, int* last, Pred pred, int dummy, int value)
 {
     while (first != last)
     {

@@ -1,20 +1,27 @@
-// from server: 97% by tester
-// roc 2007-08 00770760  unit: seg_00770000  size: 39 bytes
-// Make this compile to the exact bytes below, then: roc check 2007-08 00770760
+// from server: 100% by colin
+// roc 2007-08 007757f0  unit: seg_00770000  size: 39 bytes
+// Make this compile to the exact bytes below, then: roc check 2007-08 007757f0
 //
-// 00770760  6a05                 push 5
-// 00770762  68e4000000           push 0xfc
-// 00770767  6848647a00           push 0x7bfd44
-// 0077076c  68b4667a00           push 0x7bfe48
-// 00770771  b940158c00           mov ecx, 0x8c7418
-// 00770776  e8f5ffdcff           call 0x5ee640
-// 0077077b  68b0957700           push 0x77c210
-// 00770780  e89e05ecff           call 0x630d23
-// 00770785  59                   pop ecx
-// 00770786  c3                   ret 
-// library rbxgs/v8tree\Instance.cpp (function ??__E?propArchivable@Instance@RBX@@2V?$BoundProp@_N$00@Reflection@2@A@@YAXXZ)
+// 007757f0  6a05                 push 5
+// 007757f2  68fc000000           push 0xfc
+// 007757f7  6844fd7b00           push 0x7bfd44
+// 007757fc  6848fe7b00           push 0x7bfe48
+// 00775801  b918748c00           mov ecx, 0x8c7418
+// 00775806  e8358ee7ff           call 0x5ee640
+// 0077580b  6810c27700           push 0x77c210
+// 00775810  e80eb5ebff           call 0x630d23
+// 00775815  59                   pop ecx
+// 00775816  c3                   ret 
 
-// roc-lang: cpp
-// roc-cl: 50727
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs v8tree/Instance.cpp
+extern int g_007757f0_0;
+extern int g_007757f0_1;
+// roc-flags: /O2 /GS /EHsc /MD /Ob2 /Oy /GF
+extern "C" void tail_fn_007757f0(void*);
+struct O_007757f0 { int m(void*, void*, int, int); };
+extern O_007757f0 g_obj_007757f0;
+extern int g_tail_007757f0;
+void func_007757f0()
+{
+    g_obj_007757f0.m((void*)&g_007757f0_0, (void*)&g_007757f0_1, 252, 5);
+    tail_fn_007757f0(&g_tail_007757f0);
+}

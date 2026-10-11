@@ -1,4 +1,4 @@
-// from server: 42% by colin
+// from server: 100% by colin
 // roc 2007-08 005b70d0  unit: RBX::$01W4SurfaceType::?$SurfaceGetSet  size: 50 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 005b70d0
 //
@@ -22,34 +22,22 @@
 // 005b70fe  5e                   pop esi
 // 005b70ff  c20400               ret 4
 
-struct DescribedBase {
-    void* vtable;
+struct SurfaceGetSet {
+    int (__fastcall *get)(void*, int);
+    void (__fastcall *set)(void*);
+    void setValue(void* instance);
 };
 
-struct GetSet {
-    virtual bool isReadOnly() const;
-    virtual bool isWriteOnly() const;
-    virtual void getValue(const DescribedBase* instance) const;
-    virtual void setValue(DescribedBase* instance, const void* value) const;
-};
+extern "C" void* __fastcall sub_00573890(void* p);
 
-struct SurfaceGetSet : GetSet {
-    void* get;
-    void* set;
-    void setValue(DescribedBase* instance, const void* value) const;
-};
-
-extern "C" void* __cdecl func_00573890(void* p);
-
-void SurfaceGetSet::setValue(DescribedBase* instance, const void* value) const
+void SurfaceGetSet::setValue(void* instance)
 {
-    void* p;
+    void* obj;
     if (instance != 0) {
-        p = func_00573890((char*)instance - 4);
+        obj = sub_00573890((char*)instance - 4);
     } else {
-        p = func_00573890(0);
+        obj = sub_00573890(0);
     }
-    void* obj = (char*)p + 0x28;
-    void (*fn)(void*, const void*) = (void (*)(void*, const void*))this->set;
-    fn(obj, value);
+    void (__fastcall *fn)(void*) = this->set;
+    fn((char*)obj + 0x28);
 }

@@ -1,4 +1,4 @@
-// from server: 64% by colin
+// from server: 77% by colin
 // roc 2007-08 00562010  unit: RBX::ClearStarterpack  size: 40 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 00562010
 //
@@ -20,24 +20,24 @@
 // 00562035  c20400               ret 4
 
 struct ClearStarterpack {
-    char pad[0xc];
-    void* field_c;
-    void method();
+    char pad0[0xc];
+    void* fieldC;
+    void clear(int);
 };
 
-extern "C" void __stdcall sub_0055e290(void* p);
-extern "C" void* __stdcall sub_0048cf60(void* p);
-extern "C" void __stdcall sub_00541c30(void* p);
+extern "C" void __fastcall sub_55e290(void*);
+extern "C" void* __fastcall sub_48cf60(void*);
+extern "C" void __fastcall sub_541c30(void*);
 
-void ClearStarterpack::method()
+void ClearStarterpack::clear(int)
 {
-    void* p = field_c;
-    sub_0055e290(p);
-    void* q = field_c;
-    if (q != 0) {
-        void* r = sub_0048cf60(q);
+    void* p = fieldC;
+    sub_55e290(p);
+    void* q = fieldC;
+    if (q == 0) {
+        void* r = sub_48cf60(q);
         if (r != 0) {
-            sub_00541c30(r);
+            sub_541c30(r);
         }
     }
 }

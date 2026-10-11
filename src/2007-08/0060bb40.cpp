@@ -1,4 +1,4 @@
-// from server: 54% by colin
+// from server: 78% by colin
 // roc 2007-08 0060bb40  unit: CXTCaptionButtonTheme  size: 57 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 0060bb40
 //
@@ -26,25 +26,22 @@
 
 struct CXTCaptionButtonTheme {
     char pad[0x1c];
-    int* field_1c;
-    int field_20;
-    void* field_24;
-    void Remove(int);
+    int m_nCount;
+    int m_nIndex;
+    void* m_pTheme;
+    void RemoveAt(int nIndex);
 };
 
-extern "C" void __stdcall sub_5CF320(int, int);
-
-void CXTCaptionButtonTheme::Remove(int arg)
-{
-    void* p = field_24;
-    int* list = *(int**)((char*)p + 0x64);
-    int idx = *list;
-    int* arr = field_1c;
-    int count = field_20;
-    int val = arr[count - 1];
-    arr[idx] = val;
-    *(int*)val = idx;
-    int newcount = field_20 - 1;
-    sub_5CF320((int)((char*)this + 0x1c), newcount);
-    *list = -1;
+void CXTCaptionButtonTheme::RemoveAt(int nIndex) {
+    int* pArray = *(int**)((char*)m_pTheme + 0x64);
+    int nOld = pArray[0];
+    int idx = *(int*)((char*)this + 0x20);
+    int* pList = *(int**)((char*)this + 0x1c);
+    int val = pList[idx - 1];
+    pList[nOld] = val;
+    *(int*)val = nOld;
+    int nCount = *(int*)((char*)this + 0x20);
+    extern void __stdcall sub_5cf320(int, int);
+    sub_5cf320(nCount - 1, 0);
+    pArray[0] = -1;
 }

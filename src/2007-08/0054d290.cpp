@@ -1,4 +1,4 @@
-// from server: 52% by colin
+// from server: 53% by colin
 // roc 2007-08 0054d290  unit: UString_sink::?$stream_buffer  size: 31 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 0054d290
 //
@@ -21,11 +21,11 @@ struct UString_sink_stream_buffer
     UString_sink_stream_buffer* construct(void* arg);
 };
 
-void __stdcall sub_54c3e0(void* self, void* arg);
+void __stdcall sub_54c3e0(void* arg);
 
 UString_sink_stream_buffer* UString_sink_stream_buffer::construct(void* arg)
 {
     field0 = 0;
-    sub_54c3e0(this, arg);
+    sub_54c3e0(arg);
     return this;
 }

@@ -1,4 +1,4 @@
-// from server: 94% by colin
+// from server: 100% by colin
 // roc 2007-08 00565920  unit: RBX::Verb  size: 44 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 00565920
 //
@@ -31,11 +31,13 @@ struct StreamBuf {
     int sbumpc();
 };
 
+extern "C" int (__stdcall *sbumpc_ptr)();
+
 S* S::m()
 {
     StreamBuf* p = (StreamBuf*)field_0x4;
     if (p != 0) {
-        int r = p->sbumpc();
+        int r = ((int (__thiscall*)(StreamBuf*))sbumpc_ptr)(p);
         if (r != -1) {
             field_0x8 = false;
             return this;

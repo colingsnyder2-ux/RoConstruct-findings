@@ -1,4 +1,4 @@
-// from server: 50% by colin
+// from server: 56% by colin
 // roc 2007-08 00563c30  unit: RBX::ResetCommand  size: 39 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 00563c30
 //
@@ -16,23 +16,22 @@
 // 00563c50  8bc8                 mov ecx, eax
 // 00563c52  e9299bfcff           jmp 0x52d780
 
-struct RBX_ResetCommand
-{
-    char pad0[0xc];
-    int field_c;
-    char pad10[0x4];
-    int field_14;
-    void method_55e290();
-    void method_562240(int);
-    void method_52d780();
-    void run();
+struct ResetCommand {
+    char pad[0x0c];
+    int field0c;
+    int field10;
+    void doIt();
 };
 
-void RBX_ResetCommand::run()
+extern "C" void __stdcall sub_55e290();
+extern "C" void __stdcall sub_562240(int);
+extern "C" void __stdcall sub_52d780();
+
+void ResetCommand::doIt()
 {
-    int saved = field_c;
-    method_55e290();
-    method_562240(1);
-    field_14 = 0;
-    method_52d780();
+    int v = field0c;
+    sub_55e290();
+    sub_562240(1);
+    field10 = 0;
+    sub_52d780();
 }

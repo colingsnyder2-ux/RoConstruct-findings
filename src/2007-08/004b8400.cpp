@@ -1,4 +1,4 @@
-// from server: 98% by colin
+// from server: 100% by atomic.potato
 // roc 2007-08 004b8400  unit: RBX::Network::ClientPhysics  size: 54 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 004b8400
 //

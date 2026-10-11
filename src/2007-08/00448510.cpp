@@ -1,4 +1,4 @@
-// from server: 71% by colin
+// from server: 100% by colin
 // roc 2007-08 00448510  unit: CIDEDocManager  size: 81 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 00448510
 //
@@ -56,7 +56,7 @@ int __stdcall sub_448510(CIDEDocManager* mgr, int a, int b) {
             if (result < 0) break;
             int v = *p;
             if (v != 0) {
-                sub_4483B0(v, a, b);
+                result = sub_4483B0(v, a, b);
             }
             p++;
         } while (p < mgr->end);

@@ -1,4 +1,4 @@
-// from server: 86% by colin
+// from server: 100% by colin
 // roc 2007-08 0067f030  unit: CXTPControlRadioButton  size: 36 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 0067f030
 //
@@ -20,15 +20,14 @@
 // 0067f051  c20400               ret 4
 
 struct CXTPControlRadioButton {
-    void* sub_67EFC0();
-    void* vtable_call(void* arg);
-    void* func(void* arg);
+    void* getSite();
+    void* OnCalcDynamicSize(int);
 };
 
-void* CXTPControlRadioButton::func(void* arg) {
-    CXTPControlRadioButton* p = (CXTPControlRadioButton*)sub_67EFC0();
-    void** vtbl = *(void***)p;
-    void* (__thiscall *fn)(void*, void*) = (void* (__thiscall *)(void*, void*))vtbl[0x38];
-    fn(p, arg);
-    return p;
+void* CXTPControlRadioButton::OnCalcDynamicSize(int n) {
+    void* site = getSite();
+    void* p = *(void**)site;
+    void* (__thiscall *fn)(void*, void*, int) = *(void* (__thiscall **)(void*, void*, int))((char*)p + 0xe0);
+    fn(site, this, n);
+    return site;
 }

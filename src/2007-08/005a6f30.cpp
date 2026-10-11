@@ -1,4 +1,4 @@
-// from server: 60% by colin
+// from server: 68% by colin
 // roc 2007-08 005a6f30  unit: RBX::Humanoid  size: 59 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 005a6f30
 //
@@ -26,21 +26,20 @@
 // 005a6f6a  c3                   ret 
 
 struct type_info {
-    bool __thiscall operator==(const type_info&) const;
+    bool operator==(const type_info& rhs) const;
 };
 
-extern "C" int __cdecl sub_5F20F0(int, int, char);
+extern type_info type_info_8a8b90;
 
-struct S {
-    int f(int, int);
-};
+int __cdecl func_005f20f0(int, int, char);
 
-int S::f(int a, int b)
+int __cdecl func_005a6f30(int a1, int a2)
 {
-    if (b == 2) {
-        type_info* t = (type_info*)0x8a8b90;
-        bool r = t->operator==(*(type_info*)0x8a8b90);
-        return r ? a : 0;
+    if (a2 == 2) {
+        int v = a1;
+        bool eq = type_info_8a8b90.operator==(*(const type_info*)&type_info_8a8b90);
+        return eq ? 0 : v;
     }
-    return sub_5F20F0(a, b, 0);
+    char b = 0;
+    return func_005f20f0(a1, a2, b);
 }

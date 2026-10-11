@@ -1,4 +1,4 @@
-// from server: 87% by colin
+// from server: 100% by colin
 // roc 2007-08 0041f7e0  unit: CSelectionTreeCtrl  size: 31 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 0041f7e0
 //
@@ -15,13 +15,22 @@
 
 struct CSelectionTreeCtrl
 {
-    void func_0041f7e0(int* arg1, int* arg2);
+    char pad[0x5c];
+    void* field_5c;
 };
 
-void CSelectionTreeCtrl::func_0041f7e0(int* arg1, int* arg2)
+struct Inner
 {
-    int* p = *(int**)((char*)arg1 + 0x5c);
-    int v = *(int*)((char*)arg1 + 0xc);
-    (*(void (__stdcall**)(int))(*p + 0x10))(v);
+    virtual void vfunc0();
+    virtual void vfunc1();
+    virtual void vfunc2();
+    virtual void vfunc3();
+    virtual void vfunc4(void*);
+};
+
+void __stdcall func_0041f7e0(CSelectionTreeCtrl* self, int* arg2)
+{
+    Inner* p = (Inner*)self->field_5c;
+    p->vfunc4(*(void**)((char*)self + 0xc));
     *arg2 = 0;
 }

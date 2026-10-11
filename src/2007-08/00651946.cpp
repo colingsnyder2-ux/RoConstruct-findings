@@ -1,4 +1,4 @@
-// from server: 51% by colin
+// from server: 70% by colin
 // roc 2007-08 00651946  unit: CXTPToolBar  size: 53 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 00651946
 //
@@ -29,7 +29,7 @@ extern "C" void __stdcall SetLastError(unsigned long);
 
 extern "C" void __stdcall func_0062ff38(unsigned long, unsigned long);
 
-void func_00651946(int edi, int ebx, int ebp_minus_20)
+void __fastcall func_00651946(int edi, int ebx, int ebp_minus_20)
 {
     if (edi == 2)
         return;

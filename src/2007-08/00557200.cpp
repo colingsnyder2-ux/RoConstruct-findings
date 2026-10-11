@@ -1,4 +1,4 @@
-// from server: 91% by colin
+// from server: 100% by colin
 // roc 2007-08 00557200  unit: ChatEnter  size: 18 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 00557200
 //
@@ -9,17 +9,13 @@
 
 struct ChatEnter {
     char pad[0x1b8];
-
-    void assign();
+    void* str;
+    void SetError();
 };
 
-struct String {
-    void assign(const char*);
-};
+extern "C" void* (__thiscall *g_stringAssign)(void*, const char*);
+extern char g_errorString[];
 
-extern "C" void* __stdcall string_assign(void*, const char*);
-
-void ChatEnter::assign()
-{
-    ((String*)((char*)this + 0x1b8))->assign("list<T> too long");
+void ChatEnter::SetError() {
+    g_stringAssign((char*)this + 0x1b8, g_errorString);
 }

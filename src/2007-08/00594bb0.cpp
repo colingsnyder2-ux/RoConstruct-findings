@@ -1,38 +1,11 @@
-// from server: 94% by colin
-struct type_info
-{
-    bool operator==(const type_info&) const;
-};
-
-extern "C" void* __cdecl sub_00631392(void*);
-
-struct Inner
-{
-    char pad[0x318];
-    void* field_318;
-};
-
-struct Middle
-{
-    char pad[0x188];
-    Inner* field_188;
-};
-
-struct Outer
-{
-    char pad[0xc];
-    Middle* field_c;
-    bool f();
-};
-
-bool Outer::f()
-{
-    Inner* p = field_c->field_188;
-    void* q = p->field_318;
-    if (q != 0)
-    {
-        void* r = sub_00631392(q);
-        return ((const type_info*)0x8a5220)->operator==(*(const type_info*)r);
-    }
-    return false;
-}
+// from server: 100% by colin
+// roc-flags: /O2 /Ob2 /Oy /GF- /GS- /EHsc /MD
+struct P3 { char pad[0x318]; void* value; };
+struct P2 { char pad[0x188]; P3* p; };
+struct Obj { char pad[0xc]; P2* p; bool f(); };
+struct C {};
+extern "C" void* helper(void*);
+extern C c;
+typedef bool (__thiscall *Fn)(C*,void*);
+extern Fn slot;
+bool Obj::f(){ void* x=p->p->value; if(x){ x=helper(x); return slot(&c,x); } return false; }

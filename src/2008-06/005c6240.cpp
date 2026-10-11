@@ -1,20 +1,11 @@
-// from server: 77% by atomic.potato
-struct VArrowTool
-{
-    int *p;
-
-    int f();
-};
-
-extern "C" int __cdecl sub_6a1de2(int);
-extern "C" int __cdecl sub_802878(int, int);
-
-int VArrowTool::f()
-{
-    int *a = p;
-    int *b = (int *)a[0x204 / 4];
-    int v = b[0x3b0 / 4];
-    if (v)
-        sub_802878(sub_6a1de2(v), 0x94bc74);
-    return 0;
-}
+// from server: 100% by colin
+// roc-flags: /O2 /Ob2 /Oy /GF- /GS- /EHsc /MD
+struct P3 { char pad[0x3b0]; void* value; };
+struct P2 { char pad[0x204]; P3* p; };
+struct Obj { char pad[0xc]; P2* p; bool f(); };
+struct C {};
+extern "C" void* helper(void*);
+extern C c;
+typedef bool (__thiscall *Fn)(C*,void*);
+extern Fn slot;
+bool Obj::f(){ void* x=p->p->value; if(x){ x=helper(x); return slot(&c,x); } return false; }

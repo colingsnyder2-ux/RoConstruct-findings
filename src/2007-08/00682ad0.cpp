@@ -1,4 +1,4 @@
-// from server: 90% by colin
+// from server: 100% by colin
 // roc 2007-08 00682ad0  unit: CXTPPropertyGrid  size: 46 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 00682ad0
 //
@@ -24,7 +24,7 @@ struct CXTPPropertyGrid
     void SetField(void* p);
 };
 
-extern "C" void __stdcall sub_6301e4(void* p);
+extern "C" void __fastcall sub_6301e4(void* p);
 
 void CXTPPropertyGrid::SetField(void* p)
 {

@@ -1,4 +1,3 @@
-// from server: 63% by colin
 // roc 2007-08 004b9050  unit: RakPeer  size: 63 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 004b9050
 //
@@ -25,26 +24,9 @@
 // 004b908b  d9ee                 fldz 
 // 004b908d  59                   pop ecx
 // 004b908e  c3                   ret 
+// library openrbx-raknet/RakPeer.cpp (function ?GetDecompressionRatio@RakPeer@@UBEMXZ)
 
-struct RakPeer {
-    char pad[0x6d8];
-    unsigned int field_0x6d8;
-    char pad2[4];
-    int field_0x6e0;
-    float getRatio();
-};
-
-float RakPeer::getRatio()
-{
-    unsigned int a = field_0x6d8;
-    if (a != 0)
-        return 0.0f;
-    int b = field_0x6e0;
-    float fb = (float)b;
-    if (b < 0)
-        fb += 4294967296.0f;
-    float fa = (float)a;
-    if ((int)a < 0)
-        fa += 4294967296.0f;
-    return fb / fa;
-}
+// roc-lang: cpp
+// roc-cl: 50727
+// roc-flags: /O2 /EHsc /MD
+// roc-lib: openrbx-raknet RakPeer.cpp

@@ -1,4 +1,4 @@
-// from server: 67% by colin
+// from server: 72% by colin
 // roc 2007-08 00596c70  unit: RBX::LaserTool  size: 37 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 00596c70
 //
@@ -15,13 +15,12 @@
 // 00596c8f  83c418               add esp, 0x18
 // 00596c92  c20400               ret 4
 
-extern "C" int __cdecl G1_func_00596ae0(const char*, double, double);
-
-struct S {
-    int f(double* p);
+struct LaserTool {
+    void method(double*);
 };
 
-int S::f(double* p)
-{
-    return G1_func_00596ae0("%.3g", *p, *p);
+extern "C" void __cdecl sub_596ae0(double, double, const char*, int);
+
+void LaserTool::method(double* arg) {
+    sub_596ae0(arg[0], arg[0], (const char*)0x78d398, (int)this);
 }

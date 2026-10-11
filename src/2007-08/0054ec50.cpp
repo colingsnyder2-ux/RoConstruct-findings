@@ -1,4 +1,4 @@
-// from server: 89% by colin
+// from server: 100% by colin
 // roc 2007-08 0054ec50  unit: boost::iostreams::Uinput::?$filtering_stream  size: 59 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 0054ec50
 //
@@ -26,9 +26,9 @@ struct S {
     S* f(unsigned int);
 };
 
-extern "C" void __stdcall sub_54D4C0();
-extern "C" void __stdcall sub_62FC62(void*);
-extern "C" void (__stdcall *sub_77E4E4)(void*);
+extern "C" void __cdecl sub_54D4C0();
+extern "C" void __cdecl sub_62FC62(void*);
+extern "C" void (__cdecl *sub_77E4E4)(void*);
 
 extern int dword_77E4DC;
 extern int dword_77E4E0;

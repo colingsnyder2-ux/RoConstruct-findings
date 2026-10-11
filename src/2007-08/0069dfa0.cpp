@@ -1,4 +1,4 @@
-// from server: 90% by colin
+// from server: 100% by colin
 // roc 2007-08 0069dfa0  unit: CXTPPropertyGridItemBool  size: 29 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 0069dfa0
 //
@@ -22,8 +22,6 @@ extern "C" void __stdcall sub_00697a10(int value);
 void CXTPPropertyGridItemBool::SetValue(int value)
 {
     m_value = value;
-    unsigned int t = (unsigned int)(-(int)value);
-    t = (t != 0) ? 0xfffffffb : 0;
-    t = t + 5;
+    int t = (value == 0) ? 5 : 0;
     sub_00697a10(t);
 }

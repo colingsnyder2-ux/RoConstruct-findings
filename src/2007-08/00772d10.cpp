@@ -1,24 +1,8 @@
-// from server: 99% by colin
-// roc 2007-08 007708f0  unit: seg_00770000  size: 44 bytes
-// Make this compile to the exact bytes below, then: roc check 2007-08 007708f0
-//
-// 007708f0  6a01                 push 1
-// 007708f2  33c9                 xor ecx, ecx
-// 007708f4  51                   push ecx
-// 007708f5  51                   push ecx
-// 007708f6  b8a0ce4100           mov eax, 0x587810
-// 007708fb  50                   push eax
-// 007708fc  6898b67900           push 0x79b698
-// 00770901  683c677a00           push 0x7af670
-// 00770906  b980148c00           mov ecx, 0x8c3404
-// 0077090b  e830ffdcff           call 0x58acd0
-// 00770910  68f0957700           push 0x77a770
-// 00770915  e80904ecff           call 0x630d23
-// 0077091a  59                   pop ecx
-// 0077091b  c3                   ret 
-// library rbxgs/v8tree\Instance.cpp (function ??__Eprop_className@RBX@@YAXXZ)
-
-// roc-lang: cpp
-// roc-cl: 21022
+// from server: 100% by colin
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs v8tree/Instance.cpp
+#pragma pointers_to_members(full_generality, multiple_inheritance)
+struct B1{virtual void a();}; struct B2{virtual void b();};
+struct C:B1,B2{void m();}; void B1::a(){} void B2::b(){} void C::m(){}
+struct Obj{void run(const char*,const char*,void(C::*)(),int,int);};
+extern Obj obj; extern "C" void tail(void*);
+void func(){obj.run("IsPaused","Data",&C::m,0,1);tail((void*)0x7785b0);}

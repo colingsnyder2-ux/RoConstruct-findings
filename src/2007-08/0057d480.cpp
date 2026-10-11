@@ -1,4 +1,4 @@
-// from server: 74% by colin
+// from server: 100% by colin
 // roc 2007-08 0057d480  unit: RBX::VFlag::?$FactoryProduct::Creator  size: 65 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 0057d480
 //
@@ -26,37 +26,22 @@
 // 0057d4bb  5e                   pop esi
 // 0057d4bc  e9afcdedff           jmp 0x45a270
 
-struct RBX_Instance;
-struct RBX_ServiceProvider;
-
-struct RBX_ICreator {
-    virtual void f0();
-    virtual void f1();
+struct RBX_Instance {
+    char pad[0xbc];
+    RBX_Instance* field_bc;
 };
 
-struct RBX_Creator : RBX_ICreator {
-    RBX_Instance* findInstance(RBX_ServiceProvider* sp);
-};
+extern "C" void* __cdecl sub_630d36(RBX_Instance* p, int a, void* b, void* c, int d);
+extern "C" void* __fastcall sub_45a270(void* p);
 
-extern "C" RBX_Instance* __cdecl sub_00630d36(
-    RBX_ServiceProvider* a1,
-    int a2,
-    const char* a3,
-    const char* a4,
-    int a5);
-
-extern "C" void __cdecl sub_0045a270(RBX_Instance* a1);
-
-RBX_Instance* RBX_Creator::findInstance(RBX_ServiceProvider* sp)
+void* __cdecl sub_57d480(RBX_Instance* p)
 {
-    RBX_Instance* result;
-    while (sp != 0) {
-        result = sub_00630d36(sp, 0, (const char*)0x881f4c, (const char*)0x884e04, 0);
-        if (result != 0) {
-            sub_0045a270(result);
-            return result;
+    while (p != 0) {
+        void* r = sub_630d36(p, 0, (void*)0x881f4c, (void*)0x884e04, 0);
+        if (r != 0) {
+            return sub_45a270(r);
         }
-        sp = *(RBX_ServiceProvider**)((char*)sp + 0xbc);
+        p = p->field_bc;
     }
     return 0;
 }

@@ -1,4 +1,4 @@
-// from server: 57% by colin
+// from server: 72% by colin
 // roc 2007-08 00625780  unit: RBX::PartDragTool  size: 54 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 00625780
 //
@@ -23,13 +23,18 @@
 // 006257b3  c20400               ret 4
 
 struct PartDragTool {
-    void onMouseDown(int* hitPart);
+    int f(int* arg);
 };
 
-void PartDragTool::onMouseDown(int* hitPart) {
-    int x = *(short*)((char*)hitPart + 8);
-    int y = *(short*)((char*)hitPart + 10);
-    *(float*)((char*)this + 0x28) = (float)x;
-    *(float*)((char*)this + 0x2c) = (float)y;
-    (*(void(__thiscall**)(void*))((*(int*)this) + 0x20))(this);
+int PartDragTool::f(int* arg)
+{
+    int a = *(short*)((char*)arg + 8);
+    int b = *(short*)((char*)arg + 0xa);
+    float fa = (float)a;
+    float fb = (float)b;
+    *(float*)((char*)this + 0x28) = fa;
+    *(float*)((char*)this + 0x2c) = fb;
+    void (__thiscall *fn)(void*) = *(void (__thiscall **)(void*))((*(int*)this) + 0x20);
+    fn(this);
+    return (int)this;
 }

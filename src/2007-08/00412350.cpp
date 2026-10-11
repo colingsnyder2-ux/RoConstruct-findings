@@ -1,4 +1,4 @@
-// from server: 98% by colin
+// from server: 100% by atomic.potato
 // roc 2007-08 00412350  unit: VCContent::?$CComContainedObject  size: 78 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 00412350
 //
@@ -28,15 +28,16 @@
 // 00412399  8bc1                 mov eax, ecx
 // 0041239b  c20800               ret 8
 
-struct VCContent {};
-int __stdcall CompareContent(void* unused, const void* other);
+struct VCContent {
+    int CompareContent(const void* unused, const void* other);
+};
 
 extern const unsigned int g_content0;
 extern const unsigned int g_content1;
 extern const unsigned int g_content2;
 extern const unsigned int g_content3;
 
-int __stdcall CompareContent(void* unused, const void* other) {
+int VCContent::CompareContent(const void* unused, const void* other) {
     const unsigned int* p = (const unsigned int*)other;
     int result;
     if (p[0] == g_content0 &&

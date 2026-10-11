@@ -1,4 +1,4 @@
-// from server: 48% by colin
+// from server: 63% by colin
 // roc 2007-08 0055e4e0  unit: RBX::ClearBackpack  size: 47 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 0055e4e0
 //
@@ -21,23 +21,22 @@
 // 0055e507  e82437feff           call 0x541c30
 // 0055e50c  c20400               ret 4
 
-struct Backpack {
-    char pad[0xc];
-    void* field_c;
+struct RBX_ClearBackpack {
     void clearBackpack(int);
 };
 
-extern "C" void __stdcall sub_55E290(void*);
-extern "C" void* __stdcall sub_495820(void*);
-extern "C" void __stdcall sub_4887E0(void*);
-extern "C" void __stdcall sub_541C30(void*);
+extern "C" void __stdcall sub_55E290();
+extern "C" void* __cdecl sub_495820(void*);
+extern "C" void __stdcall sub_4887E0();
+extern "C" void __stdcall sub_541C30();
 
-void Backpack::clearBackpack(int) {
-    void* p = field_c;
-    sub_55E290(p);
-    void* q = sub_495820(field_c);
+void RBX_ClearBackpack::clearBackpack(int arg)
+{
+    void* p = *(void**)((char*)this + 0xc);
+    sub_55E290();
+    void* q = sub_495820(*(void**)((char*)this + 0xc));
     if (q) {
-        sub_4887E0(q);
-        sub_541C30(q);
+        sub_4887E0();
+        sub_541C30();
     }
 }

@@ -1,4 +1,4 @@
-// from server: 72% by colin
+// from server: 100% by colin
 // roc 2007-08 00643a10  unit: CXTPCommandBar  size: 46 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 00643a10
 //
@@ -22,21 +22,21 @@ struct CXTPCommandBar
 {
     char pad[0x164];
     void* field_164;
-
     void SetCommandBar(void* p);
 };
-
-extern "C" void __stdcall helper_6301e4(void* p);
 
 void CXTPCommandBar::SetCommandBar(void* p)
 {
     if (field_164 != 0)
-        helper_6301e4(field_164);
+    {
+        extern void __fastcall func_006301e4(void*);
+        func_006301e4(field_164);
+    }
     field_164 = p;
     if (p != 0)
     {
         void** vtbl = *(void***)p;
-        void (__stdcall *fn)(void*) = (void (__stdcall *)(void*))vtbl[0xa8 / 4];
+        void (__fastcall *fn)(void*) = (void (__fastcall *)(void*))vtbl[0x2a];
         fn(p);
     }
 }

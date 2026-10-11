@@ -1,4 +1,4 @@
-// from server: 84% by colin
+// from server: 94% by tester
 // roc 2007-08 00537e80  unit: RBX::Lua::ThreadRef::VNode::V?$shared_ptr::?$TItem  size: 89 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 00537e80
 //

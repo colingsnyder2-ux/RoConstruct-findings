@@ -1,4 +1,4 @@
-// from server: 55% by colin
+// from server: 57% by colin
 // roc 2007-08 005e6330  unit: RBX::P8Flag::?$GetSetImpl  size: 62 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 005e6330
 //
@@ -27,10 +27,10 @@
 
 struct GetSetImpl {
     char pad0[8];
-    int (__stdcall *get)(void*, int*);
-    char pad1[4];
+    int (__thiscall *get)(void*, int*);
     int offset;
-    int (__stdcall *set)(void*, int);
+    int index;
+    int (__thiscall *set)(void*, int);
     int f(int* out, int obj);
 };
 
@@ -45,10 +45,9 @@ int GetSetImpl::f(int* out, int obj)
     int* vt = *(int**)((char*)p + 0x168);
     int off = vt[idx];
     off += *(int*)((char*)this + 0xc);
-    int (__stdcall *fn)(void*, int*) = *(int (__stdcall **)(void*, int*))((char*)this + 8);
-    int* base = (int*)((char*)p + 0x168);
-    int* arg = (int*)((char*)base + off);
-    int r = fn(arg, out);
-    *out = *(int*)r;
+    int (__thiscall *fn)(void*, int*) = *(int (__thiscall **)(void*, int*))((char*)this + 8);
+    int* arg = (int*)((char*)p + off + 0x168);
+    int* r = (int*)fn(arg, out);
+    *out = *r;
     return (int)out;
 }

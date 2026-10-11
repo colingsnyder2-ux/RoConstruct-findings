@@ -1,4 +1,4 @@
-// from server: 76% by colin
+// from server: 100% by colin
 // roc 2007-08 00442c60  unit: 1RBX::Metadata::VReflection::?$FactoryProduct  size: 20 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 00442c60
 //
@@ -10,14 +10,14 @@
 // 00442c71  c20800               ret 8
 
 struct FactoryProduct {
-    int sub_442bb0(int, int);
-    int getValue(int, int);
+    int method_00442bb0(int, int);
+    int method_00442c60(int, int);
 };
 
-int FactoryProduct::getValue(int a, int b) {
+int FactoryProduct::method_00442c60(int a, int b) {
     int p = *(int*)((char*)this + 0xe8);
     if (p != 0) {
-        return sub_442bb0(a, b);
+        return ((FactoryProduct*)p)->method_00442bb0(a, b);
     }
     return 0;
 }

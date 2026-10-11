@@ -1,5 +1,5 @@
-// from server: 60% by colin
-// roc 2007-08 00560ab0  unit: RBX::VModelInstance::?$FilteredSelection  size: 47 bytes
+// from server: 70% by colin
+// roc 2007-08 00560ab0  unit: seg_00560000  size: 47 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 00560ab0
 //
 // 00560ab0  8b442404             mov eax, dword ptr [esp + 4]
@@ -17,18 +17,29 @@
 // 00560ad9  8bc6                 mov eax, esi
 // 00560adb  5e                   pop esi
 // 00560adc  c20400               ret 4
+// library rbxgs/v8datamodel\Selection.cpp (function ??0FilteredSelection@RBX@@QAE@PAVInstance@@@Z)
+
+// roc-lang: cpp
+// roc-cl: 50727
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: rbxgs v8datamodel/Selection.cpp
+
+struct Instance;
 
 struct FilteredSelection {
-    FilteredSelection(char*);
+    void construct(Instance*);
+    FilteredSelection(Instance*);
 };
 
-extern "C" void __stdcall G1_func_0077e698(void*, const char*);
-extern void G2_func_00560590();
+extern "C" void __stdcall basic_string_ctor(void*, const char*);
 
-FilteredSelection::FilteredSelection(char* name)
+void FilteredSelection::construct(Instance*)
 {
-    char buf[0x1c];
-    G1_func_0077e698(buf, "Controller1");
-    G2_func_00560590();
-    *(int*)this = 0x7a9528;
+}
+
+FilteredSelection::FilteredSelection(Instance* parent)
+{
+    char buf[28];
+    basic_string_ctor(buf, "FilteredSelection");
+    construct(parent);
 }

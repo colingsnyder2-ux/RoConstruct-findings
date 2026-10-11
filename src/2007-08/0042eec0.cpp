@@ -1,4 +1,4 @@
-// from server: 66% by colin
+// from server: 100% by colin
 // roc 2007-08 0042eec0  unit: CWrapperView  size: 19 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 0042eec0
 //
@@ -8,8 +8,6 @@
 // 0042eec9  c744240454597800     mov dword ptr [esp + 4], 0x785954
 // 0042eed1  ffe2                 jmp edx
 
-extern "C" int g_785954;
-
 struct CWrapperView {
     void Dispatch(int);
 };
@@ -18,6 +16,5 @@ void CWrapperView::Dispatch(int a) {
     typedef void (__thiscall *Fn)(void *, int);
     char *p = (char *)a;
     Fn fn = *(Fn *)(*(char **)p + 0xc);
-    *(int *)&g_785954 = 0x785954;
     fn(p, 0x785954);
 }

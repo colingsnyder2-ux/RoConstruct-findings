@@ -1,4 +1,4 @@
-// from server: 53% by colin
+// from server: 100% by colin
 // roc 2007-08 00495730  unit: RBX::Network::VPlayer::?$RefPropDescriptor  size: 65 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 00495730
 //
@@ -26,27 +26,21 @@
 // 0049576b  5e                   pop esi
 // 0049576c  e92ff2ffff           jmp 0x4949a0
 
-struct Instance {
-    Instance* findFirstChild(const char* name);
+struct RBXInstance {
+    char pad[0xbc];
+    RBXInstance* next;
 };
 
-struct Descriptor {
-    void* getValue(Instance* instance);
-};
+extern "C" int __cdecl sub_630d36(RBXInstance*, int, const char*, const char*, int);
+extern "C" void* __fastcall sub_4949a0(void*);
 
-struct RefPropDescriptor {
-    Instance* getValue(Instance* instance);
-};
-
-Instance* RefPropDescriptor::getValue(Instance* instance) {
-    if (instance == 0)
-        return 0;
-    for (;;) {
-        Descriptor* d = (Descriptor*)instance->findFirstChild("?");
-        if (d != 0)
-            return (Instance*)d->getValue(instance);
-        instance = *(Instance**)((char*)instance + 0xbc);
-        if (instance == 0)
-            return 0;
+void* __cdecl sub_495730(RBXInstance* p)
+{
+    while (p) {
+        int r = sub_630d36(p, 0, (const char*)0x881f4c, (const char*)0x884e04, 0);
+        if (r)
+            return sub_4949a0((void*)r);
+        p = p->next;
     }
+    return 0;
 }

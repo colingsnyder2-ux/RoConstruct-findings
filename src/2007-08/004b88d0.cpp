@@ -1,4 +1,4 @@
-// from server: 75% by colin
+// from server: 100% by colin
 // roc 2007-08 004b88d0  unit: RakPeer  size: 15 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 004b88d0
 //
@@ -10,14 +10,16 @@
 
 struct RakPeer {
     char pad0[4];
-    unsigned char field4;
-    char pad5[0x890];
-    unsigned char field895;
-    void f();
+    char field4;
+    char pad5[0x895 - 5];
+    char field895;
+    char get();
 };
 
-void RakPeer::f()
-{
-    if (field4 != 0)
+char RakPeer::get() {
+    char result = field4;
+    if (result != 0) {
         field895 = 0;
+    }
+    return result;
 }

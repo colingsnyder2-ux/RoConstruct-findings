@@ -1,4 +1,4 @@
-// from server: 77% by colin
+// from server: 100% by colin
 // roc 2007-08 004117f0  unit: boost::bad_any_cast  size: 18 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 004117f0
 //
@@ -13,13 +13,22 @@ struct type_info {
     bool operator==(const type_info&) const;
 };
 
-extern type_info type_info_basic_string;
+struct holder {
+    void* vtable;
+    void* pad;
+    type_info* info;
+};
+
+extern type_info type_info_8827f8;
+
+bool (type_info::*type_info_eq)(const type_info&) const;
 
 struct bad_any_cast {
-    type_info* info;
+    holder* h;
     bool matches() const;
 };
 
 bool bad_any_cast::matches() const {
-    return *info == type_info_basic_string;
+    holder* p = h;
+    return (type_info_8827f8.*type_info_eq)(*p->info);
 }

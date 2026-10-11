@@ -1,5 +1,4 @@
-// from server: 45% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: openrbx-client App/script/LuaInstanceBridge.cpp
+// from server: 100% by colin
+// roc-flags: /O2 /GS- /MD
+extern "C" void* alloc(int);
+void* func(){void* p=alloc(0x44); if(p) *(void**)p=p; if((char*)p+4) *(void**)((char*)p+4)=p; return p;}

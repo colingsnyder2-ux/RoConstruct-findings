@@ -1,4 +1,4 @@
-// from server: 85% by colin
+// from server: 100% by colin
 // roc 2007-08 005a31c0  unit: RBX::Teams  size: 33 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 005a31c0
 //
@@ -17,9 +17,13 @@ struct Teams {
     char field124;
 };
 
+int __stdcall getTeamFromPlayer(Teams* p);
+
+int __stdcall tail(int);
+
 int __stdcall getTeamFromPlayer(Teams* p)
 {
     if (p->field124 != 0)
         return 0;
-    return ((int (__stdcall*)(int))0x5a3130)(p->field120);
+    return tail(p->field120);
 }

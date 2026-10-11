@@ -1,4 +1,4 @@
-// from server: 82% by colin
+// from server: 100% by colin
 // roc 2007-08 006840e0  unit: PAVCXTPPropertyGridVerb::?$CArray  size: 33 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 006840e0
 //
@@ -13,51 +13,27 @@
 // 006840ff  5e                   pop esi
 // 00684100  c3                   ret 
 
-struct CXTPPropertyGridVerb {
-    void Construct();
-    void Clear();
-    int field34;
-    int Construct2();
-};
-
-void CXTPPropertyGridVerb::Construct() {
-    this->field34 = 0;
-}
-
-int CXTPPropertyGridVerb::Construct2() {
-    return 0;
-}
-
-extern "C" void __stdcall sub_73833A();
-extern "C" void __stdcall sub_684050();
-
 struct CArrayBase {
-    void Init();
-    void Destroy();
-    int m_nSize;
+    void BaseInit();
 };
 
-void CArrayBase::Init() {
-    sub_73833A();
-}
-
-void CArrayBase::Destroy() {
-    sub_684050();
-}
-
-struct PAVCXTPPropertyGridVerb_CArray {
-    void* vtable;
-    char pad[0x1C];
-    CArrayBase arr;
+struct CArrayDerived {
+    char pad0[0x20];
+    CArrayBase base;
+    char pad2[0x10];
     int field34;
 
-    PAVCXTPPropertyGridVerb_CArray* Construct();
+    CArrayDerived* Init();
 };
 
-PAVCXTPPropertyGridVerb_CArray* PAVCXTPPropertyGridVerb_CArray::Construct() {
-    sub_73833A();
-    this->vtable = (void*)0x7cf134;
-    sub_684050();
-    this->field34 = 0;
+extern "C" void __fastcall sub_73833a(void*);
+extern "C" void __fastcall sub_684050(CArrayBase*);
+
+CArrayDerived* CArrayDerived::Init()
+{
+    sub_73833a(this);
+    *(int*)this = 0x7cf134;
+    sub_684050(&base);
+    field34 = 0;
     return this;
 }

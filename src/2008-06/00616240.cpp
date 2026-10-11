@@ -1,5 +1,8 @@
-// from server: 87% by colin
-// roc-lang: cpp
-// roc-cl: 21022
+// from server: 100% by colin
+
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs util/Name.cpp
+void* __stdcall make_value_00616240();
+void* func_00616240() {
+    static void* value = make_value_00616240();
+    return value;
+}

@@ -1,4 +1,4 @@
-// from server: 61% by colin
+// from server: 100% by colin
 // roc 2007-08 0062d8b0  unit: RBX::Flying  size: 59 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 0062d8b0
 //
@@ -23,23 +23,21 @@
 struct Flying {
     char pad[0x28];
     float field28;
-    Flying* construct(float);
+    Flying* construct(int);
 };
 
 extern float g_79f738;
 extern float g_7c2b70;
-extern int g_7c4d04;
-extern int g_7c4cfc;
 
-extern "C" void __stdcall sub_626620(float, float, float);
+extern "C" void __stdcall sub_626620(int, float, float);
 
-Flying* Flying::construct(float a)
+Flying* Flying::construct(int a)
 {
     float x = g_79f738;
     float y = g_7c2b70;
-    sub_626620(x, y, a);
+    sub_626620(a, y, x);
     this->field28 = 0.0f;
-    *(int*)this = g_7c4d04;
-    *(int*)((char*)this + 8) = g_7c4cfc;
+    *(int*)this = 0x7c4d04;
+    *(int*)((char*)this + 8) = 0x7c4cfc;
     return this;
 }

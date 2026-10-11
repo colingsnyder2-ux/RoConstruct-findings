@@ -1,4 +1,4 @@
-// from server: 90% by colin
+// from server: 100% by colin
 // roc 2007-08 004c18e0  unit: RakPeer  size: 22 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 004c18e0
 //
@@ -11,13 +11,13 @@
 // 004c18ee  e8bde2ffff           call 0x4bfbb0
 // 004c18f3  c20800               ret 8
 
-extern "C" int __stdcall sub_004bfbb0(int, int, int, int);
-
-struct S_func_004c18e0 {
-    int f(int a, int b);
+struct RakPeer
+{
+    void sub_4bfbb0(int, int, int, int);
+    void func_4c18e0(int, int);
 };
 
-int S_func_004c18e0::f(int a, int b)
+void RakPeer::func_4c18e0(int a, int b)
 {
-    return sub_004bfbb0(a, b, 0, 0);
+    sub_4bfbb0(a, b, 0, 0);
 }

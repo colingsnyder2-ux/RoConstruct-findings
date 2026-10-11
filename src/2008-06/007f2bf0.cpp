@@ -1,5 +1,4 @@
-// from server: 93% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: openrbx-client App/v8datamodel/Feature.cpp
+// from server: 100% by colin
+// roc-flags: /O2 /Ob2 /Oy /GF- /GS- /EHsc /MD
+extern "C" int fn(void*,int);
+void func(){ *(volatile int*)0x00973cd4=fn((void*)0x0082d9d8,3001); }

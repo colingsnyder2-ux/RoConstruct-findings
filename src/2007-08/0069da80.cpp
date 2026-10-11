@@ -1,4 +1,4 @@
-// from server: 94% by colin
+// from server: 100% by colin
 // roc 2007-08 0069da80  unit: CXTPPropertyGridItemColor::?8??OnInplaceButtonDown::CPropertyGridItemColorColorPopup  size: 53 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 0069da80
 //
@@ -22,8 +22,8 @@
 // 0069dab1  5e                   pop esi
 // 0069dab2  c20400               ret 4
 
-extern "C" int __stdcall ReleaseCapture();
-extern "C" int __stdcall PostMessageA(void*, unsigned int, unsigned int, int);
+extern "C" int (__stdcall *ReleaseCapture)();
+extern "C" int (__stdcall *PostMessageA)(void*, unsigned int, unsigned int, int);
 
 struct CXTPPropertyGridItemColor {
     void OnInplaceButtonDown(int);

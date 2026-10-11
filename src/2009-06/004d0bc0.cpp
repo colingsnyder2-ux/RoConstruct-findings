@@ -1,5 +1,17 @@
-// from server: 57% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs util/Name.cpp
+// from server: 100% by colin
+// roc-flags: /O2 /GS- /EHsc /MD
+struct T4_004d0bc0 {
+    T4_004d0bc0();
+    virtual void f_004d0bc0();
+    char m_a;
+    char m_b;
+};
+T4_004d0bc0::T4_004d0bc0() : m_a(0), m_b(0) {}
+extern "C" void* create_other_004d0bc0(void*, void*, int);
+void* create_004d0bc0(void* unused, T4_004d0bc0* out, int type)
+{
+    if (type != 4)
+        return create_other_004d0bc0(unused, out, type);
+    out->T4_004d0bc0::T4_004d0bc0();
+    return out;
+}

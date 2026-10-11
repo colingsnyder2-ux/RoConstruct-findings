@@ -1,20 +1,4 @@
-// from server: 79% by colin
-struct S_seg_00770000 {
-    void f();
-};
-
-extern "C" void __stdcall sub_725520(void*, void*);
-extern "C" void* __stdcall sub_58da60();
-extern "C" void* __stdcall sub_407410(void*);
-extern "C" void __stdcall sub_4339d0();
-extern "C" void __stdcall sub_630d23(void*, void*);
-
-void S_seg_00770000::f()
-{
-    sub_725520((void*)0x8c37d8, (void*)0x58dde0);
-    void* p = sub_58da60();
-    void* q = sub_407410(&p);
-    sub_4339d0();
-    *(void**)q = (void*)0x8a4524;
-    sub_630d23((void*)0x77ac80, q);
-}
+// from server: 100% by colin
+// roc-flags: /O2 /Ob2 /Oy /GF- /GS- /EHsc /MD
+struct Obj_00773000 { Obj_00773000* get(); }; extern "C" void reg_00773000(void*,void*); extern "C" void* make_00773000(); extern "C" Obj_00773000* __stdcall wrap_00773000(void*); extern "C" void final_00773000(void*);
+void func_00773000() { void* local; reg_00773000((void*)0x58dde0,(void*)0x8c37d8); local=make_00773000(); Obj_00773000* o=wrap_00773000(&local)->get(); *(void**)o=(void*)0x8a4524; final_00773000((void*)0x77ac80); }

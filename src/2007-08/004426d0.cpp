@@ -1,4 +1,4 @@
-// from server: 82% by colin
+// from server: 100% by tester
 // roc 2007-08 004426d0  unit: CPropGrid  size: 33 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 004426d0
 //
@@ -14,19 +14,19 @@
 // 004426eb  034108               add eax, dword ptr [ecx + 8]
 // 004426ee  c20800               ret 8
 
-struct CPropGrid {
-    int f(int a, int b);
-    char pad[8];
-    int field8;
-    char pad2[8];
-    int field14;
-    int field18;
+struct CSelectionPropGrid
+{
+    int f(int, int);
+    int value0;
+    int value4;
+    int value8;
+    int valueC;
+    int value10;
+    int value14;
+    int value18;
 };
 
-int CPropGrid::f(int a, int b) {
-    int r = field18 * a;
-    r = (r + (r >> 31 & 7)) >> 3;
-    r += field14 * b;
-    r += field8;
-    return r;
+int CSelectionPropGrid::f(int a, int b)
+{
+    return ((value18 * a) / 8) + (value14 * b) + value8;
 }

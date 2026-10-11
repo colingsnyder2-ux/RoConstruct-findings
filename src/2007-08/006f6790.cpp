@@ -1,4 +1,4 @@
-// from server: 90% by colin
+// from server: 100% by colin
 // roc 2007-08 006f6790  unit: VCEdit::?$CXTMaskEditT  size: 63 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 006f6790
 //
@@ -27,17 +27,15 @@ struct CXTMaskEditT {
     char pad[0x9c];
     void* field_9c;
     void* field_a0;
-    void Refresh();
+    void Invalidate();
 };
 
-extern "C" int __stdcall InvalidateRect(void*, const void*, int);
+extern "C" int (__stdcall *InvalidateRect)(void*, const void*, int);
 
-void CXTMaskEditT::Refresh()
+void CXTMaskEditT::Invalidate()
 {
     if (field_9c != 0 && field_a0 != 0) {
-        void** vtbl = *(void***)field_a0;
-        void (__stdcall *fn)(void*) = (void (__stdcall *)(void*))vtbl[0x9c / 4];
-        fn(field_a0);
+        (*(void (__thiscall**)(void*))(*(int*)field_a0 + 0x9c))(field_a0);
         void* p = field_9c;
         if (p != 0) {
             InvalidateRect(*(void**)((char*)p + 0x20), 0, 0);

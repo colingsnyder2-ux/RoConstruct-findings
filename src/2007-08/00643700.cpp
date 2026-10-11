@@ -1,4 +1,4 @@
-// from server: 65% by colin
+// from server: 100% by colin
 // roc 2007-08 00643700  unit: CXTPCommandBar::CCommandBarCmdUI  size: 44 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 00643700
 //
@@ -14,17 +14,18 @@
 
 struct CXTPCommandBarCmdUI {
     char pad[0x28];
-    void* m_pCommandBar;
-    int m_nCmdID;
+    void* field_28;
+    int field_2c;
     void SetCheck(int nCheck);
 };
 
 void CXTPCommandBarCmdUI::SetCheck(int nCheck) {
-    m_nCmdID = 1;
-    void* p = m_pCommandBar;
+    field_2c = 1;
+    void* p = field_28;
     if (*(int*)((char*)p + 0xa0) != nCheck) {
         *(int*)((char*)p + 0xa0) = nCheck;
-        extern void __stdcall sub_63a690(void*, int);
-        sub_63a690(p, 1);
+        nCheck = 1;
+        extern void __stdcall sub_63A690(int);
+        sub_63A690(nCheck);
     }
 }

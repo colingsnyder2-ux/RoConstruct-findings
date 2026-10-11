@@ -1,4 +1,4 @@
-// from server: 86% by colin
+// from server: 100% by colin
 // roc 2007-08 0071a3d0  unit: CXTPRibbonControlSystemPopupBarListItem  size: 36 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 0071a3d0
 //
@@ -21,7 +21,6 @@
 
 struct CXTPRibbonControlSystemPopupBarListItem
 {
-    void* m_pUnknown;
     void* CreateItem(void* pParam);
 };
 
@@ -31,8 +30,8 @@ void* CXTPRibbonControlSystemPopupBarListItem::CreateItem(void* pParam)
 {
     void* pItem = func_0071a360();
     void** vtbl = *(void***)pItem;
-    typedef void* (__thiscall *Fn)(void*, void*);
+    typedef void* (__thiscall *Fn)(void*, void*, void*);
     Fn fn = (Fn)vtbl[0x38];
-    fn(pItem, pParam);
+    fn(pItem, this, pParam);
     return pItem;
 }

@@ -1,4 +1,4 @@
-// from server: 59% by colin
+// from server: 100% by colin
 // roc 2007-08 005fe120  unit: RBX::GameTool  size: 51 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 005fe120
 //
@@ -14,17 +14,21 @@
 // 005fe14d  b8b87f8c00           mov eax, 0x8c7fb8
 // 005fe152  c3                   ret 
 
-struct GameTool {
-    static float* getSomething();
+struct S_func_005fe120 {
+    float* f();
 };
 
-float* GameTool::getSomething()
+float* S_func_005fe120::f()
 {
-    if (!(*(unsigned char*)0x8c7fc4 & 1)) {
-        *(unsigned int*)0x8c7fc4 |= 1;
-        *(float*)0x8c7fb8 = 1.0f;
-        *(float*)0x8c7fbc = *(float*)0x7aa8b4;
-        *(float*)0x8c7fc0 = 0.0f;
+    static unsigned int init = 0;
+    static float a;
+    static float b;
+    static float c;
+    if (!(init & 1)) {
+        init |= 1;
+        a = 1.0f;
+        b = *(float*)0x7aa8b4;
+        c = a;
     }
-    return (float*)0x8c7fb8;
+    return &a;
 }

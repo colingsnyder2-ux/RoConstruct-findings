@@ -1,4 +1,4 @@
-// from server: 95% by colin
+// from server: 100% by colin
 // roc 2007-08 006516d0  unit: CXTPToolBar  size: 54 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 006516d0
 //
@@ -30,7 +30,7 @@ struct CXTPToolBar {
     int func(int, int);
 };
 
-extern "C" int __stdcall sub_67d150(int);
+extern "C" int __fastcall sub_67d150(int);
 
 int CXTPToolBar::func(int a, int b) {
     field_d4 = a;

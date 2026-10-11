@@ -1,5 +1,5 @@
-// from server: 98% by colin
+// from server: 100% by tester
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /MD
-// roc-lib: scintilla-mfc-1.20 ScintillaDocView.cpp
+// roc-lib: scintilla-mfc-1.20-shared ScintillaDocView.cpp

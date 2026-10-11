@@ -1,4 +1,4 @@
-// from server: 73% by colin
+// from server: 75% by colin
 // roc 2007-08 005b6ef0  unit: RBX::$02W4SurfaceType::?$SurfaceGetSet  size: 42 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 005b6ef0
 //
@@ -45,8 +45,7 @@ void SurfaceGetSet::setValue(DescribedBase* instance, const int& value) const {
         gs = 0;
     }
     DescribedBase* base = sub_573890(gs);
-    int* p = (int*)((char*)base + 0x10);
     int v = *(int*)&value;
     int fn = *(int*)((char*)this + 8);
-    ((void (__thiscall*)(void*, int))fn)(p, v);
+    ((void (__thiscall*)(char*, int))fn)((char*)base + 0x10, v);
 }

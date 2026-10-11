@@ -1,19 +1,4 @@
-// from server: 72% by colin
-struct CrashReporter {
-    void init();
-};
-
-extern "C" void __cdecl sub_725520(void*, void*);
-extern "C" void* __cdecl sub_41ffc0();
-extern "C" void* __cdecl sub_407410(void*);
-extern "C" void __cdecl sub_4339d0();
-extern "C" void __cdecl sub_630d23(void*, void*);
-
-void CrashReporter::init() {
-    sub_725520((void*)0x8bb4d8, (void*)0x4206b0);
-    void* p = sub_41ffc0();
-    void* q = sub_407410(&p);
-    sub_4339d0();
-    *(int*)q = 0x88636c;
-    sub_630d23((void*)0x777740, (void*)0x88636c);
-}
+// from server: 100% by colin
+// roc-flags: /O2 /Ob2 /Oy /GF- /GS- /EHsc /MD
+struct Obj_0076cd10 { Obj_0076cd10* get(); }; extern "C" void reg_0076cd10(void*,void*); extern "C" void* make_0076cd10(); extern "C" Obj_0076cd10* __stdcall wrap_0076cd10(void*); extern "C" void final_0076cd10(void*);
+void func_0076cd10() { void* local; reg_0076cd10((void*)0x4206b0,(void*)0x8bb4d8); local=make_0076cd10(); Obj_0076cd10* o=wrap_0076cd10(&local)->get(); *(void**)o=(void*)0x88636c; final_0076cd10((void*)0x777740); }

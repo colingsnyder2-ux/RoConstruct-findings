@@ -1,4 +1,4 @@
-// from server: 98% by colin
+// from server: 100% by colin
 // roc 2007-08 005f8b40  unit: RBX::VBrickColor::V?$Value::?$SignalDesc  size: 84 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 005f8b40
 //

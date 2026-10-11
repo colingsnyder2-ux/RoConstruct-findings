@@ -1,4 +1,4 @@
-// from server: 78% by colin
+// from server: 100% by colin
 // roc 2007-08 00670c40  unit: CXTPToolBar::CControlButtonExpand  size: 36 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 00670c40
 //
@@ -27,7 +27,7 @@ struct CXTPToolBar_CControlButtonExpand {
 void* CXTPToolBar_CControlButtonExpand::method_670C40(int arg) {
     void* p = sub_670BD0();
     void** vtbl = *(void***)p;
-    void (*fn)(void*, int) = (void (*)(void*, int))vtbl[0x38];
-    fn(p, arg);
+    void (__thiscall *fn)(void*, void*, int) = (void (__thiscall *)(void*, void*, int))vtbl[0x38];
+    fn(p, this, arg);
     return p;
 }

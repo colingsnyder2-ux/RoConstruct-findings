@@ -1,13 +1,16 @@
-// from server: 75% by colin
-struct CXTPMenuBar {
-    void* field_98;
-    CXTPMenuBar* sub_6a7640(void* arg);
+// from server: 100% by colin
+
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+struct Str_006a7640 { int words[8]; };
+extern void (__thiscall* str_ctor_006a7640)(Str_006a7640*, Str_006a7640*);
+struct X_006a7640 {
+    char pad[0x98];
+    Str_006a7640 value;
+    Str_006a7640* copy(Str_006a7640* out);
 };
-
-extern "C" void* __stdcall sub_77dd74(void*, void*);
-
-CXTPMenuBar* CXTPMenuBar::sub_6a7640(void* arg) {
-    void* local = 0;
-    sub_77dd74(reinterpret_cast<char*>(this) + 0x98, &local);
-    return this;
+Str_006a7640* X_006a7640::copy(Str_006a7640* out)
+{
+    volatile int zero = 0;
+    str_ctor_006a7640(out, &value);
+    return out;
 }

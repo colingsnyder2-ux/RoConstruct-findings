@@ -1,4 +1,4 @@
-// from server: 95% by colin
+// from server: 100% by colin
 // roc 2007-08 006c14f0  unit: XTPPaintThemes::CXTPOffice2003Theme  size: 64 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 006c14f0
 //
@@ -25,20 +25,21 @@
 // 006c152d  c20800               ret 8
 
 struct CXTPOffice2003Theme {
-    int* sub_6C14F0(int* p1, int* p2);
+    int sub_006420c0(int* a, int* b);
+    int func_006c14f0(int* a, int* b);
 };
 
-extern "C" int __stdcall sub_6420C0(int* a, int* b);
-
-int* CXTPOffice2003Theme::sub_6C14F0(int* p1, int* p2) {
-    int v = p2[0x3f];
-    if (v != 0 && v != 1) {
-        sub_6420C0(p1, p2);
-        return p1;
+int CXTPOffice2003Theme::func_006c14f0(int* a, int* b)
+{
+    int v = b[0xfc / 4];
+    if (v != 0 && v != 1)
+    {
+        sub_006420c0(a, b);
+        return (int)a;
     }
-    p1[0] = 4;
-    p1[1] = 2;
-    p1[2] = 2;
-    p1[3] = 2;
-    return p1;
+    a[0] = 4;
+    a[1] = 2;
+    a[2] = 2;
+    a[3] = 2;
+    return (int)a;
 }

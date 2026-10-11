@@ -1,5 +1,4 @@
-// from server: 96% by colin
-// roc-lang: cpp
-// roc-cl: 21022
+// from server: 100% by colin
 // roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: boost-1.34.1 libs/signals/src/signal_base.cpp
+struct B{void release();}; extern "C" void second(B*);
+struct S{char pad[4]; B* p; void f();}; void S::f(){B* q=p;if(q){q->release();second(q);}}

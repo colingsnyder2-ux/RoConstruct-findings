@@ -1,4 +1,4 @@
-// from server: 81% by colin
+// from server: 100% by colin
 // roc 2007-08 006b38a0  unit: CXTPControlGallery  size: 24 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 006b38a0
 //
@@ -26,7 +26,7 @@ int CXTPControlGallery::GetSelected()
         int p = *(int *)((char *)this - 0x20);
         if (p != 0)
         {
-            return sub_63a580(p);
+            return ((int (__thiscall *)(int))sub_63a580)(p);
         }
     }
     return result;

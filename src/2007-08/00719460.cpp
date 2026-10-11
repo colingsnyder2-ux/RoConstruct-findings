@@ -1,4 +1,4 @@
-// from server: 89% by colin
+// from server: 100% by colin
 // roc 2007-08 00719460  unit: CXTPRibbonGroupPopupToolBar  size: 28 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 00719460
 //
@@ -13,29 +13,17 @@
 // 00719478  5e                   pop esi
 // 00719479  c20400               ret 4
 
-struct Inner;
-
-struct InnerVtbl
-{
-    char pad[0x150];
-    void (__stdcall *func150)(int);
+struct CXTPRibbonGroupPopupToolBar {
+    void* m_pUnknown; // placeholder for offset 0x24c
+    void* sub_00719460(void* arg);
 };
 
-struct Inner
+void* CXTPRibbonGroupPopupToolBar::sub_00719460(void* arg)
 {
-    InnerVtbl *vtbl;
-};
-
-struct Outer
-{
-    char pad[0x24c];
-    Inner *inner;
-    int method(int arg);
-};
-
-int Outer::method(int arg)
-{
-    Inner *p = this->inner;
-    p->vtbl->func150(arg);
+    void* p = *(void**)((char*)this + 0x24c);
+    void** vtbl = *(void***)p;
+    typedef void* (__thiscall *Fn)(void*, void*);
+    Fn fn = (Fn)vtbl[0x150 / 4];
+    fn(p, arg);
     return arg;
 }

@@ -1,4 +1,4 @@
-// from server: 52% by colin
+// from server: 100% by colin
 // roc 2007-08 0064ead0  unit: CXTPToolBar::CControlButtonHide  size: 39 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 0064ead0
 //
@@ -15,20 +15,17 @@
 // 0064eaf6  c3                   ret 
 
 struct CXTPToolBar_CControlButtonHide {
-    char pad[0x168];
-    int field_168;
-    int field_16c;
-    void base_init();
-    CXTPToolBar_CControlButtonHide();
+    void* construct();
 };
 
-void CXTPToolBar_CControlButtonHide::base_init() {
-}
+extern "C" void __stdcall sub_6ca460();
 
-CXTPToolBar_CControlButtonHide::CXTPToolBar_CControlButtonHide() {
-    base_init();
-    field_168 = 0;
-    field_16c = 0;
-    *(int*)this = 0x7c7014;
+void* CXTPToolBar_CControlButtonHide::construct()
+{
+    sub_6ca460();
+    *(int*)((char*)this + 0x168) = 0;
+    *(int*)((char*)this + 0x16c) = 0;
+    *(int*)((char*)this) = 0x7c7014;
     *(int*)((char*)this + 0x20) = 0x7c6fb4;
+    return this;
 }

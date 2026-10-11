@@ -1,4 +1,4 @@
-// from server: 59% by colin
+// from server: 72% by colin
 // roc 2007-08 0064cb60  unit: CXTPImageManagerIconSet  size: 48 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 0064cb60
 //
@@ -29,13 +29,13 @@ struct CXTPImageManagerIconSet {
 };
 
 extern "C" int __stdcall sub_634A60(int *a, int b);
-extern "C" int __stdcall sub_6A2CE0(int a);
-extern "C" int __stdcall sub_6301E4(int a);
+extern "C" int __stdcall sub_6A2CE0(int a, int b);
+extern "C" void __stdcall sub_6301E4(int a);
 
 void CXTPImageManagerIconSet::sub_64CB60(int arg) {
     int local;
     if (sub_634A60(&local, arg)) {
-        sub_6A2CE0(arg);
+        sub_6A2CE0(field_24, arg);
         sub_6301E4(local);
     }
 }

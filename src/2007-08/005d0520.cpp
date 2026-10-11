@@ -1,4 +1,4 @@
-// from server: 60% by colin
+// from server: 66% by colin
 // roc 2007-08 005d0520  unit: RBX::LocalBackpackItem  size: 15 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 005d0520
 //
@@ -10,11 +10,11 @@ struct LocalBackpackItem {
     char pad[0xbc];
     int field_bc;
     void func_005d0480();
-    void func_005d0520();
+    void func_005d0520(int);
 };
 
-void LocalBackpackItem::func_005d0520()
+void LocalBackpackItem::func_005d0520(int arg)
 {
-    field_bc = 0;
+    field_bc = arg;
     func_005d0480();
 }

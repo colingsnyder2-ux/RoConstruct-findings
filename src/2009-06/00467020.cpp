@@ -1,5 +1,17 @@
-// from server: 59% by colin
-// roc-lang: cpp
-// roc-cl: 21022
+// from server: 100% by colin
 // roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: boost-1.34.1 libs/filesystem/src/operations.cpp
+struct T4_00467020 {
+    T4_00467020();
+    virtual void f_00467020();
+    char m_a;
+    char m_b;
+};
+T4_00467020::T4_00467020() : m_a(0), m_b(0) {}
+extern "C" void* create_other_00467020(void*, void*, int);
+void* create_00467020(void* unused, T4_00467020* out, int type)
+{
+    if (type != 4)
+        return create_other_00467020(unused, out, type);
+    out->T4_00467020::T4_00467020();
+    return out;
+}

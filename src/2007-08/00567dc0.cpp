@@ -1,4 +1,4 @@
-// from server: 63% by colin
+// from server: 77% by colin
 // roc 2007-08 00567dc0  unit: RBX::RootInstance  size: 68 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 00567dc0
 //
@@ -32,22 +32,23 @@
 // 00567e02  5b                   pop ebx
 // 00567e03  c3                   ret 
 
-struct RBX_RootInstance {
-    void insertInstancesHelper(int* begin, int* end, int base, int arg, int arg2, int arg3, int* out);
+struct RBX_RootInstance_Helper {
+    void insertInstancesImpl(int* begin, int* end, int base, int arg1, int arg2, int arg3);
 };
 
-void RBX_RootInstance::insertInstancesHelper(int* begin, int* end, int base, int arg, int arg2, int arg3, int* out)
+void RBX_RootInstance_Helper::insertInstancesImpl(int* begin, int* end, int base, int arg1, int arg2, int arg3)
 {
-    int* it = begin;
-    while (it != end)
+    typedef void (__thiscall *Fn)(void*, int);
+    while (begin != end)
     {
-        int ecx = *it + base;
-        void (__thiscall *fn)(int, int) = *(void (__thiscall **)(int, int))(*(int*)(&arg2));
-        fn(ecx, arg3);
-        it += 2;
+        void* obj = *(void**)begin;
+        Fn fn = *(Fn*)((char*)&arg1 + 4);
+        fn((char*)obj + base, arg3);
+        begin += 2;
     }
-    out[0] = arg;
+    int* out = (int*)arg1;
+    out[0] = (int)begin;
     out[1] = base;
-    out[2] = arg2;
-    out[3] = arg3;
+    out[2] = arg3;
+    out[3] = arg2;
 }

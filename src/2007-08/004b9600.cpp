@@ -1,4 +1,3 @@
-// from server: 71% by colin
 // roc 2007-08 004b9600  unit: RakPeer  size: 72 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 004b9600
 //
@@ -30,36 +29,9 @@
 // 004b9643  894e04               mov dword ptr [esi + 4], ecx
 // 004b9646  5e                   pop esi
 // 004b9647  c3                   ret 
+// library openrbx-raknet/RakPeer.cpp (function ?WriteLock@?$SingleProducerConsumer@UBufferedCommandStruct@RakPeer@@@DataStructures@@QAEPAUBufferedCommandStruct@RakPeer@@XZ)
 
-struct RakPeer {
-    char pad0[4];
-    struct Inner *field4;
-    struct Inner *field8;
-    void func();
-};
-
-struct Inner {
-    char pad0[0x38];
-    char field38;
-    char pad39[3];
-    struct Inner *field3c;
-};
-
-void RakPeer::func() {
-    Inner *p = this->field4;
-    if (p->field3c != this->field8) {
-        Inner *q = this->field4;
-        if (q->field3c->field38 != 1) {
-            goto after;
-        }
-    }
-    {
-        Inner *r = this->field4;
-        Inner *saved = r->field3c;
-        Inner *allocated = (Inner *)operator new(0x40);
-        this->field4->field3c = allocated;
-        this->field4->field3c->field3c = saved;
-    }
-after:
-    this->field4 = this->field4->field3c;
-}
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /EHsc /MD
+// roc-lib: openrbx-raknet RakPeer.cpp

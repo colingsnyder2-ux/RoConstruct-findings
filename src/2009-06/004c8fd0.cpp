@@ -1,5 +1,4 @@
-// from server: 36% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: boost-1.34.1 libs/date_time/src/gregorian/greg_month.cpp
+// from server: 100% by colin
+// roc-flags: /O2 /Ob2 /Oy /GS- /EHsc /MD
+extern "C" void helper_004c8fd0(void*,int,int,int);
+void func_004c8fd0(void* a,void* b,int c) { if(c!=4){ int old=c; *(volatile unsigned char*)&c=0; helper_004c8fd0((void*)a,(int)b,old,c); return; } *(int*)b=0x9ef7a0; ((char*)b)[4]=0; ((char*)b)[5]=0; }

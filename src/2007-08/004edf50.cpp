@@ -1,4 +1,4 @@
-// from server: 44% by colin
+// from server: 69% by colin
 // roc 2007-08 004edf50  unit: HeadBuilder  size: 47 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 004edf50
 //
@@ -22,12 +22,23 @@ struct HeadBuilder {
     char pad[0x20];
     float f20;
     unsigned short w24;
-    void method(unsigned int arg);
+    void sub_4edf50(int);
 };
 
-extern void __cdecl helper(unsigned short a, unsigned short b, float c, unsigned int d);
-
-void HeadBuilder::method(unsigned int arg)
+void HeadBuilder::sub_4edf50(int arg)
 {
-    helper(w24, w24, f20, arg);
+    struct Local {
+        unsigned short a;
+        unsigned short b;
+        float c;
+    } local;
+    local.a = w24;
+    local.c = f20;
+    local.b = w24;
+    int v = arg;
+    unsigned short a = local.a;
+    unsigned short b = local.b;
+    float c = local.c;
+    extern void __stdcall func_4ecc60(unsigned short, unsigned short, float, int);
+    func_4ecc60(a, b, c, v);
 }

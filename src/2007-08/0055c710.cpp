@@ -1,4 +1,4 @@
-// from server: 53% by colin
+// from server: 61% by colin
 // roc 2007-08 0055c710  unit: RBX::VDataModel::?$BoundFuncDesc  size: 64 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 0055c710
 //
@@ -25,18 +25,25 @@
 // 0055c74d  c20800               ret 8
 
 struct BoundFuncDesc {
-    void destroy(int a, int b);
+    void construct(char* dst, const char* src);
 };
 
-extern "C" void* __stdcall sub_77e69c();
+extern "C" void __stdcall sub_77E69C();
 
-void BoundFuncDesc::destroy(int a, int b)
+void BoundFuncDesc::construct(char* dst, const char* src)
 {
-    sub_77e69c();
-    void (*fn)(void*) = *(void(**)(void*))((char*)this + 0x28);
-    fn((char*)this + 0x2c + a);
-    if (b) {
-        void** vtbl = *(void***)b;
-        ((void(__thiscall*)(void*, int))vtbl[0])((void*)b, 1);
+    char* saved;
+    saved = dst;
+    sub_77E69C();
+    void (__thiscall *fn)(void*, int);
+    fn = *(void (__thiscall **)(void*, int))((char*)this + 0x28);
+    int arg = *(int*)((char*)this + 0x2c);
+    fn((char*)this + 0x2c, arg);
+    void* p = *(void**)(dst + 0xc);
+    *(int*)(dst + 0x24) = -1;
+    if (p) {
+        void** vt = *(void***)p;
+        void (__thiscall *dtor)(void*, int) = (void (__thiscall *)(void*, int))vt[0];
+        dtor(p, 1);
     }
 }

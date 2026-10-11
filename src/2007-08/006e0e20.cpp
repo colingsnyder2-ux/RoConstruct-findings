@@ -1,4 +1,4 @@
-// from server: 90% by colin
+// from server: 100% by colin
 // roc 2007-08 006e0e20  unit: CXTPDockingPaneTabbedContainer  size: 48 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 006e0e20
 //
@@ -17,33 +17,22 @@
 // 006e0e47  ff15dcec7700         call dword ptr [0x77ecdc]
 // 006e0e4d  c20800               ret 8
 
-extern "C" int __stdcall InvalidateRect(void*, const void*, int);
+extern "C" __declspec(dllimport) int __stdcall InvalidateRect(void*, const void*, int);
 
-struct Inner
-{
-    char pad0[0x20];
-    int field_20;
-};
-
-struct Outer
-{
+struct CXTPDockingPaneTabbedContainer {
     char pad[0xf0];
     int field_f0;
-    int method(int, int);
+    void CheckAndInvalidate(void* p, int bErase);
 };
 
-int Outer::method(int a, int b)
-{
-    if (this->field_f0 != 0)
-        return 0;
-
-    Inner* p = (Inner*)((char*)this - 0xa8);
-    if (p == 0)
-        return 0;
-    if (p->field_20 == 0)
-        return 0;
-
-    int h = *(int*)((char*)this - 0x88);
-    InvalidateRect((void*)h, (const void*)a, 0);
-    return 0;
+void CXTPDockingPaneTabbedContainer::CheckAndInvalidate(void* p, int bErase) {
+    if (field_f0 != 0)
+        return;
+    char* base = (char*)this - 0xa8;
+    if (base == 0)
+        return;
+    if (*(int*)(base + 0x20) == 0)
+        return;
+    void* hwnd = *(void**)((char*)this - 0x88);
+    InvalidateRect(hwnd, p, 0);
 }

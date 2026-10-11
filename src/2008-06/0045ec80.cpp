@@ -1,20 +1,4 @@
-// from server: 91% by atomic.potato
-typedef int (__cdecl *Callback)(void *, void *, void *, int);
-
-extern "C" int __cdecl sub_006A17C6(
-    int,
-    void *,
-    void *,
-    void *,
-    int
-);
-
-struct StatsService
-{
-    int f(void *);
-};
-
-int StatsService::f(void *arg)
-{
-    return sub_006A17C6((int)arg, (void *)0x92907C, (void *)0x9320F4, 0, 0) != 0;
-}
+// from server: 100% by colin
+// roc-flags: /O2 /Ob2 /Oy /GF- /GS- /EHsc /MD
+extern "C" int helper(void*,int,void*,void*,int);
+bool __stdcall func(void* p){return helper(p,0,(void*)0x92907c,(void*)0x9320f4,0)!=0;}

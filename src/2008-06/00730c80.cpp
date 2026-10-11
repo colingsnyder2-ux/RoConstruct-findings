@@ -1,17 +1,5 @@
-// from server: 69% by atomic.potato
-extern "C" int __cdecl func_0072e380(int, int, int);
-
-struct S
-{
-    int func_0072f070();
-};
-
-int S::func_0072f070()
-{
-    return 0;
-}
-
-int __stdcall func_00730c80(int a, int b)
-{
-    return ((S*)func_0072e380(a, b, 0))->func_0072f070();
-}
+// from server: 100% by tester
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /MD /GS /EHsc /Ob1
+// roc-lib: xtp-11.2.2-shared-mfc Source\CommandBars\XTPControlGallery.cpp

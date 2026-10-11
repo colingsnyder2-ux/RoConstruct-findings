@@ -1,4 +1,4 @@
-// from server: 97% by colin
+// from server: 100% by atomic.potato
 // roc 2007-08 0067d8b0  unit: CXTPControlSelector  size: 96 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 0067d8b0
 //

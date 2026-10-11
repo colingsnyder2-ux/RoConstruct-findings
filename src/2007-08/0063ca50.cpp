@@ -1,4 +1,4 @@
-// from server: 91% by colin
+// from server: 100% by colin
 // roc 2007-08 0063ca50  unit: CXTPControl  size: 36 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 0063ca50
 //
@@ -28,7 +28,7 @@ void* CXTPControl::f(int arg)
 {
     void* p = GetSomething();
     void* vtable = *(void**)p;
-    void (*fn)(void*, void*, int) = *(void (**)(void*, void*, int))((char*)vtable + 0xe0);
+    void (__thiscall *fn)(void*, void*, int) = *(void (__thiscall **)(void*, void*, int))((char*)vtable + 0xe0);
     fn(p, this, arg);
     return p;
 }

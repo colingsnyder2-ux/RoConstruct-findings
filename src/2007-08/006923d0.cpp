@@ -1,4 +1,4 @@
-// from server: 79% by colin
+// from server: 100% by colin
 // roc 2007-08 006923d0  unit: CXTPStatusBar  size: 52 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 006923d0
 //
@@ -21,17 +21,17 @@
 struct CXTPStatusBar {
     char pad[0xb8];
     void* m_pFrameHelper;
-    void* m_pFrameHelperWin;
+    int m_bFrameHelperActive;
     void* GetFrameHelper();
 };
 
-extern "C" void* __stdcall sub_63dcb0(void*);
-extern "C" void* __stdcall sub_6321d0(void*);
+extern "C" void* __cdecl sub_63dcb0(int);
+extern "C" void* __fastcall sub_6321d0(void*);
 extern void* g_8c86d8;
 
 void* CXTPStatusBar::GetFrameHelper()
 {
-    if (m_pFrameHelperWin == 0)
+    if (m_bFrameHelperActive == 0)
         return 0;
     if (m_pFrameHelper != 0)
         return sub_6321d0(m_pFrameHelper);

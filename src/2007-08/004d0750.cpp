@@ -1,4 +1,4 @@
-// from server: 53% by colin
+// from server: 60% by colin
 // roc 2007-08 004d0750  unit: RBX::View::PartChunk  size: 64 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 004d0750
 //
@@ -31,46 +31,56 @@
 // 004d078c  5b                   pop ebx
 // 004d078d  c20400               ret 4
 
-struct PartChunk {
-    struct Node {
-        Node* left;
-        Node* right;
-        Node* parent;
-        int key;
-        char color;
-        char pad[3];
-    };
-
-    struct Tree {
-        Node* header;
-        Node* root;
-        Node* leftmost;
-        Node* rightmost;
-        int count;
-    };
-
-    Tree* tree;
-
-    Node* find(Node* arg);
+struct PartChunkNode
+{
+    PartChunkNode* left;
+    PartChunkNode* parent;
+    PartChunkNode* right;
+    char pad_0c[0x0c];
+    int key;
+    char pad_1c[0x05];
+    unsigned char isNil;
 };
 
-PartChunk::Node* PartChunk::find(Node* arg) {
-    Node* x = tree->header->parent;
-    Node* y = tree->header;
-    while (x->color == 0) {
-        if (x->key < arg->key) {
-            x = x->right;
-        } else if (x->key > arg->key) {
-            y = x;
-            x = x->left;
-        } else {
-            if (x < arg) {
-                x = x->right;
-            } else {
-                y = x;
-                x = x->left;
+struct PartChunk
+{
+    char pad_0[0x4];
+    PartChunkNode* header;
+    PartChunkNode* find(PartChunkNode* hint);
+};
+
+PartChunkNode* PartChunk::find(PartChunkNode* hint)
+{
+    PartChunkNode* node = header->parent;
+    if (node->isNil)
+        return node;
+
+    PartChunkNode* result;
+    int hintKey = hint->key;
+    while (1)
+    {
+        int nodeKey = node->key;
+        if (nodeKey < hintKey)
+        {
+            node = node->right;
+        }
+        else if (nodeKey > hintKey)
+        {
+            result = node;
+            node = node->left;
+        }
+        else
+        {
+            if ((unsigned char)(&node->key < &hint->key))
+                node = node->right;
+            else
+            {
+                result = node;
+                node = node->left;
             }
         }
+        if (node->isNil)
+            break;
     }
-    return y;
+    return result;
 }

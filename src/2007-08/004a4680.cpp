@@ -1,4 +1,4 @@
-// from server: 37% by colin
+// from server: 53% by colin
 // roc 2007-08 004a4680  unit: RBX::VNetworkSettings::?$FactoryProduct  size: 58 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 004a4680
 //
@@ -26,33 +26,24 @@
 // 004a46b7  c21000               ret 0x10
 
 struct S {
-    char pad0[4];
-    int field4;
-    char pad8[8];
-    int field10;
-    int field14;
-    int field18;
     int f(int, int, int, int);
 };
 
-extern "C" void __cdecl sub_62FC62(int);
+extern "C" void __cdecl sub_0062FC62(int);
 
 int S::f(int a, int b, int c, int d)
 {
-    S* self = this;
-    int* p = (int*)&a;
-    (void)p;
-    self->field4 = b;
-    self->field10 = c;
-    self->field14 = d;
-    int edi = (int)self;
-    if (edi != 0) {
-        edi = 0;
+    int* p = (int*)a;
+    p[1] = b;
+    p[4] = c;
+    p[5] = d;
+    int* q = p;
+    if (q != 0)
+        q = 0;
+    int old = *(int*)(b + 0x18);
+    if (q != (int*)old) {
+        sub_0062FC62(old);
     }
-    int old = self->field18;
-    if (edi != old) {
-        sub_62FC62(old);
-    }
-    self->field18 = edi;
-    return (int)self;
+    *(int*)(b + 0x18) = (int)q;
+    return b;
 }

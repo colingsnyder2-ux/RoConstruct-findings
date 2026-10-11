@@ -1,4 +1,4 @@
-// from server: 86% by colin
+// from server: 100% by colin
 // roc 2007-08 0048e120  unit: RBX::Network::VPlayer::?$RefPropDescriptor  size: 65 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 0048e120
 //
@@ -26,26 +26,21 @@
 // 0048e15b  5e                   pop esi
 // 0048e15c  e93fecffff           jmp 0x48cda0
 
-struct RBX_Instance;
-struct RBX_ServiceProvider;
-
-extern "C" int __cdecl sub_00630D36(RBX_Instance* self, int a2, const char* a3, const char* a4, int a5);
-extern "C" void __cdecl sub_0048CDA0(int* p);
-
-struct RBX_Instance {
+struct RBXInstance {
     char pad[0xbc];
-    RBX_Instance* next;
+    RBXInstance* next;
 };
 
-int __cdecl sub_0048E120(RBX_Instance* inst)
+extern "C" int __cdecl sub_630d36(RBXInstance*, int, const char*, const char*, int);
+extern "C" void* __fastcall sub_48cda0(void*);
+
+void* __cdecl sub_48e120(RBXInstance* p)
 {
-    while (inst) {
-        int r = sub_00630D36(inst, 0, (const char*)0x881F4C, (const char*)0x884E04, 0);
-        if (r == 0) {
-            sub_0048CDA0((int*)r);
-            return r;
-        }
-        inst = inst->next;
+    while (p) {
+        int r = sub_630d36(p, 0, (const char*)0x881f4c, (const char*)0x884e04, 0);
+        if (r)
+            return sub_48cda0((void*)r);
+        p = p->next;
     }
     return 0;
 }

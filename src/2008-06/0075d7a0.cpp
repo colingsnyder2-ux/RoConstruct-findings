@@ -1,12 +1,5 @@
-// from server: 17% by colin
-struct CXTPDockingPaneClientContainer {
-    void sub_75D550();
-    void sub_6A1136();
-    void func();
-};
-
-void CXTPDockingPaneClientContainer::func()
-{
-    sub_75D550();
-    sub_6A1136();
-}
+// from server: 100% by tester
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /MD /GS /EHsc /Ob1
+// roc-lib: xtp-11.2.2-shared-mfc Source\PropertyGrid\XTPPropertyGridItem.cpp

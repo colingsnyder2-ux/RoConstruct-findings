@@ -1,5 +1,3 @@
-// from server: 56% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs-view MaterialFactory.cpp
+// from server: 100% by colin
+// roc-flags: /O2 /GS- /MD
+struct S{float f1(); float f2(); double f();}; double S::f(){float a=f1(); return a+f2();}

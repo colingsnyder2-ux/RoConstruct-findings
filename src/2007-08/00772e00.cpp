@@ -1,23 +1,4 @@
-// from server: 79% by colin
-struct FactoryProduct_Explosion {
-    void* field0;
-    void* field4;
-};
-
-extern "C" void __cdecl sub_725520(const char*, const char*);
-extern "C" void* __cdecl sub_587D30();
-extern "C" void* __cdecl sub_407410(void**);
-extern "C" void __cdecl sub_4339D0(void*);
-extern "C" void __cdecl sub_630D23(void*);
-
-void __cdecl sub_772E00()
-{
-    void* p;
-    sub_725520((const char*)0x8C34FC, (const char*)0x588120);
-    p = sub_587D30();
-    void** pp = &p;
-    void* obj = sub_407410(pp);
-    sub_4339D0(obj);
-    *(void**)obj = (void*)0x8A357C;
-    sub_630D23((void*)0x77A840);
-}
+// from server: 100% by colin
+// roc-flags: /O2 /Ob2 /Oy /GF- /GS- /EHsc /MD
+struct Obj_00772e00 { Obj_00772e00* get(); }; extern "C" void reg_00772e00(void*,void*); extern "C" void* make_00772e00(); extern "C" Obj_00772e00* __stdcall wrap_00772e00(void*); extern "C" void final_00772e00(void*);
+void func_00772e00() { void* local; reg_00772e00((void*)0x588120,(void*)0x8c34fc); local=make_00772e00(); Obj_00772e00* o=wrap_00772e00(&local)->get(); *(void**)o=(void*)0x8a357c; final_00772e00((void*)0x77a840); }

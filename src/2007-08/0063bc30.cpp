@@ -1,4 +1,4 @@
-// from server: 32% by colin
+// from server: 52% by colin
 // roc 2007-08 0063bc30  unit: PAVCXTPControlAction::?$CArray  size: 51 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 0063bc30
 //
@@ -22,29 +22,27 @@
 // 0063bc5d  c3                   ret 
 // 0063bc5e  e9bd42ffff           jmp 0x62ff20
 
-struct CArray {
+struct CXTPControlAction
+{
     char pad[0x60];
     void** m_pData;
-    int m_nSize;
+    int m_nCount;
     void RemoveAll();
 };
 
-extern "C" void __cdecl func_0062ff20();
+extern "C" void __stdcall sub_639DB0(void*);
 
-void CArray::RemoveAll()
+void CXTPControlAction::RemoveAll()
 {
     int i = 0;
-    if (m_nSize > 0)
+    if (m_nCount > 0)
     {
         do
         {
-            if (i < 0 || i >= m_nSize)
-            {
-                func_0062ff20();
-            }
-            void* p = m_pData[i];
-            ((void (__thiscall*)(void*))0x639db0)(p);
+            if (i < 0 || i >= m_nCount)
+                break;
+            sub_639DB0(m_pData[i]);
             ++i;
-        } while (i < m_nSize);
+        } while (i < m_nCount);
     }
 }

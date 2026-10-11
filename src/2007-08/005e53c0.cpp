@@ -1,4 +1,4 @@
-// from server: 81% by colin
+// from server: 100% by colin
 // roc 2007-08 005e53c0  unit: RBX::VInstance::?$FilteredSelection  size: 65 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 005e53c0
 //
@@ -26,30 +26,23 @@
 // 005e53fb  5e                   pop esi
 // 005e53fc  e9cffeffff           jmp 0x5e52d0
 
-struct Instance;
+struct S;
 
-struct FilteredSelection
-{
-    Instance* findFirstChild(const char* name, bool recursive);
+struct S {
+    S* findChild(const char* name, int recurse);
+    int process();
 };
 
-extern "C" void* __cdecl func_00630d36(Instance* instance, int, const char*, const char*, int);
-extern "C" void func_005e52d0();
+extern "C" int __cdecl func_00630d36(S* self, int a, const char* b, const char* c, int d);
 
-Instance* FilteredSelection::findFirstChild(const char* name, bool recursive)
+int __cdecl func_005e53c0(S* inst)
 {
-    Instance* current = (Instance*)this;
-    if (current == 0)
-        return 0;
-    do
-    {
-        void* result = func_00630d36(current, 0, (const char*)0x881f4c, (const char*)0x884e04, 0);
-        if (result != 0)
-        {
-            func_005e52d0();
-            return 0;
+    while (inst != 0) {
+        int r = func_00630d36(inst, 0, (const char*)0x881f4c, (const char*)0x884e04, 0);
+        if (r != 0) {
+            return ((S*)r)->process();
         }
-        current = *(Instance**)((char*)current + 0xbc);
-    } while (current != 0);
+        inst = *(S**)((char*)inst + 0xbc);
+    }
     return 0;
 }

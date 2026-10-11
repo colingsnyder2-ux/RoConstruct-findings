@@ -1,4 +1,4 @@
-// from server: 50% by colin
+// from server: 67% by colin
 // roc 2007-08 006490cd  unit: CXTPCommandBar  size: 53 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 006490cd
 //
@@ -24,15 +24,15 @@
 // 006490fb  ff1590d27700         call dword ptr [0x77d290]
 // 00649101  c3                   ret 
 
-extern "C" __declspec(dllimport) unsigned long __stdcall GetLastError();
-extern "C" __declspec(dllimport) void __stdcall SetLastError(unsigned long);
+extern "C" unsigned long __stdcall GetLastError();
+extern "C" void __stdcall SetLastError(unsigned long);
 
-extern "C" int __cdecl func_0062ff38(int, int);
+extern "C" void __stdcall func_0062ff38(int, int);
 
-int func_006490cd(int edi, int ebx, int arg)
+void __fastcall func_006490cd(int edi, int ebx, int arg)
 {
     if (edi == 2)
-        return 0;
+        return;
 
     int esi = (ebx == 0) ? 1 : 0;
     int saved = 0;
@@ -43,6 +43,4 @@ int func_006490cd(int edi, int ebx, int arg)
 
     if (esi != 0)
         SetLastError((unsigned long)saved);
-
-    return 0;
 }

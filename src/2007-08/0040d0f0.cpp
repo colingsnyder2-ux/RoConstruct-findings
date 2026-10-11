@@ -1,4 +1,4 @@
-// from server: 52% by colin
+// from server: 59% by colin
 // roc 2007-08 0040d0f0  unit: CGdiObject  size: 41 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 0040d0f0
 //
@@ -14,20 +14,19 @@
 // 0040d114  e8853a2200           call 0x630b9e
 
 struct CGdiObject {
-    void* m_hObject;
-    CGdiObject(const CGdiObject& other);
+    void construct(const CGdiObject& other);
 };
 
-extern "C" void __stdcall sub_77E700(const void*);
+extern "C" void __stdcall sub_77E700(void*);
 extern "C" void __stdcall sub_630B9E(void*, const char*);
 
-void* g_7864A8 = (void*)0x7864A8;
-const char g_840590[] = "boost::bad_weak_ptr";
+extern void* dword_7864A8;
+extern const char byte_840590[];
 
-CGdiObject::CGdiObject(const CGdiObject& other)
+void CGdiObject::construct(const CGdiObject& other)
 {
     char buf[12];
-    sub_77E700(&other);
-    *(void**)&buf[0] = (void*)0x7864A8;
-    sub_630B9E(buf, g_840590);
+    sub_77E700(&buf[0]);
+    *(void**)&buf[0] = &dword_7864A8;
+    sub_630B9E(&buf[0], byte_840590);
 }

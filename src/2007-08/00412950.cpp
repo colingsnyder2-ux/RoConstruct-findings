@@ -1,4 +1,4 @@
-// from server: 60% by colin
+// from server: 100% by colin
 // roc 2007-08 00412950  unit: VCContent::?$CComAggObject  size: 26 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 00412950
 //
@@ -10,25 +10,20 @@
 // 00412961  89442404             mov dword ptr [esp + 4], eax
 // 00412965  e916ffffff           jmp 0x412880
 
-struct VCContent_CComAggObject {
-    void FinalConstruct();
-    void FinalRelease();
-    void InnerQueryInterface();
-    void OuterQueryInterface();
-    void QueryInterface();
+struct VCContent_CComAggObject
+{
+    void* QueryInterface(void* p);
+    void* AddRef();
 };
 
-void VCContent_CComAggObject::QueryInterface()
+void* __stdcall sub_004125C0(void* p);
+void* __stdcall sub_00412880(void* p);
+
+void* VCContent_CComAggObject::QueryInterface(void* p)
 {
-    void* p = *(void**)((char*)this + 4);
     if (p == 0)
     {
-        *(void**)((char*)this + 4) = p;
-        FinalConstruct();
+        return sub_004125C0(p);
     }
-    else
-    {
-        *(void**)((char*)this + 4) = p;
-        FinalRelease();
-    }
+    return sub_00412880(p);
 }

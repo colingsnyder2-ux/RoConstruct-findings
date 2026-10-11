@@ -1,4 +1,4 @@
-// from server: 91% by colin
+// from server: 100% by colin
 // roc 2007-08 0069edf0  unit: CXTPPropertyGridItemEnum  size: 54 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 0069edf0
 //
@@ -18,14 +18,24 @@
 // 0069ee23  f7d8                 neg eax
 // 0069ee25  c3                   ret 
 
-extern int __cdecl func_0069ecb0();
-extern char* __cdecl func_0069e740();
+extern "C" int __cdecl sub_69ECB0();
+extern "C" int __cdecl sub_69E740();
 
-int __cdecl func_0069edf0()
+int __cdecl sub_69EDF0()
 {
-    if (func_0069ecb0() == 0)
+    int v0;
+    int v1;
+    unsigned short v2;
+
+    v0 = sub_69ECB0();
+    if (v0 == 0)
         return 0;
-    if (*(int*)(func_0069e740() + 0xd0) == 0x21ffff1)
+
+    v1 = sub_69E740();
+    if (*(unsigned int *)(v1 + 0xD0) == 0x21FFFF1)
         return 1;
-    return (unsigned short)5 > *(unsigned short*)(func_0069e740() + 0xd6);
+
+    v1 = sub_69E740();
+    v2 = 5;
+    return (v2 < *(unsigned short *)(v1 + 0xD6)) ? 1 : 0;
 }

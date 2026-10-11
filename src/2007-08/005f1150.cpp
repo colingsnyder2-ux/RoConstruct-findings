@@ -1,4 +1,4 @@
-// from server: 44% by colin
+// from server: 48% by atomic.potato
 // roc 2007-08 005f1150  unit: RBX::Reflection::Metadata::VClass::?$BoundPropGetSet  size: 43 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 005f1150
 //
@@ -21,12 +21,11 @@
 // 005f117a  c3                   ret 
 
 struct S {
-    int f(int, int);
 };
 
 extern "C" int __cdecl sub_62FC62(int);
 
-int S::f(int a, int b) {
+int __cdecl f(int a, int b) {
     int* p = (int*)a;
     p[4] = a;
     p[5] = b;

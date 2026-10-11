@@ -1,4 +1,4 @@
-// from server: 50% by colin
+// from server: 60% by colin
 // roc 2007-08 00411850  unit: boost::bad_any_cast  size: 41 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 00411850
 //
@@ -13,20 +13,18 @@
 // 0041186c  c7442408fc6d7800     mov dword ptr [esp + 8], 0x786dfc
 // 00411874  e825f32100           call 0x630b9e
 
-struct bad_cast {
+struct bad_any_cast {
     void* vfptr;
-    bad_cast(const bad_cast&);
-};
-
-extern "C" void __stdcall sub_77e718();
-extern "C" void __cdecl sub_630b9e();
-
-struct bad_any_cast : bad_cast {
+    char pad[8];
     bad_any_cast(const bad_any_cast&);
+    bad_any_cast(const char*);
 };
 
-bad_any_cast::bad_any_cast(const bad_any_cast& other) : bad_cast(other)
-{
+extern "C" void __stdcall sub_77E718(void*);
+extern "C" void __cdecl sub_630B9E(void*, const char*);
+
+bad_any_cast::bad_any_cast(const char* msg) {
+    sub_77E718((void*)&msg);
     vfptr = (void*)0x786dfc;
-    sub_630b9e();
+    sub_630B9E(this, msg);
 }

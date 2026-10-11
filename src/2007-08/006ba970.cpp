@@ -1,32 +1,16 @@
-// from server: 78% by colin
-// roc 2007-08 006ba970  unit: CXTPControlGalleryOffice2007Theme  size: 36 bytes
-// Make this compile to the exact bytes below, then: roc check 2007-08 006ba970
-//
-// 006ba970  51                   push ecx
-// 006ba971  56                   push esi
-// 006ba972  8b74240c             mov esi, dword ptr [esp + 0xc]
-// 006ba976  81c1c4000000         add ecx, 0xc4
-// 006ba97c  51                   push ecx
-// 006ba97d  8bce                 mov ecx, esi
-// 006ba97f  c744240800000000     mov dword ptr [esp + 8], 0
-// 006ba987  ff1574dd7700         call dword ptr [0x77dd74]
-// 006ba98d  8bc6                 mov eax, esi
-// 006ba98f  5e                   pop esi
-// 006ba990  59                   pop ecx
-// 006ba991  c20400               ret 4
+// from server: 100% by colin
 
-struct CXTPControlGalleryOffice2007Theme
-{
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+struct Str_006ba970 { int words[8]; };
+extern void (__thiscall* str_ctor_006ba970)(Str_006ba970*, Str_006ba970*);
+struct X_006ba970 {
     char pad[0xc4];
-    void* field_c4;
-    void* sub_006ba970(void* param);
+    Str_006ba970 value;
+    Str_006ba970* copy(Str_006ba970* out);
 };
-
-extern "C" void* __stdcall func_0077dd74(void*, void*);
-
-void* CXTPControlGalleryOffice2007Theme::sub_006ba970(void* param)
+Str_006ba970* X_006ba970::copy(Str_006ba970* out)
 {
-    void* tmp = 0;
-    func_0077dd74(&field_c4, &tmp);
-    return param;
+    volatile int zero = 0;
+    str_ctor_006ba970(out, &value);
+    return out;
 }

@@ -1,4 +1,4 @@
-// from server: 69% by colin
+// from server: 100% by colin
 // roc 2007-08 0045d270  unit: Scintilla::CScintillaView  size: 68 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 0045d270
 //
@@ -31,29 +31,38 @@
 // 0045d2b0  5b                   pop ebx
 // 0045d2b1  c20400               ret 4
 
-struct Inner {
-    int f1(int);
-    int f2(int);
+struct InnerObj {
+    char pad[0x14];
+    int flags;
 };
 
-struct Outer {
+struct ArgVTable {
+    char pad[0x74];
+    InnerObj* inner;
+};
+
+struct ArgObj {
+    ArgVTable* vtable;
+};
+
+struct SubObj {
+    int method_45c7d0(int);
+    int method_45c800(int);
+};
+
+struct CScintillaView {
     char pad[0x58];
-    Inner inner;
-    void method(int*);
+    SubObj sub;
+    void method_630916(void*);
+    void func(ArgObj* arg);
 };
 
-void Outer::method(int* p)
-{
-    int a = inner.f1(1);
-    int b = inner.f2(1);
+void CScintillaView::func(ArgObj* arg) {
+    int a = sub.method_45c7d0(1);
+    int b = sub.method_45c800(1);
     if (a != b) {
-        int* q = (int*)*p;
-        int* r = (int*)*(int*)((char*)q + 0x74);
-        r[5] &= ~4;
-        int* s = (int*)*p;
-        int* t = (int*)*(int*)((char*)s + 0x74);
-        t[5] |= 1;
+        arg->vtable->inner->flags &= ~4;
+        arg->vtable->inner->flags |= 1;
     }
-    extern void func_00630916();
-    func_00630916();
+    method_630916(arg);
 }

@@ -1,4 +1,4 @@
-// from server: 92% by colin
+// from server: 100% by colin
 // roc 2007-08 00552d70  unit: boost::iostreams::Uinput::V?$chain::?$filtering_stream_base  size: 59 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 00552d70
 //
@@ -33,7 +33,7 @@ extern "C" void __cdecl sub_62fc62(void*);
 
 extern void* g_77e4dc;
 extern void* g_77e4e0;
-extern void (__stdcall *g_77e4e4)(void*);
+extern void (__cdecl *g_77e4e4)(void*);
 
 S* S::dtor(char flag) {
     sub_54c650();

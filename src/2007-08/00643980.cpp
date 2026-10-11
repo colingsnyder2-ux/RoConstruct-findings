@@ -1,4 +1,4 @@
-// from server: 58% by colin
+// from server: 74% by colin
 // roc 2007-08 00643980  unit: CXTPCommandBar  size: 33 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 00643980
 //
@@ -16,8 +16,9 @@
 
 struct CXTPCommandBar
 {
-    int GetSomething();
+    char pad[0x100];
     int field_0x100;
+    int GetSomething();
 };
 
 int CXTPCommandBar::GetSomething()

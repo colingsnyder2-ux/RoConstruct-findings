@@ -1,22 +1,4 @@
-// from server: 81% by colin
-extern "C" void __stdcall sub_725520(void*, void*);
-extern "C" void* __stdcall sub_4a5970();
-extern "C" void* __stdcall sub_407410(void*);
-extern "C" void __stdcall sub_4339d0();
-extern "C" void __stdcall sub_630d23(void*);
-
-extern void* g_8be96c;
-extern void* g_4a7180;
-extern void* g_778a60;
-extern void* g_892aac;
-
-void __stdcall sub_76f9a0()
-{
-    void* p;
-    sub_725520(&g_8be96c, &g_4a7180);
-    p = sub_4a5970();
-    void* q = sub_407410(&p);
-    sub_4339d0();
-    *(void**)q = &g_892aac;
-    sub_630d23(&g_778a60);
-}
+// from server: 100% by colin
+// roc-flags: /O2 /Ob2 /Oy /GF- /GS- /EHsc /MD
+struct Obj_0076f9a0 { Obj_0076f9a0* get(); }; extern "C" void reg_0076f9a0(void*,void*); extern "C" void* make_0076f9a0(); extern "C" Obj_0076f9a0* __stdcall wrap_0076f9a0(void*); extern "C" void final_0076f9a0(void*);
+void func_0076f9a0() { void* local; reg_0076f9a0((void*)0x4a7180,(void*)0x8be96c); local=make_0076f9a0(); Obj_0076f9a0* o=wrap_0076f9a0(&local)->get(); *(void**)o=(void*)0x892aac; final_0076f9a0((void*)0x778a60); }

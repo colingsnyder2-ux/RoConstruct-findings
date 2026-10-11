@@ -1,4 +1,4 @@
-// from server: 88% by colin
+// from server: 100% by colin
 // roc 2007-08 0048e170  unit: RBX::Network::VPlayer::?$RefPropDescriptor  size: 65 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 0048e170
 //
@@ -26,21 +26,22 @@
 // 0048e1ab  5e                   pop esi
 // 0048e1ac  e9afedffff           jmp 0x48cf60
 
-struct RefPropDescriptor {
-    void* findDescendant(void*);
-    void checkFlags();
+struct RBXInstance {
+    char pad[0xbc];
+    RBXInstance* next;
 };
 
-void* sub_630D36(void*, void*, void*, void*, void*);
+extern "C" int __cdecl sub_630d36(RBXInstance*, int, const char*, const char*, int);
 
-void* RefPropDescriptor::findDescendant(void* arg) {
-    void* p = arg;
+void* __fastcall sub_48cf60(void*);
+
+void* __cdecl sub_48e170(RBXInstance* p)
+{
     while (p) {
-        void* r = sub_630D36(p, 0, (void*)0x881f4c, (void*)0x884e04, 0);
-        if (r) {
-            return r;
-        }
-        p = *(void**)((char*)p + 0xbc);
+        int r = sub_630d36(p, 0, (const char*)0x881f4c, (const char*)0x884e04, 0);
+        if (r)
+            return sub_48cf60((void*)r);
+        p = p->next;
     }
     return 0;
 }

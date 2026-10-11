@@ -1,10 +1,5 @@
-// from server: 68% by why2
-extern "C" void __stdcall sub_8205d4(int);
-
-extern "C" int (__stdcall *g_target)(int);
-
-int __stdcall sub_81e2da(int a)
-{
-    sub_8205d4(1);
-    return g_target(a);
-}
+// from server: 100% by colin
+// roc-flags: /O2 /GS- /EHsc /MD /Oy- /hotpatch
+extern "C" int __stdcall helper(int);
+extern "C" int __declspec(dllimport) tail(int);
+int func_0081e2da(int x) { helper(1); return tail(x); }

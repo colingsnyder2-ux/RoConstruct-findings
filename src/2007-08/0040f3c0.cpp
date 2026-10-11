@@ -1,4 +1,4 @@
-// from server: 42% by colin
+// from server: 71% by colin
 // roc 2007-08 0040f3c0  unit: CutVerb  size: 47 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 0040f3c0
 //
@@ -19,8 +19,11 @@
 // 0040f3ec  c20400               ret 4
 
 struct Verb {
-    void* name;
+    void* vtable;
+    void* name_ptr;
+    void* name_buf[4];
     void* container;
+    bool verbSecurity;
     Verb(void* container, const char* name);
 };
 
@@ -28,14 +31,13 @@ struct CutVerb : Verb {
     CutVerb(void* container);
 };
 
-extern "C" void* __stdcall sub_77e698(void*, const char*);
+extern "C" void* __stdcall sub_77e698(const char*);
 
-void* sub_55fc40(void*);
+void* g_786d10 = (void*)"Copy";
+void* g_786d48 = (void*)0;
 
-CutVerb::CutVerb(void* container) : Verb(container, (const char*)0)
-{
+CutVerb::CutVerb(void* container) : Verb(container, (const char*)0) {
     char buf[0x1c];
-    sub_77e698(buf, (const char*)0x786d10);
-    sub_55fc40(this);
-    *(void**)this = (void*)0x786d48;
+    sub_77e698((const char*)0x786d10);
+    vtable = (void*)0x786d48;
 }

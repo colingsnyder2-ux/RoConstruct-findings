@@ -1,5 +1,8 @@
-// from server: 77% by colin
-// roc-lang: cpp
-// roc-cl: 21022
+// from server: 100% by colin
+
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: openrbx-client App/v8datamodel/Selection.cpp
+void* __stdcall make_value_004c4520();
+void* func_004c4520() {
+    static void* value = make_value_004c4520();
+    return value;
+}

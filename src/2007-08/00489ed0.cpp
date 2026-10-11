@@ -1,4 +1,4 @@
-// from server: 53% by colin
+// from server: 70% by colin
 // roc 2007-08 00489ed0  unit: RBX::Network::VPlayer::?$Notifier  size: 59 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 00489ed0
 //
@@ -27,13 +27,12 @@
 
 struct type_info
 {
-    bool operator==(const type_info& other) const;
+    bool __thiscall operator==(const type_info& other) const;
 };
 
-struct VPlayer
-{
-    static type_info typeInfo;
-};
+extern type_info type_info_88caa0;
+
+int __cdecl func_0042c0c0(int, int, int);
 
 struct Notifier
 {
@@ -45,9 +44,9 @@ int Notifier::func(int a, int b)
     if (b == 2)
     {
         int result = a;
-        if (!(VPlayer::typeInfo == VPlayer::typeInfo))
+        if (!type_info_88caa0.operator==(*(const type_info*)&a))
             result = 0;
         return result;
     }
-    return func(a, b);
+    return func_0042c0c0(a, b, 0);
 }

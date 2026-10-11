@@ -1,4 +1,4 @@
-// from server: 86% by colin
+// from server: 100% by colin
 // roc 2007-08 0067dec0  unit: CXTPControlToolbars  size: 36 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 0067dec0
 //
@@ -28,7 +28,7 @@ CXTPControlToolbars* CXTPControlToolbars::func_0067dec0(int arg)
 {
     CXTPControlToolbars* p = func_0067de50();
     void** vtbl = *(void***)p;
-    void (__thiscall *fn)(CXTPControlToolbars*, int) = (void (__thiscall *)(CXTPControlToolbars*, int))vtbl[0x38];
-    fn(p, arg);
+    void (__thiscall *fn)(CXTPControlToolbars*, CXTPControlToolbars*, int) = (void (__thiscall *)(CXTPControlToolbars*, CXTPControlToolbars*, int))vtbl[0x38];
+    fn(p, this, arg);
     return p;
 }

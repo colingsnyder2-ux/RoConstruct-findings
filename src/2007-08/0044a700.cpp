@@ -1,4 +1,4 @@
-// from server: 62% by colin
+// from server: 63% by atomic.potato
 // roc 2007-08 0044a700  unit: CRobloxApp  size: 82 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 0044a700
 //
@@ -41,7 +41,7 @@ struct CRobloxApp
 
 extern "C" void __stdcall _invalid_parameter_noinfo(void);
 
-extern "C" int __fastcall sub_44a230(void* a, void* b, void* c, void* d);
+extern "C" int __cdecl sub_44a230(void* a, void* b, void* c, void* d);
 
 bool CRobloxApp::f(void* a, void* b, void* c, void* d)
 {

@@ -1,4 +1,4 @@
-// from server: 97% by colin
+// from server: 100% by colin
 // roc 2007-08 00495840  unit: RBX::Network::VPlayer::?$RefPropDescriptor  size: 37 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 00495840
 //
@@ -18,17 +18,9 @@
 
 struct DescribedBase;
 
-struct PropDescriptor {
-    void* getValue(const DescribedBase* object) const;
-};
-
-struct RefPropDescriptor {
-    void* getValue(const DescribedBase* object) const;
-};
-
 void* getPropValue(const DescribedBase* object);
 
-void* RefPropDescriptor_getValue(const RefPropDescriptor* self, const DescribedBase* object)
+void* RefPropDescriptor_getValue(const DescribedBase* object)
 {
     void* result = getPropValue(object);
     if (result != 0) {

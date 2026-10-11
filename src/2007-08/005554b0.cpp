@@ -1,4 +1,4 @@
-// from server: 80% by colin
+// from server: 100% by colin
 // roc 2007-08 005554b0  unit: RBX::VServiceProvider::?$BoundFuncDesc  size: 57 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 005554b0
 //
@@ -15,25 +15,22 @@
 // 005554e3  b8181e8c00           mov eax, 0x8c1e18
 // 005554e8  c3                   ret 
 
-struct BoundFuncDesc
-{
-    static float* getRelativePanel();
-};
+extern float G_7a8340;
+extern float G_8c1e18;
+extern float G_8c1e1c;
+extern float G_8c1e20;
+extern float G_8c1e24;
+extern unsigned int G_8c1e28;
 
-float* BoundFuncDesc::getRelativePanel()
+float* func_005554b0()
 {
-    static int initialized = 0;
-    static float values[4];
-
-    if (!(initialized & 1))
+    if (!(G_8c1e28 & 1))
     {
-        float v = *(float*)0x7a8340;
-        initialized |= 1;
-        values[0] = v;
-        values[1] = v;
-        values[2] = v;
-        values[3] = 1.0f;
+        G_8c1e28 |= 1;
+        G_8c1e18 = G_7a8340;
+        G_8c1e1c = G_7a8340;
+        G_8c1e20 = G_7a8340;
+        G_8c1e24 = 1.0f;
     }
-
-    return values;
+    return &G_8c1e18;
 }

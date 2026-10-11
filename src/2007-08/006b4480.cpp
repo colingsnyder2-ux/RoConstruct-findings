@@ -1,4 +1,4 @@
-// from server: 10% by colin
+// from server: 100% by colin
 // roc 2007-08 006b4480  unit: CXTPControlGallery  size: 54 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 006b4480
 //
@@ -25,30 +25,17 @@
 // 006b44b3  c20800               ret 8
 
 struct CXTPControlGallery {
-    bool HasGallery();
-    void OnGalleryChanged(int, int);
-    void OnGalleryChanged2(int, int);
-
-    void SomeMethod(int a, int b);
+    int sub_6b3590();
+    void sub_670630(int, int);
+    void sub_6b3e80(int, int);
+    void func(int, int);
 };
 
-bool CXTPControlGallery::HasGallery()
+void CXTPControlGallery::func(int a, int b)
 {
-    return false;
-}
-
-void CXTPControlGallery::OnGalleryChanged(int a, int b)
-{
-}
-
-void CXTPControlGallery::OnGalleryChanged2(int a, int b)
-{
-}
-
-void CXTPControlGallery::SomeMethod(int a, int b)
-{
-    if (HasGallery())
-        OnGalleryChanged(a, b);
-    else
-        OnGalleryChanged2(a, b);
+    if (sub_6b3590()) {
+        sub_670630(a, b);
+    } else {
+        sub_6b3e80(a, b);
+    }
 }

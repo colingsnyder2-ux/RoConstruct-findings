@@ -1,5 +1,4 @@
-// from server: 86% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: g3d-6.09 GLG3Dcpp/RenderDevice.cpp
+// from server: 100% by colin
+// roc-flags: /O2 /Ob2 /Oy /GF- /GS- /EHsc /MD
+extern "C" int helper(const char*,int); extern int g;
+void func(){g=helper((const char*)0x81c954,-1);}

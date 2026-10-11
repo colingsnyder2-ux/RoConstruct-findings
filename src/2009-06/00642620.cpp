@@ -1,5 +1,4 @@
-// from server: 95% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs v8datamodel/BrickColor.cpp
+// from server: 100% by colin
+// roc-flags: /O2 /Ob2 /Oy /GF- /GS- /EHsc /MD
+struct A{int** method();}; extern "C" A* __stdcall create(void*);
+struct S{int* func();}; int* S::func(){return *(((A*)((char*)create(this)+0xc8))->method());}

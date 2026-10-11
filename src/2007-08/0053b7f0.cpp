@@ -1,4 +1,4 @@
-// from server: 74% by colin
+// from server: 100% by colin
 // roc 2007-08 0053b7f0  unit: RBX::ScriptContext  size: 65 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 0053b7f0
 //
@@ -27,29 +27,20 @@
 // 0053b82c  e97f9cf1ff           jmp 0x4554b0
 
 struct RBX_Instance {
-    static const char* className();
+    char pad[0xbc];
+    RBX_Instance* next;
 };
 
-struct RBX_ServiceProvider {
-    static const char* className();
-};
+extern "C" void* __cdecl sub_630D36(void* a, void* b, void* c, void* d, void* e);
+extern "C" void* __fastcall sub_4554B0(void* self);
 
-struct RBX_ScriptContext {
-    void* findService(const char* name, const char* className, int, int);
-};
-
-extern "C" void* __cdecl func_00630d36(void* a, int b, const char* c, const char* d, int e);
-extern "C" void __cdecl func_004554b0(void* p);
-
-void* __stdcall getService(RBX_ScriptContext* ctx)
+void* __cdecl sub_53B7F0(RBX_Instance* p)
 {
-    while (ctx) {
-        void* result = func_00630d36(ctx, 0, (const char*)0x881f4c, (const char*)0x884e04, 0);
-        if (result) {
-            func_004554b0(result);
-            return result;
-        }
-        ctx = *(RBX_ScriptContext**)((char*)ctx + 0xbc);
+    while (p) {
+        void* r = sub_630D36(p, 0, (void*)0x881f4c, (void*)0x884e04, 0);
+        if (r)
+            return sub_4554B0(r);
+        p = p->next;
     }
     return 0;
 }

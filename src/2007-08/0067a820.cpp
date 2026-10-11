@@ -1,4 +1,4 @@
-// from server: 85% by colin
+// from server: 100% by colin
 // roc 2007-08 0067a820  unit: CXTPControls  size: 34 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 0067a820
 //
@@ -16,7 +16,8 @@
 // 0067a83d  8b4258               mov eax, dword ptr [edx + 0x58]
 // 0067a840  ffe0                 jmp eax
 
-struct CXTPControls {
+struct CXTPControls
+{
     int GetAt(int nIndex);
 };
 
@@ -27,7 +28,5 @@ int CXTPControls::GetAt(int nIndex)
         result = *(int*)(*(int*)((char*)this + 0x28) + nIndex * 4);
     else
         result = 0;
-    int (__stdcall *fn)(int);
-    fn = *(int (__stdcall **)(int))((*(int*)this) + 0x58);
-    return fn(result);
+    return (*(int (__thiscall**)(void*, int))((*(int*)this) + 0x58))(this, result);
 }

@@ -1,4 +1,4 @@
-// from server: 90% by colin
+// from server: 100% by colin
 // roc 2007-08 007207c0  unit: CXTShadowHook  size: 38 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 007207c0
 //
@@ -18,16 +18,17 @@
 // 007207e4  5e                   pop esi
 // 007207e5  c3                   ret 
 
-extern "C" int __stdcall IsWindow(void*);
-
 struct CXTShadowHook {
     void* vtable;
     void* field4;
-    void destroy();
     void sub_720770(int);
+    void destroy();
 };
 
-void CXTShadowHook::destroy() {
+extern "C" int (__stdcall *IsWindow)(void*);
+
+void CXTShadowHook::destroy()
+{
     void* p = field4;
     vtable = (void*)0x7e22ac;
     if (p != 0) {

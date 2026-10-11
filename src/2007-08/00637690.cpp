@@ -1,4 +1,4 @@
-// from server: 86% by colin
+// from server: 100% by tester
 // roc 2007-08 00637690  unit: CXTPControlComboBoxPopupBar  size: 36 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 00637690
 //
@@ -19,15 +19,15 @@
 // 006376b0  5e                   pop esi
 // 006376b1  c20400               ret 4
 
-struct CXTPControlComboBoxPopupBar {
-    void* sub_637620();
-    void* method(void* arg);
+struct CXTPControlComboBoxList {
+    void* sub_6377b0();
+    void* method(int);
 };
 
-void* CXTPControlComboBoxPopupBar::method(void* arg) {
-    void* obj = sub_637620();
-    void** vtable = *(void***)obj;
-    void (__thiscall *fn)(void*, void*) = (void (__thiscall *)(void*, void*))vtable[0x1c8 / 4];
-    fn(obj, arg);
-    return obj;
+void* CXTPControlComboBoxList::method(int arg) {
+    void* p = sub_6377b0();
+    void** vtbl = *(void***)p;
+    void (__thiscall *fn)(void*, void*, int) = (void (__thiscall *)(void*, void*, int))vtbl[0x1c8 / 4];
+    fn(p, this, arg);
+    return p;
 }

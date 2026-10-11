@@ -1,4 +1,4 @@
-// from server: 93% by colin
+// from server: 100% by colin
 // roc 2007-08 005fbe90  unit: RBX::SlingshotTool  size: 29 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 005fbe90
 //
@@ -14,20 +14,23 @@
 // 005fbea8  ffe0                 jmp eax
 // 005fbeaa  c20400               ret 4
 
-struct SlingshotTool {
-    char pad0[0x14];
-    bool flag14;
-    char pad15[0x1b];
-    int counter30;
-    void func(int);
+struct RBX_SlingshotTool {
+    int field0;
+    char pad[0x10];
+    char field14;
+    char pad2[0x1b];
+    int field30;
+    void method(int);
 };
 
-void SlingshotTool::func(int) {
-    if (counter30 > 0) {
-        counter30 = counter30 - 1;
+void RBX_SlingshotTool::method(int arg)
+{
+    if (field30 > 0) {
+        field30 = field30 - 1;
     }
-    if (flag14) {
-        void (__thiscall *fn)(SlingshotTool*) = *(void (__thiscall **)(SlingshotTool*))((*(int*)this) + 0x18);
-        fn(this);
+    if (field14 != 0) {
+        void (__thiscall *fn)(RBX_SlingshotTool*, int);
+        fn = *(void (__thiscall **)(RBX_SlingshotTool*, int))(*(int*)this + 0x18);
+        fn(this, arg);
     }
 }

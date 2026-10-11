@@ -1,15 +1,3 @@
-// from server: 70% by atomic.potato
-struct CXTPReportRecordItem
-{
-    int value;
-    int f(int a, int b);
-};
-
-extern "C" void __stdcall sub_803ED4(CXTPReportRecordItem *, CXTPReportRecordItem *);
-
-int CXTPReportRecordItem::f(int a, int b)
-{
-    CXTPReportRecordItem *p = (CXTPReportRecordItem *)((char *)this + 0x60);
-    sub_803ED4((CXTPReportRecordItem *)b, p);
-    return b;
-}
+// from server: 100% by colin
+// roc-flags: /O2 /Ob2 /Oy /GF- /GS- /EHsc /MD
+struct Str{int words[8];}; extern void (__thiscall* str_ctor)(Str*,Str*); struct X{char pad[0x60]; Str value; Str* copy(Str* out,int unused);}; Str* X::copy(Str* out,int unused){volatile int zero=0; str_ctor(out,&value); return out;}

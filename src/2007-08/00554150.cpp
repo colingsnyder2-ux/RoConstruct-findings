@@ -1,4 +1,4 @@
-// from server: 40% by colin
+// from server: 51% by colin
 // roc 2007-08 00554150  unit: RBX::VTeam::?$FactoryProduct  size: 43 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 00554150
 //
@@ -18,14 +18,18 @@
 // 00554179  59                   pop ecx
 // 0055417a  c3                   ret 
 
-struct S {
+struct S_00554150
+{
+    void* field0;
     void* f();
 };
 
-extern "C" void __cdecl sub_62FC62(void*);
+extern "C" void* __cdecl G_func_0062fc62(void*);
 
-void* S::f() {
+void* S_00554150::f()
+{
     void* p = 0;
-    sub_62FC62(p);
+    void* r = G_func_0062fc62(p);
+    field0 = r;
     return this;
 }

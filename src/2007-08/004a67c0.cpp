@@ -1,4 +1,4 @@
-// from server: 81% by colin
+// from server: 100% by colin
 // roc 2007-08 004a67c0  unit: RBX::Network::VClient::?$FactoryProduct  size: 36 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 004a67c0
 //
@@ -17,16 +17,20 @@
 // 004a67e0  5e                   pop esi
 // 004a67e1  c20400               ret 4
 
-struct VClient {
-    char pad[0xc];
-    int field_c;
-    void sub_5919b0(int);
-    void sub_70ed80(void*);
-    void func(void*);
+struct Inner {
+    void method1(int);
+    void method2(void*);
 };
 
-void VClient::func(void* arg) {
+struct S {
+    char pad[0xc];
+    Inner* inner;
+    void func(void* arg);
+};
+
+void S::func(void* arg)
+{
     int v = *(int*)((char*)arg + 0x264);
-    sub_5919b0(v);
-    sub_70ed80(arg);
+    inner->method1(v);
+    ((Inner*)this)->method2(arg);
 }

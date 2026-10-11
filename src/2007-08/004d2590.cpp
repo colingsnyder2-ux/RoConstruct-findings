@@ -1,4 +1,4 @@
-// from server: 85% by colin
+// from server: 91% by colin
 // roc 2007-08 004d2590  unit: RBX::Render::TextureProxy  size: 89 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 004d2590
 //
@@ -41,30 +41,35 @@ struct type_info {
     bool __thiscall operator==(const type_info&) const;
 };
 
-extern type_info type_info_00897468;
-extern void* __cdecl func_0062fef6(unsigned int);
-extern void __cdecl func_0062fc62(void*);
-
-struct S_004d2590 {
+struct TextureProxy {
+    void* field0;
+    void* field4;
+    void* field8;
 };
 
-void* __cdecl f(void* a1, int a2)
+extern "C" void* __cdecl operator_new(unsigned int);
+extern "C" void __cdecl operator_delete(void*);
+extern type_info typeid_TextureProxy;
+
+void* __cdecl func_004d2590(int unused, int mode, void* arg)
 {
-    if (a2 == 2) {
-        void* p = a1;
-        if (type_info_00897468 == *(type_info*)a1)
+    if (mode == 2) {
+        void* p = arg;
+        if (typeid_TextureProxy == *(type_info*)arg) {
             return p;
+        }
         return 0;
     }
-    if (a2 == 0) {
-        void* p = func_0062fef6(0xc);
-        if (p != 0) {
-            *(int*)p = *(int*)a1;
-            *(int*)((char*)p + 4) = *(int*)((char*)a1 + 4);
-            *(int*)((char*)p + 8) = *(int*)((char*)a1 + 8);
+    if (mode == 0) {
+        TextureProxy* src = (TextureProxy*)arg;
+        TextureProxy* dst = (TextureProxy*)operator_new(0xc);
+        if (dst) {
+            dst->field0 = src->field0;
+            dst->field4 = src->field4;
+            dst->field8 = src->field8;
         }
-        return p;
+        return dst;
     }
-    func_0062fc62(a1);
+    operator_delete(arg);
     return 0;
 }

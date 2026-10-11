@@ -1,22 +1,20 @@
-// from server: 85% by colin
+// from server: 100% by colin
 // roc 2007-08 006a3510  unit: unknown  size: 29 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 006a3510
 
 struct CHookSink;
 
 struct CXTPHookManager {
-    static CHookSink* FindHookSink(int);
-
-    int InstallHook(int a, int b);
+    static CHookSink* __stdcall FindHookSink(int);
 };
 
 struct CHookSink {
-    int Install(int);
+    void __thiscall Install(int);
 };
 
-int CXTPHookManager::InstallHook(int a, int b) {
-    CHookSink* p = FindHookSink(a);
+void __stdcall func_006a3510(int a, int b) {
+    CHookSink* p = CXTPHookManager::FindHookSink(a);
     if (p != 0) {
-        return p->Install(b);
+        p->Install(b);
     }
 }

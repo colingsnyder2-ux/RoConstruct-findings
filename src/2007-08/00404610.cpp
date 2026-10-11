@@ -1,46 +1,31 @@
-// from server: 70% by colin
-// roc 2007-08 00404610  unit: ATL::CRegObject  size: 56 bytes
-// Make this compile to the exact bytes below, then: roc check 2007-08 00404610
+// from server: 100% by tester
+// roc 2007-03 00404490  unit: seg_00400000  size: 56 bytes
+// Make this compile to the exact bytes below, then: roc check 2007-03 00404490
 //
-// 00404610  8b442404             mov eax, dword ptr [esp + 4]
-// 00404614  56                   push esi
-// 00404615  8bf1                 mov esi, ecx
-// 00404617  33c9                 xor ecx, ecx
-// 00404619  7705                 ja 0x404620
-// 0040461b  83f8ff               cmp eax, -1
-// 0040461e  760a                 jbe 0x40462a
-// 00404620  6857000780           push 0x80070057
-// 00404625  e8d6c9ffff           call 0x401000
-// 0040462a  3d00010000           cmp eax, 0x100
-// 0040462f  760e                 jbe 0x40463f
-// 00404631  50                   push eax
-// 00404632  8bce                 mov ecx, esi
-// 00404634  e847e2ffff           call 0x402880
-// 00404639  8b06                 mov eax, dword ptr [esi]
-// 0040463b  5e                   pop esi
-// 0040463c  c20400               ret 4
-// 0040463f  8d4604               lea eax, [esi + 4]
-// 00404642  8906                 mov dword ptr [esi], eax
-// 00404644  5e                   pop esi
-// 00404645  c20400               ret 4
+// 00404490  8b442404             mov eax, dword ptr [esp + 4]
+// 00404494  56                   push esi
+// 00404495  8bf1                 mov esi, ecx
+// 00404497  33c9                 xor ecx, ecx
+// 00404499  7705                 ja 0x4044a0
+// 0040449b  83f8ff               cmp eax, -1
+// 0040449e  760a                 jbe 0x4044aa
+// 004044a0  6857000780           push 0x80070057
+// 004044a5  e856cbffff           call 0x401000
+// 004044aa  3d00040000           cmp eax, 0x400
+// 004044af  760e                 jbe 0x4044bf
+// 004044b1  50                   push eax
+// 004044b2  8bce                 mov ecx, esi
+// 004044b4  e8e7c50500           call 0x460aa0
+// 004044b9  8b06                 mov eax, dword ptr [esi]
+// 004044bb  5e                   pop esi
+// 004044bc  c20400               ret 4
+// 004044bf  8d4604               lea eax, [esi + 4]
+// 004044c2  8906                 mov dword ptr [esi], eax
+// 004044c4  5e                   pop esi
+// 004044c5  c20400               ret 4
+// library atl-8.0/atl.cpp (function ?Allocate@?$CTempBuffer@D$0EAA@VCCRTAllocator@ATL@@@ATL@@QAEPADI@Z)
 
-struct S_func_00404610 {
-    void* m_p;
-    void* f(unsigned int n);
-};
-
-extern "C" void __stdcall sub_401000(unsigned int code);
-extern "C" void __fastcall sub_402880(S_func_00404610* self, unsigned int n);
-
-void* S_func_00404610::f(unsigned int n)
-{
-    if (n > 0xffffffffu) {
-        sub_401000(0x80070057u);
-    }
-    if (n > 0x100u) {
-        sub_402880(this, n);
-        return m_p;
-    }
-    m_p = (char*)this + 4;
-    return m_p;
-}
+// roc-lang: cpp
+// roc-cl: 50727
+// roc-flags: /O2 /GS- /MD
+// roc-lib: atl-8.0 atl.cpp

@@ -1,4 +1,4 @@
-// from server: 91% by colin
+// from server: 100% by colin
 // roc 2007-08 007114c0  unit: CXTColorSelectorCtrl  size: 58 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 007114c0
 //
@@ -24,20 +24,22 @@
 // 007114f6  5e                   pop esi
 // 007114f7  c20400               ret 4
 
-extern "C" __declspec(dllimport) long __stdcall SendMessageA(void* hWnd, unsigned int Msg, unsigned int wParam, long lParam);
-
 struct CXTColorSelectorCtrl {
     char pad[0xc0];
     char field_c0[0x20];
-    char pad2[0x20];
-    void* field_e0;
-    void SetColor(unsigned int color);
+    int field_e0;
+    void sub_63026e(int);
+    void method(int);
 };
 
-void CXTColorSelectorCtrl::SetColor(unsigned int color) {
+extern "C" __declspec(dllimport) long __stdcall SendMessageA(void*, unsigned int, unsigned int, long);
+
+void CXTColorSelectorCtrl::method(int arg)
+{
     char* p = (char*)this + 0xc0;
-    if (p != 0 && *(int*)(p + 0x20) != 0) {
-        SendMessageA(*(void**)((char*)this + 0xe0), 0x407, 0, color);
+    if (p != 0 && *(int*)(p + 0x20) != 0)
+    {
+        SendMessageA((void*)field_e0, 0x407, 0, arg);
     }
-    ((void (__thiscall*)(CXTColorSelectorCtrl*, unsigned int))0x63026e)(this, color);
+    sub_63026e(arg);
 }

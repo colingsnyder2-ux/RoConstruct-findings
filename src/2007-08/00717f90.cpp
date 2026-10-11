@@ -1,4 +1,4 @@
-// from server: 91% by colin
+// from server: 100% by colin
 // roc 2007-08 00717f90  unit: CXTPRibbonControlTab  size: 36 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 00717f90
 //
@@ -29,7 +29,7 @@ void* CXTPRibbonControlTab::f(int arg)
 {
     void* p = getSite();
     void** vtbl = *(void***)p;
-    void (*fn)(void*, void*, int) = (void (*)(void*, void*, int))vtbl[0xe0 / 4];
+    void (__thiscall *fn)(void*, void*, int) = (void (__thiscall *)(void*, void*, int))vtbl[0xe0 / 4];
     fn(p, this, arg);
     return p;
 }

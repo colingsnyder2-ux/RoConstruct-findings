@@ -1,4 +1,4 @@
-// from server: 94% by colin
+// from server: 100% by colin
 // roc 2007-08 006804e0  unit: CXTPBufferDC  size: 68 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 006804e0
 //
@@ -29,7 +29,7 @@
 // 00680520  5e                   pop esi
 // 00680521  c20800               ret 8
 
-extern "C" void* __stdcall SelectObject(void*, void*);
+extern "C" void* (__stdcall *SelectObject)(void*, void*);
 
 struct CXTPBufferDC
 {

@@ -1,5 +1,8 @@
-// from server: 37% by colin
-// roc-lang: cpp
-// roc-cl: 30729
-// roc-flags: /O2 /GS- /MD
-// roc-lib: xtp-15.2.1 Source/SyntaxEdit/XTPSyntaxEditView.cpp
+// from server: 100% by colin
+
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+void* __stdcall make_value_00445b70();
+void* func_00445b70() {
+    static void* value = make_value_00445b70();
+    return value;
+}

@@ -1,5 +1,4 @@
-// from server: 50% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: openrbx-client App/script/Script.cpp
+// from server: 100% by colin
+// roc-flags: /O2 /GS- /MD
+extern double get(void*,int); extern void push(void*,double); extern double g;
+int func(void* s){double x=get(s,1); x*=g; push(s,x); return 1;}

@@ -1,4 +1,4 @@
-// from server: 93% by colin
+// from server: 100% by colin
 // roc 2007-08 005b0740  unit: RBX::VGlue::?$FactoryProduct  size: 80 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 005b0740
 //
@@ -18,6 +18,8 @@ struct FactoryProduct {
     void construct();
 };
 
+extern "C" void __stdcall sub_5B03F0();
+
 void FactoryProduct::construct()
 {
     *(int*)((char*)this + 0x00) = 0x7b658c;
@@ -30,5 +32,5 @@ void FactoryProduct::construct()
     *(int*)((char*)this + 0x74) = 0x7b652c;
     *(int*)((char*)this + 0x8c) = 0x7b651c;
     *(int*)((char*)this + 0xe8) = 0x7b6504;
-    ((void (__thiscall*)(FactoryProduct*))0x5b03f0)(this);
+    sub_5B03F0();
 }

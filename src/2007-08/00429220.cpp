@@ -1,4 +1,4 @@
-// from server: 69% by colin
+// from server: 100% by colin
 // roc 2007-08 00429220  unit: ThreadLogManager  size: 43 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 00429220
 //
@@ -21,7 +21,7 @@
 // 0042924a  c3                   ret 
 
 extern "C" void __cdecl func_00427c40(int, void*);
-extern "C" void __cdecl func_00429060(void*, void*, int, int, void*, void*);
+extern "C" void __stdcall func_00429060(void*, void*, int, int, void*, void*);
 
 void func_00429220(void* self, void* a, void* b)
 {

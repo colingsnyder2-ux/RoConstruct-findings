@@ -1,4 +1,4 @@
-// from server: 62% by colin
+// from server: 100% by colin
 // roc 2007-08 00712bb0  unit: CXTShadowWnd  size: 27 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 00712bb0
 //
@@ -15,13 +15,11 @@
 // 00712bc8  c20400               ret 4
 
 struct CXTShadowWnd {
-    void func_00712bb0(int);
+    void sub_6A2D90(int);
+    int sub_6A2DD0(int, int);
+    void target(int);
 };
 
-extern "C" int __stdcall sub_006a2dd0(int, int);
-extern "C" int __stdcall sub_006a2d90(int);
-
-void CXTShadowWnd::func_00712bb0(int a)
-{
-    sub_006a2d90(sub_006a2dd0(a, 0));
+void CXTShadowWnd::target(int a) {
+    sub_6A2D90(sub_6A2DD0(a, 0));
 }

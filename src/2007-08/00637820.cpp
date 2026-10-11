@@ -1,4 +1,4 @@
-// from server: 91% by colin
+// from server: 100% by colin
 // roc 2007-08 00637820  unit: CXTPControlComboBoxList  size: 36 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 00637820
 //
@@ -27,7 +27,7 @@ struct CXTPControlComboBoxList {
 void* CXTPControlComboBoxList::method(int arg) {
     void* p = sub_6377b0();
     void** vtbl = *(void***)p;
-    void (*fn)(void*, void*, int) = (void (*)(void*, void*, int))vtbl[0x1c8 / 4];
+    void (__thiscall *fn)(void*, void*, int) = (void (__thiscall *)(void*, void*, int))vtbl[0x1c8 / 4];
     fn(p, this, arg);
     return p;
 }

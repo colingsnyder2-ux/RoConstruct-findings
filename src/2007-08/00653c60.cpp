@@ -1,4 +1,4 @@
-// from server: 96% by colin
+// from server: 100% by colin
 // roc 2007-08 00653c60  unit: CInstanceRecord::CNameItem  size: 60 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 00653c60
 //
@@ -29,10 +29,10 @@ struct CNameItem {
     int field_0x34;
     int field_0x38;
     int field_0x3c;
-    void copyTo(int* dst, int arg2);
+    void copyTo(int arg1, int* dst);
 };
 
-void CNameItem::copyTo(int* dst, int arg2) {
+void CNameItem::copyTo(int arg1, int* dst) {
     int v;
     v = field_0x38;
     if (v != -1) {
@@ -47,7 +47,7 @@ void CNameItem::copyTo(int* dst, int arg2) {
         if (field_0x3c == 0) {
             return;
         }
-        int* p = (int*)arg2;
+        int* p = (int*)arg1;
         int* q = (int*)p[1];
         v = *(int*)((char*)q + 0xb0) + 0x28;
     }

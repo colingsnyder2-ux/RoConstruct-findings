@@ -1,5 +1,5 @@
-// from server: 61% by colin
-// roc 2007-08 00560b10  unit: RBX::VModelInstance::?$FilteredSelection  size: 47 bytes
+// from server: 70% by colin
+// roc 2007-08 00560b10  unit: seg_00560000  size: 47 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 00560b10
 //
 // 00560b10  8b442404             mov eax, dword ptr [esp + 4]
@@ -18,18 +18,22 @@
 // 00560b3b  5e                   pop esi
 // 00560b3c  c20400               ret 4
 
+// roc-lang: cpp
+// roc-cl: 50727
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: rbxgs v8datamodel/Selection.cpp
+
 struct FilteredSelection {
-    FilteredSelection* init(char*);
+    void construct(const char* name);
+    FilteredSelection* init(const char* name);
 };
 
-extern "C" void __stdcall G1_func_0077e698(const char*, void*);
-extern void G2_func_00560600();
+extern "C" void __stdcall string_ctor(void* self, const char* s);
 
-FilteredSelection* FilteredSelection::init(char* name)
-{
+FilteredSelection* FilteredSelection::init(const char* name) {
     char buf[28];
-    G1_func_0077e698("Controller2", buf);
-    G2_func_00560600();
+    string_ctor(buf, "FilteredSelection");
+    construct(name);
     *(void**)this = (void*)0x7a9568;
     return this;
 }

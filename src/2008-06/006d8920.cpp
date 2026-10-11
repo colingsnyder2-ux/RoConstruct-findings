@@ -1,11 +1,5 @@
-// from server: 64% by atomic.potato
-struct S {
-    int f(int, int);
-};
-
-int S::f(int a, int b)
-{
-    int (*p)(int, int) = (int (*)(int, int))(*(unsigned int *)((unsigned char *)*(unsigned int **)this + 332));
-    p(a, 0);
-    return a;
-}
+// from server: 100% by tester
+// roc-lang: cpp
+// roc-cl: 50727
+// roc-flags: /O2 /MD /GS /EHsc
+// roc-lib: xtp-11.2.2-vc8-shared-mfc Source/ReportControl/XTPReportRecordItemText.cpp

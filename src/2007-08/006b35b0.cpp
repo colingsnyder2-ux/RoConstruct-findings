@@ -1,4 +1,4 @@
-// from server: 92% by colin
+// from server: 100% by colin
 // roc 2007-08 006b35b0  unit: CXTPControlGallery  size: 40 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 006b35b0
 //
@@ -13,9 +13,10 @@
 // 006b35d2  5e                   pop esi
 // 006b35d3  e9388ff8ff           jmp 0x63c510
 
-struct CXTPControlGallery {
+struct CXTPControlGallery
+{
     char pad[0x218];
-    void* field_218;
+    void *field_218;
     void Cleanup();
 };
 
@@ -29,5 +30,5 @@ void CXTPControlGallery::Cleanup()
         sub_63C4A0(0x1012);
         field_218 = 0;
     }
-    sub_63C510();
+    ((void (__thiscall *)(CXTPControlGallery *))sub_63C510)(this);
 }

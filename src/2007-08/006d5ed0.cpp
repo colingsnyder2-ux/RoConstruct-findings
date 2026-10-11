@@ -1,31 +1,16 @@
-// from server: 67% by colin
-// roc 2007-08 006d5ed0  unit: CXTPReportGroupRow_Batch  size: 33 bytes
-// Make this compile to the exact bytes below, then: roc check 2007-08 006d5ed0
-//
-// 006d5ed0  51                   push ecx
-// 006d5ed1  56                   push esi
-// 006d5ed2  8b74240c             mov esi, dword ptr [esp + 0xc]
-// 006d5ed6  83c170               add ecx, 0x70
-// 006d5ed9  51                   push ecx
-// 006d5eda  8bce                 mov ecx, esi
-// 006d5edc  c744240800000000     mov dword ptr [esp + 8], 0
-// 006d5ee4  ff1574dd7700         call dword ptr [0x77dd74]
-// 006d5eea  8bc6                 mov eax, esi
-// 006d5eec  5e                   pop esi
-// 006d5eed  59                   pop ecx
-// 006d5eee  c20400               ret 4
+// from server: 100% by colin
 
-struct T_006d5ed0 {
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+struct Str_006d5ed0 { int words[8]; };
+extern void (__thiscall* str_ctor_006d5ed0)(Str_006d5ed0*, Str_006d5ed0*);
+struct X_006d5ed0 {
     char pad[0x70];
-    int field_70;
-    T_006d5ed0* m(T_006d5ed0* other);
+    Str_006d5ed0 value;
+    Str_006d5ed0* copy(Str_006d5ed0* out);
 };
-
-extern "C" void __stdcall sub_77dd74(void*);
-
-T_006d5ed0* T_006d5ed0::m(T_006d5ed0* other)
+Str_006d5ed0* X_006d5ed0::copy(Str_006d5ed0* out)
 {
-    *(int*)other = 0;
-    sub_77dd74(&field_70);
-    return other;
+    volatile int zero = 0;
+    str_ctor_006d5ed0(out, &value);
+    return out;
 }

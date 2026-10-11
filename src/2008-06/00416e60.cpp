@@ -1,5 +1,4 @@
-// from server: 63% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: openrbx-client App/script/LuaInstanceBridge.cpp
+// from server: 100% by colin
+// roc-flags: /O2 /Ob2 /Oy /GF- /GS- /EHsc /MD
+extern "C" int helper(void*,int,void*,void*,int);
+bool __stdcall func(void* p){return helper(p,0,(void*)0x92907c,(void*)0x92c210,0)!=0;}

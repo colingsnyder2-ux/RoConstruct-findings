@@ -1,4 +1,4 @@
-// from server: 52% by colin
+// from server: 100% by colin
 // roc 2007-08 004561f0  unit: CRobloxView  size: 30 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 004561f0
 //
@@ -22,7 +22,10 @@ struct CRobloxView {
 };
 
 void CRobloxView::method(int arg) {
-    int flag = (field_198 != 0) ? 1 : 0;
-    void (__thiscall *fn)(void*, int) = *(void (__thiscall **)(void*, int))arg;
+    int* p = (int*)arg;
+    int* vtbl = (int*)*p;
+    int flag = (this->field_198 != 0) ? 1 : 0;
+    typedef void (__thiscall *Fn)(void*, int);
+    Fn fn = (Fn)vtbl[1];
     fn((void*)arg, flag);
 }

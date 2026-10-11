@@ -1,4 +1,4 @@
-// from server: 89% by colin
+// from server: 100% by colin
 // roc 2007-08 00635450  unit: MyXTPCommandBars  size: 56 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 00635450
 //
@@ -28,15 +28,19 @@ struct MyXTPCommandBars
     void sub_00635450(int);
 };
 
-extern "C" int __stdcall sub_006353a0(int, int);
+struct Inner
+{
+    int *sub_006353a0(int);
+};
 
 void MyXTPCommandBars::sub_00635450(int arg)
 {
     int result = (*(int (__thiscall **)(void *, int))(*(int *)this + 0x5c))(this, arg);
     if (result != 0)
     {
-        int *p = (int *)sub_006353a0(*(int *)((char *)this + 0x74) + 0xa8, arg);
-        *p = 1;
+        Inner *p = (Inner *)(*(int *)((char *)this + 0x74) + 0xa8);
+        int *r = p->sub_006353a0(arg);
+        *r = 1;
         *(int *)(*(int *)((char *)this + 0x74) + 0x4c) = 1;
     }
 }

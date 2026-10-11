@@ -1,23 +1,4 @@
-// from server: 81% by tester
-// roc 2007-08 0076cad0  unit: seg_00760000  size: 63 bytes
-// Make this compile to the exact bytes below, then: roc check 2007-08 0076cad0
-
-extern "C" void __cdecl sub_00725520(void*, void*);
-extern "C" void* __cdecl sub_0041BE50();
-extern "C" void* __cdecl sub_00407410(void*);
-extern "C" void __cdecl sub_004339D0();
-extern "C" void __cdecl sub_00630D23(void*);
-
-struct S {
-    void f();
-};
-
-void S::f()
-{
-    sub_00725520((void*)0x8bb47c, (void*)0x41c100);
-    void* p = sub_0041BE50();
-    void* q = sub_00407410(&p);
-    sub_004339D0();
-    *(void**)q = (void*)0x884a48;
-    sub_00630D23((void*)0x777650);
-}
+// from server: 100% by colin
+// roc-flags: /O2 /Ob2 /Oy /GF- /GS- /EHsc /MD
+struct Obj_0076cad0 { Obj_0076cad0* get(); }; extern "C" void reg_0076cad0(void*,void*); extern "C" void* make_0076cad0(); extern "C" Obj_0076cad0* __stdcall wrap_0076cad0(void*); extern "C" void final_0076cad0(void*);
+void func_0076cad0() { void* local; reg_0076cad0((void*)0x41c100,(void*)0x8bb47c); local=make_0076cad0(); Obj_0076cad0* o=wrap_0076cad0(&local)->get(); *(void**)o=(void*)0x884a48; final_0076cad0((void*)0x777650); }

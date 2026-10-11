@@ -1,4 +1,4 @@
-// from server: 63% by colin
+// from server: 66% by colin
 // roc 2007-08 0054d270  unit: UString_sink::?$stream_buffer  size: 27 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 0054d270
 //
@@ -14,7 +14,7 @@
 // 0054d285  50                   push eax
 // 0054d286  e825f2ffff           call 0x54c4b0
 
-extern "C" int __cdecl sub_54C4B0(int, int, int, int, int);
+extern "C" int __stdcall sub_0054c4b0(int, int, int, int, int);
 
 struct UString_sink_stream_buffer
 {
@@ -23,5 +23,5 @@ struct UString_sink_stream_buffer
 
 int UString_sink_stream_buffer::write(int a, int b, int c, int d)
 {
-    return sub_54C4B0(a, b, c, d, 0);
+    return sub_0054c4b0(a, b, c, d, 0);
 }

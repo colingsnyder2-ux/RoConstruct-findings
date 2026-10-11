@@ -1,28 +1,11 @@
-// from server: 68% by atomic.potato
-struct TypeInfo;
-typedef int (__cdecl *CompareTypeInfo)(const TypeInfo&, const TypeInfo&);
-typedef void (__thiscall *ProcessTypeInfo)(int);
-typedef void (__thiscall *InvokeTypeInfo)(int, int);
-
-extern "C" int __cdecl sub_6A1DE2(int);
-extern CompareTypeInfo g_compareTypeInfo;
-extern int g_typeInfoObject;
-
-struct TToolVerb
-{
-    int f();
-    int pad0[3];
-    int value;
-};
-
-int TToolVerb::f()
-{
-    int object = *(int *)(*(int *)((char *)this + 0x0c) + 0x204);
-    int value = *(int *)(object + 0x3b0);
-    if (value)
-    {
-        value = sub_6A1DE2(value);
-        g_compareTypeInfo(*(TypeInfo *)value, *(TypeInfo *)g_typeInfoObject);
-    }
-    return value;
-}
+// from server: 100% by colin
+// roc-flags: /O2 /Ob2 /Oy /GF- /GS- /EHsc /MD
+struct P3 { char pad[0x3b0]; void* value; };
+struct P2 { char pad[0x204]; P3* p; };
+struct Obj { char pad[0xc]; P2* p; bool f(); };
+struct C {};
+extern "C" void* helper(void*);
+extern C c;
+typedef bool (__thiscall *Fn)(C*,void*);
+extern Fn slot;
+bool Obj::f(){ void* x=p->p->value; if(x){ x=helper(x); return slot(&c,x); } return false; }

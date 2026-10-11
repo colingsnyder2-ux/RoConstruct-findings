@@ -1,4 +1,4 @@
-// from server: 57% by colin
+// from server: 100% by colin
 // roc 2007-08 00694170  unit: CXTPStatusBar  size: 49 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 00694170
 //
@@ -23,27 +23,20 @@
 // 006941a0  c3                   ret 
 
 struct CXTPStatusBar {
-    char pad0[8];
-    int field8;
-    char padC[0x10];
-    int field1C;
-    int field20;
-    int field24;
-    char pad28[0x28];
-    int field50;
-    void Init();
+    void construct();
+    char pad[0x28];
 };
 
-extern "C" void __stdcall SetRectEmpty(void*);
-extern "C" void __stdcall sub_77EE14(void*);
+extern "C" void (__stdcall *sub_77D558)();
+extern "C" void (__stdcall *sub_77EE14)(void*);
 
-void CXTPStatusBar::Init()
-{
-    SetRectEmpty(0);
-    field8 = 0;
-    field20 = 0;
-    field1C = 0;
-    field24 = -1;
-    sub_77EE14(&field8 + 1);
-    sub_77EE14(&field50);
+void CXTPStatusBar::construct() {
+    sub_77D558();
+    void (__stdcall *fn)(void*) = sub_77EE14;
+    *(int*)((char*)this + 8) = 0;
+    *(int*)((char*)this + 0x20) = 0;
+    *(int*)((char*)this + 0x1c) = 0;
+    *(int*)((char*)this + 0x24) = -1;
+    fn((char*)this + 0xc);
+    fn((char*)this + 0x28);
 }

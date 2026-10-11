@@ -1,4 +1,4 @@
-// from server: 87% by colin
+// from server: 100% by colin
 // roc 2007-08 006d42a0  unit: CXTPReportRow_Batch  size: 38 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 006d42a0
 //
@@ -21,14 +21,13 @@
 // 006d42c3  c20400               ret 4
 
 struct CXTPReportRow_Batch {
-    void* GetRow();
-    CXTPReportRow_Batch* CopyTo(CXTPReportRow_Batch*);
+    void* func_006d42a0(void* arg);
 };
 
-CXTPReportRow_Batch* CXTPReportRow_Batch::CopyTo(CXTPReportRow_Batch* other) {
-    void* p = GetRow();
-    void* q = (*(void***)p)[0x60/4];
-    ((void (__thiscall*)(void*, CXTPReportRow_Batch*))q)(p, other);
-    *(CXTPReportRow_Batch**)((char*)other + 0x4c) = this;
-    return other;
+void* CXTPReportRow_Batch::func_006d42a0(void* arg)
+{
+    void* p = ((void* (__thiscall*)(void*))((*(void***)this)[0xb8 / 4]))(this);
+    ((void (__thiscall*)(void*, void*))((*(void***)p)[0x60 / 4]))(p, arg);
+    *(void**)((char*)arg + 0x4c) = this;
+    return arg;
 }

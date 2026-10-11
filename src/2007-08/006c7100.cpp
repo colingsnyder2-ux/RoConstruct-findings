@@ -1,4 +1,4 @@
-// from server: 85% by colin
+// from server: 100% by colin
 // roc 2007-08 006c7100  unit: CXTPCustomizeSheet::CCustomizeEdit  size: 47 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 006c7100
 //
@@ -17,24 +17,22 @@
 // 006c7126  ff15d8ec7700         call dword ptr [0x77ecd8]
 // 006c712c  c20400               ret 4
 
-extern "C" __declspec(dllimport) long __stdcall SendMessageA(void* hWnd, unsigned int Msg, unsigned int wParam, long lParam);
+extern "C" long (__stdcall *SendMessageA)(void*, unsigned int, unsigned int, long);
 
 struct CXTPCustomizeSheet_CCustomizeEdit {
     char pad[0x168];
     void* field_0x168;
-    char pad2[0x170 - 0x168 - 4];
+    char pad2[0x4];
     int field_0x170;
     void SetValue(int value);
 };
 
 void CXTPCustomizeSheet_CCustomizeEdit::SetValue(int value)
 {
-    void* p = field_0x168;
     field_0x170 = value;
-    if (p == 0) {
-        void* h = *(void**)((char*)p + 0x20);
-        if (h != 0) {
-            SendMessageA(h, 0xcf, (unsigned int)value, 0);
+    if (field_0x168 != 0) {
+        if (*(int*)((char*)field_0x168 + 0x20) != 0) {
+            SendMessageA(*(void**)((char*)field_0x168 + 0x20), 0xcf, value, 0);
         }
     }
 }

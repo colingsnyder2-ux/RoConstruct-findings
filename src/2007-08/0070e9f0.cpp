@@ -1,4 +1,4 @@
-// from server: 95% by colin
+// from server: 100% by colin
 // roc 2007-08 0070e9f0  unit: CXTColorPageCustom  size: 48 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 0070e9f0
 //
@@ -40,5 +40,5 @@ void CXTColorPageCustom::func_70e9f0()
     unsigned int mid = field_78c;
     unsigned int hi = field_790;
     unsigned int packed = ((mid << 8) | hi) << 8 | v;
-    sub_70e4a0(0, packed);
+    sub_70e4a0(packed, 0);
 }

@@ -1,4 +1,4 @@
-// from server: 65% by colin
+// from server: 75% by colin
 // roc 2007-08 00643ee0  unit: CXTPCommandBar  size: 56 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 00643ee0
 //
@@ -25,22 +25,21 @@
 // 00643f14  5e                   pop esi
 // 00643f15  c20400               ret 4
 
-struct CXTPCommandBar
-{
+struct CXTPCommandBar {
     int GetCount();
-    void* GetAt(int);
-    int Find(void*);
+    void* GetAt(int index);
+    int Find(void* p);
 };
 
 int CXTPCommandBar::Find(void* p)
 {
     int i = 0;
-    if (GetCount() > 0)
-    {
-        do
-        {
-            if (*(void**)((char*)GetAt(i) + 0xd4) == p)
-                return i;
+    int count = GetCount();
+    if (count > 0) {
+        do {
+            void* item = GetAt(i);
+            if (*(int*)((char*)item + 0xd4) == (int)p)
+                return (int)item;
             ++i;
         } while (i < GetCount());
     }

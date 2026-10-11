@@ -1,22 +1,13 @@
-// from server: 99% by colin
-// roc 2007-08 00770400  unit: seg_00770000  size: 37 bytes
-// Make this compile to the exact bytes below, then: roc check 2007-08 00770400
-//
-// 00770400  33c9                 xor ecx, ecx
-// 00770402  51                   push ecx
-// 00770403  68784c7a00           push 0x7b1104
-// 00770408  51                   push ecx
-// 00770409  b8a0cf4400           mov eax, 0x596a10
-// 0077040e  50                   push eax
-// 0077040f  b9280d8c00           mov ecx, 0x8c4eb0
-// 00770414  e867efdbff           call 0x597090
-// 00770419  6870937700           push 0x77aef0
-// 0077041e  e80009ecff           call 0x630d23
-// 00770423  59                   pop ecx
-// 00770424  c3                   ret 
-// library rbxgs/util\RunStateOwner.cpp (function ??__EresetFunction@RBX@@YAXXZ)
+// from server: 100% by colin
+// roc-cl: 50727
+// roc-flags: /O2 /Ob2 /Oy /GF- /GS- /EHsc /MD
+#pragma pointers_to_members(full_generality, multiple_inheritance)
+struct B1{virtual void b();}; struct B2{virtual void c();}; inline void B1::b(){} inline void B2::c(){}
+struct P:B1,B2{__declspec(noinline) void method();}; inline void P::method(){}
+extern "C" void helper(void(P::*)(),const char*,int,void*);
+struct D{D(void(P::*)(),const char*,int);~D();};
+__declspec(noinline) D::D(void(P::*f)(),const char*n,int s){helper(f,n,s,this);} D::~D(){}
+extern "C" void tail(void*); extern int e;
+static D d(&P::method,"GetValue",0);
+void func_007732a0(){tail(&e);}
 
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs util/RunStateOwner.cpp

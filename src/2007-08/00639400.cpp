@@ -1,9 +1,9 @@
-// from server: 92% by colin
+// from server: 100% by colin
 // roc 2007-08 00639400  unit: seg_00630000  size: 67 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 00639400
 
-extern "C" void* __stdcall GetFocus();
-extern "C" int __stdcall SendMessageA(void* hWnd, unsigned int Msg, unsigned int wParam, int lParam);
+extern "C" void* (__stdcall *GetFocus)();
+extern "C" int (__stdcall *SendMessageA)(void* hWnd, unsigned int Msg, unsigned int wParam, int lParam);
 
 struct CXTPControlComboBoxList {
     char pad[0x20];

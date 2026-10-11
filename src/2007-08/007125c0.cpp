@@ -1,4 +1,4 @@
-// from server: 75% by colin
+// from server: 100% by colin
 // roc 2007-08 007125c0  unit: CXTShadowHook  size: 22 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 007125c0
 //
@@ -12,17 +12,17 @@
 // 007125d4  ffe0                 jmp eax
 
 struct CXTShadowHook {
-    void func_007125c0(int* arg);
+    void Method(int);
 };
 
-void CXTShadowHook::func_007125c0(int* arg)
+void CXTShadowHook::Method(int arg)
 {
-    int* p = arg;
-    if (p != 0) {
-        p = (int*)p[8];
+    int value = arg;
+    if (value != 0) {
+        value = *(int*)(value + 0x20);
     }
-    int* vtbl = (int*)*(int*)this;
-    arg = p;
-    void (__stdcall *fn)(void*, int*) = (void (__stdcall *)(void*, int*))vtbl[7];
-    fn(this, arg);
+    void** vtbl = *(void***)this;
+    typedef void (__thiscall *Fn)(CXTShadowHook*, int);
+    Fn fn = (Fn)vtbl[7];
+    fn(this, value);
 }

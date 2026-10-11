@@ -1,4 +1,4 @@
-// from server: 48% by colin
+// from server: 77% by colin
 // roc 2007-08 00644450  unit: CXTPCommandBar  size: 59 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 00644450
 //
@@ -29,27 +29,22 @@
 // 00644488  c20c00               ret 0xc
 
 struct CXTPCommandBar {
-    void* field0;
-    char pad[0xf8 - 4];
-    void* fieldF8;
+    char pad[0xf8];
+    int fieldF8;
     int method1();
-    int method2(int, int);
-    int method3(int, int);
+    void method3(int, int, int);
 };
 
-extern "C" int __stdcall sub_67A9A0(void*, int, int);
+extern "C" int __stdcall sub_67A9A0(int, int, int);
 
-int CXTPCommandBar::method1() {
-    int r = this->method2(0, 0);
-    if (r != 0)
-        return r;
-    int a = *(int*)((char*)this + 0xf8);
-    int b = 0;
-    int c = 0;
-    int d = sub_67A9A0((void*)a, b, c);
-    if (d != 0) {
-        int (*fp)(int, int) = *(int (**)(int, int))((*(int*)d) + 0xf8);
-        return fp(b, c);
+void CXTPCommandBar::method3(int a, int b, int c)
+{
+    if (method1() == 0) {
+        int r = sub_67A9A0(fieldF8, a, b);
+        if (r != 0) {
+            int* vt = *(int**)r;
+            int (*fn)(void*, int, int) = (int (*)(void*, int, int))vt[0xf8 / 4];
+            fn((void*)r, a, b);
+        }
     }
-    return 0;
 }

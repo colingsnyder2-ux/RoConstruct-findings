@@ -1,4 +1,4 @@
-// from server: 92% by colin
+// from server: 100% by colin
 // roc 2007-08 0067e580  unit: CXTPControlRecentFileList  size: 36 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 0067e580
 //
@@ -20,14 +20,13 @@
 // 0067e5a1  c20400               ret 4
 
 struct CXTPControlRecentFileList {
-    void* getSite();
-    void* method(int);
+    void* sub_67E510();
+    void* Method(void*);
 };
 
-void* CXTPControlRecentFileList::method(int arg) {
-    void* p = getSite();
-    void** vtbl = *(void***)p;
-    void (__thiscall *fn)(void*, void*) = (void (__thiscall*)(void*, void*))vtbl[0x38];
-    fn(p, this);
+void* CXTPControlRecentFileList::Method(void* a2)
+{
+    void* p = sub_67E510();
+    (*(void (__thiscall**)(void*, void*, void*))(*(int*)p + 0xe0))(p, this, a2);
     return p;
 }

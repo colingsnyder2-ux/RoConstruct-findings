@@ -1,4 +1,4 @@
-// from server: 89% by colin
+// from server: 100% by colin
 // roc 2007-08 004a4e60  unit: FilePacketLogger  size: 50 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 004a4e60
 //
@@ -25,15 +25,15 @@ struct Instance {
 };
 
 struct Replicator {
-    void method();
+    void method(int);
 };
 
-extern "C" Instance* __cdecl sub_630d36(Instance* inst, int a, int b, int c, int d);
+extern "C" Instance* __cdecl sub_630d36(Instance* inst, int a, const char* b, const char* c, int d);
 
 void __cdecl sub_4a4e60(Instance* inst)
 {
-    Instance* result = sub_630d36(inst, 0, 0x881f4c, 0x88f84c, 0);
+    Instance* result = sub_630d36(inst, 0, (const char*)0x881f4c, (const char*)0x88f84c, 0);
     if (result != 0 && result->flag != 0) {
-        ((Replicator*)result)->method();
+        ((Replicator*)result)->method(0);
     }
 }

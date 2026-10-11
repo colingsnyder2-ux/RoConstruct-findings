@@ -1,4 +1,4 @@
-// from server: 83% by colin
+// from server: 84% by tester
 // roc 2007-08 006f5ce0  unit: CXTPPropertyGridInplaceButton  size: 92 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 006f5ce0
 //

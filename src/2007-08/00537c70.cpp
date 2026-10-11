@@ -1,4 +1,4 @@
-// from server: 97% by colin
+// from server: 100% by colin
 // roc 2007-08 00537c70  unit: RBX::Lua::ThreadRef::VNode::V?$shared_ptr::?$TItem  size: 67 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 00537c70
 //
@@ -34,34 +34,34 @@ struct LiveThreadRef;
 struct ThreadRef {
     int* liveThreadRef;
     void* node;
+
     ThreadRef(LiveThreadRef* ref);
 };
 
-extern "C" int* __cdecl sub_0056dcc0();
-extern "C" void* __cdecl sub_0062fef6(unsigned int size);
-
-struct VNode {
-    int vtbl;
-    int ref;
+struct Node {
+    void* vtable;
+    void* ref;
+    Node(void* r);
 };
 
-struct VNodeCall {
-    virtual void release(int);
-};
+extern "C" void* __cdecl sub_56dcc0();
+extern "C" void* __cdecl sub_62fef6(unsigned int size);
+
+void* g_vtable_7a577c = (void*)0x7a577c;
 
 ThreadRef::ThreadRef(LiveThreadRef* ref)
 {
-    liveThreadRef = sub_0056dcc0();
-    VNode* n = (VNode*)sub_0062fef6(8);
+    liveThreadRef = (int*)sub_56dcc0();
+    Node* n = (Node*)sub_62fef6(8);
     if (n) {
-        n->vtbl = 0x7a577c;
-        n->ref = *(int*)ref;
+        n->vtable = &g_vtable_7a577c;
+        n->ref = *(void**)ref;
     } else {
         n = 0;
     }
     void* old = node;
     node = n;
     if (old) {
-        ((VNodeCall*)old)->release(1);
+        (*(void(__thiscall**)(void*, int))*(void**)old)(old, 1);
     }
 }

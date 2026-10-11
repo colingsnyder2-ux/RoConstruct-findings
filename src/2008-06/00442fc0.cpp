@@ -1,13 +1,4 @@
-// from server: 80% by atomic.potato
-typedef int (__cdecl *FunctionType)(void *, const void *, const void *, int);
-
-struct Classes
-{
-    int f(void *);
-};
-
-int Classes::f(void *value)
-{
-    FunctionType function = (FunctionType)0x006a17c6;
-    return function(value, (const void *)0x0092907c, (const void *)0x0092ac4c, 0) != 0;
-}
+// from server: 100% by colin
+// roc-flags: /O2 /Ob2 /Oy /GF- /GS- /EHsc /MD
+extern "C" int helper(void*,int,void*,void*,int);
+bool __stdcall func(void* p){return helper(p,0,(void*)0x92907c,(void*)0x92ac4c,0)!=0;}

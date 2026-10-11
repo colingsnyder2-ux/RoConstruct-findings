@@ -1,4 +1,4 @@
-// from server: 38% by colin
+// from server: 66% by colin
 // roc 2007-08 006dfe10  unit: CXTPDockingPaneMiniWnd  size: 65 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 006dfe10
 //
@@ -29,26 +29,29 @@
 
 struct CXTPDockingPaneMiniWnd
 {
-    int sub_6E4770(int, int);
-    int func_006DFE10(int, int);
+    char pad_0000[0x18];
+    int field_18;
+    char pad_001c[0x1c];
+    void* field_38;
+    void Method(int a, int b);
 };
 
-int CXTPDockingPaneMiniWnd::func_006DFE10(int a, int b)
+extern "C" void __stdcall sub_006e4770(void* p);
+
+void CXTPDockingPaneMiniWnd::Method(int a, int b)
 {
-    if (*(int*)((char*)this + 0x18) == a)
+    if (field_18 == a)
     {
-        int p = (int)this - 0xe4;
-        int neg = -p;
-        int sbb = (neg < 0) ? -1 : 0;
-        int r = sbb & (int)this;
-        return sub_6E4770(r, b);
+        void* p = (char*)this - 0xe4;
+        p = (p != 0) ? this : 0;
+        sub_006e4770(p);
+        return;
     }
-    if (*(int*)((char*)this + 0x38) != 0)
+    if (field_38 != 0)
     {
-        int* obj = *(int**)((char*)this + 0x38);
-        int* vt = *(int**)((char*)obj + 0x20);
-        int (*fn)(int, int, int) = *(int (**)(int, int, int))((char*)vt + 0xc);
-        return fn((int)obj + 0x20, a, b);
+        void* v = field_38;
+        int* vtbl = *(int**)v;
+        void (__stdcall *fn)(void*, int, int) = (void (__stdcall *)(void*, int, int))vtbl[3];
+        fn((char*)v + 0x20, a, b);
     }
-    return 0;
 }

@@ -1,4 +1,4 @@
-// from server: 91% by colin
+// from server: 100% by colin
 // roc 2007-08 006a6b80  unit: CXTPMenuBar  size: 36 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 006a6b80
 //
@@ -27,7 +27,7 @@ struct CXTPMenuBar {
 void* CXTPMenuBar::Method(void* arg) {
     void* p = GetSomething();
     void* vtable = *(void**)p;
-    void (*fn)(void*, void*, void*) = *(void (**)(void*, void*, void*))((char*)vtable + 0x1c8);
+    void (__thiscall *fn)(void*, void*, void*) = *(void (__thiscall **)(void*, void*, void*))((char*)vtable + 0x1c8);
     fn(p, this, arg);
     return p;
 }

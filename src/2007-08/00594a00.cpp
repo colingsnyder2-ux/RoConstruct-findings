@@ -1,35 +1,11 @@
-// from server: 95% by colin
-struct Verb {
-    char pad[0xc];
-    void* container;
-};
-
-struct Container {
-    char pad[0x188];
-    void* something;
-};
-
-struct Something {
-    char pad[0x318];
-    void* ptr;
-};
-
-extern "C" void __cdecl func_00631392(void*);
-extern "C" void* __stdcall func_0077e708(void*);
-
-struct VRightMotorTool {
-    bool isEnabled() const;
-};
-
-bool VRightMotorTool::isEnabled() const
-{
-    void* c = *(void**)((char*)this + 0xc);
-    void* s = *(void**)((char*)c + 0x188);
-    void* p = *(void**)((char*)s + 0x318);
-    if (p) {
-        func_00631392(p);
-        func_0077e708((void*)0x8a50bc);
-        return true;
-    }
-    return false;
-}
+// from server: 100% by colin
+// roc-flags: /O2 /Ob2 /Oy /GF- /GS- /EHsc /MD
+struct P3 { char pad[0x318]; void* value; };
+struct P2 { char pad[0x188]; P3* p; };
+struct Obj { char pad[0xc]; P2* p; bool f(); };
+struct C {};
+extern "C" void* helper(void*);
+extern C c;
+typedef bool (__thiscall *Fn)(C*,void*);
+extern Fn slot;
+bool Obj::f(){ void* x=p->p->value; if(x){ x=helper(x); return slot(&c,x); } return false; }

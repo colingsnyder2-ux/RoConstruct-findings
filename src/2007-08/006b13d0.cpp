@@ -1,4 +1,4 @@
-// from server: 56% by colin
+// from server: 68% by colin
 // roc 2007-08 006b13d0  unit: CXTPRibbonTheme  size: 47 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 006b13d0
 //
@@ -23,19 +23,20 @@
 // 006b13fc  c20c00               ret 0xc
 
 struct CXTPRibbonTheme {
-    int field0;
-    int field4;
-    int field8;
-    int fieldC;
-    void copyFrom(int* src, int arg1, int arg2);
+    int m_field0;
+    int m_field4;
+    int m_field8;
+    int m_fieldC;
+    void CopyFrom(const CXTPRibbonTheme* other, int a, int b);
 };
 
-extern "C" void __stdcall sub_710520(int* dst, int arg1, int arg2);
+extern "C" void __stdcall Sub_710520(int a, void* p);
 
-void CXTPRibbonTheme::copyFrom(int* src, int arg1, int arg2) {
-    field0 = src[0];
-    field4 = src[1];
-    field8 = src[2];
-    fieldC = src[3];
-    sub_710520(&field0, arg1, arg2);
+void CXTPRibbonTheme::CopyFrom(const CXTPRibbonTheme* other, int a, int b) {
+    int local[16];
+    m_field0 = other->m_field0;
+    m_field4 = other->m_field4;
+    m_field8 = other->m_field8;
+    m_fieldC = other->m_fieldC;
+    Sub_710520(a, local);
 }

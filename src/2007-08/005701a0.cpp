@@ -1,4 +1,4 @@
-// from server: 97% by colin
+// from server: 100% by colin
 // roc 2007-08 005701a0  unit: RBX::Reflection::VGenericSlotWrapper::?$sp_counted_impl_p  size: 87 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 005701a0
 //
@@ -44,10 +44,9 @@
 // 005701f6  c3                   ret 
 
 struct S {
-    int f(int* first, int* last, int* value, bool (*pred)(int, int));
 };
 
-int S::f(int* first, int* last, int* value, bool (*pred)(int, int))
+int __cdecl f(int* first, int* last, int* value, bool (*pred)(int, int))
 {
     int count = (int)(last - first);
     if (count > 0) {

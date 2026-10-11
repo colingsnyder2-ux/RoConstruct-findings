@@ -1,4 +1,4 @@
-// from server: 95% by colin
+// from server: 100% by colin
 // roc 2007-08 00534430  unit: RBX::ScriptContext  size: 48 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 00534430
 //
@@ -25,20 +25,16 @@
 // 0053445e  5e                   pop esi
 // 0053445f  c3                   ret 
 
-extern "C" int __cdecl sub_5BF350(int, int, int);
-extern "C" int __cdecl sub_5BF240(int, int, int);
-extern "C" int __cdecl sub_5C0AC0(int, int, int);
+extern "C" int __cdecl sub_005BF350(int, int, int);
+extern "C" int __cdecl sub_005BF240(int, int, int);
+extern "C" int __cdecl sub_005C0AC0(int, int, int);
 
-extern int dword_8ABC2C;
+extern int dword_008ABC2C;
 
-struct RBX_ScriptContext {
-    int method(int arg);
-};
-
-int RBX_ScriptContext::method(int arg)
+int sub_00534430(int a1)
 {
-    int a = sub_5BF350(arg, 2, 0);
-    int b = sub_5BF240(arg, 1, dword_8ABC2C);
-    sub_5C0AC0(b, a, arg);
+    int v2 = sub_005BF350(a1, 2, 0);
+    int v3 = sub_005BF240(a1, 1, dword_008ABC2C);
+    sub_005C0AC0(v3, v2, a1);
     return 0;
 }

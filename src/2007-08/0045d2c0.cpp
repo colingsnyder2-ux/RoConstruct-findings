@@ -1,4 +1,4 @@
-// from server: 95% by colin
+// from server: 100% by colin
 // roc 2007-08 0045d2c0  unit: Scintilla::CScintillaView  size: 30 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 0045d2c0
 //
@@ -17,14 +17,19 @@
 // 0045d2da  5e                   pop esi
 // 0045d2db  c20400               ret 4
 
-struct CScintillaView {
-    void sub_45D2C0(int* p);
+struct ScintillaView_Inner {
+    int get(int);
 };
 
-extern "C" int __stdcall sub_45CB10(int, int);
+struct ScintillaView {
+    char pad[0x58];
+    ScintillaView_Inner inner;
+    void method(int*);
+};
 
-void CScintillaView::sub_45D2C0(int* p) {
-    int* vtable = *(int**)p;
-    int result = sub_45CB10((int)this + 0x58, 1);
-    ((void (__thiscall*)(int*, int))vtable[0])(p, result);
+void ScintillaView::method(int* p)
+{
+    int* obj = *(int**)p;
+    int r = inner.get(1);
+    ((void (__thiscall*)(void*, int))obj[0])(p, r);
 }

@@ -1,21 +1,19 @@
-// from server: 80% by why2
-struct Inner {
-    virtual void v0();
-    virtual void v1();
-    virtual void v2();
-    virtual void v3();
-    virtual void v4();
-    virtual void v5();
-    virtual void v6();
+// from server: 100% by tester
+// roc 2009-06 00839230  unit: Ogre::RbxSubEntity::RbxSubEntityShadowRenderable  size: 10 bytes
+// Make this compile to the exact bytes below, then: roc check 2009-06 00839230
+//
+// 00839230  8b496c               mov ecx, dword ptr [ecx + 0x6c]
+// 00839233  8b01                 mov eax, dword ptr [ecx]
+// 00839235  8b4010               mov eax, dword ptr [eax + 0x10]
+// 00839238  ffe0                 jmp eax
+
+struct OgreRbxMeshPartAdapter {
+    int getSomething();
 };
 
-struct Outer {
-    char pad[0x6c];
-    Inner* field_6c;
-    void f();
-};
-
-void Outer::f() {
-    Inner* p = field_6c;
-    p->v4();
+int OgreRbxMeshPartAdapter::getSomething() {
+    void* obj = *reinterpret_cast<void**>(reinterpret_cast<char*>(this) + 0x6c);
+    void* vtable = *reinterpret_cast<void**>(obj);
+    int (__thiscall *func)(void*) = *reinterpret_cast<int (__thiscall**)(void*)>(reinterpret_cast<char*>(vtable) + 0x10);
+    return func(obj);
 }

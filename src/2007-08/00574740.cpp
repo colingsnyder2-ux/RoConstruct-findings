@@ -1,4 +1,4 @@
-// from server: 66% by colin
+// from server: 100% by colin
 // roc 2007-08 00574740  unit: RBX::P8PartInstance::?$GetSetImpl  size: 57 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 00574740
 //
@@ -23,23 +23,31 @@
 // 00574775  5e                   pop esi
 // 00574776  c20800               ret 8
 
-struct S_func_00574740 {
-    int f(int a1, int a2);
+struct P8PartInstance_GetSetImpl
+{
+    char pad0[0x18];
+    int m18;
+    int m1c;
+    int m20;
+    void (__thiscall *m_func)(void*, unsigned char);
+    char pad28[0xc4];
+    int m_ec;
+
+    void GetSetImpl(int a, unsigned char* b);
 };
 
-int S_func_00574740::f(int a1, int a2)
+void P8PartInstance_GetSetImpl::GetSetImpl(int a, unsigned char* b)
 {
-    int v;
-    if (a1 != 0)
-        v = a1 - 4;
+    P8PartInstance_GetSetImpl* p = (P8PartInstance_GetSetImpl*)a;
+    if (p)
+        p = (P8PartInstance_GetSetImpl*)((char*)p - 4);
     else
-        v = 0;
-    unsigned char c = *(unsigned char*)a2;
-    int esi = *(int*)((char*)this + 0x20);
-    int ecx = *(int*)((char*)v + 0xec);
-    ecx = *(int*)(ecx + esi);
-    ecx += *(int*)((char*)this + 0x1c);
-    int edx = *(int*)((char*)this + 0x18);
-    ecx = ecx + v + 0xec;
-    return ((int (__thiscall*)(void*, int))edx)((void*)ecx, c);
+        p = 0;
+
+    unsigned char idx = *b;
+    int off = *(int*)((char*)p + 0xec);
+    int val = *(int*)(off + this->m20);
+    val += this->m1c;
+    void (__thiscall *fn)(void*, unsigned char) = *(void (__thiscall**)(void*, unsigned char))((char*)this + 0x18);
+    fn((void*)((char*)p + 0xec + val), idx);
 }

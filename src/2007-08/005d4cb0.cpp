@@ -1,4 +1,4 @@
-// from server: 87% by colin
+// from server: 100% by colin
 // roc 2007-08 005d4cb0  unit: RBX::VTool::?$FactoryProduct  size: 55 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 005d4cb0
 //
@@ -14,21 +14,24 @@
 // 005d4ce1  b8686a8c00           mov eax, 0x8c6a68
 // 005d4ce6  c3                   ret 
 
-struct S {
-    static float* f();
+struct S_005d4cb0 {
+    void* f();
 };
 
-float* S::f()
+extern float G_007bb79c;
+extern float G_007bb798;
+extern float G_008c6a68;
+extern float G_008c6a6c;
+extern float G_008c6a70;
+extern unsigned int G_008c6a74;
+
+void* S_005d4cb0::f()
 {
-    static int init = 0;
-    static float a;
-    static float b;
-    static float c;
-    if (!(init & 1)) {
-        init |= 1;
-        a = *(float*)0x7bb79c;
-        b = *(float*)0x7bb798;
-        c = b;
+    if (!(G_008c6a74 & 1)) {
+        G_008c6a68 = G_007bb79c;
+        G_008c6a74 |= 1;
+        G_008c6a6c = G_007bb798;
+        G_008c6a70 = G_007bb798;
     }
-    return &a;
+    return &G_008c6a68;
 }

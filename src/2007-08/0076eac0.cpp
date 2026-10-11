@@ -1,4 +1,4 @@
-// from server: 84% by colin
+// from server: 100% by colin
 // roc 2007-08 0076eac0  unit: seg_00760000  size: 39 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 0076eac0
 //
@@ -11,17 +11,17 @@
 // 0076eadb  6890807700           push 0x778090
 // 0076eae0  e83e22ecff           call 0x630d23
 // 0076eae5  59                   pop ecx
-// 0076eae6  c3                   ret
+// 0076eae6  c3                   ret 
 
-struct S_48DC90 {
-    void f(int a, int b, int c, int d);
-};
-
-extern "C" void __cdecl sub_630D23(int a);
-
-void sub_76EAC0()
+extern int g_0076eac0_0;
+extern int g_0076eac0_1;
+// roc-flags: /O2 /GS /EHsc /MD /Ob2 /Oy /GF
+extern "C" void tail_fn_0076eac0(void*);
+struct O_0076eac0 { int m(void*, void*, int, int); };
+extern O_0076eac0 g_obj_0076eac0;
+extern int g_tail_0076eac0;
+void func_0076eac0()
 {
-    S_48DC90* p = (S_48DC90*)0x8bde2c;
-    p->f(5, 0x15c, 0x79b698, 0x79b6b4);
-    sub_630D23(0x778090);
+    g_obj_0076eac0.m((void*)&g_0076eac0_0, (void*)&g_0076eac0_1, 348, 5);
+    tail_fn_0076eac0(&g_tail_0076eac0);
 }

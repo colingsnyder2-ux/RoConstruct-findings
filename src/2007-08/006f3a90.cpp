@@ -1,4 +1,4 @@
-// from server: 69% by colin
+// from server: 100% by colin
 // roc 2007-08 006f3a90  unit: CXTPImageEditorPicture  size: 55 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 006f3a90
 //
@@ -23,28 +23,21 @@
 // 006f3ac6  c3                   ret 
 
 struct CXTPImageEditorPicture {
+    void sub_6F3A90();
+    int sub_6E4440();
+    int sub_6E4770(int);
+    void sub_6F2890();
     char pad[0x7c];
     int field_7c;
-    int field_80;
-    char pad3[0x9c - 0x84];
-    int field_9c;
-    char pad4[0xa8 - 0xa0];
+    char pad2[0x28];
     int field_a8;
-    void sub_6f2890();
-    void func();
 };
 
-int sub_6e4440_helper(int* p);
-int sub_6e4770_helper(int* p, int v);
-
-void CXTPImageEditorPicture::func()
-{
-    if (this->field_a8 != 0)
-    {
-        int edi = sub_6e4440_helper(&this->field_9c);
-        int eax = this->field_7c;
-        sub_6e4770_helper(&this->field_80, eax);
-        this->field_7c = edi;
-        this->sub_6f2890();
+void CXTPImageEditorPicture::sub_6F3A90() {
+    if (field_a8 != 0) {
+        int saved = ((CXTPImageEditorPicture*)((char*)this + 0x9c))->sub_6E4440();
+        ((CXTPImageEditorPicture*)((char*)this + 0x80))->sub_6E4770(field_7c);
+        field_7c = saved;
+        sub_6F2890();
     }
 }

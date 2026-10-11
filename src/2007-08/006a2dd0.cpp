@@ -1,4 +1,4 @@
-// from server: 98% by colin
+// from server: 100% by atomic.potato
 // roc 2007-08 006a2dd0  unit: CXTPHookManagerHookAble  size: 56 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 006a2dd0
 //
@@ -29,21 +29,21 @@
 // 006a2e05  c20800               ret 8
 
 struct CXTPHookManagerHookAble {
-    int find(void* unused, void* key);
+    int find(void* a, void* b);
 };
 
 extern "C" int __stdcall compare_key(void* a, void* b);
 
-int CXTPHookManagerHookAble::find(void* unused, void* key)
+int CXTPHookManagerHookAble::find(void* a, void* b)
 {
     void* node;
-    if (key == 0)
+    if (b == 0)
         node = *(void**)((char*)this + 4);
     else
-        node = *(void**)key;
+        node = *(void**)b;
 
     while (node != 0) {
-        if (compare_key((char*)node + 8, &unused) != 0)
+        if (compare_key((char*)node + 8, &a) != 0)
             return (int)node;
         node = *(void**)node;
     }

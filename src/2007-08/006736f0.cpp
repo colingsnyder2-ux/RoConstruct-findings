@@ -1,4 +1,4 @@
-// from server: 88% by colin
+// from server: 100% by colin
 // roc 2007-08 006736f0  unit: CXTPCustomizeSheet  size: 42 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 006736f0
 //
@@ -16,19 +16,20 @@
 
 struct CXTPCustomizeSheet {
     char pad[0xb8];
-    void* field_b8;
-    void SetActive();
+    void* m_p;
+    void SetActivePage1();
 };
 
-void CXTPCustomizeSheet::SetActive()
+void CXTPCustomizeSheet::SetActivePage1()
 {
-    void* p = field_b8;
-    void* q = *(void**)((char*)p + 0x58);
-    if (q != 0) {
-        *(int*)((char*)q + 0x148) = 1;
-        void* r = *(void**)((char*)q + 0xfc);
-        void** vt = *(void***)r;
-        void (*fn)(void*) = *(void (**)(void*))((char*)vt + 0x17c);
-        fn(r);
+    void* p = *(void**)((char*)m_p + 0x58);
+    if (p)
+    {
+        *(int*)((char*)p + 0x148) = 1;
+        void* q = *(void**)((char*)p + 0xfc);
+        void** vt = *(void***)q;
+        typedef void (__thiscall *Fn)(void*);
+        Fn fn = (Fn)vt[0x17c / 4];
+        fn(q);
     }
 }

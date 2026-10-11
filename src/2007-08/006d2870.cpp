@@ -1,4 +1,4 @@
-// from server: 59% by colin
+// from server: 75% by colin
 // roc 2007-08 006d2870  unit: PAVCXTPReportHyperlink::?$CXTPArrayT  size: 53 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 006d2870
 //
@@ -26,24 +26,15 @@
 // 006d289b  680b000280           push 0x8002000b
 // 006d28a0  e8c3d3f5ff           call 0x62fc68
 
-extern "C" void __stdcall AfxThrowOleDispatchException(unsigned int, unsigned int);
-
 struct CXTPReportHyperlinkArray
 {
-    int GetCount();
-    void SetAt(int nIndex, int nValue);
-    void ThrowInvalidIndex();
+    virtual int GetCount();
+    virtual void SetAt(int nIndex, int nValue);
 };
-
-void CXTPReportHyperlinkArray::ThrowInvalidIndex()
-{
-    AfxThrowOleDispatchException(0x8002000b, 0);
-}
 
 void CXTPReportHyperlinkArray::SetAt(int nIndex, int nValue)
 {
     if (nIndex < 0 || nIndex >= GetCount())
-        ThrowInvalidIndex();
-    else
-        *(int*)((char*)this + 0) = nValue;
+        throw 0x8002000b;
+    SetAt(nIndex, nValue);
 }

@@ -1,5 +1,5 @@
-// from server: 74% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs util/Name.cpp
+// from server: 100% by colin
+// roc-flags: /O2 /GS- /EHsc /MD
+#include <string>
+struct Tool { virtual std::string name() const; };
+std::string Tool::name() const { return "DropperCursor"; }

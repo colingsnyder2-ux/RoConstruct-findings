@@ -1,4 +1,4 @@
-// from server: 86% by colin
+// from server: 100% by atomic.potato
 // roc 2007-08 0067a390  unit: CXTPPopupBar  size: 36 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 0067a390
 //
@@ -19,23 +19,16 @@
 // 0067a3b0  5e                   pop esi
 // 0067a3b1  c20400               ret 4
 
-struct CXTPPopupBar
-{
-    void *m_pData;
+struct CXTPPopupBar {
+    void* GetSite();
+    void* GetPopupSite(int);
 };
 
-struct CXTPPopupBar_impl
+void* CXTPPopupBar::GetPopupSite(int n)
 {
-    CXTPPopupBar *GetPopupBar();
-    CXTPPopupBar *CreatePopupBar(CXTPPopupBar *pBar);
-};
-
-CXTPPopupBar *CXTPPopupBar_impl::CreatePopupBar(CXTPPopupBar *pBar)
-{
-    CXTPPopupBar *pNew = GetPopupBar();
-    void **vtable = *(void ***)pNew;
-    typedef void (__thiscall *Func)(CXTPPopupBar *, CXTPPopupBar *);
-    Func f = (Func)vtable[0x1c8 / 4];
-    f(pNew, pBar);
-    return pNew;
+    void* p = GetSite();
+    void* vtable = *(void**)p;
+    void (__thiscall* fn)(void*, void*, int) = *(void (__thiscall**)(void*, void*, int))((char*)vtable + 0x1c8);
+    fn(p, this, n);
+    return p;
 }

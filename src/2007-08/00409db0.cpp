@@ -1,4 +1,4 @@
-// from server: 95% by colin
+// from server: 100% by colin
 // roc 2007-08 00409db0  unit: VCApp::?$CComObject  size: 93 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 00409db0
 //
@@ -28,10 +28,10 @@
 
 struct VCApp_CComObject {
     void* f(int);
-    void sub_409290();
 };
 
 extern "C" void __cdecl sub_62FC62(void*);
+extern "C" void __fastcall sub_409290(void*);
 
 struct GlobalObj_8BAE44 {
     virtual void v0();
@@ -54,7 +54,7 @@ void* VCApp_CComObject::f(int arg)
     GlobalObj_8BAE44* p = g_8BAE44;
     p->v2();
 
-    sub_409290();
+    sub_409290(this);
 
     if (arg & 1)
         sub_62FC62(this);

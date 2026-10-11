@@ -1,4 +1,4 @@
-// from server: 84% by colin
+// from server: 100% by colin
 // roc 2007-08 00434530  unit: CClassTreeView  size: 31 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 00434530
 //
@@ -15,28 +15,21 @@
 // 0043454d  5e                   pop esi
 // 0043454e  c3                   ret 
 
-struct S_func_00434530;
-
-struct Sub {
-    char pad[0x44];
-    void (__thiscall *fn)();
+struct CClassTreeView {
+    char pad[0x60];
+    void* field60;
+    char pad2[0x9c - 0x64];
+    unsigned char field9c;
+    void func();
 };
 
-extern void G1_func_0062fcd4();
+extern "C" void __fastcall sub_62FCD4(void*);
 
-struct S_func_00434530 {
-    char pad0[0x60];
-    Sub* sub;
-    char pad1[0x38];
-    unsigned char flag;
-    void f();
-};
-
-void S_func_00434530::f()
-{
-    G1_func_0062fcd4();
-    if (flag != 0) {
-        Sub* s = sub;
-        s->fn();
+void CClassTreeView::func() {
+    sub_62FCD4(this);
+    if (field9c != 0) {
+        void* p = field60;
+        void (__fastcall *fn)(void*) = *(void (__fastcall **)(void*))((char*)p + 0x44);
+        fn((char*)this + 0x60);
     }
 }

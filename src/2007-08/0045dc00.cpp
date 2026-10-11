@@ -1,4 +1,4 @@
-// from server: 70% by colin
+// from server: 75% by colin
 // roc 2007-08 0045dc00  unit: HH::?$CArray  size: 36 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 0045dc00
 //
@@ -24,6 +24,7 @@ struct CArray {
 extern "C" void __stdcall sub_77ddb8(int, int);
 
 void* CArray::CopyTo(void* dest) {
-    sub_77ddb8(this->field_0x84, (int)dest);
+    int tmp = 0;
+    sub_77ddb8(this->field_0x84, (int)&tmp);
     return dest;
 }

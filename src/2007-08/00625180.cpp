@@ -1,4 +1,4 @@
-// from server: 92% by colin
+// from server: 100% by atomic.potato
 // roc 2007-08 00625180  unit: RBX::ArrowButton  size: 27 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 00625180
 //
@@ -12,13 +12,10 @@
 // 00625198  8ac1                 mov al, cl
 // 0062519a  c3                   ret 
 
-extern "C" void* __cdecl sub_00573D40(void*);
+extern "C" void* __cdecl sub_573D40(void*);
 
-struct ArrowButton {
-};
-
-bool __cdecl checkSomething(void* arg)
+bool __cdecl sub_625180(void* a)
 {
-    char* p = (char*)sub_00573D40(arg);
-    return p[0x1a0] == 0;
+    void* p = sub_573D40(a);
+    return *(unsigned char*)((char*)p + 0x1a0) == 0;
 }

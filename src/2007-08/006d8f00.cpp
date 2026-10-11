@@ -1,4 +1,4 @@
-// from server: 67% by colin
+// from server: 100% by colin
 // roc 2007-08 006d8f00  unit: CXTPDockingPaneLayout  size: 33 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 006d8f00
 //
@@ -12,21 +12,28 @@
 // 006d8f19  b801000000           mov eax, 1
 // 006d8f1e  c20400               ret 4
 
-struct CXTPDockingPaneLayout
-{
-    char pad[0x24];
-    int field_0x24;
+struct CXTPDockingPaneLayout {
+    int field0;
+    int field4;
+    int field8;
+    int fieldC;
+    int field10;
+    int field14;
+    int field18;
+    int field1C;
+    int field20;
+    int field24;
 };
 
-extern int __fastcall sub_006d88c0(CXTPDockingPaneLayout* p);
-extern void __cdecl sub_006d8bf0(CXTPDockingPaneLayout* p);
+extern "C" int __stdcall sub_6d8bf0(CXTPDockingPaneLayout* p);
+extern "C" int __stdcall sub_6d88c0(CXTPDockingPaneLayout* p);
 
-int __stdcall sub_006d8f00(CXTPDockingPaneLayout* p)
+int __stdcall sub_6d8f00(CXTPDockingPaneLayout* p)
 {
-    if (p->field_0x24 != 0)
+    if (p->field24 != 0)
     {
-        return sub_006d88c0(p);
+        return sub_6d88c0(p);
     }
-    sub_006d8bf0(p);
+    sub_6d8bf0(p);
     return 1;
 }

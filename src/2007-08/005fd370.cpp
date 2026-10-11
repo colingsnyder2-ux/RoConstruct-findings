@@ -1,4 +1,4 @@
-// from server: 44% by colin
+// from server: 73% by colin
 // roc 2007-08 005fd370  unit: RBX::HammerTool  size: 45 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 005fd370
 //
@@ -20,17 +20,20 @@
 
 struct HammerTool {
     char pad[0x20];
-    int field_20;
-    void* construct(const char*);
+    int field_0x20;
+
+    void* method(void* arg);
 };
 
-void* HammerTool::construct(const char* s) {
-    const char* name;
-    if (field_20 == 0) {
-        name = (const char*)0x7c2598;
-    } else {
-        name = (const char*)0x7c25a8;
-    }
-    ((void (__thiscall*)(void*, const char*))0x77e698)(this, name);
-    return this;
+extern "C" void* __stdcall HammerTool_string_ctor(void*, const char*);
+
+void* HammerTool::method(void* arg)
+{
+    const char* str;
+    if (field_0x20 != 0)
+        str = "HammerCursor";
+    else
+        str = "HammerOverCursor";
+    HammerTool_string_ctor(arg, str);
+    return arg;
 }

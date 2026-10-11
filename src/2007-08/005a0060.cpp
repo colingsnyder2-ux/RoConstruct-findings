@@ -1,4 +1,4 @@
-// from server: 73% by colin
+// from server: 100% by colin
 // roc 2007-08 005a0060  unit: RBX::P8ModelInstance::?$GetSetImpl  size: 56 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 005a0060
 //
@@ -25,20 +25,25 @@
 
 struct P8ModelInstance {
     char pad[0x18];
-    int field18;
-    int field1c;
-    int field20;
-    void GetSetImpl(int*, int*);
+    int field_18;
+    int field_1c;
+    int field_20;
+    void method(int, int);
 };
 
-void P8ModelInstance::GetSetImpl(int* a, int* b) {
-    char* p = (char*)a;
-    if (p) p -= 4;
-    else p = 0;
-    int idx = *b;
-    int off = *(int*)(p + 0xec);
-    int val = *(int*)(off + field20);
-    val += field1c;
-    int (*fn)(void*, int) = (int (*)(void*, int))field18;
-    fn(p + 0xec + val, idx);
+void P8ModelInstance::method(int a, int b)
+{
+    int* p = (int*)a;
+    if (p != 0)
+        p = (int*)((char*)p - 4);
+    else
+        p = 0;
+    int v = *(int*)b;
+    int idx = field_20;
+    int off = *(int*)((char*)p + 0xec);
+    int val = *(int*)(off + idx);
+    val += field_1c;
+    int fn = field_18;
+    int arg = val + (int)p + 0xec;
+    ((void (__thiscall*)(void*, int))fn)((void*)arg, v);
 }

@@ -1,4 +1,4 @@
-// from server: 68% by colin
+// from server: 100% by colin
 // roc 2007-08 006f5580  unit: CXTPControlCustom  size: 40 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 006f5580
 //
@@ -18,17 +18,19 @@
 // 006f55a4  5e                   pop esi
 // 006f55a5  c20400               ret 4
 
-extern "C" int __stdcall IsWindowVisible(void*);
+extern "C" int (__stdcall *IsWindowVisible)(void*);
 
 struct CXTPControlCustom {
     char pad[0x170];
-    void* m_hWnd;
+    void* hwnd;
+    void SetVisible2(int);
+
     void SetVisible(int bVisible);
 };
 
 void CXTPControlCustom::SetVisible(int bVisible)
 {
-    if (m_hWnd != 0 && IsWindowVisible(m_hWnd) != 0)
+    if (hwnd != 0 && IsWindowVisible(hwnd) != 0)
         return;
-    SetVisible(bVisible);
+    SetVisible2(bVisible);
 }

@@ -1,13 +1,5 @@
-// from server: 67% by atomic.potato
-struct S
-{
-    int f(int, int);
-};
-
-extern "C" int __cdecl sub_72e380(int, int, int);
-extern "C" int sub_72f070(int);
-
-int S::f(int a, int b)
-{
-    return sub_72f070(sub_72e380(b, a, 1));
-}
+// from server: 100% by tester
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /MD /GS /EHsc /Ob1
+// roc-lib: xtp-11.2.2-shared-mfc Source\CommandBars\XTPControlGallery.cpp

@@ -1,4 +1,4 @@
-// from server: 58% by colin
+// from server: 66% by colin
 // roc 2007-08 006a8ef0  unit: CXTPRibbonBar  size: 22 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 006a8ef0
 //
@@ -11,20 +11,15 @@
 // 006a8f03  33c0                 xor eax, eax
 // 006a8f05  c3                   ret 
 
-struct CXTPRibbonBar;
-
-extern "C" int __cdecl sub_6A7BD0();
-
 struct CXTPRibbonBar {
-    int GetSomething();
+    int f();
 };
 
-int CXTPRibbonBar::GetSomething()
-{
-    if (sub_6A7BD0()) {
-        int (__stdcall *fn)(CXTPRibbonBar*);
-        fn = *(int (__stdcall **)(CXTPRibbonBar*))(*(int*)this + 0x210);
-        return fn(this);
+extern "C" int __cdecl sub_006a7bd0();
+
+int CXTPRibbonBar::f() {
+    if (sub_006a7bd0()) {
+        return (*(int (__thiscall **)(CXTPRibbonBar *))(*(int *)this + 0x210))(this);
     }
     return 0;
 }

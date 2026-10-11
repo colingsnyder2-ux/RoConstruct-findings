@@ -1,4 +1,4 @@
-// from server: 73% by colin
+// from server: 100% by colin
 // roc 2007-08 006271e0  unit: RBX::GettingUp  size: 30 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 006271e0
 //
@@ -16,22 +16,19 @@
 // 006271fa  5e                   pop esi
 // 006271fb  c20400               ret 4
 
-struct SubA {
-    void methodA(SubA* other);
-};
-
-struct SubB {
-    void methodB(SubA* other);
-};
-
-struct S_func_006271e0 {
+struct GettingUp {
     char pad[8];
-    SubB* field8;
-    void f(SubA* a1);
+    void* field8;
+    void construct(void*);
 };
 
-void S_func_006271e0::f(SubA* a1)
+struct Other {
+    void method1(void*);
+    void method2(void*);
+};
+
+void GettingUp::construct(void* other)
 {
-    a1->methodA(a1);
-    field8->methodB(a1);
+    ((Other*)other)->method1(this);
+    ((Other*)field8)->method2(other);
 }

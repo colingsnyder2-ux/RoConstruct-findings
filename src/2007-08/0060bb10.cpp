@@ -1,4 +1,4 @@
-// from server: 54% by colin
+// from server: 77% by colin
 // roc 2007-08 0060bb10  unit: CXTCaptionButtonTheme  size: 35 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 0060bb10
 //
@@ -16,27 +16,19 @@
 // 0060bb2f  59                   pop ecx
 // 0060bb30  c20400               ret 4
 
-struct Inner {
-    char pad[0x64];
-    int m_value;
-};
-
-struct Arg {
-    char pad[0x20];
-    int m_field20;
-};
-
-struct S_func_0060bb10 {
-    char pad[0x24];
-    Inner* m_inner;
-    void f(Arg* arg);
-};
-
-extern "C" void __stdcall helper_5e2310(int* p);
-
-void S_func_0060bb10::f(Arg* arg)
+struct CXTCaptionButtonTheme
 {
-    int* p = &m_inner->m_value;
-    *p = arg->m_field20;
-    helper_5e2310(p);
+    char pad[0x20];
+    int field_20;
+    int field_24;
+    void set(int);
+};
+
+extern "C" void __stdcall sub_5e2310(void*);
+
+void CXTCaptionButtonTheme::set(int value)
+{
+    int* p = *(int**)(field_24 + 0x64);
+    *p = *(int*)(value + 0x20);
+    sub_5e2310(&p);
 }

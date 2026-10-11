@@ -1,4 +1,4 @@
-// from server: 26% by colin
+// from server: 40% by colin
 // roc 2007-08 0069ed32  unit: CXTPPropertyGridItemEnum  size: 20 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 0069ed32
 //
@@ -13,7 +13,13 @@
 // 0069ed44  5d                   pop ebp
 // 0069ed45  c3                   ret 
 
-int func_0069ed32()
+struct CXTPPropertyGridItemEnum
 {
-    return 0;
+    void f();
+};
+
+void CXTPPropertyGridItemEnum::f()
+{
+    int* p = (int*)0;
+    *p = 0;
 }

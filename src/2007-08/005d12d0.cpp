@@ -1,22 +1,14 @@
-// from server: 95% by colin
-struct RBX_Instance;
+// from server: 100% by colin
 
-struct RBX_Instance {
-    char pad[0xbc];
-    RBX_Instance* next;
-};
-
-extern "C" int __cdecl func_00630d36(RBX_Instance*, int, const char*, const char*, int);
-extern "C" int __cdecl func_0040e750();
-
-int __cdecl func_005d12d0(RBX_Instance* inst)
-{
-    while (inst != 0) {
-        int result = func_00630d36(inst, 0, (const char*)0x881f4c, (const char*)0x884e04, 0);
-        if (result != 0) {
-            return func_0040e750();
-        }
-        inst = inst->next;
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+namespace RBX {
+class Instance { public: virtual ~Instance(); char pad[0xb8]; Instance* next; };
+class ServiceProvider : public Instance { public: ServiceProvider* finish(); };
+}
+RBX::ServiceProvider* func_005d12d0(RBX::Instance* p) {
+    while (p) {
+        if (RBX::ServiceProvider* q = dynamic_cast<RBX::ServiceProvider*>(p)) return q->finish();
+        p = p->next;
     }
     return 0;
 }

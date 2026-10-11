@@ -1,4 +1,4 @@
-// from server: 74% by colin
+// from server: 76% by colin
 // roc 2007-08 0065e930  unit: CXTPReportColumn  size: 38 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 0065e930
 //
@@ -22,21 +22,13 @@ struct CXTPReportColumn {
     void SetVisible(int bVisible);
 };
 
-extern "C" int __stdcall sub_65e5a0();
-
-void CXTPReportColumn::SetVisible(int bVisible)
-{
-    if (bVisible != 0)
-    {
+void CXTPReportColumn::SetVisible(int bVisible) {
+    if (bVisible != 0) {
         void* p = field_54;
-        *(void**)((char*)p + 0x40) = this;
-    }
-    else
-    {
-        if (sub_65e5a0() != 0)
-        {
-            void* p = field_54;
-            *(void**)((char*)p + 0x40) = 0;
+        *(CXTPReportColumn**)((char*)p + 0x40) = this;
+    } else {
+        if (field_54 != 0) {
+            *(void**)((char*)field_54 + 0x40) = 0;
         }
     }
 }

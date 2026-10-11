@@ -1,4 +1,4 @@
-// from server: 94% by colin
+// from server: 100% by colin
 // roc 2007-08 00442a90  unit: RBX::Reflection::Metadata::Members  size: 36 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 00442a90
 //
@@ -15,12 +15,14 @@
 // 00442aaf  f7d8                 neg eax
 // 00442ab1  c20400               ret 4
 
+extern "C" int __cdecl sub_00630D36(int, int, int, int, int);
+
 struct Members {
-    bool construct(const char* className);
+    int func_00442A90(int);
 };
 
-extern "C" int __cdecl sub_630d36(const char*, const char*, int, const char*, int);
-
-bool Members::construct(const char* className) {
-    return sub_630d36(className, (const char*)0x881f4c, 0, (const char*)0x886328, 0) != 0;
+int Members::func_00442A90(int a)
+{
+    int r = sub_00630D36(a, 0, (int)0x881F4C, (int)0x886328, 0);
+    return r != 0;
 }

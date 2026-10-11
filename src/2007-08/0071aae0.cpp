@@ -1,4 +1,4 @@
-// from server: 95% by colin
+// from server: 100% by colin
 // roc 2007-08 0071aae0  unit: CXTPRibbonSystemPopupBarPage  size: 36 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 0071aae0
 //
@@ -27,7 +27,7 @@ struct CXTPRibbonSystemPopupBarPage {
 void* CXTPRibbonSystemPopupBarPage::CreatePage(void* p) {
     void* obj = GetSomething();
     void** vtbl = *(void***)obj;
-    void (__stdcall *fn)(void*, void*, void*) = (void (__stdcall *)(void*, void*, void*))vtbl[0x1c8 / 4];
+    void (__thiscall *fn)(void*, void*, void*) = (void (__thiscall *)(void*, void*, void*))vtbl[0x1c8 / 4];
     fn(obj, this, p);
     return obj;
 }

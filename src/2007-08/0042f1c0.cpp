@@ -1,4 +1,4 @@
-// from server: 87% by colin
+// from server: 100% by colin
 // roc 2007-08 0042f1c0  unit: CMainFrame  size: 31 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 0042f1c0
 //
@@ -17,12 +17,12 @@
 struct CMainFrame {
     char pad[0x134];
     int field_0x134;
-    int method_0x188();
     void func(int arg);
 };
 
 void CMainFrame::func(int arg)
 {
-    if (this->method_0x188() == 0)
+    int result = (*(int (__thiscall **)(void *))(*(int *)this + 0x188))(this);
+    if (result == 0)
         this->field_0x134 = arg;
 }

@@ -1,4 +1,4 @@
-// from server: 39% by colin
+// from server: 70% by atomic.potato
 // roc 2007-08 005cfd80  unit: RBX::VLocalBackpack::?$FactoryProduct  size: 55 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 005cfd80
 //
@@ -14,66 +14,36 @@
 // 005cfdb5  5e                   pop esi
 // 005cfdb6  c3                   ret 
 
-struct S {
+struct RBX_VLocalBackpack_FactoryProduct
+{
     char pad[0x2c];
-    int m2c;
-    int m30;
-    int m34;
-    int m38;
-    int m3c;
-    int m40;
-    int m44;
-    int m48;
-    int m4c;
-    int m50;
-    int m54;
-    int m58;
-    int m5c;
-    int m60;
-    int m64;
-    int m68;
-    int m6c;
-    int m70;
-    int m74;
-    int m78;
-    int m7c;
-    int m80;
-    int m84;
-    int m88;
-    int m8c;
-    int m90;
-    int m94;
-    int m98;
-    int m9c;
-    int ma0;
-    int ma4;
-    int ma8;
-    int mac;
-    int mb0;
-    int mb4;
-    int mb8;
-    int mbc;
-    int mc0;
-    int mc4;
-    int mc8;
-    int mcc;
-    int md0;
-    int md4;
-    int md8;
-    int mdc;
-    int me0;
-    int me4;
-    int me8;
-    S* f();
+    void* field_0x2c;
+    char pad2[0x14];
+    void* field_0x44;
+    char pad3[0x14];
+    void* field_0x5c;
+    char pad4[0x14];
+    void* field_0x74;
+    char pad5[0x14];
+    void* field_0x8c;
+    char pad6[0x58];
+    void* field_0xe8;
 };
 
-S* S::f()
+extern char G_007ba6bc;
+extern char G_007ba6ac;
+extern char G_007ba69c;
+extern char G_007ba68c;
+extern char G_007ba67c;
+extern char G_007ba674;
+
+RBX_VLocalBackpack_FactoryProduct* func_005cfd80(RBX_VLocalBackpack_FactoryProduct* self)
 {
-    m2c = 0x7ba6bc;
-    m44 = 0x7ba6ac;
-    m5c = 0x7ba69c;
-    m74 = 0x7ba68c;
-    m8c = 0x7ba67c;
-    me8 = 0x7ba674;
-    return this;
+    self->field_0x2c = &G_007ba6bc;
+    self->field_0x44 = &G_007ba6ac;
+    self->field_0x5c = &G_007ba69c;
+    self->field_0x74 = &G_007ba68c;
+    self->field_0x8c = &G_007ba67c;
+    self->field_0xe8 = &G_007ba674;
+    return self;
 }

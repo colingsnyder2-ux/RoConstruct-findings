@@ -1,4 +1,4 @@
-// from server: 95% by colin
+// from server: 100% by atomic.potato
 // roc 2007-08 0058c5f0  unit: VStockSound::?$FactoryProduct  size: 71 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 0058c5f0
 //
@@ -27,13 +27,13 @@
 struct VStockSound {
     char pad[0x120];
     int field_120;
-    void sub_58c1b0();
+    void sub_58c1b0(void*);
     void sub_444710(int);
     void FactoryProduct();
 };
 
 void VStockSound::FactoryProduct() {
-    sub_58c1b0();
+    sub_58c1b0(this);
     int v = field_120 + 1;
     int a = 1;
     int* p;

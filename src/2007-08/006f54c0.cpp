@@ -1,4 +1,4 @@
-// from server: 91% by colin
+// from server: 100% by colin
 // roc 2007-08 006f54c0  unit: CXTPControlCustom  size: 52 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 006f54c0
 //
@@ -20,7 +20,7 @@
 // 006f54f0  5e                   pop esi
 // 006f54f1  c20400               ret 4
 
-extern "C" int __stdcall EnableWindow(void* hWnd, int bEnable);
+extern "C" int (__stdcall *EnableWindow)(void* hWnd, int bEnable);
 
 struct CXTPControlCustom {
     char pad[0x9c];

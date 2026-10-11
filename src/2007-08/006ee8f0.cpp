@@ -1,4 +1,4 @@
-// from server: 96% by colin
+// from server: 100% by colin
 // roc 2007-08 006ee8f0  unit: CXTPDockingPaneContext  size: 62 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 006ee8f0
 //
@@ -50,8 +50,8 @@ void CXTPDockingPaneContext::method() {
         Inner* p;
         do {
             p = sub_709C90(&field_0xd0);
-            p->vfunc1();
-            p->vfunc2(1);
+            (*(void (__thiscall**)(Inner*))(*(int*)p + 0x68))(p);
+            (*(void (__thiscall**)(Inner*, int))(*(int*)p + 4))(p, 1);
         } while (field_0xdc != 0);
     }
 }

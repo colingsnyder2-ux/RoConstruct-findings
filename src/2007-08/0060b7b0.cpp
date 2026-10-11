@@ -1,4 +1,4 @@
-// from server: 61% by colin
+// from server: 64% by colin
 // roc 2007-08 0060b7b0  unit: CXTCaptionButtonTheme  size: 60 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 0060b7b0
 //
@@ -33,13 +33,13 @@ struct CXTCaptionButtonTheme
     void* field_50;
     void (__stdcall* field_54)();
 
-    float func_0060b7b0();
+    void func_0060b7b0();
 };
 
 extern float G_007a8a88;
-extern void __stdcall func_006284d0(void*);
+extern void __stdcall func_006284d0(void*, float, float);
 
-float CXTCaptionButtonTheme::func_0060b7b0()
+void CXTCaptionButtonTheme::func_0060b7b0()
 {
     if (field_4c != 0)
     {
@@ -49,6 +49,6 @@ float CXTCaptionButtonTheme::func_0060b7b0()
     }
     float f = field_48;
     float g = G_007a8a88;
-    func_006284d0(&g);
-    return f;
+    float tmp;
+    func_006284d0(&tmp, f, g);
 }

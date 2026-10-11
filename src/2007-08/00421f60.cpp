@@ -1,4 +1,4 @@
-// from server: 77% by colin
+// from server: 100% by colin
 // roc 2007-08 00421f60  unit: CXTTreeCtrl  size: 31 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 00421f60
 //
@@ -17,21 +17,20 @@
 
 struct CXTTreeCtrl {
     char pad[0x54];
-    void* field_54;
+    int field_54;
     char pad2[0x90 - 0x58];
-    char field_90;
-    void OnSomething();
+    unsigned char field_90;
+    void method();
 };
 
 extern "C" void __stdcall sub_62fcd4();
 
-void CXTTreeCtrl::OnSomething()
+void CXTTreeCtrl::method()
 {
     sub_62fcd4();
-    if (field_90 != 0)
-    {
-        void** p = (void**)field_54;
-        void (__stdcall *fn)(void*) = (void (__stdcall *)(void*))p[0x44 / 4];
-        fn(&field_54);
+    if (field_90 != 0) {
+        int* p = (int*)field_54;
+        void (__thiscall *fn)(void*) = (void (__thiscall *)(void*))p[0x44 / 4];
+        fn((char*)this + 0x54);
     }
 }

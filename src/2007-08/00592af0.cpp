@@ -1,4 +1,4 @@
-// from server: 41% by colin
+// from server: 55% by colin
 // roc 2007-08 00592af0  unit: RBX::VVisit::?$BoundFuncDesc  size: 64 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 00592af0
 //
@@ -24,20 +24,23 @@
 // 00592b2a  83c420               add esp, 0x20
 // 00592b2d  c20800               ret 8
 
-struct BoundFuncDesc {
-    char pad0[0x28];
-    void* field_28;
-    void* field_2c;
-    void invoke(int, int);
+struct S {
+    char pad[0x28];
+    int field28;
+    int field2c;
+    void method(int, int);
 };
 
-extern "C" void* __stdcall sub_77e69c();
+extern "C" void __stdcall sub_77e69c();
 
-void BoundFuncDesc::invoke(int a, int b)
+void S::method(int a, int b)
 {
-    void* esp_save = 0;
-    (void)esp_save;
     sub_77e69c();
-    void (*fn)(void*, int) = (void (*)(void*, int))field_28;
-    fn((char*)field_2c + b, a);
+    int (*fn)(void*, int) = (int (*)(void*, int))field2c;
+    fn((char*)this + field28, a);
+    void* p = *(void**)((char*)&a + 4);
+    if (p) {
+        void** vt = *(void***)p;
+        ((void (__thiscall*)(void*, int))vt[0])(p, 1);
+    }
 }

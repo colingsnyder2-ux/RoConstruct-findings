@@ -1,14 +1,5 @@
-// from server: 62% by atomic.potato
-extern "C" void __stdcall sub_0070e320(void*, int);
-
-struct S
-{
-    int f(void*);
-};
-
-int S::f(void* p)
-{
-    sub_0070e320((char*)this + 0x24, *(int*)((char*)this + 0x2c));
-    *(int*)((char*)p + 0x214) = 1;
-    return (int)p;
-}
+// from server: 100% by tester
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /MD /GS /EHsc /Ob1
+// roc-lib: xtp-11.2.2-shared-mfc Source\CommandBars\XTPCommandBars.cpp

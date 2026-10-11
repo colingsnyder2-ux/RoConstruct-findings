@@ -1,4 +1,4 @@
-// from server: 95% by colin
+// from server: 100% by colin
 // roc 2007-08 0040ebe0  unit: CChildFrame  size: 62 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 0040ebe0
 //
@@ -28,13 +28,14 @@
 struct CChildFrame {
     char pad[0x20];
     int field_20;
-    int sub_6303B2(int);
     int method(int);
+int sub_6303B2(int);
 };
 
 extern "C" void* (__stdcall *GetParent)(void*);
 extern "C" void* (__stdcall *GetWindow)(void*, unsigned int);
 extern "C" void* __stdcall sub_6301C0(void*);
+
 
 int CChildFrame::method(int arg) {
     void* p = GetParent((void*)field_20);

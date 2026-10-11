@@ -1,4 +1,4 @@
-// from server: 61% by colin
+// from server: 64% by colin
 // roc 2007-08 004048a0  unit: ATL::VCComClassFactory::?$CComObjectNoLock  size: 47 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 004048a0
 //
@@ -21,19 +21,15 @@
 // 004048c7  e864faffff           call 0x404330
 // 004048cc  c20800               ret 8
 
-struct CComObjectNoLock {
-    void* m_pUnk;
-    void* m_pVtbl;
-
-    void CreateInstance(void* p1, void* p2);
+struct S {
+    int f(int, int);
 };
 
-extern "C" void __stdcall sub_404330(void*, void*, void*);
+extern "C" int __stdcall helper(int, int, int);
 
-void CComObjectNoLock::CreateInstance(void* p1, void* p2) {
-    if (this != 0) {
-        sub_404330((char*)this + 4, p1, p2);
-    } else {
-        sub_404330(0, p1, p2);
+int S::f(int a, int b) {
+    if (this == 0) {
+        return helper(0, a, b);
     }
+    return helper((int)((char*)this + 4), a, b);
 }

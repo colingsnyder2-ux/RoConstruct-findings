@@ -1,4 +1,4 @@
-// from server: 61% by colin
+// from server: 76% by colin
 // roc 2007-08 005a98e0  unit: RBX::VHumanoid::?$SignalDesc  size: 57 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 005a98e0
 //
@@ -25,19 +25,25 @@
 // 005a9916  c20400               ret 4
 
 struct SignalDesc {
+    char pad[0x30];
+    void* field_30;
+    void* field_34;
+    char pad2[0x20];
+    void* field_58;
+    void* field_5c;
     void f(void* p);
 };
 
-extern "C" void __cdecl sub_574CD0();
-extern "C" void __cdecl sub_6034C0();
-extern "C" void __cdecl sub_5FF4F0();
+extern "C" void __stdcall sub_574CD0(void*, void*);
+extern "C" void __stdcall sub_6034C0(void*, void*);
+extern "C" void __stdcall sub_5FF4F0(void*, void*);
 
 void SignalDesc::f(void* p)
 {
-    int* pi = (int*)p;
-    pi[6] = *(int*)((char*)this + 0x5c);
-    sub_574CD0();
-    pi[7] = (int)this;
-    sub_6034C0();
-    sub_5FF4F0();
+    void* local = p;
+    *(void**)((char*)p + 0x18) = field_5c;
+    sub_574CD0(&field_58, &local);
+    *(void**)((char*)p + 0x1c) = this;
+    sub_6034C0(field_34, p);
+    sub_5FF4F0(field_30, p);
 }

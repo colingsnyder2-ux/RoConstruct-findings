@@ -1,4 +1,4 @@
-// from server: 96% by colin
+// from server: 100% by colin
 // roc 2007-08 004c1d60  unit: RakPeer  size: 52 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 004c1d60
 //
@@ -23,23 +23,29 @@
 // 004c1d92  5e                   pop esi
 // 004c1d93  c3                   ret 
 
-extern "C" int __cdecl sub_4ca340();
-extern "C" char __cdecl sub_4c0d50(void* p, int n);
-
 struct RakPeer {
+    int field0;
+    int field4;
+    int field8;
+    int fieldC;
+    int field10;
 };
 
-void __cdecl f(void* p) {
-    int* arr = (int*)p;
+extern "C" int __cdecl sub_4CA340();
+extern "C" char __cdecl sub_4C0D50(RakPeer* peer, int value);
+
+void RakPeer_Init(RakPeer* peer)
+{
+    int i;
     for (;;) {
-        int i = 0;
+        i = 0;
         do {
-            arr[i] = sub_4ca340();
+            *(int*)((char*)peer + i * 4) = sub_4CA340();
             i++;
         } while (i < 4);
-        *(unsigned int*)((char*)p + 0xc) |= 0x80000000u;
-        *(unsigned int*)p |= 1u;
-        if (sub_4c0d50(p, 5))
+        peer->fieldC |= 0x80000000;
+        peer->field0 |= 1;
+        if (sub_4C0D50(peer, 5))
             break;
     }
 }

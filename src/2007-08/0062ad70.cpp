@@ -1,4 +1,4 @@
-// from server: 59% by colin
+// from server: 72% by colin
 // roc 2007-08 0062ad70  unit: RBX::GroupDragTool  size: 54 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 0062ad70
 //
@@ -26,14 +26,17 @@ struct S_func_0062ad70 {
     char pad0[0x24];
     float m_24;
     float m_28;
-    void f(int a1);
+    S_func_0062ad70* f(int a1);
 };
 
-void S_func_0062ad70::f(int a1)
+S_func_0062ad70* S_func_0062ad70::f(int a1)
 {
     int x = *(short*)(a1 + 8);
     int y = *(short*)(a1 + 0xa);
-    m_24 = (float)x;
-    m_28 = (float)y;
+    float fx = (float)x;
+    float fy = (float)y;
+    m_24 = fx;
+    m_28 = fy;
     (*(void(__thiscall**)(void*))(*(int*)this + 0x20))(this);
+    return this;
 }

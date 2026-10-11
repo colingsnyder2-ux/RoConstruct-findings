@@ -1,4 +1,4 @@
-// from server: 66% by colin
+// from server: 100% by colin
 // roc 2007-08 005553a0  unit: RBX::VServiceProvider::?$BoundFuncDesc  size: 41 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 005553a0
 //
@@ -20,20 +20,16 @@
 // 005553c3  b801000000           mov eax, 1
 // 005553c8  c3                   ret 
 
-struct RBX_VServiceProvider_BoundFuncDesc
+struct BoundFuncDesc
 {
     int value;
-    bool isValid() const;
+    int isValid() const;
 };
 
-bool RBX_VServiceProvider_BoundFuncDesc::isValid() const
+int BoundFuncDesc::isValid() const
 {
     int v = value;
-    if (v == 1) return true;
-    if (v == 2) return true;
-    if (v == 3) return true;
-    if (v == 4) return true;
-    if (v == 5) return true;
-    if (v == 6) return true;
-    return false;
+    if (v == 1 || v == 2 || v == 3 || v == 4 || v == 5 || v == 6)
+        return 1;
+    return 0;
 }

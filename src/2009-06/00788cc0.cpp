@@ -1,5 +1,5 @@
-// from server: 59% by colin
+// from server: 100% by tester
 // roc-lang: cpp
 // roc-cl: 30729
-// roc-flags: /O2 /GS- /MD
-// roc-lib: xtp-13.2.1 Source/Controls/XTGlobal.cpp
+// roc-flags: /O2 /MD /GS /EHsc
+// roc-lib: xtp-11.2.2-shared-mfc Source/Controls/XTGlobal.cpp

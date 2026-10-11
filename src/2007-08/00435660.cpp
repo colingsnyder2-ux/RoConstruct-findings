@@ -1,4 +1,4 @@
-// from server: 98% by colin
+// from server: 100% by colin
 // roc 2007-08 00435660  unit: CMemberTreeView  size: 68 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 00435660
 //
@@ -29,14 +29,14 @@ extern "C" void __stdcall sub_0063065e();
 CMemberTreeView* CMemberTreeView::construct()
 {
     sub_0063065e();
-    *(volatile int*)((char*)this + 0x00) = 0x78c9c4;
+    *(int*)((char*)this + 0x00) = 0x78c9c4;
     *(volatile int*)((char*)this + 0xf0) = 0;
-    *(volatile int*)((char*)this + 0xf4) = 0;
-    *(volatile int*)((char*)this + 0xf8) = 0;
-    *(volatile int*)((char*)this + 0xfc) = 0;
-    *(volatile int*)((char*)this + 0x100) = 0;
-    *(volatile int*)((char*)this + 0x104) = 0;
-    *(volatile int*)((char*)this + 0x108) = 0;
-    *(volatile int*)((char*)this + 0x10c) = 0;
+    *(int*)((char*)this + 0xf4) = 0;
+    *(int*)((char*)this + 0xf8) = 0;
+    *(int*)((char*)this + 0xfc) = 0;
+    *(int*)((char*)this + 0x100) = 0;
+    *(int*)((char*)this + 0x104) = 0;
+    *(int*)((char*)this + 0x108) = 0;
+    *(int*)((char*)this + 0x10c) = 0;
     return this;
 }

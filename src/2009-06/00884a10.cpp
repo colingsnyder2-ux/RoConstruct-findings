@@ -1,5 +1,4 @@
-// from server: 90% by colin
-// roc-lang: cpp
-// roc-cl: 21022
+// from server: 100% by colin
 // roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: g3d-6.09 GLG3Dcpp/IFSModel.cpp
+extern int g; extern "C" void f(void*);
+void func(){g=0x0; f((void*)0x894120);}

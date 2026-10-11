@@ -1,26 +1,11 @@
-// from server: 84% by atomic.potato
-typedef int BOOL;
-
-struct TypeInfo
-{
-    BOOL operator==(const TypeInfo& other) const;
-};
-
-extern "C" TypeInfo* __cdecl sub_006a1de2(int value);
-extern TypeInfo* g_typeInfo;
-
-struct S
-{
-    int f();
-};
-
-int S::f()
-{
-    int* p = *(int**)((char*)this + 12);
-    int* q = *(int**)((char*)p + 516);
-    int value = *(int*)((char*)q + 944);
-    if (!value)
-        return 0;
-    TypeInfo* result = sub_006a1de2(value);
-    return *result == *g_typeInfo;
-}
+// from server: 100% by colin
+// roc-flags: /O2 /Ob2 /Oy /GF- /GS- /EHsc /MD
+struct P3 { char pad[0x3b0]; void* value; };
+struct P2 { char pad[0x204]; P3* p; };
+struct Obj { char pad[0xc]; P2* p; bool f(); };
+struct C {};
+extern "C" void* helper(void*);
+extern C c;
+typedef bool (__thiscall *Fn)(C*,void*);
+extern Fn slot;
+bool Obj::f(){ void* x=p->p->value; if(x){ x=helper(x); return slot(&c,x); } return false; }

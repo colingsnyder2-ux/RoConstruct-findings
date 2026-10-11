@@ -1,4 +1,4 @@
-// from server: 47% by colin
+// from server: 65% by colin
 // roc 2007-08 0056eaf0  unit: G3D::VVector2int16::?$TypedPropertyDescriptor  size: 55 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 0056eaf0
 //
@@ -24,20 +24,16 @@
 // 0056eb23  59                   pop ecx
 // 0056eb24  c20800               ret 8
 
-struct TypedPropertyDescriptor {
-    char pad[0x18];
-    void* getset;
-    int getValue(int arg);
+struct VVector2int16_PropertyDescriptor {
+    int getValue(int a, int b);
 };
 
-extern "C" int __stdcall sub_58CE80(void* a, void* b);
-
-int TypedPropertyDescriptor::getValue(int arg)
-{
-    void* tmp = 0;
-    void* p = this->getset;
-    int (__thiscall *fn)(void*, void**, int) = *(int (__thiscall **)(void*, void**, int))(*((int*)p) + 4);
-    fn(p, &tmp, arg);
-    sub_58CE80(tmp, (void*)arg);
-    return (int)tmp;
+int VVector2int16_PropertyDescriptor::getValue(int a, int b) {
+    int result = 0;
+    int* p = *(int**)((char*)this + 0x18);
+    int (*fn)(int*, int*, int) = *(int (**)(int*, int*, int))(*(int*)p + 4);
+    fn(p, &result, a);
+    extern void sub_58CE80(int, int);
+    sub_58CE80(result, (int)&result);
+    return result;
 }

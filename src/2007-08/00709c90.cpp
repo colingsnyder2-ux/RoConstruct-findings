@@ -1,4 +1,4 @@
-// from server: 68% by colin
+// from server: 78% by colin
 // roc 2007-08 00709c90  unit: CXTColorPageStandard  size: 50 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 00709c90
 //
@@ -26,23 +26,22 @@ struct CXTColorPageStandard {
     void* field0;
     void* field4;
     void* field8;
-    void* removeNode();
+    void* remove(void* node);
 };
 
-extern "C" void __stdcall sub_6d7cd0(void* node);
+void __stdcall free_node(void* node);
 
-void* CXTColorPageStandard::removeNode()
+void* CXTColorPageStandard::remove(void* node)
 {
-    void* cur = field4;
-    void* next = *(void**)((char*)cur + 8);
-    void* prev = *(void**)cur;
-    field4 = prev;
-    if (prev != 0) {
-        *(void**)((char*)prev + 4) = 0;
-        sub_6d7cd0(cur);
-    } else {
-        field8 = 0;
-        sub_6d7cd0(cur);
+    void* next = *(void**)node;
+    void* result = *(void**)((char*)node + 8);
+    field4 = next;
+    if (next != 0) {
+        *(void**)((char*)next + 4) = 0;
+        free_node(node);
+        return result;
     }
-    return next;
+    field8 = 0;
+    free_node(node);
+    return result;
 }

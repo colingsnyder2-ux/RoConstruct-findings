@@ -1,4 +1,4 @@
-// from server: 86% by colin
+// from server: 100% by tester
 // roc 2007-08 0071a550  unit: CXTPRibbonControlSystemPopupBarListCaption  size: 36 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 0071a550
 //
@@ -19,17 +19,16 @@
 // 0071a570  5e                   pop esi
 // 0071a571  c20400               ret 4
 
-struct CXTPRibbonControlSystemPopupBarListCaption
-{
-    void* sub_71a4e0();
-    void* sub_71a550(void* arg);
+struct CRobloxControlColorSelector {
+    void* sub_44cb40();
+    void* sub_44cbb0(void* arg);
 };
 
-void* CXTPRibbonControlSystemPopupBarListCaption::sub_71a550(void* arg)
+void* CRobloxControlColorSelector::sub_44cbb0(void* arg)
 {
-    void* p = sub_71a4e0();
+    void* p = sub_44cb40();
     void** vtbl = *(void***)p;
-    void (__thiscall *fn)(void*, void*) = (void (__thiscall *)(void*, void*))vtbl[0x38];
-    fn(p, arg);
+    void (__thiscall *fn)(void*, void*, void*) = (void (__thiscall *)(void*, void*, void*))vtbl[0x38];
+    fn(p, this, arg);
     return p;
 }

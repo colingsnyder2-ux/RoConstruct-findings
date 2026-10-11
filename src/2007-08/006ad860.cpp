@@ -1,4 +1,4 @@
-// from server: 78% by colin
+// from server: 100% by colin
 // roc 2007-08 006ad860  unit: CXTPTabPaintManager::CAppearanceSetFlat  size: 62 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 006ad860
 //
@@ -19,25 +19,27 @@
 // 006ad89a  83c418               add esp, 0x18
 // 006ad89d  c3                   ret 
 
-struct CXTPTabPaintManager {
+struct CXTPTabPaintManager_CAppearanceSetFlat
+{
     char pad[0xc0];
-    int field_c0;
-    int field_c4;
-    int field_c8;
-    int field_cc;
+    int m_fieldC0;
+    int m_fieldC4;
+    int m_fieldC8;
+    int m_fieldCC;
     char pad2[0xfc - 0xd0];
-    int field_fc;
-    void sub_6ad7f0(int* p, int v);
+    int m_fieldFC;
 
     void sub_6ad860();
 };
 
-void CXTPTabPaintManager::sub_6ad860()
+extern "C" void __cdecl sub_6ad7f0(int, int*);
+
+void CXTPTabPaintManager_CAppearanceSetFlat::sub_6ad860()
 {
     int local[4];
-    local[0] = field_c0;
-    local[1] = field_c4;
-    local[2] = field_c8;
-    local[3] = field_cc;
-    sub_6ad7f0(local, field_fc);
+    local[0] = m_fieldC0;
+    local[1] = m_fieldC4;
+    local[2] = m_fieldC8;
+    local[3] = m_fieldCC;
+    sub_6ad7f0(m_fieldFC, local);
 }

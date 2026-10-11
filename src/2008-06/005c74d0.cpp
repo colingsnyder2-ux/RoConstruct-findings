@@ -1,28 +1,11 @@
-// from server: 94% by atomic.potato
-typedef int (__thiscall *TypeInfoEqual)(void *, void *);
-typedef int (__thiscall *ObjectCall)(void *, int);
-
-extern "C" int __cdecl sub_006a1de2(int);
-extern "C" ObjectCall g_call_00802878;
-
-struct TToolVerb
-{
-    int f();
-    int pad0[3];
-    void *owner;
-};
-
-int TToolVerb::f()
-{
-    int *a;
-    int v;
-
-    a = *(int **)((char *)owner + 0x204);
-    v = *(int *)((char *)a + 0x3b0);
-    if (v)
-    {
-        v = sub_006a1de2(v);
-        g_call_00802878((void *)0x009507cc, v);
-    }
-    return 0;
-}
+// from server: 100% by colin
+// roc-flags: /O2 /Ob2 /Oy /GF- /GS- /EHsc /MD
+struct P3 { char pad[0x3b0]; void* value; };
+struct P2 { char pad[0x204]; P3* p; };
+struct Obj { char pad[0xc]; P2* p; bool f(); };
+struct C {};
+extern "C" void* helper(void*);
+extern C c;
+typedef bool (__thiscall *Fn)(C*,void*);
+extern Fn slot;
+bool Obj::f(){ void* x=p->p->value; if(x){ x=helper(x); return slot(&c,x); } return false; }

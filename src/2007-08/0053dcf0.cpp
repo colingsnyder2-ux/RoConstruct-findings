@@ -1,22 +1,14 @@
-// from server: 89% by colin
-struct RBXName;
+// from server: 100% by colin
 
-struct FactoryProduct {
-    static void* findCreator(RBXName* name);
-    void* create();
-};
-
-extern "C" void* __cdecl sub_630D36(void* a, void* b, void* c, void* d, void* e);
-extern "C" void* __cdecl sub_42E410();
-
-void* FactoryProduct::create() {
-    FactoryProduct* p = this;
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+namespace RBX {
+class Instance { public: virtual ~Instance(); char pad[0xb8]; Instance* next; };
+class ServiceProvider : public Instance { public: ServiceProvider* finish(); };
+}
+RBX::ServiceProvider* func_0053dcf0(RBX::Instance* p) {
     while (p) {
-        void* result = sub_630D36(p, 0, (void*)0x881f4c, (void*)0x884e04, 0);
-        if (result) {
-            return sub_42E410();
-        }
-        p = *(FactoryProduct**)((char*)p + 0xbc);
+        if (RBX::ServiceProvider* q = dynamic_cast<RBX::ServiceProvider*>(p)) return q->finish();
+        p = p->next;
     }
     return 0;
 }

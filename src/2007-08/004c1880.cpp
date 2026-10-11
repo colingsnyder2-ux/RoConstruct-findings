@@ -1,4 +1,3 @@
-// from server: 95% by colin
 // roc 2007-08 004c1880  unit: RakPeer  size: 85 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 004c1880
 //
@@ -38,22 +37,9 @@
 // 004c18d0  5d                   pop ebp
 // 004c18d1  5b                   pop ebx
 // 004c18d2  c21000               ret 0x10
+// library openrbx-raknet/RakPeer.cpp (function ?CloseConnection@RakPeer@@UAEXUSystemAddress@@_NE@Z)
 
-struct RakPeer {
-    void sub_4BFD00(int, int, int, int, int);
-    void method(int, int, int, int);
-};
-
-void RakPeer::method(int a, int b, int c, int d)
-{
-    sub_4BFD00(a, b, c, 0, d);
-    unsigned int i = 0;
-    while (i < *(unsigned int*)((char*)this + 0x2ac)) {
-        void* p = *(void**)((char*)this + 0x2a8);
-        void* obj = *(void**)((char*)p + i * 4);
-        void** vtbl = *(void***)obj;
-        void (__stdcall *fn)(int, int, void*) = (void (__stdcall *)(int, int, void*))vtbl[7];
-        fn(a, b, this);
-        i++;
-    }
-}
+// roc-lang: cpp
+// roc-cl: 50727
+// roc-flags: /O2 /EHsc /MD
+// roc-lib: openrbx-raknet RakPeer.cpp

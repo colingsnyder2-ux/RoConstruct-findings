@@ -1,19 +1,40 @@
-// from server: 67% by colin
+// from server: 70% by colin
 // roc 2007-08 0055ff20  unit: seg_00550000  size: 47 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 0055ff20
+//
+// 0055ff20  8b442404             mov eax, dword ptr [esp + 4]
+// 0055ff24  56                   push esi
+// 0055ff25  50                   push eax
+// 0055ff26  83ec1c               sub esp, 0x1c
+// 0055ff29  8bf1                 mov esi, ecx
+// 0055ff2b  8bcc                 mov ecx, esp
+// 0055ff2d  89642428             mov dword ptr [esp + 0x28], esp
+// 0055ff31  68d8187900           push 0x7918d8
+// 0055ff36  ff1598e67700         call dword ptr [0x77e698]
+// 0055ff3c  8bce                 mov ecx, esi
+// 0055ff3e  e8fdfcffff           call 0x55fc40
+// 0055ff43  c706a8947a00         mov dword ptr [esi], 0x7a94a8
+// 0055ff49  8bc6                 mov eax, esi
+// 0055ff4b  5e                   pop esi
+// 0055ff4c  c20400               ret 4
+// library rbxgs/v8datamodel\Selection.cpp (function ??0?$FilteredSelection@VC@@@...)
+
+// roc-lang: cpp
+// roc-cl: 50727
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: rbxgs v8datamodel/Selection.cpp
 
 struct FilteredSelection {
     void* vtable;
-    char buf[0x1c];
-    void construct();
-    FilteredSelection* init(const char*);
+    void construct(void* arg);
 };
 
-extern "C" void __stdcall std_string_ctor(void*, const char*);
+extern "C" void __stdcall string_ctor(void* self, const char* s);
+extern "C" void __stdcall base_ctor(FilteredSelection* self);
 
-FilteredSelection* FilteredSelection::init(const char* name) {
-    std_string_ctor((void*)((char*)this + 4), name);
-    construct();
-    vtable = (void*)0x7a94a8;
-    return this;
+void FilteredSelection::construct(void* arg) {
+    char buf[28];
+    string_ctor(buf, "SelectionDown");
+    base_ctor(this);
+    this->vtable = (void*)0x7a94a8;
 }

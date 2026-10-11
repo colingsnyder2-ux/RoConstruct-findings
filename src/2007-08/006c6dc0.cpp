@@ -1,4 +1,4 @@
-// from server: 86% by colin
+// from server: 100% by colin
 // roc 2007-08 006c6dc0  unit: CXTPCustomizeSheet::CCustomizeEdit  size: 36 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 006c6dc0
 //
@@ -27,7 +27,7 @@ struct CCustomizeEdit {
 void* CCustomizeEdit::doSomething(void* arg) {
     void* p = getSomething();
     void** vtbl = *(void***)p;
-    void (__thiscall *fn)(void*, void*) = (void (__thiscall *)(void*, void*))vtbl[0x38];
-    fn(p, arg);
+    void (__thiscall *fn)(void*, void*, void*) = (void (__thiscall *)(void*, void*, void*))vtbl[0x38];
+    fn(p, this, arg);
     return p;
 }

@@ -1,4 +1,4 @@
-// from server: 85% by colin
+// from server: 100% by colin
 // roc 2007-08 005a0030  unit: RBX::VSpawnLocation::?$BoundPropGetSet  size: 42 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 005a0030
 //
@@ -18,33 +18,22 @@
 // 005a0057  c20400               ret 4
 
 struct DescribedBase {
-    char pad[8];
-    int offset8;
-    int offsetC;
+    char pad[0xec];
 };
 
 struct GetSet {
-    char pad[0xec];
-    int table;
-};
-
-struct S {
-    char pad[8];
+    int pad0;
+    int pad4;
     int offset8;
-    int offsetC;
-    char getValue(DescribedBase* object) const;
+    int offsetc;
+    char getValue(const DescribedBase* object) const;
 };
 
-char S::getValue(DescribedBase* object) const {
-    GetSet* gs;
-    if (object) {
-        gs = (GetSet*)((char*)object - 4);
-    } else {
-        gs = 0;
-    }
-    int* vtbl = *(int**)((char*)gs + 0xec);
-    int idx = this->offsetC;
-    int off = vtbl[idx];
-    off += this->offset8;
-    return *(char*)((char*)gs + 0xec + off);
+char GetSet::getValue(const DescribedBase* object) const {
+    const DescribedBase* c = object ? (const DescribedBase*)((const char*)object - 4) : 0;
+    int idx = *(int*)((const char*)c + 0xec);
+    int off = *(int*)((const char*)this + 0xc);
+    int val = *(int*)((const char*)idx + off);
+    val += *(int*)((const char*)this + 8);
+    return *(char*)((const char*)c + 0xec + val);
 }

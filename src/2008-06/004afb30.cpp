@@ -1,8 +1,4 @@
-// from server: 87% by atomic.potato
-extern "C" int __stdcall sub_6A17C6(int, int, int, int, int, int);
-
-int __stdcall f(int value)
-{
-    int result = sub_6A17C6(value, 0, 0x92907C, 0x93B2E4, 0, 0);
-    return result != 0;
-}
+// from server: 100% by colin
+// roc-flags: /O2 /Ob2 /Oy /GF- /GS- /EHsc /MD
+extern "C" int helper(void*,int,void*,void*,int);
+bool __stdcall func(void* p){return helper(p,0,(void*)0x92907c,(void*)0x93b2e4,0)!=0;}

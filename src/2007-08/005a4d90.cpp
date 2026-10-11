@@ -1,4 +1,4 @@
-// from server: 70% by colin
+// from server: 100% by colin
 // roc 2007-08 005a4d90  unit: RBX::P8Humanoid::?$GetSetImpl  size: 49 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 005a4d90
 //
@@ -29,18 +29,17 @@ struct GetSetImpl {
 };
 
 void GetSetImpl::invoke(int arg) {
-    char* p;
-    if (arg != 0) {
-        p = (char*)arg - 4;
+    int* p = (int*)arg;
+    if (p != 0) {
+        p = (int*)((char*)p - 4);
     } else {
         p = 0;
     }
-    int* table = *(int**)(p + 0x108);
-    int idx = field10;
-    int base = table[idx];
-    base += fieldC;
-    base += (int)p;
-    base += 0x108;
-    void (*fn)(int) = (void (*)(int))field8;
-    fn(base);
+    int idx = *(int*)((char*)p + 0x108);
+    int off = field10;
+    int fn = *(int*)(idx + off);
+    fn += fieldC;
+    int self = (int)((char*)p + 0x108 + fn);
+    int call = field8;
+    ((void (__thiscall*)(int))call)(self);
 }

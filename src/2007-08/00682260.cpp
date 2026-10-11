@@ -1,4 +1,4 @@
-// from server: 61% by colin
+// from server: 74% by colin
 // roc 2007-08 00682260  unit: CXTPCompatibleDC  size: 16 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 00682260
 //
@@ -8,13 +8,11 @@
 // 0068226a  b8588f8c00           mov eax, 0x8c8f58
 // 0068226f  c3                   ret 
 
-struct CXTPCompatibleDC {
-    void* getSomething();
-};
+extern "C" void __cdecl sub_00630d23();
+extern int G_008c8f58;
 
-extern "C" void __cdecl helper630d23(void*);
-
-void* CXTPCompatibleDC::getSomething() {
-    helper630d23(*(void**)0x8c8f58);
-    return (void*)0x8c8f58;
+int func_00682260()
+{
+    sub_00630d23();
+    return (int)&G_008c8f58;
 }

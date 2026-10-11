@@ -1,4 +1,4 @@
-// from server: 67% by colin
+// from server: 72% by colin
 // roc 2007-08 005f1e50  unit: std::X::ZV?$allocator::$$A6AXH::V?$function::?$holder  size: 59 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 005f1e50
 //
@@ -25,21 +25,20 @@
 // 005f1e87  83c40c               add esp, 0xc
 // 005f1e8a  c3                   ret 
 
-extern "C" int __cdecl G_func_005f20f0(int, int, int);
+extern "C" int __cdecl sub_5F20F0(int, int, char);
 
 struct type_info {
     bool __thiscall operator==(const type_info&) const;
 };
 
-extern type_info G_obj_008b1760;
-extern bool (__stdcall *G_ptr_0077e708)(const type_info*, const type_info*);
+extern type_info type_info_8B1760;
 
-int __cdecl func_005f1e50(int a, int b, int c)
-{
+int __cdecl sub_5F1E50(int a, int b, int c) {
     if (c == 2) {
-        int v = a;
-        bool r = G_ptr_0077e708(&G_obj_008b1760, (const type_info*)v);
-        return r ? v : 0;
+        int r = b;
+        bool eq = type_info_8B1760 == *(type_info*)&b;
+        return eq ? r : 0;
     }
-    return G_func_005f20f0(a, b, 0);
+    char tmp = 0;
+    return sub_5F20F0(a, c, tmp);
 }

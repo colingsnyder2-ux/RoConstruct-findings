@@ -1,4 +1,4 @@
-// from server: 90% by colin
+// from server: 100% by colin
 // roc 2007-08 00461de0  unit: CSelectionCaption  size: 36 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 00461de0
 //
@@ -23,7 +23,7 @@ struct CSelectionCaption {
 };
 
 extern "C" int __stdcall sub_63023e();
-extern "C" void __stdcall sub_41dba0(int*);
+extern "C" void __fastcall sub_41dba0(int*);
 
 int CSelectionCaption::method(int arg) {
     int result = sub_63023e();

@@ -1,4 +1,4 @@
-// from server: 37% by colin
+// from server: 54% by colin
 // roc 2007-08 004ee070  unit: HeadBuilder  size: 60 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 004ee070
 //
@@ -25,19 +25,22 @@
 // 004ee0a9  c20400               ret 4
 
 struct HeadBuilder {
-    char pad[0x20];
-    float f20;
-    int i24;
-    void sub_004EE070(int);
+    char pad0[0x20];
+    float field20;
+    int field24;
+    void func(int);
 };
 
-extern "C" void __stdcall sub_004EDC20(int, int, int, int);
+extern "C" void __cdecl sub_4EDC20(int, int, int, int);
 
-void HeadBuilder::sub_004EE070(int a)
-{
-    int v = i24 + 1;
-    float f = f20;
-    int q = v / 2;
-    short s = (short)i24;
-    sub_004EDC20(a, q, *(int*)&f, (int)((unsigned)s | ((unsigned)s << 16)));
+void HeadBuilder::func(int a) {
+    int v = field24 + 1;
+    float f = field20;
+    int local0;
+    int local1;
+    *(short*)&local0 = (short)field24;
+    *(short*)((char*)&local0 + 2) = (short)field24;
+    int q = v - (v >> 31);
+    q >>= 1;
+    sub_4EDC20(a, q, *(int*)&f, local0);
 }

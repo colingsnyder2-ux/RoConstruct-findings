@@ -1,4 +1,3 @@
-// from server: 88% by colin
 // roc 2007-08 004b8da0  unit: RakPeer  size: 64 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 004b8da0
 //
@@ -20,22 +19,9 @@
 // 004b8dd7  05f0eb8b00           add eax, 0x8bebf0
 // 004b8ddc  5e                   pop esi
 // 004b8ddd  c20400               ret 4
+// library openrbx-raknet/RakPeer.cpp (function ?GetLocalIP@RakPeer@@UAEPBDI@Z)
 
-extern "C" void __cdecl sub_630B8C(void*, int, void*);
-extern "C" void __fastcall sub_4C4970(void*, void*);
-
-struct RakPeer
-{
-    void* getSocket(unsigned int index);
-};
-
-void* RakPeer::getSocket(unsigned int index)
-{
-    if (index >= 10)
-        index = 9;
-
-    sub_630B8C((void*)0x8bebf0, 0, (void*)0xa0);
-    sub_4C4970((void*)0x8befe9, (void*)0x8bebf0);
-
-    return (void*)(0x8bebf0 + (index << 4));
-}
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /EHsc /MD
+// roc-lib: openrbx-raknet RakPeer.cpp

@@ -1,5 +1,8 @@
-// from server: 70% by colin
-// roc-lang: cpp
-// roc-cl: 50727
+// from server: 100% by colin
+
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs humanoid/Humanoid.cpp
+void* __stdcall make_value_005d78f0();
+void* func_005d78f0() {
+    static void* value = make_value_005d78f0();
+    return value;
+}

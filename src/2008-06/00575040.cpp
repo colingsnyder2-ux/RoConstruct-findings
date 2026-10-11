@@ -1,14 +1,3 @@
-// from server: 96% by atomic.potato
-struct UnifiedWidget
-{
-    float f1();
-    float f2();
-    float f();
-};
-
-float UnifiedWidget::f()
-{
-    float a = f1();
-    f2();
-    return a;
-}
+// from server: 100% by colin
+// roc-flags: /O2 /GS- /MD
+struct S{float f1(); float f2(); double f();}; double S::f(){float a=f1(); return a+f2();}

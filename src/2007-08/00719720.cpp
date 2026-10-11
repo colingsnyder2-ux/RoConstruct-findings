@@ -1,4 +1,4 @@
-// from server: 78% by colin
+// from server: 100% by colin
 // roc 2007-08 00719720  unit: CXTPRibbonGroupControlPopup  size: 36 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 00719720
 //
@@ -19,15 +19,17 @@
 // 00719740  5e                   pop esi
 // 00719741  c20400               ret 4
 
-struct CXTPRibbonGroupControlPopup {
+struct CXTPRibbonGroupControlPopup
+{
     void* GetSomething();
     void* CreatePopup(void* param);
 };
 
-void* CXTPRibbonGroupControlPopup::CreatePopup(void* param) {
+void* CXTPRibbonGroupControlPopup::CreatePopup(void* param)
+{
     void* obj = GetSomething();
     void** vtable = *(void***)obj;
-    void (*fn)(void*, void*) = (void (*)(void*, void*))vtable[0xe0 / 4];
-    fn(obj, param);
+    void (__thiscall *fn)(void*, void*, void*) = (void (__thiscall *)(void*, void*, void*))vtable[0xe0 / 4];
+    fn(obj, this, param);
     return obj;
 }

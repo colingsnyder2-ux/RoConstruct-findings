@@ -1,4 +1,4 @@
-// from server: 85% by colin
+// from server: 100% by colin
 // roc 2007-08 00711190  unit: CXTColorSelectorCtrl  size: 31 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 00711190
 //
@@ -13,17 +13,18 @@
 // 007111aa  33c0                 xor eax, eax
 // 007111ac  c20400               ret 4
 
-struct CXTColorSelectorCtrl {
+struct CXTColorSelectorCtrl
+{
     char pad[0x144];
     int field_144;
     int sub_711000(int);
     int func(int);
 };
 
-int CXTColorSelectorCtrl::func(int arg) {
-    int result = sub_711000(arg);
-    if (result != 0) {
+int CXTColorSelectorCtrl::func(int arg)
+{
+    int result = ((CXTColorSelectorCtrl*)((char*)this + 0x144))->sub_711000(arg);
+    if (result != 0)
         return *(int*)(result + 8);
-    }
     return 0;
 }

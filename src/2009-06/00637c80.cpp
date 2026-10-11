@@ -1,5 +1,17 @@
-// from server: 72% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs util/RunStateOwner.cpp
+// from server: 100% by colin
+// roc-flags: /O2 /GS- /EHsc /MD
+struct T4_00637c80 {
+    T4_00637c80();
+    virtual void f_00637c80();
+    char m_a;
+    char m_b;
+};
+T4_00637c80::T4_00637c80() : m_a(0), m_b(0) {}
+extern "C" void* create_other_00637c80(void*, void*, int);
+void* create_00637c80(void* unused, T4_00637c80* out, int type)
+{
+    if (type != 4)
+        return create_other_00637c80(unused, out, type);
+    out->T4_00637c80::T4_00637c80();
+    return out;
+}

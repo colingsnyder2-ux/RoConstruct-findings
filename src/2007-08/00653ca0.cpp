@@ -1,4 +1,4 @@
-// from server: 65% by colin
+// from server: 67% by colin
 // roc 2007-08 00653ca0  unit: CInstanceRecord::CNameItem  size: 46 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 00653ca0
 //
@@ -21,28 +21,28 @@
 // 00653ccb  33c0                 xor eax, eax
 // 00653ccd  c3                   ret 
 
-struct CInstanceRecord_CNameItem {
-    void* vtable;
-    char pad0[0x40];
+struct CNameItem {
+    int field0;
+    char pad[0x40];
     int field44;
-    char pad1[0x4];
-    void* field4c;
+    char pad2[4];
+    int field4c;
     bool method();
 };
 
-bool CInstanceRecord_CNameItem::method() {
+bool CNameItem::method() {
     if (this == 0)
         return false;
-    void* p = this->field4c;
+    int* p = *(int**)((char*)this + 0x4c);
     if (p == 0)
         return false;
     if (*(int*)((char*)p + 0x48) == 0)
         return false;
-    if (this->field44 == 0)
+    if (*(int*)((char*)this + 0x44) == 0)
         return false;
-    void** vt = *(void***)this;
-    int (*fn)(void*) = (int (*)(void*))vt[0x100 / 4];
-    if (fn(this) == 0)
+    int* vtbl = *(int**)this;
+    int (*fn)() = *(int (**)())((char*)vtbl + 0x100);
+    if (fn() == 0)
         return false;
     return true;
 }

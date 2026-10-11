@@ -1,4 +1,4 @@
-// from server: 89% by colin
+// from server: 100% by colin
 // roc 2007-08 006ddca0  unit: CXTPDockingPaneWindowSelect  size: 34 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 006ddca0
 //
@@ -26,12 +26,15 @@ struct CXTPDockingPaneWindowSelect
     CXTPDockingPaneWindowSelect* construct();
 };
 
-extern "C" void __stdcall sub_006dc6f0(void* p, int n);
+struct Sub_006DC6F0
+{
+    void method(int n);
+};
 
 CXTPDockingPaneWindowSelect* CXTPDockingPaneWindowSelect::construct()
 {
     vtable = (void*)0x7d9604;
-    sub_006dc6f0(&pad_8[0], 0xa);
+    ((Sub_006DC6F0*)&pad_8[0])->method(0xa);
     field_28 = 0;
     field_4 = 0;
     field_24 = 0;

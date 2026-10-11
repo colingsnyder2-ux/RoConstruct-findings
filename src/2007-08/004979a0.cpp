@@ -1,4 +1,4 @@
-// from server: 31% by colin
+// from server: 33% by colin
 // roc 2007-08 004979a0  unit: RBX::Network::VPlayers::?$BoundFuncDesc  size: 32 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 004979a0
 //
@@ -16,14 +16,14 @@
 // 004979bc  5d                   pop ebp
 // 004979bd  c20800               ret 8
 
-extern "C" void __stdcall __security_check_cookie(unsigned int cookie);
+extern "C" void __cdecl func_00630a1e();
 
 struct S {
-    char f(int a, int b);
+    char f(int, int);
 };
 
-char S::f(int a, int b)
+char S::f(int, int)
 {
-    __security_check_cookie(0);
+    func_00630a1e();
     return 0;
 }

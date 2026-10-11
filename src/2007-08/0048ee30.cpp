@@ -1,4 +1,4 @@
-// from server: 47% by colin
+// from server: 100% by colin
 // roc 2007-08 0048ee30  unit: RBX::Network::VPlayer::?$BoundFuncDesc  size: 65 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 0048ee30
 //
@@ -26,24 +26,39 @@
 // 0048ee6b  5e                   pop esi
 // 0048ee6c  e94ff3ffff           jmp 0x48e1c0
 
-struct Instance {
-    static Instance* findFirstChildOfType(Instance* parent, const char* typeName);
-    Instance* findFirstChild(const char* name);
+struct RBX_Instance {
+    static const char* className();
 };
 
-extern "C" Instance* __stdcall findFirstChildOfType(Instance* parent, const char* typeName);
-
-struct VPlayer {
-    Instance* findFirstChildOfType(const char* typeName);
+struct RBX_ServiceProvider {
+    static const char* className();
 };
 
-Instance* VPlayer::findFirstChildOfType(const char* typeName) {
-    Instance* inst = (Instance*)this;
-    while (inst) {
-        Instance* found = ::findFirstChildOfType(inst, typeName);
-        if (found)
-            return found;
-        inst = *(Instance**)((char*)inst + 0xbc);
+struct RBX_Instance_Base {
+    void* vftable;
+};
+
+struct RBX_Instance_Impl {
+    char pad[0xbc];
+    RBX_Instance_Impl* next;
+};
+
+extern "C" void* __cdecl sub_630D36(void* p, void* a, void* b, void* c, void* d);
+
+struct RBX_Instance_Helper {
+    void* findChild(void* p);
+};
+
+void* __fastcall sub_48E1C0(void* p);
+
+void* __cdecl sub_48EE30(RBX_Instance_Impl* p)
+{
+    while (p) {
+        void* r = sub_630D36(p, 0, (void*)0x881f4c, (void*)0x884e04, 0);
+        if (r) {
+            return sub_48E1C0(r);
+        }
+        p = p->next;
     }
     return 0;
 }

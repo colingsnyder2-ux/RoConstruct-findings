@@ -1,4 +1,4 @@
-// from server: 80% by colin
+// from server: 100% by colin
 // roc 2007-08 005bbc20  unit: RBX::Controller::W4ControllerType::?$EnumDesc  size: 34 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 005bbc20
 //
@@ -10,19 +10,17 @@
 // 005bbc3a  e9d18ae8ff           jmp 0x444710
 // 005bbc3f  c20400               ret 4
 
-struct W4ControllerType
-{
-    char pad[0x150];
-    unsigned char value;
-    void setValue(unsigned char v);
+struct S_func_005bbc20 {
+    char pad0[0x150];
+    unsigned char m_field;
+    void f(unsigned char value);
 };
 
-void W4ControllerType::setValue(unsigned char v)
+void S_func_005bbc20::f(unsigned char value)
 {
-    if (this->value != v)
-    {
-        this->value = v;
-        extern void notifyChange();
-        notifyChange();
+    if (m_field != value) {
+        m_field = value;
+        extern void __stdcall sub_00444710(unsigned int);
+        sub_00444710(0x8c67dc);
     }
 }

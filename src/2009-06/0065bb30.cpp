@@ -1,5 +1,4 @@
-// from server: 72% by colin
-// roc-lang: cpp
-// roc-cl: 30729
-// roc-flags: /O2 /GS- /MD
-// roc-lib: mfc-9.0 atlmfc/src/mfc/afxribbonbar.cpp
+// from server: 100% by colin
+// roc-flags: /O2 /Ob2 /Oy /GF- /GS- /EHsc /MD
+struct B{void sub(void*);}; struct S{void* func(void*);};
+void* S::func(void* p){((B*)((char*)this+288))->sub(p); return p;}

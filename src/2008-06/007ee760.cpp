@@ -1,9 +1,9 @@
-// from server: 83% by colin
+// from server: 100% by colin
 // roc-flags: /O2 /GS- /EHsc /MD
 struct Obj { Obj* f4(); };
 extern "C" __declspec(noinline) void __cdecl reg_fn(void*, void*);
 extern "C" __declspec(noinline) void* __cdecl make_fn(void);
-extern "C" __declspec(noinline) Obj* __cdecl init_fn(void*);
+extern "C" __declspec(noinline) Obj* __stdcall init_fn(void*);
 extern "C" __declspec(noinline) void __cdecl final_fn(int);
 extern void* type_tag; extern int g_value; extern int final_arg;
 extern void fn_a(); extern void fn_b();

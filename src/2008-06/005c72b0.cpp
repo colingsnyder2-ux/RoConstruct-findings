@@ -1,27 +1,11 @@
-// from server: 86% by atomic.potato
-struct S
-{
-    int pad0[3];
-    int field0C;
-    int pad10[234];
-    int field3B0;
-    int f();
-};
-
-typedef int (__stdcall *Fn)(int);
-
-extern "C" int __cdecl helper(int);
-extern "C" Fn imported;
-
-int S::f()
-{
-    int value = field0C;
-    value = *(int *)((char *)value + 0x204);
-    value = *(int *)((char *)value + 0x3b0);
-    if (value)
-    {
-        value = helper(value);
-        return imported(value);
-    }
-    return 0;
-}
+// from server: 100% by colin
+// roc-flags: /O2 /Ob2 /Oy /GF- /GS- /EHsc /MD
+struct P3 { char pad[0x3b0]; void* value; };
+struct P2 { char pad[0x204]; P3* p; };
+struct Obj { char pad[0xc]; P2* p; bool f(); };
+struct C {};
+extern "C" void* helper(void*);
+extern C c;
+typedef bool (__thiscall *Fn)(C*,void*);
+extern Fn slot;
+bool Obj::f(){ void* x=p->p->value; if(x){ x=helper(x); return slot(&c,x); } return false; }

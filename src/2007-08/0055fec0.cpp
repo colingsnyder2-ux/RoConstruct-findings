@@ -1,5 +1,5 @@
-// from server: 63% by colin
-// roc 2007-08 0055fec0  unit: RBX::VModelInstance::?$FilteredSelection  size: 47 bytes
+// from server: 70% by colin
+// roc 2007-08 0055fec0  unit: seg_00550000  size: 47 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 0055fec0
 //
 // 0055fec0  8b442404             mov eax, dword ptr [esp + 4]
@@ -17,16 +17,25 @@
 // 0055fee9  8bc6                 mov eax, esi
 // 0055feeb  5e                   pop esi
 // 0055feec  c20400               ret 4
+// library rbxgs/v8datamodel\Selection.cpp (function ??0FilteredSelection@RBX@@QAE@ABV?$shared_ptr@VSelection@RBX@@@std@@@Z)
+
+// roc-lang: cpp
+// roc-cl: 50727
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: rbxgs v8datamodel/Selection.cpp
 
 struct FilteredSelection {
-    void construct(char*);
-    FilteredSelection(char*);
+    void* vftable;
+    void construct(void* arg);
 };
 
-extern "C" void __stdcall std_string_ctor(void*, const char*);
+extern "C" void __stdcall string_ctor(void* self, const char* s);
+extern "C" void __stdcall base_ctor(void* self, void* arg);
 
-FilteredSelection::FilteredSelection(char* name) {
-    std_string_ctor(this, "FollowCamera");
-    construct(name);
-    *(void**)this = (void*)0x7a9478;
+void FilteredSelection::construct(void* arg)
+{
+    char buf[0x1c];
+    string_ctor(buf, "FollowCamera");
+    base_ctor(this, arg);
+    this->vftable = (void*)0x7a9478;
 }

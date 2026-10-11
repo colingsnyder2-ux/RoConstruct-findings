@@ -1,4 +1,4 @@
-// from server: 61% by colin
+// from server: 68% by colin
 // roc 2007-08 005def20  unit: RBX::VMotorFeature::?$FactoryProduct  size: 59 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 005def20
 //
@@ -32,20 +32,18 @@
 // 005def59  5b                   pop ebx
 // 005def5a  c3                   ret 
 
-struct RBX_VMotorFeature_FactoryProduct
-{
-    void sort(int *begin, int *end);
+struct RBX_VMotorFeature_FactoryProduct {
+    void construct(int* begin, int* end);
 };
 
-void RBX_VMotorFeature_FactoryProduct::sort(int *begin, int *end)
+extern "C" void __stdcall sub_005DE510(int* begin, int index, int count, int* value);
+
+void RBX_VMotorFeature_FactoryProduct::construct(int* begin, int* end)
 {
     int count = (int)(end - begin);
     int half = count / 2;
-    while (half > 0)
-    {
-        int value = begin[half - 1];
+    while (half > 0) {
         half = half - 1;
-        extern void heapAdjust(int *, int, int, int);
-        heapAdjust(begin, count, half, value);
+        sub_005DE510(begin, half, count, begin + half);
     }
 }

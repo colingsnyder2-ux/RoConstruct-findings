@@ -1,4 +1,4 @@
-// from server: 67% by colin
+// from server: 69% by colin
 // roc 2007-08 0045ad30  unit: G3D::VStopwatch::?$TypedStatsItem  size: 35 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 0045ad30
 //
@@ -16,17 +16,16 @@
 // 0045ad4f  83c458               add esp, 0x58
 // 0045ad52  c3                   ret 
 
-struct VStopwatch {
-    char pad0[0x110];
-    int field110;
-    void sub_45aca0(int* out);
-    void sub_596b60(int* in);
-    void func();
+struct VStopwatchStatsItem
+{
+    void update();
 };
 
-void VStopwatch::func()
+extern int __cdecl func_0045aca0(int*);
+extern int __cdecl func_00596b60(int, int);
+
+void VStopwatchStatsItem::update()
 {
     int local[22];
-    sub_45aca0(local);
-    sub_596b60(local);
+    func_00596b60((int)this, func_0045aca0(local));
 }

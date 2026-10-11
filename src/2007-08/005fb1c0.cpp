@@ -1,4 +1,4 @@
-// from server: 48% by colin
+// from server: 100% by colin
 // roc 2007-08 005fb1c0  unit: RBX::Seat  size: 61 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 005fb1c0
 //
@@ -18,23 +18,27 @@
 // 005fb1f9  5e                   pop esi
 // 005fb1fa  c20400               ret 4
 
-struct Seat {
-    char pad[0x2d4];
-    void* m_vtable_2d4;
-    char pad2[0x4];
-    void* m_field_2d8;
-    void destroy(char flag);
+struct S_func_005fb1c0
+{
+    char pad0[0x2d4];
+    int m_field2d4;
+    int m_field2d8;
+    void* f(int a);
 };
 
-extern "C" void __stdcall free(void*);
+extern "C" void __stdcall sub_005fb120();
+extern "C" void (__cdecl *g_free)(void*);
 
-void Seat::destroy(char flag)
+void* S_func_005fb1c0::f(int a)
 {
-    void* p;
-    this->m_vtable_2d4 = (void*)0x7a4cac;
-    p = this->m_field_2d8;
-    *(void**)((char*)p + 4) = (void*)0x7a4ca4;
-    if (flag & 1) {
-        free(this);
+    sub_005fb120();
+    int* p = (int*)m_field2d8;
+    m_field2d4 = 0x7a4cac;
+    int* q = (int*)p[1];
+    *(int*)((char*)q + (int)this + 0x2d8) = 0x7a4ca4;
+    if (a & 1)
+    {
+        g_free(this);
     }
+    return this;
 }

@@ -1,4 +1,4 @@
-// from server: 81% by colin
+// from server: 100% by colin
 // roc 2007-08 006940f0  unit: CXTPStatusBar  size: 68 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 006940f0
 //
@@ -32,31 +32,25 @@
 
 struct CXTPStatusBar {
     char pad[0x3c];
-    unsigned long m_dwStyle;
-    char pad2[0x1c];
+    unsigned int m_dwStyle;
+    char pad2[0x5c - 0x40];
     void* m_pFrameHelper;
-    void SetStyle(unsigned long dwRemove, unsigned long dwAdd);
+    void SetStyle(unsigned int dwRemove, unsigned int dwAdd);
 };
 
-void CXTPStatusBar::SetStyle(unsigned long dwRemove, unsigned long dwAdd)
+void CXTPStatusBar::SetStyle(unsigned int dwRemove, unsigned int dwAdd)
 {
-    unsigned long dwStyle = m_dwStyle;
-    unsigned long dwNewStyle = (dwStyle | dwAdd) & ~dwRemove;
+    unsigned int dwStyle = m_dwStyle;
+    unsigned int dwNewStyle = (dwStyle | dwAdd) & ~dwRemove;
     if (dwStyle != dwNewStyle)
     {
-        void* pHelper = m_pFrameHelper;
         m_dwStyle = dwNewStyle;
-        if (pHelper != 0)
+        if (m_pFrameHelper != 0)
         {
-            void** vtbl = *(void***)pHelper;
-            typedef void (__stdcall *Fn0)(void*);
-            ((Fn0)vtbl[0x68 / 4])(pHelper);
-            void* pHelper2 = m_pFrameHelper;
-            if (pHelper2 != 0)
+            (*(void (__thiscall **)(void*))(*(unsigned int*)m_pFrameHelper + 0x68))(m_pFrameHelper);
+            if (m_pFrameHelper != 0)
             {
-                void** vtbl2 = *(void***)pHelper2;
-                typedef void (__stdcall *Fn1)(void*, int);
-                ((Fn1)vtbl2[1])(pHelper2, 1);
+                (*(void (__thiscall **)(void*, int))(*(unsigned int*)m_pFrameHelper + 4))(m_pFrameHelper, 1);
             }
             m_pFrameHelper = 0;
         }

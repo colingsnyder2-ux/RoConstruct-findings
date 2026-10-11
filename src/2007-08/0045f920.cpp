@@ -1,4 +1,4 @@
-// from server: 76% by colin
+// from server: 100% by colin
 // roc 2007-08 0045f920  unit: CScriptEditor  size: 53 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 0045f920
 //
@@ -22,26 +22,24 @@
 
 struct CScriptEditor {
     char pad[0x39];
-    unsigned char m_flag39;
-    unsigned char m_flag3a;
-    int sub_45d230(int, int);
-    int sub_45cad0();
-    int func_0045f920(int, int);
+    bool field_39;
+    bool field_3a;
+    int sub_45D230(int, int);
+    int sub_45CAD0();
+    int func_0045F920(int, int);
 };
 
-int CScriptEditor::func_0045f920(int, int arg)
+int CScriptEditor::func_0045F920(int a, int b)
 {
-    unsigned char al = (arg != 0);
-    m_flag39 = al;
-    int eax;
-    if (al != 0) {
-        eax = 1;
-    } else if (m_flag3a == al) {
-        eax = 1;
+    bool v = (b != 0);
+    field_39 = v;
+    int r;
+    if (!v && field_3a != v) {
+        r = 0;
     } else {
-        eax = 0;
+        r = 1;
     }
     CScriptEditor* p = (CScriptEditor*)((char*)this - 0x10c);
-    int r = p->sub_45d230(eax, 1);
-    return ((CScriptEditor*)r)->sub_45cad0();
+    int t = p->sub_45D230(r, 1);
+    return ((CScriptEditor*)t)->sub_45CAD0();
 }

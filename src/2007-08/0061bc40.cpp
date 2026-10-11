@@ -1,4 +1,4 @@
-// from server: 82% by colin
+// from server: 100% by colin
 // roc 2007-08 0061bc40  unit: RBX::KeyButton  size: 56 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 0061bc40
 //
@@ -24,25 +24,22 @@
 // 0061bc74  5e                   pop esi
 // 0061bc75  c20800               ret 8
 
-struct KeyButton {
-    char pad[0x18];
-    int field18;
-    bool field1c;
-    void processEvent(int* evt);
+struct RBX_KeyButton {
+    char pad0[0x18];
+    int m_id;
+    bool m_active;
+    void* processEvent(int, int);
 };
 
-extern "C" int __stdcall sub_6006a0(int* evt, int* self);
+void* __stdcall sub_006006A0(void*, int);
 
-void KeyButton::processEvent(int* evt) {
-    if (evt[0] == 9) {
-        if (evt[2] == field18) {
-            field1c = true;
-        }
-    }
-    if (evt[0] == 10) {
-        if (evt[2] == field18) {
-            field1c = false;
-        }
-    }
-    sub_6006a0(evt, (int*)this);
+void* RBX_KeyButton::processEvent(int a, int b)
+{
+    int* ev = (int*)b;
+    if (ev[0] == 9 && ev[2] == m_id)
+        m_active = true;
+    if (ev[0] == 10 && ev[2] == m_id)
+        m_active = false;
+    sub_006006A0((void*)a, b);
+    return (void*)a;
 }

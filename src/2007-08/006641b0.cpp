@@ -1,4 +1,4 @@
-// from server: 91% by colin
+// from server: 100% by colin
 // roc 2007-08 006641b0  unit: VCXTPReportRows::?$CXTPHeapObjectT  size: 44 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 006641b0
 //
@@ -18,13 +18,13 @@
 
 struct VCXTPReportRows_CXTPHeapObjectT
 {
-    char pad0[0x20];
+    char pad_0000[0x20];
     int field_20;
     int field_24;
-    char pad28[0x4];
-    char field_2c[0x8];
+    char pad_0028[0x04];
+    char field_2c[0x08];
     int field_34;
-    char pad38[0x8];
+    char pad_0038[0x08];
     int field_40;
 
     void func_006641b0();
@@ -35,13 +35,14 @@ struct Sub2C
     void method(int, int);
 };
 
-extern "C" void __stdcall sub_00657410(int);
+extern "C" void __fastcall sub_00657410(int);
 
 void VCXTPReportRows_CXTPHeapObjectT::func_006641b0()
 {
     if (field_34 > 0)
         field_40 = 1;
     ((Sub2C*)field_2c)->method(0, -1);
+    int v = field_20;
     field_24 = -1;
-    sub_00657410(field_20);
+    sub_00657410(v);
 }

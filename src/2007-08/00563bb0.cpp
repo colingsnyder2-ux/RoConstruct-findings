@@ -1,4 +1,4 @@
-// from server: 94% by colin
+// from server: 100% by colin
 // roc 2007-08 00563bb0  unit: RBX::StopCommand  size: 25 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 00563bb0
 //
@@ -20,10 +20,17 @@ struct RunStateOwner {
     int state;
 };
 
-extern "C" RunStateOwner* __stdcall getRunStateOwner(void*, int);
+struct Sub {
+    RunStateOwner* method(int);
+};
+
+struct StopCommandLayout {
+    char pad[0x10];
+    Sub sub;
+};
 
 bool StopCommand::isEnabled() const
 {
-    RunStateOwner* owner = getRunStateOwner((char*)this + 0x10, 1);
+    RunStateOwner* owner = ((Sub*)((char*)this + 0x10))->method(1);
     return owner->state == 1;
 }

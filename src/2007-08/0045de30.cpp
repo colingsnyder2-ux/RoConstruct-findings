@@ -1,4 +1,4 @@
-// from server: 97% by colin
+// from server: 100% by colin
 // roc 2007-08 0045de30  unit: Scintilla::CScintillaFindReplaceDlg  size: 52 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 0045de30
 //
@@ -30,7 +30,7 @@ struct Scintilla_CScintillaFindReplaceDlg {
     unsigned int run();
 };
 
-extern "C" unsigned int __stdcall SendMessageA(unsigned int, unsigned int, unsigned int, unsigned int);
+extern "C" unsigned int (__stdcall *SendMessageA)(unsigned int, unsigned int, unsigned int, unsigned int);
 
 unsigned int Scintilla_CScintillaFindReplaceDlg::run() {
     unsigned int a = method1();

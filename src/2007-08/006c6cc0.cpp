@@ -1,4 +1,4 @@
-// from server: 71% by colin
+// from server: 100% by colin
 // roc 2007-08 006c6cc0  unit: CXTPCustomizeSheet::CCustomizeEdit  size: 29 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 006c6cc0
 //
@@ -14,21 +14,21 @@
 // 006c6cd7  5e                   pop esi
 // 006c6cd8  e96f9cf6ff           jmp 0x63094c
 
+extern "C" void __stdcall sub_00635af0(void*);
+extern "C" void __fastcall sub_0063094c(void*);
+
 struct CXTPCustomizeSheet_CCustomizeEdit
 {
     char pad[0x5c];
     void* field_5c;
-    void Finalize();
+    void sub_006c6cc0();
 };
 
-extern "C" void __cdecl sub_635af0(void*);
-extern "C" void __cdecl sub_63094c(void*);
-
-void CXTPCustomizeSheet_CCustomizeEdit::Finalize()
+void CXTPCustomizeSheet_CCustomizeEdit::sub_006c6cc0()
 {
     if (field_5c != 0)
     {
-        sub_635af0((char*)field_5c + 0x18c);
+        sub_00635af0((char*)field_5c + 0x18c);
     }
-    sub_63094c(this);
+    sub_0063094c(this);
 }

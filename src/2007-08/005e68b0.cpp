@@ -1,4 +1,4 @@
-// from server: 74% by colin
+// from server: 80% by atomic.potato
 // roc 2007-08 005e68b0  unit: RBX::VFlag::?$FactoryProduct  size: 59 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 005e68b0
 //
@@ -34,12 +34,11 @@ struct VFlag {
 };
 
 struct FactoryProduct {
-    void* create(int, int);
 };
 
 extern "C" void* __cdecl sub_5E6810(int, int, int);
 
-void* FactoryProduct::create(int a, int b) {
+void* __cdecl create(int a, int b) {
     if (b == 2) {
         int v = a;
         if (VFlag::typeInfo == *(type_info*)0x8AE5F8) {

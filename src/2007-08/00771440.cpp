@@ -1,20 +1,4 @@
-// from server: 80% by tester
-struct S {
-    void m();
-};
-
-extern "C" void __stdcall f_725520(int, int);
-extern "C" void* __stdcall f_557710();
-extern "C" void* __stdcall f_407410(void*);
-extern "C" void* __fastcall f_4339d0(void*, int, void*);
-extern "C" void __stdcall f_630d23(void*, int);
-
-void S::m()
-{
-    f_725520(0x8c1f0c, 0x5586e0);
-    void* p = f_557710();
-    void* q = f_407410(&p);
-    void* r = f_4339d0(q, 0, 0);
-    *(int*)r = 0x89ebc4;
-    f_630d23((void*)0x779c40, 0);
-}
+// from server: 100% by colin
+// roc-flags: /O2 /Ob2 /Oy /GF- /GS- /EHsc /MD
+struct Obj_00771440 { Obj_00771440* get(); }; extern "C" void reg_00771440(void*,void*); extern "C" void* make_00771440(); extern "C" Obj_00771440* __stdcall wrap_00771440(void*); extern "C" void final_00771440(void*);
+void func_00771440() { void* local; reg_00771440((void*)0x5586e0,(void*)0x8c1f0c); local=make_00771440(); Obj_00771440* o=wrap_00771440(&local)->get(); *(void**)o=(void*)0x89ebc4; final_00771440((void*)0x779c40); }

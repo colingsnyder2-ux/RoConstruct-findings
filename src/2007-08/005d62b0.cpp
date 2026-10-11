@@ -1,32 +1,26 @@
-// from server: 35% by colin
-// roc 2007-08 005d62b0  unit: ChatEnter  size: 37 bytes
-// Make this compile to the exact bytes below, then: roc check 2007-08 005d62b0
+// from server: 100% by tester
+// roc 2007-03 0041dd90  unit: seg_00410000  size: 37 bytes
+// Make this compile to the exact bytes below, then: roc check 2007-03 0041dd90
 //
-// 005d62b0  51                   push ecx
-// 005d62b1  8b4c240c             mov ecx, dword ptr [esp + 0xc]
-// 005d62b5  33c0                 xor eax, eax
-// 005d62b7  890424               mov dword ptr [esp], eax
-// 005d62ba  56                   push esi
-// 005d62bb  8b74240c             mov esi, dword ptr [esp + 0xc]
-// 005d62bf  88442404             mov byte ptr [esp + 4], al
-// 005d62c3  8b442404             mov eax, dword ptr [esp + 4]
-// 005d62c7  50                   push eax
-// 005d62c8  51                   push ecx
-// 005d62c9  8bce                 mov ecx, esi
-// 005d62cb  e870f2ffff           call 0x5d5540
-// 005d62d0  8bc6                 mov eax, esi
-// 005d62d2  5e                   pop esi
-// 005d62d3  59                   pop ecx
-// 005d62d4  c3                   ret 
+// 0041dd90  51                   push ecx
+// 0041dd91  8b4c240c             mov ecx, dword ptr [esp + 0xc]
+// 0041dd95  33c0                 xor eax, eax
+// 0041dd97  890424               mov dword ptr [esp], eax
+// 0041dd9a  56                   push esi
+// 0041dd9b  8b74240c             mov esi, dword ptr [esp + 0xc]
+// 0041dd9f  88442404             mov byte ptr [esp + 4], al
+// 0041dda3  8b442404             mov eax, dword ptr [esp + 4]
+// 0041dda7  50                   push eax
+// 0041dda8  51                   push ecx
+// 0041dda9  8bce                 mov ecx, esi
+// 0041ddab  e840ffffff           call 0x41dcf0
+// 0041ddb0  8bc6                 mov eax, esi
+// 0041ddb2  5e                   pop esi
+// 0041ddb3  59                   pop ecx
+// 0041ddb4  c3                   ret 
+// library rbxgs/script\LuaInstanceBridge.cpp (function ??$shared_dynamic_cast@VInstance@RBX@@VObject@2@@boost@@YA?AV?$shared_ptr@VInstance@RBX@@@0@ABV?$shared_ptr@VObject@RBX@@@0@@Z)
 
-struct ChatEnter {
-    char pad0[8];
-    char field8;
-    void sub_5D5540(int);
-    ChatEnter* method(int);
-};
-
-ChatEnter* ChatEnter::method(int arg) {
-    this->sub_5D5540(arg);
-    return this;
-}
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+// roc-lib: rbxgs script/LuaInstanceBridge.cpp

@@ -1,16 +1,16 @@
-// from server: 42% by atomic.potato
-typedef void (__thiscall *Callback)(void *, void *, int);
+// from server: 100% by colin
 
-extern Callback g_callback;
-
-struct S
-{
-    S *f(void *arg);
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+struct Str_0074d190 { int words[8]; };
+extern void (__thiscall* str_ctor_0074d190)(Str_0074d190*, Str_0074d190*);
+struct X_0074d190 {
+    char pad[0x7c];
+    Str_0074d190 value;
+    Str_0074d190* copy(Str_0074d190* out);
 };
-
-S *S::f(void *arg)
+Str_0074d190* X_0074d190::copy(Str_0074d190* out)
 {
-    void *value = 0;
-    g_callback(this, (char *)this + 0x7c, (int)value);
-    return (S *)arg;
+    volatile int zero = 0;
+    str_ctor_0074d190(out, &value);
+    return out;
 }

@@ -1,4 +1,4 @@
-// from server: 67% by colin
+// from server: 69% by colin
 // roc 2007-08 0040b1d0  unit: CNullDoc  size: 67 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 0040b1d0
 //
@@ -32,30 +32,28 @@
 // 0040b210  c20400               ret 4
 
 struct CNullDoc {
-    char pad[0xec];
-    int field_ec;
-    int method(int);
+    void sub_40B1D0(int);
 };
 
-int CNullDoc::method(int arg) {
-    int local;
-    int* p = (int*)field_ec;
-    int* vtbl = (int*)*p;
-    typedef int (__stdcall *Fn)(int*, int*);
-    Fn fn = (Fn)vtbl[0x7c/4];
-    int result = fn(p, &local);
-    if (result != 0 || *(short*)&local != -1) {
-        int* obj = (int*)((char*)&arg + 4);
-        int* v = (int*)*obj;
+void CNullDoc::sub_40B1D0(int arg) {
+    unsigned short local;
+    int* p = *(int**)((char*)this + 0xec);
+    int* vtbl = *(int**)p;
+    typedef int (__stdcall *Fn)(int*, unsigned short*);
+    Fn fn = (Fn)vtbl[0x7c / 4];
+    int r = fn(p, &local);
+    int* q;
+    if (r == 0 && local == 0xffff) {
+        q = *(int**)((char*)&arg + 4);
+        int* vt2 = *(int**)q;
         typedef int (__stdcall *Fn2)(int*, int);
-        Fn2 fn2 = (Fn2)v[0];
-        fn2(obj, 0);
-        return 0;
+        Fn2 fn2 = (Fn2)vt2[0];
+        fn2(q, 1);
+    } else {
+        q = *(int**)((char*)&arg + 4);
+        int* vt2 = *(int**)q;
+        typedef int (__stdcall *Fn2)(int*, int);
+        Fn2 fn2 = (Fn2)vt2[0];
+        fn2(q, 0);
     }
-    int* obj = (int*)((char*)&arg + 4);
-    int* v = (int*)*obj;
-    typedef int (__stdcall *Fn2)(int*, int);
-    Fn2 fn2 = (Fn2)v[0];
-    fn2(obj, 1);
-    return 0;
 }

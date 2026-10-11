@@ -1,4 +1,4 @@
-// from server: 64% by colin
+// from server: 100% by tester
 // roc 2007-08 00438730  unit: _NVCXTPPropertyGridItemBool::?$XItem  size: 16 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 00438730
 //
@@ -9,10 +9,19 @@
 // 0043873c  0f95c0               setne al
 // 0043873f  c3                   ret 
 
-struct XItem {
-    bool f();
+struct S
+{
+    unsigned char f();
 };
 
-bool XItem::f() {
-    return (*(bool (__thiscall **)(void))(*(int *)this + 0xe8))() == 0;
+unsigned char S::f()
+{
+    struct VTable
+    {
+        char pad[0xe8];
+        int (__thiscall *method)(void *);
+    };
+
+    VTable **vtable = (VTable **)this;
+    return vtable[0]->method(this) != 0;
 }

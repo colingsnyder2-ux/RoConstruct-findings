@@ -1,4 +1,4 @@
-// from server: 48% by colin
+// from server: 69% by colin
 // roc 2007-08 00648780  unit: CXTPCommandBar  size: 27 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 00648780
 //
@@ -13,17 +13,16 @@
 // 00648796  e9a5ffffff           jmp 0x648740
 
 struct CXTPCommandBar {
-    char pad[0x80];
-    int field80;
-    int method_648600();
-    int method_648740();
-    int method_648780();
+    int sub_648600();
+    int sub_648740();
+    int func();
 };
 
-int CXTPCommandBar::method_648780()
-{
-    int result = ((CXTPCommandBar*)((char*)this + 0x80))->method_648600();
-    if (result == 0)
-        return *(int*)((char*)this + 0x80);
-    return this->method_648740();
+int CXTPCommandBar::func() {
+    CXTPCommandBar* p = this;
+    int r = (reinterpret_cast<CXTPCommandBar*>(reinterpret_cast<char*>(p) + 0x80))->sub_648600();
+    if (r == 0) {
+        return r;
+    }
+    return p->sub_648740();
 }

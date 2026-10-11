@@ -1,4 +1,4 @@
-// from server: 53% by colin
+// from server: 64% by colin
 // roc 2007-08 00648e57  unit: CXTPCommandBar  size: 54 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 00648e57
 //
@@ -27,9 +27,9 @@
 extern "C" unsigned long __stdcall GetLastError();
 extern "C" void __stdcall SetLastError(unsigned long);
 
-extern void G1_func_0062ff38(int, int);
+extern void __cdecl func_0062ff38(int, int);
 
-void func_00648e57(int edi, int ebx, int arg)
+void __fastcall func_00648e57(int edi, int ebx, int ebp_minus_20)
 {
     if (edi == 2)
         return;
@@ -39,7 +39,7 @@ void func_00648e57(int edi, int ebx, int arg)
     if (esi)
         saved = (int)GetLastError();
 
-    G1_func_0062ff38(arg, 0);
+    func_0062ff38(ebp_minus_20, 0);
 
     if (esi)
         SetLastError((unsigned long)saved);

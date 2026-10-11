@@ -1,4 +1,4 @@
-// from server: 42% by colin
+// from server: 60% by colin
 // roc 2007-08 005241f0  unit: G3D::Line  size: 64 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 005241f0
 //
@@ -33,23 +33,13 @@ struct Vector3d {
 struct Line {
     Vector3d mP1;
     Vector3d mP2;
-    void func(const Vector3d& a, const Vector3d& b, Vector3d& out);
+    void func(float a, float b, float c, float d, Vector3d* out);
 };
 
-void Line::func(const Vector3d& a, const Vector3d& b, Vector3d& out)
+void Line::func(float a, float b, float c, float d, Vector3d* out)
 {
-    float t = a.x;
-    float u = a.y;
-    float v = a.z;
-    float w = b.x;
-    float dx = mP2.x - mP1.x;
-    float dy = mP2.y - mP1.y;
-    float dz = mP2.z - mP1.z;
-    float s = w / (dx * dx + dy * dy + dz * dz);
-    out.x = dx * s;
-    out.y = dy * s;
-    out.z = dz * s;
-    out.x = t;
-    out.y = u;
-    out.z = v;
+    float t = d / a;
+    out->x = b / a;
+    out->y = c / a;
+    out->z = t;
 }

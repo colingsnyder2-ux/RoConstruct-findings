@@ -1,5 +1,5 @@
-// from server: 65% by colin
-// roc 2007-08 00570060  unit: seg_00570000  size: 34 bytes
+// from server: 74% by colin
+// roc 2007-08 00570060  unit: RBX::Reflection::GenericSlotWrapper  size: 34 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 00570060
 //
 // 00570060  8b442408             mov eax, dword ptr [esp + 8]
@@ -11,7 +11,6 @@
 // 00570075  83c104               add ecx, 4
 // 00570078  894c2404             mov dword ptr [esp + 4], ecx
 // 0057007c  ff2520e67700         jmp dword ptr [0x77e620]
-// library MSVCP80 std::operator<
 
 extern "C" int __cdecl string_less(const void* a, const void* b);
 
@@ -23,5 +22,7 @@ struct StringRef
 
 int __cdecl compare_strings(const StringRef* a, const StringRef* b)
 {
-    return string_less(a->data + 4, b->data + 4);
+    const char* x = a->data + 4;
+    const char* y = b->data + 4;
+    return string_less(y, x);
 }

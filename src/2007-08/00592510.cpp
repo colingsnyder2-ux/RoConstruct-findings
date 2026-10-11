@@ -1,4 +1,4 @@
-// from server: 43% by colin
+// from server: 57% by colin
 // roc 2007-08 00592510  unit: RBX::VVisit::?$FactoryProduct  size: 37 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 00592510
 //
@@ -18,18 +18,22 @@
 // 00592533  5e                   pop esi
 // 00592534  c3                   ret 
 
-struct S {
-    void f();
+struct VVisit {
+    char pad[4];
+    void* field4;
+    char pad2[0x18];
+    void* field20;
+    void (*fn)();
+
+    void FactoryProduct();
 };
 
-extern "C" void __stdcall sub_77E69C(void*, const void*);
+extern "C" void* __stdcall sub_77E69C(void*, void*);
 
-void S::f()
+void VVisit::FactoryProduct()
 {
-    char* p = *(char**)((char*)this + 8);
-    void* q = *(void**)((char*)this + 0x20);
-    char buf[0x1c];
-    sub_77E69C(buf, (char*)this + 4);
-    void (*fn)(void*) = *(void (**)(void*))this;
-    fn(this);
+    void* p = field20;
+    void* tmp = &field4;
+    sub_77E69C(&tmp, p);
+    fn();
 }

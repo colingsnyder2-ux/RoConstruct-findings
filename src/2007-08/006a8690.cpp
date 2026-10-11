@@ -1,4 +1,4 @@
-// from server: 52% by colin
+// from server: 100% by colin
 // roc 2007-08 006a8690  unit: CXTPRibbonBarControlQuickAccessPopup  size: 36 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 006a8690
 //
@@ -20,17 +20,15 @@
 // 006a86b1  c20400               ret 4
 
 struct CXTPRibbonBarControlQuickAccessPopup {
-    void* GetActiveSite();
-    void Popup(void* p);
+    void* f(int);
 };
 
-void* CXTPRibbonBarControlQuickAccessPopup::GetActiveSite() {
-    return 0;
-}
+void* __stdcall g_6a8620();
 
-void CXTPRibbonBarControlQuickAccessPopup::Popup(void* p) {
-    void* site = GetActiveSite();
-    void** vtbl = *(void***)site;
-    void (*fn)(void*, void*) = (void (*)(void*, void*))vtbl[0xe0 / 4];
-    fn(site, p);
+void* CXTPRibbonBarControlQuickAccessPopup::f(int arg) {
+    void* p = g_6a8620();
+    void** vtbl = *(void***)p;
+    void (__thiscall *fn)(void*, void*, int) = (void (__thiscall *)(void*, void*, int))vtbl[0x38];
+    fn(p, this, arg);
+    return p;
 }

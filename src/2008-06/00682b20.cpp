@@ -1,5 +1,4 @@
-// from server: 96% by colin
-// roc-lang: cpp
-// roc-cl: 50727
-// roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: ogre-1.7.0 OgreTangentSpaceCalc.cpp
+// from server: 100% by colin
+// roc-flags: /O2 /GS- /MD
+extern "C" void* alloc(int);
+void* func(){void* p=alloc(0x38); if(p) *(void**)p=p; if((char*)p+4) *(void**)((char*)p+4)=p; return p;}

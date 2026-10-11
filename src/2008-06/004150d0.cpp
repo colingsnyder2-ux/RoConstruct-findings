@@ -1,34 +1,21 @@
-// from server: 18% by colin
+// from server: 29% by colin
 // roc 2008-06 004150d0  unit: boost::detail::sp_counted_base  size: 120 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 004150d0
 
-extern "C" void* __cdecl malloc(unsigned int size);
+extern "C" void* __cdecl malloc(unsigned int);
+extern "C" void __stdcall sub_58AB90();
 
-struct sp_counted_base_impl_holder
-{
-    void* px;
-    void* pi;
+struct S {
+    void sub_415020(void*, void*);
+    void f(void*);
 };
 
-struct sp_counted_base
+void S::f(void* a)
 {
-    void* dispose();
-};
-
-void* sp_counted_base::dispose()
-{
-    void* raw;
-    void* obj;
-
-    raw = malloc(0x1a4);
-    obj = raw;
-    if (obj != 0)
-    {
-        obj = (void*)0x58ab90;
-    }
+    void* p = malloc(0x1a4);
+    if (p)
+        sub_58AB90();
     else
-    {
-        obj = 0;
-    }
-    return obj;
+        p = 0;
+    sub_415020(p, a);
 }

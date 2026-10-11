@@ -1,4 +1,4 @@
-// from server: 67% by colin
+// from server: 100% by colin
 // roc 2007-08 00650740  unit: CXTPToolBar  size: 52 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 00650740
 //
@@ -32,13 +32,15 @@ struct CXTPToolBar {
 
 int CXTPToolBar::func_650740(int a, int b, int c)
 {
-    if (m_nState == 4)
-        goto fail;
-    if (sub_6506E0() != 0)
-        goto fail;
-    if (sub_6439B0() != 0)
-        goto fail;
-    return sub_63023E();
-fail:
+    if (m_nState != 4)
+    {
+        if (sub_6506E0() == 0)
+        {
+            if (sub_6439B0() == 0)
+            {
+                return sub_63023E();
+            }
+        }
+    }
     return 3;
 }

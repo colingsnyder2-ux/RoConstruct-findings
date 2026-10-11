@@ -1,4 +1,4 @@
-// from server: 98% by colin
+// from server: 100% by colin
 // roc 2007-08 00417240  unit: boost::X::U?$last_value::?$holder  size: 77 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 00417240
 //
@@ -52,8 +52,9 @@ int __cdecl func_00417240(int a, int b)
     }
     if (b == 0) {
         int p = func_0062fef6(1);
-        if (p != 0)
+        if (p != 0) {
             *(char*)p = *(char*)a;
+        }
         return p;
     }
     func_0062fc62(a);

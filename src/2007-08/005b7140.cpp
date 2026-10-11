@@ -1,4 +1,4 @@
-// from server: 63% by colin
+// from server: 75% by colin
 // roc 2007-08 005b7140  unit: RBX::$01MP8Surface::?$SurfaceGetSet  size: 45 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 005b7140
 //
@@ -24,25 +24,22 @@
 struct DescribedBase;
 
 struct GetSet {
-    virtual bool isReadOnly() const;
-    virtual bool isWriteOnly() const;
-    virtual void getValue(const DescribedBase* instance) const;
-    virtual void setValue(DescribedBase* instance, const float& value) const;
-};
-
-struct SurfaceGetSet : GetSet {
-    int get;
-    int set;
+    void* get;
+    void* set;
     void setValue(DescribedBase* instance, const float& value) const;
 };
 
-extern "C" void* __cdecl sub_573890(void* p);
+struct SurfaceGetSet {
+    void* get;
+    void* set;
+    void setValue(DescribedBase* instance, const float& value) const;
+};
+
+extern "C" void* __cdecl sub_573890(void*);
 
 void SurfaceGetSet::setValue(DescribedBase* instance, const float& value) const {
-    void* p = instance ? (void*)((char*)instance - 4) : 0;
+    void* p = instance ? (char*)instance - 4 : 0;
     void* r = sub_573890(p);
-    float v = value;
-    typedef void (__thiscall *Fn)(void*, int, float);
-    Fn fn = (Fn)set;
-    fn((char*)r + 0x28, get, v);
+    void (__thiscall *fn)(void*, float) = *(void (__thiscall **)(void*, float))((char*)this + 8);
+    fn((char*)r + 0x28, value);
 }

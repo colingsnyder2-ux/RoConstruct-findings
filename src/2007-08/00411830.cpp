@@ -1,4 +1,4 @@
-// from server: 85% by colin
+// from server: 100% by colin
 // roc 2007-08 00411830  unit: boost::bad_any_cast  size: 18 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 00411830
 //
@@ -9,11 +9,9 @@
 // 0041183b  ff1508e77700         call dword ptr [0x77e708]
 // 00411841  c3                   ret 
 
-struct type_info;
-
-extern "C" {
-    bool __stdcall type_info_equals(const type_info* self, const type_info* other);
-}
+struct type_info {
+    bool operator==(const type_info&) const;
+};
 
 struct bad_any_cast {
     bool matches() const;
@@ -25,7 +23,11 @@ struct holder {
     type_info* info;
 };
 
+extern type_info type_info_882860;
+
+bool (type_info::*type_info_eq)(const type_info&) const;
+
 bool bad_any_cast::matches() const {
     const holder* h = *reinterpret_cast<const holder* const*>(this);
-    return type_info_equals((const type_info*)0x882860, h->info);
+    return (type_info_882860.*type_info_eq)(*h->info);
 }

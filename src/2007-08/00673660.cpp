@@ -1,4 +1,4 @@
-// from server: 62% by colin
+// from server: 67% by colin
 // roc 2007-08 00673660  unit: CXTPCustomizeSheet  size: 38 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 00673660
 //
@@ -21,17 +21,20 @@
 // 00673684  5e                   pop esi
 // 00673685  c3                   ret 
 
-extern "C" __declspec(dllimport) void* __stdcall GetParent(void*);
+extern "C" void* __stdcall GetParent(void*);
 
-void* g_GetParent = (void*)GetParent;
+struct CXTPCustomizeSheet {
+    int IsChildOf(void* parent);
+};
 
-int FindAncestor(void* target, void* node) {
-    if (node != 0)
+int CXTPCustomizeSheet::IsChildOf(void* parent) {
+    if (parent == 0)
         return 0;
-    while (node != target) {
-        node = ((void* (__stdcall*)(void*))g_GetParent)(node);
-        if (node != 0)
-            return 0;
+    void* h = parent;
+    while (h != 0) {
+        if (h == (void*)this)
+            return 1;
+        h = GetParent(h);
     }
-    return 1;
+    return 0;
 }

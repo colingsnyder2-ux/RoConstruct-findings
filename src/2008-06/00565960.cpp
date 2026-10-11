@@ -1,5 +1,4 @@
-// from server: 84% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs v8datamodel/FaceInstance.cpp
+// from server: 100% by colin
+// roc-flags: /O2 /Ob2 /Oy /GF- /GS- /EHsc /MD
+struct B{virtual void v0();virtual void v1();}; struct S{char pad[0x1c]; B* p; void f();};
+void S::f(){p->v1();}

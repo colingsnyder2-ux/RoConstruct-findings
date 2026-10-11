@@ -1,4 +1,4 @@
-// from server: 68% by colin
+// from server: 100% by colin
 // roc 2007-08 005974a0  unit: RBX::Stats::TypedMemItem  size: 24 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 005974a0
 //
@@ -13,16 +13,16 @@
 // 005974b7  c3                   ret 
 
 struct TypedStatsItem {
-    char pad[0x110];
-    int* getValuePtr();
-    void formatMem(int);
+    int getValue();
+    void update(int);
 };
 
-struct TypedMemItem : TypedStatsItem {
+struct TypedMemItem {
     void update();
 };
 
 void TypedMemItem::update()
 {
-    formatMem(*getValuePtr());
+    int v = ((TypedStatsItem*)((char*)this + 0x110))->getValue();
+    ((TypedStatsItem*)this)->update(v);
 }

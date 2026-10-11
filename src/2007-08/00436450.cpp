@@ -1,4 +1,4 @@
-// from server: 41% by colin
+// from server: 72% by colin
 // roc 2007-08 00436450  unit: CDeclarationView  size: 58 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 00436450
 //
@@ -24,20 +24,25 @@
 // 00436489  c3                   ret 
 
 struct QTextBrowser {
-    void setOpenLinks(bool);
-    void setOpenExternalLinks(bool);
+    void setSource(const char*);
 };
 
 struct DeclarationView : QTextBrowser {
-    DeclarationView(void* parent);
+    void updateDeclarationView(int* item);
 };
 
-DeclarationView::DeclarationView(void* parent)
+extern "C" {
+    void* __stdcall MSVCP80_StringAppendCStr(void*, const char*);
+    const char* __stdcall MSVCP80_StringCStr(const void*);
+}
+
+void DeclarationView::updateDeclarationView(int* item)
 {
-    int* count = (int*)parent;
-    if (*count > 0) {
-        setOpenLinks(true);
+    if (*item > 0) {
+        setSource("%d: %s");
     }
-    setOpenExternalLinks(true);
-    *count = *count + 1;
+    int* p = *(int**)item;
+    const char* s = MSVCP80_StringCStr((const char*)p + 4);
+    setSource(s);
+    *item = *item + 1;
 }

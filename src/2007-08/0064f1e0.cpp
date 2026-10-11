@@ -1,4 +1,4 @@
-// from server: 91% by colin
+// from server: 100% by colin
 // roc 2007-08 0064f1e0  unit: CXTPToolBar  size: 36 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 0064f1e0
 //
@@ -27,7 +27,7 @@ struct CXTPToolBar {
 void* CXTPToolBar::method_64F1E0(void* arg) {
     void* p = sub_64F170();
     void** vtbl = *(void***)p;
-    void (*fn)(void*, void*, void*) = (void (*)(void*, void*, void*))vtbl[0x1c8 / 4];
+    void (__thiscall *fn)(void*, void*, void*) = (void (__thiscall *)(void*, void*, void*))vtbl[0x1c8 / 4];
     fn(p, this, arg);
     return p;
 }

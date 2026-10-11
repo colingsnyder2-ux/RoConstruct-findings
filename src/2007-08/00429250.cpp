@@ -1,4 +1,4 @@
-// from server: 46% by colin
+// from server: 67% by colin
 // roc 2007-08 00429250  unit: ThreadLogManager  size: 49 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 00429250
 //
@@ -23,17 +23,21 @@
 // 0042927f  5e                   pop esi
 // 00429280  c3                   ret 
 
+extern "C" int __stdcall sub_427c40(int, int);
+extern "C" int __stdcall sub_429060(int, int, int, int, int, int);
+
 struct ThreadLogManager {
-    void* getLog();
-    void logEvent(const char* msg);
+    int field0;
+    int getLogFileName();
 };
 
-extern "C" void __cdecl sub_427C40(void* log, int level);
-extern "C" void __cdecl sub_429060(void* log, const char* msg, int a, int b, int c, int d);
-
-void ThreadLogManager::logEvent(const char* msg)
+int ThreadLogManager::getLogFileName()
 {
-    void* log = getLog();
-    sub_427C40(log, 1);
-    sub_429060(log, msg, 0, 0, 0, 0);
+    int* p = *(int**)((char*)this + 8);
+    int (*fn)(void*) = (int (*)(void*))p[1];
+    int r = fn(p);
+    sub_427c40(r, 1);
+    int a = *(int*)((char*)this + 16);
+    sub_429060(a, r, 0, 0, 0x7c4e6c, 0);
+    return r;
 }

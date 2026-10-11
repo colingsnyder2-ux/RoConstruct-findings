@@ -1,4 +1,4 @@
-// from server: 69% by colin
+// from server: 79% by colin
 // roc 2007-08 00557920  unit: ChatEnter  size: 31 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 00557920
 //
@@ -16,13 +16,13 @@
 struct ChatEnter {
     char pad[0x188];
     int field_188;
-    void sub_557920(int arg);
+    void method(int arg);
 };
 
-extern void __stdcall sub_5d98f0(int, int, int);
+extern "C" void __stdcall sub_005d98f0(void* out, int a, int b);
 
-void ChatEnter::sub_557920(int arg)
+void ChatEnter::method(int arg)
 {
-    int tmp = field_188;
-    sub_5d98f0(arg, (int)this, tmp);
+    int tmp[2];
+    sub_005d98f0(tmp, field_188, (int)this);
 }

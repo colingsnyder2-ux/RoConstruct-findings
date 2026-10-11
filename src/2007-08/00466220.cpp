@@ -1,4 +1,4 @@
-// from server: 94% by colin
+// from server: 100% by colin
 // roc 2007-08 00466220  unit: DxUserInput  size: 37 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 00466220
 //
@@ -20,12 +20,7 @@
 
 extern "C" int __cdecl sub_004660D0(int, int, int, int, int, float);
 
-struct DxUserInput
-{
-    int method_00466220(int, int, int, int);
-};
-
-int DxUserInput::method_00466220(int a1, int a2, int a3, int a4)
+int __cdecl sub_00466220(int a1, int a2, int a3, int a4)
 {
     return sub_004660D0(a1, a2, a3, a4, 6, 0.0f);
 }

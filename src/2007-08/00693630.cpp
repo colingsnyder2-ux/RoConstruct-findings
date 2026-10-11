@@ -1,4 +1,4 @@
-// from server: 66% by colin
+// from server: 74% by colin
 // roc 2007-08 00693630  unit: CXTPStatusBar::CStatusCmdUI  size: 57 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 00693630
 //
@@ -36,14 +36,15 @@ struct CStatusCmdUI {
 };
 
 void CStatusCmdUI::func(int arg) {
-    int v = this->field8;
-    int s = this->field14;
-    this->field18 = 1;
-    int r = sub_692E20(v);
+    int *self = (int *)this;
+    int v = self[2];
+    int s = self[5];
+    self[6] = 1;
+    int r = ((CStatusCmdUI *)s)->sub_692E20(v);
     r = r & 0xFBFFFFFF;
     if (arg == 0) {
         r = r | 0x04000000;
     }
-    int v2 = this->field8;
-    sub_6935A0(r, v2);
+    int v2 = self[2];
+    ((CStatusCmdUI *)s)->sub_6935A0(v2, r);
 }

@@ -1,4 +1,4 @@
-// from server: 66% by colin
+// from server: 70% by colin
 // roc 2007-08 004ad7e0  unit: RBX::Network::Replicator::DeleteInstanceItem  size: 59 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 004ad7e0
 //
@@ -29,7 +29,7 @@ struct type_info {
     bool __thiscall operator==(const type_info&) const;
 };
 
-extern "C" void* __stdcall sub_4acaf0(void*, int, char);
+extern "C" void __cdecl sub_4acaf0(int, int, char);
 
 struct DeleteInstanceItem {
     int method(int a, int b);
@@ -43,7 +43,5 @@ int DeleteInstanceItem::method(int a, int b)
             return a;
         return 0;
     }
-    char c = 0;
-    sub_4acaf0((void*)a, b, c);
-    return 0;
+    sub_4acaf0(a, b, 0);
 }

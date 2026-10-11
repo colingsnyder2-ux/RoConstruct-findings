@@ -1,5 +1,11 @@
-// from server: 65% by colin
-// roc-lang: cpp
-// roc-cl: 21022
+// from server: 100% by colin
 // roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: boost-1.34.1 libs/regex/src/cregex.cpp
+extern "C" void seh_fn_0042a030(void*);
+extern int g_a_0042a030;
+extern int g_b_0042a030;
+extern int g_arg_0042a030;
+struct Reg_0042a030 { Reg_0042a030() { g_a_0042a030 = 0; g_b_0042a030 = 0; seh_fn_0042a030(&g_arg_0042a030); } };
+void func_0042a030()
+{
+    static Reg_0042a030 reg;
+}

@@ -1,4 +1,4 @@
-// from server: 63% by colin
+// from server: 78% by colin
 // roc 2007-08 004c37f0  unit: RakPeer  size: 58 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 004c37f0
 //
@@ -28,21 +28,23 @@ struct RakPeer {
     char pad0[4];
     char field4;
     char field5;
-    char pad6[0x710 - 6];
+    char pad6[0x70a];
     int field710;
+    void sub_4C2340();
+
+    void sub_4C37F0(RakPeer* peer);
 };
 
-extern void func_004c2340(RakPeer* self);
-extern void func_004ca670(int value);
+extern "C" void __cdecl sub_4CA670(int);
 
-void RakPeer_004c37f0(RakPeer* self)
-{
-    self->field5 = 1;
-    while (self->field4 == 0) {
-        func_004c2340(self);
-        if (self->field710 >= 0) {
-            func_004ca670(self->field710);
+void RakPeer::sub_4C37F0(RakPeer* peer) {
+    peer->field5 = 1;
+    while (peer->field4 == 0) {
+        peer->sub_4C2340();
+        int v = peer->field710;
+        if (v >= 0) {
+            sub_4CA670(v);
         }
     }
-    self->field5 = 0;
+    peer->field5 = 0;
 }

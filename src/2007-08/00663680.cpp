@@ -1,18 +1,5 @@
-// from server: 34% by colin
-extern "C" void* __cdecl sub_00654D90(unsigned int);
-extern "C" void* __cdecl sub_006622E0(void*, const char*);
-
-struct CXTPReportRecordItemVariant
-{
-    void* Create();
-};
-
-void* CXTPReportRecordItemVariant::Create()
-{
-    void* p = sub_00654D90(0x80);
-    if (p != 0)
-    {
-        return sub_006622E0(p, (const char*)0x785954);
-    }
-    return 0;
-}
+// from server: 100% by tester
+// roc-lang: cpp
+// roc-cl: 50727
+// roc-flags: /O2 /MD /GS /EHsc
+// roc-lib: xtp-11.2.2-vc8-shared-mfc Source/ReportControl/XTPReportRecordItemText.cpp
