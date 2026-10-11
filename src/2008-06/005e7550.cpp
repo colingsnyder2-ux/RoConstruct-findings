@@ -1,5 +1,12 @@
-// from server: 86% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs v8world/Primitive.cpp
+// from server: 100% by colin
+struct Ball {
+    char pad[0x5c];
+    int field_5c;
+    void setField(int value);
+};
+
+void Ball::setField(int value) {
+    if (value != field_5c) {
+        field_5c = value;
+    }
+}

@@ -1,5 +1,12 @@
-// from server: 80% by colin
-// roc-lang: cpp
-// roc-cl: 50727
-// roc-flags: /O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MT
-// roc-lib: ogre-1.4.9 OgreSceneManager.cpp
+// from server: 85% by colin
+struct RbxSceneManager {
+    void setSkyEnabled(int value);
+};
+
+void RbxSceneManager::setSkyEnabled(int value) {
+    int* global = reinterpret_cast<int*>(0x8047bc);
+    int g = *global;
+    void** vtbl = *reinterpret_cast<void***>(this);
+    void (*fn)(void*, int, int) = reinterpret_cast<void (*)(void*, int, int)>(vtbl[0x334 / 4]);
+    fn(this, value, g);
+}

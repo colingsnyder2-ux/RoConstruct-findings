@@ -1,5 +1,25 @@
-// from server: 47% by colin
-// roc-lang: cpp
-// roc-cl: 50727
-// roc-flags: /O2 /GS- /MD
-// roc-lib: atl-8.0 atl.cpp
+// from server: 56% by colin
+struct CRobloxModule {
+    void f(int);
+};
+
+extern "C" int __cdecl sub_407BE0();
+extern "C" bool __cdecl sub_4061E0();
+
+void CRobloxModule::f(int a) {
+    int v = sub_407BE0();
+    int state = *(int*)(v + 0x134) - 1;
+    if (state != 0) {
+        if (sub_4061E0()) {
+            int* p = (int*)a;
+            int* vt = (int*)*p;
+            void (*fn)() = (void (*)())*vt;
+            fn();
+        }
+    } else if (state == 1) {
+        int* p = (int*)a;
+        int* vt = (int*)*p;
+        void (*fn)() = (void (*)())*vt;
+        fn();
+    }
+}

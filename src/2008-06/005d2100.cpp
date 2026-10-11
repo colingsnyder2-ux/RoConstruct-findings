@@ -1,15 +1,23 @@
-// from server: 81% by atomic.potato
-struct VSpawnLocationBoundPropGetSet
+// from server: 100% by colin
+struct S
 {
+    char getValue(void*);
     int value8;
-    int value12;
-    unsigned char get(unsigned char *value);
+    int valueC;
 };
 
-unsigned char VSpawnLocationBoundPropGetSet::get(unsigned char *value)
+char S::getValue(void* p)
 {
-    unsigned char *base;
+    char* base = (char*)p;
+    if (base)
+        base -= 20;
+    else
+        base = 0;
 
-    base = value ? value - 20 : 0;
-    return *(unsigned char *)(((int *)((char *)base + 0x134))[value12] + value8 + (int)base + 0x134);
+    int* index = *(int**)(base + 0x134);
+    int offset = *(int*)((char*)this + 0xC);
+    int entry = *(int*)((char*)index + offset);
+    entry += *(int*)((char*)this + 8);
+
+    return *(char*)(entry + (int)base + 0x134);
 }

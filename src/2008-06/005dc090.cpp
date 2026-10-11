@@ -1,18 +1,17 @@
-// from server: 70% by atomic.potato
+// from server: 78% by colin
 struct S
 {
-    int f(float *);
-    float value[0x1b1 / sizeof(float)];
+    void f(float* arg);
+    float value[0x1b0 / sizeof(float) + 1];
 };
 
-extern "C" void __stdcall sub_0040db00();
+extern "C" void __cdecl sub_0040db00(float* arg, const char* name);
 
-int S::f(float *value)
+void S::f(float* arg)
 {
-    if (*value == this->value[0x1b0 / sizeof(float)])
-        return 0;
+    if (*arg == value[0x1b0 / sizeof(float)])
+        return;
 
-    this->value[0x1b0 / sizeof(float)] = *value;
-    sub_0040db00();
-    return 0;
+    value[0x1b0 / sizeof(float)] = *arg;
+    sub_0040db00(arg, (const char*)0x97a2d8);
 }

@@ -1,33 +1,39 @@
-// from server: 47% by colin
-struct ProfiledRakPeer {
-    char pad[8];
-    unsigned short field_8;
-    char pad2[0x22c - 0xa];
-    void* field_22c;
-    void method(void* out, const void* addr);
+// from server: 60% by colin
+struct Key {
+    int a;
+    unsigned short b;
 };
 
-extern "C" int __stdcall sub_4a9820(void* a, void* b);
+extern "C" bool __fastcall sub_4a9820(Key* a, Key* b);
 
-void ProfiledRakPeer::method(void* out, const void* addr) {
-    unsigned short saved = *(unsigned short*)0x93cb74;
-    void* savedPtr = *(void**)0x93cb70;
-    unsigned short idx = 0;
-    unsigned int i = 0;
-    while (idx < field_8) {
-        char* base = (char*)field_22c + i * 0x850;
-        if (sub_4a9820(base + 4, (char*)out + 4) || sub_4a9820((char*)out + 4, (void*)0x93cb70)) {
+struct ProfiledRakPeer {
+    char pad[8];
+    unsigned short count;
+    char pad2[0x22c - 0xa];
+    char* entries;
+    void method(Key* out, Key* key);
+};
+
+void ProfiledRakPeer::method(Key* out, Key* key) {
+    Key saved;
+    saved.a = *(int*)0x93cb70;
+    saved.b = *(unsigned short*)0x93cb74;
+    unsigned short i = 0;
+    unsigned int off = 0;
+    while (i < count) {
+        char* base = entries + off;
+        if (sub_4a9820((Key*)(base + 4), key) || sub_4a9820(key, (Key*)0x93cb70)) {
             if (base[0] != 0) {
-                *(void**)out = *(void**)(base + 0xc);
-                *(unsigned short*)((char*)out + 4) = *(unsigned short*)(base + 0x10);
+                out->a = *(int*)(base + 0xc);
+                out->b = *(unsigned short*)(base + 0x10);
                 return;
             }
-            savedPtr = *(void**)(base + 0xc);
-            saved = *(unsigned short*)(base + 0x10);
+            saved.a = *(int*)(base + 0xc);
+            saved.b = *(unsigned short*)(base + 0x10);
         }
-        idx++;
         i++;
+        off += 0x850;
     }
-    *(void**)out = savedPtr;
-    *(unsigned short*)((char*)out + 4) = saved;
+    out->a = saved.a;
+    out->b = saved.b;
 }

@@ -1,14 +1,21 @@
-// from server: 35% by atomic.potato
-struct S
-{
+// from server: 36% by colin
+struct Vec3 {
+    float x, y, z;
+    Vec3();
+};
+
+struct Sub {
+    char pad[0xc];
+    void init();
+};
+
+struct S {
+    char pad0[0xc];
+    Sub sub;
     void f();
 };
 
-extern "C" void sub_4377b0(void *);
-extern "C" void sub_540560(void *);
-
-void S::f()
-{
-    sub_4377b0(this);
-    sub_540560((char *)this + 12);
+void S::f() {
+    Vec3 v;
+    sub.init();
 }

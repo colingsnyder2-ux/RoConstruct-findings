@@ -1,5 +1,7 @@
-// from server: 68% by colin
-// roc-lang: cpp
-// roc-cl: 50727
+// from server: 100% by colin
 // roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: ogre-1.7.0 OgreOptimisedUtilGeneral.cpp
+struct A { int a; }; struct B { int b; };
+struct Obj : A,B { void get(); void set(); void init(void*,void*,void (Obj::*)(),void (Obj::*)(),int,int); };
+extern Obj obj; extern int a,b,e;
+extern "C" void tail(void*);
+void func_00a29e30() { obj.init(&a,&b,&Obj::set,&Obj::get,31,0); tail(&e); }

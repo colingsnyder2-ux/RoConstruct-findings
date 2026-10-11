@@ -1,36 +1,33 @@
-// from server: 56% by tester
-struct CXTPPropertyGridInplaceEdit {
-    char pad0[0x20];
-    void* field20;
-    char pad24[0x5c - 0x24];
-    void* field5c;
-    char pad60[0x70 - 0x60];
-    char field70[1];
-    int method();
+// from server: 63% by colin
+struct CXTPPropertyGridInplaceEdit
+{
+    int OnKeyDown(unsigned int nChar, unsigned int nRepCnt, unsigned int nFlags);
 };
 
-extern "C" int __stdcall sub_7bc00a();
-extern "C" char __stdcall sub_802fd8(void*);
-extern "C" void __fastcall sub_774f00(CXTPPropertyGridInplaceEdit*);
-extern "C" void __fastcall sub_775510(CXTPPropertyGridInplaceEdit*);
+extern "C" int __stdcall sub_7BC00A();
+extern "C" int __stdcall sub_802FD8();
 
-int CXTPPropertyGridInplaceEdit::method()
+int CXTPPropertyGridInplaceEdit::OnKeyDown(unsigned int nChar, unsigned int nRepCnt, unsigned int nFlags)
 {
-    if (this->field5c != 0 && this->field20 != 0)
+    if (*(int*)((char*)this + 0x5c) != 0)
     {
-        if ((sub_7bc00a() & 0x800) == 0)
+        if (*(int*)((char*)this + 0x20) != 0)
         {
-            if (!sub_802fd8(this->field70))
+            int v = sub_7BC00A();
+            if ((v & 0x800) == 0)
             {
-                sub_774f00(this);
-                sub_775510(this);
-                return 1;
+                if (sub_802FD8() == 0)
+                {
+                    ((void (__thiscall*)(void*))0x774f00)((char*)this);
+                    ((void (__thiscall*)(void*))0x775510)((char*)this);
+                    return 1;
+                }
             }
         }
     }
-    void** vt = *(void***)this;
-    void (__stdcall *fn)(CXTPPropertyGridInplaceEdit*, int, int, int) =
-        (void (__stdcall *)(CXTPPropertyGridInplaceEdit*, int, int, int))vt[0x120 / 4];
-    fn(this, 0x300, 0, 0);
+
+    void** vtbl = *(void***)this;
+    void (__thiscall* fn)(void*, int, int, int) = (void (__thiscall*)(void*, int, int, int))vtbl[0x120 / 4];
+    fn((char*)this, 0x300, 0, 0);
     return 0;
 }

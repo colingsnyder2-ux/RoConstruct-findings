@@ -1,11 +1,14 @@
-// from server: 50% by atomic.potato
-extern "C" float* __cdecl sub_501AE0(float*);
-extern "C" float __cdecl sub_5631C0(float*);
+// from server: 74% by colin
+struct ContentProvider {
+    float getPriority();
+};
 
-float sub_00563A50(float value)
-{
-    float result;
-    result = *sub_501AE0(&result);
-    sub_5631C0(&result);
-    return result;
+extern "C" void __stdcall sub_501AE0(int* p);
+extern "C" float __stdcall sub_5631C0(float* p);
+
+float ContentProvider::getPriority() {
+    int buf[34];
+    sub_501AE0(buf);
+    float v = *(float*)buf;
+    return sub_5631C0(&v);
 }

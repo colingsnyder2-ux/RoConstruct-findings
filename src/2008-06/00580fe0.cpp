@@ -1,25 +1,41 @@
-// from server: 61% by atomic.potato
-typedef int (*Callback)();
+// from server: 78% by colin
+struct DataModel;
+
+struct Selection
+{
+    char pad[0x0c];
+    unsigned int begin;
+    int end;
+};
+
+struct DataModelHolder
+{
+    char pad[0x20];
+    DataModel* dataModel;
+};
+
+struct DataModel
+{
+    char pad[0x154];
+    Selection* selection;
+};
 
 struct DuplicateSelectionVerb
 {
-    int f();
+    bool isEnabled();
 };
 
-int DuplicateSelectionVerb::f()
+extern "C" DataModelHolder* __fastcall sub_4153B0(DataModelHolder* p);
+
+bool DuplicateSelectionVerb::isEnabled()
 {
-    int value;
-    int count;
-
-    value = *((int *)((char *)this + 0x20));
-    if (value)
-        value = ((Callback)value)();
+    DataModelHolder* holder = *(DataModelHolder**)((char*)this + 0x20);
+    DataModel* dm;
+    if (holder)
+        dm = sub_4153B0(holder)->dataModel;
     else
-        value = 0;
-
-    value = *((int *)((char *)value + 0x154));
-    count = *((int *)((char *)value + 0x10)) -
-            *((int *)((char *)value + 0x0c));
-
-    return (count >> 3) != 0;
+        dm = 0;
+    Selection* sel = dm->selection;
+    int count = (sel->end - sel->begin) >> 3;
+    return count > 0;
 }

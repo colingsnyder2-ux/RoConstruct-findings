@@ -1,11 +1,21 @@
-// from server: 49% by atomic.potato
-extern "C" void * __cdecl sub_501AE0(void *);
-extern "C" void __cdecl sub_5631C0(void *);
+// from server: 65% by colin
+struct ContentProvider {
+    int getCachedRemoteSourceLoadState();
+};
 
-int sub_563260(void *p)
+struct LinkedScriptLoadData {
+    int state;
+    int value;
+};
+
+extern "C" void __stdcall sub_501AE0(void *);
+extern "C" void __stdcall sub_5631C0(void *);
+
+int ContentProvider::getCachedRemoteSourceLoadState()
 {
-    void *v = sub_501AE0(&p);
-    int result = *((int *)v + 2);
-    sub_5631C0(&p);
+    LinkedScriptLoadData data;
+    sub_501AE0(&data);
+    int result = data.value;
+    sub_5631C0(&data);
     return result;
 }

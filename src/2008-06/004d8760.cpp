@@ -1,20 +1,25 @@
-// from server: 46% by atomic.potato
-extern bool func_0060a2f0();
-
-struct S
-{
-    S(void *, void *);
+// from server: 100% by colin
+struct S {
+    int f(int a, int b, int c);
 };
 
-S::S(void *a, void *b)
+extern "C" bool __cdecl func_0060a2f0(int* p);
+
+int S::f(int a, int b, int c)
 {
-    if (!func_0060a2f0())
-    {
-        void *p = (char *)this + 8;
-        if (p)
-        {
-            *(void **)p = a;
-            *((void **)p + 1) = b;
+    int local[2];
+    local[0] = a;
+    local[1] = b;
+    *(int*)this = 0;
+    if (!func_0060a2f0(local)) {
+        int* p = (int*)((char*)this + 8);
+        if (p) {
+            p[0] = local[0];
+            p[1] = local[1];
         }
+        *(int*)this = 0x826be8;
+        return (int)this;
     }
+    *(int*)this = 0;
+    return (int)this;
 }

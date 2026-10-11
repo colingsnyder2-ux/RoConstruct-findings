@@ -1,5 +1,16 @@
-// from server: 50% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs-net Streaming.cpp
+// from server: 53% by colin
+struct S {
+    int __cdecl f(int, int);
+};
+
+extern "C" int __cdecl sub_4A7000(int*, int, int);
+extern "C" int __cdecl sub_4A74C0(int*);
+
+int S::f(int a, int b)
+{
+    int local = 0xC2;
+    sub_4A7000(&local, a, b);
+    if (*(int*)(a + 4) != 0)
+        sub_4A74C0(&local);
+    return local;
+}
