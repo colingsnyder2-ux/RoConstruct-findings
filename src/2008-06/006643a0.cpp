@@ -1,5 +1,5 @@
-// from server: 35% by colin
-// roc-lang: cpp
+// from server: 100% by tester
+// roc-lang: c
 // roc-cl: 21022
-// roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: g3d-6.09 G3Dcpp/Color4.cpp
+// roc-flags: /O2 /GS- /MD
+// roc-lib: lua-5.1.4-dll llex.c

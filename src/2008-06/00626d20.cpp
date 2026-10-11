@@ -1,5 +1,5 @@
-// from server: 28% by colin
-// roc-lang: cpp
+// from server: 100% by tester
+// roc-lang: c
 // roc-cl: 21022
-// roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: boost-1.34.1 libs/signals/src/named_slot_map.cpp
+// roc-flags: /O2 /GS- /MD
+// roc-lib: lua-5.1.4-dll lstrlib.c

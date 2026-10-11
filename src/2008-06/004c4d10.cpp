@@ -21,27 +21,9 @@
 // 004c4d3f  5f                   pop edi
 // 004c4d40  5e                   pop esi
 // 004c4d41  c3                   ret 
-// copied from an identical function in another client (function ?f@ns_ROCX000024@@YAXPAX@Z)
+// library openrbx-raknet/RakPeer.cpp (function ??$generateStrongPseudoPrime@$$BY03I@big@@YAXAAY03I@Z)
 
-namespace ns_ROCX000024 {
-extern "C" int __cdecl sub_4ca340();
-extern "C" char __cdecl sub_4c0d50(void* p, int n);
-
-struct RakPeer {
-};
-
-void __cdecl f(void* p) {
-    int* arr = (int*)p;
-    for (;;) {
-        int i = 0;
-        do {
-            arr[i] = sub_4ca340();
-            i++;
-        } while (i < 4);
-        *(unsigned int*)((char*)p + 0xc) |= 0x80000000u;
-        *(unsigned int*)p |= 1u;
-        if (sub_4c0d50(p, 5))
-            break;
-    }
-}
-}
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /EHsc /MD
+// roc-lib: openrbx-raknet RakPeer.cpp
