@@ -1,19 +1,28 @@
-// from server: 47% by atomic.potato
-struct VWeldTool {
+// from server: 51% by tester
+struct DataModel;
+
+struct TToolVerb {
     char pad[0xc];
-    void* p;
-    void* f();
+    DataModel* dataModel;
+    void* construct();
 };
+
+struct Helper {
+    void init(void* arg);
+};
+
 extern "C" void* __cdecl operator_new(unsigned int);
-extern "C" void __fastcall sub_619de0(void*, void*);
-void* VWeldTool::f() {
-    void* m = operator_new(0x48);
-    void* r = 0;
-    if (m) {
-        sub_619de0(m, *(void**)((char*)p + 0x204));
-        *(void**)m = (void*)0x8392cc;
-        *(void**)((char*)m + 4) = (void*)0x8392b4;
-        r = m;
+
+void* TToolVerb::construct() {
+    void* mem = operator_new(0x48);
+    void* result = 0;
+    if (mem) {
+        void* p = *(void**)((char*)this + 0xc);
+        void* q = *(void**)((char*)p + 0x204);
+        ((Helper*)mem)->init(q);
+        *(void**)mem = (void*)0x8392cc;
+        *(void**)((char*)mem + 4) = (void*)0x8392b4;
+        result = mem;
     }
-    return r;
+    return result;
 }

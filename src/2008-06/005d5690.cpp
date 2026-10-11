@@ -1,15 +1,5 @@
-// from server: 29% by tester
-struct ShirtGraphic {
-    char pad[0x134];
-    void* field134;
-    void destructor();
-};
-
-extern "C" void __stdcall sub_802468(void*);
-extern "C" void __stdcall sub_8028c0(void*);
-extern "C" void __cdecl sub_5d3bc0(void*);
-
-void ShirtGraphic::destructor() {
-    sub_802468(&field134);
-    sub_5d3bc0(this);
-}
+// from server: 100% by tester
+// roc-cl: 21022
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+// roc-lang: cpp
+// roc-lib: openrbx-client App/v8datamodel/Decal.cpp

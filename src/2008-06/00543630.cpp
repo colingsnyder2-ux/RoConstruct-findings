@@ -1,6 +1,6 @@
-// from server: 38% by Cezant64gamejr
+// from server: 63% by tester
 struct S {
-    int f(int a);
+    int __cdecl f(int a);
 };
 
 int S::f(int a) {

@@ -1,11 +1,26 @@
-// from server: 80% by atomic.potato
-extern "C" void * __cdecl function_501AE0(void *);
-extern "C" void __cdecl function_5631C0(void *);
+// from server: 93% by tester
+struct ContentProvider {
+    int getCachedRemoteSourceLoadState();
+};
 
-int function_563230(void *p)
-{
-    char buffer[132];
-    int value = *((int *)((char *)function_501AE0(buffer) + 4));
-    function_5631C0(buffer);
-    return value;
+struct Helper {
+    int field4;
+};
+
+struct HelperMaker {
+    Helper* makeHelper();
+};
+
+struct HelperDestroyer {
+    void destroyHelper();
+};
+
+int ContentProvider::getCachedRemoteSourceLoadState() {
+    char buf[0x84];
+    HelperMaker* m = (HelperMaker*)buf;
+    Helper* h = m->makeHelper();
+    int result = h->field4;
+    HelperDestroyer* d = (HelperDestroyer*)buf;
+    d->destroyHelper();
+    return result;
 }

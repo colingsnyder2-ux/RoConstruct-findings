@@ -1,4 +1,3 @@
-// from server: 74% by colin
 // roc 2007-08 004955c0  unit: RBX::Network::VPlayers::?$RefPropDescriptor  size: 52 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 004955c0
 //
@@ -23,25 +22,9 @@
 // 004955ee  ffd0                 call eax
 // 004955f0  5e                   pop esi
 // 004955f1  c20800               ret 8
+// library openrbx-client/App\v8tree\Instance.cpp (function ?setRefValue@?$RefPropDescriptor@VInstance@RBX@@V12@@Reflection@RBX@@UBEXPAVDescribedBase@23@0@Z)
 
-struct RefPropDescriptor {
-    char pad[0x1c];
-    void* getset;
-    void setValue(void* object, void* value);
-};
-
-extern "C" void* __cdecl sub_48EB20(void*);
-
-void RefPropDescriptor::setValue(void* object, void* value)
-{
-    void* p;
-    if (object) {
-        p = sub_48EB20(object);
-    } else {
-        p = 0;
-    }
-    void* gs = this->getset;
-    void* vtbl = *(void**)gs;
-    void (*fn)(void*, void*, void*) = *(void (**)(void*, void*, void*))((char*)vtbl + 8);
-    fn(gs, p, value);
-}
+// roc-lang: cpp
+// roc-cl: 50727
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+// roc-lib: openrbx-client App/v8tree/Instance.cpp

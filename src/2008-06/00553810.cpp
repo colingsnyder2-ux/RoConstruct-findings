@@ -1,11 +1,11 @@
-// from server: 31% by atomic.potato
+// from server: 33% by tester
 struct S
 {
-    int f(int);
+    void f(int);
 };
 
-int S::f(int x)
+void S::f(int x)
 {
-    int (*p)(int) = *(int (**)(int))this;
-    return p(x);
+    void (*p)(int) = *(void (**)(int))this;
+    p(x);
 }

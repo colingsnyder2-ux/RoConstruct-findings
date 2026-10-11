@@ -1,4 +1,3 @@
-// from server: 49% by colin
 // roc 2007-08 0061f630  unit: RBX::ScoreHud  size: 89 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 0061f630
 //
@@ -40,32 +39,9 @@
 // 0061f682  895804               mov dword ptr [eax + 4], ebx
 // 0061f685  5b                   pop ebx
 // 0061f686  c21400               ret 0x14
+// library openrbx-client/App\v8xml\SerializerV2.cpp (function ?erase@?$vector@UIDREFItem@MergeBinder@RBX@@V?$allocator@UIDREFItem@MergeBinder@RBX@@@std@@@std@@QAE?AV?$_Vector_iterator@UIDREFItem@MergeBinder@RBX@@V?$allocator@UIDREFItem@MergeBinder@RBX@@@std@@@2@V32@0@Z)
 
-extern "C" void __stdcall invalid_parameter_noinfo();
-
-struct ScoreHud
-{
-    char pad0[8];
-    void* field8;
-    void assign(void* first, void* last, void* result);
-};
-
-void ScoreHud::assign(void* first, void* last, void* result)
-{
-    if (first != 0 && first != last)
-    {
-        invalid_parameter_noinfo();
-    }
-
-    if (last != result)
-    {
-        void* tmp = (void*)0x61e2e0;
-        void* newFirst = ((void* (__cdecl*)(void*, void*, void*))tmp)(field8, last, result);
-        void* tmp2 = (void*)0x61e700;
-        ((void (__cdecl*)(void*, void*, void*, void*))tmp2)(newFirst, field8, last, result);
-        field8 = newFirst;
-    }
-
-    *(void**)first = 0;
-    *(void**)((char*)first + 4) = last;
-}
+// roc-lang: cpp
+// roc-cl: 50727
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+// roc-lib: openrbx-client App/v8xml/SerializerV2.cpp

@@ -1,4 +1,3 @@
-// from server: 74% by colin
 // roc 2007-08 005dcf80  unit: RBX::VVelocityMotor::?$RefPropDescriptor  size: 52 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 005dcf80
 //
@@ -23,28 +22,9 @@
 // 005dcfae  ffd0                 call eax
 // 005dcfb0  5e                   pop esi
 // 005dcfb1  c20800               ret 8
+// library openrbx-client/App\v8tree\Instance.cpp (function ?setRefValue@?$RefPropDescriptor@VInstance@RBX@@V12@@Reflection@RBX@@UBEXPAVDescribedBase@23@0@Z)
 
-struct RefPropDescriptor
-{
-    void setValue(void* object, const void* value);
-};
-
-extern "C" void* __cdecl sub_5dcef0(void*);
-
-void RefPropDescriptor::setValue(void* object, const void* value)
-{
-    void* converted;
-    if (object)
-    {
-        converted = sub_5dcef0(object);
-    }
-    else
-    {
-        converted = 0;
-    }
-
-    void* iface = *(void**)((char*)this + 0x1c);
-    void** vtbl = *(void***)iface;
-    void (*fn)(void*, void*, const void*) = (void (*)(void*, void*, const void*))vtbl[2];
-    fn(iface, converted, value);
-}
+// roc-lang: cpp
+// roc-cl: 50727
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+// roc-lib: openrbx-client App/v8tree/Instance.cpp

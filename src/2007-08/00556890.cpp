@@ -1,4 +1,3 @@
-// from server: 33% by colin
 // roc 2007-08 00556890  unit: RBX::TextDisplay  size: 80 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 00556890
 //
@@ -22,17 +21,9 @@
 // 005568d5  64890d00000000       mov dword ptr fs:[0], ecx
 // 005568dc  83c410               add esp, 0x10
 // 005568df  c3                   ret 
+// library openrbx-client/App\v8datamodel\Decal.cpp (function ??1Decal@RBX@@UAE@XZ)
 
-struct TextDisplay {
-    char pad[0xfc];
-    void* field_fc;
-    void init();
-};
-
-extern "C" void __stdcall sub_77E6AC(void*);
-extern "C" void __stdcall sub_40CF60(void*);
-
-void TextDisplay::init() {
-    sub_77E6AC(&field_fc);
-    sub_40CF60(this);
-}
+// roc-lang: cpp
+// roc-cl: 50727
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+// roc-lib: openrbx-client App/v8datamodel/Decal.cpp

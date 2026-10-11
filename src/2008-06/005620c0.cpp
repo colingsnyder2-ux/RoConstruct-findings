@@ -1,17 +1,5 @@
-// from server: 89% by atomic.potato
-extern "C" void imported_destructor(void *);
-extern "C" void __cdecl operator_delete(void *);
-
-struct S
-{
-    int f(int);
-};
-
-int S::f(int value)
-{
-    char *p = reinterpret_cast<char *>(this) - 88;
-    imported_destructor(p);
-    if (value & 1)
-        operator_delete(p);
-    return reinterpret_cast<int>(p);
-}
+// from server: 100% by tester
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MD
+// roc-lib: ogre-1.4.9-dll OgreFileSystem.cpp

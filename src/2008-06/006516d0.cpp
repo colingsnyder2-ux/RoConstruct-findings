@@ -1,15 +1,5 @@
-// from server: 35% by tester
-struct ScoreHud {
-    char pad[0x1c];
-    void* field1c;
-    void destroy();
-};
-
-extern "C" void __stdcall sub_46B070(void*);
-extern "C" void __stdcall sub_802468(void*);
-
-void ScoreHud::destroy()
-{
-    sub_46B070(&field1c);
-    sub_802468(this);
-}
+// from server: 100% by tester
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MD
+// roc-lib: ogre-1.4.9-dll OgreCompiler2Pass.cpp

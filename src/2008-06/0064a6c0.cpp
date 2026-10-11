@@ -1,40 +1,20 @@
-// from server: 38% by colin
+// from server: 48% by tester
 
 
 
 
-struct Vec3 { float x, y, z; };
-
-struct Sub1 {
-    char pad[0x1c];
-    char* field1c;
+struct Vec3 {
+    float x;
+    float y;
+    float z;
 };
 
-struct Sub2 {
-    char pad[0xa0];
-    void* fielda0;
-};
-
-struct Sub3 {
-    char pad[0x1c];
-    Sub2* field1c;
-};
-
-struct Sub4 {
-    char pad[0x24];
-    Sub3* field24;
-};
-
-struct Inner {
-    char pad[8];
-    void method1(const Vec3* v);
-    void method2(const Vec3* v, float f);
-};
-
-struct Outer {
-    char pad[0x18];
-    Inner* field18;
-    char pad2[0x50 - 0x1c];
+struct Stage {
+    char pad0[0x18];
+    void* field18;
+    char pad1[0x24 - 0x1c];
+    void* field1c;
+    char pad2[0x50 - 0x20];
     float field50;
     char field54;
     char pad3[0x58 - 0x55];
@@ -42,25 +22,29 @@ struct Outer {
     char pad4[0x60 - 0x5c];
     int field60;
     int field64;
-
-    void method(Sub4* arg);
 };
 
-extern "C" void __stdcall sub_6144e0(void* out, void* in);
+extern "C" void __stdcall sub_6144E0(void* out, void* arg);
+extern "C" void __stdcall sub_668A20(void* self, void* out, float val);
+extern "C" void __stdcall sub_668AF0(void* self, void* out, float val, float val2);
+
 extern float g_827488;
 
-void Outer::method(Sub4* arg) {
+void Stage_0064a6c0(Stage* self, void* arg)
+{
     Vec3 v;
-    sub_6144e0(&v, arg->field24->field1c->fielda0);
-    if (field54) {
-        int ecx = field64 + field58;
-        int (*fn)(int) = (int (*)(int))field60;
-        float r = (float)fn(ecx);
-        field50 = r;
-        field54 = 0;
+    sub_6144E0(&v, *(void**)(*(char**)((char*)self->field1c + 0x1c) + 0xa0));
+
+    if (self->field54) {
+        int ecx = self->field64 + self->field58;
+        int (*fn)(int) = (int (*)(int))self->field60;
+        fn(ecx);
+        self->field50 = *(float*)&ecx;
+        self->field54 = 0;
     }
-    float f = field50;
-    Inner* inner = field18;
-    inner->method1(&v);
-    inner->method2(&v, g_827488);
+
+    float f = self->field50;
+    void* p = (char*)self->field18 + 8;
+    sub_668A20(p, &v, f);
+    sub_668AF0(p, &v, g_827488, f);
 }

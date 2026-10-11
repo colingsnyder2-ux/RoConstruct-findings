@@ -1,5 +1,5 @@
-// from server: 97% by colin
+// from server: 100% by tester
 // roc-lang: cpp
 // roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs-raknet PacketLogger.cpp
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: rbxgs-raknet-dll PacketLogger.cpp

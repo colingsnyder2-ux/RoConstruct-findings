@@ -1,5 +1,12 @@
-// from server: 77% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs tool/GroupDragTool.cpp
+// from server: 100% by tester
+struct S {
+    char pad[0x1c];
+    bool field_1c;
+    void f(const void*);
+};
+
+extern "C" void* __stdcall sub_616080(const void*, const void*);
+
+void S::f(const void* a) {
+    field_1c = sub_616080(a, (const void*)0x97bee0) != 0;
+}

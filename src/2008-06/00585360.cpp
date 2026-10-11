@@ -1,5 +1,16 @@
-// from server: 78% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs v8datamodel/FaceInstance.cpp
+// from server: 100% by tester
+struct RefPropDescriptor {
+    void* getset;
+    void* getValue(void* object);
+};
+
+void* RefPropDescriptor::getValue(void* object) {
+    void* gs = *(void**)((char*)this + 0x1c);
+    void** vtbl = *(void***)gs;
+    void* fn = vtbl[2];
+    void* result = ((void* (__thiscall*)(void*, void*))fn)(gs, object);
+    if (result) {
+        return (char*)result + 0x14;
+    }
+    return 0;
+}

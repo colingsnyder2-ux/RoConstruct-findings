@@ -1,38 +1,31 @@
-// from server: 78% by atomic.potato
-struct VInstance;
+// from server: 84% by tester
+struct VInstance {
+    void constructSignalDesc(int);
+    char pad[0xc];
+    int field_c;
+    char pad2[0x1c8 - 0x10];
+};
 
 struct SignalDesc {
     void* vtable;
     char pad[8];
-    void* field_c;
-    void construct(void*);
-    SignalDesc(void*);
+    int field_c;
+    void* init(int* owner);
 };
 
-extern "C" void* __stdcall sub_802458;
-extern "C" void __stdcall sub_5833e0(void*, void*);
+extern "C" void* __stdcall sub_802458();
+extern "C" void __stdcall sub_830684();
+extern "C" void __stdcall sub_830670();
 
-struct String {
-    char buf[28];
-    String(const char*);
-};
+void* SignalDesc::init(int* owner)
+{
+    int* p = owner ? (int*)((char*)owner + 0x1c8) : 0;
+    char buf[0x1c];
+    sub_802458();
+    sub_830684();
+    ((VInstance*)this)->constructSignalDesc((int)p);
+    this->field_c = (int)owner;
+    this->vtable = (void*)0x830670;
 
-void SignalDesc::construct(void* a) {
-    String s("EngineStats");
-    sub_5833e0(this, a);
-    field_c = a;
-    vtable = (void*)0x830670;
-}
-
-SignalDesc::SignalDesc(void* a) {
-    void* p;
-    if (a) {
-        p = (char*)a + 0x1c8;
-    } else {
-        p = 0;
-    }
-    String s("EngineStats");
-    sub_5833e0(this, p);
-    field_c = a;
-    vtable = (void*)0x830670;
+    return this;
 }

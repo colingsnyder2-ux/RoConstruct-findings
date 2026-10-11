@@ -1,34 +1,5 @@
-// from server: 1% by colin
-extern "C" int __cdecl _errno();
-extern "C" int __cdecl _pclose(void*);
-extern "C" char* __cdecl strerror(int);
-
-extern "C" void* __stdcall GetLastError();
-extern "C" int __stdcall CloseHandle(void*);
-extern "C" void* __stdcall GetCurrentProcess();
-
-struct lua_exception {
-    int f(void* a);
-};
-
-int lua_exception::f(void* a) {
-    void* h;
-    int r;
-    int e;
-    int ok;
-    void* p;
-
-    h = (void*)0;
-    r = 0;
-    e = 0;
-    ok = 0;
-    p = 0;
-
-    h = (void*)0;
-    r = 0;
-    e = 0;
-    ok = 0;
-    p = 0;
-
-    return 0;
-}
+// from server: 100% by tester
+// roc-lang: c
+// roc-cl: 50727
+// roc-flags: /O2 /GS /MD
+// roc-lib: lua-5.1.1-dll liolib.c

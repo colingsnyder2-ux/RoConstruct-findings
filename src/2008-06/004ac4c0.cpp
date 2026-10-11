@@ -1,29 +1,30 @@
-// from server: 43% by colin
-// roc 2008-06 004ac4c0  unit: RBX::Reflection::VGenericSlotWrapper::?$sp_counted_impl_p  size: 110 bytes
-// Make this compile to the exact bytes below, then: roc check 2008-06 004ac4c0
-
-extern "C" void* __cdecl operator_new(unsigned int size);
+// from server: 55% by tester
+struct RefCounted
+{
+    void* vtable;
+    int refcount;
+    int weakcount;
+    void* arg;
+};
 
 struct GenericSlotWrapper
 {
-    void* ptr;
-    GenericSlotWrapper* construct(void* arg);
+    void* slot;
+    GenericSlotWrapper(void* arg1, void* arg2);
 };
 
-GenericSlotWrapper* GenericSlotWrapper::construct(void* arg)
+extern "C" void* __cdecl operator_new(unsigned int size);
+
+GenericSlotWrapper::GenericSlotWrapper(void* arg1, void* arg2)
 {
-    void* mem = operator_new(0x14);
-    if (mem)
+    slot = 0;
+    RefCounted* p = (RefCounted*)operator_new(0x14);
+    if (p)
     {
-        *(int*)((char*)mem + 4) = 1;
-        *(int*)((char*)mem + 8) = 1;
-        *(void**)mem = (void*)0x824794;
-        *(void**)((char*)mem + 0xc) = arg;
+        p->refcount = 1;
+        p->weakcount = 1;
+        p->vtable = (void*)0x824794;
+        p->arg = arg1;
     }
-    else
-    {
-        mem = 0;
-    }
-    this->ptr = mem;
-    return this;
+    slot = p;
 }

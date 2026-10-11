@@ -1,26 +1,26 @@
-// from server: 46% by atomic.potato
-extern "C" void __cdecl invalid_parameter_noinfo();
-extern "C" int string_myptr(void *);
-extern "C" void (__cdecl *g_invalid_parameter_noinfo)();
-extern "C" int (*g_string_myptr)(void *);
-
-struct S
-{
-    int f();
-    int *p;
-    int n;
+// from server: 71% by tester
+struct LuaWriter {
+    int* ptr;
+    unsigned int pos;
+    LuaWriter& put();
 };
 
-int S::f()
-{
-    int *q = p;
-    if (*q != -4)
-    {
-        if (*q == 0)
-            g_invalid_parameter_noinfo();
-        if (n >= g_string_myptr((void *)*q) + *(q + 5))
-            g_invalid_parameter_noinfo();
+extern "C" void __stdcall sub_802890();
+extern "C" int __stdcall sub_802358();
+
+LuaWriter& LuaWriter::put() {
+    int* p = ptr;
+    if (p != (int*)-4) {
+        if (p == 0) {
+            sub_802890();
+        }
+        int* q = ptr;
+        int r = sub_802358();
+        r += *(int*)((char*)q + 0x14);
+        if (pos >= (unsigned int)r) {
+            sub_802890();
+        }
     }
-    ++n;
-    return (int)this;
+    pos++;
+    return *this;
 }

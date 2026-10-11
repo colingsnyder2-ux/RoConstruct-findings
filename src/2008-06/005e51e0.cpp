@@ -1,24 +1,23 @@
-// from server: 90% by atomic.potato
-extern "C" void __stdcall sub_5e50f0(void*);
-
+// from server: 100% by tester
 struct SimJob {
-    void* field00;
-    int field04;
-    int field08;
-    int field0c;
+    SimJob* construct(int);
+    int field0;
+    int field4;
+    int field8;
+    int fieldC;
     int field10;
     int field14;
     int field18;
-    int field1c;
+    int field1C;
     int field20;
     int field24;
-    SimJob* f(int value);
 };
 
-SimJob* SimJob::f(int value)
-{
-    sub_5e50f0(this);
-    field24 = value;
-    field00 = (void*)0x83f73c;
+extern "C" void __fastcall SimJob_base_ctor(SimJob* self);
+
+SimJob* SimJob::construct(int value) {
+    SimJob_base_ctor(this);
+    this->field24 = value;
+    *(int*)this = 0x83f73c;
     return this;
 }

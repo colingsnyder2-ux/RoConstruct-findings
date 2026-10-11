@@ -1,5 +1,20 @@
-// from server: 52% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs tool/Dragger.cpp
+// from server: 71% by tester
+struct BlockBlockContact {
+    bool computeIsColliding(float overlapIgnored);
+    bool getBestPlaneEdge(float overlapIgnored, bool& planeContact);
+    bool computeIsCollidingHelper(int a, int b);
+};
+
+bool BlockBlockContact::computeIsColliding(float overlapIgnored) {
+    int a = *(int*)((char*)this + 0x10);
+    int b = *(int*)((char*)this + 0xc);
+    a += 0x80;
+    b += 0x80;
+    if (computeIsCollidingHelper(b, a)) {
+        bool planeContact;
+        if (getBestPlaneEdge(overlapIgnored, planeContact)) {
+            return true;
+        }
+    }
+    return false;
+}

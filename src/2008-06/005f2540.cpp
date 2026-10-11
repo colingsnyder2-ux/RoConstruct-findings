@@ -1,26 +1,5 @@
-// from server: 39% by colin
-struct Alloc {
-    char* allocate(unsigned int, const void*);
-    void deallocate(char*, unsigned int);
-};
-
-extern Alloc* g_alloc;
-
-struct S {
-    char* field0;
-    char* field4;
-    void assign(char*);
-};
-
-void S::assign(char* p) {
-    if (field4 != p) {
-        char* tmp = g_alloc->allocate(1, 0);
-        char* old = field4;
-        field4 = p;
-        char* old0 = field0;
-        field0 = tmp;
-        if (old0 != 0) {
-            g_alloc->deallocate(old0, (unsigned int)old);
-        }
-    }
-}
+// from server: 100% by tester
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: boost-1.35.0-dll libs/iostreams/src/mapped_file.cpp

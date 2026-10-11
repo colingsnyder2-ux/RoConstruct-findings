@@ -1,16 +1,20 @@
-// from server: 50% by colin
-struct EquationDisplay {
-    char pad[0x188];
-    void* field188;
-    EquationDisplay(const EquationDisplay& other, int a, int b);
+// from server: 51% by tester
+struct std_string {
+    void construct(const std_string&);
 };
 
-extern "C" void __stdcall sub_5744a0(void*, const void*);
-extern "C" void __stdcall sub_80245c(void*);
+extern "C" void __stdcall sub_5744a0(void*, const std_string*);
+extern "C" void __stdcall sub_80245c();
 
-EquationDisplay::EquationDisplay(const EquationDisplay& other, int a, int b)
+struct EquationDisplay {
+    char pad[0x188];
+    std_string equation;
+    EquationDisplay(const std_string& title, const std_string& equation);
+};
+
+EquationDisplay::EquationDisplay(const std_string& title, const std_string& equation)
 {
-    sub_5744a0(&field188, &other.field188);
+    sub_5744a0(this, &title);
     *(void**)this = (void*)0x84becc;
     *(void**)((char*)this + 0x10) = (void*)0x84bebc;
     *(void**)((char*)this + 0x14) = (void*)0x84beb4;
@@ -22,5 +26,6 @@ EquationDisplay::EquationDisplay(const EquationDisplay& other, int a, int b)
     *(void**)((char*)this + 0xa4) = (void*)0x84be5c;
     *(void**)((char*)this + 0xc4) = (void*)0x84be4c;
     *(void**)((char*)this + 0x130) = (void*)0x84be44;
-    sub_80245c((void*)0x80245c);
+    sub_80245c();
+    this->equation.construct(equation);
 }

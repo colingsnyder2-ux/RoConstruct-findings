@@ -1,12 +1,10 @@
-// from server: 44% by atomic.potato
-struct Mesh
-{
-	int f(void *, void *);
+// from server: 52% by tester
+struct Mesh {
+    bool compare(const void* a, const void* b) const;
 };
 
-int Mesh::f(void *a, void *b)
-{
-	unsigned int x = *(unsigned int *)a;
-	unsigned int y = *(unsigned int *)b;
-	return x < y ? 0 : 1;
+bool Mesh::compare(const void* a, const void* b) const {
+    unsigned int x = *(const unsigned int*)a;
+    unsigned int y = *(const unsigned int*)b;
+    return x < y;
 }

@@ -1,10 +1,10 @@
-// from server: 89% by atomic.potato
+// from server: 92% by tester
 struct S
 {
-    int f();
+    bool f();
 };
 
-int S::f()
+bool S::f()
 {
     struct V
     {

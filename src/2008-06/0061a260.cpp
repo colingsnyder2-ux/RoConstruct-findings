@@ -1,5 +1,5 @@
-// from server: 41% by colin
-// roc-lang: cpp
+// from server: 100% by tester
 // roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs util/Name.cpp
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lang: cpp
+// roc-lib: boost-1.34.1 libs/thread/src/tss_hooks.cpp

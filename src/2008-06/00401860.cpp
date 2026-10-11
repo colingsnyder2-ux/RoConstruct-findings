@@ -1,5 +1,5 @@
-// from server: 55% by colin
-// roc-lang: cpp
-// roc-cl: 30729
+// from server: 100% by tester
+// roc-cl: 50727
 // roc-flags: /O2 /GS- /MD
-// roc-lib: mfc-9.0 atlmfc/src/mfc/winctrl3.cpp
+// roc-lang: cpp
+// roc-lib: atl-8.0 atl.cpp

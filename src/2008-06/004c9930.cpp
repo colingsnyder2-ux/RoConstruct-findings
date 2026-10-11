@@ -1,43 +1,39 @@
-// from server: 36% by colin
-// roc 2008-06 004c9930  unit: RBX::Network::InterpolatingPhysicsReceiver  size: 118 bytes
-
+// from server: 41% by tester
 struct Node {
-    unsigned int color;
-    Node* parent;
-    Node* left;
-    Node* right;
+    int flags;
+    Node* prev;
+    Node* next;
 };
 
-struct Tree {
-    Node* header;
-    unsigned int size;
+struct List {
+    Node* head;
+    Node* tail;
+    Node* sentinel;
 };
 
-extern "C" void __cdecl sub_4c6710(Node** out, Node* hint);
-extern "C" void __cdecl sub_4c6870(Node* header, Node* node);
+extern "C" void __cdecl sub_4c6710(Node** out, Node* n);
+extern "C" void __cdecl sub_4c6870(Node* n, Node* list);
 
-void __cdecl insert_node(Tree* tree, Node* hint, Node* node)
+void __cdecl sub_4c9930(List* list, Node* n, Node* other)
 {
-    Node* header = tree->header;
-    if (header->parent != 0 && header->parent != hint) {
-        Node* pos;
-        sub_4c6710(&pos, hint);
-        pos->parent = node;
-        if (pos == header->right) {
-            header->right = node;
-        }
+    Node* cur = n->next;
+    if (cur != 0 && cur != other) {
+        Node* tmp;
+        sub_4c6710(&tmp, cur);
+        cur->next = tmp;
+        if (cur == other->next)
+            other->next = tmp;
     } else {
-        header->parent = node;
-        if (header == hint) {
-            header->right = node;
-            header->left = node;
-        } else if (header->left == hint) {
-            header->left = node;
+        n->next = other;
+        if (n == other) {
+            other->flags = (other->flags & 1) | (int)other;
+            other->next = other;
+        } else if (n == other->prev) {
+            other->prev = other;
         }
     }
-    node->color = (node->color & 1) | (unsigned int)header;
-    node->parent = 0;
-    node->left = 0;
-    node->right = 0;
-    sub_4c6870(header, node);
+    n->flags = (n->flags & 1) | (int)list;
+    n->prev = 0;
+    n->next = 0;
+    sub_4c6870(n, other);
 }

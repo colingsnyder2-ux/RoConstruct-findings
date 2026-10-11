@@ -1,5 +1,12 @@
-// from server: 56% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: openrbx-client App/script/LuaInstanceBridge.cpp
+// from server: 68% by tester
+struct Invoker {
+    int (*fn)(void*, int);
+    void* obj;
+    int a;
+    int b;
+};
+
+int call_invoker(Invoker* inv)
+{
+    return inv->fn(inv->obj, inv->a + inv->b);
+}

@@ -1,5 +1,10 @@
-// from server: 70% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs util/RunStateOwner.cpp
+// from server: 93% by tester
+struct S {
+    void f(double* p);
+};
+
+extern "C" void __cdecl helper(double, const char*, double);
+
+void S::f(double* p) {
+    helper(*p, "%.3g", *p);
+}

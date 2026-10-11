@@ -1,4 +1,4 @@
-// from server: 20% by atomic.potato
+// from server: 22% by tester
 struct ContentProvider {
     void method(int, int, int, int, int, int, int, int, int);
 };
@@ -7,8 +7,8 @@ extern "C" void __stdcall sub_55f3b0(void*, void*, void*, int, int);
 extern "C" void __stdcall sub_5618e0(void*);
 extern "C" void __stdcall sub_562530(void*, int);
 
-extern unsigned char byte_9740ec;
-extern unsigned char byte_9740ed;
+extern char byte_9740ec;
+extern char byte_9740ed;
 
 void ContentProvider::method(int a1, int a2, int a3, int a4, int a5, int a6, int a7, int a8, int a9)
 {

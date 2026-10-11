@@ -1,13 +1,5 @@
-// from server: 25% by atomic.potato
-extern "C" void __cdecl sub_42AFC0();
-
-struct StandardOut
-{
-    void f();
-};
-
-void StandardOut::f()
-{
-    volatile int x = 0;
-    sub_42AFC0();
-}
+// from server: 100% by tester
+// roc-cl: 21022
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+// roc-lang: cpp
+// roc-lib: rbxgs util/standardout.cpp

@@ -1,5 +1,19 @@
-// from server: 47% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs v8world/Primitive.cpp
+// from server: 100% by tester
+struct Geometry {
+    char pad0[0x38];
+    int* field38;
+    int field3c;
+    int f();
+};
+
+int __stdcall helper(int);
+
+int Geometry::f() {
+    int value;
+    if (field3c > 0) {
+        value = *field38;
+    } else {
+        value = 0;
+    }
+    return helper(value);
+}

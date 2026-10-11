@@ -1,5 +1,5 @@
-// from server: 93% by colin
+// from server: 100% by tester
 // roc-lang: c
-// roc-cl: 21022
-// roc-flags: /O2 /GS- /MD
-// roc-lib: lua-5.1.1 lmathlib.c
+// roc-cl: 50727
+// roc-flags: /O2 /GS /MD
+// roc-lib: lua-5.1-dll lmathlib.c

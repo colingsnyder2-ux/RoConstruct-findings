@@ -1,4 +1,3 @@
-// from server: 29% by colin
 // roc 2007-08 0055d2b0  unit: RBX::DataModel  size: 60 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 0055d2b0
 //
@@ -23,21 +22,9 @@
 // 0055d2e3  3b5108               cmp edx, dword ptr [ecx + 8]
 // 0055d2e6  0f94c0               sete al
 // 0055d2e9  c20400               ret 4
+// library openrbx-client/App\v8xml\XmlElement.cpp (function ?isValueEqual@XmlNameValuePair@@QBE_NPBVName@RBX@@@Z)
 
-struct DataModel {
-    int field4;
-    int field8;
-    bool compare(const DataModel& other) const;
-};
-
-bool DataModel::compare(const DataModel& other) const {
-    int v = field4 - 1;
-    if (v == 0) {
-        return other.field8 == field8;
-    }
-    v = v - 1;
-    if (v == 0) {
-        return field8 == other.field8;
-    }
-    return false;
-}
+// roc-lang: cpp
+// roc-cl: 50727
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+// roc-lib: openrbx-client App/v8xml/XmlElement.cpp

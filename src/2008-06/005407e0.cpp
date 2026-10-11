@@ -1,11 +1,11 @@
-// from server: 25% by atomic.potato
+// from server: 32% by tester
 struct S
 {
-    int f();
     int value;
+    char f();
 };
 
-int S::f()
+char S::f()
 {
     return value != 0;
 }

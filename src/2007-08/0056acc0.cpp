@@ -1,4 +1,3 @@
-// from server: 66% by colin
 // roc 2007-08 0056acc0  unit: ArchiveBinder  size: 88 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 0056acc0
 //
@@ -34,39 +33,9 @@
 // 0056ad13  5e                   pop esi
 // 0056ad14  5b                   pop ebx
 // 0056ad15  c21400               ret 0x14
+// library openrbx-client/App\v8xml\SerializerV2.cpp (function ??0_Node@?$_Tree_nod@V?$_Tmap_traits@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@VInstanceHandle@RBX@@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@VInstanceHandle@RBX@@@std@@@2@$0A@@std@@@std@@QAE@PAU012@00ABU?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@VInstanceHandle@RBX@@@2@D@Z)
 
-extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
-#pragma intrinsic(_InterlockedExchangeAdd)
-
-struct ArchiveBinder {
-    int field0;
-    int field4;
-    int field8;
-    char padC[0x0C];
-    int field18;
-    int field1C;
-    int field20;
-    char pad24[0x0C];
-    char field30;
-    char field31;
-    ArchiveBinder* construct(int a, int b, int c, int d, char e);
-};
-
-extern "C" void __stdcall sub_77e69c(void*, void*);
-
-ArchiveBinder* ArchiveBinder::construct(int a, int b, int c, int d, char e)
-{
-    this->field0 = a;
-    this->field4 = c;
-    this->field8 = b;
-    sub_77e69c(&this->padC[0], (void*)d);
-    this->field1C = *(int*)(d + 0x1C);
-    int v = *(int*)(d + 0x20);
-    this->field20 = v;
-    if (v != 0) {
-        _InterlockedExchangeAdd((volatile long*)(v + 4), 1);
-    }
-    this->field30 = e;
-    this->field31 = 0;
-    return this;
-}
+// roc-lang: cpp
+// roc-cl: 50727
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+// roc-lib: openrbx-client App/v8xml/SerializerV2.cpp

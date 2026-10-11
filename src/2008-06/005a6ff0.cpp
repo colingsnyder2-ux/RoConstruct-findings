@@ -1,5 +1,5 @@
-// from server: 61% by colin
+// from server: 100% by tester
 // roc-lang: cpp
 // roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: openrbx-client App/script/ScriptContext.cpp
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: boost-1.34.1-dll libs/thread/src/tss.cpp

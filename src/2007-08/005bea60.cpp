@@ -1,5 +1,5 @@
-// from server: 30% by tester
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: boost-1.34.1 libs/filesystem/src/operations.cpp
+// from server: 100% by tester
+// roc-lang: c
+// roc-cl: 50727
+// roc-flags: /O2 /GS- /MD
+// roc-lib: lua-5.1-dll lauxlib.c

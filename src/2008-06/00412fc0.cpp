@@ -1,5 +1,5 @@
-// from server: 41% by colin
-// roc-lang: cpp
+// from server: 100% by tester
 // roc-cl: 30729
-// roc-flags: /O1 /GS- /MD
-// roc-lib: mfc-9.0 atlmfc/src/mfc/afxbasetabctrl.cpp
+// roc-flags: /O2 /GS- /MD
+// roc-lang: cpp
+// roc-lib: xtp-15.2.1-shared-mfc Source/Common/XTPImageManager.cpp

@@ -1,20 +1,5 @@
-// from server: 29% by colin
-
-
-
-
-struct Inner {
-    void method();
-};
-
-struct BoundPropGetSet {
-    void construct();
-};
-
-extern "C" void* __cdecl sub_6A0926();
-
-void BoundPropGetSet::construct()
-{
-    Inner* p = (Inner*)sub_6A0926();
-    p->method();
-}
+// from server: 100% by tester
+// roc-cl: 30729
+// roc-flags: /O2 /GS- /MD /EHsc
+// roc-lang: cpp
+// roc-lib: xtp-11.2.2-shared-mfc Source/ReportControl/XTPReportControl.cpp

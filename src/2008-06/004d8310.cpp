@@ -1,13 +1,14 @@
-// from server: 61% by atomic.potato
-extern "C" void sub_004d7890(void *, int, int);
-
-struct SimpleSceneManager_004d8310
-{
-    void f();
+// from server: 74% by tester
+struct SceneManager {
+    char pad0[4];
+    void* field4;
+    void setSkyEnabled(bool value);
 };
 
-void SimpleSceneManager_004d8310::f()
-{
-    void *p = *(void **)((char *)this + 4);
-    sub_004d7890((char *)p + 8, 0, 1);
+extern "C" void __stdcall sub_4D7890(void*, int, int);
+
+void SceneManager::setSkyEnabled(bool value) {
+    void* p = field4;
+    char* q = (char*)p + 8;
+    sub_4D7890(q, 0, 1);
 }

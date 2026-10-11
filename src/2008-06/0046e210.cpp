@@ -1,16 +1,14 @@
-// from server: 28% by colin
+// from server: 42% by tester
 struct S {
-    char pad0[8];
-    char field8[0x1c];
-    char field24[0x1c];
+    char pad[0x40];
 };
 
-extern "C" void __stdcall sub_802468();
+extern "C" void __stdcall sub_802468(void*);
 
-void destroy_range(S* first, S* last)
-{
+void f(S* first, S* last) {
     while (first != last) {
-        sub_802468();
+        sub_802468((char*)first + 0x24);
+        sub_802468((char*)first + 0x08);
         first = (S*)((char*)first + 0x40);
     }
 }

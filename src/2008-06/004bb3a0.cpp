@@ -1,5 +1,5 @@
-// from server: 22% by colin
+// from server: 100% by tester
+// roc-cl: 21022
+// roc-flags: /O2 /EHsc /MD
 // roc-lang: cpp
-// roc-cl: 30729
-// roc-flags: /O2 /GS- /MD
-// roc-lib: xtp-11.2.2 Source/Controls/XTOutBarCtrl.cpp
+// roc-lib: openrbx-raknet RakPeer.cpp

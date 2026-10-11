@@ -1,52 +1,48 @@
-// from server: 65% by colin
+// from server: 76% by tester
 struct Selection;
 
-struct EditSelectionVerb {
-    char pad[0x14];
-    int getSelection();
+struct DataModel
+{
+    char pad[0x154];
+    void* selection;
 };
 
-struct UngroupSelectionVerb {
-    char pad0[0x14];
-    EditSelectionVerb verb;
-    char pad1[0x8];
-    void* field20;
+struct EditSelectionVerb
+{
+    char pad[0x14];
+    DataModel* getDataModel(int);
+};
 
+struct UngroupSelectionVerb
+{
+    char pad[0x14];
+    DataModel* getDataModel(int);
+    char pad2[0x8];
+    void* something;
     bool isEnabled() const;
 };
 
-struct Sel {
-    char pad[0xc];
-    void* begin;
-    void* end;
-};
-
-struct SelHolder {
-    char pad[0x154];
-    Sel* sel;
-};
-
-extern "C" int __stdcall sub_581cc0(void*, int);
-extern "C" void* __stdcall sub_5806c0(void*);
-extern "C" int __stdcall sub_57edb0(void*, const char*);
-
-extern const char str_57e110[];
+extern "C" void* __stdcall sub_5806C0(void*);
+extern "C" int __stdcall sub_57EDB0(void*, const char*);
 
 bool UngroupSelectionVerb::isEnabled() const
 {
-    SelHolder* h = (SelHolder*)sub_581cc0((void*)&this->verb, 1);
-    Sel* s = h->sel;
-    int count = (int)((char*)s->end - (char*)s->begin) >> 3;
+    DataModel* dm = ((UngroupSelectionVerb*)this)->getDataModel(1);
+    void* sel = dm->selection;
+    int count = (*(int*)((char*)sel + 0x10) - *(int*)((char*)sel + 0xc)) >> 3;
     if (count <= 0)
         return false;
 
-    void* p = this->field20;
-    int r;
-    if (p != 0) {
-        void* q = sub_5806c0(p);
-        r = sub_57edb0(q, str_57e110);
-    } else {
-        r = sub_57edb0(0, str_57e110);
+    void* p = *(void**)((char*)this + 0x20);
+    if (p)
+    {
+        void* r = sub_5806C0(p);
+        int v = sub_57EDB0(r, (const char*)0x57e110);
+        return v != 0;
     }
-    return r != 0;
+    else
+    {
+        int v = sub_57EDB0(0, (const char*)0x57e110);
+        return v != 0;
+    }
 }

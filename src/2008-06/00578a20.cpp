@@ -1,4 +1,4 @@
-// from server: 14% by atomic.potato
+// from server: 34% by tester
 struct S {
     void* field0;
     char pad[4];
@@ -13,25 +13,21 @@ extern "C" void __stdcall func_00802468(void*);
 
 void* S::method(void* a, void* b, void* c, void* d, void* e, void* f, void* g, void* h, void* i)
 {
-    char local[8];
     void* tmp;
-    void* result;
     void* obj;
 
     this->field0 = 0;
     if (func_0060a2f0(&tmp)) {
         this->field0 = 0;
-        result = this;
-    } else {
-        obj = func_006a0920(0x20);
-        if (obj) {
-            *(void**)obj = tmp;
-            func_0080245c((char*)obj + 4, &tmp);
-        }
-        this->field8 = obj;
-        this->field0 = (void*)0x830038;
-        result = this;
+        return this;
     }
+    obj = func_006a0920(0x20);
+    if (obj) {
+        *(void**)obj = tmp;
+        func_0080245c((char*)obj + 4, &tmp);
+    }
+    this->field8 = obj;
+    this->field0 = (void*)0x830038;
     func_00802468(&tmp);
-    return result;
+    return this;
 }

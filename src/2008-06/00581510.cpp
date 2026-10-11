@@ -1,4 +1,4 @@
-// from server: 58% by atomic.potato
+// from server: 60% by tester
 struct Inner {
     void* vt;
     void* f4;
@@ -19,11 +19,11 @@ struct Target {
     void run();
 };
 
-extern "C" void* __stdcall sub_5805D0(void*);
-extern "C" void* __stdcall sub_57EA40(void*);
-extern "C" void __stdcall sub_5CDDD0(void*, int);
-extern "C" void __stdcall sub_5CDE10(void*, void*);
-extern "C" void __stdcall sub_58C5C0(void*, void*);
+extern "C" void* __fastcall sub_5805D0(void*);
+extern "C" void* __fastcall sub_57EA40(void*);
+extern "C" void __fastcall sub_5CDDD0(void*, int);
+extern "C" void __fastcall sub_5CDE10(void*, void*);
+extern "C" void __fastcall sub_58C5C0(void*, void*);
 
 void Target::run() {
     void* v = p20;
@@ -43,7 +43,7 @@ void Target::run() {
     Inner* in2 = pC->p288;
     void* (*fn2)(void*, void*) = (void* (*)(void*, void*))in2->f4;
     void* b = fn2(in2, edi);
-    sub_5CDE10(b, 0);
+    sub_5CDE10(b, edi);
 
     char* s = (char*)p4 + 4;
     void* arg;

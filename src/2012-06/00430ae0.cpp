@@ -1,5 +1,5 @@
-// from server: 64% by colin
+// from server: 100% by tester
 // roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: rbx2016-g3d BinaryInput.cpp
+// roc-cl: 30729
+// roc-flags: /O2 /GF /Gy /GS- /MD
+// roc-lib: atl-9.0-dll regobj.cpp
