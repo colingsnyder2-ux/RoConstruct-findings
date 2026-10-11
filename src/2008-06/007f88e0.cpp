@@ -1,5 +1,4 @@
-// from server: 75% by colin
-// roc-lang: cpp
-// roc-cl: 21022
+// from server: 83% by colin
 // roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: boost-1.34.1 libs/thread/src/tss_hooks.cpp
+struct Obj{Obj* f4();}; extern "C" void reg_fn(void*,void*); extern "C" void* make_fn(); extern "C" Obj* init_fn(void*); extern "C" void final_fn(int); extern void* type_tag; extern int g_value,final_arg; extern void fn_a(),fn_b();
+void func_007f88e0(){void* local; reg_fn(&fn_a,&fn_b); local=make_fn(); Obj* o=init_fn(&local)->f4(); *(void**)o=&type_tag; g_value=0x29a; final_fn((int)&final_arg);}
