@@ -1,19 +1,22 @@
-// from server: 51% by atomic.potato
-typedef double (__cdecl *ConvertFunction)(void *, double);
-typedef void (__thiscall *ApplyFunction)(void *, double *, double);
+// from server: 69% by tester
+struct Prop {
+    char pad[0x18];
+    void* getset;
 
-extern double __cdecl G1_func_005641e0(void *, double);
-
-struct S
-{
-    void f(double);
-    void *member18;
+    void method(void* arg1, void* arg2);
 };
 
-void S::f(double value)
+extern "C" double __fastcall sub_5641E0(void* self, void* arg);
+
+struct Vtbl {
+    char pad[0xc];
+    void (__stdcall* fn)(void*, double*);
+};
+
+void Prop::method(void* arg1, void* arg2)
 {
-    double converted = G1_func_005641e0(0, value);
-    void *object = member18;
-    ApplyFunction apply = *(ApplyFunction *)(*(void ***)object + 12);
-    apply(object, &converted, value);
+    double d = sub_5641E0(arg1, arg2);
+    void* g = getset;
+    Vtbl* vt = *(Vtbl**)g;
+    vt->fn(g, &d);
 }

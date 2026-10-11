@@ -1,4 +1,3 @@
-// from server: 92% by colin
 // roc 2007-08 00411770  unit: boost::bad_any_cast  size: 57 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 00411770
 //
@@ -26,33 +25,9 @@
 // 004117a5  33c0                 xor eax, eax
 // 004117a7  5e                   pop esi
 // 004117a8  c3                   ret 
+// library openrbx-client/App\script\LuaSignalBridge.cpp (function ??$any_cast@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@boost@@YAPAV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVany@0@@Z)
 
-struct type_info {
-    bool operator==(const type_info&) const;
-};
-
-struct bad_any_cast {
-    void* vfptr;
-};
-
-extern type_info type_info_basic_string;
-extern type_info type_info_bad_any_cast;
-
-void* __cdecl sub_411770(bad_any_cast* p) {
-    if (p == 0)
-        return 0;
-    void* obj = p->vfptr;
-    type_info* ti;
-    if (obj != 0) {
-        void** vtbl = *(void***)obj;
-        typedef type_info* (__thiscall *GetTypeFn)(void*);
-        GetTypeFn fn = (GetTypeFn)vtbl[1];
-        ti = fn(obj);
-    } else {
-        ti = &type_info_bad_any_cast;
-    }
-    if (ti->operator==(type_info_basic_string)) {
-        return (char*)p->vfptr + 4;
-    }
-    return 0;
-}
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+// roc-lib: openrbx-client App/script/LuaSignalBridge.cpp

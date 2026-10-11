@@ -1,4 +1,4 @@
-// from server: 99% by colin
+// from server: 100% by tester
 struct CXTPKeyboardManager {
     int field0;
     int* field4;

@@ -1,4 +1,3 @@
-// from server: 69% by colin
 // roc 2007-08 00486800  unit: G3D::GWindow  size: 41 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 00486800
 //
@@ -16,20 +15,9 @@
 // 00486824  5e                   pop esi
 // 00486825  59                   pop ecx
 // 00486826  c20800               ret 8
+// library openrbx-client/App\v8tree\Instance.cpp (function ?getStringValue@PropertyDescriptor@Reflection@RBX@@UBE?AV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PBVDescribedBase@23@@Z)
 
-struct GWindow {
-    void func_00486800(int, int);
-};
-
-extern "C" void* __stdcall func_0077e698(void*, const char*);
-
-void GWindow::func_00486800(int a, int b)
-{
-    int zero = 0;
-    void* p = *(void**)this;
-    void (*fn)(void*, int*) = *(void (**)(void*, int*))((char*)p + 0xc);
-    fn(this, &zero);
-    func_0077e698(&zero, "list<T> too long");
-    (void)a;
-    (void)b;
-}
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+// roc-lib: openrbx-client App/v8tree/Instance.cpp

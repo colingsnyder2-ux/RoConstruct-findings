@@ -1,4 +1,3 @@
-// from server: 54% by colin
 // roc 2007-08 00567ac0  unit: TextXmlParser  size: 91 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 00567ac0
 //
@@ -28,28 +27,9 @@
 // 00567b0d  51                   push ecx
 // 00567b0e  c7442408544e7800     mov dword ptr [esp + 8], 0x784e54
 // 00567b16  e883900c00           call 0x630b9e
+// library openrbx-client/App\v8datamodel\GlobalSettings.cpp (function ??$_Allocate@V?$shared_ptr@VInstance@RBX@@@boost@@@std@@YAPAV?$shared_ptr@VInstance@RBX@@@boost@@IPAV12@@Z)
 
-struct S_func_00567ac0 {
-    void f(unsigned int n);
-};
-
-extern "C" void __cdecl func_0062fef6(unsigned int);
-extern "C" void __cdecl func_00630b9e(void*, void*);
-extern "C" void __stdcall func_0077e6ec(void*);
-
-void S_func_00567ac0::f(unsigned int n)
-{
-    if (n <= 0) {
-        func_0062fef6(0);
-        return;
-    }
-    unsigned int q = 0xffffffffu / n;
-    if (q < 8) {
-        unsigned int local = 0;
-        func_0077e6ec(&local);
-        void* p = (void*)0x784e54;
-        func_00630b9e(&p, (void*)0x83f17c);
-        return;
-    }
-    func_0062fef6(n * 8);
-}
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+// roc-lib: openrbx-client App/v8datamodel/GlobalSettings.cpp

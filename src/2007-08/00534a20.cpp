@@ -1,5 +1,33 @@
-// from server: 95% by colin
+// roc 2007-08 00534a20  unit: RBX::Lua::VFunctionRef::?$holder  size: 57 bytes
+// Make this compile to the exact bytes below, then: roc check 2007-08 00534a20
+//
+// 00534a20  56                   push esi
+// 00534a21  8b742408             mov esi, dword ptr [esp + 8]
+// 00534a25  85f6                 test esi, esi
+// 00534a27  742c                 je 0x534a55
+// 00534a29  8b0e                 mov ecx, dword ptr [esi]
+// 00534a2b  85c9                 test ecx, ecx
+// 00534a2d  7409                 je 0x534a38
+// 00534a2f  8b01                 mov eax, dword ptr [ecx]
+// 00534a31  8b5004               mov edx, dword ptr [eax + 4]
+// 00534a34  ffd2                 call edx
+// 00534a36  eb05                 jmp 0x534a3d
+// 00534a38  b8c8278800           mov eax, 0x8827c8
+// 00534a3d  68a8998900           push 0x8999a8
+// 00534a42  8bc8                 mov ecx, eax
+// 00534a44  ff1508e77700         call dword ptr [0x77e708]
+// 00534a4a  84c0                 test al, al
+// 00534a4c  7407                 je 0x534a55
+// 00534a4e  8b06                 mov eax, dword ptr [esi]
+// 00534a50  83c008               add eax, 8
+// 00534a53  5e                   pop esi
+// 00534a54  c3                   ret 
+// 00534a55  33c0                 xor eax, eax
+// 00534a57  5e                   pop esi
+// 00534a58  c3                   ret 
+// library openrbx-client/App\script\LuaSignalBridge.cpp (function ??$any_cast@N@boost@@YAPANPAVany@0@@Z)
+
 // roc-lang: cpp
-// roc-cl: 50727
+// roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs script/LuaInstanceBridge.cpp
+// roc-lib: openrbx-client App/script/LuaSignalBridge.cpp

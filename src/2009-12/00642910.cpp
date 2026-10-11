@@ -1,31 +1,33 @@
-// from server: 64% by atomic.potato
-struct type_info {
-    bool operator==(const type_info&) const;
-};
+// roc 2009-12 00642910  unit: RBX::VBrickColor::?$TypedPropertyDescriptor  size: 57 bytes
+// Make this compile to the exact bytes below, then: roc check 2009-12 00642910
+//
+// 00642910  56                   push esi
+// 00642911  8b742408             mov esi, dword ptr [esp + 8]
+// 00642915  85f6                 test esi, esi
+// 00642917  742c                 je 0x642945
+// 00642919  8b0e                 mov ecx, dword ptr [esi]
+// 0064291b  85c9                 test ecx, ecx
+// 0064291d  7409                 je 0x642928
+// 0064291f  8b01                 mov eax, dword ptr [ecx]
+// 00642921  8b5004               mov edx, dword ptr [eax + 4]
+// 00642924  ffd2                 call edx
+// 00642926  eb05                 jmp 0x64292d
+// 00642928  b80c03b000           mov eax, 0xb0030c
+// 0064292d  683c03b000           push 0xb0033c
+// 00642932  8bc8                 mov ecx, eax
+// 00642934  ff1568b79800         call dword ptr [0x98b768]
+// 0064293a  84c0                 test al, al
+// 0064293c  7407                 je 0x642945
+// 0064293e  8b06                 mov eax, dword ptr [esi]
+// 00642940  83c004               add eax, 4
+// 00642943  5e                   pop esi
+// 00642944  c3                   ret 
+// 00642945  33c0                 xor eax, eax
+// 00642947  5e                   pop esi
+// 00642948  c3                   ret 
+// library openrbx-client/App\script\LuaSignalBridge.cpp (function ??$any_cast@_N@boost@@YAPA_NPAVany@0@@Z)
 
-struct placeholder {
-    virtual ~placeholder();
-};
-
-struct any {
-    placeholder* content;
-};
-
-extern "C" int __stdcall _except_handler4_common();
-
-bool __stdcall sub_98B768(const type_info&, const type_info&);
-
-void* f(any* a) {
-    if (a == 0)
-        return 0;
-    type_info* t;
-    if (a->content != 0) {
-        t = (type_info*)((char*)a->content - 4);
-    } else {
-        t = (type_info*)0xB0030C;
-    }
-    if (sub_98B768(*t, *(type_info*)0xB0033C)) {
-        return (char*)a->content + 4;
-    }
-    return 0;
-}
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+// roc-lib: openrbx-client App/script/LuaSignalBridge.cpp

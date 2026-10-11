@@ -1,4 +1,3 @@
-// from server: 92% by colin
 // roc 2007-08 00411730  unit: boost::bad_any_cast  size: 57 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 00411730
 //
@@ -26,42 +25,9 @@
 // 00411765  33c0                 xor eax, eax
 // 00411767  5e                   pop esi
 // 00411768  c3                   ret 
+// library openrbx-client/App\script\LuaSignalBridge.cpp (function ??$any_cast@_N@boost@@YAPA_NPAVany@0@@Z)
 
-struct type_info {
-    bool operator==(const type_info&) const;
-};
-
-struct VTable {
-    void* unknown0;
-    void* unknown1;
-};
-
-extern "C" {
-    bool __stdcall compare_type_info(const type_info*, const type_info*);
-}
-
-extern type_info type_info_8827c8;
-extern type_info type_info_8827e0;
-
-void* func_00411730(VTable** obj)
-{
-    if (obj == 0)
-        return 0;
-
-    type_info* ti;
-    VTable* vt = *obj;
-    if (vt != 0) {
-        void** vtbl = *(void***)vt;
-        typedef void* (__thiscall *Fn)(void*);
-        Fn fn = (Fn)vtbl[1];
-        ti = (type_info*)fn(vt);
-    } else {
-        ti = &type_info_8827c8;
-    }
-
-    if (ti->operator==(type_info_8827e0)) {
-        return (char*)*obj + 4;
-    }
-
-    return 0;
-}
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+// roc-lib: openrbx-client App/script/LuaSignalBridge.cpp
