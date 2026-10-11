@@ -1,0 +1,10 @@
+// from server: 99% by colin
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+extern "C" void* __stdcall make_desc_005b6d40(int, const char*);
+struct Descriptor_005b6d40 { void attach(void*); };
+extern Descriptor_005b6d40 global_desc_005b6d40;
+extern void register_desc_005b6d40(void (*)());
+static const char name_005b6d40[] = "AnimationTrack";
+static const char callback_005b6d40[] = "x";
+struct Init_005b6d40 { Init_005b6d40() { void* p = make_desc_005b6d40(0, name_005b6d40); global_desc_005b6d40.attach(p); register_desc_005b6d40((void (*)())&callback_005b6d40); } };
+Init_005b6d40* func_005b6d40() { static Init_005b6d40 init; return &init; }
