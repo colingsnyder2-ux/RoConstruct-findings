@@ -1,5 +1,20 @@
-// from server: 65% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: boost-1.34.1 libs/regex/src/cregex.cpp
+// from server: 100% by atomic.potato
+struct CMainFrame {
+    void* field0;
+    void SetSomething(void* p);
+};
+
+struct Helper {
+    void Release();
+};
+
+extern "C" void __cdecl sub_7A799A(void* p);
+
+void CMainFrame::SetSomething(void* p) {
+    void* old = field0;
+    field0 = p;
+    if (old) {
+        ((Helper*)old)->Release();
+        sub_7A799A(old);
+    }
+}

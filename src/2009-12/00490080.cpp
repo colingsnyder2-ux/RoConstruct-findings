@@ -1,4 +1,4 @@
-// from server: 38% by atomic.potato
+// from server: 50% by atomic.potato
 struct S
 {
     int Get();
@@ -9,7 +9,8 @@ int S::Get()
 {
     struct VTable
     {
-        int (*fn)(void*);
+        char pad[0x4c];
+        int (__stdcall *fn)(void*);
     };
 
     void* p = field84;

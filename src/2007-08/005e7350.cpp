@@ -1,17 +1,17 @@
-// from server: 41% by colin
+// from server: 42% by atomic.potato
 struct Flag {
     char pad[0x168];
     void* field_168;
     char pad2[0x220 - 0x16c];
     void* field_220;
     void* field_c;
-    void construct(int);
+    void* construct(int);
 };
 
 extern "C" void __stdcall sub_5e61f0(int);
 extern "C" void* __stdcall sub_591230();
 
-void Flag::construct(int arg) {
+void* Flag::construct(int arg) {
     if (arg != 0) {
         *(void**)((char*)this + 0x168) = (void*)0x7bb71c;
         *(void**)((char*)this + 0x220) = (void*)0x7a4ccc;
@@ -36,4 +36,6 @@ void Flag::construct(int arg) {
     int ecx2 = eax - 0xb8;
     *(void**)(eax + (int)this + 0x164) = (void*)ecx2;
     this->field_c = sub_591230();
+
+    return this;
 }
