@@ -1,11 +1,9 @@
-// from server: 38% by atomic.potato
-struct S
-{
+// from server: 56% by atomic.potato
+struct RBX_GuiImageButton_00757a80 {
     void f();
 };
 
-void S::f()
-{
-    volatile int *p = (volatile int *)0x5f0c244c;
-    --*p;
+void RBX_GuiImageButton_00757a80::f() {
+    extern int g_5f0c244c;
+    --g_5f0c244c;
 }

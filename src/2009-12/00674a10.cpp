@@ -1,4 +1,4 @@
-// from server: 42% by atomic.potato
+// from server: 61% by atomic.potato
 extern float g_009cf458;
 
 struct S
@@ -8,6 +8,6 @@ struct S
 
 void S::f(float *p)
 {
-    p[0] = 0.0f;
+    *(unsigned int *)p = 0;
     p[1] = g_009cf458;
 }
