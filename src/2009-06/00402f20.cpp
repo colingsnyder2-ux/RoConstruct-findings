@@ -1,0 +1,10 @@
+// from server: 24% by atomic.potato
+extern "C" __declspec(dllimport) void __stdcall InitializeCriticalSection(void*);
+
+struct S {
+    void f();
+};
+
+void S::f() {
+    InitializeCriticalSection((void*)0);
+}
