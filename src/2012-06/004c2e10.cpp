@@ -1,17 +1,17 @@
-// from server: 90% by atomic.potato
+// from server: 100% by tester
 struct S
 {
+    int value;
+    int *object;
     int offset;
-    int* object;
-    int f(int value);
+    int f(int amount);
 };
 
-int S::f(int value)
+int S::f(int amount)
 {
-    int target = offset + value;
-    int* vtable = *(int**)object;
-    int (__thiscall *method)(int*, int) =
-        (int (__thiscall *)(int*, int))vtable[61];
-    method(object, target);
+    int *vtable = *(int **)object;
+    typedef void (__thiscall *Fn)(int *, int);
+    Fn fn = (Fn)vtable[61];
+    fn(object, offset + amount);
     return offset;
 }

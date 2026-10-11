@@ -1,5 +1,22 @@
-// from server: 72% by tester
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: boost-1.34.1 libs/program_options/src/options_description.cpp
+// from server: 100% by tester
+typedef struct _CRITICAL_SECTION CRITICAL_SECTION;
+
+extern "C" void __declspec(dllimport) __stdcall LeaveCriticalSection(CRITICAL_SECTION *);
+
+struct DxUserInput
+{
+    void *field0;
+    CRITICAL_SECTION *field4;
+    unsigned char field8;
+
+    void f();
+};
+
+void DxUserInput::f()
+{
+    if (field8)
+    {
+        LeaveCriticalSection(field4);
+        field8 = 0;
+    }
+}

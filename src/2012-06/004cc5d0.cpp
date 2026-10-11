@@ -1,5 +1,15 @@
-// from server: 66% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: ogre-1.7.0 OgreMeshSerializerImpl.cpp
+// from server: 100% by tester
+struct S_func_0092b7a0 {
+    char pad0[68];
+    int m_value44;
+    char pad48[2112];
+    int m_value888;
+    int f();
+};
+
+int S_func_0092b7a0::f()
+{
+    if (m_value888)
+        return m_value888;
+    return m_value44;
+}

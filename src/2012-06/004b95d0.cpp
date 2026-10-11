@@ -1,5 +1,16 @@
-// from server: 59% by colin
-// roc-lang: cpp
-// roc-cl: 50727
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs-net Players.cpp
+// from server: 100% by tester
+struct ViewRbxGfx
+{
+    unsigned char pad18[24];
+    unsigned char m_flag18;
+    unsigned char pad19[35];
+    unsigned char m_flag3c;
+    void f(unsigned char value);
+};
+
+void ViewRbxGfx::f(unsigned char value)
+{
+    m_flag18 = 0;
+    if (value != 0)
+        m_flag3c = 0;
+}

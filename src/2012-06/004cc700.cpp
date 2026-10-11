@@ -1,5 +1,14 @@
-// from server: 67% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: g3d-6.09 G3Dcpp/GCamera.cpp
+// from server: 100% by tester
+typedef unsigned char byte;
+
+static byte g_00D1F0E0;
+static int g_00D1F0E4;
+
+void f0092b920()
+{
+    if ((g_00D1F0E4 & 1) == 0)
+    {
+        g_00D1F0E4 |= 1;
+        g_00D1F0E0 = 0;
+    }
+}

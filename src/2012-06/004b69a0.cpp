@@ -1,15 +1,31 @@
-// from server: 84% by atomic.potato
+// from server: 100% by tester
 struct CEnumMediaTypes
 {
-    int Next(void *);
+    int f(void *);
 };
 
-int CEnumMediaTypes::Next(void *arg)
+int CEnumMediaTypes::f(void *p)
 {
-    CEnumMediaTypes *p = (CEnumMediaTypes *)arg;
-    int *v = *(int **)((char *)p + 8);
-    *(int *)((char *)p + 4) = 0;
-    int (*f)(int *) = (int (*)(int *))(*(int **)v + 4);
-    *(int *)((char *)p + 12) = f(v);
+    struct VTable
+    {
+        void *entries[5];
+    };
+
+    struct Object
+    {
+        VTable *vtable;
+    };
+
+    struct State
+    {
+        int unused0;
+        int result;
+        Object *object;
+        int unused1;
+    };
+
+    State *state = (State *)p;
+    state->result = 0;
+    state->unused1 = ((int (__thiscall *)(Object *))state->object->vtable->entries[4])(state->object);
     return 0;
 }

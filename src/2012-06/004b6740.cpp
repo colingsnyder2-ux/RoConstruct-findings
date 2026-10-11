@@ -1,17 +1,21 @@
-// from server: 48% by atomic.potato
-extern "C" long __stdcall InterlockedDecrement(long *);
+// from server: 100% by tester
+extern "C" long __declspec(dllimport) __stdcall InterlockedDecrement(long *);
 
 struct CEnumMediaTypes
 {
-    int Release();
-    long *refCount;
+    int f(void *);
 };
 
-int CEnumMediaTypes::Release()
+int CEnumMediaTypes::f(void *p)
 {
-    CEnumMediaTypes *p = this;
-    long result = InterlockedDecrement(p->refCount);
-    if (result == 0 && p != 0)
-        p->Release();
+    int *state = (int *)p;
+    int result = InterlockedDecrement((long *)((char *)state + 0x10));
+
+    if (!result && state)
+    {
+        int **vtable = (int **)state;
+        ((void (__thiscall *)(void *, int))vtable[0][7])(state, 1);
+    }
+
     return result;
 }
