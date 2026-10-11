@@ -1,12 +1,14 @@
-// from server: 87% by atomic.potato
+// from server: 100% by atomic.potato
+struct Inner {
+    void f(void* out);
+};
+
 struct S {
     int Get(void* out);
 };
 
-extern "C" void __stdcall f(void*, void*);
-
 int S::Get(void* out)
 {
-    f(*(void**)((char*)this + 8), out);
+    ((Inner*)(*(void**)((char*)this + 8)))->f(out);
     return (int)out;
 }

@@ -1,13 +1,5 @@
-// from server: 91% by atomic.potato
-extern "C" int __stdcall sub_008d0360(void *, int, int *);
-
-struct CXTPMenuBarMDIMenus
-{
-    int f(int);
-};
-
-int CXTPMenuBarMDIMenus::f(int value)
-{
-    int result = sub_008d0360((char *)this + 0x20, value, &value);
-    return result ? 0 : value;
-}
+// from server: 100% by tester
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /MD /GS /EHsc /Ob1
+// roc-lib: xtp-11.2.2-shared-mfc Source\CommandBars\XTPMenuBar.cpp

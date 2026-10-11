@@ -1,7 +1,7 @@
-// from server: 58% by atomic.potato
+// from server: 69% by atomic.potato
 typedef void *HANDLE;
 
-extern "C" int release_object(void *);
+extern "C" int __fastcall release_object(void *);
 extern "C" void __cdecl destroy_object(void *);
 extern "C" int __stdcall CloseHandle(HANDLE);
 

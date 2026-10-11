@@ -1,25 +1,5 @@
-// from server: 47% by atomic.potato
-struct S
-{
-    int pad8;
-    int padC;
-    int pad10;
-    int index;
-    int state;
-    int f();
-};
-
-extern "C" int sub_80f2d0(void*, int);
-extern "C" void sub_810350(void*);
-
-int S::f()
-{
-    state = 1;
-    if (index != 0)
-    {
-        void* p = (void*)sub_80f2d0((void*)this, pad8);
-        if (p != 0)
-            sub_810350(p);
-    }
-    return 0;
-}
+// from server: 100% by tester
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /MD /GS /EHsc /Ob1
+// roc-lib: xtp-11.2.2-shared-mfc-internals Source/CommandBars/XTPStatusBar.cpp

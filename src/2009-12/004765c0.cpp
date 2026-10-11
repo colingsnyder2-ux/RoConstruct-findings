@@ -1,17 +1,20 @@
-// from server: 74% by atomic.potato
+// from server: 100% by atomic.potato
+struct CWebToolboxHelper
+{
+    void method();
+};
+
 struct CWebToolbox
 {
     char unused[0xf8];
-    void* fieldF8;
+    CWebToolboxHelper* fieldF8;
     void f(int, int, int);
+    void method(int, int, int);
 };
-
-extern "C" void __declspec(nothrow) sub_007f3cc2(CWebToolbox*, int, int, int);
-extern "C" void __declspec(nothrow) sub_007f3c02(void*);
 
 void CWebToolbox::f(int a, int b, int c)
 {
-    sub_007f3cc2(this, a, b, c);
+    method(a, b, c);
     if (fieldF8)
-        sub_007f3c02(fieldF8);
+        fieldF8->method();
 }

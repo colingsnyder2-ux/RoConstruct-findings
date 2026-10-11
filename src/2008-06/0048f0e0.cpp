@@ -1,14 +1,14 @@
-// from server: 49% by colin
+// from server: 50% by atomic.potato
 struct Creator {
     void* field0;
-    Creator(int arg);
+    Creator(int arg, int arg2);
 };
 
 extern "C" void* __cdecl operator_new(unsigned int size);
 
 void* g_vtable = (void*)0x8217e8;
 
-Creator::Creator(int arg) {
+Creator::Creator(int arg, int arg2) {
     field0 = 0;
     void* p = operator_new(0x14);
     if (p) {

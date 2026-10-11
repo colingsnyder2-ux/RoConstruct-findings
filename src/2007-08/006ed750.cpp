@@ -1,32 +1,5 @@
-// from server: 20% by colin
-struct Sub1 {
-    void destroy();
-};
-
-struct Sub2 {
-    void destroy();
-};
-
-struct Sub3 {
-    void destroy();
-};
-
-struct CMap {
-    void* vtable;
-    char pad1[0x54];
-    Sub3 sub3;
-    char pad2[0x74];
-    Sub2 sub2;
-    char pad3[0x98];
-    Sub1 sub1;
-    void destructor();
-};
-
-void CMap::destructor()
-{
-    vtable = (void*)0x7dafdc;
-    sub1.destroy();
-    sub2.destroy();
-    sub3.destroy();
-    ((Sub3*)((char*)this + 4))->destroy();
-}
+// from server: 100% by tester
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /MD /GS /EHsc /Ob1
+// roc-lib: xtp-11.2.2-shared-mfc Source\DockingPane\XTPDockingPaneContext.cpp

@@ -1,14 +1,5 @@
-// from server: 59% by colin
-struct CXTPRichRender_XTextHost {
-    void* m_p;
-    void* method(int a, int b);
-};
-
-extern "C" void* __stdcall sub_77E258(int a, int b);
-
-void* CXTPRichRender_XTextHost::method(int a, int b)
-{
-    m_p = 0;
-    sub_77E258(a, b);
-    return this;
-}
+// from server: 100% by tester
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /MD /GS /EHsc /Ob1
+// roc-lib: xtp-11.2.2-shared-mfc Source\Common\XTPOffice2007Image.cpp

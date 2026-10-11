@@ -1,5 +1,15 @@
-// from server: 55% by colin
-// roc-lang: cpp
-// roc-cl: 50727
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs v8datamodel/Workspace.cpp
+// from server: 68% by atomic.potato
+struct DecalTool {
+    char pad[0x60];
+    struct Vtbl {
+        virtual void f();
+    } *vptr;
+    void sub_8a9db0(int);
+};
+
+void DecalTool::sub_8a9db0(int a) {
+    int t = *(int*)(a + 0x10);
+    if (t == 0x7f || t == 0x1b) {
+        vptr->f();
+    }
+}

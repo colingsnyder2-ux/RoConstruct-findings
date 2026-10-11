@@ -1,18 +1,17 @@
-// from server: 34% by atomic.potato
-struct CWebToolbox
-{
-    int f();
-    void g();
-    void* field_f8;
+// from server: 100% by atomic.potato
+struct Inner {
+    void method();
 };
 
-void CWebToolbox::g()
-{
-}
+struct CWebToolbox {
+    char pad0[0xf8];
+    Inner* field_f8;
+    int f(int, int, int);
+};
 
-int CWebToolbox::f()
+int CWebToolbox::f(int, int, int)
 {
     if (field_f8)
-        g();
+        field_f8->method();
     return 3;
 }

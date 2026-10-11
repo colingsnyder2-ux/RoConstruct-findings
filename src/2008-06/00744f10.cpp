@@ -1,13 +1,5 @@
-// from server: 78% by Cezant64gamejr
-extern "C" void __stdcall call_target(int, int, int);
-
-struct VCRect {
-    void CArray();
-};
-
-void VCRect::CArray() {
-    int a = 0;
-    int b = -1;
-    int c = 9;
-    call_target(a, b, c);
-}
+// from server: 100% by tester
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /MD /GS /EHsc /Ob1
+// roc-lib: xtp-11.2.2-lib Source\GraphicLibrary\XTPGraphicBitmapPng.cpp

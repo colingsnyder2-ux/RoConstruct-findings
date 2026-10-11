@@ -1,22 +1,17 @@
-// from server: 84% by atomic.potato
+// from server: 100% by atomic.potato
 struct CWebToolbox
 {
     char pad[0xf8];
-    int* value;
-    void process(int, int, int);
-    void cleanup();
+    void* field_f8;
+    void sub_98256a(int, int, int);
+    void sub_9824a4();
+
+    void func_004b0cf0(int a, int b, int c);
 };
 
-extern "C" void (__thiscall* call_0098256a)(CWebToolbox*, int, int, int);
-extern "C" void (__thiscall* call_009824a4)(int*);
-
-void CWebToolbox::process(int a, int b, int c)
+void CWebToolbox::func_004b0cf0(int a, int b, int c)
 {
-    call_0098256a(this, a, b, c);
-    if (value)
-        call_009824a4(value);
-}
-
-void CWebToolbox::cleanup()
-{
+    sub_98256a(a, b, c);
+    if (field_f8 != 0)
+        ((CWebToolbox*)field_f8)->sub_9824a4();
 }

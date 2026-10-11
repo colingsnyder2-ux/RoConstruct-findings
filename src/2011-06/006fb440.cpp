@@ -1,4 +1,4 @@
-// from server: 29% by atomic.potato
+// from server: 52% by atomic.potato
 struct VCRenderSettingsItem_EnumPropDescriptor {
     char pad[0xb4];
     struct Data {
@@ -12,6 +12,6 @@ struct VCRenderSettingsItem_EnumPropDescriptor {
 void VCRenderSettingsItem_EnumPropDescriptor::update(float value) {
     if (value != data->value) {
         data->value = value;
-        data->value = 0xcd2850;
+        *(float*)0xcd2850 = value;
     }
 }

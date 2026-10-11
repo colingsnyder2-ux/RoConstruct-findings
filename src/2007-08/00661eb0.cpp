@@ -1,22 +1,5 @@
-// from server: 22% by colin
-struct CArrayDerived {
-    char pad[0x20];
-    char pad2[0x1C];
-    void* ptr40;
-    void sub_661DD0();
-    void sub_661D50();
-    void sub_63069A();
-    void destroy();
-};
-
-extern "C" void __stdcall sub_6301E4(void* p);
-
-void CArrayDerived::destroy()
-{
-    this->sub_661DD0();
-    if (this->ptr40 != 0) {
-        sub_6301E4(this->ptr40);
-    }
-    this->sub_661D50();
-    this->sub_63069A();
-}
+// from server: 100% by tester
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /MD /GS /EHsc /Ob1
+// roc-lib: xtp-11.2.2-shared-mfc Source\ReportControl\XTPReportRecord.cpp

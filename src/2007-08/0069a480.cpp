@@ -1,18 +1,5 @@
-// from server: 40% by colin
-struct CXTPPropertyGridItemColor {
-    void SetValue(void*);
-};
-
-extern "C" void* __stdcall sub_77DD98(void*);
-extern "C" void __stdcall sub_77DDBC(void*);
-extern "C" void* __cdecl sub_69A2B0(void*);
-
-void CXTPPropertyGridItemColor::SetValue(void* p)
-{
-    void* vtable = *(void**)this;
-    void* tmp = 0;
-    sub_77DD98(&tmp);
-    void* arg = sub_69A2B0(&tmp);
-    ((void (__thiscall*)(void*, void*))*(void**)((char*)vtable + 0xe4))(this, arg);
-    sub_77DDBC(&tmp);
-}
+// from server: 100% by tester
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /MD /GS /EHsc /Ob1
+// roc-lib: xtp-11.2.2-shared-mfc-string-calls Source\PropertyGrid\XTPPropertyGridItemColor.cpp

@@ -1,8 +1,5 @@
-// from server: 92% by colin
-extern "C" int __stdcall sub_00634a60(int, int*);
-
-int __stdcall sub_006a3020(int a)
-{
-    int r = sub_00634a60(a, &a);
-    return (r != 0) ? a : 0;
-}
+// from server: 100% by tester
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /MD /GS /EHsc /Ob1
+// roc-lib: xtp-11.2.2-shared-mfc Source\CommandBars\XTPHookManager.cpp

@@ -1,4 +1,4 @@
-// from server: 37% by atomic.potato
+// from server: 76% by atomic.potato
 struct S
 {
     char padding[16];
@@ -14,7 +14,8 @@ struct S
 
 void S::f()
 {
-    *p10 = value;
-    *p20 = value;
-    *p30 = value - value;
+    int v = value;
+    *p10 = v;
+    *p20 = v;
+    *p30 = v - v;
 }

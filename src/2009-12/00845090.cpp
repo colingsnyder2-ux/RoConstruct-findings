@@ -1,15 +1,21 @@
-// from server: 14% by atomic.potato
-struct PopupResult
+// from server: 100% by atomic.potato
+struct Inner
 {
-    void **vtable;
+    void **vtbl;
 };
+
+typedef void (__thiscall *InnerVCall)(void *, void *, int);
 
 struct CXTPPopupToolBar
 {
-    PopupResult *f(int);
+    Inner *getInner();
+    Inner *func(int arg);
 };
 
-PopupResult *CXTPPopupToolBar::f(int)
+Inner *CXTPPopupToolBar::func(int arg)
 {
-    return 0;
+    Inner *inner = getInner();
+    InnerVCall fn = *(InnerVCall *)((char *)inner->vtbl + 0x1dc);
+    fn(inner, this, arg);
+    return inner;
 }

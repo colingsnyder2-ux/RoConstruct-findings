@@ -1,4 +1,4 @@
-// from server: 57% by atomic.potato
+// from server: 82% by atomic.potato
 struct T4_0066e760 {
     void* f_0066c7d0();
     void* f_00669db0();
@@ -15,7 +15,7 @@ void __stdcall sub_0066e760(void* arg)
         void* q = sub_00669db0(p);
         if (q) {
             void** vt = *(void***)q;
-            ((void (*)(void*))vt[1])(q);
+            ((void (__thiscall *)(void*))vt[1])(q);
         }
         sub_00598d90(arg, p);
     }

@@ -1,14 +1,5 @@
-// from server: 80% by atomic.potato
-struct CArray
-{
-    int Add(int);
-};
-
-int CArray::Add(int value)
-{
-    int result;
-    int count = *((int *)((char *)this + 0x28));
-    result = Add(value);
-    *((int *)((char *)value + 0x4c)) = (int)this;
-    return value;
-}
+// from server: 100% by tester
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /MD /GS /EHsc /Ob1
+// roc-lib: xtp-11.2.2-shared-mfc Source\ReportControl\XTPReportRecord.cpp

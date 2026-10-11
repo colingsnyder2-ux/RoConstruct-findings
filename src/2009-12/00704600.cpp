@@ -1,13 +1,15 @@
-// from server: 81% by atomic.potato
+// from server: 100% by atomic.potato
 struct S
 {
 };
+
+extern "C" void __cdecl g(int, int, int);
 
 void __cdecl f(int a, int b, int c)
 {
     if (c != 4)
     {
-        ((void (*)(int, int, int))0x702df0)(a, b, c);
+        g(a, b, c);
         return;
     }
 

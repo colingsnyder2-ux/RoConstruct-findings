@@ -1,23 +1,5 @@
-// from server: 61% by atomic.potato
-struct CStatusCmdUI;
-
-extern "C" int __stdcall func_009e79f0(CStatusCmdUI*, int);
-
-struct CStatusCmdUI
-{
-    int Update(int);
-};
-
-int CStatusCmdUI::Update(int value)
-{
-    int result;
-    int owner = *(int*)((char*)this + 0x14);
-    *(int*)((char*)this + 0x18) = 1;
-    if (owner != 0)
-    {
-        result = func_009e79f0((CStatusCmdUI*)owner, *(int*)((char*)this + 8));
-        if (result != 0)
-            return result;
-    }
-    return 0;
-}
+// from server: 100% by tester
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /MD /GS /EHsc /Ob1
+// roc-lib: xtp-11.2.2-shared-mfc-internals Source/CommandBars/XTPStatusBar.cpp

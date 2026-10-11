@@ -1,5 +1,5 @@
-// from server: 79% by colin
+// from server: 100% by tester
 // roc-lang: cpp
-// roc-cl: 50727
-// roc-flags: /O2 /GS- /MD /Ob1 /Oy-
-// roc-lib: xtp-11.2.2-vc8 Source/CommandBars/XTPNativeXPTheme.cpp
+// roc-cl: 21022
+// roc-flags: /O2 /MD /GS /EHsc /Ob1
+// roc-lib: xtp-11.2.2-shared-mfc Source\CommandBars\XTPNativeXPTheme.cpp

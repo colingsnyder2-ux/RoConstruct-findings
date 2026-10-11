@@ -1,13 +1,5 @@
-// from server: 80% by atomic.potato
-struct CXTPPaintManagerColor
-{
-    void SetStandardValue(unsigned int);
-};
-
-extern float g_value;
-extern "C" void SetStandardValue(CXTPPaintManagerColor*, unsigned int, unsigned int, float);
-
-void CXTPPaintManagerColor::SetStandardValue(unsigned int value)
-{
-    ::SetStandardValue(this, value, value, g_value);
-}
+// from server: 100% by tester
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /MD /GS /EHsc /Ob1
+// roc-lib: xtp-11.2.2-shared-mfc Source\Common\XTPColorManager.cpp

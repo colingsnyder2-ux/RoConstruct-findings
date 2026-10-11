@@ -1,22 +1,5 @@
-// from server: 64% by atomic.potato
-typedef void* HDC;
-typedef void* HGDIOBJ;
-
-extern "C" HGDIOBJ __stdcall SelectObject(HDC, HGDIOBJ);
-
-struct CXTPBitmapDC
-{
-    int value;
-    HDC dc;
-    HGDIOBJ object;
-    int reserved;
-    HGDIOBJ oldObject;
-    CXTPBitmapDC();
-};
-
-CXTPBitmapDC::CXTPBitmapDC()
-{
-    SelectObject(dc, oldObject);
-    value = 0xA5FE78;
-    oldObject = (HGDIOBJ)0xA5FDD0;
-}
+// from server: 100% by tester
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /MD /GS /EHsc /Ob1
+// roc-lib: xtp-11.2.2-shared-mfc-internals Source\Common\XTPDrawHelpers.cpp

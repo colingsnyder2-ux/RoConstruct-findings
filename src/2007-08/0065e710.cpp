@@ -1,5 +1,14 @@
-// from server: 90% by colin
-// roc-lang: cpp
-// roc-cl: 30729
-// roc-flags: /O1 /GS- /MD
-// roc-lib: xtp-11.2.2 Source/ReportControl/XTPReportColumn.cpp
+// from server: 100% by atomic.potato
+struct Inner {
+    void method(void* arg);
+};
+
+struct CXTPReportColumn {
+    char pad[0x54];
+    Inner* m_pInner;
+    void f();
+};
+
+void CXTPReportColumn::f() {
+    m_pInner->method(this);
+}

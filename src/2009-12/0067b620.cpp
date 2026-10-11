@@ -1,10 +1,10 @@
-// from server: 55% by atomic.potato
+// from server: 62% by atomic.potato
 struct S
 {
     int f();
 };
 
-extern "C" int sub_415290(int);
+extern "C" int __fastcall sub_415290(int);
 
 int S::f()
 {

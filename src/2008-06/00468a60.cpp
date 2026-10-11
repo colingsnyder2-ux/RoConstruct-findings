@@ -1,10 +1,16 @@
-// from server: 45% by colin
+// from server: 49% by atomic.potato
 struct DxUserInput {
     char pad[0x16c];
     int m_x16c;
     char pad2[0x20];
     unsigned char m_x190;
     void f(int* p);
+};
+
+struct Local {
+    void* vt;
+    char pad[0x58];
+    int (__thiscall* fn)(void*, int, int);
 };
 
 extern "C" int __cdecl sub_006a17f0(float);
@@ -17,9 +23,9 @@ void DxUserInput::f(int* p)
 {
     int a = sub_006a17f0(*(float*)((char*)p + 4));
     int b = sub_006a17f0(*(float*)p);
-    int local;
+    Local local;
     sub_006a13ee(m_x16c);
-    int r = ((int (__thiscall*)(void*, int, int))((*(int**)((char*)&local + 0))[0x5c/4]))(0, b, a);
+    int r = local.fn(&local, b, a);
     int c = sub_006a14a2(m_x16c);
     bool t1 = r != 0;
     bool t2 = c != 0;

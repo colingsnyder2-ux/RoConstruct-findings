@@ -1,12 +1,5 @@
-// from server: 70% by atomic.potato
-extern "C" int sub_995e00(void *, void *);
-
-struct S
-{
-    int f(int);
-};
-
-int S::f(int value)
-{
-    return sub_995e00((char *)this + 0x20, (void *)&value) ? value : 0;
-}
+// from server: 100% by tester
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /MD /GS /EHsc /Ob1
+// roc-lib: xtp-11.2.2-shared-mfc Source\CommandBars\XTPMenuBar.cpp

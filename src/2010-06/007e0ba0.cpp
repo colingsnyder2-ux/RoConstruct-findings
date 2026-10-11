@@ -1,24 +1,5 @@
-// from server: 65% by atomic.potato
-typedef int (__stdcall *Fn)(void);
-typedef int (__stdcall *Fn1)(int, int);
-
-extern "C" int __stdcall ImportedA(void);
-extern "C" int __stdcall ImportedB(int);
-
-struct S
-{
-    int value;
-    int f(int, int);
-};
-
-int S::f(int a, int b)
-{
-    if (value == 0)
-    {
-        int x = ImportedA();
-        return ImportedB(a);
-    }
-
-    int x = ImportedA();
-    return ImportedB(a);
-}
+// from server: 100% by tester
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /MD /GS /EHsc /Ob1
+// roc-lib: xtp-11.2.2-shared-mfc-string-calls Source\ReportControl\XTPReportRecords.cpp

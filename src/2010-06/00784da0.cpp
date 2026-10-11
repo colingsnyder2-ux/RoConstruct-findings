@@ -1,5 +1,17 @@
-// from server: 64% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs util/Name.cpp
+// from server: 100% by atomic.potato
+struct Base {
+    void construct(int, int);
+};
+
+struct Dead : Base {
+    void* vfptr0;
+    void* vfptr1;
+    Dead(int, int);
+};
+
+Dead::Dead(int a, int b)
+{
+    construct(a, b);
+    vfptr0 = (void*)0xa538b8;
+    vfptr1 = (void*)0xa538b0;
+}

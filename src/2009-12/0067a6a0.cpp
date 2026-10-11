@@ -1,7 +1,12 @@
-// from server: 56% by atomic.potato
+// from server: 59% by atomic.potato
 typedef unsigned long DWORD;
 
-extern "C" void ConstructString(void *, const char *);
+struct String
+{
+    void *data[7];
+    String(const char *);
+};
+
 extern "C" void Initialize(void *);
 
 struct S
@@ -11,8 +16,7 @@ struct S
 
 int S::f(void *value)
 {
-    char buffer[28];
-    ConstructString(buffer, "Duplicate");
+    String buffer("Duplicate");
     Initialize(this);
     *(DWORD *)this = 0x009cfdac;
     return (int)this;

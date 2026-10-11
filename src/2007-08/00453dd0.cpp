@@ -1,4 +1,4 @@
-// from server: 37% by colin
+// from server: 68% by atomic.potato
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
 
@@ -16,8 +16,8 @@ struct Outer {
 };
 
 struct Helper {
-    void construct(RefCounted*);
-    void destroy();
+    Helper(RefCounted*);
+    ~Helper();
 };
 
 struct CValueItem {
@@ -30,8 +30,7 @@ void CValueItem::f() {
     if (copy) {
         _InterlockedExchangeAdd(&copy->refCount, 1);
     }
-    Helper* h = (Helper*)&copy;
-    h->construct(rc);
+    Helper h(copy);
 
     Outer* outer = (Outer*)this;
     Inner* inner = outer->getInner();
@@ -39,6 +38,4 @@ void CValueItem::f() {
 
     inner = outer->getInner();
     inner->method3();
-
-    h->destroy();
 }

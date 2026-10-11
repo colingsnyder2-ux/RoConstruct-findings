@@ -1,13 +1,8 @@
-// from server: 72% by atomic.potato
-struct S
-{
-    void f();
-};
+// from server: 90% by atomic.potato
+extern "C" void** __cdecl function_004fd680(void*);
 
-extern "C" void* __cdecl function_004fd680(void*);
-
-void S::f()
+void f(void** out, void* param)
 {
-    void* value = function_004fd680(*(void**)((char*)this + 8));
-    *(void**)((char*)this + 8) = *(void**)value;
+    void** v = function_004fd680(param);
+    *out = *v;
 }

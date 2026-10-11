@@ -1,16 +1,25 @@
-// from server: 37% by atomic.potato
+// from server: 78% by atomic.potato
 typedef unsigned char byte;
 
 extern byte g_00e31abe;
 
-struct S
+struct Inner
 {
-    unsigned char f();
+    byte method();
 };
 
-unsigned char S::f()
+struct S
+{
+    byte pad[0x84];
+    Inner* p;
+    byte f();
+};
+
+byte S::f()
 {
     if (g_00e31abe)
         return 1;
-    return 0;
+    Inner* q = p;
+    void* v = *(void**)q;
+    return ((byte (__thiscall*)(void*))0x464d90)((char*)v + (int)this + 0x84);
 }

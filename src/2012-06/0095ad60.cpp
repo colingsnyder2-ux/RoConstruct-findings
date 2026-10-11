@@ -1,4 +1,4 @@
-// from server: 57% by atomic.potato
+// from server: 60% by atomic.potato
 extern "C" void __stdcall sub_00959860(float *value, void *arg);
 
 struct AdvRunDragger
@@ -8,6 +8,6 @@ struct AdvRunDragger
 
 void AdvRunDragger::f(void *arg)
 {
-    float value = 0.0f;
+    float value = *(float *)0xb8265c;
     sub_00959860(&value, arg);
 }

@@ -1,13 +1,5 @@
-// from server: 26% by atomic.potato
-struct CCommandBarCmdUI
-{
-    int Run();
-    void *field28;
-};
-
-int CCommandBarCmdUI::Run()
-{
-    if (field28)
-        return ((CCommandBarCmdUI *)field28)->Run();
-    return 0;
-}
+// from server: 100% by tester
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /MD /GS /EHsc /Ob1
+// roc-lib: xtp-11.2.2-shared-mfc-internals Source\CommandBars\XTPCommandBar.cpp

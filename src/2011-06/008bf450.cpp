@@ -1,13 +1,5 @@
-// from server: 66% by atomic.potato
-extern "C" int sub_8d0360(void *, void *, void *);
-
-struct S
-{
-    int f(int);
-};
-
-int S::f(int value)
-{
-    int result = 0;
-    return !sub_8d0360((char *)this + 8, &result, &value) ? result : 0;
-}
+// from server: 100% by tester
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /MD /GS /EHsc /Ob1
+// roc-lib: xtp-11.2.2-shared-mfc Source\DockingPane\XTPDockingPaneKeyboardHook.cpp

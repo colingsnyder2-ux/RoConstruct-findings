@@ -1,4 +1,4 @@
-// from server: 49% by atomic.potato
+// from server: 50% by atomic.potato
 struct S_func_00781ab0 {
     char pad0[8];
     char field8[0x18];
@@ -28,7 +28,7 @@ void S_func_00781ab0::f()
         void* p = sub_00782f90(tmp, field8);
         float x = *(float*)((char*)p + 0xc) + *(float*)p;
         float y = *(float*)((char*)p + 0x10) + *(float*)((char*)p + 4);
-        float z = *(float*)((char*)p + 0x14) + *(float*)((char*)p + 8);
+        float z = *(float*)((char*)p + 0x14) + *(float*)p + 8;
         x *= g_9af2dc;
         y *= g_9af2dc;
         z *= g_9af2dc;

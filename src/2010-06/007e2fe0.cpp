@@ -1,15 +1,5 @@
-// from server: 34% by atomic.potato
-typedef unsigned int DWORD;
-
-extern "C" void sub_7e2fc0(void *);
-
-struct S
-{
-    int value;
-    S();
-};
-
-S::S()
-{
-    sub_7e2fc0(this);
-}
+// from server: 100% by tester
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /MD /GS /EHsc /Ob1
+// roc-lib: xtp-11.2.2-shared-mfc Source\Common\XTPColorManager.cpp

@@ -1,16 +1,15 @@
-// from server: 73% by atomic.potato
+// from server: 100% by atomic.potato
+struct TypeInfo;
+
+extern "C" int (__thiscall *type_info_equal)(TypeInfo *, TypeInfo *);
+
 struct S
 {
     int f();
 };
 
-extern "C" int __cdecl imported_type_info_compare(const void *, const void *);
-
-S *g_object;
-
 int S::f()
 {
-    int p = *(int *)this;
-    int q = *(int *)(p + 8);
-    return imported_type_info_compare((const void *)0x00b2b6f8, (const void *)q);
+    TypeInfo *p = *(TypeInfo **)this;
+    return type_info_equal((TypeInfo *)0xb1d7b4, *(TypeInfo **)((char *)p + 8));
 }

@@ -1,4 +1,4 @@
-// from server: 41% by colin
+// from server: 42% by atomic.potato
 // roc 2007-08 004afc80  unit: RBX::VMotor::?$FactoryProduct::Creator  size: 439 bytes
 
 extern "C" int __cdecl _invalid_parameter_noinfo(void);
@@ -83,7 +83,7 @@ Creator::Creator() {
         if (tmp != 0) {
             void* slot = (char*)creators->begin + idx * 8;
             *(void**)slot = tmp;
-            sub_402a60((char*)slot + 4, &tmp);
+            sub_402a60(&tmp, (char*)slot + 4);
             sub_492360(&tmp);
             return;
         }

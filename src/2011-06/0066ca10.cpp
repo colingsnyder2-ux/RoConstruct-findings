@@ -1,5 +1,17 @@
-// from server: 72% by colin
-// roc-lang: cpp
-// roc-cl: 50727
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: openrbx-client App/v8datamodel/PartInstance.cpp
+// from server: 100% by atomic.potato
+struct Inner {
+    void method();
+};
+
+struct PartInstance {
+    char pad[0xac];
+    Inner inner;
+    char pad2[0x228 - 0xac - sizeof(Inner)];
+    unsigned char flag;
+    void method(int arg);
+};
+
+void PartInstance::method(int arg) {
+    flag = 1;
+    inner.method();
+}

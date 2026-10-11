@@ -1,12 +1,5 @@
-// from server: 8% by atomic.potato
-struct CCommandBarCmdUI
-{
-    int m_padding[10];
-    int m_value;
-    int f();
-};
-
-int CCommandBarCmdUI::f()
-{
-    return m_value ? 1 : 0;
-}
+// from server: 100% by tester
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /MD /GS /EHsc /Ob1
+// roc-lib: xtp-11.2.2-shared-mfc-internals Source\CommandBars\XTPCommandBar.cpp

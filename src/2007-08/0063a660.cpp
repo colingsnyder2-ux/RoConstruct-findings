@@ -1,15 +1,5 @@
-// from server: 86% by colin
-struct CXTPControl
-{
-    void method(int a);
-};
-
-extern void* __stdcall sub_63A000(void* out, int a, void* self, int one);
-extern void __stdcall sub_63D450(void* p);
-
-void CXTPControl::method(int a)
-{
-    void* tmp[2];
-    void* r = sub_63A000(tmp, a, this, 1);
-    sub_63D450(r);
-}
+// from server: 100% by tester
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /MD /GS /EHsc /Ob1
+// roc-lib: xtp-11.2.2-shared-mfc Source\CommandBars\XTPControl.cpp

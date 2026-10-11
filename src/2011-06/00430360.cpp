@@ -1,5 +1,5 @@
-// from server: 48% by colin
+// from server: 100% by tester
 // roc-lang: cpp
 // roc-cl: 21022
-// roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: templates-boost-1_34_1 deque_wp.cpp
+// roc-flags: /O2 /GS /EHsc /MD /Ob1
+// roc-lib: xtp-11.2.2-shared-mfc-string-calls Source/CommandBars/XTPDialogBar.cpp

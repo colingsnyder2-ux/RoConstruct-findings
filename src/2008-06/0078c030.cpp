@@ -1,14 +1,5 @@
-// from server: 87% by atomic.potato
-struct CXTColorWnd
-{
-    void f(double, double);
-};
-
-extern "C" void __stdcall call_a(CXTColorWnd *, double);
-extern "C" void __stdcall call_b(CXTColorWnd *, double);
-
-void CXTColorWnd::f(double a, double b)
-{
-    call_a(this, a);
-    call_b(this, b);
-}
+// from server: 100% by tester
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /MD /GS /EHsc /Ob1
+// roc-lib: xtp-11.2.2-lib Source\Controls\XTColorPageCustom.cpp

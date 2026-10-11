@@ -1,14 +1,18 @@
-// from server: 49% by atomic.potato
+// from server: 100% by atomic.potato
+struct FaceComparable {
+    bool equals(void* p);
+};
+
 struct FacesComponentItem {
     char pad[0x128];
     void* field_128;
     bool compare(void* a, void* b);
 };
 
-extern "C" bool __stdcall sub_7462A0(void* a, void* b);
-
 bool FacesComponentItem::compare(void* a, void* b) {
-    bool r1 = sub_7462A0(field_128, a);
-    bool r2 = sub_7462A0(field_128, b);
+    FaceComparable* lhs = (FaceComparable*)a;
+    FaceComparable* rhs = (FaceComparable*)b;
+    bool r1 = lhs->equals(field_128);
+    bool r2 = rhs->equals(field_128);
     return r1 == r2;
 }

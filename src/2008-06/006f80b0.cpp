@@ -1,20 +1,5 @@
-// from server: 63% by atomic.potato
-extern "C" int (__stdcall *SelectObject)(int, int);
-
-struct CXTPBitmapDC
-{
-    int m_pDC;
-    int m_hBitmap;
-    int m_rect;
-    int m_oldBitmap;
-    int m_extra;
-    CXTPBitmapDC& f();
-};
-
-CXTPBitmapDC& CXTPBitmapDC::f()
-{
-    SelectObject(m_oldBitmap, m_extra);
-    m_pDC = 0x85a6c0;
-    m_hBitmap = 0x80e068;
-    return *this;
-}
+// from server: 100% by tester
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /MD /GS /EHsc /Ob1
+// roc-lib: xtp-11.2.2-shared-mfc-internals Source\Common\XTPDrawHelpers.cpp

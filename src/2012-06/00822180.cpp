@@ -1,4 +1,4 @@
-// from server: 57% by atomic.potato
+// from server: 65% by atomic.potato
 struct S
 {
     int f(int);
@@ -14,7 +14,7 @@ int S::f(int value)
 
     int index = *(int *)((char *)this + 16);
     int base = *(int *)((char *)this + 12);
-    int table = *(int *)((char *)0 + 132);
+    int table = *(int *)((char *)offset + 132);
     int target = *(int *)(table + index);
     int (*fn)(void *) = *(int (**)(void *))((char *)this + 8);
 

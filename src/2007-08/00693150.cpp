@@ -1,19 +1,5 @@
-// from server: 61% by colin
-struct CXTPStatusBar {
-    void HitTest(int, int, int, int, int, int);
-};
-
-struct CXTPStatusBarItem {
-    virtual void OnLButtonDown(int, int, int, int, int, int);
-};
-
-extern "C" CXTPStatusBarItem* __stdcall FindItem(CXTPStatusBar* self, int index);
-
-void CXTPStatusBar::HitTest(int x, int y, int a, int b, int c, int d)
-{
-    CXTPStatusBarItem* item = FindItem(this, y);
-    if (item)
-    {
-        item->OnLButtonDown(x, a, b, c, d, 0);
-    }
-}
+// from server: 100% by tester
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /MD /GS /EHsc /Ob1
+// roc-lib: xtp-11.2.2-shared-mfc-internals Source/CommandBars/XTPStatusBar.cpp

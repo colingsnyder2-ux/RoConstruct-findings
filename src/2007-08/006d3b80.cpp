@@ -1,17 +1,5 @@
-// from server: 95% by colin
-struct CXTPReportColumnsHelper {
-    int method(int, int);
-};
-
-struct CXTPReportColumns {
-    int Add(int);
-    char pad[0x24];
-    int m_nCount;
-};
-
-int CXTPReportColumns::Add(int nItem)
-{
-    int nIndex = m_nCount;
-    ((CXTPReportColumnsHelper*)((char*)this + 0x24))->method(nIndex, nItem);
-    return nIndex;
-}
+// from server: 100% by tester
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /MD /GS /EHsc /Ob1
+// roc-lib: xtp-11.2.2-shared-mfc Source\ReportControl\XTPReportColumns.cpp

@@ -1,16 +1,5 @@
-// from server: 83% by atomic.potato
-struct S
-{
-    int value;
-    int unused[28];
-    S* f();
-};
-
-void __fastcall sub_78a2c0(S*);
-
-S* S::f()
-{
-    sub_78a2c0(this);
-    value = 0x869f1c;
-    return this;
-}
+// from server: 100% by tester
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /MD /GS /EHsc /Ob1
+// roc-lib: xtp-11.2.2-lib Source\Controls\XTColorPageCustom.cpp

@@ -1,5 +1,9 @@
-// from server: 63% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs util/Name.cpp
+// from server: 72% by atomic.potato
+struct S {
+};
+
+int __cdecl f(int* p) {
+    int (*fn)(int) = (int (*)(int))p[0];
+    int r = fn(p[1]);
+    return *(int*)r;
+}

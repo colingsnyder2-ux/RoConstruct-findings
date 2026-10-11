@@ -1,4 +1,4 @@
-// from server: 37% by colin
+// from server: 38% by atomic.potato
 // Reconstructed from the target machine code.
 // The function is a member of RBX::Log (thiscall, ecx = this).
 // It parses a double from a stringstream and returns it.
@@ -42,7 +42,7 @@ extern void __cdecl throw_bad_lexical_cast();
 // The class.  Only the members touched by this function are declared.
 struct RBX_Log
 {
-    double parseDouble(const char* text);
+    double __cdecl parseDouble(const char* text);
 };
 
 double RBX_Log::parseDouble(const char* text)

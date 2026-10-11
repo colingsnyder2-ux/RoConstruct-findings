@@ -1,16 +1,5 @@
-// from server: 62% by atomic.potato
-struct S
-{
-    int f(int);
-};
-
-int S::f(int index)
-{
-    if (index >= 30 && index <= 62)
-    {
-        int value = *(((int *)this) + 0x364 / 4 + index);
-        if (value != -1)
-            return value;
-    }
-    return -1;
-}
+// from server: 100% by tester
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /MD /GS /EHsc /Ob1
+// roc-lib: xtp-11.2.2-shared-mfc Source\Common\XTPColorManager.cpp

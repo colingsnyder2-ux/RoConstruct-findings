@@ -1,4 +1,4 @@
-// from server: 88% by colin
+// from server: 91% by atomic.potato
 struct CXTPCustomizeSheet {
     char pad[0xb8];
     void* m_pSomething;
@@ -15,16 +15,15 @@ void CXTPCustomizeSheet::f(void* p)
     {
         void** vtbl = *(void***)p;
         ((void (__thiscall*)(void*, int))vtbl[0])(p, 1);
-        int r = sub_639d80(v);
-        if (r != 0 && r != 2)
+        if (sub_639d80(v) == 0 || sub_639d80(v) == 2)
         {
             void** vtbl2 = *(void***)p;
-            ((void (__thiscall*)(void*, int))vtbl2[1])(p, 0);
+            ((void (__thiscall*)(void*, int))vtbl2[1])(p, 1);
         }
         else
         {
             void** vtbl2 = *(void***)p;
-            ((void (__thiscall*)(void*, int))vtbl2[1])(p, 1);
+            ((void (__thiscall*)(void*, int))vtbl2[1])(p, 0);
         }
     }
     else

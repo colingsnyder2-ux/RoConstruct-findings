@@ -1,5 +1,12 @@
-// from server: 57% by colin
-// roc-lang: cpp
-// roc-cl: 30729
-// roc-flags: /O2 /GS- /MD
-// roc-lib: xtp-15.2.1 Source/CommandBars/XTPMessageBar.cpp
+// from server: 94% by atomic.potato
+extern "C" int __stdcall sub_00983144(int, int);
+
+struct CRobloxWnd_PartDropTarget
+{
+    int thunk();
+};
+
+int CRobloxWnd_PartDropTarget::thunk()
+{
+    return sub_00983144(0, 0);
+}

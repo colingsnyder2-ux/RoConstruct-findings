@@ -1,5 +1,7 @@
-// from server: 62% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs util/Name.cpp
+// from server: 67% by atomic.potato
+extern "C" void __stdcall sub_6966F0(float a, float b, int c);
+
+void __stdcall sub_696830(float a, float b)
+{
+    sub_6966F0(a, b, 1);
+}

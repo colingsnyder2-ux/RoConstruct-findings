@@ -1,16 +1,5 @@
-// from server: 32% by atomic.potato
-struct S
-{
-    int f(int);
-};
-
-extern "C" int __stdcall sub_00802FE0(void *);
-
-int S::f(int value)
-{
-    if (value < 0)
-        return 0;
-    if (value >= sub_00802FE0((char *)this + 0x84))
-        return 0;
-    return 1;
-}
+// from server: 100% by tester
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /MD /GS /EHsc /Ob1
+// roc-lib: xtp-11.2.2-lib-strlen Source\Controls\XTMaskEdit.cpp

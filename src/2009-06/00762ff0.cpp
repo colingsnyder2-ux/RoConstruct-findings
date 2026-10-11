@@ -1,15 +1,5 @@
-// from server: 75% by why2
-struct CXTPCustomizeSheet {
-    char pad[0xb8];
-    void* field_b8;
-    void getter();
-};
-
-extern void func_0071fac0();
-
-void CXTPCustomizeSheet::getter()
-{
-    void* p = *(void**)((char*)field_b8 + 0x58);
-    if (p != 0)
-        func_0071fac0();
-}
+// from server: 100% by tester
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /MD /GS /EHsc /Ob1
+// roc-lib: xtp-11.2.2-shared-mfc-internals Source\CommandBars\XTPCustomizeSheet.cpp

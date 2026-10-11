@@ -1,5 +1,15 @@
-// from server: 65% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: boost-1.34.1 libs/regex/src/cregex.cpp
+// from server: 100% by atomic.potato
+struct T {
+    ~T();
+};
+
+struct S {
+    T* m_p;
+    void f(T* p);
+};
+
+void S::f(T* p) {
+    T* old = m_p;
+    m_p = p;
+    if (old) delete old;
+}

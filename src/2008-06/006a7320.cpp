@@ -1,18 +1,5 @@
-// from server: 77% by atomic.potato
-typedef int (__cdecl *MemberCall)(void *, int, int, int);
-
-extern "C" int __cdecl CallA(void *, int, int);
-extern "C" int __cdecl CallB(void *, int);
-
-struct CXTPControlComboBox
-{
-    int f(int, int, int);
-};
-
-int CXTPControlComboBox::f(int a, int b, int c)
-{
-    int *vtable = *(int **)(this);
-    int x = CallA((void *)b, c, a);
-    x = CallB((void *)b, x);
-    return ((MemberCall)vtable[28])((void *)this, x, 0, 0);
-}
+// from server: 100% by tester
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /MD /GS /EHsc /Ob1
+// roc-lib: xtp-11.2.2-lib-strlen Source\CommandBars\XTPControlComboBox.cpp

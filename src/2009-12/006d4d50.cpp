@@ -1,21 +1,20 @@
-// from server: 79% by atomic.potato
+// from server: 100% by atomic.potato
 struct S
 {
-    int f();
+    bool f();
 };
 
 extern "C" int __cdecl sub_7f5286(int);
-extern "C" int __cdecl sub_98b768(int);
 
-int S::f()
+typedef bool (__thiscall *VerbFn)(void *, int);
+extern VerbFn g_verbFn;
+
+bool S::f()
 {
-    int value = *(int *)((char *)this + 12);
-    value = *(int *)((char *)value + 0xA90);
-    value = *(int *)((char *)value + 0x1B4);
-    if (value)
-    {
-        value = sub_7f5286(value);
-        sub_98b768(value);
-    }
-    return 0;
+    int v = *(int *)((char *)this + 12);
+    v = *(int *)((char *)v + 0xA90);
+    v = *(int *)((char *)v + 0x1B4);
+    if (v)
+        return g_verbFn((void *)0xB3EFC4, sub_7f5286(v));
+    return false;
 }

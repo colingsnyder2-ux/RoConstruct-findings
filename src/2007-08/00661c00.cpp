@@ -1,23 +1,5 @@
-// from server: 33% by colin
-struct CXTPReportRecord {
-    void* vtable;
-    char pad[0x1c];
-    void* field20;
-    char pad2[0x10];
-    CXTPReportRecord* field34;
-    void sub_6617E0();
-    void sub_661760();
-    void sub_63069A();
-    void sub_6301E4();
-    void sub_661C00();
-};
-
-void CXTPReportRecord::sub_661C00()
-{
-    this->vtable = (void*)0x7c8dfc;
-    this->sub_6617E0();
-    if (this->field34 != 0)
-        this->field34->sub_6301E4();
-    this->sub_661760();
-    this->sub_63069A();
-}
+// from server: 100% by tester
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /MD /GS /EHsc /Ob1
+// roc-lib: xtp-11.2.2-shared-mfc Source\ReportControl\XTPReportRecords.cpp

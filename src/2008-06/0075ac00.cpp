@@ -1,13 +1,5 @@
-// from server: 93% by atomic.potato
-extern "C" int __stdcall sub_721410(void *, void *, void *);
-
-struct CXTPDockingPaneKeyboardHook
-{
-    int f(void *);
-};
-
-int CXTPDockingPaneKeyboardHook::f(void *p)
-{
-    int result = 0;
-    return sub_721410((char *)this + 8, p, &result) ? result : 0;
-}
+// from server: 100% by tester
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /MD /GS /EHsc /Ob1
+// roc-lib: xtp-11.2.2-shared-mfc Source\DockingPane\XTPDockingPaneKeyboardHook.cpp

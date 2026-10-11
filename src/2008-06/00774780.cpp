@@ -1,15 +1,5 @@
-// from server: 23% by atomic.potato
-struct S {
-    int** items;
-    int count;
-    int* f(int index);
-};
-
-extern "C" void __cdecl func_006a0944();
-
-int* S::f(int index)
-{
-    if (index < 0 || index >= count)
-        func_006a0944();
-    return items[index];
-}
+// from server: 100% by tester
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /MD /GS /EHsc /Ob1
+// roc-lib: xtp-11.2.2-lib Source\Controls\XTColorSelectorCtrl.cpp

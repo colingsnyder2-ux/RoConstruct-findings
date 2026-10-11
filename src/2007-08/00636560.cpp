@@ -1,17 +1,5 @@
-// from server: 78% by colin
-// roc 2007-08 00636560  unit: CXTPControlComboBoxList  size: 33 bytes
-// Make this compile to the exact bytes below, then: roc check 2007-08 00636560
-
-extern "C" void* __stdcall sub_69F090(unsigned int, unsigned int, unsigned int);
-extern "C" int __stdcall SendMessageA(void*, unsigned int, unsigned int);
-
-struct CXTPControlComboBoxList
-{
-    void SetCurSel(int nIndex, int bNotify);
-};
-
-void CXTPControlComboBoxList::SetCurSel(int nIndex, int bNotify)
-{
-    void* pWnd = sub_69F090(0x1a2, (unsigned int)nIndex, (unsigned int)bNotify);
-    SendMessageA(*(void**)((char*)pWnd + 0x20), 0, 0);
-}
+// from server: 100% by tester
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /MD /GS /EHsc /Ob1
+// roc-lib: xtp-11.2.2-shared-mfc Source\CommandBars\XTPControlComboBox.cpp

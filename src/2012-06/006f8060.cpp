@@ -1,6 +1,6 @@
-// from server: 56% by atomic.potato
-extern "C" void construct_string(void*, const char*);
-extern "C" void call_006f7810(void*);
+// from server: 58% by atomic.potato
+extern "C" void __cdecl construct_string(void*, const char*);
+extern "C" void __stdcall call_006f7810(void*);
 
 struct TrackCameraCommand {
     int value;

@@ -1,17 +1,5 @@
-// from server: 88% by colin
-struct CXTPPropertyGridItem {
-    CXTPPropertyGridItem* f(int);
-};
-
-extern "C" void __stdcall sub_73833a();
-extern "C" void __stdcall sub_6992a0();
-
-CXTPPropertyGridItem* CXTPPropertyGridItem::f(int arg)
-{
-    sub_73833a();
-    *(int*)this = 0x7d16fc;
-    sub_6992a0();
-    *(int*)((char*)this + 0x38) = arg;
-    *(int*)((char*)this + 0x34) = -1;
-    return this;
-}
+// from server: 100% by tester
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /MD /GS /EHsc /Ob1
+// roc-lib: xtp-11.2.2-shared-mfc Source\PropertyGrid\XTPPropertyGridItem.cpp

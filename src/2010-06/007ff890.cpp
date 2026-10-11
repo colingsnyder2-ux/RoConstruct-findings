@@ -1,20 +1,5 @@
-// from server: 66% by atomic.potato
-typedef void *HDC;
-typedef void *HGDIOBJ;
-
-extern "C" HGDIOBJ __stdcall SelectObject(HDC, HGDIOBJ);
-
-struct S
-{
-    int f();
-    char pad[8];
-    HGDIOBJ object;
-};
-
-int S::f()
-{
-    HGDIOBJ oldObject = SelectObject(*(HDC *)((char *)this + 0xc), object);
-    *(void **)this = (void *)0xa5fe80;
-    *(void **)((char *)this + 4) = (void *)0xa024c8;
-    return (int)oldObject;
-}
+// from server: 100% by tester
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /MD /GS /EHsc /Ob1
+// roc-lib: xtp-11.2.2-shared-mfc-internals Source\Common\XTPDrawHelpers.cpp

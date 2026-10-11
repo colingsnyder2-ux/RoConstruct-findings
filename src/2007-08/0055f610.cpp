@@ -1,5 +1,8 @@
-// from server: 44% by colin
+// from server: 48% by atomic.potato
 extern "C" void __stdcall _invalid_parameter_noinfo();
+
+typedef bool (__cdecl *Pred)(int);
+int* find_if(int* first, int* last, Pred pred);
 
 struct ClearBackpack {
     char pad[0xf4];
@@ -19,7 +22,7 @@ int ClearBackpack::method(int arg) {
     if (edi > p[2]) {
         _invalid_parameter_noinfo();
     }
-    int result = ((int (__cdecl*)(int, int, int))0x55e780)(arg, ebx, edi);
+    int result = (int)find_if((int*)arg, (int*)ebx, (Pred)edi);
     int edi2 = p[2];
     if (p[1] > edi2) {
         _invalid_parameter_noinfo();

@@ -1,14 +1,5 @@
-// from server: 30% by colin
-struct CXTPImageManagerIcon {
-    void sub_6A5B70();
-    void sub_64AC60();
-    void sub_63069A();
-    void func();
-};
-
-void CXTPImageManagerIcon::func() {
-    *(void**)this = (void*)0x7c6cbc;
-    sub_6A5B70();
-    sub_64AC60();
-    sub_63069A();
-}
+// from server: 100% by tester
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /MD /GS /EHsc /Ob1
+// roc-lib: xtp-11.2.2-shared-mfc Source\Calendar\XTPCalendarControl.cpp

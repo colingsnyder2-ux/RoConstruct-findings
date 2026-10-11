@@ -1,16 +1,10 @@
-// from server: 28% by colin
+// from server: 38% by atomic.potato
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
 
 extern "C" void __stdcall _invalid_parameter_noinfo();
 
 struct RefCounted {
-    void* vptr;
-    long ref1;
-    long ref2;
-};
-
-struct Inner {
     void* vptr;
     long ref1;
     long ref2;
@@ -26,14 +20,9 @@ struct Node {
     Sub* sub;
 };
 
-struct TreeCtrl {
+struct S {
     char pad0[0x30];
     void* field_30;
-};
-
-struct S {
-    char pad0[0xc];
-    Node* node;
     bool method();
 };
 
@@ -62,9 +51,9 @@ bool S::method()
     void* local34 = 0;
     void* local38 = 0;
 
-    void* vt = *(void**)this->node->sub;
+    void* vt = *(void**)this->field_30;
     void* (__thiscall *fn)(void*, void*) = *(void* (__thiscall**)(void*, void*))((char*)vt + 0x14c);
-    void* result = fn(this->node->sub, &local24);
+    void* result = fn(this->field_30, &local24);
 
     void* obj = *(void**)result;
     void* obj2 = *(void**)((char*)result + 4);
@@ -92,8 +81,8 @@ bool S::method()
         }
     }
 
-    Node* n = this->node;
-    Sub* s = n->sub;
+    void* n = *(void**)((char*)this + 0xc);
+    Sub* s = *(Sub**)((char*)n + 0xc);
 
     Iter it;
     sub_4178F0((char*)s + 0xc0, &it);

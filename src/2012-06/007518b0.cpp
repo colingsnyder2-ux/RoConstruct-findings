@@ -1,5 +1,29 @@
-// from server: 33% by colin
-// roc-lang: cpp
-// roc-cl: 50727
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs v8datamodel/PartInstance.cpp
+// from server: 44% by atomic.potato
+struct PartInstance {
+    int count;
+    char pad0[8];
+    float* data;
+    float get();
+};
+
+float PartInstance::get() {
+    float a = 0.0f;
+    float b = 0.0f;
+    float c = 0.0f;
+    int n = count;
+    int i = 0;
+    if (n >= 2) {
+        float* p = data;
+        int k = ((unsigned)(n - 2) >> 1) + 1;
+        i = k + k;
+        do {
+            a += p[0];
+            b += p[1];
+            p += 2;
+        } while (--k);
+    }
+    if (i < n) {
+        c = data[i];
+    }
+    return (a + b + c) / (float)n;
+}

@@ -1,28 +1,5 @@
-// from server: 63% by atomic.potato
-struct CInstanceRecord
-{
-    void f(int, int);
-};
-
-struct CXTPControlTabWorkspace
-{
-    void f();
-    char pad0[0x178];
-    int m178;
-    char pad1[0x8c];
-    CInstanceRecord *m208;
-};
-
-void CInstanceRecord::f(int, int)
-{
-}
-
-void CXTPControlTabWorkspace::f()
-{
-    CInstanceRecord *p = m208;
-    if (p != 0 && *(int *)((char *)p + 0x7c) == (int)&m178)
-    {
-        *(int *)((char *)p + 0x7c) = 0;
-        p->f(0, -1);
-    }
-}
+// from server: 100% by tester
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /MD /GS /EHsc /Ob1
+// roc-lib: xtp-11.2.2-shared-mfc Source\CommandBars\XTPTabClientWnd.cpp

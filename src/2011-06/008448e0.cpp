@@ -1,23 +1,5 @@
-// from server: 60% by atomic.potato
-struct S
-{
-    S();
-    int value;
-    int a;
-    int b;
-    float c;
-    int d;
-    int e;
-    int f;
-    int g;
-};
-
-extern "C" void init(void *);
-
-S::S()
-{
-    value = 0xac62c8;
-    init((char *)this + 4);
-    init((char *)this + 16);
-    c = *(float *)0xa75b68;
-}
+// from server: 100% by tester
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /MD /GS /EHsc /Ob1
+// roc-lib: xtp-11.2.2-shared-mfc Source\Common\XTPColorManager.cpp
