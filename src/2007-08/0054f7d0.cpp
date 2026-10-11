@@ -1,6 +1,6 @@
-// from server: 35% by colin
+// from server: 49% by atomic.potato
 struct S {
-    void f(unsigned int value);
+    void __cdecl f(unsigned int value);
 };
 
 extern "C" {

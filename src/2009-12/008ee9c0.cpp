@@ -1,13 +1,18 @@
-// from server: 32% by atomic.potato
+// from server: 83% by atomic.potato
+struct S;
+
+typedef int (__thiscall *VFn)(void*, int, S*);
+
+extern void* __fastcall func_00804590(S*);
+
 struct S
 {
     int f(int);
 };
 
-extern "C" S* func_00804590(S*);
-
-int S::f(int value)
+int S::f(int arg)
 {
-    S* object = func_00804590(this);
-    return object->f(value);
+    void* obj = func_00804590(this);
+    VFn vfn = *(VFn*)(*(int*)obj + 0x170);
+    return vfn(obj, arg, this);
 }

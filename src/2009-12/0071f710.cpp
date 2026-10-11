@@ -1,4 +1,4 @@
-// from server: 45% by atomic.potato
+// from server: 46% by atomic.potato
 struct S
 {
 };
@@ -9,6 +9,6 @@ void __cdecl f(float *a, float *b)
 {
     float x = b[2];
     a[1] = b[0];
-    a[2] = b[1] * g_009b1610[0];
+    a[2] = b[1];
     a[0] = x;
 }

@@ -1,4 +1,4 @@
-// from server: 30% by atomic.potato
+// from server: 50% by atomic.potato
 struct I_func_00867950 {
     char pad[324];
     int m_x;
@@ -18,12 +18,16 @@ int S_func_00867950::f()
 struct CXTPPropertyGridView {
     char pad[332];
     int m_value;
-    int f();
+    int f(int* p);
 };
 
-int CXTPPropertyGridView::f()
+int CXTPPropertyGridView::f(int* p)
 {
-    S_func_00867950* p = (S_func_00867950*)this;
-    p->f();
-    return m_value;
+    p[4] = m_value;
+    S_func_00867950* s = (S_func_00867950*)this;
+    int r = s->f();
+    void** vt = *(void***)s;
+    void (*fn)(void*) = (void (*)(void*))vt[11];
+    fn(s);
+    return r;
 }

@@ -1,21 +1,21 @@
-// from server: 66% by colin
+// from server: 79% by atomic.potato
 extern "C" {
 int __cdecl _errno();
 int __cdecl ferror(void*);
 char* __cdecl strerror(int);
 }
 
-extern "C" int __stdcall sub_5bda90(int, int);
-extern "C" int __stdcall sub_5be8e0(int, const char*);
-extern "C" int __stdcall sub_5c7a20(int);
-extern "C" int __stdcall sub_5bd950(int, int);
-extern "C" int __stdcall sub_5bd590(int, int);
-extern "C" int __stdcall sub_5bd740(int, int);
-extern "C" int __stdcall sub_5c7560();
+extern "C" int __cdecl sub_5bda90(int, int);
+extern "C" int __cdecl sub_5be8e0(int, const char*);
+extern "C" int __cdecl sub_5c7a20(int);
+extern "C" int __cdecl sub_5bd950(int, int);
+extern "C" int __cdecl sub_5bd590(int, int);
+extern "C" int __cdecl sub_5bd740(int, int);
+extern "C" int __cdecl sub_5c7560();
 
-extern "C" int (__stdcall *off_77e83c)(void*);
-extern "C" int (__stdcall *off_77e840)(int);
-extern "C" int (__stdcall *off_77e850)();
+extern "C" int (__cdecl *off_77e83c)(void*);
+extern "C" int (__cdecl *off_77e840)(int);
+extern "C" int (__cdecl *off_77e850)();
 
 extern const char aFileIsAlreadyClosed[];
 extern const char aHresultDS[];

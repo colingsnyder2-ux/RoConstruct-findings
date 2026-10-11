@@ -1,16 +1,13 @@
-// from server: 85% by atomic.potato
+// from server: 87% by atomic.potato
 struct S
 {
-    int f();
+    char f();
 };
 
-typedef int (__cdecl *CallType)(int);
-typedef int (__thiscall *MemberCallType)(void *, int);
-
 extern "C" int __cdecl call_007f5286(int);
-extern "C" int __cdecl call_0098b768(void *, int);
+extern "C" char __cdecl call_0098b768(void *, int);
 
-int S::f()
+char S::f()
 {
     int value = *(int *)((char *)*(int *)((char *)this + 12) + 0xA90);
     int result = *(int *)((char *)value + 0x1B4);

@@ -1,19 +1,15 @@
-// from server: 83% by atomic.potato
-extern "C" void __stdcall G1_func_0040C080();
+// from server: 94% by atomic.potato
+extern "C" void __stdcall G1_func_0040C080(int);
 
 struct S
 {
-    int padding[41];
-    int value;
-    int f(int);
+    void f(int);
 };
 
-int S::f(int value)
+void S::f(int value)
 {
-    if (value == this->value)
-        return 0;
-
-    this->value = value;
-    G1_func_0040C080();
-    return 0;
+    if (value == *(int*)((char*)this + 0x9c))
+        return;
+    *(int*)((char*)this + 0x9c) = value;
+    G1_func_0040C080(0xb7af98);
 }
