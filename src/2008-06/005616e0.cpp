@@ -1,29 +1,47 @@
-// from server: 30% by tester
-struct S {
-    int f(int, int, int, int, int, int, int, int, int, int, int);
+// from server: 100% by king_originala
+typedef void (__cdecl *Manager)(void *, void *, int);
+
+struct Argument {
+    unsigned char prefix[8];
+    Manager *manager;
+    unsigned char padding[4];
+    unsigned char storage[28];
+
+    ~Argument();
 };
 
-extern "C" void* __stdcall func_006a0920(unsigned int);
-extern "C" bool __stdcall func_0060a2f0(void*);
-extern "C" void __stdcall func_0055f6a0(void*, void*);
-
-int S::f(int a1, int a2, int a3, int a4, int a5, int a6, int a7, int a8, int a9, int a10, int a11)
+inline Argument::~Argument()
 {
-    void* p = 0;
-    *(int*)this = 0;
-    if (!func_0060a2f0(&p)) {
-        void* mem = func_006a0920(0x28);
-        func_0055f6a0(mem, &p);
-        *(void**)((char*)this + 8) = mem;
-        *(int*)this = 0x82de8c;
+    if (manager) {
+        Manager f = *manager;
+        if (f)
+            f(storage, storage, 1);
+    }
+}
+
+extern bool __cdecl func_0060a2f0();
+extern void *__cdecl allocate(unsigned int);
+extern void __cdecl initialize(void *, Argument *);
+extern Manager managerTable[];
+
+struct S {
+    Manager *manager;
+    unsigned int padding;
+    void *object;
+
+    S(Argument argument);
+};
+
+S::S(Argument argument) : manager(0)
+{
+    typedef bool (__cdecl *Predicate)(Argument *);
+
+    if (!reinterpret_cast<Predicate>(&func_0060a2f0)(&argument)) {
+        void *p = allocate(40);
+        initialize(p, &argument);
+        object = p;
+        manager = managerTable;
     } else {
-        *(int*)this = 0;
+        manager = 0;
     }
-    if (p) {
-        void* vt = *(void**)p;
-        if (vt) {
-            ((void (__stdcall*)(void*, void*, int))vt)(p, &p, 1);
-        }
-    }
-    return (int)this;
 }

@@ -1,5 +1,35 @@
-// from server: 34% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs util/Name.cpp
+// from server: 100% by king_originala
+struct Object {
+    void release();
+};
+
+struct S {
+    Object* first();
+    Object* second();
+    Object* third();
+    Object* fourth();
+    Object* fifth();
+};
+
+void __stdcall f(S* s)
+{
+    Object* p = s->first();
+    if (p)
+        p->release();
+
+    p = s->second();
+    if (p)
+        p->release();
+
+    p = s->third();
+    if (p)
+        p->release();
+
+    p = s->fourth();
+    if (p)
+        p->release();
+
+    p = s->fifth();
+    if (p)
+        p->release();
+}

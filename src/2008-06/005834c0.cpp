@@ -1,13 +1,30 @@
-// from server: 31% by atomic.potato
-struct S_func_005834c0 {
-    char pad0[432];
-    char m_data[36];
-    void f(const char* source);
+// from server: 100% by king_originala
+struct Matrix {
+    float values[9];
 };
 
-void S_func_005834c0::f(const char* source)
+struct Transform {
+    Matrix rotation;
+    float x, y, z;
+    Transform& operator=(const Transform& value);
+};
+
+__forceinline Transform& Transform::operator=(const Transform& value)
 {
-    int i;
-    for (i = 0; i < 36; ++i)
-        m_data[i] = source[i];
+    rotation = value.rotation;
+    x = value.x;
+    y = value.y;
+    z = value.z;
+    return *this;
+}
+
+struct S_func_005834c0 {
+    char pad0[432];
+    Transform transform;
+    void f(const Transform& value);
+};
+
+void S_func_005834c0::f(const Transform& value)
+{
+    transform = value;
 }

@@ -1,69 +1,83 @@
-// from server: 74% by tester
-struct I_func_005e7560 {
-    char pad[36];
-    int m_x;
-};
+// from server: 98% by king_originala
+struct Stage;
+struct Item;
 
-struct S_func_005e7560 {
+struct Endpoint {
     char pad[92];
-    I_func_005e7560* m_p;
-    int f();
+    void* data;
+    int get();
 };
 
-int S_func_005e7560::f()
-{
-    return m_p->m_x;
-}
+struct FlagData {
+    char pad[20];
+    unsigned char enabled;
+};
 
-struct S_func_00645840 {
-    int field0;
+struct VirtualBase {
+    virtual void slot0();
+    virtual int rank();
+    virtual void slot2();
+    virtual int kind();
+    virtual void slot4();
+    virtual void slot5();
+    virtual void slot6();
+    virtual void slot7();
+    virtual void slot8();
+    virtual void slot9();
+    virtual void slot10();
+    virtual void update();
+};
+
+struct Item : VirtualBase {
+    Stage* owner;
+    int field8;
+    Endpoint* first;
+    Endpoint* second;
+    void finish(int);
+};
+
+struct Manager {
+    virtual void slot0();
+    virtual void slot1();
+    virtual void slot2();
+    virtual void slot3();
+    virtual void remove(Item*);
+    virtual void forward(Item*);
+};
+
+struct Container {
+    void insert(Item**);
+};
+
+struct Stage : VirtualBase {
     int field4;
-    void f(int);
+    Manager* manager;
+    char pad[36];
+    Container items;
+    void f(Item*);
 };
 
-void S_func_00645840::f(int)
+extern Item* __cdecl findPair(Endpoint*, Endpoint*);
+
+void Stage::f(Item* item)
 {
-    field4 = *reinterpret_cast<int*>(field4 + 4);
-}
+    FlagData* first = reinterpret_cast<FlagData*>(item->first->get());
+    FlagData* second = reinterpret_cast<FlagData*>(item->second->get());
+    first->enabled = 1;
+    second->enabled = 1;
 
-struct S_func_005e9f60 {
-    char pad[0x30];
-    void f(void*);
-};
+    int otherRank = item->owner->rank();
+    if (otherRank > rank())
+        manager->forward(item);
 
-struct S_func_0066f6e0 {
-    char pad[8];
-    void* m_p8;
-    char pad2[0x24];
-    S_func_005e9f60 m_30;
-    void f(void*);
-};
-
-void S_func_0066f6e0::f(void* arg)
-{
-    S_func_005e7560* esi = (S_func_005e7560*)arg;
-    S_func_0066f6e0* edi = this;
-
-    int ebp = esi->f();
-    int eax = ((S_func_005e7560*)((char*)esi + 0x10))->f();
-    *(char*)(ebp + 0x14) = 1;
-    *(char*)(eax + 0x14) = 1;
-
-    int v1 = (*(int (__thiscall**)(void*))(*(int*)((char*)esi + 4) + 4))((void*)((char*)esi + 4));
-    int v2 = (*(int (__thiscall**)(void*))(*(int*)edi + 4))(edi);
-    if (v1 > v2) {
-        (*(void (__thiscall**)(void*, void*))(*(int*)edi->m_p8 + 0x14))(edi->m_p8, esi);
+    if (item->kind() != 1) {
+        Item* entry = item;
+        items.insert(&entry);
+        item->update();
+        Item* pair = findPair(item->first, item->second);
+        if (pair && pair->owner == this)
+            manager->remove(pair);
     }
 
-    if ((*(int (__thiscall**)(void*))(*(int*)esi + 0xc))(esi) != 1) {
-        void* local = esi;
-        m_30.f(&local);
-        (*(void (__thiscall**)(void*))(*(int*)esi + 0x2c))(esi);
-        int r = ((int (__cdecl*)(void*, void*))0x5e7d30)(*(void**)((char*)esi + 0xc), *(void**)((char*)esi + 0x10));
-        if (r != 0 && *(void**)(r + 4) == edi) {
-            (*(void (__thiscall**)(void*, int))(*(int*)edi->m_p8 + 0x10))(edi->m_p8, r);
-        }
-    }
-
-    ((S_func_00645840*)esi)->f((int)edi);
+    item->finish(reinterpret_cast<int>(this));
 }

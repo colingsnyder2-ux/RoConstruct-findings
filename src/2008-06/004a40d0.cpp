@@ -1,5 +1,12 @@
-// from server: 42% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs util/Name.cpp
+// from server: 100% by king_originala
+struct S {
+    void* get();
+};
+
+extern S* __cdecl lookup(void*);
+
+bool __cdecl check(void* value)
+{
+    S* object = lookup(value);
+    return (object ? object->get() : 0) != 0;
+}

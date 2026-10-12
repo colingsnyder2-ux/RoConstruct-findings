@@ -1,28 +1,33 @@
-// from server: 51% by atomic.potato
-struct Kernel
-{
-    int value;
+// from server: 72% by colin
+struct Node {
+    int activeIndex;
+    int freeIndex;
 };
 
-struct Ball
-{
-    float result;
+struct NodeArray {
+    Node** data;
+    int size;
+    int capacity;
+    void resize(int newSize, Node* value);
 };
 
-extern "C" void __cdecl func_005faf90(int, Ball *);
-extern "C" float __cdecl func_00649310();
-
-struct KernelFunctions
-{
-    void function(Ball *);
+struct Body {
+    char pad[0x2c];
+    float* someFloatPtr;
 };
 
-void KernelFunctions::function(Ball *b)
+struct Kernel {
+    char pad[0x10];
+    NodeArray* nodeArray;
+    void insertBody(Body* b);
+};
+
+float getInfinity();
+
+void Kernel::insertBody(Body* b)
 {
-    Kernel *k = (Kernel *)this;
-    k = *(Kernel **)((char *)k + 0x10);
-    func_005faf90((int)k, b);
-    func_00649310();
-    if (b->result)
-        b->result = func_00649310();
+    nodeArray->resize(0, (Node*)b);
+    float f = getInfinity();
+    if (b->someFloatPtr)
+        *b->someFloatPtr = f;
 }

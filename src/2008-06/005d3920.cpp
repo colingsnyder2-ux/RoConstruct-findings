@@ -1,52 +1,42 @@
-// from server: 93% by tester
-struct S
+// from server: 100% by king_originala
+struct Object
 {
-    int f(int, int);
-    int value4;
-    int value8;
-    int valueC;
-    int value10;
-    int value14;
-    int value18;
+    void notify(void*);
 };
 
-extern "C" void __stdcall sub_40DB00(int, int);
+typedef void (__thiscall *Callback)(void*, void*);
 
-int S::f(int p1, int p2)
+struct S
 {
-    int* base = (int*)p1;
-    if (base)
-        base = (int*)((char*)base - 20);
-    else
-        base = 0;
+    int reserved;
+    void* property;
+    int valueOffset;
+    int valueIndex;
+    Callback callback;
+    int callbackOffset;
+    int callbackIndex;
 
-    int index = *(int*)((char*)this + 0xC);
-    int offset = *(int*)((char*)base + 0x134);
-    int entry = *(int*)((char*)index + offset);
-    entry += *(int*)((char*)this + 8);
+    void f(void*, const int*);
+};
 
-    int* target = (int*)((char*)entry + (int)base + 0x134);
-    int value = *(int*)p2;
+void S::f(void* p, const int* value)
+{
+    char* base = p ? (char*)p - 20 : 0;
+    int table = *(int*)(base + 0x134);
+    int offset = *(int*)(table + valueIndex);
+    offset += valueOffset;
+    int* destination = (int*)(base + 0x134 + offset);
 
-    if (*target != value)
+    if (*destination != *value)
     {
-        *target = value;
-
-        int changed = *(int*)((char*)this + 0x10);
-        if (changed)
+        *destination = *value;
+        if (callback)
         {
-            int a = *(int*)((char*)this + 4);
-            int b = *(int*)((char*)this + 0x18);
-            int c = *(int*)((char*)base + 0x134);
-            int d = *(int*)((char*)b + c);
-            d += *(int*)((char*)this + 0x14);
-            int* arg = (int*)((char*)d + (int)base + 0x134);
-            ((void (__stdcall*)(int*, int))changed)(arg, a);
+            int callbackTable = *(int*)(base + 0x134);
+            int adjustment = *(int*)(callbackTable + callbackIndex);
+            adjustment += callbackOffset;
+            callback(base + 0x134 + adjustment, property);
         }
-
-        int e = *(int*)((char*)this + 4);
-        sub_40DB00((int)base, e);
+        ((Object*)base)->notify(property);
     }
-
-    return 0;
 }

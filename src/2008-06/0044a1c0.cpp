@@ -1,19 +1,19 @@
-// from server: 78% by atomic.potato
-extern "C" void sub_006A1232(void*);
-extern "C" void __stdcall sub_006A067A(void*);
-extern "C" void sub_00803F14(void*);
+// from server: 100% by king_originala
+typedef void (__thiscall *CleanupFunction)(void *);
+extern CleanupFunction cleanup;
 
-struct CRbxPlayDocTemplate
-{
-    char pad[148];
-    int method(int);
+void __cdecl operator delete(void *);
+
+struct S {
+    void destroy();
+    S *f(unsigned int flags);
 };
 
-int CRbxPlayDocTemplate::method(int value)
+S *S::f(unsigned int flags)
 {
-    sub_00803F14((char*)this + 148);
-    sub_006A1232(this);
-    if (value & 1)
-        sub_006A067A(this);
-    return (int)this;
+    cleanup(reinterpret_cast<char *>(this) + 0x94);
+    destroy();
+    if (flags & 1)
+        operator delete(this);
+    return this;
 }

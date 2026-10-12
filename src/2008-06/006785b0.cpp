@@ -1,5 +1,29 @@
-// from server: 51% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MT
-// roc-lib: ogre-1.4.9 OgreAlignedAllocator.cpp
+// from server: 85% by king_originala
+extern float initialValue;
+
+struct S {
+    int count;
+    int reserved;
+    struct Record {
+        float value;
+        unsigned int a, b, c, d;
+    } records[100];
+
+    S();
+};
+
+S::S()
+{
+    float value = initialValue;
+    count = 0;
+    Record* p = records;
+    int n = 99;
+    do {
+        p->value = value;
+        p->a = 0xbf800000;
+        p->b = 0xbf800000;
+        p->c = 0xbf800000;
+        p->d = 0xbf800000;
+        ++p;
+    } while (--n >= 0);
+}

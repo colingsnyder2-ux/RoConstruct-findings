@@ -1,18 +1,28 @@
-// from server: 82% by atomic.potato
-extern "C" int __cdecl sub_56bf90();
-extern "C" void __cdecl invalid_parameter_noinfo();
-
-struct S
-{
+// from server: 94% by king_originala
+struct State {
+    void* owner;
+    unsigned int reserved[2];
+    unsigned int begin;
+    unsigned int end;
 };
 
-void __cdecl f(int* result)
+struct Result {
+    void* owner;
+    unsigned int position;
+};
+
+extern State* __cdecl getState();
+extern "C" void (__cdecl* _invalid_parameter_noinfo)();
+
+Result* __cdecl getResult(Result* output)
 {
-    int* p = (int*)sub_56bf90();
-    int value = p[3];
-    int limit = p[4];
-    if (value >= limit)
-        invalid_parameter_noinfo();
-    result[1] = limit;
-    result[0] = p[0];
+    State* state = getState();
+    unsigned int end = state->end;
+    if (state->begin > end)
+        _invalid_parameter_noinfo();
+
+    void* owner = state->owner;
+    output->position = end;
+    output->owner = owner;
+    return output;
 }

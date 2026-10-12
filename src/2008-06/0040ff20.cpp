@@ -1,56 +1,60 @@
-// from server: 48% by colin
+// from server: 97% by king_originala
+extern void* __cdecl operator new(unsigned int);
+extern void* objectTable[];
 
+struct Module;
+struct ModuleTable {
+    void (__thiscall* first)(Module*);
+    void (__thiscall* lock)(Module*);
+};
+struct Module {
+    ModuleTable* table;
+};
+extern Module* module;
 
+struct Object {
+    void** table;
+    long references;
+    void* begin;
+    void* end;
+    void* current;
+    void* owner;
+    unsigned int flags;
 
-
-extern "C" void* __cdecl operator_new(unsigned int size);
-
-struct CComObjectBase {
-    void* vtable;
-    int refcount;
-    void* pUnk;
-    void* pUnk2;
-    void* pUnk3;
-    void* pUnk4;
-    void* pUnk5;
+    Object() throw();
+    static long __stdcall Create(Object** result);
 };
 
-struct CComEnum {
-    void* vtable;
-    int refcount;
-    void* pUnk;
-    void* pUnk2;
-    void* pUnk3;
-    void* pUnk4;
-    void* pUnk5;
-};
-
-struct GlobalObj {
-    virtual void f1();
-    virtual void f2();
-};
-
-extern GlobalObj* g_pGlobal;
-
-long __stdcall CreateEnum(void** ppv)
+__forceinline Object::Object() throw()
 {
-    if (ppv == 0)
+    references = 0;
+    current = 0;
+    end = 0;
+    begin = 0;
+    owner = 0;
+    flags = 0;
+    table = objectTable;
+    module->table->lock(module);
+}
+
+long __stdcall Object::Create(Object** result)
+{
+    if (!result)
         return (long)0x80004003;
 
-    *ppv = 0;
+    *result = 0;
+    long status = (long)0x8007000e;
+    Object* object = 0;
 
-    CComEnum* p = (CComEnum*)operator_new(0x1c);
-    if (p != 0) {
-        p->refcount = 0;
-        p->pUnk3 = 0;
-        p->pUnk2 = 0;
-        p->pUnk = 0;
-        p->pUnk4 = 0;
-        p->pUnk5 = 0;
-        p->vtable = (void*)0x80d7f0;
-        g_pGlobal->f2();
-        *ppv = p;
-        return 0;
+    try {
+        object = new Object;
     }
-    return (long)0x8007000e;
+    catch (...) {
+    }
+
+    if (object)
+        status = 0;
+
+    *result = object;
+    return status;
 }

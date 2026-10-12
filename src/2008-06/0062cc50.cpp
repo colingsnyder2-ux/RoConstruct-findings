@@ -1,17 +1,18 @@
-// from server: 2% by colin
-struct FlagStand {
-    char pad[0x3e8];
-    int field_3e8;
-    void sub_5954b0();
-    void sub_62b970();
-    ~FlagStand();
+// from server: 100% by tester
+struct Base {
+    char data[0x3e8];
+    ~Base();
 };
 
-void FlagStand::sub_5954b0() {}
+struct Member {
+    ~Member();
+};
 
-void FlagStand::sub_62b970() {}
+struct ImageKeyButton : Base {
+    Member member;
+    ~ImageKeyButton();
+};
 
-FlagStand::~FlagStand() {
-    sub_5954b0();
-    sub_62b970();
+ImageKeyButton::~ImageKeyButton()
+{
 }

@@ -1,5 +1,24 @@
-// from server: 38% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs-render AggregatingSceneManager.cpp
+// from server: 100% by king_originala
+struct Color
+{
+    unsigned int value;
+    unsigned int getClosestPaletteIndex() const;
+};
+
+struct Source
+{
+    Color* getColor(Color* result) const;
+};
+
+struct Writer
+{
+    void write(const unsigned int* value, int bits, int count);
+};
+
+void func_004a7570(Source* source, Writer* writer)
+{
+    Color temporary;
+    Color color = *source->getColor(&temporary);
+    unsigned int index = color.getClosestPaletteIndex();
+    writer->write(&index, 5, 1);
+}

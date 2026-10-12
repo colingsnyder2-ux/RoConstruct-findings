@@ -1,5 +1,35 @@
-// from server: 53% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs util/Name.cpp
+// from server: 100% by tester
+#include <intrin.h>
+
+struct Counted {
+    virtual ~Counted();
+    virtual void dispose();
+    virtual void destroy();
+    long use;
+    long weak;
+    void release()
+    {
+        if (_InterlockedDecrement(&use) == 0) {
+            dispose();
+            if (_InterlockedDecrement(&weak) == 0)
+                destroy();
+        }
+    }
+};
+
+struct Base {
+    char storage[0x48];
+    ~Base();
+};
+
+struct Derived : Base {
+    void* px;
+    Counted* pn;
+    ~Derived();
+};
+
+Derived::~Derived()
+{
+    if (pn)
+        pn->release();
+}

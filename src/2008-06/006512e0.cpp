@@ -1,4 +1,4 @@
-// from server: 65% by king_originala
+// from server: 68% by king_originala
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
 
@@ -43,11 +43,12 @@ struct Shared {
     Control* control;
 
     ~Shared() {
-        if (control) {
-            if (_InterlockedExchangeAdd(&control->references, -1) == 0) {
-                control->dispose();
-                if (_InterlockedExchangeAdd(&control->weakReferences, -1) == 0)
-                    control->destroy();
+        Control* p = control;
+        if (p) {
+            if (_InterlockedExchangeAdd(&p->references, -1) == 1) {
+                p->dispose();
+                if (_InterlockedExchangeAdd(&p->weakReferences, -1) == 1)
+                    p->destroy();
             }
         }
     }
@@ -63,7 +64,8 @@ struct S {
     int f();
 };
 
-int S::f() {
+int S::f()
+{
     int result = 0;
     bool hasStats = false;
     bool hasDisabled = false;
@@ -73,7 +75,9 @@ int S::f() {
             Shared objects = owner->get();
             Collection* collection = objects.object;
             for (unsigned int i = 0;
-                 i < static_cast<unsigned int>(collection->last - collection->first);
+                 i < static_cast<unsigned int>(
+                     (reinterpret_cast<char*>(collection->last) -
+                      reinterpret_cast<char*>(collection->first)) >> 3);
                  ++i) {
                 Entry* entry = (*collection)[i].object;
                 void* found;

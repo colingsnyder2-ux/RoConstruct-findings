@@ -1,5 +1,17 @@
-// from server: 56% by colin
-// roc-lang: cpp
-// roc-cl: 50727
-// roc-flags: /O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MT
-// roc-lib: ogre-1.6.4 OgreMovableObject.cpp
+// from server: 100% by colin
+struct S_func_006850b0 {
+    char pad0[0x54];
+    int m_field54;
+    char pad1[0x12c - 0x58];
+    int m_array[1];
+    void f(int a1, int a2);
+};
+
+void S_func_006850b0::f(int a1, int a2)
+{
+    if (a1 == 0) {
+        m_field54 = a2;
+    } else {
+        *(int*)((char*)this + 0x12c + a1 * 4) = a2;
+    }
+}

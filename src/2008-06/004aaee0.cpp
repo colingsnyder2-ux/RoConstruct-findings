@@ -1,5 +1,22 @@
-// from server: 61% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs-raknet ReplicaManager.cpp
+// from server: 100% by king_originala
+struct Guard
+{
+    unsigned char storage[24];
+    Guard(void *, int);
+    ~Guard();
+};
+
+struct ProfiledRakPeer
+{
+    unsigned char padding[0x908];
+    void *mutex;
+
+    bool query();
+    bool queryUnlocked();
+};
+
+bool ProfiledRakPeer::query()
+{
+    Guard guard(mutex, 0);
+    return queryUnlocked();
+}

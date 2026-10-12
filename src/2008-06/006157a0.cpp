@@ -1,28 +1,28 @@
-// from server: 59% by atomic.potato
-extern "C" int __cdecl sub_6A17C6(int, int, int, int, int);
+// from server: 98% by king_originala
+extern "C" void* __cdecl runtime_cast(void*, long, void*, void*, int);
 
-struct Node {
-    char pad0[0x104];
-    Node* next;
+extern char instance_type[];
+extern char workspace_type[];
+extern char selectable_type[];
+
+struct Node
+{
+    char padding[0x104];
+    Node* parent;
 };
 
-struct Holder {
-    char pad0[0x104];
-    Node* node;
-};
+Node* __cdecl findSelectable(Node* node)
+{
+    Node* result = node;
+    Node** link = &node->parent;
 
-Node* __cdecl find(Holder* h) {
-    Node* n = h->node;
-    if (sub_6A17C6(0, 0x92907c, 0x9481b8, 0, (int)n) == 0) {
-        Node* result = (Node*)h;
-        for (;;) {
-            n = h->node;
-            if (sub_6A17C6(0, 0x92907c, 0x948618, 0, (int)n) != 0)
-                result = n;
-            if (sub_6A17C6(0, 0x92907c, 0x9481b8, 0, (int)n->next) == 0)
-                break;
-        }
-        return result;
+    while (!runtime_cast(*link, 0, instance_type, workspace_type, 0))
+    {
+        Node* parent = *link;
+        if (runtime_cast(parent, 0, instance_type, selectable_type, 0))
+            result = parent;
+        link = &parent->parent;
     }
-    return (Node*)h;
+
+    return result;
 }

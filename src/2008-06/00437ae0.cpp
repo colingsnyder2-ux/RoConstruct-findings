@@ -1,5 +1,63 @@
-// from server: 53% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: g3d-6.09 GLG3Dcpp/Shape.cpp
+// from server: 95% by king_originala
+struct String;
+typedef const String& (__thiscall *PrepareProc)(String*, int, int);
+typedef void (__thiscall *DestroyProc)(String*);
+typedef void (__thiscall *AssignProc)(void*, const String*);
+
+extern PrepareProc prepareString;
+extern DestroyProc destroyString;
+extern AssignProc assignString;
+extern char primaryTable[];
+extern char secondaryTable[];
+
+struct String
+{
+    void* data;
+    String(const String&);
+    ~String() throw();
+};
+
+inline String::~String() throw()
+{
+    destroyString(this);
+}
+
+String __cdecl makeValue(int);
+
+struct Binding
+{
+    char data[100];
+};
+
+struct Base
+{
+    Base(const String&);
+    ~Base();
+    void setValue(String);
+
+    void* primaryTable;
+    char reserved04[28];
+    void* secondaryTable;
+    char reserved24[104];
+    int type;
+    char reserved90[20];
+    String value;
+    Binding binding;
+};
+
+struct S : Base
+{
+    int color;
+    S(String caption, int colorValue);
+};
+
+S::S(String caption, int colorValue)
+    : Base(prepareString(&caption, colorValue, 0))
+{
+    primaryTable = ::primaryTable;
+    secondaryTable = ::secondaryTable;
+    type = 4;
+    color = colorValue;
+    setValue(makeValue(colorValue));
+    assignString(&binding, &value);
+}

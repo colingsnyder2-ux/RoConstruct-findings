@@ -1,11 +1,12 @@
-// from server: 20% by atomic.potato
-unsigned int f()
+// from server: 100% by tester
+struct S {
+    unsigned int f();
+};
+
+#pragma optimize("", off)
+unsigned int S::f()
 {
-    unsigned int a = 0x3fffffff;
-    unsigned int b;
-    if (a > 0)
-        b = a;
-    else
-        b = 1;
-    return b;
+    unsigned int count = 0x3fffffff;
+    return count > 0 ? count : 1;
 }
+#pragma optimize("", on)

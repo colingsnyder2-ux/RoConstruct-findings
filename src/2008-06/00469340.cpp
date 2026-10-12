@@ -1,13 +1,20 @@
-// from server: 74% by atomic.potato
-struct DxUserInput_00469340 {
-    int m_value;
-    int m_data;
+// from server: 90% by king_originala
+struct Vector2 {
+    float x;
+    float y;
 };
 
-void __cdecl f(float *out, const DxUserInput_00469340 *input)
+struct Input {
+    int axis;
+    int value;
+};
+
+void __cdecl f(Vector2* result, const Input* input)
 {
-    out[0] = 0.0f;
-    out[1] = (float)input->m_value;
-    if (input->m_data == 0)
-        out[0] = 0.0f;
+    result->x = 0.0f;
+    result->y = 0.0f;
+    if (input->axis == 0)
+        result->x = (float)input->value;
+    else
+        result->y = (float)input->value;
 }

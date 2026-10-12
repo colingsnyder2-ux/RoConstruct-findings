@@ -1,5 +1,33 @@
-// from server: 57% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs util/boost.cpp
+// from server: 100% by king_originala
+struct StringData {
+    unsigned int reserved;
+    union {
+        char buffer[16];
+        char* pointer;
+    };
+    unsigned int length;
+    unsigned int capacity;
+};
+
+struct Log {
+    StringData* get();
+};
+
+extern Log* globalLog;
+extern int initializationFlag;
+extern char* fallbackText;
+
+void __cdecl initializeLog();
+void __cdecl initializeOnce(void (__cdecl* initializer)(), int* flag);
+
+char* getText()
+{
+    initializeOnce(initializeLog, &initializationFlag);
+    StringData* text = globalLog->get();
+    if (text) {
+        if (text->capacity >= 16)
+            return text->pointer;
+        return text->buffer;
+    }
+    return fallbackText;
+}

@@ -1,21 +1,28 @@
-// from server: 77% by atomic.potato
-typedef unsigned int DWORD;
-
-extern "C" void __cdecl invalid_parameter_noinfo();
-
-struct S
-{
-    unsigned char pad[1];
-    S *f();
+// from server: 94% by king_originala
+struct State {
+    unsigned first;
+    unsigned reserved[2];
+    unsigned current;
+    unsigned limit;
 };
 
-S *S::f()
+struct Result {
+    unsigned first;
+    unsigned current;
+};
+
+extern State* __cdecl getState();
+extern "C" void (__cdecl* _invalid_parameter_noinfo)();
+
+Result* __cdecl f(Result* result)
 {
-    S *p = f();
-    DWORD value = *(DWORD *)((char *)p + 12);
-    if (value > *(DWORD *)((char *)p + 16))
-        invalid_parameter_noinfo();
-    *(DWORD *)((char *)p + 4) = value;
-    *(DWORD *)p = *(DWORD *)p;
-    return p;
+    State* state = getState();
+    unsigned current = state->current;
+    if (current > state->limit)
+        _invalid_parameter_noinfo();
+
+    unsigned first = state->first;
+    result->current = current;
+    result->first = first;
+    return result;
 }

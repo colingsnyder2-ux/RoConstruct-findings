@@ -1,3 +1,4 @@
+// from server: 100% by tester
 struct Data {
     unsigned long a, b, c, d;
 };

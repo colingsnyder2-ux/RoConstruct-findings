@@ -1,3 +1,4 @@
+// from server: 100% by tester
 extern void (__thiscall *destroy_string)(void *);
 
 struct String {

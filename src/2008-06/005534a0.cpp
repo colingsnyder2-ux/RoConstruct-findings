@@ -1,10 +1,11 @@
-// from server: 30% by atomic.potato
-struct S
-{
-    void f(int value);
+// from server: 95% by colin
+struct S {
+    int value;
+    S(int, int);
 };
 
-void S::f(int value)
+#pragma optimize("", off)
+S::S(int v, int)
 {
-    *(int *)this = value;
+    value = v;
 }

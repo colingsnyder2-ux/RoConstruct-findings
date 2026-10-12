@@ -1,59 +1,72 @@
-// from server: 38% by colin
-// roc 2008-06 0066c330  unit: RBX::GroupDragTool  size: 201 bytes
-// library lua-5.1.4/lcode.c (function _luaK_patchlist)
-
-extern "C" float __cdecl sub_5e82c0();
-extern "C" int __cdecl sub_60f3e0(float, float, float, float, float, float, float, float);
-
-extern float dword_819bac;
-
-struct GroupDragTool {
-    int field0;
-    int field4;
-    float field8;
-    float fieldC;
-    float field10;
-    int method();
+// from server: 65% by king_originala
+struct Vector3 {
+    float x, y, z;
 };
 
-int GroupDragTool::method() {
-    int v1;
-    float f8, fC, f10;
-    float a, b, c, d, e, f, g, h;
-    float r1, r2, r3, r4, r5, r6;
+struct Body {
+    char pad[0x94];
+    Vector3 value;
+    void updatePV();
+};
+
+struct Dimensions {
+    char pad[4];
+    Vector3 size;
+};
+
+struct Primitive {
+    char pad[0x9c];
+    Dimensions* dimensions;
+    Body* body;
+    const Vector3& getValue();
+};
+
+struct Transform {
+    float rotation[9];
+    Vector3 translation;
+};
+
+struct Box {
+    Vector3 minimum;
+    Vector3 maximum;
+    int query(const Vector3& point) const;
+};
+
+extern const float halfScale;
+
+struct S {
+    Primitive* primitive;
     int result;
+    Vector3 point;
+    void f();
+};
 
-    v1 = sub_5e82c0();
+void S::f()
+{
+    const Transform& t =
+        *reinterpret_cast<const Transform*>(&primitive->getValue());
 
-    f8 = field8 - *(float*)(v1 + 0x24);
-    fC = fieldC - *(float*)(v1 + 0x28);
-    f10 = field10 - *(float*)(v1 + 0x2c);
+    double x = point.x - t.translation.x;
+    double y = point.y - t.translation.y;
+    double z = point.z - t.translation.z;
 
-    a = *(float*)(v1 + 0x1c) * f8;
-    b = *(float*)(v1 + 0x10) * fC;
-    c = *(float*)(v1 + 4) * f10;
-    d = *(float*)(v1 + 0x20) * f8;
-    e = *(float*)(v1 + 0x14) * fC;
-    f = *(float*)(v1 + 8) * f10;
-    g = *(float*)(v1 + 0x18) * f8;
-    h = *(float*)(v1 + 0xc) * fC;
+    Vector3 local;
+    local.x = float(t.rotation[0] * x + t.rotation[3] * y + t.rotation[6] * z);
+    local.y = float(t.rotation[1] * x + t.rotation[4] * y + t.rotation[7] * z);
+    local.z = float(t.rotation[2] * x + t.rotation[5] * y + t.rotation[8] * z);
 
-    r1 = a + b + c;
-    r2 = d + e + f;
-    r3 = g + h + *(float*)(v1) * f10;
+    const Vector3& size = primitive->dimensions->size;
+    double hx = size.x * halfScale;
+    double hy = size.y * halfScale;
+    double hz = size.z * halfScale;
 
-    {
-        int p = *(int*)(field0 + 0x9c);
-        float m = dword_819bac;
-        float x = *(float*)(p + 4) * m;
-        float y = *(float*)(p + 8) * m;
-        float z = *(float*)(p + 0xc) * m;
-        r4 = -x;
-        r5 = -y;
-        r6 = -z;
-    }
+    Box box;
+    box.minimum.x = float(-hx);
+    box.minimum.y = float(-hy);
+    box.minimum.z = float(-hz);
+    box.maximum.x = float(hx);
+    box.maximum.y = float(hy);
+    box.maximum.z = float(hz);
 
-    result = sub_60f3e0(r1, r2, r3, r4, r5, r6, 0.0f, 0.0f);
-    field4 = result;
-    return result;
+    result = box.query(local);
 }

@@ -1,62 +1,91 @@
-// from server: 52% by tester
-// roc 2008-06 004db130  unit: RBX::ViewNew::ViewRbxGfx  size: 232 bytes
-// Make this compile to the exact bytes below, then: roc check 2008-06 004db130
-
-extern "C" void __stdcall sub_557330(int, int);
-extern "C" void* __stdcall sub_508580(int, int);
-extern "C" void __stdcall sub_508a30(void*, int, int);
-
-struct SimpleSceneManager {
-    void sub_4d83e0(void*);
-    void sub_4d8470(void*);
+// from server: 100% by king_originala
+struct Mutex {
+    unsigned char data[12];
+    void lock();
+    void unlock();
 };
 
-struct ViewBase {
-    void sub_563090();
-    void sub_5630e0();
-    void sub_4d8ea0();
+struct Lock {
+    Mutex* mutex;
+    bool active;
+    Lock(Mutex*);
+    ~Lock();
 };
 
-struct ViewRbxGfx {
-    void construct();
+Lock::Lock(Mutex* p) : mutex(p) {
+    mutex->lock();
+    active = true;
+}
+
+Lock::~Lock() {
+    if (active)
+        mutex->unlock();
+}
+
+struct Node {
+    Node* left;
+    Node* parent;
+    Node* right;
 };
 
-extern ViewBase* g_97272c;
+struct TreeA {
+    unsigned char data[24];
+    Node* head;
+    unsigned int count;
+    void erase(Node*);
+};
 
-void ViewRbxGfx::construct()
+struct TreeB {
+    unsigned char data[24];
+    Node* head;
+    unsigned int count;
+    void erase(Node*);
+};
+
+struct State {
+    unsigned int unused;
+    unsigned int count;
+    void* storage;
+    unsigned int capacity;
+    Mutex mutex;
+    TreeA first;
+    TreeB second;
+    void release();
+};
+
+extern State* state;
+extern int initializationFlag;
+
+void __cdecl initialize();
+void __cdecl ensureInitialized(void (__cdecl*)(), int*);
+void* __cdecl allocate(unsigned int, unsigned int);
+void* __cdecl fill(void*, int, unsigned int);
+
+void __cdecl reset()
 {
-    sub_557330(0x4d9810, 0x972744);
-    ViewBase* esi = g_97272c;
-    ViewBase* ebx = (ViewBase*)((char*)esi + 0x10);
-    ebx->sub_563090();
-    esi->sub_4d8ea0();
-    *(int*)((char*)esi + 0xc) = 0x14;
-    *(int*)((char*)esi + 4) = 0;
-    void* p = sub_508580(0x50, 0x10);
-    *(void**)((char*)esi + 8) = p;
-    int n = *(int*)((char*)esi + 0xc);
-    sub_508a30(p, 0, n * 4);
-    void* edx = *(void**)((char*)esi + 0x34);
-    void* eax = *(void**)((char*)edx + 4);
-    SimpleSceneManager* edi = (SimpleSceneManager*)((char*)esi + 0x1c);
-    edi->sub_4d83e0(eax);
-    void* v = *(void**)((char*)edi + 0x18);
-    *(void**)((char*)v + 4) = v;
-    v = *(void**)((char*)edi + 0x18);
-    *(void**)((char*)edi + 0x1c) = 0;
-    *(void**)v = v;
-    void* w = *(void**)((char*)edi + 0x18);
-    *(void**)((char*)w + 8) = w;
-    void* ecx = *(void**)((char*)esi + 0x54);
-    void* edx2 = *(void**)((char*)ecx + 4);
-    SimpleSceneManager* esi2 = (SimpleSceneManager*)((char*)esi + 0x3c);
-    esi2->sub_4d8470(edx2);
-    void* a = *(void**)((char*)esi2 + 0x18);
-    *(void**)((char*)a + 4) = a;
-    a = *(void**)((char*)esi2 + 0x18);
-    *(void**)((char*)esi2 + 0x1c) = 0;
-    *(void**)a = a;
-    void* b = *(void**)((char*)esi2 + 0x18);
-    *(void**)((char*)b + 8) = b;
-    ebx->sub_5630e0();
+    ensureInitialized(initialize, &initializationFlag);
+    State* p = state;
+    Lock lock(&p->mutex);
+
+    p->release();
+    p->capacity = 20;
+    p->count = 0;
+    p->storage = allocate(80, 16);
+    fill(p->storage, 0, p->capacity * 4);
+
+    TreeA* a = &p->first;
+    a->erase(a->head->parent);
+    a->head->parent = a->head;
+    a->count = 0;
+    a->head->left = a->head;
+    Node* n = a->head;
+    n->right = n;
+
+    TreeB* b = &p->second;
+    b->erase(b->head->parent);
+    b->head->parent = b->head;
+    b->count = 0;
+    b->head->left = b->head;
+    n = b->head;
+    n->right = n;
 }

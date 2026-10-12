@@ -1,55 +1,98 @@
-// from server: 47% by colin
+// from server: 97% by king_originala
+extern "C" int (__cdecl *move_bytes)(
+    void*, unsigned int, const void*, unsigned int);
 
+extern int __stdcall read_buffer(void*, void*, char*, int);
 
-
-
-extern "C" void __stdcall memmove_s(void*, unsigned int, const void*, unsigned int);
+inline const int& smaller(const int& a, const int& b)
+{
+    return b < a ? b : a;
+}
 
 struct S {
-    char pad0[0x10];
-    unsigned char* p10;
-    char pad14[0xC];
-    unsigned char* p20;
-    char pad24[0xC];
-    unsigned char* p30;
-    char pad34[0x10];
-    unsigned char* p44;
-    unsigned char* p48;
-    unsigned int p4c;
-    unsigned int p50;
+    virtual void v0();
+    virtual void v1();
+    virtual void v2();
+    virtual void v3();
+    virtual void v4();
+    virtual void v5();
+    virtual void v6();
+    virtual void v7();
+    virtual void v8();
+    virtual void v9();
+    virtual void v10();
+    virtual void v11();
+    virtual void v12();
+    virtual void v13();
+    virtual void v14();
+    virtual void v15();
+    virtual void v16();
+    virtual void v17();
+    virtual void v18();
+    virtual void v19();
+    virtual void v20();
+    virtual void initialize();
+
+    char padding0[12];
+    char** first;
+    char padding1[12];
+    char** current;
+    char padding2[12];
+    int* remaining;
+    char padding3[12];
+    unsigned int device;
+    void* context;
+    char* buffer;
+    int capacity;
+    int putback;
+
+    char* gptr();
+    char* eback();
+    char* egptr();
+    void setg(char*, char*, char*);
     int f();
 };
 
-int S::f() {
-    if (*p20 == 0) {
-        (*(void (__thiscall**)(S*))(*(unsigned int*)this + 0x54))(this);
-    }
-    unsigned char* a = p20;
-    unsigned int v = *a;
-    unsigned int end = *p30 + v;
-    if (v < end) {
-        return *p20;
-    }
-    unsigned int diff = v - (unsigned int)p10;
-    unsigned int* pb = &p50;
-    unsigned int* pc = pb;
-    if ((int)p50 < (int)diff) {
-        pc = &diff;
-    }
-    unsigned int edi = *pc;
-    if (edi != 0) {
-        memmove_s((void*)((unsigned int)p44 + edi), (unsigned int)(p48 - edi + p50), (void*)edi, v - edi);
-    }
-    unsigned int eax = (unsigned int)(p48 + p50);
-    p10 = (unsigned char*)(eax - edi);
-    p20 = (unsigned char*)eax;
-    p30 = (unsigned char*)(eax - eax);
-    unsigned int ebx = p50;
-    unsigned int ecx = p4c - ebx;
-    unsigned int edx = (unsigned int)(p48 + ebx);
-    unsigned int eax2 = (unsigned int)p44;
-    S* self = this;
-    self = (S*)((char*)self + 0x40);
-    ((void (__cdecl*)(S*, unsigned int, unsigned int, unsigned int))0x5f29e0)(self, eax2, edx, ecx);
-    return 0;
+inline char* S::gptr()
+{
+    return *current;
+}
+
+inline char* S::eback()
+{
+    return *first;
+}
+
+inline char* S::egptr()
+{
+    return *current + *remaining;
+}
+
+inline void S::setg(char* begin, char* next, char* end)
+{
+    *first = begin;
+    *current = next;
+    *remaining = static_cast<int>(end - next);
+}
+
+int S::f()
+{
+    if (!gptr())
+        initialize();
+
+    if (gptr() < egptr())
+        return static_cast<unsigned char>(*gptr());
+
+    int available = static_cast<int>(gptr() - eback());
+    int retained = smaller(available, putback);
+
+    if (retained)
+        move_bytes(buffer + putback - retained,
+                   retained, gptr() - retained, retained);
+
+    setg(buffer + putback - retained,
+         buffer + putback, buffer + putback);
+
+    return read_buffer(&device, context,
+                       buffer + putback, capacity - putback);
 }

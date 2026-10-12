@@ -1,5 +1,16 @@
-// from server: 71% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs util/RunStateOwner.cpp
+// from server: 100% by king_originala
+struct S;
+
+struct Listener {
+    void notify(S** value);
+};
+
+struct S {
+    void f(Listener* listener);
+};
+
+void S::f(Listener* listener)
+{
+    S* owner = reinterpret_cast<S*>(reinterpret_cast<char*>(this) - 468);
+    listener->notify(&owner);
+}

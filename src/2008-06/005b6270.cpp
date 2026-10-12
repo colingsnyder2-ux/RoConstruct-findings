@@ -1,5 +1,22 @@
-// from server: 76% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs v8datamodel/BrickColor.cpp
+// from server: 100% by king_originala
+struct Color {
+    float r, g, b, a;
+};
+
+struct Vector3 {
+    float x, y, z;
+};
+
+struct S {
+    Color color() const;
+    Vector3 f() const;
+};
+
+Vector3 S::f() const {
+    Color c = color();
+    Vector3 result;
+    result.x = c.r;
+    result.y = c.g;
+    result.z = c.b;
+    return result;
+}

@@ -1,5 +1,22 @@
-// from server: 61% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs util/Name.cpp
+// from server: 100% by king_originala
+extern unsigned char property;
+
+struct MotorData
+{
+    void set(int index, int value);
+};
+
+struct S
+{
+    unsigned char padding[0x150];
+    MotorData* motor;
+
+    void notify(const void* descriptor);
+    void setValue(int value);
+};
+
+void S::setValue(int value)
+{
+    motor->set(0, value);
+    notify(&property);
+}

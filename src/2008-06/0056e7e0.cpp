@@ -1,28 +1,31 @@
-// from server: 63% by tester
-struct PropDesc;
-
-struct GetSet {
-    bool isDataDescriptor();
-    bool getValue(int* out);
+// from server: 90% by king_originala
+struct ValueData {
+    bool convert(float& result);
 };
 
-struct PropDesc {
-    char pad[0x18];
-    GetSet* getset;
-    void equalTo(PropDesc* other, int, int);
+struct Value {
+    char padding[16];
+    ValueData data;
+    bool isEmpty();
 };
 
-extern "C" bool __fastcall sub_57C810(GetSet* self);
-extern "C" bool __fastcall sub_57C4F0(GetSet* self, int* out);
+struct Accessor {
+    virtual void slot0();
+    virtual void slot1();
+    virtual void slot2();
+    virtual void set(void* instance, const float& value);
+};
 
-void PropDesc::equalTo(PropDesc* other, int, int) {
-    if (sub_57C810(other->getset))
-        return;
-    int val;
-    if (!sub_57C4F0(other->getset, &val))
-        return;
-    GetSet* gs = this->getset;
-    void** vtbl = *(void***)gs;
-    void (*fn)(GetSet*, int*, int) = (void (*)(GetSet*, int*, int))vtbl[3];
-    fn(gs, &val, val);
+struct Descriptor {
+    char padding[24];
+    Accessor* accessor;
+    void set(void* instance, Value* value, int unused);
+};
+
+void Descriptor::set(void* instance, Value* value, int unused)
+{
+    Value* original = value;
+    if (!original->isEmpty() &&
+        original->data.convert(reinterpret_cast<float&>(value)))
+        accessor->set(instance, reinterpret_cast<float&>(value));
 }

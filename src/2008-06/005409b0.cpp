@@ -1,14 +1,20 @@
-// from server: 36% by atomic.potato
-struct S
-{
-    int f(int);
-    int m18;
+// from server: 100% by king_originala
+struct S;
+
+struct Result {
+    void __thiscall initialize(unsigned int value, S* owner);
 };
 
-extern "C" int __stdcall sub_0054e320(int, int);
+struct S {
+    unsigned char padding[24];
+    unsigned int value;
+    Result* __thiscall f(Result* result);
+};
 
-int S::f(int value)
+#pragma optimize("", off)
+Result* S::f(Result* result)
 {
-    sub_0054e320(value, m18);
-    return value;
+    result->initialize(value, this);
+    return result;
 }
+#pragma optimize("", on)

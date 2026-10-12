@@ -1,5 +1,65 @@
-// from server: 78% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs util/RunStateOwner.cpp
+// from server: 98% by king_originala
+extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
+#pragma intrinsic(_InterlockedExchangeAdd)
+extern "C" long __cdecl _InterlockedDecrement(volatile long*);
+#pragma intrinsic(_InterlockedDecrement)
+
+struct Control
+{
+    virtual void unused() = 0;
+    virtual void dispose() = 0;
+    virtual void destroy() = 0;
+
+    volatile long strong;
+    volatile long weak;
+
+    void add_ref();
+    void release();
+};
+
+inline void Control::add_ref()
+{
+    _InterlockedExchangeAdd(&strong, 1);
+}
+
+inline void Control::release()
+{
+    if (_InterlockedDecrement(&strong) == 0)
+    {
+        dispose();
+        if (_InterlockedDecrement(&weak) == 0)
+            destroy();
+    }
+}
+
+struct Shared
+{
+    void* object;
+    Control* control;
+
+    Shared(const Shared& other);
+    ~Shared();
+};
+
+inline Shared::Shared(const Shared& other)
+    : object(other.object), control(other.control)
+{
+    if (control)
+        control->add_ref();
+}
+
+inline Shared::~Shared()
+{
+    if (control)
+        control->release();
+}
+
+struct S
+{
+    void helper(Shared value, int argument);
+};
+
+void __cdecl forward(S* receiver, Shared value, int argument)
+{
+    receiver->helper(value, argument);
+}

@@ -1,21 +1,19 @@
-// from server: 53% by atomic.potato
-struct S
-{
-    struct V
-    {
-        unsigned char (*f)(V *, void *);
-    };
-
-    V *value;
-    int equals(void *, void *);
+// from server: 100% by king_originala
+struct Accessor {
+    virtual void slot0() = 0;
+    virtual void slot1() = 0;
+    virtual bool get(const void* object) = 0;
 };
 
-int S::equals(void *a, void *b)
-{
-    unsigned char x;
-    unsigned char y;
+struct Descriptor {
+    unsigned char padding[24];
+    Accessor* accessor;
+    bool equal(const void* first, const void* second);
+};
 
-    x = value->f(value, a);
-    y = value->f(value, b);
-    return x == y;
+bool Descriptor::equal(const void* first, const void* second)
+{
+    bool a = accessor->get(first);
+    bool b = accessor->get(second);
+    return a == b;
 }

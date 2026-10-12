@@ -1,54 +1,19 @@
-// from server: 7% by colin
-struct S_func_004613d0 {
-    char pad0[88];
-    int m_x;
-    int* f();
+// from server: 93% by king_originala
+struct Control {
+    int query(int, bool);
+    void update(int, int, bool);
 };
-
-struct S_func_004605d0 {
-    char pad0[84];
-    int m_a;
-    int m_b;
-    int f(int, int, int);
-};
-
-struct S_func_00460620 {
-    char pad0[84];
-    int m_a;
-    int m_b;
-    int f(int, int, int);
-};
-
-int* S_func_004613d0::f()
-{
-    return &m_x;
-}
-
-int S_func_004605d0::f(int a, int b, int c)
-{
-    if (c != 0)
-        return 0;
-    return 0;
-}
-
-int S_func_00460620::f(int a, int b, int c)
-{
-    if (c != 0)
-        return 0;
-    return 0;
-}
 
 struct CScriptEditor {
-    int f();
+    int* control();
+    void func_00464100();
 };
 
-int CScriptEditor::f()
+void CScriptEditor::func_00464100()
 {
-    S_func_004613d0* p = (S_func_004613d0*)this;
-    int* q = p->f();
-    S_func_00460620* r = (S_func_00460620*)q;
-    int v = r->f(2, 1, 1);
-    if (v != 0)
-        return ((S_func_004605d0*)q)->f(2, 0, 1);
-    return ((S_func_004605d0*)q)->f(2, 0x10, 1);
+    Control* p = reinterpret_cast<Control*>(control());
+    if (p->query(1, true))
+        p->update(1, 0, true);
+    else
+        p->update(1, 16, true);
 }

@@ -1,62 +1,63 @@
-// from server: 51% by tester
-// roc 2008-06 005d6070  unit: RBX::VTeams::?$FactoryProduct  size: 123 bytes
-
+// from server: 98% by king_originala
 namespace RBX {
-class Instance { public: virtual ~Instance(); char pad[0x100]; Instance* next; };
-class ServiceProvider : public Instance { public: ServiceProvider* finish(); };
-}
+    struct Instance {
+        virtual ~Instance();
+        char padding[0x100];
+        Instance* next;
+    };
 
-RBX::ServiceProvider* func_00491d50(RBX::Instance* p);
+    struct Entry {
+        Instance* object;
+        void* control;
+    };
 
-struct GetSetImpl {
-    int count();
-};
+    struct Children {
+        char padding[0x0c];
+        Entry* first;
+        Entry* last;
+    };
 
-int GetSetImpl::count() {
-    char* p = *(char**)((char*)this + 0x108);
-    if (!p) return 0;
-    return (*(int*)(p + 0x10) - *(int*)(p + 0xc)) >> 3;
-}
+    struct ServiceProvider : Instance {
+        Children* children;
+        unsigned int count();
+    };
 
-extern "C" void __stdcall _invalid_parameter_noinfo();
-
-typedef void* (__cdecl *func_6a17c6_t)(void*, void*, void*, void*, void*);
-extern func_6a17c6_t func_6a17c6;
-
-extern void* g_802890;
-
-struct VTeams {
-    bool isTeamGame();
-};
-
-bool VTeams::isTeamGame() {
-    RBX::Instance* inst = (RBX::Instance*)this;
-    RBX::ServiceProvider* sp = func_00491d50(inst);
-    void* ebx = sp;
-    unsigned int esi = 0;
-    GetSetImpl* gs = (GetSetImpl*)ebx;
-    unsigned int n = (unsigned int)gs->count();
-    if (n <= 0) {
-        return false;
+    namespace Network {
+        struct Player : Instance {
+            char padding[0x74];
+            bool flag;
+        };
     }
-    void* ebp = g_802890;
-    char* edi = *(char**)((char*)ebx + 0x108);
-    while (true) {
-        int cnt = (*(int*)(edi + 0x10) - *(int*)(edi + 0xc)) >> 3;
-        if (esi >= (unsigned int)cnt) {
-            ((void(*)())ebp)();
-        }
-        void* eax = *(void**)(*(char**)(edi + 0xc) + esi * 8);
-        void* r = func_6a17c6(eax, 0, (void*)0x92907c, (void*)0x937460, 0);
-        if (r != 0) {
-            if (*(char*)((char*)r + 0x17c) == 0) {
+
+    struct FactoryProduct : Instance {
+        bool f();
+    };
+}
+
+extern RBX::ServiceProvider* __cdecl func_00491d50(RBX::Instance*);
+extern "C" void (__cdecl *invalid_parameter_noinfo)();
+
+bool RBX::FactoryProduct::f()
+{
+    ServiceProvider* provider = func_00491d50(this);
+    unsigned int i = 0;
+
+    if (provider->count() > 0) {
+        void (__cdecl *invalid)() = invalid_parameter_noinfo;
+        do {
+            Children* children = provider->children;
+            if (i >= static_cast<unsigned int>(children->last - children->first))
+                invalid();
+
+            Network::Player* player =
+                dynamic_cast<Network::Player*>(children->first[i].object);
+
+            if (player && !player->flag)
                 return true;
-            }
-        }
-        esi++;
-        n = (unsigned int)gs->count();
-        if (esi >= n) {
-            return false;
-        }
+
+            ++i;
+        } while (i < provider->count());
     }
+
+    return false;
 }

@@ -1,16 +1,13 @@
-struct Flag {
-    bool value;
-};
+// from server: 100% by tester
+extern "C" void __cdecl sub_4CA360(int, int, int, int);
 
-extern char descriptor;
-extern void __cdecl manage(void* source, void** destination, int operation, Flag flag);
-
-void __cdecl dispatch(void* source, void** destination, int operation)
+void __cdecl sub_4CB170(int a, int b, int c)
 {
-    if (operation != 3) {
-        Flag flag = { false };
-        manage(source, destination, operation, flag);
-    } else {
-        *destination = &descriptor;
+    if (c != 3)
+    {
+        char zero = 0;
+        sub_4CA360(a, b, c, *(int*)&zero);
+        return;
     }
+    *(int*)b = 0x93cd10;
 }

@@ -1,16 +1,23 @@
-// from server: 64% by king_originala
+// from server: 66% by king_originala
 extern char registration_data;
 void __cdecl registration_callback();
 void __cdecl register_callback(void (__cdecl*)(), void*);
 void* __cdecl func_00616240();
-extern "C" void __cdecl _invalid_parameter_noinfo();
+extern "C" void (__cdecl* _invalid_parameter_noinfo)();
+
+struct Owner {
+    void release();
+};
 
 struct Value {
     void* pointer;
-    void* owner;
+    Owner* owner;
 
     Value() : pointer(0), owner(0) {}
-    ~Value();
+    ~Value() {
+        if (owner)
+            owner->release();
+    }
 };
 
 struct Storage {
@@ -32,16 +39,17 @@ struct S {
 void* S::f() {
     register_callback(registration_callback, &registration_data);
     unsigned index = (unsigned)func_00616240();
+    Storage& storage = values;
 
-    if (index + 1 > (unsigned)(values.last - values.first)) {
-        values.resize(index + 1, Value());
+    if (index + 1 > (unsigned)(storage.last - storage.first)) {
+        storage.resize(index + 1, Value());
         return 0;
     }
 
-    if (index >= (unsigned)(values.last - values.first))
+    if (index >= (unsigned)(storage.last - storage.first))
         _invalid_parameter_noinfo();
 
-    void* result = values.first[index].pointer;
+    void* result = storage.first[index].pointer;
     if (result)
         return result;
     return 0;

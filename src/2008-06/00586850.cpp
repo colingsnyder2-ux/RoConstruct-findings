@@ -1,3 +1,4 @@
+// from server: 100% by tester
 unsigned int __cdecl getDescriptor();
 
 extern unsigned int table0[];

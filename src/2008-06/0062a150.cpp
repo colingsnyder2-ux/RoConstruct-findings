@@ -1,28 +1,59 @@
-// from server: 53% by colin
+// from server: 97% by king_originala
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
+extern "C" long __cdecl _InterlockedDecrement(volatile long*);
+#pragma intrinsic(_InterlockedDecrement)
 
-struct BoundPropGetSet {
-    void* desc;
-    void* member;
-    float changed;
-    BoundPropGetSet(void* a, void* b, float c);
+struct Control
+{
+    virtual void unused() = 0;
+    virtual void dispose() = 0;
+    virtual void destroy() = 0;
+
+    volatile long strong;
+    volatile long weak;
+
+    void release();
 };
 
-BoundPropGetSet::BoundPropGetSet(void* a, void* b, float c)
+__forceinline void Control::release()
 {
-    desc = a;
-    member = b;
-    if (b) {
-        _InterlockedExchangeAdd((volatile long*)((char*)b + 4), 1);
+    if (_InterlockedDecrement(&strong) == 0)
+    {
+        dispose();
+        if (_InterlockedDecrement(&weak) == 0)
+            destroy();
     }
-    changed = c;
-    if (b) {
-        if (_InterlockedExchangeAdd((volatile long*)((char*)b + 4), -1) == 1) {
-            (*(void (__thiscall**)(void*))*(void**)b)(b);
-            if (_InterlockedExchangeAdd((volatile long*)((char*)b + 8), -1) == 1) {
-                (*(void (__thiscall**)(void*))((*(void***)b)[2]))(b);
-            }
-        }
-    }
+}
+
+struct Shared
+{
+    void* object;
+    Control* control;
+
+    ~Shared();
+};
+
+__forceinline Shared::~Shared()
+{
+    if (control)
+        control->release();
+}
+
+struct S
+{
+    void* object;
+    Control* control;
+    float value;
+
+    S(Shared source, float number);
+};
+
+S::S(Shared source, float number)
+{
+    object = source.object;
+    control = source.control;
+    if (source.control)
+        _InterlockedExchangeAdd(&source.control->strong, 1);
+    value = number;
 }

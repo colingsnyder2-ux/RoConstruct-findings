@@ -1,5 +1,16 @@
-// from server: 61% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MT
-// roc-lib: ogre-1.4.9 OgreAlignedAllocator.cpp
+// from server: 100% by king_originala
+struct Inner {
+    char storage[0x7e0];
+    Inner();
+};
+
+struct S {
+    virtual void f();
+    int a, b, c, d, e;
+    Inner inner;
+    int last;
+    S();
+};
+
+S::S() : a(0), b(0), c(0), d(0), e(0), last(-1) {
+}

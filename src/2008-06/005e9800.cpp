@@ -1,5 +1,23 @@
-// from server: 49% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs util/RunStateOwner.cpp
+// from server: 81% by king_originala
+struct Callback {
+    virtual void invoke(void *, int) = 0;
+};
+
+struct S {
+    void f(int value, Callback *callback);
+};
+
+void S::f(int value, Callback *callback)
+{
+    try {
+        void *object = 0;
+        if (this)
+            object = reinterpret_cast<char *>(this) - 96;
+        callback->invoke(object, value);
+    }
+    catch (...) {
+        volatile char storage[40];
+        storage[0] = 0;
+        throw;
+    }
+}

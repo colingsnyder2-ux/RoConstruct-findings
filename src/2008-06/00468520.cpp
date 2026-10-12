@@ -1,35 +1,57 @@
-// from server: 43% by atomic.potato
-struct DxUserInput {
-    char pad0[0x34];
-    int m_lock;
-    char pad1[0x178 - 0x38];
-    int m_x178;
-    char pad2[0x190 - 0x17c];
-    char m_x190;
-    char pad3[0x192 - 0x191];
-    char m_x192;
-    void sub_00468520(int);
-    void sub_004680c0();
-    void sub_00467670(int);
+// from server: 96% by king_originala
+extern "C" void __stdcall EnterCriticalSection(void *);
+extern "C" void __stdcall LeaveCriticalSection(void *);
+
+struct LockGuard
+{
+    void *section;
+    bool locked;
+
+    LockGuard(void *);
+    ~LockGuard();
 };
 
-extern "C" void __stdcall EnterCriticalSection(int*);
-extern "C" void __stdcall LeaveCriticalSection(int*);
-
-void DxUserInput::sub_00468520(int a)
+inline LockGuard::LockGuard(void *p) : section(p)
 {
-    EnterCriticalSection(&m_lock);
-    if (m_x178 == 0) {
-        m_x192 = 0;
-    } else {
-        char al = m_x190;
-        if (m_x192 != al) {
-            if (al == 0) {
-                sub_004680c0();
-            } else {
-                sub_00467670(a);
-            }
-        }
+    EnterCriticalSection(section);
+    locked = true;
+}
+
+inline LockGuard::~LockGuard()
+{
+    if (locked)
+        LeaveCriticalSection(section);
+}
+
+struct DxUserInput
+{
+    char padding0[0x34];
+    char criticalSection[0x18];
+    char padding1[0x12C];
+    int state;
+    char padding2[0x14];
+    bool requested;
+    char padding3;
+    bool current;
+
+    void enable(int);
+    void disable();
+    void update(int);
+};
+
+void DxUserInput::update(int argument)
+{
+    LockGuard lock(criticalSection);
+
+    if (state == 0)
+    {
+        current = false;
     }
-    LeaveCriticalSection(&m_lock);
+    else if (current != requested)
+    {
+        if (requested)
+            enable(argument);
+        else
+            disable();
+    }
 }

@@ -1,29 +1,27 @@
-// from server: 51% by atomic.potato
-struct S_func_004613d0 {
-    char pad0[88];
-    int m_x;
-    int* f();
+// from server: 100% by king_originala
+struct Control {
+    void setReadOnly(int value, int direct);
+};
+
+struct EditorBase {
+    char padding[88];
+    int value;
+    int* control();
 };
 
 struct CScriptEditor {
-    char pad0[0x41];
-    char m_flag41;
-    char m_flag42;
-    char pad1[0x100];
-    int* f(int, int);
+    char padding[65];
+    bool readOnly;
+    bool editable;
+    void f(int unused, int value);
 };
 
-int* CScriptEditor::f(int arg, int arg2) {
-    m_flag41 = (arg != 0);
-    int v;
-    if (m_flag41 != 0) {
-        v = 1;
-    } else if (m_flag42 == 0) {
-        v = 1;
-    } else {
-        v = 0;
-    }
-    S_func_004613d0* p = (S_func_004613d0*)((char*)this - 0x114);
-    int* r = p->f();
-    return r;
+void CScriptEditor::f(int unused, int value)
+{
+    readOnly = value != 0;
+    int state = (readOnly || !editable) ? 1 : 0;
+    reinterpret_cast<Control*>(
+        reinterpret_cast<EditorBase*>(
+            reinterpret_cast<char*>(this) - 276)->control()
+    )->setReadOnly(state, 1);
 }

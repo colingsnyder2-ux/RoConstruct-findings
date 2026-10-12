@@ -1,29 +1,22 @@
-// from server: 89% by colin
-extern "C" int __cdecl _type_info_compare(const void*, const void*);
+// from server: 100% by king_originala
+struct TypeInfo;
 
-struct S {
+extern TypeInfo expectedType;
+extern bool (__thiscall *typeEqual)(const TypeInfo *, const TypeInfo &);
+
+union Buffer {
+    unsigned int words[4];
+    const TypeInfo *type;
+    const Buffer *object;
 };
 
-void __cdecl f(int a, int b, int c)
+void __cdecl manage(const Buffer *source, Buffer *destination, int operation)
 {
-    if (c == 0) {
-        if (b == 0)
-            return;
-        *(int*)(b + 0) = *(int*)(a + 0);
-        *(int*)(b + 4) = *(int*)(a + 4);
-        *(int*)(b + 8) = *(int*)(a + 8);
-        *(int*)(b + 12) = *(int*)(a + 12);
-        return;
-    }
-    if (c == 1)
-        return;
-    {
-        int* p = (int*)b;
-        int v = *p;
-        int r = _type_info_compare((const void*)v, (const void*)0x94b7c8);
-        unsigned char al = (unsigned char)r;
-        int neg = -(int)al;
-        int mask = neg >> 31;
-        *p = mask & a;
+    if (operation == 0) {
+        if (destination)
+            *destination = *source;
+    } else if (operation != 1) {
+        destination->object =
+            typeEqual(destination->type, expectedType) ? source : 0;
     }
 }

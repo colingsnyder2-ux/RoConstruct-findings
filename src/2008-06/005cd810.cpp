@@ -1,24 +1,34 @@
-// from server: 34% by atomic.potato
-extern "C" void* __cdecl sub_005599D0(void*);
-
-struct VInstanceRefPropDescriptor
-{
-    char pad[0x1c];
-    void* field_1c;
-
-    void method(int, void*);
+// from server: 100% by tester
+struct Base {
+    virtual ~Base();
 };
 
-void VInstanceRefPropDescriptor::method(int, void* arg)
-{
-    void* v;
-    if (arg != 0)
-        v = sub_005599D0(arg);
-    else
-        v = 0;
+struct Derived : Base {
+};
 
-    void* p = field_1c;
-    void* f = *(void**)p;
-    void* fn = *(void**)((char*)f + 0xc);
-    ((void (__thiscall*)(void*, void*, void*))fn)(p, v, arg);
+Derived* polymorphic_cast(Base* x);
+
+inline Derived* maybe(Base* x)
+{
+    if (x)
+        return polymorphic_cast(x);
+    return 0;
+}
+
+struct Setter {
+    virtual void slot0();
+    virtual void slot1();
+    virtual void slot2();
+    virtual void set(Base* target, Derived* const& value);
+};
+
+struct Descriptor {
+    char padding[0x1c];
+    Setter* setter;
+    void set(Base* target, Base* value);
+};
+
+void Descriptor::set(Base* target, Base* value)
+{
+    setter->set(target, maybe(value));
 }

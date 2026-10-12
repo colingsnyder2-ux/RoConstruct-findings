@@ -1,3 +1,4 @@
+// from server: 100% by tester
 typedef void (__thiscall *StringDestructor)(void *);
 typedef void (__cdecl *FreeFunction)(void *);
 

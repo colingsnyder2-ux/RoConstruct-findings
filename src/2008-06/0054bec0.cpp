@@ -1,13 +1,12 @@
-// from server: 37% by atomic.potato
-struct Mesh
-{
-    Mesh* f();
+// from server: 100% by king_originala
+struct S {
+    S();
+    void init(int, int);
 };
 
-extern "C" void __stdcall sub_0054d390(Mesh*, int, int);
-
-Mesh* Mesh::f()
+#pragma optimize("", off)
+S::S()
 {
-    sub_0054d390(this, 0, 0);
-    return this;
+    init(0, 0);
 }
+#pragma optimize("", on)

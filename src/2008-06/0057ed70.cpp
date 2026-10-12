@@ -1,14 +1,24 @@
-// from server: 55% by atomic.potato
-struct S {
-    void __cdecl f(int* first, int* last, int* out, void (__cdecl *fn)(int, int));
+// from server: 100% by king_originala
+struct Iterator
+{
+    void* owner;
+    void** position;
 };
 
-void S::f(int* first, int* last, int* out, void (__cdecl *fn)(int, int)) {
-    while (first != last) {
-        int v = *first;
-        fn(v, out[0]);
-        first++;
-    }
-    out[0] = (int)first;
-    out[1] = (int)last;
+struct Function
+{
+    void (__cdecl *callback)(void*, void*);
+    void* context;
+    Function();
+};
+
+Function __cdecl apply(Iterator first, Iterator last, Function function)
+{
+    void** position = first.position;
+    void** end = last.position;
+
+    for (; position != end; ++position)
+        function.callback(function.context, *position);
+
+    return function;
 }

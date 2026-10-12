@@ -1,5 +1,16 @@
-// from server: 33% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs util/Name.cpp
+// from server: 78% by king_originala
+extern "C" int __stdcall query(void *, bool *);
+
+struct DropperTool {
+    unsigned char padding[0x13c];
+    void *handle;
+    bool check();
+};
+
+bool DropperTool::check() {
+    if (!handle)
+        return false;
+
+    bool value;
+    return (query(handle, &value) != 0x24) & value;
+}

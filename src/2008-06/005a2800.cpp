@@ -1,5 +1,31 @@
-// from server: 46% by colin
-// roc-lang: cpp
-// roc-cl: 50727
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs v8datamodel/Workspace.cpp
+// from server: 97% by king_originala
+typedef int (__thiscall *Getter)(void *);
+typedef void (__thiscall *Setter)(void *, int);
+
+struct Iterator
+{
+    void *unused;
+    char *current;
+};
+
+struct Function
+{
+    Setter setter;
+    int adjustment;
+    char *object;
+    Getter getter;
+    int extra1;
+    int extra2;
+};
+
+Function __cdecl apply(Iterator first, Iterator last, Function function)
+{
+    char *current = first.current;
+    char *end = last.current;
+    for (; current != end; current += 8)
+    {
+        int value = function.getter(current);
+        function.setter(function.adjustment + function.object, value);
+    }
+    return function;
+}

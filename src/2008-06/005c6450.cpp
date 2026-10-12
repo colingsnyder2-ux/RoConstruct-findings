@@ -1,21 +1,28 @@
-// from server: 47% by tester
-struct VerbContainer;
+// from server: 100% by king_originala
+void* __cdecl operator new(unsigned int);
+void __cdecl operator delete(void*);
 
-struct TToolVerb {
-    char pad[0xc];
-    void* dataModel;
-    void* construct(VerbContainer*);
-    void* create();
+struct Context {
+    char pad[0x204];
+    void* value;
+    __forceinline void* get();
 };
 
-extern "C" void* __cdecl operator_new(unsigned int);
+__forceinline void* Context::get() {
+    return value;
+}
 
-void* TToolVerb::create() {
-    void* mem = operator_new(0x48);
-    if (mem) {
-        void* dm = this->dataModel;
-        void* c = *(void**)((char*)dm + 0x204);
-        return ((TToolVerb*)mem)->construct((VerbContainer*)c);
-    }
-    return 0;
+struct Tool {
+    char storage[0x48];
+    Tool(void*);
+};
+
+struct Verb {
+    char pad[0x0c];
+    Context* context;
+    Tool* create();
+};
+
+Tool* Verb::create() {
+    return new Tool(context->get());
 }

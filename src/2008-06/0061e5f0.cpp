@@ -1,33 +1,44 @@
-// from server: 45% by colin
-// roc 2008-06 0061e5f0  unit: RBX::Lua::LuaArguments  size: 146 bytes
-// Make this compile to the exact bytes below, then: roc check 2008-06 0061e5f0
-
-struct LuaArguments {
-    char pad[0x58];
-    int __cdecl pushArgs(int a, float x, float y, float z);
+// from server: 86% by king_originala
+struct Vector3 {
+    float x, y, z;
+    Vector3(const Vector3&);
 };
 
-extern "C" void __stdcall sub_4782d0(void* p);
-extern "C" int __stdcall sub_6115b0(int a, int b, int c);
-extern "C" float __stdcall sub_611780(int a, int b);
-extern "C" void* __stdcall sub_513680(void* dst, void* src);
-extern "C" void __stdcall sub_513220(void* dst, void* src);
-extern "C" void __stdcall sub_5a8c50(int a);
-
-extern int dword_95B1C0;
-
-int LuaArguments::pushArgs(int a, float x, float y, float z)
+inline Vector3::Vector3(const Vector3& other)
+    : x(other.x), y(other.y), z(other.z)
 {
-    char buf[0x24];
-    sub_4782d0(buf);
-    int v = sub_6115b0(dword_95B1C0, 1, a);
-    float f = sub_611780(2, a);
-    char tmp[0x24];
-    sub_513680(tmp, (void*)v);
-    sub_513220(buf, tmp);
-    *(float*)(buf + 0x24) = x;
-    *(float*)(buf + 0x28) = y;
-    *(float*)(buf + 0x2c) = z;
-    sub_5a8c50(a);
+}
+
+struct Matrix3 {
+    float values[9];
+    Matrix3(const Matrix3&);
+};
+
+struct Frame {
+    Matrix3 rotation;
+    Vector3 translation;
+    Frame();
+    Frame(const Frame&);
+};
+
+inline Frame::Frame(const Frame& other)
+    : rotation(other.rotation), translation(other.translation)
+{
+}
+
+extern const char* vectorType;
+extern "C" void* __cdecl checkObject(void*, int, const char*);
+extern "C" float __cdecl checkNumber(void*, int);
+extern Matrix3 __cdecl axisAngle(const Vector3&, float);
+extern void __cdecl pushFrame(void*, Frame);
+
+int __cdecl makeFrame(void* state)
+{
+    Frame result;
+    const Vector3* axis =
+        static_cast<const Vector3*>(checkObject(state, 1, vectorType));
+    float angle = checkNumber(state, 2);
+    result.rotation = axisAngle(*axis, angle);
+    pushFrame(state, result);
     return 1;
 }

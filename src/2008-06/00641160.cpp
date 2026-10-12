@@ -1,4 +1,4 @@
-// from server: 86% by king_originala
+// from server: 97% by king_originala
 struct Text;
 
 extern void (__thiscall *textDestroy)(Text*);
@@ -41,7 +41,7 @@ struct S {
     Text defaultCursor();
 };
 
-void S::update(const void* argument) {
+void S::update(const void* volatile argument) {
     const void* original = argument;
     prepare(original);
 
@@ -55,7 +55,7 @@ void S::update(const void* argument) {
     position.y = 0.0f;
     position.z = 0.0f;
 
-    if (hitTest(original, position, &argument)) {
+    if (hitTest(original, position, const_cast<const void**>(&argument))) {
         cursor = "ResizeCursor";
         return;
     }

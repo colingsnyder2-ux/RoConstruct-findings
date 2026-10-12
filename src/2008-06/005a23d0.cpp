@@ -1,12 +1,14 @@
-// from server: 68% by tester
-struct Invoker {
-    int (*fn)(void*, int);
-    void* obj;
-    int a;
-    int b;
+// from server: 85% by king_originala
+typedef void (__thiscall *Callback)(void*, int);
+
+struct S {
+    Callback volatile callback;
+    char* volatile object;
+    volatile int adjustment;
+    volatile int argument;
 };
 
-int call_invoker(Invoker* inv)
+void __cdecl f(S* p)
 {
-    return inv->fn(inv->obj, inv->a + inv->b);
+    p->callback(p->object + p->adjustment, p->argument);
 }

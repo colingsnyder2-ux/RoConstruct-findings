@@ -1,17 +1,21 @@
-// from server: 85% by atomic.potato
-extern "C" void __stdcall ReleaseObject(void *, void *);
-
-struct S
+// from server: 100% by king_originala
+struct Callee
 {
-    void f(void *);
+    void release(void *);
 };
 
-void S::f(void *p)
+struct State
 {
-    void **v = *(void ***)p;
-    void *a = v[4];
-    if (a)
-        ReleaseObject(v[3], a);
-    v[3] = 0;
-    v[4] = 0;
+    unsigned char padding[12];
+    Callee *first;
+    void *second;
+};
+
+void __stdcall func_004d7320(State **arg, unsigned int)
+{
+    State *state = *arg;
+    if (state->second != 0)
+        state->first->release(state->second);
+    state->second = 0;
+    state->first = 0;
 }

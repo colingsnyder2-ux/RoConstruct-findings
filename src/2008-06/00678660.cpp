@@ -1,5 +1,12 @@
-// from server: 46% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MT
-// roc-lib: ogre-1.4.9 OgreAlignedAllocator.cpp
+// from server: 91% by king_originala
+void __cdecl pushHeap(float* data, int hole, int top, float value)
+{
+    int parent = (hole - 1) / 2;
+    while (top < hole && data[parent] < value)
+    {
+        data[hole] = data[parent];
+        hole = parent;
+        parent = (hole - 1) / 2;
+    }
+    data[hole] = value;
+}

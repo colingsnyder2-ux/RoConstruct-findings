@@ -1,28 +1,21 @@
-// from server: 42% by atomic.potato
-struct RunningBase
+// from server: 100% by king_originala
+extern void __cdecl release(void*);
+
+struct S
 {
-    int vftable0;
-    int vftable1;
-    int Initialize();
-    void Register();
-    RunningBase* f(unsigned int flags);
+    unsigned long table0;
+    unsigned long table1;
+
+    void cleanup();
+    S* destroy(unsigned int flags);
 };
 
-int RunningBase::Initialize()
+S* S::destroy(unsigned int flags)
 {
-    return 0;
-}
-
-void RunningBase::Register()
-{
-}
-
-RunningBase* RunningBase::f(unsigned int flags)
-{
-    vftable0 = 0x84cc38;
-    vftable1 = 0x84cc30;
-    Initialize();
+    table0 = 0x0084CC38;
+    table1 = 0x0084CC30;
+    cleanup();
     if (flags & 1)
-        Register();
+        release(this);
     return this;
 }

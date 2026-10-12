@@ -1,56 +1,54 @@
-// from server: 43% by colin
-extern "C" {
-    void __stdcall sub_557330(void*, void*);
-    void __stdcall sub_6a067a(void*);
-}
+// from server: 100% by king_originala
+extern "C" void __cdecl registerName(void (__cdecl *)(), const char *);
+extern "C" void __cdecl nameCallback();
+extern "C" void * __cdecl getDescriptor();
+extern "C" void * __cdecl getType();
+extern const char faceName[];
+void __cdecl operator delete(void *);
 
-void* sub_5ef4c0();
-void* sub_597fb0();
-void* sub_5ef470(void*, void*, void*, void*, void*);
-
-struct FaceInstance {
-    void* field0;
-    void* field4;
-    void* field8;
-    void* fieldC;
-    void* field10;
-    void* field14;
-    void* field18;
-    void* field1C;
-    void* field20;
-    void sub_56c650(void*, void*, void*, void*, void*);
-    void* construct(void*, void*, void*, void*, void*, void*, void*);
+struct Owner {
+    void *value;
+    explicit Owner(void *p) : value(p) {}
+    ~Owner() {
+        if (value)
+            operator delete(value);
+    }
+    void *release() {
+        void *p = value;
+        value = 0;
+        return p;
+    }
 };
 
-void* FaceInstance::construct(void* a, void* b, void* c, void* d, void* e, void* f, void* g)
-{
-    void* edi;
-    void* eax;
-    void* ecx;
-    void* edx;
-    void* tmp;
+extern Owner __cdecl makeOwner(int, int, int, int);
 
-    sub_557330((void*)0x97b574, (void*)0x5ef520);
-    edi = sub_5ef4c0();
-    eax = sub_597fb0();
+struct __declspec(novtable) Base {
+    virtual ~Base();
+    void initialize(void *, void *, int, int, int);
 
-    edx = g;
-    ecx = e;
-    sub_56c650(a, b, c, d, e);
-    field18 = edi;
+    int storage[5];
+    void *descriptor;
 
-    tmp = sub_5ef470(a, b, c, d, &tmp);
-    ecx = *(void**)tmp;
-    *(void**)tmp = 0;
-    field1C = ecx;
-
-    if (f != 0) {
-        sub_6a067a(f);
+    Base(int a, int b, int g) {
+        registerName(nameCallback, faceName);
+        void *p = getDescriptor();
+        void *t = getType();
+        initialize(t, p, a, b, g);
+        descriptor = p;
     }
+};
 
-    sub_557330((void*)0x97b574, (void*)0x5ef520);
-    eax = sub_5ef4c0();
-    field20 = eax;
+struct S : Base {
+    Owner owner;
+    void *descriptor2;
 
-    return this;
+    S(int, int, int, int, int, int, int);
+    virtual ~S();
+};
+
+S::S(int a, int b, int c, int d, int e, int f, int g)
+    : Base(a, b, g), owner(makeOwner(c, d, e, f).release())
+{
+    registerName(nameCallback, faceName);
+    descriptor2 = getDescriptor();
 }

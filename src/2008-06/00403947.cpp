@@ -1,5 +1,14 @@
-// from server: 69% by colin
-// roc-lang: cpp
-// roc-cl: 30729
-// roc-flags: /O2 /GS- /MD
-// roc-lib: atl-9.0 atl.cpp
+// from server: 81% by king_originala
+struct CRegObject {
+    long f(unsigned long, unsigned long, unsigned long);
+};
+
+long CRegObject::f(unsigned long value, unsigned long, unsigned long)
+{
+    try {
+        throw value;
+    }
+    catch (...) {
+        return (long)0x8007000eUL;
+    }
+}

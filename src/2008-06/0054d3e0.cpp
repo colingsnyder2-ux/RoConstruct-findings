@@ -1,32 +1,26 @@
-// from server: 21% by colin
+// from server: 100% by king_originala
 struct Mesh {
-    int field0;
-    int field4;
-    int field8;
-    void init(int* data, int count);
-    Mesh(int* data, int count);
+    void *data;
+    unsigned size;
+    unsigned capacity;
+
+    void assign(void *);
+    void f(void *, int);
 };
 
-extern "C" void __stdcall helper(int* data);
+#pragma optimize("", off)
+void Mesh::f(void *arg, int count)
+{
+    do {} while (0);
+    do {} while (0);
 
-void Mesh::init(int* data, int count) {
-    field4 = 0;
-    field8 = 0;
-    field0 = 0;
-    if (count > 0) {
-        helper(data);
-    } else {
-        field0 = 0;
-    }
-}
+    size = 0;
+    capacity = 0;
+    data = 0;
 
-Mesh::Mesh(int* data, int count) {
-    field4 = 0;
-    field8 = 0;
-    field0 = 0;
-    if (count > 0) {
-        helper(data);
-    } else {
-        field0 = 0;
-    }
+    if (count > 0)
+        assign(arg);
+    else
+        data = 0;
 }
+#pragma optimize("", on)

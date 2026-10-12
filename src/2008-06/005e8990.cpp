@@ -1,51 +1,56 @@
-// from server: 52% by king_originala
-struct Endpoint;
+// from server: 61% by king_originala
+struct Owner;
 
-struct Node {
-    char reserved[12];
-    Endpoint* first;
-    Endpoint* second;
+struct Edge
+{
+    char padding[12];
+    Owner* first;
+    Owner* second;
     int firstIndex;
     int secondIndex;
 };
 
-struct NodeList {
-    Node** data;
-    int size;
-    int capacity;
-    void append(Node* const*);
-};
-
-struct EndpointList {
-    Endpoint** data;
-    int size;
-    int capacity;
-    void append(Endpoint* const*);
-};
-
-struct Primitive {
-    Endpoint* owner;
-    NodeList nodes;
-    EndpointList endpoints;
-    void func_005e8990(Node* node);
-};
-
-void Primitive::func_005e8990(Node* node)
+struct EdgeVector
 {
-    int index = nodes.size;
+    Edge** data;
+    int size;
+    int capacity;
 
-    if (owner == node->first)
-        node->firstIndex = index;
+    void push_back(Edge* const& value);
+};
+
+struct OwnerVector
+{
+    Owner** data;
+    int size;
+    int capacity;
+
+    void push_back(Owner* const& value);
+};
+
+struct Primitive
+{
+    Owner* owner;
+    EdgeVector edges;
+    OwnerVector neighbors;
+
+    void addEdge(Edge* edge);
+};
+
+void Primitive::addEdge(Edge* edge)
+{
+    Edge* saved = edge;
+    int index = edges.size;
+
+    if (owner == saved->first)
+        saved->firstIndex = index;
     else
-        node->secondIndex = index;
+        saved->secondIndex = index;
 
-    nodes.append(&node);
+    edges.push_back(edge);
 
-    if (owner == node->first) {
-        Endpoint* endpoint = node->second;
-        endpoints.append(&endpoint);
-    } else {
-        Endpoint* endpoint = node->first;
-        endpoints.append(&endpoint);
-    }
+    if (owner == saved->first)
+        neighbors.push_back(static_cast<Owner*>(static_cast<void*>(saved->second)));
+    else
+        neighbors.push_back(static_cast<Owner*>(static_cast<void*>(saved->first)));
 }

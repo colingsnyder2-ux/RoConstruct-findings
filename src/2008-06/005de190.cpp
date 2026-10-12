@@ -1,5 +1,20 @@
-// from server: 64% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs util/Math.cpp
+// from server: 100% by king_originala
+extern "C" double __cdecl acos(double);
+#pragma intrinsic(acos)
+
+extern const float upperResult;
+extern const float lowerResult;
+
+struct S {
+    float x;
+    float y;
+};
+
+double __cdecl f(const S& v)
+{
+    if (v.y >= 1.0f)
+        return upperResult;
+    if (v.y <= -1.0f)
+        return lowerResult;
+    return acos(v.y);
+}

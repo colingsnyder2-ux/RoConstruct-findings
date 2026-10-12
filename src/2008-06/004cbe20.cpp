@@ -1,5 +1,23 @@
-// from server: 53% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs v8tree/Instance.cpp
+// from server: 92% by king_originala
+extern const float increment;
+extern const float limit;
+
+struct S {
+    char padding[24];
+    float loadFactor;
+    unsigned int threshold;
+
+    void reserve(unsigned int count);
+    void rehash(unsigned int count);
+};
+
+void S::reserve(unsigned int count)
+{
+    if (count > threshold) {
+        unsigned int capacity = ~0u;
+        double required = count / loadFactor + increment;
+        if (required >= limit)
+            capacity = static_cast<unsigned int>(required);
+        rehash(capacity);
+    }
+}

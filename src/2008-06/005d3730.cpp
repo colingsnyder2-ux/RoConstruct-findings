@@ -1,20 +1,18 @@
-// from server: 27% by colin
-struct Sub1 {
-    void f();
+// from server: 100% by tester
+struct Base {
+    char data[0x3ec];
+    ~Base();
 };
 
-struct Sub2 {
-    void f();
+struct Member {
+    ~Member();
 };
 
-struct SpawnLocation {
-    char pad[0x3ec];
-    Sub1 sub1;
-    void f();
+struct ImageKeyButton : Base {
+    Member member;
+    ~ImageKeyButton();
 };
 
-void SpawnLocation::f() {
-    sub1.f();
-    Sub2* p = (Sub2*)this;
-    p->f();
+ImageKeyButton::~ImageKeyButton()
+{
 }

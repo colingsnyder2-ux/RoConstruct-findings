@@ -1,30 +1,45 @@
-// from server: 32% by colin
-extern "C" int __stdcall func_005f5b70(void*, void*, int);
-extern "C" int __stdcall func_00802370(void*);
+// from server: 94% by king_originala
+struct StreamBuffer;
+struct S;
+
+typedef int (__thiscall *SyncFunction)(StreamBuffer*);
+extern SyncFunction pubsync;
+
+extern S* __stdcall write_buffer(void*, StreamBuffer*, const char*, int);
 
 struct S
 {
-    char pad_00[0x14];
-    int* member_14;
-    char pad_18[0x0c];
-    int* member_24;
-    char pad_28[0x1c];
-    void* member_44;
-    int f();
+    char padding0[0x14];
+    char** begin;
+    char padding1[0x0c];
+    char** end;
+    char padding2[0x18];
+    unsigned long device;
+    StreamBuffer* buffer;
+
+    int sync();
 };
 
-int S::f()
+int S::sync()
 {
-    int* p24 = member_24;
-    int* p14 = member_14;
-    int diff = *p24 - *p14;
-    if (diff > 0)
+    S* object = this;
+    const char* last = *end;
+    const char* first = *begin;
+    int count = static_cast<int>(last - first);
+
+    try
     {
-        func_005f5b70(&member_44, p14, diff);
+        if (count > 0)
+        {
+            StreamBuffer* destination = buffer;
+            object = write_buffer(&device, destination, first, count);
+        }
+        if (object->buffer)
+            pubsync(object->buffer);
     }
-    if (member_44 != 0)
+    catch (...)
     {
-        func_00802370(member_44);
+        return -1;
     }
     return 0;
 }

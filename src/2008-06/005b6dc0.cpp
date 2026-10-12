@@ -1,22 +1,23 @@
-// from server: 23% by tester
-struct ContentId {
-    void construct(const ContentId& other);
-    ContentId(const ContentId& other) { construct(other); }
-    ContentId() {}
+// from server: 100% by tester
+void* __cdecl operator new(unsigned int);
+void __cdecl operator delete(void*);
+
+struct Value {
+    int data;
 };
 
-struct SoundId {
-    ContentId content;
-    SoundId(const ContentId& id);
+struct Holder {
+    char storage[0x24];
+    Holder(const Value* value);
 };
 
-extern "C" void* __cdecl operator_new(unsigned int size);
-extern "C" void __cdecl free(void* p);
+struct Source {
+    virtual ~Source();
+    Value value;
+    Holder* clone() const;
+};
 
-SoundId::SoundId(const ContentId& id)
+Holder* Source::clone() const
 {
-    void* mem = operator_new(0x24);
-    if (mem) {
-        content.construct(id);
-    }
+    return new Holder(&value);
 }

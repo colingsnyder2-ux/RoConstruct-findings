@@ -1,5 +1,12 @@
-// from server: 52% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MT
-// roc-lib: ogre-1.4.9 OgreAlignedAllocator.cpp
+// from server: 100% by king_originala
+struct HistoryBuffer {
+    int position;
+    int reserved;
+    char entries[100][20];
+    char* get(int offset);
+};
+
+char* HistoryBuffer::get(int offset) {
+    int index = position - offset - 1;
+    return entries[index % 100];
+}

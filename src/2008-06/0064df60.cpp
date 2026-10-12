@@ -1,5 +1,16 @@
-// from server: 37% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs util/Name.cpp
+// from server: 100% by king_originala
+struct Value {
+    int fields[5];
+};
+
+struct S {
+    char pad[0x130];
+    Value value;
+    void set(const Value& source);
+};
+
+void S::set(const Value& source)
+{
+    value = source;
+    value.fields[0] = 0;
+}

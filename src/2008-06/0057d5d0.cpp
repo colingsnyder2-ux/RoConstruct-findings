@@ -1,21 +1,25 @@
-// from server: 72% by atomic.potato
-extern "C" void sub_005cbf90(void *, int);
-
-struct CameraZoomOutCommand
-{
-    void f();
+// from server: 100% by king_originala
+struct Camera {
+    void zoom(int direction);
 };
 
-void CameraZoomOutCommand::f()
-{
-    struct Base
-    {
-        void **vtable;
-    };
+struct CameraProvider {
+    virtual void reserved();
+    virtual Camera* getCamera();
+};
 
-    Base *object = *(Base **)((char *)this + 0x0c);
-    void **member = (void **)((char *)object + 0x288);
-    typedef void *(__fastcall *Call)(void *, void *);
-    void *result = ((Call)member[1])(member, 0);
-    sub_005cbf90(result, -1);
+struct Owner {
+    char padding[0x288];
+    CameraProvider provider;
+};
+
+struct CameraZoomOutCommand {
+    char padding[0x0C];
+    Owner* owner;
+    void execute();
+};
+
+void CameraZoomOutCommand::execute() {
+    Camera* camera = owner->provider.getCamera();
+    camera->zoom(-1);
 }

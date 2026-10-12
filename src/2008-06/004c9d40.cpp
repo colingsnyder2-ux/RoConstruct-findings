@@ -1,5 +1,18 @@
-// from server: 54% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs v8tree/Instance.cpp
+// from server: 100% by king_originala
+extern "C" double __cdecl sqrt(double);
+#pragma intrinsic(sqrt)
+#pragma float_control(precise, off)
+
+struct S {
+    float x, y, z, w;
+    void normalize();
+};
+
+void S::normalize()
+{
+    float inverse = 1.0f / (float)sqrt(x * x + y * y + z * z + w * w);
+    x *= inverse;
+    y *= inverse;
+    z *= inverse;
+    w *= inverse;
+}

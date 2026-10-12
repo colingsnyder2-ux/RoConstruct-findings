@@ -1,22 +1,25 @@
-// from server: 18% by tester
-extern "C" void *__cdecl malloc(unsigned int);
+// from server: 76% by king_originala
+void *__cdecl operator new(unsigned int);
+void __cdecl operator delete(void *);
 
-struct Inner
+struct Empty
 {
-    void construct(void *);
 };
 
-struct Outer
+struct Object
 {
-    void *create(void *);
+    char storage[0x158];
+    Object(void *);
 };
 
-void Inner::construct(void *p)
+struct Result
 {
-    void *q = malloc(0x158);
-    if (q)
-    {
-        Outer *o = (Outer *)q;
-        o->create(p);
-    }
+    void *object;
+    void *control;
+    Result(Object *, Empty);
+};
+
+Result f(void *argument)
+{
+    return Result(new Object(argument), Empty());
 }

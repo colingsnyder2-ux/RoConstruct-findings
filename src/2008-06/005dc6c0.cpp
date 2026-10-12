@@ -1,56 +1,62 @@
-// from server: 77% by tester
+// from server: 100% by king_originala
+struct Link;
+
+struct Primitive
+{
+    Link *first();
+    Link *next(Link *);
+};
+
+struct Link
+{
+    char padding[0x0c];
+    Primitive *a;
+    Primitive *b;
+};
+
 struct S
 {
+    char padding[0x1e8];
+    unsigned char flags;
+
+    char *getA();
+    char *getB();
+    void reset(float);
     void f();
 };
 
-extern "C" int __cdecl sub_5d8a10();
-extern "C" int __cdecl sub_5d8b10();
-extern "C" int __cdecl sub_5e7b90();
-extern "C" int __cdecl sub_5e7ba0();
-extern "C" void __cdecl sub_5dbe70();
-
 void S::f()
 {
-    int a = sub_5d8a10();
+    char *a = getA();
     if (a)
     {
-        int esi = a + 0x228;
-        if (esi)
+        Primitive *first = (Primitive *)(a + 0x228);
+        if (first)
         {
-            int b = sub_5d8b10();
+            char *b = getB();
             if (b)
             {
-                int edi = b + 0x228;
-                if (edi)
+                Primitive *second = (Primitive *)(b + 0x228);
+                if (second)
                 {
-                    int e = sub_5e7b90();
-                    if (e)
+                    Link *link = first->first();
+                    while (link)
                     {
-                        int ecx;
-                        for (;;)
+                        Primitive *other = link->a;
+                        if (first == other)
+                            other = link->b;
+                        if (other == second)
                         {
-                            ecx = *(int*)(e + 0xc);
-                            if (esi == ecx)
-                                ecx = *(int*)(e + 0x10);
-                            if (ecx == edi)
-                                break;
-                            if (!sub_5e7ba0())
-                                goto done;
-                            e = sub_5e7b90();
-                            if (!e)
-                                goto done;
+                            flags |= 4;
+                            return;
                         }
-                        *(unsigned char*)((char*)this + 0x1e8) |= 4;
-                        return;
+                        link = first->next(link);
                     }
                 }
             }
         }
     }
-done:
-    if (*(unsigned char*)((char*)this + 0x1e8) & 4)
-    {
-        sub_5dbe70();
-    }
+
+    if (flags & 4)
+        reset(0.0f);
 }

@@ -1,5 +1,27 @@
-// from server: 43% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs util/RunStateOwner.cpp
+// from server: 100% by tester
+extern "C" void __cdecl release(void *);
+
+struct S {
+    unsigned char padding[0x124];
+    void *storage;
+    unsigned char reserved[8];
+    void *entries;
+    unsigned int count;
+    unsigned int capacity;
+
+    void cleanup();
+    void finish();
+};
+
+void S::cleanup()
+{
+    if (entries)
+        release(entries);
+
+    entries = 0;
+    count = 0;
+    capacity = 0;
+
+    release(storage);
+    finish();
+}

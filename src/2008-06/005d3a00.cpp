@@ -1,24 +1,23 @@
-// from server: 56% by atomic.potato
-typedef int String;
-
-struct StringObject
-{
-    int value;
+// from server: 100% by tester
+struct Value {
+    char stringData[28];
+    unsigned int extra;
 };
 
-extern "C" void __stdcall copy_string(StringObject*, const StringObject*);
+typedef void (__thiscall *StringCopy)(void *, const void *);
+extern StringCopy copyString;
 
-struct S
-{
-    StringObject value;
-    StringObject f(StringObject*);
-    char padding[0x150];
-    StringObject source;
+struct Block {
+    char padding[0x154];
+    Value value;
+    Value *copy(Value *result);
 };
 
-StringObject S::f(StringObject* p)
+Value *Block::copy(Value *result)
 {
-    copy_string(&source, p);
-    p->value = source.value;
-    return *p;
+    Value *source = &value;
+    volatile int state = 0;
+    copyString(result, source);
+    result->extra = source->extra;
+    return result;
 }

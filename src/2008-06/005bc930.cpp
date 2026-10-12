@@ -1,16 +1,18 @@
-// from server: 56% by atomic.potato
-struct S
-{
-    char data[0x15c];
-    void f();
+// from server: 100% by king_originala
+struct EventHandler {
+    void* table;
+    unsigned int f();
 };
 
-extern "C" void sub_42afc0(void *);
-extern "C" void sub_5c9140(S *, void *);
+struct LaserTool {
+    char storage[0x158];
+    EventHandler handler;
+    void setValue(const unsigned int* value);
+    void update();
+};
 
-void S::f()
+void LaserTool::update()
 {
-    char *p = data + 0x158;
-    sub_42afc0(p);
-    sub_5c9140(this, &p);
+    unsigned int value = handler.f();
+    setValue(&value);
 }

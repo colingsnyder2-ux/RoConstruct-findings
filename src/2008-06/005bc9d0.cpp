@@ -1,29 +1,26 @@
-// from server: 76% by king_originala
-extern "C" void* __cdecl malloc(unsigned int);
-
-struct Empty {};
+// from server: 100% by king_originala
+extern "C" void* (__cdecl *malloc)(unsigned int);
+extern "C" void __cdecl free(void*);
 
 struct Object {
     char storage[0x178];
 
-    Object(const char*);
-    static void* operator new(unsigned int);
-    static void operator delete(void*);
+    Object(unsigned int);
+    static void* operator new(unsigned int n) { return malloc(n); }
+    static void operator delete(void* p) { free(p); }
 };
 
-inline void* Object::operator new(unsigned int size)
-{
-    return malloc(size);
-}
+struct Empty {};
 
 struct Result {
-    void* pointer;
-    void* count;
+    Object* object;
+    void* control;
 
-    Result(Object*, Empty);
+    Result(Object*, Empty = Empty());
+    ~Result();
 };
 
-Result create(const char* name)
+Result create(unsigned int argument)
 {
-    return Result(new Object(name), Empty());
+    return Result(new Object(argument));
 }

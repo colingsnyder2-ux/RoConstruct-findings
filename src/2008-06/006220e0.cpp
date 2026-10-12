@@ -1,5 +1,17 @@
-// from server: 50% by colin
-// roc-lang: c
-// roc-cl: 21022
-// roc-flags: /O2 /GS- /MD
-// roc-lib: lua-5.1.4 ltablib.c
+// from server: 54% by king_originala
+struct S {
+    unsigned char reserved[12];
+    unsigned int value;
+    unsigned int auxiliary;
+    unsigned char released;
+
+    S(S& source);
+};
+
+S::S(S& source)
+{
+    value = source.value;
+    auxiliary = source.auxiliary;
+    released = source.released;
+    source.released = 1;
+}

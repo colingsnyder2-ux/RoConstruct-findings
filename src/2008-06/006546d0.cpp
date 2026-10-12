@@ -1,108 +1,95 @@
-// from server: 35% by colin
-// roc 2008-06 006546d0  unit: RBX::ScoreHud  size: 391 bytes
-// Make this compile to the exact bytes below, then: roc check 2008-06 006546d0
+// from server: 56% by king_originala
+struct String;
+extern "C" void (__cdecl *invalid_parameter)();
+extern "C" void (__thiscall *destroy_string)(String *);
 
-extern "C" void __stdcall _invalid_parameter_noinfo();
-extern "C" void __stdcall sub_802468(void*);
-extern "C" void __stdcall sub_802890();
-
-struct Inner {
-    char pad[0xc];
-    int field_c;
-    int field_10;
+struct String {
+    unsigned char storage[28];
+    ~String();
 };
 
-struct Vec {
-    char pad[0x18];
-    Inner inner;
+inline String::~String() {
+    destroy_string(this);
+}
+
+struct Iterator {
+    void *owner;
+    String *position;
 };
 
-struct S {
-    char pad0[0xc];
-    int field_c;
-    int field_10;
-    char pad1[0x4];
-    Vec vec18;
-    char pad2[0x8];
-    Vec vec38;
-    void func(int, int, int, int, int, int, int, int, int, int, int, int, int, int, int, int);
+inline bool operator==(const Iterator &left, const Iterator &right) {
+    if (!left.owner || left.owner != right.owner)
+        invalid_parameter();
+    return left.position == right.position;
+}
+
+extern String *__cdecl find_string(String *, String *, const String *);
+
+inline Iterator find_string(Iterator first, Iterator last, const String &value) {
+    Iterator result = first;
+    result.position = find_string(first.position, last.position, &value);
+    return result;
+}
+
+struct Vector {
+    void *owner;
+    unsigned char prefix[8];
+    String *first;
+    String *last;
+    String *limit;
+
+    Iterator begin();
+    Iterator end();
+    void append(const String &);
 };
 
-extern "C" int __cdecl sub_650eb0(int, int, int);
-extern "C" int __cdecl sub_652c80(void*, void*);
-extern "C" int __cdecl sub_654250(void*, void*, void*);
-extern "C" int __cdecl sub_671910(void*, void*);
-extern "C" int __cdecl sub_429aa0(void*, void*);
+inline Iterator Vector::begin() {
+    Iterator result;
+    result.position = first;
+    if (first > last)
+        invalid_parameter();
+    result.owner = owner;
+    return result;
+}
 
-void S::func(int a1, int a2, int a3, int a4, int a5, int a6, int a7, int a8, int a9, int a10, int a11, int a12, int a13, int a14, int a15, int a16)
-{
-    int local_54;
-    int local_50;
-    int local_34;
-    int local_30;
-    int local_28;
-    int local_14;
-    int local_10;
-    int local_c;
+inline Iterator Vector::end() {
+    Iterator result;
+    result.position = last;
+    if (first > last)
+        invalid_parameter();
+    result.owner = owner;
+    return result;
+}
 
-    local_28 = 1;
-    local_c = field_10;
-    if (field_c > field_10)
-        sub_802890();
+struct VectorMap {
+    unsigned char storage[32];
+    Vector &lookup(const int &);
+};
 
-    local_14 = *(int*)this;
-    int ebp = field_10;
-    if (field_c > ebp)
-        sub_802890();
+struct Value {
+    int &get();
+};
 
-    int edi = field_c;
-    if (edi > field_10)
-        sub_802890();
+struct ValueMap {
+    Value &lookup(const String &, const String &);
+};
 
-    int ebx = *(int*)this;
-    int r = sub_650eb0(edi, ebp, (int)&local_54);
-    edi = r;
-    if (ebx != 0 && ebx != local_14)
-        sub_802890();
+struct ScoreHud {
+    Vector names;
+    VectorMap groups;
+    ValueMap values;
 
-    if (edi == local_10) {
-        sub_429aa0(this, &local_54);
-    }
+    void update(String name, int group, String category, int value);
+};
 
-    int* p = (int*)sub_652c80(&vec18, &local_50);
-    edi = *p;
-    local_10 = p[4];
-    if (p[3] > p[4])
-        sub_802890();
+void ScoreHud::update(String name, int group, String category, int value) {
+    if (find_string(names.begin(), names.end(), category) == names.end())
+        names.append(category);
 
-    local_14 = *(int*)edi;
-    p = (int*)sub_652c80(&vec18, &local_50);
-    ebp = p[4];
-    if (p[3] > p[4])
-        sub_802890();
+    if (find_string(groups.lookup(group).begin(),
+                    groups.lookup(group).end(), name) ==
+        groups.lookup(group).end())
+        groups.lookup(group).append(name);
 
-    p = (int*)sub_652c80(&vec18, &local_50);
-    ebx = (int)p;
-    edi = p[3];
-    if (edi > p[4])
-        sub_802890();
-
-    ebx = *(int*)ebx;
-    edi = sub_650eb0(edi, ebp, (int)&local_34);
-    if (ebx != 0 && ebx != local_10)
-        sub_802890();
-
-    if (edi == local_c) {
-        p = (int*)sub_652c80(&vec18, &local_50);
-        sub_429aa0(p, &local_30);
-    }
-
-    p = (int*)sub_654250(&vec38, &local_34, &local_50);
-    p = (int*)sub_671910(p, &local_30);
-    *p = local_54;
-
-    local_28 = 0;
-    sub_802468(&local_30);
-    local_28 = -1;
-    sub_802468(&local_50);
+    values.lookup(name, category).get() = value;
 }

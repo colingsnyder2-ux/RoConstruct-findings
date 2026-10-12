@@ -1,5 +1,23 @@
-// from server: 48% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs util/Name.cpp
+// from server: 100% by king_originala
+extern char globalData;
+
+struct Helper {
+    int invoke(void *, int, void *);
+};
+
+struct ToolMouseCommand {
+    char padding[0x130];
+    char storage[0x34];
+    Helper *helper;
+
+    void update();
+    int execute();
+};
+
+int ToolMouseCommand::execute()
+{
+    update();
+    if (helper)
+        return helper->invoke(storage, 0, &globalData);
+    return 0;
+}

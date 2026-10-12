@@ -1,5 +1,31 @@
-// from server: 43% by colin
-// roc-lang: c
-// roc-cl: 21022
-// roc-flags: /O2 /GS- /MD
-// roc-lib: lua-5.1.4 ltablib.c
+// from server: 94% by king_originala
+void* __cdecl operator new(unsigned int);
+inline void* __cdecl operator new(unsigned int, void* p) { return p; }
+inline void __cdecl operator delete(void*, void*) {}
+
+struct Pointer {
+    int* value;
+    void* count;
+
+    Pointer();
+    ~Pointer();
+    void reset(int*);
+};
+
+struct Header {
+    Pointer pointer;
+    bool flag;
+
+    Header();
+};
+
+__forceinline Pointer::Pointer() : value(0), count(0) {}
+
+__forceinline Header::Header() : pointer(), flag(false) {
+    pointer.reset(new int(1));
+}
+
+void __cdecl construct_header(char* p) {
+    p = p ? p - 12 : 0;
+    new (p) Header;
+}

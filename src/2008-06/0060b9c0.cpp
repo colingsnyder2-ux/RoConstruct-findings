@@ -1,22 +1,34 @@
-// from server: 45% by atomic.potato
-struct RefPropDescriptor {
-    char pad[0x1c];
-    void* field1c;
-    void operator()(int, int);
+// from server: 100% by tester
+struct Base {
+    virtual ~Base();
 };
 
-extern "C" void* __cdecl sub_60b970(void*);
+struct Derived : Base {
+};
 
-void RefPropDescriptor::operator()(int a, int b)
+Derived* polymorphic_cast(Base* x);
+
+inline Derived* maybe(Base* x)
 {
-    void* v;
-    if (a) {
-        v = sub_60b970((void*)a);
-    } else {
-        v = 0;
-    }
-    void** p = (void**)field1c;
-    void* fn = *(void**)((char*)*p + 0xc);
-    typedef void (__thiscall *Fn)(void*, void*, int);
-    ((Fn)fn)(field1c, v, b);
+    if (x)
+        return polymorphic_cast(x);
+    return 0;
+}
+
+struct Setter {
+    virtual void slot0();
+    virtual void slot1();
+    virtual void slot2();
+    virtual void set(Base* target, Derived* const& value);
+};
+
+struct Descriptor {
+    char padding[0x1c];
+    Setter* setter;
+    void set(Base* target, Base* value);
+};
+
+void Descriptor::set(Base* target, Base* value)
+{
+    setter->set(target, maybe(value));
 }

@@ -1,16 +1,26 @@
-// from server: 32% by atomic.potato
-extern "C" int sub_004dc410(void *);
-extern "C" void __cdecl invalid_parameter_noinfo(void);
+// from server: 100% by king_originala
+extern "C" void (__cdecl * _invalid_parameter_noinfo)();
 
-struct Mesh
-{
-    int *data;
-    int f(unsigned int index);
+struct Element {
+    float x, y, z;
 };
 
-int Mesh::f(unsigned int index)
+struct S {
+    char padding[12];
+    Element* first;
+
+    unsigned int size() const;
+    Element& at(unsigned int index);
+};
+
+#pragma optimize("", off)
+Element& S::at(unsigned int index)
 {
-    if (index >= (unsigned int)sub_004dc410(this))
-        invalid_parameter_noinfo();
-    return (int)((char *)data + index * 12);
+    if (index >= size())
+        _invalid_parameter_noinfo();
+
+    do {
+    } while (false);
+
+    return first[index];
 }

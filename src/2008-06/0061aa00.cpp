@@ -1,28 +1,44 @@
-// from server: 47% by colin
-
-
-
-
-extern "C" int __cdecl sub_6A17C6(int, int, int, int, int);
-extern "C" int __cdecl sub_6A158C(int, int);
-extern "C" void __stdcall sub_802864(int);
-extern "C" void __stdcall sub_802864_bad_cast(int);
-
-struct LuaArguments {
-    int field0;
-    int field4;
-    void convertToReturnValues(int);
+// from server: 97% by king_originala
+struct Accessor {
+    virtual void slot0();
+    virtual void slot1();
+    virtual void slot2();
+    virtual void access(void*, void*);
 };
 
-void LuaArguments::convertToReturnValues(int arg) {
-    int result = sub_6A17C6(field0, 0, 0x9295B4, 0x95AF78, 0);
-    if (result == 0) {
-        int local;
-        sub_802864((int)&local);
-        sub_6A158C((int)&local, 0x8D362C);
+struct TypedPropertyDescriptor {
+    char reserved[24];
+    Accessor* accessor;
+};
+
+extern const char sourceType[];
+extern const char destinationType[];
+extern const char badCastMessage[];
+extern const char badCastThrowInfo[];
+
+extern "C" void* __cdecl castObject(void*, long, const void*, const void*, int);
+extern "C" TypedPropertyDescriptor* __stdcall throwException(void*, const void*);
+
+typedef void (__thiscall *BadCastConstructor)(void*, const char*);
+extern BadCastConstructor constructBadCast;
+
+struct LuaArguments {
+    void* descriptor;
+    void* instance;
+    void f(void*);
+};
+
+void LuaArguments::f(void* result)
+{
+    TypedPropertyDescriptor* property =
+        static_cast<TypedPropertyDescriptor*>(
+            castObject(descriptor, 0, sourceType, destinationType, 0));
+
+    if (!property) {
+        char exception[12];
+        constructBadCast(exception, badCastMessage);
+        property = throwException(exception, badCastThrowInfo);
     }
-    int* obj = (int*)(result + 0x18);
-    int* vtbl = (int*)*obj;
-    int (*fn)(int*, int, int) = (int (*)(int*, int, int))vtbl[3];
-    fn(obj, field4, arg);
+
+    property->accessor->access(instance, result);
 }

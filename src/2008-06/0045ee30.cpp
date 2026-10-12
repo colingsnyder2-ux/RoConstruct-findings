@@ -1,15 +1,24 @@
-// from server: 60% by atomic.potato
-struct S
+// from server: 100% by king_originala
+struct Value
 {
-    char field[0x158];
+    char data[0x58];
 };
 
-extern "C" void* __cdecl sub_45edb0(void* object, void* value);
-extern "C" void __cdecl sub_5c8fa0(S* object, void* value);
-
-void function_0045ee30(S* object)
+struct Item
 {
-    char buffer[80];
-    sub_45edb0(object->field + 0x158, buffer);
-    sub_5c8fa0(object, buffer);
+    Value getValue();
+};
+
+struct S
+{
+    char padding[0x158];
+    Item item;
+
+    void setValue(const Value &value);
+    void update();
+};
+
+void S::update()
+{
+    setValue(item.getValue());
 }

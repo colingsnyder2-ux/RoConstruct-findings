@@ -1,14 +1,18 @@
-// from server: 54% by atomic.potato
-typedef unsigned char Byte;
-
-struct LuaWriter
+// from server: 100% by king_originala
+struct Listener
 {
-    int f(Byte);
+    void invoke(const int& value);
 };
 
-extern "C" int MarshaledListener(void *, Byte *);
-
-int LuaWriter::f(Byte value)
+struct Writer
 {
-    return MarshaledListener((Byte *)((char *)this + 0x20), &value);
+    char padding[32];
+    Listener listener;
+    void write(int value);
+};
+
+void Writer::write(int value)
+{
+    int copy = value;
+    listener.invoke(copy);
 }

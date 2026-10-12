@@ -1,5 +1,17 @@
-// from server: 52% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs v8kernel/Link.cpp
+// from server: 100% by king_originala
+struct S {
+    char pad0[0x10];
+    int value;
+    char pad1[8];
+    S** children;
+    int count;
+
+    void setValue(int v);
+};
+
+void S::setValue(int v)
+{
+    value = v;
+    for (int i = 0; i < count; ++i)
+        children[i]->setValue(v);
+}

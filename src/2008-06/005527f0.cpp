@@ -1,13 +1,13 @@
-// from server: 37% by atomic.potato
-extern "C" void __stdcall CNameItem(void *, int, int);
-
-struct AggregateChunk
-{
-    int f();
+// from server: 100% by king_originala
+struct S {
+    void sub_47b4e0(int, int);
+    S *sub_5527f0();
 };
 
-int AggregateChunk::f()
+#pragma optimize("", off)
+S *S::sub_5527f0()
 {
-    CNameItem(this, 0, 0);
-    return (int)this;
+    sub_47b4e0(0, 0);
+    return this;
 }
+#pragma optimize("", on)

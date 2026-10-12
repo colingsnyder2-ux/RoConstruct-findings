@@ -1,20 +1,27 @@
-// from server: 53% by atomic.potato
-struct S
-{
-    void f(void *, void *);
-    void *field18;
+// from server: 100% by king_originala
+struct Vector3 {
+    float x, y, z;
 };
 
-typedef void *(__thiscall *GetFn)(void *, void *);
-typedef void (__thiscall *InvokeFn)(void *, void *, void *);
+struct Value {
+    Vector3 get();
+};
 
-extern "C" void *__cdecl G1_func_0059b730(void *, void *);
+struct Setter {
+    typedef void (__thiscall *SetFunction)(Setter*, void*, const Vector3&);
+    SetFunction* table;
+};
 
-void S::f(void *a, void *b)
+struct Descriptor {
+    char padding[24];
+    Setter* setter;
+
+    void write(void* object, Value* value);
+};
+
+void Descriptor::write(void* object, Value* value)
 {
-    void *v;
-    GetFn *p;
-    p = (GetFn *)field18;
-    v = G1_func_0059b730(b, &v);
-    ((InvokeFn *)*p)[0](field18, a, v);
+    Setter* target = setter;
+    Setter::SetFunction& set = target->table[3];
+    set(target, object, value->get());
 }

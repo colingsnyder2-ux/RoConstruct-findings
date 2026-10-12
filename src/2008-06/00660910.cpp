@@ -1,48 +1,60 @@
-// from server: 49% by colin
-struct FilterStairs {
-    char pad[0x30];
-    int field30;
-    int field34;
-    void __cdecl addLocal(int* value);
+// from server: 100% by king_originala
+struct String {
+    unsigned char padding[5];
+    unsigned char flags;
 };
 
-extern "C" int __cdecl sub_660740(int a, int b, int c, int d, int e, int f);
-extern "C" void __cdecl sub_65C480(int a, int b, int c);
+struct Local {
+    String* name;
+    int start;
+    int end;
+};
 
-void FilterStairs::addLocal(int* value)
+struct Prototype {
+    unsigned char padding0[5];
+    unsigned char flags;
+    unsigned char padding1[18];
+    Local* locals;
+    unsigned char padding2[28];
+    int capacity;
+};
+
+struct FunctionState {
+    Prototype* prototype;
+    unsigned char padding[44];
+    short localCount;
+};
+
+struct Parser {
+    unsigned char padding[48];
+    FunctionState* function;
+    void* state;
+};
+
+extern "C" void* __cdecl growVector(
+    void*, void*, int*, int, int, const char*);
+extern "C" void __cdecl barrier(void*, Prototype*, String*);
+
+int __cdecl registerLocal(Parser* parser, String* name)
 {
-    int* base = (int*)field30;
-    int count = *(short*)((char*)base + 0x30);
-    int* vec = (int*)*base;
-    int* end = (int*)((char*)vec + 0x38);
-    int size = *(int*)((char*)vec + 0x38);
-    int i = count + 1;
-    if (i > size)
-    {
-        int* data = *(int**)((char*)vec + 0x18);
-        int* newData = (int*)sub_660740(field34, (int)data, (int)end, 0xc, 0x7fff, 0x84c548);
-        *(int**)((char*)vec + 0x18) = newData;
+    FunctionState* function = parser->function;
+    Prototype* prototype = function->prototype;
+    int oldCapacity = prototype->capacity;
+
+    if (function->localCount + 1 > prototype->capacity)
+        prototype->locals = (Local*)growVector(
+            parser->state, prototype->locals, &prototype->capacity,
+            12, 32767, "too many local variables");
+
+    while (oldCapacity < prototype->capacity) {
+        prototype->locals[oldCapacity].name = 0;
+        ++oldCapacity;
     }
-    if (size < *end)
-    {
-        int* data = *(int**)((char*)vec + 0x18);
-        int idx = size;
-        do
-        {
-            *(int*)((char*)data + idx * 0xc) = 0;
-            idx++;
-        } while (idx < *end);
-    }
-    int* data = *(int**)((char*)vec + 0x18);
-    int idx = count;
-    *(int*)((char*)data + idx * 0xc) = (int)value;
-    if ((*(unsigned char*)((char*)value + 5) & 3) != 0)
-    {
-        if ((*(unsigned char*)((char*)vec + 5) & 4) != 0)
-        {
-            sub_65C480(field34, (int)vec, (int)value);
-        }
-    }
-    unsigned short newCount = (unsigned short)(count + 1);
-    *(short*)((char*)base + 0x30) = newCount;
+
+    prototype->locals[function->localCount].name = name;
+
+    if ((name->flags & 3) && (prototype->flags & 4))
+        barrier(parser->state, prototype, name);
+
+    return function->localCount++;
 }

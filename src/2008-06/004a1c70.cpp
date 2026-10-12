@@ -1,28 +1,61 @@
-// from server: 31% by tester
+// from server: 78% by king_originala
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
 
-extern "C" void __cdecl func_004025b0(void*);
-extern "C" void* __cdecl func_006a17c6(void*, void*, void*, void*, void*);
-
-struct S {
-    void* field0;
-    void* field4;
-    void* method(void* arg0, void* arg1);
+struct Instance {
+    virtual ~Instance();
 };
 
-void* S::method(void* arg0, void* arg1)
-{
-    void* v = func_006a17c6(*(void**)arg0, (void*)0x92907c, (void*)0x937460, 0, 0);
-    this->field0 = v;
-    void* p = *(void**)((char*)arg0 + 4);
-    this->field4 = p;
-    if (p != 0) {
-        _InterlockedExchangeAdd((volatile long*)((char*)p + 4), 1);
+struct Player : Instance {
+};
+
+struct Control {
+    virtual void dispose() = 0;
+    virtual void destroy() = 0;
+    volatile long strong;
+    volatile long weak;
+};
+
+struct Count {
+    Control* control;
+    Count();
+    Count(const Count&);
+    ~Count();
+    Count& operator=(const Count&);
+};
+
+inline Count::Count() : control(0) {}
+
+inline Count::Count(const Count& other) : control(other.control) {
+    if (control)
+        _InterlockedExchangeAdd(&control->strong, 1);
+}
+
+inline Count::~Count() {
+    if (control && _InterlockedExchangeAdd(&control->strong, -1) == 1) {
+        control->dispose();
+        if (_InterlockedExchangeAdd(&control->weak, -1) == 1)
+            control->destroy();
     }
-    if (this->field0 == 0) {
-        void* tmp = 0;
-        func_004025b0(&tmp);
+}
+
+struct Source {
+    Instance* pointer;
+    Count count;
+};
+
+struct CastTag {};
+
+struct S {
+    Player* pointer;
+    Count count;
+    S(const Source&, const CastTag&);
+};
+
+S::S(const Source& source, const CastTag&)
+    : pointer(dynamic_cast<Player*>(source.pointer)), count(source.count) {
+    if (!pointer) {
+        Count empty;
+        count = empty;
     }
-    return this;
 }

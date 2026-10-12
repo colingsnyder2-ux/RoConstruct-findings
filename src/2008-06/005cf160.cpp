@@ -1,15 +1,23 @@
-// from server: 42% by atomic.potato
-extern "C" void BasicStringCopy(void* destination, void* source);
-
-struct DxUserInput
-{
-    char padding[0x180];
-    void* text;
-    void* CopyText(void* other);
+// from server: 100% by tester
+struct Value {
+    char stringData[28];
+    unsigned int extra;
 };
 
-void* DxUserInput::CopyText(void* other)
+typedef void (__thiscall *StringCopy)(void *, const void *);
+extern StringCopy copyString;
+
+struct Block {
+    char padding[0x180];
+    Value value;
+    Value *copy(Value *result);
+};
+
+Value *Block::copy(Value *result)
 {
-    BasicStringCopy(other, text);
-    return other;
+    Value *source = &value;
+    volatile int state = 0;
+    copyString(result, source);
+    result->extra = source->extra;
+    return result;
 }

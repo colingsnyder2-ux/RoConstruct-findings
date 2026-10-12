@@ -1,52 +1,56 @@
-// from server: 51% by atomic.potato
+// from server: 100% by king_originala
+#pragma float_control(precise, off)
+
 struct Vector3 {
-    float x;
-    float y;
-    float z;
+    float x, y, z;
+    Vector3(float a, float b, float c) : x(a), y(b), z(c) {}
+    Vector3 operator-(const Vector3&) const;
 };
 
-struct AxisAlignedBox {
-    float minx;
-    float miny;
-    float minz;
-    float maxx;
-    float maxy;
-    float maxz;
-    void merge(const Vector3& v);
-};
-
-struct Camera {
-    const Vector3& getDerivedPosition() const;
-};
-
-extern "C" {
-    float __stdcall Vector3_length(const Vector3* v);
-    const Vector3* __stdcall Camera_getDerivedPosition(const Camera* c);
-    void __stdcall AxisAlignedBox_merge(AxisAlignedBox* b, const Vector3* v);
+inline Vector3 Vector3::operator-(const Vector3& v) const
+{
+    return Vector3(x - v.x, y - v.y, z - v.z);
 }
 
-struct RbxSceneNode {
-    char pad0[0x20];
-    float minx;
-    float maxx;
-    void updateFromCamera(Camera* cam, Vector3* pos, float dt);
+struct AxisAlignedBox {
+    unsigned char data[32];
 };
 
-void RbxSceneNode::updateFromCamera(Camera* cam, Vector3* pos, float dt) {
-    Vector3 dir;
-    const Vector3* camPos = Camera_getDerivedPosition(cam);
-    dir.x = camPos->x - pos->x;
-    dir.y = camPos->y - pos->y;
-    dir.z = camPos->z - pos->z;
-    float len = Vector3_length(&dir);
-    float t = len - pos->x;
-    float zero = 0.0f;
-    float* pmin = (t < zero) ? &zero : &t;
-    if (this->minx < *pmin) {
-        this->minx = *pmin;
-    }
-    float t2 = t + pos->x;
-    if (t2 > this->maxx) {
-        this->maxx = t2;
-    }
+struct Camera;
+
+struct Sphere {
+    float radius;
+    Vector3 center;
+};
+
+extern void (__thiscall *mergeBox)(AxisAlignedBox*, const AxisAlignedBox&);
+extern const Vector3& (__thiscall *derivedPosition)(const Camera*);
+extern float (__thiscall *vectorLength)(const Vector3*);
+
+template<class T>
+inline const T& minimum(const T& a, const T& b)
+{
+    return b < a ? b : a;
+}
+
+template<class T>
+inline const T& maximum(const T& a, const T& b)
+{
+    return a < b ? b : a;
+}
+
+struct S : AxisAlignedBox {
+    float nearest;
+    float farthest;
+    void f(const AxisAlignedBox&, const Sphere&, const Camera&);
+};
+
+void S::f(const AxisAlignedBox& box, const Sphere& sphere,
+          const Camera& camera)
+{
+    mergeBox(this, box);
+    Vector3 delta = derivedPosition(&camera) - sphere.center;
+    float distance = vectorLength(&delta);
+    nearest = minimum(nearest, maximum(0.0f, distance - sphere.radius));
+    farthest = maximum(farthest, distance + sphere.radius);
 }

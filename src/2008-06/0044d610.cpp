@@ -1,77 +1,156 @@
-// from server: 18% by colin
+// from server: 52% by king_originala
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
 
-extern "C" void* __cdecl malloc(unsigned int);
-extern "C" void __cdecl free(void*);
+extern void* __cdecl operator new(unsigned int);
+extern void __cdecl operator delete(void*);
 
-struct RefCounted {
-    void* vptr;
-    long refcount;
-    long refcount2;
+struct Object {
+    unsigned char data[72];
+    Object();
 };
 
-struct Inner {
-    void* vptr;
-    long refcount;
+struct Control {
+    virtual void reserved() = 0;
+    virtual void dispose() = 0;
+    virtual void destroy() = 0;
+    volatile long strong;
+    volatile long weak;
 };
 
-struct Holder {
-    void* ptr;
-    Inner* inner;
-    char pad[0x40];
+struct ControlPtr {
+    Control* value;
+    ControlPtr(Object*);
+    ~ControlPtr();
+};
+
+__forceinline ControlPtr::~ControlPtr()
+{
+    Control* p = value;
+    if (p && _InterlockedExchangeAdd(&p->strong, -1) == 0) {
+        p->dispose();
+        if (_InterlockedExchangeAdd(&p->weak, -1) == 0)
+            p->destroy();
+    }
+}
+
+struct Shared {
+    Object* object;
+    Control* control;
+    Shared(Object*, Control*);
+    Shared(const Shared&);
+    ~Shared();
+};
+
+__forceinline Shared::Shared(Object* p, Control* c)
+    : object(p), control(c)
+{
+    if (control)
+        _InterlockedExchangeAdd(&control->strong, 1);
+}
+
+__forceinline Shared::Shared(const Shared& p)
+    : object(p.object), control(p.control)
+{
+    if (control)
+        _InterlockedExchangeAdd(&control->strong, 1);
+}
+
+__forceinline Shared::~Shared()
+{
+    Control* p = control;
+    if (p && _InterlockedExchangeAdd(&p->strong, -1) == 0) {
+        p->dispose();
+        if (_InterlockedExchangeAdd(&p->weak, -1) == 0)
+            p->destroy();
+    }
+}
+
+struct Bound {
+    void* function;
+    Object* object;
+    Control* control;
+    ~Bound();
+};
+
+__forceinline Bound::~Bound()
+{
+    Control* p = control;
+    if (p && _InterlockedExchangeAdd(&p->strong, -1) == 0) {
+        p->dispose();
+        if (_InterlockedExchangeAdd(&p->weak, -1) == 0)
+            p->destroy();
+    }
+}
+
+extern void __cdecl func_0041d760();
+extern void __cdecl func_0047d410(...);
+extern Bound __cdecl func_0063b770(void (__cdecl*)(), Shared);
+extern bool __cdecl func_0060a2f0(const Bound*);
+
+typedef void (__cdecl* Manager)(void*, void*, int);
+
+struct FunctionTable {
+    Manager manager;
+};
+
+extern const FunctionTable function_table;
+extern const unsigned char callback_tag[];
+
+struct Function {
+    const FunctionTable* table;
+    unsigned int padding;
+    void* function;
+    Object* object;
+    Control* control;
+    Function(const Bound&);
+    ~Function();
+};
+
+__forceinline Function::Function(const Bound& b)
+{
+    padding = 0;
+    if (!func_0060a2f0(&b)) {
+        function = b.function;
+        object = b.object;
+        control = b.control;
+        if (control)
+            _InterlockedExchangeAdd(&control->strong, 1);
+        table = &function_table;
+    } else {
+        table = 0;
+    }
+}
+
+__forceinline Function::~Function()
+{
+    if (table) {
+        Manager manager = table->manager;
+        if (manager)
+            manager(&function, &function, 1);
+    }
+}
+
+struct Callback {
+    unsigned char data[32];
+    Callback(const Function&, const unsigned char*);
+    ~Callback();
 };
 
 struct S {
-    void* field0;
-    void* field4;
-    char field8[0x40];
-    void* method();
+    Object* object;
+    ControlPtr control;
+    Callback callback;
+    S();
 };
 
-void func_0044d0c0();
-void func_0044d4b0();
-void func_0047d410();
-bool func_0060a2f0();
-void func_0063b770();
-void func_006a0920();
-void func_005971d0();
-
-void* S::method()
+S::S()
+    : object(new Object),
+      control(object),
+      callback(
+          (func_0047d410(&control, object, object),
+           Function(func_0063b770(
+               func_0041d760, Shared(object, control.value)))),
+          callback_tag)
 {
-    void* mem = malloc(0x48);
-    void* obj = 0;
-    if (mem != 0) {
-        obj = mem;
-        func_0044d0c0();
-    }
-    this->field0 = obj;
-    func_0044d4b0();
-    func_0047d410();
-    void* p = this->field0;
-    void* q = this->field4;
-    if (q != 0) {
-        _InterlockedExchangeAdd((volatile long*)((char*)q + 4), 1);
-    }
-    func_0063b770();
-    if (!func_0060a2f0()) {
-        void* a = this->field0;
-        void* b = this->field4;
-        if (b != 0) {
-            _InterlockedExchangeAdd((volatile long*)((char*)b + 4), 1);
-        }
-    }
-    if (p != 0) {
-        if (_InterlockedExchangeAdd((volatile long*)((char*)p + 4), -1) == 1) {
-            void** vt = *(void***)p;
-            ((void (__thiscall*)(void*))vt[1])(p);
-            if (_InterlockedExchangeAdd((volatile long*)((char*)p + 8), -1) == 1) {
-                void** vt2 = *(void***)p;
-                ((void (__thiscall*)(void*))vt2[2])(p);
-            }
-        }
-    }
-    func_005971d0();
-
-    return this;
 }

@@ -1,9 +1,10 @@
-// from server: 49% by atomic.potato
-typedef double Real;
+// from server: 100% by king_originala
+extern const double limit;
+extern double result;
 
-extern "C" void __stdcall Function(Real value)
+void __stdcall setValue(double value)
 {
-    static Real globalValue;
-    Real current = *(Real*)0x827988;
-    globalValue = current < value ? value : current;
+    const double bound = limit;
+    const double* selected = bound > value ? &bound : &value;
+    result = *selected;
 }

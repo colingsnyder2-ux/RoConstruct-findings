@@ -1,5 +1,13 @@
-// from server: 57% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: boost-1.34.1 libs/regex/src/instances.cpp
+// from server: 63% by colin
+struct S {
+};
+
+extern "C" void __stdcall G1_func_0080245c(void*, const void*);
+
+void __cdecl f(void* p)
+{
+    void* q = *(void**)p;
+    char buf[28];
+    G1_func_0080245c(buf, (char*)q + 4);
+    (*(void (**)(void*))q)(q);
+}

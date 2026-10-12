@@ -1,25 +1,14 @@
-// from server: 45% by atomic.potato
-struct S
-{
-    int f();
+// from server: 100% by king_originala
+struct ResourcePair {
+    void clear();
 };
 
-extern "C" void __stdcall sub_69fc4e(S **, S *);
+extern "C" void __stdcall prepare(ResourcePair* pair, ResourcePair** slot);
 
-struct T
+extern "C" int __stdcall callback(ResourcePair* pair, int, int, int, int)
 {
-    void g();
-};
-
-void T::g()
-{
-}
-
-int S::f()
-{
-    S *p = this;
-    sub_69fc4e(&p, this);
-    if (p)
-        ((T *)p)->g();
+    prepare(pair, &pair);
+    if (pair)
+        pair->clear();
     return 0;
 }

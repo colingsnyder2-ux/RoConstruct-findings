@@ -1,50 +1,61 @@
-// from server: 44% by tester
+// from server: 90% by king_originala
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
 
-struct RefCounted {
-    void** vptr;
-    volatile long refCount;
-    volatile long weakRefCount;
-};
-
-struct GetSetBase {
-    void** vptr;
-};
-
-struct GetSetImpl {
-    void** vptr;
-    int getOffset;
-    int setOffset;
-    void invoke(int a, int b, int c);
-};
-
-void GetSetImpl::invoke(int a, int b, int c)
+struct Control
 {
-    RefCounted* p = (RefCounted*)c;
-    if (p) {
-        _InterlockedExchangeAdd(&p->refCount, 1);
-    }
+    virtual void unused();
+    virtual void dispose();
+    virtual void destroy();
+    volatile long strong;
+    volatile long weak;
+};
 
-    GetSetBase* self = (GetSetBase*)this;
-    char* base = (char*)a;
-    int off = *(int*)(base + 0x150);
-    int idx = *(int*)((char*)self + 8);
-    int delta = *(int*)((char*)self + 4);
-    int target = *(int*)(off + idx) + delta;
-    void (*fn)(void*) = *(void (**)(void*))self;
-    fn((void*)(base + 0x150 + target));
+struct Shared
+{
+    void* value;
+    Control* control;
 
-    if (p) {
-        if (_InterlockedExchangeAdd(&p->refCount, -1) == 1) {
-            void** vt = p->vptr;
-            void (*dtor)(void*) = (void (*)(void*))vt[1];
-            dtor(p);
-            if (_InterlockedExchangeAdd(&p->weakRefCount, -1) == 1) {
-                void** vt2 = p->vptr;
-                void (*wdtor)(void*) = (void (*)(void*))vt2[2];
-                wdtor(p);
-            }
-        }
+    Shared(const Shared&);
+    ~Shared();
+};
+
+__forceinline Shared::Shared(const Shared& other)
+    : value(other.value), control(other.control)
+{
+    if (control)
+        _InterlockedExchangeAdd(&control->strong, 1);
+}
+
+__forceinline Shared::~Shared()
+{
+    Control* p = control;
+    if (p && _InterlockedExchangeAdd(&p->strong, -1) == 1)
+    {
+        p->dispose();
+        if (_InterlockedExchangeAdd(&p->weak, -1) == 1)
+            p->destroy();
     }
+}
+
+struct VirtualBase {};
+
+struct Base : virtual VirtualBase {};
+
+struct Padding
+{
+    char bytes[0x150];
+};
+
+struct Receiver : Padding, Base {};
+
+struct S
+{
+    void (Receiver::*setter)(Shared);
+    void f(Receiver*, Shared);
+};
+
+void S::f(Receiver* object, Shared value)
+{
+    (object->*setter)(value);
 }

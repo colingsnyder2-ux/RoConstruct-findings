@@ -1,10 +1,12 @@
-// from server: 28% by atomic.potato
-struct S
-{
-    unsigned char f();
+// from server: 100% by king_originala
+struct AggregateChunk {
+    char padding[0x61];
+    bool value;
+    bool getValue();
 };
 
-unsigned char S::f()
-{
-    return *(reinterpret_cast<unsigned char *>(this) + 0x61);
+#pragma optimize("", off)
+bool AggregateChunk::getValue() {
+    return value;
 }
+#pragma optimize("", on)

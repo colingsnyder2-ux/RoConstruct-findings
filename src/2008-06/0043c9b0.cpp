@@ -1,5 +1,63 @@
-// from server: 35% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: openrbx-client App/script/LuaInstanceBridge.cpp
+// from server: 97% by king_originala
+struct String {
+    const char *c_str() const;
+};
+
+extern const char *(__thiscall *string_c_str)(const String *);
+
+inline const char *String::c_str() const {
+    return string_c_str(this);
+}
+
+struct PropertyData {
+    unsigned long reserved;
+    String text;
+};
+
+struct Property {
+    virtual ~Property();
+    virtual bool getValue();
+    PropertyData *data;
+};
+
+struct Primary {
+    virtual ~Primary();
+    char padding[0x1c];
+};
+
+struct Secondary {
+    virtual ~Secondary();
+};
+
+struct GridItem : Primary, Secondary {
+    char padding[0xd8];
+    int flag;
+    char tail[0x0c];
+
+    GridItem(const char *, int, int);
+    virtual ~GridItem();
+    void SetValue(int);
+};
+
+struct Item {
+    virtual ~Item();
+    char padding[0x1c];
+
+    Item(Property *, int);
+};
+
+struct EnumItem : GridItem, Item {
+    Property *property;
+
+    EnumItem(Property *, int);
+    virtual ~EnumItem();
+};
+
+EnumItem::EnumItem(Property *value, int argument)
+    : GridItem(value->data->text.c_str(), 0, 0),
+      Item(value, argument)
+{
+    flag = 1;
+    property = value;
+    SetValue(value->getValue());
+}

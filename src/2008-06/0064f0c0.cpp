@@ -1,38 +1,34 @@
-// from server: 10% by colin
-struct ImageButton {
-    char pad[0x144];
-    int field_144;
-    char pad2[0x4];
-    int field_14c;
-
-    bool method_54();
-    int method_78(int);
-    void method_14c(int, unsigned char);
-    int method_573310(int*, int);
-
-    void target(int arg);
+// from server: 82% by king_originala
+struct Value {
+    float data[4];
 };
 
-int ImageButton::method_573310(int* a, int b) {
-    return 0;
-}
+struct State {
+    void update(void *, bool);
+};
 
-void ImageButton::method_14c(int a, unsigned char b) {
-}
+struct ImageButton;
 
-bool ImageButton::method_54() {
-    return false;
-}
+struct ButtonTable {
+    void *reserved0[21];
+    bool (__thiscall *enabled)(ImageButton *);
+    void *reserved1[8];
+    bool (__thiscall *accept)(ImageButton *, const Value &);
+};
 
-int ImageButton::method_78(int a) {
-    return 0;
-}
+struct ImageButton {
+    ButtonTable *table;
+    unsigned char padding0[0x140];
+    unsigned long value;
+    unsigned long padding1;
+    State state;
 
-void ImageButton::target(int arg) {
-    if (method_54()) {
-        int local;
-        int r = method_573310(&local, field_144);
-        unsigned char b = (unsigned char)method_78(r);
-        method_14c(arg, b);
-    }
+    Value makeValue(unsigned long);
+    void update(void *);
+};
+
+void ImageButton::update(void *context)
+{
+    if (table->enabled(this))
+        state.update(context, table->accept(this, makeValue(value)));
 }

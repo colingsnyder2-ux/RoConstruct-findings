@@ -1,4 +1,4 @@
-// from server: 66% by king_originala
+// from server: 70% by king_originala
 struct Node {
     Node* left;
     Node* parent;
@@ -45,9 +45,10 @@ inline Result::Result(const Iterator& p, bool b)
 struct Holder {
     void* owner;
     unsigned char padding[20];
-    Node* head;
+    Node* volatile head;
 
-    Iterator insert(bool left, Node* parent, const unsigned int* key);
+    Iterator* insert(Iterator* result, bool left, Node* parent,
+                     const unsigned int* key);
     Result find_or_insert(const unsigned int* key);
 };
 
@@ -70,12 +71,12 @@ Result Holder::find_or_insert(const unsigned int* key)
 
     if (left) {
         if (position.equal(Iterator(owner, head->left)))
-            return Result(insert(true, parent, key), true);
+            return Result(*insert(&position, true, parent, key), true);
         position.decrement();
     }
 
     if (position.node->key < *key)
-        return Result(insert(left, parent, key), true);
+        return Result(*insert(&position, left, parent, key), true);
 
     return Result(position, false);
 }

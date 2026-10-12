@@ -1,35 +1,29 @@
-// from server: 26% by colin
-struct S
-{
-    int f();
-    char pad[0x20];
-    int value;
+// from server: 100% by king_originala
+extern char* func_0040df80();
+extern char* func_0040dfa0();
+extern char* func_00432fc0();
+
+struct Item {
+    unsigned char storage[0x6c];
+    Item(int, char*, char*, char*);
 };
 
-extern char G;
+struct Base {
+    unsigned char padding[0x1c];
+    Base();
+    virtual ~Base();
+    void attach(Item*);
+};
 
-char* func_0040df80();
-char* func_00432fc0();
-char* func_0040dfa0();
-void* func_006a0920(unsigned int size);
-void func_006a117e();
-void func_006a1172();
-void func_006a1178(void* p, int a, char* b);
+struct S : Base {
+    Item* item;
+    S();
+    virtual ~S();
+};
 
-int S::f()
+S::S()
 {
-    func_006a117e();
-    *(int*)this = 0x81663c;
-    void* p = func_006a0920(0x6c);
-    if (p)
-    {
-        func_006a1178(p, 0xb9, func_0040dfa0());
-    }
-    else
-    {
-        p = 0;
-    }
-    value = (int)p;
-    func_006a1172();
-    return (int)this;
+    item = new Item(0xb9, func_0040dfa0(),
+                    func_00432fc0(), func_0040df80());
+    attach(item);
 }

@@ -1,5 +1,27 @@
-// from server: 76% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: boost-1.34.1 libs/regex/src/instances.cpp
+// from server: 100% by king_originala
+struct Base
+{
+    char padding[84];
+
+    Base();
+    virtual ~Base();
+};
+
+struct Member
+{
+    Member();
+    ~Member();
+};
+
+struct CPatchedControlComboBox : Base
+{
+    Member member;
+
+    CPatchedControlComboBox();
+    virtual ~CPatchedControlComboBox();
+};
+
+CPatchedControlComboBox::CPatchedControlComboBox()
+    : Base(), member()
+{
+}

@@ -1,5 +1,19 @@
-// from server: 63% by colin
-// roc-lang: cpp
-// roc-cl: 30729
-// roc-flags: /O2 /GS- /MD
-// roc-lib: mfc-9.0 atlmfc/src/mfc/dlgprntx.cpp
+// from server: 93% by king_originala
+struct S {
+    virtual void v0();
+    virtual void v1();
+    virtual void v2();
+    virtual void v3();
+    virtual ~S();
+
+    unsigned char padding[20];
+    unsigned long references;
+};
+
+unsigned long __stdcall release(S* object)
+{
+    unsigned long remaining = --object->references;
+    if (remaining == 0)
+        delete object;
+    return remaining;
+}

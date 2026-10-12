@@ -1,33 +1,59 @@
-// from server: 55% by colin
+// from server: 97% by king_originala
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
 
+struct Object
+{
+    void invoke(int);
+};
+
+struct Control
+{
+    long reserved;
+    volatile long references;
+
+    void add_reference();
+};
+
+inline void Control::add_reference()
+{
+    _InterlockedExchangeAdd(&references, 1);
+}
+
+struct Shared
+{
+    Object* object;
+    Control* control;
+
+    Shared(const Shared& other);
+    ~Shared();
+};
+
+inline Shared::Shared(const Shared& other)
+    : object(other.object), control(other.control)
+{
+    if (control)
+        control->add_reference();
+}
+
+struct Guard
+{
+    char storage[12];
+
+    Guard(Shared);
+    ~Guard();
+};
+
 struct DxUserInput
 {
-    char pad0[0x180];
-    int m_a;
-    int m_b;
-    void f(int);
+    char padding[0x180];
+    Shared input;
+
+    void func_00467a00(int);
 };
 
-struct Helper
+void DxUserInput::func_00467a00(int value)
 {
-    void g();
-};
-
-extern "C" void __stdcall sub_577460(int, int);
-extern "C" void __stdcall sub_5773C0(Helper*);
-
-void DxUserInput::f(int arg)
-{
-    int local[4];
-    local[0] = m_a;
-    local[1] = m_b;
-    if (local[1] != 0)
-    {
-        _InterlockedExchangeAdd((volatile long*)(local[1] + 4), 1);
-    }
-    ((Helper*)local)->g();
-    sub_577460(m_a, arg);
-    sub_5773C0((Helper*)local);
+    Guard guard(input);
+    input.object->invoke(value);
 }

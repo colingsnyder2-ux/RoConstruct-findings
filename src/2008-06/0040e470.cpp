@@ -1,5 +1,33 @@
-// from server: 30% by colin
-// roc-lang: cpp
-// roc-cl: 30729
-// roc-flags: /O2 /GS- /MD
-// roc-lib: mfc-9.0 atlmfc/src/mfc/viewform.cpp
+// from server: 77% by king_originala
+extern "C" long (__stdcall *SendMessageA)(void *, unsigned int, unsigned int, long);
+extern "C" void (__cdecl *free)(void *);
+
+struct Control {
+    char padding[0x20];
+    void *window;
+};
+
+struct S {
+    char padding[0x178];
+    Control *control;
+    void removeItem(int index);
+};
+
+void S::removeItem(int index)
+{
+    long (__stdcall *send)(void *, unsigned int, unsigned int, long) = SendMessageA;
+    if (index < send(control->window, 0x18B, 0, 0))
+        send(control->window, 0x182, index, 0);
+}
+
+struct Buffer {
+    void *data;
+    int count;
+    void release();
+};
+
+void Buffer::release()
+{
+    if (count > 0)
+        free(data);
+}

@@ -1,16 +1,27 @@
-// from server: 43% by atomic.potato
-typedef unsigned char byte;
-
-struct S
-{
-    int f(int);
-    void *vtable;
+// from server: 100% by king_originala
+struct Value {
+    bool convert();
 };
 
-extern "C" byte sub_40a7e0(void *, int);
+struct Receiver;
 
-int S::f(int value)
+struct VTable {
+    void* unused[3];
+    void (__thiscall* set)(Receiver*, void*, const bool*);
+};
+
+struct Receiver {
+    VTable* vtable;
+};
+
+struct S {
+    unsigned char padding[24];
+    Receiver* receiver;
+    void f(void* object, Value* value);
+};
+
+void S::f(void* object, Value* value)
 {
-    byte result = sub_40a7e0(this, value);
-    return ((int (__fastcall *)(void *, byte *, byte *))(*(unsigned char ***)vtable + 3))(vtable, &result, &result);
+    *reinterpret_cast<bool*>(&value) = value->convert();
+    receiver->vtable->set(receiver, object, reinterpret_cast<const bool*>(&value));
 }

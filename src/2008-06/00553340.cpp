@@ -1,32 +1,22 @@
-// from server: 51% by colin
-
-
-
-
-struct S_func_005c72e0 {
-    void* f(int a1);
+// from server: 96% by king_originala
+struct Flag {
+    void* f(int);
 };
 
-struct S_func_005534a0 {
-    void* f(int a1, int a2);
+struct Temporary {
+    int value;
+    int* f(int, void*);
 };
 
-struct S_func_00553480 {
-    void* f(void* a1);
+struct S {
+    int value;
+    S(int);
 };
 
-struct S_func_00553340 {
-    void* f(int a1, int a2, unsigned char a3);
-};
-
-void* S_func_00553340::f(int a1, int a2, unsigned char a3)
+#pragma optimize("gy", off)
+S reconstruct(int value, unsigned char flag)
 {
-    S_func_005c72e0 c;
-    void* r1 = c.f(a3);
-    S_func_005534a0 d;
-    void* r2 = d.f(a2, (int)r1);
-    void* v = *(void**)r2;
-    S_func_00553480 e;
-    e.f(v);
-    return (void*)a1;
+    Flag flagObject;
+    Temporary temporary;
+    return S(*temporary.f(value, flagObject.f(flag)));
 }

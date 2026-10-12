@@ -1,16 +1,19 @@
-// from server: 23% by atomic.potato
-struct AggregateChunk
-{
-    int value;
-    void *f();
+// from server: 100% by tester
+struct Texture {
+    unsigned int value;
+    Texture(const Texture&);
+    ~Texture();
 };
 
-extern "C" void ViewNewTexture(void *, void *);
+struct AggregateChunk {
+    char padding[40];
+    Texture texture;
+    Texture getTexture();
+};
 
-void *AggregateChunk::f()
+#pragma optimize("", off)
+Texture AggregateChunk::getTexture()
 {
-    int state = 0;
-    ViewNewTexture((char *)this + 0x28, (void *)this);
-    state |= 1;
-    return this;
+    return texture;
 }
+#pragma optimize("", on)

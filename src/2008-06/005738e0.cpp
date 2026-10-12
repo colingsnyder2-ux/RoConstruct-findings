@@ -1,42 +1,44 @@
-// from server: 54% by colin
+// from server: 100% by king_originala
+struct Vector2 {
+    float x, y;
+
+    Vector2() {}
+    Vector2(float a, float b) : x(a), y(b) {}
+};
+
+extern float scaleX;
+extern float scaleY;
+
+const Vector2& __cdecl zeroVector();
+Vector2 __cdecl transformVector(const Vector2&);
+
 struct UserInputBase {
     float unk0;
     float unk4;
     float unk8;
     float unkC;
-    void getSteerThrottle(float* out, const float* in, int steerMode, int throttleMode);
+
+    void getSteerThrottle(float* out, const float* in,
+                          int steerMode, int throttleMode);
 };
 
 struct PercentPanel {
-    char pad[0x15c];
-    int field15c;
-    int field160;
-    float field164;
-    float field168;
-    float field16c;
-    float field170;
-    void* func(float* out);
+    char padding[0x15c];
+    int steerMode;
+    int throttleMode;
+    Vector2 value;
+
+    Vector2 getInput();
 };
 
-float* getGlobalVec();
-void sub_5736f0(float* a, float* b);
-
-void* PercentPanel::func(float* out)
+Vector2 PercentPanel::getInput()
 {
-    float local[4];
-    local[0] = *(float*)0x974d78;
-    local[1] = *(float*)0x974d7c;
-    float* g = getGlobalVec();
-    local[2] = g[0];
-    local[3] = g[1];
-    float tmp[4];
-    tmp[0] = local[0];
-    tmp[1] = local[1];
-    tmp[2] = local[2];
-    tmp[3] = local[3];
-    sub_5736f0(&field164, tmp);
-    UserInputBase* uib = (UserInputBase*)this;
-    uib->getSteerThrottle(out, &field164, field15c, field160);
-
-    return this;
+    Vector2 scale(scaleX, scaleY);
+    const Vector2& zero = zeroVector();
+    UserInputBase input = { zero.x, zero.y, scale.x, scale.y };
+    Vector2 transformed = transformVector(value);
+    Vector2 result;
+    input.getSteerThrottle(&result.x, &transformed.x,
+                          steerMode, throttleMode);
+    return result;
 }

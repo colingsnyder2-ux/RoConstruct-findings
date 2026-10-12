@@ -1,5 +1,16 @@
-// from server: 64% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: ogre-1.7.0 OgreRenderSystem.cpp
+// from server: 100% by king_originala
+struct Listener {
+    void invoke(void* const& value);
+};
+
+struct S {
+    char padding[0xD8];
+    Listener listener;
+    void f(void* value);
+};
+
+void S::f(void* value)
+{
+    void* copy = value;
+    listener.invoke(copy);
+}

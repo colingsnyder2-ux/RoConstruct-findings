@@ -1,24 +1,41 @@
-// from server: 55% by colin
-struct CWebToolbox
+// from server: 94% by king_originala
+typedef void (__thiscall *StringDestructor)(void*);
+typedef const char* (__thiscall *StringConversion)(const void*);
+
+extern StringDestructor destroyString;
+extern StringConversion convertString;
+
+struct String
 {
-    void sub_006a0ad0();
-    void sub_006a097a(void*);
-    void func_0046a710();
+    void* data;
+
+    ~String();
+    operator const char*() const;
 };
 
-extern "C" void* __stdcall sub_004060d0(void*);
-extern "C" void __stdcall sub_0040e160(void*, const char*, void*);
-extern "C" void __stdcall sub_00803f14(void*);
-extern "C" void* __stdcall sub_00803ee0(void*, int, int, int, int, int);
-
-void CWebToolbox::func_0046a710()
+inline String::~String()
 {
-    char buf[8];
-    sub_006a0ad0();
-    void* p = sub_004060d0(buf);
-    sub_0040e160(buf, "/IDE/ClientToolbox.aspx", p);
-    sub_00803f14(buf);
-    void* q = sub_00803ee0(buf, 0, 0, 0, 0, 0);
-    sub_006a097a(q);
-    sub_00803f14(buf);
+    destroyString(this);
+}
+
+inline String::operator const char*() const
+{
+    return convertString(this);
+}
+
+extern String __cdecl makeString();
+extern String __cdecl concatenate(const String&, const char*);
+
+struct CWebToolbox
+{
+    void prepare();
+    void navigate(const char*, int, int, int, int, int);
+    void open();
+};
+
+void CWebToolbox::open()
+{
+    prepare();
+    const String& address = concatenate(makeString(), "/IDE/ClientToolbox.aspx");
+    navigate(address, 0, 0, 0, 0, 0);
 }

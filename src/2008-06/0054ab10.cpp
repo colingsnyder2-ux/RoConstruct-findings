@@ -1,16 +1,20 @@
-// from server: 50% by atomic.potato
-extern "C" void DestroyIndexData(void *);
-extern "C" void ReleaseMesh(void *);
+// from server: 100% by king_originala
+typedef void (__thiscall *DestructorCall)(void *);
+extern DestructorCall destroyIndexData;
+
+void __cdecl operator delete(void *);
 
 struct Mesh
 {
-    Mesh *f(unsigned int);
+    Mesh *__thiscall destroy(unsigned int flags);
 };
 
-Mesh *Mesh::f(unsigned int flags)
+#pragma optimize("", off)
+Mesh *__thiscall Mesh::destroy(unsigned int flags)
 {
-    DestroyIndexData(this);
+    destroyIndexData(this);
     if (flags & 1)
-        ReleaseMesh(this);
+        operator delete(this);
     return this;
 }
+#pragma optimize("", on)

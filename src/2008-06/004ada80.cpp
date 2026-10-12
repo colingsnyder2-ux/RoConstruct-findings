@@ -1,5 +1,15 @@
-// from server: 45% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs v8world/Assembly.cpp
+// from server: 100% by king_originala
+struct Vector3 {
+    float x, y, z;
+};
+
+struct S {
+    Vector3 get();
+};
+
+extern void __cdecl consume(void* destination, const Vector3& value);
+
+void __cdecl f(S* object, void* destination)
+{
+    consume(destination, object->get());
+}

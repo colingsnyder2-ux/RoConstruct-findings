@@ -1,39 +1,73 @@
-// from server: 38% by atomic.potato
+// from server: 89% by king_originala
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
 
-struct Inner {
-    void* vfptr;
-    long ref1;
-    long ref2;
+struct Control
+{
+    virtual ~Control();
+    virtual void dispose() = 0;
+    virtual void destroy() = 0;
+
+    volatile long strong;
+    volatile long weak;
+
+    void release();
 };
 
-extern "C" void* __cdecl sub_41E550(void* out);
+inline void Control::release()
+{
+    if (_InterlockedExchangeAdd(&strong, -1) == 1)
+    {
+        dispose();
+        if (_InterlockedExchangeAdd(&weak, -1) == 1)
+            destroy();
+    }
+}
 
-struct S {
-    void* f(void* arg);
+struct Temporary
+{
+    void* pointer;
+    Control* control;
+
+    ~Temporary();
 };
 
-void* S::f(void* arg) {
-    void* result;
-    sub_41E550(&result);
-    void** dst = (void**)arg;
-    dst[0] = ((void**)&result)[0];
-    Inner* inner = (Inner*)((void**)&result)[1];
-    dst[1] = inner;
-    if (inner) {
-        _InterlockedExchangeAdd(&inner->ref1, 1);
-    }
-    Inner* old = (Inner*)((void**)&result)[0];
-    if (old) {
-        if (_InterlockedExchangeAdd(&old->ref1, -1) == 1) {
-            void (*fn)(Inner*) = *(void(**)(Inner*))((char*)old->vfptr + 4);
-            fn(old);
-            if (_InterlockedExchangeAdd(&old->ref2, -1) == 1) {
-                void (*fn2)(Inner*) = *(void(**)(Inner*))((char*)old->vfptr + 8);
-                fn2(old);
-            }
-        }
-    }
-    return arg;
+inline Temporary::~Temporary()
+{
+    if (control)
+        control->release();
+}
+
+struct Result
+{
+    void* pointer;
+    Control* control;
+
+    Result(const Temporary&);
+    ~Result();
+};
+
+inline Result::Result(const Temporary& other)
+    : pointer(other.pointer), control(other.control)
+{
+    if (control)
+        _InterlockedExchangeAdd(&control->strong, 1);
+}
+
+inline Result::~Result()
+{
+    if (control)
+        control->release();
+}
+
+Temporary __cdecl makeTemporary();
+
+struct InsertTexture
+{
+    Result get();
+};
+
+Result InsertTexture::get()
+{
+    return Result(makeTemporary());
 }

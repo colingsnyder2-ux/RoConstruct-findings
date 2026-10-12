@@ -1,47 +1,45 @@
-// from server: 51% by tester
-struct SoundService {
-    char pad[0x14];
-    int count;
-    bool func_005be950(unsigned short* out);
+// from server: 100% by king_originala
+struct String
+{
+    unsigned int allocator;
+    union
+    {
+        char buffer[16];
+        char* pointer;
+    } storage;
+    unsigned int length;
+    unsigned int capacity;
 };
 
-extern "C" {
-    int __stdcall sub_8024c4(const char*, int, int);
-    void* __stdcall sub_8023e0(void*, int, int, void*);
-    int __stdcall sub_802868(const char*);
-    void __stdcall sub_802468(void*);
-}
+extern const char separators[3];
+extern unsigned int (__thiscall *find_first_of)(
+    const String*, const char*, unsigned int, unsigned int);
+extern String* (__thiscall *substring)(
+    const String*, String*, unsigned int, unsigned int);
+extern void (__thiscall *destroy_string)(String*);
+extern int (__cdecl *convert_integer)(const char*);
 
-bool SoundService::func_005be950(unsigned short* out)
+bool func_005be950(const String* source, short* output)
 {
-    int idx = sub_8024c4(" SVW", 0, 2);
-    if (idx < 0)
+    String temporary;
+    int position = find_first_of(source, separators, 0, 2);
+    if (position < 0)
         return false;
 
-    char buf[16];
-    void* s = sub_8023e0(this, 0, idx, buf);
-    const char* p;
-    if (*(int*)((char*)s + 0x18) < 0x10)
-        p = (const char*)s + 4;
-    else
-        p = *(const char**)s;
+    String* part = substring(source, &temporary, 0, position);
+    const char* text =
+        part->capacity >= 16 ? part->storage.pointer : part->storage.buffer;
+    int (__cdecl *convert)(const char*) = convert_integer;
+    output[0] = (short)convert(text);
+    destroy_string(&temporary);
 
-    out[0] = (unsigned short)sub_802868(p);
-    sub_802468(buf);
-
-    int next = idx + 1;
-    if (count < next)
+    int next = position + 1;
+    if ((int)source->length < next)
         return false;
 
-    int len = count - next;
-    void* s2 = sub_8023e0(this, next, len, buf);
-    const char* p2;
-    if (*(int*)((char*)s2 + 0x18) < 0x10)
-        p2 = (const char*)s2 + 4;
-    else
-        p2 = *(const char**)s2;
-
-    out[1] = (unsigned short)sub_802868(p2);
-    sub_802468(buf);
+    part = substring(source, &temporary, next, source->length - next);
+    output[1] = (short)convert(
+        part->capacity >= 16 ? part->storage.pointer : part->storage.buffer);
+    destroy_string(&temporary);
     return true;
 }

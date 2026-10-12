@@ -1,4 +1,4 @@
-// from server: 99% by king_originala
+// from server: 100% by tester
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
 extern "C" long __cdecl _InterlockedDecrement(volatile long*);
@@ -60,14 +60,15 @@ namespace std
 
 namespace RBX
 {
-    struct Instance
+    class Instance
     {
+    public:
         virtual ~Instance();
         void func_0055a8f0(Instance*);
     };
 
-    struct Accoutrement : Instance {};
-    struct CharacterAppearance : Instance {};
+    class Accoutrement : public Instance {};
+    class CharacterAppearance : public Instance {};
 }
 
 struct Control
@@ -104,9 +105,9 @@ __forceinline Pointer::~Pointer()
 
 void func_0048a690(Pointer character, Pointer item)
 {
-    if (dynamic_cast<RBX::Accoutrement*>(item.object))
+    if (dynamic_cast<RBX::CharacterAppearance*>(item.object))
         item.object->func_0055a8f0(character.object);
-    else if (dynamic_cast<RBX::CharacterAppearance*>(item.object))
+    else if (dynamic_cast<RBX::Accoutrement*>(item.object))
         item.object->func_0055a8f0(character.object);
     else
     {

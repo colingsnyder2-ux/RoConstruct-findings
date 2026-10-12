@@ -1,25 +1,41 @@
-// from server: 54% by tester
-struct MarkerItem {
-    char pad[0x2c90];
-    int field_2c90;
-    char pad2[0x2ca8 - 0x2c90 - 4];
-    int field_2ca8;
-    bool check(int arg);
+// from server: 93% by king_originala
+extern "C" {
+    extern void (__cdecl* _invalid_parameter_noinfo)();
+}
+
+struct Iterator {
+    void* owner;
+    void* node;
+
+    bool operator!=(const Iterator& other) const;
 };
 
-extern "C" void __stdcall _invalid_parameter_noinfo();
-
-extern "C" int* __fastcall sub_4ae060(int* a, int* b, int* c);
-
-bool MarkerItem::check(int arg) {
-    int local1;
-    int local2;
-    int* p = &local1;
-    int* q = &local2;
-    int* r = sub_4ae060(&field_2c90, q, p);
-    int v = *r;
-    if (v == 0 || v != field_2c90) {
+__forceinline bool Iterator::operator!=(const Iterator& other) const
+{
+    if (!owner || owner != other.owner)
         _invalid_parameter_noinfo();
-    }
-    return *((int*)((char*)r + 4)) != field_2ca8;
+    return node != other.node;
+}
+
+struct Container {
+    void* owner;
+    char padding[20];
+    void* end;
+
+    Iterator find(const unsigned int* key);
+};
+
+struct S {
+    char padding[0x2c90];
+    Container container;
+
+    bool f(unsigned int key);
+};
+
+bool S::f(unsigned int key)
+{
+    Iterator last;
+    last.node = container.end;
+    last.owner = container.owner;
+    return container.find(&key) != last;
 }

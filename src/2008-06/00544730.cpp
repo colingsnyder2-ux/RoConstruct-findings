@@ -1,23 +1,22 @@
-// from server: 47% by atomic.potato
-struct VChunk
+// from server: 84% by king_originala
+#pragma optimize("", off)
+
+struct S;
+
+struct Result
 {
-    int a;
-    int b;
+    void* first;
+    void* second;
+    Result(void*, S*);
 };
 
-extern "C" VChunk* sub_54e320(VChunk*, int, int);
-
-struct WeakReferenceCountedPointer
+struct S
 {
-    VChunk value;
-    VChunk* f(VChunk*, int, int);
+    Result f(void*, void*);
 };
 
-VChunk* WeakReferenceCountedPointer::f(VChunk* out, int a, int b)
+Result S::f(void*, void* value)
 {
-    VChunk temporary;
-    VChunk* p = sub_54e320(&temporary, b, a);
-    out->a = p->a;
-    out->b = p->b;
-    return out;
+    Result result(value, this);
+    return result;
 }

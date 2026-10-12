@@ -1,13 +1,15 @@
-// from server: 33% by atomic.potato
-extern "C" void __cdecl sub_541da0(int);
+// from server: 100% by king_originala
+struct VChunk { char pad[8]; };
+extern char* __cdecl f(VChunk*);
 
-struct Mesh
-{
-    int field18;
-    void function();
+struct S {
+    char pad[0x18];
+    VChunk* chunk;
+    char* get();
 };
 
-void Mesh::function()
+#pragma optimize("", off)
+char* S::get()
 {
-    sub_541da0(field18);
+    return f(chunk);
 }
