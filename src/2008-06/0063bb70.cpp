@@ -1,4 +1,4 @@
-// from server: 97% by colin
+// from server: 100% by colin
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
 extern "C" long __cdecl _InterlockedDecrement(volatile long*);
@@ -23,7 +23,7 @@ __forceinline void Control::release()
 }
 
 struct Value {
-    unsigned long words[3];
+    unsigned long words[2];
     Control* control;
     unsigned long last;
 };

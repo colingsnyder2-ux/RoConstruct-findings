@@ -1,48 +1,49 @@
-// from server: 98% by king_originala
+// from server: 100% by colin
 void* __cdecl operator new(unsigned int);
 void __cdecl operator delete(void*);
 
-struct Pair {
-    int first;
-    int second;
+struct State
+{
+    unsigned char storage[0x28];
+    State();
 };
 
-struct Object {
-    char storage[40];
-    Object();
-};
-
-struct Count {
+struct Count
+{
     int value;
     Count();
     ~Count();
 };
 
-inline Count::Count() : value(0) {}
+inline Count::Count() : value(0)
+{
+}
 
-struct Member {
-    int f(int, int, int);
+struct Member
+{
     Member(int, int, int);
     ~Member();
 };
 
-inline Member::Member(int a, int b, int c) {
-    f(a, b, c);
-}
+struct Arguments
+{
+    int first;
+    int second;
+};
 
-struct S {
+struct Table
+{
     int first;
     Count second;
     Member member;
-
-    S(const Pair&);
-    void set(Object*);
+    Table(const Arguments&);
+    void set(State*);
     void finish();
 };
 
-S::S(const Pair& value)
-    : first(0), second(), member(value.first, value.second, 0)
+Table::Table(const Arguments& args)
+    : first(0), second(), member(args.first, args.second, 0)
 {
-    set(new Object);
+    set(new State);
     finish();
 }

@@ -1,4 +1,4 @@
-// from server: 99% by colin
+// from server: 100% by colin
 #include <stdlib.h>
 
 namespace boost {
@@ -44,7 +44,7 @@ class IModelModifier { public: virtual ~IModelModifier(); };
 
 class ModelInstance : public Instance, public virtual IModelModifier
 {
-    char data[0x2a4 - 12];
+    char data[0x270 - 12];
 public:
     ModelInstance();
 };

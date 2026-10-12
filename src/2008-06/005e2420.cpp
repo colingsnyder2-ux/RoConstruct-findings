@@ -1,4 +1,5 @@
-// from server: 92% by king_originala
+// from server: 100% by colin
+// roc-flags: /O2 /GS- /EHsc /MD /fp:fast
 namespace RBX {
 struct ServiceProvider {
     void update();

@@ -1,4 +1,4 @@
-// from server: 94% by king_originala
+// from server: 100% by king_originala
 struct Part
 {
     unsigned char padding[0xb8];
@@ -37,8 +37,8 @@ __forceinline Joint::Joint(Part* a, Part* b, const Frame& x, const Frame& y)
 
 Joint* __cdecl func_00669d30(Part* a, Part* b, int i, int j)
 {
-    int right = b->state[j];
     int left = a->state[i];
+    int right = b->state[j];
 
     if (left == 3)
     {

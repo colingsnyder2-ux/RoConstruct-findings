@@ -1,4 +1,4 @@
-// from server: 99% by colin
+// from server: 100% by colin
 void* __cdecl operator new(unsigned int);
 void __cdecl operator delete(void*);
 
@@ -13,7 +13,7 @@ __forceinline void* Context::get() {
 }
 
 struct Tool {
-    char storage[0x48];
+    char storage[0x74];
     Tool(void*);
 };
 

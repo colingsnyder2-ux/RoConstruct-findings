@@ -1,4 +1,4 @@
-// from server: 99% by colin
+// from server: 100% by colin
 extern "C" {
     extern void* (__cdecl *allocate)(unsigned int);
 }
@@ -11,7 +11,7 @@ inline void* __cdecl operator new(unsigned int size)
 void __cdecl operator delete(void*);
 
 struct Product {
-    unsigned char storage[0x164];
+    unsigned char storage[0x158];
     Product(void*, void*, void*);
 };
 

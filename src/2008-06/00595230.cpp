@@ -1,6 +1,11 @@
-// from server: 91% by king_originala
+// from server: 96% by colin
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
+extern "C" long __cdecl _InterlockedIncrement(volatile long*);
+extern "C" long __cdecl _InterlockedDecrement(volatile long*);
+#pragma intrinsic(_InterlockedIncrement)
+#pragma intrinsic(_InterlockedDecrement)
+
 
 extern "C" void (__cdecl * const invalid_parameter_noinfo)();
 
@@ -52,14 +57,14 @@ struct Holder {
 __forceinline Holder::Holder(const Holder& other)
     : pointer(other.pointer), control(other.control) {
     if (control)
-        _InterlockedExchangeAdd(&control->strong, 1);
+        _InterlockedIncrement(&control->strong);
 }
 
 __forceinline Holder::~Holder() {
     if (control) {
-        if (_InterlockedExchangeAdd(&control->strong, -1) == 0) {
+        if (_InterlockedDecrement(&control->strong) == 0) {
             control->dispose();
-            if (_InterlockedExchangeAdd(&control->weak, -1) == 0)
+            if (_InterlockedDecrement(&control->weak) == 0)
                 control->destroy();
         }
     }

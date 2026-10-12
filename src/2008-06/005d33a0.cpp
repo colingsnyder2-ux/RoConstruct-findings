@@ -1,82 +1,81 @@
-// from server: 97% by king_originala
+// from server: 100% by colin
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
 extern "C" long __cdecl _InterlockedDecrement(volatile long*);
 #pragma intrinsic(_InterlockedDecrement)
 
-extern "C" void (__stdcall* _invalid_parameter_noinfo)();
-
 struct S;
 
-struct Object {
-    void setOwner(S*);
-};
-
-struct Control {
-    virtual void unused();
+struct Ref {
+    virtual void reserved();
     virtual void dispose();
     virtual void destroy();
+
     volatile long strong;
     volatile long weak;
+
+    void attach(S*);
+    void release();
 };
 
-struct Handle {
-    Control* control;
-    Handle& operator=(const Handle&);
-    ~Handle();
-};
-
-inline Handle::~Handle()
-{
-    Control* p = control;
-    if (p) {
-        if (_InterlockedDecrement(&p->strong) == 0) {
-            p->dispose();
-            if (_InterlockedDecrement(&p->weak) == 0)
-                p->destroy();
-        }
+inline void Ref::release() {
+    if (_InterlockedDecrement(&strong) == 0) {
+        dispose();
+        if (_InterlockedDecrement(&weak) == 0)
+            destroy();
     }
 }
 
-struct Pair {
-    Object* object;
-    Handle handle;
+struct RefSlot {
+    Ref* value;
+    RefSlot& operator=(const RefSlot&);
 };
 
-extern Pair __cdecl createObject();
-extern void __cdecl registerType(void (__cdecl*)(), const char*);
-extern void __cdecl typeCallback();
-extern const char typeName[];
-extern void* __cdecl getIndex();
+struct Pair {
+    Ref* value;
+    RefSlot owner;
+    ~Pair();
+};
+
+inline Pair::~Pair() {
+    if (owner.value)
+        owner.value->release();
+}
+
+struct Entry {
+    Ref* value;
+    RefSlot owner;
+};
 
 struct S {
     char padding[0x19c];
-    Pair* begin;
-    Pair* end;
+    Entry* first;
+    Entry* last;
 
-    Object* findObject();
-    Object* f();
+    Ref* existing();
+    Ref* create();
 };
 
-Object* S::f()
-{
-    Object* existing = findObject();
-    if (existing)
-        return existing;
+Pair __cdecl make_pair();
+void __cdecl register_value(void (__cdecl*)(), void*);
+void __cdecl cleanup_value();
+extern char registration_data;
+void* __cdecl func_0057d800();
+extern "C" void (__cdecl* invalid_parameter_noinfo)();
 
-    Pair value = createObject();
-    Object* result = value.object;
-
-    registerType(typeCallback, typeName);
-    unsigned index = reinterpret_cast<unsigned>(getIndex());
-
-    if (index >= static_cast<unsigned>(end - begin))
-        _invalid_parameter_noinfo();
-
-    Pair* slot = begin + index;
-    slot->object = value.object;
-    slot->handle = value.handle;
-
-    result->setOwner(this);
+Ref* S::create() {
+    Ref* result = existing();
+    if (!result) {
+        Pair p = make_pair();
+        result = p.value;
+        register_value(cleanup_value, &registration_data);
+        unsigned index = (unsigned)func_0057d800();
+        if (index >= (unsigned)(last - first))
+            invalid_parameter_noinfo();
+        Entry& entry = first[index];
+        entry.value = p.value;
+        entry.owner = p.owner;
+        result->attach(this);
+    }
     return result;
 }

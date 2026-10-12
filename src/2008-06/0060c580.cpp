@@ -1,4 +1,6 @@
-// from server: 90% by king_originala
+// from server: 100% by colin
+// roc-flags: /O2 /GS- /EHsc /MD /fp:fast
+
 extern const char descriptor;
 
 struct State {
@@ -16,7 +18,7 @@ struct S {
 
 void S::setValue(float value)
 {
-    if (static_cast<double>(state->value) != static_cast<double>(value)) {
+    if (value != state->value) {
         state->value = value;
         notify(&descriptor);
     }

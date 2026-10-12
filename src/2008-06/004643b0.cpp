@@ -1,32 +1,20 @@
-// from server: 95% by king_originala
+// from server: 100% by colin
 struct Text;
 
-extern void (__thiscall *textConstruct)(Text*);
-extern void (__thiscall *textDestroy)(Text*);
-extern const char* (__thiscall *textData)(const Text*);
 extern void (__cdecl *formatText)(Text*, unsigned int, ...);
 
 struct Text {
     char* data;
-    Text();
-    ~Text() throw();
-    const char* get() const;
+    __declspec(dllimport) Text();
+    __declspec(dllimport) ~Text() throw();
+    __declspec(dllimport) const char* get() const;
 };
 
-__forceinline Text::Text()
-{
-    textConstruct(this);
-}
 
-__forceinline Text::~Text() throw()
-{
-    textDestroy(this);
-}
 
-__forceinline const char* Text::get() const
-{
-    return textData(this);
-}
+
+
+
 
 struct Control {
     int query(int);

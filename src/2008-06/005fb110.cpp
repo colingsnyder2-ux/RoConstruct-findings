@@ -1,4 +1,4 @@
-// from server: 86% by king_originala
+// from server: 100% by king_originala
 extern float __cdecl infinity();
 
 struct State {
@@ -31,8 +31,8 @@ void Kernel::removeNode(Node* node)
 {
     infinity();
     Array* array = nodes;
-    Node* last = array->data[array->size - 1];
     int index = node->index;
+    Node* last = array->data[array->size - 1];
     array->data[index] = last;
     last->index = index;
     array->resize(array->size - 1, 0);

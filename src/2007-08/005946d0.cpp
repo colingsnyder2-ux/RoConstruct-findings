@@ -1,25 +1,21 @@
-// from server: 21% by colin
-struct VerbContainer;
-struct DataModel;
+// from server: 27% by espeon_1
+struct VStudsTool;
+struct TToolVerb;
 
-struct Verb {
-    void* vtable;
-    void* name;
-    VerbContainer* container;
-    bool verbSecurity;
-    Verb(VerbContainer* c, const char* n, bool blacklisted);
-};
+extern "C" void* __cdecl sub_62fef6(void*);
+extern "C" void* __cdecl sub_5fb470(void*, void*);
 
-struct TToolVerb : Verb {
+struct TToolVerb {
     bool toggle;
-    TToolVerb(DataModel* dataModel, bool toggle, bool blacklisted);
+    bool isEnabled() const;
 };
 
-extern "C" void* __cdecl operator_new(unsigned int size);
-extern "C" void __cdecl Verb_ctor(Verb* self, VerbContainer* container, const char* name, bool blacklisted);
-
-TToolVerb::TToolVerb(DataModel* dataModel, bool toggle_, bool blacklisted)
-    : Verb(0, 0, blacklisted)
-{
-    this->toggle = toggle_;
+bool TToolVerb::isEnabled() const {
+    VStudsTool* tool = *(VStudsTool**)((char*)this + 0xc);
+    void* p = sub_62fef6(tool);
+    if (p) {
+        void* q = sub_5fb470((void*)0x75b61b, p);
+        return true;
+    }
+    return false;
 }

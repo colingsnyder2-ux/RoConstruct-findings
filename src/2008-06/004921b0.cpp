@@ -1,6 +1,11 @@
-// from server: 95% by king_originala
+// from server: 96% by colin
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
+extern "C" long __cdecl _InterlockedIncrement(volatile long*);
+extern "C" long __cdecl _InterlockedDecrement(volatile long*);
+#pragma intrinsic(_InterlockedIncrement)
+#pragma intrinsic(_InterlockedDecrement)
+
 extern "C" long __cdecl _InterlockedDecrement(volatile long*);
 #pragma intrinsic(_InterlockedDecrement)
 
@@ -46,7 +51,7 @@ inline Shared::Shared(const Shared& other)
     : pointer(other.pointer), control(other.control)
 {
     if (control)
-        _InterlockedExchangeAdd(&control->strong, 1);
+        _InterlockedIncrement(&control->strong);
 }
 
 inline Shared::~Shared()

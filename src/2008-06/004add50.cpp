@@ -1,4 +1,6 @@
-// from server: 98% by king_originala
+// from server: 100% by colin
+// roc-cl: 50727
+// roc-flags: /O2 /GS- /MD
 extern double __cdecl readTime();
 extern const float timeScale;
 extern void __cdecl markerCallback();
@@ -33,7 +35,7 @@ struct S {
     void run(int, int, float);
 };
 
-void S::run(int, int, float duration)
+void S::run(int, int, volatile float duration)
 {
     double deadline = readTime() + duration * timeScale;
     do {

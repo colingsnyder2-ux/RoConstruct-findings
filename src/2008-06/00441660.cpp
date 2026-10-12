@@ -1,21 +1,15 @@
-// from server: 92% by king_originala
+// from server: 100% by colin
 struct Text;
-extern void (__thiscall *copyText)(Text*, const Text&);
-extern void (__thiscall *destroyText)(Text*);
 
 struct Text {
     void* data;
-    Text(const Text&);
-    ~Text();
+    __declspec(dllimport) Text(const Text&);
+    __declspec(dllimport) ~Text() throw();
 };
 
-inline Text::Text(const Text& other) {
-    copyText(this, other);
-}
 
-inline Text::~Text() {
-    destroyText(this);
-}
+
+
 
 struct Vector {
     float x, y, z;

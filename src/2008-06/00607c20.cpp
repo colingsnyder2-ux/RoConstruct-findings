@@ -1,20 +1,21 @@
-// from server: 71% by tester
-struct BlockBlockContact {
-    bool computeIsColliding(float overlapIgnored);
-    bool getBestPlaneEdge(float overlapIgnored, bool& planeContact);
-    bool computeIsCollidingHelper(int a, int b);
+// from server: 100% by king_originala
+struct Node {
+    bool compare(Node* other);
 };
 
-bool BlockBlockContact::computeIsColliding(float overlapIgnored) {
-    int a = *(int*)((char*)this + 0x10);
-    int b = *(int*)((char*)this + 0xc);
-    a += 0x80;
-    b += 0x80;
-    if (computeIsCollidingHelper(b, a)) {
-        bool planeContact;
-        if (getBestPlaneEdge(overlapIgnored, planeContact)) {
-            return true;
-        }
-    }
-    return false;
+struct S {
+    char padding[12];
+    Node* first;
+    Node* second;
+
+    bool update(float value);
+    int f(float value);
+};
+
+int S::f(float value)
+{
+    if (((Node*)((char*)first + 128))->compare(
+            (Node*)((char*)second + 128)) && update(value))
+        return 1;
+    return 0;
 }

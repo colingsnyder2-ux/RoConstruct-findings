@@ -1,79 +1,90 @@
-// from server: 97% by king_originala
+// from server: 100% by colin
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
 extern "C" long __cdecl _InterlockedDecrement(volatile long*);
 #pragma intrinsic(_InterlockedDecrement)
 
-struct S;
+struct CChatPrompt;
 
-struct Object {
-    void attach(S*);
-};
-
-struct Control {
-    virtual void slot0() = 0;
-    virtual void dispose() = 0;
-    virtual void destroy() = 0;
+struct Control
+{
+    virtual void unused();
+    virtual void dispose();
+    virtual void destroy();
     volatile long strong;
     volatile long weak;
+
+    void release();
 };
 
-struct Reference {
-    Control* pointer;
-    ~Reference();
-    void assign(Control* const&);
-};
-
-__forceinline Reference::~Reference()
+struct Handle
 {
-    Control* p = pointer;
-    if (p) {
-        if (_InterlockedDecrement(&p->strong) == 0) {
-            p->dispose();
-            if (_InterlockedDecrement(&p->weak) == 0)
-                p->destroy();
-        }
+    Control* p;
+    Handle& operator=(const Handle&);
+};
+
+struct Object
+{
+    void attach(CChatPrompt*);
+};
+
+struct Shared
+{
+    Object* px;
+    Handle pn;
+    ~Shared();
+};
+
+extern Shared __cdecl create_shared();
+extern unsigned __cdecl current_index();
+extern void __cdecl register_callback(void (__cdecl*)(), void*);
+extern void __cdecl callback();
+extern char callback_data;
+extern "C" void (__cdecl* _invalid_parameter_noinfo)();
+
+struct CChatPrompt
+{
+    char padding[0x19c];
+    Shared* first;
+    Shared* last;
+
+    Object* existing();
+    Object* func_00412710();
+};
+
+__forceinline void Control::release()
+{
+    if (_InterlockedDecrement(&strong) == 0)
+    {
+        dispose();
+        if (_InterlockedDecrement(&weak) == 0)
+            destroy();
     }
 }
 
-struct Pair {
-    Object* object;
-    Reference reference;
-};
-
-extern Pair __cdecl create();
-extern void __cdecl callback();
-extern char registration;
-extern void __cdecl register_callback(void (__cdecl*)(), void*);
-extern "C" void (__stdcall* _invalid_parameter_noinfo)();
-extern void* __stdcall make_value_00618520();
-
-struct S {
-    char padding[0x19c];
-    Pair* begin;
-    Pair* end;
-    Object* lookup();
-    Object* f();
-};
-
-Object* S::f()
+__forceinline Shared::~Shared()
 {
-    Object* result = lookup();
-    if (result)
-        return result;
+    if (pn.p)
+        pn.p->release();
+}
 
-    Pair value = create();
-    result = value.object;
-    register_callback(callback, &registration);
+Object* CChatPrompt::func_00412710()
+{
+    Object* result = existing();
+    if (!result)
+    {
+        Shared value = create_shared();
+        result = value.px;
+        register_callback(callback, &callback_data);
 
-    unsigned int index =
-        reinterpret_cast<unsigned int>(make_value_00618520());
-    if (index >= static_cast<unsigned int>(end - begin))
-        _invalid_parameter_noinfo();
+        unsigned index = current_index();
+        if (index >= static_cast<unsigned>(last - first))
+            _invalid_parameter_noinfo();
 
-    Pair* entry = begin + index;
-    entry->object = value.object;
-    entry->reference.assign(value.reference.pointer);
-    result->attach(this);
+        Shared& slot = first[index];
+        slot.px = value.px;
+        slot.pn = value.pn;
+        result->attach(this);
+    }
     return result;
 }

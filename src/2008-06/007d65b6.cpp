@@ -1,13 +1,5 @@
-// from server: 65% by atomic.potato
-extern "C" void __cdecl func_006a165b(void *, int, int, const void *);
-
-struct S_func_007d65b6
-{
-    char pad[0x140];
-    void f();
-};
-
-void S_func_007d65b6::f()
-{
-    func_006a165b((char *)this + 0x140, 8, 2, (const void *)0x5576e0);
-}
+// from server: 79% by colin
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD /fp:fast
+// roc-lib: g3d-6.09 GLG3Dcpp/RenderDevice.cpp

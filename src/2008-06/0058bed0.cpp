@@ -1,5 +1,26 @@
-// from server: 95% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs util/RunStateOwner.cpp
+// from server: 98% by colin
+extern "C" void (__thiscall *string_destroy)(void *);
+
+struct String {
+    char storage[28];
+    ~String();
+};
+
+__forceinline String::~String()
+{
+    string_destroy(this);
+}
+
+struct Base {
+    char storage[20];
+    ~Base();
+};
+
+struct S : Base {
+    String text;
+    ~S();
+};
+
+S::~S()
+{
+}

@@ -1,10 +1,10 @@
-// from server: 99% by colin
+// from server: 100% by colin
 extern "C" void* (__cdecl *malloc)(unsigned int);
 void __cdecl operator delete(void*);
 
 struct Client
 {
-    char storage[0x2d68];
+    char storage[0x2d78];
 
     Client(void*, void*, void*);
 

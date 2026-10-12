@@ -1,27 +1,19 @@
-// from server: 92% by king_originala
+// from server: 100% by colin
 extern "C" unsigned long (__stdcall *GetModuleFileNameA)(
     void *, char *, unsigned long);
 
 struct Text;
-extern void (__thiscall *textConstruct)(Text *, const char *);
-extern void (__thiscall *textDestroy)(Text *);
 
 struct Text
 {
     void *data;
-    Text(const char *);
-    ~Text() throw();
+    __declspec(dllimport) Text(const char *);
+    __declspec(dllimport) ~Text() throw();
 };
 
-__forceinline Text::Text(const char *s)
-{
-    textConstruct(this, s);
-}
 
-__forceinline Text::~Text() throw()
-{
-    textDestroy(this);
-}
+
+
 
 struct DxUserInput
 {

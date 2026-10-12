@@ -1,61 +1,98 @@
-// from server: 96% by king_originala
-typedef void (__cdecl *Manager)(void*, void*, int);
-
-extern char table0[], table10[], table14[], table20[], table24[];
-extern char table44[], table64[], table84[], tablea4[], tablec4[];
-
-struct Callback {
-    Manager* manager;
-    unsigned int reserved;
-    unsigned char storage[24];
-
-    __forceinline ~Callback();
+// from server: 100% by colin
+struct Buffer {
+    unsigned char bytes[24];
 };
 
-__forceinline Callback::~Callback() {
+struct Manager {
+    void (__cdecl *manage)(Buffer*, Buffer*, int);
+};
+
+struct Function {
+    Manager* manager;
+    unsigned padding;
+    Buffer buffer;
+
+    Function(const Function&);
+    ~Function();
+};
+
+inline Function::Function(const Function& source) : manager(0)
+{
+    if (source.manager) {
+        manager = source.manager;
+        manager->manage(const_cast<Buffer*>(&source.buffer), &buffer, 0);
+    }
+}
+
+inline Function::~Function()
+{
     if (manager) {
-        Manager function = *manager;
-        if (function)
-            function(storage, storage, 1);
+        void (__cdecl *manage)(Buffer*, Buffer*, int) = manager->manage;
+        if (manage)
+            manage(&buffer, &buffer, 1);
     }
 }
 
-struct Base {
-    unsigned int words[0x158 / 4];
+struct B0 {
+    virtual ~B0();
+    unsigned char padding[12];
+};
 
+struct B1 {
+    virtual ~B1();
+};
+
+struct B2 {
+    virtual ~B2();
+    unsigned char padding[8];
+};
+
+struct B3 {
+    virtual ~B3();
+};
+
+struct B4 {
+    virtual ~B4();
+    unsigned char padding[28];
+};
+
+struct B5 {
+    virtual ~B5();
+    unsigned char padding[28];
+};
+
+struct B6 {
+    virtual ~B6();
+    unsigned char padding[28];
+};
+
+struct B7 {
+    virtual ~B7();
+    unsigned char padding[28];
+};
+
+struct B8 {
+    virtual ~B8();
+    unsigned char padding[28];
+};
+
+struct B9 {
+    virtual ~B9();
+    unsigned char padding[144];
+};
+
+struct Base : B0, B1, B2, B3, B4, B5, B6, B7, B8, B9 {
     Base();
-    ~Base();
+    virtual ~Base();
 };
 
-struct Intermediate : Base {
-    __forceinline Intermediate();
+struct Descriptor : Base {
+    Function callback;
+
+    Descriptor(Function);
+    virtual ~Descriptor();
 };
 
-__forceinline Intermediate::Intermediate() : Base() {
-    words[0x00 / 4] = reinterpret_cast<unsigned int>(table0);
-    words[0x10 / 4] = reinterpret_cast<unsigned int>(table10);
-    words[0x14 / 4] = reinterpret_cast<unsigned int>(table14);
-    words[0x20 / 4] = reinterpret_cast<unsigned int>(table20);
-    words[0x24 / 4] = reinterpret_cast<unsigned int>(table24);
-    words[0x44 / 4] = reinterpret_cast<unsigned int>(table44);
-    words[0x64 / 4] = reinterpret_cast<unsigned int>(table64);
-    words[0x84 / 4] = reinterpret_cast<unsigned int>(table84);
-    words[0xa4 / 4] = reinterpret_cast<unsigned int>(tablea4);
-    words[0xc4 / 4] = reinterpret_cast<unsigned int>(tablec4);
-}
-
-struct S : Intermediate {
-    Manager* manager;
-    unsigned int reserved;
-    unsigned char storage[24];
-
-    S(Callback callback);
-};
-
-S::S(Callback callback) : Intermediate() {
-    manager = 0;
-    if (callback.manager) {
-        manager = callback.manager;
-        (*callback.manager)(callback.storage, storage, 0);
-    }
+Descriptor::Descriptor(Function source) : callback(source)
+{
 }

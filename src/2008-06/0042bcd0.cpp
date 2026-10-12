@@ -1,50 +1,58 @@
-// from server: 31% by colin
-struct Holder {
-    void* p0;
-    void* p1;
-    void* p2;
+// from server: 100% by king_originala
+struct Descriptor;
+struct Context;
+
+struct ThreadStorage {
+    void* get();
+    void set(void* value);
+    void dispose(void* value);
 };
 
-struct Inner {
-    void* vtable;
+ThreadStorage* __cdecl currentStorage();
+
+struct Scope {
+    void* saved;
+
+    Scope(int value);
+    ~Scope();
 };
 
-struct Outer {
-    Holder* holder;
-    char pad[4];
-    Inner* inner;
-    void invoke(void* arg);
-};
-
-extern "C" void __cdecl sub_42BC10(void*);
-extern "C" void* __cdecl sub_42BBB0();
-extern "C" void* __cdecl sub_5A7570(void*);
-extern "C" void __cdecl sub_5A76B0(void*, void*);
-extern "C" void __cdecl sub_5A6FF0(void*, void*);
-
-void Outer::invoke(void* arg)
+inline Scope::~Scope()
 {
-    void* local;
-    sub_42BC10(&local);
-
-    void* target;
-    if (holder) {
-        target = (char*)holder + 0x14;
-    } else {
-        target = 0;
+    ThreadStorage* storage = currentStorage();
+    void* previous = storage->get();
+    if (previous != saved) {
+        storage->set(saved);
+        if (previous)
+            storage->dispose(previous);
     }
+}
 
-    Inner* in = inner;
-    void** vtbl = *(void***)in;
-    void (*fn)(void*, void*) = (void (*)(void*, void*))vtbl[8];
-    fn(in, arg);
+struct Receiver {
+    virtual void slot0();
+    virtual void slot1();
+    virtual void slot2();
+    virtual void slot3();
+    virtual void slot4();
+    virtual void slot5();
+    virtual void slot6();
+    virtual void slot7();
+    virtual void invoke(Context* context, const Descriptor* descriptor);
+};
 
-    void* r = sub_42BBB0();
-    void* a = sub_5A7570(r);
-    if (a != local) {
-        sub_5A76B0(r, local);
-        if (a) {
-            sub_5A6FF0(r, a);
-        }
-    }
+struct Holder {
+    void* object;
+    unsigned int reserved;
+    Receiver* receiver;
+
+    void operator()(const Descriptor* descriptor);
+};
+
+void Holder::operator()(const Descriptor* descriptor)
+{
+    Scope scope(2);
+    Context* context = object
+        ? reinterpret_cast<Context*>(static_cast<char*>(object) + 20)
+        : 0;
+    receiver->invoke(context, descriptor);
 }

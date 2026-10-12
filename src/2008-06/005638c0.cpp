@@ -1,3 +1,4 @@
+// from server: 100% by colin
 namespace std {
     template<class T> struct char_traits;
     template<class T> class allocator;

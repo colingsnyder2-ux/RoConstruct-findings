@@ -1,6 +1,11 @@
-// from server: 98% by king_originala
+// from server: 100% by colin
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
+extern "C" long __cdecl _InterlockedIncrement(volatile long*);
+extern "C" long __cdecl _InterlockedDecrement(volatile long*);
+#pragma intrinsic(_InterlockedIncrement)
+#pragma intrinsic(_InterlockedDecrement)
+
 extern "C" long __cdecl _InterlockedDecrement(volatile long*);
 #pragma intrinsic(_InterlockedDecrement)
 
@@ -54,7 +59,7 @@ struct Control {
 };
 
 inline void Control::addRef() {
-    _InterlockedExchangeAdd(&strong, 1);
+    _InterlockedIncrement(&strong);
 }
 
 inline void Control::release() {

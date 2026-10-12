@@ -1,6 +1,11 @@
-// from server: 91% by king_originala
+// from server: 96% by colin
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
+extern "C" long __cdecl _InterlockedIncrement(volatile long*);
+extern "C" long __cdecl _InterlockedDecrement(volatile long*);
+#pragma intrinsic(_InterlockedIncrement)
+#pragma intrinsic(_InterlockedDecrement)
+
 
 struct Object;
 
@@ -43,10 +48,10 @@ S::S(Object* p) : object(p), count(p)
             w->object = p;
             Control* c = count.control;
             if (c)
-                _InterlockedExchangeAdd(&c->weak, 1);
+                _InterlockedIncrement(&c->weak);
 
             Control* old = w->control;
-            if (old && _InterlockedExchangeAdd(&old->weak, -1) == 1)
+            if (old && _InterlockedDecrement(&old->weak) == 1)
                 old->destroy();
 
             w->control = c;

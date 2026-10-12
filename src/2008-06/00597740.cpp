@@ -1,114 +1,122 @@
-// from server: 98% by king_originala
+// from server: 100% by colin
 struct TypeInfo {
-    bool __thiscall operator==(const TypeInfo&) const;
+    void *table;
+    void *cache;
+    const char *name;
 };
 
+typedef bool (__thiscall *TypeEqual)(const TypeInfo *, const TypeInfo *);
+extern TypeEqual equalType;
+extern const TypeInfo emptyType;
+extern const TypeInfo soundType;
+extern const TypeInfo stringType;
+
 struct String;
-extern void (__thiscall* const destroyString)(String*);
+extern void (__thiscall *destroyString)(String *);
 
 struct String {
-    unsigned int allocator;
+    void *proxy;
     union {
         char buffer[16];
-        char* pointer;
+        char *pointer;
     } storage;
     unsigned int length;
     unsigned int capacity;
 
-    ~String() { destroyString(this); }
+    ~String();
 };
 
-struct TextureId {
-    String text;
-    unsigned int data;
+inline String::~String()
+{
+    destroyString(this);
+}
 
-    TextureId();
+struct SoundId : String {
+    unsigned int extra;
+
+    SoundId();
 };
 
-struct Descriptor {
-    unsigned int reserved;
+struct NamedType {
+    void *table;
     String name;
 };
 
-struct Operations {
-    unsigned int reserved[2];
-    const TypeInfo* type;
-    Descriptor* descriptor;
+struct Descriptor {
+    void *field0;
+    void *field4;
+    const TypeInfo *type;
+    NamedType *name;
 };
 
 struct Holder {
     virtual ~Holder();
-    virtual const TypeInfo& type() const;
+    virtual const TypeInfo &type() const;
 };
 
 struct Value {
-    Holder* content;
-    void assign(const TextureId&);
+    Holder *content;
+    void assign(const SoundId &);
 };
 
 struct CastError {
-    unsigned int data[10];
-    CastError(const String&);
-    CastError(const CastError&);
+    void *table;
+    const char *description;
+    int ownsDescription;
+    String message;
+
+    CastError(const String &);
+    CastError(const CastError &);
     ~CastError();
 };
 
-extern const TypeInfo emptyType;
-extern const TypeInfo textureType;
-extern const TypeInfo stringType;
+extern Descriptor *getSoundDescriptor();
+extern String *getString(Value *);
+extern bool convertSound(const String &, SoundId &);
+extern void *getSound(Value *);
+extern String formatMessage(const char *, ...);
 
-extern bool (__thiscall* const equalType)(const TypeInfo*, const TypeInfo&);
-
-extern String* __cdecl stringValue(Value*);
-extern bool __cdecl convertTexture(const String*, TextureId*);
-extern Operations* __cdecl textureOperations();
-extern void* __cdecl textureValue(Value*);
-extern String __cdecl formatMessage(const char*, ...);
-
-struct S {
-    Operations* operations;
+struct Product {
+    Descriptor *descriptor;
     Value value;
 
-    void* getTexture();
+    void *castSound();
 };
 
-void* S::getTexture()
+void *Product::castSound()
 {
-    bool (__thiscall* compare)(const TypeInfo*, const TypeInfo&) = equalType;
-    Value* source = &value;
-
+    TypeEqual compare = equalType;
+    Value *source = &value;
     if (source) {
-        const TypeInfo& actual =
-            source->content ? source->content->type() : emptyType;
-
-        if (compare(&actual, textureType)) {
-            void* result = reinterpret_cast<char*>(source->content) + 4;
+        const TypeInfo &type = source->content
+            ? source->content->type()
+            : emptyType;
+        if (compare(&type, &soundType)) {
+            void *result = reinterpret_cast<char *>(source->content) + 4;
             if (result)
                 return result;
         }
     }
 
-    if (compare(&stringType, *operations->type)) {
-        TextureId converted;
-        if (convertTexture(stringValue(source), &converted)) {
+    const TypeInfo *sourceType = descriptor->type;
+    if (compare(&stringType, sourceType)) {
+        SoundId converted;
+        if (convertSound(*getString(source), converted)) {
             source->assign(converted);
-            operations = textureOperations();
-            return textureValue(source);
+            descriptor = getSoundDescriptor();
+            return getSound(source);
         }
     }
 
-    const String* destinationName = &textureOperations()->descriptor->name;
-    const char* destination =
-        destinationName->capacity >= 16
-            ? destinationName->storage.pointer
-            : destinationName->storage.buffer;
+    String *targetName = &getSoundDescriptor()->name->name;
+    const char *target = targetName->capacity >= 16
+        ? targetName->storage.pointer
+        : targetName->storage.buffer;
 
-    const String* sourceName = &operations->descriptor->name;
-    const char* origin =
-        sourceName->capacity >= 16
-            ? sourceName->storage.pointer
-            : sourceName->storage.buffer;
+    String *sourceName = &descriptor->name->name;
+    const char *origin = sourceName->capacity >= 16
+        ? sourceName->storage.pointer
+        : sourceName->storage.buffer;
 
-    throw CastError(formatMessage("Unable to cast %s to %s",
-                                  origin, destination));
+    throw CastError(formatMessage("Unable to cast %s to %s", origin, target));
 }

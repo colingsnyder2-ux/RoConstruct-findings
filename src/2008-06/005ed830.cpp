@@ -1,7 +1,7 @@
-// from server: 93% by king_originala
-extern int registrationState;
-extern void __cdecl registrationCallback();
-extern void __cdecl registerType(void (__cdecl *)(), int *);
+// from server: 100% by colin
+extern char descriptorData;
+extern void __cdecl initializeDescriptor();
+extern void __cdecl registerDescriptor(void (__cdecl *)(), void *);
 
 struct EnumDescriptor {
     bool contains(int value);
@@ -13,24 +13,22 @@ struct Setter {
     virtual void slot0();
     virtual void slot1();
     virtual void slot2();
-    virtual void set(void *object, const volatile int *value);
+    virtual void set(void *object, const int *value);
 };
 
-struct PropertyDescriptor {
-    unsigned char padding[28];
+struct S {
+    char padding[28];
     Setter *setter;
-
-    bool setValue(void *object, volatile int value);
+    bool f(void *object, int value);
 };
 
-bool PropertyDescriptor::setValue(void *object, volatile int value)
+bool S::f(void *object, int value)
 {
-    registerType(registrationCallback, &registrationState);
+    registerDescriptor(initializeDescriptor, &descriptorData);
     EnumDescriptor *descriptor = getEnumDescriptor();
-    int saved = value;
-    if (descriptor->contains(saved)) {
-        value = saved;
-        setter->set(object, &value);
+    if (descriptor->contains(value)) {
+        int converted = value;
+        setter->set(object, &converted);
         return true;
     }
     return false;

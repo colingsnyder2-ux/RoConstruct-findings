@@ -1,26 +1,18 @@
-// from server: 92% by king_originala
+// from server: 100% by colin
 struct String;
 
-extern void (__thiscall *stringCopy)(String*, const String&);
-extern void (__thiscall *stringDestroy)(String*);
 
 struct String
 {
     void* data;
 
-    String(const String&);
-    ~String();
+    __declspec(dllimport) String(const String&);
+    __declspec(dllimport) ~String() throw();
 };
 
-__forceinline String::String(const String& other)
-{
-    stringCopy(this, other);
-}
 
-__forceinline String::~String()
-{
-    stringDestroy(this);
-}
+
+
 
 struct S
 {

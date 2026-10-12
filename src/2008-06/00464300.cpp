@@ -1,4 +1,4 @@
-// from server: 95% by king_originala
+// from server: 100% by colin
 struct Control {
     int func_00460120(int);
     int func_00460c10(int, int);
@@ -7,24 +7,16 @@ struct Control {
 
 struct Text {
     char* data;
-    Text();
-    ~Text();
+    __declspec(dllimport) Text();
+    __declspec(dllimport) ~Text() throw();
 };
 
-extern void (__thiscall* text_construct)(Text*);
 extern void (__cdecl* text_format)(Text*, unsigned int, ...);
 extern const char* (__thiscall* text_data)(Text*);
-extern void (__thiscall* text_destroy)(Text*);
 
-__forceinline Text::Text()
-{
-    text_construct(this);
-}
 
-__forceinline Text::~Text()
-{
-    text_destroy(this);
-}
+
+
 
 struct Output {
     virtual void slot0() = 0;

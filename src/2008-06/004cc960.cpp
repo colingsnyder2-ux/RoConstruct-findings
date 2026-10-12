@@ -1,8 +1,8 @@
-// from server: 94% by king_originala
+// from server: 100% by king_originala
 typedef unsigned int UInt;
 
 void* __cdecl operator new(unsigned int);
-void __cdecl operator delete(void*);
+void __cdecl operator delete(void*) throw();
 
 struct Link {
     Link* next;
@@ -19,40 +19,39 @@ struct Node : Payload, Link {
 struct Result {
     Node* node;
     bool inserted;
-    Result(Node* n, bool b);
+
+    Result(Node* p, bool b);
 };
 
-inline Result::Result(Node* n, bool b)
-    : node(n), inserted(b)
-{
-}
-
-struct Prefix {
+struct Table {
     char padding[36];
-    Node* reserve(const UInt& key, Node* node);
+    Node* reserve(const Payload& value, Node* node);
 };
 
 struct S {
     char padding[12];
-    Prefix table;
+    Table table;
     UInt count;
-    Result insert(const UInt& key);
+
+    Result insert(const Payload& value);
 };
 
-Result S::insert(const UInt& key)
-{
-    Node* node = static_cast<Node*>(operator new(120));
+inline Result::Result(Node* p, bool b)
+    : node(p), inserted(b) {
+}
+
+Result S::insert(const Payload& value) {
+    Node* allocated = static_cast<Node*>(operator new(120));
     try {
-        Node* found = table.reserve(key, node);
-        if (found == node) {
+        Node* result = table.reserve(value, allocated);
+        if (result == allocated) {
             ++count;
-            return Result(found, true);
+            return Result(result, true);
         }
-        operator delete(node);
-        return Result(found, false);
-    }
-    catch (...) {
-        operator delete(node);
+        operator delete(allocated);
+        return Result(result, false);
+    } catch (...) {
+        operator delete(allocated);
         throw;
     }
 }

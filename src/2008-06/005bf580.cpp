@@ -1,71 +1,73 @@
-// from server: 94% by king_originala
+// from server: 100% by colin
 struct String;
+typedef void (__thiscall *StringCtor)(String *, const char *);
+typedef void (__thiscall *StringDtor)(String *);
 
-typedef void (__thiscall *StringConstructor)(String *, const char *);
-typedef void (__thiscall *StringDestructor)(String *);
-
-extern StringConstructor stringConstructor;
-extern StringDestructor stringDestructor;
+extern StringCtor constructString;
+extern StringDtor destroyString;
 
 struct String {
-    unsigned char storage[28];
-    String(const char *);
-    ~String();
+    unsigned char data[28];
+
+    String(const char *s) { constructString(this, s); }
+    ~String() { destroyString(this); }
 };
-
-inline String::String(const char *text) {
-    stringConstructor(this, text);
-}
-
-inline String::~String() {
-    stringDestructor(this);
-}
 
 extern String __cdecl format(const char *, ...);
 
-struct Exception {
-    unsigned char storage[40];
-    Exception(const String &);
+struct Error {
+    unsigned char data[40];
+
+    Error(const String &);
+    Error(const Error &);
+    ~Error();
 };
 
-extern unsigned char exceptionType;
-extern "C" __declspec(noreturn) void __stdcall throwException(void *, void *);
-
 struct Base {
-    unsigned char storage[200];
+    unsigned long slots[76];
+
     Base();
     ~Base();
     void setName(const String &);
 };
 
-struct Settings : Base {
-    Settings();
+struct S : Base {
+    S();
 };
 
-extern Settings *singleton;
+extern S *singleton;
 
-Settings::Settings() : Base() {
-    *reinterpret_cast<unsigned long *>(storage) = 0x8385f4;
-    *reinterpret_cast<unsigned long *>(storage + 0x10) = 0x8385e8;
-    *reinterpret_cast<unsigned long *>(storage + 0x14) = 0x8385e0;
-    *reinterpret_cast<unsigned long *>(storage + 0x20) = 0x8385d8;
-    *reinterpret_cast<unsigned long *>(storage + 0x24) = 0x8385c8;
-    *reinterpret_cast<unsigned long *>(storage + 0x44) = 0x8385b8;
-    *reinterpret_cast<unsigned long *>(storage + 0x64) = 0x8385a8;
-    *reinterpret_cast<unsigned long *>(storage + 0x84) = 0x838598;
-    *reinterpret_cast<unsigned long *>(storage + 0xa4) = 0x838588;
-    *reinterpret_cast<unsigned long *>(storage + 0xc4) = 0x838578;
+extern unsigned long table0[];
+extern unsigned long table10[];
+extern unsigned long table14[];
+extern unsigned long table20[];
+extern unsigned long table24[];
+extern unsigned long table44[];
+extern unsigned long table64[];
+extern unsigned long table84[];
+extern unsigned long tableA4[];
+extern unsigned long tableC4[];
 
-    {
-        String name("GameSettings");
-        setName(name);
-    }
+extern const char authoring[];
+extern const char duplicateFormat[];
 
-    if (singleton) {
-        String message = format("singleton %s already exists", "GameSettings");
-        Exception error(message);
-        throwException(&error, &exceptionType);
-    }
+S::S() : Base()
+{
+    slots[0]  = reinterpret_cast<unsigned long>(table0);
+    slots[4]  = reinterpret_cast<unsigned long>(table10);
+    slots[5]  = reinterpret_cast<unsigned long>(table14);
+    slots[8]  = reinterpret_cast<unsigned long>(table20);
+    slots[9]  = reinterpret_cast<unsigned long>(table24);
+    slots[17] = reinterpret_cast<unsigned long>(table44);
+    slots[25] = reinterpret_cast<unsigned long>(table64);
+    slots[33] = reinterpret_cast<unsigned long>(table84);
+    slots[41] = reinterpret_cast<unsigned long>(tableA4);
+    slots[49] = reinterpret_cast<unsigned long>(tableC4);
+
+    setName(String(authoring));
+
+    if (singleton)
+        throw Error(format(duplicateFormat, authoring));
 
     singleton = this;
 }

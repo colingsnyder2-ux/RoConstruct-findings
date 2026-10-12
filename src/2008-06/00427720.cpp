@@ -1,4 +1,4 @@
-// from server: 99% by king_originala
+// from server: 100% by colin
 typedef unsigned int size_t;
 
 void* __cdecl operator new(size_t);
@@ -16,43 +16,64 @@ inline void __cdecl operator delete(void* p, void*)
 
 bool __cdecl func_0060a2f0();
 
-struct String {
+struct String;
+typedef void (__thiscall *StringCopy)(String*, const String&);
+typedef void (__thiscall *StringDestroy)(String*);
+
+extern StringCopy stringCopy;
+extern StringDestroy stringDestroy;
+extern unsigned char tableData[];
+
+struct String
+{
     unsigned char storage[28];
-    __declspec(dllimport) String(const String&);
-    __declspec(dllimport) ~String();
+    String(const String&);
+    ~String();
 };
 
-struct Node {
-    unsigned int value;
+inline String::String(const String& other)
+{
+    stringCopy(this, other);
+}
+
+inline String::~String()
+{
+    stringDestroy(this);
+}
+
+struct Node
+{
+    int value;
     String text;
-    Node(unsigned int, const String&);
+    Node(int, const String&);
 };
 
-inline Node::Node(unsigned int v, const String& s)
-    : value(v), text(s)
+inline Node::Node(int value_, const String& text_)
+    : value(value_), text(text_)
 {
 }
 
-extern unsigned char function_table[];
-
-struct S {
-    const void* table;
+struct S
+{
+    void* table;
     unsigned int reserved;
-    Node* object;
-
-    S(unsigned int, String, unsigned int);
+    Node* node;
+    S(int, String, int);
 };
 
-S::S(unsigned int value, String text, unsigned int)
+S::S(int value, String text, int)
 {
     table = 0;
-    if (!reinterpret_cast<bool (__cdecl*)(const unsigned int*)>(
-            &func_0060a2f0)(&value)) {
-        Node* node = static_cast<Node*>(operator new(sizeof(Node)));
-        new (node) Node(value, text);
-        object = node;
-        table = function_table;
-    } else {
+    if (!reinterpret_cast<bool (__cdecl *)(const int*)>(
+            func_0060a2f0)(&value))
+    {
+        Node* p = static_cast<Node*>(operator new(sizeof(Node)));
+        new (p) Node(value, text);
+        node = p;
+        table = tableData;
+    }
+    else
+    {
         table = 0;
     }
 }

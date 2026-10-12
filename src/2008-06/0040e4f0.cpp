@@ -1,5 +1,22 @@
-// from server: 61% by colin
-// roc-lang: cpp
-// roc-cl: 50727
-// roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: ogre-1.7.0 OgreScriptLexer.cpp
+// from server: 89% by colin
+void* __cdecl operator new(unsigned int);
+void __cdecl operator delete(void*);
+
+struct BaseView {
+    BaseView();
+    virtual ~BaseView();
+    unsigned char storage[0x198];
+};
+
+struct View : BaseView {
+    View();
+    virtual ~View();
+    int state;
+};
+
+inline View::View() : state(0) {}
+
+View* __cdecl CreateView()
+{
+    return new View;
+}

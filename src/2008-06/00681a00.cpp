@@ -1,33 +1,5 @@
-// from server: 94% by king_originala
-struct Iterator {
-    void* owner;
-    void* node;
-};
-
-struct Container {
-    void* owner;
-    unsigned char padding[20];
-    void* endNode;
-
-    Iterator find(const unsigned int& key);
-};
-
-extern "C" void (__cdecl *invalid_parameter_noinfo)();
-
-struct S {
-    unsigned char padding[0x228];
-    Container container;
-
-    bool f(unsigned int key);
-};
-
-bool S::f(unsigned int key)
-{
-    Container& c = container;
-    Iterator it = c.find(key);
-    void* endNode = c.endNode;
-    void* owner = c.owner;
-    if (!it.owner || it.owner != owner)
-        invalid_parameter_noinfo();
-    return it.node != endNode;
-}
+// from server: 100% by colin
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MD
+// roc-lib: ogre-1.4.5-dll roc_try_3de506635a8ad8a6.cpp

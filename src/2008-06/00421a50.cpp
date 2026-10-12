@@ -1,124 +1,147 @@
-// from server: 50% by colin
+// from server: 71% by king_originala
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
 
-struct CInstanceExplorer
+struct RefCount
 {
-    char pad0[0x378];
-    char field378[0x24];
-    char field39c[0x24];
-    int field3c0;
-    int field3c4;
-    char field3c8;
-    char pad3c9[3];
-
-    void sub_421A50(int arg);
+    virtual void unused();
+    virtual void dispose();
+    virtual void destroy();
+    volatile long strong;
+    volatile long weak;
 };
 
-struct Helper1
+struct Control
 {
-    void sub_5E5A80(void* p);
+    RefCount* pointer;
+    void assign(const Control&);
 };
 
-struct Helper2
+struct Signal
 {
-    void sub_4218A0(void* p);
+    char storage[32];
+    void disconnect(void*);
+    void connect(void*);
 };
 
-struct Helper3
+struct Instance
 {
-    void sub_4025B0(void* p);
+    char padding[100];
+    Signal first;
+    Signal second;
 };
 
-struct VTable1
+struct Shared
 {
-    char pad0[0x194];
-    void* (__thiscall* fn194)(CInstanceExplorer*);
+    Instance* pointer;
+    Control control;
+    ~Shared();
 };
 
-struct VTable2
+extern Shared __cdecl acquire(void*);
+
+struct Service
 {
-    char pad0[0x160];
-    void (__thiscall* fn160)(void*);
+    void reset();
 };
 
-struct VTable3
+struct Window;
+
+struct WindowTable
 {
-    char pad0[4];
-    void (__thiscall* fn4)(void*);
-    void (__thiscall* fn8)(void*);
+    void* slots[88];
+    void (__thiscall* refresh)(Window*);
 };
 
-struct RefCounted
+struct Window
 {
-    VTable3* vtable;
-    volatile long refcount1;
-    volatile long refcount2;
+    WindowTable* table;
+    char padding[228];
+    Service* service;
 };
 
-struct FactoryResult
+struct Explorer;
+
+struct ExplorerTable
 {
-    RefCounted* ptr;
+    void* slots[101];
+    Window* (__thiscall* getWindow)(Explorer*);
 };
 
-extern "C" void* __cdecl sub_6D7850(void*);
-extern "C" FactoryResult* __cdecl sub_618A40(void*, void*);
-
-void CInstanceExplorer::sub_421A50(int arg)
+struct FlagGuard
 {
-    char saved = field3c8;
-    field3c8 = 1;
+    unsigned char* flag;
+    unsigned char previous;
+    FlagGuard(unsigned char&);
+    ~FlagGuard();
+};
 
-    if (field3c0 != 0)
+__forceinline FlagGuard::FlagGuard(unsigned char& value)
+    : flag(&value), previous(value)
+{
+    value = 1;
+}
+
+__forceinline FlagGuard::~FlagGuard()
+{
+    *flag = previous;
+}
+
+__forceinline Shared::~Shared()
+{
+    RefCount* p = control.pointer;
+    if (p)
     {
-        Helper1* h1 = (Helper1*)((char*)field3c0 + 0x64);
-        h1->sub_5E5A80(this ? (void*)((char*)this + 0x378) : 0);
-    }
-
-    if (field3c0 != 0)
-    {
-        Helper1* h2 = (Helper1*)((char*)field3c0 + 0x84);
-        h2->sub_5E5A80(this ? (void*)((char*)this + 0x39c) : 0);
-    }
-
-    VTable1* vt = *(VTable1**)this;
-    void* obj = vt->fn194(this);
-    sub_6D7850(*(void**)((char*)obj + 0xe8));
-
-    FactoryResult* fr = sub_618A40((void*)arg, (void*)&field3c4);
-    field3c0 = (int)fr->ptr;
-
-    if (fr->ptr != 0)
-    {
-        RefCounted* rc = fr->ptr;
-        if (_InterlockedExchangeAdd(&rc->refcount1, -1) == 1)
+        if (_InterlockedExchangeAdd(&p->strong, -1) == 1)
         {
-            VTable3* v = rc->vtable;
-            v->fn4(rc);
-        }
-        if (_InterlockedExchangeAdd(&rc->refcount2, -1) == 1)
-        {
-            VTable3* v = rc->vtable;
-            v->fn8(rc);
+            p->dispose();
+            if (_InterlockedExchangeAdd(&p->weak, -1) == 1)
+                p->destroy();
         }
     }
+}
 
-    if (field3c0 != 0)
+struct Explorer
+{
+    ExplorerTable* table;
+    char padding[884];
+    char firstListener[36];
+    char secondListener[36];
+    Instance* instance;
+    Control control;
+    unsigned char changing;
+
+    void setInstance(void*);
+};
+
+void Explorer::setInstance(void* argument)
+{
+    FlagGuard guard(changing);
+
+    void* listener = this ? firstListener : 0;
+    if (instance)
+        instance->first.disconnect(listener);
+
+    listener = this ? secondListener : 0;
+    if (instance)
+        instance->second.disconnect(listener);
+
+    table->getWindow(this)->service->reset();
+
     {
-        Helper2* h3 = (Helper2*)((char*)field3c0 + 0x64);
-        h3->sub_4218A0((void*)((char*)this + 0x378));
+        const Shared& value = acquire(argument);
+        instance = value.pointer;
+        control.assign(value.control);
     }
 
-    if (field3c0 != 0)
-    {
-        Helper2* h4 = (Helper2*)((char*)field3c0 + 0x84);
-        h4->sub_4218A0((void*)((char*)this + 0x39c));
-    }
+    listener = firstListener;
+    if (instance)
+        instance->first.connect(listener);
 
-    VTable1* vt2 = *(VTable1**)this;
-    void* obj2 = vt2->fn194(this);
-    VTable2* vt3 = *(VTable2**)obj2;
-    vt3->fn160(obj2);
+    listener = secondListener;
+    if (instance)
+        instance->second.connect(listener);
 
-    field3c8 = saved;
+    Window* window = table->getWindow(this);
+    window->table->refresh(window);
 }

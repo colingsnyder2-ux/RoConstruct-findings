@@ -1,41 +1,29 @@
-// from server: 71% by colin
+// from server: 88% by colin
 struct Node
 {
-    Node* next;
-    Node* prev;
+    Node *next;
 };
 
-struct List
+struct Item
 {
-    Node* head;
+    void *value;
+    char padding[652];
+    Node node;
 };
 
-struct S
+bool __stdcall f(void **key, Node **cursor, int)
 {
-    bool f(List* a, List* b, int c);
-};
-
-bool S::f(List* a, List* b, int c)
-{
-    Node* n = a->head;
-    Node* first = n;
-    if (n != first)
-        return true;
-    while (true)
+    Node *p = (*cursor)->next;
+    while (p != *cursor)
     {
-        Node* m = b->head;
-        Node* p;
-        if (n != 0)
-            p = (Node*)((char*)n - 0x70);
-        else
-            p = 0;
-        if (m == p->next)
+        Item *item = p ? reinterpret_cast<Item *>(
+            reinterpret_cast<char *>(p) - 656) : 0;
+        if (*key == item->value)
         {
-            b->head = n;
+            *cursor = p;
             return false;
         }
-        n = n->next;
-        if (n == a->head)
-            return true;
+        p = p->next;
     }
+    return true;
 }

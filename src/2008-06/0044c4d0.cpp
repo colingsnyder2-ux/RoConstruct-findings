@@ -1,6 +1,11 @@
-// from server: 90% by king_originala
+// from server: 92% by colin
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
+extern "C" long __cdecl _InterlockedIncrement(volatile long*);
+extern "C" long __cdecl _InterlockedDecrement(volatile long*);
+#pragma intrinsic(_InterlockedIncrement)
+#pragma intrinsic(_InterlockedDecrement)
+
 
 struct String {
     unsigned char storage[32];
@@ -68,9 +73,9 @@ struct Shared {
 inline Shared::~Shared() {
     if (control) {
         Control* p = control;
-        if (_InterlockedExchangeAdd(&p->strong, -1) == 1) {
+        if (_InterlockedDecrement(&p->strong) == 1) {
             p->dispose();
-            if (_InterlockedExchangeAdd(&p->weak, -1) == 1)
+            if (_InterlockedDecrement(&p->weak) == 1)
                 p->destroy();
         }
     }

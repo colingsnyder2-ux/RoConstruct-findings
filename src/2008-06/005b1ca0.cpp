@@ -1,73 +1,60 @@
-// from server: 92% by king_originala
-typedef unsigned int size_t;
-
-void* __cdecl operator new(size_t);
+// from server: 100% by colin
+void* __cdecl operator new(unsigned int);
 void __cdecl operator delete(void*);
 
-struct Data {
+struct Payload {
     unsigned int words[6];
-    Data(const Data&);
 };
-
-inline Data::Data(const Data& other)
-{
-    words[0] = other.words[0];
-    words[1] = other.words[1];
-    words[2] = other.words[2];
-    words[3] = other.words[3];
-    words[4] = other.words[4];
-    words[5] = other.words[5];
-}
 
 struct Object {
     unsigned char storage[40];
     Object();
 };
 
-struct Count {
-    unsigned int value;
-    Count();
-    ~Count();
+struct Control {
+    void* pointer;
+    Control();
 };
 
-inline Count::Count() : value(0)
-{
+inline Control::Control() : pointer(0) {
 }
 
-struct Base {
-    Object* first;
-    Count second;
+struct Owner {
+    Object* object;
+    Control control;
 
-    Base();
-    void set(Object*);
+    Owner();
+    ~Owner();
+    void reset(Object*);
 };
 
-inline Base::Base() : first(0), second()
-{
+inline Owner::Owner() : object(0), control() {
 }
 
-struct Member {
-    unsigned int value;
+struct Callback {
+    void* target;
 
-    Member(Data);
-    ~Member();
-    void initialize(const Data*);
+    Callback(const Payload&);
+    ~Callback();
+    void initialize(const Payload&);
 };
 
-inline Member::Member(Data data) : value(0)
-{
-    initialize(&data);
+inline Callback::Callback(const Payload& source) {
+    Payload copy = source;
+    target = 0;
+    initialize(copy);
 }
 
-struct S : Base {
-    Member member;
+struct SpawnerService : Owner {
+    Callback callback;
 
-    S(const Data&);
+    SpawnerService(const Payload&);
     void finish();
 };
 
-S::S(const Data& data) : Base(), member(data)
+SpawnerService::SpawnerService(const Payload& source)
+    : Owner(), callback(source)
 {
-    set(new Object);
+    reset(new Object);
     finish();
 }

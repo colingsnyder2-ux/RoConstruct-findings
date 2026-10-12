@@ -1,8 +1,8 @@
-// from server: 97% by colin
+// from server: 100% by colin
 extern "C" void (__cdecl * _invalid_parameter_noinfo)();
 
 struct Element {
-    float x, y, z;
+    float v[10];
 };
 
 struct S {

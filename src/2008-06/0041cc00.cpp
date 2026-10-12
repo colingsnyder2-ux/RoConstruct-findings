@@ -1,39 +1,40 @@
-// from server: 98% by king_originala
-#pragma pointers_to_members(full_generality, multiple_inheritance)
-
-struct String;
+// from server: 100% by colin
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+#include <string>
 extern "C" {
-extern void (__thiscall *copyString)(String*, const String&);
-extern void (__thiscall *destroyString)(String*);
 }
 
-struct String {
-    unsigned char storage[28];
-    String(const String&);
-    ~String();
-};
 
-inline String::String(const String& other)
-{
-    copyString(this, other);
-}
 
-inline String::~String()
-{
-    destroyString(this);
-}
+
+
+
+
+struct Service;
 
 struct Shared {
-    unsigned int storage[2];
+    void* object;
+    void* control;
     Shared(const Shared&);
-    ~Shared();
 };
 
-struct Binder {
-    unsigned int storage[12];
-    Binder(const Binder&);
-    ~Binder();
+Shared __cdecl getShared(Service*);
+
+struct Callback {
+    void (__cdecl *function)();
+    int adjustment;
 };
+
+void __cdecl callback();
+
+struct Bind {
+    unsigned char data[48];
+    Bind(const Bind&);
+};
+
+Bind __cdecl makeBind(Callback, Shared, std::string);
 
 struct FunctionTable {
     void (__cdecl *manager)(void*, void*, int);
@@ -43,14 +44,8 @@ struct Function {
     FunctionTable* table;
     unsigned int reserved;
     unsigned int storage[6];
-    Function(Binder, int = 0);
     Function(const Function&);
-    ~Function();
-};
-
-struct Service {
-    void f(String);
-    void callback(String);
+    Function(Bind, int);
 };
 
 struct Queue {
@@ -58,10 +53,13 @@ struct Queue {
 };
 
 extern Queue* queue;
-extern Shared __cdecl getShared(Service*);
-extern Binder __cdecl bind(void (Service::*)(String), Shared, String);
 
-void Service::f(String text)
+struct Service {
+    void submit(std::string);
+};
+
+void Service::submit(std::string text)
 {
-    queue->append(bind(&Service::callback, getShared(this), text));
+    Callback target = { callback, 0 };
+    queue->append(Function(makeBind(target, getShared(this), text), 0));
 }

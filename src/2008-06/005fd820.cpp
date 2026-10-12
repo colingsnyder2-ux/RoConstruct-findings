@@ -1,29 +1,30 @@
-// from server: 93% by king_originala
-struct CameraBase {
-    unsigned int data[9];
-    CameraBase(const CameraBase&);
-};
-
-struct Camera : CameraBase {
-    float x;
-    float y;
-    float z;
-};
-
-struct S {
-    unsigned int reserved[2];
-    const Camera& (__thiscall *getter)(void*);
-    int adjustment;
-    int tableOffset;
-
-    Camera get(void*);
-};
-
-Camera S::get(void* input)
+// from server: 97% by colin
+struct Matrix
 {
-    char* object = input ? static_cast<char*>(input) - 20 : 0;
-    int* table = *reinterpret_cast<int**>(object + 448);
-    int displacement =
-        *reinterpret_cast<int*>(reinterpret_cast<char*>(table) + tableOffset);
-    return getter(object + 448 + displacement + adjustment);
+    float data[9];
+    Matrix(const Matrix &);
+};
+
+struct Value
+{
+    Matrix rotation;
+    float x, y, z;
+};
+
+struct GetSetImpl
+{
+    char padding[8];
+    const Value &(__thiscall *function)(void *);
+    int adjustment;
+    int index;
+
+    Value Invoke(void *argument);
+};
+
+Value GetSetImpl::Invoke(void *argument)
+{
+    char *object = argument ? (char *)argument - 0x14 : 0;
+    return function(
+        object + 0x150 +
+        (*(int *)(*(char **)(object + 0x150) + index) + adjustment));
 }

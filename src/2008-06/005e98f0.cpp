@@ -1,5 +1,44 @@
-// from server: 48% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs v8world/World.cpp
+// from server: 92% by king_originala
+struct PhysicsService;
+
+struct Part {
+    char padding0[0x50];
+    int index;
+    char padding1[4];
+    PhysicsService* service;
+};
+
+struct PartList {
+    Part** data;
+    int size;
+    int capacity;
+    void append(Part* const* part);
+};
+
+struct CleanStage {
+    void f(Part* part);
+};
+
+struct FinalStage {
+    void f(Part* part);
+};
+
+struct PhysicsService {
+    char padding0[0x84];
+    FinalStage* finalStage;
+    CleanStage* cleanStage;
+    char padding1[0x20];
+    PartList parts;
+
+    void f(Part* part);
+};
+
+void PhysicsService::f(Part* part)
+{
+    Part* entry = part;
+    part->index = parts.size;
+    parts.append(&entry);
+    part->service = this;
+    cleanStage->f(part);
+    finalStage->f(part);
+}

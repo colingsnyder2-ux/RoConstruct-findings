@@ -1,4 +1,6 @@
-// from server: 97% by king_originala
+// from server: 100% by colin
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
 void* __cdecl operator new(unsigned int);
 void __cdecl operator delete(void*);
 
@@ -7,7 +9,7 @@ struct S_func_006159f0 {
 };
 
 struct Product {
-    int fields[9];
+    volatile int fields[9];
     Product(int a1);
 };
 

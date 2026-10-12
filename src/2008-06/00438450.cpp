@@ -1,4 +1,4 @@
-// from server: 91% by king_originala
+// from server: 100% by colin
 struct Str {
     int words[8];
 };
@@ -17,7 +17,7 @@ extern void (__thiscall* string_construct)(Str*, const char*);
 struct Temporary {
     int value;
     Temporary(X* owner, Str*& text);
-    ~Temporary();
+    __declspec(dllimport) ~Temporary() throw();
 };
 
 inline Temporary::Temporary(X* owner, Str*& text)
@@ -26,10 +26,6 @@ inline Temporary::Temporary(X* owner, Str*& text)
     text = owner->copy(reinterpret_cast<Str*>(this));
 }
 
-inline Temporary::~Temporary()
-{
-    text_destroy(this);
-}
 
 Str* X::convert(Str* out)
 {

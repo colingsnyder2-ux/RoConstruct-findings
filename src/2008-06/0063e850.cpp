@@ -1,4 +1,6 @@
-// from server: 96% by king_originala
+// from server: 100% by colin
+// roc-cl: 50727
+// roc-flags: /O2 /GS- /MD
 extern char table1[];
 extern char table2[];
 
@@ -13,8 +15,8 @@ struct S {
 S* S::f(int a1, bool a2, int a3)
 {
     ((S_func_006159f0*)this)->f(a1);
-    *(char* volatile*)((char*)this + 0) = table1;
-    *(char* volatile*)((char*)this + 4) = table2;
+    *(char**)((char*)this + 0) = table1;
+    *(char**)((char*)this + 4) = table2;
     *(volatile int*)((char*)this + 28) = 0;
     *(volatile int*)((char*)this + 32) = 0;
     *(volatile int*)((char*)this + 44) = 0;

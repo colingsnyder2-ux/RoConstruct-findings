@@ -1,34 +1,22 @@
-// from server: 96% by king_originala
+// from server: 100% by colin
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+#include <map>
+#include <set>
+#include <string>
 struct SceneManager;
-struct String;
-
 struct SceneNode {
     virtual ~SceneNode();
-    SceneNode(SceneManager*, const String&);
+    __declspec(dllimport) SceneNode(SceneManager*, const std::string&);
     char storage[0x224];
 };
-
-struct EmptyPolicy {
-    EmptyPolicy();
-};
-
-inline EmptyPolicy::EmptyPolicy()
-{
-}
-
-struct Member {
-    Member(const EmptyPolicy&, const EmptyPolicy&);
-    ~Member();
-};
-
 struct AdornRbxGfx : SceneNode {
-    Member member;
-
-    AdornRbxGfx(SceneManager*, const String*);
+    std::map<std::string,int> member;
+    AdornRbxGfx(SceneManager*, const std::string*);
     virtual ~AdornRbxGfx();
 };
-
-AdornRbxGfx::AdornRbxGfx(SceneManager* manager, const String* name)
-    : SceneNode(manager, *name), member(EmptyPolicy(), EmptyPolicy())
+AdornRbxGfx::AdornRbxGfx(SceneManager* manager, const std::string* name)
+    : SceneNode(manager, *name)
 {
 }

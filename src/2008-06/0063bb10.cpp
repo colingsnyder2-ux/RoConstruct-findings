@@ -1,6 +1,11 @@
-// from server: 96% by king_originala
+// from server: 100% by colin
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
+extern "C" long __cdecl _InterlockedIncrement(volatile long*);
+extern "C" long __cdecl _InterlockedDecrement(volatile long*);
+#pragma intrinsic(_InterlockedIncrement)
+#pragma intrinsic(_InterlockedDecrement)
+
 
 bool __cdecl func_0060a2f0();
 extern unsigned char tagSymbol[];
@@ -35,7 +40,7 @@ void S::f(const Value* source)
             destination->control = source->control;
             if (destination->control) {
                 volatile long* references = &destination->control->references;
-                _InterlockedExchangeAdd(references, 1);
+                _InterlockedIncrement(references);
             }
         }
         tag = tagSymbol;

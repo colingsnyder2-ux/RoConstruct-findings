@@ -1,8 +1,9 @@
-// from server: 91% by king_originala
+// from server: 97% by king_originala
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
 extern "C" long __cdecl _InterlockedDecrement(volatile long*);
 #pragma intrinsic(_InterlockedDecrement)
+#pragma pointers_to_members(full_generality, multiple_inheritance)
 
 struct RefCount {
     virtual void reserved();
@@ -63,18 +64,17 @@ struct Transport {
     virtual bool active();
 };
 
-struct __single_inheritance Server;
+struct Server;
 
 struct Binding {
     void (Server::*method)();
-    int adjustment;
     Server* object;
     int unused;
     Binding(void (Server::* const&)(), Server*);
 };
 
 inline Binding::Binding(void (Server::* const& m)(), Server* s)
-    : method(m), adjustment(0), object(s)
+    : method(m), object(s)
 {
 }
 
@@ -106,6 +106,7 @@ struct Manager {
     Connection connect(void*, const Function&, int);
 };
 
+extern Manager manager;
 Shared __cdecl makeShared(void*);
 
 struct Server {
@@ -145,7 +146,6 @@ void Server::change(Peer* oldPeer, Peer* newPeer)
 
         Function function(Binding(&Server::callback, this));
         connection.assign(
-            reinterpret_cast<Manager*>(0x00973E40)->connect(
-                &newPeer->signal, function, 10));
+            manager.connect(&newPeer->signal, function, 10));
     }
 }

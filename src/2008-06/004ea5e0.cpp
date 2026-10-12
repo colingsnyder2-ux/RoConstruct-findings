@@ -1,4 +1,4 @@
-// from server: 99% by king_originala
+// from server: 100% by king_originala
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
 extern "C" long __cdecl _InterlockedDecrement(volatile long*);
@@ -15,16 +15,18 @@ struct Control {
 struct Shared {
     void* pointer;
     Control* control;
-    ~Shared()
-    {
-        Control* p = control;
-        if (p && _InterlockedDecrement(&p->strong) == 0) {
-            p->dispose();
-            if (_InterlockedDecrement(&p->weak) == 0)
-                p->destroy();
-        }
-    }
+    ~Shared();
 };
+
+inline Shared::~Shared()
+{
+    Control* p = control;
+    if (p && _InterlockedDecrement(&p->strong) == 0) {
+        p->dispose();
+        if (_InterlockedDecrement(&p->weak) == 0)
+            p->destroy();
+    }
+}
 
 extern char instanceType;
 extern char decalType;
@@ -41,9 +43,11 @@ struct Signal {
     char storage;
 };
 
-struct Decal {
+struct DecalPadding {
     char padding[20];
-    Signal signal;
+};
+
+struct Decal : DecalPadding, Signal {
 };
 
 struct Result {
@@ -98,7 +102,7 @@ void S::f(Shared value)
         Callback callbackValue = { &S::callback, this };
         {
             Function function(callbackValue);
-            connection = manager.connect(&object->signal, function, 10);
+            connection = manager.connect(static_cast<Signal*>(object), function, 10);
         }
         update();
     }

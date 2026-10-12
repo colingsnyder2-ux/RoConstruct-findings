@@ -1,37 +1,37 @@
-// from server: 98% by king_originala
-extern "C" void __cdecl release_storage(void *);
+// from server: 99% by colin
+void __cdecl operator delete(void *) throw();
 
-struct ModuleBase {
-    unsigned char data[0x30];
-    ~ModuleBase();
+struct Base {
+    unsigned char data[24];
+    ~Base();
 };
 
-struct ContainerBase {
-    void *storage;
-    ~ContainerBase();
+struct TreeStorage {
+    void *head;
+    unsigned char data[16];
+    __forceinline ~TreeStorage();
 };
 
-struct Container : ContainerBase {
-    unsigned char data[0x10];
+struct Tree : TreeStorage {
     void clear();
-    ~Container();
+    __forceinline ~Tree();
 };
 
-struct CRobloxModule : ModuleBase {
-    Container container;
-    ~CRobloxModule();
+struct S : Base {
+    Tree tree;
+    ~S();
 };
 
-inline ContainerBase::~ContainerBase()
+__forceinline TreeStorage::~TreeStorage()
 {
-    release_storage(storage);
+    delete head;
 }
 
-inline Container::~Container()
+__forceinline Tree::~Tree()
 {
     clear();
 }
 
-CRobloxModule::~CRobloxModule()
+S::~S()
 {
 }

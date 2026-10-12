@@ -1,4 +1,4 @@
-// from server: 97% by king_originala
+// from server: 98% by colin
 struct VertexArray {
     char data[72];
 };
@@ -41,5 +41,5 @@ void S::render(RenderDevice* device, void* arg2, void* arg3, float arg4)
     device->endIndexedPrimitives();
 
     for (int i = 0; i < itemCount; ++i)
-        items[i]->render(device, arg2, arg3, arg4);
+        items[i]->render(device, arg3, arg2, arg4);
 }

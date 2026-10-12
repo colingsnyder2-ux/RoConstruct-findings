@@ -1,24 +1,24 @@
-// from server: 42% by colin
-extern "C" void __stdcall sub_4A5600(float* out, int count, int flag);
-extern "C" void __stdcall sub_4C9C80(float value);
+// from server: 97% by king_originala
+extern "C" double __cdecl sqrt(double);
+#pragma intrinsic(sqrt)
+#pragma float_control(precise, off)
 
-struct RoundRobinPhysicsSender
-{
-    void send(float x, float y, float z);
+struct S {
+    void writeBits(const unsigned char *, int, bool);
+    void writeComponent(float);
+    void f(float, float, float);
 };
 
-void RoundRobinPhysicsSender::send(float x, float y, float z)
+void S::f(float x, float y, float z)
 {
-    float len = x * x + y * y + z * z;
-    float tmp;
-    float v;
-    sub_4A5600(&tmp, 0x20, 1);
-    v = tmp;
-    if (v != 0.0f)
-    {
-        float inv = 1.0f / v;
-        sub_4C9C80(inv * x);
-        sub_4C9C80(inv * y);
-        sub_4C9C80(inv * z);
+    float length = (float)sqrt(x * x + y * y + z * z);
+    float data = length;
+    writeBits((const unsigned char *)&data, 32, true);
+
+    if (length > 0.0f) {
+        float reciprocal = 1.0f / length;
+        writeComponent(reciprocal * x);
+        writeComponent(reciprocal * y);
+        writeComponent(reciprocal * z);
     }
 }

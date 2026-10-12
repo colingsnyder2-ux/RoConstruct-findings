@@ -1,54 +1,65 @@
-// from server: 95% by king_originala
-void* __cdecl operator new(unsigned int);
+// from server: 100% by colin
+extern void* __cdecl operator new(unsigned int);
+extern void* objectTable[];
 
-struct Module {
-    virtual void unused();
-    virtual long Lock();
+struct Module;
+struct ModuleTable {
+    void (__thiscall* first)(Module*);
+    void (__thiscall* lock)(Module*);
 };
-
+struct Module {
+    ModuleTable* table;
+};
 extern Module* module;
-extern void* objectVtable[];
+
+struct Exception {
+    long status;
+    Exception(const Exception&);
+    ~Exception();
+};
 
 struct Object {
-    void** vtable;
+    void** table;
     long references;
     void* begin;
-    void* current;
     void* end;
+    void* current;
     void* owner;
     unsigned int flags;
+
+    Object() throw();
+    static long __stdcall Create(Object** result);
 };
 
-long __stdcall CreateInstance(Object** output)
+__forceinline Object::Object() throw()
 {
-    if (output == 0)
-        return (long)0x80004003UL;
+    references = 0;
+    current = 0;
+    end = 0;
+    begin = 0;
+    owner = 0;
+    flags = 0;
+    table = objectTable;
+    module->table->lock(module);
+}
 
-    *output = 0;
-    long result = (long)0x8007000EUL;
+long __stdcall Object::Create(Object** result)
+{
+    if (!result)
+        return (long)0x80004003;
+
+    *result = 0;
+    long status = (long)0x8007000e;
     Object* object = 0;
 
-    try {
-        Object* allocated =
-            static_cast<Object*>(operator new(sizeof(Object)));
-
-        if (allocated != 0) {
-            allocated->references = 0;
-            allocated->begin = allocated->current = allocated->end = 0;
-            allocated->owner = 0;
-            allocated->flags = 0;
-            allocated->vtable = objectVtable;
-            module->Lock();
-            object = allocated;
-        } else {
-            object = 0;
-        }
-
-        if (object != 0)
-            result = 0;
-    } catch (...) {
+try {
+        object = new Object;
     }
+    catch (Exception exception) {
+    }
+    if (object)
+        status = 0;
 
-    *output = object;
-    return result;
+    *result = object;
+    return status;
 }

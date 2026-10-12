@@ -1,4 +1,4 @@
-// from server: 92% by colin
+// from server: 100% by colin
 struct Vector {
     float x, y, z;
 };
@@ -6,7 +6,7 @@ struct Vector {
 struct Geometry {
     unsigned char pad0[8];
     unsigned char dirty;
-    unsigned char pad1[0x7B];
+    unsigned char pad1[0x87];
     float x, y, z;
 
     void update();

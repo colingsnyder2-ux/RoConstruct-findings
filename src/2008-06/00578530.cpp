@@ -1,85 +1,95 @@
-// from server: 94% by king_originala
-extern "C" void __cdecl initialize_index();
-extern "C" void __cdecl initialize_factory();
+// from server: 100% by colin
+extern void (__cdecl* invalid_parameter)();
+extern void __cdecl initialize_index();
+extern void __cdecl initialize_type();
 extern unsigned long index_once;
-extern unsigned long factory_once;
-
-extern "C" void __cdecl call_once(void (__cdecl *)(), unsigned long *);
-extern "C" void * __stdcall make_value_00575630();
-extern "C" void * __cdecl factory_value();
-extern void (__cdecl *invalid_parameter_noinfo)();
+extern unsigned long type_once;
+extern void __cdecl call_once(void (__cdecl*)(), unsigned long*);
+extern void* __cdecl func_0042d030();
+extern void* __cdecl func_0042ced0();
 
 struct Control {
-    void *value;
-
+    void* value;
     Control();
-    void assign(const Control &other);
+    Control& operator=(const Control&);
 };
 
-inline Control::Control() : value(0)
+__forceinline Control::Control() : value(0)
 {
 }
 
-struct Shared {
-    void *object;
+struct Pair {
+    void* object;
     Control control;
-
-    Shared();
-    Shared(const Shared &other);
-    ~Shared();
+    ~Pair();
 };
 
-inline Shared::Shared() : object(0), control()
+struct EmptyPair {
+    void* object;
+    Control control;
+    EmptyPair();
+    EmptyPair(const EmptyPair&);
+    ~EmptyPair();
+};
+
+__forceinline EmptyPair::EmptyPair()
+    : object(0), control()
 {
 }
 
-struct Cache {
-    unsigned char reserved[12];
-    Shared *first;
-    Shared *volatile last;
-    Shared *limit;
-
-    void resize(unsigned count, Shared value);
+struct Vector {
+    unsigned char padding[12];
+    Pair* first;
+    Pair* last;
+    Pair* limit;
+    void resize(unsigned int, EmptyPair);
+    unsigned int size() const;
+    Pair& at(unsigned int, void (__cdecl*)());
 };
 
-struct Creator {
-    unsigned char reserved[0x190];
-    Cache cache;
+__forceinline unsigned int Vector::size() const
+{
+    return (unsigned int)(last - first);
+}
 
-    Shared create(void *value);
-    void *get();
+__forceinline Pair& Vector::at(unsigned int index, void (__cdecl* handler)())
+{
+    if (index >= (unsigned int)(last - first))
+        handler();
+    return first[index];
+}
+
+struct S {
+    unsigned char padding[0x190];
+    Vector values;
+    Pair create(void*);
+    void* get();
 };
 
-void *Creator::get()
+void* S::get()
 {
     call_once(initialize_index, &index_once);
-    unsigned index = (unsigned)make_value_00575630();
-    void (__cdecl *invalid)() = invalid_parameter_noinfo;
-    Cache *entries = &cache;
+    unsigned int index = (unsigned int)func_0042d030();
+    void (__cdecl* handler)() = invalid_parameter;
+    Vector& entries = values;
 
-    if (index + 1 > (unsigned)(entries->last - entries->first)) {
-        entries->resize(index + 1, Shared());
+    if (index + 1 > values.size()) {
+        entries.resize(index + 1, EmptyPair());
     } else {
-        if (index >= (unsigned)(entries->last - entries->first))
-            invalid();
-
-        void *existing = entries->first[index].object;
+        void* existing = entries.at(index, handler).object;
         if (existing)
             return existing;
     }
 
-    call_once(initialize_factory, &factory_once);
-    Shared result = create(factory_value());
+    call_once(initialize_type, &type_once);
+    Pair result = create(func_0042ced0());
 
     if (!result.object)
         return 0;
 
-    void *object = result.object;
-    if (index >= (unsigned)(entries->last - entries->first))
-        invalid();
-
-    Shared *entry = &entries->first[index];
-    entry->object = result.object;
-    entry->control.assign(result.control);
+    void* object = result.object;
+    Pair& destination = entries.at(index, handler);
+    destination.object = result.object;
+    destination.control = result.control;
     return object;
 }

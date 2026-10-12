@@ -1,7 +1,4 @@
-// from server: 93% by king_originala
-extern "C" void _ReadWriteBarrier();
-#pragma intrinsic(_ReadWriteBarrier)
-
+// from server: 100% by king_originala
 struct String;
 extern String* (__thiscall *stringConstruct)(String*, const char*);
 extern void (__thiscall *stringDestroy)(String*);
@@ -41,7 +38,7 @@ struct Base {
 };
 
 struct S : Base {
-    unsigned int kind;
+    volatile unsigned int kind;
     S();
     void setValue(const String&);
 };
@@ -61,8 +58,7 @@ S::S()
     p[0xa4 / 4] = reinterpret_cast<unsigned int>(tableA4);
     p[0xc4 / 4] = reinterpret_cast<unsigned int>(tableC4);
     p[0x130 / 4] = reinterpret_cast<unsigned int>(table130);
-    _ReadWriteBarrier();
     kind = 0xe2;
-    String name("Body Colors");
+    String name("Skin");
     setValue(name);
 }

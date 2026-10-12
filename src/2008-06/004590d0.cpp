@@ -1,17 +1,20 @@
-// from server: 91% by king_originala
-extern "C" void* __cdecl GetSingleton();
-extern "C" int (__stdcall *PostMessageA)(void*, unsigned int, unsigned int, long);
+// from server: 97% by colin
+typedef void* HWND;
+typedef int BOOL;
 
-struct LockPlayModeVerb
+struct W { char p[0x20]; HWND h; };
+struct V { char p[0x20]; W* w; };
+struct U { char p[4]; V* v; };
+extern "C" U* __cdecl sub_6A0926();
+extern "C" __declspec(dllimport) BOOL __stdcall PostMessageA(HWND, unsigned int, unsigned int, long);
+
+struct ToggleFullscreenVerb
 {
-    int f(int);
+    BOOL f(void*);
 };
 
-int LockPlayModeVerb::f(int)
+BOOL ToggleFullscreenVerb::f(void*)
 {
-    void* a = GetSingleton();
-    a = *(void**)((char*)a + 4);
-    a = *(void**)((char*)a + 0x20);
-    void* hwnd = *(void**)((char*)a + 0x20);
-    return PostMessageA(hwnd, 0x111, 0x80ff, 0);
+    W* w = sub_6A0926()->v->w;
+    return PostMessageA(w->h, 0x111, 0x80f4, 0);
 }

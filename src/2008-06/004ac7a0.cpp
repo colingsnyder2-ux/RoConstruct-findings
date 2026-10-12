@@ -1,20 +1,19 @@
-// from server: 98% by king_originala
-struct String;
+// from server: 100% by colin
+namespace std {
+    template<class T> struct char_traits;
+    template<class T> class allocator;
+    template<class T, class Traits, class Alloc>
+    class __declspec(dllimport) basic_string {
+        char storage[28];
+    public:
+        basic_string(const T*);
+        basic_string(const basic_string&);
+        ~basic_string();
+    };
+    typedef basic_string<char, char_traits<char>, allocator<char> > string;
+}
 
-extern void* (__thiscall *string_copy)(String*, const String&);
-extern void (__thiscall *string_destroy)(String*);
 
-struct String {
-    unsigned char storage[28];
-
-    String(const String& source) {
-        string_copy(this, source);
-    }
-
-    ~String() {
-        string_destroy(this);
-    }
-};
 
 struct ExceptionObject {
     unsigned long words[10];
@@ -27,7 +26,7 @@ extern __declspec(noreturn) void __cdecl raise_exception(const void*);
 
 struct Dispatch {
     void* reserved;
-    void (__cdecl *invoke)(void*, String, int);
+    void (__cdecl *invoke)(void*, std::string, int);
 };
 
 struct S {
@@ -35,10 +34,10 @@ struct S {
     unsigned long reserved;
     unsigned char object[1];
 
-    void invoke(String value, int argument);
+    void invoke(std::string value, int argument);
 };
 
-void S::invoke(String value, int argument)
+void S::invoke(std::string value, int argument)
 {
     if (!dispatch)
         raise_exception(&ExceptionObject());

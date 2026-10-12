@@ -1,4 +1,4 @@
-// from server: 95% by king_originala
+// from server: 100% by colin
 struct String;
 typedef const String& (__thiscall *PrepareProc)(String*, int, int);
 typedef void (__thiscall *DestroyProc)(String*);
@@ -14,13 +14,10 @@ struct String
 {
     void* data;
     String(const String&);
-    ~String() throw();
+    __declspec(dllimport) ~String() throw();
 };
 
-inline String::~String() throw()
-{
-    destroyString(this);
-}
+
 
 String __cdecl makeValue(int);
 

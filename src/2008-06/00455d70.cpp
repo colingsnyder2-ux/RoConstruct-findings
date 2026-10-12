@@ -1,4 +1,5 @@
-// from server: 98% by king_originala
+// from server: 100% by colin
+// roc-flags: /O2 /GS- /EHsc /MD /fp:fast
 struct SYSTEMTIME
 {
     unsigned short wYear;

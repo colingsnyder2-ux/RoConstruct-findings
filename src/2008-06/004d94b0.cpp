@@ -1,4 +1,8 @@
-// from server: 97% by king_originala
+// from server: 100% by colin
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+#include <map>
 extern "C" void* __cdecl allocate(unsigned int size, unsigned int alignment);
 extern "C" void* __cdecl fill(void* destination, int value, unsigned int size);
 
@@ -18,45 +22,27 @@ struct Lock {
     ~Lock();
 };
 
-struct Hash {
-    Hash();
-};
 
-struct Allocator {
-    Allocator();
-};
 
-struct MaterialTable {
-    unsigned char data[32];
 
-    MaterialTable(const Hash&, const Allocator&);
-    ~MaterialTable();
-};
 
-struct VectorTable {
-    unsigned char data[32];
 
-    VectorTable(const Hash&, const Allocator&);
-    ~VectorTable();
-};
+
+
 
 struct SurfaceTable {
     Storage storage;
     Lock lock;
-    MaterialTable materials;
-    VectorTable vectors;
+    std::map<int,int> materials;
+    std::map<int,int> vectors;
     int value;
 
     SurfaceTable();
 };
 
-__forceinline Hash::Hash()
-{
-}
 
-__forceinline Allocator::Allocator()
-{
-}
+
+
 
 __forceinline Storage::Storage()
 {
@@ -68,9 +54,7 @@ __forceinline Storage::Storage()
 
 SurfaceTable::SurfaceTable()
     : storage(),
-      lock(),
-      materials(Hash(), Allocator()),
-      vectors(Hash(), Allocator())
+      lock()
 {
     value = 0;
 }

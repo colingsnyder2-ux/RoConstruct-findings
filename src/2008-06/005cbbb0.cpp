@@ -1,5 +1,5 @@
-// from server: 82% by king_originala
-extern "C" long (__stdcall *InterlockedDecrement)(volatile long *);
+// from server: 85% by atomic.potato
+extern "C" long __stdcall InterlockedDecrement(volatile long *);
 
 struct ControlBlock {
     virtual ~ControlBlock();

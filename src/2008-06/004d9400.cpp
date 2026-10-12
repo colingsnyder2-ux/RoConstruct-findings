@@ -1,75 +1,60 @@
-// from server: 94% by king_originala
-extern void* __cdecl allocate(unsigned int, unsigned int);
-extern void* __cdecl clearMemory(void*, int, unsigned int);
+// from server: 100% by colin
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+#include <map>
+extern "C" void* __cdecl allocate(unsigned int size, unsigned int alignment);
+extern "C" void* __cdecl fill(void* destination, int value, unsigned int size);
 
-struct Storage
-{
+struct Storage {
     int count;
-    void* buckets;
+    void* entries;
     int capacity;
 
     Storage();
-    ~Storage();
+    virtual ~Storage();
 };
 
-inline Storage::Storage()
+struct Lock {
+    unsigned char data[12];
+
+    Lock();
+    ~Lock();
+};
+
+
+
+
+
+
+
+
+
+struct SurfaceTable {
+    Storage storage;
+    Lock lock;
+    std::map<int,int> materials;
+    std::map<int,int> vectors;
+    int value;
+
+    SurfaceTable();
+};
+
+
+
+
+
+__forceinline Storage::Storage()
 {
     capacity = 10;
     count = 0;
-    buckets = allocate(40, 16);
-    clearMemory(buckets, 0, capacity * 4);
+    entries = allocate(40, 16);
+    fill(entries, 0, capacity * 4);
 }
 
-struct TagA
+SurfaceTable::SurfaceTable()
+    : storage(),
+      lock()
 {
-    TagA();
-};
-
-inline TagA::TagA() {}
-
-struct TagB
-{
-    TagB();
-};
-
-inline TagB::TagB() {}
-
-struct First
-{
-    unsigned char data[12];
-    First();
-    ~First();
-};
-
-struct Second
-{
-    unsigned char data[32];
-    Second(const TagA&, const TagB&);
-    ~Second();
-};
-
-struct Third
-{
-    unsigned char data[32];
-    Third(const TagA&, const TagB&);
-    ~Third();
-};
-
-struct Table
-{
-    Storage storage;
-    First first;
-    Second second;
-    Third third;
-    int last;
-
-    Table();
-    virtual ~Table();
-};
-
-Table::Table()
-    : second(TagA(), TagB()),
-      third(TagA(), TagB()),
-      last(0)
-{
+    value = 0;
 }

@@ -1,4 +1,4 @@
-// from server: 97% by colin
+// from server: 100% by king_originala
 struct Vector3 {
     float x, y, z;
 
@@ -31,8 +31,8 @@ Vector3 S::get(void *object) const {
         base +
         (*reinterpret_cast<int *>(
             reinterpret_cast<char *>(
-                *reinterpret_cast<int **>(base + 0x134)) +
+                *reinterpret_cast<int **>(base + 0x150)) +
             tableOffset) + adjustment) +
-        0x134,
+        0x150,
         &result);
 }

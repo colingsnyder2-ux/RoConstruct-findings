@@ -1,80 +1,90 @@
-// from server: 93% by king_originala
+// from server: 100% by colin
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
+extern "C" long __cdecl _InterlockedDecrement(volatile long*);
+#pragma intrinsic(_InterlockedDecrement)
 
-struct CRobloxDoc;
+struct CChatPrompt;
 
-struct Object {
-    void attach(CRobloxDoc*);
-};
-
-struct Control {
-    virtual void unused() = 0;
-    virtual void dispose() = 0;
-    virtual void destroy() = 0;
+struct Control
+{
+    virtual void unused();
+    virtual void dispose();
+    virtual void destroy();
     volatile long strong;
     volatile long weak;
+
     void release();
 };
 
-struct Reference {
-    Control* value;
-    Reference& operator=(const Reference&);
+struct Handle
+{
+    Control* p;
+    Handle& operator=(const Handle&);
 };
 
-struct Value {
-    Object* object;
-    Reference reference;
-    ~Value();
+struct Object
+{
+    void attach(CChatPrompt*);
 };
 
-Value __cdecl create_value();
-void __cdecl register_value(void (__cdecl*)(), void*);
-void __cdecl value_callback();
-extern char value_registration;
-void* __cdecl func_0044f3c0();
+struct Shared
+{
+    Object* px;
+    Handle pn;
+    ~Shared();
+};
+
+extern Shared __cdecl create_shared();
+extern unsigned __cdecl current_index();
+extern void __cdecl register_callback(void (__cdecl*)(), void*);
+extern void __cdecl callback();
+extern char callback_data;
 extern "C" void (__cdecl* _invalid_parameter_noinfo)();
 
-struct CRobloxDoc {
+struct CChatPrompt
+{
     char padding[0x19c];
-    Value* begin;
-    Value* end;
-    Object* find_value();
-    Object* func_004530f0();
+    Shared* first;
+    Shared* last;
+
+    Object* existing();
+    Object* func_00412710();
 };
 
 __forceinline void Control::release()
 {
-    if (_InterlockedExchangeAdd(&strong, -1) == 0) {
+    if (_InterlockedDecrement(&strong) == 0)
+    {
         dispose();
-        if (_InterlockedExchangeAdd(&weak, -1) == 0)
+        if (_InterlockedDecrement(&weak) == 0)
             destroy();
     }
 }
 
-__forceinline Value::~Value()
+__forceinline Shared::~Shared()
 {
-    if (reference.value)
-        reference.value->release();
+    if (pn.p)
+        pn.p->release();
 }
 
-Object* CRobloxDoc::func_004530f0()
+Object* CChatPrompt::func_00412710()
 {
-    Object* result = find_value();
-    if (result)
-        return result;
+    Object* result = existing();
+    if (!result)
+    {
+        Shared value = create_shared();
+        result = value.px;
+        register_callback(callback, &callback_data);
 
-    Value temporary = create_value();
-    result = temporary.object;
-    register_value(value_callback, &value_registration);
+        unsigned index = current_index();
+        if (index >= static_cast<unsigned>(last - first))
+            _invalid_parameter_noinfo();
 
-    unsigned int index = (unsigned int)func_0044f3c0();
-    if (index >= (unsigned int)(end - begin))
-        _invalid_parameter_noinfo();
-
-    Value& slot = begin[index];
-    slot.object = temporary.object;
-    slot.reference = temporary.reference;
-    result->attach(this);
+        Shared& slot = first[index];
+        slot.px = value.px;
+        slot.pn = value.pn;
+        result->attach(this);
+    }
     return result;
 }

@@ -1,4 +1,4 @@
-// from server: 97% by king_originala
+// from server: 100% by colin
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
 extern "C" long __cdecl _InterlockedDecrement(volatile long*);
@@ -6,33 +6,45 @@ extern "C" long __cdecl _InterlockedDecrement(volatile long*);
 
 struct S;
 
-struct Control {
+struct Ref {
     virtual void reserved();
     virtual void dispose();
     virtual void destroy();
+
     volatile long strong;
     volatile long weak;
+
+    void attach(S*);
     void release();
 };
 
-struct Reference {
-    Control* control;
-    Reference& operator=(const Reference&);
-    ~Reference();
+inline void Ref::release() {
+    if (_InterlockedDecrement(&strong) == 0) {
+        dispose();
+        if (_InterlockedDecrement(&weak) == 0)
+            destroy();
+    }
+}
+
+struct RefSlot {
+    Ref* value;
+    RefSlot& operator=(const RefSlot&);
 };
 
-struct Object {
-    void attach(S*);
+struct Pair {
+    Ref* value;
+    RefSlot owner;
+    ~Pair();
 };
 
-struct Temporary {
-    Object* object;
-    Reference reference;
-};
+inline Pair::~Pair() {
+    if (owner.value)
+        owner.value->release();
+}
 
 struct Entry {
-    Object* object;
-    Reference reference;
+    Ref* value;
+    RefSlot owner;
 };
 
 struct S {
@@ -40,53 +52,30 @@ struct S {
     Entry* first;
     Entry* last;
 
-    Object* existing();
-    Object* f();
+    Ref* existing();
+    Ref* create();
 };
 
-Temporary __cdecl create();
-void __cdecl callback();
-extern char registration;
-void __cdecl register_callback(void (__cdecl*)(), void*);
-unsigned __cdecl get_index();
+Pair __cdecl make_pair();
+void __cdecl register_value(void (__cdecl*)(), void*);
+void __cdecl cleanup_value();
+extern char registration_data;
+void* __cdecl func_0057d800();
+extern "C" void (__cdecl* invalid_parameter_noinfo)();
 
-extern "C" {
-    extern void (__cdecl* _invalid_parameter_noinfo)();
-}
-
-__forceinline void Control::release()
-{
-    if (this && _InterlockedDecrement(&strong) == 0) {
-        dispose();
-        if (_InterlockedDecrement(&weak) == 0)
-            destroy();
+Ref* S::create() {
+    Ref* result = existing();
+    if (!result) {
+        Pair p = make_pair();
+        result = p.value;
+        register_value(cleanup_value, &registration_data);
+        unsigned index = (unsigned)func_0057d800();
+        if (index >= (unsigned)(last - first))
+            invalid_parameter_noinfo();
+        Entry& entry = first[index];
+        entry.value = p.value;
+        entry.owner = p.owner;
+        result->attach(this);
     }
-}
-
-__forceinline Reference::~Reference()
-{
-    control->release();
-}
-
-Object* S::f()
-{
-    Object* result = existing();
-    if (result)
-        return result;
-
-    Temporary temporary = create();
-    result = temporary.object;
-
-    register_callback(callback, &registration);
-
-    unsigned index = get_index();
-    if (index >= static_cast<unsigned>(last - first))
-        _invalid_parameter_noinfo();
-
-    Entry& entry = first[index];
-    entry.object = temporary.object;
-    entry.reference = temporary.reference;
-    result->attach(this);
-
     return result;
 }

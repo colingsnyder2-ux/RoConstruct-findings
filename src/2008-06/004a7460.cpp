@@ -1,48 +1,40 @@
-// from server: 97% by king_originala
-struct TypeInfo;
-extern TypeInfo sourceType;
-extern TypeInfo destinationType;
-extern TypeInfo badCastThrowInfo;
-
-extern "C" void* __cdecl runtimeDynamicCast(
-    void*, long, TypeInfo*, TypeInfo*, int);
-extern "C" __declspec(noreturn) void __stdcall runtimeThrowException(
-    void*, TypeInfo*);
-
-struct BadCast {
-    unsigned char storage[12];
-};
-
-extern void (__thiscall* badCastConstructor)(BadCast*, const char*);
-
-struct Accessor {
-    virtual void slot0() = 0;
-    virtual void slot1() = 0;
-    virtual void get(void*, void*) = 0;
-};
-
-struct Descriptor {
-    unsigned char storage[24];
-    Accessor* accessor;
-};
-
-struct S {
-    void* descriptor;
-    void* instance;
-    void* f(void* result);
-};
-
-void* S::f(void* result)
+// from server: 100% by colin
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+#include <typeinfo>
+namespace boost {
+template<class Target, class Source>
+inline Target polymorphic_cast(Source* x)
 {
-    Descriptor* p = static_cast<Descriptor*>(
-        runtimeDynamicCast(descriptor, 0, &sourceType, &destinationType, 0));
-
-    if (!p) {
-        BadCast exception;
-        badCastConstructor(&exception, "bad cast");
-        runtimeThrowException(&exception, &badCastThrowInfo);
-    }
-
-    p->accessor->get(result, instance);
+    Target tmp = dynamic_cast<Target>(x);
+    if (tmp == 0)
+        throw std::bad_cast("bad cast");
+    return tmp;
+}
+}
+namespace boost { template<class T> class shared_ptr; }
+namespace RBX { class Instance; }
+namespace G3D { class Color3; class Vector3; }
+namespace RBX { class BrickColor; namespace Soundscape { class SoundId; } }
+struct AccessorT { virtual void s0(); virtual void s1(); virtual void get(void*, void*); };
+namespace RBX { namespace Reflection {
+class PropertyDescriptor { public: virtual ~PropertyDescriptor(); };
+template<class T>
+class TypedPropertyDescriptor : public PropertyDescriptor {
+public:
+    unsigned char padding[20];
+    AccessorT* accessor;
+};
+} }
+struct ChangePropertyItem {
+    RBX::Reflection::PropertyDescriptor* descriptor;
+    void* instance;
+    void* get(void* result);
+};
+void* ChangePropertyItem::get(void* result)
+{
+    RBX::Reflection::TypedPropertyDescriptor<RBX::BrickColor>* typed = boost::polymorphic_cast<RBX::Reflection::TypedPropertyDescriptor<RBX::BrickColor>*>(descriptor);
+    typed->accessor->get(result, instance);
     return result;
 }

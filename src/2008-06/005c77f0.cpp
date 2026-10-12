@@ -1,23 +1,28 @@
-// from server: 98% by king_originala
+// from server: 99% by colin
 void* __cdecl operator new(unsigned int);
 void __cdecl operator delete(void*);
-
-struct Clone {
-    char storage[0x24];
-    Clone(void*);
-};
 
 struct Context {
     char pad[0x204];
     void* value;
+    __forceinline void* get();
 };
+
+__forceinline void* Context::get() {
+    return value;
+}
 
 struct Tool {
-    char pad[0x0c];
-    Context* context;
-    Clone* f();
+    char storage[0x48];
+    Tool(void*);
 };
 
-Clone* Tool::f() {
-    return new Clone(context->value);
+struct Verb {
+    char pad[0x0c];
+    Context* context;
+    Tool* create();
+};
+
+Tool* Verb::create() {
+    return new Tool(context->get());
 }

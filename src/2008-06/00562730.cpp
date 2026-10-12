@@ -1,6 +1,11 @@
-// from server: 91% by king_originala
+// from server: 92% by colin
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
+extern "C" long __cdecl _InterlockedIncrement(volatile long*);
+extern "C" long __cdecl _InterlockedDecrement(volatile long*);
+#pragma intrinsic(_InterlockedIncrement)
+#pragma intrinsic(_InterlockedDecrement)
+
 
 struct Text;
 struct Input;
@@ -129,7 +134,7 @@ inline Result::Result() : object(0), counter(0) {
 inline Result::Result(const Entry& entry)
     : object(entry.object), counter(entry.counter) {
     if (counter)
-        _InterlockedExchangeAdd(&counter->references, 1);
+        _InterlockedIncrement(&counter->references);
 }
 
 extern void __cdecl transfer(Input*, Output*, unsigned int);

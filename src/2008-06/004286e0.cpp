@@ -1,34 +1,46 @@
-// from server: 88% by king_originala
-struct String {
-    char padding[20];
+// from server: 95% by king_originala
+struct Text {
+    char storage[20];
     unsigned int length;
-    const char* c_str() const;
 };
 
-struct Message {
+struct Buffer {
     void* data;
-    Message();
-    ~Message();
-    const char* c_str() const;
+    Buffer();
+    ~Buffer();
 };
 
-extern const char formatWithDetail[];
-extern const char formatWithoutDetail[];
+extern void (__thiscall* bufferConstruct)(Buffer*);
+extern void (__thiscall* bufferDestroy)(Buffer*);
+extern const char* (__thiscall* bufferText)(const Buffer*);
+extern const char* (__thiscall* textData)(const Text*);
+extern void (__cdecl* formatBuffer)(Buffer*, const char*, ...);
 
-void __cdecl formatMessage(Message*, const char*, ...);
-void __cdecl writeLog(int, const char*);
+extern const char formatWithMessage[];
+extern const char formatWithoutMessage[];
+extern void __cdecl writeLog(int, const char*);
 
-bool __cdecl reportAssertion(const char* expression, const String* detail,
-                            const char* file, int line)
+inline Buffer::Buffer()
 {
-    Message message;
-    if (detail->length > 0)
-        formatMessage(&message, formatWithDetail,
-                      expression, detail->c_str(), file, line);
-    else
-        formatMessage(&message, formatWithoutDetail,
-                      expression, file, line);
+    bufferConstruct(this);
+}
 
-    writeLog(2, message.c_str());
+inline Buffer::~Buffer()
+{
+    bufferDestroy(this);
+}
+
+bool __cdecl reportAssertion(const char* expression, const Text* message,
+                            const char* filename, int line)
+{
+    Buffer buffer;
+
+    if (message->length > 0)
+        formatBuffer(&buffer, formatWithMessage, expression,
+                     textData(message), filename, line);
+    else
+        formatBuffer(&buffer, formatWithoutMessage, expression, filename, line);
+
+    writeLog(2, bufferText(&buffer));
     return false;
 }

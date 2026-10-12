@@ -1,89 +1,95 @@
-// from server: 96% by king_originala
-extern "C" void __cdecl register_value(void (__cdecl *)(), void *);
-extern "C" void __cdecl initialize_index();
-extern "C" void __cdecl initialize_key();
-extern "C" void * __cdecl get_index();
-extern "C" void * __cdecl get_key();
-
-extern unsigned char index_storage;
-extern unsigned char key_storage;
-extern void (__cdecl *invalid_parameter)();
+// from server: 100% by colin
+extern void (__cdecl* invalid_parameter)();
+extern void __cdecl initialize_index();
+extern void __cdecl initialize_type();
+extern unsigned long index_once;
+extern unsigned long type_once;
+extern void __cdecl call_once(void (__cdecl*)(), unsigned long*);
+extern void* __cdecl func_0042d030();
+extern void* __cdecl func_0042ced0();
 
 struct Control {
-    void *value;
-    Control &operator=(const Control &);
+    void* value;
+    Control();
+    Control& operator=(const Control&);
 };
 
-struct Slot {
-    void *object;
-    Control control;
-    Slot();
-    Slot(const Slot &);
-};
-
-inline Slot::Slot()
+__forceinline Control::Control() : value(0)
 {
-    object = 0;
-    control.value = 0;
 }
 
-inline Slot::Slot(const Slot &other)
-{
-    object = other.object;
-    control.value = other.control.value;
-}
-
-struct Owned {
-    void *object;
+struct Pair {
+    void* object;
     Control control;
-    ~Owned();
+    ~Pair();
 };
+
+struct EmptyPair {
+    void* object;
+    Control control;
+    EmptyPair();
+    EmptyPair(const EmptyPair&);
+    ~EmptyPair();
+};
+
+__forceinline EmptyPair::EmptyPair()
+    : object(0), control()
+{
+}
 
 struct Vector {
     unsigned char padding[12];
-    Slot *begin;
-    Slot *end;
-    Slot *capacity;
-    void resize(unsigned int, Slot);
+    Pair* first;
+    Pair* last;
+    Pair* limit;
+    void resize(unsigned int, EmptyPair);
+    unsigned int size() const;
+    Pair& at(unsigned int, void (__cdecl*)());
 };
+
+__forceinline unsigned int Vector::size() const
+{
+    return (unsigned int)(last - first);
+}
+
+__forceinline Pair& Vector::at(unsigned int index, void (__cdecl* handler)())
+{
+    if (index >= (unsigned int)(last - first))
+        handler();
+    return first[index];
+}
 
 struct S {
     unsigned char padding[0x190];
     Vector values;
-    Owned create(void *);
-    void *f();
+    Pair create(void*);
+    void* get();
 };
 
-void *S::f()
+void* S::get()
 {
-    register_value(initialize_index, &index_storage);
-    unsigned int index = (unsigned int)get_index();
-    void (__cdecl *failure)() = invalid_parameter;
-    Vector *v = &values;
+    call_once(initialize_index, &index_once);
+    unsigned int index = (unsigned int)func_0042d030();
+    void (__cdecl* handler)() = invalid_parameter;
+    Vector& entries = values;
 
-    if (index + 1 > (unsigned int)(values.end - values.begin)) {
-        v->resize(index + 1, Slot());
+    if (index + 1 > values.size()) {
+        entries.resize(index + 1, EmptyPair());
     } else {
-        if (index >= (unsigned int)(v->end - v->begin))
-            failure();
-
-        void *result = v->begin[index].object;
-        if (result)
-            return result;
+        void* existing = entries.at(index, handler).object;
+        if (existing)
+            return existing;
     }
 
-    register_value(initialize_key, &key_storage);
-    Owned result = create(get_key());
+    call_once(initialize_type, &type_once);
+    Pair result = create(func_0042ced0());
 
     if (!result.object)
         return 0;
 
-    void *object = result.object;
-    if (index >= (unsigned int)(v->end - v->begin))
-        failure();
-
-    Slot *destination = v->begin + index;
-    destination->object = result.object;
-    destination->control = result.control;
+    void* object = result.object;
+    Pair& destination = entries.at(index, handler);
+    destination.object = result.object;
+    destination.control = result.control;
     return object;
 }

@@ -1,4 +1,6 @@
-// from server: 92% by king_originala
+// from server: 100% by colin
+// roc-flags: /O2 /GS- /EHsc /MD /fp:fast
+
 struct Ball;
 struct World {
     void changed(Ball*);
@@ -12,7 +14,7 @@ struct Ball {
 };
 
 void Ball::setValue(float v) {
-    if (value != v) {
+    if (v != value) {
         value = v;
         if (world)
             world->changed(this);

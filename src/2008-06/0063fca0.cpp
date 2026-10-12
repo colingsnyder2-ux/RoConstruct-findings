@@ -1,4 +1,4 @@
-// from server: 89% by king_originala
+// from server: 99% by king_originala
 struct Vec3 {
     float x, y, z;
 };
@@ -64,9 +64,10 @@ int S::f(int argument)
     void *object = find(argument, &position);
     if (object) {
         Buffer values;
-        void *value = getValue(object);
-        values.assign(value);
-
+        {
+            void *value = getValue(object);
+            values.assign(value);
+        }
         return perform(object, &position, &values, argument, context,
                        EmptyReference());
     }

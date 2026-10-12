@@ -1,4 +1,4 @@
-// from server: 78% by king_originala
+// from server: 79% by king_originala
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
 
@@ -8,7 +8,7 @@ struct Instance {
 
 struct PartInstance : Instance {
     unsigned char padding[804];
-    float value;
+    volatile float value;
 };
 
 struct Control {
@@ -27,11 +27,12 @@ struct Shared {
 
 inline Shared::~Shared()
 {
-    if (control) {
-        if (_InterlockedExchangeAdd(&control->strong, -1) == 1) {
-            control->dispose();
-            if (_InterlockedExchangeAdd(&control->weak, -1) == 1)
-                control->destroy();
+    Control* p = control;
+    if (p) {
+        if (_InterlockedExchangeAdd(&p->strong, -1) == 0) {
+            p->dispose();
+            if (_InterlockedExchangeAdd(&p->weak, -1) == 0)
+                p->destroy();
         }
     }
 }
@@ -51,9 +52,9 @@ extern void __cdecl submit(void*);
 void __cdecl render(Shared object, void* context, int phase)
 {
     PartInstance* part = dynamic_cast<PartInstance*>(object.object);
-    if (part && part->value == 0.0f) {
-        float t = (phase < 15 ? phase : 30 - phase) * scale;
-        Color color = { t, 0.0f, 1.0f - t, alpha };
+    if (part && part->value != 0.0f) {
+        double t = (phase < 15 ? phase : 30 - phase) * (double)scale;
+        Color color = { (float)t, 0.0f, (float)(1.0 - t), alpha };
         submit(build(context, color));
     }
 }

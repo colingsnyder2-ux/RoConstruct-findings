@@ -1,15 +1,17 @@
-// from server: 97% by king_originala
+// from server: 100% by colin
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
 void* __cdecl operator new(unsigned int);
 void __cdecl operator delete(void*);
 
 struct Base {
-    int storage[7];
+    volatile int storage[7];
     int f(int);
 };
 
 struct Clone : Base {
-    int first;
-    int second;
+    volatile int first;
+    volatile int second;
     Clone(int);
 };
 

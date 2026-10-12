@@ -1,4 +1,4 @@
-// from server: 99% by colin
+// from server: 100% by colin
 // roc 2008-06 00441f20  unit: TextureItem  size: 470 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 00441f20
 //
@@ -191,6 +191,6 @@
 // standard library map_ptr<pod24> (function ?insert@?$_Tree@V?$_Tmap_traits@PAUK@@UE@@U?$less@PAUK@@@std@@V?$allocator@U?$pair@QAUK@@UE@@@std@@@4@$0A@@std@@@std@@QAE?AViterator@12@Vconst_iterator@12@ABU?$pair@QAUK@@UE@@@2@@Z)
 
 // stl: map_ptr<pod24>
-struct E { int v[6]; };
+struct E { int v[14]; };
 #include <map>
 struct K; template class std::map<K*, E>;

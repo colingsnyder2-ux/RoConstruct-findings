@@ -1,6 +1,11 @@
-// from server: 90% by king_originala
+// from server: 96% by colin
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
+extern "C" long __cdecl _InterlockedIncrement(volatile long*);
+extern "C" long __cdecl _InterlockedDecrement(volatile long*);
+#pragma intrinsic(_InterlockedIncrement)
+#pragma intrinsic(_InterlockedDecrement)
+
 
 struct Control
 {
@@ -28,7 +33,7 @@ __forceinline Value::Value(const Value &other)
     if (control)
     {
         volatile long *counter = &control->references;
-        _InterlockedExchangeAdd(counter, 1);
+        _InterlockedIncrement(counter);
     }
 }
 
@@ -37,10 +42,10 @@ __forceinline Value::~Value()
     Control *p = control;
     if (p)
     {
-        if (_InterlockedExchangeAdd(&p->references, -1) == 1)
+        if (_InterlockedDecrement(&p->references) == 1)
         {
             p->dispose();
-            if (_InterlockedExchangeAdd(&p->weakReferences, -1) == 1)
+            if (_InterlockedDecrement(&p->weakReferences) == 1)
                 p->destroy();
         }
     }

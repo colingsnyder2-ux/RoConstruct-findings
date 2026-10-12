@@ -1,77 +1,81 @@
-// from server: 97% by king_originala
+// from server: 100% by colin
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
 extern "C" long __cdecl _InterlockedDecrement(volatile long*);
 #pragma intrinsic(_InterlockedDecrement)
 
-struct Creator;
+struct S;
 
-struct Object {
-    void attach(Creator*);
-};
-
-struct Control {
-    virtual void unused();
+struct Ref {
+    virtual void reserved();
     virtual void dispose();
     virtual void destroy();
+
     volatile long strong;
     volatile long weak;
+
+    void attach(S*);
+    void release();
 };
 
-struct Reference {
-    Control* control;
-    Reference& operator=(const Reference&);
-};
-
-struct Pointer {
-    Object* object;
-    Reference reference;
-    ~Pointer();
-};
-
-struct Creator {
-    char padding[0x19c];
-    Pointer* begin;
-    Pointer* end;
-
-    Object* existing();
-    Object* create();
-};
-
-extern Pointer make_pointer();
-extern void callback();
-extern int registration;
-extern void register_callback(void (*)(), int*);
-extern void* func_0045b2b0();
-extern "C" void (__cdecl* invalid_parameter_noinfo)();
-
-inline Pointer::~Pointer()
-{
-    Control* p = reference.control;
-    if (p && _InterlockedDecrement(&p->strong) == 0) {
-        p->dispose();
-        if (_InterlockedDecrement(&p->weak) == 0)
-            p->destroy();
+inline void Ref::release() {
+    if (_InterlockedDecrement(&strong) == 0) {
+        dispose();
+        if (_InterlockedDecrement(&weak) == 0)
+            destroy();
     }
 }
 
-Object* Creator::create()
-{
-    Object* result = existing();
-    if (result)
-        return result;
+struct RefSlot {
+    Ref* value;
+    RefSlot& operator=(const RefSlot&);
+};
 
-    Pointer value = make_pointer();
-    result = value.object;
-    register_callback(callback, &registration);
+struct Pair {
+    Ref* value;
+    RefSlot owner;
+    ~Pair();
+};
 
-    unsigned int index = reinterpret_cast<unsigned int>(func_0045b2b0());
-    if (index >= static_cast<unsigned int>(end - begin))
-        invalid_parameter_noinfo();
+inline Pair::~Pair() {
+    if (owner.value)
+        owner.value->release();
+}
 
-    Pointer& slot = begin[index];
-    slot.object = value.object;
-    slot.reference = value.reference;
-    result->attach(this);
+struct Entry {
+    Ref* value;
+    RefSlot owner;
+};
+
+struct S {
+    char padding[0x19c];
+    Entry* first;
+    Entry* last;
+
+    Ref* existing();
+    Ref* create();
+};
+
+Pair __cdecl make_pair();
+void __cdecl register_value(void (__cdecl*)(), void*);
+void __cdecl cleanup_value();
+extern char registration_data;
+void* __cdecl func_0057d800();
+extern "C" void (__cdecl* invalid_parameter_noinfo)();
+
+Ref* S::create() {
+    Ref* result = existing();
+    if (!result) {
+        Pair p = make_pair();
+        result = p.value;
+        register_value(cleanup_value, &registration_data);
+        unsigned index = (unsigned)func_0057d800();
+        if (index >= (unsigned)(last - first))
+            invalid_parameter_noinfo();
+        Entry& entry = first[index];
+        entry.value = p.value;
+        entry.owner = p.owner;
+        result->attach(this);
+    }
     return result;
 }

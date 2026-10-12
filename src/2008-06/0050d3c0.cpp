@@ -1,4 +1,5 @@
-// from server: 92% by king_originala
+// from server: 100% by colin
+// roc-flags: /O2 /GS- /EHsc /MD /fp:fast
 unsigned char* blend(unsigned char* out, unsigned int a, unsigned int b, float t)
 {
     double inverse = 1.0 - t;

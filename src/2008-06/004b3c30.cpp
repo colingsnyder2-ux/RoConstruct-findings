@@ -1,28 +1,28 @@
-// from server: 97% by king_originala
-struct String {
-    unsigned char storage[28];
-    String(const String &);
-    ~String();
-};
-
-extern void (__thiscall *stringCopy)(String *, const String &);
-extern void (__thiscall *stringDestroy)(String *);
-
-__forceinline String::String(const String &value)
-{
-    stringCopy(this, value);
+// from server: 100% by colin
+namespace std {
+    template<class T> struct char_traits;
+    template<class T> class allocator;
+    template<class T, class Traits, class Alloc>
+    class __declspec(dllimport) basic_string {
+        char storage[28];
+    public:
+        basic_string();
+        basic_string(const T*);
+        basic_string(const basic_string&);
+        ~basic_string();
+    };
+    typedef basic_string<char, char_traits<char>, allocator<char> > string;
 }
 
-__forceinline String::~String()
-{
-    stringDestroy(this);
-}
+
+
+
 
 struct S {
-    void invoke(String, int);
+    void invoke(std::string, int);
 };
 
-void forward(S *object, String value, int argument)
+void forward(S *object, std::string value, int argument)
 {
     object->invoke(value, argument);
 }

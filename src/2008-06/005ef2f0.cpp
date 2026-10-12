@@ -1,30 +1,20 @@
-// from server: 92% by atomic.potato
-struct type_info;
-
-typedef bool (__thiscall* TypeInfoEqualProc)(const type_info*, const type_info&);
-extern TypeInfoEqualProc typeInfoEqual;
-extern type_info inputType;
+// from server: 100% by colin
+struct TypeInfo {};
+extern bool (__thiscall *type_equal)(const TypeInfo *, const TypeInfo &);
+extern TypeInfo string_type;
 
 struct Metadata {
     unsigned char padding[8];
-    const type_info* type;
+    const TypeInfo* type;
 };
 
 struct Value {
     virtual ~Value();
     virtual void reserved();
     virtual Value* clone();
-    Value* copy();
 };
 
-__forceinline Value* Value::copy()
-{
-    if (this)
-        return clone();
-    return 0;
-}
-
-extern int* __cdecl directValue(Value**);
+extern int* __cdecl access_value(Value**);
 
 struct S {
     Metadata* metadata;
@@ -32,27 +22,35 @@ struct S {
 
     S(const S&);
     ~S();
-    int* convertedValue();
+    int* convert();
     int f();
 };
 
 inline S::S(const S& other)
-    : metadata(other.metadata)
 {
-    value = other.value->copy();
+    *reinterpret_cast<Metadata* volatile*>(&metadata) = other.metadata;
+
+    Value* p = other.value;
+    Value* copy;
+    if (p)
+        copy = p->clone();
+    else
+        copy = 0;
+    value = copy;
 }
 
 inline S::~S()
 {
-    if (value)
-        delete value;
+    delete value;
 }
 
 int S::f()
 {
-    if (typeInfoEqual(&inputType, *metadata->type))
-        return *directValue(&value);
+    const TypeInfo* type =
+        *reinterpret_cast<const TypeInfo* volatile*>(&metadata->type);
+    if (type_equal(&string_type, *type))
+        return *access_value(&value);
 
     S temporary(*this);
-    return *temporary.convertedValue();
+    return *temporary.convert();
 }

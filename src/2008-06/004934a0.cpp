@@ -1,88 +1,105 @@
-// from server: 61% by king_originala
-extern "C" void __cdecl _invalid_parameter_noinfo();
+// from server: 75% by king_originala
+extern "C" void (__cdecl *invalid_parameter_noinfo)();
 
-struct Node;
-
-struct Owner
+struct ExceptionObject
 {
-    char reserved[20];
-    Node* sentinel;
+    unsigned long words[10];
+    ExceptionObject *__thiscall initialize();
+    ~ExceptionObject();
 };
 
-struct Manager
+extern __declspec(noreturn) void __cdecl raise_exception(const void *);
+
+struct CallbackTable
 {
-    void* reserved;
-    void (__cdecl* invoke)(void*, float);
+    void *unused;
+    void (__cdecl *invoke)(void *, float);
 };
 
-struct Callable
+struct Function
 {
-    char reserved[8];
-    Manager* manager;
-    unsigned int unused;
-    char storage[1];
+    CallbackTable *table;
+    unsigned long reserved;
+    unsigned char data[1];
+
+    void operator()(float value);
+};
+
+struct Callback
+{
+    unsigned long unused[2];
+    Function function;
 };
 
 struct Node
 {
-    char reserved[24];
-    Callable* callable;
+    unsigned long unused[6];
+    Callback *callback;
+};
+
+struct Owner
+{
+    unsigned long unused[5];
+    Node *end;
 };
 
 struct Iterator
 {
-    char reserved[16];
-    Owner** owner;
-    Node* node;
-    char padding[32];
-    float* value;
-    bool* changed;
+    unsigned long unused[4];
+    Owner **owner;
+    Node *node;
+    unsigned long tail[8];
 
-    bool equal(const Iterator*);
-    void advance();
+    bool __thiscall equal(const void *other);
+    void __thiscall advance();
 };
 
-struct Failure
+struct EndIterator
 {
-    char data[32];
-
-    Failure();
-    ~Failure();
+    unsigned long words[16];
 };
 
-__declspec(noreturn) void __cdecl raise_failure(const Failure&);
-
-struct Result
+struct Visitor
 {
+    const float *value;
+    bool *done;
+    void operator()(Callback *callback);
 };
 
-Result __stdcall func_004934a0(Iterator first, Iterator last)
+__forceinline void Function::operator()(float value)
 {
-    while (!first.equal(&last))
+    if (!table)
     {
-        if (!*first.changed)
-        {
-            if (!first.owner)
-                _invalid_parameter_noinfo();
-
-            Owner* owner = first.owner ? *first.owner : 0;
-            if (first.node == owner->sentinel)
-                _invalid_parameter_noinfo();
-
-            Callable* callable = first.node->callable;
-            float value = *first.value;
-
-            if (!callable->manager)
-                raise_failure(Failure());
-
-            callable->manager->invoke(callable->storage, value);
-
-            if (!*first.changed)
-                *first.changed = true;
-        }
-
-        first.advance();
+        ExceptionObject exception;
+        raise_exception(exception.initialize());
     }
+    table->invoke(data, value);
+}
 
-    return Result();
+__forceinline void Visitor::operator()(Callback *callback)
+{
+    callback->function(*value);
+    if (!*done)
+        *done = true;
+}
+
+void *__stdcall process(void *result, Iterator current,
+                        Visitor visitor, EndIterator last)
+{
+    while (!current.equal(&last))
+    {
+        if (!*visitor.done)
+        {
+            if (!current.owner)
+                invalid_parameter_noinfo();
+
+            Owner *owner = current.owner ? *current.owner : 0;
+            if (current.node == owner->end)
+                invalid_parameter_noinfo();
+
+            visitor(current.node->callback);
+        }
+        current.advance();
+    }
+    return result;
 }

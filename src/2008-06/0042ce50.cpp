@@ -1,24 +1,21 @@
-// from server: 98% by king_originala
-struct String;
-
-extern String* (__thiscall* string_copy)(String*, const String&);
-extern void (__thiscall* string_destroy)(String*);
-
-struct String {
-    char data[28];
-    String(const String&);
-    ~String();
-};
-
-inline String::String(const String& source)
-{
-    string_copy(this, source);
+// from server: 100% by colin
+namespace std {
+    template<class T> struct char_traits;
+    template<class T> class allocator;
+    template<class T, class Traits, class Alloc>
+    class __declspec(dllimport) basic_string {
+        char storage[28];
+    public:
+        basic_string(const T*);
+        basic_string(const basic_string&);
+        ~basic_string();
+    };
+    typedef basic_string<char, char_traits<char>, allocator<char> > string;
 }
 
-inline String::~String()
-{
-    string_destroy(this);
-}
+
+
+
 
 struct Result {
     void* value;
@@ -26,7 +23,7 @@ struct Result {
 };
 
 struct Receiver {
-    Result apply(String);
+    Result apply(std::string);
 };
 
 struct Object {
@@ -36,10 +33,10 @@ struct Object {
 
 struct Binder {
     Object* lookup(void*);
-    void invoke(void*, String);
+    void invoke(void*, std::string);
 };
 
-void Binder::invoke(void* value, String text)
+void Binder::invoke(void* value, std::string text)
 {
     Object* object = lookup(value);
     if (object)

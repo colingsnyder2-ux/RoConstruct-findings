@@ -1,6 +1,11 @@
-// from server: 91% by king_originala
+// from server: 100% by colin
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
+extern "C" long __cdecl _InterlockedIncrement(volatile long*);
+extern "C" long __cdecl _InterlockedDecrement(volatile long*);
+#pragma intrinsic(_InterlockedIncrement)
+#pragma intrinsic(_InterlockedDecrement)
+
 
 struct RefCount {
     virtual ~RefCount();
@@ -18,9 +23,9 @@ struct Shared {
 
 __forceinline Shared::~Shared() {
     RefCount* p = count;
-    if (p && _InterlockedExchangeAdd(&p->strong, -1) == 0) {
+    if (p && _InterlockedDecrement(&p->strong) == 0) {
         p->dispose();
-        if (_InterlockedExchangeAdd(&p->weak, -1) == 0)
+        if (_InterlockedDecrement(&p->weak) == 0)
             p->destroy();
     }
 }

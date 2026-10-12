@@ -1,4 +1,4 @@
-// from server: 69% by king_originala
+// from server: 80% by king_originala
 struct EventData;
 
 struct Value
@@ -10,8 +10,8 @@ struct Value
 };
 
 inline Value::Value(const Value& other)
-    : first(other.first), second(other.second)
 {
+    *this = other;
 }
 
 struct Listener
@@ -31,6 +31,7 @@ struct EventData
     Value value;
 
     void invoke();
+    void finish();
 };
 
 void EventData::invoke()
@@ -45,5 +46,6 @@ void EventData::invoke()
         catch (...)
         {
         }
+        finish();
     }
 }

@@ -1,4 +1,8 @@
-// from server: 97% by king_originala
+// from server: 100% by colin
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+#include <map>
 extern "C" void* __cdecl allocate(unsigned int, unsigned int);
 extern "C" void* __cdecl clear_memory(void*, int, unsigned int);
 extern unsigned int table_vftable[];
@@ -27,43 +31,27 @@ struct Lock {
     ~Lock();
 };
 
-struct Compare {
-    Compare();
-};
 
-__forceinline Compare::Compare() {}
 
-struct Allocator {
-    Allocator();
-};
 
-__forceinline Allocator::Allocator() {}
 
-struct MaterialTable {
-    unsigned char data[32];
-    MaterialTable(const Compare&, const Allocator&);
-    ~MaterialTable();
-};
 
-struct VectorTable {
-    unsigned char data[32];
-    VectorTable(const Compare&, const Allocator&);
-    ~VectorTable();
-};
+
+
 
 struct S {
     Storage storage;
     Lock lock;
-    MaterialTable materials;
-    VectorTable vectors;
+    std::map<int,int> materials;
+    std::map<int,int> vectors;
     int value;
 
     S();
 };
 
 S::S()
-    : materials(Compare(), Allocator()),
-      vectors(Compare(), Allocator()),
+    : materials(),
+      vectors(),
       value(0)
 {
 }

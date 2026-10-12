@@ -1,4 +1,4 @@
-// from server: 99% by colin
+// from server: 100% by colin
 extern "C" {
     extern void* (__cdecl *malloc)(unsigned int);
     void __cdecl free(void*);
@@ -15,7 +15,7 @@ inline void __cdecl operator delete(void* p) throw()
 }
 
 struct Object {
-    char storage[0x424];
+    char storage[0x43c];
     Object(int);
 };
 

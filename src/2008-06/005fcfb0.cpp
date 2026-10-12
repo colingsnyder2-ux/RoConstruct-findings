@@ -1,6 +1,11 @@
-// from server: 90% by king_originala
+// from server: 94% by colin
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
+extern "C" long __cdecl _InterlockedIncrement(volatile long*);
+extern "C" long __cdecl _InterlockedDecrement(volatile long*);
+#pragma intrinsic(_InterlockedIncrement)
+#pragma intrinsic(_InterlockedDecrement)
+
 
 namespace RBX {
     class Instance;
@@ -62,9 +67,9 @@ Pair __cdecl func_00618a40(RBX::ServiceProvider*);
 
 __forceinline void Control::release()
 {
-    if (_InterlockedExchangeAdd(&strong, -1) == 1) {
+    if (_InterlockedDecrement(&strong) == 1) {
         dispose();
-        if (_InterlockedExchangeAdd(&weak, -1) == 1)
+        if (_InterlockedDecrement(&weak) == 1)
             destroy();
     }
 }

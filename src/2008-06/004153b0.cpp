@@ -1,4 +1,4 @@
-// from server: 97% by king_originala
+// from server: 100% by colin
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
 extern "C" long __cdecl _InterlockedDecrement(volatile long*);
@@ -6,72 +6,76 @@ extern "C" long __cdecl _InterlockedDecrement(volatile long*);
 
 struct S;
 
-struct Control {
-    virtual void unused() = 0;
-    virtual void dispose() = 0;
-    virtual void destroy() = 0;
+struct Ref {
+    virtual void reserved();
+    virtual void dispose();
+    virtual void destroy();
+
     volatile long strong;
     volatile long weak;
 
     void attach(S*);
+    void release();
 };
 
-struct Ref {
-    Control* pointer;
-    void assign(const Ref*);
+inline void Ref::release() {
+    if (_InterlockedDecrement(&strong) == 0) {
+        dispose();
+        if (_InterlockedDecrement(&weak) == 0)
+            destroy();
+    }
+}
+
+struct RefSlot {
+    Ref* value;
+    RefSlot& operator=(const RefSlot&);
 };
 
 struct Pair {
-    Control* object;
-    Ref reference;
+    Ref* value;
+    RefSlot owner;
     ~Pair();
+};
+
+inline Pair::~Pair() {
+    if (owner.value)
+        owner.value->release();
+}
+
+struct Entry {
+    Ref* value;
+    RefSlot owner;
 };
 
 struct S {
     char padding[0x19c];
-    Pair* first;
-    Pair* last;
+    Entry* first;
+    Entry* last;
 
-    Control* existing();
-    Control* f();
+    Ref* existing();
+    Ref* create();
 };
 
-Pair __cdecl create_pair();
-void* __cdecl func_00413810();
-extern void __cdecl callback();
+Pair __cdecl make_pair();
+void __cdecl register_value(void (__cdecl*)(), void*);
+void __cdecl cleanup_value();
 extern char registration_data;
-extern void __cdecl register_pair(void (__cdecl*)(), void*);
-extern "C" void (__cdecl* _invalid_parameter_noinfo)();
+void* __cdecl func_0057d800();
+extern "C" void (__cdecl* invalid_parameter_noinfo)();
 
-inline Pair::~Pair()
-{
-    Control* p = reference.pointer;
-    if (p) {
-        if (_InterlockedDecrement(&p->strong) == 0) {
-            p->dispose();
-            if (_InterlockedDecrement(&p->weak) == 0)
-                p->destroy();
-        }
+Ref* S::create() {
+    Ref* result = existing();
+    if (!result) {
+        Pair p = make_pair();
+        result = p.value;
+        register_value(cleanup_value, &registration_data);
+        unsigned index = (unsigned)func_0057d800();
+        if (index >= (unsigned)(last - first))
+            invalid_parameter_noinfo();
+        Entry& entry = first[index];
+        entry.value = p.value;
+        entry.owner = p.owner;
+        result->attach(this);
     }
-}
-
-Control* S::f()
-{
-    Control* result = existing();
-    if (result)
-        return result;
-
-    Pair value = create_pair();
-    result = value.object;
-    register_pair(callback, &registration_data);
-
-    unsigned int index = (unsigned int)func_00413810();
-    if (index >= (unsigned int)(last - first))
-        _invalid_parameter_noinfo();
-
-    Pair* slot = first + index;
-    slot->object = value.object;
-    slot->reference.assign(&value.reference);
-    result->attach(this);
     return result;
 }

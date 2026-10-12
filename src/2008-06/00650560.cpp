@@ -1,8 +1,6 @@
-// from server: 99% by king_originala
+// from server: 100% by colin
 struct String;
 
-extern void (__thiscall* stringDefault)(String*);
-extern void (__thiscall* stringCopy)(String*, const String&);
 extern String& (__thiscall* stringAssign)(String*, const String&);
 
 struct String {
@@ -14,21 +12,15 @@ struct String {
     unsigned int length;
     unsigned int capacity;
 
-    String();
-    String(const String&);
+    __declspec(dllimport) String();
+    __declspec(dllimport) String(const String&);
     ~String();
     String& operator=(const String&);
 };
 
-__forceinline String::String()
-{
-    stringDefault(this);
-}
 
-__forceinline String::String(const String& other)
-{
-    stringCopy(this, other);
-}
+
+
 
 __forceinline String& String::operator=(const String& other)
 {

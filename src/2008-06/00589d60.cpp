@@ -1,24 +1,43 @@
-// from server: 95% by king_originala
+// from server: 100% by king_originala
 namespace std {
-    template<class T> struct char_traits;
-    template<class T> struct allocator;
+template<class T> struct char_traits;
+template<class T> class allocator {};
 
-    template<class T, class Traits, class Alloc>
-    class basic_string {
-        unsigned char storage[28];
-    public:
-        basic_string();
-        ~basic_string();
-    };
+template<class C, class T = char_traits<C>, class A = allocator<C> >
+class basic_string {
+    A alloc;
+    union {
+        C buffer[16];
+        C* pointer;
+    } storage;
+    unsigned length;
+    unsigned capacity;
+public:
+    basic_string();
+    ~basic_string();
+};
 }
 
-typedef std::basic_string<char, std::char_traits<char>, std::allocator<char> > String;
+typedef std::basic_string<char> String;
 
-extern "C" void (__cdecl * const invalidParameter)();
-extern int __cdecl valueType();
+extern void (__thiscall *stringConstructor)(String*);
+extern void (__thiscall *stringDestructor)(String*);
+extern "C" void (__cdecl * const _invalid_parameter_noinfo)();
+
+namespace std {
+template<class C, class T, class A>
+inline basic_string<C, T, A>::basic_string() {
+    stringConstructor(this);
+}
+
+template<class C, class T, class A>
+inline basic_string<C, T, A>::~basic_string() {
+    stringDestructor(this);
+}
+}
 
 struct Object {
-    virtual void destroy(unsigned int);
+    virtual void destroy(unsigned);
 };
 
 struct Holder {
@@ -26,79 +45,81 @@ struct Holder {
 
     Holder(const String&);
     ~Holder();
-    void swap(Holder&);
+    void swap(Object*&);
 };
 
-inline Holder::~Holder()
-{
+inline Holder::~Holder() {
     if (pointer)
         pointer->destroy(1);
 }
 
-inline void Holder::swap(Holder& other)
-{
-    if (this != &other) {
-        Object* old = pointer;
-        pointer = other.pointer;
-        other.pointer = old;
+inline void Holder::swap(Object*& other) {
+    if (&pointer != &other) {
+        Object* saved = pointer;
+        pointer = other;
+        other = saved;
     }
 }
 
 struct Value {
-    int type;
-    Holder holder;
-
-    void set(const bool&);
+    void* type;
+    Object* object;
+    void assign(const bool&);
 };
 
-struct Arguments {
-    unsigned char prefix[12];
+struct Values {
+    unsigned reserved[3];
     Value* first;
     Value* last;
     Value* limit;
 
-    Arguments(unsigned int);
-    Arguments(const Arguments&);
-    ~Arguments();
+    Values(unsigned);
+    ~Values();
+    Value& at(unsigned);
 };
+
+inline Value& Values::at(unsigned index) {
+    if (static_cast<unsigned>(last - first) <= index)
+        _invalid_parameter_noinfo();
+    return first[index];
+}
+
+struct Result {
+    Result(const Values&);
+    ~Result();
+};
+
+extern void* __cdecl stringType();
 
 struct S {
-    unsigned char padding[0x165];
+    char padding[0x165];
     bool enabled;
 
-    bool query(String*, int);
-    Arguments f();
+    bool query(String&, int);
+    Result f();
 };
 
-Arguments S::f()
-{
+Result S::f() {
     String text;
-    if (enabled && query(&text, 0)) {
-        Arguments result(2);
-        void (__cdecl *invalid)() = invalidParameter;
-        bool value = true;
-
-        if (static_cast<unsigned int>(result.last - result.first) <= 0)
+    if (enabled && query(text, 0)) {
+        Values values(2);
+        void (__cdecl *invalid)() = _invalid_parameter_noinfo;
+        bool flag = true;
+        if (static_cast<unsigned>(values.last - values.first) <= 0)
             invalid();
+        values.first[0].assign(flag);
 
-        result.first->set(value);
-
-        if (static_cast<unsigned int>(result.last - result.first) <= 1)
+        if (static_cast<unsigned>(values.last - values.first) <= 1)
             invalid();
-
-        Value* slot = result.first + 1;
-        slot->type = valueType();
-        Holder& destination = slot->holder;
+        Value& value = values.first[1];
+        value.type = stringType();
+        Object*& destination = value.object;
         Holder(text).swap(destination);
-        return result;
+        return Result(values);
     } else {
-        Arguments result(1);
-        bool value = false;
-
-        if (static_cast<unsigned int>(result.last - result.first) <= 0)
-            invalidParameter();
-
-        result.first->set(value);
-        return result;
+        Values values(1);
+        bool flag = false;
+        values.at(0).assign(flag);
+        return Result(values);
     }
 }

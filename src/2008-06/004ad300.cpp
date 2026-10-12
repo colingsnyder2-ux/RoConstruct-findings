@@ -1,51 +1,39 @@
-// from server: 97% by king_originala
-namespace std {
-    struct bad_cast {
-        char data[12];
-        bad_cast(const char*);
-    };
-}
-
-extern void (__thiscall *construct_bad_cast)(std::bad_cast*, const char*);
-
-inline std::bad_cast::bad_cast(const char* message)
+// from server: 100% by colin
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+#include <typeinfo>
+namespace boost {
+template<class Target, class Source>
+inline Target polymorphic_cast(Source* x)
 {
-    construct_bad_cast(this, message);
+    Target tmp = dynamic_cast<Target>(x);
+    if (tmp == 0)
+        throw std::bad_cast("bad cast");
+    return tmp;
 }
-
-struct PropertyDescriptor {
-    virtual ~PropertyDescriptor();
+}
+namespace boost { template<class T> class shared_ptr; }
+namespace RBX { class Instance; }
+namespace G3D { class Color3; class Vector3; }
+namespace RBX { class BrickColor; namespace Soundscape { class SoundId; } }
+struct AccessorT { virtual void s0(); virtual void s1(); virtual void s2(); virtual void set(void*, const G3D::Color3&); };
+namespace RBX { namespace Reflection {
+class PropertyDescriptor { public: virtual ~PropertyDescriptor(); };
+template<class T>
+class TypedPropertyDescriptor : public PropertyDescriptor {
+public:
+    unsigned char padding[20];
+    AccessorT* accessor;
 };
-
-struct PropertyWriter {
-    virtual void slot0();
-    virtual void slot1();
-    virtual void slot2();
-    virtual void write(void*, void*);
-};
-
-struct TypedPropertyDescriptor : PropertyDescriptor {
-    char padding[20];
-    PropertyWriter* writer;
-};
-
-extern char bad_cast_throw_info;
-extern "C" TypedPropertyDescriptor* __stdcall throw_bad_cast(
-    void*, void*);
-
+} }
 struct ChangePropertyItem {
-    PropertyDescriptor* descriptor;
+    RBX::Reflection::PropertyDescriptor* descriptor;
     void* instance;
-    void apply(void* value);
+    void set(const G3D::Color3& value);
 };
-
-void ChangePropertyItem::apply(void* value)
+void ChangePropertyItem::set(const G3D::Color3& value)
 {
-    TypedPropertyDescriptor* property =
-        dynamic_cast<TypedPropertyDescriptor*>(descriptor);
-    if (!property) {
-        std::bad_cast error("bad cast");
-        property = throw_bad_cast(&error, &bad_cast_throw_info);
-    }
-    property->writer->write(instance, value);
+    RBX::Reflection::TypedPropertyDescriptor<G3D::Color3>* typed = boost::polymorphic_cast<RBX::Reflection::TypedPropertyDescriptor<G3D::Color3>*>(descriptor);
+    typed->accessor->set(instance, value);
 }

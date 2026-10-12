@@ -1,70 +1,60 @@
-// from server: 97% by king_originala
-extern "C" void* __cdecl allocate(unsigned int, unsigned int);
-extern "C" void* __cdecl fill(void*, int, unsigned int);
-extern unsigned int tableVtable[];
-
-struct Tag {
-    Tag();
-};
-
-__forceinline Tag::Tag()
-{
-}
+// from server: 100% by colin
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+#include <map>
+extern "C" void* __cdecl allocate(unsigned int size, unsigned int alignment);
+extern "C" void* __cdecl fill(void* destination, int value, unsigned int size);
 
 struct Storage {
-    unsigned int* vtable;
     int count;
-    void* data;
+    void* entries;
     int capacity;
 
     Storage();
-    ~Storage();
+    virtual ~Storage();
 };
 
-struct State {
-    unsigned char bytes[12];
+struct Lock {
+    unsigned char data[12];
 
-    State();
-    ~State();
+    Lock();
+    ~Lock();
 };
 
-struct FirstTable {
-    unsigned char bytes[32];
 
-    FirstTable(const Tag&, const Tag&);
-    ~FirstTable();
+
+
+
+
+
+
+
+struct SurfaceTable {
+    Storage storage;
+    Lock lock;
+    std::map<int,int> materials;
+    std::map<int,int> vectors;
+    int value;
+
+    SurfaceTable();
 };
 
-struct SecondTable {
-    unsigned char bytes[32];
 
-    SecondTable(const Tag&, const Tag&);
-    ~SecondTable();
-};
 
-struct Table : Storage {
-    State state;
-    FirstTable first;
-    SecondTable second;
-    int last;
 
-    Table();
-};
 
 __forceinline Storage::Storage()
 {
-    vtable = tableVtable;
     capacity = 10;
     count = 0;
-    data = allocate(40, 16);
-    fill(data, 0, capacity * 4);
+    entries = allocate(40, 16);
+    fill(entries, 0, capacity * 4);
 }
 
-Table::Table()
-    : Storage(),
-      state(),
-      first(Tag(), Tag()),
-      second(Tag(), Tag()),
-      last(0)
+SurfaceTable::SurfaceTable()
+    : storage(),
+      lock()
 {
+    value = 0;
 }

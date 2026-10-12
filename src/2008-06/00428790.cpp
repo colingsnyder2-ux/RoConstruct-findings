@@ -1,4 +1,4 @@
-// from server: 95% by king_originala
+// from server: 100% by colin
 struct Text
 {
     char reserved[20];
@@ -9,14 +9,11 @@ struct Buffer
 {
     char reserved[4];
 
-    Buffer();
-    ~Buffer() throw();
-    const char* c_str() const;
+    __declspec(dllimport) Buffer();
+    __declspec(dllimport) ~Buffer() throw();
+    __declspec(dllimport) const char* c_str() const;
 };
 
-extern void (__thiscall* buffer_construct)(Buffer*);
-extern void (__thiscall* buffer_destroy)(Buffer*) throw();
-extern const char* (__thiscall* buffer_text)(const Buffer*);
 extern const char* (__thiscall* text_data)(const Text*);
 extern void (__cdecl* format_buffer)(Buffer*, const char*, ...);
 
@@ -24,20 +21,11 @@ extern const char format_with_text[];
 extern const char format_without_text[];
 extern void __cdecl log_message(int, const char*);
 
-__forceinline Buffer::Buffer()
-{
-    buffer_construct(this);
-}
 
-__forceinline Buffer::~Buffer() throw()
-{
-    buffer_destroy(this);
-}
 
-__forceinline const char* Buffer::c_str() const
-{
-    return buffer_text(this);
-}
+
+
+
 
 bool __cdecl func_00428790(const char* expression, const Text* text,
                           const char* file, int line)

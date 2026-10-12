@@ -1,89 +1,81 @@
-// from server: 97% by king_originala
+// from server: 100% by colin
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
 extern "C" long __cdecl _InterlockedDecrement(volatile long*);
 #pragma intrinsic(_InterlockedDecrement)
 
-extern "C" void (__cdecl* _invalid_parameter_noinfo)();
-
 struct S;
 
-struct Control {
-    virtual void unused();
+struct Ref {
+    virtual void reserved();
     virtual void dispose();
     virtual void destroy();
 
     volatile long strong;
     volatile long weak;
-};
 
-struct Object {
     void attach(S*);
+    void release();
 };
 
-struct Reference {
-    Control* value;
-    Reference& assign(const Reference&);
+inline void Ref::release() {
+    if (_InterlockedDecrement(&strong) == 0) {
+        dispose();
+        if (_InterlockedDecrement(&weak) == 0)
+            destroy();
+    }
+}
+
+struct RefSlot {
+    Ref* value;
+    RefSlot& operator=(const RefSlot&);
 };
 
-struct Temporary {
-    Object* value;
-    Reference reference;
-
-    ~Temporary();
+struct Pair {
+    Ref* value;
+    RefSlot owner;
+    ~Pair();
 };
+
+inline Pair::~Pair() {
+    if (owner.value)
+        owner.value->release();
+}
 
 struct Entry {
-    Object* value;
-    Reference reference;
+    Ref* value;
+    RefSlot owner;
 };
-
-extern Temporary __cdecl create_temporary();
-extern void __cdecl register_callback(void (__cdecl*)(), void*);
-extern void __cdecl callback();
-extern char callback_data;
-extern void* __cdecl func_00455ea0();
 
 struct S {
     char padding[0x19c];
     Entry* first;
     Entry* last;
 
-    Object* existing();
-    Object* f();
+    Ref* existing();
+    Ref* create();
 };
 
-inline Temporary::~Temporary()
-{
-    Control* p = reference.value;
-    if (p) {
-        if (_InterlockedDecrement(&p->strong) == 0) {
-            p->dispose();
-            if (_InterlockedDecrement(&p->weak) == 0)
-                p->destroy();
-        }
+Pair __cdecl make_pair();
+void __cdecl register_value(void (__cdecl*)(), void*);
+void __cdecl cleanup_value();
+extern char registration_data;
+void* __cdecl func_0057d800();
+extern "C" void (__cdecl* invalid_parameter_noinfo)();
+
+Ref* S::create() {
+    Ref* result = existing();
+    if (!result) {
+        Pair p = make_pair();
+        result = p.value;
+        register_value(cleanup_value, &registration_data);
+        unsigned index = (unsigned)func_0057d800();
+        if (index >= (unsigned)(last - first))
+            invalid_parameter_noinfo();
+        Entry& entry = first[index];
+        entry.value = p.value;
+        entry.owner = p.owner;
+        result->attach(this);
     }
-}
-
-Object* S::f()
-{
-    Object* result = existing();
-    if (result)
-        return result;
-
-    Temporary temporary = create_temporary();
-    result = temporary.value;
-
-    register_callback(callback, &callback_data);
-
-    unsigned int index = (unsigned int)func_00455ea0();
-    if (index >= (unsigned int)(last - first))
-        _invalid_parameter_noinfo();
-
-    Entry* entry = first + index;
-    entry->value = temporary.value;
-    entry->reference.assign(temporary.reference);
-    result->attach(this);
-
     return result;
 }

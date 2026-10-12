@@ -1,83 +1,81 @@
-// from server: 97% by king_originala
+// from server: 100% by colin
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
 extern "C" long __cdecl _InterlockedDecrement(volatile long*);
 #pragma intrinsic(_InterlockedDecrement)
 
-extern "C" void (__cdecl* _invalid_parameter_noinfo)();
-
 struct S;
 
-struct Control {
-    virtual void reserved() = 0;
-    virtual void dispose() = 0;
-    virtual void destroy() = 0;
+struct Ref {
+    virtual void reserved();
+    virtual void dispose();
+    virtual void destroy();
+
     volatile long strong;
     volatile long weak;
-};
 
-struct Product {
     void attach(S*);
+    void release();
 };
 
-struct Shared {
-    Product* object;
-    Control* control;
-    ~Shared();
-};
-
-inline Shared::~Shared()
-{
-    Control* p = control;
-    if (p && _InterlockedDecrement(&p->strong) == 0) {
-        p->dispose();
-        if (_InterlockedDecrement(&p->weak) == 0)
-            p->destroy();
+inline void Ref::release() {
+    if (_InterlockedDecrement(&strong) == 0) {
+        dispose();
+        if (_InterlockedDecrement(&weak) == 0)
+            destroy();
     }
 }
 
-struct ControlSlot {
-    Control* control;
-    ControlSlot& operator=(const ControlSlot&);
+struct RefSlot {
+    Ref* value;
+    RefSlot& operator=(const RefSlot&);
 };
+
+struct Pair {
+    Ref* value;
+    RefSlot owner;
+    ~Pair();
+};
+
+inline Pair::~Pair() {
+    if (owner.value)
+        owner.value->release();
+}
 
 struct Entry {
-    Product* object;
-    ControlSlot owner;
+    Ref* value;
+    RefSlot owner;
 };
 
-Shared __cdecl createProduct();
-unsigned int __cdecl getIndex();
-void __cdecl callback();
-extern char registrationData;
-void __cdecl registerCallback(void (__cdecl*)(), void*);
-
 struct S {
-    unsigned char storage[0x19c];
+    char padding[0x19c];
     Entry* first;
     Entry* last;
 
-    Product* findProduct();
-    Product* getProduct();
+    Ref* existing();
+    Ref* create();
 };
 
-Product* S::getProduct()
-{
-    Product* result = findProduct();
-    if (result)
-        return result;
+Pair __cdecl make_pair();
+void __cdecl register_value(void (__cdecl*)(), void*);
+void __cdecl cleanup_value();
+extern char registration_data;
+void* __cdecl func_0057d800();
+extern "C" void (__cdecl* invalid_parameter_noinfo)();
 
-    Shared value = createProduct();
-    result = value.object;
-    registerCallback(callback, &registrationData);
-
-    unsigned int index = getIndex();
-    if (index >= static_cast<unsigned int>(last - first))
-        _invalid_parameter_noinfo();
-
-    Entry* entry = first + index;
-    entry->object = value.object;
-    entry->owner = *reinterpret_cast<ControlSlot*>(&value.control);
-    result->attach(this);
+Ref* S::create() {
+    Ref* result = existing();
+    if (!result) {
+        Pair p = make_pair();
+        result = p.value;
+        register_value(cleanup_value, &registration_data);
+        unsigned index = (unsigned)func_0057d800();
+        if (index >= (unsigned)(last - first))
+            invalid_parameter_noinfo();
+        Entry& entry = first[index];
+        entry.value = p.value;
+        entry.owner = p.owner;
+        result->attach(this);
+    }
     return result;
 }

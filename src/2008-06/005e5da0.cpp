@@ -1,4 +1,4 @@
-// from server: 92% by king_originala
+// from server: 100% by colin
 struct Link {
     virtual void unused();
     virtual int type();
@@ -25,11 +25,11 @@ struct S {
     void setValue(float);
 };
 
-#pragma float_control(precise, on, push)
+// roc-flags: /O2 /GS- /EHsc /MD /fp:fast
 
 void S::setValue(float v)
 {
-    if (v != value) {
+    if (value != v) {
         value = v;
         if (parent) {
             Link* p = parent->type() == 7 ? parent->parent : parent;

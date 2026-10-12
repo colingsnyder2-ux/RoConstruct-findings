@@ -1,92 +1,95 @@
-// from server: 93% by king_originala
-extern void __cdecl registerType(void (__cdecl*)(), void*);
-extern void __cdecl registerIndex();
-extern void __cdecl registerKey();
-extern char indexRegistration;
-extern char keyRegistration;
-extern void* __cdecl getIndex();
-extern void* __cdecl getKey();
-extern void (__cdecl* invalidParameter)();
+// from server: 100% by colin
+extern void (__cdecl* invalid_parameter)();
+extern void __cdecl initialize_index();
+extern void __cdecl initialize_type();
+extern unsigned long index_once;
+extern unsigned long type_once;
+extern void __cdecl call_once(void (__cdecl*)(), unsigned long*);
+extern void* __cdecl func_0042d030();
+extern void* __cdecl func_0042ced0();
 
-struct Reference
-{
-    void* control;
-    Reference& operator=(const Reference&);
+struct Control {
+    void* value;
+    Control();
+    Control& operator=(const Control&);
 };
 
-struct Product
+__forceinline Control::Control() : value(0)
 {
+}
+
+struct Pair {
     void* object;
-    Reference reference;
-
-    Product();
-    Product(const Product&);
-    ~Product();
+    Control control;
+    ~Pair();
 };
 
-inline Product::Product() : object(0)
+struct EmptyPair {
+    void* object;
+    Control control;
+    EmptyPair();
+    EmptyPair(const EmptyPair&);
+    ~EmptyPair();
+};
+
+__forceinline EmptyPair::EmptyPair()
+    : object(0), control()
 {
-    reference.control = 0;
 }
 
-struct Products
-{
-    char padding[12];
-    Product* first;
-    Product* volatile last;
-    Product* limit;
-
+struct Vector {
+    unsigned char padding[12];
+    Pair* first;
+    Pair* last;
+    Pair* limit;
+    void resize(unsigned int, EmptyPair);
     unsigned int size() const;
-    Product& at(unsigned int, void (__cdecl*)());
-    void resize(unsigned int, Product);
+    Pair& at(unsigned int, void (__cdecl*)());
 };
 
-inline unsigned int Products::size() const
+__forceinline unsigned int Vector::size() const
 {
-    return static_cast<unsigned int>(last - first);
+    return (unsigned int)(last - first);
 }
 
-inline Product& Products::at(unsigned int index, void (__cdecl* invalid)())
+__forceinline Pair& Vector::at(unsigned int index, void (__cdecl* handler)())
 {
-    if (index >= size())
-        invalid();
+    if (index >= (unsigned int)(last - first))
+        handler();
     return first[index];
 }
 
-struct Creator
-{
-    char padding[0x190];
-    Products products;
-
-    Product create(void*);
+struct S {
+    unsigned char padding[0x190];
+    Vector values;
+    Pair create(void*);
     void* get();
 };
 
-void* Creator::get()
+void* S::get()
 {
-    registerType(registerIndex, &indexRegistration);
-    unsigned int index = reinterpret_cast<unsigned int>(getIndex());
-    void (__cdecl* invalid)() = invalidParameter;
-    Products& entries = products;
+    call_once(initialize_index, &index_once);
+    unsigned int index = (unsigned int)func_0042d030();
+    void (__cdecl* handler)() = invalid_parameter;
+    Vector& entries = values;
 
-    if (index + 1 > entries.size())
-        entries.resize(index + 1, Product());
-    else
-    {
-        void* existing = entries.at(index, invalid).object;
+    if (index + 1 > values.size()) {
+        entries.resize(index + 1, EmptyPair());
+    } else {
+        void* existing = entries.at(index, handler).object;
         if (existing)
             return existing;
     }
 
-    registerType(registerKey, &keyRegistration);
-    Product result = create(getKey());
+    call_once(initialize_type, &type_once);
+    Pair result = create(func_0042ced0());
 
     if (!result.object)
         return 0;
 
     void* object = result.object;
-    Product& destination = entries.at(index, invalid);
+    Pair& destination = entries.at(index, handler);
     destination.object = result.object;
-    destination.reference = result.reference;
+    destination.control = result.control;
     return object;
 }

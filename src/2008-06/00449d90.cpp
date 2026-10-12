@@ -1,26 +1,18 @@
-// from server: 94% by king_originala
+// from server: 100% by colin
 struct Text;
 
-extern void (__thiscall *TextConstruct)(Text *);
-extern void (__thiscall *TextDestroy)(Text *);
 extern void (__cdecl *TextFormat)(Text *, const char *, ...);
 extern const char *(__thiscall *TextData)(const Text *);
 
 struct Text {
     char *data;
-    Text();
-    ~Text();
+    __declspec(dllimport) Text();
+    __declspec(dllimport) ~Text() throw();
 };
 
-__forceinline Text::Text()
-{
-    TextConstruct(this);
-}
 
-__forceinline Text::~Text()
-{
-    TextDestroy(this);
-}
+
+
 
 struct Window {
     char padding[32];

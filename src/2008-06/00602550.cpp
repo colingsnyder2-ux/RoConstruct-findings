@@ -1,4 +1,5 @@
-// from server: 99% by colin
+// from server: 100% by colin
+
 extern "C" void * (__cdecl *malloc)(unsigned int);
 
 inline void * __cdecl operator new(unsigned int size)
@@ -29,7 +30,7 @@ inline String::~String()
 }
 
 struct Widget {
-    unsigned char storage[0x188];
+    unsigned char storage[0x1a4];
     Widget(const String &, const String &);
 };
 

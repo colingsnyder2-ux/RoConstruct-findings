@@ -1,4 +1,18 @@
-// from server: 98% by king_originala
+// from server: 100% by colin
+namespace std {
+    template<class T> struct char_traits;
+    template<class T> class allocator;
+    template<class T, class Traits, class Alloc>
+    class __declspec(dllimport) basic_string {
+        char storage[28];
+    public:
+        basic_string();
+        basic_string(const T*);
+        basic_string(const basic_string&);
+        ~basic_string();
+    };
+    typedef basic_string<char, char_traits<char>, allocator<char> > string;
+}
 struct Link {
     int reserved;
     int previous;
@@ -17,26 +31,14 @@ struct Context {
     ~Context();
 };
 
-struct String {
-    char storage[28];
 
-    String(const char*);
-    String(const String&);
-    ~String();
-};
-
-extern String* (__thiscall *construct_string)(String*, const char*);
 
 struct Service {
-    void run(String, int);
+    void run(std::string, int);
 };
 
 extern Service* service;
 
-__forceinline String::String(const char* text)
-{
-    construct_string(this, text);
-}
 
 __forceinline Context::~Context()
 {
@@ -49,5 +51,5 @@ __forceinline Context::~Context()
 void __cdecl func(const char* text)
 {
     Context context(get_context());
-    service->run(String(text), 0);
+    service->run(std::string(text), 0);
 }

@@ -1,50 +1,41 @@
-// from server: 97% by king_originala
-struct Accessor {
-    virtual void slot0() = 0;
-    virtual void slot1() = 0;
-    virtual int get(void*) = 0;
+// from server: 100% by colin
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+#include <typeinfo>
+namespace boost {
+template<class Target, class Source>
+inline Target polymorphic_cast(Source* x)
+{
+    Target tmp = dynamic_cast<Target>(x);
+    if (tmp == 0)
+        throw std::bad_cast("bad cast");
+    return tmp;
+}
+}
+namespace boost { template<class T> class shared_ptr; }
+namespace RBX { class Instance; }
+namespace G3D { class Color3; class Vector3; }
+namespace RBX { class BrickColor; namespace Soundscape { class SoundId; } }
+struct AccessorT { virtual void s0() = 0; virtual void s1() = 0; virtual int get(void*) = 0; };
+namespace RBX { namespace Reflection {
+class PropertyDescriptor { public: virtual ~PropertyDescriptor(); };
+template<class T>
+class TypedPropertyDescriptor : public PropertyDescriptor {
+public:
+    unsigned char padding[20];
+    AccessorT* accessor;
 };
-
-struct TypedDescriptor {
-    unsigned char padding[24];
-    Accessor* accessor;
-};
-
-struct BadCast {
-    unsigned char storage[12];
-};
-
-extern unsigned char propertyDescriptorType;
-extern unsigned char typedPropertyDescriptorType;
-extern unsigned char badCastThrowInfo;
-
-extern "C" void* __cdecl __RTDynamicCast(
-    void*, long, void*, void*, int);
-
-extern "C" TypedDescriptor* __stdcall throwBadCast(void*, void*);
-
-typedef void (__thiscall *BadCastConstructor)(BadCast*, const char*);
-extern BadCastConstructor constructBadCast;
-
+} }
 struct ChangePropertyItem {
-    void* descriptor;
+    RBX::Reflection::PropertyDescriptor* descriptor;
     void* instance;
     int get();
 };
-
 int ChangePropertyItem::get()
 {
-    TypedDescriptor* typed = static_cast<TypedDescriptor*>(
-        __RTDynamicCast(descriptor, 0, &propertyDescriptorType,
-                        &typedPropertyDescriptorType, 0));
-
-    if (!typed) {
-        BadCast exception;
-        constructBadCast(&exception, "bad cast");
-        typed = throwBadCast(&exception, &badCastThrowInfo);
-    }
-
-    Accessor* accessor = typed->accessor;
+    RBX::Reflection::TypedPropertyDescriptor<int>* typed = boost::polymorphic_cast<RBX::Reflection::TypedPropertyDescriptor<int>*>(descriptor);
+    AccessorT* accessor = typed->accessor;
     void* object = instance;
     return accessor->get(object);
 }

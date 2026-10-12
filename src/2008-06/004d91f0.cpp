@@ -1,4 +1,8 @@
-// from server: 97% by king_originala
+// from server: 100% by colin
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+#include <map>
 extern void* __cdecl allocate(unsigned int, unsigned int);
 extern void* __cdecl clearMemory(void*, int, unsigned int);
 extern const unsigned char tableIdentity[];
@@ -30,51 +34,29 @@ struct Resource
     ~Resource();
 };
 
-struct Hash
-{
-    Hash();
-};
 
-struct Equal
-{
-    Equal();
-};
 
-__forceinline Hash::Hash()
-{
-}
 
-__forceinline Equal::Equal()
-{
-}
 
-struct FirstTable
-{
-    unsigned char storage[32];
-    FirstTable(const Hash&, const Equal&);
-    ~FirstTable();
-};
 
-struct SecondTable
-{
-    unsigned char storage[32];
-    SecondTable(const Hash&, const Equal&);
-    ~SecondTable();
-};
+
+
+
+
+
+
 
 struct Table : Storage
 {
     Resource resource;
-    FirstTable first;
-    SecondTable second;
+    std::map<int,int> first;
+    std::map<int,int> second;
     int value;
 
     Table();
 };
 
 Table::Table()
-    : first(Hash(), Equal()),
-      second(Hash(), Equal()),
-      value(0)
+    : value(0)
 {
 }

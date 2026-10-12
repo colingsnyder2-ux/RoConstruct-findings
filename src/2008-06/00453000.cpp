@@ -1,78 +1,81 @@
-// from server: 97% by king_originala
+// from server: 100% by colin
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
 extern "C" long __cdecl _InterlockedDecrement(volatile long*);
 #pragma intrinsic(_InterlockedDecrement)
 
-struct Document;
+struct S;
 
-struct Product {
-    void attach(Document*);
-};
-
-struct Control {
+struct Ref {
     virtual void reserved();
     virtual void dispose();
     virtual void destroy();
+
     volatile long strong;
     volatile long weak;
+
+    void attach(S*);
+    void release();
 };
 
-struct Reference {
-    Control* control;
-    Reference& operator=(const Reference&);
-
-    ~Reference()
-    {
-        Control* p = control;
-        if (p) {
-            if (_InterlockedDecrement(&p->strong) == 0) {
-                p->dispose();
-                if (_InterlockedDecrement(&p->weak) == 0)
-                    p->destroy();
-            }
-        }
+inline void Ref::release() {
+    if (_InterlockedDecrement(&strong) == 0) {
+        dispose();
+        if (_InterlockedDecrement(&weak) == 0)
+            destroy();
     }
+}
+
+struct RefSlot {
+    Ref* value;
+    RefSlot& operator=(const RefSlot&);
 };
+
+struct Pair {
+    Ref* value;
+    RefSlot owner;
+    ~Pair();
+};
+
+inline Pair::~Pair() {
+    if (owner.value)
+        owner.value->release();
+}
 
 struct Entry {
-    Product* value;
-    Reference reference;
+    Ref* value;
+    RefSlot owner;
 };
 
-extern Entry __cdecl createEntry();
-extern unsigned int __cdecl getIndex();
-extern void __cdecl registerValue(void (__cdecl*)(), void*);
-extern void __cdecl initializeType();
-extern unsigned char typeStorage;
-extern void (__cdecl *invalidParameter)();
-
-struct Document {
-    unsigned char padding[0x19c];
+struct S {
+    char padding[0x19c];
     Entry* first;
     Entry* last;
 
-    Product* findProduct();
-    Product* getProduct();
+    Ref* existing();
+    Ref* create();
 };
 
-Product* Document::getProduct()
-{
-    Product* result = findProduct();
-    if (result)
-        return result;
+Pair __cdecl make_pair();
+void __cdecl register_value(void (__cdecl*)(), void*);
+void __cdecl cleanup_value();
+extern char registration_data;
+void* __cdecl func_0057d800();
+extern "C" void (__cdecl* invalid_parameter_noinfo)();
 
-    Entry temporary = createEntry();
-    result = temporary.value;
-    registerValue(initializeType, &typeStorage);
-
-    unsigned int index = getIndex();
-    if (index >= static_cast<unsigned int>(last - first))
-        invalidParameter();
-
-    Entry& destination = first[index];
-    destination.value = temporary.value;
-    destination.reference = temporary.reference;
-    result->attach(this);
+Ref* S::create() {
+    Ref* result = existing();
+    if (!result) {
+        Pair p = make_pair();
+        result = p.value;
+        register_value(cleanup_value, &registration_data);
+        unsigned index = (unsigned)func_0057d800();
+        if (index >= (unsigned)(last - first))
+            invalid_parameter_noinfo();
+        Entry& entry = first[index];
+        entry.value = p.value;
+        entry.owner = p.owner;
+        result->attach(this);
+    }
     return result;
 }

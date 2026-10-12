@@ -1,7 +1,9 @@
-// from server: 39% by king_originala
-
+// from server: 46% by king_originala
 typedef unsigned long DWORD;
 typedef long HRESULT;
+
+extern "C" void* __cdecl _alloca(unsigned int);
+#pragma intrinsic(_alloca)
 
 struct Object;
 
@@ -37,8 +39,7 @@ HRESULT __stdcall func(void* base, void** result)
     Holder holder;
     holder.object = object;
 
-    DWORD entries[3];
-    DWORD* volatile table = entries;
+    DWORD* table = static_cast<DWORD*>(_alloca(12));
     DWORD* source = offsets;
 
     if (offsets != 0) {
@@ -60,10 +61,11 @@ HRESULT __stdcall func(void* base, void** result)
     if (initialization < 0) {
         object->vtable->destroy(object, 1);
         return initialization;
-    } else {
-        HRESULT status = object->vtable->query(object, &interfaceId, result);
-        if (status < 0)
-            object->vtable->destroy(object, 1);
-        return status;
     }
+
+    HRESULT status = object->vtable->query(object, &interfaceId, result);
+    if (status < 0)
+        object->vtable->destroy(object, 1);
+
+    return status;
 }

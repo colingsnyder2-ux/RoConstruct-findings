@@ -1,4 +1,4 @@
-// from server: 79% by king_originala
+// from server: 84% by colin
 extern "C" void (__cdecl *invalid_parameter)();
 
 struct Node {
@@ -54,11 +54,9 @@ Function __cdecl apply(Iterator first, Iterator last, Function function)
         if (node == state.finish.node)
             break;
 
-        if (owner)
-            goto dereference;
-        fail();
+        if (!owner)
+            fail();
 
-    check:
         if (node == reinterpret_cast<Container *>(owner)->sentinel)
             fail();
 
@@ -69,8 +67,4 @@ Function __cdecl apply(Iterator first, Iterator last, Function function)
     }
 
     return function;
-
-dereference:
-    owner = reinterpret_cast<Owner *>(owner->container);
-    goto check;
 }

@@ -1,81 +1,63 @@
-// from server: 76% by colin
-struct Node {
-    char pad[0x44];
-    int value;
+// from server: 89% by king_originala
+struct Link;
+
+struct Node
+{
+    char padding[0x44];
+    int priority;
+    char gap[8];
+    Link* next;
+    Link* previous;
 };
 
-struct List {
-    Node* head;
+struct Owner
+{
+    int unused;
+    Node* node;
 };
 
-struct Sender {
-    bool compare(Node* a, Node* b, Node* c);
+struct Sender
+{
+    bool f(Node* value, Node* cursor, int unused);
 };
 
-extern "C" Node* __stdcall sub_4c6710(Node** p);
-extern "C" Node* __stdcall sub_4c66c0(Node** p);
+extern void __cdecl previousLink(Link** cursor);
+extern void __cdecl nextLink(Link** cursor);
 
-bool Sender::compare(Node* a, Node* b, Node* c) {
-    Node* first;
-    if (this != 0) {
-        first = (Node*)((char*)this - 0xc);
-    } else {
-        first = 0;
-    }
-    List* lst = *(List**)((char*)first + 4);
-    Node* n = *(Node**)((char*)lst + 0x54);
-    if (n != 0) {
-        n = (Node*)((char*)n - 0x50);
-    } else {
-        n = 0;
-    }
-    if (c == n) {
-        goto label_afae;
-    }
+bool Sender::f(Node* value, Node* cursor, int unused)
+{
+    Owner* owner = this ? reinterpret_cast<Owner*>(
+        reinterpret_cast<char*>(this) - 12) : 0;
+
+    Link* link = owner->node->previous;
+    Node* original = cursor;
+    Node* end = link ? reinterpret_cast<Node*>(
+        reinterpret_cast<char*>(link) - 0x50) : 0;
+
+    if (original != end)
     {
-        Node* tmp;
-        if (c != 0) {
-            tmp = (Node*)((char*)c + 0x50);
-        } else {
-            tmp = 0;
-        }
-        Node* r = sub_4c6710(&tmp);
-        Node* rr;
-        if (r != 0) {
-            rr = (Node*)((char*)r - 0x50);
-        } else {
-            rr = 0;
-        }
-        if (b->value < rr->value) {
+        cursor = original ? reinterpret_cast<Node*>(
+            reinterpret_cast<char*>(original) + 0x50) : 0;
+
+        previousLink(reinterpret_cast<Link**>(&cursor));
+
+        Node* previous = cursor ? reinterpret_cast<Node*>(
+            reinterpret_cast<char*>(cursor) - 0x50) : 0;
+
+        if (value->priority < previous->priority)
             return false;
-        }
     }
-label_afae:
-    {
-        Node* tmp2;
-        if (c != 0) {
-            tmp2 = (Node*)((char*)c + 0x50);
-        } else {
-            tmp2 = 0;
-        }
-        Node* r2 = sub_4c66c0(&tmp2);
-        Node* rr2;
-        if (r2 != 0) {
-            rr2 = (Node*)((char*)r2 - 0x50);
-        } else {
-            rr2 = 0;
-        }
-        Node* first2;
-        if (this != 0) {
-            first2 = (Node*)((char*)this - 0xc);
-        } else {
-            first2 = 0;
-        }
-        if (rr2 != *(Node**)((char*)first2 + 4)) {
-            if (rr2->value < b->value) {
-                return false;
-            }
-        }
-    }
-    return true;
+
+    cursor = original ? reinterpret_cast<Node*>(
+        reinterpret_cast<char*>(original) + 0x50) : 0;
+
+    nextLink(reinterpret_cast<Link**>(&cursor));
+
+    Node* next = cursor ? reinterpret_cast<Node*>(
+        reinterpret_cast<char*>(cursor) - 0x50) : 0;
+
+    owner = this ? reinterpret_cast<Owner*>(
+        reinterpret_cast<char*>(this) - 12) : 0;
+
+    return next == owner->node || next->priority >= value->priority;
 }

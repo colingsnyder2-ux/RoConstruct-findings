@@ -1,29 +1,30 @@
-// from server: 97% by king_originala
-struct Cloneable {
-    virtual ~Cloneable();
+// from server: 100% by colin
+struct ValueOwner {
+    virtual ~ValueOwner();
     virtual void reserved();
-    virtual Cloneable* clone();
+    virtual ValueOwner* clone() = 0;
 };
 
 struct Value {
     void* data;
-    Cloneable* owner;
+    ValueOwner* owner;
 
     Value(const Value& other);
     ~Value();
     unsigned char* get();
+    static ValueOwner* copyOwner(ValueOwner* owner);
 };
 
-inline Value::Value(const Value& other)
-    : data(other.data)
+inline ValueOwner* Value::copyOwner(ValueOwner* owner)
 {
-    Cloneable* source = other.owner;
-    Cloneable* copy;
-    if (source)
-        copy = source->clone();
-    else
-        copy = 0;
-    owner = copy;
+    if (owner)
+        return owner->clone();
+    return 0;
+}
+
+inline Value::Value(const Value& other)
+    : data(other.data), owner(copyOwner(other.owner))
+{
 }
 
 inline Value::~Value()
@@ -33,48 +34,53 @@ inline Value::~Value()
 }
 
 struct Arguments {
-    virtual ~Arguments();
-    virtual void set(int index, const Value& value);
-};
-
-struct DescribedBase {
-    virtual ~DescribedBase();
+    virtual void reserved();
+    virtual void read(int index, Value* value) = 0;
 };
 
 namespace std {
-    struct bad_cast {
-        virtual ~bad_cast();
+    class bad_cast {
+        void* vtable;
         const char* message;
         int ownsMessage;
-
-        bad_cast(const char*);
     };
 }
 
-struct __multiple_inheritance Player;
+extern std::bad_cast* (__thiscall* badCastConstruct)(
+    std::bad_cast*, const char*);
+
+extern char sourceType;
+extern char destinationType;
+extern char badCastThrowInfo;
+
+extern "C" void* __cdecl __RTDynamicCast(
+    void*, long, void*, void*, int);
+
+extern "C" __declspec(noreturn) void __stdcall throwException(
+    void*, void*);
 
 struct S {
     char padding[0x38];
-    void (Player::*callback)(unsigned char);
-    Value value;
+    void (__thiscall* callback)(void*, int);
+    int adjustment;
+    Value defaultValue;
 
-    void invoke(DescribedBase* object, Arguments* arguments);
+    void invoke(void* object, Arguments* arguments);
 };
 
-struct EmptyBase {
-};
-
-struct Player : DescribedBase, EmptyBase {
-};
-
-void S::invoke(DescribedBase* object, Arguments* arguments)
+void S::invoke(void* object, Arguments* arguments)
 {
-    Value temporary(value);
-    arguments->set(1, temporary);
+    Value value(defaultValue);
+    arguments->read(1, &value);
 
-    Player* player = dynamic_cast<Player*>(object);
-    if (!player)
-        throw std::bad_cast("bad cast");
+    void* peer = __RTDynamicCast(
+        object, 0, &sourceType, &destinationType, 0);
 
-    (player->*callback)(*temporary.get());
+    if (!peer) {
+        std::bad_cast error;
+        badCastConstruct(&error, "bad cast");
+        throwException(&error, &badCastThrowInfo);
+    }
+
+    callback(static_cast<char*>(peer) + adjustment, *value.get());
 }

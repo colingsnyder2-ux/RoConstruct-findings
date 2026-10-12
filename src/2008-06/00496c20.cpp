@@ -1,4 +1,18 @@
-// from server: 99% by king_originala
+// from server: 100% by colin
+namespace std {
+    template<class T> struct char_traits;
+    template<class T> class allocator;
+    template<class T, class Traits, class Alloc>
+    class __declspec(dllimport) basic_string {
+        char storage[28];
+    public:
+        basic_string();
+        basic_string(const T*);
+        basic_string(const basic_string&);
+        ~basic_string();
+    };
+    typedef basic_string<char, char_traits<char>, allocator<char> > string;
+}
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
 extern "C" long __cdecl _InterlockedIncrement(volatile long*);
@@ -6,24 +20,10 @@ extern "C" long __cdecl _InterlockedIncrement(volatile long*);
 extern "C" long __cdecl _InterlockedDecrement(volatile long*);
 #pragma intrinsic(_InterlockedDecrement)
 
-struct String;
-extern void (__thiscall *constructString)(String*);
-extern void (__thiscall *const constructText)(String*, const char*);
+extern void (__thiscall *const constructText)(std::string*, const char*);
 
-struct String {
-    char storage[28];
-    String();
-    String(const char*);
-    ~String();
-};
 
-inline String::String() {
-    constructString(this);
-}
 
-inline String::String(const char* text) {
-    constructText(this, text);
-}
 
 struct Control {
     virtual ~Control();
@@ -62,8 +62,8 @@ inline Shared::~Shared() {
 }
 
 struct S {
-    String first;
-    String second;
+    std::string first;
+    std::string second;
     Shared owner;
     Shared empty;
     S(const char*, Shared);

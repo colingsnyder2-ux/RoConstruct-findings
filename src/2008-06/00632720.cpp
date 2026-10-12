@@ -1,4 +1,4 @@
-// from server: 97% by colin
+// from server: 100% by colin
 #pragma float_control(precise, off)
 
 struct Vector3 {
@@ -18,7 +18,7 @@ inline Vector3::Vector3()
 }
 
 struct BodyVelocity {
-    char padding[0x158];
+    char padding[0x148];
     float x, y, z;
     bool isNonzero();
 };

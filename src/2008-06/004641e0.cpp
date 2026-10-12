@@ -1,33 +1,21 @@
-// from server: 94% by king_originala
+// from server: 100% by colin
 struct Text;
 
-extern void (__thiscall *textConstruct)(Text*);
-extern void (__thiscall *textDestroy)(Text*);
-extern int (__thiscall *textLoad)(Text*, unsigned int);
 extern const char* (__thiscall *textData)(const Text*);
 
 struct Text {
     char* data;
-    Text();
-    ~Text() throw();
-    int load(unsigned int);
+    __declspec(dllimport) Text();
+    __declspec(dllimport) ~Text() throw();
+    __declspec(dllimport) int load(unsigned int);
     operator const char*() const;
 };
 
-inline Text::Text()
-{
-    textConstruct(this);
-}
 
-inline Text::~Text() throw()
-{
-    textDestroy(this);
-}
 
-inline int Text::load(unsigned int id)
-{
-    return textLoad(this, id);
-}
+
+
+
 
 inline Text::operator const char*() const
 {

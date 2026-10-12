@@ -1,38 +1,43 @@
-// from server: 73% by king_originala
+// from server: 75% by king_originala
 typedef unsigned long DWORD;
 
-struct Data
-{
+struct Data {
     DWORD a, b, c, d;
 };
 
-void* __cdecl operator new(unsigned int);
-void __cdecl operator delete(void*);
+void *__cdecl operator new(unsigned int);
+void __cdecl operator delete(void *);
 
-struct Object
-{
+struct Object {
     unsigned char storage[40];
-
     Object();
 };
 
-struct Base
-{
-    Object* object;
-    void* control;
+struct Control {
+    void *pointer;
 
-    Base();
-    ~Base();
-    void reset(Object*);
+    Control();
+    ~Control();
 };
 
-inline Base::Base() : object(0), control(0)
+inline Control::Control() : pointer(0)
 {
 }
 
-struct Function
+struct Base {
+    Object *object;
+    Control control;
+
+    Base();
+    void reset(Object *);
+};
+
+inline Base::Base() : object(0), control()
 {
-    const void* type;
+}
+
+struct Function {
+    const void *type;
     DWORD unused;
     Data data;
 
@@ -40,15 +45,14 @@ struct Function
     ~Function();
 };
 
-struct S : Base
-{
+struct S : Base {
     Function function;
 
-    S(const Data&);
+    S(const Data &);
     void finish();
 };
 
-S::S(const Data& data)
+S::S(const Data &data)
     : function(data, 0)
 {
     reset(new Object);

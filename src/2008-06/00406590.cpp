@@ -1,4 +1,4 @@
-// from server: 96% by colin
+// from server: 100% by colin
 extern "C" {
     extern unsigned int (__cdecl *strnlen)(const char *, unsigned int);
     extern int (__cdecl *_mbsnbcpy_s)(
@@ -7,9 +7,9 @@ extern "C" {
 }
 
 struct S {
-    unsigned char padding1[0xA25];
+    unsigned char padding1[0x224];
     unsigned char buffer[0x801];
-    unsigned char padding2[0x1A];
+    unsigned char padding2[0x817];
     unsigned int length;
 
     int set(const char *text);

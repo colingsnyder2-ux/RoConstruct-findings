@@ -1,40 +1,31 @@
-// from server: 43% by atomic.potato
-struct S {
-    char pad0[0x14];
-    int field14;
-    char pad1[0x28];
-    char field40;
-    char pad2[7];
-    char field48;
-    char pad3[7];
-    char field50;
-    char pad4[7];
-    char field58;
+// from server: 100% by king_originala
+extern "C" void *__cdecl getInitialType();
+extern "C" void *__cdecl getFirstType();
+extern "C" void *__cdecl getOtherType();
+extern "C" const char *__cdecl getValue(void *, int);
 
-    int __thiscall f(int a, int b, int c, int d);
+struct Property {
+    void *type;
+    void set(const char *, void *, void *);
 };
 
-extern "C" int __cdecl sub_594a50();
-extern "C" int __cdecl sub_56cdf0(void*);
-extern "C" int __cdecl sub_56cbc0(void*);
-extern "C" int __cdecl sub_553f90(int, int, int);
-extern "C" int __cdecl sub_594b40(int, int);
+struct S {
+    unsigned char prefix[0x14];
+    Property property;
+    unsigned char padding[0x28];
+    unsigned char first[8];
+    unsigned char second[8];
+    unsigned char third[8];
+    unsigned char fourth[8];
 
-int __thiscall S::f(int a, int b, int c, int d)
+    void initialize(void *, void *, void *, void *);
+};
+
+void S::initialize(void *a, void *b, void *c, void *d)
 {
-    int* p = &this->field14;
-    *p = sub_594a50();
-    int r1 = sub_56cdf0(&this->field40);
-    int r2 = sub_553f90(a, -1, r1);
-    sub_594b40(*p, r2);
-    int r3 = sub_56cbc0(&this->field48);
-    int r4 = sub_553f90(b, -1, r3);
-    sub_594b40(*p, r4);
-    int r5 = sub_56cbc0(&this->field50);
-    int r6 = sub_553f90(c, -1, r5);
-    sub_594b40(*p, r6);
-    int r7 = sub_56cbc0(&this->field58);
-    int r8 = sub_553f90(d, -1, r7);
-    sub_594b40(*p, r8);
-    return 0;
+    property.type = getInitialType();
+    property.set(getValue(a, -1), getFirstType(), first);
+    property.set(getValue(b, -1), getOtherType(), second);
+    property.set(getValue(c, -1), getOtherType(), third);
+    property.set(getValue(d, -1), getOtherType(), fourth);
 }

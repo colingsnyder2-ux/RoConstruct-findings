@@ -1,19 +1,15 @@
-// from server: 98% by king_originala
+// from server: 100% by colin
 struct String;
-extern void (__thiscall *ConstructString)(String*, const char*);
 
 struct String
 {
     char* data;
-    __forceinline String(const char*);
+    __declspec(dllimport) __forceinline String(const char*);
     String(const String&);
     ~String();
 };
 
-__forceinline String::String(const char* text)
-{
-    ConstructString(this, text);
-}
+
 
 extern const char description[];
 

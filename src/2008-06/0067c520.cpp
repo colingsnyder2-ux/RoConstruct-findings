@@ -1,21 +1,5 @@
-// from server: 96% by colin
-struct String;
-
-extern String& (__thiscall *string_assign)(String*, const String&);
-extern void (__thiscall *string_destroy)(String*);
-
-struct String {
-    char storage[28];
-    ~String() { string_destroy(this); }
-};
-
-struct S_func_00574f10 {
-    char pad0[564];
-    String text;
-    void f(String value);
-};
-
-void S_func_00574f10::f(String value)
-{
-    string_assign(&text, value);
-}
+// from server: 100% by colin
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MD
+// roc-lib: ogre-1.4.5-dll roc_try_b894a2da96c86c7e.cpp
