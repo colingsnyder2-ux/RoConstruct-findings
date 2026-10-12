@@ -1,6 +1,8 @@
-// from server: 85% by king_originala
+// from server: 87% by king_originala
 extern "C" void* __cdecl G1_func_006a17c6(void*, int, void*, void*, int);
 extern "C" void (__cdecl *invalid_parameter)();
+extern char instance_type;
+extern char click_detector_type;
 
 struct Entry {
     void* object;
@@ -52,11 +54,11 @@ void* S::f()
                 break;
 
             Container* container;
-            if (owner != 0)
-                container = owner->container;
-            else {
+            if (owner == 0) {
                 error();
                 container = 0;
+            } else {
+                container = owner->container;
             }
 
             if (current >= container->last)
@@ -64,16 +66,15 @@ void* S::f()
 
             void* result = G1_func_006a17c6(
                 current->object, 0,
-                reinterpret_cast<void*>(0x92907c),
-                reinterpret_cast<void*>(0x95b50c), 0);
+                &instance_type, &click_detector_type, 0);
             if (result != 0)
                 return result;
 
-            if (owner != 0)
-                container = owner->container;
-            else {
+            if (owner == 0) {
                 error();
                 container = 0;
+            } else {
+                container = owner->container;
             }
 
             if (current >= container->last)

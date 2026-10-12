@@ -1,4 +1,6 @@
-// from server: 98% by king_originala
+// from server: 100% by king_originala
+extern void (__thiscall* string_destructor)(void*);
+
 namespace std
 {
     template<class T> struct char_traits {};
@@ -11,6 +13,12 @@ namespace std
     public:
         ~basic_string();
     };
+
+    template<class C, class T, class A>
+    inline basic_string<C, T, A>::~basic_string()
+    {
+        string_destructor(this);
+    }
 }
 
 typedef std::basic_string<char, std::char_traits<char>, std::allocator<char> > Value;

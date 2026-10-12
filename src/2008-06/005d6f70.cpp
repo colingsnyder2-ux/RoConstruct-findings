@@ -1,4 +1,4 @@
-// from server: 77% by king_originala
+// from server: 81% by king_originala
 extern double __cdecl currentTime();
 extern void (__cdecl *invalidParameter)();
 
@@ -47,35 +47,41 @@ void TimerService::update()
     double now = currentTime();
     void (__cdecl *reportInvalid)() = invalidParameter;
 
-    while (count > 0) {
-        Entry *entry = *entries;
-        Container *container;
+again:
+    if (count == 0)
+        return;
 
-        if (proxy)
-            container = proxy->container;
-        else {
-            reportInvalid();
-            container = 0;
-        }
+    Entry *entry = *entries;
+    Proxy *p = proxy;
+    Container *container;
 
-        if (entry == container->end)
-            reportInvalid();
-
-        if (entry->time <= now) {
-            try {
-                Callback *callback = entry->callback;
-                if (!callback)
-                    throwException(Exception());
-                callback->invoke(entry->argument);
-            }
-            catch (...) {
-            }
-        }
-        else {
-            break;
-        }
-
-        ++entries;
-        --count;
+    if (!p) {
+        reportInvalid();
+        container = 0;
     }
+    else {
+        container = p->container;
+    }
+
+    if (entry == container->end)
+        reportInvalid();
+
+    if (!(now >= entry->time))
+        return;
+
+    try {
+        Callback *callback = entry->callback;
+        if (!callback)
+            throwException(Exception());
+        void (__cdecl *invoke)(void *) = callback->invoke;
+        invoke(entry->argument);
+        goto advance;
+    }
+    catch (...) {
+    }
+
+advance:
+    ++entries;
+    --count;
+    goto again;
 }

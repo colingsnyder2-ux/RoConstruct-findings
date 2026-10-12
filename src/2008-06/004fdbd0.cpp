@@ -1,4 +1,4 @@
-// from server: 90% by king_originala
+// from server: 92% by king_originala
 extern "C" double __cdecl sin(double);
 extern "C" double __cdecl cos(double);
 #pragma intrinsic(sin, cos)
@@ -30,13 +30,13 @@ void CylinderBuilder::deform(Vector3* position, Vector3* normal,
 {
     float longitude = (position->x / size->x) * angleScale;
     float arcAngle = arcScale;
-    float latitude = ((index->y - count + 1) * arcAngle)
-                   / (float)(count - 1);
+    float latitude = (float)((arcAngle * (index->y - count + 1))
+                            / (double)(count - 1));
     float latitudeCos = (float)cos(latitude);
     float inset = (float)(1.0 - latitudeCos);
     float longitudeSin = (float)sin(longitude);
 
-    position->x = (size->x - inset * radius) * longitudeSin;
+    position->x = (size->x - radius * inset) * longitudeSin;
 
     float latitudeSin = (float)sin(latitude);
     if (index->y >= count)
@@ -45,14 +45,14 @@ void CylinderBuilder::deform(Vector3* position, Vector3* normal,
         position->y = (lowerOffset + latitudeSin) * radius - size->y;
 
     float longitudeCos = (float)cos(longitude);
-    position->z = (size->z - inset * radius) * longitudeCos;
+    position->z = (size->z - radius * inset) * longitudeCos;
 
     normal->x = longitudeSin * latitudeCos;
     normal->y = latitudeSin;
     normal->z = longitudeCos * latitudeCos;
 
     float arc = arcAngle * radius;
-    float factor = (size->y + arc - radius) / arc;
+    float factor = arc / (size->y + arc - radius);
 
     if (index->y >= count)
         texture->y = factor * texture->y;

@@ -1,4 +1,4 @@
-// from server: 63% by king_originala
+// from server: 67% by king_originala
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
 
@@ -15,20 +15,22 @@ struct Control {
 struct Result {
     void* first;
     Control* second;
-    Result(const Result& other);
+    Result(const Result&);
     ~Result();
 };
 
 inline Result::Result(const Result& other)
     : first(other.first), second(other.second)
 {
-    if (second)
-        _InterlockedExchangeAdd(&second->strong, 1);
+    if (second) {
+        volatile long* count = &second->strong;
+        _InterlockedExchangeAdd(count, 1);
+    }
 }
 
 struct Guard {
     unsigned int value;
-    Guard(Result value);
+    Guard(Result);
     ~Guard();
 };
 
@@ -37,11 +39,11 @@ struct Verb {
     virtual void slot1();
     virtual void slot2();
     virtual void slot3();
-    virtual void execute(void* context);
+    virtual void execute(void*);
 };
 
 struct Registry {
-    Verb* lookup(void* value);
+    Verb* lookup(void*);
 };
 
 struct Node {
@@ -67,7 +69,7 @@ struct Map {
     Owner* owner;
     unsigned char padding[20];
     Node* end;
-    Iterator* find(Iterator* result, const int* key);
+    Iterator find(const int*);
 };
 
 struct S {
@@ -75,7 +77,7 @@ struct S {
     Map map;
     Result copy();
     Registry* registry();
-    void f(int key, int mode);
+    void f(int, int);
 };
 
 void S::f(int key, int mode)
@@ -83,12 +85,11 @@ void S::f(int key, int mode)
     if (mode != 0 && mode != -1)
         return;
 
-    Iterator position;
-    map.find(&position, &key);
-
+    Map* container = &map;
+    Iterator position = container->find(&key);
     Owner* owner = position.owner;
-    Node* end = map.end;
-    Owner* expected = map.owner;
+    Node* end = container->end;
+    Owner* expected = container->owner;
 
     if (!owner || owner != expected)
         _invalid_parameter_noinfo();
@@ -116,8 +117,10 @@ void S::f(int key, int mode)
 
     if (!owner)
         _invalid_parameter_noinfo();
+    else
+        owner = reinterpret_cast<Owner*>(owner->tree);
 
-    if (node == owner->tree->end)
+    if (node == reinterpret_cast<Tree*>(owner)->end)
         _invalid_parameter_noinfo();
 
     void* value = node->value;

@@ -1,4 +1,4 @@
-// from server: 73% by king_originala
+// from server: 75% by king_originala
 extern "C" void (__cdecl *_invalid_parameter_noinfo)();
 
 struct Payload
@@ -44,7 +44,6 @@ void S::f()
     Iterator it;
     it.node = node;
     it.proxy = currentProxy;
-    S* owner;
 
     for (;;)
     {
@@ -57,13 +56,12 @@ void S::f()
         if (node == end)
             break;
 
-        owner = reinterpret_cast<S*>(currentProxy);
-        if (currentProxy)
-            goto resolveOwner;
+        S* owner = reinterpret_cast<S*>(currentProxy);
+        if (!currentProxy)
+            _invalid_parameter_noinfo();
+        else
+            owner = currentProxy->owner;
 
-        _invalid_parameter_noinfo();
-
-    checkNode:
         if (node == owner->head)
             _invalid_parameter_noinfo();
 
@@ -72,9 +70,4 @@ void S::f()
         node = it.node;
         currentProxy = it.proxy;
     }
-    return;
-
-resolveOwner:
-    owner = currentProxy->owner;
-    goto checkNode;
 }

@@ -1,4 +1,4 @@
-// from server: 48% by king_originala
+// from server: 51% by king_originala
 extern "C" void* __cdecl malloc(unsigned int);
 extern "C" void* __cdecl _alloca(unsigned int);
 #pragma intrinsic(_alloca)
@@ -36,37 +36,39 @@ struct S {
     Remote* remotes;
 
     bool f(const char*, int, int, int, int, Address,
-           unsigned int*, bool, unsigned __int64);
+           bool, bool, unsigned __int64);
 };
 
 bool S::f(const char* data, int bits, int priority, int reliability,
-          int channel, Address address, unsigned int* indices,
-          bool broadcast, unsigned __int64 time)
+          int channel, Address address, bool broadcast,
+          bool transfer, unsigned __int64 time)
 {
     unsigned int localIndices[64];
+    unsigned int* indices;
     unsigned int selected = 0;
     bool sent = false;
 
     if (broadcast) {
         unsigned int size = count * sizeof(unsigned int) + 8;
-        unsigned int* p;
         if (size <= 1024) {
-            p = (unsigned int*)_alloca(size);
-            if (p)
-                *p = 0xcccc;
+            indices = (unsigned int*)_alloca(size);
+            if (indices)
+                *indices = 0xcccc;
         } else {
-            p = (unsigned int*)malloc(size);
-            if (p)
-                *p = 0xdddd;
+            indices = (unsigned int*)malloc(size);
+            if (indices)
+                *indices = 0xdddd;
         }
-        if (p)
-            p += 2;
-        indices = p;
+        if (indices)
+            indices += 2;
 
-        for (unsigned int i = 0; i < count; ++i) {
-            if (remotes[i].active &&
-                remotes[i].address.different(address) &&
-                remotes[i].address.different(unassignedAddress))
+        unsigned int offset = 0;
+        for (unsigned int i = 0; i < count; ++i, offset += 0x850) {
+            Remote* remote = (Remote*)((char*)remotes + offset);
+            if (remote->active &&
+                remote->address.different(address) &&
+                ((Remote*)((char*)remotes + offset))->address.different(
+                    unassignedAddress))
                 indices[selected++] = i;
         }
 
@@ -87,7 +89,7 @@ bool S::f(const char* data, int bits, int priority, int reliability,
     }
 
     for (unsigned int i = 0; i < selected; ++i) {
-        bool finalSend = broadcast && !sent && i + 1 == selected;
+        bool finalSend = transfer && !sent && i + 1 == selected;
         Remote* remote = remotes + indices[i];
 
         ((Sender*)remote->senderStorage)->send(

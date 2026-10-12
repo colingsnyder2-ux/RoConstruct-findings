@@ -1,46 +1,53 @@
-// from server: 64% by king_originala
-typedef unsigned int size_t;
-
-void* __cdecl operator new(size_t);
+// from server: 69% by king_originala
+void* __cdecl operator new(unsigned int);
 void __cdecl operator delete(void*);
 
+extern void* derivedTable[];
+extern void* callbackTable[];
+
+void* __cdecl getRegistry();
+
 struct Owner {
-    void* p;
-    __forceinline Owner(void*);
-    __forceinline Owner(Owner&);
-    __forceinline ~Owner();
+    void* pointer;
+
+    Owner() : pointer(0) {}
+    Owner(Owner& other) : pointer(other.pointer) {
+        other.pointer = 0;
+    }
+    ~Owner() {
+        if (pointer)
+            operator delete(pointer);
+    }
 };
 
-__forceinline Owner::Owner(void* value) : p(value) {}
-
-__forceinline Owner::Owner(Owner& other) : p(other.p) {
-    other.p = 0;
-}
-
-__forceinline Owner::~Owner() {
-    if (p)
-        operator delete(p);
-}
-
-extern "C" void* __stdcall getName(unsigned int, unsigned int);
-
 struct Base {
-    void* table;
-    unsigned char storage[20];
-    void* callback;
+    void** table;
+    unsigned int reserved[5];
+    Owner callback;
 
-    Base(void*, Owner, Owner);
+    Base(void*, unsigned int, unsigned int, Owner, Owner);
     ~Base();
 };
 
 struct Callback {
-    void* table;
-    void* object;
+    void** table;
+    void* owner;
     unsigned int first;
-    unsigned int unused;
+    unsigned int reserved;
     unsigned int second;
     unsigned int third;
+
+    Callback(void*, unsigned int, unsigned int, unsigned int);
 };
+
+inline Callback::Callback(void* object, unsigned int a,
+                          unsigned int b, unsigned int c) {
+    table = callbackTable;
+    owner = object;
+    first = a;
+    second = b;
+    third = c;
+}
 
 struct S : Base {
     S(unsigned int, unsigned int, unsigned int,
@@ -48,23 +55,11 @@ struct S : Base {
 };
 
 S::S(unsigned int a, unsigned int b, unsigned int c,
-     unsigned int d, unsigned int e, Owner owner)
-    : Base(getName(a, b), Owner(0), owner) {
-    table = reinterpret_cast<void*>(0x83c520);
-
-    Callback* replacement =
-        static_cast<Callback*>(operator new(sizeof(Callback)));
-
-    if (replacement) {
-        replacement->table = reinterpret_cast<void*>(0x83c4a8);
-        replacement->object = this;
-        replacement->first = c;
-        replacement->second = d;
-        replacement->third = e;
-    }
-
-    if (replacement != callback && callback)
-        operator delete(callback);
-
-    callback = replacement;
+     unsigned int d, unsigned int e, Owner tail)
+    : Base(getRegistry(), a, b, Owner(), tail) {
+    table = derivedTable;
+    Callback* replacement = new Callback(this, c, d, e);
+    if (replacement != callback.pointer && callback.pointer)
+        operator delete(callback.pointer);
+    callback.pointer = replacement;
 }

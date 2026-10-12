@@ -1,9 +1,27 @@
-// from server: 73% by king_originala
+// from server: 96% by king_originala
+struct String;
+
+typedef void (__thiscall *StringConstructor)(String*, const char*);
+typedef void (__thiscall *StringDestructor)(String*);
+
+extern StringConstructor stringConstructor;
+extern StringDestructor stringDestructor;
+
 struct String {
     unsigned char storage[28];
     String(const char*);
     ~String();
 };
+
+inline String::String(const char* text)
+{
+    stringConstructor(this, text);
+}
+
+inline String::~String()
+{
+    stringDestructor(this);
+}
 
 struct Node {
     unsigned hash;
@@ -20,6 +38,10 @@ extern "C" __declspec(noreturn) void __cdecl exit(int);
 typedef bool (__cdecl *AssertionHandler)(
     const char*, const String&, const char*, int, bool*, bool);
 
+extern AssertionHandler assertionHandler;
+extern bool ignoreNull;
+extern bool ignoreMissing;
+
 struct Table {
     unsigned reserved;
     unsigned count;
@@ -35,17 +57,15 @@ void Table::remove(const unsigned& key)
     unsigned bucket = hash % bucketCount;
     Node* node = buckets[bucket];
 
-    if (!*reinterpret_cast<bool*>(0x96f7ad) && node == 0) {
+    if (!ignoreNull && node == 0) {
         beginAssertion();
         bool terminate =
-            *reinterpret_cast<AssertionHandler*>(0x94278c) &&
-            (*reinterpret_cast<AssertionHandler*>(0x94278c))(
+            assertionHandler &&
+            assertionHandler(
                 "n != NULL",
                 String(""),
                 "d:\\Roblox\\Releases\\2008.06.17\\Client\\Rendering\\g3d\\include\\G3D/Table.h",
-                533,
-                reinterpret_cast<bool*>(0x96f7ad),
-                true);
+                533, &ignoreNull, true);
         if (terminate)
             exit(-1);
         endAssertion();
@@ -53,7 +73,7 @@ void Table::remove(const unsigned& key)
 
     Node* previous = 0;
     do {
-        if (node->hash == hash && node->key == key) {
+        if (hash == node->hash && node->key == key) {
             if (previous == 0) {
                 buckets[bucket] = node->next;
                 releaseNode(node);
@@ -70,17 +90,15 @@ void Table::remove(const unsigned& key)
         node = node->next;
     } while (node != 0);
 
-    if (!*reinterpret_cast<bool*>(0x96f7ac)) {
+    if (!ignoreMissing) {
         beginAssertion();
         bool terminate =
-            *reinterpret_cast<AssertionHandler*>(0x94278c) &&
-            (*reinterpret_cast<AssertionHandler*>(0x94278c))(
+            assertionHandler &&
+            assertionHandler(
                 "false",
                 String(""),
                 "d:\\Roblox\\Releases\\2008.06.17\\Client\\Rendering\\g3d\\include\\G3D/Table.h",
-                557,
-                reinterpret_cast<bool*>(0x96f7ac),
-                true);
+                557, &ignoreMissing, true);
         if (terminate)
             exit(-1);
         endAssertion();

@@ -1,28 +1,30 @@
-// from server: 72% by colin
-
-
-
-
-extern "C" void __stdcall sub_6A067A(void*);
-extern "C" void __stdcall sub_40EC90();
-
-struct UIEnumConnections_CComEnum_CComObject {
-    void* vtable;
-    char pad[0x14];
-    int field_18;
-    void* Release(unsigned int flags);
+// from server: 100% by king_originala
+struct Service {
+    virtual void slot0();
+    virtual void slot1();
+    virtual void slot2();
 };
 
-void* UIEnumConnections_CComEnum_CComObject::Release(unsigned int flags)
+extern Service* service;
+extern void* objectTable[];
+extern "C" void __cdecl releaseStorage(void*);
+
+struct S {
+    void** table;
+    unsigned char reserved[20];
+    unsigned long state;
+
+    void cleanup();
+    S* destroy(unsigned int flags);
+};
+
+S* S::destroy(unsigned int flags)
 {
-    vtable = (void*)0x80D7F0;
-    field_18 = (int)0xC0000001;
-    void** vtbl = *(void***)0x96C268;
-    void (*fn)(void) = (void (*)(void))vtbl[2];
-    fn();
-    sub_40EC90();
-    if (flags & 1) {
-        sub_6A067A(this);
-    }
+    table = objectTable;
+    state = 0xC0000001UL;
+    service->slot2();
+    cleanup();
+    if (flags & 1)
+        releaseStorage(this);
     return this;
 }

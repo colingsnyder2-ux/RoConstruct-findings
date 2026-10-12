@@ -1,29 +1,44 @@
-// from server: 62% by colin
-struct SurfaceEnumPropDescriptor {
-    char pad[0x1c];
-    void* getset;
-    int getEnumItem(const void* instance) const;
+// from server: 83% by king_originala
+struct Accessor {
+    virtual void slot0();
+    virtual void slot1();
+    virtual unsigned int get(void*);
 };
 
-extern "C" void __stdcall _invalid_parameter_noinfo();
-extern "C" void __cdecl sub_557330(void*, void*);
-extern "C" void* __cdecl sub_5ed5c0();
+struct EnumTable {
+    unsigned char storage[220];
+    int* volatile first;
+    int* volatile last;
+};
 
-int SurfaceEnumPropDescriptor::getEnumItem(const void* instance) const {
-    void* gs = getset;
-    int (*fn)(const void*) = *(int (**)(const void*))((*(char**)gs) + 8);
-    int value = fn(instance);
-    sub_557330((void*)0x97b11c, (void*)0x5ed620);
-    void* desc = sub_5ed5c0();
-    char* d = (char*)desc;
-    int count = (*(int*)(d + 0xe0) - *(int*)(d + 0xdc)) >> 2;
-    if ((unsigned)value < (unsigned)count) {
-        return -1;
+extern unsigned char registrationState;
+extern void __cdecl initialize();
+extern void __cdecl registerInitializer(void (__cdecl*)(), void*);
+extern EnumTable* __cdecl getEnumTable();
+extern "C" void (__cdecl* _invalid_parameter_noinfo)();
+
+struct Descriptor {
+    unsigned char storage[28];
+    Accessor* accessor;
+
+    int get(void*);
+};
+
+int Descriptor::get(void* object)
+{
+    unsigned int index = accessor->get(object);
+    registerInitializer(initialize, &registrationState);
+    EnumTable* table = getEnumTable();
+
+    int* end = table->last;
+    unsigned int count = static_cast<unsigned int>(end - table->first);
+    if (index < count) {
+        end = table->last;
+        count = static_cast<unsigned int>(end - table->first);
+        if (index >= count)
+            _invalid_parameter_noinfo();
+        int* begin = table->first;
+        return begin[index];
     }
-    int count2 = (*(int*)(d + 0xe0) - *(int*)(d + 0xdc)) >> 2;
-    if ((unsigned)value >= (unsigned)count2) {
-        _invalid_parameter_noinfo();
-    }
-    int* arr = *(int**)(d + 0xdc);
-    return arr[value];
+    return -1;
 }

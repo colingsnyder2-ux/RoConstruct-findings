@@ -1,4 +1,4 @@
-// from server: 97% by king_originala
+// from server: 98% by king_originala
 extern void* __cdecl operator new(unsigned int);
 extern void* objectTable[];
 
@@ -11,6 +11,10 @@ struct Module {
     ModuleTable* table;
 };
 extern Module* module;
+
+struct Exception {
+    long status;
+};
 
 struct Object {
     void** table;
@@ -48,6 +52,9 @@ long __stdcall Object::Create(Object** result)
 
     try {
         object = new Object;
+    }
+    catch (Exception& exception) {
+        status = exception.status;
     }
     catch (...) {
     }

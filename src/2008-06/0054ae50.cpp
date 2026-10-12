@@ -1,13 +1,20 @@
-// from server: 18% by colin
-struct Mesh {
+// from server: 100% by king_originala
+struct S {
     int* data;
     int count;
-    int getFace(int i);
+
+    int f(unsigned char flag);
+    void remove(int index, unsigned char flag);
 };
 
-int Mesh::getFace(int i) {
-    int saved = data[count - 1];
-    int idx = count - 1;
-    int result = ((int (*)(int, int))0x480020)(idx, i);
-    return saved;
+#pragma optimize("", off)
+int S::f(unsigned char flag)
+{
+    do {
+    } while (0);
+
+    int result = data[count - 1];
+    remove(count - 1, flag);
+    return result;
 }
+#pragma optimize("", on)

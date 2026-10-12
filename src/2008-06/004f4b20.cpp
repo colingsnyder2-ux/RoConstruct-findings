@@ -1,4 +1,4 @@
-// from server: 72% by king_originala
+// from server: 83% by king_originala
 extern "C" {
 extern long (__stdcall * const InterlockedIncrement)(volatile long *);
 extern long (__stdcall * const InterlockedDecrement)(volatile long *);
@@ -33,11 +33,11 @@ struct Resource {
 
 struct Reference {
     Resource *pointer;
-    Reference(Resource *);
+    Reference(Resource *) throw();
     ~Reference();
 };
 
-__forceinline Reference::Reference(Resource *p) : pointer(0) {
+__forceinline Reference::Reference(Resource *p) throw() : pointer(0) {
     if (p) {
         pointer = p;
         InterlockedIncrement(&p->references);
@@ -114,10 +114,7 @@ Builder::Builder(const Vec3 &first, const Vec3 &second,
     unsigned int scratch;
     const Vec2 &extent = calculate(first, second, &scratch).get();
 
-    Vec2 scale = {
-        extent.x * scaleFactor / dimensions.x,
-        extent.y * scaleFactor / dimensions.y
-    };
-    temporary.scale = scale;
+    temporary.scale.x = extent.x * scaleFactor / dimensions.x;
+    temporary.scale.y = extent.y * scaleFactor / dimensions.y;
     temporary.finish(second, 1);
 }

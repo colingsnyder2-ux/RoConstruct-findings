@@ -1,4 +1,4 @@
-// from server: 91% by king_originala
+// from server: 100% by king_originala
 struct Iterator
 {
     void* owner;
@@ -11,13 +11,20 @@ struct S
     int f(Iterator first, Iterator last);
 };
 
-extern void* __cdecl search(void*, void*, bool (S::*)(void*, void*), S*);
+struct Callback
+{
+    bool (S::*method)(void*, void*);
+    S* object;
+};
+
+extern void* __cdecl search(void*, void*, Callback);
 extern "C" void (__cdecl *_invalid_parameter_noinfo)();
 
 int S::f(Iterator first, Iterator last)
 {
+    Callback callback = { &S::predicate, this };
     Iterator result = first;
-    result.position = search(first.position, last.position, &S::predicate, this);
+    result.position = search(first.position, last.position, callback);
 
     if (!result.owner || result.owner != last.owner)
         _invalid_parameter_noinfo();

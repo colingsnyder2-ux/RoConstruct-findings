@@ -1,4 +1,4 @@
-// from server: 78% by king_originala
+// from server: 89% by king_originala
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
 
@@ -9,52 +9,44 @@ struct Instance {
 struct Player : Instance {
 };
 
-struct Control {
-    virtual void dispose() = 0;
-    virtual void destroy() = 0;
-    volatile long strong;
-    volatile long weak;
+struct RefBlock {
+    void* vtable;
+    volatile long references;
+    void release();
 };
 
 struct Count {
-    Control* control;
-    Count();
-    Count(const Count&);
-    ~Count();
+    RefBlock* block;
+
+    Count() : block(0) {}
+    Count(const Count& other) : block(other.block) {
+        if (block)
+            _InterlockedExchangeAdd(&block->references, 1);
+    }
+    ~Count() {
+        if (block)
+            block->release();
+    }
+
     Count& operator=(const Count&);
 };
 
-inline Count::Count() : control(0) {}
-
-inline Count::Count(const Count& other) : control(other.control) {
-    if (control)
-        _InterlockedExchangeAdd(&control->strong, 1);
-}
-
-inline Count::~Count() {
-    if (control && _InterlockedExchangeAdd(&control->strong, -1) == 1) {
-        control->dispose();
-        if (_InterlockedExchangeAdd(&control->weak, -1) == 1)
-            control->destroy();
-    }
-}
-
 struct Source {
-    Instance* pointer;
+    Instance* object;
     Count count;
 };
 
-struct CastTag {};
-
-struct S {
-    Player* pointer;
+struct GetImpl {
+    Player* object;
     Count count;
-    S(const Source&, const CastTag&);
+
+    GetImpl(const Source&, int);
 };
 
-S::S(const Source& source, const CastTag&)
-    : pointer(dynamic_cast<Player*>(source.pointer)), count(source.count) {
-    if (!pointer) {
+GetImpl::GetImpl(const Source& source, int)
+    : object(dynamic_cast<Player*>(source.object)), count(source.count)
+{
+    if (!object) {
         Count empty;
         count = empty;
     }

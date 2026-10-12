@@ -1,4 +1,4 @@
-// from server: 71% by king_originala
+// from server: 76% by king_originala
 struct Storage;
 
 struct Node {
@@ -7,6 +7,7 @@ struct Node {
 
 struct Storage {
     Node* find(const char* key);
+    Node* lookup(const char* key);
 };
 
 struct Link {
@@ -24,13 +25,19 @@ struct Argument {
 struct Descriptor {
     char reserved[0x130];
     Storage* storage;
-
     Node* find(Argument* argument);
 };
 
+inline Node* Storage::lookup(const char* key)
+{
+    if (this)
+        return find(key);
+    return 0;
+}
+
 Node* Descriptor::find(Argument* argument)
 {
-    Node* node = storage ? storage->find(argument->parent->key + 4) : 0;
+    Node* node = storage->lookup(argument->parent->key + 4);
     if (node) {
         Storage* next = node->convert();
         if (next)

@@ -1,4 +1,4 @@
-// from server: 97% by king_originala
+// from server: 98% by king_originala
 extern "C" void (__cdecl * _invalid_parameter_noinfo)();
 
 struct Arguments {
@@ -10,8 +10,11 @@ struct Arguments {
 
 inline Arguments::Arguments(const Arguments& other)
 {
-    second = other.second;
-    first = other.first;
+    const volatile Arguments& source = other;
+    unsigned secondValue = source.second;
+    unsigned firstValue = source.first;
+    second = secondValue;
+    first = firstValue;
 }
 
 struct Iteration {

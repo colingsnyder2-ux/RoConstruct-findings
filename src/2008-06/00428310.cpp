@@ -1,102 +1,106 @@
-// from server: 46% by colin
-// roc 2008-06 00428310  unit: MainLogManager  size: 453 bytes
-// Reconstructed from assembly evidence.
+// from server: 63% by king_originala
+struct String;
+struct BufferString;
 
-typedef unsigned long DWORD;
-typedef int BOOL;
-typedef const char* LPCSTR;
-typedef char* LPSTR;
-
-struct String {
-    char pad[16];
-    char* ptr;
-    DWORD len;
-    DWORD cap;
-};
+extern void (__thiscall *p_803f10)(BufferString *, const char *);
+extern int (__thiscall *p_802fe0)(const BufferString *);
+extern char *(__thiscall *p_803384)(BufferString *, int);
+extern void (__thiscall *p_803380)(BufferString *, int);
+extern const char *(__thiscall *p_803ee0)(const BufferString *);
+extern void (__thiscall *p_803f14)(BufferString *);
+extern const char *(__thiscall *p_802464)(const String *);
+extern void (__thiscall *p_802458)(String *, const char *);
+extern void (__thiscall *p_802468)(String *);
 
 extern "C" {
-    BOOL __stdcall DeleteFileA(LPCSTR);
-    BOOL __stdcall MoveFileA(LPCSTR, LPCSTR);
-    BOOL __stdcall PathAppendA(LPSTR, LPCSTR);
-    BOOL __stdcall PathFileExistsA(LPCSTR);
-    BOOL __stdcall PathRemoveFileSpecA(LPSTR);
-    LPSTR __stdcall PathStripPathA(LPSTR);
-    int __stdcall _mkdir(LPCSTR);
+    int __stdcall PathRemoveFileSpecA(char *);
+    void __stdcall PathStripPathA(char *);
+    int __stdcall PathAppendA(char *, const char *);
+    int __stdcall PathFileExistsA(const char *);
+    int __stdcall MoveFileA(const char *, const char *);
+    int __stdcall DeleteFileA(const char *);
+    int __cdecl _mkdir(const char *);
+    unsigned int __cdecl strlen(const char *);
 }
 
-extern void (__stdcall *p_803f10)(String*, LPCSTR);
-extern DWORD (__stdcall *p_802fe0)(String*);
-extern String* (__stdcall *p_803384)(String*, DWORD);
-extern void (__stdcall *p_802b20)(String*);
-extern void (__stdcall *p_803380)(String*, int);
-extern String* (__stdcall *p_802464)(String*);
-extern DWORD (__stdcall *p_802fe4)(DWORD);
-extern void (__stdcall *p_802b18)(char*, DWORD);
-extern DWORD (__stdcall *p_803ee0)(String*);
-extern BOOL (__stdcall *p_802b1c)(LPCSTR);
-extern void (__stdcall *p_80276c)(LPCSTR);
-extern void (__stdcall *p_802b10)(LPCSTR);
-extern BOOL (__stdcall *p_802200)(LPCSTR, LPCSTR);
-extern void (__stdcall *p_8021fc)(LPCSTR);
-extern void (__stdcall *p_802458)(void*, LPCSTR);
-extern void (__stdcall *p_803f14)(String*);
-extern void (__stdcall *p_802468)(String*);
-
-struct MainLogManager {
-    void* __cdecl f_00428310(LPCSTR name);
+struct String {
+    char storage[28];
+    String(const char *);
+    ~String();
+    const char *c_str() const;
 };
 
-void* MainLogManager::f_00428310(LPCSTR name) {
-    String s1;
-    String s2;
-    String s3;
-    void* result = 0;
+struct BufferString {
+    char *data;
+    BufferString(const char *);
+    ~BufferString();
+    int length() const;
+    char *buffer(int);
+    void release(int);
+    const char *text() const;
+};
 
-    p_803f10(&s1, name);
-    DWORD pid = p_802fe0(&s1);
-    String* t = p_803384(&s2, pid);
-    p_802b20(t);
-    p_803380(&s2, -1);
+inline String::String(const char *s) {
+    p_802458(this, s);
+}
 
-    String* dir = p_802464(&s3);
-    DWORD len = p_802fe4((DWORD)dir);
-    DWORD slen = p_802fe0(&s1);
-    DWORD total = len + slen + 1;
-    String* t2 = p_803384(&s2, total);
-    p_802b18((char*)t2, (DWORD)dir);
-    p_803380(&s2, -1);
+inline String::~String() {
+    p_802468(this);
+}
 
-    DWORD exists = p_803ee0(&s1);
-    if (!p_802b1c((LPCSTR)exists)) {
-        DWORD e2 = p_803ee0(&s1);
-        p_80276c((LPCSTR)e2);
-    }
+inline const char *String::c_str() const {
+    return p_802464(this);
+}
 
-    p_803f10(&s1, name);
-    DWORD pid2 = p_802fe0(&s1);
-    String* t3 = p_803384(&s2, pid2);
-    p_802b10((LPCSTR)t3);
-    p_803380(&s2, -1);
+inline BufferString::BufferString(const char *s) {
+    p_803f10(this, s);
+}
 
-    DWORD e3 = p_803ee0(&s1);
-    DWORD len2 = p_802fe4(e3);
-    DWORD slen2 = p_802fe0(&s1);
-    DWORD total2 = len2 + slen2 + 1;
-    String* t4 = p_803384(&s2, total2);
-    p_802b18((char*)t4, e3);
-    p_803380(&s2, -1);
+inline BufferString::~BufferString() {
+    p_803f14(this);
+}
 
-    DWORD e4 = p_803ee0(&s1);
-    if (!p_802200((LPCSTR)e4, name)) {
-        p_8021fc(name);
-    }
+inline int BufferString::length() const {
+    return p_802fe0(this);
+}
 
-    DWORD e5 = p_803ee0(&s1);
-    p_802458(result, (LPCSTR)e5);
+inline char *BufferString::buffer(int n) {
+    return p_803384(this, n);
+}
 
-    p_803f14(&s2);
-    p_803f14(&s1);
-    p_802468(&s3);
+inline void BufferString::release(int n) {
+    p_803380(this, n);
+}
 
-    return result;
+inline const char *BufferString::text() const {
+    return p_803ee0(this);
+}
+
+String __cdecl f_00428310(const char *name, String suffix)
+{
+    BufferString destination(name);
+    PathRemoveFileSpecA(destination.buffer(destination.length()));
+    destination.release(-1);
+
+    const char *tail = suffix.c_str();
+    unsigned int count = strlen(tail);
+    PathAppendA(destination.buffer(count + destination.length() + 1), tail);
+    destination.release(-1);
+
+    if (!PathFileExistsA(destination.text()))
+        _mkdir(destination.text());
+
+    BufferString filename(name);
+    PathStripPathA(filename.buffer(filename.length()));
+    filename.release(-1);
+
+    tail = filename.text();
+    count = strlen(tail);
+    PathAppendA(destination.buffer(count + destination.length() + 1), tail);
+    destination.release(-1);
+
+    if (!MoveFileA(name, destination.text()))
+        DeleteFileA(name);
+
+    return String(destination.text());
 }

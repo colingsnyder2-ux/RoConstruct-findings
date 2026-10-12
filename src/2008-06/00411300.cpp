@@ -1,40 +1,18 @@
-// from server: 85% by king_originala
-extern "C" int (__stdcall *PostMessageA)(void *, unsigned int, unsigned int, long);
-
-struct Event {
-    int type;
-    int unused;
-    int key;
-};
-
-struct Window {
-    char padding[0x20];
-    void *handle;
-};
-
-class Result {
-    int handled;
-    int value;
-public:
-    __forceinline Result(int handledValue, int otherValue);
-};
-
-__forceinline Result::Result(int handledValue, int otherValue)
-    : handled(handledValue), value(otherValue)
-{
-}
+// from server: 90% by colin
+extern "C" int __stdcall PostMessageA(void*, unsigned int, unsigned int, int);
 
 struct ChatEnter {
-    char padding[0x14];
-    Window *window;
-    Result process(const Event &event);
+    char pad[0x14];
+    void* field14;
+    void method(int* a, int* b);
 };
 
-Result ChatEnter::process(const Event &event)
+void ChatEnter::method(int* a, int* b)
 {
-    if (event.type == 10 && event.key == 47) {
-        PostMessageA(window->handle, 0x468, 0, 0);
-        return Result(1, 0);
+    if (a[0] == 0xa && a[2] == 0x2f) {
+        void* p = *(void**)((char*)field14 + 0x20);
+        PostMessageA(p, 0x468, 0, 0);
+        b[0] = 1;
+        b[1] = 0;
     }
-    return Result(0, 0);
 }

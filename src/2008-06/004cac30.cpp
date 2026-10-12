@@ -1,50 +1,48 @@
-// from server: 48% by tester
+// from server: 92% by king_originala
 struct BitStream {
-    int data;
-    int pad;
-    int bitPos;
+    int bitsUsed;
+    char storage[0x114];
+
+    void Reset();
 };
 
-struct RoundRobinPhysicsSender {
-    char pad0[8];
-    int field8;
-    char padC[4];
-    char field10;
-    char pad11[3];
-    int field14;
+void __cdecl writeByte(BitStream*, unsigned char);
+void __cdecl writeTime(BitStream*, unsigned int);
+unsigned int __cdecl getTime();
+
+struct Item {
+    virtual void unused() = 0;
+    virtual unsigned int value() = 0;
+};
+
+struct Sender {
+    void send(BitStream*, unsigned int);
+};
+
+struct S {
+    char padding0[8];
+    Sender* sender;
+    char padding1[4];
+    bool initialized;
+    char padding2[3];
+    int limit;
     BitStream stream;
-    char pad2C[0x130 - 0x2C];
-    int field130;
+    int count;
 
-    int sendPacket(int maxPackets, void* stats);
+    bool f(Item*);
 };
 
-extern "C" void __stdcall BitStream_Reset(BitStream* bs);
-extern "C" void __stdcall BitStream_AppendBits(BitStream* bs, const void* data, unsigned int numBits);
-extern "C" void __stdcall BitStream_Append(BitStream* bs, const void* data, unsigned int numBytes);
-extern "C" unsigned int __stdcall RakNet_GetTime();
-extern "C" void __stdcall RoundRobinPhysicsSender_sendPhysicsData(RoundRobinPhysicsSender* self, BitStream* bs, int val);
-
-int RoundRobinPhysicsSender::sendPacket(int maxPackets, void* stats)
+bool S::f(Item* item)
 {
-    if (field10 == 0)
-    {
-        BitStream_Reset(&stream);
-        BitStream_AppendBits(&stream, &maxPackets, 0x18);
-        unsigned int t = RakNet_GetTime();
-        BitStream_Append(&stream, &t, 0x20);
-        BitStream_Append(&stream, &maxPackets, 0x50);
-        field130 += 1;
-        field10 = 1;
+    if (!initialized) {
+        stream.Reset();
+        writeByte(&stream, 0x18);
+        writeTime(&stream, getTime());
+        writeByte(&stream, 0x50);
+        ++count;
+        initialized = true;
     }
 
-    int v = *(int*)((char*)stats + 0);
-    int (*fn)(void*) = *(int(**)(void*))((char*)v + 4);
-    int r = fn(stats);
-
-    RoundRobinPhysicsSender_sendPhysicsData(this, &stream, r);
-
-    int bits = stream.data + 7;
-    bits >>= 3;
-    return bits < field14;
+    sender->send(&stream, item->value());
+    return ((stream.bitsUsed + 7) >> 3) < limit;
 }

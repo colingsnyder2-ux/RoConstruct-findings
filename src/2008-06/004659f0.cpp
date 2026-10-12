@@ -1,19 +1,23 @@
-// from server: 65% by colin
-struct CScriptEditor
-{
-    void sub_00465550();
-    void sub_00464540();
-    void func_004659f0(int, int, int);
+// from server: 100% by king_originala
+extern const char event_00975770[];
+extern const char event_00973d54[];
+
+struct CScriptEditor {
+    void func_00465550();
+    void func_00464540();
+    void func_004659f0(int, const void*, int);
 };
 
-void CScriptEditor::func_004659f0(int, int a2, int)
+void CScriptEditor::func_004659f0(int, const void* event, int)
 {
-    if (a2 == 0x975770)
-    {
-        sub_00465550();
+    if (event == event_00975770) {
+        reinterpret_cast<CScriptEditor*>(
+            reinterpret_cast<char*>(this) - 0xF0)->func_00465550();
+        return;
     }
-    else if (a2 == 0x973d54)
-    {
-        sub_00464540();
+
+    if (event == event_00973d54) {
+        reinterpret_cast<CScriptEditor*>(
+            reinterpret_cast<char*>(this) - 0xF0)->func_00464540();
     }
 }

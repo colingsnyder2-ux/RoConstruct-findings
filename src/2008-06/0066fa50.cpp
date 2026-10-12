@@ -1,4 +1,4 @@
-// from server: 90% by king_originala
+// from server: 100% by king_originala
 struct Vec2 {
     float x, y;
 };
@@ -25,9 +25,13 @@ struct Adorn {
     void draw(const Vec2& a, const Vec2& b, unsigned color);
 };
 
+#pragma float_control(precise, off, push)
+
 void Adorn::draw(const Vec2& a, const Vec2& b, unsigned color)
 {
     Renderer* renderer = context->renderer;
     renderer->draw(a.x, float(height() - 1) - a.y,
                    b.x, float(height() - 1) - b.y, color);
 }
+
+#pragma float_control(pop)

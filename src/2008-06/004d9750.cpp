@@ -1,24 +1,16 @@
-// from server: 27% by colin
-struct Table;
-
-extern "C" void* __cdecl operator_new(unsigned int size);
+// from server: 100% by king_originala
+void* __cdecl operator new(unsigned int);
+void __cdecl operator delete(void*);
 
 struct Table
 {
-    Table* ctor();
+    unsigned char storage[0x60];
+    Table();
 };
 
-Table* g_table;
+extern Table* table;
 
-Table* CreateTable()
+void initializeTable()
 {
-    Table* t = (Table*)operator_new(0x60);
-    if (t)
-    {
-        t = t->ctor();
-        g_table = t;
-        return t;
-    }
-    g_table = 0;
-    return 0;
+    table = new Table;
 }

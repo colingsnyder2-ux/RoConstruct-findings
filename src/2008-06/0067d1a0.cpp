@@ -1,4 +1,4 @@
-// from server: 54% by king_originala
+// from server: 62% by king_originala
 struct Value {
     unsigned int first;
     unsigned int second;
@@ -8,15 +8,10 @@ extern void __cdecl adjust_heap(Value *, int, int, Value);
 
 void __cdecl sort_heap(Value *first, Value *last)
 {
-    int bytes = reinterpret_cast<char *>(last) -
-                reinterpret_cast<char *>(first);
-
-    while ((bytes >> 3) > 1) {
-        Value *tail = reinterpret_cast<Value *>(
-            reinterpret_cast<char *>(first) + bytes - 8);
-        Value value = *tail;
-        *tail = *first;
-        adjust_heap(first, 0, (bytes - 8) >> 3, value);
-        bytes -= 8;
+    while (last - first > 1) {
+        Value value = last[-1];
+        last[-1] = *first;
+        adjust_heap(first, 0, last - first - 1, value);
+        --last;
     }
 }

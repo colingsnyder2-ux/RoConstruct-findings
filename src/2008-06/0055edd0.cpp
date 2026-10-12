@@ -1,21 +1,35 @@
-// from server: 52% by tester
-struct DescribedNonCreatable {
-    void __cdecl construct(void* arg);
+// from server: 100% by king_originala
+typedef void (__cdecl *Manager)(const void *, void *, int);
+
+struct Function {
+    Manager *manager;
+    union Storage {
+        double alignment[3];
+        char bytes[24];
+    } storage;
+
+    Function(const Function &);
+    ~Function();
 };
 
-void DescribedNonCreatable::construct(void* arg) {
-    void* p = *(void**)arg;
-    char buf[0x20];
-    *(int*)buf = 0;
-    void* q = *(void**)((char*)p + 8);
-    if (q) {
-        *(void**)buf = q;
-        void* r = *(void**)((char*)p + 8);
-        void* v = *(void**)r;
-        ((void (__stdcall*)(void*, void*, int))v)((char*)p + 0x10, buf + 8, 0);
+inline Function::Function(const Function &other) : manager(0)
+{
+    if (other.manager) {
+        manager = other.manager;
+        (*other.manager)(&other.storage, &storage, 0);
     }
-    void* a = *(void**)(buf + 0x2c);
-    void* b = *(void**)(buf + 0x28);
-    void* f = *(void**)p;
-    ((void (__stdcall*)(void*, void*))f)(b, a);
+}
+
+typedef void (__cdecl *Invoke)(void *, void *, Function);
+
+struct Object {
+    Invoke invoke;
+    unsigned int padding;
+    Function function;
+};
+
+void __cdecl reconstruct(Object **object, void *a, void *b)
+{
+    Object *p = *object;
+    p->invoke(a, b, p->function);
 }

@@ -1,28 +1,35 @@
-// from server: 77% by colin
-struct VCBrowserViewExternal_CProxy_IBrowserViewExternalEvents {
-    void* vtable0;
-    void* vtable4;
-    void* vtable8;
-    void* field0c;
-    void* field10;
-    void* field14;
-    void* field18;
-    unsigned short field1c;
-    void* construct(int);
+// from server: 100% by king_originala
+struct Interface
+{
+    virtual void slot0() = 0;
+    virtual void slot1() = 0;
 };
 
-void* VCBrowserViewExternal_CProxy_IBrowserViewExternalEvents::construct(int) {
-    this->field18 = 0;
-    this->field10 = 0;
-    this->field0c = 0;
-    this->vtable8 = (void*)0x80d388;
-    this->field1c = 0;
-    this->vtable0 = (void*)0x80d638;
-    this->vtable4 = (void*)0x80d620;
-    this->vtable8 = (void*)0x80d5fc;
-    this->field14 = (void*)0x80d5d4;
-    void* p = *(void**)0x96c268;
-    void** vt = *(void***)p;
-    ((void (__stdcall*)(void*))vt[1])(p);
+struct S
+{
+    unsigned int table0;
+    unsigned int table4;
+    volatile unsigned int table8;
+    unsigned int valueC;
+    unsigned int value10;
+    unsigned int table14;
+    unsigned int value18;
+    volatile unsigned short value1C;
+
+    S* initialize(int);
+};
+
+S* S::initialize(int)
+{
+    value18 = 0;
+    value10 = 0;
+    valueC = 0;
+    table8 = 0x80D388;
+    value1C = 0;
+    table0 = 0x80D638;
+    table4 = 0x80D620;
+    table8 = 0x80D5FC;
+    table14 = 0x80D5D4;
+    (*(Interface**)0x96C268)->slot1();
     return this;
 }

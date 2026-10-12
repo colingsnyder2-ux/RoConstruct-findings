@@ -1,6 +1,8 @@
-// from server: 87% by king_originala
-extern "C" void __cdecl _invalid_parameter_noinfo();
+// from server: 100% by king_originala
+extern "C" void (__cdecl *invalid_parameter_noinfo)();
 extern "C" void* __cdecl _RTDynamicCast(void*, long, void*, void*, int);
+extern "C" char model_modifier_type;
+extern "C" char skin_type;
 
 struct Container {
     unsigned char padding[16];
@@ -27,8 +29,7 @@ struct S {
 
 void* S::f()
 {
-    void (__cdecl *invalid)() =
-        *reinterpret_cast<void (__cdecl **)()>(0x802890);
+    void (__cdecl *invalid)() = invalid_parameter_noinfo;
 
     Iterator last;
     last.position = end;
@@ -49,30 +50,23 @@ void* S::f()
         if (current.position == last.position)
             return 0;
 
-        Container* container;
-        if (!current.proxy) {
+        if (!current.proxy)
             invalid();
-            container = 0;
-        } else {
-            container = current.proxy->container;
-        }
+        Container* container =
+            current.proxy ? current.proxy->container : 0;
 
         if (current.position >= container->end)
             invalid();
 
         void* result = _RTDynamicCast(
             *current.position, 0,
-            reinterpret_cast<void*>(0x936908),
-            reinterpret_cast<void*>(0x952f24), 0);
+            &model_modifier_type, &skin_type, 0);
         if (result)
             return result;
 
-        if (!current.proxy) {
+        if (!current.proxy)
             invalid();
-            container = 0;
-        } else {
-            container = current.proxy->container;
-        }
+        container = current.proxy ? current.proxy->container : 0;
 
         if (current.position >= container->end)
             invalid();

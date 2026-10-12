@@ -1,5 +1,10 @@
-// from server: 38% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs-net Streaming.cpp
+// from server: 79% by king_originala
+extern "C" double __cdecl fabs(double);
+#pragma intrinsic(fabs)
+
+extern const float tolerance;
+
+bool __cdecl approximatelyEqual(float a, float b)
+{
+    return a == b || fabs(b - a) > tolerance;
+}

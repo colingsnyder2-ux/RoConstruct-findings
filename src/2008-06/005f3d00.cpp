@@ -1,34 +1,63 @@
-// from server: 47% by colin
-struct S {
-    char pad[0x3c];
-    char field_3c;
-    char pad2[7];
-    char field_44;
-    int field_48;
-    int field_4c;
-    int field_50;
-    int field_54;
-    int field_58;
-    void* field_0;
-    void* construct(int, int, int);
+// from server: 100% by king_originala
+typedef void (__thiscall *StreambufConstructor)(void*);
+extern StreambufConstructor streambufConstructor;
+
+namespace std {
+    template<class T> struct char_traits;
+
+    template<class T, class Traits> class basic_streambuf {
+    protected:
+        basic_streambuf();
+    public:
+        ~basic_streambuf();
+    private:
+        char storage[56];
+    };
+
+    template<class T, class Traits>
+    inline basic_streambuf<T, Traits>::basic_streambuf()
+    {
+        streambufConstructor(reinterpret_cast<char*>(this) - 4);
+    }
+}
+
+struct Device {
+    int value;
 };
 
-extern "C" void __stdcall sub_802548();
-extern "C" void __fastcall sub_5f33a0(S* self, int, int*, int);
+struct Buffer : std::basic_streambuf<char, std::char_traits<char> > {
+    unsigned char state;
+    unsigned char padding[3];
+    Device device;
+    unsigned char engaged;
+    unsigned char padding2[3];
+    char* first;
+    char* last;
+    char* current;
+    char* limit;
+    int capacity;
 
-void* S::construct(int a, int b, int c)
+    Buffer();
+};
+
+inline Buffer::Buffer()
+    : state(0),
+      engaged(0),
+      first(0),
+      last(0),
+      current(0),
+      limit(0),
+      capacity(16)
 {
-    sub_802548();
-    field_3c = 0;
-    field_44 = 0;
-    field_48 = 0;
-    field_4c = 0;
-    field_50 = 0;
-    field_54 = 0;
-    field_58 = 0x10;
-    field_0 = (void*)0x840a14;
-    int tmp = *(int*)a;
-    sub_5f33a0(this, b, &tmp, c);
+}
 
-    return this;
+struct S : Buffer {
+    S(const Device& source, int mode, int size);
+    virtual ~S();
+    void open(const Device& source, int mode, int size);
+};
+
+S::S(const Device& source, int mode, int size)
+{
+    open(Device(source), mode, size);
 }

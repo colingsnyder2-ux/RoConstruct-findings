@@ -1,5 +1,44 @@
-// from server: 58% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs util/RunStateOwner.cpp
+// from server: 91% by king_originala
+struct Object {
+    virtual ~Object();
+};
+
+struct Owner {
+    Object* object;
+    unsigned int reserved;
+    ~Owner();
+};
+
+inline Owner::~Owner()
+{
+    if (object)
+        delete object;
+}
+
+struct Header {
+    unsigned int reserved[5];
+    virtual ~Header();
+};
+
+inline Header::~Header()
+{
+}
+
+struct Queue {
+    unsigned char storage[44];
+    ~Queue();
+};
+
+struct Marshaller {
+    Header header;
+    Queue queue;
+    Owner first;
+    Owner second;
+    Owner third;
+
+    ~Marshaller();
+};
+
+Marshaller::~Marshaller()
+{
+}

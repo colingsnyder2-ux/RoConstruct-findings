@@ -1,36 +1,27 @@
-// from server: 77% by king_originala
-extern "C" void* __cdecl malloc(unsigned int);
-extern "C" void __cdecl free(void*);
+// from server: 78% by king_originala
+extern "C" void* (__cdecl *allocate)(unsigned int);
+
+inline void* __cdecl operator new(unsigned int size)
+{
+    return allocate(size);
+}
+
+void __cdecl operator delete(void*);
 
 struct Deleter {};
 
-struct Texture {
+struct Object {
     unsigned char storage[0x404];
-
-    Texture(int);
-
-    static void* operator new(unsigned int size);
-    static void operator delete(void* p);
+    Object(bool);
 };
 
-inline void* Texture::operator new(unsigned int size)
-{
-    return malloc(size);
-}
-
-inline void Texture::operator delete(void* p)
-{
-    free(p);
-}
-
-struct Product {
-    void* object;
+struct S {
+    Object* object;
     void* control;
-
-    Product(Texture*, Deleter);
+    S(Object*, Deleter);
 };
 
-Product __cdecl create()
+S __cdecl create()
 {
-    return Product(new Texture(1), Deleter());
+    return S(new Object(true), Deleter());
 }

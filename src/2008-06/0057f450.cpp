@@ -1,18 +1,23 @@
-// from server: 35% by colin
-struct FilteredSelection {
-    void construct(char* name);
-    void* vtable;
-    char pad[0x20];
+// from server: 98% by king_originala
+struct String;
+
+extern void (__thiscall *StringCopy)(String*, const String&);
+extern void (__thiscall *StringDestroy)(String*);
+
+struct String {
+    char storage[28];
+    String(const String& other) { StringCopy(this, other); }
+    ~String() { StringDestroy(this); }
 };
 
-extern "C" void __stdcall sub_80245c(void*, void*);
-extern "C" void __stdcall sub_802468(void*);
-extern "C" void __stdcall sub_57e730();
+struct Base {
+    Base(String, int);
+    virtual ~Base();
+};
 
-void FilteredSelection::construct(char* name) {
-    char buf[0x1c];
-    sub_80245c(buf, name);
-    sub_57e730();
-    this->vtable = (void*)0x830a50;
-    sub_802468(buf);
-}
+struct S : Base {
+    S(String, int);
+    virtual ~S();
+};
+
+S::S(String text, int value) : Base(text, value) {}

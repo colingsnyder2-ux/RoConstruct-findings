@@ -1,4 +1,4 @@
-// from server: 78% by king_originala
+// from server: 83% by king_originala
 struct Callback {
     virtual void invoke(void*, void*) = 0;
 };
@@ -13,8 +13,8 @@ struct S {
 
 void S::f(void* argument, Callback* callback)
 {
+    void* object = 0;
     try {
-        void* object = 0;
         if (this)
             object = reinterpret_cast<char*>(this) - 0x190;
         callback->invoke(object, argument);

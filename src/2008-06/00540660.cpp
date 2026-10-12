@@ -1,13 +1,21 @@
-// from server: 38% by colin
-struct Bucket {
-    int f(int);
-    char pad[0x10];
-    int field10;
+// from server: 100% by king_originala
+#pragma optimize("", off)
+
+struct Bucket;
+
+struct Iterator {
+    Iterator(void* node, Bucket* owner);
+    void* node;
+    Bucket* owner;
 };
 
-extern "C" int __stdcall sub_5426f0(int, int, Bucket*);
+struct Bucket {
+    unsigned char padding[16];
+    void* node;
+    Iterator f();
+};
 
-int Bucket::f(int a) {
-    sub_5426f0(this->field10, a, this);
-    return a;
+Iterator Bucket::f()
+{
+    return Iterator(node, this);
 }

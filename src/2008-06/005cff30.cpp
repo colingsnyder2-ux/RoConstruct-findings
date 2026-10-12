@@ -1,5 +1,16 @@
-// from server: 56% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs util/Name.cpp
+// from server: 100% by king_originala
+extern "C" void* __cdecl __RTDynamicCast(void*, long, void*, void*, int);
+
+struct S {
+    char padding[0x104];
+    void* instance;
+    int f();
+};
+
+int S::f()
+{
+    if (instance &&
+        __RTDynamicCast(instance, 0, (void*)0x92907C, (void*)0x9353EC, 0))
+        return 1;
+    return 0;
+}

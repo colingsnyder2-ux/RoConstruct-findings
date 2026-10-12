@@ -1,4 +1,4 @@
-// from server: 56% by king_originala
+// from server: 58% by king_originala
 struct Vector3 {
     float x, y, z;
 };
@@ -9,38 +9,39 @@ struct Body {
     void updatePV();
 };
 
-struct Size {
+struct Primitive {
+    char pad[0xa0];
+    Body* body;
+    const Vector3& getValue();
+};
+
+struct Dimensions {
     char pad[4];
     Vector3 value;
 };
 
 struct Box {
-    Vector3 low, high;
-    Box translated(const Vector3& value) const;
+    Vector3 minimum;
+    Vector3 maximum;
+    Box translated(const Vector3& offset) const;
 };
 
-extern const float scale;
-
-struct Primitive {
+struct S_func_00598b60 {
     char pad[0x9c];
-    Size* size;
-    Body* body;
-    const Vector3& getValue();
-};
-
-struct S : Primitive {
+    Dimensions* dimensions;
     Box f();
 };
 
-Box S::f()
+Box S_func_00598b60::f()
 {
-    const Vector3& value = size->value;
-    float x = value.x * scale;
-    float y = value.y * scale;
-    float z = value.z * scale;
-    Box bounds = {
-        { -x, -y, -z },
-        { x, y, z }
+    Vector3 half = {
+        dimensions->value.x * 0.5f,
+        dimensions->value.y * 0.5f,
+        dimensions->value.z * 0.5f
     };
-    return bounds.translated(getValue());
+    Box bounds = {
+        { -half.x, -half.y, -half.z },
+        { half.x, half.y, half.z }
+    };
+    return bounds.translated(((Primitive*)this)->getValue());
 }

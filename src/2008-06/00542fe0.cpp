@@ -1,35 +1,36 @@
-// from server: 37% by colin
-struct VChunk {
-    bool sub_540ED0(void*);
-    void* sub_54F140(void*);
-    void* sub_5409B0(void*);
-    void sub_544F60();
-    void sub_544730(void*, void*, void*);
-    void sub_544780(void*, void*, void*);
-    void* sub_545730(void*, void*);
-    bool sub_540F20(void*);
-    void* method(void*, void*, void*, void*, void*);
+// from server: 100% by king_originala
+#pragma optimize("", off)
+
+struct S;
+
+struct Result {
+    unsigned int value;
+    S* owner;
+
+    void __thiscall initialize(unsigned int, S*);
+    bool __thiscall equal(const Result&);
+    bool __thiscall different(const Result&);
+    Result __thiscall advance(int);
 };
 
-void* VChunk::method(void* a, void* b, void* c, void* d, void* e) {
-    void* local8;
-    void* local10;
-    void* local18;
-    void* local20;
+struct S {
+    Result __thiscall begin();
+    Result __thiscall end();
+    void __thiscall clear();
+    Result __thiscall erase(Result);
+    Result __thiscall finish(Result);
+    Result __thiscall f(Result, Result);
+};
 
-    sub_54F140(&local8);
-    if (sub_540ED0(&b)) {
-        sub_5409B0(&local10);
-        if (sub_540ED0(&d)) {
-            sub_544F60();
-            sub_54F140(a);
-            return a;
-        }
+Result S::f(Result first, Result last)
+{
+    if (first.equal(begin()) && last.equal(end())) {
+        clear();
+        return begin();
+    } else {
+        while (first.different(last))
+            erase(first.advance(0));
+
+        return finish(first);
     }
-    while (sub_540F20(&d)) {
-        sub_545730(&local18, 0);
-        sub_544780(&local20, *(void**)local18, *((void**)local18 + 1));
-    }
-    sub_544730(a, b, c);
-    return a;
 }

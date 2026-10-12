@@ -1,31 +1,47 @@
-// from server: 54% by colin
-struct S {
-    char pad[0x14];
-    char pad2[0x130 - 0x14];
-    float f130;
-    float f134;
-    float f138;
-    void method(int);
+// from server: 100% by king_originala
+struct Vector3
+{
+    float x, y, z;
+
+    Vector3(float a, float b, float c) : x(a), y(b), z(c) {}
+    Vector3(const Vector3& v) : x(v.x), y(v.y), z(v.z) {}
 };
 
-struct T {
-    char pad[0x10];
-    void sub_639490(float*);
+struct Signal
+{
+    void fire(char* context, Vector3 value);
 };
 
-extern "C" void* __stdcall sub_56b620(const char*);
+struct Entry
+{
+    char padding[0x10];
+    Signal signal;
+};
 
-void S::method(int arg) {
-    float a = f130;
-    float b = f134;
-    float c = f138;
-    void* p = (this != 0) ? (void*)((char*)this + 0x14) : 0;
-    void* r = sub_56b620((const char*)0x97d29c);
-    if (r != 0) {
-        float tmp[3];
-        tmp[0] = a;
-        tmp[1] = b;
-        tmp[2] = c;
-        ((T*)r)->sub_639490(tmp);
+struct Registry
+{
+    Entry* find(void* key);
+};
+
+extern Registry registry;
+
+struct S
+{
+    char padding[0x14];
+    char key[0x11c];
+    float x, y, z;
+
+    void update(void* unused);
+};
+
+void S::update(void*)
+{
+    void* identity = this ? key : 0;
+    Vector3 value(x, y, z);
+    Entry* entry = registry.find(identity);
+    if (entry)
+    {
+        char context;
+        entry->signal.fire(&context, value);
     }
 }

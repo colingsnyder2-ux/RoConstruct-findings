@@ -1,33 +1,60 @@
-// from server: 54% by colin
-struct LocalBackpackItem {
-    char pad[0x168];
-    int field_168;
-    int field_16c;
-    char pad2[0x190 - 0x170];
-    int field_190;
-    char pad3[0x1a8 - 0x194];
-    int field_1a8;
-    void func_005fc1d0();
+// from server: 88% by king_originala
+struct Vector;
+
+struct Signal {
+    char data[0x20];
+    void disconnect(void* connection);
 };
 
-extern "C" void __stdcall sub_0055afd0();
-extern "C" void __stdcall sub_005e5a80();
-extern "C" void __stdcall sub_00456e80();
+struct Object {
+    char padding[0x24];
+    Signal first;
+    Signal second;
+};
 
-void LocalBackpackItem::func_005fc1d0()
+struct Handle {
+    Object* pointer;
+    void* control;
+
+    void reset();
+    void disconnectFirst(void* connection);
+    void disconnectSecond(void* connection);
+};
+
+inline void Handle::disconnectFirst(void* connection)
 {
-    sub_0055afd0();
-    if (field_190 != 0) {
-        int* p = &field_190;
-        int v = *p;
-        if (v != 0) {
-            sub_005e5a80();
-        }
-        v = *p;
-        if (v != 0) {
-            sub_005e5a80();
-        }
-        sub_00456e80();
+    Object* p = *reinterpret_cast<Object* volatile*>(&pointer);
+    if (p)
+        p->first.disconnect(connection);
+}
+
+inline void Handle::disconnectSecond(void* connection)
+{
+    Object* p = *reinterpret_cast<Object* volatile*>(&pointer);
+    if (p)
+        p->second.disconnect(connection);
+}
+
+struct S {
+    char padding0[0x168];
+    unsigned long firstConnection;
+    unsigned long secondConnection;
+    char padding1[0x20];
+    Handle handle;
+    char padding2[0x10];
+    int state;
+
+    Vector* owner();
+    void f();
+};
+
+void S::f()
+{
+    owner();
+    if (handle.pointer) {
+        handle.disconnectFirst(&firstConnection);
+        handle.disconnectSecond(&secondConnection);
+        handle.reset();
     }
-    field_1a8 = -1;
+    state = -1;
 }

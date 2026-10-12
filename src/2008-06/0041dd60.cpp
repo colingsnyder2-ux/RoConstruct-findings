@@ -1,5 +1,24 @@
-// from server: 71% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: openrbx-client App/util/RunStateOwner.cpp
+// from server: 76% by king_originala
+struct String
+{
+    unsigned char storage[28];
+    String(const char*);
+    String(const String&);
+};
+
+struct Base
+{
+    Base(String, int);
+    virtual void v();
+};
+
+struct S : Base
+{
+    S(int, const char*);
+    virtual void v();
+};
+
+S::S(int value, const char* text)
+    : Base(String(text), value)
+{
+}

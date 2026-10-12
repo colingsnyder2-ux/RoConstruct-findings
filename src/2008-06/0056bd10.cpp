@@ -1,5 +1,17 @@
-// from server: 62% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: boost-1.34.1 libs/signals/src/signal_base.cpp
+// from server: 100% by king_originala
+struct Object {
+    void fill(void *result, int value);
+};
+
+struct S {
+    Object *object;
+    int value;
+    void *f(void *result);
+};
+
+void *S::f(void *result)
+{
+    volatile int temporary = 0;
+    object->fill(result, value);
+    return result;
+}

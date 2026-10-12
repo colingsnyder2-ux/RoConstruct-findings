@@ -1,4 +1,4 @@
-// from server: 79% by king_originala
+// from server: 86% by king_originala
 struct Vector3 {
     float x, y, z;
 };
@@ -76,6 +76,7 @@ struct S {
 
 void S::execute(Notification* notification)
 {
+    Context* saved = *reinterpret_cast<Context* volatile*>(&context);
     prepare();
 
     SelectionOwner* owner = context ? context->getSelection() : 0;
@@ -94,7 +95,7 @@ void S::execute(Notification* notification)
         state.finish();
 
         int action = 4;
-        if (0.0f == result.y)
+        if (!result.y)
             action = 1;
 
         ActionTarget* target = context ? context->getTarget() : 0;

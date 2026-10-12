@@ -1,30 +1,67 @@
-// from server: 47% by colin
-struct CMultiPlayerPane {
-    char pad[0x54];
-    void* field_54;
-    bool Init(int a, int b);
+// from server: 100% by king_originala
+struct Rect
+{
+    int left, top, right, bottom;
 };
 
-extern "C" void* __stdcall func_006a06f2(int, int, unsigned int, void*, int, int, int);
-extern "C" char* func_00411360();
-extern "C" void* __stdcall func_006a0fc2(void*);
-extern "C" void __stdcall func_00412800(void*, void*);
-extern "C" void* __stdcall SendMessageA(void*, unsigned int, unsigned int, unsigned int);
+struct Pane;
 
-bool CMultiPlayerPane::Init(int a, int b)
+struct PaneTable
 {
-    void* v;
-    if (func_006a06f2(0, 0, 0x50000000, &v, b, 0x3ea, 0) == 0)
-        return false;
+    void* unused[23];
+    int (__thiscall *create)(Pane*, const char*, const char*,
+                            unsigned long, const Rect*, void*,
+                            unsigned int, void*);
+};
 
-    void* obj = func_006a0fc2(func_00411360());
-    field_54 = obj;
+struct Pane
+{
+    PaneTable* table;
+    char padding[28];
+    void* window;
 
-    void* v2;
-    if (((bool (__thiscall*)(void*, int, int, unsigned int, void*, int, int, int))*(void**)(*(char**)obj + 0x5c))(obj, 0, 0, 0x50000000, &v2, b, 0x3eb, 0) == 0)
-        return false;
+    void configure(void*, void*);
+};
 
-    func_00412800(field_54, v2);
-    SendMessageA(*(void**)((char*)field_54 + 0x20), 0x364, 0, 0);
-    return true;
+struct Manager
+{
+    Pane* getPane();
+};
+
+extern char* func_00411360();
+
+extern "C" long (__stdcall *SendMessageA)(
+    void*, unsigned int, unsigned int, long);
+
+struct CMultiPlayerPane
+{
+    char padding[84];
+    Pane* pane;
+
+    int create(const char*, const char*, unsigned long,
+               const Rect*, void*, unsigned int, void*);
+    int initialize(void*, void*);
+};
+
+int CMultiPlayerPane::initialize(void* parent, void* context)
+{
+    Rect rect = { 0, 0, 0, 0 };
+
+    if (!create(0, 0, 0x50000000, &rect, parent, 1002, 0))
+        return 0;
+
+    pane = reinterpret_cast<Manager*>(func_00411360())->getPane();
+
+    rect.left = 0;
+    rect.top = 0;
+    rect.right = 0;
+    rect.bottom = 0;
+
+    if (!pane->table->create(pane, 0, 0, 0x50000000,
+                             &rect, this, 1003, 0))
+        return 0;
+
+    pane->configure(context, parent);
+    SendMessageA(pane->window, 0x364, 0, 0);
+    return 1;
 }

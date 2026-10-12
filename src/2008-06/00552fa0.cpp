@@ -1,21 +1,23 @@
-// from server: 36% by colin
-struct Vec3 {
+// from server: 100% by king_originala
+struct Vector3
+{
     float x, y, z;
-    Vec3();
+    Vector3();
 };
 
-struct Sub {
-    char pad[0xc];
-    void init();
+struct Member
+{
+    Member();
 };
 
-struct S {
-    char pad0[0xc];
-    Sub sub;
-    void f();
+struct S
+{
+    Vector3 first;
+    Member second;
+    S();
 };
 
-void S::f() {
-    Vec3 v;
-    sub.init();
+#pragma optimize("", off)
+S::S()
+{
 }

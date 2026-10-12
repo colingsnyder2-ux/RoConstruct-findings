@@ -1,6 +1,8 @@
-// from server: 66% by king_originala
+// from server: 73% by king_originala
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
+extern "C" long __cdecl _InterlockedDecrement(volatile long*);
+#pragma intrinsic(_InterlockedDecrement)
 
 extern "C" void (__cdecl* invalid_parameter_noinfo)();
 extern "C" void __cdecl alignedFree(void*);
@@ -23,17 +25,16 @@ struct Shared {
 inline Shared::Shared(const Shared& other)
     : object(other.object), control(other.control)
 {
-    Control* p = control;
-    if (p)
-        _InterlockedExchangeAdd(&p->strong, 1);
+    if (control)
+        _InterlockedExchangeAdd(&control->strong, 1);
 }
 
 inline Shared::~Shared()
 {
     Control* p = control;
-    if (p && _InterlockedExchangeAdd(&p->strong, -1) == 1) {
+    if (p && _InterlockedDecrement(&p->strong) == 0) {
         p->dispose();
-        if (_InterlockedExchangeAdd(&p->weak, -1) == 1)
+        if (_InterlockedDecrement(&p->weak) == 0)
             p->destroy();
     }
 }
@@ -51,10 +52,10 @@ struct Proxy {
 };
 
 struct Vector {
-    Proxy* volatile proxy;
+    Proxy* proxy;
     unsigned long reserved[2];
-    Shared* volatile first;
-    Shared* volatile last;
+    Shared* first;
+    Shared* last;
 };
 
 struct Buffer {

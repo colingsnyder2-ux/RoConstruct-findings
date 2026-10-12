@@ -1,12 +1,17 @@
-// from server: 37% by atomic.potato
-extern "C" int __cdecl sub_6A158C(int, int);
+// from server: 73% by king_originala
+struct Exception
+{
+    const char* message;
+    Exception(const char* text) : message(text) {}
+    ~Exception();
+};
 
-struct S {
+struct S_func_007ad060
+{
     void f();
 };
 
-void S::f()
+void S_func_007ad060::f()
 {
-    int local = 0;
-    sub_6A158C((int)&local, 0x90e47c);
+    throw Exception("shouldn't be here");
 }

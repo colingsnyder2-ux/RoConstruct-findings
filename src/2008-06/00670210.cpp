@@ -1,112 +1,153 @@
-// from server: 43% by colin
-struct SharedPtr {
-    void* p;
-    void* q;
-    void* r;
-};
+// from server: 76% by king_originala
+extern long (__stdcall * const InterlockedDecrement)(volatile long*);
 
-struct TexturePtr {
-    char pad[8];
-    void* res;
-    TexturePtr(const SharedPtr&);
-    ~TexturePtr();
-};
+struct ImagePtr;
 
-struct TextureManager {
-    static TextureManager& getSingleton();
-    void* getByName(const char*, const char*);
-};
+struct Image {
+    virtual void destroy(unsigned);
+    virtual void slot1();
+    virtual void slot2();
+    virtual void slot3();
+    virtual void slot4();
+    virtual void slot5();
+    virtual ImagePtr resolve(void*);
 
-struct GImage {
-    char pad[8];
-    void* img;
+    volatile long references;
+    void* resource;
+    char name[4];
+
     void release();
 };
 
-extern "C" {
-    long __stdcall InterlockedDecrement(long volatile*);
-    void* __stdcall sub_804C44();
-    void __stdcall sub_804C58(void*, void*);
-    void __stdcall sub_804C8C(void*);
-}
-
-extern float g_819778;
-
-struct AdornRbxGfx {
-    char pad0[4];
-    void* field4;
-    void method(void* a, void* b);
+struct ImagePtr {
+    Image* pointer;
+    ~ImagePtr();
 };
 
-void AdornRbxGfx::method(void* a, void* b)
+inline ImagePtr::~ImagePtr()
 {
-    SharedPtr sp;
-    sp.p = 0;
-    sp.q = 0;
-    sp.r = 0;
-
-    void* vtable = *(void**)a;
-    void (*fn)(void*, SharedPtr*, void*) = *(void (**)(void*, SharedPtr*, void*))((char*)vtable + 0x18);
-    fn(a, &sp, field4);
-
-    if (sp.p != 0) {
-        if (InterlockedDecrement((long*)((char*)sp.p + 4)) != 0) {
-            GImage* g = (GImage*)sp.p;
-            g->release();
-            if (sp.p != 0) {
-                void** vt = *(void***)sp.p;
-                void (*f2)(void*, int) = (void (*)(void*, int))vt[0];
-                f2(sp.p, 1);
-            }
-        }
+    if (pointer && InterlockedDecrement(&pointer->references) == 0) {
+        pointer->release();
+        if (pointer)
+            pointer->destroy(1);
     }
+}
 
-    TextureManager& tm = TextureManager::getSingleton();
-    void* vt2 = *(void**)&tm;
-    void* (*getTex)(void*, SharedPtr*, void*) = *(void* (**)(void*, SharedPtr*, void*))((char*)vt2 + 0x4c);
-    SharedPtr texRes;
-    getTex(&tm, &texRes, (char*)a + 0xc);
+struct Shared;
 
-    TexturePtr tex(texRes);
-    sub_804C58(&tex, &texRes);
+struct SharedTable {
+    void* destructor;
+    void (__thiscall *dispose)(Shared*);
+};
 
-    if (texRes.p != 0) {
-        if (InterlockedDecrement((long*)texRes.p) == 0) {
-            void** vt3 = *(void***)texRes.p;
-            void (*f3)(void*) = (void (*)(void*))vt3[1];
-            f3(&texRes);
-        }
+extern SharedTable sharedTable;
+
+struct Shared {
+    SharedTable* table;
+    void* pointer;
+    unsigned* references;
+
+    ~Shared();
+};
+
+inline Shared::~Shared()
+{
+    table = &sharedTable;
+    if (references) {
+        --*references;
+        if (*references == 0)
+            table->dispose(this);
     }
+}
 
-    void* vt4 = *(void**)&tex;
-    int (*getW)(void*) = *(int (**)(void*))((char*)vt4 + 0x64);
-    int w = getW(&tex);
-    void* vt5 = *(void**)&tex;
-    int (*getH)(void*) = *(int (**)(void*))((char*)vt5 + 0x60);
-    int h = getH(&tex);
+struct Texture;
 
-    float fw = (float)w;
-    if (w < 0) fw += g_819778;
-    float fh = (float)h;
-    if (h < 0) fh += g_819778;
+struct TextureTable {
+    void* unused[24];
+    unsigned (__thiscall *first)(Texture*);
+    unsigned (__thiscall *second)(Texture*);
+};
 
-    float* out = (float*)b;
-    out[0] = 0.0f;
-    out[1] = 0.0f;
-    out[2] = fw;
-    out[3] = fh;
+struct Texture {
+    TextureTable* table;
+};
 
-    sub_804C8C(&tex);
+struct TexturePtr;
 
-    if (sp.p != 0) {
-        if (InterlockedDecrement((long*)((char*)sp.p + 4)) == 0) {
-            GImage* g2 = (GImage*)sp.p;
-            g2->release();
-            if (sp.p != 0) {
-                void** vt6 = *(void***)sp.p;
-                void (*f4)(void*, int) = (void (*)(void*, int))vt6[0];
-                f4(sp.p, 1);
-            }
-        }
-    }
+extern void (__thiscall *constructTexture)(TexturePtr*, const Shared&);
+extern void (__thiscall *destroyTexture)(TexturePtr*);
+
+struct TexturePtr {
+    void* table;
+    Texture* pointer;
+    unsigned* references;
+
+    TexturePtr(const Shared&);
+    ~TexturePtr();
+};
+
+inline TexturePtr::TexturePtr(const Shared& source)
+{
+    constructTexture(this, source);
+}
+
+inline TexturePtr::~TexturePtr()
+{
+    destroyTexture(this);
+}
+
+struct Manager {
+    virtual void slot0();
+    virtual void slot1();
+    virtual void slot2();
+    virtual void slot3();
+    virtual void slot4();
+    virtual void slot5();
+    virtual void slot6();
+    virtual void slot7();
+    virtual void slot8();
+    virtual void slot9();
+    virtual void slot10();
+    virtual void slot11();
+    virtual void slot12();
+    virtual void slot13();
+    virtual void slot14();
+    virtual void slot15();
+    virtual void slot16();
+    virtual void slot17();
+    virtual void slot18();
+    virtual Shared lookup(const void*);
+};
+
+extern Manager& (__cdecl *getSingleton)();
+
+struct Rectangle {
+    float x, y, z, w;
+
+    Rectangle(float, float, float, float);
+};
+
+inline Rectangle::Rectangle(float a, float b, float c, float d)
+    : x(a), y(b), z(c), w(d)
+{
+}
+
+struct S {
+    void* unused;
+    void* context;
+
+    Rectangle f(ImagePtr image);
+};
+
+Rectangle S::f(ImagePtr image)
+{
+    image.pointer->resolve(context);
+    TexturePtr texture(getSingleton().lookup(image.pointer->name));
+
+    unsigned second = texture.pointer->table->second(texture.pointer);
+    unsigned first = texture.pointer->table->first(texture.pointer);
+    float height = (float)second;
+    float width = (float)first;
+
+    return Rectangle(0.0f, 0.0f, height, width);
 }

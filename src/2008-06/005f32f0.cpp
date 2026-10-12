@@ -1,15 +1,5 @@
-// from server: 62% by king_originala
+// from server: 68% by king_originala
 extern "C" unsigned __int64 __stdcall sub_5f5b70(void *, void *, const char *, int);
-
-union Result
-{
-    unsigned __int64 value;
-    struct
-    {
-        unsigned long low;
-        int high;
-    } words;
-};
 
 struct S
 {
@@ -48,8 +38,7 @@ struct S
     void *context;
     char pad48[0x0c];
     unsigned long reserved : 3;
-    volatile unsigned long buffered : 1;
-    unsigned long rest : 28;
+    volatile unsigned long buffered : 29;
 
     int f(int value);
 };
@@ -57,16 +46,17 @@ struct S
 int S::f(int value)
 {
     S *p = this;
-    if (p->buffered && !*p->current)
+    if ((p->buffered & 1) && !*p->current)
         p->initialize();
 
     int ch = value;
     if (ch != -1)
     {
-        if (p->buffered)
+        if (p->buffered & 1)
         {
             int available = *p->remaining;
-            if (*p->current == *p->current + available)
+            char *next = *p->current;
+            if (next == next + available)
             {
                 char *base = *p->begin;
                 int length = int(*p->current - base);
@@ -74,11 +64,11 @@ int S::f(int value)
                 {
                     void *context = p->context;
                     p = reinterpret_cast<S *>(reinterpret_cast<char *>(p) + 0x40);
-                    Result result;
-                    result.value = sub_5f5b70(p, context, base, length);
-                    available = result.words.high;
+                    available = int(sub_5f5b70(p, context, base, length) >> 32);
                 }
-                if (*p->current == *p->current + available)
+
+                next = *p->current;
+                if (next == next + available)
                     return -1;
             }
 

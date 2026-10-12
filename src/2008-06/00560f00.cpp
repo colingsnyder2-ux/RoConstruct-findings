@@ -1,55 +1,44 @@
-// from server: 84% by colin
-struct type_info {
-    bool operator==(const type_info&) const;
+// from server: 100% by king_originala
+extern void *__cdecl operator new(unsigned int);
+extern void __cdecl operator delete(void *);
+
+struct TypeInfo;
+extern TypeInfo targetType;
+extern bool (__thiscall *typeEqual)(const void *, const TypeInfo *);
+
+typedef void (__cdecl *Manager)(void *, void *, int);
+
+struct Block {
+    char reserved[8];
+    Manager *manager;
+    char padding[4];
+    char payload[24];
 };
 
-struct ContentProvider;
+extern void __cdecl copyBlock(Block *, const void *);
 
-struct DescribedNonCreatable {
-    void* field0;
-    void* field4;
-    void* field8;
-    char pad[4];
-    void* field10;
-};
-
-extern "C" void* __cdecl operator_new(unsigned int);
-extern "C" void __cdecl operator_delete(void*);
-extern "C" void __cdecl sub_55F6A0(void*, void*);
-extern "C" void __cdecl sub_6A067A(void*);
-extern "C" void* __cdecl sub_6A0920(unsigned int);
-extern "C" bool __cdecl sub_802878(const type_info*, const type_info*);
-
-extern type_info type_info_944430;
-
-void __cdecl sub_560F00(int mode, DescribedNonCreatable** out, DescribedNonCreatable** in)
+void __cdecl manage(const void *const *source, void **destination, int operation)
 {
-    if (mode == 0) {
-        DescribedNonCreatable* src = *out;
-        void* p = sub_6A0920(0x28);
-        DescribedNonCreatable* obj = (DescribedNonCreatable*)p;
-        sub_55F6A0(obj, src);
-        *in = obj;
-        return;
-    }
-    if (mode == 1) {
-        DescribedNonCreatable* obj = *in;
-        void* p = obj->field8;
-        if (p != 0) {
-            void (*fn)(void*, void*, int) = *(void (**)(void*, void*, int))p;
-            if (fn != 0) {
-                fn(obj->field10, obj->field10, 1);
-            }
-            obj->field8 = 0;
+    if (operation == 0) {
+        const void *value = *source;
+        Block *block = static_cast<Block *>(operator new(40));
+        copyBlock(block, value);
+        *destination = block;
+    } else if (operation == 1) {
+        Block *block = static_cast<Block *>(*destination);
+        if (block->manager) {
+            Manager callback = *block->manager;
+            void *payload = block->payload;
+            if (callback)
+                callback(payload, payload, 1);
+            block->manager = 0;
         }
-        sub_6A067A(obj);
-        *in = 0;
-        return;
-    }
-    DescribedNonCreatable* obj = *in;
-    if (sub_802878((const type_info*)obj->field0, &type_info_944430)) {
-        *in = *out;
+        operator delete(block);
+        *destination = 0;
     } else {
-        *in = 0;
+        if (typeEqual(*destination, &targetType))
+            *destination = const_cast<void *>(*source);
+        else
+            *destination = 0;
     }
 }

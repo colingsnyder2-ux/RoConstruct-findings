@@ -1,4 +1,4 @@
-// from server: 86% by king_originala
+// from server: 91% by king_originala
 extern "C" unsigned int __cdecl strlen(const char *);
 #pragma intrinsic(strlen)
 
@@ -34,11 +34,16 @@ String::String(const char *text)
     if (text && ((unsigned int)text & 0xffff0000U) == 0) {
         unsigned int id = (unsigned short)(unsigned int)text;
         const char *resource = lookupString(id, 0);
-        if (resource)
+        if (resource) {
             assignResource(resource, id);
-        return;
+            return;
+        }
+    } else {
+        unsigned int length;
+        if (!text)
+            length = 0;
+        else
+            length = strlen(text);
+        assign(text, length);
     }
-
-    unsigned int length = text ? strlen(text) : 0;
-    assign(text, length);
 }

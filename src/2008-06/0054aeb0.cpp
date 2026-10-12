@@ -1,10 +1,14 @@
-// from server: 35% by atomic.potato
-struct S
-{
-    int f(int index);
+// from server: 100% by king_originala
+struct Mesh {
+    unsigned int* data;
+    unsigned int* get(unsigned int index);
 };
 
-int S::f(int index)
+#pragma optimize("", off)
+unsigned int* Mesh::get(unsigned int index)
 {
-    return ((int*)this)[0] + index * 4;
+    do {
+    } while (0);
+
+    return data + index;
 }

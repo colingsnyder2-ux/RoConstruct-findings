@@ -1,8 +1,6 @@
-// from server: 82% by king_originala
+// from server: 86% by king_originala
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
-extern "C" long __cdecl _InterlockedDecrement(volatile long*);
-#pragma intrinsic(_InterlockedDecrement)
 
 extern "C" void (__cdecl* _invalid_parameter_noinfo)();
 
@@ -41,9 +39,9 @@ inline Shared::Shared(const Shared& other) {
 }
 
 inline Shared::~Shared() {
-    if (control && _InterlockedDecrement(&control->strong) == 0) {
+    if (control && _InterlockedExchangeAdd(&control->strong, -1) == 1) {
         control->dispose();
-        if (_InterlockedDecrement(&control->weak) == 0)
+        if (_InterlockedExchangeAdd(&control->weak, -1) == 1)
             control->destroy();
     }
 }
@@ -62,6 +60,7 @@ struct Iterator {
     Shared* position;
 
     Vector* container() const;
+    Iterator& operator-=(int);
     Iterator operator-(int) const;
     Shared& operator*() const;
 };
@@ -70,15 +69,19 @@ inline Vector* Iterator::container() const {
     return owner ? *owner : 0;
 }
 
+inline Iterator& Iterator::operator-=(int amount) {
+    if (!owner)
+        _invalid_parameter_noinfo();
+    if (position - amount > container()->last ||
+        position - amount < container()->first)
+        _invalid_parameter_noinfo();
+    position -= amount;
+    return *this;
+}
+
 inline Iterator Iterator::operator-(int amount) const {
     Iterator result = *this;
-    if (!result.owner)
-        _invalid_parameter_noinfo();
-    if (result.position - amount > result.container()->last ||
-        result.position - amount < result.container()->first)
-        _invalid_parameter_noinfo();
-    result.position -= amount;
-    return result;
+    return result -= amount;
 }
 
 inline Shared& Iterator::operator*() const {
@@ -135,7 +138,8 @@ void Selection::clear() {
         Vector* vector = *storage.write();
         if (vector->last - vector->first) {
             Shared* last = vector->last;
-            destroy_range(last - 1, last, &vector->allocator, this);
+            Shared* first = last - 1;
+            destroy_range(first, last, &vector->allocator, this);
             --vector->last;
         }
 

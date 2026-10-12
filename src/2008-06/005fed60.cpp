@@ -1,11 +1,51 @@
-// from server: 76% by king_originala
-struct Tool;
-typedef void (Tool::*Callback)();
+// from server: 93% by king_originala
+struct Source
+{
+    char padding[20];
+};
+
+struct Connection
+{
+    char storage[16];
+    ~Connection();
+};
+
+struct ConnectionSlot
+{
+    char storage[20];
+    ConnectionSlot& operator=(const Connection&);
+};
+
+struct Tool
+{
+    char padding0[0x104];
+    Source* source;
+    char padding1[0x110];
+    ConnectionSlot firstConnection;
+    ConnectionSlot secondConnection;
+
+    void firstCallback();
+    void secondCallback();
+    void connectSignals();
+};
+
+typedef void (Tool::*MemberFunction)();
+
+struct Callback
+{
+    MemberFunction function;
+    int adjustment;
+    int virtualAdjustment;
+    int reserved;
+
+    Callback(MemberFunction);
+};
 
 struct Bound
 {
     Callback callback;
     Tool* object;
+    int reserved;
 
     Bound(Callback, Tool*);
 };
@@ -22,23 +62,6 @@ struct Function
     ~Function();
 };
 
-struct Connection
-{
-    char storage[16];
-    ~Connection();
-};
-
-struct ConnectionSlot
-{
-    char storage[20];
-    ConnectionSlot& operator=(const Connection&);
-};
-
-struct Source
-{
-    char padding[20];
-};
-
 struct Signal
 {
     Connection connect(void*, const Function&, int);
@@ -47,36 +70,31 @@ struct Signal
 extern Signal signalFirst;
 extern Signal signalSecond;
 
-struct Tool
+inline Callback::Callback(MemberFunction f)
+    : function(f), adjustment(0), virtualAdjustment(0)
 {
-    char padding0[0x104];
-    Source* source;
-    char padding1[0x110];
-    ConnectionSlot firstConnection;
-    ConnectionSlot secondConnection;
+}
 
-    void firstCallback();
-    void secondCallback();
-    void connectSignals();
-};
-
-inline Bound::Bound(Callback f, Tool* p) : callback(f), object(p)
+inline Bound::Bound(Callback f, Tool* p)
+    : callback(f), object(p)
 {
 }
 
 void Tool::connectSignals()
 {
+    void* endpoint = 0;
+
     {
-        Function function(Bound(&Tool::firstCallback, this));
+        Function function(Bound(Callback(&Tool::firstCallback), this));
         firstConnection = signalFirst.connect(
-            source ? reinterpret_cast<char*>(source) + 20 : 0,
+            source ? reinterpret_cast<char*>(source) + 20 : endpoint,
             function, 10);
     }
 
     {
-        Function function(Bound(&Tool::secondCallback, this));
-        secondConnection = signalSecond.connect(
-            source ? reinterpret_cast<char*>(source) + 20 : 0,
-            function, 10);
+        Function function(Bound(Callback(&Tool::secondCallback), this));
+        if (source)
+            endpoint = reinterpret_cast<char*>(source) + 20;
+        secondConnection = signalSecond.connect(endpoint, function, 10);
     }
 }

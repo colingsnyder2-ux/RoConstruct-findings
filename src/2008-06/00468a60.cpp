@@ -1,35 +1,45 @@
-// from server: 49% by atomic.potato
-struct DxUserInput {
-    char pad[0x16c];
-    int m_x16c;
-    char pad2[0x20];
-    unsigned char m_x190;
-    void f(int* p);
+// from server: 100% by king_originala
+struct Point {
+    float x;
+    float y;
 };
 
-struct Local {
-    void* vt;
-    char pad[0x58];
-    int (__thiscall* fn)(void*, int, int);
+struct Device {
+    int available();
 };
 
-extern "C" int __cdecl sub_006a17f0(float);
-extern "C" void __cdecl sub_006a13ee(int);
-extern "C" void __cdecl sub_006a13e8(int);
-extern "C" int __cdecl sub_006a14a2(int);
-extern "C" void __cdecl sub_00468520(DxUserInput*, int*);
+struct ScopedDevice;
 
-void DxUserInput::f(int* p)
+struct DeviceTable {
+    char pad0[92];
+    int (__thiscall *setPosition)(ScopedDevice *, int, int);
+};
+
+struct ScopedDevice {
+    DeviceTable *table;
+    char pad0[16];
+
+    ScopedDevice(Device *);
+    ~ScopedDevice();
+};
+
+struct S_func_00468a60 {
+    char pad0[364];
+    Device *device;
+    char pad1[32];
+    bool active;
+
+    void update(const Point *);
+    void f(const Point *);
+};
+
+void S_func_00468a60::f(const Point *point)
 {
-    int a = sub_006a17f0(*(float*)((char*)p + 4));
-    int b = sub_006a17f0(*(float*)p);
-    Local local;
-    sub_006a13ee(m_x16c);
-    int r = local.fn(&local, b, a);
-    int c = sub_006a14a2(m_x16c);
-    bool t1 = r != 0;
-    bool t2 = c != 0;
-    m_x190 = (t1 && t2) ? 1 : 0;
-    sub_00468520(this, p);
-    sub_006a13e8((int)&local);
+    int y = (int)point->y;
+    int x = (int)point->x;
+    ScopedDevice scoped(device);
+    bool positioned = scoped.table->setPosition(&scoped, x, y) != 0;
+    bool available = device->available() != 0;
+    active = positioned && available;
+    update(point);
 }

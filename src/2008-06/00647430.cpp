@@ -1,4 +1,4 @@
-// from server: 79% by king_originala
+// from server: 89% by king_originala
 struct Link {
     char pad[20];
     Link* parent;
@@ -31,7 +31,7 @@ bool __cdecl match(Part* a, Part* b, Joint* joint, int extended)
             valid = checkFirst(joint);
 
         if (valid && b->link->parent == a->link) {
-            bool same = a->identity == b->identity;
+            int same = a->identity == b->identity;
             if (!extended)
                 return same;
             return same || a->f() == b->f();

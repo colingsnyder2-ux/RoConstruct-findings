@@ -1,18 +1,36 @@
-// from server: 50% by atomic.potato
-typedef unsigned int DWord;
-
-struct S
-{
-    DWord pad[6];
-    void* value;
-    void f(void*, void*);
+// from server: 100% by king_originala
+struct Color {
+    float r, g, b;
 };
 
-extern "C" DWord sub_0059b650(void*, void*);
+struct Value {
+    const Color* get(Color* temporary);
+};
 
-void S::f(void* a, void* b)
+struct Accessor;
+
+typedef void (__thiscall *Setter)(Accessor*, void*, const Color*);
+
+struct AccessorTable {
+    void* reserved[3];
+    Setter set;
+};
+
+struct Accessor {
+    AccessorTable* table;
+};
+
+struct S {
+    unsigned char reserved[24];
+    Accessor* accessor;
+    void set(void* object, Value* value);
+};
+
+void S::set(void* object, Value* value)
 {
-    void* p = *(void**)((char*)value);
-    DWord x = sub_0059b650((char*)this + 8, 0);
-    ((void (__thiscall *)(void*, void*, DWord))(*(DWord*)p))(value, b, x);
+    Color temporary;
+    Accessor* target = accessor;
+    Setter* slot = &target->table->set;
+    const Color* color = value->get(&temporary);
+    (*slot)(target, object, color);
 }

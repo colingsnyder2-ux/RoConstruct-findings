@@ -1,48 +1,39 @@
-// from server: 26% by colin
+// from server: 100% by king_originala
 struct Item;
 
-struct TreeStage;
-
-struct Container {
-    void remove(Item** item);
-};
-
 struct Owner {
-    void remove(Item* item);
+    char padding[0x5c];
+    Item* item;
 };
 
-struct Item {
-    virtual void release(unsigned int flags);
-    TreeStage* parent;
-    void detach(int stage);
+struct Node {
+    char padding0[0x0c];
+    Owner* owner;
+    char padding1[0x14];
+    bool marked;
 };
 
 struct TreeStage {
+    void detach(Node* node);
     void remove(Item* item);
-    void detach(Item* item, int stage);
-    void removeFromPipeline(Item* item);
+    void attach(Node* node, void* context, int flag);
+    void change(Node* previous, Node* next, void* context);
 };
 
-void TreeStage::remove(Item* item)
+void TreeStage::change(Node* previous, Node* next, void* context)
 {
-    if (item) {
-        item->release(0);
-        item->parent = 0;
+    if (previous) {
+        detach(previous);
+        previous->marked = false;
+        if (!next) {
+            remove(previous->owner->item);
+            return;
+        }
     }
-}
 
-void TreeStage::detach(Item* item, int stage)
-{
-    if (item) {
-        item->release(0);
-        item->parent = 0;
-    }
-}
-
-void TreeStage::removeFromPipeline(Item* item)
-{
-    if (item) {
-        item->release(0);
-        item->parent = 0;
+    if (next) {
+        detach(next);
+        next->marked = true;
+        attach(next, context, 0);
     }
 }

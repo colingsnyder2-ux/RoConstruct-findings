@@ -1,7 +1,12 @@
-// from server: 74% by king_originala
+// from server: 75% by king_originala
 struct Vector {
     float x, y, z;
+    Vector();
+    Vector(float a, float b, float c);
 };
+
+inline Vector::Vector() {}
+inline Vector::Vector(float a, float b, float c) : x(a), y(b), z(c) {}
 
 struct Matrix {
     float data[9];
@@ -46,10 +51,10 @@ struct Model {
 
 extern "C" void* __cdecl func_006a17c6(
     void*, int, const void*, const void*, int);
-extern bool __cdecl func_005d9a20(Model*);
+extern int __cdecl func_005d9a20(Model*);
 
-extern char type_0092907c;
-extern char type_00932a40;
+extern char type_0092907c[];
+extern char type_00932a40[];
 extern const float constant_00826e6c;
 extern const float constant_00828b60;
 extern const float constant_0082ca40;
@@ -70,7 +75,7 @@ void Tool::func_005ff050()
         Parent* parent = attachment.pointer->getParent();
         if (parent)
             model = static_cast<Model*>(func_006a17c6(
-                parent->instance, 0, &type_0092907c, &type_00932a40, 0));
+                parent->instance, 0, type_0092907c, type_00932a40, 0));
         attachment.pointer->setParent(0);
         attachment.reset();
     }
@@ -88,15 +93,15 @@ void Tool::func_005ff050()
             position.z = frame.position.z;
             position.y = frame.position.y + constant_00826e6c;
             float scale = constant_00828b60;
-            Vector direction = frame.rotation.column(2);
-            Vector destination = {
+            const Vector& direction = frame.rotation.column(2);
+            part->setPosition(Vector(
                 direction.x * scale * constant_0082ca40 + position.x,
                 direction.y * scale * constant_0082ca40 + position.y,
-                direction.z * scale * constant_0082ca40 + position.z
-            };
-            part->setPosition(destination);
-            Vector size = { 1.0f, 1.0f, 1.0f };
-            part->setSize(size);
+                direction.z * scale * constant_0082ca40 + position.z));
+            position.x = 1.0f;
+            position.y = 1.0f;
+            position.z = 1.0f;
+            part->setSize(position);
         }
     }
     finish();

@@ -1,4 +1,4 @@
-// from server: 95% by king_originala
+// from server: 100% by king_originala
 struct S;
 
 struct VTable {
@@ -10,16 +10,22 @@ struct Color3 {
     float r, g, b;
 };
 
+extern const float colorScale;
+
 struct S {
     VTable* vtable;
     Color3 color();
 };
 
+#pragma float_control(precise, off, push)
+
 Color3 S::color() {
     unsigned int value = vtable->getColor(this);
     Color3 result;
-    result.r = (int)(unsigned char)value * 0.00392156862745098f;
-    result.g = (int)(unsigned char)(value >> 8) * 0.00392156862745098f;
-    result.b = (int)(unsigned char)(value >> 16) * 0.00392156862745098f;
+    result.r = (int)(unsigned char)value * colorScale;
+    result.g = (int)(unsigned char)(value >> 8) * colorScale;
+    result.b = (int)(unsigned char)(value >> 16) * colorScale;
     return result;
 }
+
+#pragma float_control(pop)

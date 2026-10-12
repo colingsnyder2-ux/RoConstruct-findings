@@ -1,4 +1,4 @@
-// from server: 68% by king_originala
+// from server: 89% by king_originala
 struct Iterator {
     void* owner;
     char* position;
@@ -61,10 +61,12 @@ struct IteratorTag {};
 typedef int (__cdecl *CharacterFunction)(int);
 extern CharacterFunction characterFunction;
 
-extern Iterator __cdecl transformRange(
+extern Iterator* __cdecl transformRange(
+    Iterator* result,
     char* first,
     char* last,
-    Iterator destination,
+    void* destinationOwner,
+    char* destinationPosition,
     CharacterFunction operation,
     IteratorTag,
     IteratorTag
@@ -80,14 +82,20 @@ int ColorMap::find(const String& value)
     String copy(value);
     Iterator destination = copy.begin();
     Iterator last = copy.end();
+    Iterator result;
+    result.owner = last.owner;
     Iterator first = copy.begin();
+    result.position = static_cast<char*>(first.owner);
+    IteratorTag tag;
 
     transformRange(
+        &result,
         first.position,
         last.position,
-        destination,
+        destination.owner,
+        destination.position,
         characterFunction,
-        IteratorTag(),
+        tag,
         IteratorTag()
     );
 

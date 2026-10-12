@@ -1,4 +1,6 @@
-// from server: 77% by king_originala
+// from server: 82% by king_originala
+extern const float half;
+
 struct Vec2
 {
     float x, y;
@@ -12,7 +14,9 @@ struct S
 
 Vec2 S::f(int horizontal, int vertical)
 {
-    Vec2 result = { (x1 + x0) * 0.5f, (y1 + y0) * 0.5f };
+    Vec2 result = { x0 + x1, y0 + y1 };
+    result.x *= half;
+    result.y *= half;
 
     switch (horizontal)
     {
@@ -28,12 +32,12 @@ Vec2 S::f(int horizontal, int vertical)
     {
     case 0:
         result.y = y0;
-        break;
+        return result;
     case 1:
         result.y = y1;
-        break;
+        return result;
     case 4:
-        break;
+        return result;
     }
 
     return result;

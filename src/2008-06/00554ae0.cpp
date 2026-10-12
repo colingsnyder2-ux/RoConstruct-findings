@@ -1,5 +1,39 @@
-// from server: 80% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs util/RunStateOwner.cpp
+// from server: 98% by king_originala
+extern "C" void (__cdecl *invalid_parameter_handler)();
+
+struct S {
+    struct Cursor {
+        unsigned index;
+        unsigned limit;
+        Cursor* previous;
+    };
+
+    unsigned reserved[4];
+    void** begin;
+    void** end;
+    void** capacity;
+    Cursor* current;
+
+    void invoke(void* argument, void* element);
+    void run(void* argument);
+};
+
+void S::run(void* argument)
+{
+    Cursor cursor = { 0, unsigned(end - begin), current };
+    current = &cursor;
+
+    if (cursor.index < cursor.limit) {
+        void (__cdecl *handler)() = invalid_parameter_handler;
+        do {
+            unsigned index = cursor.index;
+            if (index >= unsigned(end - begin))
+                handler();
+
+            invoke(argument, begin[index]);
+            ++cursor.index;
+        } while (cursor.index < cursor.limit);
+    }
+
+    current = cursor.previous;
+}

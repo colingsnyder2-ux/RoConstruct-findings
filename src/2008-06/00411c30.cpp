@@ -1,4 +1,4 @@
-// from server: 83% by king_originala
+// from server: 84% by king_originala
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
 
@@ -84,7 +84,10 @@ __forceinline Shared::Shared(const Shared& value)
     pointer = value.pointer;
     control = value.control;
     if (control)
-        _InterlockedExchangeAdd(&control->references, 1);
+    {
+        volatile long* count = &control->references;
+        _InterlockedExchangeAdd(count, 1);
+    }
 }
 
 struct Guard
@@ -153,6 +156,7 @@ void ChatEnter::key(int key, int, int)
         catch (...)
         {
             other();
+            return;
         }
     }
 }

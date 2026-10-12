@@ -1,67 +1,80 @@
-// from server: 40% by colin
+// from server: 90% by king_originala
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
 
-struct type_info {
-    virtual bool operator==(const type_info&) const;
+class type_info {
+public:
+    bool __thiscall operator==(const type_info&) const;
 };
 
-struct bad_cast {
-    bad_cast(const char*);
+namespace std {
+    class bad_cast {
+        const char* message;
+        int owned;
+    public:
+        explicit bad_cast(const char*);
+        virtual ~bad_cast();
+        virtual const char* what() const;
+    };
+}
+
+struct bad_any_cast : std::bad_cast {
+    bad_any_cast();
 };
 
-struct sp_counted_base {
-    long refcount;
+bad_any_cast::bad_any_cast() : std::bad_cast("bad cast") {}
+
+__declspec(noreturn) void __cdecl raise_bad_cast(const void*);
+
+struct Counted {
+    void* vtable;
+    volatile long references;
 };
 
-struct shared_ptr_holder {
-    void* px;
-    sp_counted_base* pn;
+struct Shared {
+    void* object;
+    Counted* count;
+
+    Shared(const Shared&);
+    ~Shared();
 };
 
-void __stdcall sub_40a3f0(void*);
+Shared::Shared(const Shared& other)
+    : object(other.object), count(other.count)
+{
+    if (count)
+        _InterlockedExchangeAdd(&count->references, 1);
+}
 
-struct Vconnection_impl {
-    void* vfptr;
-    void* ptr;
-    void __cdecl assign(shared_ptr_holder* out);
+struct Placeholder {
+    virtual ~Placeholder();
+    virtual const type_info& type() const = 0;
 };
 
-void Vconnection_impl::assign(shared_ptr_holder* out) {
-    void* p = this->ptr;
-    if (p != 0) {
-        void* obj = *(void**)p;
-        if (obj != 0) {
-            void** vt = *(void***)obj;
-            typedef void* (__stdcall *Fn)(void*);
-            Fn fn = (Fn)vt[1];
-            obj = fn(obj);
-        } else {
-            obj = (void*)0x929614;
-        }
-        type_info* ti = (type_info*)0x935980;
-        bool ok = ((type_info*)obj)->operator==(*ti);
-        if (ok) {
-            char* base = (char*)*(void**)p;
-            base += 4;
-            if (base != 0) {
-                goto do_assign;
-            }
-        }
+struct Holder : Placeholder {
+    Shared value;
+};
+
+struct Any {
+    Placeholder* content;
+};
+
+Shared __cdecl cast_shared(const Any* source)
+{
+    Shared* result = 0;
+
+    if (source) {
+        const type_info& type =
+            source->content ? source->content->type() : typeid(Placeholder);
+
+        if (type == typeid(Shared))
+            result = &static_cast<Holder*>(source->content)->value;
     }
-    {
-        bad_cast bc("bad cast");
-        sub_40a3f0(&bc);
+
+    if (!result) {
+        bad_any_cast error;
+        raise_bad_cast(&error);
     }
-do_assign:
-    {
-        char* src = (char*)*(void**)p;
-        void* a = *(void**)src;
-        void* b = *(void**)(src + 4);
-        out->px = a;
-        out->pn = (sp_counted_base*)b;
-        if (b != 0) {
-            _InterlockedExchangeAdd((volatile long*)((char*)b + 4), 1);
-        }
-    }
+
+    return *result;
 }

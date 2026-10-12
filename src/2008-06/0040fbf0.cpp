@@ -1,47 +1,56 @@
-// from server: 38% by tester
-struct VCBrowserViewExternal_CComAggObject
-{
-    void* field0;
-    void* field4;
-    void* field8;
-    void* fieldC;
-    void* field10;
-    void* field14;
-    int field18;
-    unsigned short field1C;
+// from server: 92% by king_originala
+void* __cdecl operator new(unsigned int);
+void __cdecl operator delete(void*);
+
+extern unsigned long tableBase[];
+extern unsigned long table0[];
+extern unsigned long table1[];
+extern unsigned long table2[];
+extern unsigned long table3[];
+
+struct S {
+    unsigned long* v0;
+    unsigned long* v1;
+    unsigned long* volatile v2;
+    unsigned long state;
+    unsigned long outer;
+    unsigned long* v3;
+    volatile long references;
+    unsigned short flags;
+    unsigned short padding;
+
+    S();
 };
 
-extern "C" void* __cdecl sub_6A0920(unsigned int size);
-
-void* __cdecl sub_40FBF0()
+inline S::S()
 {
-    VCBrowserViewExternal_CComAggObject* p = 0;
-    void* result = 0;
-    int saved = 0;
+    references = 0;
+    outer = 0;
+    state = 0;
+    v2 = tableBase;
+    flags = 0;
+    v0 = table0;
+    v1 = table1;
+    v2 = table2;
+    v3 = table3;
+}
 
-    p = (VCBrowserViewExternal_CComAggObject*)sub_6A0920(0x20);
-    if (p != 0)
-    {
-        p->field18 = 0;
-        p->field10 = 0;
-        p->fieldC = 0;
-        p->field8 = (void*)0x80D388;
-        p->field1C = 0;
-        p->field0 = (void*)0x80D778;
-        p->field4 = (void*)0x80D760;
-        p->field8 = (void*)0x80D73C;
-        p->field14 = (void*)0x80D714;
-        if (p != 0)
-        {
-            p->field18++;
-            p->field18--;
+long __cdecl CreateInstance(S** result)
+{
+    long status = (long)0x8007000EUL;
+    S* object = 0;
+
+    try {
+        object = new S;
+        if (object) {
+            ++object->references;
+            status = 0;
+            --object->references;
         }
-        result = p;
     }
-    else
-    {
-        result = 0;
+    catch (...) {
     }
 
-    return result;
+    *result = object;
+    return status;
 }

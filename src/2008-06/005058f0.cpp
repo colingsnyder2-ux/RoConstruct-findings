@@ -1,5 +1,18 @@
-// from server: 44% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs v8world/Assembly.cpp
+// from server: 83% by king_originala
+extern const float factor;
+extern const double base;
+
+struct S {
+    char padding0[12];
+    float value;
+    char padding1[48];
+    float x;
+    float y;
+    float z;
+};
+
+int __cdecl compare(const S* a, const S* b)
+{
+    return (a->z + a->y + a->x) * factor * (base - a->value)
+         > (b->z + b->y + b->x) * factor * (base - b->value);
+}

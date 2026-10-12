@@ -1,88 +1,127 @@
-// from server: 33% by colin
-struct S {
-    char pad0[0xc];
-    int field_c;
-    char pad10[0x134 - 0x10];
-    int field_134;
-    char pad138[0x1a0 - 0x138];
-    int field_1a0;
-    int field_1a4;
-    char pad1a8[0x1b0 - 0x1a8];
-    int field_1b0;
-    int field_1b4;
-    int field_1b8;
-    char pad1bc[0x1c0 - 0x1bc];
-    int field_1c0;
-    char pad1c4[0x1cc - 0x1c4];
-    int field_1cc;
-    char pad1d0[0x228 - 0x1d0];
-    char field_228[0x3c8 - 0x228];
-    char field_3c8[4];
-    void destroy();
+// from server: 88% by king_originala
+extern "C" void __cdecl release(void*);
+
+extern unsigned int vtable0[];
+extern unsigned int vtable10[];
+extern unsigned int vtable14[];
+extern unsigned int vtable20[];
+extern unsigned int vtable24[];
+extern unsigned int vtable44[];
+extern unsigned int vtable64[];
+extern unsigned int vtable84[];
+extern unsigned int vtableA4[];
+extern unsigned int vtableC4[];
+extern unsigned int vtable130[];
+extern unsigned int vtable1A0[];
+extern unsigned int vtable1C0[];
+extern unsigned int vtable1CC[];
+extern unsigned int virtualTable1[];
+extern unsigned int virtualTable2[];
+extern unsigned int virtualTable3[];
+
+struct Base
+{
+    unsigned int words[77];
+    int* table;
+    char tail[0x68];
+    ~Base();
 };
 
-extern "C" void __stdcall func_00802468();
-extern void func_005e7df0();
-extern void func_0047d410();
-extern void func_006a067a(void*);
-extern void func_00598df0();
-
-void S::destroy()
+struct Buffer
 {
-    int* p;
-    int* q;
-    int* r;
+    unsigned int vtable;
+    void* allocation;
+    unsigned int reserved[2];
+    void* first;
+    void* last;
+    void* limit;
+    unsigned int padding;
+    ~Buffer();
+};
 
-    field_134 = 0;
-    *(int*)((char*)this + 0x0) = 0x832d4c;
-    *(int*)((char*)this + 0x10) = 0x832d3c;
-    *(int*)((char*)this + 0x14) = 0x832d34;
-    *(int*)((char*)this + 0x20) = 0x832d2c;
-    *(int*)((char*)this + 0x24) = 0x832d1c;
-    *(int*)((char*)this + 0x44) = 0x832d0c;
-    *(int*)((char*)this + 0x64) = 0x832cfc;
-    *(int*)((char*)this + 0x84) = 0x832cec;
-    *(int*)((char*)this + 0xa4) = 0x832cdc;
-    *(int*)((char*)this + 0xc4) = 0x832ccc;
-    *(int*)((char*)this + 0x130) = 0x832cc0;
-    *(int*)((char*)this + 0x1a0) = 0x832cb0;
-    *(int*)((char*)this + 0x1c0) = 0x832ca4;
-    *(int*)((char*)this + 0x1cc) = 0x832c8c;
+inline Buffer::~Buffer()
+{
+    if (first)
+        release(first);
+    void* p = allocation;
+    first = 0;
+    last = 0;
+    limit = 0;
+    release(p);
+}
 
-    p = (int*)field_134;
-    *(int*)((char*)p + 4) = 0x832c80;
-    *(int*)((char*)this + 0x134) = 0x832c80;
+struct Part
+{
+    char data[0x5c];
+    ~Part();
+};
 
-    q = (int*)field_134;
-    *(int*)((char*)q + 8) = 0x832c78;
-    *(int*)((char*)this + 0x134) = 0x832c78;
+struct Storage
+{
+    char data[0x1a0];
+    ~Storage();
+};
 
-    r = (int*)field_134;
-    *(int*)((char*)r + 0xc) = 0x832c5c;
-    *(int*)((char*)this + 0x134) = 0x832c5c;
+struct String
+{
+    char data[28];
+    ~String();
+};
 
-    p = (int*)field_134;
-    p = (int*)p[1];
-    *(int*)((char*)p + 0x130) = (int)p - 0x2b8;
+extern void (__thiscall* destroyString)(String*);
 
-    q = (int*)field_134;
-    q = (int*)q[2];
-    *(int*)((char*)q + 0x130) = (int)q - 0x2c0;
+inline String::~String()
+{
+    destroyString(this);
+}
 
-    r = (int*)field_134;
-    r = (int*)r[3];
-    *(int*)((char*)r + 0x130) = (int)r - 0x2c8;
+struct S : Base
+{
+    Buffer buffer;
+    unsigned int secondary;
+    unsigned int padding[2];
+    Part part;
+    Storage storage;
+    String text;
+    ~S();
+};
 
-    func_00802468();
-    func_005e7df0();
-    func_0047d410();
+S::~S()
+{
+    int* t = table;
+    words[0] = reinterpret_cast<unsigned int>(vtable0);
+    words[4] = reinterpret_cast<unsigned int>(vtable10);
+    words[5] = reinterpret_cast<unsigned int>(vtable14);
+    words[8] = reinterpret_cast<unsigned int>(vtable20);
+    words[9] = reinterpret_cast<unsigned int>(vtable24);
+    words[17] = reinterpret_cast<unsigned int>(vtable44);
+    words[25] = reinterpret_cast<unsigned int>(vtable64);
+    words[33] = reinterpret_cast<unsigned int>(vtable84);
+    words[41] = reinterpret_cast<unsigned int>(vtableA4);
+    words[49] = reinterpret_cast<unsigned int>(vtableC4);
+    words[76] = reinterpret_cast<unsigned int>(vtable130);
+    buffer.vtable = reinterpret_cast<unsigned int>(vtable1A0);
+    secondary = reinterpret_cast<unsigned int>(vtable1C0);
+    *reinterpret_cast<unsigned int*>(part.data) =
+        reinterpret_cast<unsigned int>(vtable1CC);
 
-    if (field_1b0 != 0) {
-        func_006a067a((void*)field_1b0);
-    }
-    func_006a067a((void*)field_1a4);
-    field_1b0 = 0;
-    field_1b4 = 0;
-    field_1b8 = 0;
-    func_00598df0();
+    *reinterpret_cast<unsigned int*>(
+        reinterpret_cast<char*>(this) + 0x134 + t[1]) =
+        reinterpret_cast<unsigned int>(virtualTable1);
+    *reinterpret_cast<unsigned int*>(
+        reinterpret_cast<char*>(this) + 0x134 + table[2]) =
+        reinterpret_cast<unsigned int>(virtualTable2);
+    *reinterpret_cast<unsigned int*>(
+        reinterpret_cast<char*>(this) + 0x134 + table[3]) =
+        reinterpret_cast<unsigned int>(virtualTable3);
+
+    int offset = table[1];
+    *reinterpret_cast<int*>(
+        reinterpret_cast<char*>(this) + 0x130 + offset) = offset - 0x2b8;
+    offset = table[2];
+    *reinterpret_cast<int*>(
+        reinterpret_cast<char*>(this) + 0x130 + offset) = offset - 0x2c0;
+    offset = table[3];
+    *reinterpret_cast<int*>(
+        reinterpret_cast<char*>(this) + 0x130 + offset) = offset - 0x2c8;
 }

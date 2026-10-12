@@ -1,18 +1,28 @@
-// from server: 65% by colin
-extern "C" unsigned int __stdcall strnlen(const char* str, unsigned int maxlen);
-extern "C" int __cdecl _mbsnbcpy_s(char* dest, unsigned int destSize, const char* src, unsigned int count);
+// from server: 100% by king_originala
+extern "C" {
+    extern unsigned int (__cdecl *strnlen)(const char *, unsigned int);
+    extern int (__cdecl *_mbsnbcpy_s)(
+        unsigned char *, unsigned int, const unsigned char *, unsigned int);
+    void __cdecl check_error(int);
+}
 
-struct VCAppCComObject
-{
-    int __stdcall f(const char* src);
+struct S {
+    unsigned char padding1[0xA25];
+    unsigned char buffer[0x801];
+    unsigned char padding2[0x1A];
+    unsigned int length;
+
+    int set(const char *text);
 };
 
-int __stdcall VCAppCComObject::f(const char* src)
+int S::set(const char *text)
 {
-    unsigned int len = strnlen(src, 0x801);
-    if (len > 0x800)
+    unsigned int n = strnlen(text, 0x801);
+    if (n > 0x800)
         return 0;
-    _mbsnbcpy_s((char*)this + 0xa25, 0x801, src, len);
-    *(unsigned int*)((char*)this + 0x1240) = len;
+
+    check_error(_mbsnbcpy_s(
+        buffer, 0x801, reinterpret_cast<const unsigned char *>(text), n));
+    length = n;
     return 1;
 }

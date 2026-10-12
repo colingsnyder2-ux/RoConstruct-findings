@@ -1,12 +1,13 @@
-// from server: 57% by atomic.potato
-extern "C" void __cdecl sub_553430(void *, void *);
+// from server: 100% by king_originala
+extern "C" void __cdecl func_00553430(void *, int);
 
-struct AggregateChunk
+struct S
 {
-    void f(void *);
+    void func_005532f0(void *);
 };
 
-void AggregateChunk::f(void *arg)
+#pragma optimize("", off)
+void S::func_005532f0(void *value)
 {
-    sub_553430(arg, 0);
+    func_00553430(value, 0);
 }

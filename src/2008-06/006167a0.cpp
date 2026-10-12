@@ -1,5 +1,6 @@
-// from server: 69% by king_originala
-extern void (__cdecl *invalid_parameter)();
+// from server: 100% by king_originala
+typedef void (__cdecl *InvalidParameterHandler)();
+extern InvalidParameterHandler invalid_parameter;
 
 struct Node {
     Node* left;
@@ -17,8 +18,8 @@ struct Iterator {
     Container** owner;
     Node* node;
 
-    bool operator!=(const Iterator& other) const;
-    unsigned& operator*() const;
+    bool different(const Iterator& other, InvalidParameterHandler handler) const;
+    unsigned& value(InvalidParameterHandler handler) const;
     void increment();
 };
 
@@ -37,20 +38,21 @@ extern void __cdecl copy_tail(
     Selection* outputEnd,
     CopyTag tag);
 
-__forceinline bool Iterator::operator!=(const Iterator& other) const
+__forceinline bool Iterator::different(
+    const Iterator& other, InvalidParameterHandler handler) const
 {
     if (!owner || owner != other.owner)
-        invalid_parameter();
+        handler();
     return node != other.node;
 }
 
-__forceinline unsigned& Iterator::operator*() const
+__forceinline unsigned& Iterator::value(InvalidParameterHandler handler) const
 {
     if (!owner)
-        invalid_parameter();
+        handler();
     Container* container = owner ? *owner : 0;
     if (node == container->head)
-        invalid_parameter();
+        handler();
     return node->value;
 }
 
@@ -60,13 +62,16 @@ void* __cdecl difference(
     Iterator last,
     Iterator second,
     Iterator secondLast,
-    Selection* output)
+    Selection* volatile output)
 {
-    while (first != last && second != secondLast) {
-        if (*first < *second) {
-            output->append(*first);
+    InvalidParameterHandler handler = invalid_parameter;
+
+    while (first.different(last, handler) &&
+           second.different(secondLast, handler)) {
+        if (first.value(handler) < second.value(handler)) {
+            output->append(first.value(handler));
             first.increment();
-        } else if (*second < *first) {
+        } else if (second.value(handler) < first.value(handler)) {
             second.increment();
         } else {
             first.increment();

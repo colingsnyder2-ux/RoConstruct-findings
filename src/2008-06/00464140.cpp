@@ -1,4 +1,4 @@
-// from server: 97% by king_originala
+// from server: 100% by king_originala
 struct Control {
     int query(int, int);
 };
@@ -17,5 +17,5 @@ struct S {
 
 void S::update(Target* target)
 {
-    target->setEnabled(reinterpret_cast<Control*>(f())->query(0, 1) != 0);
+    target->setEnabled(reinterpret_cast<Control*>(f())->query(1, 1) != 0);
 }

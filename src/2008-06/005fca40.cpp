@@ -1,30 +1,52 @@
-// from server: 47% by colin
+// from server: 100% by king_originala
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
+extern "C" long __cdecl _InterlockedDecrement(volatile long*);
+#pragma intrinsic(_InterlockedDecrement)
 
-struct RefCounted {
-    virtual void unknown0();
-    virtual void unknown1();
-    virtual void unknown2();
-    volatile long refCount;
-    volatile long weakRefCount;
+struct Control {
+    virtual void reserved() = 0;
+    virtual void dispose() = 0;
+    virtual void destroy() = 0;
+    volatile long strong;
+    volatile long weak;
+    void release();
+    void weak_release();
 };
 
-struct LocalBackpack {
-    char pad[0x178];
-    void sub_5fc730(int);
-    void func(int, int, RefCounted*);
-};
-
-void LocalBackpack::func(int a, int b, RefCounted* p)
+inline void Control::weak_release()
 {
-    sub_5fc730(a);
-    if (p) {
-        if (_InterlockedExchangeAdd(&p->refCount, -1) == 1) {
-            p->unknown1();
-            if (_InterlockedExchangeAdd(&p->weakRefCount, -1) == 1) {
-                p->unknown2();
-            }
-        }
+    if (_InterlockedDecrement(&weak) == 0)
+        destroy();
+}
+
+inline void Control::release()
+{
+    if (_InterlockedDecrement(&strong) == 0) {
+        dispose();
+        weak_release();
     }
+}
+
+struct Shared {
+    void* object;
+    Control* control;
+    ~Shared();
+};
+
+inline Shared::~Shared()
+{
+    if (control)
+        control->release();
+}
+
+struct S {
+    void helper(void*);
+    void f(int, Shared);
+};
+
+void S::f(int, Shared value)
+{
+    reinterpret_cast<S*>(reinterpret_cast<char*>(this) - 0x178)
+        ->helper(value.object);
 }

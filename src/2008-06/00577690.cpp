@@ -1,4 +1,4 @@
-// from server: 62% by king_originala
+// from server: 100% by king_originala
 struct S
 {
     void* first;
@@ -18,6 +18,9 @@ __forceinline S::S()
     first = 0;
     active = false;
     enabled = true;
+
+    if (second)
+        this->~S();
 }
 
 S* __cdecl get_instance()

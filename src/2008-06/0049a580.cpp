@@ -1,4 +1,4 @@
-// from server: 71% by king_originala
+// from server: 90% by king_originala
 extern "C" void (__cdecl* invalid_parameter_noinfo)();
 
 extern void __cdecl register_type(void (__cdecl*)(), const void*);
@@ -25,12 +25,11 @@ struct EmptyPair {
     void* object;
     void* control;
     EmptyPair();
+    EmptyPair(const EmptyPair&);
 };
 
-__forceinline EmptyPair::EmptyPair()
+__forceinline EmptyPair::EmptyPair() : object(0), control(0)
 {
-    object = 0;
-    control = 0;
 }
 
 struct Vector {
@@ -69,11 +68,12 @@ void* S::f()
 
     register_type(register_second, &second_descriptor);
     Pair result = create(func_0048a1e0());
-    if (!result.object)
+    void* object = result.object;
+    if (!object)
         return 0;
 
-    void* object = result.object;
-    if (index >= static_cast<unsigned int>(v.last - v.first))
+    unsigned int size = static_cast<unsigned int>(v.last - v.first);
+    if (index >= size)
         invalid();
 
     Pair& destination = v.first[index];

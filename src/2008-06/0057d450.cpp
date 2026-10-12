@@ -1,5 +1,38 @@
-// from server: 62% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs util/RunStateOwner.cpp
+// from server: 98% by king_originala
+struct String;
+extern void (__thiscall *constructString)(String*, const char*);
+extern const char signalName[];
+
+struct String {
+    char storage[28];
+
+    String(const char*);
+    String(const String&);
+};
+
+__forceinline String::String(const char* text)
+{
+    String* volatile destination = this;
+    constructString(this, text);
+}
+
+struct Base {
+    virtual void slot();
+    char storage[8];
+
+    Base(void*, String);
+};
+
+struct SignalDesc : Base {
+    void* owner;
+
+    virtual void slot();
+    SignalDesc(void*);
+};
+
+SignalDesc::SignalDesc(void* object)
+    : Base(object ? static_cast<char*>(object) + 0x1c8 : 0,
+           String(signalName)),
+      owner(object)
+{
+}

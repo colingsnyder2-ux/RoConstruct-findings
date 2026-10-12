@@ -1,25 +1,54 @@
-// from server: 37% by colin
-struct MarkerItem {
-    void* vfptr;
-    void* field4;
-    char bitstream[0x114];
-    int field11c;
-    char field120;
-    void construct(void* a, void* b);
+// from server: 100% by king_originala
+struct BitStream {
+    unsigned char storage[0x114];
+    BitStream();
+    ~BitStream();
 };
 
-extern "C" void __stdcall sub_4a5090(void* p);
-extern "C" void* __stdcall sub_49e890();
+struct Owner {
+    unsigned char padding[0x2d54];
+    unsigned low;
+    unsigned high;
+};
 
-void MarkerItem::construct(void* a, void* b)
+struct Peer {
+#define SLOT(n) virtual void slot##n();
+    SLOT(0)  SLOT(1)  SLOT(2)  SLOT(3)
+    SLOT(4)  SLOT(5)  SLOT(6)  SLOT(7)
+    SLOT(8)  SLOT(9)  SLOT(10) SLOT(11)
+    SLOT(12) SLOT(13) SLOT(14) SLOT(15)
+    SLOT(16) SLOT(17) SLOT(18) SLOT(19)
+    SLOT(20) SLOT(21) SLOT(22) SLOT(23)
+    SLOT(24) SLOT(25) SLOT(26) SLOT(27)
+    SLOT(28) SLOT(29) SLOT(30) SLOT(31)
+    SLOT(32) SLOT(33) SLOT(34) SLOT(35)
+    SLOT(36) SLOT(37) SLOT(38) SLOT(39)
+    SLOT(40) SLOT(41) SLOT(42) SLOT(43)
+#undef SLOT
+    virtual unsigned query(unsigned low, unsigned high);
+};
+
+struct State {
+    unsigned char padding[0x148];
+    unsigned time;
+};
+
+State* __cdecl getState();
+
+struct S {
+    Owner* owner;
+    Peer* peer;
+    BitStream stream;
+    unsigned time;
+    unsigned char flag;
+
+    S(Owner* o, Peer* p);
+};
+
+S::S(Owner* o, Peer* p)
+    : owner(o), peer(p)
 {
-    vfptr = a;
-    field4 = b;
-    sub_4a5090(&bitstream[0]);
-    int* vtable = *(int**)b;
-    int (*fn)(void*, int, int) = (int (*)(void*, int, int))*(int*)((char*)vtable + 0xb0);
-    int r = fn(b, *(int*)((char*)a + 0x2d54), *(int*)((char*)a + 0x2d58));
-    void* g = sub_49e890();
-    field11c = r - *(int*)((char*)g + 0x148);
-    field120 = 0;
+    unsigned value = p->query(o->low, o->high);
+    time = value - getState()->time;
+    flag = 0;
 }

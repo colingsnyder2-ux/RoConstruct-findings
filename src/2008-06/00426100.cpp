@@ -1,8 +1,8 @@
-// from server: 65% by king_originala
+// from server: 78% by king_originala
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
 
-extern "C" void __cdecl _invalid_parameter_noinfo();
+extern "C" void (__cdecl* _invalid_parameter_noinfo)();
 void* __cdecl operator new(unsigned int);
 void __cdecl operator delete(void*);
 
@@ -30,9 +30,9 @@ inline Handle::~Handle()
 {
     RefCount* p = count;
     if (p) {
-        if (_InterlockedExchangeAdd(&p->strong, -1) == 0) {
+        if (_InterlockedExchangeAdd(&p->strong, -1) == 1) {
             p->dispose();
-            if (_InterlockedExchangeAdd(&p->weak, -1) == 0)
+            if (_InterlockedExchangeAdd(&p->weak, -1) == 1)
                 p->destroy();
         }
     }
@@ -56,9 +56,9 @@ inline ManagerHandle::~ManagerHandle()
 {
     RefCount* p = count;
     if (p) {
-        if (_InterlockedExchangeAdd(&p->strong, -1) == 0) {
+        if (_InterlockedExchangeAdd(&p->strong, -1) == 1) {
             p->dispose();
-            if (_InterlockedExchangeAdd(&p->weak, -1) == 0)
+            if (_InterlockedExchangeAdd(&p->weak, -1) == 1)
                 p->destroy();
         }
     }
@@ -115,21 +115,18 @@ inline Iterator Map::end() const
 
 struct Lock {
     Mutex& mutex;
-    bool locked;
     Lock(Mutex&);
     ~Lock();
 };
 
-inline Lock::Lock(Mutex& m) : mutex(m), locked(false)
+inline Lock::Lock(Mutex& m) : mutex(m)
 {
     mutex.lock();
-    locked = true;
 }
 
 inline Lock::~Lock()
 {
-    if (locked)
-        mutex.unlock();
+    mutex.unlock();
 }
 
 struct Node {

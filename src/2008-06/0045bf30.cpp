@@ -1,5 +1,21 @@
-// from server: 55% by colin
-// roc-lang: cpp
-// roc-cl: 30729
-// roc-flags: /O1 /GS- /MD
-// roc-lib: xtp-11.2.2 Source/SyntaxEdit/XTPSyntaxEditColorSampleText.cpp
+// from server: 100% by king_originala
+struct Object {
+    void set(int);
+};
+
+struct CRobloxWnd {
+    char padding[0x84];
+    Object* object;
+
+    void start();
+    void finish();
+    void f(int);
+};
+
+void CRobloxWnd::f(int)
+{
+    if (object)
+        object->set(0);
+    start();
+    finish();
+}

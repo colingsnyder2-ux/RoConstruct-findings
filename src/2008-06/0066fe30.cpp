@@ -1,19 +1,26 @@
-// from server: 36% by tester
-struct RBX_AdornRbxGfx_IndexBox {
+// from server: 100% by king_originala
+struct Text;
+
+struct Size {
     float x;
     float y;
 };
 
-struct RBX_AdornRbxGfx {
-    void f(float a, float b, float c, float d, float e, RBX_AdornRbxGfx_IndexBox* out);
+struct Font {
+    Size* measure(Size* result, const Text* text, double height, int mode);
 };
 
-extern "C" void __stdcall sub_684640(float* out, float a, float b, float c, float d, float e);
+extern Font* currentFont;
 
-void RBX_AdornRbxGfx::f(float a, float b, float c, float d, float e, RBX_AdornRbxGfx_IndexBox* out)
+struct AdornRbxGfx {
+    Size* measure(Size* result, const Text* text, double height, int mode);
+};
+
+Size* AdornRbxGfx::measure(Size* result, const Text* text, double height, int mode)
 {
-    float tmp[2];
-    sub_684640(tmp, a, b, c, d, e);
-    out->x = tmp[0];
-    out->y = tmp[1];
+    Size* temporary = reinterpret_cast<Size*>(&height);
+    currentFont->measure(temporary, text, height, mode);
+    result->x = temporary->x;
+    result->y = temporary->y;
+    return result;
 }

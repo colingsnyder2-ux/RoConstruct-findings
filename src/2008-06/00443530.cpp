@@ -1,5 +1,18 @@
-// from server: 46% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs script/ScriptEvent.cpp
+// from server: 100% by king_originala
+struct Accessor {
+    virtual void slot0() = 0;
+    virtual void slot1() = 0;
+    virtual int get(void*) = 0;
+};
+
+struct S {
+    unsigned char padding[0x18];
+    Accessor* accessor;
+    bool f(void*, void*);
+};
+
+bool S::f(void* first, void* second)
+{
+    int value = accessor->get(first);
+    return value == accessor->get(second);
+}

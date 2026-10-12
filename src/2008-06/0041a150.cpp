@@ -1,4 +1,4 @@
-// from server: 99% by king_originala
+// from server: 100% by king_originala
 struct TypeInfo {};
 
 extern bool (__thiscall *type_equal)(const TypeInfo*, const TypeInfo&);
@@ -21,7 +21,7 @@ void __cdecl manage(void** source, void** destination, int operation)
 {
     if (operation == 0) {
         void* original = *source;
-        void* result = operator new(48);
+        void* result = operator new(56);
         copy_object(result, original);
         *destination = result;
     } else if (operation == 1) {

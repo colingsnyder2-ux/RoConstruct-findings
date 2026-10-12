@@ -1,25 +1,28 @@
-// from server: 63% by king_originala
-void __cdecl release(void *);
+// from server: 100% by king_originala
+extern "C" void __cdecl release(void *);
 
-struct Allocation
-{
+struct Resource {
     void *pointer;
-    __forceinline ~Allocation();
+    __forceinline ~Resource();
 };
 
-struct S
-{
-    Allocation allocation;
-    void __thiscall cleanup();
-    __stdcall ~S();
+struct S {
+    Resource resource;
+    void cleanup();
+    __forceinline ~S();
 };
 
-__forceinline Allocation::~Allocation()
+__forceinline Resource::~Resource()
 {
     release(pointer);
 }
 
-S::~S()
+__forceinline S::~S()
 {
     cleanup();
+}
+
+void __stdcall destroy(S *object)
+{
+    object->~S();
 }

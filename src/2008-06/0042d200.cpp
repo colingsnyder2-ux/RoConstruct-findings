@@ -1,5 +1,28 @@
-// from server: 56% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: boost-1.34.1 libs/regex/src/cregex.cpp
+// from server: 100% by king_originala
+extern "C" void* __cdecl get_type();
+void* __cdecl operator new(unsigned int);
+extern unsigned int holder_table[];
+
+struct Holder {
+    void* table;
+    float value;
+    Holder(const float& v);
+};
+
+inline Holder::Holder(const float& v)
+{
+    table = holder_table;
+    value = v;
+}
+
+struct S {
+    void* type;
+    Holder* holder;
+    S(const float& value);
+};
+
+S::S(const float& value)
+{
+    type = get_type();
+    holder = new Holder(value);
+}

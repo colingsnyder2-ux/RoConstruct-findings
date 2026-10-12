@@ -1,100 +1,90 @@
-// from server: 63% by king_originala
+// from server: 71% by king_originala
 struct FlagStand;
-struct Context;
 struct Owner;
 
 struct Node {
     Node *next;
-    Node *previous;
+    Node *prev;
 };
 
-struct StandList {
-    unsigned char data[20];
+struct Container {
+    unsigned char padding[20];
     Node *head;
-
     Node *insert(Node *, Node *, FlagStand *const *);
-    void grow(int);
+    void grow(unsigned int);
     void remove(FlagStand *const *);
 };
 
 struct Owner {
-    unsigned char data[0x130];
-    StandList stands;
+    unsigned char padding[0x130];
+    Container objects;
 };
 
-struct Context {
-    Owner *owner();
+struct Argument {
+    Owner *getOwner();
 };
 
-extern void callback();
+#pragma pointers_to_members(full_generality, multiple_inheritance)
 
-struct Binding {
-    void (*function)();
-    int adjustment;
-    int index;
-    int extra;
+struct Bind {
+    void (FlagStand::*function)();
+    unsigned long padding;
+    unsigned long extra;
     FlagStand *object;
-    int padding;
 };
 
 struct Function {
     unsigned char data[40];
-
-    Function(const Binding &);
+    Function(const Bind &);
     ~Function();
 };
 
 struct Connection {
     unsigned char data[12];
-
     ~Connection();
-    Connection &operator=(const Connection &);
+    Connection &assign(const Connection &);
     void disconnect();
 };
 
-struct Scheduler {
+struct Dispatcher {
     Connection connect(void *, const Function &, int);
 };
 
-extern Scheduler scheduler;
+extern Dispatcher dispatcher;
 
 struct FlagStand {
-    unsigned char data[0x3e8];
+    unsigned char padding[0x3e8];
     Connection connection;
-
-    void changed(Context *, Context *);
+    void callback();
+    void changed(Argument *, Argument *);
 };
 
-void FlagStand::changed(Context *previous, Context *current)
+void FlagStand::changed(Argument *oldValue, Argument *newValue)
 {
-    if (!previous) {
-        Owner *owner = current ? current->owner() : 0;
-        Node *head = owner->stands.head;
-        StandList *list = &owner->stands;
-        FlagStand *value;
-        Node *node = list->insert(head, head->previous, &(value = this));
-        list->grow(1);
-        head->previous = node;
-        node->previous->next = node;
+    if (!oldValue) {
+        Owner *owner = newValue ? newValue->getOwner() : 0;
+        Container *container = &owner->objects;
+        Node *head = container->head;
+        FlagStand *value = this;
+        Node *node = container->insert(head, head->prev, &value);
+        container->grow(1);
+        head->prev = node;
+        node->prev->next = node;
 
-        volatile int extra;
-        Binding binding;
-        binding.function = callback;
-        binding.index = 0;
-        binding.adjustment = 0;
-        binding.extra = extra;
-        binding.object = this;
+        volatile unsigned long extra;
+        Bind bind = { &FlagStand::callback, 0, extra, this };
 
-        Function function(binding);
-        connection = scheduler.connect(
-            this ? static_cast<void *>(reinterpret_cast<unsigned char *>(this) + 0x14) : 0,
-            function, 10);
+        Function function(bind);
+        connection.assign(dispatcher.connect(
+            this ? reinterpret_cast<unsigned char *>(this) + 0x14 : 0,
+            function, 10));
     }
 
-    if (!current) {
-        Owner *owner = previous ? previous->owner() : 0;
-        previous = reinterpret_cast<Context *>(this);
-        owner->stands.remove(reinterpret_cast<FlagStand *const *>(&previous));
+    if (!newValue) {
+        Owner *owner = oldValue ? oldValue->getOwner() : 0;
+        oldValue = reinterpret_cast<Argument *>(this);
+        owner->objects.remove(
+            reinterpret_cast<FlagStand *const *>(&oldValue));
         connection.disconnect();
     }
 }

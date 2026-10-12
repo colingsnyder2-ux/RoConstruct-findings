@@ -1,4 +1,4 @@
-// from server: 95% by tester
+// from server: 100% by king_originala
 struct EnumItem;
 
 struct EnumDesc {
@@ -25,7 +25,7 @@ struct GetSet {
     virtual bool isReadOnly() const;
     virtual bool isWriteOnly() const;
     virtual int getValue(const DescribedBase* instance) const;
-    virtual void setValue(DescribedBase* instance, const EnumItem* value) const;
+    virtual void setValue(DescribedBase* instance, const EnumItem* const& value) const;
 };
 
 struct SurfaceEnumPropDescriptor : EnumPropertyDescriptor {
@@ -36,8 +36,9 @@ struct SurfaceEnumPropDescriptor : EnumPropertyDescriptor {
 extern "C" void __cdecl sub_557330(void* a, void* b);
 extern "C" EnumDesc* __cdecl sub_5ed630();
 
-bool SurfaceEnumPropDescriptor::equalValues(const DescribedBase* a, const DescribedBase* b) const {
-    sub_557330((void*)0x97b120, (void*)0x5ed690);
+bool SurfaceEnumPropDescriptor::equalValues(const DescribedBase* a, const DescribedBase* b) const
+{
+    sub_557330((void*)0x5ed690, (void*)0x97b120);
     EnumDesc* desc = sub_5ed630();
     const EnumItem* item;
     if (desc->convertToItem((int)b, &item)) {

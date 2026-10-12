@@ -1,40 +1,41 @@
-// from server: 70% by colin
-struct PropertyDescriptor {
+// from server: 100% by king_originala
+struct S {
     int reserved;
     int type;
     union {
         double number;
         float single;
-        const char* text;
+        const char *text;
     } value;
-    void clear();
-    bool toNumber(double*);
+    bool toNumber(double *);
 };
 
-extern "C" bool __cdecl parseNumber(const char*, double*);
-
-struct SignalDesc {
-    char pad[0x20];
-    void* ptr;
-    bool isValid();
+struct Value {
+    char reserved[16];
+    S data;
+    bool check();
 };
 
-struct S {
-    char pad[0x18];
-    void* obj;
-    void f(PropertyDescriptor* desc, int a, int b);
+struct Setter;
+
+struct SetterTable {
+    void *reserved[3];
+    void (__thiscall *set)(Setter *, void *, const double *);
 };
 
-void S::f(PropertyDescriptor* desc, int a, int b)
+struct Setter {
+    SetterTable *table;
+};
+
+struct Descriptor {
+    char reserved[24];
+    Setter *setter;
+    void apply(void *, Value *, void *);
+};
+
+void Descriptor::apply(void *object, Value *value, void *)
 {
-    if (!desc->toNumber(0)) {
-        double d;
-        if (parseNumber(desc->value.text, &d)) {
-            void* p = obj;
-            void** vt = *reinterpret_cast<void***>(p);
-            typedef void (__stdcall *Fn)(void*, int, double*);
-            Fn fn = reinterpret_cast<Fn>(vt[3]);
-            fn(p, a, &d);
-        }
-    }
+    double number;
+    if (!value->check() && value->data.toNumber(&number))
+        setter->table->set(setter, object, &number);
 }

@@ -1,5 +1,39 @@
-// from server: 36% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs v8world/Block.cpp
+// from server: 98% by king_originala
+struct Vector3 {
+    float x, y, z;
+    unsigned int hashCode() const;
+};
+
+struct Node {
+    unsigned int hash;
+    Vector3 key;
+    unsigned char padding[16];
+    Node* next;
+};
+
+struct Block {
+    unsigned char padding[8];
+    Node** buckets;
+    unsigned int bucketCount;
+
+    bool contains(const Vector3& key);
+};
+
+#pragma float_control(precise, off, push)
+
+bool Block::contains(const Vector3& key)
+{
+    unsigned int hash = key.hashCode();
+    Node* node = buckets[hash % bucketCount];
+    while (node) {
+        if (node->hash == hash &&
+            node->key.x == key.x &&
+            node->key.y == key.y &&
+            node->key.z == key.z)
+            return true;
+        node = node->next;
+    }
+    return false;
+}
+
+#pragma float_control(pop)

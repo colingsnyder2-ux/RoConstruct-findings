@@ -1,4 +1,4 @@
-// from server: 70% by king_originala
+// from server: 78% by king_originala
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
 
@@ -39,7 +39,7 @@ struct Frame {
 };
 
 struct Ray {
-    char data[48];
+    char data[44];
     Frame& frame();
 };
 
@@ -68,9 +68,9 @@ Context::~Context()
 {
     RefCount* p = reference;
     if (p) {
-        if (_InterlockedExchangeAdd(&p->strong, -1) == 1) {
+        if (_InterlockedExchangeAdd(&p->strong, -1) == 0) {
             p->dispose();
-            if (_InterlockedExchangeAdd(&p->weak, -1) == 1)
+            if (_InterlockedExchangeAdd(&p->weak, -1) == 0)
                 p->destroy();
         }
     }
@@ -107,19 +107,17 @@ void S::f(int argument)
         Entry* last = objects->last;
         if (objects->first > last)
             _invalid_parameter_noinfo();
-        Proxy* endProxy = objects->proxy;
 
-        void (__cdecl *error)() = _invalid_parameter_noinfo;
-        if (!proxy || proxy != endProxy)
-            error();
+        if (!proxy || proxy != objects->proxy)
+            _invalid_parameter_noinfo();
         if (position == last)
             break;
 
-        Vector* container = proxy
-            ? proxy->container
-            : (error(), static_cast<Vector*>(0));
+        if (!proxy)
+            _invalid_parameter_noinfo();
+        Vector* container = proxy ? proxy->container : 0;
         if (position >= container->last)
-            error();
+            _invalid_parameter_noinfo();
 
         Part* part = static_cast<Part*>(
             __RTDynamicCast(position->object, 0,
@@ -130,9 +128,9 @@ void S::f(int argument)
                   world->camera.ray().frame().data + 0x24);
         }
 
-        container = proxy
-            ? proxy->container
-            : (_invalid_parameter_noinfo(), static_cast<Vector*>(0));
+        if (!proxy)
+            _invalid_parameter_noinfo();
+        container = proxy ? proxy->container : 0;
         if (position >= container->last)
             _invalid_parameter_noinfo();
         ++position;

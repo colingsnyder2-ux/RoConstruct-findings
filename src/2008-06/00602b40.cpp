@@ -1,4 +1,4 @@
-// from server: 52% by king_originala
+// from server: 56% by king_originala
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
 
@@ -15,6 +15,17 @@ struct String {
     String(const String&);
     ~String();
 };
+
+extern void (__thiscall *stringCopy)(String*, const String&);
+extern void (__thiscall *stringDestroy)(String*);
+
+inline String::String(const String& other) {
+    stringCopy(this, other);
+}
+
+inline String::~String() {
+    stringDestroy(this);
+}
 
 struct Shared;
 
@@ -71,18 +82,18 @@ extern const char resourceName[];
 extern const float firstValue;
 extern const float secondValue;
 
-Shared::Shared(const Shared& other)
+inline Shared::Shared(const Shared& other)
     : object(other.object), count(other.count) {
     if (count)
         _InterlockedExchangeAdd(&count->strong, 1);
 }
 
-Shared::~Shared() {
+inline Shared::~Shared() {
     if (count) {
         RefCount* p = count;
-        if (!_InterlockedExchangeAdd(&p->strong, -1)) {
+        if (_InterlockedExchangeAdd(&p->strong, -1) == 1) {
             p->dispose();
-            if (!_InterlockedExchangeAdd(&p->weak, -1))
+            if (_InterlockedExchangeAdd(&p->weak, -1) == 1)
                 p->destroy();
         }
     }

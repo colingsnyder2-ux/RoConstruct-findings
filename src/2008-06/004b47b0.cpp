@@ -1,4 +1,4 @@
-// from server: 67% by king_originala
+// from server: 71% by king_originala
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
 
@@ -19,10 +19,12 @@ struct LoggerReference {
     __forceinline ~LoggerReference()
     {
         Control* p = control;
-        if (p && _InterlockedExchangeAdd(&p->strong, -1) == 0) {
-            p->dispose();
-            if (_InterlockedExchangeAdd(&p->weak, -1) == 0)
-                p->destroy();
+        if (p) {
+            if (_InterlockedExchangeAdd(&p->strong, -1) == 1) {
+                p->dispose();
+                if (_InterlockedExchangeAdd(&p->weak, -1) == 1)
+                    p->destroy();
+            }
         }
     }
 };
@@ -56,11 +58,17 @@ struct Item {
 
 void Item::process()
 {
-    unsigned int key = identifier;
-    if (owner->table.contains(&key)) {
-        if (identifier == 0) {
-            logMessage(getLogger().pointer, 3,
-                       "Replication: ~NULL >> %s", owner->name.text(1));
+    try {
+        unsigned int key = identifier;
+        if (owner->table.contains(&key)) {
+            if (identifier == 0) {
+                LoggerReference logger = getLogger();
+                Logger* pointer = logger.pointer;
+                logMessage(pointer, 3, "Replication: ~NULL >> %s",
+                           owner->name.text(1));
+            }
         }
+    }
+    catch (...) {
     }
 }

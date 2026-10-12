@@ -1,8 +1,8 @@
-// from server: 84% by king_originala
+// from server: 92% by king_originala
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
 
-extern "C" void __cdecl _invalid_parameter_noinfo();
+extern "C" void (__cdecl *invalid_parameter_noinfo)();
 
 struct Control {
     virtual void unused() = 0;
@@ -15,8 +15,8 @@ struct Control {
 struct Children {
     void* owner;
     char padding[8];
-    unsigned int first;
-    unsigned int last;
+    unsigned first;
+    unsigned last;
 };
 
 struct Instance {
@@ -46,24 +46,29 @@ struct Shared {
 
 inline Shared::~Shared()
 {
-    if (control) {
-        if (_InterlockedExchangeAdd(&control->strong, -1) == 1) {
-            control->dispose();
-            if (_InterlockedExchangeAdd(&control->weak, -1) == 1)
-                control->destroy();
+    Control* p = control;
+    if (p) {
+        if (_InterlockedExchangeAdd(&p->strong, -1) == 0) {
+            p->dispose();
+            if (_InterlockedExchangeAdd(&p->weak, -1) == 0)
+                p->destroy();
         }
     }
 }
 
 struct Iterator {
     void* owner;
-    unsigned int position;
+    unsigned position;
 };
 
 void __cdecl clearBackpack(Shared);
+
+struct Visitor {
+    void (__cdecl *function)(Shared);
+};
+
 extern void __cdecl visitChildren(
-    Iterator*, void*, unsigned int, void*, unsigned int,
-    void (__cdecl *)(Shared), Control*);
+    Iterator*, void*, unsigned, void*, unsigned, Visitor, Control*);
 
 void __cdecl clearBackpack(Shared value)
 {
@@ -78,19 +83,22 @@ void __cdecl clearBackpack(Shared value)
 
     if (value.object->children) {
         Children* endContainer = value.object->children;
-        unsigned int endPosition = endContainer->last;
-        if (endContainer->first > endPosition)
-            _invalid_parameter_noinfo();
-        void* endOwner = endContainer->owner;
+        Iterator end;
+        end.position = endContainer->last;
+        if (endContainer->first > end.position)
+            invalid_parameter_noinfo();
+        end.owner = endContainer->owner;
 
         Children* beginContainer = value.object->children;
-        unsigned int beginPosition = beginContainer->first;
-        if (beginPosition > beginContainer->last)
-            _invalid_parameter_noinfo();
-        void* beginOwner = beginContainer->owner;
+        Iterator begin;
+        begin.position = beginContainer->first;
+        if (begin.position > beginContainer->last)
+            invalid_parameter_noinfo();
+        begin.owner = beginContainer->owner;
 
         Iterator result;
-        visitChildren(&result, beginOwner, beginPosition,
-                      endOwner, endPosition, clearBackpack, value.control);
+        Visitor visitor = { clearBackpack };
+        visitChildren(&result, begin.owner, begin.position,
+                      end.owner, end.position, visitor, value.control);
     }
 }

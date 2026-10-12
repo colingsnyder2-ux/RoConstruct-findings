@@ -1,22 +1,19 @@
-// from server: 57% by atomic.potato
+// from server: 100% by king_originala
 struct S {
-    char pad[0x18];
-    int (__stdcall *fn)(int, int);
-    char pad2[4];
-    int idx;
-    int base;
-    int getValue(int, int);
+    char padding[0x18];
+    void (__thiscall *setter)(void *, int);
+    int adjustment;
+    int virtualOffset;
+
+    void set(void *object, int value);
 };
 
-int S::getValue(int a, int b) {
-    S* p = (S*)a;
-    if (p) {
-        p = (S*)((char*)p - 0x14);
-    } else {
-        p = 0;
-    }
-    int* arr = *(int**)((char*)p + 0x134);
-    int off = arr[idx];
-    off += base;
-    return fn(off + (int)p + 0x134, b);
+void S::set(void *object, int value)
+{
+    char *base = object ? static_cast<char *>(object) - 0x14 : 0;
+    setter(base + 0x134
+               + *reinterpret_cast<int *>(
+                   *reinterpret_cast<char **>(base + 0x134) + virtualOffset)
+               + adjustment,
+           value);
 }

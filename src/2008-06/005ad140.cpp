@@ -1,6 +1,8 @@
-// from server: 81% by king_originala
+// from server: 84% by king_originala
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
+extern "C" long __cdecl _InterlockedDecrement(volatile long*);
+#pragma intrinsic(_InterlockedDecrement)
 
 struct Control {
     virtual void reserved();
@@ -30,9 +32,9 @@ S::S(Argument argument)
     assign(&argument);
 
     Control* control = argument.control;
-    if (control && _InterlockedExchangeAdd(&control->strong, -1) == 1) {
+    if (control && _InterlockedDecrement(&control->strong) == 0) {
         control->dispose();
-        if (_InterlockedExchangeAdd(&control->weak, -1) == 1)
+        if (_InterlockedDecrement(&control->weak) == 0)
             control->destroy();
     }
 }

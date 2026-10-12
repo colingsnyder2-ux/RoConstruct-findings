@@ -1,17 +1,26 @@
-// from server: 27% by colin
-struct InterpolatingPhysicsReceiver {
-    char pad0[0x10];
-    char flag10;
-    char pad11[7];
-    int field18;
-    void sub_4c9a10();
-    void sub_4a51a0();
-    void destroy();
+// from server: 100% by king_originala
+struct Buffer {
+    int bits;
+    int capacity;
+    int used;
+    void* data;
+    bool owned;
+
+    ~Buffer();
 };
 
-void InterpolatingPhysicsReceiver::destroy() {
-    if (flag10 != 0) {
-        sub_4c9a10();
-    }
-    sub_4a51a0();
+struct Receiver {
+    char padding[16];
+    bool active;
+    char reserved[7];
+    Buffer buffer;
+
+    void prepare();
+    ~Receiver();
+};
+
+Receiver::~Receiver()
+{
+    if (active)
+        prepare();
 }

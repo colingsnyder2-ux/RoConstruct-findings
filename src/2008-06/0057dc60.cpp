@@ -1,29 +1,35 @@
-// from server: 42% by tester
-struct Inner {
-    char pad[0x288];
-    void* vtbl;
+// from server: 100% by king_originala
+struct Value {
+    unsigned char data[48];
 };
 
-struct RayOut {
-    char pad[0x24];
-    float maxT;
+struct Source {
+    Value get();
 };
 
-extern "C" void __fastcall Ray_copy(void* self, void*, RayOut* out);
+struct Provider {
+    virtual void slot0();
+    virtual void slot1();
+    virtual Source& source();
+};
+
+struct Owner {
+    unsigned char padding[648];
+    Provider provider;
+};
+
+extern "C" void* __cdecl convert(const Value&);
+extern "C" void __cdecl assign(void*, void*);
 
 struct TiltSelectionVerb {
-    char pad[0xc];
-    Inner* inner;
-    RayOut getRotationAxis();
+    unsigned char padding[12];
+    Owner* owner;
+
+    void* execute(void* result);
 };
 
-RayOut TiltSelectionVerb::getRotationAxis() {
-    Inner* p = this->inner;
-    void** vt = (void**)p->vtbl;
-    RayOut out;
-    typedef void (__fastcall *Fn)(Inner*, void*, RayOut*);
-    Fn fn = (Fn)vt[2];
-    fn(p, 0, &out);
-    Ray_copy(0, 0, &out);
-    return out;
+void* TiltSelectionVerb::execute(void* result)
+{
+    assign(result, convert(owner->provider.source().get()));
+    return result;
 }

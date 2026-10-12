@@ -1,33 +1,40 @@
-// from server: 43% by king_originala
+// from server: 46% by king_originala
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
 
-struct TypeInfo {
-    bool __thiscall operator==(const TypeInfo&) const;
+struct Type;
+extern bool (__thiscall* typeEqual)(const Type*, const Type*);
+
+struct Type {
+    bool operator==(const Type&) const;
 };
 
-extern TypeInfo emptyType;
-extern TypeInfo sourceType;
-extern TypeInfo objectType;
+inline bool Type::operator==(const Type& other) const {
+    return typeEqual(this, &other);
+}
+
+extern Type emptyType;
+extern Type sourceType;
+extern Type objectType;
 
 struct Control {
-    virtual void unused();
-    virtual void dispose();
-    virtual void destroy();
+    virtual void unused() = 0;
+    virtual void dispose() = 0;
+    virtual void destroy() = 0;
     volatile long strong;
     volatile long weak;
 };
 
 struct Shared {
-    void* object;
-    Control* control;
+    void* const object;
+    Control* const control;
     Shared();
     ~Shared();
 };
 
 inline Shared::Shared() : object(0), control(0) {}
 
-inline Shared::~Shared() {
+__forceinline Shared::~Shared() {
     Control* p = control;
     if (p && _InterlockedExchangeAdd(&p->strong, -1) == 0) {
         p->dispose();
@@ -37,76 +44,81 @@ inline Shared::~Shared() {
 }
 
 struct Holder {
-    virtual void unused();
-    virtual const TypeInfo& type() const;
+    virtual ~Holder();
+    virtual const Type& type() const = 0;
 };
 
 struct Any {
     Holder* holder;
-    void assign(const Shared&);
+    Any& assign(const Shared&);
+    Shared* cast(const Type&);
 };
 
-struct Descriptor {
-    unsigned char padding[8];
-    const TypeInfo* type;
+__forceinline Shared* Any::cast(const Type& wanted) {
+    if (this && (holder ? holder->type() : emptyType) == wanted)
+        return reinterpret_cast<Shared*>(reinterpret_cast<char*>(holder) + 4);
+    return 0;
+}
+
+struct Table {
+    unsigned long reserved[2];
+    const Type* type;
 };
 
-extern Descriptor* __cdecl objectDescriptor();
+extern Table* __cdecl sharedTable();
 extern Shared __cdecl convert(const Shared&);
 
+struct String;
+extern void (__thiscall* stringConstruct)(String*, const char*);
+
 struct String {
-    unsigned char storage[28];
+    char storage[28];
     String(const char*);
     ~String();
 };
 
-struct Error {
-    unsigned char storage[40];
-    Error(const String&);
-    ~Error();
+__forceinline String::String(const char* text) {
+    stringConstruct(this, text);
+}
+
+struct ExceptionBase {
+    virtual ~ExceptionBase();
+    char* message;
+    int owned;
+};
+
+struct CastError : ExceptionBase {
+    String text;
+    CastError(const String&);
+    CastError(const CastError&);
+    virtual ~CastError();
 };
 
 struct S {
-    Descriptor* descriptor;
+    Table* table;
     Any value;
     Shared* f();
 };
 
 Shared* S::f() {
-    if (emptyType == *descriptor->type) {
+    if (emptyType == *table->type) {
         value.assign(Shared());
-        descriptor = objectDescriptor();
+        table = sharedTable();
     }
 
-    if (sourceType == *descriptor->type) {
-        Any* a = &value;
-        Shared* p = 0;
-        if (a) {
-            const TypeInfo& t = a->holder ? a->holder->type() : emptyType;
-            if (t == sourceType)
-                p = reinterpret_cast<Shared*>(
-                    reinterpret_cast<char*>(a->holder) + 4);
-        }
-
-        if (p)
-            a->assign(convert(*p));
+    if (sourceType == *table->type) {
+        Shared* source = value.cast(sourceType);
+        if (source)
+            value.assign(convert(*source));
         else
-            a->assign(Shared());
-
-        descriptor = objectDescriptor();
+            value.assign(Shared());
+        table = sharedTable();
     }
 
-    Any* a = &value;
-    Shared* p = 0;
-    if (a) {
-        const TypeInfo& t = a->holder ? a->holder->type() : emptyType;
-        if (t == objectType)
-            p = reinterpret_cast<Shared*>(
-                reinterpret_cast<char*>(a->holder) + 4);
+    Shared* result = value.cast(objectType);
+    if (!result) {
+        String message("Unable to cast value to Object");
+        throw CastError(message);
     }
-
-    if (!p)
-        throw Error(String("Unable to cast value to Object"));
-
-    return p;
+    return result;
 }

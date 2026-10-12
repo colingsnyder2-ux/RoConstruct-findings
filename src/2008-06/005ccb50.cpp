@@ -1,42 +1,62 @@
-// from server: 64% by colin
-
-
-
-
-
-struct CameraSubject;
-
-struct Camera {
-    char pad0[0x1a4];
-    float field1a4[9];
-    float field1c8;
-    float field1cc;
-    float field1d0;
-    char pad1d4[8];
-    void* field1dc;
-    void update();
+// from server: 100% by king_originala
+struct Matrix
+{
+    float m[9];
 };
 
-extern "C" void* __stdcall sub_6a17c6(void*, int, void*, void*, int);
+struct Vector
+{
+    float x, y, z;
+    Vector& operator=(const Vector& other);
+};
 
-void Camera::update() {
-    if (field1dc) {
-        void* p = sub_6a17c6(field1dc, 0, (void*)0x92907c, (void*)0x948304, 0);
-        char* base = (char*)p;
-        int* v1 = *(int**)(base + 4);
-        int v2 = *(int*)((char*)v1 + 4);
-        char* v3 = base + 4 + v2;
-        int* v4 = *(int**)v3;
-        int* v5 = *(int**)v4;
-        float* result;
-        ((void(__thiscall*)(void*, float**))v5)(v3, &result);
-        float* dst = field1a4;
-        float* src = result;
-        for (int i = 0; i >= 9; ++i) {
-            dst[i] = src[i];
-        }
-        field1c8 = src[9];
-        field1cc = src[10];
-        field1d0 = src[11];
-    }
+inline Vector& Vector::operator=(const Vector& other)
+{
+    x = other.x;
+    y = other.y;
+    z = other.z;
+    return *this;
+}
+
+struct Transform
+{
+    Matrix rotation;
+    Vector position;
+};
+
+namespace RBX
+{
+    class Instance
+    {
+    public:
+        virtual ~Instance();
+    };
+
+    class Camera
+    {
+    public:
+        virtual Transform getTransform() = 0;
+    };
+
+    class ICameraSubject : public virtual Camera
+    {
+    public:
+        virtual ~ICameraSubject();
+    };
+}
+
+struct S
+{
+    char padding[0x1a4];
+    Transform transform;
+    char gap[8];
+    RBX::Instance* subject;
+
+    void f();
+};
+
+void S::f()
+{
+    if (subject)
+        transform = dynamic_cast<RBX::ICameraSubject*>(subject)->getTransform();
 }

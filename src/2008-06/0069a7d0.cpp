@@ -1,4 +1,4 @@
-// from server: 81% by king_originala
+// from server: 85% by king_originala
 typedef unsigned int size_t;
 
 extern void (__cdecl *invalidParameter)();
@@ -38,14 +38,15 @@ struct Iterator {
     void *node;
 };
 
-struct Animation;
+struct SceneAnimation;
+
 struct AnimationMap {
     void *owner;
     unsigned char padding[20];
     void *end;
 
     Iterator *find(Iterator *, const String &);
-    Animation **operator[](const String &);
+    SceneAnimation **operator[](const String &);
 };
 
 struct Exception {
@@ -56,25 +57,23 @@ struct ErrorCode {
     unsigned char value;
 };
 
-extern void __cdecl constructException(
+extern Exception *__cdecl constructException(
     Exception *, ErrorCode, const String &, const String &,
     const char *, int);
 extern unsigned char exceptionType[];
 
-struct Animation {
-    virtual ~Animation();
-    unsigned char data[164];
-};
-
 extern void (__thiscall *animationConstruct)(
-    Animation *, const String &, float);
+    SceneAnimation *, const String &, float);
 
-struct SceneAnimation : Animation {
+struct SceneAnimation {
+    unsigned char data[164];
+
     SceneAnimation(const String &, float);
     virtual ~SceneAnimation();
 };
 
-__forceinline SceneAnimation::SceneAnimation(const String &name, float duration)
+__forceinline SceneAnimation::SceneAnimation(
+    const String &name, float duration)
 {
     animationConstruct(this, name, duration);
 }
@@ -83,10 +82,11 @@ struct SceneManager {
     unsigned char padding[0x4294];
     AnimationMap animations;
 
-    Animation *createAnimation(const String &, float);
+    SceneAnimation *createAnimation(const String &, float);
 };
 
-Animation *SceneManager::createAnimation(const String &name, float duration)
+SceneAnimation *SceneManager::createAnimation(
+    const String &name, float duration)
 {
     void *owner = animations.owner;
     void *finish = animations.end;
@@ -101,13 +101,14 @@ Animation *SceneManager::createAnimation(const String &name, float duration)
         ErrorCode code;
         code.value = 0;
         Exception error;
-        constructException(
-            &error, code,
-            appendString(
-                prependString("An animation with the name ", name),
-                " already exists"),
-            source, ".\\RbxSceneManager.cpp", 2991);
-        throwException(&error, exceptionType);
+        throwException(
+            constructException(
+                &error, code,
+                appendString(
+                    prependString("An animation with the name ", name),
+                    " already exists"),
+                source, ".\\RbxSceneManager.cpp", 2991),
+            exceptionType);
     }
 
     SceneAnimation *animation = new SceneAnimation(name, duration);

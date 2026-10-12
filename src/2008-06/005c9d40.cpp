@@ -1,19 +1,39 @@
-// from server: 28% by king_originala
-extern "C" void* __cdecl malloc(unsigned int size);
+// from server: 100% by king_originala
+extern "C" void* (__cdecl *malloc)(unsigned int);
+void __cdecl operator delete(void*);
 
-struct TypedStatsItem {
-    void __cdecl construct(const unsigned int* value);
-};
+struct Item {
+    char storage[0x178];
 
-struct TypedMemItem {
-    void __cdecl construct(const unsigned int* value);
-};
-
-void TypedMemItem::construct(const unsigned int* value)
-{
-    void* mem = malloc(0x178);
-    if (mem) {
-        ((TypedStatsItem*)mem)->construct(value);
+    Item(int);
+    static void* operator new(unsigned int size)
+    {
+        return malloc(size);
     }
-    ((TypedStatsItem*)this)->construct((const unsigned int*)mem);
+    static void operator delete(void* p)
+    {
+        ::operator delete(p);
+    }
+};
+
+struct Tag {
+    union {
+        int value;
+        char byte;
+    };
+
+    Tag() : value(0)
+    {
+        byte = 0;
+    }
+};
+
+struct Result {
+    Result(Item*, Tag);
+};
+
+Result makeItem(int argument)
+{
+    Tag tag;
+    return Result(new Item(argument), tag);
 }

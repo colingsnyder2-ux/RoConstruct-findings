@@ -1,10 +1,11 @@
-// from server: 74% by king_originala
+// from server: 81% by king_originala
 struct String;
 
 struct Ios {
     void *vtable;
     int reserved;
     int state;
+    int reserved2;
     int flags;
     int precision;
 };
@@ -13,29 +14,58 @@ struct Input {
     int *vbtable;
     int reserved;
 
-    Ios *ios() {
-        return reinterpret_cast<Ios *>(
-            reinterpret_cast<char *>(this) + vbtable[1]);
-    }
-
-    operator void *() {
-        return (ios()->state & 6) ? 0 : ios();
-    }
+    Ios *ios();
+    operator void *();
+    Input &unsetf(int);
+    int setprecision(int);
 };
+
+__forceinline Ios *Input::ios()
+{
+    return reinterpret_cast<Ios *>(
+        reinterpret_cast<char *>(this) + vbtable[1]);
+}
+
+__forceinline Input::operator void *()
+{
+    Ios *p = ios();
+    signed char failed = static_cast<signed char>(p->state & 6);
+    unsigned long mask = ~static_cast<unsigned long>(-(failed != 0));
+    return reinterpret_cast<void *>(reinterpret_cast<unsigned long>(p) & mask);
+}
+
+__forceinline Input &Input::unsetf(int mask)
+{
+    ios()->flags &= ~mask;
+    return *reinterpret_cast<Input *>(ios());
+}
+
+__forceinline int Input::setprecision(int value)
+{
+    Ios *p = ios();
+    int old = p->precision;
+    p->precision = value;
+    return old;
+}
 
 struct Output {
     int *vbtable;
     int reserved;
 
-    Ios *ios() {
-        return reinterpret_cast<Ios *>(
-            reinterpret_cast<char *>(this) + vbtable[1]);
-    }
-
-    bool fail() {
-        return (ios()->state & 6) != 0;
-    }
+    Ios *ios();
+    signed char fail();
 };
+
+__forceinline Ios *Output::ios()
+{
+    return reinterpret_cast<Ios *>(
+        reinterpret_cast<char *>(this) + vbtable[1]);
+}
+
+__forceinline signed char Output::fail()
+{
+    return static_cast<signed char>(ios()->state & 6);
+}
 
 struct Stream;
 
@@ -50,44 +80,45 @@ struct Stream {
     Output output;
     char storage[120];
 
-    Stream() {
-        stream_construct(this, 3, 1);
-    }
-
-    ~Stream() {
-        stream_destroy(this);
-    }
+    Stream();
+    ~Stream();
 };
 
-struct BadCast;
-extern void (__thiscall *bad_cast_construct)(BadCast *, const char *);
+__forceinline Stream::Stream()
+{
+    stream_construct(this, 3, 1);
+}
 
-struct BadCast {
-    virtual ~BadCast();
-    virtual const char *what() const;
-    char *message;
-    bool owns_message;
+__forceinline Stream::~Stream()
+{
+    stream_destroy(this);
+}
 
-    BadCast(const char *text) {
-        bad_cast_construct(this, text);
-    }
-};
-
+struct BadLexicalCast;
+extern void (__thiscall *bad_cast_construct)(BadLexicalCast *, const char *);
+extern unsigned char lexicalCastVtable;
 extern const char string_type;
 extern const char integer_type;
 
-struct BadLexicalCast : BadCast {
+struct BadLexicalCast {
+    void *vtable;
+    unsigned long base[2];
     const void *source_type;
     const void *target_type;
 
-    BadLexicalCast()
-        : BadCast("bad lexical cast: source type value could not be interpreted as target"),
-          source_type(&string_type),
-          target_type(&integer_type) {
-    }
-
-    virtual ~BadLexicalCast();
+    BadLexicalCast();
+    ~BadLexicalCast();
 };
+
+__forceinline BadLexicalCast::BadLexicalCast()
+{
+    bad_cast_construct(
+        this,
+        "bad lexical cast: source type value could not be interpreted as target");
+    vtable = &lexicalCastVtable;
+    source_type = &string_type;
+    target_type = &integer_type;
+}
 
 __declspec(noreturn) void __cdecl throw_exception(const BadLexicalCast &);
 
@@ -96,8 +127,8 @@ int __cdecl lexical_integer(const String &source)
     int result;
     Stream stream;
 
-    stream.input.ios()->flags &= ~1;
-    stream.input.ios()->precision = 10;
+    stream.input.unsetf(1);
+    stream.input.setprecision(10);
 
     if (!insert_string(stream.output, source).fail() &&
         extract_integer(&stream.input, result) &&

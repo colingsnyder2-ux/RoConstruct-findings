@@ -1,70 +1,69 @@
-// from server: 80% by colin
-struct BodyColors {
-    char pad0[0x104];
-    void* field104;
-    char pad108[0x134 - 0x108];
-    int field134;
-    int field138;
-    int field13c;
-    int field140;
-    int field144;
-    int field148;
-    void func(void*);
-};
-
-extern "C" void* __stdcall sub_6a17c6(void*, void*, void*, void*, void*);
-extern "C" void* __fastcall sub_5d4460(void*);
-extern "C" void* __fastcall sub_5d8a10(void*);
-extern "C" void* __fastcall sub_5d8b10(void*);
-extern "C" void* __fastcall sub_5d8c10(void*);
-extern "C" void* __fastcall sub_5d8d10(void*);
-extern "C" void* __fastcall sub_5d8e10(void*);
-extern "C" void* __fastcall sub_5d8f10(void*);
+// from server: 100% by king_originala
+extern "C" void* __cdecl _RTDynamicCast(void*, long, void*, void*, int);
+extern "C" char instance_type;
+extern "C" char model_type;
 
 struct Settings {
-    char pad[0x1e4];
+    unsigned char padding[0x1e4];
     int value;
     void notify(void*);
+    void setValue(int);
 };
 
-void BodyColors::func(void* arg)
+struct Model {
+    int hasBodyColors();
+    Settings* getHead();
+    Settings* getTorso();
+    Settings* getLeftArm();
+    Settings* getRightArm();
+    Settings* getLeftLeg();
+    Settings* getRightLeg();
+};
+
+struct BodyColors {
+    unsigned char padding[0x104];
+    void* parent;
+    unsigned char padding2[0x2c];
+    int headColor;
+    int leftLegColor;
+    int rightLegColor;
+    int torsoColor;
+    int leftArmColor;
+    int rightArmColor;
+
+    void apply(Model*);
+};
+
+void BodyColors::apply(Model* model)
 {
-    if (field104 != 0) {
-        void* p = sub_6a17c6(field104, 0, (void*)0x92907c, (void*)0x932a40, 0);
-        if (p != 0) {
-            if (sub_5d4460(p) != 0) {
-                return;
-            }
-        }
+    if (parent) {
+        Model* owner = static_cast<Model*>(
+            _RTDynamicCast(parent, 0, &instance_type, &model_type, 0));
+        if (owner && owner->hasBodyColors())
+            return;
     }
 
-    void* a = sub_5d8a10(arg);
-    if (a != 0) {
-        ((Settings*)a)->notify((void*)field134);
-    }
+    Settings* part = model->getHead();
+    if (part)
+        part->setValue(headColor);
 
-    void* b = sub_5d8c10(arg);
-    if (b != 0) {
-        ((Settings*)b)->notify((void*)field144);
-    }
+    part = model->getLeftArm();
+    if (part)
+        part->setValue(leftArmColor);
 
-    void* c = sub_5d8d10(arg);
-    if (c != 0) {
-        ((Settings*)c)->notify((void*)field148);
-    }
+    part = model->getRightArm();
+    if (part)
+        part->setValue(rightArmColor);
 
-    void* d = sub_5d8b10(arg);
-    if (d != 0) {
-        ((Settings*)d)->notify((void*)field140);
-    }
+    part = model->getTorso();
+    if (part)
+        part->setValue(torsoColor);
 
-    void* e = sub_5d8e10(arg);
-    if (e != 0) {
-        ((Settings*)e)->notify((void*)field138);
-    }
+    part = model->getLeftLeg();
+    if (part)
+        part->setValue(leftLegColor);
 
-    void* f = sub_5d8f10(arg);
-    if (f != 0) {
-        ((Settings*)f)->notify((void*)field13c);
-    }
+    part = model->getRightLeg();
+    if (part)
+        part->setValue(rightLegColor);
 }

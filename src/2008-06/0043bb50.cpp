@@ -1,4 +1,4 @@
-// from server: 78% by king_originala
+// from server: 92% by king_originala
 struct String
 {
     char data[28];
@@ -25,14 +25,31 @@ struct Key
     int second;
 };
 
+struct Arg
+{
+    int value;
+    Arg(const int&);
+    Arg(const Arg&);
+};
+
+__forceinline Arg::Arg(const int& other)
+{
+    value = other;
+}
+
+__forceinline Arg::Arg(const Arg& other)
+{
+    value = other.value;
+}
+
 struct Item
 {
-    int first;
+    Arg first;
     int second;
     int third;
     String text;
 
-    Item(int, int, int, String);
+    Item(Arg, int, int, String);
 };
 
 struct Result
@@ -50,5 +67,5 @@ __forceinline Result::Result(const Key& k, const Item& value)
 
 Result f(Key key, int a, int b, int c, String text)
 {
-    return Result(key, Item(a, b, c, text));
+    return Result(key, Item(Arg(a), b, c, text));
 }

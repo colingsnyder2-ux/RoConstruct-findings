@@ -1,4 +1,4 @@
-// from server: 98% by king_originala
+// from server: 100% by king_originala
 #pragma float_control(precise, off)
 
 struct Vector3
@@ -34,9 +34,9 @@ inline const T& maximum(const T& a, const T& b)
 }
 
 template<class T>
-inline const T& greaterValue(const T& a, const T& b)
+inline const T& minimum(const T& a, const T& b)
 {
-    return a > b ? a : b;
+    return a < b ? a : b;
 }
 
 struct RotatePJoint
@@ -70,5 +70,6 @@ float RotatePJoint::radius()
     float maximum0 = maximum(a[a1], a[a2]);
     float maximum1 = maximum(b[b1], b[b2]);
 
-    return greaterValue(maximum1, maximum0) * radiusScale;
+    float result = minimum(maximum1, maximum0);
+    return result * radiusScale;
 }

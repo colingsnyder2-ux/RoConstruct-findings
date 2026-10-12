@@ -1,4 +1,4 @@
-// from server: 92% by king_originala
+// from server: 93% by king_originala
 struct String {
     char storage[28];
 };
@@ -14,14 +14,14 @@ struct Buffer {
     int active;
 
     Buffer();
-    ~Buffer();
+    ~Buffer() throw();
 };
 
 __forceinline Buffer::Buffer() {
-    active = 0;
+    data = 0;
 }
 
-__forceinline Buffer::~Buffer() {
+__forceinline Buffer::~Buffer() throw() {
     destroyBuffer(this);
 }
 
@@ -51,7 +51,7 @@ extern BufferFormat formatBuffer;
 
 struct Temporary : Buffer {
     Temporary(String* text);
-    ~Temporary();
+    ~Temporary() throw();
 };
 
 __forceinline Temporary::Temporary(String* text) {
@@ -60,7 +60,7 @@ __forceinline Temporary::Temporary(String* text) {
     constructBuffer(this);
 }
 
-__forceinline Temporary::~Temporary() {
+__forceinline Temporary::~Temporary() throw() {
 }
 
 struct ThreadLogManager {

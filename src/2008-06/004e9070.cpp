@@ -1,72 +1,81 @@
-// from server: 90% by king_originala
-typedef unsigned int UInt;
+// from server: 100% by king_originala
+extern char valueTable;
 
-void* __cdecl operator new(unsigned int);
-void __cdecl operator delete(void*);
-
-struct Value {
-    UInt data[3];
-
-    Value(const Value& other) { copy(&other); }
-    virtual ~Value();
-    void copy(const Value* other);
-};
-
-struct Node {
-    UInt key;
-    UInt hash;
-    Value value;
-    Node* next;
-
-    Node(UInt key, Value value, UInt hash, Node* next);
-};
-
-struct Table {
-    UInt unused;
-    int count;
-    Node** buckets;
-    UInt capacity;
-
-    void resize(UInt capacity);
-    void insert(const UInt* key, const Value* value);
-};
-
-void Table::insert(const UInt* key, const Value* value)
+struct Value
 {
-    UInt hash = *key;
-    UInt bucket = hash % capacity;
-    Node* node = buckets[bucket];
+    void *table;
+    unsigned int data[3];
 
-    if (!node) {
-        buckets[bucket] = new Node(*key, *value, hash, 0);
-    } else {
-        int length = 1;
-        bool sameHash = true;
+    Value(const Value &);
+    ~Value();
+    void copy(const Value &);
+};
 
-        do {
-            sameHash = sameHash && hash == node->key;
+inline Value::Value(const Value &other)
+{
+    table = &valueTable;
+    copy(other);
+}
 
-            if (hash == node->key && node->hash == hash) {
-                Value* destination = &node->value;
-                if (destination != value) {
-                    destination->Value::~Value();
-                    destination->copy(value);
-                }
-                return;
-            }
+struct Node
+{
+    unsigned int key;
+    unsigned int hash;
+    Value value;
+    Node *next;
 
-            node = node->next;
-            ++length;
-        } while (node);
+    Node(unsigned int, Value, unsigned int, Node *);
+};
 
-        if ((!sameHash) & (length > 5)) {
-            if ((int)capacity < count * 20)
-                resize(capacity * 2 + 1);
-        }
+struct S
+{
+    unsigned int reserved;
+    int count;
+    Node **buckets;
+    int bucketCount;
 
-        bucket = hash % capacity;
-        buckets[bucket] = new Node(*key, *value, hash, buckets[bucket]);
+    void resize(int);
+    void f(const unsigned int *, const Value &);
+};
+
+void S::f(const unsigned int *key, const Value &value)
+{
+    unsigned int hash = *key;
+    unsigned int bucket = hash % bucketCount;
+    Node *node = buckets[bucket];
+
+    if (!node)
+    {
+        buckets[bucket] = new Node(*key, value, hash, 0);
+        ++count;
+        return;
     }
 
+    int length = 1;
+    bool sameHash = true;
+    do
+    {
+        sameHash = sameHash && hash == node->key;
+        if (hash == node->key && node->hash == hash)
+        {
+            if (&node->value != &value)
+            {
+                node->value.~Value();
+                node->value.copy(value);
+            }
+            return;
+        }
+        node = node->next;
+        ++length;
+    } while (node);
+
+    if ((!sameHash) & (length > 5))
+    {
+        if (bucketCount < count * 20)
+            resize(bucketCount * 2 + 1);
+    }
+
+    bucket = hash % bucketCount;
+    buckets[bucket] = new Node(*key, value, hash, buckets[bucket]);
     ++count;
 }

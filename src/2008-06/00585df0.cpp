@@ -1,21 +1,47 @@
-// from server: 57% by atomic.potato
-struct S {
-    char pad[8];
-    int (__stdcall *fn)(int);
-    int offset;
-    int method(int, int);
+// from server: 100% by king_originala
+struct String
+{
+    char data[28];
+    String(const String&);
 };
 
-extern "C" void __stdcall string_copy_ctor(void*, const void*);
+extern void (__thiscall *string_copy_ctor)(String*, const String*);
 
-int S::method(int a, int b)
+inline String::String(const String& other)
 {
-    int tmp = 0;
-    int* p = (int*)a;
-    if (p != 0)
-        tmp = a - 0x14;
-    int result = fn(offset + tmp);
-    string_copy_ctor((void*)b, (void*)result);
-    *(int*)(b + 0x1c) = *(int*)(result + 0x1c);
-    return b;
+    string_copy_ctor(this, &other);
+}
+
+struct Value
+{
+    String text;
+    int extra;
+};
+
+struct Base
+{
+    const Value& get();
+};
+
+struct Object
+{
+    char data[20];
+};
+
+#pragma pointers_to_members(full_generality, multiple_inheritance)
+
+struct S
+{
+    char pad[8];
+    const Value& (Base::*fn)();
+    Value method(Object*);
+};
+
+Value S::method(Object* object)
+{
+    volatile int temporary = 0;
+    Base* base = 0;
+    if (object != 0)
+        base = reinterpret_cast<Base*>(reinterpret_cast<char*>(object) - 20);
+    return (base->*fn)();
 }

@@ -1,19 +1,29 @@
-// from server: 50% by atomic.potato
-struct DxUserInput
+// from server: 100% by king_originala
+struct Object;
+
+struct Ref
 {
-    char pad0[0x192];
-    bool m_flag;
-    int f(int a, int b);
+    Object *p;
 };
 
-extern "C" int __stdcall sub_5CEB00(int a, int b);
-
-int DxUserInput::f(int a, int b)
+struct DxUserInput
 {
-    if (m_flag)
+    char pad[402];
+    unsigned char enabled;
+
+    void helper(Ref *result, int value);
+    Ref *f(Ref *result, int value);
+};
+
+Ref *DxUserInput::f(Ref *result, int value)
+{
+    volatile int zero = 0;
+    if (enabled)
     {
-        return sub_5CEB00(a, b);
+        helper(result, value);
+        return result;
     }
-    *(int*)a = 0;
-    return 0;
+
+    result->p = 0;
+    return result;
 }

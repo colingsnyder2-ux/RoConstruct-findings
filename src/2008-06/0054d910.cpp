@@ -1,13 +1,19 @@
-// from server: 20% by atomic.potato
-struct S
-{
-    int* data;
-    unsigned int count;
-    int f();
+// from server: 100% by king_originala
+struct Element {
+    char data[24];
 };
 
-int S::f()
+struct S {
+    Element* data;
+    int count;
+    Element* f();
+};
+
+#pragma optimize("", off)
+Element* S::f()
 {
-    int* p = data;
-    return p[(count - 1) * 6];
+    do {} while (0);
+    do {} while (0);
+    return data + (count - 1);
 }
+#pragma optimize("", on)

@@ -1,5 +1,5 @@
-// from server: 72% by king_originala
-extern "C" int __cdecl memmove_s(void*, unsigned int, const void*, unsigned int);
+// from server: 76% by king_originala
+extern "C" int (__cdecl *memmove_s)(void*, unsigned int, const void*, unsigned int);
 
 struct Reader {
     char storage[12];
@@ -31,52 +31,58 @@ struct S {
     virtual void initialize();
 
     char padding04[12];
-    unsigned char** beginning;
+    char** beginning;
     char padding14[12];
-    unsigned char** current;
+    char** current;
     char padding24[12];
     int* available;
     char padding34[8];
     bool ended;
     char padding3d[3];
     Reader reader;
-    unsigned char* buffer;
+    char* buffer;
     int capacity;
     int retained;
 
+    void set(char*, char*, char*);
     int func_005f9920();
 };
+
+inline void S::set(char* first, char* next, char* last)
+{
+    *beginning = first;
+    *current = next;
+    *available = last - next;
+}
 
 int S::func_005f9920()
 {
     if (!*current)
         initialize();
 
-    unsigned char* p = *current;
-    if (p < p + *available)
-        return *p;
+    if (*current < *current + *available)
+        return (unsigned char)**current;
 
-    int used = p - *beginning;
+    int used = *current - *beginning;
     const int& smaller = retained < used ? retained : used;
     int saved = smaller;
 
     if (saved)
-        memmove_s(buffer + retained - saved, saved, p - saved, saved);
+        memmove_s(buffer + (retained - saved), saved, *current - saved, saved);
 
-    unsigned char* next = buffer + retained;
-    *beginning = next - saved;
-    *current = next;
-    *available = next - *current;
+    set(buffer + retained - saved, buffer + retained, buffer + retained);
 
-    int result = reader.read((char*)(buffer + retained), capacity - retained);
+    int result = reader.read(buffer + retained, capacity - retained);
     if (result == -1) {
         ended = true;
         result = 0;
     }
 
-    *available = buffer + retained + result - *current;
+    char* start = *current;
+    char* last = buffer + retained + result;
+    *available = last - start;
 
     if (result)
-        return **current;
+        return (unsigned char)**current;
     return -1;
 }

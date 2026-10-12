@@ -1,6 +1,8 @@
-// from server: 96% by king_originala
+// from server: 100% by king_originala
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
+extern "C" void __cdecl _ReadWriteBarrier();
+#pragma intrinsic(_ReadWriteBarrier)
 
 void* __cdecl operator new(unsigned int) throw();
 
@@ -13,7 +15,9 @@ struct RefCount {
 
 __forceinline void RefCount::addRef() throw()
 {
-    _InterlockedExchangeAdd(&count, 1);
+    volatile long* p = &count;
+    _ReadWriteBarrier();
+    _InterlockedExchangeAdd(p, 1);
 }
 
 struct Bundle {

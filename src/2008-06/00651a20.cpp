@@ -1,59 +1,62 @@
-// from server: 30% by king_originala
-struct Entry
+// from server: 68% by king_originala
+struct Element
 {
-    unsigned int* link;
-    unsigned char padding[8];
-    unsigned int a;
-    unsigned int b;
-    unsigned int c;
+    unsigned long* link;
+    unsigned long reserved[2];
+    unsigned long first;
+    unsigned long last;
+    unsigned long end;
 };
 
-struct Guard
+struct Temporary
 {
-    ~Guard() {}
+    unsigned long value;
+    Temporary(unsigned long v) : value(v) {}
+    ~Temporary() {}
 };
 
-void __cdecl swap_backward(Entry* first, Entry* last, Entry* output)
+Element* __cdecl swap_backward(Element* first, Element* last, Element* output)
 {
-    Guard guard;
-    while (first != last)
+    while (last != first)
     {
         --last;
         --output;
+
         if (output != last)
         {
-            unsigned int* p = last->link;
-            unsigned int* q = output->link;
-            output->link = p;
-            last->link = q;
+            unsigned long* old = output->link;
+            output->link = last->link;
+            last->link = old;
 
-            if (output->link != q)
+            if (output->link != old)
             {
-                unsigned int t = *output->link;
-                *output->link = *q;
-                *q = t;
+                Temporary temporary(*output->link);
+                *output->link = *old;
+                *old = temporary.value;
             }
 
-            if (&output->a != &last->a)
+            if (&output->first != &last->first)
             {
-                unsigned int t = last->a;
-                last->a = output->a;
-                output->a = t;
+                Temporary temporary(last->first);
+                last->first = output->first;
+                output->first = temporary.value;
             }
 
-            if (&output->b != &last->b)
+            if (&output->last != &last->last)
             {
-                unsigned int t = last->b;
-                last->b = output->b;
-                output->b = t;
+                Temporary temporary(last->last);
+                last->last = output->last;
+                output->last = temporary.value;
             }
 
-            if (&output->c != &last->c)
+            if (&output->end != &last->end)
             {
-                unsigned int t = output->c;
-                output->c = last->c;
-                last->c = t;
+                Temporary temporary(output->end);
+                output->end = last->end;
+                last->end = temporary.value;
             }
         }
     }
+
+    return output;
 }

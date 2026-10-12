@@ -1,4 +1,4 @@
-// from server: 80% by king_originala
+// from server: 83% by king_originala
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
 
@@ -47,9 +47,9 @@ struct SharedResult {
 inline SharedResult::~SharedResult()
 {
     Control* p = control;
-    if (p && _InterlockedExchangeAdd(&p->strong, -1) == 1) {
+    if (p && _InterlockedExchangeAdd(&p->strong, -1) == 0) {
         p->dispose();
-        if (_InterlockedExchangeAdd(&p->weak, -1) == 1)
+        if (_InterlockedExchangeAdd(&p->weak, -1) == 0)
             p->destroy();
     }
 }
@@ -71,9 +71,9 @@ inline Shared::Shared(const SharedResult& other)
 inline Shared::~Shared()
 {
     Control* p = control;
-    if (p && _InterlockedExchangeAdd(&p->strong, -1) == 1) {
+    if (p && _InterlockedExchangeAdd(&p->strong, -1) == 0) {
         p->dispose();
-        if (_InterlockedExchangeAdd(&p->weak, -1) == 1)
+        if (_InterlockedExchangeAdd(&p->weak, -1) == 0)
             p->destroy();
     }
 }
@@ -81,10 +81,10 @@ inline Shared::~Shared()
 SharedResult __cdecl makeItem(int);
 
 struct TypedMemItem {
-    Item* create(int, const char*);
+    Item* create(const char*, int);
 };
 
-Item* TypedMemItem::create(int kind, const char* name)
+Item* TypedMemItem::create(const char* name, int kind)
 {
     Shared item(makeItem(kind));
     item.object->setName(String(name));

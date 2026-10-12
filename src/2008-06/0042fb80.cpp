@@ -1,5 +1,24 @@
-// from server: 50% by king_originala
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: boost-1.34.1 libs/regex/src/cregex.cpp
+// from server: 100% by king_originala
+struct Rect
+{
+    int left, top, right, bottom;
+    Rect(int l, int t, int r, int b);
+};
+
+__forceinline Rect::Rect(int l, int t, int r, int b)
+    : left(l), top(t), right(r), bottom(b)
+{
+}
+
+struct Pane;
+
+struct CMainFrame
+{
+    Pane* FindPane(unsigned int id, Rect bounds, int flags);
+    void f();
+};
+
+void CMainFrame::f()
+{
+    FindPane(191, Rect(0, 0, 280, 400), 0);
+}

@@ -1,29 +1,43 @@
-// from server: 26% by colin
-// roc 2008-06 00542770  unit: RBX::RenderBase::VChunk::?$WeakReferenceCountedPointer  size: 174 bytes
-// Make this compile to the exact bytes below, then: roc check 2008-06 00542770
+// from server: 84% by king_originala
+#pragma optimize("", off)
+#pragma strict_gs_check(on)
 
-extern "C" void* __cdecl operator_new(unsigned int size);
+void* __cdecl operator new(unsigned int);
+void __cdecl operator delete(void*);
 
-struct Inner {
-    void* field0;
-    void* field4;
-    void* field8;
+struct S;
+struct Node;
+
+struct Object
+{
+    unsigned char reserved[8];
+    Node* head;
 };
 
-struct Outer {
-    void* field0;
-    Inner* field4;
-    void set(void* p);
+struct Node
+{
+    S* owner;
+    Node* next;
+
+    Node(S*, Node*);
 };
 
-void Outer::set(void* p) {
-    field4 = (Inner*)p;
-    if (field4 != 0) {
-        Inner* tmp = (Inner*)operator_new(8);
-        if (tmp != 0) {
-            tmp->field0 = field4->field8;
-            tmp->field4 = 0;
-        }
-        field4->field8 = tmp;
+struct S
+{
+    unsigned int reserved;
+    Object* object;
+
+    void __thiscall reset();
+    void __thiscall f(Object*);
+};
+
+void S::f(Object* value)
+{
+    reset();
+    object = value;
+    if (object)
+    {
+        Node* node = new Node(this, object->head);
+        object->head = node;
     }
 }

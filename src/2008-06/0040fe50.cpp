@@ -1,53 +1,54 @@
-// from server: 41% by tester
+// from server: 95% by king_originala
+void* __cdecl operator new(unsigned int);
 
-
-
-
-extern "C" void* __cdecl operator_new(unsigned int size);
-
-struct CComEnumImpl {
-    void* vtable;
-    void* field_4;
-    void* field_8;
-    void* field_c;
-    void* field_10;
-    void* field_14;
-    void* field_18;
+struct Module {
+    virtual void unused();
+    virtual long Lock();
 };
 
-struct CComObjectRoot {
-    void* vtable;
-    void* field_4;
-    void* field_8;
-    void* field_c;
-    void* field_10;
-    void* field_14;
-    void* field_18;
+extern Module* module;
+extern void* objectVtable[];
+
+struct Object {
+    void** vtable;
+    long references;
+    void* begin;
+    void* current;
+    void* end;
+    void* owner;
+    unsigned int flags;
 };
 
-struct CComEnum {
-    long __stdcall Init(void** ppEnum);
-};
+long __stdcall CreateInstance(Object** output)
+{
+    if (output == 0)
+        return (long)0x80004003UL;
 
-long __stdcall CComEnum::Init(void** ppEnum) {
-    if (ppEnum == 0) {
-        return (long)0x80004003;
+    *output = 0;
+    long result = (long)0x8007000EUL;
+    Object* object = 0;
+
+    try {
+        Object* allocated =
+            static_cast<Object*>(operator new(sizeof(Object)));
+
+        if (allocated != 0) {
+            allocated->references = 0;
+            allocated->begin = allocated->current = allocated->end = 0;
+            allocated->owner = 0;
+            allocated->flags = 0;
+            allocated->vtable = objectVtable;
+            module->Lock();
+            object = allocated;
+        } else {
+            object = 0;
+        }
+
+        if (object != 0)
+            result = 0;
+    } catch (...) {
     }
-    *ppEnum = 0;
-    CComObjectRoot* obj = (CComObjectRoot*)operator_new(0x1c);
-    if (obj != 0) {
-        obj->field_4 = 0;
-        obj->field_10 = 0;
-        obj->field_c = 0;
-        obj->field_8 = 0;
-        obj->field_14 = 0;
-        obj->field_18 = 0;
-        obj->vtable = (void*)0x80d790;
-        void** vtbl = *(void***)0x96c268;
-        void (*fn)(void) = (void (*)(void))vtbl[1];
-        fn();
-        *ppEnum = (void*)obj;
-        return 0;
-    }
-    return (long)0x8007000e;
+
+    *output = object;
+    return result;
 }

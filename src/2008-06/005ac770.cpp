@@ -1,4 +1,4 @@
-// from server: 42% by king_originala
+// from server: 49% by king_originala
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
 
@@ -26,40 +26,45 @@ inline Shared::~Shared()
     }
 }
 
-extern Shared* __cdecl acquire(Shared*);
+struct Frame {
+    int position;
+    char reserved[40];
+    int line;
+    char remaining[80];
+};
+
+extern Shared __cdecl acquire();
 extern void __cdecl report(void*, int, const char*, ...);
 extern const char* __cdecl getText(void*, int, unsigned int*);
 
 void __cdecl trace(void* state, int category, int index,
                    int count, bool more, const char* text, int line)
 {
-    char buffer[128];
-    int position = count;
+    volatile bool pending = more;
+    volatile Frame frame;
+    char buffer[64];
+    frame.position = count;
+    frame.line = line;
 
     if (index >= 0) {
         do {
             int n = 0;
-            while (n < 127 && text[n]) {
+            while (n < 63 && text[n]) {
                 buffer[n] = text[n];
                 ++n;
             }
             buffer[n] = 0;
-            ++position;
-            {
-                Shared temporary;
-                report(acquire(&temporary)->object, category,
-                       "%s, line %d", buffer, line);
-            }
-        } while (position < 12);
+            if (!n)
+                break;
+            ++frame.position;
+            report(acquire().object, category,
+                   "%s, line %d", buffer, frame.line);
+        } while (frame.position < 12);
 
-        if (more && position < 12) {
-            Shared temporary;
-            report(acquire(&temporary)->object, category, "   stack end");
-        }
+        if (pending && frame.position < 12)
+            report(acquire().object, category, "   stack end");
     } else {
-        Shared temporary;
-        void* destination = acquire(&temporary)->object;
-        report(destination, 3, "HRESULT = %d: %s",
+        report(acquire().object, 3, "HRESULT = %d: %s",
                getText(state, -1, 0));
     }
 }

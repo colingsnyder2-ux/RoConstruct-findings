@@ -1,25 +1,82 @@
-// from server: 30% by colin
-extern "C" void* __cdecl sub_802458();
-extern "C" void __cdecl sub_409d50(void*, const char*);
-extern "C" void __cdecl sub_6a158c(void*, void*);
-extern "C" void __cdecl sub_45c470(void*, void*);
-extern "C" int __cdecl sub_495eb0(void*, int);
+// from server: 100% by king_originala
+extern void (__thiscall *constructString)(void*, const char*);
 
-struct S {
-    unsigned char padding[0x170];
-    void* field_170;
-    bool check();
+namespace std
+{
+    template<class T> struct char_traits {};
+    template<class T> struct allocator {};
+
+    template<class T, class Traits, class Allocator>
+    class basic_string
+    {
+        unsigned int allocatorState;
+        union
+        {
+            T buffer[16];
+            T* pointer;
+        } storage;
+        unsigned int length;
+        unsigned int capacity;
+
+    public:
+        basic_string(const T*);
+        ~basic_string();
+    };
+
+    template<class T, class Traits, class Allocator>
+    inline basic_string<T, Traits, Allocator>::basic_string(const T* text)
+    {
+        constructString(this, text);
+    }
+
+    typedef basic_string<char, char_traits<char>, allocator<char> > string;
+
+    class exception
+    {
+        char* message;
+        bool ownsMessage;
+
+    public:
+        virtual ~exception();
+        virtual const char* what() const;
+    };
+
+    class runtime_error : public exception
+    {
+        string message;
+
+    public:
+        explicit runtime_error(const string&);
+        virtual ~runtime_error();
+        virtual const char* what() const;
+    };
+}
+
+struct Appearance
+{
+    void remove(void (__cdecl*)());
 };
 
-bool S::check()
+struct Object
 {
-    if (!sub_495eb0(this, 1)) {
-        void* str = sub_802458();
-        sub_409d50(str, "RemoveCharacterAppearance can only be called by the backend server");
-        sub_6a158c(str, (void*)0x8d1bc8);
+    unsigned char padding[0x170];
+    Appearance* appearance;
+
+    void removeCharacterAppearance();
+};
+
+extern bool __cdecl checkBackend(int, int);
+extern void __cdecl removeAppearance();
+
+void Object::removeCharacterAppearance()
+{
+    if (!checkBackend(reinterpret_cast<int>(this), 1))
+    {
+        std::string text(
+            "RemoveCharacterAppearance can only be called by the backend server");
+        throw std::runtime_error(text);
     }
-    if (field_170) {
-        sub_45c470(field_170, (void*)0x4899b0);
-    }
-    return true;
+
+    if (appearance)
+        appearance->remove(removeAppearance);
 }

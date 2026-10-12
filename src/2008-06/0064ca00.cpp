@@ -1,5 +1,30 @@
-// from server: 44% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: openrbx-client App/v8world/SleepStage2.cpp
+// from server: 100% by king_originala
+struct Base {
+    virtual void slot0() = 0;
+    virtual void slot1() = 0;
+    virtual void set(int index, int value, bool enabled, bool reset) = 0;
+};
+
+struct SleepStage {
+    char pad0[8];
+    Base* base;
+    char pad1[204];
+    bool enabled;
+    char pad2[3];
+    int value;
+
+    void reset();
+    void update(int index);
+    void set(int index, int newValue, bool newEnabled, bool doReset);
+};
+
+void SleepStage::set(int index, int newValue, bool newEnabled, bool doReset)
+{
+    enabled = newEnabled;
+    value = newValue;
+    if (doReset)
+        reset();
+    else
+        update(index);
+    base->set(index, value, enabled, doReset);
+}

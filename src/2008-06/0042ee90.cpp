@@ -1,5 +1,19 @@
-// from server: 52% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: g3d-6.09 G3Dcpp/Color4.cpp
+// from server: 100% by king_originala
+struct Rect
+{
+    int left, top, right, bottom;
+};
+
+struct Pane;
+
+struct CWrapperView
+{
+    Pane* FindPane(int, Rect, int);
+    Pane* method();
+};
+
+Pane* CWrapperView::method()
+{
+    Rect rect = { 0, 0, 150, 400 };
+    return FindPane(140, rect, 0);
+}

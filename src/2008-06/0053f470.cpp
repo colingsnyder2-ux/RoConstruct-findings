@@ -1,32 +1,44 @@
-// from server: 42% by colin
-// roc 2008-06 0053f470  unit: RBX::RenderBase::AggregatingSceneManager  size: 112 bytes
-// Make this compile to the exact bytes below, then: roc check 2008-06 0053f470
-
-struct AggregatingSceneManager {
-    char pad[8];
-    int field8;
-    void func(int);
+// from server: 100% by king_originala
+struct Bucket {
+    bool __thiscall f(void* argument);
 };
 
-extern "C" void __stdcall sub_54F140(void* out, void* self);
-extern "C" void __stdcall sub_5409B0(void* out, void* self);
-extern "C" bool __stdcall sub_540F20(void* a, void* b);
-extern "C" void* __stdcall sub_540E90(void* self, int arg);
-extern "C" int __stdcall sub_540E80(void* self);
-extern "C" bool __stdcall sub_53F4E0(void* self);
-extern "C" void __stdcall sub_540EB0(void* self);
+struct BucketPointer {
+    Bucket* __thiscall get() const;
+};
 
-void AggregatingSceneManager::func(int arg) {
-    void* local8;
-    void* local10;
-    sub_54F140(&local8, (char*)this + 8);
-    sub_5409B0(&local10, (char*)this + 8);
-    while (sub_540F20(&local8, &local10)) {
-        void* p = sub_540E90(&local8, arg);
-        int v = sub_540E80((char*)p + 0xc);
-        if (sub_53F4E0((void*)v)) {
-            return;
-        }
-        sub_540EB0(&local8);
+struct Node {
+    unsigned char padding[12];
+    BucketPointer second;
+};
+
+struct Iterator {
+    int context;
+    int* position;
+    bool __thiscall operator!=(const Iterator& other) const;
+    Node* __thiscall operator->() const;
+    Iterator& __thiscall operator++();
+};
+
+struct Container {
+    Iterator __thiscall begin();
+    Iterator __thiscall end();
+};
+
+struct S {
+    unsigned char padding[8];
+    Container container;
+    void __thiscall f(void* argument);
+};
+
+#pragma optimize("", off)
+void S::f(void* argument)
+{
+    Iterator current = container.begin();
+    Iterator finish = container.end();
+    while (current != finish) {
+        if (current->second.get()->f(argument))
+            break;
+        ++current;
     }
 }

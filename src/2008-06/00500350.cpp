@@ -1,71 +1,131 @@
-// from server: 12% by colin
-struct HeadBuilder
+// from server: 76% by king_originala
+extern "C"
 {
-    void func_00500350(float*, float*);
+    extern long (__thiscall *InterlockedIncrement)(volatile long *);
+    extern long (__stdcall *InterlockedDecrement)(volatile long *);
+}
+
+struct Vec3
+{
+    float x, y, z;
+
+    Vec3();
+    Vec3(const Vec3 &);
 };
 
-extern "C" void __stdcall sub_548570();
-extern "C" void* __stdcall sub_6A0920(unsigned int);
-extern "C" void __stdcall sub_4DD2E0();
-extern "C" void __stdcall sub_4DCBB0();
-extern "C" void __stdcall sub_45AD90();
-extern "C" void __stdcall sub_598FA0();
-extern "C" void __stdcall sub_4FDAF0();
-extern "C" void __stdcall sub_500CA0();
-extern "C" int __stdcall InterlockedIncrement(int*);
-extern "C" int __stdcall InterlockedDecrement(int*);
-
-extern float g_83A3E4;
-
-void HeadBuilder::func_00500350(float* a, float* b)
+inline Vec3::Vec3(const Vec3 &v)
 {
-    sub_548570();
-    *(int*)this = 0x8271B8;
+    x = v.x;
+    y = v.y;
+    z = v.z;
+}
 
-    float v;
-    if (a[0] < a[2])
-        v = a[0];
-    else
-        v = a[2];
-    v = v * g_83A3E4;
+inline const float &minimum(const float &a, const float &b)
+{
+    return b < a ? b : a;
+}
 
-    void* p = sub_6A0920(0x28);
-    void* q = 0;
-    if (p)
-    {
-        sub_4DD2E0();
-        q = p;
-    }
+struct Mesh
+{
+    virtual ~Mesh();
+    volatile long references;
+    void *data;
+    unsigned char padding[28];
 
-    void* r = 0;
+    Mesh(int);
+    void dispose();
+};
+
+struct Ref
+{
+    Mesh *p;
+
+    Ref(Mesh *);
+    Ref(const Ref &);
+    ~Ref();
+};
+
+inline Ref::Ref(Mesh *q) : p(0)
+{
     if (q)
     {
-        InterlockedIncrement((int*)((char*)q + 4));
-        r = q;
+        p = q;
+        InterlockedIncrement(&q->references);
     }
+}
 
-    sub_4DCBB0();
+inline Ref::Ref(const Ref &r) : p(r.p)
+{
+    if (p)
+        InterlockedIncrement(&p->references);
+}
 
-    if (r)
+inline Ref::~Ref()
+{
+    Mesh *q = p;
+    if (q && InterlockedDecrement(&q->references) == 0)
     {
-        if (InterlockedDecrement((int*)((char*)r + 4)) == 0)
-        {
-            sub_45AD90();
-            (*(void(**)(void*, int))r)(r, 1);
-        }
+        q->dispose();
+        delete q;
     }
+}
 
-    sub_598FA0();
-    sub_4FDAF0();
-    sub_500CA0();
+struct Holder
+{
+    void assign(const Ref &);
+};
 
-    void* s = 0;
-    if (s)
+struct Base
+{
+    virtual ~Base();
+    unsigned char padding[8];
+    Holder mesh;
+
+    Base();
+};
+
+struct Work
+{
+    unsigned char padding[20];
+    Mesh *p;
+    unsigned char tail[4];
+    Vec3 position;
+
+    void initialize(void *, int);
+    ~Work();
+};
+
+inline Work::~Work()
+{
+    if (p && InterlockedDecrement(&p->references) == 0)
     {
-        if (InterlockedDecrement((int*)((char*)s + 4)) == 0)
-        {
-            sub_45AD90();
-            (*(void(**)(void*, int))s)(s, 1);
-        }
+        p->dispose();
+        if (p)
+            delete p;
     }
+}
+
+struct HeadBuilder : Base
+{
+    HeadBuilder(const Vec3 &, void *);
+    virtual ~HeadBuilder();
+};
+
+extern const float scale;
+extern void __stdcall buildMesh(Mesh *, Ref, Vec3, int, int, float);
+
+HeadBuilder::HeadBuilder(const Vec3 &size, void *arg)
+{
+    float radius = minimum(size.x, size.z) * scale;
+    Mesh *created = new Mesh(5);
+
+    {
+        Ref reference(created);
+        mesh.assign(reference);
+    }
+
+    buildMesh(created, Ref(0), size, 0, 9, radius);
+
+    Work work;
+    work.initialize(arg, 1);
 }

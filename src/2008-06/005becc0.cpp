@@ -1,17 +1,35 @@
-// from server: 54% by atomic.potato
-struct S
-{
-    int f();
+// from server: 100% by king_originala
+namespace std {
+    template<class T> struct char_traits;
+    template<class T> class allocator;
+
+    template<class T, class Traits, class Allocator>
+    class basic_string {
+    public:
+        basic_string(const basic_string&);
+        ~basic_string();
+    };
+
+    typedef basic_string<char, char_traits<char>, allocator<char> > string;
+}
+
+extern std::string* (__thiscall *copy_string)(
+    std::string*, const std::string&);
+
+namespace std {
+    template<class T, class Traits, class Allocator>
+    __forceinline basic_string<T, Traits, Allocator>::basic_string(
+        const basic_string& source)
+    {
+        copy_string(this, source);
+    }
+}
+
+struct S {
+    const std::string& name() const;
 };
 
-extern "C" void sub_005b61b0(void *);
-extern "C" void sub_0080245c(void *, void *);
-
-int S::f()
+std::string f(const S& source)
 {
-    char value[4];
-    void *p = value;
-    sub_005b61b0(p);
-    sub_0080245c(this, p);
-    return 0;
+    return source.name();
 }

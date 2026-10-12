@@ -1,4 +1,4 @@
-// from server: 97% by king_originala
+// from server: 98% by king_originala
 typedef void *HANDLE;
 typedef unsigned long DWORD;
 
@@ -60,13 +60,13 @@ void __cdecl runOnce(void (__cdecl *callback)(), volatile long *volatile flag) {
     if (compare(flag, 1, 1) == 0) {
         Stream stream(2);
 
-        WriteUnsigned(
-            &WritePointer(
+        WritePointer(
+            &WriteUnsigned(
                 &WriteFormat(
                     &WriteText(stream, "2AC1A572DB6944B0A65C38C4140AF2F4"),
                     SetFormat),
-                const_cast<const long *>(savedFlag)),
-            GetCurrentProcessId());
+                GetCurrentProcessId()),
+            const_cast<const long *>(savedFlag));
 
         String text;
         String *value = StreamString(&stream, &text);
