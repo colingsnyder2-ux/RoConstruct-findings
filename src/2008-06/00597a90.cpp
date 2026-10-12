@@ -1,4 +1,4 @@
-// from server: 96% by king_originala
+// from server: 100% by king_originala
 class type_info;
 extern bool (__thiscall *type_equal)(const type_info*, const type_info&);
 
@@ -28,7 +28,7 @@ inline String::~String()
 
 struct Value
 {
-    char data[0x24];
+    char data[0x20];
     Value(const String&);
     Value(const Value&);
     ~Value();

@@ -1,31 +1,45 @@
-// from server: 61% by tester
+// from server: 96% by king_originala
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
 
-bool func_0060a2f0();
+bool __cdecl func_0060a2f0();
+extern unsigned char tagSymbol[];
 
-struct GetSetImpl {
-    void* vptr;
-    int field4;
-    int field8;
-    int fieldC;
-    void construct(int* src);
+struct Control {
+    long reserved;
+    volatile long references;
 };
 
-void GetSetImpl::construct(int* src)
+struct Value {
+    void* first;
+    void* second;
+    Control* control;
+};
+
+struct S {
+    void* tag;
+    unsigned long reserved;
+    Value value;
+
+    void f(const Value* source);
+};
+
+void S::f(const Value* source)
 {
-    if (!func_0060a2f0()) {
-        int* dst = (int*)((char*)this + 8);
-        if (dst) {
-            dst[0] = src[0];
-            dst[1] = src[1];
-            dst[2] = src[2];
-            if (dst[2]) {
-                _InterlockedExchangeAdd((volatile long*)(dst[2] + 4), 1);
+    if (!reinterpret_cast<bool (__cdecl *)(const Value*)>(
+            &func_0060a2f0)(source)) {
+        Value* destination = &value;
+        if (destination) {
+            destination->first = source->first;
+            destination->second = source->second;
+            destination->control = source->control;
+            if (destination->control) {
+                volatile long* references = &destination->control->references;
+                _InterlockedExchangeAdd(references, 1);
             }
         }
-        *(int*)this = 0x849970;
+        tag = tagSymbol;
     } else {
-        *(int*)this = 0;
+        tag = 0;
     }
 }

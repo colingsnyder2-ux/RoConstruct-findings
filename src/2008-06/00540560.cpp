@@ -1,27 +1,29 @@
-// from server: 30% by colin
-struct Bucket {
-    Bucket();
-    void clear();
-    void addValue(float);
+// from server: 78% by king_originala
+#pragma optimize("", off)
+
+struct B {
+    int value;
+    B();
+    B(const B&);
+    int *allocate(unsigned int);
 };
 
-extern "C" void __stdcall sub_54E310(void*);
-extern "C" void __stdcall sub_54DA40();
-extern "C" void __stdcall sub_5530E0(int);
+struct Base {
+    char pad[8];
+    B allocator;
+    int *first;
+    int *last;
+    int *end;
 
-Bucket::Bucket()
-{
-    sub_54E310(this);
-    sub_54DA40();
-    clear();
-    addValue(0.0f);
-}
+    Base(B);
+    ~Base();
+};
 
-void Bucket::clear()
-{
-    sub_5530E0(0);
-}
+struct S : Base {
+    S();
+    bool f(unsigned int);
+};
 
-void Bucket::addValue(float)
-{
+S::S() : Base(B()) {
+    f(0);
 }

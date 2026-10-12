@@ -1,14 +1,17 @@
-// from server: 75% by atomic.potato
-struct CRbxDocTemplate
-{
-    int f(int a, int b);
+// from server: 100% by king_originala
+struct State {
+    void set(int);
 };
 
-extern "C" void __cdecl sub_449bf0(int, int);
-extern "C" int __cdecl sub_6a123e(CRbxDocTemplate *, int, int);
+extern State state;
 
-int CRbxDocTemplate::f(int a, int b)
+struct S {
+    void* f(const char*, int);
+    void* base(const char*, int);
+};
+
+void* S::f(const char* name, int flag)
 {
-    sub_449bf0(0x96dbe0, 1);
-    return sub_6a123e(this, a, b);
+    state.set(1);
+    return base(name, flag);
 }

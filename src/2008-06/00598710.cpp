@@ -1,18 +1,15 @@
-// from server: 75% by colin
+// from server: 77% by king_originala
 struct Decal {
-    char pad[0x16c];
-    float field_0x16c;
-    void setTransparency(float value);
+    char padding[0x16c];
+    float value;
+    void setValue(float v);
+    void notify(const void* property);
 };
 
-extern "C" void __stdcall someFunc();
-
-void Decal::setTransparency(float value) {
-    if (value != field_0x16c) {
-        if (value >= 0.0f) {
-            field_0x16c = value;
-            someFunc();
-            return;
-        }
+void Decal::setValue(float v)
+{
+    if (v != value && v > 0.0f) {
+        value = v;
+        notify((const void*)0x975f68);
     }
 }

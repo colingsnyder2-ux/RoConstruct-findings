@@ -1,4 +1,10 @@
-// from server: 78% by king_originala
+// from server: 99% by king_originala
+extern unsigned long table0;
+extern unsigned long tableEC;
+extern unsigned long tableF0;
+extern unsigned long table114;
+extern unsigned long table158;
+
 struct Base
 {
     unsigned long table;
@@ -11,7 +17,7 @@ struct Base
 
 struct MemberA
 {
-    unsigned long table;
+    volatile unsigned long table;
     char padding[0x20];
 
     MemberA();
@@ -20,7 +26,7 @@ struct MemberA
 
 struct MemberB
 {
-    unsigned long table;
+    volatile unsigned long table;
     char padding[0x20];
 
     MemberB();
@@ -31,18 +37,18 @@ struct S : Base
 {
     MemberA a;
     MemberB b;
-    unsigned long field138;
-    unsigned long field13c;
-    unsigned long field140;
-    unsigned long field144;
-    unsigned long field148;
-    unsigned long field14c;
-    unsigned long field150;
-    unsigned char field154;
-    unsigned char field155;
-    unsigned char field156;
+    volatile unsigned long field138;
+    volatile unsigned long field13c;
+    volatile unsigned long field140;
+    volatile unsigned long field144;
+    volatile unsigned long field148;
+    volatile unsigned long field14c;
+    volatile unsigned long field150;
+    volatile unsigned char field154;
+    volatile unsigned char field155;
+    volatile unsigned char field156;
     unsigned char padding157;
-    unsigned long field158;
+    volatile unsigned long field158;
     unsigned long field15c;
 
     S();
@@ -50,10 +56,10 @@ struct S : Base
 
 S::S()
 {
-    table = 0x81b3dc;
-    secondaryTable = 0x81b3d0;
-    a.table = 0x81b3bc;
-    b.table = 0x81b3a8;
+    table = (unsigned long)&table0;
+    secondaryTable = (unsigned long)&tableEC;
+    a.table = (unsigned long)&tableF0;
+    b.table = (unsigned long)&table114;
     field138 = 0;
     field13c = 0;
     field140 = 0;
@@ -65,5 +71,5 @@ S::S()
     field155 = 0;
     field156 = 0;
     field15c = 0;
-    field158 = 0x81b228;
+    field158 = (unsigned long)&table158;
 }

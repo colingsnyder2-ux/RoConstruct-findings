@@ -1,4 +1,4 @@
-// from server: 83% by king_originala
+// from server: 89% by king_originala
 extern void __cdecl initialize(void (__cdecl*)(), void*);
 extern void __cdecl initializeFlagType();
 extern void __cdecl initializeObjectType();
@@ -47,8 +47,7 @@ inline unsigned Cache::size() const {
 }
 
 inline Value& Cache::at(unsigned index, void (__cdecl* handler)()) {
-    Value* end = *reinterpret_cast<Value* const volatile*>(&last);
-    if (index >= static_cast<unsigned>(end - first))
+    if (index >= static_cast<unsigned>(last - first))
         handler();
     return first[index];
 }

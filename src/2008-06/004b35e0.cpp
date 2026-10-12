@@ -1,6 +1,9 @@
-// from server: 70% by king_originala
-extern "C" void __cdecl _invalid_parameter_noinfo();
+// from server: 77% by king_originala
+extern "C" void (__cdecl* _invalid_parameter_noinfo)();
 void* __cdecl operator new(unsigned int);
+
+struct String;
+extern void (__thiscall* destroyString)(String*);
 
 struct String {
     unsigned char allocator;
@@ -10,34 +13,46 @@ struct String {
     ~String();
 };
 
+inline String::~String() {
+    destroyString(this);
+}
+
 struct Value {
     virtual ~Value();
 };
 
-struct BoolValue {
-    void* table;
+struct BoolValue : Value {
     bool value;
+    BoolValue(bool flag);
+    virtual ~BoolValue();
 };
+
+inline BoolValue::BoolValue(bool flag) : value(flag) {}
 
 struct Pointer {
     Value* value;
 
     Pointer(String& text);
-    explicit Pointer(Value* p) : value(p) {}
-    ~Pointer() {
-        if (value)
-            delete value;
-    }
-
-    Pointer& operator=(Pointer& other) {
-        if (&other != this) {
-            Value* p = value;
-            value = other.value;
-            other.value = p;
-        }
-        return *this;
-    }
+    explicit Pointer(Value* p);
+    ~Pointer();
+    Pointer& operator=(const Pointer& other);
 };
+
+inline Pointer::Pointer(Value* p) : value(p) {}
+
+inline Pointer::~Pointer() {
+    if (value)
+        delete value;
+}
+
+inline Pointer& Pointer::operator=(const Pointer& other) {
+    if (&other != this) {
+        Value* p = value;
+        value = other.value;
+        const_cast<Pointer&>(other).value = p;
+    }
+    return *this;
+}
 
 struct Arguments {
     unsigned int bookkeeping[3];
@@ -47,13 +62,14 @@ struct Arguments {
 
     Arguments(unsigned int count);
     ~Arguments();
-
-    Pointer& operator[](unsigned int index) {
-        if (static_cast<unsigned int>(last - first) <= index)
-            _invalid_parameter_noinfo();
-        return first[index];
-    }
+    Pointer& operator[](unsigned int index);
 };
+
+inline Pointer& Arguments::operator[](unsigned int index) {
+    if (static_cast<unsigned int>(last - first) <= index)
+        _invalid_parameter_noinfo();
+    return first[index];
+}
 
 struct Receiver {
     virtual ~Receiver();
@@ -67,20 +83,9 @@ struct S {
 
 void S::f(String text, bool flag) {
     Arguments arguments(2);
-    {
-        Pointer& destination = arguments[0];
-        Pointer temporary(text);
-        destination = temporary;
-    }
-    {
-        Pointer& destination = arguments[1];
-        BoolValue* p = static_cast<BoolValue*>(operator new(8));
-        if (p) {
-            p->table = reinterpret_cast<void*>(0x80ba84);
-            p->value = flag;
-        }
-        Pointer temporary(reinterpret_cast<Value*>(p));
-        destination = temporary;
-    }
+    Pointer& first = arguments[0];
+    first = Pointer(text);
+    Pointer& second = arguments[1];
+    second = Pointer(new BoolValue(flag));
     receiver->invoke(arguments);
 }

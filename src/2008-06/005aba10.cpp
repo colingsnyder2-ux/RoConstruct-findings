@@ -1,11 +1,7 @@
-// from server: 55% by atomic.potato
-struct S
-{
-    int __cdecl f(int);
-    int (__thiscall *v)(int);
-};
+// from server: 87% by king_originala
+typedef void (__cdecl *Callback)(void*);
 
-int S::f(int x)
+void invoke(Callback* callback, void* argument)
 {
-    return v(x);
+    (*callback)(argument);
 }

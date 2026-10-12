@@ -1,130 +1,128 @@
-// from server: 61% by king_originala
+// from server: 96% by king_originala
 typedef unsigned int size_t;
 
-void* __cdecl operator new(size_t);
-void __cdecl operator delete(void*);
-
 struct String;
-struct Facet;
 struct Locale;
+struct Facet;
 
-extern void (__thiscall *stringConstruct)(String*);
-extern void (__thiscall *stringCopy)(String*, const String&);
-extern void (__thiscall *stringDestroy)(String*);
-extern Facet* (__cdecl *getGlobalLocale)();
-extern Facet* (__cdecl *initLocale)();
-extern void (__thiscall *incrementFacet)(Facet*);
-extern void (__thiscall *destroyLocale)(Locale*);
-extern void (__cdecl *invalidParameter)();
+extern void (__thiscall *string_construct)(String *);
+extern void (__thiscall *string_copy)(String *, const String *);
+extern void (__thiscall *string_destroy)(String *);
+extern void (__thiscall *locale_destroy)(Locale *);
+extern Facet *(__cdecl *get_global_locale)();
+extern Facet *(__cdecl *initialize_locale)();
+extern void (__thiscall *facet_incref)(Facet *);
+extern void (__cdecl *invalid_parameter_noinfo)();
+
+void *__cdecl operator new(size_t);
+void __cdecl operator delete(void *);
 
 struct String {
-    unsigned char data[28];
+    unsigned char storage[28];
     String();
-    String(const String&);
+    String(const String &);
     ~String();
 };
 
-inline String::String()
-{
-    stringConstruct(this);
+inline String::String() {
+    string_construct(this);
 }
 
-inline String::String(const String& other)
-{
-    stringCopy(this, other);
+inline String::String(const String &s) {
+    string_copy(this, &s);
 }
 
-inline String::~String()
-{
-    stringDestroy(this);
+inline String::~String() {
+    string_destroy(this);
 }
-
-struct Facet {
-};
 
 struct Locale {
-    Facet* impl;
+    Facet *implementation;
     Locale();
-    Locale(const Locale&);
     ~Locale();
 };
 
-inline Locale::Locale()
-{
-    impl = getGlobalLocale();
-    incrementFacet(initLocale());
+inline Locale::Locale() {
+    implementation = get_global_locale();
+    facet_incref(initialize_locale());
 }
 
-inline Locale::~Locale()
-{
-    destroyLocale(this);
+inline Locale::~Locale() {
+    locale_destroy(this);
 }
 
-Locale __cdecl copyLocale(const Locale&);
-void __cdecl transform(String*, Locale);
+struct LocaleArgument {
+    unsigned char storage[8];
+    LocaleArgument(const Locale *);
+    LocaleArgument(const LocaleArgument &);
+};
+
+extern void __cdecl copy_locale_argument(LocaleArgument *, const Locale *);
+
+inline LocaleArgument::LocaleArgument(const Locale *p) {
+    copy_locale_argument(this, p);
+}
+
+extern void __cdecl transform_string(String *, LocaleArgument);
 
 struct Value {
-    unsigned char data[12];
-    bool getString(String*);
+    unsigned char storage[12];
+    bool get_string(String *);
 };
 
-struct Tree {
+struct Node {
     unsigned char prefix[16];
     Value value;
-
-    Tree* first(void*);
-    Tree* next(Tree*);
+    Node *find(void *);
+    Node *next(Node *);
 };
 
-struct Item {
-    unsigned int allocator;
-    unsigned char prefix[8];
-    Item** begin;
-    Item** end;
-    Item** capacity;
-    String text;
-
-    Item(String);
-    void insert(void*, unsigned int, Item**, Item* const*);
-};
-
-extern void* childTag;
+extern void *node_key;
 
 struct ArrowButton {
-    void build(Item*, Tree*);
+    void *proxy;
+    unsigned char prefix[8];
+    ArrowButton **begin;
+    ArrowButton **end;
+    ArrowButton **limit;
+    unsigned char remaining[28];
+
+    ArrowButton(String);
+    void insert(void *, void *, ArrowButton **, ArrowButton *const *);
+    void build(ArrowButton *, Node *);
 };
 
-void ArrowButton::build(Item* parent, Tree* tree)
-{
-    Tree* child = tree->first(childTag);
-    while (child) {
+void ArrowButton::build(ArrowButton *destination, Node *source) {
+    Node *node = source->find(node_key);
+    while (node) {
         {
             String text;
-            child->value.getString(&text);
-
+            node->value.get_string(&text);
             {
                 Locale locale;
-                transform(&text, copyLocale(locale));
+                transform_string(&text, LocaleArgument(&locale));
             }
 
-            Item* item = new Item(text);
-            unsigned int available = parent->begin
-                ? static_cast<unsigned int>(parent->capacity - parent->begin)
-                : 0;
-            Item** position = parent->end;
+            ArrowButton *child = new ArrowButton(text);
+            ArrowButton *value = child;
 
-            if (static_cast<unsigned int>(position - parent->begin) < available) {
-                *position = item;
-                parent->end = position + 1;
+            size_t capacity = !destination->begin
+                ? 0
+                : destination->limit - destination->begin;
+            ArrowButton **position = destination->end;
+
+            if (static_cast<size_t>(position - destination->begin) < capacity) {
+                *position = child;
+                destination->end = position + 1;
             } else {
-                if (parent->begin > position)
-                    invalidParameter();
-                unsigned int result;
-                parent->insert(&result, parent->allocator, position, &item);
+                if (destination->begin > position)
+                    invalid_parameter_noinfo();
+                void *result;
+                destination->insert(&result, destination->proxy, position, &value);
             }
 
-            build(item, child);
+            build(child, node);
         }
-        child = tree->next(child);
+        node = source->next(node);
     }
 }

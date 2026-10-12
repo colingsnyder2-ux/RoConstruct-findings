@@ -1,15 +1,25 @@
-// from server: 63% by atomic.potato
-struct SelectAllCommand {
-    void *field0c;
-    void f(void *);
+// from server: 84% by king_originala
+struct Selection {
+    void apply();
 };
 
-void sub_57d250(void *);
-void sub_5a3e10(void *);
+struct Context {
+    char padding[0x204];
+    Selection* selection;
+};
 
-void SelectAllCommand::f(void *arg)
+struct Command {
+    char padding[0x0c];
+    Context* context;
+
+    void prepare();
+    Context* execute(int);
+};
+
+Context* Command::execute(int)
 {
-    void *p = field0c;
-    sub_57d250(arg);
-    sub_5a3e10(*(void **)((char *)p + 0x204));
+    Context* previous = context;
+    prepare();
+    context->selection->apply();
+    return previous;
 }

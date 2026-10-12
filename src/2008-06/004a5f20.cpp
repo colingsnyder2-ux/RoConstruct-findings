@@ -1,4 +1,4 @@
-// from server: 61% by king_originala
+// from server: 68% by king_originala
 extern "C" double __cdecl sqrt(double);
 #pragma intrinsic(sqrt)
 #pragma float_control(precise, off)
@@ -18,42 +18,33 @@ bool S::readQuaternion(float& w, float& x, float& y, float& z)
 {
     bool negativeW, negativeX, negativeY, negativeZ;
     unsigned short encodedX, encodedY, encodedZ;
-    int offset, next;
 
-    offset = readOffset;
-    next = offset + 1;
-    if (next <= bitCount)
+    if (readOffset + 1 <= bitCount)
     {
-        bool value = ((0x80 >> (offset & 7)) & data[offset >> 3]) != 0;
-        readOffset = next;
-        negativeW = value;
+        negativeW = (data[readOffset >> 3] &
+                     (0x80 >> (readOffset & 7))) != 0;
+        ++readOffset;
     }
 
-    offset = readOffset;
-    next = offset + 1;
-    if (next <= bitCount)
+    if (readOffset + 1 <= bitCount)
     {
-        bool value = ((0x80 >> (offset & 7)) & data[offset >> 3]) != 0;
-        readOffset = next;
-        negativeX = value;
+        negativeX = (data[readOffset >> 3] &
+                     (0x80 >> (readOffset & 7))) != 0;
+        ++readOffset;
     }
 
-    offset = readOffset;
-    next = offset + 1;
-    if (next <= bitCount)
+    if (readOffset + 1 <= bitCount)
     {
-        bool value = ((0x80 >> (offset & 7)) & data[offset >> 3]) != 0;
-        readOffset = next;
-        negativeY = value;
+        negativeY = (data[readOffset >> 3] &
+                     (0x80 >> (readOffset & 7))) != 0;
+        ++readOffset;
     }
 
-    offset = readOffset;
-    next = offset + 1;
-    if (next <= bitCount)
+    if (readOffset + 1 <= bitCount)
     {
-        bool value = ((0x80 >> (offset & 7)) & data[offset >> 3]) != 0;
-        readOffset = next;
-        negativeZ = value;
+        negativeZ = (data[readOffset >> 3] &
+                     (0x80 >> (readOffset & 7))) != 0;
+        ++readOffset;
     }
 
     readBits((unsigned char*)&encodedX, 16, true);
@@ -69,15 +60,8 @@ bool S::readQuaternion(float& w, float& x, float& y, float& z)
                   : encodedZ * (1.0 / 65535.0);
 
     double remainder = 1.0 - x * x - y * y - z * z;
-    double result = 0.0;
-    if (remainder <= result)
-        w = (float)result;
-    else
-    {
-        result = sqrt(remainder);
-        if (negativeW)
-            result = -result;
-        w = (float)result;
-    }
+    w = (float)(remainder <= 0.0
+                    ? 0.0
+                    : (negativeW ? -sqrt(remainder) : sqrt(remainder)));
     return true;
 }

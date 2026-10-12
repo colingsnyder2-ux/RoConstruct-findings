@@ -1,46 +1,45 @@
-// from server: 50% by tester
-struct Sel
+// from server: 100% by king_originala
+struct Rotation
 {
-    char pad[0x24];
-    float x;
-    float y;
-    float z;
+    float data[9];
+    Rotation(const Rotation&);
+};
+
+struct Value
+{
+    Rotation rotation;
+    float x, y, z;
+
+    Value* initialize();
+};
+
+struct Object
+{
+    const Value* getValue();
+};
+
+struct Owner
+{
+    Object* getObject();
 };
 
 struct S
 {
-    char pad[0x228];
-    Sel *getSelection();
-    S *f(S *out);
+    Value f();
 };
 
-extern "C" Sel *__cdecl call_5d8a10();
-extern "C" void __cdecl call_4782d0(void *p);
-extern "C" void __cdecl call_598cb0(void *p);
-extern "C" void __cdecl call_513220(void *p);
-
-Sel *S::getSelection()
+Value S::f()
 {
-    return call_5d8a10();
-}
+    volatile int zero = 0;
+    unsigned char storage[sizeof(Value)];
+    Owner* owner = reinterpret_cast<Owner*>(
+        reinterpret_cast<unsigned char*>(this) - 0x228);
 
-S *S::f(S *out)
-{
-    Sel *sel = getSelection();
-    if (sel)
-    {
-        Sel *src = getSelection();
-        call_598cb0(src);
-    }
+    const Value* source;
+    if (owner->getObject())
+        source = owner->getObject()->getValue();
     else
-    {
-        char buf[0x34];
-        call_4782d0(buf);
-    }
-    call_513220(out);
-    Sel *dst = (Sel *)out;
-    dst->x = sel->x;
-    dst->y = sel->y;
-    dst->z = sel->z;
-    return out;
+        source = reinterpret_cast<Value*>(storage)->initialize();
+
+    return *source;
 }

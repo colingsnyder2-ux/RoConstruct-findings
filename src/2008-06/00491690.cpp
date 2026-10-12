@@ -1,80 +1,56 @@
-// from server: 39% by tester
-struct type_info {
-    bool __thiscall operator==(const type_info&) const;
+// from server: 100% by king_originala
+struct TypeInfo
+{
+    unsigned long data;
 };
 
-struct bad_cast {
-    bad_cast(const char*);
+extern TypeInfo empty_type;
+extern TypeInfo shared_type;
+extern bool (__thiscall *type_equal)(const TypeInfo *, const TypeInfo &);
+extern void (__thiscall *construct_bad_cast)(void *, const char *);
+
+struct BadCast
+{
+    unsigned long vtable;
+    unsigned long message;
+    unsigned long owned;
+
+    BadCast(const char *);
+    ~BadCast();
 };
 
-struct placeholder {
-    virtual const type_info& type() const;
-};
-
-struct holder_base {
-    virtual const type_info& type() const;
-};
-
-struct shared_ptr_holder {
-    placeholder* px;
-};
-
-struct DescribedBase;
-
-struct shared_ptr {
-    DescribedBase* px;
-};
-
-struct any_holder {
-    virtual const type_info& type() const;
-    virtual ~any_holder();
-};
-
-extern "C" {
-    bool __stdcall type_info_compare(const type_info&, const type_info&);
-    void* __stdcall get_placeholder_type();
-    void __stdcall bad_cast_ctor(void*, const char*);
-    void __stdcall throw_bad_cast(void*);
+__forceinline BadCast::BadCast(const char *text)
+{
+    construct_bad_cast(this, text);
+    vtable = 0x0080BA2CUL;
 }
 
-extern const type_info type_info_shared_ptr_DescribedBase;
-extern const type_info type_info_placeholder;
-extern const char bad_cast_msg[];
+__declspec(noreturn) void __cdecl raise_bad_cast(const void *);
 
-struct VHolder {
-    shared_ptr* ptr;
-    const type_info& type() const;
-
-    void cast();
+struct Placeholder
+{
+    virtual ~Placeholder();
+    virtual const TypeInfo &type() const;
 };
 
-const type_info& VHolder::type() const {
-    if (ptr) {
-        if (ptr->px) {
-            return ((any_holder*)ptr->px)->type();
-        }
-        return type_info_placeholder;
-    }
-    return type_info_shared_ptr_DescribedBase;
-}
+struct Any
+{
+    Placeholder *content;
+};
 
-void VHolder::cast() {
-    if (ptr) {
-        if (ptr->px) {
-            const type_info& t = ((any_holder*)ptr->px)->type();
-            if (t == type_info_placeholder) {
-                goto do_cast;
-            }
-        } else {
-            if (type_info_placeholder == type_info_placeholder) {
-                goto do_cast;
-            }
-        }
-    }
+void *__cdecl func_00491690(Any *value)
+{
+    if (value)
     {
-        bad_cast bc(bad_cast_msg);
-        throw_bad_cast(&bc);
+        const TypeInfo &type =
+            value->content ? value->content->type() : empty_type;
+        if (type_equal(&type, shared_type))
+        {
+            void *result = reinterpret_cast<char *>(value->content) + 4;
+            if (result)
+                return result;
+        }
     }
-do_cast:
-    return;
+
+    raise_bad_cast(&BadCast("bad cast"));
 }

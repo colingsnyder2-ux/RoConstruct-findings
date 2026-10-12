@@ -1,110 +1,143 @@
-// from server: 26% by colin
+// from server: 57% by king_originala
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
 
-extern "C" void* __stdcall sub_6A0920(unsigned int);
-extern "C" void __stdcall sub_802890();
-extern "C" void __fastcall sub_411B40(void*);
-extern "C" void __fastcall sub_5773C0(void*);
-extern "C" void __fastcall sub_5A2FE0(void*);
-extern "C" void __fastcall sub_4259F0(void*, void*);
-extern "C" void __fastcall sub_423AC0(void*, void*, void*, void*, void*, void*, void*);
+void* __cdecl operator new(unsigned int);
+extern "C" void __cdecl _invalid_parameter_noinfo();
 
-struct CRobloxTreeCtrlNode {
-    char pad0[0xc];
-    void* field_c;
-    char pad10[0x48];
-    void* field_58;
-    void method();
+struct Control {
+    virtual void reserved() = 0;
+    virtual void dispose() = 0;
+    virtual void destroy() = 0;
+    volatile long strong;
+    volatile long weak;
 };
 
-void CRobloxTreeCtrlNode::method()
+struct Handle {
+    void* pointer;
+    Control* control;
+
+    __forceinline Handle(const Handle&);
+    __forceinline ~Handle();
+};
+
+__forceinline Handle::Handle(const Handle& h)
+    : pointer(h.pointer), control(h.control)
 {
-    void* local30 = 0;
-    void* local3c = 0;
-    void* local40 = 0;
-    void* local44 = 0;
-    void* local18[2];
-    void* local28;
-    void* local20;
-    void* local2c;
-    void* local10;
+    if (control)
+        _InterlockedExchangeAdd(&control->strong, 1);
+}
 
-    void* p = sub_6A0920(4);
-    if (p) {
-        *(void**)p = &local30;
-    } else {
-        p = 0;
+__forceinline Handle::~Handle()
+{
+    if (control && _InterlockedExchangeAdd(&control->strong, -1) == 1) {
+        control->dispose();
+        if (_InterlockedExchangeAdd(&control->weak, -1) == 1)
+            control->destroy();
     }
-    local30 = p;
-    local3c = 0;
-    local40 = 0;
-    local44 = 0;
+}
 
-    void* obj = field_58;
-    void** vtbl = *(void***)obj;
-    void* (__thiscall *fn)(void*, void*) = (void* (__thiscall *)(void*, void*))vtbl[0x154/4];
-    void* r = fn(obj, local18);
+struct Source;
 
-    void* a = *(void**)r;
-    void* b = *(void**)((char*)r + 4);
-    local20 = a;
-    local2c = b;
-    if (b) {
-        _InterlockedExchangeAdd((volatile long*)((char*)b + 4), 1);
+struct SourceTable {
+    void* slots[85];
+    Handle (__thiscall* get)(Source*);
+};
+
+struct Source {
+    SourceTable* table;
+};
+
+struct Vector {
+    Vector** proxy;
+    unsigned int reserved[2];
+    void** first;
+    void** last;
+    void** limit;
+
+    __forceinline Vector();
+    ~Vector();
+    void assign(const Vector*);
+};
+
+__forceinline Vector::Vector()
+{
+    proxy = static_cast<Vector**>(operator new(4));
+    if (proxy)
+        *proxy = this;
+    first = 0;
+    last = 0;
+    limit = 0;
+}
+
+struct Temporary {
+    unsigned int storage[3];
+    void* value;
+
+    Temporary(Handle);
+    ~Temporary();
+};
+
+struct Parent {
+    unsigned char padding[0x108];
+    Vector* selection;
+};
+
+struct S {
+    unsigned char padding0[0x0c];
+    Parent* parent;
+    unsigned char padding1[0x48];
+    Source* source;
+
+    void f();
+};
+
+void __cdecl callback();
+struct Action {
+    void (__cdecl* function)();
+    unsigned int reserved;
+    S* node;
+    void* value;
+};
+
+struct Iterator {
+    Vector** proxy;
+    void** position;
+};
+
+void __cdecl apply(Iterator*, Iterator, Iterator, Action);
+
+void S::f()
+{
+    Vector values;
+    void* context;
+    {
+        Temporary temporary(source->table->get(source));
+        if (parent->selection)
+            values.assign(parent->selection);
+        context = temporary.value;
     }
 
-    sub_411B40(&local28);
+    Action action;
+    action.function = callback;
+    action.reserved = 0;
+    action.node = this;
+    action.value = context;
 
-    void* esi = local20;
-    if (esi) {
-        if (_InterlockedExchangeAdd((volatile long*)((char*)esi + 4), -1) == 1) {
-            void** v = *(void***)esi;
-            void (*f1)(void*) = (void (*)(void*))v[1];
-            f1(esi);
-            if (_InterlockedExchangeAdd((volatile long*)((char*)esi + 8), -1) == 1) {
-                void** v2 = *(void***)esi;
-                void (*f2)(void*) = (void (*)(void*))v2[2];
-                f2(esi);
-            }
-        }
-    }
+    void** finish = values.last;
+    if (values.first > values.last)
+        _invalid_parameter_noinfo();
 
-    void* e = field_c;
-    if (*(void**)((char*)e + 0x108)) {
-        void* arg = *(void**)((char*)e + 0x108);
-        sub_4259F0(&local30, arg);
-    }
+    Iterator first;
+    first.proxy = values.proxy;
+    first.position = values.first;
+    if (values.first > values.last)
+        _invalid_parameter_noinfo();
 
-    sub_5773C0(&local20);
+    Iterator last;
+    last.proxy = values.proxy;
+    last.position = finish;
 
-    void* esi2 = (void*)0x424580;
-    void* edi2 = 0;
-    void* eax2 = local40;
-    void* ecx2 = local3c;
-    void* ebx2 = eax2;
-    if (ecx2 > eax2) {
-        sub_802890();
-        eax2 = local40;
-        ecx2 = local3c;
-    }
-    void* ebp2 = local30;
-    local10 = ecx2;
-    if (ecx2 > eax2) {
-        sub_802890();
-    }
-    void* ecx3 = local10;
-    void* edx3 = local2c;
-
-    void* args[4];
-    args[0] = esi2;
-    args[1] = edi2;
-    args[2] = ecx3;
-    args[3] = edx3;
-
-    void* eax3 = local20;
-    void* ecx4 = local40;
-    sub_423AC0(&local30, ecx4, eax3, ebp2, ebx2, args, 0);
-
-    sub_5A2FE0(&local30);
+    Iterator result;
+    apply(&result, first, last, action);
 }

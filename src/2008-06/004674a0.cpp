@@ -1,17 +1,23 @@
-// from server: 78% by colin
-struct CSettingsDialog {
-    virtual bool hasKey(int key);
+// from server: 100% by king_originala
+struct S {
+    virtual void slot0() = 0;
+    virtual void slot1() = 0;
+    virtual void slot2() = 0;
+    virtual void slot3() = 0;
+    virtual void slot4() = 0;
+    virtual bool key(int code) = 0;
+
+    bool f();
 };
 
-bool CSettingsDialog::hasKey(int key)
+bool S::f()
 {
-    if (hasKey(0x77)) return true;
-    if (hasKey(0x73)) return true;
-    if (hasKey(0x61)) return true;
-    if (hasKey(0x64)) return true;
-    if (hasKey(0x111)) return true;
-    if (hasKey(0x112)) return true;
-    if (hasKey(0x114)) return true;
-    if (hasKey(0x113)) return true;
-    return false;
+    return key(0x77) ||
+           key(0x73) ||
+           key(0x61) ||
+           key(0x64) ||
+           key(0x111) ||
+           key(0x112) ||
+           key(0x114) ||
+           key(0x113);
 }

@@ -1,12 +1,16 @@
-// from server: 77% by atomic.potato
-struct S
-{
-    void f();
+// from server: 100% by king_originala
+struct Listener {
+    void invoke(void** value);
 };
 
-extern "C" void __stdcall Target(void *, void *);
+struct Selection {
+    char padding[0x15c];
+    Listener listener;
 
-void S::f()
+    void notify(void* value);
+};
+
+void Selection::notify(void* value)
 {
-    Target((char *)this + 0x15c, (char *)this + 4);
+    listener.invoke(&value);
 }

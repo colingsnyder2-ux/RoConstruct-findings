@@ -1,5 +1,57 @@
-// from server: 47% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs-net IdManager.cpp
+// from server: 94% by king_originala
+struct Resource {
+    virtual ~Resource();
+};
+
+struct Value {
+    void* type;
+    Resource* data;
+
+    Value();
+    ~Value();
+};
+
+inline Value::~Value()
+{
+    if (data)
+        delete data;
+}
+
+struct Property {
+    virtual void slot0();
+    virtual bool excluded();
+    virtual bool readOnly();
+    virtual void slot3();
+    virtual void read(void* object, Value* value);
+};
+
+struct Result {
+    void finish();
+};
+
+struct Container {
+    Result* store(Property** property, Value* value);
+};
+
+struct S {
+    unsigned long reserved;
+    char* object;
+    char padding[16];
+    Container values;
+
+    void f(Property* property);
+};
+
+void S::f(Property* property)
+{
+    Property* p = property;
+    if (p->excluded())
+        return;
+    if (p->readOnly())
+        return;
+
+    Value value;
+    p->read(object ? object + 20 : 0, &value);
+    property = p;
+    values.store(&property, &value)->finish();
+}

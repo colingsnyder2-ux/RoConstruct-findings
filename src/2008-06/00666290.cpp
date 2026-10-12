@@ -1,21 +1,18 @@
-// from server: 83% by king_originala
-struct PartDragTool {
-    float m0;
-    float m4;
-    float m8;
-    float mC;
-    void update(float* out, float a, float b, float c);
+// from server: 85% by colin
+struct Vector3ERA {
+    float weight;
+    float x;
+    float y;
+    float z;
+    void pushAndGetAverage(float* result, float vx, float vy, float vz);
 };
 
-void PartDragTool::update(float* out, float a, float b, float c)
+void Vector3ERA::pushAndGetAverage(float* result, float vx, float vy, float vz)
 {
-    float x = (a - m4) * m0 + m4;
-    m4 = x;
-    float y = (b - m8) * m0 + m8;
-    m8 = y;
-    float z = (c - mC) * m0 + mC;
-    mC = z;
-    out[0] = x;
-    out[1] = y;
-    out[2] = z;
+    x = (vx - x) * weight + x;
+    y = (vy - y) * weight + y;
+    z = (vz - z) * weight + z;
+    result[0] = x;
+    result[1] = y;
+    result[2] = z;
 }

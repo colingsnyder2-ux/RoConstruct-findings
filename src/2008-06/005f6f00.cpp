@@ -1,35 +1,41 @@
-// from server: 41% by colin
-struct S {
-    char pad0[0x24];
-    char field24;
-    char pad25[0x1b];
-    int field40;
-    int field44;
+// from server: 100% by king_originala
+struct Text {
+    char storage[0x1c];
 };
 
-extern "C" void __stdcall sub_005f5750(void*, int);
-extern "C" void __stdcall sub_005f52e0(void*, int);
-extern "C" void __stdcall sub_008023dc(void*);
+extern void (__thiscall *clearText)(Text*);
+extern "C" void __cdecl sub_005f52e0(int*, int);
+
+struct S {
+    int* data;
+    char pad04[0x20];
+    Text field24;
+    int field40;
+    int field44;
+
+    void sub_005f5750(int*, int);
+};
 
 void __cdecl f(S* self, int a, int b)
 {
+    int sink = a;
     if (b & 2) {
-        sub_005f5750(self, 2);
+        self->sub_005f5750(&sink, 2);
         if (self->field44 & 1) {
-            int v0 = *(int*)self;
-            int v1 = *(int*)(v0 + 8);
-            sub_005f52e0(&a, v1);
-            sub_005f52e0(&a, v1 >> 8);
-            sub_005f52e0(&a, v1 >> 16);
-            sub_005f52e0(&a, v1 >> 24);
-            int v2 = *(int*)(*(int*)self + 12);
-            sub_005f52e0(&a, v2);
-            sub_005f52e0(&a, v2 >> 8);
-            sub_005f52e0(&a, v2 >> 16);
-            sub_005f52e0(&a, v2 >> 24);
+            int value = self->data[2];
+            sub_005f52e0(&sink, value);
+            sub_005f52e0(&sink, value >> 8);
+            sub_005f52e0(&sink, value >> 16);
+            sub_005f52e0(&sink, value >> 24);
+
+            value = self->data[3];
+            sub_005f52e0(&sink, value);
+            sub_005f52e0(&sink, value >> 8);
+            sub_005f52e0(&sink, value >> 16);
+            sub_005f52e0(&sink, value >> 24);
         }
     }
-    sub_008023dc(&self->field24);
+    clearText(&self->field24);
     self->field40 = 0;
     self->field44 = 0;
 }

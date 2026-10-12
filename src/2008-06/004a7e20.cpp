@@ -1,90 +1,111 @@
-// from server: 86% by king_originala
+// from server: 87% by king_originala
 struct String;
 
-extern bool (__cdecl *string_equal)(const String&, const char*);
-extern String* (__thiscall *string_copy)(String*, const String&);
-extern void (__thiscall *string_destroy)(String*);
-extern String* (__thiscall *string_assign)(String*, const String&);
-extern void (__cdecl *invalid_parameter)();
+extern bool (__cdecl *stringEqual)(const String&, const char*);
+extern void (__thiscall *stringCopy)(String*, const String&);
+extern void (__thiscall *stringDestroy)(String*);
+extern String& (__thiscall *stringAssign)(String*, const String&);
+extern void (__cdecl *invalidParameter)();
 
 struct String {
     unsigned char storage[28];
-    String(const String& s) { string_copy(this, s); }
-    ~String() { string_destroy(this); }
-    String& operator=(const String& s) { return *string_assign(this, s); }
+    String(const String&);
+    ~String();
+    String& operator=(const String&);
 };
+
+inline String::String(const String& other) {
+    stringCopy(this, other);
+}
+
+inline String::~String() {
+    stringDestroy(this);
+}
+
+inline String& String::operator=(const String& other) {
+    return stringAssign(this, other);
+}
 
 struct Key {
     String text;
     unsigned char index;
-    Key(const String& s, unsigned char i) : text(s), index(i) {}
+    Key(const String&, unsigned char);
 };
+
+inline Key::Key(const String& textValue, unsigned char indexValue)
+    : text(textValue), index(indexValue) {
+}
 
 struct Node {
     unsigned char padding[40];
     unsigned char index;
 };
 
-struct Tree {
+struct Container {
     unsigned char padding[24];
-    Node* end;
+    Node* sentinel;
+};
+
+struct Proxy {
+    Container* container;
 };
 
 struct Result {
-    Tree** owner;
+    Proxy* proxy;
     Node* node;
     bool inserted;
 };
 
 struct Stream {
-    void write(const unsigned char*, int, bool);
+    void writeBits(const unsigned char*, int, bool);
 };
 
-extern void __cdecl write_string(Stream*, const String&);
+extern void __cdecl writeString(Stream*, const String&);
 
 struct S {
     unsigned char padding[32];
     String strings[128];
     int next;
-
-    Result find(const Key&);
-    void remove(const String&);
-    void f(Stream*, const String&);
+    void encode(Stream*, const String&);
+    Result* insert(Result*, const Key&);
+    void remove(const String*);
 };
 
-void S::f(Stream* stream, const String& text)
-{
-    if (string_equal(text, ">Authoring")) {
+void S::encode(Stream* stream, const String& text) {
+    if (stringEqual(text, ">Authoring")) {
         unsigned char value = 0;
-        stream->write(&value, 8, true);
+        stream->writeBits(&value, 8, true);
         return;
     }
 
-    Result result = find(Key(text, (unsigned char)next));
+    Result result;
+    {
+        Key key(text, (unsigned char)next);
+        insert(&result, key);
+    }
 
     if (!result.inserted) {
-        Tree* tree;
-        if (!result.owner) {
-            invalid_parameter();
-            tree = 0;
+        Container* container;
+        if (!result.proxy) {
+            invalidParameter();
+            container = 0;
         } else {
-            tree = *result.owner;
+            container = result.proxy->container;
         }
 
         Node* node = result.node;
-        if (node == tree->end)
-            invalid_parameter();
+        if (node == container->sentinel)
+            invalidParameter();
 
         unsigned char value = node->index;
-        stream->write(&value, 8, true);
+        stream->writeBits(&value, 8, true);
         return;
     }
 
-    remove(strings[next]);
+    remove(&strings[next]);
     strings[next] = text;
-
     unsigned char value = (unsigned char)next | 0x80;
-    stream->write(&value, 8, true);
-    write_string(stream, text);
+    stream->writeBits(&value, 8, true);
+    writeString(stream, text);
     next = next % 127 + 1;
 }

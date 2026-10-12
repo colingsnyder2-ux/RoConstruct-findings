@@ -1,70 +1,70 @@
-// from server: 47% by tester
+// from server: 91% by king_originala
+extern "C" double __cdecl sqrt(double);
+#pragma intrinsic(sqrt)
+#pragma float_control(precise, off)
+
 struct Vector3 {
     float x, y, z;
+    Vector3 clamp(const Vector3& low, const Vector3& high) const;
 };
 
-struct CoordinateFrame {
-    float r00, r01, r02, r03;
-    float r10, r11, r12, r13;
-    float r20, r21, r22, r23;
+struct Body {
+    char pad[0x94];
+    Vector3 value;
+    void updatePV();
 };
 
-struct Part {
-    char pad[0x9c];
-    CoordinateFrame* cframe;
-};
-
-struct GroupDragTool {
-    Part* part;
+struct Dimensions {
     char pad[4];
-    Vector3 lastHit;
+    Vector3 size;
+};
+
+struct Primitive {
+    char pad[0x9c];
+    Dimensions* dimensions;
+    Body* body;
+    const Vector3& getValue();
+};
+
+struct Frame {
+    float rotation[9];
+    Vector3 translation;
+};
+
+struct S {
+    Primitive* primitive;
+    char pad[4];
+    Vector3 position;
     float f();
 };
 
-extern float g_scale;
-
-extern "C" CoordinateFrame* __cdecl getCFrame(void* p);
-extern "C" void __cdecl transformPoint(Vector3* out, const Vector3* in, const CoordinateFrame* cf);
-extern "C" float __cdecl _sqrtf(float x);
-
-float GroupDragTool::f()
+float S::f()
 {
-    CoordinateFrame* cf = part->cframe;
-    float a = cf->r00 * g_scale;
-    float b = cf->r01 * g_scale;
-    float c = cf->r02 * g_scale;
-    float d = cf->r10 * g_scale;
-    float e = cf->r11 * g_scale;
-    float f2 = cf->r12 * g_scale;
+    const Vector3& size = primitive->dimensions->size;
+    float hx = size.x * 0.5f;
+    float hy = size.y * 0.5f;
+    float hz = size.z * 0.5f;
 
-    Vector3 local;
-    local.x = -a;
-    local.y = -b;
-    local.z = -c;
+    Vector3 low = { -hx, -hy, -hz };
+    Vector3 high = { hx, hy, hz };
 
-    Vector3 local2;
-    local2.x = -d;
-    local2.y = -e;
-    local2.z = -f2;
+    const Frame& frame =
+        *reinterpret_cast<const Frame*>(&primitive->getValue());
 
-    CoordinateFrame* world = getCFrame(0);
+    float x = position.x - frame.translation.x;
+    float y = position.y - frame.translation.y;
+    float z = position.z - frame.translation.z;
 
-    Vector3 diff;
-    diff.x = lastHit.x - world->r03;
-    diff.y = lastHit.y - world->r13;
-    diff.z = lastHit.z - world->r23;
+    Vector3 local = {
+        frame.rotation[6] * z + frame.rotation[3] * y + frame.rotation[0] * x,
+        frame.rotation[7] * z + frame.rotation[4] * y + frame.rotation[1] * x,
+        frame.rotation[8] * z + frame.rotation[5] * y + frame.rotation[2] * x
+    };
 
-    Vector3 out;
-    out.x = diff.x * world->r00 + diff.y * world->r10 + diff.z * world->r20;
-    out.y = diff.x * world->r01 + diff.y * world->r11 + diff.z * world->r21;
-    out.z = diff.x * world->r02 + diff.y * world->r12 + diff.z * world->r22;
+    Vector3 nearest = local.clamp(low, high);
+    float dx = local.x - nearest.x;
+    float dy = local.y - nearest.y;
+    float dz = local.z - nearest.z;
 
-    Vector3 result;
-    transformPoint(&result, &local, world);
-
-    float dx = out.x - result.x;
-    float dy = out.y - result.y;
-    float dz = out.z - result.z;
-
-    return _sqrtf(dx*dx + dy*dy + dz*dz);
+    return static_cast<float>(sqrt(dz * dz + dy * dy + dx * dx));
 }

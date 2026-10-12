@@ -1,4 +1,4 @@
-// from server: 75% by colin
+// from server: 100% by king_originala
 struct Object {
     virtual void slot0();
     virtual void slot1();
@@ -15,8 +15,12 @@ struct Object {
     virtual bool eligible();
 };
 
+struct InsertResult {
+    char data[12];
+};
+
 struct Collection {
-    void insert(Object* const& object);
+    InsertResult insert(Object* const& object);
 };
 
 struct TreeStage {

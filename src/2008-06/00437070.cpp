@@ -1,84 +1,87 @@
-// from server: 71% by king_originala
-extern "C" int __stdcall PostMessageA(void*, unsigned int, unsigned int, long);
-
-struct String;
-extern "C" void (__thiscall *destroy_string)(String*);
+// from server: 92% by king_originala
+extern "C" int (__stdcall *PostMessageA)(void*, unsigned int, unsigned int, long);
+extern "C" void (__thiscall *destroyString)(void*);
 
 struct String {
-    unsigned int data[7];
+    unsigned char storage[28];
     ~String();
 };
 
 inline String::~String()
 {
-    destroy_string(this);
+    destroyString(this);
 }
 
-struct Record {
+struct Entry {
     unsigned int kind;
     String text;
-    unsigned int extra[2];
+    unsigned char remainder[12];
 };
 
 struct Queue {
     unsigned int reserved[4];
-    Record** blocks;
+    Entry** blocks;
     unsigned int capacity;
     unsigned int start;
     unsigned int count;
     void append(const void*);
+    void pop_front();
 };
 
-struct Lock {
-    void* object;
-    char type;
-    void enter();
-    void leave();
+inline void Queue::pop_front()
+{
+    if (count != 0) {
+        blocks[start]->text.~String();
+        ++start;
+        if (capacity <= start)
+            start = 0;
+        if (--count == 0)
+            start = 0;
+    }
+}
+
+struct Mutex {
+    void* handle;
+    char flag;
+    void lock();
+    void unlock();
 };
 
 struct Guard {
-    Lock* lock;
-    bool active;
-    Guard(Lock*);
+    Mutex* mutex;
+    bool locked;
+    Guard(Mutex*);
     ~Guard();
 };
 
-inline Guard::Guard(Lock* p) : lock(p)
+inline Guard::Guard(Mutex* value) : mutex(value)
 {
-    lock->enter();
-    active = true;
+    mutex->lock();
+    locked = true;
 }
 
 inline Guard::~Guard()
 {
-    if (active)
-        lock->leave();
+    if (locked)
+        mutex->unlock();
 }
 
-struct CStandardOutputView {
+struct View {
     unsigned int reserved;
     Queue queue;
-    Lock lock;
-    void output(unsigned int, Record);
+    Mutex mutex;
+    void submit(Entry);
 };
 
-void CStandardOutputView::output(unsigned int, Record value)
+void View::submit(Entry value)
 {
-    Guard guard(&lock);
+    Guard guard(&mutex);
 
     if (queue.count == 0)
-        PostMessageA(*(void**)((char*)this - 0x100), 0x465, 0, 0);
+        PostMessageA(*(void**)((char*)this - 256), 0x465, 0, 0);
 
     queue.append(&value);
 
-    if (queue.count > 250) {
-        if (queue.count != 0) {
-            queue.blocks[queue.start]->text.~String();
-            ++queue.start;
-            if (queue.start >= queue.capacity)
-                queue.start = 0;
-            if (--queue.count == 0)
-                queue.start = 0;
-        }
-    }
+    if (queue.count > 250)
+        queue.pop_front();
 }

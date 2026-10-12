@@ -1,14 +1,19 @@
-// from server: 28% by atomic.potato
-extern "C" void std_string_copy(void *, const void *);
+// from server: 100% by king_originala
+typedef void *(__thiscall *StringCopy)(void *, const void *);
+extern StringCopy stringCopy;
 
-struct S
-{
-    int f(S *, const void *);
+struct Mesh {
+    int value;
+    unsigned char text[28];
+
+    Mesh *f(const int *, const void *);
 };
 
-int S::f(S *source, const void *value)
+#pragma optimize("", off)
+Mesh *Mesh::f(const int *source, const void *stringSource)
 {
-    *(void **)this = *(void **)source;
-    std_string_copy((char *)this + 4, value);
-    return (int)this;
+    value = *source;
+    stringCopy(text, stringSource);
+    return this;
 }
+#pragma optimize("", on)

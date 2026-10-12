@@ -1,15 +1,22 @@
-// from server: 72% by atomic.potato
-extern "C" void* __cdecl GetToggleContext();
-
-struct ToggleIDEModeVerb
-{
-    unsigned char f();
+// from server: 79% by king_originala
+struct State {
+    char padding[0x104];
+    bool enabled;
 };
 
-unsigned char ToggleIDEModeVerb::f()
+struct Context {
+    char padding[0x20];
+    State* state;
+};
+
+struct Root {
+    char padding[4];
+    Context* context;
+};
+
+extern Root* __cdecl getRoot();
+
+bool toggleIDEModeEnabled()
 {
-    void* p = GetToggleContext();
-    p = *(void**)((char*)p + 4);
-    p = *(void**)((char*)p + 0x20);
-    return *(unsigned char*)((char*)p + 0x104) == 0;
+    return !getRoot()->context->state->enabled;
 }

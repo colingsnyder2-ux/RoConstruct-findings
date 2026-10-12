@@ -1,60 +1,73 @@
-// from server: 51% by colin
-// roc 2008-06 005737e0  unit: RBX::VStarterPackService::?$FactoryProduct  size: 241 bytes
-// Make this compile to the exact bytes below, then: roc check 2008-06 005737e0
-
+// from server: 72% by king_originala
 extern float g_974d78;
 extern float g_974d7c;
 
-struct Vec2f { float x; float y; };
-struct Vec3f { float x; float y; float z; };
+struct Vec2f {
+    float x, y;
 
-extern "C" Vec2f* __cdecl sub_509ba0();
-extern "C" Vec3f* __cdecl sub_5cef60(Vec3f* a, Vec3f* b, Vec3f* c, int d, int e);
+    Vec2f() {}
+    Vec2f(float a, float b) : x(a), y(b) {}
+    Vec2f(const Vec2f& v) : x(v.x), y(v.y) {}
+};
+
+extern "C" const Vec2f& __cdecl sub_509ba0();
+
+struct Rect {
+    Vec2f low, high;
+
+    Rect(const Vec2f& a, const Vec2f& b) : low(a), high(b) {}
+    Vec2f calculate(const Rect& bounds, int horizontal, int vertical) const;
+};
 
 struct S {
-    virtual Vec3f* f0(Vec3f* out);
-    char pad[0x15c];
+    virtual void f0();
+    virtual void f1();
+    virtual void f2();
+    virtual void f3();
+    virtual void f4();
+    virtual void f5();
+    virtual void f6();
+    virtual void f7();
+    virtual void f8();
+    virtual void f9();
+    virtual void f10();
+    virtual void f11();
+    virtual void f12();
+    virtual void f13();
+    virtual void f14();
+    virtual void f15();
+    virtual void f16();
+    virtual void f17();
+    virtual void f18();
+    virtual void f19();
+    virtual void f20();
+    virtual void f21();
+    virtual void f22();
+    virtual Vec2f size();
+
+    char pad[0x158];
     int m15c;
     int m160;
     short m164;
     short m166;
-    Vec3f f(Vec3f* arg);
+
+    Vec2f f();
 };
 
-Vec3f S::f(Vec3f* arg)
+Vec2f S::f()
 {
-    Vec3f tmp;
-    tmp.x = g_974d78;
-    tmp.y = g_974d7c;
-    Vec2f* p = sub_509ba0();
-    Vec3f a;
-    a.x = p->x;
-    a.y = p->y;
-    a.z = tmp.x;
-    Vec3f b;
-    b.x = tmp.y;
-    b.y = 0.0f;
-    b.z = 0.0f;
-    Vec3f* r = f0(&a);
-    Vec2f* q = sub_509ba0();
-    Vec3f c;
-    c.x = q->x;
-    c.y = q->y;
-    c.z = r->x;
-    Vec3f d;
-    d.x = r->y;
-    d.y = 0.0f;
-    d.z = 0.0f;
-    Vec3f e;
-    e.x = (float)m164 + c.x;
-    e.y = (float)m166 + c.y;
-    e.z = d.x - c.z;
-    Vec3f g;
-    g.x = d.y - c.z;
-    g.y = 0.0f;
-    g.z = 0.0f;
-    Vec3f* out = sub_5cef60(&e, &g, arg, m15c, m160);
-    arg->x = out->x;
-    arg->y = out->y;
-    return *arg;
+    Vec2f unit(g_974d78, g_974d7c);
+    Rect area(sub_509ba0(), unit);
+    const Vec2f& extent = size();
+    Rect bounds(sub_509ba0(), extent);
+
+    float x = (float)m164;
+    float y = (float)m166;
+
+    area.low.x = area.low.x + x;
+    area.low.y = area.low.y + y;
+    area.high.x = area.high.x - x;
+    area.high.y = area.high.y - y;
+
+    return area.calculate(bounds, m15c, m160);
 }

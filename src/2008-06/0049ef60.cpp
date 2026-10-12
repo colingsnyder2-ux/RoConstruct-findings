@@ -1,5 +1,22 @@
-// from server: 94% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs util/RunStateOwner.cpp
+// from server: 100% by king_originala
+extern void (__thiscall *destroy_string)(void*);
+
+struct StringStorage {
+    char storage[32];
+    ~StringStorage();
+};
+
+inline StringStorage::~StringStorage()
+{
+    destroy_string(this);
+}
+
+struct S {
+    StringStorage first;
+    StringStorage second;
+    ~S();
+};
+
+S::~S()
+{
+}

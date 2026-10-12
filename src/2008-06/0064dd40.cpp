@@ -1,49 +1,45 @@
-// from server: 56% by colin
+// from server: 95% by king_originala
+struct Vector3 {
+    float x, y, z;
+};
+
+struct Source {
+    char reserved[0x94];
+    float m00, m01, m02;
+    float m10, m11, m12;
+    float m20, m21, m22;
+    Vector3 translation;
+
+    const void* get();
+};
+
 struct Point {
-    char pad0[0x10];
-    float x;
-    float y;
-    float z;
-    char pad1[4];
-    float ox;
-    float oy;
-    float oz;
-    void setFrom(const float* p);
+    char reserved[0x0C];
+    Source* source;
+    Vector3 local;
+    Vector3 position;
+
+    void setPosition(const Vector3* value);
 };
 
-struct Other {
-    char pad0[0x94];
-    float m00;
-    float m01;
-    float m02;
-    float m03;
-    float m10;
-    float m11;
-    float m12;
-    float m13;
-    float m20;
-    float m21;
-    float m22;
-    float m23;
-    float m30;
-    float m31;
-    float m32;
-    float m33;
-    void update();
-};
+void Point::setPosition(const Vector3* value)
+{
+    Source* s = source;
+    position.x = value->x;
+    position.y = value->y;
+    position.z = value->z;
 
-extern "C" void __fastcall sub_599360(Other* self);
+    s->get();
 
-void Point::setFrom(const float* p) {
-    ox = p[0];
-    oy = p[1];
-    oz = p[2];
-    Other* o = *(Other**)((char*)this + 0xc);
-    o->update();
-    float dx = ox - o->m30;
-    float dy = oy - o->m31;
-    float dz = oz - o->m32;
-    x = o->m00 * o->m10 + dx * dy + o->m20 * dz;
-    y = o->m01 * dx + o->m11 * dy + o->m21 * dz;
-    z = o->m02 * dx + o->m12 * dy + o->m22 * dz;
+    double x = position.x - s->translation.x;
+    double y = position.y - s->translation.y;
+    double z = position.z - s->translation.z;
+
+    double c = s->m22 * z + s->m12 * y + s->m02 * x;
+    double a = s->m20 * z + s->m10 * y + s->m00 * x;
+    double b = s->m21 * z + s->m11 * y + s->m01 * x;
+
+    local.x = (float)a;
+    local.y = (float)b;
+    local.z = (float)c;
 }

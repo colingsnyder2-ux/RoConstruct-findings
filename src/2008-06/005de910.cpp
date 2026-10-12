@@ -1,5 +1,16 @@
-// from server: 96% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs util/Math.cpp
+// from server: 100% by king_originala
+struct Matrix
+{
+    float values[9];
+    Matrix(float, float, float, float, float, float, float, float, float);
+};
+
+const Matrix& getMatrix()
+{
+    static Matrix value(
+        0.0f, -1.0f, 0.0f,
+        1.0f,  0.0f, 0.0f,
+        0.0f,  0.0f, 1.0f
+    );
+    return value;
+}

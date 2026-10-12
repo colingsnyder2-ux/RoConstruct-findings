@@ -1,46 +1,55 @@
-// from server: 32% by colin
-struct Inner {
-    void* p;
+// from server: 100% by king_originala
+struct Resource {
+    void* object;
+    void* control;
+
+    Resource() : object(0), control(0) {}
+    ~Resource();
 };
 
-struct Mid {
-    char pad[0x18];
-    Inner* q;
+struct Guard {
+    Resource resource;
+    int state;
+
+    Guard(void* p) : state(0) { acquire(p); }
+    void acquire(void*);
+    ~Guard();
 };
 
-struct Outer {
-    char pad0[0x128];
-    void* a;
-    Mid* b;
-    int f(void* x, int y);
+struct Interface {
+    virtual void slot0() = 0;
+    virtual void slot1() = 0;
+    virtual void apply(void*, void*) = 0;
 };
 
-extern "C" void __stdcall sub_576f00(void*, void*);
-extern "C" void __stdcall sub_5773c0(void*);
+struct Provider {
+    char padding[0x198];
+    void* content;
+};
 
-int Outer::f(void* x, int y)
+struct Destination {
+    char padding[0x18];
+    Interface* target;
+};
+
+struct Argument {
+    char padding[0x14];
+    char payload;
+};
+
+struct S {
+    char padding[0x128];
+    Provider* provider;
+    Destination* destination;
+
+    void* f(void*, Argument*);
+};
+
+void* S::f(void* result, Argument* argument)
 {
-    void* local1 = 0;
-    void* local2 = 0;
-    void* local3 = 0;
-    void* local4 = 0;
-    void* local5 = 0;
-
-    void* t = *(void**)((char*)a + 0x198);
-    sub_576f00(&local1, t);
-
-    void* arg;
-    if (x != 0)
-        arg = (char*)x + 0x14;
-    else
-        arg = 0;
-
-    Mid* m = b;
-    Inner* in = m->q;
-    void** vt = *(void***)in;
-    void (*fn)(void*, void*, void*) = (void (*)(void*, void*, void*))vt[2];
-    fn(in, x, arg);
-
-    sub_5773c0(&local1);
-    return y;
+    Guard guard(provider->content);
+    void* payload = argument ? &argument->payload : 0;
+    register Destination* dest = destination;
+    dest->target->apply(result, payload);
+    return result;
 }

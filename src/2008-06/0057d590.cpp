@@ -1,21 +1,26 @@
-// from server: 52% by atomic.potato
-struct S
-{
-    void f();
-    char pad[12];
-    struct T
-    {
-        char pad2[648];
-    } *p;
+// from server: 67% by colin
+struct CameraTiltDownCommand {
+    char pad[0xc];
+    void* workspace;
+    void doIt(void* dataState);
 };
 
-extern void sub_5cc040(void *, int);
+struct WorkspaceCamera {
+    char pad[0x288];
+    void* camera;
+};
 
-void S::f()
+struct Camera {
+    void* vtable;
+};
+
+extern "C" void __stdcall sub_5cc040(void* camera, int value);
+
+void CameraTiltDownCommand::doIt(void* dataState)
 {
-    T *q = p;
-    void (*fn)(T *) =
-        *(void (**)(T *))((char *)q + 648 + 4);
-    fn((T *)((char *)q + 648));
-    sub_5cc040(0, 1);
+    WorkspaceCamera* wc = (WorkspaceCamera*)workspace;
+    Camera* cam = (Camera*)wc->camera;
+    void (__stdcall *fn)(void*) = *(void (__stdcall **)(void*))((char*)cam + 4);
+    fn((char*)wc + 0x288);
+    sub_5cc040((void*)0, 1);
 }

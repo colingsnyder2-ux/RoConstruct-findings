@@ -1,20 +1,25 @@
-// from server: 44% by colin
-struct Chunk {
-    char pad[0xc];
-    void destroy();
+// from server: 82% by king_originala
+#pragma optimize("", off)
+
+struct Reference {
+    void update(void* p, int flag);
 };
 
-extern "C" void __stdcall sub_6a158c(int, int);
-extern "C" void sub_54426a();
+struct S {
+    unsigned char reserved[12];
+    Reference reference;
 
-struct VChunk {
-    void __cdecl func(int a, int b);
+    void __cdecl f(void* p);
 };
 
-void VChunk::func(int a, int b)
+void S::f(void* p)
 {
-    Chunk* c = (Chunk*)((char*)this + 0xc);
-    c->destroy();
-    sub_6a158c(0, 0);
-    sub_54426a();
+    void* saved = p;
+    try {
+        reference.update(saved, 0);
+    }
+    catch (...) {
+        reference.update(saved, 1);
+        throw;
+    }
 }

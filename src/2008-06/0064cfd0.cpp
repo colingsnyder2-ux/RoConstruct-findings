@@ -1,29 +1,46 @@
-// from server: 32% by colin
-struct ClumpStage {
-    void* vtable;
-    int field4;
-    int field8;
-    int fieldC;
-    char field10[0x68];
-    ClumpStage(int, int);
+// from server: 83% by king_originala
+void* __cdecl operator new(unsigned int);
+void __cdecl operator delete(void*);
+
+struct Stage;
+
+struct TreeStage {
+    char storage[120];
+    TreeStage(Stage* owner, Stage* next);
 };
 
-extern "C" void* __cdecl operator_new(unsigned int);
-extern "C" void __stdcall sub_669870(void*, int, int);
-extern "C" void __stdcall sub_64B2A0(void*, int*, int*);
+struct Collection {
+    Collection(Stage* const& first, Stage* const& last);
+    ~Collection();
+};
 
-ClumpStage::ClumpStage(int a2, int a3) {
-    void* p = operator_new(0x78);
-    if (p) {
-        sub_669870(p, (int)this, a3);
-    } else {
-        p = 0;
-    }
-    field4 = a2;
-    field8 = (int)p;
-    fieldC = a3;
-    vtable = (void*)0x84b14c;
-    int local1 = 0;
-    int local2 = 0;
-    sub_64B2A0(this->field10, &local1, &local2);
+struct Stage {
+    virtual ~Stage();
+
+    Stage* owner;
+    TreeStage* tree;
+    Stage* next;
+
+    __forceinline Stage(Stage* ownerValue, Stage* nextValue);
+};
+
+struct ClumpStage : Stage {
+    Collection collection;
+
+    ClumpStage(Stage* ownerValue, Stage* nextValue);
+    virtual ~ClumpStage();
+};
+
+__forceinline Stage::Stage(Stage* ownerValue, Stage* nextValue)
+{
+    TreeStage* treeValue = new TreeStage(this, nextValue);
+    owner = ownerValue;
+    tree = treeValue;
+    next = nextValue;
+}
+
+ClumpStage::ClumpStage(Stage* ownerValue, Stage* nextValue)
+    : Stage(ownerValue, nextValue),
+      collection(nextValue, nextValue)
+{
 }

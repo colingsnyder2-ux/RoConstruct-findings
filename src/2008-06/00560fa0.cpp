@@ -1,36 +1,86 @@
-// from server: 28% by tester
-// roc 2008-06 00560fa0  unit: RBX::VContentProvider::?$DescribedNonCreatable  size: 115 bytes
-// Make this compile to the exact bytes below, then: roc check 2008-06 00560fa0
+// from server: 87% by king_originala
+typedef unsigned int size_t;
 
-extern "C" void __stdcall sub_802460();
-extern "C" void* __cdecl sub_6a0920(unsigned int);
-extern "C" void* __cdecl sub_554270();
+void* __cdecl operator new(size_t);
 
-struct S {
-    char pad0[0x1c];
-    void* field1c;
-    char pad20[0x20];
-    void* field40;
-    char pad44[0xc];
-    void* field50;
-    void* field54;
-    void* field58;
-    S* ctor();
+extern void* (__thiscall *constructString)(void*);
+
+namespace std {
+    template<class T> struct char_traits;
+    template<class T> struct allocator;
+
+    template<class T, class Traits, class Alloc>
+    struct basic_string {
+        unsigned char storage[28];
+        basic_string();
+        ~basic_string();
+    };
+
+    template<class T, class Traits, class Alloc>
+    __forceinline basic_string<T, Traits, Alloc>::basic_string()
+    {
+        constructString(this);
+    }
+}
+
+const void* __cdecl getLocalScope();
+
+struct Guid {
+    std::basic_string<char, std::char_traits<char>, std::allocator<char> > text;
+    const void* scope;
+
+    Guid();
+    ~Guid();
 };
 
-S* S::ctor()
+__forceinline Guid::Guid()
+    : scope(getLocalScope())
 {
-    sub_802460();
-    this->field1c = sub_554270();
-    void* p = sub_6a0920(4);
-    if (p == 0) {
-        *(void**)p = &this->field40;
-    } else {
-        p = 0;
-    }
-    this->field40 = p;
-    this->field50 = 0;
-    this->field54 = 0;
-    this->field58 = 0;
-    return this;
+}
+
+struct ContainerBase {
+    struct Proxy {
+        ContainerBase* owner;
+        Proxy(ContainerBase*);
+    };
+
+    Proxy* proxy;
+    unsigned int reserved[2];
+
+    ContainerBase();
+    ~ContainerBase();
+};
+
+__forceinline ContainerBase::Proxy::Proxy(ContainerBase* p)
+    : owner(p)
+{
+}
+
+__forceinline ContainerBase::ContainerBase()
+    : proxy(new Proxy(this))
+{
+}
+
+struct Container : ContainerBase {
+    void* first;
+    void* last;
+    void* end;
+
+    Container();
+};
+
+__forceinline Container::Container()
+    : first(0), last(0), end(0)
+{
+}
+
+struct S {
+    Guid guid;
+    Container container;
+
+    S();
+};
+
+S::S()
+{
 }

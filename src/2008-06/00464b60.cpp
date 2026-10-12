@@ -1,4 +1,4 @@
-// from server: 95% by king_originala
+// from server: 100% by king_originala
 struct Control
 {
     virtual void unused();
@@ -11,24 +11,29 @@ struct Control
 
 struct Base
 {
-    void *value;
-    Base() : value(0) {}
     virtual ~Base();
 };
 
 struct Count
 {
     Control *control;
-    Count() : control(0) {}
-    ~Count()
-    {
-        if (control)
-            control->release();
-    }
+    Count();
+    ~Count();
 };
+
+inline Count::Count() : control(0)
+{
+}
+
+inline Count::~Count()
+{
+    if (control)
+        control->release();
+}
 
 struct S : Base
 {
+    void *value;
     Count count;
     void *first;
     void *last;
@@ -39,7 +44,7 @@ struct S : Base
 };
 
 S::S(void *a, void *b, void *c)
-    : first(a), last(c)
+    : value(0), first(a), last(c)
 {
     connect(b);
 }

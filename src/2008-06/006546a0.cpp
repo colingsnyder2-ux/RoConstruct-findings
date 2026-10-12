@@ -1,15 +1,24 @@
-// from server: 51% by atomic.potato
-extern "C" void basic_string_ctor(void *);
-extern "C" void TypedPropertyDescriptor(void *, void *);
+// from server: 55% by king_originala
+struct String
+{
+    char storage[24];
+    String();
+};
+
+struct Member
+{
+    Member(void *);
+};
 
 struct S
 {
-    int f(void *, void *);
+    String text;
+    Member member;
+
+    S(void *, void *);
 };
 
-int S::f(void *a, void *b)
+S::S(void *, void *value)
+    : text(), member(value)
 {
-    basic_string_ctor((char *)((char *)this + 0x34));
-    TypedPropertyDescriptor((char *)this + 0x18, b);
-    return 0;
 }

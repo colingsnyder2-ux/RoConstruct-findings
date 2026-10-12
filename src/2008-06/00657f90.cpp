@@ -1,6 +1,5 @@
-// from server: 62% by king_originala
+// from server: 66% by king_originala
 struct Locale {
-    unsigned short flags;
     void* facet;
 
     Locale(const Locale&);
@@ -11,7 +10,7 @@ extern void (__thiscall *facet_incref)(void*);
 extern void (__thiscall *locale_destroy)(Locale*);
 
 inline Locale::Locale(const Locale& other)
-    : flags(other.flags), facet(other.facet)
+    : facet(other.facet)
 {
     facet_incref(facet);
 }
@@ -21,15 +20,13 @@ inline Locale::~Locale()
     locale_destroy(this);
 }
 
-struct Result {
-    unsigned char storage[12];
-};
+struct Result;
 
-void __cdecl helper(Result*, int, int, int, int, Locale, Result*);
+void __cdecl helper(Result*, int, int, int, int, unsigned short, Locale, Result*);
 
-Result __cdecl function(int a, int b, int c, int d, Locale locale)
+Result* __cdecl function(Result* result, int a, int b, int c, int d,
+                        unsigned short flags, Locale locale)
 {
-    Result result;
-    helper(&result, a, b, c, d, locale, &result);
+    helper(result, a, b, c, d, flags, locale, result);
     return result;
 }

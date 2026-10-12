@@ -1,67 +1,70 @@
-// from server: 58% by colin
-struct RBX_BodyColors {
+// from server: 80% by colin
+struct BodyColors {
     char pad0[0x104];
-    void* field_104;
-    char pad1[0x134 - 0x108];
-    int field_134;
-    int field_138;
-    int field_13c;
-    int field_140;
-    int field_144;
-    int field_148;
-    void apply(void*);
+    void* field104;
+    char pad108[0x134 - 0x108];
+    int field134;
+    int field138;
+    int field13c;
+    int field140;
+    int field144;
+    int field148;
+    void func(void*);
 };
 
-extern "C" void* __stdcall sub_6A17C6(void*, int, void*, void*, int);
-extern "C" void* __fastcall sub_5D4460(void*);
-extern "C" void* __fastcall sub_5D8A10(void*);
-extern "C" void* __fastcall sub_5D8B10(void*);
-extern "C" void* __fastcall sub_5D8C10(void*);
-extern "C" void* __fastcall sub_5D8D10(void*);
-extern "C" void* __fastcall sub_5D8E10(void*);
-extern "C" void* __fastcall sub_5D8F10(void*);
-extern "C" void __fastcall sub_59DF40(void*, int, int);
+extern "C" void* __stdcall sub_6a17c6(void*, void*, void*, void*, void*);
+extern "C" void* __fastcall sub_5d4460(void*);
+extern "C" void* __fastcall sub_5d8a10(void*);
+extern "C" void* __fastcall sub_5d8b10(void*);
+extern "C" void* __fastcall sub_5d8c10(void*);
+extern "C" void* __fastcall sub_5d8d10(void*);
+extern "C" void* __fastcall sub_5d8e10(void*);
+extern "C" void* __fastcall sub_5d8f10(void*);
 
-void RBX_BodyColors::apply(void* a) {
-    if (field_104 != 0) {
-        void* r = sub_6A17C6(field_104, 0, (void*)0x92907c, (void*)0x932a40, 0);
-        if (r != 0) {
-            void* r2 = sub_5D4460(r);
-            if (r2 != 0) {
+struct Settings {
+    char pad[0x1e4];
+    int value;
+    void notify(void*);
+};
+
+void BodyColors::func(void* arg)
+{
+    if (field104 != 0) {
+        void* p = sub_6a17c6(field104, 0, (void*)0x92907c, (void*)0x932a40, 0);
+        if (p != 0) {
+            if (sub_5d4460(p) != 0) {
                 return;
             }
         }
     }
 
-    void* v;
-
-    v = sub_5D8A10(a);
-    if (v != 0) {
-        sub_59DF40(v, field_134, 0);
+    void* a = sub_5d8a10(arg);
+    if (a != 0) {
+        ((Settings*)a)->notify((void*)field134);
     }
 
-    v = sub_5D8C10(a);
-    if (v != 0) {
-        sub_59DF40(v, field_144, 0);
+    void* b = sub_5d8c10(arg);
+    if (b != 0) {
+        ((Settings*)b)->notify((void*)field144);
     }
 
-    v = sub_5D8D10(a);
-    if (v != 0) {
-        sub_59DF40(v, field_148, 0);
+    void* c = sub_5d8d10(arg);
+    if (c != 0) {
+        ((Settings*)c)->notify((void*)field148);
     }
 
-    v = sub_5D8B10(a);
-    if (v != 0) {
-        sub_59DF40(v, field_140, 0);
+    void* d = sub_5d8b10(arg);
+    if (d != 0) {
+        ((Settings*)d)->notify((void*)field140);
     }
 
-    v = sub_5D8E10(a);
-    if (v != 0) {
-        sub_59DF40(v, field_138, 0);
+    void* e = sub_5d8e10(arg);
+    if (e != 0) {
+        ((Settings*)e)->notify((void*)field138);
     }
 
-    v = sub_5D8F10(a);
-    if (v != 0) {
-        sub_59DF40(v, field_13c, 0);
+    void* f = sub_5d8f10(arg);
+    if (f != 0) {
+        ((Settings*)f)->notify((void*)field13c);
     }
 }

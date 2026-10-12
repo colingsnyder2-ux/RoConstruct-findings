@@ -1,5 +1,18 @@
-// from server: 55% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs v8datamodel/FaceInstance.cpp
+// from server: 89% by king_originala
+extern char descriptor;
+
+struct S {
+    char padding[0x1e8];
+    float value;
+
+    void notify(void*);
+    void set(float);
+};
+
+void S::set(float v)
+{
+    if (value != v) {
+        value = v;
+        notify(&descriptor);
+    }
+}

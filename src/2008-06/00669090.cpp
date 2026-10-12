@@ -1,42 +1,33 @@
-// from server: 35% by atomic.potato
-struct TreeStage {
-    void* f(void* a, void* b, void* c, void* d, void* e, void* f);
+// from server: 100% by king_originala
+struct Edge;
+
+struct Stage {
+    Edge* ascend(bool side, Edge* edge, void* context0, void* context1);
+    void reconcile(Edge* left, Edge* right, int leftDepth, int rightDepth,
+                   void* context0, void* context1);
 };
 
-void* helper(void* self, void* a, void* b, void* c, int d);
-
-void* TreeStage::f(void* a, void* b, void* c, void* d, void* e, void* f)
+void Stage::reconcile(Edge* left, Edge* right, int leftDepth, int rightDepth,
+                      void* context0, void* context1)
 {
-    void* esi = a;
-    void* edi = b;
-    void* ebx = c;
-    void* ebp = d;
-    void* ecx = e;
-    void* eax = f;
-    while (ecx != eax) {
-        if ((int)ecx > (int)eax) {
-            ecx = (char*)ecx - 1;
-            esi = helper(this, ebx, ebp, esi, 0);
+    for (;;) {
+        if (leftDepth != rightDepth) {
+            if (leftDepth > rightDepth) {
+                --leftDepth;
+                left = ascend(false, left, context0, context1);
+            } else {
+                --rightDepth;
+                right = ascend(true, right, context0, context1);
+            }
         } else {
-            eax = (char*)eax - 1;
-            edi = helper(this, ebx, ebp, edi, 1);
+            if (left == right)
+                return;
+
+            left = left ? ascend(false, left, context0, context1) : 0;
+            Edge* nextRight = right ? ascend(true, right, context0, context1) : 0;
+            --rightDepth;
+            --leftDepth;
+            right = nextRight;
         }
     }
-    if (esi != edi) {
-        if (esi) {
-            esi = helper(this, ebx, ebp, esi, 0);
-        } else {
-            esi = 0;
-        }
-        if (edi) {
-            edi = helper(this, ebx, ebp, edi, 1);
-            e = (char*)e - 1;
-            f = (char*)f - 1;
-        } else {
-            e = (char*)e - 1;
-            f = (char*)f - 1;
-            edi = 0;
-        }
-    }
-    return 0;
 }

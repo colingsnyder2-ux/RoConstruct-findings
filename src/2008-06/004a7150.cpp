@@ -1,39 +1,64 @@
-// from server: 63% by tester
-// roc 2008-06 004a7150  unit: RBX::VHint::?$FactoryProduct::Creator  size: 138 bytes
-// Make this compile to the exact bytes below, then: roc check 2008-06 004a7150
-
+// from server: 95% by king_originala
 extern "C" {
-    void __stdcall sub_802460(void*);
-    void __stdcall sub_802468(void*);
+    extern void (__thiscall *string_construct)(void *);
+    extern void (__thiscall *string_destroy)(void *);
 }
 
 struct String {
-    void* pad[4];
+    char storage[28];
     String();
     ~String();
 };
 
-struct Creator {
-    void sub_4a6e20(void*, void*);
-    void sub_4a7150(void* arg1, void* arg2);
+inline String::String()
+{
+    string_construct(this);
+}
+
+inline String::~String()
+{
+    string_destroy(this);
+}
+
+struct Base {
+    int data;
 };
 
-void Creator::sub_4a7150(void* arg1, void* arg2) {
-    String s;
-    sub_802460(&s);
-    sub_4a6e20(arg1, &s);
-    void* p = *(void**)((char*)&s + 4);
-    if (p) {
-        void* q = *(void**)&s;
-        void* r = (char*)p - 0x14;
-        if (r) {
-            r = (char*)r + 0x14;
-        } else {
-            r = 0;
-        }
-        void* vtable = *(void**)q;
-        void (*fn)(void*, void*) = *(void (**)(void*, void*))((char*)vtable + 0x20);
-        fn(r, &s);
+struct Prefix {
+    char data[20];
+};
+
+struct Derived : Prefix, Base {
+};
+
+struct Receiver;
+
+struct ReceiverTable {
+    void *slots[8];
+    void (__thiscall *invoke)(Receiver *, Base *, String *);
+};
+
+struct Receiver {
+    ReceiverTable *table;
+};
+
+struct Argument {
+    Receiver *receiver;
+    Base *object;
+};
+
+struct S {
+    void prepare(int value, String *text);
+    void f(Argument *argument, int value);
+};
+
+void S::f(Argument *argument, int value)
+{
+    String text;
+    prepare(value, &text);
+    if (argument->object) {
+        Derived *object = static_cast<Derived *>(argument->object);
+        argument->receiver->table->invoke(
+            argument->receiver, static_cast<Base *>(object), &text);
     }
-    sub_802468(&s);
 }

@@ -1,41 +1,32 @@
-// from server: 78% by colin
-struct DataModel;
-
-struct Selection
-{
-    char pad[0x0c];
-    unsigned int begin;
-    int end;
+// from server: 100% by king_originala
+struct Element {
+    unsigned int data[2];
 };
 
-struct DataModelHolder
-{
-    char pad[0x20];
-    DataModel* dataModel;
+struct Selection {
+    char padding[12];
+    Element* first;
+    Element* last;
 };
 
-struct DataModel
-{
-    char pad[0x154];
+struct Context {
+    char padding[0x154];
     Selection* selection;
 };
 
-struct DuplicateSelectionVerb
-{
+struct Owner {
+    Context* getContext();
+};
+
+struct DuplicateSelectionVerb {
+    char padding[0x20];
+    Owner* owner;
     bool isEnabled();
 };
 
-extern "C" DataModelHolder* __fastcall sub_4153B0(DataModelHolder* p);
-
 bool DuplicateSelectionVerb::isEnabled()
 {
-    DataModelHolder* holder = *(DataModelHolder**)((char*)this + 0x20);
-    DataModel* dm;
-    if (holder)
-        dm = sub_4153B0(holder)->dataModel;
-    else
-        dm = 0;
-    Selection* sel = dm->selection;
-    int count = (sel->end - sel->begin) >> 3;
-    return count > 0;
+    Context* context = owner ? owner->getContext() : 0;
+    Selection* selection = context->selection;
+    return static_cast<unsigned int>(selection->last - selection->first) > 0;
 }

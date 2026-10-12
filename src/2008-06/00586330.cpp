@@ -1,11 +1,11 @@
-// from server: 81% by king_originala
+// from server: 96% by king_originala
 struct Value;
 extern void (__thiscall *destroyValue)(Value*);
 extern void* __cdecl valueType();
 
 struct Value
 {
-    char data[28];
+    char data[32];
     ~Value();
 };
 
@@ -24,7 +24,8 @@ struct Holder
     Object* value;
     Holder(const Value&);
     ~Holder();
-    void swap(Object*&);
+    void swap(Holder&);
+    void assign(const Value&);
 };
 
 inline Holder::~Holder()
@@ -33,14 +34,19 @@ inline Holder::~Holder()
         delete value;
 }
 
-inline void Holder::swap(Object*& other)
+inline void Holder::swap(Holder& other)
 {
-    if (&value != &other)
+    if (this != &other)
     {
-        Object* old = other;
-        other = value;
+        Object* old = other.value;
+        other.value = value;
         value = old;
     }
+}
+
+inline void Holder::assign(const Value& source)
+{
+    Holder(source).swap(*this);
 }
 
 struct Accessor
@@ -53,14 +59,14 @@ struct Accessor
 struct Result
 {
     void* type;
-    Object* value;
+    Holder value;
     void assign(const Value&);
 };
 
 inline void Result::assign(const Value& source)
 {
     type = valueType();
-    Holder(source).swap(value);
+    value.assign(source);
 }
 
 struct Descriptor

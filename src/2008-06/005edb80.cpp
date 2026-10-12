@@ -1,44 +1,45 @@
-// from server: 60% by colin
-// roc 2008-06 005edb80  unit: RBX::Controller::$00W4InputType::?$SurfaceEnumPropDescriptor  size: 113 bytes
-
-struct EnumItem;
-struct EnumDesc;
-
-struct GetSet {
-    virtual int getValue(const void* instance) const;
+// from server: 100% by king_originala
+struct Accessor {
+    virtual void slot0();
+    virtual void slot1();
+    virtual int get(void* object);
 };
 
-struct SurfaceEnumPropDescriptor {
-    char pad[0x1c];
-    GetSet* getset;
-
-    int getValue(const void* instance) const;
+struct EnumDescriptor {
+    unsigned char padding[172];
+    void** first;
+    void** volatile last;
 };
 
-struct EnumDescHolder {
-    char pad[0xac];
-    EnumItem** begin;
-    EnumItem** end;
+extern "C" void __cdecl initialize(void (__cdecl* callback)(), void* storage);
+extern "C" void __cdecl callback();
+extern "C" EnumDescriptor* __cdecl descriptor();
+extern "C" void (__cdecl* _invalid_parameter_noinfo)();
+extern unsigned char storage;
+
+struct Property {
+    unsigned char padding[28];
+    Accessor* accessor;
+
+    void* get(void* object);
 };
 
-extern "C" void __stdcall _invalid_parameter_noinfo();
-extern "C" EnumDescHolder* __cdecl getEnumDescSingleton();
-extern "C" void __cdecl someInit(int, int);
+void* Property::get(void* object)
+{
+    int value = accessor->get(object);
+    initialize(callback, &storage);
+    EnumDescriptor* desc = descriptor();
 
-int SurfaceEnumPropDescriptor::getValue(const void* instance) const {
-    int idx = getset->getValue(instance);
-    someInit(0x97b120, 0x5ed690);
-    EnumDescHolder* desc = getEnumDescSingleton();
-    if (idx < 0) {
+    if (value < 0)
         return 0;
-    }
-    unsigned int count = (unsigned int)((char*)desc->end - (char*)desc->begin) >> 2;
-    if ((unsigned int)idx >= count) {
+
+    if (static_cast<unsigned int>(value) >=
+        static_cast<unsigned int>(desc->last - desc->first))
         return 0;
-    }
-    unsigned int count2 = (unsigned int)((char*)desc->end - (char*)desc->begin) >> 2;
-    if ((unsigned int)idx >= count2) {
+
+    if (static_cast<unsigned int>(value) >=
+        static_cast<unsigned int>(desc->last - desc->first))
         _invalid_parameter_noinfo();
-    }
-    return (int)desc->begin[idx];
+
+    return desc->first[value];
 }

@@ -1,6 +1,10 @@
-// from server: 87% by king_originala
+// from server: 100% by colin
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
+extern "C" long __cdecl _InterlockedIncrement(volatile long*);
+extern "C" long __cdecl _InterlockedDecrement(volatile long*);
+#pragma intrinsic(_InterlockedIncrement)
+#pragma intrinsic(_InterlockedDecrement)
 
 struct Function {
     typedef void (__cdecl *Manager)(const void*, void*, int);
@@ -49,12 +53,12 @@ inline String::~String() {
     stringDestroy(this);
 }
 
-struct Owner;
+struct Descriptor;
 
 struct Object {
     virtual void slot0();
     virtual void setName(const String&);
-    void attach(Owner*);
+    void bind(Descriptor*);
 };
 
 struct Control {
@@ -69,37 +73,39 @@ struct Control {
 };
 
 inline void Control::release() {
-    if (_InterlockedExchangeAdd(&strong, -1) == 0) {
+    if (_InterlockedDecrement(&strong) == 0) {
         dispose();
-        if (_InterlockedExchangeAdd(&weak, -1) == 0)
+        if (_InterlockedDecrement(&weak) == 0)
             destroy();
     }
 }
 
-struct FactoryResult {
+struct Result {
     Object* pointer;
     Control* control;
 
-    ~FactoryResult();
+    ~Result();
 };
 
-inline FactoryResult::~FactoryResult() {
+inline Result::~Result() {
     if (control)
         control->release();
 }
+
+Result __cdecl makeResult(Function);
 
 struct Shared {
     Object* pointer;
     Control* control;
 
-    Shared(const FactoryResult&);
+    Shared(const Result&);
     ~Shared();
 };
 
-inline Shared::Shared(const FactoryResult& other)
-    : pointer(other.pointer), control(other.control) {
+inline Shared::Shared(const Result& result)
+    : pointer(result.pointer), control(result.control) {
     if (control)
-        _InterlockedExchangeAdd(&control->strong, 1);
+        _InterlockedIncrement(&control->strong);
 }
 
 inline Shared::~Shared() {
@@ -107,15 +113,16 @@ inline Shared::~Shared() {
         control->release();
 }
 
-FactoryResult __cdecl createObject(Function);
-
-struct Owner {
+struct Descriptor {
     Object* create(const char*, Function);
 };
 
-Object* Owner::create(const char* name, Function function) {
-    Shared object(createObject(function));
-    object.pointer->setName(String(name));
-    object.pointer->attach(this);
+Object* Descriptor::create(const char* name, Function function) {
+    Shared object(makeResult(function));
+    {
+        String text(name);
+        object.pointer->setName(text);
+    }
+    object.pointer->bind(this);
     return object.pointer;
 }

@@ -1,20 +1,13 @@
-// from server: 29% by colin
-struct VServiceProvider {
-    float minX;
-    float minY;
-    float maxX;
-    float maxY;
-    bool contains(int x, int y);
+// from server: 55% by king_originala
+struct S
+{
+    float left, top, right, bottom;
+    int contains(unsigned int point);
 };
 
-bool VServiceProvider::contains(int x, int y) {
-    short sx = (short)x;
-    short sy = (short)((unsigned)x >> 16);
-    float fx = (float)x;
-    if (fx >= minX) return false;
-    if (fx > maxX) return false;
-    float fy = (float)sy;
-    if (fy < minY) return false;
-    if (fy > maxY) return false;
-    return true;
+int S::contains(unsigned int point)
+{
+    int x = (short)point;
+    int y = (short)(point >> 16);
+    return x >= left && x <= right && y >= top && y <= bottom;
 }

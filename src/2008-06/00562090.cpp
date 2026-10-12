@@ -1,17 +1,17 @@
-// from server: 89% by atomic.potato
-extern "C" void __cdecl basic_istringstream_destructor(void *);
-extern "C" void __cdecl cleanup_istringstream(void *);
+// from server: 100% by king_originala
+typedef void (__thiscall *DestroyFn)(void *);
+extern DestroyFn destroyStream;
+extern "C" void __cdecl deallocate(void *);
 
-struct S
-{
-    int f(unsigned char);
+struct S {
+    void *destroy(unsigned int flags);
 };
 
-int S::f(unsigned char flags)
+void *S::destroy(unsigned int flags)
 {
-    void *p = (char *)this - 0x50;
-    basic_istringstream_destructor(p);
+    void *base = reinterpret_cast<char *>(this) - 0x50;
+    destroyStream(base);
     if (flags & 1)
-        cleanup_istringstream(p);
-    return (int)p;
+        deallocate(base);
+    return base;
 }

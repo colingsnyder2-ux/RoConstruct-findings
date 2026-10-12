@@ -1,20 +1,31 @@
-// from server: 21% by tester
-extern "C" void* __stdcall malloc(unsigned int size);
+// from server: 100% by king_originala
+extern "C" {
+    extern void* (__cdecl *malloc)(unsigned int);
+    void __cdecl free(void*);
+}
 
-struct S_func_0048efb0 {
-    void* m_p;
-    int f(void* a, void* b);
+inline void* __cdecl operator new(unsigned int size) throw()
+{
+    return malloc(size);
+}
+
+inline void __cdecl operator delete(void* p) throw()
+{
+    free(p);
+}
+
+struct Object {
+    char storage[0x424];
+    Object(int);
 };
 
-int S_func_0048efb0::f(void* a, void* b)
+struct Result {
+    Result(Object*, unsigned int);
+};
+
+Result f()
 {
-    void* p = malloc(0x424);
-    m_p = p;
-    if (p == 0) {
-        ((void (__thiscall*)(void*, int))0x5d3490)(p, 1);
-    } else {
-        p = 0;
-    }
-    ((void (__thiscall*)(void*, void*, void*))0x48ef00)(this, p, a);
-    return (int)this;
+    volatile unsigned int deleter = 0;
+    *reinterpret_cast<volatile unsigned char*>(&deleter) = 0;
+    return Result(new Object(1), deleter);
 }

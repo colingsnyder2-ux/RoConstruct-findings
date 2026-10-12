@@ -1,24 +1,29 @@
-// from server: 59% by king_originala
+// from server: 84% by king_originala
 struct Exception;
-typedef void (__thiscall *ExceptionConstructor)(Exception*, const char* const&);
+typedef void (__thiscall *ExceptionConstructor)(Exception *, const char * const &);
 extern ExceptionConstructor exceptionConstructor;
+extern char exceptionThrowInfo;
+
+extern "C" __declspec(noreturn) void __stdcall
+throwException(void *, void *);
 
 struct Exception {
-    char* message;
+    void *table;
+    char *message;
     int ownsMessage;
 
-    Exception(const char* const&);
-    Exception(const Exception&);
-    virtual ~Exception();
-    virtual const char* what() const;
+    Exception();
+    ~Exception();
 };
 
-__forceinline Exception::Exception(const char* const& text)
+__forceinline Exception::Exception()
 {
-    exceptionConstructor(this, text);
 }
 
 void func_005039e0()
 {
-    throw Exception("shouldn't be here");
+    const char *text = "shouldn't be here";
+    Exception value;
+    exceptionConstructor(&value, text);
+    throwException(&value, &exceptionThrowInfo);
 }

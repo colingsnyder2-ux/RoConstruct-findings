@@ -1,51 +1,68 @@
-// from server: 40% by colin
-struct Ball {
-    char pad0[4];
-    float x;
-    float y;
-    float z;
-    float radius;
-    bool method(float a, float b, float c);
+// from server: 72% by king_originala
+#pragma float_control(precise, off)
+
+struct Vector {
+    float x, y, z;
+
+    Vector();
+    static const Vector& zero();
 };
 
-extern "C" int __stdcall sub_7BB5A0(float*, float*, float*, float*, float*);
+inline Vector::Vector() : x(0.0f), y(0.0f), z(0.0f) {}
 
-bool Ball::method(float a, float b, float c) {
-    float dx = x - a;
-    float dy = y - b;
-    float dz = z - c;
-    float dist2 = dx * dx + dy * dy + dz * dz;
-    bool result = dist2 <= radius * radius;
+inline const Vector& Vector::zero()
+{
+    static Vector value;
+    return value;
+}
 
-    static bool init = false;
-    static float gx, gy, gz;
-    if (!init) {
-        init = true;
-        gx = 0.0f;
-        gy = 0.0f;
-        gz = 0.0f;
-    }
+struct Ray {
+    void* table;
+    Vector origin;
+    Vector direction;
+};
 
-    float out[3];
-    out[0] = gx;
-    out[1] = gy;
-    out[2] = gz;
+struct Sphere {
+    Vector center;
+    float radius;
 
-    float tmp[3];
-    tmp[0] = 0.0f;
-    tmp[1] = 0.0f;
-    tmp[2] = 0.0f;
+    Sphere(const Vector&, float);
+    virtual ~Sphere();
+};
 
-    static double dbl = 0.0;
-    static bool dblInit = false;
-    if (!dblInit) {
-        dblInit = true;
-        dbl = *(double*)0x8024ac;
-    }
+inline Sphere::Sphere(const Vector& position, float size)
+    : center(position), radius(size)
+{
+}
 
-    sub_7BB5A0(&x, &a, tmp, out, (float*)0x97f6d8);
+inline Sphere::~Sphere()
+{
+}
 
-    if (out[0] == (float)dbl)
-        return true;
-    return false;
+extern const double* infinitySource;
+extern Vector normalOutput;
+
+extern double __cdecl intersectSphere(
+    const Vector*, const Vector*, const Sphere*, Vector*, Vector*);
+
+struct Ball {
+    char padding[0x10];
+    float radius;
+
+    bool intersect(const Ray&, Vector&, bool&) const;
+};
+
+bool Ball::intersect(const Ray& ray, Vector& point, bool& inside) const
+{
+    inside = radius * radius >=
+        ray.origin.x * ray.origin.x +
+        ray.origin.y * ray.origin.y +
+        ray.origin.z * ray.origin.z;
+
+    Sphere sphere(Vector::zero(), radius);
+    static double infinity = *infinitySource;
+
+    return intersectSphere(
+        &ray.origin, &ray.direction, &sphere, &point, &normalOutput)
+        != infinity;
 }

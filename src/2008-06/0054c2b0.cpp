@@ -1,19 +1,14 @@
-// from server: 26% by atomic.potato
-struct Mesh
-{
+// from server: 100% by king_originala
+struct Mesh {
     int value;
-    int f(int);
+    int f(int offset);
 };
 
-int Mesh::f(int x)
+#pragma optimize("", off)
+int Mesh::f(int offset)
 {
-    int a = 0;
-    while (a != 0)
-        a = 0;
-
-    int b = 0;
-    while (b != 0)
-        b = 0;
-
-    return value + x;
+    do {} while (0);
+    do {} while (0);
+    return value + offset;
 }
+#pragma optimize("", on)

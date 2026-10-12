@@ -1,14 +1,20 @@
-// from server: 36% by atomic.potato
-struct S
-{
-    int f(int);
-    int member10;
+// from server: 100% by king_originala
+#pragma optimize("", off)
+
+struct S;
+
+struct Result {
+    void initialize(int value, S* owner);
 };
 
-extern "C" int __stdcall sub_005444a0(int, int);
+struct S {
+    char padding[16];
+    int value;
+    Result* f(Result* result);
+};
 
-int S::f(int value)
+Result* S::f(Result* result)
 {
-    sub_005444a0(value, member10);
-    return value;
+    result->initialize(value, this);
+    return result;
 }

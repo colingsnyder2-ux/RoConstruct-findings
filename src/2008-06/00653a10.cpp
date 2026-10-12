@@ -1,38 +1,47 @@
-// from server: 30% by tester
-struct ScoreHud {
-    void destroyChildren(void*);
+// from server: 100% by king_originala
+struct String;
+extern void (__thiscall *destroyString)(String *);
+extern void __cdecl operator delete(void *);
+
+struct String {
+    char storage[28];
+    __forceinline ~String();
+};
+
+struct Value {
+    char storage[32];
+    ~Value();
+};
+
+struct Pair {
+    String first;
+    Value second;
 };
 
 struct Node {
-    char pad[0x49];
-    char flag;
+    Node *left;
+    Node *parent;
+    Node *right;
+    Pair value;
+    unsigned char color;
+    unsigned char nil;
 };
 
-extern "C" void __stdcall sub_46B070(void*);
-extern "C" void __stdcall sub_6A067A(void*);
-extern "C" void __stdcall sub_802468(void*);
+struct S {
+    void erase(Node *);
+};
 
-void ScoreHud::destroyChildren(void* p)
+__forceinline String::~String()
 {
-    Node* n = (Node*)p;
-    if (n->flag == 0) {
-        Node* child = *(Node**)((char*)n + 8);
-        destroyChildren(child);
-        Node* next = *(Node**)n;
-        void* base = (char*)n + 0xc;
-        sub_46B070((char*)base + 0x1c);
-        sub_802468(base);
-        sub_6A067A(n);
-        n = next;
-        while (n->flag == 0) {
-            child = *(Node**)((char*)n + 8);
-            destroyChildren(child);
-            next = *(Node**)n;
-            base = (char*)n + 0xc;
-            sub_46B070((char*)base + 0x1c);
-            sub_802468(base);
-            sub_6A067A(n);
-            n = next;
-        }
+    destroyString(this);
+}
+
+void S::erase(Node *node)
+{
+    for (Node *current = node; !current->nil; node = current) {
+        erase(current->right);
+        current = current->left;
+        node->value.~Pair();
+        operator delete(node);
     }
 }

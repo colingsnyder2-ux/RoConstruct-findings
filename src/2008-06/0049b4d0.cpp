@@ -1,9 +1,18 @@
-// from server: 80% by king_originala
+// from server: 100% by king_originala
 struct Holder {
     virtual ~Holder();
     virtual void reserved();
     virtual Holder* clone();
+
+    static Holder* copy(Holder*);
 };
+
+__forceinline Holder* Holder::copy(Holder* h)
+{
+    if (h)
+        return h->clone();
+    return 0;
+}
 
 struct Value {
     void* object;
@@ -14,10 +23,8 @@ struct Value {
 };
 
 __forceinline Value::Value(const Value& other)
+    : object(other.object), holder(Holder::copy(other.holder))
 {
-    Holder* h = other.holder;
-    object = other.object;
-    holder = h ? h->clone() : 0;
 }
 
 __forceinline Value::~Value()
@@ -37,6 +44,14 @@ namespace std {
         char storage[12];
         bad_cast(const char*);
     };
+}
+
+typedef void (__thiscall *BadCastConstructor)(std::bad_cast*, const char*);
+extern BadCastConstructor constructBadCast;
+
+__forceinline std::bad_cast::bad_cast(const char* message)
+{
+    constructBadCast(this, message);
 }
 
 extern unsigned char sourceType;

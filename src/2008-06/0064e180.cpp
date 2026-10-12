@@ -1,5 +1,25 @@
-// from server: 67% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs util/RunStateOwner.cpp
+// from server: 100% by king_originala
+struct String {
+    unsigned char data[28];
+};
+
+typedef String& (__thiscall *StringAssign)(String*, const String&);
+extern StringAssign assignString;
+
+struct Value {
+    String text;
+    int value;
+};
+
+struct S {
+    unsigned char padding[0x144];
+    Value field;
+    void set(const Value& source);
+};
+
+void S::set(const Value& source)
+{
+    Value* destination = &field;
+    assignString(&destination->text, source.text);
+    destination->value = source.value;
+}

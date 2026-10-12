@@ -1,19 +1,20 @@
-// from server: 53% by colin
-struct PropDesc {
-    char pad[0x18];
-    void* getset;
-    bool equalTo(void* exec, const PropDesc& other);
+// from server: 100% by king_originala
+struct Getter {
+    virtual void slot0() = 0;
+    virtual void slot1() = 0;
+    virtual void get(unsigned int* result, unsigned int object) = 0;
 };
 
-bool PropDesc::equalTo(void* exec, const PropDesc& other)
+struct S {
+    unsigned char padding[24];
+    Getter* getter;
+    int equal(unsigned int a, unsigned int b);
+};
+
+int S::equal(unsigned int a, unsigned int b)
 {
-    char tmp1;
-    char tmp2;
-    void* vtable = *(void**)getset;
-    void (*fn)(void*, char*, void*) = *(void (**)(void*, char*, void*))((char*)vtable + 8);
-    fn(getset, &tmp1, exec);
-    void* vtable2 = *(void**)getset;
-    void (*fn2)(void*, char*, void*) = *(void (**)(void*, char*, void*))((char*)vtable2 + 8);
-    fn2(getset, &tmp2, exec);
-    return tmp1 == tmp2;
+    unsigned int value;
+    getter->get(&value, b);
+    getter->get(&b, a);
+    return b == value;
 }

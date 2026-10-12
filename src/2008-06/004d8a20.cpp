@@ -1,6 +1,8 @@
-// from server: 97% by king_originala
+// from server: 100% by king_originala
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
+extern "C" long __cdecl _InterlockedIncrement(volatile long*);
+#pragma intrinsic(_InterlockedIncrement)
 extern "C" long __cdecl _InterlockedDecrement(volatile long*);
 #pragma intrinsic(_InterlockedDecrement)
 
@@ -44,7 +46,7 @@ S* S::f(Ptr value)
     *(void* volatile*)((char*)this + 0x14) = value.p;
     *(Ref* volatile*)((char*)this + 0x18) = value.r;
     if (value.r)
-        _InterlockedExchangeAdd(&value.r->strong, 1);
+        _InterlockedIncrement(&value.r->strong);
 
     *(int*)((char*)this + 0x20) = 0;
     *(int*)((char*)this + 0x24) = 0;

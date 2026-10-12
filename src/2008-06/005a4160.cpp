@@ -1,17 +1,20 @@
-// from server: 64% by atomic.potato
+// from server: 100% by king_originala
+struct Value
+{
+    float get();
+};
+
 struct S
 {
-    int pad[86];
-    float value;
+    char padding[0x158];
+    Value value;
+
+    void setValue(const float &value);
     void f();
 };
 
-extern "C" float get_value(float*);
-
-extern "C" void consume(float*);
-
 void S::f()
 {
-    float value = get_value(&this->value);
-    consume(&value);
+    float result = value.get();
+    setValue(result);
 }

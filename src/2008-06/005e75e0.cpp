@@ -1,5 +1,12 @@
-// from server: 58% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs v8world/Primitive.cpp
+// from server: 100% by king_originala
+struct S {
+    unsigned char padding[0xAB];
+    unsigned char value;
+    void setValue(unsigned char v);
+};
+
+void S::setValue(unsigned char v)
+{
+    if (v != value)
+        value = v;
+}

@@ -1,5 +1,20 @@
-// from server: 58% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs v8datamodel/FaceInstance.cpp
+// from server: 100% by king_originala
+extern unsigned char propertyA;
+extern unsigned char propertyB;
+
+struct Settings {
+    unsigned char padding[0x1e4];
+    int value;
+
+    void notify(void*);
+    void setValue(int);
+};
+
+void Settings::setValue(int v)
+{
+    if (v != value) {
+        value = v;
+        notify(&propertyA);
+        notify(&propertyB);
+    }
+}

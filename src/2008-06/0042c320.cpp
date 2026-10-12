@@ -1,4 +1,4 @@
-// from server: 90% by king_originala
+// from server: 100% by king_originala
 typedef void (__cdecl *Manager)(void *, void *, int);
 extern Manager globalManager;
 
@@ -7,10 +7,10 @@ struct Binder {
     unsigned int reserved;
     unsigned int storage;
 
-    void assign(unsigned int value);
+    Binder &assign(unsigned int value);
 };
 
-void Binder::assign(unsigned int value)
+Binder &Binder::assign(unsigned int value)
 {
     if (manager) {
         Manager callback = *manager;
@@ -36,4 +36,6 @@ void Binder::assign(unsigned int value)
         manager = 0;
         throw;
     }
+
+    return *this;
 }

@@ -1,4 +1,4 @@
-// from server: 99% by colin
+// from server: 100% by king_originala
 extern "C" void* (__cdecl *malloc_call)(unsigned int);
 
 inline void* __cdecl operator new(unsigned int size)
@@ -28,7 +28,7 @@ inline String::~String()
 }
 
 struct S {
-    char storage[384];
+    char storage[360];
     S(int, const String&);
 };
 

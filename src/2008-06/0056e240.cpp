@@ -1,17 +1,25 @@
-// from server: 43% by tester
-struct PropertyDescriptor {
-    char pad[0x18];
-    void* field18;
-    bool equalTo(void* exec, const PropertyDescriptor& other) const;
+// from server: 100% by king_originala
+extern "C" bool __cdecl convert(const void *, double *);
+
+struct Setter {
+    virtual void slot0();
+    virtual void slot1();
+    virtual void slot2();
+    virtual void set(void *, const double &);
 };
 
-bool PropertyDescriptor::equalTo(void* exec, const PropertyDescriptor& other) const {
-    char buf[4];
-    if (!((bool (__stdcall*)(void*, const PropertyDescriptor&, void*))0x5be680)(exec, other, buf))
-        return false;
-    void* p = field18;
-    void** vtbl = *(void***)p;
-    void (__stdcall* fn)(void*, void*, void*) = (void (__stdcall*)(void*, void*, void*))vtbl[3];
-    fn(p, buf, exec);
-    return true;
+struct S {
+    unsigned char padding[24];
+    Setter *setter;
+    bool assign(void *, const void *);
+};
+
+bool S::assign(void *object, const void *source)
+{
+    double value;
+    if (convert(source, &value)) {
+        setter->set(object, value);
+        return true;
+    }
+    return false;
 }

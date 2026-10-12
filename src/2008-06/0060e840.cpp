@@ -1,5 +1,53 @@
-// from server: 51% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs util/Extents.cpp
+// from server: 77% by king_originala
+struct Matrix {
+    float elements[9];
+    Matrix(const Matrix&);
+};
+
+struct Vector {
+    float x, y, z;
+    Vector(const Vector&);
+    Vector& operator=(const Vector&);
+};
+
+inline Vector::Vector(const Vector& other)
+    : x(other.x), y(other.y), z(other.z)
+{
+}
+
+inline Vector& Vector::operator=(const Vector& other)
+{
+    x = other.x;
+    y = other.y;
+    z = other.z;
+    return *this;
+}
+
+struct Frame {
+    Matrix rotation;
+    Vector translation;
+};
+
+struct Object {
+    const Frame* getFrame();
+    bool needsAdjustment();
+    void setFrame(const Frame&);
+};
+
+extern const float adjustment;
+extern Frame __cdecl adjustFrame(const Frame&, float);
+
+void __cdecl updateFrame(Object* object, const Vector& offset)
+{
+    const Frame* source = object->getFrame();
+    Frame frame = { source->rotation, source->translation };
+
+    frame.translation.x += offset.x;
+    frame.translation.y += offset.y;
+    frame.translation.z += offset.z;
+
+    if (object->needsAdjustment())
+        frame = adjustFrame(frame, adjustment);
+
+    object->setFrame(frame);
+}

@@ -1,32 +1,49 @@
-// from server: 36% by colin
-struct S {
-    void* field0;
-    void* field4;
-    char field8[0x20];
-    void construct(void*);
+// from server: 100% by king_originala
+typedef unsigned int size_t;
+
+void* __cdecl operator new(size_t);
+void __cdecl operator delete(void*);
+
+struct Triple {
+    unsigned int a, b, c;
 };
 
-extern "C" void __stdcall sub_42B800(void*, int, int, int);
-extern "C" void* __cdecl sub_6A0920(unsigned int);
-extern "C" void __fastcall sub_41AD40(void*);
-extern "C" void __fastcall sub_41B0F0(void*, void*);
-extern "C" void __fastcall sub_595840(void*);
+struct Base {
+    unsigned int reserved;
 
-void S::construct(void* arg)
-{
-    field0 = 0;
-    field4 = 0;
-    int* p = (int*)arg;
-    int a = p[0];
-    int b = p[1];
-    int c = p[2];
-    sub_42B800(field8, a, b, c);
-    void* mem = sub_6A0920(0x28);
-    if (mem != 0) {
-        sub_41AD40(mem);
-    } else {
-        mem = 0;
-    }
-    sub_41B0F0(this, mem);
-    sub_595840(this);
+    Base();
+    ~Base();
+};
+
+inline Base::Base() : reserved(0) {}
+
+struct EventHandler {
+    void* state;
+    unsigned int reserved;
+    Triple payload;
+
+    EventHandler(Triple value, unsigned int unused);
+    ~EventHandler();
+};
+
+struct Object {
+    char storage[40];
+
+    Object();
+};
+
+struct Holder {
+    void* state;
+    Base base;
+    EventHandler handler;
+
+    Holder(const Triple& value);
+    void set(Object* object);
+    void finish();
+};
+
+Holder::Holder(const Triple& value)
+    : state(0), base(), handler(value, 0) {
+    set(new Object);
+    finish();
 }

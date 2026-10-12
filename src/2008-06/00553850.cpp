@@ -1,14 +1,20 @@
-// from server: 39% by atomic.potato
-extern "C" void Function_005444A0(void *, void *);
+// from server: 100% by king_originala
+#pragma optimize("", off)
 
-struct AggregateChunk
-{
-    char padding[12];
-    void *field_0c;
-    void f(void *);
+struct S;
+
+struct Result {
+    void initialize(unsigned long value, S* owner);
 };
 
-void AggregateChunk::f(void *p)
+struct S {
+    unsigned char padding[12];
+    unsigned long value;
+    Result* f(Result* result);
+};
+
+Result* S::f(Result* result)
 {
-    Function_005444A0(field_0c, this);
+    result->initialize(value, this);
+    return result;
 }

@@ -1,4 +1,4 @@
-// from server: 96% by king_originala
+// from server: 100% by king_originala
 void* __cdecl operator new(unsigned int);
 void __cdecl operator delete(void*);
 
@@ -36,10 +36,11 @@ Entry* __stdcall createEntry(int a, int b, int c, const void* p, bool flag)
 {
     void* storage = operator new(sizeof(Entry));
     try {
-        return new (storage) Entry(a, b, c, p, flag);
+        new (storage) Entry(a, b, c, p, flag);
     }
     catch (...) {
         operator delete(storage);
         throw;
     }
+    return static_cast<Entry*>(storage);
 }

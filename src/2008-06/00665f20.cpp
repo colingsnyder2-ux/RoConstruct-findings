@@ -1,7 +1,6 @@
-// from server: 86% by king_originala
+// from server: 87% by king_originala
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
-
 extern "C" long __cdecl _InterlockedDecrement(volatile long*);
 #pragma intrinsic(_InterlockedDecrement)
 
@@ -21,24 +20,30 @@ struct Shared
 {
     void* object;
     Control* control;
-
-    Shared(const Shared& other) : object(other.object), control(other.control)
-    {
-        if (control)
-            _InterlockedExchangeAdd(&control->strong, 1);
-    }
-
-    __forceinline ~Shared()
-    {
-        Control* p = control;
-        if (p && _InterlockedDecrement(&p->strong) == 0)
-        {
-            p->dispose();
-            if (_InterlockedDecrement(&p->weak) == 0)
-                p->destroy();
-        }
-    }
+    Shared(const Shared&);
+    ~Shared();
 };
+
+__forceinline Shared::Shared(const Shared& other)
+    : object(other.object), control(other.control)
+{
+    if (control)
+    {
+        volatile long* count = &control->strong;
+        _InterlockedExchangeAdd(count, 1);
+    }
+}
+
+__forceinline Shared::~Shared()
+{
+    Control* p = control;
+    if (p && _InterlockedDecrement(&p->strong) == 0)
+    {
+        p->dispose();
+        if (_InterlockedDecrement(&p->weak) == 0)
+            p->destroy();
+    }
+}
 
 struct Vector3
 {
@@ -51,7 +56,6 @@ struct Base
     int a, b, c;
     unsigned char flag;
     int argument;
-
     Base(int);
     ~Base();
 };
@@ -68,45 +72,59 @@ struct List;
 struct Proxy
 {
     List* owner;
-    Proxy(List* p) : owner(p) {}
+    Proxy(List*);
 };
+
+__forceinline Proxy::Proxy(List* p) : owner(p) {}
 
 struct ProxyOwner
 {
     Proxy* pointer;
-
-    ProxyOwner(List* p) : pointer(new Proxy(p)) {}
-    __forceinline ~ProxyOwner() { operator delete(pointer); }
+    unsigned char padding[8];
+    ProxyOwner(List*);
+    ~ProxyOwner();
 };
 
-struct Storage
+__forceinline ProxyOwner::ProxyOwner(List* p) : pointer(new Proxy(p)) {}
+
+__forceinline ProxyOwner::~ProxyOwner()
+{
+    operator delete(pointer);
+}
+
+struct ListBase : ProxyOwner
 {
     void* begin;
     void* end;
     void* capacity;
-
-    Storage() : begin(0), end(0), capacity(0) {}
-
-    __forceinline ~Storage()
-    {
-        if (begin)
-            operator delete(begin);
-        begin = 0;
-        end = 0;
-        capacity = 0;
-    }
+    ListBase(List*);
+    ~ListBase();
 };
 
-struct List
+__forceinline ListBase::ListBase(List* p)
+    : ProxyOwner(p), begin(0), end(0), capacity(0)
 {
-    ProxyOwner proxy;
-    unsigned char padding[8];
-    Storage storage;
+}
 
-    List() : proxy(this) {}
+__forceinline ListBase::~ListBase() {}
+
+struct List : ListBase
+{
+    List();
     void append(int*);
-    __forceinline ~List() {}
+    ~List();
 };
+
+__forceinline List::List() : ListBase(this) {}
+
+__forceinline List::~List()
+{
+    if (begin)
+        operator delete(begin);
+    begin = 0;
+    end = 0;
+    capacity = 0;
+}
 
 struct Second
 {
@@ -118,19 +136,31 @@ struct Second
 template<class T> struct Owner
 {
     T* pointer;
-
-    Owner() : pointer(0) {}
-    Owner(int) : pointer(0) {}
-
-    __forceinline ~Owner() { delete pointer; }
-
-    void reset(T* value)
-    {
-        if (value != pointer && pointer)
-            delete pointer;
-        pointer = value;
-    }
+    Owner();
+    Owner(int);
+    ~Owner();
+    void reset(T*);
 };
+
+template<class T>
+__forceinline Owner<T>::Owner() : pointer(0) {}
+
+template<class T>
+__forceinline Owner<T>::Owner(int) : pointer(0) {}
+
+template<class T>
+__forceinline Owner<T>::~Owner()
+{
+    delete pointer;
+}
+
+template<class T>
+__forceinline void Owner<T>::reset(T* value)
+{
+    if (value != pointer && pointer)
+        delete pointer;
+    pointer = value;
+}
 
 struct PartDragTool : Base
 {
@@ -140,25 +170,24 @@ struct PartDragTool : Base
     float x, y;
     unsigned char active;
     Vector3 position;
-
-    PartDragTool(int, const Vector3*, int, Shared);
+    PartDragTool(int, const Vector3&, int, Shared);
 };
 
-PartDragTool::PartDragTool(int object, const Vector3* point,
-                           int argument, Shared value)
+PartDragTool::PartDragTool(int object, const Vector3& point,
+                          int argument, Shared value)
     : Base(argument),
       first((table1 = 0x84cbb4, table2 = 0x84cb9c, 0)),
       shared(value), x(0.0f), y(0.0f), active(0)
 {
-    position.x = point->x;
-    position.y = point->y;
-    position.z = point->z;
+    position.x = point.x;
+    position.y = point.y;
+    position.z = point.z;
 
     first.reset(new First);
 
     List objects;
-    point = reinterpret_cast<const Vector3*>(object);
-    objects.append(reinterpret_cast<int*>(&point));
+    int entry = object;
+    objects.append(&entry);
 
     second.reset(new Second(object, &objects, argument));
 }

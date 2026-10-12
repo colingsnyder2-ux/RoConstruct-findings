@@ -1,45 +1,60 @@
-// from server: 43% by colin
-struct Vec2 {
-    float x;
-    float y;
+// from server: 81% by king_originala
+#pragma float_control(precise, off)
+
+struct Vec2
+{
+    float x, y;
+
+    Vec2() {}
+    Vec2(float a, float b) : x(a), y(b) {}
+    Vec2(const Vec2& v) : x(v.x), y(v.y) {}
+
+    Vec2 clamp(const Vec2& low, const Vec2& high) const;
 };
 
-struct DxUserInput {
-    void update(Vec2* pos, Vec2* delta, int dt);
-};
+struct Rect
+{
+    Vec2 low, high;
 
-extern "C" void __cdecl func_005cf000(float* out, float x, float y);
-extern "C" void __cdecl func_00469fa0(float* out, float* a, float* b, float* c);
+    Rect() {}
+    Rect(const Vec2& a, const Vec2& b) : low(a), high(b) {}
+
+    void translate(const Rect& offset);
+};
 
 extern float g_scale;
 
-void DxUserInput::update(Vec2* pos, Vec2* delta, int dt)
+void __cdecl func_0046a010(const Vec2* motion, Vec2* overflow,
+                          Vec2* position, const Vec2* dimensions,
+                          int margin, float factor)
 {
-    float scaledX = g_scale * delta->x;
-    float scaledY = g_scale * delta->y;
+    float sx = dimensions->x * g_scale;
+    float sy = dimensions->y * g_scale;
 
-    float fdt = (float)dt;
+    Rect bounds;
+    bounds.low.x = -sx + margin;
+    bounds.low.y = -sy + margin;
+    bounds.high.x = sx - margin;
+    bounds.high.y = sy - margin;
 
-    float a0 = -fdt + scaledX;
-    float a1 = -scaledY + fdt;
-    float a2 = scaledX + fdt;
-    float a3 = scaledY + fdt;
+    Vec2 desired;
+    {
+        Vec2 original(position->x, position->y);
+        {
+            Rect offset(original, original);
+            bounds.translate(offset);
+        }
+        desired.x = motion->x + original.x;
+        desired.y = motion->y + original.y;
+    }
 
-    float out0, out1, out2, out3;
-    func_005cf000(&out0, pos->x, pos->y);
-    out1 = pos->y;
-    out2 = pos->x;
-    out3 = pos->y;
+    Vec2 clamped = desired.clamp(bounds.low, bounds.high);
+    float dx = desired.x - clamped.x;
+    float dy = desired.y - clamped.y;
+    Vec2 adjusted(clamped.x + dx * factor, clamped.y + dy * factor);
 
-    float r0, r1, r2, r3;
-    func_00469fa0(&r0, &a0, &a1, &a2);
-
-    float dx = r0 - out0;
-    float dy = r1 - out1;
-
-    pos->x = pos->x + dx * fdt;
-    pos->y = pos->y + dy * fdt;
-
-    delta->x = delta->x + dx;
-    delta->y = delta->y + dy;
+    position->x = adjusted.x;
+    position->y = adjusted.y;
+    overflow->x += dx;
+    overflow->y += dy;
 }

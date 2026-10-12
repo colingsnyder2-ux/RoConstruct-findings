@@ -1,4 +1,4 @@
-// from server: 95% by king_originala
+// from server: 99% by king_originala
 extern unsigned char derivedTable[];
 extern "C" long (__stdcall *InterlockedDecrement)(volatile long*);
 
@@ -42,12 +42,7 @@ inline D::D(const D& other) : S(other) {
 struct Pair {
     unsigned short first;
     unsigned short second;
-    Pair(unsigned short a, unsigned short b);
 };
-
-inline Pair::Pair(unsigned short a, unsigned short b)
-    : first(a), second(b) {
-}
 
 struct WedgeBuilder {
     void build(D value, Pair pair, int purpose);
@@ -56,5 +51,9 @@ struct WedgeBuilder {
 
 void WedgeBuilder::f(D value, unsigned short first,
                      unsigned short second, int purpose) {
-    build(value, Pair(first, second), purpose);
+    int savedPurpose = purpose;
+    Pair& pair = reinterpret_cast<Pair&>(purpose);
+    pair.first = first;
+    pair.second = second;
+    build(value, pair, savedPurpose);
 }

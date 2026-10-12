@@ -1,10 +1,10 @@
-// from server: 92% by king_originala
+// from server: 95% by king_originala
 struct Rect
 {
     int left, top, right, bottom;
 };
 
-extern "C" int __stdcall GetClientRect(void *, Rect *);
+extern "C" int (__stdcall *GetClientRect)(void *, Rect *);
 
 struct Window;
 typedef void (__thiscall *RefreshFunction)(Window *);
@@ -46,7 +46,9 @@ void CObjectBrowser::func_004339d0(int type, int width, int height)
         int minimum;
         GetClientRect(first.handle, &rect);
         int savedHeight = height;
-        int difference = savedHeight - (rect.bottom - rect.top);
+        unsigned int rectHeight =
+            (unsigned int)rect.bottom - (unsigned int)rect.top;
+        int difference = (unsigned int)savedHeight - rectHeight;
         first.move(0, 0, width, savedHeight, 1);
 
         if (second.handle)

@@ -1,16 +1,18 @@
-// from server: 53% by atomic.potato
-struct Decal
-{
-    float padding[89];
+// from server: 83% by king_originala
+extern char property;
+
+struct Decal {
+    char padding[0x164];
     float value;
-    float f(float);
+
+    void setValue(float v);
+    void notify(const void* descriptor);
 };
 
-float Decal::f(float x)
+void Decal::setValue(float v)
 {
-    if (x >= value)
-        return value;
-
-    value = x;
-    return 0.0f;
+    if (v != value && v >= 0.0f) {
+        value = v;
+        notify(&property);
+    }
 }

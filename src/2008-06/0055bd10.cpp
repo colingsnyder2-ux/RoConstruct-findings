@@ -1,5 +1,12 @@
-// from server: 78% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs v8tree/Instance.cpp
+// from server: 92% by king_originala
+struct String;
+
+extern unsigned (__thiscall *string_find)(
+    const String *, const char *, unsigned, unsigned);
+
+bool is_http_url(const String *value)
+{
+    if (string_find(value, "http://", 0, 7) == 0)
+        return true;
+    return string_find(value, "https://", 0, 8) == 0;
+}

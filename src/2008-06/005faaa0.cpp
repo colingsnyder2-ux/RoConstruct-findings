@@ -1,8 +1,15 @@
-// from server: 82% by king_originala
+// from server: 100% by king_originala
+#pragma float_control(precise, off)
+
 struct Vector3 {
     float x, y, z;
-    Vector3(const Vector3& v) : x(v.x), y(v.y), z(v.z) {}
+    Vector3(const Vector3&);
 };
+
+inline Vector3::Vector3(const Vector3& v)
+    : x(v.x), y(v.y), z(v.z)
+{
+}
 
 struct Matrix3 {
     float elements[9];

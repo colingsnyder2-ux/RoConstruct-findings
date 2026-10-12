@@ -1,34 +1,54 @@
-// from server: 72% by colin
-struct SurfaceDescriptor
+// from server: 100% by king_originala
+struct Holder
 {
-    int* field0;
-    int* field4;
-    SurfaceDescriptor(int*);
+    virtual void __thiscall destroy(unsigned int);
 };
 
 extern "C" void __cdecl sub_557330(int, int);
 extern "C" int* __cdecl sub_5ED630();
 extern "C" int* __cdecl sub_6A0920(int);
+extern int holderVtable[];
 
-SurfaceDescriptor::SurfaceDescriptor(int* p)
+struct PointerSlot
 {
-    sub_557330(0x97b120, 0x5ed690);
-    field0 = sub_5ED630();
+    int* value;
+    void assign(int*& source);
+};
+
+struct SurfaceDescriptor
+{
+    int* field0;
+    PointerSlot field4;
+    SurfaceDescriptor(int*);
+};
+
+__forceinline void PointerSlot::assign(int*& source)
+{
     int* mem = sub_6A0920(8);
     if (mem)
     {
-        mem[0] = 0x83fcf4;
-        mem[1] = *p;
+        mem[0] = (int)holderVtable;
+        mem[1] = *source;
     }
     else
     {
         mem = 0;
     }
-    int* old = field4;
-    field4 = mem;
-    if (old)
+
+    int* old = mem;
+    if (&source != &value)
     {
-        int* vtbl = (int*)*old;
-        ((void (__stdcall*)(int))vtbl[0])(1);
+        old = value;
+        value = mem;
     }
+
+    if (old)
+        ((Holder*)old)->destroy(1);
+}
+
+SurfaceDescriptor::SurfaceDescriptor(int* p)
+{
+    sub_557330(0x5ed690, 0x97b120);
+    field0 = sub_5ED630();
+    field4.assign(p);
 }

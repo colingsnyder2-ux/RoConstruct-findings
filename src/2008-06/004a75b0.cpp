@@ -1,16 +1,16 @@
-// from server: 53% by colin
+// from server: 100% by king_originala
 struct S {
-    int __cdecl f(int, int);
+    int reserved;
+    int enabled;
+    void apply(int*);
 };
 
-extern "C" int __cdecl sub_4A7000(int*, int, int);
-extern "C" int __cdecl sub_4A74C0(int*);
+extern void __cdecl helper(void*, int*);
 
-int S::f(int a, int b)
+void __cdecl f(S* object, void* source)
 {
-    int local = 0xC2;
-    sub_4A7000(&local, a, b);
-    if (*(int*)(a + 4) != 0)
-        sub_4A74C0(&local);
-    return local;
+    int value = 194;
+    helper(source, &value);
+    if (object->enabled != 0)
+        object->apply(&value);
 }

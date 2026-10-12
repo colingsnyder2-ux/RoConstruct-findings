@@ -1,82 +1,96 @@
-// from server: 44% by tester
-struct TreeNode {
-    TreeNode* left;
-    TreeNode* parent;
-    unsigned int key;
-    char color;
-    char pad[3];
+// from server: 61% by king_originala
+struct Tree;
+
+struct Node {
+    Node* left;
+    Node* parent;
+    Node* right;
+    unsigned key;
+    unsigned value;
+    unsigned char color;
+    unsigned char nil;
+};
+
+struct Owner {
+    Tree* tree;
+};
+
+struct Iterator {
+    Owner* owner;
+    Node* node;
+    void next();
 };
 
 struct Tree {
-    TreeNode* header;
-    int size;
+    Owner* owner;
+    unsigned char padding[20];
+    Node* head;
+
+    Iterator* lower(Iterator* result, const unsigned* key);
+    Iterator* erase(Iterator* result, Iterator position);
 };
 
-struct Map {
+extern "C" void (__cdecl* invalid_parameter_noinfo)();
+
+struct S {
+    unsigned char padding[48];
     Tree tree;
+    void f(unsigned value, unsigned key);
 };
 
-struct GettingUp {
-    char pad[0x30];
-    Map map;
-    void erase(int* key);
-};
-
-extern "C" void __stdcall _invalid_parameter_noinfo();
-
-extern "C" void* __stdcall sub_667fd0(void* a, void* b);
-extern "C" void __stdcall sub_5539d0(void* a, void* b, void* c);
-extern "C" void __stdcall sub_68dfa0(void* a);
-
-void GettingUp::erase(int* key)
+void S::f(unsigned value, unsigned key)
 {
-    if (key == 0)
+    if (!key)
         return;
 
-    TreeNode* first = 0;
-    TreeNode* last = 0;
+    Tree* t = &tree;
+    Iterator temporary;
+    Iterator current = *t->lower(&temporary, &key);
+    Owner* owner = current.owner;
+    Node* node = current.node;
 
-    sub_667fd0(&first, key);
+    for (;;) {
+        Node* head = t->head;
+        Node* p = head->parent;
+        Node* end = head;
 
-loop:
-    TreeNode* node = map.tree.header->parent;
-    TreeNode* result = map.tree.header;
-    while (node->color == 0) {
-        if (*key < node->key) {
-            result = node;
-            node = node->left;
+        while (!p->nil) {
+            if (key < p->key) {
+                end = p;
+                p = p->left;
+            } else {
+                p = p->right;
+            }
+        }
+
+        Owner* expected = t->owner;
+        if (!owner || owner != expected)
+            invalid_parameter_noinfo();
+
+        if (node == end)
+            break;
+
+        Tree* container;
+        if (!owner) {
+            invalid_parameter_noinfo();
+            container = 0;
         } else {
-            node = node->parent;
+            container = owner->tree;
         }
-    }
 
-    TreeNode* root = map.tree.header->left;
-    if (first != 0 && first != root) {
-        _invalid_parameter_noinfo();
-    }
+        if (node == container->head)
+            invalid_parameter_noinfo();
 
-    if (last == result)
-        return;
-
-    if (first == 0) {
-        _invalid_parameter_noinfo();
-        TreeNode* n = 0;
-        if (last != n->parent) {
-            _invalid_parameter_noinfo();
+        if (node->value == value) {
+            Iterator position;
+            position.owner = owner;
+            position.node = node;
+            t->erase(&temporary, position);
+            break;
         }
-    } else {
-        first = first->left;
-        if (last != first->parent) {
-            _invalid_parameter_noinfo();
-        }
-    }
 
-    if (last->key != *key) {
-        sub_68dfa0(&first);
-        last = first;
-        first = 0;
-        goto loop;
+        current.next();
+        node = current.node;
+        owner = current.owner;
     }
-
-    sub_5539d0(&first, last, key);
 }

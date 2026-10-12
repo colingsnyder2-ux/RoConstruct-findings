@@ -1,11 +1,14 @@
-// from server: 33% by tester
-struct S
-{
-    void f(int);
+// from server: 100% by king_originala
+typedef void (__thiscall *Callback)(void *);
+
+struct S {
+    Callback callback;
+    void invoke(void *object);
 };
 
-void S::f(int x)
+#pragma optimize("", off)
+void S::invoke(void *object)
 {
-    void (*p)(int) = *(void (**)(int))this;
-    p(x);
+    callback(object);
 }
+#pragma optimize("", on)

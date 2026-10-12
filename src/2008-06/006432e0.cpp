@@ -1,9 +1,9 @@
-// from server: 86% by king_originala
+// from server: 100% by king_originala
 struct Ball
 {
     unsigned char padding[0xa8];
     unsigned char flagA;
-    unsigned char gap[2];
+    unsigned char reserved[2];
     unsigned char flagB;
 
     int getBulletSphereShape() const;
@@ -14,7 +14,7 @@ struct Owner
     void* f();
 };
 
-struct S
+struct Landed
 {
     unsigned char padding[4];
     Owner* owner;
@@ -22,18 +22,16 @@ struct S
     int f(Ball* ball);
 };
 
-int S::f(Ball* ball)
+int Landed::f(Ball* ball)
 {
-    Ball* other = static_cast<Ball*>(owner->f());
+    Ball* current = static_cast<Ball*>(owner->f());
     int result = 2;
 
-    if (ball->flagA || ball->flagB)
-        result = 1;
-    else if (other)
+    if (ball->flagA || ball->flagB ||
+        (current &&
+         current->getBulletSphereShape() == ball->getBulletSphereShape()))
     {
-        int shape = other->getBulletSphereShape();
-        if (shape == ball->getBulletSphereShape())
-            result = 1;
+        result = 1;
     }
 
     return result;

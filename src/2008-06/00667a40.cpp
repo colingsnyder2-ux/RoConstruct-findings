@@ -1,9 +1,11 @@
-// from server: 84% by king_originala
+// from server: 94% by king_originala
+#pragma float_control(precise, off, push)
+
 struct Vector3 {
     float x, y, z;
 };
 
-inline const float& minimum(const float& a, const float& b)
+__forceinline const float& minimum(const float& a, const float& b)
 {
     return b < a ? b : a;
 }
@@ -77,7 +79,8 @@ void Jumping::update(float dt)
         goto finish;
 
     body->get();
-    if ((amount = (jumpHeight - body->height) * jumpScale) <= 0.0f) {
+    amount = (jumpHeight - body->height) * jumpScale;
+    if (amount <= 0.0f) {
 finish:
         finished = 1;
         return;
@@ -91,18 +94,17 @@ finish:
         ? other->massSource->getMass()
         : other->mass;
 
-    float mass;
-    dt = minimum(
-        mass = body->massSource
-            ? body->massSource->getMass()
-            : body->mass,
-        dt) * amount;
+    float mass = body->massSource
+        ? body->massSource->getMass()
+        : body->mass;
+    dt = minimum(mass, dt) * amount;
 
     const float& vertical = body->getVelocity()->y;
     if (vertical < dt) {
+        dt -= vertical;
         Vector3 force;
-        force.y = dt -= vertical;
         force.x = 0.0f;
+        force.y = dt;
         force.z = 0.0f;
         body->apply(&force);
 
@@ -114,3 +116,5 @@ finish:
             receiver->apply(&force, &position);
     }
 }
+
+#pragma float_control(pop)

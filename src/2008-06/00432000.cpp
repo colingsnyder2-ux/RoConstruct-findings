@@ -1,49 +1,31 @@
-// from server: 92% by king_originala
-void __cdecl operator delete(void *);
-
+// from server: 95% by king_originala
 struct Resource {
     void release();
 };
 
-struct Owned {
-    ~Owned();
+struct Object {
+    virtual void unused();
+    virtual ~Object();
 };
 
-struct Polymorphic {
-    virtual void reserved();
-    virtual ~Polymorphic();
+struct OwnedObject {
+    Object* p;
+    ~OwnedObject() { if (p) delete p; }
 };
 
-struct OwnedPtr {
-    Owned *p;
-    ~OwnedPtr();
+struct Auxiliary {
+    ~Auxiliary();
 };
 
-inline OwnedPtr::~OwnedPtr() {
-    if (p)
-        delete p;
-}
-
-struct PolyPtr {
-    Polymorphic *p;
-    ~PolyPtr();
+struct OwnedAuxiliary {
+    Auxiliary* p;
+    ~OwnedAuxiliary() { if (p) delete p; }
 };
-
-inline PolyPtr::~PolyPtr() {
-    if (p)
-        delete p;
-}
 
 struct Member108 {
     char data[0x30];
     ~Member108();
 };
-
-extern void (__thiscall *destroy108)(Member108 *);
-
-inline Member108::~Member108() {
-    destroy108(this);
-}
 
 struct Member138 {
     char data[0x14c];
@@ -65,47 +47,46 @@ struct Member3E0 {
 };
 
 struct Base {
-    virtual ~Base();
+    virtual void baseMethod();
+    char data[0xec];
     void cleanup();
-    char padding[0xec];
+    ~Base() { cleanup(); }
 };
 
-inline Base::~Base() {
-    cleanup();
-}
-
 struct Interface {
-    virtual void callback();
+    virtual void interfaceMethod();
 };
 
 struct Registry {
-    void remove(Interface *);
+    void remove(Interface*);
 };
 
 extern Registry registry;
 
 struct CDataModelPropGrid : Base, Interface {
-    OwnedPtr owned;
+    OwnedAuxiliary auxiliary;
     char paddingF8[8];
-    Resource *resource;
+    Resource* resource;
     char padding104[4];
     Member108 member108;
     Member138 member138;
     Member284 member284;
-    PolyPtr member3A8;
-    PolyPtr member3AC;
-    PolyPtr member3B0;
+    OwnedObject member3A8;
+    OwnedObject member3AC;
+    OwnedObject member3B0;
     Member3B4 member3B4;
     Member3E0 member3E0;
 
-    virtual ~CDataModelPropGrid();
-    virtual void callback();
+    virtual void baseMethod();
+    virtual void interfaceMethod();
+    ~CDataModelPropGrid();
 };
 
-CDataModelPropGrid::~CDataModelPropGrid() {
+CDataModelPropGrid::~CDataModelPropGrid()
+{
     if (resource) {
         resource->release();
         resource = 0;
     }
-    registry.remove(static_cast<Interface *>(this));
+    registry.remove(this);
 }

@@ -1,5 +1,30 @@
-// from server: 82% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs util/RunStateOwner.cpp
+// from server: 100% by king_originala
+extern "C" {
+    extern void (__thiscall *construct_string)(void *);
+}
+
+struct StringStorage {
+    char data[28];
+    StringStorage();
+    ~StringStorage();
+};
+
+inline StringStorage::StringStorage()
+{
+    construct_string(this);
+}
+
+struct Tail {
+    Tail();
+};
+
+struct S {
+    char prefix[8];
+    StringStorage text;
+    Tail tail;
+    S();
+};
+
+S::S()
+{
+}

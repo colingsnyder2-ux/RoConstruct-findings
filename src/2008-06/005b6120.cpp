@@ -1,53 +1,51 @@
-// from server: 75% by colin
-// roc 2008-06 005b6120  unit: RBX::VHat::?$FactoryProduct  size: 84 bytes
-// Make this compile to the exact bytes below, then: roc check 2008-06 005b6120
+// from server: 100% by king_originala
+struct S;
+struct Node;
 
-extern "C" void __stdcall _invalid_parameter_noinfo();
-
-struct Name;
-
-struct CreatorMap {
-    void* head;
+struct Tree {
+    char padding[0x18];
+    Node* end;
 };
 
-struct FactoryProduct {
-    void* getClassName();
-    void* getCreator();
+struct Node {
+    char padding[0x10];
+    void* value;
 };
+
+struct Iterator {
+    Tree** owner;
+    Node* node;
+};
+
+struct Map {
+    Iterator* find(Iterator* result, const S* key);
+};
+
+struct Registry {
+    char padding[0x30];
+    Map map;
+};
+
+extern Registry* __cdecl getRegistry();
+extern "C" void (__cdecl* invalid_parameter_noinfo)();
 
 struct S {
-    void* field0;
-    void* field4;
+    void** f(void** result);
 };
 
-extern "C" void* __cdecl sub_5b5c20(void* out);
-extern "C" void* __cdecl sub_5b3990(void* p);
-
-void* __stdcall sub_5b6120(void* out);
-
-void* __stdcall sub_5b6120(void* out)
+void** S::f(void** result)
 {
-    void* tmp;
-    sub_5b5c20(&tmp);
-    void* p = sub_5b3990((char*)tmp + 0x30);
-    S* s = (S*)p;
-    void (__stdcall *fn)() = *(void (__stdcall **)())0x802890;
-    void* e = s->field0;
-    if (e == 0) {
-        fn();
-        e = s->field0;
-        if (e == 0) {
-            e = 0;
-        } else {
-            e = *(void**)e;
-        }
-    } else {
-        e = *(void**)e;
-    }
-    if (s->field4 == *(void**)((char*)e + 0x18)) {
-        fn();
-    }
-    void* v = *(void**)((char*)s->field4 + 0x10);
-    *(void**)out = v;
-    return out;
+    Iterator storage;
+    Iterator* it = getRegistry()->map.find(&storage, this);
+
+    void (__cdecl* invalid)() = invalid_parameter_noinfo;
+    if (!it->owner)
+        invalid();
+
+    Tree* tree = it->owner ? *it->owner : 0;
+    if (it->node == tree->end)
+        invalid();
+
+    *result = it->node->value;
+    return result;
 }

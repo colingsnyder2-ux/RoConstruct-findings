@@ -1,30 +1,92 @@
-// from server: 39% by colin
-struct Descriptor {
-    Descriptor(const char*, int);
+// from server: 92% by king_originala
+struct Text;
+extern void (__thiscall *copyText)(Text*, const Text&);
+extern void (__thiscall *destroyText)(Text*);
+
+struct Text {
+    void* data;
+    Text(const Text&);
+    ~Text();
 };
 
-struct EnumDescriptor;
+inline Text::Text(const Text& other) {
+    copyText(this, other);
+}
 
-struct Item : Descriptor {
-    const EnumDescriptor& owner;
-    const int value;
-    const unsigned int index;
-    Item(const char* name, int attributes, int value, unsigned int index, const EnumDescriptor& owner);
+inline Text::~Text() {
+    destroyText(this);
+}
+
+struct Vector {
+    float x, y, z;
 };
 
-extern "C" void __stdcall sub_803ED4(void*, const char*);
-extern "C" void __stdcall sub_803F14(void*);
+struct Item {
+    virtual void v00();
+    virtual void v01();
+    virtual void v02();
+    virtual void v03();
+    virtual void v04();
+    virtual void v05();
+    virtual void v06();
+    virtual void v07();
+    virtual void v08();
+    virtual void v09();
+    virtual void v10();
+    virtual void v11();
+    virtual void v12();
+    virtual void v13();
+    virtual void v14();
+    virtual void v15();
+    virtual void v16();
+    virtual void v17();
+    virtual void v18();
+    virtual void v19();
+    virtual void v20();
+    virtual void v21();
+    virtual void v22();
+    virtual void v23();
+    virtual void v24();
+    virtual void v25();
+    virtual void v26();
+    virtual void v27();
+    virtual void v28();
+    virtual void v29();
+    virtual void v30();
+    virtual void v31();
+    virtual void v32();
+    virtual void v33();
+    virtual void v34();
+    virtual void v35();
+    virtual void v36();
+    virtual void v37();
+    virtual void v38();
+    virtual void v39();
+    virtual void v40();
+    virtual void v41();
+    virtual void v42();
+    virtual void v43();
+    virtual void v44();
+    virtual void v45();
+    virtual void v46();
+    virtual void v47();
+    virtual void v48();
+    virtual void v49();
+    virtual void v50();
+    virtual void v51();
+    virtual void v52();
+    virtual void v53();
+    virtual void v54();
+    virtual void v55();
+    virtual void v56();
+    virtual Vector getVector();
 
-struct EnumDescriptor {
-    void sub_711AC0();
-    void* sub_43FF70(void*);
-    Item* createItem(const char* name, int attributes, int value, unsigned int index);
+    void setText(Text);
+    void setVector(const Vector&);
+    void update(Text);
 };
 
-Item* EnumDescriptor::createItem(const char* name, int attributes, int value, unsigned int index) {
-    char buf[16];
-    sub_803ED4(buf, name);
-    sub_711AC0();
-    void* p = (this->*(void* (EnumDescriptor::*)(void*))0)(buf);
-    return (Item*)sub_43FF70(p);
+void Item::update(Text value) {
+    setText(value);
+    setVector(getVector());
 }

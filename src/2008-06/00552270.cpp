@@ -1,5 +1,25 @@
-// from server: 28% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs-render TextureProxy.cpp
+// from server: 78% by king_originala
+#pragma optimize("", off)
+
+struct Handle {
+    void* value;
+    ~Handle();
+    Handle& operator=(const Handle&);
+};
+
+Handle __cdecl makeHandle(void*, void*, void*);
+
+struct TextureProxy {
+    char padding[0x1c];
+    char first[0x10];
+    Handle handle;
+    char second[0xc0];
+    char third;
+
+    void update();
+};
+
+void TextureProxy::update()
+{
+    handle = makeHandle(&third, second, first);
+}

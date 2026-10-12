@@ -1,34 +1,71 @@
-// from server: 24% by colin
-struct SoundService {
-    char pad[0x18];
-    void* field18;
-    void construct(void* a, void* b, void* c, void* d, void* e, void* f);
+// from server: 68% by king_originala
+typedef unsigned int size_t;
+
+void* __cdecl operator new(size_t);
+void __cdecl operator delete(void*);
+
+struct Owner {
+    void* p;
+
+    Owner() : p(0) {}
+    Owner(Owner& other) : p(other.p) {
+        other.p = 0;
+    }
+    ~Owner() {
+        if (p)
+            operator delete(p);
+    }
 };
 
-extern "C" void* __stdcall sub_5BB7F0(void* a, void* b);
-extern "C" void __stdcall sub_445610(void* a, void* b);
-extern "C" void* __stdcall sub_6A0920(unsigned int size);
-extern "C" void __stdcall sub_6A067A(void* p);
+extern "C" void* __stdcall getDescriptor(void*, void*);
 
-void SoundService::construct(void* a, void* b, void* c, void* d, void* e, void* f)
+struct Base {
+    void* vtable;
+    unsigned char data[20];
+
+    Base(void*, Owner, Owner);
+    ~Base();
+};
+
+struct Service;
+
+extern void* stateVtable;
+extern void* serviceVtable;
+
+struct State {
+    void* vtable;
+    Service* service;
+    void* first;
+    unsigned int unused;
+    void* second;
+    void* third;
+
+    State(Service*, void* const&, void* const&, void* const&);
+};
+
+inline State::State(Service* s, void* const& a,
+                    void* const& b, void* const& c)
 {
-    void* v = sub_5BB7F0(d, e);
-    sub_445610(this, v);
-    this->field18 = 0;
-    *(void**)this = (void*)0x824134;
-    void* mem = sub_6A0920(0x18);
-    if (mem == 0) {
-        *(void**)mem = (void*)0x83760C;
-        *(void**)((char*)mem + 4) = this;
-        *(void**)((char*)mem + 8) = c;
-        *(void**)((char*)mem + 0x10) = d;
-        *(void**)((char*)mem + 0x14) = e;
-    } else {
-        mem = 0;
-    }
-    void* old = this->field18;
-    if (mem != old && old != 0) {
-        sub_6A067A(old);
-    }
-    this->field18 = mem;
+    vtable = &stateVtable;
+    service = s;
+    first = a;
+    second = b;
+    third = c;
+}
+
+struct Service : Base {
+    State* state;
+
+    Service(void*, void*, void*, void*, void*, Owner);
+};
+
+Service::Service(void* a, void* b, void* c, void* d, void* e, Owner owner)
+    : Base(getDescriptor(a, b), Owner(), Owner(owner))
+{
+    vtable = &serviceVtable;
+
+    State* replacement = new State(this, c, d, e);
+    if (replacement != state && state)
+        operator delete(state);
+    state = replacement;
 }

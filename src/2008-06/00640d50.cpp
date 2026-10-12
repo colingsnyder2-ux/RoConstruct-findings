@@ -1,8 +1,10 @@
-// from server: 48% by king_originala
+// from server: 51% by king_originala
 struct Vector
 {
     float x, y, z;
 };
+
+extern const Vector& __cdecl getVector();
 
 struct Ray
 {
@@ -10,37 +12,38 @@ struct Ray
     Vector direction;
 };
 
-struct Temporary
+struct Bounds
 {
-    char data[24];
-    ~Temporary() {}
+    Vector low;
+    Vector high;
+    ~Bounds() {}
 };
 
-extern const Vector& __cdecl getVector();
-extern bool __cdecl testRay(const Ray*, const Temporary*, void*, void*);
+extern bool __cdecl intersect(const Ray*, const Bounds*, void*, void*);
 
 struct S
 {
-    bool prepare(const Ray*);
-    Temporary getTemporary(void*);
+    bool accepts(const Ray*);
+    Bounds getBounds(void*);
     bool f(void*, void*, void*);
 };
 
-bool S::f(void* input, void* a, void* b)
+bool S::f(void* input, void* output1, void* output2)
 {
     Ray ray;
-    ray.origin = getVector();
+    const Vector& origin = getVector();
+    ray.origin.x = origin.x;
+    ray.origin.y = origin.y;
+    ray.origin.z = origin.z;
 
-    const Vector& v = getVector();
-    ray.direction.x = -v.x;
-    ray.direction.y = -v.y;
-    ray.direction.z = -v.z;
+    const Vector& direction = getVector();
+    ray.direction.x = -direction.x;
+    ray.direction.y = -direction.y;
+    ray.direction.z = -direction.z;
 
-    if (prepare(&ray))
-    {
-        if (testRay(&ray, &getTemporary(input), a, b))
-            return true;
-    }
+    if (accepts(&ray) &&
+        intersect(&ray, &getBounds(input), output1, output2))
+        return true;
 
     return false;
 }

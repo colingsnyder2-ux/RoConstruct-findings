@@ -1,55 +1,68 @@
-// from server: 45% by colin
-struct ChatWidget {
-    char pad0[0x10];
-    void* vtbl10;
-    void* vtbl14;
-    char pad18[0x8];
-    void* vtbl20;
-    void* vtbl24;
-    char pad28[0x1c];
-    void* vtbl44;
-    char pad48[0x1c];
-    void* vtbl64;
-    char pad68[0x1c];
-    void* vtbl84;
-    char pad88[0x1c];
-    void* vtbla4;
-    char pada8[0x1c];
-    void* vtblc4;
-    char padc8[0x68];
-    void* vtbl130;
-    char pad134[0x8];
-    float field13c;
-    float field140;
-    char pad144[0x8];
-    void* field14c;
+// from server: 100% by king_originala
+struct String;
+extern void (__thiscall *string_construct)(String *);
+extern void (__thiscall *string_destroy)(String *);
+extern const float initialX;
+extern const float initialY;
 
-    ChatWidget(int, int);
+struct String
+{
+    char storage[28];
+    String(int);
+    ~String();
 };
 
-extern "C" void __stdcall sub_802460();
-extern "C" void __stdcall sub_642370(int);
-extern "C" void __stdcall sub_55af90(int);
+inline String::String(int)
+{
+    string_construct(this);
+}
 
-extern float dword_819ba8;
-extern float dword_82f85c;
+inline String::~String()
+{
+    string_destroy(this);
+}
 
-ChatWidget::ChatWidget(int a, int b) {
-    sub_642370(a);
-    field14c = 0;
-    *(void**)this = (void*)0x84b5f4;
-    vtbl10 = (void*)0x84b5e4;
-    vtbl14 = (void*)0x84b5dc;
-    vtbl20 = (void*)0x84b5d4;
-    vtbl24 = (void*)0x84b5c4;
-    vtbl44 = (void*)0x84b5b4;
-    vtbl64 = (void*)0x84b5a4;
-    vtbl84 = (void*)0x84b594;
-    vtbla4 = (void*)0x84b584;
-    vtblc4 = (void*)0x84b574;
-    vtbl130 = (void*)0x84b56c;
-    sub_802460();
-    sub_55af90(b);
-    field13c = dword_819ba8;
-    field140 = dword_82f85c;
+struct ChatEnter
+{
+    unsigned int words[83];
+    ChatEnter(unsigned int);
+    ~ChatEnter();
+    ChatEnter *construct(unsigned int);
+};
+
+inline ChatEnter::ChatEnter(unsigned int value)
+{
+    construct(value);
+}
+
+struct S : ChatEnter
+{
+    String value;
+    S(unsigned int, const String &);
+    int installTables();
+    void setValue(const String &);
+};
+
+__forceinline int S::installTables()
+{
+    words[0] = 0x84b5f4;
+    words[4] = 0x84b5e4;
+    words[5] = 0x84b5dc;
+    words[8] = 0x84b5d4;
+    words[9] = 0x84b5c4;
+    words[17] = 0x84b5b4;
+    words[25] = 0x84b5a4;
+    words[33] = 0x84b594;
+    words[41] = 0x84b584;
+    words[49] = 0x84b574;
+    words[76] = 0x84b56c;
+    return 0;
+}
+
+S::S(unsigned int argument, const String &text)
+    : ChatEnter(argument), value(installTables())
+{
+    setValue(text);
+    *reinterpret_cast<float *>(&words[79]) = initialX;
+    *reinterpret_cast<float *>(&words[80]) = initialY;
 }

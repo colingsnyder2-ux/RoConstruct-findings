@@ -1,30 +1,35 @@
-// from server: 18% by colin
-// roc 2008-06 00669390  unit: RBX::TreeStage  size: 116 bytes
-// Make this compile to the exact bytes below, then: roc check 2008-06 00669390
+// from server: 100% by king_originala
+struct Resource {
+    virtual ~Resource();
+};
 
-struct Sub {
-    void destroy();
+struct Owner {
+    Resource* pointer;
+    ~Owner();
+};
+
+__forceinline Owner::~Owner()
+{
+    if (pointer)
+        delete pointer;
+}
+
+struct StageData {
+    unsigned char data[32];
+    ~StageData();
 };
 
 struct TreeStage {
-    void* vtable;
-    Sub* sub8;
-    char pad0C[0x0C];
-    Sub sub18;
-    char pad2C[0x0C];
-    Sub sub38;
-    char pad4C[0x0C];
-    Sub sub58;
-    void destructor();
+    virtual ~TreeStage();
+
+    unsigned int reserved;
+    Owner owner;
+    unsigned char padding[12];
+    StageData first;
+    StageData second;
+    StageData third;
 };
 
-void TreeStage::destructor()
+TreeStage::~TreeStage()
 {
-    this->vtable = (void*)0x84cf94;
-    this->sub58.destroy();
-    this->sub38.destroy();
-    this->sub18.destroy();
-    if (this->sub8) {
-        this->sub8->destroy();
-    }
 }

@@ -1,5 +1,27 @@
-// from server: 55% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs util/RunStateOwner.cpp
+// from server: 100% by king_originala
+#pragma float_control(precise, off)
+
+extern const float scale;
+
+struct V {
+    float x, y, z;
+};
+
+struct B {
+    V* get(V*, int);
+};
+
+struct S {
+    V* f(V*);
+};
+
+V* S::f(V* result)
+{
+    float factor = scale;
+    V temporary;
+    V* value = ((B*)((char*)this + 460))->get(&temporary, 2);
+    result->x = value->x * factor;
+    result->y = value->y * factor;
+    result->z = value->z * factor;
+    return result;
+}

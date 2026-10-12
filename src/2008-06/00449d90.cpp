@@ -1,50 +1,58 @@
-// from server: 90% by king_originala
+// from server: 94% by king_originala
+struct Text;
+
+extern void (__thiscall *TextConstruct)(Text *);
+extern void (__thiscall *TextDestroy)(Text *);
+extern void (__cdecl *TextFormat)(Text *, const char *, ...);
+extern const char *(__thiscall *TextData)(const Text *);
+
 struct Text {
-    char* data;
+    char *data;
     Text();
     ~Text();
-    void __cdecl Format(const char* format, ...);
-    operator const char*() const;
 };
 
-struct Frame {
-    char reserved[32];
-    void* window;
-};
+__forceinline Text::Text()
+{
+    TextConstruct(this);
+}
 
-struct Application;
+__forceinline Text::~Text()
+{
+    TextDestroy(this);
+}
 
-struct ApplicationTable {
-    void* reserved[31];
-    Frame* (__thiscall* GetMainFrame)(Application*);
+struct Window {
+    char padding[32];
+    void *handle;
 };
 
 struct Application {
-    ApplicationTable* table;
+    struct Table {
+        void *unused[31];
+        Window *(__thiscall *getWindow)(Application *);
+    };
+    Table *table;
 };
 
-extern Application* __cdecl GetApplication();
+extern Application *__cdecl GetApplication();
 
-extern "C" void* __stdcall ShellExecuteA(
-    void* window,
-    const char* operation,
-    const char* file,
-    const char* parameters,
-    const char* directory,
-    int show
-);
+extern void *(__stdcall *ShellExecuteA)(
+    void *, const char *, const char *, const char *, const char *, int);
 
 void OpenWiki()
 {
-    Text parameters;
-    parameters.Format("url.dll,FileProtocolHandler %s",
-                      "http://wiki.roblox.com");
+    Text command;
+    TextFormat(&command, "url.dll,FileProtocolHandler %s",
+               "http://wiki.roblox.com");
 
-    Application* application = GetApplication();
-    Frame* frame = application
-        ? application->table->GetMainFrame(application)
-        : 0;
+    Application *application = GetApplication();
+    Window *window;
+    if (application)
+        window = application->table->getWindow(application);
+    else
+        window = 0;
 
-    ShellExecuteA(frame->window, "open", "rundll32.exe",
-                  parameters, 0, 10);
+    ShellExecuteA(window->handle, "open", "rundll32.exe",
+                  TextData(&command), 0, 10);
 }

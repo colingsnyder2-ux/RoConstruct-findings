@@ -1,48 +1,53 @@
-// from server: 67% by king_originala
+// from server: 68% by king_originala
+#pragma float_control(precise, off)
+
 struct Vector3 {
     float x, y, z;
 };
 
-struct SizeData {
-    float unused;
-    Vector3 size;
+struct Dimensions {
+    unsigned int reserved;
+    Vector3 value;
 };
 
-struct RayData {
-    float unused;
-    Vector3 origin;
-    Vector3 direction;
+struct Transform {
+    unsigned int reserved;
+    Vector3 position;
+    Vector3 orientation;
 };
 
 struct Bounds {
-    Vector3 low;
-    Vector3 high;
+    Vector3 low, high;
 };
 
+extern const unsigned int dataD4;
+extern const unsigned int dataD8;
 extern const float halfScale;
-extern float output1;
-extern float output2;
 
-extern void __cdecl collide(
-    const Vector3*, const Vector3*, const Bounds*,
-    void*, float*, float*);
+extern void __cdecl drawBounds(
+    const Vector3*,
+    const Vector3*,
+    const Bounds*,
+    const void*,
+    const unsigned int*,
+    const unsigned int*);
 
-void __cdecl testBounds(
-    const SizeData* size, const RayData* ray, void* result, float scale)
+void __cdecl drawScaledBounds(
+    const Dimensions* dimensions,
+    const Transform* transform,
+    const void* context,
+    float scale)
 {
-    double x = (double)size->size.x * scale;
-    double y = (double)size->size.y * scale;
-    double z = (double)size->size.z * scale;
+    float x = dimensions->value.x * scale;
+    float y = dimensions->value.y * scale;
+    float z = dimensions->value.z * scale;
 
     x *= halfScale;
     y *= halfScale;
     z *= halfScale;
 
-    Bounds bounds = {
-        { (float)-x, (float)-y, (float)-z },
-        { (float)x, (float)y, (float)z }
-    };
+    Bounds bounds = { { -x, -y, -z }, { x, y, z } };
 
-    collide(&ray->origin, &ray->direction, &bounds,
-            result, &output1, &output2);
+    drawBounds(&transform->position, &transform->orientation,
+               &bounds, context, &dataD4, &dataD8);
 }

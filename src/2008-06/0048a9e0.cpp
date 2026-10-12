@@ -1,68 +1,50 @@
-// from server: 80% by king_originala
+// from server: 89% by king_originala
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
 
-extern "C" void* __cdecl __RTDynamicCast(void*, long, void*, void*, int);
-extern unsigned char instanceType;
-extern unsigned char modelInstanceType;
+extern char sourceType;
+extern char targetType;
 
-struct Control {
-    virtual void dispose() = 0;
-    virtual void destroy() = 0;
-    volatile long strong;
-    volatile long weak;
+extern "C" void* __cdecl dynamicCast(
+    void*, long, const void*, const void*, int);
+
+struct Counted {
+    long reserved;
+    volatile long references;
     void release();
 };
 
-inline void Control::release()
-{
-    if (_InterlockedExchangeAdd(&strong, -1) == 1) {
-        dispose();
-        if (_InterlockedExchangeAdd(&weak, -1) == 1)
-            destroy();
-    }
-}
+struct Control {
+    Counted* p;
 
-struct Count {
-    Control* p;
-    Count();
-    Count(const Count&);
-    ~Count();
-    Count& operator=(const Count&);
+    explicit Control(Counted* value);
+    Control(const Control& other);
+    ~Control();
+    Control& operator=(const Control& other);
 };
 
-inline Count::Count() : p(0)
-{
-}
+inline Control::Control(Counted* value) : p(value) {}
 
-inline Count::Count(const Count& other) : p(other.p)
-{
+inline Control::Control(const Control& other) : p(other.p) {
     if (p)
-        _InterlockedExchangeAdd(&p->strong, 1);
+        _InterlockedExchangeAdd(&p->references, 1);
 }
 
-inline Count::~Count()
-{
+inline Control::~Control() {
     if (p)
         p->release();
 }
 
-struct Source {
-    void* pointer;
-    Count count;
-};
-
 struct S {
-    void* pointer;
-    Count count;
-    S(const Source&, int);
+    void* object;
+    Control control;
+
+    S(const S& other, int tag);
 };
 
-S::S(const Source& source, int)
-    : pointer(__RTDynamicCast(source.pointer, 0,
-                              &instanceType, &modelInstanceType, 0)),
-      count(source.count)
-{
-    if (!pointer)
-        count = Count();
+S::S(const S& other, int tag)
+    : object(dynamicCast(other.object, 0, &sourceType, &targetType, 0)),
+      control(other.control) {
+    if (!object)
+        control = Control(0);
 }

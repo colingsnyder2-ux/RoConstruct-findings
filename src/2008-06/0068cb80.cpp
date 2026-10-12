@@ -1,4 +1,4 @@
-// from server: 99% by king_originala
+// from server: 100% by king_originala
 typedef unsigned int size_t;
 
 void* __cdecl operator new(size_t);
@@ -6,49 +6,47 @@ void __cdecl operator delete(void*);
 
 namespace Ogre {
     struct SceneManager;
-    struct AxisAlignedBox;
+    struct Sphere;
 
-    struct AxisAlignedBoxSceneQuery {
-        virtual ~AxisAlignedBoxSceneQuery();
+    struct SphereSceneQuery {
+        virtual ~SphereSceneQuery();
         virtual void setQueryMask(unsigned int);
-        __declspec(dllimport) void setBox(const AxisAlignedBox&);
+        __declspec(dllimport) void setSphere(const Sphere&);
         unsigned char data[48];
     };
 
     struct SceneQueryListener {
         virtual ~SceneQueryListener();
-        unsigned char data[36];
+        unsigned char data[20];
     };
 
-    struct DefaultAxisAlignedBoxSceneQuery
-        : AxisAlignedBoxSceneQuery, SceneQueryListener {
-        __declspec(dllimport) DefaultAxisAlignedBoxSceneQuery(SceneManager*);
+    struct DefaultSphereSceneQuery
+        : SphereSceneQuery, SceneQueryListener {
+        __declspec(dllimport) DefaultSphereSceneQuery(SceneManager*);
     };
 
-    struct RbxAxisAlignedBoxSceneQuery : DefaultAxisAlignedBoxSceneQuery {
-        RbxAxisAlignedBoxSceneQuery(SceneManager*);
-        virtual ~RbxAxisAlignedBoxSceneQuery();
+    struct RbxSphereSceneQuery : DefaultSphereSceneQuery {
+        RbxSphereSceneQuery(SceneManager*);
+        virtual ~RbxSphereSceneQuery();
     };
 
     struct RbxSceneManager {
-        AxisAlignedBoxSceneQuery* createAABBQuery(
-            const AxisAlignedBox&, unsigned int);
+        SphereSceneQuery* createSphereQuery(const Sphere&, unsigned int);
     };
 }
 
-inline Ogre::RbxAxisAlignedBoxSceneQuery::RbxAxisAlignedBoxSceneQuery(
+inline Ogre::RbxSphereSceneQuery::RbxSphereSceneQuery(
     Ogre::SceneManager* manager)
-    : DefaultAxisAlignedBoxSceneQuery(manager)
+    : DefaultSphereSceneQuery(manager)
 {
 }
 
-Ogre::AxisAlignedBoxSceneQuery* Ogre::RbxSceneManager::createAABBQuery(
-    const Ogre::AxisAlignedBox& box, unsigned int mask)
+Ogre::SphereSceneQuery* Ogre::RbxSceneManager::createSphereQuery(
+    const Ogre::Sphere& sphere, unsigned int mask)
 {
-    RbxAxisAlignedBoxSceneQuery* query =
-        new RbxAxisAlignedBoxSceneQuery(
-            reinterpret_cast<SceneManager*>(this));
-    query->setBox(box);
+    RbxSphereSceneQuery* query =
+        new RbxSphereSceneQuery(reinterpret_cast<SceneManager*>(this));
+    query->setSphere(sphere);
     query->setQueryMask(mask);
     return query;
 }

@@ -1,5 +1,21 @@
-// from server: 48% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs v8world/SimJobStage.cpp
+// from server: 100% by king_originala
+struct Receiver {
+    virtual void slot0();
+    virtual void submit(int value);
+    int m_x;
+    void f(int a1);
+};
+
+struct S {
+    virtual void slot0();
+    virtual void slot1();
+    virtual void slot2();
+    virtual int value();
+    void f(Receiver *receiver);
+};
+
+void S::f(Receiver *receiver)
+{
+    receiver->f((int)this);
+    receiver->submit(value());
+}

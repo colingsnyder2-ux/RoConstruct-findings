@@ -1,6 +1,8 @@
-// from server: 83% by king_originala
+// from server: 100% by king_originala
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
+extern "C" void __cdecl _ReadWriteBarrier(void);
+#pragma intrinsic(_ReadWriteBarrier)
 
 struct Control {
     long reserved;
@@ -11,15 +13,17 @@ struct Shared {
     void* object;
     Control* control;
 
-    Shared(const Shared& other) throw();
+    Shared(const Shared&);
     ~Shared();
 };
 
-inline Shared::Shared(const Shared& other) throw()
-    : object(other.object), control(other.control) {
+inline Shared::Shared(const Shared& other)
+    : object(other.object), control(other.control)
+{
     if (control) {
-        volatile long* references = &control->references;
-        _InterlockedExchangeAdd(references, 1);
+        volatile long* count = &control->references;
+        _ReadWriteBarrier();
+        _InterlockedExchangeAdd(count, 1);
     }
 }
 
@@ -33,15 +37,28 @@ struct Guard {
 struct Text;
 struct Result;
 
-extern const char* (__thiscall* text_c_str)(const Text*);
-extern void (__thiscall* result_construct)(Result*, const char*);
+extern const char* (__thiscall *text_c_str)(const Text*);
+extern void (__thiscall *result_construct)(Result*, const char*);
 
 struct Text {
-    const char* __thiscall c_str() const;
+    const char* c_str() const;
 };
 
-inline const char* Text::c_str() const {
+inline const char* Text::c_str() const
+{
     return text_c_str(this);
+}
+
+struct Result {
+    void* value;
+
+    Result(const char*);
+    ~Result();
+};
+
+inline Result::Result(const char* text)
+{
+    result_construct(this, text);
 }
 
 struct Owner {
@@ -49,28 +66,16 @@ struct Owner {
     Text text;
 };
 
-struct Result {
-    void* storage;
-
-    Result(const char*);
-    Result(const Result&);
-    ~Result();
-};
-
-inline Result::Result(const char* text) {
-    result_construct(this, text);
-}
-
 struct S {
     unsigned char padding[0x7c];
     Shared shared;
     Owner* owner;
 
-    Result f(int);
+    Result f(void*);
 };
 
-Result S::f(int) {
+Result S::f(void*)
+{
     Guard guard(shared);
-    Result result(owner->text.c_str());
-    return result;
+    return Result(owner->text.c_str());
 }

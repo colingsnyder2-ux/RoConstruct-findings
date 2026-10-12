@@ -1,32 +1,32 @@
-// from server: 53% by colin
-#pragma optimize("g", off)
+// from server: 100% by king_originala
+#pragma optimize("", off)
 
 struct AtomicInt32 {
+    long value;
     unsigned int decrement();
 };
 
-struct RefCountedBase {
-    virtual void release(int);
+struct Ref {
+    virtual ~Ref();
+    AtomicInt32 count;
+    void dispose();
 };
 
-struct RefCounted {
-    AtomicInt32* refCount;
-    RefCountedBase* ptr;
+struct WeakReferenceCountedPointer {
+    Ref* pointer;
+    void reset();
 };
 
-struct S {
-    RefCounted* p;
-    void f();
-};
-
-void S::f()
+void WeakReferenceCountedPointer::reset()
 {
-    if (p != 0) {
-        if (p->refCount->decrement() == 0) {
-            RefCountedBase* q = p->ptr;
-            if (q != 0)
-                q->release(1);
-            p = 0;
+    if (pointer != 0) {
+        do {} while (0);
+        do {} while (0);
+
+        if (pointer->count.decrement() == 0) {
+            pointer->dispose();
+            delete pointer;
         }
+        pointer = 0;
     }
 }

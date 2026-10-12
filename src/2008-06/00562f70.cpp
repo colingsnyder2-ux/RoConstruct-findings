@@ -1,5 +1,7 @@
-// from server: 27% by colin
+// from server: 100% by king_originala
 typedef void (__cdecl *Manager)(const void *, void *, int);
+
+struct Result;
 
 struct Function {
     Manager *manager;
@@ -7,30 +9,50 @@ struct Function {
         double alignment[3];
         char bytes[24];
     } storage;
-    Function(int, int, Function);
+
+    Function(Result, int);
     Function(const Function &);
     ~Function();
 };
 
 struct Result {
-    int dummy;
+    double data[5];
+    Result(const Result &);
 };
 
-struct ContentProvider {
-    void method(int, int, int, int, int, int, int, int, int);
+struct String {
+    unsigned char data[32];
 };
 
-extern "C" void __cdecl sub_55f3b0(Function *, int, int);
-extern "C" void __cdecl sub_5618e0(void *);
-extern "C" void __cdecl sub_562530(ContentProvider *, int);
+extern unsigned char flag1;
+extern unsigned char flag2;
+extern void __cdecl callback();
+extern Result __cdecl bindCallback(void (__cdecl *)(), int, int, Function);
 
-extern unsigned char byte_9740ec;
-extern unsigned char byte_9740ed;
+struct S {
+    void invoke(const String &, Function);
+    void f(const String &, Function);
+};
 
-void ContentProvider::method(int a1, int a2, int a3, int a4, int a5, int a6, int a7, int a8, int a9)
+inline Function::Function(const Function &other)
 {
-    Function f(0, 0, *(Function *)0);
-    sub_55f3b0(&f, byte_9740ed, byte_9740ec);
-    sub_5618e0(&f);
-    sub_562530(this, a1);
+    manager = 0;
+    if (other.manager) {
+        manager = other.manager;
+        (*other.manager)(&other.storage, &storage, 0);
+    }
+}
+
+inline Function::~Function()
+{
+    if (manager) {
+        Manager destroy = *manager;
+        if (destroy)
+            destroy(&storage, &storage, 1);
+    }
+}
+
+void S::f(const String &s, Function function)
+{
+    invoke(s, Function(bindCallback(callback, flag1, flag2, function), 0));
 }

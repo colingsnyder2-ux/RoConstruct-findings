@@ -1,5 +1,5 @@
-// from server: 80% by king_originala
-extern "C" void __cdecl _invalid_parameter_noinfo();
+// from server: 100% by king_originala
+extern "C" void (__cdecl* _invalid_parameter_noinfo)();
 
 struct Node
 {
@@ -15,6 +15,9 @@ struct Iterator
 {
     void* owner;
     Node* node;
+
+    Iterator(void* o, Node* n);
+    bool operator==(const Iterator& other) const;
 };
 
 struct S
@@ -23,44 +26,49 @@ struct S
     unsigned char padding[20];
     Node* head;
 
-    Iterator* f(Iterator* result, const signed char* key);
+    Iterator end() const;
+    Iterator f(const signed char& key);
 };
 
-Iterator* S::f(Iterator* result, const signed char* key)
+inline Iterator::Iterator(void* o, Node* n)
 {
-    Node* candidate = head;
-    Node* current = head->parent;
+    node = n;
+    owner = o;
+}
 
-    while (!current->nil)
-    {
-        if (current->key < *key)
-            current = current->right;
-        else
-        {
-            candidate = current;
-            current = current->left;
-        }
-    }
-
-    Iterator found;
-    Iterator end;
-    found.owner = owner;
-    found.node = candidate;
-    Node* sentinel = head;
-
-    if (!found.owner || found.owner != owner)
+inline bool Iterator::operator==(const Iterator& other) const
+{
+    if (!owner || owner != other.owner)
         _invalid_parameter_noinfo();
+    return node == other.node;
+}
 
-    Iterator* selected;
-    if (candidate != sentinel && !(*key < candidate->key))
-        selected = &found;
-    else
+inline Iterator S::end() const
+{
+    return Iterator(owner, head);
+}
+
+Iterator S::f(const signed char& key)
+{
+    Node* current = head->parent;
+    Node* candidate = head;
+
+    if (!current->nil)
     {
-        end.node = head;
-        end.owner = owner;
-        selected = &end;
+        do
+        {
+            if (current->key < key)
+                current = current->right;
+            else
+            {
+                candidate = current;
+                current = current->left;
+            }
+        } while (!current->nil);
     }
 
-    *result = *selected;
-    return result;
+    Iterator position(owner, candidate);
+    return position == end() || key < position.node->key
+        ? end()
+        : position;
 }

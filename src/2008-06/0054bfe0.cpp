@@ -1,12 +1,11 @@
-// from server: 33% by atomic.potato
-struct S
-{
-    int f();
-    void g(int, int);
+// from server: 100% by king_originala
+struct Mesh {
+    Mesh();
+    void f(void *arg, int count);
 };
 
-int S::f()
+#pragma optimize("", off)
+Mesh::Mesh()
 {
-    g(0, 0);
-    return *(int *)this;
+    f(0, 0);
 }

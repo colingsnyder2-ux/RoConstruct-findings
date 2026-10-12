@@ -1,16 +1,20 @@
-// from server: 59% by atomic.potato
-struct S
+// from server: 100% by king_originala
+struct EventHandler
 {
-    int value;
-    int f();
+    int get();
 };
 
-extern "C" int __cdecl sub_42afc0(int *p);
-extern "C" void __cdecl sub_5c9110(S *p, int *v);
-
-int S::f()
+struct StatsItem
 {
-    int v = sub_42afc0(&value);
-    sub_5c9110(this, &v);
-    return 0;
+    char storage[0x158];
+    EventHandler handler;
+
+    void update(const int* value);
+    void f();
+};
+
+void StatsItem::f()
+{
+    int value = handler.get();
+    update(&value);
 }

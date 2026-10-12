@@ -1,63 +1,72 @@
-// from server: 25% by colin
-struct CXTPPropertyGridItem {
-    char pad[0x90];
-    int m_nValue;
-    void OnValueChanged(int value);
-    void SetValue(int value);
+// from server: 97% by king_originala
+struct String
+{
+    const char* c_str() const;
 };
 
-struct Inner {
-    void* p;
-    void* q;
+extern const char* (__thiscall *stringData)(const String*);
+
+__forceinline const char* String::c_str() const
+{
+    return stringData(this);
+}
+
+struct Holder
+{
+    char pad[4];
+    String text;
 };
 
-struct Sub {
-    char pad[0x10c];
-    void sub_43a070(void* a, void* b);
+struct Item
+{
+    virtual void unused();
+    virtual bool value();
+    Holder* holder;
 };
 
-struct Target {
-    char pad0[0x20];
-    char pad1[0xdc];
-    int field_fc;
-    char pad2[0x2c];
-    void* field_12c;
-    char pad3[0x10c];
-    void sub_43a070(void* a, void* b);
-    void sub_7120e0(int v);
-    void sub_713510(void* a, void* b, void* c);
-    void* c_str();
+struct Base
+{
+    void* table;
+    char pad04[0x1c];
+    void* secondaryTable;
+    char pad24[0xd8];
+    int kind;
+    char pad100[0x0c];
 
-    void method(void* a, void* b);
+    Base(const char*, int, int);
+    ~Base();
+    void OnValueChanged(int);
 };
 
-extern "C" void* __stdcall sub_802464(void* p);
+struct Member
+{
+    void* table;
+    char pad[0x1c];
 
-void Target::sub_43a070(void* a, void* b) {
-}
+    Member(Item*, int);
+    ~Member();
+};
 
-void Target::sub_7120e0(int v) {
-}
+extern void* primaryTable[];
+extern void* secondaryTable[];
+extern void* memberTable[];
 
-void Target::sub_713510(void* a, void* b, void* c) {
-}
+struct S : Base
+{
+    Member member;
+    Item* item;
 
-void* Target::c_str() {
-    return 0;
-}
+    S(Item*, int);
+};
 
-void Target::method(void* a, void* b) {
-    void* p = *(void**)((char*)a + 4);
-    void* s = sub_802464((char*)p + 4);
-    sub_713510(0, 0, s);
-    sub_43a070(a, b);
-    field_fc = 1;
-    *(void**)this = (void*)0x81409c;
-    *(void**)((char*)this + 0x20) = (void*)0x81403c;
-    *(void**)((char*)this + 0x10c) = (void*)0x814030;
-    field_12c = a;
-    void** vt = *(void***)a;
-    int (*fn)(void*) = (int (*)(void*))vt[1];
-    int r = fn(a);
-    sub_7120e0(r & 0xff);
+S::S(Item* source, int argument)
+    : Base(source->holder->text.c_str(), 0, 0),
+      member(source, argument)
+{
+    kind = 1;
+    table = primaryTable;
+    secondaryTable = ::secondaryTable;
+    member.table = memberTable;
+    item = source;
+    OnValueChanged(source->value());
 }

@@ -1,47 +1,62 @@
-// from server: 29% by colin
+// from server: 100% by king_originala
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
+extern "C" long __cdecl _InterlockedDecrement(volatile long*);
+#pragma intrinsic(_InterlockedDecrement)
 
-struct CNameItem {
-    void construct();
+struct Control {
+    virtual void unused() = 0;
+    virtual void dispose() = 0;
+    virtual void destroy() = 0;
+    volatile long strong;
+    volatile long weak;
 };
 
-void CNameItem::construct() {
-    // placeholder to satisfy declaration
+struct Shared {
+    void* pointer;
+    Control* control;
+
+    Shared(const Shared& source);
+    ~Shared();
+};
+
+inline Shared::Shared(const Shared& source)
+    : pointer(source.pointer), control(source.control)
+{
+    if (control) {
+        volatile long* count = &control->strong;
+        _InterlockedExchangeAdd(count, 1);
+    }
 }
 
-struct RefCounted {
-    long refcount;
-    virtual void destroy();
-    virtual void release();
+inline Shared::~Shared()
+{
+    Control* p = control;
+    if (p && _InterlockedDecrement(&p->strong) == 0) {
+        p->dispose();
+        if (_InterlockedDecrement(&p->weak) == 0)
+            p->destroy();
+    }
+}
+
+struct Member {
+    char storage[48];
+    Member();
 };
 
-struct RoundRobinPhysicsSender {
-    int field0;
-    RefCounted* field4;
-    char pad8[8];
-    CNameItem field10;
-    char pad1c[0x24];
-    float field40;
-    int field44;
-    RoundRobinPhysicsSender(int a, RefCounted* b);
+extern float initialValue;
+
+struct S {
+    Shared owner;
+    char padding[8];
+    Member member;
+    float value;
+    int index;
+
+    S(Shared source);
 };
 
-RoundRobinPhysicsSender::RoundRobinPhysicsSender(int a, RefCounted* b) {
-    field0 = a;
-    field4 = b;
-    if (b) {
-        _InterlockedExchangeAdd((volatile long*)((char*)b + 4), 1);
-    }
-    field10.construct();
-    field40 = *(float*)0x93cc40;
-    field44 = -1;
-    if (b) {
-        if (_InterlockedExchangeAdd((volatile long*)((char*)b + 4), -1) == 1) {
-            b->destroy();
-            if (_InterlockedExchangeAdd((volatile long*)((char*)b + 8), -1) == 1) {
-                b->release();
-            }
-        }
-    }
+S::S(Shared source)
+    : owner(source), member(), value(initialValue), index(-1)
+{
 }

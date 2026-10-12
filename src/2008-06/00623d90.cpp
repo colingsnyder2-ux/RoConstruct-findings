@@ -1,14 +1,15 @@
-// from server: 50% by colin
+// from server: 75% by colin
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
 
 extern "C" void __cdecl sub_65F600(void* a, void* b);
 extern "C" void __cdecl sub_6606F0(void* a, void* b, int c, int d);
 
-struct RefCounted {
-    long refcount;
-    virtual void destroy();
-    virtual void release();
+struct Inner {
+    virtual void v1();
+    virtual void v2();
+    volatile long ref1;
+    volatile long ref2;
 };
 
 struct Obj {
@@ -21,30 +22,27 @@ struct Obj {
 };
 
 struct Holder {
-    char pad0[0x0c];
-    Obj* obj;
+    int count;
+    Inner* inner;
 };
 
-void __cdecl func(Holder* holder)
+void __cdecl target(Obj* obj, Holder* holder)
 {
-    Obj* o = holder->obj;
-    sub_65F600(o, o->field20);
+    sub_65F600(obj, obj->field20);
 
-    RefCounted* rc = *(RefCounted**)((char*)o - 8);
-    _InterlockedExchangeAdd(&((RefCounted*)((char*)o - 0xc))->refcount, -1);
-    if (rc != 0) {
-        if (_InterlockedExchangeAdd(&rc->refcount, -1) == 1) {
-            rc->destroy();
-        }
-        if (_InterlockedExchangeAdd((volatile long*)((char*)rc + 8), -1) == 1) {
-            rc->release();
+    Inner* p = holder->inner;
+    if (p != 0) {
+        if (_InterlockedExchangeAdd(&p->ref1, -1) == 1) {
+            p->v1();
+            if (_InterlockedExchangeAdd(&p->ref2, -1) == 1) {
+                p->v2();
+            }
         }
     }
 
-    int n = o->field30;
-    void* p = o->field28;
+    int n = obj->field30;
     int sz = n * 12;
-    sub_6606F0(holder, p, sz, 0);
-    sub_6606F0(holder, o->field20, o->field2c << 4, 0);
-    sub_6606F0(holder, (char*)o - 0xc, 0x84, 0);
+    sub_6606F0(holder, obj->field28, sz, 0);
+    sub_6606F0(holder, obj->field20, obj->field2c * 16, 0);
+    sub_6606F0(holder, &holder->inner, 0x84, 0);
 }

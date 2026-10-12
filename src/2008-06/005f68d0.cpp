@@ -1,4 +1,19 @@
-// from server: 51% by atomic.potato
+// from server: 64% by colin
+
+
+
+
+extern "C" void* __stdcall _invalid_parameter_noinfo();
+extern "C" void* __stdcall sub_802890();
+
+struct streambuf;
+
+struct basic_ios {
+    void* vfptr;
+    void* unk4;
+    streambuf* rdbuf(streambuf*);
+};
+
 struct S {
     char pad0[8];
     void* field8;
@@ -6,31 +21,37 @@ struct S {
     void f();
 };
 
-extern "C" void* __stdcall sub_80258C(void*, void*);
-extern "C" void* __stdcall sub_802890();
-
 void S::f() {
-    void* eax = fieldC;
-    if (*(int*)((char*)eax + 0x18) == 0) {
-        void* edx = field8;
-        void* p = *(void**)((char*)edx + 4);
-        sub_80258C((char*)p + (int)this + 8, 0);
+    void* p = *(void**)((char*)this->fieldC + 0x18);
+    if (p == 0) {
+        void* q = *(void**)((char*)this->field8 + 4);
+        basic_ios* ios = (basic_ios*)((char*)this + 8 + (int)q);
+        ios->rdbuf(0);
         return;
     }
-    void* ecx = *(void**)((char*)eax + 0x14);
-    void* eax2 = *(void**)eax;
-    void* esi = *(void**)ecx;
-    if (eax2 != 0) {
-        do {
-            eax2 = *(void**)eax2;
-        } while (eax2 != 0);
-    }
-    sub_802890();
-    if (esi == *(void**)((char*)0 + 0x14)) {
+    void* a = *(void**)this->fieldC;
+    void* b = *(void**)((char*)this->fieldC + 0x14);
+    void* c = *(void**)b;
+    if (a == 0) {
         sub_802890();
+        void* d = 0;
+        if (c == *(void**)((char*)d + 0x14)) {
+            sub_802890();
+        }
+        void* e = *(void**)((char*)c + 8);
+        void* q = *(void**)((char*)this->field8 + 4);
+        basic_ios* ios = (basic_ios*)((char*)this + 8 + (int)q);
+        ios->rdbuf((streambuf*)e);
+        return;
     }
-    void* eax3 = *(void**)((char*)esi + 8);
-    void* edx2 = field8;
-    void* p2 = *(void**)((char*)edx2 + 4);
-    sub_80258C((char*)p2 + (int)this + 8, eax3);
+    while (a != 0) {
+        a = *(void**)a;
+        if (c == *(void**)((char*)a + 0x14)) {
+            sub_802890();
+        }
+    }
+    void* e = *(void**)((char*)c + 8);
+    void* q = *(void**)((char*)this->field8 + 4);
+    basic_ios* ios = (basic_ios*)((char*)this + 8 + (int)q);
+    ios->rdbuf((streambuf*)e);
 }

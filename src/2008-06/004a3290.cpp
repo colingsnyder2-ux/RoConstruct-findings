@@ -1,46 +1,67 @@
-// from server: 70% by colin
-// roc 2008-06 004a3290  unit: RBX::Network::Server::ClientProxy  size: 170 bytes
-// Make this compile to the exact bytes below, then: roc check 2008-06 004a3290
-
-extern "C" int __stdcall sub_6a17c6(int, int, int, int, int);
-extern "C" int __stdcall sub_4a2fa0(int, int);
-extern "C" void __stdcall sub_802890();
-
-struct ClientProxy {
-    char pad[0x2d70];
-    int field_2d70;
-    int method(int);
+// from server: 84% by king_originala
+struct Iterator {
+    void* owner;
+    void* node;
 };
 
-int ClientProxy::method(int a) {
-    int result;
-    int *p;
-    int v;
-    int *q;
-    int *r;
-    int *s;
-    int t;
-    int u;
+struct Table {
+    void* owner;
+    char padding[20];
+    void* end;
+    Iterator* find(Iterator* result, const void* key);
+};
 
-    result = sub_6a17c6(a, 0, 0x92907c, 0x92e1c8, 0);
-    if (result != 0) {
-        p = (int *)(result + 0x14c);
-        v = *(int *)(this->field_2d70 + 0x164);
-        q = (int *)(this->field_2d70 + 0x164);
-        r = (int *)(this->field_2d70 + 0x164 + 0x18);
-        if (*p == 0) {
-            s = (int *)(result + 0x130);
-            sub_4a2fa0((int)&t, (int)s);
-        } else {
-            s = (int *)(result + 0x138);
-            sub_4a2fa0((int)&t, (int)s);
-        }
-        u = *(int *)&t;
-        if (u != 0 && u != v) {
-            sub_802890();
-        }
-        return (*(int *)((char *)&t + 4) != *r) ? 1 : 0;
+struct State {
+    char padding[0x164];
+    Table table;
+};
+
+struct Script {
+    char padding[0x130];
+    const void* externalKey;
+    char reserved[4];
+    char localKey[0x14];
+    unsigned int discriminator;
+};
+
+extern const char instanceType;
+extern const char scriptType;
+extern const char messageType;
+
+extern "C" void* __cdecl dynamicCast(
+    void* object, int offset, const void* sourceType,
+    const void* targetType, int isReference);
+
+extern "C" void (__cdecl *invalidParameter)();
+
+struct ClientProxy {
+    char padding[0x2d70];
+    State* state;
+    bool contains(void* object);
+};
+
+bool ClientProxy::contains(void* object)
+{
+    Script* script = static_cast<Script*>(
+        dynamicCast(object, 0, &instanceType, &scriptType, 0));
+
+    if (script) {
+        Table* table = &state->table;
+        void* owner = table->owner;
+        void* end = table->end;
+        Iterator temporary;
+        Iterator* result;
+
+        if (script->discriminator == 0)
+            result = table->find(&temporary, script->externalKey);
+        else
+            result = table->find(&temporary, script->localKey);
+
+        if (!result->owner || result->owner != owner)
+            invalidParameter();
+
+        return result->node != end;
     }
-    result = sub_6a17c6(a, 0, 0x92907c, 0x939b1c, 0);
-    return (result == 0) ? 1 : 0;
+
+    return dynamicCast(object, 0, &instanceType, &messageType, 0) == 0;
 }

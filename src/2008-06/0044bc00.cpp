@@ -1,4 +1,4 @@
-// from server: 85% by king_originala
+// from server: 87% by king_originala
 extern "C" void (__cdecl *invalid_parameter_noinfo)();
 
 struct Container
@@ -19,10 +19,16 @@ struct Value
     unsigned long value;
     unsigned long context;
     Value(unsigned long v, unsigned long c);
+    Value(const Value& other);
 };
 
 inline Value::Value(unsigned long v, unsigned long c)
     : value(v), context(c)
+{
+}
+
+inline Value::Value(const Value& other)
+    : value(other.value), context(other.context)
 {
 }
 
@@ -42,26 +48,26 @@ Callback __cdecl visit(Iterator first, Iterator last, Callback callback)
             break;
 
         Container* container;
-        if (current.owner)
-            container = *current.owner;
-        else
+        if (!current.owner)
         {
             invalid_parameter_noinfo();
             container = 0;
         }
+        else
+            container = *current.owner;
 
         if (current.position >= container->end)
             invalid_parameter_noinfo();
 
         callback(Value(*current.position, current.context));
 
-        if (current.owner)
-            container = *current.owner;
-        else
+        if (!current.owner)
         {
             invalid_parameter_noinfo();
             container = 0;
         }
+        else
+            container = *current.owner;
 
         if (current.position >= container->end)
             invalid_parameter_noinfo();

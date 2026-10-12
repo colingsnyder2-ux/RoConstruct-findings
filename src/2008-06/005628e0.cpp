@@ -1,66 +1,162 @@
-// from server: 19% by colin
-// roc 2008-06 005628e0  size: 327 bytes
-// Reconstructed from the target machine code.
+// from server: 73% by king_originala
+typedef unsigned int size_t;
+void __cdecl operator delete(void*);
 
-struct S {
-    void f(int, int, int, int, int, int, int, int, int);
+struct String;
+extern void (__thiscall* string_copy_ctor)(String*, const String&);
+extern void (__thiscall* string_dtor)(String*);
+
+struct String {
+    unsigned int allocator;
+    union {
+        char buffer[16];
+        char* pointer;
+    };
+    unsigned int length;
+    unsigned int capacity;
+    String(const String&);
+    ~String();
 };
 
-extern "C" {
-    void __stdcall sub_80245c();
-    void __stdcall sub_802468();
-    void __cdecl sub_413a70();
-    void __cdecl sub_4147c0();
-    void __cdecl sub_415350();
-    void __cdecl sub_561f20();
-    void __cdecl sub_58f6c0();
-    void __cdecl sub_593250();
-    void __cdecl sub_6a067a();
+String::String(const String& other) {
+    string_copy_ctor(this, other);
 }
 
-void S::f(int a1, int a2, int a3, int a4, int a5, int a6, int a7, int a8, int a9)
-{
-    char buf[0x58];
-    char *p;
-    int v1;
-    int v2;
-    int v3;
-    int v4;
-    int v5;
-    int v6;
-    int v7;
-    int v8;
-    int v9;
-    int v10;
+String::~String() {
+    string_dtor(this);
+}
 
-    v1 = 0;
-    sub_80245c();
-    v2 = a9;
-    sub_561f20();
-    v3 = *(int*)0;
-    *(int*)0 = 0;
-    v4 = v3;
-    if (v3 != 0) {
-        v5 = *(int*)v3;
-        v6 = *(int*)(v5 + 4);
-        v7 = *(int*)(v6 + v3);
-        v8 = *(int*)v7;
-        sub_415350();
-    }
-    v9 = *(int*)(v4 + 0x28);
-    sub_415350();
-    sub_58f6c0();
-    v10 = *(int*)0;
-    *(int*)0 = 0;
-    if (v10 != 0) {
-        sub_413a70();
-        sub_6a067a();
-    }
-    sub_593250();
-    if (v10 != 0) {
-        sub_413a70();
-        sub_6a067a();
-    }
-    sub_4147c0();
-    sub_802468();
+struct Request {
+    String name;
+    int mode;
+    Request(const String&, int);
+};
+
+Request::Request(const String& value, int flags)
+    : name(value), mode(flags) {
+}
+
+struct StreamBase {
+    virtual ~StreamBase();
+    char reserved[36];
+    void* resource;
+};
+
+struct Stream : virtual StreamBase {
+};
+
+struct Object {
+    ~Object();
+};
+
+struct StreamResult {
+    mutable Stream* pointer;
+    ~StreamResult();
+};
+
+StreamResult::~StreamResult() {
+    if (pointer)
+        delete pointer;
+}
+
+struct StreamProxy {
+    mutable Stream* pointer;
+    StreamProxy(const StreamResult&);
+    ~StreamProxy();
+};
+
+StreamProxy::StreamProxy(const StreamResult& other) {
+    Stream* p = other.pointer;
+    other.pointer = 0;
+    pointer = p;
+}
+
+StreamProxy::~StreamProxy() {
+    if (pointer)
+        delete pointer;
+}
+
+struct StreamOwner {
+    Stream* pointer;
+    StreamOwner(const StreamProxy&);
+    ~StreamOwner();
+};
+
+StreamOwner::StreamOwner(const StreamProxy& other) {
+    Stream* p = other.pointer;
+    other.pointer = 0;
+    pointer = p;
+}
+
+StreamOwner::~StreamOwner() {
+    if (pointer)
+        delete pointer;
+}
+
+struct ObjectResult {
+    mutable Object* pointer;
+    ~ObjectResult();
+};
+
+ObjectResult::~ObjectResult() {
+    if (pointer)
+        delete pointer;
+}
+
+struct ObjectProxy {
+    mutable Object* pointer;
+    ObjectProxy(const ObjectResult&);
+    ~ObjectProxy();
+};
+
+ObjectProxy::ObjectProxy(const ObjectResult& other) {
+    Object* p = other.pointer;
+    other.pointer = 0;
+    pointer = p;
+}
+
+ObjectProxy::~ObjectProxy() {
+    if (pointer)
+        delete pointer;
+}
+
+struct ObjectOwner {
+    Object* pointer;
+    ObjectOwner(const ObjectProxy&);
+    ~ObjectOwner();
+};
+
+ObjectOwner::ObjectOwner(const ObjectProxy& other) {
+    Object* p = other.pointer;
+    other.pointer = 0;
+    pointer = p;
+}
+
+ObjectOwner::~ObjectOwner() {
+    if (pointer)
+        delete pointer;
+}
+
+struct Builder {
+    char storage[72];
+    Builder(void*);
+    ~Builder();
+    ObjectResult create();
+};
+
+struct PointerSlot {
+    void* pointer;
+    void assign(Object*, void*);
+};
+
+struct S {
+    StreamResult open(Request);
+    void f(String, int, void*);
+};
+
+void S::f(String name, int mode, void* value) {
+    StreamOwner stream((StreamProxy(open(Request(name, mode)))));
+    Builder builder(stream.pointer->resource);
+    ObjectOwner object((ObjectProxy(builder.create())));
+    reinterpret_cast<PointerSlot*>(&value)->assign(object.pointer, value);
 }

@@ -1,18 +1,17 @@
-// from server: 33% by tester
+// from server: 36% by colin
 struct T;
 typedef T* E;
 
 struct Iterator_base_aux {
     E* _Myptr;
-    E* _Getmycont() const;
+    const void* _Getmycont() const;
     bool _Has_container() const;
 };
 
-E* Iterator_base_aux::_Getmycont() const {
+const void* Iterator_base_aux::_Getmycont() const {
     E* p = _Myptr;
-    if (p) {
-        return (E*)*p;
-    }
+    if (p)
+        return (const void*)*p;
     return 0;
 }
 
@@ -23,16 +22,20 @@ bool Iterator_base_aux::_Has_container() const {
 extern "C" void __stdcall _invalid_parameter_noinfo();
 
 struct S {
-    Iterator_base_aux* _Mynextiter;
-    void _Addref();
+    Iterator_base_aux* _Myfirstiter;
+    E* _Mynextiter;
+    void _Adopt();
 };
 
-void S::_Addref() {
-    if (!_Mynextiter->_Has_container()) {
+void S::_Adopt() {
+    if (!_Myfirstiter->_Has_container())
         _invalid_parameter_noinfo();
-    }
-    if (_Mynextiter->_Getmycont() == 0) {
+    if (!_Myfirstiter->_Has_container())
         _invalid_parameter_noinfo();
-    }
-    _Mynextiter = (Iterator_base_aux*)((char*)_Mynextiter + 0x28);
+    const void* c = _Myfirstiter->_Getmycont();
+    if (_Mynextiter >= (E*)((char*)c + 0x10))
+        _invalid_parameter_noinfo();
+    if (_Mynextiter >= (E*)((char*)c + 0x10))
+        _invalid_parameter_noinfo();
+    _Mynextiter = (E*)((char*)_Mynextiter + 0x28);
 }

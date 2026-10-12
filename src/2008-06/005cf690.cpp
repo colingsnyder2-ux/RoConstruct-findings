@@ -1,15 +1,15 @@
-// from server: 45% by atomic.potato
-struct S
-{
-    int (**vtable)(void *, int);
-    void *unknown;
-    char *data;
-    int f(void *, int);
+// from server: 100% by king_originala
+struct __multiple_inheritance Object;
+typedef void (Object::*Setter)(int);
+
+struct S {
+    char padding[8];
+    Setter setter;
+    void f(char* object, int value);
 };
 
-int S::f(void *p, int value)
+void S::f(char* object, int value)
 {
-    if (p != 0)
-        return (*vtable)(data + ((char *)p - (char *)20), value);
-    return (*vtable)(data, value);
+    Object* target = reinterpret_cast<Object*>(object ? object - 20 : 0);
+    (target->*setter)(value);
 }

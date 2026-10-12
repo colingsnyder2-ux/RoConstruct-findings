@@ -1,4 +1,4 @@
-// from server: 75% by king_originala
+// from server: 77% by king_originala
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
 extern "C" long __cdecl _InterlockedDecrement(volatile long*);
@@ -9,6 +9,9 @@ struct String {
     String(const char*);
     ~String();
 };
+
+extern void (__thiscall* stringConstruct)(String*, const char*);
+extern void (__thiscall* stringDestroy)(String*);
 
 struct Control {
     virtual void reserved();
@@ -46,6 +49,16 @@ struct S {
     void* f();
 };
 
+__forceinline String::String(const char* text)
+{
+    stringConstruct(this, text);
+}
+
+__forceinline String::~String()
+{
+    stringDestroy(this);
+}
+
 __forceinline void Control::release()
 {
     if (_InterlockedDecrement(&strong) == 0) {
@@ -59,8 +72,9 @@ __forceinline Reference::Reference() : control(0) {}
 
 __forceinline Reference::~Reference()
 {
-    if (control)
-        control->release();
+    Control* p = control;
+    if (p)
+        p->release();
 }
 
 __forceinline Shared::Shared() : pointer(0) {}

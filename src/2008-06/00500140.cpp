@@ -1,17 +1,34 @@
-// from server: 38% by colin
-extern "C" void __stdcall sub_4FFD40(int, int, int, int);
+// from server: 100% by king_originala
+struct ShortPair
+{
+    short x;
+    short y;
+};
 
-struct HeadBuilder {
+struct Arguments
+{
+    ShortPair pair;
+    float value;
+    int half;
+};
+
+struct HeadBuilder
+{
+    char padding[0x20];
     float field20;
-    int field24;
+    volatile int field24;
+
+    void sub_4FFD40(int, int, ShortPair, int);
     void sub_500140(int);
 };
 
 void HeadBuilder::sub_500140(int a)
 {
-    float f = field20;
-    int v = field24 + 1;
-    int half = v / 2;
-    short s = (short)field24;
-    sub_4FFD40(a, half, *(int*)&f, s);
+    Arguments args;
+    args.value = field20;
+    args.half = (field24 + 1) / 2;
+    int value = field24;
+    args.pair.x = (short)value;
+    args.pair.y = (short)value;
+    sub_4FFD40(*(int*)&args.value, args.half, args.pair, a);
 }

@@ -1,5 +1,12 @@
-// from server: 91% by king_originala
+// from server: 97% by king_originala
 extern "C" void (__cdecl *_invalid_parameter_noinfo)();
+
+struct String;
+struct MeshPtr;
+
+extern void (__thiscall *string_destroy)(String*);
+extern void (__thiscall *mesh_copy)(MeshPtr*, const MeshPtr&);
+extern void (__thiscall *mesh_default)(MeshPtr*);
 
 struct String {
     char storage[28];
@@ -14,6 +21,21 @@ struct MeshPtr {
     MeshPtr(const MeshPtr&);
     ~MeshPtr();
 };
+
+__forceinline String::~String()
+{
+    string_destroy(this);
+}
+
+__forceinline MeshPtr::MeshPtr()
+{
+    mesh_default(this);
+}
+
+__forceinline MeshPtr::MeshPtr(const MeshPtr& other)
+{
+    mesh_copy(this, other);
+}
 
 struct Node {
     char padding[40];
@@ -53,11 +75,11 @@ MeshPtr S::f(String key)
     Map** expected = map.owner;
     void (__cdecl *invalid)();
 
-    if (!owner || owner != expected) {
+    if (owner && owner != expected) {
         invalid = _invalid_parameter_noinfo;
-        invalid();
     } else {
         invalid = _invalid_parameter_noinfo;
+        invalid();
     }
 
     if (node != finish) {

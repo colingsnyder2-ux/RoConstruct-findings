@@ -1,43 +1,48 @@
-// from server: 27% by colin
-extern "C" {
-    void __stdcall sub_802458(void*);
-    void __stdcall sub_802468(void*);
-}
-int __cdecl sub_46f9f0(void*, void*);
+// from server: 100% by king_originala
+extern void (__thiscall *string_construct)(void*, const char*);
+extern void (__thiscall *string_destroy)(void*);
 
-struct S {
-    int f(int, int, int, int, int, int, int);
-};
+namespace std {
+    template<class T> struct char_traits;
+    template<class T> class allocator;
 
-int S::f(int a, int b, int c, int d, int e, int g, int h)
-{
-    char buf1[4];
-    char buf2[4];
-    char str1[28];
-    char str2[28];
-    int flag;
-    char ok;
+    template<class T, class Traits, class Allocator>
+    class basic_string {
+        unsigned char allocator_storage[4];
+        union {
+            T buffer[16];
+            T* pointer;
+        } storage;
+        unsigned int length;
+        unsigned int capacity;
 
-    flag = 0;
-    sub_802458(str1);
-    ok = 1;
-    if (sub_46f9f0(buf2, str2) == 0)
-        ok = 1;
-    else
-        ok = 0;
-    sub_802468(str1);
-    if (ok) {
-        sub_802468(str2);
-        return 0;
+    public:
+        basic_string(const T*);
+        ~basic_string();
+    };
+
+    template<class T, class Traits, class Allocator>
+    inline basic_string<T, Traits, Allocator>::basic_string(const T* text)
+    {
+        string_construct(this, text);
     }
-    sub_802458(str2);
-    if (sub_46f9f0(buf1, str1) == 0)
-        ok = 1;
-    else
-        ok = 0;
-    sub_802468(str2);
-    sub_802468(str1);
-    if (ok)
+
+    template<class T, class Traits, class Allocator>
+    inline basic_string<T, Traits, Allocator>::~basic_string()
+    {
+        string_destroy(this);
+    }
+
+    typedef basic_string<char, char_traits<char>, allocator<char> > string;
+}
+
+int __cdecl compare(const std::string&, const std::string&);
+
+int __stdcall classify(std::string value)
+{
+    if (compare(value, std::string("symmetric")) == 0)
+        return 0;
+    if (compare(value, std::string("brick")) == 0)
         return 1;
     return 2;
 }

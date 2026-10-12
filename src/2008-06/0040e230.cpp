@@ -1,5 +1,24 @@
-// from server: 57% by colin
-// roc-lang: cpp
-// roc-cl: 30729
-// roc-flags: /O2 /GS- /MD
-// roc-lib: mfc-9.0 atlmfc/src/mfc/afxoutlookbartabctrl.cpp
+// from server: 100% by king_originala
+struct B {
+    virtual ~B();
+};
+
+struct S : B {
+    ~S();
+};
+
+struct P {
+    void release();
+};
+
+struct CBrowserView : S {
+    char padding[244];
+    P* p;
+    ~CBrowserView();
+};
+
+CBrowserView::~CBrowserView()
+{
+    if (p)
+        p->release();
+}

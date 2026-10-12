@@ -1,38 +1,83 @@
-// from server: 76% by tester
-extern "C" void __stdcall sub_802468(void*);
+// from server: 100% by king_originala
+extern "C" void (__thiscall* string_destroy)(void*);
 
-struct Instance {
+namespace std {
+template<class T> struct char_traits;
+template<class T> class allocator;
+
+template<class T, class Traits, class Allocator>
+class basic_string {
+    unsigned char storage[32];
+public:
+    ~basic_string();
+};
+
+template<class T, class Traits, class Allocator>
+__forceinline basic_string<T, Traits, Allocator>::~basic_string()
+{
+    string_destroy(this);
+}
+
+typedef basic_string<char, char_traits<char>, allocator<char> > string;
+}
+
+namespace RBX {
+class Instance {
+public:
     virtual ~Instance();
     char pad[0x100];
     Instance* next;
 };
 
-struct ServiceProvider : Instance {
+class ServiceProvider : public Instance {
+public:
     ServiceProvider* finish();
 };
+}
 
-struct String {
-    char buf[0x1c];
-    ~String();
+RBX::ServiceProvider* __cdecl func_005a3330(RBX::Instance*);
+
+struct Source {
+    virtual void slot0();
+    virtual void slot1();
+    virtual void slot2();
+    virtual void slot3();
+    virtual void slot4();
+    virtual void slot5();
+    virtual void slot6();
+    virtual void slot7();
+    virtual void slot8();
+    virtual void slot9();
+    virtual void slot10();
+    virtual void slot11();
+    virtual void slot12();
+    virtual void slot13();
+    virtual std::string get();
 };
 
-struct Workspace {
-    char pad0[0x3b0];
-    void* field3b0;
-    void func(void*);
+struct Destination {
+    virtual void slot0();
+    virtual void slot1();
+    virtual void slot2();
+    virtual void slot3();
+    virtual void slot4();
+    virtual void slot5();
+    virtual void slot6();
+    virtual void set(int, const std::string&);
 };
 
-ServiceProvider* func_005a3330(Instance* p);
+struct S : RBX::Instance {
+    unsigned char padding[0x2a8];
+    Source* source;
+    void f(int);
+};
 
-void Workspace::func(void* arg)
+void S::f(int value)
 {
-    ServiceProvider* sp = func_005a3330((Instance*)this);
-    Instance* inst = *(Instance**)((char*)sp + 0x130);
-    if (inst) {
-        void* p = field3b0;
-        void* v = (*(void*(**)(void*, void**))p)(p, 0);
-        String s;
-        (*(void(**)(Instance*, void*, void*))inst)(inst, v, arg);
-        s.~String();
-    }
+    RBX::ServiceProvider* provider = func_005a3330(this);
+    Destination* destination =
+        *(Destination**)((unsigned char*)provider + 0x130);
+
+    if (destination)
+        destination->set(value, source->get());
 }

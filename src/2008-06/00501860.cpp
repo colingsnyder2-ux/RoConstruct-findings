@@ -1,18 +1,19 @@
-// from server: 83% by atomic.potato
-extern "C" void __stdcall bad_cast_copy(void *, const void *);
+// from server: 100% by king_originala
+struct S {
+    void* vtable;
+    unsigned char baseData[8];
+    const void* sourceType;
+    const void* targetType;
 
-struct S
-{
-    S(S *);
-    void *vftable;
-    int pad0;
-    int pad1;
-    int value;
+    S(const S& other);
 };
 
-S::S(S *source)
+extern void* (__thiscall* copyBadCast)(S*, const S&);
+
+S::S(const S& other)
 {
-    bad_cast_copy(this, source);
-    vftable = (void *)0x827224;
-    value = source->value;
+    copyBadCast(this, other);
+    vtable = reinterpret_cast<void*>(0x827224);
+    sourceType = other.sourceType;
+    targetType = other.targetType;
 }

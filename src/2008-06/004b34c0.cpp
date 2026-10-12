@@ -1,45 +1,46 @@
-// from server: 62% by king_originala
-extern "C" void __cdecl _invalid_parameter_noinfo();
+// from server: 63% by king_originala
+struct Value {
+    void* pointer;
+    void* control;
 
-extern void __cdecl creator_callback();
-extern unsigned registration_state;
-extern void __cdecl register_creator(void (__cdecl *)(), unsigned *);
-extern void * __cdecl func_004ab4d0();
-
-struct Entry {
-    void *value;
-    void *control;
-    ~Entry();
+    Value() : pointer(0), control(0) {}
+    ~Value();
 };
 
-struct Entries {
-    unsigned bookkeeping[3];
-    Entry *first;
-    Entry *last;
-    Entry *limit;
+struct Storage {
+    unsigned char padding[12];
+    Value* first;
+    Value* last;
+    Value* limit;
 
-    void resize(unsigned count, Entry value);
+    void resize(unsigned int count, Value value);
 };
+
+extern int initializationFlag;
+extern void __cdecl initialize();
+extern void __cdecl initializeOnce(void (__cdecl* function)(), int* flag);
+extern void* __cdecl func_004ab4d0();
+extern "C" void (__cdecl* _invalid_parameter_noinfo)();
 
 struct Creator {
     unsigned char padding[0x190];
-    Entries entries;
+    Storage values;
 
-    void *get();
+    void* get();
 };
 
-void *Creator::get()
+void* Creator::get()
 {
-    register_creator(creator_callback, &registration_state);
-    unsigned index = reinterpret_cast<unsigned>(func_004ab4d0());
+    initializeOnce(initialize, &initializationFlag);
+    unsigned int index = (unsigned int)func_004ab4d0();
 
-    if (index + 1 > static_cast<unsigned>(entries.last - entries.first)) {
-        entries.resize(index + 1, Entry());
+    if (index + 1 > (unsigned int)(values.last - values.first)) {
+        values.resize(index + 1, Value());
         return 0;
     }
 
-    if (index >= static_cast<unsigned>(entries.last - entries.first))
+    if (index >= (unsigned int)(values.last - values.first))
         _invalid_parameter_noinfo();
 
-    return entries.first[index].value;
+    return values.first[index].pointer;
 }

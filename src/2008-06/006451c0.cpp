@@ -1,7 +1,16 @@
-// from server: 98% by king_originala
+// from server: 99% by king_originala
 struct Vector3 {
     float x, y, z;
+    Vector3& operator=(const Vector3&);
 };
+
+inline Vector3& Vector3::operator=(const Vector3& other)
+{
+    x = other.x;
+    y = other.y;
+    z = other.z;
+    return *this;
+}
 
 struct Matrix3 {
     float values[9];
@@ -46,15 +55,15 @@ struct Owner {
     Controller* controller;
 };
 
-struct StateEntry {
-    int first;
-    int second;
-    int third;
-    int fourth;
-    char padding[56];
+struct StateColumn {
+    int value;
+    char padding[68];
 };
 
-extern StateEntry stateTable[];
+extern StateColumn stateFirst[];
+extern StateColumn stateSecond[];
+extern StateColumn stateThird[];
+extern StateColumn stateFourth[];
 extern const Vector3& __cdecl zeroVector();
 
 struct Climbing {
@@ -91,21 +100,19 @@ void Climbing::update(float dt)
     active = false;
     part.reset();
 
-    const Vector3& zero = zeroVector();
-    velocity.x = zero.x;
-    velocity.y = zero.y;
-    velocity.z = zero.z;
+    velocity = zeroVector();
 
     remaining -= dt;
     setFirst(firstFlag());
     setSecond(secondFlag());
     setThird(thirdFlag());
 
-    if (stateTable[state()].third != 13 ||
-        stateTable[state()].fourth != 13) {
+    if (stateThird[state()].value != 13 ||
+        stateFourth[state()].value != 13) {
         refreshPart();
         if (part.pointer) {
-            owner->controller->setPrimitive(&part.pointer->primitive, 0);
+            owner->controller->setPrimitive(
+                part.pointer ? &part.pointer->primitive : 0, 0);
             if (oldPart == part.pointer) {
                 previous = current;
                 Primitive* primitive =
@@ -124,7 +131,7 @@ void Climbing::update(float dt)
         }
     }
 
-    if (stateTable[state()].first != 13 ||
-        stateTable[state()].second != 13)
+    if (stateFirst[state()].value != 13 ||
+        stateSecond[state()].value != 13)
         active = check(0);
 }

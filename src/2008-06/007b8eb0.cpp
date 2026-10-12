@@ -1,5 +1,27 @@
-// from server: 99% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs-render TextureProxy.cpp
+// from server: 100% by king_originala
+void* __cdecl operator new(unsigned int);
+void __cdecl operator delete(void*);
+
+struct Texture;
+
+struct Ptr {
+    Texture* value;
+    Ptr(Texture*);
+    Ptr(const Ptr&);
+    ~Ptr();
+    void assign(Texture*);
+};
+
+struct Texture {
+    char storage[0x54];
+    Texture(Ptr);
+    Ptr clone();
+};
+
+inline Ptr::Ptr(Texture* p) : value(0) {
+    assign(p);
+}
+
+Ptr Texture::clone() {
+    return Ptr(new Texture(Ptr(this)));
+}
