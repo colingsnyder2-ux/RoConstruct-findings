@@ -1,47 +1,45 @@
-// from server: 89% by colin
-struct S_004d8ff0 {
-    int f0;
-    int f4;
-    int* f8;
-    int fc;
-    void method_004d8ff0();
+// from server: 100% by king_originala
+namespace G3D {
+struct System {
+    static void __cdecl free(void*);
+    static void __cdecl alignedFree(void*);
+};
+}
+
+struct Payload {
+    void* vtable;
+    unsigned char data[12];
+    void destroy();
 };
 
-struct Node_004d8ff0 {
-    int pad0;
-    int pad4;
-    int pad8;
-    int padc;
-    int pad10;
-    int pad14;
-    Node_004d8ff0* f18;
+struct Node {
+    unsigned char data[8];
+    Payload value;
+    Node* next;
 };
 
-extern "C" void __cdecl func_004d7e30(int*);
-extern "C" void __cdecl func_00507d00(void*);
-extern "C" void __cdecl func_00507d20(void*);
+struct S {
+    unsigned int field0;
+    int size;
+    Node** buckets;
+    int bucketCount;
+    void clear();
+};
 
-void S_004d8ff0::method_004d8ff0()
+void S::clear()
 {
-    int i = 0;
-    if (fc > 0) {
-        do {
-            Node_004d8ff0* p = (Node_004d8ff0*)f8[i];
-            if (p != 0) {
-                do {
-                    Node_004d8ff0* next = p->f18;
-                    int* q = (int*)((char*)p + 8);
-                    *q = 0x826c1c;
-                    func_004d7e30(q);
-                    func_00507d00(p);
-                    p = next;
-                } while (p != 0);
-            }
-            ++i;
-        } while (i < fc);
+    for (int i = 0; i < bucketCount; ++i) {
+        Node* node = buckets[i];
+        while (node) {
+            Node* next = node->next;
+            node->value.vtable = (void*)0x00826bf4;
+            node->value.destroy();
+            G3D::System::free(node);
+            node = next;
+        }
     }
-    func_00507d20(f8);
-    f8 = 0;
-    fc = 0;
-    f4 = 0;
+    G3D::System::alignedFree(buckets);
+    buckets = 0;
+    bucketCount = 0;
+    size = 0;
 }

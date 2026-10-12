@@ -1,28 +1,33 @@
-// from server: 62% by colin
-struct Item {
-    int a;
-    char pad0[0x20];
-    float f24;
-    float f28;
-    float f2c;
-    char pad1[4];
-    char sub[0x30];
-    Item* copyFrom(const Item* other);
-    void subInit(const void* p);
+// from server: 100% by king_originala
+struct Matrix
+{
+    float values[9];
+    Matrix(const Matrix &);
 };
 
-extern "C" void __stdcall copy9(void* dst, const void* src);
+struct Transform
+{
+    Matrix matrix;
+    float x, y, z;
+};
 
-void Item::subInit(const void* p) {
-    copy9(sub, p);
-}
+struct Tail
+{
+    Tail(const Tail &);
+};
 
-Item* Item::copyFrom(const Item* other) {
-    a = other->a;
-    copy9(pad0, other->pad0);
-    f24 = other->f24;
-    f28 = other->f28;
-    f2c = other->f2c;
-    subInit(other->sub);
-    return this;
+struct S
+{
+    int value;
+    Transform transform;
+    Tail tail;
+
+    S(const S &);
+};
+
+S::S(const S &other)
+    : value(other.value),
+      transform(other.transform),
+      tail(other.tail)
+{
 }

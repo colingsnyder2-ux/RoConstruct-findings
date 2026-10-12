@@ -1,124 +1,145 @@
-// from server: 17% by colin
+// from server: 71% by king_originala
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
 
-extern "C" void __stdcall _invalid_parameter_noinfo();
+extern "C" void (__cdecl* _invalid_parameter_noinfo)();
 
-struct RefCounted {
-    void* vptr;
-    long refcount;
-    long weakrefcount;
+struct Instance;
+struct Provider;
+
+struct Input {
+    char padding[8];
+    Instance* instance;
 };
 
-struct ListBase {
-    void* vptr;
-    void* head;
-    void* tail;
+struct Control {
+    virtual void reserved();
+    virtual void dispose();
+    virtual void destroy();
+    volatile long strong;
+    volatile long weak;
 };
 
-struct Inner {
-    char pad[0x154];
-    ListBase* list;
+struct ControlHolder {
+    Control* control;
+    void assign(const ControlHolder*);
 };
 
-struct Node {
-    Node* next;
-    Node* prev;
+struct Shared {
+    Provider* object;
+    ControlHolder holder;
+    Shared& operator=(const Shared&);
+    ~Shared();
 };
 
-struct VInstance {
-    char pad[0x134];
-    void* field134;
-    void* field138;
-    void* field13c;
-};
+__forceinline Shared& Shared::operator=(const Shared& other)
+{
+    object = other.object;
+    holder.assign(&other.holder);
+    return *this;
+}
 
-extern "C" void* __cdecl func_00421cb0(void*);
-extern "C" void __cdecl func_0055acc0(void*);
-extern "C" void __cdecl func_00618a40(void*, void*, void*);
-extern "C" void __cdecl func_004025b0(void*, void*);
-extern "C" void __cdecl func_004213a0(void*, void*);
-extern "C" void __cdecl func_00567180(void*, void*);
-
-struct FilteredSelection {
-    void method(void*);
-};
-
-void FilteredSelection::method(void* arg) {
-    VInstance* self = (VInstance*)this;
-    func_0055acc0(arg);
-    if (self->field134 != 0) {
-        return;
-    }
-    void* p = func_00421cb0(*(void**)((char*)arg + 8));
-    void* tmp;
-    func_00618a40(&tmp, p, 0);
-    void* val = *(void**)tmp;
-    tmp = (char*)tmp + 4;
-    self->field134 = val;
-    func_004025b0(&self->field138, &tmp);
-    RefCounted* rc = (RefCounted*)tmp;
-    if (rc != 0) {
-        if (_InterlockedExchangeAdd(&rc->refcount, -1) == 1) {
-            void** vt = (void**)rc->vptr;
-            void (*fn)(void*) = (void (*)(void*))vt[1];
-            fn(rc);
-            if (_InterlockedExchangeAdd(&rc->weakrefcount, -1) == 1) {
-                void** vt2 = (void**)rc->vptr;
-                void (*fn2)(void*) = (void (*)(void*))vt2[2];
-                fn2(rc);
-            }
+__forceinline Shared::~Shared()
+{
+    if (holder.control) {
+        Control* p = holder.control;
+        if (_InterlockedExchangeAdd(&p->strong, -1) == 0) {
+            p->dispose();
+            if (_InterlockedExchangeAdd(&p->weak, -1) == 0)
+                p->destroy();
         }
     }
-    if (self->field134 == 0) {
+}
+
+struct Listener {
+    void insert(Instance* const*);
+};
+
+struct Entry {
+    Instance* object;
+    Control* control;
+};
+
+struct Sequence;
+
+struct Proxy {
+    Sequence* owner;
+};
+
+struct Sequence {
+    Proxy* proxy;
+    char padding[8];
+    Entry* first;
+    Entry* last;
+    Entry* limit;
+};
+
+struct Provider {
+    char padding[0x154];
+    Sequence* sequence;
+    void connect(void*);
+};
+
+extern Provider* __cdecl func_00421cb0(Instance*);
+extern Shared __cdecl resolve(Provider*);
+
+struct Selection {
+    char padding[0x130];
+    void* connection;
+    Shared selected;
+    Listener listener;
+    void initialize(Input*);
+    void update(Input*);
+};
+
+void Selection::update(Input* input)
+{
+    initialize(input);
+    if (selected.object)
         return;
-    }
-    Inner* inner = (Inner*)((char*)self->field134 + 0x154);
-    ListBase* lb = inner->list;
-    Node* first = (Node*)lb->head;
-    Node* last = (Node*)lb->tail;
-    if (first > last) {
+
+    selected = resolve(func_00421cb0(input->instance));
+
+    if (!selected.object)
+        return;
+
+    Sequence* sequence = selected.object->sequence;
+    Entry* current = sequence->first;
+    if (current > sequence->last)
         _invalid_parameter_noinfo();
-    }
-    Node* cur = first;
-    while (true) {
-        Inner* inner2 = (Inner*)((char*)self->field134 + 0x154);
-        ListBase* lb2 = inner2->list;
-        Node* end = (Node*)lb2->tail;
-        if ((Node*)lb2->head > end) {
+    Proxy* proxy = sequence->proxy;
+
+    for (;;) {
+        sequence = selected.object->sequence;
+        Entry* end = sequence->last;
+        if (sequence->first > end)
             _invalid_parameter_noinfo();
-        }
-        Node* next = (Node*)lb2->head;
-        if (cur != 0 && cur == next) {
-        } else {
-            _invalid_parameter_noinfo();
-        }
-        if (first == end) {
+
+        Proxy* endProxy = sequence->proxy;
+        void (__cdecl* invalid)() = _invalid_parameter_noinfo;
+        if (!proxy || proxy != endProxy)
+            invalid();
+
+        if (current == end)
             break;
-        }
-        Node* n;
-        if (cur != 0) {
-            n = cur;
-        } else {
-            _invalid_parameter_noinfo();
-            n = 0;
-            if (first < (Node*)0x10) {
-                _invalid_parameter_noinfo();
-            }
-        }
-        void* item = n->next;
-        if (item != 0) {
-            func_004213a0(&self->field13c, &item);
-        }
-        if (cur != 0) {
-            cur = (Node*)cur->next;
-        } else {
-            _invalid_parameter_noinfo();
-            if (first < (Node*)0x10) {
-                _invalid_parameter_noinfo();
-            }
-            cur = (Node*)((char*)first + 8);
-        }
+
+        if (!proxy)
+            invalid();
+        Sequence* owner = proxy ? proxy->owner : 0;
+        if (current >= owner->last)
+            invalid();
+
+        Instance* object = current->object;
+        if (object)
+            listener.insert(&object);
+
+        if (!proxy)
+            invalid();
+        owner = proxy ? proxy->owner : 0;
+        if (current >= owner->last)
+            invalid();
+        ++current;
     }
-    func_00567180(&self->field134, self->field134);
+
+    selected.object->connect(&connection);
 }

@@ -1,5 +1,17 @@
-// from server: 63% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: openrbx-client App/v8world/Assembly2.cpp
+// from server: 100% by king_originala
+struct State {
+    char padding[0xA8];
+    unsigned char a;
+    unsigned char b;
+    unsigned char c;
+};
+
+struct Clump {
+    char padding[0x1C];
+    State* state;
+    int f();
+};
+
+int Clump::f() {
+    return state->a || state->b || state->c;
+}

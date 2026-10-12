@@ -1,41 +1,43 @@
-// from server: 84% by colin
-struct BodyMover {
-    char pad[0x138];
-    int field138;
-    void f(int, int);
+// from server: 100% by king_originala
+struct Listener {
+    char storage;
 };
 
-extern "C" void* __stdcall sub_4530F0();
-
-struct JointsService {
-    char pad[0x150];
-    void addMover(int*);
-    void removeMover(int*);
+struct ListenerCollection {
+    void detach(Listener*);
+    void attach(Listener*);
 };
 
-void BodyMover::f(int a, int b) {
-    if (a) {
-        int* p;
-        if (this)
-            p = &this->field138;
-        else
-            p = 0;
-        void* svc = sub_4530F0();
-        if (svc) {
-            JointsService* js = (JointsService*)((char*)svc + 0x150);
-            js->addMover(p);
-        }
+struct Service {
+    char padding[0x150];
+    ListenerCollection listeners;
+};
+
+struct Instance {
+    Service* getService();
+};
+
+struct Prefix {
+    char padding[0x138];
+};
+
+struct BodyMover : Prefix, Listener {
+    void changeParent(Instance* previous, Instance* current);
+};
+
+void BodyMover::changeParent(Instance* previous, Instance* current)
+{
+    if (previous) {
+        Listener* listener = static_cast<Listener*>(this);
+        Service* service = previous->getService();
+        if (service)
+            service->listeners.detach(listener);
     }
-    if (b) {
-        int* p;
-        if (this)
-            p = &this->field138;
-        else
-            p = 0;
-        void* svc = sub_4530F0();
-        if (svc) {
-            JointsService* js = (JointsService*)((char*)svc + 0x150);
-            js->removeMover(p);
-        }
+
+    if (current) {
+        Listener* listener = static_cast<Listener*>(this);
+        Service* service = current->getService();
+        if (service)
+            service->listeners.attach(listener);
     }
 }

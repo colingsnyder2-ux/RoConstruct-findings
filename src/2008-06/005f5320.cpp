@@ -1,24 +1,34 @@
-// from server: 70% by atomic.potato
-struct S
+// from server: 100% by king_originala
+struct Locale
 {
-    unsigned char pad0[0x8c];
-    void* value;
-    unsigned char pad1[0x0c];
-    unsigned char flags;
-    void f(void*);
+    unsigned int value;
 };
 
-typedef void (__thiscall *P1)(void*, void*);
-typedef void (__thiscall *P2)(void*);
+struct Stream;
 
-extern P1 g_802568;
-extern P2 g_802564;
+extern void (__thiscall *pubimbue)(Stream*, Locale*, const Locale&);
+extern void (__thiscall *destroy_locale)(Locale*);
 
-void S::f(void* arg)
+struct S
 {
-    if ((flags & 1) != 0 && value != 0)
+    char padding[0x8c];
+    Stream* stream;
+    char reserved[12];
+    unsigned char flags;
+
+    void f(const Locale& locale);
+};
+
+void S::f(const Locale& locale)
+{
+    if (flags & 1)
     {
-        g_802568(value, arg);
-        g_802564(&value);
+        Stream* p = stream;
+        if (p)
+        {
+            Locale result;
+            pubimbue(p, &result, locale);
+            destroy_locale(&result);
+        }
     }
 }

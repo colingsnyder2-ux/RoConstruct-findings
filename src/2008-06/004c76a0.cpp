@@ -1,33 +1,50 @@
-// from server: 39% by atomic.potato
-struct CNameItem {
-    void Init();
+// from server: 71% by king_originala
+typedef unsigned int size_t;
+void* __cdecl operator new(size_t);
+
+struct Name {
+    char storage[48];
+    Name();
+    ~Name();
 };
 
-struct Assoc {
-    char pad0[4];
-    CNameItem name;
-    char pad1[0x2c];
-    void* field34;
-    char pad2[8];
-    int f0c;
-    int f10;
-    int f14;
-    Assoc* Init();
+struct Links;
+
+struct Owner {
+    Links* value;
+    Owner(Links*);
 };
 
-extern "C" void* __stdcall sub_6a0920(int);
+struct Links {
+    Owner* owner;
+    unsigned int reserved[2];
+    void* first;
+    void* last;
+    void* end;
+    Links();
+    ~Links();
+};
 
-Assoc* Assoc::Init()
+struct Item {
+    unsigned int reserved;
+    Name name;
+    Links links;
+    Item();
+};
+
+__forceinline Owner::Owner(Links* p)
+    : value(p)
 {
-    name.Init();
-    void* p = sub_6a0920(4);
-    if (p != 0)
-        *(void**)p = &field34;
-    else
-        p = 0;
-    field34 = p;
-    f0c = 0;
-    f10 = 0;
-    f14 = 0;
-    return this;
+}
+
+__forceinline Links::Links()
+{
+    owner = new Owner(this);
+    first = 0;
+    last = 0;
+    end = 0;
+}
+
+Item::Item()
+{
 }

@@ -1,15 +1,15 @@
-// from server: 50% by atomic.potato
-extern "C" void __cdecl CallTarget(void *);
+// from server: 100% by king_originala
+extern "C" void __cdecl release(void *);
 
-struct S
-{
-    int pad0[4];
-    void *field14;
+struct S {
+    unsigned char padding[16];
+    int active;
+    void *allocation;
     void f();
 };
 
 void S::f()
 {
-    if (pad0[4] != 0)
-        CallTarget(field14);
+    if (active)
+        release(allocation);
 }

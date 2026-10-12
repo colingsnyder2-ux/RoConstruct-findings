@@ -1,15 +1,21 @@
-// from server: 80% by atomic.potato
-struct CWebToolbox
+// from server: 100% by king_originala
+struct Child
 {
-    void Update(void *);
-    void Finalize();
-    char unused[0xf8];
-    void *field_f8;
+    void update();
 };
 
-void CWebToolbox::Update(void *arg)
+struct CWebToolbox
 {
-    Update(arg);
-    if (field_f8)
-        Finalize();
+    char padding[0xF8];
+    Child* child;
+
+    void baseCall(int value);
+    void func_0046a6d0(int value);
+};
+
+void CWebToolbox::func_0046a6d0(int value)
+{
+    baseCall(value);
+    if (child)
+        child->update();
 }

@@ -1,32 +1,30 @@
-// from server: 90% by colin
-// roc 2008-06 00419ae0  unit: VCLuaFunction::?$CComObject  size: 88 bytes
-// Make this compile to the exact bytes below, then: roc check 2008-06 00419ae0
+// from server: 100% by king_originala
+extern "C" void* __cdecl allocate(unsigned int);
+extern "C" void __cdecl construct(void*, const void*);
 
-extern "C" void* __cdecl operator_new(unsigned int size);
-extern "C" void __stdcall sub_4192a0();
-extern "C" void __stdcall sub_429040(void* a, void* b);
+struct S {
+    unsigned int reserved[4];
+    void** blocks;
+    unsigned int capacity;
+    unsigned int start;
+    unsigned int count;
 
-struct VCLuaFunction {
-    char pad0[0x10];
-    void** array;      // +0x10
-    int capacity;      // +0x14
-    int size;          // +0x18
-    int offset;        // +0x1c
-    void push_back(void* value);
+    void grow(unsigned int);
+    void append(const void*);
 };
 
-void VCLuaFunction::push_back(void* value) {
-    int newSize = offset + 1;
-    if (capacity <= (unsigned)newSize) {
-        sub_4192a0();
-    }
-    int idx = size + offset;
-    if ((unsigned)capacity <= (unsigned)idx) {
-        idx -= capacity;
-    }
-    if (array[idx] == 0) {
-        array[idx] = operator_new(0x20);
-    }
-    sub_429040(array[idx], value);
-    offset++;
+void S::append(const void* value)
+{
+    if (capacity <= count + 1)
+        grow(1);
+
+    unsigned int index = start + count;
+    if (capacity <= index)
+        index -= capacity;
+
+    if (blocks[index] == 0)
+        blocks[index] = allocate(32);
+
+    construct(blocks[index], value);
+    ++count;
 }

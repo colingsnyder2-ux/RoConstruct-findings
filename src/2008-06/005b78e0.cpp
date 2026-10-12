@@ -1,5 +1,64 @@
-// from server: 57% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: openrbx-client App/script/Script.cpp
+// from server: 96% by king_originala
+extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
+#pragma intrinsic(_InterlockedExchangeAdd)
+
+struct String;
+extern String* (__thiscall *copyString)(String*, const String&);
+
+struct String {
+    char storage[28];
+    String(const String&);
+};
+
+__forceinline String::String(const String& source)
+{
+    copyString(this, source);
+}
+
+struct Control {
+    long unused;
+    volatile long references;
+};
+
+struct Payload {
+    String text;
+    int value;
+    void* object;
+    Control* control;
+
+    Payload(const Payload&);
+};
+
+__forceinline Payload::Payload(const Payload& source)
+    : text(source.text),
+      value(source.value),
+      object(source.object),
+      control(source.control)
+{
+    if (control) {
+        volatile long* count = reinterpret_cast<volatile long*>(control);
+        ++count;
+        _InterlockedExchangeAdd(count, 1);
+    }
+}
+
+struct S {
+    int first;
+    int second;
+    int third;
+    Payload payload;
+    bool enabled;
+    bool flag;
+
+    S(int, int, int, const Payload&, bool);
+};
+
+S::S(int a, int b, int c, const Payload& source, bool state)
+    : first(a),
+      second(b),
+      third(c),
+      payload(source),
+      enabled(state),
+      flag(false)
+{
+}

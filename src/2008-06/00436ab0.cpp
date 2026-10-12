@@ -1,27 +1,59 @@
-// from server: 35% by colin
-struct COutputView {
-    char pad[0xf8];
-    int field_f8;
-    char pad2[0x118 - 0xf8 - 4];
-    int field_118;
-    int field_11c;
-    void sub_436760();
-    void sub_465a80();
+// from server: 82% by king_originala
+void __cdecl operator delete(void *);
+
+struct B_func_00465a80 {
+    virtual ~B_func_00465a80();
 };
 
-extern "C" void __cdecl sub_6a067a(int);
+struct S_func_00465a80 : B_func_00465a80 {
+    ~S_func_00465a80();
+};
 
-void COutputView::sub_465a80()
+struct Interface;
+
+struct InterfaceTable {
+    void *slots[2];
+    unsigned long (__stdcall *release)(Interface *);
+};
+
+struct Interface {
+    InterfaceTable *table;
+};
+
+struct Storage {
+    void *first;
+    ~Storage();
+};
+
+struct Container {
+    Storage storage;
+    unsigned char remainder[28];
+    void clear();
+    ~Container();
+};
+
+struct COutputView : S_func_00465a80 {
+    unsigned char padding[244];
+    Container container;
+    Interface *firstInterface;
+    Interface *secondInterface;
+    ~COutputView();
+};
+
+__forceinline Storage::~Storage()
 {
-    int* p;
-    if (field_11c) {
-        p = (int*)field_11c;
-        ((void (__thiscall*)(int*))((int*)*p)[2])(p);
-    }
-    if (field_118) {
-        p = (int*)field_118;
-        ((void (__thiscall*)(int*))((int*)*p)[2])(p);
-    }
-    sub_436760();
-    sub_6a067a(field_f8);
+    operator delete(first);
+}
+
+__forceinline Container::~Container()
+{
+    clear();
+}
+
+COutputView::~COutputView()
+{
+    if (secondInterface)
+        secondInterface->table->release(secondInterface);
+    if (firstInterface)
+        firstInterface->table->release(firstInterface);
 }

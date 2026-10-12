@@ -1,16 +1,19 @@
-// from server: 32% by atomic.potato
-struct S
-{
-    int f(int *);
-    char data[48];
+// from server: 100% by king_originala
+struct Texture {
+    unsigned int value;
+    Texture(const Texture&);
+    ~Texture();
 };
 
-extern "C" void TextureInit(void *, void *);
+struct AggregateChunk {
+    char padding[44];
+    Texture texture;
+    Texture getTexture();
+};
 
-int S::f(int *p)
+#pragma optimize("", off)
+Texture AggregateChunk::getTexture()
 {
-    int x = 0;
-    TextureInit(data + 44, p);
-    x |= 1;
-    return (int)p;
+    return texture;
 }
+#pragma optimize("", on)

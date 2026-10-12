@@ -1,5 +1,121 @@
-// from server: 31% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: openrbx-client App/v8world/SleepStage2.cpp
+// from server: 73% by king_originala
+struct Stage;
+struct Primitive;
+
+struct State {
+    int value;
+    int auxiliary;
+    void cleanup();
+};
+
+struct Action {
+    void invoke();
+};
+
+struct Link3 {
+    char padding[0x2c];
+    Action* action;
+};
+
+struct Link2 {
+    char padding[0x10];
+    Link3* next;
+};
+
+struct Link1 {
+    char padding[0xa0];
+    Link2* next;
+};
+
+struct Link {
+    char padding[0x1c];
+    Link1* next;
+};
+
+struct Primitive {
+    char padding0[4];
+    Stage* owner;
+    char padding1[0x10];
+    State* state;
+    char padding2[8];
+    Link* link;
+
+    void setState(int value);
+    void setOwner(Stage* owner);
+};
+
+struct InsertResult {
+    char data[12];
+};
+
+struct Container {
+    char data[1];
+    void erase(Primitive* const* key);
+    void insert(InsertResult* result, Primitive* const* key);
+};
+
+struct Manager {
+    void remove(Primitive* primitive);
+};
+
+struct Collection {
+    void remove(Primitive* primitive, int flag);
+};
+
+struct Stage {
+    virtual void slot0();
+    virtual int rank();
+
+    int reserved;
+    Manager* manager;
+    Collection* collection;
+    char padding[0x170];
+    Container container;
+
+    Container* select(int state);
+    void f(Primitive* primitive);
+};
+
+extern "C" void __cdecl releaseMemory(void* memory);
+
+void Stage::f(Primitive* primitive)
+{
+    Primitive* p = primitive;
+    Primitive* key = p;
+    int state;
+
+    if (p->owner && p->owner->rank() >= rank())
+        state = p->state->value;
+    else
+        state = 0;
+
+    Container* selected = select(state);
+    Container* destination = &container;
+    selected->erase(&key);
+
+    InsertResult result;
+    destination->insert(&result, &key);
+
+    if (state == 4 || state == 5) {
+        Action* action = p->link->next->next->next->action;
+        if (action)
+            action->invoke();
+    }
+
+    if (p->owner->rank() > rank())
+        manager->remove(p);
+
+    p->state->auxiliary = 0;
+    p->state->value = 6;
+    collection->remove(p, 0);
+    destination->erase(&primitive);
+
+    State* oldState = p->state;
+    if (oldState) {
+        oldState->cleanup();
+        releaseMemory(oldState);
+    }
+
+    p->setState(0);
+    p->setOwner(this);
+}

@@ -1,5 +1,14 @@
-// from server: 52% by colin
-// roc-lang: cpp
-// roc-cl: 30729
-// roc-flags: /O2 /GS- /MD
-// roc-lib: mfc-9.0 atlmfc/src/mfc/afxoutlookbartabctrl.cpp
+// from server: 100% by king_originala
+void* __cdecl operator new(unsigned int);
+void __cdecl operator delete(void*);
+
+struct S
+{
+    char storage[0x1f0];
+    S();
+};
+
+S* __cdecl f()
+{
+    return new S;
+}

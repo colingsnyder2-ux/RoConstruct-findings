@@ -1,5 +1,39 @@
-// from server: 51% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: openrbx-client App/script/LuaInstanceBridge.cpp
+// from server: 90% by king_originala
+typedef void (__cdecl *Manager)(void *, void *, int);
+extern Manager globalManager;
+
+struct Binder {
+    Manager *manager;
+    unsigned int reserved;
+    unsigned int storage;
+
+    void assign(unsigned int value);
+};
+
+void Binder::assign(unsigned int value)
+{
+    if (manager) {
+        Manager callback = *manager;
+        unsigned int *destination = &storage;
+        if (callback)
+            callback(destination, destination, 1);
+        manager = 0;
+    }
+
+    try {
+        Manager callback = globalManager;
+        unsigned int *destination = &storage;
+        if (callback)
+            callback(destination, destination, 1);
+
+        if (value) {
+            *destination = value;
+            manager = &globalManager;
+        } else {
+            *destination = 0;
+        }
+    } catch (...) {
+        manager = 0;
+        throw;
+    }
+}

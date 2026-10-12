@@ -1,5 +1,22 @@
-// from server: 51% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs script/ScriptEvent.cpp
+// from server: 100% by king_originala
+struct Accessor {
+    virtual void slot0();
+    virtual void slot1();
+    virtual void* get(void*);
+};
+
+extern "C" void __cdecl convert(void*, void**);
+
+struct S {
+    unsigned char padding[24];
+    Accessor* accessor;
+    void* f(void* result, void* object);
+};
+
+void* S::f(void* result, void* object)
+{
+    volatile unsigned int unused = 0;
+    object = accessor->get(object);
+    convert(result, &object);
+    return result;
+}
