@@ -1,16 +1,25 @@
-// from server: 27% by colin
-struct RBX_RenderBase_AggregateChunk {
-    char pad[0x10];
-    int field_0x10;
-    bool sub_553160(int);
-    int sub_5531e0(int, int, int);
-    bool method(int, int);
+// from server: 76% by king_originala
+class _com_error {};
+
+struct S {
+    unsigned char padding[12];
+    int source;
+    int result;
+
+    bool check(void*);
+    int compute(int, void*, void*);
+    void f(void*, void*);
 };
 
-bool RBX_RenderBase_AggregateChunk::method(int a, int b) {
-    if (!this->sub_553160(a))
-        return false;
-    int r = this->sub_5531e0(this->field_0x10, a, b);
-    this->field_0x10 = r;
-    return true;
+#pragma optimize("", off)
+void S::f(void* a, void* b)
+{
+    if (check(a)) {
+        try {
+            result = compute(source, a, b);
+        }
+        catch (const _com_error&) {
+        }
+    }
 }
+#pragma optimize("", on)

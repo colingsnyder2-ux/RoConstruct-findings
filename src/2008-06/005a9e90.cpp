@@ -1,5 +1,12 @@
-// from server: 49% by colin
-// roc-lang: cpp
-// roc-cl: 50727
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs script/ScriptContext.cpp
+// from server: 100% by tester
+extern int typeTag;
+extern "C" unsigned int* __cdecl getValue(void*, int, int);
+extern "C" void __cdecl pushBoolean(void*, int);
+
+int __cdecl compareValues(void* state)
+{
+    unsigned int* first = getValue(state, 1, typeTag);
+    unsigned int* second = getValue(state, 2, typeTag);
+    pushBoolean(state, *first == *second);
+    return 1;
+}

@@ -1,30 +1,40 @@
-// from server: 55% by tester
-struct RefCounted
-{
-    void* vtable;
-    int refcount;
-    int weakcount;
-    void* arg;
+extern void* __cdecl operator new(unsigned int);
+extern const unsigned char control_table[];
+
+struct Object {
+    virtual ~Object();
 };
 
-struct GenericSlotWrapper
-{
-    void* slot;
-    GenericSlotWrapper(void* arg1, void* arg2);
+struct Deleter {};
+
+struct Control {
+    const void* table;
+    long strong;
+    long weak;
+    Object* object;
+    Deleter deleter;
 };
 
-extern "C" void* __cdecl operator_new(unsigned int size);
+struct S {
+    Control* control;
+    S(Object* object, Deleter deleter);
+};
 
-GenericSlotWrapper::GenericSlotWrapper(void* arg1, void* arg2)
+S::S(Object* object, Deleter deleter) : control(0)
 {
-    slot = 0;
-    RefCounted* p = (RefCounted*)operator_new(0x14);
-    if (p)
-    {
-        p->refcount = 1;
-        p->weakcount = 1;
-        p->vtable = (void*)0x824794;
-        p->arg = arg1;
+    try {
+        Control* p = static_cast<Control*>(operator new(sizeof(Control)));
+        if (p) {
+            p->strong = 1;
+            p->weak = 1;
+            p->table = control_table;
+            p->object = object;
+        } else {
+            p = 0;
+        }
+        control = p;
+    } catch (...) {
+        delete object;
+        throw;
     }
-    slot = p;
 }

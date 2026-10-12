@@ -1,5 +1,14 @@
-// from server: 41% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs-view MaterialFactory.cpp
+// from server: 100% by king_originala
+struct Tag {};
+
+extern char typeTag;
+extern "C" void __cdecl helper(int, void *, int, Tag);
+
+void __cdecl f(int a, void *b, int c)
+{
+    if (c != 3) {
+        helper(a, b, c, Tag());
+        return;
+    }
+    *(void **)b = &typeTag;
+}

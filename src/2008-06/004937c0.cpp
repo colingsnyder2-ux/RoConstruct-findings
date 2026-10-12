@@ -1,5 +1,11 @@
-// from server: 97% by colin
-// roc-lang: cpp
-// roc-cl: 50727
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs-net Player.cpp
+// from server: 100% by tester
+struct Sec { void enter(); };
+Sec* __stdcall getSec(int, const char*);
+struct Base { void setName(const void* n); };
+struct Player : Base {
+    void setName(const void* n);
+};
+void Player::setName(const void* n) {
+    getSec(3, "set a Player's name")->enter();
+    Base::setName(n);
+}

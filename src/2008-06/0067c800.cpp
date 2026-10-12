@@ -1,5 +1,39 @@
-// from server: 32% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: ogre-1.7.0 OgreMeshSerializerImpl.cpp
+// from server: 88% by king_originala
+struct S
+{
+    int value;
+    float key;
+};
+
+void __cdecl sortThree(S* a, S* b, S* c)
+{
+    if (a->key > b->key)
+    {
+        if (b != a)
+        {
+            S temp = *b;
+            *b = *a;
+            *a = temp;
+        }
+    }
+
+    if (b->key > c->key)
+    {
+        if (c != b)
+        {
+            S temp = *c;
+            *c = *b;
+            *b = temp;
+        }
+    }
+
+    if (a->key > b->key)
+    {
+        if (b != a)
+        {
+            S temp = *b;
+            *b = *a;
+            *a = temp;
+        }
+    }
+}

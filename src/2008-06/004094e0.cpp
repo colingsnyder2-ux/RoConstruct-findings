@@ -1,23 +1,41 @@
-// from server: 52% by colin
-struct S {
-    int f(int a, int b);
+// from server: 100% by tester
+extern void* __cdecl operator new(unsigned int);
+extern const unsigned char control_table[];
+
+struct Object {
+    virtual ~Object();
 };
 
-extern "C" void* __cdecl sub_6A0920(unsigned int size);
+struct Deleter {};
 
-int S::f(int a, int b)
+struct Control {
+    const void* table;
+    long strong;
+    long weak;
+    Object* object;
+    Deleter deleter;
+};
+
+struct S {
+    Control* control;
+    S(Object* object, Deleter deleter);
+};
+
+S::S(Object* object, Deleter deleter) : control(0)
 {
-    int* p;
-    *(int*)this = 0;
-    p = (int*)sub_6A0920(0x14);
-    if (p != 0) {
-        p[1] = 1;
-        p[2] = 1;
-        p[0] = 0x80b6d0;
-        p[3] = a;
-    } else {
-        p = 0;
+    try {
+        Control* p = static_cast<Control*>(operator new(sizeof(Control)));
+        if (p) {
+            p->strong = 1;
+            p->weak = 1;
+            p->table = control_table;
+            p->object = object;
+        } else {
+            p = 0;
+        }
+        control = p;
+    } catch (...) {
+        delete object;
+        throw;
     }
-    *(int*)this = (int)p;
-    return (int)this;
 }

@@ -1,29 +1,40 @@
-// from server: 52% by colin
-struct Creator {
-    void* vtable;
-    int refcount1;
-    int refcount2;
-    void* arg;
+extern void* __cdecl operator new(unsigned int);
+extern const unsigned char control_table[];
+
+struct Object {
+    virtual ~Object();
 };
 
-extern "C" void* __cdecl operator_new(unsigned int size);
+struct Deleter {};
 
-struct FactoryProduct {
-    void* field0;
-    FactoryProduct(void* arg, int dummy);
+struct Control {
+    const void* table;
+    long strong;
+    long weak;
+    Object* object;
+    Deleter deleter;
 };
 
-FactoryProduct::FactoryProduct(void* arg, int dummy)
+struct S {
+    Control* control;
+    S(Object* object, Deleter deleter);
+};
+
+S::S(Object* object, Deleter deleter) : control(0)
 {
-    field0 = 0;
-    Creator* c = (Creator*)operator_new(0x14);
-    if (c) {
-        c->refcount1 = 1;
-        c->refcount2 = 1;
-        c->vtable = (void*)0x811c3c;
-        c->arg = arg;
-    } else {
-        c = 0;
+    try {
+        Control* p = static_cast<Control*>(operator new(sizeof(Control)));
+        if (p) {
+            p->strong = 1;
+            p->weak = 1;
+            p->table = control_table;
+            p->object = object;
+        } else {
+            p = 0;
+        }
+        control = p;
+    } catch (...) {
+        delete object;
+        throw;
     }
-    field0 = c;
 }

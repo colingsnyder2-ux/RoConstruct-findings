@@ -1,42 +1,35 @@
-// from server: 34% by tester
-struct EnumDescBase {
-    static void* singleton();
+// from server: 100% by king_originala
+extern char descriptorData;
+extern void __cdecl initializeDescriptor();
+extern void __cdecl registerDescriptor(void (__cdecl *)(), void *);
+
+struct EnumDescriptor {
+    bool contains(int value);
 };
 
-struct DescribedBase;
+extern EnumDescriptor * __cdecl getEnumDescriptor();
 
-struct Variant {
-    int storage;
+struct Setter {
+    virtual void slot0();
+    virtual void slot1();
+    virtual void slot2();
+    virtual void set(void *object, const int *value);
 };
 
-struct GetSet {
-    bool isReadOnly() const;
-    bool isWriteOnly() const;
-    void getValue(const DescribedBase* instance, Variant& value) const;
-    void setValue(DescribedBase* instance, const Variant& value) const;
+struct S {
+    char padding[28];
+    Setter *setter;
+    bool f(void *object, int value);
 };
 
-struct EnumPropertyDescriptor {
-    void construct(const void* classDesc, void* enumDesc, const char* name, const char* category, int flags);
-};
-
-struct SurfaceEnumPropDescriptor : EnumPropertyDescriptor {
-    GetSet* getset;
-    bool isReadOnly() const;
-    bool isWriteOnly() const;
-    void get(const DescribedBase* instance, Variant& value) const;
-    void set(DescribedBase* instance, const Variant& value) const;
-};
-
-extern "C" void __stdcall sub_557330(void* a, void* b);
-extern "C" void* __stdcall sub_5ed630();
-extern "C" bool __stdcall sub_448450(void* ecx, void* arg);
-
-bool SurfaceEnumPropDescriptor::isReadOnly() const {
-    sub_557330((void*)0x97b120, (void*)0x5ed690);
-    void* desc = sub_5ed630();
-    if (sub_448450(desc, getset)) {
-        return getset->isReadOnly();
+bool S::f(void *object, int value)
+{
+    registerDescriptor(initializeDescriptor, &descriptorData);
+    EnumDescriptor *descriptor = getEnumDescriptor();
+    if (descriptor->contains(value)) {
+        int converted = value;
+        setter->set(object, &converted);
+        return true;
     }
     return false;
 }

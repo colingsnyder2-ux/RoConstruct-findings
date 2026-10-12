@@ -1,35 +1,44 @@
-// from server: 51% by colin
-struct ICreator {
-    void* vftable;
-    int refcount1;
-    int refcount2;
-    void* field_c;
+// from server: 100% by tester
+#pragma optimize("y", off)
+
+void* __cdecl operator new(unsigned int);
+extern void* controlVtable[];
+
+struct Deleter {
+    void operator()(void*) const;
 };
 
-struct Creator {
-    void* vftable;
-    void* field4;
-    void* field8;
-    void* fieldc;
-    void* field10;
+inline void Deleter::operator()(void*) const {}
+
+struct Control {
+    void** vtable;
+    int strong;
+    int weak;
+    void* object;
+    Deleter deleter;
+
+    Control(void*, const Deleter&);
 };
 
-extern "C" void* __cdecl operator_new(unsigned int size);
+inline Control::Control(void* p, const Deleter& d)
+    : strong(1), weak(1), deleter(d)
+{
+    vtable = controlVtable;
+    object = p;
+}
 
-struct FactoryProductCreator : ICreator {
-    FactoryProductCreator(void* arg);
+struct S {
+    Control* control;
+    S(void*, Deleter);
 };
 
-FactoryProductCreator::FactoryProductCreator(void* arg) {
-    this->vftable = 0;
-    Creator* p = (Creator*)operator_new(0x14);
-    if (p != 0) {
-        p->field4 = (void*)1;
-        p->field8 = (void*)1;
-        p->vftable = (void*)0x821b14;
-        p->fieldc = arg;
-    } else {
-        p = 0;
+S::S(void* p, Deleter d) : control(0)
+{
+    try {
+        control = new Control(p, d);
     }
-    this->vftable = p;
+    catch (...) {
+        d(p);
+        throw;
+    }
 }

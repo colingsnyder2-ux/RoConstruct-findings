@@ -1,4 +1,4 @@
-// from server: 86% by atomic.potato
+// from server: 100% by king_originala
 // roc 2008-06 004a49a0  unit: VDHTMLWindow::?$BoundFuncDesc  size: 90 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 004a49a0
 //
@@ -41,15 +41,15 @@
 
 struct VDHTMLWindow_BoundFuncDesc {
     char pad0[0x38];
-    int (__stdcall *field38)(int);
+    int (__thiscall *field38)(int);
     int field3c;
-    int method(int, int*);
+    void method(int, int*);
 };
 
 extern "C" int __cdecl sub_56cbc0();
 extern "C" void* __cdecl sub_6a0920(int);
 
-int VDHTMLWindow_BoundFuncDesc::method(int a, int* out)
+void VDHTMLWindow_BoundFuncDesc::method(int a, int* out)
 {
     int result = field38(field3c + a);
     int* p = out;
@@ -68,7 +68,7 @@ int VDHTMLWindow_BoundFuncDesc::method(int a, int* out)
         *slot = (int)obj;
     }
     if (old) {
-        (*(void(__thiscall**)(int, int))old)(old, 1);
+        typedef void (__thiscall *Destroy)(int, int);
+        (*(Destroy**)old)[0](old, 1);
     }
-    return 0;
 }

@@ -1,38 +1,35 @@
-// from server: 67% by colin
-struct Instance {
-    char pad[0x100];
-    Instance* next;
-};
+// from server: 71% by king_originala
+struct Listener {
+    char padding[12];
+    int active;
+    char remainder[32];
 
-struct ServiceProvider {
-    ServiceProvider* finish();
+    void attach(Listener*);
+    void detach(Listener*);
 };
-
-extern "C" ServiceProvider* __cdecl func_004651c0(Instance* p);
 
 struct SoundService {
-    char pad0[0x130];
-    int field130;
-    char pad1[0x13c - 0x134];
-    int field13c;
-    char pad2[0x165 - 0x140];
-    unsigned char field165;
-    char pad3[0x16c - 0x166];
-    int field16c;
+    char padding[0x130];
+    Listener listener;
+    char reserved[5];
+    unsigned char flags;
+    char reserved2[6];
+    int enabled;
 
-    void method_004218a0(int* p);
-    void method_005e5a80(int* p);
-    void f();
+    void update();
 };
 
-void SoundService::f() {
-    if (field16c != 0 && (field165 & 1) != 0 && field13c != 0) {
-        ServiceProvider* sp = func_004651c0((Instance*)((char*)this + 0x130));
-        if (sp == 0) return;
-        method_004218a0((int*)((char*)sp + 0x130));
-        return;
+SoundService* __cdecl findService(SoundService*);
+
+void SoundService::update()
+{
+    if (enabled && (flags & 1) && listener.active) {
+        SoundService* service = findService(this);
+        if (service)
+            service->listener.attach(&listener);
+    } else {
+        SoundService* service = findService(this);
+        if (service)
+            service->listener.detach(&listener);
     }
-    ServiceProvider* sp = func_004651c0((Instance*)((char*)this + 0x130));
-    if (sp == 0) return;
-    method_005e5a80((int*)((char*)sp + 0x130));
 }

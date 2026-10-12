@@ -1,10 +1,10 @@
-// from server: 25% by atomic.potato
-struct S
-{
-    int f();
+// from server: 100% by king_originala
+#pragma optimize("", off)
+struct S {
+    void* pointer;
+    bool f();
 };
 
-int S::f()
-{
-    return *(int*)this == 0;
+bool S::f() {
+    return pointer == 0;
 }

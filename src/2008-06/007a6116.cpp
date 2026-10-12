@@ -1,16 +1,5 @@
-// from server: 88% by atomic.potato
-struct S
-{
-    int f();
-};
-
-extern "C" void __fastcall Initialize(void *);
-
-int S::f()
-{
-    Initialize((char *)this + 4);
-    *(int *)((char *)this + 32) = 0;
-    *(int *)((char *)this + 36) = 0;
-    *(int *)((char *)this + 40) = 0;
-    return (int)this;
-}
+// from server: 100% by tester
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /MD
+// roc-archive: msvc-atlmfc-rtm atls.lib/f:/dd/vctools/vc7libs/ship/atlmfc/src/atl/atls/staticrelease/obj1r/i386/atlwinmodule.obj

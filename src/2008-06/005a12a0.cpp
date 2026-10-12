@@ -1,5 +1,16 @@
-// from server: 51% by colin
-// roc-lang: cpp
-// roc-cl: 50727
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs tool/ToolsArrow.cpp
+struct Flag {
+    bool value;
+};
+
+extern char descriptor;
+extern void __cdecl manage(void* source, void** destination, int operation, Flag flag);
+
+void __cdecl dispatch(void* source, void** destination, int operation)
+{
+    if (operation != 3) {
+        Flag flag = { false };
+        manage(source, destination, operation, flag);
+    } else {
+        *destination = &descriptor;
+    }
+}

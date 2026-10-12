@@ -1,14 +1,16 @@
-// from server: 67% by atomic.potato
-extern "C" int __stdcall sub_00490af0(int);
-
-struct GeometryService {
-    char pad0[304];
-    int m_value;
-    void f(int a1, int a2);
+// from server: 100% by king_originala
+struct Argument {
+    int get();
 };
 
-void GeometryService::f(int a1, int a2)
+struct S_func_0062dda0 {
+    char pad0[304];
+    int value;
+    void f(int a1, Argument* a2);
+};
+
+void S_func_0062dda0::f(int a1, Argument* a2)
 {
     if (a2)
-        m_value = sub_00490af0(a2);
+        value = a2->get();
 }

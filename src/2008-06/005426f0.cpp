@@ -1,11 +1,5 @@
-// from server: 21% by atomic.potato
-struct WeakReferenceCountedPointer
-{
-    void f(void*, void*);
-    void g(void*, void*);
-};
-
-void WeakReferenceCountedPointer::f(void* a, void* b)
-{
-    this->g(a, b);
-}
+// from server: 100% by tester
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MD
+// roc-lib: ogre-1.4.5-dll OgreAnimationState.cpp

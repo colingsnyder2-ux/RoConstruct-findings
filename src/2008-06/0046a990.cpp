@@ -1,5 +1,14 @@
-// from server: 76% by colin
-// roc-lang: cpp
-// roc-cl: 30729
-// roc-flags: /O2 /GS- /MD
-// roc-lib: mfc-9.0 atlmfc/src/mfc/afxtoolbarimages.cpp
+// from server: 100% by king_originala
+struct Target {
+    int invoke();
+};
+
+struct S {
+    char padding[16];
+    Target* target;
+    int invoke(int, int);
+};
+
+int S::invoke(int, int) {
+    return target->invoke();
+}

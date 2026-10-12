@@ -1,61 +1,78 @@
-// from server: 37% by colin
-struct CXTIconHandle {
-    int field0;
-    char pad1[4];
-    int field8;
-    int fieldC;
-    char pad10[0x10];
-    int field20;
-    int method_7a6196();
-    int method_7a61c0();
-    int method_7a61d8();
-};
-
-extern "C" int __stdcall sub_7a6116(int);
-extern "C" int __stdcall sub_7a60c2(int);
-extern "C" int __stdcall sub_7a6132(int, int);
-extern "C" void __stdcall DeleteCriticalSection(void*);
-extern "C" int __stdcall sub_7a5c04(int);
+// from server: 57% by king_originala
+#pragma optimize("s", on)
 
 extern char byte_96dcf8;
 extern int dword_97f2ac;
 
-int CXTIconHandle::method_7a6196()
+struct Tail {
+    ~Tail();
+};
+
+struct Item {
+    char padding[0x10];
+    struct Interface *object;
+};
+
+struct Interface;
+
+struct InterfaceTable {
+    void *entry0;
+    void *entry1;
+    unsigned long (__stdcall *release)(Interface *);
+};
+
+struct Interface {
+    InterfaceTable *table;
+};
+
+struct CXTIconHandle {
+    int field0;
+    int field4;
+    Item **field8;
+    Item **fieldC;
+    char field10[0x10];
+    Tail field20;
+
+    CXTIconHandle();
+    ~CXTIconHandle();
+    void method_7a6116();
+    void method_7a61d8();
+};
+
+extern "C" int __stdcall sub_7a60c2(CXTIconHandle *);
+extern "C" void __stdcall sub_7a6132(CXTIconHandle *, int);
+extern "C" void (__stdcall *DeleteCriticalSection)(void *);
+
+CXTIconHandle::CXTIconHandle()
 {
-    sub_7a6116((int)this);
-    this->field0 = 0x2c;
-    int r = sub_7a60c2((int)this);
-    if (r < 0) {
+    method_7a6116();
+    field0 = 0x2c;
+    if (sub_7a60c2(this) < 0) {
         byte_96dcf8 = 1;
-        this->field0 = 0;
+        field0 = 0;
     }
-    return (int)this;
 }
 
-int CXTIconHandle::method_7a61c0()
+CXTIconHandle::~CXTIconHandle()
 {
-    sub_7a6132((int)this, dword_97f2ac);
-    return sub_7a5c04((int)this + 0x20);
+    sub_7a6132(this, dword_97f2ac);
 }
 
-int CXTIconHandle::method_7a61d8()
+void CXTIconHandle::method_7a61d8()
 {
-    if (this->field0 != 0) {
-        int* p = (int*)this->field8;
-        int* end = (int*)this->fieldC;
-        while (p < end) {
-            int v = *p;
-            if (v != 0) {
-                int* q = *(int**)(v + 0x10);
-                if (q != 0) {
-                    ((void (__stdcall*)(int*))*(int*)(*q + 8))(q);
-                }
-                *(int*)(v + 0x10) = 0;
+    if (field0 != 0) {
+        Item **p = field8;
+        while (p < fieldC) {
+            Item *item = *p;
+            if (item != 0) {
+                Interface *object = item->object;
+                if (object != 0)
+                    object->table->release(object);
+                item->object = 0;
             }
-            p++;
+            ++p;
         }
-        DeleteCriticalSection((void*)((char*)this + 0x10));
-        this->field0 = 0;
+        DeleteCriticalSection(field10);
+        field0 = 0;
     }
-    return (int)this;
 }

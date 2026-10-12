@@ -1,5 +1,34 @@
-// from server: 66% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: raknet-4.081 FullyConnectedMesh2.cpp
+// from server: 100% by king_originala
+struct Primary {
+    virtual ~Primary();
+    char padding[0x5c];
+};
+
+struct Secondary {
+    virtual ~Secondary();
+    char padding[0x3c];
+};
+
+struct Base : Primary, Secondary {
+    Base();
+    virtual ~Base();
+};
+
+struct Member {
+    Member();
+    ~Member();
+    char storage[8];
+};
+
+struct CDeclarationView : Base {
+    Member member;
+    int value;
+
+    CDeclarationView();
+    virtual ~CDeclarationView();
+};
+
+CDeclarationView::CDeclarationView()
+    : Base(), member(), value(0)
+{
+}

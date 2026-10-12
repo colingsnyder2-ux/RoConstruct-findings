@@ -1,134 +1,150 @@
-// from server: 38% by colin
+// from server: 66% by king_originala
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
 
+extern "C" void __cdecl _invalid_parameter_noinfo();
+void* __cdecl operator new(unsigned int);
+void __cdecl operator delete(void*);
 
-extern "C" void __stdcall func_00802468(void*);
-extern "C" void __stdcall func_0080245c(void*, void*);
-
-extern "C" void* __cdecl func_006a0920(unsigned int size);
-extern "C" void __cdecl func_0047d410(void* a, void* b, void* c);
-extern "C" void __cdecl func_004025b0(void* a, void* b);
-extern "C" void __cdecl func_005b9d10(void* self, void* a, void* b);
-extern "C" void* __cdecl func_005b6f70(void* self, void* a);
-extern "C" void __cdecl func_005bb060(void* self, void* a);
-extern "C" void* __cdecl func_005bab80(void* self, void* a);
-
-struct SoundService
-{
-    char pad_0000[0x18];
-    void* field_18;
-    char pad_001c[0x164];
-    char field_180[0x20];
-    char field_1a0[0x20];
-
-    void* func_005bb5f0(char flag, void* a, void* b, void* c, void* d, void* e, void* f, void* g, void* h, void* i);
-    void func_00802890();
+struct String {
+    unsigned char data[28];
+    String(const String&);
+    ~String();
 };
 
-void* SoundService::func_005bb5f0(char flag, void* a, void* b, void* c, void* d, void* e, void* f, void* g, void* h, void* i)
+struct Key {
+    String text;
+    int value;
+};
+
+struct Control {
+    virtual void unused() = 0;
+    virtual void dispose() = 0;
+    virtual void destroy() = 0;
+    volatile long strong;
+    volatile long weak;
+};
+
+struct Channel {
+    unsigned char data[48];
+    Channel(void*, Key, bool);
+};
+
+struct Reference {
+    Control* control;
+    Reference(Channel*);
+    Reference& operator=(const Reference&);
+    ~Reference();
+};
+
+__forceinline Reference::~Reference()
 {
-    char* base;
-    if (flag != 0)
-        base = (char*)this + 0x1a0;
-    else
-        base = (char*)this + 0x180;
-
-    void* local1c = 0;
-    void* local34 = 0;
-    void* local30 = 0;
-
-    func_005b9d10(base, &local1c, &local34);
-
-    void* esi = local1c;
-    void* ebx = *(void**)(base + 0x18);
-    void* eax = *(void**)base;
-
-    if (esi != 0 && esi != eax)
-    {
-        func_00802890();
-    }
-
-    void* ebp = local34;
-    if (ebp != ebx)
-    {
-        if (esi != 0)
-        {
-            esi = *(void**)esi;
-        }
-        else
-        {
-            func_00802890();
-        }
-
-        if (ebp == *(void**)((char*)esi + 0x18))
-        {
-            func_00802890();
-        }
-
-        void* edx = *(void**)((char*)ebp + 0x2c);
-        void* out = local30;
-        *(void**)out = edx;
-        void* eax2 = *(void**)((char*)ebp + 0x30);
-        *(void**)((char*)out + 4) = eax2;
-        if (eax2 != 0)
-        {
-            _InterlockedExchangeAdd((volatile long*)((char*)eax2 + 4), 1);
-        }
-
-        func_00802468(&local34);
-        return out;
-    }
-
-    void* mem = func_006a0920(0x30);
-    void* newobj = mem;
-    if (newobj != 0)
-    {
-        char* tmp = (char*)&local34;
-        func_0080245c(tmp, &local34);
-        *(void**)((char*)tmp + 0x1c) = *(void**)((char*)&local34 + 0x1c);
-        void* edx2 = local30;
-        void* eax3 = *(void**)((char*)edx2 + 0x134);
-        void* result = func_005b6f70(newobj, eax3);
-        esi = result;
-    }
-    else
-    {
-        esi = 0;
-    }
-
-    func_005bb060(&local1c, esi);
-    func_0047d410(&local1c, esi, esi);
-
-    void* added = func_005bab80(base, &local34);
-    *(void**)added = esi;
-    func_004025b0((char*)added + 4, &local1c);
-
-    void* out = local30;
-    *(void**)out = esi;
-    void* esi2 = local1c;
-    *(void**)((char*)out + 4) = esi2;
-    if (esi2 != 0)
-    {
-        _InterlockedExchangeAdd((volatile long*)((char*)esi2 + 4), 1);
-    }
-
-    if (esi2 != 0)
-    {
-        if (_InterlockedExchangeAdd((volatile long*)((char*)esi2 + 4), -1) == 1)
-        {
-            void* vptr = *(void**)esi2;
-            void (*dtor)(void*) = *(void (**)(void*))((char*)vptr + 4);
-            dtor(esi2);
-            if (_InterlockedExchangeAdd((volatile long*)((char*)esi2 + 8), -1) == 1)
-            {
-                void* vptr2 = *(void**)esi2;
-                void (*dtor2)(void*) = *(void (**)(void*))((char*)vptr2 + 8);
-                dtor2(esi2);
-            }
+    Control* p = control;
+    if (p) {
+        if (_InterlockedExchangeAdd(&p->strong, -1) == 1) {
+            p->dispose();
+            if (_InterlockedExchangeAdd(&p->weak, -1) == 1)
+                p->destroy();
         }
     }
+}
 
-    func_00802468(&local34);
-    return out;
+void __cdecl func_0047d410(Reference*, Channel*, Channel*);
+
+struct Shared {
+    Channel* pointer;
+    Reference reference;
+    Shared(Channel*);
+    Shared(const Shared&);
+    Shared(Channel*, const Reference&);
+};
+
+__forceinline Shared::Shared(Channel* p) : pointer(p), reference(p)
+{
+    func_0047d410(&reference, p, p);
+}
+
+__forceinline Shared::Shared(const Shared& p)
+    : pointer(p.pointer), reference(p.reference)
+{
+    Control* c = reference.control;
+    if (c)
+        _InterlockedExchangeAdd(&c->strong, 1);
+}
+
+__forceinline Shared::Shared(Channel* p, const Reference& r)
+    : pointer(p), reference(r)
+{
+    Control* c = reference.control;
+    if (c)
+        _InterlockedExchangeAdd(&c->strong, 1);
+}
+
+struct Node {
+    unsigned char data[44];
+    Shared value;
+};
+
+struct Map;
+
+struct Proxy {
+    Map* map;
+};
+
+struct Iterator {
+    Proxy* proxy;
+    Node* node;
+};
+
+struct Map {
+    Proxy* proxy;
+    unsigned char data[20];
+    Node* head;
+    unsigned int size;
+    void find(Iterator*, const Key*);
+    Shared* insert(const Key*);
+};
+
+struct S {
+    unsigned char prefix[0x134];
+    void* owner;
+    unsigned char middle[0x48];
+    Map first;
+    Map second;
+    Shared f(Key, bool);
+};
+
+Shared S::f(Key key, bool flag)
+{
+    Map* map = flag ? &second : &first;
+    {
+        Iterator it;
+        map->find(&it, &key);
+
+        Proxy* proxy = it.proxy;
+        Node* end = map->head;
+        Proxy* expected = map->proxy;
+
+        if (!proxy || proxy != expected)
+            _invalid_parameter_noinfo();
+
+        Node* node = it.node;
+        if (node != end) {
+            if (!proxy)
+                _invalid_parameter_noinfo();
+            else
+                proxy = reinterpret_cast<Proxy*>(proxy->map);
+
+            if (node == reinterpret_cast<Map*>(proxy)->head)
+                _invalid_parameter_noinfo();
+
+            return Shared(node->value.pointer, node->value.reference);
+        }
+    }
+
+    Shared result(new Channel(owner, key, flag));
+    Shared* value = map->insert(&key);
+    value->pointer = result.pointer;
+    value->reference = result.reference;
+    return result;
 }

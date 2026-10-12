@@ -1,5 +1,18 @@
-// from server: 74% by colin
-// roc-lang: cpp
-// roc-cl: 30729
-// roc-flags: /O2 /GS- /MD
-// roc-lib: mfc-9.0 atlmfc/src/mfc/afxcolorbar.cpp
+// from server: 100% by king_originala
+struct S;
+
+struct VTable {
+    void *slots[88];
+    void (__thiscall *invoke)(S *);
+};
+
+struct S {
+    VTable *vtable;
+    void f(int unused, int *result);
+};
+
+void S::f(int unused, int *result)
+{
+    vtable->invoke(this);
+    *result = 0;
+}

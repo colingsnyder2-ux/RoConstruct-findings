@@ -1,47 +1,48 @@
-// from server: 49% by colin
+// from server: 64% by king_originala
+extern char registration_data;
+void __cdecl registration_callback();
+void __cdecl register_callback(void (__cdecl*)(), void*);
+void* __cdecl func_00616240();
+extern "C" void __cdecl _invalid_parameter_noinfo();
 
+struct Value {
+    void* pointer;
+    void* owner;
 
-extern "C" void __stdcall _invalid_parameter_noinfo();
-
-void* __stdcall make_value_00616240();
-void* func_00616240() {
-    static void* value = make_value_00616240();
-    return value;
-}
-
-void __stdcall sub_00557330(void*, void*);
-void __stdcall sub_004124c0(void*, int, void*);
-
-struct Vec {
-    char* begin;
-    char* end;
-    char* cap;
+    Value() : pointer(0), owner(0) {}
+    ~Value();
 };
 
-struct Holder {
-    char pad[0x190];
-    Vec v;
-    char pad2[8];
+struct Storage {
+    char padding[12];
+    Value* first;
+    Value* last;
+    Value* limit;
+
+    void resize(unsigned count, Value value);
 };
 
 struct S {
+    char padding[0x190];
+    Storage values;
+
     void* f();
 };
 
 void* S::f() {
-    sub_00557330((void*)0x616400, (void*)0x97bf00);
-    void* p = func_00616240();
-    int idx = (int)p;
-    Holder* h = (Holder*)((char*)this + 0x190);
-    int count = (int)((h->v.end - h->v.begin) >> 3);
-    if (idx + 1 > count) {
-        sub_004124c0(h, idx + 1, 0);
+    register_callback(registration_callback, &registration_data);
+    unsigned index = (unsigned)func_00616240();
+
+    if (index + 1 > (unsigned)(values.last - values.first)) {
+        values.resize(index + 1, Value());
         return 0;
     }
-    int cnt2 = (int)((h->v.cap - h->v.begin) >> 3);
-    if (idx >= cnt2) {
+
+    if (index >= (unsigned)(values.last - values.first))
         _invalid_parameter_noinfo();
-    }
-    void* r = *(void**)(h->v.begin + idx * 8);
-    return r;
+
+    void* result = values.first[index].pointer;
+    if (result)
+        return result;
+    return 0;
 }

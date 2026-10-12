@@ -1,9 +1,7 @@
-// from server: 93% by tester
-// roc 2008-06 0042d280  unit: seg_00420000  size: 59 bytes
-// Make this compile to the exact bytes below, then: roc check 2008-06 0042d280
-
+// from server: 100% by king_originala
 extern "C" int __cdecl sub_56cbc0();
 extern "C" void* __cdecl sub_6a0920(unsigned int);
+extern const int holder_vtable[];
 
 struct Holder {
     int field0;
@@ -12,14 +10,14 @@ struct Holder {
 };
 
 Holder* Holder::init(void* arg) {
-    this->field0 = sub_56cbc0();
+    field0 = sub_56cbc0();
     void* p = sub_6a0920(8);
     if (p != 0) {
-        *(int*)p = 0x8106cc;
+        *(const int**)p = holder_vtable;
         *(int*)((char*)p + 4) = *(int*)arg;
-        this->field4 = p;
     } else {
-        this->field4 = 0;
+        p = 0;
     }
+    field4 = p;
     return this;
 }

@@ -1,5 +1,29 @@
-// from server: 40% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs-net Streaming.cpp
+// from server: 95% by king_originala
+extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
+#pragma intrinsic(_InterlockedExchangeAdd)
+
+struct Control {
+    long unused;
+    volatile long references;
+};
+
+struct Value {
+    unsigned long first;
+    unsigned long second;
+    Control* control;
+};
+
+void __cdecl fill(Value* destination, unsigned int count, const Value* source)
+{
+    while (count > 0) {
+        if (destination) {
+            destination->first = source->first;
+            destination->second = source->second;
+            destination->control = source->control;
+            if (destination->control)
+                _InterlockedExchangeAdd(&destination->control->references, 1);
+        }
+        --count;
+        ++destination;
+    }
+}

@@ -1,20 +1,32 @@
-// from server: 37% by colin
-struct SoundChannel {
-    void* field0;
-    char pad[8];
-    void* fieldC;
-    void destroy();
+// from server: 100% by king_originala
+typedef void (__thiscall *StringDestructor)(void *);
+extern StringDestructor destroyString;
+
+extern "C" void * __stdcall resolveHandle(void *);
+void __cdecl releaseHandle(void *);
+
+struct StringStorage {
+    unsigned char storage[28];
+    ~StringStorage();
 };
 
-extern "C" void* __stdcall sub_69FC12(void*);
-extern "C" void __stdcall sub_5B87A0(void*);
-extern "C" void __stdcall sub_802468(void*);
+inline StringStorage::~StringStorage()
+{
+    destroyString(this);
+}
 
-void SoundChannel::destroy() {
-    void* p = field0;
-    if (p) {
-        sub_5B87A0(sub_69FC12(p));
-        field0 = 0;
+struct SoundChannel {
+    void *handle;
+    unsigned char padding[8];
+    StringStorage name;
+
+    ~SoundChannel();
+};
+
+SoundChannel::~SoundChannel()
+{
+    if (handle) {
+        releaseHandle(resolveHandle(handle));
+        handle = 0;
     }
-    sub_802468(&fieldC);
 }

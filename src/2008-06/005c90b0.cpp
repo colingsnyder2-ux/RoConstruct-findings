@@ -1,10 +1,11 @@
-// from server: 93% by tester
-struct S {
-    void f(double* p);
+// from server: 100% by king_originala
+extern void __cdecl formatValue(void *, double, const char *, ...);
+
+struct LaserTool {
+    void setValue(const double &value);
 };
 
-extern "C" void __cdecl helper(double, const char*, double);
-
-void S::f(double* p) {
-    helper(*p, "%.3g", *p);
+void LaserTool::setValue(const double &value)
+{
+    formatValue(this, value, "%.3g", value);
 }

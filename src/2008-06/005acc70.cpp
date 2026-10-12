@@ -1,6 +1,17 @@
-// from server: 56% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GS- /EHsc /MD
-extern "C" void helper(int,void*,int,int);
-void f(int a,void* b,int c){if(c!=3){int old=c;c=0;helper(a,b,old,c);return;}*(void**)b=(void*)0x92c520;}
+// from server: 100% by tester
+struct Flag {
+    bool value;
+};
+
+extern char descriptor;
+extern void __cdecl manage(void* source, void** destination, int operation, Flag flag);
+
+void __cdecl dispatch(void* source, void** destination, int operation)
+{
+    if (operation != 3) {
+        Flag flag = { false };
+        manage(source, destination, operation, flag);
+    } else {
+        *destination = &descriptor;
+    }
+}

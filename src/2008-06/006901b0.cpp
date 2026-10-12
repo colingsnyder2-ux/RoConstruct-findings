@@ -1,21 +1,12 @@
-// from server: 90% by colin
+// from server: 100% by king_originala
 struct LightInfo {
     char data[24];
 };
 
-struct SceneManager {
-    LightInfo* first;
-    LightInfo* last;
-};
+extern LightInfo& (__thiscall *assignLightInfo)(LightInfo*, const LightInfo&);
 
-struct LightInfoAssigner {
-    LightInfo* __thiscall assign(const LightInfo* src);
-};
-
-void assign_range(LightInfo* first, LightInfo* last, const LightInfo* value)
+void __cdecl fillLightInfo(LightInfo* first, LightInfo* last, const LightInfo& value)
 {
-    while (first != last) {
-        ((LightInfoAssigner*)first)->assign(value);
-        first = (LightInfo*)((char*)first + 24);
-    }
+    for (; first != last; ++first)
+        assignLightInfo(first, value);
 }

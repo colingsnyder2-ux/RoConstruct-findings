@@ -1,17 +1,5 @@
-// from server: 11% by tester
-struct AggChunk {
-    char pad[0x54];
-    int m_field54;
-    void destroy();
-};
-
-struct VerbBinder {
-    char pad0[0x54];
-    AggChunk m_chunk;
-    void f();
-};
-
-void VerbBinder::f()
-{
-    m_chunk.destroy();
-}
+// from server: 100% by tester
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /MD /GS- /EHsc /Ob1
+// roc-lib: xtp-11.2.2-shared-mfc-string-calls Source\ReportControl\XTPReportInplaceControls.cpp

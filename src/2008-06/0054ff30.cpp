@@ -1,5 +1,9 @@
-// from server: 92% by colin
-// roc-lang: cpp
-// roc-cl: 50727
+// from server: 100% by tester
 // roc-flags: /Od /Ob1 /GS- /MT
-// roc-lib: wildmagic-2-core Containment/WmlConvexHull3.cpp
+struct It {
+    void* node;
+    void* tree;
+    It& operator++();
+    It operator++(int);
+};
+It It::operator++(int) { It t = *this; ++*this; return t; }

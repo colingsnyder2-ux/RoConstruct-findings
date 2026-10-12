@@ -1,11 +1,11 @@
-// from server: 25% by atomic.potato
-struct S
-{
-    int value;
-    int f(S *);
+// from server: 100% by king_originala
+#pragma optimize("", off)
+struct S {
+    unsigned int unused;
+    unsigned int value;
+    int f(const S& other);
 };
 
-int S::f(S *other)
-{
-    return value >= other->value ? 1 : 0;
+int S::f(const S& other) {
+    return value < other.value;
 }

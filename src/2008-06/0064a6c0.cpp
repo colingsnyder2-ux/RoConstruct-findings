@@ -1,50 +1,67 @@
-// from server: 48% by tester
-
-
-
-
-struct Vec3 {
-    float x;
-    float y;
-    float z;
+// from server: 100% by king_originala
+struct Transform {
+    float data[12];
 };
 
-struct Stage {
-    char pad0[0x18];
-    void* field18;
-    char pad1[0x24 - 0x1c];
-    void* field1c;
-    char pad2[0x50 - 0x20];
-    float field50;
-    char field54;
-    char pad3[0x58 - 0x55];
-    int field58;
-    char pad4[0x60 - 0x5c];
-    int field60;
-    int field64;
+struct Source {
+    void read(Transform* result);
 };
 
-extern "C" void __stdcall sub_6144E0(void* out, void* arg);
-extern "C" void __stdcall sub_668A20(void* self, void* out, float val);
-extern "C" void __stdcall sub_668AF0(void* self, void* out, float val, float val2);
+struct Node {
+    char padding[0xA0];
+    Source* source;
+};
 
-extern float g_827488;
+struct Link {
+    char padding[0x1C];
+    Node* node;
+};
 
-void Stage_0064a6c0(Stage* self, void* arg)
+struct Controller {
+    void apply(Transform* transform, float depth);
+    void finish(Transform* transform, float depth, float scale);
+};
+
+struct Owner {
+    char padding[8];
+    Controller controller;
+};
+
+typedef float (__thiscall* Getter)(void*);
+
+struct Object {
+    char padding0[0x18];
+    Owner* owner;
+    char padding1[8];
+    Link* link;
+    char padding2[0x28];
+    float depth;
+    unsigned char dirty;
+    char padding3[3];
+    char* context;
+    int reserved;
+    Getter getter;
+    int adjustment;
+};
+
+extern const float scale;
+
+#pragma float_control(precise, off, push)
+
+void __stdcall update(Object* object)
 {
-    Vec3 v;
-    sub_6144E0(&v, *(void**)(*(char**)((char*)self->field1c + 0x1c) + 0xa0));
+    Transform transform;
+    object->link->node->source->read(&transform);
 
-    if (self->field54) {
-        int ecx = self->field64 + self->field58;
-        int (*fn)(int) = (int (*)(int))self->field60;
-        fn(ecx);
-        self->field50 = *(float*)&ecx;
-        self->field54 = 0;
+    if (object->dirty) {
+        object->depth = object->getter(object->context + object->adjustment);
+        object->dirty = 0;
     }
 
-    float f = self->field50;
-    void* p = (char*)self->field18 + 8;
-    sub_668A20(p, &v, f);
-    sub_668AF0(p, &v, g_827488, f);
+    float depth = object->depth;
+    Controller* controller = &object->owner->controller;
+    controller->apply(&transform, depth);
+    controller->finish(&transform, depth, scale);
 }
+
+#pragma float_control(pop)

@@ -1,5 +1,5 @@
-// from server: 27% by colin
+// from server: 100% by tester
 // roc-lang: cpp
-// roc-cl: 30729
-// roc-flags: /O2 /GS- /MD
-// roc-lib: mfc-9.0 atlmfc/src/mfc/ctltrack.cpp
+// roc-cl: 21022
+// roc-flags: /O2 /EHsc /MD
+// roc-lib: openrbx-raknet RakPeer.cpp

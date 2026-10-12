@@ -1,59 +1,74 @@
-// from server: 59% by colin
-struct S {
-    char pad0[4];
-    int field4;
-    char pad8[4];
-    int fieldC;
-    char pad10[0x10];
-    int field20;
-    int method();
+// from server: 93% by king_originala
+struct Subject;
+
+struct Intermediate {
+    Subject* resolve();
 };
 
-extern "C" int __stdcall sub_5805D0(int);
-extern "C" int __stdcall sub_57EA40(int);
-extern "C" int __stdcall sub_5CDDD0(int);
-extern "C" int __stdcall sub_5CDE10(int);
-extern "C" int __stdcall sub_58C5C0(int, int);
+struct Source {
+    Intermediate* get();
+};
 
-int S::method() {
-    int eax;
-    int edi;
-    int ecx;
+struct Camera {
+    void setType(int);
+    void setSubject(Subject*);
+};
 
-    ecx = field20;
-    if (ecx != 0) {
-        eax = sub_5805D0(ecx);
-    } else {
-        eax = 0;
-    }
-    ecx = eax;
-    edi = sub_57EA40(ecx);
+struct CameraProvider {
+    virtual void unused();
+    virtual Camera* getCamera();
+};
 
-    eax = fieldC;
-    ecx = eax + 0x288;
-    eax = *(int*)ecx;
-    int edx = *(int*)(eax + 4);
-    eax = ((int (__stdcall*)(int, int))edx)(ecx, 1);
-    ecx = eax;
-    sub_5CDDD0(ecx);
+struct Model {
+    char padding[0x288];
+    CameraProvider cameras;
+};
 
-    eax = fieldC;
-    ecx = eax + 0x288;
-    eax = *(int*)ecx;
-    edx = *(int*)(eax + 4);
-    eax = ((int (__stdcall*)(int, int))edx)(ecx, edi);
-    ecx = eax;
-    sub_5CDE10(ecx);
+struct String {
+    unsigned int unused;
+    union {
+        char buffer[16];
+        char* pointer;
+    } storage;
+    unsigned int size;
+    unsigned int capacity;
+};
 
-    eax = field4;
-    ecx = fieldC;
-    eax += 4;
-    if (*(int*)(eax + 0x18) < 0x10) {
-        eax += 4;
-    } else {
-        eax = *(int*)(eax + 4);
-    }
-    sub_58C5C0(eax, ecx);
+struct Descriptor {
+    unsigned int unused;
+    String name;
+};
 
-    return 1;
+struct Disposable {
+    virtual void release(int);
+};
+
+extern "C" void __cdecl notify(const char*, Model*);
+
+struct Command {
+    unsigned int unused0;
+    Descriptor* descriptor;
+    unsigned int unused8;
+    Model* model;
+    char padding[16];
+    Source* source;
+
+    void execute(Disposable*);
+};
+
+void Command::execute(Disposable* disposable)
+{
+    Subject* subject = (source ? source->get() : 0)->resolve();
+
+    model->cameras.getCamera()->setType(1);
+    model->cameras.getCamera()->setSubject(subject);
+
+    String* name = &descriptor->name;
+    Model* target = model;
+    const char* text = name->capacity >= 16
+        ? name->storage.pointer
+        : name->storage.buffer;
+
+    notify(text, target);
+    disposable->release(1);
 }

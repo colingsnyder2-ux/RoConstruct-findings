@@ -1,12 +1,11 @@
-// from server: 40% by atomic.potato
-extern "C" void __stdcall Resize(void*, int);
-
-struct Mesh
-{
+// from server: 100% by tester
+struct S {
+    void resize(int);
     void f();
 };
 
-void Mesh::f()
+#pragma optimize("", off)
+void S::f()
 {
-    Resize(this, 0);
+    resize(0);
 }

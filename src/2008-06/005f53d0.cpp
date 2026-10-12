@@ -1,66 +1,71 @@
-// from server: 49% by colin
-struct S {
-    int f(int a, int b, int c);
+// from server: 77% by king_originala
+struct Stream;
+
+extern int (__thiscall *stream_sputn)(Stream *, const char *, int);
+extern int (__cdecl *memmove_s)(void *, unsigned int, const void *, unsigned int);
+extern int compression_mode;
+extern void __cdecl check_result(int);
+
+struct Buffer {
+    char *base;
+    int capacity;
+    char *next;
+    char *end;
 };
 
-extern "C" int __stdcall sputn_impl(void*, const char*, int);
-extern "C" int __stdcall memmove_s_impl(void*, void*, unsigned int, unsigned int);
+struct State {
+    void *context;
+    int reserved[4];
+    Buffer buffer;
+    int flags;
 
-int S::f(int a, int b, int c)
+    void before(const char **, const char *, char **, char *);
+    int process(int);
+    void after(const char **, char **, bool);
+};
+
+struct Compressor {
+    State *state;
+    int write(Stream *, const char *, int);
+};
+
+int Compressor::write(Stream *stream, const char *source, int count)
 {
-    int* self = (int*)this;
-    int* p = (int*)*self;
-    if ((p[9] & 2) == 0) {
-        p[9] |= 2;
-        p = (int*)*self;
-        p[7] = p[5];
-        p[8] = p[5] + p[6];
+    if (!(state->flags & 2)) {
+        state->flags |= 2;
+        State *active = state;
+        active->buffer.next = active->buffer.base;
+        active->buffer.end = active->buffer.base + active->buffer.capacity;
     }
 
-    int start = a;
-    int end = b + a;
-    int* buf = (int*)(*self + 0x14);
-    int* bufptr = buf;
+    Buffer *buffer = &state->buffer;
+    const char *current = source;
+    const char *end = source + count;
 
-    if (start != end) {
-        do {
-            if (bufptr[2] == bufptr[3]) {
-                int* q = (int*)*self;
-                int len = q[7] - q[5];
-                int n = sputn_impl((void*)c, (const char*)q[5], len);
-                if (n < len && n > 0) {
-                    int* r = (int*)*self;
-                    memmove_s_impl((void*)r[5], (void*)(r[5] + n), len - n, len - n);
-                }
-                {
-                    int* r = (int*)*self;
-                    r[7] = r[5] - n + len;
-                    r[8] = r[5] + r[6];
-                }
-                if (n == 0)
-                    break;
+    while (current != end) {
+        if (buffer->next == buffer->end) {
+            int pending = state->buffer.next - state->buffer.base;
+            int written = stream_sputn(stream, state->buffer.base, pending);
+
+            if (written < pending && written > 0) {
+                memmove_s(state->buffer.base, pending - written,
+                          state->buffer.base + written, pending - written);
             }
-            {
-                int* q = (int*)*self;
-                int tmp;
-                int* dst = &tmp;
-                int* src = bufptr + 2;
-                int* src2 = bufptr + 2;
-                int* dst2 = &tmp;
-                (void)dst; (void)src; (void)src2; (void)dst2;
-                // call 0064da90 with ecx=q, args: &tmp, src, c
-                extern void __fastcall f64da90(int*, int*, int*, int*);
-                f64da90(q, &tmp, src, (int*)c);
-                int v = *(int*)0x84b22c;
-                extern int __fastcall f64db20(int*, int);
-                int r = f64db20(q, v);
-                extern void __fastcall f64dac0(int*, int*, int*, int);
-                f64dac0(q, &tmp, src2, 1);
-                extern void __cdecl f64d9e0(int);
-                f64d9e0(r);
-            }
-        } while (bufptr != (int*)end);
+
+            State *active = state;
+            active->buffer.next = active->buffer.base - written + pending;
+            active->buffer.end = active->buffer.base + active->buffer.capacity;
+
+            if (written == 0)
+                break;
+        }
+
+        State *active = state;
+        active->before(&current, end, &buffer->next, buffer->end);
+        int result = active->process(compression_mode);
+        active->after(&current, &buffer->next, true);
+        check_result(result);
     }
 
-    return end - start;
+    return current - source;
 }

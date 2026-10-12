@@ -1,19 +1,24 @@
-// from server: 70% by atomic.potato
-typedef void (*Fn)(void *, void *);
+// from server: 100% by king_originala
+struct Dispatch;
 
-struct S {
-    void f(void *);
+struct DispatchTable {
+    void *reserved[3];
+    int (__thiscall *invoke)(Dispatch *, void *, int *);
 };
 
-extern S *g;
+struct Dispatch {
+    DispatchTable *table;
+};
 
-void S::f(void *p)
+extern Dispatch *dispatcher;
+
+struct S {
+    char reserved[20];
+    int f(int value);
+};
+
+int S::f(int value)
 {
-    void *x;
-    if (this)
-        x = (char *)this + 20;
-    else
-        x = 0;
-    Fn fn = *(Fn *)((char *)*(void **)g + 12);
-    fn(x, &p);
+    void *object = this ? (void *)(reserved + 20) : 0;
+    return dispatcher->table->invoke(dispatcher, object, &value);
 }

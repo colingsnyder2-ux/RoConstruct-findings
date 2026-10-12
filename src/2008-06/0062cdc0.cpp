@@ -1,15 +1,32 @@
-// from server: 93% by atomic.potato
-extern "C" void __stdcall FactoryProduct(void *, const char *);
-
-struct FlagStand
+// from server: 100% by tester
+namespace RBX {
+namespace Reflection {
+class PropertyDescriptor
 {
-    char padding[1020];
-    int value;
-    void f(int);
+    const char* name;
+};
+}
+
+class BrickColor
+{
+    int number;
+public:
+    ~BrickColor() {}
 };
 
-void FlagStand::f(int value)
+class FlagStand
 {
-    this->value = value;
-    FactoryProduct(this, (const char *)0x97610c);
+    char gap0[0x3fc];
+    BrickColor teamColor;
+public:
+    static Reflection::PropertyDescriptor prop_TeamColor;
+    void raisePropertyChanged(const Reflection::PropertyDescriptor& descriptor);
+    void setTeamColor(BrickColor value);
+};
+
+void FlagStand::setTeamColor(BrickColor value)
+{
+    teamColor = value;
+    raisePropertyChanged(prop_TeamColor);
+}
 }

@@ -1,20 +1,34 @@
-// from server: 31% by colin
-struct PropertyDescriptor {
-    char pad[0x18];
-    void* field_18;
-    void setValue(void* value, unsigned attributes);
+extern void (__thiscall *destroy_string)(void *);
+
+struct String {
+    char storage[32];
+    ~String();
 };
 
-extern "C" void __stdcall string_dtor(void*);
-extern "C" void __stdcall sub_5863e0(void*, void*);
-
-void PropertyDescriptor::setValue(void* value, unsigned attributes)
+__forceinline String::~String()
 {
-    void* p = field_18;
-    void* tmp;
-    sub_5863e0(&tmp, value);
-    void** vtbl = *(void***)p;
-    void (*fn)(void*, void*, void*) = (void (*)(void*, void*, void*))vtbl[3];
-    fn(p, value, &tmp);
-    string_dtor(&tmp);
+    destroy_string(this);
+}
+
+struct Value {
+    String toString() const;
+};
+
+struct Accessor {
+    virtual void slot0();
+    virtual void slot1();
+    virtual void slot2();
+    virtual void set(void *, const String &);
+};
+
+struct Descriptor {
+    char padding[24];
+    Accessor *accessor;
+    void set(void *, const Value &) const;
+};
+
+void Descriptor::set(void *object, const Value &value) const
+{
+    Accessor *a = accessor;
+    a->set(object, value.toString());
 }

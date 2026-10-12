@@ -1,10 +1,14 @@
-// from server: 91% by atomic.potato
-extern int G1_func_006a0686();
-extern void G1_func_006a0680(int);
+// from server: 100% by tester
+typedef long HRESULT;
 
-void __stdcall func_00401000(int value)
+__declspec(noreturn) void __stdcall AfxThrowMemoryException();
+__declspec(noreturn) void __stdcall AfxThrowOleException(HRESULT sc);
+
+namespace ATL {
+void __stdcall AtlThrowImpl(HRESULT hr)
 {
-    if (value == 0x8007000e)
-        value = G1_func_006a0686();
-    G1_func_006a0680(value);
+    if (hr == 0x8007000EL)
+        AfxThrowMemoryException();
+    AfxThrowOleException(hr);
+}
 }

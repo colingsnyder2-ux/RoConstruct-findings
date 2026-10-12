@@ -1,12 +1,5 @@
-// from server: 37% by atomic.potato
-struct S
-{
-    void f();
-};
-
-extern "C" void __stdcall sub_550de0(void *);
-
-void S::f()
-{
-    sub_550de0((char *)this + 0x14);
-}
+// from server: 100% by colin
+// roc-flags: /O2 /GS- /EHsc /MD
+#pragma optimize("g", off)
+struct B{void f();}; struct S{char pad[0x14]; B b; void g();};
+void S::g(){b.f();}

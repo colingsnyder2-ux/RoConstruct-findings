@@ -1,12 +1,11 @@
-// from server: 40% by atomic.potato
-extern "C" void __stdcall CNameItem_resize(void *, int);
-
-struct S
-{
+// from server: 100% by tester
+struct S {
+    void resize(int);
     void f();
 };
 
+#pragma optimize("", off)
 void S::f()
 {
-    CNameItem_resize(this, 0);
+    resize(0);
 }

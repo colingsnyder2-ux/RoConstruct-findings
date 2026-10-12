@@ -1,5 +1,13 @@
-// from server: 63% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs util/RunStateOwner.cpp
+// from server: 100% by king_originala
+extern const char label[];
+extern void __cdecl helper(void *, double, const char *, int);
+
+struct LaserTool {
+    void f(const int *value);
+};
+
+void LaserTool::f(const int *value)
+{
+    int n = *value;
+    helper(this, (double)n, label, n);
+}

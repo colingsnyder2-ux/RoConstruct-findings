@@ -1,5 +1,15 @@
-// from server: 93% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs v8kernel/Body.cpp
+// from server: 100% by tester
+namespace RBX {
+class Body
+{
+    char gap0[0x14];
+    Body* parent;
+public:
+    Body* calcRoot();
+};
+
+Body* Body::calcRoot()
+{
+    return parent ? parent->calcRoot() : this;
+}
+}

@@ -1,26 +1,44 @@
-// from server: 48% by tester
-struct ICreator {
-    virtual void dummy0();
-    virtual void dummy1();
+// from server: 100% by tester
+#pragma optimize("y", off)
+
+void* __cdecl operator new(unsigned int);
+extern void* controlVtable[];
+
+struct Deleter {
+    void operator()(void*) const;
 };
 
-struct Creator : ICreator {
-    int field0;
-    Creator(const void* name);
+inline void Deleter::operator()(void*) const {}
+
+struct Control {
+    void** vtable;
+    int strong;
+    int weak;
+    void* object;
+    Deleter deleter;
+
+    Control(void*, const Deleter&);
 };
 
-extern "C" void* __cdecl operator_new(unsigned int size);
+inline Control::Control(void* p, const Deleter& d)
+    : strong(1), weak(1), deleter(d)
+{
+    vtable = controlVtable;
+    object = p;
+}
 
-Creator::Creator(const void* name) {
-    field0 = 0;
-    void* p = operator_new(0x14);
-    if (p) {
-        *(int*)((char*)p + 4) = 1;
-        *(int*)((char*)p + 8) = 1;
-        *(int*)p = 0x80f1e8;
-        *(const void**)((char*)p + 0xc) = name;
-    } else {
-        p = 0;
+struct S {
+    Control* control;
+    S(void*, Deleter);
+};
+
+S::S(void* p, Deleter d) : control(0)
+{
+    try {
+        control = new Control(p, d);
     }
-    field0 = (int)p;
+    catch (...) {
+        d(p);
+        throw;
+    }
 }

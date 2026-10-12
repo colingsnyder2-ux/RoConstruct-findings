@@ -1,126 +1,96 @@
-// from server: 17% by tester
+// from server: 78% by king_originala
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
-
-struct RefCounted {
-    void* vptr;
-    volatile long refcount;
-    volatile long weakrefcount;
-};
+extern "C" long __cdecl _InterlockedDecrement(volatile long*);
+#pragma intrinsic(_InterlockedDecrement)
 
 struct String {
-    char buf[16];
-    unsigned int size;
-    unsigned int cap;
+    char storage[28];
+    String(const char*);
+    String(const String&);
+    ~String();
 };
 
-extern "C" {
-    void __stdcall sub_6021E0(void* out, int a, int b, int c);
-    void __stdcall sub_602280(void* out, const char* s, void* src);
-    void __stdcall sub_6034D0(void* self, void* arg);
-    void* __stdcall sub_658880();
-    void __stdcall sub_600F10(void* p);
-    void __stdcall string_ctor_copy(void* self, const void* other);
-    void __stdcall string_ctor_cstr(void* self, const char* s);
-    void __stdcall string_dtor(void* self);
+extern void (__thiscall *string_construct)(String*, const char*);
+extern void (__thiscall *string_copy)(String*, const String&);
+extern void (__thiscall *string_destroy)(String*);
+
+inline String::String(const char* s) { string_construct(this, s); }
+inline String::String(const String& s) { string_copy(this, s); }
+inline String::~String() { string_destroy(this); }
+
+struct Control {
+    virtual void unused() = 0;
+    virtual void dispose() = 0;
+    virtual void destroy() = 0;
+    volatile long strong;
+    volatile long weak;
+};
+
+struct Object;
+
+struct Shared {
+    Object* object;
+    Control* control;
+    Shared(const Shared&);
+    ~Shared();
+};
+
+inline Shared::Shared(const Shared& s)
+    : object(s.object), control(s.control)
+{
+    if (control)
+        _InterlockedExchangeAdd(&control->strong, 1);
 }
 
-extern float g_81c434;
-extern float g_842428;
-extern char g_842418;
-extern char g_822ba4;
-extern char g_80b716;
+inline Shared::~Shared()
+{
+    Control* c = control;
+    if (c && _InterlockedDecrement(&c->strong) == 0) {
+        c->dispose();
+        if (_InterlockedDecrement(&c->weak) == 0)
+            c->destroy();
+    }
+}
 
-struct UnifiedImageWidget {
-    void* vptr;
-    void method(int a, int b);
+struct Object {
+    virtual void unused() = 0;
+    virtual void setName(const String&) = 0;
+    void setParent(Shared);
 };
 
-void UnifiedImageWidget::method(int a, int b) {
-    void* local1c = 0;
-    String s1;
-    String s2;
-    String s3;
-    void* local18 = 0;
-    void* local20 = 0;
-    void* local24 = 0;
-    void* local40 = 0;
-    void* local44 = 0;
-    void* local6c = 0;
-    void* local70 = 0;
+struct Vector2 {
+    float x, y;
+    Vector2(float, float);
+    ~Vector2();
+};
 
-    float f1 = g_81c434;
-    float f2 = g_842428;
+inline Vector2::Vector2(float a, float b) : x(a), y(b) {}
+inline Vector2::~Vector2() {}
 
-    sub_6021E0(&s1, 2, (int)&f1, 1);
+extern const float initialX;
+extern const float initialY;
+extern const char objectName[];
+extern const char lookupName[];
+extern const char imageName[];
 
-    string_ctor_cstr(&s2, &g_842418);
+extern Shared __cdecl createObject(int, bool, Vector2);
+extern Shared __cdecl findObject(void*, const char*);
+extern int* __cdecl getContext();
 
-    void* p1 = local1c;
-    void* vt = *(void**)p1;
-    void (*fn)(void*, void*) = *(void(**)(void*, void*))((char*)vt + 4);
-    fn(p1, &local24);
+struct S {
+    Shared f(void*);
+    void configure(int, String, Shared);
+};
 
-    string_dtor(&local24);
-
-    sub_602280(&s3, &g_822ba4, &local1c);
-
-    void* tmp = local20;
-    local18 = tmp;
-    local20 = local18;
-
-    if (local20) {
-        _InterlockedExchangeAdd((volatile long*)((char*)local20 + 4), 1);
-    }
-
-    sub_600F10(local24);
-
-    void* edi = *(void**)sub_658880();
-
-    string_ctor_cstr(&local44, &g_80b716);
-
-    void* tmp2 = local18;
-    void* tmp3 = local20;
-    if (tmp3) {
-        _InterlockedExchangeAdd((volatile long*)((char*)tmp3 + 4), 1);
-    }
-
-    string_ctor_copy(&local40, &local44);
-
-    sub_6034D0(this, edi);
-
-    void* dst = local6c;
-    *(void**)dst = local1c;
-    *(void**)((char*)dst + 4) = local20;
-    if (local20) {
-        _InterlockedExchangeAdd((volatile long*)((char*)local20 + 4), 1);
-    }
-
-    string_dtor(&local40);
-
-    if (local18) {
-        if (_InterlockedExchangeAdd((volatile long*)((char*)local18 + 4), -1) == 1) {
-            void* vt2 = *(void**)local18;
-            void (*fn2)(void*) = *(void(**)(void*))((char*)vt2 + 4);
-            fn2(local18);
-            if (_InterlockedExchangeAdd((volatile long*)((char*)local18 + 8), -1) == 1) {
-                void* vt3 = *(void**)local18;
-                void (*fn3)(void*) = *(void(**)(void*))((char*)vt3 + 8);
-                fn3(local18);
-            }
-        }
-    }
-
-    if (local20) {
-        if (_InterlockedExchangeAdd((volatile long*)((char*)local20 + 4), -1) == 1) {
-            void* vt4 = *(void**)local20;
-            void (*fn4)(void*) = *(void(**)(void*))((char*)vt4 + 4);
-            fn4(local20);
-            if (_InterlockedExchangeAdd((volatile long*)((char*)local20 + 8), -1) == 1) {
-                void* vt5 = *(void**)local20;
-                void (*fn5)(void*) = *(void(**)(void*))((char*)vt5 + 8);
-                fn5(local20);
-            }
-        }
-    }
+Shared S::f(void* p)
+{
+    Shared result = createObject(2, true, Vector2(initialX, initialY));
+    result.object->setName(String(objectName));
+    Shared parent = findObject(p, lookupName);
+    result.object->setParent(parent);
+    int context = *getContext();
+    String image(imageName);
+    configure(context, image, parent);
+    return Shared(result);
 }

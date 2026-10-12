@@ -1,5 +1,14 @@
-// from server: 94% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs v8tree/Instance.cpp
+// from server: 100% by tester
+#include <intrin.h>
+struct Cnt { void* vt; long use; void add() { _InterlockedIncrement(&use); } };
+struct Obj { int rc; };
+struct SP {
+    Obj* px; Cnt* pn;
+    SP(const SP& o);
+};
+SP::SP(const SP& o) {
+    px = o.px;
+    pn = o.pn;
+    if (pn) pn->add();
+    ++px->rc;
+}

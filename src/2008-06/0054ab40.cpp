@@ -1,17 +1,10 @@
-// from server: 73% by atomic.potato
+// from server: 100% by king_originala
 extern "C" void __cdecl sub_557330(void *, void *);
 
-extern void *g_0097DB44;
-extern char g_00973984;
-extern char g_0054AB60;
+#pragma optimize("", off)
 
-struct Mesh
+void *__cdecl f()
 {
-    void *f();
-};
-
-void *Mesh::f()
-{
-    sub_557330(&g_0054AB60, &g_00973984);
-    return g_0097DB44;
+    sub_557330((void *)0x0054AB60, (void *)0x00973984);
+    return *(void **)0x0097DB44;
 }

@@ -1,19 +1,13 @@
-// from server: 41% by atomic.potato
-struct S
-{
-    int* value;
-    void assign(int);
-    S& f(int*);
+// from server: 100% by tester
+#pragma optimize("", off)
+
+struct S {
+    void* pointer;
+    void assign(void*);
+    S(const S&);
 };
 
-void S::assign(int value)
-{
-    *this->value = value;
-}
-
-S& S::f(int* other)
-{
-    *this->value = 0;
-    assign(*other);
-    return *this;
+S::S(const S& other) {
+    pointer = 0;
+    assign(other.pointer);
 }

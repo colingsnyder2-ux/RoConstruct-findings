@@ -1,5 +1,22 @@
-// from server: 76% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs v8world/Primitive.cpp
+// from server: 92% by king_originala
+struct S;
+struct P {
+    void g(S*);
+};
+
+struct S {
+    char pad0[88];
+    P* p;
+    char pad1[84];
+    float value;
+    void f(float v);
+};
+
+void S::f(float v)
+{
+    if (value != v) {
+        value = v;
+        if (p)
+            p->g(this);
+    }
+}

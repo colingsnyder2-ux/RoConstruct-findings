@@ -1,11 +1,5 @@
-// from server: 50% by atomic.potato
-struct S
-{
-    int value;
-    S();
-};
-
-S::S()
-{
-    value = 0;
-}
+// from server: 100% by tester
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MD
+// roc-lib: ogre-1.4.5-dll OgreAnimationState.cpp

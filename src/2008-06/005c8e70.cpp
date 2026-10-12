@@ -1,5 +1,16 @@
-// from server: 51% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs util/Name.cpp
+// from server: 100% by king_originala
+struct String;
+
+extern void (__thiscall *copyString)(String *, const String *);
+
+struct LaserTool {
+    String *getValue(String *result);
+};
+
+String *LaserTool::getValue(String *result)
+{
+    volatile int state = 0;
+    (*(void (__thiscall **)(LaserTool *))(*(char **)this + 0x40))(this);
+    copyString(result, (const String *)((char *)this + 0x138));
+    return result;
+}

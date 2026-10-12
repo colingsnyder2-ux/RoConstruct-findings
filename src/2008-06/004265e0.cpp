@@ -1,36 +1,59 @@
-// from server: 60% by atomic.potato
+// from server: 100% by king_originala
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
+extern "C" void __cdecl _ReadWriteBarrier();
+#pragma intrinsic(_ReadWriteBarrier)
 
-struct Inner {
-    void* p0;
-    long ref;
+extern unsigned char table_810060[];
+extern unsigned char table_810054[];
+extern unsigned char table_810048[];
+
+struct RefCount {
+    unsigned long reserved;
+    volatile long strong;
+
+    __forceinline void addRef();
 };
 
-struct Arg {
-    void* p0;
-    Inner* p1;
+__forceinline void RefCount::addRef()
+{
+    volatile long* p = &strong;
+    _ReadWriteBarrier();
+    _InterlockedExchangeAdd(p, 1);
+}
+
+struct Handle {
+    void* pointer;
+    RefCount* count;
+
+    __forceinline Handle(const Handle& other);
+    ~Handle();
 };
 
-struct CRobloxTreeCtrlNode {
-    void* vptr0;
-    void* vptr1;
-    void* vptr2;
-    char pad[0x54 - 12];
+__forceinline Handle::Handle(const Handle& other)
+    : pointer(other.pointer), count(other.count)
+{
+    if (count)
+        count->addRef();
+}
+
+struct S {
+    void* table0;
+    void* table1;
+    void* table2;
+    unsigned char padding[0x48];
     unsigned char flags;
-    void init(Arg* a, int b);
+
+    void initialize(int mode, Handle handle, int value);
+    S* construct(const Handle& handle, int value);
 };
 
-void CRobloxTreeCtrlNode::init(Arg* a, int b) {
-    Arg local;
-    local.p0 = a->p0;
-    local.p1 = a->p1;
-    if (local.p1) {
-        _InterlockedExchangeAdd(&local.p1->ref, 1);
-    }
-    init(&local, 0);
+S* S::construct(const Handle& handle, int value)
+{
+    initialize(0, handle, value);
     flags |= 2;
-    vptr0 = (void*)0x810060;
-    vptr1 = (void*)0x810054;
-    vptr2 = (void*)0x810048;
+    table0 = table_810060;
+    table1 = table_810054;
+    table2 = table_810048;
+    return this;
 }

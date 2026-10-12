@@ -1,23 +1,5 @@
-// from server: 58% by atomic.potato
-struct CXTIconHandle
-{
-    int value;
-    int *buffer;
-    int *self;
-    int position;
-    int reserved;
-    unsigned short low;
-    unsigned short high;
-    CXTIconHandle(int *p);
-};
-
-CXTIconHandle::CXTIconHandle(int *p)
-{
-    buffer = p;
-    value = 0x871f6c;
-    position = 2;
-    reserved = 0;
-    low = 0;
-    high = 0;
-    self = reinterpret_cast<int *>(this);
-}
+// from server: 100% by tester
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /MD
+// roc-archive: msvc-atlmfc-rtm atls.lib/f:/dd/vctools/vc7libs/ship/atlmfc/src/atl/atls/staticrelease/obj1r/i386/atlstr.obj

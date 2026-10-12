@@ -1,9 +1,5 @@
-// from server: 7% by atomic.potato
-struct S
-{
-    void f(int);
-};
-
-void S::f(int value)
-{
-}
+// from server: 100% by tester
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MD
+// roc-lib: ogre-1.4.5-dll OgreParticleSystem.cpp

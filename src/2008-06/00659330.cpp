@@ -1,5 +1,17 @@
-// from server: 42% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs v8world/Contact.cpp
+// from server: 100% by king_originala
+struct Box {
+    int minX, minY, minZ;
+    int maxX, maxY, maxZ;
+};
+
+bool __cdecl intersects(const Box* a, const Box* b)
+{
+    if (a->minX <= b->maxX &&
+        a->minY <= b->maxY &&
+        a->minZ <= b->maxZ &&
+        a->maxY >= b->minY &&
+        a->maxX >= b->minX &&
+        a->maxZ >= b->minZ)
+        return true;
+    return false;
+}

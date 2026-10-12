@@ -1,5 +1,19 @@
-// from server: 52% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MT
-// roc-lib: ogre-1.4.9 OgreAlignedAllocator.cpp
+// from server: 100% by king_originala
+extern void __cdecl median3(int*, int*, int*);
+
+void __cdecl sampleMedian(int* first, int* middle, int* last)
+{
+    int count = last - first;
+    if (count > 40)
+    {
+        int step = (count + 1) / 8;
+        median3(first, first + step, first + 2 * step);
+        median3(middle - step, middle, middle + step);
+        median3(last - 2 * step, last - step, last);
+        median3(first + step, middle, last - step);
+    }
+    else
+    {
+        median3(first, middle, last);
+    }
+}

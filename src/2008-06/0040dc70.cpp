@@ -1,5 +1,34 @@
-// from server: 54% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs util/Name.cpp
+// from server: 100% by tester
+extern "C" {
+    extern void* (__cdecl *allocate)(unsigned int);
+}
+
+inline void* __cdecl operator new(unsigned int size)
+{
+    return allocate(size);
+}
+
+void __cdecl operator delete(void*);
+
+struct Product {
+    unsigned char storage[0x158];
+    Product();
+};
+
+struct Deleter {
+    union {
+        unsigned int value;
+        unsigned char unused;
+    };
+};
+
+struct Result {
+    Result(Product*, Deleter);
+};
+
+Result __cdecl create()
+{
+    Deleter deleter = { 0 };
+    *(volatile unsigned char*)&deleter.unused = 0;
+    return Result(new Product, deleter);
+}

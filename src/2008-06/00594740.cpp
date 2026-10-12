@@ -1,34 +1,39 @@
-// from server: 52% by colin
-extern "C" void* __cdecl operator_new(unsigned int size);
+extern void* __cdecl operator new(unsigned int);
+extern const unsigned char control_table[];
 
-struct VFunctionRef_holder
-{
-    void* field0;
-    void* field4;
-    void* field8;
-    void* fieldC;
+struct Object {
+    virtual ~Object();
 };
 
-struct VFunctionRef
-{
-    VFunctionRef_holder* holder;
-    VFunctionRef(void* p);
+struct Deleter {};
+
+struct Control {
+    const void* table;
+    long strong;
+    long weak;
+    Object* object;
 };
 
-VFunctionRef::VFunctionRef(void* p)
+struct S {
+    Control* control;
+    S(Object* object);
+};
+
+S::S(Object* object) : control(0)
 {
-    holder = 0;
-    VFunctionRef_holder* h = (VFunctionRef_holder*)operator_new(0x10);
-    if (h)
-    {
-        h->field4 = (void*)1;
-        h->field8 = (void*)1;
-        h->field0 = (void*)0x832258;
-        h->fieldC = p;
+    try {
+        Control* p = static_cast<Control*>(operator new(sizeof(Control)));
+        if (p) {
+            p->strong = 1;
+            p->weak = 1;
+            p->table = control_table;
+            p->object = object;
+        } else {
+            p = 0;
+        }
+        control = p;
+    } catch (...) {
+        delete object;
+        throw;
     }
-    else
-    {
-        h = 0;
-    }
-    holder = h;
 }

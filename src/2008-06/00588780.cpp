@@ -1,65 +1,100 @@
-// from server: 36% by colin
-// roc 2008-06 00588780  unit: RBX::VChangeHistoryService::?$FactoryProduct  size: 357 bytes
+// from server: 100% by king_originala
+struct String;
 
-extern "C" {
-    void __stdcall sub_802458();
-    void __stdcall sub_802890();
-    void __stdcall sub_6a158c(void*, void*);
+extern void (__thiscall *construct_string)(String *, const char *);
+extern void (__cdecl *invalid_parameter_noinfo)();
+
+struct String
+{
+    char storage[28];
+    String(const char *);
+    ~String();
+};
+
+inline String::String(const char *text)
+{
+    construct_string(this, text);
 }
 
-struct RBX_String {
-    void ctor(const char*);
+struct HistoryError
+{
+    char storage[40];
+    HistoryError(const String &);
+    HistoryError(const HistoryError &);
+    ~HistoryError();
 };
 
-struct RBX_ChangeHistory {
-    void* p0;
-    void* p4;
+struct Change
+{
+    void play();
 };
 
-struct RBX_VChangeHistoryService {
-    char pad_000[0x138];
-    void* field_138;
-    char pad_13c[0x10];
-    void* field_14c;
-    char pad_150[0x4];
-    RBX_ChangeHistory field_154;
-    void* field_15c;
-    void* field_160;
-    char field_164;
-    char field_165;
-    char pad_166[0x2];
-
-    void method_00588780();
+struct Iterator
+{
+    void *owner;
+    void *position;
+    Change **dereference();
+    void advance();
+    bool equals(const Iterator &) const;
 };
 
-void RBX_VChangeHistoryService::method_00588780() {
-    if (this->field_164) {
-        RBX_String s;
-        s.ctor("ChangeHistoryService is currently playing");
-        sub_6a158c(&s, (void*)0x8d1bc8);
-    }
-    if (!this->field_165) {
-        RBX_String s;
-        s.ctor("ChangeHistoryService is disabled");
-        sub_6a158c(&s, (void*)0x8d1bc8);
-    }
-    void* a = this->field_154.p0;
-    void* b = this->field_138;
-    void* c = this->field_14c;
-    if (a != 0 && a != b) {
-        sub_802890();
-    }
-    if (this->field_154.p4 != c) {
-        RBX_String s;
-        s.ctor("Attempt to play beyond change history");
-        sub_6a158c(&s, (void*)0x8d1bc8);
-    }
-    char old = this->field_164;
-    this->field_164 = 1;
-    void* r = ((void* (__thiscall*)(void*))0x42a8f0)(&this->field_154);
-    ((void (__thiscall*)(void*))0x588710)(*(void**)r);
-    this->field_160 = this->field_154.p4;
-    this->field_15c = this->field_154.p0;
-    ((void (__thiscall*)(void*))0x5872d0)(&this->field_154);
-    this->field_164 = old;
+inline bool Iterator::equals(const Iterator &other) const
+{
+    if (!owner || owner != other.owner)
+        invalid_parameter_noinfo();
+    return position == other.position;
+}
+
+struct RestoreFlag
+{
+    bool *flag;
+    bool previous;
+    RestoreFlag(bool &);
+    ~RestoreFlag();
+};
+
+inline RestoreFlag::RestoreFlag(bool &value)
+    : flag(&value), previous(value)
+{
+    value = true;
+}
+
+inline RestoreFlag::~RestoreFlag()
+{
+    *flag = previous;
+}
+
+struct History
+{
+    char padding0[0x138];
+    void *owner;
+    char padding1[0x10];
+    void *end;
+    char padding2[4];
+    Iterator current;
+    Iterator previous;
+    bool playing;
+    bool enabled;
+    void play();
+};
+
+void History::play()
+{
+    if (playing)
+        throw HistoryError(String("ChangeHistoryService is currently playing"));
+
+    if (!enabled)
+        throw HistoryError(String("ChangeHistoryService is disabled"));
+
+    Iterator finish;
+    finish.owner = owner;
+    finish.position = end;
+
+    if (current.equals(finish))
+        throw HistoryError(String("Attempt to play beyond change history"));
+
+    RestoreFlag restore(playing);
+    (*current.dereference())->play();
+    previous = current;
+    current.advance();
 }

@@ -1,30 +1,38 @@
-// from server: 77% by colin
-
-
-
-
-struct SoundService {
-    char pad0[0x134];
-    int field134;
-    char pad1[0x4];
-    int field13c;
-    void sub_5bc5b0();
-    void cleanup();
+// from server: 100% by king_originala
+struct Resource {
+    char padding[8];
+    int references;
 };
 
-extern "C" int __stdcall sub_69fbf4(int, int);
-extern "C" void __stdcall sub_5b87a0(int);
-extern "C" void __stdcall sub_456e80(void*);
+struct ResourcePair {
+    Resource* pointer;
+    void* control;
+    void clear();
+};
 
-void SoundService::cleanup()
+extern "C" int __stdcall releaseHandle(void* handle, int flags);
+extern "C" void __cdecl checkResult(int result);
+
+struct S {
+    char padding[0x134];
+    ResourcePair resource;
+    void* handle;
+
+    void cleanup();
+    void f();
+};
+
+void S::f()
 {
-    if (field13c) {
-        sub_5b87a0(sub_69fbf4(field13c, 0));
-        field13c = 0;
+    if (handle) {
+        checkResult(releaseHandle(handle, 0));
+        handle = 0;
     }
-    if (field134) {
-        field134--;
-        sub_456e80(&field134);
+
+    if (resource.pointer) {
+        --resource.pointer->references;
+        resource.clear();
     }
-    sub_5bc5b0();
+
+    cleanup();
 }

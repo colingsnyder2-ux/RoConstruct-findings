@@ -1,21 +1,5 @@
-// from server: 53% by atomic.potato
-extern "C" void __cdecl ReleaseHandle(int);
-
-struct CXTIconHandle
-{
-    int handle;
-    int value4;
-    int value8;
-    void Reset();
-};
-
-void CXTIconHandle::Reset()
-{
-    if (handle)
-    {
-        ReleaseHandle(handle);
-        handle = 0;
-    }
-    value4 = 0;
-    value8 = 0;
-}
+// from server: 100% by tester
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /MD
+// roc-archive: msvc-atlmfc-rtm atls.lib/f:/dd/vctools/vc7libs/ship/atlmfc/src/atl/atls/staticrelease/obj1r/i386/Externs.obj

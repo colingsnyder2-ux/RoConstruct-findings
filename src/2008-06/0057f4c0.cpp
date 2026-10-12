@@ -1,19 +1,47 @@
-// from server: 35% by colin
-struct FilteredSelection {
-    void construct(const char* name, const char* unused, int a, int b, int c, int d, int e, int f, int g);
-};
+// from server: 98% by king_originala
+namespace std {
+    template<class T> struct char_traits;
+    template<class T> class allocator;
 
-extern "C" {
-    void __stdcall sub_80245c(void* dst, const void* src);
-    void __stdcall sub_802468(void* p);
-    void __stdcall sub_57e730();
+    template<class T, class Traits, class Allocator>
+    class basic_string {
+        char storage[28];
+
+    public:
+        basic_string(const basic_string&);
+        ~basic_string();
+    };
+
+    typedef basic_string<char, char_traits<char>, allocator<char> > string;
 }
 
-void FilteredSelection::construct(const char* name, const char* unused, int a, int b, int c, int d, int e, int f, int g)
+extern void (__thiscall *string_copy)(void*, const std::string&);
+extern void (__thiscall *string_destroy)(void*);
+
+template<class T, class Traits, class Allocator>
+__forceinline std::basic_string<T, Traits, Allocator>::basic_string(
+    const basic_string& other)
 {
-    char buf[28];
-    sub_80245c(buf, name);
-    sub_57e730();
-    *(void**)this = (void*)0x830a6c;
-    sub_802468(buf);
+    string_copy(this, other);
+}
+
+template<class T, class Traits, class Allocator>
+__forceinline std::basic_string<T, Traits, Allocator>::~basic_string()
+{
+    string_destroy(this);
+}
+
+struct Base {
+    Base(std::string text, int value);
+    virtual ~Base();
+};
+
+struct FilteredSelection : Base {
+    FilteredSelection(std::string text, int value);
+    virtual ~FilteredSelection();
+};
+
+FilteredSelection::FilteredSelection(std::string text, int value)
+    : Base(text, value)
+{
 }

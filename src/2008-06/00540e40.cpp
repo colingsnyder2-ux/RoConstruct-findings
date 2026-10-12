@@ -1,13 +1,10 @@
-// from server: 46% by atomic.potato
-extern "C" void __stdcall sub_005425f0(void *, int);
-
-struct Bucket
-{
-    int f(void *);
+// from server: 100% by king_originala
+#pragma optimize("", off)
+struct S {
+    S(const int& value);
+    void init(int value);
 };
 
-int Bucket::f(void *p)
-{
-    sub_005425f0(this, *(int *)p);
-    return (int)this;
+S::S(const int& value) {
+    init(value);
 }

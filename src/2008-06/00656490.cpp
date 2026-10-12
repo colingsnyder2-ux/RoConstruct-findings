@@ -1,37 +1,35 @@
-// from server: 70% by tester
-struct ScoreHud {
-    char pad[0x13c];
-    float f13c;
-    float f140;
-    int i144;
-    int i148;
-    ScoreHud* ctor();
+// from server: 73% by king_originala
+struct S {
+    unsigned int slots[79];
+    float value13c;
+    float value140;
+    unsigned int value144;
+    unsigned int value148;
+
+    S* initializeBase();
+    S* initialize();
 };
 
-struct Base {
-    void init();
-};
-
-extern float g_827490;
-extern float g_8163A4;
-
-ScoreHud* ScoreHud::ctor()
+S* S::initialize()
 {
-    ((Base*)this)->init();
-    *(int*)((char*)this + 0x00) = 0x84bdcc;
-    *(int*)((char*)this + 0x10) = 0x84bdbc;
-    *(int*)((char*)this + 0x14) = 0x84bdb4;
-    *(int*)((char*)this + 0x20) = 0x84bdac;
-    *(int*)((char*)this + 0x24) = 0x84bd9c;
-    *(int*)((char*)this + 0x44) = 0x84bd8c;
-    *(int*)((char*)this + 0x64) = 0x84bd7c;
-    *(int*)((char*)this + 0x84) = 0x84bd6c;
-    *(int*)((char*)this + 0xa4) = 0x84bd5c;
-    *(int*)((char*)this + 0xc4) = 0x84bd4c;
-    *(int*)((char*)this + 0x130) = 0x84bd44;
-    f13c = g_827490;
-    i144 = 0;
-    f140 = g_8163A4;
-    i148 = 0;
+    initializeBase();
+
+    slots[0] = 0x0084bdcc;
+    slots[4] = 0x0084bdbc;
+    slots[5] = 0x0084bdb4;
+    slots[8] = 0x0084bdac;
+    slots[9] = 0x0084bd9c;
+    slots[17] = 0x0084bd8c;
+    slots[25] = 0x0084bd7c;
+    slots[33] = 0x0084bd6c;
+    slots[41] = 0x0084bd5c;
+    slots[49] = 0x0084bd4c;
+    slots[76] = 0x0084bd44;
+
+    value13c = *reinterpret_cast<const float*>(0x00827490);
+    value140 = *reinterpret_cast<const float*>(0x008163a4);
+    value144 = 0;
+    value148 = 0;
+
     return this;
 }

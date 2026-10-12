@@ -1,4 +1,4 @@
-// from server: 94% by colin
+// from server: 100% by tester
 // roc 2008-06 005b97b0  unit: VStockSound::?$FactoryProduct  size: 56 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 005b97b0
 //
@@ -29,7 +29,7 @@ struct VStockSound {
     void method();
 };
 
-extern "C" int __cdecl sub_69fbee(int, float, float, float);
+extern "C" int __stdcall sub_69fbee(int, float, float, float);
 extern "C" void __cdecl sub_5b87a0(int);
 
 void VStockSound::method() {

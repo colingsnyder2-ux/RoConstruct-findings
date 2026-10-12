@@ -1,23 +1,40 @@
-// from server: 50% by colin
-struct BoundPropGetSet {
-    void* field0;
-    BoundPropGetSet(void* desc, int member, int changed);
+extern void* __cdecl operator new(unsigned int);
+extern const unsigned char control_table[];
+
+struct Object {
+    virtual ~Object();
 };
 
-extern "C" void* __cdecl operator_new(unsigned int size);
+struct Deleter {};
 
-BoundPropGetSet::BoundPropGetSet(void* desc, int member, int changed)
+struct Control {
+    const void* table;
+    long strong;
+    long weak;
+    Object* object;
+    Deleter deleter;
+};
+
+struct S {
+    Control* control;
+    S(Object* object, Deleter deleter);
+};
+
+S::S(Object* object, Deleter deleter) : control(0)
 {
-    void* p;
-    field0 = 0;
-    p = operator_new(0x14);
-    if (p != 0) {
-        *(int*)((char*)p + 4) = 1;
-        *(int*)((char*)p + 8) = 1;
-        *(void**)p = (void*)0x841f10;
-        *(int*)((char*)p + 0xc) = member;
-    } else {
-        p = 0;
+    try {
+        Control* p = static_cast<Control*>(operator new(sizeof(Control)));
+        if (p) {
+            p->strong = 1;
+            p->weak = 1;
+            p->table = control_table;
+            p->object = object;
+        } else {
+            p = 0;
+        }
+        control = p;
+    } catch (...) {
+        delete object;
+        throw;
     }
-    field0 = p;
 }

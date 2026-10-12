@@ -1,27 +1,39 @@
-// from server: 52% by colin
-extern "C" void* __cdecl func_006a0920(unsigned int size);
+extern void* __cdecl operator new(unsigned int);
+extern const unsigned char control_table[];
 
-struct S
-{
-    void* member_0;
-    S* init(void* arg);
+struct Object {
+    virtual ~Object();
 };
 
-S* S::init(void* arg)
+struct Deleter {};
+
+struct Control {
+    const void* table;
+    long strong;
+    long weak;
+    Object* object;
+};
+
+struct S {
+    Control* control;
+    S(Object* object);
+};
+
+S::S(Object* object) : control(0)
 {
-    member_0 = 0;
-    void* p = func_006a0920(0x10);
-    if (p != 0)
-    {
-        *(int*)((char*)p + 4) = 1;
-        *(int*)((char*)p + 8) = 1;
-        *(void**)((char*)p + 0) = (void*)0x8408b4;
-        *(void**)((char*)p + 0xc) = arg;
+    try {
+        Control* p = static_cast<Control*>(operator new(sizeof(Control)));
+        if (p) {
+            p->strong = 1;
+            p->weak = 1;
+            p->table = control_table;
+            p->object = object;
+        } else {
+            p = 0;
+        }
+        control = p;
+    } catch (...) {
+        delete object;
+        throw;
     }
-    else
-    {
-        p = 0;
-    }
-    member_0 = p;
-    return this;
 }

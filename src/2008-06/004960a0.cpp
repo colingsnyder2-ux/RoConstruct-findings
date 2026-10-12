@@ -1,5 +1,31 @@
-// from server: 65% by colin
-// roc-lang: cpp
-// roc-cl: 50727
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs-net Players.cpp
+// from server: 96% by king_originala
+struct String {
+    unsigned int allocator;
+    char storage[16];
+    unsigned int length;
+    unsigned int capacity;
+    ~String();
+};
+
+struct Member {
+    unsigned int data[4];
+    Member(int, const String&);
+};
+
+struct S {
+    unsigned int first;
+    unsigned int second;
+    unsigned int third;
+    unsigned int padding;
+    Member member;
+    unsigned int fourth;
+    unsigned int fifth;
+
+    S(int, String);
+};
+
+S::S(int value, String text)
+    : first(0), second(0), third(0), member(value, text),
+      fourth(0), fifth(0)
+{
+}

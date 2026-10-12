@@ -1,5 +1,13 @@
-// from server: 75% by colin
-// roc-lang: cpp
-// roc-cl: 30729
-// roc-flags: /O2 /GS- /MD
-// roc-lib: mfc-9.0 atlmfc/src/mfc/afxbasepane.cpp
+// from server: 100% by king_originala
+extern "C" int (__stdcall *PostMessageA)(void *, unsigned int, unsigned int, long);
+
+struct CRobloxView {
+    void notify(unsigned int, long);
+};
+
+void CRobloxView::notify(unsigned int, long)
+{
+    void *window = *reinterpret_cast<void **>(
+        reinterpret_cast<char *>(this) - 0x88);
+    PostMessageA(window, 0x46B, 0, 0);
+}

@@ -1,5 +1,19 @@
-// from server: 46% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MT
-// roc-lib: ogre-1.4.9 OgreAlignedAllocator.cpp
+// from server: 82% by king_originala
+void __cdecl sortThree(float& a, float& b, float& c)
+{
+    if ((double)a > b && &b != &a) {
+        double temp = b;
+        b = a;
+        a = temp;
+    }
+    if ((double)b > c && &c != &b) {
+        double temp = c;
+        c = b;
+        b = temp;
+    }
+    if ((double)a > b && &b != &a) {
+        double temp = b;
+        b = a;
+        a = temp;
+    }
+}

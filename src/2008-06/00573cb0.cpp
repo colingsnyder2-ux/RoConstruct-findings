@@ -1,54 +1,91 @@
-// from server: 34% by colin
-// roc 2008-06 00573cb0  unit: RBX::GuiRoot  size: 330 bytes
-// Make this compile to the exact bytes below, then: roc check 2008-06 00573cb0
-
-extern "C" void __stdcall sub_55AF90(void*);
-extern "C" void __stdcall sub_5739D0(void*);
-extern "C" float* __stdcall sub_7BAF10();
-
-struct GuiRoot {
-    void construct(int a, int b, int c);
+// from server: 99% by king_originala
+struct Color {
+    float r, g, b, a;
+    Color(float);
 };
 
-void GuiRoot::construct(int a, int b, int c)
+__forceinline Color::Color(float v) : r(v), g(v), b(v), a(v) {}
+
+extern const Color& __cdecl zeroColor();
+extern const float whiteValue;
+
+extern const unsigned long table00Data[];
+extern const unsigned long table10Data[];
+extern const unsigned long table14Data[];
+extern const unsigned long table20Data[];
+extern const unsigned long table24Data[];
+extern const unsigned long table44Data[];
+extern const unsigned long table64Data[];
+extern const unsigned long table84Data[];
+extern const unsigned long tableA4Data[];
+extern const unsigned long tableC4Data[];
+extern const unsigned long table130Data[];
+
+struct PercentPanel {
+    unsigned long table00;
+    char pad04[12];
+    unsigned long table10;
+    unsigned long table14;
+    char pad18[8];
+    unsigned long table20;
+    unsigned long table24;
+    char pad28[28];
+    unsigned long table44;
+    char pad48[28];
+    unsigned long table64;
+    char pad68[28];
+    unsigned long table84;
+    char pad88[28];
+    unsigned long tableA4;
+    char padA8[28];
+    unsigned long tableC4;
+    char padC8[104];
+    unsigned long table130;
+    char pad134[16];
+
+    PercentPanel();
+    ~PercentPanel();
+    void setName(const char*);
+};
+
+struct GuiRoot : PercentPanel {
+    float r, g, b, a;
+    void* owner;
+    bool enabled;
+
+    GuiRoot(const char*, void*, bool);
+};
+
+GuiRoot::GuiRoot(const char* name, void* parent, bool white)
+    : PercentPanel()
 {
-    sub_5739D0(this);
+    table00 = reinterpret_cast<unsigned long>(table00Data);
+    table10 = reinterpret_cast<unsigned long>(table10Data);
+    table14 = reinterpret_cast<unsigned long>(table14Data);
+    table20 = reinterpret_cast<unsigned long>(table20Data);
+    table24 = reinterpret_cast<unsigned long>(table24Data);
+    table44 = reinterpret_cast<unsigned long>(table44Data);
+    table64 = reinterpret_cast<unsigned long>(table64Data);
+    table84 = reinterpret_cast<unsigned long>(table84Data);
+    tableA4 = reinterpret_cast<unsigned long>(tableA4Data);
+    tableC4 = reinterpret_cast<unsigned long>(tableC4Data);
+    table130 = reinterpret_cast<unsigned long>(table130Data);
 
-    *(int*)((char*)this + 0x00) = 0x82faf4;
-    *(int*)((char*)this + 0x10) = 0x82fae4;
-    *(int*)((char*)this + 0x14) = 0x82fadc;
-    *(int*)((char*)this + 0x20) = 0x82fad4;
-    *(int*)((char*)this + 0x24) = 0x82fac4;
-    *(int*)((char*)this + 0x44) = 0x82fab4;
-    *(int*)((char*)this + 0x64) = 0x82faa4;
-    *(int*)((char*)this + 0x84) = 0x82fa94;
-    *(int*)((char*)this + 0xa4) = 0x82fa84;
-    *(int*)((char*)this + 0xc4) = 0x82fa74;
-    *(int*)((char*)this + 0x130) = 0x82fa6c;
-    *(int*)((char*)this + 0x154) = 0;
+    owner = 0;
+    const Color& zero = zeroColor();
+    r = zero.r;
+    g = zero.g;
+    b = zero.b;
+    a = zero.a;
+    enabled = true;
+    setName(name);
+    owner = parent;
 
-    float* p = sub_7BAF10();
-    *(float*)((char*)this + 0x144) = p[0];
-    *(float*)((char*)this + 0x148) = p[1];
-    *(float*)((char*)this + 0x14c) = p[2];
-    *(float*)((char*)this + 0x150) = p[3];
-
-    sub_55AF90((void*)a);
-    *(unsigned char*)((char*)this + 0x158) = 1;
-    *(int*)((char*)this + 0x154) = b;
-
-    if (c != 0) {
-        if ((*(unsigned char*)0x974e50 & 1) == 0) {
-            float v = *(float*)0x82f838;
-            *(unsigned int*)0x974e50 |= 1;
-            *(float*)0x974e40 = v;
-            *(float*)0x974e44 = v;
-            *(float*)0x974e48 = v;
-            *(float*)0x974e4c = v;
-        }
-        *(float*)((char*)this + 0x144) = *(float*)0x974e40;
-        *(float*)((char*)this + 0x148) = *(float*)0x974e44;
-        *(float*)((char*)this + 0x14c) = *(float*)0x974e48;
-        *(float*)((char*)this + 0x150) = *(float*)0x974e4c;
+    if (white) {
+        static Color whiteColor(whiteValue);
+        r = whiteColor.r;
+        g = whiteColor.g;
+        b = whiteColor.b;
+        a = whiteColor.a;
     }
 }

@@ -1,5 +1,46 @@
-// from server: 75% by colin
-// roc-lang: cpp
-// roc-cl: 50727
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs script/ScriptContext.cpp
+// from server: 97% by king_originala
+extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
+#pragma intrinsic(_InterlockedExchangeAdd)
+
+struct Control {
+    long reserved;
+    volatile long references;
+};
+
+struct Shared {
+    void* pointer;
+    Control* control;
+
+    Shared(const Shared&);
+    ~Shared();
+};
+
+__forceinline Shared::Shared(const Shared& other)
+    : pointer(other.pointer), control(other.control)
+{
+    if (control)
+        _InterlockedExchangeAdd(&control->references, 1);
+}
+
+struct Iterator {
+    void* owner;
+    Shared* current;
+};
+
+struct Function {
+    unsigned long a;
+    unsigned long b;
+    unsigned long c;
+    unsigned long d;
+
+    void invoke(unsigned long, Shared);
+};
+
+Function __cdecl process(Iterator first, Iterator last, Function function)
+{
+    Shared* current = first.current;
+    Shared* end = last.current;
+    for (; current != end; ++current)
+        function.invoke(function.c, *current);
+    return function;
+}

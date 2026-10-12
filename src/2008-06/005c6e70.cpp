@@ -1,20 +1,39 @@
-// from server: 50% by atomic.potato
-struct VLeftMotorTool {
-    char pad[0xc];
-    struct Inner { char pad[0x204]; void* p; }* p;
-    void* f();
+// from server: 100% by tester
+void* __cdecl operator new(unsigned int);
+void __cdecl operator delete(void*);
+
+extern void* table1[];
+extern void* table2[];
+
+struct Cursor {
+    void* primary;
+    void* secondary;
+    char storage[0x40];
+    Cursor(void*);
 };
 
-struct Alloc { void* __thiscall ctor(void*); };
+struct FlatCursor : Cursor {
+    FlatCursor(void*);
+};
 
-extern "C" void* __cdecl sub_6A0920(unsigned int);
+inline FlatCursor::FlatCursor(void* value) : Cursor(value)
+{
+    primary = table1;
+    secondary = table2;
+}
 
-void* VLeftMotorTool::f() {
-    void* mem = sub_6A0920(0x48);
-    if (mem) {
-        ((Alloc*)mem)->ctor(p->p);
-        *(void**)mem = (void*)0x839574;
-        *(void**)((char*)mem + 4) = (void*)0x83955c;
-    }
-    return mem;
+struct Context {
+    char pad[0x204];
+    void* value;
+};
+
+struct Tool {
+    char pad[0x0c];
+    Context* context;
+    Cursor* f();
+};
+
+Cursor* Tool::f()
+{
+    return new FlatCursor(context->value);
 }

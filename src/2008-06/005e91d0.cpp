@@ -1,5 +1,32 @@
-// from server: 57% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs util/RunStateOwner.cpp
+// from server: 100% by king_originala
+struct Iterator {
+    void* primitive;
+    int index;
+    void advance();
+};
+
+struct Assembly {
+    Iterator end() const;
+    Iterator begin() const;
+};
+
+struct Consumer {
+    void consume(void* primitive);
+};
+
+struct PhysicsService {
+    char padding[0x84];
+    Consumer* consumer;
+    void f(Assembly* assembly);
+};
+
+void PhysicsService::f(Assembly* assembly)
+{
+    Iterator last = assembly->end();
+    Iterator current = assembly->begin();
+
+    while (current.primitive != last.primitive) {
+        consumer->consume(current.primitive);
+        current.advance();
+    }
+}

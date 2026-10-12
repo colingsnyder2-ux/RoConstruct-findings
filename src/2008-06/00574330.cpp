@@ -1,63 +1,83 @@
-// from server: 56% by tester
-struct S_func_00574330 {
-    char pad0[0x108];
-    void* m_ptr108;
-    int f(float* p);
+// from server: 99% by king_originala
+extern float horizontalOffset;
+extern float availableHeight;
+
+struct Vec2 {
+    float x;
+    float y;
 };
 
-extern "C" float __stdcall sub_6a17f0(float);
+struct Entry {
+    char data[8];
+};
 
-float g_826e6c;
-float g_974d7c;
+struct Entries {
+    char padding[12];
+    Entry* begin;
+    Entry* end;
+};
 
-int S_func_00574330::f(float* p)
+template<class T>
+inline const T& maximum(const T& a, const T& b)
 {
-    float v;
-    int a, b, c, d, e;
-    int* q;
+    return a < b ? b : a;
+}
 
-    (*(void (__thiscall**)(S_func_00574330*, float*))(*(int*)this + 0x48))(this, p);
-    (*(void (__thiscall**)(S_func_00574330*, float*))(*(int*)this + 0x5c))(this, &v);
+template<class T>
+inline const T& minimum(const T& a, const T& b)
+{
+    return a < b ? a : b;
+}
 
-    *p = v + g_826e6c + *p;
+struct S {
+    virtual void v0() = 0;
+    virtual void v1() = 0;
+    virtual void v2() = 0;
+    virtual void v3() = 0;
+    virtual void v4() = 0;
+    virtual void v5() = 0;
+    virtual void v6() = 0;
+    virtual void v7() = 0;
+    virtual void v8() = 0;
+    virtual void v9() = 0;
+    virtual void v10() = 0;
+    virtual void v11() = 0;
+    virtual void v12() = 0;
+    virtual void v13() = 0;
+    virtual void v14() = 0;
+    virtual void v15() = 0;
+    virtual void v16() = 0;
+    virtual void v17() = 0;
+    virtual Vec2 position() = 0;
+    virtual void v19() = 0;
+    virtual void v20() = 0;
+    virtual void v21() = 0;
+    virtual void v22() = 0;
+    virtual Vec2 size() = 0;
 
-    a = (int)sub_6a17f0(p[1]);
-    b = (int)sub_6a17f0(g_974d7c);
-    b += 4;
-    c = (int)sub_6a17f0(p[1]);
-    c -= 0x78;
-    c = c / b;
-    d = (int)sub_6a17f0(p[1]);
-    d -= 0x14;
-    d = d / b;
+    char padding[260];
+    Entries* entries;
 
-    if (m_ptr108) {
-        e = (*(int*)((char*)m_ptr108 + 0x10) - *(int*)((char*)m_ptr108 + 0xc)) >> 3;
-    } else {
-        e = 0;
-    }
-    e = e / 2;
+    Vec2 f();
+};
 
-    c -= e;
+Vec2 S::f()
+{
+    Vec2 result = position();
+    Vec2 dimensions = size();
 
-    if (e < d) {
-        q = &e;
-    } else {
-        q = &d;
-    }
-    d = *q;
+    result.x = horizontalOffset + dimensions.x + result.x;
 
-    if (d < c) {
-        q = &d;
-    } else {
-        q = &c;
-    }
-    c = *q;
+    int spacing = (int)dimensions.y + 4;
+    int limit = ((int)availableHeight - 120) / spacing;
+    int row = ((int)result.y - 20) / spacing;
+    Entries* list = entries;
+    int half = (list ? (int)(list->end - list->begin) : 0) / 2;
 
-    c -= e;
-    c *= b;
-    c += 0x14;
+    limit -= half;
+    row = maximum(half, row);
+    row = minimum(row, limit);
+    result.y = (float)((row - half) * spacing + 20);
 
-    p[1] = (float)c;
-    return (int)p;
+    return result;
 }

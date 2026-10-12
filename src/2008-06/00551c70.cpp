@@ -1,10 +1,12 @@
-// from server: 37% by atomic.potato
-struct TextureProxyBase
-{
-    void SetTexture(void *value);
+// from server: 100% by king_originala
+#pragma optimize("", off)
+
+struct S {
+    char padding[0x28];
+    int value;
+    void setValue(int v);
 };
 
-void TextureProxyBase::SetTexture(void *value)
-{
-    *(void **)((char *)this + 0x28) = value;
+void S::setValue(int v) {
+    value = v;
 }

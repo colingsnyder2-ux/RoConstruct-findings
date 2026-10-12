@@ -1,28 +1,39 @@
-// from server: 51% by tester
-struct DataModel;
+// from server: 100% by tester
+void* __cdecl operator new(unsigned int);
+void __cdecl operator delete(void*);
 
-struct TToolVerb {
-    char pad[0xc];
-    DataModel* dataModel;
-    void* construct();
+extern void* table1[];
+extern void* table2[];
+
+struct Cursor {
+    void* primary;
+    void* secondary;
+    char storage[0x40];
+    Cursor(void*);
 };
 
-struct Helper {
-    void init(void* arg);
+struct FlatCursor : Cursor {
+    FlatCursor(void*);
 };
 
-extern "C" void* __cdecl operator_new(unsigned int);
+inline FlatCursor::FlatCursor(void* value) : Cursor(value)
+{
+    primary = table1;
+    secondary = table2;
+}
 
-void* TToolVerb::construct() {
-    void* mem = operator_new(0x48);
-    void* result = 0;
-    if (mem) {
-        void* p = *(void**)((char*)this + 0xc);
-        void* q = *(void**)((char*)p + 0x204);
-        ((Helper*)mem)->init(q);
-        *(void**)mem = (void*)0x8392cc;
-        *(void**)((char*)mem + 4) = (void*)0x8392b4;
-        result = mem;
-    }
-    return result;
+struct Context {
+    char pad[0x204];
+    void* value;
+};
+
+struct Tool {
+    char pad[0x0c];
+    Context* context;
+    Cursor* f();
+};
+
+Cursor* Tool::f()
+{
+    return new FlatCursor(context->value);
 }

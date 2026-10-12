@@ -1,22 +1,44 @@
-// from server: 52% by atomic.potato
-struct S {
-    void* p;
-    S(void* a, void* b);
+// from server: 100% by tester
+#pragma optimize("y", off)
+
+void* __cdecl operator new(unsigned int);
+extern void* controlVtable[];
+
+struct Deleter {
+    void operator()(void*) const;
 };
 
-extern "C" void* __cdecl sub_6a0920(unsigned int size);
+inline void Deleter::operator()(void*) const {}
 
-S::S(void* a, void* b)
+struct Control {
+    void** vtable;
+    int strong;
+    int weak;
+    void* object;
+    Deleter deleter;
+
+    Control(void*, const Deleter&);
+};
+
+inline Control::Control(void* p, const Deleter& d)
+    : strong(1), weak(1), deleter(d)
 {
-    p = 0;
-    void* mem = sub_6a0920(0x14);
-    if (mem) {
-        *(int*)((char*)mem + 4) = 1;
-        *(int*)((char*)mem + 8) = 1;
-        *(void**)mem = (void*)0x822cc4;
-        *(void**)((char*)mem + 0xc) = a;
-    } else {
-        mem = 0;
+    vtable = controlVtable;
+    object = p;
+}
+
+struct S {
+    Control* control;
+    S(void*, Deleter);
+};
+
+S::S(void* p, Deleter d) : control(0)
+{
+    try {
+        control = new Control(p, d);
     }
-    p = mem;
+    catch (...) {
+        d(p);
+        throw;
+    }
 }

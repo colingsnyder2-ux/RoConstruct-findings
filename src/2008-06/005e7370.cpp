@@ -1,5 +1,12 @@
-// from server: 52% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs v8datamodel/ModelInstance.cpp
+// from server: 100% by king_originala
+struct S {
+    char padding[20];
+    S* parent;
+    int depth();
+};
+
+int S::depth() {
+    if (parent)
+        return parent->depth() + 1;
+    return 1;
+}

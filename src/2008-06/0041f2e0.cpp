@@ -1,18 +1,7 @@
-// from server: 65% by atomic.potato
-extern "C" void construct_string(void *, const char *);
-extern "C" void initialize_object(void *, void *);
-
-struct InsertDecal
-{
-    void *vtable;
-    InsertDecal *f(void *);
-};
-
-InsertDecal *InsertDecal::f(void *arg)
-{
-    char buffer[28];
-    construct_string(buffer, "d$TP");
-    initialize_object(this, buffer);
-    vtable = (void *)0x0080f204;
-    return this;
-}
+// from server: 100% by colin
+// roc-cl: 21022
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+#include <string>
+struct B{virtual ~B(){}; B(std::string,int);};
+struct CutVerb:B{CutVerb(int);};
+CutVerb::CutVerb(int p):B("Insert Object",p){}

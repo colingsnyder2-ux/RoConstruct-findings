@@ -1,9 +1,4 @@
-// from server: 50% by Cezant64gamejr
-struct S {
-    int f(int a);
-};
-
-int S::f(int a) {
-    int* ptr = (int*)((char*)this + 8);
-    return *ptr + 12;
-}
+// from server: 100% by colin
+// roc-flags: /O2 /GS- /MD
+#pragma optimize("g", off)
+struct VChunk{char pad[0xc];}; char* f(VChunk* p){return p->pad+0xc;}

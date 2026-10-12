@@ -1,5 +1,28 @@
-// from server: 76% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MT
-// roc-lib: ogre-1.6.4 OgreResourceBackgroundQueue.cpp
+// from server: 100% by king_originala
+struct Base
+{
+    Base(int value);
+    virtual ~Base();
+    char data[36];
+};
+
+struct Member
+{
+    Member(const int* first, const int* last);
+    ~Member();
+    char data[32];
+};
+
+struct S : Base
+{
+    Member member;
+    int value;
+
+    S(int value, int initial);
+    virtual ~S();
+};
+
+S::S(int value, int initial)
+    : Base(initial), member(&value + 1, &initial), value(value)
+{
+}

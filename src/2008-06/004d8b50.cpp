@@ -1,24 +1,44 @@
-// from server: 52% by colin
-struct ViewBase {
-    void* field0;
-    ViewBase(void* a, void* b);
+// from server: 100% by tester
+#pragma optimize("y", off)
+
+void* __cdecl operator new(unsigned int);
+extern void* controlVtable[];
+
+struct Deleter {
+    void operator()(void*) const;
 };
 
-extern "C" void* __cdecl operator_new(unsigned int size);
+inline void Deleter::operator()(void*) const {}
 
-void* __cdecl sub_6A0920(unsigned int size);
+struct Control {
+    void** vtable;
+    int strong;
+    int weak;
+    void* object;
+    Deleter deleter;
 
-ViewBase::ViewBase(void* a, void* b)
+    Control(void*, const Deleter&);
+};
+
+inline Control::Control(void* p, const Deleter& d)
+    : strong(1), weak(1), deleter(d)
 {
-    field0 = 0;
-    void* p = sub_6A0920(0x14);
-    if (p) {
-        *(int*)((char*)p + 4) = 1;
-        *(int*)((char*)p + 8) = 1;
-        *(void**)p = (void*)0x826c5c;
-        *(void**)((char*)p + 0xc) = a;
-    } else {
-        p = 0;
+    vtable = controlVtable;
+    object = p;
+}
+
+struct S {
+    Control* control;
+    S(void*, Deleter);
+};
+
+S::S(void* p, Deleter d) : control(0)
+{
+    try {
+        control = new Control(p, d);
     }
-    field0 = p;
+    catch (...) {
+        d(p);
+        throw;
+    }
 }

@@ -1,26 +1,100 @@
-// from server: 26% by atomic.potato
-struct S {
-    void* field0;
-    void* field4;
-    void method();
+// from server: 100% by king_originala
+struct TypeInfo;
+extern bool (__thiscall *typeEqual)(const TypeInfo*, const TypeInfo&);
+extern void (__thiscall *destroyString)(void*);
+
+namespace std
+{
+    template<class T> struct char_traits;
+    template<class T> class allocator;
+
+    template<class T, class Traits, class Allocator>
+    class basic_string
+    {
+        char storage[28];
+    public:
+        ~basic_string();
+    };
+
+    template<class T, class Traits, class Allocator>
+    inline basic_string<T, Traits, Allocator>::~basic_string()
+    {
+        destroyString(this);
+    }
+
+    typedef basic_string<char, char_traits<char>, allocator<char> > string;
+}
+
+struct TypeInfo
+{
+    bool operator==(const TypeInfo&) const;
 };
 
-extern "C" int __stdcall sub_802878(void*);
-extern "C" void __stdcall sub_802468(void*);
-extern "C" void* __cdecl sub_416110(void*, void*);
-extern "C" void* __cdecl sub_56cd80();
-extern "C" void __cdecl sub_59ef90();
-extern "C" void __cdecl sub_615440();
-extern "C" void __cdecl sub_6154e0();
-
-void S::method()
+inline bool TypeInfo::operator==(const TypeInfo& other) const
 {
-    if (sub_802878(*(void**)(*(char**)this + 8))) {
-        void* tmp = sub_416110((char*)this + 4, (char*)this + 4);
-        sub_615440();
-        sub_59ef90();
-        sub_56cd80();
-        *(void**)this = sub_56cd80();
+    return typeEqual(this, other);
+}
+
+struct Object
+{
+    virtual ~Object();
+};
+
+struct Value : std::string
+{
+    char extra[4];
+    Value(const std::string&);
+};
+
+struct Holder
+{
+    Object* value;
+    Holder(const Value&);
+    ~Holder();
+    void swap(Holder& other);
+};
+
+inline Holder::~Holder()
+{
+    if (value)
+        delete value;
+}
+
+inline void Holder::swap(Holder& other)
+{
+    if (&other != this)
+    {
+        Object* saved = other.value;
+        other.value = value;
+        value = saved;
     }
-    sub_6154e0();
+}
+
+struct Descriptor
+{
+    unsigned int unused[2];
+    TypeInfo* type;
+};
+
+extern TypeInfo stringType;
+extern std::string __cdecl convert(const Holder&);
+extern Descriptor* __cdecl valueDescriptor();
+
+struct S
+{
+    Descriptor* descriptor;
+    Holder holder;
+
+    void finish();
+    void f();
+};
+
+void S::f()
+{
+    if (stringType == *descriptor->type)
+    {
+        holder.swap(Holder(Value(convert(holder))));
+        descriptor = valueDescriptor();
+    }
+    finish();
 }

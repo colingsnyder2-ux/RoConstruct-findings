@@ -1,41 +1,43 @@
-// from server: 20% by colin
-// roc 2008-06 0054aed0  unit: RBX::RenderBase::Mesh  size: 410 bytes
+// from server: 75% by king_originala
+typedef unsigned int size_t;
 
-struct Vec3 { float x, y, z; };
+void * __cdecl operator new(size_t, void *);
+void __cdecl operator delete(void *, void *);
 
-struct Mesh {
-    int f(int a, int b);
+struct V {
+    float x, y, z;
+    V(const V &);
+    V &operator=(const V &);
 };
 
-extern "C" void* __cdecl sub_401670(unsigned int size, void* src);
+struct S {
+    V *data;
+    int count;
+    int capacity;
 
-struct Helper {
-    char __thiscall sub_501ee0(int idx);
-    void __thiscall sub_5025c0(int a, int b);
-    Vec3* __thiscall sub_514be0(const Vec3* src);
+    bool contains(const V &);
+    void resize(int, bool);
+    void append(const V &, const V &);
 };
 
-int Mesh::f(int a, int b)
+#pragma strict_gs_check(on)
+#pragma optimize("", off)
+
+void S::append(const V &a, const V &b)
 {
-    Helper* h = (Helper*)this;
-    if (h->sub_501ee0(a) || h->sub_501ee0(b)) {
-        Vec3 va, vb;
-        h->sub_514be0((const Vec3*)&a);
-        h->sub_514be0((const Vec3*)&b);
-        return this->f((int)&va, (int)&vb);
-    }
-    int* p = (int*)this;
-    if (p[1] + 1 < p[2]) {
-        Vec3* dst1 = (Vec3*)sub_401670(0xc, (char*)p[0] + p[1] * 0xc);
-        Vec3* r1 = dst1 ? h->sub_514be0((const Vec3*)&a) : 0;
-        Vec3* dst2 = (Vec3*)sub_401670(0xc, (char*)p[0] + p[1] * 0xc + 0xc);
-        Vec3* r2 = dst2 ? h->sub_514be0((const Vec3*)&b) : 0;
-        p[1] += 2;
-        (void)r1; (void)r2;
+    if (contains(a) || contains(b)) {
+        V copies[2] = { a, b };
+        append(copies[0], copies[1]);
+    } else if (count + 1 < capacity) {
+        new (data + count) V(a);
+        new (data + count + 1) V(b);
+        count += 2;
     } else {
-        h->sub_5025c0(p[1] + 2, 0);
-        h->sub_514be0((const Vec3*)((char*)p[0] + (p[1] - 2) * 0xc));
-        h->sub_514be0((const Vec3*)((char*)p[0] + (p[1] - 1) * 0xc));
+        resize(count + 2, false);
+        data[count - 2] = a;
+        data[count - 1] = b;
     }
-    return 0;
 }
+
+#pragma optimize("", on)
+#pragma strict_gs_check(off)

@@ -1,5 +1,28 @@
-// from server: 63% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: openrbx-client App/v8world/Assembly2.cpp
+// from server: 100% by king_originala
+struct Link {
+    void assign(Link*);
+};
+
+struct State {
+    void assign(State*);
+    void update(int);
+};
+
+struct Source {
+    int value();
+};
+
+struct Clump {
+    char pad0[0x5c];
+    Link* link;
+    char pad1[0x40];
+    State* state;
+};
+
+void __cdecl func_005e7050(Clump* first, Source* source, Clump* third)
+{
+    third->link->assign(first->link);
+    third->state->assign(first->state);
+    State* state = third->state;
+    state->update(source->value());
+}

@@ -1,5 +1,26 @@
-// from server: 43% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: openrbx-client App/v8datamodel/DebugSettings.cpp
+// from server: 82% by king_originala
+struct PropertyDescriptor {};
+extern const PropertyDescriptor property;
+extern const float upperBound;
+
+struct CRenderSettings
+{
+    char padding[0x14c];
+    float lowerBound;
+    float value;
+
+    void raisePropertyChanged(const PropertyDescriptor&);
+    void setValue(float);
+};
+
+void CRenderSettings::setValue(float incoming)
+{
+    const float upper = upperBound;
+    const float& lowerClamped = lowerBound < incoming ? incoming : lowerBound;
+    const float& clamped = lowerClamped < upper ? lowerClamped : upper;
+
+    if (clamped != value) {
+        value = clamped;
+        raisePropertyChanged(property);
+    }
+}

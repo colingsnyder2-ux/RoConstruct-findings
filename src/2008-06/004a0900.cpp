@@ -1,42 +1,77 @@
-// from server: 24% by colin
+// from server: 100% by tester
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
+extern "C" long __cdecl _InterlockedIncrement(volatile long*);
+extern "C" long __cdecl _InterlockedDecrement(volatile long*);
+#pragma intrinsic(_InterlockedIncrement)
+#pragma intrinsic(_InterlockedDecrement)
 
-bool func_0060a2f0();
+extern bool func_0060a2f0();
+extern char objectTag;
 
-struct Inner {
-    int a;
-    int b;
-};
-
-struct S {
-    int f(int, int, int);
-};
-
-int S::f(int a, int b, int c)
+inline void* __cdecl operator new(unsigned int, void* p)
 {
-    Inner* p = 0;
-    *(int*)this = 0;
-    if (!func_0060a2f0()) {
-        Inner* dst = (Inner*)((char*)this + 8);
-        if (dst) {
-            dst->a = (int)p;
-            dst->b = (int)p;
-            if (p) {
-                _InterlockedExchangeAdd((volatile long*)((char*)p + 4), 1);
-            }
-        }
-        *(int*)this = 0x822fa4;
-    } else {
-        *(int*)this = 0;
+    return p;
+}
+
+struct Control
+{
+    virtual void unused() = 0;
+    virtual void dispose() = 0;
+    virtual void destroy() = 0;
+    volatile long strong;
+    volatile long weak;
+};
+
+struct Pair
+{
+    void* object;
+    Control* control;
+
+    Pair(const Pair& other);
+};
+
+inline Pair::Pair(const Pair& other)
+    : object(other.object), control(other.control)
+{
+    if (control)
+        _InterlockedIncrement(&control->strong);
+}
+
+struct S
+{
+    void* tag;
+    unsigned int reserved;
+    Pair value;
+
+    S* func_0055a4b0(Pair argument, unsigned int unused);
+};
+
+S* S::func_0055a4b0(Pair argument, unsigned int unused)
+{
+    tag = 0;
+
+    if (!reinterpret_cast<bool (__cdecl*)(Pair*)>(
+            func_0060a2f0)(&argument))
+    {
+        new (&value) Pair(argument);
+        tag = &objectTag;
     }
-    if (p) {
-        if (_InterlockedExchangeAdd((volatile long*)((char*)p + 4), -1) == 1) {
-            ((void (__thiscall*)(Inner*))((int*)p)[1])(p);
-            if (_InterlockedExchangeAdd((volatile long*)((char*)p + 8), -1) == 1) {
-                ((void (__thiscall*)(Inner*))((int*)p)[2])(p);
-            }
+    else
+    {
+        tag = 0;
+    }
+
+    if (argument.control)
+    {
+        Control* control = argument.control;
+        if (_InterlockedDecrement(&control->strong) == 0)
+        {
+            control->dispose();
+            if (_InterlockedDecrement(&control->weak) == 0)
+                control->destroy();
         }
     }
-    return (int)this;
+
+    return this;
 }

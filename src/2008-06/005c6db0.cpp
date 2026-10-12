@@ -1,32 +1,39 @@
-// from server: 40% by colin
-struct Verb {
-    char pad[0x48];
+// from server: 100% by tester
+void* __cdecl operator new(unsigned int);
+void __cdecl operator delete(void*);
+
+extern void* table1[];
+extern void* table2[];
+
+struct Cursor {
+    void* primary;
+    void* secondary;
+    char storage[0x40];
+    Cursor(void*);
 };
 
-struct MouseCommand {
-    char pad[0x204];
-    void* p;
+struct FlatCursor : Cursor {
+    FlatCursor(void*);
 };
 
-struct DataModel {
-    char pad[0xc];
-    MouseCommand* mc;
-};
-
-struct TToolVerb {
-    char pad[0x48];
-};
-
-extern "C" void* __cdecl operator_new(unsigned int);
-extern "C" void __stdcall MouseCommand_ctor(MouseCommand*, void*);
-
-TToolVerb* makeToolVerb(DataModel* dm)
+inline FlatCursor::FlatCursor(void* value) : Cursor(value)
 {
-    TToolVerb* v = (TToolVerb*)operator_new(0x48);
-    if (v) {
-        MouseCommand_ctor((MouseCommand*)v, dm->mc->p);
-        *(void**)v = (void*)0x8394ec;
-        *(void**)((char*)v + 4) = (void*)0x8394d4;
-    }
-    return v;
+    primary = table1;
+    secondary = table2;
+}
+
+struct Context {
+    char pad[0x204];
+    void* value;
+};
+
+struct Tool {
+    char pad[0x0c];
+    Context* context;
+    Cursor* f();
+};
+
+Cursor* Tool::f()
+{
+    return new FlatCursor(context->value);
 }

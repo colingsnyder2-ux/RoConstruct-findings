@@ -1,51 +1,124 @@
-// from server: 20% by atomic.potato
+// from server: 81% by king_originala
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
 
 extern "C" void __stdcall EnterCriticalSection(void*);
 extern "C" void __stdcall LeaveCriticalSection(void*);
 
-extern "C" void* __stdcall sub_802458(const char*);
-extern "C" void __stdcall sub_802468(void*);
-extern "C" void* __stdcall sub_802464(void*);
-extern "C" void* __stdcall sub_8023e4(void*, void*, const char*);
-extern "C" void* __stdcall sub_8022d4(void*);
-extern "C" void* __stdcall sub_8021f4(void*);
-
-extern "C" void* __cdecl sub_569620(void*);
-extern "C" void __cdecl sub_5693a0(void*, int, void*);
-
-struct S_func_00467880 {
-    char pad0[0x34];
-    char m_cs[0x18];
-    char pad1[0x17c - 0x34 - 0x18];
-    void* m_17c;
-    char pad2[0x1a0 - 0x17c - 4];
-    bool f(void* a1, void* a2, void* a3);
+struct String
+{
+    unsigned char storage[28];
+    String(const char*);
+    ~String();
+    const char* c_str() const;
 };
 
-bool S_func_00467880::f(void* a1, void* a2, void* a3)
+String __cdecl operator+(const String&, const char*);
+
+struct RefCount
 {
-    EnterCriticalSection(m_cs);
-    int r = ((int (__stdcall*)(void*, int, void*, void*, int))((*(void***)a3)[0x28/4]))(a3, 0x14, a2, a1, 0);
-    if (r == 0) {
-        LeaveCriticalSection(m_cs);
-        return true;
+    virtual void reserved();
+    virtual void dispose();
+    virtual void destroy();
+
+    volatile long strong;
+    volatile long weak;
+};
+
+struct Shared
+{
+    void* object;
+    RefCount* count;
+
+    void* get() const;
+    ~Shared();
+};
+
+inline void* Shared::get() const
+{
+    return object;
+}
+
+inline Shared::~Shared()
+{
+    RefCount* p = count;
+    if (p)
+    {
+        if (_InterlockedExchangeAdd(&p->strong, -1) == 1)
+        {
+            p->dispose();
+            if (_InterlockedExchangeAdd(&p->weak, -1) == 1)
+                p->destroy();
+        }
     }
-    if (r == 1) {
-        const char* s = (a3 == m_17c) ? (const char*)0x81c3d0 : (const char*)0x81c3d0;
-        void* str1 = sub_802458(s);
-        void* str2 = sub_8023e4(str1, (void*)0x81c3bc, 0);
-        void* str3 = sub_569620(str2);
-        void* cstr = sub_802464(str3);
-        sub_5693a0(cstr, 3, 0);
-        sub_802468(str3);
-        sub_802468(str1);
-    } else {
-        const char* s = (a3 == m_17c) ? (const char*)0x81c3d8 : (const char*)0x81c3d0;
-        void* str1 = sub_802458(s);
-        sub_802468(str1);
+}
+
+Shared __cdecl getService();
+void __cdecl report(void*, int, const char*);
+
+struct Lock
+{
+    void* section;
+    bool locked;
+
+    Lock(void*);
+    ~Lock();
+};
+
+inline Lock::Lock(void* p) : section(p)
+{
+    EnterCriticalSection(section);
+    locked = true;
+}
+
+inline Lock::~Lock()
+{
+    if (locked)
+        LeaveCriticalSection(section);
+}
+
+struct Device;
+struct DeviceTable
+{
+    void* reserved[10];
+    long (__stdcall* getData)(Device*, unsigned long, void*,
+                             unsigned long*, unsigned long);
+};
+
+struct Device
+{
+    DeviceTable* table;
+};
+
+struct DxUserInput
+{
+    unsigned char prefix[0x34];
+    unsigned char section[24];
+    unsigned char padding[0x130];
+    Device* keyboard;
+
+    bool read(void*, unsigned long*, Device*);
+};
+
+bool DxUserInput::read(void* data, unsigned long* count, Device* device)
+{
+    Lock lock(section);
+    switch (device->table->getData(device, 20, data, count, 0))
+    {
+    case 0:
+        break;
+    case 1:
+        {
+            String name(device == keyboard ? "Keyboard " : "Mouse ");
+            String message = name + "DI_BUFFEROVERFLOW!";
+            report(getService().get(), 3, message.c_str());
+        }
+        break;
+    default:
+        {
+            String name(device == keyboard ? "Keyboard " : "Mouse ");
+        }
+        return false;
     }
-    LeaveCriticalSection(m_cs);
-    return false;
+    return true;
 }

@@ -1,5 +1,33 @@
-// from server: 76% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: openrbx-client App/script/Script.cpp
+// from server: 96% by king_originala
+struct Name;
+extern const Name& __cdecl getLocalScope();
+
+typedef void (__thiscall *StringConstructor)(void*);
+extern StringConstructor stringConstructor;
+
+struct String
+{
+    char data[28];
+    String() { stringConstructor(this); }
+    ~String();
+};
+
+struct ChatEnter
+{
+    String text;
+    const Name* scope;
+    unsigned int a;
+    unsigned int b;
+    unsigned int c;
+    unsigned int d;
+    float x;
+    float y;
+
+    ChatEnter();
+};
+
+ChatEnter::ChatEnter()
+    : scope(&getLocalScope()),
+      a(0), b(0), c(0), d(0), x(0.0f), y(0.0f)
+{
+}

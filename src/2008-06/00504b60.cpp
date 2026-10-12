@@ -1,4 +1,4 @@
-// from server: 66% by tester
+// from server: 100% by king_originala
 // roc 2008-06 00504b60  unit: RBX::Render::RenderScene  size: 133 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 00504b60
 //
@@ -43,36 +43,49 @@
 // 00504be1  5b                   pop ebx
 // 00504be2  c20800               ret 8
 
-struct RenderScene {
-    char pad[0x1e8];
-    char field_1e8[0x8c];
-    char field_274[0xc];
-    char field_280[0xc];
-    char field_28c[0x4];
-    char field_250[0x4];
-    char field_278[0x4];
-    char field_e0[0x108];
-    void sub_504b00();
-    void sub_504290(int, int);
-    void sub_503540();
-    void sub_511cf0();
-    void sub_511df0();
-    void sub_505860(void*);
-    void sub_505890(void*);
-    void sub_5058c0(void*);
-    void func(int, int);
+struct Lock {
+    void enter();
+    void leave();
 };
 
-void RenderScene::func(int a, int b) {
-    sub_511cf0();
-    sub_504b00();
-    sub_504290(a, b);
-    sub_503540();
-    sub_511cf0();
-    sub_505860(field_274);
-    sub_505890(field_280);
-    sub_5058c0(field_28c);
-    sub_511df0();
-    sub_511df0();
-    *(int*)field_250 = *(int*)field_278;
+struct Array {
+    void* data;
+    int count;
+    int capacity;
+};
+
+void __cdecl process1(Array*);
+void __cdecl process2(Array*);
+void __cdecl process3(Array*);
+
+struct S {
+    char pad0[0xe0];
+    Lock lock1;
+    char pad1[0x107];
+    Lock lock2;
+    char pad2[0x67];
+    int count;
+    char pad3[0x20];
+    Array array1;
+    Array array2;
+    Array array3;
+
+    void prepare();
+    void update(int, int);
+    void finish();
+    void f(int, int);
+};
+
+void S::f(int a, int b) {
+    lock2.enter();
+    prepare();
+    update(a, b);
+    finish();
+    lock1.enter();
+    process1(&array1);
+    process2(&array2);
+    process3(&array3);
+    lock1.leave();
+    lock2.leave();
+    count = array1.count;
 }

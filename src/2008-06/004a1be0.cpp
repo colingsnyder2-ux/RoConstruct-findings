@@ -1,29 +1,44 @@
-// from server: 51% by colin
-struct GetSet {
-    void* vfptr;
-    int refcount1;
-    int refcount2;
-    void* get;
+// from server: 100% by tester
+#pragma optimize("y", off)
+
+void* __cdecl operator new(unsigned int);
+extern void* controlVtable[];
+
+struct Deleter {
+    void operator()(void*) const;
 };
 
-struct GetImpl {
-    void* ptr;
-    GetImpl(void* get);
+inline void Deleter::operator()(void*) const {}
+
+struct Control {
+    void** vtable;
+    int strong;
+    int weak;
+    void* object;
+    Deleter deleter;
+
+    Control(void*, const Deleter&);
 };
 
-extern "C" void* __cdecl operator_new(unsigned int size);
-
-GetImpl::GetImpl(void* get)
+inline Control::Control(void* p, const Deleter& d)
+    : strong(1), weak(1), deleter(d)
 {
-    this->ptr = 0;
-    GetSet* p = (GetSet*)operator_new(0x14);
-    if (p) {
-        p->refcount1 = 1;
-        p->refcount2 = 1;
-        p->vfptr = (void*)0x8233b0;
-        p->get = get;
-    } else {
-        p = 0;
+    vtable = controlVtable;
+    object = p;
+}
+
+struct S {
+    Control* control;
+    S(void*, Deleter);
+};
+
+S::S(void* p, Deleter d) : control(0)
+{
+    try {
+        control = new Control(p, d);
     }
-    this->ptr = p;
+    catch (...) {
+        d(p);
+        throw;
+    }
 }

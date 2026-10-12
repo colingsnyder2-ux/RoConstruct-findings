@@ -1,27 +1,17 @@
-// from server: 97% by atomic.potato
-typedef unsigned long DWORD;
-
-extern "C" DWORD __cdecl sub_69FC12(DWORD);
-extern "C" DWORD __cdecl sub_5B87A0(DWORD);
-
-struct Descriptor
-{
-    DWORD value;
+// from server: 100% by king_originala
+struct S {
+    char padding[32];
+    void** value;
 };
 
-struct Holder
-{
-    DWORD pad[8];
-    Descriptor* descriptor;
-};
+extern "C" void* __stdcall convert(void*);
+extern "C" void __cdecl release(void*);
 
-void function_005BA2B0(Holder* object)
+void __cdecl clear(S* object)
 {
-    Descriptor* descriptor = object->descriptor;
-    DWORD value = descriptor->value;
-    if (value != 0)
-    {
-        sub_5B87A0(sub_69FC12(value));
-        descriptor->value = 0;
+    void** value = object->value;
+    if (*value) {
+        release(convert(*value));
+        *value = 0;
     }
 }

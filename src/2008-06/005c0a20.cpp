@@ -1,22 +1,44 @@
-// from server: 52% by tester
-struct SettingsItem {
-    void* m_data;
-    SettingsItem(int, int);
+// from server: 100% by tester
+#pragma optimize("y", off)
+
+void* __cdecl operator new(unsigned int);
+extern void* controlVtable[];
+
+struct Deleter {
+    void operator()(void*) const;
 };
 
-extern "C" void* __cdecl operator_new(unsigned int);
+inline void Deleter::operator()(void*) const {}
 
-SettingsItem::SettingsItem(int a, int b)
+struct Control {
+    void** vtable;
+    int strong;
+    int weak;
+    void* object;
+    Deleter deleter;
+
+    Control(void*, const Deleter&);
+};
+
+inline Control::Control(void* p, const Deleter& d)
+    : strong(1), weak(1), deleter(d)
 {
-    m_data = 0;
-    void* p = operator_new(0x14);
-    if (p) {
-        *(int*)((char*)p + 4) = 1;
-        *(int*)((char*)p + 8) = 1;
-        *(int*)p = 0x838834;
-        *(int*)((char*)p + 0xc) = a;
-    } else {
-        p = 0;
+    vtable = controlVtable;
+    object = p;
+}
+
+struct S {
+    Control* control;
+    S(void*, Deleter);
+};
+
+S::S(void* p, Deleter d) : control(0)
+{
+    try {
+        control = new Control(p, d);
     }
-    m_data = p;
+    catch (...) {
+        d(p);
+        throw;
+    }
 }

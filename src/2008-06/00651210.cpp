@@ -1,29 +1,24 @@
-// from server: 69% by atomic.potato
+// from server: 100% by king_originala
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
+extern "C" long __cdecl _InterlockedDecrement(volatile long*);
+#pragma intrinsic(_InterlockedDecrement)
 
-struct RefCounted {
+struct Control {
+    virtual void unused();
+    virtual void dispose();
     virtual void destroy();
-    virtual void release();
-    volatile long ref1;
-    volatile long ref2;
+    volatile long strong;
+    volatile long weak;
 };
 
-void RefCounted_release(RefCounted* p) {
-    if (p) {
-        if (_InterlockedExchangeAdd(&p->ref1, -1) == 1) {
-            p->destroy();
-            if (_InterlockedExchangeAdd(&p->ref2, -1) == 1) {
-                p->release();
-            }
+void __stdcall release(void*, void*, Control* control)
+{
+    if (control) {
+        if (_InterlockedDecrement(&control->strong) == 0) {
+            control->dispose();
+            if (_InterlockedDecrement(&control->weak) == 0)
+                control->destroy();
         }
     }
-}
-
-struct ScoreHud {
-    void func(int a, int b, RefCounted* p);
-};
-
-void ScoreHud::func(int a, int b, RefCounted* p) {
-    RefCounted_release(p);
 }

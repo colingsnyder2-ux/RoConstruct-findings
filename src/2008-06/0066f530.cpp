@@ -1,29 +1,22 @@
-// from server: 44% by atomic.potato
-struct S_func_00645830
-{
+// from server: 100% by king_originala
+struct S_func_00645830 {
     char pad0[4];
     int m_x;
     void f(int a1);
 };
 
-void S_func_00645830::f(int a1)
-{
-    m_x = a1;
-}
-
-extern "C" void __cdecl f_0064aff0(int);
-
-struct MovingNoPhysicsBase
-{
-    int pad0;
-    int pad1;
-    S_func_00645830* m_state;
-    void f(int);
+struct Stage {
+    void f(S_func_00645830* object);
 };
 
-void MovingNoPhysicsBase::f(int a1)
+struct S {
+    char pad0[8];
+    Stage* stage;
+    void f(S_func_00645830* object);
+};
+
+void S::f(S_func_00645830* object)
 {
-    S_func_00645830* p = m_state;
-    p->f(a1);
-    f_0064aff0(a1);
+    object->f((int)this);
+    stage->f(object);
 }

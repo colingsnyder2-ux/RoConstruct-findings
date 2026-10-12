@@ -1,27 +1,42 @@
-// from server: 44% by colin
-struct VBodyVelocity {
-    char pad0[0x1c];
-    int field1c;
-    void construct(int);
+// from server: 100% by tester
+unsigned int __cdecl getName();
+
+extern unsigned char table0[];
+extern unsigned char table10[];
+extern unsigned char table14[];
+extern unsigned char table20[];
+extern unsigned char table24[];
+extern unsigned char table44[];
+extern unsigned char table64[];
+extern unsigned char table84[];
+extern unsigned char tableA4[];
+extern unsigned char tableC4[];
+extern unsigned char table130[];
+extern unsigned char table138[];
+
+struct Base {
+    unsigned int data[79];
+    Base(void*);
+    ~Base();
 };
 
-extern "C" void __stdcall sub_62f600(int);
-extern "C" int __cdecl sub_631060();
+struct S : Base {
+    S(void*);
+};
 
-void VBodyVelocity::construct(int a)
+S::S(void* argument) : Base(argument)
 {
-    sub_62f600(a);
-    field1c = sub_631060();
-    *(int*)((char*)this + 0x00) = 0x84807c;
-    *(int*)((char*)this + 0x10) = 0x848070;
-    *(int*)((char*)this + 0x14) = 0x848068;
-    *(int*)((char*)this + 0x20) = 0x848060;
-    *(int*)((char*)this + 0x24) = 0x848050;
-    *(int*)((char*)this + 0x44) = 0x848040;
-    *(int*)((char*)this + 0x64) = 0x848030;
-    *(int*)((char*)this + 0x84) = 0x848020;
-    *(int*)((char*)this + 0xa4) = 0x848010;
-    *(int*)((char*)this + 0xc4) = 0x848000;
-    *(int*)((char*)this + 0x130) = 0x847fe4;
-    *(int*)((char*)this + 0x138) = 0x847fd8;
+    data[7] = getName();
+    data[0] = reinterpret_cast<unsigned int>(table0);
+    data[4] = reinterpret_cast<unsigned int>(table10);
+    data[5] = reinterpret_cast<unsigned int>(table14);
+    data[8] = reinterpret_cast<unsigned int>(table20);
+    data[9] = reinterpret_cast<unsigned int>(table24);
+    data[17] = reinterpret_cast<unsigned int>(table44);
+    data[25] = reinterpret_cast<unsigned int>(table64);
+    data[33] = reinterpret_cast<unsigned int>(table84);
+    data[41] = reinterpret_cast<unsigned int>(tableA4);
+    data[49] = reinterpret_cast<unsigned int>(tableC4);
+    data[76] = reinterpret_cast<unsigned int>(table130);
+    data[78] = reinterpret_cast<unsigned int>(table138);
 }

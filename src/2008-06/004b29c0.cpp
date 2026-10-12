@@ -1,28 +1,44 @@
-// from server: 52% by atomic.potato
-extern "C" void* __cdecl operator_new(unsigned int size);
+// from server: 100% by tester
+#pragma optimize("y", off)
 
-struct Inner {
-    void* vtable;
-    int refcount1;
-    int refcount2;
-    int field_c;
+void* __cdecl operator new(unsigned int);
+extern void* controlVtable[];
+
+struct Deleter {
+    void operator()(void*) const;
 };
 
-struct Outer {
-    Inner* ptr;
-    Outer(int arg1, int arg2);
+inline void Deleter::operator()(void*) const {}
+
+struct Control {
+    void** vtable;
+    int strong;
+    int weak;
+    void* object;
+    Deleter deleter;
+
+    Control(void*, const Deleter&);
 };
 
-Outer::Outer(int arg1, int arg2) {
-    ptr = 0;
-    Inner* p = (Inner*)operator_new(0x14);
-    if (p) {
-        p->refcount1 = 1;
-        p->refcount2 = 1;
-        p->vtable = (void*)0x824c10;
-        p->field_c = arg1;
-    } else {
-        p = 0;
+inline Control::Control(void* p, const Deleter& d)
+    : strong(1), weak(1), deleter(d)
+{
+    vtable = controlVtable;
+    object = p;
+}
+
+struct S {
+    Control* control;
+    S(void*, Deleter);
+};
+
+S::S(void* p, Deleter d) : control(0)
+{
+    try {
+        control = new Control(p, d);
     }
-    ptr = p;
+    catch (...) {
+        d(p);
+        throw;
+    }
 }

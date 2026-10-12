@@ -1,5 +1,5 @@
-// from server: 87% by colin
-// roc-lang: cpp
-// roc-cl: 50727
-// roc-flags: /Od /Ob1 /GS- /MT
-// roc-lib: wildmagic-2-core Containment/WmlConvexHull3.cpp
+// from server: 100% by colin
+// roc-flags: /O2 /GS- /EHsc /MD
+#pragma optimize("g", off)
+struct B{void f();}; struct S{char pad[0xc]; B b; void g();};
+void S::g(){b.f();}

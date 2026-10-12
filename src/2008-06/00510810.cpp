@@ -1,14 +1,5 @@
-// from server: 73% by atomic.potato
-extern "C" float g_819bac;
-extern "C" double tan(double);
-
-struct Ray
-{
-    void f(float);
-};
-
-void Ray::f(float value)
-{
-    ((float*)this)[1] = value;
-    ((float*)this)[2] = 1.0f / (2.0f * tan(value * g_819bac));
-}
+// from server: 100% by tester
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD /fp:fast
+// roc-lib: g3d-6.09 G3Dcpp/GCamera.cpp

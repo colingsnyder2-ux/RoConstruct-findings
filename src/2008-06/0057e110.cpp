@@ -1,13 +1,22 @@
-// from server: 44% by atomic.potato
-struct S
-{
-    int f();
+// from server: 100% by king_originala
+struct Entry {
+    unsigned int data[2];
 };
 
-int S::f()
+struct Storage {
+    unsigned char padding[12];
+    Entry* begin;
+    Entry* end;
+};
+
+struct Object {
+    unsigned char padding[264];
+    Storage* storage;
+};
+
+int __cdecl hasEntries(Object* object)
 {
-    int* p = *(int**)((char*)this + 0x108);
-    if (p)
-        return ((*(int**)((char*)p + 0x10) - *(int**)((char*)p + 0x0c)) >> 3) > 0 ? 1 : 0;
-    return 0;
+    Storage* storage = object->storage;
+    unsigned int count = storage ? storage->end - storage->begin : 0;
+    return count > 0;
 }

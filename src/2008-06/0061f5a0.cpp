@@ -1,22 +1,43 @@
-// from server: 52% by colin
-struct LuaArguments {
-    void* field0;
-    LuaArguments(void* arg);
+// from server: 100% by tester
+void* __cdecl operator new(unsigned int);
+void __cdecl operator delete(void*);
+
+struct Object {
+    virtual ~Object();
 };
 
-extern "C" void* __cdecl sub_006A0920(unsigned int size);
+struct CountBase {
+    long useCount;
+    long weakCount;
 
-LuaArguments::LuaArguments(void* arg)
+    CountBase() : useCount(1), weakCount(1) {}
+    virtual ~CountBase();
+    virtual void dispose() = 0;
+    virtual void destroy();
+    virtual void* getDeleter(const void*) = 0;
+};
+
+struct Count : CountBase {
+    Object* object;
+
+    explicit Count(Object* p) : object(p) {}
+    virtual ~Count();
+    virtual void dispose();
+    virtual void* getDeleter(const void*);
+};
+
+struct S {
+    CountBase* count;
+    explicit S(Object*);
+};
+
+S::S(Object* p) : count(0)
 {
-    field0 = 0;
-    void* p = sub_006A0920(0x10);
-    if (p != 0) {
-        *(int*)((char*)p + 4) = 1;
-        *(int*)((char*)p + 8) = 1;
-        *(void**)p = (void*)0x84463c;
-        *(void**)((char*)p + 0xc) = arg;
-    } else {
-        p = 0;
+    try {
+        count = new Count(p);
     }
-    field0 = p;
+    catch (...) {
+        delete p;
+        throw;
+    }
 }

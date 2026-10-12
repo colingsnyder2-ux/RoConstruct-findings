@@ -1,10 +1,9 @@
-// from server: 78% by atomic.potato
-struct XItem
-{
-    int __stdcall f(float *a, float *b);
-};
+// from server: 100% by king_originala
+#pragma float_control(precise, off)
 
-int __stdcall XItem::f(float *a, float *b)
+int __stdcall equal(const float* a, const float* b)
 {
-    return *b == *a;
+    if (*a == *b)
+        return 1;
+    return 0;
 }

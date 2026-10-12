@@ -1,19 +1,22 @@
-// from server: 61% by colin
-extern float G_f827490;
-
-struct S {
-    void f(float* out);
+// from server: 92% by king_originala
+struct Pair
+{
+    float x;
+    float y;
 };
 
-extern "C" void __cdecl G_func_005736f0(float* a, float* b);
+extern float value_00827490;
+extern const float* __cdecl func_005736f0(Pair*, const Pair*);
 
-void S::f(float* out)
+Pair* __stdcall func_005cf190(Pair* result)
 {
-    float v = G_f827490;
-    float tmp[2];
-    tmp[0] = v;
-    tmp[1] = v;
-    G_func_005736f0(tmp, &tmp[1]);
-    out[0] = tmp[0];
-    out[1] = tmp[1];
+    Pair input;
+    Pair temporary;
+    input.x = value_00827490;
+    input.y = value_00827490;
+
+    float value = *func_005736f0(&temporary, &input);
+    result->x = value;
+    result->y = value;
+    return result;
 }

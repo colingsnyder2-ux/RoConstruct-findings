@@ -1,30 +1,41 @@
-// from server: 77% by atomic.potato
-struct Inner {
-    char pad[0x10];
-    void sub_6395d0(void*);
+// from server: 100% by king_originala
+struct Base {
+    char data;
 };
 
-struct Outer {
-    char pad0[0x14];
-    char field14;
-    char pad1[0x130 - 0x15];
-    int field130;
-    void sub_63b0f0(int);
+struct Token {};
+
+struct Action {
+    void invoke(Token*, int);
 };
 
-extern "C" void* __stdcall sub_56b620(int, void*);
+struct Result {
+    char padding[16];
+    Action action;
+};
 
-void Outer::sub_63b0f0(int arg) {
-    void* p;
-    if (this) {
-        p = &field14;
-    } else {
-        p = 0;
-    }
-    int v = field130;
-    void* r = sub_56b620(0x97d2ec, p);
-    if (r) {
-        Inner* inner = (Inner*)((char*)r + 0x10);
-        inner->sub_6395d0(&v);
+struct Lookup {
+    Result* find(Base*);
+};
+
+extern Lookup lookup;
+
+struct S {
+    char padding0[20];
+    Base base;
+    char padding1[283];
+    int value;
+
+    void f(void*);
+};
+
+void S::f(void*)
+{
+    Base* key = this ? &base : 0;
+    int saved = value;
+    Result* result = lookup.find(key);
+    if (result) {
+        Token token;
+        result->action.invoke(&token, saved);
     }
 }

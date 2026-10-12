@@ -1,33 +1,31 @@
-// from server: 27% by colin
-
-
-
-
-struct RBXString {
-    void* pad[4];
+// from server: 60% by king_originala
+struct String {
+    char data[28];
+    String(const String&);
+    ~String();
 };
 
-extern "C" void __stdcall sub_61A7B0(void*, void*);
-extern "C" void __stdcall sub_56C9E0(void*, void*);
-extern "C" void __stdcall sub_80245C(void*, void*);
-extern "C" void __stdcall sub_802468(void*);
-
-struct VContentId {
-    char pad[0x1c];
-    RBXString str;
+struct Content {
+    String text;
+    int tag;
 };
 
-struct TypedPropertyDescriptor {
-    void construct(const VContentId* other);
+struct Payload {
+    void assign(Content value);
 };
 
-void TypedPropertyDescriptor::construct(const VContentId* other) {
-    RBXString local;
-    sub_61A7B0((void*)&local, (void*)other);
-    RBXString tmp;
-    sub_80245C((void*)&tmp, (void*)&local);
-    tmp.pad[3] = local.pad[3];
-    sub_56C9E0((void*)((char*)this + 0x10), (void*)&tmp);
-    sub_802468((void*)&tmp);
-    sub_802468((void*)&local);
+struct Variant {
+    char padding[16];
+    Payload payload;
+};
+
+struct Descriptor {
+    Content getContent(void* instance);
+    void getVariant(void* instance, Variant* result);
+};
+
+void Descriptor::getVariant(void* instance, Variant* result)
+{
+    Content value = getContent(instance);
+    result->payload.assign(value);
 }

@@ -1,33 +1,26 @@
-// from server: 61% by atomic.potato
-struct type_info {
-    bool __thiscall operator==(const type_info&) const;
+// from server: 100% by tester
+struct TypeInfo {};
+
+typedef bool (__thiscall *TypeEqual)(const TypeInfo*, const TypeInfo&);
+extern TypeEqual typeEqual;
+extern const TypeInfo typeTag;
+
+struct Storage {
+    const TypeInfo* first;
+    void* second;
 };
 
-struct VNode {
-    void* field0;
-    void* field4;
-};
-
-void __cdecl assign(int mode, void* dst, void* src)
+void manage(Storage* source, Storage* destination, int operation)
 {
-    if (mode == 3) {
-        *(void**)dst = (void*)0x94c510;
-        return;
-    }
-    if (mode == 0) {
-        if (dst == 0)
-            return;
-        *(void**)dst = *(void**)src;
-        *(void**)((char*)dst + 4) = *(void**)((char*)src + 4);
-        return;
-    }
-    if (mode == 1)
-        return;
-    {
-        void* p = *(void**)src;
-        type_info* ti = (type_info*)__RTtypeid(p);
-        type_info* other = (type_info*)0x94c510;
-        bool eq = ti->operator==(*other);
-        *(void**)src = eq ? dst : 0;
+    if (operation != 3) {
+        if (operation == 0) {
+            if (destination)
+                *destination = *source;
+        } else if (operation != 1) {
+            destination->first = typeEqual(destination->first, typeTag)
+                ? reinterpret_cast<const TypeInfo*>(source) : 0;
+        }
+    } else {
+        destination->first = &typeTag;
     }
 }

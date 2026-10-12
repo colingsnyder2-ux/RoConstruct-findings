@@ -1,19 +1,25 @@
-// from server: 92% by tester
-struct S
-{
-    bool f();
+// from server: 100% by king_originala
+struct Camera {
+    char padding[0x1D4];
+    int mode;
 };
 
-bool S::f()
-{
-    struct V
-    {
-        int pad[162];
-        int (__thiscall *g)(V*);
-    };
+struct CameraSource {
+    virtual void unused();
+    virtual Camera* getCamera();
+};
 
-    V* p = *(V**)((char*)this + 12);
-    int (__thiscall *q)(V*) = *(int (__thiscall **)(V*))((char*)p + 648);
-    int x = q((V*)((char*)p + 648));
-    return *(int*)((char*)x + 468) == 4;
+struct Context {
+    char padding[0x288];
+    CameraSource source;
+};
+
+struct FollowCameraCommand {
+    char padding[0x0C];
+    Context* context;
+    bool isChecked();
+};
+
+bool FollowCameraCommand::isChecked() {
+    return context->source.getCamera()->mode == 4;
 }

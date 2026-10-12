@@ -1,5 +1,13 @@
-// from server: 69% by colin
-// roc-lang: cpp
-// roc-cl: 30729
-// roc-flags: /O2 /GS- /MD
-// roc-lib: xtp-11.2.2 Source/CommandBars/XTPTabToolBar.cpp
+// from server: 100% by king_originala
+struct S {
+    char padding[0x20];
+    S* parent;
+    S* f();
+    S* next();
+};
+
+S* S::f() {
+    if (parent)
+        return parent->next();
+    return this;
+}

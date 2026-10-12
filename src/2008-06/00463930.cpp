@@ -1,5 +1,23 @@
-// from server: 52% by colin
-// roc-lang: cpp
-// roc-cl: 30729
-// roc-flags: /O2 /GS- /MD
-// roc-lib: xtp-11.2.2 Source/Controls/XTHexEdit.cpp
+// from server: 100% by king_originala
+extern "C" void* (__stdcall *LoadLibraryA)(const char*);
+extern void* moduleHandle;
+extern int referenceCount;
+
+struct CObjectBrowser
+{
+    int func_00462c60(void* argument);
+    int func_00463930(void* argument);
+};
+
+int CObjectBrowser::func_00463930(void* argument)
+{
+    if (referenceCount == 0)
+    {
+        moduleHandle = LoadLibraryA("SciLexer.dll");
+        if (moduleHandle == 0)
+            return -1;
+    }
+
+    ++referenceCount;
+    return func_00462c60(argument) == -1 ? -1 : 0;
+}

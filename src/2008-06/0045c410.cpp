@@ -1,34 +1,25 @@
-// from server: 62% by colin
-struct type_info {
-    bool operator==(const type_info&) const;
+struct TypeInfo {};
+
+typedef bool (__thiscall *TypeEqual)(const TypeInfo*, const TypeInfo&);
+extern TypeEqual typeEqual;
+extern const TypeInfo typeTag;
+
+struct Storage {
+    const TypeInfo* first;
+    void* second;
 };
 
-extern "C" type_info type_info_9329e0;
-extern "C" bool (__stdcall *func_802878)(const type_info*);
-
-struct S {
-    void f(int a, int b, int c);
-};
-
-void S::f(int a, int b, int c)
+void manage(Storage* source, Storage* destination, int operation)
 {
-    if (c == 3) {
-        *(const type_info**)b = &type_info_9329e0;
-        return;
-    }
-    if (c == 0) {
-        if (b == 0)
-            return;
-        *(int*)b = *(int*)a;
-        *(int*)((char*)b + 4) = *(int*)((char*)a + 4);
-        return;
-    }
-    if (c == 1)
-        return;
-    {
-        const type_info** p = (const type_info**)b;
-        const type_info* t = *p;
-        bool r = func_802878(&type_info_9329e0);
-        *p = r ? 0 : t;
+    if (operation != 3) {
+        if (operation == 0) {
+            if (destination)
+                *destination = *source;
+        } else if (operation != 1) {
+            destination->first = typeEqual(destination->first, typeTag)
+                ? reinterpret_cast<const TypeInfo*>(source) : 0;
+        }
+    } else {
+        destination->first = &typeTag;
     }
 }

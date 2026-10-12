@@ -1,4 +1,4 @@
-// from server: 48% by atomic.potato
+// from server: 83% by king_originala
 // roc 2008-06 00466c00  unit: CSettingsExplorer  size: 156 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 00466c00
 //
@@ -56,38 +56,45 @@
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
 
-struct RefCounted {
-    virtual void unknown0();
-    virtual void unknown1();
-    virtual void unknown2();
-    volatile long ref1;
-    volatile long ref2;
+struct ControlBlock {
+    virtual ~ControlBlock();
+    virtual void dispose();
+    virtual void destroy();
+    volatile long strongCount;
+    volatile long weakCount;
 };
 
-struct CSettingsExplorer {
-    void func();
+struct Service {
+    void invoke();
 };
 
-extern "C" void* __cdecl sub_6A1160(int, int, int);
-extern "C" void* __cdecl sub_5690F0(void*);
-extern "C" void __cdecl sub_5684D0(void*);
-extern "C" void __cdecl sub_6A1496(void*, int);
+struct ServiceHandle {
+    Service* object;
+    ControlBlock* control;
+    ~ServiceHandle();
+};
 
-void CSettingsExplorer::func()
-{
-    void* p = sub_6A1160(0x8f, 0x40, -1);
-    void* q = sub_5690F0(&p);
-    void* obj = *(void**)q;
-    sub_5684D0(obj);
-    void* r = *(void**)((char*)&p + 4);
-    if (r != 0) {
-        RefCounted* rc = (RefCounted*)r;
-        if (_InterlockedExchangeAdd(&rc->ref1, -1) == 1) {
-            rc->unknown1();
-            if (_InterlockedExchangeAdd(&rc->ref2, -1) == 1) {
-                rc->unknown2();
-            }
+__forceinline ServiceHandle::~ServiceHandle() {
+    ControlBlock* p = control;
+    if (p) {
+        if (_InterlockedExchangeAdd(&p->strongCount, -1) == 0) {
+            p->dispose();
+            if (_InterlockedExchangeAdd(&p->weakCount, -1) == 0)
+                p->destroy();
         }
     }
-    sub_6A1496(this, 2);
+}
+
+extern ServiceHandle __cdecl getService();
+
+struct CSettingsExplorer {
+    long sendMessage(unsigned int, unsigned int, long);
+    int showWindow(int);
+    void update();
+};
+
+void CSettingsExplorer::update() {
+    sendMessage(0x8f, 0x40, -1);
+    getService().object->invoke();
+    showWindow(2);
 }

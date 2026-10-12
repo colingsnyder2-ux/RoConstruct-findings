@@ -1,5 +1,11 @@
-// from server: 96% by colin
-// roc-lang: cpp
-// roc-cl: 21022
+// from server: 100% by tester
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs v8datamodel/Lighting.cpp
+#include <string>
+struct Pair { int a, b; Pair(const Pair& o) : a(o.a), b(o.b) {} };
+std::string format(Pair);
+struct L {
+    char pad[0x268];
+    Pair t;
+    std::string getTimeStr() const;
+};
+std::string L::getTimeStr() const { return format(t); }

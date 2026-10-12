@@ -1,5 +1,32 @@
-// from server: 61% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: boost-1.34.1 libs/regex/src/instances.cpp
+// from server: 100% by king_originala
+struct BadFunctionCall
+{
+    char data[40];
+    BadFunctionCall();
+    ~BadFunctionCall();
+};
+
+__declspec(noreturn) void __cdecl throw_exception(const BadFunctionCall&);
+
+struct FunctionTable
+{
+    void* manager;
+    void (__cdecl *invoke)(void*, void*);
+};
+
+struct S
+{
+    FunctionTable* table;
+    unsigned int reserved;
+    char storage[12];
+
+    void f(void* argument);
+};
+
+void S::f(void* argument)
+{
+    if (!table)
+        throw_exception(BadFunctionCall());
+
+    table->invoke(storage, argument);
+}

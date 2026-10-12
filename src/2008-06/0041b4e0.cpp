@@ -1,5 +1,23 @@
-// from server: 55% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O1 /Ob2 /Oy /GS- /EHsc /MD
-// roc-lib: rbxgs util/boost.cpp
+// from server: 100% by king_originala
+struct TypeInfo {};
+extern TypeInfo target_type;
+
+struct Buffer {
+    const TypeInfo* type;
+};
+
+struct Tag {};
+
+extern void __cdecl manage_impl(const Buffer&, Buffer&, int, Tag);
+
+struct Manager {
+    static void __cdecl manage(const Buffer&, Buffer&, int);
+};
+
+void __cdecl Manager::manage(const Buffer& source, Buffer& destination, int operation)
+{
+    if (operation != 3)
+        manage_impl(source, destination, operation, Tag());
+    else
+        destination.type = &target_type;
+}

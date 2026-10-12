@@ -1,22 +1,16 @@
-// from server: 93% by atomic.potato
+// from server: 100% by tester
 extern "C" __declspec(dllimport) long __stdcall SendMessageA(void*, unsigned int, unsigned int, long);
-
-struct ScintillaFindReplaceDlg {
+struct Wnd { char pad[0x20]; void* hwnd; };
+struct Dlg {
     char pad[0x19c];
     void* field_19c;
-
-    void* method_00461e90();
+    void* method();
+    Wnd* GetDlgItem(unsigned int id);
 };
-
-extern "C" void* __stdcall sub_6a0e8a();
-extern "C" void* __stdcall sub_6a1418(void*, unsigned int);
-
-void* ScintillaFindReplaceDlg::method_00461e90()
-{
-    void* edi = sub_6a0e8a();
-    void* eax = sub_6a1418(this, 0x412);
-    void* ecx = field_19c;
-    void* edx = *(void**)((char*)eax + 0x20);
-    SendMessageA(edx, 0xf1, (unsigned int)ecx, 0);
-    return edi;
+void* __stdcall getResult();
+void* Dlg::method() {
+    void* r = getResult();
+    Wnd* w = GetDlgItem(0x412);
+    SendMessageA(w->hwnd, 0xf1, (unsigned int)field_19c, 0);
+    return r;
 }

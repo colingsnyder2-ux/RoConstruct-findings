@@ -1,5 +1,33 @@
-// from server: 94% by colin
-// roc-lang: cpp
 // roc-cl: 50727
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: openrbx-client Network/Player.cpp
+namespace RBX {
+namespace Reflection {
+class PropertyDescriptor
+{
+    const char* name;
+};
+}
+
+class BrickColor
+{
+public:
+    int number;
+};
+
+class SpawnLocation
+{
+    char gap0[0x140];
+    BrickColor teamColor;
+public:
+    static Reflection::PropertyDescriptor prop_teamColor;
+    void raisePropertyChanged(const Reflection::PropertyDescriptor& descriptor);
+    void setTeamColor(BrickColor value);
+};
+
+void SpawnLocation::setTeamColor(BrickColor value)
+{
+    if (value.number != teamColor.number) {
+        teamColor = value;
+        raisePropertyChanged(prop_teamColor);
+    }
+}
+}

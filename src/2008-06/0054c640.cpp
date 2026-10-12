@@ -1,9 +1,4 @@
-// from server: 38% by Cezant64gamejr
-struct RBX_RenderBase_Mesh {
-    int someFunction(int param);
-};
-
-int RBX_RenderBase_Mesh::someFunction(int param) {
-    int result = param + 4;
-    return result;
-}
+// from server: 100% by colin
+// roc-flags: /O2 /GS- /MD
+#pragma optimize("g", off)
+struct VChunk{char pad[0x4];}; char* f(VChunk* p){return p->pad+0x4;}

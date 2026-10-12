@@ -1,21 +1,34 @@
-// from server: 29% by colin
-// roc 2008-06 004150d0  unit: boost::detail::sp_counted_base  size: 120 bytes
-// Make this compile to the exact bytes below, then: roc check 2008-06 004150d0
+// from server: 100% by tester
+extern "C" {
+    extern void* (__cdecl *allocate)(unsigned int);
+}
 
-extern "C" void* __cdecl malloc(unsigned int);
-extern "C" void __stdcall sub_58AB90();
+inline void* __cdecl operator new(unsigned int size)
+{
+    return allocate(size);
+}
 
-struct S {
-    void sub_415020(void*, void*);
-    void f(void*);
+void __cdecl operator delete(void*);
+
+struct Product {
+    unsigned char storage[0x1a4];
+    Product();
 };
 
-void S::f(void* a)
+struct Deleter {
+    union {
+        unsigned int value;
+        unsigned char unused;
+    };
+};
+
+struct Result {
+    Result(Product*, Deleter);
+};
+
+Result __cdecl create()
 {
-    void* p = malloc(0x1a4);
-    if (p)
-        sub_58AB90();
-    else
-        p = 0;
-    sub_415020(p, a);
+    Deleter deleter = { 0 };
+    *(volatile unsigned char*)&deleter.unused = 0;
+    return Result(new Product, deleter);
 }

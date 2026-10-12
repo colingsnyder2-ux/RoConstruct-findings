@@ -1,28 +1,34 @@
-// from server: 18% by colin
-struct S_func_00458e90 {
-    void f(int a1, int a2);
+// from server: 100% by king_originala
+#pragma optimize("", off)
+
+struct Element {
+    int data[3];
 };
 
-struct S_func_004dc3e0 {
-    void f(void* a1, int a2);
+struct Allocator {
+    int state;
+    void deallocate(Element* p, unsigned int count);
 };
 
 struct Mesh {
-    char pad[8];
-    int* begin;
-    int* end;
-    int* capacity;
+    int reserved[2];
+    Allocator allocator;
+    Element* first;
+    Element* last;
+    Element* limit;
+
+    void destroy(int first, int last);
     void clear();
 };
 
 void Mesh::clear()
 {
-    if (this->begin != 0) {
-        S_func_00458e90().f((int)this->begin, (int)this->end);
-        int count = (int)((char*)this->end - (char*)this->begin) / 12;
-        S_func_004dc3e0().f((void*)&this->begin, count);
+    if (first != 0) {
+        destroy((int)first, (int)last);
+        allocator.deallocate(first, (unsigned int)(limit - first));
     }
-    this->begin = 0;
-    this->end = 0;
-    this->capacity = 0;
+
+    first = 0;
+    last = 0;
+    limit = 0;
 }

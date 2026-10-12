@@ -1,5 +1,64 @@
-// from server: 47% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: boost-1.34.1 libs/regex/src/cregex.cpp
+// from server: 98% by king_originala
+extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
+#pragma intrinsic(_InterlockedExchangeAdd)
+
+void* __cdecl operator new(unsigned int);
+void __cdecl operator delete(void*);
+
+struct ControlBlock {
+    int reserved;
+    volatile long references;
+};
+
+struct Shared {
+    void* object;
+    ControlBlock* control;
+
+    Shared(const Shared&);
+    ~Shared();
+};
+
+inline Shared::Shared(const Shared& other)
+    : object(other.object), control(other.control)
+{
+    if (control)
+        _InterlockedExchangeAdd(&control->references, 1);
+}
+
+struct First {
+    virtual ~First();
+    char storage[0x48];
+
+    First(Shared);
+};
+
+struct Second {
+    virtual ~Second();
+    char storage[0x140];
+
+    Second(void*);
+};
+
+struct CRobloxWnd {
+    char padding0[0x70];
+    Shared shared;
+    char padding1[0x38];
+    First* first;
+    Second* second;
+    void* argument;
+
+    void sub_45b3a0();
+};
+
+void CRobloxWnd::sub_45b3a0()
+{
+    First* replacementFirst = new First(shared);
+    if (replacementFirst != first && first)
+        delete first;
+    first = replacementFirst;
+
+    Second* replacementSecond = new Second(argument);
+    if (replacementSecond != second && second)
+        delete second;
+    second = replacementSecond;
+}

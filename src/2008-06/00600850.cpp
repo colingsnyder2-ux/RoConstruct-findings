@@ -1,33 +1,40 @@
-// from server: 48% by colin
-struct BoundProp;
+extern void* __cdecl operator new(unsigned int);
+extern const unsigned char control_table[];
 
-struct GetSet {
-    virtual bool isReadOnly() const;
-    virtual bool isWriteOnly() const;
-    virtual void getValue();
-    virtual void setValue();
+struct Object {
+    virtual ~Object();
 };
 
-struct BoundPropGetSet : GetSet {
-    BoundProp* desc;
-    int member;
-    int changed;
-    BoundPropGetSet(BoundProp* d, int m, int c);
+struct Deleter {};
+
+struct Control {
+    const void* table;
+    long strong;
+    long weak;
+    Object* object;
+    Deleter deleter;
 };
 
-extern "C" void* __cdecl operator_new(unsigned int);
+struct S {
+    Control* control;
+    S(Object* object, Deleter deleter);
+};
 
-BoundPropGetSet::BoundPropGetSet(BoundProp* d, int m, int c)
+S::S(Object* object, Deleter deleter) : control(0)
 {
-    this->desc = 0;
-    void* p = operator_new(0x14);
-    if (p) {
-        *(int*)((char*)p + 4) = 1;
-        *(int*)((char*)p + 8) = 1;
-        *(int*)p = 0x841ee8;
-        *(int*)((char*)p + 0xc) = m;
-    } else {
-        p = 0;
+    try {
+        Control* p = static_cast<Control*>(operator new(sizeof(Control)));
+        if (p) {
+            p->strong = 1;
+            p->weak = 1;
+            p->table = control_table;
+            p->object = object;
+        } else {
+            p = 0;
+        }
+        control = p;
+    } catch (...) {
+        delete object;
+        throw;
     }
-    this->desc = (BoundProp*)p;
 }

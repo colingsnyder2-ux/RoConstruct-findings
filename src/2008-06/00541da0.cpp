@@ -1,9 +1,4 @@
-// from server: 38% by Cezant64gamejr
-struct RBX_RenderBase_VChunk_WeakReferenceCountedPointer {
-    int f(int param);
-};
-
-int RBX_RenderBase_VChunk_WeakReferenceCountedPointer::f(int param) {
-    int result = param + 8;
-    return result;
-}
+// from server: 100% by colin
+// roc-flags: /O2 /GS- /MD
+#pragma optimize("g", off)
+struct VChunk{char pad[0x8];}; char* f(VChunk* p){return p->pad+0x8;}

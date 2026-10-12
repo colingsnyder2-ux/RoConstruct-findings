@@ -1,4 +1,4 @@
-// from server: 87% by colin
+// from server: 100% by king_originala
 // roc 2008-06 004d6f80  unit: CSHA1  size: 33 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 004d6f80
 //
@@ -11,17 +11,20 @@
 // 004d6f9b  d95808               fstp dword ptr [eax + 8]
 // 004d6f9e  c20400               ret 4
 
-struct CSHA1 {
-    char pad[0x270];
-    float m_a;
-    float m_b;
-    float m_c;
-    void get(float* out);
+struct Vector3 {
+    float x, y, z;
 };
 
-void CSHA1::get(float* out)
-{
-    out[0] = m_a;
-    out[1] = m_b;
-    out[2] = m_c;
+struct CSHA1 {
+    char padding[0x270];
+    float x, y, z;
+    Vector3 getVector() const;
+};
+
+Vector3 CSHA1::getVector() const {
+    Vector3 result;
+    result.x = x;
+    result.y = y;
+    result.z = z;
+    return result;
 }

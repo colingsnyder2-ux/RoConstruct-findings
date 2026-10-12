@@ -1,5 +1,18 @@
-// from server: 62% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: openrbx-client App/script/LuaInstanceBridge.cpp
+// from server: 100% by king_originala
+struct Dialog {
+    char storage[0x12c];
+
+    Dialog(void* parent);
+    virtual ~Dialog();
+    virtual int DoModal();
+};
+
+struct CIDEDocManager {
+    void OnAppAbout();
+};
+
+void CIDEDocManager::OnAppAbout()
+{
+    Dialog dialog(0);
+    dialog.DoModal();
+}

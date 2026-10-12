@@ -1,5 +1,5 @@
-// from server: 54% by colin
+// from server: 100% by tester
 // roc-lang: cpp
-// roc-cl: 30729
-// roc-flags: /O1 /GS- /MD
-// roc-lib: mfc-9.0 atlmfc/src/mfc/afxtaskspane.cpp
+// roc-cl: 21022
+// roc-flags: /O2 /MD /GS /EHsc /Ob0
+// roc-lib: xtp-11.2.2-lib Source\ReportControl\XTPReportControl.cpp

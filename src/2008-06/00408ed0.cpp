@@ -1,24 +1,33 @@
-// from server: 32% by tester
-// roc 2008-06 00408ed0  unit: RBX::VDebugSettings::?$FactoryProduct::Creator  size: 120 bytes
-// Make this compile to the exact bytes below, then: roc check 2008-06 00408ed0
+extern "C" {
+    extern void* (__cdecl *allocate)(unsigned int);
+}
 
-extern "C" void* __cdecl malloc(unsigned int size);
-
-struct CreatorBase {
-    void construct(void* p);
-};
-
-struct Creator : CreatorBase {
-    void __cdecl init(void* p);
-};
-
-void Creator::init(void* p)
+inline void* __cdecl operator new(unsigned int size)
 {
-    void* mem = malloc(0x17c);
-    if (mem) {
-        ((CreatorBase*)mem)->construct(mem);
-    } else {
-        mem = 0;
-    }
-    this->construct(mem);
+    return allocate(size);
+}
+
+void __cdecl operator delete(void*);
+
+struct Product {
+    unsigned char storage[0x17c];
+    Product();
+};
+
+struct Deleter {
+    union {
+        unsigned int value;
+        unsigned char unused;
+    };
+};
+
+struct Result {
+    Result(Product*, Deleter);
+};
+
+Result __cdecl create()
+{
+    Deleter deleter = { 0 };
+    *(volatile unsigned char*)&deleter.unused = 0;
+    return Result(new Product, deleter);
 }

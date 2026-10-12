@@ -1,4 +1,4 @@
-// from server: 61% by colin
+// from server: 100% by king_originala
 // roc 2008-06 004e7220  unit: RBX::ViewNew::Texture  size: 85 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 004e7220
 //
@@ -34,37 +34,27 @@
 // 004e726e  c70018199400         mov dword ptr [eax], 0x941918
 // 004e7274  c3                   ret 
 
-struct type_info;
-
-extern "C" {
-    int __stdcall type_info_equals(const type_info* self, const type_info* other);
-}
-
-struct S {
+struct Pair {
+    void *first;
+    void *second;
 };
 
-void __cdecl f(int a, int b, int c)
+extern char typeTag;
+extern bool (__thiscall *typeEqual)(const void *, const void *);
+
+void __cdecl manage(Pair *source, Pair *destination, int operation)
 {
-    if (c == 3) {
-        *(int*)b = 0x941918;
+    if (operation != 3) {
+        if (operation == 0) {
+            if (destination) {
+                destination->first = source->first;
+                destination->second = source->second;
+            }
+        } else if (operation != 1) {
+            destination->first =
+                typeEqual(destination->first, &typeTag) ? source : 0;
+        }
         return;
     }
-    if (c == 0) {
-        if (b == 0)
-            return;
-        *(int*)b = *(int*)a;
-        *(int*)(b + 4) = *(int*)(a + 4);
-        return;
-    }
-    if (c == 1)
-        return;
-    {
-        int* p = (int*)a;
-        int v = *p;
-        int r = type_info_equals((const type_info*)v, (const type_info*)0x941918);
-        unsigned char al = (unsigned char)r;
-        int neg = -(int)al;
-        int mask = neg | (neg >> 31);
-        *p = mask & b;
-    }
+    destination->first = &typeTag;
 }

@@ -1,4 +1,4 @@
-// from server: 70% by tester
+// from server: 100% by king_originala
 // roc 2008-06 00406450  unit: VCApp::?$CComObject  size: 85 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 00406450
 //
@@ -35,24 +35,24 @@
 // 004064a1  5b                   pop ebx
 // 004064a2  c20400               ret 4
 
-extern "C" __declspec(dllimport) unsigned int __stdcall strnlen(const char*, unsigned int);
-extern "C" __declspec(dllimport) int __cdecl _mbsnbcpy_s(char*, unsigned int, const char*, unsigned int);
-extern "C" int __cdecl sub_401680(char*);
+extern "C" unsigned int (__cdecl *strnlen)(const char*, unsigned int);
+extern "C" int (__cdecl *_mbsnbcpy_s)(unsigned char*, unsigned int,
+                                     const unsigned char*, unsigned int);
+extern void __cdecl check_result(int);
 
-struct VCApp_CComObject
+struct S
 {
-    char pad[0x1230];
-    unsigned int field_1230;
-    int __stdcall SetName(const char* name);
+    int set_text(const char*);
 };
 
-int __stdcall VCApp_CComObject::SetName(const char* name)
+int S::set_text(const char* text)
 {
-    unsigned int len = strnlen(name, 0x101);
-    if (len > 0x100)
+    unsigned int length = strnlen(text, 0x101);
+    if (length > 0x100)
         return 0;
-    _mbsnbcpy_s(this->pad + 0x21, 0x101, name, len);
-    sub_401680(this->pad + 0x21);
-    this->field_1230 = len;
+
+    check_result(_mbsnbcpy_s((unsigned char*)this + 0x21, 0x101,
+                            (const unsigned char*)text, length));
+    *(unsigned int*)((char*)this + 0x1230) = length;
     return 1;
 }

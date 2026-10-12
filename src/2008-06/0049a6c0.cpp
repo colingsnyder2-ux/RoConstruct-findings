@@ -1,29 +1,40 @@
-// from server: 52% by colin
-struct ICreator {
-    void* vtable;
+// from server: 100% by tester
+extern void* __cdecl operator new(unsigned int);
+extern const unsigned char control_table[];
+
+struct Object {
+    virtual ~Object();
 };
 
-struct Creator : ICreator {
-    void* field4;
+struct Deleter {};
+
+struct Control {
+    const void* table;
+    long strong;
+    long weak;
+    Object* object;
 };
 
-struct FactoryProduct {
-    Creator* creator;
-    FactoryProduct(int arg);
+struct S {
+    Control* control;
+    S(Object* object);
 };
 
-extern "C" void* __cdecl operator_new(unsigned int size);
-
-FactoryProduct::FactoryProduct(int arg) {
-    this->creator = 0;
-    Creator* c = (Creator*)operator_new(0x10);
-    if (c) {
-        c->vtable = (void*)0x822674;
-        c->field4 = (void*)1;
-        *(int*)((char*)c + 8) = 1;
-        *(int*)((char*)c + 0xc) = arg;
-    } else {
-        c = 0;
+S::S(Object* object) : control(0)
+{
+    try {
+        Control* p = static_cast<Control*>(operator new(sizeof(Control)));
+        if (p) {
+            p->strong = 1;
+            p->weak = 1;
+            p->table = control_table;
+            p->object = object;
+        } else {
+            p = 0;
+        }
+        control = p;
+    } catch (...) {
+        delete object;
+        throw;
     }
-    this->creator = c;
 }

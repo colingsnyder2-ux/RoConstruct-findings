@@ -1,5 +1,5 @@
-// from server: 32% by colin
+// from server: 100% by tester
 // roc-lang: cpp
 // roc-cl: 21022
-// roc-flags: /O2 /GS- /MD
-// roc-lib: scintilla-mfc-1.20 ScintillaDocView.cpp
+// roc-flags: /O2 /MD /GS- /EHsc /Ob1
+// roc-lib: xtp-11.2.2-shared-mfc Source\Common\XTPPropExchange.cpp

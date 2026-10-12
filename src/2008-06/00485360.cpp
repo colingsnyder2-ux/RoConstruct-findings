@@ -1,13 +1,5 @@
-// from server: 91% by atomic.potato
-struct Milestone
-{
-    float value[3];
-    void f(float* result, float scale);
-};
-
-void Milestone::f(float* result, float scale)
-{
-    result[0] = value[0] * scale;
-    result[1] = value[1] * scale;
-    result[2] = value[2] * scale;
-}
+// from server: 100% by tester
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD /fp:fast
+// roc-lib: g3d-6.09 GLG3Dcpp/RenderDevice.cpp

@@ -1,25 +1,26 @@
-// from server: 91% by atomic.potato
-struct S
-{
-    int f();
+// from server: 100% by king_originala
+struct Camera {
+    char padding[0x1D4];
+    int mode;
 };
 
-int S::f()
+struct CameraProvider {
+    virtual void unused();
+    virtual Camera* getCamera();
+};
+
+struct Owner {
+    char padding[0x288];
+    CameraProvider provider;
+};
+
+struct TrackCameraCommand {
+    char padding[0xC];
+    Owner* owner;
+    bool isTracking();
+};
+
+bool TrackCameraCommand::isTracking()
 {
-    struct VTable
-    {
-        void *unknown;
-        int (__thiscall *call)(void *);
-    };
-
-    struct Object
-    {
-        char padding[0x288];
-        VTable *vtable;
-    };
-
-    Object *object = *(Object **)((char *)this + 0x0c);
-    int (__thiscall *function)(void *) = object->vtable->call;
-    int value = function((char *)object + 0x288);
-    return *(int *)((char *)value + 0x1d4) == 3;
+    return owner->provider.getCamera()->mode == 3;
 }

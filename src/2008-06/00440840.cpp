@@ -1,31 +1,44 @@
-// from server: 47% by tester
-struct ContentItem {
-    void* vtable;
-    int refcount;
-    int refcount2;
-    int field_c;
-    int field_10;
+// from server: 100% by tester
+#pragma optimize("y", off)
+
+void* __cdecl operator new(unsigned int);
+extern void* controlVtable[];
+
+struct Deleter {
+    void operator()(void*) const;
 };
 
-struct VSoundId {
-    ContentItem* item;
-    VSoundId(int a, int b);
+inline void Deleter::operator()(void*) const {}
+
+struct Control {
+    void** vtable;
+    int strong;
+    int weak;
+    void* object;
+    Deleter deleter;
+
+    Control(void*, const Deleter&);
 };
 
-extern "C" void* __cdecl operator_new(unsigned int size);
-
-VSoundId::VSoundId(int a, int b)
+inline Control::Control(void* p, const Deleter& d)
+    : strong(1), weak(1), deleter(d)
 {
-    item = 0;
-    ContentItem* p = (ContentItem*)operator_new(0x14);
-    if (p != 0) {
-        p->refcount = 1;
-        p->refcount2 = 1;
-        p->vtable = (void*)0x81531c;
-        p->field_c = a;
-        p->field_10 = b;
-        item = p;
-    } else {
-        item = 0;
+    vtable = controlVtable;
+    object = p;
+}
+
+struct S {
+    Control* control;
+    S(void*, Deleter);
+};
+
+S::S(void* p, Deleter d) : control(0)
+{
+    try {
+        control = new Control(p, d);
+    }
+    catch (...) {
+        d(p);
+        throw;
     }
 }

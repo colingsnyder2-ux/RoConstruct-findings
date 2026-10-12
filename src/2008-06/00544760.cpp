@@ -1,14 +1,5 @@
-// from server: 26% by atomic.potato
-struct Inner {
-    void method();
-};
-
-struct Outer {
-    char pad[0x14];
-    Inner inner;
-    void func();
-};
-
-void Outer::func() {
-    inner.method();
-}
+// from server: 100% by colin
+// roc-flags: /O2 /GS- /EHsc /MD
+#pragma optimize("g", off)
+struct B{void f();}; struct S{char pad[0x14]; B b; void g();};
+void S::g(){b.f();}

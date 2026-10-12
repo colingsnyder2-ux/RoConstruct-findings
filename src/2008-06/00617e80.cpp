@@ -1,5 +1,32 @@
-// from server: 38% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs util/Name.cpp
+// from server: 100% by king_originala
+struct Value {
+    char padding[0x328];
+    float value;
+};
+
+struct Object {
+    Value* getValue();
+};
+
+extern "C" void* __cdecl lookup(void*);
+extern "C" Object* __cdecl getObject(void*);
+
+struct S {
+    char padding[0x18];
+    void* context;
+    bool f();
+};
+
+bool S::f()
+{
+    void* p = lookup(context);
+    if (p) {
+        Object* object = getObject(p);
+        if (object) {
+            Value* v = object->getValue();
+            if (v && v->value == 0.0f)
+                return true;
+        }
+    }
+    return false;
+}

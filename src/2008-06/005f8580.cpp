@@ -1,23 +1,43 @@
-// from server: 52% by colin
-struct S {
-    void* p;
-    S* ctor(void*);
+// from server: 100% by tester
+void* __cdecl operator new(unsigned int);
+void __cdecl operator delete(void*);
+
+struct Object {
+    virtual ~Object();
 };
 
-extern "C" void* __cdecl func_006a0920(unsigned int);
+struct CountBase {
+    long useCount;
+    long weakCount;
 
-S* S::ctor(void* a)
+    CountBase() : useCount(1), weakCount(1) {}
+    virtual ~CountBase();
+    virtual void dispose() = 0;
+    virtual void destroy();
+    virtual void* getDeleter(const void*) = 0;
+};
+
+struct Count : CountBase {
+    Object* object;
+
+    explicit Count(Object* p) : object(p) {}
+    virtual ~Count();
+    virtual void dispose();
+    virtual void* getDeleter(const void*);
+};
+
+struct S {
+    CountBase* count;
+    explicit S(Object*);
+};
+
+S::S(Object* p) : count(0)
 {
-    p = 0;
-    void* q = func_006a0920(0x10);
-    if (q != 0) {
-        *(int*)((char*)q + 4) = 1;
-        *(int*)((char*)q + 8) = 1;
-        *(int*)q = 0x84088c;
-        *(void**)((char*)q + 0xc) = a;
-    } else {
-        q = 0;
+    try {
+        count = new Count(p);
     }
-    p = q;
-    return this;
+    catch (...) {
+        delete p;
+        throw;
+    }
 }

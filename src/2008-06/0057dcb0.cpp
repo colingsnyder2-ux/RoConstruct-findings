@@ -1,15 +1,25 @@
-// from server: 80% by atomic.potato
-struct AttachCameraCommand
-{
-    void* field0c;
-    unsigned char f();
+// from server: 100% by king_originala
+struct Result {
+    char padding[0x1D4];
+    int state;
 };
 
-unsigned char AttachCameraCommand::f()
-{
-    unsigned char* object = *(unsigned char**)((unsigned char*)field0c + 0x288);
-    typedef void* (__thiscall *Method)(void*);
-    Method method = *(Method*)((unsigned char*)object + 4);
-    void* result = method((unsigned char*)field0c + 0x288);
-    return *(int*)((unsigned char*)result + 0x1d4) == 1;
+struct Interface {
+    virtual void unused();
+    virtual Result* getResult();
+};
+
+struct Owner {
+    char padding[0x288];
+    Interface camera;
+};
+
+struct AttachCameraCommand {
+    char padding[0xC];
+    Owner* owner;
+    bool execute();
+};
+
+bool AttachCameraCommand::execute() {
+    return owner->camera.getResult()->state == 1;
 }

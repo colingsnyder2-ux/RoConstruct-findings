@@ -1,5 +1,20 @@
-// from server: 73% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs util/Name.cpp
+// from server: 100% by king_originala
+extern "C" void __cdecl release(void *);
+
+struct S {
+    unsigned long primary;
+    unsigned long secondary;
+
+    void cleanup();
+    void *destroy(unsigned int flags);
+};
+
+void *S::destroy(unsigned int flags)
+{
+    primary = 0x843bd4;
+    secondary = 0x843bbc;
+    cleanup();
+    if (flags & 1)
+        release(this);
+    return this;
+}

@@ -1,31 +1,57 @@
-// from server: 68% by colin
-struct SimJob;
+// from server: 100% by king_originala
+struct Object;
+struct Result;
+struct Node;
+struct Interface;
 
-struct PhysicsSender {
-    char pad[4];
-    void* replicator;
-};
+typedef Result* (__thiscall *GetResult)(Object*);
+typedef char* (__thiscall *GetValue)(Interface*);
 
-struct RoundRobinPhysicsSender : PhysicsSender {
-    SimJob* findTargetPlayerCharacterSimJob();
-};
-
-extern "C" void* __stdcall sub_5E50C0(void* p);
-
-SimJob* RoundRobinPhysicsSender::findTargetPlayerCharacterSimJob()
+struct Object
 {
-    void* v = *(void**)((char*)replicator + 0);
-    void* (*fn)(void*) = *(void* (**)(void*))((char*)v + 0x44);
-    void* r = fn(v);
-    if (r == 0)
-        return 0;
-    void* p = *(void**)((char*)r + 0x170);
-    if (p == 0)
-        return 0;
-    void* q = *(void**)((char*)p + 0x134);
-    void* (*fn2)(void*) = *(void* (**)(void*))((char*)q + 4);
-    void* r2 = fn2((char*)p + 0x134);
-    if (r2 == 0)
-        return 0;
-    return (SimJob*)sub_5E50C0((char*)r2 + 0x228);
+    GetResult* vtable;
+};
+
+struct Result
+{
+    char padding[0x170];
+    Node* node;
+};
+
+struct Node
+{
+    char padding[0x134];
+    int* vbtable;
+};
+
+struct Interface
+{
+    GetValue* vtable;
+};
+
+extern "C" void* __cdecl sub_5E50C0(void*);
+
+struct S
+{
+    int padding;
+    Object* object;
+    void* f();
+};
+
+void* S::f()
+{
+    Result* result = object->vtable[17](object);
+    if (result)
+    {
+        Node* node = result->node;
+        if (node)
+        {
+            Interface* interfaceObject = reinterpret_cast<Interface*>(
+                reinterpret_cast<char*>(node) + 0x134 + node->vbtable[1]);
+            char* value = interfaceObject->vtable[0](interfaceObject);
+            if (value)
+                return sub_5E50C0(value + 0x228);
+        }
+    }
+    return 0;
 }

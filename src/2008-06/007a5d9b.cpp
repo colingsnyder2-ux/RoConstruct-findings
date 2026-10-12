@@ -1,13 +1,5 @@
-// from server: 53% by atomic.potato
-extern "C" unsigned long __stdcall HeapSize(void *, unsigned long, const void *);
-
-struct CXTIconHandle
-{
-    void *heap;
-    unsigned long Size(void *block);
-};
-
-unsigned long CXTIconHandle::Size(void *block)
-{
-    return HeapSize(heap, 0, block);
-}
+// from server: 100% by tester
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /MD
+// roc-archive: msvc-atlmfc-rtm atls.lib/f:/dd/vctools/vc7libs/ship/atlmfc/src/atl/atls/staticrelease/obj1r/i386/atlstr.obj

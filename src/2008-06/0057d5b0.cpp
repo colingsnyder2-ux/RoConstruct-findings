@@ -1,16 +1,25 @@
-// from server: 51% by atomic.potato
-struct S {
-    int f();
+// from server: 100% by king_originala
+struct Camera {
+    void zoom(int direction);
 };
 
-typedef int (__thiscall *Thunk)(void *);
+struct CameraProvider {
+    virtual void unused();
+    virtual Camera* getCamera();
+};
 
-extern "C" int __cdecl sub_005cbf90(int);
+struct Owner {
+    char padding[648];
+    CameraProvider provider;
+};
 
-int S::f()
-{
-    void *p = *(void **)((char *)this + 12);
-    void *q = *(void **)((char *)p + 648);
-    int r = ((Thunk)(*(void **)((char *)q + 4)))(q);
-    return sub_005cbf90(r);
+struct CameraZoomInCommand {
+    char padding[12];
+    Owner* owner;
+    void execute();
+};
+
+void CameraZoomInCommand::execute() {
+    Camera* camera = owner->provider.getCamera();
+    camera->zoom(1);
 }

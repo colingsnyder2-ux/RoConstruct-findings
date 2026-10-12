@@ -1,127 +1,109 @@
-// from server: 34% by colin
-// roc 2008-06 004930d0 305 bytes
-struct RBX_Instance {
-    virtual ~RBX_Instance();
-    char pad[0x100];
-    RBX_Instance* next;
+// from server: 68% by king_originala
+struct Vector2 {
+    float x, y;
 };
 
-struct RBX_ServiceProvider : RBX_Instance {
-    RBX_ServiceProvider* finish();
+struct Rect {
+    float x0, y0, x1, y1;
+    Rect() {}
+    Rect(double a, double b, double c, double d)
+        : x0((float)a), y0((float)b), x1((float)c), y1((float)d) {}
 };
 
-struct RBX_Vector3 {
-    float x, y, z;
+namespace RBX {
+    class Instance {
+    public:
+        virtual ~Instance();
+        char pad[0x100];
+        Instance* next;
+    };
+
+    class ServiceProvider : public Instance {
+    public:
+        char padding[0xB8];
+        float rate;
+        char alignment[4];
+        double scale;
+        ServiceProvider* finish();
+    };
+}
+
+extern RBX::ServiceProvider* func_00492e00(RBX::Instance*);
+extern const double lowerBound;
+extern const double upperBound;
+extern const float multiplier;
+extern const float expansion;
+extern unsigned char color1;
+extern unsigned char color2;
+
+struct TransformPart {
+    void finish();
 };
 
-struct RBX_Region3 {
-    RBX_Vector3 min;
-    RBX_Vector3 max;
+struct Transform {
+    char padding[0x24];
+    TransformPart part;
 };
 
-struct RBX_CFrame {
-    float r00, r01, r02;
-    float r10, r11, r12;
-    float r20, r21, r22;
-    float x, y, z;
+struct Object {
+    Transform* position(Vector2*);
 };
 
-struct RBX_CoordFrame {
-    float r00, r01, r02;
-    float r10, r11, r12;
-    float r20, r21, r22;
-    float x, y, z;
+extern Object* findObject(RBX::Instance*);
+
+struct Receiver {
+    void submit(const Rect*);
 };
 
-struct RBX_Model {
-    char pad[0x1c0];
-    float scale;
-    char pad2[4];
-    double something;
+struct S : RBX::Instance {
+    char padding[0x68];
+    RBX::Instance* object;
+    void bounds(Rect*);
+    void draw(const Rect*, const void*, const void*);
+    void f(Receiver*);
 };
 
-struct RBX_VPlayer {
-    char pad[0x170];
-    RBX_Instance* field170;
-
-    void func_004930d0(RBX_Instance* param);
-};
-
-RBX_ServiceProvider* func_00492e00(RBX_Instance* p);
-void func_00489910(RBX_VPlayer* self, RBX_Vector3* out);
-void func_0048ae50(RBX_VPlayer* self, void* p);
-void func_0048b8a0(RBX_VPlayer* self, void* p, void* a, void* b);
-void* func_005185f0(void* p);
-void* func_00598cb0(void* p, void* out);
-void* func_005d75a0(void* p);
-
-extern float g_819bac;
-extern float g_81c434;
-extern double g_821df8;
-extern double g_821e00;
-
-void RBX_VPlayer::func_004930d0(RBX_Instance* param)
+void S::f(Receiver* receiver)
 {
-    RBX_ServiceProvider* sp = func_00492e00(param);
-    if (!sp)
+    RBX::ServiceProvider* provider = func_00492e00(this);
+    if (!provider)
         return;
-    if (!this->field170)
-        return;
-    RBX_Model* model = (RBX_Model*)func_005d75a0(this->field170);
-    if (!model)
+    if (!object)
         return;
 
-    RBX_Vector3 v;
-    func_00489910(this, &v);
+    Object* target = findObject(object);
+    if (!target)
+        return;
 
-    float dx = v.x - v.x;
-    float dy = v.y - v.y;
-    float dz = v.z - v.z;
+    Rect original;
+    bounds(&original);
+    float width = original.x1 - original.x0;
+    float height = original.y1 - original.y0;
 
-    float f1 = dx;
-    float f2 = dy;
-    float f3 = dz;
+    Vector2 center;
+    target->position(&center)->part.finish();
 
-    void* p = func_00598cb0(model, &f1);
-    void* q = (void*)((char*)p + 0x24);
-    func_005185f0(q);
+    double scale = 1.0;
+    scale /= provider->rate;
+    scale *= provider->scale;
 
-    float invScale = 1.0f / model->scale;
-    double d = invScale * model->something;
-
-    float a, b, c, e;
-    if (d == g_821e00) {
-        a = f1 * g_819bac;
-        b = f2 * g_819bac;
-        c = f3 * g_819bac;
-        e = 0.0f;
-    } else if (d == g_821df8) {
-        a = f1;
-        b = f2 + g_81c434;
-        c = f3;
-        e = 0.0f;
+    double dx, dy;
+    if (scale > lowerBound) {
+        dx = width * (double)multiplier;
+        dy = height * (double)multiplier;
+    } else if (scale < upperBound) {
+        dx = width + (double)expansion;
+        dy = height + (double)expansion;
     } else {
-        a = f1;
-        b = f2;
-        c = f3;
-        e = 0.0f;
+        dx = width;
+        dy = height;
     }
 
-    RBX_CFrame cf;
-    cf.r00 = a;
-    cf.r01 = b;
-    cf.r02 = c;
-    cf.r10 = e;
-    cf.r11 = a;
-    cf.r12 = b;
-    cf.r20 = c;
-    cf.r21 = e;
-    cf.r22 = a;
-    cf.x = b;
-    cf.y = c;
-    cf.z = e;
+    dx *= multiplier;
+    dy *= multiplier;
 
-    func_0048b8a0(this, &cf, (void*)0x96fcf0, (void*)0x96fdd0);
-
-    func_0048ae50(this, &cf);
+    Rect result(center.x - dx, center.y - dy,
+                center.x + dx, center.y + dy);
+    draw(&result, &color2, &color1);
+    receiver->submit(&result);
 }

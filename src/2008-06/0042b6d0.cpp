@@ -1,5 +1,34 @@
-// from server: 53% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: boost-1.34.1 libs/regex/src/instances.cpp
+// from server: 100% by tester
+struct Data {
+    unsigned long a, b, c, d;
+};
+
+struct Argument {
+    Data data;
+    unsigned long extra;
+};
+
+extern bool __cdecl func_0060a2f0();
+extern unsigned char tag;
+
+struct S {
+    const void *type;
+    unsigned long unused;
+    Data data;
+
+    S(Argument value);
+};
+
+S::S(Argument value)
+{
+    type = 0;
+    if (!reinterpret_cast<bool (__cdecl *)(Argument *)>(
+            &func_0060a2f0)(&value)) {
+        Data *destination = &data;
+        if (destination)
+            *destination = value.data;
+        type = &tag;
+    } else {
+        type = 0;
+    }
+}

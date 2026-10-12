@@ -1,18 +1,18 @@
-// from server: 2% by colin
-struct RBX_ImageKeyButton {
-    char pad[0x150];
-    int field_150;
-    void sub_5cf360();
-    void sub_411540();
-    ~RBX_ImageKeyButton();
+// from server: 100% by king_originala
+struct Base {
+    char data[0x150];
+    ~Base();
 };
 
-void RBX_ImageKeyButton::sub_5cf360() {}
+struct Member {
+    ~Member();
+};
 
-void RBX_ImageKeyButton::sub_411540() {}
+struct ImageKeyButton : Base {
+    Member member;
+    ~ImageKeyButton();
+};
 
-RBX_ImageKeyButton::~RBX_ImageKeyButton()
+ImageKeyButton::~ImageKeyButton()
 {
-    sub_5cf360();
-    sub_411540();
 }

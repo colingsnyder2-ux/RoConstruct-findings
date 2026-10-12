@@ -1,5 +1,20 @@
-// from server: 64% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs util/Name.cpp
+// from server: 100% by king_originala
+void* __cdecl operator new(unsigned int);
+void __cdecl operator delete(void*);
+
+struct Product
+{
+    char storage[36];
+    Product(void* arg);
+};
+
+struct FactoryProduct
+{
+    Product* product;
+    FactoryProduct(void* arg);
+};
+
+FactoryProduct::FactoryProduct(void* arg)
+{
+    product = new Product(arg);
+}

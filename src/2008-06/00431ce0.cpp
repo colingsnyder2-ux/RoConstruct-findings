@@ -1,13 +1,11 @@
-// from server: 63% by atomic.potato
-struct CDataModelPropGrid
-{
-    void f(int);
+// from server: 100% by king_originala
+struct CDataModelPropGrid {
+    void f(bool);
     void Update();
     char padding[0xf8];
     unsigned char field_0xf8;
 };
 
-void CDataModelPropGrid::Update()
-{
+void CDataModelPropGrid::Update() {
     f(field_0xf8 == 0);
 }

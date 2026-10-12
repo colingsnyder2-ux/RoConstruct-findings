@@ -1,30 +1,33 @@
-// from server: 48% by colin
+// from server: 77% by king_originala
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
 
-struct RefCounted {
-    void* vptr;
-    volatile long refcount;
+struct Control {
+    unsigned int reserved;
+    volatile long count;
 };
 
-struct Elem {
-    void* ptr;
-    RefCounted* ref;
+struct Entry {
+    void* object;
+    Control* control;
+
+    Entry(const Entry& other);
 };
 
-typedef void (__cdecl *Callback)(Elem);
-
-void __cdecl ForEach(Elem* begin, Elem* end, Callback cb)
+__forceinline Entry::Entry(const Entry& other)
 {
-    if (begin == end)
-        return;
-    do {
-        Elem tmp;
-        tmp.ptr = begin->ptr;
-        tmp.ref = begin->ref;
-        if (tmp.ref)
-            _InterlockedExchangeAdd(&tmp.ref->refcount, 1);
-        cb(tmp);
-        ++begin;
-    } while (begin != end);
+    object = other.object;
+    control = other.control;
+    if (control)
+        _InterlockedExchangeAdd(&control->count, 1);
+}
+
+typedef void (__cdecl *Callback)(Entry);
+
+Callback __cdecl process(unsigned int, Entry* first, unsigned int,
+                         Entry* last, Callback callback)
+{
+    for (; first != last; ++first)
+        callback(*first);
+    return callback;
 }

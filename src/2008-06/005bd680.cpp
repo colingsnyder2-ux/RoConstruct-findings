@@ -1,36 +1,40 @@
-// from server: 63% by colin
-
-
-
-
-struct DescribedBase;
-
-struct GetSet {
-    virtual bool isReadOnly() const;
-    virtual bool isWriteOnly() const;
-    virtual void getValue(const DescribedBase* object, void* out) const;
-    virtual void setValue(DescribedBase* object, const void* value) const;
+// from server: 94% by king_originala
+struct Prefix {
+    char padding[20];
 };
 
-struct BoundPropGetSet {
-    char pad0[4];
-    int member;
-    char pad8[4];
-    void (*changed)(const void*);
-    int desc;
-    void setValue(DescribedBase* object, const float* value) const;
+struct Interface {
+    char padding[4];
 };
 
-extern "C" void __fastcall raisePropertyChanged(int self);
+struct Object : Prefix, Interface {
+    void notify(void* property);
+};
 
-void BoundPropGetSet::setValue(DescribedBase* object, const float* value) const {
-    int offset = object ? (int)object - 0x14 : 0;
-    float* field = (float*)((char*)this->member + offset);
-    if (*value != *field) {
-        *field = *value;
-        if (this->changed) {
-            this->changed((const void*)(this->desc + offset));
-        }
-        raisePropertyChanged(offset);
+struct BoundProp {
+    void* vtable;
+    void* property;
+    int offset;
+    int unused;
+    void (Object::*changed)(void*);
+
+    void set(Interface* instance, const float& value);
+};
+
+#pragma float_control(precise, off, push)
+
+void BoundProp::set(Interface* instance, const float& value)
+{
+    Object* object = instance ? static_cast<Object*>(instance) : 0;
+    float* destination = reinterpret_cast<float*>(
+        reinterpret_cast<char*>(object) + offset);
+
+    if (*destination != value) {
+        *destination = value;
+        if (changed)
+            (object->*changed)(property);
+        object->notify(property);
     }
 }
+
+#pragma float_control(pop)

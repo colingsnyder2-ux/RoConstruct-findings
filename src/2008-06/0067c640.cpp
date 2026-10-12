@@ -1,5 +1,16 @@
-// from server: 37% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: ogre-1.7.0 OgreMesh.cpp
+// from server: 92% by king_originala
+struct Node {
+    int value;
+    float priority;
+};
+
+void __cdecl f(Node* first, int hole, int top, Node value)
+{
+    int parent = (hole - 1) / 2;
+    while (top < hole && value.priority > first[parent].priority) {
+        first[hole] = first[parent];
+        hole = parent;
+        parent = (hole - 1) / 2;
+    }
+    first[hole] = value;
+}

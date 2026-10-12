@@ -1,14 +1,5 @@
-// from server: 34% by atomic.potato
-extern "C" int __stdcall HeapFree(void *, unsigned long, void *);
-
-struct CXTIconHandle
-{
-    void *heap;
-    void Release(void *);
-};
-
-void CXTIconHandle::Release(void *p)
-{
-    if (p)
-        HeapFree(*(void **)((char *)this + 4), 0, p);
-}
+// from server: 100% by tester
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /MD
+// roc-archive: msvc-atlmfc-rtm atls.lib/f:/dd/vctools/vc7libs/ship/atlmfc/src/atl/atls/staticrelease/obj1r/i386/atlstr.obj

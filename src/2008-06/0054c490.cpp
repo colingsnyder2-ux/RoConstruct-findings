@@ -1,12 +1,5 @@
-// from server: 42% by atomic.potato
-extern "C" void std_string_destructor(void *);
-
-struct S {
-    int f();
-};
-
-int S::f()
-{
-    std_string_destructor((char *)this + 4);
-    return 0;
-}
+// from server: 100% by tester
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MD
+// roc-lib: ogre-1.4.5-dll OgreGpuProgram.cpp

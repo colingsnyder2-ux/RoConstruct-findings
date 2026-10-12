@@ -1,5 +1,61 @@
-// from server: 54% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /GS- /MD
-// roc-lib: g3d-6.09 GLG3Dcpp/Texture.cpp
+// from server: 94% by king_originala
+void* __cdecl operator new(unsigned int);
+void __cdecl operator delete(void*);
+
+struct CAtlException {
+    long m_hr;
+};
+
+struct Subobject {
+    virtual void slot0();
+    virtual void slot1();
+    virtual void slot2();
+    virtual void slot3();
+    virtual void slot4();
+    virtual void destroy(unsigned int);
+};
+
+struct S;
+struct Table {
+    long (__stdcall* query)(S*, const void*, void**);
+};
+
+struct S {
+    Table* table;
+    unsigned long reserved[2];
+    Subobject subobject;
+    unsigned long reserved2[2];
+    volatile long references;
+
+    S(void*) throw();
+    static long __stdcall create(void*, const void*, void**);
+};
+
+long __stdcall S::create(void* context, const void* iid, void** result)
+{
+    if (!result)
+        return (long)0x80004003;
+
+    S* object = 0;
+    *result = 0;
+    long status = (long)0x8007000e;
+
+    try {
+        object = new S(context);
+    }
+    catch (CAtlException& exception) {
+        status = exception.m_hr;
+    }
+    catch (...) {
+    }
+
+    if (object) {
+        ++object->references;
+        --object->references;
+        status = object->table->query(object, iid, result);
+        if (status != 0)
+            object->subobject.destroy(1);
+    }
+
+    return status;
+}

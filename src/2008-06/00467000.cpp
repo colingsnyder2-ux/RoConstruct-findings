@@ -1,15 +1,22 @@
-// from server: 92% by colin
-struct CSettingsPropGrid {
-    void sub_440E30(int, int);
-    void f(int, int);
+// from server: 100% by king_originala
+struct Descriptor {
+    bool __thiscall differs(const Descriptor&) const;
 };
 
-extern "C" int __fastcall sub_40AD80(void*);
-extern "C" bool __fastcall sub_56FE20(void*, int);
+const Descriptor& __cdecl getDescriptor();
 
-void CSettingsPropGrid::f(int a, int b) {
-    int v = sub_40AD80(this);
-    if (sub_56FE20(*(void**)(b + 0xc), v)) {
-        sub_440E30(a, b);
-    }
+struct Item {
+    unsigned char padding[12];
+    Descriptor* descriptor;
+};
+
+struct CSettingsPropGrid {
+    void __thiscall apply(int, Item*);
+    void __thiscall f(int, Item*);
+};
+
+void CSettingsPropGrid::f(int value, Item* item)
+{
+    if (item->descriptor->differs(getDescriptor()))
+        apply(value, item);
 }

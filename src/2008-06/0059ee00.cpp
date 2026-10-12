@@ -1,4 +1,4 @@
-// from server: 94% by atomic.potato
+// from server: 100% by tester
 struct S
 {
     int *vtable;
@@ -11,7 +11,7 @@ struct S
 int S::f(float *out, int *arg)
 {
     int *p = arg ? (int *)((char *)arg - 20) : 0;
-    int *value = (int *)(get((int *)((char *)this + offset + (int)p)));
+    int *value = (int *)(get((int *)(offset + (int)p)));
     out[0] = ((float *)value)[0];
     out[1] = ((float *)value)[1];
     out[2] = ((float *)value)[2];

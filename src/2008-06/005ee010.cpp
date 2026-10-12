@@ -1,48 +1,49 @@
-// from server: 63% by colin
-struct DescribedBase;
-struct Variant;
-
-struct EnumPropertyDescriptor {
-    void* vtable;
-    void* getset;
-    void* field_8;
-    void* field_c;
-    void* field_10;
-    void* field_14;
-    void* field_18;
-    void* field_1c;
+// from server: 100% by tester
+struct Text {
+    unsigned int reserved;
+    union {
+        char buffer[16];
+        char* pointer;
+    };
+    unsigned int length;
+    unsigned int capacity;
 };
 
-struct SurfaceEnumPropDescriptor : EnumPropertyDescriptor {
-    bool equalValues(const DescribedBase* a, const DescribedBase* b) const;
+struct EnumTable {
+    bool lookup(unsigned int key, int* value);
 };
 
-struct Helper {
-    bool method(void*);
+struct Setter {
+    virtual void slot0() = 0;
+    virtual void slot1() = 0;
+    virtual void slot2() = 0;
+    virtual void set(void* instance, const int* value) = 0;
 };
 
-extern "C" void __cdecl sub_557330(void*, void*);
-extern "C" void* __cdecl sub_5ed630();
-extern "C" void* __cdecl sub_554290(void*, void*);
+extern unsigned char registrationState;
+extern void __cdecl initialize();
+extern void __cdecl registerInitializer(void (__cdecl* callback)(), void* state);
+extern EnumTable* __cdecl getEnumTable();
+extern unsigned int __cdecl stringKey(const char* text);
 
-bool SurfaceEnumPropDescriptor::equalValues(const DescribedBase* a, const DescribedBase* b) const {
-    const char* pa;
-    if (*(unsigned int*)((const char*)a + 0x18) < 0x10)
-        pa = (const char*)a + 4;
-    else
-        pa = *(const char**)a;
+struct Descriptor {
+    unsigned char padding[28];
+    Setter* setter;
 
-    sub_557330((void*)0x97b120, (void*)0x5ed690);
-    void* desc = sub_5ed630();
+    bool setString(void* instance, const Text& text);
+};
 
-    char buf[4];
-    void* r = sub_554290(buf, (void*)pa);
-    bool eq = ((Helper*)desc)->method(r);
-    if (eq) {
-        void* p = *(void**)((const char*)this + 0x1c);
-        void** vt = *(void***)p;
-        void (*fn)(void*, void*) = (void (*)(void*, void*))vt[3];
-        fn(p, (void*)buf);
+bool Descriptor::setString(void* instance, const Text& text)
+{
+    const char* characters =
+        text.capacity >= 16 ? text.pointer : text.buffer;
+
+    registerInitializer(initialize, &registrationState);
+    EnumTable* table = getEnumTable();
+
+    int value;
+    if (table->lookup(stringKey(characters), &value)) {
+        setter->set(instance, &value);
         return true;
     }
     return false;

@@ -1,4 +1,4 @@
-// from server: 49% by colin
+// from server: 100% by king_originala
 // roc 2008-06 00540530  unit: RBX::RenderBase::AggregatingSceneManager::Bucket  size: 33 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 00540530
 //
@@ -16,17 +16,16 @@
 // 0054054d  5d                   pop ebp
 // 0054054e  c20400               ret 4
 
-struct Bucket {
-    int f(int);
-    int h(int);
+struct S {
+    int get() const;
+    void set(int value);
+    S& operator=(const S& other);
 };
 
-struct Other {
-    int g();
-};
-
-int Bucket::f(int a) {
-    Other* o = (Other*)a;
-    int r = o->g();
-    return this->h(r);
+#pragma optimize("", off)
+S& S::operator=(const S& other)
+{
+    set(other.get());
+    return *this;
 }
+#pragma optimize("", on)

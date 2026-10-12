@@ -1,15 +1,19 @@
-// from server: 87% by atomic.potato
-struct S_func_0062e090 {
-    char pad0[360];
-    float m_x;
-    float m_y;
-    float m_z;
-    void f(float* out);
+// from server: 100% by king_originala
+struct Vector3 {
+    float x, y, z;
 };
 
-void S_func_0062e090::f(float* out)
+struct S {
+    char pad[360];
+    float x, y, z;
+    Vector3 f();
+};
+
+Vector3 S::f()
 {
-    out[0] = m_x;
-    out[1] = m_y;
-    out[2] = m_z;
+    Vector3 result;
+    result.x = x;
+    result.y = y;
+    result.z = z;
+    return result;
 }

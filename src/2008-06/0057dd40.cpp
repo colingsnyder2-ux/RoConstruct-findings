@@ -1,17 +1,30 @@
-// from server: 66% by atomic.potato
-struct WatchCameraCommand
+// from server: 100% by king_originala
+struct Result
 {
-    unsigned char IsActive();
+    char padding[0x1D4];
+    int state;
 };
 
-unsigned char WatchCameraCommand::IsActive()
+struct Interface
 {
-    struct Camera
-    {
-        int value[162];
-    };
+    virtual void slot0();
+    virtual Result* get();
+};
 
-    Camera* camera = *(Camera**)((char*)this + 0x0c);
-    typedef Camera* (__thiscall *Fn)(Camera*);
-    return *(int*)((char*)(((Fn)(*(void**)((char*)camera + 0x288 + 4)))(camera)) + 0x1d4) == 2;
+struct Owner
+{
+    char padding[0x288];
+    Interface value;
+};
+
+struct S
+{
+    char padding[0x0C];
+    Owner* owner;
+    bool f();
+};
+
+bool S::f()
+{
+    return owner->value.get()->state == 2;
 }

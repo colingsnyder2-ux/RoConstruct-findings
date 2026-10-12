@@ -1,20 +1,8 @@
-// from server: 93% by tester
-struct ContentProvider {
-    int getCachedRemoteSourceLoadState();
-};
-
-struct Helper {
-    int field4;
-};
-
-struct HelperMaker {
-    Helper* makeHelper();
-};
-
-struct HelperDestroyer {
-    void destroyHelper();
-};
-
+// from server: 100% by tester
+struct Helper { int field0; int field4; };
+struct ContentProvider { int getCachedRemoteSourceLoadState(); };
+struct HelperMaker { Helper* makeHelper(); };
+struct HelperDestroyer { void destroyHelper(); };
 int ContentProvider::getCachedRemoteSourceLoadState() {
     char buf[0x84];
     HelperMaker* m = (HelperMaker*)buf;

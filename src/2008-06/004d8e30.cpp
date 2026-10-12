@@ -1,38 +1,45 @@
-// from server: 89% by colin
-struct S {
-    int f();
-    int field0;
-    int field4;
-    int field8;
-    int fieldC;
+// from server: 100% by tester
+namespace G3D {
+struct System {
+    static void __cdecl free(void*);
+    static void __cdecl alignedFree(void*);
+};
+}
+
+struct Payload {
+    void* vtable;
+    unsigned char data[12];
+    void destroy();
 };
 
-extern "C" void __cdecl sub_507D00(void*);
-extern "C" void __cdecl sub_507D20(void*);
-extern "C" void __cdecl sub_4D7E30(void*);
+struct Node {
+    unsigned char data[8];
+    Payload value;
+    Node* next;
+};
 
-int S::f()
+struct S {
+    unsigned int field0;
+    int size;
+    Node** buckets;
+    int bucketCount;
+    void clear();
+};
+
+void S::clear()
 {
-    int i = 0;
-    if (fieldC > 0) {
-        do {
-            int* p = (int*)field8;
-            int* node = (int*)p[i];
-            if (node) {
-                do {
-                    int* next = (int*)node[6];
-                    node[2] = 0x826bfc;
-                    sub_4D7E30(node + 2);
-                    sub_507D00(node);
-                    node = next;
-                } while (node);
-            }
-            i++;
-        } while (i < fieldC);
+    for (int i = 0; i < bucketCount; ++i) {
+        Node* node = buckets[i];
+        while (node) {
+            Node* next = node->next;
+            node->value.vtable = (void*)0x00826bf4;
+            node->value.destroy();
+            G3D::System::free(node);
+            node = next;
+        }
     }
-    sub_507D20((void*)field8);
-    field8 = 0;
-    fieldC = 0;
-    field4 = 0;
-    return 0;
+    G3D::System::alignedFree(buckets);
+    buckets = 0;
+    bucketCount = 0;
+    size = 0;
 }

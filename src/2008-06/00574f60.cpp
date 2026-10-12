@@ -1,12 +1,4 @@
-// from server: 88% by atomic.potato
-extern "C" void __stdcall assign_string(void *, const char *);
-
-struct UnifiedWidget
-{
-    void f();
-};
-
-void UnifiedWidget::f()
-{
-    assign_string((char *)this + 0x234, ">Authoring");
-}
+// from server: 99% by king_originala
+// roc-flags: /O2 /GS- /EHsc /MD
+struct S{void f();}; typedef void(__thiscall* Fn)(void*,const char*); extern Fn assign;
+void S::f(){assign((char*)this+564,"[[[progress]]]");}

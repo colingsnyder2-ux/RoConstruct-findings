@@ -1,4 +1,4 @@
-// from server: 98% by colin
+// from server: 100% by tester
 // roc 2008-06 00430360  unit: CWrapperView  size: 53 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 00430360
 //
@@ -33,7 +33,7 @@ struct CWrapperView {
 void CWrapperView::func_430360(int a, int b)
 {
     sub_6a0c68();
-    if (field_f8 != 0 && field_fa == 0 && b == 0) {
+    if (field_f8 != 0 && field_fa == 0 && a == 0) {
         sub_430160();
         sub_6a096e(7);
     }

@@ -1,11 +1,14 @@
-// from server: 44% by colin
+// from server: 100% by tester
+struct Queue { void flush(); };
+struct Scene { char pad[8]; Queue queue; };
+
 struct SimpleSceneManager {
-    char pad[4];
-    void* field4;
-    void* getSomething();
+    void* vtbl;
+    Scene* scene;
+    void flush();
 };
 
-void* SimpleSceneManager::getSomething()
+void SimpleSceneManager::flush()
 {
-    return (char*)field4 + 8;
+    scene->queue.flush();
 }

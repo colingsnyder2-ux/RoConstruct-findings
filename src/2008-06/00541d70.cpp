@@ -1,12 +1,5 @@
-// from server: 39% by atomic.potato
-struct S
-{
-    void f(void *, void *);
-};
-
-extern "C" void sub_0053f280(void *, void *);
-
-void S::f(void *a, void *b)
-{
-    sub_0053f280(a, b);
-}
+// from server: 100% by tester
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MD
+// roc-lib: ogre-1.4.5-dll OgreParticleSystem.cpp

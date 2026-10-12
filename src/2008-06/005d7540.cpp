@@ -1,5 +1,12 @@
-// from server: 78% by colin
-// roc-lang: cpp
-// roc-cl: 50727
-// roc-flags: /O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MT
-// roc-lib: ogre-1.4.9 OgreSceneManager.cpp
+// from server: 100% by tester
+struct RbxSceneManager {
+    char pad[0x1e8];
+    unsigned char lo : 4;
+    unsigned char flag : 1;
+    unsigned char hi : 3;
+    bool getFlag() const;
+};
+
+bool RbxSceneManager::getFlag() const {
+    return flag;
+}
