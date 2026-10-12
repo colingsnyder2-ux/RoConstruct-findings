@@ -1,5 +1,5 @@
-// from server: 18% by colin
-// roc-lang: cpp
+// from server: 22% by colin
 // roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MT
-// roc-lib: ogre-1.4.9 OgreSceneManager.cpp
+// roc-flags: /O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MT /fp:fast
+// roc-lang: cpp
+// roc-lib: ogre-1.4.9-dll OgreSceneManager.cpp
