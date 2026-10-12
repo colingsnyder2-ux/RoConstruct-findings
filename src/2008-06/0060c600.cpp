@@ -1,19 +1,21 @@
-// from server: 84% by tester
-struct EnumPropDescriptor {
-    char pad[0x150];
-    void* getset;
+// from server: 90% by king_originala
+struct State {
+    char padding[0x8c];
+    float value;
     void setValue(float value);
 };
 
-extern "C" void __stdcall sub_5e5da0(float value);
-extern "C" void __stdcall sub_40db00(void* desc, const char* name);
+struct S {
+    char padding[0x150];
+    State* state;
+    void notify(const void* descriptor);
+    void setValue(float value);
+};
 
-void EnumPropDescriptor::setValue(float value)
+void S::setValue(float value)
 {
-    void* gs = getset;
-    float current = *(float*)((char*)gs + 0x8c);
-    if (current == value)
-        return;
-    sub_5e5da0(value);
-    sub_40db00(this, (const char*)0x97be80);
+    if (state->value != value) {
+        state->setValue(value);
+        notify(reinterpret_cast<const void*>(0x97be80));
+    }
 }

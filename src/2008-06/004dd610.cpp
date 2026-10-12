@@ -1,5 +1,5 @@
-// from server: 44% by king_originala
-extern "C" void __stdcall _invalid_parameter_noinfo();
+// from server: 50% by king_originala
+extern "C" void (__cdecl *_invalid_parameter_noinfo)();
 
 struct Key {
     float x, y, z;
@@ -8,18 +8,15 @@ struct Key {
 };
 
 struct Node {
-    Node* left;
-    Node* parent;
-    Node* right;
+    Node *left, *parent, *right;
     Key key;
     unsigned char padding[20];
-    unsigned char color;
-    unsigned char nil;
+    unsigned char color, nil;
 };
 
 struct Iterator {
-    void* owner;
-    Node* node;
+    void *owner;
+    Node *node;
     void decrement();
 };
 
@@ -29,49 +26,39 @@ struct Result {
 };
 
 struct Compare {
-    bool less(const Key&, const Key&) const;
+    bool less(const Key &, const Key &) const;
 };
 
 struct S {
-    void* owner;
+    void *owner;
     unsigned int reserved;
     Compare compare;
     unsigned char padding[15];
-    Node* head;
+    Node *head;
     unsigned int count;
 
-    Iterator insert(bool, Node*, const Key&);
-    Result f(const Key&);
+    Iterator *insert(Iterator *, bool, Node *, const Key &);
+    Result *f(Result *, const Key &);
 };
 
-Result S::f(const Key& key)
+Result *S::f(Result *result, const Key &key)
 {
-    Node* parent = head;
-    Node* current = head->parent;
+    Node *parent = head;
+    Node *current = head->parent;
     bool left = true;
 
     while (!current->nil) {
         parent = current;
-
-        if (current->key.x > key.x)
-            left = true;
-        else if (current->key.x < key.x)
-            left = false;
-        else if (current->key.y > key.y)
-            left = true;
-        else if (current->key.y < key.y)
-            left = false;
-        else if (current->key.z > key.z)
-            left = true;
-        else if (current->key.z < key.z)
-            left = false;
-        else if (key.index < current->key.index)
-            left = true;
-        else if (key.index > current->key.index)
-            left = false;
-        else
-            left = key.value < current->key.value;
-
+        left =
+            key.x < current->key.x ? true :
+            key.x > current->key.x ? false :
+            key.y < current->key.y ? true :
+            key.y > current->key.y ? false :
+            key.z < current->key.z ? true :
+            key.z > current->key.z ? false :
+            key.index < current->key.index ? true :
+            key.index > current->key.index ? false :
+            key.value < current->key.value;
         current = left ? current->left : current->right;
     }
 
@@ -87,10 +74,10 @@ Result S::f(const Key& key)
         if (!position.owner || position.owner != first.owner)
             _invalid_parameter_noinfo();
 
-        if (position.node == first.node) {
-            Result result;
-            result.position = insert(true, parent, key);
-            result.inserted = true;
+        if (parent == first.node) {
+            Iterator temporary;
+            result->position = *insert(&temporary, true, parent, key);
+            result->inserted = true;
             return result;
         }
 
@@ -98,14 +85,13 @@ Result S::f(const Key& key)
     }
 
     if (compare.less(position.node->key, key)) {
-        Result result;
-        result.position = insert(left, parent, key);
-        result.inserted = true;
+        Iterator temporary;
+        result->position = *insert(&temporary, left, parent, key);
+        result->inserted = true;
         return result;
     }
 
-    Result result;
-    result.position = position;
-    result.inserted = false;
+    result->position = position;
+    result->inserted = false;
     return result;
 }

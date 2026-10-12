@@ -1,65 +1,44 @@
-// from server: 24% by atomic.potato
-struct Node;
+// from server: 100% by king_originala
+struct VChunk;
 
-struct Tree {
-    Node* find(Node*);
-    Node* begin();
+char * __cdecl rightLink(VChunk *);
+void * __cdecl leftLink(void *);
+char * __cdecl parentLink(VChunk *);
+char * __cdecl nilFlag(VChunk *);
+
+struct S {
+    char *rootLink();
+    void f(VChunk *);
 };
 
-struct Node {
-    Node* left;
-    Node* right;
-    Node* parent;
-    char color;
-    char pad[3];
-};
-
-extern "C" Node* __stdcall sub_541DA0(Node*);
-extern "C" Node* __stdcall sub_54C630(Node*);
-extern "C" Node* __stdcall sub_54C640(Node*);
-extern "C" char* __stdcall sub_54C600(Node*);
-
-struct Mesh {
-    Node* insert_unique(Node*);
-};
-
-Node* Mesh::insert_unique(Node* hint)
+#pragma optimize("", off)
+void S::f(VChunk *node)
 {
-    Node* pos = sub_541DA0(hint);
-    Node* cur = pos->left;
-    Node* existing = sub_54C630(cur);
-    Node* p = sub_541DA0(hint);
-    p->left = existing->left;
-    Node* e2 = sub_54C630(cur);
-    char* chk = sub_54C600(e2->left);
-    if (*chk == 0) {
-        Node* e3 = sub_54C630(cur);
-        Node* r = sub_54C640(e3->left);
-        r->left = hint;
+    VChunk *replacement = *reinterpret_cast<VChunk **>(rightLink(node));
+
+    *reinterpret_cast<VChunk **>(rightLink(node)) =
+        *reinterpret_cast<VChunk **>(leftLink(replacement));
+
+    if (*nilFlag(*reinterpret_cast<VChunk **>(leftLink(replacement))) == 0) {
+        *reinterpret_cast<VChunk **>(
+            parentLink(*reinterpret_cast<VChunk **>(leftLink(replacement)))) = node;
     }
-    Node* a = sub_54C640(hint);
-    Node* b = sub_54C640(cur);
-    a->left = b->left;
-    Node* root = ((Tree*)this)->find(0);
-    if (hint == root->left) {
-        Node* r2 = ((Tree*)this)->find(0);
-        r2->left = cur;
+
+    *reinterpret_cast<VChunk **>(parentLink(replacement)) =
+        *reinterpret_cast<VChunk **>(parentLink(node));
+
+    if (node == *reinterpret_cast<VChunk **>(rootLink())) {
+        *reinterpret_cast<VChunk **>(rootLink()) = replacement;
+    } else if (node == *reinterpret_cast<VChunk **>(
+                           leftLink(*reinterpret_cast<VChunk **>(parentLink(node))))) {
+        *reinterpret_cast<VChunk **>(
+            leftLink(*reinterpret_cast<VChunk **>(parentLink(node)))) = replacement;
     } else {
-        Node* c = sub_54C640(hint);
-        Node* d = sub_54C630(c->left);
-        if (hint == d->left) {
-            Node* e = sub_54C640(hint);
-            Node* f = sub_54C630(e->left);
-            f->left = cur;
-        } else {
-            Node* g = sub_54C640(hint);
-            Node* h = sub_541DA0(g->left);
-            h->left = cur;
-        }
+        *reinterpret_cast<VChunk **>(
+            rightLink(*reinterpret_cast<VChunk **>(parentLink(node)))) = replacement;
     }
-    Node* i = sub_54C630(cur);
-    i->left = hint;
-    Node* j = sub_54C640(hint);
-    j->left = cur;
-    return 0;
+
+    *reinterpret_cast<VChunk **>(leftLink(replacement)) = node;
+    *reinterpret_cast<VChunk **>(parentLink(node)) = replacement;
 }
+#pragma optimize("", on)

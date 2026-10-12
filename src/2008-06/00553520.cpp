@@ -1,15 +1,21 @@
-// from server: 1% by colin
-struct AggChunk {
-    int f(int a, int b, int c, int d);
+// from server: 83% by king_originala
+#pragma optimize("", off)
+
+struct S {
+    void f(void*, void*);
 };
 
-int AggChunk::f(int a, int b, int c, int d)
+void __cdecl construct_n(void* destination, unsigned int count,
+                         void* value, S* constructor)
 {
-    int i = 0;
-    while (b > 0) {
-        b = b - 1;
-        a = a + 0x28;
-        i = 0;
+    void* first = destination;
+    try {
+        for (; count > 0; --count,
+             destination = static_cast<char*>(destination) + 40) {
+            constructor->f(destination, value);
+        }
     }
-    return i;
+    catch (...) {
+        throw;
+    }
 }

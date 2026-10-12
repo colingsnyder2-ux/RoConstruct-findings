@@ -1,5 +1,15 @@
-// from server: 85% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs util/Math.cpp
+// from server: 98% by king_originala
+bool __cdecl f(const float matrix[3][3])
+{
+    for (int i = 0; i < 3; ++i)
+    {
+        for (int j = 0; j < 3; ++j)
+        {
+            const double value = matrix[i][j];
+            if (value == 0.0 || value == 1.0 || value == -1.0)
+                continue;
+            return false;
+        }
+    }
+    return true;
+}

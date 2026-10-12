@@ -1,41 +1,51 @@
-// from server: 38% by colin
+// from server: 96% by king_originala
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
 
-struct RefCounted {
-    void* vptr;
-    long refcount;
+struct Control {
+    void* table;
+    volatile long references;
+
+    void addReference();
 };
 
-struct AnyHolder {
-    void* vptr;
-    RefCounted* ptr;
+__forceinline void Control::addReference() {
+    volatile long* count =
+        reinterpret_cast<volatile long*>(reinterpret_cast<char*>(this) + 4);
+    _InterlockedExchangeAdd(count, 1);
+}
+
+struct Shared {
+    void* pointer;
+    Control* control;
+
+    Shared(const Shared& other);
+    ~Shared();
 };
 
-struct Target {
-    void invoke(AnyHolder* a, AnyHolder* b, AnyHolder* c, AnyHolder* d);
+Shared::Shared(const Shared& other)
+    : pointer(other.pointer), control(other.control) {
+    if (control)
+        control->addReference();
+}
+
+Shared::~Shared() {
+}
+
+struct Arguments {
+    volatile int* value;
+    Shared* object;
 };
 
-void Target::invoke(AnyHolder* a, AnyHolder* b, AnyHolder* c, AnyHolder* d)
-{
-    RefCounted* p1 = a->ptr;
-    RefCounted* p2 = b->ptr;
-    RefCounted* p3 = c->ptr;
+typedef void (__cdecl *Callback)(Shared, Shared, int, Shared);
 
-    void* v1 = p1->vptr;
-    void* v2 = p2->vptr;
-    void* v3 = p3->vptr;
+struct S {
+    Shared first;
+    Shared second;
 
-    if (p1->refcount) {
-        _InterlockedExchangeAdd(&p1->refcount, 1);
-    }
-    if (p2->refcount) {
-        _InterlockedExchangeAdd(&p2->refcount, 1);
-    }
-    if (p3->refcount) {
-        _InterlockedExchangeAdd(&p3->refcount, 1);
-    }
+    void invoke(void*, Callback*, Arguments*, void*);
+};
 
-    void (*fn)(void*, void*, void*, void*) = (void (*)(void*, void*, void*, void*))v1;
-    fn(v2, v3, p1, p2);
+void S::invoke(void*, Callback* callback, Arguments* arguments, void*) {
+    (*callback)(first, second, *arguments->value, *arguments->object);
 }

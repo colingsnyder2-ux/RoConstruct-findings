@@ -1,19 +1,33 @@
-// from server: 35% by atomic.potato
-struct S
+// from server: 100% by king_originala
+struct Frame
 {
-    int f(int, int);
-    int pad[6];
+    float data[12];
 };
 
-typedef int (__thiscall *Method)(void *, int, int);
-extern "C" int __cdecl helper(void *, void *);
-
-int S::f(int a, int b)
+struct Value
 {
-    int value;
-    void *object = *(void **)((char *)this + 24);
-    void *table = *(void **)object;
-    Method method = *(Method *)((char *)table + 12);
-    value = helper((void *)((char *)&a - 4), 0);
-    return method(object, b, value);
+    Frame *get(Frame *storage);
+};
+
+struct Accessor
+{
+    typedef void (__thiscall *Setter)(Accessor *, void *, const Frame *);
+    Setter *table;
+};
+
+struct S
+{
+    char padding[24];
+    Accessor *accessor;
+
+    void f(void *object, Value *value);
+};
+
+void S::f(void *object, Value *value)
+{
+    Frame storage;
+    Accessor *target = accessor;
+    Accessor::Setter *slot = target->table + 3;
+    const Frame *frame = value->get(&storage);
+    (*slot)(target, object, frame);
 }

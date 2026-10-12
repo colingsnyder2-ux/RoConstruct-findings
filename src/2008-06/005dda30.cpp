@@ -1,5 +1,10 @@
-// from server: 84% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs util/Math.cpp
+// from server: 100% by king_originala
+extern const float scaleValue;
+extern const float offsetValue;
+
+double convert(unsigned char value)
+{
+    double converted = value;
+    static float scale = scaleValue;
+    return converted * scale - offsetValue;
+}

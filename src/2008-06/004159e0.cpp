@@ -1,5 +1,18 @@
-// from server: 51% by colin
-// roc-lang: cpp
-// roc-cl: 30729
-// roc-flags: /O2 /GS- /MD
-// roc-lib: mfc-9.0 atlmfc/src/mfc/afxpropertygridctrl.cpp
+// from server: 85% by king_originala
+struct SafeArray {
+    unsigned short dimensions;
+    unsigned short features;
+};
+
+extern "C" long __stdcall SafeArrayGetVartype(SafeArray*, unsigned short*);
+
+long __cdecl f(SafeArray* array, unsigned short* type)
+{
+    long result = SafeArrayGetVartype(array, type);
+    if (result >= 0 && type && *type == 13 && array) {
+        unsigned short features = array->features;
+        if ((features & 0x40) && (features & 0x400))
+            *type = 9;
+    }
+    return result;
+}

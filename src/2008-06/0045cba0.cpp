@@ -1,5 +1,31 @@
-// from server: 48% by colin
-// roc-lang: cpp
-// roc-cl: 30729
-// roc-flags: /O2 /GS- /MD
-// roc-lib: mfc-9.0 atlmfc/src/mfc/dlgdhtml.cpp
+// from server: 100% by king_originala
+struct Interface {
+    void update();
+};
+
+struct CRobloxWnd {
+    char padding0[0x70];
+    int active;
+    char padding1[0x10];
+    Interface* interfacePtr;
+
+    void start();
+    void refresh();
+    void finish();
+    void handle(int state);
+};
+
+void CRobloxWnd::handle(int state)
+{
+    switch (state) {
+    case 0:
+        start();
+        refresh();
+        break;
+    case 1:
+        if (active && interfacePtr)
+            interfacePtr->update();
+        break;
+    }
+    finish();
+}

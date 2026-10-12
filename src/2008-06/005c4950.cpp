@@ -1,21 +1,19 @@
-// from server: 59% by king_originala
+// from server: 61% by king_originala
 struct String;
 
 extern String* (__thiscall* copyString)(String*, const String&);
 extern void (__thiscall* destroyString)(String*);
 
-struct Payload;
-
 struct String {
     unsigned char storage[28];
     String(const String&);
     ~String();
-    const Payload* get();
 };
 
 struct Payload {
     String text;
     int value;
+    Payload(String, int);
 };
 
 struct Product {
@@ -41,6 +39,5 @@ inline Product::Product(int id, const Payload& source)
 
 Product makeProduct(int identifier, String input)
 {
-    String temporary(input);
-    return Product(identifier, *temporary.get());
+    return Product(identifier, Payload(input, 1));
 }

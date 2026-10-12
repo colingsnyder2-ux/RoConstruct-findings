@@ -1,5 +1,16 @@
-// from server: 26% by king_originala
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: g3d-6.09 G3Dcpp/Vector3.cpp
+// from server: 92% by king_originala
+unsigned char* blend(unsigned char* out, unsigned int a, unsigned int b, float t)
+{
+    double inverse = 1.0 - t;
+
+    out[0] = (unsigned char)((int)((unsigned char)a * t)
+                          + (unsigned char)b * inverse);
+    out[1] = (unsigned char)((int)((unsigned char)(a >> 8) * t)
+                          + (unsigned char)(b >> 8) * inverse);
+    out[2] = (unsigned char)((int)((unsigned char)(a >> 16) * t)
+                          + (unsigned char)(b >> 16) * inverse);
+    out[3] = (unsigned char)((int)((unsigned char)(a >> 24) * t)
+                          + (unsigned char)(b >> 24) * inverse);
+
+    return out;
+}

@@ -1,80 +1,87 @@
-// from server: 73% by king_originala
-struct Control
+// from server: 75% by king_originala
+extern "C" void* __cdecl __RTDynamicCast(
+    void*, long, void*, void*, int);
+
+struct ThrowInfo;
+extern "C" __declspec(noreturn) void __stdcall throwException(
+    void*, ThrowInfo*);
+
+extern char baseType;
+extern char clientType;
+extern ThrowInfo badCastThrowInfo;
+
+namespace std
 {
-    virtual void destroy(unsigned int) = 0;
+    class bad_cast
+    {
+        char storage[8];
+
+    public:
+        bad_cast(const char*);
+        virtual ~bad_cast();
+    };
+}
+
+struct ValueObject
+{
+    virtual ~ValueObject();
     virtual void unused() = 0;
-    virtual Control* clone() = 0;
+    virtual ValueObject* clone() = 0;
 };
 
 struct Value
 {
-    void* object;
-    Control* control;
+    void* type;
+    ValueObject* object;
 
     Value(const Value&);
     ~Value();
     int* get();
 };
 
-inline Value::Value(const Value& other)
+inline Value::Value(const Value& source)
 {
-    object = other.object;
-    control = other.control ? other.control->clone() : 0;
+    type = source.type;
+    object = source.object ? source.object->clone() : 0;
 }
 
 inline Value::~Value()
 {
-    if (control)
-        control->destroy(1);
+    if (object)
+        delete object;
 }
 
 struct Arguments
 {
     virtual void unused() = 0;
-    virtual void set(int, Value*) = 0;
+    virtual void read(int, Value*) = 0;
 };
 
-namespace std
-{
-    class bad_cast
-    {
-        unsigned char storage[12];
-    public:
-        bad_cast(const char*);
-    };
-}
-
-extern char sourceType;
-extern char targetType;
-extern char badCastInfo;
-
-extern "C" void* __cdecl __RTDynamicCast(
-    void*, long, void*, void*, int);
-extern "C" void __stdcall throwException(void*, void*);
+typedef void (__thiscall *BoundMethod)(void*, int);
 
 struct S
 {
-    unsigned char reserved[56];
-    void (__thiscall* invoke)(void*, int);
+    char reserved[0x38];
+    BoundMethod method;
     int adjustment;
-    Value value;
+    Value defaultValue;
 
-    void function(void*, Arguments*);
+    void invoke(void*, Arguments*);
 };
 
-void S::function(void* object, Arguments* arguments)
+void S::invoke(void* instance, Arguments* arguments)
 {
-    Value temporary(value);
-    arguments->set(1, &temporary);
+    Value value(defaultValue);
+    arguments->read(1, &value);
 
     void* client = __RTDynamicCast(
-        object, 0, &sourceType, &targetType, 0);
+        instance, 0, &baseType, &clientType, 0);
 
     if (!client)
     {
         std::bad_cast exception("bad cast");
-        throwException(&exception, &badCastInfo);
+        throwException(&exception, &badCastThrowInfo);
     }
 
-    invoke(static_cast<char*>(client) + adjustment, *temporary.get());
+    method(static_cast<char*>(client) + adjustment, *value.get());
 }

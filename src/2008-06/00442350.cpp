@@ -1,49 +1,53 @@
-// from server: 28% by atomic.potato
+// from server: 100% by king_originala
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
+extern "C" long __cdecl _InterlockedDecrement(volatile long*);
+#pragma intrinsic(_InterlockedDecrement)
 
-struct Inner {
-    void* vfptr;
-    long ref1;
-    long ref2;
+struct Control {
+    virtual void unused();
+    virtual void dispose();
+    virtual void destroy();
+    volatile long strong;
+    volatile long weak;
 };
 
-struct Mid {
-    char pad[0x1c];
-    Inner* ptr;
+struct Shared {
+    void* object;
+    Control* control;
+    ~Shared();
 };
 
-struct Outer {
-    void* vfptr;
-    char pad[0x18];
-    void* field18;
-    void* field1c;
-
-    void method(void* arg);
-};
-
-extern "C" void* __stdcall sub_618a40(void*, void*);
-extern "C" void* __stdcall sub_442140(void*, void*);
-extern "C" void* __stdcall sub_420110(void*);
-
-void Outer::method(void* arg) {
-    void* local8 = 0;
-    void* localc = 0;
-    void* local10 = 0;
-    Mid* m = (Mid*)arg;
-    void* p = m->ptr;
-    void* r = sub_618a40(p, &local8);
-    void* q = sub_442140(this, &local10);
-    sub_420110(q);
-    Inner* obj = (Inner*)local8;
-    if (obj) {
-        if (_InterlockedExchangeAdd(&obj->ref1, -1) == 1) {
-            void** vt = *(void***)obj;
-            ((void(__thiscall*)(void*))vt[1])(obj);
-            if (_InterlockedExchangeAdd(&obj->ref2, -1) == 1) {
-                void** vt2 = *(void***)obj;
-                ((void(__thiscall*)(void*))vt2[2])(obj);
-            }
+__forceinline Shared::~Shared()
+{
+    if (control) {
+        Control* p = control;
+        if (_InterlockedDecrement(&p->strong) == 0) {
+            p->dispose();
+            if (_InterlockedDecrement(&p->weak) == 0)
+                p->destroy();
         }
     }
+}
+
+struct Source {
+    char padding[28];
+    int key;
+};
+
+Shared __cdecl makeShared(Source* source);
+
+struct Result {
+    void apply();
+};
+
+struct TextureItem {
+    Result* find(const int* key, const Shared& value);
+    void update(Source* source);
+};
+
+void TextureItem::update(Source* source)
+{
+    int key = source->key;
+    find(&key, makeShared(source))->apply();
 }

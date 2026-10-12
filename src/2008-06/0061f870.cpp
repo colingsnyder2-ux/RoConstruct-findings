@@ -1,4 +1,4 @@
-// from server: 99% by king_originala
+// from server: 100% by king_originala
 class type_info {
 public:
     virtual ~type_info();
@@ -33,12 +33,6 @@ namespace std {
     };
 }
 
-namespace RBX {
-    namespace Reflection {
-        class PropertyDescriptor;
-    }
-}
-
 namespace boost {
     struct placeholder {
         virtual ~placeholder();
@@ -50,7 +44,7 @@ namespace boost {
     };
 
     struct descriptor_holder : placeholder {
-        const RBX::Reflection::PropertyDescriptor* held;
+        const char* held;
     };
 
     class bad_any_cast : public std::bad_cast {
@@ -61,8 +55,7 @@ namespace boost {
     __declspec(noreturn)
     void __cdecl throw_exception(const bad_any_cast&);
 
-    const RBX::Reflection::PropertyDescriptor*
-    __cdecl any_cast(const any*);
+    const char* __cdecl any_cast(const any*);
 }
 
 extern void* bad_any_cast_vtable[];
@@ -88,13 +81,12 @@ inline cast_exception::~cast_exception()
     reinterpret_cast<boost::bad_any_cast*>(this)->boost::bad_any_cast::~bad_any_cast();
 }
 
-const RBX::Reflection::PropertyDescriptor*
-__cdecl boost::any_cast(const boost::any* operand)
+const char* __cdecl boost::any_cast(const boost::any* operand)
 {
-    const RBX::Reflection::PropertyDescriptor* const* value =
+    const char* const* value =
         operand &&
         (operand->content ? operand->content->type() : typeid(void)) ==
-            typeid(const RBX::Reflection::PropertyDescriptor*)
+            typeid(const char*)
         ? &static_cast<const boost::descriptor_holder*>(operand->content)->held
         : 0;
 

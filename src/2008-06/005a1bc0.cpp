@@ -1,5 +1,47 @@
-// from server: 95% by colin
-// roc-lang: cpp
-// roc-cl: 50727
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs v8datamodel/Workspace.cpp
+// from server: 97% by king_originala
+extern char instanceDescriptor;
+extern char renderableDescriptor;
+
+extern "C" void *__cdecl __RTDynamicCast(
+    void *, long, void *, void *, int);
+
+struct Instance;
+
+struct IRenderable;
+
+struct RenderableSet {
+    void remove(IRenderable *);
+};
+
+struct NotificationArgument {
+    bool value;
+};
+
+struct Notification {
+    void notify(NotificationArgument);
+    char storage[0x44];
+};
+
+struct S {
+    char padding[0x344];
+    Notification notification;
+    RenderableSet renderables;
+
+    void baseRemove(Instance **);
+    void remove(Instance **);
+};
+
+void S::remove(Instance **object)
+{
+    IRenderable *renderable = static_cast<IRenderable *>(
+        __RTDynamicCast(*object, 0, &instanceDescriptor,
+                        &renderableDescriptor, 0));
+    if (renderable)
+        renderables.remove(renderable);
+
+    baseRemove(object);
+
+    NotificationArgument argument;
+    argument.value = false;
+    notification.notify(argument);
+}

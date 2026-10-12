@@ -1,33 +1,37 @@
-// from server: 92% by colin
-struct S_func_007b76e0 {
-    char pad0[4];
-    char m_field4;
-    char pad5[3];
-    int m_field8;
-    int m_fieldc;
-    float m_field10;
-    float m_field14;
-    float m_field18;
-    float m_field1c;
-    float m_field20;
-    float m_field24;
-    float m_field28;
-    S_func_007b76e0* f(S_func_007b76e0* other);
+// from server: 100% by king_originala
+struct PointerSlot {
+    void* value;
+    void assign(void* value);
 };
 
-extern "C" int __stdcall sub_00598fa0(int* self, int value);
+struct S_func_007b76e0 {
+    char pad0[4];
+    unsigned char flag;
+    char pad1[3];
+    PointerSlot first;
+    PointerSlot second;
+    float x10;
+    float x14;
+    float x18;
+    float x1c;
+    float x20;
+    float x24;
+    float x28;
 
-S_func_007b76e0* S_func_007b76e0::f(S_func_007b76e0* other)
+    S_func_007b76e0& f(const S_func_007b76e0& source);
+};
+
+S_func_007b76e0& S_func_007b76e0::f(const S_func_007b76e0& source)
 {
-    m_field4 = other->m_field4;
-    sub_00598fa0(&m_field8, other->m_field8);
-    sub_00598fa0(&m_fieldc, other->m_fieldc);
-    m_field10 = other->m_field10;
-    m_field14 = other->m_field14;
-    m_field18 = other->m_field18;
-    m_field1c = other->m_field1c;
-    m_field20 = other->m_field20;
-    m_field24 = other->m_field24;
-    m_field28 = other->m_field28;
-    return this;
+    flag = source.flag;
+    first.assign(source.first.value);
+    second.assign(source.second.value);
+    x10 = source.x10;
+    x14 = source.x14;
+    x18 = source.x18;
+    x1c = source.x1c;
+    x20 = source.x20;
+    x24 = source.x24;
+    x28 = source.x28;
+    return *this;
 }

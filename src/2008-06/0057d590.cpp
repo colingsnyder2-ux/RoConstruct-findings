@@ -1,26 +1,26 @@
-// from server: 67% by colin
-struct CameraTiltDownCommand {
-    char pad[0xc];
-    void* workspace;
-    void doIt(void* dataState);
-};
-
-struct WorkspaceCamera {
-    char pad[0x288];
-    void* camera;
-};
-
+// from server: 100% by king_originala
 struct Camera {
-    void* vtable;
+    void tiltDown(int);
 };
 
-extern "C" void __stdcall sub_5cc040(void* camera, int value);
+struct CameraSource {
+    virtual void reserved();
+    virtual Camera* getCamera();
+};
 
-void CameraTiltDownCommand::doIt(void* dataState)
+struct Owner {
+    char padding[0x288];
+    CameraSource source;
+};
+
+struct Command {
+    char padding[0x0c];
+    Owner* owner;
+    void execute();
+};
+
+void Command::execute()
 {
-    WorkspaceCamera* wc = (WorkspaceCamera*)workspace;
-    Camera* cam = (Camera*)wc->camera;
-    void (__stdcall *fn)(void*) = *(void (__stdcall **)(void*))((char*)cam + 4);
-    fn((char*)wc + 0x288);
-    sub_5cc040((void*)0, 1);
+    Camera* camera = owner->source.getCamera();
+    camera->tiltDown(1);
 }

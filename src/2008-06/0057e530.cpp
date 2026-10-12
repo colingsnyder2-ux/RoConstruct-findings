@@ -1,86 +1,96 @@
-// from server: 26% by colin
+// from server: 84% by king_originala
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
 
-struct S_func_00598de0 {
-    char pad0[500];
-    int m_x;
-    int* f();
+extern "C" void __cdecl _invalid_parameter_noinfo();
+
+struct Control {
+    virtual void unused() = 0;
+    virtual void dispose() = 0;
+    virtual void destroy() = 0;
+    volatile long strong;
+    volatile long weak;
+};
+
+struct Children {
+    void* owner;
+    char padding[8];
+    unsigned int first;
+    unsigned int last;
+};
+
+struct Instance {
+    virtual void unused() = 0;
+    char padding[0x104];
+    Children* children;
+};
+
+struct Face {
+    int getSurfaceType() const;
+    void set(int);
 };
 
 struct Surfaces {
-    char pad[0x2e0];
-    int surfaceType[6];
+    Face* face(int);
 };
 
-struct FaceInstance {
-    Surfaces* part;
-    int face;
-    int getSurfaceType() const;
+struct PartInstance : Instance {
+    Surfaces* surfaces();
 };
 
-struct RefCounted {
-    void* vptr;
-    long refcount;
+struct Shared {
+    Instance* object;
+    Control* control;
+    ~Shared();
 };
 
-struct Obj {
-    char pad0[0x108];
-    void* children;
-};
-
-extern "C" void* __cdecl sub_006a17c6(void*, void*, void*, void*, void*);
-extern "C" void __cdecl sub_0057e4d0(void*, void*, void*, void*, void*, void*, void*);
-extern "C" void __cdecl sub_0057e530();
-extern "C" void __cdecl _invalid_parameter_noinfo();
-
-struct ClearBackpack {
-    char pad0[0x108];
-    void* children;
-    void run();
-};
-
-void ClearBackpack::run()
+inline Shared::~Shared()
 {
-    void* p = sub_006a17c6(this, 0, (void*)0x92907c, (void*)0x92dd50, 0);
-    if (p) {
-        S_func_00598de0* s = (S_func_00598de0*)p;
-        int* arr = s->f();
-        for (int i = 0; i < 6; i++) {
-            FaceInstance* fi = (FaceInstance*)((char*)arr + i * 4);
-            if (fi->getSurfaceType() == 2) {
-                fi->face = 3;
-            }
+    if (control) {
+        if (_InterlockedExchangeAdd(&control->strong, -1) == 1) {
+            control->dispose();
+            if (_InterlockedExchangeAdd(&control->weak, -1) == 1)
+                control->destroy();
+        }
+    }
+}
+
+struct Iterator {
+    void* owner;
+    unsigned int position;
+};
+
+void __cdecl clearBackpack(Shared);
+extern void __cdecl visitChildren(
+    Iterator*, void*, unsigned int, void*, unsigned int,
+    void (__cdecl *)(Shared), Control*);
+
+void __cdecl clearBackpack(Shared value)
+{
+    PartInstance* part = dynamic_cast<PartInstance*>(value.object);
+    if (part) {
+        Surfaces* surfaces = part->surfaces();
+        for (int i = 0; i < 6; ++i) {
+            if (surfaces->face(i)->getSurfaceType() == 2)
+                surfaces->face(i)->set(3);
         }
     }
 
-    if (this->children) {
-        void* c = this->children;
-        void* a = *(void**)((char*)c + 0xc);
-        void* b = *(void**)((char*)c + 0x10);
-        if (a > b) {
+    if (value.object->children) {
+        Children* endContainer = value.object->children;
+        unsigned int endPosition = endContainer->last;
+        if (endContainer->first > endPosition)
             _invalid_parameter_noinfo();
-        }
-        void* first = *(void**)c;
-        void* last = *(void**)((char*)this->children + 0x10);
-        void* begin = *(void**)((char*)this->children + 0xc);
-        if (begin > last) {
-            _invalid_parameter_noinfo();
-        }
-        void* end = *(void**)this->children;
-        void* tmp = 0;
-        sub_0057e4d0(&tmp, end, begin, first, b, (void*)0x57e530, 0);
-    }
+        void* endOwner = endContainer->owner;
 
-    RefCounted* r = *(RefCounted**)&this->children;
-    if (r) {
-        if (_InterlockedExchangeAdd(&r->refcount, -1) == 1) {
-            void** vt = *(void***)r;
-            ((void (__thiscall*)(void*))vt[1])(r);
-            if (_InterlockedExchangeAdd((volatile long*)((char*)r + 8), -1) == 1) {
-                void** vt2 = *(void***)r;
-                ((void (__thiscall*)(void*))vt2[2])(r);
-            }
-        }
+        Children* beginContainer = value.object->children;
+        unsigned int beginPosition = beginContainer->first;
+        if (beginPosition > beginContainer->last)
+            _invalid_parameter_noinfo();
+        void* beginOwner = beginContainer->owner;
+
+        Iterator result;
+        visitChildren(&result, beginOwner, beginPosition,
+                      endOwner, endPosition, clearBackpack, value.control);
     }
 }

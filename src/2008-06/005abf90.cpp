@@ -1,58 +1,72 @@
-// from server: 40% by colin
-extern "C" void __stdcall _invalid_parameter_noinfo();
-
-struct Inner {
-    int field0;
-    int field4;
-    int field8;
-    int fieldC;
-    int field10;
+// from server: 84% by king_originala
+struct Item {
+    unsigned char data[8];
 };
 
-struct Outer {
-    Inner* begin;
-    Inner* end;
-    int field8;
-    int fieldC;
-    int field10;
+struct Container {
+    Container** proxy;
+    unsigned char padding[8];
+    Item* first;
+    Item* last;
 };
 
-int __cdecl sub_5aba50(Inner* item, int arg);
+struct Iterator {
+    Container** proxy;
+    Item* position;
+};
 
-int __cdecl sub_5abf90(Outer* self, int arg) {
-    int total = 0;
-    Inner* it = self->begin;
-    Inner* last = self->end;
-    int savedEnd = self->field10;
-    int savedBegin = self->field8;
+extern "C" void (__cdecl* _invalid_parameter_noinfo)();
+extern int __cdecl processItem(Item*, void*);
 
-    if (self->fieldC > self->field10)
+int __cdecl processRange(Container* container, void* argument)
+{
+    Iterator current;
+    current.position = container->first;
+    int result = 0;
+
+    if (current.position > container->last)
         _invalid_parameter_noinfo();
 
-    int limit = self->field10;
-    Inner* first = self->begin;
+    Iterator end;
+    end.position = container->last;
+    current.proxy = container->proxy;
 
-    if (self->fieldC > limit)
+    if (container->first > end.position)
         _invalid_parameter_noinfo();
 
-    Inner* cur = self->begin;
+    end.proxy = container->proxy;
 
-    if (first != 0 && first == cur) {
-    } else {
-        _invalid_parameter_noinfo();
-    }
+    for (;;) {
+        void (__cdecl* invalid)();
 
-    while (it != last) {
-        if (it == 0) {
-            _invalid_parameter_noinfo();
-            total += sub_5aba50(it, arg);
-            _invalid_parameter_noinfo();
-            it = (Inner*)((char*)it + 8);
+        if (current.proxy && current.proxy != end.proxy) {
+            invalid = _invalid_parameter_noinfo;
         } else {
-            total += sub_5aba50(it, arg);
-            it = (Inner*)((char*)it + 8);
+            invalid = _invalid_parameter_noinfo;
+            invalid();
         }
+
+        if (current.position == end.position)
+            break;
+
+        Container* owner = current.proxy
+            ? *current.proxy
+            : (invalid(), (Container*)0);
+
+        if (current.position >= owner->last)
+            invalid();
+
+        result += processItem(current.position, argument);
+
+        owner = current.proxy
+            ? *current.proxy
+            : (invalid(), (Container*)0);
+
+        if (current.position >= owner->last)
+            invalid();
+
+        ++current.position;
     }
 
-    return total;
+    return result;
 }

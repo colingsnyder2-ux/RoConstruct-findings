@@ -1,4 +1,4 @@
-// from server: 85% by king_originala
+// from server: 96% by king_originala
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
 
@@ -58,12 +58,14 @@ inline Result::Result(Source* source)
 }
 
 inline Result::Result(const Result& other)
+    : first(other.first), second(other.second)
 {
-    first = other.first;
-    second = other.second;
-    if (second)
-        _InterlockedExchangeAdd(
-            reinterpret_cast<volatile long*>(second + 4), 1);
+    Control* control = reinterpret_cast<Control*>(second);
+    if (control)
+    {
+        volatile long* count = &control->strong;
+        _InterlockedExchangeAdd(count, 1);
+    }
 }
 
 inline Result::~Result()
@@ -95,5 +97,6 @@ void S::f()
 {
     initialize();
     forward(Result(source));
-    sink.invoke(globalResult, Result());
+    Sink* destination = &sink;
+    destination->invoke(globalResult, Result());
 }

@@ -1,5 +1,19 @@
-// from server: 50% by king_originala
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /GS- /EHsc /MD /arch:SSE2 /fp:fast
-// roc-lib: g3d-6.09 GLG3Dcpp/Texture.cpp
+// from server: 72% by king_originala
+extern const char exceptionType;
+extern "C" void __stdcall throwException(void *, const void *);
+
+struct Storage {
+    char bytes[92];
+};
+
+struct S {
+    void prepare();
+    void f(Storage storage);
+};
+
+void S::f(Storage storage)
+{
+    prepare();
+    throwException(storage.bytes + 88, &exceptionType);
+    __assume(0);
+}

@@ -1,74 +1,70 @@
-// from server: 42% by colin
+// from server: 95% by king_originala
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
+extern "C" long __cdecl _InterlockedDecrement(volatile long*);
+#pragma intrinsic(_InterlockedDecrement)
+extern "C" void __cdecl _ReadWriteBarrier();
+#pragma intrinsic(_ReadWriteBarrier)
 
-struct Sub150 {
-    void destroy();
+struct Count {
+    virtual void reserved();
+    virtual void dispose();
+    virtual void destroy();
+    volatile long strong;
+    volatile long weak;
 };
 
-struct Sub164 {
-    void destroy();
+struct Shared {
+    void* pointer;
+    Count* count;
+    ~Shared();
 };
 
-struct RefCounted {
-    virtual void onZero();
-    virtual void onZero2();
-    volatile long refA;
-    volatile long refB;
-};
-
-struct ClientProxy {
-    void* vptr0;
-    char pad0[0x0c];
-    void* vptr10;
-    void* vptr14;
-    char pad1[0x08];
-    void* vptr20;
-    void* vptr24;
-    char pad2[0x1c];
-    void* vptr44;
-    char pad3[0x1c];
-    void* vptr64;
-    char pad4[0x1c];
-    void* vptr84;
-    char pad5[0x1c];
-    void* vptrA4;
-    char pad6[0x1c];
-    void* vptrC4;
-    char pad7[0x68];
-    void* vptr130;
-    void* vptr134;
-    char pad8[0x14];
-    RefCounted* ref;
-    Sub150 sub150;
-    Sub164 sub164;
-    void destroy();
-};
-
-void ClientProxy::destroy()
+inline Shared::~Shared()
 {
-    this->vptr0 = (void*)0x82367c;
-    this->vptr10 = (void*)0x823670;
-    this->vptr14 = (void*)0x823668;
-    this->vptr20 = (void*)0x823660;
-    this->vptr24 = (void*)0x823650;
-    this->vptr44 = (void*)0x823640;
-    this->vptr64 = (void*)0x823630;
-    this->vptr84 = (void*)0x823620;
-    this->vptrA4 = (void*)0x823610;
-    this->vptrC4 = (void*)0x823600;
-    this->vptr130 = (void*)0x8235d0;
-    this->vptr134 = (void*)0x8235c4;
-    this->sub164.destroy();
-    this->sub150.destroy();
-    RefCounted* r = this->ref;
-    if (r != 0) {
-        if (_InterlockedExchangeAdd(&r->refA, -1) == 1) {
-            r->onZero();
-            if (_InterlockedExchangeAdd(&r->refB, -1) == 1) {
-                r->onZero2();
-            }
-        }
+    Count* p = count;
+    if (p && _InterlockedDecrement(&p->strong) == 0) {
+        p->dispose();
+        if (_InterlockedDecrement(&p->weak) == 0)
+            p->destroy();
     }
-    ((void (__thiscall*)(ClientProxy*))0x4a1580)(this);
+}
+
+struct Member150 {
+    unsigned int data[5];
+    ~Member150();
+};
+
+struct Member164 {
+    unsigned int data;
+    ~Member164();
+};
+
+struct Base {
+    volatile unsigned int data[82];
+    ~Base();
+};
+
+struct S : Base {
+    Shared shared;
+    Member150 member150;
+    Member164 member164;
+    ~S();
+};
+
+S::~S()
+{
+    data[0] = 0x0082367C;
+    data[4] = 0x00823670;
+    data[5] = 0x00823668;
+    data[8] = 0x00823660;
+    data[9] = 0x00823650;
+    data[17] = 0x00823640;
+    data[25] = 0x00823630;
+    data[33] = 0x00823620;
+    data[41] = 0x00823610;
+    data[49] = 0x00823600;
+    data[76] = 0x008235D0;
+    data[77] = 0x008235C4;
+    _ReadWriteBarrier();
 }

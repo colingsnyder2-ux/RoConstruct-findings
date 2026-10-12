@@ -1,78 +1,93 @@
-// from server: 35% by colin
+// from server: 90% by king_originala
+struct Value {
+    char data[40];
+};
+
 struct Node {
     Node* left;
     Node* parent;
     Node* right;
-    char color;
-    char pad[0x30];
-    char isNil;
+    Value value;
+    unsigned char color;
+    unsigned char nil;
+};
+
+extern "C" bool __cdecl compare(const Value*, const Value*);
+extern "C" void (__cdecl* _invalid_parameter_noinfo)();
+
+struct Iterator {
+    void* owner;
+    Node* node;
+
+    Iterator(void*, Node*);
+    bool operator==(const Iterator&) const;
+    void __thiscall decrement();
+};
+
+inline Iterator::Iterator(void* container, Node* current)
+    : owner(container), node(current)
+{
+}
+
+inline bool Iterator::operator==(const Iterator& other) const
+{
+    if (!owner || owner != other.owner)
+        _invalid_parameter_noinfo();
+    return node == other.node;
+}
+
+struct Result {
+    Iterator position;
+    bool inserted;
 };
 
 struct Tree {
+    void* owner;
+    char padding[20];
     Node* head;
-    Node* root;
-    Node* begin;
-    int size;
+
+    Iterator* __thiscall insert(Iterator*, bool, Node*, const Value&);
+    Result* __thiscall find_or_insert(Result*, const Value&);
 };
 
-struct Prop {
-    char pad0[0x18];
-    Tree* tree;
-};
-
-struct Result {
-    Node* first;
-    Node* second;
-    char flag;
-};
-
-extern "C" int __stdcall compare_key(void*, void*);
-extern "C" void __stdcall invalid_param();
-extern "C" void __stdcall shared_release(void*);
-
-struct VSoundId {
-    Result* find(void* key, Result* out);
-    Result* insert(void* key, Node* hint, int flag, Result* out);
-};
-
-Result* VSoundId::find(void* key, Result* out)
+Result* Tree::find_or_insert(Result* result, const Value& value)
 {
-    Tree* t = *(Tree**)((char*)this + 0x18);
-    Node* cur = t->head->parent;
-    char ok = 1;
-    while (cur->isNil == 0) {
-        ok = (char)compare_key(key, (char*)cur + 0xc);
-        if (ok)
-            cur = cur->left;
-        else
-            cur = cur->right;
+    Node* parent = head;
+    Node* current = parent->parent;
+    bool left = true;
+
+    while (!current->nil) {
+        parent = current;
+        left = compare(&value, &current->value);
+        current = left ? current->left : current->right;
     }
-    Node* first = t->head->left;
-    Node* second = cur;
-    if (ok) {
-        Node* root = t->head->parent;
-        if (first != 0) {
-            if (first != first)
-                invalid_param();
+
+    void* container = owner;
+    Node* candidate = parent;
+    Iterator position(container, candidate);
+
+    if (left) {
+        if (position == Iterator(container, head->left)) {
+            Iterator* inserted = insert(&position, true, parent, value);
+            result->position = *inserted;
+            result->inserted = true;
+            return result;
         }
-        if (cur == root) {
-            Result* r = insert(key, cur, 1, out);
-            out->first = r->first;
-            out->second = r->second;
-            out->flag = 1;
-            return out;
-        }
-        shared_release(0);
+
+        position.decrement();
+        candidate = position.node;
+        container = position.owner;
     }
-    if (compare_key((char*)second + 0xc, key)) {
-        Result* r = insert(key, first, ok, out);
-        out->first = r->first;
-        out->second = r->second;
-        out->flag = 1;
-        return out;
+
+    if (compare(&candidate->value, &value)) {
+        Iterator* inserted = insert(&position, left, parent, value);
+        result->position = *inserted;
+        result->inserted = true;
+        return result;
     }
-    out->first = first;
-    out->second = second;
-    out->flag = 0;
-    return out;
+
+    result->position.owner = container;
+    result->position.node = candidate;
+    result->inserted = false;
+    return result;
 }

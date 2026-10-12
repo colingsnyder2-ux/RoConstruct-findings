@@ -1,5 +1,24 @@
-// from server: 67% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: openrbx-client App/util/RunStateOwner.cpp
+// from server: 100% by king_originala
+struct Key {
+    unsigned int first;
+    unsigned int second;
+    void Set(int, int);
+};
+
+struct S {
+    virtual void notify();
+    unsigned int padding;
+    Key key;
+
+    void begin();
+    void end();
+    void f(const Key& value);
+};
+
+void S::f(const Key& value)
+{
+    begin();
+    key.Set(value.first, value.second);
+    end();
+    notify();
+}

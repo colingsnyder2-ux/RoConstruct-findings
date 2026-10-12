@@ -1,12 +1,13 @@
-// from server: 44% by atomic.potato
-struct Mesh
-{
-    unsigned char reserved[0x7f4];
-    unsigned char value;
-    unsigned char getValue();
+// from server: 100% by king_originala
+struct Mesh {
+    char pad[0x7f4];
+    bool value;
+    bool get();
 };
 
-unsigned char Mesh::getValue()
+#pragma optimize("", off)
+bool Mesh::get()
 {
     return value;
 }
+#pragma optimize("", on)

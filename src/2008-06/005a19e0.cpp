@@ -1,5 +1,10 @@
-// from server: 64% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs util/Name.cpp
+// from server: 86% by king_originala
+struct Callback {
+    void (__cdecl* function)(void*);
+    void* argument;
+};
+
+void __cdecl invoke(Callback* callback)
+{
+    callback->function(callback->argument);
+}

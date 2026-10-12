@@ -1,83 +1,107 @@
-// from server: 47% by tester
+// from server: 96% by king_originala
 struct PartInstance;
+struct PVInstance;
+
+struct Bounds
+{
+    float low[3];
+    float high[3];
+};
+
+struct PartVTable
+{
+    void* reserved[21];
+    Bounds* (__thiscall* bounds)(PartInstance*, Bounds*);
+};
+
+struct PartInstance
+{
+    PartVTable* vtable;
+};
+
+struct Instance
+{
+    virtual void anchor();
+};
+
+struct PVInstance : Instance
+{
+};
+
+struct PVVTable
+{
+    void* reserved[23];
+    PartInstance* (__thiscall* getPart)(PVInstance*);
+};
 
 struct GetSetImpl
 {
-    static PartInstance* get(PartInstance* p);
+    static PartInstance* get(PartInstance*);
 };
 
-struct VModelInstance
+struct Entry
 {
-    char pad0[0x108];
-    void* vec108;
-    char pad10c[0x1e0 - 0x10c];
-    int field1e0;
-
-    int count();
-    PartInstance* findBest();
+    Instance* object;
+    void* control;
 };
 
-int VModelInstance::count()
+struct Children
 {
-    void* v = *(void**)((char*)this + 0x108);
-    if (v != 0)
-        return 0;
-    return (int)((*(char**)((char*)v + 0x10) - *(char**)((char*)v + 0xc)) >> 3);
-}
+    char reserved[12];
+    Entry* begin;
+    Entry* end;
+};
 
-extern "C" void __stdcall _invalid_parameter_noinfo();
-extern "C" void* __cdecl sub_6a17c6(void*, void*, void*, void*, void*);
-extern "C" void* __cdecl sub_583a40(void*, void*);
+extern float initialArea;
+extern void (__cdecl* invalidParameter)();
 
-PartInstance* VModelInstance::findBest()
+struct S
 {
-    if (this->field1e0 != 0)
-        return 0;
+    char reserved0[0x108];
+    Children* children;
+    char reserved1[0xd4];
+    PartInstance* cached;
 
-    float best = *(float*)0x81c3b8;
-    PartInstance* result = 0;
-    int i = 0;
+    unsigned count();
+    void setPart(PartInstance*);
+    PartInstance* findPart();
+};
 
-    int n = this->count();
-    if (n > 0)
+PartInstance* S::findPart()
+{
+    if (cached)
+        return cached;
+
+    float bestArea = initialArea;
+    PartInstance* best = 0;
+
+    for (unsigned i = 0; i < count(); ++i)
     {
-        do
+        Children* list = children;
+        if (i >= static_cast<unsigned>(list->end - list->begin))
+            invalidParameter();
+
+        PVInstance* object = dynamic_cast<PVInstance*>(list->begin[i].object);
+        if (object)
         {
-            void* v = *(void**)((char*)this + 0x108);
-            unsigned int sz = (unsigned int)((*(char**)((char*)v + 0x10) - *(char**)((char*)v + 0xc)) >> 3);
-            if ((unsigned int)i >= sz)
-                _invalid_parameter_noinfo();
-
-            void* elem = *(void**)(*(char**)((char*)v + 0xc) + i * 8);
-
-            void* obj = sub_6a17c6(elem, (void*)0x92907c, (void*)0x947f1c, 0, 0);
-            if (obj != 0)
+            PVVTable* table = *reinterpret_cast<PVVTable**>(object);
+            PartInstance* part = table->getPart(object);
+            if (part)
             {
-                void** vt = *(void***)obj;
-                void* (*fn)(void*) = (void* (*)(void*))vt[0x5c / 4];
-                void* r = fn(obj);
-                if (r != 0)
+                part = GetSetImpl::get(part);
+                Bounds storage;
+                Bounds* box = part->vtable->bounds(part, &storage);
+                double area = (box->high[2] - box->low[2]) *
+                              (box->high[0] - box->low[0]);
+                if (bestArea < area)
                 {
-                    PartInstance* p = GetSetImpl::get((PartInstance*)r);
-                    void** vt2 = *(void***)p;
-                    void (*fn2)(void*, void*) = (void (*)(void*, void*))vt2[0x54 / 4];
-                    char tmp[16];
-                    fn2(p, tmp);
-                    float w = *(float*)(tmp + 0xc) - *(float*)(tmp + 0);
-                    float h = *(float*)(tmp + 0x14) - *(float*)(tmp + 8);
-                    float area = w * h;
-                    if (!(area <= best))
-                    {
-                        best = area;
-                        result = p;
-                    }
+                    bestArea = static_cast<float>(area);
+                    best = part;
                 }
             }
-
-            i++;
-        } while ((unsigned int)i < (unsigned int)this->count());
+        }
     }
 
-    sub_583a40(this, result);
-    return result;
+    setPart(best);
+    return best;
 }

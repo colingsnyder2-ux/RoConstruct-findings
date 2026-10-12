@@ -1,23 +1,26 @@
-// from server: 20% by tester
-// roc 2008-06 0054dba0  unit: RBX::RenderBase::Mesh  size: 79 bytes
-// Make this compile to the exact bytes below, then: roc check 2008-06 0054dba0
-
-extern "C" void __stdcall sub_515ed0(void* self, int count);
-
+// from server: 100% by king_originala
 struct Mesh {
-    int field0;
-    int field4;
-    int field8;
-    void construct(int* data, int count);
+    void *data;
+    int count;
+    int capacity;
+
+    void resize(int);
+    void f(int, int);
 };
 
-void Mesh::construct(int* data, int count) {
-    field4 = 0;
-    field8 = 0;
-    field0 = 0;
-    if (count > 0) {
-        sub_515ed0(this, (int)data);
-    } else {
-        field0 = 0;
-    }
+#pragma optimize("", off)
+void Mesh::f(int size, int allocate)
+{
+    do {} while (0);
+    do {} while (0);
+
+    count = 0;
+    capacity = 0;
+    data = 0;
+
+    if (allocate > 0)
+        resize(size);
+    else
+        data = 0;
 }
+#pragma optimize("", on)

@@ -1,4 +1,4 @@
-// from server: 99% by king_originala
+// from server: 100% by king_originala
 struct Owned {
     ~Owned();
 };
@@ -58,7 +58,7 @@ void CDataModelPropGrid::f()
     }
 
     if (!flag104) {
-        Settings settings(0, Handle(), "Settings");
+        Settings settings(0, Handle(), "IDE\0Settings");
         if (settings.available()) {
             configure(&settings, 1);
             settings.value.apply(getHandle(&handle, 1));

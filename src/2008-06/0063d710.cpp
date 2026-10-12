@@ -1,42 +1,74 @@
-// from server: 65% by tester
-struct GCamera {
-    char pad[0x24];
+// from server: 96% by king_originala
+struct Matrix;
+extern const Matrix& __cdecl identityMatrix();
+
+struct Matrix {
+    float elements[9];
+    Matrix(const Matrix& source = identityMatrix());
+};
+
+struct Vector {
     float x, y, z;
 };
 
-struct Obj {
-    void sub_598cb0();
-    void sub_513220(void*);
+struct Frame {
+    Matrix rotation;
+    Vector position;
 };
 
-int __stdcall sub_6a17c6(int, int, int, int, int);
-void __cdecl sub_513e20();
+struct Part {
+    const Frame& getFrame();
+};
 
-struct Sparkles {
-    char pad0[0x14];
+extern char sourceType;
+extern char targetType;
+
+extern "C" void* __cdecl runtimeCast(
+    void* object, long displacement, const void* sourceType,
+    const void* targetType, int isReference);
+
+struct Renderer {
+    virtual void slot0();
+    virtual void slot1();
+    virtual void slot2();
+    virtual void slot3();
+    virtual void slot4();
+    virtual void slot5();
+    virtual void slot6();
+    virtual void slot7();
+    virtual void slot8();
+    virtual void slot9();
+    virtual void slot10();
+    virtual void slot11();
+    virtual void slot12();
+    virtual void slot13();
+    virtual void setFrame(const Frame&);
+    virtual void slot15();
+    virtual void slot16();
+    virtual void slot17();
+    virtual void slot18();
+    virtual void finish();
+};
+
+struct S {
+    char reserved[20];
     bool enabled;
-    char pad1[0x10];
-    void* parent;
-    void onChangedEnabled(int);
+    void draw(Renderer* renderer);
 };
 
-void Sparkles::onChangedEnabled(int) {
-    int result;
-    GCamera cam;
-    void* v;
+void S::draw(Renderer* renderer)
+{
+    Part* part = static_cast<Part*>(runtimeCast(
+        *reinterpret_cast<void**>(reinterpret_cast<char*>(this) - 44),
+        0, &sourceType, &targetType, 0));
 
-    result = sub_6a17c6(*(int*)((char*)this - 0x2c), 0, 0x92907c, 0x92dd50, 0);
-    if (result != 0) {
-        if (enabled) {
-            ((Obj*)result)->sub_598cb0();
-            sub_513e20();
-            ((Obj*)&cam)->sub_513220(&cam);
-            cam.x = *(float*)((char*)&cam + 0x24);
-            cam.y = *(float*)((char*)&cam + 0x28);
-            cam.z = *(float*)((char*)&cam + 0x2c);
-            v = parent;
-            (*(void(__thiscall**)(void*, GCamera*))(*(int*)v + 0x38))(v, &cam);
-            (*(void(__thiscall**)(void*))(*(int*)v + 0x4c))(v);
-        }
+    if (part && enabled) {
+        const Vector& position = part->getFrame().position;
+        Frame frame;
+        frame.position.x = position.x;
+        frame.position.y = position.y;
+        frame.position.z = position.z;
+        renderer->setFrame(frame);
+        renderer->finish();
     }
 }

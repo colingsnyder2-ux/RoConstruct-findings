@@ -1,66 +1,77 @@
-// from server: 48% by colin
-// roc 2008-06 005d8690  unit: RBX::VHumanoid::?$FactoryProduct  size: 162 bytes
-// Make this compile to the exact bytes below, then: roc check 2008-06 005d8690
+// from server: 100% by king_originala
+extern "C" void* __cdecl __RTDynamicCast(
+    void*, long, void*, void*, int);
 
-extern "C" void __stdcall _invalid_parameter_noinfo();
-extern "C" int __cdecl sub_6a17c6(int, int, int, int, int);
-
-struct VHumanoid {
-    char pad[0x1ec];
-    int field_1ec;
-    int field_1f0;
-    int field_1f4;
-    int field_1f8;
-    int field_1fc;
-    int f();
+struct Container {
+    unsigned char padding[16];
+    void** finish;
 };
 
-int VHumanoid::f() {
-    int* pEnd;
-    int* pBegin;
-    int* pCur;
-    int* pOld;
-    int result;
+struct Proxy {
+    Container* container;
+};
 
-    pEnd = (int*)this->field_1fc;
-    if ((unsigned int)this->field_1f8 > (unsigned int)pEnd)
-        _invalid_parameter_noinfo();
+struct Iterator {
+    Proxy* proxy;
+    void** position;
+};
 
-    pBegin = (int*)this->field_1f8;
-    pOld = (int*)this->field_1ec;
-    pCur = pBegin;
-    if ((unsigned int)pCur > (unsigned int)this->field_1fc)
-        _invalid_parameter_noinfo();
+struct S {
+    unsigned char padding0[0x1ec];
+    Proxy* proxy;
+    unsigned char padding1[8];
+    void** first;
+    void** last;
 
-    pCur = (int*)this->field_1ec;
+    void* f();
+};
 
+void* S::f()
+{
+    void (__cdecl *invalid)() =
+        *reinterpret_cast<void (__cdecl **)()>(0x802890);
+
+    Iterator finish;
+    finish.position = last;
+    if (first > finish.position)
+        invalid();
+
+    void** current = first;
+    finish.proxy = proxy;
+    if (current > last)
+        invalid();
+
+    Proxy* currentProxy = proxy;
     for (;;) {
-        if (pCur != 0 && pCur != pOld)
-            _invalid_parameter_noinfo();
+        if (!currentProxy || currentProxy != finish.proxy)
+            invalid();
 
-        if (pBegin == pEnd)
+        if (current == finish.position)
             return 0;
 
-        if (pCur != 0) {
-            result = *pCur;
-        } else {
-            _invalid_parameter_noinfo();
-            result = 0;
-            if ((unsigned int)pBegin < *(unsigned int*)(result + 0x10))
-                _invalid_parameter_noinfo();
-            result = *pBegin;
-        }
+        if (!currentProxy)
+            invalid();
 
-        if (sub_6a17c6(result, 0, 0x936908, 0x9534e0, 0) != 0)
+        Container* container =
+            currentProxy ? currentProxy->container : 0;
+        if (current >= container->finish)
+            invalid();
+
+        void* result = __RTDynamicCast(
+            *current, 0,
+            reinterpret_cast<void*>(0x936908),
+            reinterpret_cast<void*>(0x9534e0), 0);
+
+        if (result)
             return result;
 
-        if (pCur == 0) {
-            _invalid_parameter_noinfo();
-            result = 0;
-            if ((unsigned int)pBegin < *(unsigned int*)(result + 0x10))
-                _invalid_parameter_noinfo();
-        }
+        if (!currentProxy)
+            invalid();
 
-        pBegin = (int*)((char*)pBegin + 4);
+        container = currentProxy ? currentProxy->container : 0;
+        if (current >= container->finish)
+            invalid();
+
+        ++current;
     }
 }

@@ -1,4 +1,4 @@
-// from server: 73% by king_originala
+// from server: 81% by king_originala
 typedef void (__thiscall *StringInit)(void *);
 typedef void (__thiscall *StringFini)(void *);
 typedef long (__stdcall *Decrement)(volatile long *);
@@ -50,14 +50,20 @@ struct DrawParameters {
     float zero;
     float opacity;
 
-    DrawParameters(const float &, const float &, float);
+    __forceinline DrawParameters(const float &, const float &, const float &);
     DrawParameters(const DrawParameters &);
 };
 
-inline DrawParameters::DrawParameters(const float &w, const float &h, float a)
-    : red(colorRed), green(colorGreen), blue(colorBlue),
-      width(w), height(h), zero(0.0f), opacity(a)
+__forceinline DrawParameters::DrawParameters(
+    const float &w, const float &h, const float &transparency)
 {
+    opacity = 1.0f - transparency;
+    zero = 0.0f;
+    height = h;
+    width = w;
+    red = colorRed;
+    green = colorGreen;
+    blue = colorBlue;
 }
 
 struct Renderer {
@@ -120,7 +126,7 @@ Ref Decal::get()
                 renderer->draw(
                     Ref(created),
                     DrawParameters(block->width, block->height,
-                                   1.0f - instance->transparency));
+                                   instance->transparency));
                 created->adjust(adjustment);
                 dirty = 0;
             } else if (status == 2) {

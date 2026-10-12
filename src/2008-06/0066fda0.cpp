@@ -1,20 +1,40 @@
-// from server: 55% by tester
-struct AdornRbxGfx {
-    void render3dAdorn(float* a, int b, int c, int d, int e, int f, int g, int h, int i, int j);
+// from server: 89% by king_originala
+struct Vec2
+{
+    float x, y;
+
+    Vec2(float a, float b) : x(a), y(b) {}
+    Vec2(const Vec2& v) : x(v.x), y(v.y) {}
 };
 
-extern "C" void __stdcall sub_684730(int, int, int, int, int, int, int, int, int, int, int);
-
-void AdornRbxGfx::render3dAdorn(float* a, int b, int c, int d, int e, int f, int g, int h, int i, int j)
+struct Service
 {
-    float v0 = a[0];
-    int n = (*(int (__thiscall **)(void))(*(int *)this + 0x18))();
-    n--;
-    float v1 = (float)n - a[1];
-    float v2 = v0;
-    float v3 = v1;
-    int* p = (int*)0x962dac;
-    sub_684730(*p, (int)&v2, b, c, d, e, f, g, h, i, j);
-    a[0] = v2;
-    a[1] = v3;
+    Vec2 transform(void*, int, const Vec2&, double, int, int, int, int, int);
+};
+
+extern Service* service;
+
+struct S
+{
+    virtual void slot0();
+    virtual void slot1();
+    virtual void slot2();
+    virtual void slot3();
+    virtual void slot4();
+    virtual void slot5();
+    virtual int height();
+
+    void* context;
+
+    Vec2 f(int, const Vec2&, double, int, int, int, int, int);
+};
+
+Vec2 S::f(int a, const Vec2& position, double b,
+          int c, int d, int e, int g, int h)
+{
+    float x = position.x;
+    int top = height() - 1;
+    Vec2 adjusted(x, top - position.y);
+    Vec2 result = service->transform(context, a, adjusted, b, c, d, e, g, h);
+    return Vec2(result.x, result.y);
 }

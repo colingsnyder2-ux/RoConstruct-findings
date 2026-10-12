@@ -1,54 +1,74 @@
-// from server: 82% by king_originala
+// from server: 96% by king_originala
 struct String {
-    unsigned char storage[28];
-    String(const char*);
-    String(const String&);
-    ~String();
+    char storage[28];
+};
+
+extern String* (__thiscall *stringConstruct)(String*, const char*);
+extern void (__thiscall *stringDestroy)(String*);
+
+struct ScopedString : String {
+    ScopedString(const char* text) { stringConstruct(this, text); }
+    ~ScopedString() { stringDestroy(this); }
 };
 
 struct Base {
-    unsigned long storage[57];
+    unsigned int words[75];
     Base();
     ~Base();
-    void setName(const String&);
+    void setValue(const String&);
 };
 
-struct Exception {
-    unsigned char storage[36];
-    Exception(const String&);
-    ~Exception();
+struct Error {
+    char storage[40];
+    Error(const String&);
+    ~Error();
 };
 
-struct Settings : Base {
-    Settings();
+extern ScopedString __cdecl formatString(const char*, ...);
+extern "C" __declspec(noreturn) void __stdcall
+throwException(void*, void*);
+
+extern unsigned int table0[];
+extern unsigned int table10[];
+extern unsigned int table14[];
+extern unsigned int table20[];
+extern unsigned int table24[];
+extern unsigned int table44[];
+extern unsigned int table64[];
+extern unsigned int table84[];
+extern unsigned int tableA4[];
+extern unsigned int tableC4[];
+extern char errorType;
+
+struct S : Base {
+    S();
 };
 
-extern Settings* singleton;
-extern unsigned char exceptionType;
-extern String __cdecl format(const char*, ...);
-extern "C" __declspec(noreturn) void __stdcall throwException(void*, void*);
+extern S* singleton;
 
-Settings::Settings() : Base()
+S::S()
 {
-    storage[0] = 0x82e2ac;
-    storage[4] = 0x82e29c;
-    storage[5] = 0x82e294;
-    storage[8] = 0x82e28c;
-    storage[9] = 0x82e27c;
-    storage[17] = 0x82e26c;
-    storage[25] = 0x82e25c;
-    storage[33] = 0x82e24c;
-    storage[41] = 0x82e23c;
-    storage[49] = 0x82e22c;
+    words[0] = reinterpret_cast<unsigned int>(table0);
+    words[4] = reinterpret_cast<unsigned int>(table10);
+    words[5] = reinterpret_cast<unsigned int>(table14);
+    words[8] = reinterpret_cast<unsigned int>(table20);
+    words[9] = reinterpret_cast<unsigned int>(table24);
+    words[17] = reinterpret_cast<unsigned int>(table44);
+    words[25] = reinterpret_cast<unsigned int>(table64);
+    words[33] = reinterpret_cast<unsigned int>(table84);
+    words[41] = reinterpret_cast<unsigned int>(tableA4);
+    words[49] = reinterpret_cast<unsigned int>(tableC4);
 
     {
-        String name("DebugSettings");
-        setName(name);
+        ScopedString name("DebugSettings");
+        setValue(name);
     }
 
     if (singleton) {
-        Exception error(format("singleton %s already exists", "DebugSettings"));
-        throwException(&error, &exceptionType);
+        throwException(
+            &Error(formatString("singleton %s already exists",
+                                "DebugSettings")),
+            &errorType);
     }
 
     singleton = this;

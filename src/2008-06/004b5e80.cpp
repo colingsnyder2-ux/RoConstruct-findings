@@ -1,34 +1,36 @@
-// from server: 75% by king_originala
-extern unsigned char table[];
-
-struct Packet {
+// from server: 76% by king_originala
+struct Record {
     unsigned int first;
     volatile unsigned int second;
-    unsigned short value;
+    unsigned short third;
+
+    __forceinline Record(unsigned short value);
 };
 
-struct Link {
-    void* data;
-    void initialize(Packet*, unsigned int*);
+__forceinline Record::Record(unsigned short value)
+    : first(0), second(second), third(value)
+{
+}
+
+struct Member {
+    unsigned int storage;
+    void initialize(const Record&, const unsigned int&);
 };
+
+extern unsigned int table[];
 
 struct S {
-    void* tablePointer;
+    unsigned int* vtable;
     unsigned int value;
-    Link link;
-    S* initialize(unsigned int);
+    Member member;
+
+    S(unsigned int);
 };
 
-S* S::initialize(unsigned int n)
+S::S(unsigned int argument)
 {
-    Packet packet;
-    unsigned short small = (unsigned short)n;
-    unsigned int saved = packet.second;
-    value = n;
-    packet.first = 0;
-    packet.second = saved;
-    tablePointer = table;
-    packet.value = small;
-    link.initialize(&packet, &n);
-    return this;
+    value = argument;
+    Record record((unsigned short)argument);
+    vtable = table;
+    member.initialize(record, argument);
 }

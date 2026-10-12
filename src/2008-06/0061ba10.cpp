@@ -1,4 +1,4 @@
-// from server: 81% by king_originala
+// from server: 95% by king_originala
 extern "C" void (__cdecl *invalid_parameter_noinfo)();
 
 struct String {
@@ -43,7 +43,7 @@ struct S {
 
 inline Iterator::Iterator(Entry **p, S *s) : owner(0)
 {
-    if (p < s->first || p > s->last)
+    if (s->first > p || p > s->last)
         invalid_parameter_noinfo();
     owner = s->owner;
     position = p;
@@ -51,18 +51,27 @@ inline Iterator::Iterator(Entry **p, S *s) : owner(0)
 
 inline Iterator &Iterator::operator+=(unsigned int n)
 {
-    S *container;
-    if (owner)
-        container = owner->container;
-    else {
+    S *cursor = reinterpret_cast<S *>(owner);
+
+    if (!cursor)
         invalid_parameter_noinfo();
-        container = 0;
-    }
+
+    S *container = cursor
+        ? reinterpret_cast<Proxy *>(cursor)->container
+        : 0;
 
     Entry **p = position + n;
-    if (p > container->last ||
-        p < (owner ? owner->container : 0)->first)
+    if (p > container->last)
         invalid_parameter_noinfo();
+    else {
+        if (cursor)
+            cursor = reinterpret_cast<Proxy *>(cursor)->container;
+        else
+            cursor = 0;
+
+        if (p < cursor->first)
+            invalid_parameter_noinfo();
+    }
 
     position = p;
     return *this;

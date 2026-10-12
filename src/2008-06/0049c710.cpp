@@ -1,4 +1,4 @@
-// from server: 86% by king_originala
+// from server: 88% by king_originala
 struct Mutex {
     void* handle;
     unsigned char kind;
@@ -31,8 +31,8 @@ struct Result {
     Result(const Result&);
 };
 
-void __cdecl callback();
-Result __cdecl prepare(void*, void*, void*, void**, void (__cdecl*)(), int);
+typedef void (__cdecl Callback)();
+Result __cdecl prepare(void*, void*, void*, void**, Callback*, int);
 
 struct Arguments {
     void* first;
@@ -59,7 +59,11 @@ struct S {
 
 void S::f(int value, Arguments* args)
 {
-    prepare(args->first, *args->data, args->first, args->data, callback, value);
+    void** data = args->data;
+    void* first = args->first;
+    void* entry = *data;
+    prepare(first, entry, first, data,
+            reinterpret_cast<Callback*>(0x4990a0), value);
     {
         Guard guard(&object->mutex);
         object->apply(value);

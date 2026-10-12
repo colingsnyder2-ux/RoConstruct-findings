@@ -1,47 +1,58 @@
-// from server: 61% by atomic.potato
+// from server: 78% by king_originala
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
 
 struct String {
-    char pad[0x1c];
-    void* field_1c;
+    char storage[28];
 };
 
-struct Inner {
-    char pad[0x1c];
-    void* field_1c;
+struct Source {
+    String text;
+    unsigned long value;
 };
 
-extern "C" int __stdcall sub_55bd60(void*, void*);
-extern "C" void* __stdcall sub_80240c(void*, void*);
-extern "C" void __stdcall sub_40db00(void*, const char*);
-extern "C" void __stdcall sub_586b10(void*, void**);
-
-struct Outer {
-    char pad[0x138];
-    Inner inner;
-    void method(void* arg);
+struct Control {
+    virtual void reserved() = 0;
+    virtual void dispose() = 0;
+    virtual void destroy() = 0;
+    volatile long strong;
+    volatile long weak;
 };
 
-void Outer::method(void* arg)
+struct Shared {
+    void* object;
+    Control* control;
+};
+
+extern bool __cdecl differs(const Source*, const Source*);
+extern String& (__thiscall *assignString)(String*, const String&);
+
+struct S {
+    char padding[0x138];
+    Source source;
+
+    Shared update();
+    void notify(const void*);
+    void setSource(const Source&);
+};
+
+void S::setSource(const Source& input)
 {
-    String* s = (String*)arg;
-    if (sub_55bd60(&inner, arg)) {
-        sub_80240c(&inner, arg);
-        inner.field_1c = s->field_1c;
-        void* tmp;
-        sub_586b10(this, &tmp);
-        void* p = tmp;
-        if (p) {
-            if (_InterlockedExchangeAdd((volatile long*)((char*)p + 4), -1) == 1) {
-                void** vt = *(void***)p;
-                ((void (__thiscall*)(void*))vt[1])(p);
-                if (_InterlockedExchangeAdd((volatile long*)((char*)p + 8), -1) == 1) {
-                    void** vt2 = *(void***)p;
-                    ((void (__thiscall*)(void*))vt2[2])(p);
-                }
+    Source* current = &source;
+    if (differs(current, &input)) {
+        assignString(&current->text, input.text);
+        current->value = input.value;
+
+        Shared result = update();
+        Control* control = result.control;
+        if (control) {
+            if (_InterlockedExchangeAdd(&control->strong, -1) - 1 == 0) {
+                control->dispose();
+                if (_InterlockedExchangeAdd(&control->weak, -1) - 1 == 0)
+                    control->destroy();
             }
         }
-        sub_40db00(this, (const char*)0x975738);
+
+        notify(reinterpret_cast<const void*>(0x975738));
     }
 }

@@ -1,31 +1,34 @@
-// from server: 78% by king_originala
+// from server: 100% by king_originala
 struct Result {
-    int reserved;
+    int unused;
     int first;
     int second;
-    char flag;
+    unsigned char flag;
 };
 
-struct Object {
+struct Tail {
     void finish();
 };
 
-extern "C" void* __stdcall create_object(
-    void* source, Result* result, int* value, int option, int zero);
+struct Product {
+    char padding[16];
+    Tail tail;
+};
 
-Result* __stdcall reconstruct(Result* result, void* source, int option, int value)
+struct S {
+    Result* f(Result* out, void* object, int value, int context);
+    Product& make(void* object, Result* out, int* context, int value, int zero);
+};
+
+Result* S::f(Result* out, void* object, int value, int context)
 {
-    int zero = 0;
-    volatile int local = zero;
-
-    if (source != 0) {
-        void* object = create_object(source, result, &value, option, zero);
-        ((Object*)((char*)object + 16))->finish();
-        return result;
+    volatile int local = 0;
+    if (object) {
+        make(object, out, &context, value, 0).tail.finish();
+    } else {
+        out->first = 0;
+        out->second = 0;
+        out->flag = 0;
     }
-
-    result->first = zero;
-    result->second = zero;
-    result->flag = (char)zero;
-    return result;
+    return out;
 }

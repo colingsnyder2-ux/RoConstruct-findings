@@ -1,31 +1,46 @@
-// from server: 63% by king_originala
+// from server: 74% by king_originala
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
 
 struct Control {
-    virtual void unused() = 0;
-    virtual void dispose() = 0;
-    virtual void destroy() = 0;
+    virtual void reserved();
+    virtual void dispose();
+    virtual void destroy();
     volatile long strong;
     volatile long weak;
 };
 
-struct Shared {
+struct Pair {
     void* object;
     Control* control;
 
-    Shared(const Shared& other);
-    ~Shared();
+    Pair(const Pair& other);
+    ~Pair();
 };
 
-inline Shared::Shared(const Shared& other)
+inline Pair::Pair(const Pair& other)
     : object(other.object), control(other.control)
 {
     if (control)
         _InterlockedExchangeAdd(&control->strong, 1);
 }
 
-inline Shared::~Shared()
+struct Owner {
+    void* object;
+    Control* control;
+
+    Owner(const Pair& other);
+    ~Owner();
+};
+
+inline Owner::Owner(const Pair& other)
+    : object(other.object), control(other.control)
+{
+    if (control)
+        _InterlockedExchangeAdd(&control->strong, 1);
+}
+
+inline Owner::~Owner()
 {
     if (control && _InterlockedExchangeAdd(&control->strong, -1) == 1) {
         control->dispose();
@@ -34,34 +49,30 @@ inline Shared::~Shared()
     }
 }
 
-struct Temporary {
-    void* object;
-    Control* control;
-    ~Temporary();
-};
+struct Lock {
+    unsigned char storage[8];
 
-struct Scope {
-    unsigned char storage[12];
-    Scope(Shared value);
-    ~Scope();
+    Lock(Pair value);
+    ~Lock();
 };
 
 struct FlagGuard {
-    unsigned char* flag;
+    unsigned char* address;
     unsigned char previous;
-    FlagGuard(unsigned char& value);
+
+    FlagGuard(unsigned char& flag);
     ~FlagGuard();
 };
 
-inline FlagGuard::FlagGuard(unsigned char& value)
-    : flag(&value), previous(value)
+inline FlagGuard::FlagGuard(unsigned char& flag)
+    : address(&flag), previous(flag)
 {
-    value = 1;
+    flag = 1;
 }
 
 inline FlagGuard::~FlagGuard()
 {
-    *flag = previous;
+    *address = previous;
 }
 
 struct Selection {
@@ -71,10 +82,10 @@ struct Selection {
 
 struct Item {
     unsigned char padding[12];
-    Shared value;
+    Pair value;
 };
 
-struct Argument {
+struct Notification {
     unsigned char padding0[4];
     int valid;
     unsigned char padding1[28];
@@ -83,35 +94,32 @@ struct Argument {
 
 struct Tree;
 
-struct TreeTable {
-    void* slots[84];
+struct TreeVTable {
+    void* padding[84];
     Selection* (__thiscall* selection)(Tree*);
-    Temporary (__thiscall* context)(Tree*);
+    Pair (__thiscall* context)(Tree*);
 };
 
 struct Tree {
-    TreeTable* table;
+    TreeVTable* vtable;
     unsigned char padding[222];
     unsigned char changing;
-    void f(Argument* argument, unsigned char select);
+
+    void f(Notification* notification, unsigned char select);
 };
 
-void Tree::f(Argument* argument, unsigned char select)
+void Tree::f(Notification* notification, unsigned char select)
 {
-    if (argument->valid && argument->item) {
-        Shared value(argument->item->value);
-        if (value.object) {
-            Temporary temporary = table->context(this);
-            Scope scope(*reinterpret_cast<Shared*>(&temporary));
-            temporary.~Temporary();
-            Selection* current = table->selection(this);
-            {
-                FlagGuard guard(changing);
-                if (select)
-                    current->select(value.object);
-                else
-                    current->deselect(value.object);
-            }
+    if (notification->valid && notification->item) {
+        Owner object(notification->item->value);
+        if (object.object) {
+            Lock lock(vtable->context(this));
+            Selection* selection = vtable->selection(this);
+            FlagGuard guard(changing);
+            if (select)
+                selection->select(object.object);
+            else
+                selection->deselect(object.object);
         }
     }
 }

@@ -1,69 +1,90 @@
-// from server: 31% by colin
+// from server: 100% by king_originala
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
+extern "C" long __cdecl _InterlockedDecrement(volatile long*);
+#pragma intrinsic(_InterlockedDecrement)
 
-struct Inner {
-    char pad0[0xc];
-    int* begin;
-    int* end;
+inline long exchangeAdd(volatile long* p, long value)
+{
+    return _InterlockedExchangeAdd(p, value);
+}
+
+inline long decrement(volatile long* p)
+{
+    return _InterlockedDecrement(p);
+}
+
+struct Control
+{
+    virtual void unused() = 0;
+    virtual void dispose() = 0;
+    virtual void destroy() = 0;
+
+    volatile long strong;
+    volatile long weak;
+
+    void weakRelease();
 };
 
-struct RefCounted {
-    void** vptr;
-    long refcount;
+inline void Control::weakRelease()
+{
+    if (decrement(&weak) == 0)
+        destroy();
+}
+
+struct Shared
+{
+    void* px;
+    Control* pn;
+
+    Shared();
+    Shared(const Shared&);
+    ~Shared();
 };
 
-struct Outer {
-    char pad0[0x154];
-    Inner* inner;
-};
+inline Shared::Shared() : px(0), pn(0)
+{
+}
 
-struct Holder {
-    int* first;
-    RefCounted* second;
-};
+inline Shared::Shared(const Shared& other) : px(other.px), pn(other.pn)
+{
+    if (pn)
+        exchangeAdd(&pn->strong, 1);
+}
 
-struct S {
-    void* field0;
-    Holder* get(Holder* out);
-};
-
-void* __fastcall sub_5587c0(Inner* self);
-
-Holder* S::get(Holder* out) {
-    Inner* inner = *(Inner**)((char*)this + 0x154);
-    int* b = inner->begin;
-    int* e = inner->end;
-    int count = (int)(e - b);
-    int flag = 0;
-    RefCounted* rc = 0;
-    if (count > 0) {
-        rc = (RefCounted*)sub_5587c0(inner);
-        flag = 1;
-    } else {
-        rc = 0;
-        flag = 1;
+inline Shared::~Shared()
+{
+    if (pn && decrement(&pn->strong) == 0)
+    {
+        pn->dispose();
+        pn->weakRelease();
     }
-    out->first = b;
-    out->second = rc;
-    if (rc) {
-        _InterlockedExchangeAdd(&rc->refcount, 1);
-    }
-    flag |= 2;
-    if (flag & 1) {
-        flag &= ~1;
-        if (rc) {
-            if (_InterlockedExchangeAdd(&rc->refcount, -1) != 1) {
-                void** vt = rc->vptr;
-                void (*fn)(RefCounted*) = (void (*)(RefCounted*))vt[1];
-                fn(rc);
-                if (_InterlockedExchangeAdd(&rc->refcount, -1) == 1) {
-                    void** vt2 = rc->vptr;
-                    void (*fn2)(RefCounted*) = (void (*)(RefCounted*))vt2[2];
-                    fn2(rc);
-                }
-            }
-        }
-    }
-    return out;
+}
+
+struct List
+{
+    char padding[12];
+    Shared* first;
+    Shared* last;
+
+    unsigned int size() const;
+    Shared& front();
+};
+
+inline unsigned int List::size() const
+{
+    return static_cast<unsigned int>(last - first);
+}
+
+struct S
+{
+    char padding[340];
+    List* children;
+
+    Shared f();
+};
+
+Shared S::f()
+{
+    return children->size() > 0 ? children->front() : Shared();
 }

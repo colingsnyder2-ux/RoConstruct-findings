@@ -1,5 +1,12 @@
-// from server: 74% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: openrbx-client App/util/RunStateOwner.cpp
+// from server: 100% by king_originala
+struct S
+{
+    void build(void* result, int a, int b, int c, int d);
+};
+
+void* __cdecl func_004936b0(void* result, S** object,
+                          int a, int b, int c, int d)
+{
+    (*object)->build(result, a, b, c, d);
+    return result;
+}

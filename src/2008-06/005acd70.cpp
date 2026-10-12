@@ -1,103 +1,87 @@
-// from server: 46% by tester
-extern "C" void __stdcall _invalid_parameter_noinfo();
+// from server: 69% by king_originala
+extern unsigned int counter;
+extern unsigned int index_value;
+extern unsigned int index_guard;
+extern void *holder_vtable[];
+extern "C" void (__cdecl *_invalid_parameter_noinfo)();
+void *__cdecl operator new(unsigned int);
 
-extern int G_802890;
-extern int G_971a80;
-extern int G_976be0;
-extern int G_976be4;
-
-struct Inner {
-    int v;
+struct Holder {
+    void **vtable;
+    unsigned int first;
+    unsigned int second;
 };
 
-struct Elem {
-    int pad0;
-    int pad4;
-    int pad8;
+struct Iterator {
+    void *owner;
+    Holder **position;
 };
 
 struct S {
-    int (__stdcall *fn0)(int);
-    int pad4;
-    Elem* begin;
-    Elem* end;
-    Elem* cap;
-    int f();
+    void *owner;
+    unsigned int reserved[2];
+    Holder **begin;
+    Holder **end;
+    Holder **limit;
+
+    Iterator insert(Iterator position, Holder *const &value);
+    unsigned int *f();
 };
 
-extern "C" int __cdecl sub_6a0920(int size);
-extern "C" void __cdecl sub_4c7c60(S* self, Elem** slot, int a, Elem* b, int* c);
-
-int S::f()
+unsigned int *S::f()
 {
-    int count;
-    int idx;
-    int* slot;
-    Elem* p;
-    Elem* q;
-    Elem* r;
-    Elem* e;
-    int tmp;
+    void (__cdecl *invalid)() = _invalid_parameter_noinfo;
 
     for (;;) {
-        count = (int)((this->end - this->begin) >> 2);
-        if ((G_976be4 & 1) == 0) {
-            G_976be4 |= 1;
-            G_976be0 = G_971a80;
-            idx = G_971a80;
-            G_971a80 = idx + 1;
-        } else {
-            idx = G_976be0;
+        unsigned int size = static_cast<unsigned int>(end - begin);
+        if (!(index_guard & 1)) {
+            index_guard |= 1;
+            index_value = counter++;
         }
-        if ((unsigned)count > (unsigned)idx) {
+        if (size > index_value)
             break;
 
-        }
-        tmp = 0;
-        if (this->begin == 0) {
-            count = 0;
+        Holder *value = 0;
+        unsigned int capacity;
+        if (!begin)
+            capacity = 0;
+        else
+            capacity = static_cast<unsigned int>(limit - begin);
+
+        Holder **position = end;
+        if (static_cast<unsigned int>(position - begin) < capacity) {
+            *position = value;
+            end = position + 1;
         } else {
-            count = (int)((this->cap - this->begin) >> 2);
+            if (begin > position)
+                invalid();
+            Iterator where;
+            where.owner = owner;
+            where.position = position;
+            insert(where, value);
         }
-        p = this->end;
-        q = p;
-        count = (int)((q - this->begin) >> 2);
-        if ((unsigned)count < (unsigned)count) {
-        }
-        if ((unsigned)((int)((p - this->begin) >> 2)) < (unsigned)count) {
-            *(int*)p = 0;
-            this->end = p + 1;
-            continue;
-        }
-        if (this->begin > p) {
-            ((void (__stdcall *)(int))G_802890)(0);
-        }
-        sub_4c7c60(this, &p, *(int*)this, p, &tmp);
     }
 
-    if ((G_976be4 & 1) == 0) {
-        G_976be4 |= 1;
-        G_976be0 = G_971a80;
-        idx = G_971a80;
-        G_971a80 = idx + 1;
-    } else {
-        idx = G_976be0;
+    if (!(index_guard & 1)) {
+        index_guard |= 1;
+        index_value = counter++;
     }
-    count = (int)((this->end - this->begin) >> 2);
-    if ((unsigned)idx >= (unsigned)count) {
-        ((void (__stdcall *)(int))G_802890)(0);
-    }
-    e = this->begin + idx;
-    if (*(int*)e == 0) {
-        r = (Elem*)sub_6a0920(12);
-        if (r != 0) {
-            *(int*)r = 0x834550;
-            *(int*)((char*)r + 4) = 0;
-            *(int*)((char*)r + 8) = 0;
-            *(int*)e = (int)r;
-            return (int)r + 4;
+
+    unsigned int index = index_value;
+    if (index >= static_cast<unsigned int>(end - begin))
+        invalid();
+
+    Holder **slot = begin + index;
+    if (!*slot) {
+        Holder *value = new Holder;
+        if (value) {
+            value->vtable = holder_vtable;
+            value->first = 0;
+            value->second = 0;
+            *slot = value;
+            return &value->first;
         }
-        *(int*)e = 0;
+        *slot = 0;
     }
-    return *(int*)e + 4;
+    return &(*slot)->first;
 }

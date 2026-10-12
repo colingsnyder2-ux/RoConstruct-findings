@@ -1,5 +1,11 @@
-// from server: 56% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: g3d-6.09 G3Dcpp/GImage_png.cpp
+// from server: 100% by king_originala
+struct S {
+    int unused;
+    int* data;
+    int width;
+};
+
+void __cdecl setValue(S* s, int x, int y, int value)
+{
+    s->data[y * s->width + x] = value;
+}

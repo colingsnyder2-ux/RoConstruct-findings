@@ -1,32 +1,53 @@
-// from server: 37% by colin
-struct S {
-    void destroy();
+// from server: 95% by king_originala
+extern "C" void __stdcall EnterCriticalSection(void *);
+extern "C" void __stdcall LeaveCriticalSection(void *);
+extern "C" int __stdcall DestroyWindow(void *);
+
+struct CriticalSection {
+    unsigned char data[24];
 };
 
-extern "C" void __stdcall EnterCriticalSection(void*);
-extern "C" void __stdcall LeaveCriticalSection(void*);
-extern "C" int __stdcall DestroyWindow(void*);
-
-struct CritSect {
-    char pad[0x28];
+struct Registry {
+    void remove(void *);
 };
 
-struct S2 {
-    int refcount;
-    char pad[0x20];
-    void* hwnd;
-    CritSect cs;
+extern CriticalSection marshalLock;
+extern Registry marshalRegistry;
+
+struct MarshalWindow {
+    unsigned char reserved0[4];
+    void *window;
+    unsigned char reserved1[28];
+    int references;
+    unsigned long key;
 };
 
-void sub_405ce0(void*, void*);
+struct ScopedLock {
+    CriticalSection *section;
+    bool locked;
 
-void S::destroy()
+    ScopedLock(CriticalSection &);
+    ~ScopedLock();
+};
+
+__forceinline ScopedLock::ScopedLock(CriticalSection &value)
+    : section(&value), locked(false)
 {
-    EnterCriticalSection((void*)0x96d17c);
-    S2* p = (S2*)this;
-    if (--p->refcount == 0) {
-        sub_405ce0((void*)0x96d15c, &p->cs);
-        DestroyWindow(p->hwnd);
+    EnterCriticalSection(section);
+    locked = true;
+}
+
+__forceinline ScopedLock::~ScopedLock()
+{
+    if (locked)
+        LeaveCriticalSection(section);
+}
+
+void __cdecl releaseMarshalWindow(MarshalWindow *value)
+{
+    ScopedLock lock(marshalLock);
+    if (--value->references == 0) {
+        marshalRegistry.remove(&value->key);
+        DestroyWindow(value->window);
     }
-    LeaveCriticalSection((void*)0x96d17c);
 }

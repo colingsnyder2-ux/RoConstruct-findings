@@ -1,4 +1,6 @@
-// from server: 70% by king_originala
+// from server: 98% by king_originala
+#pragma pointers_to_members(full_generality, multiple_inheritance)
+
 struct String;
 extern "C" {
 extern void (__thiscall *copyString)(String*, const String&);
@@ -48,6 +50,7 @@ struct Function {
 
 struct Service {
     void f(String);
+    void callback(String);
 };
 
 struct Queue {
@@ -56,10 +59,9 @@ struct Queue {
 
 extern Queue* queue;
 extern Shared __cdecl getShared(Service*);
-extern void __cdecl callback();
-extern Binder __cdecl bind(void (__cdecl *)(), int, Shared, String);
+extern Binder __cdecl bind(void (Service::*)(String), Shared, String);
 
 void Service::f(String text)
 {
-    queue->append(bind(callback, 0, getShared(this), text));
+    queue->append(bind(&Service::callback, getShared(this), text));
 }

@@ -1,4 +1,4 @@
-// from server: 98% by king_originala
+// from server: 100% by king_originala
 extern "C" int (__cdecl *memmove_s)(void *, unsigned int,
                                    const void *, unsigned int);
 
@@ -23,7 +23,7 @@ Item **__cdecl merge(Item **first1, Item **last1,
             if (right->flag() != left->flag())
                 takeRight = right->flag();
             else
-                takeRight = left->value > right->value;
+                takeRight = right->value < left->value;
         }
 
         if (takeRight)

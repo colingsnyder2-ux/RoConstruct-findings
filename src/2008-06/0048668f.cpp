@@ -1,5 +1,11 @@
-// from server: 55% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: g3d-6.09 G3Dcpp/Vector3.cpp
+// from server: 56% by king_originala
+extern void (__stdcall *setValues)(int, int, int, int, int);
+
+void applyValues(int location, const float* values)
+{
+    setValues(location,
+              (int)values[0],
+              (int)values[5],
+              (int)values[10],
+              (int)values[15]);
+}

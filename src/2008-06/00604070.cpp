@@ -1,78 +1,124 @@
-// from server: 25% by colin
+// from server: 65% by king_originala
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
 
+namespace std {
+template<class T> struct char_traits;
+template<class T> class allocator;
+
+template<class T, class Traits, class Alloc>
+class basic_string {
+    unsigned char storage[28];
+public:
+    basic_string(const T*);
+    ~basic_string();
+};
+}
+
+typedef std::basic_string<char, std::char_traits<char>,
+                         std::allocator<char> > String;
+
+struct Object {
+    virtual void reserved();
+    virtual void setName(const String&);
+};
+
 struct RefCounted {
-    void* vptr;
-    long refcount;
-    long weakrefcount;
+    virtual void reserved();
+    virtual void dispose();
+    virtual void destroy();
+    volatile long refcount;
+    volatile long weakrefcount;
 };
 
-struct Widget {
-    void* vptr;
+struct Shared {
+    Object* object;
+    RefCounted* control;
+
+    Shared(const Shared&);
+    ~Shared();
 };
 
-struct String {
-    char buf[16];
-};
-
-extern "C" void* __cdecl sub_7baf10();
-extern "C" void __cdecl sub_601db0(void*, void*);
-extern "C" void __cdecl sub_602cb0();
-
-extern "C" void* __stdcall sub_802458(String*, const char*);
-extern "C" void __stdcall sub_802468(String*);
-
-struct UnifiedImageWidget {
-    void method(int a, int b);
-};
-
-void UnifiedImageWidget::method(int a, int b)
+inline Shared::Shared(const Shared& other)
+    : object(other.object), control(other.control)
 {
-    String str;
-    void* p;
-    void* q;
-    void* r;
-    void* s;
-    int arr[8];
-    void* tmp;
+    if (control)
+        _InterlockedExchangeAdd(&control->refcount, 1);
+}
 
-    arr[0] = 3;
-    arr[1] = 1;
-    arr[2] = 0;
-    arr[3] = 1;
-    float* f = (float*)sub_7baf10();
-    float f0 = f[0];
-    float f1 = f[1];
-    float f2 = f[2];
-    float f3 = f[3];
-    arr[4] = *(int*)&f3;
-    arr[5] = *(int*)&f1;
-    arr[6] = *(int*)&f2;
-    arr[7] = *(int*)&f0;
-    sub_601db0(&arr[0], &arr[0]);
-
-    sub_802458(&str, "RightPalette");
-    p = 0;
-    q = 0;
-    sub_602cb0();
-    r = 0;
-    s = 0;
-    if (r) {
-        _InterlockedExchangeAdd((volatile long*)((char*)r + 4), 1);
-    }
-    if (s) {
-        _InterlockedExchangeAdd((volatile long*)((char*)s + 4), 1);
-    }
-    if (s) {
-        if (_InterlockedExchangeAdd((volatile long*)((char*)s + 4), -1) == 1) {
-            void** vt = *(void***)s;
-            ((void(__thiscall*)(void*))vt[1])(s);
-            if (_InterlockedExchangeAdd((volatile long*)((char*)s + 8), -1) == 1) {
-                void** vt2 = *(void***)s;
-                ((void(__thiscall*)(void*))vt2[2])(s);
-            }
+inline Shared::~Shared()
+{
+    if (control) {
+        RefCounted* p = control;
+        if (_InterlockedExchangeAdd(&p->refcount, -1) == 1) {
+            p->dispose();
+            if (_InterlockedExchangeAdd(&p->weakrefcount, -1) == 1)
+                p->destroy();
         }
     }
-    sub_802468(&str);
+}
+
+struct Point {
+    unsigned short x;
+    unsigned short y;
+    Point();
+};
+
+inline Point::Point() : x(0), y(0)
+{
+}
+
+struct Color {
+    float r, g, b, a;
+    Color(float, float, float, float);
+    Color(const Color&);
+};
+
+inline Color::Color(float red, float green, float blue, float alpha)
+    : r(red), g(green), b(blue), a(alpha)
+{
+}
+
+inline Color::Color(const Color& other)
+    : r(other.r), g(other.g), b(other.b), a(other.a)
+{
+}
+
+struct Description {
+    int type;
+    int enabled;
+    Point point;
+    int mode;
+    Color color;
+
+    Description(int, int, Point, int, const Color&);
+};
+
+inline Description::Description(int t, int e, Point p, int m,
+                                const Color& c)
+    : type(t), enabled(e), point(p), mode(m),
+      color(c.r, c.g, c.b, c.a)
+{
+}
+
+const Color& __cdecl sub_7baf10();
+Shared __cdecl sub_601db0(Description);
+
+struct UnifiedImageWidget {
+    Shared method(int);
+    void sub_602cb0(int, Shared);
+};
+
+Shared UnifiedImageWidget::method(int argument)
+{
+    Shared result = sub_601db0(
+        Description(3, 1, Point(), 1, sub_7baf10()));
+
+    {
+        String name("RightPalette");
+        result.object->setName(name);
+    }
+
+    sub_602cb0(argument, result);
+    return Shared(result);
 }

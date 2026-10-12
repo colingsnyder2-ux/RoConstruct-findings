@@ -1,29 +1,27 @@
-// from server: 89% by king_originala
-struct VItem
-{
-    struct Base
-    {
-        struct VTable
-        {
-            void *reserved[7];
-            void (__thiscall *invoke)(Base *, void *, void *);
-        };
-
-        VTable *vtable;
-    };
-
-    Base *object;
-    void *value;
-
-    void *f(void *argument);
+// from server: 100% by king_originala
+struct Result {
+    Result(const Result&);
+    ~Result();
+    int value;
 };
 
-void *VItem::f(void *argument)
-{
-    volatile int local;
-    Base *o = object;
-    void *v = value;
-    local = 0;
-    o->vtable->invoke(o, argument, v);
-    return argument;
+struct Interface {
+    virtual void f0() = 0;
+    virtual void f1() = 0;
+    virtual void f2() = 0;
+    virtual void f3() = 0;
+    virtual void f4() = 0;
+    virtual void f5() = 0;
+    virtual void f6() = 0;
+    virtual Result get(int) = 0;
+};
+
+struct S {
+    Interface* object;
+    int argument;
+    Result get();
+};
+
+Result S::get() {
+    return object->get(argument);
 }

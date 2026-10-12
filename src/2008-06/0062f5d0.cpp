@@ -1,20 +1,21 @@
-// from server: 78% by atomic.potato
-struct S
-{
-    char pad[8];
-    char* data;
-    void f(float* out, const char* value);
+// from server: 100% by king_originala
+struct Vector3 {
+    float x, y, z;
 };
 
-void __thiscall S::f(float* out, const char* value)
-{
+struct S {
+    char padding[8];
     int offset;
-    if (value)
-        offset = -20;
-    else
-        offset = 0;
-    char* p = data + offset;
-    out[0] = *(float*)(p + 0);
-    out[1] = *(float*)(p + 4);
-    out[2] = *(float*)(p + 8);
+    Vector3 get(void* object);
+};
+
+Vector3 S::get(void* object)
+{
+    char* base = object ? static_cast<char*>(object) - 20 : 0;
+    const float* source = reinterpret_cast<const float*>(base + offset);
+    Vector3 result;
+    result.x = source[0];
+    result.y = source[1];
+    result.z = source[2];
+    return result;
 }

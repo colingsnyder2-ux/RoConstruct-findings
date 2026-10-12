@@ -1,26 +1,61 @@
-// from server: 51% by tester
-struct LuaArguments {
-    int offset;
-    void* L;
-    void* getValues(int);
-    LuaArguments(void*, int);
+// from server: 78% by king_originala
+struct Result {
+    int value;
+    Result(const Result&);
+    ~Result();
 };
 
-extern "C" void* __stdcall sub_6A17C6(void*, void*, void*, int, void*);
-extern "C" void __stdcall sub_802864(void*);
-extern "C" void __stdcall sub_6A158C(void*, void*);
-extern "C" void __stdcall sub_61A7B0(void*, void*, void*);
+namespace std {
+    class bad_cast {
+        const char* message;
+        int owns;
+    public:
+        explicit bad_cast(const char*);
+        bad_cast(const bad_cast&);
+        virtual ~bad_cast();
+    };
+}
 
-LuaArguments::LuaArguments(void* luaState, int off) {
-    void* result;
-    result = sub_6A17C6(*(void**)this, (void*)0x9295B4, (void*)0x95AF78, 0, (void*)0);
-    if (result != 0) {
-        void* tmp = 0;
-        sub_802864(&tmp);
-        sub_6A158C((void*)0x8D362C, &tmp);
-        result = tmp;
+extern std::bad_cast* (__thiscall* bad_cast_constructor)(
+    std::bad_cast*, const char*);
+
+inline std::bad_cast::bad_cast(const char* text)
+{
+    bad_cast_constructor(this, text);
+}
+
+namespace boost {
+    template<class T> class shared_ptr;
+}
+
+namespace RBX {
+    class Instance;
+
+    namespace Reflection {
+        struct PropertyDescriptor {
+            virtual ~PropertyDescriptor();
+        };
+
+        template<class T>
+        struct TypedPropertyDescriptor : PropertyDescriptor {
+            Result get(int);
+        };
     }
-    sub_61A7B0(result, *(void**)((char*)this + 4), (void*)off);
-    this->offset = off;
-    this->L = luaState;
+}
+
+struct S {
+    RBX::Reflection::PropertyDescriptor* descriptor;
+    int index;
+    Result f();
+};
+
+Result S::f()
+{
+    typedef RBX::Reflection::TypedPropertyDescriptor<
+        boost::shared_ptr<RBX::Instance> > TypedDescriptor;
+
+    TypedDescriptor* p = dynamic_cast<TypedDescriptor*>(descriptor);
+    if (!p)
+        throw std::bad_cast("bad cast");
+    return p->get(index);
 }

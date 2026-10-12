@@ -1,4 +1,4 @@
-// from server: 78% by king_originala
+// from server: 82% by king_originala
 struct Ref {
     void* value;
     Ref& operator=(const Ref&);
@@ -16,7 +16,7 @@ struct Pair {
 struct Vector {
     char padding[12];
     Pair* first;
-    Pair* last;
+    Pair* volatile last;
     Pair* limit;
 
     void resize(unsigned int, Pair);
@@ -43,10 +43,11 @@ void* S::f()
 {
     register_type(callback1, &registration1);
     unsigned int index = (unsigned int)func_0048a460();
+    unsigned int count = (unsigned int)(values.last - values.first);
     void (__cdecl *check)() = invalid_parameter;
     Vector* v = &values;
 
-    if (index + 1 > (unsigned int)(v->last - v->first)) {
+    if (index + 1 > count) {
         v->resize(index + 1, Pair());
     } else {
         if (index >= (unsigned int)(v->last - v->first))

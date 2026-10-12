@@ -1,81 +1,125 @@
-// from server: 39% by colin
-// roc 2008-06 0056d890  unit: G3D::VColor3::?$holder  size: 286 bytes
+// from server: 97% by king_originala
+class type_info;
+extern bool (__thiscall *type_equal)(const type_info*, const type_info&);
 
-typedef unsigned int DWORD;
+extern const type_info void_type;
+extern const type_info color_type;
+extern const type_info string_type;
 
-extern "C" {
-    int __stdcall sub_409d50(void*);
-    int __stdcall sub_415c90(void*);
-    int __stdcall sub_509b10(void*, void*, void*, void*);
-    int __stdcall sub_56c6d0(void*);
-    void* __stdcall sub_56ce60();
-    int __stdcall sub_56d1d0(void*, void*);
-    int __stdcall sub_5bebb0(void*, void*);
-    int __stdcall sub_6a158c(void*, void*);
+namespace std {
+    template<class T> struct char_traits {};
+    template<class T> class allocator {};
+
+    template<class T, class Traits, class Allocator>
+    class basic_string {
+    public:
+        unsigned int allocator_storage;
+        union {
+            T buffer[16];
+            T* pointer;
+        } storage;
+        unsigned int length;
+        unsigned int capacity;
+
+        basic_string(const basic_string&);
+        ~basic_string();
+    };
+
+    typedef basic_string<char, char_traits<char>, allocator<char> > string;
+
+    class exception {
+        char* message;
+        int owns_message;
+
+    public:
+        exception(const exception&);
+        virtual ~exception();
+        virtual const char* what() const;
+    };
+
+    class runtime_error : public exception {
+        string text;
+
+    public:
+        runtime_error(const string&);
+        runtime_error(const runtime_error&);
+        virtual ~runtime_error();
+        virtual const char* what() const;
+    };
 }
 
+struct Color {
+    float x, y, z;
+};
+
+struct Placeholder {
+    virtual ~Placeholder();
+    virtual const type_info& type() const;
+};
+
+struct Any {
+    Placeholder* content;
+    void assign(const Color&);
+};
+
+struct Name {
+    unsigned int reserved;
+    std::string text;
+};
+
+struct Descriptor {
+    unsigned int reserved[2];
+    const type_info* type;
+    Name* name;
+};
+
+extern Color* __cdecl extract(Any*);
+extern bool __cdecl convert(const Color*, Color*);
+extern Descriptor* __cdecl color_descriptor();
+extern void __cdecl finish(Any*);
+extern std::string __cdecl format(const char*, ...);
+
 struct S {
-    void* field0;
-    void* field4;
+    Descriptor* descriptor;
+    Any value;
+
     void f();
 };
 
-void S::f() {
-    float zero;
-    char buf[32];
-    int flag;
-
-    if (field4 != 0) {
-        void* obj = field4;
-        void* vtbl = *(void**)obj;
-        void* fn = *(void**)((char*)vtbl + 4);
-        void* res;
-        if (obj != 0) {
-            res = ((void*(*)(void*))fn)(obj);
-        } else {
-            res = (void*)0x929614;
-        }
-        if (((int(__stdcall*)(void*, void*))0x802878)(res, (void*)0x946364)) {
-            if ((char*)field4 + 4 != 0) {
-                goto done;
-            }
+void S::f()
+{
+    bool (__thiscall *equal)(const type_info*, const type_info&) = type_equal;
+    Any* p = &value;
+    if (p) {
+        const type_info& t = p->content ? p->content->type() : void_type;
+        if (equal(&t, color_type)) {
+            if (reinterpret_cast<char*>(p->content) + 4)
+                return;
         }
     }
 
-    if (((int(__stdcall*)(void*, void*))0x802878)(*(void**)((char*)field0 + 8), (void*)0x92bef8)) {
-        zero = 0.0f;
-        sub_415c90(&zero);
-        if (sub_5bebb0(&zero, field4)) {
-            sub_56d1d0(field4, &zero);
-            field0 = sub_56ce60();
-            sub_56c6d0(field4);
-            goto done;
+    if (equal(&string_type, *descriptor->type)) {
+        Color color;
+        color.x = 0.0f;
+        color.y = 0.0f;
+        color.z = 0.0f;
+        if (convert(extract(p), &color)) {
+            p->assign(color);
+            descriptor = color_descriptor();
+            finish(p);
+            return;
         }
     }
 
-    {
-        void* a = sub_56ce60();
-        void* b = *(void**)((char*)a + 0xc);
-        void* c;
-        if (*(DWORD*)((char*)b + 0x1c) < 0x10) {
-            c = (char*)b + 8;
-        } else {
-            c = *(void**)((char*)b + 8);
-        }
-        void* d = *(void**)((char*)field0 + 0xc);
-        void* e = (char*)d + 4;
-        void* g;
-        if (*(DWORD*)((char*)e + 0x18) < 0x10) {
-            g = (char*)e + 4;
-        } else {
-            g = *(void**)((char*)e + 4);
-        }
-        sub_509b10(buf, (void*)0x82f71c, g, c);
-        flag = 0;
-        sub_409d50(buf);
-        sub_6a158c((void*)0x8d1bc8, buf);
-    }
+    Name* destination = color_descriptor()->name;
+    const char* destination_name =
+        destination->text.capacity >= 16 ?
+        destination->text.storage.pointer :
+        destination->text.storage.buffer;
+    const std::string& source = descriptor->name->text;
+    const char* source_name =
+        source.capacity >= 16 ? source.storage.pointer : source.storage.buffer;
 
-done:
-    return;
+    throw std::runtime_error(
+        format("Unable to cast %s to %s", source_name, destination_name));
 }

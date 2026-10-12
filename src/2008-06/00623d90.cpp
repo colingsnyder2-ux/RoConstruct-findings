@@ -1,48 +1,57 @@
-// from server: 75% by colin
+// from server: 100% by king_originala
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
+extern "C" long __cdecl _InterlockedDecrement(volatile long*);
+#pragma intrinsic(_InterlockedDecrement)
 
-extern "C" void __cdecl sub_65F600(void* a, void* b);
-extern "C" void __cdecl sub_6606F0(void* a, void* b, int c, int d);
-
-struct Inner {
-    virtual void v1();
-    virtual void v2();
-    volatile long ref1;
-    volatile long ref2;
-};
-
-struct Obj {
-    char pad0[0x20];
-    void* field20;
-    char pad24[0x04];
-    void* field28;
-    int field2c;
-    int field30;
-};
-
-struct Holder {
-    int count;
-    Inner* inner;
-};
-
-void __cdecl target(Obj* obj, Holder* holder)
+struct Control
 {
-    sub_65F600(obj, obj->field20);
+    virtual void unused();
+    virtual void dispose();
+    virtual void destroy();
+    volatile long strong;
+    volatile long weak;
+};
 
-    Inner* p = holder->inner;
-    if (p != 0) {
-        if (_InterlockedExchangeAdd(&p->ref1, -1) == 1) {
-            p->v1();
-            if (_InterlockedExchangeAdd(&p->ref2, -1) == 1) {
-                p->v2();
-            }
+struct Header
+{
+    int* count;
+    Control* control;
+    unsigned int unused;
+};
+
+struct Object
+{
+    unsigned char padding[32];
+    void* first;
+    unsigned int unused;
+    void* second;
+    unsigned int firstCount;
+    unsigned int secondCount;
+};
+
+extern void __cdecl cleanup(Object*, void*);
+extern void __cdecl resizeBlock(void*, void*, unsigned int, unsigned int);
+
+void __cdecl releaseObject(void* state, Object* object)
+{
+    cleanup(object, object->first);
+
+    Header* header = reinterpret_cast<Header*>(object) - 1;
+    --*header->count;
+
+    Control* control = header->control;
+    if (control)
+    {
+        if (_InterlockedDecrement(&control->strong) == 0)
+        {
+            control->dispose();
+            if (_InterlockedDecrement(&control->weak) == 0)
+                control->destroy();
         }
     }
 
-    int n = obj->field30;
-    int sz = n * 12;
-    sub_6606F0(holder, obj->field28, sz, 0);
-    sub_6606F0(holder, obj->field20, obj->field2c * 16, 0);
-    sub_6606F0(holder, &holder->inner, 0x84, 0);
+    resizeBlock(state, object->second, object->secondCount * 24, 0);
+    resizeBlock(state, object->first, object->firstCount * 16, 0);
+    resizeBlock(state, header, 0x84, 0);
 }

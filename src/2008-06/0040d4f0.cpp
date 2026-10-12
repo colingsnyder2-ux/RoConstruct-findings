@@ -1,5 +1,7 @@
-// from server: 64% by king_originala
-extern "C" void __cdecl _invalid_parameter_noinfo();
+// from server: 100% by king_originala
+extern "C" {
+    extern void (__cdecl * const _invalid_parameter_noinfo)();
+}
 
 struct Failure {
     unsigned char storage[40];
@@ -15,15 +17,19 @@ struct CallableTable {
 };
 
 struct Callable {
-    unsigned char prefix[8];
     CallableTable* table;
     unsigned char unused[4];
     unsigned char data[1];
 };
 
+struct Value {
+    unsigned char prefix[8];
+    Callable callable;
+};
+
 struct Node {
     unsigned char prefix[24];
-    Callable* callable;
+    Value* value;
 };
 
 struct Container {
@@ -49,28 +55,29 @@ struct Result {
 
 Result __stdcall apply(Iterator first, Iterator last)
 {
-    while (!first.equal(last)) {
-        if (!*first.invoked) {
-            if (!first.owner)
-                _invalid_parameter_noinfo();
+    if (!first.equal(last)) {
+        void (__cdecl *invalid)() = _invalid_parameter_noinfo;
+        do {
+            if (!*first.invoked) {
+                if (!first.owner)
+                    invalid();
 
-            Container* container = first.owner ? *first.owner : 0;
-            if (first.node == container->end)
-                _invalid_parameter_noinfo();
+                Container* container = first.owner ? *first.owner : 0;
+                if (first.node == container->end)
+                    invalid();
 
-            Callable* callable = first.node->callable;
-            void* argument = *first.argument;
+                Callable* callable = &first.node->value->callable;
+                void* argument = *first.argument;
 
-            if (!callable->table) {
-                Failure failure;
-                raise_failure(failure);
+                if (!callable->table)
+                    raise_failure(Failure());
+
+                callable->table->invoke(callable->data, argument);
+                if (!*first.invoked)
+                    *first.invoked = 1;
             }
-
-            callable->table->invoke(callable->data, argument);
-            if (!*first.invoked)
-                *first.invoked = 1;
-        }
-        first.advance();
+            first.advance();
+        } while (!first.equal(last));
     }
     return Result();
 }

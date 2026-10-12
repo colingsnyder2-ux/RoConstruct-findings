@@ -1,22 +1,32 @@
-// from server: 69% by tester
-struct Prop {
-    char pad[0x18];
-    void* getset;
-
-    void method(void* arg1, void* arg2);
-};
-
-extern "C" double __fastcall sub_5641E0(void* self, void* arg);
-
-struct Vtbl {
-    char pad[0xc];
-    void (__stdcall* fn)(void*, double*);
-};
-
-void Prop::method(void* arg1, void* arg2)
+// from server: 100% by king_originala
+struct Value
 {
-    double d = sub_5641E0(arg1, arg2);
-    void* g = getset;
-    Vtbl* vt = *(Vtbl**)g;
-    vt->fn(g, &d);
+    double get();
+};
+
+struct Accessor;
+
+struct AccessorTable
+{
+    unsigned char padding[12];
+    void (__thiscall *set)(Accessor *, void *, const double *);
+};
+
+struct Accessor
+{
+    AccessorTable *table;
+};
+
+struct Descriptor
+{
+    unsigned char padding[24];
+    Accessor *accessor;
+
+    void set(void *object, Value *value);
+};
+
+void Descriptor::set(void *object, Value *value)
+{
+    double converted = value->get();
+    accessor->table->set(accessor, object, &converted);
 }

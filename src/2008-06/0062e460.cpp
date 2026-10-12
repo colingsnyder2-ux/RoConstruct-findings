@@ -1,6 +1,12 @@
-// from server: 84% by king_originala
+// from server: 95% by king_originala
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
+extern "C" long __cdecl _InterlockedDecrement(volatile long*);
+#pragma intrinsic(_InterlockedDecrement)
+
+extern char table0[], table10[], table14[], table20[], table24[];
+extern char table44[], table64[], table84[], tableA4[], tableC4[];
+extern char table130[], table138[], baseTable130[];
 
 struct Control {
     virtual void first() = 0;
@@ -16,43 +22,66 @@ struct Holder {
     ~Holder();
 };
 
+struct Reference {
+    unsigned long table;
+    unsigned long padding;
+    Holder holder;
+    ~Reference();
+};
+
 struct Base {
-    unsigned long words[80];
+    unsigned long words[76];
     ~Base();
 };
 
+struct Table {
+    unsigned long value;
+    ~Table();
+};
+
 struct Intermediate : Base {
+    Table table;
+    unsigned long padding;
     ~Intermediate();
 };
 
 struct BodyMover : Intermediate {
-    Holder holder;
+    Reference reference;
     ~BodyMover();
 };
 
 inline Holder::~Holder()
 {
-    if (control && _InterlockedExchangeAdd(&control->count, -1) == 1)
-        control->release();
+    Control* p = control;
+    if (p && _InterlockedDecrement(&p->count) == 0)
+        p->release();
+}
+
+inline Reference::~Reference()
+{
+}
+
+inline Table::~Table()
+{
+    value = reinterpret_cast<unsigned long>(baseTable130);
 }
 
 inline Intermediate::~Intermediate()
 {
-    words[76] = 0x0083d1f4;
 }
 
 BodyMover::~BodyMover()
 {
-    words[0] = 0x00846bec;
-    words[4] = 0x00846be0;
-    words[5] = 0x00846bd8;
-    words[8] = 0x00846bd0;
-    words[9] = 0x00846bc0;
-    words[17] = 0x00846bb0;
-    words[25] = 0x00846ba0;
-    words[33] = 0x00846b90;
-    words[41] = 0x00846b80;
-    words[49] = 0x00846b70;
-    words[76] = 0x00846b54;
-    words[78] = 0x00846b48;
+    words[0] = reinterpret_cast<unsigned long>(table0);
+    words[4] = reinterpret_cast<unsigned long>(table10);
+    words[5] = reinterpret_cast<unsigned long>(table14);
+    words[8] = reinterpret_cast<unsigned long>(table20);
+    words[9] = reinterpret_cast<unsigned long>(table24);
+    words[17] = reinterpret_cast<unsigned long>(table44);
+    words[25] = reinterpret_cast<unsigned long>(table64);
+    words[33] = reinterpret_cast<unsigned long>(table84);
+    words[41] = reinterpret_cast<unsigned long>(tableA4);
+    words[49] = reinterpret_cast<unsigned long>(tableC4);
+    table.value = reinterpret_cast<unsigned long>(table130);
+    reference.table = reinterpret_cast<unsigned long>(table138);
 }

@@ -1,42 +1,78 @@
-// from server: 29% by atomic.potato
-extern "C" {
-    void* __stdcall func_8025c8();
-    void* __stdcall func_8025c4();
-    void __stdcall func_8025a4();
-    void __stdcall func_802564();
-    void __stdcall func_802890();
-    void __stdcall func_802468();
-}
+// from server: 100% by king_originala
+struct LocaleImpl;
 
-void __stdcall sub_64fd00(void*, void*);
-void* __stdcall sub_4a2fa0();
+extern LocaleImpl* (__cdecl* getGlobalLocale)();
+extern LocaleImpl* (__cdecl* initLocale)();
+extern void (__thiscall* increfLocale)(LocaleImpl*);
+extern void (__thiscall* destroyLocale)(void*);
+extern void (__thiscall* destroyString)(void*);
+extern void (__cdecl* invalidParameter)();
 
-struct TreeStage {
-    char pad0[0x18];
-    int field18;
-    int field0;
-    bool func(int, int, int, int, int, int, int);
+struct Locale
+{
+    LocaleImpl* impl;
+    unsigned char storage[4];
+
+    Locale();
+    ~Locale();
 };
 
-bool TreeStage::func(int a1, int a2, int a3, int a4, int a5, int a6, int a7)
+struct String
 {
-    char buf1[8];
-    char buf2[8];
-    int v;
-    bool result;
+    unsigned char data[28];
 
-    func_8025c8();
-    v = 0;
-    func_8025c4();
-    func_8025a4();
-    sub_64fd00(buf2, buf1);
-    func_802564();
-    int saved = field18;
-    int saved2 = field0;
-    void* p = sub_4a2fa0();
-    result = false;
-    func_802890();
-    result = (*(int*)((char*)p + 4) != saved);
-    func_802468();
-    return result;
+    ~String();
+};
+
+struct Iterator
+{
+    void* owner;
+    void* node;
+};
+
+extern void __cdecl prepareString(String*, Locale*);
+
+struct TreeStage
+{
+    void* owner;
+    unsigned char padding[20];
+    void* endNode;
+
+    Iterator* lookup(Iterator*, const String*);
+    bool process(String);
+};
+
+__forceinline Locale::Locale()
+{
+    impl = getGlobalLocale();
+    increfLocale(initLocale());
+}
+
+__forceinline Locale::~Locale()
+{
+    destroyLocale(this);
+}
+
+__forceinline String::~String()
+{
+    destroyString(this);
+}
+
+bool TreeStage::process(String value)
+{
+    Iterator* result;
+    {
+        Locale locale;
+        prepareString(&value, &locale);
+        result = reinterpret_cast<Iterator*>(&locale);
+    }
+
+    void* savedEnd = endNode;
+    void* savedOwner = owner;
+    Iterator* found = lookup(result, &value);
+
+    if (!found->owner || found->owner != savedOwner)
+        invalidParameter();
+
+    return found->node != savedEnd;
 }

@@ -1,50 +1,68 @@
-// from server: 29% by colin
+// from server: 99% by king_originala
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
+extern "C" long __cdecl _InterlockedIncrement(volatile long*);
+extern "C" long __cdecl _InterlockedDecrement(volatile long*);
+#pragma intrinsic(_InterlockedIncrement)
+#pragma intrinsic(_InterlockedDecrement)
 
-struct Inner {
-    void* vptr;
-    long refcount;
+struct Control {
+    virtual void unused() = 0;
+    virtual void dispose() = 0;
+    virtual void destroy() = 0;
+    volatile long strong;
+    volatile long weak;
 };
 
-extern "C" void __stdcall sub_618a40(void* out, void* in);
-extern "C" void __stdcall sub_4025b0(void* dst, void* src);
-extern "C" void __stdcall sub_40db00(void* self, void* arg);
-extern "C" void __stdcall sub_49d200(void* self, void* arg);
-
-struct Target {
-    char pad[0x130];
-    Inner* ptr130;
-    Inner* ptr134;
-    void method(void* arg);
+struct CountPtr {
+    Control* p;
+    CountPtr(const CountPtr&);
+    ~CountPtr();
+    CountPtr& operator=(const CountPtr&);
 };
 
-void Target::method(void* arg)
-{
-    if (this->ptr130 != arg) {
-        Inner* tmp = 0;
-        sub_618a40(&tmp, arg);
-        this->ptr130 = tmp;
-        sub_4025b0(&this->ptr134, &tmp);
-        if (tmp) {
-            if (_InterlockedExchangeAdd(&tmp->refcount, -1) == 1) {
-                void** vt = (void**)tmp->vptr;
-                typedef void (__stdcall *Fn)(void*);
-                ((Fn)vt[1])(tmp);
-                if (_InterlockedExchangeAdd(&tmp->refcount, -1) == 1) {
-                    ((Fn)vt[2])(tmp);
-                }
-            }
+__forceinline CountPtr::CountPtr(const CountPtr& other) : p(other.p) {
+    if (p)
+        _InterlockedIncrement(&p->strong);
+}
+
+__forceinline CountPtr::~CountPtr() {
+    if (p) {
+        Control* q = p;
+        if (_InterlockedDecrement(&q->strong) == 0) {
+            q->dispose();
+            if (_InterlockedDecrement(&q->weak) == 0)
+                q->destroy();
         }
-        sub_40db00(this, (void*)0x97d364);
-        Inner* p130 = this->ptr130;
-        Inner* p134 = this->ptr134;
-        void* local[2];
-        local[0] = p130;
-        local[1] = p134;
-        if (p134) {
-            _InterlockedExchangeAdd(&p134->refcount, 1);
-        }
-        sub_49d200((void*)0x97d330, local);
+    }
+}
+
+struct Value {
+    volatile int value;
+    CountPtr count;
+};
+
+extern Value __cdecl makeValue(int);
+
+struct Descriptor {
+    void emit(void*, Value);
+};
+
+extern Descriptor changedDescriptor;
+extern char propertyDescriptor;
+
+struct S {
+    char prefix[0x130];
+    Value current;
+    void notify(const void*);
+    void set(int);
+};
+
+void S::set(int value) {
+    if (current.value != value) {
+        current = makeValue(value);
+        notify(&propertyDescriptor);
+        void* object = prefix + 0x14;
+        changedDescriptor.emit(object, current);
     }
 }

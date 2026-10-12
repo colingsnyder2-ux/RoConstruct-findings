@@ -1,22 +1,18 @@
-// from server: 66% by tester
-struct VPartInstance {
-    void setFilteredSelection(bool value);
+// from server: 100% by king_originala
+extern char descriptor;
+
+struct S {
+    char padding[0x1e8];
+    bool enabled : 1;
+
+    void notify(const char&);
+    void setEnabled(bool value);
 };
 
-extern "C" void __stdcall notifyFilteredSelectionChanged(void*);
-
-void VPartInstance::setFilteredSelection(bool value)
+void S::setEnabled(bool value)
 {
-    unsigned char* self = (unsigned char*)this;
-    unsigned char old = self[0x1e8];
-    unsigned char dl = (unsigned char)value;
-    unsigned char bl = old & 1;
-    if (bl != dl) {
-        bl = old;
-        bl ^= dl;
-        bl &= 1;
-        bl ^= old;
-        self[0x1e8] = bl;
-        notifyFilteredSelectionChanged((void*)0x97a26c);
+    if (enabled != value) {
+        enabled = value;
+        notify(descriptor);
     }
 }

@@ -1,5 +1,7 @@
-// from server: 90% by king_originala
+// from server: 92% by king_originala
+#pragma float_control(except, off)
 #pragma float_control(precise, off)
+#pragma fenv_access(off)
 
 struct Vector {
     float x, y, z;
@@ -50,8 +52,10 @@ struct S {
 
 void S::setValue(int newValue)
 {
-    int selected = 0;
+    int selected;
     if (mode != 1)
+        selected = 0;
+    else
         selected = newValue;
 
     if (selected == value)

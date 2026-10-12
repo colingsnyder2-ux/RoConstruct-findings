@@ -1,25 +1,64 @@
-// from server: 23% by colin
-struct CXTPPropertyGridItem {
-    char pad0[0xfc];
-    int m_nValue;
-    char pad1[0x0c];
-    void* m_pOwner;
-    void OnValueChanged(int value);
-    void SetValue(int value);
+// from server: 97% by king_originala
+struct String {
+    const char* c_str() const;
 };
 
-struct CXTPPropertyGridItemXItem {
-    char pad0[0x10c];
-    void SetPropertyGrid(void* pGrid);
-};
+extern const char* (__thiscall* string_c_str)(const String*);
 
-extern "C" void* __stdcall c_str_helper(void* p);
-
-void CXTPPropertyGridItemXItem::SetPropertyGrid(void* pGrid)
+inline const char* String::c_str() const
 {
-    CXTPPropertyGridItem* pItem = (CXTPPropertyGridItem*)this;
-    pItem->SetValue(0);
-    pItem->m_nValue = 1;
-    pItem->m_pOwner = pGrid;
-    pItem->OnValueChanged(1);
+    return string_c_str(this);
+}
+
+struct Name {
+    char pad[4];
+    String text;
+};
+
+struct Item {
+    virtual ~Item();
+    virtual bool value();
+    Name* name;
+};
+
+struct Primary {
+    virtual ~Primary();
+    char pad[0x1c];
+};
+
+struct Secondary {
+    virtual ~Secondary();
+};
+
+struct Base : Primary, Secondary {
+    char pad0[0xd8];
+    int flag;
+    char pad1[0x0c];
+
+    Base(const char*, int, int);
+    virtual ~Base();
+    void SetValue(int);
+};
+
+struct Helper {
+    virtual ~Helper();
+    char pad[0x1c];
+
+    Helper(Item*, int);
+};
+
+struct S : Base, Helper {
+    Item* item;
+
+    S(Item*, int);
+    virtual ~S();
+};
+
+S::S(Item* p, int n)
+    : Base(p->name->text.c_str(), 0, 0),
+      Helper(p, n)
+{
+    flag = 1;
+    item = p;
+    SetValue(p->value());
 }

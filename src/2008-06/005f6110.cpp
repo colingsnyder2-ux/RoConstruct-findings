@@ -1,91 +1,86 @@
-// from server: 42% by colin
+// from server: 87% by king_originala
+struct S;
 
-
-
-
-struct StreamBuf {
-    int sputn(const char* s, int n);
-};
-
-struct Inner {
-    char pad0[0x14];
-    char* p14;
-    char* p18;
-    char* p1c;
-    char* p20;
-    char pad24[4];
-    unsigned char flags24;
-};
-
-struct Outer {
-    Inner* p0;
-};
-
-extern "C" int __stdcall helper_64db30(Inner* self, void* x);
-extern "C" int __stdcall helper_64db40(Inner* self, int a, int b);
-extern "C" void __stdcall helper_64da90(Inner* self, void* a, void* b, void* c);
-extern "C" void __stdcall helper_64dac0(Inner* self, void* a, void* b, void* c);
-extern "C" void __stdcall helper_64d9e0(void* p);
-extern "C" int __stdcall helper_5f5be0(void* p);
-
-extern void* g_84b230;
-extern void* g_84b210;
-extern int (__stdcall *g_8023a0)(void*, const char*, int);
-
-struct S {
-    Outer* p0;
-    void f(int a, int b);
-};
-
-void S::f(int a, int b)
+struct State
 {
-    Inner* inner = this->p0->p0;
-    if ((inner->flags24 & 1) != 0 && (a & 1) != 0) {
-        inner->flags24 = 0;
-        char* p14 = inner->p14;
-        inner->p1c = p14;
-        inner->p20 = p14;
-        helper_64db40(this->p0->p0, 1, 0);
+    char reserved[20];
+    char* buffer;
+    int capacity;
+    char* current;
+    char* end;
+    int flags;
+
+    void reset(int, bool);
+    void before(char*&, char*, char*&, char*);
+    int process(int);
+    void after(char*&, char*&, bool);
+};
+
+struct Cleanup
+{
+    S* owner;
+    ~Cleanup();
+};
+
+struct S
+{
+    State* state;
+    void func_005f6110(void**, int);
+};
+
+extern int finish_mode;
+extern int stream_end;
+extern void __cdecl check_error(int);
+
+typedef int (__thiscall *WriteFunction)(void*, const char*, int);
+extern WriteFunction sputn;
+
+void S::func_005f6110(void** sink, int mode)
+{
+    if ((state->flags & 1) && (mode & 1))
+    {
+        state->flags = 0;
+        State* p = state;
+        p->end = p->current = p->buffer;
+        state->reset(0, true);
     }
 
-    inner = this->p0->p0;
-    if ((inner->flags24 & 2) != 0 && (a & 2) != 0) {
-        char flag = 1;
-        int state = 0;
-        char local;
-        char* pLocal = &local;
-        char** pp20 = &inner->p20;
-        char** pp1c = &inner->p1c;
-        for (;;) {
-            if (*pp1c == *pp20) {
-                break;
+    if ((state->flags & 2) && (mode & 2))
+    {
+        Cleanup cleanup = { this };
+        bool more = true;
+        char dummy;
+        char* input = &dummy;
+        char*& output_end = state->end;
+        char*& output = state->current;
+
+        do
+        {
+            if (output != output_end)
+            {
+                State* p = state;
+                p->before(input, input, output, output_end);
+                int result = p->process(finish_mode);
+                p->after(input, output, false);
+                check_error(result);
+                more = result != stream_end;
             }
-            Inner* self = this->p0->p0;
-            helper_64da90(self, &pLocal, pp1c, pp20);
-            int r = helper_64db30(self, g_84b230);
-            helper_64dac0(self, &pLocal, pp1c, 0);
-            helper_64d9e0((void*)r);
-            if (r != (int)g_84b210) {
-                flag = 0;
-            }
-            inner = this->p0->p0;
-            char* p14 = inner->p14;
-            int diff = (int)(inner->p1c - p14);
+
+            int count = state->current - state->buffer;
             int written = 0;
-            char* base = p14;
-            while (written < diff) {
-                int n = g_8023a0(*(void**)&pLocal, base + written, diff - written);
-                written += n;
-            }
-            inner = this->p0->p0;
-            char* p14b = inner->p14;
-            char* p18b = inner->p18;
-            inner->p1c = p14b - written + diff;
-            inner->p20 = p14b + (int)p18b;
-            if (flag == 0) {
-                break;
-            }
+            char* buffer = state->buffer;
+
+            while (written < count)
+                written += sputn(*sink, buffer + written, count - written);
+
+            State* p = state;
+            char* begin = p->buffer;
+            int capacity = p->capacity;
+            char* remaining = begin - written + count;
+            char* end = begin + capacity;
+            p->current = remaining;
+            p->end = end;
         }
-        helper_5f5be0(&pLocal);
+        while (more);
     }
 }

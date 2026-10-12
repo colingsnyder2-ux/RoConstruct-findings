@@ -1,4 +1,4 @@
-// from server: 60% by king_originala
+// from server: 62% by king_originala
 namespace std {
     template<class T> struct char_traits;
     template<class T> class allocator;
@@ -35,14 +35,16 @@ struct BoundFuncDesc {
     unsigned char reserved[56];
     void (__thiscall *callback)(void*, String);
     int adjustment;
-
-    void invoke(void* object, Owner* owner);
 };
 
-void BoundFuncDesc::invoke(void* object, Owner* owner)
+struct Object : Owner {
+    void invoke(BoundFuncDesc* descriptor, const String& argument);
+};
+
+void Object::invoke(BoundFuncDesc* descriptor, const String& argument)
 {
     Guard guard;
-    guard.value = owner;
-    callback(static_cast<char*>(object) + adjustment,
-             *static_cast<const String*>(object));
+    guard.value = this;
+    descriptor->callback(reinterpret_cast<char*>(this) + descriptor->adjustment,
+                         argument);
 }

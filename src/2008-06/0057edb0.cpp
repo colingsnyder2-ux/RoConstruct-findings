@@ -1,68 +1,76 @@
-// from server: 42% by colin
-
-
-
-extern "C" void __stdcall _invalid_parameter_noinfo();
+// from server: 93% by king_originala
+extern "C" void (__cdecl* _invalid_parameter_noinfo)();
 
 typedef bool (__cdecl *Pred)(int);
+int* __cdecl find_if(int* first, int* last, Pred pred);
 
-int* find_if(int* first, int* last, Pred pred)
+struct Container
 {
-    while (first != last)
-    {
-        if (pred(*first))
-            break;
-        ++first;
-    }
-    return first;
-}
-
-struct ClearBackpack
-{
-    char pad0[0x13c];
-    int* first;
-    char pad1[8];
+    char padding[16];
     int* last;
-    int* end;
-    int Clear(int pred);
 };
 
-int ClearBackpack::Clear(int pred)
+struct Proxy
 {
-    int* f = first;
-    int* l = last;
-    if (f > l)
+    Container* owner;
+};
+
+struct Iterator
+{
+    Proxy* proxy;
+    int* volatile position;
+};
+
+struct S
+{
+    char padding[316];
+    Proxy* proxy;
+    char padding2[8];
+    int* first;
+    int* last;
+
+    int f(Pred pred);
+};
+
+int S::f(Pred pred)
+{
+    Iterator iterator;
+    int* finish = last;
+    if (first > finish)
         _invalid_parameter_noinfo();
-    f = first;
-    l = last;
-    if (f > l)
+
+    int* start = first;
+    if (start > last)
         _invalid_parameter_noinfo();
-    int* result = find_if(f, l, (Pred)pred);
-    int* newLast = last;
-    if (first > newLast)
+
+    Proxy* saved = proxy;
+    iterator.position = start;
+    int* result = find_if(start, finish, pred);
+
+    finish = last;
+    if (first > finish)
         _invalid_parameter_noinfo();
-    int* oldFirst = first;
-    if (oldFirst != 0 && oldFirst == first)
+
+    Proxy* current = *reinterpret_cast<Proxy* volatile*>(&proxy);
+    void (__cdecl* invalid)();
+    if (!saved || saved != current)
     {
+        invalid = _invalid_parameter_noinfo;
+        invalid();
     }
     else
+        invalid = _invalid_parameter_noinfo;
+
+    if (result != finish)
     {
-        _invalid_parameter_noinfo();
-    }
-    if (result != newLast)
-    {
-        if (oldFirst == 0)
-        {
-            _invalid_parameter_noinfo();
-            if (result < *(int**)((char*)oldFirst + 0x10))
-                _invalid_parameter_noinfo();
-        }
+        if (saved)
+            saved = reinterpret_cast<Proxy*>(saved->owner);
         else
-        {
-            oldFirst = *(int**)oldFirst;
-            if (result < *(int**)((char*)oldFirst + 0x10))
-                _invalid_parameter_noinfo();
-        }
+            invalid();
+
+        if (result >= reinterpret_cast<Container*>(saved)->last)
+            invalid();
+
         return *result;
     }
     return 0;

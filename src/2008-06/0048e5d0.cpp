@@ -1,5 +1,40 @@
-// from server: 60% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: openrbx-client App/util/RunStateOwner.cpp
+// from server: 81% by king_originala
+extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
+#pragma intrinsic(_InterlockedExchangeAdd)
+
+struct Ref {
+    virtual void unused();
+    virtual void dispose();
+    virtual void destroy();
+    volatile long strong;
+    volatile long weak;
+};
+
+struct Argument {
+    unsigned long first;
+    unsigned long second;
+    unsigned long third;
+    Ref* control;
+    unsigned long fifth;
+};
+
+struct S {
+    unsigned long value;
+    void initialize(Argument*);
+    S* f(Argument);
+};
+
+S* S::f(Argument argument)
+{
+    value = 0;
+    initialize(&argument);
+
+    Ref* control = argument.control;
+    if (control && _InterlockedExchangeAdd(&control->strong, -1) == 1) {
+        control->dispose();
+        if (_InterlockedExchangeAdd(&control->weak, -1) == 1)
+            control->destroy();
+    }
+
+    return this;
+}

@@ -1,134 +1,135 @@
-// from server: 37% by atomic.potato
+// from server: 89% by king_originala
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
+#pragma float_control(precise, off)
 
-struct RefCounted {
-    void* vptr;
-    volatile long refcount;
-    volatile long weakrefcount;
-};
-
-struct Inner {
-    char pad0[0x10];
-    void* ptr10;
-    char pad14[0x28 - 0x14];
-    void* ptr28;
-    char pad2c[0x2c8 - 0x2c];
-    void* ptr2c8;
-};
-
-struct Obj {
-    char pad0[0x10];
-    void* ptr10;
-    char pad14[0x18 - 0x14];
-    float f18;
-    float f1c;
-    float f20;
-    float f24;
-    float f28;
-    float f2c;
-    float f30;
-    float f34;
-    float f38;
-    float f3c;
-};
-
-struct Vec3 {
+struct Vec {
     float x, y, z;
+    Vec() {}
+    Vec(float a, float b, float c) : x(a), y(b), z(c) {}
+    Vec& operator=(const Vec& v) {
+        x = v.x;
+        y = v.y;
+        z = v.z;
+        return *this;
+    }
+    Vec operator-(const Vec& v) const {
+        return Vec(x - v.x, y - v.y, z - v.z);
+    }
+    Vec operator-() const {
+        return Vec(-x, -y, -z);
+    }
+    Vec operator*(float s) const {
+        return Vec(x * s, y * s, z * s);
+    }
+    Vec* clamp(Vec* result, const Vec* lower, const Vec* upper);
 };
 
-struct Big {
-    char pad0[0x10];
-    void* ptr10;
-    char pad14[0xd0 - 0x14];
-    float fd0;
-    float fd4;
-    float fd8;
+struct RefCount {
+    virtual void reserved();
+    virtual void dispose();
+    virtual void destroy();
+    volatile long strong;
+    volatile long weak;
 };
 
-extern "C" void (__thiscall *sub_5cab00)(void* out, void* in);
-extern "C" void __stdcall sub_599360(void* p);
-extern "C" float __stdcall sub_65ff10(void* p);
-extern "C" void __stdcall sub_658d20(void* p);
-extern "C" Vec3* __stdcall sub_4a6100(Vec3* out, Vec3* a, Vec3* b);
+struct Body;
 
-struct BodyAngularVelocity {
-    void method(int a, int b);
+struct Object {
+    char padding[0x2c8];
+    Body* body;
 };
 
-void BodyAngularVelocity::method(int a, int b)
+struct Shared {
+    Object* object;
+    RefCount* count;
+};
+
+struct Handle {
+    char storage[8];
+    Shared* get(Shared* result);
+};
+
+struct Accumulator {
+    char padding0[8];
+    unsigned char dirty;
+    char padding1[0x87];
+    Vec torque;
+    void update();
+};
+
+struct Parent {
+    char padding[0x2c];
+    Accumulator* accumulator;
+};
+
+struct MassSource {
+    float getMass();
+};
+
+struct Node {
+    char padding0[0x10];
+    Parent* parent;
+    char padding1[0x14];
+    MassSource* massSource;
+    char padding2[0x60];
+    float mass;
+};
+
+struct Body {
+    char padding0[0x10];
+    Node* node;
+    char padding1[0xbc];
+    Vec angularVelocity;
+    const void* get();
+};
+
+struct S {
+    char padding[0x10];
+    Handle handle;
+    float gain;
+    Vec limit;
+    Vec desired;
+    Vec torque;
+    void f(float, float);
+};
+
+void S::f(float, float)
 {
-    void* local;
-    void* esi;
-    void* ebx;
-    float f14, f18, f1c;
-    float scale;
-    Vec3 tmp;
-    Vec3 neg;
-    Vec3 result;
-    Inner* inner;
-    Big* big;
-    Obj* self;
-    RefCounted* rc;
-    void* obj2c8;
-    void* p2c;
-    float f;
-
-    self = (Obj*)this;
-    sub_5cab00((char*)this + 0x10, &local);
-    esi = local;
-    ebx = *(void**)(*(char**)&local);
-    obj2c8 = *(void**)((char*)ebx + 0x2c8);
-
-    if (esi != 0) {
-        rc = (RefCounted*)esi;
-        if (_InterlockedExchangeAdd(&rc->refcount, -1) == 1) {
-            void** vt = *(void***)esi;
-            ((void (__thiscall*)(void*))vt[1])(esi);
-            if (_InterlockedExchangeAdd(&rc->weakrefcount, -1) == 1) {
-                void** vt2 = *(void***)esi;
-                ((void (__thiscall*)(void*))vt2[2])(esi);
+    Body* body;
+    {
+        Shared shared;
+        body = handle.get(&shared)->object->body;
+        RefCount* count = shared.count;
+        if (count) {
+            if (_InterlockedExchangeAdd(&count->strong, -1) == 1) {
+                count->dispose();
+                if (_InterlockedExchangeAdd(&count->weak, -1) == 1)
+                    count->destroy();
             }
         }
     }
 
-    sub_599360(obj2c8);
-
-    big = (Big*)obj2c8;
-    f14 = self->f28 - big->fd0;
-    f18 = self->f2c - big->fd4;
-    f1c = self->f30 - big->fd8;
-
-    inner = (Inner*)big->ptr10;
-    if (inner->ptr28 != 0) {
-        scale = sub_65ff10(inner->ptr28);
-    } else {
-        scale = *(float*)((char*)inner + 0x8c);
+    body->get();
+    {
+        Vec difference = (desired - body->angularVelocity) * gain;
+        Node* node = body->node;
+        torque = difference * (node->massSource
+            ? node->massSource->getMass() : node->mass);
+    }
+    {
+        Vec lower = -limit;
+        Vec result;
+        torque = *torque.clamp(&result, &lower, &limit);
     }
 
-    f14 *= scale;
-    f18 *= scale;
-    f1c *= scale;
-
-    tmp.x = f14;
-    tmp.y = f18;
-    tmp.z = f1c;
-
-    neg.x = -self->f18;
-    neg.y = -self->f1c;
-    neg.z = -self->f20;
-
-    sub_4a6100(&result, &neg, &tmp);
-    tmp = result;
-
-    p2c = *(void**)((char*)big->ptr10 + 0x10);
-    f = *(float*)((char*)p2c + 0x2c);
-    if (f != 0.0f) {
-        if (*(char*)((char*)p2c + 8) != 0) {
-            sub_658d20(p2c);
-        }
-        *(float*)((char*)p2c + 0x90) += tmp.x;
-        *(float*)((char*)p2c + 0x94) += tmp.y;
-        *(float*)((char*)p2c + 0x98) += tmp.z;
+    Accumulator* accumulator = body->node->parent->accumulator;
+    if (accumulator) {
+        if (accumulator->dirty)
+            accumulator->update();
+        Vec& applied = torque;
+        accumulator->torque.x = accumulator->torque.x + applied.x;
+        accumulator->torque.y = applied.y + accumulator->torque.y;
+        accumulator->torque.z = applied.z + accumulator->torque.z;
     }
 }

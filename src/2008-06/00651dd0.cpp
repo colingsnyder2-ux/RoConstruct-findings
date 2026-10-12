@@ -1,4 +1,8 @@
-// from server: 91% by king_originala
+// from server: 98% by colin
+
+
+
+
 typedef unsigned int size_t;
 
 inline void* operator new(size_t, void* p) { return p; }
@@ -14,8 +18,10 @@ S* __cdecl fill_n(S* first, unsigned int count, const S& value)
 {
     S* begin = first;
     try {
-        for (; count > 0; --count, ++first)
-            new (first) S(value);
+        for (; count > 0; --count, ++first) {
+            S* cur = first;
+            new (cur) S(value);
+        }
     }
     catch (...) {
         for (; begin != first; ++begin)

@@ -1,33 +1,33 @@
-// from server: 66% by tester
+// from server: 96% by king_originala
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
 
-struct RefCounted {
-    void* vptr;
-    long refcount;
+struct Control {
+    long reserved;
+    volatile long references;
 };
 
-struct Elem {
-    void* ptr;
-    RefCounted* ref;
+struct Value {
+    void* object;
+    Control* control;
+    Value(const Value& other);
+    ~Value();
 };
 
-typedef bool (__stdcall *Pred)(Elem*);
+__forceinline Value::Value(const Value& other)
+    : object(other.object), control(other.control)
+{
+    if (control)
+        _InterlockedExchangeAdd(&control->references, 1);
+}
 
-int CountIf(Elem* first, Elem* last, Pred pred)
+int __cdecl count_if(Value* first, Value* last,
+                     bool (__cdecl *predicate)(Value))
 {
     int count = 0;
-    while (first != last) {
-        Elem tmp;
-        tmp.ptr = first->ptr;
-        tmp.ref = first->ref;
-        if (tmp.ref) {
-            _InterlockedExchangeAdd(&tmp.ref->refcount, 1);
-        }
-        if (pred(&tmp)) {
+    for (; first != last; ++first) {
+        if (predicate(*first))
             ++count;
-        }
-        ++first;
     }
     return count;
 }

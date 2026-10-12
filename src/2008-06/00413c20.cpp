@@ -1,4 +1,4 @@
-// from server: 96% by king_originala
+// from server: 97% by king_originala
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
 extern "C" long __cdecl _InterlockedIncrement(volatile long*);
@@ -65,10 +65,11 @@ inline const Shared& Vector::front() const
     if (position > last)
         invalid();
 
-    Vector** proxy = owner;
-    Vector* container = proxy ? *proxy : 0;
-    if (!proxy)
+    Vector* container = reinterpret_cast<Vector*>(owner);
+    if (!container)
         invalid();
+    else
+        container = *reinterpret_cast<Vector**>(container);
 
     if (position >= container->last)
         invalid();

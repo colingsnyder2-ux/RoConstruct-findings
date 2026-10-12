@@ -1,4 +1,4 @@
-// from server: 77% by king_originala
+// from server: 100% by king_originala
 struct S;
 
 struct Result {
@@ -28,6 +28,6 @@ int S::f(unsigned int key) {
     Range range = equal_range(key);
     int count = 0;
     process(range.first, range.second, &count);
-    erase(range.first, range.second);
+    erase(Result(range.first), Result(range.second));
     return count;
 }

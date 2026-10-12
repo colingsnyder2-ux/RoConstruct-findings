@@ -1,26 +1,33 @@
-// from server: 85% by colin
-struct EventHandler {
-    void clear();
-    int f(int a1);
+// from server: 100% by king_originala
+typedef void (__cdecl *Callback)(void *, void *, int);
+
+struct CallbackTable {
+    Callback callback;
 };
 
-extern "C" void __cdecl sub_6A067A(void*);
+struct S {
+    unsigned long unused[2];
+    CallbackTable *table;
+    unsigned long reserved;
+    unsigned char data[24];
+    unsigned long references;
+};
 
-int EventHandler::f(int a1)
+extern void __cdecl release(void *);
+
+unsigned long __stdcall function(S *p)
 {
-    int* p = (int*)a1;
-    p[10] -= 1;
-    if (p[10] == 0) {
-        int* q = (int*)p[2];
-        if (q != 0) {
-            int (*fn)(void*, void*, int) = (int (*)(void*, void*, int))q[0];
-            if (fn != 0) {
-                fn((void*)(p + 4), (void*)(p + 4), 1);
-            }
-            p[2] = 0;
+    unsigned long result = --p->references;
+    if (result == 0) {
+        if (p->table) {
+            Callback callback = p->table->callback;
+            void *data = p->data;
+            if (callback)
+                callback(data, data, 1);
+            p->table = 0;
         }
-        sub_6A067A(p);
-        return 0;
+        release(p);
+        result = 0;
     }
-    return p[10];
+    return result;
 }

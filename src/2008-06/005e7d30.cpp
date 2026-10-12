@@ -1,34 +1,21 @@
-// from server: 66% by tester
-struct Geometry {
-    char pad[0x1c];
-    int* indices;
-    int count;
+// from server: 100% by king_originala
+struct S {
+    char padding[28];
     int* values;
-
-    int find(Geometry* other);
+    int count;
+    int reserved;
+    S** neighbors;
 };
 
-int Geometry::find(Geometry* other) {
-    Geometry* a = other;
-    Geometry* b = this;
-    Geometry* first;
-    Geometry* second;
-    if (a->count < b->count) {
-        first = a;
-        second = b;
-    } else {
-        first = b;
-        if (b != a) {
-            second = b;
-        } else {
-            second = a;
-        }
+int __cdecl findConnection(S* a, S* b)
+{
+    S* smaller = a->count < b->count ? a : b;
+    S* other = smaller == a ? b : a;
+
+    for (int i = 0; i < smaller->count; ++i) {
+        if (smaller->neighbors[i] == other)
+            return smaller->values[i];
     }
-    int n = first->count;
-    for (int i = 0; i < n; ++i) {
-        if (first->indices[i] == (int)second) {
-            return first->values[i];
-        }
-    }
+
     return 0;
 }

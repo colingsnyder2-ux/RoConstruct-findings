@@ -1,15 +1,21 @@
-// from server: 42% by tester
-struct S {
-    int f(int, int);
+// from server: 82% by king_originala
+struct W {
+    void *p;
+    W(const W &);
 };
 
-extern "C" void __stdcall sub_553220(int*);
-extern "C" void __stdcall sub_5456D0(int);
+struct B {
+    unsigned char data[20];
+    B(int, W);
+};
 
-int S::f(int a, int b) {
-    int tmp;
-    sub_553220(&tmp);
-    sub_5456D0(a);
-    sub_553220((int*)((char*)this + 0x14));
-    return (int)this;
+struct S : B {
+    W value;
+    S(int, W);
+};
+
+#pragma optimize("", off)
+S::S(int n, W w)
+    : B(n, w), value(w)
+{
 }

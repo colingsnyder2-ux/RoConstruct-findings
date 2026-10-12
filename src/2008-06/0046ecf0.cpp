@@ -1,22 +1,31 @@
-// from server: 56% by colin
-struct LDrawCommand {
-    bool writeToStream(void* stream);
+// from server: 100% by king_originala
+struct Context
+{
+    int f(int);
 };
 
-extern "C" int __stdcall sub_46D080(int);
-extern "C" void* __stdcall sub_44A450(void*, const char*);
-extern "C" void* __stdcall sub_44A450_2(void*, const char*);
-extern "C" void* __stdcall sub_44A450_3(void*, const char*);
+struct Stream;
 
-extern void* g_802470;
+extern "C" Stream * __cdecl append(Stream *, const char *);
+extern Stream * (__thiscall *writeInteger)(Stream *, int);
 
-bool LDrawCommand::writeToStream(void* stream)
+struct Command
 {
-    int v = sub_46D080(*(int*)((char*)this + 0xc));
-    void* p = sub_44A450(stream, (const char*)0x81cae4);
-    void* q = sub_44A450_2(p, (const char*)0x81cb08);
-    (void)q;
-    void* r = sub_44A450_3(stream, (const char*)0x81cbcc);
-    (void)r;
+    int reserved0;
+    Context *context;
+    int reserved8;
+    int value;
+
+    bool f(Stream *);
+};
+
+bool Command::f(Stream *out)
+{
+    append(
+        writeInteger(
+            append(out, (const char *)0x81cae4),
+            context->f(value)),
+        (const char *)0x81cb08);
+    append(out, (const char *)0x81cbcc);
     return true;
 }

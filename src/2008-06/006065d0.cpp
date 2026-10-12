@@ -1,39 +1,55 @@
-// from server: 41% by tester
-struct Point {
-    char pad[0x1c];
-    float x;
-    float y;
-    float z;
-    float vx;
-    float vy;
-    float vz;
+// from server: 94% by king_originala
+extern "C" double __cdecl fabs(double);
+#pragma intrinsic(fabs)
+#pragma float_control(precise, off)
+
+struct Vector3 {
+    float x, y, z;
 };
 
-struct PointToPointBreakConnector {
+struct Body {
+    char pad[28];
+    Vector3 position;
+    Vector3 force;
+};
+
+struct Connector {
     char pad[8];
-    Point* point0;
-    Point* point1;
-    float k;
-    float breakForce;
+    Body* first;
+    Body* second;
+    float stiffness;
+    float threshold;
     bool broken;
-    void computeForce(float dt, bool throttling);
+    void f(float, float);
 };
 
-void PointToPointBreakConnector::computeForce(float dt, bool throttling)
+void Connector::f(float, float)
 {
     if (!broken) {
-        float fx = (point1->x - point0->x) * -k;
-        float fy = (point1->y - point0->y) * -k;
-        float fz = (point1->z - point0->z) * -k;
+        const Vector3& b = second->position;
+        const Vector3& a = first->position;
+        Vector3 force = { b.x - a.x, b.y - a.y, b.z - a.z };
 
-        float mag = (fx < 0 ? -fx : fx) + (fy < 0 ? -fy : fy) + (fz < 0 ? -fz : fz);
-        broken = breakForce < mag;
+        float scale = -stiffness;
+        force.x *= scale;
+        force.y *= scale;
+        force.z *= scale;
 
-        point0->vx += fx;
-        point0->vy += fy;
-        point0->vz += fz;
-        point1->vx -= fx;
-        point1->vy -= fy;
-        point1->vz -= fz;
+        float magnitude = (float)fabs(force.y)
+                        + (float)fabs(force.x)
+                        + (float)fabs(force.z);
+        broken = magnitude > threshold;
+
+        Vector3 negative = { -force.x, -force.y, -force.z };
+
+        Vector3& af = first->force;
+        af.x += negative.x;
+        af.y += negative.y;
+        af.z += negative.z;
+
+        Vector3& bf = second->force;
+        bf.x += force.x;
+        bf.y += force.y;
+        bf.z += force.z;
     }
 }

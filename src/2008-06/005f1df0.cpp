@@ -1,11 +1,9 @@
-// from server: 60% by tester
-extern "C" __declspec(dllimport) int __stdcall ReleaseMutex(void*);
-extern "C" __declspec(dllimport) int __stdcall ReleaseSemaphore(void*, long, long*);
-extern "C" __declspec(dllimport) unsigned long __stdcall WaitForSingleObject(void*, unsigned long);
-
-extern void* g_802280;
-extern void* g_802288;
-extern void* g_8022c0;
+// from server: 93% by king_originala
+extern "C" {
+    extern unsigned long (__stdcall *WaitForSingleObject)(void*, unsigned long);
+    extern int (__stdcall *ReleaseMutex)(void*);
+    extern int (__stdcall *ReleaseSemaphore)(void*, long, long*);
+}
 
 struct S {
     void* field0;
@@ -17,44 +15,43 @@ struct S {
     void method();
 };
 
-void S::method() {
-    void* ebx = g_802288;
-    int ebp = fieldC;
-    int edi = field14;
+void S::method()
+{
+    unsigned long (__stdcall *wait)(void*, unsigned long) = WaitForSingleObject;
+    wait(field4, 0xffffffffUL);
+    wait(field8, 0xffffffffUL);
 
-    ReleaseMutex(field4);
-    ReleaseMutex(field8);
+    int edi = field14;
+    int ebp = fieldC;
 
     if (edi != 0) {
-        edi = edi - 1;
-        field14 = edi;
-        if (edi != 0) {
-            if (field10 == edi) {
-                if (ebp != 0) {
-                    fieldC = 0;
-                }
-            } else {
+        int remaining = edi - 1;
+        field14 = remaining;
+        if (remaining == 0) {
+            if (field10 != 0) {
                 ReleaseSemaphore(field0, 1, 0);
                 edi = 0;
+            } else if (ebp != 0) {
+                fieldC = 0;
             }
         }
     } else {
-        ebp = ebp + 1;
-        fieldC = ebp;
-        if (ebp == 0x7fffffff) {
-            ReleaseMutex(field0);
+        int count = ebp + 1;
+        fieldC = count;
+        if (count == 0x7fffffff) {
+            wait(field0, 0xffffffffUL);
             field10 -= fieldC;
             ReleaseSemaphore(field0, 1, 0);
             fieldC = 0;
         }
     }
 
-    WaitForSingleObject(field8, 0xffffffff);
+    ReleaseMutex(field8);
 
     if (edi == 1) {
         while (ebp != 0) {
-            ReleaseMutex(field4);
-            ebp = ebp - 1;
+            wait(field4, 0xffffffffUL);
+            --ebp;
         }
         ReleaseSemaphore(field0, 1, 0);
     }

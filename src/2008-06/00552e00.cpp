@@ -1,30 +1,31 @@
-// from server: 35% by colin
-struct Agg {
-    void f(void*);
-};
-
-struct Vec3 {
+// from server: 100% by king_originala
+struct Vector {
     float x, y, z;
+    Vector operator-(const Vector&) const;
+    float length() const;
+    float distance(class Provider*) const;
 };
 
-struct Chunk {
-    char pad[0x24];
-    Vec3 pos;
+struct Transform {
+    char padding[0x24];
+    Vector translation;
 };
 
-struct Base {
-    virtual void getPos(Vec3* out);
+class Provider {
+public:
+    virtual void slot0();
+    virtual void slot1();
+    virtual void slot2();
+    virtual void slot3();
+    virtual void slot4();
+    virtual void slot5();
+    virtual void slot6();
+    virtual const Transform& getTransform();
 };
 
-extern "C" void __fastcall sub_45ac40(Vec3* out, Vec3* a, Vec3* b);
-extern "C" void __fastcall sub_552e40(Chunk* c);
-
-void Agg::f(void* p) {
-    Vec3 tmp;
-    Base* b = (Base*)p;
-    Vec3* src;
-    b->getPos(&tmp);
-    src = (Vec3*)((char*)b + 0x24);
-    sub_45ac40(&tmp, src, &tmp);
-    sub_552e40((Chunk*)&tmp);
+#pragma optimize("", off)
+float Vector::distance(Provider* provider) const {
+    Vector difference = provider->getTransform().translation - *this;
+    return difference.length();
 }
+#pragma optimize("", on)

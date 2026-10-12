@@ -1,11 +1,18 @@
-// from server: 69% by atomic.potato
-extern "C" int __cdecl _mbscmp(const unsigned char *, const unsigned char *);
+// from server: 100% by king_originala
+namespace ATL {
+    __declspec(noreturn) void __stdcall AtlThrowImpl(long hr);
+}
 
-extern "C" void __cdecl sub_401000(unsigned long);
+extern "C" int (__cdecl *mbscmp_import)(
+    const unsigned char *, const unsigned char *);
 
-int sub_00569d30(const unsigned char **a, const unsigned char *b)
+int __cdecl compareStrings(
+    const unsigned char *const volatile *left,
+    const unsigned char *right)
 {
-    if (b == 0)
-        sub_401000(0x80004005UL);
-    return _mbscmp(*a, b) == 0;
+    if (!right)
+        ATL::AtlThrowImpl((long)0x80004005UL);
+
+    const unsigned char *value = *left;
+    return mbscmp_import(value, right) == 0;
 }

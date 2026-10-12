@@ -1,4 +1,4 @@
-// from server: 64% by king_originala
+// from server: 76% by king_originala
 struct Entry {
     unsigned int data[2];
 };
@@ -11,17 +11,12 @@ struct Container {
 
 struct Vector {
     float x, y, z;
-    Vector(float, float, float);
     Vector(const Vector&);
-    Vector operator-(const Vector&) const;
 };
 
-inline Vector::Vector(float a, float b, float c) : x(a), y(b), z(c) {}
-inline Vector::Vector(const Vector& v) : x(v.x), y(v.y), z(v.z) {}
-
-inline Vector Vector::operator-(const Vector& v) const
+inline Vector::Vector(const Vector& v)
+    : x(v.x), y(v.y), z(v.z)
 {
-    return Vector(x - v.x, y - v.y, z - v.z);
 }
 
 struct Bounds {
@@ -31,7 +26,9 @@ struct Bounds {
 };
 
 inline Bounds::Bounds(const Bounds& b)
-    : minimum(b.minimum), maximum(b.maximum) {}
+    : minimum(b.minimum), maximum(b.maximum)
+{
+}
 
 extern const float half;
 
@@ -49,10 +46,14 @@ void S::f(Container* container)
     if (static_cast<unsigned int>(container->end - container->begin) > 0) {
         Bounds bounds = getBounds(container);
         Vector position = getPosition();
-        Vector result = transform(position - Vector(
-            (bounds.minimum.x + bounds.maximum.x) * half,
-            bounds.minimum.y,
-            (bounds.minimum.z + bounds.maximum.z) * half));
+
+        position.x = position.x -
+            (bounds.minimum.x + bounds.maximum.x) * half;
+        position.y = position.y - bounds.minimum.y;
+        position.z = position.z -
+            (bounds.minimum.z + bounds.maximum.z) * half;
+
+        Vector result = transform(position);
         apply(container, result, 0);
     }
 }

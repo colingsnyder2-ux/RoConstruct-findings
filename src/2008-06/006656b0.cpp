@@ -1,80 +1,101 @@
-// from server: 35% by tester
-struct V3 { float x, y, z; };
-
-struct A {
-    char pad0[0x10];
-    V3 v10;
+// from server: 67% by king_originala
+struct Vec {
+    float x, y, z;
 };
 
-struct B {
-    char pad0[0x24];
-    float f24, f28, f2c;
+struct Box {
+    Vec faceCenter(int index) const;
 };
 
-extern "C" void __stdcall sub_60f7b0(void*, void*);
-extern "C" void* __cdecl sub_5ec570(int);
-extern "C" void __cdecl sub_677140(void*, void*, void*);
-extern "C" void __cdecl sub_7bb5a0(void*, void*, void*, void*, void*);
-
-extern float g_81e380;
-extern double g_96f018;
-extern int g_96f020;
-extern void* g_8024ac;
-extern void* g_827404;
-extern void* g_97f6d8;
-
-struct Effect {
-    bool f(void* a, void* b, void* c, void* d);
+struct Transform {
+    float m[9];
+    Vec translation;
 };
 
-bool Effect::f(void* a, void* b, void* c, void* d)
-{
-    char* p = (char*)a;
-    V3* vp = (V3*)(p + 4);
-    V3* vp2 = (V3*)(p + 0x10);
-    B* bp = (B*)b;
-    int i;
-    float fx, fy, fz;
-    float gx, gy, gz;
-    float hx, hy, hz;
-    float t;
-    bool result = false;
+struct Ray {
+    int tag;
+    Vec origin;
+    Vec direction;
+};
 
-    for (i = 0; i < 6; i++) {
-        char buf[0x30];
-        sub_60f7b0(b, buf);
-        void* q = sub_5ec570(0);
-        float s = g_81e380;
-        fx = *(float*)q * s;
-        fy = *(float*)((char*)q + 4) * s;
-        fz = *(float*)((char*)q + 8) * s;
-        fx += vp->x;
-        fy += vp->y;
-        fz += vp->z;
-        gx = bp->f24 + fx * *(float*)((char*)b + 0) + fy * *(float*)((char*)b + 0x10) + fz * *(float*)((char*)b + 0x20);
-        gy = bp->f28 + fx * *(float*)((char*)b + 4) + fy * *(float*)((char*)b + 0x14) + fz * *(float*)((char*)b + 0x24);
-        gz = bp->f2c + fx * *(float*)((char*)b + 8) + fy * *(float*)((char*)b + 0x18) + fz * *(float*)((char*)b + 0x28);
-        sub_677140(0, 0, 0);
-        hx = 0.0f;
-        hy = 0.0f;
-        hz = 0.0f;
-        sub_7bb5a0(vp2, buf, &hx, &gx, g_97f6d8);
-        if (!(g_96f020 & 1)) {
-            g_96f020 |= 1;
-            g_96f018 = *(double*)g_8024ac;
-        }
-        if (hx != (float)g_96f018) {
-            result = true;
-            break;
+struct Hit {
+    virtual ~Hit();
+    Vec point;
+    float distance;
+};
+
+inline Hit::~Hit() {}
+
+extern "C" const double* _Inf;
+extern float offsetScale;
+extern unsigned char intersectionContext;
+
+extern const Vec* __cdecl faceNormal(int index);
+extern float __cdecl pointDistance(const Vec* origin, const Vec* point);
+extern double __cdecl intersect(
+    const Vec* origin,
+    const Vec* direction,
+    Vec* point,
+    Vec* normal,
+    void* context
+);
+
+bool __cdecl testEffect(
+    const Box* box,
+    const Transform* transform,
+    const Ray* ray,
+    Vec* result,
+    int* face
+) {
+    const Vec* direction = &ray->direction;
+    const Vec* origin = &ray->origin;
+
+    for (int i = 0; i < 6; ++i) {
+        Vec center = box->faceCenter(i);
+        const Vec* n = faceNormal(i);
+
+        center.x += n->x * offsetScale;
+        center.y += n->y * offsetScale;
+        center.z += n->z * offsetScale;
+
+        Vec point;
+        point.x = transform->m[0] * center.x
+                + transform->m[2] * center.z
+                + transform->m[1] * center.y
+                + transform->translation.x;
+        point.y = transform->m[3] * center.x
+                + transform->m[5] * center.z
+                + transform->m[4] * center.y
+                + transform->translation.y;
+        point.z = transform->m[8] * center.z
+                + transform->m[7] * center.y
+                + transform->m[6] * center.x
+                + transform->translation.z;
+
+        float distance = pointDistance(origin, &point);
+
+        Vec normal;
+        normal.x = 0.0f;
+        normal.y = 0.0f;
+        normal.z = 0.0f;
+
+        Hit hit;
+        hit.point = point;
+        hit.distance = distance;
+
+        static double infinity = *_Inf;
+        bool found = intersect(
+            origin, direction, &hit.point, &normal, &intersectionContext
+        ) < infinity;
+
+        if (found) {
+            *face = i;
+            result->x = point.x;
+            result->y = point.y;
+            result->z = point.z;
+            return true;
         }
     }
 
-    if (result) {
-        *(int*)d = i;
-        *(float*)c = fx;
-        *(float*)((char*)c + 4) = fy;
-        *(float*)((char*)c + 8) = fz;
-        return true;
-    }
     return false;
 }

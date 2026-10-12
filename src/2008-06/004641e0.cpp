@@ -1,40 +1,63 @@
-// from server: 58% by colin
-struct S_func_004613d0 {
-    char pad0[88];
-    int m_x;
-    int* f();
+// from server: 94% by king_originala
+struct Text;
+
+extern void (__thiscall *textConstruct)(Text*);
+extern void (__thiscall *textDestroy)(Text*);
+extern int (__thiscall *textLoad)(Text*, unsigned int);
+extern const char* (__thiscall *textData)(const Text*);
+
+struct Text {
+    char* data;
+    Text();
+    ~Text() throw();
+    int load(unsigned int);
+    operator const char*() const;
 };
 
-struct S_func_00460f10 {
-    char pad0[0x54];
-    int m_a;
-    int m_b;
-    int f(int);
+inline Text::Text()
+{
+    textConstruct(this);
+}
+
+inline Text::~Text() throw()
+{
+    textDestroy(this);
+}
+
+inline int Text::load(unsigned int id)
+{
+    return textLoad(this, id);
+}
+
+inline Text::operator const char*() const
+{
+    return textData(this);
+}
+
+struct Command {
+    virtual void enable(int);
+    virtual void check(int);
+    virtual void radio(int);
+    virtual void setText(const char*);
+};
+
+struct Control {
+    int query(int);
 };
 
 struct CScriptEditor {
-    void func(int);
+    int* f();
+    void update(Command*);
 };
 
-extern "C" {
-    int __stdcall sub_803F04(int*);
-    int __stdcall sub_8032C0(int*, int);
-    int __stdcall sub_803EE0(int*);
-    int __stdcall sub_803F14(int*);
-}
+void CScriptEditor::update(Command* command)
+{
+    Text text;
+    if (reinterpret_cast<Control*>(f())->query(1))
+        text.load(0xe704);
 
-void CScriptEditor::func(int arg) {
-    int local;
-    sub_803F04(&local);
-    S_func_004613d0* p = (S_func_004613d0*)((char*)this + 0);
-    int* q = p->f();
-    S_func_00460f10* r = (S_func_00460f10*)q;
-    if (r->f(1)) {
-        sub_8032C0(&local, 0xe704);
-    }
-    int* v = (int*)arg;
-    int* vt = *(int**)v;
-    int tmp = sub_803EE0(&local);
-    ((void (__thiscall*)(void*, int))vt[3])(v, tmp);
-    sub_803F14(&local);
+    typedef void (__thiscall *SetText)(Command*, const char*);
+    SetText* table = *reinterpret_cast<SetText**>(command);
+    const char* value = text;
+    table[3](command, value);
 }

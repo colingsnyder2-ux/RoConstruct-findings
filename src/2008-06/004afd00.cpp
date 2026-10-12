@@ -1,79 +1,126 @@
-// from server: 25% by colin
+// from server: 84% by king_originala
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
 
-struct RefCounted {
-    void AddRef();
-    void Release();
+extern "C" void (__cdecl* _invalid_parameter_noinfo)();
+
+struct Control {
+    virtual void unused() = 0;
+    virtual void dispose() = 0;
+    virtual void destroy() = 0;
+    volatile long strong;
+    volatile long weak;
 };
 
-struct JointsService {
-    char pad[0x2c38];
-    struct List {
-        char pad0[0x18];
-        void* end;
-        void* begin;
-    } list;
-    bool func(void* a, void* b);
+struct Object;
+
+struct Shared {
+    Object* ptr;
+    Control* control;
+    __forceinline ~Shared();
 };
 
-void __stdcall sub_4ADFD0(void*, void*, void*);
-void __stdcall sub_4AE690(void*, void*, void*, void*);
-void __stdcall sub_4AED00(void*, void*, void*);
-void __stdcall sub_55A8F0(void*, int);
-void __stdcall sub_595230(void*);
-void __stdcall sub_802890();
-
-bool JointsService::func(void* a, void* b)
-{
-    if (a == 0) {
-        if (b != 0) {
-            RefCounted* rc = (RefCounted*)b;
-            if (_InterlockedExchangeAdd((volatile long*)((char*)rc + 4), -1) == 1) {
-                rc->Release();
-            }
-            if (_InterlockedExchangeAdd((volatile long*)((char*)rc + 8), -1) == 1) {
-                rc->Release();
-            }
+__forceinline Shared::~Shared() {
+    Control* p = control;
+    if (p) {
+        if (_InterlockedExchangeAdd(&p->strong, -1) == 0) {
+            p->dispose();
+            if (_InterlockedExchangeAdd(&p->weak, -1) == 0)
+                p->destroy();
         }
+    }
+}
+
+#pragma pointers_to_members(full_generality, multiple_inheritance)
+
+struct S;
+
+struct Callback {
+    bool (S::*method)(Shared);
+    S* object;
+    char unused;
+};
+
+struct Object {
+    void apply(Callback);
+    void detach(int);
+};
+
+struct Signal {
+    char data[16];
+    void clear();
+};
+
+struct Node {
+    char prefix[16];
+    Object* object;
+    int padding;
+    Signal first;
+    Signal second;
+    bool active;
+};
+
+struct Map;
+
+struct Proxy {
+    Map* container;
+};
+
+struct Iterator {
+    Proxy* proxy;
+    Node* node;
+};
+
+struct Map {
+    Proxy* proxy;
+    char padding[20];
+    Node* end;
+    Iterator* find(Iterator*, Object* const*);
+    Iterator* erase(Iterator*, Proxy*, Node*);
+};
+
+struct S {
+    char padding[0x2c38];
+    Map entries;
+    bool remove(Shared);
+};
+
+bool S::remove(Shared value) {
+    if (!value.ptr)
         return false;
-    }
 
-    void* local = a;
-    void* iter;
-    sub_4ADFD0(&list, &iter, &local);
+    Object* key = value.ptr;
+    Map* map = &entries;
+    Iterator position;
+    map->find(&position, &key);
 
-    void* end = list.end;
-    void* begin = list.begin;
+    Proxy* proxy = position.proxy;
+    Node* end = map->end;
+    if (!proxy || proxy != map->proxy)
+        _invalid_parameter_noinfo();
 
-    if (iter != end) {
-        do {
-            void* item = iter;
-            sub_4AE690(item, a, this, b);
-            if (iter == 0) {
-                sub_802890();
-                if (iter == 0) {
-                    sub_802890();
-                }
-                sub_595230((char*)iter + 0x18);
-                sub_595230((char*)iter + 0x28);
-                if (*(char*)((char*)iter + 0x38) != 0) {
-                    sub_55A8F0(*(void**)((char*)iter + 0x10), 0);
-                }
-                sub_4AED00(&list, iter, 0);
-            }
-            iter = *(void**)iter;
-        } while (iter != end);
-    }
+    Node* node = position.node;
+    if (node == end)
+        return false;
 
-    if (b != 0) {
-        RefCounted* rc = (RefCounted*)b;
-        if (_InterlockedExchangeAdd((volatile long*)((char*)rc + 4), -1) == 1) {
-            rc->Release();
-        }
-        if (_InterlockedExchangeAdd((volatile long*)((char*)rc + 8), -1) == 1) {
-            rc->Release();
-        }
-    }
+    Callback callback;
+    callback.method = &S::remove;
+    callback.object = this;
+    value.ptr->apply(callback);
+
+    Map* container = proxy
+        ? proxy->container
+        : (_invalid_parameter_noinfo(), (Map*)0);
+
+    if (node == container->end)
+        _invalid_parameter_noinfo();
+
+    node->first.clear();
+    node->second.clear();
+
+    if (node->active)
+        node->object->detach(0);
+
+    map->erase(&position, proxy, node);
     return true;
 }

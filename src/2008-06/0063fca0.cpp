@@ -1,7 +1,9 @@
-// from server: 66% by king_originala
+// from server: 89% by king_originala
 struct Vec3 {
     float x, y, z;
 };
+
+void __cdecl operator delete(void *) throw();
 
 struct Buffer {
     void *head;
@@ -14,8 +16,6 @@ struct Buffer {
     void assign(void *const &value);
     ~Buffer();
 };
-
-void __cdecl operator delete(void *);
 
 __forceinline Buffer::~Buffer()
 {
@@ -32,12 +32,14 @@ struct EmptyReference {
     void *control;
 
     EmptyReference();
+    EmptyReference(const EmptyReference &);
     ~EmptyReference();
 };
 
 __forceinline EmptyReference::EmptyReference()
-    : object(0), control(0)
 {
+    object = 0;
+    control = 0;
 }
 
 __forceinline EmptyReference::~EmptyReference()
@@ -60,13 +62,13 @@ int S::f(int argument)
 {
     Vec3 position = { 0.0f, 0.0f, 0.0f };
     void *object = find(argument, &position);
-    if (!object)
-        return 0;
+    if (object) {
+        Buffer values;
+        void *value = getValue(object);
+        values.assign(value);
 
-    Buffer values;
-    void *value = getValue(object);
-    values.assign(value);
-
-    return perform(object, &position, &values, argument, context,
-                   EmptyReference());
+        return perform(object, &position, &values, argument, context,
+                       EmptyReference());
+    }
+    return 0;
 }

@@ -1,4 +1,4 @@
-// from server: 80% by colin
+// from server: 100% by colin
 struct Skin {
     char pad[0x104];
     int field_104;
@@ -13,7 +13,7 @@ void Skin::func(int a) {
         int r = sub_5d9a20(field_104);
         if (r) {
             void** vt = *(void***)this;
-            void (*fn)(void*, int) = (void (*)(void*, int))vt[0x10];
+            void (__thiscall *fn)(void*, int) = (void (__thiscall *)(void*, int))vt[0x10];
             fn(this, r);
         }
     }

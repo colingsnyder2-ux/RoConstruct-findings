@@ -1,4 +1,4 @@
-// from server: 91% by king_originala
+// from server: 95% by king_originala
 struct CriticalSection {
     unsigned char data[24];
 };
@@ -31,6 +31,7 @@ struct Lock {
 
     Lock(CriticalSection*);
     ~Lock();
+    void unlock();
 };
 
 inline Lock::Lock(CriticalSection* p) : section(p) {
@@ -41,6 +42,11 @@ inline Lock::Lock(CriticalSection* p) : section(p) {
 inline Lock::~Lock() {
     if (owned)
         LeaveCriticalSection(section);
+}
+
+inline void Lock::unlock() {
+    LeaveCriticalSection(section);
+    owned = false;
 }
 
 struct S {
@@ -63,5 +69,6 @@ int S::f(unsigned int, unsigned int, unsigned int, int* result) {
         delete message.lParam;
 
     *result = 0;
+    lock.unlock();
     return 0;
 }

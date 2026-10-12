@@ -1,65 +1,121 @@
-// from server: 63% by colin
-extern "C" {
-int __stdcall sub_803380(int);
-int __stdcall sub_803384(int, int);
-int __stdcall sub_803ee0(int);
-int __stdcall sub_803f04(int);
-int __stdcall sub_803f14(int);
-int __stdcall sub_802458(int, int);
-int __stdcall sub_802468(int);
+// from server: 89% by king_originala
+struct Control {
+    int modified(int);
+    int length(int);
+    void text(int, char*);
+    void savePoint(int);
+};
+
+struct Mutex {
+    void acquire();
+    void release();
+};
+
+extern void (__thiscall *stringCreate)(void*, const char*);
+extern void (__thiscall *stringDestroy)(void*);
+extern void (__thiscall *bufferCreate)(void*);
+extern void (__thiscall *bufferDestroy)(void*);
+extern char* (__thiscall *bufferGet)(void*, int, int);
+extern void (__thiscall *bufferRelease)(void*, int);
+extern const char* (__thiscall *bufferData)(void*);
+
+struct String {
+    char storage[28];
+    String(const char*);
+    ~String();
+};
+
+inline String::String(const char* p)
+{
+    stringCreate(this, p);
 }
 
-struct Str {
-    char pad[0x1c];
-    Str(const char*);
-    ~Str();
+inline String::~String()
+{
+    stringDestroy(this);
+}
+
+struct Buffer {
+    char* storage;
+    Buffer();
+    __declspec(nothrow) ~Buffer();
+    char* get(int, int);
+    void release(int);
+    const char* data();
+};
+
+inline Buffer::Buffer()
+{
+    bufferCreate(this);
+}
+
+inline Buffer::~Buffer()
+{
+    bufferDestroy(this);
+}
+
+inline char* Buffer::get(int n, int flag)
+{
+    return bufferGet(this, n, flag);
+}
+
+inline void Buffer::release(int n)
+{
+    bufferRelease(this, n);
+}
+
+inline const char* Buffer::data()
+{
+    return bufferData(this);
+}
+
+struct Lock {
+    Mutex* mutex;
+    bool locked;
+    Lock(Mutex*);
+    ~Lock();
+};
+
+inline Lock::Lock(Mutex* p) : mutex(p)
+{
+    mutex->acquire();
+    locked = true;
+}
+
+inline Lock::~Lock()
+{
+    if (locked)
+        mutex->release();
+}
+
+struct Script {
+    void update(const String&);
 };
 
 struct CScriptDoc {
-    char pad0[0x138];
-    int field_138;
-    char pad1[0x8];
-    int field_144;
-    char pad2[0xc];
-    char field_154;
-    int f_4613d0(int);
-    int f_460a90(int);
-    int f_460ee0(int);
-    int f_460e90(int, int);
-    int f_460230(int);
-    void f_563090();
-    void f_5630e0();
-    void f_586f30(int, Str*);
-    void method();
+    char padding0[0x138];
+    Mutex* mutex;
+    char padding1[8];
+    Script* script;
+    char padding2[12];
+    bool busy;
+
+    Control* control();
+    void f();
 };
 
-void CScriptDoc::method()
+void CScriptDoc::f()
 {
-    int* p = (int*)f_4613d0(1);
-    if (f_460a90(0) == 0)
-        return;
-    if (field_154 != 0)
-        return;
-    if (field_144 != 0)
-    {
-        int saved = field_138;
-        f_563090();
-        f_4613d0(1);
-        int n = f_460ee0(1);
-        sub_803f04(0);
-        n++;
-        sub_803384(0, n);
-        f_4613d0(1);
-        f_460e90(n, 0);
-        sub_803380(-1);
-        int v = sub_803ee0(0);
-        sub_802458(0, v);
-        Str s("");
-        f_586f30(field_144, &s);
-        sub_802468(0);
-        sub_803f14(0);
-        f_5630e0();
+    if (control()->modified(1) && !busy) {
+        if (script) {
+            Lock lock(mutex);
+            int n = control()->length(1);
+            Buffer buffer;
+            ++n;
+            control()->text(n, buffer.get(n, 1));
+            buffer.release(-1);
+            script->update(String(buffer.data()));
+        }
+        control()->savePoint(1);
     }
-    f_4613d0(1);
-    f_460230(0);
 }

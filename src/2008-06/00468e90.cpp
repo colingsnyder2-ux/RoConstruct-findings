@@ -1,111 +1,125 @@
-// from server: 49% by colin
+// from server: 79% by king_originala
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
 
 extern "C" void __stdcall DeleteCriticalSection(void*);
+extern "C" void __cdecl sub_006a094a(void*);
 
-struct Sub_005E5A80 {
-    void f(void*);
+struct Base {
+    unsigned long vtable;
+    char data[0x24];
+    ~Base();
 };
 
-struct Sub_00467770 {
-    void f();
+struct Registry {
+    void remove(void*);
 };
 
-extern "C" void __cdecl sub_006A094A(void*);
-
-struct DxUserInput {
-    void dtor();
+struct Device;
+struct DeviceTable {
+    void (__stdcall *slot0)(Device*);
+    void (__stdcall *slot1)(Device*);
+    unsigned long (__stdcall *release)(Device*);
+    void (__stdcall *slots3[5])(Device*);
+    void (__stdcall *stop)(Device*);
 };
 
-void DxUserInput::dtor()
+struct Device {
+    DeviceTable* table;
+};
+
+struct DeviceHolder {
+    Device* p;
+
+    void reset()
+    {
+        if (p) {
+            p->table->release(p);
+            p = 0;
+        }
+    }
+
+    ~DeviceHolder()
+    {
+        if (p)
+            p->table->release(p);
+    }
+};
+
+struct Control {
+    virtual void slot0() = 0;
+    virtual void dispose() = 0;
+    virtual void destroy() = 0;
+    volatile long references;
+    volatile long weakReferences;
+};
+
+struct SharedHolder {
+    void* p;
+    Control* control;
+
+    ~SharedHolder()
+    {
+        Control* c = control;
+        if (c) {
+            if (_InterlockedExchangeAdd(&c->references, -1) == 1) {
+                c->dispose();
+                if (_InterlockedExchangeAdd(&c->weakReferences, -1) == 1)
+                    c->destroy();
+            }
+        }
+    }
+};
+
+struct CriticalSection {
+    char data[24];
+
+    ~CriticalSection()
+    {
+        DeleteCriticalSection(this);
+    }
+};
+
+struct S : Base {
+    unsigned long secondaryVtable;
+    unsigned long tertiaryVtable;
+    unsigned long padding30;
+    CriticalSection critical;
+    unsigned long padding4c;
+    void* buffer;
+    char padding54[0x120];
+    DeviceHolder device;
+    DeviceHolder keyboard;
+    DeviceHolder mouse;
+    SharedHolder owner;
+    SharedHolder service;
+
+    ~S();
+};
+
+S::~S()
 {
-    char* base = (char*)this;
-    *(int*)(base + 0) = 0x81c404;
-    *(int*)(base + 0x28) = 0x81c3f8;
-    *(int*)(base + 0x2c) = 0x81c3ec;
+    vtable = 0x81c404;
+    secondaryVtable = 0x81c3f8;
+    tertiaryVtable = 0x81c3ec;
 
-    if (*(int*)(base + 0x188)) {
-        ((Sub_005E5A80*)(*(int*)(base + 0x188) + 0x130))->f((void*)(base + 0x2c));
-    }
-    if (*(int*)(base + 0x188)) {
-        ((Sub_005E5A80*)(*(int*)(base + 0x188) + 0x170))->f((void*)(base + 0x28));
-    }
+    if (service.p)
+        ((Registry*)((char*)service.p + 0x130))->remove(&tertiaryVtable);
+    if (service.p)
+        ((Registry*)((char*)service.p + 0x170))->remove(&secondaryVtable);
 
-    if (*(int*)(base + 0x178)) {
-        void* p = *(void**)(base + 0x178);
-        (*(void(__thiscall**)(void*, int))(*(int*)p + 0x20))(p, 1);
-        p = *(void**)(base + 0x178);
-        if (p) {
-            (*(void(__thiscall**)(void*, int))(*(int*)p + 8))(p, 1);
-            *(int*)(base + 0x178) = 0;
-        }
+    if (keyboard.p) {
+        keyboard.p->table->stop(keyboard.p);
+        keyboard.reset();
     }
 
-    if (*(int*)(base + 0x17c)) {
-        void* p = *(void**)(base + 0x17c);
-        (*(void(__thiscall**)(void*, int))(*(int*)p + 0x20))(p, 1);
-        p = *(void**)(base + 0x17c);
-        if (p) {
-            (*(void(__thiscall**)(void*, int))(*(int*)p + 8))(p, 1);
-            *(int*)(base + 0x17c) = 0;
-        }
+    if (mouse.p) {
+        mouse.p->table->stop(mouse.p);
+        mouse.reset();
     }
 
-    if (*(int*)(base + 0x174)) {
-        void* p = *(void**)(base + 0x174);
-        if (p) {
-            (*(void(__thiscall**)(void*, int))(*(int*)p + 8))(p, 1);
-            *(int*)(base + 0x174) = 0;
-        }
-    }
+    if (device.p)
+        device.reset();
 
-    sub_006A094A(*(void**)(base + 0x50));
-
-    {
-        int* p = *(int**)(base + 0x18c);
-        if (p) {
-            if (_InterlockedExchangeAdd((volatile long*)((char*)p + 4), -1) == 1) {
-                (*(void(__thiscall**)(void*))(*(int*)p + 4))(p);
-            }
-            if (_InterlockedExchangeAdd((volatile long*)((char*)p + 8), -1) == 1) {
-                (*(void(__thiscall**)(void*))(*(int*)p + 8))(p);
-            }
-        }
-    }
-
-    {
-        int* p = *(int**)(base + 0x184);
-        if (p) {
-            if (_InterlockedExchangeAdd((volatile long*)((char*)p + 4), -1) == 1) {
-                (*(void(__thiscall**)(void*))(*(int*)p + 4))(p);
-            }
-            if (_InterlockedExchangeAdd((volatile long*)((char*)p + 8), -1) == 1) {
-                (*(void(__thiscall**)(void*))(*(int*)p + 8))(p);
-            }
-        }
-    }
-
-    {
-        int* p = *(int**)(base + 0x17c);
-        if (p) {
-            (*(void(__thiscall**)(void*))(*(int*)p + 8))(p);
-        }
-    }
-    {
-        int* p = *(int**)(base + 0x178);
-        if (p) {
-            (*(void(__thiscall**)(void*))(*(int*)p + 8))(p);
-        }
-    }
-    {
-        int* p = *(int**)(base + 0x174);
-        if (p) {
-            (*(void(__thiscall**)(void*))(*(int*)p + 8))(p);
-        }
-    }
-
-    DeleteCriticalSection((void*)(base + 0x34));
-
-    ((Sub_00467770*)base)->f();
+    sub_006a094a(buffer);
 }

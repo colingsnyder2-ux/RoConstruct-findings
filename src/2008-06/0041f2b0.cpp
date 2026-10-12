@@ -1,22 +1,29 @@
-// from server: 46% by atomic.potato
-typedef unsigned int DWORD;
-
-struct S
-{
-    DWORD value;
-    DWORD pad;
-    DWORD pad2;
-    DWORD pad3;
-    DWORD pad4;
-    S *f(DWORD);
+// from server: 100% by king_originala
+struct String {
+    char storage[28];
 };
 
-extern "C" void __stdcall Call(DWORD, S *);
+struct Value {
+    int reserved;
+    String text;
+};
 
-S *S::f(DWORD arg)
-{
-    S *p = (S *)((char *)this + 0x10);
-    S *q = p->f(0);
-    Call((DWORD)q + 4, q);
-    return q;
+struct Source {
+    virtual void unused();
+    virtual Value* get();
+};
+
+extern void (__thiscall *copyString)(String*, const String*);
+
+struct InsertDecal {
+    char reserved[16];
+    Source source;
+    String* f(String* result);
+};
+
+String* InsertDecal::f(String* result) {
+    volatile int temporary = 0;
+    Value* value = source.get();
+    copyString(result, &value->text);
+    return result;
 }

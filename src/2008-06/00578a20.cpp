@@ -1,33 +1,79 @@
-// from server: 34% by tester
-struct S {
-    void* field0;
-    char pad[4];
-    void* field8;
-    void* method(void* a, void* b, void* c, void* d, void* e, void* f, void* g, void* h, void* i);
+// from server: 100% by king_originala
+typedef unsigned int size_t;
+
+void* __cdecl operator new(size_t);
+void __cdecl operator delete(void*);
+
+inline void* __cdecl operator new(size_t, void* p)
+{
+    return p;
+}
+
+inline void __cdecl operator delete(void* p, void*)
+{
+    operator delete(p);
+}
+
+bool __cdecl func_0060a2f0();
+
+struct String;
+typedef void (__thiscall *StringCopy)(String*, const String&);
+typedef void (__thiscall *StringDestroy)(String*);
+
+extern StringCopy stringCopy;
+extern StringDestroy stringDestroy;
+extern unsigned char tableData[];
+
+struct String
+{
+    unsigned char storage[28];
+    String(const String&);
+    ~String();
 };
 
-extern "C" bool __cdecl func_0060a2f0(void*);
-extern "C" void* __cdecl func_006a0920(unsigned int);
-extern "C" void __stdcall func_0080245c(void*, void*);
-extern "C" void __stdcall func_00802468(void*);
-
-void* S::method(void* a, void* b, void* c, void* d, void* e, void* f, void* g, void* h, void* i)
+inline String::String(const String& other)
 {
-    void* tmp;
-    void* obj;
+    stringCopy(this, other);
+}
 
-    this->field0 = 0;
-    if (func_0060a2f0(&tmp)) {
-        this->field0 = 0;
-        return this;
+inline String::~String()
+{
+    stringDestroy(this);
+}
+
+struct Node
+{
+    int value;
+    String text;
+    Node(int, const String&);
+};
+
+inline Node::Node(int value_, const String& text_)
+    : value(value_), text(text_)
+{
+}
+
+struct S
+{
+    void* table;
+    unsigned int reserved;
+    Node* node;
+    S(int, String, int);
+};
+
+S::S(int value, String text, int)
+{
+    table = 0;
+    if (!reinterpret_cast<bool (__cdecl *)(const int*)>(
+            func_0060a2f0)(&value))
+    {
+        Node* p = static_cast<Node*>(operator new(sizeof(Node)));
+        new (p) Node(value, text);
+        node = p;
+        table = tableData;
     }
-    obj = func_006a0920(0x20);
-    if (obj) {
-        *(void**)obj = tmp;
-        func_0080245c((char*)obj + 4, &tmp);
+    else
+    {
+        table = 0;
     }
-    this->field8 = obj;
-    this->field0 = (void*)0x830038;
-    func_00802468(&tmp);
-    return this;
 }

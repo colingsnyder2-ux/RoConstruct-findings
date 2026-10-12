@@ -1,21 +1,54 @@
-// from server: 25% by atomic.potato
-struct S {
-    void f();
+// from server: 78% by king_originala
+struct String
+{
+    char data[28];
+    String(const String&);
+    ~String();
 };
 
-extern "C" {
-    void __stdcall sub_80245c(void*);
-    void __stdcall sub_802468(void*);
+extern void (__thiscall *stringCopy)(String*, const String&);
+extern void (__thiscall *stringDestroy)(String*);
+
+__forceinline String::String(const String& value)
+{
+    stringCopy(this, value);
 }
 
-void sub_43bad0(void*, void*);
+__forceinline String::~String()
+{
+    stringDestroy(this);
+}
 
-void S::f() {
-    char buf[0x30];
-    void* p = 0;
-    char tmp[0x1c];
-    sub_80245c(&buf[0x48]);
-    sub_43bad0(&tmp[0x18], &buf[0x48]);
-    sub_802468(&tmp[0x18]);
-    sub_802468(&buf[0x48]);
+struct Key
+{
+    int first;
+    int second;
+};
+
+struct Item
+{
+    int first;
+    int second;
+    int third;
+    String text;
+
+    Item(int, int, int, String);
+};
+
+struct Result
+{
+    Key key;
+    Item item;
+
+    Result(const Key&, const Item&);
+};
+
+__forceinline Result::Result(const Key& k, const Item& value)
+    : key(k), item(value)
+{
+}
+
+Result f(Key key, int a, int b, int c, String text)
+{
+    return Result(key, Item(a, b, c, text));
 }

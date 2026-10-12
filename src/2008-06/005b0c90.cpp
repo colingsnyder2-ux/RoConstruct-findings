@@ -1,16 +1,18 @@
-// from server: 57% by atomic.potato
-struct S
+// from server: 100% by king_originala
+struct GetSetImpl
 {
-    int (__thiscall *g)(char *, int);
-    int h;
-    int f_value;
-    int f(void *);
+    char padding[8];
+    int (__thiscall *function)(void *);
+    int adjustment;
+    int index;
+
+    int Invoke(void *argument);
 };
 
-int S::f(void *p)
+int GetSetImpl::Invoke(void *argument)
 {
-    S *q = (S *)this;
-    char *a = p ? (char *)p - 20 : 0;
-    int esi = q->f_value;
-    return q->g(a + a[0x150 / 4] + esi + q->h, esi);
+    char *object = argument ? (char *)argument - 0x14 : 0;
+    return function(
+        object + 0x150 +
+        (*(int *)(*(char **)(object + 0x150) + index) + adjustment));
 }

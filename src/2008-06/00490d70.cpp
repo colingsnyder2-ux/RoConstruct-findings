@@ -1,4 +1,4 @@
-// from server: 66% by king_originala
+// from server: 96% by king_originala
 extern "C" void __cdecl register_value(void (__cdecl *)(), void *);
 extern "C" void __cdecl initialize_index();
 extern "C" void __cdecl initialize_key();
@@ -17,7 +17,21 @@ struct Control {
 struct Slot {
     void *object;
     Control control;
+    Slot();
+    Slot(const Slot &);
 };
+
+inline Slot::Slot()
+{
+    object = 0;
+    control.value = 0;
+}
+
+inline Slot::Slot(const Slot &other)
+{
+    object = other.object;
+    control.value = other.control.value;
+}
 
 struct Owned {
     void *object;
@@ -47,9 +61,8 @@ void *S::f()
     void (__cdecl *failure)() = invalid_parameter;
     Vector *v = &values;
 
-    if (index + 1 > (unsigned int)(v->end - v->begin)) {
-        Slot empty = { 0, { 0 } };
-        v->resize(index + 1, empty);
+    if (index + 1 > (unsigned int)(values.end - values.begin)) {
+        v->resize(index + 1, Slot());
     } else {
         if (index >= (unsigned int)(v->end - v->begin))
             failure();

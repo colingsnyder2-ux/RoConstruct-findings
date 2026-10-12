@@ -1,8 +1,8 @@
-// from server: 57% by king_originala
+// from server: 66% by king_originala
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
 
-extern "C" void (__cdecl* _invalid_parameter_noinfo)();
+extern "C" void (__cdecl* const _invalid_parameter_noinfo)();
 
 namespace RBX {
 struct Instance {
@@ -43,39 +43,9 @@ struct Proxy {
 struct Iterator {
     Proxy* proxy;
     Element* position;
-
-    bool operator!=(const Iterator& other) const {
-        if (!proxy || proxy != other.proxy)
-            _invalid_parameter_noinfo();
-        return position != other.position;
-    }
-
-    Element& operator*() const {
-        Vector* owner;
-        if (!proxy) {
-            _invalid_parameter_noinfo();
-            owner = 0;
-        } else {
-            owner = proxy->owner;
-        }
-        check(owner);
-        return *position;
-    }
-
-    Iterator& operator++() {
-        Vector* owner;
-        if (!proxy) {
-            _invalid_parameter_noinfo();
-            owner = 0;
-        } else {
-            owner = proxy->owner;
-        }
-        check(owner);
-        ++position;
-        return *this;
-    }
-
-    void check(Vector*) const;
+    bool operator!=(const Iterator&) const;
+    Element& operator*() const;
+    Iterator& operator++();
 };
 
 struct Vector {
@@ -83,29 +53,48 @@ struct Vector {
     unsigned reserved[2];
     Element* first;
     Element* last;
-
-    Iterator begin() const {
-        Element* position = first;
-        if (position > last)
-            _invalid_parameter_noinfo();
-        Iterator result = { proxy, position };
-        return result;
-    }
-
-    Iterator end() const {
-        Element* position = last;
-        if (first > position)
-            _invalid_parameter_noinfo();
-        Iterator result = { proxy, position };
-        return result;
-    }
-
+    Iterator begin() const;
+    Iterator end() const;
     void append(RBX::ModelInstance* const*);
 };
 
-inline void Iterator::check(Vector* owner) const {
-    if (position >= owner->last)
+inline bool Iterator::operator!=(const Iterator& other) const {
+    if (!proxy || proxy != other.proxy)
         _invalid_parameter_noinfo();
+    return position != other.position;
+}
+
+inline Element& Iterator::operator*() const {
+    if (!proxy)
+        _invalid_parameter_noinfo();
+    if (position >= (proxy ? proxy->owner : 0)->last)
+        _invalid_parameter_noinfo();
+    return *position;
+}
+
+inline Iterator& Iterator::operator++() {
+    if (!proxy)
+        _invalid_parameter_noinfo();
+    if (position >= (proxy ? proxy->owner : 0)->last)
+        _invalid_parameter_noinfo();
+    ++position;
+    return *this;
+}
+
+inline Iterator Vector::begin() const {
+    Element* position = first;
+    if (position > last)
+        _invalid_parameter_noinfo();
+    Iterator result = { proxy, position };
+    return result;
+}
+
+inline Iterator Vector::end() const {
+    Element* position = last;
+    if (first > position)
+        _invalid_parameter_noinfo();
+    Iterator result = { proxy, position };
+    return result;
 }
 
 struct Selection {
@@ -117,16 +106,17 @@ struct Selection {
 struct SelectionPtr {
     Selection* value;
     Control* control;
-
-    ~SelectionPtr() {
-        Control* p = control;
-        if (p && _InterlockedExchangeAdd(&p->strong, -1) == 0) {
-            p->dispose();
-            if (_InterlockedExchangeAdd(&p->weak, -1) == 0)
-                p->destroy();
-        }
-    }
+    ~SelectionPtr();
 };
+
+inline SelectionPtr::~SelectionPtr() {
+    Control* p = control;
+    if (p && _InterlockedExchangeAdd(&p->strong, -1) == 0) {
+        p->dispose();
+        if (_InterlockedExchangeAdd(&p->weak, -1) == 0)
+            p->destroy();
+    }
+}
 
 struct Argument {
     unsigned reserved[2];
@@ -134,7 +124,7 @@ struct Argument {
 };
 
 RBX::ServiceProvider* __cdecl func_00421cb0(RBX::Instance*);
-SelectionPtr* __cdecl acquire(SelectionPtr*, RBX::ServiceProvider*);
+SelectionPtr __cdecl acquire(RBX::ServiceProvider*);
 
 struct S {
     char pad[0x130];
@@ -144,20 +134,19 @@ struct S {
     Vector filtered;
 
     void base(Argument*);
+    void assign(const SelectionPtr&);
     void f(Argument*);
 };
+
+inline void S::assign(const SelectionPtr& result) {
+    selection = result.value;
+    control.assign(&result.control);
+}
 
 void S::f(Argument* argument) {
     base(argument);
     if (!selection) {
-        {
-            SelectionPtr temporary;
-            SelectionPtr* result =
-                acquire(&temporary, func_00421cb0(argument->instance));
-            selection = result->value;
-            control.assign(&result->control);
-        }
-
+        assign(acquire(func_00421cb0(argument->instance)));
         if (selection) {
             Iterator current = selection->children->begin();
             while (current != selection->children->end()) {

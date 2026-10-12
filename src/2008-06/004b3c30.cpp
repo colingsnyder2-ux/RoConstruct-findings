@@ -1,5 +1,28 @@
-// from server: 74% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs util/RunStateOwner.cpp
+// from server: 97% by king_originala
+struct String {
+    unsigned char storage[28];
+    String(const String &);
+    ~String();
+};
+
+extern void (__thiscall *stringCopy)(String *, const String &);
+extern void (__thiscall *stringDestroy)(String *);
+
+__forceinline String::String(const String &value)
+{
+    stringCopy(this, value);
+}
+
+__forceinline String::~String()
+{
+    stringDestroy(this);
+}
+
+struct S {
+    void invoke(String, int);
+};
+
+void forward(S *object, String value, int argument)
+{
+    object->invoke(value, argument);
+}

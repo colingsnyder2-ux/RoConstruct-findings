@@ -1,64 +1,66 @@
-// from server: 46% by atomic.potato
+// from server: 88% by king_originala
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
 
-struct Inner {
-    char pad0[0xc];
-    void* begin;
-    void* end;
+struct Control {
+    virtual void slot0();
+    virtual void dispose();
+    virtual void destroy();
+    volatile long strong;
+    volatile long weak;
 };
 
-struct Mid {
-    char pad0[0x10];
-    Inner* inner;
+struct Shared {
+    void* object;
+    Control* control;
 };
 
-struct Obj {
-    char pad0[0xc];
-    Mid* mid;
+struct Entries {
+    char padding[12];
+    Shared* begin;
+    Shared* end;
 };
 
-struct Vtbl {
-    void* pad0;
-    void* pad1;
-    void* pad2;
+struct Context {
+    char padding[0x154];
+    Entries* entries;
+    Shared* get(Shared*);
 };
 
-struct RefObj {
-    Vtbl* vtbl;
-    volatile long ref1;
-    volatile long ref2;
+struct Parent {
+    char padding[0x204];
+    void* fallback;
+    Context* getContext();
 };
 
-Mid* sub_4153B0(Obj*);
-RefObj* sub_413C20(Mid*, RefObj**);
+struct InsertService {
+    char padding[12];
+    Parent* parent;
+    void* get();
+};
 
-int sub_41F5F0(Obj* self)
+void* InsertService::get()
 {
-    Mid* m;
-    if (self->mid) {
-        m = sub_4153B0(self);
-    } else {
-        m = 0;
-    }
-    Inner* in = *(Inner**)((char*)m + 0x154);
-    int count = (int)(((char*)in->end - (char*)in->begin) >> 3);
+    Context* context = parent ? parent->getContext() : 0;
+    int count = context->entries->end - context->entries->begin;
+
     if (count == 1) {
-        RefObj* tmp = 0;
-        RefObj* r = sub_413C20(m, &tmp);
-        RefObj* result = *(RefObj**)r;
-        if (tmp) {
-            if (_InterlockedExchangeAdd(&tmp->ref1, -1) == 1) {
-                ((void (__thiscall*)(RefObj*))tmp->vtbl->pad1)(tmp);
-                if (_InterlockedExchangeAdd(&tmp->ref2, -1) == 1) {
-                    ((void (__thiscall*)(RefObj*))tmp->vtbl->pad2)(tmp);
-                }
+        Shared temporary;
+        void* result = context->get(&temporary)->object;
+        Control* control = temporary.control;
+
+        if (control) {
+            if (_InterlockedExchangeAdd(&control->strong, -1) == 1) {
+                control->dispose();
+                if (_InterlockedExchangeAdd(&control->weak, -1) == 1)
+                    control->destroy();
             }
         }
-        return (int)result;
+        return result;
     }
-    if (count == 0) {
-        return *(int*)((char*)self->mid + 0x204);
-    }
+
+    if (count == 0)
+        return parent->fallback;
+
     return 0;
 }

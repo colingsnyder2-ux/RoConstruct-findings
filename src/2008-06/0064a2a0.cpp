@@ -1,26 +1,33 @@
-// from server: 40% by king_originala
+// from server: 43% by king_originala
 extern "C" double __cdecl fabs(double);
-#pragma intrinsic(fabs)
 
-bool __cdecl testPlanes(const float planes[2][4][3],
-                       const float points[2][3],
-                       const float offsets[2],
-                       const float limits[2])
+struct Vector3
 {
-    for (unsigned int side = 0; side < 2; ++side)
-    {
-        const float y = points[side][1];
-        const float x = points[side][0];
-        const float z = points[side][2];
-        const float offset = offsets[side];
-        const float limit = limits[side];
-        const float (*plane)[3] = planes[side];
+    float x, y, z;
+};
 
-        for (int i = 0; i < 4; ++i, ++plane)
+struct Plane
+{
+    Vector3 normal;
+    float offset;
+    float limit;
+};
+
+bool __cdecl testPlanes(const Plane* planes, const Vector3* points)
+{
+    for (int i = 0; i < 2; ++i)
+    {
+        const double x = planes[i].normal.x;
+        const double y = planes[i].normal.y;
+        const double z = planes[i].normal.z;
+        const double offset = planes[i].offset;
+        const double limit = planes[i].limit;
+
+        for (int j = 0; j < 4; ++j)
         {
-            if (fabs((*plane)[2] * z +
-                     (*plane)[1] * y +
-                     (*plane)[0] * x + offset) > limit)
+            if (fabs(points[j].z * z +
+                     points[j].y * y +
+                     points[j].x * x + offset) > limit)
                 return false;
         }
     }

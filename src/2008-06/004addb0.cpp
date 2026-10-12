@@ -1,11 +1,11 @@
-// from server: 58% by king_originala
-extern "C" void (__cdecl* invalidParameter)();
+// from server: 91% by king_originala
+extern "C" void (__cdecl *invalidParameter)();
 
 struct String;
-extern void (__thiscall* destroyString)(String*);
+extern void (__thiscall *destroyString)(String *);
 
 struct String {
-    void* proxy;
+    void *proxy;
     char storage[16];
     unsigned int length;
     unsigned int capacity;
@@ -20,49 +20,49 @@ inline String::~String()
 struct S;
 
 struct Proxy {
-    S* container;
+    S *container;
 };
 
 struct Node {
-    Node* left;
-    Node* parent;
-    Node* right;
+    Node *left;
+    Node *parent;
+    Node *right;
     unsigned int key;
     unsigned int value;
 };
 
 struct Iterator {
-    Proxy* owner;
-    Node* node;
+    Proxy *owner;
+    Node *node;
     void increment();
 };
 
 struct S {
-    Proxy* proxy;
+    Proxy *proxy;
     unsigned char padding[20];
-    Node* head;
+    Node *head;
     unsigned int value;
 
     String get(unsigned int key);
-    void f(void* output);
+    void f(void *output);
 };
 
-extern void __cdecl writeValue(void* output, unsigned int value);
-extern void __cdecl writeString(void* output, const String& value);
+extern void __cdecl writeValue(void *output, unsigned int value);
+extern void __cdecl writeString(void *output, const String &value);
 
-void S::f(void* output)
+void S::f(void *output)
 {
     writeValue(output, value);
 
     Iterator it;
-    it.node = head->left;
-    it.owner = proxy;
+    Node *node = head->left;
+    Proxy *owner = proxy;
+    it.node = node;
+    it.owner = owner;
 
     for (;;) {
-        Node* node = it.node;
-        Proxy* owner = it.owner;
-        Node* finish = head;
-        Proxy* currentOwner = proxy;
+        Node *finish = head;
+        Proxy *currentOwner = proxy;
 
         if (!owner || owner != currentOwner)
             invalidParameter();
@@ -70,26 +70,19 @@ void S::f(void* output)
         if (node == finish)
             break;
 
-        S* container;
-        if (owner) {
-            container = owner->container;
-        } else {
+        if (!owner)
             invalidParameter();
-            container = 0;
-        }
 
+        S *container = owner ? owner->container : 0;
         if (node == container->head)
             invalidParameter();
 
         writeValue(output, node->value);
 
-        if (owner) {
-            container = owner->container;
-        } else {
+        if (!owner)
             invalidParameter();
-            container = 0;
-        }
 
+        container = owner ? owner->container : 0;
         if (node == container->head)
             invalidParameter();
 
@@ -99,5 +92,7 @@ void S::f(void* output)
         }
 
         it.increment();
+        node = it.node;
+        owner = it.owner;
     }
 }

@@ -1,6 +1,8 @@
-// from server: 89% by king_originala
+// from server: 100% by king_originala
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
+extern "C" long __cdecl _InterlockedDecrement(volatile long*);
+#pragma intrinsic(_InterlockedDecrement)
 
 struct Control
 {
@@ -12,15 +14,22 @@ struct Control
     volatile long weak;
 
     void release();
+    void releaseWeak();
 };
+
+inline void Control::releaseWeak()
+{
+    if (_InterlockedDecrement(&weak) == 0)
+        destroy();
+}
 
 inline void Control::release()
 {
-    if (_InterlockedExchangeAdd(&strong, -1) == 1)
+    volatile long* count = &strong;
+    if (_InterlockedDecrement(count) == 0)
     {
         dispose();
-        if (_InterlockedExchangeAdd(&weak, -1) == 1)
-            destroy();
+        releaseWeak();
     }
 }
 
@@ -51,7 +60,10 @@ inline Result::Result(const Temporary& other)
     : pointer(other.pointer), control(other.control)
 {
     if (control)
-        _InterlockedExchangeAdd(&control->strong, 1);
+    {
+        volatile long* count = &control->strong;
+        _InterlockedExchangeAdd(count, 1);
+    }
 }
 
 inline Result::~Result()

@@ -1,49 +1,79 @@
-// from server: 50% by colin
+// from server: 97% by king_originala
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
+extern "C" long __cdecl _InterlockedIncrement(volatile long*);
+extern "C" long __cdecl _InterlockedDecrement(volatile long*);
+#pragma intrinsic(_InterlockedIncrement)
+#pragma intrinsic(_InterlockedDecrement)
 
-struct RefCounted {
-    void** vptr;
-    long refcount;
-    long weakrefcount;
-};
-
-struct Holder {
-    void* a;
-    void* b;
-    RefCounted* c;
-};
-
-typedef void (__stdcall *CopyFn)(void*, void*);
-typedef void (__thiscall *VoidFn)(void*);
-
-void __cdecl sub_48d370(Holder* out, void* first, void* last, CopyFn copy)
+struct Control
 {
-    Holder tmp;
-    tmp.a = 0;
-    tmp.b = 0;
-    tmp.c = 0;
+    virtual void unused() = 0;
+    virtual void dispose() = 0;
+    virtual void destroy() = 0;
+    volatile long strong;
+    volatile long weak;
+};
 
-    void* it = first;
-    while (it != last) {
-        copy(&tmp, it);
-        it = (char*)it + 8;
-    }
+struct Owner
+{
+    void* pointer;
+    Control* control;
 
-    out->a = tmp.a;
-    out->b = tmp.b;
-    out->c = tmp.c;
+    Owner(const Owner&);
+    ~Owner();
+};
 
-    if (tmp.c) {
-        _InterlockedExchangeAdd(&tmp.c->refcount, 1);
-    }
+inline Owner::Owner(const Owner& other)
+    : pointer(other.pointer), control(other.control)
+{
+    if (control)
+        _InterlockedIncrement(&control->strong);
+}
 
-    if (tmp.c) {
-        if (_InterlockedExchangeAdd(&tmp.c->refcount, -1) == 1) {
-            ((VoidFn)tmp.c->vptr[1])(tmp.c);
-            if (_InterlockedExchangeAdd(&tmp.c->weakrefcount, -1) == 1) {
-                ((VoidFn)tmp.c->vptr[2])(tmp.c);
-            }
+inline Owner::~Owner()
+{
+    if (control)
+    {
+        Control* p = control;
+        if (_InterlockedDecrement(&p->strong) == 0)
+        {
+            p->dispose();
+            if (_InterlockedDecrement(&p->weak) == 0)
+                p->destroy();
         }
     }
+}
+
+struct Element
+{
+    unsigned long data[2];
+};
+
+struct Iterator
+{
+    void* unused;
+    Element* current;
+};
+
+struct Function
+{
+    void (__cdecl *callback)(Owner*, Element*);
+    Owner owner;
+
+    Function(const Function&);
+};
+
+inline Function::Function(const Function& other)
+    : callback(other.callback), owner(other.owner)
+{
+}
+
+Function __cdecl apply(Iterator first, Iterator last, Function function)
+{
+    Element* current = first.current;
+    Element* end = last.current;
+    for (; current != end; ++current)
+        function.callback(&function.owner, current);
+    return function;
 }

@@ -1,4 +1,6 @@
-// from server: 82% by king_originala
+// from server: 83% by king_originala
+extern void* (__thiscall *stringConstruct)(void*, const char*);
+
 namespace std {
     class type_info {};
 
@@ -9,9 +11,15 @@ namespace std {
     class basic_string {
         char storage[28];
     public:
-        __thiscall basic_string(const T*);
+        __forceinline basic_string(const T*);
         __thiscall ~basic_string();
     };
+
+    template<class T, class Traits, class Alloc>
+    __forceinline basic_string<T, Traits, Alloc>::basic_string(const T* text)
+    {
+        stringConstruct(this, text);
+    }
 
     typedef basic_string<char, char_traits<char>, allocator<char> > string;
 }
@@ -35,6 +43,7 @@ struct Any {
     __thiscall Any(const FunctionRef&);
     __forceinline ~Any();
     __forceinline void swap(Any&);
+    __forceinline void assign(const FunctionRef&);
 };
 
 __forceinline Any::~Any()
@@ -46,10 +55,15 @@ __forceinline Any::~Any()
 __forceinline void Any::swap(Any& other)
 {
     if (this != &other) {
-        Holder* old = other.content;
-        other.content = content;
-        content = old;
+        Holder* old = content;
+        content = other.content;
+        other.content = old;
     }
+}
+
+__forceinline void Any::assign(const FunctionRef& ref)
+{
+    Any(ref).swap(*this);
 }
 
 struct CastError {
@@ -75,7 +89,7 @@ FunctionRef& Value::castFunctionRef()
         typeEqual;
 
     if (equal(&placeholderType, *descriptor[2])) {
-        Any(FunctionRef()).swap(value);
+        value.assign(FunctionRef());
         descriptor = reinterpret_cast<const std::type_info**>(
             const_cast<std::type_info*>(getFunctionRefType()));
     }

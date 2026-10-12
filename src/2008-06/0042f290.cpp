@@ -1,23 +1,26 @@
-// from server: 65% by king_originala
+// from server: 69% by king_originala
 struct String;
 struct Text;
+struct Resource;
 
 extern void (__thiscall *stringConstruct)(String*);
 extern void (__thiscall *stringDestroy)(String*);
 extern void (__cdecl *stringFormat)(String*, const char*, ...);
 extern Text* (__thiscall *stringGet)(String*);
-extern const char* (__thiscall *textGet)(Text*);
+extern Resource* (__thiscall *textGet)(Text*);
 
-extern bool __cdecl apply(int, int, int);
+struct Resource {
+    bool __cdecl apply(int, int, int);
+};
 
 struct Text {
-    const char* get();
+    Resource* get();
 };
 
 struct String {
     char* data;
     String();
-    ~String();
+    ~String() throw();
     void format(const char*, int, int);
     Text* get();
 };
@@ -27,7 +30,7 @@ inline String::String()
     stringConstruct(this);
 }
 
-inline String::~String()
+inline String::~String() throw()
 {
     stringDestroy(this);
 }
@@ -42,7 +45,7 @@ inline Text* String::get()
     return stringGet(this);
 }
 
-inline const char* Text::get()
+inline Resource* Text::get()
 {
     return textGet(this);
 }
@@ -54,12 +57,10 @@ void reconstruct(int a, int b)
     register int y;
 
     s.format("%s_%d", x, y);
-    if ((s.get()->get(), apply(a, b, 0))) {
+    if (s.get()->get()->apply(a, b, 0)) {
         s.format("%s_%d_D", x, y);
-        s.get()->get();
-        apply(a, b, 1);
+        s.get()->get()->apply(a, b, 1);
         s.format("%s_%d_H", x, y);
-        s.get()->get();
-        apply(a, b, 2);
+        s.get()->get()->apply(a, b, 2);
     }
 }

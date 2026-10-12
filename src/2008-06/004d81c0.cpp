@@ -1,102 +1,113 @@
-// from server: 21% by colin
+// from server: 37% by king_originala
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
 
-struct RefCounted {
-    void* vptr;
-    volatile long ref1;
-    volatile long ref2;
-    void Release();
+extern void* __cdecl operator new(unsigned int);
+extern void __cdecl operator delete(void*);
+
+struct Control {
+    virtual ~Control();
+    virtual void dispose();
+    virtual void destroy();
+    volatile long strong;
+    volatile long weak;
 };
 
-void RefCounted::Release()
+struct Count {
+    Control* control;
+    explicit Count(int*);
+    __forceinline ~Count();
+};
+
+__forceinline Count::~Count()
 {
-    if (_InterlockedExchangeAdd(&ref1, -1) == 1) {
-        void** vt = *(void***)this;
-        ((void (__thiscall*)(void*))vt[1])(this);
-        if (_InterlockedExchangeAdd(&ref2, -1) == 1) {
-            void** vt2 = *(void***)this;
-            ((void (__thiscall*)(void*))vt2[2])(this);
-        }
+    if (control && _InterlockedExchangeAdd(&control->strong, -1) == 0) {
+        control->dispose();
+        if (_InterlockedExchangeAdd(&control->weak, -1) == 0)
+            control->destroy();
     }
 }
 
-struct Inner {
-    char pad0[8];
+struct Key {
+    int* value;
+    Count count;
+    __forceinline explicit Key(const int*);
 };
 
-struct Arg1 {
-    void* vptr;
-    char pad4[0x1c];
+__forceinline Key::Key(const int* p)
+    : value(new int(*p)), count(value)
+{
+}
+
+extern void __cdecl func_0047d410(Count*, int*, int*);
+
+struct Object {
+    virtual ~Object();
 };
 
-struct Arg2 {
-    char pad0[4];
-    void* p4;
-    void* p8;
-    char c0c;
+struct Owner {
+    Object* object;
+    explicit Owner(const void*);
+    __forceinline ~Owner();
 };
 
-struct Arg3 {
-    void* p0;
+__forceinline Owner::~Owner()
+{
+    delete object;
+}
+
+struct Node {
+    unsigned char padding[8];
+    int size;
 };
 
-struct Arg4 {
-    void* p0;
+struct Entity {
+    unsigned char padding[28];
+    Node* node;
 };
 
-struct Arg5 {
-    void* p0;
+struct Shared {
+    Entity* object;
+    Count count;
+};
+
+struct Holder {
+    Entity* object;
+    Control* control;
+    Shared get() const;
+};
+
+struct Result {
+    int unused;
+    void* first;
+    void* second;
+    bool success;
+    __forceinline Result(void*, void*, bool);
+    ~Result();
+};
+
+__forceinline Result::Result(void* a, void* b, bool c)
+    : first(a), second(b), success(c)
+{
+}
+
+struct Backend {
+    Result insert(const Owner&, const Key&, Shared, int);
 };
 
 struct S {
-    void* field0;
-    void func(Arg1* a1, Arg2* a2, Arg3* a3, Arg4* a4, Arg5* a5);
+    Backend* backend;
+    Result f(const int*, const Holder&, int);
 };
 
-void func_0042a800();
-void func_0047d410();
-void func_004915b0();
-void func_004d7d50();
-void func_0056a900();
-void* __cdecl func_006a0920(unsigned int);
-
-void S::func(Arg1* a1, Arg2* a2, Arg3* a3, Arg4* a4, Arg5* a5)
+Result S::f(const int* key, const Holder& object, int flags)
 {
-    void* eax = *(void**)a1;
-    eax = *(void**)((char*)eax + 0x1c);
-    if (eax == 0 || *(void**)((char*)eax + 8) == 0) {
-        a2->p4 = 0;
-        a2->p8 = 0;
-        a2->c0c = 0;
-        return;
-    }
+    Node* node = object.object->node;
+    if (!node || !node->size)
+        return Result(0, 0, false);
 
-    void* mem = func_006a0920(4);
-    void* esi = 0;
-    if (mem != 0) {
-        *(void**)mem = *(void**)a3;
-        esi = mem;
-    }
-
-    func_0042a800();
-    func_0047d410();
-
-    char local[8];
-    func_004d7d50();
-
-    void* edi = *(void**)((char*)a2 + 8);
-    void* ecx = *(void**)this;
-    func_0056a900();
-
-    void* ecx2 = *(void**)((char*)a2 + 4);
-    if (ecx2 != 0) {
-        void** vt = *(void***)ecx2;
-        ((void (__thiscall*)(void*, int))vt[0])(ecx2, 1);
-    }
-
-    if (esi != 0) {
-        RefCounted* rc = (RefCounted*)esi;
-        rc->Release();
-    }
+    Key stored(key);
+    func_0047d410(&stored.count, stored.value, stored.value);
+    Owner owner(reinterpret_cast<const unsigned char*>(&object) + 8);
+    return backend->insert(owner, stored, object.get(), flags);
 }

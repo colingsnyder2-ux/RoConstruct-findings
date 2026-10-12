@@ -1,21 +1,26 @@
-// from server: 93% by colin
-struct GCamera {
-    int data[9];
-    GCamera(const GCamera& other);
+// from server: 100% by king_originala
+struct Vector {
+    float x, y, z;
+};
+
+struct Matrix {
+    float data[9];
+    Matrix(const Matrix&);
+};
+
+struct Frame {
+    Matrix rotation;
+    float x, y, z;
 };
 
 struct Tool {
     char pad[0x1cc];
-    GCamera camera;
-    void method_5ffb70(float*);
-    void method_5ffc00(float*);
+    Matrix rotation;
+    bool method_5ffb70(const Frame&);
+    void method_5ffc00(const Vector&);
 };
 
-void Tool::method_5ffc00(float* p) {
-    GCamera tmp(this->camera);
-    float v[3];
-    v[0] = p[0];
-    v[1] = p[1];
-    v[2] = p[2];
-    this->method_5ffb70(v);
+void Tool::method_5ffc00(const Vector& position) {
+    Frame frame = { rotation, position.x, position.y, position.z };
+    method_5ffb70(frame);
 }

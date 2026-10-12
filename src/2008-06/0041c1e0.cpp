@@ -1,5 +1,22 @@
-// from server: 51% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs util/RunStateOwner.cpp
+// from server: 56% by king_originala
+struct Value {
+    virtual ~Value();
+};
+
+struct Argument {
+    Value* value;
+    Argument(const Argument&);
+    ~Argument() { if (value) delete value; }
+};
+
+struct S {
+    char reserved[0x38];
+    void (__thiscall *callback)(void*, Argument);
+    int adjustment;
+    void f(void*, Argument);
+};
+
+void S::f(void* object, Argument argument)
+{
+    callback(static_cast<char*>(object) + adjustment, argument);
+}

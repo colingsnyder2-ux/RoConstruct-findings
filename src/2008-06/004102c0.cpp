@@ -1,5 +1,11 @@
-// from server: 56% by colin
-// roc-lang: cpp
-// roc-cl: 30729
-// roc-flags: /O2 /GS- /MD
-// roc-lib: mfc-9.0 atlmfc/src/mfc/dlgprntx.cpp
+// from server: 100% by king_originala
+struct S {
+    int forward(int a, int b, int c, int d, int e);
+};
+
+extern S globalObject;
+
+int __stdcall dispatch(int unused, int a, int b, int c, int d, int e)
+{
+    return globalObject.forward(a, b, c, d, e);
+}

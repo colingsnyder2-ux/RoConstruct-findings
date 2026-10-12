@@ -1,6 +1,8 @@
-// from server: 82% by king_originala
+// from server: 98% by king_originala
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
+extern "C" long __cdecl _InterlockedDecrement(volatile long*);
+#pragma intrinsic(_InterlockedDecrement)
 
 struct Control
 {
@@ -9,7 +11,18 @@ struct Control
     virtual void destroy() = 0;
     volatile long strong;
     volatile long weak;
+    void release();
 };
+
+inline void Control::release()
+{
+    if (_InterlockedDecrement(&strong) == 0)
+    {
+        dispose();
+        if (_InterlockedDecrement(&weak) == 0)
+            destroy();
+    }
+}
 
 template<class T>
 struct Shared
@@ -22,13 +35,8 @@ struct Shared
 template<class T>
 inline Shared<T>::~Shared()
 {
-    Control* p = control;
-    if (p && _InterlockedExchangeAdd(&p->strong, -1) == 1)
-    {
-        p->dispose();
-        if (_InterlockedExchangeAdd(&p->weak, -1) == 1)
-            p->destroy();
-    }
+    if (control)
+        control->release();
 }
 
 struct Mutex

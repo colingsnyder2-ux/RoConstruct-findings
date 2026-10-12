@@ -1,79 +1,86 @@
-// from server: 59% by king_originala
+// from server: 73% by king_originala
 extern "C" void __cdecl _invalid_parameter_noinfo();
 
 struct Node {
     Node* next;
     Node* previous;
-    void* value;
+    int value;
 };
 
 struct Container {
     char padding[20];
-    Node* end;
+    Node* head;
 };
 
-struct Owner {
+struct Proxy {
     Container* container;
 };
 
 struct Argument {
     char padding[28];
-    Owner* owner;
+    Proxy* proxy;
     Node* node;
 };
 
 struct Service {
     char padding0[16];
-    Owner* owner;
-    char padding1[12];
+    Proxy* proxy;
+    char padding1[16];
     Node* node;
 
-    void* get(Argument* argument);
+    int get(const Argument* argument);
 };
 
-void* Service::get(Argument* argument)
+int Service::get(const Argument* argument)
 {
     Node* current = argument->node;
-    Owner* currentOwner = argument->owner;
-    Container* container = 0;
+    Proxy* owner = argument->proxy;
+    Container* container;
 
-    if (currentOwner)
-        container = currentOwner->container;
-    else
+    if (owner)
+        container = owner->container;
+    else {
         _invalid_parameter_noinfo();
+        container = 0;
+    }
 
-    if (current == container->end)
+    if (current == container->head)
         _invalid_parameter_noinfo();
 
     current = current->next;
 
-    Node* finish = node;
-    if (!currentOwner || currentOwner != owner)
+    Proxy* otherOwner = proxy;
+    Node* otherNode = node;
+
+    if (!owner || owner != otherOwner)
         _invalid_parameter_noinfo();
 
-    if (current == finish) {
+    if (current == otherNode) {
         Node* first = node->next;
-        Owner* firstOwner = owner;
-        Container* firstContainer = 0;
+        Proxy* firstOwner = proxy;
+        Container* firstContainer;
 
         if (firstOwner)
             firstContainer = firstOwner->container;
-        else
+        else {
             _invalid_parameter_noinfo();
+            firstContainer = 0;
+        }
 
-        if (first == firstContainer->end)
+        if (first == firstContainer->head)
             _invalid_parameter_noinfo();
 
         return first->value;
     }
 
-    Container* currentContainer = 0;
-    if (currentOwner)
-        currentContainer = currentOwner->container;
-    else
+    if (owner)
+        container = owner->container;
+    else {
         _invalid_parameter_noinfo();
+        container = 0;
+    }
 
-    if (current == currentContainer->end)
+    if (current == container->head)
         _invalid_parameter_noinfo();
 
     return current->value;

@@ -1,11 +1,15 @@
-// from server: 67% by king_originala
+// from server: 96% by king_originala
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
+extern "C" long __cdecl _InterlockedDecrement(volatile long*);
+#pragma intrinsic(_InterlockedDecrement)
 
 namespace std {
     template<class T> struct char_traits;
     template<class T> struct allocator;
-    template<class T, class Traits, class Allocator> class basic_string {
+
+    template<class T, class Traits, class Allocator>
+    class basic_string {
         unsigned char storage[28];
     public:
         basic_string(const T*);
@@ -13,7 +17,8 @@ namespace std {
     };
 }
 
-typedef std::basic_string<char, std::char_traits<char>, std::allocator<char> > String;
+typedef std::basic_string<char, std::char_traits<char>,
+                          std::allocator<char> > String;
 
 struct Owner;
 
@@ -31,17 +36,29 @@ struct Control {
     volatile long weak;
 };
 
+struct Temporary {
+    Object* object;
+    Control* control;
+    ~Temporary();
+};
+
 struct Shared {
     Object* object;
     Control* control;
-    Shared();
-    Shared(const Shared&);
+    Shared(const Temporary&);
     ~Shared();
 };
 
-inline Shared::Shared() {}
+inline Temporary::~Temporary() {
+    Control* p = control;
+    if (p && _InterlockedDecrement(&p->strong) == 0) {
+        p->dispose();
+        if (_InterlockedDecrement(&p->weak) == 0)
+            p->destroy();
+    }
+}
 
-inline Shared::Shared(const Shared& other)
+inline Shared::Shared(const Temporary& other)
     : object(other.object), control(other.control) {
     if (control)
         _InterlockedExchangeAdd(&control->strong, 1);
@@ -49,9 +66,9 @@ inline Shared::Shared(const Shared& other)
 
 inline Shared::~Shared() {
     Control* p = control;
-    if (p && _InterlockedExchangeAdd(&p->strong, -1) - 1 == 0) {
+    if (p && _InterlockedDecrement(&p->strong) == 0) {
         p->dispose();
-        if (_InterlockedExchangeAdd(&p->weak, -1) - 1 == 0)
+        if (_InterlockedDecrement(&p->weak) == 0)
             p->destroy();
     }
 }
@@ -59,7 +76,7 @@ inline Shared::~Shared() {
 struct Function {
     typedef void (__cdecl *Manager)(void*, void*, int);
     Manager* manager;
-    void* reserved;
+    unsigned int reserved;
     unsigned char data[24];
     Function(const Function&);
     ~Function();
@@ -80,15 +97,18 @@ inline Function::~Function() {
     }
 }
 
-Shared* __cdecl createObject(const Shared&, Function);
+Temporary __cdecl createObject(Function);
 
 struct Owner {
     Object* create(const char*, Function);
 };
 
 Object* Owner::create(const char* name, Function function) {
-    Shared object(*createObject(Shared(), function));
-    object.object->setName(String(name));
+    Shared object(createObject(function));
+    {
+        String text(name);
+        object.object->setName(text);
+    }
     object.object->attach(this);
     return object.object;
 }

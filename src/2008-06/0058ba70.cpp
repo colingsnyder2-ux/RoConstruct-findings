@@ -1,6 +1,8 @@
-// from server: 94% by king_originala
+// from server: 100% by king_originala
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
+extern "C" long __cdecl _InterlockedDecrement(volatile long*);
+#pragma intrinsic(_InterlockedDecrement)
 
 struct Control {
     virtual ~Control();
@@ -8,7 +10,24 @@ struct Control {
     virtual void destroy();
     volatile long strong;
     volatile long weak;
+
+    void release();
+    void weakRelease();
 };
+
+inline void Control::weakRelease()
+{
+    if (_InterlockedDecrement(&weak) == 0)
+        destroy();
+}
+
+inline void Control::release()
+{
+    if (_InterlockedDecrement(&strong) == 0) {
+        dispose();
+        weakRelease();
+    }
+}
 
 struct ChangeHistoryService;
 
@@ -31,18 +50,8 @@ inline Shared::Shared(const Shared& other)
 
 inline Shared::~Shared()
 {
-    Control* p = control;
-    if (p) {
-        volatile long* count = &p->strong;
-        long remaining = _InterlockedExchangeAdd(count, -1) - 1;
-        if (!remaining) {
-            p->dispose();
-            volatile long* weakCount = &p->weak;
-            remaining = _InterlockedExchangeAdd(weakCount, -1) - 1;
-            if (!remaining)
-                p->destroy();
-        }
-    }
+    if (control)
+        control->release();
 }
 
 struct Record {

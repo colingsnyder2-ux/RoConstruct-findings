@@ -1,4 +1,4 @@
-// from server: 74% by king_originala
+// from server: 78% by king_originala
 struct Owner
 {
     void* value;
@@ -16,20 +16,31 @@ inline Iterator::Iterator()
 {
 }
 
+struct RawIterator
+{
+    void* value;
+    void* position;
+
+    RawIterator(Owner*, void*);
+};
+
+inline RawIterator::RawIterator(Owner* owner, void* pos)
+    : value(owner->value), position(pos)
+{
+}
+
 extern "C" void (__cdecl* _invalid_parameter_noinfo)();
 
-const Iterator& __cdecl helper(Iterator*, void*, void*, void*, void*, Iterator);
+const Iterator& __cdecl helper(Iterator*, RawIterator, RawIterator, Iterator);
 
 Iterator __cdecl reconstruct(Iterator first, Iterator last, Iterator extra)
 {
-    Owner* lastOwner = last.owner ? *last.owner : 0;
-    void* lastValue = lastOwner->value;
-    Owner* firstOwner = first.owner ? *first.owner : 0;
-    void* firstValue = firstOwner->value;
-
     Iterator temporary;
-    Iterator result = helper(&temporary, firstValue, first.position,
-                             lastValue, last.position, extra);
+    Iterator result = helper(
+        &temporary,
+        RawIterator(first.owner ? *first.owner : 0, first.position),
+        RawIterator(last.owner ? *last.owner : 0, last.position),
+        extra);
 
     if (first.owner != result.owner)
         _invalid_parameter_noinfo();

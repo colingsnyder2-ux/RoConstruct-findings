@@ -1,4 +1,4 @@
-// from server: 78% by king_originala
+// from server: 81% by king_originala
 struct EventData;
 
 struct Listener
@@ -28,7 +28,9 @@ void EventData::invoke()
         try
         {
             listener->prepare(this);
-            listener->dispatch(argument, value);
+            int savedValue = value;
+            int savedArgument = argument;
+            listener->dispatch(savedArgument, savedValue);
         }
         catch (...)
         {

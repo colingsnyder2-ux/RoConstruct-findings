@@ -1,58 +1,47 @@
-// from server: 58% by colin
-struct Mesh {
-    unsigned short getNumSubMeshes() const;
-    void *getSubMesh(unsigned short) const;
+// from server: 100% by king_originala
+struct Mesh;
+
+extern unsigned short (__thiscall *getNumSubMeshes)(const Mesh*);
+extern void* (__thiscall *getSubMesh)(const Mesh*, unsigned short);
+
+struct MeshRef {
+    void* control;
+    Mesh* mesh;
 };
 
-struct SubMesh;
+struct Matrix {
+    float elements[16];
+};
 
-struct S_func_004208f0 {
-    char pad0[84];
+struct RenderObject {
+    char padding0[84];
     int m_x;
-    void f(int a1);
+    char padding1[152];
+    Matrix matrix;
+
+    void f(int value);
+    void setState(void* value);
 };
 
-struct S_func_00671d60 {
-    char pad0[0xf0];
-    int m_data[16];
+struct Sink {
+    void f(void* value);
 };
 
-struct S_func_006850a0 {
-    void f(int a1);
+struct S {
+    char padding[0x98];
+    Sink* sink;
+
+    RenderObject* create();
+    void f(const MeshRef& mesh, const Matrix& matrix, void* state);
 };
 
-struct S_func_0067da50 {
-    void f(void *a1);
-};
-
-struct S_func_00671f00 {
-    char pad0[0x98];
-    void *m_ptr98;
-    void f(void *a1, void *a2, void *a3);
-};
-
-extern "C" unsigned short __stdcall getNumSubMeshes_wrap(void *mesh);
-extern "C" void *__stdcall getSubMesh_wrap(void *mesh, unsigned short idx);
-
-void S_func_00671f00::f(void *a1, void *a2, void *a3)
+void S::f(const MeshRef& mesh, const Matrix& matrix, void* state)
 {
-    unsigned short n = ((Mesh*)a1)->getNumSubMeshes();
-    unsigned short i = 0;
-    if (i < n) {
-        do {
-            S_func_00671d60 *p = (S_func_00671d60*)0;
-            (void)p;
-            void *sub = ((Mesh*)a1)->getSubMesh(i);
-            S_func_004208f0 *q = (S_func_004208f0*)sub;
-            q->f((int)a2);
-            S_func_00671d60 *r = (S_func_00671d60*)sub;
-            int *dst = (int*)((char*)r + 0xf0);
-            int *src = (int*)a3;
-            for (int k = 0; k < 16; k++) dst[k] = src[k];
-            ((S_func_006850a0*)sub)->f((int)a3);
-            ((S_func_0067da50*)m_ptr98)->f(sub);
-            i++;
-            n = ((Mesh*)a1)->getNumSubMeshes();
-        } while (i < n);
+    for (int i = 0; i < getNumSubMeshes(mesh.mesh); ++i) {
+        RenderObject* object = create();
+        object->f((int)getSubMesh(mesh.mesh, (unsigned short)i));
+        object->matrix = matrix;
+        object->setState(state);
+        sink->f(object);
     }
 }

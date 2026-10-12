@@ -1,32 +1,40 @@
-// from server: 50% by atomic.potato
-struct Inner {
+// from server: 100% by king_originala
+void* __cdecl operator new(unsigned int);
+void __cdecl operator delete(void*);
+
+extern const void* table1[];
+extern const void* table2[];
+
+struct Product {
+    const void** first;
+    const void** second;
+    char pad[0x1c];
+    Product(void*);
+};
+
+struct DerivedProduct : Product {
+    DerivedProduct(void*);
+};
+
+struct Context {
     char pad[0x204];
-    void* field;
+    void* value;
 };
 
-struct Outer {
+struct Tool {
     char pad[0xc];
-    Inner* p;
+    Context* context;
+    Product* f();
 };
 
-struct VModelSetPrimaryPartTool {
-    char pad[0xc];
-    Outer* p;
-    void* method();
-};
+__forceinline DerivedProduct::DerivedProduct(void* value)
+    : Product(value)
+{
+    first = table1;
+    second = table2;
+}
 
-extern "C" void* __cdecl operator_new(unsigned int);
-extern "C" void __fastcall init_obj(void*, void*);
-
-void* VModelSetPrimaryPartTool::method() {
-    void* mem = operator_new(0x24);
-    void* result = 0;
-    if (mem) {
-        void* arg = p->p->field;
-        init_obj(mem, arg);
-        *(void**)mem = (void*)0x839704;
-        *(void**)((char*)mem + 4) = (void*)0x8396e8;
-        result = mem;
-    }
-    return result;
+Product* Tool::f()
+{
+    return new DerivedProduct(context->value);
 }

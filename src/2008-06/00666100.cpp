@@ -1,6 +1,8 @@
-// from server: 64% by king_originala
+// from server: 84% by king_originala
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
+extern "C" long __cdecl _InterlockedDecrement(volatile long*);
+#pragma intrinsic(_InterlockedDecrement)
 
 struct Control {
     virtual void unused();
@@ -8,7 +10,17 @@ struct Control {
     virtual void destroy();
     volatile long strong;
     volatile long weak;
+    void release();
 };
+
+__forceinline void Control::release()
+{
+    if (_InterlockedDecrement(&strong) == 0) {
+        dispose();
+        if (_InterlockedDecrement(&weak) == 0)
+            destroy();
+    }
+}
 
 struct Service {
     void clear();
@@ -19,18 +31,20 @@ struct Context {
     int owner;
     void* object;
     Control* control;
-
+    Context(int);
     Service* get(int);
     ~Context();
 };
 
-__forceinline Context::~Context() {
-    Control* p = control;
-    if (p && _InterlockedExchangeAdd(&p->strong, -1) == 1) {
-        p->dispose();
-        if (_InterlockedExchangeAdd(&p->weak, -1) == 1)
-            p->destroy();
-    }
+inline Context::Context(int value)
+    : owner(value), object(0), control(0)
+{
+}
+
+inline Context::~Context()
+{
+    if (control)
+        control->release();
 }
 
 struct Value {
@@ -38,7 +52,11 @@ struct Value {
     ~Value();
 };
 
-__forceinline Value::~Value() {
+inline Value::~Value()
+{
+    Control* p = 0;
+    if (p)
+        p->release();
 }
 
 struct Receiver {
@@ -58,12 +76,12 @@ struct String {
     } storage;
     unsigned int length;
     unsigned int capacity;
-
     const char* c_str() const;
 };
 
-__forceinline const char* String::c_str() const {
-    return capacity < 16 ? storage.buffer : storage.pointer;
+__forceinline const char* String::c_str() const
+{
+    return capacity >= 16 ? storage.pointer : storage.buffer;
 }
 
 struct Name {
@@ -100,7 +118,8 @@ struct S {
     int run(int);
 };
 
-int S::run(int argument) {
+int S::run(int argument)
+{
     if (dragging) {
         if (worker->active())
             receiver->consume(make(argument));
@@ -109,10 +128,7 @@ int S::run(int argument) {
         dragging = false;
         RBX::handle(reinterpret_cast<int>(name()->text.c_str()), owner);
     } else if (item) {
-        Context context;
-        context.owner = owner;
-        context.object = 0;
-        context.control = 0;
+        Context context(owner);
         context.get(1)->clear();
         Service* service = context.get(1);
         service->set(item);

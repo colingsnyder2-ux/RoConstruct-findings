@@ -1,34 +1,40 @@
-// from server: 37% by colin
-struct Vector3 {
-    float x;
-    float y;
-    float z;
-};
-
-struct AABB {
-    Vector3 min;
-    Vector3 max;
-};
-
-struct PercentPanel {
-    void getWorldPosition(Vector3* out);
-    void getSize(Vector3* out);
-    AABB* computeAABB(AABB* out, const Vector3* pos, const Vector3* size);
-};
-
-AABB* __fastcall computeAABB_impl(AABB* out, const Vector3* pos, const Vector3* size);
-
-AABB* PercentPanel::computeAABB(AABB* out, const Vector3* pos, const Vector3* size)
+// from server: 75% by king_originala
+struct Vector2
 {
-    Vector3 p;
-    Vector3 s;
-    this->getWorldPosition(&p);
-    this->getSize(&s);
-    out->min.x = s.x + p.x;
-    out->min.y = p.y + s.y;
-    out->min.z = p.z + s.z;
-    out->max.x = p.x - s.x;
-    out->max.y = p.y - s.y;
-    out->max.z = p.z - s.z;
-    return out;
+    float x, y;
+};
+
+struct Rect
+{
+    float values[4];
+};
+
+struct Panel;
+
+struct PanelTable
+{
+    void *reserved0[18];
+    Vector2 *(__thiscall *position)(Panel *, Vector2 *);
+    void *reserved1[4];
+    Vector2 *(__thiscall *size)(Panel *, Vector2 *);
+};
+
+void __cdecl makeRect(Rect *, const Vector2 &, const Vector2 &);
+
+struct Panel
+{
+    PanelTable *table;
+    Rect *bounds(Rect *);
+};
+
+Rect *Panel::bounds(Rect *result)
+{
+    Vector2 p;
+    Vector2 storage;
+    table->position(this, &p);
+    Vector2 *s = table->size(this, &storage);
+    Vector2 end = { s->x + p.x, s->y + p.y };
+    Vector2 begin = { p.x, p.y };
+    makeRect(result, begin, end);
+    return result;
 }

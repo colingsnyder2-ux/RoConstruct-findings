@@ -1,4 +1,4 @@
-// from server: 27% by tester
+// from server: 28% by king_originala
 extern "C" void* __cdecl malloc(unsigned int size);
 
 struct TypedStatsItem {
@@ -6,7 +6,7 @@ struct TypedStatsItem {
 };
 
 struct TypedMemItem {
-    void construct(const unsigned int* value);
+    void __cdecl construct(const unsigned int* value);
 };
 
 void TypedMemItem::construct(const unsigned int* value)

@@ -1,10 +1,10 @@
-// from server: 58% by atomic.potato
-extern "C" double g_value_827988;
-extern "C" double g_value_94f638;
+// from server: 100% by colin
+extern const double limit;
+extern double result;
 
-double __stdcall f(double value)
+void __stdcall setValue(double value)
 {
-    double current = g_value_827988;
-    g_value_94f638 = current < value ? value : current;
-    return g_value_94f638;
+    const double bound = limit;
+    const double* selected = bound > value ? &bound : &value;
+    result = *selected;
 }

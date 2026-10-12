@@ -1,4 +1,4 @@
-// from server: 57% by king_originala
+// from server: 58% by king_originala
 struct String;
 
 extern void (__thiscall *string_construct)(String *);
@@ -8,27 +8,24 @@ extern const char *(__thiscall *string_c_str)(const String *);
 extern void (__thiscall *string_clear)(String *);
 extern bool (__cdecl *string_not_equal)(const String &, const String &);
 extern void (__cdecl *invalid_parameter)();
-
-extern "C" void __stdcall SysFreeString(unsigned short *);
+extern void (__stdcall *free_string)(unsigned short *);
 
 struct String {
     unsigned char storage[28];
-
-    String() { string_construct(this); }
-    ~String() { string_destroy(this); }
-
-    String &operator=(const String &other) {
-        return string_assign(this, other);
-    }
-
-    const char *c_str() const {
-        return string_c_str(this);
-    }
-
-    void clear() {
-        string_clear(this);
-    }
+    String();
+    ~String();
+    String &operator=(const String &);
+    const char *c_str() const;
+    void clear();
 };
+
+inline String::String() { string_construct(this); }
+inline String::~String() { string_destroy(this); }
+inline String &String::operator=(const String &s) {
+    return string_assign(this, s);
+}
+inline const char *String::c_str() const { return string_c_str(this); }
+inline void String::clear() { string_clear(this); }
 
 struct Value {
     String get();
@@ -53,37 +50,51 @@ struct Iterator {
     Proxy *owner;
     Node *node;
 
-    bool operator!=(const Iterator &other) const {
-        if (!owner || owner != other.owner)
-            invalid_parameter();
-        return node != other.node;
-    }
-
-    Value *operator*() const {
-        if (!owner)
-            invalid_parameter();
-        if (node == (owner ? owner->container : 0)->head)
-            invalid_parameter();
-        return node->value;
-    }
-
-    Iterator &operator++() {
-        if (!owner)
-            invalid_parameter();
-        if (node == (owner ? owner->container : 0)->head)
-            invalid_parameter();
-        node = node->next;
-        return *this;
-    }
+    Iterator(Node *, Proxy *);
+    bool operator!=(const Iterator &) const;
+    Container *container() const;
+    Value *operator*() const;
+    Iterator &operator++();
 };
+
+inline Iterator::Iterator(Node *n, Proxy *p) : owner(p), node(n) {}
+
+inline bool Iterator::operator!=(const Iterator &other) const {
+    if (!owner || owner != other.owner)
+        invalid_parameter();
+    return node != other.node;
+}
+
+inline Container *Iterator::container() const {
+    return owner ? owner->container : 0;
+}
+
+inline Value *Iterator::operator*() const {
+    if (!owner)
+        invalid_parameter();
+    if (node == container()->head)
+        invalid_parameter();
+    return node->value;
+}
+
+inline Iterator &Iterator::operator++() {
+    if (!owner)
+        invalid_parameter();
+    if (node == container()->head)
+        invalid_parameter();
+    node = node->next;
+    return *this;
+}
 
 struct BString {
     unsigned short *value;
     BString(const char *);
-    ~BString() {
-        SysFreeString(value);
-    }
+    ~BString();
 };
+
+inline BString::~BString() {
+    free_string(value);
+}
 
 struct Interface {
     typedef long (__stdcall *Setter)(Interface *, unsigned short *);
@@ -104,27 +115,31 @@ struct S {
     unsigned char padding3[7];
     Interface *target;
 
+    Iterator begin();
+    Iterator end();
     void f();
 };
+
+inline Iterator S::begin() {
+    return Iterator(head->next, owner);
+}
+
+inline Iterator S::end() {
+    return Iterator(head, owner);
+}
 
 void S::f() {
     flag = 0;
     String text;
+    Iterator current = begin();
+    Iterator last = end();
 
-    Iterator current;
-    current.owner = owner;
-    current.node = head->next;
-
-    Iterator end;
-    end.owner = owner;
-    end.node = head;
-
-    if (current != end) {
+    if (current != last) {
         text = (*current)->get();
         ++current;
     }
 
-    for (; current != end; ++current) {
+    for (; current != last; ++current) {
         if (string_not_equal(text, (*current)->get())) {
             text.clear();
             break;

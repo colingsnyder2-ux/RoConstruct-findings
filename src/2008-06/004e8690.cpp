@@ -1,4 +1,4 @@
-// from server: 89% by king_originala
+// from server: 95% by king_originala
 extern "C" void (__cdecl *invalid_parameter_noinfo)();
 
 struct Key
@@ -37,14 +37,14 @@ inline bool Key::less(const Key& other) const
 {
     if (value < other.value)
         return true;
-    if (other.value < value)
+    if (value > other.value)
         return false;
     return this < &other;
 }
 
 inline bool Iterator::equal(void* otherOwner, Node* otherNode) const
 {
-    if (!owner || owner != otherOwner)
+    if (!(owner && owner == otherOwner))
         invalid_parameter_noinfo();
     return node == otherNode;
 }
@@ -69,8 +69,8 @@ Iterator S::find(const Key* key)
     }
     else
     {
-        finish.owner = owner;
         finish.node = head;
+        finish.owner = owner;
         selected = &finish;
     }
 

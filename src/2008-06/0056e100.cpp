@@ -1,25 +1,26 @@
-// from server: 65% by atomic.potato
-struct Inner {
-    virtual void f();
-    virtual void g();
-    virtual void h();
+// from server: 100% by king_originala
+struct Result {
+    char storage[28];
+    Result(const Result&);
+    ~Result();
 };
 
-struct Outer {
-    char pad[0x18];
-    Inner* inner;
-    void* method(void* a, int b);
+Result __cdecl convert(const bool& value);
+
+struct Getter {
+    virtual void slot0();
+    virtual void slot1();
+    virtual bool get(void* instance);
 };
 
-extern "C" void __stdcall sub_5bde30(void*, void*);
+struct S {
+    char padding[24];
+    Getter* getter;
 
-void* Outer::method(void* a, int b) {
-    char result = 0;
-    Inner* p = inner;
-    void** vt = *(void***)p;
-    void (*fn)(Inner*, int) = (void (*)(Inner*, int))vt[2];
-    fn(p, b);
-    result = (char)0;
-    sub_5bde30(a, &result);
-    return a;
+    Result f(void* instance);
+};
+
+Result S::f(void* instance)
+{
+    return convert(getter->get(instance));
 }

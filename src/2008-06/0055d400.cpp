@@ -1,37 +1,48 @@
-// from server: 89% by colin
+// from server: 96% by king_originala
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
+extern "C" void __cdecl _ReadWriteBarrier();
+#pragma intrinsic(_ReadWriteBarrier)
 
-struct MD5HasherImpl {
-    char pad0[0x1c];
-    int field1c;
-    int field20;
-    int* field24;
-    int field28;
-    int* field2c;
-    MD5HasherImpl(const MD5HasherImpl& other);
+struct String {
+    char storage[28];
 };
 
-MD5HasherImpl::MD5HasherImpl(const MD5HasherImpl& other)
+typedef void (__thiscall *StringCopy)(String*, const String&);
+extern StringCopy copyString;
+
+struct Control {
+    long reserved;
+    volatile long references;
+};
+
+struct S : String {
+    long value;
+    void* first;
+    Control* firstControl;
+    void* second;
+    Control* secondControl;
+
+    S(const S&);
+};
+
+S::S(const S& source)
 {
-    char* self = (char*)this;
-    char* src = (char*)&other;
-
-    // call basic_string copy ctor on this (offset 0)
-    extern void __stdcall string_copy_ctor(void*, const void*);
-    string_copy_ctor(self, src);
-
-    field1c = other.field1c;
-    field20 = other.field20;
-    field24 = other.field24;
-    if (field24 != 0)
-    {
-        _InterlockedExchangeAdd((volatile long*)((char*)field24 + 4), 1);
+    copyString(this, source);
+    value = source.value;
+    first = source.first;
+    firstControl = source.firstControl;
+    if (firstControl) {
+        volatile long* count = &firstControl->references;
+        _ReadWriteBarrier();
+        _InterlockedExchangeAdd(count, 1);
     }
-    field28 = other.field28;
-    field2c = other.field2c;
-    if (field2c != 0)
-    {
-        _InterlockedExchangeAdd((volatile long*)((char*)field2c + 4), 1);
+
+    second = source.second;
+    secondControl = source.secondControl;
+    if (secondControl) {
+        volatile long* count = &secondControl->references;
+        _ReadWriteBarrier();
+        _InterlockedExchangeAdd(count, 1);
     }
 }

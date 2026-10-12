@@ -1,28 +1,61 @@
-// from server: 41% by colin
-struct DirectPhysicsReceiver {
-    char pad[0x0c];
-    int field_0c;
-    char pad2[0x30 - 0x10];
-    int field_30;
-    int sub_4c8e40(int, int);
-    int method(int, int);
+// from server: 94% by king_originala
+void* __cdecl operator new(unsigned int size);
+void __cdecl operator delete(void* p);
+
+struct Node
+{
+    Node* next;
 };
 
-extern "C" void* __cdecl sub_6a0920(unsigned int);
-extern "C" void __cdecl sub_6a067a(void*);
-
-int DirectPhysicsReceiver::method(int a, int b)
+struct Object
 {
-    void* mem = sub_6a0920(0x298);
-    int r = sub_4c8e40(b, (int)mem);
-    if (r == (int)mem) {
-        field_30 += 1;
-        *(int*)a = r;
-        *(char*)(a + 4) = 1;
-        return a;
+    char padding[0x290];
+    Node link;
+    unsigned int extra;
+};
+
+struct Result
+{
+    Object* object;
+    bool inserted;
+
+    Result(Object* p, bool b) : object(p), inserted(b) {}
+};
+
+struct Table
+{
+    char padding[0x24];
+
+    Object* receive(unsigned int* key, Object* object);
+};
+
+struct Receiver
+{
+    char padding[0x0c];
+    Table table;
+    unsigned int count;
+
+    Result insert(unsigned int* key);
+};
+
+Result Receiver::insert(unsigned int* key)
+{
+    Object* object = static_cast<Object*>(operator new(0x298));
+    try
+    {
+        Object* result = table.receive(key, object);
+        if (result == object)
+        {
+            ++count;
+            return Result(result, true);
+        }
+
+        operator delete(object);
+        return Result(result, false);
     }
-    sub_6a067a(mem);
-    *(int*)a = r;
-    *(char*)(a + 4) = 0;
-    return a;
+    catch (...)
+    {
+        operator delete(object);
+        throw;
+    }
 }

@@ -1,4 +1,4 @@
-// from server: 74% by king_originala
+// from server: 82% by king_originala
 struct Link {
     Link* next;
 };
@@ -80,6 +80,7 @@ __forceinline Iterator Table::erase(Iterator position)
 {
     Iterator next = position;
     next.advance();
+    next.range = &range;
 
     Link* hook = position.node ? &position.node->link : 0;
     Link* following = hook->next;
@@ -89,8 +90,9 @@ __forceinline Iterator Table::erase(Iterator position)
     previous->next = following;
 
     unsigned index = firstBucket;
-    if (range.buckets[index].next == range.buckets + index) {
-        Link* bucket = range.buckets + index;
+    Link* bucket = range.buckets + index;
+    if (bucket->next == bucket) {
+        bucket = *reinterpret_cast<Link* volatile*>(&range.buckets) + index;
         do {
             ++bucket;
             ++index;

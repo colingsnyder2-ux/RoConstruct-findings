@@ -1,75 +1,103 @@
-// from server: 48% by colin
-struct Tool {
-    char pad[0x1a4];
-    int field_1a4;
-    void sub_5fec80();
-    void f();
+// from server: 74% by king_originala
+struct Vector {
+    float x, y, z;
 };
 
-extern "C" void __stdcall sub_456e80(int* p);
-extern "C" void __stdcall sub_513240(float* out, int idx);
-extern "C" void __stdcall sub_55a8f0(int a);
-extern "C" void __stdcall sub_59dad0(float* v);
-extern "C" void __stdcall sub_59dd80(int a);
-extern "C" void* __stdcall sub_5b08a0();
-extern "C" void* __stdcall sub_5d9a20(int a);
-extern "C" void* __stdcall sub_5e2a10();
-extern "C" void __stdcall sub_608960(float* v);
-extern "C" void* __stdcall sub_6a17c6(int a, const char* b, const char* c, int d, int e);
+struct Matrix {
+    float data[9];
+    Vector column(int index) const;
+};
 
-extern float g_826e6c;
-extern float g_828b60;
-extern float g_82ca40;
+struct Frame {
+    Matrix rotation;
+    Vector position;
+};
 
-void Tool::f()
+struct FrameProvider {
+    virtual Frame getFrame();
+};
+
+struct Parent {
+    char padding[0x104];
+    void* instance;
+};
+
+struct Attachment {
+    Parent* getParent();
+    void setParent(Parent*);
+};
+
+struct AttachmentPtr {
+    Attachment* pointer;
+    void* control;
+    void reset();
+};
+
+struct Part {
+    void setValue(bool);
+    void setPosition(Vector);
+    void setSize(const Vector&);
+};
+
+struct Model {
+    char padding[0x134];
+    int* virtualBaseTable;
+};
+
+extern "C" void* __cdecl func_006a17c6(
+    void*, int, const void*, const void*, int);
+extern bool __cdecl func_005d9a20(Model*);
+
+extern char type_0092907c;
+extern char type_00932a40;
+extern const float constant_00826e6c;
+extern const float constant_00828b60;
+extern const float constant_0082ca40;
+
+struct Tool {
+    char padding[0x1a4];
+    AttachmentPtr attachment;
+
+    Part* getPart();
+    void finish();
+    void func_005ff050();
+};
+
+void Tool::func_005ff050()
 {
-    int* p = &field_1a4;
-    int edi = 0;
-    if (*p != 0) {
-        void* eax = sub_5e2a10();
-        if (eax != 0) {
-            int v = *(int*)((char*)eax + 0x104);
-            edi = (int)sub_6a17c6(v, (const char*)0x92907c, (const char*)0x932a40, 0, 0);
-        }
-        sub_55a8f0(0);
-        sub_456e80(p);
+    Model* model = 0;
+    if (attachment.pointer) {
+        Parent* parent = attachment.pointer->getParent();
+        if (parent)
+            model = static_cast<Model*>(func_006a17c6(
+                parent->instance, 0, &type_0092907c, &type_00932a40, 0));
+        attachment.pointer->setParent(0);
+        attachment.reset();
     }
-    void* esi = sub_5b08a0();
-    if (esi != 0) {
-        sub_59dd80(1);
-        if (sub_5d9a20(edi) != 0) {
-            int* eax = *(int**)(edi + 0x134);
-            int ecx = *(int*)((char*)eax + 8);
-            int* edx = *(int**)(ecx + edi + 0x134);
-            int (*fn)(void*) = *(int(**)(void*))edx;
-            float tmp[3];
-            fn(tmp);
-            float a = tmp[0];
-            float b = tmp[1];
-            float c = tmp[2];
-            float d = g_828b60;
-            float e = c + g_826e6c;
-            float out[3];
-            sub_513240(out, 2);
-            float f0 = out[0];
-            float f1 = out[1];
-            float f2 = out[2];
-            float m = g_82ca40;
-            float r0 = f0 * m + a;
-            float r1 = f1 * m + b;
-            float r2 = f2 * m + e;
-            float v[3];
-            v[0] = r0;
-            v[1] = r1;
-            v[2] = r2;
-            sub_608960(v);
-            float one = 1.0f;
-            float q[3];
-            q[0] = one;
-            q[1] = one;
-            q[2] = one;
-            sub_59dad0(q);
+
+    Part* part = getPart();
+    if (part) {
+        part->setValue(true);
+        if (func_005d9a20(model)) {
+            FrameProvider* provider = reinterpret_cast<FrameProvider*>(
+                reinterpret_cast<char*>(model) + 0x134 +
+                model->virtualBaseTable[2]);
+            Frame frame = provider->getFrame();
+            Vector position;
+            position.x = frame.position.x;
+            position.z = frame.position.z;
+            position.y = frame.position.y + constant_00826e6c;
+            float scale = constant_00828b60;
+            Vector direction = frame.rotation.column(2);
+            Vector destination = {
+                direction.x * scale * constant_0082ca40 + position.x,
+                direction.y * scale * constant_0082ca40 + position.y,
+                direction.z * scale * constant_0082ca40 + position.z
+            };
+            part->setPosition(destination);
+            Vector size = { 1.0f, 1.0f, 1.0f };
+            part->setSize(size);
         }
     }
-    sub_5fec80();
+    finish();
 }

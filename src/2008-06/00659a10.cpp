@@ -1,13 +1,13 @@
-// from server: 45% by king_originala
+// from server: 53% by king_originala
 extern "C" void (__cdecl *invalid_parameter_noinfo)();
-extern "C" int __cdecl compareObjects(void*, void*);
+extern "C" int __cdecl compare_objects(void*, void*);
 
 struct Key {
-    int a, b, c;
+    unsigned int a, b, c;
 };
 
 struct Node {
-    unsigned short children[8];
+    unsigned short indices[8];
     unsigned short level;
     unsigned char mask;
     char padding[9];
@@ -15,72 +15,71 @@ struct Node {
     Node* next;
 };
 
-struct Link {
+struct Record {
     void* object;
-    Link* next;
+    Record* next;
     char padding[12];
     Key key;
 };
 
-struct Entry {
-    Link* node;
+struct BucketEntry {
+    Record* node;
     unsigned int value;
 };
 
-struct Level {
+struct Bucket {
     char padding[12];
-    Entry* begin;
-    Entry* end;
-    Entry* capacity;
+    BucketEntry* begin;
+    BucketEntry* end;
+    BucketEntry* capacity;
 };
 
-struct Receiver {
-    void accept(void*, void*);
+struct Manager {
+    void process(void*, void*);
 };
 
 struct S {
     char padding[8];
-    Receiver* receiver;
-    Level levels[1];
+    Manager* manager;
+    Bucket buckets[1];
 
-    Node* find(unsigned int, unsigned int, Key*);
-    void f(Node*, void*);
+    Node* find(unsigned int, unsigned int, const Key*);
+    void visit(Node*, void*);
 };
 
-void S::f(Node* node, void* object)
+void S::visit(Node* node, void* object)
 {
-    int x = node->key.a * 2;
-    int y = node->key.b * 2;
-    int z = node->key.c * 2;
+    unsigned int a = node->key.a * 2;
+    unsigned int b = node->key.b * 2;
+    unsigned int c = node->key.c * 2;
 
     for (int i = 0; i < 8; ++i) {
-        unsigned char bit = 1;
-        bit <<= i;
-        if (node->mask & bit) {
-            unsigned int index = node->children[i];
-            Key key;
-            key.a = x + (i & 1);
-            key.b = y + ((i >> 1) & 1);
-            key.c = z + ((i >> 2) & 1);
+        if (node->mask & static_cast<unsigned char>(1 << i)) {
+            unsigned int index = node->indices[i];
+            unsigned int x = a + (i & 1);
+            unsigned int y = b + ((i >> 1) & 1);
+            unsigned int z = c + ((i >> 2) & 1);
+            Key key = { x, y, z };
 
-            Level* level = &levels[node->level - 1];
-            if (index >= (unsigned int)(level->end - level->begin))
+            Bucket* bucket = &buckets[node->level - 1];
+            if (index >= static_cast<unsigned int>(bucket->end - bucket->begin))
                 invalid_parameter_noinfo();
 
-            Link* link = level->begin[index].node;
-            while (link) {
-                void* other = link->object;
+            Record* record = bucket->begin[index].node;
+            while (record) {
+                void* other = record->object;
                 if (other != object &&
-                    link->key.a == key.a &&
-                    link->key.b == key.b &&
-                    link->key.c == key.c &&
-                    compareObjects(object, other) == 0)
-                    receiver->accept(object, other);
-                link = link->next;
+                    record->key.a == x &&
+                    record->key.b == y &&
+                    record->key.c == z &&
+                    !compare_objects(object, other)) {
+                    manager->process(object, other);
+                }
+                record = record->next;
             }
 
             if (node->level > 1)
-                f(find(node->level - 1, node->children[i], &key), object);
+                visit(find(node->level - 1, node->indices[i], &key), object);
         }
     }
 }

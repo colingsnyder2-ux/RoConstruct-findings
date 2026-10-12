@@ -1,99 +1,137 @@
-// from server: 87% by king_originala
+// from server: 88% by king_originala
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
 
-struct Descriptor {
+namespace std {
+    template<class T> struct char_traits;
+    template<class T> struct allocator;
+    template<class T, class Traits, class Alloc>
+    struct basic_string {
+        char storage[28];
+        basic_string(const T*);
+        ~basic_string();
+    };
+}
+
+typedef std::basic_string<char, std::char_traits<char>, std::allocator<char> > String;
+
+struct SocketDescriptor {
     unsigned short port;
     char host[32];
-    Descriptor(unsigned short, const char*);
+    SocketDescriptor(unsigned short, const char*);
 };
 
 struct Address {
     unsigned long host;
     unsigned short port;
-    const char* text(bool);
+    const char* toString(bool) const;
 };
 
-struct Text {
-    unsigned char storage[28];
-    Text(const char*);
-    ~Text();
+struct Peer {
+    virtual void reserved0() = 0;
+    virtual bool start(unsigned short, unsigned int, SocketDescriptor*, unsigned int) = 0;
+    virtual void reserved2() = 0;
+    virtual void reserved3() = 0;
+    virtual void reserved4() = 0;
+    virtual void reserved5() = 0;
+    virtual void reserved6() = 0;
+    virtual void reserved7() = 0;
+    virtual void reserved8() = 0;
+    virtual void reserved9() = 0;
+    virtual void reserved10() = 0;
+    virtual void reserved11() = 0;
+    virtual void reserved12() = 0;
+    virtual void reserved13() = 0;
+    virtual void reserved14() = 0;
+    virtual void reserved15() = 0;
+    virtual void reserved16() = 0;
+    virtual void reserved17() = 0;
+    virtual void reserved18() = 0;
+    virtual void reserved19() = 0;
+    virtual void reserved20() = 0;
+    virtual void reserved21() = 0;
+    virtual void reserved22() = 0;
+    virtual void reserved23() = 0;
+    virtual void reserved24() = 0;
+    virtual void reserved25() = 0;
+    virtual void reserved26() = 0;
+    virtual void reserved27() = 0;
+    virtual void reserved28() = 0;
+    virtual void reserved29() = 0;
+    virtual void reserved30() = 0;
+    virtual void reserved31() = 0;
+    virtual void reserved32() = 0;
+    virtual void reserved33() = 0;
+    virtual void reserved34() = 0;
+    virtual void reserved35() = 0;
+    virtual void reserved36() = 0;
+    virtual void reserved37() = 0;
+    virtual void reserved38() = 0;
+    virtual void reserved39() = 0;
+    virtual Address getAddress(Address) = 0;
 };
 
-struct Error {
-    unsigned char storage[40];
-    Error(const Text&);
-    Error(const Error&);
-    ~Error();
-};
-
-struct RefCount {
-    virtual void unused();
-    virtual void dispose();
-    virtual void destroy();
+struct Control {
+    virtual void reserved() = 0;
+    virtual void dispose() = 0;
+    virtual void destroy() = 0;
     volatile long strong;
     volatile long weak;
 };
 
-struct Logger {
+struct Shared {
     void* object;
-    RefCount* count;
-    ~Logger();
+    Control* control;
+    ~Shared();
 };
 
-__forceinline Logger::~Logger()
+__forceinline Shared::~Shared()
 {
-    if (count) {
-        RefCount* p = count;
-        if (_InterlockedExchangeAdd(&p->strong, -1) == 1) {
+    Control* p = control;
+    if (p) {
+        if (_InterlockedExchangeAdd(&p->strong, -1) == 0) {
             p->dispose();
-            if (_InterlockedExchangeAdd(&p->weak, -1) == 1)
+            if (_InterlockedExchangeAdd(&p->weak, -1) == 0)
                 p->destroy();
         }
     }
 }
 
-extern Logger __cdecl getLogger();
-extern void __cdecl writeLog(void*, int, const char*, ...);
-extern unsigned long addressHost;
-extern unsigned long addressIndex;
-
-struct Peer;
-struct PeerTable {
-    void* unused;
-    bool (__thiscall* start)(Peer*, int, unsigned int, Descriptor*, int);
-    void* reserved[38];
-    Address (__thiscall* address)(Peer*, unsigned long, unsigned long);
+struct Failure {
+    char storage[40];
+    Failure(const String&);
 };
 
-struct Peer {
-    PeerTable* table;
-};
+extern Address defaultAddress;
+extern unsigned char failureType;
+extern "C" __declspec(noreturn) void __stdcall throwFailure(void*, void*);
+extern Shared __cdecl getLogger();
+extern void __cdecl logMessage(void*, int, const char*, ...);
 
-struct S {
-    unsigned char padding[0x140];
+struct Server {
+    char padding[0x140];
     Peer* peer;
     unsigned int port;
     void start(unsigned short, unsigned int);
     void update();
 };
 
-void S::start(unsigned short requestedPort, unsigned int parameter)
+void Server::start(unsigned short requestedPort, unsigned int flags)
 {
-    Descriptor descriptor(requestedPort, "");
-    if (!peer->table->start(peer, 64, parameter, &descriptor, 1)) {
-        Text message("Failed to start network server");
-        throw Error(message);
+    SocketDescriptor descriptor(requestedPort, "");
+    if (!peer->start(64, flags, &descriptor, 1)) {
+        String message("Failed to start network server");
+        Failure failure(message);
+        throwFailure(&failure, &failureType);
     }
 
-    Address local = peer->table->address(peer, addressHost, addressIndex);
-    port = local.port;
-
+    Address address = peer->getAddress(defaultAddress);
+    port = address.port;
     {
-        Logger logger = getLogger();
-        void* output = logger.object;
-        writeLog(output, 1, "Started network server %s", local.text(true));
+        Shared logger = getLogger();
+        void* object = logger.object;
+        logMessage(object, 1, "Started network server %s",
+                   address.toString(true));
     }
-
     update();
 }

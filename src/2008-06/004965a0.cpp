@@ -1,5 +1,24 @@
-// from server: 54% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs v8xml/XmlSerializer.cpp
+// from server: 81% by king_originala
+struct Message {
+    char data[72];
+    Message(const Message&);
+    ~Message();
+};
+
+struct Callback {
+    virtual void invoke(void*, Message) = 0;
+};
+
+struct Plugin {
+    void dispatch(Message, Callback*);
+};
+
+void Plugin::dispatch(Message message, Callback* callback)
+{
+    try {
+        void* owner = this ? reinterpret_cast<char*>(this) - 0x130 : 0;
+        callback->invoke(owner, message);
+    }
+    catch (...) {
+    }
+}

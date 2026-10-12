@@ -1,22 +1,15 @@
-// from server: 84% by atomic.potato
-typedef unsigned int UINT;
-typedef unsigned long WPARAM;
-typedef long LPARAM;
-typedef int BOOL;
+// from server: 87% by colin
+extern "C" void* __cdecl sub_6A0926();
+extern "C" int __stdcall PostMessageA(void*, unsigned int, unsigned int, int);
 
-extern "C" void* __cdecl sub_6a0926();
-extern "C" BOOL __stdcall PostMessageA(void*, UINT, WPARAM, LPARAM);
-
-struct ReportAbuseVerb
-{
-    void f();
+struct ReportAbuseVerb {
+    void method(int);
 };
 
-void ReportAbuseVerb::f()
-{
-    void* a = sub_6a0926();
-    a = *(void**)((char*)a + 4);
-    a = *(void**)((char*)a + 0x20);
-    void* h = *(void**)((char*)a + 0x20);
-    PostMessageA(h, 0x111, 0x8100, 0);
+void ReportAbuseVerb::method(int arg) {
+    void* p = sub_6A0926();
+    int* q = *(int**)((char*)p + 4);
+    int* r = *(int**)((char*)q + 0x20);
+    int hwnd = *(int*)((char*)r + 0x20);
+    PostMessageA((void*)hwnd, 0x111, 0x8100, 0);
 }

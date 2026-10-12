@@ -1,4 +1,4 @@
-// from server: 80% by king_originala
+// from server: 87% by king_originala
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
 
@@ -10,8 +10,12 @@ struct Control {
     volatile long weak;
 };
 
+struct Logger {
+    void __cdecl reportError(int, const char*, const char*);
+};
+
 struct Handle {
-    void* object;
+    Logger* object;
     Control* control;
     ~Handle();
 };
@@ -30,15 +34,16 @@ __forceinline Handle::~Handle()
 
 extern Handle __cdecl getHandle();
 extern const char* __cdecl getText(void*, int, unsigned int*);
-extern void __cdecl reportError(void*, int, const char*, const char*);
 extern const char errorFormat[];
 
 int __cdecl callback(void* state)
 {
     {
         Handle h = getHandle();
-        reportError(h.object, 3, errorFormat, getText(state, -1, 0));
+        Logger* object = h.object;
+        object->reportError(3, errorFormat, getText(state, -1, 0));
     }
-    *reinterpret_cast<int*>(0) = *reinterpret_cast<int*>(4);
+    int* p = 0;
+    p[0] = p[1];
     return 0;
 }

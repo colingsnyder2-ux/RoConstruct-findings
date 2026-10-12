@@ -1,48 +1,69 @@
-// from server: 33% by tester
-struct Str_00437ed0 { int words[8]; };
-
-struct X_00437ed0 {
-    char pad[0xa4];
-    Str_00437ed0 value;
-    Str_00437ed0* copy(Str_00437ed0* out);
-};
-
-extern "C" void* __stdcall sub_803EE0();
-extern "C" void __stdcall sub_802458();
-extern "C" void __stdcall sub_802468();
-extern "C" void __stdcall sub_803F14();
-extern "C" bool __cdecl sub_5BEBB0(void*, void*);
-
+// from server: 96% by king_originala
 struct VVector3 {
-    float x;
-    float y;
-    float z;
+    float x, y, z;
+    VVector3(float, float, float);
 };
 
-struct XItem {
-    bool get(VVector3* out);
+inline VVector3::VVector3(float a, float b, float c)
+    : x(a), y(b), z(c) {
+}
+
+struct Handle;
+struct String;
+
+extern const char* (__thiscall* handle_text)(const Handle*);
+extern void (__thiscall* handle_destroy)(Handle*);
+extern void (__thiscall* string_construct)(String*, const char*);
+extern void (__thiscall* string_destroy)(String*);
+extern bool __cdecl parse_vector(const String*, VVector3*);
+
+struct Handle {
+    unsigned int value;
+    ~Handle();
+    const char* text() const;
 };
 
-bool XItem::get(VVector3* out)
-{
-    Str_00437ed0 local;
-    X_00437ed0* src = (X_00437ed0*)((char*)this - 0xa4);
-    src->copy(&local);
+struct String {
+    char reserved[4];
+    union {
+        char buffer[16];
+        char* pointer;
+    } data;
+    unsigned int length;
+    unsigned int capacity;
 
-    void* p = sub_803EE0();
-    sub_802458();
-    bool ok = sub_5BEBB0(&local, &local);
-    sub_802468();
-    sub_803F14();
+    String(const char*);
+    ~String();
+};
 
-    if (ok) {
-        out->x = 0.0f;
-        out->y = 0.0f;
-        out->z = 0.0f;
-    } else {
-        out->x = 0.0f;
-        out->y = 0.0f;
-        out->z = 0.0f;
-    }
-    return ok;
+inline Handle::~Handle() {
+    handle_destroy(this);
+}
+
+inline const char* Handle::text() const {
+    return handle_text(this);
+}
+
+inline String::String(const char* text) {
+    string_construct(this, text);
+}
+
+inline String::~String() {
+    string_destroy(this);
+}
+
+struct S {
+    char reserved[0xa4];
+    Handle value;
+
+    Handle copy();
+    VVector3 f();
+};
+
+VVector3 S::f() {
+    VVector3 result(0.0f, 0.0f, 0.0f);
+    bool valid = parse_vector(&String(copy().text()), &result);
+    if (valid)
+        return VVector3(result.x, result.y, result.z);
+    return VVector3(0.0f, 0.0f, 0.0f);
 }

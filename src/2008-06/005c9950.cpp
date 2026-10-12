@@ -1,4 +1,4 @@
-// from server: 64% by king_originala
+// from server: 70% by king_originala
 struct Value {
     unsigned char storage[24];
     Value(const Value&);
@@ -32,11 +32,11 @@ struct S {
 
 void S::invoke(Object* object, Output* output, Input* argument)
 {
-    Value value = (object->*method)(argument->get());
+    const Value& value = (object->*method)(argument->get());
     output->type = valueType();
 
-    Holder& source = reinterpret_cast<Holder&>(argument).assign(value);
     Holder& destination = output->value;
+    Holder& source = reinterpret_cast<Holder&>(argument).assign(value);
     if (&source != &destination) {
         Input* old = destination.pointer;
         destination.pointer = source.pointer;

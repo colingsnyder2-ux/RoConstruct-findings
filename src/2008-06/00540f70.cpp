@@ -1,18 +1,19 @@
-// from server: 23% by atomic.potato
-struct Bucket
-{
-    int value;
-    void f(void *);
+// from server: 100% by king_originala
+struct PartChunk {
+    void* value;
+    PartChunk(void* source);
+    ~PartChunk();
 };
 
-struct PartChunk
-{
-    PartChunk(void *, int);
+struct Bucket {
+    unsigned char padding[4];
+    void* value;
+    PartChunk f();
 };
 
-void Bucket::f(void *p)
+#pragma optimize("", off)
+PartChunk Bucket::f()
 {
-    int flag = 0;
-    PartChunk(p, value);
-    flag |= 1;
+    return PartChunk(value);
 }
+#pragma optimize("", on)

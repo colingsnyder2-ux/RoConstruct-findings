@@ -1,4 +1,4 @@
-// from server: 84% by king_originala
+// from server: 85% by king_originala
 extern "C" void (__cdecl *_invalid_parameter_noinfo)();
 
 struct Mutex {
@@ -65,12 +65,12 @@ void S::f(double value) {
     Guard guard(&mutex);
     Iterator it;
     it.node = head->left;
-    it.owner = tree;
+    Tree* owner = reinterpret_cast<Tree*>(tree);
+    it.owner = reinterpret_cast<Proxy*>(owner);
 
     for (;;) {
         Node* end = head;
         Proxy* current = tree;
-        Tree* owner = reinterpret_cast<Tree*>(it.owner);
 
         if (!owner || reinterpret_cast<Proxy*>(owner) != current)
             _invalid_parameter_noinfo();
@@ -88,5 +88,6 @@ void S::f(double value) {
 
         it.node->item->update(value);
         it.advance();
+        owner = reinterpret_cast<Tree*>(it.owner);
     }
 }

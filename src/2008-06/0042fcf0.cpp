@@ -1,23 +1,38 @@
-// from server: 64% by colin
-struct CXTPPopupBar {
-    static CXTPPopupBar* CreatePopupBar(void*);
-    void SetCommandBars(void*);
+// from server: 93% by king_originala
+extern "C" int (__cdecl * _mbscmp)(const unsigned char *,
+                                  const unsigned char *);
+
+struct CommandBars;
+
+struct PopupBar {
+    static PopupBar * __cdecl CreatePopupBar(CommandBars *);
+    void SetTitle(const char *, unsigned int, int);
+};
+
+struct PopupRequest {
+    PopupBar *popup;
+    int enabled;
+    unsigned char reserved[12];
+    const char *title;
 };
 
 struct CMainFrame {
-    int OnCreateHelper(void* p);
+    unsigned char reserved[0xec];
+    CommandBars *commandBars;
+
+    int CreatePopup(PopupRequest *);
 };
 
-extern "C" int __cdecl _mbscmp(const unsigned char*, const unsigned char*);
-
-int CMainFrame::OnCreateHelper(void* p)
+int CMainFrame::CreatePopup(PopupRequest *request)
 {
-    if (*(int*)((char*)p + 4) != 0)
-        return 0;
-    if (_mbscmp((const unsigned char*)*(void**)((char*)p + 0x14), (const unsigned char*)0x810dcc) != 0)
-        return 0;
-    CXTPPopupBar* bar = CXTPPopupBar::CreatePopupBar(*(void**)((char*)this + 0xec));
-    bar->SetCommandBars(*(void**)((char*)p + 0x14));
-    *(void**)p = bar;
-    return 1;
+    if (request->enabled &&
+        _mbscmp((const unsigned char *)request->title,
+                (const unsigned char *)"Camera Positioning") == 0)
+    {
+        PopupBar *popup = PopupBar::CreatePopupBar(commandBars);
+        popup->SetTitle(request->title, 1001, 400);
+        request->popup = popup;
+        return 1;
+    }
+    return 0;
 }

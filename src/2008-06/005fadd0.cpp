@@ -1,16 +1,23 @@
-// from server: 78% by atomic.potato
-extern "C" int __cdecl func_006a17f0(double);
+// from server: 100% by king_originala
+#pragma float_control(precise, off)
 
-struct S
-{
-    int f();
-    char pad[16];
+extern "C" double __cdecl sqrt(double);
+#pragma intrinsic(sqrt)
+
+struct Data {
+    char reserved0[4];
+    int count;
+    char reserved1[0x20];
     int value;
+};
+
+struct S {
+    char reserved[0x10];
+    Data* data;
+    int f();
 };
 
 int S::f()
 {
-    int* p = *(int**)((char*)this + 16);
-    int n = p[1] * 6 + p[10] + 4;
-    return func_006a17f0((double)n) + 1;
+    return (int)sqrt(sqrt((double)(data->count * 6 + data->value + 4))) + 1;
 }

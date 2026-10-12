@@ -1,55 +1,53 @@
-// from server: 70% by king_originala
-typedef unsigned int size_t;
+// from server: 72% by king_originala
+struct Allocator {
+    virtual void slot0();
+    virtual void slot1();
+    virtual void slot2();
+    virtual char *get();
+};
 
-extern "C" size_t __cdecl strlen(const char *);
+extern Allocator allocator;
+
+struct String {
+    char *context;
+    union {
+        char small[16];
+        char *large;
+    } storage;
+    unsigned length;
+    unsigned capacity;
+
+    String();
+    ~String();
+    void assign(const char *, unsigned);
+};
+
+__forceinline String::String()
+{
+    context = allocator.get() + 16;
+}
+
+extern String makeString(bool);
+extern "C" unsigned __cdecl strlen(const char *);
+
 #pragma intrinsic(strlen)
 
-struct Manager {
-    void *(__thiscall **table)(Manager *);
-};
-
-extern Manager manager;
-
-struct Text {
-    unsigned char allocator;
-    union {
-        char buffer[16];
-        char *pointer;
-    } storage;
-    unsigned int length;
-    unsigned int capacity;
-
-    ~Text();
-};
-
-Text __cdecl buildText(bool);
-
-struct Result {
-    void *data;
-
-    ~Result();
-    void append(const char *, unsigned int);
-};
-
-Result __cdecl makeResult(bool alternate)
+String makeResult(bool enabled)
 {
-    Result result = {
-        static_cast<char *>(manager.table[3](&manager)) + 16
-    };
+    String result;
+    const char *text;
+    unsigned count;
 
-    if (alternate) {
-        static Text text = buildText(true);
-        const char *p = text.capacity < 16
-            ? text.storage.buffer
-            : text.storage.pointer;
-        result.append(p, p ? strlen(p) : 0);
+    if (enabled) {
+        static String value = makeString(true);
+        text = value.capacity < 16 ? value.storage.small : value.storage.large;
+        count = text ? strlen(text) : 0;
     } else {
-        static Text text = buildText(false);
-        const char *p = text.capacity < 16
-            ? text.storage.buffer
-            : text.storage.pointer;
-        result.append(p, p ? strlen(p) : 0);
+        static String value = makeString(false);
+        text = value.capacity < 16 ? value.storage.small : value.storage.large;
+        count = text ? strlen(text) : 0;
     }
 
+    result.assign(text, count);
     return result;
 }

@@ -1,32 +1,61 @@
-// from server: 29% by colin
-// roc 2008-06 0060c260  unit: RBX::VNetworkSettings::?$EnumPropDescriptor  size: 214 bytes
-// Make this compile to the exact bytes below, then: roc check 2008-06 0060c260
+// from server: 72% by king_originala
+extern int initializationFlag;
+extern void __cdecl initializeDescriptor();
+extern void __cdecl runOnce(void (__cdecl *)(), int *);
+extern void * __cdecl getDescriptor();
+extern void * __cdecl getSettings();
+extern void __cdecl operator delete(void *);
 
-extern "C" void __cdecl sub_557330(int, int);
-extern "C" void __cdecl sub_56c650();
-extern "C" void __cdecl sub_5c0940();
-extern "C" void __cdecl sub_60aa70();
-extern "C" void __cdecl sub_60b850();
-extern "C" void __cdecl sub_6a067a(void*);
-
-struct S {
-    void f(int, int, int, int, int, int, int);
-    char pad[0x24];
+struct Owner {
+    void *pointer;
+    ~Owner();
+    void *release();
 };
 
-void S::f(int a1, int a2, int a3, int a4, int a5, int a6, int a7)
+inline Owner::~Owner()
 {
-    sub_557330(0x60b8b0, 0x97bdac);
-    int edi = (int)sub_60b850;
-    sub_5c0940();
-    sub_56c650();
-    *(int*)((char*)this + 0x18) = edi;
-    *(int*)this = 0x8432cc;
-    sub_60aa70();
-    *(int*)((char*)this + 0x1c) = 0;
-    if (a7) {
-        sub_6a067a((void*)a7);
-    }
-    sub_557330(0x60b8b0, 0x97bdac);
-    *(int*)((char*)this + 0x20) = (int)sub_60b850;
+    if (pointer)
+        operator delete(pointer);
+}
+
+inline void *Owner::release()
+{
+    void *result = pointer;
+    pointer = 0;
+    return result;
+}
+
+extern Owner __cdecl createBinding(int, int, int, int);
+
+struct Base {
+    unsigned char storage[20];
+    void *descriptor;
+
+    Base(int, int, int);
+    void initialize(void *, void *, int, int, int);
+    virtual ~Base();
+};
+
+inline Base::Base(int a, int b, int g)
+{
+    runOnce(initializeDescriptor, &initializationFlag);
+    void *cached = getDescriptor();
+    initialize(getSettings(), cached, a, b, g);
+    descriptor = cached;
+}
+
+struct S : Base {
+    void *binding;
+    void *settings;
+
+    S(int, int, int, int, int, int, int);
+    virtual ~S();
+};
+
+S::S(int a, int b, int c, int d, int e, int f, int g)
+    : Base(a, b, g),
+      binding(createBinding(c, d, e, f).release())
+{
+    runOnce(initializeDescriptor, &initializationFlag);
+    settings = getDescriptor();
 }

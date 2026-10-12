@@ -1,5 +1,47 @@
-// from server: 56% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs-render AggregatingSceneManager.cpp
+// from server: 100% by king_originala
+struct String;
+extern String* (__thiscall* stringDefaultConstruct)(String*);
+extern void (__thiscall* stringDestroy)(String*);
+
+struct String {
+    char storage[28];
+    String();
+    ~String();
+};
+
+inline String::String()
+{
+    stringDefaultConstruct(this);
+}
+
+inline String::~String()
+{
+    stringDestroy(this);
+}
+
+extern void __cdecl makeString(const char*, String*);
+
+struct Receiver {
+    virtual void slot0() = 0;
+    virtual void slot1() = 0;
+    virtual void slot2() = 0;
+    virtual void slot3() = 0;
+    virtual void slot4() = 0;
+    virtual void slot5() = 0;
+    virtual void slot6() = 0;
+    virtual void slot7() = 0;
+    virtual void notify(int, const String&) = 0;
+};
+
+struct Context {
+    Receiver* receiver;
+    int value;
+};
+
+void __cdecl create(Context* context, const char* text)
+{
+    String string;
+    makeString(text, &string);
+    if (context->value)
+        context->receiver->notify(context->value, string);
+}
