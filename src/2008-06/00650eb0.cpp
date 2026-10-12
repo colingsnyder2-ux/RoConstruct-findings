@@ -1,4 +1,4 @@
-// from server: 94% by king_originala
+// from server: 96% by king_originala
 struct String {
     unsigned char data[28];
 };
@@ -14,6 +14,7 @@ String* __cdecl f(String* first, String* last, const String& value)
                 break;
             ++first;
         } while (first != last);
+        return first;
     }
-    return first;
+    return last;
 }

@@ -1,4 +1,4 @@
-// from server: 95% by king_originala
+// from server: 100% by king_originala
 extern "C" double __cdecl sqrt(double);
 #pragma intrinsic(sqrt)
 #pragma float_control(precise, off)
@@ -7,7 +7,7 @@ struct Vec3 {
     float x, y, z;
 };
 
-void __cdecl normalizeAndScale(Vec3* value, Vec3* unit, void*, const Vec3* scale)
+void __cdecl normalizeAndScale(Vec3* value, Vec3* unit, void*, const volatile Vec3* scale)
 {
     float inverseLength = 1.0f / (float)sqrt(
         value->x * value->x +
