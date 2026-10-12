@@ -1,22 +1,5 @@
-// from server: 76% by king_originala
-struct Base {
-    virtual ~Base();
-};
-
-struct Member {
-    void cleanup();
-    ~Member();
-};
-
-struct Bucket {
-    Base base;
-    unsigned char padding[8];
-    Member member;
-    ~Bucket();
-};
-
-#pragma optimize("", off)
-Bucket::~Bucket()
-{
-    member.cleanup();
-}
+// from server: 100% by colin
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /Od /Ob0 /GS /EHsc /MD
+// roc-lib: templates-boost-1_34_1 roc_boost_finish_239abb6d60853838.cpp

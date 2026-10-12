@@ -1,13 +1,7 @@
-// from server: 37% by atomic.potato
-extern "C" void construct_string(void *, const char *);
-
-struct VModelInstance
-{
-    VModelInstance(const char *);
-};
-
-VModelInstance::VModelInstance(const char *value)
-{
-    construct_string((char *)this + 0x1c, "Controller1");
-    *(void **)this = (void *)0x830ab8;
-}
+// from server: 100% by colin
+// roc-cl: 21022
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+#include <string>
+struct B{virtual ~B(){}; B(std::string,int);};
+struct CutVerb:B{CutVerb(int);};
+CutVerb::CutVerb(int p):B("SelectionTilt",p){}

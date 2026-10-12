@@ -1,33 +1,5 @@
-// from server: 42% by colin
-
-
-
-
-extern "C" {
-    void __stdcall sub_802458(void*);
-    void __stdcall sub_802468(void*);
-}
-
-struct Str {
-    char pad[0x1c];
-    void ctor(const char*);
-    void dtor();
-};
-
-struct Base {
-    void init(void*);
-};
-
-struct Derived : Base {
-    void* vtable;
-    void construct();
-};
-
-void Derived::construct()
-{
-    Str s;
-    s.ctor("no read access");
-    Base::init(&s);
-    this->vtable = (void*)0x840854;
-    s.dtor();
-}
+// from server: 100% by tester
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: templates-2008-06-dll roc_rtti_205f2b05043a4e2a.cpp

@@ -1,20 +1,8 @@
-// from server: 98% by king_originala
-namespace std {
-    class exception {
-        const char* message;
-        int owned;
-    public:
-        exception(const char*);
-        virtual ~exception();
-        virtual const char* what() const;
-    };
+// from server: 100% by colin
+#include <typeinfo>
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
 
-    class bad_cast : public exception {
-    public:
-        bad_cast(const char*);
-        virtual ~bad_cast();
-    };
-}
 
 struct Resource {
     virtual ~Resource();
@@ -55,11 +43,11 @@ struct Arguments {
     virtual void read(int index, Value* value) = 0;
 };
 
-struct DescribedBase {
-    virtual ~DescribedBase();
-};
+namespace RBX { namespace Reflection { class DescribedBase { public: virtual ~DescribedBase(); }; } }
+using RBX::Reflection::DescribedBase;
 
-struct Humanoid : DescribedBase {};
+namespace RBX { class Humanoid : public DescribedBase {}; }
+using RBX::Humanoid;
 
 struct S {
     char padding[68];

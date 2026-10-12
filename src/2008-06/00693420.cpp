@@ -1,4 +1,6 @@
-// from server: 96% by king_originala
+// from server: 100% by colin
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /MD /fp:fast
 extern "C" void (__cdecl *_invalid_parameter_noinfo)();
 
 struct Node {
@@ -98,7 +100,7 @@ void S::f(Iterator first, Iterator last, int a, int b,
             render(node, a, 0, b);
             device->state(2);
             device->mode(1);
-        } else if (x != y) {
+        } else if ((x || y) && !(x && y)) {
             render(node, a, 0, b);
         } else {
             device->state(0);

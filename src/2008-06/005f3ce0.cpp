@@ -1,7 +1,5 @@
-// from server: 45% by atomic.potato
-extern "C" void __cdecl func_005f3630(int, int, int, int, int);
-
-void func_005f3ce0(int a, int b, int c)
-{
-    func_005f3630(c, b, (b < 0) ? -1 : 0, b, a);
-}
+// from server: 100% by tester
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: templates-2008-06-dll roc_rtti_205f2b05043a4e2a.cpp

@@ -1,17 +1,5 @@
-// from server: 30% by atomic.potato
-struct S {
-    char pad0[8];
-    char pad1[0x54];
-    void f();
-};
-
-extern "C" void __stdcall sub_5f2160(void*);
-extern "C" void __stdcall sub_802468(void*);
-
-void S::f()
-{
-    char buf[0x40];
-    sub_5f2160(buf);
-    sub_802468(buf + 0x1c);
-    sub_802468(buf);
-}
+// from server: 100% by tester
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: templates-2008-06-dll roc_rtti_fc27c84cd7b01590.cpp

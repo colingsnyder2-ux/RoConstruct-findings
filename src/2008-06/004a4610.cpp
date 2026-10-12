@@ -1,29 +1,18 @@
-// from server: 98% by king_originala
-namespace std {
-    class exception {
-        const char* message;
-        int owned;
-    public:
-        virtual ~exception();
-        virtual const char* what() const;
-    };
+// from server: 100% by colin
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
+#include <typeinfo>
 
-    class bad_cast : public exception {
-    public:
-        explicit bad_cast(const char*);
-        virtual ~bad_cast();
-    };
-}
 
 namespace RBX {
     namespace Reflection {
-        struct DescribedBase {
+        class DescribedBase { public:
             virtual ~DescribedBase();
         };
     }
 
     namespace Network {
-        struct Server : Reflection::DescribedBase {
+        class Server : public Reflection::DescribedBase {
         };
     }
 }

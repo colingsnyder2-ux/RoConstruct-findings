@@ -1,39 +1,5 @@
-// from server: 88% by king_originala
-struct S
-{
-    int value;
-    float key;
-};
-
-void __cdecl sortThree(S* a, S* b, S* c)
-{
-    if (a->key > b->key)
-    {
-        if (b != a)
-        {
-            S temp = *b;
-            *b = *a;
-            *a = temp;
-        }
-    }
-
-    if (b->key > c->key)
-    {
-        if (c != b)
-        {
-            S temp = *c;
-            *c = *b;
-            *b = temp;
-        }
-    }
-
-    if (a->key > b->key)
-    {
-        if (b != a)
-        {
-            S temp = *b;
-            *b = *a;
-            *a = temp;
-        }
-    }
-}
+// from server: 100% by colin
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MD /fp:fast
+// roc-lib: ogre-1.4.5-dll roc_try_ebdcbd65a010751e.cpp

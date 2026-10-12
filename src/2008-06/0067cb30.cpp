@@ -1,34 +1,5 @@
-// from server: 68% by king_originala
-struct Entry {
-    unsigned int value;
-    float key;
-};
-
-void __cdecl insertion_sort(Entry* first, Entry* last)
-{
-    if (first != last) {
-        for (Entry* next = first + 1; next != last; ++next) {
-            Entry value = *next;
-            Entry* hole = next;
-
-            if (first->key > value.key) {
-                Entry* source = next;
-                while (first != source) {
-                    --source;
-                    source[1] = *source;
-                }
-                *first = value;
-            } else {
-                Entry* previous = next;
-                for (;;) {
-                    --previous;
-                    if (!(previous->key > value.key))
-                        break;
-                    *hole = *previous;
-                    hole = previous;
-                }
-                *hole = value;
-            }
-        }
-    }
-}
+// from server: 100% by colin
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MD /fp:fast
+// roc-lib: ogre-1.4.5-dll roc_try_ebdcbd65a010751e.cpp

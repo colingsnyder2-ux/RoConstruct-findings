@@ -1,4 +1,4 @@
-// from server: 78% by colin
+// from server: 100% by king_originala
 // roc 2008-06 0057d570  unit: RBX::CameraTiltUpCommand  size: 30 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 0057d570
 //
@@ -12,19 +12,28 @@
 // 0057d588  e8b3ea0400           call 0x5cc040
 // 0057d58d  c3                   ret 
 
-struct CameraTiltUpCommand {
-    char pad[0xc];
-    void* workspace;
-    bool doIt(void* dataState);
+struct Result {
+    void func_005cc040(int);
 };
 
-extern "C" void __stdcall func_005cc040(void*);
+struct Proxy {
+    virtual void slot0();
+    virtual Result* slot1();
+};
 
-bool CameraTiltUpCommand::doIt(void* dataState)
+struct Owner {
+    char padding[0x288];
+    Proxy proxy;
+};
+
+struct S {
+    char padding[0x0c];
+    Owner* owner;
+    void func_0057d570();
+};
+
+void S::func_0057d570()
 {
-    char* ws = (char*)workspace;
-    void** vtbl = *(void***)(ws + 0x288);
-    void* result = ((void* (__thiscall*)(void*))vtbl[1])(ws + 0x288);
-    func_005cc040(result);
-    return true;
+    Result* result = owner->proxy.slot1();
+    result->func_005cc040(-1);
 }

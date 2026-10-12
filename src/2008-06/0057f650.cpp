@@ -1,17 +1,7 @@
-// from server: 56% by atomic.potato
-extern "C" void construct_string(void *, const char *);
-extern "C" void initialize(void *);
-
-struct S
-{
-    int f(const char *);
-};
-
-int S::f(const char *value)
-{
-    char object[28];
-    construct_string(object, "SelectionRotate");
-    initialize(this);
-    *(int *)this = 0x830a9c;
-    return (int)this;
-}
+// from server: 100% by colin
+// roc-cl: 21022
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+#include <string>
+struct B{virtual ~B(){}; B(std::string,int);};
+struct CutVerb:B{CutVerb(int);};
+CutVerb::CutVerb(int p):B("SelectionRotate",p){}

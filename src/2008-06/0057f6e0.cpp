@@ -1,17 +1,7 @@
-// from server: 65% by atomic.potato
-extern "C" void construct_string(void *, const char *);
-extern "C" void initialize(void *, void *);
-
-struct S
-{
-    void *vftable;
-    S(void *);
-};
-
-S::S(void *arg)
-{
-    char buffer[28];
-    construct_string(buffer, "Controller2");
-    initialize(this, buffer);
-    vftable = (void *)0x830af8;
-}
+// from server: 100% by colin
+// roc-cl: 21022
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+#include <string>
+struct B{virtual ~B(){}; B(std::string,int);};
+struct CutVerb:B{CutVerb(int);};
+CutVerb::CutVerb(int p):B("Controller2",p){}

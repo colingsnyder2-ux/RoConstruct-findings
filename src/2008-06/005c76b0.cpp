@@ -1,24 +1,28 @@
-// from server: 98% by king_originala
+// from server: 100% by king_originala
 void* __cdecl operator new(unsigned int);
 void __cdecl operator delete(void*);
 
-struct Created {
-    char storage[0x38];
-    Created(int);
-};
-
 struct Context {
     char pad[0x204];
-    int value;
+    void* value;
+    __forceinline void* get();
 };
+
+__forceinline void* Context::get() {
+    return value;
+}
 
 struct Tool {
-    char pad[0x0c];
-    Context* context;
-    Created* create();
+    char storage[0x38];
+    Tool(void*);
 };
 
-Created* Tool::create()
-{
-    return new Created(context->value);
+struct Verb {
+    char pad[0x0c];
+    Context* context;
+    Tool* create();
+};
+
+Tool* Verb::create() {
+    return new Tool(context->get());
 }

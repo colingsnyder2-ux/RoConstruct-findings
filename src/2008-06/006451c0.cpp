@@ -1,4 +1,4 @@
-// from server: 99% by king_originala
+// from server: 100% by king_originala
 struct Vector3 {
     float x, y, z;
     Vector3& operator=(const Vector3&);
@@ -111,8 +111,9 @@ void Climbing::update(float dt)
         stateFourth[state()].value != 13) {
         refreshPart();
         if (part.pointer) {
-            owner->controller->setPrimitive(
-                part.pointer ? &part.pointer->primitive : 0, 0);
+            Primitive* selected =
+                part.pointer ? &part.pointer->primitive : 0;
+            owner->controller->setPrimitive(selected, 0);
             if (oldPart == part.pointer) {
                 previous = current;
                 Primitive* primitive =

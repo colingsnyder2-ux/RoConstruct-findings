@@ -1,4 +1,4 @@
 // roc-lang: cpp
-// roc-cl: 21022
+// roc-cl: 50727
 // roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: templates-2008-06-dll roc_ndebug_iostreams.cpp
+// roc-lib: templates-boost-1_34_1-dll roc_boost_resume_e8ec57138b7c1e28.cpp

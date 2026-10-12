@@ -1,17 +1,5 @@
-// from server: 62% by king_originala
-struct Value {
-    unsigned int first;
-    unsigned int second;
-};
-
-extern void __cdecl adjust_heap(Value *, int, int, Value);
-
-void __cdecl sort_heap(Value *first, Value *last)
-{
-    while (last - first > 1) {
-        Value value = last[-1];
-        last[-1] = *first;
-        adjust_heap(first, 0, last - first - 1, value);
-        --last;
-    }
-}
+// from server: 100% by colin
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MD /fp:fast
+// roc-lib: ogre-1.4.5-dll roc_try_15110fb6a0b86d4e.cpp

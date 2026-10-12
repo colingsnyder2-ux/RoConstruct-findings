@@ -1,4 +1,6 @@
-// from server: 98% by king_originala
+// from server: 100% by colin
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /MD /fp:fast
 typedef unsigned long DWORD;
 typedef long HRESULT;
 
@@ -45,8 +47,8 @@ DWORD getValue()
         } values;
 
         CoInitialize(0);
+        object = 0;
         values.count = 0;
-        values.flags = 0;
 
         if (CoCreateInstance(classId, 0, 1, interfaceId,
                              reinterpret_cast<void**>(&object)) >= 0) {

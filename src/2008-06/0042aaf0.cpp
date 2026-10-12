@@ -1,4 +1,3 @@
-// from server: 96% by colin
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
 extern "C" long __cdecl _InterlockedIncrement(volatile long*);
@@ -51,7 +50,7 @@ S::S(Object* p) : object(p), count(p)
                 _InterlockedIncrement(&c->weak);
 
             Control* old = w->control;
-            if (old && _InterlockedDecrement(&old->weak) == 1)
+            if (old && _InterlockedDecrement(&old->weak) == 0)
                 old->destroy();
 
             w->control = c;

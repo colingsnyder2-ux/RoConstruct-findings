@@ -1,16 +1,7 @@
-// from server: 57% by atomic.potato
-extern "C" void basic_string_ctor(void *, const char *);
-
-struct S
-{
-    S(void *);
-};
-
-S::S(void *value)
-{
-    char local[28];
-    basic_string_ctor(local, "FilteredSelection");
-    ((void (__thiscall *)(void *, void *))0x57e730)(this, local);
-    *(void **)this = (void *)0x830890;
-    (void)value;
-}
+// from server: 100% by colin
+// roc-cl: 21022
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+#include <string>
+struct B{virtual ~B(){}; B(std::string,int);};
+struct CutVerb:B{CutVerb(int);};
+CutVerb::CutVerb(int p):B("SelectionDown",p){}

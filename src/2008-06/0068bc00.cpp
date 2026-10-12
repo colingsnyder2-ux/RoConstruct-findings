@@ -1,4 +1,4 @@
-// from server: 77% by tester
+// from server: 100% by king_originala
 // roc 2008-06 0068bc00  unit: Ogre::RbxSceneManager  size: 18 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 0068bc00
 //
@@ -9,16 +9,15 @@
 // 0068bc0f  ffd0                 call eax
 // 0068bc11  c3                   ret 
 
-struct RbxSceneManager {
+extern void* factoryName;
+
+struct S {
+    typedef void (__thiscall *Method)(S*, void*);
+    Method* vtable;
     void f();
 };
 
-extern "C" void* __stdcall FACTORY_TYPE_NAME_BillboardChainFactory;
-
-void RbxSceneManager::f()
+void S::f()
 {
-    void* p = *(void**)this;
-    void* q = *(void**)((char*)p + 0x340);
-    void* r = *(void**)0x8047bc;
-    ((void (__stdcall*)(void*))q)(r);
+    vtable[208](this, factoryName);
 }

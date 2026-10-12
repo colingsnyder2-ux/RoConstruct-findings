@@ -1,4 +1,4 @@
-// from server: 99% by king_originala
+// from server: 100% by king_originala
 extern "C" void (__cdecl *invalid_parameter_noinfo)();
 
 struct ExceptionObject
@@ -8,7 +8,7 @@ struct ExceptionObject
     ~ExceptionObject();
 };
 
-extern void __cdecl raise_exception(const void *);
+extern __declspec(noreturn) void __cdecl raise_exception(const void *);
 
 struct FunctionManager
 {

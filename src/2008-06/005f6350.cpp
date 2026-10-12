@@ -1,11 +1,5 @@
-// from server: 52% by atomic.potato
-extern "C" void __cdecl function_005f6080(int, int, int, int);
-
-struct S
-{
-};
-
-void __cdecl f(int a, int b, int c)
-{
-    function_005f6080(c, b, b >> 31, b);
-}
+// from server: 100% by tester
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: templates-2008-06-dll roc_rtti_205f2b05043a4e2a.cpp

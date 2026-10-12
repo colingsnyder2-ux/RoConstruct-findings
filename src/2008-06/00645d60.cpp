@@ -1,21 +1,5 @@
-// from server: 74% by atomic.potato
-struct RotateVJoint
-{
-    static void swap(float *a, float *b);
-};
-
-void RotateVJoint::swap(float *a, float *b)
-{
-    if (a != b)
-    {
-        float x = a[0];
-        float y = a[1];
-        float z = a[2];
-        a[0] = b[0];
-        a[1] = b[1];
-        a[2] = b[2];
-        b[0] = x;
-        b[1] = y;
-        b[2] = z;
-    }
-}
+// from server: 100% by tester
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD /fp:fast
+// roc-lib: g3d-6.09 G3Dcpp/MeshAlg.cpp

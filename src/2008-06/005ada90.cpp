@@ -1,4 +1,7 @@
-// from server: 97% by king_originala
+// from server: 100% by colin
+#include <typeinfo>
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
 struct Control
 {
     virtual ~Control();
@@ -42,26 +45,13 @@ struct Arguments
     virtual void get(int, Value *);
 };
 
-struct DescribedBase
-{
-    virtual ~DescribedBase();
-};
+namespace RBX { namespace Reflection { class DescribedBase { public: virtual ~DescribedBase(); }; } }
+using RBX::Reflection::DescribedBase;
 
-struct ScriptContext : DescribedBase
-{
-};
+namespace RBX { class ScriptContext : public DescribedBase {}; }
+using RBX::ScriptContext;
 
-namespace std
-{
-    struct bad_cast
-    {
-        virtual ~bad_cast();
-        const char *message;
-        int owned;
 
-        bad_cast(const char *);
-    };
-}
 
 struct S
 {

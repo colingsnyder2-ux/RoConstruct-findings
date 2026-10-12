@@ -1,32 +1,5 @@
-// from server: 94% by colin
-struct Entry
-{
-    void* first;
-    float second;
-};
-
-void __cdecl push_heap(Entry*, int, int, Entry);
-
-void __cdecl adjust_heap(Entry* entries, int hole, int length, Entry value)
-{
-    int top = hole;
-    int child = hole * 2 + 2;
-
-    while (child < length)
-    {
-        if (entries[child - 1].second < entries[child].second)
-            --child;
-
-        entries[hole] = entries[child];
-        hole = child;
-        child = child * 2 + 2;
-    }
-
-    if (child == length)
-    {
-        entries[hole] = entries[length - 1];
-        hole = length - 1;
-    }
-
-    push_heap(entries, hole, top, value);
-}
+// from server: 100% by colin
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MD /fp:fast
+// roc-lib: ogre-1.4.5-dll roc_try_a1d8d26af91f29e3.cpp
