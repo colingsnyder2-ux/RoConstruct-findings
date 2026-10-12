@@ -23,7 +23,8 @@ lists them all.
   `work/agent-memory/attempts.jsonl` (shared with other PCs through the server).
 - `research/recipes.json` - named compiler-only experiments with recorded results;
   run them with `roc research list|plan|run NAME`.
-- `docs/investigations/matching-findings.md` - the dated findings log, newest at the end.
+- `research/log.jsonl` - the dated findings log (`roc research log`, `roc research note`); the
+  older address-level log is frozen in RoConstruct-findings `reports/matching-findings-20261012.md`.
 - `roc/libs.py` - library recipes (exact upstream source + flags per client).
 - `research/reports.json` - index of old campaign reports (full text in
   RoConstruct-findings `reports/`): history, not instructions.
@@ -31,7 +32,7 @@ lists them all.
 
 ## How matching work is done (current methods, 2026-10-12)
 
-Start with the newest entries at the end of `docs/investigations/matching-findings.md`:
+Start with `roc research log` (newest entries):
 they say what just worked, what was parked, and what to try next. Don't repeat a
 variant recorded there as rejected.
 
@@ -68,7 +69,7 @@ not a new script; generated units go through `libs.add_unit` so every PC can reb
 them. Keep each campaign's evidence in `work/<campaign>-<date>/`: sources, hashes,
 diffs, server receipts and a summary. Compiling locally is free, so submit only
 gains, with `roc submit <client> [addr ...]`. Afterwards append one dated entry to
-`docs/investigations/matching-findings.md`, covering:
+`research/log.jsonl` with `roc research note TITLE TEXT`, covering:
 - what was tried;
 - the exacts gained;
 - the rejected variants;
@@ -97,7 +98,9 @@ gains, with `roc submit <client> [addr ...]`. Afterwards append one dated entry 
 
 ## Rules
 
-- Current focus is 2008-06. Never touch client 2009-12 (no mining, testing or submitting).
+- Default research focus is 2008-06. Agent workers honor the selected client;
+  All clients authorizes every registered client, including 2009-12. Keep each
+  client's sources, compiler configuration, leases and evidence separate.
 - A source that matches is a codegen analog: don't claim it is the original declaration.
 - No inline assembly, `__emit`, byte blobs or patched target bytes.
 - Never invent struct fields, offsets or ABIs: derive them from the binary or a compile.

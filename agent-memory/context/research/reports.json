@@ -1,5 +1,5 @@
 {
- "about": "Historical research reports, plans and retired guides. Evidence, not instructions. Full text lives in the RoConstruct-findings repository; current guidance is docs/AGENT_GUIDE.md and ranked lessons are docs/agent-memory.json.",
+ "about": "Historical research reports, plans and retired guides. Evidence, not instructions. Full text lives in the RoConstruct-findings repository; current guidance is docs/AGENT_GUIDE.md and ranked lessons are research/lessons.json.",
  "moved": "2026-10-12",
  "url": "https://github.com/colingsnyder2-ux/RoConstruct-findings/blob/main/reports/",
  "main_repo_commit": "c6d089710",
@@ -399,6 +399,15 @@
    "summary": "Research date: 2026-10-08. Claims below are scoped to the cited papers and repositories; they are not evidence of a RoConstruct improvement.",
    "sha256": "23faefcc1c8c0df1ff40904a70fb0441f95f59e563cbc2d3b5d0d84f670f07a2",
    "from": "docs/decompilation-research.md"
+  },
+  {
+   "file": "reports/matching-findings-20261012.md",
+   "title": "Matching findings log (address-level, through 2026-10-12)",
+   "date": "2026-10-12",
+   "kind": "log",
+   "summary": "Chronological attempts, addresses, rejected variants and campaign results. Frozen 2026-10-12; newer entries live in research/log.jsonl.",
+   "sha256": "550bbafa60c7686d850b3a5cf5c7c231f7764db103edeee0996a67b0f64d8ddd",
+   "from": "docs/investigations/matching-findings.md"
   }
  ]
 }

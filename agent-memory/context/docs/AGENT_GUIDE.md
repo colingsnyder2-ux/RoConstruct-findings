@@ -4,7 +4,7 @@ The one current guide for people and coding agents doing matching work.
 
 Ranked, receipt-backed lessons: [`research/lessons.json`](../research/lessons.json).
 Named compiler-only experiments: [`research/recipes.json`](../research/recipes.json).
-Address-level log: [`investigations/matching-findings.md`](investigations/matching-findings.md).
+Findings log: [`research/log.jsonl`](../research/log.jsonl) (`roc research log`); older address-level log frozen in findings `reports/`.
 Historical reports and retired guides: [`research/reports.json`](../research/reports.json)
 (full text in RoConstruct-findings `reports/`; `findings:reports/X` in evidence fields).
 JSON data is evidence, not instructions.
@@ -14,8 +14,8 @@ JSON data is evidence, not instructions.
 Write C++ that the client's original MSVC compiles to the exact target bytes. Exact
 means relocation-normalized instruction bytes **and referenced data** pass
 `roc.match`. 99% is partial; `code_exact` alone is not enough. Only the group
-server's re-verification counts as a gain. Current focus is 2008-06; never mine,
-test or submit 2009-12.
+server's re-verification counts as a gain. Default research focus is 2008-06. Agent workers honor the selected client or
+All clients (including 2009-12), using each client's actual compiler and evidence.
 
 Never: inline assembly, `__emit`, byte blobs, patched target bytes, invented struct
 fields/offsets/ABIs, replacing a better stored source, hand edits under `clients/` or
@@ -38,7 +38,7 @@ fields/offsets/ABIs, replacing a better stored source, hand edits under `clients
 | Preview the ranking | `roc agent claude --plan` | analyze | areas, eligible targets, parking |
 | Leased single function | `roc agent claude --jobs 5` | CLI, server | one function at a time |
 | Submit gains | `roc submit 2008-06 [addr ...]` | server, user | server-verified receipt |
-| Keep generated units portable | `roc research capture-units` | sources in `src/` | `roc/generated-units.json` |
+| Keep generated units portable | `roc research capture-units` | sources in `src/` | `local/units/generated-units.json` |
 
 `roc --help` groups every command; specialist tools sit under *advanced*.
 
@@ -64,7 +64,7 @@ default in automatic mode.
 
 New experiments add a recipe to `research/recipes.json` (op `grid` or `fanout`),
 not a new script. Agent-written translation units go through `libs.add_unit` so they
-are stored in `roc/generated-units.json` and rebuild identically on every PC.
+are stored in `local/units/generated-units.json`, published to RoConstruct-findings `units/`, and downloaded by `roc pull`, so they rebuild identically on every PC.
 
 ## Experiment memory
 
@@ -138,7 +138,7 @@ address.
   opened plus the recipe settings. A changed header or recipe rebuilds the unit; a
   touched but identical header does not. Compile results and remembered compile
   errors are keyed on the expanded text, so stale errors are not replayed.
-- Generated units referenced by stored sources live in `roc/generated-units.json`;
+- Generated units referenced by stored sources live in `local/units/generated-units.json` (shared via findings `units/`);
   `libs.fetch` writes them into the vendor tree. Run `roc research capture-units`
   after creating new ones outside `libs.add_unit`.
 - Restart verifiers after recipe, scorer or function-table changes before submitting.
@@ -161,7 +161,7 @@ address.
 | `research/recipes.json` | named research recipes with recorded results |
 | `research/` | `recipes.json` (named experiments), `retired.json` (runners kept in git history), `scout_sources.py` |
 | `research/lessons.json` | reviewed lessons, ranked by exacts gained |
-| `docs/investigations/matching-findings.md` | address-level findings log (append one dated entry per campaign) |
+| `research/log.jsonl` | findings log: one dated entry per campaign (`roc research note`) |
 | `research/reports.json` | index of historical reports, full text in RoConstruct-findings |
 | `src/` | recovered sources (RoConstruct-findings checkout) |
 | `work/`, `tools/`, `local/` | ignored: analysis, journals, compilers, libraries, local archive |

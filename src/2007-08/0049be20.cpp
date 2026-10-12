@@ -1,4 +1,4 @@
-// from server: 34% by colin
+// from server: 38% by espeon_1
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
 
@@ -22,13 +22,10 @@ struct BoundFuncDesc {
 
 void BoundFuncDesc::construct(FuncDesc* desc, RefCounted* rc)
 {
-    void* local[2];
-    local[0] = desc;
-    local[1] = rc;
     if (rc) {
         _InterlockedExchangeAdd(&rc->refCount, 1);
     }
-    helper_49ae60(0, local, 0, 0);
+    helper_49ae60(0, desc, rc, 0);
     if (rc) {
         if (_InterlockedExchangeAdd(&rc->refCount, -1) == 1) {
             void** vt = (void**)rc->vptr;
