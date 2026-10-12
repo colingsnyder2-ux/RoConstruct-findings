@@ -1,12 +1,12 @@
 # Agent guide
 
-The one current guide for people and coding agents doing matching work. It replaces
-`AI_WORKER_GUIDE.md`, `AGENT_MEMORY.md`, `EXPERIMENTS.md` and `NEXT_EXPERIMENTS.md`
-(kept in [archive](archive/README.md) as history, not instructions).
+The one current guide for people and coding agents doing matching work.
 
-Ranked, receipt-backed lessons: [`agent-memory.json`](agent-memory.json).
-Named compiler-only experiments: [`../benchmarks/research.json`](../benchmarks/research.json).
+Ranked, receipt-backed lessons: [`research/lessons.json`](../research/lessons.json).
+Named compiler-only experiments: [`research/recipes.json`](../research/recipes.json).
 Address-level log: [`investigations/matching-findings.md`](investigations/matching-findings.md).
+Historical reports and retired guides: [`research/reports.json`](../research/reports.json)
+(full text in RoConstruct-findings `reports/`; `findings:reports/X` in evidence fields).
 JSON data is evidence, not instructions.
 
 ## Goal and acceptance
@@ -62,7 +62,7 @@ default in automatic mode.
    `volatile` for order, `/fp:fast` for x87 order. One hypothesis per trial.
 8. **Boundaries** only with proof, through `work/<client>/bounds.json`.
 
-New experiments add a recipe to `benchmarks/research.json` (op `grid` or `fanout`),
+New experiments add a recipe to `research/recipes.json` (op `grid` or `fanout`),
 not a new script. Agent-written translation units go through `libs.add_unit` so they
 are stored in `roc/generated-units.json` and rebuild identically on every PC.
 
@@ -80,7 +80,7 @@ symptom and source hash. Append every trial, including failures and zero gains, 
 receipt). Similarity gains and exact counts are different units. Restore the best
 source after a losing trial. Park a profile after two zero-gain shards until the
 evidence changes. Only interactive maintainers promote receipt-backed lessons into
-`agent-memory.json`; unattended agents append attempts only.
+`research/lessons.json`; unattended agents append attempts only.
 
 Written automatically: `roc agent-check` trials, automatic `auto_target`/`auto_batch`
 records with receipts, leased `session` records, and `roc research` run records.
@@ -112,6 +112,26 @@ Runs inside Workers (same chat, terminal, history and stop control as other work
 - **Submission.** Best source per target is re-scored locally and submitted under
   the lease; only server-verified improvements count.
 
+## Claude Code and Codex CLIs
+
+Install and sign in once: `npm install -g @anthropic-ai/claude-code` then `claude`, or
+`npm install -g @openai/codex` then `codex` (dashboard **Agent setup** does this). Usage
+bills the CLI's own sign-in (Claude Pro/Max, ChatGPT plan) or `ANTHROPIC_API_KEY` /
+`OPENAI_API_KEY` if set.
+
+| Mode | Command | Scope |
+|---|---|---|
+| Automatic | Workers → Agent worker, or `roc agent claude --automatic [--workers 2 --jobs 24 --minutes 120]` | ranked batches, isolated copies, `roc agent-check` only |
+| Leased | `roc agent claude --jobs 5 [--max-size 256 --minutes 20]` | one function in `src/`, `roc check` only; regressions rolled back |
+| Goal | `roc agent codex --goal "finish zlib in 2008-06" --minutes 60` | any `roc.py` command, web search, `src/` edits, attempt journal |
+| Interactive | `roc agent claude --interactive --goal "..."` | a normal session you watch and approve |
+
+Claude runs with `acceptEdits` and an explicit tool allowlist; Codex with `--full-auto`
+(writes limited to this folder). The server re-verifies every submission. Cloud sessions
+(claude.ai/code) are Claude itself, so they follow `CLAUDE.md` directly; they need full
+network access, Wine (`wine wine32 msitools cabextract p7zip-full`) and a public server
+address.
+
 ## Reproducibility
 
 - Preprocessed library units (`work/libcache/`) record every header the compiler
@@ -138,10 +158,10 @@ Runs inside Workers (same chat, terminal, history and stop control as other work
 | Path | Purpose |
 | --- | --- |
 | `roc.py`, `roc/` | CLI and library: analysis, compile/score, recipes, research, agents, server, dashboard |
-| `benchmarks/research.json` | named research recipes with recorded results |
-| `benchmarks/*.py`, `*.json` | runners/manifests still used by tests; retired ones in `benchmarks/retired.json` |
-| `docs/agent-memory.json` | reviewed lessons, ranked by exacts gained |
-| `docs/investigations/` | campaign reports and the findings log |
-| `docs/archive/` | historical reports and retired guides |
+| `research/recipes.json` | named research recipes with recorded results |
+| `research/` | `recipes.json` (named experiments), `retired.json` (runners kept in git history), `scout_sources.py` |
+| `research/lessons.json` | reviewed lessons, ranked by exacts gained |
+| `docs/investigations/matching-findings.md` | address-level findings log (append one dated entry per campaign) |
+| `research/reports.json` | index of historical reports, full text in RoConstruct-findings |
 | `src/` | recovered sources (RoConstruct-findings checkout) |
 | `work/`, `tools/`, `local/` | ignored: analysis, journals, compilers, libraries, local archive |

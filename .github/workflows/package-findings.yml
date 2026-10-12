@@ -17,9 +17,10 @@ jobs:
           mkdir -p dist
           (cd src && zip -qr ../dist/roconstruct-findings-src.zip .)
           sha256sum dist/roconstruct-findings-src.zip > dist/roconstruct-findings-src.zip.sha256
-          if [ -d agent-memory ]; then
-            zip -qr dist/roconstruct-agent-memory.zip agent-memory
-            sha256sum dist/roconstruct-agent-memory.zip > dist/roconstruct-agent-memory.zip.sha256
+          evidence=$(ls -d agent-memory reports 2>/dev/null || true)
+          if [ -n "$evidence" ]; then
+            zip -qr dist/roconstruct-evidence.zip $evidence
+            sha256sum dist/roconstruct-evidence.zip > dist/roconstruct-evidence.zip.sha256
           fi
       - name: Update stable release assets
         env:

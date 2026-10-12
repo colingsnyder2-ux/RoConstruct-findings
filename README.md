@@ -1,15 +1,18 @@
 # RoConstruct findings
 
-Recovered C++ sources and portable matching evidence. Main application and setup:
-https://github.com/colingsnyder2-ux/RoConstruct
+Recovered C++ sources and portable research evidence for
+[RoConstruct](https://github.com/colingsnyder2-ux/RoConstruct). Published automatically
+by the group server; do not edit by hand.
 
-`src/` contains recovered functions. On this PC it is a compatibility junction to
-the live source directory, so agents retain their original paths.
+| Folder | Contents |
+|---|---|
+| `src/<client>/<addr>.cpp` | recovered functions (exact matches, partials and candidates) |
+| `agent-memory/` | reviewed lessons, shared experiment attempts and the agent workflow context |
+| `reports/` | historical campaign reports, plans and retired guides (index: `research/reports.json` in the main repo) |
 
-`agent-memory/` holds reviewed lessons, workflow, campaign reports, portable
-attempts and audit snapshots. Attempt reports do not prove exact matches.
-The group server confirms source hashes against its verified score events.
+Only the group server's byte-for-byte re-verification counts as a match. Attempt
+reports are evidence, not proof; `server_confirmed` marks those whose source hash
+matches a verified score event. Releases: `roconstruct-findings-src.zip` (sources) and
+`roconstruct-evidence.zip` (agent memory and reports).
 
-Use `roc submit` and `roc pull` for source sharing. App updates remain separate.
-Fetch findings without overwriting local mining edits. No client executables,
-compiler bundles, credentials or private scratch folders belong here.
+No client executables, compilers, credentials or private scratch files belong here.

@@ -19,13 +19,15 @@ lists them all.
 
 - `docs/AGENT_GUIDE.md` - the one current guide: acceptance rules, tool routing, order
   of work, experiment-memory schema, automatic worker. Read first.
-- `docs/agent-memory.json` - ranked, receipt-backed lessons; append each trial to
+- `research/lessons.json` - ranked, receipt-backed lessons; append each trial to
   `work/agent-memory/attempts.jsonl` (shared with other PCs through the server).
-- `benchmarks/research.json` - named compiler-only experiments with recorded results;
+- `research/recipes.json` - named compiler-only experiments with recorded results;
   run them with `roc research list|plan|run NAME`.
-- `docs/investigations/` - one write-up per campaign (`matching-findings.md` is the log).
+- `docs/investigations/matching-findings.md` - the dated findings log, newest at the end.
 - `roc/libs.py` - library recipes (exact upstream source + flags per client).
-- `docs/archive/` - retired guides and reports: history, not instructions.
+- `research/reports.json` - index of old campaign reports (full text in
+  RoConstruct-findings `reports/`): history, not instructions.
+- `docs/SETUP.md`, `docs/SERVER.md` - install, models, dashboard, hosting, packages.
 
 ## How matching work is done (current methods, 2026-10-12)
 
@@ -61,7 +63,7 @@ variant recorded there as rejected.
    upstream version, or the vendor's build prelude and defines.
 7. **Boundaries.** Fix function extents only with proof, via `work/<client>/bounds.json`.
 
-Write bulk trials as a recipe in `benchmarks/research.json` (op `grid` or `fanout`),
+Write bulk trials as a recipe in `research/recipes.json` (op `grid` or `fanout`),
 not a new script; generated units go through `libs.add_unit` so every PC can rebuild
 them. Keep each campaign's evidence in `work/<campaign>-<date>/`: sources, hashes,
 diffs, server receipts and a summary. Compiling locally is free, so submit only
@@ -83,7 +85,8 @@ gains, with `roc submit <client> [addr ...]`. Afterwards append one dated entry 
   Client-import headers (`#undef OGRE_NONCLIENT_BUILD`) plus authentic method
   bodies and inherited layouts have recovered dozens more. Their winning exe
   flags often include `/O2`; use per-source evidence, not the DLL flags globally.
-  Read `docs/investigations/agent-auto-audit-20261012.md` before new Ogre work.
+  Read the `ogre-*` lessons in `research/lessons.json` and the `ogre-*` recipes in
+  `research/recipes.json` before new Ogre work.
 - WildMagic is not in 2008-06. Functions attributed to it are Roblox templates.
 - A second zlib 1.2.3 copy (0x7a3e90-0x7a99b0) was built with VS2005 50727 and
   `ZLIB_WINAPI` (recipe `zlib-1.2.3-winapi`).
