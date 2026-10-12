@@ -1,45 +1,63 @@
-// from server: 26% by colin
-struct CXTPPropertyGridItem {
-    char pad[0x90];
-    int m_nValue;
-    void OnValueChanged(int value);
-    void SetValue(int value);
+// from server: 96% by king_originala
+struct Text {
+    char storage[28];
 };
 
-struct CSelectionPropGrid {
-    char pad0[0xfc];
-    int field_fc;
-    char pad1[0x20];
-    int field_120;
-    char pad2[0x1c];
-    int field_140;
-    void sub_43a070(int a, int b);
-    void sub_717b20(int a, int b, int c);
-    void sub_7120e0(int a);
-    CSelectionPropGrid(int a, int b);
+extern const char *(__thiscall *textString)(const Text *);
+
+struct Name {
+    int header;
+    Text text;
 };
 
-extern "C" void* __stdcall sub_802464(void* p);
+struct Object {
+    virtual void first();
+    virtual bool value();
+    Name *name;
+};
 
-void CSelectionPropGrid::sub_43a070(int a, int b) {
+struct Primary {
+    virtual ~Primary();
+    char padding[0x1C];
+};
+
+struct Secondary {
+    virtual ~Secondary();
+    char padding04[0xD8];
+    int flag;
+    char paddingE0[0x20];
+};
+
+struct Base : Primary, Secondary {
+    Base(const char *, int, int);
+    virtual ~Base();
+    void OnValueChanged(int);
+};
+
+struct Helper {
+    virtual ~Helper();
+    char padding[0x1C];
+    Helper(Object *, int);
+};
+
+struct Combined : Base, Helper {
+    Combined(const char *, Object *, int);
+};
+
+struct S : Combined {
+    Object *object;
+    S(Object *, int);
+    virtual ~S();
+};
+
+__forceinline Combined::Combined(const char *name, Object *p, int n)
+    : Base(name, 0, 0), Helper(p, n)
+{
+    flag = 1;
 }
 
-void CSelectionPropGrid::sub_717b20(int a, int b, int c) {
-}
-
-void CSelectionPropGrid::sub_7120e0(int a) {
-}
-
-CSelectionPropGrid::CSelectionPropGrid(int a, int b) {
-    char* p = (char*)(*(int*)(a + 4) + 4);
-    void* s = sub_802464(p);
-    sub_717b20(0, 0, (int)s);
-    sub_43a070(b, a);
-    field_fc = 1;
-    *(int*)this = 0x813814;
-    *(int*)((char*)this + 0x20) = 0x8137b4;
-    *(int*)((char*)this + 0x120) = 0x8137ac;
-    field_140 = a;
-    int v = (*(int(**)(void))a)();
-    sub_7120e0(v & 0xff);
+S::S(Object *p, int n)
+    : Combined(textString(&p->name->text), p, n), object(p)
+{
+    OnValueChanged(p->value());
 }

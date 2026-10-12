@@ -1,6 +1,6 @@
-// from server: 85% by king_originala
-extern "C" void __cdecl _invalid_parameter_noinfo();
+// from server: 86% by king_originala
 extern "C" int __stdcall TlsSetValue(unsigned long, void*);
+extern "C" void __cdecl _invalid_parameter_noinfo();
 extern void __cdecl releaseMemory(void*);
 
 struct Mutex {
@@ -10,111 +10,90 @@ struct Mutex {
 
 struct Lock {
     Mutex* mutex;
-    bool active;
+    bool locked;
 };
 
-struct Exception {
+struct CallError {
     char storage[40];
-    Exception* construct();
+    CallError* construct();
 };
 
-extern void __cdecl raiseException(Exception*);
-extern void __cdecl finishCleanup(Lock*);
-extern Mutex* cleanupMutex;
-extern unsigned long tlsIndex;
-
-struct Callback;
+extern __declspec(noreturn) void __cdecl raiseError(CallError*);
+extern void __cdecl cleanupLock(Lock*);
 
 struct CallbackTable {
-    void (__cdecl *first)();
+    void* reserved;
     void (__cdecl *invoke)(void*, void*);
 };
 
 struct Callback {
     CallbackTable* table;
     unsigned long reserved;
-    char context[1];
-};
-
-struct CallbackList {
-    unsigned long reserved[3];
-    Callback** begin;
-    Callback** end;
-    Callback** capacity;
-
-    unsigned int size() const;
-    Callback*& at(unsigned int index);
+    char object[1];
 };
 
 struct Values {
     void* allocation;
     unsigned long reserved[2];
-    void** begin;
-    void** end;
-    void** capacity;
-
-    unsigned int size() const;
-    void*& at(unsigned int index);
+    void** first;
+    void** last;
+    void** limit;
 };
 
-extern CallbackList* callbacks;
+struct Callbacks {
+    unsigned long reserved[3];
+    Callback** first;
+    Callback** last;
+    Callback** limit;
+};
 
-inline unsigned int CallbackList::size() const
-{
-    return static_cast<unsigned int>(end - begin);
-}
+extern Mutex* globalMutex;
+extern Callbacks* globalCallbacks;
+extern unsigned long tlsIndex;
 
-inline Callback*& CallbackList::at(unsigned int index)
-{
-    if (index >= size())
-        _invalid_parameter_noinfo();
-    return begin[index];
-}
-
-inline unsigned int Values::size() const
-{
-    return static_cast<unsigned int>(end - begin);
-}
-
-inline void*& Values::at(unsigned int index)
-{
-    if (index >= size())
-        _invalid_parameter_noinfo();
-    return begin[index];
-}
-
-void __cdecl cleanupValues(Values* values)
+void __cdecl sub_5a71e0(Values* values)
 {
     Lock lock;
-    lock.mutex = cleanupMutex;
+    lock.mutex = globalMutex;
     lock.mutex->lock();
-    lock.active = true;
+    lock.locked = true;
 
-    for (unsigned int i = 0; i < values->size(); ++i) {
-        void*& value = values->begin[i];
-        Callback* callback = callbacks->at(i);
+    for (unsigned int i = 0;
+         i < static_cast<unsigned int>(values->last - values->first);
+         ++i) {
+        void** value = values->first + i;
+        Callback** first = globalCallbacks->first;
+        Callback*** base = &globalCallbacks->first;
+
+        if (i >= static_cast<unsigned int>(globalCallbacks->last - first))
+            _invalid_parameter_noinfo();
+
+        Callback* callback = (*base)[i];
         if (!callback->table) {
-            Exception exception;
-            raiseException(exception.construct());
-            return;
+            CallError error;
+            raiseError(error.construct());
         }
-        callback->table->invoke(callback->context, value);
-        values->at(i) = 0;
+
+        callback->table->invoke(callback->object, *value);
+
+        if (i >= static_cast<unsigned int>(values->last - values->first))
+            _invalid_parameter_noinfo();
+
+        values->first[i] = 0;
     }
 
     TlsSetValue(tlsIndex, 0);
-    finishCleanup(&lock);
+    cleanupLock(&lock);
 
-    if (values->begin)
-        releaseMemory(values->begin);
+    if (values->first)
+        releaseMemory(values->first);
 
-    values->begin = 0;
-    values->end = 0;
-    values->capacity = 0;
-
+    values->first = 0;
+    values->last = 0;
+    values->limit = 0;
     releaseMemory(values->allocation);
     releaseMemory(values);
 
-    if (lock.active)
+    if (lock.locked)
         lock.mutex->unlock();
 }

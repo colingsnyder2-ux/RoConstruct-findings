@@ -1,13 +1,12 @@
-// from server: 56% by atomic.potato
-struct InsertDecal
-{
-    bool Check();
-    bool Insert(InsertDecal *);
+// from server: 100% by king_originala
+struct S {
+    bool f(S*);
+    int g(S*);
 };
 
-bool InsertDecal::Insert(InsertDecal *decal)
+int S::g(S* other)
 {
-    if (decal && !Check())
-        return false;
-    return true;
+    if (other && !other->f(this))
+        return 0;
+    return 1;
 }

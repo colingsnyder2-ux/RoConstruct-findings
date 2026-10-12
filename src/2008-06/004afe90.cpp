@@ -1,51 +1,71 @@
-// from server: 45% by colin
+// from server: 100% by king_originala
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
 
-struct RefCounted {
-    long refcount;
+struct ReferenceCount {
+    volatile long value;
+    void increment();
 };
 
-struct Inner {
-    int a;
-    RefCounted* b;
+__forceinline void ReferenceCount::increment()
+{
+    _InterlockedExchangeAdd(&value, 1);
+}
+
+struct Control {
+    long reserved;
+    ReferenceCount references;
 };
 
-struct Arg {
-    int x;
-    RefCounted* y;
+struct Shared {
+    void *object;
+    Control *control;
+
+    Shared(const Shared &);
+    ~Shared();
 };
 
-struct Sub {
-    char pad[0x2cb0];
+__forceinline Shared::Shared(const Shared &other)
+    : object(other.object), control(other.control)
+{
+    if (control)
+        control->references.increment();
+}
+
+struct InsertResult {
+    unsigned int storage[3];
 };
 
-struct Outer {
-    char pad0[0x2cb0];
-    Sub sub;
+struct Tree {
+    InsertResult insert(void *const &);
 };
 
-struct Target {
-    void* vptr;
-    int field4;
-    int field8;
-    RefCounted* fieldC;
-
-    void construct(int a, Arg* arg);
+struct Owner {
+    char padding[0x2cb0];
+    Tree tree;
 };
 
-extern "C" void __stdcall helper_5e8c40(void*, void*);
+struct Base {
+    Owner *owner;
 
-void Target::construct(int a, Arg* arg) {
-    this->field4 = a;
-    this->vptr = (void*)0x824b2c;
-    this->field8 = arg->x;
-    RefCounted* rc = arg->y;
-    this->fieldC = rc;
-    if (rc != 0) {
-        _InterlockedExchangeAdd(&rc->refcount, 1);
-    }
-    int v = arg->x;
-    void* tmp = 0;
-    helper_5e8c40(&tmp, &v);
+    Base(Owner *);
+};
+
+__forceinline Base::Base(Owner *p)
+    : owner(p)
+{
+}
+
+struct S : Base {
+    Shared shared;
+
+    S(Owner *, const Shared &);
+    virtual ~S();
+};
+
+S::S(Owner *p, const Shared &value)
+    : Base(p), shared(value)
+{
+    void *key = value.object;
+    p->tree.insert(key);
 }

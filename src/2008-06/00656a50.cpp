@@ -1,31 +1,64 @@
-// from server: 51% by tester
-struct std_string {
-    void construct(const std_string&);
-};
+// from server: 100% by king_originala
+struct String;
+extern String * (__thiscall *string_copy)(String *, const String &);
 
-extern "C" void __stdcall sub_5744a0(void*, const std_string*);
-extern "C" void __stdcall sub_80245c();
-
-struct EquationDisplay {
-    char pad[0x188];
-    std_string equation;
-    EquationDisplay(const std_string& title, const std_string& equation);
-};
-
-EquationDisplay::EquationDisplay(const std_string& title, const std_string& equation)
+struct String
 {
-    sub_5744a0(this, &title);
-    *(void**)this = (void*)0x84becc;
-    *(void**)((char*)this + 0x10) = (void*)0x84bebc;
-    *(void**)((char*)this + 0x14) = (void*)0x84beb4;
-    *(void**)((char*)this + 0x20) = (void*)0x84beac;
-    *(void**)((char*)this + 0x24) = (void*)0x84be9c;
-    *(void**)((char*)this + 0x44) = (void*)0x84be8c;
-    *(void**)((char*)this + 0x64) = (void*)0x84be7c;
-    *(void**)((char*)this + 0x84) = (void*)0x84be6c;
-    *(void**)((char*)this + 0xa4) = (void*)0x84be5c;
-    *(void**)((char*)this + 0xc4) = (void*)0x84be4c;
-    *(void**)((char*)this + 0x130) = (void*)0x84be44;
-    sub_80245c();
-    this->equation.construct(equation);
+    char storage[28];
+    String(const String &);
+};
+
+inline String::String(const String &other)
+{
+    string_copy(this, other);
+}
+
+struct Base
+{
+    unsigned long table0;
+    char pad04[12];
+    unsigned long table10;
+    unsigned long table14;
+    char pad18[8];
+    unsigned long table20;
+    unsigned long table24;
+    char pad28[28];
+    unsigned long table44;
+    char pad48[28];
+    unsigned long table64;
+    char pad68[28];
+    unsigned long table84;
+    char pad88[28];
+    unsigned long tableA4;
+    char padA8[28];
+    unsigned long tableC4;
+    char padC8[104];
+    unsigned long table130;
+    char pad134[84];
+
+    Base(int, int);
+    ~Base();
+};
+
+struct S : Base
+{
+    String value;
+    S(int, const String &);
+};
+
+S::S(int argument, const String &text)
+    : Base(argument, argument),
+      value((table0   = 0x84becc,
+             table10  = 0x84bebc,
+             table14  = 0x84beb4,
+             table20  = 0x84beac,
+             table24  = 0x84be9c,
+             table44  = 0x84be8c,
+             table64  = 0x84be7c,
+             table84  = 0x84be6c,
+             tableA4  = 0x84be5c,
+             tableC4  = 0x84be4c,
+             table130 = 0x84be44,
+             text))
+{
 }

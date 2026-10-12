@@ -1,5 +1,30 @@
-// from server: 71% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: boost-1.34.1 libs/regex/src/cregex.cpp
+// from server: 100% by king_originala
+void* __cdecl operator new(unsigned int);
+void __cdecl operator delete(void*);
+
+struct Primary
+{
+    virtual void vf();
+    char data[28];
+};
+
+struct Secondary
+{
+    virtual void vf();
+    char data[444];
+};
+
+struct Base : Primary, Secondary
+{
+    Base(int value = 0);
+};
+
+struct Derived : Base
+{
+    virtual void vf();
+};
+
+Derived* __cdecl Create()
+{
+    return new Derived;
+}

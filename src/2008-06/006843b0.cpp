@@ -1,5 +1,18 @@
-// from server: 53% by colin
-// roc-lang: cpp
-// roc-cl: 50727
-// roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: ogre-1.7.0 OgreTechnique.cpp
+// from server: 100% by colin
+extern "C" void __cdecl sub_6832B0();
+
+struct OgreTwoDManager {
+    char pad[8];
+    char byte8;
+    char byte9;
+    void method(int, int, int);
+};
+
+void OgreTwoDManager::method(int a, int b, int c)
+{
+    if (byte9 != 0)
+        return;
+    if ((char)a != byte8)
+        return;
+    sub_6832B0();
+}

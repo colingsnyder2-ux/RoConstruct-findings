@@ -1,60 +1,50 @@
-// from server: 70% by colin
-struct S {
-    void f(int, int);
+// from server: 100% by king_originala
+struct Key {
+    unsigned int a, b, c;
 };
 
-extern int g_count;
-extern "C" void __stdcall sub_659670(int, int, int);
-extern "C" void __stdcall sub_6597D0(void*);
+struct Node {
+    char padding[28];
+    Key key;
+    Node* next;
+};
 
-void S::f(int a, int b)
+extern int levelLimit;
+
+struct S {
+    Node* find(int level, unsigned int hash, const Key& key);
+    void remove(Node* node);
+    void f(int level, const Key& key);
+};
+
+void S::f(int level, const Key& key)
 {
-    int local[4];
-    int i = a + 1;
-    local[0] = (int)this;
-    if (i >= g_count)
-        return;
-    int* p = (int*)b;
-    int j = i - a;
-    do {
-        int v0 = p[0];
-        int v1 = p[1];
-        int v2 = p[2];
-        int c = j;
-        v2 >>= c;
-        v0 >>= c;
-        v1 >>= c;
-        local[1] = v2;
-        int t0 = v2 * 0x4f9ffb7;
-        local[2] = v0;
-        int t1 = v0 * 0x466f45d;
-        local[3] = v1;
-        int t2 = v1 * 0x127409f;
-        int mask = 0xffff >> i;
-        int h = (t0 ^ t1 ^ t2) & mask;
-        sub_659670(i, h, (int)local);
-        int e0 = p[0];
-        int e1 = p[1];
-        int e2 = p[2];
-        int sh = j - 1;
-        e2 >>= sh;
-        e1 >>= sh;
-        e2 &= 1;
-        e1 &= 1;
-        int idx = e1 + e2 * 2;
-        e0 >>= sh;
-        e0 &= 1;
-        idx = e0 + idx * 2;
-        unsigned char bit = 1 << idx;
-        bit = ~bit;
-        ((unsigned char*)h)[0x12] &= bit;
-        ((unsigned short*)h)[idx] = 0xffff;
-        if (*(int*)(h + 0x14) == 0) {
-            if (((unsigned char*)h)[0x12] == 0) {
-                sub_6597D0((void*)h);
-            }
-        }
-        i++;
-        j++;
-    } while (i < g_count);
+    for (int current = level + 1; current < levelLimit; ++current) {
+        int shift = current - level;
+        Key parent;
+        parent.a = (int)key.a >> shift;
+        parent.b = (int)key.b >> shift;
+        parent.c = (int)key.c >> shift;
+
+        Node* node = find(
+            current,
+            ((parent.c * 0x04f9ffb7u) ^
+             (parent.a * 0x0466f45du) ^
+             (parent.b * 0x0127409fu)) & (0xffff >> current),
+            parent);
+
+        int bit = shift - 1;
+        int index = (((int)key.a >> bit) & 1) +
+                    2 * ((((int)key.b >> bit) & 1) +
+                         2 * (((int)key.c >> bit) & 1));
+
+        node->padding[18] &= (unsigned char)~(1 << index);
+        ((unsigned short*)node)[index] = 0xffff;
+
+        if (*(int*)(node->padding + 20) != 0 ||
+            node->padding[18] != 0)
+            break;
+
+        remove(node);
+    }
 }

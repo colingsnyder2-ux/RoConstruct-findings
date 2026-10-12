@@ -1,60 +1,123 @@
-// from server: 38% by colin
+// from server: 100% by king_originala
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
+extern "C" long __cdecl _InterlockedDecrement(volatile long*);
+#pragma intrinsic(_InterlockedDecrement)
 
-extern "C" void __stdcall G1_00802468();
-extern "C" void __stdcall G1_0080245c();
+struct String;
+extern void (__thiscall *stringCopy)(String*, const String&);
+extern void (__thiscall *stringDestroy)(String*);
 
-extern "C" void __cdecl G1_005bd600();
-extern "C" void __cdecl G1_00557330(void*, void*);
-extern "C" void __cdecl G1_005bb2c0();
-extern "C" void __cdecl G1_00448360();
-extern "C" void __cdecl G1_0055c500();
-extern "C" void __cdecl G1_005bd360();
-extern "C" void __cdecl G1_0055a8f0();
-extern "C" void __cdecl G1_005baa70();
-extern "C" void __cdecl G1_004025b0();
-
-struct S {
-    void f(int, int, int, int, int, int, int, int);
+struct String {
+    char storage[28];
+    String(const String&);
+    ~String();
 };
 
-void S::f(int a1, int a2, int a3, int a4, int a5, int a6, int a7, int a8)
+inline String::String(const String& source)
 {
-    char buf[0x2c];
-    int v;
-    void* p;
-    void* q;
-    void* r;
-    void* s;
-    void* t;
-    void* u;
-    void* w;
-    void* x;
-    void* y;
-    void* z;
+    stringCopy(this, source);
+}
 
-    v = 0;
-    G1_005bd600();
-    p = *(void**)(buf + 4);
-    G1_00557330((void*)0x5bb320, (void*)0x977524);
-    G1_005bb2c0();
-    G1_00448360();
-    (*(void(__thiscall**)(void*, void*))(*(int*)p + 4))(p, q);
-    G1_00802468();
-    G1_0055c500();
-    G1_005bd360();
-    G1_00802468();
-    G1_0055a8f0();
-    G1_005baa70();
-    G1_004025b0();
-    if (r != 0) {
-        if (_InterlockedExchangeAdd((volatile long*)((char*)r + 4), -1) == 1) {
-            (*(void(__thiscall**)(void*))(*(int*)r + 4))(r);
-            if (_InterlockedExchangeAdd((volatile long*)((char*)r + 8), -1) == 1) {
-                (*(void(__thiscall**)(void*))(*(int*)r + 8))(r);
-            }
-        }
+inline String::~String()
+{
+    stringDestroy(this);
+}
+
+struct Value {
+    String text;
+    int tag;
+};
+
+struct Argument {
+    String text;
+    int tag;
+    Argument(const Value&);
+};
+
+inline Argument::Argument(const Value& source)
+    : text(source.text), tag(source.tag)
+{
+}
+
+struct Control {
+    virtual void unused() = 0;
+    virtual void dispose() = 0;
+    virtual void destroy() = 0;
+    volatile long strong;
+    volatile long weak;
+    void release();
+};
+
+inline void Control::release()
+{
+    if (_InterlockedDecrement(&strong) == 0) {
+        dispose();
+        if (_InterlockedDecrement(&weak) == 0)
+            destroy();
     }
-    G1_00802468();
+}
+
+struct Writer {
+    virtual void unused() = 0;
+    virtual void write(const String&) = 0;
+};
+
+struct S;
+
+struct Object {
+    void set(Argument);
+    void attach(S*);
+};
+
+struct ControlPointer {
+    Control* pointer;
+    void assign(const ControlPointer&);
+};
+
+struct Pair {
+    Object* object;
+    ControlPointer control;
+    ~Pair();
+};
+
+inline Pair::~Pair()
+{
+    if (control.pointer)
+        control.pointer->release();
+}
+
+struct Manager {
+    String lookup(const int*);
+};
+
+struct Table {
+    Pair* lookup(const int*);
+};
+
+extern Pair makePair();
+extern void registerType(void (__cdecl*)(), const char*);
+extern void registeredFunction();
+extern const char registeredName[];
+extern Manager* getManager();
+extern Value makeValue(const String*);
+
+struct S {
+    char padding[0x13c];
+    Table table;
+    void f(int key, String value);
+};
+
+void S::f(int key, String value)
+{
+    Pair p = makePair();
+    Writer* writer = reinterpret_cast<Writer*>(p.object);
+    registerType(registeredFunction, registeredName);
+    Manager* manager = getManager();
+    writer->write(manager->lookup(&key));
+    p.object->set(makeValue(&value));
+    p.object->attach(this);
+    Pair* destination = table.lookup(&key);
+    destination->object = p.object;
+    destination->control.assign(p.control);
 }

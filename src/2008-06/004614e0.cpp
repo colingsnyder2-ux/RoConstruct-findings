@@ -1,5 +1,22 @@
-// from server: 88% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /GS- /MD
-// roc-lib: scintilla-mfc-1.20 ScintillaDocView.cpp
+// from server: 100% by king_originala
+struct Control {
+    int query(int direct);
+};
+
+struct Command {
+    virtual void enable(int enabled);
+};
+
+typedef bool (__thiscall *Predicate)(void *);
+extern Predicate predicate;
+
+struct View {
+    char padding[0x58];
+    Control control;
+    void update(Command *command);
+};
+
+void View::update(Command *command)
+{
+    command->enable(control.query(1) && !predicate((void *)0x00932fb8));
+}

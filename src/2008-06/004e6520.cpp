@@ -1,55 +1,101 @@
-// from server: 42% by tester
+// from server: 99% by king_originala
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
+extern "C" long __cdecl _InterlockedDecrement(volatile long*);
+#pragma intrinsic(_InterlockedDecrement)
 
-extern "C" void __stdcall G1_func_005a3380();
-extern "C" int __cdecl func_00422ae0(void*);
-extern "C" void __fastcall func_0045ad90(void*);
+extern "C" long (__stdcall *InterlockedIncrement)(volatile long*);
+extern "C" long (__stdcall *InterlockedDecrement)(volatile long*);
 
-extern "C" void* __stdcall func_008021b0(void*);
-extern "C" int __stdcall func_008021ac(void*);
-
-struct S_func_004e6520 {
-    void f(int, int);
+struct Node {
+    char padding[0x104];
+    Node* parent;
+    bool f(Node*);
 };
 
-void S_func_004e6520::f(int, int)
+extern Node* __cdecl findNode(Node*);
+
+struct Control {
+    virtual void unused();
+    virtual void dispose();
+    virtual void destroy();
+    volatile long strong;
+    volatile long weak;
+};
+
+struct Shared {
+    void* object;
+    Control* control;
+    ~Shared();
+};
+
+inline Shared::~Shared()
 {
-    void* p = *(void**)((char*)this + 0xbc);
-    G1_func_005a3380();
-    void* q = *(void**)((char*)this + 0xbc);
-    void* r = *(void**)((char*)q + 0x104);
-    if (r != 0 && func_00422ae0(r) == 0) {
-        void* s = (char*)this + 4;
-        func_008021b0(s);
-        void* t = *(void**)((char*)this + 0xd0);
-        void* u = *(void**)((char*)t + 4);
-        void* v = *(void**)u;
-        void* (*w)(void*, void*) = *(void*(**)(void*, void*))((char*)v + 8);
-        void* x = 0;
-        w(u, &x);
-        if (x != 0) {
-            if (func_008021ac((char*)x + 4) == 0) {
-                func_0045ad90(x);
-                if (x != 0) {
-                    void* y = *(void**)x;
-                    void (*z)(void*, int) = *(void(**)(void*, int))y;
-                    z(x, 1);
-                }
-            }
+    Control* p = control;
+    if (p) {
+        if (_InterlockedDecrement(&p->strong) == 0) {
+            p->dispose();
+            if (_InterlockedDecrement(&p->weak) == 0)
+                p->destroy();
         }
     }
-    void* aa = *(void**)((char*)this + 0x1c);
-    if (aa != 0) {
-        if (_InterlockedExchangeAdd((volatile long*)((char*)aa + 4), -1) == 1) {
-            void* ab = *(void**)aa;
-            void (*ac)(void*) = *(void(**)(void*))((char*)ab + 4);
-            ac(aa);
-            if (_InterlockedExchangeAdd((volatile long*)((char*)aa + 8), -1) == 1) {
-                void* ad = *(void**)aa;
-                void (*ae)(void*) = *(void(**)(void*))((char*)ad + 8);
-                ae(aa);
-            }
+}
+
+struct Intrusive {
+    virtual ~Intrusive();
+    volatile long references;
+    void cleanup();
+};
+
+struct IntrusivePtr {
+    Intrusive* pointer;
+    IntrusivePtr(Intrusive*);
+    ~IntrusivePtr();
+};
+
+inline IntrusivePtr::IntrusivePtr(Intrusive* p) : pointer(p)
+{
+    InterlockedIncrement(&p->references);
+}
+
+inline IntrusivePtr::~IntrusivePtr()
+{
+    if (pointer) {
+        if (InterlockedDecrement(&pointer->references) == 0) {
+            pointer->cleanup();
+            if (pointer)
+                delete pointer;
         }
+        pointer = 0;
+    }
+}
+
+struct Receiver {
+    virtual void first();
+    virtual void second();
+    virtual void update(IntrusivePtr&);
+};
+
+struct Holder {
+    void* first;
+    Receiver* receiver;
+};
+
+struct Part : Intrusive {
+    char padding[0xb4];
+    Node* node;
+    char padding2[0x10];
+    Holder* holder;
+    void f(Shared);
+};
+
+void Part::f(Shared value)
+{
+    Node* found = findNode(node);
+    if (!found ||
+        (found != node->parent &&
+         (!node->parent || !node->parent->f(found)))) {
+        IntrusivePtr self(this);
+        holder->receiver->update(self);
     }
 }

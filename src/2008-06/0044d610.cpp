@@ -1,4 +1,4 @@
-// from server: 52% by king_originala
+// from server: 56% by king_originala
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
 
@@ -27,9 +27,9 @@ struct ControlPtr {
 __forceinline ControlPtr::~ControlPtr()
 {
     Control* p = value;
-    if (p && _InterlockedExchangeAdd(&p->strong, -1) == 0) {
+    if (p && _InterlockedExchangeAdd(&p->strong, -1) == 1) {
         p->dispose();
-        if (_InterlockedExchangeAdd(&p->weak, -1) == 0)
+        if (_InterlockedExchangeAdd(&p->weak, -1) == 1)
             p->destroy();
     }
 }
@@ -59,9 +59,9 @@ __forceinline Shared::Shared(const Shared& p)
 __forceinline Shared::~Shared()
 {
     Control* p = control;
-    if (p && _InterlockedExchangeAdd(&p->strong, -1) == 0) {
+    if (p && _InterlockedExchangeAdd(&p->strong, -1) == 1) {
         p->dispose();
-        if (_InterlockedExchangeAdd(&p->weak, -1) == 0)
+        if (_InterlockedExchangeAdd(&p->weak, -1) == 1)
             p->destroy();
     }
 }
@@ -76,9 +76,9 @@ struct Bound {
 __forceinline Bound::~Bound()
 {
     Control* p = control;
-    if (p && _InterlockedExchangeAdd(&p->strong, -1) == 0) {
+    if (p && _InterlockedExchangeAdd(&p->strong, -1) == 1) {
         p->dispose();
-        if (_InterlockedExchangeAdd(&p->weak, -1) == 0)
+        if (_InterlockedExchangeAdd(&p->weak, -1) == 1)
             p->destroy();
     }
 }
@@ -103,6 +103,7 @@ struct Function {
     void* function;
     Object* object;
     Control* control;
+    unsigned int tail[3];
     Function(const Bound&);
     ~Function();
 };
@@ -111,8 +112,8 @@ __forceinline Function::Function(const Bound& b)
 {
     padding = 0;
     if (!func_0060a2f0(&b)) {
-        function = b.function;
         object = b.object;
+        function = b.function;
         control = b.control;
         if (control)
             _InterlockedExchangeAdd(&control->strong, 1);
@@ -133,8 +134,7 @@ __forceinline Function::~Function()
 
 struct Callback {
     unsigned char data[32];
-    Callback(const Function&, const unsigned char*);
-    ~Callback();
+    void initialize(const Function&, const unsigned char*);
 };
 
 struct S {
@@ -145,12 +145,9 @@ struct S {
 };
 
 S::S()
-    : object(new Object),
-      control(object),
-      callback(
-          (func_0047d410(&control, object, object),
-           Function(func_0063b770(
-               func_0041d760, Shared(object, control.value)))),
-          callback_tag)
+    : object(new Object), control(object)
 {
+    func_0047d410(&control, object, object);
+    Function f(func_0063b770(func_0041d760, Shared(object, control.value)));
+    callback.initialize(f, callback_tag);
 }

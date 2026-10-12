@@ -1,4 +1,4 @@
-// from server: 85% by king_originala
+// from server: 100% by king_originala
 unsigned int func_006492d0();
 
 struct State
@@ -16,6 +16,8 @@ struct Joint
     float value;
     void update();
 };
+
+#pragma float_control(precise, off, push)
 
 void Joint::update()
 {
@@ -36,3 +38,5 @@ void Joint::update()
         }
     }
 }
+
+#pragma float_control(pop)

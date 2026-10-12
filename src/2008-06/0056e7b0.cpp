@@ -1,27 +1,35 @@
-// from server: 61% by atomic.potato
-extern "C" void sub_0057c2d0(void*);
-
-struct S
-{
-    int f(void*);
+// from server: 100% by king_originala
+struct Getter {
+    virtual void slot0() = 0;
+    virtual void slot1() = 0;
+    virtual bool get(void* object) = 0;
 };
 
-int S::f(void* arg)
+struct Value {
+    unsigned int reserved;
+    unsigned int type;
+    bool data;
+
+    void clear();
+};
+
+struct Output {
+    char reserved[16];
+    Value value;
+};
+
+struct S {
+    char reserved[24];
+    Getter* getter;
+
+    void f(void* object, Output* output);
+};
+
+void S::f(void* object, Output* output)
 {
-    struct T
-    {
-        void* vptr;
-        int value;
-        unsigned char flag;
-    };
-
-    void* p = *(void**)((char*)this + 0x18);
-    void* table = *(void**)p;
-    unsigned char result = ((unsigned char (__cdecl *)(void*, void*))(*(void**)((char*)table + 8)))(p, arg);
-
-    T* out = (T*)((char*)arg + 0x10);
-    sub_0057c2d0(out);
-    out->flag = result;
-    out->value = 4;
-    return 0;
+    bool result = getter->get(object);
+    Value* value = &output->value;
+    value->clear();
+    value->data = result;
+    value->type = 4;
 }

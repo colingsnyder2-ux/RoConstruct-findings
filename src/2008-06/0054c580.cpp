@@ -1,27 +1,32 @@
-// from server: 21% by colin
+// from server: 100% by king_originala
+#pragma optimize("", off)
+
 struct S_func_00458e90 {
     void f(int a1, int a2);
 };
 
-struct S_func_004dc3e0 {
-    void f(void* a1, int a2);
+struct Allocator {
+    int unused;
+    void deallocate(short* p, unsigned int count);
 };
 
-struct Mesh {
-    char pad[8];
-    int* begin;
-    int* end;
-    int* capacity;
+struct S {
+    int unused[2];
+    Allocator allocator;
+    short* first;
+    short* last;
+    short* limit;
     void clear();
 };
 
-void Mesh::clear()
+void S::clear()
 {
-    if (this->begin != 0) {
-        S_func_00458e90().f((int)this->begin, (int)this->end);
-        S_func_004dc3e0().f(&this->begin, (this->capacity - this->begin) >> 1);
+    if (first != 0) {
+        reinterpret_cast<S_func_00458e90*>(this)->f(
+            reinterpret_cast<int>(first), reinterpret_cast<int>(last));
+        allocator.deallocate(first, limit - first);
     }
-    this->begin = 0;
-    this->end = 0;
-    this->capacity = 0;
+    first = 0;
+    last = 0;
+    limit = 0;
 }

@@ -1,33 +1,37 @@
-// from server: 63% by tester
-struct Material {
-    void* vtable;
-    int field_4;
-    int field_8;
-    int field_c;
-    int field_10;
-    int getBestTechnique(int lodIndex, int pass);
+// from server: 100% by king_originala
+struct Frame
+{
+    virtual bool unavailable() = 0;
+    char data[40];
 };
 
-extern "C" int __cdecl _ftol2_sse(float);
+struct Material
+{
+    virtual void slot0() = 0;
+    virtual void slot1() = 0;
+    virtual void slot2() = 0;
+    virtual void slot3() = 0;
+    virtual int ready() = 0;
 
-int Material::getBestTechnique(int lodIndex, int pass) {
-    int (*fn)(void);
-    fn = *(int (**)(void))(*((int*)this) + 0x10);
-    if (fn() == 0) {
+    int padding[2];
+    Frame* frames;
+    int count;
+
+    Frame* select(float position);
+};
+
+Frame* Material::select(float position)
+{
+    if (!ready())
         return 0;
-    }
-    int n = this->field_10;
-    float f = (float)n * *(float*)((char*)&pass + 12);
-    int idx = _ftol2_sse(f);
-    int maxIdx = n - 1;
-    if (idx <= 0) {
-        idx = 0;
-    } else if (idx >= maxIdx) {
-        idx = maxIdx;
-    }
-    char* elem = (char*)this->field_c + idx * 0x2c;
-    int (*fn2)(void);
-    fn2 = *(int (**)(void))elem;
-    int r = ((int (*)(void*))fn2)(elem);
-    return (unsigned char)r ? (int)elem : 0;
+
+    int last = count - 1;
+    int index = (int)(count * position);
+    if (index <= 0)
+        index = 0;
+    else if (index >= last)
+        index = last;
+
+    Frame* frame = frames + index;
+    return frame->unavailable() ? 0 : frame;
 }

@@ -1,121 +1,189 @@
-// from server: 30% by colin
-struct VCoordinateFrame;
+// from server: 84% by king_originala
+typedef unsigned int size_t;
 
-struct VCoordinateFrame {
-    char pad[0x134];
-    void* field_134;
-    void func(void* out, void* arg);
-};
-
-extern "C" void* __cdecl sub_6A0920(unsigned int size);
-extern "C" void __cdecl sub_6A067A(void* p);
-extern "C" void __cdecl sub_60F340(void* a, void* b);
-extern "C" void* __cdecl sub_583920();
-extern "C" void __cdecl sub_583860();
-extern "C" void* __cdecl sub_60F9B0(void* a, void* b);
-extern "C" void __cdecl sub_57DEE0(void* a, void* b);
-extern "C" void* __cdecl sub_5E82C0(void* a, void* b);
+void* __cdecl operator new(size_t);
+void __cdecl operator delete(void*);
 extern "C" void __cdecl _invalid_parameter_noinfo();
 
-extern float g_819bac;
+#pragma float_control(precise, off)
 
-void VCoordinateFrame::func(void* out, void* arg) {
-    void* local_0c = 0;
-    void* local_18 = 0;
-    void* local_1c = 0;
-    void* local_20 = 0;
+struct Vector3
+{
+    float x, y, z;
+    Vector3() {}
+    __forceinline Vector3(double, double, double) throw();
+    __forceinline Vector3 operator*(float) const throw();
+    __forceinline Vector3 operator-() const throw();
+};
 
-    void* p = sub_6A0920(4);
-    if (p) {
-        *(void**)p = &local_0c;
-    } else {
-        p = 0;
+__forceinline Vector3::Vector3(double a, double b, double c) throw()
+    : x((float)a), y((float)b), z((float)c)
+{
+}
+
+__forceinline Vector3 Vector3::operator*(float s) const throw()
+{
+    return Vector3(x * s, y * s, z * s);
+}
+
+__forceinline Vector3 Vector3::operator-() const throw()
+{
+    return Vector3(-x, -y, -z);
+}
+
+struct Frame
+{
+    float data[12];
+};
+
+struct Box
+{
+    Vector3 low, high;
+    Box() {}
+    __forceinline Box(const Box&);
+    __forceinline Box(const Vector3&, const Vector3&);
+    Box transform(const Vector3&, const Frame&) const;
+    void merge(const Box&);
+};
+
+__forceinline Box::Box(const Box& b)
+{
+    low.x = b.low.x;
+    low.y = b.low.y;
+    low.z = b.low.z;
+    high.x = b.high.x;
+    high.y = b.high.y;
+    high.z = b.high.z;
+}
+
+__forceinline Box::Box(const Vector3& a, const Vector3& b)
+{
+    low.x = a.x;
+    low.y = a.y;
+    low.z = a.z;
+    high.x = b.x;
+    high.y = b.y;
+    high.z = b.z;
+}
+
+extern const Box& __cdecl initialBox();
+extern const Box& __cdecl emptyBox();
+extern const float extentScale;
+
+struct Dimensions
+{
+    float unused;
+    Vector3 value;
+};
+
+struct Body;
+
+struct Primitive
+{
+    char padding[0x9c];
+    Dimensions* dimensions;
+    Body* body;
+    const Vector3& getValue();
+};
+
+struct ListBase;
+
+struct ListProxy
+{
+    ListBase* owner;
+    __forceinline ListProxy(ListBase*);
+};
+
+__forceinline ListProxy::ListProxy(ListBase* p) : owner(p)
+{
+}
+
+struct ListBase
+{
+    ListProxy* proxy;
+    unsigned int reserved[2];
+    __forceinline ListBase();
+    __forceinline ~ListBase() throw();
+};
+
+__forceinline ListBase::ListBase() : proxy(new ListProxy(this))
+{
+}
+
+__forceinline ListBase::~ListBase() throw()
+{
+    operator delete(proxy);
+}
+
+struct PrimitiveList : ListBase
+{
+    Primitive** first;
+    Primitive** last;
+    Primitive** limit;
+    __forceinline PrimitiveList();
+    __forceinline ~PrimitiveList() throw();
+    __forceinline size_t size() const;
+    __forceinline Primitive* operator[](size_t) const;
+};
+
+__forceinline PrimitiveList::PrimitiveList() : first(0), last(0), limit(0)
+{
+}
+
+__forceinline PrimitiveList::~PrimitiveList() throw()
+{
+    if (first)
+        operator delete(first);
+    first = 0;
+    last = 0;
+    limit = 0;
+}
+
+__forceinline size_t PrimitiveList::size() const
+{
+    return static_cast<size_t>(last - first);
+}
+
+__forceinline Primitive* PrimitiveList::operator[](size_t i) const
+{
+    if (i >= size())
+        _invalid_parameter_noinfo();
+    return first[i];
+}
+
+struct S;
+extern void __cdecl collect(S*, PrimitiveList*);
+
+typedef Frame* (__thiscall *FrameGetter)(void*, Frame*);
+
+struct S
+{
+    char padding[0x134];
+    int* frameTable;
+    Box f();
+};
+
+Box S::f()
+{
+    PrimitiveList primitives;
+    collect(this, &primitives);
+    Box result(initialBox());
+
+    for (size_t i = 0; i < primitives.size(); ++i)
+    {
+        Vector3 half = primitives[i]->dimensions->value * extentScale;
+        Primitive* primitive = primitives.first[i];
+        Box bounds(-half, half);
+
+        void* object = reinterpret_cast<char*>(&frameTable) + frameTable[2];
+        FrameGetter getter =
+            reinterpret_cast<FrameGetter*>(*static_cast<int**>(object))[0];
+
+        Frame storage;
+        const Frame* frame = getter(object, &storage);
+        Box transformed = bounds.transform(primitive->getValue(), *frame);
+        result.merge(transformed);
     }
-    local_0c = p;
-    local_18 = 0;
-    local_1c = 0;
-    local_20 = 0;
 
-    sub_60F340(this, &local_0c);
-
-    float* src = (float*)sub_583920();
-    float tmp[6];
-    tmp[0] = src[0];
-    tmp[1] = src[1];
-    tmp[2] = src[2];
-    tmp[3] = src[3];
-    tmp[4] = src[4];
-    tmp[5] = src[5];
-
-    void* base = local_18;
-    void* end = local_1c;
-    int count = ((char*)end - (char*)base) >> 2;
-
-    unsigned int i = 0;
-    if ((unsigned int)count > 0) {
-        do {
-            float scale = g_819bac;
-            if (i >= (unsigned int)count) {
-                _invalid_parameter_noinfo();
-                base = local_18;
-                scale = g_819bac;
-            }
-            void* elem = *(void**)((char*)base + i * 4);
-            float* m = *(float**)((char*)elem + 0x9c);
-            float a0 = m[1] * scale;
-            float a1 = m[2] * scale;
-            float a2 = m[3] * scale;
-            float b0 = -a0;
-            float b1 = -a1;
-            float b2 = -a2;
-            float c0 = -tmp[0];
-            float c1 = -tmp[1];
-            float c2 = -tmp[2];
-
-            float mat[6];
-            mat[0] = b0;
-            mat[1] = b1;
-            mat[2] = b2;
-            mat[3] = c0;
-            mat[4] = c1;
-            mat[5] = c2;
-
-            void* f134 = *(void**)((char*)this + 0x134);
-            void* vtbl = *(void**)f134;
-            void* outbuf;
-            ((void (__thiscall*)(void*, void*))vtbl)(f134, &outbuf);
-
-            void* r1 = sub_5E82C0(elem, outbuf);
-            void* r2 = sub_60F9B0(&mat[3], r1);
-            sub_57DEE0(&tmp[0], r2);
-
-            base = local_18;
-            end = local_1c;
-            count = ((char*)end - (char*)base) >> 2;
-            i++;
-        } while (i < (unsigned int)count);
-    }
-
-    float* result;
-    if (count > 0) {
-        result = tmp;
-    } else {
-        sub_583860();
-        result = (float*)local_18;
-    }
-
-    float* dst = (float*)out;
-    dst[0] = result[0];
-    dst[1] = result[1];
-    dst[2] = result[2];
-    dst[3] = result[3];
-    dst[4] = result[4];
-    dst[5] = result[5];
-
-    if (local_18) {
-        sub_6A067A(local_18);
-    }
-    if (local_0c) {
-        sub_6A067A(local_0c);
-    }
+    return primitives.size() > 0 ? result : emptyBox();
 }

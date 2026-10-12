@@ -1,33 +1,50 @@
-// from server: 35% by atomic.potato
-struct Inner {
-    int f(int a, int b, int c);
-};
+// from server: 100% by king_originala
+void* __cdecl operator new(unsigned int);
+void __cdecl operator delete(void*);
 
-struct S {
-    int f(int arg);
-    int field0;
-    int field4;
-    char pad8[0x28];
-};
-
-extern "C" void* __cdecl func_006a0920(unsigned int size);
-extern "C" void __cdecl func_0041ad40();
-extern "C" void __cdecl func_0041b0f0();
-extern "C" void __cdecl func_00595840();
-
-int S::f(int arg)
+struct Arguments
 {
-    field0 = 0;
-    field4 = 0;
-    Inner* p = (Inner*)((char*)this + 8);
-    p->f(*(int*)arg, *(int*)(arg + 4), 0);
-    void* mem = func_006a0920(0x28);
-    if (mem) {
-        func_0041ad40();
-    } else {
-        mem = 0;
-    }
-    func_0041b0f0();
-    func_00595840();
-    return (int)this;
+    int first;
+    int second;
+};
+
+struct Owner
+{
+    void* second;
+
+    Owner();
+    ~Owner();
+};
+
+inline Owner::Owner() : second(0) {}
+
+struct Function
+{
+    Function(int, int, int);
+    ~Function();
+};
+
+struct Object
+{
+    unsigned char storage[0x28];
+
+    Object();
+};
+
+struct Table
+{
+    void* first;
+    Owner owner;
+    Function function;
+
+    Table(const Arguments&);
+    void assign(Object*);
+    void finish();
+};
+
+Table::Table(const Arguments& args)
+    : first(0), owner(), function(args.first, args.second, 0)
+{
+    assign(new Object);
+    finish();
 }

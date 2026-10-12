@@ -1,30 +1,34 @@
-// from server: 84% by atomic.potato
-struct S_func_00645830 {
-    char pad0[4];
-    int m_x;
-    void f(int a1);
+// from server: 100% by king_originala
+struct JointStage;
+
+struct Joint {
+    char padding[4];
+    int owner;
+    void setOwner(int value);
 };
 
-struct S {
-    char pad0[8];
-    void** m_x;
-    void g(int a1);
-    bool h(int a1);
-    void i();
+struct NextStage {
+    virtual void entry0();
+    virtual void entry1();
+    virtual void entry2();
+    virtual void entry3();
+    virtual void addJoint(Joint* joint);
 };
 
-void S::g(int a1)
+struct JointStage {
+    char padding[8];
+    NextStage* next;
+
+    bool acceptsJoint(Joint* joint);
+    void addLocally(Joint* joint);
+    void addJoint(Joint* joint);
+};
+
+void JointStage::addJoint(Joint* joint)
 {
-    S_func_00645830* p = (S_func_00645830*)a1;
-    p->f((int)this);
-    if (h(a1))
-    {
-        void** v = m_x;
-        void (*fn)() = (void (*)())(v[4]);
-        fn();
-    }
+    joint->setOwner((int)this);
+    if (acceptsJoint(joint))
+        next->addJoint(joint);
     else
-    {
-        i();
-    }
+        addLocally(joint);
 }

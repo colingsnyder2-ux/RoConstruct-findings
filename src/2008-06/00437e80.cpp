@@ -1,5 +1,18 @@
-// from server: 53% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: openrbx-client App/script/LuaInstanceBridge.cpp
+// from server: 80% by king_originala
+struct S;
+typedef int (__thiscall *Method)(S *, int);
+
+struct Table {
+    Method unused[58];
+    Method target;
+};
+
+struct S {
+    Table *table;
+    int f(const int *value);
+};
+
+int S::f(const int *value)
+{
+    return table->target(this, *value);
+}

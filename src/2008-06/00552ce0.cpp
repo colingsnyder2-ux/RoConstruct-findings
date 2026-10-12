@@ -1,11 +1,16 @@
-// from server: 47% by king_originala
+// from server: 55% by king_originala
 struct Pair {
     unsigned int first;
     unsigned int second;
+    Pair();
+};
+
+struct Functor {
+    unsigned int state[4];
 };
 
 extern Pair __cdecl transform(Pair value);
-extern Pair __cdecl advance(Pair value);
+extern Pair __cdecl advance(Pair value, Functor operation);
 
 struct Container {
     Pair firstOperation(Pair value);
@@ -18,14 +23,20 @@ struct S {
     Container* f(const Pair* value);
 };
 
+#pragma optimize("", off)
 Container* S::f(const Pair* value)
 {
+    Functor operation;
+    Pair end;
+    unsigned int index;
     Pair current = *value;
-    while (current.first) {
-        current = advance(
+
+    for (index = 0; current.first; current.first = current.second) {
+        advance(
             container.secondOperation(
                 container.firstOperation(
-                    transform(current))));
+                    transform(current))),
+            operation);
     }
     return &container;
 }

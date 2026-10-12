@@ -1,20 +1,26 @@
-// from server: 82% by colin
-struct KeyButton {
-    char pad[0x18];
-    int id;
-    bool active;
-    void processEvent(int, void*);
+// from server: 100% by king_originala
+struct Event {
+    int type;
+    int reserved;
+    int key;
 };
 
-void KeyButton::processEvent(int, void* evt) {
-    int* e = (int*)evt;
-    if (e[0] == 0xa && e[2] == this->id) {
-        this->active = true;
-    }
-    if (e[0] == 0xb && e[2] == this->id) {
-        this->active = false;
-    }
-    void* self = this;
-    extern void __stdcall sub_642210(void*, void*);
-    sub_642210(self, e);
+struct KeyButton {
+    char pad[0x18];
+    int key;
+    bool pressed;
+
+    void* sub_642210(void* result, Event* event);
+    void* sub_64EF90(void* result, Event* event);
+};
+
+void* KeyButton::sub_64EF90(void* result, Event* event) {
+    if (event->type == 10 && event->key == key)
+        pressed = true;
+
+    if (event->type == 11 && event->key == key)
+        pressed = false;
+
+    sub_642210(result, event);
+    return result;
 }

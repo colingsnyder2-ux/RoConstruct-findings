@@ -1,49 +1,76 @@
-// from server: 61% by colin
-struct GCamera {
-    char pad[0x14];
-    char field14[0x11c];
-    char field130[0x30];
-};
-
-struct SignalBase {
-    char pad[0x10];
-    char field10[0x20];
-};
-
-extern "C" void copy_camera(GCamera* dst, const void* src);
-extern "C" void* __stdcall find_signal(void* self, void* arg);
-extern "C" void signal_connect(SignalBase* self, void* arg);
-
-struct VVector3ValueSignalDesc {
-    void method(void* arg);
-};
-
-void VVector3ValueSignalDesc::method(void* arg)
+// from server: 100% by king_originala
+struct Matrix
 {
-    GCamera* cam = (GCamera*)this;
-    char* base;
-    if (cam != 0)
-        base = (char*)cam + 0x14;
-    else
-        base = 0;
+    float data[9];
+    Matrix(const Matrix&);
+};
 
-    char* src = (char*)cam + 0x130;
+struct Vector
+{
+    float x, y, z;
+    Vector(const Vector&);
+};
 
-    char local[0x30];
-    copy_camera((GCamera*)local, src);
+__forceinline Vector::Vector(const Vector& other)
+    : x(other.x), y(other.y), z(other.z)
+{
+}
 
-    float f0 = *(float*)(src + 0x24);
-    float f1 = *(float*)(src + 0x28);
-    float f2 = *(float*)(src + 0x2c);
+struct Frame
+{
+    Matrix rotation;
+    Vector position;
+    Frame(const Frame&);
+    ~Frame();
+};
 
-    void* result = find_signal((void*)0x97d4c4, base);
-    if (result != 0)
+__forceinline Frame::Frame(const Frame& other)
+    : rotation(other.rotation), position(other.position)
+{
+}
+
+__forceinline Frame::~Frame()
+{
+}
+
+struct Tag
+{
+};
+
+struct Signal
+{
+    void fire(const Tag&, Frame);
+};
+
+struct Slot
+{
+    char padding[16];
+    Signal signal;
+};
+
+struct Registry
+{
+    Slot* find(void*);
+};
+
+extern Registry registry;
+
+struct S
+{
+    char padding[0x130];
+    Frame frame;
+
+    void f(void*);
+};
+
+void S::f(void*)
+{
+    void* owner = this ? reinterpret_cast<char*>(this) + 0x14 : 0;
+    Frame value(frame);
+    Slot* slot = registry.find(owner);
+    if (slot)
     {
-        char tmp[0x30];
-        copy_camera((GCamera*)tmp, local);
-        *(float*)(tmp + 0x24) = f0;
-        *(float*)(tmp + 0x28) = f1;
-        *(float*)(tmp + 0x2c) = f2;
-        signal_connect((SignalBase*)((char*)result + 0x10), tmp);
+        Tag tag;
+        slot->signal.fire(tag, value);
     }
 }

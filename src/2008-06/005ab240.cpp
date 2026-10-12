@@ -1,6 +1,8 @@
-// from server: 98% by king_originala
+// from server: 100% by king_originala
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
+extern "C" void __cdecl _ReadWriteBarrier(void);
+#pragma intrinsic(_ReadWriteBarrier)
 
 struct TypeInfo {};
 typedef bool (__thiscall *TypeEqual)(const TypeInfo*, const TypeInfo&);
@@ -69,7 +71,10 @@ Shared* __cdecl extractShared(Shared* result, const Any* source)
 
     result->object = value->object;
     result->control = value->control;
-    if (result->control)
-        _InterlockedExchangeAdd(&result->control->references, 1);
+    if (result->control) {
+        volatile long* references = &result->control->references;
+        _ReadWriteBarrier();
+        _InterlockedExchangeAdd(references, 1);
+    }
     return result;
 }

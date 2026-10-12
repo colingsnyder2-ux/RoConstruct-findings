@@ -1,20 +1,36 @@
-// from server: 44% by tester
-struct S_004d8390 {
-    void* f(void* a, void* b, void* c, void* d);
+// from server: 91% by king_originala
+struct Result {
+    unsigned char padding[4];
+    void* first;
+    void* second;
+    unsigned char flag;
 };
 
-extern "C" void* __stdcall sub_005875e0(void* a, void* b, void* c, void* d, void* e);
-extern "C" void sub_004d81c0(void* a);
+struct State {
+    void finish();
+};
 
-void* S_004d8390::f(void* a, void* b, void* c, void* d)
+struct Product {
+    unsigned char padding[16];
+    State state;
+};
+
+struct S {
+    Product* create(void*, Result*, unsigned long*, unsigned long, int);
+    Result* f(Result*, void*, unsigned long, unsigned long);
+};
+
+Result* S::f(Result* result, void* object, unsigned long value,
+             unsigned long context)
 {
-    if (a == 0) {
-        *(void**)((char*)b + 4) = 0;
-        *(void**)((char*)b + 8) = 0;
-        *(char*)((char*)b + 12) = 0;
-        return 0;
+    volatile int zero = 0;
+    if (object) {
+        Product* product = create(object, result, &context, value, 0);
+        product->state.finish();
+        return result;
     }
-    void* r = sub_005875e0(a, b, c, d, 0);
-    sub_004d81c0((char*)r + 16);
-    return b;
+    result->first = 0;
+    result->second = 0;
+    result->flag = 0;
+    return result;
 }

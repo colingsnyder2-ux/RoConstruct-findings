@@ -1,30 +1,24 @@
-// from server: 40% by tester
+// from server: 94% by king_originala
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
 
-struct RefCounted {
-    long refCount;
+struct Control {
+    long unused;
+    volatile long references;
 };
 
 struct Holder {
-    RefCounted* ptr;
+    char* pointer;
+    Control* control;
 };
 
-struct S {
-    void __cdecl f(Holder* out, Holder* in);
-};
-
-void S::f(Holder* out, Holder* in)
+Holder* __cdecl convert(Holder* result, const Holder& source)
 {
-    RefCounted* p = in->ptr;
-    RefCounted* q = 0;
-    if (p == 0) {
-        q = (RefCounted*)((char*)p + 0x14);
-    }
-    out->ptr = q;
-    RefCounted* r = in->ptr;
-    out->ptr = r;
-    if (r != 0) {
-        _InterlockedExchangeAdd((volatile long*)((char*)r + 4), 1);
-    }
+    volatile int state = 0;
+    char* p = source.pointer;
+    result->pointer = p ? p + 20 : 0;
+    result->control = source.control;
+    if (result->control)
+        _InterlockedExchangeAdd(&result->control->references, 1);
+    return result;
 }

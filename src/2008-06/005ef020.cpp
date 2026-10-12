@@ -1,4 +1,4 @@
-// from server: 99% by king_originala
+// from server: 100% by king_originala
 struct TypeInfo {};
 typedef bool (__thiscall *TypeEqual)(const TypeInfo *, const TypeInfo &);
 extern TypeEqual typeEqual;
@@ -78,7 +78,8 @@ int *SurfaceDescriptor::cast()
         }
     }
 
-    if (equal(&conversionType, *descriptor->type))
+    const TypeInfo *actualType = descriptor->type;
+    if (equal(&conversionType, *actualType))
         convert(source);
 
     registerDescriptor(descriptorCallback, descriptorName);

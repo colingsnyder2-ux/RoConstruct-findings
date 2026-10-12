@@ -1,26 +1,27 @@
-// from server: 40% by tester
-struct Chunk {
+// from server: 66% by colin
+#pragma optimize("g", off)
+
+struct VChunk;
+
+char* __cdecl f(VChunk*);
+char* __cdecl g(VChunk*);
+char* __cdecl h(VChunk*);
+char* __cdecl i(VChunk*);
+char* __cdecl j(VChunk*);
+
+struct S {
     char pad[0x18];
-    int field18;
+    VChunk* chunk;
     int field1c;
-    void init();
+    void construct();
 };
 
-struct Helper {
-    int __thiscall call545260();
-    int* __thiscall call5423f0();
-    int* __thiscall call5508e0();
-    int* __thiscall call54cec0();
-};
-
-extern "C" char* __cdecl sub_542e00(int);
-
-void Chunk::init() {
-    Helper* h = (Helper*)this;
-    field18 = h->call545260();
-    *sub_542e00(field18) = 1;
-    *h->call5423f0() = field18;
-    *h->call5508e0() = field18;
-    *h->call54cec0() = field18;
+void S::construct()
+{
+    chunk = (VChunk*)f((VChunk*)this);
+    *g(chunk) = 1;
+    *(VChunk**)h((VChunk*)this) = chunk;
+    *(VChunk**)i((VChunk*)this) = chunk;
+    *(VChunk**)j((VChunk*)this) = chunk;
     field1c = 0;
 }

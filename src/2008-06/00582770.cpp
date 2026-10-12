@@ -1,13 +1,20 @@
-// from server: 72% by atomic.potato
-struct StopCommand
-{
-    int reserved[4];
-    unsigned char f();
+// from server: 100% by king_originala
+struct State {
+    char padding[0x1B4];
+    int value;
 };
 
-extern "C" int sub_581C00(void *, int);
+struct Resolver {
+    State* get(int);
+};
 
-unsigned char StopCommand::f()
+struct S {
+    char padding[0x10];
+    Resolver resolver;
+    bool f();
+};
+
+bool S::f()
 {
-    return *(int *)((char *)sub_581C00((char *)this + 16, 1) + 436) == 1;
+    return resolver.get(1)->value == 1;
 }

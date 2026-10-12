@@ -1,4 +1,4 @@
-// from server: 97% by king_originala
+// from server: 100% by king_originala
 #pragma optimize("", off)
 
 struct VChunk {
@@ -31,8 +31,8 @@ struct S {
     VChunk* chunk;
     void* other;
 
-    Pair first();
-    Pair second();
+    Pair* first(Pair*);
+    Pair* second(Pair*);
     Pair combine(Pair, Pair);
     void f();
 };
@@ -40,9 +40,11 @@ struct S {
 void S::f()
 {
     Pair a;
-    a = first();
+    Pair firstTemporary;
     Pair b;
-    b = second();
+    Pair secondTemporary;
+    a = *first(&secondTemporary);
+    b = *second(&firstTemporary);
     combine(b, a);
     collector.append(firstPart(chunk));
     collector.append(secondPart(chunk));

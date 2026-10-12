@@ -1,9 +1,11 @@
-// from server: 34% by atomic.potato
-struct AggregateChunk {
-    int get(int value);
+// from server: 100% by king_originala
+struct S {
+    int value;
+    int f(int);
 };
 
-int AggregateChunk::get(int value)
-{
-    return *(int *)this;
+#pragma optimize("", off)
+int S::f(int) {
+    return value;
 }
+#pragma optimize("", on)

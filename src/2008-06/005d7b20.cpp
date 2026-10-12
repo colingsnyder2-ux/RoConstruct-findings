@@ -1,27 +1,23 @@
-// from server: 63% by atomic.potato
-struct S {
-    char pad[0x18];
-    int (__stdcall *fn)(int, int);
-    char pad2[4];
-    int offset;
-    int index;
-    int method(int, int);
+// from server: 67% by colin
+struct GetSetImpl {
+    int get;
+    int set;
+    void invoke(int, int);
 };
 
-int S::method(int a, int b)
+void GetSetImpl::invoke(int a, int b)
 {
-    int *p = (int *)a;
+    int* p = (int*)a;
     if (p)
-        p = (int *)((char *)p - 0x14);
+        p = (int*)((char*)p - 0x14);
     else
         p = 0;
-    int *q = (int *)b;
-    int v = *q;
-    int idx = this->index;
-    int *base = (int *)((char *)p + 0x150);
-    int off = *(int *)((char *)p + 0x150);
-    int val = *(int *)(off + idx);
-    val += this->offset;
-    int (__stdcall *f)(int, int) = this->fn;
-    return f(val + (int)base, v);
+    int idx = *(int*)b;
+    int off = *(int*)((char*)this + 0x20);
+    int base = *(int*)((char*)p + 0x150);
+    int val = *(int*)(base + off);
+    val += *(int*)((char*)this + 0x1c);
+    int fn = *(int*)((char*)this + 0x18);
+    int arg = val + (int)p + 0x150;
+    ((void (__stdcall*)(int))fn)(arg);
 }

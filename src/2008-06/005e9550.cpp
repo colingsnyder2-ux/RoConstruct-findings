@@ -1,5 +1,55 @@
-// from server: 40% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs util/RunStateOwner.cpp
+// from server: 89% by king_originala
+struct Vector3 { float x, y, z; };
+
+struct Item {
+    int getBulletSphereShape() const;
+    const Vector3& getValue();
+    const void* get();
+};
+
+struct Kind {
+    int value;
+};
+
+struct Link {
+    char pad[0x1c];
+    Item* item;
+};
+
+struct Shape {
+    char pad0[0x18];
+    Kind* kind;
+    char pad1[8];
+    Link* link;
+};
+
+struct Service {
+    char pad[0xac];
+    Item** items;
+    int count;
+    void f(void*);
+};
+
+void Service::f(void*)
+{
+    for (int i = 0; i < count; ++i) {
+        Item* item = items[i];
+        Shape* shape = (Shape*)item->getBulletSphereShape();
+        bool special;
+
+        if (!shape->kind ||
+            (shape->kind->value != 3 &&
+             shape->kind->value != 1 &&
+             shape->kind->value != 2)) {
+            special = false;
+        } else {
+            special = true;
+            if (item != shape->link->item)
+                continue;
+        }
+
+        item->getValue();
+        if (!special)
+            item->get();
+    }
+}

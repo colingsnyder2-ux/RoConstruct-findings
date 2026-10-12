@@ -1,18 +1,36 @@
-// from server: 86% by king_originala
+// from server: 100% by king_originala
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
+extern "C" void __cdecl _ReadWriteBarrier();
+#pragma intrinsic(_ReadWriteBarrier)
+
+struct Counter {
+    volatile long value;
+    __forceinline void retain();
+};
+
+__forceinline void Counter::retain()
+{
+    volatile long* p = &value;
+    _ReadWriteBarrier();
+    _InterlockedExchangeAdd(p, 1);
+}
 
 struct Ref {
     long reserved;
-    volatile long count;
-
+    Counter count;
     __forceinline void retain();
 };
 
 __forceinline void Ref::retain()
 {
-    _InterlockedExchangeAdd(&count, 1);
+    count.retain();
 }
+
+extern unsigned char initialTable[];
+extern unsigned char finalTable[];
+extern void* globalObject;
+extern Ref* globalReference;
 
 struct S {
     unsigned long tag;
@@ -25,17 +43,16 @@ struct S {
 
 S::S()
 {
-    tag = 0x0080ebc8;
-    object = *reinterpret_cast<void**>(0x00975c6c);
-    Ref* r = *reinterpret_cast<Ref**>(0x00975c70);
-    reference = r;
-    if (r)
-        r->retain();
+    tag = reinterpret_cast<unsigned long>(initialTable);
+    object = globalObject;
+    reference = globalReference;
+    if (reference)
+        reference->retain();
     a = 0;
     b = 0;
     c = 0;
     d = 0;
     e = 0;
-    tag = 0x0080ebd0;
+    tag = reinterpret_cast<unsigned long>(finalTable);
     f = 0;
 }

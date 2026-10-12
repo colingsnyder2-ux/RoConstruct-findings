@@ -1,50 +1,92 @@
-// from server: 42% by colin
+// from server: 95% by king_originala
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
+extern "C" long __cdecl _InterlockedDecrement(volatile long*);
+#pragma intrinsic(_InterlockedDecrement)
 
-struct MarkerItem {
-    void sendMarker(int);
+struct Control {
+    virtual void unused();
+    virtual void dispose();
+    virtual void destroy();
+    volatile long strong;
+    volatile long weak;
 };
 
-struct RefCounted {
-    void AddRef();
-    void Release();
-};
+struct Shared {
+    void* object;
+    Control* control;
 
-extern "C" void __cdecl sub_4AB5D0(int, int);
-extern "C" void __cdecl sub_4A61A0(int, int);
-extern "C" void* __cdecl sub_49E890();
-extern "C" void __cdecl sub_569620(void*);
-extern "C" void __cdecl sub_5693A0(int, int, const char*, int, int);
-extern "C" void* __cdecl sub_4A98B0(int, int);
-
-void MarkerItem::sendMarker(int a2)
-{
-    sub_4AB5D0(a2, 4);
-    sub_4A61A0(a2, *(int*)((char*)this + 8));
-    void* p = sub_49E890();
-    if (*(char*)((char*)p + 0x131) != 0)
-    {
-        void* v;
-        sub_569620(&v);
-        int* obj = *(int**)v;
-        int* base = (int*)(*(int*)((char*)this + 4) + 0x2d54);
-        void* s = sub_4A98B0((int)base, 1);
-        sub_5693A0((int)obj, 1, "Replication: Sending marker %d to %s", *(int*)((char*)this + 8), (int)s);
-        if (v != 0)
-        {
-            if (_InterlockedExchangeAdd((volatile long*)((char*)v + 4), -1) == 1)
-            {
-                (*(void(__thiscall**)(void*))v)(v);
-            }
-            if (_InterlockedExchangeAdd((volatile long*)((char*)v + 8), -1) == 1)
-            {
-                (*(void(__thiscall**)(void*))(*(int*)v + 8))(v);
+    ~Shared() {
+        if (control) {
+            Control* p = control;
+            if (_InterlockedDecrement(&p->strong) == 0) {
+                p->dispose();
+                if (_InterlockedDecrement(&p->weak) == 0)
+                    p->destroy();
             }
         }
     }
-    int* p4 = *(int**)((char*)this + 4);
-    int* vt = *(int**)p4;
-    void (__thiscall* fn)(int*, int) = (void (__thiscall*)(int*, int))vt[0x4c / 4];
-    fn(p4, *(int*)((char*)this + 8));
+};
+
+struct Settings {
+    char padding[0x131];
+    unsigned char logging;
+};
+
+struct Endpoint {
+    const char* text(int);
+};
+
+struct Owner {
+    virtual void v0();
+    virtual void v1();
+    virtual void v2();
+    virtual void v3();
+    virtual void v4();
+    virtual void v5();
+    virtual void v6();
+    virtual void v7();
+    virtual void v8();
+    virtual void v9();
+    virtual void v10();
+    virtual void v11();
+    virtual void v12();
+    virtual void v13();
+    virtual void v14();
+    virtual void v15();
+    virtual void v16();
+    virtual void v17();
+    virtual void v18();
+    virtual void sent(int);
+
+    char padding[0x2d50];
+    Endpoint endpoint;
+};
+
+void __cdecl writeKind(void*, int);
+void __cdecl writeMarker(void*, int);
+Settings* __cdecl settings();
+Shared __cdecl acquireLogger();
+void __cdecl logMessage(void*, int, const char*, ...);
+
+struct MarkerItem {
+    unsigned int padding;
+    Owner* owner;
+    int marker;
+    void send(void*);
+};
+
+void MarkerItem::send(void* stream)
+{
+    writeKind(stream, 4);
+    writeMarker(stream, marker);
+
+    if (settings()->logging) {
+        const Shared& logger = acquireLogger();
+        void* output = logger.object;
+        logMessage(output, 1, "Replication: Sending marker %d to %s",
+                   marker, owner->endpoint.text(1));
+    }
+
+    owner->sent(marker);
 }

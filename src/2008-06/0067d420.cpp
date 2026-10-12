@@ -1,7 +1,9 @@
-// from server: 79% by king_originala
+// from server: 84% by king_originala
+extern "C" void (__cdecl *_invalid_parameter_noinfo)();
 void __cdecl operator delete(void *);
 
-extern void (__cdecl *invalid_parameter_noinfo)();
+struct Entity;
+extern unsigned (__thiscall *getNumSubEntitiesImport)(const Entity *);
 
 struct SubEntity {
     virtual ~SubEntity();
@@ -11,125 +13,98 @@ struct RbxSubEntity : SubEntity {
     virtual ~RbxSubEntity();
 };
 
+struct InterfaceA {
+    virtual ~InterfaceA();
+};
+
+struct InterfaceB {
+    virtual ~InterfaceB();
+    char padding[0xc0];
+};
+
+struct InterfaceC {
+    virtual ~InterfaceC();
+};
+
 struct Iterator {
     void *owner;
     SubEntity **position;
-    Iterator(void *, SubEntity **);
 };
 
-inline Iterator::Iterator(void *o, SubEntity **p)
-    : owner(o), position(p) {}
-
-struct SubEntities {
+struct SubEntityArray {
     void *owner;
-    unsigned char padding[8];
+    unsigned reserved[2];
     SubEntity **first;
     SubEntity **last;
     SubEntity **limit;
-    Iterator erase(Iterator, Iterator);
+
+    Iterator erase(Iterator first, Iterator last);
 };
 
-struct Primary {
-    virtual void primary();
+struct Entity : InterfaceA, InterfaceB, InterfaceC {
+    char padding0[12];
+    SubEntityArray entities;
+    char padding1[0x18c];
+
+    virtual ~Entity();
 };
-
-struct Secondary {
-    virtual void secondary();
-    unsigned char padding[0xc0];
-};
-
-struct Tertiary {
-    virtual void tertiary();
-    unsigned char padding[12];
-};
-
-struct Entity;
-struct AxisAlignedBox;
-
-extern unsigned int (__thiscall *entity_count)(const Entity *);
-extern void (__thiscall *entity_destroy)(Entity *);
-extern void (__thiscall *box_destroy)(AxisAlignedBox *);
-
-struct Entity : Primary, Secondary, Tertiary {
-    SubEntities entities;
-    unsigned char padding[0x18c];
-
-    ~Entity();
-    unsigned int getNumSubEntities() const;
-};
-
-inline Entity::~Entity()
-{
-    entity_destroy(this);
-}
-
-inline unsigned int Entity::getNumSubEntities() const
-{
-    return entity_count(this);
-}
 
 struct AxisAlignedBox {
-    unsigned char data[0x28];
+    char storage[0x28];
     ~AxisAlignedBox();
-};
-
-inline AxisAlignedBox::~AxisAlignedBox()
-{
-    box_destroy(this);
-}
-
-struct Buffer {
-    void *data;
-    unsigned int size;
-    unsigned int capacity;
-};
-
-struct PointerArray {
-    void *first;
-    void *last;
-    void *limit;
 };
 
 struct RbxEntity : Entity {
     AxisAlignedBox box;
-    Buffer buffer;
-    PointerArray pointers;
+    void *allocation;
+    unsigned reserved[2];
+    void *buffer;
+    void *bufferEnd;
+    void *bufferLimit;
 
-    virtual void primary();
-    virtual void secondary();
-    virtual void tertiary();
-    ~RbxEntity();
+    virtual ~RbxEntity();
 };
 
 RbxEntity::~RbxEntity()
 {
-    for (int i = 0; i < (int)getNumSubEntities(); ++i) {
-        if ((unsigned int)i >=
-            (unsigned int)(entities.last - entities.first))
-            invalid_parameter_noinfo();
+    unsigned (__thiscall *count)(const Entity *) =
+        getNumSubEntitiesImport;
 
-        RbxSubEntity *p =
+    for (int i = 0; i < (int)count(this); ++i) {
+        if ((unsigned)i >= (unsigned)(entities.last - entities.first))
+            _invalid_parameter_noinfo();
+
+        RbxSubEntity *entry =
             dynamic_cast<RbxSubEntity *>(entities.first[i]);
-        if (p)
-            delete p;
+        if (entry)
+            delete entry;
     }
 
-    SubEntities &v = entities;
-    SubEntity **end = v.last;
-    if (v.first > end)
-        invalid_parameter_noinfo();
+    SubEntity **end = entities.last;
+    if (entities.first > end)
+        _invalid_parameter_noinfo();
 
-    SubEntity **begin = v.first;
-    void *owner = v.owner;
-    if (begin > v.last)
-        invalid_parameter_noinfo();
+    SubEntityArray &array = entities;
+    SubEntity **begin = array.first;
+    void *volatile owner = array.owner;
+    if (begin > array.last)
+        _invalid_parameter_noinfo();
 
-    v.erase(Iterator(v.owner, begin), Iterator(owner, end));
+    Iterator first;
+    first.owner = array.owner;
+    first.position = begin;
 
-    if (pointers.first)
-        operator delete(pointers.first);
-    pointers.first = 0;
-    pointers.last = 0;
-    pointers.limit = 0;
-    operator delete(buffer.data);
+    Iterator last;
+    last.owner = owner;
+    last.position = end;
+
+    array.erase(first, last);
+
+    if (buffer)
+        operator delete(buffer);
+
+    buffer = 0;
+    bufferEnd = 0;
+    bufferLimit = 0;
+    operator delete(allocation);
 }

@@ -1,108 +1,130 @@
-// from server: 50% by colin
-struct Locale {
-    void* p;
-    Locale();
-    Locale(const Locale&);
-    ~Locale();
-};
+// from server: 61% by king_originala
+typedef unsigned int size_t;
+
+void* __cdecl operator new(size_t);
+void __cdecl operator delete(void*);
+
+struct String;
+struct Facet;
+struct Locale;
+
+extern void (__thiscall *stringConstruct)(String*);
+extern void (__thiscall *stringCopy)(String*, const String&);
+extern void (__thiscall *stringDestroy)(String*);
+extern Facet* (__cdecl *getGlobalLocale)();
+extern Facet* (__cdecl *initLocale)();
+extern void (__thiscall *incrementFacet)(Facet*);
+extern void (__thiscall *destroyLocale)(Locale*);
+extern void (__cdecl *invalidParameter)();
 
 struct String {
-    char pad[0x1c];
+    unsigned char data[28];
     String();
     String(const String&);
     ~String();
 };
 
-struct SignalDesc {
-    char pad[4];
-    void* node;
-    void* find(void*);
-    void* find2(void*);
-};
-
-struct AssocItem {
-    char pad[0xc];
-    void** begin;
-    void** end;
-    void insert(void**, void**, void*);
-};
-
-struct ArrowButton {
-    char pad[0xc];
-    void** begin;
-    void** end;
-    void** cap;
-    void func(int, int);
-};
-
-extern "C" {
-    void* __stdcall sub_57C230(void*, void*);
-    void* __stdcall sub_57C250(void*, void*);
-    void __stdcall sub_57C210(void*, void*);
-    void __stdcall sub_657C10(void*, void*, void*);
-    void __stdcall sub_6582B0(void*, void*);
-    void* __stdcall sub_658170(void*, void*);
-    void* __stdcall sub_6A0920(unsigned int);
-    void __stdcall sub_802460(void*);
-    void __stdcall sub_802468(void*);
-    void* __stdcall sub_8025C8();
-    void* __stdcall sub_8025C4();
-    void __stdcall sub_8025A4(void*);
-    void __stdcall sub_802564(void*);
-    void __stdcall sub_80245C(void*, void*);
-    void __stdcall sub_802890();
-    void __stdcall sub_4C7C60(void*, void*, void*, void*, void*);
+inline String::String()
+{
+    stringConstruct(this);
 }
 
-void ArrowButton::func(int a, int b)
+inline String::String(const String& other)
 {
-    void* g = *(void**)0x97d948;
-    void* s = sub_57C230(g, (void*)a);
-    if (s == 0) return;
+    stringCopy(this, other);
+}
 
-    while (s != 0) {
-        Locale loc;
-        sub_802460(&loc);
-        sub_57C210((char*)s + 0x10, &loc);
-        void* p1 = sub_8025C8();
-        void* p2 = sub_8025C4();
-        sub_8025A4(p2);
-        sub_657C10(&p1, &p2, &loc);
-        sub_6582B0(&p1, &loc);
-        sub_802564(&loc);
+inline String::~String()
+{
+    stringDestroy(this);
+}
 
-        void* mem = sub_6A0920(0x34);
-        void* item = 0;
-        if (mem != 0) {
-            sub_80245C(&loc, mem);
-            item = sub_658170(mem, &loc);
-        }
+struct Facet {
+};
 
-        void** begin = this->begin;
-        void** end = this->end;
-        if (begin == 0) {
-            int n = 0;
-            void** cur = end;
-            int m = (int)((char*)cur - (char*)begin) >> 2;
-            if (m < n) {
-                *cur = item;
-                this->end = cur + 1;
-            } else {
-                sub_4C7C60(this, &item, cur, begin, 0);
+struct Locale {
+    Facet* impl;
+    Locale();
+    Locale(const Locale&);
+    ~Locale();
+};
+
+inline Locale::Locale()
+{
+    impl = getGlobalLocale();
+    incrementFacet(initLocale());
+}
+
+inline Locale::~Locale()
+{
+    destroyLocale(this);
+}
+
+Locale __cdecl copyLocale(const Locale&);
+void __cdecl transform(String*, Locale);
+
+struct Value {
+    unsigned char data[12];
+    bool getString(String*);
+};
+
+struct Tree {
+    unsigned char prefix[16];
+    Value value;
+
+    Tree* first(void*);
+    Tree* next(Tree*);
+};
+
+struct Item {
+    unsigned int allocator;
+    unsigned char prefix[8];
+    Item** begin;
+    Item** end;
+    Item** capacity;
+    String text;
+
+    Item(String);
+    void insert(void*, unsigned int, Item**, Item* const*);
+};
+
+extern void* childTag;
+
+struct ArrowButton {
+    void build(Item*, Tree*);
+};
+
+void ArrowButton::build(Item* parent, Tree* tree)
+{
+    Tree* child = tree->first(childTag);
+    while (child) {
+        {
+            String text;
+            child->value.getString(&text);
+
+            {
+                Locale locale;
+                transform(&text, copyLocale(locale));
             }
-        } else {
-            int n = ((char*)this->cap - (char*)begin) >> 2;
-            int m = ((char*)end - (char*)begin) >> 2;
-            if (m < n) {
-                *end = item;
-                this->end = end + 1;
-            } else {
-                sub_4C7C60(this, &item, end, begin, 0);
-            }
-        }
 
-        this->func((int)s, (int)item);
-        sub_802468(&loc);
-        s = sub_57C250(g, (void*)a);
+            Item* item = new Item(text);
+            unsigned int available = parent->begin
+                ? static_cast<unsigned int>(parent->capacity - parent->begin)
+                : 0;
+            Item** position = parent->end;
+
+            if (static_cast<unsigned int>(position - parent->begin) < available) {
+                *position = item;
+                parent->end = position + 1;
+            } else {
+                if (parent->begin > position)
+                    invalidParameter();
+                unsigned int result;
+                parent->insert(&result, parent->allocator, position, &item);
+            }
+
+            build(item, child);
+        }
+        child = tree->next(child);
     }
 }

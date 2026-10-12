@@ -1,19 +1,13 @@
-// from server: 42% by atomic.potato
-struct S
-{
-    int f();
+// from server: 100% by king_originala
+struct S {
+    char padding[0x1c8];
     int value;
+
+    int set(int);
+    int next();
 };
 
-void callee(S*, int);
-
-int S::f()
+int S::next()
 {
-    int value = this->value;
-    int adjusted = (value + 1) & 0x80000001;
-    if (adjusted < 0)
-        adjusted = (adjusted - 1) | 0xfffffffe;
-    ++adjusted;
-    callee(this, adjusted + value + 1);
-    return 0;
+    return set(value + (value + 1) % 2 + 1);
 }

@@ -1,100 +1,33 @@
-// from server: 73% by atomic.potato
-// roc 2008-06 004db690  unit: RBX::ViewNew::ViewG3D  size: 82 bytes
-// Make this compile to the exact bytes below, then: roc check 2008-06 004db690
-//
-// 004db690  56                   push esi
-// 004db691  8bf1                 mov esi, ecx
-// 004db693  8b06                 mov eax, dword ptr [esi]
-// 004db695  8b5024               mov edx, dword ptr [eax + 0x24]
-// 004db698  57                   push edi
-// 004db699  ffd2                 call edx
-// 004db69b  dd0538698200         fld qword ptr [0x826938]
-// 004db6a1  8b4e04               mov ecx, dword ptr [esi + 4]
-// 004db6a4  8b01                 mov eax, dword ptr [ecx]
-// 004db6a6  8b5014               mov edx, dword ptr [eax + 0x14]
-// 004db6a9  83ec08               sub esp, 8
-// 004db6ac  dd1c24               fstp qword ptr [esp]
-// 004db6af  ffd2                 call edx
-// 004db6b1  8b4614               mov eax, dword ptr [esi + 0x14]
-// 004db6b4  8b8004020000         mov eax, dword ptr [eax + 0x204]
-// 004db6ba  8b9088020000         mov edx, dword ptr [eax + 0x288]
-// 004db6c0  8b7608               mov esi, dword ptr [esi + 8]
-// 004db6c3  8b3e                 mov edi, dword ptr [esi]
-// 004db6c5  8d8888020000         lea ecx, [eax + 0x288]
-// 004db6cb  8b4208               mov eax, dword ptr [edx + 8]
-// 004db6ce  ffd0                 call eax
-// 004db6d0  8b4c240c             mov ecx, dword ptr [esp + 0xc]
-// 004db6d4  8b5714               mov edx, dword ptr [edi + 0x14]
-// 004db6d7  50                   push eax
-// 004db6d8  51                   push ecx
-// 004db6d9  8bce                 mov ecx, esi
-// 004db6db  ffd2                 call edx
-// 004db6dd  5f                   pop edi
-// 004db6de  5e                   pop esi
-// 004db6df  c20400               ret 4
-
-struct VtblA {
-    char pad[0x24];
-    void (__stdcall *fn24)();
+// from server: 77% by colin
+struct ViewG3D {
+    void* field0;
+    void* field4;
+    void* field8;
+    char pad0C[8];
+    void* field14;
+    void func(int arg);
 };
 
-struct VtblB {
-    char pad[0x14];
-    void (__stdcall *fn14)(double);
-};
-
-struct VtblC {
-    char pad[0x8];
-    void* (__stdcall *fn8)();
-};
-
-struct VtblD {
-    char pad[0x14];
-    void (__stdcall *fn14)(void*, void*);
-};
-
-struct ObjA {
-    VtblA* vt;
-};
-
-struct ObjB {
-    VtblB* vt;
-};
-
-struct ObjC {
-    VtblD* vt;
-};
-
-struct ObjD {
-    VtblD* vt;
-};
-
-struct Inner {
-    char pad[0x288];
-    VtblC* vt;
-};
-
-struct Outer {
-    char pad[0x204];
-    Inner* inner;
-};
-
-struct S {
-    ObjA* a;
-    ObjB* b;
-    ObjC* c;
-    char pad[8];
-    Outer* d;
-    void f(int);
-};
-
-extern double g_826938;
-
-void S::f(int x)
+void ViewG3D::func(int arg)
 {
-    a->vt->fn24();
-    b->vt->fn14(g_826938);
-    Inner* in = d->inner;
-    void* r = in->vt->fn8();
-    c->vt->fn14(r, (void*)x);
+    struct Vtbl0 { void (__thiscall *fn24)(void*); };
+    struct Vtbl4 { void (__thiscall *fn14)(void*, double); };
+    struct Vtbl8 { void (__thiscall *fn14)(void*, int, int); };
+    struct VtblA { void* (__thiscall *fn8)(void*); };
+
+    void* p0 = field0;
+    (*(Vtbl0**)p0)->fn24(p0);
+
+    double d = *(double*)0x826938;
+    void* p4 = field4;
+    (*(Vtbl4**)p4)->fn14(p4, d);
+
+    void* p14 = field14;
+    void* p204 = *(void**)((char*)p14 + 0x204);
+    void* p288 = (char*)p204 + 0x288;
+    void* edx = *(void**)p288;
+    void* p8 = field8;
+    void* edi = *(void**)p8;
+    void* eax = (*(VtblA**)edx)->fn8(edx);
+    (*(Vtbl8**)edi)->fn14(p8, (int)eax, arg);
 }

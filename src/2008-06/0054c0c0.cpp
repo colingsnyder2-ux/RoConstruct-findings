@@ -1,26 +1,16 @@
-// from server: 42% by colin
+// from server: 74% by king_originala
 #pragma optimize("", off)
 
-struct Element {
-    int data[3];
+struct Base {
+    ~Base();
 };
 
-struct Allocator {
-    int state;
-    void deallocate(Element* p, unsigned int count);
-};
-
-struct Mesh {
-    int reserved[2];
-    Allocator allocator;
-    Element* first;
-
+struct Mesh : Base {
     void clear();
-    void destroy();
+    ~Mesh();
 };
 
-void Mesh::destroy()
+Mesh::~Mesh()
 {
     clear();
-    allocator.deallocate(first, 0);
 }

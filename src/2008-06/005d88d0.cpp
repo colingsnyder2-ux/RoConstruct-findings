@@ -1,4 +1,4 @@
-// from server: 62% by king_originala
+// from server: 80% by king_originala
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
 
@@ -21,9 +21,9 @@ struct Shared {
 inline Shared::~Shared()
 {
     Control* p = control;
-    if (p && _InterlockedExchangeAdd(&p->strong, -1) == 0) {
+    if (p && _InterlockedExchangeAdd(&p->strong, -1) == 1) {
         p->dispose();
-        if (_InterlockedExchangeAdd(&p->weak, -1) == 0)
+        if (_InterlockedExchangeAdd(&p->weak, -1) == 1)
             p->destroy();
     }
 }
@@ -48,7 +48,7 @@ inline Storage::~Storage()
 }
 
 struct Base {
-    unsigned long words[76];
+    volatile unsigned long words[76];
     ~Base();
 };
 
@@ -57,10 +57,11 @@ struct Connection {
 };
 
 struct S : Base {
-    unsigned long connectionTable;
+    volatile unsigned long connectionTable;
     Shared connection;
     Storage storage;
     ~S();
+    void* deletingDestructor(unsigned int);
 };
 
 S::~S()
@@ -78,5 +79,14 @@ S::~S()
     connectionTable = 0x0083d4c0;
 
     if (connection.object)
-        static_cast<Connection*>(connection.object)->disconnect(&connectionTable);
+        static_cast<Connection*>(connection.object)->disconnect(
+            const_cast<unsigned long*>(&connectionTable));
+}
+
+void* S::deletingDestructor(unsigned int flags)
+{
+    this->~S();
+    if (flags & 1)
+        free(this);
+    return this;
 }

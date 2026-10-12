@@ -1,16 +1,11 @@
-// from server: 87% by atomic.potato
-struct BoundPropGetSet
-{
-    int unused;
-    int value;
+// from server: 100% by king_originala
+struct S {
+    int reserved[2];
     int offset;
-
-    float get(float* base);
+    float get(void* object);
 };
 
-float BoundPropGetSet::get(float* base)
-{
-    if (base)
-        return *(float*)((char*)base + offset - 20);
-    return *(float*)((char*)0 + offset);
+float S::get(void* object) {
+    char* base = object ? (char*)object - 20 : 0;
+    return *(float*)(base + offset);
 }

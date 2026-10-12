@@ -1,34 +1,42 @@
-// from server: 79% by colin
-struct CWebToolbox {
-    char pad[0xf8];
-    void* field_f8;
-    void* field_fc;
-    int func_0046a8e0(void** arg);
+// from server: 100% by king_originala
+struct Interface {
+    virtual void __stdcall slot0() = 0;
+    virtual unsigned long __stdcall AddRef() = 0;
+    virtual unsigned long __stdcall Release() = 0;
 };
 
-extern "C" void __stdcall sub_6a0a28(void*);
+struct Helper {
+    void sub_6a0a28();
+};
 
-int CWebToolbox::func_0046a8e0(void** arg)
+struct CWebToolbox {
+    char pad[0xf8];
+    Helper* field_f8;
+    Interface* field_fc;
+    long func_0046a8e0(Interface** out);
+};
+
+long CWebToolbox::func_0046a8e0(Interface** out)
 {
-    if (field_f8 != 0) {
-        sub_6a0a28(field_f8);
-    }
-    void* p = field_fc;
-    if (p != 0) {
-        (*(void (__stdcall**)(void*))((*(int**)p)[1]))(p);
-    }
-    int result;
-    if (arg == 0) {
-        result = (int)0x80004003;
+    if (field_f8)
+        field_f8->sub_6a0a28();
+
+    Interface* value = field_fc;
+    if (value)
+        value->AddRef();
+
+    long result;
+    if (!out) {
+        result = (long)0x80004003UL;
     } else {
-        *arg = p;
-        if (p != 0) {
-            (*(void (__stdcall**)(void*))((*(int**)p)[1]))(p);
-        }
+        *out = value;
+        if (value)
+            value->AddRef();
         result = 0;
     }
-    if (p != 0) {
-        (*(void (__stdcall**)(void*))((*(int**)p)[2]))(p);
-    }
+
+    if (value)
+        value->Release();
+
     return result;
 }

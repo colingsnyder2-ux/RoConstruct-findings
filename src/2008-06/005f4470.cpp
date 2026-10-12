@@ -1,28 +1,33 @@
-// from server: 28% by tester
-struct stream_buffer
-{
-    void* vtable;
-    void* field4;
-    void* field8;
-    void destroy();
+// from server: 95% by king_originala
+namespace std {
+    template<class C> struct char_traits;
+    template<class C, class T> struct basic_streambuf;
+}
+
+typedef std::basic_streambuf<char, std::char_traits<char> > Buffer;
+extern int (__thiscall *pubsync)(Buffer*);
+
+struct VirtualBase {
+    virtual ~VirtualBase();
+    char padding[36];
+    Buffer* buffer;
 };
 
-extern "C" int __stdcall pubsync(void*);
-extern void func_005f37d0();
+struct Root {
+    virtual ~Root();
+    unsigned char** state;
+};
 
-void stream_buffer::destroy()
+struct Base : Root, virtual VirtualBase {
+    virtual ~Base();
+};
+
+struct StreamBuffer : Base {
+    virtual ~StreamBuffer();
+};
+
+StreamBuffer::~StreamBuffer()
 {
-    this->vtable = (void*)0x840adc;
-    void* p = this->field8;
-    int* q = *(int**)((char*)p + 4);
-    *(void**)((char*)q + (int)this + 8) = (void*)0x840ad4;
-    int* r = *(int**)this->field4;
-    if (*(unsigned char*)((char*)r + 0x2c) & 1)
-    {
-        void* s = this->field8;
-        int* t = *(int**)((char*)s + 4);
-        void* u = *(void**)((char*)t + (int)this + 0x30);
-        pubsync(u);
-    }
-    func_005f37d0();
+    if ((*state)[44] & 1)
+        pubsync(buffer);
 }

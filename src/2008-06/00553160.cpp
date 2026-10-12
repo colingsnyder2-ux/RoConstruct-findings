@@ -1,34 +1,42 @@
-// from server: 21% by atomic.potato
-struct Inner {
-    char pad[8];
-    int f(int);
+// from server: 100% by king_originala
+#pragma optimize("", off)
+
+struct Element {
+    char data[40];
 };
+
+struct Allocator {
+    Element* allocate(unsigned int count);
+};
+
+void allocation_error();
 
 struct S {
-    char pad0[8];
-    Inner inner;
-    int field_c;
-    int field_10;
-    int field_14;
-    int g();
-    int h();
-    int k();
-    bool func(int);
+    char padding[8];
+    Allocator allocator;
+    Element* first;
+    Element* last;
+    Element* limit;
+
+    unsigned int max_size();
+    bool allocate(unsigned int count);
 };
 
-bool S::func(int n) {
-    field_c = 0;
-    field_10 = 0;
-    field_14 = 0;
-    if (n == 0) {
+bool S::allocate(unsigned int count)
+{
+    first = 0;
+    last = 0;
+    limit = 0;
+
+    if (count == 0) {
         return false;
-    }
-    if (g() < (unsigned)n) {
-        h();
+    } else if (max_size() < count) {
+        allocation_error();
     } else {
-        field_c = inner.f(n);
-        field_10 = field_c;
-        field_14 = field_c + n * 0x28;
+        first = allocator.allocate(count);
+        last = first;
+        limit = first + count;
     }
+
     return true;
 }

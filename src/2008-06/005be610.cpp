@@ -1,16 +1,24 @@
-// from server: 35% by colin
-struct SoundService {
-    bool findService(int* out);
+// from server: 97% by king_originala
+struct S
+{
+    unsigned char padding[20];
+    void* volatile value;
 };
 
-extern "C" int __cdecl sub_5be240(int);
+extern int __cdecl process(S* object);
 
-bool SoundService::findService(int* out) {
-    int* self = (int*)this;
-    int v = self[5];
-    if (v == 0) {
-        return false;
+bool __cdecl getValue(S* object, int* result)
+{
+    if (object->value)
+    {
+        try
+        {
+            *result = process(object);
+            return true;
+        }
+        catch (...)
+        {
+        }
     }
-    *out = sub_5be240((int)this);
-    return true;
+    return false;
 }

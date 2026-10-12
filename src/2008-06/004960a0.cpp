@@ -1,4 +1,8 @@
-// from server: 96% by king_originala
+// from server: 98% by king_originala
+struct String;
+typedef void (__thiscall *StringDestructor)(String*);
+extern StringDestructor destroyString;
+
 struct String {
     unsigned int allocator;
     char storage[16];
@@ -7,13 +11,18 @@ struct String {
     ~String();
 };
 
+inline String::~String()
+{
+    destroyString(this);
+}
+
 struct Member {
     unsigned int data[4];
     Member(int, const String&);
 };
 
 struct S {
-    unsigned int first;
+    volatile unsigned int first;
     unsigned int second;
     unsigned int third;
     unsigned int padding;

@@ -1,4 +1,4 @@
-// from server: 88% by king_originala
+// from server: 97% by king_originala
 extern unsigned char sourceType[];
 extern unsigned char targetType[];
 extern unsigned char throwInfo[];
@@ -6,8 +6,6 @@ extern const char badCastText[];
 
 extern "C" void* __cdecl __RTDynamicCast(
     void*, long, void*, void*, int);
-extern "C" __declspec(noreturn) void __stdcall throwException(
-    void*, void*);
 
 struct BadCast {
     unsigned char data[12];
@@ -27,6 +25,8 @@ struct TypedPropertyDescriptor {
     ValueAccessor* accessor;
 };
 
+extern "C" TypedPropertyDescriptor* __stdcall throwException(void*, void*);
+
 struct LuaArguments {
     void* descriptor;
     void* instance;
@@ -42,7 +42,7 @@ void LuaArguments::get(void* result)
     if (!property) {
         BadCast exception;
         badCastConstructor(&exception, badCastText);
-        throwException(&exception, throwInfo);
+        property = throwException(&exception, throwInfo);
     }
 
     property->accessor->get(instance, result);

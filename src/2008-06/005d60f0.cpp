@@ -1,5 +1,57 @@
-// from server: 44% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs util/RunStateOwner.cpp
+// from server: 94% by king_originala
+namespace RBX {
+    struct Instance {
+        virtual ~Instance();
+        char pad[0x100];
+        Instance* next;
+    };
+
+    struct ChildEntry {
+        Instance* object;
+        void* owner;
+    };
+
+    struct Children {
+        char pad[0x0c];
+        ChildEntry* first;
+        ChildEntry* last;
+    };
+
+    struct ServiceProvider : Instance {
+        Children* children;
+        unsigned int size();
+    };
+
+    namespace Network {
+        struct Player : Instance {
+            char pad[0x70];
+            int value;
+            bool flag;
+        };
+    }
+
+    struct VTeams : Instance {
+        int count(int value);
+    };
+}
+
+RBX::ServiceProvider* __cdecl func_00491d50(RBX::Instance*);
+extern "C" void (__cdecl *invalid_parameter_noinfo)();
+
+int RBX::VTeams::count(int value)
+{
+    int result = 0;
+    ServiceProvider* provider = func_00491d50(this);
+    for (unsigned int i = 0; i < provider->size(); ++i) {
+        Children* children = provider->children;
+        if (i >= static_cast<unsigned int>(children->last - children->first))
+            invalid_parameter_noinfo();
+
+        Network::Player* player =
+            dynamic_cast<Network::Player*>(children->first[i].object);
+
+        if (player && !player->flag && player->value == value)
+            ++result;
+    }
+    return result;
+}

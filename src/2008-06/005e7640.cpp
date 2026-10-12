@@ -1,5 +1,20 @@
-// from server: 76% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs v8world/Primitive.cpp
+// from server: 92% by king_originala
+struct Ball;
+struct World {
+    void changed(Ball*);
+};
+struct Ball {
+    char pad[0x58];
+    World* world;
+    char pad2[0xb4 - 0x5c];
+    float value;
+    void setValue(float v);
+};
+
+void Ball::setValue(float v) {
+    if (value != v) {
+        value = v;
+        if (world)
+            world->changed(this);
+    }
+}

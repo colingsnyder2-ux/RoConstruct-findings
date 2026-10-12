@@ -1,4 +1,4 @@
-// from server: 93% by king_originala
+// from server: 100% by king_originala
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
 extern "C" long __cdecl _InterlockedIncrement(volatile long*);
@@ -51,6 +51,7 @@ struct Shared {
     Shared(const ProviderShared&);
     Shared(const Shared&);
     ~Shared();
+    Object* getPointer() const;
 };
 
 inline Shared::Shared(const ProviderShared& other)
@@ -71,6 +72,11 @@ inline Shared::~Shared()
 {
     if (count)
         count->release();
+}
+
+inline Object* Shared::getPointer() const
+{
+    return pointer;
 }
 
 struct Provider {
@@ -100,6 +106,6 @@ void CRobloxDoc::update(Command* command)
 {
     Guard guard(provider->get());
     int enabled = get().pointer->getInfo()->enabled;
-    bool blocked = query(get().pointer) != 0;
+    bool blocked = query(get().getPointer()) != 0;
     command->enable(enabled && !blocked ? 1 : 0);
 }

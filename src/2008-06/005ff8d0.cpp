@@ -1,18 +1,21 @@
-// from server: 83% by atomic.potato
-extern "C" void CallA(void *, int);
-extern "C" void CallB(void *, const void *);
+// from server: 100% by king_originala
+extern char propertyDescriptor;
 
 struct S
 {
-    int f(int);
+    char storage[0x1c4];
+    int value;
+
+    void applyValue(int newValue);
+    void notify(const void *descriptor);
+    void setValue(int newValue);
 };
 
-int S::f(int value)
+void S::setValue(int newValue)
 {
-    if (value != *(int *)((char *)this + 0x1c4))
+    if (newValue != value)
     {
-        CallA(this, value);
-        CallB(this, (const void *)0x97b7e0);
+        applyValue(newValue);
+        notify(&propertyDescriptor);
     }
-    return 0;
 }

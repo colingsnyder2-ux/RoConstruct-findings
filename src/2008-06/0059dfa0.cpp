@@ -1,62 +1,81 @@
-// from server: 63% by colin
-struct VCRenderSettings_EnumPropDescriptor {
-    void SetValue(int);
+// from server: 90% by king_originala
+#pragma float_control(precise, off)
+
+struct Vector {
+    float x, y, z;
+    Vector(const Vector& other);
 };
 
-extern "C" void* __stdcall sub_5A3390(void*);
-extern "C" void __stdcall sub_5EA4C0(void*, void*);
-extern "C" void __stdcall sub_40DB00(void*, const char*);
-extern "C" void __stdcall sub_599EB0(void*, void*, void*);
-extern "C" void __stdcall sub_59DB90(void*, void*);
-extern "C" void __stdcall sub_59B4F0(void*);
-extern "C" void __stdcall sub_5EA5D0(void*, void*);
-
-void VCRenderSettings_EnumPropDescriptor::SetValue(int value)
+inline Vector::Vector(const Vector& other)
 {
-    char* self = (char*)this;
-    int v;
-    if (*(int*)(self + 0x1dc) == 1)
-        v = value;
-    else
-        v = 0;
+    x = other.x;
+    y = other.y;
+    z = other.z;
+}
 
-    if (v == *(int*)(self + 0x1e0))
+struct Data {
+    int header;
+    Vector size;
+};
+
+struct Manager {
+    void begin(void* property);
+    void end(void* property);
+};
+
+struct S;
+extern Manager* __cdecl getManager(S* object);
+extern char descriptor;
+
+template<class T>
+inline const T& maximum(const T& a, const T& b)
+{
+    return a < b ? b : a;
+}
+
+struct S {
+    char padding0[0x1dc];
+    int mode;
+    int value;
+    char padding1[0x44];
+    char property[0x9c];
+    Data* data;
+
+    void notify(const void* descriptor);
+    Vector transform(const Vector& size);
+    void apply(const Vector& size);
+    void update();
+    void setValue(int newValue);
+};
+
+void S::setValue(int newValue)
+{
+    int selected = 0;
+    if (mode != 1)
+        selected = newValue;
+
+    if (selected == value)
         return;
 
-    void* p = sub_5A3390(self);
-    if (p != 0)
-    {
-        sub_5EA4C0(p, self + 0x228);
+    Manager* manager = getManager(this);
+    if (manager)
+        manager->begin(property);
+
+    if (selected != value) {
+        value = selected;
+        notify(&descriptor);
     }
 
-    if (v != *(int*)(self + 0x1e0))
-    {
-        *(int*)(self + 0x1e0) = v;
-        sub_40DB00(self, (const char*)0x9762ec);
-    }
+    Vector size(data->size);
+    float rounded = (float)(int)size.y;
+    float minimum = 1.0f;
+    size.y = maximum(minimum, rounded);
 
-    float* f = (float*)(*(int*)(self + 0x2c4) + 4);
-    float a = f[0];
-    float b = f[1];
-    float c = f[2];
+    Vector transformed = transform(size);
+    apply(transformed);
+    update();
 
-    float t = (float)(int)b;
-    float one = 1.0f;
-    float* sel;
-    if (t < one)
-        sel = &t;
-    else
-        sel = &one;
-
-    float d = *sel;
-
-    sub_599EB0(self, &a, &d);
-    sub_59DB90(self, &d);
-    sub_59B4F0(self);
-
-    void* q = sub_5A3390(self);
-    if (q != 0)
-    {
-        sub_5EA5D0(q, self + 0x228);
-    }
+    manager = getManager(this);
+    if (manager)
+        manager->end(property);
 }

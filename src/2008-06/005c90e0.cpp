@@ -1,5 +1,11 @@
-// from server: 70% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs util/RunStateOwner.cpp
+// from server: 100% by king_originala
+extern void __cdecl formatValue(void *, double, const char *, ...);
+
+struct LaserTool {
+    void setValue(const float &value);
+};
+
+void LaserTool::setValue(const float &value)
+{
+    formatValue(this, value, "%.3g", value);
+}

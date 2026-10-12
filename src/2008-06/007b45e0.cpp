@@ -1,4 +1,4 @@
-// from server: 71% by king_originala
+// from server: 86% by king_originala
 
 
 
@@ -19,8 +19,8 @@ inline void Vector4::set(const Vector3& v) {
     w = 0.0f;
 }
 
-extern Vector3 __cdecl randomVector();
-extern "C" int __cdecl rand();
+extern Vector3* __cdecl randomVector(Vector3* result);
+extern "C" int (__cdecl *rand)();
 extern const float randomScale;
 extern const double sizeOffset;
 
@@ -53,8 +53,9 @@ void Sky::setCount(int count) {
     sizes.resize(vectors.count, true);
 
     for (int i = vectors.count - 1; i >= 0; --i) {
-        vectors.data[i].set(randomVector());
+        Vector3 temporary;
+        vectors.data[i].set(*randomVector(&temporary));
         double r = rand() * randomScale;
-        sizes.data[i] = static_cast<float>(r * r + sizeOffset);
+        sizes.data[i] = r * r + sizeOffset;
     }
 }

@@ -1,132 +1,124 @@
-// from server: 49% by colin
+// from server: 65% by king_originala
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
+#pragma float_control(precise, off)
 
-struct Vec3 {
+struct Vec {
     float x, y, z;
+    Vec clamp(const Vec*, const Vec*);
 };
 
-struct RefCounted {
-    void** vptr;
-    long refcount;
-    long weakrefcount;
+struct RefCount {
+    virtual void unused();
+    virtual void dispose();
+    virtual void destroy();
+    volatile long strong;
+    volatile long weak;
 };
 
-struct Sub10 {
-    char pad[0x10];
-    int field10;
+struct Force {
+    char reserved0[8];
+    unsigned char dirty;
+    char reserved1[0x7B];
+    Vec accumulated;
+    void update();
 };
 
-struct Sub10_28 {
-    char pad[0x28];
-    int field28;
+struct Node {
+    char reserved0[0x2C];
+    Force* force;
 };
 
-struct Sub10_10 {
-    char pad[0x10];
-    int field10;
+struct Mass {
+    float get();
 };
 
-struct Sub10_10_2c {
-    char pad[0x2c];
-    int field2c;
+struct Source {
+    char reserved0[0x10];
+    Node* node;
+    char reserved1[0x14];
+    Mass* mass;
+    char reserved2[0x60];
+    float fallbackMass;
 };
 
-struct Big {
-    char pad0[0x10];
-    Sub10* p10;
-    char pad14[0xc4 - 0x14];
-    float f_c4;
-    float f_c8;
-    float f_cc;
+struct Body {
+    char reserved0[0x10];
+    Source* source;
+    char reserved1[0xB0];
+    Vec velocity;
+    const void* get();
 };
 
-struct BodyVelocity {
-    char pad0[0x10];
-    int field10;
-    char pad14[0x18 - 0x14];
-    Vec3 v18;
-    char pad24[0x28 - 0x24];
-    float f28;
-    float f2c;
-    float f30;
-    Vec3 v34;
-    char pad40[0x2c8 - 0x40];
-    int field2c8;
-
-    void func(int, int);
+struct Owner {
+    char reserved0[0x2C8];
+    Body* body;
 };
 
-int sub_5cab00(void* self, void* out);
-void sub_599360(void* self);
-void sub_65ff10(void* self);
-void sub_658d20(void* self);
-Vec3* sub_4a6100(void* self, Vec3* out, Vec3* in);
+struct Shared {
+    Owner* object;
+    RefCount* count;
+};
 
-void BodyVelocity::func(int a, int b)
+struct Handle {
+    char reserved[8];
+    Shared* get(Shared*);
+};
+
+struct S {
+    char reserved[0x10];
+    Handle handle;
+    float gain;
+    Vec maximum;
+    Vec desired;
+    Vec result;
+    void f(float, float);
+};
+
+void S::f(float, float)
 {
-    void* local;
-    sub_5cab00((char*)this + 0x10, &local);
-    int* p = (int*)local;
-    Big* ebx = (Big*)p[0x2c8 / 4];
+    Shared shared;
+    Body* body = handle.get(&shared)->object->body;
+    RefCount* count = shared.count;
 
-    RefCounted* esi = (RefCounted*)local;
-    if (esi != 0) {
-        if (_InterlockedExchangeAdd(&esi->refcount, -1) == 1) {
-            void** vt = esi->vptr;
-            void (*fn)(void*) = (void (*)(void*))vt[1];
-            fn(esi);
-            if (_InterlockedExchangeAdd(&esi->weakrefcount, -1) == 1) {
-                void** vt2 = esi->vptr;
-                void (*fn2)(void*) = (void (*)(void*))vt2[2];
-                fn2(esi);
-            }
+    if (count) {
+        if (_InterlockedExchangeAdd(&count->strong, -1) == 1) {
+            count->dispose();
+            if (_InterlockedExchangeAdd(&count->weak, -1) == 1)
+                count->destroy();
         }
     }
 
-    sub_599360(ebx);
+    body->get();
 
-    float dx = this->f28 - ebx->f_c4;
-    float dy = this->f2c - ebx->f_c8;
-    float dz = this->f30 - ebx->f_cc;
+    Vec scaled;
+    scaled.x = (desired.x - body->velocity.x) * gain;
+    scaled.y = (desired.y - body->velocity.y) * gain;
+    scaled.z = (desired.z - body->velocity.z) * gain;
 
-    Sub10* eax = ebx->p10;
-    int ecx = ((Sub10_28*)eax)->field28;
+    Source* source = body->source;
+    float mass = source->mass ? source->mass->get() : source->fallbackMass;
 
-    float mx = this->v18.x * dx;
-    float my = this->v18.y * dy;
-    float mz = this->v18.z * dz;
+    result.x = scaled.x * mass;
+    result.y = scaled.y * mass;
+    result.z = scaled.z * mass;
 
-    float scale;
-    if (ecx != 0) {
-        sub_65ff10((void*)ecx);
-        scale = 0.0f;
-    } else {
-        scale = *(float*)((char*)eax + 0x8c);
-    }
+    Vec lower;
+    lower.x = -maximum.x;
+    lower.y = -maximum.y;
+    lower.z = -maximum.z;
 
-    Vec3* esi2 = &this->v34;
-    Vec3 neg;
-    neg.x = -this->v18.x;
-    neg.y = -this->v18.y;
-    neg.z = -this->v18.z;
+    Vec clamped = result.clamp(&lower, &maximum);
+    result.x = clamped.x;
+    result.y = clamped.y;
+    result.z = clamped.z;
 
-    Vec3 tmp;
-    Vec3* r = sub_4a6100(esi2, &tmp, &neg);
-    esi2->x = r->x;
-    esi2->y = r->y;
-    esi2->z = r->z;
-
-    Sub10* edx = ebx->p10;
-    Sub10_10* eax2 = (Sub10_10*)edx->field10;
-    Sub10_10_2c* edi = (Sub10_10_2c*)eax2->field10;
-
-    if (edi != 0) {
-        if (*((char*)edi + 8) != 0) {
-            sub_658d20(edi);
-        }
-        *(float*)((char*)edi + 0x84) += esi2->x;
-        *(float*)((char*)edi + 0x88) += esi2->y;
-        *(float*)((char*)edi + 0x8c) += esi2->z;
+    Force* force = body->source->node->force;
+    if (force) {
+        if (force->dirty)
+            force->update();
+        force->accumulated.x = force->accumulated.x + result.x;
+        force->accumulated.y = result.y + force->accumulated.y;
+        force->accumulated.z = result.z + force->accumulated.z;
     }
 }

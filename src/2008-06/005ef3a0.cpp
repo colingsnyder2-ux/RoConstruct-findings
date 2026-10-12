@@ -1,18 +1,24 @@
-// from server: 69% by atomic.potato
-struct S {
-    int **vtable;
-    char pad[24];
-    void *field;
-    int f(int, int);
+// from server: 100% by king_originala
+struct Input {
+    int convert();
 };
 
-extern "C" int __stdcall sub_5ef240(int);
+struct Setter {
+    virtual void slot0();
+    virtual void slot1();
+    virtual void slot2();
+    virtual void set(void* object, const int* value);
+};
 
-int S::f(int a, int b)
+struct S {
+    char padding[28];
+    Setter* setter;
+
+    void set(void* object, int value);
+};
+
+void S::set(void* object, int value)
 {
-    int value = sub_5ef240(b);
-    int *object = *(int **)field;
-    int (__fastcall *function)(void *, int *) =
-        (int (__fastcall *)(void *, int *))object[3];
-    return function(field, &value);
+    value = reinterpret_cast<Input*>(value)->convert();
+    setter->set(object, &value);
 }

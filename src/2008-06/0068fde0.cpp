@@ -1,5 +1,19 @@
-// from server: 64% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MT
-// roc-lib: ogre-1.4.9 OgreSceneManager.cpp
+// from server: 100% by king_originala
+void* __cdecl operator new(unsigned int);
+void __cdecl operator delete(void*);
+
+struct SceneManager
+{
+    char storage[0x8c04];
+    SceneManager(unsigned int);
+};
+
+struct Factory
+{
+    SceneManager* create(unsigned int);
+};
+
+SceneManager* Factory::create(unsigned int value)
+{
+    return new SceneManager(value);
+}

@@ -1,42 +1,37 @@
-// from server: 17% by tester
-// roc 2008-06 005530e0  unit: RBX::RenderBase::AggregateChunk  size: 128 bytes
-// Make this compile to the exact bytes below, then: roc check 2008-06 005530e0
-
-struct Agg {
-    char pad0[8];
-    int field8;
-    int fieldC;
-    int field10;
-    int field14;
-    int getCount();
-    int alloc(int n);
-    bool grow(int n);
+// from server: 100% by king_originala
+struct B {
+    int *allocate(unsigned int);
 };
 
-extern "C" void __stdcall sub_553270();
+extern "C" void __cdecl length_error();
 
-int Agg::getCount() {
-    return field8;
-}
+struct S {
+    char pad[8];
+    B allocator;
+    int *first;
+    int *last;
+    int *end;
 
-int Agg::alloc(int n) {
-    return 0;
-}
+    unsigned int max_size();
+    bool f(unsigned int);
+};
 
-bool Agg::grow(int n) {
-    fieldC = 0;
-    field10 = 0;
-    field14 = 0;
-    if (n != 0) {
+#pragma optimize("", off)
+bool S::f(unsigned int count)
+{
+    first = 0;
+    last = 0;
+    end = 0;
+
+    if (count == 0) {
         return false;
-    }
-    if ((unsigned)getCount() < (unsigned)n) {
-        sub_553270();
+    } else if (max_size() < count) {
+        length_error();
     } else {
-        int p = alloc(n);
-        fieldC = p;
-        field10 = p;
-        field14 = p + n * 4;
+        first = allocator.allocate(count);
+        last = first;
+        end = first + count;
     }
+
     return true;
 }

@@ -1,49 +1,66 @@
-// from server: 34% by colin
-struct VContentProvider {
-    char pad[0x1c];
-    void* field1c;
-    bool sub_560200(void*);
-    void* sub_561980();
-    void* sub_561e30(int, int, int, int, int, int, int, int, int);
+// from server: 100% by king_originala
+struct String;
+
+extern void (__thiscall *stringCopy)(String *, const String &);
+extern void (__thiscall *stringDestroy)(String *);
+
+struct String {
+    unsigned int allocator;
+    union {
+        char local[16];
+        char *heap;
+    } storage;
+    unsigned int length;
+    unsigned int capacity;
+
+    String(const String &);
+    ~String();
+    const char *c_str() const;
 };
 
-extern "C" {
-    void* __stdcall sub_80245c(void*, const void*);
-    void __stdcall sub_802468(void*);
-    void* __stdcall sub_6a158c(void*, const char*);
-    void* __stdcall sub_6a0920(unsigned int);
+__forceinline String::String(const String &other) {
+    stringCopy(this, other);
 }
 
-void* __stdcall sub_409d50(void*);
-void* __stdcall sub_509b10(void*, const char*, void*);
+__forceinline String::~String() {
+    stringDestroy(this);
+}
 
-void* VContentProvider::sub_561e30(int a1, int a2, int a3, int a4, int a5, int a6, int a7, int a8, int a9)
-{
-    char buf[0x20];
-    char str[0x20];
-    void* result;
-    void* p;
+__forceinline const char *String::c_str() const {
+    const char *result = storage.heap;
+    if (capacity < 16)
+        result = storage.local;
+    return result;
+}
 
-    sub_80245c(buf, &a1);
-    *(void**)(buf + 0x1c) = (void*)a9;
+struct Content {
+    String text;
+    unsigned int tag;
+};
 
-    result = sub_561980();
-    if (result == 0) {
-        if (sub_560200(result)) {
-            p = *(void**)((char*)result + 8);
-            sub_80245c(str, p);
-            sub_802468(str);
-            return p;
-        }
-    }
+struct Entry {
+    unsigned int reserved[2];
+    String *text;
+};
 
-    if (*(unsigned int*)(str + 0x14) >= 0x10)
-        p = *(void**)(str + 0);
-    else
-        p = str;
+struct LoadError {
+    char storage[40];
+    LoadError(const String &);
+    LoadError(const LoadError &);
+    ~LoadError();
+};
 
-    sub_509b10(buf, "Unable to load %s", p);
-    sub_409d50(buf);
-    sub_6a158c(buf, "tSVW");
-    return 0;
+extern String __cdecl format(const char *, ...);
+
+struct Provider {
+    Entry *find(Content, int, int);
+    bool valid(Entry *);
+    String load(Content);
+};
+
+String Provider::load(Content content) {
+    Entry *entry = find(content, 2, 0);
+    if (entry && valid(entry))
+        return *entry->text;
+    throw LoadError(format("Unable to load %s", content.text.c_str()));
 }

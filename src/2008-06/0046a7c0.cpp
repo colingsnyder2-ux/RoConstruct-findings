@@ -1,17 +1,19 @@
-// from server: 62% by atomic.potato
-extern "C" void __cdecl func_006a0c68();
-extern "C" void func_006a0a28(void*);
-
-struct CWebToolbox
-{
-    void f();
-    int padding_f4;
-    int field_f8;
+// from server: 100% by king_originala
+struct Tool {
+    void update();
 };
 
-void CWebToolbox::f()
+struct CWebToolbox {
+    char padding[0xf8];
+    Tool* tool;
+
+    void prepare();
+    void f(int, int, int);
+};
+
+void CWebToolbox::f(int, int, int)
 {
-    func_006a0c68();
-    if (field_f8)
-        func_006a0a28((void*)field_f8);
+    prepare();
+    if (tool)
+        tool->update();
 }

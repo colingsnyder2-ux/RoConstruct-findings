@@ -1,5 +1,20 @@
-// from server: 52% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs v8xml/XmlSerializer.cpp
+// from server: 100% by king_originala
+struct S {
+    char padding0[0x150];
+    unsigned int count;
+    char padding1[0x11];
+    bool enabled;
+
+    void prepare(const char*);
+    void step();
+    void f();
+};
+
+void S::f()
+{
+    if (enabled) {
+        prepare("base");
+        while (count > 1)
+            step();
+    }
+}

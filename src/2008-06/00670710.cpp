@@ -1,5 +1,20 @@
-// from server: 55% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: ogre-1.7.0 OgreAnimationTrack.cpp
+// from server: 100% by king_originala
+extern void (__thiscall *textureDestructor)(void *);
+extern "C" void __cdecl release(void *);
+
+struct S {
+    void *unused;
+    void *object;
+    void *count;
+    void f();
+};
+
+void S::f()
+{
+    void *p = object;
+    if (p) {
+        textureDestructor(static_cast<char *>(p) + 0x20c);
+        release(p);
+    }
+    release(count);
+}

@@ -1,5 +1,16 @@
-// from server: 53% by king_originala
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MT
-// roc-lib: ogre-1.6.4 OgreRenderQueueSortingGrouping.cpp
+// from server: 100% by colin
+struct RbxSceneManagerFactory {
+    int count;
+    char pad[4];
+    struct Entry {
+        int a, b, c, d, e;
+    } entries[100];
+    void addEntry(const Entry* e);
+};
+
+void RbxSceneManagerFactory::addEntry(const Entry* e) {
+    int idx = count % 100;
+    Entry* dst = &entries[idx];
+    *dst = *e;
+    count++;
+}

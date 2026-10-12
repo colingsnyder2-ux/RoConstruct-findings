@@ -1,4 +1,8 @@
-// from server: 82% by king_originala
+// from server: 84% by colin
+
+
+
+
 struct String;
 
 extern int (__thiscall *stringLength)(const String*);
@@ -62,7 +66,8 @@ bool MainLogManager::hasDump() {
         unsigned char remaining[316];
     } data;
 
-    void* handle = FindFirstFileA(concatenate(path, "*.dmp").c_str(), &data);
+    String pattern = concatenate(path, "*.dmp");
+    void* handle = FindFirstFileA(pattern.c_str(), &data);
     if (handle != reinterpret_cast<void*>(-1)) {
         int (__stdcall *next)(void*, void*) = FindNextFileA;
         do {

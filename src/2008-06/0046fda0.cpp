@@ -1,22 +1,22 @@
-// from server: 30% by tester
-extern "C" int __stdcall sub_94278C();
-extern "C" void __stdcall sub_802468();
-extern "C" void __stdcall sub_8027F4(int);
-extern "C" void __cdecl sub_50A9B0();
-extern "C" void __cdecl exit(int);
-
-struct LuaWriter {
-    void f();
+// from server: 53% by king_originala
+struct String {
+    char storage[24];
+    String();
+    ~String();
 };
 
-void LuaWriter::f()
-{
-    char buf[8];
-    bool b;
+extern String existingString;
+extern char (__cdecl *callback)(int, int, int, int, int, const String&);
+extern void (__stdcall *exitProc)(int);
+extern void __cdecl flushLog();
+extern bool resultFlag;
 
-    b = sub_94278C() != 0;
-    if (b)
-        sub_8027F4(-1);
-    sub_50A9B0();
-    exit(0);
+bool __cdecl function()
+{
+    bool failed = callback(0, 0, 0, 0, 0,
+                          resultFlag ? existingString : String()) != 0;
+    if (failed)
+        exitProc(-1);
+    flushLog();
+    return resultFlag;
 }

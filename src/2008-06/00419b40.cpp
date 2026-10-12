@@ -1,67 +1,61 @@
-// from server: 77% by colin
-// roc 2008-06 00419b40  unit: VCLuaFunction::?$CComObject  size: 149 bytes
-// library xtp-11.2.2/Source\Calendar\XTPCalendarCustomProperties.cpp
+// from server: 100% by king_originala
+extern "C" void __cdecl release(void*);
 
-extern "C" void __cdecl sub_6a067a(void*);
-
-struct VCLuaFunction
+struct Entry
 {
-    void* field_0;
-    void* field_4;
-    void* field_8;
-    void* field_c;
-    void** field_10;
-    unsigned int field_14;
-    unsigned int field_18;
-    unsigned int field_1c;
-
-    void Clear();
+    typedef void (__cdecl *Callback)(void*, void*, int);
+    Callback* manager;
+    unsigned int reserved;
+    char storage[1];
 };
 
-void VCLuaFunction::Clear()
+struct S
 {
-    while (this->field_1c != 0)
+    unsigned char reserved[16];
+    Entry** entries;
+    unsigned int capacity;
+    unsigned int first;
+    unsigned int count;
+
+    void clear();
+};
+
+void S::clear()
+{
+    while (count != 0)
     {
-        unsigned int count = this->field_1c;
         if (count != 0)
         {
-            unsigned int idx = count + this->field_18 - 1;
-            if (this->field_14 <= idx)
-                idx -= this->field_14;
-            void** slot = &this->field_10[idx];
-            void* obj = *slot;
-            if (obj != 0)
+            unsigned int index = count + first - 1;
+            if (capacity <= index)
+                index -= capacity;
+
+            Entry* entry = entries[index];
+            if (entry->manager != 0)
             {
-                void** vtbl = *(void***)obj;
-                void* fn = *vtbl;
-                if (fn != 0)
-                {
-                    typedef void (__stdcall *Fn)(void*, int);
-                    ((Fn)fn)((char*)obj + 8, 1);
-                }
-                *slot = 0;
+                Entry::Callback callback = *entry->manager;
+                void* storage = entry->storage;
+                if (callback != 0)
+                    callback(storage, storage, 1);
+                entry->manager = 0;
             }
-            if (--this->field_1c == 0)
-                this->field_18 = 0;
+
+            if (--count == 0)
+                first = 0;
         }
     }
 
-    unsigned int i = this->field_14;
-    while (i > 0)
+    unsigned int remaining = capacity;
+    while (remaining > 0)
     {
-        i--;
-        void** slot = &this->field_10[i];
-        if (*slot != 0)
-        {
-            sub_6a067a(*slot);
-        }
+        --remaining;
+        if (entries[remaining] != 0)
+            release(entries[remaining]);
     }
 
-    if (this->field_10 != 0)
-    {
-        sub_6a067a(this->field_10);
-    }
+    if (entries != 0)
+        release(entries);
 
-    this->field_10 = 0;
-    this->field_14 = 0;
+    capacity = 0;
+    entries = 0;
 }

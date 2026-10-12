@@ -1,62 +1,78 @@
-// from server: 40% by colin
-// roc 2008-06 004436e0  unit: RBX::Reflection::H::?$TypedPropertyDescriptor  size: 160 bytes
+// from server: 100% by king_originala
+extern "C" void (__cdecl *invalid_parameter_noinfo)();
+extern "C" void* __cdecl __RTDynamicCast(void*, long, void*, void*, int);
 
-extern "C" void __stdcall _invalid_parameter_noinfo();
+extern char instance_type;
+extern char properties_type;
 
-struct Descriptor {
-    char pad[0x108];
-    void* field_108;
-    int find(void* key);
+struct Entry {
+    void* object;
+    void* other;
 };
 
-int Descriptor::find(void* key) {
-    void* p = field_108;
-    if (p == 0) {
-        return 0;
-    }
-    void* end = *(void**)((char*)p + 0x10);
-    void* start = *(void**)((char*)p + 0xc);
-    if (start > end) {
-        _invalid_parameter_noinfo();
-    }
-    void* first = *(void**)p;
-    p = field_108;
-    void* cur = *(void**)((char*)p + 0xc);
-    void* last = *(void**)((char*)p + 0x10);
-    if (cur > last) {
-        _invalid_parameter_noinfo();
-    }
-    void* node = *(void**)p;
-    while (1) {
-        if (node != 0 && node != first) {
-            _invalid_parameter_noinfo();
+struct Storage;
+
+struct Owner {
+    Storage* storage;
+};
+
+struct Storage {
+    Owner* owner;
+    unsigned char padding[8];
+    Entry* begin;
+    Entry* end;
+};
+
+struct S {
+    unsigned char padding[0x108];
+    Storage* storage;
+    void* f();
+};
+
+void* S::f()
+{
+    Storage* s = storage;
+    if (s) {
+        Entry* last = s->end;
+        void (__cdecl *invalid)() = invalid_parameter_noinfo;
+        if (s->begin > last)
+            invalid();
+
+        Owner* lastOwner = s->owner;
+        s = storage;
+        Entry* current = s->begin;
+        if (current > s->end)
+            invalid();
+
+        Owner* owner = s->owner;
+        for (;;) {
+            if (!owner || owner != lastOwner)
+                invalid();
+
+            if (current == last)
+                break;
+
+            if (!owner)
+                invalid();
+            Storage* container = owner ? owner->storage : 0;
+
+            if (current >= container->end)
+                invalid();
+
+            void* result = __RTDynamicCast(
+                current->object, 0, &instance_type, &properties_type, 0);
+            if (result)
+                return result;
+
+            if (!owner)
+                invalid();
+            container = owner ? owner->storage : 0;
+
+            if (current >= container->end)
+                invalid();
+
+            ++current;
         }
-        if (cur == end) {
-            return 0;
-        }
-        if (node == 0) {
-            _invalid_parameter_noinfo();
-            void* v = 0;
-            if (cur < *(void**)((char*)v + 0x10)) {
-                _invalid_parameter_noinfo();
-            }
-            void* r = *(void**)cur;
-            int res = ((int (__cdecl*)(void*, void*, void*, void*, void*))0x6a17c6)(r, 0, (void*)0x92907c, (void*)0x92a950, 0);
-            if (res != 0) {
-                return res;
-            }
-            if (node == 0) {
-                _invalid_parameter_noinfo();
-                void* v2 = 0;
-                if (cur < *(void**)((char*)v2 + 0x10)) {
-                    _invalid_parameter_noinfo();
-                }
-            } else {
-                node = *(void**)node;
-            }
-            cur = (char*)cur + 8;
-        } else {
-            node = *(void**)node;
-        }
     }
+    return 0;
 }

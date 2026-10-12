@@ -1,35 +1,35 @@
-// from server: 57% by colin
-struct PropertyDescriptor {
-    char pad[0x18];
-    void* member;
+// from server: 100% by king_originala
+struct Getter {
+    virtual void slot0();
+    virtual void slot1();
+    virtual double get(void*);
 };
 
-struct GetSet {
-    void* vtable;
+struct Variant {
+    unsigned int storage;
+    unsigned int type;
+    double value;
+
+    void clear();
 };
 
-struct Target {
-    char pad[0x10];
-    int field4;
-    double field8;
+struct Output {
+    unsigned char padding[16];
+    Variant variant;
 };
 
-extern "C" void __fastcall sub_0057C2D0(void* self);
+struct S {
+    unsigned char padding[24];
+    Getter* getter;
 
-void Target_assign(Target* self, double value)
+    void get(void*, Output*);
+};
+
+void S::get(void* object, Output* output)
 {
-    self->field4 = 9;
-    self->field8 = value;
-}
-
-void __fastcall func_0056E720(PropertyDescriptor* self, int, int arg)
-{
-    void* obj = self->member;
-    void** vtbl = *(void***)obj;
-    double (*fn)(void*, int) = (double (*)(void*, int))vtbl[2];
-    double result = fn(obj, arg);
-    Target* t = (Target*)((char*)arg + 0x10);
-    sub_0057C2D0(t);
-    t->field4 = 9;
-    t->field8 = result;
+    double value = getter->get(object);
+    Variant* result = &output->variant;
+    result->clear();
+    result->value = value;
+    result->type = 9;
 }

@@ -1,17 +1,18 @@
-// from server: 8% by atomic.potato
-struct S
-{
-    int unused0;
-    int unused1;
-    int unused2;
-    int unused3;
-    int offset;
-    int (*call)(int, double);
+// from server: 100% by king_originala
+struct Base1 { int a; };
+struct Base2 { int b; };
+struct Object : Base1, Base2 {};
 
-    int f();
+struct S {
+    char padding[16];
+    void (Object::*setter)(double);
+    void f(void* object, const double& value);
 };
 
-int S::f()
+void S::f(void* object, const double& value)
 {
-    return 0;
+    Object* target = object
+        ? reinterpret_cast<Object*>(static_cast<char*>(object) - 20)
+        : 0;
+    (target->*setter)(value);
 }

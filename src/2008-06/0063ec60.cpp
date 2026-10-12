@@ -1,5 +1,21 @@
-// from server: 39% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs util/Name.cpp
+// from server: 92% by king_originala
+struct String {
+    char storage[28];
+
+    String(const char*);
+    String(const String&);
+    ~String();
+};
+
+struct ResizeTool {
+    char padding[0x28];
+    bool resizing;
+
+    String defaultCursor();
+    String cursor();
+};
+
+String ResizeTool::cursor()
+{
+    return resizing ? String("ResizeCursor") : defaultCursor();
+}

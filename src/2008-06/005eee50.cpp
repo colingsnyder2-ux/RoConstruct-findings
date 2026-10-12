@@ -1,30 +1,18 @@
-// from server: 57% by atomic.potato
-struct S_func_00598de0
-{
+// from server: 85% by king_originala
+struct S_func_00598de0 {
     char pad0[500];
     int m_x;
     int* f();
 };
 
-int* S_func_00598de0::f()
-{
-    return &m_x;
-}
-
-extern "C" int* __cdecl call_005f17a0(int*, int, int);
-
-struct SurfaceDescriptor
-{
-    int* f(int* p, int a, int b);
+struct Target {
+    void set(int a, int b);
 };
 
-int* SurfaceDescriptor::f(int* p, int a, int b)
+void __stdcall function(char* p, int a, int b)
 {
-    S_func_00598de0* q;
-    if (p)
-        q = (S_func_00598de0*)((char*)p - 20);
-    else
-        q = 0;
-    int* r = q->f();
-    return call_005f17a0(r + 8, a, b);
+    S_func_00598de0* object =
+        p ? reinterpret_cast<S_func_00598de0*>(p - 20) : 0;
+    int* result = object->f();
+    reinterpret_cast<Target*>(reinterpret_cast<char*>(result) + 32)->set(a, b);
 }

@@ -1,24 +1,37 @@
-// from server: 60% by tester
-struct DecalTool {
-    char pad[0x48];
-    void* field48;
-    void doAction(void*);
+// from server: 100% by king_originala
+struct Part {
+    char padding[0x1F0];
+    bool locked;
 };
 
-extern "C" void __stdcall sub_55a8f0(void*);
-extern "C" void __stdcall sub_5ef770(void*, int);
-extern "C" int __stdcall sub_615f10(void*, void*, void*);
+struct Hit {
+    char padding[4];
+    int face;
+};
 
-void DecalTool::doAction(void* arg) {
-    void* local8;
-    void* local14;
-    int result = sub_615f10(this, &local14, &local8);
-    if (local8 != 0 && field48 != 0 && result != 0 && *(char*)((char*)local8 + 0x1f0) == 0) {
-        sub_55a8f0(local8);
-        sub_5ef770(field48, *(int*)((char*)result + 4));
+struct Decal {
+    void setPart(Part*);
+    void setFaceId(int);
+};
+
+struct DecalTool {
+    char padding[0x48];
+    Decal* decal;
+
+    Hit* findHit(Part*, Part**, int*);
+    void update(Part*);
+};
+
+void DecalTool::update(Part* part)
+{
+    int auxiliary;
+    Hit* hit = findHit(part, &part, &auxiliary);
+
+    if (part && decal && hit && !part->locked) {
+        decal->setPart(part);
+        decal->setFaceId(hit->face);
     } else {
-        if (field48 != 0) {
-            sub_55a8f0(field48);
-        }
+        if (decal)
+            decal->setPart(0);
     }
 }

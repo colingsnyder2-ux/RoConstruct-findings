@@ -1,111 +1,110 @@
-// from server: 27% by colin
+// from server: 40% by colin
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
 
-struct SharedPtr {
-    void* vptr;
-    void* obj;
+struct Obj {
+    char pad0[0x130];
+    void* field130;
+    void* field134;
+    void* field138;
+    void* field13c;
+    void* field140;
+    void* field144;
 };
 
+extern "C" void __stdcall func_0055acc0(void*);
+extern "C" void* __stdcall func_005a3390(void*);
+extern "C" void* __stdcall func_005cab00(void*, void*);
+extern "C" void __stdcall func_005e9150(void*, void*);
+extern "C" void __stdcall func_005fad50(void*);
+extern "C" void __stdcall func_005fad80(void*);
+extern "C" void* __stdcall func_00618a40(void*, void*, void*, void*, void*, void*);
+extern "C" void* __stdcall func_006a17c6(void*, void*, void*, void*, void*);
+
 struct BodyMover {
-    char pad[0x130];
-    SharedPtr field130;
-    void* field13c;
-    SharedPtr field140;
-    void* field144;
     void func(void* arg);
 };
 
-extern "C" void __stdcall sub_55acc0(void*);
-extern "C" void* __stdcall sub_5a3390(void*);
-extern "C" void* __stdcall sub_5cab00(void*, void*);
-extern "C" void* __stdcall sub_5e9150(void*, void*);
-extern "C" void __stdcall sub_5fad50(void*);
-extern "C" void __stdcall sub_5fad80(void*);
-extern "C" void* __stdcall sub_618a40(void*, void*, void*, void*, void*, void*, void*);
-extern "C" void* __stdcall sub_6a17c6(void*, void*, void*, void*, void*);
-
 void BodyMover::func(void* arg)
 {
+    Obj* self = (Obj*)this;
     void** p = (void**)arg;
-    sub_55acc0(arg);
-    if (p[0] != this)
-        goto cleanup;
+    func_0055acc0(arg);
+    if (*p != self)
+        goto end;
 
     {
-        void* eax = p[2];
-        void* r = sub_6a17c6(eax, 0, (void*)0x92907c, (void*)0x92dd50, 0);
-        void* tmp[1];
-        sub_618a40(tmp, r, 0, 0, 0, 0, 0);
-        void* src = tmp[0];
-        this->field140.vptr = *(void**)src;
-        void* obj = *((void**)src + 1);
-        tmp[0] = 0;
-        if (obj) {
-            _InterlockedExchangeAdd((volatile long*)((char*)obj + 8), 1);
-        }
-        void* old = this->field144;
-        if (old) {
-            if (_InterlockedExchangeAdd((volatile long*)((char*)old + 8), -1) == 1) {
-                void** vt = *(void***)old;
-                void (*fn)(void*) = (void (*)(void*))vt[2];
-                fn(old);
+        void* a = p[2];
+        void* r = func_006a17c6(a, 0, (void*)0x92907c, (void*)0x92dd50, 0);
+        void* tmp;
+        func_00618a40(&tmp, r, 0, 0, 0, 0);
+        void** res = (void**)tmp;
+        self->field140 = res[0];
+        void* newref = res[1];
+        void* old144 = self->field144;
+        if (newref)
+            _InterlockedExchangeAdd((volatile long*)((char*)newref + 8), 1);
+        if (old144)
+        {
+            if (_InterlockedExchangeAdd((volatile long*)((char*)old144 + 8), -1) == 1)
+            {
+                void** vt = *(void***)old144;
+                ((void(__stdcall*)(void*))vt[2])(old144);
             }
         }
-        this->field144 = obj;
-        void* tmp2 = tmp[0];
-        tmp[0] = (void*)-1;
-        if (tmp2) {
-            if (_InterlockedExchangeAdd((volatile long*)((char*)tmp2 + 4), -1) == 1) {
-                void** vt = *(void***)tmp2;
-                void (*fn)(void*) = (void (*)(void*))vt[1];
-                fn(tmp2);
-                if (_InterlockedExchangeAdd((volatile long*)((char*)tmp2 + 8), -1) == 1) {
-                    void** vt2 = *(void***)tmp2;
-                    void (*fn2)(void*) = (void (*)(void*))vt2[2];
-                    fn2(tmp2);
+        self->field144 = newref;
+        if (tmp)
+        {
+            if (_InterlockedExchangeAdd((volatile long*)((char*)tmp + 4), -1) == 1)
+            {
+                void** vt = *(void***)tmp;
+                ((void(__stdcall*)(void*))vt[1])(tmp);
+                if (_InterlockedExchangeAdd((volatile long*)((char*)tmp + 8), -1) == 1)
+                {
+                    void** vt2 = *(void***)tmp;
+                    ((void(__stdcall*)(void*))vt2[2])(tmp);
                 }
             }
         }
     }
 
     {
-        void* tmp[1];
-        void* r = sub_5cab00(&this->field140, tmp);
-        void* result;
-        if (*(void**)r != 0) {
-            result = sub_5a3390(this);
-        } else {
-            result = 0;
-        }
-        void* tmp2 = tmp[0];
-        tmp[0] = (void*)-1;
-        if (tmp2) {
-            if (_InterlockedExchangeAdd((volatile long*)((char*)tmp2 + 4), -1) == 1) {
-                void** vt = *(void***)tmp2;
-                void (*fn)(void*) = (void (*)(void*))vt[1];
-                fn(tmp2);
-                if (_InterlockedExchangeAdd((volatile long*)((char*)tmp2 + 8), -1) == 1) {
-                    void** vt2 = *(void***)tmp2;
-                    void (*fn2)(void*) = (void (*)(void*))vt2[2];
-                    fn2(tmp2);
+        void* tmp3;
+        func_005cab00(&self->field140, &tmp3);
+        void* ebx;
+        if (*(void**)tmp3 != 0)
+            ebx = func_005a3390(self);
+        else
+            ebx = 0;
+        if (tmp3)
+        {
+            if (_InterlockedExchangeAdd((volatile long*)((char*)tmp3 + 4), -1) == 1)
+            {
+                void** vt = *(void***)tmp3;
+                ((void(__stdcall*)(void*))vt[1])(tmp3);
+                if (_InterlockedExchangeAdd((volatile long*)((char*)tmp3 + 8), -1) == 1)
+                {
+                    void** vt2 = *(void***)tmp3;
+                    ((void(__stdcall*)(void*))vt2[2])(tmp3);
                 }
             }
         }
-        void* old = this->field13c;
-        if (old != result) {
-            if (old) {
-                void* r2 = sub_5e9150(&this->field130, old);
-                sub_5fad80(r2);
+        void* old13c = self->field13c;
+        if (old13c != ebx)
+        {
+            if (old13c)
+            {
+                func_005e9150(&self->field130, old13c);
+                func_005fad80(old13c);
             }
-            this->field13c = result;
-            if (result) {
-                void* r3 = sub_5e9150(&this->field130, result);
-                sub_5fad50(r3);
+            self->field13c = ebx;
+            if (ebx)
+            {
+                func_005e9150(&self->field130, ebx);
+                func_005fad50(ebx);
             }
         }
     }
-
-cleanup:
+end:
     ;
 }

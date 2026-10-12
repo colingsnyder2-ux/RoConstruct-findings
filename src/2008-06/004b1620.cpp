@@ -1,23 +1,31 @@
-// from server: 37% by colin
-struct S {
-    int f();
+// from server: 88% by king_originala
+void* __cdecl operator new(unsigned int);
+
+struct Base {
+    unsigned char data[0x24];
+    Base();
+    ~Base();
 };
 
-extern "C" void __cdecl sub_4A8580();
-extern "C" void* __cdecl sub_6A0920(int);
+struct Storage {
+    Storage** link;
+    unsigned int reserved[2];
+    void* first;
+    void* last;
+    void* end;
+    Storage();
+};
 
-int S::f()
+__forceinline Storage::Storage()
+    : link(new Storage*(this)), first(0), last(0), end(0)
 {
-    sub_4A8580();
-    int* p = (int*)((char*)this + 0x24);
-    void* q = sub_6A0920(4);
-    if (q != 0)
-        *(void**)q = p;
-    else
-        q = 0;
-    *(void**)p = q;
-    *(int*)((char*)p + 0xc) = 0;
-    *(int*)((char*)p + 0x10) = 0;
-    *(int*)((char*)p + 0x14) = 0;
-    return (int)this;
+}
+
+struct S : Base {
+    Storage storage;
+    S();
+};
+
+S::S()
+{
 }

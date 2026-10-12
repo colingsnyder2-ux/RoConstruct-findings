@@ -1,18 +1,24 @@
-// from server: 34% by colin
-struct RenderSceneBase
-{
-    void construct();
+// from server: 59% by king_originala
+struct Exception;
+typedef void (__thiscall *ExceptionConstructor)(Exception*, const char* const&);
+extern ExceptionConstructor exceptionConstructor;
+
+struct Exception {
+    char* message;
+    int ownsMessage;
+
+    Exception(const char* const&);
+    Exception(const Exception&);
+    virtual ~Exception();
+    virtual const char* what() const;
 };
 
-extern "C" void __stdcall sub_8028a4(void*);
-extern "C" void sub_6a158c(void*, void*);
-extern "C" void std_exception_ctor(void*, const char**);
-
-void RenderSceneBase::construct()
+__forceinline Exception::Exception(const char* const& text)
 {
-    void* p;
-    const char* msg = "shouldn't be here";
-    sub_8028a4(&p);
-    std_exception_ctor(&p, &msg);
-    sub_6a158c(&p, (void*)0x8d997c);
+    exceptionConstructor(this, text);
+}
+
+void func_005039e0()
+{
+    throw Exception("shouldn't be here");
 }

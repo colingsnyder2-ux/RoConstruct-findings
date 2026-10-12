@@ -1,5 +1,19 @@
-// from server: 56% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: boost-1.36.0 libs/iostreams/src/mapped_file.cpp
+// from server: 100% by king_originala
+struct S;
+
+extern int guard;
+extern S source;
+
+extern void __cdecl callback();
+extern void __cdecl initialize(void (__cdecl *)(), int *);
+
+typedef S *(__thiscall *CopyFunction)(S *, const S &);
+extern CopyFunction copyFunction;
+
+S *__cdecl construct(S *destination)
+{
+    volatile int state = 0;
+    initialize(callback, &guard);
+    copyFunction(destination, source);
+    return destination;
+}

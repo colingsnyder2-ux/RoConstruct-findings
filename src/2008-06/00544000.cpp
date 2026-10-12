@@ -1,22 +1,36 @@
-// from server: 42% by colin
+// from server: 80% by colin
+#pragma optimize("g", off)
+
+struct VChunk { char pad[0x15]; };
+char* __cdecl f(VChunk* p);
+
+struct VChunk2 { char pad[8]; };
+char* __cdecl f2(VChunk2* p);
+
 struct S {
     char pad[0x18];
-    int* field18;
-    int field1c;
-    void f();
+    VChunk* chunk;
+    char* get();
+    char* get2();
+    char* get3();
+    char* get4();
+    void init();
 };
 
-extern "C" int __cdecl sub_545550();
-extern "C" char* __cdecl sub_541D90(int*);
-extern "C" int* __cdecl sub_5423F0();
-extern "C" int* __cdecl sub_5508E0();
-extern "C" int* __cdecl sub_54CEC0();
+char* __cdecl f(VChunk* p) { return p->pad + 0x15; }
+char* __cdecl f2(VChunk2* p) { return p->pad + 8; }
 
-void S::f() {
-    field18 = (int*)sub_545550();
-    *sub_541D90(field18) = 1;
-    *sub_5423F0() = (int)field18;
-    *sub_5508E0() = (int)field18;
-    *sub_54CEC0() = (int)field18;
-    field1c = 0;
+char* S::get() { return f(chunk); }
+char* S::get2() { return f(chunk); }
+char* S::get3() { return f(chunk); }
+char* S::get4() { return f(chunk); }
+
+void S::init()
+{
+    chunk = (VChunk*)f2((VChunk2*)this);
+    *f((VChunk*)chunk) = 1;
+    *(char**)get() = (char*)chunk;
+    *(char**)get2() = (char*)chunk;
+    *(char**)get3() = (char*)chunk;
+    *(int*)((char*)this + 0x1c) = 0;
 }

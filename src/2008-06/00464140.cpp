@@ -1,23 +1,21 @@
-// from server: 49% by atomic.potato
-struct CScriptEditor
-{
-    int **vtable;
-
-    int f();
+// from server: 97% by king_originala
+struct Control {
+    int query(int, int);
 };
 
-extern "C" int *__cdecl func_004613d0();
-
-struct S_func_00460620
-{
-    int f(int, int);
+struct Target {
+    virtual void slot0();
+    virtual void setEnabled(int);
 };
 
-extern S_func_00460620 func_00460620;
+struct S {
+    char pad0[88];
+    int m_x;
+    int* f();
+    void update(Target*);
+};
 
-int CScriptEditor::f()
+void S::update(Target* target)
 {
-    int *p = func_004613d0();
-    int v = func_00460620.f(1, 1);
-    return v ? 1 : 0;
+    target->setEnabled(reinterpret_cast<Control*>(f())->query(0, 1) != 0);
 }

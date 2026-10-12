@@ -1,19 +1,19 @@
-// from server: 77% by colin
-struct FilteredSelection {
-    void func_005dbf40(float);
+// from server: 100% by king_originala
+extern bool __cdecl check(void *);
+
+struct S {
+    char padding[0x1A8];
+    float value;
+
+    void *get();
+    void set(float);
+    void f(float);
 };
 
-extern "C" int __stdcall G1_func_0062d3d0(void*);
-
-void* __fastcall sub_005d8b10(FilteredSelection* self);
-void __fastcall sub_005dbe70(FilteredSelection* self, float value);
-
-void FilteredSelection::func_005dbf40(float arg)
+#pragma float_control(precise, off, push)
+void S::f(float amount)
 {
-    if (sub_005d8b10(this) == 0)
-        return;
-    if (G1_func_0062d3d0(sub_005d8b10(this)))
-        return;
-    float v = *(float*)((char*)this + 0x1a8) - arg;
-    sub_005dbe70(this, v);
+    if (get() && !check(get()))
+        set(value - amount);
 }
+#pragma float_control(pop)

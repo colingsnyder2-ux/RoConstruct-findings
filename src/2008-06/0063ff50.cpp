@@ -1,6 +1,8 @@
-// from server: 67% by king_originala
+// from server: 73% by king_originala
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
+extern "C" long __cdecl _InterlockedDecrement(volatile long*);
+#pragma intrinsic(_InterlockedDecrement)
 
 struct RefCount {
     virtual void unused();
@@ -8,17 +10,39 @@ struct RefCount {
     virtual void destroy();
     volatile long strong;
     volatile long weak;
-
     void release();
 };
 
-inline void RefCount::release()
+__forceinline void RefCount::release()
 {
-    if (_InterlockedExchangeAdd(&strong, -1) == 1) {
+    if (_InterlockedDecrement(&strong) == 0) {
         dispose();
-        if (_InterlockedExchangeAdd(&weak, -1) == 1)
+        if (_InterlockedDecrement(&weak) == 0)
             destroy();
     }
+}
+
+struct Count {
+    RefCount *value;
+    Count();
+    Count(const Count&);
+    ~Count();
+};
+
+__forceinline Count::Count() : value(0)
+{
+}
+
+__forceinline Count::Count(const Count& other) : value(other.value)
+{
+    if (value)
+        _InterlockedExchangeAdd(&value->strong, 1);
+}
+
+__forceinline Count::~Count()
+{
+    if (value)
+        value->release();
 }
 
 struct Object;
@@ -30,30 +54,18 @@ struct RawShared {
 
 struct Shared {
     Object *object;
-    RefCount *count;
-
+    Count count;
     Shared();
     Shared(const Shared&);
-    ~Shared();
 };
 
-inline Shared::Shared() : object(0), count(0)
+__forceinline Shared::Shared() : object(0), count()
 {
 }
 
-inline Shared::Shared(const Shared& other)
+__forceinline Shared::Shared(const Shared& other)
     : object(other.object), count(other.count)
 {
-    RefCount *p = count;
-    if (p)
-        _InterlockedExchangeAdd(&p->strong, 1);
-}
-
-inline Shared::~Shared()
-{
-    RefCount *p = count;
-    if (p)
-        p->release();
 }
 
 struct Transform {
@@ -110,13 +122,14 @@ int CloneTool::execute(void *argument)
             p->release();
 
         Collection collection;
+        Object *cloned = copy.object;
         collection.insert(Shared(copy));
         apply(&collection, context, 1, 1);
         findService(context)->notify(8);
 
         Tool *tool = new Tool(
-            copy.object,
-            reinterpret_cast<char *>(copy.object->transform()) + 36,
+            cloned,
+            reinterpret_cast<char *>(cloned->transform()) + 36,
             context,
             Shared());
         return tool->run(argument);

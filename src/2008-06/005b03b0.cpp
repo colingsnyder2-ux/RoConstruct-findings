@@ -1,4 +1,4 @@
-// from server: 60% by king_originala
+// from server: 76% by king_originala
 extern void __cdecl callback_0047d410();
 extern void __cdecl callback_00416690();
 extern bool __cdecl func_0060a2f0();
@@ -36,7 +36,7 @@ struct FunctionA
     Callback callback;
     unsigned char storage[16];
 
-    __forceinline FunctionA(const Callback& source);
+    __forceinline FunctionA(Callback source);
 };
 
 struct FunctionB
@@ -46,10 +46,10 @@ struct FunctionB
     Callback callback;
     unsigned char storage[16];
 
-    __forceinline FunctionB(const Callback& source);
+    __forceinline FunctionB(Callback source);
 };
 
-__forceinline FunctionA::FunctionA(const Callback& source)
+__forceinline FunctionA::FunctionA(Callback source)
 {
     manager = 0;
     if (!reinterpret_cast<bool (__cdecl *)(const Callback*)>(
@@ -64,7 +64,7 @@ __forceinline FunctionA::FunctionA(const Callback& source)
     }
 }
 
-__forceinline FunctionB::FunctionB(const Callback& source)
+__forceinline FunctionB::FunctionB(Callback source)
 {
     manager = 0;
     if (!reinterpret_cast<bool (__cdecl *)(const Callback*)>(

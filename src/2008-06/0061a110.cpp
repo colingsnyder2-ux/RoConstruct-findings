@@ -1,84 +1,91 @@
-// from server: 43% by tester
+// from server: 90% by king_originala
+struct List;
+struct Node;
 
-
-extern "C" {
-    __declspec(dllimport) void __stdcall EnterCriticalSection(void*);
-    __declspec(dllimport) void __stdcall LeaveCriticalSection(void*);
-    __declspec(dllimport) void* __stdcall TlsGetValue(unsigned long);
-    __declspec(dllimport) int __stdcall TlsSetValue(unsigned long, void*);
-    __declspec(dllimport) void __stdcall _invalid_parameter_noinfo();
-}
-
-void __stdcall sub_557330(const char*, const char*);
-void __stdcall sub_6a067a(void*);
-void __stdcall sub_682b40();
-void __stdcall sub_5888f0(void*, void*, void*);
+struct Proxy {
+    List* owner;
+};
 
 struct Node {
     Node* next;
     Node* prev;
-    void* data;
+    void (__cdecl *callback)();
 };
 
-struct Container {
-    char pad[0x14];
+struct Iterator {
+    Proxy* proxy;
+    Node* node;
+};
+
+struct List {
+    Proxy* proxy;
+    unsigned char padding[16];
     Node* head;
-    int count;
+    unsigned int size;
+
+    void erase(Iterator* result, Proxy* owner, Node* node);
+    void clear();
 };
 
-struct InletTool {
-    void* vtable;
-    char pad[0x10];
-    Container* container;
-    int field18;
-    void method();
-};
+extern unsigned long tlsIndex;
+extern int referenceCount;
 
-void InletTool::method()
+extern "C" {
+    extern void (__stdcall *EnterCriticalSection)(void*);
+    extern void (__stdcall *LeaveCriticalSection)(void*);
+    extern void* (__stdcall *TlsGetValue)(unsigned long);
+    extern int (__stdcall *TlsSetValue)(unsigned long, void*);
+    extern void (__cdecl *_invalid_parameter_noinfo)();
+
+    void __cdecl initialize(void (__cdecl *)(), int*);
+    void __cdecl deallocate(void*);
+}
+
+void cleanup()
 {
-    sub_557330((const char*)0x97bf54, (const char*)0x61a080);
-    EnterCriticalSection((void*)0x97bf3c);
-    unsigned long tlsIndex = *(unsigned long*)0x95af6c;
-    if (tlsIndex == 0xFFFFFFFF) {
-        LeaveCriticalSection((void*)0x97bf3c);
-        return;
-    }
-    void* tlsVal = TlsGetValue(tlsIndex);
-    if (tlsVal == 0) {
-        LeaveCriticalSection((void*)0x97bf3c);
-        return;
-    }
-    if (TlsSetValue(tlsIndex, 0) == 0) {
-        LeaveCriticalSection((void*)0x97bf3c);
-        return;
-    }
-    *(int*)0x97bf58 -= 1;
-    LeaveCriticalSection((void*)0x97bf3c);
+    Iterator result;
+    void (__cdecl *initializationCallback)() =
+        reinterpret_cast<void (__cdecl *)()>(0x61a080);
 
-    Container* c = this->container;
-    if (c->count != 0) {
-        void* ebx = *(void**)0x802890;
-        while (c->count != 0) {
-            Node* n = c->head;
-            void* edi = n->data;
-            if (this->vtable != 0) {
-                this->vtable = *(void**)this->vtable;
-            }
-            if (edi == *(void**)((char*)0 + 0x14)) {
-                ((void(*)())ebx)();
-            }
-            void* f = *(void**)((char*)edi + 8);
-            if (f != 0) {
-                ((void(*)())f)();
-            }
-            Node* n2 = c->head;
-            void* a = n2->data;
-            void* b = this->vtable;
-            void* tmp;
-            sub_5888f0(&tmp, b, a);
-        }
+    initialize(initializationCallback, reinterpret_cast<int*>(0x97bf54));
+    EnterCriticalSection(reinterpret_cast<void*>(0x97bf3c));
+
+    if (tlsIndex == ~0UL) {
+        LeaveCriticalSection(reinterpret_cast<void*>(0x97bf3c));
+        return;
     }
-    sub_682b40();
-    sub_6a067a(this->vtable);
-    sub_6a067a(this);
+
+    List* list = static_cast<List*>(TlsGetValue(tlsIndex));
+    if (list && TlsSetValue(tlsIndex, 0)) {
+        --referenceCount;
+        LeaveCriticalSection(reinterpret_cast<void*>(0x97bf3c));
+
+        if (list->size != 0) {
+            void (__cdecl *invalid)() = _invalid_parameter_noinfo;
+            do {
+                Node* node = list->head->next;
+                List* owner;
+                if (!list->proxy) {
+                    invalid();
+                    owner = 0;
+                } else {
+                    owner = list->proxy->owner;
+                }
+
+                if (node == owner->head)
+                    invalid();
+
+                if (node->callback)
+                    node->callback();
+
+                list->erase(&result, list->proxy, list->head->next);
+            } while (list->size != 0);
+        }
+
+        list->clear();
+        deallocate(list->proxy);
+        deallocate(list);
+    } else {
+        LeaveCriticalSection(reinterpret_cast<void*>(0x97bf3c));
+    }
 }

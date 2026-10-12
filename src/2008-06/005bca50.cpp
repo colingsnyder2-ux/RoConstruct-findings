@@ -1,76 +1,85 @@
-// from server: 31% by colin
+// from server: 100% by king_originala
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
+extern "C" long __cdecl _InterlockedIncrement(volatile long*);
+#pragma intrinsic(_InterlockedIncrement)
+extern "C" long __cdecl _InterlockedDecrement(volatile long*);
+#pragma intrinsic(_InterlockedDecrement)
 
-struct RefCounted {
-    void** vptr;
-    long refcount;
-    long weakcount;
+struct Control {
+    virtual void reserved() = 0;
+    virtual void dispose() = 0;
+    virtual void destroy() = 0;
+    volatile long strong;
+    volatile long weak;
 };
+
+struct String;
+extern void (__thiscall *stringConstruct)(String*, const char*);
+extern void (__thiscall *stringDestroy)(String*);
 
 struct String {
-    char buf[16];
+    char storage[28];
+    String(const char*);
+    ~String();
 };
 
-extern "C" void __stdcall sub_802458(String* dst, const char* src);
-extern "C" void __stdcall sub_802468(String* s);
+inline String::String(const char* text) {
+    stringConstruct(this, text);
+}
 
-struct Obj {
-    void** vptr;
+inline String::~String() {
+    stringDestroy(this);
+}
+
+struct S;
+
+struct Object {
+    char storage[0x178];
+    void attach(S*);
 };
 
-struct Target {
-    void method(int a, int b);
+struct Named {
+    virtual void reserved() = 0;
+    virtual void setName(const String&) = 0;
 };
 
-void __fastcall helper_5bc9d0(void* out, const char* s);
-void __fastcall helper_55a8f0(Obj* o, void* p);
+struct Result {
+    Object* object;
+    Control* control;
+    Result(const Result&);
+    ~Result();
+    const Result& reference() const;
+};
 
-void Target::method(int a, int b)
-{
-    char buf[28];
-    helper_5bc9d0(buf, (const char*)a);
+inline const Result& Result::reference() const {
+    return *this;
+}
 
-    RefCounted* p = *(RefCounted**)buf;
-    RefCounted* q = *(RefCounted**)(buf + 4);
+inline Result::Result(const Result& other)
+    : object(other.object), control(other.control) {
+    if (control)
+        _InterlockedIncrement(&control->strong);
+}
 
-    if (q) {
-        _InterlockedExchangeAdd(&q->refcount, 1);
+inline Result::~Result() {
+    Control* p = control;
+    if (p && _InterlockedDecrement(&p->strong) == 0) {
+        p->dispose();
+        if (_InterlockedDecrement(&p->weak) == 0)
+            p->destroy();
     }
+}
 
-    RefCounted* r = *(RefCounted**)(buf + 8);
-    if (r) {
-        if (_InterlockedExchangeAdd(&r->refcount, -1) == 1) {
-            typedef void (__thiscall *Fn)(RefCounted*);
-            Fn f = (Fn)r->vptr[1];
-            f(r);
-            if (_InterlockedExchangeAdd(&r->weakcount, -1) == 1) {
-                Fn g = (Fn)r->vptr[2];
-                g(r);
-            }
-        }
-    }
+Result __cdecl createObject(unsigned int);
 
-    String s;
-    sub_802458(&s, (const char*)b);
+struct S {
+    Object* f(const char*, unsigned int);
+};
 
-    typedef void (__thiscall *Fn2)(Obj*, String*);
-    Fn2 f2 = (Fn2)p->vptr[1];
-    f2((Obj*)p, &s);
-
-    sub_802468(&s);
-
-    helper_55a8f0((Obj*)p, (void*)a);
-
-    if (q) {
-        if (_InterlockedExchangeAdd(&q->refcount, -1) == 1) {
-            typedef void (__thiscall *Fn)(RefCounted*);
-            Fn f = (Fn)q->vptr[1];
-            f(q);
-            if (_InterlockedExchangeAdd(&q->weakcount, -1) == 1) {
-                Fn g = (Fn)q->vptr[2];
-                g(q);
-            }
-        }
-    }
+Object* S::f(const char* name, unsigned int kind) {
+    Result result(createObject(kind).reference());
+    reinterpret_cast<Named*>(result.object)->setName(String(name));
+    result.object->attach(this);
+    return result.object;
 }

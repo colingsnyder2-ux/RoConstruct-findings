@@ -1,63 +1,74 @@
-// from server: 37% by colin
+// from server: 84% by king_originala
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
 
-struct RefCounted {
-    void AddRef();
-    void Release();
+extern void (__thiscall *string_construct)(void*, const char*);
+extern void (__thiscall *string_destroy)(void*);
+
+struct String {
+    char storage[28];
+    String(const char*);
+    ~String();
 };
 
-struct VPartInstance {
-    char pad[0x104];
-    int field104;
-    char pad2[0xF4];
-    int field1FC;
-    int field200;
-    int field204;
-    void FilteredSelection();
+inline String::String(const char* text) {
+    string_construct(this, text);
+}
+
+inline String::~String() {
+    string_destroy(this);
+}
+
+struct Control {
+    virtual void unused() = 0;
+    virtual void dispose() = 0;
+    virtual void destroy() = 0;
+    volatile long strong;
+    volatile long weak;
 };
 
-extern "C" void __stdcall sub_802458(void*);
-extern "C" void __stdcall sub_802468(void*);
-extern "C" void* __cdecl sub_557950(int);
-extern "C" void* __cdecl sub_5D42F0(void*, void*);
-extern "C" void __cdecl sub_4025B0(void*, void*);
+struct Reference {
+    Control* control;
+    Reference& operator=(const Reference&);
+};
 
-void VPartInstance::FilteredSelection()
-{
-    if (field1FC != 0)
-        return;
-    if (field104 == 0)
-        return;
+struct Pair {
+    void* value;
+    Reference reference;
+    ~Pair();
+};
 
-    void* str;
-    sub_802458(&str);
-
-    void* local;
-    local = 0;
-
-    void* p = sub_557950(field104);
-    void* arg;
-    if (p != 0)
-        arg = (char*)p + 0xE4;
-    else
-        arg = 0;
-
-    void* result = sub_5D42F0(&local, arg);
-    int val = *(int*)result;
-    result = (char*)result + 4;
-    field1FC = val;
-    sub_4025B0(&field200, result);
-
-    if (local != 0) {
-        RefCounted* rc = (RefCounted*)local;
-        if (_InterlockedExchangeAdd((volatile long*)((char*)rc + 4), -1) == 1) {
-            rc->Release();
-        }
-        if (_InterlockedExchangeAdd((volatile long*)((char*)rc + 8), -1) == 1) {
-            rc->Release();
-        }
+inline Pair::~Pair() {
+    Control* p = reference.control;
+    if (p && _InterlockedExchangeAdd(&p->strong, -1) == 0) {
+        p->dispose();
+        if (_InterlockedExchangeAdd(&p->weak, -1) == 0)
+            p->destroy();
     }
+}
 
-    sub_802468(&str);
+extern Pair __cdecl make_pair(void*);
+
+struct Parent {
+    char* find(const String&);
+};
+
+struct S {
+    char padding0[0x104];
+    Parent* parent;
+    char padding1[0xf4];
+    void* cached;
+    Reference reference;
+    void* f();
+};
+
+void* S::f() {
+    if (!cached && parent) {
+        String name("Left Leg");
+        char* part = parent->find(name);
+        Pair result = make_pair(part ? part + 0xe4 : 0);
+        cached = result.value;
+        reference = result.reference;
+    }
+    return cached;
 }

@@ -1,5 +1,20 @@
-// from server: 76% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: openrbx-client App/v8datamodel/Team.cpp
+// from server: 81% by king_originala
+struct Target {
+    void f();
+};
+
+struct Link {
+    char padding[0x24];
+    Target* target;
+};
+
+struct CRobloxModule {
+    char padding[0x58];
+    Link* link;
+    void f();
+};
+
+void CRobloxModule::f()
+{
+    link->target->f();
+}

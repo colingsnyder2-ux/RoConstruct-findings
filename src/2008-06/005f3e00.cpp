@@ -1,19 +1,21 @@
-// from server: 18% by colin
-struct S {
-    char pad[0x58];
-    unsigned int flags;
-    void sub_5f3d80();
-    S();
+// from server: 78% by king_originala
+struct Base {
+    virtual ~Base();
+    unsigned char storage[84];
 };
 
-S::S()
+struct S : Base {
+    unsigned int flags;
+    virtual ~S();
+    void close();
+};
+
+S::~S()
 {
-    *(unsigned int*)this = 0x840a14;
-    unsigned char al = 1;
-    *(unsigned char*)((char*)this + 0x58) = al;
-    if ((*(unsigned int*)((char*)this + 0x58) & 0x10) != 0) {
-        if ((al & (*(unsigned int*)((char*)this + 0x58) >> 4)) != 0) {
-            sub_5f3d80();
-        }
+    try {
+        if ((flags & 1) && ((flags >> 4) & 1))
+            close();
+    }
+    catch (...) {
     }
 }

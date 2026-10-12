@@ -1,36 +1,68 @@
-// from server: 33% by colin
-// roc 2008-06 005a4cb0  unit: RBX::VWorkspace::?$BoundFuncDesc  size: 215 bytes
-// Make this compile to the exact bytes below, then: roc check 2008-06 005a4cb0
+// from server: 100% by king_originala
+typedef unsigned int size_t;
 
-extern "C" void* __cdecl malloc(unsigned int size);
-extern "C" void __stdcall sub_45c300(void* a, void* b);
-extern "C" void __stdcall sub_5a4190(void* a);
+extern "C" void *(__cdecl *allocate_memory)(size_t);
 
-struct S {
-    void f(void* a, void* b);
+struct Function
+{
+    typedef void (__cdecl *Manager)(void *, void *, int);
+
+    Manager *manager;
+    unsigned int reserved;
+    unsigned char storage[24];
+
+    Function(const Function &);
+    ~Function();
 };
 
-void S::f(void* a, void* b)
+inline Function::Function(const Function &other)
 {
-    void* p = malloc(0x178);
-    if (p == 0) {
-        void* local = 0;
-        if (a != 0) {
-            local = a;
-            void* vt = *(void**)a;
-            void* tmp = &local;
-            ((void (__stdcall*)(void*, void*, int))vt)(tmp, &local, 0);
-        }
-        sub_5a4190(p);
-    } else {
-        p = 0;
+    manager = 0;
+    if (other.manager)
+    {
+        manager = other.manager;
+        (*other.manager)((void *)other.storage, storage, 0);
     }
-    sub_45c300(p, a);
-    if (b != 0) {
-        void* vt = *(void**)b;
-        if (vt != 0) {
-            void* tmp = &b;
-            ((void (__stdcall*)(void*, void*, int))vt)(tmp, &b, 1);
-        }
+}
+
+inline Function::~Function()
+{
+    if (manager)
+    {
+        Manager operation = *manager;
+        if (operation)
+            operation(storage, storage, 1);
     }
+}
+
+struct Object
+{
+    unsigned char storage[0x178];
+
+    Object(Function);
+    static void *operator new(size_t);
+    static void operator delete(void *);
+};
+
+inline void *Object::operator new(size_t size)
+{
+    return allocate_memory(size);
+}
+
+struct Empty
+{
+};
+
+struct Result
+{
+    Object *pointer;
+    void *control;
+
+    Result(Object *, Empty);
+    ~Result();
+};
+
+Result create(Function function)
+{
+    return Result(new Object(function), Empty());
 }

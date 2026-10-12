@@ -1,5 +1,22 @@
-// from server: 52% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs v8world/World.cpp
+// from server: 100% by king_originala
+struct Node {
+    virtual void slot0();
+    virtual int kind();
+    int reserved;
+    Node* next;
+    void apply(void* argument);
+};
+
+struct S {
+    char padding[0x88];
+    Node* node;
+    void f(void* argument);
+};
+
+void S::f(void* argument)
+{
+    Node* current = node;
+    while (current->kind() != 2)
+        current = current->next;
+    current->apply(argument);
+}

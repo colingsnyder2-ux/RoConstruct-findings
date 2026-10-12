@@ -1,9 +1,9 @@
-// from server: 85% by king_originala
+// from server: 88% by colin
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
 
-extern "C" int (__stdcall *CryptHashData)(unsigned long, const unsigned char*, unsigned long, unsigned long);
-extern "C" unsigned long (__stdcall *GetLastError)();
+extern "C" int __stdcall CryptHashData(unsigned long, const unsigned char*, unsigned long, unsigned long);
+extern "C" unsigned long __stdcall GetLastError();
 
 struct RefCount {
     virtual void unused();
@@ -14,7 +14,7 @@ struct RefCount {
 };
 
 struct Logger {
-    void __cdecl print(int, const char*, ...);
+    void print(int, const char*, ...);
 };
 
 struct SharedLogger {
@@ -23,13 +23,13 @@ struct SharedLogger {
     ~SharedLogger();
 };
 
-__forceinline SharedLogger::~SharedLogger()
+SharedLogger::~SharedLogger()
 {
     RefCount* p = count;
     if (p) {
-        if (_InterlockedExchangeAdd(&p->strong, -1) == 0) {
+        if (_InterlockedExchangeAdd(&p->strong, -1) == 1) {
             p->dispose();
-            if (_InterlockedExchangeAdd(&p->weak, -1) == 0)
+            if (_InterlockedExchangeAdd(&p->weak, -1) == 1)
                 p->destroy();
         }
     }
@@ -46,7 +46,8 @@ struct S {
 void S::update(const unsigned char* data, unsigned long size)
 {
     if (!CryptHashData(hash, data, size, 0)) {
-        getLogger().object->print(
+        SharedLogger lg = getLogger();
+        lg.object->print(
             3, "Error during CryptHashData. GetLastError = %d",
             GetLastError());
     }

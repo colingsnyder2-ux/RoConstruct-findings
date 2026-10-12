@@ -1,30 +1,36 @@
-// from server: 52% by colin
-struct S {
-    void* field0;
-    void* field4;
-    void* field8;
-    void* fieldC;
-    void* field10;
-    void* field14;
-    void* field18;
-    void* field1C;
-    void __cdecl construct(void* src);
+// from server: 71% by king_originala
+typedef unsigned int size_t;
+
+inline void* __cdecl operator new(size_t, void* p) { return p; }
+inline void __cdecl operator delete(void*, void*) {}
+
+struct Storage {
+    unsigned char data[16];
 };
 
-void S::construct(void* src)
+struct Manager {
+    void (__cdecl *copy)(const Storage*, Storage*, int);
+};
+
+struct S {
+    unsigned int tag;
+    unsigned int reserved;
+    Manager* manager;
+    unsigned int padding;
+    Storage storage;
+
+    S(const S& other);
+};
+
+inline S::S(const S& other) : tag(other.tag), manager(0)
 {
-    if (this != 0) {
-        void** s = (void**)src;
-        field0 = s[0];
-        field8 = 0;
-        void* p = s[2];
-        if (p != 0) {
-            field8 = p;
-            void* q = s[2];
-            void** vt = (void**)((char*)q + 0x10);
-            void* arg = (char*)this + 0x10;
-            void (*fn)(void*, void*, int) = (void (*)(void*, void*, int))vt[0];
-            fn(arg, (char*)src + 0x10, 0);
-        }
+    if (other.manager) {
+        manager = other.manager;
+        other.manager->copy(&other.storage, &storage, 0);
     }
+}
+
+void __cdecl construct(S* destination, const S& source)
+{
+    new (destination) S(source);
 }

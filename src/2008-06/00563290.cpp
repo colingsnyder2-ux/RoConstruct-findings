@@ -1,12 +1,14 @@
-// from server: 71% by atomic.potato
-extern "C" void* __cdecl sub_501AE0();
-extern "C" void __cdecl sub_5631C0(void*);
-
-int sub_563290(void* arg)
-{
-    char buffer[128];
-    void* p = sub_501AE0();
-    int value = *(int*)((char*)p + 12);
-    sub_5631C0(buffer);
-    return value;
+// from server: 97% by king_originala
+struct Helper { int field0; int field4; };
+struct ContentProvider { int getCachedRemoteSourceLoadState(); };
+struct HelperMaker { Helper* makeHelper(); };
+struct HelperDestroyer { void destroyHelper(); };
+int ContentProvider::getCachedRemoteSourceLoadState() {
+    char buf[0x84];
+    HelperMaker* m = (HelperMaker*)buf;
+    Helper* h = m->makeHelper();
+    int result = h->field4;
+    HelperDestroyer* d = (HelperDestroyer*)buf;
+    d->destroyHelper();
+    return result;
 }

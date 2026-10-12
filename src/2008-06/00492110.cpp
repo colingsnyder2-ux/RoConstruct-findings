@@ -1,5 +1,17 @@
-// from server: 57% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: openrbx-client App/script/Script.cpp
+// from server: 98% by king_originala
+struct String {
+    char data[32];
+    String(const String&);
+    ~String();
+};
+
+struct Value {
+    String text;
+    void* pointer;
+    Value(String, void*);
+};
+
+Value __cdecl f(String text, void* pointer)
+{
+    return Value(text, pointer);
+}

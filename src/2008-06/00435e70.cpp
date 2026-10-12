@@ -1,5 +1,23 @@
-// from server: 38% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: raknet-4.081 FullyConnectedMesh2.cpp
+// from server: 100% by king_originala
+struct Input {
+    char padding[0x5c];
+    int value;
+};
+
+struct Handler {
+    void handle(int value);
+};
+
+struct CDeclarationView {
+    char padding[0xb0];
+    Handler* handler;
+
+    void process(Input* input, int* result);
+};
+
+void CDeclarationView::process(Input* input, int* result)
+{
+    if (handler)
+        handler->handle(input->value);
+    *result = 0;
+}

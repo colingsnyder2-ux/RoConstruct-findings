@@ -1,5 +1,6 @@
-// from server: 99% by king_originala
+// from server: 100% by king_originala
 struct Device;
+
 struct Property {
     unsigned long size;
     unsigned long headerSize;
@@ -32,6 +33,7 @@ extern "C" __declspec(noreturn) void __stdcall checkError(long);
 struct S {
     unsigned char reserved[0x174];
     Input* input;
+    unsigned char gap[4];
     Device* device;
     void f();
 };
@@ -39,11 +41,11 @@ struct S {
 void S::f()
 {
     long result = input->table->createDevice(
-        input, (const void*)0x85012c, &device, 0);
+        input, (const void*)0x81f038, &device, 0);
     if (result < 0)
         checkError(result);
 
-    result = device->table->setDataFormat(device, (const void*)0x84ff0c);
+    result = device->table->setDataFormat(device, (const void*)0x850114);
     if (result < 0)
         checkError(result);
 

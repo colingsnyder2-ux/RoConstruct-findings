@@ -1,108 +1,103 @@
-// from server: 25% by colin
+// from server: 92% by king_originala
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
 
-extern "C" void* __cdecl operator_new(unsigned int);
-extern "C" void __cdecl operator_delete(void*);
+void* __cdecl operator new(unsigned int);
+void __cdecl operator delete(void*);
 
-struct RefCounted {
-    void* vptr;
-    long refcount;
-    long weakref;
+struct Control {
+    virtual void unused();
+    virtual void dispose();
+    virtual void destroy();
+    volatile long strong;
+    volatile long weak;
 };
 
-struct Vec {
-    void* begin;
-    void* end;
-    void* cap;
+struct Shared {
+    void* pointer;
+    Control* control;
+    Shared(const Shared&);
+    ~Shared();
 };
 
-struct Obj {
-    void* vptr;
-};
-
-struct Base {
-    void* vptr;
-    virtual void f1();
-    virtual void f2();
-    virtual void f3();
-};
-
-struct Helper {
-    void* vptr;
-    virtual void g1();
-    virtual void g2();
-};
-
-extern "C" void __cdecl sub_60e920(void*, Vec*);
-extern "C" void* __cdecl sub_665f20(void*, void*, void*, void*);
-extern "C" void* __cdecl sub_66a630(void*, void*, void*, void*);
-extern "C" void __cdecl sub_590550(void*);
-
-struct FilterStairs {
-    void* __cdecl method(void* a, void* b, void* c, void* d);
-};
-
-void* FilterStairs::method(void* a, void* b, void* c, void* d) {
-    Vec v;
-    v.begin = 0;
-    v.end = 0;
-    v.cap = 0;
-
-    void* p = operator_new(4);
-    if (p) {
-        *(void**)p = &v;
-    } else {
-        p = 0;
+inline Shared::Shared(const Shared& other)
+    : pointer(other.pointer), control(other.control)
+{
+    if (control) {
+        volatile long* count = &control->strong;
+        _InterlockedExchangeAdd(count, 1);
     }
-    v.begin = p;
-    v.end = 0;
-    v.cap = 0;
+}
 
-    sub_60e920(a, &v);
-
-    unsigned int sz = ((unsigned int)v.end - (unsigned int)v.begin) & 0xfffffff8;
-
-    void* result;
-    if (sz == 8) {
-        void* mem = operator_new(0x44);
-        if (mem) {
-            void* r = sub_665f20(mem, c, d, b);
-            result = r;
-        } else {
-            result = 0;
-        }
-    } else {
-        void* mem = operator_new(0x38);
-        if (mem) {
-            void* r = sub_66a630(mem, b, &v, c);
-            result = r;
-        } else {
-            result = 0;
-        }
+inline Shared::~Shared()
+{
+    Control* p = control;
+    if (p && _InterlockedExchangeAdd(&p->strong, -1) == 0) {
+        p->dispose();
+        if (_InterlockedExchangeAdd(&p->weak, -1) == 0)
+            p->destroy();
     }
+}
 
-    void* vt = *(void**)result;
-    void (*fn)(void*) = *(void (**)(void*))((char*)vt + 4);
-    fn(result);
+struct Collection;
 
-    void* saved = result;
+struct Proxy {
+    Collection* owner;
+    Proxy(Collection*);
+};
 
-    sub_590550(&v);
+inline Proxy::Proxy(Collection* p) : owner(p) {}
 
-    if (d) {
-        RefCounted* rc = (RefCounted*)d;
-        if (_InterlockedExchangeAdd(&rc->refcount, -1) == 1) {
-            void* vt2 = *(void**)rc;
-            void (*fn2)(void*) = *(void (**)(void*))((char*)vt2 + 4);
-            fn2(rc);
-            if (_InterlockedExchangeAdd(&rc->weakref, -1) == 1) {
-                void* vt3 = *(void**)rc;
-                void (*fn3)(void*) = *(void (**)(void*))((char*)vt3 + 8);
-                fn3(rc);
-            }
-        }
-    }
+struct ProxyOwner {
+    Proxy* proxy;
+    ProxyOwner(Collection*);
+    ~ProxyOwner();
+};
 
-    return saved;
+inline ProxyOwner::ProxyOwner(Collection* p) : proxy(new Proxy(p)) {}
+
+struct Collection : ProxyOwner {
+    unsigned int reserved[2];
+    Shared* first;
+    Shared* last;
+    Shared* limit;
+    Collection();
+    ~Collection();
+};
+
+inline Collection::Collection()
+    : ProxyOwner(this), first(0), last(0), limit(0)
+{
+}
+
+extern void __cdecl collect(void*, Collection*);
+
+struct Filter {
+    virtual void unused();
+    virtual int apply(void*);
+};
+
+struct SingleFilter : Filter {
+    unsigned char storage[64];
+    SingleFilter(void*, void*, void*, Shared);
+};
+
+struct MultipleFilter : Filter {
+    unsigned char storage[52];
+    MultipleFilter(void*, void*, Collection*, void*);
+};
+
+int __cdecl makeFilter(void* a, void* b, void* source, void* value,
+                       void* context, Shared shared)
+{
+    Collection collection;
+    collect(source, &collection);
+
+    Filter* filter;
+    if (collection.last - collection.first == 1)
+        filter = new SingleFilter(a, b, context, shared);
+    else
+        filter = new MultipleFilter(a, b, &collection, context);
+
+    return filter->apply(value);
 }

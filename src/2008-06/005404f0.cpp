@@ -1,10 +1,10 @@
-// from server: 26% by colin
-struct Bucket {
-    int compare(const Bucket& other) const;
+// from server: 100% by king_originala
+struct S {
+    unsigned int value;
+    bool operator<(const S& other) const;
 };
 
-int Bucket::compare(const Bucket& other) const {
-    int a = *(const int*)this;
-    int b = *(const int*)&other;
-    return (a < b) ? 1 : 0;
+#pragma optimize("", off)
+bool S::operator<(const S& other) const {
+    return value < other.value;
 }

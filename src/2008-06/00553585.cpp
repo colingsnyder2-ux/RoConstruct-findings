@@ -1,23 +1,28 @@
-// from server: 32% by colin
-
-
-
-
+// from server: 87% by king_originala
 struct AggChunk {
     char pad[0x28];
 };
 
 struct AggContainer {
-    void __cdecl destroy(AggChunk* begin, AggChunk* end);
+    void destroy(AggChunk*);
 };
 
-extern "C" void __cdecl sub_6A158C(int, int);
+#pragma optimize("", off)
 
-void AggContainer::destroy(AggChunk* begin, AggChunk* end)
+void __cdecl cleanup(AggChunk* end, AggChunk* begin,
+                     int unused, AggContainer* container)
 {
-    AggChunk* p = begin;
-    while (p != end) {
-        sub_6A158C(0, 0);
-        p = (AggChunk*)((char*)p + 0x28);
+    AggChunk* current;
+    unused = unused;
+    try {
+        for (current = begin; current != end; ++current)
+            container->destroy(current);
+    }
+    catch (...) {
+        for (; current != end; ++current)
+            container->destroy(current);
+        throw;
     }
 }
+
+#pragma optimize("", on)

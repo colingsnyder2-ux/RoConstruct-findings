@@ -1,5 +1,31 @@
-// from server: 56% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs v8xml/XmlSerializer.cpp
+// from server: 100% by king_originala
+extern "C" void (__cdecl* _invalid_parameter_noinfo)();
+
+struct Range {
+    void* data;
+    unsigned int reserved[2];
+    unsigned int first;
+    unsigned int last;
+};
+
+struct Result {
+    void* data;
+    unsigned int position;
+};
+
+struct CopyVerb {
+    char reserved[0x154];
+    Range* range;
+    Result* f(Result* result);
+};
+
+Result* CopyVerb::f(Result* result) {
+    Range* p = range;
+    unsigned int last = p->last;
+    result->data = 0;
+    if (p->first > last)
+        _invalid_parameter_noinfo();
+    result->data = p->data;
+    result->position = last;
+    return result;
+}

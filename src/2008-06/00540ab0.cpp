@@ -1,12 +1,18 @@
-// from server: 17% by tester
-extern "C" void __stdcall sub_542410();
-extern "C" void __stdcall sub_541240();
+// from server: 77% by king_originala
+#pragma optimize("", off)
 
-struct Bucket {
-    void f();
+struct WeakReferenceCountedPointer
+{
+    ~WeakReferenceCountedPointer();
 };
 
-void Bucket::f() {
-    sub_542410();
-    sub_541240();
+struct Bucket : WeakReferenceCountedPointer
+{
+    void clear();
+    ~Bucket();
+};
+
+Bucket::~Bucket()
+{
+    clear();
 }

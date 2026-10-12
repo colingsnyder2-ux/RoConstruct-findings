@@ -1,24 +1,29 @@
-// from server: 47% by colin
-struct Accessor {
+// from server: 100% by king_originala
+struct Value {
+    float x, y, z;
+};
+
+struct Reader {
     virtual void slot0() = 0;
     virtual void slot1() = 0;
-    virtual void get(void*, void*) = 0;
+    virtual Value get(void* object) = 0;
 };
 
-struct Descriptor {
-    unsigned char padding[24];
-    Accessor* accessor;
-    bool equalTo(void*, void*);
+struct S {
+    char padding[24];
+    Reader* reader;
+    int equal(void* a, void* b);
 };
 
-bool Descriptor::equalTo(void* a, void* b)
+#pragma float_control(precise, off, push)
+
+int S::equal(void* a, void* b)
 {
-    float v1[3];
-    float v2[3];
-    accessor->get(a, v1);
-    accessor->get(b, v2);
-    if (v1[0] == v2[0]) return false;
-    if (v1[0] != v2[0]) return false;
-    if (v1[1] != v2[1]) return false;
-    return true;
+    Value first = reader->get(b);
+    Value second = reader->get(a);
+    return second.x == first.x &&
+           second.y == first.y &&
+           second.z == first.z;
 }
+
+#pragma float_control(pop)

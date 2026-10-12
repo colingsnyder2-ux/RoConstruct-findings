@@ -1,54 +1,56 @@
-// from server: 66% by colin
+// from server: 100% by king_originala
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
+extern "C" long __cdecl _InterlockedIncrement(volatile long*);
+#pragma intrinsic(_InterlockedIncrement)
+extern "C" long __cdecl _InterlockedDecrement(volatile long*);
+#pragma intrinsic(_InterlockedDecrement)
 
-struct RefCounted {
-    void** vptr;
-    long ref1;
-    long ref2;
+struct Control {
+    virtual void unused();
+    virtual void dispose();
+    virtual void destroy();
+    volatile long strong;
+    volatile long weak;
 };
 
-struct Holder {
-    int a;
-    int b;
-    int c;
-    int d;
-    RefCounted* p;
+struct Functor {
+    unsigned long a;
+    unsigned long b;
+    unsigned long c;
+    unsigned long d;
+    Control* control;
 };
 
-extern "C" int __cdecl type_info_equals(void*, void*);
+struct TypeInfo {
+    unsigned long data;
+};
 
-int __cdecl sub_4b0e70(int arg0, Holder* src, Holder* dst, int op)
+extern TypeInfo functorType;
+extern bool (__thiscall *typeEqual)(const TypeInfo*, const TypeInfo&);
+
+void __cdecl manage(const Functor* source, Functor* destination, int operation)
 {
-    if (op == 0) {
-        if (dst == 0)
-            return 0;
-        dst->a = src->a;
-        dst->b = src->b;
-        dst->c = src->c;
-        dst->d = src->d;
-        dst->p = src->p;
-        if (dst->p == 0)
-            return 0;
-        _InterlockedExchangeAdd(&dst->p->ref1, 1);
-        return 0;
-    }
-    if (op == 1) {
-        RefCounted* p = src->p;
-        if (p == 0)
-            return 0;
-        if (_InterlockedExchangeAdd(&p->ref1, -1) == 1) {
-            ((void (__thiscall*)(RefCounted*))p->vptr[1])(p);
-            if (_InterlockedExchangeAdd(&p->ref2, -1) == 1) {
-                ((void (__thiscall*)(RefCounted*))p->vptr[2])(p);
-            }
+    if (operation == 0) {
+        if (destination) {
+            destination->a = source->a;
+            destination->b = source->b;
+            destination->c = source->c;
+            destination->d = source->d;
+            destination->control = source->control;
+            if (destination->control)
+                _InterlockedIncrement(&destination->control->strong);
         }
-        return 0;
+    } else if (operation == 1) {
+        Control* p = destination->control;
+        if (p && _InterlockedDecrement(&p->strong) == 0) {
+            p->dispose();
+            if (_InterlockedDecrement(&p->weak) == 0)
+                p->destroy();
+        }
+    } else {
+        const TypeInfo* type = *reinterpret_cast<const TypeInfo**>(destination);
+        *reinterpret_cast<const Functor**>(destination) =
+            typeEqual(type, functorType) ? source : 0;
     }
-    {
-        int r = type_info_equals(*(void**)src, (void*)0x93b378);
-        int v = -r;
-        dst->a = v & arg0;
-    }
-    return 0;
 }

@@ -1,30 +1,65 @@
-// from server: 35% by colin
-struct S {
-    void* field0;
-    void f(int a, int b, int c, int d, int e, int f, int g);
+// from server: 97% by king_originala
+extern "C" void __cdecl release(void *);
+
+struct Vector3 {
+    float x, y, z;
 };
 
-struct T {
-    void method(void* p);
+struct TemporaryOwner {
+    void *p;
+    void *take() const;
+    ~TemporaryOwner();
 };
 
-extern "C" void* __stdcall sub_608E90(void* out, void* in);
-extern "C" void* __stdcall sub_585090(int a, int b);
-extern "C" void __cdecl sub_6A067A(void* p);
+inline void *TemporaryOwner::take() const {
+    void *result = p;
+    const_cast<TemporaryOwner *>(this)->p = 0;
+    return result;
+}
 
-void S::f(int a, int b, int c, int d, int e, int f, int g) {
-    void* local[3];
-    local[0] = (void*)a;
-    local[1] = (void*)b;
-    local[2] = (void*)c;
-    void* tmp = 0;
-    void* r = sub_608E90(&tmp, local);
-    void* v = *(void**)r;
-    *(void**)r = 0;
-    void* r2 = sub_585090(d, e);
-    ((T*)this)->method(r2);
-    if (tmp) {
-        sub_6A067A(tmp);
-    }
-    this->field0 = (void*)0x8428b8;
+inline TemporaryOwner::~TemporaryOwner() {
+    if (p)
+        release(p);
+}
+
+struct Owner {
+    void *p;
+    Owner(const TemporaryOwner &);
+    Owner(const Owner &);
+    void *take() const;
+    ~Owner();
+};
+
+inline Owner::Owner(const TemporaryOwner &other) : p(other.take()) {
+}
+
+inline Owner::Owner(const Owner &other) : p(other.take()) {
+}
+
+inline void *Owner::take() const {
+    void *result = p;
+    const_cast<Owner *>(this)->p = 0;
+    return result;
+}
+
+inline Owner::~Owner() {
+    if (p)
+        release(p);
+}
+
+TemporaryOwner __cdecl makeOwner(int, Vector3);
+void *__cdecl getDescriptor();
+
+struct Base {
+    unsigned int table;
+    Base(void *, int, int, Owner, int);
+};
+
+struct S : Base {
+    S(int, int, int, Vector3, int);
+};
+
+S::S(int a, int b, int c, Vector3 v, int d)
+    : Base(getDescriptor(), a, b, makeOwner(c, v), d) {
+    table = 0x008428B8;
 }

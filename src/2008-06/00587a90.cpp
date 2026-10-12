@@ -1,4 +1,4 @@
-// from server: 93% by king_originala
+// from server: 96% by king_originala
 extern "C" {
     extern void (__cdecl *invalid_parameter_noinfo)();
 }
@@ -73,11 +73,14 @@ bool S::f(String* output, int count)
 
     Node* end = head;
     Proxy* endOwner = proxy;
-    bool compatible = owner && owner == endOwner;
-    void (__cdecl *report)() = invalid_parameter_noinfo;
+    void (__cdecl *report)();
 
-    if (!compatible)
+    if (!owner || owner != endOwner) {
+        report = invalid_parameter_noinfo;
         report();
+    } else {
+        report = invalid_parameter_noinfo;
+    }
 
     if (node == end)
         return false;

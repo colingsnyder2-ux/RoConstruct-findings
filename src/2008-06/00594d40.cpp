@@ -1,5 +1,19 @@
-// from server: 62% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs script/ThreadRef.cpp
+// from server: 100% by king_originala
+extern "C" {
+    extern void (__stdcall *LeaveCriticalSection)(void *);
+    extern int (__stdcall *ReleaseMutex)(void *);
+}
+
+struct S {
+    void *handle;
+    unsigned char criticalSection;
+    void unlock(void *&);
+};
+
+void S::unlock(void *&)
+{
+    if (criticalSection)
+        LeaveCriticalSection(handle);
+    else
+        ReleaseMutex(handle);
+}

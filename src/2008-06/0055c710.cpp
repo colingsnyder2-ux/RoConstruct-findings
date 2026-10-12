@@ -1,5 +1,27 @@
-// from server: 65% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs v8xml/XmlSerializer.cpp
+// from server: 100% by king_originala
+struct String {
+    unsigned char data[28];
+};
+
+extern void (__thiscall *copyString)(String *, const String *);
+
+struct S {
+    virtual void slot0();
+    virtual void slot1();
+    virtual void slot2();
+    virtual void slot3();
+    virtual void finish();
+
+    unsigned char padding[8];
+    String text;
+
+    String *get(String *result);
+};
+
+String *S::get(String *result)
+{
+    volatile int state = 0;
+    finish();
+    copyString(result, &text);
+    return result;
+}

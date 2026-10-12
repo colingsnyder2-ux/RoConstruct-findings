@@ -1,18 +1,34 @@
-// from server: 14% by colin
-extern "C" void* __cdecl malloc(unsigned int size);
+// from server: 100% by king_originala
+extern void* (__cdecl *allocate)(unsigned int);
+void __cdecl operator delete(void*);
 
-struct Item {
-    void construct(int);
-    void init(int, int);
-};
-
-void Item::construct(int a)
+inline void* __cdecl operator new(unsigned int size)
 {
-    Item* p = (Item*)malloc(0x178);
-    if (p) {
-        p->init(a, 0);
-    }
-    this->init((int)p, 0);
+    return allocate(size);
 }
 
-void Item::init(int, int) {}
+struct Empty
+{
+    unsigned int value;
+};
+
+struct Item
+{
+    unsigned char storage[0x178];
+    Item(const char* name);
+};
+
+struct Result
+{
+    Item* object;
+    void* control;
+
+    Result(Item* p, Empty tag);
+};
+
+Result f(const char* name)
+{
+    Empty tag = {0};
+    *(volatile unsigned char*)&tag = 0;
+    return Result(new Item(name), tag);
+}

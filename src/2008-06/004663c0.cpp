@@ -1,6 +1,6 @@
-// from server: 84% by king_originala
-void __cdecl operator delete(void *);
+// from server: 100% by king_originala
 extern "C" void __cdecl release(void *);
+extern "C" void __cdecl deallocate(void *) throw();
 
 struct Storage {
     void *allocation;
@@ -8,32 +8,32 @@ struct Storage {
     void *begin;
     void *end;
     void *capacity;
+    unsigned int reserved2;
+    void *object;
 
-    ~Storage();
+    ~Storage() throw();
 };
 
-struct EventData {
+struct S {
     Storage storage;
-    unsigned int reserved;
-    void *reference;
 
-    void disconnect();
-    virtual ~EventData();
+    virtual ~S();
+    void detach();
 };
 
-__forceinline Storage::~Storage()
+inline Storage::~Storage() throw()
 {
     if (begin)
-        operator delete(begin);
+        deallocate(begin);
 
     begin = 0;
     end = 0;
     capacity = 0;
-    operator delete(allocation);
+    deallocate(allocation);
 }
 
-EventData::~EventData()
+S::~S()
 {
-    disconnect();
-    release(reference);
+    detach();
+    release(storage.object);
 }

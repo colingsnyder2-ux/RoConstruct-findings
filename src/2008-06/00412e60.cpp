@@ -1,50 +1,67 @@
-// from server: 62% by colin
-struct CChildFrame
-{
-    void func_00412e60(int* param);
+// from server: 90% by king_originala
+extern "C" {
+    extern int (__stdcall *IsZoomed)(void *);
+}
+
+struct SizeSource {
+    int get_19c(int *out);
 };
 
-extern "C" int __stdcall IsZoomed(void*);
-extern "C" void __cdecl func_006a0c68();
-extern "C" int __cdecl func_006a0974();
-extern "C" int __cdecl func_00412d50(int*);
-extern "C" int __cdecl func_00445250(int*);
+SizeSource *func_00412d50();
 
-void CChildFrame::func_00412e60(int* param)
+struct Rect {
+    int left;
+    int top;
+    int right;
+    int bottom;
+};
+
+struct CChildFrame;
+typedef void (__thiscall *RectFunction)(CChildFrame *, Rect *, int);
+
+struct FrameTable {
+    RectFunction entries[29];
+};
+
+struct CChildFrame {
+    FrameTable *table;
+    char padding[0x1c];
+    void *window;
+
+    void func_006a0c68();
+    int func_006a0974();
+    void func_00412e60(int *param);
+};
+
+void CChildFrame::func_00412e60(int *param)
 {
     func_006a0c68();
-    int eax = func_006a0974();
-    int* p = param;
-    if (eax != 0)
+    int value = func_006a0974();
+    int *p = param;
+
+    if (value != 0 &&
+        *(char *)(value + 0xf8) != 0 &&
+        *(int *)(*(int *)(value + 0xec) + 0x84) == 0)
     {
-        if (*(char*)(eax + 0xf8) != 0)
-        {
-            int* q = *(int**)(eax + 0xec);
-            if (*(int*)((char*)q + 0x84) == 0)
-            {
-                *(int*)((char*)p + 8) += 0x28;
-                *(int*)((char*)p + 0xc) += 0x28;
-                *(int*)((char*)p + 0x20) += 0x28;
-                *(int*)((char*)p + 0x24) += 0x28;
-            }
-        }
+        p[2] += 40;
+        p[3] += 40;
+        p[8] += 40;
+        p[9] += 40;
     }
-    if (IsZoomed(*(void**)((char*)this + 0x20)) == 0)
+
+    if (IsZoomed(window) == 0)
     {
-        int local;
-        func_00412d50(&local);
-        func_00445250(&local);
-        short a = *(short*)((char*)&local + 0);
-        short b = *(short*)((char*)&local + 2);
-        int x = a;
-        int y = b;
-        int zero1 = 0;
-        int zero2 = 0;
-        int out1 = 0;
-        int out2 = 0;
-        void (__stdcall *fn)(void*, int*, int) = *(void (__stdcall**)(void*, int*, int))((*(int**)this)[0x70/4]);
-        fn(this, &out1, 0);
-        *(int*)((char*)p + 0x20) = out1 - zero1;
-        *(int*)((char*)p + 0x24) = out2 - zero2;
+        func_00412d50()->get_19c((int *)&param);
+
+        Rect rect;
+        rect.right = ((short *)&param)[0];
+        rect.bottom = ((short *)&param)[1];
+        rect.left = 0;
+        rect.top = 0;
+
+        table->entries[28](this, &rect, 0);
+
+        p[8] = rect.right - rect.left;
+        p[9] = rect.bottom - rect.top;
     }
 }

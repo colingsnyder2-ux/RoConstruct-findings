@@ -1,17 +1,13 @@
-// from server: 64% by colin
-struct Mouse {
-    Mouse(int);
+// from server: 100% by king_originala
+void* __cdecl operator new(unsigned int);
+void __cdecl operator delete(void*);
+
+struct Command {
+    char storage[0xcc];
+    Command(void*);
 };
 
-struct ScriptMouseCommand {
-    void* m_mouse;
-    ScriptMouseCommand(int workspace);
-};
-
-ScriptMouseCommand::ScriptMouseCommand(int workspace)
+Command* __cdecl createCommand(void* argument)
 {
-    Mouse* m = new Mouse(0xcc);
-    m_mouse = m;
-    if (m)
-        m->Mouse::Mouse(workspace);
+    return new Command(argument);
 }

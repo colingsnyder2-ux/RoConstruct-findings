@@ -1,4 +1,4 @@
-// from server: 93% by king_originala
+// from server: 100% by king_originala
 struct Control {
     int query(int, bool);
     void update(int, int, bool);
@@ -6,14 +6,14 @@ struct Control {
 
 struct CScriptEditor {
     int* control();
-    void func_00464100();
+    void func_00464090();
 };
 
-void CScriptEditor::func_00464100()
+void CScriptEditor::func_00464090()
 {
     Control* p = reinterpret_cast<Control*>(control());
-    if (p->query(1, true))
-        p->update(1, 0, true);
+    if (p->query(2, true))
+        p->update(2, 0, true);
     else
-        p->update(1, 16, true);
+        p->update(2, 16, true);
 }

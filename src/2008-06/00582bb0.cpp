@@ -1,75 +1,165 @@
-// from server: 16% by colin
-struct DuplicateSelectionVerb {
-    char pad0[4];
-    void* field4;
-    char pad8[4];
-    void* fieldC;
-    char pad10[4];
-    char field14[0x0C];
-    void* field20;
-    void run(int);
+// from server: 60% by king_originala
+extern "C" void __cdecl _invalid_parameter_noinfo();
+
+void* __cdecl operator new(unsigned int);
+void __cdecl operator delete(void*);
+
+struct Resource {
+    void destroy();
 };
 
-extern "C" void __stdcall sub_57D250();
-extern "C" void* __stdcall sub_591A30();
-extern "C" void __stdcall sub_4153B0();
-extern "C" void* __stdcall sub_581CC0();
-extern "C" void __stdcall sub_802890();
-extern "C" void __stdcall sub_423BA0();
-extern "C" void __stdcall sub_593480();
-extern "C" void* __stdcall sub_6A0920();
-extern "C" void __stdcall sub_5A05D0();
-extern "C" void __stdcall sub_413B00();
-extern "C" void __stdcall sub_4531E0();
-extern "C" void __stdcall sub_5BD820();
-extern "C" void __stdcall sub_58C5C0();
-extern "C" void __stdcall sub_5A2FE0();
-extern "C" void __stdcall sub_413A70();
-extern "C" void __stdcall sub_6A067A();
+Resource* __cdecl acquireResource();
+void __cdecl prepareResource(Resource*);
+void __cdecl duplicateItem();
+void __cdecl recordAction(const char*, void*);
 
-void DuplicateSelectionVerb::run(int)
+struct ResourceGuard {
+    Resource* value;
+    ~ResourceGuard();
+};
+
+ResourceGuard::~ResourceGuard()
 {
-    void* p = sub_591A30();
-    void* q = field20;
-    if (q)
-        sub_4153B0();
-    void* r = sub_581CC0();
-    void* s = *(void**)((char*)r + 0x154);
-    void* t = *(void**)((char*)s + 0x10);
-    if (*(void**)((char*)s + 0xC) > t)
-        sub_802890();
-    void* u = *(void**)s;
-    void* v = sub_581CC0();
-    void* w = *(void**)((char*)v + 0x154);
-    void* x = *(void**)((char*)w + 0xC);
-    if (x > *(void**)((char*)w + 0x10))
-        sub_802890();
-    void* y = *(void**)w;
-    sub_423BA0();
-    sub_593480();
-    void* z = sub_6A0920();
-    if (z)
-        *(void**)z = 0;
-    else
-        z = 0;
-    sub_5A05D0();
-    sub_413B00();
-    void* a = field20;
-    if (a)
-        sub_4531E0();
-    else
-        a = 0;
-    sub_5BD820();
-    void* b = field4;
-    if (*(int*)((char*)b + 0x1C) >= 0x10)
-        b = *(void**)((char*)b + 8);
-    else
-        b = (char*)b + 8;
-    sub_58C5C0();
-    sub_5A2FE0();
-    if (p)
-    {
-        sub_413A70();
-        sub_6A067A();
+    if (value) {
+        value->destroy();
+        operator delete(value);
     }
+}
+
+struct Iterator {
+    void* owner;
+    void* position;
+};
+
+void __cdecl copySelection(
+    Iterator*, void*, void*, void*, void*,
+    void (__cdecl*)(), Resource*);
+
+struct SelectionStorage {
+    void* owner;
+    unsigned int unused[2];
+    void* begin;
+    void* end;
+};
+
+struct Selection {
+    char unused[0x154];
+    SelectionStorage* storage;
+    void replace(void*, void*, void*, void*);
+};
+
+struct SelectionHandle {
+    Selection* get(int);
+};
+
+struct Result {
+    Result** owner;
+    unsigned int unused[2];
+    void* begin;
+    void* end;
+    void* capacity;
+    Result();
+    ~Result();
+};
+
+Result::Result()
+{
+    owner = static_cast<Result**>(operator new(4));
+    if (owner)
+        *owner = this;
+    begin = 0;
+    end = 0;
+    capacity = 0;
+}
+
+struct Action {
+    virtual void dispose(int) = 0;
+};
+
+struct Recorder {
+    void apply(Resource*, Result*, int, int);
+    void mark(int);
+};
+
+struct Context {
+    void prepare();
+    Recorder* recorder();
+};
+
+struct Name {
+    unsigned int unused[2];
+    union {
+        char text[16];
+        char* pointer;
+    };
+    unsigned int length;
+    unsigned int capacity;
+};
+
+struct S {
+    unsigned int unused0;
+    Name* name;
+    unsigned int unused8;
+    Recorder* sink;
+    unsigned int unused10;
+    SelectionHandle selection;
+    unsigned int unused18;
+    unsigned int unused1c;
+    Context* context;
+
+    void initialize();
+    void execute(Action*);
+};
+
+void S::execute(Action* action)
+{
+    initialize();
+    ResourceGuard resource;
+    resource.value = acquireResource();
+
+    if (context)
+        context->prepare();
+
+    SelectionStorage* lastStorage = selection.get(1)->storage;
+    void* last = lastStorage->end;
+    if (lastStorage->begin > last)
+        _invalid_parameter_noinfo();
+    void* lastOwner = lastStorage->owner;
+
+    SelectionStorage* firstStorage = selection.get(1)->storage;
+    void* first = firstStorage->begin;
+    if (first > firstStorage->end)
+        _invalid_parameter_noinfo();
+    void* firstOwner = firstStorage->owner;
+
+    Iterator copied;
+    copySelection(&copied, firstOwner, first, lastOwner, last,
+                  duplicateItem, resource.value);
+    prepareResource(resource.value);
+
+    Result result;
+    sink->apply(resource.value, &result, 2, 0);
+
+    void* finish = result.end;
+    void* start = result.begin;
+    if (start > finish) {
+        _invalid_parameter_noinfo();
+        finish = result.end;
+        start = result.begin;
+    }
+
+    void* finishOwner = result.owner;
+    void* position = start;
+    if (start > finish)
+        _invalid_parameter_noinfo();
+    void* startOwner = result.owner;
+
+    selection.get(1)->replace(startOwner, position, finishOwner, finish);
+
+    Recorder* recorder = context ? context->recorder() : 0;
+    recorder->mark(8);
+
+    const char* text = name->capacity >= 16 ? name->pointer : name->text;
+    recordAction(text, context);
+    action->dispose(1);
 }

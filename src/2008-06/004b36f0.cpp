@@ -1,5 +1,23 @@
-// from server: 83% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs util/RunStateOwner.cpp
+// from server: 100% by king_originala
+typedef void (__thiscall *DestructorProc)(void *);
+
+extern DestructorProc stringDestructor;
+
+void __stdcall destroyArray(
+    void *array, unsigned int elementSize,
+    int elementCount, DestructorProc destructor);
+
+struct Base {
+    char storage[32];
+    ~Base();
+};
+
+struct S : Base {
+    char strings[128 * 28];
+    ~S();
+};
+
+S::~S()
+{
+    destroyArray(strings, 28, 128, stringDestructor);
+}

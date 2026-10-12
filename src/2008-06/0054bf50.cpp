@@ -1,12 +1,15 @@
-// from server: 33% by atomic.potato
-struct S
-{
-    int f();
-    void g(int, int);
+// from server: 100% by king_originala
+struct Mesh {
+    void *data;
+    unsigned size;
+    unsigned capacity;
+
+    Mesh();
+    void f(void *arg, int count);
 };
 
-int S::f()
+#pragma optimize("", off)
+Mesh::Mesh()
 {
-    g(0, 0);
-    return reinterpret_cast<int>(this);
+    f(0, 0);
 }

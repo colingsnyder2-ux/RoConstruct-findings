@@ -1,4 +1,6 @@
-// from server: 62% by king_originala
+// from server: 82% by king_originala
+#pragma float_control(precise, off)
+
 extern float g_84b04c;
 extern float g_84b048;
 
@@ -21,7 +23,7 @@ void RBX_Ball::func(float* a, float* c, float* d, float* b)
     float y = f_4 - a[1];
     float z = f_8 - a[2];
     float t = x * c[0] + y * c[1] + z * c[2];
-    *d = *(t >= *d ? &t : d);
+    *d = *(t < *d ? &t : d);
     *b = *(t > *b ? &t : b);
 
     x = f_c - a[0];

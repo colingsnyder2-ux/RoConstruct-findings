@@ -1,5 +1,13 @@
-// from server: 83% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MT
-// roc-lib: ogre-1.4.9 OgreAlignedAllocator.cpp
+// from server: 93% by king_originala
+struct S {
+    float x, y, z, w;
+};
+
+S* __cdecl copy(S* destination, const S* source)
+{
+    destination->x = source->x;
+    destination->y = source->y;
+    destination->z = source->z;
+    destination->w = source->w;
+    return destination;
+}
