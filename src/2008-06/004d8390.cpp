@@ -1,32 +1,34 @@
-// from server: 91% by king_originala
+// from server: 100% by colin
 struct Result {
-    unsigned char padding[4];
-    void* first;
-    void* second;
+    unsigned int reserved;
+    unsigned int first;
+    unsigned int second;
     unsigned char flag;
 };
 
-struct State {
+struct ProductPart {
     void finish();
 };
 
 struct Product {
     unsigned char padding[16];
-    State state;
+    ProductPart part;
 };
 
 struct S {
-    Product* create(void*, Result*, unsigned long*, unsigned long, int);
-    Result* f(Result*, void*, unsigned long, unsigned long);
+    Product& createProduct(unsigned int source, Result* result,
+                           unsigned int* value, unsigned int option,
+                           unsigned int zero);
+    Result* f(Result* result, unsigned int source,
+              unsigned int option, unsigned int value);
 };
 
-Result* S::f(Result* result, void* object, unsigned long value,
-             unsigned long context)
+Result* S::f(Result* result, unsigned int source,
+             unsigned int option, unsigned int value)
 {
-    volatile int zero = 0;
-    if (object) {
-        Product* product = create(object, result, &context, value, 0);
-        product->state.finish();
+    volatile unsigned int zero = 0;
+    if (source) {
+        createProduct(source, result, &value, option, 0).part.finish();
         return result;
     }
     result->first = 0;

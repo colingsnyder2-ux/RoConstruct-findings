@@ -1,32 +1,34 @@
-// from server: 95% by tester
+// from server: 100% by colin
 struct Result {
-    unsigned int unused;
+    unsigned int reserved;
     unsigned int first;
     unsigned int second;
     unsigned char flag;
 };
 
-struct Part {
+struct ProductPart {
     void finish();
 };
 
-struct Object {
+struct Product {
     unsigned char padding[16];
-    Part part;
+    ProductPart part;
 };
 
 struct S {
-    Object* build(void* node, Result* result, int* value, int argument, int zero);
-    Result* f(Result* result, void* node, int argument, int value);
+    Product& createProduct(unsigned int source, Result* result,
+                           unsigned int* value, unsigned int option,
+                           unsigned int zero);
+    Result* f(Result* result, unsigned int source,
+              unsigned int option, unsigned int value);
 };
 
-Result* S::f(Result* result, void* node, int argument, int value)
+Result* S::f(Result* result, unsigned int source,
+             unsigned int option, unsigned int value)
 {
-    volatile int zero = 0;
-    if (node) {
-        Object* object = build(node, result, &value, argument, 0);
-        Part* part = &object->part;
-        part->finish();
+    volatile unsigned int zero = 0;
+    if (source) {
+        createProduct(source, result, &value, option, 0).part.finish();
         return result;
     }
     result->first = 0;

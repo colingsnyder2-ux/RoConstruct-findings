@@ -1,64 +1,92 @@
-// from server: 80% by king_originala
-namespace std {
-template<class T> struct char_traits;
-template<class T> class allocator;
+// from server: 100% by king_originala
+extern void (__thiscall* string_destructor)(void*);
 
-template<class C, class T, class A>
-class basic_string {
-    unsigned char storage[28];
-public:
-    ~basic_string();
-};
-}
+namespace std
+{
+    template<class T> struct char_traits {};
+    template<class T> struct allocator {};
 
-typedef std::basic_string<char, std::char_traits<char>, std::allocator<char> > String;
+    template<class C, class T, class A>
+    class basic_string
+    {
+        char data[28];
+    public:
+        ~basic_string();
+    };
 
-struct Object {
-    virtual void destroy(unsigned int);
-};
-
-struct Holder {
-    Object* p;
-    Holder(const String&);
-    ~Holder();
-    void swap(Holder&);
-};
-
-inline Holder::~Holder() {
-    if (p)
-        p->destroy(1);
-}
-
-inline void Holder::swap(Holder& other) {
-    if (&other != this) {
-        Object* old = other.p;
-        other.p = p;
-        p = old;
+    template<class C, class T, class A>
+    inline basic_string<C, T, A>::~basic_string()
+    {
+        string_destructor(this);
     }
 }
 
-extern void* __cdecl getType();
+typedef std::basic_string<char, std::char_traits<char>, std::allocator<char> > Value;
 
-struct Value {
+struct Managed
+{
+    virtual ~Managed();
+};
+
+struct Holder
+{
+    Managed* value;
+    Holder(const Value&);
+    ~Holder();
+    void swap(Managed*&);
+};
+
+inline Holder::~Holder()
+{
+    if (value)
+        delete value;
+}
+
+inline void Holder::swap(Managed*& other)
+{
+    if (&value != &other)
+    {
+        Managed* old = value;
+        value = other;
+        other = old;
+    }
+}
+
+inline void assignValue(Managed*& destination, const Value& source)
+{
+    Holder(source).swap(destination);
+}
+
+struct Getter
+{
+    virtual void slot0();
+    virtual void slot1();
+    virtual Value get(void*);
+};
+
+extern void* __cdecl func_00615490();
+
+struct Result
+{
     void* type;
-    Holder holder;
+    Managed* value;
+    void set(const Value&);
 };
 
-struct Getter {
-    virtual void v0();
-    virtual void v1();
-    virtual const String* get(String*, void*);
-};
+inline void Result::set(const Value& source)
+{
+    type = func_00615490();
+    assignValue(value, source);
+}
 
-struct S {
-    unsigned char padding[24];
+struct S
+{
+    char padding[24];
     Getter* getter;
-    void f(void*, Value*);
+    void func_0059f280(void*, Result*);
 };
 
-void S::f(void* object, Value* result) {
-    String text;
-    const String* returned = getter->get(&text, object);
-    result->type = getType();
-    result->holder.swap(Holder(*returned));
+void S::func_0059f280(void* object, Result* result)
+{
+    result->set(getter->get(object));
 }

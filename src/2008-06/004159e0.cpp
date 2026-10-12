@@ -1,17 +1,19 @@
-// from server: 85% by king_originala
+// from server: 87% by king_originala
 struct SafeArray {
     unsigned short dimensions;
-    unsigned short features;
+    unsigned short flags;
 };
 
-extern "C" long __stdcall SafeArrayGetVartype(SafeArray*, unsigned short*);
+extern "C" {
+    long (__stdcall *SafeArrayGetVartype)(SafeArray*, unsigned short*);
+}
 
 long __cdecl f(SafeArray* array, unsigned short* type)
 {
     long result = SafeArrayGetVartype(array, type);
-    if (result >= 0 && type && *type == 13 && array) {
-        unsigned short features = array->features;
-        if ((features & 0x40) && (features & 0x400))
+    if (result >= 0 && type != 0 && *type == 13 && array != 0) {
+        unsigned short flags = array->flags;
+        if ((flags & 0x40) != 0 && (flags & 0x400) != 0)
             *type = 9;
     }
     return result;

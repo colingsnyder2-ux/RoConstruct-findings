@@ -1,4 +1,5 @@
-// from server: 98% by king_originala
+// from server: 100% by colin
+
 struct Node {
     Node* next;
 };
@@ -22,7 +23,7 @@ void S::f(Item* item)
 {
     Node* link = item ? &item->link : 0;
     Node* first = link->next;
-    Node* last = first;
+    Node* last = link->next;
 
     while (last->next != link)
         last = last->next;

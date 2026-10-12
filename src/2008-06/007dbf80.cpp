@@ -1,12 +1,5 @@
-// from server: 63% by atomic.potato
-extern "C" void __cdecl func_006a165b(void *, int, int, void *);
-
-struct seg_007d0000
-{
-    void f();
-};
-
-void seg_007d0000::f()
-{
-    func_006a165b((char *)this + 12, 24, 4, (void *)0x67fb10);
-}
+// from server: 90% by colin
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: g3d-6.09 GLG3Dcpp/Sky.cpp

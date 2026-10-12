@@ -1,25 +1,34 @@
-// from server: 78% by king_originala
-void* __cdecl operator new(unsigned int);
+// from server: 99% by colin
+extern "C" {
+    extern void* (__cdecl *allocate)(unsigned int);
+}
+
+inline void* __cdecl operator new(unsigned int size)
+{
+    return allocate(size);
+}
+
 void __cdecl operator delete(void*);
 
-struct Item
-{
-    unsigned char storage[0x158];
-    Item(int, int, int);
+struct Product {
+    unsigned char storage[0x164];
+    Product(void*, void*, void*);
 };
 
-struct Empty
-{
+struct Deleter {
+    union {
+        unsigned int value;
+        unsigned char unused;
+    };
 };
 
-struct Result
-{
-    void* object;
-    void* control;
-    Result(Item*, Empty = Empty());
+struct Result {
+    Result(Product*, Deleter);
 };
 
-Result __cdecl makeItem(int a, int b, int c)
+Result __cdecl create(void* first, void* second, void* third)
 {
-    return Result(new Item(a, b, c));
+    Deleter deleter = { 0 };
+    *(volatile unsigned char*)&deleter.unused = 0;
+    return Result(new Product(first, second, third), deleter);
 }

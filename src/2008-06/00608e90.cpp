@@ -1,4 +1,4 @@
-// from server: 92% by king_originala
+// from server: 100% by colin
 extern "C" void* __cdecl allocate(unsigned int);
 extern unsigned char table[];
 
@@ -18,14 +18,15 @@ Object** __cdecl makeObject(Object** result, unsigned int,
 {
     volatile unsigned int state = 0;
     Object* p = static_cast<Object*>(allocate(24));
+Object* q;
     if (p) {
         p->vtable = table;
         p->value08 = a;
         p->value0C = b;
         p->value10 = c;
-        *result = p;
-        return result;
-    }
-    *result = p;
+        q = p;
+    } else
+        q = 0;
+    *result = q;
     return result;
 }

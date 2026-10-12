@@ -1,84 +1,76 @@
-// from server: 87% by king_originala
-extern "C" void* __cdecl G1_func_006a17c6(void*, int, void*, void*, int);
-extern "C" void (__cdecl *invalid_parameter)();
+// from server: 100% by colin
+
+extern "C" void (__cdecl *invalid_parameter_noinfo)();
+extern "C" void* __cdecl __RTDynamicCast(void*, long, void*, void*, int);
+
 extern char instance_type;
-extern char click_detector_type;
+extern char properties_type;
 
 struct Entry {
     void* object;
-    void* control;
+    void* other;
 };
 
-struct Container;
+struct Storage;
 
 struct Owner {
-    Container* container;
+    Storage* storage;
 };
 
-struct Container {
+struct Storage {
     Owner* owner;
-    unsigned int pad[2];
-    Entry* first;
-    Entry* last;
+    unsigned char padding[8];
+    Entry* begin;
+    Entry* end;
 };
 
 struct S {
-    char pad[0x108];
-    Container* field_108;
+    unsigned char padding[0x108];
+    Storage* storage;
     void* f();
 };
 
 void* S::f()
 {
-    Container* c = field_108;
-    if (c != 0) {
-        Entry* saved = c->last;
-        void (__cdecl *error)() = invalid_parameter;
+    Storage* s = storage;
+    if (s) {
+        Entry* last = s->end;
+        void (__cdecl *invalid)() = invalid_parameter_noinfo;
+        if (s->begin > last)
+            invalid();
 
-        if (c->first > saved)
-            error();
+        Owner* lastOwner = s->owner;
+        s = storage;
+        Entry* current = s->begin;
+        if (current > s->end)
+            invalid();
 
-        Owner* savedOwner = c->owner;
-        c = field_108;
-        Entry* current = c->first;
-
-        if (current > c->last)
-            error();
-
-        Owner* owner = c->owner;
+        Owner* owner = s->owner;
         for (;;) {
-            if (owner == 0 || owner != savedOwner)
-                error();
+            if (!owner || owner != lastOwner)
+                invalid();
 
-            if (current == saved)
+            if (current == last)
                 break;
 
-            Container* container;
-            if (owner == 0) {
-                error();
-                container = 0;
-            } else {
-                container = owner->container;
-            }
+            if (!owner)
+                invalid();
+            Storage* container = owner ? owner->storage : 0;
 
-            if (current >= container->last)
-                error();
+            if (current >= container->end)
+                invalid();
 
-            void* result = G1_func_006a17c6(
-                current->object, 0,
-                &instance_type, &click_detector_type, 0);
-            if (result != 0)
+            void* result = __RTDynamicCast(
+                current->object, 0, &instance_type, &properties_type, 0);
+            if (result)
                 return result;
 
-            if (owner == 0) {
-                error();
-                container = 0;
-            } else {
-                container = owner->container;
-            }
+            if (!owner)
+                invalid();
+            container = owner ? owner->storage : 0;
 
-            if (current >= container->last)
-                error();
+            if (current >= container->end)
+                invalid();
 
             ++current;
         }

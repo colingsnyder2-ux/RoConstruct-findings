@@ -1,31 +1,37 @@
-// from server: 79% by king_originala
-extern "C" void* (__cdecl *allocate)(unsigned int);
+// from server: 100% by colin
+extern "C" void *(__cdecl *malloc)(unsigned int);
 
-inline void* __cdecl operator new(unsigned int size)
+struct Deleter {
+    char value;
+    Deleter();
+};
+
+inline Deleter::Deleter() : value(0) {}
+
+struct Object {
+    char storage[0x154];
+
+    Object(void *);
+    static void *operator new(unsigned int size) throw();
+    static void operator delete(void *);
+};
+
+inline void *Object::operator new(unsigned int size) throw()
 {
-    return allocate(size);
+    return malloc(size);
 }
 
-void __cdecl operator delete(void*);
+struct Result {
+    void *object;
+    void *control;
 
-struct Product
-{
-    char storage[0x154];
-    Product(void*);
+    Result(Object *, Deleter);
+    Result(const Result &);
+    ~Result();
 };
 
-struct Deleter
+Result __cdecl create(void *argument)
 {
-};
-
-struct Result
-{
-    void* object;
-    void* control;
-    Result(Product*, Deleter);
-};
-
-Result __cdecl create(void* argument)
-{
-    return Result(new Product(argument), Deleter());
+    Deleter deleter = Deleter();
+    return Result(new Object(argument), deleter);
 }

@@ -1,4 +1,4 @@
-// from server: 78% by king_originala
+// from server: 100% by colin
 struct Base {
     virtual ~Base();
     unsigned char storage[84];
@@ -13,9 +13,9 @@ struct S : Base {
 S::~S()
 {
     try {
-        if ((flags & 1) && ((flags >> 4) & 1))
+        if ((*reinterpret_cast<unsigned char*>(&flags) & 1) &&
+            (static_cast<unsigned char>(flags >> 4) & 1))
             close();
-    }
-    catch (...) {
+    } catch (...) {
     }
 }

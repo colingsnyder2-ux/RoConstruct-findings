@@ -1,30 +1,8 @@
-// from server: 98% by king_originala
-namespace std {
-    template<class T> struct char_traits;
-    template<class T> class allocator;
-
-    template<class T, class Traits = char_traits<T>,
-             class Alloc = allocator<T> >
-    class basic_string {
-        char storage[28];
-    public:
-        basic_string(const T*);
-        ~basic_string();
-    };
-
-    typedef basic_string<char> string;
-}
-
-extern void (__thiscall* constructString)(std::string*, const char*);
-
-namespace std {
-    template<class T, class Traits, class Alloc>
-    __forceinline basic_string<T, Traits, Alloc>::basic_string(const T* text)
-    {
-        constructString(this, text);
-    }
-}
-
+// from server: 100% by colin
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+#include <string>
 struct Context {
     int value;
 };

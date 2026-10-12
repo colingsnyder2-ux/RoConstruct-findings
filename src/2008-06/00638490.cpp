@@ -1,47 +1,9 @@
-// from server: 98% by king_originala
-namespace std {
-    template<class T> struct char_traits;
-    template<class T> class allocator;
-
-    template<class T, class Traits, class Alloc>
-    class basic_string {
-        unsigned char storage[28];
-    public:
-        basic_string(const basic_string&);
-        basic_string(const T*);
-        ~basic_string();
-    };
-}
-
-typedef std::basic_string<char, std::char_traits<char>,
-                         std::allocator<char> > String;
-
-extern String* (__thiscall *stringCopy)(String*, const String&);
-extern String* (__thiscall *stringConstruct)(String*, const char*);
-extern void (__thiscall *stringDestroy)(String*);
-
-namespace std {
-    template<class T, class Traits, class Alloc>
-    __forceinline basic_string<T, Traits, Alloc>::basic_string(
-        const basic_string& other)
-    {
-        stringCopy(this, other);
-    }
-
-    template<class T, class Traits, class Alloc>
-    __forceinline basic_string<T, Traits, Alloc>::basic_string(const T* text)
-    {
-        stringConstruct(this, text);
-    }
-
-    template<class T, class Traits, class Alloc>
-    __forceinline basic_string<T, Traits, Alloc>::~basic_string()
-    {
-        stringDestroy(this);
-    }
-}
-
-extern const String initialValue;
+// from server: 100% by colin
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+#include <string>
+extern const std::string initialValue;
 
 struct P0 {
     virtual void f();
@@ -94,17 +56,17 @@ struct P9 {
 struct Base : P0, P1, P2, P3, P4, P5, P6, P7, P8, P9 {
     Base();
     ~Base();
-    void setName(const String&);
+    void setName(const std::string&);
 };
 
 struct S : Base {
-    String value;
+    std::string value;
     S();
     virtual void f();
 };
 
 S::S() : Base(), value(initialValue)
 {
-    String name("Value");
+    std::string name("Value");
     setName(name);
 }

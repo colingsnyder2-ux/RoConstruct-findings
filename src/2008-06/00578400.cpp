@@ -1,26 +1,53 @@
-// from server: 77% by king_originala
-extern "C" void* __cdecl malloc(unsigned int);
+// from server: 99% by colin
+#include <stdlib.h>
 
-struct Object {
-    char storage[0x270];
-
-    Object(bool);
-    static void* operator new(unsigned int size) {
-        return malloc(size);
-    }
-    static void operator delete(void*);
-};
-
-struct Deleter {};
-
-struct Shared {
-    Object* pointer;
-    void* control;
-
-    Shared(Object*, Deleter);
-};
-
-Shared __cdecl create()
+namespace boost {
+template<class T>
+class shared_ptr
 {
-    return Shared(new Object(true), Deleter());
+    T* px;
+    void* pn;
+public:
+    template<class Y, class D> shared_ptr(Y* p, D d);
+    ~shared_ptr();
+};
+}
+
+namespace RBX {
+template<class T>
+class Creatable
+{
+public:
+    class Deleter
+    {
+    public:
+        void operator()(T* instance);
+    };
+
+    template<class U>
+    static boost::shared_ptr<U> create()
+    {
+        return boost::shared_ptr<U>(new U(), Deleter());
+    }
+
+protected:
+    static void* operator new(size_t size) { return malloc(size); }
+};
+
+class Instance : public Creatable<Instance>
+{
+public:
+    virtual ~Instance();
+};
+
+class IModelModifier { public: virtual ~IModelModifier(); };
+
+class ModelInstance : public Instance, public virtual IModelModifier
+{
+    char data[0x2a4 - 12];
+public:
+    ModelInstance();
+};
+
+template boost::shared_ptr<ModelInstance> Creatable<Instance>::create<ModelInstance>();
 }

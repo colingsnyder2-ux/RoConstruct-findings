@@ -1,32 +1,53 @@
-// from server: 77% by king_originala
-extern "C" void* __cdecl malloc(unsigned int);
-extern "C" void __cdecl free(void*);
+// from server: 99% by colin
+#include <stdlib.h>
 
-struct Deleter {};
-
-struct T {
-    char storage[0x22c];
-
-    T(bool);
-    static void* operator new(unsigned int);
-    static void operator delete(void*);
-};
-
-inline void* T::operator new(unsigned int size)
+namespace boost {
+template<class T>
+class shared_ptr
 {
-    return malloc(size);
+    T* px;
+    void* pn;
+public:
+    template<class Y, class D> shared_ptr(Y* p, D d);
+    ~shared_ptr();
+};
 }
 
-inline void T::operator delete(void* p)
+namespace RBX {
+template<class T>
+class Creatable
 {
-    free(p);
-}
+public:
+    class Deleter
+    {
+    public:
+        void operator()(T* instance);
+    };
 
-struct S {
-    S(T*, Deleter);
+    template<class U>
+    static boost::shared_ptr<U> create()
+    {
+        return boost::shared_ptr<U>(new U(), Deleter());
+    }
+
+protected:
+    static void* operator new(size_t size) { return malloc(size); }
 };
 
-S __cdecl create()
+class Instance : public Creatable<Instance>
 {
-    return S(new T(true), Deleter());
+public:
+    virtual ~Instance();
+};
+
+class IModelModifier { public: virtual ~IModelModifier(); };
+
+class ModelInstance : public Instance, public virtual IModelModifier
+{
+    char data[0x2a4 - 12];
+public:
+    ModelInstance();
+};
+
+template boost::shared_ptr<ModelInstance> Creatable<Instance>::create<ModelInstance>();
 }

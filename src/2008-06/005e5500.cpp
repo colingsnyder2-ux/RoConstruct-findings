@@ -1,17 +1,19 @@
-// from server: 93% by king_originala
+// from server: 100% by colin
+struct A { char pad[0x140]; };
+struct B { int x; };
+struct Joint : A, B {
+    void f(bool);
+};
+
 struct S_func_006cb020 {
     char pad0[32];
     int m_x;
-    int f();
-};
-
-struct Joint {
-    void f(int);
+    B* f();
 };
 
 void __stdcall func(void*, S_func_006cb020* p)
 {
-    int value = p->f();
-    if (value)
-        reinterpret_cast<Joint*>(value - 0x140)->f(0);
+    B* b = p->f();
+    if (b)
+        static_cast<Joint*>(b)->f(false);
 }

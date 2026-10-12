@@ -1,5 +1,5 @@
-// from server: 96% by king_originala
-extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
+// from server: 100% by colin
+extern "C" long __cdecl _InterlockedIncrement(volatile long*);
 #pragma intrinsic(_InterlockedExchangeAdd)
 
 bool __cdecl func_0060a2f0();
@@ -45,7 +45,7 @@ void S::f(const Buffer& source)
             if (owner)
             {
                 volatile long* count = &owner->count;
-                _InterlockedExchangeAdd(count, 1);
+                _InterlockedIncrement(count);
             }
         }
         tag = reinterpret_cast<unsigned long>(&descriptor);

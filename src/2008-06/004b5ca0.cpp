@@ -1,5 +1,44 @@
-// from server: 86% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: openrbx-client App/util/RunStateOwner.cpp
+// from server: 100% by colin
+extern "C" void* (__cdecl *malloc)(unsigned int);
+extern "C" void __cdecl free(void*);
+
+struct Object
+{
+    unsigned char storage[0x178];
+
+    Object(int);
+    static void* operator new(unsigned int) throw();
+    static void operator delete(void*);
+};
+
+__forceinline void* Object::operator new(unsigned int size) throw()
+{
+    return malloc(size);
+}
+
+__forceinline void Object::operator delete(void* memory)
+{
+    free(memory);
+}
+
+struct Shared
+{
+    Object* object;
+    void* control;
+
+    Shared(Object*, int);
+};
+
+union Tag
+{
+    int value;
+    unsigned char byte;
+};
+
+Shared create(int argument)
+{
+    volatile Tag tag;
+    tag.value = 0;
+    tag.byte = 0;
+    return Shared(new Object(argument), tag.value);
+}

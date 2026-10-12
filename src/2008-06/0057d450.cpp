@@ -1,26 +1,19 @@
-// from server: 98% by king_originala
-struct String;
-extern void (__thiscall *constructString)(String*, const char*);
+// from server: 100% by colin
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+#include <string>
 extern const char signalName[];
 
-struct String {
-    char storage[28];
 
-    String(const char*);
-    String(const String&);
-};
 
-__forceinline String::String(const char* text)
-{
-    String* volatile destination = this;
-    constructString(this, text);
-}
+
 
 struct Base {
     virtual void slot();
     char storage[8];
 
-    Base(void*, String);
+    Base(void*, std::string);
 };
 
 struct SignalDesc : Base {
@@ -32,7 +25,7 @@ struct SignalDesc : Base {
 
 SignalDesc::SignalDesc(void* object)
     : Base(object ? static_cast<char*>(object) + 0x1c8 : 0,
-           String(signalName)),
+           std::string(signalName)),
       owner(object)
 {
 }

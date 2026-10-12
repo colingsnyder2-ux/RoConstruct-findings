@@ -1,5 +1,12 @@
-// from server: 77% by colin
-// roc-lang: cpp
-// roc-cl: 50727
-// roc-flags: /Od /Ob1 /GS- /MT
-// roc-lib: wildmagic-2-core Geometry/WmlConvexClipper.cpp
+// from server: 100% by colin
+struct S {
+    S();
+    void init(int, int);
+};
+
+#pragma optimize("", off)
+S::S()
+{
+    init(0, 0);
+}
+#pragma optimize("", on)

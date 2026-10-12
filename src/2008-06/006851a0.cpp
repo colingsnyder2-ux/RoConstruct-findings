@@ -1,5 +1,20 @@
-// from server: 67% by colin
-// roc-lang: cpp
-// roc-cl: 50727
-// roc-flags: /O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MT
-// roc-lib: ogre-1.6.4 OgreMovableObject.cpp
+// from server: 100% by colin
+struct ExceptionStorage {
+    unsigned long data[3];
+};
+
+extern "C" void (__thiscall *exceptionConstructor)(
+    ExceptionStorage*, const char* const&);
+
+extern unsigned char exceptionThrowInfo;
+extern "C" __declspec(noreturn) void __stdcall throwException(
+    void*, void*);
+
+void hasEdgeList()
+{
+    const char* message =
+        "RBX RbxSubEntity::hasEdgeList(): should not be called";
+    ExceptionStorage exception;
+    exceptionConstructor(&exception, message);
+    throwException(&exception, &exceptionThrowInfo);
+}

@@ -1,5 +1,5 @@
-// from server: 96% by king_originala
-extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
+// from server: 100% by colin
+extern "C" long __cdecl _InterlockedIncrement(volatile long*);
 #pragma intrinsic(_InterlockedExchangeAdd)
 
 struct String;
@@ -38,7 +38,7 @@ __forceinline Payload::Payload(const Payload& source)
     if (control) {
         volatile long* count = reinterpret_cast<volatile long*>(control);
         ++count;
-        _InterlockedExchangeAdd(count, 1);
+        _InterlockedIncrement(count);
     }
 }
 

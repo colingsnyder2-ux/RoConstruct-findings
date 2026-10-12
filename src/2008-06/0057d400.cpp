@@ -1,27 +1,31 @@
-// from server: 83% by tester
-struct SignalDesc {
-    void* vftable;
-    char pad[8];
-    void* field_c;
-    void* construct(void*);
+// from server: 100% by colin
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+#include <string>
+extern const char signalName[];
+
+
+
+
+
+struct Base {
+    virtual void slot();
+    char storage[8];
+
+    Base(void*, std::string);
 };
 
-extern "C" void* __stdcall sub_802458(const char*);
-extern "C" void __stdcall sub_5833e0(void*, void*);
+struct SignalDesc : Base {
+    void* owner;
 
-void* SignalDesc::construct(void* a)
+    virtual void slot();
+    SignalDesc(void*);
+};
+
+SignalDesc::SignalDesc(void* object)
+    : Base(object ? static_cast<char*>(object) + 0x1c8 : 0,
+           std::string(signalName)),
+      owner(object)
 {
-    char* p = (char*)a;
-    char* q;
-    if (p != 0)
-        q = p + 0x1c8;
-    else
-        q = 0;
-    char buf[0x1c];
-    sub_802458("JoinCommand");
-    sub_5833e0(this, q);
-    field_c = a;
-    vftable = (void*)0x830694;
-
-    return this;
 }

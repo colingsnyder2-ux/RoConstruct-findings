@@ -1,37 +1,22 @@
-// from server: 95% by king_originala
-struct String;
-typedef void (__thiscall *StringCopy)(String *, const String &);
-extern StringCopy stringCopy;
-
-struct String {
-    char storage[28];
-    String(const String &);
-    ~String();
-};
-
-inline String::String(const String &other)
-{
-    stringCopy(this, other);
-}
-
+// from server: 100% by colin
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+#include <string>
 struct Receiver {
-    void accept(String);
+    void accept(std::string);
 };
-
 struct Argument {
     char reserved[16];
     char *object;
 };
-
 struct S {
-    String *value;
+    std::string *value;
     void *f(void *, Argument *);
 };
-
 void *S::f(void *result, Argument *argument)
 {
-    Receiver *receiver =
-        reinterpret_cast<Receiver *>(argument->object + 8);
+    Receiver *receiver = reinterpret_cast<Receiver *>(argument->object + 8);
     receiver->accept(*value);
     return result;
 }

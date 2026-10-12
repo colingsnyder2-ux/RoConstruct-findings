@@ -1,25 +1,16 @@
-// from server: 98% by king_originala
-struct String;
+// from server: 100% by colin
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+#include <string>
 extern "C" {
-extern void (__thiscall *stringCopy)(String*, const String&);
-extern void (__thiscall *stringDestroy)(String*);
 }
 
-struct String {
-    unsigned char data[28];
-    String(const String&);
-    ~String();
-};
 
-inline String::String(const String& other)
-{
-    stringCopy(this, other);
-}
 
-inline String::~String()
-{
-    stringDestroy(this);
-}
+
+
+
 
 struct Service;
 
@@ -43,7 +34,7 @@ struct Bind {
     Bind(const Bind&);
 };
 
-Bind __cdecl makeBind(Callback, Shared, String);
+Bind __cdecl makeBind(Callback, Shared, std::string);
 
 struct FunctionTable {
     void (__cdecl *manager)(void*, void*, int);
@@ -64,10 +55,10 @@ struct Queue {
 extern Queue* queue;
 
 struct Service {
-    void submit(String);
+    void submit(std::string);
 };
 
-void Service::submit(String text)
+void Service::submit(std::string text)
 {
     Callback target = { callback, 0 };
     queue->append(Function(makeBind(target, getShared(this), text), 0));

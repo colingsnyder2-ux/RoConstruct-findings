@@ -1,4 +1,6 @@
-// from server: 81% by atomic.potato
+// from server: 100% by tester
+// roc-cl: 50727
+// roc-flags: /O2 /GS- /MD /fp:fast
 struct SpecialShape
 {
     char pad[448];
@@ -8,9 +10,9 @@ struct SpecialShape
     double f();
 };
 
-double g_817a88 = 0.0;
+double g_817a88 = 100.0;
 
 double SpecialShape::f()
 {
-    return 1.0 / (m_1c0 * m_1d0 * g_817a88);
+    return (1.0 / m_1c0) * m_1d0 * g_817a88;
 }

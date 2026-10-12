@@ -1,34 +1,11 @@
-// from server: 99% by king_originala
-struct String;
-extern void (__thiscall *string_default)(String *);
-extern void (__thiscall *string_copy)(String *, const String &);
-extern void (__thiscall *string_destroy)(String *);
-
-struct String {
-    unsigned char data[28];
-    String();
-    String(const String &);
-    ~String();
-};
-
-__forceinline String::String()
-{
-    string_default(this);
-}
-
-__forceinline String::String(const String &other)
-{
-    string_copy(this, other);
-}
-
-__forceinline String::~String()
-{
-    string_destroy(this);
-}
-
+// from server: 100% by colin
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+#include <string>
 extern void __cdecl read_count(unsigned int, unsigned int *);
 extern void __cdecl read_key(unsigned int, unsigned int *);
-extern void __cdecl read_string(unsigned int, String *);
+extern void __cdecl read_string(unsigned int, std::string *);
 
 struct S {
     unsigned char padding[12];
@@ -38,7 +15,7 @@ struct S {
     unsigned int bits;
 
     void reserve(unsigned int, unsigned int);
-    void insert(String, unsigned int);
+    void insert(std::string, unsigned int);
     void func_004b17f0(unsigned int);
 };
 
@@ -51,7 +28,7 @@ void S::func_004b17f0(unsigned int count)
     for (unsigned int i = 0; i < count; ++i) {
         unsigned int key;
         read_key(source, &key);
-        String text;
+        std::string text;
         read_string(source, &text);
         insert(text, key);
     }

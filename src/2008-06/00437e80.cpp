@@ -1,6 +1,8 @@
-// from server: 80% by king_originala
+// from server: 100% by colin
+// roc-cl: 50727
+// roc-flags: /O2 /GS- /MD
 struct S;
-typedef int (__thiscall *Method)(S *, int);
+typedef void (__thiscall *Method)(S *, int);
 
 struct Table {
     Method unused[58];
@@ -9,10 +11,10 @@ struct Table {
 
 struct S {
     Table *table;
-    int f(const int *value);
+    void f(const int *value);
 };
 
-int S::f(const int *value)
+void S::f(const int *value)
 {
     return table->target(this, *value);
 }

@@ -1,5 +1,5 @@
-// from server: 98% by king_originala
-extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
+// from server: 100% by colin
+extern "C" long __cdecl _InterlockedIncrement(volatile long*);
 #pragma intrinsic(_InterlockedExchangeAdd)
 
 void* __cdecl operator new(unsigned int);
@@ -15,7 +15,7 @@ struct RefCount
 
 inline void RefCount::addRef()
 {
-    _InterlockedExchangeAdd(&count, 1);
+    _InterlockedIncrement(&count);
 }
 
 struct Argument

@@ -1,27 +1,31 @@
-// from server: 78% by king_originala
-extern "C" void* (__cdecl *allocate)(unsigned int);
-
-inline void* __cdecl operator new(unsigned int size)
-{
-    return allocate(size);
+// from server: 99% by colin
+extern "C" {
+    extern void* (__cdecl *malloc)(unsigned int);
+    void __cdecl free(void*);
 }
 
-void __cdecl operator delete(void*);
+inline void* __cdecl operator new(unsigned int size) throw()
+{
+    return malloc(size);
+}
 
-struct Deleter {};
+inline void __cdecl operator delete(void* p) throw()
+{
+    free(p);
+}
 
 struct Object {
-    unsigned char storage[0x404];
-    Object(bool);
+    char storage[0x424];
+    Object(int);
 };
 
-struct S {
-    Object* object;
-    void* control;
-    S(Object*, Deleter);
+struct Result {
+    Result(Object*, unsigned int);
 };
 
-S __cdecl create()
+Result f()
 {
-    return S(new Object(true), Deleter());
+    volatile unsigned int deleter = 0;
+    *reinterpret_cast<volatile unsigned char*>(&deleter) = 0;
+    return Result(new Object(1), deleter);
 }

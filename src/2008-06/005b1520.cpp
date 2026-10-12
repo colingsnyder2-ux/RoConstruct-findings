@@ -1,84 +1,76 @@
-// from server: 87% by king_originala
-extern "C" void (__cdecl *invalid_parameter)();
-extern "C" void* __cdecl runtime_cast(void*, long, void*, void*, int);
+// from server: 100% by colin
 
-extern char instance_type[];
-extern char accoutrement_type[];
+extern "C" void (__cdecl *invalid_parameter_noinfo)();
+extern "C" void* __cdecl __RTDynamicCast(void*, long, void*, void*, int);
 
-struct Vector;
-
-struct Proxy {
-    Vector* container;
-};
+extern char instance_type;
+extern char properties_type;
 
 struct Entry {
     void* object;
-    void* control;
+    void* other;
 };
 
-struct Vector {
-    Proxy* proxy;
-    char padding[8];
-    Entry* first;
-    Entry* last;
+struct Storage;
+
+struct Owner {
+    Storage* storage;
 };
 
-struct Accoutrement {
-    char padding[0x108];
-    Vector* items;
-    void* find();
+struct Storage {
+    Owner* owner;
+    unsigned char padding[8];
+    Entry* begin;
+    Entry* end;
 };
 
-void* Accoutrement::find() {
-    Vector* vector = items;
-    if (vector) {
-        Entry* finish = vector->last;
-        void (__cdecl *report)() = invalid_parameter;
+struct S {
+    unsigned char padding[0x108];
+    Storage* storage;
+    void* f();
+};
 
-        if (vector->first > finish)
-            report();
+void* S::f()
+{
+    Storage* s = storage;
+    if (s) {
+        Entry* last = s->end;
+        void (__cdecl *invalid)() = invalid_parameter_noinfo;
+        if (s->begin > last)
+            invalid();
 
-        Proxy* finishProxy = vector->proxy;
+        Owner* lastOwner = s->owner;
+        s = storage;
+        Entry* current = s->begin;
+        if (current > s->end)
+            invalid();
 
-        vector = items;
-        Entry* current = vector->first;
-        if (current > vector->last)
-            report();
-
-        Proxy* proxy = vector->proxy;
-
+        Owner* owner = s->owner;
         for (;;) {
-            if (!proxy || proxy != finishProxy)
-                report();
+            if (!owner || owner != lastOwner)
+                invalid();
 
-            if (current == finish)
+            if (current == last)
                 break;
 
-            Vector* owner;
-            if (!proxy) {
-                report();
-                owner = 0;
-            } else {
-                owner = proxy->container;
-            }
+            if (!owner)
+                invalid();
+            Storage* container = owner ? owner->storage : 0;
 
-            if (current >= owner->last)
-                report();
+            if (current >= container->end)
+                invalid();
 
-            void* result = runtime_cast(
-                current->object, 0, instance_type, accoutrement_type, 0);
+            void* result = __RTDynamicCast(
+                current->object, 0, &instance_type, &properties_type, 0);
             if (result)
                 return result;
 
-            if (!proxy) {
-                report();
-                owner = 0;
-            } else {
-                owner = proxy->container;
-            }
+            if (!owner)
+                invalid();
+            container = owner ? owner->storage : 0;
 
-            if (current >= owner->last)
-                report();
+            if (current >= container->end)
+                invalid();
 
             ++current;
         }

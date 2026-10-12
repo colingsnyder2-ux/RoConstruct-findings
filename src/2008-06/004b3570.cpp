@@ -1,5 +1,5 @@
-// from server: 96% by king_originala
-extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
+// from server: 100% by colin
+extern "C" long __cdecl _InterlockedIncrement(volatile long*);
 #pragma intrinsic(_InterlockedExchangeAdd)
 
 struct RefCount {
@@ -38,7 +38,7 @@ void S::f(const Data& source)
             destination->d = source.d;
             destination->owner = source.owner;
             if (destination->owner)
-                _InterlockedExchangeAdd(&destination->owner->count, 1);
+                _InterlockedIncrement(&destination->owner->count);
         }
         table = &function_table;
     } else {

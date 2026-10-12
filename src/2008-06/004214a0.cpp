@@ -1,69 +1,62 @@
-// from server: 81% by king_originala
+// from server: 100% by colin
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
+extern "C" long __cdecl _InterlockedDecrement(volatile long*);
+#pragma intrinsic(_InterlockedDecrement)
 
-struct Control
-{
-    virtual void unused();
+struct Control {
+    virtual ~Control();
     virtual void dispose();
     virtual void destroy();
-
     volatile long strong;
     volatile long weak;
 };
 
-struct Holder
-{
-    void* object;
+struct Shared {
+    void* pointer;
     Control* control;
-
-    ~Holder();
+    ~Shared();
 };
 
-__forceinline Holder::~Holder()
+struct Member {
+    unsigned char storage[4];
+    void cleanup();
+};
+
+struct S;
+
+struct Owner {
+    void remove(S*);
+};
+
+struct Base {
+    virtual ~Base();
+};
+
+struct S : Base {
+    Shared shared;
+    Owner* owner;
+    Member member;
+    virtual ~S();
+};
+
+inline Base::~Base()
+{
+}
+
+inline Shared::~Shared()
 {
     Control* p = control;
-    if (p && _InterlockedExchangeAdd(&p->strong, -1) == 0)
-    {
+    if (p && _InterlockedDecrement(&p->strong) == 0) {
         p->dispose();
-        if (_InterlockedExchangeAdd(&p->weak, -1) == 0)
+        if (_InterlockedDecrement(&p->weak) == 0)
             p->destroy();
     }
 }
 
-struct S;
-
-struct Registry
-{
-    void disconnect(S*);
-};
-
-struct Member
-{
-    unsigned long storage;
-    ~Member();
-};
-
-struct Base
-{
-    virtual ~Base();
-};
-
-__forceinline Base::~Base()
-{
-}
-
-struct S : Base
-{
-    Holder owner;
-    Registry* registry;
-    Member member;
-
-    virtual ~S();
-};
-
 S::~S()
 {
-    if (registry)
-        registry->disconnect(this);
+    if (owner)
+        owner->remove(this);
+    member.cleanup();
 }

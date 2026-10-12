@@ -1,5 +1,5 @@
-// from server: 63% by colin
-// roc-lang: c
+// from server: 100% by colin
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /MD
-// roc-lib: libpng-1.2.5 pngget.c
+extern "C" __declspec(dllimport) void __cdecl free(void*);
+void f(void* p) { if (p) free(p); }

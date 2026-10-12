@@ -1,4 +1,5 @@
-// from server: 92% by king_originala
+// from server: 100% by colin
+// roc-flags: /O2 /GS- /EHsc /MD /fp:fast
 struct S;
 struct P {
     void g(S*);
@@ -14,7 +15,7 @@ struct S {
 
 void S::f(float v)
 {
-    if (value != v) {
+    if (v != value) {
         value = v;
         if (p)
             p->g(this);

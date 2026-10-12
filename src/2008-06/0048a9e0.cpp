@@ -1,5 +1,5 @@
-// from server: 89% by king_originala
-extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
+// from server: 91% by colin
+extern "C" long __cdecl _InterlockedIncrement(volatile long*);
 #pragma intrinsic(_InterlockedExchangeAdd)
 
 extern char sourceType;
@@ -27,7 +27,7 @@ inline Control::Control(Counted* value) : p(value) {}
 
 inline Control::Control(const Control& other) : p(other.p) {
     if (p)
-        _InterlockedExchangeAdd(&p->references, 1);
+        _InterlockedIncrement(&p->references);
 }
 
 inline Control::~Control() {

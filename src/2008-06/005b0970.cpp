@@ -1,4 +1,6 @@
-// from server: 95% by king_originala
+// from server: 100% by colin
+// roc-cl: 50727
+// roc-flags: /O2 /GS- /MD /fp:fast
 extern const float attachmentScale;
 
 struct Vector3

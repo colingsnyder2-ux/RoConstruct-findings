@@ -1,11 +1,11 @@
-// from server: 98% by colin
+// from server: 100% by colin
 struct Vector3 {
     float x, y, z;
     Vector3() : x(0.0f), y(0.0f), z(0.0f) {}
 };
 
 struct Object {
-    char padding[0x90];
+    char padding[0x84];
     Vector3 value;
 };
 

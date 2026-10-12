@@ -1,4 +1,10 @@
-// from server: 96% by king_originala
+// from server: 100% by colin
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+#include <string>
+extern "C" long __cdecl _InterlockedIncrement(volatile long*);
+#pragma intrinsic(_InterlockedIncrement)
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
 
@@ -20,7 +26,7 @@ struct Shared {
 inline Shared::Shared(const Shared& other)
     : object(other.object), control(other.control) {
     if (control)
-        _InterlockedExchangeAdd(&control->strong, 1);
+        _InterlockedIncrement(&control->strong);
 }
 
 inline Shared::~Shared() {
@@ -31,19 +37,15 @@ inline Shared::~Shared() {
     }
 }
 
-struct String {
-    unsigned char storage[28];
-    String(const String&);
-    ~String();
-};
+
 
 struct Value {
-    String text;
+    std::string text;
     Shared owner;
 };
 
 struct Receiver {
-    void invoke(String text, Shared owner);
+    void invoke(std::string text, Shared owner);
 };
 
 struct Context {

@@ -1,5 +1,26 @@
-// from server: 71% by colin
-// roc-lang: cpp
-// roc-cl: 50727
-// roc-flags: /Od /Ob1 /GS- /MT
-// roc-lib: wildmagic-2-core Containment/WmlConvexHull3.cpp
+// from server: 97% by colin
+extern "C" void (__cdecl * _invalid_parameter_noinfo)();
+
+struct Element {
+    float x, y, z;
+};
+
+struct S {
+    char padding[12];
+    Element* first;
+
+    unsigned int size() const;
+    Element& at(unsigned int index);
+};
+
+#pragma optimize("", off)
+Element& S::at(unsigned int index)
+{
+    if (index >= size())
+        _invalid_parameter_noinfo();
+
+    do {
+    } while (false);
+
+    return first[index];
+}

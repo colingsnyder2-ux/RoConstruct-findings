@@ -1,5 +1,5 @@
-// from server: 97% by king_originala
-extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
+// from server: 100% by colin
+extern "C" long __cdecl _InterlockedIncrement(volatile long*);
 #pragma intrinsic(_InterlockedExchangeAdd)
 
 void* __cdecl operator new(unsigned int);
@@ -20,7 +20,7 @@ inline Argument::Argument(const Argument& other)
     : object(other.object), control(other.control) {
     if (control) {
         volatile long* count = &control->references;
-        _InterlockedExchangeAdd(count, 1);
+        _InterlockedIncrement(count);
     }
 }
 

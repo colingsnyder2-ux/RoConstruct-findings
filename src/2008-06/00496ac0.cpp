@@ -1,4 +1,8 @@
-// from server: 99% by king_originala
+// from server: 100% by colin
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+#include <string>
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
 extern "C" long __cdecl _InterlockedIncrement(volatile long*);
@@ -6,23 +10,12 @@ extern "C" long __cdecl _InterlockedIncrement(volatile long*);
 extern "C" long __cdecl _InterlockedDecrement(volatile long*);
 #pragma intrinsic(_InterlockedDecrement)
 
-struct String;
-extern void (__thiscall *copyString)(String*, const String&);
-extern void (__thiscall *destroyString)(String*);
 
-struct String {
-    unsigned char storage[28];
-    String(const String&);
-    ~String();
-};
 
-inline String::String(const String& other) {
-    copyString(this, other);
-}
 
-inline String::~String() {
-    destroyString(this);
-}
+
+
+
 
 struct Control {
     virtual void unused() = 0;
@@ -64,7 +57,7 @@ struct Error {
 
 __declspec(noreturn) void __cdecl raiseError(const Error&);
 
-typedef void (__cdecl *Invoke)(void*, String, Shared);
+typedef void (__cdecl *Invoke)(void*, std::string, Shared);
 
 struct Table {
     void* unused;
@@ -75,10 +68,10 @@ struct S {
     Table* table;
     unsigned long reserved;
     unsigned char callable[1];
-    void f(String, Shared);
+    void f(std::string, Shared);
 };
 
-void S::f(String text, Shared value) {
+void S::f(std::string text, Shared value) {
     if (!table)
         raiseError(Error());
     table->invoke(callable, text, value);

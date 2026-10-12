@@ -1,4 +1,5 @@
-// from server: 90% by king_originala
+// from server: 100% by colin
+// roc-flags: /O2 /GS- /EHsc /MD /fp:fast
 extern char property;
 
 struct Value {
@@ -15,7 +16,7 @@ struct S {
 
 void S::setValue(float value)
 {
-    if (data->value != value) {
+    if (value != data->value) {
         data->value = value;
         notify(&property);
     }

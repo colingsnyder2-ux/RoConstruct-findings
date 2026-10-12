@@ -1,5 +1,5 @@
-// from server: 94% by king_originala
-extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
+// from server: 100% by colin
+extern "C" long __cdecl _InterlockedIncrement(volatile long*);
 #pragma intrinsic(_InterlockedExchangeAdd)
 
 struct Control {
@@ -19,6 +19,6 @@ Holder* __cdecl convert(Holder* result, const Holder& source)
     result->pointer = p ? p + 20 : 0;
     result->control = source.control;
     if (result->control)
-        _InterlockedExchangeAdd(&result->control->references, 1);
+        _InterlockedIncrement(&result->control->references);
     return result;
 }

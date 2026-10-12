@@ -1,33 +1,44 @@
-// from server: 79% by king_originala
-extern "C" void* (__cdecl *allocateMemory)(unsigned int);
+// from server: 100% by colin
+extern "C" void* (__cdecl *malloc)(unsigned int);
+extern "C" void __cdecl free(void*);
 
-__forceinline void* __cdecl operator new(unsigned int size)
-{
-    return allocateMemory(size);
-}
-
-void __cdecl operator delete(void*);
-
-struct Item
+struct Object
 {
     unsigned char storage[0x178];
 
-    Item(const void*);
+    Object(int);
+    static void* operator new(unsigned int) throw();
+    static void operator delete(void*);
 };
 
-struct Deleter
+__forceinline void* Object::operator new(unsigned int size) throw()
 {
-};
+    return malloc(size);
+}
+
+__forceinline void Object::operator delete(void* memory)
+{
+    free(memory);
+}
 
 struct Shared
 {
-    Item* object;
+    Object* object;
     void* control;
 
-    Shared(Item*, Deleter);
+    Shared(Object*, int);
 };
 
-Shared __cdecl createItem(const void* argument)
+union Tag
 {
-    return Shared(new Item(argument), Deleter());
+    int value;
+    unsigned char byte;
+};
+
+Shared create(int argument)
+{
+    volatile Tag tag;
+    tag.value = 0;
+    tag.byte = 0;
+    return Shared(new Object(argument), tag.value);
 }

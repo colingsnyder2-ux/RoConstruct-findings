@@ -1,4 +1,4 @@
-// from server: 96% by king_originala
+// from server: 100% by atomic.potato
 struct Value;
 extern void (__thiscall *destroyValue)(Value*);
 extern void* __cdecl valueType();
@@ -38,9 +38,9 @@ inline void Holder::swap(Holder& other)
 {
     if (this != &other)
     {
-        Object* old = other.value;
-        other.value = value;
-        value = old;
+        Object* old = value;
+        value = other.value;
+        other.value = old;
     }
 }
 

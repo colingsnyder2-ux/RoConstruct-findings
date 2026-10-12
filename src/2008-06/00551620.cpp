@@ -1,5 +1,26 @@
-// from server: 57% by colin
-// roc-lang: cpp
-// roc-cl: 50727
-// roc-flags: /Od /Ob1 /GS- /MT
-// roc-lib: wildmagic-2-core Geometry/WmlConvexClipper.cpp
+// from server: 100% by colin
+struct Mesh {
+    int size;
+    void *first;
+    void *last;
+
+    void initialize(void *);
+    void f(void *, int);
+};
+
+#pragma optimize("", off)
+void Mesh::f(void *arg, int count)
+{
+    do {} while (0);
+    do {} while (0);
+
+    first = 0;
+    last = 0;
+    size = 0;
+
+    if (count > 0)
+        initialize(arg);
+    else
+        size = 0;
+}
+#pragma optimize("", on)

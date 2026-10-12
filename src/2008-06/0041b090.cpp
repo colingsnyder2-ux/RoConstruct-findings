@@ -1,5 +1,5 @@
-// from server: 96% by king_originala
-extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
+// from server: 100% by colin
+extern "C" long __cdecl _InterlockedIncrement(volatile long*);
 #pragma intrinsic(_InterlockedExchangeAdd)
 
 struct Control
@@ -41,7 +41,7 @@ void S::f(const Data* source)
             destination->c = source->c;
             destination->control = source->control;
             if (destination->control)
-                _InterlockedExchangeAdd(&destination->control->references, 1);
+                _InterlockedIncrement(&destination->control->references);
             destination->e = source->e;
         }
         tag = &marker_0080ed34;

@@ -1,5 +1,5 @@
-// from server: 84% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: g3d-6.09 GLG3Dcpp/TextureFormat.cpp
+// from server: 100% by colin
+// roc-cl: 50727
+// roc-flags: /O2 /Ob0 /GS- /MD
+#include <locale>
+std::locale::id id;

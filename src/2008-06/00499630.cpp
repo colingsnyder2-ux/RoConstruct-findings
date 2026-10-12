@@ -1,4 +1,4 @@
-// from server: 99% by king_originala
+// from server: 100% by king_originala
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
 extern "C" long __cdecl _InterlockedDecrement(volatile long*);
@@ -41,7 +41,7 @@ struct OwnedNode {
 
 struct Resource {
     volatile unsigned long table;
-    void* allocation;
+    void* volatile allocation;
     unsigned long reserved[2];
     void* buffer;
     unsigned long size;
@@ -136,10 +136,11 @@ __forceinline Resource::~Resource() throw()
 {
     if (buffer)
         operator delete(buffer);
+    void* p = allocation;
     buffer = 0;
     size = 0;
     capacity = 0;
-    operator delete(allocation);
+    operator delete(p);
 }
 
 S::~S()

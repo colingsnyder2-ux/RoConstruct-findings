@@ -1,5 +1,5 @@
-// from server: 96% by king_originala
-extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
+// from server: 100% by colin
+extern "C" long __cdecl _InterlockedIncrement(volatile long*);
 #pragma intrinsic(_InterlockedExchangeAdd)
 
 struct Counter {
@@ -36,7 +36,7 @@ void S::assign(const Data* source)
             Counter* counter = source->counter;
             destination->counter = counter;
             if (counter)
-                _InterlockedExchangeAdd(&counter->references, 1);
+                _InterlockedIncrement(&counter->references);
         }
         tag = &target_0080ecc0;
     } else {

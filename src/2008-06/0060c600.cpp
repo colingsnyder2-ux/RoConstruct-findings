@@ -1,21 +1,29 @@
-// from server: 90% by king_originala
-struct State {
+// from server: 100% by colin
+// roc-flags: /O2 /GS- /EHsc /MD /fp:fast
+struct MotorData
+{
     char padding[0x8c];
     float value;
+
     void setValue(float value);
 };
 
-struct S {
-    char padding[0x150];
-    State* state;
-    void notify(const void* descriptor);
-    void setValue(float value);
-};
+extern const char property;
 
-void S::setValue(float value)
+struct Motor
 {
-    if (state->value != value) {
-        state->setValue(value);
-        notify(reinterpret_cast<const void*>(0x97be80));
+    char padding[0x150];
+    MotorData* data;
+
+    void setValue(float value);
+    void notify(const void* descriptor);
+};
+
+void Motor::setValue(float value)
+{
+    if (value != data->value)
+    {
+        data->setValue(value);
+        notify(&property);
     }
 }

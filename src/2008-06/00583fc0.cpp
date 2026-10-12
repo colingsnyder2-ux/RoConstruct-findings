@@ -1,26 +1,30 @@
-// from server: 83% by king_originala
-struct Base {
+// from server: 97% by colin
+struct Matrix
+{
     float data[9];
-    Base(const Base&);
+    Matrix(const Matrix &);
 };
 
-struct Value {
-    Base base;
+struct Value
+{
+    Matrix rotation;
     float x, y, z;
 };
 
-struct S {
-    unsigned char padding[8];
-    const Value& (__thiscall *getter)(void*);
+struct GetSetImpl
+{
+    char padding[8];
+    const Value &(__thiscall *function)(void *);
     int adjustment;
-    int virtualOffset;
+    int index;
 
-    Value get(const void* object) const;
+    Value Invoke(void *argument);
 };
 
-Value S::get(const void* object) const {
-    char* p = object ? (char*)object - 0x14 : 0;
-    char* table = *(char**)(p + 0x134);
-    int offset = *(int*)(table + virtualOffset) + adjustment;
-    return getter(p + 0x134 + offset);
+Value GetSetImpl::Invoke(void *argument)
+{
+    char *object = argument ? (char *)argument - 0x14 : 0;
+    return function(
+        object + 0x150 +
+        (*(int *)(*(char **)(object + 0x150) + index) + adjustment));
 }

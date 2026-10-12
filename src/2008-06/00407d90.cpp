@@ -1,4 +1,4 @@
-// from server: 94% by king_originala
+// from server: 100% by colin
 struct Base {
     virtual void f0();
     virtual void f1();
@@ -6,21 +6,13 @@ struct Base {
     virtual void f3();
     virtual void f4();
     virtual void destroy(unsigned int);
-
-    unsigned int padding[2];
-    unsigned int references;
 };
 
-struct Object {
-    unsigned int padding[3];
-    Base base;
-};
-
-extern "C" unsigned int __stdcall release(Object *object)
+extern "C" unsigned int __stdcall release(char *object)
 {
-    --object->base.references;
-    unsigned int result = object->base.references;
+    unsigned int *refs = reinterpret_cast<unsigned int*>(object + 0x18);
+    unsigned int result = --*refs;
     if (result == 0 && object != 0)
-        object->base.destroy(1);
+        reinterpret_cast<Base*>(object + 0xc)->destroy(1);
     return result;
 }

@@ -1,5 +1,4 @@
-// from server: 55% by colin
-// roc-lang: cpp
+// from server: 100% by tester
 // roc-cl: 50727
-// roc-flags: /Od /Ob1 /GS- /MT
-// roc-lib: wildmagic-2-core Geometry/WmlConvexClipper.cpp
+// roc-flags: /Od /Ob0 /GS- /MD
+void empty() {}

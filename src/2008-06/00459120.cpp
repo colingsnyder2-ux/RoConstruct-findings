@@ -1,9 +1,12 @@
-// from server: 91% by king_originala
+// from server: 100% by colin
 typedef void* HWND;
 typedef int BOOL;
 
-extern "C" void* __cdecl sub_6A0926();
-extern "C" BOOL (__stdcall *PostMessageA)(HWND, unsigned int, unsigned int, long);
+struct W { char p[0x20]; HWND h; };
+struct V { char p[0x20]; W* w; };
+struct U { char p[4]; V* v; };
+extern "C" U* __cdecl sub_6A0926();
+extern "C" __declspec(dllimport) BOOL __stdcall PostMessageA(HWND, unsigned int, unsigned int, long);
 
 struct ToggleFullscreenVerb
 {
@@ -12,9 +15,6 @@ struct ToggleFullscreenVerb
 
 BOOL ToggleFullscreenVerb::f(void*)
 {
-    void* a = sub_6A0926();
-    a = *(void**)((char*)a + 4);
-    a = *(void**)((char*)a + 0x20);
-    HWND h = *(HWND*)((char*)a + 0x20);
-    return PostMessageA(h, 0x111, 0x80f4, 0);
+    W* w = sub_6A0926()->v->w;
+    return PostMessageA(w->h, 0x111, 0x80f4, 0);
 }

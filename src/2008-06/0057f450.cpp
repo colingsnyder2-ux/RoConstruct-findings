@@ -1,23 +1,14 @@
-// from server: 98% by king_originala
-struct String;
-
-extern void (__thiscall *StringCopy)(String*, const String&);
-extern void (__thiscall *StringDestroy)(String*);
-
-struct String {
-    char storage[28];
-    String(const String& other) { StringCopy(this, other); }
-    ~String() { StringDestroy(this); }
-};
-
+// from server: 100% by colin
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+#include <string>
 struct Base {
-    Base(String, int);
+    Base(std::string, int);
     virtual ~Base();
 };
-
 struct S : Base {
-    S(String, int);
+    S(std::string, int);
     virtual ~S();
 };
-
-S::S(String text, int value) : Base(text, value) {}
+S::S(std::string text, int value) : Base(text, value) {}

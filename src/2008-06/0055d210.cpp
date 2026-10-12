@@ -1,5 +1,5 @@
-// from server: 96% by king_originala
-extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
+// from server: 100% by colin
+extern "C" long __cdecl _InterlockedIncrement(volatile long*);
 #pragma intrinsic(_InterlockedExchangeAdd)
 extern "C" void __cdecl _ReadWriteBarrier(void);
 #pragma intrinsic(_ReadWriteBarrier)
@@ -38,7 +38,7 @@ S::S(const S& source, const Pair& pair)
     if (firstCount) {
         volatile long* count = &firstCount->count;
         _ReadWriteBarrier();
-        _InterlockedExchangeAdd(count, 1);
+        _InterlockedIncrement(count);
     }
     second = pair.second;
     secondCount = pair.secondCount;
@@ -47,6 +47,6 @@ S::S(const S& source, const Pair& pair)
         _ReadWriteBarrier();
         volatile long* count = &counter->count;
         _ReadWriteBarrier();
-        _InterlockedExchangeAdd(count, 1);
+        _InterlockedIncrement(count);
     }
 }

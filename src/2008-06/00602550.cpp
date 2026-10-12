@@ -1,59 +1,48 @@
-// from server: 82% by king_originala
-extern "C" __declspec(dllimport) void* __cdecl malloc(unsigned int);
+// from server: 99% by colin
+extern "C" void * (__cdecl *malloc)(unsigned int);
 
-struct String {
-    char storage[28];
-
-    __declspec(dllimport) void initialize(const char*);
-    __declspec(dllimport) void destroy();
-
-    String(const char*);
-    ~String();
-};
-
-__forceinline String::String(const char* text)
-{
-    initialize(text);
-}
-
-__forceinline String::~String()
-{
-    destroy();
-}
-
-struct ImageWidget {
-    char storage[0x1a4];
-
-    static void* operator new(unsigned int) throw();
-    static void operator delete(void*);
-    ImageWidget(const String&, const String&);
-};
-
-__forceinline void* ImageWidget::operator new(unsigned int size) throw()
+inline void * __cdecl operator new(unsigned int size)
 {
     return malloc(size);
 }
 
-struct Tag {
-    char value;
-    Tag();
+void __cdecl operator delete(void *);
+
+struct String;
+extern void (__thiscall *string_construct)(String *, const char *);
+extern void (__thiscall *string_destroy)(String *);
+
+struct String {
+    unsigned char storage[28];
+    String(const char *);
+    ~String();
 };
 
-__forceinline Tag::Tag()
+inline String::String(const char *text)
 {
-    value = 0;
+    string_construct(this, text);
 }
 
-struct ImagePtr {
-    ImageWidget* object;
-    void* control;
+inline String::~String()
+{
+    string_destroy(this);
+}
 
-    ImagePtr(ImageWidget*, Tag);
-    ~ImagePtr();
+struct Widget {
+    unsigned char storage[0x188];
+    Widget(const String &, const String &);
 };
 
-ImagePtr createImageWidget(const char* first, const char* second)
+struct Empty {};
+
+struct Result {
+    void *object;
+    void *control;
+    Result(Widget *, Empty = Empty());
+    ~Result();
+};
+
+Result makeWidget(const char *first, const char *second)
 {
-    Tag tag;
-    return ImagePtr(new ImageWidget(String(first), String(second)), tag);
+    return Result(new Widget(String(first), String(second)));
 }

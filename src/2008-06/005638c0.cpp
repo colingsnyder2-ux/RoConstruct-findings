@@ -1,4 +1,3 @@
-// from server: 99% by colin
 namespace std {
     template<class T> struct char_traits;
     template<class T> class allocator;
@@ -24,9 +23,9 @@ __forceinline std::basic_string<T, Traits, Alloc>::basic_string(
 }
 
 struct S {
-    char prefix[16];
+    char prefix[0x48];
     std::string text;
-    char suffix[88];
+    char suffix[0x20];
 
     S();
     ~S();

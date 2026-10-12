@@ -1,60 +1,62 @@
-// from server: 40% by colin
+// from server: 100% by colin
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
+extern "C" long __cdecl _InterlockedDecrement(volatile long*);
+#pragma intrinsic(_InterlockedDecrement)
 
-struct Inner
-{
-    virtual void slot0();
-    virtual void slot1();
-    virtual void slot2();
-};
-
-struct RefCounted
-{
-    virtual void slot0();
-    virtual void slot1();
-    virtual void slot2();
-
+struct Control {
+    virtual ~Control();
+    virtual void dispose();
+    virtual void destroy();
     volatile long strong;
     volatile long weak;
-
-    void release();
 };
 
-__forceinline void RefCounted::release()
+struct Shared {
+    void* pointer;
+    Control* control;
+    ~Shared();
+};
+
+struct Member {
+    unsigned char storage[4];
+    void cleanup();
+};
+
+struct S;
+
+struct Owner {
+    void remove(S*);
+};
+
+struct Base {
+    virtual ~Base();
+};
+
+struct S : Base {
+    Shared shared;
+    Owner* owner;
+    Member member;
+    virtual ~S();
+};
+
+inline Base::~Base()
 {
-    if (_InterlockedExchangeAdd(&strong, -1) == 1)
-    {
-        slot1();
-        if (_InterlockedExchangeAdd(&weak, -1) == 1)
-            slot2();
+}
+
+inline Shared::~Shared()
+{
+    Control* p = control;
+    if (p && _InterlockedDecrement(&p->strong) == 0) {
+        p->dispose();
+        if (_InterlockedDecrement(&p->weak) == 0)
+            p->destroy();
     }
 }
 
-struct Sub
+S::~S()
 {
-    void destroy();
-};
-
-struct S
-{
-    virtual void v0();
-    virtual void v1();
-    virtual void v2();
-
-    RefCounted* ref;
-    Sub sub;
-    void* extra;
-
-    void f();
-};
-
-void S::f()
-{
-    ref = 0;
-    if (extra)
-        sub.destroy();
-    sub.~Sub();
-    if (ref)
-        ref->release();
+    if (owner)
+        owner->remove(this);
+    member.cleanup();
 }

@@ -1,49 +1,58 @@
-// from server: 36% by colin
-struct type_info {
-    bool __thiscall operator==(const type_info&) const;
+// from server: 92% by atomic.potato
+struct type_info;
+
+typedef bool (__thiscall* TypeInfoEqualProc)(const type_info*, const type_info&);
+extern TypeInfoEqualProc typeInfoEqual;
+extern type_info inputType;
+
+struct Metadata {
+    unsigned char padding[8];
+    const type_info* type;
 };
 
-struct Inner {
-    void* p;
-    void* q;
+struct Value {
+    virtual ~Value();
+    virtual void reserved();
+    virtual Value* clone();
+    Value* copy();
 };
+
+__forceinline Value* Value::copy()
+{
+    if (this)
+        return clone();
+    return 0;
+}
+
+extern int* __cdecl directValue(Value**);
 
 struct S {
-    void* vtable;
-    Inner inner;
+    Metadata* metadata;
+    Value* value;
+
+    S(const S&);
+    ~S();
+    int* convertedValue();
     int f();
 };
 
-extern "C" void* __cdecl sub_5EDAF0(void*);
-extern "C" void* __cdecl sub_5EF020(void*);
-extern "C" bool __stdcall sub_802878(void*, void*);
+inline S::S(const S& other)
+    : metadata(other.metadata)
+{
+    value = other.value->copy();
+}
 
-extern type_info type_955E20;
+inline S::~S()
+{
+    if (value)
+        delete value;
+}
 
-int S::f() {
-    void* vt = *(void**)this;
-    void* ti = *(void**)((char*)vt + 8);
-    if (sub_802878(&type_955E20, ti)) {
-        void* r = sub_5EDAF0((char*)this + 4);
-        return *(int*)r;
-    }
-    void* a = *(void**)this;
-    void* b = *(void**)((char*)this + 4);
-    void* c;
-    if (b) {
-        void* bvt = *(void**)b;
-        c = ((void* (__thiscall*)(void*))*(void**)((char*)bvt + 8))(b);
-    } else {
-        c = 0;
-    }
-    void* tmp[2];
-    tmp[0] = a;
-    tmp[1] = c;
-    void* r = sub_5EF020(tmp);
-    int result = *(int*)r;
-    if (c) {
-        void* cvt = *(void**)c;
-        ((void (__thiscall*)(void*, int))*(void**)((char*)cvt))(c, 1);
-    }
-    return result;
+int S::f()
+{
+    if (typeInfoEqual(&inputType, *metadata->type))
+        return *directValue(&value);
+
+    S temporary(*this);
+    return *temporary.convertedValue();
 }

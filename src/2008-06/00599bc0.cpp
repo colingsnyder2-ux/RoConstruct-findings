@@ -1,5 +1,5 @@
-// from server: 98% by king_originala
-extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
+// from server: 100% by colin
+extern "C" long __cdecl _InterlockedIncrement(volatile long*);
 #pragma intrinsic(_InterlockedExchangeAdd)
 extern "C" long __cdecl _InterlockedDecrement(volatile long*);
 #pragma intrinsic(_InterlockedDecrement)
@@ -46,7 +46,7 @@ void S::resizeStorage(int oldCount)
                 volatile long* counter =
                     reinterpret_cast<volatile long*>(newData->control);
                 ++counter;
-                _InterlockedExchangeAdd(counter, 1);
+                _InterlockedIncrement(counter);
             }
         }
     }

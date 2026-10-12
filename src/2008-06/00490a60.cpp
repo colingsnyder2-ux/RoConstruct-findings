@@ -1,76 +1,67 @@
-// from server: 97% by king_originala
-extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
+// from server: 100% by colin
+extern "C" long __cdecl _InterlockedIncrement(volatile long*);
 #pragma intrinsic(_InterlockedExchangeAdd)
-extern "C" void __cdecl _ReadWriteBarrier();
-#pragma intrinsic(_ReadWriteBarrier)
 
-struct Control {
+struct RefCount {
     long unused;
-    volatile long references;
+    volatile long count;
 };
 
-struct Payload {
-    void* first;
-    Control* firstControl;
-    void* second;
-    Control* secondControl;
-    unsigned long extra;
+struct Argument {
+    unsigned long value1;
+    RefCount* ref1;
+    unsigned long value2;
+    RefCount* ref2;
+    unsigned long unused;
 
     void destroy();
 };
 
-struct Argument {
-    unsigned long value;
-    Payload payload;
+extern bool __cdecl func_0060a2f0(void*);
+
+inline void* __cdecl operator new(unsigned int, void* p) {
+    return p;
+}
+
+struct Payload {
+    unsigned long first;
+    unsigned long value1;
+    RefCount* ref1;
+    unsigned long value2;
+    RefCount* ref2;
+
+    __forceinline Payload(unsigned long, const Argument&);
 };
 
-struct Data {
-    unsigned long value;
-    void* first;
-    Control* firstControl;
-    void* second;
-    Control* secondControl;
-};
-
-extern bool __cdecl func_0060a2f0(const Argument*);
-extern unsigned long table_0082175c[];
+__forceinline Payload::Payload(unsigned long value, const Argument& arg) {
+    first = value;
+    value1 = arg.value1;
+    ref1 = arg.ref1;
+    if (ref1)
+        _InterlockedIncrement(&ref1->count);
+    value2 = arg.value2;
+    ref2 = arg.ref2;
+    if (ref2)
+        _InterlockedIncrement(&ref2->count);
+}
 
 struct S {
-    void* table;
-    unsigned long reserved;
-    Data data;
+    unsigned long tag;
+    unsigned long unused;
+    Payload payload;
 
-    S* initialize(Argument argument);
+    S* f(unsigned long, Argument);
 };
 
-S* S::initialize(Argument argument)
-{
-    table = 0;
-    if (!func_0060a2f0(&argument)) {
-        Data* destination = &data;
-        if (destination) {
-            destination->value = argument.value;
-            destination->first = argument.payload.first;
-            destination->firstControl = argument.payload.firstControl;
-            if (destination->firstControl) {
-                volatile long* references =
-                    &destination->firstControl->references;
-                _ReadWriteBarrier();
-                _InterlockedExchangeAdd(references, 1);
-            }
-            destination->second = argument.payload.second;
-            destination->secondControl = argument.payload.secondControl;
-            if (destination->secondControl) {
-                volatile long* references =
-                    &destination->secondControl->references;
-                _ReadWriteBarrier();
-                _InterlockedExchangeAdd(references, 1);
-            }
-        }
-        table = table_0082175c;
-    } else {
-        table = 0;
+S* S::f(unsigned long first, Argument arg) {
+    tag = 0;
+    if (!func_0060a2f0(&first)) {
+        new (&payload) Payload(first, arg);
+        tag = 0x00821ca0;
+        arg.destroy();
+        return this;
     }
-    argument.payload.destroy();
+    tag = 0;
+    arg.destroy();
     return this;
 }

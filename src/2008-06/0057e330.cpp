@@ -1,30 +1,20 @@
-// from server: 98% by king_originala
-struct String
-{
-    char storage[28];
+// from server: 100% by colin
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+#include <string>
+extern std::string* (__thiscall * const stringCopy)(std::string*, const std::string&);
+extern void (__thiscall * const stringDestroy)(std::string*);
 
-    String(const String&);
-    ~String();
-};
 
-extern String* (__thiscall * const stringCopy)(String*, const String&);
-extern void (__thiscall * const stringDestroy)(String*);
 
-__forceinline String::String(const String& other)
-{
-    stringCopy(this, other);
-}
 
-__forceinline String::~String()
-{
-    stringDestroy(this);
-}
 
 struct Base
 {
     unsigned char storage[8];
 
-    Base(void*, String);
+    Base(void*, std::string);
     virtual ~Base();
 };
 
@@ -35,11 +25,11 @@ struct ClearBackpack : Base
     volatile unsigned int state;
     volatile unsigned int flags;
 
-    ClearBackpack(String, void*);
+    ClearBackpack(std::string, void*);
     virtual ~ClearBackpack();
 };
 
-ClearBackpack::ClearBackpack(String name, void* object)
+ClearBackpack::ClearBackpack(std::string name, void* object)
     : Base(object ? static_cast<char*>(object) + 0x1c8 : 0, name),
       owner(object),
       target(object),

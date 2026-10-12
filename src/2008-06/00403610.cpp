@@ -1,8 +1,8 @@
-// from server: 90% by colin
+// from server: 100% by colin
 // roc 2008-06 00403610  unit: ATL::CRegObject  size: 63 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 00403610
 
-extern "C" __declspec(noreturn) void __stdcall RaiseException(unsigned long, unsigned long, unsigned long, const unsigned long*);
+extern "C" __declspec(dllimport) __declspec(noreturn) void __stdcall RaiseException(unsigned long, unsigned long, unsigned long, const unsigned long*);
 
 struct CRegObject {
     int field0;
@@ -19,8 +19,8 @@ int CRegObject::GetAt(int index) {
     if (result == -1) {
         return 0;
     }
-    if (result < 0 || result >= self[1]) {
+    if (result < 0 || result >= self[2]) {
         RaiseException(0xc000008c, 1, 0, 0);
     }
-    return ((int*)self[0])[result];
+    return ((int*)self[1])[result];
 }

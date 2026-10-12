@@ -1,74 +1,76 @@
-// from server: 84% by king_originala
+// from server: 100% by colin
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+#include <string>
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
+extern "C" long __cdecl _InterlockedDecrement(volatile long*);
+#pragma intrinsic(_InterlockedDecrement)
 
-extern void (__thiscall *string_construct)(void*, const char*);
-extern void (__thiscall *string_destroy)(void*);
 
-struct String {
-    char storage[28];
-    String(const char*);
-    ~String();
-};
 
-inline String::String(const char* text) {
-    string_construct(this, text);
-}
 
-inline String::~String() {
-    string_destroy(this);
-}
+
+
+
 
 struct Control {
-    virtual void unused() = 0;
-    virtual void dispose() = 0;
-    virtual void destroy() = 0;
+    virtual void unused();
+    virtual void dispose();
+    virtual void destroy();
     volatile long strong;
     volatile long weak;
 };
 
-struct Reference {
+struct Count {
     Control* control;
-    Reference& operator=(const Reference&);
+    Count& operator=(const Count&);
+    __forceinline ~Count();
 };
 
-struct Pair {
-    void* value;
-    Reference reference;
-    ~Pair();
-};
-
-inline Pair::~Pair() {
-    Control* p = reference.control;
-    if (p && _InterlockedExchangeAdd(&p->strong, -1) == 0) {
-        p->dispose();
-        if (_InterlockedExchangeAdd(&p->weak, -1) == 0)
-            p->destroy();
+__forceinline Count::~Count()
+{
+    if (control) {
+        Control* p = control;
+        if (_InterlockedDecrement(&p->strong) == 0) {
+            p->dispose();
+            if (_InterlockedDecrement(&p->weak) == 0)
+                p->destroy();
+        }
     }
 }
 
-extern Pair __cdecl make_pair(void*);
+struct Shared {
+    void* pointer;
+    Count count;
+    __forceinline ~Shared();
+};
+
+__forceinline Shared::~Shared()
+{
+}
+
+Shared __cdecl makeShared(void*);
 
 struct Parent {
-    char* find(const String&);
+    char* find(const std::string&);
 };
 
 struct S {
     char padding0[0x104];
     Parent* parent;
     char padding1[0xf4];
-    void* cached;
-    Reference reference;
+    Shared cached;
     void* f();
 };
 
-void* S::f() {
-    if (!cached && parent) {
-        String name("Left Leg");
-        char* part = parent->find(name);
-        Pair result = make_pair(part ? part + 0xe4 : 0);
-        cached = result.value;
-        reference = result.reference;
+void* S::f()
+{
+    if (!cached.pointer && parent) {
+        std::string name("Left Leg");
+        char* object = parent->find(name);
+        cached = makeShared(object ? object + 0xe4 : 0);
     }
-    return cached;
+    return cached.pointer;
 }

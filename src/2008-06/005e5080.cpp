@@ -1,4 +1,5 @@
-// from server: 90% by king_originala
+// from server: 100% by colin
+// roc-flags: /O2 /GS- /EHsc /MD /fp:fast
 struct MotorData
 {
     char padding[0x8c];
@@ -20,7 +21,7 @@ struct Motor
 
 void Motor::setValue(float value)
 {
-    if (data->value != value)
+    if (value != data->value)
     {
         data->setValue(value);
         notify(&property);

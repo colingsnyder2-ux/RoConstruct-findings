@@ -1,27 +1,30 @@
-// from server: 88% by king_originala
-struct Vector
-{
-    float x, y, z;
-    Vector();
+// from server: 97% by colin
+#pragma float_control(precise, off)
+
+struct Vector3 {
+    static float x, y, z;
+    Vector3();
 };
 
-inline Vector::Vector() : x(0.0f), y(0.0f), z(0.0f)
+float Vector3::x;
+float Vector3::y;
+float Vector3::z;
+
+inline Vector3::Vector3()
 {
+    x = 0.0f;
+    y = 0.0f;
+    z = 0.0f;
 }
 
-struct BodyForce
-{
-    char padding[0x148];
+struct BodyVelocity {
+    char padding[0x158];
     float x, y, z;
-
-    int hasForce();
+    bool isNonzero();
 };
 
-int BodyForce::hasForce()
+bool BodyVelocity::isNonzero()
 {
-    static Vector zero;
-
-    if (zero.x != x || zero.y != y || zero.z != z)
-        return 1;
-    return 0;
+    static Vector3 zero;
+    return x != zero.x || y != zero.y || z != zero.z;
 }

@@ -1,4 +1,5 @@
-// from server: 93% by atomic.potato
+// from server: 100% by colin
+// roc-flags: /O2 /GS- /EHsc /MD /fp:fast
 struct Vector3ComponentItem
 {
     int value;
@@ -6,10 +7,7 @@ struct Vector3ComponentItem
     int index;
     int f(int, int);
 };
-
 int Vector3ComponentItem::f(int a, int b)
 {
-    float x = *(float *)(b + index * 4);
-    float y = *(float *)(a + index * 4);
-    return x == y;
+    return *(float *)(a + index * 4) == *(float *)(b + index * 4);
 }

@@ -1,5 +1,5 @@
-// from server: 89% by king_originala
-extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
+// from server: 91% by colin
+extern "C" long __cdecl _InterlockedIncrement(volatile long*);
 #pragma intrinsic(_InterlockedExchangeAdd)
 
 struct Instance {
@@ -21,7 +21,7 @@ struct Count {
     Count() : block(0) {}
     Count(const Count& other) : block(other.block) {
         if (block)
-            _InterlockedExchangeAdd(&block->references, 1);
+            _InterlockedIncrement(&block->references);
     }
     ~Count() {
         if (block)

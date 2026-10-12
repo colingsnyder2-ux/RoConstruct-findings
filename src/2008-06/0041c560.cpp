@@ -1,21 +1,15 @@
-// from server: 97% by king_originala
+// from server: 100% by colin
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+#include <string>
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
 
-struct String;
-typedef void (__thiscall *StringCopy)(String*, const String&);
-extern StringCopy copyString;
 
-struct String {
-    char storage[28];
-    String(const String&);
-    ~String();
-};
 
-inline String::String(const String& other)
-{
-    copyString(this, other);
-}
+
+
 
 struct Control {
     long reserved;
@@ -40,7 +34,7 @@ inline Shared::Shared(const Shared& other)
 }
 
 struct Value {
-    const String& text();
+    const std::string& text();
     const Shared& pointer();
 };
 
@@ -50,7 +44,7 @@ struct Base2 {};
 struct __multiple_inheritance Object : Base1, Base2 {
 };
 
-typedef void (Object::*Callback)(Shared, String, String);
+typedef void (Object::*Callback)(Shared, std::string, std::string);
 
 struct S {
     char reserved[56];

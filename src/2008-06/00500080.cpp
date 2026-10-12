@@ -1,46 +1,39 @@
-// from server: 69% by king_originala
-struct Pair {
-    short x;
-    short y;
-    Pair(int, int);
+// from server: 100% by colin
+struct Pair
+{
+    short first;
+    short second;
 };
 
-inline Pair::Pair(int a, int b)
+struct FloatValue
 {
-    x = (short)a;
-    y = (short)b;
-}
-
-struct Scalar {
     float value;
-    Scalar(float);
 };
 
-inline Scalar::Scalar(float v)
+struct Data
 {
-    value = v;
-}
-
-struct Integer {
-    int value;
-    Integer(int);
+    Pair pair;
+    FloatValue value;
+    int half;
 };
 
-inline Integer::Integer(int v)
+struct S
 {
-    value = v;
-}
-
-struct S {
     char padding[32];
     float value;
-    int count;
+    volatile int count;
 
-    void build(Scalar, Integer, Pair, void*);
-    void f(void*);
+    void helper(FloatValue value, int half, Pair pair, int argument);
+    void func_005000c0(int argument);
 };
 
-void S::f(void* arg)
+void S::func_005000c0(int argument)
 {
-    build(Scalar(value), Integer((count + 1) / 2), Pair(count, count), arg);
+    Data data;
+    data.value.value = value;
+    data.half = (count + 1) / 2;
+    int n = count;
+    data.pair.first = (short)n;
+    data.pair.second = (short)n;
+    helper(data.value, data.half, data.pair, argument);
 }

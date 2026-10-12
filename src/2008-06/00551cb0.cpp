@@ -1,4 +1,6 @@
-// from server: 37% by atomic.potato
+// from server: 100% by tester
+// roc-cl: 50727
+// roc-flags: /Od /Ob0 /GS- /MD
 struct TextureProxyBase
 {
     void SetValue(float value);

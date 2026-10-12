@@ -1,34 +1,27 @@
-// from server: 93% by king_originala
-struct String;
-typedef void (__thiscall *StringConstructor)(String*, const char*);
-extern StringConstructor stringConstructor;
-
-struct String
-{
-    unsigned char storage[28];
-    String(const char*, volatile int&);
-    String(const String&);
-};
-
-inline String::String(const char* text, volatile int& slot)
-{
-    slot = reinterpret_cast<int>(this);
-    stringConstructor(this, text);
+namespace std {
+    template<class T> struct char_traits;
+    template<class T> class allocator;
+    template<class T, class Traits, class Alloc>
+    class __declspec(dllimport) basic_string {
+        char storage[28];
+    public:
+        basic_string(const T*);
+        basic_string(const basic_string&);
+        ~basic_string();
+    };
+    typedef basic_string<char, char_traits<char>, allocator<char> > string;
 }
-
 struct Base
 {
-    Base(String, int);
+    Base(std::string, int);
     virtual void v();
 };
-
 struct S : Base
 {
-    S(volatile int, const char*);
+    S(int, const char*);
     virtual void v();
 };
-
-S::S(volatile int value, const char* text)
-    : Base(String(text, value), value)
+S::S(int value, const char* text)
+    : Base(std::string(text), value)
 {
 }

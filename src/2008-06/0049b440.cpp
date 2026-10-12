@@ -1,22 +1,17 @@
-// from server: 98% by king_originala
+// from server: 100% by colin
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+#include <string>
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
 extern "C" void __cdecl _ReadWriteBarrier();
 #pragma intrinsic(_ReadWriteBarrier)
 
-struct String;
-extern void (__thiscall *copyString)(String*, const String&);
 
-struct String {
-    unsigned char storage[28];
-    String(const String&);
-    ~String();
-};
 
-__forceinline String::String(const String& other)
-{
-    copyString(this, other);
-}
+
+
 
 struct Control {
     void* table;
@@ -42,7 +37,7 @@ __forceinline Shared::Shared(const Shared& other)
 }
 
 struct Source {
-    const String& getString();
+    const std::string& getString();
     const Shared& getShared();
 };
 
@@ -50,7 +45,7 @@ struct __multiple_inheritance Object;
 
 struct Descriptor {
     unsigned char padding[56];
-    void (Object::*method)(Shared, String);
+    void (Object::*method)(Shared, std::string);
 
     void invoke(Object*, void*, Source*, Source*);
 };

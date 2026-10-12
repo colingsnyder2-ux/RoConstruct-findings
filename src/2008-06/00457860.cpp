@@ -1,61 +1,85 @@
-// from server: 76% by king_originala
+// from server: 100% by colin
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
+extern "C" long __cdecl _InterlockedDecrement(volatile long*);
+#pragma intrinsic(_InterlockedDecrement)
 
 void* __cdecl operator new(unsigned int) throw();
 
-struct Control {
-    virtual void reserved() = 0;
-    virtual void dispose() = 0;
-    virtual void destroy() = 0;
-    volatile long references;
-    volatile long weakReferences;
+struct Control
+{
+    virtual void unused();
+    virtual void dispose();
+    virtual void destroy();
+
+    volatile long strong;
+    volatile long weak;
+
+    void release() throw();
 };
 
-struct Shared {
-    void* pointer;
+struct Shared
+{
+    void* object;
     Control* control;
+
     Shared(const Shared&) throw();
+    ~Shared() throw();
 };
 
 struct S;
 
-struct Message {
-    char data[0x18];
-    Message(S*, int, Shared) throw();
+struct Node
+{
+    unsigned char storage[24];
+
+    Node(S*, int, Shared) throw();
 };
 
-struct Queue {
-    void insert(Message* const*);
+struct Container
+{
+    unsigned char storage[28];
+
+    void insert(Node* const&) throw();
 };
 
-struct Destination {
+struct Dispatcher
+{
     void* field0;
     void* field4;
-    void method(int);
+
+    void method(int) throw();
 };
 
-struct S {
-    char prefix[4];
-    Queue queue;
-    char padding[0x1b];
-    Destination* destination;
-    void method(int, Shared);
-};
-
-void S::method(int arg, Shared value)
+struct S
 {
-    Message* message = new Message(this, arg, value);
-    Message* entry = message;
-    queue.insert(&entry);
-    destination->method(reinterpret_cast<int>(message));
+    void* field0;
+    Container pending;
+    Dispatcher* dispatcher;
 
-    Control* control = value.control;
-    if (control) {
-        if (_InterlockedExchangeAdd(&control->references, -1) == 1) {
-            control->dispose();
-            if (_InterlockedExchangeAdd(&control->weakReferences, -1) == 1)
-                control->destroy();
-        }
+    void method(int, Shared) throw();
+};
+
+__forceinline void Control::release() throw()
+{
+    if (_InterlockedDecrement(&strong) == 0)
+    {
+        dispose();
+        if (_InterlockedDecrement(&weak) == 0)
+            destroy();
     }
+}
+
+__forceinline Shared::~Shared() throw()
+{
+    if (control)
+        control->release();
+}
+
+void S::method(int argument, Shared value) throw()
+{
+    Node* node = new Node(this, argument, value);
+    argument = reinterpret_cast<int>(node);
+    pending.insert(reinterpret_cast<Node* const&>(argument));
+    dispatcher->method(reinterpret_cast<int>(node));
 }

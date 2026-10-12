@@ -1,26 +1,19 @@
-// from server: 88% by king_originala
+// from server: 100% by colin
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+#include <string>
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
+extern "C" long __cdecl _InterlockedDecrement(volatile long*);
+#pragma intrinsic(_InterlockedDecrement)
 
-struct String;
-extern void (__thiscall *string_construct)(String*, const char*);
-extern void (__thiscall *string_destroy)(String*);
 
-struct String {
-    unsigned char storage[28];
-    String(const char*);
-    ~String();
-};
 
-inline String::String(const char* text)
-{
-    string_construct(this, text);
-}
 
-inline String::~String()
-{
-    string_destroy(this);
-}
+
+
+
 
 struct Control {
     virtual void reserved() = 0;
@@ -30,57 +23,58 @@ struct Control {
     volatile long weak;
 };
 
-struct Reference {
+struct Handle {
     Control* control;
-    Reference& operator=(const Reference&);
+    Handle& operator=(const Handle&);
+    ~Handle();
 };
 
-struct Pair {
-    void* object;
-    Reference reference;
-    __forceinline Pair& operator=(const Pair&);
-    __forceinline ~Pair();
-};
-
-__forceinline Pair& Pair::operator=(const Pair& other)
-{
-    object = other.object;
-    reference = other.reference;
-    return *this;
-}
-
-__forceinline Pair::~Pair()
-{
-    Control* p = reference.control;
-    if (p) {
-        if (_InterlockedExchangeAdd(&p->strong, -1) == 0) {
+__forceinline Handle::~Handle() {
+    if (control) {
+        Control* p = control;
+        if (_InterlockedDecrement(&p->strong) == 0) {
             p->dispose();
-            if (_InterlockedExchangeAdd(&p->weak, -1) == 0)
+            if (_InterlockedDecrement(&p->weak) == 0)
                 p->destroy();
         }
     }
 }
 
-extern Pair __cdecl obtain(char*);
-
-struct Parent {
-    char* find(const String&);
+struct Shared {
+    void* object;
+    Handle handle;
+    ~Shared();
 };
+
+__forceinline Shared::~Shared() {
+}
+
+struct Instance {
+    void* find(const std::string&);
+};
+
+extern Shared __cdecl acquire(void*);
 
 struct S {
-    unsigned char padding0[0x104];
-    Parent* parent;
-    unsigned char padding1[0xfc];
-    Pair cached;
-    void* get();
+    char padding0[0x104];
+    Instance* parent;
+    char padding1[0xfc];
+    void* cached;
+    Handle owner;
+    void assign(const Shared&);
+    void* f();
 };
 
-void* S::get()
-{
-    if (!cached.object && parent) {
-        String name("Right Leg");
-        char* found = parent->find(name);
-        cached = obtain(found ? found + 0xe4 : 0);
+__forceinline void S::assign(const Shared& value) {
+    cached = value.object;
+    owner = value.handle;
+}
+
+void* S::f() {
+    if (!cached && parent) {
+        std::string name("Right Leg");
+        void* found = parent->find(name);
+        assign(acquire(found ? static_cast<char*>(found) + 0xe4 : 0));
     }
-    return cached.object;
+    return cached;
 }

@@ -1,44 +1,46 @@
-// from server: 84% by king_originala
+// from server: 100% by colin
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
 extern "C" long __cdecl _InterlockedDecrement(volatile long*);
 #pragma intrinsic(_InterlockedDecrement)
 
-struct Control
-{
+struct Control {
     virtual void unused();
     virtual void dispose();
     virtual void destroy();
     volatile long strong;
     volatile long weak;
+    void release();
 };
 
-struct Argument
+__forceinline void Control::release()
 {
-    unsigned long a;
-    unsigned long b;
-    unsigned long c;
-    Control* control;
-    unsigned long e;
-};
-
-struct S
-{
-    unsigned long value;
-    void helper(Argument*);
-    S* f(Argument);
-};
-
-S* S::f(Argument arg)
-{
-    value = 0;
-    helper(&arg);
-    Control* p = arg.control;
-    if (p && _InterlockedDecrement(&p->strong) == 0)
-    {
-        p->dispose();
-        if (_InterlockedDecrement(&p->weak) == 0)
-            p->destroy();
+    if (_InterlockedDecrement(&strong) == 0) {
+        dispose();
+        if (_InterlockedDecrement(&weak) == 0)
+            destroy();
     }
+}
+
+struct Value {
+    unsigned long words[3];
+    Control* control;
+    unsigned long last;
+};
+
+struct S {
+    void* pointer;
+    void initialize(Value*);
+    S* f(Value);
+};
+
+S* S::f(Value value)
+{
+    pointer = 0;
+    initialize(&value);
+
+    if (value.control)
+        value.control->release();
+
     return this;
 }

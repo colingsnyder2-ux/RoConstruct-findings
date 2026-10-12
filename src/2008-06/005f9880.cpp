@@ -1,14 +1,11 @@
-// from server: 87% by king_originala
+// from server: 100% by colin
 struct Base {
-    char reserved[84];
     virtual ~Base();
+    unsigned char storage[84];
 };
 
 struct S : Base {
-    unsigned int open : 1;
-    unsigned int reservedFlags : 3;
-    volatile unsigned int mode : 28;
-
+    unsigned int flags;
     virtual ~S();
     void close();
 };
@@ -16,7 +13,8 @@ struct S : Base {
 S::~S()
 {
     try {
-        if (open && (mode & 1))
+        if ((*reinterpret_cast<unsigned char*>(&flags) & 1) &&
+            (static_cast<unsigned char>(flags >> 4) & 1))
             close();
     } catch (...) {
     }

@@ -1,31 +1,31 @@
-// from server: 84% by tester
-struct VInstance {
-    void constructSignalDesc(int);
-    char pad[0xc];
-    int field_c;
-    char pad2[0x1c8 - 0x10];
+// from server: 100% by colin
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+#include <string>
+extern const char signalName[];
+
+
+
+
+
+struct Base {
+    virtual void slot();
+    char storage[8];
+
+    Base(void*, std::string);
 };
 
-struct SignalDesc {
-    void* vtable;
-    char pad[8];
-    int field_c;
-    void* init(int* owner);
+struct SignalDesc : Base {
+    void* owner;
+
+    virtual void slot();
+    SignalDesc(void*);
 };
 
-extern "C" void* __stdcall sub_802458();
-extern "C" void __stdcall sub_830684();
-extern "C" void __stdcall sub_830670();
-
-void* SignalDesc::init(int* owner)
+SignalDesc::SignalDesc(void* object)
+    : Base(object ? static_cast<char*>(object) + 0x1c8 : 0,
+           std::string(signalName)),
+      owner(object)
 {
-    int* p = owner ? (int*)((char*)owner + 0x1c8) : 0;
-    char buf[0x1c];
-    sub_802458();
-    sub_830684();
-    ((VInstance*)this)->constructSignalDesc((int)p);
-    this->field_c = (int)owner;
-    this->vtable = (void*)0x830670;
-
-    return this;
 }

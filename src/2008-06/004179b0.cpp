@@ -1,5 +1,5 @@
-// from server: 96% by king_originala
-extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
+// from server: 100% by colin
+extern "C" long __cdecl _InterlockedIncrement(volatile long*);
 #pragma intrinsic(_InterlockedExchangeAdd)
 
 struct Control
@@ -42,7 +42,7 @@ S::S()
     object = sharedObject;
     control = sharedControl;
     if (control)
-        _InterlockedExchangeAdd(&control->references, 1);
+        _InterlockedIncrement(&control->references);
     field20 = 0;
     field24 = 0;
     field28 = 0;

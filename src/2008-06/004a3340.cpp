@@ -1,46 +1,38 @@
-// from server: 87% by king_originala
-struct Result
-{
+// from server: 100% by colin
+struct Result {
     unsigned int reserved;
-    void* object;
-    void* owner;
+    unsigned int first;
+    unsigned int second;
     unsigned char flag;
 };
 
-struct State
-{
+struct ProductPart {
     void finish();
 };
 
-struct Prefix
-{
-    unsigned char reserved[16];
+struct Product {
+    unsigned char padding[16];
+    ProductPart part;
 };
 
-struct Product : Prefix, State
-{
+struct S {
+    Product& createProduct(unsigned int source, Result* result,
+                           unsigned int* value, unsigned int option,
+                           unsigned int zero);
+    Result* f(Result* result, unsigned int source,
+              unsigned int option, unsigned int value);
 };
 
-extern "C" Product& __stdcall createProduct(
-    void*, Result*, void**, unsigned int, unsigned int);
-
-struct S
-{
-    Result* reconstruct(Result*, void*, unsigned int, void*);
-};
-
-Result* S::reconstruct(
-    Result* result, void* source, unsigned int value, void* context)
+Result* S::f(Result* result, unsigned int source,
+             unsigned int option, unsigned int value)
 {
     volatile unsigned int zero = 0;
-    if (source)
-    {
-        createProduct(source, result, &context, value, 0).finish();
+    if (source) {
+        createProduct(source, result, &value, option, 0).part.finish();
         return result;
     }
-
-    result->object = 0;
-    result->owner = 0;
+    result->first = 0;
+    result->second = 0;
     result->flag = 0;
     return result;
 }

@@ -1,4 +1,4 @@
-// from server: 93% by king_originala
+// from server: 100% by colin
 struct String {
     unsigned char unused;
 };
@@ -25,7 +25,8 @@ struct CMemberTreeView {
 
 void CMemberTreeView::addItem(Item* item)
 {
-    const char* text = string_c_str(&item->data->text);
+    ItemData* data = item->data;
+    const char* text = string_c_str(&data->text);
     void* handle = insertItem(35, text, 10, 10, 0, 0, 0,
                               (void*)0xffff0000, (void*)0xffff0002);
     setItem(handle, 4, 0, 0, 0, 0, 0, item);

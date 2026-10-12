@@ -1,35 +1,28 @@
-// from server: 97% by king_originala
-struct String;
-extern const char clearBackpack[];
-extern String *(__thiscall *stringConstructor)(String *, const char *);
-
-struct String {
-    char storage[28];
-    String(const char *);
-    String(const String &);
-    ~String();
-};
-
-__forceinline String::String(const char *text)
-{
-    stringConstructor(this, text);
+namespace std {
+    template<class T> struct char_traits;
+    template<class T> class allocator;
+    template<class T, class Traits, class Alloc>
+    class __declspec(dllimport) basic_string {
+        char storage[28];
+    public:
+        basic_string(const T*);
+        basic_string(const basic_string&);
+        ~basic_string();
+    };
+    typedef basic_string<char, char_traits<char>, allocator<char> > string;
 }
-
 struct Base {
     unsigned char storage[8];
-    Base(void *, String);
+    Base(void *, std::string);
     virtual void dispatch();
 };
-
 struct SignalDesc : Base {
     void *instance;
     SignalDesc(void *);
     virtual void dispatch();
 };
-
 SignalDesc::SignalDesc(void *object)
-    : Base(object ? static_cast<char *>(object) + 0x1c8 : 0,
-           String(clearBackpack)),
+    : Base(object ? static_cast<char *>(object) + 0x1c8 : 0, "ClearBackpack"),
       instance(object)
 {
 }

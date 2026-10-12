@@ -1,5 +1,5 @@
-// from server: 97% by king_originala
-extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
+// from server: 100% by colin
+extern "C" long __cdecl _InterlockedIncrement(volatile long*);
 #pragma intrinsic(_InterlockedExchangeAdd)
 
 struct Value {
@@ -13,7 +13,7 @@ inline Value::Value(const Value& other)
     : pointer(other.pointer), control(other.control)
 {
     if (control)
-        _InterlockedExchangeAdd(control + 1, 1);
+        _InterlockedIncrement(control + 1);
 }
 
 struct Iterator {

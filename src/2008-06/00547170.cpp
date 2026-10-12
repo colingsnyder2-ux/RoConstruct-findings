@@ -1,5 +1,5 @@
-// from server: 53% by colin
+// from server: 100% by colin
 // roc-lang: cpp
 // roc-cl: 50727
-// roc-flags: /Od /Ob1 /GS- /MT
-// roc-lib: wildmagic-2-core Geometry/WmlConvexClipper.cpp
+// roc-flags: /Od /Ob0 /GS- /MD
+// roc-lib: rbxgs-render roc_g3d_ptr_debug_fbb0c4ed74b7271b.cpp

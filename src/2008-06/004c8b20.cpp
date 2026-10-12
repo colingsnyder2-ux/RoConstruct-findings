@@ -1,25 +1,14 @@
-// from server: 85% by king_originala
-inline void* __cdecl operator new(unsigned int, void* p)
-{
-    return p;
-}
+// from server: 100% by colin
+inline void* operator new(unsigned int, void* p) { return p; }
+inline void operator delete(void*, void*) {}
 
-inline void __cdecl operator delete(void*, void*)
+struct S
 {
-}
-
-struct Object
-{
-    Object(const Object& source);
-    void copy(const Object& source);
+    S(void*);
 };
 
-inline Object::Object(const Object& source)
+S* __stdcall sub_4CB010(void* argument, void* storage)
 {
-    copy(source);
-}
-
-Object* __stdcall construct(const Object* source, Object* storage)
-{
-    return new (storage) Object(*source);
+    new (storage) S(argument);
+    return static_cast<S*>(storage);
 }

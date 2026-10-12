@@ -1,62 +1,77 @@
-// from server: 86% by king_originala
+// from server: 100% by colin
+
 extern "C" void (__cdecl *invalid_parameter_noinfo)();
-extern "C" void* __cdecl sub_6A17C6(void*, int, int, int, int);
+extern "C" void* __cdecl __RTDynamicCast(void*, long, void*, void*, int);
+
+extern char instance_type;
+extern char properties_type;
 
 struct Entry {
     void* object;
-    void* control;
+    void* other;
 };
 
-struct Vector {
-    Vector** owner;
-    unsigned int reserved[2];
+struct Storage;
+
+struct Owner {
+    Storage* storage;
+};
+
+struct Storage {
+    Owner* owner;
+    unsigned char padding[8];
     Entry* begin;
     Entry* end;
 };
 
-struct Teams {
-    unsigned char reserved[0x108];
-    Vector* children;
-    void* findHumanoid();
+struct S {
+    unsigned char padding[0x108];
+    Storage* storage;
+    void* f();
 };
 
-void* Teams::findHumanoid() {
-    Vector* v = children;
-    if (v) {
-        Entry* last = v->end;
-        void (__cdecl *bad)() = invalid_parameter_noinfo;
-        if (v->begin > last)
-            bad();
-        Vector** lastOwner = v->owner;
+void* S::f()
+{
+    Storage* s = storage;
+    if (s) {
+        Entry* last = s->end;
+        void (__cdecl *invalid)() = invalid_parameter_noinfo;
+        if (s->begin > last)
+            invalid();
 
-        v = children;
-        Entry* current = v->begin;
-        if (current > v->end)
-            bad();
-        Vector** owner = v->owner;
+        Owner* lastOwner = s->owner;
+        s = storage;
+        Entry* current = s->begin;
+        if (current > s->end)
+            invalid();
 
+        Owner* owner = s->owner;
         for (;;) {
             if (!owner || owner != lastOwner)
-                bad();
+                invalid();
+
             if (current == last)
                 break;
 
-            Vector* container = !owner
-                ? (bad(), (Vector*)0)
-                : *owner;
-            if (current >= container->end)
-                bad();
+            if (!owner)
+                invalid();
+            Storage* container = owner ? owner->storage : 0;
 
-            void* result = sub_6A17C6(
-                current->object, 0, 0x92907c, 0x9534e0, 0);
+            if (current >= container->end)
+                invalid();
+
+            void* result = __RTDynamicCast(
+                current->object, 0, &instance_type, &properties_type, 0);
             if (result)
                 return result;
 
-            container = !owner
-                ? (bad(), (Vector*)0)
-                : *owner;
+            if (!owner)
+                invalid();
+            container = owner ? owner->storage : 0;
+
             if (current >= container->end)
-                bad();
+                invalid();
+
             ++current;
         }
     }

@@ -1,22 +1,5 @@
-// from server: 80% by king_originala
-struct S
-{
-    char pad0[0x10];
-    char** first;
-    char pad1[0x0C];
-    char** next;
-    char pad2[0x0C];
-    int* count;
-    char pad3[0x18];
-    char* buffer;
-
-    void f();
-};
-
-void S::f()
-{
-    char* p = buffer;
-    *first = p;
-    *next = p;
-    *count = p - *next;
-}
+// from server: 100% by colin
+// roc-lang: cpp
+// roc-cl: 50727
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: templates-boost-1_34_1 roc_string_sink_401c42386b16c308.cpp

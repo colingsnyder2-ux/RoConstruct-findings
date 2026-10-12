@@ -1,29 +1,14 @@
-// from server: 98% by king_originala
-struct String;
-
-extern void (__thiscall *string_copy)(String *, const String *);
-extern void (__thiscall *string_destroy)(String *);
-
-struct String {
-    unsigned char storage[28];
-    String(const String &);
-    ~String();
-};
-
-inline String::String(const String &other) {
-    string_copy(this, &other);
-}
-
-inline String::~String() {
-    string_destroy(this);
-}
-
+// from server: 100% by colin
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+#include <string>
 struct Result {
     void *object;
 };
 
 struct Signal {
-    Result invoke(String text, int value);
+    Result invoke(std::string text, int value);
 };
 
 struct Object {
@@ -33,7 +18,7 @@ struct Object {
 
 extern Object *__stdcall resolve(void *object);
 
-void __stdcall dispatch(void *object, String text, int value) {
+void __stdcall dispatch(void *object, std::string text, int value) {
     Object *resolved = resolve(object);
     if (resolved)
         resolved->signal.invoke(text, value);

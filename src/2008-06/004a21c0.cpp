@@ -1,27 +1,35 @@
-// from server: 80% by king_originala
-extern "C" void *(__cdecl *allocate)(unsigned int);
+// from server: 99% by colin
+extern "C" void* (__cdecl *malloc)(unsigned int);
+void __cdecl operator delete(void*);
 
-inline void *__cdecl operator new(unsigned int, void *p)
+struct Client
 {
-    return p;
-}
+    char storage[0x2d68];
 
-void __cdecl operator delete(void *, void *);
+    Client(void*, void*, void*);
 
-struct Object {
-    char storage[0x2d78];
-    Object(int, int, int);
+    static void* operator new(unsigned int size)
+    {
+        return malloc(size);
+    }
+
+    static void operator delete(void* p)
+    {
+        ::operator delete(p);
+    }
 };
 
-struct Deleter {};
+struct Shared
+{
+    Client* pointer;
+    void* count;
 
-struct Result {
-    void *object;
-    void *control;
-    Result(Object *, Deleter);
+    Shared(Client*, int);
 };
 
-Result __cdecl f(int a, int b, int c)
+Shared __cdecl createClient(void* a, void* b, void* c)
 {
-    return Result(new (allocate(sizeof(Object))) Object(a, b, c), Deleter());
+    int tag = 0;
+    *reinterpret_cast<volatile char*>(&tag) = 0;
+    return Shared(new Client(a, b, c), tag);
 }

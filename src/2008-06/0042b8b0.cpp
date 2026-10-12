@@ -1,48 +1,57 @@
-// from server: 96% by king_originala
-extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
+// from server: 100% by colin
+extern "C" long __cdecl _InterlockedIncrement(volatile long*);
 #pragma intrinsic(_InterlockedExchangeAdd)
 
-extern bool __cdecl func_0060a2f0();
-extern unsigned char managerTable;
+bool __cdecl func_0060a2f0();
+extern unsigned char descriptor;
 
-struct Control {
-    unsigned int reserved;
-    volatile long references;
-};
-
-struct Argument {
-    unsigned int first;
-    unsigned int second;
-    unsigned int third;
-    Control *control;
-};
-
-struct Holder {
-    void *table;
-    unsigned int reserved;
-    Argument storage;
-
-    void assign(const Argument *argument);
-};
-
-void Holder::assign(const Argument *argument)
+struct RefCount
 {
-    typedef bool (__cdecl *Predicate)(const Argument *);
+    long reserved;
+    volatile long count;
+};
 
-    if (!reinterpret_cast<Predicate>(&func_0060a2f0)(argument)) {
-        Argument *destination = &storage;
-        if (destination) {
-            destination->first = argument->first;
-            destination->second = argument->second;
-            destination->third = argument->third;
-            destination->control = argument->control;
+struct Buffer
+{
+    unsigned long a;
+    unsigned long b;
+    unsigned long c;
+    RefCount* owner;
+};
 
-            Control *control = destination->control;
-            if (control)
-                _InterlockedExchangeAdd(&control->references, 1);
+struct S
+{
+    unsigned long tag;
+    unsigned long reserved;
+    Buffer buffer;
+
+    void f(const Buffer& source);
+};
+
+void S::f(const Buffer& source)
+{
+    typedef bool (__cdecl *Predicate)(const Buffer&);
+
+    if (!reinterpret_cast<Predicate>(&func_0060a2f0)(source))
+    {
+        Buffer* destination = &buffer;
+        if (destination)
+        {
+            destination->a = source.a;
+            destination->b = source.b;
+            destination->c = source.c;
+            RefCount* owner = source.owner;
+            destination->owner = owner;
+            if (owner)
+            {
+                volatile long* count = &owner->count;
+                _InterlockedIncrement(count);
+            }
         }
-        table = &managerTable;
-    } else {
-        table = 0;
+        tag = reinterpret_cast<unsigned long>(&descriptor);
+    }
+    else
+    {
+        tag = 0;
     }
 }

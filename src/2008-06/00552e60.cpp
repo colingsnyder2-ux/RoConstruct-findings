@@ -1,20 +1,5 @@
-// from server: 51% by colin
-struct S {
-    int f(unsigned int index);
-};
-
-extern "C" int __stdcall sub_546320();
-
-extern "C" void __stdcall sub_802890();
-
-int S::f(unsigned int index)
-{
-    int count = sub_546320();
-    if (index >= (unsigned int)count) {
-        sub_802890();
-        if (index >= (unsigned int)count) {
-            sub_802890();
-        }
-    }
-    return *(int*)((char*)this + 0xc) + index * 4;
-}
+// from server: 100% by colin
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /Od /Ob0 /GS- /MD
+// roc-lib: rbxgs-render roc_g3d_array_debug_89494c2c4f78369c.cpp

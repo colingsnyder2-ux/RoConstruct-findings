@@ -1,8 +1,9 @@
-// from server: 97% by king_originala
+// from server: 100% by colin
 extern int g_hit, g_miss;
+extern float g_none;
 
 double hitRatio() {
     int n = g_hit + g_miss;
-    if (n == 0) return -1.0f;
+    if (n == 0) return g_none;
     return (double)g_hit / n;
 }

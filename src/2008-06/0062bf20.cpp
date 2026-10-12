@@ -1,75 +1,78 @@
-// from server: 86% by king_originala
+// from server: 100% by colin
+
 extern "C" void (__cdecl *invalid_parameter_noinfo)();
 extern "C" void* __cdecl __RTDynamicCast(void*, long, void*, void*, int);
 
-extern char instance_type_descriptor;
-extern char flag_type_descriptor;
-
-struct Container;
-
-struct Proxy {
-    Container* container;
-};
+extern char instance_type;
+extern char properties_type;
 
 struct Entry {
     void* object;
-    void* reference;
+    void* other;
 };
 
-struct Container {
-    Proxy* proxy;
+struct Storage;
+
+struct Owner {
+    Storage* storage;
+};
+
+struct Storage {
+    Owner* owner;
     unsigned char padding[8];
-    Entry* first;
-    Entry* last;
+    Entry* begin;
+    Entry* end;
 };
 
 struct S {
     unsigned char padding[0x108];
-    Container* children;
+    Storage* storage;
     void* f();
 };
 
 void* S::f()
 {
-    if (children) {
-        Container* c = children;
-        Entry* finish = c->last;
+    Storage* s = storage;
+    if (s) {
+        Entry* last = s->end;
         void (__cdecl *invalid)() = invalid_parameter_noinfo;
-
-        if (c->first > finish)
+        if (s->begin > last)
             invalid();
-        Proxy* finishOwner = c->proxy;
 
-        c = children;
-        Entry* position = c->first;
-        if (position > c->last)
+        Owner* lastOwner = s->owner;
+        s = storage;
+        Entry* current = s->begin;
+        if (current > s->end)
             invalid();
-        Proxy* owner = c->proxy;
 
+        Owner* owner = s->owner;
         for (;;) {
-            if (!owner || owner != finishOwner)
+            if (!owner || owner != lastOwner)
                 invalid();
-            if (position == finish)
+
+            if (current == last)
                 break;
 
-            Container* checked = owner
-                ? owner->container
-                : (invalid(), (Container*)0);
-            if (position >= checked->last)
+            if (!owner)
+                invalid();
+            Storage* container = owner ? owner->storage : 0;
+
+            if (current >= container->end)
                 invalid();
 
             void* result = __RTDynamicCast(
-                position->object, 0,
-                &instance_type_descriptor, &flag_type_descriptor, 0);
+                current->object, 0, &instance_type, &properties_type, 0);
             if (result)
                 return result;
 
-            checked = owner
-                ? owner->container
-                : (invalid(), (Container*)0);
-            if (position >= checked->last)
+            if (!owner)
                 invalid();
-            ++position;
+            container = owner ? owner->storage : 0;
+
+            if (current >= container->end)
+                invalid();
+
+            ++current;
         }
     }
     return 0;

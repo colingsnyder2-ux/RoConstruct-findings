@@ -1,5 +1,5 @@
-// from server: 95% by king_originala
-extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
+// from server: 100% by colin
+extern "C" long __cdecl _InterlockedIncrement(volatile long*);
 #pragma intrinsic(_InterlockedExchangeAdd)
 
 struct RefCount {
@@ -38,11 +38,11 @@ __forceinline Payload::Payload(unsigned long value, const Argument& arg) {
     value1 = arg.value1;
     ref1 = arg.ref1;
     if (ref1)
-        _InterlockedExchangeAdd(&ref1->count, 1);
+        _InterlockedIncrement(&ref1->count);
     value2 = arg.value2;
     ref2 = arg.ref2;
     if (ref2)
-        _InterlockedExchangeAdd(&ref2->count, 1);
+        _InterlockedIncrement(&ref2->count);
 }
 
 struct S {

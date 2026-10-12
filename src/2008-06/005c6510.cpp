@@ -1,36 +1,28 @@
-// from server: 34% by colin
-struct Primary {
-    virtual void primary();
-};
+// from server: 99% by colin
+void* __cdecl operator new(unsigned int);
+void __cdecl operator delete(void*);
 
-struct Secondary {
-    virtual void secondary();
-};
-
-struct Base : Primary, Secondary {
-    int fields[5];
-    Base(int);
-    ~Base();
-};
-
-struct Active {
+struct Context {
     char pad[0x204];
-    Base* p;
+    void* value;
+    __forceinline void* get();
 };
 
-extern "C" void* __cdecl operator_new(unsigned int);
+__forceinline void* Context::get() {
+    return value;
+}
+
+struct Tool {
+    char storage[0x48];
+    Tool(void*);
+};
 
 struct Verb {
-    char pad[0xc];
-    Active* active;
-    void* doIt();
+    char pad[0x0c];
+    Context* context;
+    Tool* create();
 };
 
-void* Verb::doIt() {
-    void* mem = operator_new(0x74);
-    if (mem) {
-        Base* b = (Base*)mem;
-        b->Base::Base((int)active->p);
-    }
-    return mem;
+Tool* Verb::create() {
+    return new Tool(context->get());
 }
