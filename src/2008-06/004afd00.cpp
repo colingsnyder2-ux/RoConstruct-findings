@@ -1,8 +1,10 @@
-// from server: 84% by king_originala
+// from server: 91% by king_originala
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
+extern "C" long __cdecl _InterlockedDecrement(volatile long*);
+#pragma intrinsic(_InterlockedDecrement)
 
-extern "C" void (__cdecl* _invalid_parameter_noinfo)();
+extern "C" void (__cdecl* invalid_parameter_noinfo)();
 
 struct Control {
     virtual void unused() = 0;
@@ -13,114 +15,120 @@ struct Control {
 };
 
 struct Object;
-
 struct Shared {
-    Object* ptr;
+    Object* object;
     Control* control;
-    __forceinline ~Shared();
-};
-
-__forceinline Shared::~Shared() {
-    Control* p = control;
-    if (p) {
-        if (_InterlockedExchangeAdd(&p->strong, -1) == 0) {
-            p->dispose();
-            if (_InterlockedExchangeAdd(&p->weak, -1) == 0)
-                p->destroy();
+    __forceinline ~Shared() {
+        if (control) {
+            Control* p = control;
+            if (_InterlockedDecrement(&p->strong) == 0) {
+                p->dispose();
+                if (_InterlockedDecrement(&p->weak) == 0)
+                    p->destroy();
+            }
         }
     }
-}
-
-#pragma pointers_to_members(full_generality, multiple_inheritance)
-
-struct S;
-
-struct Callback {
-    bool (S::*method)(Shared);
-    S* object;
-    char unused;
 };
 
-struct Object {
-    void apply(Callback);
-    void detach(int);
+struct Connection {
+    char data[16];
+    void disconnect();
 };
 
 struct Signal {
-    char data[16];
-    void clear();
+    void set(int);
 };
 
 struct Node {
-    char prefix[16];
-    Object* object;
-    int padding;
-    Signal first;
-    Signal second;
-    bool active;
+    Node* left;
+    Node* parent;
+    Node* right;
+    unsigned int key;
+    Signal* signal;
+    unsigned int padding;
+    Connection first;
+    Connection second;
+    unsigned char active;
+    unsigned char tail[4];
+    unsigned char nil;
 };
 
-struct Map;
-
-struct Proxy {
-    Map* container;
+struct Tree;
+struct Owner {
+    Tree* tree;
 };
 
 struct Iterator {
-    Proxy* proxy;
+    Owner* owner;
     Node* node;
 };
 
-struct Map {
-    Proxy* proxy;
+struct Tree {
+    Owner* owner;
     char padding[20];
-    Node* end;
-    Iterator* find(Iterator*, Object* const*);
-    Iterator* erase(Iterator*, Proxy*, Node*);
+    Node* head;
+    Iterator* find(Iterator*, unsigned int*);
+    Iterator* erase(Iterator*, Iterator);
+};
+
+#pragma pointers_to_members(full_generality, multiple_inheritance)
+struct S;
+struct Placeholder {};
+
+struct Callback {
+    bool (S::*function)(Shared);
+    S* instance;
+    Placeholder argument;
+};
+
+struct Object {
+    void connect(Callback);
 };
 
 struct S {
     char padding[0x2c38];
-    Map entries;
+    Tree tree;
     bool remove(Shared);
 };
 
 bool S::remove(Shared value) {
-    if (!value.ptr)
+    if (!value.object)
         return false;
 
-    Object* key = value.ptr;
-    Map* map = &entries;
+    unsigned int key = reinterpret_cast<unsigned int>(value.object);
     Iterator position;
-    map->find(&position, &key);
+    Tree* t = &tree;
+    t->find(&position, &key);
 
-    Proxy* proxy = position.proxy;
-    Node* end = map->end;
-    if (!proxy || proxy != map->proxy)
-        _invalid_parameter_noinfo();
+    Owner* owner = position.owner;
+    Node* end = t->head;
+    Owner* expected = t->owner;
+    if (!owner || owner != expected)
+        invalid_parameter_noinfo();
 
     Node* node = position.node;
     if (node == end)
         return false;
 
     Callback callback;
-    callback.method = &S::remove;
-    callback.object = this;
-    value.ptr->apply(callback);
+    callback.function = &S::remove;
+    callback.instance = this;
+    value.object->connect(callback);
 
-    Map* container = proxy
-        ? proxy->container
-        : (_invalid_parameter_noinfo(), (Map*)0);
+    Tree* ownerTree = owner
+        ? owner->tree
+        : (invalid_parameter_noinfo(), static_cast<Tree*>(0));
+    if (node == ownerTree->head)
+        invalid_parameter_noinfo();
 
-    if (node == container->end)
-        _invalid_parameter_noinfo();
-
-    node->first.clear();
-    node->second.clear();
-
+    node->first.disconnect();
+    node->second.disconnect();
     if (node->active)
-        node->object->detach(0);
+        node->signal->set(0);
 
-    map->erase(&position, proxy, node);
+    Iterator current;
+    current.owner = owner;
+    current.node = node;
+    t->erase(&position, current);
     return true;
 }

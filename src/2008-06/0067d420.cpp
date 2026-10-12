@@ -1,9 +1,13 @@
-// from server: 84% by king_originala
+// from server: 94% by king_originala
 extern "C" void (__cdecl *_invalid_parameter_noinfo)();
-void __cdecl operator delete(void *);
+void __cdecl operator delete(void *) throw();
 
 struct Entity;
+struct AxisAlignedBox;
+
 extern unsigned (__thiscall *getNumSubEntitiesImport)(const Entity *);
+extern void (__thiscall *destroyEntityImport)(Entity *);
+extern void (__thiscall *destroyBoxImport)(AxisAlignedBox *);
 
 struct SubEntity {
     virtual ~SubEntity();
@@ -14,16 +18,16 @@ struct RbxSubEntity : SubEntity {
 };
 
 struct InterfaceA {
-    virtual ~InterfaceA();
+    virtual void methodA();
 };
 
 struct InterfaceB {
-    virtual ~InterfaceB();
+    virtual void methodB();
     char padding[0xc0];
 };
 
 struct InterfaceC {
-    virtual ~InterfaceC();
+    virtual void methodC();
 };
 
 struct Iterator {
@@ -39,24 +43,54 @@ struct SubEntityArray {
     SubEntity **limit;
 
     Iterator erase(Iterator first, Iterator last);
+    SubEntity *&at(unsigned index);
 };
+
+__forceinline SubEntity *&SubEntityArray::at(unsigned index)
+{
+    if (index >= (unsigned)(last - first))
+        _invalid_parameter_noinfo();
+    return first[index];
+}
 
 struct Entity : InterfaceA, InterfaceB, InterfaceC {
     char padding0[12];
     SubEntityArray entities;
     char padding1[0x18c];
-
-    virtual ~Entity();
 };
+
+struct EntityCleanup {
+    ~EntityCleanup();
+};
+
+__forceinline EntityCleanup::~EntityCleanup()
+{
+    destroyEntityImport(reinterpret_cast<Entity *>(this));
+}
 
 struct AxisAlignedBox {
     char storage[0x28];
     ~AxisAlignedBox();
 };
 
-struct RbxEntity : Entity {
+__forceinline AxisAlignedBox::~AxisAlignedBox()
+{
+    destroyBoxImport(this);
+}
+
+struct Allocation {
+    void *pointer;
+    ~Allocation() throw();
+};
+
+__forceinline Allocation::~Allocation() throw()
+{
+    operator delete(pointer);
+}
+
+struct RbxEntity : EntityCleanup, Entity {
     AxisAlignedBox box;
-    void *allocation;
+    Allocation allocation;
     unsigned reserved[2];
     void *buffer;
     void *bufferEnd;
@@ -71,22 +105,19 @@ RbxEntity::~RbxEntity()
         getNumSubEntitiesImport;
 
     for (int i = 0; i < (int)count(this); ++i) {
-        if ((unsigned)i >= (unsigned)(entities.last - entities.first))
-            _invalid_parameter_noinfo();
-
         RbxSubEntity *entry =
-            dynamic_cast<RbxSubEntity *>(entities.first[i]);
+            dynamic_cast<RbxSubEntity *>(entities.at(i));
         if (entry)
             delete entry;
     }
 
     SubEntity **end = entities.last;
-    if (entities.first > end)
+    SubEntityArray &array = entities;
+    if (array.first > end)
         _invalid_parameter_noinfo();
 
-    SubEntityArray &array = entities;
     SubEntity **begin = array.first;
-    void *volatile owner = array.owner;
+    void *owner = array.owner;
     if (begin > array.last)
         _invalid_parameter_noinfo();
 
@@ -106,5 +137,4 @@ RbxEntity::~RbxEntity()
     buffer = 0;
     bufferEnd = 0;
     bufferLimit = 0;
-    operator delete(allocation);
 }

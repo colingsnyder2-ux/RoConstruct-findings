@@ -1,4 +1,4 @@
-// from server: 76% by king_originala
+// from server: 91% by king_originala
 struct Text;
 struct Size { int cx, cy; };
 struct Point { int x, y; };
@@ -15,14 +15,10 @@ struct Text {
     char *data;
     Text();
     __declspec(nothrow) ~Text();
-    const char *c_str() const;
-    int length() const;
 };
 
 __forceinline Text::Text() { textConstruct(this); }
-__forceinline Text::~Text() { textDestroy(this); }
-__forceinline const char *Text::c_str() const { return textData(this); }
-__forceinline int Text::length() const { return textLength(this); }
+__forceinline __declspec(nothrow) Text::~Text() { textDestroy(this); }
 
 struct DC;
 typedef unsigned long (__thiscall *DCVirtual)(DC *, unsigned long);
@@ -61,7 +57,7 @@ void __stdcall drawPage(DC *dc, Page *page, PrintInfo *info)
     textFormat(&number, pageFormat, page->number);
 
     Text caption;
-    formatResource(caption, 198, number.c_str());
+    formatResource(caption, 198, textData(&number));
 
     dc->table[14](dc, 0);
     unsigned int previous = dc->setAlignment(0);
@@ -70,7 +66,7 @@ void __stdcall drawPage(DC *dc, Page *page, PrintInfo *info)
     {
         Size extent;
         GetTextExtentPoint32A(
-            dc->attribute, caption.c_str(), caption.length(), &extent);
+            dc->attribute, textData(&number), textLength(&caption), &extent);
 
         height = extent.cy * 2;
         int left = info->area.left;
@@ -83,7 +79,7 @@ void __stdcall drawPage(DC *dc, Page *page, PrintInfo *info)
 
         ExtTextOutA(
             dc->output, left, baseline, 0, &rectangle,
-            caption.c_str(), caption.length(), 0);
+            textData(&number), textLength(&caption), 0);
     }
 
     dc->moveTo(info->area.left, info->area.bottom - height + 5);

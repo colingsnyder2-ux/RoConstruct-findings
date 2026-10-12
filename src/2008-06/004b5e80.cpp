@@ -1,14 +1,14 @@
-// from server: 76% by king_originala
+// from server: 81% by king_originala
 struct Record {
     unsigned int first;
     volatile unsigned int second;
     unsigned short third;
 
-    __forceinline Record(unsigned short value);
+    __forceinline Record();
 };
 
-__forceinline Record::Record(unsigned short value)
-    : first(0), second(second), third(value)
+__forceinline Record::Record()
+    : first(0), second(second)
 {
 }
 
@@ -29,8 +29,10 @@ struct S {
 
 S::S(unsigned int argument)
 {
+    unsigned short shortValue = (unsigned short)argument;
     value = argument;
-    Record record((unsigned short)argument);
+    Record record;
     vtable = table;
+    record.third = shortValue;
     member.initialize(record, argument);
 }

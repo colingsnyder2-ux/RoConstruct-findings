@@ -1,12 +1,14 @@
-// from server: 99% by king_originala
+// from server: 100% by king_originala
 namespace RBX {
-    struct Instance {
+    class Instance {
+    public:
         virtual ~Instance();
     };
 
     struct Humanoid;
 
-    struct ModelInstance : Instance {
+    class ModelInstance : public Instance {
+    public:
         Humanoid* getHumanoid();
     };
 

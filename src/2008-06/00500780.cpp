@@ -1,48 +1,32 @@
-// from server: 44% by king_originala
-struct String;
-extern void (__thiscall *string_construct)(String*);
-extern void (__thiscall *string_destroy)(String*);
-
+// from server: 46% by king_originala
 struct String
 {
-    unsigned char data[28];
-
+    unsigned char storage[28];
     String();
     ~String();
 };
 
-inline String::String()
+struct Value
 {
-    string_construct(this);
-}
+    void* object;
+    void* owner;
+    ~Value();
+};
 
-inline String::~String()
+struct Reader
 {
-    string_destroy(this);
-}
-
-struct Argument
-{
-    void operation(int* output, int* status, String* text);
+    void read(Value*, Reader**, String*);
 };
 
 struct HeadBuilder
 {
-    HeadBuilder* func_00500780(int status, int unused, int output);
+    void build(Reader*, int, Value);
 };
 
-HeadBuilder* HeadBuilder::func_00500780(int status, int unused, int output)
+void HeadBuilder::build(Reader* reader, int unused, Value value)
 {
-    try
-    {
-        String text;
-        reinterpret_cast<Argument*>(status)->operation(&output, &status, &text);
-        if (status == 1)
-            return this;
-        return 0;
-    }
-    catch (...)
-    {
-        return 0;
-    }
+    String text;
+    reader->read(&value, &reader, &text);
+    if (reader == reinterpret_cast<Reader*>(1))
+        return;
 }

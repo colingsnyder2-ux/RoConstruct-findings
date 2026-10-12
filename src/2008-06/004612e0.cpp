@@ -1,20 +1,26 @@
-// from server: 42% by tester
-// roc 2008-06 0045ffe0  unit: Scintilla::CScintillaCtrl  size: 26 bytes
-// Make this compile to the exact bytes below, then: roc check 2008-06 0045ffe0
-//
-// 0045ffe0  56                   push esi
-// 0045ffe1  8bf1                 mov esi, ecx
-// 0045ffe3  e8a80e2400           call 0x6a0e90
-// 0045ffe8  33c0                 xor eax, eax
-// 0045ffea  894654               mov dword ptr [esi + 0x54], eax
-// 0045ffed  894658               mov dword ptr [esi + 0x58], eax
-// 0045fff0  c70654a78100         mov dword ptr [esi], 0x81a754
-// 0045fff6  8bc6                 mov eax, esi
-// 0045fff8  5e                   pop esi
-// 0045fff9  c3                   ret 
-// library xtp-11.2.2/Source\CommandBars\XTPImageEditor.cpp (function ??0CXTPImageEditorPicker@@QAE@XZ)
+// from server: 100% by king_originala
+struct Text;
 
-// roc-lang: cpp
-// roc-cl: 30729
-// roc-flags: /O2 /GS- /MD /Ob0
-// roc-lib: xtp-11.2.2 Source/CommandBars/XTPImageEditor.cpp
+extern "C" void* __cdecl allocate(unsigned int);
+extern "C" void __cdecl release(void*);
+extern void (__thiscall *constructText)(Text*, const char*);
+
+struct S {
+    char padding[0x54];
+    int (__cdecl *direct)(int, unsigned int, unsigned int, int);
+    int context;
+
+    Text* getSelectedText(Text* result);
+};
+
+Text* S::getSelectedText(Text* result)
+{
+    volatile int state = 0;
+    int start = direct(context, 0x85F, 0, 0);
+    int end = direct(context, 0x861, 0, 0);
+    char* buffer = static_cast<char*>(allocate(end - start + 1));
+    direct(context, 0x871, 0, reinterpret_cast<int>(buffer));
+    constructText(result, buffer);
+    release(buffer);
+    return result;
+}

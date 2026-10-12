@@ -1,4 +1,4 @@
-// from server: 76% by king_originala
+// from server: 88% by king_originala
 struct HeightSource {
     virtual void slot0() = 0;
     virtual void slot1() = 0;
@@ -33,10 +33,7 @@ struct S {
 
 void S::setRect(const Rect& value)
 {
-    if (value.left == rect.left &&
-        value.top == rect.top &&
-        value.right == rect.right &&
-        value.bottom == rect.bottom)
+    if (value.bottom == rect.bottom)
         return;
 
     int height;

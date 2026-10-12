@@ -1,4 +1,4 @@
-// from server: 99% by king_originala
+// from server: 100% by tester
 namespace std {
     class bad_cast;
 }
@@ -53,12 +53,15 @@ inline Argument::~Argument()
         delete value;
 }
 
-struct DescribedBase {
+namespace RBX { namespace Reflection { class DescribedBase {
+public:
     virtual ~DescribedBase();
-};
+}; } }
+using RBX::Reflection::DescribedBase;
 
-struct DataModel : DescribedBase {
-};
+namespace RBX { class DataModel : public Reflection::DescribedBase {
+}; }
+using RBX::DataModel;
 
 struct Arguments {
     virtual void reserved();

@@ -1,16 +1,16 @@
-// from server: 50% by king_originala
-extern "C" void (__cdecl *invalid_parameter_noinfo)();
-void __cdecl operator delete(void *);
+// from server: 58% by king_originala
+extern "C" void (__cdecl *const invalid_parameter_noinfo)();
+extern "C" void __cdecl release_memory(void *);
 
-struct Payload {
-    void merge(Payload *);
-    ~Payload();
+struct Value {
+    void merge(Value *);
+    void destroy();
 };
 
 struct Node {
     Node *next;
     Node *prev;
-    Payload *value;
+    Value *value;
 };
 
 struct List;
@@ -22,87 +22,96 @@ struct Proxy {
 struct Iterator {
     Proxy *owner;
     Node *node;
+
+    Value *&get() const;
+    void advance();
+    void retreat();
+    bool equals(const Iterator &) const;
 };
 
 struct List {
     Proxy *proxy;
-    unsigned char reserved[16];
+    char padding[16];
     Node *head;
+    unsigned size;
 
+    Iterator begin();
     Iterator erase(Iterator);
 };
 
 struct S {
-    unsigned char reserved[0x138];
+    char padding[0x138];
     List list;
-    Iterator first;
-    Iterator second;
+    Iterator forward;
+    Iterator backward;
 
     void f();
 };
 
+inline Iterator List::begin()
+{
+    Iterator result;
+    result.owner = proxy;
+    result.node = head->next;
+    return result;
+}
+
+inline Value *&Iterator::get() const
+{
+    if (!owner)
+        invalid_parameter_noinfo();
+    List *container = owner ? owner->container : 0;
+    if (node == container->head)
+        invalid_parameter_noinfo();
+    return node->value;
+}
+
+inline void Iterator::advance()
+{
+    if (!owner)
+        invalid_parameter_noinfo();
+    List *container = owner ? owner->container : 0;
+    if (node == container->head)
+        invalid_parameter_noinfo();
+    node = node->next;
+}
+
+inline void Iterator::retreat()
+{
+    if (!owner)
+        invalid_parameter_noinfo();
+    node = node->prev;
+    List *container = owner ? owner->container : 0;
+    if (node == container->head)
+        invalid_parameter_noinfo();
+}
+
+inline bool Iterator::equals(const Iterator &other) const
+{
+    if (!owner || owner != other.owner)
+        invalid_parameter_noinfo();
+    return node == other.node;
+}
+
 void S::f()
 {
-    Proxy *owner = list.proxy;
-    Node *node = list.head;
+    Iterator current = list.begin();
+    current.advance();
 
-    if (!owner)
-        invalid_parameter_noinfo();
-    if (node == (owner ? owner->container : 0)->head)
-        invalid_parameter_noinfo();
+    Value *&secondValue = current.get();
+    list.begin().get()->merge(secondValue);
 
-    node = node->next;
+    if (backward.equals(current))
+        backward.retreat();
 
-    if (!owner)
-        invalid_parameter_noinfo();
-    if (node == (owner ? owner->container : 0)->head)
-        invalid_parameter_noinfo();
+    if (forward.equals(current))
+        forward.advance();
 
-    Node *head = list.head;
-    if (!list.proxy)
-        invalid_parameter_noinfo();
-    if (head == (list.proxy ? list.proxy->container : 0)->head)
-        invalid_parameter_noinfo();
-
-    head->value->merge(node->value);
-
-    if (!second.owner || second.owner != owner)
-        invalid_parameter_noinfo();
-
-    if (second.node == node) {
-        if (!second.owner)
-            invalid_parameter_noinfo();
-        second.node = second.node->prev;
-        if (second.node ==
-            (second.owner ? second.owner->container : 0)->head)
-            invalid_parameter_noinfo();
-    }
-
-    if (!first.owner || first.owner != owner)
-        invalid_parameter_noinfo();
-
-    if (first.node == node) {
-        if (!first.owner)
-            invalid_parameter_noinfo();
-        if (first.node ==
-            (first.owner ? first.owner->container : 0)->head)
-            invalid_parameter_noinfo();
-        first.node = first.node->next;
-    }
-
-    if (!owner)
-        invalid_parameter_noinfo();
-    if (node == (owner ? owner->container : 0)->head)
-        invalid_parameter_noinfo();
-
-    Payload *value = node->value;
+    Value *value = current.get();
     if (value) {
-        value->~Payload();
-        operator delete(value);
+        value->destroy();
+        release_memory(value);
     }
 
-    Iterator position;
-    position.owner = owner;
-    position.node = node;
-    list.erase(position);
+    list.erase(current);
 }

@@ -1,7 +1,9 @@
-// from server: 88% by king_originala
+// from server: 97% by king_originala
 struct BadCast {
     unsigned char storage[12];
 };
+
+struct Descriptor;
 
 typedef void (__thiscall *BadCastConstructor)(BadCast*, const char*);
 extern BadCastConstructor constructBadCast;
@@ -11,8 +13,7 @@ extern unsigned char targetType;
 
 extern "C" void* __cdecl __RTDynamicCast(
     void*, long, void*, void*, int);
-extern "C" __declspec(noreturn) void __stdcall throwException(
-    void*, void*);
+extern "C" Descriptor* __stdcall throwException(void*, void*);
 
 struct Object {
     virtual void slot0();
@@ -39,7 +40,7 @@ void S::f(void* result)
     if (!p) {
         BadCast error;
         constructBadCast(&error, "bad cast");
-        throwException(&error, &badCastThrowInfo);
+        p = throwException(&error, &badCastThrowInfo);
     }
     p->object->get(instance, result);
 }

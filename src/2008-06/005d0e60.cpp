@@ -1,4 +1,4 @@
-// from server: 90% by king_originala
+// from server: 94% by king_originala
 extern "C" void (__cdecl *_invalid_parameter_noinfo)();
 
 struct Property {
@@ -32,7 +32,7 @@ bool Descriptor::set(void* instance, unsigned int index)
         if (ordinal >= static_cast<unsigned int>(map->end - map->begin))
             _invalid_parameter_noinfo();
 
-        index = map->begin[ordinal];
+        *(volatile unsigned int*)&index = map->begin[ordinal];
         property->set(instance, index);
         return true;
     }

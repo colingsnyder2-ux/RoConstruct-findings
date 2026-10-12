@@ -1,4 +1,4 @@
-// from server: 94% by king_originala
+// from server: 100% by king_originala
 struct Vector3
 {
     float value[3];
@@ -9,17 +9,24 @@ struct Storage
     unsigned int first;
     unsigned int second;
 
-    Storage() : first(0), second(0) {}
+    Storage();
     ~Storage();
 };
+
+inline Storage::Storage() : first(0), second(0) {}
 
 struct Handle : Storage
 {
     unsigned int third;
 
-    Handle(void* value) : third(0) { initialize(value); }
+    Handle(void* value);
     void initialize(void* value);
 };
+
+inline Handle::Handle(void* value) : third(0)
+{
+    initialize(value);
+}
 
 struct Instance
 {
@@ -39,7 +46,20 @@ struct Property
 {
     char padding[0x18];
     Accessor* accessor;
+
+    Vector3 get(void* object);
+    void set(void* object, const Vector3& value);
 };
+
+inline Vector3 Property::get(void* object)
+{
+    return accessor->get(object);
+}
+
+inline void Property::set(void* object, const Vector3& value)
+{
+    accessor->set(object, value);
+}
 
 struct Owner
 {
@@ -60,7 +80,7 @@ struct Vector3ComponentItem
 void Vector3ComponentItem::update(Instance* instance, const Vector3& value)
 {
     Handle handle(owner->value);
-    Vector3 result = property->accessor->get(instance ? &instance->object : 0);
+    Vector3 result = property->get(instance ? &instance->object : 0);
     result.value[component] = value.value[component];
-    property->accessor->set(instance ? &instance->object : 0, result);
+    property->set(instance ? &instance->object : 0, result);
 }

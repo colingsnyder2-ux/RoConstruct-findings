@@ -1,4 +1,4 @@
-// from server: 93% by king_originala
+// from server: 96% by king_originala
 extern "C" unsigned int __cdecl strlen(const char *);
 extern "C" int (__cdecl *format_message)(char *, const char *, ...);
 extern void __cdecl report(void *, const char *);
@@ -24,16 +24,20 @@ unsigned int __cdecl func_00526a80(void *context, const char *text, char **outpu
     }
 
     char *destination = *output;
-    int (__cdecl *formatter)(char *, const char *, ...) = format_message;
-    for (; *text != 0; ++text, ++destination) {
-        if (*text < 32 ||
-            (*text > 126 && (unsigned char)*text < 161)) {
-            formatter(message, "invalid keyword character 0x%02X", *text);
-            report(context, message);
-            *destination = ' ';
-        } else {
-            *destination = *text;
-        }
+    if (*text) {
+        int (__cdecl *formatter)(char *, const char *, ...) = format_message;
+        do {
+            char c = *text;
+            if (c < 32 || (c > 126 && (unsigned char)c < 161)) {
+                formatter(message, "invalid keyword character 0x%02X", c);
+                report(context, message);
+                *destination = ' ';
+            } else {
+                *destination = c;
+            }
+            ++text;
+            ++destination;
+        } while (*text);
     }
     *destination = 0;
 

@@ -1,31 +1,40 @@
-// from server: 70% by colin
-struct VCApp_CComAggObject
-{
-    long __stdcall QueryInterface(void* riid, void** ppvObject);
+// from server: 100% by king_originala
+struct Interface;
+
+struct InterfaceTable {
+    void *unused;
+    unsigned long (__stdcall *AddRef)(Interface *);
 };
 
-long __stdcall VCApp_CComAggObject::QueryInterface(void* riid, void** ppvObject)
+struct Interface {
+    InterfaceTable *table;
+};
+
+struct Cache {
+    unsigned char padding[12];
+    Interface *value;
+    long initialize(unsigned long locale);
+};
+
+extern Cache cache;
+
+long __stdcall GetTypeInfo(void *object, unsigned int index,
+                           unsigned long locale, Interface **output)
 {
-    if (riid != 0)
-    {
-        return (long)0x8002000b;
+    if (index != 0)
+        return 0x8002000BL;
+
+    if (!output)
+        return 0x80004003L;
+
+    long result = 0;
+    if (!cache.value)
+        result = cache.initialize(locale);
+
+    *output = cache.value;
+    if (cache.value) {
+        cache.value->table->AddRef(cache.value);
+        result = 0;
     }
-    if (ppvObject == 0)
-    {
-        return (long)0x80004003;
-    }
-    if (*(int*)0x928be4 == 0)
-    {
-        extern void __stdcall sub_404A80(void*);
-        sub_404A80(*(void**)((char*)&ppvObject + 4));
-    }
-    *ppvObject = *(void**)0x928be4;
-    if (*(int*)0x928be4 != 0)
-    {
-        void* p = *(void**)0x928be4;
-        void** vtbl = *(void***)p;
-        void (__stdcall *fn)(void*) = (void (__stdcall *)(void*))vtbl[1];
-        fn(p);
-    }
-    return 0;
+    return result;
 }

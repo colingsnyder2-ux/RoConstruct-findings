@@ -1,14 +1,23 @@
-// from server: 80% by tester
-struct S {
-    int __cdecl f(int, int, int, int, int, int);
+// from server: 100% by king_originala
+struct Element {
+    char data[24];
 };
 
-extern "C" int __cdecl helper(int, int, int, int, int, int);
+struct IteratorTag {};
+struct CopyTag {
+    char value;
+};
 
-int S::f(int a, int b, int c, int d, int e, int f) {
-    char flag = 0;
-    helper(a, b, c, d, e, f);
-    int diff = e - a;
-    int q = diff / 24;
-    return d - q * 24;
+extern Element* __cdecl copy_backward_impl(
+    Element*, Element*, Element*, IteratorTag, IteratorTag, CopyTag);
+
+Element* __cdecl copy_backward(Element* first, Element* last, Element* destination)
+{
+    IteratorTag inputTag;
+    IteratorTag outputTag;
+    CopyTag copyTag;
+    copyTag.value = 0;
+
+    copy_backward_impl(first, last, destination, inputTag, outputTag, copyTag);
+    return destination - (last - first);
 }

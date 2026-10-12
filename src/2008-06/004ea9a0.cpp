@@ -1,46 +1,52 @@
-// from server: 45% by tester
-struct Part {
-    int type;
-    int gridSize;
-    char pad[8];
-    void construct(int a, int b, int c);
-    void setSomething(void* p);
-    void finalize();
+// from server: 100% by king_originala
+void* __cdecl operator new(unsigned int);
+void __cdecl operator delete(void*);
+
+struct Pair
+{
+    int first;
+    int second;
 };
 
-extern "C" void* __cdecl operator_new(unsigned int size);
-extern "C" void __stdcall sub_41AD40(void* p);
-extern "C" void __stdcall sub_41B0F0(void* p);
-extern "C" void __stdcall sub_4EA320(void* p, int a, int b, int c);
-extern "C" void __stdcall sub_595840(void* p);
-
-void Part::construct(int a, int b, int c)
+struct Base
 {
-    sub_4EA320((char*)this + 8, a, b, c);
+    int value;
+
+    Base();
+    ~Base();
+};
+
+Base::Base() : value(0)
+{
 }
 
-void Part::setSomething(void* p)
+struct Member
 {
-    sub_41B0F0(p);
-}
+    Member(int, int, int);
+    ~Member();
+};
 
-void Part::finalize()
+struct Object
 {
-    sub_595840(this);
-}
+    char storage[40];
 
-Part* __stdcall Part_ctor(Part* self, int* src)
+    Object();
+};
+
+struct S
 {
-    self->type = 0;
-    self->gridSize = 0;
-    sub_4EA320((char*)self + 8, src[0], src[1], 0);
-    void* p = operator_new(0x28);
-    if (p) {
-        sub_41AD40(p);
-    } else {
-        p = 0;
-    }
-    sub_41B0F0(p);
-    sub_595840(self);
-    return self;
+    int first;
+    Base second;
+    Member member;
+
+    S(const Pair&);
+    void set(Object*);
+    void finish();
+};
+
+S::S(const Pair& value)
+    : first(0), second(), member(value.first, value.second, 0)
+{
+    set(new Object);
+    finish();
 }

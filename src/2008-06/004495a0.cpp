@@ -1,59 +1,65 @@
-// from server: 59% by tester
-struct WNDCLASSA
-{
+// from server: 100% by king_originala
+typedef unsigned long DWORD;
+typedef long (__stdcall *WindowProc)(void*, unsigned int, unsigned int, long);
+
+struct WindowClass {
     unsigned int style;
-    int lpfnWndProc;
-    int cbClsExtra;
-    int cbWndExtra;
-    int hInstance;
-    int hIcon;
-    int hCursor;
-    int hbrBackground;
-    const char* lpszMenuName;
-    const char* lpszClassName;
+    WindowProc procedure;
+    int classExtra;
+    int windowExtra;
+    void* instance;
+    void* icon;
+    void* cursor;
+    void* background;
+    const char* menuName;
+    const char* className;
 };
 
-extern "C" __declspec(dllimport) int __stdcall LoadIconA(int hInstance, const char* lpIconName);
-extern "C" __declspec(dllimport) int __stdcall LoadCursorA(int hInstance, const char* lpCursorName);
-extern "C" __declspec(dllimport) unsigned short __stdcall RegisterClassA(const WNDCLASSA* lpWndClass);
+extern WindowProc DefWindowProcA;
+extern void* (__stdcall *LoadIconA)(void*, const char*);
+extern void* (__stdcall *LoadCursorA)(void*, const char*);
+extern unsigned short (__stdcall *RegisterClassA)(const WindowClass*);
 
-extern int g_802dc4;
-extern int g_802d64;
-extern int g_802dd0;
-extern int g_802d34;
-extern int g_8034f4;
-extern const char g_816618[];
-extern const char g_816620[];
-extern const char g_81662c[];
-
-extern int __cdecl sub_6a0926(int, int, int, int);
-extern int __cdecl sub_6a1166();
-extern int __cdecl sub_6a0fc2();
-
-struct S
-{
-    int f();
+struct Context {
+    char reserved[8];
+    void* instance;
 };
 
-int S::f()
+struct Window;
+struct WindowTable {
+    void* reserved[81];
+    void (__thiscall *create)(Window*, const char*, const char*, DWORD,
+                             void*, int, int, int, int);
+};
+
+struct Window {
+    WindowTable* table;
+};
+
+struct Manager {
+    Window* getWindow();
+};
+
+extern Context* __cdecl getContext();
+extern Manager* __cdecl getManager();
+extern void* creationParameter;
+
+void initializeWindow()
 {
-    WNDCLASSA wc;
+    WindowClass wc;
     wc.style = 3;
-    wc.lpfnWndProc = g_802dc4;
-    wc.cbClsExtra = 0;
-    wc.cbWndExtra = 0;
-    int v = sub_6a0926(3, g_802dc4, 0, 0);
-    wc.hInstance = *(int*)(v + 8);
-    wc.hIcon = LoadIconA(0, (const char*)0x7f00);
-    wc.hCursor = LoadCursorA(0, (const char*)0x7f00);
-    wc.hbrBackground = 0;
-    wc.lpszMenuName = g_81662c;
-    wc.lpszClassName = g_816620;
+    wc.procedure = DefWindowProcA;
+    wc.classExtra = 0;
+    wc.windowExtra = 0;
+    wc.instance = getContext()->instance;
+    wc.icon = LoadIconA(0, reinterpret_cast<const char*>(0x7f00));
+    wc.cursor = LoadCursorA(0, reinterpret_cast<const char*>(0x7f00));
+    wc.background = 0;
+    wc.menuName = "Menu";
+    wc.className = "ROBLOX-ATOM";
     RegisterClassA(&wc);
-    int q = sub_6a0fc2();
-    int* obj = (int*)q;
-    int* vt = *(int**)obj;
-    int (*fn)(int*, int, const char*, int, int, int, int, int, int) = (int (*)(int*, int, const char*, int, int, int, int, int, int))*(int*)((char*)vt + 0x144);
-    fn(obj, g_8034f4, g_816618, 0xcf0000, 0, 0, 0, 0, 0);
-    return 0;
+
+    Window* window = getManager()->getWindow();
+    window->table->create(window, wc.className, "ROBLOX", 0xcf0000,
+                          creationParameter, 0, 0, 0, 0);
 }

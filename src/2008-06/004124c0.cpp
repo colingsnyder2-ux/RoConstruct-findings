@@ -1,8 +1,8 @@
-// from server: 80% by king_originala
+// from server: 87% by king_originala
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
 
-extern "C" void __cdecl _invalid_parameter_noinfo();
+extern "C" void (__cdecl* _invalid_parameter_noinfo)();
 
 struct Control {
     virtual void reserved() = 0;
@@ -22,9 +22,9 @@ inline Value::~Value()
 {
     Control* p = control;
     if (p) {
-        if (_InterlockedExchangeAdd(&p->strong, -1) == 0) {
+        if (_InterlockedExchangeAdd(&p->strong, -1) == 1) {
             p->dispose();
-            if (_InterlockedExchangeAdd(&p->weak, -1) == 0)
+            if (_InterlockedExchangeAdd(&p->weak, -1) == 1)
                 p->destroy();
         }
     }
@@ -44,7 +44,7 @@ struct S {
 
     void insert(void* owner, Value* position, unsigned int count,
                 const Value* value);
-    Iterator erase(Iterator first, Iterator last);
+    Iterator* erase(Iterator* result, Iterator first, Iterator last);
     void resize(unsigned int count, Value value);
 };
 
@@ -75,6 +75,7 @@ void S::resize(unsigned int count, Value value)
         beginIterator.owner = owner;
         beginIterator.position = beginPosition;
 
-        erase(beginIterator + count, endIterator);
+        Iterator result;
+        erase(&result, beginIterator + count, endIterator);
     }
 }

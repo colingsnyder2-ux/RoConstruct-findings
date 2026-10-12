@@ -1,36 +1,46 @@
-// from server: 74% by colin
+// from server: 89% by king_originala
 struct S_func_00609a30 {
     char pad0[320];
     int m_x;
     int f();
 };
 
+extern char table_823474[];
+extern char table_823464[];
+extern char table_82345c[];
+extern char table_823454[];
+extern char table_823444[];
+extern char table_823434[];
+extern char table_823424[];
+extern char table_823414[];
+extern char table_823404[];
+extern char table_8233f4[];
+extern char table_8233c4[];
+
 struct S {
-    char pad0[0x2d68];
-    int m_2d68;
-    int m_2d6c;
-    int m_2d70;
-    S* construct(int a, int b, int c);
+    volatile unsigned int data[0x2d74 / 4];
+    void initialize(int a, int b, int c);
+    S* construct(int a, int b, S_func_00609a30* p);
 };
 
-S* S::construct(int a, int b, int c)
+S* S::construct(int a, int b, S_func_00609a30* p)
 {
-    S_func_00609a30* p = (S_func_00609a30*)c;
     int v = p->f();
-    ((void (__thiscall*)(S*, int, int, int))0x4b9bd0)(this, a, b, v);
-    *(int*)((char*)this + 0x00) = 0x823474;
-    *(int*)((char*)this + 0x10) = 0x823464;
-    *(int*)((char*)this + 0x14) = 0x82345c;
-    *(int*)((char*)this + 0x20) = 0x823454;
-    *(int*)((char*)this + 0x24) = 0x823444;
-    *(int*)((char*)this + 0x44) = 0x823434;
-    *(int*)((char*)this + 0x64) = 0x823424;
-    *(int*)((char*)this + 0x84) = 0x823414;
-    *(int*)((char*)this + 0xa4) = 0x823404;
-    *(int*)((char*)this + 0xc4) = 0x8233f4;
-    *(int*)((char*)this + 0x2b74) = 0x8233c4;
-    m_2d68 = 0;
-    m_2d6c = 0;
-    m_2d70 = c;
+    initialize(a, b, v);
+
+    data[0x00 / 4] = reinterpret_cast<unsigned int>(table_823474);
+    data[0x10 / 4] = reinterpret_cast<unsigned int>(table_823464);
+    data[0x14 / 4] = reinterpret_cast<unsigned int>(table_82345c);
+    data[0x20 / 4] = reinterpret_cast<unsigned int>(table_823454);
+    data[0x24 / 4] = reinterpret_cast<unsigned int>(table_823444);
+    data[0x44 / 4] = reinterpret_cast<unsigned int>(table_823434);
+    data[0x64 / 4] = reinterpret_cast<unsigned int>(table_823424);
+    data[0x84 / 4] = reinterpret_cast<unsigned int>(table_823414);
+    data[0xa4 / 4] = reinterpret_cast<unsigned int>(table_823404);
+    data[0xc4 / 4] = reinterpret_cast<unsigned int>(table_8233f4);
+    data[0x2b74 / 4] = reinterpret_cast<unsigned int>(table_8233c4);
+    data[0x2d68 / 4] = 0;
+    data[0x2d6c / 4] = 0;
+    data[0x2d70 / 4] = reinterpret_cast<unsigned int>(p);
     return this;
 }

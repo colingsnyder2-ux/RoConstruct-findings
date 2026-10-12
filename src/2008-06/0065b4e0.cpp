@@ -1,66 +1,75 @@
-// from server: 71% by king_originala
-struct Pair {
-    int first;
-    int second;
+// from server: 83% by king_originala
+struct Entry {
+    unsigned int value[2];
 };
 
-struct Bucket {
-    int prefix[3];
-    Pair *begin;
-    Pair *end;
-    Pair *capacity;
+struct Block {
+    unsigned int data[3];
+    Entry* first;
+    Entry* last;
+    Entry* limit;
 
-    Bucket();
-    ~Bucket();
-    void resize(int count, Pair value);
+    Block();
+    ~Block();
+    void resize(int count, int value1, int value2);
 };
 
-struct Buffer {
-    void *begin;
-    void *end;
-    void *capacity;
+struct Tail {
+    unsigned int data[5];
 
-    Buffer();
-    ~Buffer();
+    Tail();
 };
 
-__forceinline Buffer::Buffer()
-    : end(0), capacity(0)
+inline Tail::Tail()
 {
-    begin = 0;
+    data[0] = 0;
+    data[1] = 0;
+    data[2] = 0;
+    data[3] = 0;
+    data[4] = 0;
 }
 
-extern int bucketCount;
+struct Vector {
+    Entry* first;
+    Entry* last;
+    Entry* limit;
 
-extern "C" {
-    extern void (__cdecl *_invalid_parameter_noinfo)();
-    void *__cdecl memset(void *, int, unsigned int);
+    Vector();
+    ~Vector();
+};
+
+inline Vector::Vector()
+{
+    last = 0;
+    limit = 0;
+    first = 0;
 }
+
+extern int blockCount;
+extern "C" void (__cdecl* _invalid_parameter_noinfo)();
+extern "C" void* __cdecl memset(void* destination, int value, unsigned int size);
 
 struct S {
     int state;
-    int first;
-    int second;
-    Bucket buckets[4];
-    int a, b, c, d, e;
-    Buffer buffer;
+    int argument1;
+    int argument2;
+    Block blocks[4];
+    Tail tail;
+    Vector vector;
 
-    S(int firstValue, int secondValue);
+    S(int a, int b);
 };
 
-S::S(int firstValue, int secondValue)
-    : state(0), first(firstValue), second(secondValue),
-      a(0), b(0), c(0), d(0), e(0)
+S::S(int a, int b)
+    : state(0), argument1(a), argument2(b)
 {
-    for (int i = 0; i < bucketCount; ++i) {
-        Pair value = { 0, 0 };
-        buckets[i].resize(0x10000 >> i, value);
+    for (int i = 0; i < blockCount; ++i) {
+        blocks[i].resize(0x10000 >> i, 0, 0);
 
-        unsigned int count =
-            static_cast<unsigned int>(buckets[i].end - buckets[i].begin);
-        if (!(count > 0U))
+        unsigned int count = blocks[i].last - blocks[i].first;
+        if (count <= 0U)
             _invalid_parameter_noinfo();
 
-        memset(buckets[i].begin, 0, count * sizeof(Pair));
+        memset(blocks[i].first, 0, count * sizeof(Entry));
     }
 }

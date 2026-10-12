@@ -1,4 +1,4 @@
-// from server: 56% by king_originala
+// from server: 58% by king_originala
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
 
@@ -23,16 +23,6 @@ struct ControlPtr {
     ControlPtr(Object*);
     ~ControlPtr();
 };
-
-__forceinline ControlPtr::~ControlPtr()
-{
-    Control* p = value;
-    if (p && _InterlockedExchangeAdd(&p->strong, -1) == 1) {
-        p->dispose();
-        if (_InterlockedExchangeAdd(&p->weak, -1) == 1)
-            p->destroy();
-    }
-}
 
 struct Shared {
     Object* object;
@@ -59,9 +49,9 @@ __forceinline Shared::Shared(const Shared& p)
 __forceinline Shared::~Shared()
 {
     Control* p = control;
-    if (p && _InterlockedExchangeAdd(&p->strong, -1) == 1) {
+    if (p && _InterlockedExchangeAdd(&p->strong, -1) == 0) {
         p->dispose();
-        if (_InterlockedExchangeAdd(&p->weak, -1) == 1)
+        if (_InterlockedExchangeAdd(&p->weak, -1) == 0)
             p->destroy();
     }
 }
@@ -70,22 +60,12 @@ struct Bound {
     void* function;
     Object* object;
     Control* control;
-    ~Bound();
 };
-
-__forceinline Bound::~Bound()
-{
-    Control* p = control;
-    if (p && _InterlockedExchangeAdd(&p->strong, -1) == 1) {
-        p->dispose();
-        if (_InterlockedExchangeAdd(&p->weak, -1) == 1)
-            p->destroy();
-    }
-}
 
 extern void __cdecl func_0041d760();
 extern void __cdecl func_0047d410(...);
-extern Bound __cdecl func_0063b770(void (__cdecl*)(), Shared);
+extern void __cdecl func_0063b770(
+    Bound*, void (__cdecl*)(), Shared);
 extern bool __cdecl func_0060a2f0(const Bound*);
 
 typedef void (__cdecl* Manager)(void*, void*, int);
@@ -148,6 +128,14 @@ S::S()
     : object(new Object), control(object)
 {
     func_0047d410(&control, object, object);
-    Function f(func_0063b770(func_0041d760, Shared(object, control.value)));
+    Bound b;
+    func_0063b770(&b, func_0041d760, Shared(object, control.value));
+    Function f(b);
+    Control* p = b.control;
+    if (p && _InterlockedExchangeAdd(&p->strong, -1) == 0) {
+        p->dispose();
+        if (_InterlockedExchangeAdd(&p->weak, -1) == 0)
+            p->destroy();
+    }
     callback.initialize(f, callback_tag);
 }

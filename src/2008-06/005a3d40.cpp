@@ -1,6 +1,8 @@
-// from server: 64% by king_originala
+// from server: 67% by king_originala
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
+extern "C" long __cdecl _InterlockedDecrement(volatile long*);
+#pragma intrinsic(_InterlockedDecrement)
 
 void* __cdecl operator new(unsigned int);
 void __cdecl operator delete(void*);
@@ -22,11 +24,7 @@ struct Guard {
 
     Guard* acquire(int, void*);
     void finish();
-};
-
-struct Holder {
-    Control* control;
-    ~Holder();
+    ~Guard();
 };
 
 struct Object {
@@ -39,13 +37,13 @@ struct Descriptor {
     void f(void*);
 };
 
-inline Holder::~Holder()
+inline Guard::~Guard()
 {
     Control* p = control;
     if (p) {
-        if (_InterlockedExchangeAdd(&p->strong, -1) == 1) {
+        if (_InterlockedDecrement(&p->strong) == 0) {
             p->dispose();
-            if (_InterlockedExchangeAdd(&p->weak, -1) == 1)
+            if (_InterlockedDecrement(&p->weak) == 0)
                 p->destroy();
         }
     }
@@ -54,10 +52,7 @@ inline Holder::~Holder()
 void Descriptor::f(void* value)
 {
     Guard guard = { this, 0, 0 };
-    Holder holder = { 0 };
-    if (value) {
+    if (value)
         guard.acquire(1, value)->finish();
-        holder.control = guard.control;
-    }
     attach(new Object(this, value));
 }

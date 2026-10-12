@@ -1,4 +1,4 @@
-// from server: 58% by king_originala
+// from server: 60% by king_originala
 namespace std {
     template<class T> struct char_traits {};
     template<class T> struct allocator {};
@@ -19,15 +19,23 @@ struct Owned {
 };
 
 struct Guard {
+    volatile unsigned char prefix[4];
     Owned* volatile pointer;
-    volatile unsigned char padding[16];
-    Guard(Owned* p) : pointer(p) {}
-    ~Guard() {
-        Owned* p = pointer;
-        if (p)
-            delete p;
-    }
+    volatile unsigned char padding[12];
+    Guard(Owned*);
+    ~Guard();
 };
+
+Guard::Guard(Owned* p) : pointer(p)
+{
+}
+
+Guard::~Guard()
+{
+    Owned* p = pointer;
+    if (p)
+        delete p;
+}
 
 struct Object;
 

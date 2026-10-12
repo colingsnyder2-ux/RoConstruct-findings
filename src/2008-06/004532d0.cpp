@@ -1,6 +1,10 @@
-// from server: 54% by king_originala
+// from server: 96% by king_originala
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
+extern "C" long __cdecl _InterlockedIncrement(volatile long*);
+#pragma intrinsic(_InterlockedIncrement)
+extern "C" long __cdecl _InterlockedDecrement(volatile long*);
+#pragma intrinsic(_InterlockedDecrement)
 
 struct Control
 {
@@ -28,13 +32,14 @@ struct Result
 
     Result(const Result&);
     ~Result();
+    const Result& ref() const;
 };
 
 __forceinline Result::Result(const Result& other)
     : first(other.first), second(other.second)
 {
     if (second)
-        _InterlockedExchangeAdd(&second->strong, 1);
+        _InterlockedIncrement(&second->strong);
 }
 
 __forceinline Result::~Result()
@@ -42,13 +47,18 @@ __forceinline Result::~Result()
     if (second)
     {
         Control* control = second;
-        if (_InterlockedExchangeAdd(&control->strong, -1) == 1)
+        if (_InterlockedDecrement(&control->strong) == 0)
         {
             control->dispose();
-            if (_InterlockedExchangeAdd(&control->weak, -1) == 1)
+            if (_InterlockedDecrement(&control->weak) == 0)
                 control->destroy();
         }
     }
+}
+
+__forceinline const Result& Result::ref() const
+{
+    return *this;
 }
 
 struct Source
@@ -69,11 +79,11 @@ struct ReportAbuseVerb
     unsigned char padding[12];
     Source* source;
 
-    bool f();
+    char f();
 };
 
-bool ReportAbuseVerb::f()
+char ReportAbuseVerb::f()
 {
-    Guard guard(source->get());
-    return source->get().first->getPrompt()->f() != 0;
+    Guard guard(source->get().ref());
+    return (char)source->get().first->getPrompt()->f();
 }

@@ -1,4 +1,4 @@
-// from server: 99% by king_originala
+// from server: 100% by tester
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
 
@@ -66,12 +66,15 @@ struct Arguments {
     virtual void get(int, Argument&) = 0;
 };
 
-struct Base {
-    virtual ~Base();
-};
+namespace RBX { namespace Reflection { class DescribedBase {
+public:
+    virtual ~DescribedBase();
+}; } }
+typedef RBX::Reflection::DescribedBase Base;
 
-struct Service : Base {
-};
+namespace RBX { class DebrisService : public Reflection::DescribedBase {
+}; }
+typedef RBX::DebrisService Service;
 
 namespace std {
     class bad_cast {

@@ -1,5 +1,7 @@
-// from server: 96% by king_originala
+// from server: 100% by king_originala
 extern "C" long (__stdcall *SendMessageA)(void *, unsigned int, unsigned int, long);
+extern "C" void __cdecl _ReadWriteBarrier();
+#pragma intrinsic(_ReadWriteBarrier)
 
 struct Context {
     bool contains(void *);
@@ -59,6 +61,7 @@ void Node::update()
             while (node) {
                 unsigned char saved = node->flag;
                 node->flag = 1;
+                _ReadWriteBarrier();
                 int value = node->item;
                 void *window = node->control->window;
                 send(window, 0x1102, 0x4002, value);

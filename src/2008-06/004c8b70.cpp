@@ -1,4 +1,4 @@
-// from server: 86% by king_originala
+// from server: 96% by king_originala
 struct Node
 {
     Node *next;
@@ -47,17 +47,18 @@ bool Receiver::insert(Object *object)
         previous = previous->next;
     previous->next = next;
 
+    Flag flag;
     try
     {
         unsigned bucket = hashObject(object) % table.count;
         Node **data = table.data;
-        Flag flag;
-        flag.value = false;
         Node **position = data + bucket;
+        flag.value = false;
 
         if (!prepare(object, &position, flag))
         {
-            for (unsigned index = first; ; ++index)
+            unsigned index = first;
+            for (;;)
             {
                 if (data[index] != reinterpret_cast<Node *>(data + index))
                 {
@@ -65,23 +66,31 @@ bool Receiver::insert(Object *object)
                     remove(object);
                     return false;
                 }
+                ++index;
             }
         }
 
         try
         {
-            if (accept(object))
+            try
             {
-                Node *entry = object ? &object->link : 0;
-                entry->next = *position;
-                *position = entry;
+                if (accept(object))
+                {
+                    Node *entry = object ? &object->link : 0;
+                    entry->next = *position;
+                    *position = entry;
 
-                unsigned index = first;
-                if (index > bucket)
-                    first = bucket;
-                else if (index < bucket)
-                    first = table.f(index);
-                return true;
+                    unsigned index = first;
+                    if (index > bucket)
+                        first = bucket;
+                    else if (index < bucket)
+                        first = table.f(index);
+                    return true;
+                }
+            }
+            catch (...)
+            {
+                throw;
             }
         }
         catch (...)
@@ -90,7 +99,8 @@ bool Receiver::insert(Object *object)
             throw;
         }
 
-        for (unsigned index = first; ; ++index)
+        unsigned index = first;
+        for (;;)
         {
             if (table.data[index] !=
                 reinterpret_cast<Node *>(table.data + index))
@@ -98,6 +108,7 @@ bool Receiver::insert(Object *object)
                 first = index;
                 return false;
             }
+            ++index;
         }
     }
     catch (...)

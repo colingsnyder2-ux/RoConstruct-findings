@@ -1,55 +1,49 @@
-// from server: 41% by king_originala
-extern "C" void* __cdecl get_state();
-extern "C" void __stdcall finish_state(int, void*);
-extern "C" void __cdecl free_object(void*);
+// from server: 64% by king_originala
+extern "C" void* __cdecl current_context();
+extern "C" void __stdcall release_context(int, void*);
+extern "C" void __cdecl free_storage(void*);
 extern "C" void __cdecl report_error(int, long, const char*, int);
-extern "C" __declspec(noreturn) void __stdcall raise_error(long, const void*);
+extern "C" __declspec(noreturn) void __stdcall raise_error(long, const char*);
 
-struct StateGuard {
-    void* saved;
+struct Context {
+    void* previous;
     void** slot;
-    void* registration;
-    int deferred;
-    char padding[8];
-
-    StateGuard(void*);
-    ~StateGuard();
+    void* resource;
+    int owned;
+    int reserved[2];
+    Context(void*);
+    ~Context();
 };
 
-__forceinline StateGuard::~StateGuard()
+inline Context::~Context()
 {
     if (slot)
-        slot[1] = saved;
-    if (deferred)
-        finish_state(0, registration);
+        slot[1] = previous;
+    if (owned)
+        release_context(0, resource);
 }
 
-struct Item {
-    ~Item();
+struct Text {
+    void destroy();
 };
 
-struct Temporary {
-    Item* value;
-    ~Temporary();
+struct TextOwner {
+    Text* value;
+    ~TextOwner();
 };
 
-__forceinline Temporary::~Temporary()
+inline TextOwner::~TextOwner()
 {
     if (value) {
-        value->~Item();
-        free_object(value);
+        value->destroy();
+        free_storage(value);
     }
 }
 
-struct Source {
-    Temporary get();
-    long check(Item*, void*);
-};
-
 struct Interface {
-    virtual long __stdcall query(const void*, void**) = 0;
-    virtual unsigned long __stdcall add_ref() = 0;
-    virtual unsigned long __stdcall release() = 0;
+    virtual long __stdcall query(void*, void**);
+    virtual unsigned long __stdcall add_ref();
+    virtual unsigned long __stdcall release();
 };
 
 struct InterfaceOwner {
@@ -58,71 +52,78 @@ struct InterfaceOwner {
     ~InterfaceOwner();
 };
 
-__forceinline InterfaceOwner::InterfaceOwner(Interface* p) : value(p)
+inline InterfaceOwner::InterfaceOwner(Interface* p) : value(p)
 {
     if (value)
         value->add_ref();
 }
 
-__forceinline InterfaceOwner::~InterfaceOwner()
+inline InterfaceOwner::~InterfaceOwner()
 {
     if (value)
         value->release();
 }
 
-struct Object;
-extern "C" long __stdcall create_object(Object**);
+struct Payload {
+    unsigned char prefix[8];
+    unsigned char data[1];
+};
 
-int __stdcall reconstruct(Source* source, Interface** result)
+struct Object {
+    unsigned char prefix[4];
+    Interface interface_part;
+    unsigned char gap[4];
+    Payload payload;
+};
+
+extern "C" long __stdcall acquire_object(Object**);
+
+struct Source {
+    TextOwner text();
+    long assign(Text*, void*);
+};
+
+long __stdcall reconstruct(Source*, Interface**);
+
+long __stdcall reconstruct(Source* source, Interface** result)
 {
     Object* object = 0;
-    StateGuard guard(get_state());
+    Context context(current_context());
 
     try {
-        if (create_object(&object)) {
-            report_error(1, create_object(&object),
-                         reinterpret_cast<const char*>(0x81c850), 331);
-            raise_error(create_object(&object),
-                        reinterpret_cast<const void*>(0x8164f8));
+        if (acquire_object(&object)) {
+            report_error(1, acquire_object(&object), ".\\Workspace.cpp", 331);
+            raise_error(acquire_object(&object),
+                        reinterpret_cast<const char*>(0x8164f8));
         }
 
-        source->check(
-            source->get().value,
-            reinterpret_cast<char*>(object) + 12
-                ? reinterpret_cast<char*>(object) + 20 : 0) == 0
-            ? (void)0
-            : (report_error(
-                   1,
-                   source->check(
-                       source->get().value,
-                       reinterpret_cast<char*>(object) + 12
-                           ? reinterpret_cast<char*>(object) + 20 : 0),
-                   reinterpret_cast<const char*>(0x81c850), 334),
-               raise_error(
-                   source->check(
-                       source->get().value,
-                       reinterpret_cast<char*>(object) + 12
-                           ? reinterpret_cast<char*>(object) + 20 : 0),
-                   reinterpret_cast<const void*>(0x8164f8)));
+        Object* const saved = object;
 
-        InterfaceOwner owner(
-            object
-                ? reinterpret_cast<Interface*>(
-                      reinterpret_cast<char*>(object) + 4)
-                : 0);
+        (source->assign(source->text().value,
+                        &saved->payload ? saved->payload.data : 0)
+            ? (report_error(1,
+                            source->assign(source->text().value,
+                                           &saved->payload ? saved->payload.data : 0),
+                            ".\\Workspace.cpp", 334),
+               raise_error(source->assign(source->text().value,
+                                          &saved->payload ? saved->payload.data : 0),
+                           reinterpret_cast<const char*>(0x8164f8)))
+            : (void)0);
 
-        if (!result) {
-            report_error(1, 0x80004003L,
-                         reinterpret_cast<const char*>(0x81c850), 338);
+        InterfaceOwner value(saved ? &saved->interface_part : 0);
+
+        if (result) {
+            *result = value.value;
+            if (value.value)
+                value.value->add_ref();
+        } else {
+            report_error(1, 0x80004003L, ".\\Workspace.cpp", 338);
             raise_error(0x80004003L,
-                        reinterpret_cast<const void*>(0x8164f8));
+                        reinterpret_cast<const char*>(0x8164f8));
         }
-
-        *result = owner.value;
-        if (owner.value)
-            owner.value->add_ref();
-    }
-    catch (...) {
+    } catch (long error) {
+        return error;
+    } catch (...) {
         return 0x80004005L;
     }
 

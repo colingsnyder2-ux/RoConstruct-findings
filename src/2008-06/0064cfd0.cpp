@@ -1,4 +1,4 @@
-// from server: 83% by king_originala
+// from server: 90% by king_originala
 void* __cdecl operator new(unsigned int);
 void __cdecl operator delete(void*);
 
@@ -14,7 +14,7 @@ struct Collection {
     ~Collection();
 };
 
-struct Stage {
+struct __declspec(novtable) Stage {
     virtual ~Stage();
 
     Stage* owner;

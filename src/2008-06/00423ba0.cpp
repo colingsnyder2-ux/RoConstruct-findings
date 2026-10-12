@@ -1,6 +1,8 @@
-// from server: 96% by king_originala
+// from server: 100% by king_originala
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
+extern "C" void __cdecl _ReadWriteBarrier();
+#pragma intrinsic(_ReadWriteBarrier)
 
 struct Control
 {
@@ -23,6 +25,7 @@ inline Shared::Shared(const Shared& other)
     if (control)
     {
         volatile long* references = &control->references;
+        _ReadWriteBarrier();
         _InterlockedExchangeAdd(references, 1);
     }
 }

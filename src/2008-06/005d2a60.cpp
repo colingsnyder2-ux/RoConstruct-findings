@@ -1,4 +1,4 @@
-// from server: 97% by king_originala
+// from server: 100% by king_originala
 void* __cdecl operator new(unsigned int);
 void __cdecl operator delete(void*);
 
@@ -11,18 +11,24 @@ struct Object {
     Object();
 };
 
+struct Control {
+    void* pointer;
+    Control();
+};
+
+inline Control::Control() : pointer(0) {
+}
+
 struct Owner {
     Object* object;
-    void* control;
+    Control control;
 
     Owner();
     ~Owner();
     void reset(Object*);
 };
 
-inline Owner::Owner() {
-    object = 0;
-    control = 0;
+inline Owner::Owner() : object(0), control() {
 }
 
 struct Callback {

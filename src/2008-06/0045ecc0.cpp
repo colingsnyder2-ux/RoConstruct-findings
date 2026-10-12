@@ -1,45 +1,56 @@
-// from server: 43% by colin
-struct S
-{
-    char pad0[0x158];
-    int field158;
-    char pad15c[4];
-    int field160;
-    int field164;
-
-    S* construct(int arg);
+// from server: 84% by king_originala
+struct Base {
+    unsigned char storage[0x130];
+    Base();
 };
 
-extern "C" bool __cdecl func_0060a2f0();
+struct S : Base {
+    double value;
+    unsigned char text[28];
+    S();
+};
 
-S* S::construct(int arg)
+extern void __cdecl func_005ec170(void *);
+extern bool __cdecl func_0060a2f0();
+
+struct Pair {
+    void (__cdecl *function)(void *);
+    void *argument;
+};
+
+inline void *__cdecl operator new(unsigned int, void *p)
 {
-    char local[8];
-    *(int*)(local + 0) = 0x5ec170;
-    *(int*)(local + 4) = arg;
+    return p;
+}
 
-    *(int*)((char*)this + 0x00) = 0x81a08c;
-    *(int*)((char*)this + 0x10) = 0x81a07c;
-    *(int*)((char*)this + 0x14) = 0x81a074;
-    *(int*)((char*)this + 0x20) = 0x81a06c;
-    *(int*)((char*)this + 0x24) = 0x81a05c;
-    *(int*)((char*)this + 0x44) = 0x81a04c;
-    *(int*)((char*)this + 0x64) = 0x81a03c;
-    *(int*)((char*)this + 0x84) = 0x81a02c;
-    *(int*)((char*)this + 0xa4) = 0x81a01c;
-    *(int*)((char*)this + 0xc4) = 0x81a00c;
-    field158 = 0;
+struct Item : S {
+    unsigned long state;
+    unsigned long padding;
+    Pair target;
+    Item(void *);
+};
 
-    if (!func_0060a2f0())
-    {
-        field160 = *(int*)(local + 0);
-        field164 = *(int*)(local + 4);
-        field158 = 0x819cdc;
+Item::Item(void *argument)
+{
+    unsigned long *p = reinterpret_cast<unsigned long *>(this);
+    p[0x00 / 4] = 0x0081a08c;
+    p[0x10 / 4] = 0x0081a07c;
+    p[0x14 / 4] = 0x0081a074;
+    p[0x20 / 4] = 0x0081a06c;
+    p[0x24 / 4] = 0x0081a05c;
+    p[0x44 / 4] = 0x0081a04c;
+    p[0x64 / 4] = 0x0081a03c;
+    p[0x84 / 4] = 0x0081a02c;
+    p[0xa4 / 4] = 0x0081a01c;
+    p[0xc4 / 4] = 0x0081a00c;
+
+    Pair local = { &func_005ec170, argument };
+    state = 0;
+    if (!reinterpret_cast<bool (__cdecl *)(Pair *)>(
+            &func_0060a2f0)(&local)) {
+        new (&target) Pair(local);
+        state = 0x00819cdc;
+    } else {
+        state = 0;
     }
-    else
-    {
-        field158 = 0;
-    }
-
-    return this;
 }

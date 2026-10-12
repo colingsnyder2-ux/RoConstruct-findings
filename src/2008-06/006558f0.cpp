@@ -1,26 +1,51 @@
-// from server: 37% by tester
-struct ScoreHud {
-    int field0;
-    char pad[0x14];
-    int field18;
-    char pad2[0x1c];
-    int field38;
-    char pad3[0x1c];
-    int field58;
-    void destroy();
+// from server: 100% by king_originala
+extern "C" void __cdecl release(void *);
+
+struct Owner {
+    void *pointer;
+    ~Owner();
 };
 
-void sub_655870();
-void sub_655800();
-void sub_6541e0();
-void sub_4077d0();
-void sub_6a067a(void*);
+struct Container {
+    Owner owner;
+    char storage[20];
+    void tidy();
+    ~Container();
+};
 
-void ScoreHud::destroy()
+struct MemberA {
+    char storage[32];
+    ~MemberA();
+};
+
+struct MemberB {
+    char storage[32];
+    ~MemberB();
+};
+
+struct MemberC {
+    char storage[32];
+    ~MemberC();
+};
+
+struct ScoreHud {
+    Container container;
+    MemberA a;
+    MemberB b;
+    MemberC c;
+    ~ScoreHud();
+};
+
+inline Owner::~Owner()
 {
-    sub_655870();
-    sub_655800();
-    sub_6541e0();
-    sub_4077d0();
-    sub_6a067a((void*)field0);
+    release(pointer);
+}
+
+inline Container::~Container()
+{
+    tidy();
+}
+
+ScoreHud::~ScoreHud()
+{
 }

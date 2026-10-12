@@ -1,58 +1,54 @@
-// from server: 50% by tester
-struct Contact {
-    char pad[8];
+// from server: 73% by king_originala
+#pragma float_control(precise, off)
+
+struct Box {
+    float x0, y0, z0;
+    float x1, y1, z1;
+};
+
+struct Source {
+    char reserved[0x90];
+    unsigned int version;
+    const void* get();
+};
+
+struct List {
+    Source** data;
     int count;
+    int capacity;
+
+    void reset(int, int);
+    void append(Source* const*);
 };
 
-struct Primitive {
-    char pad[0x18];
+struct Owner {
+    void query(const Box*, int, List*);
 };
 
-struct Connector {
-    char pad[0x18];
+struct Contact {
+    Owner* owner;
+    int reserved;
+    List candidates;
+
+    void collect(const Box*, int, List*);
 };
 
-struct ContactConnector {
-    char pad[0x18];
-};
-
-struct S_0060d140 {
-    void* m_p0;
-    int m_count;
-    void* m_p8;
-    void f(Primitive* p0, Primitive* p1, int a3);
-};
-
-extern "C" void __stdcall sub_00599a70(void* p, int a, int b);
-extern "C" void __stdcall sub_0065ac60(void* a, void* b, void* c, void* d);
-extern "C" void* __stdcall sub_005e7a50(void* p);
-extern "C" void __stdcall sub_0059a190(void* p, void* q);
-
-void S_0060d140::f(Primitive* p0, Primitive* p1, int a3)
+void Contact::collect(const Box* box, int argument, List* output)
 {
-    void* self = this;
-    void* ebx = (char*)this + 8;
-    sub_00599a70(ebx, 0, 0);
-    sub_0065ac60(*(void**)this, p0, p1, ebx);
-    int i = 0;
-    if (m_count > 0) {
-        do {
-            void* arr = *(void**)ebx;
-            int off = i * 4;
-            void* elem = *(void**)((char*)arr + off);
-            void* r = sub_005e7a50(elem);
-            float* f = (float*)r;
-            if (f[3] == *(float*)p0 &&
-                f[4] == *((float*)p0 + 1) &&
-                f[5] == *((float*)p0 + 2) &&
-                f[1] > *((float*)p0 + 4) &&
-                f[0] > *((float*)p0 + 3) &&
-                f[2] > *((float*)p0 + 5)) {
-                void* arr2 = *(void**)ebx;
-                void* elem2 = (void*)((char*)arr2 + off);
-                sub_0059a190(*(void**)((char*)self + 0x10), elem2);
-            }
-            i++;
-        } while (i < m_count);
+    candidates.reset(0, 0);
+    owner->query(box, argument, &candidates);
+
+    for (int i = 0; i < candidates.count; ++i) {
+        Source*& source = candidates.data[i];
+        const Box* bounds = static_cast<const Box*>(source->get());
+
+        if (!(bounds->x1 < box->x0) &&
+            !(bounds->y1 < box->y0) &&
+            !(bounds->z1 < box->z0) &&
+            !(bounds->y0 > box->y1) &&
+            !(bounds->x0 > box->x1) &&
+            !(bounds->z0 > box->z1)) {
+            output->append(&candidates.data[i]);
+        }
     }
 }

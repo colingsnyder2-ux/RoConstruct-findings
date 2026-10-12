@@ -1,95 +1,121 @@
-// from server: 57% by colin
-// roc 2008-06 007ad310  unit: RBX::RenderNew::Material::Level  size: 319 bytes
-// Make this compile to the exact bytes below, then: roc check 2008-06 007ad310
+// from server: 82% by king_originala
+extern "C" long (__stdcall * const InterlockedDecrement)(volatile long *);
 
-struct OgreString {
-    void* rep;
-    OgreString();
-    OgreString(const OgreString&);
-    ~OgreString();
+struct String;
+struct MaterialPtr;
+struct MaterialManager;
+struct LogManager;
+
+extern void (__thiscall *copyString)(String *, const String &);
+extern void (__thiscall *destroyString)(String *);
+extern String (__cdecl *concatString)(const char *, const String &);
+extern void (__thiscall *destroyMaterialPtr)(MaterialPtr *);
+extern MaterialManager &(__cdecl *getMaterialManager)();
+extern LogManager &(__cdecl *getLogManager)();
+extern void (__thiscall *writeLog)(LogManager *, const String &, int, bool);
+
+struct String {
+    unsigned char storage[28];
+    String(const String &);
+    ~String();
 };
 
-struct OgreMaterialPtr {
-    void* p;
-    ~OgreMaterialPtr();
-};
-
-struct OgreLogManager {
-    void logMessage(const OgreString&, int, bool);
-};
-
-struct OgreMaterialManager {
-    void* getByName(const char*);
-};
-
-struct OgreSingleton {
-    static OgreLogManager& getSingleton();
-};
-
-extern "C" {
-    void* __stdcall InterlockedDecrement(void*);
-    void* __stdcall sub_80245c();
-    void* __stdcall sub_804e60();
-    void* __stdcall sub_802368();
-    void* __stdcall sub_804e74();
-    void* __stdcall sub_804e78();
-    void* __stdcall sub_802468();
-    void* __stdcall sub_804e70();
+inline String::String(const String &other)
+{
+    copyString(this, other);
 }
 
-extern void* __stdcall sub_45ad90(void*);
+inline String::~String()
+{
+    destroyString(this);
+}
 
-struct Level {
-    void* vtable;
-    void* field_4;
-    void* field_8;
-    void* field_c;
-    char pad_10[0x1c];
-    void* field_2c;
-    void* field_30;
-    void destroy();
+struct Material {
+    unsigned char reserved0[36];
+    String name;
+    unsigned char reserved1[28];
+    unsigned long handle;
 };
 
-void Level::destroy()
+struct MaterialManager {
+    virtual void slot0();
+    virtual void slot1();
+    virtual void slot2();
+    virtual void slot3();
+    virtual void slot4();
+    virtual void slot5();
+    virtual void slot6();
+    virtual void slot7();
+    virtual void slot8();
+    virtual void slot9();
+    virtual void slot10();
+    virtual void slot11();
+    virtual void slot12();
+    virtual void slot13();
+    virtual void slot14();
+    virtual void remove(unsigned long);
+};
+
+struct LogManager {};
+
+struct Control {
+    virtual ~Control();
+    volatile long count;
+    void *object;
+    void release();
+};
+
+struct Reference {
+    Control *p;
+    ~Reference();
+};
+
+inline Reference::~Reference()
 {
-    this->vtable = (void*)0x874ae4;
-    if (this->field_30) {
-        void* p = (char*)this->field_30 + 0x24;
-        OgreString s1;
-        sub_80245c();
-        sub_804e60();
-        void* m = *(void**)((char*)this->field_30 + 0x5c);
-        void* vt = *(void**)m;
-        ((void (__thiscall*)(void*, void*))*(void**)((char*)vt + 0x3c))(m, m);
-        OgreString s2;
-        sub_802368();
-        void* mat = sub_804e74();
-        sub_804e78();
-        sub_802468();
-        sub_802468();
-    }
-    sub_804e70();
-    if (this->field_c) {
-        void* p = (char*)this->field_c + 4;
-        if (InterlockedDecrement(p) == 0) {
-            sub_45ad90(this->field_c);
-            if (this->field_c) {
-                void* vt = *(void**)this->field_c;
-                ((void (__thiscall*)(void*, int))*(void**)((char*)vt))(this->field_c, 1);
-            }
+    if (p) {
+        if (InterlockedDecrement(&p->count) == 0) {
+            p->release();
+            if (p)
+                delete p;
         }
-        this->field_c = 0;
+        p = 0;
     }
-    if (this->field_8) {
-        void* p = (char*)this->field_8 + 4;
-        if (InterlockedDecrement(p) == 0) {
-            sub_45ad90(this->field_8);
-            if (this->field_8) {
-                void* vt = *(void**)this->field_8;
-                ((void (__thiscall*)(void*, int))*(void**)((char*)vt))(this->field_8, 1);
-            }
-        }
-        this->field_8 = 0;
+}
+
+struct MaterialPtr {
+    void *vtable;
+    Material *p;
+    void *count;
+    ~MaterialPtr();
+};
+
+inline MaterialPtr::~MaterialPtr()
+{
+    destroyMaterialPtr(this);
+}
+
+struct Base {
+    virtual ~Base();
+};
+
+inline Base::~Base()
+{
+}
+
+struct Level : Base {
+    unsigned long reserved0;
+    Reference first;
+    Reference second;
+    unsigned char reserved1[28];
+    MaterialPtr material;
+    ~Level();
+};
+
+Level::~Level()
+{
+    if (material.p) {
+        String name(material.p->name);
+        getMaterialManager().remove(material.p->handle);
+        writeLog(&getLogManager(), concatString("RBX removed ", name), 2, false);
     }
-    this->vtable = (void*)0x874a8c;
 }

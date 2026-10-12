@@ -1,4 +1,4 @@
-// from server: 88% by king_originala
+// from server: 93% by king_originala
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
 extern "C" long __cdecl _InterlockedDecrement(volatile long*);
@@ -14,7 +14,6 @@ struct Control {
 
 struct Reference {
     Control *control;
-
     Reference(const Reference &other);
     Reference &operator=(const Reference &other);
     ~Reference();
@@ -31,11 +30,13 @@ __forceinline Reference::Reference(const Reference &other)
 
 __forceinline Reference::~Reference()
 {
-    if (control) {
-        Control *p = control;
-        if (_InterlockedDecrement(&p->strong) == 0) {
+    Control *p = control;
+    if (p) {
+        volatile long *count = &p->strong;
+        if (_InterlockedDecrement(count) == 0) {
             p->dispose();
-            if (_InterlockedDecrement(&p->weak) == 0)
+            count = &p->weak;
+            if (_InterlockedDecrement(count) == 0)
                 p->destroy();
         }
     }
@@ -62,7 +63,6 @@ struct SecondSource {
 struct Main {
     char padding[0x204];
     FirstSource *source;
-
     void *getValue();
     SecondSource *getSource();
 };
@@ -74,7 +74,6 @@ struct Shared {
 
 struct Guard {
     char storage[12];
-
     Guard(Shared);
     ~Guard();
 };
@@ -89,7 +88,6 @@ struct Object {
     unsigned long reserved;
     Shared first;
     Shared second;
-
     long initialize();
 };
 
@@ -99,8 +97,8 @@ long Object::initialize()
     Guard guard(first);
     second = makeSecond(first.value->getValue());
 
-    FirstSource *source = first.value->source;
     Listener *listener = &firstListener;
+    FirstSource *source = first.value->source;
     if (source)
         source->signal.connect(listener);
 

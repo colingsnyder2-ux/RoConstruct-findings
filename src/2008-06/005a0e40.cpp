@@ -1,4 +1,4 @@
-// from server: 92% by king_originala
+// from server: 100% by king_originala
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
 extern "C" long __cdecl _InterlockedDecrement(volatile long*);
@@ -12,7 +12,17 @@ struct Control {
     virtual void destroy();
     volatile long strong;
     volatile long weak;
+    void release();
 };
+
+__forceinline void Control::release()
+{
+    if (_InterlockedDecrement(&strong) == 0) {
+        dispose();
+        if (_InterlockedDecrement(&weak) == 0)
+            destroy();
+    }
+}
 
 struct Holder {
     Control* control;
@@ -21,12 +31,8 @@ struct Holder {
 
 __forceinline Holder::~Holder()
 {
-    Control* p = control;
-    if (p && _InterlockedDecrement(&p->strong) == 0) {
-        p->dispose();
-        if (_InterlockedDecrement(&p->weak) == 0)
-            p->destroy();
-    }
+    if (control)
+        control->release();
 }
 
 struct Entry {

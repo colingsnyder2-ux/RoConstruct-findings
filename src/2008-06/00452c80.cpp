@@ -1,4 +1,4 @@
-// from server: 70% by king_originala
+// from server: 85% by king_originala
 extern "C" void __cdecl initialize(void (__cdecl*)(), void*);
 extern "C" void __cdecl initializeIndex();
 extern "C" void __cdecl initializeKey();
@@ -21,6 +21,7 @@ struct Product
     Reference reference;
 
     Product();
+    Product(const Product&);
     ~Product();
 };
 
@@ -53,10 +54,11 @@ void* Creator::get()
 {
     initialize(initializeIndex, &indexState);
     unsigned int index = getIndex();
+    unsigned int size = static_cast<unsigned int>(products.end - products.begin);
     void (__cdecl* invalid)() = invalidParameter;
     ProductArray& array = products;
 
-    if (index + 1 > static_cast<unsigned int>(array.end - array.begin))
+    if (index + 1 > size)
     {
         array.resize(index + 1, Product());
     }

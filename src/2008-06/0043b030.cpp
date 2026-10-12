@@ -1,29 +1,47 @@
-// from server: 30% by colin
-struct VColor3 {
-    char pad[0x134];
-    int field134;
-    int field138;
-    void sub_43b030(int a, int b);
+// from server: 88% by king_originala
+struct Handle {
+    int first;
+    int second;
+    Handle() : first(0), second(0) {}
+    ~Handle();
 };
 
-extern "C" void __stdcall sub_576f00(int, int);
-extern "C" void __stdcall sub_5773c0(int);
+struct Temporary {
+    Handle handle;
+    int third;
+    void init(int value);
+    Temporary(int value) : third(0) { init(value); }
+    ~Temporary();
+};
 
-void VColor3::sub_43b030(int a, int b) {
-    int local1 = 0;
-    int local2 = 0;
-    int local3 = 0;
-    int local4 = 0;
-    int local5 = 0;
-    int* p = (int*)((char*)this + 0x134);
-    int v = *(int*)(*p + 0x198);
-    sub_576f00(v, (int)&local1);
-    local5 = 1;
-    int* q = (int*)((char*)this + 0x138);
-    int* r = (int*)(*q + 0x18);
-    int* s = (int*)*r;
-    int (*fn)(int, int) = (int (*)(int, int))s[3];
-    fn(a, b);
-    local5 = -1;
-    sub_5773c0((int)&local1);
+struct Source {
+    char padding[0x198];
+    int value;
+};
+
+struct Receiver {
+    virtual void slot0();
+    virtual void slot1();
+    virtual void slot2();
+    virtual void invoke(void* value, int argument);
+};
+
+struct Destination {
+    char padding[0x18];
+    Receiver* receiver;
+};
+
+struct S {
+    char padding[0x134];
+    Source* source;
+    Destination* destination;
+    void f(void* value, int argument);
+};
+
+void S::f(void* value, int argument)
+{
+    Temporary temporary(source->value);
+    destination->receiver->invoke(
+        value ? static_cast<char*>(value) + 0x14 : 0,
+        argument);
 }

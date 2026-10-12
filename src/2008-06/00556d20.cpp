@@ -1,84 +1,92 @@
-// from server: 64% by king_originala
+// from server: 73% by king_originala
 extern "C" void __cdecl _invalid_parameter_noinfo();
 
-struct Error {
-    char storage[40];
-    Error();
-    ~Error();
-};
-
-__declspec(noreturn) void __cdecl raiseError(const Error&);
-
-struct Invocation {
-    void* reserved;
-    void (__cdecl *invoke)(void*, float, float);
-};
-
-struct Callback {
-    char reserved[8];
-    Invocation* implementation;
-    unsigned long padding;
-    char object[1];
-
-    void operator()(float x, float y);
-};
-
-inline void Callback::operator()(float x, float y)
+struct Failure
 {
-    if (!implementation)
-        raiseError(Error());
-    implementation->invoke(object, x, y);
-}
-
-struct Node {
-    char reserved[24];
-    Callback* callback;
+    unsigned long words[10];
+    Failure();
+    ~Failure();
 };
 
-struct Container {
-    char reserved[20];
-    Node* sentinel;
-};
+__declspec(noreturn) void __cdecl raise_exception(const void *);
 
-struct Iterator {
-    char reserved[16];
-    Container** owner;
-    Node* node;
-    char remaining[32];
-
-    bool equal(const Iterator* other);
-    void advance();
-};
-
-struct EndIterator {
-    Iterator value;
-    char remaining[8];
-};
-
-struct Arguments {
+struct Arguments
+{
     float first;
     float second;
 };
 
-void* __stdcall dispatch(void* result, Iterator current,
-                         const Arguments* arguments, bool* invoked,
-                         EndIterator end)
+struct FunctionTable
 {
-    while (!current.equal(&end.value)) {
-        if (!*invoked) {
-            if (!current.owner)
+    void *unused;
+    void (__cdecl *invoke)(void *, float, float);
+};
+
+struct Callable
+{
+    unsigned long padding[2];
+    FunctionTable *table;
+    unsigned long reserved;
+    unsigned char storage[1];
+};
+
+struct Node
+{
+    unsigned long padding[6];
+    Callable *callable;
+};
+
+struct List
+{
+    unsigned long padding[5];
+    Node *end;
+};
+
+struct Iterator
+{
+    unsigned long padding[4];
+    List **owner;
+    Node *node;
+    unsigned long state[8];
+    Arguments *arguments;
+    bool *cached;
+
+    bool equal(const Iterator &) const;
+    void advance();
+};
+
+struct Result
+{
+};
+
+Result __stdcall combine(Iterator first, Iterator last)
+{
+    while (!first.equal(last))
+    {
+        if (!*first.cached)
+        {
+            if (!first.owner)
                 _invalid_parameter_noinfo();
 
-            Container* container = current.owner ? *current.owner : 0;
-            if (current.node == container->sentinel)
+            List *list = first.owner ? *first.owner : 0;
+            if (first.node == list->end)
                 _invalid_parameter_noinfo();
 
-            (*current.node->callback)(arguments->first, arguments->second);
+            Callable *callable = first.node->callable;
+            float a = first.arguments->first;
+            float b = first.arguments->second;
 
-            if (!*invoked)
-                *invoked = true;
+            if (!callable->table)
+                raise_exception(&Failure());
+
+            callable->table->invoke(callable->storage, a, b);
+
+            if (!*first.cached)
+                *first.cached = true;
         }
-        current.advance();
+
+        first.advance();
     }
-    return result;
+
+    return Result();
 }

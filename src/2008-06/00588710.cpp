@@ -1,5 +1,5 @@
-// from server: 75% by king_originala
-extern "C" void (__cdecl *_invalid_parameter_noinfo)();
+// from server: 79% by colin
+extern "C" void __cdecl _invalid_parameter_noinfo();
 
 struct Payload
 {
@@ -8,7 +8,7 @@ struct Payload
 
 struct Node
 {
-    Node* first;
+    Node* next;
     unsigned int reserved[3];
     Payload value;
 };
@@ -39,7 +39,7 @@ struct S
 
 void S::f()
 {
-    Node* node = head->first;
+    Node* node = head->next;
     Proxy* currentProxy = proxy;
     Iterator it;
     it.node = node;

@@ -1,4 +1,6 @@
-// from server: 69% by king_originala
+// from server: 90% by king_originala
+#pragma float_control(precise, off)
+
 struct Device;
 struct Texture;
 struct Batch;
@@ -13,14 +15,19 @@ extern "C" {
 
 struct Handle {
     Texture *pointer;
-    Handle(Texture *);
+    Handle(Texture *const &);
     Handle(const Handle &);
+    ~Handle();
     void assign(Texture *);
 };
 
-inline Handle::Handle(Texture *p) : pointer(0)
+inline Handle::Handle(Texture *const &p) : pointer(0)
 {
     assign(p);
+}
+
+inline Handle::~Handle()
+{
 }
 
 struct Vector3 {
@@ -30,11 +37,21 @@ struct Vector3 {
 struct Color {
     float x, y, z, w;
     Color(float, float, float, float);
+    Color &operator=(const Color &);
 };
 
 inline Color::Color(float a, float b, float c, float d)
     : x(a), y(b), z(c), w(d)
 {
+}
+
+inline Color &Color::operator=(const Color &c)
+{
+    x = c.x;
+    y = c.y;
+    z = c.z;
+    w = c.w;
+    return *this;
 }
 
 extern const Vector3 &colorVector();
@@ -67,7 +84,7 @@ struct Texture {
 
 struct State {
     char padding[0x30];
-    Texture *volatile texture;
+    Texture *texture;
 };
 
 struct Device {
@@ -87,7 +104,7 @@ struct Device {
     void disableLighting();
     void texture(int, Handle);
     void transform(const Batch *);
-    void select(int);
+    void select(int, Handle);
     void end();
 };
 
@@ -105,11 +122,13 @@ void S::render(Device *device)
 {
     if (!enabled)
         return;
-    if (!state->texture)
+
+    State *current = state;
+    if (*reinterpret_cast<const int *>(&current->texture) == 0)
         return;
 
-    int kind = state->texture->kind;
-    if (kind == 5 && kind != 7)
+    int kind = current->texture->kind;
+    if (kind != 5 && kind != 7)
         return;
 
     device->begin();
@@ -126,14 +145,13 @@ void S::render(Device *device)
         device->depthWrite = 0;
     }
 
-    Color *destination = &device->color;
     for (int i = 0; i < count; ++i) {
+        Color *destination = &device->color;
         Batch *batch = batches[i];
         Surface *surface = batch->surface;
         device->offset(batch->offset);
         device->transform(batch);
-        surface->prepare(device);
-        device->select(0);
+        device->select(0, surface->prepare(device));
 
         float scale = surface->scale();
         const Vector3 &color = colorVector();

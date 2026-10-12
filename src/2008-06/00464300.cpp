@@ -1,36 +1,52 @@
-// from server: 40% by colin
-struct S_func_004613d0 {
-    char pad0[88];
-    int m_x;
-    int* f();
+// from server: 95% by king_originala
+struct Control {
+    int func_00460120(int);
+    int func_00460c10(int, int);
+    int func_004610e0(int, int);
 };
 
-struct S_func_00464300 {
-    int f(int);
+struct Text {
+    char* data;
+    Text();
+    ~Text();
 };
 
-extern "C" int __stdcall G1_func_00803f04(int);
-extern "C" int __stdcall G1_func_008032c4(int, int, int);
-extern "C" int __stdcall G1_func_00803ee0(int);
-extern "C" int __stdcall G1_func_00803f14(int);
+extern void (__thiscall* text_construct)(Text*);
+extern void (__cdecl* text_format)(Text*, unsigned int, ...);
+extern const char* (__thiscall* text_data)(Text*);
+extern void (__thiscall* text_destroy)(Text*);
 
-int S_func_00464300::f(int a1)
+__forceinline Text::Text()
 {
-    S_func_004613d0* p = (S_func_004613d0*)0;
-    int* pi = p->f();
-    int v1 = ((int (__thiscall*)(void*, int))0x460120)(pi, 1);
-    int v2 = ((int (__thiscall*)(void*, int, int))0x460c10)(pi, v1, 1);
-    int v3 = ((int (__thiscall*)(void*, int, int))0x4610e0)(pi, v2, 1);
-    int v4 = v3 & 0xfff;
-    v4 -= 0x400;
-    int buf[4];
-    G1_func_00803f04((int)buf);
-    buf[0] = 0;
-    G1_func_008032c4((int)buf, 0xc9, v4);
-    int* obj = (int*)buf[2];
-    int* vtbl = (int*)*obj;
-    G1_func_00803ee0((int)buf);
-    ((void (__thiscall*)(void*, int))vtbl[3])(obj, (int)buf);
-    G1_func_00803f14((int)buf);
-    return a1;
+    text_construct(this);
+}
+
+__forceinline Text::~Text()
+{
+    text_destroy(this);
+}
+
+struct Output {
+    virtual void slot0() = 0;
+    virtual void slot1() = 0;
+    virtual void slot2() = 0;
+    virtual void set(const char*) = 0;
+};
+
+struct CScriptEditor {
+    int* func_004613d0();
+    void func_00464300(Output*);
+};
+
+void CScriptEditor::func_00464300(Output* output)
+{
+    Control* control = reinterpret_cast<Control*>(func_004613d0());
+    int value = control->func_00460120(1);
+    value = control->func_00460c10(value, 1);
+    value = control->func_004610e0(value, 1);
+    value = (value & 0xfff) - 0x400;
+
+    Text text;
+    text_format(&text, 201, value);
+    output->set(text_data(&text));
 }

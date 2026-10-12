@@ -1,4 +1,4 @@
-// from server: 92% by king_originala
+// from server: 100% by king_originala
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
 extern "C" long __cdecl _InterlockedDecrement(volatile long*);
@@ -26,18 +26,21 @@ struct Pointer {
     Object* object;
     Control* control;
 
-    Pointer();
+    Pointer() throw();
     Pointer(const Pointer& other);
     ~Pointer();
+    const Pointer& reference() const throw();
 };
 
-inline Pointer::Pointer() {
+inline Pointer::Pointer() throw() {
 }
 
 inline Pointer::Pointer(const Pointer& other)
     : object(other.object), control(other.control) {
-    if (control)
-        _InterlockedExchangeAdd(&control->strong, 1);
+    if (control) {
+        volatile long* count = &control->strong;
+        _InterlockedExchangeAdd(count, 1);
+    }
 }
 
 inline Pointer::~Pointer() {
@@ -51,6 +54,10 @@ inline Pointer::~Pointer() {
     }
 }
 
+inline const Pointer& Pointer::reference() const throw() {
+    return *this;
+}
+
 struct Guard {
     unsigned char storage[12];
     Guard(Pointer value);
@@ -62,14 +69,14 @@ struct Source;
 struct S {
     unsigned char padding[0x94];
     Source* source;
-    Pointer* get(Pointer* output) throw();
+    Pointer get() throw();
     int f();
 };
 
 int S::f() {
-    if (get(&Pointer())->object != 0) {
-        Guard guard(*get(&Pointer()));
-        int result = get(&Pointer())->object->interfaceValue.query();
+    if (get().object != 0) {
+        Guard guard(get().reference());
+        int result = get().object->interfaceValue.query();
         return result;
     }
     return 0;

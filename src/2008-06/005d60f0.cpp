@@ -1,4 +1,4 @@
-// from server: 94% by king_originala
+// from server: 98% by king_originala
 namespace RBX {
     struct Instance {
         virtual ~Instance();
@@ -25,7 +25,7 @@ namespace RBX {
     namespace Network {
         struct Player : Instance {
             char pad[0x70];
-            int value;
+            volatile int value;
             bool flag;
         };
     }
@@ -37,6 +37,9 @@ namespace RBX {
 
 RBX::ServiceProvider* __cdecl func_00491d50(RBX::Instance*);
 extern "C" void (__cdecl *invalid_parameter_noinfo)();
+extern "C" void* __cdecl __RTDynamicCast(void*, long, void*, void*, int);
+extern char instanceTypeDescriptor;
+extern char playerTypeDescriptor;
 
 int RBX::VTeams::count(int value)
 {
@@ -47,8 +50,9 @@ int RBX::VTeams::count(int value)
         if (i >= static_cast<unsigned int>(children->last - children->first))
             invalid_parameter_noinfo();
 
-        Network::Player* player =
-            dynamic_cast<Network::Player*>(children->first[i].object);
+        Network::Player* player = static_cast<Network::Player*>(
+            __RTDynamicCast(children->first[i].object, 0,
+                            &instanceTypeDescriptor, &playerTypeDescriptor, 0));
 
         if (player && !player->flag && player->value == value)
             ++result;

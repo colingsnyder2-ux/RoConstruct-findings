@@ -1,42 +1,43 @@
-// from server: 76% by colin
-// roc 2008-06 005fd770  unit: RBX::Tool  size: 88 bytes
-// Make this compile to the exact bytes below, then: roc check 2008-06 005fd770
-
-struct CNameItem {
+// from server: 100% by king_originala
+struct Matrix {
     char data[36];
-    CNameItem();
+    Matrix* copyFrom(const Matrix* source);
 };
 
-struct Tool;
-
-extern "C" void* __cdecl sub_5b08a0(void* p);
+struct Frame {
+    Matrix rotation;
+    float f24, f28, f2c;
+    Frame* initialize();
+};
 
 struct Helper {
-    void method();
+    Frame* method();
+};
+
+struct Owner {
+    Helper* getPart();
 };
 
 struct Tool {
-    char pad[0x24];
-    float f24;
-    float f28;
-    float f2c;
-    Tool* copyFrom(Tool* other);
+    Frame* copyFrom(Frame* other);
 };
 
-Tool* Tool::copyFrom(Tool* other) {
-    void* src;
-    void* p = sub_5b08a0((char*)this - 0x26c);
-    if (p) {
-        Helper* h = (Helper*)p;
-        h->method();
-        src = p;
-    } else {
-        CNameItem item;
-        src = &item;
-    }
-    other->copyFrom((Tool*)src);
-    other->f24 = ((Tool*)src)->f24;
-    other->f28 = ((Tool*)src)->f28;
-    other->f2c = ((Tool*)src)->f2c;
+Frame* Tool::copyFrom(Frame* other)
+{
+    volatile int flag = 0;
+    Frame item;
+    Helper* p = reinterpret_cast<Owner*>(
+        reinterpret_cast<char*>(this) - 0x26c)->getPart();
+
+    Frame* src;
+    if (p)
+        src = p->method();
+    else
+        src = item.initialize();
+
+    other->rotation.copyFrom(&src->rotation);
+    other->f24 = src->f24;
+    other->f28 = src->f28;
+    other->f2c = src->f2c;
     return other;
 }

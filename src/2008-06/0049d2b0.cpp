@@ -1,6 +1,8 @@
-// from server: 81% by king_originala
+// from server: 85% by king_originala
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
+extern "C" long __cdecl _InterlockedDecrement(volatile long*);
+#pragma intrinsic(_InterlockedDecrement)
 
 struct String;
 extern String* (__thiscall *string_copy)(String*, const String&);
@@ -37,27 +39,28 @@ struct Shared {
 
 __forceinline Shared::Shared(const Shared& other)
     : object(other.object), control(other.control) {
-    if (control) {
-        volatile long* count = &control->strong;
-        _InterlockedExchangeAdd(count, 1);
-    }
+    if (control)
+        _InterlockedExchangeAdd(&control->strong, 1);
 }
 
 __forceinline Shared::~Shared() {
     Control* p = control;
     if (p) {
-        volatile long* count = &p->strong;
-        if (_InterlockedExchangeAdd(count, -1) - 1 == 0) {
+        if (_InterlockedDecrement(&p->strong) == 0) {
             p->dispose();
-            count = &p->weak;
-            if (_InterlockedExchangeAdd(count, -1) - 1 == 0)
+            if (_InterlockedDecrement(&p->weak) == 0)
                 p->destroy();
         }
     }
 }
 
+struct Result {
+    void* value;
+    Result(const Result&);
+};
+
 struct Event {
-    void invoke(void**, String, Shared);
+    Result invoke(String, Shared);
 };
 
 struct Target {
@@ -73,5 +76,5 @@ struct S {
 void S::f(void* argument, String text, Shared owner) {
     Target* target = resolve(argument);
     if (target)
-        target->event.invoke(&argument, text, owner);
+        target->event.invoke(text, owner);
 }

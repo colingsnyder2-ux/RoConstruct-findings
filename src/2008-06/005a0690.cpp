@@ -1,4 +1,4 @@
-// from server: 99% by king_originala
+// from server: 100% by tester
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
 extern "C" long __cdecl _InterlockedDecrement(volatile long*);
@@ -6,14 +6,16 @@ extern "C" long __cdecl _InterlockedDecrement(volatile long*);
 
 namespace RBX
 {
-    struct Instance
+    class Instance
     {
+    public:
         virtual ~Instance();
         bool contains(Instance*);
     };
 
-    struct IRenderable
+    class IRenderable
     {
+    public:
         virtual ~IRenderable();
         virtual void reserved1();
         virtual void reserved2();

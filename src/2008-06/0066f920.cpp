@@ -1,7 +1,8 @@
-// from server: 77% by king_originala
+// from server: 89% by king_originala
 struct Text {
     unsigned char storage[28];
     Text(const Text&);
+    ~Text();
 };
 
 struct Rect {
@@ -31,13 +32,19 @@ struct Adorn {
     State* state;
     Text text;
 
+    static __forceinline float subtract(int value, float coordinate);
     void draw(const Rect* rect, const void* color);
 };
+
+__forceinline float Adorn::subtract(int value, float coordinate)
+{
+    return value - coordinate;
+}
 
 void Adorn::draw(const Rect* rect, const void* color)
 {
     state->renderer->draw(text, color,
-                          rect->x0, (height() - 1) - rect->y0,
-                          rect->x1, (height() - 1) - rect->y1,
+                          rect->x0, subtract(height() - 1, rect->y0),
+                          rect->x1, subtract(height() - 1, rect->y1),
                           0.0f, 0.0f, 1.0f, 1.0f);
 }

@@ -1,117 +1,109 @@
-// from server: 78% by king_originala
-struct Ring {
-    unsigned int head;
-    unsigned int tail;
-    unsigned int capacity;
-};
+// from server: 93% by king_originala
+extern const double timeScale;
 
-struct Item {
+struct Item
+{
     char padding[12];
-    unsigned int size;
+    unsigned count;
 };
 
-struct Node {
-    char paddingBeforeSize[4];
-    unsigned int size;
-    char paddingBeforeNext[256];
+struct Node
+{
+    unsigned unused;
+    unsigned count;
+    char padding[256];
     Node* next;
 };
 
-struct S {
-    char paddingBeforeQueue[16];
-    Ring queue;
-    char paddingBeforeCounter[4];
-    unsigned int counter;
-    char paddingBeforeNodes[44];
-    Node* nodes;
-    char paddingBeforeRings[20];
-    Ring primary;
-    char paddingAfterPrimary[4];
-    Ring secondary;
-    char paddingAfterSecondary[4];
-    Ring tertiary;
-    char paddingAfterTertiary[4];
-    Ring quaternary;
+struct S
+{
+    char p000[16];
+    unsigned begin0, end0, capacity0;
+    char p01c[4];
+    unsigned count20;
+    char p024[44];
+    Node* head;
+    char p054[20];
+    unsigned begin1, end1, capacity1;
+    char p074[4];
+    unsigned begin2, end2, capacity2;
+    char p084[4];
+    unsigned begin3, end3, capacity3;
+    char p094[4];
+    unsigned begin4, end4, capacity4;
     Item** items;
-    unsigned int itemCount;
-    char paddingBeforeStatistics[820];
-    unsigned int primaryCount;
-    unsigned int secondaryCount;
-    unsigned int tertiaryCount;
-    unsigned int quaternaryCount;
-    char paddingBeforeCounterCopy[56];
-    unsigned int counterCopy;
-    char paddingBeforeNodeTotal[20];
-    unsigned int nodeTotal;
-    char paddingBeforeItemTotal[76];
-    unsigned int itemTotal;
-    unsigned int queueCount;
+    unsigned itemCount;
+    char p0ac[820];
+    volatile unsigned result1, result2, result3, result4;
+    char p3f0[56];
+    unsigned result20;
+    char p42c[20];
+    unsigned nodeCount;
+    char p444[76];
+    unsigned totalCount;
+    unsigned result0;
     double rate;
-    char paddingBeforeExpired[4];
+    char p4a0[4];
     bool expired;
-    char paddingBeforeStart[3];
-    __int64 start;
-    unsigned int samples;
-    char paddingBeforeCurrent[28];
+    char p4a5[3];
+    __int64 previous;
+    unsigned samples;
+    char p4b4[28];
     __int64 current;
-    char paddingBeforeEnabled[44];
+    char p4d8[44];
     bool enabled;
-    char paddingBeforeTimestamp[3];
-    __int64 timestamp;
+    char p505[3];
+    __int64 started;
 
-    unsigned int* f();
+    unsigned* f();
 };
 
-unsigned int* S::f()
+unsigned* S::f()
 {
-    primaryCount = primary.head <= primary.tail
-        ? primary.tail - primary.head
-        : primary.capacity - primary.head + primary.tail;
+    unsigned end = end1;
+    unsigned begin = begin1;
+    result1 = begin <= end
+        ? end - begin : capacity1 - begin + end;
 
-    secondaryCount = secondary.head <= secondary.tail
-        ? secondary.tail - secondary.head
-        : secondary.capacity - secondary.head + secondary.tail;
+    end = end2;
+    begin = begin2;
+    result2 = begin <= end
+        ? end - begin : capacity2 - begin + end;
 
-    tertiaryCount = tertiary.head <= tertiary.tail
-        ? tertiary.tail - tertiary.head
-        : tertiary.capacity - tertiary.head + tertiary.tail;
+    end = end3;
+    begin = begin3;
+    result3 = begin <= end
+        ? end - begin : capacity3 - begin + end;
 
-    quaternaryCount = quaternary.head <= quaternary.tail
-        ? quaternary.tail - quaternary.head
-        : quaternary.capacity - quaternary.head + quaternary.tail;
+    end = end4;
+    begin = begin4;
+    result4 = begin <= end
+        ? end - begin : capacity4 - begin + end;
 
-    counterCopy = counter;
+    result20 = count20;
+
     __int64 now = current;
-    __int64 beginning = start;
-
-    if (now > beginning && samples > 0)
-        rate = double(samples) / (double(now - beginning) * 0.000001);
+    __int64 before = previous;
+    if (now > before && samples > 0)
+        rate = double(samples) / (double(now - before) * timeScale);
     else
         rate = 0.0;
 
-    itemTotal = 0;
-    if (itemCount > 0) {
-        Item** p = items;
-        unsigned int i = 0;
-        do {
-            itemTotal += (*p)->size;
-            ++i;
-            ++p;
-        } while (i < itemCount);
-    }
+    totalCount = 0;
+    for (unsigned i = 0; i < itemCount; ++i)
+        totalCount += items[i]->count;
 
-    queueCount = queue.head <= queue.tail
-        ? queue.tail - queue.head
-        : queue.capacity - queue.head + queue.tail;
+    end = end0;
+    begin = begin0;
+    result0 = begin <= end
+        ? end - begin : capacity0 - begin + end;
 
-    expired = enabled && now - timestamp > 1000000;
+    expired = enabled && now - started > 1000000;
 
-    unsigned int total = 0;
-    Node* p = nodes;
-    while (p) {
-        total += p->size;
-        p = p->next;
-    }
-    nodeTotal = total;
-    return &primaryCount;
+    unsigned sum = 0;
+    for (Node* n = head; n; n = n->next)
+        sum += n->count;
+    nodeCount = sum;
+
+    return const_cast<unsigned*>(&result1);
 }

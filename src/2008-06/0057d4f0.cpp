@@ -1,21 +1,34 @@
-// from server: 37% by colin
-struct ClearBackpack {
-    char pad[0xc];
-    void* field_c;
-    void clear(int);
+// from server: 80% by king_originala
+struct Vector;
+
+struct Iterator {
+    Vector* owner();
 };
 
-extern "C" void __cdecl func_0057d250();
-extern "C" void* __cdecl func_0049ac80(void*);
-extern "C" void __cdecl func_0048c470();
-extern "C" void __cdecl func_0055afd0();
+struct Object {
+    Iterator* get();
+};
 
-void ClearBackpack::clear(int) {
-    void* p = field_c;
-    func_0057d250();
-    void* r = func_0049ac80(field_c);
-    if (r) {
-        func_0048c470();
-        func_0055afd0();
+extern "C" void* __cdecl func(void*);
+
+struct S {
+    char padding[12];
+    void* value;
+
+    void prepare();
+    void clear(int);
+
+    static __declspec(noinline) void prepareCall(S* object, void* saved)
+    {
+        object->prepare();
+        func(saved);
     }
+};
+
+void S::clear(int)
+{
+    prepareCall(this, value);
+    Object* object = static_cast<Object*>(func(value));
+    if (object)
+        object->get()->owner();
 }

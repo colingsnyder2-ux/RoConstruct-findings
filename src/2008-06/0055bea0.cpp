@@ -1,33 +1,40 @@
-// from server: 68% by colin
-// roc 2008-06 0055bea0  unit: RBX::VInstance::?$SignalDesc  size: 113 bytes
-// Make this compile to the exact bytes below, then: roc check 2008-06 0055bea0
-
-extern "C" __declspec(dllimport) void* __stdcall FindResourceExA(void*, unsigned short, unsigned short, unsigned short);
-extern "C" void* __stdcall sub_7a5c83(void*, int);
-extern "C" void* __stdcall sub_55be30(void*, void*, unsigned int);
-
-struct S {
+// from server: 92% by king_originala
+struct ModuleList {
+    void* __thiscall GetHInstanceAt(int index);
 };
 
-void* __cdecl f(unsigned int a, unsigned short b) {
-    void* esi;
-    void* edi = 0;
-    int ebp = 1;
-    esi = sub_7a5c83((void*)0x97f2a8, 0);
-    while (esi != 0) {
-        if (edi != 0)
-            break;
-        unsigned int ecx = a >> 4;
-        ecx++;
-        unsigned short edx = (unsigned short)ecx;
-        void* eax = FindResourceExA(esi, 6, edx, b);
-        if (eax != 0) {
-            edi = sub_55be30(esi, eax, a);
-            if (edi != 0)
-                return esi;
+extern ModuleList modules;
+
+extern "C" {
+    extern void* (__stdcall *FindResourceExA)(
+        void* module, const char* type, const char* name,
+        unsigned short language);
+}
+
+extern int __cdecl CheckStringResource(
+    void* module, void* resource, unsigned int id);
+
+void* __cdecl FindStringResourceInstance(
+    unsigned int id, unsigned short language)
+{
+    int found = 0;
+    void* module = modules.GetHInstanceAt(0);
+    int index = 1;
+
+    while (module != 0 && !found) {
+        void* resource = FindResourceExA(
+            module, (const char*)6,
+            (const char*)(unsigned int)(unsigned short)((id >> 4) + 1),
+            language);
+
+        if (resource != 0) {
+            found = CheckStringResource(module, resource, id);
+            if (found)
+                return module;
         }
-        esi = sub_7a5c83((void*)0x97f2a8, ebp);
-        ebp++;
+
+        module = modules.GetHInstanceAt(index++);
     }
+
     return 0;
 }

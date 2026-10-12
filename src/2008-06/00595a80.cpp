@@ -1,5 +1,19 @@
-// from server: 62% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: boost-1.34.1 libs/regex/src/instances.cpp
+// from server: 79% by king_originala
+extern unsigned char flag;
+
+void f()
+{
+    if (flag)
+    {
+        __try
+        {
+            for (;;)
+            {
+            }
+        }
+        __except (-1)
+        {
+            __assume(0);
+        }
+    }
+}

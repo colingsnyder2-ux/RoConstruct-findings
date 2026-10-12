@@ -1,4 +1,4 @@
-// from server: 89% by king_originala
+// from server: 98% by king_originala
 struct Control {
     void* value;
     Control& operator=(const Control&);
@@ -10,11 +10,17 @@ struct Value {
     ~Value();
 };
 
+struct EmptyControl {
+    void* value;
+    EmptyControl() : value(0) {}
+    EmptyControl(const EmptyControl&);
+};
+
 struct EmptyValue {
     void* object;
-    void* control;
+    EmptyControl control;
 
-    EmptyValue() : object(0), control(0) {}
+    EmptyValue() : object(0), control() {}
     EmptyValue(const EmptyValue&);
 };
 
@@ -48,16 +54,13 @@ void* S::get()
 {
     initialize(initializeIndex, &indexFlag);
     unsigned index = (unsigned)getIndex();
-    unsigned count = (unsigned)(values.last - values.first);
     void (__cdecl* invalid)() = invalidParameter;
     Values* entries = &values;
 
-    if (index + 1 > count) {
+    if (index + 1 > (unsigned)(values.last - values.first)) {
         entries->resize(index + 1, EmptyValue());
     } else {
-        Value* end = *(Value* volatile*)&entries->last;
-        Value* begin = *(Value* volatile*)&entries->first;
-        if (index >= (unsigned)(end - begin))
+        if (index >= (unsigned)(entries->last - entries->first))
             invalid();
 
         void* object = entries->first[index].object;

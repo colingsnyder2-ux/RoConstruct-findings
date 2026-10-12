@@ -1,113 +1,128 @@
-// from server: 66% by king_originala
+// from server: 83% by king_originala
 struct Vector3 {
     float x, y, z;
-    Vector3();
-    Vector3(float a, float b, float c);
-    Vector3 operator*(float s) const;
-    Vector3 operator-() const;
+    __forceinline Vector3& operator=(const Vector3& v) {
+        x = v.x;
+        y = v.y;
+        z = v.z;
+        return *this;
+    }
 };
 
-__forceinline Vector3::Vector3() {}
-__forceinline Vector3::Vector3(float a, float b, float c)
-    : x(a), y(b), z(c) {}
-__forceinline Vector3 Vector3::operator*(float s) const
-{
-    return Vector3(x * s, y * s, z * s);
-}
-__forceinline Vector3 Vector3::operator-() const
-{
-    return Vector3(-x, -y, -z);
-}
-
-struct RayCache {
-    const void* tag;
-    Vector3 origin;
-    Vector3 direction;
-    ~RayCache();
-};
-
-struct SphereCache {
-    const void* tag;
-    Vector3 center;
-    float radius;
-    ~SphereCache();
-};
-
-extern const char rayTag;
-extern const char sphereTag;
 extern const float halfScale;
+extern const unsigned int rayTag;
+extern const unsigned int sphereTag;
+extern unsigned int savedFlags;
+
+struct Ray;
+struct Sphere;
+extern Ray savedRay;
+extern Sphere savedSphere;
+
+extern "C" int __cdecl atexit(void (__cdecl*)());
+extern void __cdecl destroySavedRay();
+extern void __cdecl destroySavedSphere();
 
 struct Ray {
-    const void* tag;
+    const unsigned int* tag;
     Vector3 origin;
     Vector3 direction;
+    __forceinline ~Ray();
 };
 
 struct Sphere {
-    const void* tag;
+    const unsigned int* tag;
     Vector3 center;
     float radius;
+    __forceinline ~Sphere();
 };
 
 struct Frame {
-    Ray makeRay(const Vector3* value);
-    Vector3* pointToWorld(Vector3* result, const Vector3* value);
+    Ray makeRay(const Vector3& point) const;
+    Vector3 pointToWorld(const Vector3& point) const;
 };
 
 struct Box {
     Vector3 low;
     Vector3 high;
-    Sphere transformed(const Frame* frame);
+    Sphere transform(const Frame& frame);
 };
 
-struct Size {
+struct Dimensions {
     unsigned int tag;
-    Vector3 value;
+    Vector3 size;
 };
 
-struct Primitive {
+struct Object {
     char padding[0x9c];
-    Size* size;
-    const Vector3& getValue();
+    Dimensions* dimensions;
+    const Frame& getFrame();
 };
-
-extern bool __cdecl intersect(const Ray*, const Sphere*, Vector3*);
 
 struct S {
-    Primitive* primitive;
+    Object* object;
     Frame* frame;
     Vector3 point;
-    void f(const Vector3* value);
+    void f(const Vector3& input);
 };
 
-void S::f(const Vector3* value)
+extern bool __cdecl intersect(const Ray& ray, const Sphere& sphere,
+                              Vector3& point);
+
+__forceinline Ray::~Ray()
 {
-    Vector3 half = primitive->size->value * halfScale;
-    Box bounds = { -half, half };
-
-    Frame* source = (Frame*)&primitive->getValue();
-    Ray ray = source->makeRay(value);
-    Sphere sphere = bounds.transformed(frame);
-
-    Vector3 hit(0.0f, 0.0f, 0.0f);
-    if (intersect(&ray, &sphere, &hit)) {
-        Vector3 result;
-        const Vector3* p = source->pointToWorld(&result, &hit);
-        point.x = p->x;
-        point.y = p->y;
-        point.z = p->z;
-    } else {
-        intersect(&ray, &sphere, &hit);
+    if (!(savedFlags & 1)) {
+        savedFlags |= 1;
+        savedRay.tag = &rayTag;
+        savedRay.origin.x = origin.x;
+        savedRay.origin.y = origin.y;
+        savedRay.origin.z = origin.z;
+        savedRay.direction.x = direction.x;
+        savedRay.direction.y = direction.y;
+        savedRay.direction.z = direction.z;
+        atexit(destroySavedRay);
     }
+}
 
-    static RayCache savedRay = {
-        &rayTag,
-        Vector3(ray.origin.x, ray.origin.y, ray.origin.z),
-        Vector3(ray.direction.x, ray.direction.y, ray.direction.z)
-    };
-    static SphereCache savedSphere = {
-        &sphereTag,
-        Vector3(sphere.center.x, sphere.center.y, sphere.center.z),
-        sphere.radius
-    };
+__forceinline Sphere::~Sphere()
+{
+    if (!(savedFlags & 2)) {
+        savedFlags |= 2;
+        savedSphere.tag = &sphereTag;
+        savedSphere.center.x = center.x;
+        savedSphere.center.y = center.y;
+        savedSphere.center.z = center.z;
+        savedSphere.radius = radius;
+        atexit(destroySavedSphere);
+    }
+}
+
+void S::f(const Vector3& input)
+{
+    const Vector3& size = object->dimensions->size;
+    double x = size.x * (double)halfScale;
+    double y = size.y * (double)halfScale;
+    double z = size.z * (double)halfScale;
+
+    Box box;
+    box.low.x = (float)-x;
+    box.low.y = (float)-y;
+    box.low.z = (float)-z;
+    box.high.x = (float)x;
+    box.high.y = (float)y;
+    box.high.z = (float)z;
+
+    const Frame& world = object->getFrame();
+    Ray ray = world.makeRay(input);
+    Sphere sphere = box.transform(*frame);
+
+    Vector3 hit;
+    hit.x = 0.0f;
+    hit.y = 0.0f;
+    hit.z = 0.0f;
+
+    if (intersect(ray, sphere, hit))
+        point = world.pointToWorld(hit);
+    else
+        intersect(ray, sphere, hit);
 }

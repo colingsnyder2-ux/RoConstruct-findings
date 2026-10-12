@@ -1,4 +1,4 @@
-// from server: 99% by king_originala
+// from server: 100% by tester
 struct String {
     char storage[28];
     ~String();
@@ -15,5 +15,5 @@ struct RuntimeError {
 
 void __cdecl rejectEnumModification()
 {
-    throw RuntimeError(makeString("Enums cannot be modified"));
+    throw RuntimeError(makeString("Enum cannot be modified"));
 }

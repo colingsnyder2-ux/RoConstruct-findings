@@ -1,4 +1,4 @@
-// from server: 70% by king_originala
+// from server: 75% by king_originala
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
 
@@ -13,17 +13,18 @@ struct RefCount {
 struct Shared {
     void* object;
     RefCount* count;
-
-    ~Shared()
-    {
-        RefCount* p = count;
-        if (p && _InterlockedExchangeAdd(&p->strong, -1) == 0) {
-            p->dispose();
-            if (_InterlockedExchangeAdd(&p->weak, -1) == 0)
-                p->destroy();
-        }
-    }
+    ~Shared();
 };
+
+inline Shared::~Shared()
+{
+    RefCount* p = count;
+    if (p && _InterlockedExchangeAdd(&p->strong, -1) == 1) {
+        p->dispose();
+        if (_InterlockedExchangeAdd(&p->weak, -1) == 1)
+            p->destroy();
+    }
+}
 
 Shared __cdecl convert(void*);
 
@@ -43,10 +44,15 @@ struct Connection {
     unsigned char padding[3];
     unsigned char active;
 
-    Connection() : first(0), second(0), flag(0), active(0) {}
+    Connection();
     ~Connection();
     Connection& operator=(const Result&);
 };
+
+inline Connection::Connection()
+    : first(0), second(0), flag(0), active(0)
+{
+}
 
 struct __single_inheritance Part;
 
@@ -101,23 +107,25 @@ Part::Part(void* source, void* sharedSource, void* extra)
     : Base(initialValue, convert(sharedSource), extra),
       object(convert(source))
 {
-    FirstBinding firstBinding;
-    firstBinding.function = &Part::firstCallback;
-    firstBinding.object = this;
     {
-        Function callback(firstBinding);
-        first = firstSignal.connect(
+        FirstBinding binding;
+        binding.function = &Part::firstCallback;
+        binding.object = this;
+        Function callback(binding);
+        Result result = firstSignal.connect(
             source ? static_cast<unsigned char*>(source) + 20 : 0,
             callback, 10);
+        first = result;
     }
 
-    SecondBinding secondBinding;
-    secondBinding.function = &Part::secondCallback;
-    secondBinding.object = this;
     {
-        Function callback(secondBinding);
-        second = secondSignal.connect(
+        SecondBinding binding;
+        binding.function = &Part::secondCallback;
+        binding.object = this;
+        Function callback(binding);
+        Result result = secondSignal.connect(
             source ? static_cast<unsigned char*>(source) + 20 : 0,
             callback, 10);
+        second = result;
     }
 }

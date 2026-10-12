@@ -1,58 +1,86 @@
-// from server: 52% by colin
-struct StarterPackService {
-    void method(int);
+// from server: 93% by king_originala
+#pragma float_control(precise, off)
+
+struct Vec2 {
+    float x, y;
+    Vec2(float, float);
 };
 
-extern "C" {
-    void __stdcall sub_574050(int);
-    int __cdecl sub_5cfc30();
-    void* __cdecl sub_573770(unsigned int);
-    float* __cdecl sub_514a60();
-    int __cdecl sub_7baf10(int, int, int);
-    void __stdcall sub_802458(void*);
-    void __stdcall sub_802468(void*);
+__forceinline Vec2::Vec2(float xx, float yy)
+    : x(xx), y(yy)
+{
 }
 
-struct Vec3 {
-    float x, y, z;
+struct Rect {
+    float x, y, z, w;
 };
 
-struct Mat4 {
-    float m[16];
+struct Color {
+    float r, g, b, a;
 };
 
-struct String {
-    void* data[4];
-    String(const char*);
-    ~String();
+namespace std {
+    template<class T> struct char_traits {};
+    template<class T> class allocator {};
+
+    template<class T, class Traits, class Alloc>
+    class basic_string {
+        unsigned char storage[28];
+    public:
+        basic_string(const T*);
+        ~basic_string();
+    };
+
+    typedef basic_string<char, char_traits<char>, allocator<char> > string;
+}
+
+struct Context {
+    virtual void slot0();
+    virtual void slot1();
+    virtual void slot2();
+    virtual void slot3();
+    virtual Rect bounds();
+    virtual void slot5();
+    virtual void slot6();
+    virtual void slot7();
+    virtual void slot8();
+    virtual void slot9();
+    virtual void slot10();
+    virtual void slot11();
+    virtual void slot12();
+    virtual Vec2 text(const std::string&, const Vec2&, double,
+                      const Color&, int, int, int, int);
 };
 
-void StarterPackService::method(int a)
+extern float inset;
+extern const Color& __cdecl white();
+extern int __cdecl fontSize(int);
+extern int __cdecl textOptions();
+
+struct S {
+    void base(Context*);
+    void* check();
+    void draw(Context*);
+};
+
+void S::draw(Context* context)
 {
-    sub_574050(a);
-    if (sub_5cfc30() == 0)
-        return;
+    base(context);
+    if (check()) {
+        Rect rect = context->bounds();
+        int size = fontSize(12);
+        Vec2 position(inset + rect.x, rect.w - inset);
 
-    Vec3 v;
-    (*(void (__thiscall**)(int, Vec3*))(*(int*)a + 0x10))(a, &v);
+        const Color& source = white();
+        Color color;
+        color.r = source.r;
+        color.g = source.g;
+        color.b = source.b;
+        color.a = 1.0f;
 
-    Mat4* m = (Mat4*)sub_573770(0xc);
-
-    float f1 = v.x + *(float*)0x826e6c;
-    float f2 = v.z - v.y;
-
-    float* p = sub_514a60();
-    m->m[0] = p[0];
-    m->m[1] = p[1];
-    m->m[2] = p[2];
-    m->m[3] = 1.0f;
-
-    String s("StarterPack - these items will be given to each new player");
-
-    int n = sub_7baf10(1, 3, 0);
-
-    (*(void (__thiscall**)(int, float*, float*, float, int, String*))(*(int*)a + 0x34))(
-        a, &f1, &f2, (float)n, 0, &s);
-
-    s.~String();
+        std::string label(
+            "StarterPack - these items will be given to each new player");
+        context->text(label, position, double(size), color,
+                      textOptions(), 1, 3, 0);
+    }
 }

@@ -1,4 +1,4 @@
-// from server: 97% by king_originala
+// from server: 100% by king_originala
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
 
@@ -9,15 +9,20 @@ struct Object
 
 struct Control
 {
-    long reserved;
+    virtual void reserved();
+    virtual void dispose();
+    virtual void destroy();
+
     volatile long references;
+    volatile long weak;
 
     void add_reference();
 };
 
 inline void Control::add_reference()
 {
-    _InterlockedExchangeAdd(&references, 1);
+    volatile long* count = &references;
+    _InterlockedExchangeAdd(count, 1);
 }
 
 struct Shared

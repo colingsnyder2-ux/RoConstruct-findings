@@ -1,21 +1,5 @@
-// from server: 82% by king_originala
-struct W {
-    void *p;
-    W(const W &);
-};
-
-struct B {
-    unsigned char data[20];
-    B(int, W);
-};
-
-struct S : B {
-    W value;
-    S(int, W);
-};
-
-#pragma optimize("", off)
-S::S(int n, W w)
-    : B(n, w), value(w)
-{
-}
+// from server: 100% by tester
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /Od /Ob0 /GS /EHsc /MD
+// roc-lib: wildmagic-2-core Geometry/WmlConvexClipper.cpp

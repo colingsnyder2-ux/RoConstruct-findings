@@ -1,13 +1,14 @@
-// from server: 88% by king_originala
+// from server: 89% by king_originala
 struct Control {
     void* value;
+    Control() : value(0) {}
     Control& operator=(const Control&);
 };
 
 struct Value {
     void* object;
     Control control;
-    Value() : object(0) { control.value = 0; }
+    Value() : object(0), control() {}
     Value(const Value&);
     ~Value();
 };
@@ -20,8 +21,22 @@ struct Values {
     Value* last;
     Value* limit;
 
+    unsigned int size() const;
+    Value& at(unsigned int, void (__cdecl*)());
     void resize(unsigned int, Value);
 };
+
+inline unsigned int Values::size() const
+{
+    return (unsigned int)(last - first);
+}
+
+inline Value& Values::at(unsigned int index, void (__cdecl* invalid)())
+{
+    if (index >= size())
+        invalid();
+    return first[index];
+}
 
 extern void initialize(void (__cdecl*)(), int*);
 extern void __cdecl initialize_index();
@@ -43,17 +58,14 @@ void* S::f()
 {
     initialize(initialize_index, &index_guard);
     unsigned int index = (unsigned int)func_004c9be0();
-    unsigned int count = (unsigned int)(
-        *(Value* volatile*)&values.last - values.first);
+    unsigned int count = values.size();
     void (__cdecl* invalid)() = invalid_parameter;
     Values& entries = values;
 
     if (index + 1 > count) {
         entries.resize(index + 1, Value());
     } else {
-        if (index >= (unsigned int)(entries.last - entries.first))
-            invalid();
-        void* existing = entries.first[index].object;
+        void* existing = entries.at(index, invalid).object;
         if (existing)
             return existing;
     }
@@ -64,10 +76,7 @@ void* S::f()
         return 0;
 
     void* object = result.object;
-    if (index >= (unsigned int)(entries.last - entries.first))
-        invalid();
-
-    Value& destination = entries.first[index];
+    Value& destination = entries.at(index, invalid);
     destination.object = result.object;
     destination.control = result.control;
     return object;

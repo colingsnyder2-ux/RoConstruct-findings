@@ -1,23 +1,24 @@
-// from server: 19% by colin
-struct S_func_0046ff60 {
-    void f();
+// from server: 60% by king_originala
+struct String {
+    char storage[24];
+    ~String();
 };
 
-extern "C" int __stdcall sub_0094278C();
-extern "C" void __stdcall sub_00802468();
-extern "C" void __stdcall sub_008027F4(int);
-extern "C" void __cdecl sub_0050A9B0();
+extern bool (__cdecl *callback)(const char *, const char *, const char *,
+                               int, int, int);
+extern "C" void __cdecl exit(int);
+extern void __cdecl flushLog();
+extern bool result;
 
-void S_func_0046ff60::f()
+bool check()
 {
-    char bl;
-    if (sub_0094278C()) {
-        bl = 1;
-    } else {
-        bl = 0;
+    bool terminate;
+    {
+        String text;
+        terminate = callback(text.storage, 0, 0, 0, 0, 1);
     }
-    if (bl) {
-        sub_008027F4(-1);
-    }
-    sub_0050A9B0();
+    if (terminate)
+        exit(-1);
+    flushLog();
+    return result;
 }

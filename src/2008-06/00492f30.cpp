@@ -1,4 +1,4 @@
-// from server: 42% by king_originala
+// from server: 75% by king_originala
 extern "C" void (__cdecl* _invalid_parameter_noinfo)();
 
 struct String
@@ -19,6 +19,7 @@ struct StringIterator
     char* position;
 
     StringIterator();
+    StringIterator(String*, char*);
     StringIterator& operator++();
 };
 
@@ -36,8 +37,6 @@ struct TreeIterator
 {
     void* owner;
     Node* position;
-
-    TreeIterator();
 };
 
 struct Result
@@ -45,6 +44,8 @@ struct Result
     StringIterator first;
     StringIterator last;
     bool flag;
+
+    Result(String*, char*, String*, char*, bool);
 };
 
 struct S;
@@ -68,7 +69,7 @@ struct S
     unsigned int count;
     unsigned int single;
 
-    TreeIterator find(const char& key);
+    TreeIterator* find(TreeIterator*, const char&);
     Result f(StringIterator first, StringIterator last);
 };
 
@@ -76,69 +77,78 @@ inline StringIterator::StringIterator()
 {
 }
 
+inline StringIterator::StringIterator(String* s, char* p)
+    : owner(s), position(p)
+{
+}
+
+inline Result::Result(String* a, char* b, String* c, char* d, bool e)
+    : first(a, b), last(c, d), flag(e)
+{
+}
+
 Result S::f(StringIterator first, StringIterator last)
 {
     StringIterator found = find_match(first, last, Predicate(this));
+    String* foundOwner = found.owner;
 
-    if (found.owner != reinterpret_cast<String*>(-4) &&
-        (!found.owner || found.owner != last.owner))
+    if (foundOwner != reinterpret_cast<String*>(-4) &&
+        (!foundOwner || foundOwner != last.owner))
         _invalid_parameter_noinfo();
 
-    Result result;
-
     if (found.position == last.position)
-    {
-        result.first = last;
-        result.last = last;
-        result.flag = false;
-        return result;
-    }
+        return Result(last.owner, last.position,
+                      last.owner, last.position, false);
 
-    StringIterator scan = found;
+    StringIterator scan(foundOwner, found.position);
+    String* scanOwner = scan.owner;
 
     if (single == 0)
     {
         for (;;)
         {
-            if (scan.owner != reinterpret_cast<String*>(-4) &&
-                (!scan.owner || scan.owner != last.owner))
+            char* scanPosition = scan.position;
+
+            if (scanOwner != reinterpret_cast<String*>(-4) &&
+                (!scanOwner || scanOwner != last.owner))
                 _invalid_parameter_noinfo();
 
-            if (scan.position == last.position)
+            if (scanPosition == last.position)
                 break;
 
-            if (scan.owner != reinterpret_cast<String*>(-4))
+            if (scanOwner != reinterpret_cast<String*>(-4))
             {
-                if (!scan.owner)
+                if (!scanOwner)
                     _invalid_parameter_noinfo();
 
-                char* data = scan.owner->capacity >= 16
-                    ? scan.owner->pointer : scan.owner->buffer;
+                char* data = scanOwner->capacity >= 16
+                    ? scanOwner->pointer : scanOwner->buffer;
 
-                if (scan.position >= data + scan.owner->length)
+                if (scanPosition >= data + scanOwner->length)
                     _invalid_parameter_noinfo();
             }
 
-            char key = *scan.position;
+            char key = *scanPosition;
             Node* endNode = sentinel;
             void* treeOwner = owner;
-            const TreeIterator& entry = find(key);
+            TreeIterator temporary;
+            TreeIterator* entry = find(&temporary, key);
 
-            if (!entry.owner || entry.owner != treeOwner)
+            if (!entry->owner || entry->owner != treeOwner)
                 _invalid_parameter_noinfo();
 
-            if (entry.position == endNode)
+            if (entry->position == endNode)
                 break;
 
-            if (scan.owner != reinterpret_cast<String*>(-4))
+            if (scanOwner != reinterpret_cast<String*>(-4))
             {
-                if (!scan.owner)
+                if (!scanOwner)
                     _invalid_parameter_noinfo();
 
-                char* data = scan.owner->capacity >= 16
-                    ? scan.owner->pointer : scan.owner->buffer;
+                char* data = scanOwner->capacity >= 16
+                    ? scanOwner->pointer : scanOwner->buffer;
 
-                if (scan.position >= data + scan.owner->length)
+                if (scan.position >= data + scanOwner->length)
                     _invalid_parameter_noinfo();
             }
 
@@ -148,10 +158,9 @@ Result S::f(StringIterator first, StringIterator last)
     else
     {
         ++scan;
+        scanOwner = scan.owner;
     }
 
-    result.first = found;
-    result.last = scan;
-    result.flag = false;
-    return result;
+    return Result(foundOwner, found.position,
+                  scanOwner, scan.position, false);
 }

@@ -1,4 +1,4 @@
-// from server: 72% by king_originala
+// from server: 88% by king_originala
 struct StreamOwner {
     void* stream;
     unsigned char padding[16];
@@ -26,8 +26,9 @@ void S::f()
     s->field1c = value;
     s->field20 = value;
 
+    s = *p;
     try {
-        (*p)->finish(false, true);
+        s->finish(false, true);
     }
     catch (...) {
     }

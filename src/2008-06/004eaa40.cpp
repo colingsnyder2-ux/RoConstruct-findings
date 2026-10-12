@@ -1,4 +1,4 @@
-// from server: 95% by king_originala
+// from server: 100% by king_originala
 void* __cdecl operator new(unsigned int);
 void __cdecl operator delete(void*);
 
@@ -8,35 +8,39 @@ struct Pair {
 };
 
 struct Object {
-    unsigned char storage[40];
+    char storage[40];
     Object();
 };
 
-struct Owner {
-    int first;
-    int second;
-
-    Owner() : first(0), second(0) {}
-    ~Owner();
-    void reset(Object*);
+struct Counter {
+    int value;
+    Counter();
+    ~Counter();
 };
 
+inline Counter::Counter() : value(0)
+{
+}
+
 struct Texture {
-    int f(int, int, int);
-    Texture(int a, int b, int c) { f(a, b, c); }
+    int storage[3];
+    Texture(int, int, int);
     ~Texture();
 };
 
-struct Part : Owner {
+struct Part {
+    int first;
+    Counter second;
     Texture texture;
 
     Part(const Pair&);
+    void set(Object*);
     void finish();
 };
 
 Part::Part(const Pair& value)
-    : Owner(), texture(value.first, value.second, 0)
+    : first(0), second(), texture(value.first, value.second, 0)
 {
-    reset(new Object);
+    set(new Object);
     finish();
 }

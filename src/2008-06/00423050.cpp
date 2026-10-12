@@ -1,6 +1,8 @@
-// from server: 90% by king_originala
+// from server: 100% by king_originala
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
+extern "C" long __cdecl _InterlockedDecrement(volatile long*);
+#pragma intrinsic(_InterlockedDecrement)
 
 struct Target {
     int invoke(int, int);
@@ -43,9 +45,9 @@ inline Shared::~Shared()
 {
     Control* p = control;
     if (p) {
-        if (_InterlockedExchangeAdd(&p->strong, -1) == 1) {
+        if (_InterlockedDecrement(&p->strong) == 0) {
             p->dispose();
-            if (_InterlockedExchangeAdd(&p->weak, -1) == 1)
+            if (_InterlockedDecrement(&p->weak) == 0)
                 p->destroy();
         }
     }
@@ -54,7 +56,8 @@ inline Shared::~Shared()
 int __cdecl function(Input* input)
 {
     Shared shared = acquire();
+    int value = input->value;
     Result* result = reinterpret_cast<Result*>(
-        shared.object->invoke(input->value, 1));
+        shared.object->invoke(value, 1));
     return result ? result->get() : 0;
 }

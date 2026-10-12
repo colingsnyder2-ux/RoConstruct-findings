@@ -1,106 +1,123 @@
-// from server: 80% by king_originala
-struct String;
-
-extern int (__thiscall *stringEmpty)(const String *);
-extern int (__thiscall *stringFind)(const String *, const char *);
-extern String &(__thiscall *stringAssign)(String *, const String &);
-extern void (__thiscall *stringCopy)(String *, const String &);
-extern const char *(__thiscall *stringData)(const String *);
-extern void (__thiscall *stringDestroy)(String *);
-
-struct String {
-    char *data;
-    String(const String &other) { stringCopy(this, other); }
-    ~String() { stringDestroy(this); }
-    const char *c_str() const { return stringData(this); }
-};
-
-struct Selection {
-    String get();
-};
-
-struct View;
+// from server: 98% by king_originala
+struct Text;
+struct Editor;
+struct S;
 struct Dialog;
 
-struct ViewTable {
-    void *unused[115];
-    Dialog *(__thiscall *makeDialog)(View *);
+extern void* (__stdcall *SetActiveWindow)(void*);
+extern long (__stdcall *SendMessageA)(void*, unsigned int, unsigned int, long);
+extern "C" void __stdcall activate(void*);
+
+extern bool (__thiscall *textEmpty)(const Text*);
+extern int (__thiscall *textFind)(const Text*, const char*);
+extern void (__thiscall *textAssign)(Text*, const char*);
+extern void (__thiscall *textConstruct)(Text*, const char*);
+extern const char* (__thiscall *textData)(const Text*);
+extern void (__thiscall *textDestroy)(Text*);
+
+struct Text {
+    void* data;
+    Text(Editor*);
+    Text(const char*);
+    ~Text() throw();
 };
 
+struct Editor {
+    char padding[0x54];
+    int (__cdecl *direct)(int, unsigned int, unsigned int, int);
+    int context;
+    Text* getSelectedText(Text*);
+};
+
+inline Text::Text(Editor* editor)
+{
+    editor->getSelectedText(this);
+}
+
+inline Text::Text(const char* value)
+{
+    textConstruct(this, value);
+}
+
+inline Text::~Text() throw()
+{
+    textDestroy(this);
+}
+
 struct DialogTable {
-    void *unused[91];
-    int (__thiscall *create)(Dialog *, int, const char *, const char *, unsigned int, View *);
+    char padding[0x16c];
+    int (__thiscall *create)(Dialog*, int, const char*, const char*, unsigned int, S*);
 };
 
 struct Dialog {
-    DialogTable *table;
-    char reserved04[0x1c];
-    void *window;
-    char reserved24[0x178];
+    DialogTable* table;
+    char padding1[0x1c];
+    void* window;
+    char padding2[0x178];
     int option;
     void show(int);
 };
 
-struct View {
-    ViewTable *table;
-    char reserved04[0x54];
-    Selection selection;
-    char reserved59[0x7f];
-    int active;
-    void open(int);
+struct ViewTable {
+    char padding[0x1cc];
+    Dialog* (__thiscall *makeDialog)(S*);
 };
 
-extern Dialog *currentDialog;
-extern int currentKind;
-extern String defaultSearch;
-extern String replacement;
-extern int flagC0;
-extern int flagC4;
-extern int flagC8;
-extern int flagCC;
-extern const char searchPattern[];
+struct S {
+    ViewTable* table;
+    char padding1[0x54];
+    Editor editor;
+    char padding2[0x24];
+    int active;
+    void f(int);
+};
 
-extern "C" void *__stdcall SetActiveWindow(void *);
-extern "C" long __stdcall SendMessageA(void *, unsigned int, unsigned int, long);
-extern Dialog *__stdcall fromHandle(void *);
+extern Dialog* currentDialog;
+extern int currentMode;
+extern const char defaultText[];
+extern const char initialText[];
+extern const char replacementText[];
+extern int matchCase;
+extern int searchDown;
+extern int wholeWord;
+extern int extraOption;
 
-void View::open(int kind)
+void S::f(int mode)
 {
     active = 1;
-
     if (currentDialog) {
-        if (currentKind == kind) {
-            fromHandle(SetActiveWindow(currentDialog->window));
+        if (currentMode == mode) {
+            activate(SetActiveWindow(currentDialog->window));
             currentDialog->show(5);
             return;
         }
-        SendMessageA(currentDialog->window, 16, 0, 0);
+        SendMessageA(currentDialog->window, 0x10, 0, 0);
     }
 
-    String search = selection.get();
-    if (stringEmpty(&search) || stringFind(&search, searchPattern) != -1)
-        stringAssign(&search, defaultSearch);
+    Text selected(&editor);
+    if (textEmpty(&selected) || textFind(&selected, defaultText) != -1)
+        textAssign(&selected, initialText);
 
-    String replace(replacement);
+    Text replacement(replacementText);
     currentDialog = table->makeDialog(this);
 
     unsigned int flags = 0;
-    if (flagC4)
+    if (searchDown)
         flags = 1;
-    if (flagC0)
+    if (matchCase)
         flags |= 4;
-    if (flagC8)
+    if (wholeWord)
         flags |= 2;
-    if (flagCC)
+    if (extraOption)
         currentDialog->option = 1;
 
-    if (!currentDialog->table->create(currentDialog, kind,
-                                      search.c_str(), replace.c_str(),
-                                      flags, this)) {
+    DialogTable* dialogTable = currentDialog->table;
+    if (!dialogTable->create(currentDialog, mode, textData(&selected),
+                             textData(&replacement), flags, this)) {
         currentDialog = 0;
     } else {
-        currentKind = kind;
-        fromHandle(SetActiveWindow(currentDialog->window));
+        currentMode = mode;
+        activate(SetActiveWindow(currentDialog->window));
         currentDialog->show(5);
     }
 }

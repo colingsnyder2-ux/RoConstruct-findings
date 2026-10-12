@@ -1,5 +1,5 @@
-// from server: 82% by king_originala
-#pragma float_control(precise, off)
+// from server: 84% by king_originala
+#pragma float_control(precise, on)
 
 extern float defaultFirst;
 extern float defaultSecond;

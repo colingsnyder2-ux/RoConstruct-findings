@@ -1,6 +1,8 @@
-// from server: 67% by king_originala
+// from server: 82% by king_originala
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
+extern "C" long __cdecl _InterlockedDecrement(volatile long*);
+#pragma intrinsic(_InterlockedDecrement)
 
 struct Control {
     virtual void reserved();
@@ -13,7 +15,6 @@ struct Control {
 struct Handle {
     void* object;
     Control* control;
-
     Handle(const Handle&);
     ~Handle();
 };
@@ -21,18 +22,39 @@ struct Handle {
 inline Handle::Handle(const Handle& other)
     : object(other.object), control(other.control)
 {
-    if (control)
-        _InterlockedExchangeAdd(&control->strong, 1);
+    if (control) {
+        volatile long* count = &control->strong;
+        _InterlockedExchangeAdd(count, 1);
+    }
 }
 
 inline Handle::~Handle()
 {
     Control* p = control;
-    if (p && _InterlockedExchangeAdd(&p->strong, -1) == 1) {
-        p->dispose();
-        if (_InterlockedExchangeAdd(&p->weak, -1) == 1)
-            p->destroy();
+    if (p) {
+        volatile long* count = &p->strong;
+        if (_InterlockedDecrement(count) == 0) {
+            p->dispose();
+            volatile long* weakCount = &p->weak;
+            if (_InterlockedDecrement(weakCount) == 0)
+                p->destroy();
+        }
     }
+}
+
+struct Input {
+    void* pointer;
+    Input(const Input&);
+    ~Input();
+};
+
+inline Input::Input(const Input& other)
+    : pointer(other.pointer)
+{
+}
+
+inline Input::~Input()
+{
 }
 
 struct Key {
@@ -43,14 +65,12 @@ struct Key {
 struct Value {
     unsigned tag;
     Handle handle;
-
-    Value(void*, Handle, int);
+    Value(Input, Handle, int);
 };
 
 struct Result {
     Key key;
     Value value;
-
     Result(const Key&, const Value&);
 };
 
@@ -59,7 +79,7 @@ inline Result::Result(const Key& k, const Value& v)
 {
 }
 
-Result __cdecl makeResult(Key key, void* input, Handle handle, int number)
+Result __cdecl makeResult(Key key, Input input, Handle handle, volatile int number)
 {
     return Result(key, Value(input, handle, number));
 }

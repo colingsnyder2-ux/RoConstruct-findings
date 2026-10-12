@@ -1,73 +1,72 @@
-// from server: 30% by colin
+// from server: 84% by king_originala
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
 
-struct RefCounted {
-    void Release();
-};
-
-struct Inner {
-    char pad[0x154];
-    void* field154;
-};
-
-struct Obj {
-    char pad0[0xc];
-    Inner* inner;
-};
-
-extern "C" void* sub_4153B0(void*);
-extern "C" void sub_413C20(void*, void*);
-extern "C" void sub_57E660(void*, void*);
-extern "C" char sub_609A60(void*, void*);
-
-struct JoinCommand {
-    char pad0[0xc];
-    void* field_c;
-    char f();
-};
-
-char JoinCommand::f()
+struct Control
 {
-    Inner* inner;
-    if (field_c != 0) {
-        inner = (Inner*)sub_4153B0(field_c);
-    } else {
-        inner = 0;
+    virtual void unused();
+    virtual void dispose();
+    virtual void destroy();
+    volatile long strong;
+    volatile long weak;
+};
+
+struct Shared
+{
+    void* object;
+    Control* control;
+    ~Shared();
+};
+
+__forceinline Shared::~Shared()
+{
+    Control* p = control;
+    if (p && _InterlockedExchangeAdd(&p->strong, -1) == 0)
+    {
+        p->dispose();
+        if (_InterlockedExchangeAdd(&p->weak, -1) == 0)
+            p->destroy();
     }
+}
 
-    void* p = inner->field154;
+struct Children
+{
+    char padding[12];
+    char* begin;
+    char* end;
+};
 
-    char* base = (char*)p;
-    unsigned int size = (unsigned int)(*(char**)(base + 0x10) - *(char**)(base + 0xc));
-    size &= 0xfffffff8;
-    if (size != 0x10) {
-        return 0;
+struct Object
+{
+    char padding[0x154];
+    Children* children;
+    Shared first();
+    Shared second();
+};
+
+struct Holder
+{
+    Object* get();
+};
+
+int __cdecl matches(void*, void*);
+
+struct JoinCommand
+{
+    char padding[12];
+    Holder* holder;
+    bool execute();
+};
+
+bool JoinCommand::execute()
+{
+    Object* p = holder ? holder->get() : 0;
+    if (((p->children->end - p->children->begin) & ~7) == 16)
+    {
+        Shared a = p->first();
+        Shared b = p->second();
+        if ((unsigned char)matches(a.object, b.object))
+            return true;
     }
-
-    void* a = 0;
-    void* b = 0;
-    sub_413C20(inner, &b);
-    sub_57E660(inner, &a);
-
-    char result = sub_609A60(a, b);
-
-    RefCounted* r = (RefCounted*)a;
-    if (r != 0) {
-        if (_InterlockedExchangeAdd((volatile long*)((char*)r + 4), -1) == 1) {
-            r->Release();
-        }
-    }
-
-    r = (RefCounted*)b;
-    if (r != 0) {
-        if (_InterlockedExchangeAdd((volatile long*)((char*)r + 4), -1) == 1) {
-            r->Release();
-        }
-    }
-
-    if (result) {
-        return 1;
-    }
-    return 0;
+    return false;
 }

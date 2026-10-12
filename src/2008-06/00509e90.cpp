@@ -1,4 +1,4 @@
-// from server: 99% by king_originala
+// from server: 100% by tester
 extern "C" int (__cdecl *fprintf)(void *, const char *, ...);
 
 struct String {
@@ -21,8 +21,8 @@ void Shader::write(const String &text)
 {
     if (file) {
         int (__cdecl *print)(void *, const char *, ...) = fprintf;
-        print(file, "_____________________________________________________");
-        print(file, "    ###    %s    ###",
+        print(file, "_____________________________________________________\n");
+        print(file, "\n    ###    %s    ###\n\n",
               text.capacity >= 16 ? text.pointer : text.buffer);
     }
 }

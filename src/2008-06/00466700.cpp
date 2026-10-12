@@ -1,4 +1,4 @@
-// from server: 62% by king_originala
+// from server: 64% by king_originala
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
 
@@ -25,17 +25,11 @@ inline Payload::Payload(const Payload& other) throw()
     : first(other.first), firstCount(other.firstCount)
 {
     if (firstCount)
-    {
-        volatile long* count = &firstCount->count;
-        _InterlockedExchangeAdd(count, 1);
-    }
+        _InterlockedExchangeAdd(&firstCount->count, 1);
     second = other.second;
     secondCount = other.secondCount;
     if (secondCount)
-    {
-        volatile long* count = &secondCount->count;
-        _InterlockedExchangeAdd(count, 1);
-    }
+        _InterlockedExchangeAdd(&secondCount->count, 1);
 }
 
 struct Entry
@@ -111,51 +105,57 @@ void Listener::notify(void* key, Payload value) throw()
             invalid_parameter_noinfo();
         finish.proxy = proxy;
         if (current.equals(finish))
-            break;
+        {
+            append(key, value);
+            return;
+        }
 
         void (__cdecl* fail)() = invalid_parameter_noinfo;
         Owner* owner;
-        if (current.proxy)
-            owner = current.proxy->owner;
-        else
+        if (!current.proxy)
         {
             fail();
             owner = 0;
         }
+        else
+            owner = current.proxy->owner;
         if (current.position >= owner->end)
             fail();
 
-        if (current.proxy)
-            owner = current.proxy->owner;
-        else
+        if (!current.proxy)
         {
             fail();
             owner = 0;
         }
+        else
+            owner = current.proxy->owner;
         if (current.position >= owner->end)
             fail();
 
         Entry* entry = *current.position;
-        if (accept(key, value, entry->key, entry->payload))
+        void* selectedKey = key;
+        void* entryKey = entry->key;
+        const Payload* entryPayload = &entry->payload;
+        if (accept(selectedKey, value, entryKey, *entryPayload))
         {
             void (__cdecl* failed)() = invalid_parameter_noinfo;
-            if (current.proxy)
-                owner = current.proxy->owner;
-            else
+            if (!current.proxy)
             {
                 failed();
                 owner = 0;
             }
+            else
+                owner = current.proxy->owner;
             if (current.position >= owner->end)
                 failed();
 
-            if ((*current.position)->key != key)
+            if ((*current.position)->key != selectedKey)
             {
                 Owner* finalOwner = reinterpret_cast<Owner*>(current.proxy);
-                if (current.proxy)
-                    finalOwner = current.proxy->owner;
-                else
+                if (!current.proxy)
                     failed();
+                else
+                    finalOwner = current.proxy->owner;
 
                 if (current.position >= finalOwner->end)
                     failed();
@@ -164,17 +164,15 @@ void Listener::notify(void* key, Payload value) throw()
             return;
         }
 
-        if (current.proxy)
-            owner = current.proxy->owner;
-        else
+        if (!current.proxy)
         {
             invalid_parameter_noinfo();
             owner = 0;
         }
+        else
+            owner = current.proxy->owner;
         if (current.position >= owner->end)
             invalid_parameter_noinfo();
         ++current.position;
     }
-
-    append(key, value);
 }

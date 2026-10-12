@@ -1,4 +1,4 @@
-// from server: 96% by king_originala
+// from server: 98% by king_originala
 struct SYSTEMTIME
 {
     unsigned short wYear;
@@ -12,12 +12,11 @@ struct SYSTEMTIME
 };
 
 extern "C" void (__stdcall *GetLocalTime)(SYSTEMTIME*);
-extern float G;
 
 double func_00455d70()
 {
     SYSTEMTIME time;
     GetLocalTime(&time);
     return (time.wHour * 60 + time.wMinute) * 60
-         + time.wMilliseconds * G;
+         + time.wMilliseconds * 0.001f;
 }

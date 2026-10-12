@@ -1,4 +1,4 @@
-// from server: 97% by king_originala
+// from server: 100% by colin
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
 extern "C" long __cdecl _InterlockedDecrement(volatile long*);
@@ -9,69 +9,73 @@ extern "C" void (__cdecl* _invalid_parameter_noinfo)();
 struct S;
 
 struct Control {
-    virtual void unused() = 0;
-    virtual void dispose() = 0;
-    virtual void destroy() = 0;
+    virtual void unused();
+    virtual void dispose();
+    virtual void destroy();
     volatile long strong;
     volatile long weak;
+    void release();
 };
 
-struct Reference {
-    Control* control;
-    Reference& operator=(const Reference& other);
-    ~Reference();
-};
-
-inline Reference::~Reference() {
-    Control* p = control;
-    if (p) {
-        if (_InterlockedDecrement(&p->strong) == 0) {
-            p->dispose();
-            if (_InterlockedDecrement(&p->weak) == 0)
-                p->destroy();
-        }
+inline void Control::release()
+{
+    if (_InterlockedDecrement(&strong) == 0) {
+        dispose();
+        if (_InterlockedDecrement(&weak) == 0)
+            destroy();
     }
 }
 
-struct Product {
+struct Reference {
+    Control* control;
+    Reference& operator=(const Reference&);
+};
+
+struct Object {
     void attach(S*);
 };
 
 struct Pair {
-    Product* pointer;
+    Object* object;
     Reference reference;
+    ~Pair();
 };
 
-Pair __cdecl create_product();
-void __cdecl registration_callback();
-extern char registration_data;
-void __cdecl register_product(void (__cdecl*)(), void*);
-void* __cdecl func_004962f0();
+inline Pair::~Pair()
+{
+    if (reference.control)
+        reference.control->release();
+}
+
+Pair __cdecl make_pair();
+unsigned int __cdecl get_index();
+void __cdecl cleanup();
+extern unsigned int cleanup_data;
+void __cdecl register_cleanup(void (__cdecl*)(), unsigned int*);
 
 struct S {
-    char padding[0x19c];
+    unsigned char padding[0x19c];
     Pair* begin;
     Pair* end;
-    Product* lookup();
-    Product* get();
+
+    Object* lookup();
+    Object* get();
 };
 
-Product* S::get() {
-    Product* existing = lookup();
-    if (existing)
-        return existing;
-
-    Pair value = create_product();
-    Product* result = value.pointer;
-    register_product(registration_callback, &registration_data);
-
-    unsigned int index = reinterpret_cast<unsigned int>(func_004962f0());
-    if (index >= static_cast<unsigned int>(end - begin))
-        _invalid_parameter_noinfo();
-
-    Pair* slot = begin + index;
-    slot->pointer = value.pointer;
-    slot->reference = value.reference;
-    result->attach(this);
+Object* S::get()
+{
+    Object* result = lookup();
+    if (!result) {
+        Pair value = make_pair();
+        result = value.object;
+        register_cleanup(cleanup, &cleanup_data);
+        unsigned int index = get_index();
+        if (index >= static_cast<unsigned int>(end - begin))
+            _invalid_parameter_noinfo();
+        Pair* slot = begin + index;
+        slot->object = value.object;
+        slot->reference = value.reference;
+        result->attach(this);
+    }
     return result;
 }

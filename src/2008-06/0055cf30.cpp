@@ -1,4 +1,4 @@
-// from server: 63% by colin
+// from server: 66% by king_originala
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
 
@@ -6,31 +6,34 @@ struct RefCounted {
     virtual void slot0();
     virtual void slot1();
     virtual void slot2();
+
+    volatile long strong;
+    volatile long weak;
 };
 
 struct S {
     int field0;
     int field4;
-    RefCounted *field8;
+    RefCounted* field8;
 
-    S *init(int a, int b, RefCounted *c, RefCounted *d);
+    S(int unused, int a, int b, RefCounted* volatile c);
 };
 
-S *S::init(int a, int b, RefCounted *c, RefCounted *d)
+S::S(int unused, int a, int b, RefCounted* volatile c)
 {
     field0 = a;
     field4 = b;
     field8 = c;
-    if (c != 0) {
-        _InterlockedExchangeAdd((volatile long *)((char *)c + 4), 1);
+    if (field8 != 0) {
+        _InterlockedExchangeAdd(&field8->strong, 1);
+        RefCounted* d = c;
         if (d != 0) {
-            if (_InterlockedExchangeAdd((volatile long *)((char *)d + 4), -1) == 1) {
+            if (_InterlockedExchangeAdd(&d->strong, -1) == 0) {
                 d->slot1();
-                if (_InterlockedExchangeAdd((volatile long *)((char *)d + 8), -1) == 1) {
+                if (_InterlockedExchangeAdd(&d->weak, -1) == 0) {
                     d->slot2();
                 }
             }
         }
     }
-    return this;
 }

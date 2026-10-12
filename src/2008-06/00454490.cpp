@@ -1,8 +1,6 @@
-// from server: 68% by king_originala
+// from server: 84% by king_originala
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
-extern "C" long __cdecl _InterlockedDecrement(volatile long*);
-#pragma intrinsic(_InterlockedDecrement)
 
 struct Control
 {
@@ -28,16 +26,22 @@ struct Result
 {
     Object* object;
     Control* control;
+    State* getState() const;
     ~Result();
 };
+
+inline State* Result::getState() const
+{
+    return object ? object->getState() : 0;
+}
 
 inline Result::~Result()
 {
     Control* p = control;
-    if (p && _InterlockedDecrement(&p->use_count) == 0)
+    if (p && _InterlockedExchangeAdd(&p->use_count, -1) == 1)
     {
         p->dispose();
-        if (_InterlockedDecrement(&p->weak_count) == 0)
+        if (_InterlockedExchangeAdd(&p->weak_count, -1) == 1)
             p->destroy();
     }
 }
@@ -60,10 +64,10 @@ inline Pair::Pair(const Result& other)
 inline Pair::~Pair()
 {
     Control* p = control;
-    if (p && _InterlockedDecrement(&p->use_count) == 0)
+    if (p && _InterlockedExchangeAdd(&p->use_count, -1) == 1)
     {
         p->dispose();
-        if (_InterlockedDecrement(&p->weak_count) == 0)
+        if (_InterlockedExchangeAdd(&p->weak_count, -1) == 1)
             p->destroy();
     }
 }
@@ -97,11 +101,7 @@ void S::f(Callback* callback)
 {
     Guard guard(source->get());
 
-    State* state;
-    {
-        const Result& value = get();
-        state = value.object ? value.object->getState() : 0;
-    }
+    State* state = get().getState();
 
     int enabled;
     if (state && state->enabled)

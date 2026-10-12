@@ -1,4 +1,4 @@
-// from server: 83% by king_originala
+// from server: 100% by king_originala
 struct Target {
     virtual void slot0();
     virtual void slot1();
@@ -14,12 +14,13 @@ struct Object {
 
 struct PartTool {
     char padding[0x18];
-    Object* object;
+    Object* volatile object;
     void invoke(void*);
 };
 
 void PartTool::invoke(void* argument)
 {
-    if (object)
-        object->target.invoke(argument, 0);
+    Object* p = object;
+    if (p)
+        p->target.invoke(argument, 0);
 }

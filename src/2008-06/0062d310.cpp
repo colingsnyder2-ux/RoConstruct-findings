@@ -1,71 +1,61 @@
-// from server: 40% by colin
-struct Inner {
-    unsigned char pad[0x0c];
-    unsigned int *begin;
-    unsigned int *end;
+// from server: 73% by king_originala
+struct Instance;
+
+struct Entry {
+    Instance *object;
+    void *control;
 };
 
-struct Outer {
-    unsigned char pad[0x104];
-    void *field104;
-    Inner *field108;
-
-    int GetCount();
-    bool Check();
+struct Children {
+    unsigned char padding[12];
+    Entry *first;
+    Entry *last;
 };
 
-extern unsigned int *g_802890;
+struct Instance {
+    virtual ~Instance();
+    unsigned char padding[0x100];
+    Instance *parent;
+    Children *children;
 
-extern "C" int __cdecl sub_6a17c6(void *a, void *b, void *c, void *d, void *e);
+    unsigned int childCount();
+};
 
-int Outer::GetCount()
-{
-    Inner *p = this->field108;
-    if (p == 0)
-        return 0;
-    return (int)(p->end - p->begin) >> 3;
-}
+struct ForceField : Instance {};
+struct Workspace : Instance {};
 
-bool Outer::Check()
+extern void (__cdecl *invalidParameter)();
+
+__declspec(noinline) bool __cdecl hasForceField(Instance *object)
 {
     unsigned int i = 0;
-    unsigned int count = this->GetCount();
-    if (count > 0)
-    {
-        do
-        {
-            Inner *p = this->field108;
-            unsigned int n = (unsigned int)(p->end - p->begin) >> 3;
-            if (i >= n)
-            {
-                void (*h)() = (void (*)())g_802890;
-                h();
-            }
-            unsigned int *arr = p->begin;
-            unsigned int v = arr[i];
-            int r = sub_6a17c6((void *)v, (void *)0, (void *)0x92907c, (void *)0x95c410, (void *)0);
-            if (r != 0)
+    if (object->childCount() > 0) {
+        void (__cdecl *handler)() = invalidParameter;
+        do {
+            Children *children = object->children;
+            if (i >= static_cast<unsigned int>(children->last - children->first))
+                handler();
+
+            if (dynamic_cast<ForceField *>(children->first[i].object))
                 return true;
-            i++;
-            count = this->GetCount();
-        } while (i < count);
+
+            ++i;
+        } while (i < object->childCount());
     }
     return false;
 }
 
-bool __cdecl Outer_CheckRecursive(Outer *self)
+__declspec(dllexport) bool __cdecl protectedByForceField(Instance *object)
 {
-    if (self->Check())
+    if (hasForceField(object))
         return true;
-    void *p = self->field104;
-    while (p != 0)
-    {
-        int r = sub_6a17c6(p, (void *)0, (void *)0x92907c, (void *)0x9481b8, (void *)0);
-        if (r != 0)
-            break;
-        if (((Outer *)p)->Check())
+
+    while ((object = object->parent) != 0) {
+        if (dynamic_cast<Workspace *>(object))
+            return false;
+
+        if (hasForceField(object))
             return true;
-        p = ((Outer *)p)->field104;
     }
     return false;
 }

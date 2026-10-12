@@ -1,4 +1,4 @@
-// from server: 80% by king_originala
+// from server: 82% by king_originala
 extern "C" void (__stdcall *_invalid_parameter_noinfo)();
 
 struct Range {
@@ -49,7 +49,12 @@ inline Operation::Operation(Property* p, bool v)
 {
 }
 
-extern Operation __cdecl apply(
+struct Result {
+    unsigned char* storage;
+    Result();
+};
+
+extern Result __cdecl apply(
     unsigned char*, unsigned, unsigned char*, unsigned, Operation);
 
 namespace RBX {

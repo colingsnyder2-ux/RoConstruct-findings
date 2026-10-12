@@ -1,15 +1,5 @@
-// from server: 75% by king_originala
-struct S_func_004e5b30 {
-    virtual ~S_func_004e5b30();
-};
-
-struct S : S_func_004e5b30 {
-    virtual ~S();
-    void cleanup();
-};
-
-#pragma optimize("", off)
-S::~S()
-{
-    cleanup();
-}
+// from server: 100% by tester
+// roc-lang: cpp
+// roc-cl: 50727
+// roc-flags: /Od /Ob0 /GS /EHsc /MD
+// roc-lib: wildmagic-2-core Geometry/WmlConvexClipper.cpp

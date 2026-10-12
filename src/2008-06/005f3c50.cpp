@@ -1,4 +1,4 @@
-// from server: 94% by king_originala
+// from server: 96% by king_originala
 struct StreamBuffer;
 struct S;
 
@@ -39,7 +39,8 @@ int S::sync()
     }
     catch (...)
     {
-        return -1;
+        volatile int error = -1;
+        return error;
     }
     return 0;
 }

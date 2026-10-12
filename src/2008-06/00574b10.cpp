@@ -1,64 +1,72 @@
-// from server: 70% by colin
-struct GuiItem;
-
-struct Inner {
-    virtual bool v44();
-    virtual void v40();
+// from server: 82% by king_originala
+struct Event {
+    int type;
 };
 
-struct Holder {
-    Inner* ptr;
+struct Result {
+    void* value;
+    void* auxiliary;
+    Result(void* v, void* a) : value(v), auxiliary(a) {}
+};
+
+struct Parent;
+
+struct ParentTable {
+    void* reserved[16];
+    void (__thiscall* release)(Parent*);
+    bool (__thiscall* active)(Parent*);
+};
+
+struct ParentLink {
+    Parent* pointer;
+    void* control;
+    void reset();
+    void clear();
 };
 
 struct GuiItem {
-    char pad[0x130];
-    Holder holder;
-    void* method(int* out, int* in);
+    virtual Result process(const Event& event);
+    ParentLink parent;
 };
 
-extern "C" void __stdcall sub_456e80(Holder* h);
-extern "C" void __stdcall sub_574980(GuiItem* self, int* out, int* in);
+struct Parent {
+    ParentTable* table;
+    char padding[0x12c];
+    GuiItem gui;
+};
 
-void* GuiItem::method(int* out, int* in)
+struct Base {
+    Result process(const Event& event);
+};
+
+__forceinline void ParentLink::clear()
 {
-    if (*in >= 1 && *in == 7) {
-        out[0] = 0;
-        out[1] = 0;
-        return out;
+    if (pointer)
+        pointer->table->release(pointer);
+    reset();
+}
+
+Result GuiItem::process(const Event& event)
+{
+    if (event.type >= 1 && event.type == 7)
+        return Result(0, 0);
+
+    if (parent.pointer) {
+        if (parent.pointer->table->active(parent.pointer)) {
+            Result result =
+                reinterpret_cast<Base*>(reinterpret_cast<char*>(this) - 0x130)
+                    ->process(event);
+            if (result.value)
+                return result;
+        }
+
+        Result result = parent.pointer->gui.process(event);
+        if (result.value)
+            return result;
+
+        parent.clear();
     }
 
-    Inner* p = holder.ptr;
-    if (p) {
-        if (p->v44()) {
-            int tmp[2];
-            sub_574980(this, tmp, in);
-            if (tmp[0]) {
-                out[0] = tmp[0];
-                out[1] = tmp[1];
-                return out;
-            }
-        }
-
-        Inner* q = holder.ptr;
-        int tmp2[2];
-        typedef void (__thiscall *Fn)(Inner*, int*, int*);
-        Fn fn = *(Fn*)(*(char**)q + 0x130);
-        fn(q, tmp2, in);
-        if (tmp2[0]) {
-            out[0] = tmp2[0];
-            out[1] = tmp2[1];
-            return out;
-        }
-
-        Inner* r = holder.ptr;
-        if (r) {
-            typedef void (__thiscall *Fn2)(Inner*);
-            Fn2 fn2 = *(Fn2*)(*(char**)r + 0x40);
-            fn2(r);
-        }
-        sub_456e80(&holder);
-    }
-
-    sub_574980(this, out, in);
-    return out;
+    return reinterpret_cast<Base*>(reinterpret_cast<char*>(this) - 0x130)
+        ->process(event);
 }

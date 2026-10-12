@@ -1,45 +1,35 @@
-// from server: 52% by colin
+// from server: 100% by king_originala
 typedef long HRESULT;
-__declspec(noreturn) void __stdcall AtlThrowImpl(HRESULT hr);
 
-extern "C" int __stdcall _mbslwr_s(char* str, unsigned int size);
-
-struct StdString {
-    char* data;
-    unsigned int size;
-    unsigned int capacity;
-};
-
-struct StandardOut {
-    StdString* str;
-    void reserve(unsigned int n);
-    void __cdecl print(int type, const char* message);
-};
-
-void StandardOut::reserve(unsigned int n)
-{
-    char* p = str->data;
-    unsigned int cap = *(unsigned int*)(p - 4);
-    unsigned int sz = *(unsigned int*)(p - 8);
-    unsigned int old = *(unsigned int*)(p - 12);
-    if ((int)((1 - old) | (sz - cap)) < 0)
-        reserve(n);
+namespace ATL {
+    __declspec(noreturn) void __stdcall AtlThrowImpl(HRESULT hr);
 }
 
-void StandardOut::print(int type, const char* message)
+extern "C" int (__cdecl *_mbslwr_s)(unsigned char *, unsigned int);
+void __cdecl CheckError(int);
+
+struct S {
+    unsigned char *data;
+    void PrepareWrite(int length);
+    S &MakeLower();
+};
+
+S &S::MakeLower()
 {
-    char* p = str->data;
-    unsigned int sz = *(unsigned int*)(p - 8);
-    unsigned int old = *(unsigned int*)(p - 12);
-    if ((int)((1 - old) | (sz - (unsigned int)(p - 8))) < 0)
-        reserve(sz);
-    char* q = str->data;
-    _mbslwr_s(q + sz + 1, 0);
-    print(type, q + sz + 1);
-    if ((int)sz >= 0 && (int)sz <= *(int*)(str->data - 8)) {
-        *(unsigned int*)(str->data - 12) = sz;
-        str->data[sz] = 0;
-        return;
-    }
-    AtlThrowImpl(0x80070057);
+    int length = reinterpret_cast<int *>(data)[-3];
+
+    if (((reinterpret_cast<int *>(data)[-2] - length) |
+         (1 - reinterpret_cast<int *>(data)[-1])) < 0)
+        PrepareWrite(length);
+
+    unsigned char *buffer = data;
+    unsigned int size = length + 1;
+    CheckError(_mbslwr_s(buffer, size));
+
+    if (length < 0 || length > reinterpret_cast<int *>(data)[-2])
+        ATL::AtlThrowImpl((HRESULT)0x80070057L);
+
+    reinterpret_cast<int *>(data)[-3] = length;
+    data[length] = 0;
+    return *this;
 }

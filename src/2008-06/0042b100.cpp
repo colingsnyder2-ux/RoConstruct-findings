@@ -1,4 +1,4 @@
-// from server: 86% by king_originala
+// from server: 95% by king_originala
 struct String;
 typedef void (__thiscall *StringCopy)(String *, const String &);
 extern StringCopy stringCopy;
@@ -6,6 +6,7 @@ extern StringCopy stringCopy;
 struct String {
     char storage[28];
     String(const String &);
+    ~String();
 };
 
 inline String::String(const String &other)

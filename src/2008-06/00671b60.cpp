@@ -1,4 +1,4 @@
-// from server: 69% by king_originala
+// from server: 94% by king_originala
 struct Vector3 {
     float x, y, z;
 };
@@ -37,7 +37,7 @@ struct Cache {
 extern void (__thiscall *finish)(Handle*);
 extern float (__thiscall *getRadius)(Mesh*);
 extern const Box& (__thiscall *getBounds)(Mesh*);
-extern Vector3 (__thiscall *getCenter)(const Box*);
+extern Vector3* (__thiscall *getCenter)(const Box*, Vector3*);
 extern unsigned short (__thiscall *getCount)(Mesh*);
 extern SubMesh* (__thiscall *getSubMesh)(Mesh*, unsigned short, const Sphere&);
 
@@ -55,7 +55,8 @@ void S::f(void* key, const MeshPtr& meshPtr) {
 
     Mesh* mesh = meshPtr.mesh;
     float radius = getRadius(mesh);
-    const Vector3& center = getCenter(&getBounds(mesh));
+    Vector3 temporary;
+    const Vector3& center = *getCenter(&getBounds(mesh), &temporary);
 
     Sphere sphere;
     sphere.radius = radius;

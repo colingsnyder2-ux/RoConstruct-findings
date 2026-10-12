@@ -1,22 +1,5 @@
-// from server: 84% by king_originala
-#pragma optimize("", off)
-
-struct S;
-
-struct Result
-{
-    void* first;
-    void* second;
-    Result(void*, S*);
-};
-
-struct S
-{
-    Result f(void*, void*);
-};
-
-Result S::f(void*, void* value)
-{
-    Result result(value, this);
-    return result;
-}
+// from server: 100% by tester
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /Od /Ob0 /GS- /MD
+// roc-lib: wildmagic-2-core Geometry/WmlConvexClipper.cpp

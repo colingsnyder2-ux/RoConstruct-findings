@@ -1,4 +1,4 @@
-// from server: 60% by king_originala
+// from server: 61% by king_originala
 struct Container;
 struct Node;
 
@@ -45,7 +45,7 @@ struct Container {
 
 extern void __cdecl processValue(Payload*);
 extern Iterator* __cdecl processRange(
-    Iterator*, Proxy*, Node*, Proxy*, Node*,
+    Iterator*, Iterator, Iterator,
     void (__cdecl*)(Payload*), Payload*
 );
 
@@ -82,11 +82,13 @@ void Container::processAll()
         case 2:
             {
                 __declspec(align(8)) Iterator result;
-                Node* last = value->head;
-                Proxy* firstOwner = value->proxy;
-                Node* first = last->next;
-                processRange(&result, firstOwner, first,
-                             firstOwner, last, processValue, value);
+                Iterator last;
+                last.node = value->head;
+                last.proxy = value->proxy;
+                Iterator first;
+                first.node = last.node->next;
+                first.proxy = last.proxy;
+                processRange(&result, first, last, &processValue, value);
             }
             it.advance();
             node = it.node;

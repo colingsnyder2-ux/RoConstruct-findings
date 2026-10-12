@@ -1,30 +1,5 @@
-// from server: 73% by king_originala
-#pragma optimize("", off)
-
-struct VChunk;
-
-struct Reference {
-    VChunk* pointer;
-    Reference(const Reference&);
-    ~Reference();
-};
-
-struct S {
-    char pad[0x18];
-    VChunk* pointer;
-    int state;
-
-    S(int, Reference);
-    ~S();
-    void initialize();
-};
-
-struct T : S {
-    T(int, const Reference&);
-};
-
-T::T(int value, const Reference& reference)
-    : S(value, reference)
-{
-    initialize();
-}
+// from server: 100% by tester
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /Od /Ob0 /GS /EHsc /MD
+// roc-lib: wildmagic-2-core Geometry/WmlConvexClipper.cpp

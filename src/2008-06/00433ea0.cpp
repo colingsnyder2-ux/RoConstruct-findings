@@ -1,16 +1,32 @@
-// from server: 81% by colin
-struct CMemberTreeView
-{
-    void sub_00433EA0(void *);
+// from server: 93% by king_originala
+struct String {
+    unsigned char unused;
 };
 
-extern "C" const char *__cdecl c_str_impl(void *);
-extern "C" int __cdecl sub_006A10D0(void *, int, int, int, int, int, int, int, int, int);
-extern "C" int __cdecl sub_006A10D6(void *, int, int, int, int, int, int, int, void *);
+extern const char* (__thiscall *string_c_str)(const String*);
 
-void CMemberTreeView::sub_00433EA0(void *arg)
+struct ItemData {
+    unsigned char padding[4];
+    String text;
+};
+
+struct Item {
+    unsigned char padding[4];
+    ItemData* data;
+};
+
+struct CMemberTreeView {
+    void* insertItem(unsigned int, const char*, int, int, unsigned int,
+                     unsigned int, unsigned int, void*, void*);
+    void setItem(void*, unsigned int, const char*, int, int,
+                 unsigned int, unsigned int, Item*);
+    void addItem(Item*);
+};
+
+void CMemberTreeView::addItem(Item* item)
 {
-    const char *text = c_str_impl((char *)arg + 4);
-    int result = sub_006A10D0(this, 0x23, (int)text, 0xa, 0xa, 0, 0, 0, 0xffff0000, 0xffff0002);
-    sub_006A10D6(this, result, 4, 0, 0, 0, 0, 0, arg);
+    const char* text = string_c_str(&item->data->text);
+    void* handle = insertItem(35, text, 10, 10, 0, 0, 0,
+                              (void*)0xffff0000, (void*)0xffff0002);
+    setItem(handle, 4, 0, 0, 0, 0, 0, item);
 }

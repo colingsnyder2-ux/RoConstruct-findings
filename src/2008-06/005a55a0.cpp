@@ -1,4 +1,4 @@
-// from server: 96% by king_originala
+// from server: 98% by king_originala
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
 extern "C" long __cdecl _InterlockedDecrement(volatile long*);
@@ -20,6 +20,21 @@ namespace std {
 typedef std::basic_string<char, std::char_traits<char>,
                           std::allocator<char> > String;
 
+extern String* (__thiscall *stringConstruct)(String*, const char*);
+extern void (__thiscall *stringDestroy)(String*);
+
+namespace std {
+    template<class T, class Traits, class Allocator>
+    inline basic_string<T, Traits, Allocator>::basic_string(const T* text) {
+        stringConstruct(this, text);
+    }
+
+    template<class T, class Traits, class Allocator>
+    inline basic_string<T, Traits, Allocator>::~basic_string() {
+        stringDestroy(this);
+    }
+}
+
 struct Owner;
 
 struct Object {
@@ -34,7 +49,21 @@ struct Control {
     virtual void destroy() = 0;
     volatile long strong;
     volatile long weak;
+    void addRef();
+    void release();
 };
+
+inline void Control::addRef() {
+    _InterlockedExchangeAdd(&strong, 1);
+}
+
+inline void Control::release() {
+    if (_InterlockedDecrement(&strong) == 0) {
+        dispose();
+        if (_InterlockedDecrement(&weak) == 0)
+            destroy();
+    }
+}
 
 struct Temporary {
     Object* object;
@@ -50,27 +79,19 @@ struct Shared {
 };
 
 inline Temporary::~Temporary() {
-    Control* p = control;
-    if (p && _InterlockedDecrement(&p->strong) == 0) {
-        p->dispose();
-        if (_InterlockedDecrement(&p->weak) == 0)
-            p->destroy();
-    }
+    if (control)
+        control->release();
 }
 
 inline Shared::Shared(const Temporary& other)
     : object(other.object), control(other.control) {
     if (control)
-        _InterlockedExchangeAdd(&control->strong, 1);
+        control->addRef();
 }
 
 inline Shared::~Shared() {
-    Control* p = control;
-    if (p && _InterlockedDecrement(&p->strong) == 0) {
-        p->dispose();
-        if (_InterlockedDecrement(&p->weak) == 0)
-            p->destroy();
-    }
+    if (control)
+        control->release();
 }
 
 struct Function {

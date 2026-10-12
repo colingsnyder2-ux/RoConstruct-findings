@@ -1,85 +1,87 @@
-// from server: 40% by colin
-// roc 2008-06 00568180  unit: RBX::VSelection::?$BoundFuncDesc  size: 340 bytes
-// Make this compile to the exact bytes below, then: roc check 2008-06 00568180
+// from server: 85% by king_originala
+typedef unsigned int Word;
 
-extern "C" {
-    void* __stdcall sub_6A0920(unsigned int);
-    void __stdcall sub_802458(void*);
-    void __stdcall sub_802468(void*);
-}
+void* __cdecl operator new(unsigned int);
 
-struct VSelectionBoundFuncDesc {
-    char pad0[0x10];
-    char pad10[0x4];
-    char pad14[0xc];
-    char pad20[0x4];
-    char pad24[0x20];
-    char pad44[0x20];
-    char pad64[0x20];
-    char pad84[0x20];
-    char pada4[0x20];
-    char padc4[0x6c];
-    char pad130[0x24];
-    char pad154[0x8];
-    char pad15c[0x4];
+struct String;
+extern void (__thiscall *stringConstruct)(String*, const char*);
+extern void (__thiscall *stringDestroy)(String*);
 
-    VSelectionBoundFuncDesc();
+struct String {
+    char storage[28];
+    __forceinline String(const char* text) { stringConstruct(this, text); }
+    __forceinline ~String() { stringDestroy(this); }
 };
 
-void __stdcall sub_567E20(void*);
-void __stdcall sub_5E9EC0(void*);
-void __stdcall sub_49AD50(void*, void*);
-void __stdcall sub_5A2FE0(void*);
-void __stdcall sub_55AF90(void*, void*);
+struct Base {
+    char storage[0x130];
+    Base();
+    ~Base();
+    void setValue(const String&);
+};
 
-VSelectionBoundFuncDesc::VSelectionBoundFuncDesc()
+struct Part {
+    char storage[0x20];
+    Part();
+    ~Part();
+};
+
+struct List {
+    struct Proxy {
+        List* owner;
+        __forceinline Proxy(List* p) : owner(p) {}
+    };
+
+    struct ProxySlot {
+        Proxy* value;
+        __forceinline ProxySlot(List* owner) : value(new Proxy(owner)) {}
+        ~ProxySlot();
+    };
+
+    ProxySlot proxy;
+    Word reserved[2];
+    Word first;
+    Word last;
+    Word count;
+
+    __forceinline List() : proxy(this), first(0), last(0), count(0) {}
+    ~List();
+};
+
+struct Holder {
+    char storage[8];
+    Holder(const List&);
+    ~Holder();
+};
+
+struct S : Base {
+    Part part;
+    Word table150;
+    Holder holder;
+    List list;
+
+    S();
+    void initializeTables();
+};
+
+__forceinline void S::initializeTables()
 {
-    sub_567E20(this);
+    *reinterpret_cast<Word*>(reinterpret_cast<char*>(this) + 0x000) = 0x82edc4;
+    *reinterpret_cast<Word*>(reinterpret_cast<char*>(this) + 0x010) = 0x82edb4;
+    *reinterpret_cast<Word*>(reinterpret_cast<char*>(this) + 0x014) = 0x82edac;
+    *reinterpret_cast<Word*>(reinterpret_cast<char*>(this) + 0x020) = 0x82eda4;
+    *reinterpret_cast<Word*>(reinterpret_cast<char*>(this) + 0x024) = 0x82ed94;
+    *reinterpret_cast<Word*>(reinterpret_cast<char*>(this) + 0x044) = 0x82ed84;
+    *reinterpret_cast<Word*>(reinterpret_cast<char*>(this) + 0x064) = 0x82ed74;
+    *reinterpret_cast<Word*>(reinterpret_cast<char*>(this) + 0x084) = 0x82ed64;
+    *reinterpret_cast<Word*>(reinterpret_cast<char*>(this) + 0x0a4) = 0x82ed54;
+    *reinterpret_cast<Word*>(reinterpret_cast<char*>(this) + 0x0c4) = 0x82ed44;
+    *reinterpret_cast<Word*>(&part) = 0x82ed34;
+    table150 = 0x82ed28;
+}
 
-    void* p130 = (char*)this + 0x130;
-    sub_5E9EC0(p130);
-
-    *(void**)this = (void*)0x82EDC4;
-    *(void**)((char*)this + 0x10) = (void*)0x82EDB4;
-    *(void**)((char*)this + 0x14) = (void*)0x82EDAC;
-    *(void**)((char*)this + 0x20) = (void*)0x82EDA4;
-    *(void**)((char*)this + 0x24) = (void*)0x82ED94;
-    *(void**)((char*)this + 0x44) = (void*)0x82ED84;
-    *(void**)((char*)this + 0x64) = (void*)0x82ED74;
-    *(void**)((char*)this + 0x84) = (void*)0x82ED64;
-    *(void**)((char*)this + 0xA4) = (void*)0x82ED54;
-    *(void**)((char*)this + 0xC4) = (void*)0x82ED44;
-    *(void**)p130 = (void*)0x82ED34;
-    *(void**)((char*)this + 0x150) = (void*)0x82ED28;
-
-    void* p = sub_6A0920(4);
-    if (p == 0) {
-        *(void**)p = (char*)this + 0x14;
-    } else {
-        p = 0;
-    }
-    *(void**)((char*)this + 0x14) = p;
-    *(void**)((char*)this + 0x20) = 0;
-    *(void**)((char*)this + 0x24) = 0;
-    *(void**)((char*)this + 0x28) = 0;
-
-    sub_49AD50((char*)this + 0x154, (char*)this + 0x14);
-
-    sub_5A2FE0((char*)this + 0x14);
-
-    void* p2 = sub_6A0920(4);
-    if (p2 != 0) {
-        *(void**)p2 = (char*)this + 0x15C;
-    } else {
-        p2 = 0;
-    }
-    *(void**)((char*)this + 0x15C) = p2;
-    *(void**)((char*)this + 0x168) = 0;
-    *(void**)((char*)this + 0x16C) = 0;
-    *(void**)((char*)this + 0x170) = 0;
-
-    char buf[0x10];
-    sub_802458((void*)0x82EEDC);
-    sub_55AF90(this, buf);
-    sub_802468(buf);
+S::S()
+    : Base(), part(), holder((initializeTables(), List())), list()
+{
+    setValue(String("Selection"));
 }

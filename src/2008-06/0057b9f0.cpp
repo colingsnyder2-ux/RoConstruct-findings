@@ -1,178 +1,168 @@
-// from server: 80% by king_originala
-typedef unsigned long DWORD;
-
+// from server: 99% by king_originala
 void* __cdecl operator new(unsigned int);
 void __cdecl operator delete(void*);
 
-extern void (__thiscall *stringDefault)(void*);
-extern void (__thiscall *stringFromText)(void*, const char*);
-extern void (__thiscall *stringDestroy)(void*);
+struct S;
+
+struct Base {
+    char data[0x1c8];
+    Base();
+    ~Base();
+};
+
+struct Part {
+    char data[0x28];
+    Part(int);
+    ~Part();
+};
+
+struct Signal {
+    char data[8];
+    Signal(S*);
+    ~Signal();
+};
+
+extern void __cdecl constructSignal(Signal*, S*);
+
+inline Signal::Signal(S* owner)
+{
+    constructSignal(this, owner);
+}
+
+struct Pair {
+    char data[8];
+    Pair();
+    ~Pair();
+};
+
+extern void __cdecl constructPair(Pair*);
+
+inline Pair::Pair()
+{
+    constructPair(this);
+}
+
+struct NullPair {
+    void* first;
+    void* second;
+    NullPair();
+    ~NullPair();
+};
+
+inline NullPair::NullPair() : first(0), second(0) {}
 
 struct String {
-    unsigned char storage[28];
+    char data[28];
     String();
     String(const char*);
     ~String();
 };
 
-__forceinline String::String()
+extern String* (__thiscall *stringDefault)(String*);
+extern String* (__thiscall *stringFromText)(String*, const char*);
+extern void (__thiscall *stringDestroy)(String*);
+
+inline String::String()
 {
     stringDefault(this);
 }
 
-__forceinline String::String(const char* p)
+inline String::String(const char* text)
 {
-    stringFromText(this, p);
+    stringFromText(this, text);
 }
 
-__forceinline String::~String()
+inline String::~String()
 {
     stringDestroy(this);
 }
 
-struct Base {
-    unsigned char storage[0x1c8];
-    Base();
-    ~Base();
-};
-
-struct Secondary {
-    unsigned char storage[0x28];
-    Secondary(int);
-    ~Secondary();
-};
-
-struct Tables {
-    DWORD a, b, c;
-    Tables();
-    ~Tables();
-};
-
-__forceinline Tables::Tables()
-{
-    DWORD* w = reinterpret_cast<DWORD*>(
-        reinterpret_cast<char*>(this) - 0x1f0);
-    w[0] = 0x8303cc;
-    w[0x10 / 4] = 0x8303c0;
-    w[0x14 / 4] = 0x8303b8;
-    w[0x20 / 4] = 0x8303b0;
-    w[0x24 / 4] = 0x8303a0;
-    w[0x44 / 4] = 0x830390;
-    w[0x64 / 4] = 0x830380;
-    w[0x84 / 4] = 0x830370;
-    w[0xa4 / 4] = 0x830360;
-    w[0xc4 / 4] = 0x830350;
-    w[0x130 / 4] = 0x830340;
-    w[0x150 / 4] = 0x830330;
-    w[0x170 / 4] = 0x830320;
-    w[0x1c8 / 4] = 0x830318;
-    a = 0x83030c;
-    b = 0x830304;
-    c = 0x8302f8;
-}
-
-extern void __cdecl constructOwner(void*, void*);
-extern void __cdecl constructPair(void*);
-extern void __cdecl func_0047d410();
-
-struct Owner {
-    DWORD first, second;
-    Owner(void*);
-    ~Owner();
-};
-
-__forceinline Owner::Owner(void* p)
-{
-    constructOwner(this, p);
-}
-
-struct ZeroPair {
-    DWORD first, second;
-    ZeroPair();
-    ~ZeroPair();
-};
-
-__forceinline ZeroPair::ZeroPair() : first(0), second(0) {}
-
-struct Pair {
-    DWORD first, second;
-    Pair();
-    ~Pair();
-};
-
-__forceinline Pair::Pair()
-{
-    constructPair(this);
-}
-
-struct Item {
-    DWORD value;
-    unsigned char enabled;
-    unsigned char padding[3];
-    DWORD other;
-    Item();
-    ~Item();
+struct Node {
+    char data[12];
+    Node();
 };
 
 struct Count {
-    DWORD value;
-    Count(Item*);
+    void* data;
+    Count(Node*);
     ~Count();
-    void initialize(Item*);
+    void initialize(Node*);
 };
 
-__forceinline Count::Count(Item* p)
+extern void __cdecl connectOwner(Count*, Node*, Node*);
+
+inline Count::Count(Node* p)
 {
     initialize(p);
-    typedef void (__cdecl *Notify)(Count*, Item*, Item*);
-    reinterpret_cast<Notify>(&func_0047d410)(this, p, p);
+    connectOwner(this, p, p);
 }
 
-struct S : Base, Secondary {
-    Tables tables;
-    DWORD empty1;
-    DWORD empty2;
-    Owner owner;
-    ZeroPair pair1;
-    ZeroPair pair2;
-    Pair pair3;
-    Pair pair4;
-    DWORD empty3;
-    unsigned char enabled;
-    unsigned char padding[3];
+extern unsigned table0[], table10[], table14[], table20[], table24[];
+extern unsigned table44[], table64[], table84[], tablea4[], tablec4[];
+extern unsigned table130[], table150[], table170[], table1c8[];
+extern unsigned table1f0[], table1f4[], table1f8[];
+
+struct S : Base, Part {
+    unsigned* table1;
+    unsigned* table2;
+    unsigned* table3;
+    NullPair pair1fc;
+    Signal signal;
+    NullPair pair20c;
+    NullPair pair214;
+    Pair pair21c;
+    Pair pair224;
+    unsigned field22c;
+    bool field230;
+    char padding231[3];
     String text;
-    DWORD empty4;
-    DWORD untouched;
-    unsigned char flag1;
-    unsigned char flag2;
-    unsigned char padding2[2];
-    Item* item;
+    unsigned field250;
+    unsigned field254;
+    bool field258;
+    bool field259;
+    Node* node;
     Count count;
 
     S();
-    void setName(const String&);
+    void setValue(const String&);
 };
 
 S::S()
     : Base(),
-      Secondary(0),
-      tables(),
-      empty1(0),
-      empty2(0),
-      owner(this),
-      pair1(),
-      pair2(),
-      pair3(),
-      pair4(),
-      empty3(0),
-      enabled(1),
+      Part(0),
+      table1((
+          ((unsigned**)this)[0] = table0,
+          ((unsigned**)this)[4] = table10,
+          ((unsigned**)this)[5] = table14,
+          ((unsigned**)this)[8] = table20,
+          ((unsigned**)this)[9] = table24,
+          ((unsigned**)this)[17] = table44,
+          ((unsigned**)this)[25] = table64,
+          ((unsigned**)this)[33] = table84,
+          ((unsigned**)this)[41] = tablea4,
+          ((unsigned**)this)[49] = tablec4,
+          ((unsigned**)this)[76] = table130,
+          ((unsigned**)this)[84] = table150,
+          ((unsigned**)this)[92] = table170,
+          ((unsigned**)this)[114] = table1c8,
+          table1f0)),
+      table2(table1f4),
+      table3(table1f8),
+      pair1fc(),
+      signal(this),
+      pair20c(),
+      pair214(),
+      pair21c(),
+      pair224(),
+      field22c(0),
+      field230(true),
       text(),
-      empty4(0),
-      flag1(0),
-      flag2(0),
-      item(new Item),
-      count(item)
+      field250(0),
+      field258(false),
+      field259(false),
+      node(new Node),
+      count(node)
 {
     String name("Level");
-    setName(name);
+    setValue(name);
 }

@@ -1,5 +1,21 @@
-// from server: 87% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs util/Profiling.cpp
+// from server: 100% by king_originala
+struct Profiler
+{
+    virtual void virtualFunction();
+    char storage[0xc03c];
+
+    Profiler(const char*);
+};
+
+struct DerivedProfiler : Profiler
+{
+    virtual void virtualFunction();
+    int count;
+
+    DerivedProfiler(const char*);
+};
+
+DerivedProfiler::DerivedProfiler(const char* name)
+    : Profiler(name), count(0)
+{
+}

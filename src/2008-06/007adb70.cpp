@@ -1,24 +1,63 @@
-// from server: 63% by tester
-struct TextureProxyBase {
-    virtual int getWidth();
-    virtual int getHeight();
+// from server: 100% by king_originala
+struct Vector2
+{
+    float x;
+    float y;
 };
 
-struct TextureProxy {
-    TextureProxyBase* texture;
-    float getOriginalSize(float* out);
+struct Texture
+{
+    virtual void slot0();
+    virtual void slot1();
+    virtual void slot2();
+    virtual void slot3();
+    virtual void slot4();
+    virtual void slot5();
+    virtual void slot6();
+    virtual void slot7();
+    virtual void slot8();
+    virtual void slot9();
+    virtual void slot10();
+    virtual void slot11();
+    virtual void slot12();
+    virtual void slot13();
+    virtual void slot14();
+    virtual void slot15();
+    virtual void slot16();
+    virtual void slot17();
+    virtual void slot18();
+    virtual void slot19();
+    virtual void slot20();
+    virtual void slot21();
+    virtual void slot22();
+    virtual void slot23();
+    virtual unsigned int height();
+    virtual unsigned int width();
 };
 
-float TextureProxy::getOriginalSize(float* out) {
-    out[0] = 0.0f;
-    out[1] = 0.0f;
-    if (texture) {
-        int w = texture->getWidth();
-        out[0] = (float)w;
-        if (w < 0) out[0] += 4294967296.0f;
-        int h = texture->getHeight();
-        out[1] = (float)h;
-        if (h < 0) out[1] += 4294967296.0f;
+struct TextureProxy
+{
+    unsigned char padding[0x58];
+    Texture* texture;
+
+    Vector2 getSize();
+};
+
+Vector2 TextureProxy::getSize()
+{
+    Vector2 result = { 0.0f, 0.0f };
+    Texture* current = texture;
+
+    if (current)
+    {
+        result.x = (float)current->width();
+        result.y = (float)texture->height();
     }
-    return out[0];
+    else
+    {
+        result.y = 0.0f;
+        result.x = 0.0f;
+    }
+
+    return result;
 }

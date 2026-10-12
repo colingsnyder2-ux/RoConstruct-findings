@@ -1,15 +1,16 @@
-// from server: 46% by king_originala
+// from server: 63% by king_originala
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
 
 struct Type;
-extern bool (__thiscall* typeEqual)(const Type*, const Type*);
+typedef bool (__thiscall* TypeEqual)(const Type*, const Type*);
+extern TypeEqual typeEqual;
 
 struct Type {
     bool operator==(const Type&) const;
 };
 
-inline bool Type::operator==(const Type& other) const {
+__forceinline bool Type::operator==(const Type& other) const {
     return typeEqual(this, &other);
 }
 
@@ -32,13 +33,13 @@ struct Shared {
     ~Shared();
 };
 
-inline Shared::Shared() : object(0), control(0) {}
+__forceinline Shared::Shared() : object(0), control(0) {}
 
 __forceinline Shared::~Shared() {
     Control* p = control;
-    if (p && _InterlockedExchangeAdd(&p->strong, -1) == 0) {
+    if (p && _InterlockedExchangeAdd(&p->strong, -1) - 1 == 0) {
         p->dispose();
-        if (_InterlockedExchangeAdd(&p->weak, -1) == 0)
+        if (_InterlockedExchangeAdd(&p->weak, -1) - 1 == 0)
             p->destroy();
     }
 }
@@ -56,7 +57,8 @@ struct Any {
 
 __forceinline Shared* Any::cast(const Type& wanted) {
     if (this && (holder ? holder->type() : emptyType) == wanted)
-        return reinterpret_cast<Shared*>(reinterpret_cast<char*>(holder) + 4);
+        return reinterpret_cast<Shared*>(
+            reinterpret_cast<char*>(holder) + 4);
     return 0;
 }
 
@@ -101,12 +103,14 @@ struct S {
 };
 
 Shared* S::f() {
-    if (emptyType == *table->type) {
+    TypeEqual equal = typeEqual;
+
+    if (equal(&emptyType, table->type)) {
         value.assign(Shared());
         table = sharedTable();
     }
 
-    if (sourceType == *table->type) {
+    if (equal(&sourceType, table->type)) {
         Shared* source = value.cast(sourceType);
         if (source)
             value.assign(convert(*source));

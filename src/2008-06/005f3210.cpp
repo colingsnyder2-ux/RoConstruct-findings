@@ -1,20 +1,23 @@
-// from server: 73% by colin
+// from server: 100% by king_originala
+typedef void (__thiscall *ImbueFunction)(void *, void *, const void *);
+typedef void (__thiscall *DestroyFunction)(void *);
+
+extern ImbueFunction imbue;
+extern DestroyFunction destroy;
+
 struct S {
-    char pad[0x44];
-    void* field_44;
-    char pad2[0x0c];
-    unsigned char field_54;
-    void imbue(const void* loc);
+    unsigned char padding0[0x44];
+    void *stream;
+    unsigned char padding1[0x0C];
+    unsigned char flags;
+
+    void f(const void *locale);
 };
 
-extern "C" void* __stdcall sub_802568(void* buf, const void* loc);
-extern "C" void __stdcall sub_802564(void* loc);
-
-void S::imbue(const void* loc)
+void S::f(const void *locale)
 {
-    if ((field_54 & 1) && field_44) {
-        char buf[4];
-        sub_802568(buf, loc);
-        sub_802564(buf);
+    if ((flags & 1) && stream) {
+        imbue(stream, &locale, locale);
+        destroy(&locale);
     }
 }

@@ -1,8 +1,6 @@
-// from server: 82% by king_originala
-extern "C" {
-    extern long (__stdcall *InterlockedDecrement)(volatile long*);
-    extern long (__stdcall *InterlockedIncrement)(volatile long*);
-}
+// from server: 87% by king_originala
+extern "C" long __stdcall InterlockedDecrement(volatile long*);
+extern "C" long __stdcall InterlockedIncrement(volatile long*);
 
 extern const float minimumValue;
 extern const float zeroValue;
@@ -82,12 +80,15 @@ void S::f()
             cached = 0;
         }
 
-        holder->receiver->update(Handle(this), state->enabled == 0);
+        {
+            Handle reference(this);
+            Receiver* receiver = holder->receiver;
+            receiver->update(reference, state->enabled == 0);
+        }
 
         if (state->enabled) {
-            float value = minimumValue;
-            if (getValue() < value)
-                setValue(value);
+            if (getValue() < minimumValue)
+                setValue(minimumValue);
         } else {
             if (getValue() < zeroValue)
                 setValue(0.0f);

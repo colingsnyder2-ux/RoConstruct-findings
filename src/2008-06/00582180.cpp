@@ -1,4 +1,4 @@
-// from server: 97% by king_originala
+// from server: 100% by king_originala
 extern "C" void (__cdecl* invalid_parameter_noinfo)();
 
 struct Container {
@@ -37,14 +37,17 @@ struct S {
 bool S::f()
 {
     unsigned* volatile iteratorStorage[3];
-    void* savedOwner;
+    struct Saved {
+        unsigned* end;
+        void* owner;
+    } saved;
 
     Container* c = access.get(1)->container;
-    unsigned* savedEnd = c->last;
-    if (c->first > savedEnd)
+    saved.end = c->last;
+    if (c->first > saved.end)
         invalid_parameter_noinfo();
 
-    savedOwner = c->owner;
+    saved.owner = c->owner;
     void* argument = context;
 
     c = access.get(1)->container;
@@ -62,8 +65,8 @@ bool S::f()
     iteratorStorage[2] = begin;
     unsigned* result = find_match(begin, end, test);
 
-    if (!owner || owner != savedOwner)
+    if (!owner || owner != saved.owner)
         invalid_parameter_noinfo();
 
-    return result != savedEnd;
+    return result != saved.end;
 }

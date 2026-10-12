@@ -1,4 +1,4 @@
-// from server: 77% by king_originala
+// from server: 78% by king_originala
 extern "C" void* __cdecl cast_object(void*, long, const void*, const void*, int);
 extern "C" void (__cdecl* _invalid_parameter_noinfo)();
 
@@ -36,7 +36,7 @@ struct FilteredSelection {
 void FilteredSelection::update(Change* argument)
 {
     Selection* s = reinterpret_cast<Selection*>(this);
-    Change* change = argument;
+    Change* change = *static_cast<Change* volatile*>(&argument);
 
     argument = static_cast<Change*>(
         cast_object(change->added, 0, &instance_type, &pvinstance_type, 0));
@@ -46,26 +46,30 @@ void FilteredSelection::update(Change* argument)
             reinterpret_cast<char*>(s) + 12)->insert(
                 reinterpret_cast<void* const*>(&argument));
 
-    argument = static_cast<Change*>(change->removed);
-    if (argument) {
+    change = static_cast<Change*>(change->removed);
+    argument = change;
+    if (change) {
         s = reinterpret_cast<Selection*>(reinterpret_cast<char*>(s) + 12);
 
         void** finish = s->last;
         if (s->first > finish)
             _invalid_parameter_noinfo();
 
-        void** current = s->first;
-        if (current > s->last)
+        change = reinterpret_cast<Change*>(s->first);
+        if (reinterpret_cast<void**>(change) > s->last)
             _invalid_parameter_noinfo();
 
         Iterator position;
         position.owner = s->owner;
-        *static_cast<void*** volatile>(&position.position) = current;
+        *static_cast<void*** volatile>(&position.position) =
+            reinterpret_cast<void**>(change);
 
-        while (current != finish) {
-            if (*current == *reinterpret_cast<void* volatile*>(&argument))
+        while (reinterpret_cast<void**>(change) != finish) {
+            if (*reinterpret_cast<void**>(change) ==
+                *reinterpret_cast<void* volatile*>(&argument))
                 break;
-            ++current;
+            change = reinterpret_cast<Change*>(
+                reinterpret_cast<char*>(change) + 4);
         }
 
         finish = s->last;
@@ -76,8 +80,8 @@ void FilteredSelection::update(Change* argument)
         if (!position.owner || position.owner != owner)
             _invalid_parameter_noinfo();
 
-        if (current != finish) {
-            position.position = current;
+        if (reinterpret_cast<void**>(change) != finish) {
+            position.position = reinterpret_cast<void**>(change);
             s->erase(position);
         }
     }

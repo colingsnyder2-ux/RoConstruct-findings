@@ -1,22 +1,20 @@
-// from server: 37% by atomic.potato
-extern "C" void __cdecl _invalid_parameter_noinfo();
-
-struct S
-{
-    unsigned int* f(unsigned int);
-    unsigned int GetCount();
-    unsigned int* data;
+// from server: 51% by colin
+struct S {
+    int f(unsigned int index);
 };
 
-unsigned int S::GetCount()
-{
-    return 0;
-}
+extern "C" int __stdcall sub_546320();
 
-unsigned int* S::f(unsigned int index)
+extern "C" void __stdcall sub_802890();
+
+int S::f(unsigned int index)
 {
-    unsigned int count = GetCount();
-    if (index >= count)
-        _invalid_parameter_noinfo();
-    return data + index;
+    int count = sub_546320();
+    if (index >= (unsigned int)count) {
+        sub_802890();
+        if (index >= (unsigned int)count) {
+            sub_802890();
+        }
+    }
+    return *(int*)((char*)this + 0xc) + index * 4;
 }

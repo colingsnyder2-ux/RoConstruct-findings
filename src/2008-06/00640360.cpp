@@ -1,4 +1,4 @@
-// from server: 69% by king_originala
+// from server: 100% by king_originala
 typedef unsigned int size_t;
 
 void* __cdecl operator new(size_t);
@@ -16,10 +16,34 @@ struct Vector {
     float x, y, z;
 };
 
+struct Control {
+    void addRef();
+    void release();
+};
+
+struct Count {
+    Control* pointer;
+
+    Count() : pointer(0) {}
+
+    Count(const Count& other) : pointer(other.pointer)
+    {
+        if (pointer)
+            pointer->addRef();
+    }
+
+    ~Count()
+    {
+        if (pointer)
+            pointer->release();
+    }
+};
+
 struct Pair {
     void* first;
-    void* second;
-    Pair() : first(0), second(0) {}
+    Count second;
+
+    Pair() : first(0), second() {}
 };
 
 struct Action {

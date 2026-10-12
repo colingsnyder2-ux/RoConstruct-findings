@@ -1,35 +1,41 @@
-// from server: 79% by king_originala
-
-
-
+// from server: 96% by king_originala
+extern void *ios_base_table;
+extern void *basic_ios_table;
 
 namespace std {
 template<class C> struct char_traits;
 template<class C, class T> struct basic_streambuf;
 
-struct ios_base {
+struct __declspec(novtable) ios_base {
     ios_base();
     virtual ~ios_base();
 };
 
-template<class C, class T> struct basic_ios : ios_base {
+template<class C, class T>
+struct __declspec(novtable) basic_ios : ios_base {
     basic_ios();
     virtual ~basic_ios();
 };
 
-template<class C, class T> struct basic_istream : virtual basic_ios<C, T> {
+template<class C, class T>
+struct basic_istream : virtual basic_ios<C, T> {
     int count;
     basic_istream(basic_streambuf<C, T> *, bool);
     virtual ~basic_istream();
 };
 
-inline ios_base::ios_base() {}
-
-template<class C, class T>
-inline basic_ios<C, T>::basic_ios() {}
+inline ios_base::ios_base()
+{
+    *reinterpret_cast<void *volatile *>(this) = ios_base_table;
 }
 
-typedef std::basic_ios<char, std::char_traits<char> > IOS;
+template<class C, class T>
+inline basic_ios<C, T>::basic_ios()
+{
+    *reinterpret_cast<void *volatile *>(this) = basic_ios_table;
+}
+}
+
 typedef std::basic_istream<char, std::char_traits<char> > IStream;
 
 struct State {
@@ -38,19 +44,25 @@ struct State {
 };
 
 struct ChainStorage {
-    State *state;
+    State *volatile state;
     unsigned int spare;
     ChainStorage();
     ~ChainStorage();
 };
 
-struct ChainBase : virtual IOS {
+struct StorageBase {
     ChainStorage *storage;
-    ChainBase();
-    ~ChainBase();
+    StorageBase();
 };
 
-inline ChainBase::ChainBase() : storage(0) {}
+inline StorageBase::StorageBase() : storage(0) {}
+
+struct ChainBase : StorageBase {
+    ChainBase();
+    virtual ~ChainBase();
+};
+
+inline ChainBase::ChainBase() {}
 
 struct S : ChainBase, IStream {
     ChainStorage chain;

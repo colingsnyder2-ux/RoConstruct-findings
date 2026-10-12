@@ -1,106 +1,92 @@
-// from server: 72% by king_originala
-void* __cdecl operator new(size_t);
-extern "C" bool __cdecl stackAvailable(size_t);
-extern "C" void* __cdecl _alloca(size_t);
+// from server: 73% by king_originala
+typedef unsigned long ULONG;
+typedef long HRESULT;
+
+extern "C" void* __cdecl allocate(unsigned int);
+extern "C" bool __cdecl checkStack(unsigned int);
+extern "C" void* __cdecl _alloca(unsigned int);
 #pragma intrinsic(_alloca)
 
+struct Module;
+struct ModuleTable {
+    void (__thiscall* first)(Module*);
+    void (__thiscall* lock)(Module*);
+};
+
 struct Module {
-    virtual void reserved() = 0;
-    virtual void addReference() = 0;
+    ModuleTable* table;
+};
+
+struct Object {
+    void* table;
+    ULONG references;
+    void* field8;
+    void* field12;
+    void* field16;
+    void* field20;
+    void* field24;
+};
+
+struct AllocationState {
+    unsigned int size;
+    int limit;
 };
 
 extern Module* module;
 extern void* objectTable[];
-extern unsigned long lockFlags;
+extern unsigned int allocationFlags;
+extern AllocationState allocationState;
 
-struct LockData {
-    long size;
-    long value;
-};
-
-extern LockData lockData;
-
-struct Object {
-    void* table;
-    long references;
-    void* first;
-    void* second;
-    void* third;
-    void* fourth;
-    void* fifth;
-
-    void initialize();
-};
-
-__forceinline void Object::initialize()
-{
-    references = 0;
-    third = 0;
-    second = 0;
-    first = 0;
-    fourth = 0;
-    fifth = 0;
-    table = objectTable;
-    module->addReference();
-}
-
-struct Guard {
-    LockData* data;
-    long status;
-
-    Guard(LockData* p);
-    ~Guard();
-};
-
-__forceinline Guard::Guard(LockData* p)
-{
-    data = p;
-    status = 0;
-}
-
-long __stdcall createObject(void* context, Object** result)
+HRESULT __stdcall createObject(void* context, Object** result)
 {
     if (!result)
-        return (long)0x80004003;
+        return (HRESULT)0x80004003L;
 
     *result = 0;
-    Object* object;
+    Object* object = 0;
 
     try {
-        Object* allocated = static_cast<Object*>(operator new(28));
-        if (allocated) {
-            allocated->initialize();
-            object = allocated;
-        } else {
-            object = 0;
+        Object* storage = (Object*)allocate(28);
+        if (storage) {
+            storage->references = 0;
+            storage->field16 = 0;
+            storage->field12 = 0;
+            storage->field8 = 0;
+            storage->field20 = 0;
+            storage->field24 = 0;
+            storage->table = objectTable;
+            module->table->lock(module);
+            object = storage;
         }
     }
     catch (...) {
-        return (long)0x8007000E;
+        return (HRESULT)0x8007000EL;
     }
 
     if (!object)
-        return (long)0x8007000E;
+        return (HRESULT)0x8007000EL;
 
-    if (!(lockFlags & 1)) {
-        lockFlags |= 1;
-        lockData.size = 4;
-        lockData.value = -1;
+    if (!(allocationFlags & 1)) {
+        allocationFlags |= 1;
+        allocationState.size = 4;
+        allocationState.limit = -1;
     }
 
-    Guard guard(&lockData);
+    void* buffer = 0;
     try {
-        void* volatile storage = 0;
-        if (stackAvailable(4))
-            storage = _alloca(4);
+        if (checkStack(4))
+            buffer = _alloca(4);
+        else
+            buffer = allocate(4);
 
-        if (storage)
-            *static_cast<long*>(storage) = 0;
+        if (!buffer)
+            return (HRESULT)0x8007000EL;
 
+        *(void**)buffer = context;
         *result = object;
         return 0;
     }
     catch (...) {
-        return (long)0x8007000E;
+        return (HRESULT)0x8007000EL;
     }
 }

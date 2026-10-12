@@ -1,57 +1,72 @@
-// from server: 44% by atomic.potato
-struct Node {
-    Node* next;
-    char pad[8];
-    unsigned int fieldC;
-    unsigned int field10;
+// from server: 100% by king_originala
+extern "C" void (__cdecl *invalid_parameter)();
+extern "C" void* __cdecl runtime_cast(void*, long, const void*, const void*, int);
+
+struct Container;
+
+struct Proxy {
+    Container* container;
 };
 
-struct S {
-    char pad[0x108];
-    Node* field108;
-    int f();
+struct Container {
+    Proxy* proxy;
+    unsigned char padding[8];
+    unsigned char* first;
+    unsigned char* last;
 };
 
-extern "C" void __stdcall _invalid_parameter_noinfo();
-extern "C" int __cdecl sub_6a17c6(int, int, int, int, int);
+struct Service {
+    unsigned char padding[0x108];
+    Container* items;
 
-int S::f()
+    void* find();
+};
+
+void* Service::find()
 {
-    Node* p = field108;
-    if (p == 0)
-        return 0;
+    Container* c = items;
+    if (c) {
+        unsigned char* finish = c->last;
+        void (__cdecl *report)() = invalid_parameter;
 
-    unsigned int v10 = p->field10;
-    if (p->fieldC > v10)
-        _invalid_parameter_noinfo();
+        if (c->first > finish)
+            report();
+        Proxy* finishOwner = c->proxy;
 
-    Node* first = p;
-    Node* cur = field108;
-    unsigned int c = cur->fieldC;
-    if (c > cur->field10)
-        _invalid_parameter_noinfo();
+        c = items;
+        unsigned char* current = c->first;
+        if (current > c->last)
+            report();
+        Proxy* owner = c->proxy;
 
-    Node* n = cur->next;
-    while (n != 0 && n != first)
-        _invalid_parameter_noinfo();
+        for (;;) {
+            if (!owner || owner != finishOwner)
+                report();
 
-    while (c != v10)
-    {
-        if (n != 0)
-        {
-            int r = *(int*)n;
-            if (sub_6a17c6(r, 0, 0x92907c, 0x951950, 0) != 0)
-                return 0;
+            if (current == finish)
+                break;
+
+            if (!owner)
+                report();
+            Container* range = owner ? owner->container : 0;
+            if (current >= range->last)
+                report();
+
+            void* result = runtime_cast(
+                *reinterpret_cast<void**>(current), 0,
+                reinterpret_cast<const void*>(0x92907c),
+                reinterpret_cast<const void*>(0x951950), 0);
+            if (result)
+                return result;
+
+            if (!owner)
+                report();
+            range = owner ? owner->container : 0;
+            if (current >= range->last)
+                report();
+
+            current += 8;
         }
-        else
-        {
-            if (c > 0)
-                _invalid_parameter_noinfo();
-            int r = *(int*)c;
-            if (sub_6a17c6(r, 0, 0x92907c, 0x951950, 0) != 0)
-                return 0;
-        }
-        c += 8;
     }
     return 0;
 }

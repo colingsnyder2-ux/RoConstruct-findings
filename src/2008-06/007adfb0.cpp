@@ -1,55 +1,124 @@
-// from server: 34% by colin
-// roc 2008-06 007adfb0  unit: RBX::RenderNew::TextureProxy  size: 454 bytes
-// Make this compile to the exact bytes below, then: roc check 2008-06 007adfb0
+// from server: 67% by king_originala
+typedef unsigned int uint;
 
-struct S {
-    char pad0[0x14];
-    unsigned int len;
-    char pad1[0x4];
-    char* ptr;
-    char pad2[0x4];
-    void __cdecl load(const char* a, const char* b);
+extern "C" uint __cdecl strlen(const char*);
+#pragma intrinsic(strlen)
+
+struct String {
+    void* allocator;
+    union {
+        char local[16];
+        char* heap;
+    };
+    uint length;
+    uint capacity;
+
+    String(const char*);
+    ~String();
+    String substr(uint, uint) const;
+    uint find(const String&) const;
 };
 
-extern "C" {
-    void* __stdcall sub_802458(const char*);
-    void* __stdcall sub_8023e4(void*, const char*, int);
-    void* __stdcall sub_8023e0(void*, int, int, void*);
-    void* __stdcall sub_802498(void*, int, const char*, int);
-    void  __stdcall sub_802468(void*);
-    int   __stdcall sub_50edb0(void*);
-    void  __stdcall sub_569620(void*);
-    void* __stdcall sub_804c4c(void*, void*, void*);
-    void* __stdcall sub_8023e8();
+struct Image {
+    Image& load(const String&, const String&);
+};
+
+typedef String* (__thiscall *ConstructString)(String*, const char*);
+typedef void (__thiscall *DestroyString)(String*);
+typedef String (__cdecl *AppendString)(const String&, const char*);
+typedef String (__thiscall *Substring)(const String*, uint, uint);
+typedef uint (__thiscall *FindString)(const String*, const char*, uint, uint);
+typedef Image& (__thiscall *LoadImage)(Image*, const String&, const String&);
+
+extern ConstructString constructString;
+extern DestroyString destroyString;
+extern AppendString appendString;
+extern Substring substring;
+extern FindString findString;
+extern LoadImage loadImage;
+extern const uint* stringNpos;
+
+extern int __cdecl classify(const String&);
+extern String __cdecl resourcePath();
+
+inline String::String(const char* text)
+{
+    constructString(this, text);
 }
 
-void S::load(const char* a, const char* b) {
-    char buf1[0x1c];
-    char buf2[0x1c];
-    char buf3[0x1c];
-    char buf4[0x1c];
-    int i;
-    char found;
-    for (i = 0; i < 0xd; i++) {
-        const char* s = *(const char**)((char*)this + i * 4);
-        int n = 0;
-        while (s[n]) n++;
-        sub_802458((const char*)0x81ca8c);
-        sub_8023e4(buf2, s, n);
-        sub_8023e0(buf3, this->len - n - 1, this->len - n - 1, buf2);
-        found = (sub_802498(buf3, 0, s, n) != 0);
-        sub_802468(buf3);
-        sub_802468(buf2);
-        sub_802468(buf1);
-        if (found) break;
-    }
-    if (found) {
-        sub_802458((const char*)0x8163c4);
-        sub_804c4c((void*)0, this, buf3);
-        sub_802468(buf3);
-    } else {
-        if (sub_50edb0(this) != 9) {
-            sub_569620(buf4);
+inline String::~String()
+{
+    destroyString(this);
+}
+
+inline String String::substr(uint offset, uint count) const
+{
+    return substring(this, offset, count);
+}
+
+inline uint String::find(const String& text) const
+{
+    return findString(this, text.capacity < 16 ? text.local : text.heap,
+                      0, text.length);
+}
+
+bool __cdecl loadTexture(const String& filename, Image& image)
+{
+    const char* extensions[13] = {
+        (const char*)0x84d1e0,
+        (const char*)0x874bd0,
+        (const char*)0x874bcc,
+        (const char*)0x867d60,
+        (const char*)0x874bc8,
+        (const char*)0x874bc0,
+        (const char*)0x874bbc,
+        (const char*)0x874bb8,
+        (const char*)0x874bb4,
+        (const char*)0x874bb0,
+        (const char*)0x874bac,
+        (const char*)0x874ba8,
+        (const char*)0x867d64
+    };
+
+    int i = 0;
+    do {
+        const char* extension = extensions[i];
+        uint length = strlen(extension);
+        bool recognized =
+            filename.substr(filename.length - length - 1, *stringNpos)
+                .find(appendString(String((const char*)0x81ca8c), extension))
+            != *stringNpos;
+
+        if (recognized) {
+            bool success = true;
+            try {
+                String group((const char*)0x8163c4);
+                loadImage(&image, filename, group);
+            }
+            catch (...) {
+                success = false;
+            }
+            return success;
         }
+
+        ++i;
+    } while (i < 13);
+
+    if (classify(filename) == 9) {
+        String path = resourcePath();
+        const char* text = filename.capacity < 16
+            ? filename.local : filename.heap;
+        bool success = true;
+        try {
+            String resolved = appendString(path, text);
+            String group((const char*)0x8163c4);
+            loadImage(&image, resolved, group);
+        }
+        catch (...) {
+            success = false;
+        }
+        return success;
     }
+
+    return false;
 }

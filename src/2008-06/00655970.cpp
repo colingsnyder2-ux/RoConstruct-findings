@@ -1,53 +1,53 @@
-// from server: 50% by colin
-struct ScoreHud {
-    void* field0;
-    unsigned int field4;
-    unsigned int field8;
-    unsigned int fieldC;
-    unsigned int field10;
-    unsigned int field14;
-    unsigned char field18[0x20];
-    unsigned char field38[0x20];
-    unsigned char field58[0x20];
-    unsigned int field78;
+// from server: 77% by king_originala
+void* __cdecl operator new(unsigned int);
 
-    ScoreHud(int);
+struct S;
+
+struct Owner {
+    S** pointer;
+    int reserved[2];
+    Owner(S* p) : pointer(new S*(p)) {}
+    ~Owner();
 };
 
-struct Helper1 {
-    void f(void*, void*);
+struct Storage {
+    int first;
+    int last;
+    int capacity;
+    Storage() : first(0), last(0), capacity(0) {}
+    ~Storage();
 };
 
-struct Helper2 {
-    void f(void*, void*);
+struct TableA {
+    char data[32];
+    TableA(const int&, const int&);
+    ~TableA();
 };
 
-struct Helper3 {
-    void f(void*, void*);
+struct TableB {
+    char data[32];
+    TableB(const int&, const int&);
+    ~TableB();
 };
 
-extern "C" void* __cdecl sub_6A0920(unsigned int);
+struct TableC {
+    char data[32];
+    TableC(const int&, const int&);
+    ~TableC();
+};
 
-ScoreHud::ScoreHud(int arg)
+struct S {
+    Owner owner;
+    Storage storage;
+    TableA a;
+    TableB b;
+    TableC c;
+    int value;
+
+    S(int);
+};
+
+S::S(int n)
+    : owner(this), storage(), a(n, n), b(n, n), c(n, n), value(n)
 {
-    void* p = sub_6A0920(4);
-    if (p != 0)
-        *(void**)p = this;
-    else
-        p = 0;
-    field0 = p;
-    fieldC = 0;
-    field10 = 0;
-    field14 = 0;
-
-    int local1 = 1;
-    ((Helper1*)(field18))->f(&local1, &local1);
-
-    char local2 = 2;
-    ((Helper2*)(field38))->f(&local2, &local2);
-
-    char local3 = 3;
-    ((Helper3*)(field58))->f(&local3, &local3);
-
-    field78 = local1;
 }

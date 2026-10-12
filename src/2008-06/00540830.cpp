@@ -1,52 +1,53 @@
-// from server: 55% by king_originala
+// from server: 76% by king_originala
+#pragma strict_gs_check(on)
 #pragma optimize("", off)
 
-struct Value {
-    unsigned int data;
-    Value();
-    ~Value();
-};
-
-struct Pair {
-    unsigned int data[4];
-    Pair(const unsigned int& key, const Value& value);
-    ~Pair();
-};
+struct Node;
 
 struct Iterator {
     void* container;
     void* current;
 
     bool equal(const Iterator& other) const;
-    void* key_source() const;
-    char* dereference() const;
+    Node* position() const;
+    Node* node() const;
 };
 
-extern "C" const unsigned int& __cdecl extract_key(void* source);
+struct Temporary {
+    unsigned int value;
 
-struct Comparator {
-    bool compare(const unsigned int& left, const unsigned int& right);
+    Temporary();
+    ~Temporary();
 };
 
-struct S {
+struct Entry {
+    unsigned int data[4];
+
+    Entry(const unsigned int& key, const Temporary& value);
+    ~Entry();
+};
+
+struct Filter {
+    bool accept(const unsigned int& key, unsigned int value);
+};
+
+extern "C" unsigned int __cdecl classify(Node* node);
+
+struct Bucket {
     unsigned char padding[8];
-    Comparator comparator;
+    Filter filter;
 
     Iterator find(const unsigned int& key);
-    Iterator* end(Iterator* result);
-    Iterator insert(Iterator position, const Pair& value);
-    char* f(const unsigned int& key);
+    Iterator end();
+    Iterator insert(Iterator hint, const Entry& value);
+    void* f(const unsigned int& key);
 };
 
-char* S::f(const unsigned int& key)
+void* Bucket::f(const unsigned int& key)
 {
-    Iterator position = find(key);
-    Iterator last;
-
-    if (position.equal(*end(&last)) &&
-        comparator.compare(key, extract_key(position.key_source()))) {
-        position = insert(position, Pair(key, Value()));
+    Iterator it = find(key);
+    if (it.equal(end()) || filter.accept(key, classify(it.position()))) {
+        it = insert(Iterator(it), Entry(key, Temporary()));
     }
-
-    return position.dereference() + 12;
+    return reinterpret_cast<unsigned char*>(it.node()) + 12;
 }

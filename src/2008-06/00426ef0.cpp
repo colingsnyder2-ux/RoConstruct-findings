@@ -1,4 +1,4 @@
-// from server: 63% by king_originala
+// from server: 73% by king_originala
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
 
@@ -15,7 +15,6 @@ struct Object;
 struct Shared {
     Object* object;
     Control* control;
-
     Shared(const Shared&);
     ~Shared();
 };
@@ -75,7 +74,18 @@ struct Guard {
 };
 
 void __cdecl callback();
-void __cdecl search(Pair*, Pair, Pair, void (__cdecl*)(), Object*);
+
+struct Predicate {
+    void (__cdecl *function)();
+    Object* object;
+    Predicate(void (__cdecl*)(), Object*);
+};
+
+inline Predicate::Predicate(void (__cdecl *fn)(), Object* obj)
+    : function(fn), object(obj) {
+}
+
+void __cdecl search(Pair*, Pair, Pair, Predicate);
 void __cdecl notify(const char*, Object*);
 extern const char drop[];
 
@@ -99,7 +109,7 @@ struct S {
     void* window;
     char padding1[0x100];
     Shared owner;
-    Selection* selection;
+    Selection* volatile selection;
 
     void prepare();
     Item* item(long);
@@ -116,8 +126,9 @@ void S::finish(unsigned int, unsigned int, long) {
         (*state()->map)->clean();
         ReleaseCapture();
 
-        if (selection)
-            selection->destroy(1);
+        Selection* current = selection;
+        if (current)
+            current->destroy(1);
         selection = 0;
 
         long handle = SendMessageA(window, 0x110a, 8, 0);
@@ -130,9 +141,8 @@ void S::finish(unsigned int, unsigned int, long) {
 
                 if (object) {
                     Pair result;
-                    Pair* last = range().f();
-                    Pair* first = range().get();
-                    search(&result, *first, *last, callback, object);
+                    search(&result, *range().get(), *range().f(),
+                           Predicate(callback, object));
                 }
 
                 notify(drop, owner.object);

@@ -1,63 +1,55 @@
-// from server: 23% by colin
+// from server: 24% by colin
 struct LDraw2RobloxColorMap {
     void destroy();
 };
+
+extern "C" void __stdcall sub_802890();
+extern "C" void __stdcall sub_802468(void*);
+
+extern "C" void __fastcall sub_46b070(void*);
+extern "C" void __fastcall sub_553d80(void*);
+extern "C" void __fastcall sub_68d1a0(void*);
+extern "C" void __fastcall sub_68dfa0(void*);
 
 struct Node {
     Node* next;
     char pad[0x0c];
     void* obj;
+    char pad2[0x04];
+    Node* owner;
 };
 
 struct List {
     Node* head;
     Node* tail;
-    void clear();
 };
-
-struct SharedPtr {
-    void* px;
-    void* pn;
-    void release();
-};
-
-struct Inner {
-    char pad[0x0c];
-    void* obj;
-};
-
-extern "C" void __stdcall _invalid_parameter_noinfo();
-extern "C" void __stdcall basic_string_dtor(void*);
 
 void LDraw2RobloxColorMap::destroy()
 {
-    *(void**)this = (void*)0x81c904;
+    *(int*)this = 0x81c904;
 
-    List* list1 = (List*)((char*)this + 0x3c);
-    Node* n1 = list1->head;
+    List* l1 = (List*)((char*)this + 0x3c);
+    Node* n1 = l1->head;
     Node* end1 = *(Node**)((char*)this + 0x54);
     end1 = end1->next;
 
     while (n1 != end1) {
-        if (n1 == 0 || n1 != list1->head) {
-            _invalid_parameter_noinfo();
+        if (n1 == 0) {
+            sub_802890();
         }
-        if (n1 != end1) {
+        if (n1->owner != n1) {
             if (n1 == 0) {
-                _invalid_parameter_noinfo();
+                sub_802890();
             }
-            if (n1 != *(Node**)((char*)n1 + 0x18)) {
-                _invalid_parameter_noinfo();
+            if (n1->owner == n1) {
+                sub_802890();
             }
-            Inner* inner = (Inner*)((char*)n1 + 0x10);
-            if (inner->obj != 0) {
-                void** vt = *(void***)inner->obj;
-                void (*fn)(void*, int) = (void (*)(void*, int))vt[0];
-                fn(inner->obj, 1);
+            void* o = n1->obj;
+            if (o) {
+                (*(void(__thiscall**)(void*, int))*(void**)o)(o, 1);
             }
-            SharedPtr* sp = (SharedPtr*)&n1;
-            sp->release();
-            n1 = *(Node**)((char*)this + 0x3c);
+            sub_68dfa0(&n1);
+            n1 = l1->head;
             end1 = *(Node**)((char*)this + 0x54);
             end1 = end1->next;
         } else {
@@ -65,31 +57,28 @@ void LDraw2RobloxColorMap::destroy()
         }
     }
 
-    List* list2 = (List*)((char*)this + 0x5c);
-    Node* n2 = list2->head;
+    List* l2 = (List*)((char*)this + 0x5c);
+    Node* n2 = l2->head;
     Node* end2 = *(Node**)((char*)this + 0x74);
     end2 = end2->next;
 
     while (n2 != end2) {
-        if (n2 == 0 || n2 != list2->head) {
-            _invalid_parameter_noinfo();
+        if (n2 == 0) {
+            sub_802890();
         }
-        if (n2 != end2) {
+        if (n2->owner != n2) {
             if (n2 == 0) {
-                _invalid_parameter_noinfo();
+                sub_802890();
             }
-            if (n2 != *(Node**)((char*)n2 + 0x18)) {
-                _invalid_parameter_noinfo();
+            if (n2->owner == n2) {
+                sub_802890();
             }
-            Inner* inner = (Inner*)((char*)n2 + 0x28);
-            if (inner->obj != 0) {
-                void** vt = *(void***)inner->obj;
-                void (*fn)(void*, int) = (void (*)(void*, int))vt[0];
-                fn(inner->obj, 1);
+            void* o = n2->obj;
+            if (o) {
+                (*(void(__thiscall**)(void*, int))*(void**)o)(o, 1);
             }
-            SharedPtr* sp = (SharedPtr*)&n2;
-            sp->release();
-            n2 = *(Node**)((char*)this + 0x5c);
+            sub_68d1a0(&n2);
+            n2 = l2->head;
             end2 = *(Node**)((char*)this + 0x74);
             end2 = end2->next;
         } else {
@@ -97,8 +86,8 @@ void LDraw2RobloxColorMap::destroy()
         }
     }
 
-    list2->clear();
-    list1->clear();
-    basic_string_dtor((char*)this + 0x20);
-    basic_string_dtor((char*)this + 4);
+    sub_46b070(l2);
+    sub_553d80((char*)this + 0x3c);
+    sub_802468((char*)this + 0x20);
+    sub_802468((char*)this + 4);
 }
