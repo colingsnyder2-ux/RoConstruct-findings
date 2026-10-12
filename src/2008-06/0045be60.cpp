@@ -1,5 +1,33 @@
-// from server: 50% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: boost-1.34.1 libs/regex/src/cregex.cpp
+// from server: 91% by king_originala
+struct Object
+{
+    virtual ~Object();
+};
+
+struct S
+{
+    char padding0[0x5c];
+    int state;
+    char padding1[0x54];
+    Object* first;
+    Object* second;
+
+    void alternate();
+    void cleanup();
+};
+
+void S::cleanup()
+{
+    if (state == 2)
+    {
+        alternate();
+        return;
+    }
+
+    if (second)
+    {
+        delete first;
+        first = 0;
+        delete second;
+    }
+}

@@ -1,27 +1,18 @@
-// from server: 42% by atomic.potato
-typedef unsigned int DWORD;
+// from server: 100% by king_originala
+struct String {};
 
-struct BasicString
-{
-    BasicString(const BasicString&);
+extern String* (__thiscall *copyString)(String*, const String&);
+
+struct S {
+    unsigned char padding[8];
+    int offset;
+    String* f(String* result, void* object);
 };
 
-extern "C" void __stdcall construct_string(BasicString*, const BasicString&);
-
-struct S
+String* S::f(String* result, void* object)
 {
-    int f(BasicString* result, BasicString* value);
-
-    char padding[8];
-    BasicString* base;
-};
-
-int S::f(BasicString* result, BasicString* value)
-{
-    BasicString* source = 0;
-    if (value)
-        source = value - 0x14;
-
-    construct_string(result, *source);
-    return (int)value;
+    volatile int state = 0;
+    char* base = object ? static_cast<char*>(object) - 20 : 0;
+    copyString(result, *reinterpret_cast<const String*>(base + offset));
+    return result;
 }

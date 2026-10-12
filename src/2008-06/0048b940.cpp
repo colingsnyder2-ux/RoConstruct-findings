@@ -1,22 +1,24 @@
-// from server: 89% by atomic.potato
-typedef unsigned long DWORD;
+// from server: 100% by tester
+struct Dispatch;
 
-struct S
-{
-    int f(int);
+struct DispatchTable {
+    void *reserved[3];
+    int (__thiscall *invoke)(Dispatch *, void *, int *);
 };
 
-typedef int (__thiscall *Callback)(void *, void *, void *);
+struct Dispatch {
+    DispatchTable *table;
+};
 
-extern S *g_object;
+extern Dispatch *dispatcher;
+
+struct S {
+    char reserved[20];
+    int f(int value);
+};
 
 int S::f(int value)
 {
-    void *p;
-    if (this)
-        p = (char *)this + 20;
-    else
-        p = 0;
-    Callback callback = *(Callback *)*(DWORD *)((char *)g_object);
-    return callback(g_object, p, &value);
+    void *object = this ? (void *)(reserved + 20) : 0;
+    return dispatcher->table->invoke(dispatcher, object, &value);
 }

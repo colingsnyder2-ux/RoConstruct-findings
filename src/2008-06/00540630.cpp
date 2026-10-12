@@ -1,14 +1,20 @@
-// from server: 40% by atomic.potato
-struct S
-{
-    int f(int);
-    int value;
+// from server: 100% by king_originala
+struct Bucket;
+
+struct Result {
+    void initialize(void* value, Bucket* owner);
 };
 
-extern "C" int sub_5426f0(int, int, S *);
+struct Bucket {
+    unsigned char padding[12];
+    void* value;
+    Result* f(Result* result);
+};
 
-int S::f(int a)
+#pragma optimize("", off)
+Result* Bucket::f(Result* result)
 {
-    sub_5426f0(a, value, this);
-    return a;
+    result->initialize(value, this);
+    return result;
 }
+#pragma optimize("", on)

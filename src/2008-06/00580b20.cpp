@@ -1,24 +1,28 @@
-// from server: 55% by atomic.potato
-extern "C" void __cdecl sub_57d250(void *);
-extern "C" void *__cdecl sub_490d70();
-extern "C" void __cdecl sub_55afd0(void *);
-
-struct ClearStarterpack
-{
-    char padding[12];
-    void *field_0c;
-    void f();
+// from server: 76% by king_originala
+struct Result {
+    void clear();
 };
 
-void ClearStarterpack::f()
+struct Entry {
+    Result* get();
+};
+
+struct ClearStarterpack {
+    unsigned char padding[12];
+    Entry* volatile entry;
+
+    void prepare();
+    void run(void*);
+};
+
+void ClearStarterpack::run(void*)
 {
-    void *value = field_0c;
-    sub_57d250(this);
-    value = field_0c;
-    if (value)
-    {
-        void *result = sub_490d70();
+    Entry* saved = entry;
+    prepare();
+    Entry* current = entry;
+    if (current) {
+        Result* result = current->get();
         if (result)
-            sub_55afd0(result);
+            result->clear();
     }
 }

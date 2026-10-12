@@ -1,18 +1,17 @@
-// from server: 74% by colin
-extern "C" int __cdecl sub_6A17C6(int, int, int, int, int);
+// from server: 100% by king_originala
+extern char instanceType[];
+extern char holeType[];
+extern char motorFeatureType[];
 
-struct S {
-    int f(int, int);
-};
+extern "C" void* __cdecl __RTDynamicCast(
+    void*, long, void*, void*, int);
 
-int S::f(int a, int b) {
-    if (sub_6A17C6(a, 0, 0x92907c, 0x959a28, 0) != 0) {
-        if (sub_6A17C6(b, 0, 0x92907c, 0x959a08, 0) != 0)
-            return 1;
-    }
-    if (sub_6A17C6(b, 0, 0x92907c, 0x959a28, 0) != 0) {
-        if (sub_6A17C6(a, 0, 0x92907c, 0x959a08, 0) != 0)
-            return 1;
-    }
+int __cdecl matches(void* first, void* second)
+{
+    if ((__RTDynamicCast(first, 0, instanceType, holeType, 0) &&
+         __RTDynamicCast(second, 0, instanceType, motorFeatureType, 0)) ||
+        (__RTDynamicCast(second, 0, instanceType, holeType, 0) &&
+         __RTDynamicCast(first, 0, instanceType, motorFeatureType, 0)))
+        return 1;
     return 0;
 }

@@ -1,5 +1,12 @@
-// from server: 59% by colin
-// roc-lang: cpp
-// roc-cl: 50727
-// roc-flags: /Od /Ob1 /GS- /MT
-// roc-lib: wildmagic-2-core Containment/WmlConvexHull3.cpp
+// from server: 100% by tester
+struct S {
+    unsigned int f();
+};
+
+#pragma optimize("", off)
+unsigned int S::f()
+{
+    unsigned int count = 0x1fffffff;
+    return count > 0 ? count : 1;
+}
+#pragma optimize("", on)

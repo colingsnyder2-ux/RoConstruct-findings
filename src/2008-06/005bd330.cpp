@@ -1,5 +1,20 @@
-// from server: 57% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs util/Name.cpp
+// from server: 100% by king_originala
+extern int property;
+
+struct S {
+    char padding[0x170];
+    int value;
+
+    void setValue(const int& v);
+    void notify(const int* p);
+    void changed();
+};
+
+void S::setValue(const int& v)
+{
+    if (v != value) {
+        value = v;
+        notify(&property);
+        changed();
+    }
+}

@@ -1,20 +1,15 @@
-// from server: 70% by atomic.potato
-extern "C" int __cdecl MessageValue();
-
-struct CameraCopyType
-{
-    void copy(const void *);
+// from server: 100% by king_originala
+struct Matrix {
+    unsigned int data[9];
+    Matrix(const Matrix&);
 };
 
-struct RotateSelectionVerb
-{
-    int f(void *);
+extern const Matrix& __cdecl getMatrix();
+
+struct RotateSelectionVerb {
+    Matrix f();
 };
 
-int RotateSelectionVerb::f(void *value)
-{
-    void *result = value;
-    CameraCopyType *camera = (CameraCopyType *)this;
-    camera->copy((const void *)MessageValue());
-    return (int)result;
+Matrix RotateSelectionVerb::f() {
+    return getMatrix();
 }

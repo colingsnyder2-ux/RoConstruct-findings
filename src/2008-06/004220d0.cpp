@@ -1,4 +1,4 @@
-// from server: 99% by king_originala
+// from server: 100% by tester
 extern "C" void* __cdecl getModule();
 extern "C" void* (__stdcall *GetProcAddress)(void*, const char*);
 
@@ -10,7 +10,7 @@ struct CSettingsExplorer {
 
 void** CSettingsExplorer::getProcedure(void** result) {
     if (!procedure)
-        procedure = GetProcAddress(getModule(), "ImageList_DragShowNolock");
+        procedure = GetProcAddress(getModule(), "ImageList_DragEnter");
     *result = *reinterpret_cast<void* volatile*>(&procedure);
     return result;
 }

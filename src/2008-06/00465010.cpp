@@ -1,46 +1,69 @@
-// from server: 39% by atomic.potato
-typedef unsigned long DWORD;
-
-struct Sub1
+// from server: 78% by king_originala
+struct Base
 {
-    void ctor();
+    unsigned long table;
+    char padding[0xe8];
+    unsigned long secondaryTable;
+
+    Base();
+    ~Base();
 };
 
-struct Sub2
+struct MemberA
 {
-    void ctor();
+    unsigned long table;
+    char padding[0x20];
+
+    MemberA();
+    ~MemberA();
 };
 
-struct Sub3
+struct MemberB
 {
-    void ctor();
+    unsigned long table;
+    char padding[0x20];
+
+    MemberB();
+    ~MemberB();
 };
 
-struct VRunServiceMarshaledListener
+struct S : Base
 {
-    void ctor();
+    MemberA a;
+    MemberB b;
+    unsigned long field138;
+    unsigned long field13c;
+    unsigned long field140;
+    unsigned long field144;
+    unsigned long field148;
+    unsigned long field14c;
+    unsigned long field150;
+    unsigned char field154;
+    unsigned char field155;
+    unsigned char field156;
+    unsigned char padding157;
+    unsigned long field158;
+    unsigned long field15c;
+
+    S();
 };
 
-void VRunServiceMarshaledListener::ctor()
+S::S()
 {
-    char *base = (char *)this;
-    ((Sub1 *)(base + 0xec))->ctor();
-    ((Sub2 *)(base + 0xf0))->ctor();
-    ((Sub3 *)(base + 0x114))->ctor();
-    *(DWORD *)(base + 0x00) = 0x81b3dc;
-    *(DWORD *)(base + 0xec) = 0x81b3d0;
-    *(DWORD *)(base + 0xf0) = 0x81b3bc;
-    *(DWORD *)(base + 0x114) = 0x81b3a8;
-    *(DWORD *)(base + 0x138) = 0;
-    *(DWORD *)(base + 0x13c) = 0;
-    *(DWORD *)(base + 0x140) = 0;
-    *(DWORD *)(base + 0x144) = 0;
-    *(DWORD *)(base + 0x148) = 0;
-    *(DWORD *)(base + 0x14c) = 0;
-    *(DWORD *)(base + 0x150) = 0;
-    *(char *)(base + 0x154) = 0;
-    *(char *)(base + 0x155) = 0;
-    *(char *)(base + 0x156) = 0;
-    *(DWORD *)(base + 0x15c) = 0;
-    *(DWORD *)(base + 0x158) = 0x81b228;
+    table = 0x81b3dc;
+    secondaryTable = 0x81b3d0;
+    a.table = 0x81b3bc;
+    b.table = 0x81b3a8;
+    field138 = 0;
+    field13c = 0;
+    field140 = 0;
+    field144 = 0;
+    field148 = 0;
+    field14c = 0;
+    field150 = 0;
+    field154 = 0;
+    field155 = 0;
+    field156 = 0;
+    field15c = 0;
+    field158 = 0x81b228;
 }

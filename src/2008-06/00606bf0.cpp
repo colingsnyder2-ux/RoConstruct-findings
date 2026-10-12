@@ -1,5 +1,8 @@
-// from server: 92% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs v8world/Contact.cpp
+// from server: 97% by king_originala
+extern int g_hit, g_miss;
+
+double hitRatio() {
+    int n = g_hit + g_miss;
+    if (n == 0) return -1.0f;
+    return (double)g_hit / n;
+}

@@ -1,23 +1,15 @@
-// from server: 31% by tester
-struct Chunk {
-    int a;
-    int b;
-};
-
+// from server: 100% by king_originala
 struct S {
-    Chunk data;
-    Chunk get(int);
+    int first;
+    int second;
+
+    S& advance(int amount);
+    S offset(int amount) const;
 };
 
-extern "C" Chunk* __stdcall helper(Chunk* self, int x);
-
-Chunk S::get(int x) {
-    Chunk tmp;
-    tmp.a = this->data.a;
-    tmp.b = this->data.b;
-    Chunk* p = helper(&tmp, x);
-    Chunk result;
-    result.a = p->a;
-    result.b = p->b;
-    return result;
+#pragma optimize("", off)
+S S::offset(int amount) const {
+    S copy = *this;
+    return copy.advance(amount);
 }
+#pragma optimize("", on)

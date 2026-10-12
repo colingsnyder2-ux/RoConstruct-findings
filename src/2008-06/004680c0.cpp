@@ -1,71 +1,71 @@
-// from server: 22% by colin
-struct DxUserInput {
-    char pad[0x59];
-    char unk59;
-    char pad2[0x16c - 0x5a];
-    void* unk16c;
-    char pad3[0x178 - 0x170];
-    void* unk178;
-    char pad4[0x192 - 0x17c];
-    char unk192;
-    void method();
+// from server: 82% by king_originala
+struct Point {
+    int x;
+    int y;
 };
 
-extern "C" {
-    int __stdcall ClientToScreen(void*, void*);
-    int __stdcall InvalidateRect(void*, const void*, int);
-    void* __stdcall LoadCursorA(void*, const char*);
-    void* __stdcall SetCursor(void*);
-    int __stdcall SetCursorPos(int, int);
-    void __stdcall sub_6A17F0();
-    void __stdcall sub_6A0926();
-    void __stdcall sub_467B50(void*);
-}
+struct Vec2 {
+    float x;
+    float y;
+};
 
-void DxUserInput::method()
+extern "C" int (__stdcall *ClientToScreen)(void *, Point *);
+extern "C" int (__stdcall *SetCursorPos)(int, int);
+extern "C" void *(__stdcall *LoadCursorA)(void *, const char *);
+extern "C" void *(__stdcall *SetCursor)(void *);
+extern "C" int (__stdcall *InvalidateRect)(void *, const void *, int);
+
+extern void initializeCursor();
+
+struct Device;
+struct DeviceTable {
+    void *slots[8];
+    long (__stdcall *unacquire)(Device *);
+};
+
+struct Device {
+    DeviceTable *table;
+};
+
+struct Window {
+    char padding[0x20];
+    void *handle;
+};
+
+struct DxUserInput {
+    char padding0[0x59];
+    unsigned char flag59;
+    char padding1[0x112];
+    Window *window;
+    char padding2[8];
+    Device *device;
+    char padding3[0x16];
+    unsigned char flag192;
+
+    Vec2 *getPosition(Vec2 *);
+    void releaseInput();
+};
+
+void DxUserInput::releaseInput()
 {
-    void* v1 = this->unk178;
-    void* v2 = *(void**)v1;
-    void (__stdcall *fn)(void*) = *(void (__stdcall**)(void*))((char*)v2 + 0x20);
-    fn(v1);
+    device->table->unacquire(device);
 
-    int local10;
-    int local14;
-    sub_467B50(&local10);
+    Vec2 position;
+    getPosition(&position);
 
-    float f14 = *(float*)&local14;
-    sub_6A17F0();
-    int edi = (int)f14;
+    Point point;
+    int y = (int)position.y;
+    point.x = (int)position.x;
+    point.y = y;
 
-    float f10 = *(float*)&local10;
-    sub_6A17F0();
-    int eax2 = (int)f10;
+    ClientToScreen(window->handle, &point);
+    SetCursorPos(point.x, point.y);
 
-    int local8 = eax2;
-    int localC = edi;
+    static void *cursor =
+        (initializeCursor(), LoadCursorA(0, (const char *)0x7f00));
 
-    void* v3 = this->unk16c;
-    void* v4 = *(void**)((char*)v3 + 0x20);
-    ClientToScreen(v4, &local8);
-
-    int a = localC;
-    int b = local8;
-    SetCursorPos(b, a);
-
-    if ((*(unsigned char*)0x96dfe0 & 1) == 0) {
-        *(unsigned int*)0x96dfe0 |= 1;
-        sub_6A0926();
-        void* h = LoadCursorA(0, (const char*)0x7f00);
-        *(void**)0x96dfdc = h;
-    }
-
-    void* cur = *(void**)0x96dfdc;
-    SetCursor(cur);
-
-    void* v5 = this->unk16c;
-    void* v6 = *(void**)((char*)v5 + 0x20);
-    InvalidateRect(v6, 0, 1);
-
-    this->unk192 = 0;
-    this->unk59 = 0;
+    SetCursor(cursor);
+    InvalidateRect(window->handle, 0, 1);
+    flag192 = 0;
+    flag59 = 0;
 }

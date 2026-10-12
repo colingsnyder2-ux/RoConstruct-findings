@@ -1,5 +1,20 @@
-// from server: 69% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: boost-1.34.1 libs/regex/src/instances.cpp
+// from server: 100% by tester
+void* __cdecl operator new(unsigned int);
+void __cdecl operator delete(void*) throw();
+
+struct FrameBase
+{
+    FrameBase();
+    virtual ~FrameBase();
+    char storage[200];
+};
+
+struct CBrowserFrameWnd : FrameBase
+{
+    virtual ~CBrowserFrameWnd();
+};
+
+CBrowserFrameWnd* func_00433280()
+{
+    return new CBrowserFrameWnd;
+}

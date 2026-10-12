@@ -1,5 +1,12 @@
-// from server: 72% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs v8world/World.cpp
+// from server: 100% by tester
+struct Owner {
+    int forward();
+};
+
+int Owner::forward()
+{
+    int* ptr = *reinterpret_cast<int**>(reinterpret_cast<char*>(this) + 0x88);
+    int* vtable = *reinterpret_cast<int**>(ptr);
+    int func = vtable[6];
+    return reinterpret_cast<int(__thiscall*)(int*)>(func)(ptr);
+}

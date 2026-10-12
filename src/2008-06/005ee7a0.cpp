@@ -1,33 +1,64 @@
-// from server: 51% by colin
-struct SurfaceEnumPropDescriptor {
-    char pad[0x18];
-    int field18;
-    int field1c;
-    int init(int, int, int, int, int);
+// from server: 100% by king_originala
+extern unsigned char registrationState;
+extern void __cdecl initialize();
+extern void __cdecl registerInitializer(void (__cdecl*)(), void*);
+extern void* __cdecl getEnumTable();
+extern void* __cdecl getClassDescriptor();
+
+void* __cdecl operator new(unsigned int);
+void __cdecl operator delete(void*);
+
+struct Base {
+    unsigned char storage[20];
+
+    Base(void*, void*, const char*, unsigned int, unsigned int);
+    virtual ~Base();
 };
 
-extern "C" void __cdecl sub_557330(int, int);
-extern "C" int __cdecl sub_5ed5c0();
-extern "C" int __cdecl sub_59c7f0();
-extern "C" int __cdecl sub_56c650(int, int, int, int, int);
-extern "C" void* __cdecl sub_6a0920(unsigned int);
+struct EnumBase : Base {
+    void* enumeration;
 
-int SurfaceEnumPropDescriptor::init(int a1, int a2, int a3, int a4, int a5)
+    EnumBase(void*, void*, const char*, unsigned int, unsigned int);
+};
+
+inline EnumBase::EnumBase(void* owner, void* table, const char* name,
+                         unsigned int flags, unsigned int category)
+    : Base(owner, table, name, flags, category), enumeration(table)
 {
-    sub_557330(0x97b11c, 0x5ed620);
-    int v = sub_5ed5c0();
-    int w = sub_59c7f0();
-    sub_56c650(w, v, a1, a2, a3);
-    field18 = v;
-    *(int*)this = 0x8401d4;
-    void* p = sub_6a0920(0xc);
-    if (p) {
-        *(int*)p = 0x83fe04;
-        *(int*)((char*)p + 4) = a4;
-        *(int*)((char*)p + 8) = a5;
-    } else {
-        p = 0;
-    }
-    field1c = (int)p;
-    return (int)this;
+}
+
+struct Setter {
+    virtual void slot0();
+    virtual void slot1();
+    virtual void slot2();
+    virtual void slot3();
+
+    unsigned int getter;
+    unsigned int setter;
+
+    Setter(unsigned int, unsigned int);
+};
+
+inline Setter::Setter(unsigned int get, unsigned int set)
+    : getter(get), setter(set)
+{
+}
+
+struct Descriptor : EnumBase {
+    Setter* access;
+
+    virtual ~Descriptor();
+    Descriptor(const char*, unsigned int, unsigned int,
+               unsigned int, unsigned int);
+};
+
+Descriptor::Descriptor(const char* name, unsigned int flags,
+                       unsigned int getter, unsigned int setter,
+                       unsigned int category)
+    : EnumBase(getClassDescriptor(),
+               (registerInitializer(initialize, &registrationState),
+                getEnumTable()),
+               name, flags, category)
+{
+    access = new Setter(getter, setter);
 }

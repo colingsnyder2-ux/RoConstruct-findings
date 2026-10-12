@@ -1,5 +1,10 @@
-// from server: 75% by colin
-// roc-lang: cpp
-// roc-cl: 50727
-// roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: ogre-1.7.0 OgreTangentSpaceCalc.cpp
+// from server: 100% by tester
+#include <list>
+
+struct E {
+    char data[48];
+    bool operator==(const E&) const;
+    bool operator<(const E&) const;
+};
+
+template class std::list<E>;

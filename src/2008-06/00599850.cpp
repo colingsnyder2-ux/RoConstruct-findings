@@ -1,5 +1,21 @@
-// from server: 75% by colin
-// roc-lang: cpp
-// roc-cl: 50727
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: openrbx-client App/v8datamodel/PartInstance.cpp
+// from server: 100% by tester
+struct Vector3 { float x, y, z; };
+
+struct Body {
+    char pad[0xc4];
+    Vector3 value;
+    void updatePV();
+};
+
+struct PartInstance {
+    char pad[0x2c8];
+    Body* body;
+    const Vector3& getValue();
+};
+
+const Vector3& PartInstance::getValue()
+{
+    Body* b = body;
+    b->updatePV();
+    return b->value;
+}

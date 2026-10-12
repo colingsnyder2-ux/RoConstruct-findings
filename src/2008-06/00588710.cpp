@@ -1,5 +1,80 @@
-// from server: 45% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs-net IdManager.cpp
+// from server: 73% by king_originala
+extern "C" void (__cdecl *_invalid_parameter_noinfo)();
+
+struct Payload
+{
+    void f();
+};
+
+struct Node
+{
+    Node* first;
+    unsigned int reserved[3];
+    Payload value;
+};
+
+struct S;
+
+struct Proxy
+{
+    S* owner;
+};
+
+struct Iterator
+{
+    Proxy* proxy;
+    Node* node;
+
+    void next();
+};
+
+struct S
+{
+    Proxy* volatile proxy;
+    unsigned int reserved[5];
+    Node* head;
+
+    void f();
+};
+
+void S::f()
+{
+    Node* node = head->first;
+    Proxy* currentProxy = proxy;
+    Iterator it;
+    it.node = node;
+    it.proxy = currentProxy;
+    S* owner;
+
+    for (;;)
+    {
+        Node* end = head;
+        Proxy* endProxy = proxy;
+
+        if (!currentProxy || currentProxy != endProxy)
+            _invalid_parameter_noinfo();
+
+        if (node == end)
+            break;
+
+        owner = reinterpret_cast<S*>(currentProxy);
+        if (currentProxy)
+            goto resolveOwner;
+
+        _invalid_parameter_noinfo();
+
+    checkNode:
+        if (node == owner->head)
+            _invalid_parameter_noinfo();
+
+        node->value.f();
+        it.next();
+        node = it.node;
+        currentProxy = it.proxy;
+    }
+    return;
+
+resolveOwner:
+    owner = currentProxy->owner;
+    goto checkNode;
+}

@@ -1,18 +1,16 @@
-// from server: 67% by colin
-struct S_func_0046a1b0 {
-    int m_x0;
-    float m_x4;
+// from server: 100% by king_originala
+struct Vec2 {
+    float x;
+    float y;
 };
 
-extern "C" int __cdecl sub_0046a010(S_func_0046a1b0*, S_func_0046a1b0*, S_func_0046a1b0*, int, float, float);
+extern const float scale;
+extern void __cdecl helper(Vec2 *, Vec2 *, Vec2 *, void *, int, float);
 
-extern float g_81c430;
-
-void __cdecl sub_0046a1b0(S_func_0046a1b0* a, S_func_0046a1b0* b, S_func_0046a1b0* c, int d)
+void __cdecl update(Vec2 *a, Vec2 *b, Vec2 *c, void *context)
 {
-    float f1 = a->m_x4;
-    float f2 = f1 + b->m_x4;
-    sub_0046a010(a, c, b, 0x14, g_81c430, f2);
-    c->m_x4 = 0.0f;
-    b->m_x4 = f2;
+    float y = a->y + c->y;
+    helper(a, b, c, context, 20, scale);
+    b->y = 0.0f;
+    c->y = y;
 }

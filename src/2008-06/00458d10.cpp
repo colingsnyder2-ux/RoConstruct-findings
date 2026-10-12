@@ -1,5 +1,18 @@
-// from server: 66% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: openrbx-client App/script/LuaInstanceBridge.cpp
+// from server: 100% by tester
+struct Base {
+    char data[0x3d4];
+    ~Base();
+};
+
+struct Member {
+    ~Member();
+};
+
+struct ImageKeyButton : Base {
+    Member member;
+    ~ImageKeyButton();
+};
+
+ImageKeyButton::~ImageKeyButton()
+{
+}

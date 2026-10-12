@@ -1,5 +1,27 @@
-// from server: 41% by colin
-// roc-lang: cpp
-// roc-cl: 50727
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs v8datamodel/RootInstance.cpp
+// from server: 87% by king_originala
+struct Node
+{
+    char padding[0x104];
+    Node* next;
+};
+
+Node* __cdecl f(Node* node)
+{
+    Node* current = node->next;
+    Node* previous = current;
+    Node* following = previous->next;
+
+    while (following->next)
+    {
+        previous = following;
+        following = following->next;
+    }
+
+    while (current != previous)
+    {
+        node = current;
+        current = node->next;
+    }
+
+    return node;
+}

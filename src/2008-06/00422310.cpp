@@ -1,5 +1,16 @@
-// from server: 71% by colin
-// roc-lang: cpp
-// roc-cl: 30729
-// roc-flags: /O2 /GS- /MD
-// roc-lib: mfc-9.0 atlmfc/src/mfc/afxbasepane.cpp
+// from server: 100% by tester
+extern "C" void* __cdecl getModule();
+extern "C" void* (__stdcall *GetProcAddress)(void*, const char*);
+
+struct CSettingsExplorer {
+    char padding[0x74];
+    void* procedure;
+    void** getProcedure(void** result);
+};
+
+void** CSettingsExplorer::getProcedure(void** result) {
+    if (!procedure)
+        procedure = GetProcAddress(getModule(), "ImageList_DragMove");
+    *result = *reinterpret_cast<void* volatile*>(&procedure);
+    return result;
+}

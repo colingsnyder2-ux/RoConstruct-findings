@@ -1,4 +1,4 @@
-// from server: 91% by king_originala
+// from server: 95% by tester
 struct Result {
     unsigned int unused;
     unsigned int first;
@@ -25,7 +25,8 @@ Result* S::f(Result* result, void* node, int argument, int value)
     volatile int zero = 0;
     if (node) {
         Object* object = build(node, result, &value, argument, 0);
-        object->part.finish();
+        Part* part = &object->part;
+        part->finish();
         return result;
     }
     result->first = 0;

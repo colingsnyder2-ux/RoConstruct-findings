@@ -1,5 +1,21 @@
-// from server: 63% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs util/RunStateOwner.cpp
+// from server: 100% by tester
+struct Vector3 { float x, y, z; };
+
+struct Body {
+    char pad[0x94];
+    Vector3 value;
+    void updatePV();
+};
+
+struct Primitive {
+    char pad[0xa0];
+    Body* body;
+    const Vector3& getValue();
+};
+
+const Vector3& Primitive::getValue()
+{
+    Body* b = body;
+    b->updatePV();
+    return b->value;
+}

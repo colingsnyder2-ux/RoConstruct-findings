@@ -1,44 +1,63 @@
-// from server: 45% by colin
-struct S {
-    char pad0[0x130];
-    float f130;
-    float f134;
-    float f138;
-    void ctor();
+// from server: 100% by king_originala
+struct String
+{
+    char storage[28];
+
+    __forceinline String(const char*);
+    __forceinline ~String();
 };
 
-extern "C" {
-    void __stdcall sub_802458(void*);
-    void __stdcall sub_802468(void*);
+typedef void (__thiscall *StringConstruct)(String*, const char*);
+typedef void (__thiscall *StringDestroy)(String*);
+
+extern StringConstruct stringConstruct;
+extern StringDestroy stringDestroy;
+
+__forceinline String::String(const char* text)
+{
+    stringConstruct(this, text);
 }
 
-extern float g_9611c0;
-extern float g_9611c4;
-extern float g_9611c8;
-
-void sub_637e50();
-void sub_55af90();
-
-void S::ctor()
+__forceinline String::~String()
 {
-    sub_637e50();
-    *(void**)this = (void*)0x84960c;
-    *(void**)((char*)this + 0x10) = (void*)0x849600;
-    *(void**)((char*)this + 0x14) = (void*)0x8495f8;
-    *(void**)((char*)this + 0x20) = (void*)0x8495f0;
-    *(void**)((char*)this + 0x24) = (void*)0x8495e0;
-    *(void**)((char*)this + 0x44) = (void*)0x8495d0;
-    *(void**)((char*)this + 0x64) = (void*)0x8495c0;
-    *(void**)((char*)this + 0x84) = (void*)0x8495b0;
-    *(void**)((char*)this + 0xa4) = (void*)0x8495a0;
-    *(void**)((char*)this + 0xc4) = (void*)0x849590;
-    f130 = g_9611c0;
-    f134 = g_9611c4;
-    f138 = g_9611c8;
+    stringDestroy(this);
+}
 
-    char buf[0x1c];
-    sub_802458((void*)0x818478);
-    *(int*)(buf + 0x18) = 0;
-    sub_55af90();
-    sub_802468(buf);
+struct Base
+{
+    unsigned long storage[76];
+
+    Base();
+    ~Base();
+    void setName(const String&);
+};
+
+struct S : Base
+{
+    float x;
+    float y;
+    float z;
+
+    S();
+};
+
+S::S() : Base()
+{
+    storage[0] = 0x84960c;
+    storage[4] = 0x849600;
+    storage[5] = 0x8495f8;
+    storage[8] = 0x8495f0;
+    storage[9] = 0x8495e0;
+    storage[17] = 0x8495d0;
+    storage[25] = 0x8495c0;
+    storage[33] = 0x8495b0;
+    storage[41] = 0x8495a0;
+    storage[49] = 0x849590;
+
+    x = *reinterpret_cast<const float*>(0x9611c0);
+    y = *reinterpret_cast<const float*>(0x9611c4);
+    z = *reinterpret_cast<const float*>(0x9611c8);
+
+    String name(reinterpret_cast<const char*>(0x818478));
+    setName(name);
 }

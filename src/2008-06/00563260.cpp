@@ -1,21 +1,14 @@
-// from server: 65% by colin
-struct ContentProvider {
-    int getCachedRemoteSourceLoadState();
-};
-
-struct LinkedScriptLoadData {
-    int state;
-    int value;
-};
-
-extern "C" void __stdcall sub_501AE0(void *);
-extern "C" void __stdcall sub_5631C0(void *);
-
-int ContentProvider::getCachedRemoteSourceLoadState()
-{
-    LinkedScriptLoadData data;
-    sub_501AE0(&data);
-    int result = data.value;
-    sub_5631C0(&data);
+// from server: 97% by king_originala
+struct Helper { int field0; int field4; };
+struct ContentProvider { int getCachedRemoteSourceLoadState(); };
+struct HelperMaker { Helper* makeHelper(); };
+struct HelperDestroyer { void destroyHelper(); };
+int ContentProvider::getCachedRemoteSourceLoadState() {
+    char buf[0x84];
+    HelperMaker* m = (HelperMaker*)buf;
+    Helper* h = m->makeHelper();
+    int result = h->field4;
+    HelperDestroyer* d = (HelperDestroyer*)buf;
+    d->destroyHelper();
     return result;
 }

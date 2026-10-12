@@ -1,5 +1,17 @@
-// from server: 57% by colin
-// roc-lang: cpp
-// roc-cl: 30729
-// roc-flags: /O2 /GS- /MD
-// roc-lib: mfc-9.0 atlmfc/src/mfc/dlgprntx.cpp
+// from server: 100% by tester
+struct IUnknown {
+    virtual long __stdcall QueryInterface(const void* iid, void** object) = 0;
+    virtual unsigned long __stdcall AddRef() = 0;
+    virtual unsigned long __stdcall Release() = 0;
+};
+
+struct Contained {
+    char padding[24];
+    IUnknown* outer;
+    unsigned long __stdcall Release();
+};
+
+unsigned long __stdcall Contained::Release()
+{
+    return outer->Release();
+}

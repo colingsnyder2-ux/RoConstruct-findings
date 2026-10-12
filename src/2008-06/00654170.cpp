@@ -1,17 +1,24 @@
-// from server: 58% by king_originala
+// from server: 100% by king_originala
 void* __cdecl operator new(unsigned int);
 
 struct Vector;
 
 struct Proxy {
     Vector* owner;
-    Proxy(Vector* p);
+    Proxy(Vector*);
 };
 
 inline Proxy::Proxy(Vector* p) : owner(p) {}
 
-struct Vector {
+struct ProxyHolder {
     Proxy* proxy;
+    ProxyHolder(Vector*);
+    ~ProxyHolder();
+};
+
+inline ProxyHolder::ProxyHolder(Vector* p) : proxy(new Proxy(p)) {}
+
+struct Vector : ProxyHolder {
     unsigned int unused[2];
     void* first;
     void* last;
@@ -23,11 +30,15 @@ struct Vector {
 };
 
 inline Vector::Vector()
-    : proxy(new Proxy(this)), first(0), last(0), limit(0) {}
+    : ProxyHolder(this), first(0), last(0), limit(0)
+{
+    if (first)
+        operator new(4);
+}
 
 struct S {
-    void f(int value);
-    void g(int value, Vector values);
+    void f(int);
+    void g(int, Vector);
 };
 
 void S::f(int value)

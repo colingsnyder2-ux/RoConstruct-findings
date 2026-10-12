@@ -1,5 +1,14 @@
-// from server: 97% by tester
-// roc-lang: cpp
-// roc-cl: 50727
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs script/ScriptContext.cpp
+// from server: 100% by tester
+extern "C" const char* __cdecl getText(void*, int, unsigned int*);
+extern "C" void* __cdecl getObject(void*, int, const char*);
+extern "C" void __cdecl invoke(void*, const char*, void*);
+
+extern const char* objectType;
+
+int __cdecl function_005a89d0(void* state)
+{
+    const char* text = getText(state, 2, 0);
+    void* object = getObject(state, 1, objectType);
+    invoke(object, text, state);
+    return 0;
+}

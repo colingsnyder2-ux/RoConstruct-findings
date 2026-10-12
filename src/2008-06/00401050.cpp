@@ -1,5 +1,30 @@
-// from server: 58% by colin
-// roc-lang: cpp
-// roc-cl: 30729
-// roc-flags: /O2 /GS- /MD
-// roc-lib: mfc-9.0 atlmfc/src/mfc/afxbasetabctrl.cpp
+// from server: 100% by tester
+struct String;
+extern void (__thiscall *string_destroy)(String *);
+
+struct String
+{
+    char storage[28];
+    ~String();
+};
+
+inline String::~String()
+{
+    string_destroy(this);
+}
+
+struct Base
+{
+    char storage[0x114];
+    ~Base();
+};
+
+struct S : Base
+{
+    String value;
+    ~S();
+};
+
+S::~S()
+{
+}

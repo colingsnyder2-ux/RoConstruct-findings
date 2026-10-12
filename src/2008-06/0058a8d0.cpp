@@ -1,38 +1,31 @@
-unsigned int __cdecl getDescriptor();
-
-extern unsigned int table0[];
-extern unsigned int table10[];
-extern unsigned int table14[];
-extern unsigned int table20[];
-extern unsigned int table24[];
-extern unsigned int table44[];
-extern unsigned int table64[];
-extern unsigned int table84[];
-extern unsigned int tableA4[];
-extern unsigned int tableC4[];
+// from server: 100% by king_originala
+extern void* __cdecl getDescriptor();
 
 struct Base {
-    unsigned int words[50];
+    unsigned int words[7];
 
-    Base(int);
+    Base(int argument);
     ~Base();
 };
 
-struct Hint : Base {
-    Hint(int);
+struct S : Base {
+    void* descriptor;
+    unsigned int slots[42];
+
+    S(int argument);
 };
 
-Hint::Hint(int value) : Base(value)
+S::S(int argument)
+    : Base(argument), descriptor(getDescriptor())
 {
-    words[7] = getDescriptor();
-    words[0] = reinterpret_cast<unsigned int>(table0);
-    words[4] = reinterpret_cast<unsigned int>(table10);
-    words[5] = reinterpret_cast<unsigned int>(table14);
-    words[8] = reinterpret_cast<unsigned int>(table20);
-    words[9] = reinterpret_cast<unsigned int>(table24);
-    words[17] = reinterpret_cast<unsigned int>(table44);
-    words[25] = reinterpret_cast<unsigned int>(table64);
-    words[33] = reinterpret_cast<unsigned int>(table84);
-    words[41] = reinterpret_cast<unsigned int>(tableA4);
-    words[49] = reinterpret_cast<unsigned int>(tableC4);
+    words[0] = 0x008317fc;
+    words[4] = 0x008317ec;
+    words[5] = 0x008317e4;
+    slots[0] = 0x008317dc;
+    slots[1] = 0x008317cc;
+    slots[9] = 0x008317bc;
+    slots[17] = 0x008317ac;
+    slots[25] = 0x0083179c;
+    slots[33] = 0x0083178c;
+    slots[41] = 0x0083177c;
 }

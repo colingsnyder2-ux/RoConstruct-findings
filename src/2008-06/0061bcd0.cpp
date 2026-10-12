@@ -1,70 +1,53 @@
-// from server: 35% by colin
-// roc 2008-06 0061bcd0  unit: RBX::Lua::LuaArguments  size: 201 bytes
-// Make this compile to the exact bytes below, then: roc check 2008-06 0061bcd0
-
+// from server: 70% by king_originala
 struct Instance {
-    Instance* getRootAncestor();
-    bool isAncestorOf(Instance* other);
-    char pad[0x100];
+    unsigned char reserved[0x104];
     Instance* parent;
+
+    Instance* getRootAncestor();
+    bool isAncestorOf(Instance* instance);
 };
 
-struct DataModel : Instance {
+struct DataModel {
+    unsigned char reserved[0x21c];
+    Instance* guiHooks;
+    unsigned char gap[4];
+    Instance* guiRoot;
 };
 
-struct StatsService : Instance {
+struct Context {
+    unsigned long identity;
+    void report(int level, const char* message);
 };
 
-struct LuaArguments {
-    void checkStatsService();
-};
+extern Context* __cdecl getContext();
+extern bool __cdecl hasPermission(unsigned long identity, int permission);
+extern "C" void* __cdecl runtimeCast(
+    void* object, int displacement, const void* sourceType,
+    const void* targetType, int reference);
 
-extern "C" void* __stdcall sub_493760(int);
-extern "C" void __stdcall sub_489810(void*);
-extern "C" void* __stdcall sub_6a17c6(void*, int, void*, void*, int, int);
-extern "C" bool __stdcall sub_5cf070(void*, int);
-
-extern void* g_92907c;
-extern void* g_93244c;
-extern void* g_92e8a0;
-extern void* g_844268;
-extern void* g_82fa60;
-extern void* g_84425c;
-
-void LuaArguments::checkStatsService()
+void checkModification(Instance* instance)
 {
-    void* v = sub_493760(0);
-    void* p = *(void**)v;
-    if (sub_5cf070(p, 1))
+    if (hasPermission(getContext()->identity, 1))
         return;
 
-    Instance* self = (Instance*)this;
+    if (runtimeCast(instance, 0, (const void*)0x92907c,
+                    (const void*)0x93244c, 0))
+        getContext()->report(1, (const char*)0x844268);
 
-    if (sub_6a17c6(self, 0, &g_92907c, &g_93244c, 0, 0))
-    {
-        void* v2 = sub_493760(1);
-        sub_489810(v2);
-    }
+    Instance* root = instance->parent
+        ? instance->parent->getRootAncestor()
+        : instance;
 
-    Instance* root;
-    if (self->parent)
-        root = self->parent->getRootAncestor();
-    else
-        root = self;
+    DataModel* model = (DataModel*)runtimeCast(
+        root, 0, (const void*)0x92907c, (const void*)0x92e8a0, 0);
 
-    Instance* stats = (Instance*)sub_6a17c6(root, 0, &g_92907c, &g_92e8a0, 0, 0);
-    if (stats)
-    {
-        if (stats->parent != self && !stats->parent->isAncestorOf(self))
-        {
-            void* v3 = sub_493760(1);
-            sub_489810(v3);
-        }
+    if (model) {
+        if (model->guiHooks == instance ||
+            model->guiHooks->isAncestorOf(instance))
+            getContext()->report(1, (const char*)0x82fa60);
 
-        if (stats->parent != self && !stats->parent->isAncestorOf(self))
-        {
-            void* v4 = sub_493760(1);
-            sub_489810(v4);
-        }
+        if (model->guiRoot == instance ||
+            model->guiRoot->isAncestorOf(instance))
+            getContext()->report(1, (const char*)0x84425c);
     }
 }

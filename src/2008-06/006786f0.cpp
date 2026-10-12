@@ -1,5 +1,24 @@
-// from server: 67% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MT
-// roc-lib: ogre-1.4.9 OgreAlignedAllocator.cpp
+// from server: 100% by king_originala
+struct Root;
+extern Root* root;
+extern void (__thiscall *destroyRoot)(Root*);
+void __cdecl operator delete(void*);
+
+struct Root
+{
+    ~Root();
+};
+
+__forceinline Root::~Root()
+{
+    destroyRoot(this);
+}
+
+void cleanupRoot()
+{
+    if (root)
+    {
+        delete root;
+        root = 0;
+    }
+}

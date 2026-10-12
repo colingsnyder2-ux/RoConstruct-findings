@@ -1,7 +1,4 @@
-// from server: 98% by colin
-// roc 2008-06 005f1c90  unit: RBX::FaceInstance  size: 151 bytes
-// Make this compile to the exact bytes below, then: roc check 2008-06 005f1c90
-
+// from server: 100% by tester
 extern "C" {
     __declspec(dllimport) void* __stdcall WaitForSingleObject(void*, unsigned long);
     __declspec(dllimport) int __stdcall ReleaseMutex(void*);
@@ -24,9 +21,9 @@ void FaceInstance::func()
     int (__stdcall *release)(void*, long, long*) = ReleaseSemaphore;
     int (__stdcall *relmutex)(void*) = ReleaseMutex;
 
+    int did = 0;
     wait(field8, (unsigned long)-1);
 
-    int did = 0;
     if (field14 != 0) {
         if (field10 == 0) {
             relmutex(field8);

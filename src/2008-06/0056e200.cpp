@@ -1,25 +1,28 @@
-// from server: 48% by tester
-struct Vtable {
-    void* pad0;
-    void* pad1;
-    double (__stdcall *getValue)(void*);
-};
+// from server: 100% by king_originala
+struct String;
+String* __cdecl convertNumber(String*, const double&);
 
-struct Inner {
-    Vtable* vt;
+struct Getter {
+    virtual void slot0();
+    virtual void slot1();
+    virtual double get(void*);
 };
 
 struct S {
-    char pad[0x18];
-    Inner* inner;
-    void getValue(double* out);
+    unsigned char padding[24];
+    Getter* volatile getter;
+    String* convert(String*, void*);
 };
 
-extern "C" void __stdcall func_005bdf70(double* value, double* out);
-
-void S::getValue(double* out)
+String* S::convert(String* result, void* object)
 {
-    double tmp = 0.0;
-    double result = inner->vt->getValue(inner);
-    func_005bdf70(&result, out);
+    union {
+        volatile int initial;
+        double value;
+    } number;
+
+    number.initial = 0;
+    number.value = getter->get(object);
+    convertNumber(result, number.value);
+    return result;
 }

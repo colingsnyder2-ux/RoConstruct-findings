@@ -1,45 +1,39 @@
-// from server: 83% by atomic.potato
+// from server: 100% by tester
+#include <typeinfo>
 
+namespace G3D { class Vector2int16 { public: int value; }; }
 
+namespace boost {
+class any {
+public:
+    class placeholder {
+    public:
+        virtual ~placeholder() {}
+        virtual const std::type_info& type() const = 0;
+    };
 
+    template<typename ValueType>
+    class holder : public placeholder {
+    public:
+        virtual const std::type_info& type() const { return typeid(ValueType); }
+        ValueType held;
+    };
 
-struct type_info {
-    bool operator==(const type_info&) const;
-};
-
-struct VTable {
-    void* pad;
-    const type_info& (__thiscall *getType)(void*);
-};
-
-struct Obj {
-    VTable* vt;
-};
-
-extern "C" const type_info typeinfo_Vector2int16;
-extern "C" const type_info typeinfo_placeholder;
-
-extern "C" bool __stdcall type_info_equals(const type_info* a, const type_info* b);
-
-struct EnumDescriptor {
-    Obj* field0;
-    Obj* get();
-};
-
-Obj* EnumDescriptor::get() {
-    Obj* p = this->field0;
-    if (p == 0) {
-        return 0;
+    const std::type_info& type() const
+    {
+        return content ? content->type() : typeid(void);
     }
-    Obj* inner = *(Obj**)p;
-    const type_info* ti;
-    if (inner != 0) {
-        ti = &inner->vt->getType(inner);
-    } else {
-        ti = &typeinfo_Vector2int16;
-    }
-    if (type_info_equals(ti, &typeinfo_placeholder)) {
-        return (Obj*)((char*)p + 4);
-    }
-    return 0;
+
+    placeholder* content;
+};
+
+template<typename ValueType>
+ValueType* any_cast(any* operand)
+{
+    return operand && operand->type() == typeid(ValueType)
+        ? &static_cast<any::holder<ValueType>*>(operand->content)->held
+        : 0;
 }
+}
+
+template G3D::Vector2int16* boost::any_cast<G3D::Vector2int16>(boost::any*);

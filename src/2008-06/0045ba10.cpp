@@ -1,5 +1,30 @@
-// from server: 82% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: openrbx-client App/script/Script.cpp
+// from server: 100% by tester
+struct String;
+extern void (__thiscall *string_destroy)(String *);
+
+struct String
+{
+    char storage[28];
+    ~String();
+};
+
+inline String::~String()
+{
+    string_destroy(this);
+}
+
+struct Base
+{
+    char storage[0x138];
+    ~Base();
+};
+
+struct S : Base
+{
+    String value;
+    ~S();
+};
+
+S::~S()
+{
+}

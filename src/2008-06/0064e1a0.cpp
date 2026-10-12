@@ -1,5 +1,28 @@
-// from server: 49% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs util/RunStateOwner.cpp
+// from server: 100% by king_originala
+struct Callback {
+    void apply(void* source, void* destination);
+};
+
+struct Result {
+    char prefix[0x24];
+    char value;
+};
+
+struct S {
+    char prefix[0x130];
+    char value[0x34];
+    Callback* callback;
+
+    void prepare();
+    void populate(Result* result);
+    Result* get(Result* result);
+};
+
+Result* S::get(Result* result)
+{
+    prepare();
+    populate(result);
+    if (callback)
+        callback->apply(value, &result->value);
+    return result;
+}

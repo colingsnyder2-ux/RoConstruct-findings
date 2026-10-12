@@ -1,18 +1,43 @@
-// from server: 62% by atomic.potato
-extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
-#pragma intrinsic(_InterlockedExchangeAdd)
+// from server: 100% by tester
+#include <intrin.h>
 
-struct CWebToolbox
-{
-    int unused0[9];
-    void* value;
-    void setValue(void* output);
+namespace boost {
+namespace detail {
+class sp_counted_base {
+public:
+    virtual ~sp_counted_base() {}
+    virtual void dispose() = 0;
+    virtual void destroy() { delete this; }
+    long use_count_;
+    long weak_count_;
+    void add_ref_copy() { _InterlockedIncrement(&use_count_); }
 };
 
-void CWebToolbox::setValue(void* output)
+class shared_count {
+public:
+    sp_counted_base* pi_;
+    shared_count(const shared_count& r) : pi_(r.pi_) { if (pi_ != 0) pi_->add_ref_copy(); }
+};
+}
+
+template<class T>
+class shared_ptr {
+public:
+    T* px;
+    detail::shared_count pn;
+};
+}
+
+struct Item;
+
+struct Owner {
+    char padding[0x24];
+    boost::shared_ptr<Item> item;
+    boost::shared_ptr<Item> get() const;
+};
+
+boost::shared_ptr<Item> Owner::get() const
 {
-    *(void**)output = value;
-    *(void**)((char*)output + 4) = *(void**)((char*)this + 0x28);
-    if (*(void**)((char*)this + 0x28) != 0)
-        _InterlockedExchangeAdd((volatile long*)((char*)*(void**)((char*)this + 0x28) + 4), 1);
+    volatile int state = 0;
+    return item;
 }

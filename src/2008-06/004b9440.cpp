@@ -1,5 +1,25 @@
-// from server: 78% by colin
-// roc-lang: cpp
-// roc-cl: 50727
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs-net Replicator.cpp
+// from server: 100% by king_originala
+struct Base {
+    char storage[0x130];
+    ~Base();
+};
+
+struct MemberA {
+    char storage[0x2a24];
+    ~MemberA();
+};
+
+struct MemberB {
+    char storage;
+    ~MemberB();
+};
+
+struct S : Base {
+    MemberA a;
+    MemberB b;
+    ~S();
+};
+
+S::~S()
+{
+}

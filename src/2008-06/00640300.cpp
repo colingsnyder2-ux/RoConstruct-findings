@@ -1,5 +1,21 @@
-// from server: 58% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs util/Name.cpp
+// from server: 100% by tester
+void* __cdecl operator new(unsigned int);
+void __cdecl operator delete(void*);
+
+struct Context;
+
+struct Tool {
+    char storage[56];
+    Tool(Context* context);
+};
+
+struct Verb {
+    char padding[24];
+    Context* context;
+    Tool* create();
+};
+
+Tool* Verb::create()
+{
+    return new Tool(context);
+}

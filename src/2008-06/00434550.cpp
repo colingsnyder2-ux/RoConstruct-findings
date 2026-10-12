@@ -1,5 +1,13 @@
-// from server: 66% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: raknet-4.081 FullyConnectedMesh2.cpp
+// from server: 100% by tester
+namespace ns_ROCX000012 {
+struct COutputView {
+    void sub_6300B8();
+    void sub_630670(int);
+    void func();
+};
+
+void COutputView::func() {
+    sub_6300B8();
+    sub_630670(0xd2);
+}
+}

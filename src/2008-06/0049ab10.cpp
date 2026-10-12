@@ -1,22 +1,34 @@
-// from server: 74% by colin
-struct RefPropDescriptor {
-    char pad[0x1c];
-    void* getset;
-    void setValue(void* object, const void* value);
+// from server: 100% by tester
+struct Base {
+    virtual ~Base();
 };
 
-extern "C" void* __cdecl func_00492a90(void* p);
+struct Derived : Base {
+};
 
-void RefPropDescriptor::setValue(void* object, const void* value) {
-    void* v;
-    if (value) {
-        v = func_00492a90((void*)value);
-    } else {
-        v = 0;
-    }
-    void* g = this->getset;
-    void* tmp = v;
-    void** vtbl = *(void***)g;
-    void (*fn)(void*, void*, const void*) = (void (*)(void*, void*, const void*))vtbl[3];
-    fn(g, object, tmp);
+Derived* polymorphic_cast(Base* x);
+
+inline Derived* maybe(Base* x)
+{
+    if (x)
+        return polymorphic_cast(x);
+    return 0;
+}
+
+struct Setter {
+    virtual void slot0();
+    virtual void slot1();
+    virtual void slot2();
+    virtual void set(Base* target, Derived* const& value);
+};
+
+struct Descriptor {
+    char padding[0x1c];
+    Setter* setter;
+    void set(Base* target, Base* value);
+};
+
+void Descriptor::set(Base* target, Base* value)
+{
+    setter->set(target, maybe(value));
 }

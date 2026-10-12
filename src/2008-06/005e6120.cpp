@@ -1,5 +1,21 @@
-// from server: 96% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: openrbx-client App/v8world/Assembly2.cpp
+// from server: 100% by tester
+struct Prim { char pad[0xac]; bool canSleep; };
+struct It {
+    Prim* p; int dir;
+    void next();
+};
+struct Assembly {
+    char pad[0x1c];
+    Prim* head;
+    bool computeCanSleep() const;
+};
+bool Assembly::computeCanSleep() const {
+    It it;
+    it.p = head;
+    it.dir = 1;
+    while (it.p) {
+        if (!it.p->canSleep) return false;
+        it.next();
+    }
+    return true;
+}

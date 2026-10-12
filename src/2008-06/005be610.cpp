@@ -1,12 +1,16 @@
-// from server: 29% by colin
+// from server: 35% by colin
 struct SoundService {
-    bool __cdecl findService(void* out);
+    bool findService(int* out);
 };
 
-bool SoundService::findService(void* out) {
-    if (*(void**)((char*)this + 0x14) != 0) {
-        *(void**)out = ((void* (*)(void*))0x5be240)(this);
-        return true;
+extern "C" int __cdecl sub_5be240(int);
+
+bool SoundService::findService(int* out) {
+    int* self = (int*)this;
+    int v = self[5];
+    if (v == 0) {
+        return false;
     }
-    return false;
+    *out = sub_5be240((int)this);
+    return true;
 }

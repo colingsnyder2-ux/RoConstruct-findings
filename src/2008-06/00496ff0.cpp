@@ -1,5 +1,10 @@
-// from server: 57% by colin
-// roc-lang: cpp
-// roc-cl: 50727
-// roc-flags: /O2 /GF /GS- /EHsc /MD /Ob1 /Oy-
-// roc-lib: rbxgs-net Players.cpp
+// from server: 100% by tester
+#include <list>
+
+struct E {
+    char data[72];
+    bool operator==(const E&) const;
+    bool operator<(const E&) const;
+};
+
+template class std::list<E>;

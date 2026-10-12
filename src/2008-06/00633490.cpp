@@ -1,18 +1,12 @@
-// from server: 87% by atomic.potato
-struct S
-{
-    int value;
-    double get(void *p);
+// from server: 100% by king_originala
+struct S {
+    unsigned char padding[8];
+    unsigned int offset;
+    double get(void* object);
 };
 
-double S::get(void *p)
+double S::get(void* object)
 {
-    int offset;
-    if (p)
-    {
-        offset = ((int *)this)[2];
-        return *(double *)((char *)p + offset - 20);
-    }
-    offset = ((int *)this)[2];
-    return *(double *)((char *)0 + offset);
+    return *reinterpret_cast<double*>(
+        (object ? static_cast<char*>(object) - 20 : 0) + offset);
 }

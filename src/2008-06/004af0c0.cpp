@@ -1,27 +1,30 @@
-// from server: 61% by atomic.potato
-struct MarkerItem {
-    void* field_0;
-    void* field_4;
-    void* field_8;
-    char field_3D;
+// from server: 100% by tester
+void __cdecl operator delete(void*);
 
-    void sub_4af0c0(MarkerItem* arg);
+struct Value {
+    ~Value();
 };
 
-extern "C" void __cdecl sub_4ab8c0(void*);
-extern "C" void __stdcall sub_6a067a(void*);
+struct Node {
+    Node* left;
+    Node* parent;
+    Node* right;
+    char padding[4];
+    Value value;
+    char padding2[44];
+    char isnil;
+};
 
-void MarkerItem::sub_4af0c0(MarkerItem* arg) {
-    MarkerItem* esi = arg;
-    MarkerItem* edi = arg;
-    MarkerItem* ebx = this;
+struct Tree {
+    void erase(Node* root);
+};
 
-    while (edi->field_3D == 0) {
-        void* eax = esi->field_8;
-        this->sub_4af0c0(esi);
-        esi = reinterpret_cast<MarkerItem*>(esi->field_0);
-        sub_4ab8c0(reinterpret_cast<void*>(reinterpret_cast<char*>(edi) + 0x10));
-        sub_6a067a(edi);
-        edi = esi;
+void Tree::erase(Node* root)
+{
+    for (Node* node = root; !node->isnil; root = node) {
+        erase(node->right);
+        node = node->left;
+        root->value.~Value();
+        operator delete(root);
     }
 }

@@ -1,92 +1,47 @@
-// from server: 43% by colin
-struct S
-{
-    void f(float a);
+// from server: 66% by king_originala
+struct Signal {
+    void fire(float*);
 };
 
-extern "C" void __stdcall sub_0040db00(void*);
-extern "C" void* __stdcall sub_0056b620(void*);
-extern "C" void __stdcall sub_004b5950(void*, void*);
+struct Entry {
+    char padding[0x10];
+    Signal signal;
+};
 
-void S::f(float a)
+struct Registry {
+    Entry* find(void*);
+};
+
+extern Registry registry;
+extern char property;
+
+struct S {
+    char padding0[0x1a8];
+    float value;
+    float limit;
+    char padding1[0x38];
+    unsigned char flags;
+
+    void notify(void*);
+    void setValue(float);
+};
+
+void S::setValue(float input)
 {
-    float v = *(float*)((char*)this + 0x1ac);
-    if (a > v)
-    {
-        if (a <= v)
-        {
-            goto skip;
+    double next = limit;
+    if (input <= 0.0)
+        next = 0.0;
+    else if (input < next)
+        next = input;
+
+    if (next != value) {
+        value = static_cast<float>(next);
+        notify(&property);
+        if (value == 0.0f && !(flags & 2)) {
+            flags |= 2;
+            Entry* entry = registry.find(reinterpret_cast<char*>(this) + 0x14);
+            if (entry)
+                entry->signal.fire(&input);
         }
     }
-    else
-    {
-        if (a < v)
-        {
-            goto skip;
-        }
-    }
-    if (a == *(float*)((char*)this + 0x1a8))
-    {
-        goto end;
-    }
-    *(float*)((char*)this + 0x1a8) = a;
-    sub_0040db00((void*)0x97a460);
-    if (*(float*)((char*)this + 0x1a8) == 0.0f)
-    {
-        goto end;
-    }
-    {
-        unsigned char al = *(unsigned char*)((char*)this + 0x1e8);
-        if (al & 2)
-        {
-            goto end;
-        }
-        al |= 2;
-        *(unsigned char*)((char*)this + 0x1e8) = al;
-    }
-    {
-        void* p = sub_0056b620((void*)0x97a37c);
-        if (!p)
-        {
-            goto end;
-        }
-        sub_004b5950((char*)p + 0x10, &a);
-    }
-    return;
-skip:
-    if (a == v)
-    {
-        goto end;
-    }
-    goto check;
-check:
-    if (a == *(float*)((char*)this + 0x1a8))
-    {
-        goto end;
-    }
-    *(float*)((char*)this + 0x1a8) = a;
-    sub_0040db00((void*)0x97a460);
-    if (*(float*)((char*)this + 0x1a8) == 0.0f)
-    {
-        goto end;
-    }
-    {
-        unsigned char al = *(unsigned char*)((char*)this + 0x1e8);
-        if (al & 2)
-        {
-            goto end;
-        }
-        al |= 2;
-        *(unsigned char*)((char*)this + 0x1e8) = al;
-    }
-    {
-        void* p = sub_0056b620((void*)0x97a37c);
-        if (!p)
-        {
-            goto end;
-        }
-        sub_004b5950((char*)p + 0x10, &a);
-    }
-end:
-    return;
 }

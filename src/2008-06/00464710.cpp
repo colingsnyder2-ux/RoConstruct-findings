@@ -1,19 +1,43 @@
-// from server: 65% by atomic.potato
-extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
-#pragma intrinsic(_InterlockedExchangeAdd)
+// from server: 100% by tester
+#include <intrin.h>
 
-struct CScriptDoc
-{
-    char padding[0x25c];
-    int field_25c;
-    void* field_260;
-    void f(void*);
+namespace boost {
+namespace detail {
+class sp_counted_base {
+public:
+    virtual ~sp_counted_base() {}
+    virtual void dispose() = 0;
+    virtual void destroy() { delete this; }
+    long use_count_;
+    long weak_count_;
+    void add_ref_copy() { _InterlockedIncrement(&use_count_); }
 };
 
-void CScriptDoc::f(void* out)
+class shared_count {
+public:
+    sp_counted_base* pi_;
+    shared_count(const shared_count& r) : pi_(r.pi_) { if (pi_ != 0) pi_->add_ref_copy(); }
+};
+}
+
+template<class T>
+class shared_ptr {
+public:
+    T* px;
+    detail::shared_count pn;
+};
+}
+
+struct Item;
+
+struct Owner {
+    char padding[0x25c];
+    boost::shared_ptr<Item> item;
+    boost::shared_ptr<Item> get() const;
+};
+
+boost::shared_ptr<Item> Owner::get() const
 {
-    *(int*)out = field_25c;
-    *(void**)((char*)out + 4) = field_260;
-    if (field_260 != 0)
-        _InterlockedExchangeAdd((volatile long*)((char*)field_260 + 4), 1);
+    volatile int state = 0;
+    return item;
 }

@@ -1,22 +1,23 @@
-// from server: 33% by colin
+// from server: 64% by king_originala
+extern "C" int __stdcall queryChannel(void*, bool*);
+
+struct Owner {
+    void stopChannel(void*);
+};
+
 struct SoundChannel {
-    char pad[0xc];
-    void* field_c;
-    void update();
+    char padding[12];
+    void* channel;
+
+    void update(int, int, int);
 };
 
-struct Other {
-    void method(void* arg);
-};
+void SoundChannel::update(int, int, int)
+{
+    Owner* owner = reinterpret_cast<Owner*>(
+        reinterpret_cast<char*>(this) - 0x130);
+    bool playing;
 
-extern "C" int __cdecl sub_69fbdc(void* a, char* b);
-
-void SoundChannel::update() {
-    char local;
-    if (field_c) {
-        int r = sub_69fbdc(field_c, &local);
-        if (r != 0x24 && local == 0) {
-            ((Other*)((char*)this - 0x130))->method(field_c);
-        }
-    }
+    if (channel && queryChannel(channel, &playing) != 0x24 && !playing)
+        owner->stopChannel(channel);
 }

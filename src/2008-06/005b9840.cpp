@@ -1,23 +1,27 @@
-// from server: 84% by atomic.potato
+// from server: 86% by colin
+// roc 2008-06 005b9840  unit: RBX::Soundscape::SoundChannel  size: 68 bytes
+// Make this compile to the exact bytes below, then: roc check 2008-06 005b9840
+
+extern "C" int __cdecl sub_69FBF4(int, int);
+extern "C" void __cdecl sub_5B87A0(int);
+extern "C" void __cdecl sub_456E80(int);
+
 struct SoundChannel {
-    char pad0[0x134];
-    void* field134;
-    void* field13c;
-    void release();
-    void cleanup();
+    char pad[0x134];
+    int field_134;
+    int field_138;
+    int field_13C;
+    void method(int, int);
 };
 
-extern "C" void* __stdcall sub_69fbf4(void*, int);
-extern "C" void __stdcall sub_5b87a0(void*);
-extern "C" void __stdcall sub_456e80(void*);
-
-void SoundChannel::release() {
-    if (field13c) {
-        sub_5b87a0(sub_69fbf4(field13c, 0));
-        field13c = 0;
+void SoundChannel::method(int, int)
+{
+    if (field_13C) {
+        sub_5B87A0(sub_69FBF4(field_13C, 0));
+        field_13C = 0;
     }
-    if (field134) {
-        --*(int*)((char*)field134 + 8);
-        sub_456e80(&field134);
+    if (field_134) {
+        field_134 -= 1;
+        sub_456E80((int)&field_134);
     }
 }

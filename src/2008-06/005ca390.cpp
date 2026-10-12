@@ -1,14 +1,18 @@
-// from server: 52% by atomic.potato
-struct Item
+// from server: 100% by king_originala
+struct S
 {
-    bool check(int);
+    virtual void v0();
+    virtual void v1();
+    virtual void v2();
+    virtual void v3();
+    virtual void v4();
+    virtual bool check(int value);
+    int f();
 };
 
-bool Item::check(int value)
+int S::f()
 {
-    if (check(0x133))
-        return true;
-    if (check(0x134))
-        return true;
-    return false;
+    if (check(0x133) || check(0x134))
+        return 1;
+    return 0;
 }

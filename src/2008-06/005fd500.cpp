@@ -1,5 +1,18 @@
-// from server: 73% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs util/RunStateOwner.cpp
+// from server: 100% by tester
+struct Vector3 {
+    float x, y, z;
+};
+
+struct CSHA1 {
+    char padding[0x1f0];
+    float x, y, z;
+    Vector3 getVector() const;
+};
+
+Vector3 CSHA1::getVector() const {
+    Vector3 result;
+    result.x = x;
+    result.y = y;
+    result.z = z;
+    return result;
+}

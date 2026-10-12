@@ -1,23 +1,37 @@
-// from server: 32% by colin
-struct DxUserInput
-{
-    char pad0[0x34];
-    int lock;
-    char pad1[0x191 - 0x38];
-    unsigned char flag;
+// from server: 95% by king_originala
+extern "C" void __stdcall EnterCriticalSection(void*);
+extern "C" void __stdcall LeaveCriticalSection(void*);
 
-    void Method(unsigned char arg);
+struct Guard {
+    void* section;
+    bool locked;
+
+    explicit Guard(void* p) : section(p)
+    {
+        EnterCriticalSection(section);
+        locked = true;
+    }
+
+    ~Guard()
+    {
+        if (locked)
+            LeaveCriticalSection(section);
+    }
 };
 
-extern "C" void __stdcall EnterCriticalSection(int*);
-extern "C" void __stdcall LeaveCriticalSection(int*);
+struct S {
+    unsigned char reserved0[0x34];
+    unsigned char criticalSection[0x18];
+    unsigned char reserved1[0x145];
+    bool enabled;
 
-void DxUserInput_sub(int*);
+    void update();
+    void f(bool value);
+};
 
-void DxUserInput::Method(unsigned char arg)
+void S::f(bool value)
 {
-    EnterCriticalSection(&this->lock);
-    this->flag = arg;
-    DxUserInput_sub((int*)this);
-    LeaveCriticalSection(&this->lock);
+    Guard guard(criticalSection);
+    enabled = value;
+    update();
 }

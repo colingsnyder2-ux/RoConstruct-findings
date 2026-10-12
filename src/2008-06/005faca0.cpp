@@ -1,54 +1,64 @@
-// from server: 27% by colin
-// roc 2008-06 005faca0  unit: UString_sink::?$stream_buffer  size: 162 bytes
-// Make this compile to the exact bytes below, then: roc check 2008-06 005faca0
+// from server: 100% by king_originala
+namespace G3D {
+struct System {
+    static void __cdecl alignedFree(void*);
+};
+}
 
-extern "C" void __cdecl G3D_alignedFree(void* p);
-extern "C" void __cdecl sub_6a067a(void* p);
-extern "C" void __cdecl sub_5fa970(void* p);
+void __cdecl operator delete(void*);
 
-struct UString_sink_stream_buffer {
-    void* vtable;      // +0x00
-    int   field_04;    // +0x04
-    void* field_08;    // +0x08
-    int   field_0c;    // +0x0c
-    void* field_10;    // +0x10
-    void* field_14;    // +0x14
-    int   field_18;    // +0x18
-    int   field_1c;    // +0x1c
-    void* field_20;    // +0x20
+extern int liveCount;
 
-    void dtor();
+struct Buffer {
+    void* data;
+    int size;
+    int capacity;
+    ~Buffer();
 };
 
-extern int g_97b5b8;
+struct Owned {
+    virtual ~Owned();
+};
 
-void UString_sink_stream_buffer::dtor()
+struct Owner {
+    Owned* p;
+    ~Owner();
+};
+
+struct Storage {
+    void* data;
+    int size;
+    int capacity;
+    ~Storage();
+};
+
+struct S {
+    int reserved4;
+    Owner first;
+    int reservedC;
+    Buffer* buffer;
+    Storage storage;
+    Owner last;
+    virtual ~S();
+};
+
+__forceinline Owner::~Owner()
 {
-    this->vtable = (void*)0x84105c;
-    g_97b5b8--;
+    if (p)
+        delete p;
+}
 
-    void* p10 = this->field_10;
-    if (p10 != 0) {
-        sub_5fa970(p10);
-        sub_6a067a(p10);
-    }
+__forceinline Storage::~Storage()
+{
+    G3D::System::alignedFree(data);
+    data = 0;
+    size = 0;
+    capacity = 0;
+}
 
-    void* p20 = this->field_20;
-    if (p20 != 0) {
-        void** vt = *(void***)p20;
-        void (*fn)(void*, int) = (void (*)(void*, int))vt[0];
-        fn(p20, 1);
-    }
-
-    G3D_alignedFree(this->field_14);
-    this->field_14 = 0;
-    this->field_18 = 0;
-    this->field_1c = 0;
-
-    void* p08 = this->field_08;
-    if (p08 != 0) {
-        void** vt = *(void***)p08;
-        void (*fn)(void*, int) = (void (*)(void*, int))vt[0];
-        fn(p08, 1);
-    }
+S::~S()
+{
+    --liveCount;
+    if (buffer)
+        delete buffer;
 }

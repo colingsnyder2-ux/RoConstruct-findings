@@ -1,44 +1,65 @@
-// from server: 39% by colin
-// roc 2008-06 006388b0  unit: G3D::VCoordinateFrame::V?$Value::?$FactoryProduct  size: 223 bytes
-// Make this compile to the exact bytes below, then: roc check 2008-06 006388b0
+// from server: 100% by king_originala
+struct String;
+typedef void (__thiscall *StringConstructor)(String *, const char *);
+typedef void (__thiscall *StringDestructor)(String *);
 
-extern "C" {
-    void __stdcall sub_802458(void*);
-    void __stdcall sub_802468(void*);
-}
+extern StringConstructor stringConstructor;
+extern StringDestructor stringDestructor;
 
-struct S {
-    char pad0[0x130];
-    float f130;
-    float f134;
-    float f138;
-    void* ctor();
+struct String
+{
+    unsigned char storage[28];
+
+    String(const char *text);
+    ~String();
 };
 
-void base_ctor(S* self);
-void sub_55af90(S* self, void* str);
-
-void* S::ctor()
+__forceinline String::String(const char *text)
 {
-    base_ctor(this);
-    *(void**)this = (void*)0x84978c;
-    *(void**)((char*)this + 0x10) = (void*)0x849780;
-    *(void**)((char*)this + 0x14) = (void*)0x849778;
-    *(void**)((char*)this + 0x20) = (void*)0x849770;
-    *(void**)((char*)this + 0x24) = (void*)0x849760;
-    *(void**)((char*)this + 0x44) = (void*)0x849750;
-    *(void**)((char*)this + 0x64) = (void*)0x849740;
-    *(void**)((char*)this + 0x84) = (void*)0x849730;
-    *(void**)((char*)this + 0xa4) = (void*)0x849720;
-    *(void**)((char*)this + 0xc4) = (void*)0x849710;
-    f130 = *(float*)0x97d320;
-    f134 = *(float*)0x97d324;
-    f138 = *(float*)0x97d328;
+    stringConstructor(this, text);
+}
 
-    char buf[0x20];
-    sub_802458(buf);
-    sub_55af90(this, buf);
-    sub_802468(buf);
+__forceinline String::~String()
+{
+    stringDestructor(this);
+}
 
-    return this;
+struct Base
+{
+    unsigned char storage[0x130];
+
+    Base();
+    ~Base();
+    void setName(const String &name);
+};
+
+struct S : Base
+{
+    float x;
+    float y;
+    float z;
+
+    S();
+};
+
+S::S()
+{
+    unsigned int *p = reinterpret_cast<unsigned int *>(this);
+    p[0x00 / 4] = 0x84978c;
+    p[0x10 / 4] = 0x849780;
+    p[0x14 / 4] = 0x849778;
+    p[0x20 / 4] = 0x849770;
+    p[0x24 / 4] = 0x849760;
+    p[0x44 / 4] = 0x849750;
+    p[0x64 / 4] = 0x849740;
+    p[0x84 / 4] = 0x849730;
+    p[0xa4 / 4] = 0x849720;
+    p[0xc4 / 4] = 0x849710;
+
+    x = *reinterpret_cast<const float *>(0x97d320);
+    y = *reinterpret_cast<const float *>(0x97d324);
+    z = *reinterpret_cast<const float *>(0x97d328);
+
+    String name(reinterpret_cast<const char *>(0x818478));
+    setName(name);
 }

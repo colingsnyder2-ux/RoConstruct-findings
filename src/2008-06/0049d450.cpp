@@ -1,5 +1,15 @@
-// from server: 78% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: openrbx-client App/util/RunStateOwner.cpp
+// from server: 100% by tester
+struct CRenderSettings {
+    char padding[0x1ac];
+    int value;
+    void setValue(int);
+    void notify(void*);
+};
+
+void CRenderSettings::setValue(int v)
+{
+    if (v != value) {
+        value = v;
+        notify(reinterpret_cast<void*>(0x96d3ec));
+    }
+}

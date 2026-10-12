@@ -1,10 +1,10 @@
-// from server: 52% by tester
-struct Mesh {
-    bool compare(const void* a, const void* b) const;
+// from server: 100% by king_originala
+struct S {
+    bool less(const unsigned int& a, const unsigned int& b) const;
 };
 
-bool Mesh::compare(const void* a, const void* b) const {
-    unsigned int x = *(const unsigned int*)a;
-    unsigned int y = *(const unsigned int*)b;
-    return x < y;
+#pragma optimize("", off)
+bool S::less(const unsigned int& a, const unsigned int& b) const {
+    return a < b;
 }
+#pragma optimize("", on)

@@ -1,13 +1,10 @@
-// from server: 28% by atomic.potato
-struct Mesh
-{
-    int f();
+// from server: 100% by king_originala
+struct S {
+    S();
+    void initialize(int, int);
 };
 
-void __cdecl sub_54db30(Mesh *, int, int);
-
-int Mesh::f()
-{
-    sub_54db30(this, 0, 0);
-    return 0;
+#pragma optimize("", off)
+S::S() {
+    initialize(0, 0);
 }

@@ -1,5 +1,16 @@
-// from server: 55% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs util/Name.cpp
+// from server: 100% by king_originala
+struct FaceInstance {
+    int getSurfaceType() const;
+};
+
+struct S {
+    FaceInstance* getFace(int index);
+    int* getSurfaceTypes(int* result);
+};
+
+int* S::getSurfaceTypes(int* result)
+{
+    for (int i = 0; i < 6; ++i)
+        result[i] = getFace(i)->getSurfaceType();
+    return result;
+}

@@ -1,18 +1,17 @@
-// from server: 36% by atomic.potato
-typedef unsigned long DWORD;
+// from server: 100% by king_originala
+struct Mesh {
+    int reserved;
+    int count;
 
-extern "C" void Function54D6E0(void *, int, int);
-extern "C" void Function54D910(void *);
-
-struct S
-{
+    void grow(int, int);
+    void update();
     void f();
-    DWORD padding;
-    DWORD value;
 };
 
-void S::f()
+#pragma optimize("", off)
+void Mesh::f()
 {
-    Function54D6E0(this, value + 1, 0);
-    Function54D910(this);
+    grow(count + 1, 0);
+    update();
 }
+#pragma optimize("", on)

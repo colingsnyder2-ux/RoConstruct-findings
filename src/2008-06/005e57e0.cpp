@@ -1,23 +1,30 @@
-// from server: 28% by colin
-extern "C" void* __stdcall malloc(unsigned int size);
+// from server: 76% by king_originala
+extern "C" void *(__cdecl *malloc)(unsigned int);
 
-struct Instance {
-    void* vtable;
-    void constructFromInstance(const Instance* other);
-};
-
-struct JointsService : Instance {
-    JointsService(const Instance* other);
-};
-
-JointsService::JointsService(const Instance* other)
+struct Product
 {
-    void* mem = malloc(0x154);
-    if (mem) {
-        ((Instance*)mem)->constructFromInstance(other);
+    unsigned char storage[0x154];
+
+    Product(int);
+    static void *__cdecl operator new(unsigned int size) throw()
+    {
+        return malloc(size);
     }
-    else {
-        mem = 0;
-    }
-    constructFromInstance((Instance*)mem);
+    static void __cdecl operator delete(void *);
+};
+
+struct Result
+{
+    void *object;
+    void *control;
+
+    Result(Product *, int);
+    ~Result();
+};
+
+Result __cdecl createProduct(int argument)
+{
+    volatile int flags = 0;
+    reinterpret_cast<volatile char *>(&flags)[0] = 0;
+    return Result(new Product(argument), flags);
 }
