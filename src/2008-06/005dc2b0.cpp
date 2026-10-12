@@ -1,24 +1,20 @@
-// from server: 53% by atomic.potato
-struct VPartInstance {
-    char pad[0x1e8];
-    unsigned char flags;
-    void SetFilteredSelection(bool value);
+// from server: 100% by king_originala
+extern const char descriptor;
+
+struct S {
+    char padding[0x1e8];
+    unsigned char reserved : 3;
+    unsigned char selected : 1;
+    unsigned char remaining : 4;
+
+    void setSelected(bool value);
+    void notify(const void* property);
 };
 
-void VPartInstance::SetFilteredSelection(bool value) {
-    unsigned char old = flags;
-    unsigned char bit = (old >> 3) & 1;
-    if (bit == (unsigned char)value) {
-        return;
+void S::setSelected(bool value)
+{
+    if (selected != value) {
+        selected = value;
+        notify(&descriptor);
     }
-    unsigned char v = (unsigned char)value;
-    v = (unsigned char)(v + v);
-    v = (unsigned char)(v + v);
-    v = (unsigned char)(v + v);
-    v = (unsigned char)(v ^ old);
-    v = (unsigned char)(v & 8);
-    v = (unsigned char)(v ^ old);
-    flags = v;
-    extern void __stdcall sub_40DB00();
-    sub_40DB00();
 }

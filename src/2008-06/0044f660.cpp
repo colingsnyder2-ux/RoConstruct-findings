@@ -1,33 +1,55 @@
-// from server: 32% by colin
-struct CPublishAsPlaceDialog {
-    char pad[0x74];
-    void* vtable_74;
-    void* vtable_0;
-    void* construct(char* a, char* b);
+// from server: 87% by king_originala
+struct String
+{
+    void* data;
+    ~String() throw();
+    int value() const;
 };
 
-extern "C" void* __stdcall sub_4060d0(void*);
-extern "C" void* __stdcall sub_40e160(void*, const char*, void*);
-extern "C" void __stdcall sub_45fe80(void*, void*, void*);
-extern "C" void* __stdcall sub_803ee0(void*);
-extern "C" void __stdcall sub_803f14(void*);
+extern String __cdecl make_exception();
+extern String __cdecl combine(const String&, const char*);
+extern const char path[];
 
-void* CPublishAsPlaceDialog::construct(char* a, char* b)
+typedef void (__thiscall *DestroyString)(String*);
+typedef int (__thiscall *StringValue)(const String*);
+
+extern DestroyString destroyString;
+extern StringValue stringValue;
+
+inline String::~String() throw()
 {
-    void* p1;
-    void* p2;
-    void* p3;
-    void* p4;
-    void* p5;
+    destroyString(this);
+}
 
-    sub_4060d0(&p1);
-    p2 = sub_40e160(&p3, "/UI/Save.aspx?type=Model", &p1);
-    p4 = sub_803ee0(p2);
-    sub_45fe80(this, p4, p3);
-    sub_803f14(&p1);
-    sub_803f14(&p3);
-    this->vtable_0 = (void*)0x81777c;
-    this->vtable_74 = (void*)0x817750;
+inline int String::value() const
+{
+    return stringValue(this);
+}
 
-    return this;
+struct Primary
+{
+    virtual void primary();
+    char padding[112];
+};
+
+struct Secondary
+{
+    virtual void secondary();
+};
+
+struct Base : Primary, Secondary
+{
+    Base(int, int, int);
+};
+
+struct CPublishAsPlaceDialog : Base
+{
+    CPublishAsPlaceDialog(int, int);
+    virtual void primary();
+    virtual void secondary();
+};
+
+CPublishAsPlaceDialog::CPublishAsPlaceDialog(int first, int second)
+    : Base(first, combine(make_exception(), path).value(), second)
+{
 }

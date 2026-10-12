@@ -1,5 +1,38 @@
-// from server: 46% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs util/Name.cpp
+// from server: 56% by king_originala
+struct Text {
+    unsigned char data[28];
+    Text(const Text&);
+    ~Text();
+};
+
+extern Text* (__thiscall *copyText)(Text*, const Text*);
+
+inline Text::Text(const Text& other) {
+    copyText(this, &other);
+}
+
+struct Argument {
+    Text text;
+    unsigned value;
+};
+
+struct Context {
+    bool check(Argument argument);
+};
+
+extern Context* context;
+
+struct Result {
+    unsigned value;
+};
+
+extern void __cdecl buildResult(Result*, unsigned, const Argument*);
+
+Result* __cdecl reconstruct(Result* result, unsigned value,
+                            const Argument* argument) {
+    if (context->check(*argument))
+        buildResult(result, value, argument);
+    else
+        result->value = 0;
+    return result;
+}

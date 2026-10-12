@@ -1,5 +1,10 @@
-// from server: 72% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs util/Name.cpp
+// from server: 100% by king_originala
+extern char sentinel;
+extern void __stdcall forward(void *);
+
+void __stdcall check(void **value)
+{
+    void *p = *value;
+    if (p != &sentinel)
+        forward(p);
+}

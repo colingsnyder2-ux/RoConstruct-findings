@@ -1,48 +1,51 @@
-// from server: 71% by tester
-struct DescribedBase;
-
-struct GetSet {
-    virtual bool isReadOnly() const;
-    virtual bool isWriteOnly() const;
-    virtual void getValue(const DescribedBase* object, void* out) const;
-    virtual void setValue(DescribedBase* object, const void* value) const;
+// from server: 100% by king_originala
+struct Prefix {
+    char padding[20];
 };
 
-struct BoundPropGetSet : GetSet {
-    int desc;
-    int member;
-    int changed;
-    void setValue(DescribedBase* object, const void* value) const;
+struct Argument {
+    char padding[428];
+    int* virtualTable;
 };
 
-extern "C" void __stdcall raisePropertyChanged(int);
+struct Object : Prefix, Argument {
+    void notify(void* property);
+};
 
-void BoundPropGetSet::setValue(DescribedBase* object, const void* value) const {
-    int* c;
-    if (object) {
-        c = (int*)((char*)object - 0x14);
-    } else {
-        c = 0;
-    }
-    int idx = *(int*)((char*)this + 0xc);
-    int off = *(int*)((char*)c + 0x1c0);
-    int base = *(int*)(idx + off);
-    base += *(int*)((char*)this + 8);
-    char v = *(char*)value;
-    char* addr = (char*)c + base + 0x1c0;
-    if (*addr != v) {
-        *addr = v;
-        int fn = *(int*)((char*)this + 0x10);
-        if (fn) {
-            int a = *(int*)((char*)this + 4);
-            int b = *(int*)((char*)this + 0x18);
-            int off2 = *(int*)((char*)c + 0x1c0);
-            int p = *(int*)(b + off2);
-            p += *(int*)((char*)this + 0x14);
-            char* arg = (char*)c + p + 0x1c0;
-            ((void (__stdcall*)(int, char*))fn)(a, arg);
+typedef void (__thiscall *Callback)(void*, void*);
+
+struct S {
+    void* reserved;
+    void* property;
+    int valueOffset;
+    int valueVirtualOffset;
+    Callback callback;
+    int callbackOffset;
+    int callbackVirtualOffset;
+
+    void set(Argument* argument, const bool& value);
+};
+
+void S::set(Argument* argument, const bool& value)
+{
+    Object* object = static_cast<Object*>(argument);
+    bool* destination = reinterpret_cast<bool*>(
+        reinterpret_cast<char*>(object) + 448 +
+        *reinterpret_cast<int*>(
+            reinterpret_cast<char*>(object->virtualTable) + valueVirtualOffset) +
+        valueOffset);
+
+    if (*destination != value) {
+        *destination = value;
+        if (callback) {
+            callback(
+                reinterpret_cast<char*>(object) + 448 +
+                *reinterpret_cast<int*>(
+                    reinterpret_cast<char*>(object->virtualTable) +
+                    callbackVirtualOffset) +
+                callbackOffset,
+                property);
         }
-        int a2 = *(int*)((char*)this + 4);
-        raisePropertyChanged(a2);
+        object->notify(property);
     }
 }

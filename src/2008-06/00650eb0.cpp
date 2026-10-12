@@ -1,19 +1,19 @@
-// from server: 80% by colin
-struct ChatLine {
-    char pad[0x1c];
+// from server: 94% by king_originala
+struct String {
+    unsigned char data[28];
 };
 
-struct ChatOutput {
-};
+extern bool (__cdecl *equalString)(const String&, const String&);
 
-extern "C" bool __stdcall string_equal(const void*, const void*);
-
-ChatLine* __cdecl find(ChatLine* first, ChatLine* last, const void* value)
+String* __cdecl f(String* first, String* last, const String& value)
 {
-    while (first != last) {
-        if (string_equal(first, value))
-            break;
-        first = (ChatLine*)((char*)first + 0x1c);
+    if (first != last) {
+        bool (__cdecl *compare)(const String&, const String&) = equalString;
+        do {
+            if (compare(*first, value))
+                break;
+            ++first;
+        } while (first != last);
     }
     return first;
 }

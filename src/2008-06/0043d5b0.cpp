@@ -1,29 +1,42 @@
-// from server: 13% by colin
-struct Str_00437ed0 { int words[8]; };
+// from server: 100% by king_originala
+struct Text;
 
-struct X_00437ed0 {
-    char pad[0xa4];
-    Str_00437ed0 value;
-    Str_00437ed0* copy(Str_00437ed0* out);
+extern const char authoring[];
+extern int (__thiscall* compareText)(const Text*, const char*);
+extern void (__thiscall* destroyText)(Text*);
+
+struct Text {
+    void* data;
+    int compare(const char* s) const;
+    ~Text();
 };
 
-extern "C" int __stdcall sub_802ff0(int, const char*);
-extern "C" void __stdcall sub_803f14(Str_00437ed0*);
-extern "C" void __stdcall sub_713c20(void*, int, int, int, int, int);
+inline int Text::compare(const char* s) const
+{
+    return compareText(this, s);
+}
+
+inline Text::~Text()
+{
+    destroyText(this);
+}
+
+struct Rect {
+    int left;
+    int top;
+    int right;
+    int bottom;
+};
 
 struct XBrickColorItem {
-    int method(int a1, int a2, int a3, int a4, int a5);
+    Text getText();
+    int baseAction(void* context, Rect bounds);
+    int action(void* context, Rect bounds);
 };
 
-int XBrickColorItem::method(int a1, int a2, int a3, int a4, int a5)
+int XBrickColorItem::action(void* context, Rect bounds)
 {
-    Str_00437ed0 local;
-    X_00437ed0* p = (X_00437ed0*)((char*)this + 0);
-    p->copy(&local);
-    int r = sub_802ff0(0, (const char*)0x80b716);
-    sub_803f14(&local);
-    if (r == 0)
+    if (getText().compare(authoring) == 0)
         return 0;
-    sub_713c20(this, a1, a2, a3, a4, a5);
-    return 0;
+    return baseAction(context, bounds);
 }

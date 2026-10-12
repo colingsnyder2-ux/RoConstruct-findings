@@ -1,44 +1,70 @@
-// from server: 45% by colin
+// from server: 100% by king_originala
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
+extern "C" long __cdecl _InterlockedDecrement(volatile long*);
+#pragma intrinsic(_InterlockedDecrement)
 
 namespace RBX {
-class Instance { public: virtual ~Instance(); char pad[0x100]; Instance* next; };
-class ServiceProvider : public Instance { public: ServiceProvider* finish(); };
+struct Instance;
+struct ServiceProvider;
 }
 
-RBX::ServiceProvider* func_00492e00(RBX::Instance* p);
+RBX::ServiceProvider* __cdecl func_00492e00(RBX::Instance*);
 
-struct RefCounted {
-    virtual void Release();
+struct Control {
+    virtual ~Control();
+    virtual void dispose();
+    virtual void destroy();
+
+    volatile long strongCount;
+    volatile long weakCount;
 };
 
-struct CameraModelViewCommand {
-    int field0;
-    int field4;
-    int field8;
-    int Get();
+struct Reference {
+    Control* control;
+
+    Reference& operator=(const Reference&);
+    ~Reference();
 };
 
-void* func_00618a40(void*, void*);
-void func_004025b0(void*, void*);
-
-int CameraModelViewCommand::Get() {
-    if (this->field4 == 0) {
-        RBX::ServiceProvider* sp = func_00492e00((RBX::Instance*)this->field0);
-        void* tmp = 0;
-        void* obj = func_00618a40(sp, &tmp);
-        this->field4 = *(int*)obj;
-        func_004025b0(&this->field8, (char*)obj + 4);
-        RefCounted* rc = (RefCounted*)tmp;
-        if (rc) {
-            if (_InterlockedExchangeAdd((volatile long*)((char*)rc + 4), -1) == 1) {
-                rc->Release();
-            }
-            if (_InterlockedExchangeAdd((volatile long*)((char*)rc + 8), -1) == 1) {
-                rc->Release();
-            }
+inline Reference::~Reference()
+{
+    Control* p = control;
+    if (p) {
+        if (_InterlockedDecrement(&p->strongCount) == 0) {
+            p->dispose();
+            if (_InterlockedDecrement(&p->weakCount) == 0)
+                p->destroy();
         }
     }
-    return this->field4;
+}
+
+struct Product {
+    void* object;
+    Reference reference;
+
+    Product& operator=(const Product&);
+};
+
+inline Product& Product::operator=(const Product& other)
+{
+    object = other.object;
+    reference = other.reference;
+    return *this;
+}
+
+Product __cdecl func_00618a40(RBX::ServiceProvider*);
+
+struct S {
+    RBX::Instance* instance;
+    Product cached;
+
+    void* get(int);
+};
+
+void* S::get(int)
+{
+    if (!cached.object)
+        cached = func_00618a40(func_00492e00(instance));
+    return cached.object;
 }

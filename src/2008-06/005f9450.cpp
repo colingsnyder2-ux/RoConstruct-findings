@@ -1,4 +1,4 @@
-// from server: 96% by king_originala
+// from server: 100% by colin
 namespace std {
     template<class T> struct char_traits;
     template<class T> class allocator;
@@ -48,10 +48,10 @@ long Input::read(char* buffer, long count)
     unsigned long received;
 
     if (!InternetQueryDataAvailable(handle, &available, 0, 0))
-        return -1;
+        goto fail;
 
     if (available == 0)
-        return -1;
+        goto fail;
 
     if (!InternetReadFile(handle, buffer, count, &received)) {
         std::string message("InternetReadFile failed");
@@ -59,4 +59,7 @@ long Input::read(char* buffer, long count)
     }
 
     return received;
+
+fail:
+    return -1;
 }

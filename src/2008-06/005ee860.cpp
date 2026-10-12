@@ -1,23 +1,35 @@
-// from server: 77% by colin
-struct SurfaceEnumPropDescriptor {
-    char pad[0x1c];
-    void* getset;
-    bool setVariant(void* instance, const void* value) const;
+// from server: 100% by king_originala
+extern void __cdecl registerInitializer(void (__cdecl*)(), void*);
+
+struct EnumTable {
+    bool lookup(const void*, int*);
 };
 
-extern "C" void __cdecl sub_557330(void*, void*);
-extern "C" void* __cdecl sub_5ed5c0();
-extern "C" bool __cdecl sub_5ed300(void*, void*, void*);
+extern EnumTable* __cdecl getEnumTable();
 
-bool SurfaceEnumPropDescriptor::setVariant(void* instance, const void* value) const {
-    sub_557330((void*)0x97b11c, (void*)0x5ed620);
-    void* desc = sub_5ed5c0();
-    void* local;
-    if (sub_5ed300(desc, &local, (void*)value)) {
-        void* gs = getset;
-        void* vtbl = *(void**)gs;
-        void* fn = *(void**)((char*)vtbl + 0xc);
-        ((void (__thiscall*)(void*, void*, void*))fn)(gs, &local, instance);
+struct Accessor {
+    virtual void slot0();
+    virtual void slot1();
+    virtual void slot2();
+    virtual void set(void*, const int*);
+};
+
+struct Descriptor {
+    unsigned char storage[28];
+    Accessor* access;
+
+    bool setValue(void*, const void*);
+};
+
+bool Descriptor::setValue(void* object, const void* value)
+{
+    int result;
+    registerInitializer(
+        reinterpret_cast<void (__cdecl*)()>(0x005ed620),
+        reinterpret_cast<void*>(0x0097b11c));
+    EnumTable* table = getEnumTable();
+    if (table->lookup(value, &result)) {
+        access->set(object, &result);
         return true;
     }
     return false;

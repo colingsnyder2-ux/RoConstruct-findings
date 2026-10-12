@@ -1,21 +1,38 @@
-// from server: 30% by colin
-struct EventData {
-    char pad0[4];
-    int field4;
-    char pad8[4];
-    int fieldC;
-    int field10;
-    void clear();
+// from server: 78% by king_originala
+struct EventData;
+
+struct Listener
+{
+    virtual void slot0() = 0;
+    virtual void slot1() = 0;
+    virtual void dispatch(int, int) = 0;
+
+    void prepare(EventData*);
 };
 
-extern "C" void __stdcall sub_4574B0(EventData*);
-
-void EventData::clear()
+struct EventData
 {
-    if (fieldC != 0) {
-        sub_4574B0(this);
-        int* p = (int*)fieldC;
-        void (__stdcall *fn)(int, int) = *(void (__stdcall **)(int, int))(*(int*)p + 8);
-        fn(field4, field10);
+    int field0;
+    int argument;
+    int field8;
+    Listener* listener;
+    int value;
+
+    void invoke();
+};
+
+void EventData::invoke()
+{
+    if (listener)
+    {
+        try
+        {
+            listener->prepare(this);
+            listener->dispatch(argument, value);
+        }
+        catch (...)
+        {
+            listener = 0;
+        }
     }
 }

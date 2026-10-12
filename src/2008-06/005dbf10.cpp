@@ -1,16 +1,18 @@
-// from server: 67% by atomic.potato
-struct S
-{
-    char padding[428];
+// from server: 79% by king_originala
+extern char descriptor;
+
+struct S {
+    char padding[0x1ac];
     float value;
 
-    void f(float);
+    void notify(const void*);
+    void setValue(float);
 };
 
-void f();
-
-void S::f(float x)
+void S::setValue(float v)
 {
-    if (x > value)
-        value = x;
+    if (v != value) {
+        value = v;
+        notify(&descriptor);
+    }
 }

@@ -1,71 +1,63 @@
-// from server: 52% by colin
+// from server: 64% by king_originala
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
 
-struct RefCounted {
-    void AddRef();
-    void Release();
+void* __cdecl operator new(unsigned int);
+void __cdecl operator delete(void*);
+
+struct Descriptor;
+
+struct Control {
+    virtual void slot0();
+    virtual void dispose();
+    virtual void destroy();
+    volatile long strong;
+    volatile long weak;
 };
 
-struct Inner {
-    int f0;
-    int f4;
-    int f8;
-};
+struct Guard {
+    Descriptor* owner;
+    void* pointer;
+    Control* control;
 
-struct Obj {
-    void* vptr;
-    int ref1;
-    int ref2;
+    Guard* acquire(int, void*);
+    void finish();
 };
 
 struct Holder {
-    int a;
-    int b;
-    int c;
+    Control* control;
+    ~Holder();
 };
 
-extern "C" void* __cdecl operator_new(unsigned int);
-extern "C" void __cdecl operator_delete(void*);
-
-void __stdcall sub_581cc0(Holder* h, int a, int b);
-void __stdcall sub_567770(void* p);
-void* __stdcall sub_5a19f0(void* self, void* a, void* b);
-void __stdcall sub_5a1fc0(void* self, void* p);
-
-struct VWorkspace {
-    void func(void* arg);
+struct Object {
+    char storage[0x50];
+    Object(Descriptor*, void*);
 };
 
-void VWorkspace::func(void* arg) {
-    Holder h;
-    h.a = 0;
-    h.b = 0;
-    h.c = 0;
-    void* local = 0;
-    void* saved = 0;
-    if (arg) {
-        sub_581cc0(&h, 1, (int)arg);
-        sub_567770(&h);
-        saved = (void*)h.b;
-    }
-    void* mem = operator_new(0x50);
-    void* obj;
-    if (mem) {
-        obj = sub_5a19f0(mem, this, arg);
-    } else {
-        obj = 0;
-    }
-    sub_5a1fc0(this, obj);
-    if (saved) {
-        Obj* o = (Obj*)saved;
-        if (_InterlockedExchangeAdd((volatile long*)((char*)o + 4), -1) == 1) {
-            void** vt = *(void***)o;
-            ((void (__thiscall*)(void*))vt[1])(o);
-            if (_InterlockedExchangeAdd((volatile long*)((char*)o + 8), -1) == 1) {
-                void** vt2 = *(void***)o;
-                ((void (__thiscall*)(void*))vt2[2])(o);
-            }
+struct Descriptor {
+    void attach(Object*);
+    void f(void*);
+};
+
+inline Holder::~Holder()
+{
+    Control* p = control;
+    if (p) {
+        if (_InterlockedExchangeAdd(&p->strong, -1) == 1) {
+            p->dispose();
+            if (_InterlockedExchangeAdd(&p->weak, -1) == 1)
+                p->destroy();
         }
     }
+}
+
+void Descriptor::f(void* value)
+{
+    Guard guard = { this, 0, 0 };
+    Holder holder = { 0 };
+    if (value) {
+        guard.acquire(1, value)->finish();
+        holder.control = guard.control;
+    }
+    attach(new Object(this, value));
 }

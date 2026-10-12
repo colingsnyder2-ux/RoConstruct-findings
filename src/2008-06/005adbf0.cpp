@@ -1,27 +1,62 @@
-// from server: 42% by colin
-extern "C" void __cdecl sub_493760();
-extern "C" void __cdecl sub_6a158c(void *, void *);
-extern "C" void __stdcall sub_802458(void *, const char *);
-extern "C" void __cdecl sub_409d50(void *, void *);
+// from server: 100% by king_originala
+namespace std
+{
+    template<class T> struct char_traits {};
+    template<class T> class allocator {};
+
+    template<class T, class Traits, class Alloc>
+    class basic_string
+    {
+        unsigned char allocator_storage[4];
+        union
+        {
+            T buffer[16];
+            T *pointer;
+        } storage;
+        unsigned int length;
+        unsigned int capacity;
+
+    public:
+        basic_string(const T *);
+        ~basic_string();
+    };
+
+    typedef basic_string<char, char_traits<char>, allocator<char> > string;
+
+    class runtime_error
+    {
+        unsigned char storage[40];
+
+    public:
+        runtime_error(const string &);
+        runtime_error(const runtime_error &);
+        ~runtime_error();
+    };
+}
+
+extern void (__thiscall *string_constructor)(std::string *, const char *);
+
+namespace std
+{
+    template<>
+    __forceinline basic_string<char, char_traits<char>, allocator<char> >::basic_string(const char *text)
+    {
+        string_constructor(this, text);
+    }
+}
+
+extern "C" int *__cdecl sub_493760();
 
 struct S
 {
+    unsigned char padding[0x1c8];
+    volatile int active;
+
     void f(int, int);
 };
 
 void S::f(int, int)
 {
-    void *p = *(void **)((char *)this + 0x1c8);
-    if (p)
-    {
-        sub_493760();
-        if (*(int *)p == 2)
-        {
-            char buf[0x1c];
-            sub_802458(buf, (const char *)0x8346a8);
-            *(int *)(buf + 0x1c) = 0;
-            sub_409d50(buf + 0x1c, buf);
-            sub_6a158c((void *)0x8d1bc8, buf + 0x1c);
-        }
-    }
+    if (active && *sub_493760() == 2)
+        throw std::runtime_error(std::string("Game script timout"));
 }

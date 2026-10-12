@@ -1,5 +1,38 @@
-// from server: 55% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs-render AggregatingSceneManager.cpp
+// from server: 92% by king_originala
+struct String {
+    unsigned int proxy;
+    union {
+        char buffer[16];
+        char* pointer;
+    } storage;
+    unsigned int length;
+    unsigned int capacity;
+
+    ~String();
+};
+
+String operator+(const String&, const char*);
+String operator+(const String&, const String&);
+
+struct Text {
+    unsigned int padding;
+    String value;
+};
+
+struct Link {
+    unsigned int padding;
+    Text* text;
+};
+
+struct Source {
+    unsigned int padding0;
+    Text* suffix;
+    unsigned int padding1;
+    Link* prefix;
+};
+
+String __stdcall concatenate(const Source* source)
+{
+    return (source->prefix->text->value + "Critical Error")
+         + source->suffix->value;
+}

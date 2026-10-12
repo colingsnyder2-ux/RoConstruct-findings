@@ -1,18 +1,16 @@
-// from server: 90% by atomic.potato
-extern "C" float* __cdecl getShaderValue();
-
-struct DxUserInput
-{
+// from server: 100% by king_originala
+struct Vec2 {
     float x;
     float y;
-    void __cdecl f(float* a, float* b);
 };
 
-void __cdecl DxUserInput::f(float* a, float* b)
+extern const Vec2& __cdecl zeroVector();
+
+void __cdecl func_004692f0(const Vec2* input, Vec2* first, Vec2* second)
 {
-    float* value = getShaderValue();
-    a[0] = value[0];
-    a[1] = value[1];
-    b[0] += a[0];
-    b[1] += a[1];
+    const Vec2& zero = zeroVector();
+    first->x = zero.x;
+    first->y = zero.y;
+    second->x = input->x + second->x;
+    second->y = input->y + second->y;
 }

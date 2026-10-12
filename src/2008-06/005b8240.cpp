@@ -1,34 +1,76 @@
-// from server: 21% by colin
-extern "C" void* __stdcall func_0056cd80();
-extern "C" void* __stdcall func_005b72c0(void*);
-extern "C" void __stdcall func_00802468();
+// from server: 100% by king_originala
+extern void (__thiscall *destroy_string)(void *);
+extern void * __cdecl get_type();
 
-struct S {
-    char pad[0x18];
-    void* field_18;
-    void func_005b8240(int, int);
+struct String
+{
+    char storage[32];
+    ~String();
 };
 
-void S::func_005b8240(int a, int b)
+__forceinline String::~String()
 {
-    void* p = field_18;
-    void** vt = *(void***)p;
-    void (*fn)(void*, void*) = (void (*)(void*, void*))vt[2];
-    void* local;
-    fn(p, &local);
-    void* result = func_0056cd80();
-    *(void**)b = result;
-    void** esi = (void**)((char*)b + 4);
-    void* r = func_005b72c0(&local);
-    if (r != esi) {
-        void* tmp = *esi;
-        *esi = *(void**)r;
-        *(void**)r = tmp;
+    destroy_string(this);
+}
+
+struct Product
+{
+    virtual ~Product();
+};
+
+struct FactoryProduct
+{
+    Product *product;
+    FactoryProduct(void *);
+    ~FactoryProduct();
+    void swap(FactoryProduct &);
+};
+
+__forceinline FactoryProduct::~FactoryProduct()
+{
+    if (product)
+        delete product;
+}
+
+__forceinline void FactoryProduct::swap(FactoryProduct &other)
+{
+    if (this != &other)
+    {
+        Product *p = product;
+        product = other.product;
+        other.product = p;
     }
-    if (local) {
-        void** vt2 = *(void***)local;
-        void (*fn2)(void*, int) = (void (*)(void*, int))vt2[0];
-        fn2(local, 1);
-    }
-    func_00802468();
+}
+
+struct Value
+{
+    void *type;
+    FactoryProduct holder;
+    void assign(const String &);
+};
+
+__forceinline void Value::assign(const String &s)
+{
+    type = get_type();
+    FactoryProduct &destination = holder;
+    FactoryProduct((void *)&s).swap(destination);
+}
+
+struct Accessor
+{
+    virtual void slot0();
+    virtual void slot1();
+    virtual String get(void *);
+};
+
+struct Descriptor
+{
+    char padding[24];
+    Accessor *accessor;
+    void get(void *, Value &) const;
+};
+
+void Descriptor::get(void *object, Value &value) const
+{
+    value.assign(accessor->get(object));
 }

@@ -1,49 +1,56 @@
-// from server: 57% by atomic.potato
-struct TwoDManager {
-    char pad0[0x134];
-    int field134;
-    char pad138[0x200 - 0x138];
-    int field200;
-    int field204;
-    char pad208[0x400 - 0x208];
-    int table[0x80];
+// from server: 100% by king_originala
+extern "C" void (__cdecl* _invalid_parameter_noinfo)();
 
-    void compute(float* out, int a, double b, int c);
+extern const double heightMultiplier;
+extern const double fixedWidthMultiplier;
+
+struct Text {
+    unsigned int reserved;
+    union {
+        char local[16];
+        char* allocated;
+    } storage;
+    unsigned int length;
+    unsigned int capacity;
 };
 
-extern "C" void __stdcall _invalid_parameter_noinfo();
+struct Size {
+    float x;
+    float y;
+};
 
-extern double dbl_82d038;
-extern double dbl_84e800;
+struct S {
+    int widths[128];
+    int textureWidth;
+    int textureHeight;
 
-void TwoDManager::compute(float* out, int a, double b, int c) {
-    double v = b * dbl_82d038;
-    int count = *(int*)((char*)a + 0x14);
-    double scale = (double)field200 * v / (double)field204;
-    double acc = 0.0;
-    if (c != 0) {
-        int t = field134 * count;
-        double r = (double)t * v * dbl_84e800;
-        out[0] = (float)r;
-        out[1] = (float)scale;
-        return;
-    }
-    int i = 0;
-    if (count > 0) {
-        do {
-            if (i > *(int*)((char*)a + 0x14)) {
+    Size* measure(Size* result, const Text& text, volatile double height, int fixed) const;
+};
+
+Size* S::measure(Size* result, const Text& text, volatile double height, int fixed) const
+{
+    double scaledHeight = height * heightMultiplier;
+    double width = textureWidth;
+    int length = text.length;
+    double scale = (width * scaledHeight / textureHeight) / width;
+    double total = 0.0;
+
+    if (!fixed) {
+        for (int i = 0; i < length; ++i) {
+            if (static_cast<unsigned int>(i) > text.length)
                 _invalid_parameter_noinfo();
-            }
-            char* p;
-            if (*(int*)((char*)a + 0x18) >= 0x10)
-                p = *(char**)((char*)a + 4);
-            else
-                p = (char*)a + 4;
-            int idx = (int)(signed char)p[i] & 0x7f;
-            i++;
-            acc += (double)table[idx] * scale;
-        } while (i < count);
+
+            const char* characters = text.capacity >= 16
+                ? text.storage.allocated
+                : text.storage.local;
+
+            total += widths[characters[i] & 127] * scale;
+        }
+    } else {
+        total = (widths[77] * length) * scale * fixedWidthMultiplier;
     }
-    out[0] = (float)scale;
-    out[1] = (float)acc;
+
+    result->x = static_cast<float>(total);
+    result->y = static_cast<float>(scaledHeight);
+    return result;
 }

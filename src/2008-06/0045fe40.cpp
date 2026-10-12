@@ -1,16 +1,18 @@
-// from server: 78% by atomic.potato
-extern unsigned char g_0096df84;
-extern int g_00932ec8;
-extern int g_00932ecc;
-extern int g_00932ebc;
-
-int func_0045fe40()
+// from server: 90% by king_originala
+struct S
 {
-    if ((g_0096df84 & 1) == 0)
-    {
-        g_0096df84 |= 1;
-        g_00932ec8 = 0;
-        g_00932ecc = 0;
-    }
-    return g_00932ebc;
+    char padding[12];
+    int a;
+    int b;
+    S();
+};
+
+__forceinline S::S() : a(0), b(0)
+{
+}
+
+S* func_0045fe40()
+{
+    static S object;
+    return &object;
 }

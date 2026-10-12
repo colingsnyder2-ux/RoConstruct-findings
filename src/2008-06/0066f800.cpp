@@ -1,4 +1,4 @@
-// from server: 74% by king_originala
+// from server: 91% by king_originala
 typedef unsigned int size_t;
 
 void* __cdecl operator new(size_t);
@@ -11,9 +11,17 @@ struct Child {
     Child(Stage*, int);
 };
 
+struct Empty {
+    Empty();
+};
+
+inline Empty::Empty()
+{
+}
+
 struct Pair {
     unsigned char storage[0x20];
-    Pair(int*, int*);
+    Pair(const Empty&, const Empty&);
     ~Pair();
 };
 
@@ -41,7 +49,7 @@ struct Stage : Base {
 
 Stage::Stage(int a, int b)
     : Base(a, new Child(this, b), b),
-      pair1(&b, &b),
-      pair2(&b, &b)
+      pair1(Empty(), Empty()),
+      pair2(Empty(), Empty())
 {
 }

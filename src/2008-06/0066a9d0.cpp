@@ -1,5 +1,29 @@
-// from server: 71% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs util/Name.cpp
+// from server: 100% by king_originala
+void __cdecl operator delete(void *);
+
+struct Primary {
+    virtual ~Primary();
+};
+
+struct Secondary {
+    virtual ~Secondary();
+};
+
+struct Base : Primary, Secondary {
+    unsigned int reserved[5];
+    virtual ~Base();
+};
+
+struct Owned {
+    ~Owned();
+};
+
+struct S : Base {
+    Owned *owned;
+    virtual ~S();
+};
+
+S::~S()
+{
+    delete owned;
+}

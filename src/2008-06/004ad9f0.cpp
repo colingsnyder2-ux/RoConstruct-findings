@@ -1,4 +1,4 @@
-// from server: 74% by king_originala
+// from server: 83% by king_originala
 extern "C" {
     extern void (__cdecl *invalid_parameter_noinfo)();
 }
@@ -28,29 +28,32 @@ struct Function {
 
 Function __cdecl apply(Iterator first, Iterator last, Function function)
 {
-    Iterator current = first;
     Iterator finish = last;
     void (__cdecl *invalid)() = invalid_parameter_noinfo;
+    Owner* owner = first.owner;
+    Node* node = first.node;
+    Iterator current = first;
 
     for (;;) {
-        Owner* owner = current.owner;
-        Node* node = current.node;
-
         if (!owner || owner != finish.owner)
             invalid();
 
         if (node == finish.node)
             break;
 
+        Tree* tree = reinterpret_cast<Tree*>(owner);
         if (!owner)
             invalid();
+        else
+            tree = owner->tree;
 
-        Tree* tree = owner->tree;
         if (node == tree->end)
             invalid();
 
         function.callback(reinterpret_cast<char*>(node) + 12);
         current.advance();
+        node = current.node;
+        owner = current.owner;
     }
 
     return function;

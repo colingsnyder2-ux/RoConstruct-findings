@@ -1,60 +1,45 @@
-// from server: 78% by king_originala
-extern unsigned int indexCounter;
-extern unsigned int indexValue;
-extern unsigned int indexGuard;
-extern "C" void (__cdecl *invalidParameter)();
+// from server: 96% by king_originala
+extern unsigned int counter;
+extern "C" void (__cdecl* invalid_parameter_noinfo)();
 
 struct Object {
     virtual ~Object();
 };
 
-struct S {
-    unsigned char padding[12];
+inline unsigned int slot()
+{
+    static unsigned int value = counter++;
+    return value;
+}
+
+struct Context {
+    char padding[12];
     Object** first;
     Object** last;
-    void clearSlot();
+
+    unsigned int size() const;
+    Object*& at(unsigned int, void (__cdecl*)());
+    void clear();
 };
 
-void S::clearSlot()
+inline unsigned int Context::size() const
 {
-    unsigned int count = static_cast<unsigned int>(last - first);
+    return static_cast<unsigned int>(last - first);
+}
 
-    if (!(indexGuard & 1)) {
-        unsigned int next = indexCounter;
-        indexGuard |= 1;
-        indexValue = next;
-        indexCounter = next + 1;
-    }
+inline Object*& Context::at(unsigned int index, void (__cdecl* handler)())
+{
+    if (index >= size())
+        handler();
+    return first[index];
+}
 
-    if (count > indexValue) {
-        if (!(indexGuard & 1)) {
-            unsigned int next = indexCounter;
-            indexGuard |= 1;
-            indexValue = next;
-            indexCounter = next + 1;
-        }
-
-        unsigned int slot = indexValue;
-        void (__cdecl *check)() = invalidParameter;
-
-        if (slot >= static_cast<unsigned int>(last - first))
-            check();
-
-        Object* object = first[slot];
-        if (object)
-            delete object;
-
-        if (!(indexGuard & 1)) {
-            unsigned int next = indexCounter;
-            indexGuard |= 1;
-            indexValue = next;
-            indexCounter = next + 1;
-        }
-
-        slot = indexValue;
-        if (slot >= static_cast<unsigned int>(last - first))
-            check();
-
-        first[slot] = 0;
+void Context::clear()
+{
+    if (size() > slot()) {
+        unsigned int index = slot();
+        void (__cdecl* handler)() = invalid_parameter_noinfo;
+        delete at(index, handler);
+        at(slot(), handler) = 0;
     }
 }

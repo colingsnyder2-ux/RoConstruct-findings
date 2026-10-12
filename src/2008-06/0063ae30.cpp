@@ -1,41 +1,49 @@
-// from server: 51% by colin
+// from server: 61% by colin
 struct GCamera {
-    char pad[0x130];
-    char sub[0x24];
-    void copyFrom(const GCamera* other);
+    char pad[0x14];
+    char field14[0x11c];
+    char field130[0x30];
 };
 
-struct SignalDesc {
+struct SignalBase {
     char pad[0x10];
-    void setValue(const void* value);
+    char field10[0x20];
 };
 
-extern "C" void* __stdcall sub_56B620(void* arg);
-extern "C" void __stdcall sub_639300(void* arg);
+extern "C" void copy_camera(GCamera* dst, const void* src);
+extern "C" void* __stdcall find_signal(void* self, void* arg);
+extern "C" void signal_connect(SignalBase* self, void* arg);
 
 struct VVector3ValueSignalDesc {
-    void func(int arg);
+    void method(void* arg);
 };
 
-void VVector3ValueSignalDesc::func(int arg) {
+void VVector3ValueSignalDesc::method(void* arg)
+{
     GCamera* cam = (GCamera*)this;
-    GCamera* other = 0;
-    if (cam) {
-        other = (GCamera*)((char*)cam + 0x14);
-    }
-    GCamera* src = (GCamera*)((char*)cam + 0x130);
-    GCamera local;
-    local.copyFrom(src);
-    float f1 = *(float*)((char*)src + 0x24);
-    float f2 = *(float*)((char*)src + 0x28);
-    float f3 = *(float*)((char*)src + 0x2c);
-    void* result = sub_56B620(other);
-    if (result) {
-        GCamera tmp;
-        tmp.copyFrom(&local);
-        *(float*)((char*)&tmp + 0x24) = f1;
-        *(float*)((char*)&tmp + 0x28) = f2;
-        *(float*)((char*)&tmp + 0x2c) = f3;
-        sub_639300((char*)result + 0x10);
+    char* base;
+    if (cam != 0)
+        base = (char*)cam + 0x14;
+    else
+        base = 0;
+
+    char* src = (char*)cam + 0x130;
+
+    char local[0x30];
+    copy_camera((GCamera*)local, src);
+
+    float f0 = *(float*)(src + 0x24);
+    float f1 = *(float*)(src + 0x28);
+    float f2 = *(float*)(src + 0x2c);
+
+    void* result = find_signal((void*)0x97d4c4, base);
+    if (result != 0)
+    {
+        char tmp[0x30];
+        copy_camera((GCamera*)tmp, local);
+        *(float*)(tmp + 0x24) = f0;
+        *(float*)(tmp + 0x28) = f1;
+        *(float*)(tmp + 0x2c) = f2;
+        signal_connect((SignalBase*)((char*)result + 0x10), tmp);
     }
 }

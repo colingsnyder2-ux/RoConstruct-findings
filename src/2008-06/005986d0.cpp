@@ -1,16 +1,18 @@
-// from server: 64% by atomic.potato
-struct S
-{
-    float pad[90];
-    void f(float);
+// from server: 83% by king_originala
+extern char property;
+
+struct Decal {
+    char padding[0x168];
+    float value;
+
+    void notify(const char*);
+    void setValue(float);
 };
 
-void S::f(float x)
+void Decal::setValue(float v)
 {
-    if (x == pad[90] && x >= 0.0f)
-    {
-        pad[90] = x;
-        *(float*)0x975f30 = x;
-        ((void (__stdcall *)(float))0x40db00)(x);
+    if (v != value && v > 0.0f) {
+        value = v;
+        notify(&property);
     }
 }

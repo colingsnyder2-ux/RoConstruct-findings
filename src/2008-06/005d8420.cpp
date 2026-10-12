@@ -1,4 +1,4 @@
-// from server: 96% by king_originala
+// from server: 100% by king_originala
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
 extern "C" long __cdecl _InterlockedDecrement(volatile long*);
@@ -16,16 +16,15 @@ struct Object {
     void setValue(float);
 };
 
-struct Shared {
-    Object* object;
+struct Count {
     Control* control;
 
-    Shared(const Shared&);
-    ~Shared();
+    Count(const Count&);
+    ~Count();
 };
 
-inline Shared::Shared(const Shared& other)
-    : object(other.object), control(other.control)
+inline Count::Count(const Count& other)
+    : control(other.control)
 {
     if (control) {
         volatile long* count = &control->strong;
@@ -33,7 +32,7 @@ inline Shared::Shared(const Shared& other)
     }
 }
 
-inline Shared::~Shared()
+inline Count::~Count()
 {
     if (control) {
         Control* p = control;
@@ -43,6 +42,23 @@ inline Shared::~Shared()
                 p->destroy();
         }
     }
+}
+
+struct Shared {
+    Object* object;
+    Count count;
+
+    Shared(const Shared&);
+    ~Shared();
+};
+
+inline Shared::Shared(const Shared& other)
+    : object(other.object), count(other.count)
+{
+}
+
+inline Shared::~Shared()
+{
 }
 
 extern Shared __cdecl createRotate();

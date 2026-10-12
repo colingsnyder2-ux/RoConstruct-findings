@@ -1,5 +1,22 @@
-// from server: 50% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: openrbx-client App/v8datamodel/RootInstance.cpp
+// from server: 100% by king_originala
+struct TypeInfo;
+
+extern TypeInfo expectedType;
+extern bool (__thiscall *typeEqual)(const TypeInfo *, const TypeInfo &);
+
+union Buffer {
+    unsigned int words[4];
+    const TypeInfo *type;
+    const Buffer *object;
+};
+
+void __cdecl manage(const Buffer *source, Buffer *destination, int operation)
+{
+    if (operation == 0) {
+        if (destination)
+            *destination = *source;
+    } else if (operation != 1) {
+        destination->object =
+            typeEqual(destination->type, expectedType) ? source : 0;
+    }
+}

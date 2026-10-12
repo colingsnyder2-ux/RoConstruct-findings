@@ -1,53 +1,59 @@
-// from server: 39% by colin
-
-
-
-
-extern "C" {
-    int __stdcall compare_string_char(const void* str, const char* ch);
-    void* __stdcall string_ctor(void* self, const char* s);
-    void __stdcall string_dtor(void* self);
-}
-
-struct VItem {
-    char pad[0x158];
-    void* field_158;
-    char pad2[0x14];
-    void* field_14;
-
-    void method_448f40(float f);
-    void method_448fd0(float f);
-    void method_449060(float f);
-    void method_4490c0(float f);
-
-    void func(char flag);
+// from server: 100% by king_originala
+struct String {
+    char storage[28];
+    String(const char *);
+    ~String();
 };
 
-void VItem::func(char flag)
+extern void (__thiscall *constructString)(String *, const char *);
+extern void (__thiscall *destroyString)(String *);
+extern bool (__cdecl *stringNotEqual)(const String &, const char *);
+
+__forceinline String::String(const char *text)
 {
-    if (!flag) {
-        if (!compare_string_char(&field_158, *(const char**)0x9317fc))
-            return;
+    constructString(this, text);
+}
+
+__forceinline String::~String()
+{
+    destroyString(this);
+}
+
+extern const char *defaultText;
+extern const float resetValue;
+
+struct Manager;
+typedef void (__thiscall *NotifyFunction)(Manager *, void *, const String &);
+
+struct Manager {
+    NotifyFunction *vtable;
+};
+
+extern Manager *manager;
+
+struct S {
+    char padding[0x158];
+    String text;
+
+    void reset(bool force);
+    void setA(float);
+    void setB(float);
+    void setC(float);
+    void setD(float);
+};
+
+void S::reset(bool force)
+{
+    if (force || stringNotEqual(text, defaultText)) {
+        setA(resetValue);
+        setB(resetValue);
+        setA(resetValue);
+        setC(resetValue);
+        setD(resetValue);
+        setC(resetValue);
+
+        String value(defaultText);
+        void *object = this ? reinterpret_cast<char *>(this) + 0x14 : 0;
+        manager->vtable[3](manager, object, value);
     }
-
-    float f = *(float*)0x8163a4;
-
-    method_4490c0(f);
-    method_449060(f);
-    method_4490c0(f);
-    method_448fd0(f);
-    method_448f40(f);
-    method_448fd0(f);
-
-    char buf[0x20];
-    string_ctor(buf, *(const char**)0x9317fc);
-
-    void* p = this ? (void*)((char*)this + 0x14) : 0;
-    void* mgr = *(void**)0x96d52c;
-    void** vtbl = *(void***)mgr;
-    typedef void (__thiscall *Fn)(void*, void*, void*);
-    Fn fn = (Fn)vtbl[3];
-    fn(mgr, p, buf);
-
-    string_dtor(buf);
 }

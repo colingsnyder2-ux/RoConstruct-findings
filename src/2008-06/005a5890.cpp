@@ -1,100 +1,104 @@
-// from server: 39% by colin
-extern "C" void __stdcall _invalid_parameter_noinfo();
+// from server: 91% by king_originala
+namespace RBX {
+    struct Instance {
+        virtual ~Instance();
+    };
 
-struct Vec {
-    char pad[8];
-    void* begin;
-    void* end;
+    struct ServiceProvider;
+
+    struct HopperBin {
+        virtual ~HopperBin();
+        void activate(ServiceProvider*);
+    };
+
+    struct Frame {
+        float values[12];
+    };
+
+    struct ILocation {
+        virtual Frame getFrame() = 0;
+    };
+
+    struct IRenderable {
+        virtual ~IRenderable();
+    };
+}
+
+RBX::ServiceProvider* __cdecl func_00590d80(RBX::Instance*);
+
+extern "C" void (__cdecl *_invalid_parameter_noinfo)();
+extern "C" void* __cdecl __RTDynamicCast(void*, long, void*, void*, int);
+
+extern unsigned char instanceType;
+extern unsigned char hopperType;
+extern unsigned char locationType;
+extern unsigned char renderableType;
+
+struct Result {
+    void finish();
 };
 
-struct Inner {
-    char pad0[0xc];
-    void* begin;
-    void* end;
+struct Processor {
+    virtual void reserved();
+    virtual Result* process(const RBX::Frame&, int);
 };
 
-struct Obj {
-    char pad0[0x108];
-    Inner* inner;
-    char pad10c[0x288 - 0x10c];
-    char field288[8];
-    char pad290[0x43c - 0x290];
-    int field43c;
+struct Entry {
+    RBX::Instance* pointer;
+    void* control;
 };
 
-struct Other {
-    virtual void v0(int*);
+struct Children {
+    unsigned char padding[12];
+    Entry* first;
+    Entry* last;
+
+    RBX::Instance* at(unsigned int);
 };
 
-struct Other2 {
-    virtual void v1(int*);
+inline RBX::Instance* Children::at(unsigned int index) {
+    if (index >= static_cast<unsigned int>(last - first))
+        _invalid_parameter_noinfo();
+    return first[index].pointer;
+}
+
+struct Workspace {
+    unsigned char padding0[0x108];
+    Children* children;
+    unsigned char padding1[0x17c];
+    unsigned char processor[4];
+    unsigned char padding2[0x1b0];
+    int state;
+
+    void prepare();
+    unsigned int count();
+    int update(int);
 };
 
-extern "C" int __cdecl func_006a17c6(void*, void*, void*, void*, void*);
-extern "C" void __stdcall func_00802890();
+int Workspace::update(int argument) {
+    prepare();
+    RBX::HopperBin* selected = 0;
 
-void func_005a5710(Obj*);
-int func_0048ae20(Obj*);
-void func_005ce480(void*, int*);
-void func_0055a8f0(void*, void*);
-void* func_00590d80(Obj*);
+    for (unsigned int i = 0; i < count(); ++i) {
+        RBX::HopperBin* hopper = static_cast<RBX::HopperBin*>(
+            __RTDynamicCast(children->at(i), 0, &instanceType, &hopperType, 0));
+        RBX::ILocation* location = static_cast<RBX::ILocation*>(
+            __RTDynamicCast(children->at(i), 0, &instanceType, &locationType, 0));
+        RBX::IRenderable* renderable = static_cast<RBX::IRenderable*>(
+            __RTDynamicCast(children->at(i), 0, &instanceType, &renderableType, 0));
 
-void func_005a5890(Obj* self, int arg)
-{
-    func_005a5710(self);
-    int esi = 0;
-    int local8 = 0;
-    int local10 = 0;
-    int local14 = 0;
-    int local18 = 0;
-    int local1c = 0;
-
-    if (func_0048ae20(self) > 0) {
-        do {
-            Inner* edi = self->inner;
-            unsigned int n = (unsigned int)(((char*)edi->end - (char*)edi->begin) >> 3);
-            if ((unsigned int)esi >= n)
-                func_00802890();
-            void* p = ((void**)edi->begin)[esi];
-            int a = func_006a17c6(p, 0, (void*)0x92907c, (void*)0x9496a0, 0);
-            local14 = a;
-
-            edi = self->inner;
-            n = (unsigned int)(((char*)edi->end - (char*)edi->begin) >> 3);
-            if ((unsigned int)esi >= n)
-                func_00802890();
-            p = ((void**)edi->begin)[esi];
-            int b = func_006a17c6(p, 0, (void*)0x92907c, (void*)0x9482e8, 0);
-
-            edi = self->inner;
-            n = (unsigned int)(((char*)edi->end - (char*)edi->begin) >> 3);
-            if ((unsigned int)esi >= n)
-                func_00802890();
-            p = ((void**)edi->begin)[esi];
-            int c = func_006a17c6(p, 0, (void*)0x92907c, (void*)0x939f70, 0);
-
-            if (b != 0 && c != 0) {
-                Other* o = (Other*)b;
-                o->v0(&local18);
-                Other2* o2 = (Other2*)(self->field288);
-                o2->v1(&local1c);
-                func_005ce480((void*)0, &local1c);
-            }
-
-            if (local14 != 0)
-                local10 = local14;
-
-            esi++;
-        } while (esi < func_0048ae20(self));
-
-        if (local10 != 0) {
-            void* r = func_00590d80(self);
-            func_0055a8f0((void*)local10, r);
+        if (location && renderable) {
+            RBX::Frame frame = location->getFrame();
+            reinterpret_cast<Processor*>(processor)->process(frame, argument)->finish();
         }
+
+        if (hopper)
+            selected = hopper;
     }
 
-    int v = 0;
-    if (self->field43c <= 0)
-        v = 1;
-    self->field43c = v;
+    if (selected)
+        selected->activate(
+            func_00590d80(reinterpret_cast<RBX::Instance*>(this)));
+
+    return state = state <= 0;
 }

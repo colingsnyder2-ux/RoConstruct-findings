@@ -1,5 +1,17 @@
-// from server: 60% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: g3d-6.09 G3Dcpp/Box.cpp
+// from server: 100% by king_originala
+extern const char* (__thiscall *getText)(void*);
+extern void (__thiscall *constructText)(void*, const char*);
+
+struct NameItem {
+    char padding[0x7c];
+    char* instance;
+    void* getName(void* result, int unused);
+};
+
+void* NameItem::getName(void* result, int unused)
+{
+    volatile int temporary = 0;
+    const char* text = getText(instance + 0x110);
+    constructText(result, text);
+    return result;
+}

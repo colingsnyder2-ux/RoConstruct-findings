@@ -1,5 +1,37 @@
-// from server: 67% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs util/Name.cpp
+// from server: 100% by king_originala
+void* __cdecl operator new(unsigned int);
+void __cdecl operator delete(void*);
+
+struct Primary {
+    virtual ~Primary();
+};
+
+struct Secondary {
+    virtual ~Secondary();
+};
+
+struct CursorBase : Primary, Secondary {
+    unsigned char storage[64];
+    CursorBase(void*);
+};
+
+struct InletCursor : CursorBase {
+    InletCursor(void*);
+    virtual ~InletCursor();
+};
+
+__forceinline InletCursor::InletCursor(void* context)
+    : CursorBase(context)
+{
+}
+
+struct InletTool {
+    unsigned char storage[24];
+    void* context;
+    InletCursor* createCursor();
+};
+
+InletCursor* InletTool::createCursor()
+{
+    return new InletCursor(context);
+}

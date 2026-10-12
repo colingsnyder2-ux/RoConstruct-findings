@@ -1,47 +1,81 @@
-// from server: 5% by tester
+// from server: 100% by king_originala
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
+extern "C" long __cdecl _InterlockedDecrement(volatile long*);
+#pragma intrinsic(_InterlockedDecrement)
 
-struct RBXName {
-    void* rep;
+struct S;
+
+struct Ref {
+    virtual void reserved();
+    virtual void dispose();
+    virtual void destroy();
+
+    volatile long strong;
+    volatile long weak;
+
+    void attach(S*);
+    void release();
 };
 
-struct CreatorBase {
-    virtual void v0();
-    virtual void v1();
-    virtual void v2();
-};
-
-struct Creator : CreatorBase {
-    void* field4;
-    long refcount8;
-    long refcountC;
-};
-
-struct Registry {
-    char pad[0x19c];
-    void* begin;
-    void* end;
-};
-
-struct FactoryProduct {
-    char pad[0x1a0];
-};
-
-extern "C" void* __stdcall make_value_0057d800();
-extern "C" void __stdcall func_0057f710(void*);
-extern "C" void __stdcall func_0057fd20();
-extern "C" void __stdcall func_00557330(void*, void*, void*);
-extern "C" void __stdcall func_0055a8f0(void*, void*);
-extern "C" void __stdcall func_004025b0(void*, void*);
-extern "C" void __stdcall func_00802890();
-
-struct VVelocityMotor_FactoryProduct_Creator {
-    int ctor();
-};
-
-int VVelocityMotor_FactoryProduct_Creator::ctor() {
-    if (func_0057fd20(), 0) {
+inline void Ref::release() {
+    if (_InterlockedDecrement(&strong) == 0) {
+        dispose();
+        if (_InterlockedDecrement(&weak) == 0)
+            destroy();
     }
-    return 0;
+}
+
+struct RefSlot {
+    Ref* value;
+    RefSlot& operator=(const RefSlot&);
+};
+
+struct Pair {
+    Ref* value;
+    RefSlot owner;
+    ~Pair();
+};
+
+inline Pair::~Pair() {
+    if (owner.value)
+        owner.value->release();
+}
+
+struct Entry {
+    Ref* value;
+    RefSlot owner;
+};
+
+struct S {
+    char padding[0x19c];
+    Entry* first;
+    Entry* last;
+
+    Ref* existing();
+    Ref* create();
+};
+
+Pair __cdecl make_pair();
+void __cdecl register_value(void (__cdecl*)(), void*);
+void __cdecl cleanup_value();
+extern char registration_data;
+void* __cdecl func_0057d800();
+extern "C" void (__cdecl* invalid_parameter_noinfo)();
+
+Ref* S::create() {
+    Ref* result = existing();
+    if (!result) {
+        Pair p = make_pair();
+        result = p.value;
+        register_value(cleanup_value, &registration_data);
+        unsigned index = (unsigned)func_0057d800();
+        if (index >= (unsigned)(last - first))
+            invalid_parameter_noinfo();
+        Entry& entry = first[index];
+        entry.value = p.value;
+        entry.owner = p.owner;
+        result->attach(this);
+    }
+    return result;
 }

@@ -1,33 +1,26 @@
-// from server: 42% by atomic.potato
-struct bad_cast_copy {
-    void* vftable;
-    char pad[8];
+// from server: 100% by king_originala
+struct Exception {
+    void* vtable;
+    unsigned long base[2];
+    const void* sourceType;
+    const void* targetType;
 };
 
-extern "C" void* __stdcall sub_80285c();
-extern "C" void __cdecl sub_6a158c(void*, const char*);
+typedef void (__thiscall *CopyBadCast)(void*, const void*);
+extern CopyBadCast copyBadCast;
 
-struct bad_lexical_cast {
-    char pad0[0xc];
-    int field_c;
-    int field_10;
-    void bad_lexical_cast_ctor(const bad_cast_copy*);
-};
+extern unsigned char lexicalCastVtable;
+extern unsigned char lexicalCastThrowInfo;
 
-void bad_lexical_cast::bad_lexical_cast_ctor(const bad_cast_copy* other)
+extern "C" __declspec(noreturn) void __stdcall
+throwException(void*, void*);
+
+void throwLexicalCast(const Exception& source)
 {
-    bad_cast_copy local;
-    sub_80285c();
-    local.vftable = (void*)0x827224;
-    local.pad[0] = 0;
-    local.pad[1] = 0;
-    local.pad[2] = 0;
-    local.pad[3] = 0;
-    local.pad[4] = 0;
-    local.pad[5] = 0;
-    local.pad[6] = 0;
-    local.pad[7] = 0;
-    *(int*)((char*)&local + 0x10) = field_c;
-    *(int*)((char*)&local + 0x14) = field_10;
-    sub_6a158c(&local, (const char*)0x8e5c90);
+    Exception value;
+    copyBadCast(&value, &source);
+    value.vtable = &lexicalCastVtable;
+    value.sourceType = source.sourceType;
+    value.targetType = source.targetType;
+    throwException(&value, &lexicalCastThrowInfo);
 }

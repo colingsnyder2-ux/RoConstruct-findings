@@ -1,32 +1,44 @@
-// from server: 32% by colin
-struct stream_buffer
+// from server: 86% by king_originala
+struct StreamBuffer;
+
+extern void __stdcall flush_buffer(void*, StreamBuffer*, char*, int);
+
+typedef int (__thiscall *SyncFunction)(StreamBuffer*);
+extern SyncFunction pubsync;
+
+struct S
 {
-    char pad_0x00[0x14];
-    int field_0x14;
-    char pad_0x18[0x0c];
-    int field_0x24;
-    char pad_0x28[0x1c];
-    int field_0x44;
-    int field_0x48;
+    char padding0[0x14];
+    char** begin;
+    char padding1[0x0C];
+    char** end;
+    char padding2[0x18];
+    char buffer[8];
+    StreamBuffer* stream;
+
     int sync();
 };
 
-extern "C" int __stdcall sub_005f5b70(int, int, int, int);
-extern "C" int (__stdcall *pubsync_ptr)(int);
-
-int stream_buffer::sync()
+int S::sync()
 {
-    int a = *(int*)field_0x24;
-    int b = *(int*)field_0x14;
-    int diff = a - b;
-    if (diff > 0)
+    try
     {
-        sub_005f5b70((int)(this + 0x40), field_0x48, b, diff);
+        char* last = *end;
+        char* first = *begin;
+        int count = last - first;
+        if (count > 0)
+        {
+            StreamBuffer* destination = stream;
+            flush_buffer(buffer, destination, first, count);
+        }
+
+        if (stream)
+            pubsync(stream);
+
+        return 0;
     }
-    int h = field_0x48;
-    if (h != 0)
+    catch (...)
     {
-        pubsync_ptr(h);
+        return -1;
     }
-    return 0;
 }

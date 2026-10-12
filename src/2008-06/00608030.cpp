@@ -1,4 +1,4 @@
-// from server: 91% by king_originala
+// from server: 100% by king_originala
 struct Geometry {
     int reserved;
     float extent[3];
@@ -43,21 +43,28 @@ void BlockBlockContact::build(int first, int second, int feature0, int feature1)
     if (feature1 > 12)
         face1 = (face1 + 3) % 6;
 
-    Contact* contact = create(primitive[first]->data,
-                              primitive[second]->data,
-                              5, face0, face1);
+    Primitive* primitive1 = primitive[second];
+    Primitive* primitive0 = primitive[first];
+    void* data1 = primitive1->data;
+    void* data0 = primitive0->data;
+    Contact* contact = create(data0, data1, 5, face0, face1);
+
+    struct Saved {
+        int value;
+        float extent;
+    } saved;
 
     Geometry* geometry0 = primitive[first]->geometry;
-    float extent = geometry0->extent[face0 % 3];
-    int savedValue = value;
+    saved.extent = geometry0->extent[face0 % 3];
+    saved.value = value;
     int id1 = primitive[second]->geometry->feature(feature1);
     int id0 = geometry0->feature(feature0);
 
     contact->feature0 = id0;
-    contact->extent = extent;
+    contact->extent = saved.extent;
     contact->feature1 = id1;
     contact->face0 = face0;
     contact->face1 = face1;
-    contact->value = savedValue;
+    contact->value = saved.value;
     contact->type = 5;
 }

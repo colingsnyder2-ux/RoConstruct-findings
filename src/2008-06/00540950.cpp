@@ -1,12 +1,18 @@
-// from server: 17% by colin
-struct Bucket {
-    void f();
+// from server: 77% by king_originala
+#pragma optimize("", off)
+
+struct Base
+{
+    ~Base();
 };
 
-extern "C" void __stdcall sub_541CA0();
-extern "C" void __stdcall sub_541240();
+struct Bucket : Base
+{
+    ~Bucket();
+    void cleanup();
+};
 
-void Bucket::f() {
-    sub_541CA0();
-    sub_541240();
+Bucket::~Bucket()
+{
+    cleanup();
 }

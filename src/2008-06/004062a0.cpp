@@ -1,5 +1,13 @@
-// from server: 75% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: openrbx-client App/script/Script.cpp
+// from server: 100% by king_originala
+int __cdecl f(unsigned int value)
+{
+    switch (value)
+    {
+    case 0: return 21;
+    case 1: return 70;
+    case 2: return 80;
+    case 3: return 443;
+    case 7: return 1080;
+    default: return 0;
+    }
+}

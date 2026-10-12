@@ -1,4 +1,4 @@
-// from server: 89% by king_originala
+// from server: 90% by king_originala
 namespace std {
     template<class T> struct char_traits;
 
@@ -26,7 +26,7 @@ struct State {
     void* last;
     void* current;
     void* limit;
-    int size;
+    volatile int size;
 
     State();
 };
@@ -38,12 +38,12 @@ inline State::State()
 }
 
 struct S : std::basic_streambuf<char, std::char_traits<char> >, State {
-    S(Device device, int mode, int capacity);
+    S(Device device, int mode, volatile int capacity);
     virtual ~S();
     void open(const Device* device, int mode, int capacity);
 };
 
-S::S(Device device, int mode, int capacity)
+S::S(Device device, int mode, volatile int capacity)
 {
     device.value = *device.source;
     open(&device, mode, capacity);

@@ -1,15 +1,22 @@
-// from server: 62% by atomic.potato
-struct S
-{
-    int field_1c;
-    int f(int value);
+// from server: 100% by king_originala
+struct Source {
+    virtual void slot0();
+    virtual void slot1();
+    virtual int get(int value);
 };
 
-extern "C" int __stdcall sub_005ef180(int *, int);
+struct Result {
+    void set(const int* value);
+};
 
-int S::f(int value)
+struct S {
+    char padding[28];
+    Source* source;
+    void f(int value, Result* result);
+};
+
+void S::f(int value, Result* result)
 {
-    int *object = (int *)field_1c;
-    int result = ((int (__fastcall *)(int *, int))(*(int **)object + 8))(object, value);
-    return sub_005ef180(&result, result);
+    value = source->get(value);
+    result->set(&value);
 }

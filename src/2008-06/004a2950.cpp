@@ -1,5 +1,51 @@
-// from server: 37% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: openrbx-client App/util/RunStateOwner.cpp
+// from server: 87% by king_originala
+extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
+#pragma intrinsic(_InterlockedExchangeAdd)
+
+struct Control {
+    virtual ~Control();
+    virtual void dispose() = 0;
+    virtual void destroy() = 0;
+    volatile long strong;
+    volatile long weak;
+};
+
+template<class T> struct Shared {
+    T* pointer;
+    Control* control;
+
+    Shared();
+    Shared(const Shared&);
+    ~Shared();
+};
+
+template<class T>
+inline Shared<T>::Shared() : pointer(0), control(0) {}
+
+template<class T>
+inline Shared<T>::Shared(const Shared& other)
+    : pointer(other.pointer), control(other.control) {
+    Control* p = control;
+    if (p)
+        _InterlockedExchangeAdd(&p->strong, 1);
+}
+
+template<class T>
+inline Shared<T>::~Shared() {
+    Control* p = control;
+    if (p && _InterlockedExchangeAdd(&p->strong, -1) == 0) {
+        p->dispose();
+        if (_InterlockedExchangeAdd(&p->weak, -1) == 0)
+            p->destroy();
+    }
+}
+
+struct Source {
+    Shared<Source> get();
+};
+
+Shared<void> __cdecl convert(const Shared<Source>&);
+
+Shared<void> __cdecl reconstruct(Source* source) {
+    return source ? convert(source->get()) : Shared<void>();
+}

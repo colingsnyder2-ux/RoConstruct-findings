@@ -1,16 +1,19 @@
-// from server: 36% by colin
-struct Bucket {
-    float sampleTimeElapsed;
-    float wallTimeSpan;
-    int frames;
-    Bucket();
+// from server: 100% by king_originala
+struct Token {
+    float& __thiscall get();
 };
 
-struct Profiler {
-    Bucket getWindow(double window) const;
+struct S {
+    void __thiscall initialize(Token* token, float& value);
+    S* __thiscall f();
 };
 
-Bucket::Bucket() {
-    Profiler p;
-    p.getWindow(0.0);
+#pragma optimize("", off)
+S* S::f()
+{
+    Token first;
+    Token second;
+    initialize(&second, first.get());
+    return this;
 }
+#pragma optimize("", on)

@@ -1,5 +1,21 @@
-// from server: 50% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs v8world/Assembly.cpp
+// from server: 100% by king_originala
+struct Matrix {
+    float elements[9];
+    Matrix(const Matrix&);
+};
+
+struct Transform {
+    Matrix rotation;
+    float position[3];
+};
+
+struct S {
+    Transform get();
+};
+
+void __cdecl consume(void*, const Transform&);
+
+void __cdecl function(S* object, void* destination)
+{
+    consume(destination, object->get());
+}

@@ -1,5 +1,24 @@
-// from server: 45% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: openrbx-client App/v8datamodel/Selection.cpp
+// from server: 100% by king_originala
+extern "C" unsigned long (__stdcall *GetCurrentThreadId)();
+
+struct LogState {
+    unsigned char storage[8];
+    void apply();
+};
+
+LogState* __cdecl currentLogState();
+
+struct MainLogManager {
+    unsigned char storage[4];
+    LogState state;
+    unsigned long threadId;
+    void apply();
+};
+
+void MainLogManager::apply()
+{
+    if (GetCurrentThreadId() == threadId)
+        state.apply();
+    else
+        currentLogState()->apply();
+}

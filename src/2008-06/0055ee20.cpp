@@ -1,37 +1,44 @@
-// from server: 26% by atomic.potato
-struct VContentProvider {
-    void* field0;
-    VContentProvider* construct(unsigned int id);
+// from server: 86% by king_originala
+extern "C" unsigned int __cdecl strlen(const char *);
+#pragma intrinsic(strlen)
+
+struct Manager;
+typedef char * (__thiscall *ManagerFunction)(Manager *);
+
+struct Manager {
+    ManagerFunction *table;
 };
 
-extern "C" void* __stdcall sub_55bea0(unsigned int id, int zero);
-extern "C" void __stdcall sub_55d9f0();
-extern "C" void __stdcall sub_55d950();
+extern Manager manager;
+extern const char * __cdecl lookupString(unsigned int, unsigned int);
 
-struct GlobalObj {
-    char pad[0xc];
-    void* (__stdcall *fnC)();
+struct StringStorage {
+    char *data;
+    StringStorage();
+    ~StringStorage();
 };
 
-extern GlobalObj g_obj;
-
-VContentProvider* VContentProvider::construct(unsigned int id)
+inline StringStorage::StringStorage()
 {
-    void* p = g_obj.fnC();
-    field0 = (char*)p + 0x10;
-    if (id == 0) {
-        sub_55d950();
-    } else if ((id & 0xffff0000) != 0) {
-        const char* s = (const char*)id;
-        int len = 0;
-        while (s[len]) len++;
-        sub_55d950();
-    } else {
-        unsigned short w = (unsigned short)id;
-        void* r = sub_55bea0(w, 0);
-        if (r) {
-            sub_55d9f0();
-        }
+    data = manager.table[3](&manager) + 16;
+}
+
+struct String : StringStorage {
+    String(const char *);
+    void assign(const char *, unsigned int);
+    void assignResource(const char *, unsigned int);
+};
+
+String::String(const char *text)
+{
+    if (text && ((unsigned int)text & 0xffff0000U) == 0) {
+        unsigned int id = (unsigned short)(unsigned int)text;
+        const char *resource = lookupString(id, 0);
+        if (resource)
+            assignResource(resource, id);
+        return;
     }
-    return this;
+
+    unsigned int length = text ? strlen(text) : 0;
+    assign(text, length);
 }

@@ -1,5 +1,19 @@
-// from server: 93% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: openrbx-client App/v8datamodel/ModelInstance.cpp
+// from server: 100% by king_originala
+struct Interface {
+    virtual void unused();
+    virtual char* get();
+};
+
+struct S {
+    char padding[0x134];
+    int* offsets;
+    char* f();
+};
+
+char* S::f()
+{
+    Interface* base = reinterpret_cast<Interface*>(
+        reinterpret_cast<char*>(this) + 0x134 + offsets[1]);
+    char* result = base->get();
+    return result ? result + 0x228 : 0;
+}

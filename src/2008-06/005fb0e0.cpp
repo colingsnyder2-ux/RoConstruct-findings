@@ -1,33 +1,30 @@
-// from server: 72% by colin
-struct Node {
-    int activeIndex;
-    int freeIndex;
+// from server: 100% by king_originala
+struct Value {
+    int index;
+    float value;
 };
 
-struct NodeArray {
-    Node** data;
-    int size;
-    int capacity;
-    void resize(int newSize, Node* value);
+struct Argument {
+    char padding[44];
+    Value* target;
 };
 
-struct Body {
-    char pad[0x2c];
-    float* someFloatPtr;
+struct Receiver {
+    void resize(Argument* argument);
 };
 
-struct Kernel {
-    char pad[0x10];
-    NodeArray* nodeArray;
-    void insertBody(Body* b);
+extern "C" float __cdecl infinity();
+
+struct S {
+    char padding[16];
+    Receiver* receiver;
+    void f(Argument* argument);
 };
 
-float getInfinity();
-
-void Kernel::insertBody(Body* b)
+void S::f(Argument* argument)
 {
-    nodeArray->resize(0, (Node*)b);
-    float f = getInfinity();
-    if (b->someFloatPtr)
-        *b->someFloatPtr = f;
+    receiver->resize(argument);
+    double value = infinity();
+    if (argument->target)
+        argument->target->value = value;
 }

@@ -1,42 +1,80 @@
-// from server: 30% by colin
+// from server: 100% by king_originala
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
+extern "C" long __cdecl _InterlockedDecrement(volatile long*);
+#pragma intrinsic(_InterlockedDecrement)
 
-struct Str {
-    char pad[0x1c];
+struct Text;
+extern void (__thiscall *constructText)(Text*, const char*);
+extern void (__thiscall *destroyText)(Text*);
+
+struct Text {
+    unsigned char storage[28];
+    Text(const char*);
+    ~Text();
 };
 
-extern "C" void __stdcall Str_ctor(Str*, const char*);
-extern "C" void __stdcall Str_dtor(Str*);
+inline Text::Text(const char* value)
+{
+    constructText(this, value);
+}
 
-extern "C" void* __stdcall sub_4B4E50(void*);
-extern "C" void __stdcall sub_55A8F0(void*, void*);
+inline Text::~Text()
+{
+    destroyText(this);
+}
 
-struct RefCounted {
-    virtual void v0();
-    virtual void v1();
-    virtual void v2();
-    volatile long ref1;
-    volatile long ref2;
+struct Item;
+
+struct Object {
+    virtual void reserved();
+    virtual void setName(const Text&);
+    void attach(Item*);
 };
 
-struct TypedMemItem {
-    void construct(const char* name);
+struct Control {
+    virtual void reserved();
+    virtual void dispose();
+    virtual void destroy();
+    volatile long strong;
+    volatile long weak;
+    void release();
 };
 
-void TypedMemItem::construct(const char* name) {
-    Str s;
-    Str_ctor(&s, name);
-    void* p = sub_4B4E50(&s);
-    sub_55A8F0(p, this);
-    Str_dtor(&s);
-    RefCounted* r = (RefCounted*)p;
-    if (r) {
-        if (_InterlockedExchangeAdd(&r->ref1, -1) == 1) {
-            r->v1();
-            if (_InterlockedExchangeAdd(&r->ref2, -1) == 1) {
-                r->v2();
-            }
-        }
+inline void Control::release()
+{
+    if (_InterlockedDecrement(&strong) == 0) {
+        dispose();
+        if (_InterlockedDecrement(&weak) == 0)
+            destroy();
     }
+}
+
+struct Shared {
+    Object* object;
+    Control* control;
+    ~Shared();
+};
+
+inline Shared::~Shared()
+{
+    if (control)
+        control->release();
+}
+
+extern Shared __cdecl createObject();
+
+struct Item {
+    Object* create(const char*);
+};
+
+Object* Item::create(const char* name)
+{
+    Shared result = createObject();
+    {
+        Text text(name);
+        result.object->setName(text);
+    }
+    result.object->attach(this);
+    return result.object;
 }

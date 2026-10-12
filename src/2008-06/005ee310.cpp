@@ -1,52 +1,39 @@
-// from server: 69% by colin
-struct GetSet {
-    virtual void unused0();
-    virtual void unused1();
-    virtual int getValue(const void* instance);
+// from server: 100% by king_originala
+struct ValueSource {
+    virtual void slot0();
+    virtual void slot1();
+    virtual unsigned int get(void*);
 };
 
-struct DescribedBase {
+struct EnumTable {
+    char padding[0xdc];
+    int* begin;
+    int* volatile end;
 };
 
-struct SurfaceEnumPropDescriptor {
-    char pad[0x1c];
-    GetSet* getset;
-    int getValue(const DescribedBase* instance) const;
+extern void __cdecl initializeOnce(void (__cdecl*)(), int*);
+extern EnumTable* __cdecl getTable();
+extern "C" void (__cdecl* _invalid_parameter_noinfo)();
+
+struct Descriptor {
+    char padding[0x1c];
+    ValueSource* source;
+    int lookup(void*);
 };
 
-struct EnumDesc {
-    static EnumDesc& singleton();
-    int convertToValue(int v);
-};
+int Descriptor::lookup(void* object)
+{
+    unsigned int index = source->get(object);
+    initializeOnce(
+        reinterpret_cast<void (__cdecl*)()>(0x5ed690),
+        reinterpret_cast<int*>(0x97b120));
+    EnumTable* table = getTable();
 
-struct Item {
-};
-
-struct EnumDescriptor {
-    struct Item* convertToItem(int v);
-};
-
-extern "C" void __stdcall _invalid_parameter_noinfo();
-extern "C" void __cdecl sub_557330(int a, int b);
-extern "C" EnumDesc* __cdecl sub_5ed630();
-
-struct Container {
-    char pad[0xdc];
-    Item** begin;
-    Item** end;
-};
-
-int SurfaceEnumPropDescriptor::getValue(const DescribedBase* instance) const {
-    int v = getset->getValue(instance);
-    sub_557330(0x97b120, 0x5ed690);
-    Container* c = (Container*)sub_5ed630();
-    unsigned int count = (unsigned int)((char*)c->end - (char*)c->begin) >> 2;
-    if ((unsigned int)v < count) {
-        return -1;
+    if (index < static_cast<unsigned int>(table->end - table->begin)) {
+        if (index >= static_cast<unsigned int>(table->end - table->begin))
+            _invalid_parameter_noinfo();
+        return table->begin[index];
     }
-    unsigned int count2 = (unsigned int)((char*)c->end - (char*)c->begin) >> 2;
-    if ((unsigned int)v >= count2) {
-        _invalid_parameter_noinfo();
-    }
-    return (int)c->begin[v];
+
+    return -1;
 }

@@ -1,52 +1,49 @@
-// from server: 37% by colin
-// roc 2008-06 0040ea90 188 bytes
-// VCBrowserViewExternal::?$CProxy_IBrowserViewExternalEvents
+// from server: 80% by king_originala
+typedef unsigned int size_t;
+typedef unsigned long DWORD;
 
-extern "C" void* __stdcall calloc(unsigned int, unsigned int);
-extern "C" void* __stdcall _recalloc(void*, unsigned int, unsigned int);
-extern "C" void __cdecl memset(void*, int, unsigned int);
+extern "C" {
+    extern void* (__cdecl *calloc)(size_t, size_t);
+    extern void* (__cdecl *_recalloc)(void*, size_t, size_t);
+    void* __cdecl memset(void*, int, size_t);
+}
 
-struct CProxy {
-    unsigned int* data;
-    unsigned int count;
-    void Add(unsigned int value);
+struct S {
+    void** entries;
+    int capacity;
+
+    DWORD Add(void* object);
 };
 
-void CProxy::Add(unsigned int value) {
-    if (this->count == 0) {
-        unsigned int* p = (unsigned int*)calloc(4, 4);
-        if (p == 0) {
-            return;
-        }
-        p[0] = 0;
-        p[1] = 0;
-        p[2] = 0;
-        p[3] = 0;
-        this->data = p;
-        this->count = 4;
+DWORD S::Add(void* object)
+{
+    if (capacity == 0) {
+        void** allocated = (void**)calloc(4, 4);
+        if (!allocated)
+            return (DWORD)allocated;
+
+        memset(allocated, 0, 16);
+        entries = allocated;
+        capacity = 4;
     }
 
-    unsigned int* begin = this->data;
-    unsigned int n = this->count;
-    unsigned int* end = begin + n;
-    unsigned int i = 1;
-    unsigned int* it = begin;
-    while (it < end) {
-        if (*it == 0) {
-            *it = value;
-            return;
+    DWORD index = 1;
+    for (void** slot = entries; slot < entries + capacity; ++slot, ++index) {
+        if (*slot == 0) {
+            *slot = object;
+            return index;
         }
-        it++;
-        i++;
     }
 
-    unsigned int newCount = n * 2;
-    unsigned int* newData = (unsigned int*)_recalloc(this->data, newCount, 4);
-    if (newData == 0) {
-        return;
-    }
-    this->data = newData;
-    memset(newData + n, 0, (newCount - n) * 4);
-    newData[n] = value;
-    this->count = newCount;
+    int newCapacity = capacity * 2;
+    void** allocated = (void**)_recalloc(entries, 4, newCapacity);
+    if (!allocated)
+        return (DWORD)allocated;
+
+    entries = allocated;
+    memset((char*)allocated + capacity * 4, 0, capacity * 4);
+    entries[capacity] = object;
+    DWORD result = capacity + 1;
+    capacity = newCapacity;
+    return result;
 }

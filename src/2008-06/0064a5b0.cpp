@@ -1,4 +1,4 @@
-// from server: 75% by colin
+// from server: 100% by king_originala
 struct Edge {
     int pad0;
     void* prim0;
@@ -19,13 +19,11 @@ struct CleanStage : IStage {
     void* primitivesAreOk(Edge* e);
 };
 
-void* CleanStage::primitivesAreOk(Edge* e) {
+void* CleanStage::primitivesAreOk(Edge* e)
+{
     if (e->prim0 != 0) {
-        int a = ((IStage*)e->prim0)->getPriority();
-        int b = this->getPriority();
-        if (a >= b) {
+        if (((IStage*)e->prim0)->getPriority() >= getPriority())
             return *(void**)e->joint;
-        }
     }
     return 0;
 }

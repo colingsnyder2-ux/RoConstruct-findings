@@ -1,5 +1,15 @@
-// from server: 65% by colin
-// roc-lang: cpp
-// roc-cl: 50727
-// roc-flags: /O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MT
-// roc-lib: ogre-1.6.4 OgreMovableObject.cpp
+// from server: 74% by colin
+struct RbxSubEntity {
+    void getEdgeList();
+};
+
+extern "C" void __stdcall sub_8028A4(void*);
+extern "C" void __cdecl sub_6A158C(void*, const char*);
+
+void RbxSubEntity::getEdgeList()
+{
+    char buf[16];
+    const char* msg = "RBX RbxSubEntity::getEdgeList(): should not be called";
+    sub_8028A4(buf);
+    sub_6A158C(buf, msg);
+}

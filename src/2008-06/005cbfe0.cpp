@@ -1,5 +1,7 @@
-// from server: 60% by colin
-// roc-lang: cpp
-// roc-cl: 50727
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs v8datamodel/Camera.cpp
+// from server: 61% by king_originala
+int __stdcall f(int);
+
+int __stdcall f(int)
+{
+    return 1;
+}

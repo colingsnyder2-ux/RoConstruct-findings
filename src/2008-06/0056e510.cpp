@@ -1,19 +1,24 @@
-// from server: 45% by atomic.potato
-struct Inner {
-    virtual void f(int, int*);
+// from server: 100% by king_originala
+struct Accessor
+{
+    virtual void slot0();
+    virtual void slot1();
+    virtual void get(void** result, void* source);
 };
 
-struct Outer {
-    char pad[0x18];
-    Inner* p;
-    int method(int, int);
+extern void __cdecl copyValue(void* destination, const void* source);
+
+struct S
+{
+    unsigned char padding[24];
+    Accessor* accessor;
+    void* f(void* destination, void* source);
 };
 
-extern "C" void __stdcall sub_5be8a0(int*, int*);
-
-int Outer::method(int a, int b) {
-    int tmp = 0;
-    p->f(b, &tmp);
-    sub_5be8a0(&tmp, &tmp);
-    return tmp;
+void* S::f(void* destination, void* source)
+{
+    volatile unsigned long temporary = 0;
+    accessor->get(&source, source);
+    copyValue(destination, &source);
+    return destination;
 }

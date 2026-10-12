@@ -1,5 +1,14 @@
-// from server: 46% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs util/Math.cpp
+// from server: 83% by king_originala
+extern "C" double __cdecl fabs(double);
+
+float __cdecl maxAbs(const float* v)
+{
+    const float a[3] = {
+        (float)fabs(v[0]),
+        (float)fabs(v[1]),
+        (float)fabs(v[2])
+    };
+    const float& yz = a[1] < a[2] ? a[2] : a[1];
+    const float& result = a[0] < yz ? yz : a[0];
+    return result;
+}

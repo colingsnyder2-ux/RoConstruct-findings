@@ -1,18 +1,32 @@
-// from server: 55% by colin
-struct SurfaceEnumPropDescriptor {
-    void getVariant(const void* instance, void* value) const;
+// from server: 100% by king_originala
+struct Accessor {
+    virtual void slot0();
+    virtual void slot1();
+    virtual int get(void* object);
 };
 
-extern "C" void __cdecl sub_557330(const char* a, const char* b);
-extern "C" void* __cdecl sub_5ED630();
-extern "C" void __cdecl sub_448360(void* self, void* a, void* b);
+struct EnumDescriptor {
+    void convert(void* output, const int* value);
+};
 
-void SurfaceEnumPropDescriptor::getVariant(const void* instance, void* value) const {
-    void* getset = *(void**)((char*)this + 0x1c);
-    void* vtable = *(void**)getset;
-    void* fn = *(void**)((char*)vtable + 8);
-    void* result = ((void* (__thiscall*)(void*, const void*))fn)(getset, instance);
-    sub_557330((const char*)0x97b120, (const char*)0x5ed690);
-    void* desc = sub_5ED630();
-    sub_448360(desc, value, result);
+extern "C" void __cdecl initialize(void (__cdecl* callback)(), void* storage);
+extern "C" void __cdecl callback();
+extern "C" EnumDescriptor* __cdecl descriptor();
+extern unsigned char storage;
+
+struct Property {
+    unsigned char padding[28];
+    Accessor* accessor;
+
+    void* get(void* output, int object);
+};
+
+void* Property::get(void* output, int object)
+{
+    volatile int initial = 0;
+    object = accessor->get(reinterpret_cast<void*>(object));
+    initialize(callback, &storage);
+    EnumDescriptor* desc = descriptor();
+    desc->convert(output, &object);
+    return output;
 }

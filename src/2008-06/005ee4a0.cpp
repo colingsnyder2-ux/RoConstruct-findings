@@ -1,36 +1,62 @@
-// from server: 43% by atomic.potato
-struct SurfaceEnumPropDescriptor {
-    void* vfptr;
-    char pad[0x14];
-    void* field18;
-    void* field1c;
-    void* construct(int, int, int, int, int);
+// from server: 100% by king_originala
+typedef unsigned int size_t;
+
+void* __cdecl operator new(size_t);
+
+extern void __cdecl registerDescriptor(void (*)(), void*);
+extern void __cdecl descriptorCallback();
+extern void* __cdecl enumDescriptor();
+extern void* __cdecl partDescriptor();
+
+struct Base {
+    unsigned int vtable;
+    unsigned int data[5];
+
+    Base(void*, void*, unsigned int, unsigned int, unsigned int);
+    ~Base();
 };
 
-extern "C" void __cdecl sub_557330(int, int);
-extern "C" void* __cdecl sub_5ed5c0();
-extern "C" void __cdecl sub_59c7f0();
-extern "C" void* __cdecl sub_6a0920(int);
-extern "C" void __cdecl sub_56c650();
+struct EnumBase : Base {
+    void* descriptor;
 
-void* SurfaceEnumPropDescriptor::construct(int a, int b, int c, int d, int e)
+    EnumBase(void*, void*, unsigned int, unsigned int, unsigned int);
+};
+
+inline EnumBase::EnumBase(void* owner, void* type,
+                          unsigned int a, unsigned int b,
+                          unsigned int flags)
+    : Base(owner, type, a, b, flags), descriptor(type)
 {
-    sub_557330(0x5ed620, 0x97b11c);
-    void* p = sub_5ed5c0();
-    field18 = p;
-    sub_59c7f0();
-    sub_56c650();
-    field18 = p;
-    vfptr = (void*)0x840104;
-    void* q = sub_6a0920(0xc);
-    if (q) {
-        *(int*)q = 0x83fdc8;
-        *(int*)((char*)q + 4) = c;
-        *(int*)((char*)q + 8) = d;
-    } else {
-        q = 0;
-    }
-    field1c = q;
+}
 
-    return this;
+struct Binding {
+    unsigned int vtable;
+    unsigned int getter;
+    unsigned int setter;
+
+    Binding(unsigned int, unsigned int);
+};
+
+inline Binding::Binding(unsigned int g, unsigned int s)
+    : vtable(0x83fd50), getter(g), setter(s)
+{
+}
+
+struct S : EnumBase {
+    Binding* binding;
+
+    S(unsigned int, unsigned int, unsigned int,
+      unsigned int, unsigned int);
+};
+
+S::S(unsigned int a, unsigned int b, unsigned int getter,
+     unsigned int setter, unsigned int flags)
+    : EnumBase(partDescriptor(),
+               (registerDescriptor(descriptorCallback,
+                                   reinterpret_cast<void*>(0x97b11c)),
+                enumDescriptor()),
+               a, b, flags)
+{
+    vtable = 0x83ff64;
+    binding = new Binding(getter, setter);
 }

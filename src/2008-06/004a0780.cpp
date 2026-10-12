@@ -1,51 +1,80 @@
-// from server: 42% by atomic.potato
-struct VClientBoundFuncDesc {
-    char pad0[0x38];
-    int (__stdcall *field38)(int);
-    char pad3c[0x40 - 0x3c];
-    int field40;
-    int field44;
-    void invoke(int, int);
-};
-
-struct Arg {
-    int a;
-    int b;
-};
-
-extern "C" int __stdcall sub_6a17c6(int, int, int, int, int);
-extern "C" void __stdcall sub_6a158c(int, int);
-extern "C" int __stdcall sub_56ea60(int);
-extern "C" void __stdcall sub_802864(int);
-
-void VClientBoundFuncDesc::invoke(int a, int b)
+// from server: 73% by king_originala
+struct Control
 {
-    int v8;
-    int vc;
-    int v24;
-    int v2c;
+    virtual void destroy(unsigned int) = 0;
+    virtual void unused() = 0;
+    virtual Control* clone() = 0;
+};
 
-    v8 = field40;
-    if (field44) {
-        vc = (*(int (__thiscall **)(int))(*(int *)field44 + 8))(field44);
-    } else {
-        vc = 0;
+struct Value
+{
+    void* object;
+    Control* control;
+
+    Value(const Value&);
+    ~Value();
+    int* get();
+};
+
+inline Value::Value(const Value& other)
+{
+    object = other.object;
+    control = other.control ? other.control->clone() : 0;
+}
+
+inline Value::~Value()
+{
+    if (control)
+        control->destroy(1);
+}
+
+struct Arguments
+{
+    virtual void unused() = 0;
+    virtual void set(int, Value*) = 0;
+};
+
+namespace std
+{
+    class bad_cast
+    {
+        unsigned char storage[12];
+    public:
+        bad_cast(const char*);
+    };
+}
+
+extern char sourceType;
+extern char targetType;
+extern char badCastInfo;
+
+extern "C" void* __cdecl __RTDynamicCast(
+    void*, long, void*, void*, int);
+extern "C" void __stdcall throwException(void*, void*);
+
+struct S
+{
+    unsigned char reserved[56];
+    void (__thiscall* invoke)(void*, int);
+    int adjustment;
+    Value value;
+
+    void function(void*, Arguments*);
+};
+
+void S::function(void* object, Arguments* arguments)
+{
+    Value temporary(value);
+    arguments->set(1, &temporary);
+
+    void* client = __RTDynamicCast(
+        object, 0, &sourceType, &targetType, 0);
+
+    if (!client)
+    {
+        std::bad_cast exception("bad cast");
+        throwException(&exception, &badCastInfo);
     }
 
-    v2c = 0;
-    (*(void (__thiscall **)(int, int, int *))(*(int *)a + 4))(a, 1, &v8);
-
-    int esi = sub_6a17c6(v2c, 0, 0x9291fc, 0x938ddc, 0);
-    if (esi == 0) {
-        sub_802864(0x80ba34);
-        sub_6a158c((int)&v8, 0x8d362c);
-    }
-
-    int edx = *(int *)sub_56ea60((int)&v8);
-    field38(edx + esi);
-
-    v24 = -1;
-    if (vc) {
-        (*(void (__thiscall **)(int, int))(*(int *)vc))(vc, 1);
-    }
+    invoke(static_cast<char*>(client) + adjustment, *temporary.get());
 }

@@ -1,5 +1,26 @@
-// from server: 53% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs util/RunStateOwner.cpp
+// from server: 100% by king_originala
+struct Object;
+
+struct Iterator {
+    void* unused;
+    int* current;
+};
+
+struct Functor {
+    void (__thiscall *method)(Object*, int, int);
+    Object* object;
+    int adjustment;
+    int argument;
+};
+
+Functor apply(Iterator first, Iterator last, Functor function)
+{
+    int* current = first.current;
+    int* end = last.current;
+    for (; current != end; ++current)
+        function.method(
+            reinterpret_cast<Object*>(
+                function.adjustment + reinterpret_cast<char*>(function.object)),
+            function.argument, *current);
+    return function;
+}

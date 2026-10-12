@@ -1,17 +1,23 @@
-// from server: 74% by atomic.potato
-struct S
-{
-    int f(int, int);
+// from server: 100% by king_originala
+struct Getter;
+typedef void* (__thiscall *GetValue)(Getter*, void**, void*);
+
+struct Getter {
+    GetValue* table;
 };
 
-typedef int (__thiscall *F)(void *, void *);
+struct Output {
+    void assign(void* value);
+};
 
-extern int __stdcall G1_func_00445bc0(int, int);
+struct S {
+    unsigned char padding[24];
+    Getter* getter;
+    void get(void* object, Output* output);
+};
 
-int S::f(int a, int b)
+void S::get(void* object, Output* output)
 {
-    char *p = *(char **)((char *)this + 0x18);
-    F q = *(F *)(*(char **)p + 8);
-    int x = q(p, &b);
-    return G1_func_00445bc0(b, x);
+    void* value = getter->table[2](getter, &object, object);
+    output->assign(value);
 }

@@ -1,27 +1,35 @@
-// from server: 86% by colin
-// roc 2008-06 005b9840  unit: RBX::Soundscape::SoundChannel  size: 68 bytes
-// Make this compile to the exact bytes below, then: roc check 2008-06 005b9840
+// from server: 100% by king_originala
+extern "C" int __stdcall releaseHandle(void *, int);
+extern "C" void __cdecl checkResult(int);
 
-extern "C" int __cdecl sub_69FBF4(int, int);
-extern "C" void __cdecl sub_5B87A0(int);
-extern "C" void __cdecl sub_456E80(int);
-
-struct SoundChannel {
-    char pad[0x134];
-    int field_134;
-    int field_138;
-    int field_13C;
-    void method(int, int);
+struct Referent {
+    unsigned char padding[8];
+    int references;
 };
 
-void SoundChannel::method(int, int)
+struct Reference {
+    Referent *object;
+    void *control;
+    void reset();
+};
+
+struct S {
+    unsigned char padding[0x134];
+    Reference reference;
+    void *handle;
+
+    void release(int, int);
+};
+
+void S::release(int, int)
 {
-    if (field_13C) {
-        sub_5B87A0(sub_69FBF4(field_13C, 0));
-        field_13C = 0;
+    if (handle) {
+        checkResult(releaseHandle(handle, 0));
+        handle = 0;
     }
-    if (field_134) {
-        field_134 -= 1;
-        sub_456E80((int)&field_134);
+
+    if (reference.object) {
+        --reference.object->references;
+        reference.reset();
     }
 }

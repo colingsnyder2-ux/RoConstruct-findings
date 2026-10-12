@@ -1,4 +1,4 @@
-// from server: 80% by king_originala
+// from server: 100% by king_originala
 unsigned __cdecl descriptor();
 
 struct Base {
@@ -8,17 +8,22 @@ struct Base {
 };
 
 struct S : Base {
+    static __forceinline int prepare(S*, int);
     S(int complete);
 };
 
-S::S(int complete)
-    : Base(complete
-        ? (data[0x150 / 4] = 0x834eb4,
-           data[0x1d4 / 4] = 0x846144, 0)
-        : 0)
+__forceinline int S::prepare(S* p, int complete)
 {
     volatile int constructionFlags = 0;
+    if (complete) {
+        p->data[0x150 / 4] = 0x834eb4;
+        p->data[0x1d4 / 4] = 0x846144;
+    }
+    return 0;
+}
 
+S::S(int complete) : Base(prepare(this, complete))
+{
     data[0x1c / 4] = descriptor();
 
     int* table = reinterpret_cast<int*>(data[0x150 / 4]);

@@ -1,29 +1,42 @@
-// from server: 69% by atomic.potato
-struct PartInstance;
+// from server: 100% by king_originala
+struct S {
+    char padding[0x104];
+    S* parent;
+    bool f(S* node);
+};
 
-struct GetSetImpl
-{
+struct PartInstance : S {
+    char padding2[0x1f0 - 0x108];
+    bool locked;
+};
+
+struct GetSetImpl {
     static PartInstance* get(PartInstance* p);
 };
 
-struct UnlockedPartByLocalCharacter
-{
-    int f(PartInstance* p);
+struct Humanoid {
+    int f() const;
 };
 
-int UnlockedPartByLocalCharacter::f(PartInstance* p)
+struct UnlockedPartByLocalCharacter {
+    int unused;
+    S* character;
+    int unused2;
+    Humanoid* humanoid;
+    int f(PartInstance* part);
+};
+
+int UnlockedPartByLocalCharacter::f(PartInstance* part)
 {
-    if (*(int*)((char*)this + 4) != 0 && *(int*)((char*)this + 0xc) != 0)
-    {
-        PartInstance* q = GetSetImpl::get(p);
-        if (((char (__thiscall*)(void*, void*))0x422ae0)(q, *(void**)((char*)this + 4)))
-        {
-            char r = ((char (__thiscall*)(void*))0x6601c0)(*(void**)((char*)this + 0xc));
-            int v = r != 0 ? 1 : 0;
-            if (v != 2)
-                return v;
-        }
+    int result = 2;
+    if (character && humanoid) {
+        PartInstance* instance = GetSetImpl::get(part);
+        if (instance->f(character))
+            result = (unsigned char)humanoid->f() != 0;
     }
-    PartInstance* q = GetSetImpl::get(p);
-    return (*(unsigned char*)((char*)q + 0x1f0) != 0) ? 2 : 0;
+
+    if (result == 2)
+        result = GetSetImpl::get(part)->locked ? 0 : 2;
+
+    return result;
 }

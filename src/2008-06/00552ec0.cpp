@@ -1,16 +1,18 @@
-// from server: 29% by colin
+// from server: 100% by king_originala
 struct S {
-    char pad[0x10];
-    int field10;
-    bool check();
-    void remove(int, int);
+    char padding[16];
+    int* finish;
+
+    bool empty();
+    void destroy(int* first, int* last);
+    void pop_back();
 };
 
-bool S::check() {
-    if (!check()) {
-        int v = field10;
-        remove(v, v - 4);
-        field10 -= 4;
+#pragma optimize("", off)
+void S::pop_back()
+{
+    if (!empty()) {
+        destroy(finish - 1, finish);
+        --finish;
     }
-    return true;
 }

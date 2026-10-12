@@ -1,5 +1,11 @@
-// from server: 74% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs util/Name.cpp
+// from server: 100% by king_originala
+extern "C" void __cdecl cleanup();
+extern "C" int __cdecl register_exit(void (__cdecl *)());
+extern "C" void __cdecl initialize();
+
+int __cdecl f()
+{
+    register_exit(cleanup);
+    initialize();
+    return 0;
+}

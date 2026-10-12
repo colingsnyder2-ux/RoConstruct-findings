@@ -1,17 +1,15 @@
-// from server: 58% by atomic.potato
-extern "C" void __cdecl UpdateGlobal(float);
-
-struct Decal
-{
+// from server: 77% by king_originala
+struct S {
     char padding[0x170];
     float value;
-    void SetValue(float);
+    void changed(const void*);
+    void setValue(float);
 };
 
-void Decal::SetValue(float x)
+void S::setValue(float v)
 {
-    if (x == value)
-        return;
-    value = x;
-    UpdateGlobal(x);
+    if (v != value && v > 0.0f) {
+        value = v;
+        changed(reinterpret_cast<const void*>(0x975f4c));
+    }
 }

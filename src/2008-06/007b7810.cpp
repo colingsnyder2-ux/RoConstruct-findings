@@ -1,15 +1,24 @@
-// from server: 50% by atomic.potato
-struct S_func_007b7810 {
-    char pad[12];
-    void *m_value;
-    void f(void *);
+// from server: 100% by king_originala
+struct Ptr {
+    void* value;
+    Ptr(const Ptr& p);
+    ~Ptr();
+    void reset(void* p);
 };
 
-extern "C" void __stdcall sub_00598fa0(void *, void *);
-
-void S_func_007b7810::f(void *p)
+inline Ptr::Ptr(const Ptr& p)
 {
-    *(void **)p = 0;
-    *(void **)((char *)p + 8) = 0;
-    sub_00598fa0(p, m_value);
+    value = 0;
+    reset(p.value);
+}
+
+struct S {
+    char pad[12];
+    Ptr value;
+    Ptr f();
+};
+
+Ptr S::f()
+{
+    return Ptr(value);
 }

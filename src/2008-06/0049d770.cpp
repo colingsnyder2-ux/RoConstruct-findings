@@ -1,4 +1,4 @@
-// from server: 66% by king_originala
+// from server: 88% by king_originala
 struct Packet {
     unsigned char reserved[12];
     unsigned int length;
@@ -44,11 +44,12 @@ struct S {
     unsigned char reserved[372];
     Handler* handler;
     unsigned char context[4];
-    bool process(unsigned int, Packet*);
+    bool process(unsigned int, volatile Packet*);
 };
 
-bool S::process(unsigned int, Packet* packet)
+bool S::process(unsigned int, volatile Packet* packet)
 {
+    S* owner = this;
     switch (packet->data[0]) {
     case 0x51:
         try {
@@ -59,6 +60,7 @@ bool S::process(unsigned int, Packet* packet)
             SmallMessage e;
             SmallMessage f;
             TinyMessage g;
+            volatile unsigned int length = packet->length;
         }
         catch (...) {
         }
@@ -66,14 +68,17 @@ bool S::process(unsigned int, Packet* packet)
 
     case 0x52:
         try {
-            if (handler) {
+            if (owner->handler) {
                 Stream stream(packet->data, packet->length, false);
                 stream.skip(8);
                 Message message;
                 readWord(&stream, &message.first);
                 readWord(&stream, &message.second);
                 readValue(&stream, message.third);
-                handler->invoke(&message, context);
+                Handler* callback = owner->handler;
+                owner = reinterpret_cast<S*>(
+                    reinterpret_cast<unsigned char*>(owner) + 376);
+                callback->invoke(&message, owner);
             }
         }
         catch (...) {

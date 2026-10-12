@@ -1,10 +1,10 @@
-// from server: 72% by atomic.potato
-struct S
-{
+// from server: 100% by king_originala
+struct S {
+    int* (__cdecl *function)(void*);
+    void* argument;
 };
 
-void* __cdecl f(void* p)
+int __cdecl f(S* s)
 {
-    void* (*fn)(void*) = *(void* (**)(void*))p;
-    return *(void**)fn(*(void**)((char*)p + 4));
+    return *s->function(s->argument);
 }

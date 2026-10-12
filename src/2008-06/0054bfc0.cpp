@@ -1,19 +1,17 @@
-// from server: 36% by atomic.potato
-struct Mesh
-{
-    int m_data;
-    int f(int index);
+// from server: 100% by king_originala
+#pragma optimize("", off)
+
+struct Element {
+    char data[16];
 };
 
-int Mesh::f(int index)
-{
-    int result = 0;
-    while (result != 0)
-        result = 0;
+struct Mesh {
+    Element* elements;
+    Element* get(unsigned int index);
+};
 
-    int value = 0;
-    while (value != 0)
-        value = 0;
-
-    return index * 16 + m_data;
+Element* Mesh::get(unsigned int index) {
+    do {} while (0);
+    do {} while (0);
+    return elements + index;
 }

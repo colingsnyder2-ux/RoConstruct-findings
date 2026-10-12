@@ -1,11 +1,18 @@
-// from server: 21% by atomic.potato
-struct S
-{
-    int value;
-    int f(int);
+// from server: 100% by king_originala
+#pragma optimize("", off)
+
+struct Vertex {
+    char data[24];
 };
 
-int S::f(int index)
+struct Mesh {
+    Vertex* vertices;
+    Vertex* getVertex(int index);
+};
+
+Vertex* Mesh::getVertex(int index)
 {
-    return value + index * 24;
+    do {} while (0);
+    do {} while (0);
+    return vertices + index;
 }

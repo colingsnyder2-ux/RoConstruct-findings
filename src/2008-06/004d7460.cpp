@@ -1,5 +1,41 @@
-// from server: 42% by king_originala
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MT
-// roc-lib: ogre-1.4.9 OgreAlignedAllocator.cpp
+// from server: 82% by king_originala
+extern "C" long (__stdcall *InterlockedDecrement)(volatile long *);
+
+struct Control
+{
+    virtual ~Control();
+    volatile long references;
+    void dispose();
+};
+
+struct Shared
+{
+    Control *control;
+    ~Shared();
+};
+
+struct S
+{
+    Shared a;
+    Shared b;
+    Shared c;
+    Shared d;
+    ~S();
+};
+
+__forceinline Shared::~Shared()
+{
+    if (control)
+    {
+        if (InterlockedDecrement(&control->references) == 0)
+        {
+            control->dispose();
+            delete control;
+        }
+        control = 0;
+    }
+}
+
+S::~S()
+{
+}

@@ -1,111 +1,127 @@
-// from server: 34% by colin
+// from server: 87% by king_originala
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
+extern "C" long __cdecl _InterlockedDecrement(volatile long*);
+#pragma intrinsic(_InterlockedDecrement)
 
-extern "C" void __cdecl _invalid_parameter_noinfo();
+typedef void (__cdecl* Check)();
+extern "C" Check invalid_parameter_noinfo;
 
-struct Inner {
-    int* begin;
-    int* end;
-    int* cap;
+struct Control {
+    virtual void unused() = 0;
+    virtual void dispose() = 0;
+    virtual void destroy() = 0;
+    volatile long strong;
+    volatile long weak;
 };
+
+struct Vector;
+
+struct Proxy {
+    Vector* owner;
+};
+
+struct Entry {
+    void* value;
+    unsigned long other;
+};
+
+struct Iterator {
+    Proxy* proxy;
+    Entry* position;
+    Iterator(Proxy*, Entry*);
+    bool different(const Iterator&, Check) const;
+    void* value(Check) const;
+    void advance(Check);
+};
+
+struct Vector {
+    Proxy* proxy;
+    unsigned long padding[2];
+    Entry* first;
+    Entry* last;
+};
+
+inline Iterator::Iterator(Proxy* p, Entry* e)
+    : proxy(p), position(e)
+{
+}
+
+inline bool Iterator::different(const Iterator& other, Check check) const
+{
+    if (!proxy || proxy != other.proxy)
+        check();
+    return position != other.position;
+}
+
+inline void* Iterator::value(Check check) const
+{
+    if (!proxy)
+        check();
+    Vector* owner = proxy ? proxy->owner : 0;
+    if (position >= owner->last)
+        check();
+    return position->value;
+}
+
+inline void Iterator::advance(Check check)
+{
+    if (!proxy)
+        check();
+    Vector* owner = proxy ? proxy->owner : 0;
+    if (position >= owner->last)
+        check();
+    ++position;
+}
+
+struct Shared {
+    Vector* pointer;
+    Control* control;
+    ~Shared();
+};
+
+inline Shared::~Shared()
+{
+    Control* p = control;
+    if (p && _InterlockedDecrement(&p->strong) == 0) {
+        p->dispose();
+        if (_InterlockedDecrement(&p->weak) == 0)
+            p->destroy();
+    }
+}
 
 struct Holder {
-    int* vtable;
-    long refcount1;
-    long refcount2;
+    Vector* pointer;
+    Control* control;
+    Shared get();
 };
 
-struct Outer {
-    char pad[0x108];
-    Inner* inner;
-
-    void func(int arg);
+struct S {
+    unsigned char padding[0x108];
+    Holder holder;
+    void f(void (__cdecl*)(void*));
 };
 
-extern void __stdcall sub_4915b0(Inner* self, void* out);
-
-void Outer::func(int arg)
+void S::f(void (__cdecl* callback)(void*))
 {
-    if (this->inner != 0)
-        return;
+    if (holder.pointer) {
+        Shared shared = holder.get();
+        Vector* vector = shared.pointer;
+        Check check = invalid_parameter_noinfo;
 
-    Inner* p = this->inner;
+        Entry* last = vector->last;
+        if (vector->first > last)
+            check();
+        Iterator finish(vector->proxy, last);
 
-    void* out;
-    sub_4915b0(p, &out);
+        Entry* first = vector->first;
+        if (first > vector->last)
+            check();
+        Iterator current(vector->proxy, first);
 
-    int* esi = *(int**)&out;
-    int* eax = (int*)esi[4];
-    int* ebx = *(int**)0x802890;
-    int* edi = (int*)esi[3];
-    int* ecx = (int*)esi[0];
-    int* ebp = (int*)arg;
-
-    int* local1c = ecx;
-    int* local10 = eax;
-
-    if (edi > eax)
-        ((void(*)())ebx)();
-
-    esi = (int*)esi[0];
-
-    while (true) {
-        if (esi != 0 && esi != local1c)
-            ((void(*)())ebx)();
-
-        if (edi == local10)
-            break;
-
-        if (esi == 0) {
-            ((void(*)())ebx)();
-            int* eax2 = 0;
-            if (edi >= (int*)eax2[4])
-                ((void(*)())ebx)();
-            int* edx = (int*)edi[0];
-            ((void(*)(int*))ebp)(edx);
-            if (esi == 0) {
-                ((void(*)())ebx)();
-                int* eax3 = 0;
-                if (edi >= (int*)eax3[4])
-                    ((void(*)())ebx)();
-                edi += 2;
-                continue;
-            }
-            int* eax4 = (int*)esi[0];
-            if (edi >= (int*)eax4[4])
-                ((void(*)())ebx)();
-            edi += 2;
-            continue;
-        }
-        int* eax5 = (int*)esi[0];
-        if (edi >= (int*)eax5[4])
-            ((void(*)())ebx)();
-        int* edx2 = (int*)edi[0];
-        ((void(*)(int*))ebp)(edx2);
-        if (esi == 0) {
-            ((void(*)())ebx)();
-            int* eax6 = 0;
-            if (edi >= (int*)eax6[4])
-                ((void(*)())ebx)();
-            edi += 2;
-            continue;
-        }
-        int* eax7 = (int*)esi[0];
-        if (edi >= (int*)eax7[4])
-            ((void(*)())ebx)();
-        edi += 2;
-    }
-
-    Holder* h = (Holder*)local1c;
-    if (h != 0) {
-        if (_InterlockedExchangeAdd(&h->refcount1, -1) == 1) {
-            int* vt = (int*)h->vtable;
-            ((void(*)(Holder*))vt[1])(h);
-            if (_InterlockedExchangeAdd(&h->refcount2, -1) == 1) {
-                int* vt2 = (int*)h->vtable;
-                ((void(*)(Holder*))vt2[2])(h);
-            }
+        while (current.different(finish, check)) {
+            callback(current.value(check));
+            current.advance(check);
         }
     }
 }

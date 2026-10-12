@@ -1,48 +1,53 @@
-// from server: 23% by colin
+// from server: 90% by king_originala
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
+extern "C" long __cdecl _InterlockedDecrement(volatile long*);
+#pragma intrinsic(_InterlockedDecrement)
 
-struct Inner {
-    void (__thiscall *vtbl)(void);
-    void AddRef();
-    void Release();
+struct Control {
+    virtual void unused();
+    virtual void dispose();
+    virtual void destroy();
+    volatile long strong;
+    volatile long weak;
 };
 
-struct Obj {
-    int refcount;
-    void AddRef();
-    void Release();
+struct Shared {
+    void* pointer;
+    Control* control;
+    Shared(const Shared&);
+    ~Shared();
 };
 
-struct S {
-    char pad[8];
-    void* field8;
-    void sub_48b270(Obj*);
-    S* method(Obj*, Obj*);
-};
-
-void Obj::AddRef() {
-    _InterlockedExchangeAdd((volatile long*)&refcount, 1);
-}
-
-void Obj::Release() {
-    if (_InterlockedExchangeAdd((volatile long*)&refcount, -1) == 1) {
-        Inner* p = (Inner*)((char*)this + 4);
-        p->vtbl();
-        if (_InterlockedExchangeAdd((volatile long*)((char*)this + 8), -1) == 1) {
-            Inner* q = (Inner*)((char*)this + 4);
-            q->vtbl();
-        }
+inline Shared::Shared(const Shared& other)
+    : pointer(other.pointer), control(other.control)
+{
+    if (control) {
+        volatile long* count = &control->strong;
+        _InterlockedExchangeAdd(count, 1);
     }
 }
 
-S* S::method(Obj* a, Obj* b) {
-    if (b) {
-        b->AddRef();
+inline Shared::~Shared()
+{
+    Control* p = control;
+    if (p && _InterlockedDecrement(&p->strong) == 0) {
+        p->dispose();
+        if (_InterlockedDecrement(&p->weak) == 0)
+            p->destroy();
     }
-    sub_48b270(a);
-    if (b) {
-        b->Release();
-    }
-    return this;
+}
+
+struct Base {
+    Base(Shared, int);
+    ~Base();
+};
+
+struct S : Base {
+    S(Shared, int);
+};
+
+S::S(Shared value, int argument)
+    : Base(value, argument)
+{
 }

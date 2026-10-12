@@ -1,37 +1,38 @@
-// from server: 46% by colin
-extern "C" char* __stdcall strncpy(char*, const char*, unsigned int);
+// from server: 76% by king_originala
+extern "C" char * __cdecl strncpy(char *, const char *, unsigned int);
+extern const char digits[];
 
-char* __fastcall f(char* dst, int, const char* src)
+void __fastcall f(char *dst, const char *message, const unsigned char *src)
 {
-    char* p = dst;
+    int n = 0;
     int i = 0;
     do {
-        unsigned char c = (unsigned char)src[i + 0x11c];
-        int t = c - 0x41;
-        i++;
+        int c = src[i + 0x11c];
+        unsigned int t = (unsigned int)(c - 0x41);
+        ++i;
         if (t <= 0x39 && (c <= 0x5a || c >= 0x61)) {
-            *p = (char)c;
+            dst[n] = (char)c;
         } else {
-            *p = '[';
-            p++;
-            *p = "0123456789ABCDEF"[(c >> 4) & 0xf];
-            p++;
-            *p = "0123456789ABCDEF"[c & 0xf];
-            p++;
-            *p = ']';
+            dst[n] = '[';
+            ++n;
+            dst[n] = digits[(c >> 4) & 0xf];
+            ++n;
+            dst[n] = digits[c & 0xf];
+            ++n;
+            dst[n] = ']';
         }
-        p++;
+        ++n;
     } while (i < 4);
 
-    if (src == 0) {
-        *p = 0;
-        return dst;
+    if (message == 0) {
+        dst[n] = 0;
+        return;
     }
-    *p = ':';
-    p++;
-    *p = ' ';
-    p++;
-    strncpy(p, src, 0x3f);
-    p[0x3f] = 0;
-    return dst;
+    dst[n] = ':';
+    ++n;
+    dst[n] = ' ';
+    ++n;
+    dst += n;
+    strncpy(dst, message, 0x3f);
+    dst[0x3f] = 0;
 }

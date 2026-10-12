@@ -1,4 +1,4 @@
-// from server: 94% by king_originala
+// from server: 100% by colin
 void* __cdecl operator new(unsigned int);
 inline void* __cdecl operator new(unsigned int, void* p) { return p; }
 inline void __cdecl operator delete(void*, void*) {}
@@ -26,6 +26,6 @@ __forceinline Header::Header() : pointer(), flag(false) {
 }
 
 void __cdecl construct_header(char* p) {
-    p = p ? p - 12 : 0;
-    new (p) Header;
+    Header* h = p ? (Header*)(p - 12) : 0;
+    new (h) Header;
 }

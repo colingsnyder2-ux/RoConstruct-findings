@@ -1,87 +1,121 @@
-// from server: 72% by king_originala
+// from server: 87% by king_originala
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
 
-struct S;
+struct Function {
+    typedef void (__cdecl *Manager)(const void*, void*, int);
+    struct Table {
+        Manager manage;
+    };
+
+    const Table* table;
+    unsigned int reserved;
+    unsigned char storage[24];
+
+    Function(const Function&);
+    ~Function();
+};
+
+inline Function::Function(const Function& other) : table(0) {
+    if (other.table) {
+        table = other.table;
+        other.table->manage(other.storage, storage, 0);
+    }
+}
+
+inline Function::~Function() {
+    if (table) {
+        Manager manager = table->manage;
+        if (manager)
+            manager(storage, storage, 1);
+    }
+}
 
 struct String {
-    unsigned char storage[24];
+    unsigned char storage[28];
+
     String(const char*);
     ~String();
 };
 
+extern void (__thiscall *stringConstruct)(String*, const char*);
+extern void (__thiscall *stringDestroy)(String*);
+
+inline String::String(const char* text) {
+    stringConstruct(this, text);
+}
+
+inline String::~String() {
+    stringDestroy(this);
+}
+
+struct Owner;
+
 struct Object {
-    virtual void unused() = 0;
-    virtual void setName(const String&) = 0;
-    void attach(S*);
+    virtual void slot0();
+    virtual void setName(const String&);
+    void attach(Owner*);
 };
 
 struct Control {
-    virtual void unused() = 0;
-    virtual void dispose() = 0;
-    virtual void destroy() = 0;
+    virtual void slot0();
+    virtual void dispose();
+    virtual void destroy();
+
     volatile long strong;
     volatile long weak;
+
+    void release();
 };
 
-struct Shared {
-    Object* object;
+inline void Control::release() {
+    if (_InterlockedExchangeAdd(&strong, -1) == 0) {
+        dispose();
+        if (_InterlockedExchangeAdd(&weak, -1) == 0)
+            destroy();
+    }
+}
+
+struct FactoryResult {
+    Object* pointer;
     Control* control;
 
-    Shared(const Shared& other)
-        : object(other.object), control(other.control) {
-        if (control)
-            _InterlockedExchangeAdd(&control->strong, 1);
-    }
-
-    ~Shared() {
-        Control* p = control;
-        if (p && _InterlockedExchangeAdd(&p->strong, -1) == 1) {
-            p->dispose();
-            if (_InterlockedExchangeAdd(&p->weak, -1) == 1)
-                p->destroy();
-        }
-    }
+    ~FactoryResult();
 };
 
-struct Function {
-    typedef void (__cdecl *Manager)(const void*, void*, int);
-    Manager* manager;
-    unsigned long reserved;
-    unsigned char data[24];
+inline FactoryResult::~FactoryResult() {
+    if (control)
+        control->release();
+}
 
-    Function(const Function& other) : manager(0) {
-        if (other.manager) {
-            manager = other.manager;
-            (*other.manager)(other.data, data, 0);
-        }
-    }
+struct Shared {
+    Object* pointer;
+    Control* control;
 
-    ~Function() {
-        if (manager) {
-            Manager operation = *manager;
-            if (operation)
-                operation(data, data, 1);
-        }
-    }
+    Shared(const FactoryResult&);
+    ~Shared();
 };
 
-struct Result {
-    Shared value;
+inline Shared::Shared(const FactoryResult& other)
+    : pointer(other.pointer), control(other.control) {
+    if (control)
+        _InterlockedExchangeAdd(&control->strong, 1);
+}
+
+inline Shared::~Shared() {
+    if (control)
+        control->release();
+}
+
+FactoryResult __cdecl createObject(Function);
+
+struct Owner {
+    Object* create(const char*, Function);
 };
 
-Result __cdecl createObject(Function);
-
-struct S {
-    Object* f(const char*, Function);
-};
-
-Object* S::f(const char* name, Function function) {
-    Shared result(createObject(function).value);
-    {
-        String text(name);
-        result.object->setName(text);
-    }
-    result.object->attach(this);
-    return result.object;
+Object* Owner::create(const char* name, Function function) {
+    Shared object(createObject(function));
+    object.pointer->setName(String(name));
+    object.pointer->attach(this);
+    return object.pointer;
 }

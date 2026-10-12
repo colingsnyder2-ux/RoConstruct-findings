@@ -1,21 +1,22 @@
-// from server: 65% by colin
+// from server: 100% by king_originala
+extern char property;
+
 struct S
 {
-    void f(bool value);
-    unsigned char field_1e8;
-};
+    char padding[0x1e8];
+    unsigned char unused : 4;
+    unsigned char selected : 1;
+    unsigned char remaining : 3;
 
-extern "C" void __cdecl sub_40db00();
+    void f(bool value);
+    void notify(const void* descriptor);
+};
 
 void S::f(bool value)
 {
-    unsigned char old = field_1e8;
-    unsigned char current = (old >> 4) & 1;
-    if (current != (unsigned char)value)
+    if (selected != value)
     {
-        unsigned char v = (unsigned char)value;
-        unsigned char updated = old ^ ((v << 4) & 0x10);
-        field_1e8 = updated;
-        sub_40db00();
+        selected = value;
+        notify(&property);
     }
 }

@@ -1,23 +1,16 @@
-// from server: 55% by atomic.potato
-namespace RBX {
-class Instance { public: virtual ~Instance(); char pad[0x100]; Instance* next; };
-class ServiceProvider : public Instance { public: ServiceProvider* finish(); };
-}
-
-RBX::ServiceProvider* func_00491e50(RBX::Instance* p);
-
+// from server: 100% by king_originala
 struct S {
-    char pad[0x2e4];
-    int field_2e4;
-    int __cdecl f(RBX::Instance* p);
+    char padding[0x2e4];
+    void* value;
+    bool f(S* node);
 };
 
-int S::f(RBX::Instance* p) {
-    RBX::ServiceProvider* s = func_00491e50(p);
-    if (s) {
-        if (p == (RBX::Instance*)s || ((char*)p)[0] == 0) {
-            return ((S*)s)->field_2e4;
-        }
-    }
+extern S* func_00491e50(S* p);
+
+void* func_005a3390(S* p)
+{
+    S* q = func_00491e50(p);
+    if (q && (p == q || p->f(q)))
+        return q->value;
     return 0;
 }

@@ -1,13 +1,23 @@
-// from server: 52% by atomic.potato
-struct S
-{
-    int f(void *);
+// from server: 100% by king_originala
+struct Access {
+    virtual void slot0();
+    virtual void slot1();
+    virtual int get(int);
 };
 
-int S::f(void *arg)
+struct Result {
+    void assign(const int*);
+};
+
+struct Descriptor {
+    unsigned char padding[28];
+    Access* access;
+
+    void read(int, Result*);
+};
+
+void Descriptor::read(int value, Result* result)
 {
-    void *p = *(void **)((char *)this + 0x1c);
-    void *v = ((void *(__thiscall *)(void *, void *))(*(void ***)p)[2])(p, arg);
-    ((void (__thiscall *)(void *, void *))0x5ef120)(this, &v);
-    return (int)v;
+    value = access->get(value);
+    result->assign(&value);
 }

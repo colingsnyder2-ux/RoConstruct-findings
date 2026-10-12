@@ -1,19 +1,25 @@
-// from server: 33% by colin
-struct S_func_005fbd10 {
-    char pad0[0x174];
-    int f(int, int, int, int, int);
+// from server: 100% by king_originala
+extern unsigned char sourceType;
+extern unsigned char targetType;
+
+extern "C" void* __cdecl castObject(void*, long, void*, void*, int);
+
+struct Parameter
+{
+    void* object;
+    unsigned long storage[3];
+    ~Parameter();
 };
 
-extern "C" int __stdcall sub_006a17c6(int, int, int, int, int);
-extern "C" int __stdcall sub_005fbc80(int);
-extern "C" int __stdcall sub_00422c60(int);
-
-int S_func_005fbd10::f(int a1, int a2, int a3, int a4, int a5)
+struct S
 {
-    int result = sub_006a17c6(a1, 0, 0x92907c, 0x951950, 0);
-    if (result != 0) {
-        sub_005fbc80(result);
-    }
-    sub_00422c60(0);
-    return result;
+    void accept(void*);
+    void f(unsigned long, Parameter);
+};
+
+void S::f(unsigned long, Parameter value)
+{
+    void* object = castObject(value.object, 0, &sourceType, &targetType, 0);
+    if (object)
+        reinterpret_cast<S*>(reinterpret_cast<char*>(this) - 0x174)->accept(object);
 }

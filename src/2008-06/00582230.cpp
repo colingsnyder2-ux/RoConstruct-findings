@@ -1,75 +1,98 @@
-// from server: 31% by tester
-extern "C" void __stdcall _invalid_parameter_noinfo();
+// from server: 76% by king_originala
+extern "C" void (__stdcall *_invalid_parameter_noinfo)();
 
-struct Inner {
-    char pad[0xc];
-    unsigned int count;
-    unsigned int capacity;
-    char pad2[0x144];
-    void* data;
+struct Range {
+    unsigned char* storage;
+    unsigned char padding[8];
+    unsigned first;
+    unsigned last;
 };
 
-struct Verb {
-    void* vtable;
-    char pad[0x10];
-    char field14[0x0c];
-    void* field20;
-    char field24[0x0c];
-
-    void Run();
+struct Object {
+    unsigned char padding[0x154];
+    Range* range;
 };
 
-extern "C" void __stdcall sub_57D250();
-extern "C" void* __stdcall sub_581CC0(void* self, int flag);
-extern "C" void __stdcall sub_57FAB0(void* dst, void* a, unsigned int b, unsigned int c, unsigned int d, void* e, void* f);
-extern "C" void __stdcall sub_58C5C0(void* a, void* b);
+struct Reference {
+    Object* get(int);
+    unsigned char padding[12];
+};
 
-void Verb::Run()
+struct String {
+    unsigned unknown;
+    union {
+        char local[16];
+        char* allocated;
+    } text;
+    unsigned length;
+    unsigned capacity;
+
+    const char* c_str() const;
+};
+
+const char* String::c_str() const
 {
-    Inner* inner = *(Inner**)((char*)this + 0x20);
-    sub_57D250();
+    if (capacity >= 16)
+        return text.allocated;
+    return text.local;
+}
 
-    bool (__stdcall *fn)(void*) = *(bool (__stdcall **)(void*))((*(char**)this) + 0xc);
-    bool result = fn(this);
-    unsigned char flag = (result == 0) ? 1 : 0;
+struct Property {
+    unsigned unknown;
+    String name;
+};
 
-    void* p24 = *(void**)((char*)this + 0x24);
-    char* base = (char*)this + 0x14;
+struct Completion {
+    virtual int finish(int);
+};
 
-    void* r1 = sub_581CC0(base, 1);
-    Inner* i1 = *(Inner**)((char*)r1 + 0x154);
-    unsigned int c1 = i1->count;
-    unsigned int cap1 = i1->capacity;
-    if (c1 > cap1) {
+extern void __cdecl apply(
+    unsigned*, unsigned char*, unsigned, unsigned char*, unsigned,
+    Property*, bool);
+
+namespace RBX {
+    void __cdecl handle(int, int);
+}
+
+struct S {
+    virtual void slot0();
+    virtual void slot1();
+    virtual void slot2();
+    virtual bool state();
+
+    unsigned char padding[16];
+    Reference reference;
+    volatile int context;
+    Property* property;
+
+    void prepare();
+    int run(Completion*);
+};
+
+int S::run(Completion* completion)
+{
+    int unused = context;
+    prepare();
+
+    Property* savedProperty;
+    bool value = !state();
+    savedProperty = property;
+
+    Range* endRange = reference.get(1)->range;
+    unsigned end = endRange->last;
+    if (endRange->first > end)
         _invalid_parameter_noinfo();
-    }
-    void* d1 = i1->data;
+    unsigned char* endStorage = endRange->storage;
 
-    void* r2 = sub_581CC0(base, 1);
-    Inner* i2 = *(Inner**)((char*)r2 + 0x154);
-    unsigned int c2 = i2->count;
-    unsigned int cap2 = i2->capacity;
-    if (c2 > cap2) {
+    Range* beginRange = reference.get(1)->range;
+    unsigned begin = beginRange->first;
+    if (begin > beginRange->last)
         _invalid_parameter_noinfo();
-    }
-    void* d2 = i2->data;
 
-    char buf[16];
-    sub_57FAB0(buf, d2, c2, flag, cap1, p24, d1);
+    unsigned result;
+    apply(&result, beginRange->storage, begin, endStorage, end,
+          savedProperty, value);
 
-    char* p = (char*)this + 0x24;
-    char* str;
-    if (*(unsigned int*)(p + 0x1c) < 0x10) {
-        str = p + 4;
-    } else {
-        str = *(char**)(p + 4);
-    }
-
-    void* p20 = *(void**)((char*)this + 0x20);
-    sub_58C5C0(str, p20);
-
-    void* obj = *(void**)buf;
-    void** vt = *(void***)obj;
-    void (*final)(void*) = (void (*)(void*))vt[0];
-    final(obj);
+    RBX::handle(reinterpret_cast<int>(property->name.c_str()), context);
+    return completion->finish(1);
 }

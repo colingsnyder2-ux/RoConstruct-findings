@@ -1,5 +1,28 @@
-// from server: 70% by colin
-// roc-lang: cpp
-// roc-cl: 30729
-// roc-flags: /O2 /GS- /MD
-// roc-lib: mfc-9.0 atlmfc/src/mfc/afxtoolbarimages.cpp
+// from server: 100% by king_originala
+struct S;
+
+struct InsertResult {
+    unsigned long data[3];
+};
+
+struct Registry {
+    void insert(InsertResult* result, S** value);
+};
+
+extern Registry registry;
+extern unsigned long table[];
+
+struct S {
+    unsigned long* tablePointer;
+    S* initialize();
+};
+
+S* S::initialize()
+{
+    InsertResult result;
+    S* value;
+    tablePointer = table;
+    value = this;
+    registry.insert(&result, &value);
+    return this;
+}

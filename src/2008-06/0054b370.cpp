@@ -1,16 +1,20 @@
-// from server: 37% by atomic.potato
-extern "C" int __cdecl sub_54e310(int *);
-extern "C" void __cdecl sub_54c650(unsigned char *, int);
+// from server: 100% by king_originala
+#pragma optimize("", off)
 
-struct S
-{
-    int f();
+struct A {
+    float& XMin();
 };
 
-int S::f()
+struct B {};
+
+struct S {
+    S();
+    void initialize(const B&, float&);
+};
+
+S::S()
 {
-    unsigned char a;
-    unsigned char b;
-    sub_54c650(&b, sub_54e310((int *)&a));
-    return (int)this;
+    A a;
+    B b;
+    initialize(b, a.XMin());
 }

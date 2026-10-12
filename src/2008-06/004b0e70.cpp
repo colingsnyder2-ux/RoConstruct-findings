@@ -1,57 +1,54 @@
-// from server: 65% by atomic.potato
+// from server: 66% by colin
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
 
-struct type_info {
-    bool operator==(const type_info&) const;
+struct RefCounted {
+    void** vptr;
+    long ref1;
+    long ref2;
 };
 
-struct RefCount {
-    long refs;
-    long weak;
+struct Holder {
+    int a;
+    int b;
+    int c;
+    int d;
+    RefCounted* p;
 };
 
-struct Obj {
-    void* vptr;
-    char pad[0xc];
-    RefCount* rc;
-};
+extern "C" int __cdecl type_info_equals(void*, void*);
 
-struct S {
-};
-
-void __cdecl f(void* a, void* b, int c) {
-    if (c == 0) {
-        if (b == 0) return;
-        Obj* src = (Obj*)a;
-        Obj* dst = (Obj*)b;
-        *(int*)((char*)dst + 0) = *(int*)((char*)src + 0);
-        *(int*)((char*)dst + 4) = *(int*)((char*)src + 4);
-        *(int*)((char*)dst + 8) = *(int*)((char*)src + 8);
-        *(int*)((char*)dst + 0xc) = *(int*)((char*)src + 0xc);
-        RefCount* r = *(RefCount**)((char*)src + 0x10);
-        *(RefCount**)((char*)dst + 0x10) = r;
-        if (r == 0) return;
-        _InterlockedExchangeAdd(&r->refs, 1);
-        return;
+int __cdecl sub_4b0e70(int arg0, Holder* src, Holder* dst, int op)
+{
+    if (op == 0) {
+        if (dst == 0)
+            return 0;
+        dst->a = src->a;
+        dst->b = src->b;
+        dst->c = src->c;
+        dst->d = src->d;
+        dst->p = src->p;
+        if (dst->p == 0)
+            return 0;
+        _InterlockedExchangeAdd(&dst->p->ref1, 1);
+        return 0;
     }
-    if (c == 1) {
-        Obj* o = (Obj*)a;
-        RefCount* r = o->rc;
-        if (r == 0) return;
-        if (_InterlockedExchangeAdd(&r->refs, -1) != 1) return;
-        void** vt = *(void***)r;
-        void (*fn)(void*) = (void (*)(void*))vt[1];
-        fn(r);
-        if (_InterlockedExchangeAdd(&r->weak, -1) != 1) return;
-        void** vt2 = *(void***)r;
-        void (*fn2)(void*) = (void (*)(void*))vt2[2];
-        fn2(r);
-        return;
+    if (op == 1) {
+        RefCounted* p = src->p;
+        if (p == 0)
+            return 0;
+        if (_InterlockedExchangeAdd(&p->ref1, -1) == 1) {
+            ((void (__thiscall*)(RefCounted*))p->vptr[1])(p);
+            if (_InterlockedExchangeAdd(&p->ref2, -1) == 1) {
+                ((void (__thiscall*)(RefCounted*))p->vptr[2])(p);
+            }
+        }
+        return 0;
     }
-    Obj* o = (Obj*)a;
-    void* t = o->vptr;
-    extern bool __stdcall typeinfo_eq(void*, void*);
-    bool eq = typeinfo_eq(t, (void*)0x93b378);
-    o->vptr = eq ? 0 : b;
+    {
+        int r = type_info_equals(*(void**)src, (void*)0x93b378);
+        int v = -r;
+        dst->a = v & arg0;
+    }
+    return 0;
 }

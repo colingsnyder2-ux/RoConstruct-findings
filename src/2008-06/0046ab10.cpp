@@ -1,5 +1,23 @@
-// from server: 85% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: boost-1.34.1 libs/regex/src/instances.cpp
+// from server: 100% by king_originala
+struct Value
+{
+    unsigned char data[16];
+    ~Value();
+};
+
+struct Target
+{
+    void func_00555350();
+};
+
+struct S
+{
+    unsigned char padding[20];
+    Target* target;
+    void func_0046ab10(int, Value);
+};
+
+void S::func_0046ab10(int, Value)
+{
+    target->func_00555350();
+}

@@ -1,25 +1,43 @@
-// from server: 15% by colin
-extern "C" void* __cdecl malloc(unsigned int size);
+// from server: 100% by king_originala
+extern "C" void* (__cdecl *malloc)(unsigned int);
+extern "C" void __cdecl free(void*);
 
-struct Item {
-    void* construct(int* p);
-    void init(int* p);
-};
-
-void* Item::construct(int* p)
+inline void* __cdecl operator new(unsigned int size) throw()
 {
-    *p = 0;
-    return 0;
+    return malloc(size);
 }
 
-void Item::init(int* p)
+inline void __cdecl operator delete(void* p) throw()
 {
-    int* q = (int*)malloc(0x160);
-    if (q) {
-        construct(q);
-    } else {
-        q = 0;
+    free(p);
+}
+
+struct TypedMemItem
+{
+    char storage[0x160];
+    TypedMemItem(int value);
+};
+
+struct Deleter
+{
+    int value;
+
+    Deleter() : value(0)
+    {
+        *(volatile unsigned char*)&value = 0;
     }
-    *(int*)0 = 0;
-    init(q);
+
+    void operator()(TypedMemItem* p) const;
+};
+
+struct S
+{
+    S(TypedMemItem* p, Deleter deleter);
+    static S f(int value);
+};
+
+S S::f(int value)
+{
+    Deleter deleter;
+    return S(new TypedMemItem(value), deleter);
 }

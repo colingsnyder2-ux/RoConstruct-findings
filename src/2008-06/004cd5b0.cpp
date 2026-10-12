@@ -1,38 +1,61 @@
-// from server: 35% by tester
-struct RBX_Network_RoundRobinPhysicsSender {
-    char pad0[0x138];
-    void* construct();
-    void init(const char*);
-    void sub_55af90(void*);
+// from server: 73% by king_originala
+struct Base
+{
+    unsigned int words[78];
+    Base();
+    ~Base();
 };
 
-extern "C" void __stdcall sub_4cd510();
-extern "C" void __stdcall sub_64b2a0();
-extern "C" void __stdcall sub_55af90();
-
-extern "C" void __stdcall string_ctor(void*, const char*);
-extern "C" void __stdcall string_dtor(void*);
-
-void* RBX_Network_RoundRobinPhysicsSender::construct()
+struct Member
 {
-    sub_4cd510();
-    *(int*)((char*)this + 0x00) = 0x826aac;
-    *(int*)((char*)this + 0x10) = 0x826aa0;
-    *(int*)((char*)this + 0x14) = 0x826a98;
-    *(int*)((char*)this + 0x20) = 0x826a90;
-    *(int*)((char*)this + 0x24) = 0x826a80;
-    *(int*)((char*)this + 0x44) = 0x826a70;
-    *(int*)((char*)this + 0x64) = 0x826a60;
-    *(int*)((char*)this + 0x84) = 0x826a50;
-    *(int*)((char*)this + 0xa4) = 0x826a40;
-    *(int*)((char*)this + 0xc4) = 0x826a30;
-    *(int*)((char*)this + 0x130) = 0x826a24;
-    *(int*)((char*)this + 0x134) = 0x826a18;
-    sub_64b2a0();
-    char buf[8];
-    string_ctor(buf, (const char*)0x826a04);
-    sub_55af90(buf);
-    string_dtor(buf);
+    unsigned int storage[3];
+    Member(const char&, const char&);
+    ~Member();
+};
 
-    return this;
+struct String
+{
+    unsigned char storage[28];
+
+    String(const char* text)
+    {
+        typedef void (__thiscall *Constructor)(String*, const char*);
+        ((Constructor*)0x802458)[0](this, text);
+    }
+
+    ~String()
+    {
+        typedef void (__thiscall *Destructor)(String*);
+        ((Destructor*)0x802468)[0](this);
+    }
+};
+
+struct Sender : Base
+{
+    Member member;
+
+    Sender();
+    void setName(const String&);
+};
+
+Sender::Sender()
+    : Base(),
+      member(
+          (words[0] = 0x826aac,
+           words[4] = 0x826aa0,
+           words[5] = 0x826a98,
+           words[8] = 0x826a90,
+           words[9] = 0x826a80,
+           words[17] = 0x826a70,
+           words[25] = 0x826a60,
+           words[33] = 0x826a50,
+           words[41] = 0x826a40,
+           words[49] = 0x826a30,
+           words[76] = 0x826a24,
+           words[77] = 0x826a18,
+           char()),
+          char())
+{
+    String name((const char*)0x826a04);
+    setName(name);
 }

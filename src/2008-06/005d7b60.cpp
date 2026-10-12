@@ -1,0 +1,108 @@
+// from server: 80% by colin
+struct GetSetImpl {
+    char pad0[8];
+    float* (__thiscall *get)(void*);
+    int offset;
+    int index;
+    int pad14;
+    int pad18;
+    int pad1c;
+    int pad20;
+    int pad24;
+    int pad28;
+    int pad2c;
+    int pad30;
+    int pad34;
+    int pad38;
+    int pad3c;
+    int pad40;
+    int pad44;
+    int pad48;
+    int pad4c;
+    int pad50;
+    int pad54;
+    int pad58;
+    int pad5c;
+    int pad60;
+    int pad64;
+    int pad68;
+    int pad6c;
+    int pad70;
+    int pad74;
+    int pad78;
+    int pad7c;
+    int pad80;
+    int pad84;
+    int pad88;
+    int pad8c;
+    int pad90;
+    int pad94;
+    int pad98;
+    int pad9c;
+    int padA0;
+    int padA4;
+    int padA8;
+    int padAC;
+    int padB0;
+    int padB4;
+    int padB8;
+    int padBC;
+    int padC0;
+    int padC4;
+    int padC8;
+    int padCC;
+    int padD0;
+    int padD4;
+    int padD8;
+    int padDC;
+    int padE0;
+    int padE4;
+    int padE8;
+    int padEC;
+    int padF0;
+    int padF4;
+    int padF8;
+    int padFC;
+    int pad100;
+    int pad104;
+    int pad108;
+    int pad10C;
+    int pad110;
+    int pad114;
+    int pad118;
+    int pad11C;
+    int pad120;
+    int pad124;
+    int pad128;
+    int pad12C;
+    int pad130;
+    int pad134;
+    int pad138;
+    int pad13C;
+    int pad140;
+    int pad144;
+    int pad148;
+    int pad14C;
+    int pad150;
+    float* getValue(float* out, void* obj);
+};
+
+float* GetSetImpl::getValue(float* out, void* obj)
+{
+    char* base;
+    if (obj) {
+        base = (char*)obj - 0x14;
+    } else {
+        base = 0;
+    }
+    int* vtable = *(int**)(base + 0x150);
+    int idx = *(int*)((char*)this + 0x10);
+    int fnOffset = *(int*)((char*)vtable + idx);
+    fnOffset += *(int*)((char*)this + 0xc);
+    float* (__thiscall *fn)(void*) = *(float* (__thiscall **)(void*))((char*)this + 8);
+    float* result = fn((void*)(base + 0x150 + fnOffset));
+    out[0] = result[0];
+    out[1] = result[1];
+    out[2] = result[2];
+    return out;
+}

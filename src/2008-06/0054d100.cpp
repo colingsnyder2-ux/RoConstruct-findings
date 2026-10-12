@@ -1,12 +1,12 @@
-// from server: 52% by atomic.potato
-extern "C" void sub_5514b0(void *, void *);
+// from server: 100% by king_originala
+extern "C" int __cdecl helper(int);
 
-struct Mesh
-{
-    void f(void *);
+struct Mesh {
+    int f(int);
 };
 
-void Mesh::f(void *arg)
+#pragma optimize("", off)
+int Mesh::f(int value)
 {
-    sub_5514b0(this, arg);
+    return helper(value);
 }

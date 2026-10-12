@@ -1,4 +1,4 @@
-// from server: 67% by king_originala
+// from server: 73% by king_originala
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
 
@@ -58,6 +58,7 @@ struct Counted {
 };
 
 struct Mutex;
+
 struct Lock {
     unsigned unused;
     Mutex* mutex;
@@ -109,7 +110,7 @@ struct Function {
 };
 
 __forceinline Lock::Lock(Mutex& value) : mutex(&value) {
-    mutex->acquire();
+    value.acquire();
     locked = true;
 }
 
@@ -122,9 +123,9 @@ __forceinline Lock::~Lock() {
 
 __forceinline SharedState::~SharedState() {
     Counted* p = count;
-    if (p && _InterlockedExchangeAdd(&p->strong, -1) == 1) {
+    if (p && _InterlockedExchangeAdd(&p->strong, -1) == 0) {
         p->dispose();
-        if (_InterlockedExchangeAdd(&p->weak, -1) == 1)
+        if (_InterlockedExchangeAdd(&p->weak, -1) == 0)
             p->destroy();
     }
 }
@@ -151,5 +152,7 @@ void __cdecl worker(SharedState state, const Function& function)
         mutex.wait(&lock);
         condition.release();
         mutex.reacquire(&lock);
+        mutex.release();
+        lock.locked = false;
     }
 }

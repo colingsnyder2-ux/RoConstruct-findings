@@ -1,5 +1,22 @@
-// from server: 33% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs v8world/Contact.cpp
+// from server: 97% by king_originala
+struct Vector3 {
+    float x, y, z;
+};
+
+extern int mapping[][4];
+
+struct ContactConnector {
+    char padding[16];
+    Vector3* vertices;
+
+    Vector3* getVertex(int index);
+};
+
+Vector3* ContactConnector::getVertex(int index)
+{
+    if (index < 12)
+        return vertices + mapping[index / 4][index % 4];
+
+    index -= 12;
+    return vertices + mapping[index / 4][index + 1];
+}

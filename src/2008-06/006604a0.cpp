@@ -1,6 +1,8 @@
-// from server: 68% by king_originala
+// from server: 100% by king_originala
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
+extern "C" long __cdecl _InterlockedDecrement(volatile long*);
+#pragma intrinsic(_InterlockedDecrement)
 
 struct Control
 {
@@ -11,56 +13,61 @@ struct Control
     volatile long weak;
 };
 
-struct Owner
+struct Reference
 {
     Control* control;
-    Owner();
-    ~Owner();
-    Owner& operator=(const Owner&);
+    Reference();
+    ~Reference();
+    Reference& operator=(const Reference&);
 };
 
-inline Owner::Owner() : control(0)
+struct Pointer
+{
+    void* object;
+    Reference reference;
+    Pointer();
+    Pointer& operator=(const Pointer&);
+};
+
+Pointer __cdecl makePointer(void*);
+
+struct S
+{
+    unsigned long table;
+    Pointer pointer;
+    S(void*);
+};
+
+__forceinline Reference::Reference() : control(0)
 {
 }
 
-inline Owner::~Owner()
+__forceinline Reference::~Reference()
 {
     Control* p = control;
-    if (p && _InterlockedExchangeAdd(&p->strong, -1) == 1)
+    if (p)
     {
-        p->dispose();
-        if (_InterlockedExchangeAdd(&p->weak, -1) == 1)
-            p->destroy();
+        if (_InterlockedDecrement(&p->strong) == 0)
+        {
+            p->dispose();
+            if (_InterlockedDecrement(&p->weak) == 0)
+                p->destroy();
+        }
     }
 }
 
-struct Product
+__forceinline Pointer::Pointer() : object(0)
 {
-    void* pointer;
-    Owner owner;
-};
+}
 
-Product __cdecl makeProduct(void*);
-
-struct FilterStairs
+__forceinline Pointer& Pointer::operator=(const Pointer& other)
 {
-    virtual ~FilterStairs();
-    void* pointer;
-    Owner owner;
-
-    FilterStairs(void*);
-    FilterStairs& operator=(const Product&);
-};
-
-inline FilterStairs& FilterStairs::operator=(const Product& product)
-{
-    pointer = product.pointer;
-    owner = product.owner;
+    object = other.object;
+    reference = other.reference;
     return *this;
 }
 
-FilterStairs::FilterStairs(void* argument)
-    : pointer(0), owner()
+S::S(void* argument) : table(0x0084c46c)
 {
-    *this = makeProduct(argument);
+    pointer = makePointer(argument);
 }

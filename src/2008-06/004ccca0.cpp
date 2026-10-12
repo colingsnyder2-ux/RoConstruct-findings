@@ -1,4 +1,4 @@
-// from server: 78% by king_originala
+// from server: 88% by king_originala
 struct Control {
     void* value;
     Control& operator=(const Control&);
@@ -12,7 +12,7 @@ struct Value {
     ~Value();
 };
 
-extern "C" void (__cdecl* invalid_parameter)();
+extern "C" void (__cdecl* volatile invalid_parameter)();
 
 struct Values {
     unsigned char reserved[12];
@@ -43,10 +43,12 @@ void* S::f()
 {
     initialize(initialize_index, &index_guard);
     unsigned int index = (unsigned int)func_004c9be0();
+    unsigned int count = (unsigned int)(
+        *(Value* volatile*)&values.last - values.first);
     void (__cdecl* invalid)() = invalid_parameter;
     Values& entries = values;
 
-    if (index + 1 > (unsigned int)(entries.last - entries.first)) {
+    if (index + 1 > count) {
         entries.resize(index + 1, Value());
     } else {
         if (index >= (unsigned int)(entries.last - entries.first))

@@ -1,4 +1,4 @@
-// from server: 95% by king_originala
+// from server: 96% by colin
 #pragma float_control(precise, off)
 
 extern "C" double __cdecl sqrt(double);
@@ -17,5 +17,5 @@ Vector2 Vector2::direction() const {
     float squaredLength = x * x + y * y;
     if (squaredLength != 1.0f)
         return *this / (float)sqrt(squaredLength);
-    return Vector2(x, y);
+    return Vector2(y, x);
 }

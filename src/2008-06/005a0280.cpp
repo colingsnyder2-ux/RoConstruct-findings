@@ -1,5 +1,13 @@
-// from server: 96% by colin
-// roc-lang: cpp
-// roc-cl: 50727
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs v8datamodel/Workspace.cpp
+// from server: 100% by king_originala
+void* __cdecl operator new(unsigned int);
+void __cdecl operator delete(void*);
+
+struct S {
+    unsigned char storage[0x48];
+    S(void* arg);
+};
+
+S* __cdecl create(void* arg)
+{
+    return new S(arg);
+}

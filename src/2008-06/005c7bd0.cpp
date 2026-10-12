@@ -1,5 +1,36 @@
-// from server: 64% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs util/Name.cpp
+// from server: 100% by king_originala
+void* __cdecl operator new(unsigned int);
+void __cdecl operator delete(void*);
+
+struct Primary {
+    virtual void f();
+};
+
+struct Secondary {
+    virtual void g();
+};
+
+struct Base : Primary, Secondary {
+    char data[40];
+    Base(void*, int, int);
+};
+
+struct Object : Base {
+    Object(void*, int, int);
+    virtual void f();
+    virtual void g();
+};
+
+__forceinline Object::Object(void* owner, int value, int limit)
+    : Base(owner, value, limit) {}
+
+struct S {
+    char padding[24];
+    void* owner;
+    Object* create();
+};
+
+Object* S::create()
+{
+    return new Object(owner, 0, 90);
+}
