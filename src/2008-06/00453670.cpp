@@ -1,4 +1,4 @@
-// from server: 98% by king_originala
+// from server: 100% by king_originala
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
 extern "C" long __cdecl _InterlockedDecrement(volatile long*);
@@ -16,7 +16,9 @@ struct Control {
 };
 
 __forceinline void Control::addRef() {
-    _InterlockedExchangeAdd(&strong, 1);
+    volatile long* count =
+        reinterpret_cast<volatile long*>(reinterpret_cast<char*>(this) + 4);
+    _InterlockedExchangeAdd(count, 1);
 }
 
 __forceinline void Control::release() {

@@ -1,4 +1,4 @@
-// from server: 76% by king_originala
+// from server: 80% by king_originala
 extern "C" void (__stdcall *_invalid_parameter_noinfo)();
 
 struct Range {
@@ -26,16 +26,7 @@ struct String {
     } text;
     unsigned length;
     unsigned capacity;
-
-    const char* c_str() const;
 };
-
-const char* String::c_str() const
-{
-    if (capacity >= 16)
-        return text.allocated;
-    return text.local;
-}
 
 struct Property {
     unsigned unknown;
@@ -43,12 +34,23 @@ struct Property {
 };
 
 struct Completion {
-    virtual int finish(int);
+    virtual void finish(int);
 };
 
-extern void __cdecl apply(
-    unsigned*, unsigned char*, unsigned, unsigned char*, unsigned,
-    Property*, bool);
+struct Operation {
+    Property* property;
+    bool value;
+
+    Operation(Property*, bool);
+};
+
+inline Operation::Operation(Property* p, bool v)
+    : property(p), value(v)
+{
+}
+
+extern Operation __cdecl apply(
+    unsigned char*, unsigned, unsigned char*, unsigned, Operation);
 
 namespace RBX {
     void __cdecl handle(int, int);
@@ -66,17 +68,15 @@ struct S {
     Property* property;
 
     void prepare();
-    int run(Completion*);
+    void run(Completion*);
 };
 
-int S::run(Completion* completion)
+void S::run(Completion* completion)
 {
     int unused = context;
     prepare();
 
-    Property* savedProperty;
-    bool value = !state();
-    savedProperty = property;
+    Operation operation(property, !state());
 
     Range* endRange = reference.get(1)->range;
     unsigned end = endRange->last;
@@ -89,10 +89,15 @@ int S::run(Completion* completion)
     if (begin > beginRange->last)
         _invalid_parameter_noinfo();
 
-    unsigned result;
-    apply(&result, beginRange->storage, begin, endStorage, end,
-          savedProperty, value);
+    apply(beginRange->storage, begin, endStorage, end, operation);
 
-    RBX::handle(reinterpret_cast<int>(property->name.c_str()), context);
-    return completion->finish(1);
+    String* name = &property->name;
+    const char* text;
+    if (name->capacity >= 16)
+        text = name->text.allocated;
+    else
+        text = name->text.local;
+
+    RBX::handle(reinterpret_cast<int>(text), context);
+    completion->finish(1);
 }

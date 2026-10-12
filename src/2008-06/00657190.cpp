@@ -1,21 +1,50 @@
-// from server: 23% by tester
-struct ImageKeyButton {
-    void* construct(void* a, void* b, void* c, void* d);
+// from server: 100% by king_originala
+extern "C" {
+    extern void* (__cdecl *malloc)(unsigned int);
+    void __cdecl free(void*);
+}
+
+struct String {
+    char storage[28];
+    ~String();
 };
 
-extern "C" void* __cdecl malloc(unsigned int);
-extern "C" void __stdcall free_string(void*);
+extern void (__thiscall *destroyString)(String*);
 
-void* ImageKeyButton::construct(void* a, void* b, void* c, void* d)
+__forceinline String::~String()
 {
-    void* p = malloc(0x190);
-    if (p) {
-        void* r = ((void* (__thiscall*)(void*, void*, void*, void*, void*))0x6570a0)(p, a, b, c, d);
-        p = r;
-    } else {
-        p = 0;
-    }
-    ((void (__thiscall*)(void*, void*, void*))0x656eb0)(this, p, 0);
-    free_string((char*)this + 40);
-    return this;
+    destroyString(this);
+}
+
+struct S {
+    unsigned long data[0x190 / 4];
+
+    S(void*, void*, void*, void*, void*);
+    static void* operator new(unsigned int) throw();
+    static void operator delete(void*);
+};
+
+void* S::operator new(unsigned int size) throw()
+{
+    return malloc(size);
+}
+
+void S::operator delete(void* p)
+{
+    free(p);
+}
+
+struct Deleter {};
+
+struct Shared {
+    void* object;
+    void* control;
+
+    Shared(S*, Deleter);
+    ~Shared();
+};
+
+Shared __cdecl create(void* a, String b, void* c, void* d, void* e)
+{
+    return Shared(new S(a, &b, c, d, e), Deleter());
 }

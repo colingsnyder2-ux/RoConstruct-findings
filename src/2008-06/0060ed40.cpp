@@ -1,6 +1,8 @@
-// from server: 75% by king_originala
+// from server: 76% by king_originala
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
+extern "C" long __cdecl _InterlockedDecrement(volatile long*);
+#pragma intrinsic(_InterlockedDecrement)
 
 extern "C" void (__cdecl* _invalid_parameter_noinfo)();
 
@@ -26,32 +28,43 @@ inline void Control::addRef()
 
 inline void Control::release()
 {
-    if (_InterlockedExchangeAdd(&strong, -1) == 1) {
+    if (_InterlockedDecrement(&strong) == 0) {
         dispose();
-        if (_InterlockedExchangeAdd(&weak, -1) == 1)
+        if (_InterlockedDecrement(&weak) == 0)
             destroy();
     }
 }
 
-struct Shared {
-    Object* object;
+struct Count {
     Control* control;
 
-    Shared(const Shared&);
-    ~Shared();
+    Count(const Count&);
+    ~Count();
 };
 
-inline Shared::Shared(const Shared& other)
-    : object(other.object), control(other.control)
+inline Count::Count(const Count& other)
+    : control(other.control)
 {
     if (control)
         control->addRef();
 }
 
-inline Shared::~Shared()
+inline Count::~Count()
 {
     if (control)
         control->release();
+}
+
+struct Shared {
+    Object* object;
+    Count count;
+
+    Shared(const Shared&);
+};
+
+inline Shared::Shared(const Shared& other)
+    : object(other.object), count(other.count)
+{
 }
 
 struct Entry {

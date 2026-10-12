@@ -1,4 +1,8 @@
-// from server: 91% by king_originala
+// from server: 98% by king_originala
+extern "C" void* __cdecl __RTDynamicCast(void*, long, void*, void*, int);
+extern char instanceType;
+extern char partType;
+
 struct Matrix {
     float elements[9];
     void copy(const Matrix&);
@@ -33,7 +37,7 @@ struct Storage {
     virtual void set(int, void*);
     char padding[8];
     void* entries[1];
-    void update(int, const Frame*);
+    void update(int, const Frame&);
 };
 
 struct S {
@@ -51,7 +55,9 @@ void S::f(int index, Instance* instance)
 
     void* part;
     PartObject* result;
-    if (instance && (result = dynamic_cast<PartObject*>(instance->object)))
+    if (instance &&
+        (result = static_cast<PartObject*>(__RTDynamicCast(
+            instance->object, 0, &instanceType, &partType, 0))))
         part = &result->part;
     else
         part = 0;
@@ -67,9 +73,10 @@ void S::f(int index, Instance* instance)
     frame.y = source->y;
     frame.z = source->z;
 
-    if (storage->entries[index] != part) {
-        storage->set(index, part);
+    Storage* current = storage;
+    if (current->entries[index] != part) {
+        current->set(index, part);
         if (part)
-            storage->update(index, &frame);
+            storage->update(index, frame);
     }
 }

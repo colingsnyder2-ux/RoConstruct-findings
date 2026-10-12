@@ -1,29 +1,19 @@
-// from server: 74% by colin
-struct Inner {
-    void* vtable;
+// from server: 100% by king_originala
+struct Result {
+    void finish();
 };
 
-struct Mid {
-    char pad[0x24];
-    Inner* inner;
-};
-
-struct Outer {
+struct CRbxPlayDocTemplate {
     char pad[0x58];
-    Mid* mid;
+    void* field_58;
+    void method();
 };
 
-struct Target {
-    void* method0();
-    void method1(int, int);
-};
-
-void* Target::method0()
+void CRbxPlayDocTemplate::method()
 {
-    Mid* m = *(Mid**)((char*)this + 0x58);
-    Inner* in = m->inner;
-    void** vt = *(void***)in;
-    void* (__thiscall *fn)(void*, int, int) = *(void* (__thiscall **)(void*, int, int))((char*)vt + 0x88);
-    void* r = fn(in, 0, 1);
-    return ((Target*)r)->method0();
+    void* q = *(void**)((char*)field_58 + 0x24);
+    void** vtable = *(void***)q;
+    Result* (__thiscall *fn)(void*, int, int) =
+        (Result* (__thiscall *)(void*, int, int))vtable[0x88 / 4];
+    fn(q, 0, 1)->finish();
 }

@@ -1,5 +1,24 @@
-// from server: 61% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs util/Math.cpp
+// from server: 68% by colin
+struct S {
+};
+
+void __cdecl f(float* out, const float* in) {
+    out[0] = in[0];
+    out[1] = in[1];
+    out[2] = in[2];
+    if (!(out[2] > out[1]) && out + 2 != out + 1) {
+        float t = out[2];
+        out[2] = out[1];
+        out[1] = t;
+    }
+    if (!(out[0] <= out[1]) && out + 1 != out) {
+        float t = out[1];
+        out[1] = out[0];
+        out[0] = t;
+    }
+    if (!(out[1] <= out[2]) && out + 2 != out + 1) {
+        float t = out[2];
+        out[2] = out[1];
+        out[1] = t;
+    }
+}

@@ -1,9 +1,8 @@
-// from server: 63% by king_originala
+// from server: 100% by king_originala
 struct String;
-extern void (__thiscall *stringDefaultConstruct)(String*);
-extern void (__thiscall *stringConstruct)(String*, const char*);
+extern void (__thiscall *stringConstruct)(String*);
+extern void (__thiscall *stringConstructText)(String*, const char*);
 extern void (__thiscall *stringDestroy)(String*);
-extern const void* __cdecl getLocalScope();
 
 struct String {
     char storage[28];
@@ -12,30 +11,22 @@ struct String {
     ~String();
 };
 
-inline String::String() {
-    stringDefaultConstruct(this);
-}
+__forceinline String::String() { stringConstruct(this); }
+__forceinline String::String(const char* text) { stringConstructText(this, text); }
+__forceinline String::~String() { stringDestroy(this); }
 
-inline String::String(const char* text) {
-    stringConstruct(this, text);
-}
+struct Name;
+extern const Name& __cdecl getLocalScope();
 
-inline String::~String() {
-    stringDestroy(this);
-}
-
-struct Guid {
-    String value;
-    const void* scope;
-    Guid();
+struct ScopedString {
+    String text;
+    const Name* scope;
+    ScopedString(int = 0);
+    ~ScopedString();
 };
 
-inline Guid::Guid() : scope(getLocalScope()) {
-}
-
-extern char table0[], table10[], table14[], table20[], table24[];
-extern char table44[], table64[], table84[], tableA4[], tableC4[];
-extern char table130[];
+__forceinline ScopedString::ScopedString(int) : text(), scope(&getLocalScope()) {}
+__forceinline ScopedString::~ScopedString() {}
 
 struct Base {
     char storage[0x134];
@@ -44,30 +35,30 @@ struct Base {
     void setValue(const String&);
 };
 
-struct Tables : Base {
-    Tables();
-};
-
-inline Tables::Tables() {
-    *reinterpret_cast<void**>(storage) = table0;
-    *reinterpret_cast<void**>(storage + 0x10) = table10;
-    *reinterpret_cast<void**>(storage + 0x14) = table14;
-    *reinterpret_cast<void**>(storage + 0x20) = table20;
-    *reinterpret_cast<void**>(storage + 0x24) = table24;
-    *reinterpret_cast<void**>(storage + 0x44) = table44;
-    *reinterpret_cast<void**>(storage + 0x64) = table64;
-    *reinterpret_cast<void**>(storage + 0x84) = table84;
-    *reinterpret_cast<void**>(storage + 0xA4) = tableA4;
-    *reinterpret_cast<void**>(storage + 0xC4) = tableC4;
-    *reinterpret_cast<void**>(storage + 0x130) = table130;
-}
-
-struct S : Tables {
-    Guid first;
-    Guid second;
+struct S : Base {
+    ScopedString first;
+    ScopedString second;
+    void installTables();
     S();
 };
 
-S::S() {
-    setValue(String("Shirt Graphic"));
+__forceinline void S::installTables()
+{
+    unsigned char* p = reinterpret_cast<unsigned char*>(this);
+    *reinterpret_cast<unsigned long*>(p + 0x000) = 0x83ca6c;
+    *reinterpret_cast<unsigned long*>(p + 0x010) = 0x83ca60;
+    *reinterpret_cast<unsigned long*>(p + 0x014) = 0x83ca58;
+    *reinterpret_cast<unsigned long*>(p + 0x020) = 0x83ca50;
+    *reinterpret_cast<unsigned long*>(p + 0x024) = 0x83ca40;
+    *reinterpret_cast<unsigned long*>(p + 0x044) = 0x83ca30;
+    *reinterpret_cast<unsigned long*>(p + 0x064) = 0x83ca20;
+    *reinterpret_cast<unsigned long*>(p + 0x084) = 0x83ca10;
+    *reinterpret_cast<unsigned long*>(p + 0x0a4) = 0x83ca00;
+    *reinterpret_cast<unsigned long*>(p + 0x0c4) = 0x83c9f0;
+    *reinterpret_cast<unsigned long*>(p + 0x130) = 0x83c9e8;
+}
+
+S::S() : Base(), first((installTables(), 0)), second()
+{
+    setValue(String("Clothing"));
 }

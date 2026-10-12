@@ -1,4 +1,4 @@
-// from server: 99% by king_originala
+// from server: 100% by king_originala
 typedef unsigned int size_t;
 
 void* __cdecl operator new(size_t);
@@ -8,7 +8,7 @@ inline void* __cdecl operator new(size_t, void* p) { return p; }
 inline void __cdecl operator delete(void*, void*) {}
 
 struct Value {
-    char data[60];
+    char data[72];
     Value(const Value&);
 };
 

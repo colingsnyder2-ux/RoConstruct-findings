@@ -1,39 +1,41 @@
-// from server: 42% by colin
-struct Instance {
-    char pad[0x0c];
-    void* field_0c;
+// from server: 100% by king_originala
+struct Entry {
+    unsigned int first;
+    unsigned int second;
 };
 
-struct Container {
-    char pad[0x0c];
-    void* field_0c;
+struct Entries {
+    char padding[12];
+    Entry* begin;
+    Entry* end;
 };
 
-extern "C" void* __stdcall sub_490d70(void*);
-
-struct S {
-    char pad[0x0c];
-    void* field_0c;
-    bool f();
+struct Object {
+    char padding[264];
+    Entries* entries;
 };
 
-bool S::f() {
-    void* p = this->field_0c;
-    if (!p) {
-        return false;
+struct Context {
+    Object* getObject();
+};
+
+struct ClearStarterpack {
+    char padding[12];
+    Context* context;
+    bool check();
+};
+
+bool ClearStarterpack::check()
+{
+    if (context) {
+        Object* object = context->getObject();
+        if (object) {
+            Entries* entries = object->entries;
+            unsigned int count = entries
+                ? static_cast<unsigned int>(entries->end - entries->begin)
+                : 0;
+            return count > 0;
+        }
     }
-    void* q = sub_490d70(p);
-    if (!q) {
-        return false;
-    }
-    char* r = *(char**)((char*)q + 0x108);
-    if (!r) {
-        return false;
-    }
-    int a = *(int*)(r + 0x10);
-    int b = *(int*)(r + 0x0c);
-    int diff = a - b;
-    diff >>= 3;
-    int c = 0;
-    return c < diff;
+    return false;
 }

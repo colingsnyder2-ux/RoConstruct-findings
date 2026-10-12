@@ -1,4 +1,4 @@
-// from server: 98% by king_originala
+// from server: 100% by king_originala
 struct Vector3 {
     float x, y, z;
     unsigned int hashCode() const;
@@ -7,7 +7,7 @@ struct Vector3 {
 struct Node {
     unsigned int hash;
     Vector3 key;
-    unsigned char padding[16];
+    unsigned char padding[4];
     Node* next;
 };
 

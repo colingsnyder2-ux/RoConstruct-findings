@@ -1,5 +1,20 @@
-// from server: 31% by colin
-// roc-lang: cpp
-// roc-cl: 30729
-// roc-flags: /O2 /GS- /MD
-// roc-lib: xtp-11.2.2 Source/CommandBars/XTPFrameWnd.cpp
+// from server: 100% by king_originala
+struct Resource {
+    void release();
+};
+
+struct Base {
+    virtual ~Base();
+    char padding[232];
+};
+
+struct Frame : Base {
+    Resource* resource;
+    virtual ~Frame();
+};
+
+Frame::~Frame()
+{
+    if (resource)
+        resource->release();
+}

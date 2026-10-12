@@ -1,5 +1,26 @@
-// from server: 76% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs util/Name.cpp
+// from server: 100% by king_originala
+struct Base {
+    char storage[28];
+    Base(int);
+    ~Base();
+};
+
+struct S : Base {
+    char cursor[28];
+    S(int);
+};
+
+extern unsigned long primaryTable[];
+extern unsigned long secondaryTable[];
+
+typedef void* (__thiscall *StringConstructor)(void*, const char*);
+extern StringConstructor constructString;
+
+S::S(int a1) : Base(a1)
+{
+    constructString(
+        (*(unsigned long**)((char*)this + 0) = primaryTable,
+         *(unsigned long**)((char*)this + 4) = secondaryTable,
+         cursor),
+        "ArrowCursor");
+}

@@ -1,11 +1,11 @@
-// from server: 53% by king_originala
-extern "C" void __cdecl _invalid_parameter_noinfo();
+// from server: 60% by king_originala
+#pragma float_control(precise, off)
+
+extern "C" void (__cdecl *invalid_parameter)();
 extern float threshold;
 
 struct Primitive;
 struct Assembly;
-struct Node;
-struct Container;
 
 struct Properties {
     char padding[0x28];
@@ -17,7 +17,7 @@ struct Link {
     Assembly* assembly;
 };
 
-struct PrimIterator {
+struct __declspec(align(8)) PrimIterator {
     Primitive* current;
     int state;
     void advance();
@@ -88,51 +88,53 @@ void S::f(Array* output)
     while (root->kind() != 5)
         root = root->parent;
 
+    const Primitive* temporary;
     Iterator it;
-    it.proxy = root->proxy;
     it.node = root->head->next;
+    it.proxy = root->proxy;
 
     for (;;) {
-        Node* end = root->head;
-        if (!it.proxy || it.proxy != root->proxy)
-            _invalid_parameter_noinfo();
+        Iterator lastNode;
+        lastNode.node = root->head;
+        lastNode.proxy = root->proxy;
 
-        if (it.node == end)
+        if (!it.proxy || it.proxy != lastNode.proxy)
+            invalid_parameter();
+        if (it.node == lastNode.node)
             break;
 
-        Container* owner;
-        if (it.proxy)
-            owner = it.proxy->owner;
-        else {
-            _invalid_parameter_noinfo();
-            owner = 0;
-        }
+        Proxy* owner = it.proxy;
+        if (!owner)
+            invalid_parameter();
+        else
+            owner = reinterpret_cast<Proxy*>(owner->owner);
 
-        if (it.node == owner->head)
-            _invalid_parameter_noinfo();
+        if (it.node == reinterpret_cast<Container*>(owner)->head)
+            invalid_parameter();
 
         Primitive* primitive = it.node->value;
-        if (threshold > primitive->link->assembly->properties()->value) {
+        if (primitive->link->assembly->properties()->value < threshold) {
             PrimIterator last = primitive->end();
             PrimIterator current = primitive->begin();
 
             while (current.current != last.current) {
                 Primitive* value = current.current;
-                if (threshold > value->properties()->value) {
-                    const Primitive* temporary;
+                if (value->properties()->value < threshold) {
                     if (output->size < output->capacity) {
                         Primitive** slot = output->data + output->size;
                         if (slot)
                             *slot = value;
                         ++output->size;
-                    } else if ((unsigned)&temporary >= (unsigned)output->data &&
-                               (unsigned)&temporary <
-                                   (unsigned)(output->data + output->size)) {
-                        temporary = value;
-                        output->append(temporary);
                     } else {
-                        output->resize(output->size + 1, false);
-                        output->data[output->size - 1] = value;
+                        if ((unsigned)&temporary >= (unsigned)output->data &&
+                            (unsigned)&temporary <
+                                (unsigned)(output->data + output->size)) {
+                            temporary = value;
+                            output->append(temporary);
+                        } else {
+                            output->resize(output->size + 1, false);
+                            output->data[output->size - 1] = value;
+                        }
                     }
                 }
                 current.advance();

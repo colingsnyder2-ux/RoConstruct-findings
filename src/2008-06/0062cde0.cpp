@@ -1,66 +1,98 @@
-// from server: 27% by colin
+// from server: 72% by king_originala
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
 
-struct FlagStand {
-    char pad[0x14];
-    int field14;
-    char pad2[0x3fc - 0x18];
-    int field3fc;
-    void func(int, int);
+struct Control {
+    virtual void slot0() = 0;
+    virtual void dispose() = 0;
+    virtual void destroy() = 0;
+    volatile long strong;
+    volatile long weak;
 };
 
-extern "C" int __cdecl sub_5D9A20(int);
-extern "C" void* __cdecl sub_49ACD0(int);
-extern "C" void __cdecl sub_600660(void*);
-extern "C" int __cdecl sub_619450(int);
-extern "C" void __cdecl sub_4116F0(void*, void*);
-extern "C" void __cdecl sub_49D200(void*, int);
-extern "C" int __cdecl sub_62BF20(int);
-extern "C" void __cdecl sub_618380(int, void*);
-extern "C" void __cdecl sub_618A40(void*, int, void*);
-extern "C" int __cdecl sub_62C2E0(int, int);
-extern "C" void __cdecl sub_62BDC0(int, int);
+struct Actor;
 
-void FlagStand::func(int a, int b)
+struct Child {
+    Actor *getActor();
+};
+
+struct Object {
+    unsigned char padding[0x104];
+    Child *child;
+};
+
+struct Shared {
+    Object *object;
+    Control *control;
+    Shared(const Shared &);
+    ~Shared();
+};
+
+inline Shared::~Shared()
 {
-    int local2 = -1;
-    int local3;
-
-    int esi = *(int*)(a + 0x104);
-    if (sub_5D9A20(esi) != 0) {
-        int ebx = sub_62BF20(esi);
-        if (ebx != 0) {
-            int s = (int)sub_49ACD0(esi);
-            if (s != 0) {
-                if (*(char*)(s + 0x17c) == 0) {
-                    int ebp = this->field3fc;
-                    if (*(int*)(s + 0x178) == ebp) {
-                        sub_618380(ebx, &local3);
-                        if (*(int*)&local3 != ebp) {
-                            void* tmp;
-                            sub_618A40(&local3, s, &tmp);
-                            sub_4116F0(&local3, &tmp);
-                            sub_49D200((void*)0x97c060, (int)&this->field14);
-                            local2 = 0;
-                            sub_600660(&local3);
-                            int r = sub_619450((int)this);
-                            int r2 = sub_62C2E0(r, ebx);
-                            if (r2 != 0) {
-                                sub_62BDC0(r2, ebx);
-                            }
-                        }
-                    }
-                }
-            }
-        }
+    Control *p = control;
+    if (p && _InterlockedExchangeAdd(&p->strong, -1) == 1) {
+        p->dispose();
+        if (_InterlockedExchangeAdd(&p->weak, -1) == 1)
+            p->destroy();
     }
+}
 
-    if (b != 0) {
-        if (_InterlockedExchangeAdd((volatile long*)(b + 4), -1) == 1) {
-            (*(void(**)(int))(*(int*)b + 4))(b);
-            if (_InterlockedExchangeAdd((volatile long*)(b + 8), -1) == 1) {
-                (*(void(**)(int))(*(int*)b + 8))(b);
+struct Flag {
+    unsigned char padding[0x178];
+    int team;
+    bool inactive;
+};
+
+struct Actor {
+    int *getTeam(int *);
+};
+
+struct Receiver {
+    void accept(Actor *);
+};
+
+struct Context {
+    Receiver *find(Actor *);
+};
+
+struct Signal {
+    void invoke(void *, Shared);
+};
+
+extern int __cdecl checkChild(Child *);
+extern Flag *__cdecl getFlag(Child *);
+extern Shared __cdecl makeShared(Flag *);
+extern Context *__cdecl getContext(void *);
+
+struct Stand {
+    unsigned char padding[0x3fc];
+    int team;
+    void touch(Shared);
+};
+
+void Stand::touch(Shared object)
+{
+    Child *child = object.object->child;
+    if (!checkChild(child))
+        return;
+
+    Actor *actor = child->getActor();
+    if (!actor)
+        return;
+
+    Flag *flag = getFlag(child);
+    if (flag && !flag->inactive) {
+        int currentTeam = team;
+        if (flag->team == currentTeam) {
+            int actorTeam;
+            if (*actor->getTeam(&actorTeam) != currentTeam) {
+                reinterpret_cast<Signal *>(0x97c060)->invoke(
+                    reinterpret_cast<unsigned char *>(this) + 0x14,
+                    makeShared(flag));
+                Receiver *receiver = getContext(this)->find(actor);
+                if (receiver)
+                    receiver->accept(actor);
             }
         }
     }

@@ -1,81 +1,55 @@
-// from server: 60% by king_originala
+// from server: 64% by king_originala
 typedef unsigned int size_t;
 
 void* __cdecl operator new(size_t);
 void __cdecl operator delete(void*);
 
-extern unsigned int serviceTable[];
-extern unsigned int implementationTable[];
-
-void* __cdecl classDescriptor();
-
-struct Owner {
-    void* value;
-
-    Owner();
-    Owner(void*&);
-    ~Owner();
-};
-
-inline Owner::Owner() : value(0)
-{
-}
-
-inline Owner::Owner(void*& p) : value(p)
-{
-    p = 0;
-}
-
-inline Owner::~Owner()
-{
-    if (value)
-        operator delete(value);
-}
-
-struct Member {
-    unsigned int first;
-    unsigned int second;
+struct OwnedPointer {
+    void* p;
+    OwnedPointer() : p(0) {}
+    ~OwnedPointer() {
+        if (p)
+            operator delete(p);
+    }
 };
 
 struct Base {
-    unsigned int* table;
-    unsigned int storage[5];
-    void* implementation;
+    virtual ~Base();
+    unsigned char data[20];
+    void* getter;
 
-    Base(void*, const char*, unsigned int, Owner, Owner);
-    ~Base();
+    Base(void*, int, int, OwnedPointer, int);
 };
 
 struct S;
 
-struct Implementation {
-    unsigned int* table;
+struct Getter {
+    virtual ~Getter();
     S* object;
-    Member member;
-    unsigned int first;
-    unsigned int second;
-    unsigned int third;
-    unsigned int unused;
+    int functionLow;
+    int functionHigh;
+    int state0;
+    int state1;
+    int state2;
+    int reserved;
 
-    Implementation(S*, Member);
+    Getter(S* object_, int low, int high)
+        : object(object_), functionLow(low), functionHigh(high),
+          state0(0), state1(0), state2(0) {}
 };
-
-inline Implementation::Implementation(S* p, Member m)
-    : table(implementationTable), object(p), member(m),
-      first(0), second(0), third(0)
-{
-}
 
 struct S : Base {
-    S(const char*, unsigned int, Member, void*);
+    static void* descriptor();
+    S(int, int, int, int, int);
+    virtual ~S();
 };
 
-S::S(const char* name, unsigned int flags, Member member, void* owner)
-    : Base(classDescriptor(), name, flags, Owner(), Owner(owner))
+S::S(int a, int b, int low, int high, int flags)
+    : Base(descriptor(), a, b, OwnedPointer(), flags)
 {
-    table = serviceTable;
-    Implementation* p = new Implementation(this, member);
-    if (p != implementation && implementation)
-        operator delete(implementation);
-    implementation = p;
+    Getter* replacement = new Getter(this, low, high);
+    void* old = getter;
+    if (replacement != old && old)
+        operator delete(old);
+    getter = replacement;
 }

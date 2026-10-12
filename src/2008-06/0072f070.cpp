@@ -1,4 +1,4 @@
-// from server: 91% by king_originala
+// from server: 95% by king_originala
 extern "C" unsigned int __cdecl strlen(const char*);
 
 extern int (__stdcall* CompareStringA)(
@@ -28,10 +28,7 @@ int Gallery::find(int start, const char* text, int exact)
     if (!count())
         return -1;
 
-    if (!text)
-        return -1;
-
-    unsigned int length = strlen(text);
+    unsigned int length = text ? strlen(text) : 0;
     const unsigned int originalLength = length;
     if (length < 1)
         return -1;

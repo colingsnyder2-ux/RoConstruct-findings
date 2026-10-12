@@ -1,5 +1,18 @@
-// from server: 77% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs util/Name.cpp
+// from server: 100% by king_originala
+extern char criticalSection;
+extern char initializationFlag;
+
+extern void __cdecl initialize();
+extern void __cdecl initializeOnce(void (__cdecl *)(), void *);
+
+extern "C" {
+    extern void (__stdcall *EnterCriticalSection)(void *);
+    extern void (__stdcall *LeaveCriticalSection)(void *);
+}
+
+void func_0061a090()
+{
+    initializeOnce(initialize, &initializationFlag);
+    EnterCriticalSection(&criticalSection);
+    LeaveCriticalSection(&criticalSection);
+}

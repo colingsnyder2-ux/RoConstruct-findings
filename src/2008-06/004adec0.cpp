@@ -1,4 +1,4 @@
-// from server: 72% by king_originala
+// from server: 91% by king_originala
 struct S;
 
 struct Proxy {
@@ -33,7 +33,6 @@ extern void __cdecl writeString(void*, const String&);
 struct Iterator {
     Proxy* proxy;
     Node* node;
-    Node* checked() const;
     void advance();
 };
 
@@ -52,29 +51,17 @@ __forceinline String::~String()
     stringDestroy(this);
 }
 
-__forceinline Node* Iterator::checked() const
-{
-    Proxy* p = proxy;
-    Node* n = node;
-    if (!p)
-        invalid_parameter_noinfo();
-    S* container = p ? p->container : 0;
-    if (n == container->head)
-        invalid_parameter_noinfo();
-    return n;
-}
-
 void S::serialize(void* output)
 {
     writeValue(output, value);
 
     Iterator i;
-    i.node = head->left;
-    i.proxy = proxy;
+    Node* n = head->left;
+    Proxy* p = proxy;
+    i.node = n;
+    i.proxy = p;
 
     for (;;) {
-        Proxy* p = i.proxy;
-        Node* n = i.node;
         Node* end = head;
         Proxy* owner = proxy;
         if (!p || p != owner)
@@ -82,11 +69,27 @@ void S::serialize(void* output)
         if (n == end)
             break;
 
-        writeValue(output, i.checked()->value);
+        if (!p)
+            invalid_parameter_noinfo();
+        S* container = p ? p->container : 0;
+        if (n == container->head)
+            invalid_parameter_noinfo();
+
+        writeValue(output, n->value);
+
+        if (!p)
+            invalid_parameter_noinfo();
+        container = p ? p->container : reinterpret_cast<S*>(p);
+        if (n == container->head)
+            invalid_parameter_noinfo();
+
         {
-            String temporary = text(i.checked()->key);
+            String temporary = text(n->key);
             writeString(output, temporary);
         }
+
         i.advance();
+        n = i.node;
+        p = i.proxy;
     }
 }

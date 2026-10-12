@@ -1,13 +1,19 @@
-// from server: 50% by colin
-struct LocalBackpackItem {
-    char pad[0x104];
-    int field_104;
-    int getTextureId();
+// from server: 100% by king_originala
+struct S;
+
+struct T
+{
+    void f(S*);
 };
 
-extern int __stdcall func_005fbff0(int);
-
-int LocalBackpackItem::getTextureId()
+struct S
 {
-    return func_005fbff0(field_104);
+    char padding[0x104];
+    T* target;
+    void f(S*);
+};
+
+void S::f(S*)
+{
+    target->f(this);
 }

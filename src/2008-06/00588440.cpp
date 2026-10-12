@@ -1,62 +1,62 @@
-// from server: 62% by king_originala
+// from server: 66% by king_originala
 struct Node {
-    Node* left;
+    Node* next;
 };
 
-struct Iterator {
-    Node* tree;
-    Node* node;
-
-    Iterator(Node* t, Node* n) : tree(t), node(n) {}
-};
-
-struct Receiver {
-    void setValue(int value);
+struct Target {
+    void set(int value);
 };
 
 struct S {
-    int unused0;
-    Receiver* receiver;
-    int unused8;
+    int reserved0;
+    Target* target;
+    int reserved8;
     int mode;
     int value;
-    int unused20;
-    Node* tree;
-    int unused28[5];
-    Node* end;
+    int reserved14;
+    Node* first;
+    char reserved1C[20];
+    Node* last;
 
-    void clear();
+    void visit(Node*);
+    void f();
 };
 
-extern void __cdecl destroyNode(Node*);
-extern Iterator __cdecl eraseRange(
-    Iterator first, Iterator last,
-    void (__cdecl *callback)(Node*), S* owner);
+struct Iterator {
+    Node* node;
+    Node* owner;
 
-void S::clear()
+    Iterator(Node* n, Node* o) : node(n), owner(o) {}
+};
+
+struct Action {
+    void (S::*function)(Node*);
+    S* object;
+
+    Action(void (S::*fn)(Node*), S* obj)
+        : function(fn), object(obj) {}
+};
+
+Action __cdecl operate(Iterator first, Iterator last, Action action);
+
+void S::f()
 {
     switch (mode) {
     case 1:
-        {
-            Iterator last(tree, end);
-            Iterator first(last);
-            first.node = first.node->left;
-            eraseRange(first, last, destroyNode, this);
-            receiver->setValue(value);
-        }
+        operate(Iterator(first, first),
+                Iterator(last->next, last),
+                Action(&S::visit, this));
+        target->set(value);
         break;
 
     case 2:
-        {
-            Iterator last(tree, end);
-            Iterator first(last);
-            first.node = first.node->left;
-            eraseRange(first, last, destroyNode, this);
-        }
+        operate(Iterator(first, first),
+                Iterator(last->next, last),
+                Action(&S::visit, this));
         break;
 
     case 3:
-        receiver->setValue(0);
+        target->set(0);
         break;
     }
 }

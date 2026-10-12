@@ -1,4 +1,4 @@
-// from server: 84% by king_originala
+// from server: 88% by king_originala
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
 
@@ -12,11 +12,13 @@ struct String {
     ~String();
 };
 
-inline String::String(const char* text) {
+inline String::String(const char* text)
+{
     string_construct(this, text);
 }
 
-inline String::~String() {
+inline String::~String()
+{
     string_destroy(this);
 }
 
@@ -36,15 +38,24 @@ struct Reference {
 struct Pair {
     void* object;
     Reference reference;
-    ~Pair();
+    __forceinline Pair& operator=(const Pair&);
+    __forceinline ~Pair();
 };
 
-inline Pair::~Pair() {
+__forceinline Pair& Pair::operator=(const Pair& other)
+{
+    object = other.object;
+    reference = other.reference;
+    return *this;
+}
+
+__forceinline Pair::~Pair()
+{
     Control* p = reference.control;
     if (p) {
-        if (_InterlockedExchangeAdd(&p->strong, -1) == 1) {
+        if (_InterlockedExchangeAdd(&p->strong, -1) == 0) {
             p->dispose();
-            if (_InterlockedExchangeAdd(&p->weak, -1) == 1)
+            if (_InterlockedExchangeAdd(&p->weak, -1) == 0)
                 p->destroy();
         }
     }
@@ -60,18 +71,16 @@ struct S {
     unsigned char padding0[0x104];
     Parent* parent;
     unsigned char padding1[0xfc];
-    void* cached;
-    Reference reference;
+    Pair cached;
     void* get();
 };
 
-void* S::get() {
-    if (!cached && parent) {
+void* S::get()
+{
+    if (!cached.object && parent) {
         String name("Right Leg");
         char* found = parent->find(name);
-        const Pair& result = obtain(found ? found + 0xe4 : 0);
-        cached = result.object;
-        reference = result.reference;
+        cached = obtain(found ? found + 0xe4 : 0);
     }
-    return cached;
+    return cached.object;
 }

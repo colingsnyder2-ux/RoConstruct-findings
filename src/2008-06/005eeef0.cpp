@@ -1,26 +1,22 @@
-// from server: 44% by atomic.potato
-struct S_func_00598de0 {
+// from server: 85% by king_originala
+struct S_func_00598de0
+{
     char pad0[500];
     int m_x;
     int* f();
 };
 
-int* S_func_00598de0::f()
+struct Receiver
 {
-    return &m_x;
-}
-
-struct S {
-    int f(int*, int, int);
+    void apply(int, int);
 };
 
-extern "C" int __cdecl call_005f17a0(int*, int, int);
-
-int S::f(int* p, int a, int b)
+void __stdcall sub_5eeef0(void* p, int a, int b)
 {
-    S_func_00598de0* q = 0;
-    if (p)
-        q = (S_func_00598de0*)((char*)p - 20);
-    int* r = q->f();
-    return call_005f17a0(r + 10, a, b);
+    S_func_00598de0* object = p
+        ? reinterpret_cast<S_func_00598de0*>(static_cast<char*>(p) - 20)
+        : 0;
+
+    int* result = object->f();
+    reinterpret_cast<Receiver*>(reinterpret_cast<char*>(result) + 40)->apply(a, b);
 }

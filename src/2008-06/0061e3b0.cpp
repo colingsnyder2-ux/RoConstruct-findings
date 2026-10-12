@@ -1,87 +1,56 @@
-// from server: 36% by colin
-struct LuaState;
+// from server: 80% by king_originala
+struct State;
 
-struct Vec3 {
+struct Vector {
     float x, y, z;
+    Vector();
+    Vector(const Vector&);
 };
 
-struct Matrix3 {
-    float m[9];
+inline Vector::Vector() : x(0.0f), y(0.0f), z(0.0f) {}
+
+inline Vector::Vector(const Vector& v) : x(v.x), y(v.y), z(v.z) {}
+
+struct Matrix {
+    float m[3][3];
+    Vector operator*(const Vector&) const;
 };
 
-extern "C" {
-    int __cdecl sub_6115B0(LuaState* L, int idx, int n);
-    int __cdecl sub_611C10(LuaState* L);
-    void __cdecl sub_5A9040(float* v);
-    void __cdecl sub_513510(Matrix3* out, const Vec3* in);
+inline Vector Matrix::operator*(const Vector& v) const {
+    Vector r;
+    r.x = m[0][2] * v.z + m[0][1] * v.y + m[0][0] * v.x;
+    r.y = m[1][2] * v.z + m[1][0] * v.x + m[1][1] * v.y;
+    r.z = m[2][2] * v.z + m[2][0] * v.x + m[2][1] * v.y;
+    return r;
 }
 
-extern float g_96f044;
-extern float g_96f048;
-extern float g_96f04c;
-extern int g_96f050;
-extern int g_95b1c0;
-extern int g_95b1c8;
-
-struct LuaArguments {
-    int method(LuaState* L);
+struct Transform {
+    Matrix rotation() const;
 };
 
-int LuaArguments::method(LuaState* L)
-{
-    int top = sub_6115B0(L, 1, g_95b1c8);
-    int n = sub_611C10(L) - 1;
+extern void* transformTag;
+extern void* vectorTag;
 
-    if (n != 0)
-    {
-        if ((g_96f050 & 1) == 0)
-        {
-            g_96f050 |= 1;
-            g_96f044 = 0.0f;
-            g_96f048 = 0.0f;
-            g_96f04c = 0.0f;
-        }
+extern "C" void* __cdecl checkObject(State*, int, void*);
+extern "C" int __cdecl lua_gettop(State*);
+extern "C" void __cdecl pushVector(State*, Vector);
 
-        Matrix3 mat;
-        sub_513510(&mat, (const Vec3*)&mat);
+int __cdecl transformVectors(State* state) {
+    Transform* transform =
+        static_cast<Transform*>(checkObject(state, 1, transformTag));
+    int count = lua_gettop(state) - 1;
 
-        Vec3 v;
-        v.x = 0.0f;
-        v.y = 0.0f;
-        v.z = 0.0f;
-
-        v.x = mat.m[0] * g_96f044 + mat.m[1] * g_96f048 + mat.m[2] * g_96f04c;
-        v.y = mat.m[3] * g_96f044 + mat.m[4] * g_96f048 + mat.m[5] * g_96f04c;
-        v.z = mat.m[6] * g_96f044 + mat.m[7] * g_96f048 + mat.m[8] * g_96f04c;
-
-        sub_5A9040(&v.x);
+    if (count == 0) {
+        static Vector zero;
+        pushVector(state, transform->rotation() * zero);
         return 1;
     }
 
-    int i = 0;
-    if (n > 0)
-    {
-        do
-        {
-            int idx = i + 2;
-            int handle = sub_6115B0(L, idx, g_95b1c0);
-
-            Matrix3 mat;
-            sub_513510(&mat, (const Vec3*)&mat);
-
-            Vec3 v;
-            v.x = 0.0f;
-            v.y = 0.0f;
-            v.z = 0.0f;
-
-            v.x = mat.m[0] * *(float*)(handle + 0) + mat.m[1] * *(float*)(handle + 4) + mat.m[2] * *(float*)(handle + 8);
-            v.y = mat.m[3] * *(float*)(handle + 0) + mat.m[4] * *(float*)(handle + 4) + mat.m[5] * *(float*)(handle + 8);
-            v.z = mat.m[6] * *(float*)(handle + 0) + mat.m[7] * *(float*)(handle + 4) + mat.m[8] * *(float*)(handle + 8);
-
-            sub_5A9040(&v.x);
-            i++;
-        } while (i < n);
+    for (int i = 0; i < count; ++i) {
+        Vector* v =
+            static_cast<Vector*>(checkObject(state, i + 2, vectorTag));
+        pushVector(state, transform->rotation() * *v);
     }
 
-    return n;
+    return count;
 }

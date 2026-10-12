@@ -1,94 +1,179 @@
-// from server: 31% by atomic.potato
+// from server: 92% by king_originala
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
+extern "C" long __cdecl _InterlockedDecrement(volatile long*);
+#pragma intrinsic(_InterlockedDecrement)
 
-extern "C" void* __stdcall SendMessageA(void*, unsigned int, unsigned int, long);
-extern "C" bool __cdecl string_less(const void*, const void*);
+extern "C" long (__stdcall *SendMessageA)(void*, unsigned int, unsigned int, long);
 
-struct RefCounted {
-    char pad0[4];
-    volatile long ref1;
-    volatile long ref2;
+struct Control {
+    virtual void unused() = 0;
+    virtual void dispose() = 0;
+    virtual void destroy() = 0;
+    volatile long strong;
+    volatile long weak;
 };
 
-struct CRobloxTreeCtrlNode {
-    char pad0[0x0c];
-    void* field_0c;
-    char pad10[0x4c];
-    void* field_5c;
-    void* field_58;
-    char pad60[0x24];
-    int field_84;
-    int field_88;
-    void method();
+struct Shared {
+    void* object;
+    Control* control;
+    ~Shared();
 };
 
-extern "C" void* __stdcall sub_424b60(int);
-extern "C" void* __stdcall sub_6a0f56(void*, void*);
-extern "C" void __stdcall sub_411b40(void*);
-extern "C" void __stdcall sub_5773c0(void*);
-
-void CRobloxTreeCtrlNode::method()
+__forceinline Shared::~Shared()
 {
-    void* p;
-    void* node;
-    void* item;
-    int cmp;
-    void* local18[2];
-    char local28[0x4c];
-    int flag;
+    Control* p = control;
+    if (p && _InterlockedDecrement(&p->strong) == 0) {
+        p->dispose();
+        if (_InterlockedDecrement(&p->weak) == 0)
+            p->destroy();
+    }
+}
 
-    p = sub_424b60(field_88);
-    flag = -1;
+struct Argument {
+    void* object;
+    Control* control;
+    Argument(const Shared&);
+    ~Argument();
+};
 
-    if (field_5c != 0)
-        p = *(void**)((char*)field_5c + 0x80);
-    else
-        p = (void*)0xffff0000;
+__forceinline Argument::Argument(const Shared& other)
+    : object(other.object), control(other.control)
+{
+    if (control)
+        _InterlockedExchangeAdd(&control->strong, 1);
+}
 
-    item = (void*)SendMessageA(*(void**)((char*)field_58 + 0x20), 0x110a, 4, (long)p);
+__forceinline Argument::~Argument()
+{
+    Control* p = control;
+    if (p && _InterlockedDecrement(&p->strong) == 0) {
+        p->dispose();
+        if (_InterlockedDecrement(&p->weak) == 0)
+            p->destroy();
+    }
+}
 
-    while (item != 0) {
-        node = sub_6a0f56(field_58, item);
-        cmp = field_84 - *(int*)((char*)node + 0x84);
-        if (cmp > 0) {
-            flag = (int)item;
-        } else if (cmp == 0) {
-            void* vt = *(void**)field_58;
-            void* (*fn)(void*, void*) = *(void*(**)(void*, void*))((char*)vt + 0x154);
-            void* r = fn(field_58, local18);
-            RefCounted* rc = *(RefCounted**)r;
-            if (rc != 0) {
-                _InterlockedExchangeAdd(&rc->ref1, 1);
-            }
-            sub_411b40(local28);
-            if (rc != 0) {
-                if (_InterlockedExchangeAdd(&rc->ref1, -1) == 1) {
-                    void* vt2 = *(void**)rc;
-                    void (*d1)(void*) = *(void(**)(void*))((char*)vt2 + 4);
-                    d1(rc);
-                    if (_InterlockedExchangeAdd(&rc->ref2, -1) == 1) {
-                        void* vt3 = *(void**)rc;
-                        void (*d2)(void*) = *(void(**)(void*))((char*)vt3 + 8);
-                        d2(rc);
-                    }
-                }
-            }
-            if (string_less((char*)node + 0xc + 0x110, (char*)this + 0xc + 0x110)) {
-                flag = (int)item;
-                sub_5773c0(local28);
-            } else {
-                sub_5773c0(local28);
-            }
+struct Guard {
+    unsigned int data[3];
+    Guard(Argument);
+    ~Guard();
+};
+
+struct String {
+    unsigned char data[28];
+};
+
+extern bool (__cdecl *compare)(const String&, const String&);
+extern int __cdecl image(int);
+
+struct Payload {
+    unsigned char padding[0x110];
+    String text;
+};
+
+struct Node;
+
+struct Navigation {
+    virtual void unused();
+    virtual unsigned int next(unsigned int, int);
+};
+
+#define SLOT(n) virtual void slot##n() = 0;
+#define TEN(n) SLOT(n##0) SLOT(n##1) SLOT(n##2) SLOT(n##3) SLOT(n##4) \
+               SLOT(n##5) SLOT(n##6) SLOT(n##7) SLOT(n##8) SLOT(n##9)
+
+struct Tree {
+    TEN(0)
+    TEN(1)
+    TEN(2)
+    TEN(3)
+    TEN(4)
+    TEN(5)
+    TEN(6)
+    TEN(7)
+    SLOT(80)
+    SLOT(81)
+    SLOT(82)
+    SLOT(83)
+    SLOT(84)
+    virtual Shared get() = 0;
+
+    unsigned char padding0[0x1c];
+    void* window;
+    unsigned char padding1[0x30];
+    Navigation navigation;
+
+    Node* lookup(unsigned int);
+};
+
+#undef TEN
+#undef SLOT
+
+struct Insert {
+    unsigned int parent;
+    unsigned int after;
+    unsigned int mask;
+    unsigned int item;
+    unsigned int state;
+    unsigned int stateMask;
+    char* text;
+    int textLength;
+    int image;
+    int selectedImage;
+    int children;
+    Node* parameter;
+    unsigned int extension[4];
+};
+
+struct Node {
+    unsigned char padding0[0x0c];
+    Payload* payload;
+    unsigned char padding1[0x48];
+    Tree* tree;
+    Node* parent;
+    unsigned char padding2[0x20];
+    unsigned int item;
+    int priority;
+    int imageIndex;
+
+    int f();
+};
+
+int Node::f()
+{
+    Insert insertion;
+    insertion.text = reinterpret_cast<char*>(-1);
+    insertion.children = -1;
+    insertion.mask = 0x67;
+    insertion.image = insertion.selectedImage = image(imageIndex);
+    insertion.parameter = this;
+    insertion.parent = parent ? parent->item : 0xffff0000;
+
+    unsigned int after = 0xffff0001;
+    unsigned int current =
+        SendMessageA(tree->window, 0x110a, 4, insertion.parent);
+
+    while (current) {
+        Node* other = tree->lookup(current);
+        if (priority > other->priority) {
+            after = current;
         } else {
-            break;
+            if (priority != other->priority)
+                break;
+
+            Guard guard(tree->get());
+            if (!compare(payload->text, other->payload->text))
+                break;
+            after = current;
         }
-        {
-            void* vt = *(void**)((char*)field_58 + 0x54);
-            void* (*fn)(void*, void*, int) = *(void*(**)(void*, void*, int))((char*)vt + 4);
-            item = fn((char*)field_58 + 0x54, item, 1);
-        }
+
+        Navigation* navigation = &tree->navigation;
+        current = navigation->next(current, 1);
     }
 
-    SendMessageA(*(void**)((char*)field_58 + 0x20), 0x1100, 0, (long)&flag);
+    insertion.after = after;
+    Tree* owner = tree;
+    return SendMessageA(owner->window, 0x1100, 0,
+                        reinterpret_cast<long>(&insertion));
 }

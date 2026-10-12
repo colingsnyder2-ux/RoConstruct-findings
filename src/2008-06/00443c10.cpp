@@ -1,5 +1,23 @@
-// from server: 55% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs script/ScriptEvent.cpp
+// from server: 100% by king_originala
+struct Value {
+    void* convert();
+};
+
+struct Accessor {
+    virtual void slot0();
+    virtual void slot1();
+    virtual void slot2();
+    virtual void* get(void*, void**);
+};
+
+struct S {
+    unsigned char padding[24];
+    Accessor* accessor;
+    void* f(void* result, void* object);
+};
+
+void* S::f(void* result, void* object)
+{
+    object = static_cast<Value*>(object)->convert();
+    return accessor->get(result, &object);
+}

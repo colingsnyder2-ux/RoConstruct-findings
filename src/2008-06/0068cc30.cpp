@@ -1,4 +1,4 @@
-// from server: 99% by king_originala
+// from server: 100% by king_originala
 typedef unsigned int size_t;
 
 void* __cdecl operator new(size_t);
@@ -17,7 +17,7 @@ namespace Ogre {
 
     struct SceneQueryListener {
         virtual ~SceneQueryListener();
-        unsigned char data[36];
+        unsigned char data[28];
     };
 
     struct DefaultAxisAlignedBoxSceneQuery

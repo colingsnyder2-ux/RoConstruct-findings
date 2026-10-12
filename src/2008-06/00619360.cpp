@@ -1,6 +1,8 @@
-// from server: 93% by king_originala
+// from server: 97% by king_originala
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
+extern "C" long __cdecl _InterlockedDecrement(volatile long*);
+#pragma intrinsic(_InterlockedDecrement)
 
 struct S;
 
@@ -14,17 +16,7 @@ struct Control {
     virtual void destroy() = 0;
     volatile long strong;
     volatile long weak;
-    void release();
 };
-
-__forceinline void Control::release()
-{
-    if (_InterlockedExchangeAdd(&strong, -1) == 1) {
-        dispose();
-        if (_InterlockedExchangeAdd(&weak, -1) == 1)
-            destroy();
-    }
-}
 
 struct Reference {
     Control* pointer;
@@ -34,8 +26,14 @@ struct Reference {
 
 __forceinline Reference::~Reference()
 {
-    if (pointer)
-        pointer->release();
+    Control* p = pointer;
+    if (p) {
+        if (_InterlockedDecrement(&p->strong) == 0) {
+            p->dispose();
+            if (_InterlockedDecrement(&p->weak) == 0)
+                p->destroy();
+        }
+    }
 }
 
 struct Pair {

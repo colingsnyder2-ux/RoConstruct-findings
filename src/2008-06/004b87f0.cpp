@@ -1,140 +1,184 @@
-// from server: 61% by king_originala
-typedef unsigned long Word;
+// from server: 63% by king_originala
+extern "C" void (__cdecl *const invalid_parameter_noinfo)();
 
 struct Node
 {
-    Node* left;
-    Node* parent;
-    Node* right;
+    Node *left;
+    Node *parent;
+    Node *right;
 };
 
-struct Iterator
-{
-    void* proxy;
-    Node* node;
-};
+typedef void (__cdecl *Callback)(void *);
+extern void __cdecl releaseEntry(void *);
+extern void __cdecl processRange(
+    void **, Node *, Node *, Node *, Node *, Callback, unsigned);
 
 struct Tree
 {
-    void* proxy;
+    Node *owner;
     char padding[20];
-    Node* head;
-    Word size;
-    void destroy(Node*);
+    Node *head;
+    unsigned count;
+    void release(Node *);
 };
 
 struct Sequence
 {
-    void* proxy;
-    Word reserved[2];
-    Word first;
-    Word last;
-    Word capacity;
-    void erase(Iterator*, void*, Word, void*, Word);
+    void *owner;
+    unsigned reserved[2];
+    unsigned first;
+    unsigned last;
+    unsigned capacity;
+    void erase(void **, void *, unsigned, void *, unsigned);
 };
 
 struct Event
 {
-    char storage[0xdc];
     void clear();
 };
 
 struct Object
 {
-    void* primary();
-    void* first();
-    void* second();
-    void* third();
-    void* fourth();
-    void* fifth();
-    void* sixth();
-};
-
-struct Listener;
-struct ListenerTable
-{
-    void (__thiscall* slots[60])(Listener*, void*);
+    void *getPrimary();
+    void *getFirst();
+    void *getSecond();
+    void *getThird();
+    void *getFourth();
+    void *getFifth();
+    void *getSixth();
 };
 
 struct Listener
 {
-    ListenerTable* table;
+    virtual void slot00();
+    virtual void slot01();
+    virtual void slot02();
+    virtual void slot03();
+    virtual void slot04();
+    virtual void slot05();
+    virtual void slot06();
+    virtual void slot07();
+    virtual void slot08();
+    virtual void slot09();
+    virtual void slot10();
+    virtual void slot11();
+    virtual void slot12();
+    virtual void slot13();
+    virtual void slot14();
+    virtual void slot15();
+    virtual void slot16();
+    virtual void slot17();
+    virtual void slot18();
+    virtual void slot19();
+    virtual void slot20();
+    virtual void slot21();
+    virtual void slot22();
+    virtual void slot23();
+    virtual void slot24();
+    virtual void slot25();
+    virtual void slot26();
+    virtual void slot27();
+    virtual void slot28();
+    virtual void slot29();
+    virtual void slot30();
+    virtual void slot31();
+    virtual void slot32();
+    virtual void slot33();
+    virtual void slot34();
+    virtual void slot35();
+    virtual void slot36();
+    virtual void slot37();
+    virtual void slot38();
+    virtual void slot39();
+    virtual void slot40();
+    virtual void slot41();
+    virtual void slot42();
+    virtual void slot43();
+    virtual void slot44();
+    virtual void slot45();
+    virtual void slot46();
+    virtual void slot47();
+    virtual void slot48();
+    virtual void slot49();
+    virtual void slot50();
+    virtual void slot51();
+    virtual void slot52();
+    virtual void slot53();
+    virtual void slot54();
+    virtual void slot55();
+    virtual void slot56();
+    virtual void slot57();
+    virtual void slot58();
+    virtual void remove(void *);
 };
 
-extern "C" void __cdecl release_value(void*);
-extern "C" void __cdecl clear_nodes(
-    Iterator*, Iterator, Iterator, void (__cdecl*)(void*), Word);
-extern "C" void (__cdecl* invalid_parameter_noinfo)();
-
-struct ClientProxy
+struct S
 {
-    char prefix[0x2c38];
+    char padding0[0x2b74];
+    char connection[0xc4];
     Tree tree;
     Sequence sequence;
-    void* cached;
+    void *cached;
     Event event;
-    Listener* listener;
+    char padding1[0xdb];
+    Listener *listener;
 
-    void reset(Word, Object*);
-    void set_primary(void*);
-    void attach(void*, bool);
+    void update(unsigned, Object *);
+    void setPrimary(void *);
+    void attach(void *, int);
 };
 
-void ClientProxy::reset(Word, Object* object)
+void S::update(unsigned, Object *object)
 {
-    Iterator result;
-    Word cookie = reinterpret_cast<Word>(result.node);
-    Tree* t = &tree;
-    Iterator begin;
-    Iterator end;
-    begin.proxy = t->proxy;
-    begin.node = t->head->left;
-    end.proxy = t->proxy;
-    end.node = t->head;
+    void *result;
+    unsigned tag;
+    Tree *t = &tree;
+    Node *head = t->head;
+    Node *owner = t->owner;
+    processRange(&result, owner, head->left, owner, head, releaseEntry, tag);
 
-    clear_nodes(&result, begin, end, release_value, cookie);
-
-    t->destroy(t->head->parent);
+    t->release(t->head->parent);
     t->head->parent = t->head;
-    t->size = 0;
+    t->count = 0;
     t->head->left = t->head;
-    t->head->right = t->head;
+    Node *root = t->head;
+    root->right = root;
 
     event.clear();
 
-    Sequence* s = &sequence;
-    Word last = s->last;
+    Sequence *s = &sequence;
+    unsigned last = s->last;
     if (s->first > last)
         invalid_parameter_noinfo();
 
-    Word first = s->first;
-    void* proxy = s->proxy;
+    unsigned first = s->first;
+    result = s->owner;
     if (first > s->last)
         invalid_parameter_noinfo();
 
-    s->erase(&result, s->proxy, first, proxy, last);
+    s->erase(&result, s->owner, first, result, last);
 
-    set_primary(object ? object->primary() : 0);
-
+    void *value = object ? object->getPrimary() : 0;
+    setPrimary(value);
     if (object)
     {
-        void* value = object->first();
-        attach(value, true);
-        value = object->second();
-        attach(value, false);
-        value = object->third();
-        attach(value, false);
-        value = object->fourth();
-        attach(value, false);
-        value = object->fifth();
+        value = object->getFirst();
+        attach(value, 1);
+        value = object->getSecond();
+        attach(value, 0);
+        value = object->getThird();
+        attach(value, 0);
+        value = object->getFourth();
+        attach(value, 0);
+        value = object->getFifth();
         cached = value;
-        attach(value, false);
-        value = object->sixth();
-        attach(value, false);
+        attach(value, 0);
+        value = object->getSixth();
+        attach(value, 0);
     }
     else if (listener)
     {
-        listener->table->slots[59](listener, prefix + 0x2b74);
+        listener->remove(connection);
         listener = 0;
     }
 }

@@ -1,4 +1,4 @@
-// from server: 88% by king_originala
+// from server: 89% by king_originala
 extern "C" void __cdecl register_once(void (__cdecl *)(), void *);
 extern "C" void __cdecl initialize_index();
 extern "C" void __cdecl initialize_type();
@@ -73,8 +73,7 @@ void *S::f()
 {
     register_once(initialize_index, &index_state);
     unsigned int index = (unsigned int)func_004a1760();
-    const volatile Entries &observed = entries;
-    unsigned int count = (unsigned int)(observed.last - observed.first);
+    unsigned int count = entries.size();
     void (__cdecl *invalid)() = invalid_parameter_noinfo;
     Entries &cache = entries;
 

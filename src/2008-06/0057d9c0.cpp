@@ -1,14 +1,30 @@
-// from server: 84% by atomic.potato
-struct FirstPersonCommand
-{
-    void f();
+// from server: 100% by king_originala
+struct Result {
+    int finish();
 };
 
-void FirstPersonCommand::f()
+struct Interface {
+    virtual void slot0();
+    virtual Result* get();
+};
+
+struct Object {
+    char padding[0x288];
+    Interface interfaceObject;
+};
+
+struct Owner {
+    char padding[0x204];
+    Object* object;
+};
+
+struct FirstPersonCommand {
+    char padding[0x0c];
+    Owner* owner;
+    int execute();
+};
+
+int FirstPersonCommand::execute()
 {
-    int* a = *(int**)((char*)this + 0x0c);
-    a = *(int**)((char*)a + 0x204);
-    int* b = *(int**)((char*)a + 0x288);
-    int (__thiscall *fn)(int*) = *(int (__thiscall **)(int*))((char*)b + 4);
-    fn((int*)((char*)a + 0x288));
+    return owner->object->interfaceObject.get()->finish();
 }

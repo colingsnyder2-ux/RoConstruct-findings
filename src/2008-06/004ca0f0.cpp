@@ -1,4 +1,4 @@
-// from server: 97% by king_originala
+// from server: 98% by king_originala
 extern const float scale;
 extern const float offset;
 
@@ -36,7 +36,7 @@ bool S::f(float& x, float& y, float& z)
             return false;
 
         packed = (unsigned short)packed;
-        float c = packed * scale - offset;
+        double c = packed * scale - offset;
 
         x = a;
         y = b;

@@ -1,13 +1,12 @@
-// from server: 56% by atomic.potato
-extern "C" int __cdecl sub_00543640(int);
-extern "C" void __cdecl sub_0054c630(int);
+// from server: 100% by king_originala
+struct VChunk { char pad[0xc]; };
 
-struct S
-{
-    void __cdecl f(int);
-};
+extern char* __cdecl chunk_data(VChunk* p);
+extern void* __cdecl convert_pointer(void* p);
 
-void __cdecl S::f(int value)
+#pragma optimize("", off)
+void* __cdecl f(VChunk* p)
 {
-    sub_0054c630(sub_00543640(value));
+    return convert_pointer(chunk_data(p));
 }
+#pragma optimize("", on)

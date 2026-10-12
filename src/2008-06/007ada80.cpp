@@ -1,49 +1,41 @@
-// from server: 37% by king_originala
-typedef unsigned char Byte;
+// from server: 39% by king_originala
+extern void __cdecl edgeFilter(
+    const unsigned char* source, int pixelStride, int channels,
+    unsigned int width, unsigned int height, unsigned char* destination,
+    int channelStride, int rowStride);
 
-void __cdecl copyLevel(const Byte* source, int pixelStride, int components,
-                       unsigned width, unsigned height, Byte* destination,
-                       int componentStride, int rowStride);
-
-void __cdecl reduceLevel(int components, const Byte* source, Byte* destination,
-                         int pixelStride, int componentStride, int rowStride,
-                         unsigned width, unsigned height)
+void __cdecl downsample(
+    unsigned int width, unsigned int height, int channels,
+    const unsigned char* source, unsigned char* destination,
+    int channelStride, int rowStride, int pixelStride)
 {
     if (width == 1 || height == 1) {
-        copyLevel(source, pixelStride, components, width, height,
-                  destination, componentStride, rowStride);
+        edgeFilter(source, pixelStride, channels, width, height,
+                   destination, channelStride, rowStride);
         return;
     }
 
     int columns = (int)(width >> 1);
     int rows = (int)(height >> 1);
-    int adjustment = rowStride - width * pixelStride;
+    int rowAdjustment = rowStride * 2 - width * pixelStride;
 
-    if (rows > 0) {
-        adjustment += rowStride;
-        do {
-            int remainingColumns = columns;
-            if (remainingColumns > 0) {
+    for (int y = rows; y > 0; --y) {
+        for (int x = columns; x > 0; --x) {
+            if (channels > 0) {
+                const unsigned char* nextRow = source + rowStride;
+                int offset = pixelStride - rowStride;
+                int remaining = channels;
                 do {
-                    int remainingComponents = components;
-                    if (remainingComponents > 0) {
-                        int offset = pixelStride;
-                        const Byte* lower = source + rowStride;
-                        offset -= rowStride;
-                        do {
-                            int sum = lower[pixelStride] + lower[offset];
-                            sum += *source;
-                            sum += *lower;
-                            *destination = (Byte)((sum + 2) / 4);
-                            ++destination;
-                            source += componentStride;
-                            lower += componentStride;
-                        } while (--remainingComponents);
-                    }
-                    source += pixelStride;
-                } while (--remainingColumns);
+                    int sum = nextRow[pixelStride] + nextRow[offset];
+                    sum += *source;
+                    sum += *nextRow;
+                    *destination++ = (unsigned char)((sum + 2) / 4);
+                    source += channelStride;
+                    nextRow += channelStride;
+                } while (--remaining);
             }
-            source += adjustment;
-        } while (--rows);
+            source += pixelStride;
+        }
+        source += rowAdjustment;
     }
 }

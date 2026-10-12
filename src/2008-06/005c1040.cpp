@@ -1,23 +1,29 @@
-// from server: 29% by colin
-// roc 2008-06 005c1040  unit: RBX::VExplosion::?$FactoryProduct::Creator  size: 122 bytes
-// Make this compile to the exact bytes below, then: roc check 2008-06 005c1040
+// from server: 100% by king_originala
+typedef unsigned int size_t;
 
-extern "C" void* __cdecl malloc(unsigned int size);
+extern "C" void* (__cdecl *malloc)(size_t);
 
-struct Creator {
-    void* field0;
-    void construct(void* p);
-    void* create();
+inline void* __cdecl operator new(size_t size)
+{
+    return malloc(size);
+}
+
+void __cdecl operator delete(void*);
+
+struct Explosion {
+    unsigned char storage[0x41c];
+    Explosion(int);
 };
 
-void* Creator::create()
+struct Creator {
+    Explosion* object;
+    void* control;
+    Creator(Explosion*, int);
+};
+
+Creator __cdecl createExplosion()
 {
-    void* mem = malloc(0x41c);
-    void* obj = 0;
-    if (mem) {
-        obj = (void*)((char*)mem);
-        ((Creator*)mem)->construct((void*)1);
-    }
-    this->construct(obj);
-    return this;
+    volatile int control = 0;
+    *reinterpret_cast<volatile unsigned char*>(&control) = 0;
+    return Creator(new Explosion(1), control);
 }

@@ -1,69 +1,95 @@
-// from server: 30% by colin
-// roc 2008-06 0042de90  unit: RBX::VScriptContext::?$FactoryProduct::Creator  size: 320 bytes
-// Make this compile to the exact bytes below, then: roc check 2008-06 0042de90
+// from server: 100% by king_originala
+extern void (__cdecl* invalid_parameter)();
+extern void __cdecl initialize_index();
+extern void __cdecl initialize_type();
+extern unsigned long index_once;
+extern unsigned long type_once;
+extern void __cdecl call_once(void (__cdecl*)(), unsigned long*);
+extern void* __cdecl func_0042d030();
+extern void* __cdecl func_0042ced0();
 
-extern "C" void __stdcall _invalid_parameter_noinfo();
-
-void* __stdcall make_value_0042d030();
-void* func_0042d030();
-
-void __stdcall sub_00557330(int, int);
-void __stdcall sub_004124c0(int, int);
-void __stdcall sub_00572a90(int, int);
-void __stdcall sub_00600660(int);
-void __stdcall sub_004025b0(int, int);
-
-struct Vec8 {
-    int* begin;
-    int* end;
-    int* cap;
+struct Control {
+    void* value;
+    Control();
+    Control& operator=(const Control&);
 };
 
-struct Container {
-    char pad[0x190];
-    Vec8 vec;
-    char pad2[0x1a0 - 0x190 - 12];
+__forceinline Control::Control() : value(0)
+{
+}
+
+struct Pair {
+    void* object;
+    Control control;
+    ~Pair();
 };
+
+struct EmptyPair {
+    void* object;
+    Control control;
+    EmptyPair();
+    EmptyPair(const EmptyPair&);
+    ~EmptyPair();
+};
+
+__forceinline EmptyPair::EmptyPair()
+    : object(0), control()
+{
+}
+
+struct Vector {
+    unsigned char padding[12];
+    Pair* first;
+    Pair* last;
+    Pair* limit;
+    void resize(unsigned int, EmptyPair);
+    unsigned int size() const;
+    Pair& at(unsigned int, void (__cdecl*)());
+};
+
+__forceinline unsigned int Vector::size() const
+{
+    return (unsigned int)(last - first);
+}
+
+__forceinline Pair& Vector::at(unsigned int index, void (__cdecl* handler)())
+{
+    if (index >= (unsigned int)(last - first))
+        handler();
+    return first[index];
+}
 
 struct S {
-    int f();
+    unsigned char padding[0x190];
+    Vector values;
+    Pair create(void*);
+    void* get();
 };
 
-int S::f() {
-    void* v = func_0042d030();
-    int idx = (int)v;
-    Container* c = (Container*)((char*)this + 0x190);
-    int count = (int)((char*)c->vec.end - (char*)c->vec.begin) >> 3;
-    int next = idx + 1;
-    if ((unsigned)next > (unsigned)count) {
-        int zero1 = 0;
-        int zero2 = 0;
-        sub_004124c0((int)&zero1, next);
+void* S::get()
+{
+    call_once(initialize_index, &index_once);
+    unsigned int index = (unsigned int)func_0042d030();
+    void (__cdecl* handler)() = invalid_parameter;
+    Vector& entries = values;
+
+    if (index + 1 > values.size()) {
+        entries.resize(index + 1, EmptyPair());
     } else {
-        int cnt2 = (int)((char*)c->vec.cap - (char*)c->vec.begin) >> 3;
-        if (idx >= cnt2) {
-            _invalid_parameter_noinfo();
-        }
-        int* p = c->vec.begin + idx * 2;
-        if (*p != 0) {
-            return *p;
-        }
+        void* existing = entries.at(index, handler).object;
+        if (existing)
+            return existing;
     }
-    void* v2 = func_0042d030();
-    int tmp = 0;
-    sub_00572a90((int)this, (int)&tmp);
-    int val = tmp;
-    if (val == 0) {
-        sub_00600660((int)&tmp);
+
+    call_once(initialize_type, &type_once);
+    Pair result = create(func_0042ced0());
+
+    if (!result.object)
         return 0;
-    }
-    int cnt3 = (int)((char*)c->vec.cap - (char*)c->vec.begin) >> 3;
-    if (idx >= cnt3) {
-        _invalid_parameter_noinfo();
-    }
-    int* slot = c->vec.begin + idx * 2;
-    *slot = val;
-    sub_004025b0((int)(slot + 1), (int)&tmp);
-    sub_00600660((int)&tmp);
-    return val;
+
+    void* object = result.object;
+    Pair& destination = entries.at(index, handler);
+    destination.object = result.object;
+    destination.control = result.control;
+    return object;
 }

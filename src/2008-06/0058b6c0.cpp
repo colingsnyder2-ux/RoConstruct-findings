@@ -1,11 +1,13 @@
-// from server: 59% by king_originala
+// from server: 81% by king_originala
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
+extern "C" long __cdecl _InterlockedDecrement(volatile long*);
+#pragma intrinsic(_InterlockedDecrement)
 
 extern "C" void (__cdecl* _invalid_parameter_noinfo)();
 
 struct Control {
-    virtual void reserved();
+    virtual ~Control();
     virtual void dispose();
     virtual void destroy();
     volatile long references;
@@ -29,9 +31,9 @@ __forceinline Shared::Shared(const Shared& other)
 __forceinline Shared::~Shared()
 {
     Control* p = control;
-    if (p && _InterlockedExchangeAdd(&p->references, -1) == 0) {
+    if (p && _InterlockedDecrement(&p->references) == 0) {
         p->dispose();
-        if (_InterlockedExchangeAdd(&p->weakReferences, -1) == 0)
+        if (_InterlockedDecrement(&p->weakReferences) == 0)
             p->destroy();
     }
 }
@@ -43,19 +45,24 @@ struct Value {
     ~Value();
 };
 
-struct Entry {
+struct InputEntry {
     void* key;
     Value value;
-    Entry(void*, const Value&);
-    Entry(const Entry&);
+    InputEntry(void*, const Value&);
 };
 
-__forceinline Entry::Entry(void* p, const Value& v)
+struct Entry {
+    void* const key;
+    Value value;
+    Entry(const InputEntry&);
+};
+
+__forceinline InputEntry::InputEntry(void* p, const Value& v)
     : key(p), value(v)
 {
 }
 
-__forceinline Entry::Entry(const Entry& other)
+__forceinline Entry::Entry(const InputEntry& other)
     : key(other.key), value(other.value)
 {
 }
@@ -74,15 +81,17 @@ struct Container {
     unsigned char padding2[4];
     void* descriptor;
 
-    Iterator find(void* const&);
-    Iterator insert(const Entry&);
+    Iterator* find(Iterator*, void* const&);
+    Iterator* insert(Iterator*, const Entry&);
     void* f(Shared);
 };
 
 void* Container::f(Shared argument)
 {
     void* key = argument.pointer;
-    Iterator position = find(key);
+    Iterator position;
+    find(&position, key);
+
     Container** identity = position.owner;
     unsigned char* last = end;
     Container** expected = owner;
@@ -93,21 +102,21 @@ void* Container::f(Shared argument)
     unsigned char* node = position.node;
 
     if (node == last) {
-        Value value(descriptor, argument);
-        Entry first(argument.pointer, value);
-        Entry second(first);
-        Iterator result = insert(second);
-        identity = result.owner;
-        node = result.node;
+        Iterator* result = insert(
+            &position,
+            Entry(InputEntry(argument.pointer, Value(descriptor, argument))));
+        identity = result->owner;
+        node = result->node;
     }
 
-    if (identity)
-        identity = reinterpret_cast<Container**>(*identity);
-    else
+    if (!identity)
         _invalid_parameter_noinfo();
+    else
+        identity = reinterpret_cast<Container**>(*identity);
 
     if (node == reinterpret_cast<Container*>(identity)->end)
         _invalid_parameter_noinfo();
 
-    return node + 16;
+    node += 16;
+    return node;
 }

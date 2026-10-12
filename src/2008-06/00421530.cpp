@@ -1,4 +1,4 @@
-// from server: 82% by king_originala
+// from server: 93% by king_originala
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
 
@@ -66,5 +66,6 @@ void EventData::dispatch()
         catch (...)
         {
         }
+        listener = 0;
     }
 }

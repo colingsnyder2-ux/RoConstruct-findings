@@ -1,52 +1,62 @@
-// from server: 80% by king_originala
+// from server: 85% by king_originala
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
 extern "C" long __cdecl _InterlockedDecrement(volatile long*);
 #pragma intrinsic(_InterlockedDecrement)
 
 struct Control {
-    virtual ~Control();
-    virtual void dispose() = 0;
-    virtual void destroy() = 0;
+    virtual void unused();
+    virtual void dispose();
+    virtual void destroy();
     volatile long strong;
     volatile long weak;
+
+    void release();
 };
 
+inline void Control::release()
+{
+    if (_InterlockedDecrement(&strong) == 0) {
+        dispose();
+        if (_InterlockedDecrement(&weak) == 0)
+            destroy();
+    }
+}
+
 struct Shared {
-    char* const pointer;
-    Control* const control;
+    char* object;
+    Control* control;
 
     Shared(const Shared&);
     ~Shared();
 };
 
 inline Shared::Shared(const Shared& other)
-    : pointer(other.pointer), control(other.control)
+    : object(other.object), control(other.control)
 {
-    if (control)
-        _InterlockedExchangeAdd(&control->strong, 1);
+    Control* p = other.control;
+    if (p)
+        _InterlockedExchangeAdd(&p->strong, 1);
 }
 
 inline Shared::~Shared()
 {
-    Control* c = control;
-    if (c && _InterlockedDecrement(&c->strong) == 0) {
-        c->dispose();
-        if (_InterlockedDecrement(&c->weak) == 0)
-            c->destroy();
-    }
+    Control* p = control;
+    if (p)
+        p->release();
 }
 
-struct Holder {
-    char storage[28];
+struct Source {
+    char data[8];
     Shared get();
 };
 
 bool __cdecl check(Shared);
 
 struct S {
-    char prefix[8];
-    Holder holder;
+    char padding0[8];
+    Source source;
+    char padding1[20];
     char* result;
 
     void update();
@@ -54,10 +64,12 @@ struct S {
 
 void S::update()
 {
-    Shared value = holder.get();
-    char* p = value.pointer;
+    Shared value = source.get();
+    Control* control = value.control;
+    char* object = value.object;
     if (check(value))
-        result = p + 0x228;
+        result = object + 0x228;
     else
         result = 0;
+    value.control = control;
 }

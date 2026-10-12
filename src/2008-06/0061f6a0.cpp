@@ -1,4 +1,4 @@
-// from server: 99% by king_originala
+// from server: 100% by king_originala
 class type_info {
 public:
     virtual ~type_info();
@@ -7,6 +7,7 @@ public:
 
 extern bool (__thiscall *type_info_equal)(
     const type_info*, const type_info&);
+extern const type_info held_type_info;
 
 inline bool type_info::operator==(const type_info& other) const
 {
@@ -94,7 +95,7 @@ __cdecl boost::any_cast(const boost::any* operand)
     const RBX::Reflection::PropertyDescriptor* const* value =
         operand &&
         (operand->content ? operand->content->type() : typeid(void)) ==
-            typeid(const RBX::Reflection::PropertyDescriptor*)
+            held_type_info
         ? &static_cast<const boost::descriptor_holder*>(operand->content)->held
         : 0;
 

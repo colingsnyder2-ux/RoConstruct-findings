@@ -1,6 +1,8 @@
-// from server: 87% by king_originala
+// from server: 100% by king_originala
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
+extern "C" long __cdecl _InterlockedDecrement(volatile long*);
+#pragma intrinsic(_InterlockedDecrement)
 
 extern "C" void (__cdecl* invalid_parameter_noinfo)();
 
@@ -70,9 +72,9 @@ __forceinline Shared::~Shared()
 {
     if (control) {
         Control* p = control;
-        if (_InterlockedExchangeAdd(&p->strong, -1) == 0) {
+        if (_InterlockedDecrement(&p->strong) == 0) {
             p->dispose();
-            if (_InterlockedExchangeAdd(&p->weak, -1) == 0)
+            if (_InterlockedDecrement(&p->weak) == 0)
                 p->destroy();
         }
     }
@@ -97,10 +99,9 @@ void S::f(String name, Shared instance)
     Holder* result = new (&storage) Holder(name);
 
     if (result != first) {
-        Value* saved = first->value;
-        Value* replacement = result->value;
-        result->value = saved;
-        first->value = replacement;
+        Value* saved = result->value;
+        result->value = first->value;
+        first->value = saved;
     }
     reinterpret_cast<Holder*>(&storage)->~Holder();
 

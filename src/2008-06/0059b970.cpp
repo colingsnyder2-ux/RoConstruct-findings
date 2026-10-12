@@ -1,23 +1,5 @@
-// from server: 88% by king_originala
+// from server: 99% by king_originala
 extern "C" void __cdecl release(void*);
-
-extern unsigned int vtable0[];
-extern unsigned int vtable10[];
-extern unsigned int vtable14[];
-extern unsigned int vtable20[];
-extern unsigned int vtable24[];
-extern unsigned int vtable44[];
-extern unsigned int vtable64[];
-extern unsigned int vtable84[];
-extern unsigned int vtableA4[];
-extern unsigned int vtableC4[];
-extern unsigned int vtable130[];
-extern unsigned int vtable1A0[];
-extern unsigned int vtable1C0[];
-extern unsigned int vtable1CC[];
-extern unsigned int virtualTable1[];
-extern unsigned int virtualTable2[];
-extern unsigned int virtualTable3[];
 
 struct Base
 {
@@ -89,33 +71,32 @@ struct S : Base
 S::~S()
 {
     int* t = table;
-    words[0] = reinterpret_cast<unsigned int>(vtable0);
-    words[4] = reinterpret_cast<unsigned int>(vtable10);
-    words[5] = reinterpret_cast<unsigned int>(vtable14);
-    words[8] = reinterpret_cast<unsigned int>(vtable20);
-    words[9] = reinterpret_cast<unsigned int>(vtable24);
-    words[17] = reinterpret_cast<unsigned int>(vtable44);
-    words[25] = reinterpret_cast<unsigned int>(vtable64);
-    words[33] = reinterpret_cast<unsigned int>(vtable84);
-    words[41] = reinterpret_cast<unsigned int>(vtableA4);
-    words[49] = reinterpret_cast<unsigned int>(vtableC4);
-    words[76] = reinterpret_cast<unsigned int>(vtable130);
-    buffer.vtable = reinterpret_cast<unsigned int>(vtable1A0);
-    secondary = reinterpret_cast<unsigned int>(vtable1C0);
-    *reinterpret_cast<unsigned int*>(part.data) =
-        reinterpret_cast<unsigned int>(vtable1CC);
+    words[0] = 0x00832d4c;
+    words[4] = 0x00832d3c;
+    words[5] = 0x00832d34;
+    words[8] = 0x00832d2c;
+    words[9] = 0x00832d1c;
+    words[17] = 0x00832d0c;
+    words[25] = 0x00832cfc;
+    words[33] = 0x00832cec;
+    words[41] = 0x00832cdc;
+    words[49] = 0x00832ccc;
+    words[76] = 0x00832cc0;
+    buffer.vtable = 0x00832cb0;
+    secondary = 0x00832ca4;
+    *reinterpret_cast<unsigned int*>(part.data) = 0x00832c8c;
 
     *reinterpret_cast<unsigned int*>(
-        reinterpret_cast<char*>(this) + 0x134 + t[1]) =
-        reinterpret_cast<unsigned int>(virtualTable1);
+        reinterpret_cast<char*>(this) + t[1] + 0x134) = 0x00832c80;
+    t = table;
     *reinterpret_cast<unsigned int*>(
-        reinterpret_cast<char*>(this) + 0x134 + table[2]) =
-        reinterpret_cast<unsigned int>(virtualTable2);
+        reinterpret_cast<char*>(this) + t[2] + 0x134) = 0x00832c78;
+    t = table;
     *reinterpret_cast<unsigned int*>(
-        reinterpret_cast<char*>(this) + 0x134 + table[3]) =
-        reinterpret_cast<unsigned int>(virtualTable3);
+        reinterpret_cast<char*>(this) + t[3] + 0x134) = 0x00832c5c;
 
-    int offset = table[1];
+    t = table;
+    int offset = t[1];
     *reinterpret_cast<int*>(
         reinterpret_cast<char*>(this) + 0x130 + offset) = offset - 0x2b8;
     offset = table[2];

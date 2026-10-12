@@ -1,74 +1,92 @@
-// from server: 29% by colin
-struct Vec8 {
-    char* begin;
-    char* end;
-    char* cap;
-};
+// from server: 93% by king_originala
+extern void __cdecl registerType(void (__cdecl*)(), void*);
+extern void __cdecl registerIndex();
+extern void __cdecl registerKey();
+extern char indexRegistration;
+extern char keyRegistration;
+extern void* __cdecl getIndex();
+extern void* __cdecl getKey();
+extern void (__cdecl* invalidParameter)();
 
-void* __stdcall make_value_0044f4a0();
-void* __cdecl func_0044f4a0();
-void __stdcall sub_557330(void*, void*);
-void __stdcall sub_4124c0(void*, int, void*);
-void __stdcall sub_4025b0(void*, void*);
-void __stdcall sub_600660(void*);
-void __stdcall sub_572a90(void*, void*, void*);
-void __stdcall sub_44f2f0();
-void __stdcall sub_44f4a0();
-void __cdecl invalid_parameter_noinfo();
-
-struct RBX_VVisit_FactoryProduct_Creator {
-    void* method(int);
-};
-
-void* RBX_VVisit_FactoryProduct_Creator::method(int a)
+struct Reference
 {
-    void* result;
-    void* tmp;
-    int idx;
-    int count;
-    void* p;
+    void* control;
+    Reference& operator=(const Reference&);
+};
 
-    sub_557330((void*)0x96dd78, (void*)0x450880);
-    sub_44f4a0();
-    idx = (int)func_0044f4a0();
+struct Product
+{
+    void* object;
+    Reference reference;
 
-    count = (*(int*)((char*)this + 0x1a0) - *(int*)((char*)this + 0x19c)) >> 3;
+    Product();
+    Product(const Product&);
+    ~Product();
+};
 
-    if ((unsigned)(idx + 1) > (unsigned)count) {
-        void* local[2];
-        local[0] = 0;
-        local[1] = 0;
-        sub_4124c0((char*)this + 0x190, idx + 1, local);
-    } else {
-        int n = (*(int*)((char*)this + 0x1a0) - *(int*)((char*)this + 0x19c)) >> 3;
-        if (idx >= n) {
-            invalid_parameter_noinfo();
-        }
-        result = *(void**)(*(int*)((char*)this + 0x19c) + idx * 8);
-        if (result != 0) {
-            return result;
-        }
-    }
+inline Product::Product() : object(0)
+{
+    reference.control = 0;
+}
 
-    sub_557330((void*)0x96dd68, (void*)0x450840);
-    sub_44f2f0();
-    tmp = func_0044f4a0();
-    sub_572a90(this, &tmp, (void*)tmp);
+struct Products
+{
+    char padding[12];
+    Product* first;
+    Product* volatile last;
+    Product* limit;
 
-    if (tmp == 0) {
-        sub_600660(&tmp);
-        return 0;
-    }
+    unsigned int size() const;
+    Product& at(unsigned int, void (__cdecl*)());
+    void resize(unsigned int, Product);
+};
 
+inline unsigned int Products::size() const
+{
+    return static_cast<unsigned int>(last - first);
+}
+
+inline Product& Products::at(unsigned int index, void (__cdecl* invalid)())
+{
+    if (index >= size())
+        invalid();
+    return first[index];
+}
+
+struct Creator
+{
+    char padding[0x190];
+    Products products;
+
+    Product create(void*);
+    void* get();
+};
+
+void* Creator::get()
+{
+    registerType(registerIndex, &indexRegistration);
+    unsigned int index = reinterpret_cast<unsigned int>(getIndex());
+    void (__cdecl* invalid)() = invalidParameter;
+    Products& entries = products;
+
+    if (index + 1 > entries.size())
+        entries.resize(index + 1, Product());
+    else
     {
-        int n = (*(int*)((char*)this + 0x1a0) - *(int*)((char*)this + 0x19c)) >> 3;
-        if (idx >= n) {
-            invalid_parameter_noinfo();
-        }
-        p = (void*)(*(int*)((char*)this + 0x19c) + idx * 8);
-        *(void**)p = tmp;
-        sub_4025b0((char*)p + 4, &tmp);
-        sub_600660(&tmp);
-        return tmp;
+        void* existing = entries.at(index, invalid).object;
+        if (existing)
+            return existing;
     }
+
+    registerType(registerKey, &keyRegistration);
+    Product result = create(getKey());
+
+    if (!result.object)
+        return 0;
+
+    void* object = result.object;
+    Product& destination = entries.at(index, invalid);
+    destination.object = result.object;
+    destination.reference = result.reference;
+    return object;
 }

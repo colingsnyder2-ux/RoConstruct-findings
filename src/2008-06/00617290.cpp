@@ -1,4 +1,4 @@
-// from server: 74% by king_originala
+// from server: 88% by king_originala
 extern "C" {
     extern void (__cdecl *_invalid_parameter_noinfo)();
 }
@@ -53,14 +53,16 @@ void Selection::update(Change* change)
         Iterator found;
         found.position = current;
 
-        while (current != finish && *current != value)
+        while (current != finish &&
+               *current != *static_cast<void* volatile*>(&value))
             ++current;
 
         finish = container->last;
         if (container->first > finish)
             _invalid_parameter_noinfo();
 
-        void* currentOwner = container->owner;
+        void* currentOwner =
+            *static_cast<void* volatile*>(&container->owner);
         if (!originalOwner || originalOwner != currentOwner)
             _invalid_parameter_noinfo();
 

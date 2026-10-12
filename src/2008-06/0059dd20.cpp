@@ -1,9 +1,9 @@
-// from server: 97% by king_originala
+// from server: 100% by king_originala
 extern char descriptor;
 
 struct Property {
-    char storage[0xA9];
-    void set(bool value);
+    char storage[0xA8];
+    void enable(bool value);
 };
 
 struct S {
@@ -18,7 +18,7 @@ struct S {
 void S::setValue(bool newValue)
 {
     if (newValue != value) {
-        property.set(newValue);
+        property.enable(newValue);
         notify(&descriptor);
     }
 }

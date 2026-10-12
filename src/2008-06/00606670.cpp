@@ -1,4 +1,10 @@
-// from server: 49% by colin
+// from server: 67% by king_originala
+#pragma float_control(precise, off)
+
+struct Helper {
+    const void* get();
+};
+
 struct Connector {
     char pad0[8];
     int field8;
@@ -10,68 +16,50 @@ struct Connector {
     void func(int a, int b);
 };
 
-struct Helper {
-    void method();
-};
-
-extern "C" void sub_599360(int);
-
 void Connector::func(int a, int b)
 {
     if (field18 != 0)
         return;
 
-    int edi = *(int*)(field8 + 0xC);
-    ((Helper*)edi)->method();
+    int object = *(int*)(field8 + 0xC);
+    ((Helper*)object)->get();
 
-    int ecx = field1C;
-    int eax = ecx / 3;
-    int rem = ecx - eax * 3;
-    int eax2 = eax + eax;
+    int quotient = field1C / 3;
+    int remainder = field1C - quotient * 3;
 
-    float f0 = *(float*)(edi + rem * 4 + 0x94);
-    float f1 = *(float*)(edi + rem * 4 + 0xA0);
-    float f2 = *(float*)(edi + rem * 4 + 0xAC);
+    float f0 = *(float*)(object + remainder * 4 + 0x94);
+    float f1 = *(float*)(object + remainder * 4 + 0xA0);
+    float f2 = *(float*)(object + remainder * 4 + 0xAC);
 
-    int t = 1 - eax2;
-    float ft = (float)t;
+    float scale = (float)(1 - (quotient + quotient));
+    f0 *= scale;
+    f1 *= scale;
+    f2 *= scale;
 
-    f0 *= ft;
-    f1 *= ft;
-    f2 *= ft;
+    int position = fieldC + 0x1C;
+    int first = field8;
 
-    int eax3 = fieldC + 0x1C;
-    int ecx3 = field8;
+    float d0 = *(float*)position - *(float*)(first + 0x1C);
+    float d1 = *(float*)(position + 4) - *(float*)(first + 0x20);
+    float d2 = *(float*)(position + 8) - *(float*)(first + 0x24);
 
-    float d0 = *(float*)eax3 - *(float*)(ecx3 + 0x1C);
-    float d1 = *(float*)(eax3 + 4) - *(float*)(ecx3 + 0x20);
-    float d2 = *(float*)(eax3 + 8) - *(float*)(ecx3 + 0x24);
+    float negative = -field10;
+    d0 *= negative;
+    d1 *= negative;
+    d2 *= negative;
 
-    float neg = -field10;
-    d0 *= neg;
-    d1 *= neg;
-    d2 *= neg;
+    field18 = -(f0 * d0 + f1 * d1 + f2 * d2) > field14;
 
-    float r0 = f0 + d0;
-    float r1 = f1 + d1;
-    float r2 = f2 + d2;
+    float n0 = -d0;
+    float n1 = -d1;
+    float n2 = -d2;
 
-    float cmp = -r2;
-    if (cmp == field14)
-        field18 = 0;
-    else
-        field18 = 1;
+    *(float*)(first + 0x28) += n0;
+    *(float*)(first + 0x2C) += n1;
+    *(float*)(first + 0x30) += n2;
 
-    float n0 = -r0;
-    float n1 = -r1;
-    float n2 = -r2;
-
-    *(float*)(ecx3 + 0x28) += n0;
-    *(float*)(ecx3 + 0x2C) += n1;
-    *(float*)(ecx3 + 0x30) += n2;
-
-    int esi = fieldC;
-    *(float*)(esi + 0x28) += n0;
-    *(float*)(esi + 0x2C) += n1;
-    *(float*)(esi + 0x30) += n2;
+    int second = fieldC + 0x28;
+    *(float*)second += d0;
+    *(float*)(second + 4) += d1;
+    *(float*)(second + 8) += d2;
 }

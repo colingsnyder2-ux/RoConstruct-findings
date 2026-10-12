@@ -1,24 +1,39 @@
-// from server: 41% by colin
-struct XTPPropertyGridItem
+// from server: 66% by king_originala
+struct String;
+
+extern void (__thiscall *CopyString)(String*, const String&);
+extern void (__thiscall *DestroyString)(String*);
+
+struct String
 {
-    void __stdcall SetValue(const void* value);
+    char* data;
+    String(const String&);
+    ~String() throw();
 };
 
-
-extern "C" void __stdcall FreeSomething(void* p);
-
-struct HVCXTPPropertyGridItem
+__forceinline String::String(const String& value)
 {
-    void __stdcall SetValue(const void* value);
-    void* GetSomething();
+    CopyString(this, value);
+}
+
+__forceinline String::~String() throw()
+{
+    DestroyString(this);
+}
+
+struct Item
+{
+    typedef int (__thiscall *Getter)(Item*);
+    Getter* table;
+
+    void SetValue(String value);
+    void Apply(const int& value);
+    void Change(String value);
 };
 
-void __stdcall HVCXTPPropertyGridItem::SetValue(const void* value)
+void Item::Change(String value)
 {
-    void* local = 0;
-    void* saved = GetSomething();
-    XTPPropertyGridItem* item = (XTPPropertyGridItem*)this;
-    item->SetValue(value);
-    int result = ((int (__stdcall*)(void))((*(void***)this)[0x39]))();
-    FreeSomething(saved);
+    SetValue(value);
+    int result = table[57](this);
+    Apply(result);
 }

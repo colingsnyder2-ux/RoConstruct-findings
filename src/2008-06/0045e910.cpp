@@ -1,4 +1,4 @@
-// from server: 99% by king_originala
+// from server: 100% by king_originala
 struct Rect {
     long left, top, right, bottom;
 };
@@ -25,7 +25,7 @@ struct PaintContext {
 struct Guard {
     unsigned char storage[24];
 
-    Guard(void *, bool);
+    Guard(void *, int);
     ~Guard();
 };
 
@@ -90,7 +90,8 @@ bool Window::draw()
                       "Roblox can't run with your graphics driver",
                       -1, &rect, 0x8000);
         } else {
-            Guard guard(lock, true);
+            void *guardLock = lock;
+            Guard guard(guardLock, 1);
             update();
             renderer->prepare();
             setMode(true);

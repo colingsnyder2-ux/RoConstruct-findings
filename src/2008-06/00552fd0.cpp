@@ -1,11 +1,11 @@
-// from server: 48% by atomic.potato
-struct S
-{
-    int f();
-    int g();
+// from server: 100% by king_originala
+struct S {
+    unsigned int count() const;
+    bool empty() const;
 };
 
-int S::f()
+#pragma optimize("", off)
+bool S::empty() const
 {
-    return !g();
+    return !count();
 }

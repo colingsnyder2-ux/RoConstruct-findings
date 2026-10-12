@@ -1,33 +1,64 @@
-// from server: 77% by colin
-struct ViewG3D {
-    void* field0;
-    void* field4;
-    void* field8;
-    char pad0C[8];
-    void* field14;
-    void func(int arg);
+// from server: 100% by king_originala
+extern const double value;
+
+struct Source {
+    virtual void slot0();
+    virtual void slot1();
+    virtual void slot2();
+    virtual void slot3();
+    virtual void slot4();
+    virtual void set(double);
 };
 
-void ViewG3D::func(int arg)
-{
-    struct Vtbl0 { void (__thiscall *fn24)(void*); };
-    struct Vtbl4 { void (__thiscall *fn14)(void*, double); };
-    struct Vtbl8 { void (__thiscall *fn14)(void*, int, int); };
-    struct VtblA { void* (__thiscall *fn8)(void*); };
+struct Query {
+    virtual void slot0();
+    virtual void slot1();
+    virtual int get();
+};
 
-    void* p0 = field0;
-    (*(Vtbl0**)p0)->fn24(p0);
+struct Target {
+    virtual void slot0();
+    virtual void slot1();
+    virtual void slot2();
+    virtual void slot3();
+    virtual void slot4();
+    virtual void apply(int, int);
+};
 
-    double d = *(double*)0x826938;
-    void* p4 = field4;
-    (*(Vtbl4**)p4)->fn14(p4, d);
+struct Context {
+    char padding[0x288];
+    Query query;
+};
 
-    void* p14 = field14;
-    void* p204 = *(void**)((char*)p14 + 0x204);
-    void* p288 = (char*)p204 + 0x288;
-    void* edx = *(void**)p288;
-    void* p8 = field8;
-    void* edi = *(void**)p8;
-    void* eax = (*(VtblA**)edx)->fn8(edx);
-    (*(Vtbl8**)edi)->fn14(p8, (int)eax, arg);
+struct Holder {
+    char padding[0x204];
+    Context* context;
+};
+
+struct S {
+    virtual void slot0();
+    virtual void slot1();
+    virtual void slot2();
+    virtual void slot3();
+    virtual void slot4();
+    virtual void slot5();
+    virtual void slot6();
+    virtual void slot7();
+    virtual void slot8();
+    virtual void prepare();
+
+    Source* source;
+    Target* target;
+    char padding[8];
+    Holder* holder;
+
+    void f(int);
+};
+
+void S::f(int arg) {
+    prepare();
+    source->set(value);
+    Context* c = holder->context;
+    Target* t = target;
+    t->apply(arg, c->query.get());
 }

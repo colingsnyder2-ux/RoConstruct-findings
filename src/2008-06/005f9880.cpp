@@ -1,18 +1,21 @@
-// from server: 17% by tester
-struct UString_sink_stream_buffer {
-    char pad[0x58];
-    unsigned int m_flags;
-    void f();
+// from server: 78% by king_originala
+struct Base {
+    char reserved[84];
+    virtual ~Base();
 };
 
-void UString_sink_stream_buffer::f()
+struct S : Base {
+    unsigned int flags;
+
+    virtual ~S();
+    void close();
+};
+
+S::~S()
 {
-    unsigned int v = m_flags;
-    m_flags = 0x840eac;
-    if ((v & 1) != 0) {
-        if (((v >> 4) & 1) != 0) {
-            extern void sub_005f3d80();
-            sub_005f3d80();
-        }
+    try {
+        if ((flags & 1) && ((flags >> 4) & 1))
+            close();
+    } catch (...) {
     }
 }

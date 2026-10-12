@@ -1,4 +1,4 @@
-// from server: 99% by king_originala
+// from server: 100% by king_originala
 struct String {
     unsigned int allocator;
     union {
@@ -67,11 +67,11 @@ Log::Log(const String& filename, int value)
     if (file) {
         setvbuf(file, 0, 4, 0);
         int (__cdecl *print)(FILE*, const char*, ...) = fprintf;
-        print(file, "Application Log\n\n");
+        print(file, "Application Log\n");
 
         __int64 now;
         _time64(&now);
-        print(file, "Start: %s\n\n", _ctime64(&now));
+        print(file, "Start: %s\n", _ctime64(&now));
         fflush(file);
     }
 

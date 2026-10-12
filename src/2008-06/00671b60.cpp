@@ -1,54 +1,71 @@
-// from server: 46% by colin
-struct OgreMesh;
-struct OgreSubMesh;
-struct OgreVector3 { float x, y, z; };
-struct OgreAxisAlignedBox { char data[24]; };
-
-struct OgreMeshPtr {
-    OgreMesh *p;
-    OgreMeshPtr& operator=(const OgreMeshPtr&);
+// from server: 69% by king_originala
+struct Vector3 {
+    float x, y, z;
 };
 
-extern "C" {
-    float __stdcall Ogre_Mesh_getBoundingSphereRadius(const OgreMesh *);
-    const OgreAxisAlignedBox& __stdcall Ogre_Mesh_getBounds(const OgreMesh *);
-    OgreVector3 __stdcall Ogre_AxisAlignedBox_getCenter(const OgreAxisAlignedBox *);
-    unsigned short __stdcall Ogre_Mesh_getNumSubMeshes(const OgreMesh *);
-    OgreSubMesh* __stdcall Ogre_Mesh_getSubMesh(const OgreMesh *, unsigned short);
-}
-
-struct AdornRbxGfx {
-    char pad[0x34];
-    void *field34;
-    char pad2[0x78 - 0x38];
-    OgreMeshPtr meshPtr;
-    void addMesh(const OgreMeshPtr&, int);
+struct Sphere {
+    float radius;
+    Vector3 center;
 };
 
-void AdornRbxGfx::addMesh(const OgreMeshPtr& mesh, int index)
-{
-    OgreMeshPtr local;
-    local = meshPtr;
-    OgreMesh *m = local.p;
+struct Box;
+struct Mesh;
+struct SubMesh;
+struct Handle;
+struct Renderer;
 
-    float radius = Ogre_Mesh_getBoundingSphereRadius(m);
-    const OgreAxisAlignedBox& box = Ogre_Mesh_getBounds(m);
-    OgreVector3 center = Ogre_AxisAlignedBox_getCenter(&box);
+typedef void (__thiscall *DrawFn)(Renderer*, SubMesh*);
 
-    float cx = center.x;
-    float cy = center.y;
-    float cz = center.z;
+struct RenderTable {
+    char padding[0x1c4];
+    DrawFn draw;
+};
 
-    unsigned short count = Ogre_Mesh_getNumSubMeshes(m);
-    int i = 0;
-    while (i < (int)count) {
-        void *obj = *(void **)field34;
-        OgreSubMesh *sm = Ogre_Mesh_getSubMesh(m, (unsigned short)i);
-        void *v = (void *)((char *)obj + 0x1c4);
-        void (__thiscall *fn)(void *, OgreSubMesh *, int, OgreVector3 *) =
-            *(void (__thiscall **)(void *, OgreSubMesh *, int, OgreVector3 *))v;
-        fn(obj, sm, index, &center);
-        i++;
-        count = Ogre_Mesh_getNumSubMeshes(m);
+struct Renderer {
+    RenderTable* table;
+};
+
+struct MeshPtr {
+    void* first;
+    Mesh* mesh;
+};
+
+struct Cache {
+    Handle* prepare(void*, const MeshPtr&);
+};
+
+extern void (__thiscall *finish)(Handle*);
+extern float (__thiscall *getRadius)(Mesh*);
+extern const Box& (__thiscall *getBounds)(Mesh*);
+extern Vector3 (__thiscall *getCenter)(const Box*);
+extern unsigned short (__thiscall *getCount)(Mesh*);
+extern SubMesh* (__thiscall *getSubMesh)(Mesh*, unsigned short, const Sphere&);
+
+struct S {
+    char padding0[0x34];
+    Renderer* renderer;
+    char padding1[0x40];
+    Cache cache;
+
+    void f(void*, const MeshPtr&);
+};
+
+void S::f(void* key, const MeshPtr& meshPtr) {
+    finish(cache.prepare(key, meshPtr));
+
+    Mesh* mesh = meshPtr.mesh;
+    float radius = getRadius(mesh);
+    const Vector3& center = getCenter(&getBounds(mesh));
+
+    Sphere sphere;
+    sphere.radius = radius;
+    sphere.center.x = center.x;
+    sphere.center.y = center.y;
+    sphere.center.z = center.z;
+
+    for (int i = 0; i < getCount(meshPtr.mesh); ++i) {
+        DrawFn* draw = &renderer->table->draw;
+        SubMesh* subMesh = getSubMesh(meshPtr.mesh, (unsigned short)i, sphere);
+        (*draw)(renderer, subMesh);
     }
 }

@@ -1,8 +1,12 @@
-// from server: 53% by king_originala
+// from server: 69% by king_originala
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
+extern "C" long __cdecl _InterlockedDecrement(volatile long*);
+#pragma intrinsic(_InterlockedDecrement)
 
-extern void (__cdecl *invalid_parameter)();
+typedef void (__cdecl* InvalidHandler)();
+extern "C" InvalidHandler _invalid_parameter_noinfo;
+extern "C" void __cdecl free_object(void*);
 
 struct Control {
     virtual void unused();
@@ -15,12 +19,9 @@ struct Control {
 struct Shared {
     void* object;
     Control* control;
-    Shared();
     Shared(const Shared&);
     ~Shared();
 };
-
-inline Shared::Shared() {}
 
 inline Shared::Shared(const Shared& other)
     : object(other.object), control(other.control) {
@@ -29,10 +30,11 @@ inline Shared::Shared(const Shared& other)
 }
 
 inline Shared::~Shared() {
-    if (control && _InterlockedExchangeAdd(&control->strong, -1) == 0) {
-        control->dispose();
-        if (_InterlockedExchangeAdd(&control->weak, -1) == 0)
-            control->destroy();
+    Control* p = control;
+    if (p && _InterlockedDecrement(&p->strong) == 0) {
+        p->dispose();
+        if (_InterlockedDecrement(&p->weak) == 0)
+            p->destroy();
     }
 }
 
@@ -44,18 +46,21 @@ struct Guard {
 
 struct Item {
     virtual void unused();
-    virtual ~Item();
+    virtual void deleting_destructor(unsigned int);
 };
 
 struct Vector;
 
 struct Proxy {
-    Vector* owner;
+    Vector* container;
 };
 
 struct Iterator {
-    Proxy* proxy;
+    Proxy* owner;
     Item** position;
+    bool different(const Iterator&, InvalidHandler) const;
+    Item* value(InvalidHandler) const;
+    void advance(InvalidHandler);
 };
 
 struct Vector {
@@ -65,24 +70,60 @@ struct Vector {
     Item** first;
     Item** last;
     Item** limit;
+    Iterator begin(InvalidHandler);
+    Iterator end(InvalidHandler);
     Iterator* erase(Iterator*, Iterator, Iterator);
 };
 
+inline bool Iterator::different(const Iterator& other, InvalidHandler invalid) const {
+    if (!owner || owner != other.owner)
+        invalid();
+    return position != other.position;
+}
+
+inline Item* Iterator::value(InvalidHandler invalid) const {
+    if (!owner)
+        invalid();
+    Vector* container = owner ? owner->container : 0;
+    if (position >= container->last)
+        invalid();
+    return *position;
+}
+
+inline void Iterator::advance(InvalidHandler invalid) {
+    if (!owner)
+        invalid();
+    Vector* container = owner ? owner->container : 0;
+    if (position >= container->last)
+        invalid();
+    ++position;
+}
+
+inline Iterator Vector::begin(InvalidHandler invalid) {
+    Item** position = first;
+    if (first > last)
+        invalid();
+    Iterator result = { proxy, position };
+    return result;
+}
+
+inline Iterator Vector::end(InvalidHandler invalid) {
+    Item** position = last;
+    if (first > last)
+        invalid();
+    Iterator result = { proxy, position };
+    return result;
+}
+
 struct Owned {
-    void destroy();
-};
-
-struct Source;
-
-struct SourceTable {
-    void* unused0;
-    void* unused1;
-    unsigned long (__stdcall *release)(Source*);
+    void cleanup();
 };
 
 struct Source {
-    SourceTable* table;
-    void close();
+    virtual void unused0();
+    virtual void unused1();
+    virtual unsigned long __stdcall release();
+    void cleanup();
 };
 
 struct S {
@@ -90,83 +131,49 @@ struct S {
     Vector items;
     Owned* owned;
     Source* source;
-    Shared* get(Shared*);
+    Shared get();
     void finish();
     void f();
 };
 
-extern S* current;
-extern "C" void __cdecl free_object(void*);
-extern "C" void __cdecl set_current(int, S*);
+extern S* current_document;
+extern void __cdecl set_document(int, S*);
 
 void S::f() {
     {
-        Shared temporary;
-        Guard guard(*get(&temporary));
+        Guard guard(static_cast<const Shared&>(get()));
 
-        Vector* vector = &items;
-        Iterator begin;
-        begin.position = vector->first;
-        if (begin.position > vector->last)
-            invalid_parameter();
-        begin.proxy = vector->proxy;
+        InvalidHandler invalid = _invalid_parameter_noinfo;
+        Iterator first = items.begin(invalid);
+        Iterator last = items.end(invalid);
 
-        Iterator end;
-        end.position = vector->last;
-        if (vector->first > end.position)
-            invalid_parameter();
-        end.proxy = vector->proxy;
-
-        for (;;) {
-            if (!begin.proxy || begin.proxy != end.proxy)
-                invalid_parameter();
-            if (begin.position == end.position)
-                break;
-
-            if (!begin.proxy)
-                invalid_parameter();
-            Vector* owner = begin.proxy ? begin.proxy->owner : 0;
-            if (begin.position >= owner->last)
-                invalid_parameter();
-            delete *begin.position;
-
-            if (!begin.proxy)
-                invalid_parameter();
-            owner = begin.proxy ? begin.proxy->owner : 0;
-            if (begin.position >= owner->last)
-                invalid_parameter();
-            ++begin.position;
+        for (; first.different(last, invalid); first.advance(invalid)) {
+            Item* item = first.value(invalid);
+            if (item)
+                item->deleting_destructor(1);
         }
 
-        Iterator last;
-        last.position = vector->last;
-        if (vector->first > last.position)
-            invalid_parameter();
-        last.proxy = vector->proxy;
-
-        Iterator first;
-        first.position = vector->first;
-        if (first.position > vector->last)
-            invalid_parameter();
-        first.proxy = vector->proxy;
-
+        Iterator end = items.end(invalid);
+        Iterator begin = items.begin(_invalid_parameter_noinfo);
         Iterator result;
-        vector->erase(&result, first, last);
+        items.erase(&result, begin, end);
 
         Owned* old = owned;
         owned = 0;
         if (old) {
-            old->destroy();
+            old->cleanup();
             free_object(old);
         }
     }
 
     if (source) {
-        source->close();
-        source->table->release(source);
+        source->cleanup();
+        source->release();
         source = 0;
     }
-    if (current == this)
-        set_current(1, this);
+
+    if (current_document == this)
+        set_document(1, this);
+
     finish();
 }

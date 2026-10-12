@@ -1,4 +1,4 @@
-// from server: 80% by king_originala
+// from server: 90% by king_originala
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
 
@@ -31,17 +31,14 @@ struct Object {
 struct Shared {
     Object* object;
     RefCount* control;
-
     Shared(const Shared&);
     ~Shared();
 };
 
 inline Shared::Shared(const Shared& other)
     : object(other.object), control(other.control) {
-    if (control) {
-        volatile long* count = &control->count;
-        _InterlockedExchangeAdd(count, 1);
-    }
+    if (control)
+        _InterlockedExchangeAdd(&control->count, 1);
 }
 
 struct Guard {
@@ -68,20 +65,42 @@ struct Range {
     unsigned char pad[8];
     unsigned first;
     unsigned last;
+    Iterator begin();
+    Iterator end();
 };
+
+inline Iterator Range::begin() {
+    unsigned index = first;
+    if (index > last)
+        _invalid_parameter_noinfo();
+    Iterator result;
+    result.owner = owner;
+    result.index = index;
+    return result;
+}
+
+inline Iterator Range::end() {
+    unsigned index = last;
+    if (first > index)
+        _invalid_parameter_noinfo();
+    Iterator result;
+    result.owner = owner;
+    result.index = index;
+    return result;
+}
 
 struct Callback {
     void (__cdecl* function)(void*);
+    void* destination;
 };
 
 RBX::ServiceProvider* __cdecl func_00421cb0(RBX::Instance*);
 void __cdecl callback(void*);
-Iterator* __cdecl transform(Iterator*, Iterator, Iterator, Callback, void*);
+Callback __cdecl transform(Iterator, Iterator, Callback);
 
 struct S {
     unsigned char pad[0x24];
     Shared object;
-
     void* create();
     Result f();
 };
@@ -94,35 +113,16 @@ Result S::f() {
     RBX::ServiceProvider* provider =
         func_00421cb0(p ? p->parent : 0);
 
-    Range* endRange =
-        *reinterpret_cast<Range**>(
-            reinterpret_cast<char*>(provider) + 0x154);
-    unsigned last = endRange->last;
-    void* destination = result.value;
-
-    if (endRange->first > last)
-        _invalid_parameter_noinfo();
-
-    Iterator end;
-    end.owner = endRange->owner;
-    end.index = last;
-
-    Range* beginRange =
-        *reinterpret_cast<Range**>(
-            reinterpret_cast<char*>(provider) + 0x154);
-    unsigned first = beginRange->first;
-
-    if (first > beginRange->last)
-        _invalid_parameter_noinfo();
-
-    Iterator begin;
-    begin.owner = beginRange->owner;
-    begin.index = first;
-
     Callback action;
     action.function = callback;
-    Iterator ignored;
-    transform(&ignored, begin, end, action, destination);
+    action.destination = result.value;
+
+    transform(
+        (*reinterpret_cast<Range**>(
+            reinterpret_cast<char*>(provider) + 0x154))->begin(),
+        (*reinterpret_cast<Range**>(
+            reinterpret_cast<char*>(provider) + 0x154))->end(),
+        action);
 
     return result;
 }

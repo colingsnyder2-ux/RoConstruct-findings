@@ -1,16 +1,16 @@
-// from server: 23% by atomic.potato
-struct Mesh {
-    unsigned int begin;
-    unsigned int end;
-    bool contains(unsigned int value);
+// from server: 100% by king_originala
+struct Element {
+    unsigned int data[2];
 };
 
-bool Mesh::contains(unsigned int value) {
-    bool result;
-    if (value >= this->begin && value < this->begin + this->end * 8) {
-        result = true;
-    } else {
-        result = false;
-    }
-    return result;
+struct Mesh {
+    Element* begin;
+    unsigned int count;
+    bool contains(Element* value);
+};
+
+#pragma optimize("", off)
+bool Mesh::contains(Element* value)
+{
+    return value >= begin && value < begin + count;
 }

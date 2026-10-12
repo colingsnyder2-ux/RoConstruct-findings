@@ -1,5 +1,23 @@
-// from server: 33% by colin
-// roc-lang: cpp
-// roc-cl: 50727
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs v8datamodel/MouseCommand.cpp
+// from server: 100% by king_originala
+struct Value
+{
+    char data[28];
+};
+
+struct Buffer
+{
+    volatile int zero;
+    Value value;
+};
+
+extern "C" void __cdecl build(Value*, void*, void*);
+extern "C" void __cdecl copy(void*, const Value*);
+
+void* __cdecl f(void* destination, void* a, void* b)
+{
+    Buffer buffer;
+    buffer.zero = 0;
+    build(&buffer.value, a, b);
+    copy(destination, &buffer.value);
+    return destination;
+}

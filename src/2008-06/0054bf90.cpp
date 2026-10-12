@@ -1,15 +1,23 @@
-// from server: 37% by atomic.potato
-extern "C" void __cdecl sub_54d430(int, int);
-extern "C" void __cdecl sub_54d660(int);
+// from server: 100% by king_originala
+#pragma optimize("", off)
 
-struct S
+struct Element
 {
-    int value;
-    void f();
+    unsigned char data[16];
 };
 
-void S::f()
+struct Mesh
 {
-    sub_54d430(value + 1, 0);
-    sub_54d660((int)this);
+    Element* elements;
+    unsigned int count;
+
+    void resize(unsigned int size, int value);
+    Element* last();
+    Element* append();
+};
+
+Element* Mesh::append()
+{
+    resize(count + 1, 0);
+    return last();
 }

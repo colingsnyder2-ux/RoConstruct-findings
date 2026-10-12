@@ -1,45 +1,68 @@
-// from server: 42% by colin
+// from server: 100% by king_originala
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
+extern "C" long __cdecl _InterlockedIncrement(volatile long*);
+extern "C" long __cdecl _InterlockedDecrement(volatile long*);
+#pragma intrinsic(_InterlockedIncrement)
+#pragma intrinsic(_InterlockedDecrement)
 
-struct RefCounted {
-    void** vtable;
+struct Control {
+    virtual ~Control();
+    virtual void dispose() = 0;
+    virtual void destroy() = 0;
     volatile long strong;
     volatile long weak;
+
+    void add_ref();
+    void release();
+};
+
+__forceinline void Control::add_ref() {
+    _InterlockedIncrement(&strong);
+}
+
+__forceinline void Control::release() {
+    if (_InterlockedDecrement(&strong) == 0) {
+        dispose();
+        if (_InterlockedDecrement(&weak) == 0)
+            destroy();
+    }
+}
+
+struct Shared {
+    void* pointer;
+    Control* control;
+
+    Shared(const Shared& other);
+    ~Shared();
+};
+
+__forceinline Shared::Shared(const Shared& other)
+    : pointer(other.pointer), control(other.control) {
+    if (control)
+        control->add_ref();
+}
+
+__forceinline Shared::~Shared() {
+    if (control)
+        control->release();
+}
+
+struct Object {
+    char padding[0x1c0];
+    int* offsets;
 };
 
 struct S {
-    void* field0;
-    int field4;
-    int field8;
-    void invoke(void* a, void* b, void* c);
+    typedef void (__thiscall *Setter)(void*, Shared);
+    Setter setter;
+    int adjustment;
+    int offset;
+    void f(Object* object, Shared value);
 };
 
-void S::invoke(void* a, void* b, void* c)
-{
-    RefCounted* rc = (RefCounted*)c;
-    if (rc)
-        _InterlockedExchangeAdd(&rc->strong, 1);
-
-    char* base = (char*)b;
-    int offset = *(int*)(base + 0x1c0);
-    int idx = *(int*)((char*)this + 8);
-    int delta = *(int*)(offset + idx);
-    delta += *(int*)((char*)this + 4);
-    void (*fn)(void*) = *(void (**)(void*))this;
-    fn(base + 0x1c0 + delta);
-
-    if (rc)
-    {
-        if (_InterlockedExchangeAdd(&rc->strong, -1) == 1)
-        {
-            void (*dtor)(void*) = *(void (**)(void*))rc->vtable;
-            dtor(rc);
-            if (_InterlockedExchangeAdd(&rc->weak, -1) == 1)
-            {
-                void (*dtor2)(void*) = *(void (**)(void*))((char*)rc->vtable + 8);
-                dtor2(rc);
-            }
-        }
-    }
+void S::f(Object* object, Shared value) {
+    setter(reinterpret_cast<char*>(object) + 0x1c0 +
+           *reinterpret_cast<int*>(reinterpret_cast<char*>(object->offsets) + offset) +
+           adjustment, value);
 }

@@ -1,32 +1,21 @@
-// from server: 64% by colin
-struct Contact {
-    float field0;
-    float field4;
-    float field8;
-    float fieldC;
-    float field10;
-    float field14;
+// from server: 75% by king_originala
+struct S {
+    float x0, y0, z0;
+    float x1, y1, z1;
+
+    bool intersects(const S* other);
+    bool separated(const S* other, float margin);
 };
 
-extern "C" bool __fastcall sub_606B60(float* p);
-
-struct BlockBlockContact {
-    float field0;
-    float field4;
-    float field8;
-    float fieldC;
-    float field10;
-    float field14;
-    bool method(float a, float b);
-};
-
-bool BlockBlockContact::method(float a, float b) {
-    float v[6];
-    v[0] = field0 - a;
-    v[1] = field4 - b;
-    v[2] = field8 - a;
-    v[3] = fieldC + b;
-    v[4] = field10 + a;
-    v[5] = field14 + b;
-    return !sub_606B60(v);
+bool S::separated(const S* other, float margin)
+{
+    S expanded = {
+        x0 - margin,
+        y0 - margin,
+        z0 - margin,
+        x1 + margin,
+        y1 + margin,
+        z1 + margin
+    };
+    return !expanded.intersects(other);
 }

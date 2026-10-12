@@ -1,4 +1,4 @@
-// from server: 91% by king_originala
+// from server: 93% by king_originala
 struct String;
 
 extern String* (__thiscall* copyString)(String*, const String&);
@@ -60,7 +60,6 @@ void Table::apply(unsigned int mode, unsigned int a, unsigned int b)
             prepare();
             throw;
         }
-        prepare();
     } else {
         configure(a, b);
         Texture* selected = texture;
@@ -69,4 +68,5 @@ void Table::apply(unsigned int mode, unsigned int a, unsigned int b)
             currentTexture = selected;
         }
     }
+    prepare();
 }

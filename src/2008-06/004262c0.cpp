@@ -1,4 +1,4 @@
-// from server: 57% by king_originala
+// from server: 70% by king_originala
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
 
@@ -30,10 +30,11 @@ __forceinline Handle::Handle(const Handle& h)
 
 __forceinline Handle::~Handle()
 {
-    if (control && _InterlockedExchangeAdd(&control->strong, -1) == 1) {
-        control->dispose();
-        if (_InterlockedExchangeAdd(&control->weak, -1) == 1)
-            control->destroy();
+    Control* p = control;
+    if (p && _InterlockedExchangeAdd(&p->strong, -1) == 1) {
+        p->dispose();
+        if (_InterlockedExchangeAdd(&p->weak, -1) == 1)
+            p->destroy();
     }
 }
 
@@ -48,26 +49,41 @@ struct Source {
     SourceTable* table;
 };
 
-struct Vector {
-    Vector** proxy;
+struct Vector;
+
+struct Proxy {
+    Vector* owner;
+    __forceinline Proxy(Vector*);
+};
+
+__forceinline Proxy::Proxy(Vector* p) : owner(p)
+{
+}
+
+struct VectorBase {
+    Proxy* proxy;
     unsigned int reserved[2];
     void** first;
     void** last;
     void** limit;
 
+    __forceinline VectorBase(Vector*);
+    ~VectorBase();
+};
+
+__forceinline VectorBase::VectorBase(Vector* p)
+    : proxy(new Proxy(p)), first(0), last(0), limit(0)
+{
+}
+
+struct Vector : VectorBase {
     __forceinline Vector();
     ~Vector();
     void assign(const Vector*);
 };
 
-__forceinline Vector::Vector()
+__forceinline Vector::Vector() : VectorBase(this)
 {
-    proxy = static_cast<Vector**>(operator new(4));
-    if (proxy)
-        *proxy = this;
-    first = 0;
-    last = 0;
-    limit = 0;
 }
 
 struct Temporary {
@@ -83,7 +99,29 @@ struct Parent {
     Vector* selection;
 };
 
-struct S {
+struct Item {
+    char data[8];
+};
+
+struct Target {
+    void callback(Item*);
+};
+
+struct Callback {
+    void (Target::*method)(Item*);
+    int adjustment;
+    Target* object;
+    int extra;
+};
+
+struct Iterator {
+    Proxy* proxy;
+    void** position;
+};
+
+Callback __cdecl apply(Iterator, Iterator, Callback);
+
+struct S : Target {
     unsigned char padding0[0x0c];
     Parent* parent;
     unsigned char padding1[0x48];
@@ -92,37 +130,22 @@ struct S {
     void f();
 };
 
-void __cdecl callback();
-struct Action {
-    void (__cdecl* function)();
-    unsigned int reserved;
-    S* node;
-    void* value;
-};
-
-struct Iterator {
-    Vector** proxy;
-    void** position;
-};
-
-void __cdecl apply(Iterator*, Iterator, Iterator, Action);
-
 void S::f()
 {
     Vector values;
-    void* context;
+    Callback action;
     {
         Temporary temporary(source->table->get(source));
+
         if (parent->selection)
             values.assign(parent->selection);
-        context = temporary.value;
+
+        action.extra = reinterpret_cast<int>(temporary.value);
     }
 
-    Action action;
-    action.function = callback;
-    action.reserved = 0;
-    action.node = this;
-    action.value = context;
+    action.method = &Target::callback;
+    action.adjustment = 0;
+    action.object = this;
 
     void** finish = values.last;
     if (values.first > values.last)
@@ -138,6 +161,5 @@ void S::f()
     last.proxy = values.proxy;
     last.position = finish;
 
-    Iterator result;
-    apply(&result, first, last, action);
+    apply(first, last, action);
 }

@@ -1,31 +1,51 @@
-// from server: 57% by tester
+// from server: 100% by king_originala
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
 
-struct S
+__forceinline void increment(volatile long* counter)
 {
-    int a;
-    int *b;
-    int c;
-    double d;
-    int e;
-    int f;
-    char buf[0x4c];
-    S(const S&);
+    _InterlockedExchangeAdd(counter, 1);
+}
+
+struct Control {
+    long reserved;
+    volatile long references;
 };
 
-extern "C" void __cdecl sub_6A1598(void*, int, int, void*, void*);
+struct Shared {
+    void* object;
+    Control* control;
 
-S::S(const S& other)
+    Shared(const Shared&);
+    ~Shared();
+};
+
+__forceinline Shared::Shared(const Shared& other)
+    : object(other.object), control(other.control)
 {
-    a = other.a;
-    b = other.b;
-    if (b != 0)
-    {
-        _InterlockedExchangeAdd((volatile long*)(b + 1), 1);
-    }
-    d = 0.0;
-    e = 0;
-    f = 0;
-    sub_6A1598(buf, 0x4c, 8, (void*)0x4c76a0, (void*)0x4ae910);
+    if (control)
+        increment(&control->references);
+}
+
+struct Element {
+    char storage[0x4c];
+
+    Element();
+    ~Element();
+};
+
+struct S {
+    Shared owner;
+    char reserved[8];
+    double value;
+    unsigned first;
+    unsigned second;
+    Element elements[8];
+
+    S(const Shared&);
+};
+
+S::S(const Shared& source)
+    : owner(source), value(0.0), first(0), second(0)
+{
 }

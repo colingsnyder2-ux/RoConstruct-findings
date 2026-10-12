@@ -1,6 +1,8 @@
-// from server: 97% by king_originala
+// from server: 100% by king_originala
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
+extern "C" long __cdecl _InterlockedIncrement(volatile long*);
+#pragma intrinsic(_InterlockedIncrement)
 extern "C" long __cdecl _InterlockedDecrement(volatile long*);
 #pragma intrinsic(_InterlockedDecrement)
 
@@ -54,6 +56,6 @@ S::S(Shared source, float number)
     object = source.object;
     control = source.control;
     if (source.control)
-        _InterlockedExchangeAdd(&source.control->strong, 1);
+        _InterlockedIncrement(&source.control->strong);
     value = number;
 }

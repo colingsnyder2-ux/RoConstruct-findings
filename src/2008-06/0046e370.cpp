@@ -1,16 +1,29 @@
-// from server: 55% by atomic.potato
-struct S
-{
-    int pad[26];
+// from server: 100% by king_originala
+struct Entry {
+    char data[64];
+};
+
+struct Container {
+    char padding[12];
+    Entry* first;
+    Entry* last;
+
+    int lookup(unsigned int index);
+};
+
+struct S {
+    char padding[92];
+    Container entries;
+
     int f();
 };
 
-int callee(S *, int);
-
 int S::f()
 {
-    int n = (pad[27] - pad[26]) >> 6;
-    if (n <= 0)
-        return 0;
-    return callee((S *)((char *)this + 0x5c), 0);
+    Container* container = &entries;
+    unsigned int count =
+        static_cast<unsigned int>(container->last - container->first);
+    if (count > 0)
+        return container->lookup(0);
+    return 0;
 }

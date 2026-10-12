@@ -1,4 +1,7 @@
-// from server: 76% by king_originala
+// from server: 91% by king_originala
+extern "C" void* __cdecl _AddressOfReturnAddress(void);
+#pragma intrinsic(_AddressOfReturnAddress)
+
 struct Human {
     char padding[20];
     char key;
@@ -43,6 +46,8 @@ Seated::Seated(Human* const human) : Base(human)
 {
     Node* node = lookup.find(human ? &human->key : 0);
     if (node)
-        node->sink.update(&human, 1);
+        node->sink.update(
+            reinterpret_cast<Human* const*>(_AddressOfReturnAddress()) + 1,
+            1);
     set(1);
 }

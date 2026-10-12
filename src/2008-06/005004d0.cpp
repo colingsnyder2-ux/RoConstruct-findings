@@ -1,7 +1,7 @@
-// from server: 66% by king_originala
+// from server: 69% by king_originala
 extern "C"
 {
-    extern long (__stdcall * const InterlockedIncrement)(volatile long *);
+    extern long (__thiscall * const InterlockedIncrement)(volatile long *);
     extern long (__stdcall * const InterlockedDecrement)(volatile long *);
 }
 
@@ -23,8 +23,6 @@ struct Vector3
 struct Vector2
 {
     float x, y;
-
-    Vector2(float a, float b) : x(a), y(b) {}
 };
 
 struct Image
@@ -53,10 +51,11 @@ struct ImageRef
 
     ~ImageRef()
     {
-        if (pointer && !InterlockedDecrement(&pointer->references))
+        Image *p = pointer;
+        if (p && !InterlockedDecrement(&p->references))
         {
-            pointer->releaseStorage();
-            pointer->destroy(1);
+            p->releaseStorage();
+            p->destroy(1);
         }
     }
 };
@@ -121,7 +120,7 @@ struct S : Base
 
 S::S(const Vector3 &size, void *context, const Vector2 &dimensions)
 {
-    const float &minimum = size.x <= size.z ? size.x : size.z;
+    const float &minimum = size.x > size.z ? size.z : size.x;
     float radius = minimum * radiusScale;
     Image *image = new Image(5);
 
@@ -133,7 +132,7 @@ S::S(const Vector3 &size, void *context, const Vector2 &dimensions)
     Surface surface(image, size, 0, 9, radius);
     Vector3 result;
     Vector3 *adjusted = calculate(&result, &size, context)->adjust(&radius);
-    surface.scale = Vector2(adjusted->x * textureScale / dimensions.x,
-                           adjusted->y * textureScale / dimensions.y);
+    surface.scale.x = adjusted->x * textureScale / dimensions.x;
+    surface.scale.y = adjusted->y * textureScale / dimensions.y;
     surface.apply(context, 1);
 }

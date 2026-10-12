@@ -1,38 +1,70 @@
-// from server: 41% by colin
-struct S {
-    void* vtable;
-    int field4;
-    void f();
+// from server: 82% by king_originala
+struct type_info {
+    bool operator==(const type_info&) const;
 };
 
-extern "C" int __stdcall G1_00802878(void*);
-extern "C" void __stdcall G1_00802468(void*);
-extern "C" void G1_00416110(void*, void*);
-extern "C" void G1_00615440(void*, void*);
-extern "C" void* G1_0056d2b0(void*, void*);
-extern "C" void* G1_0056cd80();
-extern "C" void G1_0056de80(void*);
+extern type_info string_type;
 
-void S::f()
+struct String {
+    char data[28];
+    ~String();
+};
+
+struct Value : String {
+    Value(const String&);
+};
+
+struct placeholder {
+    virtual ~placeholder();
+    virtual const type_info& type() const = 0;
+};
+
+struct any {
+    placeholder* content;
+
+    any(const Value&);
+    ~any();
+    any& swap(any&);
+};
+
+inline any::~any()
 {
-    if (G1_00802878(*(void**)(*(int*)this + 8))) {
-        char buf[8];
-        G1_00416110(buf, &field4);
-        char buf2[32];
-        G1_00615440(buf2, buf);
-        void* p = G1_0056d2b0(buf2, buf);
-        if (p != &field4) {
-            int tmp = *(int*)&field4;
-            *(int*)&field4 = *(int*)p;
-            *(int*)p = tmp;
-        }
-        int* q = *(int**)buf;
-        if (q) {
-            (*(void(__thiscall**)(int*, int))(*q))(q, 1);
-        }
-        G1_00802468(buf2);
-        G1_00802468(buf);
-        vtable = G1_0056cd80();
+    if (content)
+        delete content;
+}
+
+inline any& any::swap(any& other)
+{
+    if (this != &other) {
+        placeholder* old = other.content;
+        other.content = content;
+        content = old;
     }
-    G1_0056de80(this);
+    return *this;
+}
+
+extern String __cdecl extractString(const any&);
+
+struct Type {
+    char padding[8];
+    const type_info* info;
+};
+
+extern Type* __cdecl valueType();
+
+struct Descriptor {
+    Type* type;
+    any value;
+
+    void finish();
+    void convert();
+};
+
+void Descriptor::convert()
+{
+    if (string_type == *type->info) {
+        any(Value(extractString(value))).swap(value);
+        type = valueType();
+    }
+    finish();
 }

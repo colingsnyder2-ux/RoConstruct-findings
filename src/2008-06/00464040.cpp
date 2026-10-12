@@ -1,36 +1,28 @@
-// from server: 60% by colin
-struct CScintillaCtrl {
-    char padding[0x54];
-    int (__stdcall *fn54)();
-    int (__stdcall *fn58)();
-    int getLineCount(int direct);
-    int lineFromPosition(int pos, int direct);
-    int positionFromLine(int line, int direct);
-    int getLineEndPosition(int line, int direct);
-    int setSel(int start, int end, int direct);
+// from server: 100% by king_originala
+extern "C" int (__stdcall* MessageBeep)(unsigned int);
+
+struct EditorControl
+{
+    int currentPosition(int direct);
+    int lineFromPosition(int position, int direct);
+    int previousMarker(int line, int mask, int direct);
+    void goToLine(int line, int direct);
 };
 
-struct CScriptEditor {
-    CScintillaCtrl* control();
-    void f();
+struct CScriptEditor
+{
+    EditorControl* control();
+    void func_00464040();
 };
 
-extern "C" int __stdcall MessageBeep(unsigned int uType);
-
-CScintillaCtrl* CScriptEditor::control()
+void CScriptEditor::func_00464040()
 {
-    return 0;
-}
-
-void CScriptEditor::f()
-{
-    CScintillaCtrl* ctrl = control();
-    int line = ctrl->lineFromPosition(ctrl->getLineCount(1), 1);
-    int pos = ctrl->positionFromLine(line - 1, 1);
-    int result = ctrl->getLineEndPosition(pos, 1);
-    if (result >= 0) {
-        ctrl->setSel(result, result, 1);
-    } else {
-        MessageBeep(0x10);
-    }
+    EditorControl* editor = control();
+    int position = editor->currentPosition(1);
+    int line = editor->lineFromPosition(position, 1);
+    int marker = editor->previousMarker(line - 1, 1, 1);
+    if (marker >= 0)
+        editor->goToLine(marker, 1);
+    else
+        MessageBeep(16);
 }

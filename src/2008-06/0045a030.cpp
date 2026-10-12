@@ -1,4 +1,4 @@
-// from server: 79% by king_originala
+// from server: 94% by king_originala
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
 
@@ -6,8 +6,6 @@ struct StringValue {
     unsigned char data[28];
 };
 
-extern const char NetworkClient[];
-extern const char Players[];
 extern int (__thiscall *compareString)(const StringValue*, const char*);
 extern int (__stdcall *PostMessageA)(void*, unsigned int, unsigned int, long);
 
@@ -44,9 +42,9 @@ inline SharedInstance::~SharedInstance()
 {
     ReferenceCount* p = count;
     if (p) {
-        if (_InterlockedExchangeAdd(&p->strong, -1) - 1 == 0) {
+        if (_InterlockedExchangeAdd(&p->strong, -1) == 0) {
             p->dispose();
-            if (_InterlockedExchangeAdd(&p->weak, -1) - 1 == 0)
+            if (_InterlockedExchangeAdd(&p->weak, -1) == 0)
                 p->destroy();
         }
     }
@@ -62,14 +60,18 @@ struct CRobloxView {
 
 void CRobloxView::changed(int, SharedInstance instance)
 {
-    if (compareString(&instance.object->names.getName()->text, NetworkClient) == 0 ||
-        compareString(&instance.object->names.getName()->text, Players) == 0) {
+    NameValue* name;
+    if ((name = instance.object->names.getName(),
+         compareString(&name->text, "NetworkClient")) == 0 ||
+        (name = instance.object->names.getName(),
+         compareString(&name->text, "Players")) == 0) {
         PostMessageA(*reinterpret_cast<void**>(
                          reinterpret_cast<char*>(this) - 128),
                      0x46b, 0, 0);
     }
 
-    if (compareString(&instance.object->names.getName()->text, Players) == 0) {
+    name = instance.object->names.getName();
+    if (compareString(&name->text, "Players") == 0) {
         void* listener = (reinterpret_cast<char*>(this) - 160)
                              ? reinterpret_cast<char*>(this) + 8
                              : 0;

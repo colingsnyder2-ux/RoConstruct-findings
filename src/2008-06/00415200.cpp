@@ -1,4 +1,4 @@
-// from server: 81% by king_originala
+// from server: 95% by king_originala
 struct Control {
     void* value;
     Control& operator=(const Control&);
@@ -40,16 +40,13 @@ void* S::get()
 {
     initialize(initializeIndex, &indexFlag);
     unsigned int index = (unsigned int)func_00413810();
-    unsigned int count = (unsigned int)(entries.last - entries.first);
     void (__cdecl* invalid)() = invalid_parameter_noinfo;
     Storage* storage = &entries;
 
-    if (index + 1 > count) {
+    if (index + 1 > (unsigned int)(entries.last - entries.first)) {
         storage->resize(index + 1, Pointer());
     } else {
-        if (index >= (unsigned int)(
-                ((volatile Storage*)storage)->last -
-                ((volatile Storage*)storage)->first))
+        if (index >= (unsigned int)(storage->last - storage->first))
             invalid();
         void* result = storage->first[index].object;
         if (result)

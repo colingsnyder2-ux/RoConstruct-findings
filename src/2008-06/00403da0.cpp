@@ -1,5 +1,19 @@
-// from server: 52% by colin
-// roc-lang: cpp
-// roc-cl: 30729
-// roc-flags: /O2 /GS- /MD
-// roc-lib: atl-9.0 atl.cpp
+// from server: 100% by king_originala
+struct A {
+    unsigned long value;
+};
+
+struct B {
+    unsigned long value;
+};
+
+extern "C" long __stdcall query(B *, const void *, void **);
+
+struct S : A, B {
+    long f(const void *, void **);
+};
+
+long S::f(const void *id, void **result)
+{
+    return query(static_cast<B *>(this), id, result);
+}

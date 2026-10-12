@@ -1,144 +1,117 @@
-// from server: 37% by colin
+// from server: 100% by king_originala
+extern "C" void (__cdecl *invalid_parameter_noinfo)();
+typedef void (__cdecl *ErrorHandler)();
 
+namespace RBX {
+class Instance;
+class Decal;
+}
 
-extern "C" void __stdcall _invalid_parameter_noinfo();
+struct Children;
 
-struct VInstance {
-    char pad0[0x108];
-    void* field_108;
+struct Proxy {
+    Children* owner;
 };
 
-struct FilteredSelection {
-    char pad0[0x10];
-    void* field_10;
+struct Entry {
+    RBX::Instance* object;
+    void* control;
 };
 
-struct Node {
-    char pad0[0xc];
-    unsigned int field_c;
-    unsigned int field_10;
+struct Iterator {
+    Proxy* proxy;
+    Entry* position;
+    RBX::Instance* get(ErrorHandler error) const;
+    void advance(ErrorHandler error);
 };
 
-struct Elem {
-    char pad0[4];
-    void* field_4;
+struct Children {
+    Proxy* proxy;
+    unsigned int reserved[2];
+    Entry* first;
+    Entry* last;
+    Iterator begin(ErrorHandler error);
+    Proxy* end(Entry*& position, ErrorHandler& error);
 };
 
-struct Obj {
-    char pad0[0x140];
-    void* field_140;
+namespace RBX {
+class Instance {
+public:
+    virtual ~Instance();
+    char padding[0x104];
+    Children* children;
 };
 
-extern "C" void* __cdecl func_00615f10(void* a, void* b, void* c);
-extern "C" void* __cdecl func_006a17c6(void* a, void* b, void* c, void* d, void* e);
+class Decal : public Instance {
+public:
+    char padding2[0x34];
+    void* value;
+};
+}
 
-void* __stdcall func_00616c90(VInstance* self, void* arg1, void* arg2) {
-    void* local14;
-    void* local20;
-    void* result = func_00615f10(arg1, &local20, &local14);
-    if (result == 0) return 0;
-    if (self->field_108 == 0) return 0;
+struct Context {
+    unsigned int reserved;
+    void* value;
+};
 
-    Node* n = (Node*)self->field_108;
-    unsigned int saved = n->field_10;
-    local20 = (void*)saved;
-    if (n->field_c > saved) {
-        _invalid_parameter_noinfo();
-    }
-    void* ebp = *(void**)n;
-    Node* n2 = (Node*)self->field_108;
-    unsigned int edi = n2->field_c;
-    if (edi > n2->field_10) {
-        _invalid_parameter_noinfo();
-    }
-    void* esi = *(void**)n2;
-    while (1) {
-        if (esi != 0 && esi == ebp) {
-            // equal, continue
-        } else {
-            _invalid_parameter_noinfo();
-        }
-        if (edi == (unsigned int)local20) return 0;
-        if (esi != 0) {
-            void* eax = *(void**)esi;
-            goto check;
-        }
-        _invalid_parameter_noinfo();
-        {
-            void* eax = 0;
-            if (edi < *(unsigned int*)((char*)eax + 0x10)) {
-                // ok
-            } else {
-                _invalid_parameter_noinfo();
-            }
-            void* v = *(void**)edi;
-            void* r = func_006a17c6(v, 0, (void*)0x92907c, (void*)0x940dbc, 0);
-            if (r != 0) {
-                void* ecx = *(void**)((char*)r + 0x140);
-                Elem* edx = (Elem*)result;
-                if (ecx == edx->field_4) {
-                    return r;
-                }
-            }
-            if (esi != 0) {
-                void* eax = *(void**)esi;
-                goto check2;
-            }
-            _invalid_parameter_noinfo();
-            {
-                void* eax = 0;
-                if (edi < *(unsigned int*)((char*)eax + 0x10)) {
-                    // ok
-                } else {
-                    _invalid_parameter_noinfo();
-                }
-                edi += 8;
-                continue;
-            }
-        }
-    check:
-        {
-            void* eax = *(void**)esi;
-            if (edi < *(unsigned int*)((char*)eax + 0x10)) {
-                // ok
-            } else {
-                _invalid_parameter_noinfo();
-            }
-            void* v = *(void**)edi;
-            void* r = func_006a17c6(v, 0, (void*)0x92907c, (void*)0x940dbc, 0);
-            if (r != 0) {
-                void* ecx = *(void**)((char*)r + 0x140);
-                Elem* edx = (Elem*)result;
-                if (ecx == edx->field_4) {
-                    return r;
-                }
-            }
-            if (esi != 0) {
-                void* eax = *(void**)esi;
-                goto check2;
-            }
-            _invalid_parameter_noinfo();
-            {
-                void* eax = 0;
-                if (edi < *(unsigned int*)((char*)eax + 0x10)) {
-                    // ok
-                } else {
-                    _invalid_parameter_noinfo();
-                }
-                edi += 8;
-                continue;
-            }
-        }
-    check2:
-        {
-            void* eax = *(void**)esi;
-            if (edi < *(unsigned int*)((char*)eax + 0x10)) {
-                // ok
-            } else {
-                _invalid_parameter_noinfo();
-            }
-            edi += 8;
-            continue;
+struct Selection {
+    Context* lookup(int argument, RBX::Instance** object, int* temporary);
+    RBX::Decal* find(RBX::Instance* object, int argument);
+};
+
+inline Iterator Children::begin(ErrorHandler error) {
+    Iterator result;
+    result.position = first;
+    if (first > last)
+        error();
+    result.proxy = proxy;
+    return result;
+}
+
+inline Proxy* Children::end(Entry*& position, ErrorHandler& error) {
+    position = last;
+    error = invalid_parameter_noinfo;
+    if (first > position)
+        error();
+    return proxy;
+}
+
+inline RBX::Instance* Iterator::get(ErrorHandler error) const {
+    if (!proxy)
+        error();
+    Children* owner = proxy ? proxy->owner : 0;
+    if (position >= owner->last)
+        error();
+    return position->object;
+}
+
+inline void Iterator::advance(ErrorHandler error) {
+    if (!proxy)
+        error();
+    Children* owner = proxy ? proxy->owner : 0;
+    if (position >= owner->last)
+        error();
+    ++position;
+}
+
+RBX::Decal* Selection::find(RBX::Instance* object, int argument) {
+    int temporary;
+    Context* context = lookup(argument, &object, &temporary);
+    if (context && object->children) {
+        ErrorHandler error;
+        Entry*& finishPosition = reinterpret_cast<Entry*&>(argument);
+        Proxy* finishProxy = object->children->end(finishPosition, error);
+        Iterator current = object->children->begin(error);
+        for (;;) {
+            if (!current.proxy || current.proxy != finishProxy)
+                error();
+            if (current.position == finishPosition)
+                break;
+            RBX::Decal* decal = dynamic_cast<RBX::Decal*>(current.get(error));
+            if (decal && decal->value == context->value)
+                return decal;
+            current.advance(error);
         }
     }
+    return 0;
 }

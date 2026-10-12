@@ -1,5 +1,20 @@
-// from server: 59% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs util/RunStateOwner.cpp
+// from server: 100% by king_originala
+struct Result
+{
+    int value;
+};
+
+struct S
+{
+    int unused[2];
+    int offset;
+    Result f(void* object);
+};
+
+Result S::f(void* object)
+{
+    char* base = object ? static_cast<char*>(object) - 20 : 0;
+    Result result;
+    result.value = *reinterpret_cast<int*>(base + offset);
+    return result;
+}

@@ -1,25 +1,43 @@
-// from server: 91% by king_originala
+// from server: 100% by king_originala
 struct TypeInfo {
     bool operator==(const TypeInfo&) const;
 };
+
+extern bool (TypeInfo::*typeInfoEqual)(const TypeInfo&) const;
+extern TypeInfo expectedType;
+
+inline bool TypeInfo::operator==(const TypeInfo& other) const
+{
+    return (this->*typeInfoEqual)(other);
+}
 
 struct Descriptor {
     char padding[8];
     TypeInfo* type;
 };
 
-extern TypeInfo expectedType;
-
 struct String {
     char storage[28];
     ~String();
 };
+
+extern void (String::*destroyString)();
+
+inline String::~String()
+{
+    (this->*destroyString)();
+}
 
 struct Argument {
     char storage[32];
     Argument(const String*);
     ~Argument();
 };
+
+inline Argument::~Argument()
+{
+    (reinterpret_cast<String*>(this)->*destroyString)();
+}
 
 struct Product {
     virtual ~Product();
@@ -29,17 +47,23 @@ struct Product {
 struct FactoryProduct {
     Product* product;
     FactoryProduct(void* arg);
-    ~FactoryProduct() { delete product; }
-
-    void swap(FactoryProduct& other)
-    {
-        if (this != &other) {
-            Product* old = product;
-            product = other.product;
-            other.product = old;
-        }
-    }
+    ~FactoryProduct();
+    void swap(FactoryProduct& other);
 };
+
+inline FactoryProduct::~FactoryProduct()
+{
+    delete product;
+}
+
+inline void FactoryProduct::swap(FactoryProduct& other)
+{
+    if (this != &other) {
+        Product* old = product;
+        product = other.product;
+        other.product = old;
+    }
+}
 
 String __cdecl makeString(Product* const*);
 Descriptor* __cdecl getDescriptor();

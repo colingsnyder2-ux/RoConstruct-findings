@@ -1,36 +1,43 @@
-// from server: 97% by colin
-struct SceneManager {
-    int field0;
-    int field4;
-    int field8;
-    int fieldC;
+// from server: 100% by king_originala
+extern "C" void __cdecl free_node(void*);
+extern "C" void __cdecl aligned_free(void*);
+extern "C" void __stdcall destroy_value(void*);
+extern "C" void __stdcall destroy_array(
+    void*, unsigned int, int, void (__stdcall *)(void*));
+
+struct Node
+{
+    unsigned char padding[16];
+    unsigned int value;
+    Node* next;
+};
+
+struct S
+{
+    unsigned int padding;
+    int used;
+    Node** buckets;
+    int count;
+
     void clear();
 };
 
-extern "C" void __cdecl G3D_free(void* p);
-extern "C" void __cdecl G3D_alignedFree(void* p);
-extern "C" void __cdecl sub_6a165b(void* p, int a, int b, void* c);
-
-void SceneManager::clear()
+void S::clear()
 {
-    int i = 0;
-    if (fieldC > 0) {
-        do {
-            int* node = (int*)((char*)field8 + i * 4);
-            int* cur = (int*)*node;
-            if (cur) {
-                do {
-                    int* next = (int*)cur[5];
-                    sub_6a165b((char*)cur + 0x10, 4, 1, (void*)0x502a70);
-                    G3D_free(cur);
-                    cur = next;
-                } while (cur);
-            }
-            i++;
-        } while (i < fieldC);
+    for (int i = 0; i < count; ++i)
+    {
+        Node* node = buckets[i];
+        while (node)
+        {
+            Node* next = node->next;
+            destroy_array(&node->value, 4, 1, destroy_value);
+            free_node(node);
+            node = next;
+        }
     }
-    G3D_alignedFree((void*)field8);
-    field8 = 0;
-    fieldC = 0;
-    field4 = 0;
+
+    aligned_free(buckets);
+    buckets = 0;
+    count = 0;
+    used = 0;
 }

@@ -1,15 +1,35 @@
-// from server: 91% by king_originala
+// from server: 100% by king_originala
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
+extern "C" long __cdecl _InterlockedDecrement(volatile long*);
+#pragma intrinsic(_InterlockedDecrement)
 
-struct RefCount
+struct Control
 {
-    virtual ~RefCount();
+    virtual ~Control();
     virtual void dispose() = 0;
     virtual void destroy() = 0;
     volatile long use_count;
     volatile long weak_count;
+
+    void release();
+    void weak_release();
 };
+
+inline void Control::weak_release()
+{
+    if (_InterlockedDecrement(&weak_count) == 0)
+        destroy();
+}
+
+inline void Control::release()
+{
+    if (_InterlockedDecrement(&use_count) == 0)
+    {
+        dispose();
+        weak_release();
+    }
+}
 
 struct Property
 {
@@ -18,34 +38,26 @@ struct Property
 
 struct Object
 {
-    char padding[0x1F0];
+    char padding[0x1f0];
     Property property;
 };
 
-struct Shared
+struct Handle
 {
     Object* object;
-    RefCount* count;
-    ~Shared();
+    Control* control;
+    ~Handle();
 };
 
-__forceinline Shared::~Shared()
+inline Handle::~Handle()
 {
-    RefCount* p = count;
-    if (p)
-    {
-        if (_InterlockedExchangeAdd(&p->use_count, -1) == 0)
-        {
-            p->dispose();
-            if (_InterlockedExchangeAdd(&p->weak_count, -1) == 0)
-                p->destroy();
-        }
-    }
+    if (control)
+        control->release();
 }
 
-struct Holder
+struct Source
 {
-    Shared get();
+    Handle get();
 };
 
 struct CRobloxDoc
@@ -53,7 +65,7 @@ struct CRobloxDoc
     char padding0[0x48];
     int state;
     char padding1[0x48];
-    Holder* holder;
+    Source* source;
 
     void func_0044fad0(int value);
 };
@@ -61,6 +73,6 @@ struct CRobloxDoc
 void CRobloxDoc::func_0044fad0(int value)
 {
     state = value;
-    if (holder)
-        holder->get().object->property.set(value == 1);
+    if (source)
+        source->get().object->property.set(value == 1);
 }

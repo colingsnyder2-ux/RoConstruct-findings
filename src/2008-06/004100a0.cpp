@@ -1,116 +1,106 @@
-// from server: 71% by king_originala
-typedef unsigned int size_t;
-
+// from server: 72% by king_originala
 void* __cdecl operator new(size_t);
-void __cdecl operator delete(void*);
+extern "C" bool __cdecl stackAvailable(size_t);
 extern "C" void* __cdecl _alloca(size_t);
-extern bool __cdecl verifyStack(size_t);
+#pragma intrinsic(_alloca)
 
 struct Module {
     virtual void reserved() = 0;
-    virtual long lock() = 0;
+    virtual void addReference() = 0;
 };
 
 extern Module* module;
+extern void* objectTable[];
+extern unsigned long lockFlags;
 
-struct ObjectData {
+struct LockData {
+    long size;
+    long value;
+};
+
+extern LockData lockData;
+
+struct Object {
+    void* table;
     long references;
-    long field8;
-    long field12;
-    long field16;
-    long field20;
-    long field24;
+    void* first;
+    void* second;
+    void* third;
+    void* fourth;
+    void* fifth;
 
-    ObjectData() throw();
+    void initialize();
 };
 
-__forceinline ObjectData::ObjectData() throw() {
+__forceinline void Object::initialize()
+{
     references = 0;
-    field16 = 0;
-    field12 = 0;
-    field8 = 0;
-    field20 = 0;
-    field24 = 0;
+    third = 0;
+    second = 0;
+    first = 0;
+    fourth = 0;
+    fifth = 0;
+    table = objectTable;
+    module->addReference();
 }
 
-struct Object : ObjectData {
-    Object() throw();
-    virtual ~Object() throw();
+struct Guard {
+    LockData* data;
+    long status;
+
+    Guard(LockData* p);
+    ~Guard();
 };
 
-__forceinline Object::Object() throw() {
-    module->lock();
+__forceinline Guard::Guard(LockData* p)
+{
+    data = p;
+    status = 0;
 }
 
-struct Allocation {
-    unsigned size;
-    int limit;
-
-    Allocation() throw();
-};
-
-__forceinline Allocation::Allocation() throw() {
-    size = 4;
-    limit = -1;
-}
-
-struct HeapGuard {
-    Allocation* allocator;
-    void* memory;
-
-    HeapGuard(Allocation* value) throw();
-    ~HeapGuard() throw();
-};
-
-__forceinline HeapGuard::HeapGuard(Allocation* value) throw() {
-    allocator = value;
-    memory = 0;
-}
-
-__forceinline HeapGuard::~HeapGuard() throw() {
-    if (memory)
-        operator delete(memory);
-}
-
-struct Factory {
-    static long __stdcall create(void* argument, Object** result);
-};
-
-long __stdcall Factory::create(void* argument, Object** result) {
+long __stdcall createObject(void* context, Object** result)
+{
     if (!result)
-        return (long)0x80004003UL;
+        return (long)0x80004003;
 
     *result = 0;
     Object* object;
 
     try {
-        Object* created = new Object;
-        object = created;
-    } catch (...) {
-        object = 0;
+        Object* allocated = static_cast<Object*>(operator new(28));
+        if (allocated) {
+            allocated->initialize();
+            object = allocated;
+        } else {
+            object = 0;
+        }
+    }
+    catch (...) {
+        return (long)0x8007000E;
     }
 
-    if (object) {
-        static Allocation allocation;
-        HeapGuard guard(&allocation);
-        void* storage;
+    if (!object)
+        return (long)0x8007000E;
 
-        if (verifyStack(4))
+    if (!(lockFlags & 1)) {
+        lockFlags |= 1;
+        lockData.size = 4;
+        lockData.value = -1;
+    }
+
+    Guard guard(&lockData);
+    try {
+        void* volatile storage = 0;
+        if (stackAvailable(4))
             storage = _alloca(4);
-        else {
-            guard.memory = operator new(guard.allocator->size);
-            storage = guard.memory;
-        }
 
-        if (!storage) {
-            delete object;
-            return (long)0x8007000EUL;
-        }
+        if (storage)
+            *static_cast<long*>(storage) = 0;
 
-        *(void**)storage = argument;
         *result = object;
         return 0;
     }
-
-    return (long)0x8007000EUL;
+    catch (...) {
+        return (long)0x8007000E;
+    }
 }

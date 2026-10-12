@@ -1,7 +1,13 @@
-// from server: 90% by king_originala
+// from server: 97% by king_originala
 struct Vector3 {
     float x, y, z;
+    Vector3(const Vector3&);
 };
+
+inline Vector3::Vector3(const Vector3& v)
+    : x(v.x), y(v.y), z(v.z)
+{
+}
 
 struct Team {
     int func_005d5f40() const;
@@ -53,6 +59,9 @@ namespace Network {
 extern RBX::ServiceProvider* __cdecl func_00491d50(RBX::Instance*);
 extern const Vector3& __cdecl func_00514a60();
 extern "C" void (__cdecl* _invalid_parameter_noinfo)();
+extern "C" void* __cdecl __RTDynamicCast(void*, long, void*, void*, int);
+extern char instanceTypeDescriptor;
+extern char playerTypeDescriptor;
 
 Vector3 RBX::VTeams::func_005d6180(int teamId)
 {
@@ -62,8 +71,9 @@ Vector3 RBX::VTeams::func_005d6180(int teamId)
         if (i >= static_cast<unsigned int>(children->end - children->begin))
             _invalid_parameter_noinfo();
 
-        Network::Player* player =
-            dynamic_cast<Network::Player*>(children->begin[i].object);
+        Network::Player* player = static_cast<Network::Player*>(
+            __RTDynamicCast(children->begin[i].object, 0,
+                            &instanceTypeDescriptor, &playerTypeDescriptor, 0));
 
         if (player && !player->neutral && player->team &&
             player->team->func_005d5f40() == teamId) {

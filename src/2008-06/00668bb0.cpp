@@ -1,35 +1,39 @@
-// from server: 69% by king_originala
-extern "C" double __cdecl ceil(double);
-
+// from server: 72% by king_originala
 struct Dimensions {
-    float unused;
-    float values[3];
+    unsigned int unused;
+    float x;
+    float y;
+    float z;
 };
 
 struct S {
     char padding0[0x14];
-    unsigned int count;
+    unsigned int scale;
     char padding1[0x84];
     Dimensions* dimensions;
 };
 
-double __cdecl f(S* s)
+extern "C" double __cdecl floor(double);
+#pragma intrinsic(floor)
+
+double __cdecl f(S* object)
 {
-    float* d = s->dimensions->values;
+    float* d = &object->dimensions->x;
     double area;
 
     if (d[0] < d[1]) {
         if (d[0] < d[2])
-            area = (double)d[2] * d[1];
+            area = d[2] * d[1];
         else
-            area = (double)d[1] * d[0];
+            area = d[1] * d[0];
     } else {
         if (d[1] < d[2])
-            area = (double)d[2] * d[0];
+            area = d[2] * d[0];
         else
-            area = (double)d[1] * d[0];
+            area = d[1] * d[0];
     }
 
-    float rounded = (float)ceil(area);
-    return (double)((unsigned __int64)s->count * (int)rounded);
+    float length = (float)floor(area);
+    int count = (int)length;
+    return (double)((unsigned __int64)object->scale * count);
 }

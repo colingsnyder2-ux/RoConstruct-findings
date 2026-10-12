@@ -1,41 +1,45 @@
-// from server: 58% by colin
-extern "C" __declspec(dllimport) long __stdcall SendMessageA(void*, unsigned int, unsigned int, long);
+// from server: 62% by king_originala
+extern "C" long __stdcall SendMessageA(void*, unsigned int, unsigned int, void*);
+extern "C" void* __stdcall func_006a0eba(long);
+void* __cdecl func_00433ab0(unsigned int);
 
-struct CMemberTreeView
+struct Control
 {
-    char pad[0x20];
-    void* hwnd;
-    char pad2[0x3c];
-    void* vtable60;
-    char pad3[0x3c];
-    void* field_a0;
-    int func(unsigned int);
+    typedef void (__thiscall *Method)(Control*);
+    Method* table;
 };
 
-extern "C" int __cdecl sub_6A10E2(void*, unsigned int);
-extern "C" void* __cdecl sub_433AB0(void*, unsigned int);
-extern "C" int __cdecl sub_6A0EBA(void*, int, int, int, int);
-
-int CMemberTreeView::func(unsigned int arg)
+struct ImageList
 {
-    int idx = sub_6A10E2(this, arg);
-    if (idx != -1)
+    void* table;
+    void* handle;
+};
+
+struct S
+{
+    char padding0[0x20];
+    void* window;
+    char padding1[0x3C];
+    Control control;
+    char padding2[0x3C];
+    ImageList images;
+
+    int func_006a10e2(void*);
+    int func_00433e30(void*);
+};
+
+int S::func_00433e30(void* argument)
+{
+    if (func_006a10e2(argument) != -1)
         return -1;
 
-    void** vt = *(void***)((char*)this + 0x60);
-    void (*fn)(void*) = (void (*)(void*))vt[0x48 / 4];
-    fn((char*)this + 0x60);
+    control.table[18](&control);
 
-    void* p = sub_433AB0((char*)this + 0xa0, 0xc4);
-    if (p == 0)
+    ImageList* list = &images;
+    if (!func_00433ab0(0xC4))
         return -1;
 
-    void* esi = (char*)this + 0xa0;
-    if (esi != 0)
-        esi = *(void**)((char*)esi + 4);
-
-    void* hwnd = *(void**)((char*)this + 0x20);
-    long r = SendMessageA(hwnd, 0x1109, 0, (long)esi);
-    sub_6A0EBA((void*)r, 0, 0, 0, 0);
+    void* handle = list ? list->handle : 0;
+    func_006a0eba(SendMessageA(window, 0x1109, 0, handle));
     return 0;
 }

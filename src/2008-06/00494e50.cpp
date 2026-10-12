@@ -1,10 +1,10 @@
-// from server: 55% by king_originala
+// from server: 61% by king_originala
 typedef void (__cdecl *Manager)(void *, void *, int);
 
 struct Function {
     Manager *manager;
     unsigned long reserved;
-    unsigned char storage[72];
+    unsigned long storage[18];
 
     Function(const Function &);
     ~Function();
@@ -20,16 +20,17 @@ inline Function::~Function()
     }
 }
 
-struct S {
-    Function first;
-    Function second;
+struct Base {
+    Base();
+    ~Base();
+};
 
+struct S : Base {
     S(Function a, Function b);
-    void finish();
+    void finish(Function a, Function b);
 };
 
 S::S(Function a, Function b)
-    : first(a), second(b)
 {
-    finish();
+    finish(a, b);
 }

@@ -1,25 +1,37 @@
-// from server: 80% by king_originala
+// from server: 86% by king_originala
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
 
-struct Reference {
-    virtual void unused() = 0;
-    virtual void dispose() = 0;
-    virtual void destroy() = 0;
+extern "C" void __stdcall _invalid_parameter_noinfo();
+
+struct RefCount {
+    virtual void unused();
+    virtual void dispose();
+    virtual void destroy();
     volatile long strong;
     volatile long weak;
 };
 
+struct Log {
+    void __cdecl report(int, const char*, ...);
+};
+
 struct Shared {
-    void* object;
-    Reference* reference;
+    Log* pointer;
+    RefCount* count;
+    Log* operator->() const;
     ~Shared();
 };
 
-__forceinline Shared::~Shared()
+inline Log* Shared::operator->() const
 {
-    if (reference) {
-        Reference* p = reference;
+    return pointer;
+}
+
+inline Shared::~Shared()
+{
+    if (count) {
+        RefCount* p = count;
         if (_InterlockedExchangeAdd(&p->strong, -1) == 0) {
             p->dispose();
             if (_InterlockedExchangeAdd(&p->weak, -1) == 0)
@@ -30,78 +42,75 @@ __forceinline Shared::~Shared()
 
 struct Settings {
     char padding[0x131];
-    unsigned char enabled;
+    unsigned char logging;
 };
 
-struct Iterator {
-    void* owner;
-    unsigned int index;
-    int* dereference();
-};
-
-struct Queue {
-    void* owner;
-    char padding[20];
-    unsigned int first;
-    unsigned int count;
-    void advance();
-};
+extern void __cdecl readMarker(void*, int*);
+extern Settings* __cdecl settings();
+extern Shared __cdecl logger();
+extern const char markerFormat[];
 
 struct Address {
     const char* text(int);
 };
 
+struct Iterator {
+    void* owner;
+    unsigned int position;
+    void** value();
+};
+
+struct Queue {
+    void* owner;
+    char padding[0x14];
+    unsigned int position;
+    unsigned int size;
+    void advance();
+};
+
 struct Signal {
-    void invoke(int*);
+    void notify(void**);
 };
 
 struct Entry {
-    char padding[16];
+    char padding[0x10];
     Signal signal;
 };
 
 struct Registry {
-    Entry* find(int);
+    Entry* find(void*);
 };
 
 extern Registry registry;
-extern "C" void __cdecl readMarker(int, int*);
-extern "C" Settings* __cdecl settings();
-extern "C" Shared __cdecl getLogger();
-extern "C" void __cdecl logMessage(void*, int, const char*, int, const char*);
-extern "C" void (__cdecl *invalidParameter)();
 
 struct S {
     char padding[0x2cdc];
     Queue queue;
     char gap[0x58];
     Address address;
-    void f(int);
+    void f(void*);
 };
 
-void S::f(int argument)
+void S::f(void* argument)
 {
     int marker;
     readMarker(argument, &marker);
 
-    if (settings()->enabled) {
-        Shared logger = getLogger();
-        void* object = logger.object;
-        logMessage(object, 1, "Received marker %d from %s",
-                   marker, address.text(1));
-    }
+    if (settings()->logging)
+        logger()->report(1, markerFormat, marker, address.text(1));
 
     Queue* q = &queue;
-    unsigned int first = q->first;
-    if (first > first + q->count)
-        invalidParameter();
+    unsigned int position = q->position;
+    if (position > position + q->size)
+        _invalid_parameter_noinfo();
 
     Iterator iterator;
     iterator.owner = q->owner;
-    iterator.index = first;
-    Entry* entry = registry.find(*iterator.dereference());
+    iterator.position = position;
+
+    Entry* entry = registry.find(*iterator.value());
     if (entry)
-        entry->signal.invoke(&argument);
+        entry->signal.notify(&argument);
 
     q->advance();
 }

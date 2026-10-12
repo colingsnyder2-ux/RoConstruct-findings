@@ -1,24 +1,33 @@
-// from server: 56% by colin
-struct S {
-    int field_0x10;
-    int assign(int* p);
+// from server: 100% by king_originala
+struct Interface;
+
+struct InterfaceTable {
+    long (__stdcall *QueryInterface)(Interface *, const void *, void **);
+    unsigned long (__stdcall *AddRef)(Interface *);
+    unsigned long (__stdcall *Release)(Interface *);
 };
 
-int S::assign(int* p) {
-    S* self = this;
-    if (self->field_0x10 != (int)p) {
-        if (p) {
-            int* vt = (int*)p[0];
-            void (*fn)(int*) = (void (*)(int*))vt[1];
-            fn(p);
-        }
-        int old = self->field_0x10;
-        if (old) {
-            int* vt = (int*)old;
-            void (*fn)(int*) = (void (*)(int*))vt[2];
-            fn((int*)old);
-        }
-        self->field_0x10 = (int)p;
+struct Interface {
+    InterfaceTable *table;
+};
+
+struct Object {
+    unsigned char padding[16];
+    Interface *value;
+};
+
+long __stdcall SetValue(void *part, Interface *value)
+{
+    Object *object = part
+        ? reinterpret_cast<Object *>(static_cast<char *>(part) - 12)
+        : 0;
+
+    if (object->value != value) {
+        if (value)
+            value->table->AddRef(value);
+        if (object->value)
+            object->value->table->Release(object->value);
+        object->value = value;
     }
     return 0;
 }

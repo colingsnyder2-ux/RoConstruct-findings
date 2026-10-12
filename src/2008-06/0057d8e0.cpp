@@ -1,37 +1,64 @@
-// from server: 57% by tester
-struct IDataState;
-
-struct RunStateVerb {
-    char pad[8];
-    void* ptrC;
-    void doIt(IDataState* dataState);
-};
-
-struct AllCanSelectCommand : RunStateVerb {
-    void doIt(IDataState* dataState);
-};
-
-extern "C" void __cdecl sub_57D250();
-extern "C" void __cdecl sub_59DE20(void*, int);
-extern "C" void __cdecl sub_58C5C0(void*, void*);
-
-void AllCanSelectCommand::doIt(IDataState* dataState)
+// from server: 87% by king_originala
+struct Instance
 {
-    sub_57D250();
-    void* p = *(void**)((char*)this->ptrC + 0x204);
-    sub_59DE20(p, 0);
+    char padding[0x204];
+    Instance* selection;
+};
 
-    char* s = (char*)this->pad + 4;
-    char* str;
-    if (*(int*)(s + 0x18) < 0x10)
-        str = s + 4;
-    else
-        str = *(char**)(s + 4);
+struct String
+{
+    unsigned int reserved;
+    union
+    {
+        char buffer[16];
+        char* pointer;
+    } storage;
+    unsigned int length;
+    unsigned int capacity;
+};
 
-    sub_58C5C0(str, p);
+struct Label
+{
+    unsigned int reserved;
+    String text;
+};
 
-    void** vtbl = *(void***)dataState;
-    *(int*)((char*)&dataState + 4) = 1;
-    void (*fn)() = (void (*)())*(void**)vtbl;
-    fn();
+struct Callback
+{
+    virtual void finish(int value) = 0;
+};
+
+extern unsigned int __cdecl childCount(Instance*, int);
+
+namespace RBX
+{
+    void __cdecl handle(int, int);
+}
+
+struct AllCanSelectCommand
+{
+    unsigned int reserved;
+    Label* label;
+    unsigned int reserved2;
+    Instance* volatile context;
+
+    void prepare();
+    void execute(Callback* callback);
+};
+
+void AllCanSelectCommand::execute(Callback* callback)
+{
+    Instance* instance = context;
+    prepare();
+    instance = context->selection;
+    childCount(instance, 0);
+
+    String* text = &label->text;
+    char* name = text->capacity >= 16
+        ? text->storage.pointer
+        : text->storage.buffer;
+
+    RBX::handle(reinterpret_cast<int>(name),
+                reinterpret_cast<int>(instance));
+    callback->finish(1);
 }

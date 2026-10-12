@@ -1,10 +1,22 @@
-// from server: 95% by king_originala
+// from server: 96% by king_originala
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
 extern "C" long __cdecl _InterlockedDecrement(volatile long*);
 #pragma intrinsic(_InterlockedDecrement)
 extern "C" void __cdecl _ReadWriteBarrier();
 #pragma intrinsic(_ReadWriteBarrier)
+
+extern unsigned char table_842d54[];
+extern unsigned char table_842d44[];
+extern unsigned char table_842d3c[];
+extern unsigned char table_842d34[];
+extern unsigned char table_842d24[];
+extern unsigned char table_842d14[];
+extern unsigned char table_842d04[];
+extern unsigned char table_842cf4[];
+extern unsigned char table_842ce4[];
+extern unsigned char table_842cd4[];
+extern unsigned char table_842cbc[];
 
 struct Counted
 {
@@ -35,7 +47,7 @@ inline Shared::~Shared()
 
 struct Base
 {
-    volatile unsigned long words[85];
+    void* volatile words[85];
     ~Base();
 };
 
@@ -54,16 +66,17 @@ struct S : Base
 
 S::~S()
 {
-    words[0] = 0x00842d54;
-    words[4] = 0x00842d44;
-    words[5] = 0x00842d3c;
-    words[8] = 0x00842d34;
-    words[9] = 0x00842d24;
-    words[17] = 0x00842d14;
-    words[25] = 0x00842d04;
-    words[33] = 0x00842cf4;
-    words[41] = 0x00842ce4;
-    words[49] = 0x00842cd4;
-    words[76] = 0x00842cbc;
+    words[0] = table_842d54;
+    words[4] = table_842d44;
+    words[5] = table_842d3c;
+    words[8] = table_842d34;
+    words[9] = table_842d24;
+    words[17] = table_842d14;
+    words[25] = table_842d04;
+    words[33] = table_842cf4;
+    words[41] = table_842ce4;
+    words[49] = table_842cd4;
+    _ReadWriteBarrier();
+    words[76] = table_842cbc;
     _ReadWriteBarrier();
 }

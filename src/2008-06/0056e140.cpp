@@ -1,21 +1,24 @@
-// from server: 56% by atomic.potato
-struct Inner {
-    virtual void f(int*);
+// from server: 100% by king_originala
+extern "C" bool __cdecl convert(void* value, void** result);
+
+struct Setter {
+    virtual void slot0();
+    virtual void slot1();
+    virtual void slot2();
+    virtual void set(void* instance, void** value);
 };
 
 struct S {
-    char pad[0x18];
-    Inner* p;
-    bool g(int*, int);
+    char padding[24];
+    Setter* setter;
+
+    bool f(void* instance, void* value);
 };
 
-extern "C" int __cdecl sub_5bde60(int*, int*);
-
-bool S::g(int* a, int) {
-    int v = *a;
-    if (sub_5bde60(a, &v)) {
-        Inner* q = p;
-        q->f(&v);
+bool S::f(void* instance, void* value)
+{
+    if (convert(value, &value)) {
+        setter->set(instance, &value);
         return true;
     }
     return false;

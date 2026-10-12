@@ -1,17 +1,25 @@
-// from server: 50% by colin
-extern "C" void __stdcall sub_57D250(void *);
-extern "C" int __stdcall sub_581C00(void *, int);
-extern "C" int __stdcall sub_554DA0(void *, int);
-
-struct S
-{
-    int f();
+// from server: 52% by king_originala
+struct Context {
+    void prepare();
 };
 
-int S::f()
+struct Result {
+    void setState(int);
+};
+
+struct Resolver {
+    Result* get(int);
+};
+
+struct S {
+    char padding[0x0C];
+    Context* context;
+    Resolver resolver;
+    void f(int);
+};
+
+void S::f(int)
 {
-    int esi = *(int *)((char *)this + 0x0c);
-    sub_57D250((void *)esi);
-    int result = sub_581C00((char *)this + 0x10, 1);
-    return sub_554DA0((void *)result, 2);
+    context->prepare();
+    resolver.get(1)->setState(2);
 }

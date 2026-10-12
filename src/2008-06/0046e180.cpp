@@ -1,16 +1,33 @@
-// from server: 19% by colin
-struct LDraw2RobloxMapRoot {
-    void f(void* a, unsigned int count, void* c);
+// from server: 91% by king_originala
+typedef unsigned int size_t;
+
+inline void* __cdecl operator new(size_t, void* p)
+{
+    return p;
+}
+
+inline void __cdecl operator delete(void*, void*)
+{
+}
+
+struct Element {
+    unsigned char storage[64];
+    Element(const Element&);
+    ~Element();
 };
 
-void LDraw2RobloxMapRoot::f(void* a, unsigned int count, void* c)
+Element* __cdecl construct_elements(Element* first, unsigned int count,
+                                    const Element& value)
 {
-    char* p = (char*)a;
-    while (count > 0) {
-        if (p != 0) {
-            ((void (__thiscall*)(void*, void*))0x46deb0)(p, c);
-        }
-        count--;
-        p += 0x40;
+    Element* start = first;
+    try {
+        for (; count > 0; --count, ++first)
+            new (static_cast<void*>(first)) Element(value);
     }
+    catch (...) {
+        for (; start != first; ++start)
+            start->~Element();
+        throw;
+    }
+    return first;
 }

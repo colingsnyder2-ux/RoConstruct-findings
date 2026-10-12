@@ -1,5 +1,25 @@
-// from server: 74% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs util/Name.cpp
+// from server: 100% by king_originala
+extern void (__thiscall *destroy_string)(void *);
+
+struct Primary {
+    virtual ~Primary();
+};
+
+struct Secondary {
+    virtual ~Secondary();
+};
+
+struct Base : Primary, Secondary {
+    char data[20];
+    virtual ~Base();
+};
+
+struct S : Base {
+    char string_data[28];
+    virtual ~S();
+};
+
+S::~S()
+{
+    destroy_string(string_data);
+}

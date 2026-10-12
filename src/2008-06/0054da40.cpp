@@ -1,15 +1,20 @@
-// from server: 44% by colin
-struct Mesh {
-    char pad[8];
-    Mesh* f(const void*);
+// from server: 78% by king_originala
+struct A {
+    unsigned int value;
+    A(const A&);
 };
 
-extern "C" void __stdcall sub_553220(const void*);
-extern "C" void __stdcall sub_54ef60();
+struct B {
+    unsigned int data[2];
+    B(A);
+};
 
-Mesh* Mesh::f(const void* arg) {
-    sub_553220(&arg);
-    sub_54ef60();
-    sub_553220((char*)this + 8);
-    return this;
+struct S : B {
+    A member;
+    S(A);
+};
+
+#pragma optimize("", off)
+S::S(A a) : B(a), member(a)
+{
 }

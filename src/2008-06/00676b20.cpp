@@ -1,4 +1,4 @@
-// from server: 84% by king_originala
+// from server: 87% by king_originala
 #pragma float_control(precise, off)
 
 extern const float lengthFactor;
@@ -39,8 +39,8 @@ struct Renderer {
 
 void __cdecl drawCross(float width, float length, Renderer *renderer)
 {
-    float extent = length * lengthFactor;
-    length = width * widthFactor;
+    float extent = lengthFactor * length;
+    length = widthFactor * width;
 
     for (int face = 0; face < 2; ++face) {
         float direction;
@@ -55,19 +55,22 @@ void __cdecl drawCross(float width, float length, Renderer *renderer)
         for (int plane = 0; plane < 2; ++plane) {
             float y = length;
             float z = crossOffset;
+            float color = shade;
+
             if (plane != 0) {
                 float temporary = y;
                 y = z;
                 z = temporary;
             }
 
-            renderer->vtable[24](
+            QuadFunction quad = renderer->vtable[24];
+            quad(
                 renderer,
                 Vector3(width, y * direction, z),
                 Vector3(width, -(y * direction), z),
                 Vector3(width, -(y * direction), -z),
                 Vector3(width, y * direction, -z),
-                Color4(shade, shade, shade, 1.0f)
+                Color4(color, color, color, 1.0f)
             );
         }
     }

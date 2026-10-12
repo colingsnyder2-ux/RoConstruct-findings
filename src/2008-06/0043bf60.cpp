@@ -1,24 +1,46 @@
-// from server: 17% by colin
-// roc 2008-06 0043bf60  size: 180 bytes
-// Reconstructed: std::string array copy with SEH frame
+// from server: 94% by king_originala
+extern void (__thiscall *copyString)(void*, const void*);
+extern void (__thiscall *destroyString)(void*);
 
-struct S {
-    void* __cdecl f(void* dst, const void* first, const void* last);
+struct String {
+    char data[28];
+    String(const String&);
+    ~String();
 };
 
-extern "C" {
-    void __stdcall sub_80245c(void* dst, const void* src);
-    void __stdcall sub_802468(void* p);
+__forceinline String::String(const String& other) {
+    copyString(this, &other);
 }
 
-void* S::f(void* dst, const void* first, const void* last) {
-    char* d = (char*)dst;
-    const char* p = (const char*)first;
-    const char* e = (const char*)last;
-    while (p != e) {
-        sub_80245c(d, p);
-        p += 8;
-        d += 8;
+__forceinline String::~String() {
+    destroyString(this);
+}
+
+struct Item {
+    char data[8];
+};
+
+struct Iterator {
+    void* owner;
+    Item* current;
+};
+
+struct Function {
+    void (__thiscall *invoke)(void*, void*, const String*);
+    char* object;
+    int adjustment;
+    void* (__thiscall *extract)(void*);
+    int extra;
+    String value;
+};
+
+Function apply(Iterator first, Iterator last, Function function) {
+    Item* current = first.current;
+    Item* end = last.current;
+    for (; current != end; ++current) {
+        void* item = function.extract(current);
+        function.invoke(function.object + function.adjustment,
+                        item, &function.value);
     }
-    return dst;
+    return function;
 }

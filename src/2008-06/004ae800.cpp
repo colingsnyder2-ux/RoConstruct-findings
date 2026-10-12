@@ -1,26 +1,35 @@
-// from server: 30% by colin
+// from server: 74% by king_originala
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
 
-struct RefCounted {
-    void (__stdcall *vptr)(void*);
-    int refcount;
+struct Control {
+    void* table;
+    volatile long strong;
 };
 
-struct Holder {
-    char pad[8];
-    int field8;
-    RefCounted* fieldC;
-    RefCounted* field10;
+struct Pair {
+    void* pointer;
+    Control* control;
+    Pair(const Pair&);
+    ~Pair();
 };
 
-extern "C" void __cdecl sub_496910(int, RefCounted*, int);
-
-void __cdecl sub_4ae800(Holder* h, int a, int b)
+inline Pair::Pair(const Pair& other)
+    : pointer(other.pointer), control(other.control)
 {
-    RefCounted* p = h->field10;
-    RefCounted* q = h->fieldC;
-    if (p)
-        _InterlockedExchangeAdd((volatile long*)((char*)p + 4), 1);
-    sub_496910(h->field8, q, b);
+    if (control)
+        _InterlockedExchangeAdd(&control->strong, 1);
+}
+
+struct S {
+    unsigned char padding[8];
+    void* pointer;
+    Pair value;
+};
+
+extern void __stdcall helper(void*, Pair, void*);
+
+void __cdecl function(S* object, void* argument)
+{
+    helper(object->pointer, object->value, argument);
 }

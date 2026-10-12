@@ -1,20 +1,34 @@
-// from server: 33% by tester
-struct AggChunk {
-    void method(int);
+// from server: 73% by king_originala
+#pragma optimize("g", off)
+
+struct Tag
+{
+    int value;
+    Tag();
+    Tag(const Tag&);
 };
 
-extern "C" void __cdecl sub_54e310(void *);
-extern "C" void __cdecl sub_54da40(void *);
-extern "C" void * __cdecl sub_552fa0(void *);
-extern "C" void __cdecl sub_552ff0(void *, int, void *);
-extern "C" void __cdecl sub_547020(void *);
-
-void AggChunk::method(int a)
+struct Mesh
 {
-    char buf[0x38];
-    sub_54e310(buf);
-    sub_54da40(this);
-    void *p = sub_552fa0(buf);
-    sub_552ff0(this, a, p);
-    sub_547020(buf);
+    Mesh(Tag);
+    ~Mesh();
+};
+
+struct Temporary
+{
+    int storage[10];
+    Temporary();
+    ~Temporary();
+};
+
+struct AggregateChunk : Mesh
+{
+    AggregateChunk(void* argument);
+    void initialize(void* argument, const Temporary& value);
+};
+
+AggregateChunk::AggregateChunk(void* argument)
+    : Mesh(Tag())
+{
+    initialize(argument, Temporary());
 }

@@ -1,16 +1,24 @@
-// from server: 20% by colin
-struct Mesh {
-    char pad0[0x20];
-    int field20;
-    char pad24[0x24];
-    void sub_54b370();
-    void sub_563070();
+// from server: 84% by king_originala
+#pragma optimize("", off)
+
+struct Base {
+    char data[0x20];
+    Base();
+    ~Base();
+};
+
+struct Member {
+    char data[0x0C];
+    Member();
+};
+
+struct Mesh : Base {
+    unsigned int value;
+    Member member;
     Mesh();
 };
 
 Mesh::Mesh()
 {
-    sub_54b370();
-    sub_563070();
-    field20 = 0;
+    value = 0;
 }

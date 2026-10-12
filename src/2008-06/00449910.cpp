@@ -1,100 +1,109 @@
-// from server: 36% by tester
-extern "C" void __stdcall func_006a117e();
-extern "C" void* __stdcall func_006a0920(unsigned int);
-extern "C" void __stdcall func_006a1172(void*);
-extern "C" void __stdcall func_006a11cc(void*, int, char*, char*, char*);
-extern "C" void __stdcall func_006a0d2e();
-extern "C" void __stdcall func_00455d40();
-extern "C" void __stdcall func_00458e70();
-extern "C" void __stdcall func_00412b80();
-extern "C" void __stdcall func_0044f200();
-extern "C" void __stdcall func_0040df70();
-extern "C" void __stdcall func_00412af0();
-extern "C" void __stdcall func_0040dfa0();
-extern "C" void __stdcall func_004638c0();
-extern "C" void __stdcall func_004638a0();
-extern "C" void __stdcall func_00433410();
-extern "C" void __stdcall func_004332e0();
-extern "C" void __stdcall func_00803f04();
+// from server: 100% by king_originala
+typedef unsigned int size_t;
 
-struct CRbxPlayDocTemplate {
-    void* field_0;
-    char pad_4[0x1c];
-    void* field_20;
-    void* field_24;
-    void* field_28;
-    void* field_2c;
-    void construct(char);
+void* __cdecl operator new(size_t);
+void __cdecl operator delete(void*);
+
+extern char* __cdecl func_0040df70();
+extern char* __cdecl func_0040dfa0();
+extern char* __cdecl func_00412af0();
+extern char* __cdecl func_00412b80();
+extern char* __cdecl func_004332e0();
+extern char* __cdecl func_00433410();
+extern char* __cdecl func_0044f200();
+extern char* __cdecl func_00455d40();
+extern char* __cdecl func_00458e70();
+extern char* __cdecl func_004638a0();
+extern char* __cdecl func_004638c0();
+extern char* __cdecl func_006a0d2e();
+
+extern void* vtable_00816684[];
+extern void* vtable_0081671c[];
+extern void* vtable_0081685c[];
+extern void (__thiscall* imported_00803f04)(void*);
+
+struct Document {
+    void** vptr;
+    char padding[0x8c];
+
+    Document(int, char*, char*, char*);
 };
 
-void CRbxPlayDocTemplate::construct(char flag)
+struct SimpleDocument : Document {
+    SimpleDocument(int, char*, char*, char*);
+};
+
+struct ExtendedDocument : Document {
+    int field_90;
+    unsigned int field_94;
+
+    ExtendedDocument(int, char*, char*, char*);
+};
+
+struct TemplateBase {
+    void** vptr;
+    char padding[0x1c];
+
+    TemplateBase();
+    ~TemplateBase();
+    void attach(Document*);
+};
+
+struct CRbxPlayDocTemplate : TemplateBase {
+    SimpleDocument* field_20;
+    ExtendedDocument* field_24;
+    SimpleDocument* field_28;
+    SimpleDocument* field_2c;
+
+    CRbxPlayDocTemplate(bool);
+};
+
+__forceinline SimpleDocument::SimpleDocument(
+    int id, char* a, char* b, char* c)
+    : Document(id, a, b, c)
 {
-    void* p;
-    void* q;
-    void* r;
-    void* s;
-    char* a;
-    char* b;
-    char* c;
+    vptr = vtable_00816684;
+}
 
-    func_006a117e();
-    field_0 = (void*)0x81685c;
+__forceinline ExtendedDocument::ExtendedDocument(
+    int id, char* a, char* b, char* c)
+    : Document(id, a, b, c)
+{
+    vptr = vtable_0081671c;
+    field_90 = 0;
+    imported_00803f04(&field_94);
+}
 
-    p = func_006a0920(0x98);
-    if (p == 0) {
-        if (flag != 0) {
-            func_00455d40();
-        } else {
-            func_00458e70();
-        }
-        func_00412b80();
-        func_0044f200();
-        func_006a11cc(p, 0x81, a, b, c);
-        *(void**)((char*)p + 0x90) = 0;
-        *(void**)p = (void*)0x81671c;
-        func_00803f04();
-    } else {
-        p = 0;
-    }
-    func_006a1172(p);
-    field_24 = p;
+CRbxPlayDocTemplate::CRbxPlayDocTemplate(bool play)
+    : TemplateBase()
+{
+    vptr = vtable_0081685c;
 
-    q = func_006a0920(0x90);
-    if (q != 0) {
-        func_0040df70();
-        func_00412af0();
-        func_0040dfa0();
-        func_006a11cc(q, 0xb9, a, b, c);
-        *(void**)q = (void*)0x816684;
-    } else {
-        q = 0;
-    }
-    func_006a1172(q);
-    field_20 = q;
+    field_24 = new ExtendedDocument(
+        0x81,
+        func_0044f200(),
+        func_00412b80(),
+        play ? func_00455d40() : func_00458e70());
+    attach(field_24);
 
-    r = func_006a0920(0x90);
-    if (r != 0) {
-        func_004638c0();
-        func_006a0d2e();
-        func_004638a0();
-        func_006a11cc(r, 0xcf, a, b, c);
-        *(void**)r = (void*)0x816684;
-    } else {
-        r = 0;
-    }
-    func_006a1172(r);
-    field_28 = r;
+    field_20 = new SimpleDocument(
+        0xb9,
+        func_0040dfa0(),
+        func_00412af0(),
+        func_0040df70());
+    attach(field_20);
 
-    s = func_006a0920(0x90);
-    if (s != 0) {
-        func_00433410();
-        func_006a0d2e();
-        func_004332e0();
-        func_006a11cc(s, 0x8a, a, b, c);
-        *(void**)s = (void*)0x816684;
-    } else {
-        s = 0;
-    }
-    func_006a1172(s);
-    field_2c = s;
+    field_28 = new SimpleDocument(
+        0xcf,
+        func_004638a0(),
+        func_006a0d2e(),
+        func_004638c0());
+    attach(field_28);
+
+    field_2c = new SimpleDocument(
+        0x8a,
+        func_004332e0(),
+        func_006a0d2e(),
+        func_00433410());
+    attach(field_2c);
 }

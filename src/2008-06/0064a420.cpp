@@ -1,19 +1,27 @@
-// from server: 25% by atomic.potato
-struct CleanStage
-{
-    int GetValue();
-    void Process(void *);
-    void *field4;
-    void *field8;
+// from server: 100% by king_originala
+struct Item;
+
+struct Stage {
+    virtual void slot0();
+    virtual int rank();
+    virtual void slot2();
+    virtual void slot3();
+    virtual void slot4();
+    virtual void forward(Item*);
+
+    int reserved;
+    Stage* next;
+
+    void process(Item*, int);
 };
 
-int CleanStage::GetValue()
-{
-    return 0;
-}
+struct Item {
+    int reserved;
+    Stage* stage;
+};
 
-void CleanStage::Process(void *value)
+void Stage::process(Item* item, int)
 {
-    if (*(int *)((char *)value + 4) > GetValue())
-        ((void (__thiscall *)(void *, void *))(*(int **)((char *)field8))[20])(field8, value);
+    if (item->stage->rank() > rank())
+        next->forward(item);
 }

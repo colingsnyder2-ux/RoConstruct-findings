@@ -1,54 +1,59 @@
-// from server: 48% by colin
-// roc 2008-06 004b5ed0  unit: RBX::Network::VSharedStringDictionary::?$sp_counted_impl_p  size: 106 bytes
-// Make this compile to the exact bytes below, then: roc check 2008-06 004b5ed0
+// from server: 99% by king_originala
+struct Target;
+struct __multiple_inheritance S;
 
-struct BitStream {
-    void writeBits(const unsigned char* data, unsigned int numBits, bool align);
+struct Pair {
+    unsigned first;
+    unsigned second;
+    Pair();
+    Pair(const Pair&);
+    ~Pair();
 };
 
-struct SenderDictionary {
-    void send(BitStream& stream, const char* value);
-};
+inline Pair::~Pair()
+{
+}
 
-struct ReceiverDictionary {
-    void receive(BitStream& stream, const char*& value);
-};
+extern Pair __cdecl makePair(Target*);
 
-struct SharedStringDictionary : SenderDictionary, ReceiverDictionary {
-    char pad[0x2c58];
-    void* map;
-    void send(BitStream& stream, const char* value);
-    void receive(BitStream& stream, const char*& value);
-};
-
-struct MarshaledListener {
-    void* p;
-    void addListener(void* listener);
-};
+struct Placeholder {};
 
 struct Callback {
-    void* vtable;
-    void* unk;
-    void* obj;
-    void* arg;
+    void (S::*function)();
+    S* object;
+    Placeholder placeholder;
 };
 
-extern "C" void __stdcall sub_618a40(void* dst, const char* src, unsigned int len);
-extern "C" void __stdcall sub_4ae570(void* obj, void* callback);
+struct Listener {
+    void update(Target**);
+};
 
-void SharedStringDictionary::send(BitStream& stream, const char* value)
+struct Target {
+    void connect(Callback);
+};
+
+struct Base1 {};
+struct Base2 {};
+
+struct S : Base1, Base2 {
+    char padding[0x2c57];
+    Listener listener;
+
+    void update(Target*, unsigned);
+    void apply(Pair, unsigned);
+    void onEvent();
+};
+
+void S::update(Target* target, unsigned value)
 {
-    if (value) {
-        void* local;
-        MarshaledListener* ml = (MarshaledListener*)((char*)this + 0x2c58);
-        ml->addListener(&local);
-        sub_618a40(&local, value, 0);
-        this->SenderDictionary::send(stream, value);
-        Callback cb;
-        cb.vtable = (void*)0x4aff70;
-        cb.unk = 0;
-        cb.obj = this;
-        cb.arg = local;
-        sub_4ae570((void*)value, &cb);
+    Target* original = target;
+    if (original) {
+        listener.update(&target);
+        apply(makePair(original), value);
+
+        Callback callback;
+        callback.function = &S::onEvent;
+        callback.object = this;
+        original->connect(callback);
     }
 }

@@ -1,52 +1,93 @@
-// from server: 30% by colin
+// from server: 88% by king_originala
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
 
-struct RefCounted {
-    void AddRef();
-    void Release();
+struct RefCount {
+    virtual void reserved();
+    virtual void dispose();
+    virtual void destroy();
+    volatile long strong;
+    volatile long weak;
 };
 
-struct Inner {
-    char pad[0xc4];
-    void Lock();
-    void Unlock();
+struct Handle {
+    void* pointer;
+    RefCount* count;
+    ~Handle();
 };
 
-struct TreeCtrlNode {
-    char pad0[0x50];
-    unsigned char flags;
-    char pad1[3];
-    void* owner;
-    char pad2[4];
-    void* ref;
-    void RemoveChild(void*);
+struct Lock {
+    void* handle;
+    bool criticalSection;
+    unsigned int count;
+    void lock();
+    void unlock();
+};
+
+struct Guard {
+    Lock* mutex;
+    bool owned;
+    Guard(Lock* p);
+    ~Guard();
+};
+
+struct Iterator {
+    void* values[3];
+};
+
+struct Tree {
+    void lookup(Iterator* result, Handle* value);
 };
 
 struct Owner {
-    char pad[0x15c];
-    void (__stdcall *fn)(void*);
+    void** vtable;
+    char padding[0xc0];
+    Lock mutex;
 };
 
-void TreeCtrlNode::RemoveChild(void* p)
+struct Node {
+    char padding[0x50];
+    unsigned char flags;
+    char padding2[3];
+    Owner* owner;
+    unsigned int reserved;
+    Tree tree;
+    void invoke(int unused, Handle value);
+};
+
+__forceinline Handle::~Handle()
 {
-    if (flags & 2) {
-        Inner* inner = (Inner*)((char*)owner + 0xc4);
-        inner->Lock();
-        char guard = 1;
-        void* tmp = 0;
-        ((TreeCtrlNode*)((char*)this + 0x5c))->RemoveChild(&tmp);
-        inner->Unlock();
-    }
-    Owner* o = (Owner*)owner;
-    o->fn((char*)this - 4);
-    RefCounted* r = (RefCounted*)ref;
-    if (r) {
-        if (_InterlockedExchangeAdd((volatile long*)((char*)r + 4), -1) == 1) {
-            r->Release();
-            if (_InterlockedExchangeAdd((volatile long*)((char*)r + 8), -1) == 1) {
-                r->Release();
-            }
+    RefCount* p = count;
+    if (p) {
+        if (_InterlockedExchangeAdd(&p->strong, -1) == 1) {
+            p->dispose();
+            if (_InterlockedExchangeAdd(&p->weak, -1) == 1)
+                p->destroy();
         }
     }
+}
+
+__forceinline Guard::Guard(Lock* p)
+    : mutex(p), owned(false)
+{
+    mutex->lock();
+    owned = true;
+}
+
+__forceinline Guard::~Guard()
+{
+    if (owned)
+        mutex->unlock();
+}
+
+void Node::invoke(int unused, Handle value)
+{
+    if (flags & 2) {
+        Guard guard(&owner->mutex);
+        Iterator result;
+        tree.lookup(&result, &value);
+    }
+
+    typedef void (__thiscall *Notify)(Owner*, void*);
+    ((Notify)owner->vtable[87])(owner, (char*)this - 4);
 }

@@ -1,4 +1,4 @@
-// from server: 91% by king_originala
+// from server: 92% by king_originala
 extern const float initialY;
 extern const float initialZ;
 
@@ -19,7 +19,5 @@ inline S::S() : x(0), y(initialY), z(initialZ)
 int S::isDefault() const
 {
     static S value;
-    if (value.x != x || value.y != y || value.z != z)
-        return 0;
-    return 1;
+    return x == value.x && value.y == y && value.z == z;
 }

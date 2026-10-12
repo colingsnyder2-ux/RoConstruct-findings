@@ -1,71 +1,105 @@
-// from server: 44% by colin
-struct S {
-    void* field0;
-    void* field4;
-    void f();
+// from server: 95% by king_originala
+struct TypeInfo {};
+
+typedef bool (__thiscall *TypeEqual)(const TypeInfo*, const TypeInfo&);
+extern TypeEqual typeEqual;
+
+extern const TypeInfo colorType;
+extern const TypeInfo stringType;
+extern const TypeInfo emptyType;
+
+struct String {
+    unsigned int allocator;
+    union {
+        char buffer[16];
+        char* pointer;
+    } storage;
+    unsigned int length;
+    unsigned int capacity;
+
+    ~String();
 };
 
-extern "C" void* __stdcall func_0056cf40();
-extern "C" void* __stdcall func_0056d260(void*);
-extern "C" void __stdcall func_0056c790(void*);
-extern "C" void* __stdcall func_00415c90(void*, void*);
-extern "C" bool __stdcall func_005bed50(void*, void*);
-extern "C" void* __stdcall func_00509b10(void*, void*, void*, void*);
-extern "C" void __stdcall func_00409d50(void*, void*);
-extern "C" void __stdcall func_006a158c(void*, void*);
+struct Name {
+    unsigned int prefix;
+    String text;
+};
 
-extern void* G_802878;
-extern void* G_929614;
-extern void* G_9463a4;
-extern void* G_92bef8;
-extern void* G_82f71c;
-extern void* G_8d1bc8;
+struct Descriptor {
+    unsigned int reserved[2];
+    const TypeInfo* type;
+    Name* name;
+};
 
-void S::f()
+struct Placeholder {
+    virtual ~Placeholder();
+    virtual const TypeInfo& type() const;
+};
+
+struct Color {
+    float r, g, b;
+};
+
+struct Any {
+    Placeholder* content;
+    void assign(const Color&);
+};
+
+struct Error {
+    unsigned char storage[36];
+
+    Error(const String&);
+    Error(const Error&);
+    ~Error();
+};
+
+extern const String* __cdecl getString(const Any*);
+extern bool __cdecl parseColor(const String&, Color&);
+extern Descriptor* __cdecl colorDescriptor();
+extern void __cdecl finishColor(Any*);
+extern String __cdecl format(const char*, ...);
+
+struct S {
+    Descriptor* descriptor;
+    Any value;
+
+    void convert();
+};
+
+void S::convert()
 {
-    void* p = this->field4;
-    if (p != 0) {
-        void* q = *(void**)p;
-        if (q != 0) {
-            void* r = (*(void*(**)(void*))q)(q);
-            if (!((bool(__stdcall*)(void*, void*))G_802878)(r, &G_9463a4))
-                goto fail;
-        } else {
-            if (!((bool(__stdcall*)(void*, void*))G_802878)(&G_929614, &G_9463a4))
-                goto fail;
-        }
-        if ((char*)this->field4 + 4 != 0)
+    TypeEqual equal = typeEqual;
+    Any* p = &value;
+    if (p &&
+        equal(&(p->content ? p->content->type() : emptyType), colorType)) {
+        Color* color = reinterpret_cast<Color*>(
+            reinterpret_cast<char*>(p->content) + 4);
+        if (color)
             return;
     }
-fail:
-    if (((bool(__stdcall*)(void*, void*))G_802878)(*(void**)((char*)this->field0 + 8), &G_92bef8)) {
-        char buf[16];
-        void* r = func_00415c90(&this->field4, buf);
-        if (func_005bed50(r, buf)) {
-            func_0056d260(&this->field4);
-            void* v = func_0056cf40();
-            this->field0 = v;
-            func_0056c790(&this->field4);
-            return;
-        }
+
+    Color color;
+    if (equal(&stringType, *descriptor->type) &&
+        parseColor(*getString(p), color)) {
+        p->assign(color);
+        descriptor = colorDescriptor();
+        finishColor(p);
+        return;
     }
-    void* a = func_0056cf40();
-    void* b = *(void**)((char*)a + 0xc);
-    void* c;
-    if (*(unsigned*)((char*)b + 0x1c) < 0x10)
-        c = (char*)b + 8;
+
+    Name* destinationName = colorDescriptor()->name;
+    const char* destination;
+    if (destinationName->text.capacity >= 16)
+        destination = destinationName->text.storage.pointer;
     else
-        c = *(void**)((char*)b + 8);
-    void* d = *(void**)((char*)this->field0 + 0xc);
-    void* e = (char*)d + 4;
-    void* g;
-    if (*(unsigned*)((char*)e + 0x18) < 0x10)
-        g = (char*)e + 4;
+        destination = destinationName->text.storage.buffer;
+
+    String* sourceString = &descriptor->name->text;
+    const char* source;
+    if (sourceString->capacity >= 16)
+        source = sourceString->storage.pointer;
     else
-        g = *(void**)((char*)e + 4);
-    char buf2[32];
-    func_00509b10(buf2, &G_82f71c, g, c);
-    char buf3[32];
-    func_00409d50(buf3, buf2);
-    func_006a158c(&G_8d1bc8, buf3);
+        source = sourceString->storage.buffer;
+
+    throw Error(format("Unable to cast %s to %s", source, destination));
 }

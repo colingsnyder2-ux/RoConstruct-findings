@@ -1,26 +1,28 @@
-// from server: 71% by tester
+// from server: 100% by king_originala
+struct String {
+    char padding[20];
+    unsigned int length;
+};
+
+extern void (__cdecl *sub_802890)();
+extern unsigned int (__thiscall *sub_802358)(String*);
+
 struct LuaWriter {
-    int* ptr;
+    String* ptr;
     unsigned int pos;
     LuaWriter& put();
 };
 
-extern "C" void __stdcall sub_802890();
-extern "C" int __stdcall sub_802358();
+LuaWriter& LuaWriter::put()
+{
+    if (ptr != (String*)-4) {
+        void (__cdecl *invalid)() = sub_802890;
+        if (ptr == 0)
+            invalid();
 
-LuaWriter& LuaWriter::put() {
-    int* p = ptr;
-    if (p != (int*)-4) {
-        if (p == 0) {
-            sub_802890();
-        }
-        int* q = ptr;
-        int r = sub_802358();
-        r += *(int*)((char*)q + 0x14);
-        if (pos >= (unsigned int)r) {
-            sub_802890();
-        }
+        if (pos >= sub_802358(ptr) + ptr->length)
+            invalid();
     }
-    pos++;
+    ++pos;
     return *this;
 }

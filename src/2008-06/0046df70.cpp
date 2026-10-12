@@ -1,27 +1,27 @@
-// from server: 93% by colin
-struct String {
-    char storage[28];
-    String& operator=(const String&);
+// from server: 100% by king_originala
+struct StringStorage {
+    char data[28];
 };
 
-struct Element {
-    int a;
-    int b;
-    String s1;
-    String s2;
+extern StringStorage& (__thiscall *assignString)(
+    StringStorage*, const StringStorage*);
+
+struct Entry {
+    unsigned int first;
+    unsigned int second;
+    StringStorage name;
+    StringStorage value;
 };
 
-Element* copy_backward(Element* first, Element* last, Element* dest)
+Entry* __cdecl copyBackward(Entry* first, Entry* last, Entry* result)
 {
-    if (first != last) {
-        do {
-            last--;
-            dest--;
-            dest->a = last->a;
-            dest->b = last->b;
-            dest->s1 = last->s1;
-            dest->s2 = last->s2;
-        } while (last != first);
+    while (first != last) {
+        --last;
+        --result;
+        result->first = last->first;
+        result->second = last->second;
+        assignString(&result->name, &last->name);
+        assignString(&result->value, &last->value);
     }
-    return dest;
+    return result;
 }

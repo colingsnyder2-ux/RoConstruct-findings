@@ -1,5 +1,4 @@
-// from server: 78% by king_originala
-extern char objectName[];
+// from server: 79% by king_originala
 extern unsigned char table0[], table10[], table14[], table20[];
 extern unsigned char table24[], table44[], table64[], table84[];
 extern unsigned char tableA4[], tableC4[], table130[], table138[];
@@ -45,7 +44,7 @@ struct S {
 
 S* S::init()
 {
-    base(objectName);
+    base((const char*)0x95c740);
     t0 = table0;
     t10 = table10;
     t14 = table14;
@@ -59,21 +58,20 @@ S* S::init()
     t130 = table130;
     t138 = table138;
     flag148 = 0;
-    field14C = 0;
-    field150 = 0;
     field154 = 0.0f;
     field158 = 0.0f;
+    field14C = 0;
     field15C = 0.0f;
-    field160 = value160;
+    field150 = 0;
     flag164 = 0;
+    field160 = value160;
     field168 = value168;
     field16C = value16C;
     field170 = value170;
     field174 = value174;
     field178 = value178;
     field17C = value17C;
-    field180 = value180;
-    field184 = value180;
+    field184 = field180 = value180;
     field188 = 0.0f;
     field18C = value18C;
     return this;

@@ -1,22 +1,29 @@
-// from server: 77% by tester
-extern "C" void __cdecl helper_678660(float* arr, int a, int b, float val);
+// from server: 100% by king_originala
+extern void __cdecl push_heap(float*, int, int, float);
 
-void __cdecl func_678780(float* arr, int lo, int hi, float val)
+#pragma float_control(precise, off, push)
+
+void __cdecl adjust_heap(float* first, int hole, int length, float value)
 {
-    int i = lo;
-    int j = lo + lo + 2;
-    while (j < hi)
+    int top = hole;
+    int child = 2 * hole + 2;
+
+    while (child < length)
     {
-        if (!(arr[j - 1] < arr[j]))
-            j--;
-        arr[i] = arr[j];
-        i = j;
-        j = j + j + 2;
+        if (first[child] < first[child - 1])
+            --child;
+        first[hole] = first[child];
+        hole = child;
+        child = 2 * child + 2;
     }
-    if (j == hi)
+
+    if (child == length)
     {
-        arr[i] = arr[hi - 1];
-        i = hi - 1;
+        first[hole] = first[length - 1];
+        hole = length - 1;
     }
-    helper_678660(arr, i, lo, val);
+
+    push_heap(first, hole, top, value);
 }
+
+#pragma float_control(pop)

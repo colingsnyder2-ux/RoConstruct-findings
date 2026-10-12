@@ -1,50 +1,71 @@
-// from server: 32% by colin
-struct RenderScene {
-    char pad0[0x24];
-    float f24;
-    float f28;
-    char pad2c[0x2f4 - 0x2c];
-    char sub2f4[0x308 - 0x2f4];
-    char f308[0x30c - 0x308];
-    char f30c[0x310 - 0x30c];
-    unsigned char b310;
-    char pad311[0x314 - 0x311];
-    float f314;
-    char pad318[0x3a0 - 0x318];
-    char f3a0[0x498 - 0x3a0];
-    char f498[0x4a0 - 0x498];
-    void func(float, unsigned char, float, float, float);
+// from server: 88% by king_originala
+extern "C" long __stdcall InterlockedDecrement(volatile long *);
+extern const float upperLimit;
+
+struct Control
+{
+    virtual ~Control();
+    volatile long references;
+    void dispose();
 };
 
-extern "C" int __stdcall InterlockedDecrement(int*);
-extern "C" void __stdcall sub_7afce0();
-extern "C" void __stdcall sub_598fa0();
-extern "C" void __stdcall sub_45ad90();
-
-extern float g_8163a4;
-
-void RenderScene::func(float a, unsigned char b, float c, float d, float e)
+struct Handle
 {
-    float v;
-    if (a == 0.0f) {
-        v = g_8163a4;
-        if (v == 0.0f) {
-            v = 0.0f;
+    Control *object;
+
+    ~Handle()
+    {
+        if (object && InterlockedDecrement(&object->references) == 0)
+        {
+            object->dispose();
+            if (object)
+                delete object;
         }
-    } else {
-        v = a;
     }
+};
 
-    if (f24 == c && f28 == d && b310 == b && f314 == e) {
-        return;
+struct Pointer
+{
+    Control *object;
+    void assign(Control *);
+};
+
+struct Generator
+{
+    Handle generate(float, float, bool, float, void *, void *, void *);
+};
+
+struct Scene
+{
+    char padding0[0x24];
+    float first;
+    float second;
+    char padding1[0x2f4 - 0x2c];
+    Generator generator;
+    char padding2[0x308 - 0x2f5];
+    unsigned long output;
+    Pointer pointer;
+    bool enabled;
+    char padding3[3];
+    float fourth;
+    char padding4[0x3a0 - 0x318];
+    char output2[0xf8];
+    char output3;
+
+    void update(float, float, bool, float);
+};
+
+void Scene::update(float a, float b, bool c, float d)
+{
+    float value = a <= 0.0f ? 0.0f : a >= upperLimit ? upperLimit : a;
+
+    if (value != first || b != second || c != enabled || d != fourth)
+    {
+        first = value;
+        second = b;
+        fourth = d;
+        enabled = c;
+        pointer.assign(generator.generate(value, b, c, d,
+                                          &output, output2, &output3).object);
     }
-
-    f24 = c;
-    f28 = d;
-    f314 = e;
-    b310 = b;
-
-    sub_7afce0();
-    sub_598fa0();
-    sub_45ad90();
 }

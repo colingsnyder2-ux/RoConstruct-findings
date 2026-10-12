@@ -1,22 +1,23 @@
-// from server: 66% by king_originala
-struct Str_00437ed0 {
-    int value;
-    Str_00437ed0();
-    ~Str_00437ed0();
-    const char* c_str() const;
-};
+// from server: 72% by king_originala
+struct Str_00437ed0 { int words[8]; };
 
-extern const char* (__thiscall* string_data)(const Str_00437ed0*);
-extern void (__thiscall* string_release)(Str_00437ed0*);
+extern const void* __cdecl getLocalScope();
+
+extern const char* (__thiscall* text_access)(Str_00437ed0*);
+extern void (__thiscall* temp_destroy)(void*);
 
 struct String {
-    char storage[28];
+    char data[28];
     String(const char*);
     ~String();
 };
 
 extern void (__thiscall* string_construct)(String*, const char*);
-extern const void* __cdecl getLocalScope();
+
+inline String::String(const char* text)
+{
+    string_construct(this, text);
+}
 
 struct Result {
     String text;
@@ -24,34 +25,38 @@ struct Result {
     Result(const char*);
 };
 
+inline Result::Result(const char* textValue)
+    : text(textValue), scope(getLocalScope())
+{
+}
+
+inline void* operator new(unsigned int, void* p)
+{
+    return p;
+}
+
+struct Temporary {
+    int value;
+    ~Temporary();
+};
+
+inline Temporary::~Temporary()
+{
+    temp_destroy(this);
+}
+
 struct X_00437ed0 {
     char pad[0xa4];
     Str_00437ed0 value;
     Str_00437ed0* copy(Str_00437ed0*);
-    Result func_00438580();
+    Result* func_00438580(Result*);
 };
 
-Str_00437ed0::Str_00437ed0() : value(0) {}
-
-Str_00437ed0::~Str_00437ed0()
+Result* X_00437ed0::func_00438580(Result* out)
 {
-    string_release(this);
-}
-
-const char* Str_00437ed0::c_str() const
-{
-    return string_data(this);
-}
-
-String::String(const char* s)
-{
-    string_construct(this, s);
-}
-
-Result::Result(const char* s) : text(s), scope(getLocalScope()) {}
-
-Result X_00437ed0::func_00438580()
-{
-    Str_00437ed0 temporary;
-    return Result(copy(&temporary)->c_str());
+    Temporary temporary;
+    temporary.value = 0;
+    Str_00437ed0* value = copy((Str_00437ed0*)&temporary);
+    new (out) Result(text_access(value));
+    return out;
 }

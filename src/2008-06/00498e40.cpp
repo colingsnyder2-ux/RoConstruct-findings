@@ -1,5 +1,35 @@
-// from server: 48% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs util/RunStateOwner.cpp
+// from server: 78% by king_originala
+struct Node {
+    Node* next;
+    void* previous;
+    char value[1];
+};
+
+struct Iterator {
+    void* owner;
+    Node* node;
+};
+
+typedef void (__thiscall *Callback)(void*, void*);
+
+struct Function {
+    Callback callback;
+    void* context;
+    Function(const Function& other);
+};
+
+Function::Function(const Function& other)
+    : callback(other.callback), context(other.context) {}
+
+Function __cdecl traverse(Iterator first, Iterator last, Function function)
+{
+    Node* current = first.node;
+    Node* end = last.node;
+    for (;;) {
+        if (current == end)
+            break;
+        function.callback(function.context, current->value);
+        current = current->next;
+    }
+    return function;
+}

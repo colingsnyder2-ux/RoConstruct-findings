@@ -1,48 +1,39 @@
-// from server: 35% by tester
-// roc 2008-06 005443c0  unit: RBX::RenderBase::VChunk::?$WeakReferenceCountedPointer  size: 219 bytes
-// Make this compile to the exact bytes below, then: roc check 2008-06 005443c0
+// from server: 100% by king_originala
+#pragma optimize("", off)
 
-extern "C" void __stdcall _invalid_parameter_noinfo();
+struct VChunk;
 
-struct Node {
-    Node* next;
-    Node* prev;
-};
-
-struct List {
-    Node* head;
-};
+extern "C" void (__cdecl *invalid_parameter_noinfo)();
+extern "C" char* __cdecl left_slot(VChunk*);
+extern "C" char* __cdecl flag_slot(VChunk*);
+extern "C" char* __cdecl parent_slot(VChunk*);
+extern "C" VChunk* __cdecl next_slot(VChunk*);
 
 struct S {
-    char pad0[4];
-    List* list;
-    void f();
+    void* container;
+    VChunk* node;
+
+    bool __thiscall has_container() const;
+    void __thiscall decrement();
 };
 
-extern "C" int __cdecl sub_402410(void* p);
-extern "C" Node* __cdecl sub_541da0(List* l);
-extern "C" char* __cdecl sub_542e00(Node* n);
-extern "C" Node* __cdecl sub_5450f0(Node* n);
-extern "C" Node* __cdecl sub_54c640(List* l);
+void S::decrement()
+{
+    if (!has_container())
+        invalid_parameter_noinfo();
 
-void S::f() {
-    if (!sub_402410(this)) {
-        _invalid_parameter_noinfo();
-    }
-    Node* n = sub_541da0(this->list);
-    if (*sub_542e00(n) != 0) {
-        _invalid_parameter_noinfo();
-        return;
-    }
-    Node* first = sub_541da0(this->list);
-    if (*sub_542e00(first->next) == 0) {
-        this->list->head = sub_5450f0(first->next);
-    } else {
-        Node* cur = sub_54c640(this->list);
-        while (*sub_542e00(cur) == 0 && this->list->head == sub_541da0((List*)cur)->next) {
-            this->list->head = cur;
-            cur = sub_54c640(this->list);
-        }
-        this->list->head = cur;
+    do {
+    } while (false);
+
+    if (*flag_slot(node))
+        invalid_parameter_noinfo();
+    else if (!*flag_slot(*reinterpret_cast<VChunk**>(left_slot(node))))
+        node = next_slot(*reinterpret_cast<VChunk**>(left_slot(node)));
+    else {
+        VChunk* parent;
+        while (!*flag_slot(parent = *reinterpret_cast<VChunk**>(parent_slot(node)))
+            && node == *reinterpret_cast<VChunk**>(left_slot(parent)))
+            node = parent;
+        node = parent;
     }
 }

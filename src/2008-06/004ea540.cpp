@@ -1,39 +1,49 @@
-// from server: 45% by colin
-struct S_func_004ea540 {
-    void f(void*);
+// from server: 95% by king_originala
+typedef unsigned int size_t;
+void* __cdecl operator new(size_t);
+void __cdecl operator delete(void*);
+
+struct Pair {
+    int first;
+    int second;
 };
 
-struct S_sub_0041ad40 {
-    void sub_0041ad40();
+struct Owner {
+    int first;
+    int second;
+    Owner();
+    ~Owner();
+    void attach(struct Object*);
 };
 
-struct S_sub_0041b0f0 {
-    void sub_0041b0f0(void*);
+struct Object {
+    char storage[40];
+    Object();
 };
 
-struct S_sub_004e9f40 {
-    void sub_004e9f40(void*, void*, void*);
+struct Member {
+    int f(int, int, int);
+    Member(int, int, int);
+    ~Member();
 };
 
-struct S_sub_00595840 {
-    void sub_00595840();
+struct S : Owner {
+    Member member;
+    S(const Pair&);
+    void finish();
 };
 
-extern "C" void* __cdecl sub_006a0920(unsigned int);
-
-void S_func_004ea540::f(void* arg)
+inline Owner::Owner() : first(0), second(0)
 {
-    *(void**)this = 0;
-    *(void**)((char*)this + 4) = 0;
-    void* p = *(void**)arg;
-    void* q = *(void**)((char*)arg + 4);
-    ((S_sub_004e9f40*)((char*)this + 8))->sub_004e9f40(p, q, 0);
-    void* mem = sub_006a0920(0x28);
-    if (mem != 0) {
-        ((S_sub_0041ad40*)mem)->sub_0041ad40();
-    } else {
-        mem = 0;
-    }
-    ((S_sub_0041b0f0*)this)->sub_0041b0f0(mem);
-    ((S_sub_00595840*)this)->sub_00595840();
+}
+
+inline Member::Member(int a, int b, int c)
+{
+    f(a, b, c);
+}
+
+S::S(const Pair& p) : member(p.first, p.second, 0)
+{
+    attach(new Object);
+    finish();
 }

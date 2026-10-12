@@ -1,17 +1,15 @@
-// from server: 50% by atomic.potato
-struct S
-{
-    int f();
+// from server: 100% by king_originala
+struct Subobject {
+    virtual void first();
+    virtual void second();
 };
 
-int S::f()
-{
-    struct V
-    {
-        int x;
-        int (*p)();
-    };
+struct S {
+    char padding[0x130];
+    Subobject subobject;
+};
 
-    V* v = *(V**)((char*)this + 0x130);
-    return v->p();
+void f(S* object)
+{
+    object->subobject.second();
 }

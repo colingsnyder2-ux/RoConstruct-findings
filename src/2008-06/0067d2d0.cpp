@@ -1,4 +1,4 @@
-// from server: 83% by king_originala
+// from server: 91% by king_originala
 extern "C" {
     extern void (__cdecl *_invalid_parameter_noinfo)();
     extern int (__cdecl *memmove_s)(void *, unsigned int, const void *, unsigned int);
@@ -14,6 +14,11 @@ struct Owner {
     Object **end;
 };
 
+struct Iterator {
+    Owner **proxy;
+    Object **position;
+};
+
 struct S {
     char padding[216];
     Owner **volatile proxy;
@@ -26,11 +31,12 @@ struct S {
 
 void S::remove(Object *object)
 {
-    Object **position = begin;
-    if (position > end)
+    Iterator current;
+    current.position = begin;
+    if (current.position > end)
         _invalid_parameter_noinfo();
 
-    Owner **savedProxy = proxy;
+    current.proxy = proxy;
 
     for (;;) {
         Object **last = end;
@@ -38,49 +44,42 @@ void S::remove(Object *object)
             _invalid_parameter_noinfo();
 
         Owner **currentProxy = proxy;
-        if (!savedProxy || savedProxy != currentProxy)
+        if (!current.proxy || current.proxy != currentProxy)
             _invalid_parameter_noinfo();
 
-        if (position == last)
+        if (current.position == last)
             break;
 
-        Owner *owner;
-        if (!savedProxy) {
-            _invalid_parameter_noinfo();
-            owner = 0;
-        } else {
-            owner = *savedProxy;
-        }
-
-        if (position >= owner->end)
+        if (!current.proxy)
             _invalid_parameter_noinfo();
 
-        if (*position == object) {
-            Object **next = position + 1;
+        Owner *owner = current.proxy ? *current.proxy : 0;
+        if (current.position >= owner->end)
+            _invalid_parameter_noinfo();
+
+        if (*current.position == object) {
+            Object **next = current.position + 1;
             int count = end - next;
             if (count > 0) {
                 unsigned int bytes = count * sizeof(Object *);
-                memmove_s(position, bytes, next, bytes);
+                memmove_s(current.position, bytes, next, bytes);
             }
 
             --end;
             Object **newEnd = end;
-            if (begin > position || position > newEnd)
+            if (begin > current.position || current.position > newEnd)
                 _invalid_parameter_noinfo();
             break;
         }
 
-        if (!savedProxy) {
-            _invalid_parameter_noinfo();
-            owner = 0;
-        } else {
-            owner = *savedProxy;
-        }
-
-        if (position >= owner->end)
+        if (!current.proxy)
             _invalid_parameter_noinfo();
 
-        ++position;
+        owner = current.proxy ? *current.proxy : 0;
+        if (current.position >= owner->end)
+            _invalid_parameter_noinfo();
+
+        ++current.position;
     }
 
     if (object)

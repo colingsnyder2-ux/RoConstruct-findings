@@ -1,5 +1,18 @@
-// from server: 59% by king_originala
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: boost-1.34.1 libs/date_time/src/gregorian/greg_month.cpp
+// from server: 100% by king_originala
+struct Object {
+    virtual void destroy(unsigned int);
+};
+
+struct S {
+    unsigned char padding[16];
+    Object object;
+};
+
+extern unsigned int __cdecl cleanup(const S&);
+
+void __stdcall f(S* p)
+{
+    cleanup(*p);
+    if (p)
+        p->object.destroy(1);
+}
