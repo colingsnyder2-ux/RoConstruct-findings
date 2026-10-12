@@ -1,4 +1,4 @@
-// from server: 84% by king_originala
+// from server: 86% by king_originala
 namespace std {
     struct basic_string {
         char storage[28];
@@ -7,7 +7,7 @@ namespace std {
     struct ios_base {
         void* table;
         long reserved;
-        int state;
+        volatile int state;
         int exceptions;
         unsigned long format;
         int digits;
@@ -51,52 +51,93 @@ namespace std {
 
     struct basic_stringstream : basic_istream, basic_ostream {
         char buffer[68];
-        basic_stringstream(int);
-        ~basic_stringstream();
     };
+}
 
-    basic_ostream& operator<<(basic_ostream&, const basic_string&);
+typedef void (__thiscall *StreamConstructor)(
+    std::basic_stringstream*, int, int);
+typedef void (__thiscall *StreamDestructor)(std::basic_stringstream*);
+typedef std::basic_ostream& (__cdecl *StringInsertion)(
+    std::basic_ostream&, const std::basic_string&);
+typedef std::basic_istream& (__thiscall *ShortExtraction)(
+    std::basic_istream*, unsigned short&);
+typedef int (__thiscall *StreamGet)(std::basic_istream*);
+typedef void (__thiscall *BadCastConstructor)(void*, const char*);
 
-    struct bad_cast {
-        char* message;
-        int owned;
-        bad_cast(const char*);
-        virtual ~bad_cast();
-        virtual const char* what() const;
-    };
+extern StreamConstructor constructStream;
+extern StreamDestructor destroyStream;
+extern StringInsertion insertString;
+extern ShortExtraction extractShort;
+extern StreamGet streamGet;
+extern BadCastConstructor constructBadCast;
+
+inline std::basic_istream&
+std::basic_istream::operator>>(unsigned short& value) {
+    return extractShort(this, value);
+}
+
+inline int std::basic_istream::get() {
+    return streamGet(this);
+}
+
+struct StreamStorage {
+    char storage[136];
+
+    StreamStorage(int);
+    ~StreamStorage();
+    std::basic_stringstream& stream();
+};
+
+inline StreamStorage::StreamStorage(int mode) {
+    constructStream(
+        reinterpret_cast<std::basic_stringstream*>(storage), mode, 1);
+}
+
+inline StreamStorage::~StreamStorage() {
+    destroyStream(reinterpret_cast<std::basic_stringstream*>(storage));
+}
+
+inline std::basic_stringstream& StreamStorage::stream() {
+    return *reinterpret_cast<std::basic_stringstream*>(storage);
 }
 
 struct type_info;
 extern const type_info source_type;
 extern const type_info target_type;
+extern unsigned char lexicalCastVtable;
 
-struct bad_lexical_cast : std::bad_cast {
+struct bad_lexical_cast {
+    void* vtable;
+    unsigned long base[2];
     const type_info* source;
     const type_info* target;
 
     bad_lexical_cast();
-    virtual ~bad_lexical_cast();
-    virtual const char* what() const;
+    ~bad_lexical_cast();
 };
 
-inline bad_lexical_cast::bad_lexical_cast()
-    : std::bad_cast(
-          "bad lexical cast: source type value could not be interpreted as target"),
-      source(&source_type),
-      target(&target_type) {
+inline bad_lexical_cast::bad_lexical_cast() {
+    constructBadCast(
+        this,
+        "bad lexical cast: source type value could not be interpreted as target");
+    vtable = &lexicalCastVtable;
+    source = &source_type;
+    target = &target_type;
 }
 
-__declspec(noreturn) void raise(const bad_lexical_cast&);
+__declspec(noreturn) void __cdecl raise(const bad_lexical_cast&);
 
 unsigned short convert(const std::basic_string& text) {
     unsigned short value;
-    std::basic_stringstream stream(3);
+    StreamStorage storage(3);
+    std::basic_stringstream& stream = storage.stream();
+
     stream.unsetf(1);
     stream.precision(5);
 
-    if (!(stream << text).fail() &&
+    if (!insertString(stream, text).fail() &&
         (stream >> value) &&
-        stream.get() != -1)
+        stream.get() == -1)
         return value;
 
     bad_lexical_cast error;

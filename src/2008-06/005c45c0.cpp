@@ -1,42 +1,44 @@
-// from server: 58% by king_originala
-namespace std
-{
-    template<class T> struct char_traits {};
-    template<class T> struct allocator {};
+// from server: 66% by king_originala
+namespace std {
+template<class T> struct char_traits;
+template<class T> class allocator;
 
-    template<class T, class Traits, class Allocator>
-    struct basic_string
-    {
-        unsigned char storage[28];
+template<class T, class Traits, class Alloc>
+class basic_string {
+    unsigned char storage[28];
+public:
+    basic_string();
+    basic_string(const basic_string&);
+    ~basic_string();
+};
 
-        basic_string();
-        basic_string(const basic_string&);
-        ~basic_string();
-
-        void process(basic_string*);
-    };
+typedef basic_string<char, char_traits<char>, allocator<char> > string;
 }
 
-typedef std::basic_string<char, std::char_traits<char>, std::allocator<char> > String;
+struct Parser {
+    std::string first;
+    std::string second;
 
-void function(String argument)
+    Parser(const std::string&);
+    ~Parser();
+    void parse(std::string&);
+};
+
+__forceinline Parser::Parser(const std::string& source)
+    : first(source), second()
 {
-    try
-    {
-        String first;
-        String copy(argument);
-        String third;
-        try
-        {
-            copy.process(&first);
-        }
-        catch (...)
-        {
-            throw;
-        }
-    }
-    catch (...)
-    {
-        throw;
+}
+
+__forceinline Parser::~Parser()
+{
+}
+
+void process(std::string source)
+{
+    try {
+        std::string result;
+        Parser parser(source);
+        parser.parse(result);
+    } catch (...) {
     }
 }

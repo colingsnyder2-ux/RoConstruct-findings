@@ -1,6 +1,6 @@
-// from server: 98% by colin
+// from server: 100% by king_originala
 struct Node {
-    char padding[20];
+    char padding[32];
     Node* next;
 };
 

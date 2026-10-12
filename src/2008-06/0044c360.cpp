@@ -1,8 +1,8 @@
-// from server: 99% by colin
+// from server: 100% by king_originala
 void __cdecl operator delete(void *) throw();
 
 struct Base {
-    unsigned char data[24];
+    unsigned char data[48];
     ~Base();
 };
 

@@ -1,4 +1,4 @@
-// from server: 97% by colin
+// from server: 100% by king_originala
 typedef void* HWND;
 typedef int BOOL;
 
@@ -16,5 +16,5 @@ struct ToggleFullscreenVerb
 BOOL ToggleFullscreenVerb::f(void*)
 {
     W* w = sub_6A0926()->v->w;
-    return PostMessageA(w->h, 0x111, 0x80f4, 0);
+    return PostMessageA(w->h, 0x111, 0x80ff, 0);
 }

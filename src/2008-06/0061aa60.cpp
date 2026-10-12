@@ -1,49 +1,39 @@
-// from server: 97% by king_originala
-extern unsigned char sourceType[];
-extern unsigned char targetType[];
-extern unsigned char throwInfo[];
-extern const char badCastText[];
-
-extern "C" void* __cdecl __RTDynamicCast(
-    void*, long, void*, void*, int);
-
-struct BadCast {
-    unsigned char data[12];
-};
-
-extern BadCast* (__thiscall *badCastConstructor)(BadCast*, const char*);
-
-struct ValueAccessor {
-    virtual void reserved0();
-    virtual void reserved1();
-    virtual void reserved2();
-    virtual void get(void*, void*);
-};
-
-struct TypedPropertyDescriptor {
-    unsigned char padding[24];
-    ValueAccessor* accessor;
-};
-
-extern "C" TypedPropertyDescriptor* __stdcall throwException(void*, void*);
-
-struct LuaArguments {
-    void* descriptor;
-    void* instance;
-    void get(void* result);
-};
-
-void LuaArguments::get(void* result)
+// from server: 99% by king_originala
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+#include <typeinfo>
+namespace boost {
+template<class Target, class Source>
+inline Target polymorphic_cast(Source* x)
 {
-    TypedPropertyDescriptor* property =
-        static_cast<TypedPropertyDescriptor*>(
-            __RTDynamicCast(descriptor, 0, sourceType, targetType, 0));
-
-    if (!property) {
-        BadCast exception;
-        badCastConstructor(&exception, badCastText);
-        property = throwException(&exception, throwInfo);
-    }
-
-    property->accessor->get(instance, result);
+    Target tmp = dynamic_cast<Target>(x);
+    if (tmp == 0)
+        throw std::bad_cast("bad cast");
+    return tmp;
+}
+}
+namespace boost { template<class T> class shared_ptr; }
+namespace RBX { class Instance; }
+namespace G3D { class Color3; class Vector3; }
+namespace RBX { class BrickColor; namespace Soundscape { class SoundId; } }
+struct AccessorT { virtual void s0(); virtual void s1(); virtual void s2(); virtual void set(void*, const RBX::Soundscape::SoundId&); };
+namespace RBX { namespace Reflection {
+class PropertyDescriptor { public: virtual ~PropertyDescriptor(); };
+template<class T>
+class TypedPropertyDescriptor : public PropertyDescriptor {
+public:
+    unsigned char padding[20];
+    AccessorT* accessor;
+};
+} }
+struct ChangePropertyItem {
+    RBX::Reflection::PropertyDescriptor* descriptor;
+    void* instance;
+    void set(const RBX::Soundscape::SoundId& value);
+};
+void ChangePropertyItem::set(const RBX::Soundscape::SoundId& value)
+{
+    RBX::Reflection::TypedPropertyDescriptor<RBX::Soundscape::SoundId>* typed = boost::polymorphic_cast<RBX::Reflection::TypedPropertyDescriptor<RBX::Soundscape::SoundId>*>(descriptor);
+    typed->accessor->set(instance, value);
 }

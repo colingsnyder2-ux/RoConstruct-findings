@@ -1,5 +1,23 @@
-// from server: 97% by colin
-// roc-lang: cpp
-// roc-cl: 50727
-// roc-flags: /Od /Ob0 /GS- /MD
-// roc-lib: wildmagic-2-core Graphics/WmlClodMesh.cpp
+// from server: 100% by king_originala
+#pragma optimize("", off)
+
+struct Part {
+    int data[2];
+    Part(int value);
+};
+
+struct S {
+    int a;
+    int b;
+    int c;
+    Part part;
+    unsigned char flag;
+    unsigned char zero;
+
+    S(int x, int y, int z, int value, unsigned char enabled);
+};
+
+S::S(int x, int y, int z, int value, unsigned char enabled)
+    : a(x), b(y), c(z), part(value), flag(enabled), zero(0)
+{
+}

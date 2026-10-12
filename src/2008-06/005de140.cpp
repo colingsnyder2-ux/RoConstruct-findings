@@ -1,16 +1,21 @@
-// from server: 87% by king_originala
+// from server: 100% by king_originala
 extern "C" double __cdecl acos(double);
+#pragma intrinsic(acos)
 
-struct Vector3 {
+extern const float negativeOne;
+extern const float pi;
+
+struct Vector3
+{
     float x, y, z;
 };
 
-double __cdecl angle(const Vector3& a, const Vector3& b)
+double __cdecl angleBetween(const Vector3& a, const Vector3& b)
 {
     double dot = a.z * b.z + a.y * b.y + a.x * b.x;
-    if (1.0f <= dot)
+    if (dot >= 1.0f)
         return 0.0f;
-    if (-1.0f >= dot)
-        return 3.14159265358979323846f;
+    if (dot <= negativeOne)
+        return pi;
     return acos(dot);
 }

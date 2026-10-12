@@ -1,4 +1,4 @@
-// from server: 98% by colin
+// from server: 100% by king_originala
 extern "C" void (__thiscall *string_destroy)(void *);
 
 struct String {
@@ -12,7 +12,7 @@ __forceinline String::~String()
 }
 
 struct Base {
-    char storage[20];
+    char storage[36];
     ~Base();
 };
 

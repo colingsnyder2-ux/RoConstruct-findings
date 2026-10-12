@@ -1,4 +1,4 @@
-// from server: 97% by colin
+// from server: 100% by king_originala
 struct Matrix
 {
     float data[9];
@@ -25,6 +25,6 @@ Value GetSetImpl::Invoke(void *argument)
 {
     char *object = argument ? (char *)argument - 0x14 : 0;
     return function(
-        object + 0x150 +
-        (*(int *)(*(char **)(object + 0x150) + index) + adjustment));
+        object + 0x1c0 +
+        (*(int *)(*(char **)(object + 0x1c0) + index) + adjustment));
 }

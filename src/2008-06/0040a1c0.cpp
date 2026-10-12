@@ -1,15 +1,17 @@
-// from server: 72% by king_originala
+// from server: 93% by king_originala
 struct Arguments {
     unsigned int first;
     unsigned int second;
 
     Arguments(const Arguments& other);
-    ~Arguments();
 };
 
 inline Arguments::Arguments(const Arguments& other)
-    : first(other.first), second(other.second)
 {
+    unsigned int b = other.second;
+    unsigned int a = other.first;
+    second = b;
+    first = a;
 }
 
 struct Callback {
@@ -27,6 +29,7 @@ void S::f(Arguments arguments, Callback* callback)
         if (this)
             object = reinterpret_cast<char*>(this) - 0xC4;
         callback->invoke(object, arguments);
+        __assume(0);
     }
     catch (...) {
         volatile char storage[40];

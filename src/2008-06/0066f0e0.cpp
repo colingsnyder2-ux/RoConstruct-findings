@@ -1,4 +1,4 @@
-// from server: 58% by king_originala
+// from server: 60% by king_originala
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
 
@@ -16,14 +16,14 @@ struct Counts {
 };
 
 struct Reference {
-    Counts* value;
-    Reference& assign(const Reference&);
+    Counts *value;
+    Reference &assign(const Reference &);
     ~Reference();
 };
 
 inline Reference::~Reference()
 {
-    Counts* p = value;
+    Counts *p = value;
     if (p && _InterlockedExchangeAdd(&p->strong, -1) == 0) {
         p->dispose();
         if (_InterlockedExchangeAdd(&p->weak, -1) == 0)
@@ -32,7 +32,7 @@ inline Reference::~Reference()
 }
 
 struct SharedActor {
-    Part* object;
+    Part *object;
     Reference reference;
 };
 
@@ -55,31 +55,34 @@ struct Result {
 };
 
 struct Link {
-    Result* get(void*);
+    Result *get(void *);
 };
 
 struct Actor {
     char padding[0x21c];
-    Link* link;
-    void* source();
+    Link *link;
+    void *source();
 };
 
 struct Part {
     char padding[0x228];
     Switch flag;
-    const Transform* transform();
+    const Transform *transform();
 };
 
 struct Service {
-    void attach(Part*);
+    void attach(Part *);
+};
+
+struct ConnectionResult {
+    char storage[20];
+    ~ConnectionResult();
 };
 
 struct Connection {
-    long first;
-    long second;
-    long third;
+    long first, second, third;
     Connection();
-    Connection& assign(const Connection&);
+    Connection &assign(const ConnectionResult &);
     ~Connection();
 };
 
@@ -88,41 +91,36 @@ inline Connection::Connection() : first(0), second(0), third(0) {}
 extern void __cdecl callback();
 
 struct Binding {
-    void (__cdecl* function)();
+    void (__cdecl *function)();
     int adjustment;
-    State* object;
+    State *object;
 };
 
 struct Function {
     char storage[40];
-    Function(const Binding&);
+    Function(const Binding &);
     ~Function();
 };
 
-struct ConnectionResult {
-    char storage[16];
-    ~ConnectionResult();
-};
-
 struct Dispatcher {
-    ConnectionResult* connect(ConnectionResult*, void*, const Function&, int);
+    ConnectionResult connect(void *, const Function &, int);
 };
 
 struct Animation {
     char padding[0x10];
     struct Channel {
-        void set(Actor**, float);
+        void set(Actor **, float);
     } channel;
 };
 
 struct Registry {
-    Animation* find(void*);
+    Animation *find(void *);
 };
 
 extern Dispatcher dispatcher;
 extern Registry registry;
-extern SharedActor* __cdecl acquire(SharedActor*, void*);
-extern Service* __cdecl findService(Actor*);
+extern SharedActor __cdecl acquire(void *);
+extern Service *__cdecl findService(Actor *);
 
 struct Prefix {
     char storage[0xa0];
@@ -137,9 +135,9 @@ struct Token {
 struct State {
     Prefix prefix;
     Token token;
-    Part* part;
+    Part *part;
     Reference reference;
-    Service* service;
+    Service *service;
     Connection connection;
     unsigned char firstFlag;
     char gap[3];
@@ -147,22 +145,24 @@ struct State {
     char gap2[3];
     Transform frame;
 
-    State(Actor*);
+    void assignActor(const SharedActor &);
+    State(Actor *);
 };
 
-State::State(Actor* actor)
+inline void State::assignActor(const SharedActor &value)
+{
+    part = value.object;
+    reference.assign(value.reference);
+}
+
+State::State(Actor *actor)
     : part(0), service(0), firstFlag(0), secondFlag(0)
 {
-    Transform& destination = frame;
-    {
-        SharedActor temporary;
-        SharedActor* result = acquire(&temporary, actor->source());
-        part = result->object;
-        reference.assign(result->reference);
-    }
+    Transform &destination = frame;
+    assignActor(acquire(actor->source()));
 
     if (part) {
-        const Transform* source = part->transform();
+        const Transform *source = part->transform();
         destination.rotation = source->rotation;
         destination.x = source->x;
         destination.y = source->y;
@@ -176,21 +176,19 @@ State::State(Actor* actor)
         binding.object = this;
         {
             Function function(binding);
-            ConnectionResult temporary;
-            ConnectionResult* result = dispatcher.connect(
-                &temporary,
-                part ? reinterpret_cast<char*>(part) + 0x14 : 0,
-                function, 10);
-            connection.assign(reinterpret_cast<const Connection&>(*result));
+            connection.assign(dispatcher.connect(
+                part ? reinterpret_cast<char *>(part) + 0x14 : 0,
+                function, 10));
         }
 
-        service = findService(actor);
+        Actor *owner = actor;
+        service = findService(owner);
         service->attach(part);
-        actor->link->get(&token)->finish();
+        owner->link->get(&token)->finish();
     }
 
-    Animation* animation = registry.find(
-        actor ? reinterpret_cast<char*>(actor) + 0x14 : 0);
+    Animation *animation = registry.find(
+        actor ? reinterpret_cast<char *>(actor) + 0x14 : 0);
     if (animation)
         animation->channel.set(&actor, 0.0f);
 }

@@ -1,5 +1,23 @@
-// from server: 97% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs-render TextureProxy.cpp
+// from server: 100% by king_originala
+struct Texture;
+
+struct Ptr {
+    Texture* value;
+    Ptr(Texture* const&);
+    ~Ptr();
+    void assign(Texture*);
+};
+
+struct Texture {
+    char storage[0x30];
+    Texture* target;
+    Ptr clone();
+};
+
+inline Ptr::Ptr(Texture* const& p) : value(0) {
+    assign(p);
+}
+
+Ptr Texture::clone() {
+    return Ptr(target);
+}

@@ -1,4 +1,4 @@
-// from server: 98% by king_originala
+// from server: 100% by king_originala
 struct Helper {
     void method(void* arg);
 };
@@ -28,7 +28,7 @@ void* GroupDragTool::onMouseUp(void* inputObject)
             Helper* receiver = megaDragger;
             void* p = sub_5de890();
             receiver->method(p);
-            return this;
+            break;
         }
         }
         return this;

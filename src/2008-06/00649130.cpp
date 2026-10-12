@@ -1,5 +1,6 @@
-// from server: 88% by king_originala
+// from server: 96% by king_originala
 struct Result;
+
 struct Vector3 {
     float x, y, z;
 };
@@ -13,6 +14,8 @@ struct S {
     Result* f(Result* result, float mass);
 };
 
+#pragma float_control(precise, off, push)
+
 Result* S::f(Result* result, float mass)
 {
     Vector3 diagonal;
@@ -20,3 +23,5 @@ Result* S::f(Result* result, float mass)
     buildResult(result, &diagonal);
     return result;
 }
+
+#pragma float_control(pop)

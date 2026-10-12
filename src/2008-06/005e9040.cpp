@@ -1,4 +1,4 @@
-// from server: 66% by king_originala
+// from server: 85% by king_originala
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
 
@@ -10,15 +10,32 @@ struct Control {
     volatile long weak;
 };
 
+struct FactoryShared {
+    void* object;
+    Control* control;
+
+    ~FactoryShared();
+};
+
 struct Shared {
     void* object;
     Control* control;
 
-    Shared(const Shared&);
+    Shared(const FactoryShared&);
     ~Shared();
 };
 
-__forceinline Shared::Shared(const Shared& other)
+__forceinline FactoryShared::~FactoryShared()
+{
+    Control* p = control;
+    if (p && _InterlockedExchangeAdd(&p->strong, -1) - 1 == 0) {
+        p->dispose();
+        if (_InterlockedExchangeAdd(&p->weak, -1) - 1 == 0)
+            p->destroy();
+    }
+}
+
+__forceinline Shared::Shared(const FactoryShared& other)
     : object(other.object), control(other.control)
 {
     if (control)
@@ -27,14 +44,15 @@ __forceinline Shared::Shared(const Shared& other)
 
 __forceinline Shared::~Shared()
 {
-    if (control && _InterlockedExchangeAdd(&control->strong, -1) == 1) {
-        control->dispose();
-        if (_InterlockedExchangeAdd(&control->weak, -1) == 1)
-            control->destroy();
+    Control* p = control;
+    if (p && _InterlockedExchangeAdd(&p->strong, -1) - 1 == 0) {
+        p->dispose();
+        if (_InterlockedExchangeAdd(&p->weak, -1) - 1 == 0)
+            p->destroy();
     }
 }
 
-Shared __cdecl makeShared(void*);
+FactoryShared __cdecl makeShared(void*);
 
 struct Event {
     void invoke(void*, Shared);
@@ -57,6 +75,5 @@ void S::f(void* value)
 {
     collection.remove(&value);
     void* owner = this ? reinterpret_cast<char*>(this) + 0x14 : 0;
-    Shared shared = makeShared(value);
-    event.invoke(owner, shared);
+    event.invoke(owner, makeShared(value));
 }
