@@ -1,3 +1,4 @@
+// from server: 67% by colin
 // from server: 66% by king_originala
 namespace std {
 template<class T> struct char_traits;

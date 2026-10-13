@@ -1,3 +1,4 @@
+// from server: 60% by colin
 // from server: 55% by king_originala
 struct Rect {
     long left, top, right, bottom;

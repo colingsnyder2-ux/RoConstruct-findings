@@ -1,3 +1,4 @@
+// from server: 88% by colin
 // from server: 82% by king_originala
 struct String;
 

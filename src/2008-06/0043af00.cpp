@@ -1,7 +1,14 @@
-// from server: 94% by king_originala
-struct String {};
+// from server: 97% by king_originala
+struct String {
+    const char* c_str() const;
+};
 
 extern const char* (__thiscall *string_c_str)(const String*);
+
+inline const char* String::c_str() const
+{
+    return string_c_str(this);
+}
 
 struct TextData
 {
@@ -53,7 +60,7 @@ struct XItem : PropertyItem, ItemInterface
 };
 
 XItem::XItem(Record* source, int argument)
-    : PropertyItem(string_c_str(&source->data->text), 0, 0),
+    : PropertyItem(source->data->text.c_str(), 0, 0),
       ItemInterface(source, argument),
       record(source)
 {

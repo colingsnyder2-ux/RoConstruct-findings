@@ -1,3 +1,4 @@
+// from server: 99% by colin
 // from server: 87% by king_originala
 struct AggChunk {
     char pad[0x28];

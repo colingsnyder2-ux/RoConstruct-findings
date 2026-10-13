@@ -1,4 +1,4 @@
-// from server: 96% by king_originala
+// from server: 97% by king_originala
 struct String {
     char padding[4];
 };
@@ -6,20 +6,12 @@ struct String {
 typedef const char* (__thiscall *StringData)(const String*);
 extern StringData stringData;
 
-struct Text;
-typedef void (__thiscall *TextInit)(Text*, const char*);
-extern TextInit textInit;
-
 struct Text {
     void* data;
-    Text(const char*);
+    __declspec(dllimport) Text(const char*);
     Text(const Text&);
     ~Text();
 };
-
-inline Text::Text(const char* value) {
-    textInit(this, value);
-}
 
 struct Source {
     virtual ~Source();

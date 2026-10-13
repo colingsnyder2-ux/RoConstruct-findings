@@ -1,6 +1,6 @@
-// from server: 89% by king_originala
-extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
-#pragma intrinsic(_InterlockedExchangeAdd)
+// from server: 100% by king_originala
+extern "C" long __cdecl _InterlockedDecrement(volatile long*);
+#pragma intrinsic(_InterlockedDecrement)
 
 struct Argument;
 struct Entry;
@@ -11,7 +11,17 @@ struct RefCount {
     virtual void destroy() = 0;
     volatile long strong;
     volatile long weak;
+    void release();
 };
+
+inline void RefCount::release()
+{
+    if (_InterlockedDecrement(&strong) == 0) {
+        dispose();
+        if (_InterlockedDecrement(&weak) == 0)
+            destroy();
+    }
+}
 
 struct Manager {
     Entry* lookup(Argument*);
@@ -21,18 +31,18 @@ struct Shared {
     Manager* pointer;
     RefCount* count;
     ~Shared();
+    Manager* get() const;
 };
 
 inline Shared::~Shared()
 {
-    RefCount* p = count;
-    if (p) {
-        if (_InterlockedExchangeAdd(&p->strong, -1) == 0) {
-            p->dispose();
-            if (_InterlockedExchangeAdd(&p->weak, -1) == 0)
-                p->destroy();
-        }
-    }
+    if (count)
+        count->release();
+}
+
+inline Manager* Shared::get() const
+{
+    return pointer;
 }
 
 extern Shared __cdecl getManager();
@@ -89,7 +99,7 @@ void CDeclarationView::process(Argument* argument)
     if (!all && argument->identifier != identifier)
         return;
 
-    Entry* entry = getManager().pointer->lookup(argument);
+    Entry* entry = getManager().get()->lookup(argument);
 
     if (entry) {
         Settings* settings = getSettings();
@@ -102,7 +112,8 @@ void CDeclarationView::process(Argument* argument)
     }
 
     if (argument->flags & 1) {
-        const char* text = string_c_str(&argument->name->text);
+        Name* name = argument->name;
+        const char* text = string_c_str(&name->text);
         void* handle = insert(0x23, text, 6, 6, 0, 0, 0,
                               0xffff0000UL, 0xffff0002UL);
         configure(handle, 4, 0, 0, 0, 0, 0, argument);

@@ -1382,4 +1382,4 @@ void func_0065d2c0()
 // roc-lang: c
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /MD
-// roc-lib: lua-5.1.4-dll lvm.c
+// roc-lib: lua-5.1.1-dll lvm.c

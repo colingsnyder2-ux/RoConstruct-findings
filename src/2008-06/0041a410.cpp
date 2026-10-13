@@ -1,3 +1,4 @@
+// from server: 90% by colin
 // from server: 87% by king_originala
 extern "C" void (__cdecl *invalid_parameter_noinfo)();
 
