@@ -792,7 +792,7 @@
       "new_verified": 0,
       "status": "partial",
       "evidence": "work/agent-campaigns/xtp-flags-grid-2008/",
-      "details": "Ran 98 trials (7 targets x 2 builds x 7 profiles). Score improvements: 00431040 46->56 (+10, /EHsc), 00457b60 28->35 (+7, /EHsc), 0042e0c0 18->24 (+6, /Oy-), 0045d417 best 39 (vs current 43 with /O1), 006a94c0 best 61 (same), 004321f0 39 (same), 00430bf0 33 (same). No exacts. /EHsc flag consistently improves SyntaxEdit and ReportControl targets."
+      "details": "Ran 98 trials (7 targets x 2 builds x 7 profiles). Score improvements: 00431040 46->56 (+10, /EHsc), 00457b60 28->35 (+7, /EHsc), 0042e0c0 18->24 (+6, /Oy-), 0045d417 best 39 (vs current 43 with /O1), 006a94c0 best 61 (same), 004321f0 39 (same), 00430bf0 33 (same). No exacts. /EHsc flag consistently improves SyntaxEdit and ReportControl targets. 00431040 ScaleRectPos has calling convention/SEH mismatch (target has SEH prologue, candidate doesn't) suggesting XTP source version difference. 00457b60 misattributed (CGdiObject dtor, not XTP)."
     },
     "next": "Run grid on 7 targets x 2 builds x 7 profiles = 98 trials. Look for score improvements."
   }
