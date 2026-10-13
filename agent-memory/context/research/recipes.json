@@ -478,7 +478,46 @@
     "append": [
       " /hotpatch"
     ],
-    "result": {}
+    "result": {
+      "date": "2026-10-13",
+      "trials": 6,
+      "new_verified": 0,
+      "status": "rejected",
+      "details": "/hotpatch generates 'mov edi, edi' prologue, not the target's 3-zero-byte prologue at 16-byte alignment. Target prologue is unmatchable with standard compilation."
+    },
+    "next": "Accept 73% on PrintPage with correct vtable offsets; focus on near-miss repair of custom sources."
+  },
+  "scintilla-nearmiss-repair-2008": {
+    "op": "grid",
+    "client": "2008-06",
+    "library": "scintilla-mfc-1.20 custom sources",
+    "hypothesis": "Three custom sources at 98%/97%/91% differ only in SEH handler registration and stack offsets; grid over EH flags and optimization may close gaps",
+    "targets": {
+      "addresses": [
+        "00462560",
+        "00462710",
+        "004622e0"
+      ]
+    },
+    "builds": [
+      21022
+    ],
+    "profiles": [
+      "/O2 /GS- /MD /EHsc",
+      "/O2 /GS- /MD /EHs",
+      "/O2 /GS- /MD /EHa",
+      "/O2 /GS- /MD /EHsc /Ob1",
+      "/O2 /GS- /MD /EHsc /Ob2",
+      "/O1 /GS- /MD /EHsc"
+    ],
+    "result": {
+      "date": "2026-10-13",
+      "trials": 18,
+      "new_verified": 0,
+      "status": "rejected",
+      "details": "Flag variations on custom sources yield 93-98% (no improvement over 98% baseline). Mismatches are source-level: SEH handler (push sym vs push 0), stack offsets, extra stores. Requires source modification, not flag changes."
+    },
+    "next": "Near-miss repair must edit custom sources: add explicit __try/__finally for SEH handler, adjust local variable order for stack offsets. Use authentic ScintillaDocView.cpp logic as reference."
   },
   "ogre-campaign-553eea6fe9fd": {
     "op": "fanout",
@@ -524,6 +563,83 @@
       "status": "partial",
       "evidence": "work/agent-campaigns/553eea6fe9fd/",
       "details": "Existing fork units (roc_fork_*.cpp) and local-family units (roc_try_*.cpp) fanout against all 2008-06 targets yielded 0 new exacts for the 4 campaign Ogre targets. Campaign targets are: 005d75a0 (MovablePlane dtor, inline header, needs explicit out-of-line), 00685a40 (std::map<int,GpuLogicalIndexUse>::erase, needs GpuLogicalIndexUse layout), 00685e30 (Vector2 stream operator, inline header, target uses direct float init not stream format), 0069ebd0 (large RbxSceneManager method 4096B, likely _renderScene/_findVisibleObjects). Other 14 campaign targets misattributed (ATL/RakNet). Next: create explicit instantiation units for inline headers; infer GpuLogicalIndexUse layout from binary; extract authentic _renderScene body from Ogre 1.4.5 SceneManager.cpp for fork unit."
+    }
+  },
+  "xtp-campaign-7106124654d7": {
+    "op": "grid",
+    "client": "2008-06",
+    "library": "XTP 11.2.2",
+    "hypothesis": "Three high-score XTP campaign targets (00700c00 83%, 0070c410 83%, 0074b1a0 80%) have specific mismatch categories: 00700c00 stack frame size (CArchive template), 0070c410 register allocation, 0074b1a0 structural prologue. Sweep both VS2008 builds (21022, 30729) with flag variations targeting each mismatch: frame size (/O1, /O2, /Ox, /Ob0, /Ob1, /Ob2, /GS, /GS-), register pressure (/fp:fast, /Oy-, /GF), prologue (/hotpatch, /GS-).",
+    "targets": {
+      "addresses": [
+        "00700c00",
+        "0070c410",
+        "0074b1a0"
+      ],
+      "scores": [
+        70,
+        99
+      ]
+    },
+    "builds": [
+      21022,
+      30729
+    ],
+    "profiles": [
+      "/O2 /GS- /EHsc /MD",
+      "/O2 /Ob2 /GS- /EHsc /MD",
+      "/O1 /GS- /EHsc /MD",
+      "/Od /Ob0 /GS /EHsc /MD"
+    ],
+    "append": [
+      "",
+      " /GS",
+      " /Ob0",
+      " /Ob2",
+      " /fp:fast",
+      " /Oy-",
+      " /GF",
+      " /hotpatch"
+    ],
+    "result": {
+      "date": "2026-10-13",
+      "trials": 0,
+      "new_verified": 0,
+      "status": "planned",
+      "evidence": "work/agent-campaigns/7106124654d7/"
+    }
+  },
+  "ogre-fork-propagation-2008": {
+    "op": "fanout",
+    "client": "2008-06",
+    "library": "Ogre 1.4.5 / Roblox subclasses",
+    "hypothesis": "RbxSceneManager fork unit (roc_fork_fe0538e1034a8d62.cpp) with authentic 1.4.5 SceneManager method bodies matches RbxSceneNode, TwoDManager, and ShadowCasterSceneQueryListener methods when compiled with exe flags. RbxEntity fork unit (roc_fork_aab1724a168d52da.cpp) matches RbxEntity methods. Pilot showed gains: 00681f90 40->49, 006825b0 21->28, 006843f0 23->25, 0069c5f0 21->27.",
+    "sources": [
+      {
+        "recipe": "ogre-1.4.5-dll",
+        "files": [
+          "roc_fork_fe0538e1034a8d62.cpp",
+          "roc_fork_aab1724a168d52da.cpp",
+          "roc_fork_ea71c50b47f88007.cpp",
+          "roc_fork_97dc8a390b2b28e8.cpp"
+        ],
+        "builds": [
+          21022,
+          50727
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MD /fp:fast",
+          "/O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MD"
+        ]
+      }
+    ],
+    "result": {
+      "date": "2026-10-13",
+      "trials": 8,
+      "new_verified": 0,
+      "status": "partial",
+      "evidence": "work/agent-campaigns/22f558d6ca55/",
+      "details": "Fork units fanout against campaign targets: 00681f90 40->49, 006825b0 21->28, 006843f0 23->25, 0069c5f0 21->27. RbxEntity targets: 0067daf0 19->20, 0067e2f0 14->14. Local-family heap units regressed on 006829a0 (45->22). Next: propagate fork units to all RbxSceneNode/RbxEntity siblings; refine GpuLogicalIndexUse layout for 00685a40."
     }
   }
 }
