@@ -1,4 +1,4 @@
-// from server: 82% by king_originala
+// from server: 100% by colin
 // roc 2008-06 00490c30  unit: RBX::VHumanoid::?$FactoryProduct::Creator  size: 320 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 00490c30
 //
@@ -100,18 +100,24 @@
 // 00490d6c  83c418               add esp, 0x18
 // 00490d6f  c3                   ret 
 
+extern void (__cdecl* invalid_parameter)();
+extern void __cdecl initialize_index();
+extern void __cdecl initialize_type();
+extern unsigned long index_once;
+extern unsigned long type_once;
+extern void __cdecl call_once(void (__cdecl*)(), unsigned long*);
+extern void* __cdecl func_0042d030();
+extern void* __cdecl func_0042ced0();
+
 struct Control {
     void* value;
+    Control();
     Control& operator=(const Control&);
 };
 
-struct EmptyPair {
-    void* object;
-    void* control;
-
-    EmptyPair() : object(0), control(0) {}
-    EmptyPair(const EmptyPair&);
-};
+__forceinline Control::Control() : value(0)
+{
+}
 
 struct Pair {
     void* object;
@@ -119,62 +125,71 @@ struct Pair {
     ~Pair();
 };
 
-struct Slots {
-    char padding[12];
+struct EmptyPair {
+    void* object;
+    Control control;
+    EmptyPair();
+    EmptyPair(const EmptyPair&);
+    ~EmptyPair();
+};
+
+__forceinline EmptyPair::EmptyPair()
+    : object(0), control()
+{
+}
+
+struct Vector {
+    unsigned char padding[12];
     Pair* first;
     Pair* last;
     Pair* limit;
-
     void resize(unsigned int, EmptyPair);
+    unsigned int size() const;
+    Pair& at(unsigned int, void (__cdecl*)());
 };
 
-struct Creator {
-    char padding[0x190];
-    Slots slots;
+__forceinline unsigned int Vector::size() const
+{
+    return (unsigned int)(last - first);
+}
 
+__forceinline Pair& Vector::at(unsigned int index, void (__cdecl* handler)())
+{
+    if (index >= (unsigned int)(last - first))
+        handler();
+    return first[index];
+}
+
+struct S {
+    unsigned char padding[0x190];
+    Vector values;
     Pair create(void*);
     void* get();
 };
 
-extern void __cdecl register_type(void (__cdecl*)(), void*);
-extern void __cdecl callback_a();
-extern void __cdecl callback_b();
-extern char registration_a;
-extern char registration_b;
-extern void* __cdecl func_0048a4c0();
-extern void* __cdecl func_00489ed0();
-extern void (__cdecl* invalid_parameter_handler)();
-
-void* Creator::get()
+void* S::get()
 {
-    register_type(callback_a, &registration_a);
-    unsigned int index = (unsigned int)func_0048a4c0();
-    unsigned int count = (unsigned int)(slots.last - slots.first);
-    void (__cdecl* invalid)() = invalid_parameter_handler;
-    Slots* entries = &slots;
+    call_once(initialize_index, &index_once);
+    unsigned int index = (unsigned int)func_0042d030();
+    void (__cdecl* handler)() = invalid_parameter;
+    Vector& entries = values;
 
-    if (index + 1 > count) {
-        entries->resize(index + 1, EmptyPair());
+    if (index + 1 > values.size()) {
+        entries.resize(index + 1, EmptyPair());
     } else {
-        const volatile Slots* checked = entries;
-        if (index >= (unsigned int)(checked->last - checked->first))
-            invalid();
-
-        void* existing = entries->first[index].object;
+        void* existing = entries.at(index, handler).object;
         if (existing)
             return existing;
     }
 
-    register_type(callback_b, &registration_b);
-    Pair result = create(func_00489ed0());
+    call_once(initialize_type, &type_once);
+    Pair result = create(func_0042ced0());
+
     if (!result.object)
         return 0;
 
     void* object = result.object;
-    if (index >= (unsigned int)(entries->last - entries->first))
-        invalid();
-
-    Pair& destination = entries->first[index];
+    Pair& destination = entries.at(index, handler);
     destination.object = result.object;
     destination.control = result.control;
     return object;
