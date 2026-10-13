@@ -97,6 +97,10 @@ publisher exports lessons, context and shared attempts to RoConstruct-findings.
 ## Automatic agent worker
 
 Runs inside Workers (same chat, terminal, history and stop control as other workers).
+Dashboard agents repeat cycles until Stop, including custom goals. CLI users opt in
+with `--continuous`. Batch/time caps apply per cycle. Zero-gain automatic cycles
+switch evidence-backed strategies, retain parking per strategy/source revision,
+and refresh targets and shared memory. Idle/error cycles wait before retrying.
 
 Select a client explicitly. The CLI defaults to `2008-06`; all clients require
 `--client all` (or selecting **All clients** in the dashboard).
@@ -105,13 +109,14 @@ Select a client explicitly. The CLI defaults to `2008-06`; all clients require
 | --- | ---: | ---: | ---: | ---: |
 | Fast | 30 | 5 | 256 | 12 |
 | Automatic / Balanced | 120 | 10 | 512 | 24 |
-| Deep | 240 | 20 | 2048 | 48 |
+| Deep | 240 | 20 | Unlimited | 48 |
 
 Overall time is shared wall time across workers, starting after planning and memory
 sync. New batches stop at the deadline; model time is capped by the time remaining.
 An in-flight compiler check, submission, or final memory sync may finish afterwards.
 Runs can finish early when the target cap or eligible batches are exhausted. Byte
 limits apply to target machine-code size, not C++ source length or total library size.
+Deep has no byte cap; the CLI represents unlimited as `--max-size 0`.
 Automatic prioritizes reusable gains within this budget; it does not exhaust every
 function of a library or guarantee 100%. Individual repair remains disabled.
 
