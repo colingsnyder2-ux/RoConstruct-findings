@@ -399,5 +399,31 @@
     ],
     "output": "work\\agent-campaigns\\10f6f89ba74c\\parser-fanout",
     "next": "If no gain, park parser configuration; surviving exception destructor needs byte-proven complete boundaries"
+  },
+  "xtp-lib-imports-fanout-2008": {
+    "op": "fanout",
+    "client": "2008-06",
+    "library": "XTP 11.2.2",
+    "hypothesis": "The 2008 client calls dllimport functions (FreeResource, CString accessors) through the import table. The -lib-imports recipe (vendor _LIB prelude + noinline CString accessors + GetLength + FreeResource) reproduces XTP exactly; three near-misses (006cbfc0 93%, 006badf0/006bbb80 75%) went 100% under it.",
+    "sources": [
+      {
+        "recipe": "xtp-11.2.2-lib-imports",
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /MD /GS /EHsc /Ob1"
+        ]
+      }
+    ],
+    "output": "work/agent-campaigns/afec32731807/lib-imports-fanout",
+    "result": {
+      "date": "2026-10-13",
+      "trials": 325,
+      "new_verified": 4,
+      "exacts": ["006cbfc0", "006badf0", "006bbb80", "00710660"],
+      "evidence": "work/agent-campaigns/afec32731807/lib-imports-fanout/xtp-lib-imports-fanout-2008.jsonl"
+    },
+    "next": "Swept all 325 XTP files under -lib-imports; only 00710660 (LoadSysFonts) was a new exact. Remaining near-misses are not import-table differences: 0074d870 (two extra EH-state stores, compiler scoping), 00700c00 (CArchive::operator>> template, 0x118 vs 0x94 stack frame), 0070c410 (register allocation), 0074b1a0 (structural prologue). Need the exact XTP/MFC source revision or a compiler build between VS2008 RTM and SP1."
   }
 }
