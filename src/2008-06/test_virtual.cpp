@@ -1,4 +1,6 @@
-// test virtual destructor with namespace std
+// test extern C position
+extern "C" void bar();
+
 namespace std {
     class __declspec(dllimport) exception {
     public:
@@ -11,5 +13,5 @@ struct Derived : std::exception {
 };
 
 Derived::~Derived() {
-    // Base destructor called automatically
+    bar();
 }
