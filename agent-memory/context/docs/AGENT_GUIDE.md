@@ -150,8 +150,11 @@ bills the CLI's own sign-in (Claude Pro/Max, ChatGPT plan) or `ANTHROPIC_API_KEY
 | Interactive | `roc agent claude --interactive --goal "..."` | a normal session you watch and approve |
 
 Claude runs with `acceptEdits` and an explicit tool allowlist; Codex with `--sandbox workspace-write` and `approval_policy="never"`
-(writes limited to this folder). The server re-verifies every submission. Cloud sessions
-(claude.ai/code) are Claude itself, so they follow `CLAUDE.md` directly; they need full
+(writes limited to this folder). The server re-verifies every submission.
+Windows agent runs use the unelevated workspace sandbox and standard shell execution;
+their temp root lives under `work/agent-temp`. Compiler directories inherit sandbox ACLs.
+Codex JSON events keep input prompts out of the console; Compact folds long output.
+Cloud sessions (claude.ai/code) are Claude itself, so they follow `CLAUDE.md` directly; they need full
 network access, Wine (`wine wine32 msitools cabextract p7zip-full`) and a public server
 address.
 
