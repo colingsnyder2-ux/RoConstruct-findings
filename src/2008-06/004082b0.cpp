@@ -1,5 +1,4 @@
-// from server: 12% by colin
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /MD
-// roc-lib: g3d-6.09 GLG3Dcpp/Texture.cpp
+// roc-lib: g3d-6.09-rbx2008 GLG3Dcpp/Texture.cpp
