@@ -98,6 +98,24 @@ publisher exports lessons, context and shared attempts to RoConstruct-findings.
 
 Runs inside Workers (same chat, terminal, history and stop control as other workers).
 
+Select a client explicitly. The CLI defaults to `2008-06`; all clients require
+`--client all` (or selecting **All clients** in the dashboard).
+
+| Dashboard mode | Overall minutes | Per model batch minutes | Max function bytes | Target cap |
+| --- | ---: | ---: | ---: | ---: |
+| Fast | 30 | 5 | 256 | 12 |
+| Automatic / Balanced | 120 | 10 | 512 | 24 |
+| Deep | 240 | 20 | 2048 | 48 |
+
+Overall time is shared wall time across workers, starting after planning and memory
+sync. New batches stop at the deadline; model time is capped by the time remaining.
+An in-flight compiler check, submission, or final memory sync may finish afterwards.
+Runs can finish early when the target cap or eligible batches are exhausted. Byte
+limits apply to target machine-code size, not C++ source length or total library size.
+Automatic prioritizes reusable gains within this budget; it does not exhaust every
+function of a library or guarantee 100%. Individual repair remains disabled.
+
+
 - **Ranking.** Areas (family reuse, templates/library, imports, ABI/layout, other
   near-misses) are ranked by a heuristic plus the server-verified gain rate per target
   of past batches from every PC (Laplace-smoothed). This is a priority, not a forecast.
