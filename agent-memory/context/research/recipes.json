@@ -211,6 +211,50 @@
       }
     ],
     "output": "work\\agent-campaigns\\cf56cb487737\\enum-fanout",
-    "next": "Pilot destructor then fan out genuine enum family; observe IID/type data before broader types"
+    "next": "Pilot destructor then fan out genuine enum family; observe IID/type data before broader types",
+    "result": {
+      "date": "2026-10-12",
+      "pilot_verified": 1,
+      "fanout_trials": 1,
+      "fanout_new_verified": 0,
+      "evidence": "work\\agent-campaigns\\cf56cb487737\\receipts.json"
+    }
+  },
+  "mfc-attribution-color-image-2008": {
+    "op": "fanout",
+    "client": "2008-06",
+    "library": "mfc-9.0 attribution / MFC CEditView and ATL CImage",
+    "hypothesis": "Verified authentic CEditView CtlColor and target-proven CImage plain mask-copy fork; fan out whole emitted objects",
+    "sources": [
+      {
+        "recipe": "mfc-9.0-shared-rtm",
+        "unit": "work\\agent-campaigns\\cf56cb487737\\chat-color-view.cpp",
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /GS- /MD"
+        ]
+      },
+      {
+        "recipe": "atl-9.0-dll-rtm",
+        "unit": "work\\agent-campaigns\\cf56cb487737\\image-plain-copy.cpp",
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /GS- /MD"
+        ]
+      }
+    ],
+    "output": "work\\agent-campaigns\\cf56cb487737\\color-image-fanout",
+    "next": "Read actual app inheritance and imported declarations; no unchanged library sweep",
+    "result": {
+      "date": "2026-10-12",
+      "pilot_verified": 2,
+      "fanout_trials": 2,
+      "fanout_new_verified": 0,
+      "evidence": "work\\agent-campaigns\\cf56cb487737\\receipts.json"
+    }
   }
 }
