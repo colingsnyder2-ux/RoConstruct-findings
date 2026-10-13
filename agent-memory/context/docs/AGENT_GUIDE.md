@@ -36,7 +36,7 @@ fields/offsets/ABIs, replacing a better stored source, hand edits under `clients
 | Explain a mismatch | `roc classify 2008-06 ADDR FILE` | compilers | mismatch category with evidence |
 | Automatic agent | Dashboard **Workers → Agent worker**, or `roc agent claude --automatic` | Claude Code or Codex CLI signed in | ranked batches, receipts, memory |
 | Preview the ranking | `roc agent claude --plan` | analyze | areas, eligible targets, parking |
-| Leased single function | `roc agent claude --jobs 5` | CLI, server | one function at a time |
+| Shared single function | `roc agent claude --jobs 5` | CLI, server | one function at a time; best verified result wins |
 | Submit gains | `roc submit 2008-06 [addr ...]` | server, user | server-verified receipt |
 | Keep generated units portable | `roc research capture-units` | sources in `src/` | `local/units/generated-units.json` |
 
