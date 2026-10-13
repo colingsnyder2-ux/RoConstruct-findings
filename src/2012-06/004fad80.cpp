@@ -1,11 +1,5 @@
-// from server: 52% by atomic.potato
-struct E { int v[3]; };
-
-extern "C" E* __stdcall sub_4fabe0(E* first, E* last, E* dest, int a, int b, int c, int d);
-
-E* __stdcall sub_4fad80(E* first, E* last, E* dest, int a, int b, int c)
-{
-    char tmp = 0;
-    sub_4fabe0(first, last, dest, a, b, c, *(int*)&tmp);
-    return dest + (last - first) * 9;
-}
+// from server: 98% by colin
+// roc-lang: cpp
+// roc-cl: 50727
+// roc-flags: /O2 /Ob1 /GS- /MT
+// roc-lib: wildmagic-2-core Containment/WmlConvexHull2.cpp

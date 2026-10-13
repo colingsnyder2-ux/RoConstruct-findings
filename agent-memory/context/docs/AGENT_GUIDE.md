@@ -115,7 +115,7 @@ Runs inside Workers (same chat, terminal, history and stop control as other work
 ## Claude Code and Codex CLIs
 
 Install and sign in once: `npm install -g @anthropic-ai/claude-code` then `claude`, or
-`npm install -g @openai/codex` then `codex` (dashboard **Agent setup** does this). Usage
+`npm install -g @openai/codex` then `codex` (dashboard **Workers → Agent → Install / sign in** does this). Usage
 bills the CLI's own sign-in (Claude Pro/Max, ChatGPT plan) or `ANTHROPIC_API_KEY` /
 `OPENAI_API_KEY` if set.
 

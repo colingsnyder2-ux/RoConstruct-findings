@@ -1,40 +1,39 @@
-// from server: 88% by king_originala
-extern "C" void * __cdecl sub_6A17C6(void *, int, const void *, const void *, int);
-extern "C" __declspec(noreturn) void __cdecl sub_6A158C(void *, const void *);
-
-extern const char sourceType[];
-extern const char destinationType[];
-extern const char badCastMessage[];
-extern const char badCastThrowInfo[];
-
-extern void (__thiscall *badCastConstructor)(void *, const char *);
-
-struct Setter {
-    virtual void slot0();
-    virtual void slot1();
-    virtual void slot2();
-    virtual int set(int, int);
-};
-
-struct Descriptor {
-    char padding[24];
-    Setter *setter;
-};
-
-struct ChangePropertyItem {
-    void *property;
-    int instance;
-    int f(int);
-};
-
-int ChangePropertyItem::f(int a)
+// from server: 99% by colin
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+#include <typeinfo>
+namespace boost {
+template<class Target, class Source>
+inline Target polymorphic_cast(Source* x)
 {
-    Descriptor *v = (Descriptor *)sub_6A17C6(
-        property, 0, sourceType, destinationType, 0);
-    if (!v) {
-        char exception[12];
-        badCastConstructor(exception, badCastMessage);
-        sub_6A158C(exception, badCastThrowInfo);
-    }
-    return v->setter->set(instance, a);
+    Target tmp = dynamic_cast<Target>(x);
+    if (tmp == 0)
+        throw std::bad_cast("bad cast");
+    return tmp;
+}
+}
+namespace boost { template<class T> class shared_ptr; }
+namespace RBX { class Instance; }
+namespace G3D { class Color3; class Vector3; }
+namespace RBX { class BrickColor; namespace Soundscape { class SoundId; } }
+struct AccessorT { virtual void s0(); virtual void s1(); virtual void s2(); virtual void set(void*, const RBX::BrickColor&); };
+namespace RBX { namespace Reflection {
+class PropertyDescriptor { public: virtual ~PropertyDescriptor(); };
+template<class T>
+class TypedPropertyDescriptor : public PropertyDescriptor {
+public:
+    unsigned char padding[20];
+    AccessorT* accessor;
+};
+} }
+struct ChangePropertyItem {
+    RBX::Reflection::PropertyDescriptor* descriptor;
+    void* instance;
+    void set(const RBX::BrickColor& value);
+};
+void ChangePropertyItem::set(const RBX::BrickColor& value)
+{
+    RBX::Reflection::TypedPropertyDescriptor<RBX::BrickColor>* typed = boost::polymorphic_cast<RBX::Reflection::TypedPropertyDescriptor<RBX::BrickColor>*>(descriptor);
+    typed->accessor->set(instance, value);
 }
