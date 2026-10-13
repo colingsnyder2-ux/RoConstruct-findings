@@ -97,6 +97,16 @@ publisher exports lessons, context and shared attempts to RoConstruct-findings.
 ## Automatic agent worker
 
 Runs inside Workers (same chat, terminal, history and stop control as other workers).
+The Automatic preset explores unfinished libraries and evidence-ranked categories (`--experimental`).
+It randomly samples least-tried campaigns, weighted toward stronger source baselines.
+The agent chooses the best subcategory, targets and evidence-backed experiments within its campaign.
+It starts from actual recipe-backed sources, across all function sizes, and permits
+evidence-backed research recipes, generated authentic units and library configuration
+experiments. It rotates libraries/strategies and parks unchanged strategies after two
+zero-gain campaigns. If no fresh campaign remains, it falls back to ranked batches.
+Campaign counts cover recipe-backed attribution; the Pages library table also uses
+RTTI labels and neighbouring exact matches, so its family totals are broader estimates.
+Fast/Balanced/Deep retain the fixed-batch repair workflow. Custom goals take priority.
 Dashboard agents repeat cycles until Stop, including custom goals. CLI users opt in
 with `--continuous`. Batch/time caps apply per cycle. Zero-gain automatic cycles
 switch evidence-backed strategies, retain parking per strategy/source revision,
