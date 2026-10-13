@@ -1,5 +1,5 @@
-// from server: 21% by colin
+// from server: 96% by king_originala
 // roc-lang: cpp
 // roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MD /fp:fast
-// roc-lib: ogre-1.4.5 roc_gpulogicalindexuse2_60acbf84fea8d1c1.cpp
+// roc-flags: /O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MD
+// roc-lib: ogre-1.4.5-dll roc_rbx_subentity_shadow_volume_a79ded6cb3f8ee5e.cpp

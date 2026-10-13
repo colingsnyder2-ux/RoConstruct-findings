@@ -1,5 +1,5 @@
-// from server: 45% by colin
+// from server: 100% by king_originala
 // roc-lang: cpp
 // roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MD /fp:fast
-// roc-lib: ogre-1.4.5 roc_try_ebdcbd65a010751e.cpp
+// roc-flags: /O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MD
+// roc-lib: ogre-1.4.5-dll roc_listener_vertex_buffer_28806614eb3a450c.cpp

@@ -603,10 +603,11 @@
     ],
     "result": {
       "date": "2026-10-13",
-      "trials": 0,
+      "trials": 192,
       "new_verified": 0,
-      "status": "planned",
-      "evidence": "work/agent-campaigns/7106124654d7/"
+      "status": "rejected",
+      "evidence": "work/agent-campaigns/7106124654d7/",
+      "details": "Flag grid (192 trials) and recipe variants (lib-imports, shared-mfc-internals) exhausted. Best scores: 00700c00=83 (CArchive template stack frame 0x118 vs 0x94), 0070c410=83 (register allocation), 0074b1a0=80 (structural prologue). Missing evidence: exact XTP 11.2.2 source revision or compiler build between 21022/30729. Parked per two-hypothesis rule."
     }
   },
   "ogre-fork-propagation-2008": {
@@ -635,11 +636,49 @@
     ],
     "result": {
       "date": "2026-10-13",
-      "trials": 8,
+      "trials": 16,
       "new_verified": 0,
       "status": "partial",
       "evidence": "work/agent-campaigns/22f558d6ca55/",
-      "details": "Fork units fanout against campaign targets: 00681f90 40->49, 006825b0 21->28, 006843f0 23->25, 0069c5f0 21->27. RbxEntity targets: 0067daf0 19->20, 0067e2f0 14->14. Local-family heap units regressed on 006829a0 (45->22). Next: propagate fork units to all RbxSceneNode/RbxEntity siblings; refine GpuLogicalIndexUse layout for 00685a40."
+      "details": "Fork units fanout against campaign targets: 00681f90 40->49, 006825b0 21->28, 006843f0 23->25, 0069c5f0 21->27. RbxEntity targets: 0067daf0 19->20, 0067e2f0 14->14. Local-family heap units regressed on 006829a0 (45->22). Full fanout against all 122 RbxSceneNode/RbxEntity targets yields partial gains (5-9%) but no exact matches due to class layout differences between authentic Ogre 1.4.5 and Roblox forks. Next: infer Roblox fork class layouts from binary; refine GpuLogicalIndexUse layout for 00685a40."
     }
+  },
+  "ogre-campaign-08c08e1a6823": {
+    "op": "fanout",
+    "client": "2008-06",
+    "library": "ogre/OgreMain/src (Ogre 1.4.5 forks + templates)",
+    "hypothesis": "Four campaign targets need specific fixes: (1) 005d75a0 MovablePlane dtor - scalar deleting destructor with Roblox fork layout (has SEH frame, std::string members); (2) 00685a40 map::erase with GpuLogicalIndexUse - binary shows 4 float members at offsets 0,4,8,12 (not 3 floats at 8,12,16); (3) 00685e30 Vector2 stream operator - inline header, target uses direct x87 float init from constant 0x81c3b8; (4) 0069ebd0 large RbxSceneManager method - needs authentic _renderScene/_findVisibleObjects from Ogre 1.4.5 SceneManager.cpp adapted for RbxSceneManager layout. Fork propagation to 122 RbxSceneNode/RbxEntity siblings requires binary-inferred class layouts.",
+    "sources": [
+      {
+        "recipe": "ogre-1.4.5-dll",
+        "files": [
+          "roc_fork_fe0538e1034a8d62.cpp",
+          "roc_fork_aab1724a168d52da.cpp"
+        ],
+        "builds": [21022],
+        "flags": ["/O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MD /fp:fast"]
+      },
+      {
+        "recipe": "ogre-1.4.5-dll",
+        "unit": "work/agent-campaigns/08c08e1a6823/movableplane_dtor.cpp",
+        "builds": [21022],
+        "flags": ["/O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MD /fp:fast", "/O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MD"]
+      },
+      {
+        "recipe": "ogre-1.4.5-dll",
+        "unit": "work/agent-campaigns/08c08e1a6823/gpulogicalindexuse_map.cpp",
+        "builds": [21022],
+        "flags": ["/O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MD /fp:fast"]
+      }
+    ],
+    "result": {
+      "date": "2026-10-13",
+      "trials": 0,
+      "new_verified": 0,
+      "status": "planned",
+      "evidence": "work/agent-campaigns/08c08e1a6823/",
+      "details": "Campaign evidence from ogre-campaign-553eea6fe9fd and ogre-fork-propagation-2008. Key blockers identified: class layout differences, inline header functions, unknown GpuLogicalIndexUse layout. Requires binary-inferred layouts for Roblox forks."
+    },
+    "next": "Create binary-inferred class layout units for RbxSceneManager, RbxEntity, RbxSceneNode, MovablePlane, GpuLogicalIndexUse. Extract authentic SceneManager method bodies from Ogre 1.4.5 source."
   }
 }
