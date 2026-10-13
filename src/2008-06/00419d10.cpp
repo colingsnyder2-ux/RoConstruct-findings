@@ -1,16 +1,5 @@
-// from server: 91% by king_originala
-typedef void (__thiscall *Callback)(void*, int, int);
-
-struct CallData {
-    Callback callback;
-    char* object;
-    int adjustment;
-    int unused;
-    int first;
-    int second;
-};
-
-void __cdecl invoke(CallData* data)
-{
-    data->callback(data->object + data->adjustment, data->first, data->second);
-}
+// from server: 100% by king_originala
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: boost-1.34.1-dll roc_unit_7c283c9b16193989.cpp

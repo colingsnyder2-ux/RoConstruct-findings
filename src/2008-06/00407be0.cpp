@@ -1,4 +1,4 @@
-// from server: 94% by king_originala
+// from server: 100% by king_originala
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
 extern "C" long __cdecl _InterlockedDecrement(volatile long*);
@@ -19,12 +19,14 @@ struct Control {
     virtual void destroy() = 0;
     volatile long strong;
     volatile long weak;
+    void release();
 };
 
 struct Shared {
     Object* object;
     Control* control;
     ~Shared();
+    Object* get() const;
 };
 
 struct Guard {
@@ -40,16 +42,24 @@ extern Object* globalObject;
 Shared __cdecl makeObject();
 Shared __cdecl getDependency();
 
+__forceinline void Control::release()
+{
+    if (_InterlockedDecrement(&strong) == 0) {
+        dispose();
+        if (_InterlockedDecrement(&weak) == 0)
+            destroy();
+    }
+}
+
 __forceinline Shared::~Shared()
 {
-    Control* p = control;
-    if (p) {
-        if (_InterlockedDecrement(&p->strong) == 0) {
-            p->dispose();
-            if (_InterlockedDecrement(&p->weak) == 0)
-                p->destroy();
-        }
-    }
+    if (control)
+        control->release();
+}
+
+__forceinline Object* Shared::get() const
+{
+    return object;
 }
 
 __forceinline Guard::Guard(Lock& value)
@@ -70,7 +80,7 @@ Object* __cdecl getObject()
     Guard guard(globalLock);
     if (!globalObject) {
         Shared object = makeObject();
-        object.object->initialize(getDependency().object);
+        object.object->initialize(getDependency().get());
     }
     return globalObject;
 }

@@ -1,5 +1,5 @@
-// from server: 38% by colin
+// from server: 100% by king_originala
 // roc-lang: cpp
-// roc-cl: 50727
+// roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: ogre-1.7.0 OgreTangentSpaceCalc.cpp
+// roc-lib: ogre-1.4.5 roc_observed_3db354efc99e4c09.cpp

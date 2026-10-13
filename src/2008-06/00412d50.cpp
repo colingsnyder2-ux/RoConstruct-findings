@@ -1,4 +1,4 @@
-// from server: 98% by king_originala
+// from server: 100% by king_originala
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
 extern "C" long __cdecl _InterlockedDecrement(volatile long*);
@@ -30,6 +30,7 @@ struct Shared
     T* object;
     Control* control;
     ~Shared();
+    T* get() const;
 };
 
 template<class T>
@@ -37,6 +38,12 @@ inline Shared<T>::~Shared()
 {
     if (control)
         control->release();
+}
+
+template<class T>
+inline T* Shared<T>::get() const
+{
+    return object;
 }
 
 struct Mutex
@@ -87,7 +94,7 @@ Object* __cdecl sub_412d50()
     if (globalObject == 0)
     {
         Shared<Holder> holder = sub_408ed0();
-        holder.object->sub_55a8f0(sub_5690f0().object);
+        holder.object->sub_55a8f0(sub_5690f0().get());
     }
     return globalObject;
 }

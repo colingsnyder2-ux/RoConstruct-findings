@@ -1,4 +1,4 @@
-// test lua_exception with non-trivial derived destructor
+// test lua_exception with try/catch to force C++ EH frame
 // roc-flags: /O2 /GS- /MD /EHsc
 extern "C" void luaD_realloc(void* L, int n);
 
@@ -18,20 +18,16 @@ struct lua_exception : std::exception {
     virtual ~lua_exception();
 };
 
-struct DerivedLuaException : lua_exception {
-    int extra;
-    ~DerivedLuaException();
-};
-
-DerivedLuaException::~DerivedLuaException() {
-    extra = 42;
-}
-
 lua_exception::~lua_exception() {
-    if (flag_14) {
-        if (field_10) {
-            *(unsigned long*)((char*)field_10 + 8) = 0;
+    try {
+        if (flag_14) {
+            if (field_10) {
+                *(unsigned long*)((char*)field_10 + 8) = 0;
+            }
+            luaD_realloc(L, -2);
         }
-        luaD_realloc(L, -2);
     }
+    catch (...) {
+    }
+    // base destructor called automatically
 }
