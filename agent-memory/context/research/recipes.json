@@ -455,5 +455,75 @@
       "details": "00462af0 (FindTextSimple): 99% with shared-mbcs, vtable offset 0x1c8 vs 0x1c4 (1 slot diff). 00463230 (PrintPage): 73%, vtable offsets match but prologue has hotpatch nops."
     },
     "next": "Try /hotpatch for PrintPage prologue; investigate MFC vtable layout: target has +4 bytes vs static (not +8), suggesting CObject vtable has 3 not 4 entries in mfc90.dll. Check if scintilla-mfc version differs from TeXnicCenter source."
+  },
+  "scintilla-mfc-1.20-hotpatch-2008": {
+    "op": "grid",
+    "client": "2008-06",
+    "library": "scintilla-mfc-1.20",
+    "hypothesis": "PrintPage (00463230) has hotpatch prologue (2-byte nops); /hotpatch flag generates hotpatchable prologue",
+    "targets": {
+      "addresses": [
+        "00463230"
+      ]
+    },
+    "builds": [
+      21022,
+      30729
+    ],
+    "profiles": [
+      "/O2 /GS- /MD",
+      "/O2 /GS /EHsc /MD",
+      "/O2 /MD /GS /EHsc /Ob1"
+    ],
+    "append": [
+      " /hotpatch"
+    ],
+    "result": {}
+  },
+  "ogre-campaign-553eea6fe9fd": {
+    "op": "fanout",
+    "client": "2008-06",
+    "library": "ogre/OgreMain/src (1.4.5 forks + templates)",
+    "hypothesis": "Campaign targets: 4 Ogre-attributed functions (005d75a0 MovablePlane dtor, 00685a40 map::erase, 00685e30 Vector2 stream, 0069ebd0 large RbxSceneManager). Use client-import fork units for RbxSceneManager methods, explicit template instantiation for STL with Ogre types, explicit out-of-line for inline header functions. Build 21022 /O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MD /fp:fast.",
+    "sources": [
+      {
+        "recipe": "ogre-1.4.5-dll",
+        "files": [
+          "roc_fork_fe0538e1034a8d62.cpp",
+          "roc_fork_aab1724a168d52da.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MD /fp:fast"
+        ]
+      },
+      {
+        "recipe": "ogre-1.4.5-dll",
+        "files": [
+          "roc_try_ebdcbd65a010751e.cpp",
+          "roc_try_128da6f25e32415f.cpp",
+          "roc_try_90e948f69e73921c.cpp",
+          "roc_try_16107800e0b0542a.cpp",
+          "roc_try_5d751f703f5eddd8.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MD /fp:fast",
+          "/O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MD"
+        ]
+      }
+    ],
+    "result": {
+      "date": "2026-10-13",
+      "trials": 12,
+      "new_verified": 0,
+      "status": "partial",
+      "evidence": "work/agent-campaigns/553eea6fe9fd/",
+      "details": "Existing fork units (roc_fork_*.cpp) and local-family units (roc_try_*.cpp) fanout against all 2008-06 targets yielded 0 new exacts for the 4 campaign Ogre targets. Campaign targets are: 005d75a0 (MovablePlane dtor, inline header, needs explicit out-of-line), 00685a40 (std::map<int,GpuLogicalIndexUse>::erase, needs GpuLogicalIndexUse layout), 00685e30 (Vector2 stream operator, inline header, target uses direct float init not stream format), 0069ebd0 (large RbxSceneManager method 4096B, likely _renderScene/_findVisibleObjects). Other 14 campaign targets misattributed (ATL/RakNet). Next: create explicit instantiation units for inline headers; infer GpuLogicalIndexUse layout from binary; extract authentic _renderScene body from Ogre 1.4.5 SceneManager.cpp for fork unit."
+    }
   }
 }
