@@ -83,9 +83,9 @@ evidence changes. Only interactive maintainers promote receipt-backed lessons in
 `research/lessons.json`; unattended agents append attempts only.
 
 Written automatically: `roc agent-check` trials, automatic `auto_target`/`auto_batch`
-records with receipts, leased `session` records, and `roc research` run records.
+records with receipts, shared `session` records, and `roc research` run records.
 
-**Sharing.** Automatic runs, leased runs, goal runs and the dashboard sync with the
+**Sharing.** Automatic runs, shared runs, goal runs and the dashboard sync with the
 group server (`/v1/agent-memory`): local attempts upload (sanitized: no credentials or
 full local paths, bounded excerpts), shared attempts and reviewed lessons download.
 The server marks a report `server_confirmed` only when its source hash and score
@@ -135,16 +135,17 @@ function of a library or guarantee 100%. Individual repair remains disabled.
 - **Ranking.** Areas (family reuse, templates/library, imports, ABI/layout, other
   near-misses) are ranked by a heuristic plus the server-verified gain rate per target
   of past batches from every PC (Laplace-smoothed). This is a priority, not a forecast.
-- **Leases.** Each batch leases its targets from the server; parallel workers never
-  share an area, and a lost lease means no submission.
+- **Shared targets.** Workers may investigate the same target or area. The server
+  keeps only a server-verified score improvement, so concurrent work cannot replace
+  a better source.
 - **Free phase first.** Verified donors, recipe sources from the batch, and compiler
   gates for >=90% targets (both builds x kept flags, `/O2`, `/O1`). Pairs of address and
   source hash that already failed on any PC are skipped.
 - **Paid phase.** One agent batch per coherent group, editing only isolated copies
   under `work/agent-auto/<run>/` and checking with `roc agent-check`. Two zero-gain
   batches park that group until its sources change.
-- **Submission.** Best source per target is re-scored locally and submitted under
-  the lease; only server-verified improvements count.
+- **Submission.** Best source per target is re-scored locally and submitted; only
+  server-verified improvements count.
 
 ## Claude Code and Codex CLIs
 
@@ -156,7 +157,7 @@ bills the CLI's own sign-in (Claude Pro/Max, ChatGPT plan) or `ANTHROPIC_API_KEY
 | Mode | Command | Scope |
 |---|---|---|
 | Automatic | Workers → Agent worker, or `roc agent claude --automatic [--workers 2 --jobs 24 --minutes 120]` | ranked batches, isolated copies, `roc agent-check` only |
-| Leased | `roc agent claude --jobs 5 [--max-size 256 --minutes 20]` | one function in `src/`, `roc check` only; regressions rolled back |
+| Shared | `roc agent claude --jobs 5 [--max-size 256 --minutes 20]` | one function in `src/`, `roc check` only; regressions rolled back |
 | Goal | `roc agent codex --goal "finish zlib in 2008-06" --minutes 60` | any `roc.py` command, web search, `src/` edits, attempt journal |
 | Interactive | `roc agent claude --interactive --goal "..."` | a normal session you watch and approve |
 
