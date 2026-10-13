@@ -59,5 +59,30 @@
     "sources": [{"recipe": "xtp-11.2.2-lib-strlen", "builds": [21022], "flags": ["/O2 /MD /GS /EHsc /Ob1"]}],
     "result": {"date": "2026-10-11", "status": "exhausted", "evidence": "findings:reports/xtp-2008-coverage-20261011.md"},
     "next": "Rerun only after a recipe or header change: the dependency-aware cache rebuilds changed units."
+  },
+  "xtp-attribution-lua-math-2008": {
+    "op": "fanout",
+    "sources": [
+      {
+        "flags": [
+          "/O2 /GS- /MD /fp:fast"
+        ],
+        "builds": [
+          21022
+        ],
+        "files": [
+          "lmathlib.c"
+        ],
+        "recipe": "lua-5.1.2",
+        "langs": [
+          "c"
+        ]
+      }
+    ],
+    "output": "work/agent-campaigns/b146b804d111/fanout",
+    "client": "2008-06",
+    "hypothesis": "Fresh sole-survivor diff proves Lua math_exp; sibling math_tan exact under 21022 fp:fast. Replay authentic Lua 5.1.2 math unit.",
+    "library": "xtp-15.2.1 attribution / Lua math",
+    "next": "Pilot math_exp, then fan out only this proven math family; preserve prior exacts."
   }
 }
