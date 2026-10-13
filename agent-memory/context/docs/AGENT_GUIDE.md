@@ -106,7 +106,8 @@ experiments. It rotates libraries/strategies and parks unchanged strategies afte
 zero-gain campaigns. If no fresh campaign remains, it falls back to ranked batches.
 Campaign counts cover recipe-backed attribution; the Pages library table also uses
 RTTI labels and neighbouring exact matches, so its family totals are broader estimates.
-Fast/Balanced/Deep retain the fixed-batch repair workflow. Custom goals take priority.
+All Agent presets prefer unfinished libraries before categories or fixed batches.
+Preset limits control campaign time; custom goals take priority.
 Dashboard agents repeat cycles until Stop, including custom goals. CLI users opt in
 with `--continuous`. Batch/time caps apply per cycle. Zero-gain automatic cycles
 switch evidence-backed strategies, retain parking per strategy/source revision,
