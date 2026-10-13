@@ -149,7 +149,7 @@ bills the CLI's own sign-in (Claude Pro/Max, ChatGPT plan) or `ANTHROPIC_API_KEY
 | Goal | `roc agent codex --goal "finish zlib in 2008-06" --minutes 60` | any `roc.py` command, web search, `src/` edits, attempt journal |
 | Interactive | `roc agent claude --interactive --goal "..."` | a normal session you watch and approve |
 
-Claude runs with `acceptEdits` and an explicit tool allowlist; Codex with `--full-auto`
+Claude runs with `acceptEdits` and an explicit tool allowlist; Codex with `--sandbox workspace-write` and `approval_policy="never"`
 (writes limited to this folder). The server re-verifies every submission. Cloud sessions
 (claude.ai/code) are Claude itself, so they follow `CLAUDE.md` directly; they need full
 network access, Wine (`wine wine32 msitools cabextract p7zip-full`) and a public server
