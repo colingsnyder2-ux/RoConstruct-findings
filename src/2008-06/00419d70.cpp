@@ -1,19 +1,5 @@
-// from server: 59% by king_originala
-struct Value {
-    char data[36];
-    Value(const Value&);
-};
-
-struct Object {
-    char padding[8];
-    char data[8];
-    Value source;
-
-    void invoke(void*, Value);
-};
-
-void __cdecl function(Object** object)
-{
-    Object* p = *object;
-    p->invoke(p->data, p->source);
-}
+// from server: 100% by king_originala
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: boost-1.34.1-dll roc_unit_c054a2084880d614.cpp

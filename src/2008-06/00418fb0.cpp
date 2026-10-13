@@ -1,21 +1,5 @@
-// from server: 92% by king_originala
-typedef unsigned int size_t;
-
-inline void* operator new(size_t, void* p) { return p; }
-inline void operator delete(void*, void*) {}
-
-struct String {
-    char data[28];
-    String(const String&);
-};
-
-struct S {
-    unsigned int first;
-    unsigned int second;
-    String text;
-};
-
-void __cdecl construct(S* destination, const S& source)
-{
-    new (destination) S(source);
-}
+// from server: 100% by king_originala
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: boost-1.34.1-dll roc_unit_c054a2084880d614.cpp

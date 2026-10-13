@@ -425,5 +425,35 @@
       "evidence": "work/agent-campaigns/afec32731807/lib-imports-fanout/xtp-lib-imports-fanout-2008.jsonl"
     },
     "next": "Swept all 325 XTP files under -lib-imports; only 00710660 (LoadSysFonts) was a new exact. Remaining near-misses are not import-table differences: 0074d870 (two extra EH-state stores, compiler scoping), 00700c00 (CArchive::operator>> template, 0x118 vs 0x94 stack frame), 0070c410 (register allocation), 0074b1a0 (structural prologue). Need the exact XTP/MFC source revision or a compiler build between VS2008 RTM and SP1."
+  },
+  "scintilla-mfc-1.20-shared-mbcs-2008": {
+    "op": "grid",
+    "client": "2008-06",
+    "library": "scintilla-mfc-1.20",
+    "hypothesis": "Target uses shared MFC (mfc90.dll) with _MBCS for DBCS; _AFXDLL + _MBCS fixes _ismbblead dllimport call and CString accessors",
+    "targets": {
+      "addresses": [
+        "00462af0",
+        "00463230"
+      ]
+    },
+    "builds": [
+      21022,
+      30729
+    ],
+    "profiles": [
+      "/O2 /GS- /MD",
+      "/O2 /GS /EHsc /MD",
+      "/O2 /MD /GS /EHsc /Ob1"
+    ],
+    "result": {
+      "date": "2026-10-13",
+      "trials": 6,
+      "new_verified": 0,
+      "evidence": "work/agent-campaigns/117214b7e1e2",
+      "status": "partial",
+      "details": "00462af0 (FindTextSimple): 99% with shared-mbcs, vtable offset 0x1c8 vs 0x1c4 (1 slot diff). 00463230 (PrintPage): 73%, vtable offsets match but prologue has hotpatch nops."
+    },
+    "next": "Try /hotpatch for PrintPage prologue; investigate MFC vtable layout: target has +4 bytes vs static (not +8), suggesting CObject vtable has 3 not 4 entries in mfc90.dll. Check if scintilla-mfc version differs from TeXnicCenter source."
   }
 }
