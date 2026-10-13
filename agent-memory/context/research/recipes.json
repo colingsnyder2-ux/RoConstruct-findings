@@ -257,6 +257,47 @@
       "evidence": "work\\agent-campaigns\\cf56cb487737\\receipts.json"
     }
   },
+  "mfc-9.0-flags-grid-2008": {
+    "op": "grid",
+    "client": "2008-06",
+    "library": "mfc-9.0 flag variations",
+    "hypothesis": "High-score mfc-9.0 targets have specific mismatch categories (stack frame size, calling convention, EH state, x87 floating-point ordering). Test both VS2008 builds (21022, 30729) with flag profiles targeting each category: frame size (/O1, /O2, /Ox, /Ob0, /Ob1, /Ob2), register pressure (/fp:fast, /Oy-, /GF), EH (/EHsc, /EHs, /EHa), and GS (/GS, /GS-).",
+    "builds": [
+      21022,
+      30729
+    ],
+    "profiles": [
+      "/O2 /GS- /MD",
+      "/O2 /GS- /MD /EHsc",
+      "/O2 /GS- /MD /EHs",
+      "/O2 /GS- /MD /EHa",
+      "/O1 /GS- /MD",
+      "/O2 /GS- /MD /Ob1",
+      "/O2 /GS- /MD /Ob2",
+      "/O2 /GS- /MD /Oy-",
+      "/O2 /GS- /MD /GF",
+      "/O2 /GS- /MD /fp:fast"
+    ],
+    "targets": {
+      "addresses": [
+        "00402750",
+        "0046c75c",
+        "004220bb",
+        "006a15fd",
+        "007ef4e0",
+        "007ef5e0",
+        "007ef6e0"
+      ],
+      "scores": [70, 99]
+    },
+    "next": "If score improvements seen, propagate winner; if grid exhausted without gains, park and try near-miss repair on specific mismatch categories.",
+    "result": {
+      "date": "",
+      "trials": 0,
+      "new_verified": 0,
+      "evidence": ""
+    }
+  },
   "libpng-1.2.6-fp-fast-2008": {
     "op": "grid",
     "client": "2008-06",
