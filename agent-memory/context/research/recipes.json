@@ -257,4 +257,16 @@
       "evidence": "work\\agent-campaigns\\cf56cb487737\\receipts.json"
     }
   }
-}
+,
+  "libpng-1.2.6-fp-fast-2008": {
+    "op": "grid",
+    "client": "2008-06",
+    "library": "libpng-1.2.6",
+    "hypothesis": "Target cHRM/gAMA x87 uses reciprocal fmul; /fp:fast reproduces source-backed float conversion.",
+    "targets": {"addresses": ["0052d360", "0052d660", "0052db80"]},
+    "builds": [21022],
+    "profiles": ["keep"],
+    "append": [" /fp:fast"],
+    "result": {"date": "2026-10-13", "trials": 3, "new_verified": 0, "evidence": "work/agent-campaigns/cce09b6c6264"},
+    "next": "Keep per-source /fp:fast where score improves; source strings/data refs still block exactness."
+  }}

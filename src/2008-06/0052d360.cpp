@@ -1,3 +1,152 @@
+// from server: 96% by colin
+// roc 2008-06 0052d360  unit: seg_00520000  size: 383 bytes
+// Make this compile to the exact bytes below, then: roc check 2008-06 0052d360
+//
+// 0052d360  51                   push ecx
+// 0052d361  56                   push esi
+// 0052d362  8b74240c             mov esi, dword ptr [esp + 0xc]
+// 0052d366  8b4668               mov eax, dword ptr [esi + 0x68]
+// 0052d369  a801                 test al, 1
+// 0052d36b  750d                 jne 0x52d37a
+// 0052d36d  6868bf8200           push 0x82bf68
+// 0052d372  56                   push esi
+// 0052d373  e838c6ffff           call 0x5299b0
+// 0052d378  eb2f                 jmp 0x52d3a9
+// 0052d37a  a804                 test al, 4
+// 0052d37c  741c                 je 0x52d39a
+// 0052d37e  6850bf8200           push 0x82bf50
+// 0052d383  56                   push esi
+// 0052d384  e8c7c6ffff           call 0x529a50
+// 0052d389  8b44241c             mov eax, dword ptr [esp + 0x1c]
+// 0052d38d  50                   push eax
+// 0052d38e  56                   push esi
+// 0052d38f  e84cfbffff           call 0x52cee0
+// 0052d394  83c410               add esp, 0x10
+// 0052d397  5e                   pop esi
+// 0052d398  59                   pop ecx
+// 0052d399  c3                   ret 
+// 0052d39a  a802                 test al, 2
+// 0052d39c  740e                 je 0x52d3ac
+// 0052d39e  6838bf8200           push 0x82bf38
+// 0052d3a3  56                   push esi
+// 0052d3a4  e8a7c6ffff           call 0x529a50
+// 0052d3a9  83c408               add esp, 8
+// 0052d3ac  53                   push ebx
+// 0052d3ad  8b5c2414             mov ebx, dword ptr [esp + 0x14]
+// 0052d3b1  85db                 test ebx, ebx
+// 0052d3b3  742b                 je 0x52d3e0
+// 0052d3b5  8b4308               mov eax, dword ptr [ebx + 8]
+// 0052d3b8  a801                 test al, 1
+// 0052d3ba  7424                 je 0x52d3e0
+// 0052d3bc  a900080000           test eax, 0x800
+// 0052d3c1  751d                 jne 0x52d3e0
+// 0052d3c3  6820bf8200           push 0x82bf20
+// 0052d3c8  56                   push esi
+// 0052d3c9  e882c6ffff           call 0x529a50
+// 0052d3ce  8b4c2420             mov ecx, dword ptr [esp + 0x20]
+// 0052d3d2  51                   push ecx
+// 0052d3d3  56                   push esi
+// 0052d3d4  e807fbffff           call 0x52cee0
+// 0052d3d9  83c410               add esp, 0x10
+// 0052d3dc  5b                   pop ebx
+// 0052d3dd  5e                   pop esi
+// 0052d3de  59                   pop ecx
+// 0052d3df  c3                   ret 
+// 0052d3e0  57                   push edi
+// 0052d3e1  8b7c241c             mov edi, dword ptr [esp + 0x1c]
+// 0052d3e5  83ff04               cmp edi, 4
+// 0052d3e8  741a                 je 0x52d404
+// 0052d3ea  6804bf8200           push 0x82bf04
+// 0052d3ef  56                   push esi
+// 0052d3f0  e85bc6ffff           call 0x529a50
+// 0052d3f5  57                   push edi
+// 0052d3f6  56                   push esi
+// 0052d3f7  e8e4faffff           call 0x52cee0
+// 0052d3fc  83c410               add esp, 0x10
+// 0052d3ff  5f                   pop edi
+// 0052d400  5b                   pop ebx
+// 0052d401  5e                   pop esi
+// 0052d402  59                   pop ecx
+// 0052d403  c3                   ret 
+// 0052d404  6a04                 push 4
+// 0052d406  8d542418             lea edx, [esp + 0x18]
+// 0052d40a  52                   push edx
+// 0052d40b  56                   push esi
+// 0052d40c  e89f76ffff           call 0x524ab0
+// 0052d411  6a04                 push 4
+// 0052d413  8d442424             lea eax, [esp + 0x24]
+// 0052d417  50                   push eax
+// 0052d418  56                   push esi
+// 0052d419  e86209ffff           call 0x51dd80
+// 0052d41e  6a00                 push 0
+// 0052d420  56                   push esi
+// 0052d421  e8bafaffff           call 0x52cee0
+// 0052d426  83c420               add esp, 0x20
+// 0052d429  85c0                 test eax, eax
+// 0052d42b  0f85a9000000         jne 0x52d4da
+// 0052d431  8b442414             mov eax, dword ptr [esp + 0x14]
+// 0052d435  0fb6542416           movzx edx, byte ptr [esp + 0x16]
+// 0052d43a  0fb6f8               movzx edi, al
+// 0052d43d  c1e708               shl edi, 8
+// 0052d440  0fb6cc               movzx ecx, ah
+// 0052d443  0fb6442417           movzx eax, byte ptr [esp + 0x17]
+// 0052d448  03f9                 add edi, ecx
+// 0052d44a  c1e708               shl edi, 8
+// 0052d44d  03fa                 add edi, edx
+// 0052d44f  c1e708               shl edi, 8
+// 0052d452  03f8                 add edi, eax
+// 0052d454  897c240c             mov dword ptr [esp + 0xc], edi
+// 0052d458  7513                 jne 0x52d46d
+// 0052d45a  68e0be8200           push 0x82bee0
+// 0052d45f  56                   push esi
+// 0052d460  e8ebc5ffff           call 0x529a50
+// 0052d465  83c408               add esp, 8
+// 0052d468  5f                   pop edi
+// 0052d469  5b                   pop ebx
+// 0052d46a  5e                   pop esi
+// 0052d46b  59                   pop ecx
+// 0052d46c  c3                   ret 
+// 0052d46d  f7430800080000       test dword ptr [ebx + 8], 0x800
+// 0052d474  743c                 je 0x52d4b2
+// 0052d476  81ffc8af0000         cmp edi, 0xafc8
+// 0052d47c  7c08                 jl 0x52d486
+// 0052d47e  81ffb0b30000         cmp edi, 0xb3b0
+// 0052d484  7e2c                 jle 0x52d4b2
+// 0052d486  68a8be8200           push 0x82bea8
+// 0052d48b  56                   push esi
+// 0052d48c  e8bfc5ffff           call 0x529a50
+// 0052d491  83c408               add esp, 8
+// 0052d494  57                   push edi
+// 0052d495  6890be8200           push 0x82be90
+// 0052d49a  ff1558278000         call dword ptr [0x802758]
+// 0052d4a0  83c040               add eax, 0x40
+// 0052d4a3  50                   push eax
+// 0052d4a4  ff151c288000         call dword ptr [0x80281c]
+// 0052d4aa  83c40c               add esp, 0xc
+// 0052d4ad  5f                   pop edi
+// 0052d4ae  5b                   pop ebx
+// 0052d4af  5e                   pop esi
+// 0052d4b0  59                   pop ecx
+// 0052d4b1  c3                   ret 
+// 0052d4b2  db44240c             fild dword ptr [esp + 0xc]
+// 0052d4b6  83ec08               sub esp, 8
+// 0052d4b9  d80db0b38200         fmul dword ptr [0x82b3b0]
+// 0052d4bf  d9965c010000         fst dword ptr [esi + 0x15c]
+// 0052d4c5  dd1c24               fstp qword ptr [esp]
+// 0052d4c8  53                   push ebx
+// 0052d4c9  56                   push esi
+// 0052d4ca  e801f8feff           call 0x51ccd0
+// 0052d4cf  57                   push edi
+// 0052d4d0  53                   push ebx
+// 0052d4d1  56                   push esi
+// 0052d4d2  e879f8feff           call 0x51cd50
+// 0052d4d7  83c41c               add esp, 0x1c
+// 0052d4da  5f                   pop edi
+// 0052d4db  5b                   pop ebx
+// 0052d4dc  5e                   pop esi
+// 0052d4dd  59                   pop ecx
+// 0052d4de  c3                   ret 
+
 // from server: 94% by tester
 // roc 2008-06 0052d4e0  unit: seg_00520000  size: 384 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 0052d4e0
