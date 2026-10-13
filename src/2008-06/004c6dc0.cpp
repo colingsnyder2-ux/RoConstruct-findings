@@ -1,5 +1,5 @@
-// from server: 35% by colin
+// from server: 100% by king_originala
 // roc-lang: cpp
-// roc-cl: 50727
-// roc-flags: /O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MT
-// roc-lib: ogre-1.6.4 OgreAutoParamDataSource.cpp
+// roc-cl: 21022
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast
+// roc-lib: openrbx-client roc_part_interpolation_39321dab6a1be6aa.cpp

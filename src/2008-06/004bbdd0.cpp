@@ -1,5 +1,5 @@
-// from server: 51% by colin
+// from server: 100% by king_originala
 // roc-lang: cpp
-// roc-cl: 50727
-// roc-flags: /O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MT
-// roc-lib: ogre-1.6.4 OgreAutoParamDataSource.cpp
+// roc-cl: 21022
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast
+// roc-lib: rbxgs-raknet roc_profiled_rakpeer_ratio_6e565fa5f20deb46.cpp

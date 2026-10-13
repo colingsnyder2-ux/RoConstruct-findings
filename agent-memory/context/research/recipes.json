@@ -680,5 +680,120 @@
       "details": "Campaign evidence from ogre-campaign-553eea6fe9fd and ogre-fork-propagation-2008. Key blockers identified: class layout differences, inline header functions, unknown GpuLogicalIndexUse layout. Requires binary-inferred layouts for Roblox forks."
     },
     "next": "Create binary-inferred class layout units for RbxSceneManager, RbxEntity, RbxSceneNode, MovablePlane, GpuLogicalIndexUse. Extract authentic SceneManager method bodies from Ogre 1.4.5 source."
+  },
+  "xtp-shared-mfc-internals-campaign-2008": {
+    "op": "fanout",
+    "client": "2008-06",
+    "library": "XTP 11.2.2",
+    "hypothesis": "Campaign targets using basic xtp-11.2.2 recipe (0042e0c0 18%, 00430bf0 33%, 00431040 46%, 004321f0 39%, 00457b60 28%, 0045d417 43%) may call MFC internal functions requiring afximpl.h. The shared-mfc-internals recipe adds afximpl.h preinclude and MFC source includes with /EHsc /Ob1 flags.",
+    "sources": [
+      {
+        "recipe": "xtp-11.2.2-shared-mfc-internals",
+        "files": [
+          "Source/Calendar/XTPCalendarCustomProperties.cpp",
+          "Source/SyntaxEdit/XTPSyntaxEditView.cpp",
+          "Source/CommandBars/XTPDockState.cpp",
+          "Source/ReportControl/XTPReportView.cpp",
+          "Source/SyntaxEdit/XTPSyntaxEditColorSampleText.cpp"
+        ],
+        "builds": [
+          21022,
+          30729
+        ],
+        "flags": [
+          "/O2 /MD /GS /EHsc /Ob1",
+          "/O2 /MD /GS- /Ob1"
+        ]
+      }
+    ],
+    "output": "work/agent-campaigns/xtp-shared-mfc-internals-2008",
+    "result": {
+      "date": "2026-10-13",
+      "trials": 20,
+      "new_verified": 0,
+      "status": "rejected",
+      "evidence": "work/agent-campaigns/xtp-shared-mfc-internals-2008/",
+      "details": "Ran 20 trials (5 source files x 2 builds x 2 flag profiles). No local exacts, no score improvements on campaign targets 0042e0c0, 00430bf0, 00431040, 004321f0, 00457b60, 0045d417. MFC internals (afximpl.h) not the differentiator for these targets."
+    },
+    "next": "Try xtp-11.2.2-vc8 recipe (VS2005 build 50727 with MFC 8.0 headers) on same targets."
+  },
+  "xtp-vc8-campaign-2008": {
+    "op": "fanout",
+    "client": "2008-06",
+    "library": "XTP 11.2.2",
+    "hypothesis": "Some campaign targets may have been compiled with VS2005 (build 50727) using MFC 8.0 headers. The xtp-11.2.2-vc8 recipe uses build 50727 with MFC 8.0 includes and _MFC_GRID flags.",
+    "sources": [
+      {
+        "recipe": "xtp-11.2.2-vc8",
+        "files": [
+          "Source/Calendar/XTPCalendarCustomProperties.cpp",
+          "Source/SyntaxEdit/XTPSyntaxEditView.cpp",
+          "Source/CommandBars/XTPDockState.cpp",
+          "Source/ReportControl/XTPReportView.cpp",
+          "Source/SyntaxEdit/XTPSyntaxEditColorSampleText.cpp"
+        ],
+        "builds": [
+          50727
+        ],
+        "flags": [
+          "/O2 /GS- /MD",
+          "/O2 /GS- /MT",
+          "/O1 /GS- /MD",
+          "/O2 /GF /Gy /GS- /MD"
+        ]
+      }
+    ],
+    "output": "work/agent-campaigns/xtp-vc8-2008",
+    "result": {
+      "date": "2026-10-13",
+      "trials": 0,
+      "new_verified": 0,
+      "status": "planned",
+      "evidence": "work/agent-campaigns/xtp-vc8-2008/"
+    },
+    "next": "Run fanout on 5 source files x 1 build x 4 flag profiles = 20 trials. Check scores on 6 campaign targets."
+  },
+  "xtp-flags-grid-campaign-2008": {
+    "op": "grid",
+    "client": "2008-06",
+    "library": "XTP 11.2.2",
+    "hypothesis": "Campaign targets (0042e0c0 18%, 00430bf0 33%, 00431040 46%, 004321f0 39%, 00457b60 28%, 0045d417 43%, 006a94c0 61%) use basic xtp-11.2.2 or shared-mfc recipes with /O2 /GS- /MD. The lib-imports recipe uses /O2 /MD /GS /EHsc /Ob1 on build 21022. Test flag variations from lib-imports on build 30729: add /EHsc, /Ob1, /GS, /Ob2, /Oy-, /GF.",
+    "targets": {
+      "addresses": [
+        "0042e0c0",
+        "00430bf0",
+        "00431040",
+        "004321f0",
+        "00457b60",
+        "0045d417",
+        "006a94c0"
+      ],
+      "scores": [
+        10,
+        99
+      ]
+    },
+    "builds": [
+      30729,
+      21022
+    ],
+    "profiles": [
+      "/O2 /GS- /MD",
+      "/O2 /GS- /EHsc /MD",
+      "/O2 /GS- /EHsc /MD /Ob1",
+      "/O2 /GS /EHsc /MD /Ob1",
+      "/O2 /GS- /EHsc /MD /Ob2",
+      "/O2 /GS- /EHsc /MD /Oy-",
+      "/O2 /GS- /EHsc /MD /GF"
+    ],
+    "result": {
+      "date": "2026-10-13",
+      "trials": 98,
+      "new_verified": 0,
+      "status": "partial",
+      "evidence": "work/agent-campaigns/xtp-flags-grid-2008/",
+      "details": "Ran 98 trials (7 targets x 2 builds x 7 profiles). Score improvements: 00431040 46->56 (+10, /EHsc), 00457b60 28->35 (+7, /EHsc), 0042e0c0 18->24 (+6, /Oy-), 0045d417 best 39 (vs current 43 with /O1), 006a94c0 best 61 (same), 004321f0 39 (same), 00430bf0 33 (same). No exacts. /EHsc flag consistently improves SyntaxEdit and ReportControl targets."
+    },
+    "next": "Run grid on 7 targets x 2 builds x 7 profiles = 98 trials. Look for score improvements."
   }
 }
