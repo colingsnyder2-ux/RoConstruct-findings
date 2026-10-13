@@ -1,5 +1,5 @@
-// from server: 98% by colin
+// from server: 100% by colin
 // roc-lang: c
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /MD
-// roc-lib: libpng-1.2.6 pngrutil.c
+// roc-lib: g3d-6.09-png-dll pngrutil.c
