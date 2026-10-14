@@ -1,12 +1,13 @@
-// from server: 96% by king_originala
+// from server: 100% by colin
 struct Text;
 extern const char* (__thiscall* text_data)(const Text*);
-extern void (__thiscall* text_destroy)(Text*);
 
 struct Text {
     int value;
     const char* c_str() const;
-    ~Text();
+    ~Text() throw();
+
+    __declspec(dllimport) void __thiscall destroyImport() throw();
 };
 
 inline const char* Text::c_str() const
@@ -14,9 +15,9 @@ inline const char* Text::c_str() const
     return text_data(this);
 }
 
-inline Text::~Text()
+inline Text::~Text() throw()
 {
-    text_destroy(this);
+    destroyImport();
 }
 
 struct String;

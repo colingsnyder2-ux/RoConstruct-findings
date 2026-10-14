@@ -1,4 +1,4 @@
-// from server: 96% by king_originala
+// from server: 97% by colin
 extern const float initialFirst;
 extern const float initialSecond;
 
@@ -35,9 +35,10 @@ struct FaceInstance {
 
 float FaceInstance::getValue() const
 {
+    int index = face;
     Properties* properties = &part->properties;
     _ReadWriteBarrier();
-    Value* value = properties->values[face];
+    Value* value = properties->values[index];
     if (!value) {
         static Value fallback(initialFirst, initialSecond);
         value = &fallback;

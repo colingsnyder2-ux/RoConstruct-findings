@@ -1,4 +1,4 @@
-// from server: 95% by king_originala
+// from server: 100% by colin
 #pragma float_control(precise, off)
 
 struct Rect {
@@ -25,6 +25,7 @@ struct Viewport {
 namespace Ogre {
     struct Radian {
         float value;
+        Radian() : value(0.0f) {}
     };
 
     struct Camera {
@@ -72,7 +73,8 @@ void CRobloxWnd::resize(unsigned int, unsigned int, unsigned int)
             camera->setAspectRatio((float)viewport->getWidth() /
                                    (float)viewport->getHeight());
 
-        Ogre::Radian angle = { 0.0f };
-        Ogre::yaw(camera, angle);
+        Ogre::yaw(camera, Ogre::Radian());
     }
 }
+
+

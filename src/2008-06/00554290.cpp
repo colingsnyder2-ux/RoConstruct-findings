@@ -1,4 +1,4 @@
-// from server: 97% by king_originala
+// from server: 100% by colin
 namespace std {
     template<class T> struct char_traits;
     template<class T> class allocator;
@@ -7,8 +7,8 @@ namespace std {
     class basic_string {
         unsigned char storage[28];
     public:
-        basic_string(const T*);
-        ~basic_string();
+        __declspec(dllimport) basic_string(const T*);
+        __declspec(dllimport) ~basic_string();
     };
 }
 

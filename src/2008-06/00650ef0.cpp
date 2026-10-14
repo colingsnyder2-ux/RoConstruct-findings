@@ -1,10 +1,10 @@
-// from server: 95% by king_originala
-extern "C" void __cdecl _invalid_parameter_noinfo();
+// from server: 100% by colin
+extern "C" __declspec(dllimport) void __cdecl _invalid_parameter_noinfo();
 
 struct String {
     char storage[28];
-    ~String();
-    String& operator=(const String&);
+    __declspec(dllimport) ~String();
+    __declspec(dllimport) String& operator=(const String&);
 };
 
 struct S {

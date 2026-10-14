@@ -18,6 +18,7 @@
  },
  "../rbxgs/Client/App": {
   "lua-5.1.1/src/roc_lane_d_resume_00622400.cpp": "#include \"ldo.c\"",
+  "roc_backpack_find_372c5edd18a4cfb7.cpp": "#include \"v8datamodel/Backpack.h\"\n\nnamespace RBX {\ntemplate Backpack* Instance::findFirstChildOfType<Backpack>() const;\n}\n",
   "roc_dynamic_3479a5afbc444daf.cpp": "#include \"Client.h\"\n#include \"Player.h\"\nboost::shared_ptr<RBX::Network::Player> cast_player(boost::shared_ptr<RBX::Instance> const& p) { return boost::dynamic_pointer_cast<RBX::Network::Player>(p); }\n",
   "roc_dynamic_6bac3cea7322b2a0.cpp": "#define private public\n#include \"Network/Player.h\"\n#undef private\nboost::shared_ptr<RBX::Network::Player> cast_player(boost::shared_ptr<RBX::Instance> const& p) { return boost::dynamic_pointer_cast<RBX::Network::Player>(p); }\n",
   "roc_dynamic_7e244a2254b0e965.cpp": "#include \"gui/Gui.h\"\nboost::shared_ptr<RBX::TextDisplay> cast_text(boost::shared_ptr<RBX::Instance> const& p) { return boost::dynamic_pointer_cast<RBX::TextDisplay>(p); }\n",

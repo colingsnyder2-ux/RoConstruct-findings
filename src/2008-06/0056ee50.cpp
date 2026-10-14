@@ -1,4 +1,4 @@
-// from server: 97% by king_originala
+// from server: 100% by colin
 struct TypeInfo
 {
     unsigned int data[3];
@@ -78,34 +78,43 @@ double S::f()
 {
     TypeEqual equal = typeEqual;
 
-    if (equal(&intType, descriptor->type))
     {
-        double value = getInt(&holder.pointer);
+        const TypeInfo *currentType = descriptor->type;
+        if (equal(&intType, currentType))
         {
-            Owner temporary = { new Holder(value) };
-            temporary.swap(holder);
+            double value = getInt(&holder.pointer);
+            {
+                Owner temporary = { new Holder(value) };
+                temporary.swap(holder);
+            }
+            descriptor = getDoubleDescriptor();
         }
-        descriptor = getDoubleDescriptor();
     }
 
-    if (equal(&boolType, descriptor->type))
     {
-        double value = getBool(&holder.pointer) ? 1 : 0;
+        const TypeInfo *currentType = descriptor->type;
+        if (equal(&boolType, currentType))
         {
-            Owner temporary = { new Holder(value) };
-            temporary.swap(holder);
+            double value = getBool(&holder.pointer) ? 1 : 0;
+            {
+                Owner temporary = { new Holder(value) };
+                temporary.swap(holder);
+            }
+            descriptor = getDoubleDescriptor();
         }
-        descriptor = getDoubleDescriptor();
     }
 
-    if (equal(&floatType, descriptor->type))
     {
-        double value = getFloat(&holder.pointer);
+        const TypeInfo *currentType = descriptor->type;
+        if (equal(&floatType, currentType))
         {
-            Owner temporary = { new Holder(value) };
-            temporary.swap(holder);
+            double value = getFloat(&holder.pointer);
+            {
+                Owner temporary = { new Holder(value) };
+                temporary.swap(holder);
+            }
+            descriptor = getDoubleDescriptor();
         }
-        descriptor = getDoubleDescriptor();
     }
 
     return finish();

@@ -1,4 +1,4 @@
-// from server: 95% by king_originala
+// from server: 100% by colin
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
 extern "C" long __cdecl _InterlockedDecrement(volatile long*);
@@ -72,6 +72,8 @@ struct Message {
     Message();
     __declspec(nothrow) ~Message();
     const char* text() const;
+
+    __declspec(dllimport) void __thiscall destroyImport() throw();
 };
 
 extern void (__thiscall* message_construct)(Message*);
@@ -86,7 +88,7 @@ inline Message::Message()
 
 inline Message::~Message()
 {
-    message_destroy(this);
+    destroyImport();
 }
 
 inline const char* Message::text() const

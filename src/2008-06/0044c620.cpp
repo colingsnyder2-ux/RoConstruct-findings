@@ -1,4 +1,4 @@
-// from server: 95% by king_originala
+// from server: 100% by colin
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
 extern "C" long __cdecl _InterlockedDecrement(volatile long*);
@@ -88,7 +88,8 @@ void __cdecl reportGlobalSettings() {
     {
         SettingsHandle* result;
         SettingsHandle settings(result);
-        result->object->enumerate(settingsCallback);
+        Settings* targetSettings = result->object;
+        targetSettings->enumerate(settingsCallback);
     }
     {
         String* result;

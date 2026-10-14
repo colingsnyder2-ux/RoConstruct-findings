@@ -1,4 +1,4 @@
-// from server: 95% by king_originala
+// from server: 100% by colin
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
 extern "C" long __cdecl _InterlockedDecrement(volatile long*);
@@ -50,9 +50,9 @@ void S::f(void* argument, Pair value)
     (*slot)(this, argument, value);
     LeaveCriticalSection(lock);
 
-    Control* control = value.control;
-    if (control)
+    if (value.control)
     {
+        Control* control = value.control;
         if (_InterlockedDecrement(&control->strong) == 0)
         {
             control->dispose();
@@ -61,3 +61,4 @@ void S::f(void* argument, Pair value)
         }
     }
 }
+

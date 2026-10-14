@@ -1,6 +1,7 @@
-// from server: 95% by king_originala
-extern "C" void __stdcall EnterCriticalSection(void*);
-extern "C" void __stdcall LeaveCriticalSection(void*);
+// from server: 100% by colin
+// DxUserInput  00468b20
+extern "C" __declspec(dllimport) void __stdcall EnterCriticalSection(void*);
+extern "C" __declspec(dllimport) void __stdcall LeaveCriticalSection(void*);
 
 struct Point {
     float x;

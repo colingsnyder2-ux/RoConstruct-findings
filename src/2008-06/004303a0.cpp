@@ -1,4 +1,6 @@
-// from server: 97% by king_originala
+// from server: 100% by colin
+// roc-flags: /O2 /MD /GS /EHsc /Ob1
+// roc-cl: 21022
 struct Bar;
 
 struct Rect
@@ -41,17 +43,19 @@ int CWrapperView::func_004303a0(void* context, Bar* bar)
 
     Rect rect(bar);
 
-    switch (bar->position)
-    {
-    case 2:
-    case 3:
-    case 5:
-        OffsetRect(&rect, 0, rect.bottom - rect.top);
-        break;
-    default:
-        OffsetRect(&rect, rect.right - rect.left, 0);
-        break;
-    }
+    int pos = bar->position;
+    if (pos == 2) goto L_case;
+    if (pos == 3) goto L_case;
+    if (pos == 5) goto L_case;
+    goto L_default;
 
+L_case:
+    OffsetRect(&rect, 0, rect.bottom - rect.top);
+    goto L_end;
+
+L_default:
+    OffsetRect(&rect, rect.right - rect.left, 0);
+
+L_end:
     return commandBars->func_006a2a00(context, &rect, bar->menu);
 }

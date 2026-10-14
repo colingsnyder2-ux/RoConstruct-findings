@@ -1,4 +1,4 @@
-// from server: 95% by king_originala
+// from server: 100% by colin
 namespace std {
     typedef void (__thiscall *MemberCall)(void*);
 
@@ -15,6 +15,7 @@ namespace std {
         facet* ptr;
 
         locale(const locale& other);
+        __declspec(dllimport) void __thiscall localeDestroy() throw();
         ~locale() throw();
     };
 
@@ -30,7 +31,7 @@ namespace std {
 
     inline locale::~locale() throw()
     {
-        localeDestructorCall(this);
+        this->localeDestroy();
     }
 }
 

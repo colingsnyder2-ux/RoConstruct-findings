@@ -1,4 +1,4 @@
-// from server: 95% by king_originala
+// from server: 100% by colin
 struct String;
 
 typedef void (__thiscall *StringInit)(String*);
@@ -19,6 +19,7 @@ struct String
 {
     void* data;
     String();
+    __declspec(dllimport) void __thiscall destroyImport() throw();
     __declspec(nothrow) ~String();
     int compare(const char*) const;
     const char* text() const;
@@ -31,7 +32,7 @@ __forceinline String::String()
 
 __declspec(nothrow) __forceinline String::~String()
 {
-    stringDestroy(this);
+    this->destroyImport();
 }
 
 __forceinline int String::compare(const char* value) const

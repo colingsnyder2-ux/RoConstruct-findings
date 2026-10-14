@@ -1,7 +1,7 @@
-// from server: 95% by king_originala
-extern "C" void __stdcall EnterCriticalSection(void *);
-extern "C" void __stdcall LeaveCriticalSection(void *);
-extern "C" int __stdcall DestroyWindow(void *);
+// from server: 100% by colin
+extern "C" __declspec(dllimport) void __stdcall EnterCriticalSection(void *);
+extern "C" __declspec(dllimport) void __stdcall LeaveCriticalSection(void *);
+extern "C" __declspec(dllimport) int __stdcall DestroyWindow(void *);
 
 struct CriticalSection {
     unsigned char data[24];

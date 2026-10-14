@@ -1,4 +1,4 @@
-// from server: 98% by colin
+// from server: 100% by colin
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
 extern "C" long __cdecl _InterlockedIncrement(volatile long*);
@@ -126,7 +126,8 @@ void Object::rebuildBackpack() {
             if (i >= static_cast<unsigned int>(list->last - list->first))
                 invalidParameter();
 
-            Shared owner(list->first[i].object->getOwner());
+            Object* entry = list->first[i].object;
+            Shared owner(entry->getOwner());
             owner.object->setParent(backpack.object);
         }
     }

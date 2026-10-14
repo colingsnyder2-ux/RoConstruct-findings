@@ -1,4 +1,4 @@
-// from server: 95% by king_originala
+// from server: 100% by colin
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
 extern "C" long __cdecl _InterlockedDecrement(volatile long*);
@@ -85,6 +85,8 @@ struct Text {
     Text();
     __declspec(nothrow) ~Text();
     operator const char*() const;
+
+    __declspec(dllimport) void __thiscall destroyImport() throw();
 };
 
 Text::Text()
@@ -94,7 +96,7 @@ Text::Text()
 
 __declspec(nothrow) Text::~Text()
 {
-    text_destroy(this);
+    destroyImport();
 }
 
 Text::operator const char*() const

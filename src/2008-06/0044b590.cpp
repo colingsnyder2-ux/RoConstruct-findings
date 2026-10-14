@@ -1,4 +1,4 @@
-// from server: 97% by king_originala
+// from server: 98% by colin
 struct TypeLibrary
 {
     void** vtable;
@@ -32,8 +32,8 @@ int __stdcall registerLibrary(const wchar_t* filename, int option)
     wchar_t directoryBuffer[260];
 
     int result = loadLibrary(filename, option, &path, &library);
-    wchar_t* savedPath = path;
     void (__stdcall *freeString)(wchar_t*) = SysFreeString;
+    wchar_t* savedPath = path;
 
     if (result >= 0)
     {

@@ -1,10 +1,10 @@
-// from server: 98% by king_originala
+// from server: 100% by colin
 typedef unsigned long DWORD;
 
 struct String {
     char storage[28];
-    String(const char *);
-    ~String();
+    __declspec(dllimport) String(const char *);
+    __declspec(dllimport) ~String();
 };
 
 struct Base {

@@ -1,4 +1,4 @@
-// from server: 99% by king_originala
+// from server: 100% by colin
 void* __cdecl operator new(unsigned int);
 void __cdecl operator delete(void*);
 
@@ -15,14 +15,14 @@ struct Header {
     char pad0[0x7c];
     int field_7c;
     char pad1[8];
-    int field_88;
+    volatile int field_88;
 
     void setMode(int);
 };
 
 struct Report {
     char pad0[0x288];
-    Header* header;
+    Header* volatile header;
 
     Column* addColumn(Column*);
 };
@@ -51,8 +51,8 @@ int S::f(int a1)
 
     Header* header = report->header;
     header->field_88 = 1;
-    header = report->header;
-    header->field_7c = 0;
+    Header* mode = report->header;
+    mode->field_7c = 0;
     report->header->setMode(1);
 
     Column* column = report->addColumn(
