@@ -1,6 +1,7 @@
-// from server: 98% by king_originala
+// from server: 100% by colin
 namespace RBX {
-    struct Instance {
+    class Instance {
+    public:
         virtual ~Instance();
         char padding[0x100];
         Instance* next;
@@ -23,7 +24,8 @@ namespace RBX {
     };
 
     namespace Network {
-        struct Player : Instance {
+        class Player : Instance {
+        public:
             char padding[0x74];
             bool flag;
         };
@@ -49,8 +51,8 @@ bool RBX::FactoryProduct::f()
             if (i >= static_cast<unsigned int>(children->last - children->first))
                 invalid();
 
-            Network::Player* player =
-                dynamic_cast<Network::Player*>(children->first[i].object);
+            Instance* obj = children->first[i].object;
+            Network::Player* player = dynamic_cast<Network::Player*>(obj);
 
             if (player && !player->flag)
                 return true;
