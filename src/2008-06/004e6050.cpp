@@ -1,4 +1,4 @@
-// from server: 87% by king_originala
+// from server: 92% by colin
 // roc 2008-06 004e6050  unit: RBX::ViewNew::PartChunk  size: 155 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 004e6050
 //
@@ -67,8 +67,8 @@
 // 004e60e7  59                   pop ecx
 // 004e60e8  c20400               ret 4
 
-extern "C" long __stdcall InterlockedDecrement(volatile long *);
-extern "C" long __stdcall InterlockedIncrement(volatile long *);
+extern "C" __declspec(dllimport) long __stdcall InterlockedDecrement(volatile long *);
+extern "C" __declspec(dllimport) long __stdcall InterlockedIncrement(volatile long *);
 void __cdecl operator delete(void *);
 
 struct Object {

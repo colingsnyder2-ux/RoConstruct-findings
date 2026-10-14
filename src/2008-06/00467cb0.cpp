@@ -1,4 +1,4 @@
-// from server: 93% by king_originala
+// from server: 100% by colin
 // roc 2008-06 00467cb0  unit: DxUserInput  size: 145 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 00467cb0
 //
@@ -47,8 +47,8 @@
 // 00467d3b  83c414               add esp, 0x14
 // 00467d3e  c20400               ret 4
 
-extern "C" void __stdcall EnterCriticalSection(void *);
-extern "C" void __stdcall LeaveCriticalSection(void *);
+extern "C" __declspec(dllimport) void __stdcall EnterCriticalSection(void *);
+extern "C" __declspec(dllimport) void __stdcall LeaveCriticalSection(void *);
 extern int __cdecl translateKey(int);
 
 struct Lock {

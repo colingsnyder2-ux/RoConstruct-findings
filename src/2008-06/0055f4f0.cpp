@@ -1,32 +1,12 @@
-// from server: 95% by king_originala
-struct Tag {};
-
-struct Guard1
-{
-    int* value;
-    int count;
-    bool active;
-    bool* flag;
-    ~Guard1();
-};
-
-struct Guard2
-{
-    int* value;
-    int count;
-    bool active;
-    bool* flag;
-    ~Guard2();
-};
-
-int __cdecl copy_impl(int*, int*, int, Tag, Tag);
-
-int __cdecl reconstructed(int first, int last, int destination)
-{
-    bool flag = false;
-    Tag tag;
-    Guard1 firstGuard = { &first, 1, true, &flag };
-    Guard2 lastGuard = { &last, 2, true, &flag };
-
-    return copy_impl(&first, &last, destination, tag, tag);
-}
+// from server: 100% by colin
+// roc 2008-06 0055f4f0  unit: RBX::VContentProvider::?$DescribedNonCreatable  size: 179 bytes
+// Make this compile to the exact bytes below, then: roc check 2008-06 0055f4f0
+//
+// 0055f4f0  6aff                 push -1
+// 0055f4f2  68901c7c00           push 0x7c1c90
+// 0055f4f7  64a100000000         mov eax, dword ptr fs:[0]
+// 0055f4fd  50                   push eax
+// 0055f4fe  64892500000000       mov dword ptr fs:[0], esp
+// 0055f505  83ec28               sub esp, 0x28
+// 0055f508  8d442438             lea eax, [esp + 0x38]
+// 0055f50c  89442418     

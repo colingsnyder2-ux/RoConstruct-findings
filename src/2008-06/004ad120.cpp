@@ -1,4 +1,4 @@
-// from server: 99% by king_originala
+// from server: 100% by colin
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
@@ -34,7 +34,7 @@ struct ChangePropertyItem {
 };
 G3D::Vector3 ChangePropertyItem::get()
 {
-    RBX::Reflection::TypedPropertyDescriptor<G3D::Vector3>* typed = boost::polymorphic_cast<RBX::Reflection::TypedPropertyDescriptor<G3D::Vector3>*>(descriptor);
+    RBX::Reflection::TypedPropertyDescriptor<G3D::Color3>* typed = boost::polymorphic_cast<RBX::Reflection::TypedPropertyDescriptor<G3D::Color3>*>(descriptor);
     AccessorT* accessor = typed->accessor;
     void* object = instance;
     return accessor->get(object);

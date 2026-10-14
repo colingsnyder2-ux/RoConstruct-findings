@@ -1,6 +1,6 @@
-// from server: 74% by king_originala
+// from server: 100% by colin
+// roc-flags: /EHsc
 #pragma optimize("", off)
-#pragma strict_gs_check(on)
 
 struct Iterator {
     unsigned int words[2];
@@ -11,8 +11,8 @@ struct Iterator {
 
 struct String {
     unsigned char storage[28];
-    String();
-    ~String();
+    __declspec(dllimport) String();
+    __declspec(dllimport) ~String();
 };
 
 struct Pair {
