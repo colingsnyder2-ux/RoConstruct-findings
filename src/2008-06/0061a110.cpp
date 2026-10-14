@@ -1,32 +1,7 @@
-// from server: 90% by king_originala
-struct List;
-struct Node;
+#include <list>
 
-struct Proxy {
-    List* owner;
-};
-
-struct Node {
-    Node* next;
-    Node* prev;
-    void (__cdecl *callback)();
-};
-
-struct Iterator {
-    Proxy* proxy;
-    Node* node;
-};
-
-struct List {
-    Proxy* proxy;
-    unsigned char padding[16];
-    Node* head;
-    unsigned int size;
-
-    void erase(Iterator* result, Proxy* owner, Node* node);
-    void clear();
-};
-
+extern char criticalSection;
+extern char initializationFlag;
 extern unsigned long tlsIndex;
 extern int referenceCount;
 
@@ -35,57 +10,38 @@ extern "C" {
     extern void (__stdcall *LeaveCriticalSection)(void*);
     extern void* (__stdcall *TlsGetValue)(unsigned long);
     extern int (__stdcall *TlsSetValue)(unsigned long, void*);
-    extern void (__cdecl *_invalid_parameter_noinfo)();
 
-    void __cdecl initialize(void (__cdecl *)(), int*);
-    void __cdecl deallocate(void*);
+    void __cdecl initialize(void (__cdecl *)(), void*);
+    void __cdecl initializeImpl();
 }
+
+typedef void (__cdecl *thread_exit_handler)();
 
 void cleanup()
 {
-    Iterator result;
-    void (__cdecl *initializationCallback)() =
-        reinterpret_cast<void (__cdecl *)()>(0x61a080);
-
-    initialize(initializationCallback, reinterpret_cast<int*>(0x97bf54));
-    EnterCriticalSection(reinterpret_cast<void*>(0x97bf3c));
+    initialize(initializeImpl, &initializationFlag);
+    EnterCriticalSection(&criticalSection);
 
     if (tlsIndex == ~0UL) {
-        LeaveCriticalSection(reinterpret_cast<void*>(0x97bf3c));
+        LeaveCriticalSection(&criticalSection);
         return;
     }
 
-    List* list = static_cast<List*>(TlsGetValue(tlsIndex));
-    if (list && TlsSetValue(tlsIndex, 0)) {
+    std::list<thread_exit_handler>* exit_handlers =
+        static_cast<std::list<thread_exit_handler>*>(TlsGetValue(tlsIndex));
+    if (exit_handlers && TlsSetValue(tlsIndex, 0)) {
         --referenceCount;
-        LeaveCriticalSection(reinterpret_cast<void*>(0x97bf3c));
+        LeaveCriticalSection(&criticalSection);
 
-        if (list->size != 0) {
-            void (__cdecl *invalid)() = _invalid_parameter_noinfo;
-            do {
-                Node* node = list->head->next;
-                List* owner;
-                if (!list->proxy) {
-                    invalid();
-                    owner = 0;
-                } else {
-                    owner = list->proxy->owner;
-                }
-
-                if (node == owner->head)
-                    invalid();
-
-                if (node->callback)
-                    node->callback();
-
-                list->erase(&result, list->proxy, list->head->next);
-            } while (list->size != 0);
+        while (!exit_handlers->empty()) {
+            if (thread_exit_handler handler = *exit_handlers->begin())
+                handler();
+            exit_handlers->pop_front();
         }
 
-        list->clear();
-        deallocate(list->proxy);
-        deallocate(list);
+        delete exit_handlers;
+        exit_handlers = 0;
     } else {
-        LeaveCriticalSection(reinterpret_cast<void*>(0x97bf3c));
+        LeaveCriticalSection(&criticalSection);
     }
 }
