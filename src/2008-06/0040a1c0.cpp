@@ -1,7 +1,7 @@
 // from server: 93% by king_originala
 struct Arguments {
-    unsigned int first;
     unsigned int second;
+    unsigned int first;
 
     Arguments(const Arguments& other);
 };

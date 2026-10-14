@@ -10,8 +10,8 @@ struct SizeSource {
 SizeSource *func_00412d50();
 
 struct Rect {
-    int left;
     int top;
+    int left;
     int right;
     int bottom;
 };
