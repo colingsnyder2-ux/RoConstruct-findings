@@ -1,28 +1,43 @@
-// from server: 54% by colin
-struct ChangePropertyItem {
-    void* vtable;
-    int field4;
-    void* f(void* arg);
-};
-
-extern "C" void* __cdecl sub_6A17C6(void* a, int b, void* c, void* d, int e);
-extern "C" void* __cdecl sub_6A158C(void* a, void* b);
-extern "C" void* __stdcall sub_802864(void* a);
-
-extern void* g_9295B4;
-extern void* g_93ADC0;
-extern void* g_80BA34;
-extern void* g_8D362C;
-
-void* ChangePropertyItem::f(void* arg)
+// from server: 100% by colin
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+#include <typeinfo>
+namespace boost {
+template<class Target, class Source>
+inline Target polymorphic_cast(Source* x)
 {
-    void* result = sub_6A17C6(vtable, 0, &g_9295B4, &g_93ADC0, 0);
-    if (result == 0) {
-        char buffer[8];
-        sub_802864(&g_80BA34);
-        sub_6A158C(&g_8D362C, buffer);
-    }
-    int saved = field4;
-    void* a = arg;
-    return ((void* (__thiscall*)(void*, int, void*))0x4ACB30)(result, saved, a);
+    Target tmp = dynamic_cast<Target>(x);
+    if (tmp == 0)
+        throw std::bad_cast("bad cast");
+    return tmp;
+}
+}
+namespace boost { template<class T> class shared_ptr; }
+namespace RBX { class Instance; }
+namespace G3D { class Color3; class CoordinateFrame; class Vector3; }
+namespace RBX { class BrickColor; namespace Soundscape { class SoundId; } }
+struct AccessorT { virtual void s0(); virtual void s1(); virtual void s2(void*, void*); virtual void set(void*, const G3D::CoordinateFrame&); };
+namespace RBX { namespace Reflection {
+class PropertyDescriptor { public: virtual ~PropertyDescriptor(); };
+template<class T>
+class TypedPropertyDescriptor : public PropertyDescriptor {
+public:
+    unsigned char padding[20];
+    AccessorT* accessor;
+};
+} }
+struct ChangePropertyItem {
+    RBX::Reflection::PropertyDescriptor* descriptor;
+    void* instance;
+    const G3D::CoordinateFrame& f(const G3D::CoordinateFrame& value);
+};
+struct TypedDescriptorHelper {
+    const void* invoke(const void* value, void* instance);
+};
+const G3D::CoordinateFrame& ChangePropertyItem::f(const G3D::CoordinateFrame& value)
+{
+    RBX::Reflection::TypedPropertyDescriptor<G3D::CoordinateFrame>* typed = boost::polymorphic_cast<RBX::Reflection::TypedPropertyDescriptor<G3D::CoordinateFrame>*>(descriptor);
+    reinterpret_cast<TypedDescriptorHelper*>(typed)->invoke(&value, instance);
+    return value;
 }

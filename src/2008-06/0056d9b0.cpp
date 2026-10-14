@@ -51,4 +51,169 @@
 // 0056da30  83c408               add esp, 8
 // 0056da33  84c0                 test al, al
 // 0056da35  7434                 je 0x56da6b
-// 0056da37  8
+// 0056da37  8d542450             lea edx, [esp + 0x50]
+// 0056da3b  52                   push edx
+// 0056da3c  8bce                 mov ecx, esi
+// 0056da3e  e8ddf7ffff           call 0x56d220
+// 0056da43  e8b8bf0200           call 0x599a00
+// 0056da48  56                   push esi
+// 0056da49  8907                 mov dword ptr [edi], eax
+// 0056da4b  e8c0ecffff           call 0x56c710
+// 0056da50  83c404               add esp, 4
+// 0056da53  8b8c2480000000       mov ecx, dword ptr [esp + 0x80]
+// 0056da5a  5f                   pop edi
+// 0056da5b  5e                   pop esi
+// 0056da5c  5b                   pop ebx
+// 0056da5d  64890d00000000       mov dword ptr fs:[0], ecx
+// 0056da64  81c480000000         add esp, 0x80
+// 0056da6a  c3                   ret 
+// 0056da6b  e890bf0200           call 0x599a00
+// 0056da70  8b400c               mov eax, dword ptr [eax + 0xc]
+// 0056da73  ba10000000           mov edx, 0x10
+// 0056da78  39501c               cmp dword ptr [eax + 0x1c], edx
+// 0056da7b  7205                 jb 0x56da82
+// 0056da7d  8b4808               mov ecx, dword ptr [eax + 8]
+// 0056da80  eb03                 jmp 0x56da85
+// 0056da82  8d4808               lea ecx, [eax + 8]
+// 0056da85  8b07                 mov eax, dword ptr [edi]
+// 0056da87  8b400c               mov eax, dword ptr [eax + 0xc]
+// 0056da8a  83c004               add eax, 4
+// 0056da8d  395018               cmp dword ptr [eax + 0x18], edx
+// 0056da90  7205                 jb 0x56da97
+// 0056da92  8b4004               mov eax, dword ptr [eax + 4]
+// 0056da95  eb03                 jmp 0x56da9a
+// 0056da97  83c004               add eax, 4
+// 0056da9a  51                   push ecx
+// 0056da9b  50                   push eax
+// 0056da9c  8d4c2414             lea ecx, [esp + 0x14]
+// 0056daa0  681cf78200           push 0x82f71c
+// 0056daa5  51                   push ecx
+// 0056daa6  e865c0f9ff           call 0x509b10
+// 0056daab  83c410               add esp, 0x10
+// 0056daae  50                   push eax
+// 0056daaf  8d4c242c             lea ecx, [esp + 0x2c]
+// 0056dab3  c784248c00000000000000 mov dword ptr [esp + 0x8c], 0
+// 0056dabe  e88dc2e9ff           call 0x409d50
+// 0056dac3  68c81b8d00           push 0x8d1bc8
+// 0056dac8  8d54242c             lea edx, [esp + 0x2c]
+// 0056dacc  52                   push edx
+// 0056dacd  e8ba3a1300           call 0x6a158c
+
+struct type_info {};
+
+extern bool (__thiscall* typeEqual)(const type_info*, const type_info&);
+
+struct String
+{
+    unsigned int allocator;
+    union
+    {
+        char local[16];
+        char* heap;
+    } storage;
+    unsigned int length;
+    unsigned int capacity;
+
+    ~String();
+};
+
+struct Name
+{
+    unsigned int unused;
+    String text;
+};
+
+struct Descriptor
+{
+    unsigned int unused[2];
+    const type_info* type;
+    Name* name;
+};
+
+struct Placeholder
+{
+    virtual ~Placeholder();
+    virtual const type_info& type() const;
+};
+
+struct Frame
+{
+    char data[48];
+    Frame();
+};
+
+struct Any
+{
+    Placeholder* content;
+    void assign(const Frame&);
+};
+
+struct RuntimeError
+{
+    char data[36];
+    RuntimeError(const String&);
+    RuntimeError(const RuntimeError&);
+    ~RuntimeError();
+};
+
+extern const type_info emptyType;
+extern const type_info frameType;
+extern const type_info stringType;
+
+extern Descriptor* __cdecl frameDescriptor();
+extern const String* __cdecl stringCast(const Any*);
+extern bool __cdecl parseFrame(const String*, Frame&);
+extern void __cdecl finishAssignment(Any*);
+extern String __cdecl format(const char*, ...);
+
+struct Holder
+{
+    Descriptor* descriptor;
+    Any value;
+
+    void convert();
+};
+
+void Holder::convert()
+{
+    bool (__thiscall* equal)(const type_info*, const type_info&) = typeEqual;
+    Any* source = &value;
+    if (source)
+    {
+        const type_info& type =
+            source->content ? source->content->type() : emptyType;
+        if (equal(&type, frameType))
+        {
+            Frame* result = reinterpret_cast<Frame*>(
+                reinterpret_cast<char*>(source->content) + 4);
+            if (result)
+                return;
+        }
+    }
+
+    Descriptor* d = descriptor;
+    const type_info* dst = d->type;
+    if (equal(&stringType, *dst))
+    {
+        Frame frame;
+        if (parseFrame(stringCast(source), frame))
+        {
+            source->assign(frame);
+            descriptor = frameDescriptor();
+            finishAssignment(source);
+            return;
+        }
+    }
+
+    const Name* destination = frameDescriptor()->name;
+    const char* destinationName = destination->text.capacity >= 16
+        ? destination->text.storage.heap
+        : destination->text.storage.local;
+
+    const String& original = descriptor->name->text;
+    const char* originalName = original.capacity >= 16
+        ? original.storage.heap : original.storage.local;
+
+    throw RuntimeError(format("Unable to cast %s to %s",
+                              originalName, destinationName));
+}

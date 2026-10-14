@@ -32,4 +32,101 @@
 // 00565640  c644245801           mov byte ptr [esp + 0x58], 1
 // 00565645  e84659ffff           call 0x55af90
 // 0056564a  8d4c2408             lea ecx, [esp + 8]
-// 0056564e  c644245400       
+// 0056564e  c644245400           mov byte ptr [esp + 0x54], 0
+// 00565653  ff1568248000         call dword ptr [0x802468]
+// 00565659  833d18c3960000       cmp dword ptr [0x96c318], 0
+// 00565660  7435                 je 0x565697
+// 00565662  68b8df8200           push 0x82dfb8
+// 00565667  8d4c240c             lea ecx, [esp + 0xc]
+// 0056566b  68c4c78000           push 0x80c7c4
+// 00565670  51                   push ecx
+// 00565671  e89a44faff           call 0x509b10
+// 00565676  83c40c               add esp, 0xc
+// 00565679  50                   push eax
+// 0056567a  8d4c2428             lea ecx, [esp + 0x28]
+// 0056567e  c644245802           mov byte ptr [esp + 0x58], 2
+// 00565683  e8c846eaff           call 0x409d50
+// 00565688  68c81b8d00           push 0x8d1bc8
+// 0056568d  8d542428             lea edx, [esp + 0x28]
+// 00565691  52                   push edx
+// 00565692  e8f5be1300           call 0x6a158c
+// 00565697  8b4c244c             mov ecx, dword ptr [esp + 0x4c]
+// 0056569b  893518c39600         mov dword ptr [0x96c318], esi
+// 005656a1  8bc6                 mov eax, esi
+// 005656a3  5e                   pop esi
+// 005656a4  64890d00000000       mov dword ptr fs:[0], ecx
+// 005656ab  83c454               add esp, 0x54
+// 005656ae  c3                   ret 
+
+struct String;
+typedef void (__thiscall *StringCtor)(String *, const char *);
+typedef void (__thiscall *StringDtor)(String *);
+
+extern StringCtor constructString;
+extern StringDtor destroyString;
+
+struct String {
+    unsigned char data[28];
+
+    String(const char *s) { constructString(this, s); }
+    ~String() { destroyString(this); }
+};
+
+extern String __cdecl format(const char *, ...);
+
+struct Error {
+    unsigned char data[40];
+
+    Error(const String &);
+    Error(const Error &);
+    ~Error();
+};
+
+struct Base {
+    unsigned long slots[76];
+
+    Base();
+    ~Base();
+    void setName(const String &);
+};
+
+struct S : Base {
+    S();
+};
+
+extern S *singleton;
+
+extern unsigned long table0[];
+extern unsigned long table10[];
+extern unsigned long table14[];
+extern unsigned long table20[];
+extern unsigned long table24[];
+extern unsigned long table44[];
+extern unsigned long table64[];
+extern unsigned long table84[];
+extern unsigned long tableA4[];
+extern unsigned long tableC4[];
+
+extern const char authoring[];
+extern const char duplicateFormat[];
+
+S::S() : Base()
+{
+    slots[0]  = reinterpret_cast<unsigned long>(table0);
+    slots[4]  = reinterpret_cast<unsigned long>(table10);
+    slots[5]  = reinterpret_cast<unsigned long>(table14);
+    slots[8]  = reinterpret_cast<unsigned long>(table20);
+    slots[9]  = reinterpret_cast<unsigned long>(table24);
+    slots[17] = reinterpret_cast<unsigned long>(table44);
+    slots[25] = reinterpret_cast<unsigned long>(table64);
+    slots[33] = reinterpret_cast<unsigned long>(table84);
+    slots[41] = reinterpret_cast<unsigned long>(tableA4);
+    slots[49] = reinterpret_cast<unsigned long>(tableC4);
+
+    setName(String(authoring));
+
+    if (singleton)
+        throw Error(format(duplicateFormat, authoring));
+
+    singleton = this;
+}

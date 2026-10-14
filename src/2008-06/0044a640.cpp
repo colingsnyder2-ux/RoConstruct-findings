@@ -1,4 +1,4 @@
-// from server: 99% by king_originala
+// from server: 100% by colin
 // roc 2008-06 0044a640  unit: CRbxPlayDocTemplate  size: 382 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 0044a640
 //
@@ -134,6 +134,9 @@ struct Stream;
 struct IOS {
     char reserved[0x30];
     char fill;
+
+    __declspec(dllimport) void setstate(int, bool = false);
+    __declspec(dllimport) void width(int);
 };
 
 struct Stream : virtual IOS {
@@ -143,9 +146,6 @@ struct Stream : virtual IOS {
         Sentry(Stream *);
         ~Sentry();
     };
-
-    void setstate(int, bool = false);
-    void width(int);
 };
 
 extern int (__thiscall *get_width)(const IOS *);

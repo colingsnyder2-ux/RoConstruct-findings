@@ -1,7 +1,8 @@
-// from server: 89% by king_originala
+// from server: 100% by colin
+// roc-flags: /O2 /MD /GS /EHsc /Ob1 /fp:fast
 struct Text {
     unsigned char storage[28];
-    Text(const Text&);
+    __declspec(dllimport) Text(const Text&);
     ~Text();
 };
 

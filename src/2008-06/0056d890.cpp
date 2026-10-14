@@ -60,4 +60,170 @@
 // 0056d928  e833f5ffff           call 0x56ce60
 // 0056d92d  56                   push esi
 // 0056d92e  8907                 mov dword ptr [edi], eax
-// 0056d930  e89bedffff           call 0x56c
+// 0056d930  e89bedffff           call 0x56c6d0
+// 0056d935  83c404               add esp, 4
+// 0056d938  8b4c245c             mov ecx, dword ptr [esp + 0x5c]
+// 0056d93c  5f                   pop edi
+// 0056d93d  5e                   pop esi
+// 0056d93e  5b                   pop ebx
+// 0056d93f  64890d00000000       mov dword ptr fs:[0], ecx
+// 0056d946  83c45c               add esp, 0x5c
+// 0056d949  c3                   ret 
+// 0056d94a  e811f5ffff           call 0x56ce60
+// 0056d94f  8b400c               mov eax, dword ptr [eax + 0xc]
+// 0056d952  ba10000000           mov edx, 0x10
+// 0056d957  39501c               cmp dword ptr [eax + 0x1c], edx
+// 0056d95a  7205                 jb 0x56d961
+// 0056d95c  8b4808               mov ecx, dword ptr [eax + 8]
+// 0056d95f  eb03                 jmp 0x56d964
+// 0056d961  8d4808               lea ecx, [eax + 8]
+// 0056d964  8b07                 mov eax, dword ptr [edi]
+// 0056d966  8b400c               mov eax, dword ptr [eax + 0xc]
+// 0056d969  83c004               add eax, 4
+// 0056d96c  395018               cmp dword ptr [eax + 0x18], edx
+// 0056d96f  7205                 jb 0x56d976
+// 0056d971  8b4004               mov eax, dword ptr [eax + 4]
+// 0056d974  eb03                 jmp 0x56d979
+// 0056d976  83c004               add eax, 4
+// 0056d979  51                   push ecx
+// 0056d97a  50                   push eax
+// 0056d97b  8d4c2420             lea ecx, [esp + 0x20]
+// 0056d97f  681cf78200           push 0x82f71c
+// 0056d984  51                   push ecx
+// 0056d985  e886c1f9ff           call 0x509b10
+// 0056d98a  83c410               add esp, 0x10
+// 0056d98d  50                   push eax
+// 0056d98e  8d4c2438             lea ecx, [esp + 0x38]
+// 0056d992  c744246800000000     mov dword ptr [esp + 0x68], 0
+// 0056d99a  e8b1c3e9ff           call 0x409d50
+// 0056d99f  68c81b8d00           push 0x8d1bc8
+// 0056d9a4  8d542438             lea edx, [esp + 0x38]
+// 0056d9a8  52                   push edx
+// 0056d9a9  e8de3b1300           call 0x6a158c
+
+class type_info;
+extern bool (__thiscall *type_equal)(const type_info*, const type_info&);
+
+extern const type_info void_type;
+extern const type_info color_type;
+extern const type_info string_type;
+
+namespace std {
+    template<class T> struct char_traits {};
+    template<class T> class allocator {};
+
+    template<class T, class Traits, class Allocator>
+    class basic_string {
+    public:
+        unsigned int allocator_storage;
+        union {
+            T buffer[16];
+            T* pointer;
+        } storage;
+        unsigned int length;
+        unsigned int capacity;
+
+        basic_string(const basic_string&);
+        ~basic_string();
+    };
+
+    typedef basic_string<char, char_traits<char>, allocator<char> > string;
+
+    class exception {
+        char* message;
+        int owns_message;
+
+    public:
+        exception(const exception&);
+        virtual ~exception();
+        virtual const char* what() const;
+    };
+
+    class runtime_error : public exception {
+        string text;
+
+    public:
+        runtime_error(const string&);
+        runtime_error(const runtime_error&);
+        virtual ~runtime_error();
+        virtual const char* what() const;
+    };
+}
+
+struct Color {
+    float x, y, z;
+};
+
+struct Placeholder {
+    virtual ~Placeholder();
+    virtual const type_info& type() const;
+};
+
+struct Any {
+    Placeholder* content;
+    void assign(const Color&);
+};
+
+struct Name {
+    unsigned int reserved;
+    std::string text;
+};
+
+struct Descriptor {
+    unsigned int reserved[2];
+    const type_info* type;
+    Name* name;
+};
+
+extern Color* __cdecl extract(Any*);
+extern bool __cdecl convert(const Color*, Color*);
+extern Descriptor* __cdecl color_descriptor();
+extern void __cdecl finish(Any*);
+extern std::string __cdecl format(const char*, ...);
+
+struct S {
+    Descriptor* descriptor;
+    Any value;
+
+    void f();
+};
+
+void S::f()
+{
+    bool (__thiscall *equal)(const type_info*, const type_info&) = type_equal;
+    Any* p = &value;
+    if (p) {
+        const type_info& t = p->content ? p->content->type() : void_type;
+        if (equal(&t, color_type)) {
+            if (reinterpret_cast<char*>(p->content) + 4)
+                return;
+        }
+    }
+
+    Descriptor* d = descriptor;
+    const type_info* dst = d->type;
+    if (equal(&string_type, *dst)) {
+        Color color;
+        color.x = 0.0f;
+        color.y = 0.0f;
+        color.z = 0.0f;
+        if (convert(extract(p), &color)) {
+            p->assign(color);
+            descriptor = color_descriptor();
+            finish(p);
+            return;
+        }
+    }
+
+    Name* destination = color_descriptor()->name;
+    const char* destination_name =
+        destination->text.capacity >= 16 ?
+        destination->text.storage.pointer :
+        destination->text.storage.buffer;
+    const std::string& source = descriptor->name->text;
+    const char* source_name =
+        source.capacity >= 16 ? source.storage.pointer : source.storage.buffer;
+
+    throw std::runtime_error(
+        format("Unable to cast %s to %s", source_name, destination_name));
+}

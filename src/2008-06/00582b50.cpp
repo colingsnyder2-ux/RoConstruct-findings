@@ -1,4 +1,4 @@
-// from server: 89% by king_originala
+// from server: 100% by colin
 // roc 2008-06 00582b50  unit: RBX::UngroupSelectionVerb  size: 90 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 00582b50
 //
@@ -79,7 +79,7 @@ struct S {
 bool S::f()
 {
     Selection* selection = handle.get(1)->selection;
-    if (static_cast<unsigned int>(selection->end - selection->begin) == 0)
+    if (static_cast<unsigned int>(selection->end - selection->begin) <= 0)
         return false;
 
     Target* target = provider ? provider->get() : 0;

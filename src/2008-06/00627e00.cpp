@@ -1,5 +1,5 @@
-// from server: 63% by colin
-// roc-lang: cpp
+// from server: 70% by colin
+// roc-lang: c
 // roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: openrbx-client App/script/Script.cpp
+// roc-flags: /O2 /GS- /MD
+// roc-lib: lua-5.1.4-dll lstrlib.c
