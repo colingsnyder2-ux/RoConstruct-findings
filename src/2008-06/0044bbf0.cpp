@@ -5,12 +5,12 @@ struct Target {
 
 struct Link {
     char padding[0x24];
-    Target* target;
+    Target* volatile target;
 };
 
 struct CRobloxModule {
     char padding[0x58];
-    Link* link;
+    Link* volatile link;
     void f();
 };
 

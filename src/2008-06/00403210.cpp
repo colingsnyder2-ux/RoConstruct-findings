@@ -1,4 +1,3 @@
-// from server: 77% by king_originala
 struct Guid {
     unsigned long a;
     unsigned short b, c;

@@ -1,4 +1,3 @@
-// from server: 72% by king_originala
 typedef long HRESULT;
 typedef unsigned short* BSTR;
 

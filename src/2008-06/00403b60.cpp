@@ -1,4 +1,4 @@
-// from server: 70% by king_originala
+// roc-flags: /O2 /GS- /EHa /MD
 typedef unsigned short WCHAR;
 
 extern void (__stdcall *SysFreeString)(WCHAR *);

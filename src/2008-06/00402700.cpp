@@ -20,7 +20,7 @@ struct Object
 unsigned long __stdcall release(Object* object)
 {
     unsigned long result = --object->references;
-    if (result == 0 && object != 0)
+    if (result == 0 && object)
         object->interfacePart.destroy(1);
     return result;
 }

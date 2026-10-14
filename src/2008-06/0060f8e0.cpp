@@ -1,4 +1,3 @@
-// from server: 66% by king_originala
 // roc 2008-06 0060f8e0  unit: RBX::BlockBlockContact  size: 203 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 0060f8e0
 //
@@ -88,59 +87,9 @@
 // 0060f9a8  5e                   pop esi
 // 0060f9a9  5b                   pop ebx
 // 0060f9aa  c3                   ret 
+// library rbxgs-dll/util\Extents.cpp (function ?vv@Extents@RBX@@SA?AV12@ABVVector3@G3D@@0@Z)
 
-#pragma float_control(precise, off)
-
-struct Vector3 {
-    float x, y, z;
-
-    __forceinline Vector3(float a, float b, float c);
-    __forceinline Vector3(const Vector3& v);
-    __forceinline Vector3& operator=(const Vector3& v);
-};
-
-__forceinline Vector3::Vector3(float a, float b, float c)
-    : x(a), y(b), z(c) {}
-
-__forceinline Vector3::Vector3(const Vector3& v)
-    : x(v.x), y(v.y), z(v.z) {}
-
-__forceinline Vector3& Vector3::operator=(const Vector3& v) {
-    x = v.x;
-    y = v.y;
-    z = v.z;
-    return *this;
-}
-
-struct Box {
-    Vector3 low;
-    Vector3 high;
-};
-
-extern const Vector3& __cdecl infinityVector();
-
-static __forceinline const float& minimum(const float& a, const float& b) {
-    return a < b ? a : b;
-}
-
-static __forceinline const float& maximum(const float& a, const float& b) {
-    return a > b ? a : b;
-}
-
-Box* __cdecl makeBox(Box* result, const Vector3& a, const Vector3& b) {
-    result->low = infinityVector();
-    const Vector3& inf = infinityVector();
-    result->high = Vector3(-inf.x, -inf.y, -inf.z);
-
-    result->low = Vector3(
-        minimum(a.x, b.x),
-        minimum(a.y, b.y),
-        minimum(a.z, b.z));
-
-    result->high = Vector3(
-        maximum(a.x, b.x),
-        maximum(a.y, b.y),
-        maximum(a.z, b.z));
-
-    return result;
-}
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast
+// roc-lib: rbxgs-dll util/Extents.cpp

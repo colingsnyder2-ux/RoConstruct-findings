@@ -1,4 +1,3 @@
-// from server: 75% by king_originala
 extern "C" int (__stdcall *lstrlenA)(const char*);
 
 struct Exception

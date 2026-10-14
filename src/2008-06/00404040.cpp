@@ -1,4 +1,3 @@
-// from server: 51% by king_originala
 extern "C" int (__stdcall * const lstrlenA)(const char *);
 extern int __cdecl LookupType(const char *, unsigned short *);
 
