@@ -1,87 +1,71 @@
-// from server: 91% by king_originala
-struct Input {
-    virtual void v0();
-    virtual void v1();
-    virtual void v2();
-    virtual void v3();
-    virtual void v4();
-    virtual short x();
-    virtual short y();
-};
+// roc 2008-06 00573c00  unit: RBX::GuiRoot  size: 167 bytes
+// Make this compile to the exact bytes below, then: roc check 2008-06 00573c00
+//
+// 00573c00  53                   push ebx
+// 00573c01  55                   push ebp
+// 00573c02  8b6c240c             mov ebp, dword ptr [esp + 0xc]
+// 00573c06  8b4500               mov eax, dword ptr [ebp]
+// 00573c09  8b5018               mov edx, dword ptr [eax + 0x18]
+// 00573c0c  8bd9                 mov ebx, ecx
+// 00573c0e  56                   push esi
+// 00573c0f  8bcd                 mov ecx, ebp
+// 00573c11  ffd2                 call edx
+// 00573c13  0fb7f0               movzx esi, ax
+// 00573c16  8b4500               mov eax, dword ptr [ebp]
+// 00573c19  8b5014               mov edx, dword ptr [eax + 0x14]
+// 00573c1c  8bcd                 mov ecx, ebp
+// 00573c1e  ffd2                 call edx
+// 00573c20  98                   cwde 
+// 00573c21  0fbfce               movsx ecx, si
+// 00573c24  89442410             mov dword ptr [esp + 0x10], eax
+// 00573c28  33f6                 xor esi, esi
+// 00573c2a  db442410             fild dword ptr [esp + 0x10]
+// 00573c2e  894c2410             mov dword ptr [esp + 0x10], ecx
+// 00573c32  8bcb                 mov ecx, ebx
+// 00573c34  db442410             fild dword ptr [esp + 0x10]
+// 00573c38  d9c9                 fxch st(1)
+// 00573c3a  d91d784d9700         fstp dword ptr [0x974d78]
+// 00573c40  d91d7c4d9700         fstp dword ptr [0x974d7c]
+// 00573c46  e8d571f1ff           call 0x48ae20
+// 00573c4b  85c0                 test eax, eax
+// 00573c4d  7652                 jbe 0x573ca1
+// 00573c4f  57                   push edi
+// 00573c50  8bbb08010000         mov edi, dword ptr [ebx + 0x108]
+// 00573c56  8b5710               mov edx, dword ptr [edi + 0x10]
+// 00573c59  2b570c               sub edx, dword ptr [edi + 0xc]
+// 00573c5c  c1fa03               sar edx, 3
+// 00573c5f  3bf2                 cmp esi, edx
+// 00573c61  7206                 jb 0x573c69
+// 00573c63  ff1590288000         call dword ptr [0x802890]
+// 00573c69  8b470c               mov eax, dword ptr [edi + 0xc]
+// 00573c6c  8b04f0               mov eax, dword ptr [eax + esi*8]
+// 00573c6f  6a00                 push 0
+// 00573c71  68d8b89200           push 0x92b8d8
+// 00573c76  687c909200           push 0x92907c
+// 00573c7b  6a00                 push 0
+// 00573c7d  50                   push eax
+// 00573c7e  e843db1200           call 0x6a17c6
+// 00573c83  83c414               add esp, 0x14
+// 00573c86  85c0                 test eax, eax
+// 00573c88  740a                 je 0x573c94
+// 00573c8a  8b10                 mov edx, dword ptr [eax]
+// 00573c8c  8bc8                 mov ecx, eax
+// 00573c8e  8b4260               mov eax, dword ptr [edx + 0x60]
+// 00573c91  55                   push ebp
+// 00573c92  ffd0                 call eax
+// 00573c94  8bcb                 mov ecx, ebx
+// 00573c96  46                   inc esi
+// 00573c97  e88471f1ff           call 0x48ae20
+// 00573c9c  3bf0                 cmp esi, eax
+// 00573c9e  72b0                 jb 0x573c50
+// 00573ca0  5f                   pop edi
+// 00573ca1  5e                   pop esi
+// 00573ca2  5d                   pop ebp
+// 00573ca3  5b                   pop ebx
+// 00573ca4  c20400               ret 4
+// library openrbx-client/App\gui\GUI.cpp (function ?render2d@GuiRoot@RBX@@UAEXPAVAdorn@2@@Z)
 
-struct Item {
-    virtual void v0();
-    virtual void v1();
-    virtual void v2();
-    virtual void v3();
-    virtual void v4();
-    virtual void v5();
-    virtual void v6();
-    virtual void v7();
-    virtual void v8();
-    virtual void v9();
-    virtual void v10();
-    virtual void v11();
-    virtual void v12();
-    virtual void v13();
-    virtual void v14();
-    virtual void v15();
-    virtual void v16();
-    virtual void v17();
-    virtual void v18();
-    virtual void v19();
-    virtual void v20();
-    virtual void v21();
-    virtual void v22();
-    virtual void v23();
-    virtual void update(Input *);
-};
-
-struct Point {
-    float x, y;
-};
-
-extern Point position;
-extern char instanceType;
-extern char itemType;
-
-extern "C" void *__cdecl castObject(void *, long, void *, void *, int);
-extern "C" void (__cdecl *invalidParameter)();
-
-struct Entry {
-    void *object;
-    void *control;
-};
-
-struct Children {
-    char padding[12];
-    Entry *begin;
-    Entry *end;
-};
-
-struct Root {
-    char padding[0x108];
-    Children *children;
-    unsigned count();
-    void update(Input *);
-};
-
-void Root::update(Input *input)
-{
-    short y = input->y();
-    short x = input->x();
-    position.x = (float)x;
-    position.y = (float)y;
-
-    for (unsigned i = 0; i < count(); ++i) {
-        Children *list = children;
-        if (i >= (unsigned)(list->end - list->begin))
-            invalidParameter();
-
-        Item *item = (Item *)castObject(
-            list->begin[i].object, 0, &instanceType, &itemType, 0);
-
-        if (item)
-            item->update(input);
-    }
-}
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast
+// roc-lib: openrbx-client App/gui/GUI.cpp

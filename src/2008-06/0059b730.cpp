@@ -65,7 +65,8 @@ __forceinline Value::~Value()
 
 Vector3 Value::get()
 {
-    if (compareType(&vectorType, *descriptor->info))
+    const type_info* t = descriptor->info;
+    if (compareType(&vectorType, *t))
         return extractVector(&content);
 
     Value temporary(*this);

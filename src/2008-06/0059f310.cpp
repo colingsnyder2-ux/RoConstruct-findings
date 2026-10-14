@@ -95,7 +95,8 @@ inline Temporary::~Temporary()
 
 MeshId S::f()
 {
-    if (typeEqual(&meshType, *type->info))
+    const TypeInfo* t = type->info;
+    if (typeEqual(&meshType, *t))
         return getMeshId(&holder);
 
     Temporary temporary(*this);

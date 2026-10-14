@@ -50,7 +50,8 @@ inline S::~S()
 
 int S::value()
 {
-    if (typeEqual(&surfaceType, metadata->type))
+    const TypeInfo* t = metadata->type;
+    if (typeEqual(&surfaceType, t))
         return *getValue(&holder);
 
     S copy(*this);

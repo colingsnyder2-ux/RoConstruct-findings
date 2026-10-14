@@ -139,9 +139,8 @@ __forceinline Object* Shared::operator->() const
 }
 
 __forceinline Shared::Shared(const Shared& other)
+    : object(other.object), count(other.count)
 {
-    object = other.object;
-    count = other.count;
     if (count) {
         volatile long* strong = &count->strong;
         _InterlockedExchangeAdd(strong, 1);

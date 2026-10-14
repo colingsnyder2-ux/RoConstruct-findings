@@ -73,7 +73,8 @@ inline Temporary::~Temporary()
 
 Vector3 Value::get()
 {
-    if (compareType(&colorType, *type->info)) {
+    const type_info* t = type->info;
+    if (compareType(&colorType, *t)) {
         const Vector3& v = extractVector(&payload);
         return Vector3(v.x, v.y, v.z);
     }
