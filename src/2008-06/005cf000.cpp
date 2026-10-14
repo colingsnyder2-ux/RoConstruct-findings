@@ -1,4 +1,6 @@
-// from server: 80% by king_originala
+// from server: 100% by colin
+// roc-cl: 50727
+// roc-flags: /O2 /GS- /EHsc /MD /fp:fast
 inline const float& minimum(const float& a, const float& b)
 {
     return b < a ? b : a;

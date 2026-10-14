@@ -480,6 +480,44 @@
     "append": [
       " /fp:fast"
     ],
-    "next": "Float-heavy siblings of winners; flags alone do not fix layout mismatches."
+    "next": "Float-heavy siblings of winners; flags alone do not fix layout mismatches.",
+    "result": {
+      "date": "2026-10-14",
+      "trials": 630,
+      "new_verified": 7,
+      "evidence": "work/research-jobs/app-fp-fast-2008/05eaa5134a9f4e369a87387168215a60.log",
+      "winners": [
+        "0066faf0",
+        "005df380",
+        "004649f0",
+        "00646af0",
+        "005cf190",
+        "005e2670",
+        "00607ad0"
+      ],
+      "note": "all 7 on VS2005 50727"
+    }
+  },
+  "app-fp-fast-50727-75-89": {
+    "op": "grid",
+    "library": "Roblox app code (non-Ogre)",
+    "hypothesis": "app-fp-fast-2008 winners were all VS2005 50727 + /fp:fast; lower-scored x87 sources may need the same pair",
+    "targets": {
+      "unit": "^(?!Ogre::)",
+      "scores": [
+        75,
+        89
+      ]
+    },
+    "builds": [
+      50727
+    ],
+    "profiles": [
+      "keep"
+    ],
+    "append": [
+      " /fp:fast"
+    ],
+    "next": "If it pays, extend to 60-74."
   }
 }
