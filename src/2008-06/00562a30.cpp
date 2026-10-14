@@ -1,4 +1,4 @@
-// from server: 98% by king_originala
+// roc 2008-06 00562a30
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
 
@@ -88,7 +88,8 @@ inline Buffer::Buffer(int value) {
 
 inline Buffer::~Buffer() {
     Header* header = reinterpret_cast<Header*>(data - 16);
-    if (_InterlockedExchangeAdd(&header->references, -1) - 1 <= 0)
+    volatile long* refs = &header->references;
+    if (_InterlockedExchangeAdd(refs, -1) - 1 <= 0)
         header->manager->release(header);
 }
 
