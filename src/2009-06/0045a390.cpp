@@ -1,4 +1,3 @@
-// from server: 88% by atomic.potato
 // roc 2009-06 0045a390  unit: CRobloxWnd::PartDropTarget  size: 24 bytes
 // Make this compile to the exact bytes below, then: roc check 2009-06 0045a390
 //
@@ -12,14 +11,9 @@
 // 0045a3a3  7402                 je 0x45a3a7
 // 0045a3a5  8bc2                 mov eax, edx
 // 0045a3a7  c3                   ret 
+// library g3d-6.09-rbx2008/G3Dcpp\AABox.cpp (function ??$max@M@std@@YAABMABM0@Z)
 
-struct CRobloxWnd_PartDropTarget
-{
-};
-
-float* __cdecl f(float* a, float* b)
-{
-    if (*b < *a)
-        return b;
-    return a;
-}
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD /fp:fast
+// roc-lib: g3d-6.09-rbx2008 G3Dcpp/AABox.cpp
