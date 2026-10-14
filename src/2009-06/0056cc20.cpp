@@ -1,4 +1,3 @@
-// from server: 72% by atomic.potato
 // roc 2009-06 0056cc20  unit: G3D::Shader  size: 68 bytes
 // Make this compile to the exact bytes below, then: roc check 2009-06 0056cc20
 //
@@ -28,23 +27,9 @@
 // 0056cc5c  8bc1                 mov eax, ecx
 // 0056cc5e  d95904               fstp dword ptr [ecx + 4]
 // 0056cc61  c20800               ret 8
+// library g3d-6.09-rbx2008/G3Dcpp\Vector2.cpp (function ??KVector2@G3D@@QBE?AV01@M@Z)
 
-struct Shader {
-    float x;
-    float y;
-    void normalize(float* out, float len);
-};
-
-extern "C" void* __fastcall sub_56cbc0();
-
-void Shader::normalize(float* out, float len) {
-    if (len != 0.0f) {
-        float inv = 1.0f / len;
-        out[0] = x * inv;
-        out[1] = y * inv;
-        return;
-    }
-    void* p = sub_56cbc0();
-    out[0] = *(float*)p;
-    out[1] = *((float*)p + 1);
-}
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD /fp:fast
+// roc-lib: g3d-6.09-rbx2008 G3Dcpp/Vector2.cpp

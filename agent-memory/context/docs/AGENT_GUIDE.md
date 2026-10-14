@@ -205,8 +205,10 @@ bills the CLI's own sign-in (Claude Pro/Max, ChatGPT plan) or `ANTHROPIC_API_KEY
 
 Claude runs with `acceptEdits` and an explicit tool allowlist; Codex with `--sandbox workspace-write` and `approval_policy="never"`
 (writes limited to this folder). The server re-verifies every submission.
-Dashboard worker tabs start concurrently; only command jobs queue behind other
-commands. Goal runs skip unchanged reported blockers between cycles. Local 100%
+Dashboard agent tabs launch 15 seconds apart, then run concurrently without a session cap.
+Heavy target planning and memory sync take turns across local processes to bound startup
+RAM; per-tab model and worker parameters stay unchanged. Command jobs queue behind
+other commands. Goal runs skip unchanged reported blockers between cycles. Local 100%
 and already-exact receipts are not new wins. OpenCode appears in the CLI selector,
 loads installed models, and runs with its own standalone server per worker.
 Goal shortlists mix 14 near-misses (95–99%), 7 largest remaining functions and
@@ -216,6 +218,11 @@ excluded. Each listed source is copied into the run's scratch folder with ready
 check/submit commands, so models need not rediscover files or shell syntax.
 Thinking and tool bursts share one folded activity row; expanding it retains
 reasoning summaries, complete commands and outputs.
+Every final agent report includes an **Improvements** section: 1-3 API/tool, AI
+workflow, prompt or process suggestions grounded in the run. Each names the observed
+problem, proposed fix and expected benefit; the same text goes into the workflow
+record's `improvements` field for History. No supported suggestion means an explicit
+"no clear improvement identified", not an invented recommendation.
 Repair prompts include bounded caller/callee names, strings, imports, argument
 slots and observed reads/writes. Agents infer likely behavior, cite one supporting
 fact, and test a C++ change against the bytes; inferred purpose never proves layout
