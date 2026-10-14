@@ -1,4 +1,8 @@
-// from server: 97% by king_originala
+// from server: 100% by colin
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+
 struct String {
     const char* c_str() const;
 };
@@ -14,6 +18,8 @@ struct Name {
     int unused;
     String text;
 };
+
+inline const char* NameText(const Name* n, const Name*) { return n->text.c_str(); }
 
 struct Source {
     virtual void reserved();
@@ -52,7 +58,7 @@ struct Item : Base, Link {
 };
 
 Item::Item(Source* input, int option)
-    : Base(input->name->text.c_str(), 0, 0),
+    : Base(NameText(input->name, input->name), 0, 0),
       Link(input, option),
       source(input)
 {

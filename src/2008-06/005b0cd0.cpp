@@ -1,4 +1,4 @@
-// from server: 96% by colin
+// from server: 100% by colin
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
 extern "C" long __cdecl _InterlockedIncrement(volatile long*);
@@ -14,6 +14,16 @@ struct Control
     virtual void destroy();
     volatile long strong;
     volatile long weak;
+
+    void release()
+    {
+        if (_InterlockedDecrement(&strong) == 0)
+        {
+            dispose();
+            if (_InterlockedDecrement(&weak) == 0)
+                destroy();
+        }
+    }
 };
 
 struct Shared
@@ -34,13 +44,8 @@ __forceinline Shared::Shared(const Shared& other)
 
 __forceinline Shared::~Shared()
 {
-    Control* p = control;
-    if (p && _InterlockedDecrement(&p->strong) == 1)
-    {
-        p->dispose();
-        if (_InterlockedDecrement(&p->weak) == 1)
-            p->destroy();
-    }
+    if (control)
+        control->release();
 }
 
 struct VirtualBase {};

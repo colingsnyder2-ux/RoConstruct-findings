@@ -1,4 +1,4 @@
-// from server: 84% by king_originala
+// from server: 93% by colin
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
 extern "C" long __cdecl _InterlockedDecrement(volatile long*);
@@ -128,10 +128,11 @@ int S::run(int argument)
         dragging = false;
         RBX::handle(reinterpret_cast<int>(name()->text.c_str()), owner);
     } else if (item) {
+        void* held = item;
         Context context(owner);
         context.get(1)->clear();
         Service* service = context.get(1);
-        service->set(item);
+        service->set(held);
     }
 
     finish();

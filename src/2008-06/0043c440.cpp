@@ -1,4 +1,4 @@
-// from server: 97% by king_originala
+// from server: 100% by colin
 struct Text {
     const char* c_str() const;
 };
@@ -20,6 +20,8 @@ struct Source {
     virtual bool value();
     TextOwner* text;
 };
+
+inline const char *NameText(const TextOwner *n, const TextOwner *) { return n->text.c_str(); }
 
 struct Primary {
     virtual ~Primary();
@@ -52,7 +54,7 @@ struct Item : ItemBase, Attachment {
 };
 
 Item::Item(Source* object, int argument)
-    : ItemBase(object->text->text.c_str(), 0, 0),
+    : ItemBase(NameText(object->text, object->text), 0, 0),
       Attachment(object, argument)
 {
     state = 1;

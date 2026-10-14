@@ -1,4 +1,4 @@
-// from server: 90% by king_originala
+// from server: 100% by colin
 struct Accessor {
     virtual void slot0();
     virtual void slot1();
@@ -30,11 +30,8 @@ int Descriptor::get(void* object)
     registerInitializer(initialize, &registrationState);
     EnumTable* table = getEnumTable();
 
-    unsigned int count =
-        static_cast<unsigned int>(table->last - table->first);
-    if (index < count) {
-        count = static_cast<unsigned int>(table->last - table->first);
-        if (index >= count)
+    if (index < static_cast<unsigned int>(table->last - table->first)) {
+        if (index >= static_cast<unsigned int>(table->last - table->first))
             _invalid_parameter_noinfo();
         return table->first[index];
     }

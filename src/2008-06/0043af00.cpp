@@ -1,4 +1,4 @@
-// from server: 97% by king_originala
+// from server: 100% by colin
 struct String {
     const char* c_str() const;
 };
@@ -59,8 +59,13 @@ struct XItem : PropertyItem, ItemInterface
     virtual ~XItem();
 };
 
+static TextData* dataOf(Record* source)
+{
+    return source->data;
+}
+
 XItem::XItem(Record* source, int argument)
-    : PropertyItem(source->data->text.c_str(), 0, 0),
+    : PropertyItem(dataOf(source)->text.c_str(), 0, 0),
       ItemInterface(source, argument),
       record(source)
 {

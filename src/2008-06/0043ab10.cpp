@@ -1,4 +1,4 @@
-// from server: 97% by king_originala
+// from server: 100% by colin
 struct String {
     const char* c_str() const;
 };
@@ -54,8 +54,13 @@ struct S : Base, Helper {
     virtual ~S();
 };
 
+static Name* nameOf(Item* p)
+{
+    return p->name;
+}
+
 S::S(Item* p, int n)
-    : Base(p->name->text.c_str(), 0, 0),
+    : Base(nameOf(p)->text.c_str(), 0, 0),
       Helper(p, n)
 {
     flag = 1;

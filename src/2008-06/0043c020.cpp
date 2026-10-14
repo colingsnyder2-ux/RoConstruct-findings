@@ -1,4 +1,4 @@
-// from server: 97% by king_originala
+// from server: 100% by colin
 struct String
 {
     const char* c_str() const;
@@ -23,6 +23,8 @@ struct Item
     virtual bool value();
     Holder* holder;
 };
+
+inline const char* NameText(const Holder* n, const Holder*) { return n->text.c_str(); }
 
 struct Base
 {
@@ -60,7 +62,7 @@ struct S : Base
 };
 
 S::S(Item* source, int argument)
-    : Base(source->holder->text.c_str(), 0, 0),
+    : Base(NameText(source->holder, source->holder), 0, 0),
       member(source, argument)
 {
     kind = 1;

@@ -1,40 +1,19 @@
-// from server: 98% by king_originala
-struct Compare
-{
-    Compare();
-};
-
-struct Allocator
-{
-    Allocator();
-};
-
-inline Compare::Compare() {}
-inline Allocator::Allocator() {}
-
-struct Base
-{
+// from server: 100% by colin
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+#include <map>
+struct Base {
+    virtual void vfunc();
+    char padding[84];
     Base();
-    virtual ~Base();
-    char reserved[84];
+    ~Base();
 };
-
-struct Tree
-{
-    Tree(const Compare&, const Allocator&);
-    ~Tree();
-    char storage[12];
-};
-
-struct CRobloxView : Base
-{
-    Tree tree;
-
+struct CRobloxView : Base {
+    std::map<int,int> member;
+    virtual void vfunc();
     CRobloxView();
-    virtual ~CRobloxView();
 };
-
-CRobloxView::CRobloxView()
-    : Base(), tree(Compare(), Allocator())
+CRobloxView::CRobloxView() : Base()
 {
 }

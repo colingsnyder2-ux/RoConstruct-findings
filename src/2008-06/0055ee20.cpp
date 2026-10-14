@@ -1,4 +1,4 @@
-// from server: 91% by king_originala
+// from server: 98% by colin
 extern "C" unsigned int __cdecl strlen(const char *);
 #pragma intrinsic(strlen)
 
@@ -20,7 +20,8 @@ struct StringStorage {
 
 inline StringStorage::StringStorage()
 {
-    data = manager.table[3](&manager) + 16;
+    ManagerFunction f = manager.table[3];
+    data = f(&manager) + 16;
 }
 
 struct String : StringStorage {

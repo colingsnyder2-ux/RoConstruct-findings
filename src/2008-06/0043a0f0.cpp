@@ -1,63 +1,69 @@
-// from server: 96% by king_originala
-struct Text {
-    char storage[28];
+// from server: 100% by colin
+struct String {
+    const char* c_str() const;
 };
 
-extern const char *(__thiscall *textString)(const Text *);
+extern const char* (__thiscall* string_c_str)(const String*);
+
+inline const char* String::c_str() const
+{
+    return string_c_str(this);
+}
 
 struct Name {
-    int header;
-    Text text;
+    char pad[4];
+    String text;
 };
 
-struct Object {
-    virtual void first();
+struct Item {
+    virtual ~Item();
     virtual bool value();
-    Name *name;
+    Name* name;
 };
 
 struct Primary {
     virtual ~Primary();
-    char padding[0x1C];
+    char pad[0x1c];
 };
 
 struct Secondary {
     virtual ~Secondary();
-    char padding04[0xD8];
-    int flag;
-    char paddingE0[0x20];
 };
 
 struct Base : Primary, Secondary {
-    Base(const char *, int, int);
+    char pad0[0xd8];
+    int flag;
+    char pad1[0x20];
+
+    Base(const char*, int, int);
     virtual ~Base();
-    void OnValueChanged(int);
+    void SetValue(int);
 };
 
 struct Helper {
     virtual ~Helper();
-    char padding[0x1C];
-    Helper(Object *, int);
+    char pad[0x1c];
+
+    Helper(Item*, int);
 };
 
-struct Combined : Base, Helper {
-    Combined(const char *, Object *, int);
-};
+struct S : Base, Helper {
+    Item* item;
 
-struct S : Combined {
-    Object *object;
-    S(Object *, int);
+    S(Item*, int);
     virtual ~S();
 };
 
-__forceinline Combined::Combined(const char *name, Object *p, int n)
-    : Base(name, 0, 0), Helper(p, n)
+static Name* nameOf(Item* p)
 {
-    flag = 1;
+    return p->name;
 }
 
-S::S(Object *p, int n)
-    : Combined(textString(&p->name->text), p, n), object(p)
+S::S(Item* p, int n)
+    : Base(nameOf(p)->text.c_str(), 0, 0),
+      Helper(p, n)
 {
-    OnValueChanged(p->value());
+    flag = 1;
+    item = p;
+    SetValue(p->value());
 }
