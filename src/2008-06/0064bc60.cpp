@@ -1,5 +1,4 @@
-// from server: 100% by colin
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lang: cpp
-// roc-lib: rbxgs roc_unit_55a8d705f4093d42.cpp
+// roc 2008-06 0064bc60  unit: RBX::SleepStage  size: 282 bytes
+// Make this compile to the exact bytes below, then: roc check 2008-06 0064bc60
+//
+// 0064bc60  
