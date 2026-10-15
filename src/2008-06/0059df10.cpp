@@ -1,3 +1,5 @@
+// roc-cl: 50727
+// roc-flags: /O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MD /Op
 // from server: 89% by king_originala
 extern char descriptor;
 

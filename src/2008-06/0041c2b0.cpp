@@ -1,80 +1,89 @@
-// from server: 78% by king_originala
-struct Value {
-    virtual ~Value();
-    virtual void reserved();
-    virtual Value* clone() const;
+// from server: 99% by colin
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
+#include <typeinfo>
+
+
+namespace RBX {
+    namespace Reflection {
+        class DescribedBase { public:
+            virtual ~DescribedBase();
+        };
+    }
+
+    namespace Network {
+        class Server : public Reflection::DescribedBase {
+        };
+    }
+}
+
+struct Content {
+    virtual ~Content();
+    virtual void type() const;
+    virtual Content* clone() const;
 };
 
-struct Argument {
+struct Value {
     int value;
-    Value* object;
+    Content* content;
 
-    Argument(const Argument& other) {
-        Value* source = other.object;
-        value = other.value;
-        object = source ? source->clone() : 0;
-    }
-
-    ~Argument() {
-        if (object)
-            delete object;
-    }
-
+    static Content* copyContent(Content*);
+    Value(const Value&);
+    ~Value();
     int* get();
 };
 
+inline Content* Value::copyContent(Content* source)
+{
+    if (source)
+        return source->clone();
+    return 0;
+}
+
+inline Value::Value(const Value& other)
+    : value(other.value), content(copyContent(other.content))
+{
+}
+
+inline Value::~Value()
+{
+    if (content)
+        delete content;
+}
+
 struct Arguments {
-    virtual void reserved();
-    virtual void read(int index, Argument* value);
+    virtual void unused();
+    virtual void assign(int, Value*);
 };
 
-namespace RBX {
-namespace Reflection {
-struct DescribedBase {
-    virtual ~DescribedBase();
-};
-}
-}
-
-struct WindowBase {};
-
-struct __multiple_inheritance VDHTMLWindow
-    : RBX::Reflection::DescribedBase, WindowBase {
-};
-
-struct BadCast {
-    void* table;
-    const char* message;
-    int owned;
-};
-
-extern BadCast* (__thiscall *constructBadCast)(BadCast*, const char*);
-extern unsigned char badCastThrowInfo;
-extern "C" __declspec(noreturn) void __stdcall throwException(void*, void*);
-
-struct S {
+struct BoundFuncDesc {
     char padding[56];
-    void (VDHTMLWindow::*method)(int, int);
-    Argument first;
-    Argument second;
+    void (__thiscall* function)(void*, int, int);
+    int adjustment;
+    Value first;
+    Value second;
 
     void invoke(RBX::Reflection::DescribedBase*, Arguments*);
 };
 
-void S::invoke(RBX::Reflection::DescribedBase* instance, Arguments* arguments)
+void BoundFuncDesc::invoke(RBX::Reflection::DescribedBase* source,
+                           Arguments* arguments)
 {
-    Argument a(first);
-    arguments->read(1, &a);
+    Value a(first);
+    arguments->assign(1, &a);
 
-    Argument b(second);
-    arguments->read(2, &b);
+    Value b(second);
+    arguments->assign(2, &b);
 
-    VDHTMLWindow* window = dynamic_cast<VDHTMLWindow*>(instance);
-    if (!window) {
-        BadCast error;
-        constructBadCast(&error, "bad cast");
-        throwException(&error, &badCastThrowInfo);
-    }
+    RBX::Network::Server* server =
+        dynamic_cast<RBX::Network::Server*>(source);
 
-    (window->*method)(*a.get(), *b.get());
+    if (!server)
+        throw std::bad_cast("bad cast");
+
+    int* secondValue = b.get();
+    int* firstValue = a.get();
+
+    function(reinterpret_cast<char*>(server) + adjustment,
+             *firstValue, *secondValue);
 }

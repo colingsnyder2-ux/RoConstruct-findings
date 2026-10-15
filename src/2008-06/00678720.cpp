@@ -1,18 +1,19 @@
-// from server: 82% by king_originala
+// from server: 100% by colin
+// roc-flags: /O2 /GS- /EHsc /MD /fp:fast
 void __cdecl sortThree(float& a, float& b, float& c)
 {
-    if ((double)a > b && &b != &a) {
-        double temp = b;
+    if (b < a && &b != &a) {
+        float temp = b;
         b = a;
         a = temp;
     }
-    if ((double)b > c && &c != &b) {
-        double temp = c;
+    if (c < b && &c != &b) {
+        float temp = c;
         c = b;
         b = temp;
     }
-    if ((double)a > b && &b != &a) {
-        double temp = b;
+    if (b < a && &b != &a) {
+        float temp = b;
         b = a;
         a = temp;
     }

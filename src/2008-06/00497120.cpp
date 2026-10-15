@@ -1,4 +1,6 @@
-// from server: 98% by king_originala
+// from server: 100% by colin
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
 void* __cdecl operator new(unsigned int);
 void __cdecl operator delete(void*);
 
@@ -10,29 +12,11 @@ template<class T, class Traits, class Alloc>
 class basic_string {
     char storage[28];
 public:
-    basic_string(const basic_string&);
-    ~basic_string();
+    __declspec(dllimport) basic_string(const basic_string&);
+    __declspec(dllimport) ~basic_string();
 };
 
 typedef basic_string<char, char_traits<char>, allocator<char> > string;
-}
-
-extern void (__thiscall *string_copy)(std::string*, const std::string&);
-extern void (__thiscall *string_destroy)(std::string*);
-
-namespace std {
-template<class T, class Traits, class Alloc>
-__forceinline basic_string<T, Traits, Alloc>::basic_string(
-    const basic_string& other)
-{
-    string_copy(this, other);
-}
-
-template<class T, class Traits, class Alloc>
-__forceinline basic_string<T, Traits, Alloc>::~basic_string()
-{
-    string_destroy(this);
-}
 }
 
 struct Node {

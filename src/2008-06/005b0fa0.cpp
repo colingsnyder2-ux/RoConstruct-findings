@@ -1,51 +1,37 @@
-// from server: 77% by king_originala
-extern "C" void (__cdecl *invalid_parameter_noinfo)();
-extern "C" void* __cdecl __RTDynamicCast(void*, long, void*, void*, int);
-extern char instance_type;
-extern char camera_subject_type;
-
-struct Entry
-{
-    void* object;
-    void* control;
+// from server: 98% by colin
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+#include <vector>
+namespace RBX {
+class Instance;
+struct SP { Instance* p; void* c; };
+struct Children {
+    std::vector<SP> v;
 };
-
-struct Children
-{
-    char reserved[12];
-    Entry* volatile first;
-    Entry* volatile last;
-};
-
-struct CameraSubject
-{
-    virtual void slot0() = 0;
-    virtual void update(float) = 0;
-};
-
-struct S
-{
-    void update(float value);
-};
-
-void S::update(float value)
-{
-    void (__cdecl * const invalid)() = invalid_parameter_noinfo;
+class Instance {
+public:
+    virtual ~Instance();
     Children* children;
-    for (unsigned int i = 0;
-         (children = *reinterpret_cast<Children* volatile*>(
-             reinterpret_cast<char*>(this) - 200)) != 0 &&
-         i < static_cast<unsigned int>(children->last - children->first);
-         ++i)
-    {
-        Children* current = children;
-        if (i >= static_cast<unsigned int>(current->last - current->first))
-            invalid();
-
-        CameraSubject* subject = static_cast<CameraSubject*>(
-            __RTDynamicCast(current->first[i].object, 0,
-                            &instance_type, &camera_subject_type, 0));
-        if (subject)
-            subject->update(value);
+    char pad[0x198 - 8];
+    size_t numChildren() const { return children ? children->v.size() : 0; }
+    Instance* getChild(size_t i) const { return children->v[i].p; }
+};
+class ICameraSubject {
+public:
+    virtual void getCameraSubject();
+    virtual void onCameraNear(float);
+};
+class ModelInstance : public Instance, public ICameraSubject {
+public:
+    virtual void onCameraNear(float);
+};
+void ModelInstance::onCameraNear(float f)
+{
+    for (size_t i = 0; i < numChildren(); ++i) {
+        ICameraSubject* s = dynamic_cast<ICameraSubject*>(getChild(i));
+        if (s)
+            s->onCameraNear(f);
     }
+}
 }

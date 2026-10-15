@@ -1,46 +1,39 @@
-// from server: 93% by king_originala
-namespace std
-{
-    template<class T> struct char_traits;
-    template<class T> class allocator;
+// from server: 100% by colin
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+#include <string>
+extern std::string* (__thiscall * const stringCopy)(std::string*, const std::string&);
+extern void (__thiscall * const stringDestroy)(std::string*);
 
-    template<class T, class Traits, class Allocator>
-    class basic_string
-    {
-        unsigned int storage[7];
 
-    public:
-        basic_string(const basic_string&);
-        ~basic_string();
-    };
-}
 
-typedef std::basic_string<char, std::char_traits<char>, std::allocator<char> > String;
+
 
 struct Base
 {
-    unsigned int data[2];
+    unsigned char storage[8];
 
-    Base(void* context, String name);
+    Base(void*, std::string);
     virtual ~Base();
 };
 
 struct ClearBackpack : Base
 {
-    void* owner;
-    void* backpack;
-    unsigned int field14;
-    unsigned int field18;
+    void* volatile owner;
+    void* volatile target;
+    volatile unsigned int state;
+    volatile unsigned int flags;
 
-    ClearBackpack(String name, void* object);
+    ClearBackpack(std::string, void*);
     virtual ~ClearBackpack();
 };
 
-ClearBackpack::ClearBackpack(String name, void* object)
+ClearBackpack::ClearBackpack(std::string name, void* object)
     : Base(object ? static_cast<char*>(object) + 0x2ec : 0, name),
       owner(object),
-      backpack(object),
-      field14(0),
-      field18(0)
+      target(object),
+      state(0),
+      flags(0)
 {
 }

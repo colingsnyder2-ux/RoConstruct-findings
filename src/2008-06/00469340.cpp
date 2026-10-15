@@ -1,3 +1,5 @@
+// roc-cl: 21022
+// roc-flags: /O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MD
 // from server: 90% by king_originala
 struct Vector2 {
     float x;

@@ -1,3 +1,5 @@
+// roc-cl: 21022
+// roc-flags: /O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MD
 // from server: 81% by king_originala
 struct Target {
     void f();
@@ -16,5 +18,6 @@ struct CRobloxModule {
 
 void CRobloxModule::f()
 {
-    link->target->f();
+    Link* lnk = link;
+    lnk->target->f();
 }

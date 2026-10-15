@@ -1,4 +1,4 @@
-// from server: 99% by colin
+// from server: 100% by colin
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD /arch:SSE2 /fp:fast
@@ -9,5 +9,5 @@ extern "C" void helper(void(P::*)(),const char*,const char*,int,void*);
 struct D{D(void(P::*)(),const char*,const char*,int);~D();};
 __declspec(noinline) D::D(void(P::*f)(),const char*n,const char*c,int s){helper(f,n,c,s,this);} D::~D(){}
 extern "C" void tail(void*); extern int e;
-static D d(&P::method,"SetBody","html",0);
+static D d(&P::method,"SetMinutesAfterMidnight","minutes",0);
 void func_007eedc0(){tail(&e);}
