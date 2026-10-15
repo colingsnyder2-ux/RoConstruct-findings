@@ -1,58 +1,72 @@
-// from server: 79% by king_originala
+// from server: 100% by colin
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
+extern "C" long __cdecl _InterlockedDecrement(volatile long*);
+#pragma intrinsic(_InterlockedDecrement)
 
 namespace RBX {
-    class Instance;
-    class ServiceProvider;
+struct Instance;
+struct ServiceProvider;
 }
 
-RBX::ServiceProvider* __cdecl func_006174e0(RBX::Instance*);
+RBX::ServiceProvider* __cdecl func_00492e00(RBX::Instance*);
 
 struct Control {
     virtual ~Control();
     virtual void dispose();
     virtual void destroy();
-    volatile long strong;
-    volatile long weak;
+
+    volatile long strongCount;
+    volatile long weakCount;
 };
 
 struct Reference {
     Control* control;
+
     Reference& operator=(const Reference&);
+    ~Reference();
 };
+
+inline Reference::~Reference()
+{
+    Control* p = control;
+    if (p) {
+        if (_InterlockedDecrement(&p->strongCount) == 0) {
+            p->dispose();
+            if (_InterlockedDecrement(&p->weakCount) == 0)
+                p->destroy();
+        }
+    }
+}
 
 struct Product {
     void* object;
     Reference reference;
-    ~Product();
+
+    Product& operator=(const Product&);
 };
 
-__forceinline Product::~Product()
+inline Product& Product::operator=(const Product& other)
 {
-    Control* p = reference.control;
-    if (p && _InterlockedExchangeAdd(&p->strong, -1) == 1) {
-        p->dispose();
-        if (_InterlockedExchangeAdd(&p->weak, -1) == 1)
-            p->destroy();
-    }
+    object = other.object;
+    reference = other.reference;
+    return *this;
 }
 
 Product __cdecl func_00618a40(RBX::ServiceProvider*);
 
-struct FilteredSelection {
+struct S {
     RBX::Instance* instance;
-    void* cached;
-    Reference reference;
+    Product cached;
+
     void* get(int);
 };
 
-void* FilteredSelection::get(int)
+void* S::get(int)
 {
-    if (!cached) {
-        Product product = func_00618a40(func_006174e0(instance));
-        cached = product.object;
-        reference = product.reference;
-    }
-    return cached;
+    if (!cached.object)
+        cached = func_00618a40(func_00492e00(instance));
+    return cached.object;
 }

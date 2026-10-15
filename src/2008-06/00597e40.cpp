@@ -1,75 +1,95 @@
-// from server: 86% by king_originala
-struct TypeInfo
-{
-    unsigned char storage[8];
-};
+// from server: 100% by colin
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
+namespace std {
+    template<class T> struct char_traits;
+    template<class T> class allocator;
 
-extern TypeInfo textureType;
-extern bool (__thiscall *equalType)(const TypeInfo *, const TypeInfo &);
-extern void (__thiscall *stringCopy)(void *, const void *);
-
-struct String
-{
-    unsigned char storage[28];
-    String(const String &);
-    ~String();
-};
-
-inline String::String(const String &other)
-{
-    stringCopy(this, &other);
+    template<class T, class Traits, class Allocator>
+    class basic_string {
+        unsigned char storage[28];
+    public:
+        basic_string(const basic_string&);
+        ~basic_string();
+    };
 }
 
-struct Texture
-{
-    String name;
-    int value;
+typedef std::basic_string<char, std::char_traits<char>,
+                          std::allocator<char> > String;
+
+typedef String* (__thiscall *StringCopyProc)(String*, const String&);
+extern StringCopyProc stringCopy;
+
+namespace std {
+    template<class T, class Traits, class Allocator>
+    __forceinline basic_string<T, Traits, Allocator>::basic_string(
+        const basic_string& other)
+    {
+        stringCopy(this, other);
+    }
+}
+
+class type_info {
+public:
+    bool operator==(const type_info&) const;
 };
 
-struct Holder
+typedef bool (__thiscall *TypeEqualProc)(const type_info*, const type_info&);
+extern TypeEqualProc typeEqual;
+extern const type_info contentType;
+
+__forceinline bool type_info::operator==(const type_info& other) const
 {
+    return typeEqual(this, other);
+}
+
+struct ContentId {
+    String text;
+    unsigned int value;
+};
+
+struct TypeDescriptor {
+    unsigned char prefix[8];
+    const type_info* info;
+};
+
+struct Holder {
     virtual ~Holder();
-    virtual const TypeInfo &type() const;
-    virtual Holder *clone() const;
+    virtual void reserved();
+    virtual Holder* clone() const;
 };
 
-struct Descriptor
-{
-    unsigned char storage[8];
-    const TypeInfo *type;
+extern const ContentId& __cdecl extractContentId(Holder* const*);
+
+struct S {
+    TypeDescriptor* type;
+    Holder* object;
+
+    S(const S&);
+    ~S();
+    const ContentId& convert() const;
+    ContentId f() const;
 };
 
-extern const Texture &__cdecl extractTexture(Holder **);
-
-struct Product
+__forceinline S::S(const S& other)
 {
-    const Descriptor *descriptor;
-    Holder *holder;
-
-    Product(const Product &);
-    ~Product();
-    const Texture &convert();
-    Texture get();
-};
-
-inline Product::Product(const Product &other)
-{
-    Holder *p = other.holder;
-    descriptor = other.descriptor;
-    holder = p ? p->clone() : 0;
+    Holder* source = other.object;
+    type = other.type;
+    Holder* copy = source ? source->clone() : 0;
+    object = copy;
 }
 
-inline Product::~Product()
+__forceinline S::~S()
 {
-    if (holder)
-        delete holder;
+    if (object)
+        delete object;
 }
 
-Texture Product::get()
+ContentId S::f() const
 {
-    if (equalType(&textureType, *descriptor->type))
-        return extractTexture(&holder);
+    if (contentType == *type->info)
+        return extractContentId(&object);
 
-    Product temporary(*this);
+    S temporary(*this);
     return temporary.convert();
 }

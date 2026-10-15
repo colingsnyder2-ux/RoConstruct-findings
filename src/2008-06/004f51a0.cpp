@@ -1,5 +1,5 @@
-// from server: 17% by atomic.potato
-// roc-lang: cpp
+// from server: 18% by colin
 // roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+// roc-flags: /Od /Ob0 /GS /EHsc /MD
+// roc-lang: cpp
 // roc-lib: rbxgs-view PBBMesh.cpp

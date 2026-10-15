@@ -1,4 +1,6 @@
-// from server: 24% by colin
+// from server: 28% by colin
+// roc-cl: 21022
+// roc-flags: /O1 /GS- /EHsc /MD
 struct LDraw2RobloxColorMap {
     void destroy();
 };

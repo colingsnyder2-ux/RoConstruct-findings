@@ -1,4 +1,6 @@
-// from server: 20% by atomic.potato
+// from server: 22% by colin
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD /fp:fast
 // roc 2008-06 004fe070  unit: RBX::ViewNew::CylinderBuilder  size: 723 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 004fe070
 

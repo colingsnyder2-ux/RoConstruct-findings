@@ -1,72 +1,31 @@
-// from server: 76% by king_originala
-#pragma optimize("g", off)
+// from server: 100% by colin
+// roc-cl: 21022
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD /Od /Ob0 /GS
+// roc 2008-06 0064acf0  unit: RBX::SleepStage  size: 58 bytes
+// Make this compile to the exact bytes below, then: roc check 2008-06 0064acf0
+//
+// 0064acf0  56                   push esi
+// 0064acf1  8b742418             mov esi, dword ptr [esp + 0x18]
+// 0064acf5  57                   push edi
+// 0064acf6  8b3d90288000         mov edi, dword ptr [0x802890]
+// 0064acfc  8d642400             lea esp, [esp]
+// 0064ad00  8b44240c             mov eax, dword ptr [esp + 0xc]
+// 0064ad04  85c0                 test eax, eax
+// 0064ad06  7406                 je 0x64ad0e
+// 0064ad08  3b442414             cmp eax, dword ptr [esp + 0x14]
+// 0064ad0c  7402                 je 0x64ad10
+// 0064ad0e  ffd7                 call edi
+// 0064ad10  8b442410             mov eax, dword ptr [esp + 0x10]
+// 0064ad14  3b442418             cmp eax, dword ptr [esp + 0x18]
+// 0064ad18  740d                 je 0x64ad27
+// 0064ad1a  ff06                 inc dword ptr [esi]
+// 0064ad1c  8d4c240c             lea ecx, [esp + 0xc]
+// 0064ad20  e81be6f9ff           call 0x5e9340
+// 0064ad25  ebd9                 jmp 0x64ad00
+// 0064ad27  5f                   pop edi
+// 0064ad28  5e                   pop esi
+// 0064ad29  c3                   ret 
+// library rbxgs-render/AggregatingSceneManager.cpp (function ??$_Distance2@Viterator@?$_Tree@V?$_Tset_traits@V?$WeakReferenceCountedPointer@VChunk@Render@RBX@@@G3D@@U?$less@V?$WeakReferenceCountedPointer@VChunk@Render@RBX@@@G3D@@@std@@V?$allocator@V?$WeakReferenceCountedPointer@VChunk@Render@RBX@@@G3D@@@4@$0A@@std@@@std@@I@std@@YAXViterator@?$_Tree@V?$_Tset_traits@V?$WeakReferenceCountedPointer@VChunk@Render@RBX@@@G3D@@U?$less@V?$WeakReferenceCountedPointer@VChunk@Render@RBX@@@G3D@@@std@@V?$allocator@V?$WeakReferenceCountedPointer@VChunk@Render@RBX@@@G3D@@@4@$0A@@std@@@0@0AAIUbidirectional_iterator_tag@0@@Z)
 
-void* __cdecl operator new(unsigned int);
-void __cdecl operator delete(void*);
-
-struct Source;
-
-struct Object {
-    char data[36];
-    Object();
-    void update(Source*);
-};
-
-struct Handle {
-    Object* value;
-    Handle();
-    ~Handle();
-    Handle& operator=(const Handle&);
-    void reset(Object*);
-    Object* operator->();
-};
-
-struct B {
-    void destroy();
-};
-
-struct Key {
-    char data[8];
-    B member;
-    Key(Source*);
-    ~Key();
-};
-
-struct Entry {
-    char key[12];
-    Handle value;
-};
-
-struct Iterator {
-    char data[8];
-    bool operator==(const Iterator&) const;
-    Entry& operator*() const;
-};
-
-struct Map {
-    Iterator find(const Key&);
-    Iterator end();
-    Handle& operator[](const Key&);
-};
-
-struct S {
-    char padding[8];
-    Map map;
-    void f(Source*);
-};
-
-void S::f(Source* source)
-{
-    Handle handle;
-    {
-        Key key(source);
-        Iterator position = map.find(key);
-        if (position == map.end()) {
-            handle.reset(new Object);
-            map[key] = handle;
-        } else {
-            handle = (*position).value;
-        }
-    }
-    handle->update(source);
-}
+// roc-lang: cpp
+// roc-lib: rbxgs-render AggregatingSceneManager.cpp

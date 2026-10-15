@@ -1,4 +1,6 @@
-// from server: 26% by colin
+// from server: 43% by colin
+// roc-cl: 21022
+// roc-flags: /Od /Ob0 /GS /EHsc /MD
 struct SubA {
     void f();
 };

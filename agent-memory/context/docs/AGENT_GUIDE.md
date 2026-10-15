@@ -33,6 +33,14 @@ type names when an old library attribution is misleading. Each fact names the
 store instruction, destination, vtable and type descriptor. Constructors and
 destructors both store vptrs; the facts do not establish a layout or calling convention.
 
+For 2008, `native_type_headers` adds up to six bounded, read-only declaration
+candidates from available RBX/Ogre/G3D trees. Different versions stay visible;
+they are not ABI proof. Check real fields, bases and destructors against the native
+stores before drafting. Native box drawing uses the 100-byte `RBX::IndexBox`, not
+the larger G3D Box; constructor RTTI and the genuine virtual destructor resolve
+that distinction. The cached declaration index also finds classes inside headers
+with different filenames; selected excerpts are read afresh.
+
 Agent evidence includes ECX-relative reads/stores and decoded `return_stack_bytes`
 for the target and up to eight callees. These are instruction clues, not ABI proof:
 combine return immediates with caller cleanup; bare `ret` does not prove zero arguments.
@@ -118,7 +126,8 @@ default in automatic mode.
 8. **Boundaries** only with proof, through `work/<client>/bounds.json`.
 
 `roc brute CLIENT` runs the `portable-bruteforce` sweep recipe: client-specific native
-family stages, compiler gates, then source portfolios over unresolved functions.
+family stages, whole-object portfolio fanout, native unoptimized member emission,
+compiler gates, then per-target source portfolios over unresolved functions.
 Portfolios include canonical/local source, retained journal bests and research seeds,
 same-client exact donors with identical instruction shape, and real alternate recipe
 preludes/runtime settings for the same native file. Sourceless targets enter when one
@@ -495,3 +504,9 @@ fanout from client-scoped portfolios. Limit counts distinct source/config contex
 not targets; every emitted function is checked across unresolved code with referenced
 data verification. Remove the limit for a full run. Existing per-target grid journals
 do not imply whole-object coverage. Only server improvement receipts count as gains.
+
+Portfolio fanout schedules one candidate per target before alternate candidates, then
+round-robins compiler contexts. Recipe inputs stream through bounded compile prefetch.
+`evidence_resume` re-expands current sources and reuses complete COFF object hashes
+only under unchanged binary, function extents/relocations and target filters. Changed
+headers/data retry; failed verification keeps local hits eligible.

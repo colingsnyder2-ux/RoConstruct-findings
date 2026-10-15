@@ -1,4 +1,6 @@
-// from server: 21% by colin
+// from server: 23% by colin
+// roc-cl: 21022
+// roc-flags: /O1 /GS- /EHsc /MD
 // roc 2008-06 004f7d90  unit: RBX::ViewNew::WedgeBuilder  size: 836 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 004f7d90
 

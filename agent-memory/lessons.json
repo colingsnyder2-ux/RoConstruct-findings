@@ -1,5 +1,38 @@
 [
   {
+    "id": "native-helper-parameter-context-before-forced-store",
+    "client": "2008-06",
+    "library": "Native TreeStage edge erase with checked set key",
+    "hypothesis": "A missing parameter-copy instruction can come from a real inlined helper formal; flattening the helper can erase required storage/lifetime context.",
+    "change": "Recovered downstream-removal wrapper plus actual native eraseEdge helper. Flattened native core92 misses key copy; retain genuine separate eraseEdge body and inline parameter binding,21022normal gives00669710 full10078bytes. Native cleanEdge prototype is only a codegen analogue for wrapper, original helper name unclaimed. Genuine Edge flag accessor1c and typed set58; no forced store, fake padding or extra virtual method.",
+    "exacts_gained": 1,
+    "outcome": "server_verified",
+    "evidence": "work/goal-native-stage-callback-round-20261015/receipts.json",
+    "next": "Four stage callback whole objects0extras, parked. Preserve real helper boundaries before changing ABI or adding dead stores."
+  },
+  {
+    "id": "native-virtual-slot-prototype-before-loop-label",
+    "client": "2008-06",
+    "library": "Stage native virtual callback identification",
+    "hypothesis": "A native loop can produce a higher partial score while calling a different API; slot offset and explicit arguments must agree with the real declaration before submission.",
+    "change": "0066f570 looked like joint stepUi; genuine loop65to73 locally, but target calls Joint slot34 with zero pushed arguments then tail-dispatches downstream slot8. Actual available Joint::stepUi(int) is slot30 and pushes int. Rejected identification, did not submit73, did not invent virtual entries or force prototype.",
+    "exacts_gained": 0,
+    "outcome": "parked",
+    "evidence": "work/goal-native-stage-callback-batch-20261015/proof.json",
+    "next": "Find actual source revision/caller prototype; higher partial score alone does not justify wrong native API."
+  },
+  {
+    "id": "native-computeprop-dispatch-before-padding",
+    "client": "2008-06",
+    "library": "Native ComputeProp and running-average neighbor tolerance",
+    "hypothesis": "Use the genuine native lazy property template with its real class inheritance and member-function-pointer representation before inventing cache fields or dispatch storage.",
+    "change": "Actual SleepStage forceNeighborAwake/okNeighborSleep use real ComputeProp<float,Assembly> view at50, genuine CF by-value return and RunningAverageState at SleepInfo+8. Compiler naturally emits exact cache50/dirty54/object58/member60+64 dispatch. Strict float mode spills radius; target retains x87 value, /fp:fast gives both100. Body/Clump/Primitive views inherited from earlier full receipts.",
+    "exacts_gained": 2,
+    "outcome": "server_verified",
+    "evidence": "work/goal-sleep-joint-neighbor-round-20261015/receipts.json",
+    "next": "The same bool cache68/dirty69/object6c/member70+74 is proven in partial sleep decision. No full class layout claim. Joint normal and neighbor fpfast whole-object scans0extras, parked."
+  },
+  {
     "id": "native-indexarray-contact-callback-core",
     "client": "2008-06",
     "library": "RBX native Contact IndexArray and deferred contact stepping",

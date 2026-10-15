@@ -1,59 +1,100 @@
-// from server: 87% by colin
-// roc-cl: 50727
+// from server: 100% by colin
+// roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD
-struct Storage {
-    union {
-        double alignment;
-        unsigned char bytes[24];
-    };
+struct Buffer {
+    unsigned char bytes[24];
 };
 
-typedef void (__cdecl *Manager)(Storage *, Storage *, int);
-
-struct Table {
-    Manager manage;
+struct Manager {
+    void (__cdecl *manage)(Buffer*, Buffer*, int);
 };
 
 struct Function {
-    const Table *table;
-    Storage storage;
+    Manager* manager;
+    unsigned padding;
+    Buffer buffer;
+
+    Function(const Function&);
     ~Function();
 };
 
-inline Function::~Function()
+inline Function::Function(const Function& source) : manager(0)
 {
-    if (table && table->manage)
-        table->manage(&storage, &storage, 1);
+    if (source.manager) {
+        manager = source.manager;
+        manager->manage(const_cast<Buffer*>(&source.buffer), &buffer, 0);
+    }
 }
 
-struct Base {
-    unsigned long words[86];
-    Base();
-    ~Base();
-};
-
-struct S : Base {
-    const Table *table;
-    Storage storage;
-    S(Function source);
-};
-
-S::S(Function source) : Base()
+inline Function::~Function()
 {
-    words[0] = 0x0081a154;
-    words[4] = 0x0081a144;
-    words[5] = 0x0081a13c;
-    words[8] = 0x0081a134;
-    words[9] = 0x0081a124;
-    words[17] = 0x0081a114;
-    words[25] = 0x0081a104;
-    words[33] = 0x0081a0f4;
-    words[41] = 0x0081a0e4;
-    words[49] = 0x0081a0d4;
-
-    table = 0;
-    if (source.table) {
-        table = source.table;
-        source.table->manage(&source.storage, &storage, 0);
+    if (manager) {
+        void (__cdecl *manage)(Buffer*, Buffer*, int) = manager->manage;
+        if (manage)
+            manage(&buffer, &buffer, 1);
     }
+}
+
+struct B0 {
+    virtual ~B0();
+    unsigned char padding[12];
+};
+
+struct B1 {
+    virtual ~B1();
+};
+
+struct B2 {
+    virtual ~B2();
+    unsigned char padding[8];
+};
+
+struct B3 {
+    virtual ~B3();
+};
+
+struct B4 {
+    virtual ~B4();
+    unsigned char padding[28];
+};
+
+struct B5 {
+    virtual ~B5();
+    unsigned char padding[28];
+};
+
+struct B6 {
+    virtual ~B6();
+    unsigned char padding[28];
+};
+
+struct B7 {
+    virtual ~B7();
+    unsigned char padding[28];
+};
+
+struct B8 {
+    virtual ~B8();
+    unsigned char padding[28];
+};
+
+struct B9 {
+    virtual ~B9();
+    unsigned char padding[144];
+};
+
+struct Base : B0, B1, B2, B3, B4, B5, B6, B7, B8, B9 {
+    Base();
+    virtual ~Base();
+};
+
+struct Descriptor : Base {
+    Function callback;
+
+    Descriptor(Function);
+    virtual ~Descriptor();
+};
+
+Descriptor::Descriptor(Function source) : callback(source)
+{
 }

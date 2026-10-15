@@ -1,4 +1,6 @@
-// from server: 13% by atomic.potato
+// from server: 16% by colin
+// roc-cl: 21022
+// roc-flags: /O1 /GS- /EHsc /MD
 // Minimal reconstruction of 0056f0b0.
 // The function is a member of a class whose first member is a pointer to a
 // type-info-like object (vtable-ish).  It repeatedly queries a global

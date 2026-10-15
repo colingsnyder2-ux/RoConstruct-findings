@@ -1,62 +1,95 @@
-// from server: 88% by king_originala
+// from server: 100% by colin
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
 namespace std {
-    template<class T> struct char_traits {};
-    template<class T> class allocator {};
+    template<class T> struct char_traits;
+    template<class T> class allocator;
 
-    template<class T, class Traits, class Alloc>
+    template<class T, class Traits, class Allocator>
     class basic_string {
         unsigned char storage[28];
     public:
         basic_string(const basic_string&);
         ~basic_string();
     };
-
-    class type_info {
-    public:
-        bool operator==(const type_info&) const;
-    };
 }
 
-struct SoundId {
-    std::basic_string<char, std::char_traits<char>, std::allocator<char> > text;
-    int value;
+typedef std::basic_string<char, std::char_traits<char>,
+                          std::allocator<char> > String;
+
+typedef String* (__thiscall *StringCopyProc)(String*, const String&);
+extern StringCopyProc stringCopy;
+
+namespace std {
+    template<class T, class Traits, class Allocator>
+    __forceinline basic_string<T, Traits, Allocator>::basic_string(
+        const basic_string& other)
+    {
+        stringCopy(this, other);
+    }
+}
+
+class type_info {
+public:
+    bool operator==(const type_info&) const;
 };
 
-struct Payload {
-    virtual ~Payload();
+typedef bool (__thiscall *TypeEqualProc)(const type_info*, const type_info&);
+extern TypeEqualProc typeEqual;
+extern const type_info contentType;
+
+__forceinline bool type_info::operator==(const type_info& other) const
+{
+    return typeEqual(this, other);
+}
+
+struct ContentId {
+    String text;
+    unsigned int value;
+};
+
+struct TypeDescriptor {
+    unsigned char prefix[8];
+    const type_info* info;
+};
+
+struct Holder {
+    virtual ~Holder();
     virtual void reserved();
-    virtual Payload* clone() const;
+    virtual Holder* clone() const;
 };
 
-struct Descriptor {
-    unsigned char padding[8];
-    const std::type_info* type;
+extern const ContentId& __cdecl extractContentId(Holder* const*);
+
+struct S {
+    TypeDescriptor* type;
+    Holder* object;
+
+    S(const S&);
+    ~S();
+    const ContentId& convert() const;
+    ContentId f() const;
 };
 
-extern const std::type_info soundType;
-extern const SoundId& __cdecl directSound(Payload* const*);
-
-struct Product {
-    const Descriptor* descriptor;
-    Payload* payload;
-
-    Product(const Descriptor*, Payload*);
-    ~Product();
-    const SoundId& convert() const;
-    SoundId get() const;
-};
-
-inline Product::Product(const Descriptor* d, Payload* p)
-    : descriptor(d), payload(p) {}
-
-inline Product::~Product() {
-    if (payload)
-        delete payload;
+__forceinline S::S(const S& other)
+{
+    Holder* source = other.object;
+    type = other.type;
+    Holder* copy = source ? source->clone() : 0;
+    object = copy;
 }
 
-SoundId Product::get() const {
-    if (soundType == *descriptor->type)
-        return directSound(&payload);
+__forceinline S::~S()
+{
+    if (object)
+        delete object;
+}
 
-    return Product(descriptor, payload ? payload->clone() : 0).convert();
+ContentId S::f() const
+{
+    if (contentType == *type->info)
+        return extractContentId(&object);
+
+    S temporary(*this);
+    return temporary.convert();
 }

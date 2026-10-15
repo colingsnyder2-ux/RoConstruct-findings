@@ -1,28 +1,27 @@
-// from server: 81% by king_originala
-extern "C" void (__cdecl* invalid_parameter_noinfo)();
-
-typedef void (__cdecl* ErrorHandler)();
-
+// from server: 100% by colin
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
 struct Node {
-    Node* links[3];
+    unsigned char padding[12];
     unsigned int value;
 };
 
-struct Container {
+struct Tree {
     unsigned char padding[24];
     Node* sentinel;
 };
 
-struct Iterator {
-    Container** owner;
-    Node* node;
-
-    void advance();
-    unsigned int& value(ErrorHandler error) const;
-    bool different(const Iterator& other, ErrorHandler error) const;
+struct Owner {
+    Tree* tree;
 };
 
-struct Output {
+struct Iterator {
+    Owner* owner;
+    Node* node;
+    void advance();
+};
+
+struct Sink {
     void append(unsigned int value);
 };
 
@@ -30,50 +29,86 @@ struct Checked {
     bool value;
 };
 
-extern void __cdecl finish(void* result, Iterator first, Iterator last,
-                           Output* output1, Output* output2, Output* output3,
-                           Checked checked);
+extern "C" void (__cdecl* invalid_parameter_noinfo)();
 
-__forceinline bool Iterator::different(const Iterator& other,
-                                      ErrorHandler error) const
-{
-    if (!owner || owner != other.owner)
-        error();
-    return node != other.node;
-}
+extern void __cdecl copy_remaining(
+    Sink** result,
+    Iterator first,
+    Iterator last,
+    Sink* output1,
+    Sink* output2,
+    Sink* output3,
+    Checked checked
+);
 
-__forceinline unsigned int& Iterator::value(ErrorHandler error) const
-{
-    if (!owner)
-        error();
+Sink** __cdecl set_difference(
+    Sink** result,
+    Iterator first,
+    Iterator last,
+    Iterator second,
+    Iterator secondLast,
+    Sink* volatile output
+) {
+    void (__cdecl* invalid)() = invalid_parameter_noinfo;
 
-    Container* container = owner ? *owner : 0;
-    if (node == container->sentinel)
-        error();
+    for (;;) {
+        if (!first.owner || first.owner != last.owner)
+            invalid();
+        if (first.node == last.node)
+            break;
 
-    return node->value;
-}
+        if (!second.owner || second.owner != secondLast.owner)
+            invalid();
+        if (second.node == secondLast.node)
+            break;
 
-void* __cdecl difference(void* result, Iterator first, Iterator last,
-                        Iterator second, Iterator secondLast, Output* output)
-{
-    ErrorHandler error = invalid_parameter_noinfo;
+        if (!first.owner)
+            invalid();
+        Tree* firstTree = first.owner ? first.owner->tree : 0;
+        if (first.node == firstTree->sentinel)
+            invalid();
+        unsigned int* firstValue = &first.node->value;
 
-    while (first.different(last, error) &&
-           second.different(secondLast, error)) {
-        if (first.value(error) < second.value(error)) {
-            output->append(first.value(error));
+        if (!second.owner)
+            invalid();
+        Tree* secondTree = second.owner ? second.owner->tree : 0;
+        if (second.node == secondTree->sentinel)
+            invalid();
+
+        if (*firstValue < second.node->value) {
+            if (!first.owner)
+                invalid();
+            Tree* tree = first.owner ? first.owner->tree : 0;
+            if (first.node == tree->sentinel)
+                invalid();
+
+            output->append(first.node->value);
             first.advance();
-        } else if (second.value(error) < first.value(error)) {
-            second.advance();
         } else {
-            first.advance();
-            second.advance();
+            if (!second.owner)
+                invalid();
+            Tree* tree = second.owner ? second.owner->tree : 0;
+            if (second.node == tree->sentinel)
+                invalid();
+            unsigned int* secondValue = &second.node->value;
+
+            if (!first.owner)
+                invalid();
+            Tree* otherTree = first.owner ? first.owner->tree : 0;
+            if (first.node == otherTree->sentinel)
+                invalid();
+
+            if (*secondValue < first.node->value) {
+                second.advance();
+            } else {
+                first.advance();
+                second.advance();
+            }
         }
     }
 
     Checked checked;
     checked.value = false;
-    finish(result, first, last, output, output, output, checked);
+    copy_remaining(result, first, last, output, output, output, checked);
     return result;
 }

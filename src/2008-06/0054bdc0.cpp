@@ -1,4 +1,6 @@
-// from server: 19% by colin
+// from server: 23% by colin
+// roc-cl: 21022
+// roc-flags: /Od /Ob0 /GS /EHsc /MD
 struct Element {
     unsigned int data[2];
 };

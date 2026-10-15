@@ -7532,6 +7532,7 @@
     "op": "sweep",
     "stages_by_client": {
       "2008-06": [
+        "auto-native-scorehud-family-2008",
         "native-reflection-isolated-cores-batch-2008",
         "native-reflection-isolated-cores-heldout-2008",
         "native-levelbuilder-vptr-float-family-2008",
@@ -7539,10 +7540,12 @@
       ]
     },
     "stages": [
+      "bruteforce-portfolio-fanout",
+      "bruteforce-native-od-fanout",
       "bruteforce-compiler-gates",
       "bruteforce-source-portfolios"
     ],
-    "hypothesis": "Reuse authentic compiler/template successes, then advance through all sourced unmatched functions with bounded gates, preserved best partials and server-only exact credit. Client-specific source stages never transfer implicitly.",
+    "hypothesis": "Replay client-scoped authentic native families, whole-object portfolio fanout and proven native unoptimized member emission before per-target compiler gates. Full code/data/server acceptance; streaming inputs and evidence-aware object reuse.",
     "next": "Register authentic family stages separately for each client; no instant-gain guarantee."
   },
   "large-texture-family-gates-2008": {
@@ -7822,10 +7825,12 @@
       ]
     },
     "stages": [
+      "bruteforce-portfolio-fanout",
+      "bruteforce-native-od-fanout",
       "bruteforce-compiler-gates",
       "bruteforce-source-portfolios-deep"
     ],
-    "hypothesis": "Reuse authentic compiler/template successes, then advance through all sourced unmatched functions with bounded gates, preserved best partials and server-only exact credit. Client-specific source stages never transfer implicitly.",
+    "hypothesis": "Replay client-scoped authentic native families, whole-object portfolio fanout and proven native unoptimized member emission before per-target compiler gates. Full code/data/server acceptance; streaming inputs and evidence-aware object reuse.",
     "next": "Register authentic family stages separately for each client; no instant-gain guarantee."
   },
   "native-reflection-isolated-cores-heldout2-2008": {
@@ -8662,7 +8667,13 @@
     ],
     "keep_partials": true,
     "output": "work\\goal-sleep-joint-loop-20261015\\grid",
-    "next": "Inspect real residue if partial; bounded gates, full code/data/server receipt."
+    "next": "Inspect real residue if partial; bounded gates, full code/data/server receipt.",
+    "result": {
+      "status": "verified",
+      "new_verified": 1,
+      "evidence": "work/goal-sleep-joint-neighbor-round-20261015/receipts.json",
+      "partial_evidence": "work/goal-sleep-joint-neighbor-round-20261015/partial-receipt.json"
+    }
   },
   "large-adorn-indexbox-gates-2008": {
     "op": "grid",
@@ -8763,7 +8774,13 @@
     ],
     "keep_partials": true,
     "output": "work\\goal-sleep-neighbor-core-20261015\\grid",
-    "next": "Inspect genuine pointer-to-member representation if mismatch; do not pad or invent ABI."
+    "next": "Inspect genuine pointer-to-member representation if mismatch; do not pad or invent ABI.",
+    "result": {
+      "status": "parked",
+      "new_verified": 0,
+      "evidence": "work/goal-sleep-joint-neighbor-round-20261015/receipts.json",
+      "partial_evidence": "work/goal-sleep-joint-neighbor-round-20261015/partial-receipt.json"
+    }
   },
   "native-sleep-neighbor-extended-radius-fpfast-2008": {
     "op": "grid",
@@ -8797,6 +8814,1216 @@
     ],
     "keep_partials": true,
     "output": "work/goal-sleep-neighbor-core-20261015/fpfast-grid",
-    "next": "Inspect genuine pointer-to-member representation if mismatch; do not pad or invent ABI."
+    "next": "Inspect genuine pointer-to-member representation if mismatch; do not pad or invent ABI.",
+    "result": {
+      "status": "verified",
+      "new_verified": 2,
+      "evidence": "work/goal-sleep-joint-neighbor-round-20261015/receipts.json",
+      "partial_evidence": "work/goal-sleep-joint-neighbor-round-20261015/partial-receipt.json"
+    }
+  },
+  "native-sleep-decision-bool-cache-array-view-2008": {
+    "op": "grid",
+    "client": "2008-06",
+    "library": "SleepStage actual sleep decision with measured native containers",
+    "hypothesis": "Verified float ComputeProp native ABI extends to bool cache68. Actual decision control flow and stage/edge virtuals; target Array-shaped external-edge receiver and int iteration. Genuine upstream reference-returning API declaration retained only as ABI analogue; measured native Array view, no original type/layout claim.",
+    "targets": {
+      "addresses": [
+        "0064a950"
+      ],
+      "scores": [
+        0,
+        99
+      ]
+    },
+    "seed_sources": {
+      "2008-06": {
+        "0064a950": "work\\goal-sleep-decision-core-20261015\\0064a950.cpp"
+      }
+    },
+    "builds": [
+      21022
+    ],
+    "profiles": [
+      "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+    ],
+    "append": [
+      ""
+    ],
+    "keep_partials": true,
+    "output": "work\\goal-sleep-decision-core-20261015\\grid",
+    "next": "Full code/data/server acceptance; park if native template representation fails, never invent padding.",
+    "result": {
+      "status": "parked",
+      "new_verified": 0,
+      "evidence": "work/goal-sleep-joint-neighbor-round-20261015/receipts.json",
+      "partial_evidence": "work/goal-sleep-joint-neighbor-round-20261015/partial-receipt.json"
+    }
+  },
+  "native-adorn-indexbox-sphere-material-fanout-2008": {
+    "op": "fanout",
+    "client": "2008-06",
+    "library": "native RTTI-correct IndexBox/Ogre sphere/material",
+    "hypothesis": "Fresh RTTI rejects G3DBox draft; genuine100-byte IndexBox virtualdtor/8corners header now copiedwhole into managedunit. Same object retains material621exact and sphere931fullbody. Propagate newly corrected body to unresolvedcode.",
+    "sources": [
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_adorn_indexbox_sphere_material_b9264866d860a24e.cpp"
+        ],
+        "builds": [
+          21022,
+          50727
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MD /fp:fast",
+          "/O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MD"
+        ]
+      }
+    ],
+    "targets": {},
+    "output": "work/large-functions-2008-20261014/adorn-indexbox-sphere-material-fanout",
+    "next": "Park new corrected objects after bounded pass; no unmatched type guess credit."
+  },
+  "bruteforce-texture-temporary-end": {
+    "op": "grid",
+    "client": "2008-06",
+    "library": "Texture lookup iterator lifetime",
+    "hypothesis": "Two99percent lookup siblings differ only allocation-save stackslot50vs10; named trivial end iterator extends source scope. Test temporary end iterator expression, preserving declarations and values; no padding/offset mutation.",
+    "targets": {
+      "addresses": [
+        "004edeb0",
+        "004ef2b0"
+      ],
+      "scores": [
+        0,
+        99
+      ]
+    },
+    "seed_sources": {
+      "2008-06": {
+        "004edeb0": "work/brute-texture-lifetimes-20261015/004edeb0.cpp",
+        "004ef2b0": "work/brute-texture-lifetimes-20261015/004ef2b0.cpp"
+      }
+    },
+    "builds": [
+      21022,
+      50727
+    ],
+    "profiles": [
+      "keep"
+    ],
+    "keep_partials": true,
+    "next": "Accept fullcode/data/server only. Park losing contexts; no guessed stack padding."
+  },
+  "bruteforce-texture-outer-result": {
+    "op": "grid",
+    "client": "2008-06",
+    "library": "Texture lookup iterator lifetime",
+    "hypothesis": "Single allocation-save stackslot residue. Declare result in outer function scope before lookup; values and all type declarations unchanged. Test source lifetime/spill placement, no padding.",
+    "targets": {
+      "addresses": [
+        "004edeb0",
+        "004ef2b0"
+      ],
+      "scores": [
+        0,
+        99
+      ]
+    },
+    "seed_sources": {
+      "2008-06": {
+        "004edeb0": "work/brute-texture-lifetimes-20261015/004edeb0-outer-result.cpp",
+        "004ef2b0": "work/brute-texture-lifetimes-20261015/004ef2b0-outer-result.cpp"
+      }
+    },
+    "builds": [
+      21022,
+      50727
+    ],
+    "profiles": [
+      "keep"
+    ],
+    "keep_partials": true,
+    "next": "Accept fullcode/data/server only. Park losing contexts; no guessed stack padding."
+  },
+  "native-sleep-decision-index-lifetime-2008": {
+    "op": "grid",
+    "client": "2008-06",
+    "library": "SleepStage actual sleep decision with measured native containers",
+    "hypothesis": "Target initializes EBX index before early cache guards and reuses BL as zero. Previous genuine54 holds array receiver in EBX and this in EBP. Move same necessary index initializer to function entry, extending only observed lifetime; no extra variables, volatility or fake stores.",
+    "targets": {
+      "addresses": [
+        "0064a950"
+      ],
+      "scores": [
+        0,
+        99
+      ]
+    },
+    "seed_sources": {
+      "2008-06": {
+        "0064a950": "work\\goal-sleep-decision-core-20261015\\0064a950-index-scope.cpp"
+      }
+    },
+    "builds": [
+      21022
+    ],
+    "profiles": [
+      "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+    ],
+    "append": [
+      ""
+    ],
+    "keep_partials": true,
+    "output": "work\\goal-sleep-decision-core-20261015\\index-grid",
+    "next": "Full code/data/server acceptance; park if native template representation fails, never invent padding.",
+    "result": {
+      "status": "parked",
+      "new_verified": 0,
+      "evidence": "work/goal-sleep-joint-neighbor-round-20261015/receipts.json",
+      "partial_evidence": "work/goal-sleep-joint-neighbor-round-20261015/partial-receipt.json"
+    }
+  },
+  "native-sleep-decision-const-array-pointer-2008": {
+    "op": "grid",
+    "client": "2008-06",
+    "library": "SleepStage actual sleep decision with measured native containers",
+    "hypothesis": "Read-only observed Array pointer receiver, instead of reference local. Same genuine controls and iteration. Baseline reference54, index-lifetime71 both spill wrong local; canonical const pointer view may permit target allocation without volatility or fake stores. Last bounded source trial.",
+    "targets": {
+      "addresses": [
+        "0064a950"
+      ],
+      "scores": [
+        0,
+        99
+      ]
+    },
+    "seed_sources": {
+      "2008-06": {
+        "0064a950": "work\\goal-sleep-decision-core-20261015\\0064a950-pointer.cpp"
+      }
+    },
+    "builds": [
+      21022
+    ],
+    "profiles": [
+      "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+    ],
+    "append": [
+      ""
+    ],
+    "keep_partials": true,
+    "output": "work\\goal-sleep-decision-core-20261015\\pointer-grid",
+    "next": "Full code/data/server acceptance; park if native template representation fails, never invent padding.",
+    "result": {
+      "status": "parked",
+      "new_verified": 0,
+      "evidence": "work/goal-sleep-joint-neighbor-round-20261015/receipts.json",
+      "partial_evidence": "work/goal-sleep-joint-neighbor-round-20261015/partial-receipt.json"
+    }
+  },
+  "native-sleep-joint-neighbor-winning-propagation-2008": {
+    "op": "fanout",
+    "client": "2008-06",
+    "library": "Three fully verified native joint/neighbor functions",
+    "hypothesis": "Whole-object scan from verified stepJoints normal and native tolerance/ComputeProp fpfast objects. Same winning configs, no new layout or source variants.",
+    "sources": [
+      {
+        "recipe": "rbxgs",
+        "files": [
+          "roc_unit_55a8d705f4093d42.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "rbxgs",
+        "files": [
+          "roc_unit_e9459ee4124ecd0d.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast"
+        ]
+      }
+    ],
+    "targets": {},
+    "next": "Park zero-gain objects; no repeat without new native facts.",
+    "result": {
+      "status": "parked",
+      "new_verified": 0,
+      "evidence": "work/goal-sleep-joint-neighbor-round-20261015/receipts.json",
+      "partial_evidence": "work/goal-sleep-joint-neighbor-round-20261015/partial-receipt.json"
+    }
+  },
+  "bruteforce-c-linkage-eh-context": {
+    "op": "grid",
+    "client": "2008-06",
+    "library": "C-linkage exception context",
+    "hypothesis": "Unsearched EHs context on99percent directC++ sources containing C-linkage declarations and targetSEHprologue. Same bodies/types/constants; bounded12source compiler experiment. Does not establish original exception contract.",
+    "targets": {
+      "addresses": [
+        "00419510",
+        "0041db00",
+        "00444cf0",
+        "00449720",
+        "004e6520",
+        "004edeb0",
+        "004ee3b0",
+        "004ee8b0",
+        "004ef2b0",
+        "004ef7b0",
+        "004f7bd0",
+        "004f7c80"
+      ],
+      "scores": [
+        0,
+        99
+      ]
+    },
+    "seed_sources": {
+      "2008-06": {
+        "00419510": "work/brute-eh-context-20261015/00419510.cpp",
+        "0041db00": "work/brute-eh-context-20261015/0041db00.cpp",
+        "00444cf0": "work/brute-eh-context-20261015/00444cf0.cpp",
+        "00449720": "work/brute-eh-context-20261015/00449720.cpp",
+        "004e6520": "work/brute-eh-context-20261015/004e6520.cpp",
+        "004edeb0": "work/brute-eh-context-20261015/004edeb0.cpp",
+        "004ee3b0": "work/brute-eh-context-20261015/004ee3b0.cpp",
+        "004ee8b0": "work/brute-eh-context-20261015/004ee8b0.cpp",
+        "004ef2b0": "work/brute-eh-context-20261015/004ef2b0.cpp",
+        "004ef7b0": "work/brute-eh-context-20261015/004ef7b0.cpp",
+        "004f7bd0": "work/brute-eh-context-20261015/004f7bd0.cpp",
+        "004f7c80": "work/brute-eh-context-20261015/004f7c80.cpp"
+      }
+    },
+    "builds": [
+      21022
+    ],
+    "profiles": [
+      "keep"
+    ],
+    "keep_partials": true,
+    "next": "Only serververified exacts count. Park losing12source pilot, no broad EH rewrite."
+  },
+  "bruteforce-native-od-fanout": {
+    "op": "fanout",
+    "client": "2008-06",
+    "library": "Native portfolio unoptimized member emission",
+    "portfolio": {
+      "max_candidates": 0,
+      "donors": 0,
+      "family_sources": 0,
+      "native_only": true
+    },
+    "targets": {
+      "scores": [
+        0,
+        99
+      ]
+    },
+    "builds": [
+      21022
+    ],
+    "profiles": [
+      "keep"
+    ],
+    "append": [
+      " /Od /Ob0 /GS"
+    ],
+    "evidence_resume": true,
+    "hypothesis": "Whole-object mesh-level-upload Od/Ob0/GS native context verified5newexacts, mesh-aggregate2. Apply that measured context to other client-scoped native portfolio units, preserving original flags/defines then overriding optimization/inlining/GS. Fullcode/data/server verification.",
+    "next": "Bounded256context pilot, inspect verified yield; no fabricated layouts, no original build claim."
+  },
+  "native-tree-edge-erase-set-core-2008": {
+    "op": "grid",
+    "client": "2008-06",
+    "library": "Native TreeStage edge removal and flag-controlled set erase",
+    "hypothesis": "Target78bytes contains native downstream stage callbacks and erase helper flag branch; actual newer source splits these same operations between onEdgeRemoving/eraseEdge. Use real TreeStage/Edge/std::set, measured set58 and native flag1c.",
+    "targets": {
+      "addresses": [
+        "00669710"
+      ],
+      "scores": [
+        0,
+        99
+      ]
+    },
+    "seed_sources": {
+      "2008-06": {
+        "00669710": "work\\goal-tree-edge-erase-core-20261015\\00669710.cpp"
+      }
+    },
+    "builds": [
+      21022
+    ],
+    "profiles": [
+      "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+    ],
+    "append": [
+      ""
+    ],
+    "keep_partials": true,
+    "output": "work\\goal-tree-edge-erase-core-20261015\\grid",
+    "next": "Full code/data/server required; no invented fields/vtable slots.",
+    "result": {
+      "status": "parked",
+      "new_verified": 0,
+      "evidence": "work/goal-native-stage-callback-round-20261015/receipts.json"
+    }
+  },
+  "native-assembly-edge-remove-dirty-cache-core-2008": {
+    "op": "grid",
+    "client": "2008-06",
+    "library": "AssemblyStage native edge-removal and cache invalidation",
+    "hypothesis": "Actual full native removal helper/bodies, genuine inheritance/std::set/Joint virtual API. Target additionally proves both Assembly external-edge cache dirty writes14; getter005e6c70 confirms flag. Original native class layout naturally matches set30, no padding/extra virtuals.",
+    "targets": {
+      "addresses": [
+        "0066f6e0"
+      ],
+      "scores": [
+        0,
+        99
+      ]
+    },
+    "seed_sources": {
+      "2008-06": {
+        "0066f6e0": "work\\goal-assembly-edge-remove-core-20261015\\0066f6e0.cpp"
+      }
+    },
+    "builds": [
+      21022
+    ],
+    "profiles": [
+      "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+    ],
+    "append": [
+      ""
+    ],
+    "keep_partials": true,
+    "output": "work\\goal-assembly-edge-remove-core-20261015\\grid",
+    "next": "Full code/data/server only; inspect native helper inline context if partial.",
+    "result": {
+      "status": "verified",
+      "new_verified": 1,
+      "evidence": "work/goal-native-stage-callback-round-20261015/receipts.json"
+    }
+  },
+  "native-tree-erase-authentic-inline-context-2008": {
+    "op": "grid",
+    "client": "2008-06",
+    "library": "Native TreeStage edge removal and flag-controlled set erase",
+    "hypothesis": "Native92 differs only missing key-parameter copy before branch. Preserve genuine separate eraseEdge helper body and its inlined formal parameter rather than flattening it into recovered downstream-removal wrapper. Native cleanEdge prototype is an explicit codegen analogue for wrapper; original helper name unclaimed. No fake store or extra ABI.",
+    "targets": {
+      "addresses": [
+        "00669710"
+      ],
+      "scores": [
+        0,
+        99
+      ]
+    },
+    "seed_sources": {
+      "2008-06": {
+        "00669710": "work\\goal-tree-edge-erase-core-20261015\\00669710-inline.cpp"
+      }
+    },
+    "builds": [
+      21022
+    ],
+    "profiles": [
+      "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+    ],
+    "append": [
+      ""
+    ],
+    "keep_partials": true,
+    "output": "work\\goal-tree-edge-erase-core-20261015\\inline-grid",
+    "next": "Full code/data/server required; no invented fields/vtable slots.",
+    "result": {
+      "status": "verified",
+      "new_verified": 1,
+      "evidence": "work/goal-native-stage-callback-round-20261015/receipts.json"
+    }
+  },
+  "bruteforce-native-od-50727": {
+    "op": "fanout",
+    "client": "2008-06",
+    "library": "Native portfolio unoptimized member emission",
+    "portfolio": {
+      "max_candidates": 0,
+      "donors": 0,
+      "family_sources": 0,
+      "native_only": true
+    },
+    "targets": {
+      "scores": [
+        0,
+        99
+      ]
+    },
+    "builds": [
+      50727
+    ],
+    "profiles": [
+      "keep"
+    ],
+    "append": [
+      " /Od /Ob0 /GS"
+    ],
+    "evidence_resume": true,
+    "hypothesis": "VS2008 nativeOd pilot256 verified11newexacts. Test same authentic native member-emission strategy under other supported2008 compiler50727; prior genuine native headers sometimes compile only under50727. No source/layout changes, separate receipts.",
+    "next": "256context compilerpilot; scale only verified yield or new source evidence. Do not alter private access."
+  },
+  "native-stage-ui-undirty-edge-add-batch-2008": {
+    "op": "grid",
+    "client": "2008-06",
+    "library": "Three native stage callbacks with independently measured receivers",
+    "hypothesis": "Fresh native class callbacks: joint-only stepUi127; unchanged undirtyAssembly/set38; full onEdgeAdded with proven cache dirty14 writes and actual helper inline context. Genuine std::set/Joint/Edge/IPipelined, no new fields/ABIs.",
+    "targets": {
+      "addresses": [
+        "0066f570",
+        "00669290",
+        "0066f5f0"
+      ],
+      "scores": [
+        0,
+        99
+      ]
+    },
+    "seed_sources": {
+      "2008-06": {
+        "0066f570": "work\\goal-native-stage-callback-batch-20261015\\0066f570.cpp",
+        "00669290": "work\\goal-native-stage-callback-batch-20261015\\00669290.cpp",
+        "0066f5f0": "work\\goal-native-stage-callback-batch-20261015\\0066f5f0.cpp"
+      }
+    },
+    "builds": [
+      21022
+    ],
+    "profiles": [
+      "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+    ],
+    "append": [
+      ""
+    ],
+    "keep_partials": true,
+    "output": "work\\goal-native-stage-callback-batch-20261015\\grid",
+    "next": "Inspect factual residue only. Full code/data/server verification before credit.",
+    "result": {
+      "status": "verified",
+      "new_verified": 2,
+      "evidence": "work/goal-native-stage-callback-round-20261015/receipts.json",
+      "rejected_target": "0066f570 native UI signature/slot mismatch,73 not submitted."
+    }
+  },
+  "native-stage-callback-winning-objects-propagation-2008": {
+    "op": "fanout",
+    "client": "2008-06",
+    "library": "Four server-verified stage callback objects",
+    "hypothesis": "Whole object propagation only from four verified native callback cores, same proven21022normal config. UI target rejected due native slot/signature mismatch, not included as winning source.",
+    "sources": [
+      {
+        "recipe": "rbxgs",
+        "files": [
+          "roc_unit_8c97cddee26372e7.cpp",
+          "roc_unit_c44f118534f0d81e.cpp",
+          "roc_unit_a131fea3a0b22e82.cpp",
+          "roc_unit_66ac0c2604711628.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      }
+    ],
+    "targets": {},
+    "next": "Park zero-gain objects; missing native virtual API needs new source evidence, no fake slots.",
+    "result": {
+      "status": "parked",
+      "new_verified": 0,
+      "evidence": "work/goal-native-stage-callback-round-20261015/receipts.json"
+    }
+  },
+  "native-velocity-bodymover-destructor-cores-2008": {
+    "op": "grid",
+    "client": "2008-06",
+    "library": "Actual VelocityMotor and BodyMover destructor cores",
+    "hypothesis": "Relocated RTTI identifies actual types. Genuine destructor bodies/member types/inheritance avoid synthetic control blocks and fake EH tails. Minimal genuine headers permit both historical compilers; native old BodyMover raw pointer may expose ownership revision.",
+    "targets": {
+      "addresses": [
+        "0060a650",
+        "0062e460"
+      ],
+      "scores": [
+        0,
+        99
+      ]
+    },
+    "seed_sources": {
+      "2008-06": {
+        "0060a650": "work\\goal-native-force-motor-core-20261015\\0060a650.cpp",
+        "0062e460": "work\\goal-native-force-motor-core-20261015\\0062e460.cpp"
+      }
+    },
+    "builds": [
+      21022,
+      50727
+    ],
+    "profiles": [
+      "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+    ],
+    "append": [
+      ""
+    ],
+    "keep_partials": true,
+    "output": "work\\goal-native-force-motor-core-20261015\\grid",
+    "next": "Inspect actual layout/prototype residue. Do not invent members/padding to recover failed source revision."
+  },
+  "large-scorehud-family-gates-2008": {
+    "op": "grid",
+    "client": "2008-06",
+    "library": "native ScoreHud team and FFA",
+    "hypothesis": "Initial full ScoreHud methods. Later callee audit corrected semantic interpretation: 49ab50/49a580 FINDS Teams; 590dd0/4b3b40 CREATES Teams. Cache resize alone does not prove creation. See corrected native-accessors and compile-board sources.",
+    "targets": {
+      "addresses": [
+        "00655a20",
+        "006551e0"
+      ],
+      "scores": [
+        0,
+        99
+      ]
+    },
+    "seed_sources": {
+      "2008-06": {
+        "00655a20": "work/large-functions-2008-20261014/00655a20.cpp",
+        "006551e0": "work/large-functions-2008-20261014/006551e0.cpp"
+      }
+    },
+    "keep_partials": true,
+    "builds": [
+      21022,
+      50727
+    ],
+    "profiles": [
+      "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast",
+      "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD",
+      "/O1 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast",
+      "/Od /Ob0 /GS /EHsc /MD"
+    ],
+    "output": "work/large-functions-2008-20261014/scorehud-family-gates",
+    "next": "Only reviewed complete sources eligible for partialsubmission; exacts require fullcode/data/server; park grid."
+  },
+  "native-scorehud-family-fanout-2008": {
+    "op": "fanout",
+    "client": "2008-06",
+    "library": "native ScoreHud and genuine Color palette/templates",
+    "hypothesis": "New complete ScoreHud source and genuine Color.h palette/template helpers, two compilerbuilds normal/fast, across unresolved2008code; full data checks.",
+    "sources": [
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_scorehud_family_1346da7936040480.cpp"
+        ],
+        "builds": [
+          21022,
+          50727
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast",
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      }
+    ],
+    "targets": {},
+    "output": "work/large-functions-2008-20261014/scorehud-family-fanout",
+    "next": "Park unchanged objects after bounded pass; count only verified new exacts."
+  },
+  "auto-native-scorehud-family-2008": {
+    "op": "fanout",
+    "client": "2008-06",
+    "library": "verified native ScoreHud/helper family",
+    "hypothesis": "Two large manual ScoreHud recoveries emitted genuine Color palette and stdcontainer helpers; four-object pilot verified7 new exacts2622bytes. Allseven replay100 under first normalrbxgs profile. Retain only winning21022 normal object for automatic pipeline, avoiding3 losing build/precision gates. Corrected findTeams semantic source independently replays all7 exacts with referenced data; relocated API names alone are not semantic proof.",
+    "sources": [
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_scorehud_native_accessors_f7967999d988d954.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      }
+    ],
+    "targets": {},
+    "output": "work/large-functions-2008-20261014/scorehud-family-auto",
+    "next": "Resume journal; no same-object repetitions or promised gains. Source/code/data and server verification remain mandatory."
+  },
+  "native-guiditem-weak-owner-destructor-revision-2008": {
+    "op": "grid",
+    "client": "2008-06",
+    "library": "Actual Instance GuidItem revision and binary-proven weak owners",
+    "hypothesis": "Newer genuine GuidItem first base, real enable_shared_from_this placement and separate Guid removal explain vptr shifts and known Instance fields. Typed ownership revision proved by actual weak-release/lock/EH-array callee instructions. No fabricated padding or extra virtuals beyond genuine GuidItem destructor.",
+    "targets": {
+      "addresses": [
+        "0060a650",
+        "0062e460"
+      ],
+      "scores": [
+        0,
+        99
+      ]
+    },
+    "seed_sources": {
+      "2008-06": {
+        "0060a650": "work\\goal-native-guid-owner-revision-20261015\\0060a650.cpp",
+        "0062e460": "work\\goal-native-guid-owner-revision-20261015\\0062e460.cpp"
+      }
+    },
+    "builds": [
+      21022
+    ],
+    "profiles": [
+      "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+    ],
+    "append": [
+      ""
+    ],
+    "keep_partials": true,
+    "output": "work\\goal-native-guid-owner-revision-20261015\\grid",
+    "next": "Inspect full code and RTTI/data. No global recipe changes or unchecked class-layout claims."
+  },
+  "native-bodyforce-weak-part-accumulator-core-2008": {
+    "op": "grid",
+    "client": "2008-06",
+    "library": "BodyForce actual weak ownership and native accumulators",
+    "hypothesis": "New2dtor100 proof establishes GuidItem hierarchy and actual weak BodyMover part. Actual newer force body with part.lock and prior measured primitive/body views; real SimBody native update and vector force operations, no synthetic control blocks.",
+    "targets": {
+      "addresses": [
+        "00630570"
+      ],
+      "scores": [
+        0,
+        99
+      ]
+    },
+    "seed_sources": {
+      "2008-06": {
+        "00630570": "work\\goal-bodyforce-native-weak-core-20261015\\00630570.cpp"
+      }
+    },
+    "builds": [
+      21022
+    ],
+    "profiles": [
+      "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+    ],
+    "append": [
+      ""
+    ],
+    "keep_partials": true,
+    "output": "work\\goal-bodyforce-native-weak-core-20261015\\grid",
+    "next": "Inspect true native receiver/alias residue, bounded gates. Full code/data/server required."
+  },
+  "native-bodyforce-owner-lifetime-simbody-views-2008": {
+    "op": "grid",
+    "client": "2008-06",
+    "library": "BodyForce actual weak ownership and native accumulators",
+    "hypothesis": "Target and actual older native body release weak lock temporary after Body* root initializer, before force accumulation. Adopt real expression boundary; genuine SimBody selected methods use directly proved dirty8/Vector3force84 views, no guessed leading field.",
+    "targets": {
+      "addresses": [
+        "00630570"
+      ],
+      "scores": [
+        0,
+        99
+      ]
+    },
+    "seed_sources": {
+      "2008-06": {
+        "00630570": "work\\goal-bodyforce-native-weak-core-20261015\\00630570-lifetime.cpp"
+      }
+    },
+    "builds": [
+      21022
+    ],
+    "profiles": [
+      "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+    ],
+    "append": [
+      ""
+    ],
+    "keep_partials": true,
+    "output": "work\\goal-bodyforce-native-weak-core-20261015\\lifetime-grid",
+    "next": "Inspect true native receiver/alias residue, bounded gates. Full code/data/server required."
+  },
+  "native-guiditem-destructor-family-pilot-2008": {
+    "op": "fanout",
+    "client": "2008-06",
+    "library": "Eight genuine destructor cores with verified GuidItem hierarchy revision",
+    "hypothesis": "Two full native destructor exacts establish real source hierarchy/weak ownership revision. Apply only same managed aliases to8other explicit empty/assert-only native destructor cores. Preserve actual member types and destructor effects; normal and actual DLL preprocessing only. Scan all unresolved targets and referenced data.",
+    "sources": [
+      {
+        "recipe": "rbxgs",
+        "files": [
+          "roc_unit_0f8187f1fe467d96.cpp",
+          "roc_unit_0344c891b5f9fd62.cpp",
+          "roc_unit_f405e62f632b4436.cpp",
+          "roc_unit_9dd977839b1be19a.cpp",
+          "roc_unit_08e1ba31cda5e7e4.cpp",
+          "roc_unit_f5c0ce6d1e0357c4.cpp",
+          "roc_unit_8be421a08ebdeb9d.cpp",
+          "roc_unit_8f9a2e8e1dd5b74f.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_unit_0f8187f1fe467d96.cpp",
+          "roc_unit_0344c891b5f9fd62.cpp",
+          "roc_unit_f405e62f632b4436.cpp",
+          "roc_unit_9dd977839b1be19a.cpp",
+          "roc_unit_08e1ba31cda5e7e4.cpp",
+          "roc_unit_f5c0ce6d1e0357c4.cpp",
+          "roc_unit_8be421a08ebdeb9d.cpp",
+          "roc_unit_8f9a2e8e1dd5b74f.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      }
+    ],
+    "targets": {},
+    "next": "Scale only if new full server gains; park zero-gain per-class/config objects. No global recipe/header changes."
+  },
+  "native-bodyforce-commutative-x87-fpfast-2008": {
+    "op": "grid",
+    "client": "2008-06",
+    "library": "BodyForce actual weak ownership and native accumulators",
+    "hypothesis": "Native force core98 matches ownership, all receiver offsets and all instructions except first FLD/FADD operand order. Test target-compatible /fp:fast commutative x87 scheduling only; same genuine Vector3 operation, no manual store rewrite.",
+    "targets": {
+      "addresses": [
+        "00630570"
+      ],
+      "scores": [
+        0,
+        99
+      ]
+    },
+    "seed_sources": {
+      "2008-06": {
+        "00630570": "work\\goal-bodyforce-native-weak-core-20261015\\00630570-lifetime.cpp"
+      }
+    },
+    "builds": [
+      21022
+    ],
+    "profiles": [
+      "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast"
+    ],
+    "append": [
+      ""
+    ],
+    "keep_partials": true,
+    "output": "work/goal-bodyforce-native-weak-core-20261015/fpfast-grid",
+    "next": "Inspect true native receiver/alias residue, bounded gates. Full code/data/server required."
+  },
+  "native-guiditem-destructor-family-heldout-2008": {
+    "op": "fanout",
+    "client": "2008-06",
+    "library": "Eight heldout genuine destructor classes with verified GuidItem revision",
+    "hypothesis": "First8cores gave2new exacts after2seed exacts. Expand to8fresh native explicit destructor cores with same proven aliases. Workspace inherits Bucket: preserve complete actual header and compatible50727, never omit required base or bypass access.",
+    "sources": [
+      {
+        "recipe": "rbxgs",
+        "files": [
+          "roc_unit_2023d484ac2c7b1b.cpp",
+          "roc_unit_820908da05c9ae2e.cpp",
+          "roc_unit_1f23c097610b6fb5.cpp",
+          "roc_unit_58c155c0e6a38bbf.cpp",
+          "roc_unit_fcd0b457f199c469.cpp",
+          "roc_unit_b094db09f6a0e449.cpp",
+          "roc_unit_1fe72c6aaaf6e93d.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_unit_2023d484ac2c7b1b.cpp",
+          "roc_unit_820908da05c9ae2e.cpp",
+          "roc_unit_1f23c097610b6fb5.cpp",
+          "roc_unit_58c155c0e6a38bbf.cpp",
+          "roc_unit_fcd0b457f199c469.cpp",
+          "roc_unit_b094db09f6a0e449.cpp",
+          "roc_unit_1fe72c6aaaf6e93d.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "rbxgs",
+        "files": [
+          "roc_unit_040a4a9b24dc1b0f.cpp"
+        ],
+        "builds": [
+          50727
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_unit_040a4a9b24dc1b0f.cpp"
+        ],
+        "builds": [
+          50727
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      }
+    ],
+    "targets": {},
+    "next": "Park zero-gain class/config objects after single bounded scan."
+  },
+  "native-guiditem-full-instance-source-2008": {
+    "op": "fanout",
+    "client": "2008-06",
+    "library": "Actual full Instance TU with native GuidItem base revision",
+    "hypothesis": "Four full destructor exacts prove GuidItem/weak ownership revision. Apply only real verified hierarchy to full authentic Instance source; move old member Guid initialization to actual base constructor. No other source/algorithm edits; native accessor prototypes retained.",
+    "sources": [
+      {
+        "recipe": "rbxgs",
+        "files": [
+          "roc_unit_9935db0189a5bc04.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_unit_9935db0189a5bc04.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      }
+    ],
+    "targets": {},
+    "next": "Park if no gains, retain field/header facts for narrow new native cores."
+  },
+  "bruteforce-postmessage-command": {
+    "op": "grid",
+    "client": "2008-06",
+    "library": "PostMessageA command ID",
+    "hypothesis": "0044f700 target calls importedPostMessageA with message111,wParam8100,lParam0; storedsource onlyresidue80ff. Correct actual commandID, preserve sourcebody/ABI and avoid original verb attribution.",
+    "targets": {
+      "addresses": [
+        "0044f700"
+      ],
+      "scores": [
+        0,
+        99
+      ]
+    },
+    "seed_sources": {
+      "2008-06": {
+        "0044f700": "work/brute-postmessage-command-20261015/0044f700.cpp"
+      }
+    },
+    "builds": [
+      21022
+    ],
+    "profiles": [
+      "keep"
+    ],
+    "next": "Fullservercode/data receipt required; propagate only to matching provedcommand siblings."
+  },
+  "native-bodyforce-source-first-vector-sum-2008": {
+    "op": "grid",
+    "client": "2008-06",
+    "library": "BodyForce actual weak ownership and native accumulators",
+    "hypothesis": "Only residual98 is first x87 sum operand reversed; target loads source force first for every component. Use genuine Vector3 source+accumulator expression rather than accumulator+=source, same operation and real value type; no per-component store trick or volatile. fpfast alone unchanged98, already parked.",
+    "targets": {
+      "addresses": [
+        "00630570"
+      ],
+      "scores": [
+        0,
+        99
+      ]
+    },
+    "seed_sources": {
+      "2008-06": {
+        "00630570": "work\\goal-bodyforce-native-weak-core-20261015\\00630570-source-first.cpp"
+      }
+    },
+    "builds": [
+      21022
+    ],
+    "profiles": [
+      "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+    ],
+    "append": [
+      ""
+    ],
+    "keep_partials": true,
+    "output": "work\\goal-bodyforce-native-weak-core-20261015\\source-first-grid",
+    "next": "Inspect true native receiver/alias residue, bounded gates. Full code/data/server required."
+  },
+  "native-guiditem-full-instance-original-assert-mode-2008": {
+    "op": "fanout",
+    "client": "2008-06",
+    "library": "Actual full Instance TU with native GuidItem base revision",
+    "hypothesis": "Full Instance same authentic source/new verified GuidItem hierarchy; previous release-only mode yields1newexact. Restore original vendor _RELEASEASSERT default for other functions whose native assertions remain. Only two preprocessing modes, no body/layout changes.",
+    "sources": [
+      {
+        "recipe": "rbxgs",
+        "files": [
+          "roc_unit_04f5a52c79364815.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_unit_04f5a52c79364815.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      }
+    ],
+    "targets": {},
+    "next": "Park both full-TU modes after bounded scans; individual native helper contexts still needed."
+  },
+  "large-scorehud-compile-board-gates-2008": {
+    "op": "grid",
+    "client": "2008-06",
+    "library": "native ScoreHud team and FFA",
+    "hypothesis": "New complete CompileData and BuildBoardData bodies from native control flow, genuine BoardData/LeaderboardData containers, proven native accessors and reflection getValue prototype/slot, actual external RTTI metadata. Four source targets share one object; lookup/create semantics audited at native callees.",
+    "targets": {
+      "addresses": [
+        "00654860",
+        "00654d20",
+        "00655a20",
+        "006551e0"
+      ],
+      "scores": [
+        0,
+        99
+      ]
+    },
+    "seed_sources": {
+      "2008-06": {
+        "00654860": "work/large-functions-2008-20261014/00654860.cpp",
+        "00654d20": "work/large-functions-2008-20261014/00654d20.cpp",
+        "00655a20": "work/large-functions-2008-20261014/00655a20.cpp",
+        "006551e0": "work/large-functions-2008-20261014/006551e0.cpp"
+      }
+    },
+    "keep_partials": true,
+    "builds": [
+      21022,
+      50727
+    ],
+    "profiles": [
+      "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD",
+      "/O2 /Ob1 /Oy /GF /GS- /EHsc /MD",
+      "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast"
+    ],
+    "output": "work/large-functions-2008-20261014/scorehud-compile-board-gates",
+    "next": "Submit only verified improvements; all partials remain partials; full code/data required for exacts."
+  },
+  "bruteforce-x87-owned-float-constants": {
+    "op": "grid",
+    "client": "2008-06",
+    "library": "x87 source-owned constant width",
+    "hypothesis": "0045f570 targetfsub dword827494 owns3f800000 float1;fld dword8163a4 owns42c80000 float100. Existing literals fold toqword operands. Declare actual floatconstant objects before function and define after, preserving exactsourceowned4byte data; no extern-only data bypass, no declaration identity claim.",
+    "targets": {
+      "addresses": [
+        "0045f570"
+      ],
+      "scores": [
+        0,
+        99
+      ]
+    },
+    "seed_sources": {
+      "2008-06": {
+        "0045f570": "work/brute-x87-constant-width-20261015/0045f570.cpp"
+      }
+    },
+    "builds": [
+      21022,
+      50727
+    ],
+    "profiles": [
+      "keep"
+    ],
+    "keep_partials": true,
+    "next": "Fullcode/data/server only; inspect observedresidue, do not invent constantvalues."
+  },
+  "bruteforce-x87-volatile-owned-constants": {
+    "op": "grid",
+    "client": "2008-06",
+    "library": "x87 source-owned constant width",
+    "hypothesis": "Ordinary sourceownedfloat constants still folded toqword; targetactualreadonly floats1/100proven. Preserve4byte sourceowneddefinitions, usevolatile read qualification to force measured x87dword operands. Codegenanalogue only, not recovered volatility contract.",
+    "targets": {
+      "addresses": [
+        "0045f570"
+      ],
+      "scores": [
+        0,
+        99
+      ]
+    },
+    "seed_sources": {
+      "2008-06": {
+        "0045f570": "work/brute-x87-constant-width-20261015/0045f570-volatile.cpp"
+      }
+    },
+    "builds": [
+      21022,
+      50727
+    ],
+    "profiles": [
+      "keep"
+    ],
+    "keep_partials": true,
+    "next": "Fullcode/data/server only; inspect observedresidue, do not invent constantvalues."
+  },
+  "bruteforce-x87-global-owned-constants": {
+    "op": "grid",
+    "client": "2008-06",
+    "library": "x87 source-owned constant width",
+    "hypothesis": "Constversion folded qword;volatileversion forced extraordering95. Ordinary sourceownedfloat objects keep measured4byte1/100 values readable across externalcalls withoutvolatile evaluation constraints. Explicitcodegenanalogue, not original mutability/declaration claim. Finalbounded strategy, nofield/layout changes.",
+    "targets": {
+      "addresses": [
+        "0045f570"
+      ],
+      "scores": [
+        0,
+        99
+      ]
+    },
+    "seed_sources": {
+      "2008-06": {
+        "0045f570": "work/brute-x87-constant-width-20261015/0045f570-global.cpp"
+      }
+    },
+    "builds": [
+      21022,
+      50727
+    ],
+    "profiles": [
+      "keep"
+    ],
+    "keep_partials": true,
+    "next": "Fullcode/data/server only; inspect observedresidue, do not invent constantvalues."
+  },
+  "native-scorehud-compile-board-fanout-2008": {
+    "op": "fanout",
+    "client": "2008-06",
+    "library": "native ScoreHud and genuine Color palette/templates",
+    "hypothesis": "Two additional complete1212/1214byte leaderboard methods emit authentic map/vector and roster ownership helpers. Four compiled objects checked across unresolved2008 code. New native public accessor bodies also improve2574/1566byte parents with corrected findTeams semantics.",
+    "sources": [
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_scorehud_compile_board_59229c00dc6d423a.cpp"
+        ],
+        "builds": [
+          21022,
+          50727
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast",
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      }
+    ],
+    "targets": {},
+    "output": "work/large-functions-2008-20261014/scorehud-compile-board-fanout",
+    "next": "Park unchanged objects after bounded pass; count only verified new exacts."
+  },
+  "bruteforce-native-optimized-50727": {
+    "op": "fanout",
+    "client": "2008-06",
+    "library": "Native portfolio unoptimized member emission",
+    "portfolio": {
+      "max_candidates": 0,
+      "donors": 0,
+      "family_sources": 0,
+      "native_only": true
+    },
+    "targets": {
+      "scores": [
+        0,
+        99
+      ]
+    },
+    "builds": [
+      50727
+    ],
+    "profiles": [
+      "keep"
+    ],
+    "append": [
+      ""
+    ],
+    "evidence_resume": true,
+    "hypothesis": "Broadsourcecontexts schedule many21022contexts before50727; prior genuine nativeheaders compileonlyunder50727 while some21022units failIRenderable privateheader. Test currentclientnative portfolio baseoptimized contexts under50727 with sameauthentic bodies/preludes/flags, separate from zero-yieldOdscale. No access/field changes.",
+    "next": "256context boundedpilot when RAMpermits; inspectserververified gains before expansion."
   }
 }

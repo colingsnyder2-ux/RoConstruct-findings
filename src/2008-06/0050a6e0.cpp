@@ -1,0 +1,5 @@
+// from server: 100% by colin
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lang: cpp
+// roc-lib: g3d-6.09-dll G3Dcpp/debugAssert.cpp

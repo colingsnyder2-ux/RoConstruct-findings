@@ -1,4 +1,6 @@
-// from server: 18% by colin
+// from server: 24% by colin
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD /fp:fast
 struct Vec3 { float x, y, z; };
 
 struct CylinderBuilder {

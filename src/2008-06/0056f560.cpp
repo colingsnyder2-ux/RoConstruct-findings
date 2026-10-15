@@ -1,41 +1,35 @@
-// from server: 91% by king_originala
-struct Color3 {
+// from server: 100% by colin
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
+struct Vector3
+{
     float x, y, z;
 };
 
-struct Source;
+struct Result;
 
-typedef void (__thiscall *Getter)(Source*, Color3*, void*);
-
-struct SourceTable {
-    void* slot0;
-    void* slot1;
-    Getter get;
-};
-
-struct Source {
-    SourceTable* table;
-};
-
-extern "C" void __cdecl convert(void* result, const Color3* color);
-
-struct Descriptor {
-    char padding[24];
-    Source* source;
-
-    void* get(void* result, void* object);
-};
-
-void* Descriptor::get(void* result, void* object)
+struct Accessor
 {
-    struct Temporary {
-        volatile int state;
-        Color3 color;
-    } temporary;
+    virtual void slot0();
+    virtual void slot1();
+    virtual Vector3* get(Vector3* value, void* object);
+};
 
-    Source* receiver = source;
-    Getter getter = receiver->table->get;
-    getter(receiver, (temporary.state = 0, &temporary.color), object);
-    convert(result, &temporary.color);
+extern void __cdecl convert(Result* result, const Vector3* value);
+
+struct Descriptor
+{
+    char padding[24];
+    Accessor* accessor;
+
+    Result* read(Result* result, void* object);
+};
+
+Result* Descriptor::read(Result* result, void* object)
+{
+    volatile int state = 0;
+    Vector3 temporary;
+    accessor->get(&temporary, object);
+    convert(result, &temporary);
     return result;
 }

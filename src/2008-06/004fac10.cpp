@@ -1,4 +1,6 @@
-// from server: 22% by atomic.potato
+// from server: 24% by colin
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD /fp:fast
 // roc 2008-06 004fac10  unit: RBX::ViewNew::TorsoBuilder  size: 739 bytes
 
 extern "C" void __cdecl sub_5EC1A0(float* dst, float* src);

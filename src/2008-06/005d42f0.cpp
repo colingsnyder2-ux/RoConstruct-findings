@@ -1,19 +1,23 @@
-// from server: 87% by king_originala
+// from server: 100% by colin
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
+extern "C" long __cdecl _InterlockedIncrement(volatile long*);
+extern "C" long __cdecl _InterlockedDecrement(volatile long*);
+#pragma intrinsic(_InterlockedIncrement)
+#pragma intrinsic(_InterlockedDecrement)
 
-struct Control
-{
-    virtual void unused();
-    virtual void dispose();
-    virtual void destroy();
+struct Control {
+    virtual ~Control();
+    virtual void dispose() = 0;
+    virtual void destroy() = 0;
     volatile long strong;
     volatile long weak;
 };
 
-template<class T> struct Shared
-{
-    T* object;
+template<class T> struct Shared {
+    T* pointer;
     Control* control;
 
     Shared();
@@ -22,44 +26,32 @@ template<class T> struct Shared
 };
 
 template<class T>
-__forceinline Shared<T>::Shared() : object(0), control(0)
-{
-}
+inline Shared<T>::Shared() : pointer(0), control(0) {}
 
 template<class T>
-__forceinline Shared<T>::Shared(const Shared& other)
-    : object(other.object), control(other.control)
-{
-    if (control)
-        _InterlockedExchangeAdd(&control->strong, 1);
-}
-
-template<class T>
-__forceinline Shared<T>::~Shared()
-{
+inline Shared<T>::Shared(const Shared& other)
+    : pointer(other.pointer), control(other.control) {
     Control* p = control;
     if (p)
-    {
-        if (_InterlockedExchangeAdd(&p->strong, -1) == 0)
-        {
-            p->dispose();
-            if (_InterlockedExchangeAdd(&p->weak, -1) == 0)
-                p->destroy();
-        }
+        _InterlockedIncrement(&p->strong);
+}
+
+template<class T>
+inline Shared<T>::~Shared() {
+    Control* p = control;
+    if (p && _InterlockedDecrement(&p->strong) == 0) {
+        p->dispose();
+        if (_InterlockedDecrement(&p->weak) == 0)
+            p->destroy();
     }
 }
 
-struct Input;
-struct Output;
-
-struct Source
-{
-    Shared<Input> get();
+struct Source {
+    Shared<Source> get();
 };
 
-Shared<Output> __cdecl convert(const Shared<Input>&);
+Shared<void> __cdecl convert(const Shared<Source>&);
 
-Shared<Output> __cdecl reconstruct(Source* source)
-{
-    return source ? convert(source->get()) : Shared<Output>();
+Shared<void> __cdecl reconstruct(Source* source) {
+    return source ? convert(source->get()) : Shared<void>();
 }

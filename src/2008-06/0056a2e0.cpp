@@ -1,4 +1,6 @@
-// from server: 14% by colin
+// from server: 25% by colin
+// roc-cl: 21022
+// roc-flags: /O1 /GS- /EHsc /MD
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
 
