@@ -1,4 +1,4 @@
-// from server: 99% by king_originala
+// from server: 100% by colin
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
 
@@ -51,8 +51,7 @@ struct S : Base
 {
     Weak weak;
     void* pointer;
-    Shared first;
-    Shared second;
+    Pair arguments;
 
     S(void*, void*, Pair);
     virtual ~S();
@@ -72,7 +71,7 @@ __forceinline Shared::Shared(const Shared& value)
 }
 
 S::S(void* p, void* q, Pair value)
-    : weak(), pointer(p), first(value.first), second(value.second)
+    : weak(), pointer(p), arguments(value)
 {
     set(q);
 }

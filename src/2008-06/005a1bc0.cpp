@@ -1,3 +1,4 @@
+// from server: 100% by colin
 // from server: 97% by king_originala
 extern char instanceDescriptor;
 extern char renderableDescriptor;
@@ -33,8 +34,9 @@ struct S {
 
 void S::remove(Instance **object)
 {
+    void *raw = *object;
     IRenderable *renderable = static_cast<IRenderable *>(
-        __RTDynamicCast(*object, 0, &instanceDescriptor,
+        __RTDynamicCast(raw, 0, &instanceDescriptor,
                         &renderableDescriptor, 0));
     if (renderable)
         renderables.remove(renderable);

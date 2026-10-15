@@ -1,4 +1,4 @@
-// from server: 99% by king_originala
+// from server: 100% by colin
 struct Text {
     char storage[20];
     unsigned int length;
@@ -27,7 +27,7 @@ extern void __cdecl makeRectangle(Rectangle *, const Point *, const Point *);
 extern float *__cdecl activeColor();
 extern float *__cdecl inactiveColor();
 extern float *__cdecl backgroundColor();
-extern void *__stdcall selectFont(int);
+extern void *__cdecl selectFont();
 
 inline void copyRectangle(Rectangle *destination, const Rectangle &source)
 {
@@ -94,7 +94,7 @@ struct MenuItem {
     Text text;
 
     Rectangle bounds();
-    void drawText(Context *, const Text &, float *, void *);
+    void drawText(Context *, const Text &, float *, void *, int);
     void render(Context *);
 };
 
@@ -114,10 +114,10 @@ void MenuItem::render(Context *context)
              currentAction && currentAction->table->checked(currentAction)
                  ? prependText(prefix, caption())
                  : caption(),
-             color, selectFont(1));
+             color, selectFont(), 1);
 
     if (text.length > 0) {
         float *secondColor = enabled() ? activeColor() : inactiveColor();
-        drawText(context, text, secondColor, selectFont(0));
+        drawText(context, text, secondColor, selectFont(), 0);
     }
 }

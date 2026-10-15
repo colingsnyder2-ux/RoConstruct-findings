@@ -1,4 +1,6 @@
 // from server: 96% by king_originala
+// roc-cl: 21022
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
 struct Node {
     unsigned char padding0[4];
     char* data;
@@ -13,7 +15,8 @@ struct S {
 
 void* S::search(Node* node, bool recursive)
 {
-    void* result = find(node->data + 4);
+    const char* key = node->data + 4;
+    void* result = find(key);
     if (result)
         return result;
 

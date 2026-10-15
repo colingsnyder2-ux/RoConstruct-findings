@@ -1,4 +1,4 @@
-// from server: 99% by king_originala
+// from server: 100% by colin
 extern void (__thiscall *stringCopy)(void*, const void*);
 extern void (__thiscall *stringConstruct)(void*, const char*);
 extern void (__thiscall *stringDestroy)(void*);
@@ -13,7 +13,7 @@ namespace std {
         unsigned char storage[28];
     public:
         basic_string(const basic_string&);
-        basic_string(const C*);
+        __declspec(dllimport) basic_string(const C*);
         ~basic_string();
         const C* c_str() const;
     };
@@ -22,12 +22,6 @@ namespace std {
     inline basic_string<C, T, A>::basic_string(const basic_string& other)
     {
         stringCopy(this, &other);
-    }
-
-    template<class C, class T, class A>
-    inline basic_string<C, T, A>::basic_string(const C* text)
-    {
-        stringConstruct(this, text);
     }
 
     template<class C, class T, class A>

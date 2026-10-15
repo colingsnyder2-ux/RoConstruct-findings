@@ -1,4 +1,4 @@
-// from server: 99% by king_originala
+// from server: 100% by colin
 namespace std {
 template<class T> struct char_traits;
 template<class T> struct allocator;
@@ -6,7 +6,7 @@ template<class T> struct allocator;
 template<class T, class Traits, class Alloc>
 struct basic_string {
     unsigned char storage[28];
-    basic_string(const T*);
+    __declspec(dllimport) basic_string(const T*);
     basic_string(const basic_string&);
     ~basic_string();
     const T* c_str() const;
@@ -20,12 +20,6 @@ extern void (__thiscall* stringDestroy)(String*);
 extern const char* (__thiscall* stringData)(const String*);
 
 namespace std {
-template<class T, class Traits, class Alloc>
-inline basic_string<T, Traits, Alloc>::basic_string(const T* text)
-{
-    stringConstruct(this, text);
-}
-
 template<class T, class Traits, class Alloc>
 inline basic_string<T, Traits, Alloc>::~basic_string()
 {
@@ -87,9 +81,9 @@ LogManager::~LogManager()
             delete shader;
 
         if (archiveMode == 2)
-            archiveFile(path.c_str(), String("archive\\"));
-        else
             archiveFile(path.c_str(), String("error\\"));
+        else
+            archiveFile(path.c_str(), String("archive\\"));
     }
 
     currentManager = 0;

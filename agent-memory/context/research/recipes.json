@@ -519,5 +519,509 @@
       " /fp:fast"
     ],
     "next": "If it pays, extend to 60-74."
+  },
+  "app-fp-fast-50727-60-74": {
+    "op": "grid",
+    "library": "Roblox app code (non-Ogre)",
+    "hypothesis": "Previous 75-89 score campaign gained 12 server-verified exacts under VS2005 50727 plus /fp:fast; test same compiler hypothesis on fresh lower-score 60-74 app sources.",
+    "targets": {
+      "unit": "^(?!Ogre::)",
+      "scores": [
+        60,
+        74
+      ]
+    },
+    "builds": [
+      50727
+    ],
+    "profiles": [
+      "keep"
+    ],
+    "append": [
+      " /fp:fast"
+    ],
+    "next": "Inspect receipts and gain rate; do not repeat completed source/config pairs."
+  },
+  "largest-isolated-ogre-2008": {
+    "op": "fanout",
+    "library": "Ogre 1.4.5 / Roblox client methods",
+    "hypothesis": "Authentic large methods isolated into separate translation units preserve client-import code generation; 00690b20 isolation already server-verified exact",
+    "sources": [
+      {
+        "recipe": "ogre-1.4.5-dll",
+        "files": [
+          "roc_large_isolated_269ad3df38099054.cpp",
+          "roc_large_isolated_8a8ab84b4f576c05.cpp",
+          "roc_large_isolated_e9bdf23cf32acd87.cpp",
+          "roc_large_isolated_c1b76caa35f99f53.cpp",
+          "roc_large_isolated_b4bf6ed8d39181e4.cpp",
+          "roc_large_isolated_ad782e9aed364c00.cpp",
+          "roc_large_isolated_835da005427dd7f3.cpp",
+          "roc_large_isolated_81149b9e9cdb1fd4.cpp",
+          "roc_large_isolated_e15a1e4fd798f627.cpp",
+          "roc_large_isolated_9ff3053587a2b427.cpp",
+          "roc_large_isolated_fb4da4736d828778.cpp",
+          "roc_large_isolated_328340dbe6f8cf7e.cpp",
+          "roc_large_isolated_c94f78e9a588d567.cpp",
+          "roc_large_isolated_f6de8f23b1ec9dd3.cpp",
+          "roc_large_isolated_1bda97978befb41a.cpp",
+          "roc_large_isolated_053f07a93ca638ab.cpp",
+          "roc_large_isolated_4278fbd62f352382.cpp",
+          "roc_large_isolated_6a7ab98d13e5d1b7.cpp"
+        ],
+        "builds": [
+          21022,
+          50727
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MD /fp:fast"
+        ]
+      }
+    ],
+    "output": "work/large-functions-2008-20261014/ogre-isolated",
+    "result": {
+      "date": "2026-10-14",
+      "variants": 36,
+      "additional_exacts": 0,
+      "status": "parked",
+      "evidence": "reports/large-unmatched-2008-20261014.md"
+    },
+    "next": "Do not repeat unchanged cohort. Resume only with new binary-supported source or build evidence."
+  },
+  "app-fp-fast-50727-45-59": {
+    "op": "grid",
+    "library": "Roblox app code (non-Ogre)",
+    "hypothesis": "60-74 cohort gained five server-verified exacts in 415 trials; test same VS2005 50727 /fp:fast hypothesis on fresh 45-59 sources.",
+    "targets": {
+      "unit": "^(?!Ogre::)",
+      "scores": [
+        45,
+        59
+      ]
+    },
+    "builds": [
+      50727
+    ],
+    "profiles": [
+      "keep"
+    ],
+    "append": [
+      " /fp:fast"
+    ],
+    "next": "Inspect receipts and gain rate; do not repeat completed source/config pairs."
+  },
+  "large-client-profile-pilot-2008": {
+    "op": "fanout",
+    "library": "Ogre 1.4.5 imported client methods",
+    "hypothesis": "Automatic EXE profiles recover large low-score methods hidden by the DLL-only build grid; no source guessing or boundary changes",
+    "targets": {
+      "sizes": [
+        3476,
+        1000000
+      ],
+      "scores": [
+        0,
+        39
+      ]
+    },
+    "sources": [
+      {
+        "recipe": "ogre-1.4.5-dll",
+        "files": [
+          "roc_client_remaining_methods_04658f2fb3f66782.cpp",
+          "roc_client_large_methods_fe8e0ed61a73b8e9.cpp",
+          "roc_fork_aab1724a168d52da.cpp"
+        ],
+        "builds": [
+          21022
+        ]
+      }
+    ],
+    "output": "work/large-functions-2008-20261014/auto-pilot",
+    "result": {
+      "date": "2026-10-14",
+      "variants": 12,
+      "additional_exacts": 0,
+      "status": "parked",
+      "evidence": "reports/large-unmatched-2008-20261014.md"
+    },
+    "next": "Do not repeat unchanged cohort. Resume only with new binary-supported source or build evidence."
+  },
+  "large-recovered-source-pilot-2008": {
+    "op": "fanout",
+    "library": "G3D 6.09 / binary-supported client GLCaps",
+    "hypothesis": "Auto-discovering portable recovered units outside the vendor glob replays a manually verified large 0-percent function and may propagate to other large low-score functions",
+    "targets": {
+      "sizes": [
+        1024,
+        1000000
+      ],
+      "scores": [
+        0,
+        39
+      ]
+    },
+    "sources": [
+      {
+        "recipe": "g3d-6.09-dll",
+        "files": [
+          "roc_large_glcaps_11e595a340f00f1c.cpp"
+        ],
+        "builds": [
+          21022
+        ]
+      }
+    ],
+    "output": "work/large-functions-2008-20261014/recovered-source-pilot",
+    "result": {
+      "date": "2026-10-14",
+      "variants": 6,
+      "additional_exacts": 0,
+      "status": "parked",
+      "evidence": "reports/large-unmatched-2008-20261014.md"
+    },
+    "next": "Do not repeat unchanged cohort. Resume only with new binary-supported source or build evidence."
+  },
+  "large-recovered-source-scale-2008": {
+    "op": "fanout",
+    "library": "G3D 6.09 / portable recovered client units",
+    "hypothesis": "Verified auto-discovery replay of a missed 4396-byte function generalizes to other recovered units outside the vendor glob; stop on zero-gain shard",
+    "targets": {
+      "sizes": [
+        1024,
+        1000000
+      ],
+      "scores": [
+        0,
+        39
+      ]
+    },
+    "sources": [
+      {
+        "recipe": "g3d-6.09-dll",
+        "files": [
+          "roc_g3d_bmp_exception_38498d93767fe727.cpp",
+          "roc_g3d_jpeg_throw_414d7d8a47fb28a0.cpp",
+          "roc_g3d_log_guard_18744d5ad0bb680e.cpp",
+          "roc_unit_45931f30d1eceea5.cpp",
+          "roc_vrbxfont_compute_packed_458dceda9d4228a0.cpp",
+          "roc_vrbxfont_constructor_server_c5079e23e94144b0.cpp",
+          "roc_vrbxfont_draw2d_assigned_bounds_b5d1316817af0b1d.cpp"
+        ],
+        "builds": [
+          21022
+        ]
+      }
+    ],
+    "output": "work/large-functions-2008-20261014/recovered-source-scale",
+    "result": {
+      "date": "2026-10-14",
+      "variants": 42,
+      "additional_exacts": 0,
+      "status": "parked",
+      "evidence": "reports/large-unmatched-2008-20261014.md"
+    },
+    "next": "Do not repeat unchanged cohort. Resume only with new binary-supported source or build evidence."
+  },
+  "stl-map-int-set-ptr-2008": {
+    "op": "fanout",
+    "library": "MSVC STL nested map/set",
+    "hypothesis": "00653730 erase became server exact after using four-byte key plus authentic std::set<T*> payload; propagate this nested container source to unresolved sibling methods.",
+    "sources": [
+      {
+        "recipe": "openrbx-client-dll",
+        "files": [
+          "roc_unit_162c63062ae86f51.cpp"
+        ],
+        "builds": [
+          21022,
+          50727
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      }
+    ],
+    "next": "Inspect verified sibling hits; do not modify tree node headers or replay completed pairs."
+  },
+  "stl-map-ptr-set-ptr-2008": {
+    "op": "fanout",
+    "library": "MSVC STL nested map/set",
+    "hypothesis": "00653730 and sibling00652310 establish a four-byte key plus set-of-four-byte-elements payload; pointer-key ordering is the next authentic template alternative for unresolved siblings.",
+    "sources": [
+      {
+        "recipe": "openrbx-client-dll",
+        "files": [
+          "roc_unit_a7fedc0da5d9156a.cpp"
+        ],
+        "builds": [
+          21022,
+          50727
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      }
+    ],
+    "next": "Keep only server-verified hits; signedness is a codegen hypothesis, not recovered type identity."
+  },
+  "stl-map-set-signed-elements-2008": {
+    "op": "fanout",
+    "library": "MSVC STL nested map/set",
+    "hypothesis": "Verified nested map/set methods establish four-byte outer keys and inner elements; signed inner-element comparison is the remaining authentic ordering variant after pointer variants gained00652310 and00654360.",
+    "sources": [
+      {
+        "recipe": "openrbx-client-dll",
+        "files": [
+          "roc_unit_06fd33449fe2545f.cpp"
+        ],
+        "builds": [
+          21022,
+          50727
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      }
+    ],
+    "next": "Keep verified hits; park unchanged four-byte nested-container variants after this matrix."
+  },
+  "large-quadric-emission-pilot-2008": {
+    "op": "fanout",
+    "library": "GLU-style client Ogre quadrics",
+    "hypothesis": "Binary-supported isolated disk/cylinder emission corrections may match other large low-score routines; no blanket source rewrites",
+    "targets": {
+      "sizes": [
+        1024,
+        1000000
+      ],
+      "scores": [
+        0,
+        39
+      ]
+    },
+    "sources": [
+      {
+        "recipe": "ogre-1.4.5-dll",
+        "files": [
+          "roc_disk_texorder_988117100aa25aa8.cpp",
+          "roc_cylinder_parity_8e6f6539259fd095.cpp"
+        ],
+        "builds": [
+          21022
+        ]
+      }
+    ],
+    "output": "work/large-functions-2008-20261014/quadric-emission-pilot",
+    "next": "Zero-gain pilot parked. Resume on new binary-supported evidence; choose a fresh large below40 manual seed.",
+    "result": {
+      "date": "2026-10-14",
+      "variants": 8,
+      "additional_exacts": 0,
+      "status": "parked",
+      "evidence": "work/large-functions-2008-20261014/quadric-emission-pilot"
+    }
+  },
+  "large-rbxgs-dll-pilot-2008": {
+    "op": "fanout",
+    "library": "RBXGS app with imported MSVCP90 runtime",
+    "hypothesis": "BrickMap constructor005b4630 manually recovered0-to100 using existing DLL preprocessing; test source and ContentProvider against remaining large low-score targets",
+    "targets": {
+      "sizes": [
+        1024,
+        1000000
+      ],
+      "scores": [
+        0,
+        39
+      ]
+    },
+    "sources": [
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "v8datamodel/BrickColor.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD",
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast"
+        ]
+      },
+      {
+        "recipe": "rbxgs-atl90-dll",
+        "files": [
+          "util/ContentProvider.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD",
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast"
+        ]
+      }
+    ],
+    "output": "work/large-functions-2008-20261014/rbxgs-dll-pilot",
+    "next": "Zero-gain corrected pilot parked without scale. Choose another large below40 manual seed; do not repeat unchanged files.",
+    "setup_evidence": "ContentProvider initially failed atlutil.h; scoped VS2008 RTM ATL include recipe compiles 477923-byte object. Original failures retained in journal.",
+    "result": {
+      "date": "2026-10-14",
+      "variants": 4,
+      "additional_exacts": 0,
+      "status": "parked",
+      "setup_failures_repaired": 2,
+      "evidence": "work/large-functions-2008-20261014/rbxgs-dll-pilot"
+    }
+  },
+  "lighting-child-layout-2008": {
+    "op": "fanout",
+    "library": "RBX Lighting",
+    "hypothesis": "onChildAdded005e2160 became server exact using observed shared sky0x2d4 and SignalSource0x14; propagate same authentic child-callback unit.",
+    "sources": [
+      {
+        "recipe": "rbxgs",
+        "files": [
+          "roc_unit_90b7c5827cc97187.cpp"
+        ],
+        "builds": [
+          21022,
+          50727
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      }
+    ],
+    "next": "Keep receipt-backed sibling hits; no blanket header layout changes."
+  },
+  "large-reverb-preset-pilot-2008": {
+    "op": "fanout",
+    "library": "FMOD4.08 reverb presets / RBX SoundService",
+    "hypothesis": "Manually recovered0-percent3880-byte reverb switch; portable unit replay may identify other large low-score preset routines",
+    "targets": {
+      "sizes": [
+        1024,
+        1000000
+      ],
+      "scores": [
+        0,
+        39
+      ]
+    },
+    "sources": [
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_reverb_room_ed1e431bee9bec28.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD",
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast"
+        ]
+      }
+    ],
+    "output": "work/large-functions-2008-20261014/reverb-pilot",
+    "next": "Zero-gain pilot parked; no scale. Choose fresh large below40 seed.",
+    "result": {
+      "date": "2026-10-14",
+      "variants": 2,
+      "additional_exacts": 0,
+      "status": "parked",
+      "evidence": "work/large-functions-2008-20261014/reverb-pilot"
+    }
+  },
+  "lighting-color-layout-fast-2008": {
+    "op": "fanout",
+    "library": "RBX Lighting Color3 setters",
+    "hypothesis": "005e22c0 is server exact after authentic Color3 setter replay at observed offsets with SignalSource+0x14 and21022/fp-fast; two target setters share control flow at adjacent observed Color3 fields.",
+    "targets": {
+      "addresses": [
+        "005e22c0",
+        "005e2370",
+        "005e2490"
+      ]
+    },
+    "sources": [
+      {
+        "recipe": "rbxgs",
+        "files": [
+          "roc_unit_a3550546fecd006b.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast"
+        ]
+      }
+    ],
+    "next": "Keep verified exacts; offset mapping is a codegen analog, not original member declaration proof."
+  },
+  "large-g3d-mesh-x87-pilot-2008": {
+    "op": "fanout",
+    "library": "G3D6.09 mesh algorithms",
+    "hypothesis": "Manual2872-byte0-to100 adjacency recovery validates x87 fpfast; test adjacent unchanged vendor algorithm files against remaining large below40 functions",
+    "targets": {
+      "sizes": [
+        1024,
+        1000000
+      ],
+      "scores": [
+        0,
+        39
+      ]
+    },
+    "sources": [
+      {
+        "recipe": "g3d-6.09-dll",
+        "files": [
+          "G3Dcpp/MeshAlgAdjacency.cpp",
+          "G3Dcpp/MeshAlg.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /GS- /EHsc /MD /fp:fast"
+        ]
+      }
+    ],
+    "output": "work/large-functions-2008-20261014/g3d-mesh-pilot",
+    "next": "No new exacts in bounded pilot. Do not repeat unchanged source/config pairs; select fresh large below40 manual seed.",
+    "result": {
+      "date": "2026-10-14",
+      "variants": 2,
+      "additional_exacts": 0,
+      "status": "parked",
+      "evidence": "work/large-functions-2008-20261014/g3d-mesh-pilot"
+    }
+  },
+  "xml-double-layout-2008": {
+    "op": "fanout",
+    "library": "RBX XML value union",
+    "hypothesis": "00413a70 server exact with authentic doubleValue union member and corresponding8byte alignment; propagate unchanged serializer methods under same profile",
+    "targets": {},
+    "sources": [
+      {
+        "recipe": "rbxgs",
+        "files": [
+          "roc_unit_b33e4ed4fd49a8f3.cpp",
+          "roc_unit_1090b1d636e8a7d4.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      }
+    ],
+    "next": "Keep whole code/data server-verified gains; no invented padding, original declarations remain unproven."
   }
 }

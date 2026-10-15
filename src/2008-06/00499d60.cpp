@@ -1,18 +1,5 @@
-// from server: 98% by king_originala
-struct Tag1 {
-    Tag1() {}
-};
-
-struct Tag2 {
-    Tag2() {}
-};
-
-struct Base {
-    char storage[32];
-
-    Base(const Tag1&, const Tag2&);
-    ~Base();
-};
+// from server: 100% by colin
+#include <set>
 
 struct Member {
     void* data;
@@ -22,13 +9,13 @@ struct Member {
     Member();
 };
 
-struct S : Base {
+struct S : std::set<double> {
     Member member;
 
     S();
 };
 
 S::S()
-    : Base(Tag1(), Tag2()), member()
+    : member()
 {
 }

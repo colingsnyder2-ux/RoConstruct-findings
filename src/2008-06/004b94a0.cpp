@@ -1,4 +1,9 @@
-// from server: 99% by king_originala
+// from server: 100% by colin
+#include <set>
+struct E { int v[8]; };
+bool operator<(const E&, const E&);
+typedef std::set<E> Tail;
+
 struct I0 { virtual void f(); char padding[12]; };
 struct I1 { virtual void f(); };
 struct I2 { virtual void f(); char padding[8]; };
@@ -21,22 +26,6 @@ struct Member {
     ~Member();
 };
 
-struct Tag1 {
-    Tag1();
-};
-
-struct Tag2 {
-    Tag2();
-};
-
-inline Tag1::Tag1() {}
-inline Tag2::Tag2() {}
-
-struct Tail {
-    Tail(const Tag1&, const Tag2&);
-    ~Tail();
-};
-
 struct S : Base {
     Member member;
     Tail tail;
@@ -44,6 +33,6 @@ struct S : Base {
     S();
 };
 
-S::S() : Base(), member(), tail(Tag1(), Tag2())
+S::S() : Base(), member(), tail()
 {
 }

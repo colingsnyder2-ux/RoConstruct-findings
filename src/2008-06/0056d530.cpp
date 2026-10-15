@@ -1,4 +1,4 @@
-// from server: 92% by colin
+// from server: 99% by colin
 // roc 2008-06 0056d530  unit: G3D::VColor3::?$holder  size: 272 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 0056d530
 //
@@ -97,105 +97,101 @@
 // 0056d63a  52                   push edx
 // 0056d63b  e84c3f1300           call 0x6a158c
 
-struct TypeInfo {
-    unsigned int reserved[2];
-    const char* name;
-};
+struct TypeInfo {};
 
-typedef bool (__thiscall *TypeEqual)(const TypeInfo*, const TypeInfo&);
+extern bool (__thiscall *typeEqual)(const TypeInfo *, const TypeInfo &);
+extern const TypeInfo emptyType;
+extern const TypeInfo integerType;
+extern const TypeInfo stringType;
 
 struct String {
-    unsigned int reserved;
+    unsigned allocator;
     union {
-        char buffer[16];
-        char* pointer;
-    } data;
-    unsigned int length;
-    unsigned int capacity;
+        char local[16];
+        char *pointer;
+    } storage;
+    unsigned length;
+    unsigned capacity;
 
     ~String();
 };
 
 struct TypeName {
-    unsigned int reserved;
+    unsigned prefix;
     String text;
 };
 
-struct Descriptor {
-    unsigned int reserved[2];
-    const TypeInfo* type;
-    TypeName* name;
+struct Type {
+    unsigned reserved[2];
+    const TypeInfo *info;
+    TypeName *name;
 };
 
 struct Placeholder {
-    virtual ~Placeholder();
-    virtual const TypeInfo& type() const;
+    virtual void destroy();
+    virtual const TypeInfo &type() const;
 };
 
 struct Any {
-    Placeholder* content;
-    void assign(const bool&);
+    Placeholder *content;
+    void assign(const int *);
 };
 
 struct CastError {
-    unsigned char storage[36];
-    CastError(const String&);
+    unsigned storage[10];
+    CastError(const String &);
+    CastError(const CastError &);
 };
 
-extern String __cdecl format(const char*, const char*, const char*);
-extern String* __cdecl stringValue(Any*);
-extern bool __cdecl parseValue(const String*, bool*);
-extern bool* __cdecl boolValue(Any*);
-extern Descriptor* __cdecl descriptor();
-extern "C" __declspec(noreturn) void __stdcall throwException(void*, void*);
+extern Type *__cdecl integerDescriptor();
+extern String *__cdecl stringCast(Any *);
+extern int *__cdecl integerCast(Any *);
+extern bool __cdecl parseInteger(const String *, int *);
+extern String __cdecl formatMessage(const char *, const char *, const char *);
 
-struct Holder {
-    Descriptor* description;
+struct Value {
+    Type *descriptor;
     Any value;
-
-    void convert();
+    int *convert();
 };
 
-void Holder::convert()
+int *Value::convert()
 {
-    TypeEqual equal = *reinterpret_cast<TypeEqual*>(0x802878);
-    Any* source = &value;
-
+    bool (__thiscall *equal)(const TypeInfo *, const TypeInfo &) = typeEqual;
+    Any *source = &value;
     if (source) {
-        const TypeInfo* type = source->content
-            ? &source->content->type()
-            : reinterpret_cast<const TypeInfo*>(0x929614);
-
-        if (equal(type, *reinterpret_cast<const TypeInfo*>(0x929644))) {
-            bool* result = reinterpret_cast<bool*>(
-                reinterpret_cast<char*>(source->content) + 4);
+        const TypeInfo &info =
+            source->content ? source->content->type() : emptyType;
+        if (equal(&info, integerType)) {
+            int *result = reinterpret_cast<int *>(
+                reinterpret_cast<char *>(source->content) + 4);
             if (result)
-                return;
+                return result;
         }
     }
 
-    bool result;
-    const TypeInfo* targetType = description->type;
-    if (equal(reinterpret_cast<const TypeInfo*>(0x92bef8),
-              *targetType) &&
-
-        parseValue(stringValue(source), &result)) {
-        source->assign(result);
-        description = descriptor();
-        boolValue(source);
-        return;
+    const TypeInfo *descriptorInfo = descriptor->info;
+    if (equal(&stringType, *descriptorInfo)) {
+        int converted;
+        if (parseInteger(stringCast(source), &converted)) {
+            source->assign(&converted);
+            descriptor = integerDescriptor();
+            return integerCast(source);
+        }
     }
 
-    TypeName* target = descriptor()->name;
-    const char* targetName = target->text.capacity >= 16
-        ? target->text.data.pointer : target->text.data.buffer;
-    String& current = description->name->text;
-    const char* currentName = current.capacity >= 16
-        ? current.data.pointer : current.data.buffer;
+    TypeName *destinationName = integerDescriptor()->name;
+    const char *destination =
+        destinationName->text.capacity >= 16
+            ? destinationName->text.storage.pointer
+            : destinationName->text.storage.local;
 
-    String message = format(
-        reinterpret_cast<const char*>(0x82f71c),
-        currentName, targetName);
-    CastError error(message);
-    throwException(&error, reinterpret_cast<void*>(0x8d1bc8));
+    String *sourceName = &descriptor->name->text;
+    const char *origin =
+        sourceName->capacity >= 16
+            ? sourceName->storage.pointer
+            : sourceName->storage.local;
+
+    throw CastError(formatMessage("Unable to cast %s to %s",
+                                  origin, destination));
 }
