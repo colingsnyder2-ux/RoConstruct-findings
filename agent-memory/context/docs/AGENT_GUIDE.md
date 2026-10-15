@@ -17,6 +17,10 @@ means relocation-normalized instruction bytes **and referenced data** pass
 server's re-verification counts as a gain. Default research focus is 2008-06. Agent workers honor the selected client or
 All clients (including 2009-12), using each client's actual compiler and evidence.
 
+Cached `work/<client>/scores.json` values are hints, not proof about the current
+source file. Server startup imports re-check each candidate's current source and
+referenced data before crediting an exact; stale or uncompilable candidates are skipped.
+
 Never: inline assembly, `__emit`, byte blobs, patched target bytes, invented struct
 fields/offsets/ABIs, replacing a better stored source, hand edits under `clients/` or
 `tools/`. A matching source is a codegen analog, not proof of the original declaration.
@@ -36,6 +40,10 @@ including nested recipe include directories. When resolved, they omit unrelated
 fallback headers. `agent-metrics` reports `repair_verified_gains` and its wall-hour
 rate separately from totals that include compiler reuse; use repair receipts and
 first useful checks when assessing model scale-up.
+Read `checked_target_fraction` alongside the median: targets without a first useful
+check remain in its denominator. A null fraction means no repair targets were sampled.
+`blocked_reasons` groups recorded blockers, including older runs whose target files
+remain available. `unrecorded` means evidence is missing; it is not a model diagnosis.
 
 | Need | Command | Needs | Result |
 | --- | --- | --- | --- |
@@ -77,6 +85,11 @@ default in automatic mode.
    Windows CE contamination were setup faults, not matching limits. Fix those first.
 2. **Authentic vendor configuration.** Find the vendor's prelude, defines and runtime
    linkage (XTP: `XTPDLLExports.h`, `_LIB`, noinline CString accessors, +444 exacts).
+   For CRT IAT mismatches, inspect preprocessing defines: final `/MD` cannot change
+   headers already expanded without `_DLL`. The existing `openrbx-client-dll` recipe
+   repaired 95 audited stale sources without body changes; the separate bool adapter
+   reached 100 after C++ redeclarations had failed. Use binary import evidence, not a
+   blanket change to every library's runtime.
 3. **Source reuse.** Verified donors of the same shape, library recipes, `roc xcopy`.
 4. **Authentic templates.** Instantiate real Boost/STL/G3D/Ogre templates for types
    observed in RTTI (`roc/client_templates.py`; +90 Boost/std exacts).
@@ -106,6 +119,14 @@ the target must have an independent SEH prologue. This recovered ToneMap's
 adjacent PS20 entry missed when no int3 separated it from PS14. Record reviewed
 extent corrections in `bounds.json` and verify both complete functions, including
 their referenced data, before counting any recovered matches.
+
+Analysis also joins embedded catch labels when a relocated catch return points
+back into its framed parent and normal branches cross the handler to the same
+EBP epilogue. Every followed exit must preserve that frame; called, independently
+framed, exact and proven entries remain protected. The 2008 staged audit recovered
+the complete 4073-byte texture resolver at 007aec70, formerly cut at 3499 bytes.
+Record reviewed changes in bounds.json, preserve stored sources, and invalidate
+scores measured against the old extents before mining the complete bodies.
 
 For manually recovered, source-less families, grid recipes can supply
 `seed_sources: {"2008-06": {"ADDR": "work/campaign/ADDR.cpp"}}`. Seeds are scoped

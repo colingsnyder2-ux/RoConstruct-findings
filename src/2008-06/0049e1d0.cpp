@@ -1,4 +1,6 @@
-// from server: 98% by king_originala
+// from server: 100% by colin
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
 typedef unsigned int size_t;
 
 void* __cdecl operator new(size_t);
@@ -10,17 +12,14 @@ struct String {
     unsigned int length;
     unsigned int capacity;
 
-    String(const String&);
+    __declspec(dllimport) String(const String&);
     ~String();
 };
 
 extern void (__thiscall *copyString)(String*, const String*);
 extern void (__thiscall *destroyString)(String*);
 
-__forceinline String::String(const String& other)
-{
-    copyString(this, &other);
-}
+
 
 __forceinline String::~String()
 {

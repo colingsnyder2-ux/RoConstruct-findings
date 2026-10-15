@@ -1,4 +1,4 @@
 // roc-lang: cpp
 // roc-cl: 21022
-// roc-flags: /O2 /GS- /MD
-// roc-lib: g3d-6.09-rbx2008 GLG3Dcpp/Texture.cpp
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+// roc-lib: rbxgs-atl90-dll roc_http_wininet_catch_19404fecbe27f869.cpp

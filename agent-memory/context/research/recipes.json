@@ -1,4 +1,372 @@
 {
+  "audited-hidden-result-forwarder-2008": {
+    "op": "grid",
+    "client": "2008-06",
+    "library": "Two-word hidden result receiver view",
+    "hypothesis": "006b9b50 wrongCDWordArray::Add donor68. Callee6b9a30 copies[ECX+18/1c] tohiddenresult[0/4], returnsresultptr,ret4. Callerprojectsreceiver+30 andreturnsresult. Nativepair8byteABIanalogue, originalclassesunknown; no fieldpadding.",
+    "targets": {
+      "addresses": [
+        "006b9b50"
+      ],
+      "scores": [
+        0,
+        99
+      ]
+    },
+    "seed_sources": {
+      "2008-06": {
+        "006b9b50": "work\\goal-auto-exact-census-20261015\\review-0002\\006b9b50.cpp"
+      }
+    },
+    "keep_partials": true,
+    "builds": [
+      21022,
+      50727
+    ],
+    "profiles": [
+      "/O2 /GS- /EHsc /MD"
+    ],
+    "append": [
+      ""
+    ],
+    "output": "work\\goal-auto-exact-census-20261015\\review-0002\\forwarder-grid",
+    "next": "Fullservercode/data; thisisauditedsource restoration, notnewtargetdiscovery; classnames/type notoriginaldeclaration claims."
+  },
+  "audited-openrbx-dll-heldout-2008": {
+    "op": "grid",
+    "client": "2008-06",
+    "library": "OpenRBX DLL CRT heldout source repairs",
+    "hypothesis": "31/31auditedpilot sources restored100 withactualDLL preprocessor. Test64independentserverconfirmedstaleclaims, sameoneproperty/build/flags, no cppbody/layoutedits.",
+    "targets": {
+      "addresses": [
+        "00415bd0",
+        "00415c10",
+        "00415c50",
+        "00415c90",
+        "0061fb20",
+        "00430e10",
+        "005768b0",
+        "005a1530",
+        "00576940",
+        "005e9940",
+        "005e99d0",
+        "005e9a60",
+        "005e9af0",
+        "00443c60",
+        "005608d0",
+        "00591c60",
+        "00591e60",
+        "00592180",
+        "00592fd0",
+        "005930c0",
+        "00595190",
+        "00620e80",
+        "0067c5e0",
+        "00412180",
+        "0048ba70",
+        "0048b9a0",
+        "005584c0",
+        "00558590",
+        "005728f0",
+        "00572b40",
+        "00572db0",
+        "00413d70",
+        "0058d4b0",
+        "0058d5f0",
+        "0058d630",
+        "0058d780",
+        "0058df70",
+        "0058eb10",
+        "0058ecb0",
+        "0058ee00",
+        "0058eef0",
+        "005b9d10",
+        "0042c590",
+        "004999b0",
+        "0049a770",
+        "0049c4f0",
+        "0049c590",
+        "004a0860",
+        "004b4fb0",
+        "00558110",
+        "00558220",
+        "00558370",
+        "00559430",
+        "005599d0",
+        "00559a50",
+        "0057b300",
+        "0062b090",
+        "00636370",
+        "00638bf0",
+        "0048f220",
+        "005c0b60",
+        "006023d0",
+        "00639880",
+        "0068d4b0"
+      ],
+      "scores": [
+        0,
+        99
+      ]
+    },
+    "seed_sources": {
+      "2008-06": {
+        "00415bd0": "work\\goal-auto-exact-census-20261015\\review-0002\\dll-seeds\\00415bd0.cpp",
+        "00415c10": "work\\goal-auto-exact-census-20261015\\review-0002\\dll-seeds\\00415c10.cpp",
+        "00415c50": "work\\goal-auto-exact-census-20261015\\review-0002\\dll-seeds\\00415c50.cpp",
+        "00415c90": "work\\goal-auto-exact-census-20261015\\review-0002\\dll-seeds\\00415c90.cpp",
+        "0061fb20": "work\\goal-auto-exact-census-20261015\\review-0002\\dll-seeds\\0061fb20.cpp",
+        "00430e10": "work\\goal-auto-exact-census-20261015\\review-0002\\dll-seeds\\00430e10.cpp",
+        "005768b0": "work\\goal-auto-exact-census-20261015\\review-0002\\dll-seeds\\005768b0.cpp",
+        "005a1530": "work\\goal-auto-exact-census-20261015\\review-0002\\dll-seeds\\005a1530.cpp",
+        "00576940": "work\\goal-auto-exact-census-20261015\\review-0002\\dll-seeds\\00576940.cpp",
+        "005e9940": "work\\goal-auto-exact-census-20261015\\review-0002\\dll-seeds\\005e9940.cpp",
+        "005e99d0": "work\\goal-auto-exact-census-20261015\\review-0002\\dll-seeds\\005e99d0.cpp",
+        "005e9a60": "work\\goal-auto-exact-census-20261015\\review-0002\\dll-seeds\\005e9a60.cpp",
+        "005e9af0": "work\\goal-auto-exact-census-20261015\\review-0002\\dll-seeds\\005e9af0.cpp",
+        "00443c60": "work\\goal-auto-exact-census-20261015\\review-0002\\dll-seeds\\00443c60.cpp",
+        "005608d0": "work\\goal-auto-exact-census-20261015\\review-0002\\dll-seeds\\005608d0.cpp",
+        "00591c60": "work\\goal-auto-exact-census-20261015\\review-0002\\dll-seeds\\00591c60.cpp",
+        "00591e60": "work\\goal-auto-exact-census-20261015\\review-0002\\dll-seeds\\00591e60.cpp",
+        "00592180": "work\\goal-auto-exact-census-20261015\\review-0002\\dll-seeds\\00592180.cpp",
+        "00592fd0": "work\\goal-auto-exact-census-20261015\\review-0002\\dll-seeds\\00592fd0.cpp",
+        "005930c0": "work\\goal-auto-exact-census-20261015\\review-0002\\dll-seeds\\005930c0.cpp",
+        "00595190": "work\\goal-auto-exact-census-20261015\\review-0002\\dll-seeds\\00595190.cpp",
+        "00620e80": "work\\goal-auto-exact-census-20261015\\review-0002\\dll-seeds\\00620e80.cpp",
+        "0067c5e0": "work\\goal-auto-exact-census-20261015\\review-0002\\dll-seeds\\0067c5e0.cpp",
+        "00412180": "work\\goal-auto-exact-census-20261015\\review-0002\\dll-seeds\\00412180.cpp",
+        "0048ba70": "work\\goal-auto-exact-census-20261015\\review-0002\\dll-seeds\\0048ba70.cpp",
+        "0048b9a0": "work\\goal-auto-exact-census-20261015\\review-0002\\dll-seeds\\0048b9a0.cpp",
+        "005584c0": "work\\goal-auto-exact-census-20261015\\review-0002\\dll-seeds\\005584c0.cpp",
+        "00558590": "work\\goal-auto-exact-census-20261015\\review-0002\\dll-seeds\\00558590.cpp",
+        "005728f0": "work\\goal-auto-exact-census-20261015\\review-0002\\dll-seeds\\005728f0.cpp",
+        "00572b40": "work\\goal-auto-exact-census-20261015\\review-0002\\dll-seeds\\00572b40.cpp",
+        "00572db0": "work\\goal-auto-exact-census-20261015\\review-0002\\dll-seeds\\00572db0.cpp",
+        "00413d70": "work\\goal-auto-exact-census-20261015\\review-0002\\dll-seeds\\00413d70.cpp",
+        "0058d4b0": "work\\goal-auto-exact-census-20261015\\review-0002\\dll-seeds\\0058d4b0.cpp",
+        "0058d5f0": "work\\goal-auto-exact-census-20261015\\review-0002\\dll-seeds\\0058d5f0.cpp",
+        "0058d630": "work\\goal-auto-exact-census-20261015\\review-0002\\dll-seeds\\0058d630.cpp",
+        "0058d780": "work\\goal-auto-exact-census-20261015\\review-0002\\dll-seeds\\0058d780.cpp",
+        "0058df70": "work\\goal-auto-exact-census-20261015\\review-0002\\dll-seeds\\0058df70.cpp",
+        "0058eb10": "work\\goal-auto-exact-census-20261015\\review-0002\\dll-seeds\\0058eb10.cpp",
+        "0058ecb0": "work\\goal-auto-exact-census-20261015\\review-0002\\dll-seeds\\0058ecb0.cpp",
+        "0058ee00": "work\\goal-auto-exact-census-20261015\\review-0002\\dll-seeds\\0058ee00.cpp",
+        "0058eef0": "work\\goal-auto-exact-census-20261015\\review-0002\\dll-seeds\\0058eef0.cpp",
+        "005b9d10": "work\\goal-auto-exact-census-20261015\\review-0002\\dll-seeds\\005b9d10.cpp",
+        "0042c590": "work\\goal-auto-exact-census-20261015\\review-0002\\dll-seeds\\0042c590.cpp",
+        "004999b0": "work\\goal-auto-exact-census-20261015\\review-0002\\dll-seeds\\004999b0.cpp",
+        "0049a770": "work\\goal-auto-exact-census-20261015\\review-0002\\dll-seeds\\0049a770.cpp",
+        "0049c4f0": "work\\goal-auto-exact-census-20261015\\review-0002\\dll-seeds\\0049c4f0.cpp",
+        "0049c590": "work\\goal-auto-exact-census-20261015\\review-0002\\dll-seeds\\0049c590.cpp",
+        "004a0860": "work\\goal-auto-exact-census-20261015\\review-0002\\dll-seeds\\004a0860.cpp",
+        "004b4fb0": "work\\goal-auto-exact-census-20261015\\review-0002\\dll-seeds\\004b4fb0.cpp",
+        "00558110": "work\\goal-auto-exact-census-20261015\\review-0002\\dll-seeds\\00558110.cpp",
+        "00558220": "work\\goal-auto-exact-census-20261015\\review-0002\\dll-seeds\\00558220.cpp",
+        "00558370": "work\\goal-auto-exact-census-20261015\\review-0002\\dll-seeds\\00558370.cpp",
+        "00559430": "work\\goal-auto-exact-census-20261015\\review-0002\\dll-seeds\\00559430.cpp",
+        "005599d0": "work\\goal-auto-exact-census-20261015\\review-0002\\dll-seeds\\005599d0.cpp",
+        "00559a50": "work\\goal-auto-exact-census-20261015\\review-0002\\dll-seeds\\00559a50.cpp",
+        "0057b300": "work\\goal-auto-exact-census-20261015\\review-0002\\dll-seeds\\0057b300.cpp",
+        "0062b090": "work\\goal-auto-exact-census-20261015\\review-0002\\dll-seeds\\0062b090.cpp",
+        "00636370": "work\\goal-auto-exact-census-20261015\\review-0002\\dll-seeds\\00636370.cpp",
+        "00638bf0": "work\\goal-auto-exact-census-20261015\\review-0002\\dll-seeds\\00638bf0.cpp",
+        "0048f220": "work\\goal-auto-exact-census-20261015\\review-0002\\dll-seeds\\0048f220.cpp",
+        "005c0b60": "work\\goal-auto-exact-census-20261015\\review-0002\\dll-seeds\\005c0b60.cpp",
+        "006023d0": "work\\goal-auto-exact-census-20261015\\review-0002\\dll-seeds\\006023d0.cpp",
+        "00639880": "work\\goal-auto-exact-census-20261015\\review-0002\\dll-seeds\\00639880.cpp",
+        "0068d4b0": "work\\goal-auto-exact-census-20261015\\review-0002\\dll-seeds\\0068d4b0.cpp"
+      }
+    },
+    "keep_partials": true,
+    "builds": [
+      21022
+    ],
+    "profiles": [
+      "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+    ],
+    "append": [
+      ""
+    ],
+    "output": "work\\goal-auto-exact-census-20261015\\review-0002\\dll-grid",
+    "next": "Report verifiedsource restorationsseparatelyfromnewfunctiondiscoveries. Preserveactualpartial whenDLLdoesnotfullmatch."
+  },
+  "native-bool-signal-runtime-2008": {
+    "op": "grid",
+    "client": "2008-06",
+    "library": "RBX bool signal real DLL CRT preprocessing",
+    "hypothesis": "Earlierbool96 differsonlyCRT invalidparameterIAT; nativeearly/latereclarationsfailed. New31/31pilot provesexistingDLLrecipe correctspreprocessor_CRTIMP withoutC++linkagehacks.",
+    "targets": {
+      "addresses": [
+        "005da420"
+      ],
+      "scores": [
+        0,
+        99
+      ]
+    },
+    "seed_sources": {
+      "2008-06": {
+        "005da420": "work\\goal-auto-exact-census-20261015\\bool-runtime\\005da420.cpp"
+      }
+    },
+    "keep_partials": true,
+    "builds": [
+      21022
+    ],
+    "profiles": [
+      "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+    ],
+    "append": [
+      ""
+    ],
+    "output": "work\\goal-auto-exact-census-20261015\\bool-runtime\\grid",
+    "next": "Reopenedparkedtargetonlybecauseactualpreprocessingruntimeevidenceisnew; fullservercode/data gate."
+  },
+  "audited-xtp-actions-removeall-2008": {
+    "op": "grid",
+    "client": "2008-06",
+    "library": "XTP authentic control actions RemoveAll",
+    "hypothesis": "Falsecached006acf90 sourceClosePopups44 wrongfamily. TargetloopsGetCount/GetAt, OnRemoved+InternalRelease, arrayRemoveAllat20; genuineCXTPControlActions::RemoveAll exactlythisbody.",
+    "targets": {
+      "addresses": [
+        "006acf90"
+      ],
+      "scores": [
+        0,
+        99
+      ]
+    },
+    "seed_sources": {
+      "2008-06": {
+        "006acf90": "work\\goal-auto-exact-census-20261015\\review-0001\\006acf90.cpp"
+      }
+    },
+    "keep_partials": true,
+    "builds": [
+      21022
+    ],
+    "profiles": [
+      "/O2 /MD /GS /EHsc /Ob1"
+    ],
+    "append": [
+      ""
+    ],
+    "output": "work\\goal-auto-exact-census-20261015\\review-0001\\xtp-grid",
+    "next": "Fullservercode/data gate; thisrestoresfalsehistoricalclaim, notnewtargetdiscovery."
+  },
+  "audited-openrbx-dll-restoration-2008": {
+    "op": "grid",
+    "client": "2008-06",
+    "library": "OpenRBX real DLL CRT import restoration",
+    "hypothesis": "31 falselycached100 sources serverreverifybelow100. ManyonlydirectCRT calls vsIAT. Switchexistingauthenticrecipe toopenrbx-client-dll (_DLL preprocessor), same21022 build/flags; correctartifacts, notnewfunctiondiscovery.",
+    "targets": {
+      "addresses": [
+        "00496e20",
+        "00498300",
+        "0048ff70",
+        "004093b0",
+        "005929b0",
+        "005780e0",
+        "0057cc20",
+        "00639700",
+        "0060e390",
+        "00415b90",
+        "00585db0",
+        "00614c20",
+        "00496740",
+        "005c12b0",
+        "00407820",
+        "00420b50",
+        "00620910",
+        "0040b320",
+        "0040d410",
+        "00411f50",
+        "004a3850",
+        "004a4d40",
+        "005c0dd0",
+        "005c1520",
+        "005c32f0",
+        "00639780",
+        "00639a80",
+        "005bde30",
+        "005bdef0",
+        "005bdf30",
+        "005bea10"
+      ],
+      "scores": [
+        0,
+        99
+      ]
+    },
+    "seed_sources": {
+      "2008-06": {
+        "00496e20": "work\\goal-auto-exact-census-20261015\\review-0001\\dll-seeds\\00496e20.cpp",
+        "00498300": "work\\goal-auto-exact-census-20261015\\review-0001\\dll-seeds\\00498300.cpp",
+        "0048ff70": "work\\goal-auto-exact-census-20261015\\review-0001\\dll-seeds\\0048ff70.cpp",
+        "004093b0": "work\\goal-auto-exact-census-20261015\\review-0001\\dll-seeds\\004093b0.cpp",
+        "005929b0": "work\\goal-auto-exact-census-20261015\\review-0001\\dll-seeds\\005929b0.cpp",
+        "005780e0": "work\\goal-auto-exact-census-20261015\\review-0001\\dll-seeds\\005780e0.cpp",
+        "0057cc20": "work\\goal-auto-exact-census-20261015\\review-0001\\dll-seeds\\0057cc20.cpp",
+        "00639700": "work\\goal-auto-exact-census-20261015\\review-0001\\dll-seeds\\00639700.cpp",
+        "0060e390": "work\\goal-auto-exact-census-20261015\\review-0001\\dll-seeds\\0060e390.cpp",
+        "00415b90": "work\\goal-auto-exact-census-20261015\\review-0001\\dll-seeds\\00415b90.cpp",
+        "00585db0": "work\\goal-auto-exact-census-20261015\\review-0001\\dll-seeds\\00585db0.cpp",
+        "00614c20": "work\\goal-auto-exact-census-20261015\\review-0001\\dll-seeds\\00614c20.cpp",
+        "00496740": "work\\goal-auto-exact-census-20261015\\review-0001\\dll-seeds\\00496740.cpp",
+        "005c12b0": "work\\goal-auto-exact-census-20261015\\review-0001\\dll-seeds\\005c12b0.cpp",
+        "00407820": "work\\goal-auto-exact-census-20261015\\review-0001\\dll-seeds\\00407820.cpp",
+        "00420b50": "work\\goal-auto-exact-census-20261015\\review-0001\\dll-seeds\\00420b50.cpp",
+        "00620910": "work\\goal-auto-exact-census-20261015\\review-0001\\dll-seeds\\00620910.cpp",
+        "0040b320": "work\\goal-auto-exact-census-20261015\\review-0001\\dll-seeds\\0040b320.cpp",
+        "0040d410": "work\\goal-auto-exact-census-20261015\\review-0001\\dll-seeds\\0040d410.cpp",
+        "00411f50": "work\\goal-auto-exact-census-20261015\\review-0001\\dll-seeds\\00411f50.cpp",
+        "004a3850": "work\\goal-auto-exact-census-20261015\\review-0001\\dll-seeds\\004a3850.cpp",
+        "004a4d40": "work\\goal-auto-exact-census-20261015\\review-0001\\dll-seeds\\004a4d40.cpp",
+        "005c0dd0": "work\\goal-auto-exact-census-20261015\\review-0001\\dll-seeds\\005c0dd0.cpp",
+        "005c1520": "work\\goal-auto-exact-census-20261015\\review-0001\\dll-seeds\\005c1520.cpp",
+        "005c32f0": "work\\goal-auto-exact-census-20261015\\review-0001\\dll-seeds\\005c32f0.cpp",
+        "00639780": "work\\goal-auto-exact-census-20261015\\review-0001\\dll-seeds\\00639780.cpp",
+        "00639a80": "work\\goal-auto-exact-census-20261015\\review-0001\\dll-seeds\\00639a80.cpp",
+        "005bde30": "work\\goal-auto-exact-census-20261015\\review-0001\\dll-seeds\\005bde30.cpp",
+        "005bdef0": "work\\goal-auto-exact-census-20261015\\review-0001\\dll-seeds\\005bdef0.cpp",
+        "005bdf30": "work\\goal-auto-exact-census-20261015\\review-0001\\dll-seeds\\005bdf30.cpp",
+        "005bea10": "work\\goal-auto-exact-census-20261015\\review-0001\\dll-seeds\\005bea10.cpp"
+      }
+    },
+    "keep_partials": true,
+    "builds": [
+      21022
+    ],
+    "profiles": [
+      "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+    ],
+    "append": [
+      ""
+    ],
+    "output": "work\\goal-auto-exact-census-20261015\\review-0001\\dll-grid",
+    "next": "Fullservercode/data gates only; reportrestored staleclaims separatelyfromnewtargets. Remainingmismatchcasesparkwithoutblindflaggrids."
+  },
+  "worker-normal-epilogue-propagation-2008": {
+    "op": "fanout",
+    "library": "RBX actual priority helper and imported string dtor",
+    "hypothesis": "Propagate nativeworkerhelpers fromverified164bytepriorityfunction includingnormalepilogue; managedRTMxstring dtor import only21022.",
+    "targets": {},
+    "sources": [
+      {
+        "recipe": "rbxgs",
+        "files": [
+          "roc_unit_dc687bf7b89856a6.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      }
+    ],
+    "next": "Fullservergains only; sourcefidelityfix0063f8c0 notnewexact, do notduplicatecount."
+  },
   "native-linesegment-fidelity-propagation-2008": {
     "op": "fanout",
     "library": "G3D native LineSegment laser temporary",
@@ -3686,7 +4054,18 @@
       " /fp:fast"
     ],
     "output": "work/large-functions-2008-20261014/scene-light-sync-grid",
-    "next": "Review own symbol, SDK layout and native output controls; unresolved specular sentinel branch needs evidence before exact claims."
+    "next": "Review own symbol, SDK layout and native output controls; unresolved specular sentinel branch needs evidence before exact claims.",
+    "result": {
+      "date": "2026-10-15",
+      "status": "parked",
+      "verified_partials": {
+        "007a9d30": 52,
+        "005f9c30": 52,
+        "005f8b60": 44
+      },
+      "new_verified_exacts": 0,
+      "evidence": "work/large-functions-2008-20261014/light-http-verified-summary.json"
+    }
   },
   "large-scene-light-array-2008": {
     "op": "grid",
@@ -3722,7 +4101,18 @@
       ""
     ],
     "output": "work/large-functions-2008-20261014/scene-light-sync-array-grid",
-    "next": "Review own symbol, SDK layout and native output controls; unresolved specular sentinel branch needs evidence before exact claims."
+    "next": "Review own symbol, SDK layout and native output controls; unresolved specular sentinel branch needs evidence before exact claims.",
+    "result": {
+      "date": "2026-10-15",
+      "status": "parked",
+      "verified_partials": {
+        "007a9d30": 52,
+        "005f9c30": 52,
+        "005f8b60": 44
+      },
+      "new_verified_exacts": 0,
+      "evidence": "work/large-functions-2008-20261014/light-http-verified-summary.json"
+    }
   },
   "large-http-wininet-2008": {
     "op": "grid",
@@ -3760,7 +4150,18 @@
       " /fp:fast"
     ],
     "output": "work/large-functions-2008-20261014/http-wininet-grid",
-    "next": "Review own request symbol and native network argument contracts; no actual HTTP traffic needed."
+    "next": "Review own request symbol and native network argument contracts; no actual HTTP traffic needed.",
+    "result": {
+      "date": "2026-10-15",
+      "status": "parked",
+      "verified_partials": {
+        "007a9d30": 52,
+        "005f9c30": 52,
+        "005f8b60": 44
+      },
+      "new_verified_exacts": 0,
+      "evidence": "work/large-functions-2008-20261014/light-http-verified-summary.json"
+    }
   },
   "large-http-wininet-atl-2008": {
     "op": "grid",
@@ -3797,7 +4198,18 @@
       " /fp:fast"
     ],
     "output": "work/large-functions-2008-20261014/http-wininet-atl-grid",
-    "next": "Review own request symbol and native network argument contracts; no actual HTTP traffic needed."
+    "next": "Review own request symbol and native network argument contracts; no actual HTTP traffic needed.",
+    "result": {
+      "date": "2026-10-15",
+      "status": "parked",
+      "verified_partials": {
+        "007a9d30": 52,
+        "005f9c30": 52,
+        "005f8b60": 44
+      },
+      "new_verified_exacts": 0,
+      "evidence": "work/large-functions-2008-20261014/light-http-verified-summary.json"
+    }
   },
   "large-http-wininet-catch-2008": {
     "op": "grid",
@@ -3833,7 +4245,18 @@
       ""
     ],
     "output": "work/large-functions-2008-20261014/http-wininet-catch-grid",
-    "next": "Review own request symbol and native network argument contracts; no actual HTTP traffic needed."
+    "next": "Review own request symbol and native network argument contracts; no actual HTTP traffic needed.",
+    "result": {
+      "date": "2026-10-15",
+      "status": "parked",
+      "verified_partials": {
+        "007a9d30": 52,
+        "005f9c30": 52,
+        "005f8b60": 44
+      },
+      "new_verified_exacts": 0,
+      "evidence": "work/large-functions-2008-20261014/light-http-verified-summary.json"
+    }
   },
   "large-http-winhttp-2008": {
     "op": "grid",
@@ -3869,7 +4292,18 @@
       ""
     ],
     "output": "work/large-functions-2008-20261014/http-winhttp-grid",
-    "next": "Review own request symbol and native network argument contracts; no actual HTTP traffic needed."
+    "next": "Review own request symbol and native network argument contracts; no actual HTTP traffic needed.",
+    "result": {
+      "date": "2026-10-15",
+      "status": "parked",
+      "verified_partials": {
+        "007a9d30": 52,
+        "005f9c30": 52,
+        "005f8b60": 44
+      },
+      "new_verified_exacts": 0,
+      "evidence": "work/large-functions-2008-20261014/light-http-verified-summary.json"
+    }
   },
   "large-http-pinned-atl-2008": {
     "op": "grid",
@@ -3944,7 +4378,7 @@
         "recipe": "rbxgs-atl90-dll",
         "files": [
           "roc_http_wininet_catch_19404fecbe27f869.cpp",
-          "roc_http_winhttp_2d017e3925a0bd15.cpp"
+          "roc_http_winhttp_buffers_2ef88c615963e2ca.cpp"
         ],
         "builds": [
           21022
@@ -3955,6 +4389,1266 @@
       }
     ],
     "output": "work/large-functions-2008-20261014/native-light-http-scale",
-    "next": "Inspect server receipts, retain gains, park unchanged cohort after one bounded shard."
+    "next": "Inspect server receipts, retain gains, park unchanged cohort after one bounded shard.",
+    "result": {
+      "date": "2026-10-15",
+      "status": "verified",
+      "new_verified_exacts": 1,
+      "verified_exact": {
+        "004082b0": 100
+      },
+      "evidence": "work/large-functions-2008-20261014/light-http-verified-summary.json"
+    }
+  },
+  "large-http-winhttp-wide-2008": {
+    "op": "grid",
+    "client": "2008-06",
+    "library": "native WinHTTP sibling using authentic Boost/ATL and recovered cleanup",
+    "hypothesis": "Correct native wide-buffer stack extents: encoding256 WCHAR/error512 WCHAR while native API counts remain256/512 bytes. Observed frame ranges -48c/-68c to gzip params -28c; source boundary correction only.",
+    "targets": {
+      "addresses": [
+        "005f8b60"
+      ],
+      "sizes": [
+        2000,
+        2100
+      ],
+      "scores": [
+        0,
+        39
+      ]
+    },
+    "seed_sources": {
+      "2008-06": {
+        "005f8b60": "work/large-functions-2008-20261014/http-winhttp-wide-wrapper.cpp"
+      }
+    },
+    "keep_partials": true,
+    "builds": [
+      21022
+    ],
+    "profiles": [
+      "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+    ],
+    "append": [
+      ""
+    ],
+    "output": "work/large-functions-2008-20261014/http-winhttp-wide-grid",
+    "next": "Review own request symbol and native network argument contracts; no actual HTTP traffic needed.",
+    "result": {
+      "date": "2026-10-15",
+      "status": "parked",
+      "verified_partials": {
+        "007a9d30": 52,
+        "005f9c30": 52,
+        "005f8b60": 44
+      },
+      "new_verified_exacts": 0,
+      "evidence": "work/large-functions-2008-20261014/light-http-verified-summary.json"
+    }
+  },
+  "large-atl-url-anchor-pilot-2008": {
+    "op": "grid",
+    "client": "2008-06",
+    "library": "authentic ATL9.0RTM URL parser automatic anchor",
+    "hypothesis": "Recovered HTTP object verified1077-byte CUrl::Parse 004082b0 from19to100. Reduce that emitter to an actual CUrl::CrackUrl wrapper, retaining authentic parser/header and first normal automatic compiler profile. This control is already exact and is not a new gain.",
+    "targets": {
+      "addresses": [
+        "004082b0"
+      ],
+      "sizes": [
+        1000,
+        1100
+      ],
+      "scores": [
+        0,
+        100
+      ]
+    },
+    "seed_sources": {
+      "2008-06": {
+        "004082b0": "work/large-functions-2008-20261014/atl-url-anchor-wrapper.cpp"
+      }
+    },
+    "builds": [
+      21022
+    ],
+    "profiles": [
+      "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+    ],
+    "output": "work/large-functions-2008-20261014/atl-url-anchor-pilot",
+    "next": "If exact parser/data reproduce, keep minimal portable anchor in normal recipe discovery and scan held-out large below40 functions.",
+    "result": {
+      "date": "2026-10-15",
+      "status": "exact_control",
+      "score": 100,
+      "new_verified_exacts": 0,
+      "evidence": "work/large-functions-2008-20261014/atl-url-anchor-control.json"
+    }
+  },
+  "large-atl-url-anchor-scale-2008": {
+    "op": "fanout",
+    "client": "2008-06",
+    "library": "authentic ATL9.0RTM URL parser automatic anchor",
+    "hypothesis": "After exact-control replay, bounded minimal-header object reuse on current large below40 functions; known parser exact excluded. No manually copied native byte source.",
+    "targets": {
+      "sizes": [
+        1000,
+        1000000
+      ],
+      "scores": [
+        0,
+        39
+      ]
+    },
+    "sources": [
+      {
+        "recipe": "rbxgs-atl90-dll",
+        "files": [
+          "roc_atl_url_anchor_8ddda6a712a58775.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      }
+    ],
+    "output": "work/large-functions-2008-20261014/atl-url-anchor-scale",
+    "next": "Audit new receipts separately from control replay; park unchanged object after bounded shard.",
+    "result": {
+      "date": "2026-10-15",
+      "status": "parked",
+      "new_verified_exacts": 0,
+      "control_exact": 100,
+      "evidence": "work/large-functions-2008-20261014/atl-url-anchor-control.json"
+    }
+  },
+  "large-mesh-plain-2008": {
+    "op": "grid",
+    "client": "2008-06",
+    "library": "native plain bevel mesh dispatcher",
+    "hypothesis": "Recover2275-byte zero-score sibling using authentic Mesh base/Level prefix, observed40-byte Level allocation, existing six face ABIs, native captured20join topology/80positive references/24releases, flat bevel UVs. No source-byte copying.",
+    "targets": {
+      "addresses": [
+        "004e2c80"
+      ],
+      "sizes": [
+        2200,
+        2350
+      ],
+      "scores": [
+        0,
+        39
+      ]
+    },
+    "seed_sources": {
+      "2008-06": {
+        "004e2c80": "work/large-functions-2008-20261014/mesh-plain-wrapper.cpp"
+      }
+    },
+    "keep_partials": true,
+    "builds": [
+      21022,
+      50727
+    ],
+    "profiles": [
+      "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+    ],
+    "append": [
+      "",
+      " /fp:fast"
+    ],
+    "output": "work/large-functions-2008-20261014/mesh-plain-grid",
+    "next": "Inspect own populate symbol and native geometry matrix; retain only verified gains, then bounded reuse.",
+    "result": {
+      "date": "2026-10-15",
+      "status": "parked",
+      "new_verified_exacts": 0,
+      "evidence": "work/large-functions-2008-20261014/mesh-input-boundary-verified-summary.json"
+    }
+  },
+  "large-input-map-2008": {
+    "op": "grid",
+    "client": "2008-06",
+    "library": "native DirectInput to SDL mapping pair",
+    "hypothesis": "Two real1145/1138-byte converters initialize256/323 int entries once then lookup. Recover canonical scan-ordered assignments using actual SDL enums, preserving inverse alias overwrites; native cold and579warm index outputs verified.",
+    "targets": {
+      "addresses": [
+        "00469360",
+        "004697e0"
+      ],
+      "sizes": [
+        1100,
+        1200
+      ],
+      "scores": [
+        0,
+        39
+      ]
+    },
+    "seed_sources": {
+      "2008-06": {
+        "00469360": "work/large-functions-2008-20261014/input-map-wrapper.cpp",
+        "004697e0": "work/large-functions-2008-20261014/input-map-wrapper.cpp"
+      }
+    },
+    "keep_partials": true,
+    "builds": [
+      21022,
+      50727
+    ],
+    "profiles": [
+      "/O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MD"
+    ],
+    "output": "work/large-functions-2008-20261014/input-map-grid",
+    "next": "Inspect own converter symbols, preserve genuine code status and alias semantics; bounded reuse after verified pilot.",
+    "result": {
+      "date": "2026-10-15",
+      "status": "parked",
+      "new_verified_exacts": 0,
+      "evidence": "work/large-functions-2008-20261014/mesh-input-boundary-verified-summary.json"
+    }
+  },
+  "large-input-map-fill-2008": {
+    "op": "grid",
+    "client": "2008-06",
+    "library": "native DirectInput to SDL mapping pair",
+    "hypothesis": "Native zeroing is rep stosd with EDI save; ordinary memset remains an outlined call even underOi. Try direct typed zero-fill loops only; keep mapping source order unchanged.",
+    "targets": {
+      "addresses": [
+        "00469360",
+        "004697e0"
+      ],
+      "sizes": [
+        1100,
+        1200
+      ],
+      "scores": [
+        0,
+        39
+      ]
+    },
+    "seed_sources": {
+      "2008-06": {
+        "00469360": "work/large-functions-2008-20261014/input-map-fill-wrapper.cpp",
+        "004697e0": "work/large-functions-2008-20261014/input-map-fill-wrapper.cpp"
+      }
+    },
+    "keep_partials": true,
+    "builds": [
+      21022
+    ],
+    "profiles": [
+      "/O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MD"
+    ],
+    "output": "work/large-functions-2008-20261014/input-map-fill-grid",
+    "next": "Inspect own converter symbols, preserve genuine code status and alias semantics; bounded reuse after verified pilot.",
+    "result": {
+      "date": "2026-10-15",
+      "status": "parked",
+      "new_verified_exacts": 0,
+      "evidence": "work/large-functions-2008-20261014/mesh-input-boundary-verified-summary.json"
+    }
+  },
+  "large-input-map-alias-2008": {
+    "op": "grid",
+    "client": "2008-06",
+    "library": "native DirectInput to SDL mapping pair",
+    "hypothesis": "Typed loops reproduced native zeroing99/98. Only remaining store-order mismatch is US/ISO backslash alias: native forward stores2b/56 adjacent, inverse retains56 at the2b source position. Group those aliases in both source mappings; no other changes.",
+    "targets": {
+      "addresses": [
+        "00469360",
+        "004697e0"
+      ],
+      "sizes": [
+        1100,
+        1200
+      ],
+      "scores": [
+        0,
+        39
+      ]
+    },
+    "seed_sources": {
+      "2008-06": {
+        "00469360": "work/large-functions-2008-20261014/input-map-alias-wrapper.cpp",
+        "004697e0": "work/large-functions-2008-20261014/input-map-alias-wrapper.cpp"
+      }
+    },
+    "keep_partials": true,
+    "builds": [
+      21022
+    ],
+    "profiles": [
+      "/O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MD"
+    ],
+    "output": "work/large-functions-2008-20261014/input-map-alias-grid",
+    "next": "Inspect own converter symbols, preserve genuine code status and alias semantics; bounded reuse after verified pilot.",
+    "result": {
+      "date": "2026-10-15",
+      "status": "verified",
+      "new_verified_exacts": 2,
+      "exacts": {
+        "00469360": 100,
+        "004697e0": 100
+      },
+      "evidence": "work/large-functions-2008-20261014/mesh-input-boundary-verified-summary.json"
+    }
+  },
+  "large-mesh-input-scale-2008": {
+    "op": "fanout",
+    "client": "2008-06",
+    "library": "native plain mesh and DirectInput SDL pair",
+    "hypothesis": "Manual recovered plain mesh verified49 and input converters verified100/100; normal automatic profile reproduces both exact controls. Bounded two-object sweep on held-out large below40 genuine-code rows; exact controls and reviewed data excluded.",
+    "targets": {
+      "sizes": [
+        1000,
+        1000000
+      ],
+      "scores": [
+        0,
+        39
+      ]
+    },
+    "sources": [
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_mesh_plain_934d986030420178.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_input_map_alias_9c2f97ba1d40f5a8.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      }
+    ],
+    "output": "work/large-functions-2008-20261014/mesh-input-scale",
+    "next": "Inspect separate server receipts; park unchanged cohorts. Complete4073-byte resolver now has valid boundary.",
+    "result": {
+      "date": "2026-10-15",
+      "status": "parked",
+      "new_verified_exacts": 0,
+      "evidence": "work/large-functions-2008-20261014/mesh-input-boundary-verified-summary.json"
+    }
+  },
+  "large-skybox-fork-2008": {
+    "op": "grid",
+    "client": "2008-06",
+    "library": "Ogre 1.4.5 client skybox fork",
+    "hypothesis": "Native 1603-byte fork: lazy opaque d4-byte sky allocation, second rotated top-bottom node, no mipmaps, modulated face materials; authentic inherited SceneManager and native callee interfaces. Float -90 angle and compiler gates.",
+    "targets": {
+      "addresses": [
+        "00692a10"
+      ],
+      "sizes": [
+        1500,
+        1700
+      ],
+      "scores": [
+        0,
+        39
+      ]
+    },
+    "seed_sources": {
+      "2008-06": {
+        "00692a10": "work/large-functions-2008-20261014/skybox-fork-proven-wrapper.cpp"
+      }
+    },
+    "keep_partials": true,
+    "builds": [
+      21022,
+      50727
+    ],
+    "profiles": [
+      "/O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MD"
+    ],
+    "append": [
+      "",
+      " /fp:fast"
+    ],
+    "output": "work/large-functions-2008-20261014/skybox-fork-grid",
+    "next": "Review own symbol and native enabled/disabled/node/material controls; submit only improvement, then bounded family reuse.",
+    "result": {
+      "date": "2026-10-15",
+      "status": "verified_followup",
+      "evidence": "work/large-functions-2008-20261014/skybox-cache-joints-summary.json",
+      "new_verified_exacts": 1,
+      "note": "Final skybox radians expression verifies100 under normal imported fast profile; five cache partial89 and joint partial80 submitted separately. No extra sweep exacts.",
+      "final_seed_source": "work/large-functions-2008-20261014/00692a10.cpp",
+      "normal_auto_evidence": "work/large-functions-2008-20261014/skybox-normal-auto-control.json",
+      "receipt_event": 20514
+    }
+  },
+  "large-mesh-cache-flush-2008": {
+    "op": "grid",
+    "client": "2008-06",
+    "library": "native G3D mesh cache eviction",
+    "hypothesis": "Five 1060-byte 19-percent targets use nested Table<Vector3,MeshRef> under surface groups and two STL decal/texture maps, recursive_mutex and boost once; null only sole-reference meshes, preserving keys. Native allocator/constructor proves prefix and authentic headers provide real fields.",
+    "targets": {
+      "addresses": [
+        "004ec630",
+        "004eca60",
+        "004ece90",
+        "004ed2c0",
+        "004ed6f0"
+      ],
+      "sizes": [
+        1000,
+        1100
+      ],
+      "scores": [
+        0,
+        39
+      ]
+    },
+    "seed_sources": {
+      "2008-06": {
+        "004ec630": "work/large-functions-2008-20261014/mesh-cache-flush-wrapper.cpp",
+        "004eca60": "work/large-functions-2008-20261014/mesh-cache-flush-wrapper.cpp",
+        "004ece90": "work/large-functions-2008-20261014/mesh-cache-flush-wrapper.cpp",
+        "004ed2c0": "work/large-functions-2008-20261014/mesh-cache-flush-wrapper.cpp",
+        "004ed6f0": "work/large-functions-2008-20261014/mesh-cache-flush-wrapper.cpp"
+      }
+    },
+    "keep_partials": true,
+    "builds": [
+      21022,
+      50727
+    ],
+    "profiles": [
+      "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD",
+      "/O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MD"
+    ],
+    "append": [
+      "",
+      " /fp:fast"
+    ],
+    "output": "work/large-functions-2008-20261014/mesh-cache-flush-grid",
+    "next": "Compare own loop symbol; native refcount controls; submit only improvements, fan out verified object.",
+    "result": {
+      "date": "2026-10-15",
+      "status": "parked",
+      "evidence": "work/large-functions-2008-20261014/skybox-cache-joints-summary.json",
+      "new_verified_exacts": 0,
+      "note": "Final skybox radians expression verifies100 under normal imported fast profile; five cache partial89 and joint partial80 submitted separately. No extra sweep exacts."
+    }
+  },
+  "large-skybox-object-scale-2008": {
+    "op": "fanout",
+    "client": "2008-06",
+    "library": "recovered Ogre skybox fork",
+    "hypothesis": "Server-verified 00692a10 37-to-100 source under normal imported client fast profile; bounded reuse on current large below40 code only.",
+    "targets": {
+      "sizes": [
+        1000,
+        1000000
+      ],
+      "scores": [
+        0,
+        39
+      ]
+    },
+    "sources": [
+      {
+        "recipe": "ogre-1.4.5-dll",
+        "files": [
+          "roc_large_skybox_8f6d8e40516e2b8d.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MD /fp:fast"
+        ]
+      }
+    ],
+    "output": "work/large-functions-2008-20261014/skybox-object-scale",
+    "next": "Park unchanged object if no gains.",
+    "result": {
+      "date": "2026-10-15",
+      "status": "parked",
+      "evidence": "work/large-functions-2008-20261014/skybox-cache-joints-summary.json",
+      "new_verified_exacts": 0,
+      "note": "Final skybox radians expression verifies100 under normal imported fast profile; five cache partial89 and joint partial80 submitted separately. No extra sweep exacts."
+    }
+  },
+  "large-humanoid-joints-2008": {
+    "op": "grid",
+    "client": "2008-06",
+    "library": "native Humanoid buildJoints",
+    "hypothesis": "Authentic old Humanoid::buildJoints body with native inlined nullable character-parent cast and omitted six obsolete Body::setCanThrottle calls; joint creation order, names, transforms and parent calls recovered from native 1745-byte zero target.",
+    "targets": {
+      "addresses": [
+        "005d9340"
+      ],
+      "sizes": [
+        1700,
+        1800
+      ],
+      "scores": [
+        0,
+        39
+      ]
+    },
+    "seed_sources": {
+      "2008-06": {
+        "005d9340": "work/large-functions-2008-20261014/humanoid-build-joints-parent-wrapper.cpp"
+      }
+    },
+    "keep_partials": true,
+    "builds": [
+      21022,
+      50727
+    ],
+    "profiles": [
+      "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD",
+      "/O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MD"
+    ],
+    "append": [
+      "",
+      " /fp:fast"
+    ],
+    "output": "work/large-functions-2008-20261014/humanoid-joints-grid",
+    "next": "Inspect native transform/parent contracts; retain best gain, no invented layouts.",
+    "result": {
+      "status": "rejected",
+      "reason": "Old parent offset f4 versus native104 and runtime assertions; compiler gates not promoted."
+    }
+  },
+  "large-humanoid-joints-native-2008": {
+    "op": "grid",
+    "client": "2008-06",
+    "library": "native Humanoid buildJoints",
+    "hypothesis": "Native four control cases prove original zero target builds five joints/ten frames, with reversed hip C1 x signs versus old source; no obsolete throttle calls/assertions. Genuine external character helper avoids known-wrong old Instance parent offset.",
+    "targets": {
+      "addresses": [
+        "005d9340"
+      ],
+      "sizes": [
+        1700,
+        1800
+      ],
+      "scores": [
+        0,
+        39
+      ]
+    },
+    "seed_sources": {
+      "2008-06": {
+        "005d9340": "work/large-functions-2008-20261014/humanoid-build-joints-native-wrapper.cpp"
+      }
+    },
+    "keep_partials": true,
+    "builds": [
+      21022,
+      50727
+    ],
+    "profiles": [
+      "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+    ],
+    "append": [
+      "",
+      " /fp:fast"
+    ],
+    "output": "work/large-functions-2008-20261014/humanoid-joints-native-grid",
+    "next": "Inspect native transform/parent contracts; retain best gain, no invented layouts.",
+    "result": {
+      "date": "2026-10-15",
+      "status": "parked",
+      "evidence": "work/large-functions-2008-20261014/skybox-cache-joints-summary.json",
+      "new_verified_exacts": 0,
+      "note": "Final skybox radians expression verifies100 under normal imported fast profile; five cache partial89 and joint partial80 submitted separately. No extra sweep exacts."
+    }
+  },
+  "large-cache-joints-scale-2008": {
+    "op": "fanout",
+    "client": "2008-06",
+    "library": "native mesh cache eviction and Humanoid joints",
+    "hypothesis": "Six large below40 pilots improved with authentic templates/calls and 19 native controls; fan out portable best objects to other current large below40 code, never credit partials as exact.",
+    "targets": {
+      "sizes": [
+        1000,
+        1000000
+      ],
+      "scores": [
+        0,
+        39
+      ]
+    },
+    "sources": [
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_mesh_cache_flush_9679ea4a46335872.cpp",
+          "roc_humanoid_build_joints_0d3b52b134e3226e.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      }
+    ],
+    "output": "work/large-functions-2008-20261014/cache-joints-scale",
+    "next": "Park unchanged object fanout if zero gains.",
+    "result": {
+      "date": "2026-10-15",
+      "status": "parked",
+      "evidence": "work/large-functions-2008-20261014/skybox-cache-joints-summary.json",
+      "new_verified_exacts": 0,
+      "note": "Final skybox radians expression verifies100 under normal imported fast profile; five cache partial89 and joint partial80 submitted separately. No extra sweep exacts."
+    }
+  },
+  "audited-openrbx-dll-third-cohort-2008": {
+    "op": "grid",
+    "client": "2008-06",
+    "library": "OpenRBX DLL CRT heldout source repairs",
+    "hypothesis": "95/95 prior audited sources verified after DLL preprocessing. Independently test 68 additional server-confirmed stale sources; recipe-only change.",
+    "targets": {
+      "addresses": [
+        "004a2fa0",
+        "0058ef70",
+        "00553e60",
+        "0055e750",
+        "00591d80",
+        "006710e0",
+        "00678cf0",
+        "00696f30",
+        "005a8850",
+        "005a88f0",
+        "005a8a50",
+        "005a8af0",
+        "004377c0",
+        "00495d60",
+        "00498b20",
+        "0057c1b0",
+        "0057c210",
+        "0057c2d0",
+        "0057c3d0",
+        "0057cb30",
+        "0057ce40",
+        "0057cf50",
+        "0058c920",
+        "00615440",
+        "00409620",
+        "0041e550",
+        "00439480",
+        "0048f700",
+        "004941d0",
+        "00494250",
+        "00557e80",
+        "00558660",
+        "00566ab0",
+        "00566d50",
+        "00567c10",
+        "005c2150",
+        "005a6c60",
+        "005a6bc0",
+        "0048e080",
+        "004911b0",
+        "00554960",
+        "005549e0",
+        "00554a60",
+        "00555fd0",
+        "00556300",
+        "004c6d40",
+        "0056b500",
+        "0040b8a0",
+        "005861f0",
+        "005b7400",
+        "005cf5d0",
+        "005d3b90",
+        "0045db40",
+        "00414bd0",
+        "00414e40",
+        "0049e810",
+        "005c1ee0",
+        "00639980",
+        "005703a0",
+        "00570440",
+        "005704e0",
+        "00577090",
+        "0045c580",
+        "006699a0",
+        "00490450",
+        "004901e0",
+        "005c3da0",
+        "00639800"
+      ],
+      "scores": [
+        0,
+        99
+      ]
+    },
+    "seed_sources": {
+      "2008-06": {
+        "004a2fa0": "work\\goal-auto-exact-census-20261015\\review-0003\\dll-seeds\\004a2fa0.cpp",
+        "0058ef70": "work\\goal-auto-exact-census-20261015\\review-0003\\dll-seeds\\0058ef70.cpp",
+        "00553e60": "work\\goal-auto-exact-census-20261015\\review-0003\\dll-seeds\\00553e60.cpp",
+        "0055e750": "work\\goal-auto-exact-census-20261015\\review-0003\\dll-seeds\\0055e750.cpp",
+        "00591d80": "work\\goal-auto-exact-census-20261015\\review-0003\\dll-seeds\\00591d80.cpp",
+        "006710e0": "work\\goal-auto-exact-census-20261015\\review-0003\\dll-seeds\\006710e0.cpp",
+        "00678cf0": "work\\goal-auto-exact-census-20261015\\review-0003\\dll-seeds\\00678cf0.cpp",
+        "00696f30": "work\\goal-auto-exact-census-20261015\\review-0003\\dll-seeds\\00696f30.cpp",
+        "005a8850": "work\\goal-auto-exact-census-20261015\\review-0003\\dll-seeds\\005a8850.cpp",
+        "005a88f0": "work\\goal-auto-exact-census-20261015\\review-0003\\dll-seeds\\005a88f0.cpp",
+        "005a8a50": "work\\goal-auto-exact-census-20261015\\review-0003\\dll-seeds\\005a8a50.cpp",
+        "005a8af0": "work\\goal-auto-exact-census-20261015\\review-0003\\dll-seeds\\005a8af0.cpp",
+        "004377c0": "work\\goal-auto-exact-census-20261015\\review-0003\\dll-seeds\\004377c0.cpp",
+        "00495d60": "work\\goal-auto-exact-census-20261015\\review-0003\\dll-seeds\\00495d60.cpp",
+        "00498b20": "work\\goal-auto-exact-census-20261015\\review-0003\\dll-seeds\\00498b20.cpp",
+        "0057c1b0": "work\\goal-auto-exact-census-20261015\\review-0003\\dll-seeds\\0057c1b0.cpp",
+        "0057c210": "work\\goal-auto-exact-census-20261015\\review-0003\\dll-seeds\\0057c210.cpp",
+        "0057c2d0": "work\\goal-auto-exact-census-20261015\\review-0003\\dll-seeds\\0057c2d0.cpp",
+        "0057c3d0": "work\\goal-auto-exact-census-20261015\\review-0003\\dll-seeds\\0057c3d0.cpp",
+        "0057cb30": "work\\goal-auto-exact-census-20261015\\review-0003\\dll-seeds\\0057cb30.cpp",
+        "0057ce40": "work\\goal-auto-exact-census-20261015\\review-0003\\dll-seeds\\0057ce40.cpp",
+        "0057cf50": "work\\goal-auto-exact-census-20261015\\review-0003\\dll-seeds\\0057cf50.cpp",
+        "0058c920": "work\\goal-auto-exact-census-20261015\\review-0003\\dll-seeds\\0058c920.cpp",
+        "00615440": "work\\goal-auto-exact-census-20261015\\review-0003\\dll-seeds\\00615440.cpp",
+        "00409620": "work\\goal-auto-exact-census-20261015\\review-0003\\dll-seeds\\00409620.cpp",
+        "0041e550": "work\\goal-auto-exact-census-20261015\\review-0003\\dll-seeds\\0041e550.cpp",
+        "00439480": "work\\goal-auto-exact-census-20261015\\review-0003\\dll-seeds\\00439480.cpp",
+        "0048f700": "work\\goal-auto-exact-census-20261015\\review-0003\\dll-seeds\\0048f700.cpp",
+        "004941d0": "work\\goal-auto-exact-census-20261015\\review-0003\\dll-seeds\\004941d0.cpp",
+        "00494250": "work\\goal-auto-exact-census-20261015\\review-0003\\dll-seeds\\00494250.cpp",
+        "00557e80": "work\\goal-auto-exact-census-20261015\\review-0003\\dll-seeds\\00557e80.cpp",
+        "00558660": "work\\goal-auto-exact-census-20261015\\review-0003\\dll-seeds\\00558660.cpp",
+        "00566ab0": "work\\goal-auto-exact-census-20261015\\review-0003\\dll-seeds\\00566ab0.cpp",
+        "00566d50": "work\\goal-auto-exact-census-20261015\\review-0003\\dll-seeds\\00566d50.cpp",
+        "00567c10": "work\\goal-auto-exact-census-20261015\\review-0003\\dll-seeds\\00567c10.cpp",
+        "005c2150": "work\\goal-auto-exact-census-20261015\\review-0003\\dll-seeds\\005c2150.cpp",
+        "005a6c60": "work\\goal-auto-exact-census-20261015\\review-0003\\dll-seeds\\005a6c60.cpp",
+        "005a6bc0": "work\\goal-auto-exact-census-20261015\\review-0003\\dll-seeds\\005a6bc0.cpp",
+        "0048e080": "work\\goal-auto-exact-census-20261015\\review-0003\\dll-seeds\\0048e080.cpp",
+        "004911b0": "work\\goal-auto-exact-census-20261015\\review-0003\\dll-seeds\\004911b0.cpp",
+        "00554960": "work\\goal-auto-exact-census-20261015\\review-0003\\dll-seeds\\00554960.cpp",
+        "005549e0": "work\\goal-auto-exact-census-20261015\\review-0003\\dll-seeds\\005549e0.cpp",
+        "00554a60": "work\\goal-auto-exact-census-20261015\\review-0003\\dll-seeds\\00554a60.cpp",
+        "00555fd0": "work\\goal-auto-exact-census-20261015\\review-0003\\dll-seeds\\00555fd0.cpp",
+        "00556300": "work\\goal-auto-exact-census-20261015\\review-0003\\dll-seeds\\00556300.cpp",
+        "004c6d40": "work\\goal-auto-exact-census-20261015\\review-0003\\dll-seeds\\004c6d40.cpp",
+        "0056b500": "work\\goal-auto-exact-census-20261015\\review-0003\\dll-seeds\\0056b500.cpp",
+        "0040b8a0": "work\\goal-auto-exact-census-20261015\\review-0003\\dll-seeds\\0040b8a0.cpp",
+        "005861f0": "work\\goal-auto-exact-census-20261015\\review-0003\\dll-seeds\\005861f0.cpp",
+        "005b7400": "work\\goal-auto-exact-census-20261015\\review-0003\\dll-seeds\\005b7400.cpp",
+        "005cf5d0": "work\\goal-auto-exact-census-20261015\\review-0003\\dll-seeds\\005cf5d0.cpp",
+        "005d3b90": "work\\goal-auto-exact-census-20261015\\review-0003\\dll-seeds\\005d3b90.cpp",
+        "0045db40": "work\\goal-auto-exact-census-20261015\\review-0003\\dll-seeds\\0045db40.cpp",
+        "00414bd0": "work\\goal-auto-exact-census-20261015\\review-0003\\dll-seeds\\00414bd0.cpp",
+        "00414e40": "work\\goal-auto-exact-census-20261015\\review-0003\\dll-seeds\\00414e40.cpp",
+        "0049e810": "work\\goal-auto-exact-census-20261015\\review-0003\\dll-seeds\\0049e810.cpp",
+        "005c1ee0": "work\\goal-auto-exact-census-20261015\\review-0003\\dll-seeds\\005c1ee0.cpp",
+        "00639980": "work\\goal-auto-exact-census-20261015\\review-0003\\dll-seeds\\00639980.cpp",
+        "005703a0": "work\\goal-auto-exact-census-20261015\\review-0003\\dll-seeds\\005703a0.cpp",
+        "00570440": "work\\goal-auto-exact-census-20261015\\review-0003\\dll-seeds\\00570440.cpp",
+        "005704e0": "work\\goal-auto-exact-census-20261015\\review-0003\\dll-seeds\\005704e0.cpp",
+        "00577090": "work\\goal-auto-exact-census-20261015\\review-0003\\dll-seeds\\00577090.cpp",
+        "0045c580": "work\\goal-auto-exact-census-20261015\\review-0003\\dll-seeds\\0045c580.cpp",
+        "006699a0": "work\\goal-auto-exact-census-20261015\\review-0003\\dll-seeds\\006699a0.cpp",
+        "00490450": "work\\goal-auto-exact-census-20261015\\review-0003\\dll-seeds\\00490450.cpp",
+        "004901e0": "work\\goal-auto-exact-census-20261015\\review-0003\\dll-seeds\\004901e0.cpp",
+        "005c3da0": "work\\goal-auto-exact-census-20261015\\review-0003\\dll-seeds\\005c3da0.cpp",
+        "00639800": "work\\goal-auto-exact-census-20261015\\review-0003\\dll-seeds\\00639800.cpp"
+      }
+    },
+    "keep_partials": true,
+    "builds": [
+      21022
+    ],
+    "profiles": [
+      "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+    ],
+    "append": [
+      ""
+    ],
+    "output": "work\\goal-auto-exact-census-20261015\\review-0003\\dll-grid",
+    "next": "Report verifiedsource restorationsseparatelyfromnewfunctiondiscoveries. Preserveactualpartial whenDLLdoesnotfullmatch."
+  },
+  "openrbx-dll-unresolved-propagation-2008": {
+    "op": "grid",
+    "client": "2008-06",
+    "library": "OpenRBX DLL CRT heldout source repairs",
+    "hypothesis": "New evidence:95 historical restorations plus bool adapter exact from DLL preprocessing. Bounded propagation to remaining64 stored partial OpenRBX sources; no C++ body or layout changes. Historical repairs tracked separately.",
+    "targets": {
+      "addresses": [
+        "00573360",
+        "007b8450",
+        "0061ff70",
+        "004c6f70",
+        "006395d0",
+        "0059b4f0",
+        "0060f820",
+        "004ea000",
+        "004ea140",
+        "00632290",
+        "00496170",
+        "0055a540",
+        "0049d869",
+        "0049b810",
+        "007f4d60",
+        "007f4e20",
+        "007f4de0",
+        "007f4da0",
+        "004073e0",
+        "00657c40",
+        "0064bf90",
+        "004abfd0",
+        "00506dd0",
+        "005db280",
+        "0060d2d0",
+        "006685b0",
+        "004ef650",
+        "0060d500",
+        "0049bdc0",
+        "0064bd80",
+        "00608e20",
+        "004e9c50",
+        "004501c0",
+        "0059c4a0",
+        "006372d0",
+        "005bd4f0",
+        "0044f8d0",
+        "004c9cf0",
+        "004e5ff0",
+        "0044c1b0",
+        "004545d0",
+        "0064b8e0",
+        "0044ff40",
+        "00448f40",
+        "0060f9b0",
+        "00449bf0",
+        "004e6a30",
+        "0064a950",
+        "00493da0",
+        "0064c470",
+        "006447b0",
+        "00455a20",
+        "00454c90",
+        "005ea920",
+        "004a9250",
+        "0041d0a0",
+        "004b7f20",
+        "0065ac60",
+        "00609da0",
+        "00615070",
+        "0049bf90",
+        "00453c30",
+        "0065a950",
+        "004ec220"
+      ],
+      "scores": [
+        0,
+        99
+      ]
+    },
+    "seed_sources": {
+      "2008-06": {
+        "00573360": "work\\goal-auto-exact-census-20261015\\unresolved-dll\\seeds\\00573360.cpp",
+        "007b8450": "work\\goal-auto-exact-census-20261015\\unresolved-dll\\seeds\\007b8450.cpp",
+        "0061ff70": "work\\goal-auto-exact-census-20261015\\unresolved-dll\\seeds\\0061ff70.cpp",
+        "004c6f70": "work\\goal-auto-exact-census-20261015\\unresolved-dll\\seeds\\004c6f70.cpp",
+        "006395d0": "work\\goal-auto-exact-census-20261015\\unresolved-dll\\seeds\\006395d0.cpp",
+        "0059b4f0": "work\\goal-auto-exact-census-20261015\\unresolved-dll\\seeds\\0059b4f0.cpp",
+        "0060f820": "work\\goal-auto-exact-census-20261015\\unresolved-dll\\seeds\\0060f820.cpp",
+        "004ea000": "work\\goal-auto-exact-census-20261015\\unresolved-dll\\seeds\\004ea000.cpp",
+        "004ea140": "work\\goal-auto-exact-census-20261015\\unresolved-dll\\seeds\\004ea140.cpp",
+        "00632290": "work\\goal-auto-exact-census-20261015\\unresolved-dll\\seeds\\00632290.cpp",
+        "00496170": "work\\goal-auto-exact-census-20261015\\unresolved-dll\\seeds\\00496170.cpp",
+        "0055a540": "work\\goal-auto-exact-census-20261015\\unresolved-dll\\seeds\\0055a540.cpp",
+        "0049d869": "work\\goal-auto-exact-census-20261015\\unresolved-dll\\seeds\\0049d869.cpp",
+        "0049b810": "work\\goal-auto-exact-census-20261015\\unresolved-dll\\seeds\\0049b810.cpp",
+        "007f4d60": "work\\goal-auto-exact-census-20261015\\unresolved-dll\\seeds\\007f4d60.cpp",
+        "007f4e20": "work\\goal-auto-exact-census-20261015\\unresolved-dll\\seeds\\007f4e20.cpp",
+        "007f4de0": "work\\goal-auto-exact-census-20261015\\unresolved-dll\\seeds\\007f4de0.cpp",
+        "007f4da0": "work\\goal-auto-exact-census-20261015\\unresolved-dll\\seeds\\007f4da0.cpp",
+        "004073e0": "work\\goal-auto-exact-census-20261015\\unresolved-dll\\seeds\\004073e0.cpp",
+        "00657c40": "work\\goal-auto-exact-census-20261015\\unresolved-dll\\seeds\\00657c40.cpp",
+        "0064bf90": "work\\goal-auto-exact-census-20261015\\unresolved-dll\\seeds\\0064bf90.cpp",
+        "004abfd0": "work\\goal-auto-exact-census-20261015\\unresolved-dll\\seeds\\004abfd0.cpp",
+        "00506dd0": "work\\goal-auto-exact-census-20261015\\unresolved-dll\\seeds\\00506dd0.cpp",
+        "005db280": "work\\goal-auto-exact-census-20261015\\unresolved-dll\\seeds\\005db280.cpp",
+        "0060d2d0": "work\\goal-auto-exact-census-20261015\\unresolved-dll\\seeds\\0060d2d0.cpp",
+        "006685b0": "work\\goal-auto-exact-census-20261015\\unresolved-dll\\seeds\\006685b0.cpp",
+        "004ef650": "work\\goal-auto-exact-census-20261015\\unresolved-dll\\seeds\\004ef650.cpp",
+        "0060d500": "work\\goal-auto-exact-census-20261015\\unresolved-dll\\seeds\\0060d500.cpp",
+        "0049bdc0": "work\\goal-auto-exact-census-20261015\\unresolved-dll\\seeds\\0049bdc0.cpp",
+        "0064bd80": "work\\goal-auto-exact-census-20261015\\unresolved-dll\\seeds\\0064bd80.cpp",
+        "00608e20": "work\\goal-auto-exact-census-20261015\\unresolved-dll\\seeds\\00608e20.cpp",
+        "004e9c50": "work\\goal-auto-exact-census-20261015\\unresolved-dll\\seeds\\004e9c50.cpp",
+        "004501c0": "work\\goal-auto-exact-census-20261015\\unresolved-dll\\seeds\\004501c0.cpp",
+        "0059c4a0": "work\\goal-auto-exact-census-20261015\\unresolved-dll\\seeds\\0059c4a0.cpp",
+        "006372d0": "work\\goal-auto-exact-census-20261015\\unresolved-dll\\seeds\\006372d0.cpp",
+        "005bd4f0": "work\\goal-auto-exact-census-20261015\\unresolved-dll\\seeds\\005bd4f0.cpp",
+        "0044f8d0": "work\\goal-auto-exact-census-20261015\\unresolved-dll\\seeds\\0044f8d0.cpp",
+        "004c9cf0": "work\\goal-auto-exact-census-20261015\\unresolved-dll\\seeds\\004c9cf0.cpp",
+        "004e5ff0": "work\\goal-auto-exact-census-20261015\\unresolved-dll\\seeds\\004e5ff0.cpp",
+        "0044c1b0": "work\\goal-auto-exact-census-20261015\\unresolved-dll\\seeds\\0044c1b0.cpp",
+        "004545d0": "work\\goal-auto-exact-census-20261015\\unresolved-dll\\seeds\\004545d0.cpp",
+        "0064b8e0": "work\\goal-auto-exact-census-20261015\\unresolved-dll\\seeds\\0064b8e0.cpp",
+        "0044ff40": "work\\goal-auto-exact-census-20261015\\unresolved-dll\\seeds\\0044ff40.cpp",
+        "00448f40": "work\\goal-auto-exact-census-20261015\\unresolved-dll\\seeds\\00448f40.cpp",
+        "0060f9b0": "work\\goal-auto-exact-census-20261015\\unresolved-dll\\seeds\\0060f9b0.cpp",
+        "00449bf0": "work\\goal-auto-exact-census-20261015\\unresolved-dll\\seeds\\00449bf0.cpp",
+        "004e6a30": "work\\goal-auto-exact-census-20261015\\unresolved-dll\\seeds\\004e6a30.cpp",
+        "0064a950": "work\\goal-auto-exact-census-20261015\\unresolved-dll\\seeds\\0064a950.cpp",
+        "00493da0": "work\\goal-auto-exact-census-20261015\\unresolved-dll\\seeds\\00493da0.cpp",
+        "0064c470": "work\\goal-auto-exact-census-20261015\\unresolved-dll\\seeds\\0064c470.cpp",
+        "006447b0": "work\\goal-auto-exact-census-20261015\\unresolved-dll\\seeds\\006447b0.cpp",
+        "00455a20": "work\\goal-auto-exact-census-20261015\\unresolved-dll\\seeds\\00455a20.cpp",
+        "00454c90": "work\\goal-auto-exact-census-20261015\\unresolved-dll\\seeds\\00454c90.cpp",
+        "005ea920": "work\\goal-auto-exact-census-20261015\\unresolved-dll\\seeds\\005ea920.cpp",
+        "004a9250": "work\\goal-auto-exact-census-20261015\\unresolved-dll\\seeds\\004a9250.cpp",
+        "0041d0a0": "work\\goal-auto-exact-census-20261015\\unresolved-dll\\seeds\\0041d0a0.cpp",
+        "004b7f20": "work\\goal-auto-exact-census-20261015\\unresolved-dll\\seeds\\004b7f20.cpp",
+        "0065ac60": "work\\goal-auto-exact-census-20261015\\unresolved-dll\\seeds\\0065ac60.cpp",
+        "00609da0": "work\\goal-auto-exact-census-20261015\\unresolved-dll\\seeds\\00609da0.cpp",
+        "00615070": "work\\goal-auto-exact-census-20261015\\unresolved-dll\\seeds\\00615070.cpp",
+        "0049bf90": "work\\goal-auto-exact-census-20261015\\unresolved-dll\\seeds\\0049bf90.cpp",
+        "00453c30": "work\\goal-auto-exact-census-20261015\\unresolved-dll\\seeds\\00453c30.cpp",
+        "0065a950": "work\\goal-auto-exact-census-20261015\\unresolved-dll\\seeds\\0065a950.cpp",
+        "004ec220": "work\\goal-auto-exact-census-20261015\\unresolved-dll\\seeds\\004ec220.cpp"
+      }
+    },
+    "keep_partials": true,
+    "builds": [
+      21022
+    ],
+    "profiles": [
+      "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+    ],
+    "append": [
+      ""
+    ],
+    "output": "work\\goal-auto-exact-census-20261015\\unresolved-dll\\grid",
+    "next": "Report verifiedsource restorationsseparatelyfromnewfunctiondiscoveries. Preserveactualpartial whenDLLdoesnotfullmatch."
+  },
+  "native-signal-thread-error-literal-2008": {
+    "op": "grid",
+    "client": "2008-06",
+    "library": "OpenRBX DLL CRT heldout source repairs",
+    "hypothesis": "DLL propagation gives exact code but99 referenceddata: target0084469c proves runtime_error literal. Replace only genuine upstream literal; managed full TU, no body/layout guess.",
+    "targets": {
+      "addresses": [
+        "0061ff70"
+      ],
+      "scores": [
+        0,
+        99
+      ]
+    },
+    "seed_sources": {
+      "2008-06": {
+        "0061ff70": "work\\goal-auto-exact-census-20261015\\signal-thread-literal\\0061ff70.cpp"
+      }
+    },
+    "keep_partials": true,
+    "builds": [
+      21022
+    ],
+    "profiles": [
+      "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+    ],
+    "append": [
+      ""
+    ],
+    "output": "work\\goal-auto-exact-census-20261015\\signal-thread-literal\\grid",
+    "next": "Report verifiedsource restorationsseparatelyfromnewfunctiondiscoveries. Preserveactualpartial whenDLLdoesnotfullmatch."
+  },
+  "native-openrbx-signal-thread-error-literal-2008": {
+    "op": "grid",
+    "client": "2008-06",
+    "library": "OpenRBX DLL CRT heldout source repairs",
+    "hypothesis": "DLL propagation gives exact code but99 referenceddata: target0084469c proves runtime_error literal. Replace only genuine upstream literal; managed full TU, no body/layout guess. Correct OpenRBX native TU; prior rbxgs sibling TU incompatible headers, compile failed.",
+    "targets": {
+      "addresses": [
+        "0061ff70"
+      ],
+      "scores": [
+        0,
+        99
+      ]
+    },
+    "seed_sources": {
+      "2008-06": {
+        "0061ff70": "work\\goal-auto-exact-census-20261015\\signal-thread-literal\\0061ff70-openrbx.cpp"
+      }
+    },
+    "keep_partials": true,
+    "builds": [
+      21022
+    ],
+    "profiles": [
+      "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+    ],
+    "append": [
+      ""
+    ],
+    "output": "work\\goal-auto-exact-census-20261015\\signal-thread-literal\\openrbx-grid",
+    "next": "Report verifiedsource restorationsseparatelyfromnewfunctiondiscoveries. Preserveactualpartial whenDLLdoesnotfullmatch."
+  },
+  "audited-openrbx-dll-fourth-cohort-2008": {
+    "op": "grid",
+    "client": "2008-06",
+    "library": "OpenRBX DLL CRT heldout source repairs",
+    "hypothesis": "163 prior DLL source restorations verified. Seven additional confirmed stale sources, same recipe-only fix.",
+    "targets": {
+      "addresses": [
+        "00614cc0",
+        "004af530",
+        "0056b620",
+        "0041d500",
+        "00591bd0",
+        "00592610",
+        "005691b0"
+      ],
+      "scores": [
+        0,
+        99
+      ]
+    },
+    "seed_sources": {
+      "2008-06": {
+        "00614cc0": "work\\goal-auto-exact-census-20261015\\review-0004\\dll-seeds\\00614cc0.cpp",
+        "004af530": "work\\goal-auto-exact-census-20261015\\review-0004\\dll-seeds\\004af530.cpp",
+        "0056b620": "work\\goal-auto-exact-census-20261015\\review-0004\\dll-seeds\\0056b620.cpp",
+        "0041d500": "work\\goal-auto-exact-census-20261015\\review-0004\\dll-seeds\\0041d500.cpp",
+        "00591bd0": "work\\goal-auto-exact-census-20261015\\review-0004\\dll-seeds\\00591bd0.cpp",
+        "00592610": "work\\goal-auto-exact-census-20261015\\review-0004\\dll-seeds\\00592610.cpp",
+        "005691b0": "work\\goal-auto-exact-census-20261015\\review-0004\\dll-seeds\\005691b0.cpp"
+      }
+    },
+    "keep_partials": true,
+    "builds": [
+      21022
+    ],
+    "profiles": [
+      "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+    ],
+    "append": [
+      ""
+    ],
+    "output": "work\\goal-auto-exact-census-20261015\\review-0004\\dll-grid",
+    "next": "Report verifiedsource restorationsseparatelyfromnewfunctiondiscoveries. Preserveactualpartial whenDLLdoesnotfullmatch."
+  },
+  "audited-xtp-native-families-2008": {
+    "op": "grid",
+    "client": "2008-06",
+    "library": "XTP genuine family donor correction",
+    "hypothesis": "Two stale donor wrappers point to unrelated TUs. Target761750 proves CList InsertBefore pointer element; native splitter container emits list family. Target6c0e30 enum1..4 dispatch is genuine CXTPImageManagerIcon::GetIcon(XTPImageState). Use proven vendor prelude and narrow compiler controls.",
+    "targets": {
+      "addresses": [
+        "00761750",
+        "006c0e30"
+      ],
+      "scores": [
+        0,
+        99
+      ]
+    },
+    "seed_sources": {
+      "2008-06": {
+        "00761750": "work\\goal-auto-exact-census-20261015\\review-0004\\xtp-seeds\\00761750.cpp",
+        "006c0e30": "work\\goal-auto-exact-census-20261015\\review-0004\\xtp-seeds\\006c0e30.cpp"
+      }
+    },
+    "keep_partials": true,
+    "builds": [
+      21022,
+      50727
+    ],
+    "profiles": [
+      "/O2 /MD /GS /EHsc /Ob1",
+      "/O2 /MD /GS- /EHsc /Ob1"
+    ],
+    "append": [
+      ""
+    ],
+    "output": "work\\goal-auto-exact-census-20261015\\review-0004\\xtp-grid",
+    "next": "Report verifiedsource restorationsseparatelyfromnewfunctiondiscoveries. Preserveactualpartial whenDLLdoesnotfullmatch."
+  },
+  "large-mesh-aggregate-2008": {
+    "op": "grid",
+    "client": "2008-06",
+    "library": "native RenderBase Mesh aggregation",
+    "hypothesis": "Recover2369-byte 19-percent Mesh::aggregate from native bounds, single QUADS detail0.3, transformed pooled vertices/normals/UVs and full shadow adjacency merge with observed two-edge-slot face loop. Authentic Mesh/Chunk/ShadowSurface fields; native88-byte mesh allocation and40-byte Level constructor remain external.",
+    "targets": {
+      "addresses": [
+        "00547610"
+      ],
+      "sizes": [
+        2300,
+        2450
+      ],
+      "scores": [
+        0,
+        39
+      ]
+    },
+    "seed_sources": {
+      "2008-06": {
+        "00547610": "work/large-functions-2008-20261014/mesh-aggregate-wrapper.cpp"
+      }
+    },
+    "keep_partials": true,
+    "builds": [
+      21022,
+      50727
+    ],
+    "profiles": [
+      "/Od /Ob0 /GS /EHsc /MD",
+      "/Od /Ob1 /GS /EHsc /MD",
+      "/Od /Ob2 /GS /EHsc /MD"
+    ],
+    "append": [
+      "",
+      " /fp:fast"
+    ],
+    "output": "work/large-functions-2008-20261014/mesh-aggregate-grid",
+    "next": "Inspect own aggregate symbol, verify native aggregation controls, submit only improved source; bounded auto propagation."
+  },
+  "audited-openrbx-dll-fifth-cohort-2008": {
+    "op": "grid",
+    "client": "2008-06",
+    "library": "OpenRBX DLL CRT heldout source repairs",
+    "hypothesis": "170 prior DLL source restorations verified. Additional server-confirmed stale sources; same recipe-only fix.",
+    "targets": {
+      "addresses": [
+        "00440980",
+        "00568f80",
+        "00569070",
+        "0066fd40",
+        "005a8210",
+        "005a8260",
+        "005a8440",
+        "0056c080",
+        "005d3fa0",
+        "005ebae0",
+        "0041e4d0",
+        "0041ec30",
+        "00440bf0",
+        "0048bc20",
+        "005804a0",
+        "005bd600",
+        "005c1a00",
+        "005c23c0",
+        "005c2630"
+      ],
+      "scores": [
+        0,
+        99
+      ]
+    },
+    "seed_sources": {
+      "2008-06": {
+        "00440980": "work\\goal-auto-exact-census-20261015\\review-0005\\dll-seeds\\00440980.cpp",
+        "00568f80": "work\\goal-auto-exact-census-20261015\\review-0005\\dll-seeds\\00568f80.cpp",
+        "00569070": "work\\goal-auto-exact-census-20261015\\review-0005\\dll-seeds\\00569070.cpp",
+        "0066fd40": "work\\goal-auto-exact-census-20261015\\review-0005\\dll-seeds\\0066fd40.cpp",
+        "005a8210": "work\\goal-auto-exact-census-20261015\\review-0005\\dll-seeds\\005a8210.cpp",
+        "005a8260": "work\\goal-auto-exact-census-20261015\\review-0005\\dll-seeds\\005a8260.cpp",
+        "005a8440": "work\\goal-auto-exact-census-20261015\\review-0005\\dll-seeds\\005a8440.cpp",
+        "0056c080": "work\\goal-auto-exact-census-20261015\\review-0005\\dll-seeds\\0056c080.cpp",
+        "005d3fa0": "work\\goal-auto-exact-census-20261015\\review-0005\\dll-seeds\\005d3fa0.cpp",
+        "005ebae0": "work\\goal-auto-exact-census-20261015\\review-0005\\dll-seeds\\005ebae0.cpp",
+        "0041e4d0": "work\\goal-auto-exact-census-20261015\\review-0005\\dll-seeds\\0041e4d0.cpp",
+        "0041ec30": "work\\goal-auto-exact-census-20261015\\review-0005\\dll-seeds\\0041ec30.cpp",
+        "00440bf0": "work\\goal-auto-exact-census-20261015\\review-0005\\dll-seeds\\00440bf0.cpp",
+        "0048bc20": "work\\goal-auto-exact-census-20261015\\review-0005\\dll-seeds\\0048bc20.cpp",
+        "005804a0": "work\\goal-auto-exact-census-20261015\\review-0005\\dll-seeds\\005804a0.cpp",
+        "005bd600": "work\\goal-auto-exact-census-20261015\\review-0005\\dll-seeds\\005bd600.cpp",
+        "005c1a00": "work\\goal-auto-exact-census-20261015\\review-0005\\dll-seeds\\005c1a00.cpp",
+        "005c23c0": "work\\goal-auto-exact-census-20261015\\review-0005\\dll-seeds\\005c23c0.cpp",
+        "005c2630": "work\\goal-auto-exact-census-20261015\\review-0005\\dll-seeds\\005c2630.cpp"
+      }
+    },
+    "keep_partials": true,
+    "builds": [
+      21022
+    ],
+    "profiles": [
+      "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+    ],
+    "append": [
+      ""
+    ],
+    "output": "work\\goal-auto-exact-census-20261015\\review-0005\\dll-grid",
+    "next": "Report verifiedsource restorationsseparatelyfromnewfunctiondiscoveries. Preserveactualpartial whenDLLdoesnotfullmatch."
+  },
+  "audited-openrbx-dll-sixth-cohort-2008": {
+    "op": "grid",
+    "client": "2008-06",
+    "library": "OpenRBX DLL CRT heldout source repairs",
+    "hypothesis": "189 prior DLL source restorations verified. Three additional server-confirmed stale Message.cpp sources; same recipe-only fix.",
+    "targets": {
+      "addresses": [
+        "00443490",
+        "004a3a90",
+        "005dd280"
+      ],
+      "scores": [
+        0,
+        99
+      ]
+    },
+    "seed_sources": {
+      "2008-06": {
+        "00443490": "work\\goal-auto-exact-census-20261015\\review-0006\\dll-seeds\\00443490.cpp",
+        "004a3a90": "work\\goal-auto-exact-census-20261015\\review-0006\\dll-seeds\\004a3a90.cpp",
+        "005dd280": "work\\goal-auto-exact-census-20261015\\review-0006\\dll-seeds\\005dd280.cpp"
+      }
+    },
+    "keep_partials": true,
+    "builds": [
+      21022
+    ],
+    "profiles": [
+      "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+    ],
+    "append": [
+      ""
+    ],
+    "output": "work\\goal-auto-exact-census-20261015\\review-0006\\dll-grid",
+    "next": "Report verifiedsource restorationsseparatelyfromnewfunctiondiscoveries. Preserveactualpartial whenDLLdoesnotfullmatch."
+  },
+  "native-signal-dll-and-thread-literal-propagation-2008": {
+    "op": "fanout",
+    "client": "2008-06",
+    "library": "Native signal DLL CRT and proven event thread literal",
+    "hypothesis": "Two verified new native family exacts005da420 and0061ff70. Propagate their full authentic objects across unresolved2008, using provenDLL preprocessor and binaryliteral. Existingexact donors excluded.",
+    "targets": {},
+    "sources": [
+      {
+        "recipe": "openrbx-client-dll",
+        "files": [
+          "roc_unit_988a984215b485ea.cpp",
+          "roc_unit_1d4ebb12986ccd7b.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      }
+    ],
+    "next": "Full referenceddata and groupserver100 only; parkafterboundedzero-gainobjectscan."
   }
 }

@@ -1,5 +1,18 @@
 [
   {
+    "id": "crt-dll-preprocessing-before-cpp-prototype-edits",
+    "client": "2008-06",
+    "library": "OpenRBX DLL CRT preprocessing",
+    "hypothesis": "Library preprocessing must use the target runtime declaration mode; finalcompiler /MD arrivesaftermacro expansion.",
+    "change": "IAT-provenCRT call mismatches useexistingopenrbx-client-dll recipe (_DLL) withsame21022flags, noCppbodychanges.95/95 stale-source restorations plusnew005da420booladapter96to100.",
+    "symptom": "DirectCRT calls versusIAT, sometimeslargeinline stdstring/allocator bodies. Early/late C++dllimport redeclarationscanbeoverridden orfailC2375.",
+    "exacts_gained": 1,
+    "verified_source_restorations": 95,
+    "outcome": "server_verified",
+    "evidence": "work\\goal-auto-exact-census-20261015\\runtime-receipts.json",
+    "next": "95restoredclaims are notnewtargetdiscoveries. ChooseDLLpreludeonlywithbinaryIATevidence, preservevalidstaticruntimecases. Cachedscoresare notcurrent-sourceproof."
+  },
+  {
     "id": "rtti-base-vptr-eh-state",
     "client": "2008-06",
     "library": "RBX Render Material Level",

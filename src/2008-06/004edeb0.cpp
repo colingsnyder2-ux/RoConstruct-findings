@@ -1,4 +1,4 @@
-// from server: 96% by king_originala
+// from server: 99% by colin
 // roc 2008-06 004edeb0  unit: RBX::ViewNew::Texture  size: 371 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 004edeb0
 //
@@ -262,5 +262,13 @@ Texture* __cdecl getTexture(const Vector3& position, int kind,
         return result;
     }
 
-    return iterator.dereference()->texture;
+    Proxy* owner = iterator.owner;
+    if (!owner)
+        _invalid_parameter_noinfo();
+
+    Map* container = owner ? owner->container : 0;
+    if (iterator.node == container->end)
+        _invalid_parameter_noinfo();
+
+    return iterator.node->texture;
 }

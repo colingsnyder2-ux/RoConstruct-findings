@@ -1,4 +1,4 @@
-// from server: 80% by king_originala
+// from server: 84% by colin
 // roc 2008-06 0060ef30  unit: RBX::BlockBlockContact  size: 354 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 0060ef30
 //
@@ -110,7 +110,9 @@
 // 0060f091  c3                   ret 
 
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
+extern "C" long __cdecl _InterlockedDecrement(volatile long*);
 #pragma intrinsic(_InterlockedExchangeAdd)
+#pragma intrinsic(_InterlockedDecrement)
 
 extern "C" void __cdecl _invalid_parameter_noinfo();
 
@@ -155,9 +157,9 @@ inline Pointer::Pointer(const Pointer& other) {
 
 inline Pointer::~Pointer() {
     Control* c = control;
-    if (c && _InterlockedExchangeAdd(&c->strong, -1) == 1) {
+    if (c && _InterlockedDecrement(&c->strong) == 0) {
         c->dispose();
-        if (_InterlockedExchangeAdd(&c->weak, -1) == 1)
+        if (_InterlockedDecrement(&c->weak) == 0)
             c->destroy();
     }
 }

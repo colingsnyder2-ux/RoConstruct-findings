@@ -1,128 +1,157 @@
-// from server: 96% by king_originala
-extern "C" void (__cdecl* _invalid_parameter_noinfo)();
+// from server: 99% by colin
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
+extern "C" {
+    extern void (__cdecl* _invalid_parameter_noinfo)();
+}
+
 void* __cdecl operator new(unsigned int);
 void __cdecl operator delete(void*);
 
-struct Vec3 { float x, y, z; };
-struct Vec2 { float x, y; };
-
-struct Texture {
-    char data[140];
-    Texture(const Vec3*, int, const Vec2*);
+struct Vector3 {
+    float x, y, z;
 };
 
-struct Mutex {
-    char data[44];
-    void lock();
-    void unlock();
+struct Vector2 {
+    float x, y;
 };
-
-struct Lock {
-    Mutex* mutex;
-    bool held;
-    Lock(Mutex*);
-    ~Lock();
-};
-
-inline Lock::Lock(Mutex* p) : mutex(p), held(false) {
-    mutex->lock();
-    held = true;
-}
-
-inline Lock::~Lock() {
-    if (held)
-        mutex->unlock();
-}
 
 struct Key {
-    float x, y, z;
-    int value;
-    float u, v;
+    Vector3 position;
+    int kind;
+    Vector2 size;
+};
+
+struct Texture {
+    unsigned char storage[0x8c];
+    Texture(const Vector3&, int, const Vector2&);
+};
+
+struct Reference {
+    Texture* pointer;
+    void assign(Texture*);
 };
 
 struct Node {
-    char data[36];
+    unsigned char padding[0x24];
     Texture* texture;
 };
 
-struct Tree;
-struct Proxy { Tree* tree; };
+struct Map;
 
-struct Iterator {
-    Proxy* proxy;
-    Node* node;
-    bool equal(const Iterator&) const;
-    Texture* get() const;
+struct Proxy {
+    Map* container;
 };
 
-inline bool Iterator::equal(const Iterator& other) const {
-    if (!proxy || proxy != other.proxy)
+struct Iterator {
+    Proxy* owner;
+    Node* node;
+    bool equals(const Iterator&) const;
+    Node* dereference() const;
+};
+
+struct Map {
+    Proxy* proxy;
+    unsigned char padding[0x14];
+    Node* end;
+    void find(Iterator*, const Key*);
+    Reference* lookup(const Key*);
+    Iterator finish();
+};
+
+inline Iterator Map::finish() {
+    Iterator result;
+    result.owner = proxy;
+    result.node = end;
+    return result;
+}
+
+inline bool Iterator::equals(const Iterator& other) const {
+    if (!owner || owner != other.owner)
         _invalid_parameter_noinfo();
     return node == other.node;
 }
 
-struct Slot {
-    void assign(Texture*);
-};
-
-struct Tree {
-    Proxy* proxy;
-    char padding[20];
-    Node* sentinel;
-    void find(Iterator*, const Key*);
-    Slot* index(const Key*);
-};
-
-inline Texture* Iterator::get() const {
-    Tree* tree;
-    if (!proxy) {
+inline Node* Iterator::dereference() const {
+    Map* container;
+    if (!owner) {
         _invalid_parameter_noinfo();
-        tree = 0;
+        container = 0;
     } else {
-        tree = proxy->tree;
+        container = owner->container;
     }
-    if (node == tree->sentinel)
+    if (node == container->end)
         _invalid_parameter_noinfo();
-    return node->texture;
+    return node;
 }
 
-struct Owner {
-    char padding[16];
-    Mutex mutex;
-    Tree tree;
+struct Mutex {
+    void lock();
+    void unlock();
 };
 
-extern Owner* owner;
-extern int initialization;
-void __cdecl initialize(void (__cdecl*)(), int*);
-void __cdecl createOwner();
+struct State {
+    unsigned char prefix[0x10];
+    Mutex mutex;
+    unsigned char padding[0x2b];
+    Map map;
+};
 
-Texture* __cdecl getTexture(const Vec3* position, int value, const Vec2* size) {
-    initialize(createOwner, &initialization);
-    Owner* p = owner;
-    Mutex& mutex = p->mutex;
-    Lock guard(&mutex);
+extern State* state;
+extern int initialization;
+extern void __cdecl initializeState();
+extern void __cdecl initialize(void (__cdecl*)(), int*);
+
+struct Guard {
+    Mutex* mutex;
+    bool active;
+    Guard(Mutex*);
+    ~Guard();
+};
+
+Guard::Guard(Mutex* p) : mutex(p) {
+    mutex->lock();
+    active = true;
+}
+
+Guard::~Guard() {
+    if (active)
+        mutex->unlock();
+}
+
+Texture* __cdecl getTexture(const Vector3& position, int kind,
+                            const Vector2& size) {
+    initialize(initializeState, &initialization);
+    State* s = state;
+    Guard guard(&s->mutex);
 
     Key key;
-    key.x = position->x;
-    key.y = position->y;
-    key.z = position->z;
-    key.value = value;
-    key.u = size->x;
-    key.v = size->y;
+    key.position.x = position.x;
+    key.position.y = position.y;
+    key.position.z = position.z;
+    key.kind = kind;
+    key.size.x = size.x;
+    key.size.y = size.y;
 
-    Tree& tree = p->tree;
-    Iterator found;
-    tree.find(&found, &key);
-    Iterator end;
-    end.proxy = tree.proxy;
-    end.node = tree.sentinel;
+    Map* map = &s->map;
+    Iterator iterator;
+    map->find(&iterator, &key);
 
-    if (found.equal(end)) {
-        Texture* result = new Texture(position, value, size);
-        Slot* slot = tree.index(&key);
-        slot->assign(result);
+    Iterator end = map->finish();
+    if (iterator.equals(end)) {
+        Texture* result = new Texture(position, kind, size);
+        Reference* reference = map->lookup(&key);
+        reference->assign(result);
         return result;
     }
-    return found.get();
+
+    Proxy* owner = iterator.owner;
+    if (!owner)
+        _invalid_parameter_noinfo();
+
+    Map* container = owner ? owner->container : 0;
+    if (iterator.node == container->end)
+        _invalid_parameter_noinfo();
+
+    return iterator.node->texture;
 }
