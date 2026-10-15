@@ -1,4 +1,836 @@
 {
+  "native-linesegment-fidelity-propagation-2008": {
+    "op": "fanout",
+    "library": "G3D native LineSegment laser temporary",
+    "hypothesis": "Propagate authenticatedLineSegment/Color4 replacement aftersame100serververification; no inventedCapsule destructor. Originaltarget alreadyexact, do notcount asnewgain.",
+    "targets": {},
+    "sources": [
+      {
+        "recipe": "rbxgs",
+        "files": [
+          "roc_unit_ec33feeb5006c149.cpp"
+        ],
+        "builds": [
+          21022,
+          50727
+        ],
+        "flags": [
+          "/O2 /GS- /EHsc /MD"
+        ]
+      }
+    ],
+    "next": "Fullservergains only; nativeLineSegmentheader/dtor matchescalleeRTTI82b394, notfakecleanupstate."
+  },
+  "material-level-base-propagation-2008": {
+    "op": "fanout",
+    "library": "RBX Material Level RTTI-proven base",
+    "hypothesis": "Propagate nativeTUwithproven12slotfourbyteRenderBaseMaterialBaseLevel base; dtor93to100 alreadyserververified.",
+    "targets": {},
+    "sources": [
+      {
+        "recipe": "rbxgs-render",
+        "files": [
+          "roc_unit_9d141486a4068313.cpp"
+        ],
+        "builds": [
+          21022,
+          50727
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      }
+    ],
+    "next": "Fullcode/data only; baseclassRTTI/PMDproof recorded, unresolvedAPImethods stayexternal."
+  },
+  "material-level-base-view-2008": {
+    "op": "grid",
+    "client": "2008-06",
+    "library": "RBX Material Level RTTI-proven base",
+    "hypothesis": "NewRTTI CHD8cc8d8 has2classes; baseRenderBaseMaterialBaseLevel PMD0 andsize4. Dtor93 missingfinalbasevptr874a8c reset andEHstate. Restore12slotbaseAPIview, externalmethodbodies, emptybasedtorproven7acd00; nofields/padding.",
+    "targets": {
+      "addresses": [
+        "007b7a60",
+        "007b78b0",
+        "007b7c50",
+        "007b7ff0"
+      ],
+      "scores": [
+        0,
+        99
+      ]
+    },
+    "seed_sources": {
+      "2008-06": {
+        "007b7a60": "work\\goal-material-level-vtable-20261015\\base-007b7a60.cpp",
+        "007b78b0": "work\\goal-material-level-vtable-20261015\\base-007b78b0.cpp",
+        "007b7c50": "work\\goal-material-level-vtable-20261015\\base-007b7c50.cpp",
+        "007b7ff0": "work\\goal-material-level-vtable-20261015\\base-007b7ff0.cpp"
+      }
+    },
+    "keep_partials": true,
+    "builds": [
+      21022,
+      50727
+    ],
+    "profiles": [
+      "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+    ],
+    "append": [
+      ""
+    ],
+    "output": "work\\goal-material-level-vtable-20261015\\base-grid",
+    "next": "Only servergains; baseview reconstructedfromRTTI/slots, originalgettername andpointeeAPI names uncertain, no originaldeclaration claim."
+  },
+  "material-level-nearby-batch-2008": {
+    "op": "grid",
+    "client": "2008-06",
+    "library": "RBX Material Level native nearby partials",
+    "hypothesis": "Evaluate correctedLevelvirtualheader fullTU againstfive nearby unresolvedconstructor/destructor/arraymethods; retain newpartialgains forserververification.",
+    "targets": {
+      "addresses": [
+        "007b78b0",
+        "007b7a60",
+        "007b7c50",
+        "007b7ff0",
+        "007b80f0"
+      ],
+      "scores": [
+        0,
+        99
+      ]
+    },
+    "seed_sources": {
+      "2008-06": {
+        "007b78b0": "work\\goal-material-level-vtable-20261015\\007b78b0.cpp",
+        "007b7a60": "work\\goal-material-level-vtable-20261015\\007b7a60.cpp",
+        "007b7c50": "work\\goal-material-level-vtable-20261015\\007b7c50.cpp",
+        "007b7ff0": "work\\goal-material-level-vtable-20261015\\007b7ff0.cpp",
+        "007b80f0": "work\\goal-material-level-vtable-20261015\\007b80f0.cpp"
+      }
+    },
+    "keep_partials": true,
+    "builds": [
+      21022,
+      50727
+    ],
+    "profiles": [
+      "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+    ],
+    "append": [
+      ""
+    ],
+    "output": "work\\goal-material-level-vtable-20261015\\nearby-grid",
+    "next": "Submitonlyretainedhigherpartials; inspectnewresidue ratherthanmoregenericflags."
+  },
+  "block-closest-edge-native-fp-2008": {
+    "op": "grid",
+    "client": "2008-06",
+    "library": "RBX Block native matrix-vector order",
+    "hypothesis": "00647d10 authenticMatrix3 transposeMultiply88 matchesallcontrolflow, differsonlyx87sumordering; targetz+y+x vsnormalx+y+z suggests nativefpfast gate.",
+    "targets": {
+      "addresses": [
+        "00647d10"
+      ],
+      "scores": [
+        0,
+        99
+      ]
+    },
+    "seed_sources": {
+      "2008-06": {
+        "00647d10": "work\\goal-block-native-fp-20261015\\00647d10.cpp"
+      }
+    },
+    "keep_partials": true,
+    "builds": [
+      21022,
+      50727
+    ],
+    "profiles": [
+      "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast"
+    ],
+    "append": [
+      ""
+    ],
+    "output": "work\\goal-block-native-fp-20261015\\grid",
+    "next": "Nativepuremath only, selectedmethodusesnoassembly; ifnogain parkmathorder."
+  },
+  "material-level-vtable-propagation-2008": {
+    "op": "fanout",
+    "library": "RBX Material Level actualvirtual API",
+    "hypothesis": "Propagate verified44bytepolymorphicLevel managedheader across genuineMaterial.cpp methods andG3DArray helpers.",
+    "targets": {},
+    "sources": [
+      {
+        "recipe": "rbxgs-render",
+        "files": [
+          "roc_unit_095c8f50cdc6ca16.cpp"
+        ],
+        "builds": [
+          21022,
+          50727
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      }
+    ],
+    "next": "Fullservercode/data only; LevelRTTI andslots inwork/goal-material-level-vtable-20261015/proof.json."
+  },
+  "native-pair-shared-vector-propagation-2008": {
+    "op": "fanout",
+    "library": "MSVC native pair DWORD sharedptr vector",
+    "hypothesis": "Propagate serververified twelvebyte pair/sharedptrvector implementation across unresolved2008functions, bothcompilerbuilds.",
+    "targets": {},
+    "sources": [
+      {
+        "recipe": "rbxgs",
+        "files": [
+          "roc_unit_793d094842d6b0aa.cpp"
+        ],
+        "builds": [
+          21022,
+          50727
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      }
+    ],
+    "next": "Fullservercode/data only; originalpointeetype andfirstDWORD meaning unknown."
+  },
+  "material-level-vtable-2008": {
+    "op": "grid",
+    "client": "2008-06",
+    "library": "RBX Material Level actualvirtual API",
+    "hypothesis": "RTTI and12slotvtable prove genuineLevel polymorphic; oldheadernonvirtual explains40vs44stride andallfields-4. Restorebinaryprovenvirtualmethods andslot3smartpointergetter, nofields/padding.",
+    "targets": {
+      "addresses": [
+        "007b7ef0"
+      ],
+      "scores": [
+        0,
+        99
+      ]
+    },
+    "seed_sources": {
+      "2008-06": {
+        "007b7ef0": "work\\goal-material-level-vtable-20261015\\007b7ef0.cpp"
+      }
+    },
+    "keep_partials": true,
+    "builds": [
+      21022,
+      50727
+    ],
+    "profiles": [
+      "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+    ],
+    "append": [
+      ""
+    ],
+    "output": "work\\goal-material-level-vtable-20261015\\grid",
+    "next": "Fullcode/data servergate thennativeTUfanout; slot3getter originalnameunknown, codegenanalogue."
+  },
+  "native-pair-shared-vector-2008": {
+    "op": "grid",
+    "client": "2008-06",
+    "library": "MSVC vector of DWORD plus sharedptr",
+    "hypothesis": "004a8110 stride12 versus WaitingThread24 donor90. Exactcallee4a7520 copiesDWORD0,pointer4,control8 andincrementscontrol+4;4a79e0 releasescontrol8. Authenticstdpair<DWORD,boostsharedptr<Instance>> is compile-backed typeanalogue.",
+    "targets": {
+      "addresses": [
+        "004a8110"
+      ],
+      "scores": [
+        0,
+        99
+      ]
+    },
+    "seed_sources": {
+      "2008-06": {
+        "004a8110": "work\\goal-native-pair-shared-vector-20261015\\004a8110.cpp"
+      }
+    },
+    "keep_partials": true,
+    "builds": [
+      21022,
+      50727
+    ],
+    "profiles": [
+      "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+    ],
+    "append": [
+      ""
+    ],
+    "output": "work\\goal-native-pair-shared-vector-20261015\\grid",
+    "next": "Server fullcode/data only thenfanout; originalfirstword and pointee type unknown."
+  },
+  "native-zero-relay-adapter-propagation-2008": {
+    "op": "fanout",
+    "library": "Native zero signal, threefloat relays and bool adapters",
+    "hypothesis": "Broaden verifiedsignal0 andthreefloatrelay nativeobjects pluspartialbooladapter genuinehelpers across all unresolved2008functions; bothcompilers.",
+    "targets": {},
+    "sources": [
+      {
+        "recipe": "rbxgs",
+        "files": [
+          "roc_unit_e2c93e985fe4ceae.cpp",
+          "roc_unit_5d855646c3dedd26.cpp"
+        ],
+        "builds": [
+          21022,
+          50727
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "openrbx-client",
+        "files": [
+          "roc_unit_988a984215b485ea.cpp"
+        ],
+        "builds": [
+          21022,
+          50727
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      }
+    ],
+    "next": "Fullserverexact gains only; bool005da420 staysparked96; do not infer originalrelay aggregateclassname."
+  },
+  "native-three-float-relay-2008": {
+    "op": "grid",
+    "client": "2008-06",
+    "library": "Native threefloat byvalue forwarding",
+    "hypothesis": "Two35bytefunctions copy3float stackargs into thiscall receiver, callees6364f0/636670 ret12 and callerbareRET. GenuineColor3copy codegenanalogue; original aggregate type/name unknown.",
+    "targets": {
+      "addresses": [
+        "00637a30",
+        "00637aa0"
+      ],
+      "scores": [
+        0,
+        99
+      ]
+    },
+    "seed_sources": {
+      "2008-06": {
+        "00637a30": "work\\goal-native-three-float-relay-20261015\\00637a30.cpp",
+        "00637aa0": "work\\goal-native-three-float-relay-20261015\\00637aa0.cpp"
+      }
+    },
+    "keep_partials": true,
+    "builds": [
+      21022,
+      50727
+    ],
+    "profiles": [
+      "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+    ],
+    "append": [
+      ""
+    ],
+    "output": "work\\goal-native-three-float-relay-20261015\\grid",
+    "next": "Require fullserververification; opaque receiver hasnoinventedfields, methodABI derivedfromcaller/callee."
+  },
+  "native-zero-signal-dispatch-2008": {
+    "op": "grid",
+    "client": "2008-06",
+    "library": "Boost native zero argument signal",
+    "hypothesis": "004b5950 ret4 ishiddenresult only; bytepointerislocaldummy notboolarg. Bool57 rejected; authentic signal0 correctarity.",
+    "targets": {
+      "addresses": [
+        "004b5950"
+      ],
+      "scores": [
+        0,
+        99
+      ]
+    },
+    "seed_sources": {
+      "2008-06": {
+        "004b5950": "work\\goal-native-zero-signal-20261015\\004b5950.cpp"
+      }
+    },
+    "keep_partials": true,
+    "builds": [
+      21022,
+      50727
+    ],
+    "profiles": [
+      "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+    ],
+    "append": [
+      ""
+    ],
+    "output": "work\\goal-native-zero-signal-20261015\\grid",
+    "next": "Fullcode/data gate thenfanout; hiddenaggregate return mustcount before inferring args."
+  },
+  "native-bool-signal-dispatch-2008": {
+    "op": "grid",
+    "client": "2008-06",
+    "library": "Boost native bool signal dispatch",
+    "hypothesis": "Target004b5950 unlikefloatdonor78 takesbyteaddress foriterator, nox87floatcopy; genuineboolspecialization testsargtype withoutlayoutchanges.",
+    "targets": {
+      "addresses": [
+        "004b5950"
+      ],
+      "scores": [
+        0,
+        99
+      ]
+    },
+    "seed_sources": {
+      "2008-06": {
+        "004b5950": "work\\goal-native-bool-signal-20261015\\004b5950.cpp"
+      }
+    },
+    "keep_partials": true,
+    "builds": [
+      21022,
+      50727
+    ],
+    "profiles": [
+      "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+    ],
+    "append": [
+      ""
+    ],
+    "output": "work\\goal-native-bool-signal-20261015\\dispatch-grid",
+    "next": "Verify referenceddata andserver thenfanout; do not retry parked005da420CRTdeclarations."
+  },
+  "native-ref-serializer-view-2008": {
+    "op": "grid",
+    "client": "2008-06",
+    "library": "RBX genuine IdSerializer proven ABI view",
+    "hypothesis": "Onlyoldheader errors targetvslot0x30 versus0x24 andDescribedBase projection-0x14 versus-4. Preserveactualfunction andtypes, apply explicitlybinaryproven slot/baseview withoutclasspadding.",
+    "targets": {
+      "addresses": [
+        "004a8b90"
+      ],
+      "scores": [
+        0,
+        99
+      ]
+    },
+    "seed_sources": {
+      "2008-06": {
+        "004a8b90": "work\\goal-native-ref-serializer-20261015\\004a8b90.cpp"
+      }
+    },
+    "keep_partials": true,
+    "builds": [
+      21022,
+      50727
+    ],
+    "profiles": [
+      "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+    ],
+    "append": [
+      ""
+    ],
+    "output": "work\\goal-native-ref-serializer-20261015\\grid",
+    "next": "Fullservercode/data gate; binaryview not originalclasslayoutdeclaration."
+  },
+  "native-bind-two-arg-propagation-2008": {
+    "op": "fanout",
+    "library": "Boost two argument member bind",
+    "hypothesis": "Propagate serververifiedsharedptr-plus-DWORD memberbind invoker and genuinehelpers across unresolved2008functions",
+    "targets": {},
+    "sources": [
+      {
+        "recipe": "rbxgs",
+        "files": [
+          "roc_unit_bdc55fa8f21ebff2.cpp"
+        ],
+        "builds": [
+          21022,
+          50727
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      }
+    ],
+    "next": "Fullservergains only; receiverInstance reused as codegenanalogue, originalclassunknown."
+  },
+  "native-bool-signal-late-import-2008": {
+    "op": "grid",
+    "client": "2008-06",
+    "library": "RBX bool signal preserved CRT import",
+    "hypothesis": "Preprocessedgenuineheader later redeclaresCRT API plain and erases earlydllimport. Redeclare provenIAT boundary afterheader beforeexplicitinstantiation.",
+    "targets": {
+      "addresses": [
+        "005da420"
+      ],
+      "scores": [
+        0,
+        99
+      ]
+    },
+    "seed_sources": {
+      "2008-06": {
+        "005da420": "work\\goal-native-bool-signal-20261015\\late-import-005da420.cpp"
+      }
+    },
+    "keep_partials": true,
+    "builds": [
+      21022
+    ],
+    "profiles": [
+      "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+    ],
+    "append": [
+      ""
+    ],
+    "output": "work\\goal-native-bool-signal-20261015\\late-import-grid",
+    "next": "Third distincthypothesis; park if stillnotfullmatch. No guessedtypebytes."
+  },
+  "native-bind-two-arg-invoker-2008": {
+    "op": "grid",
+    "client": "2008-06",
+    "library": "Boost genuine member bind arity",
+    "hypothesis": "Target00588390 passes sharedptr8 plus trailingDWORD to native memberadapter496910(ret16 includesobject), donoronlysharedptr. Genuinefunction2/bind mf2 specialization, nativeInstance MI class reused as codegenanalogue.",
+    "targets": {
+      "addresses": [
+        "00588390"
+      ],
+      "scores": [
+        0,
+        99
+      ]
+    },
+    "seed_sources": {
+      "2008-06": {
+        "00588390": "work\\goal-native-bind-arity-20261015\\00588390.cpp"
+      }
+    },
+    "keep_partials": true,
+    "builds": [
+      21022,
+      50727
+    ],
+    "profiles": [
+      "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+    ],
+    "append": [
+      ""
+    ],
+    "output": "work\\goal-native-bind-arity-20261015\\grid",
+    "next": "Require fullserververification; actualreceiverclass and trailingDWORD semanticmeaning remainunknown."
+  },
+  "native-bool-signal-import-2008": {
+    "op": "grid",
+    "client": "2008-06",
+    "library": "RBX bool signal correct CRT import",
+    "hypothesis": "Nativebool96 nowonly differs direct _invalid_parameter_noinfo versus targetIAT. RealPEimport proves dllimport boundary, redeclareactualCRT API beforegenuineheader.",
+    "targets": {
+      "addresses": [
+        "005da420"
+      ],
+      "scores": [
+        0,
+        99
+      ]
+    },
+    "seed_sources": {
+      "2008-06": {
+        "005da420": "work\\goal-native-bool-signal-20261015\\import-005da420.cpp"
+      }
+    },
+    "keep_partials": true,
+    "builds": [
+      21022
+    ],
+    "profiles": [
+      "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+    ],
+    "append": [
+      ""
+    ],
+    "output": "work\\goal-native-bool-signal-20261015\\import-grid",
+    "next": "Only fullservercode/data counts; no fakefunctionpointer global."
+  },
+  "native-bool-signal-adapter-2008": {
+    "op": "grid",
+    "client": "2008-06",
+    "library": "RBX genuine bool signal adapter",
+    "hypothesis": "Target005da420 holds onebytevalue in eightbyteboostany holder, floatdonor95 copiesfloat. Instantiate authenticbool signaladapter; require referencedtype data fullmatch.",
+    "targets": {
+      "addresses": [
+        "005da420"
+      ],
+      "scores": [
+        0,
+        99
+      ]
+    },
+    "seed_sources": {
+      "2008-06": {
+        "005da420": "work\\goal-native-bool-signal-20261015\\005da420.cpp"
+      }
+    },
+    "keep_partials": true,
+    "builds": [
+      21022,
+      50727
+    ],
+    "profiles": [
+      "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+    ],
+    "append": [
+      ""
+    ],
+    "output": "work\\goal-native-bool-signal-20261015\\grid",
+    "next": "Server fullcode/data before nativeobjectfanout; no guessed reflectedtypename."
+  },
+  "native-pair-string-propagation-2008": {
+    "op": "fanout",
+    "library": "MSVC native pair string construction",
+    "hypothesis": "Propagate verified importedcopy nativepair construction plus authenticinline form across all unresolvedfunctions, preserving compiler-specificheader.",
+    "targets": {},
+    "sources": [
+      {
+        "recipe": "rbxgs",
+        "files": [
+          "roc_unit_a7034061e022fe61.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "rbxgs",
+        "files": [
+          "roc_unit_01fe352c1d0840c6.cpp"
+        ],
+        "builds": [
+          21022,
+          50727
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      }
+    ],
+    "next": "Fullservergains only; no originalfirstword type assertion from codegenanalogue."
+  },
+  "native-pair-imported-string-2008": {
+    "op": "grid",
+    "client": "2008-06",
+    "library": "MSVC native pair importedstring construction",
+    "hypothesis": "Target IAT proves importedstdstring copy; nativepair with originalinlinecopy79. ManagedauthenticRTMxstring changes only proven copyctor to dllimport declaration.",
+    "targets": {
+      "addresses": [
+        "00577310"
+      ],
+      "scores": [
+        0,
+        99
+      ]
+    },
+    "seed_sources": {
+      "2008-06": {
+        "00577310": "work\\goal-native-pair-string-20261015\\import-00577310.cpp"
+      }
+    },
+    "keep_partials": true,
+    "builds": [
+      21022
+    ],
+    "profiles": [
+      "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+    ],
+    "append": [
+      ""
+    ],
+    "output": "work\\goal-native-pair-string-20261015\\import-grid",
+    "next": "Fullservermatch only; original firstDWORD type remainsunknown. No compiler-header handedit."
+  },
+  "native-pair-string-construction-2008": {
+    "op": "grid",
+    "client": "2008-06",
+    "library": "MSVC native pair string construction",
+    "hypothesis": "Import evidence proves stdstring copy ctor at offset4 after one DWORD copy; oldboostbind donor member8 is wrong semanticfamily. Nativepair is codegenanalogue, original firstword type unknown.",
+    "targets": {
+      "addresses": [
+        "00577310"
+      ],
+      "scores": [
+        0,
+        99
+      ]
+    },
+    "seed_sources": {
+      "2008-06": {
+        "00577310": "work\\goal-native-pair-string-20261015\\00577310.cpp"
+      }
+    },
+    "keep_partials": true,
+    "builds": [
+      21022,
+      50727
+    ],
+    "profiles": [
+      "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+    ],
+    "append": [
+      ""
+    ],
+    "output": "work\\goal-native-pair-string-20261015\\grid",
+    "next": "Fullcode/data servergate then nativeobject fanout; do not claim originalunsignedint declaration."
+  },
+  "boost-aggregate-signal-propagation-2008": {
+    "op": "fanout",
+    "library": "Boost authentic aggregate and scalar signal templates",
+    "hypothesis": "Propagate verified by-valueVector3 signal and compare genuine threefloat specialization against unresolvedfunctions; retain fullcode/data only",
+    "targets": {},
+    "sources": [
+      {
+        "recipe": "rbxgs",
+        "files": [
+          "roc_unit_659050ba9a7bf80e.cpp",
+          "roc_unit_cfcb5a17e3e77cc8.cpp"
+        ],
+        "builds": [
+          21022,
+          50727
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      }
+    ],
+    "next": "Server code/data gains only; scalar specialization is rejected for00639490 and must never replace verifiedVector3 source."
+  },
+  "boost-double-signal-propagation-2008": {
+    "op": "fanout",
+    "library": "Boost signal1 double authentic specialization",
+    "hypothesis": "Propagate serververified double signal specialization across all unresolved2008 functions, both compilerbuilds",
+    "targets": {},
+    "sources": [
+      {
+        "recipe": "rbxgs",
+        "files": [
+          "roc_unit_81a1083f68234f24.cpp"
+        ],
+        "builds": [
+          21022,
+          50727
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      }
+    ],
+    "next": "Server code and referenceddata gates only; zeroextra parks exactsameobject."
+  },
+  "boost-vector-signal-2008": {
+    "op": "grid",
+    "client": "2008-06",
+    "library": "Boost native signal1 Vector3",
+    "hypothesis": "Target00639490 three float copies may represent one by-value nativeVector3 rather than three scalar signal args; same12-byte ABI, native nontrivialcopy semantics",
+    "targets": {
+      "addresses": [
+        "00639490"
+      ],
+      "scores": [
+        0,
+        99
+      ]
+    },
+    "seed_sources": {
+      "2008-06": {
+        "00639490": "work\\goal-boost-double-signal-20261015\\vector-00639490.cpp"
+      }
+    },
+    "keep_partials": true,
+    "builds": [
+      21022,
+      50727
+    ],
+    "profiles": [
+      "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+    ],
+    "append": [
+      ""
+    ],
+    "output": "work\\goal-boost-double-signal-20261015\\vector-grid",
+    "next": "Retain only servergain, park if nativeaggregate does not explain stack lifetime."
+  },
+  "boost-three-float-signal-2008": {
+    "op": "grid",
+    "client": "2008-06",
+    "library": "Boost native signal3 float",
+    "hypothesis": "Target00639490 loads three separate float args and returns16 including hidden result; native donor signal2 only two args",
+    "targets": {
+      "addresses": [
+        "00639490"
+      ],
+      "scores": [
+        0,
+        99
+      ]
+    },
+    "seed_sources": {
+      "2008-06": {
+        "00639490": "work\\goal-boost-double-signal-20261015\\00639490.cpp"
+      }
+    },
+    "keep_partials": true,
+    "builds": [
+      21022,
+      50727
+    ],
+    "profiles": [
+      "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+    ],
+    "append": [
+      ""
+    ],
+    "output": "work\\goal-boost-double-signal-20261015\\three-grid",
+    "next": "Propagate native object only after server verification; no guessed tuple padding."
+  },
+  "boost-double-signal-2008": {
+    "op": "grid",
+    "client": "2008-06",
+    "library": "Boost native signal1 double",
+    "hypothesis": "Target006391d0 loads and spills qword argument and returns12 versus nativefloat donor8; instantiate authentic boost::signal1<void,double>",
+    "targets": {
+      "addresses": [
+        "006391d0"
+      ],
+      "scores": [
+        0,
+        99
+      ]
+    },
+    "seed_sources": {
+      "2008-06": {
+        "006391d0": "work\\goal-boost-double-signal-20261015\\006391d0.cpp"
+      }
+    },
+    "keep_partials": true,
+    "builds": [
+      21022,
+      50727
+    ],
+    "profiles": [
+      "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+    ],
+    "append": [
+      ""
+    ],
+    "output": "work\\goal-boost-double-signal-20261015\\grid",
+    "next": "If exact propagate native object; otherwise inspect typed argument specialization residue, no ABI invention."
+  },
   "getter-arity-propagation-2008": {
     "op": "fanout",
     "library": "RBX proven getter and helper-arity repairs",
@@ -2408,5 +3240,721 @@
       },
       "evidence": "work/large-functions-2008-20261014/atlas-verified-summary.json"
     }
+  },
+  "large-twod-batch-2008": {
+    "op": "grid",
+    "client": "2008-06",
+    "library": "Ogre 1.4.5 native 2D draw batching",
+    "hypothesis": "Recover real 4309-byte batching body using native field accesses and actual checked std::list; imported constructor declared with unchanged SDK layout. Compile both historical gates.",
+    "targets": {
+      "addresses": [
+        "006832b0"
+      ],
+      "sizes": [
+        4000,
+        4500
+      ],
+      "scores": [
+        0,
+        39
+      ]
+    },
+    "seed_sources": {
+      "2008-06": {
+        "006832b0": "work/large-functions-2008-20261014/twod-wrapper.cpp"
+      }
+    },
+    "keep_partials": true,
+    "builds": [
+      21022,
+      50727
+    ],
+    "profiles": [
+      "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+    ],
+    "append": [
+      "",
+      " /fp:fast"
+    ],
+    "output": "work/large-functions-2008-20261014/twod-grid",
+    "next": "Review own draw symbol and native geometry contract before submission; scan emitted list helpers if pilot succeeds.",
+    "result": {
+      "date": "2026-10-15",
+      "new_verified_exacts": 0,
+      "status": "parked",
+      "verified_partials": {
+        "006832b0": 32,
+        "006825b0": 86
+      },
+      "evidence": "work/large-functions-2008-20261014/twod-verified-summary.json"
+    }
+  },
+  "large-twod-scoped-2008": {
+    "op": "grid",
+    "client": "2008-06",
+    "library": "Ogre 1.4.5 native 2D draw batching",
+    "hypothesis": "Native shares one outer list cleanup; retain scoped nonempty branch. Correct alpha-only texture format from native immediate3/PF_A8. VS2005 list layout rejected by SDK proof; use21022 only.",
+    "targets": {
+      "addresses": [
+        "006832b0"
+      ],
+      "sizes": [
+        4000,
+        4500
+      ],
+      "scores": [
+        0,
+        39
+      ]
+    },
+    "seed_sources": {
+      "2008-06": {
+        "006832b0": "work/large-functions-2008-20261014/twod-scoped-wrapper.cpp"
+      }
+    },
+    "keep_partials": true,
+    "builds": [
+      21022
+    ],
+    "profiles": [
+      "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+    ],
+    "append": [
+      "",
+      " /fp:fast"
+    ],
+    "output": "work/large-functions-2008-20261014/twod-scoped-grid",
+    "next": "Review own draw symbol and native geometry contract before submission; scan emitted list helpers if pilot succeeds.",
+    "result": {
+      "date": "2026-10-15",
+      "new_verified_exacts": 0,
+      "status": "parked",
+      "verified_partials": {
+        "006832b0": 32,
+        "006825b0": 86
+      },
+      "evidence": "work/large-functions-2008-20261014/twod-verified-summary.json"
+    }
+  },
+  "large-twod-handle-2008": {
+    "op": "grid",
+    "client": "2008-06",
+    "library": "Ogre 1.4.5 native 2D draw batching",
+    "hypothesis": "Native TextureManager vslot50 is getByHandle, not getByName: recovered addQuad already verified100 stores Resource::getHandle. Correct resource handle ABI and compare31022 fast full existing family flags.",
+    "targets": {
+      "addresses": [
+        "006832b0"
+      ],
+      "sizes": [
+        4000,
+        4500
+      ],
+      "scores": [
+        0,
+        39
+      ]
+    },
+    "seed_sources": {
+      "2008-06": {
+        "006832b0": "work/large-functions-2008-20261014/twod-handle-wrapper.cpp"
+      }
+    },
+    "keep_partials": true,
+    "builds": [
+      21022
+    ],
+    "profiles": [
+      "/O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MD /fp:fast"
+    ],
+    "append": [
+      ""
+    ],
+    "output": "work/large-functions-2008-20261014/twod-handle-grid",
+    "next": "Review own draw symbol and native geometry contract before submission; scan emitted list helpers if pilot succeeds.",
+    "result": {
+      "date": "2026-10-15",
+      "new_verified_exacts": 0,
+      "status": "parked",
+      "verified_partials": {
+        "006832b0": 32,
+        "006825b0": 86
+      },
+      "evidence": "work/large-functions-2008-20261014/twod-verified-summary.json"
+    }
+  },
+  "large-twod-setup-2008": {
+    "op": "grid",
+    "client": "2008-06",
+    "library": "Ogre 1.4.5 native 2D draw batching",
+    "hypothesis": "Recover native1007-byte state setup sibling from SDK virtual methods, owner RenderTarget and normalized flag reads. Test own setup before fanout.",
+    "targets": {
+      "addresses": [
+        "006825b0"
+      ],
+      "sizes": [
+        1000,
+        1100
+      ],
+      "scores": [
+        0,
+        39
+      ]
+    },
+    "seed_sources": {
+      "2008-06": {
+        "006825b0": "work/large-functions-2008-20261014/twod-setup-wrapper.cpp"
+      }
+    },
+    "keep_partials": true,
+    "builds": [
+      21022
+    ],
+    "profiles": [
+      "/O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MD /fp:fast"
+    ],
+    "append": [
+      ""
+    ],
+    "output": "work/large-functions-2008-20261014/twod-setup-grid",
+    "next": "Review own draw symbol and native geometry contract before submission; scan emitted list helpers if pilot succeeds.",
+    "result": {
+      "date": "2026-10-15",
+      "new_verified_exacts": 0,
+      "status": "parked",
+      "verified_partials": {
+        "006832b0": 32,
+        "006825b0": 86
+      },
+      "evidence": "work/large-functions-2008-20261014/twod-verified-summary.json"
+    }
+  },
+  "large-twod-state-2008": {
+    "op": "grid",
+    "client": "2008-06",
+    "library": "Ogre 1.4.5 native 2D draw batching",
+    "hypothesis": "Correct native float constant .5 (not2), SDK virtual-slot proof identifies culling/polygon and GPU-stage order, comparison immediate1 means ALWAYS_PASS. Test recovered state and parent using real handle ABI.",
+    "targets": {
+      "addresses": [
+        "006825b0",
+        "006832b0"
+      ],
+      "sizes": [
+        1000,
+        4500
+      ],
+      "scores": [
+        0,
+        39
+      ]
+    },
+    "seed_sources": {
+      "2008-06": {
+        "006825b0": "work/large-functions-2008-20261014/twod-state-wrapper.cpp",
+        "006832b0": "work/large-functions-2008-20261014/twod-state-wrapper.cpp"
+      }
+    },
+    "keep_partials": true,
+    "builds": [
+      21022
+    ],
+    "profiles": [
+      "/O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MD /fp:fast"
+    ],
+    "append": [
+      ""
+    ],
+    "output": "work/large-functions-2008-20261014/twod-state-grid",
+    "next": "Review own draw symbol and native geometry contract before submission; scan emitted list helpers if pilot succeeds.",
+    "result": {
+      "date": "2026-10-15",
+      "new_verified_exacts": 0,
+      "status": "parked",
+      "verified_partials": {
+        "006832b0": 32,
+        "006825b0": 86
+      },
+      "evidence": "work/large-functions-2008-20261014/twod-verified-summary.json"
+    }
+  },
+  "large-twod-state-scale-2008": {
+    "op": "fanout",
+    "client": "2008-06",
+    "library": "recovered native 2D draw/state family",
+    "hypothesis": "Two real large native bodies plus genuine SDK list helpers, handle ABI and virtual slots verified by independent evidence; scan portable object against all current large below40 targets.",
+    "targets": {
+      "sizes": [
+        1000,
+        1000000
+      ],
+      "scores": [
+        0,
+        39
+      ]
+    },
+    "sources": [
+      {
+        "recipe": "ogre-1.4.5-dll",
+        "files": [
+          "roc_twod_state_936a24b1546195a2.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MD /fp:fast"
+        ]
+      }
+    ],
+    "output": "work/large-functions-2008-20261014/twod-state-scale",
+    "next": "Keep only server verified gains; no generic rewrite from a partial. Park unchanged cohort.",
+    "result": {
+      "date": "2026-10-15",
+      "new_verified_exacts": 0,
+      "status": "parked",
+      "verified_partials": {
+        "006832b0": 32,
+        "006825b0": 86
+      },
+      "evidence": "work/large-functions-2008-20261014/twod-verified-summary.json"
+    }
+  },
+  "large-single-object-2008": {
+    "op": "grid",
+    "client": "2008-06",
+    "library": "Ogre 1.4.5 inherited renderSingleObject",
+    "hypothesis": "Native2391-byte function has independent SEH, static RenderOperation initialization, four arguments and Pass auto-light/texture APIs. Recover authentic inherited body; target adds custom RTTI preamble, so this is an explicit partial pilot before that fork is recovered.",
+    "targets": {
+      "addresses": [
+        "0069bc50"
+      ],
+      "sizes": [
+        2300,
+        2450
+      ],
+      "scores": [
+        0,
+        39
+      ]
+    },
+    "seed_sources": {
+      "2008-06": {
+        "0069bc50": "work/large-functions-2008-20261014/render-single-object-wrapper.cpp"
+      }
+    },
+    "keep_partials": true,
+    "builds": [
+      21022
+    ],
+    "profiles": [
+      "/O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MD"
+    ],
+    "append": [
+      "",
+      " /fp:fast"
+    ],
+    "output": "work/large-functions-2008-20261014/render-single-object-grid",
+    "next": "Recover custom RTTI prefix and inherited render-state differences from native; do not submit an unrelated best symbol.",
+    "result": {
+      "date": "2026-10-15",
+      "status": "parked",
+      "new_verified_exacts": 0,
+      "verified_partials": {
+        "0069bc50": 60
+      },
+      "evidence": "work/large-functions-2008-20261014/render-single-object-verified-summary.json"
+    }
+  },
+  "large-single-object-fork-2008": {
+    "op": "grid",
+    "client": "2008-06",
+    "library": "Ogre 1.4.5 inherited renderSingleObject",
+    "hypothesis": "RTTI strings prove RbxSubEntity and RbxSceneNode casts; native copies cached Matrix4 at sub+f0 for custom node, and skips repeated state when manager bytes8bb8/8bb9 agree. Add observed preamble/condition to actual inherited body.",
+    "targets": {
+      "addresses": [
+        "0069bc50"
+      ],
+      "sizes": [
+        2300,
+        2450
+      ],
+      "scores": [
+        0,
+        39
+      ]
+    },
+    "seed_sources": {
+      "2008-06": {
+        "0069bc50": "work/large-functions-2008-20261014/render-single-object-fork-wrapper.cpp"
+      }
+    },
+    "keep_partials": true,
+    "builds": [
+      21022
+    ],
+    "profiles": [
+      "/O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MD /fp:fast"
+    ],
+    "append": [
+      ""
+    ],
+    "output": "work/large-functions-2008-20261014/render-single-object-fork-grid",
+    "next": "Recover custom RTTI prefix and inherited render-state differences from native; do not submit an unrelated best symbol.",
+    "result": {
+      "date": "2026-10-15",
+      "status": "parked",
+      "new_verified_exacts": 0,
+      "verified_partials": {
+        "0069bc50": 60
+      },
+      "evidence": "work/large-functions-2008-20261014/render-single-object-verified-summary.json"
+    }
+  },
+  "large-single-object-scale-2008": {
+    "op": "fanout",
+    "client": "2008-06",
+    "library": "Ogre renderSingleObject custom native fork",
+    "hypothesis": "Six native custom-prefix controls matched and own2391-byte body improved0to60; scan the registered inherited object against current large below40 targets. This is bounded reuse, not a generic custom RTTI rewrite.",
+    "targets": {
+      "sizes": [
+        1000,
+        1000000
+      ],
+      "scores": [
+        0,
+        39
+      ]
+    },
+    "sources": [
+      {
+        "recipe": "ogre-1.4.5-dll",
+        "files": [
+          "roc_large_single_fork_d5e6d2a8f571d0d9.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MD /fp:fast"
+        ]
+      }
+    ],
+    "output": "work/large-functions-2008-20261014/render-single-object-scale",
+    "next": "Audit receipts; park cohort after bounded shard. Native remainder residue needed before another source change.",
+    "result": {
+      "date": "2026-10-15",
+      "status": "parked",
+      "new_verified_exacts": 0,
+      "verified_partials": {
+        "0069bc50": 60
+      },
+      "evidence": "work/large-functions-2008-20261014/render-single-object-verified-summary.json"
+    }
+  },
+  "large-scene-light-sync-2008": {
+    "op": "grid",
+    "client": "2008-06",
+    "library": "native G3D to Ogre scene light synchronization",
+    "hypothesis": "Recover real2616-byte light synchronization: ambient, brightness clamp, light creation/removal, scaled bounds, diffuse/specular transforms and one-light fill. Authentic SDK Lighting/GLight/Color3 layouts, native-proven opaque owner offsets and two-argument caller cleanup.",
+    "targets": {
+      "addresses": [
+        "007a9d30"
+      ],
+      "sizes": [
+        2500,
+        2700
+      ],
+      "scores": [
+        0,
+        39
+      ]
+    },
+    "seed_sources": {
+      "2008-06": {
+        "007a9d30": "work/large-functions-2008-20261014/scene-light-sync-wrapper.cpp"
+      }
+    },
+    "keep_partials": true,
+    "builds": [
+      21022,
+      50727
+    ],
+    "profiles": [
+      "/O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MD"
+    ],
+    "append": [
+      "",
+      " /fp:fast"
+    ],
+    "output": "work/large-functions-2008-20261014/scene-light-sync-grid",
+    "next": "Review own symbol, SDK layout and native output controls; unresolved specular sentinel branch needs evidence before exact claims."
+  },
+  "large-scene-light-array-2008": {
+    "op": "grid",
+    "client": "2008-06",
+    "library": "native G3D to Ogre scene light synchronization",
+    "hypothesis": "Actual SDK replay proved ambient fields24/36 but lightArray64 differs from native76. View genuine G3D Array at native offset4c; no invented padding or fork fields. Preserve native GLight80 layout.",
+    "targets": {
+      "addresses": [
+        "007a9d30"
+      ],
+      "sizes": [
+        2500,
+        2700
+      ],
+      "scores": [
+        0,
+        39
+      ]
+    },
+    "seed_sources": {
+      "2008-06": {
+        "007a9d30": "work/large-functions-2008-20261014/scene-light-sync-array-wrapper.cpp"
+      }
+    },
+    "keep_partials": true,
+    "builds": [
+      21022
+    ],
+    "profiles": [
+      "/O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MD /fp:fast"
+    ],
+    "append": [
+      ""
+    ],
+    "output": "work/large-functions-2008-20261014/scene-light-sync-array-grid",
+    "next": "Review own symbol, SDK layout and native output controls; unresolved specular sentinel branch needs evidence before exact claims."
+  },
+  "large-http-wininet-2008": {
+    "op": "grid",
+    "client": "2008-06",
+    "library": "native WinInet HTTP transfer from authentic RBX Http.cpp",
+    "hypothesis": "Recover runtime bool GET/POST member with observed five stack args/ret20, native handle lifetimes, numeric status query, larger-upload diagnostic headers/MD5 and status text errors. Preserve actual Boost filters and exact MD5Hasher declaration.",
+    "targets": {
+      "addresses": [
+        "005f9c30"
+      ],
+      "sizes": [
+        2200,
+        2300
+      ],
+      "scores": [
+        0,
+        39
+      ]
+    },
+    "seed_sources": {
+      "2008-06": {
+        "005f9c30": "work/large-functions-2008-20261014/http-wininet-wrapper.cpp"
+      }
+    },
+    "keep_partials": true,
+    "builds": [
+      21022,
+      50727
+    ],
+    "profiles": [
+      "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+    ],
+    "append": [
+      "",
+      " /fp:fast"
+    ],
+    "output": "work/large-functions-2008-20261014/http-wininet-grid",
+    "next": "Review own request symbol and native network argument contracts; no actual HTTP traffic needed."
+  },
+  "large-http-wininet-atl-2008": {
+    "op": "grid",
+    "client": "2008-06",
+    "library": "native WinInet HTTP transfer from authentic RBX Http.cpp",
+    "hypothesis": "Use existing authentic rbxgs-atl90-dll recipe: generic rbxgs lacks atlutil.h. Source body/ABI unchanged; resolve required ATL include path before scoring.",
+    "targets": {
+      "addresses": [
+        "005f9c30"
+      ],
+      "sizes": [
+        2200,
+        2300
+      ],
+      "scores": [
+        0,
+        39
+      ]
+    },
+    "seed_sources": {
+      "2008-06": {
+        "005f9c30": "work/large-functions-2008-20261014/http-wininet-atl-wrapper.cpp"
+      }
+    },
+    "keep_partials": true,
+    "builds": [
+      21022
+    ],
+    "profiles": [
+      "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+    ],
+    "append": [
+      "",
+      " /fp:fast"
+    ],
+    "output": "work/large-functions-2008-20261014/http-wininet-atl-grid",
+    "next": "Review own request symbol and native network argument contracts; no actual HTTP traffic needed."
+  },
+  "large-http-wininet-catch-2008": {
+    "op": "grid",
+    "client": "2008-06",
+    "library": "native WinInet HTTP transfer from authentic RBX Http.cpp",
+    "hypothesis": "Native saves ESP at EBP-10, uses EBP exception frame and three handle-close cleanup paths. Replace destructor wrappers with explicit nested catch-all close/rethrow, one cleanup-structure hypothesis. Normal behavior remains native close order.",
+    "targets": {
+      "addresses": [
+        "005f9c30"
+      ],
+      "sizes": [
+        2200,
+        2300
+      ],
+      "scores": [
+        0,
+        39
+      ]
+    },
+    "seed_sources": {
+      "2008-06": {
+        "005f9c30": "work/large-functions-2008-20261014/http-wininet-catch-wrapper.cpp"
+      }
+    },
+    "keep_partials": true,
+    "builds": [
+      21022
+    ],
+    "profiles": [
+      "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+    ],
+    "append": [
+      ""
+    ],
+    "output": "work/large-functions-2008-20261014/http-wininet-catch-grid",
+    "next": "Review own request symbol and native network argument contracts; no actual HTTP traffic needed."
+  },
+  "large-http-winhttp-2008": {
+    "op": "grid",
+    "client": "2008-06",
+    "library": "native WinHTTP sibling using authentic Boost/ATL and recovered cleanup",
+    "hypothesis": "Native2028-byte sibling shares thiscall5args and catch-close structure. Replace API contracts with WinHTTP wide arguments/BSTR conversion, HTTPS flag, direct POST send, receive response, wide header query then numeric status; only size/hash diagnostic headers.",
+    "targets": {
+      "addresses": [
+        "005f8b60"
+      ],
+      "sizes": [
+        2000,
+        2100
+      ],
+      "scores": [
+        0,
+        39
+      ]
+    },
+    "seed_sources": {
+      "2008-06": {
+        "005f8b60": "work/large-functions-2008-20261014/http-winhttp-wrapper.cpp"
+      }
+    },
+    "keep_partials": true,
+    "builds": [
+      21022
+    ],
+    "profiles": [
+      "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+    ],
+    "append": [
+      ""
+    ],
+    "output": "work/large-functions-2008-20261014/http-winhttp-grid",
+    "next": "Review own request symbol and native network argument contracts; no actual HTTP traffic needed."
+  },
+  "large-http-pinned-atl-2008": {
+    "op": "grid",
+    "client": "2008-06",
+    "library": "native HTTP recovered bodies with pinned authentic ATL headers",
+    "hypothesis": "Live verifier predates ATL90 recipe. Preserve its recipe-version checks: package fully preprocessed authentic21022 header input via existing rbxgs-dll unit. Assert own function bytes/relocations unchanged before scoring/submission; no verifier restart.",
+    "targets": {
+      "addresses": [
+        "005f9c30",
+        "005f8b60"
+      ],
+      "sizes": [
+        2000,
+        2300
+      ],
+      "scores": [
+        0,
+        39
+      ]
+    },
+    "seed_sources": {
+      "2008-06": {
+        "005f9c30": "work/large-functions-2008-20261014/005f9c30-http-pinned.cpp",
+        "005f8b60": "work/large-functions-2008-20261014/005f8b60-http-pinned.cpp"
+      }
+    },
+    "keep_partials": true,
+    "builds": [
+      21022
+    ],
+    "profiles": [
+      "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+    ],
+    "output": "work/large-functions-2008-20261014/http-pinned-grid",
+    "next": "Submit only byte/relocation-identical packaged improvements; retain human source plus pin proof.",
+    "result": {
+      "date": "2026-10-15",
+      "status": "parked",
+      "new_verified_exacts": 0,
+      "reason": "Pinned preprocessed units exceed400000-character portability limit; not accepted, removed. Original small ATL units remain. Verifier reload required."
+    }
+  },
+  "large-native-light-http-scale-2008": {
+    "op": "fanout",
+    "client": "2008-06",
+    "library": "recovered light sync and two native HTTP transports",
+    "hypothesis": "Manual pilots use native offsets/prototypes, six light outputs and eight native HTTP argument controls. Fan out three portable objects only to current large below40 real-code targets; known pilots above39 are excluded.",
+    "targets": {
+      "sizes": [
+        1000,
+        1000000
+      ],
+      "scores": [
+        0,
+        39
+      ]
+    },
+    "sources": [
+      {
+        "recipe": "g3d-6.09-dll",
+        "files": [
+          "roc_scene_light_array_1159df62033510c6.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MD /fp:fast"
+        ]
+      },
+      {
+        "recipe": "rbxgs-atl90-dll",
+        "files": [
+          "roc_http_wininet_catch_19404fecbe27f869.cpp",
+          "roc_http_winhttp_2d017e3925a0bd15.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      }
+    ],
+    "output": "work/large-functions-2008-20261014/native-light-http-scale",
+    "next": "Inspect server receipts, retain gains, park unchanged cohort after one bounded shard."
   }
 }

@@ -1,5 +1,41 @@
 [
   {
+    "id": "rtti-base-vptr-eh-state",
+    "client": "2008-06",
+    "library": "RBX Render Material Level",
+    "hypothesis": "Missing polymorphicbase can mimic unexplained EH state differences even after derivedfieldlayout is correct.",
+    "change": "Follow COL->CHD->base descriptors: MaterialLevel derives fourbyteRenderBaseMaterialBaseLevel PMD0. Restore provenbaseAPIview andemptydtor, ratherthanediting EHstate numbers.",
+    "symptom": "NativeLeveldtor93 missingfinalbasevptrstore andtwoEHstate values differ; inheritedview yields100. VirtualAPI fixes40vs44stride andanotherconstructor.",
+    "exacts_gained": 3,
+    "outcome": "server_verified",
+    "evidence": "work\\goal-material-level-vtable-20261015\\receipts.json",
+    "next": "Inspect fullRTTIbasehierarchy wheneverdtorends withanother vptrstore. ExternalbaseAPImethoddeclarations are binaryview, notoriginaldeclarations; originalslot3getternameunknown."
+  },
+  {
+    "id": "boost-hidden-result-and-member-arity",
+    "client": "2008-06",
+    "library": "Boost native arity",
+    "hypothesis": "ABI cleanup counts include hidden aggregate result and explicit member object; byteaddresses can be localdummy state.",
+    "change": "004b5950 signal0<void>78to100 after bool57 rejection;00588390 bindmf2 sharedptrplusDWORD92to100 replaceswrongmf1 donor.",
+    "symptom": "Zeroargunusable resultret4; memberadaptercallee496910ret16 includesobject+sharedptr8+DWORD4.",
+    "exacts_gained": 2,
+    "outcome": "server_verified",
+    "evidence": "work\\goal-native-arity-batch-20261015\\receipts.json",
+    "next": "Count hiddenresults and objectarguments, inspect actualcallees; zero/bind propagation exhausted noextras. Never addpadding to repair argumentarity."
+  },
+  {
+    "id": "boost-signal-native-argument-types",
+    "client": "2008-06",
+    "library": "Boost signal native arguments",
+    "hypothesis": "Native template argument width and aggregate copy semantics explain stack slots before optimizer changes.",
+    "change": "Instantiate authentic signal1<void,double> for qword argument and signal1<void,G3D::Vector3> for byvalue vector copy; propagate full native object.",
+    "symptom": "006391d0 float donor92 has 4byte versus target8byte argument;00639490 float2 donor76 needs12bytes but scalar3 still77, nativeVector3 exact.",
+    "exacts_gained": 7,
+    "outcome": "server_verified",
+    "evidence": "work/goal-boost-double-signal-20261015/receipts.json",
+    "next": "Five connect siblings verify generic native bodies, not original double API types; aggregate/scalar propagation exhausted0extra, do not repeat unchanged gates."
+  },
+  {
     "id": "native-string-copy-iat-lifetimes",
     "client": "2008-06",
     "library": "std::basic_string imported constructors",

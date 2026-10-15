@@ -27,6 +27,16 @@ Agent evidence includes ECX-relative reads/stores and decoded `return_stack_byte
 for the target and up to eight callees. These are instruction clues, not ABI proof:
 combine return immediates with caller cleanup; bare `ret` does not prove zero arguments.
 
+Import evidence preserves ordinal identities such as `mfc90.dll!#800` and resolves
+exact six-byte `FF 25` IAT jump stubs one level. Import identity alone does not prove
+a prototype or ordinal's API name; inspect the corresponding DLL export and callers.
+
+Recovery packets prioritize quoted headers actually included by the native source,
+including nested recipe include directories. When resolved, they omit unrelated
+fallback headers. `agent-metrics` reports `repair_verified_gains` and its wall-hour
+rate separately from totals that include compiler reuse; use repair receipts and
+first useful checks when assessing model scale-up.
+
 | Need | Command | Needs | Result |
 | --- | --- | --- | --- |
 | Diagnose install | `roc doctor` | - | repair steps |
