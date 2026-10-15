@@ -1,18 +1,5 @@
-// from server: 79% by king_originala
-extern char descriptor;
-
-struct S {
-    char padding[0x1ac];
-    float value;
-
-    void notify(const void*);
-    void setValue(float);
-};
-
-void S::setValue(float v)
-{
-    if (v != value) {
-        value = v;
-        notify(&descriptor);
-    }
-}
+// from server: 100% by colin
+// roc-cl: 21022
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast
+// roc-lang: cpp
+// roc-lib: rbxgs roc_unit_498526c4f91048e5.cpp

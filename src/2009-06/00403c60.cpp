@@ -1,7 +1,5 @@
-// from server: 95% by why2
-extern "C" void __stdcall sub_00402EB0(unsigned int code);
-
-void __stdcall sub_00403C60()
-{
-    sub_00402EB0(0x8007000E);
-}
+// from server: 100% by colin
+// roc-cl: 30729
+// roc-flags: /O2 /GS- /MD
+// roc-lang: cpp
+// roc-lib: mfc-9.0 atlmfc/src/mfc/dlgdhtml.cpp

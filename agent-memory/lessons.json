@@ -443,5 +443,38 @@
     "evidence": "work\\goal-native-mouse-agent-round-20261015\\receipts.json",
     "mousecommand_header": "roc_unit_9958a7131e20354c.cpp",
     "next": "12command family contexts add Mouse constructor1exact, otherspark. Base20 control already100, no newcredit. Three Feature multiply order variants92/86/81 lose to96; parked."
+  },
+  {
+    "id": "native-face-ordered-separation-predicate",
+    "client": "2008-06",
+    "library": "Actual Face geometry",
+    "hypothesis": "Genuine Face overlap98 differs solely ordered floating relation from negated comparison.",
+    "change": "TargettestAH5/JNP identifies ordered f1max-margin<f0min, while !>= emitsdifferenttestAH1/JNE. Retain realFace48/Vector3/privategetAxis/minMax prototypes. Existing getAxis externalcontext plus genuine outofline body, full pure Face source excluding asm-dependent snapToGrid, fpfast.",
+    "exacts_gained": 3,
+    "outcome": "server_verified",
+    "evidence": "work\\goal-native-face-round-20261015\\receipts.json",
+    "next": "Face.minMax82to96 verifiedpartial, normal53; dotreceiver96/component83 noexacts,park. RunService fourfullcontexts0; range raise98samecurrent. Workspace21022 C2248 persists with declaration/inline/private-equivalent-typedef variants; do not repeat or change private access. Full native50727 topSelectable95 loses98. Humanoid event needs genuine static state-step declaration, not guessed cdecl helper."
+  },
+  {
+    "id": "native-humanoid-members-and-real-clamped-value",
+    "client": "2008-06",
+    "library": "Humanoid genuine setters",
+    "hypothesis": "Native owner97 differs only payload offsets; real float methods require fpfast and actual input/clamped value lifetime.",
+    "change": "Use actual shared_ptr/Vector3/float/WalkMode member lvalues at independently observed offsets; do not pad unknownfourbyte hierarchy gap. Three owner setters100normal, movement owner100normal/direction+rot100fast. Actual newer public nonvirtualsetMaxHealth(float) adds real declaration only; globaldescriptor explicitlyqualified to distinguish oldclassstatic. PublicsetHealth uses actualclamp/health/packedimDeadbit1/Died SignalDesc. Const clamped local reused compare/store fixes sole99FSTP discard vs reassigning input, no dummy spills/EH.",
+    "exacts_gained": 8,
+    "outcome": "server_verified",
+    "evidence": "work\\goal-humanoid-native-setter-round-20261015\\receipts.json",
+    "next": "Four winning object contexts0extras,park. Camera base versions do not yet prove unknown4bytes; retain selected views. OldStaticStateStep helper645450 prototype still absent; no guessed ABI."
+  },
+  {
+    "id": "native-lua-exception-full-owner-before-padding",
+    "client": "2008-06",
+    "library": "Lua protected call and actual lua_exception",
+    "hypothesis": "Canonical69byte Lua parent is only prefix; fakeJump24padding hides real3typed catches versus genuinejmp12.",
+    "change": "Read actualEHtable: lua_exception& +conststd::exception& +nestedlua_exception&. Cached2016source contains complete real class stdexceptionbase, LuaState*L/lua_longjmp*errorJmp/mutablecommitted, realprivatecommit. Copy unchanged, preserve SDKjmp12. Actual2008 luaG_runerror2argcall differslater%s3arg. Verify188wholeCOMDAT andEHhandler+referencedFuncInfo100 before serverparent100. FourCPP familyconfigs1newrealcopyctor,4Cfails eliminated via explicitlangsCPP; heldoutRBXhooks1object0.",
+    "exacts_gained": 2,
+    "outcome": "server_verified",
+    "evidence": "work\\goal-lua-protected-full-body-audit-20261015\\receipts.json",
+    "next": "Frame exit review packets expose normalcontinuations but do not mutatebounds. Preservetyped catchcontracts and completeclass; never padfakeJump to matchprefix. All loser familyconfigs parked; no automaticworker restart."
   }
 ]

@@ -7539,7 +7539,14 @@
         "native-reflection-isolated-cores-batch-2008",
         "native-reflection-isolated-cores-heldout-2008",
         "native-levelbuilder-vptr-float-family-2008",
-        "native-reflection-isolated-cores-scale-2008"
+        "native-reflection-isolated-cores-scale-2008",
+        "auto-native-selection-family-2008",
+        "auto-native-contact-script-execute-2008",
+        "bruteforce-authentic-bind-factory-families",
+        "bruteforce-authentic-bind-factory-matrix",
+        "bruteforce-authentic-bind-factory-pairs",
+        "bruteforce-authentic-bind-factory-triples",
+        "auto-native-window-lua-value-2008"
       ]
     },
     "stages": [
@@ -7824,7 +7831,11 @@
         "native-reflection-isolated-cores-batch-2008",
         "native-reflection-isolated-cores-heldout-2008",
         "native-levelbuilder-vptr-float-family-2008",
-        "native-reflection-isolated-cores-scale-2008"
+        "native-reflection-isolated-cores-scale-2008",
+        "bruteforce-authentic-bind-factory-families",
+        "bruteforce-authentic-bind-factory-matrix",
+        "bruteforce-authentic-bind-factory-pairs",
+        "bruteforce-authentic-bind-factory-triples"
       ]
     },
     "stages": [
@@ -13007,12 +13018,12 @@
     "op": "fanout",
     "client": "2008-06",
     "library": "native ScoreHud and genuine Color palette/templates",
-    "hypothesis": "Two large0score nativeLua property manualrecoveries and publicregistration callback emission add1newexact116byte genuine sharedownerparenthelper004ab530 87to100. Fourobject pilot verified; firstnormal21022 normalautomaticprofile independently100 withdata. Retainonewinningobject, notfourconfigurations. Three reviewedcorrectsymbolpartialparents63/43/50.",
+    "hypothesis": "Two large0score nativeLua property manualrecoveries and publicregistration callback emission add1newexact116byte genuine sharedownerparenthelper004ab530 87to100. Fourobject pilot verified; firstnormal21022 normalautomaticprofile independently100 withdata. Retainonewinningobject, notfourconfigurations. Three reviewedcorrectsymbolpartialparents63/43/50. Fresh1064byte index0061c2c0 manually0to99: genuine publicfactorybase10, omitted nativecacheassert, actualshared_from specialization; prior exact004ab530 independently100withdata undernewfirstnormal21022unit. Replaceone existingobject, no additional Lua compile stage.",
     "sources": [
       {
         "recipe": "rbxgs-dll",
         "files": [
-          "roc_lua_property_native_family_df72ab273215c092.cpp"
+          "roc_lua_index_native_family_e38820bbe8166503.cpp"
         ],
         "builds": [
           21022
@@ -13314,7 +13325,12 @@
       ""
     ],
     "keep_partials": true,
-    "output": "work\\goal-mouse-topselectable-native-20261015\\grid"
+    "output": "work\\goal-mouse-topselectable-native-20261015\\grid",
+    "result": {
+      "status": "parked",
+      "new_verified": 0,
+      "evidence": "work\\goal-native-face-round-20261015\\receipts.json"
+    }
   },
   "bruteforce-result-native-pair-prefix": {
     "op": "grid",
@@ -13377,7 +13393,12 @@
       }
     ],
     "targets": {},
-    "next": "Four bounded native objects then park no gains; use actual helper ABI before more class/event variants."
+    "next": "Four bounded native objects then park no gains; use actual helper ABI before more class/event variants.",
+    "result": {
+      "status": "parked",
+      "new_verified": 0,
+      "evidence": "work\\goal-native-face-round-20261015\\receipts.json"
+    }
   },
   "large-gyro-native-gates-2008": {
     "op": "grid",
@@ -13448,7 +13469,12 @@
       }
     ],
     "targets": {},
-    "next": "Four context full source cohort; park zero-gain variants."
+    "next": "Four context full source cohort; park zero-gain variants.",
+    "result": {
+      "status": "parked",
+      "new_verified": 0,
+      "evidence": "work\\goal-native-face-round-20261015\\receipts.json"
+    }
   },
   "bruteforce-authentic-bind-string-factory": {
     "op": "fanout",
@@ -13535,7 +13561,12 @@
       ""
     ],
     "keep_partials": true,
-    "output": "work\\goal-mouse-topselectable-native-20261015\\21022-diagnostic"
+    "output": "work\\goal-mouse-topselectable-native-20261015\\21022-diagnostic",
+    "result": {
+      "status": "parked",
+      "new_verified": 0,
+      "evidence": "work\\goal-native-face-round-20261015\\receipts.json"
+    }
   },
   "native-gyro-family-fanout-2008": {
     "op": "fanout",
@@ -13591,7 +13622,12 @@
       ""
     ],
     "keep_partials": true,
-    "output": "work\\goal-workspace-unused-inline-context-20261015\\grid"
+    "output": "work\\goal-workspace-unused-inline-context-20261015\\grid",
+    "result": {
+      "status": "parked",
+      "new_verified": 0,
+      "evidence": "work\\goal-native-face-round-20261015\\receipts.json"
+    }
   },
   "native-workspace-full-declaration-context-2008": {
     "op": "grid",
@@ -13622,7 +13658,12 @@
       ""
     ],
     "keep_partials": true,
-    "output": "work\\goal-workspace-unused-inline-context-20261015\\declarations-grid"
+    "output": "work\\goal-workspace-unused-inline-context-20261015\\declarations-grid",
+    "result": {
+      "status": "parked",
+      "new_verified": 0,
+      "evidence": "work\\goal-native-face-round-20261015\\receipts.json"
+    }
   },
   "bruteforce-authentic-bind-factory-families": {
     "op": "fanout",
@@ -13676,7 +13717,12 @@
       ""
     ],
     "keep_partials": true,
-    "output": "work\\goal-workspace-unused-inline-context-20261015\\private-type-grid"
+    "output": "work\\goal-workspace-unused-inline-context-20261015\\private-type-grid",
+    "result": {
+      "status": "parked",
+      "new_verified": 0,
+      "evidence": "work\\goal-native-face-round-20261015\\receipts.json"
+    }
   },
   "native-face-overlap-genuine-types-core-2008": {
     "op": "grid",
@@ -13708,7 +13754,12 @@
       ""
     ],
     "keep_partials": true,
-    "output": "work\\goal-native-face-overlap-core-20261015\\grid"
+    "output": "work\\goal-native-face-overlap-core-20261015\\grid",
+    "result": {
+      "status": "parked",
+      "new_verified": 0,
+      "evidence": "work\\goal-native-face-round-20261015\\receipts.json"
+    }
   },
   "native-face-overlap-ordered-float-guard-2008": {
     "op": "grid",
@@ -13739,7 +13790,12 @@
       ""
     ],
     "keep_partials": true,
-    "output": "work\\goal-native-face-overlap-core-20261015\\ordered-grid"
+    "output": "work\\goal-native-face-overlap-core-20261015\\ordered-grid",
+    "result": {
+      "status": "verified",
+      "new_verified": 1,
+      "evidence": "work\\goal-native-face-round-20261015\\receipts.json"
+    }
   },
   "native-face-verified-overlap-family-2008": {
     "op": "fanout",
@@ -13775,7 +13831,12 @@
       }
     ],
     "targets": {},
-    "next": "Park zero-gain objects; inspect native minMax/axis residues only if meaningful."
+    "next": "Park zero-gain objects; inspect native minMax/axis residues only if meaningful.",
+    "result": {
+      "status": "verified",
+      "new_verified": 2,
+      "evidence": "work\\goal-native-face-round-20261015\\receipts.json"
+    }
   },
   "native-face-projection-dot-evaluation-2008": {
     "op": "fanout",
@@ -13809,12 +13870,17 @@
       }
     ],
     "targets": {},
-    "next": "Two bounded arithmetic hypotheses; retain existing best and park nonexact."
+    "next": "Two bounded arithmetic hypotheses; retain existing best and park nonexact.",
+    "result": {
+      "status": "parked",
+      "new_verified": 0,
+      "evidence": "work\\goal-native-face-round-20261015\\receipts.json"
+    }
   },
   "large-rotatejoint-native-gates-2008": {
     "op": "grid",
     "client": "2008-06",
-    "library": "native ScoreHud team and FFA",
+    "library": "Native RotateJoint feasibility",
     "hypothesis": "Fresh0score1167byte RotateJoint.canBuildJoint recoveredfullgenuine source andpublicPrimitive/Face/Math/Frame APIs, private surfaceTypeToJoint staysprivate ownclass call. Native6461af receiverface1/argcenter0,6461ce face0/center1: olderSDKself-center extrusion checks wrong, fixedbothreceivers beforefirstsubmission. Score72unchangedsosemanticproofrequired; fullnative branch+swap+grid+alignment+privatefactory paths. No fakefields/ABI/access changes.",
     "targets": {
       "addresses": [
@@ -13843,5 +13909,2915 @@
     ],
     "output": "work/large-functions-2008-20261014/rotatejoint-native-gates",
     "next": "Submit only verified improvements; all partials remain partials; full code/data required for exacts."
+  },
+  "native-humanoid-limb-owner-setters-2008": {
+    "op": "fanout",
+    "client": "2008-06",
+    "library": "Actual Humanoid shared limb setters",
+    "hypothesis": "Real left/rightleg setters correspond target1fc/204 owner fields. Reuse genuine GuidItem hierarchy and full Humanoid/Part declarations, actual boostshared_from/shared_ptr and exact native descriptor types/external declarations. Three original setter bodies, no fake volatile pointer/control/padding/EH.",
+    "sources": [
+      {
+        "recipe": "rbxgs",
+        "files": [
+          "roc_unit_095b72d64e5fd0a5.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_unit_095b72d64e5fd0a5.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      }
+    ],
+    "targets": {},
+    "next": "Two native contexts; park if no full gains, inspect only actual symbol residues.",
+    "result": {
+      "status": "parked",
+      "new_verified": 0,
+      "evidence": "work\\goal-humanoid-native-setter-round-20261015\\receipts.json"
+    }
+  },
+  "native-humanoid-limb-owners-proven-member-views-2008": {
+    "op": "grid",
+    "client": "2008-06",
+    "library": "Actual Humanoid limb owners measured member views",
+    "hypothesis": "Genuine setLeftLeg97 differs only observed1fc vs oldnative1f8 offsets; right204 andtorso1f4 independentlyreadfromtarget. Correct only actual boostshared_ptr member lvalues. Do not invent missing4bytefield/base or assert wholeHumanoid layout.",
+    "targets": {
+      "addresses": [
+        "005dc480",
+        "005dc540",
+        "005dc600"
+      ],
+      "scores": [
+        0,
+        99
+      ]
+    },
+    "seed_sources": {
+      "2008-06": {
+        "005dc480": "work\\goal-humanoid-native-limb-owners-20261015\\owners-proven.cpp",
+        "005dc540": "work\\goal-humanoid-native-limb-owners-20261015\\owners-proven.cpp",
+        "005dc600": "work\\goal-humanoid-native-limb-owners-20261015\\owners-proven.cpp"
+      }
+    },
+    "builds": [
+      21022
+    ],
+    "profiles": [
+      "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+    ],
+    "append": [
+      ""
+    ],
+    "keep_partials": true,
+    "output": "work\\goal-humanoid-native-limb-owners-20261015\\views-grid",
+    "result": {
+      "status": "verified",
+      "new_verified": 3,
+      "evidence": "work\\goal-humanoid-native-setter-round-20261015\\receipts.json"
+    }
+  },
+  "native-selection-rotatejoint-family-2008": {
+    "op": "fanout",
+    "client": "2008-06",
+    "library": "Native Selection and RotateJoint",
+    "hypothesis": "Full genuine Selection mutation bodies: proven COW154, Listener150, Instance public Notifier basea4. Actual shared_from native boundary. Native loop uses size>0. Full genuine RotateJoint with cross-face center tests. Four profiles each, exact code and referenced data only.",
+    "sources": [
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_selection_native_family_ad678e9424f0efdf.cpp"
+        ],
+        "builds": [
+          21022,
+          50727
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD",
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast"
+        ]
+      },
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_rotatejoint_native_cross_face_5e58a755b817a936.cpp"
+        ],
+        "builds": [
+          21022,
+          50727
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD",
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast"
+        ]
+      }
+    ],
+    "targets": {},
+    "output": "work\\large-functions-2008-20261014\\selection-rotatejoint-fanout"
+  },
+  "native-humanoid-movement-proven-member-views-2008": {
+    "op": "grid",
+    "client": "2008-06",
+    "library": "Actual Humanoid movement setters",
+    "hypothesis": "Preserve four real native bodies, exact descriptor types and Vector3/boost APIs. Binaryproven rot1b0,timer1b4,mode1b8,owner1bc,point1c4,direction1d0 selected actual typed lvalues. Native limb threefullserver exacts corroborate payload revision; no unknown4bytefield invented.",
+    "targets": {
+      "addresses": [
+        "005dbf80",
+        "005dc090",
+        "005dc150"
+      ],
+      "scores": [
+        0,
+        99
+      ]
+    },
+    "seed_sources": {
+      "2008-06": {
+        "005dbf80": "work\\goal-humanoid-native-movement-20261015\\movement.cpp",
+        "005dc090": "work\\goal-humanoid-native-movement-20261015\\movement.cpp",
+        "005dc150": "work\\goal-humanoid-native-movement-20261015\\movement.cpp"
+      }
+    },
+    "builds": [
+      21022
+    ],
+    "profiles": [
+      "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+    ],
+    "append": [
+      "",
+      " /fp:fast"
+    ],
+    "keep_partials": true,
+    "output": "work\\goal-humanoid-native-movement-20261015\\grid",
+    "result": {
+      "status": "verified",
+      "new_verified": 3,
+      "evidence": "work\\goal-humanoid-native-setter-round-20261015\\receipts.json"
+    }
+  },
+  "auto-native-selection-family-2008": {
+    "op": "fanout",
+    "client": "2008-06",
+    "library": "Native Selection mutation family",
+    "hypothesis": "Fresh setSelection1181byte0->87, toggle518byte0->86. Full genuine algorithms, native COW154/Listener150/Instance Notifiera4, size>0 native loop, shared_from external real specialization. Pilot verified clearSelection415byte exact. First21022normal object alone replays code+data exact; retain one object.",
+    "sources": [
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_selection_native_family_ad678e9424f0efdf.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      }
+    ],
+    "targets": {},
+    "output": "work\\large-functions-2008-20261014\\selection-family-auto",
+    "next": "One compile, unresolved2008 fanout; unchanged zero-gain objects parked."
+  },
+  "native-humanoid-maxhealth-real-public-api-2008": {
+    "op": "grid",
+    "client": "2008-06",
+    "library": "Genuine newer Humanoid setMaxHealth API",
+    "hypothesis": "Actual newer public setMaxHealth(float) declaration and implementation match target41byte field1ac setter. Add real nonvirtual declaration to older genuine header; preserve all fields/bases/virtuals. Typed measured maxHealth lvalue, actual global PropDescriptor type; qualify global to distinguish old classstaticBoundProp. No new ABI guessed.",
+    "targets": {
+      "addresses": [
+        "005dbf10"
+      ],
+      "scores": [
+        0,
+        99
+      ]
+    },
+    "seed_sources": {
+      "2008-06": {
+        "005dbf10": "work\\goal-humanoid-native-max-health-20261015\\005dbf10.cpp"
+      }
+    },
+    "builds": [
+      21022
+    ],
+    "profiles": [
+      "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+    ],
+    "append": [
+      " /fp:fast",
+      ""
+    ],
+    "keep_partials": true,
+    "output": "work\\goal-humanoid-native-max-health-20261015\\grid",
+    "result": {
+      "status": "verified",
+      "new_verified": 1,
+      "evidence": "work\\goal-humanoid-native-setter-round-20261015\\receipts.json"
+    }
+  },
+  "native-humanoid-health-real-signal-and-flags-2008": {
+    "op": "grid",
+    "client": "2008-06",
+    "library": "Actual Humanoid health setter",
+    "hypothesis": "Existing genuine public setHealth(float) prototype, clamp/health/imDead/eventDied types recovered from native onChangedHealth and target. Binary proves health1a8/max1ac and packed imDead bit1 at1e8; direct unsignedchar representation view preserves other bits without adding fields/base. Target death path only fires actual SignalDesc<void()>; no obsolete statecreation/jointbreak path inserted.",
+    "targets": {
+      "addresses": [
+        "005dbe70"
+      ],
+      "scores": [
+        0,
+        99
+      ]
+    },
+    "seed_sources": {
+      "2008-06": {
+        "005dbe70": "work\\goal-humanoid-native-health-20261015\\005dbe70.cpp"
+      }
+    },
+    "builds": [
+      21022
+    ],
+    "profiles": [
+      "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+    ],
+    "append": [
+      " /fp:fast",
+      ""
+    ],
+    "keep_partials": true,
+    "output": "work\\goal-humanoid-native-health-20261015\\grid",
+    "result": {
+      "status": "parked",
+      "new_verified": 0,
+      "evidence": "work\\goal-humanoid-native-setter-round-20261015\\receipts.json"
+    }
+  },
+  "native-humanoid-proven-setter-object-propagation-2008": {
+    "op": "fanout",
+    "client": "2008-06",
+    "library": "Verified native Humanoid setter objects",
+    "hypothesis": "Three owner setters and three movement setters fullserver exact with actual native types/measured member views. Scan both wholeobjects normal/fast once for unresolved same-shape helper siblings; no extra source changes.",
+    "sources": [
+      {
+        "recipe": "rbxgs",
+        "files": [
+          "roc_unit_d6cab88ba07e13d4.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD",
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast"
+        ]
+      },
+      {
+        "recipe": "rbxgs",
+        "files": [
+          "roc_unit_6d53eb90d22581ff.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD",
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast"
+        ]
+      }
+    ],
+    "targets": {},
+    "next": "Park all zero-gain object contexts after this4object scan.",
+    "result": {
+      "status": "parked",
+      "new_verified": 0,
+      "evidence": "work\\goal-humanoid-native-setter-round-20261015\\receipts.json"
+    }
+  },
+  "native-humanoid-health-clamped-value-lifetime-2008": {
+    "op": "grid",
+    "client": "2008-06",
+    "library": "Actual health clamped-value lifetime",
+    "hypothesis": "Native99 sole diff x87 discardFSTP ST0 vs ST2 in low clamp branch. Retain original input argument and use normal constfloat clamped reused for compare/store instead of reassigning parameter. Same real clamp/signal/flag behavior, no dummy spill or volatile.",
+    "targets": {
+      "addresses": [
+        "005dbe70"
+      ],
+      "scores": [
+        0,
+        99
+      ]
+    },
+    "seed_sources": {
+      "2008-06": {
+        "005dbe70": "work\\goal-humanoid-native-health-20261015\\005dbe70-clamped-local.cpp"
+      }
+    },
+    "builds": [
+      21022
+    ],
+    "profiles": [
+      "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast"
+    ],
+    "append": [
+      ""
+    ],
+    "keep_partials": true,
+    "output": "work\\goal-humanoid-native-health-20261015\\clamped-grid",
+    "result": {
+      "status": "verified",
+      "new_verified": 1,
+      "evidence": "work\\goal-humanoid-native-setter-round-20261015\\receipts.json"
+    }
+  },
+  "bruteforce-authentic-bind-factory-matrix": {
+    "op": "fanout",
+    "client": "2008-06",
+    "library": "Genuine Boost bind factory matrix",
+    "hypothesis": "Observedbindfactory omission recovered4exacts acrossString/FunctionRef/Resize/Property families. Emit33genuine0/1argument freefunction/rawreceiver/sharedreceiver factories with actualSDK int/bool/float/double/pointer/string/shared/weak/reference/FunctionRef types. Sameproven8byteDHTMLWindow memberpointer, nativevalue/list/storage implementations; no fakeoperators, classfields, originaltypeidentity claims or callbackaddress literals.",
+    "sources": [
+      {
+        "recipe": "boost-1.34.1-dll",
+        "files": [
+          "roc_bind_factory_matrix_69d4b9a826d126af.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD",
+          "/O2 /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "boost-1.34.1-dll",
+        "files": [
+          "roc_bind_factory_matrix_88fcf2790ed4c606.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD",
+          "/O2 /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "boost-1.34.1-dll",
+        "files": [
+          "roc_bind_factory_matrix_54088c711827a6a9.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD",
+          "/O2 /GS- /EHsc /MD"
+        ]
+      }
+    ],
+    "evidence_resume": true,
+    "next": "Bounded6objects; fullcode/data/server only. Expandarityonlyonnewverifiedyield."
+  },
+  "large-native-lua-index-2008": {
+    "op": "grid",
+    "client": "2008-06",
+    "library": "Native Lua index",
+    "hypothesis": "Fresh below40 large function manually recovered from genuine source. Index genuine public AbstractFactoryProduct base10, native no releaseassert on lua function cache, actual shared_from external specialization. Execute exact native own138/13c fields and genuine safe_lua_tostring2arg helper. Full real classes/access/algorithms; no fake ABI/fields.",
+    "targets": {
+      "addresses": [
+        "0061c2c0"
+      ],
+      "scores": [
+        0,
+        99
+      ]
+    },
+    "seed_sources": {
+      "2008-06": {
+        "0061c2c0": "work\\large-functions-2008-20261014\\0061c2c0.cpp"
+      }
+    },
+    "builds": [
+      21022,
+      50727
+    ],
+    "profiles": [
+      "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD",
+      "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast",
+      "/O1 /Ob2 /Oy /GF /GS- /EHsc /MD",
+      "/Od /Ob0 /GS /EHsc /MD"
+    ],
+    "output": "work\\large-functions-2008-20261014\\lua-index-native-grid"
+  },
+  "large-native-lua-execute-2008": {
+    "op": "grid",
+    "client": "2008-06",
+    "library": "Native Lua execute",
+    "hypothesis": "Fresh below40 large function manually recovered from genuine source. Index genuine public AbstractFactoryProduct base10, native no releaseassert on lua function cache, actual shared_from external specialization. Execute exact native own138/13c fields and genuine safe_lua_tostring2arg helper. Full real classes/access/algorithms; no fake ABI/fields.",
+    "targets": {
+      "addresses": [
+        "005af940"
+      ],
+      "scores": [
+        0,
+        99
+      ]
+    },
+    "seed_sources": {
+      "2008-06": {
+        "005af940": "work\\large-functions-2008-20261014\\005af940.cpp"
+      }
+    },
+    "builds": [
+      21022,
+      50727
+    ],
+    "profiles": [
+      "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD",
+      "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast",
+      "/O1 /Ob2 /Oy /GF /GS- /EHsc /MD",
+      "/Od /Ob0 /GS /EHsc /MD"
+    ],
+    "output": "work\\large-functions-2008-20261014\\lua-execute-native-grid"
+  },
+  "native-lua-index-execute-family-2008": {
+    "op": "fanout",
+    "client": "2008-06",
+    "library": "Native Lua index and execute families",
+    "hypothesis": "Two large initially0 genuine manual recoveries, eight bounded objects scanned against all unresolved2008; only full code+referenced data exacts submitted.",
+    "sources": [
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_lua_index_native_family_e38820bbe8166503.cpp"
+        ],
+        "builds": [
+          21022,
+          50727
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD",
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast"
+        ]
+      },
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_scriptcontext_native_execute_a442f712664a5f94.cpp"
+        ],
+        "builds": [
+          21022,
+          50727
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD",
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast"
+        ]
+      }
+    ],
+    "targets": {},
+    "output": "work\\large-functions-2008-20261014\\lua-index-execute-fanout"
+  },
+  "bruteforce-authentic-bind-factory-pairs": {
+    "op": "fanout",
+    "client": "2008-06",
+    "library": "Genuine Boost two-argument bind factories",
+    "hypothesis": "Positive one-argument factory yield justifies bounded two-argument matrix over same observed SDK types and proven member-pointer ABI. Actual vendor templates only; codegen analogues, no declaration identity claims.",
+    "sources": [
+      {
+        "recipe": "boost-1.34.1-dll",
+        "files": [
+          "roc_bind_factory_pairs_750c93f9d1983c49.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD",
+          "/O2 /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "boost-1.34.1-dll",
+        "files": [
+          "roc_bind_factory_pairs_7b9dc7b3b61749ab.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD",
+          "/O2 /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "boost-1.34.1-dll",
+        "files": [
+          "roc_bind_factory_pairs_0c036e57d3975298.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD",
+          "/O2 /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "boost-1.34.1-dll",
+        "files": [
+          "roc_bind_factory_pairs_78887b3036b103cc.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD",
+          "/O2 /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "boost-1.34.1-dll",
+        "files": [
+          "roc_bind_factory_pairs_8762ef503992ee8e.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD",
+          "/O2 /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "boost-1.34.1-dll",
+        "files": [
+          "roc_bind_factory_pairs_8366e55f3c438ba8.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD",
+          "/O2 /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "boost-1.34.1-dll",
+        "files": [
+          "roc_bind_factory_pairs_0367bc3689f34f03.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD",
+          "/O2 /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "boost-1.34.1-dll",
+        "files": [
+          "roc_bind_factory_pairs_d4091b9987f95968.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD",
+          "/O2 /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "boost-1.34.1-dll",
+        "files": [
+          "roc_bind_factory_pairs_7d1043aeeee82aa7.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD",
+          "/O2 /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "boost-1.34.1-dll",
+        "files": [
+          "roc_bind_factory_pairs_4763d187d2cb0b70.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD",
+          "/O2 /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "boost-1.34.1-dll",
+        "files": [
+          "roc_bind_factory_pairs_47093eee91486a0e.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD",
+          "/O2 /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "boost-1.34.1-dll",
+        "files": [
+          "roc_bind_factory_pairs_da9954e404bf4236.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD",
+          "/O2 /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "boost-1.34.1-dll",
+        "files": [
+          "roc_bind_factory_pairs_377027319701dfcc.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD",
+          "/O2 /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "boost-1.34.1-dll",
+        "files": [
+          "roc_bind_factory_pairs_9193aa2d6a2d0e06.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD",
+          "/O2 /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "boost-1.34.1-dll",
+        "files": [
+          "roc_bind_factory_pairs_5d8475c67d67cdfa.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD",
+          "/O2 /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "boost-1.34.1-dll",
+        "files": [
+          "roc_bind_factory_pairs_b0adafe46fc3a2a5.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD",
+          "/O2 /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "boost-1.34.1-dll",
+        "files": [
+          "roc_bind_factory_pairs_6be15c1ffba3b2c5.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD",
+          "/O2 /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "boost-1.34.1-dll",
+        "files": [
+          "roc_bind_factory_pairs_9b9f655df4a2ac57.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD",
+          "/O2 /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "boost-1.34.1-dll",
+        "files": [
+          "roc_bind_factory_pairs_021406c77b9ab588.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD",
+          "/O2 /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "boost-1.34.1-dll",
+        "files": [
+          "roc_bind_factory_pairs_fb023c51b53bfbd3.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD",
+          "/O2 /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "boost-1.34.1-dll",
+        "files": [
+          "roc_bind_factory_pairs_6e906c846cde3c85.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD",
+          "/O2 /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "boost-1.34.1-dll",
+        "files": [
+          "roc_bind_factory_pairs_9f555e64b5960069.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD",
+          "/O2 /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "boost-1.34.1-dll",
+        "files": [
+          "roc_bind_factory_pairs_ab11f2c59731b383.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD",
+          "/O2 /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "boost-1.34.1-dll",
+        "files": [
+          "roc_bind_factory_pairs_6c912cf2123e3347.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD",
+          "/O2 /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "boost-1.34.1-dll",
+        "files": [
+          "roc_bind_factory_pairs_bac84f1102138815.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD",
+          "/O2 /GS- /EHsc /MD"
+        ]
+      }
+    ],
+    "evidence_resume": true,
+    "next": "Audit server receipts; park unchanged if zero yield."
+  },
+  "native-contact-execute-family-pilot-2008": {
+    "op": "fanout",
+    "client": "2008-06",
+    "library": "Actual contact quad and ScriptContext execute",
+    "hypothesis": "Two large initially below40 methods fully recovered; combined firstfast21022 object independently exactcode/data both1047/1049byte parents. Fullgenuine types, nativeownfields, publichelper/prototype and genuine block body; no fakepadding/ABI/access. Four bounded objects against unresolved2008.",
+    "sources": [
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_contact_execute_native_family_ec6db4ca48e835bd.cpp"
+        ],
+        "builds": [
+          21022,
+          50727
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD",
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast"
+        ]
+      }
+    ],
+    "targets": {},
+    "output": "work\\large-functions-2008-20261014\\contact-execute-family-pilot"
+  },
+  "auto-native-contact-script-execute-2008": {
+    "op": "fanout",
+    "client": "2008-06",
+    "library": "Native contact quad and script execution",
+    "hypothesis": "Two full large initiallybelow40 exacts: contact1047 24to100 andexecute1049 0to100. Combinedfast21022 firstobject independentlyreplays bothfullcode/data; retainone object instead ofeight profiles. Contact genuineblock helper/realnative6c/70/74/78 fields, releaseassert off; script own138/13c fields, real safe_lua_tostring prototype/body proof. Fourobjectpilot noextra helperexacts. Expanded using fresh large0score manual recovery: kernel object adds full835byte RotateJoint.putInKernel exact, parser object adds genuine4argbool LuaArguments.get body; retains everyprior large exact independently100withdata. Same two compiled objects, no extra default stage/object. Expanded again: genuineColor3/Vector3 publicconverterroots; fresh834byte colorparser0to100 fullcode/data. Combinedfirstfast21022 replaysfourlargeexacts, stillonecompile; nativefloat32 requiresfpfast. Noextra defaultstage/object.",
+    "sources": [
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_color_kernel_native_family_d08788802cbb1f87.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast"
+        ]
+      }
+    ],
+    "targets": {},
+    "output": "work\\large-functions-2008-20261014\\contact-execute-family-auto"
+  },
+  "bruteforce-authentic-bind-factory-triples": {
+    "op": "fanout",
+    "client": "2008-06",
+    "library": "Genuine Boost three-argument bind factories",
+    "hypothesis": "Two-argument factories recovered native list constructors and free bind factory. Expand to arity3 over six observed callback types; authentic Boost storage/list/value and same proven member-pointer ABI. Codegen analogues only.",
+    "sources": [
+      {
+        "recipe": "boost-1.34.1-dll",
+        "files": [
+          "roc_bind_factory_triples_d098fdf255a97718.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD",
+          "/O2 /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "boost-1.34.1-dll",
+        "files": [
+          "roc_bind_factory_triples_470e2acde04f4dbb.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD",
+          "/O2 /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "boost-1.34.1-dll",
+        "files": [
+          "roc_bind_factory_triples_e38cd0d1df7989e0.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD",
+          "/O2 /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "boost-1.34.1-dll",
+        "files": [
+          "roc_bind_factory_triples_872f5c79a277b406.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD",
+          "/O2 /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "boost-1.34.1-dll",
+        "files": [
+          "roc_bind_factory_triples_7ef836f52c64e0cf.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD",
+          "/O2 /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "boost-1.34.1-dll",
+        "files": [
+          "roc_bind_factory_triples_d93a13edb2ecb18b.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD",
+          "/O2 /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "boost-1.34.1-dll",
+        "files": [
+          "roc_bind_factory_triples_dfaea293d27547e8.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD",
+          "/O2 /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "boost-1.34.1-dll",
+        "files": [
+          "roc_bind_factory_triples_8d5235aa62638b3e.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD",
+          "/O2 /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "boost-1.34.1-dll",
+        "files": [
+          "roc_bind_factory_triples_aa8740d6ffbf8eba.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD",
+          "/O2 /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "boost-1.34.1-dll",
+        "files": [
+          "roc_bind_factory_triples_dd76d00eff2429d9.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD",
+          "/O2 /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "boost-1.34.1-dll",
+        "files": [
+          "roc_bind_factory_triples_07aebda607f4dda0.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD",
+          "/O2 /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "boost-1.34.1-dll",
+        "files": [
+          "roc_bind_factory_triples_e308c8043c16b7f2.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD",
+          "/O2 /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "boost-1.34.1-dll",
+        "files": [
+          "roc_bind_factory_triples_617d681a92e1b2a6.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD",
+          "/O2 /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "boost-1.34.1-dll",
+        "files": [
+          "roc_bind_factory_triples_3843516947b2022d.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD",
+          "/O2 /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "boost-1.34.1-dll",
+        "files": [
+          "roc_bind_factory_triples_75919e1a2e7fe48f.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD",
+          "/O2 /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "boost-1.34.1-dll",
+        "files": [
+          "roc_bind_factory_triples_619885320b2f2bf5.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD",
+          "/O2 /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "boost-1.34.1-dll",
+        "files": [
+          "roc_bind_factory_triples_97598cbc194365e2.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD",
+          "/O2 /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "boost-1.34.1-dll",
+        "files": [
+          "roc_bind_factory_triples_58ac76659fd27071.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD",
+          "/O2 /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "boost-1.34.1-dll",
+        "files": [
+          "roc_bind_factory_triples_1c8895c3d367cf1d.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD",
+          "/O2 /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "boost-1.34.1-dll",
+        "files": [
+          "roc_bind_factory_triples_2eee91631783cc1c.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD",
+          "/O2 /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "boost-1.34.1-dll",
+        "files": [
+          "roc_bind_factory_triples_6ae55e0f000a242a.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD",
+          "/O2 /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "boost-1.34.1-dll",
+        "files": [
+          "roc_bind_factory_triples_bc1eab6fd2dac165.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD",
+          "/O2 /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "boost-1.34.1-dll",
+        "files": [
+          "roc_bind_factory_triples_9d80f85497fbab82.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD",
+          "/O2 /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "boost-1.34.1-dll",
+        "files": [
+          "roc_bind_factory_triples_9aa06c0c08119c4a.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD",
+          "/O2 /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "boost-1.34.1-dll",
+        "files": [
+          "roc_bind_factory_triples_0c885f560d27e164.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD",
+          "/O2 /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "boost-1.34.1-dll",
+        "files": [
+          "roc_bind_factory_triples_efc804c3abd11e2c.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD",
+          "/O2 /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "boost-1.34.1-dll",
+        "files": [
+          "roc_bind_factory_triples_81d2b9c1713534b4.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD",
+          "/O2 /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "boost-1.34.1-dll",
+        "files": [
+          "roc_bind_factory_triples_7f9118c29419530f.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD",
+          "/O2 /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "boost-1.34.1-dll",
+        "files": [
+          "roc_bind_factory_triples_db50a5b9e5e76757.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD",
+          "/O2 /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "boost-1.34.1-dll",
+        "files": [
+          "roc_bind_factory_triples_1fcf8806e1bd5af6.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD",
+          "/O2 /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "boost-1.34.1-dll",
+        "files": [
+          "roc_bind_factory_triples_9817752105f1ba35.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD",
+          "/O2 /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "boost-1.34.1-dll",
+        "files": [
+          "roc_bind_factory_triples_7d39845c60415faa.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD",
+          "/O2 /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "boost-1.34.1-dll",
+        "files": [
+          "roc_bind_factory_triples_069fc447678cb9d6.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD",
+          "/O2 /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "boost-1.34.1-dll",
+        "files": [
+          "roc_bind_factory_triples_e952e38b08a5e75f.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD",
+          "/O2 /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "boost-1.34.1-dll",
+        "files": [
+          "roc_bind_factory_triples_0a67b70b6dac40b9.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD",
+          "/O2 /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "boost-1.34.1-dll",
+        "files": [
+          "roc_bind_factory_triples_576ba6d6d432ddc0.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD",
+          "/O2 /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "boost-1.34.1-dll",
+        "files": [
+          "roc_bind_factory_triples_375bb1901690931f.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD",
+          "/O2 /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "boost-1.34.1-dll",
+        "files": [
+          "roc_bind_factory_triples_d3b70122bad70c4e.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD",
+          "/O2 /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "boost-1.34.1-dll",
+        "files": [
+          "roc_bind_factory_triples_0c48fbca1f1f3c84.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD",
+          "/O2 /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "boost-1.34.1-dll",
+        "files": [
+          "roc_bind_factory_triples_1853dd56eefd527a.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD",
+          "/O2 /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "boost-1.34.1-dll",
+        "files": [
+          "roc_bind_factory_triples_d13faa6030380bdf.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD",
+          "/O2 /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "boost-1.34.1-dll",
+        "files": [
+          "roc_bind_factory_triples_30719e56374a9401.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD",
+          "/O2 /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "boost-1.34.1-dll",
+        "files": [
+          "roc_bind_factory_triples_a96cb5f40070985a.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD",
+          "/O2 /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "boost-1.34.1-dll",
+        "files": [
+          "roc_bind_factory_triples_747eaff975aa15b0.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD",
+          "/O2 /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "boost-1.34.1-dll",
+        "files": [
+          "roc_bind_factory_triples_5f695aaefb22d23a.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD",
+          "/O2 /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "boost-1.34.1-dll",
+        "files": [
+          "roc_bind_factory_triples_be3371841420ac6e.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD",
+          "/O2 /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "boost-1.34.1-dll",
+        "files": [
+          "roc_bind_factory_triples_f8b7cf532ac0f894.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD",
+          "/O2 /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "boost-1.34.1-dll",
+        "files": [
+          "roc_bind_factory_triples_121ad073e276cf1f.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD",
+          "/O2 /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "boost-1.34.1-dll",
+        "files": [
+          "roc_bind_factory_triples_a925ac065c9a60cf.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD",
+          "/O2 /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "boost-1.34.1-dll",
+        "files": [
+          "roc_bind_factory_triples_766cdf7121b214e1.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD",
+          "/O2 /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "boost-1.34.1-dll",
+        "files": [
+          "roc_bind_factory_triples_592742b0ee499ee8.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD",
+          "/O2 /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "boost-1.34.1-dll",
+        "files": [
+          "roc_bind_factory_triples_3d82c4689ed81468.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD",
+          "/O2 /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "boost-1.34.1-dll",
+        "files": [
+          "roc_bind_factory_triples_1c05fda0619d176f.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD",
+          "/O2 /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "boost-1.34.1-dll",
+        "files": [
+          "roc_bind_factory_triples_3ef9d3fdf85fc7a5.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD",
+          "/O2 /GS- /EHsc /MD"
+        ]
+      }
+    ],
+    "evidence_resume": true,
+    "next": "Audit full code/data/server receipts; park zero-yield unchanged contexts."
+  },
+  "bruteforce-authentic-bind-factory-od": {
+    "op": "fanout",
+    "client": "2008-06",
+    "library": "Authentic Boost bind unoptimized factory emission",
+    "sources": [
+      {
+        "recipe": "boost-1.34.1-dll",
+        "files": [
+          "roc_bind_factories_17fe4b0ff94f7e66.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/Od /Ob0 /GS /EHsc /MD",
+          "/Od /Ob0 /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "boost-1.34.1-dll",
+        "files": [
+          "roc_bind_factory_matrix_69d4b9a826d126af.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/Od /Ob0 /GS /EHsc /MD",
+          "/Od /Ob0 /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "boost-1.34.1-dll",
+        "files": [
+          "roc_bind_factory_matrix_88fcf2790ed4c606.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/Od /Ob0 /GS /EHsc /MD",
+          "/Od /Ob0 /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "boost-1.34.1-dll",
+        "files": [
+          "roc_bind_factory_matrix_54088c711827a6a9.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/Od /Ob0 /GS /EHsc /MD",
+          "/Od /Ob0 /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "boost-1.34.1-dll",
+        "files": [
+          "roc_bind_factory_pairs_750c93f9d1983c49.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/Od /Ob0 /GS /EHsc /MD",
+          "/Od /Ob0 /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "boost-1.34.1-dll",
+        "files": [
+          "roc_bind_factory_pairs_7b9dc7b3b61749ab.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/Od /Ob0 /GS /EHsc /MD",
+          "/Od /Ob0 /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "boost-1.34.1-dll",
+        "files": [
+          "roc_bind_factory_pairs_0c036e57d3975298.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/Od /Ob0 /GS /EHsc /MD",
+          "/Od /Ob0 /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "boost-1.34.1-dll",
+        "files": [
+          "roc_bind_factory_pairs_78887b3036b103cc.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/Od /Ob0 /GS /EHsc /MD",
+          "/Od /Ob0 /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "boost-1.34.1-dll",
+        "files": [
+          "roc_bind_factory_pairs_8762ef503992ee8e.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/Od /Ob0 /GS /EHsc /MD",
+          "/Od /Ob0 /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "boost-1.34.1-dll",
+        "files": [
+          "roc_bind_factory_pairs_8366e55f3c438ba8.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/Od /Ob0 /GS /EHsc /MD",
+          "/Od /Ob0 /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "boost-1.34.1-dll",
+        "files": [
+          "roc_bind_factory_pairs_0367bc3689f34f03.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/Od /Ob0 /GS /EHsc /MD",
+          "/Od /Ob0 /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "boost-1.34.1-dll",
+        "files": [
+          "roc_bind_factory_pairs_d4091b9987f95968.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/Od /Ob0 /GS /EHsc /MD",
+          "/Od /Ob0 /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "boost-1.34.1-dll",
+        "files": [
+          "roc_bind_factory_pairs_7d1043aeeee82aa7.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/Od /Ob0 /GS /EHsc /MD",
+          "/Od /Ob0 /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "boost-1.34.1-dll",
+        "files": [
+          "roc_bind_factory_pairs_4763d187d2cb0b70.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/Od /Ob0 /GS /EHsc /MD",
+          "/Od /Ob0 /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "boost-1.34.1-dll",
+        "files": [
+          "roc_bind_factory_pairs_47093eee91486a0e.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/Od /Ob0 /GS /EHsc /MD",
+          "/Od /Ob0 /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "boost-1.34.1-dll",
+        "files": [
+          "roc_bind_factory_pairs_da9954e404bf4236.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/Od /Ob0 /GS /EHsc /MD",
+          "/Od /Ob0 /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "boost-1.34.1-dll",
+        "files": [
+          "roc_bind_factory_pairs_377027319701dfcc.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/Od /Ob0 /GS /EHsc /MD",
+          "/Od /Ob0 /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "boost-1.34.1-dll",
+        "files": [
+          "roc_bind_factory_pairs_9193aa2d6a2d0e06.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/Od /Ob0 /GS /EHsc /MD",
+          "/Od /Ob0 /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "boost-1.34.1-dll",
+        "files": [
+          "roc_bind_factory_pairs_5d8475c67d67cdfa.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/Od /Ob0 /GS /EHsc /MD",
+          "/Od /Ob0 /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "boost-1.34.1-dll",
+        "files": [
+          "roc_bind_factory_pairs_b0adafe46fc3a2a5.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/Od /Ob0 /GS /EHsc /MD",
+          "/Od /Ob0 /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "boost-1.34.1-dll",
+        "files": [
+          "roc_bind_factory_pairs_6be15c1ffba3b2c5.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/Od /Ob0 /GS /EHsc /MD",
+          "/Od /Ob0 /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "boost-1.34.1-dll",
+        "files": [
+          "roc_bind_factory_pairs_9b9f655df4a2ac57.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/Od /Ob0 /GS /EHsc /MD",
+          "/Od /Ob0 /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "boost-1.34.1-dll",
+        "files": [
+          "roc_bind_factory_pairs_021406c77b9ab588.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/Od /Ob0 /GS /EHsc /MD",
+          "/Od /Ob0 /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "boost-1.34.1-dll",
+        "files": [
+          "roc_bind_factory_pairs_fb023c51b53bfbd3.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/Od /Ob0 /GS /EHsc /MD",
+          "/Od /Ob0 /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "boost-1.34.1-dll",
+        "files": [
+          "roc_bind_factory_pairs_6e906c846cde3c85.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/Od /Ob0 /GS /EHsc /MD",
+          "/Od /Ob0 /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "boost-1.34.1-dll",
+        "files": [
+          "roc_bind_factory_pairs_9f555e64b5960069.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/Od /Ob0 /GS /EHsc /MD",
+          "/Od /Ob0 /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "boost-1.34.1-dll",
+        "files": [
+          "roc_bind_factory_pairs_ab11f2c59731b383.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/Od /Ob0 /GS /EHsc /MD",
+          "/Od /Ob0 /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "boost-1.34.1-dll",
+        "files": [
+          "roc_bind_factory_pairs_6c912cf2123e3347.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/Od /Ob0 /GS /EHsc /MD",
+          "/Od /Ob0 /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "boost-1.34.1-dll",
+        "files": [
+          "roc_bind_factory_pairs_bac84f1102138815.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/Od /Ob0 /GS /EHsc /MD",
+          "/Od /Ob0 /GS- /EHsc /MD"
+        ]
+      }
+    ],
+    "evidence_resume": true,
+    "hypothesis": "Factory instantiations newly exposed eight verified exacts under optimized builds. Test previously un-emitted factories under actual Od/Ob0 configuration, GS on/off. Same authentic vendor definitions, no layouts or byte tricks.",
+    "next": "Bounded58-context experiment; park unchanged zero yield."
+  },
+  "bruteforce-authentic-bind-factory-50727": {
+    "op": "fanout",
+    "client": "2008-06",
+    "library": "Authentic Boost bind original VS2005 compiler",
+    "sources": [
+      {
+        "recipe": "boost-1.34.1-dll",
+        "files": [
+          "roc_bind_factories_17fe4b0ff94f7e66.cpp"
+        ],
+        "builds": [
+          50727
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "boost-1.34.1-dll",
+        "files": [
+          "roc_bind_factory_matrix_69d4b9a826d126af.cpp"
+        ],
+        "builds": [
+          50727
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "boost-1.34.1-dll",
+        "files": [
+          "roc_bind_factory_matrix_88fcf2790ed4c606.cpp"
+        ],
+        "builds": [
+          50727
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "boost-1.34.1-dll",
+        "files": [
+          "roc_bind_factory_matrix_54088c711827a6a9.cpp"
+        ],
+        "builds": [
+          50727
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "boost-1.34.1-dll",
+        "files": [
+          "roc_bind_factory_pairs_750c93f9d1983c49.cpp"
+        ],
+        "builds": [
+          50727
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "boost-1.34.1-dll",
+        "files": [
+          "roc_bind_factory_pairs_7b9dc7b3b61749ab.cpp"
+        ],
+        "builds": [
+          50727
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "boost-1.34.1-dll",
+        "files": [
+          "roc_bind_factory_pairs_0c036e57d3975298.cpp"
+        ],
+        "builds": [
+          50727
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "boost-1.34.1-dll",
+        "files": [
+          "roc_bind_factory_pairs_78887b3036b103cc.cpp"
+        ],
+        "builds": [
+          50727
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "boost-1.34.1-dll",
+        "files": [
+          "roc_bind_factory_pairs_8762ef503992ee8e.cpp"
+        ],
+        "builds": [
+          50727
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "boost-1.34.1-dll",
+        "files": [
+          "roc_bind_factory_pairs_8366e55f3c438ba8.cpp"
+        ],
+        "builds": [
+          50727
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "boost-1.34.1-dll",
+        "files": [
+          "roc_bind_factory_pairs_0367bc3689f34f03.cpp"
+        ],
+        "builds": [
+          50727
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "boost-1.34.1-dll",
+        "files": [
+          "roc_bind_factory_pairs_d4091b9987f95968.cpp"
+        ],
+        "builds": [
+          50727
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "boost-1.34.1-dll",
+        "files": [
+          "roc_bind_factory_pairs_7d1043aeeee82aa7.cpp"
+        ],
+        "builds": [
+          50727
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "boost-1.34.1-dll",
+        "files": [
+          "roc_bind_factory_pairs_4763d187d2cb0b70.cpp"
+        ],
+        "builds": [
+          50727
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "boost-1.34.1-dll",
+        "files": [
+          "roc_bind_factory_pairs_47093eee91486a0e.cpp"
+        ],
+        "builds": [
+          50727
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "boost-1.34.1-dll",
+        "files": [
+          "roc_bind_factory_pairs_da9954e404bf4236.cpp"
+        ],
+        "builds": [
+          50727
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "boost-1.34.1-dll",
+        "files": [
+          "roc_bind_factory_pairs_377027319701dfcc.cpp"
+        ],
+        "builds": [
+          50727
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "boost-1.34.1-dll",
+        "files": [
+          "roc_bind_factory_pairs_9193aa2d6a2d0e06.cpp"
+        ],
+        "builds": [
+          50727
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "boost-1.34.1-dll",
+        "files": [
+          "roc_bind_factory_pairs_5d8475c67d67cdfa.cpp"
+        ],
+        "builds": [
+          50727
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "boost-1.34.1-dll",
+        "files": [
+          "roc_bind_factory_pairs_b0adafe46fc3a2a5.cpp"
+        ],
+        "builds": [
+          50727
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "boost-1.34.1-dll",
+        "files": [
+          "roc_bind_factory_pairs_6be15c1ffba3b2c5.cpp"
+        ],
+        "builds": [
+          50727
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "boost-1.34.1-dll",
+        "files": [
+          "roc_bind_factory_pairs_9b9f655df4a2ac57.cpp"
+        ],
+        "builds": [
+          50727
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "boost-1.34.1-dll",
+        "files": [
+          "roc_bind_factory_pairs_021406c77b9ab588.cpp"
+        ],
+        "builds": [
+          50727
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "boost-1.34.1-dll",
+        "files": [
+          "roc_bind_factory_pairs_fb023c51b53bfbd3.cpp"
+        ],
+        "builds": [
+          50727
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "boost-1.34.1-dll",
+        "files": [
+          "roc_bind_factory_pairs_6e906c846cde3c85.cpp"
+        ],
+        "builds": [
+          50727
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "boost-1.34.1-dll",
+        "files": [
+          "roc_bind_factory_pairs_9f555e64b5960069.cpp"
+        ],
+        "builds": [
+          50727
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "boost-1.34.1-dll",
+        "files": [
+          "roc_bind_factory_pairs_ab11f2c59731b383.cpp"
+        ],
+        "builds": [
+          50727
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "boost-1.34.1-dll",
+        "files": [
+          "roc_bind_factory_pairs_6c912cf2123e3347.cpp"
+        ],
+        "builds": [
+          50727
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "boost-1.34.1-dll",
+        "files": [
+          "roc_bind_factory_pairs_bac84f1102138815.cpp"
+        ],
+        "builds": [
+          50727
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      }
+    ],
+    "evidence_resume": true,
+    "hypothesis": "New factory code was absent from original VS2005 pilot. Test same genuine zero/one/two-argument factories once under original supported compiler; no declaration/ABI changes.",
+    "next": "Bounded29contexts; park zero yield."
+  },
+  "bruteforce-authentic-bind-factory-placeholders": {
+    "op": "fanout",
+    "client": "2008-06",
+    "library": "Genuine Boost bind placeholder factories",
+    "sources": [
+      {
+        "recipe": "boost-1.34.1-dll",
+        "files": [
+          "roc_bind_factory_placeholders_313fd547cbbf585b.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD",
+          "/O2 /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "boost-1.34.1-dll",
+        "files": [
+          "roc_bind_factory_placeholders_330700b7992d31c8.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD",
+          "/O2 /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "boost-1.34.1-dll",
+        "files": [
+          "roc_bind_factory_placeholders_dc63b779b6ab5834.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD",
+          "/O2 /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "boost-1.34.1-dll",
+        "files": [
+          "roc_bind_factory_placeholders_63cb8b294a410117.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD",
+          "/O2 /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "boost-1.34.1-dll",
+        "files": [
+          "roc_bind_factory_placeholders_b542348e7d4680ce.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD",
+          "/O2 /GS- /EHsc /MD"
+        ]
+      }
+    ],
+    "evidence_resume": true,
+    "hypothesis": "Prior factory matrices supplied only concrete bound values. Emit genuine Boost arg<1>/arg<2> storage specializations over same actual callback argument types and proven member-pointer ABI. No synthetic empty classes, fields, operators or original identity claims.",
+    "next": "Bounded10contexts; park unchanged zero yield."
+  },
+  "large-lua-value-native-gates-2008": {
+    "op": "grid",
+    "client": "2008-06",
+    "library": "Native Lua Value push",
+    "hypothesis": "Fresh1330byte initial0. Genuine LuaArguments class/body plus native Tuple946340 values vector<Value> revision, actual laterTuple declaration retained, shared_ptr<const Instances> RTTI938950. Oldheader51 lacksTuple/constowner, rejected. Correctedforloop76; native cachedend iterator while-loop100 including natural64byte stackalignment. Four earlierO2gates76; externalall-templateboundaries18 rejected. No fabricatedalignment/padding/ABI/access. Current seed full100, no need to rerun grid.",
+    "targets": {
+      "addresses": [
+        "005aba50"
+      ],
+      "scores": [
+        0,
+        99
+      ]
+    },
+    "seed_sources": {
+      "2008-06": {
+        "005aba50": "work\\large-functions-2008-20261014\\005aba50.cpp"
+      }
+    },
+    "builds": [
+      21022,
+      50727
+    ],
+    "profiles": [
+      "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD",
+      "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast"
+    ],
+    "output": "work\\large-functions-2008-20261014\\lua-value-native-gates"
+  },
+  "native-window-lua-value-family-pilot-2008": {
+    "op": "fanout",
+    "client": "2008-06",
+    "library": "Native window events and Lua value types",
+    "hypothesis": "Manual large below40 originals: Win32pollEvent1016 0to100 after exact WM_SYSCOMMAND SC_KEYMENU+F10 branches, entire genuine vendor file/class/statichelpers retained; Lua1330 full genuine type dispatch restored Tuple unpack/const Instances. Four objects per family fan out against all unresolved2008.",
+    "sources": [
+      {
+        "recipe": "rbxgs-g3d-dll",
+        "files": [
+          "roc_window_event_native_family_2a9dbad62871f104.cpp"
+        ],
+        "builds": [
+          21022,
+          50727
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD",
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast"
+        ]
+      },
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_lua_value_native_family_089972442e96b8d4.cpp"
+        ],
+        "builds": [
+          21022,
+          50727
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD",
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast"
+        ]
+      }
+    ],
+    "targets": {},
+    "output": "work\\large-functions-2008-20261014\\window-lua-value-family-pilot"
+  },
+  "native-window-value-combined-pilot-2008": {
+    "op": "fanout",
+    "client": "2008-06",
+    "library": "Actual Win32 event and Lua Tuple families",
+    "hypothesis": "Two fresh large0score manuals1016/1330 now fullcode/data100 inone first21022normal combinedobject. Native Win32 Alt SC_KEYMENU/F10 branches, actual Tuplevalues branch/enditerator lifetime and constInstances RTTI. All real headers/classes/bases/access preserved, no forcedalign/padding/ABI. Fourconfig combined pilot.",
+    "sources": [
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_window_value_native_combined_63b5822b935c363c.cpp"
+        ],
+        "builds": [
+          21022,
+          50727
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD",
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast"
+        ]
+      }
+    ],
+    "targets": {},
+    "output": "work\\large-functions-2008-20261014\\window-value-combined-pilot"
+  },
+  "auto-native-window-lua-value-2008": {
+    "op": "fanout",
+    "client": "2008-06",
+    "library": "Native window event and Lua value dispatch",
+    "hypothesis": "Two initially0 large genuine manual exacts: pollEvent1016 andLuaArguments.push1330. Combined first21022normal object independently fullcode+data100 both. Preserve vendor wholefile/statichelpers andrealLuaArguments class/fields/bases/access. Native Alt menu/F10 handling, genuine Tuplevalues/cacheend loop and shared_ptr<const Instances>. One object, no duplicateperfamily compile;4object pilot0extras. Expanded using fresh large0score manual recovery: kernel object adds full835byte RotateJoint.putInKernel exact, parser object adds genuine4argbool LuaArguments.get body; retains everyprior large exact independently100withdata. Same two compiled objects, no extra default stage/object.",
+    "sources": [
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_expanded_parser_native_family_4cf965f3a92f49c0.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      }
+    ],
+    "targets": {},
+    "output": "work\\large-functions-2008-20261014\\window-value-family-auto"
+  },
+  "native-lua-protected-real-exception-eh-group-2008": {
+    "op": "grid",
+    "client": "2008-06",
+    "library": "Actual Roblox Lua exception and protected owner",
+    "hypothesis": "Before submission independentlyverified all188bytes offull COMDAT (parent69+threecatch/normalexit chunks)100; EHhandler10+referencedFuncInfo36 data100. Genuine archived Roblox lua_exception class copiedunchanged, SDKrealjmpstruct12, no dummy padding. Targettypedcatchtablelua_exception&/conststd::exception&/nestedlua_exception& matches source; real ldebug.h luaG_runerror2argcall. Correct only real LuaState errorJmp70 typed lvalue; no inventory edits.",
+    "targets": {
+      "addresses": [
+        "00621920"
+      ],
+      "scores": [
+        0,
+        99
+      ]
+    },
+    "seed_sources": {
+      "2008-06": {
+        "00621920": "work\\goal-lua-protected-full-body-audit-20261015\\native.cpp"
+      }
+    },
+    "builds": [
+      21022
+    ],
+    "profiles": [
+      "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+    ],
+    "append": [
+      ""
+    ],
+    "keep_partials": true,
+    "output": "work\\goal-lua-protected-full-body-audit-20261015\\verified-grid",
+    "result": {
+      "status": "verified",
+      "new_verified": 1,
+      "evidence": "work\\goal-lua-protected-full-body-audit-20261015\\receipts.json"
+    }
+  },
+  "native-lua-real-exception-full-ldo-family-2008": {
+    "op": "fanout",
+    "client": "2008-06",
+    "library": "Genuine Lua full ldo with recovered Roblox exceptions",
+    "hypothesis": "Full188byte rawrunprotected plus actualEHmetadata verified before widening. Unchanged genuine Lua5.1.2ldo.c with actual archived lua_exception class and verified Roblox TRY/THROW contract: conststd::exception catch, twoarg luaG_runerror, nested lua_exception commit. No padding/fake classes/ABI. Compare normal/DLL and both native compilers, fullserver only.",
+    "sources": [
+      {
+        "recipe": "lua-5.1.2",
+        "files": [
+          "roc_unit_6878e048cc528e62.cpp"
+        ],
+        "builds": [
+          21022,
+          50727
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ],
+        "langs": [
+          "cpp"
+        ]
+      },
+      {
+        "recipe": "lua-5.1.2-dll",
+        "files": [
+          "roc_unit_6878e048cc528e62.cpp"
+        ],
+        "builds": [
+          21022,
+          50727
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ],
+        "langs": [
+          "cpp"
+        ]
+      }
+    ],
+    "targets": {},
+    "next": "Park no-gain configs; require rawprotected control and actual throw/exception family inspection.",
+    "result": {
+      "status": "verified",
+      "new_verified": 1,
+      "evidence": "work\\goal-lua-protected-full-body-audit-20261015\\receipts.json"
+    }
+  },
+  "native-lua-real-exception-rbx-resume-heldout-2008": {
+    "op": "fanout",
+    "client": "2008-06",
+    "library": "Verified Lua exception source with existing Roblox state hooks",
+    "hypothesis": "Winning CPP21022DLL genuine exception copy ctor. One heldout config uses existing binaryproven Lua5.1.2-rbx-dll hooks (12extraspace/resumeLminus4), same unchanged fullldo genuine exception source. Explicit CPP avoids knowninvalid Cmode; no new field or ABI guesses.",
+    "sources": [
+      {
+        "recipe": "lua-5.1.2-rbx-dll",
+        "files": [
+          "roc_unit_6878e048cc528e62.cpp"
+        ],
+        "langs": [
+          "cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      }
+    ],
+    "targets": {},
+    "next": "Single heldout object; park no gains and do not repeat failed Cmode.",
+    "result": {
+      "status": "parked",
+      "new_verified": 0,
+      "evidence": "work\\goal-lua-protected-full-body-audit-20261015\\receipts.json"
+    }
+  },
+  "large-native-lua-get-gates-2008": {
+    "op": "grid",
+    "client": "2008-06",
+    "library": "Native get",
+    "hypothesis": "Fresh initially0 manual large target; fullgenuinebody/native publicAPI views. Lua fourargbool get/treatNilAsMissing proven native nilbranch541 and recursive4push51f, original65 wrong3arg control rejected before submit. Numberdouble, tablefor1..n, native boolreturns. Rocket fullgenuine privateownturn body, real publicBody getters/own178/17c/180 fields; Matrix3 byvalue getBranchIBody restored beforeMath.toDiagonal, actualprivupdatePVcalledonlybyownpublicmethods. No fake ABI/padding/access. FourO2configs.",
+    "targets": {
+      "addresses": [
+        "005ad380"
+      ],
+      "scores": [
+        0,
+        99
+      ]
+    },
+    "seed_sources": {
+      "2008-06": {
+        "005ad380": "work\\large-functions-2008-20261014\\005ad380.cpp"
+      }
+    },
+    "builds": [
+      21022,
+      50727
+    ],
+    "profiles": [
+      "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD",
+      "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast"
+    ],
+    "output": "work\\large-functions-2008-20261014\\native-get-gates"
+  },
+  "large-native-rocket-turn-gates-2008": {
+    "op": "grid",
+    "client": "2008-06",
+    "library": "Native turn",
+    "hypothesis": "Fresh initially0 manual large target; fullgenuinebody/native publicAPI views. Lua fourargbool get/treatNilAsMissing proven native nilbranch541 and recursive4push51f, original65 wrong3arg control rejected before submit. Numberdouble, tablefor1..n, native boolreturns. Rocket fullgenuine privateownturn body, real publicBody getters/own178/17c/180 fields; Matrix3 byvalue getBranchIBody restored beforeMath.toDiagonal, actualprivupdatePVcalledonlybyownpublicmethods. No fake ABI/padding/access. FourO2configs.",
+    "targets": {
+      "addresses": [
+        "0062e530"
+      ],
+      "scores": [
+        0,
+        99
+      ]
+    },
+    "seed_sources": {
+      "2008-06": {
+        "0062e530": "work\\large-functions-2008-20261014\\0062e530.cpp"
+      }
+    },
+    "builds": [
+      21022,
+      50727
+    ],
+    "profiles": [
+      "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD",
+      "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast"
+    ],
+    "output": "work\\large-functions-2008-20261014\\native-turn-gates"
+  },
+  "native-lua-get-rocket-rotate-family-2008": {
+    "op": "fanout",
+    "client": "2008-06",
+    "library": "Native parser/rocket/kernel families",
+    "hypothesis": "Three initially0 manual large genuine bodies; RotateJoint putInKernel835 full100, Lua get836 andRocketturn992 partials. Fourobjects pernewfamily against all unresolved2008; never submit partial wrongsymbol/ABI. Allrealtypes/bases/privateaccesspreserved.",
+    "sources": [
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_lua_get_native_family_830061c7baf22fbe.cpp"
+        ],
+        "builds": [
+          21022,
+          50727
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD",
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast"
+        ]
+      },
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_rocket_turn_native_49484d2f8c9594a1.cpp"
+        ],
+        "builds": [
+          21022,
+          50727
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD",
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast"
+        ]
+      },
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_rotate_kernel_native_6a4b4d96eefe4e74.cpp"
+        ],
+        "builds": [
+          21022,
+          50727
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD",
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast"
+        ]
+      }
+    ],
+    "targets": {},
+    "output": "work\\large-functions-2008-20261014\\get-rocket-rotate-family"
+  },
+  "native-teams-joints-constructor-minimal-contexts-2008": {
+    "op": "fanout",
+    "client": "2008-06",
+    "library": "Genuine Teams/JointsService construction",
+    "hypothesis": "Replace constructor placeholders with actual native classes/COW/vector/G3DIndexArray and verified GuidItem root. Teams genuine tempvector/COW may explain missingEHstate. JointsService type proved actual relocated vptrs+name, preserve full required Bucket and compiler50727; factory harness instantiates existing inlinector only, no fabricated fields/vslots/EH. Four bounded normal/DLL contexts.",
+    "sources": [
+      {
+        "recipe": "rbxgs",
+        "files": [
+          "roc_unit_8fea65fc3c181555.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_unit_8fea65fc3c181555.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "rbxgs",
+        "files": [
+          "roc_unit_368dac5a3512fec9.cpp"
+        ],
+        "builds": [
+          50727
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_unit_368dac5a3512fec9.cpp"
+        ],
+        "builds": [
+          50727
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      }
+    ],
+    "targets": {},
+    "next": "Park losers; inspect real constructor symbols only, not invented harness identity."
+  },
+  "native-jointsservice-real-outofline-constructor-2008": {
+    "op": "grid",
+    "client": "2008-06",
+    "library": "Actual JointsService constructor definition context",
+    "hypothesis": "Direct new harness cannot access genuine privateallocator. Emit existing public constructor directly: preserve actual declaration and move identical native inline body outofline, no allocation wrapper or access changes. Full Bucket and all native fields/bases retained, requiredcompiler50727.",
+    "targets": {
+      "addresses": [
+        "004afa30"
+      ],
+      "scores": [
+        0,
+        99
+      ]
+    },
+    "seed_sources": {
+      "2008-06": {
+        "004afa30": "work\\goal-native-teams-joints-constructors-20261015\\004afa30.cpp"
+      }
+    },
+    "builds": [
+      50727
+    ],
+    "profiles": [
+      "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+    ],
+    "append": [
+      ""
+    ],
+    "keep_partials": true,
+    "output": "work\\goal-native-teams-joints-constructors-20261015\\joints-grid"
+  },
+  "native-color-kernel-family-pilot-2008": {
+    "op": "fanout",
+    "client": "2008-06",
+    "library": "Genuine color/vector converter and kernel bodies",
+    "hypothesis": "Fresh834byte initially0 Color3 StringConverter actualProperty.cpp publicstaticbody hiddenbyunusedinline. Genuinepublic function-address roots emitColor3/Vector3 convertToValue; no synthetic nativeglobal identity. Nativefloat32 multiply sixsites: normal99/fpfast100. Combinedearlyspecialization beforeheaders and releaseassert off preserves threeprior large exacts; allfour independentlyfullcode/data100onefast21022object. Fourprofilepilot.",
+    "sources": [
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_color_kernel_native_family_d08788802cbb1f87.cpp"
+        ],
+        "builds": [
+          21022,
+          50727
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast",
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      }
+    ],
+    "targets": {},
+    "output": "work\\large-functions-2008-20261014\\color-kernel-family-pilot"
+  },
+  "native-jointsservice-sp1-compiler-private-template-control-2008": {
+    "op": "grid",
+    "client": "2008-06",
+    "library": "Actual JointsService constructor definition context",
+    "hypothesis": "One VS2008SP1 compiler control: determine whether native unchanged private IndexArray/member-pointer friend context compiles where RTM21022 rejects it. Preserve genuine publicctor/fullBucket/access, no bypass. Stop after one config ifC2248 persists.",
+    "targets": {
+      "addresses": [
+        "004afa30"
+      ],
+      "scores": [
+        0,
+        99
+      ]
+    },
+    "seed_sources": {
+      "2008-06": {
+        "004afa30": "work\\goal-native-teams-joints-constructors-20261015\\004afa30.cpp"
+      }
+    },
+    "builds": [
+      30729
+    ],
+    "profiles": [
+      "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+    ],
+    "append": [
+      ""
+    ],
+    "keep_partials": true,
+    "output": "work\\goal-native-teams-joints-constructors-20261015\\sp1-grid"
+  },
+  "native-teams-full-source-primary-guid-revision-2008": {
+    "op": "fanout",
+    "client": "2008-06",
+    "library": "Genuine full Teams source",
+    "hypothesis": "Full unchanged Teams.cpp with proved current Guid primary hierarchy; preserve full required native headers. Earlier full-source50727 result parked under older context; compiler21022 and30729 controls now explicit, scan all unresolved targets once.",
+    "sources": [
+      {
+        "recipe": "rbxgs",
+        "files": [
+          "roc_unit_dc4dcbaf5d17a1c9.cpp"
+        ],
+        "builds": [
+          21022,
+          30729
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_unit_dc4dcbaf5d17a1c9.cpp"
+        ],
+        "builds": [
+          21022,
+          30729
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      }
+    ],
+    "targets": {},
+    "next": "Park all unchanged contexts after this bounded batch."
   }
 }

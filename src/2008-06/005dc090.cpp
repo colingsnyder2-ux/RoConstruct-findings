@@ -1,20 +1,5 @@
-// from server: 84% by king_originala
-extern char property;
-
-struct S
-{
-    char padding[0x1b0];
-    float value;
-
-    void setValue(const float* p);
-    void notify(const void* property);
-};
-
-void S::setValue(const float* p)
-{
-    if (*p != value)
-    {
-        value = *p;
-        notify(&property);
-    }
-}
+// from server: 100% by colin
+// roc-cl: 21022
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast
+// roc-lang: cpp
+// roc-lib: rbxgs roc_unit_6d53eb90d22581ff.cpp

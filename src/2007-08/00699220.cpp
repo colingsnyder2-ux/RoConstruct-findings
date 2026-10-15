@@ -1,16 +1,5 @@
-// from server: 94% by colin
-struct CXTPArrayT
-{
-    int GetAt(int nIndex);
-    int m_nCount;
-    int m_pData;
-};
-
-extern "C" int __stdcall sub_62FF20();
-
-int CXTPArrayT::GetAt(int nIndex)
-{
-    if (nIndex < 0 || nIndex >= *(int*)((char*)this + 0x28))
-        return sub_62FF20();
-    return ((int*)(*(int*)((char*)this + 0x24)))[nIndex];
-}
+// from server: 100% by colin
+// roc-cl: 50727
+// roc-flags: /O2 /GS- /MD
+// roc-lang: cpp
+// roc-lib: xtp-11.2.2-vc8 Source/CommandBars/XTPControl.cpp

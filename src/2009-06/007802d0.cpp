@@ -1,5 +1,5 @@
-// from server: 50% by colin
-// roc-lang: cpp
+// from server: 100% by colin
 // roc-cl: 30729
-// roc-flags: /O2 /GS- /MD
-// roc-lib: xtp-15.2.1 Source/CommandBars/XTPMessageBar.cpp
+// roc-flags: /O2 /GS- /MD /Ob1 /Oy-
+// roc-lang: cpp
+// roc-lib: xtp-15.2.1 Source/CommandBars/XTPStatusBar.cpp

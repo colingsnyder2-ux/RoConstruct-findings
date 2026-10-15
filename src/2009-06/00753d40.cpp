@@ -1,5 +1,5 @@
-// from server: 51% by colin
-// roc-lang: cpp
+// from server: 100% by colin
 // roc-cl: 30729
 // roc-flags: /O2 /GS- /MD
-// roc-lib: xtp-15.2.1 Source/Chart/XTPChartSeriesPoint.cpp
+// roc-lang: cpp
+// roc-lib: xtp-13.2.1 Source/ReportControl/XTPReportRows.cpp

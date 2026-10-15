@@ -1,9 +1,5 @@
-// from server: 52% by why2
-struct RBX_Mesh {
-    char pad[0x15];
-    int field_15;
-};
-
-int RBX_Mesh_get(RBX_Mesh* p) {
-    return (int)((char*)p + 0x15);
-}
+// from server: 100% by colin
+// roc-cl: 30729
+// roc-flags: /O2 /GF /GS- /EHsc /MD /Ob1 /Oy-
+// roc-lang: cpp
+// roc-lib: rbxgs v8datamodel/ModelInstance.cpp

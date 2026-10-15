@@ -54,6 +54,10 @@ Import evidence preserves ordinal identities such as `mfc90.dll!#800` and resolv
 exact six-byte `FF 25` IAT jump stubs one level. Import identity alone does not prove
 a prototype or ordinal's API name; inspect the corresponding DLL export and callers.
 
+Recovery packets mark `extent_review` when a framed prefix jumps into an excluded
+EH row that restores its EBP/FS frame. Review the full owner, normal exit and catch
+contracts before claiming a whole-function match. This evidence does not change bounds.
+
 Recovery packets prioritize quoted headers actually included by the native source,
 including nested recipe include directories. When resolved, they omit unrelated
 fallback headers. `agent-metrics` reports `repair_verified_gains` and its wall-hour
