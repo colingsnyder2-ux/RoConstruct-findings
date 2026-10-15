@@ -6894,5 +6894,159 @@
       }
     ],
     "next": "Fullcode/dataonly; parkboundedzero."
+  },
+  "native-part-find-children-core-21022-2008": {
+    "op": "grid",
+    "client": "2008-06",
+    "library": "RBX actual recursive Part collector",
+    "hypothesis": "Native87 differschildrenC0vs108, 50727vector4/8vs21022C/10, EHtestorder/inc. ReuseprovenInstancechildren108viewandactual21022checkedvector/DLL. KnownIRenderableminimalcore preservesprivateusedclass, omitsunusedBucket. UnchangednativefindPartsbody.",
+    "targets": {
+      "addresses": [
+        "0059c640"
+      ],
+      "scores": [
+        0,
+        99
+      ]
+    },
+    "seed_sources": {
+      "2008-06": {
+        "0059c640": "work\\goal-part-find-children-core-20261015\\0059c640.cpp"
+      }
+    },
+    "keep_partials": true,
+    "builds": [
+      21022
+    ],
+    "profiles": [
+      "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+    ],
+    "append": [
+      ""
+    ],
+    "output": "work\\goal-part-find-children-core-20261015\\grid",
+    "next": "Fullservercode/data; oneobjectpropagationifexact."
+  },
+  "native-shared-part-array-21022-2008": {
+    "op": "grid",
+    "client": "2008-06",
+    "library": "G3D actual shared PartInstance array",
+    "hypothesis": "NativeG3DArrayresize/appendshape with8byteboostsharedowner. Existing syntheticresize95 missesauthenticrelease destructorcode. FullgenuineArray<shared_ptr<PartInstance>> instantiation at21022, useprovenminimalrendercore, no inventedstorage/destructorbody.",
+    "targets": {
+      "addresses": [
+        "0059a200",
+        "0059b310"
+      ],
+      "scores": [
+        0,
+        99
+      ]
+    },
+    "seed_sources": {
+      "2008-06": {
+        "0059a200": "work\\goal-native-shared-array-20261015\\0059a200.cpp",
+        "0059b310": "work\\goal-native-shared-array-20261015\\0059a200.cpp"
+      }
+    },
+    "keep_partials": true,
+    "builds": [
+      21022
+    ],
+    "profiles": [
+      "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+    ],
+    "append": [
+      ""
+    ],
+    "output": "work\\goal-native-shared-array-20261015\\grid",
+    "next": "Pilotbothfullserver; ifsuccessfullobjectfanout acrossallunresolvedonce."
+  },
+  "native-shared-part-array-members-21022-2008": {
+    "op": "grid",
+    "client": "2008-06",
+    "library": "G3D actual shared PartInstance array",
+    "hypothesis": "NativeG3DArrayresize/appendshape with8byteboostsharedowner. Existing syntheticresize95 missesauthenticrelease destructorcode. FullgenuineArray<shared_ptr<PartInstance>> instantiation at21022, useprovenminimalrendercore, no inventedstorage/destructorbody. WholeclassexplicitinstantiationfailedunusedcompareGT: shared_ptroperator>notdefined. Instantiateonlygenuineresize/appendmembers, actualclientusage; no customcomparison/loopbody.",
+    "targets": {
+      "addresses": [
+        "0059a200",
+        "0059b310"
+      ],
+      "scores": [
+        0,
+        99
+      ]
+    },
+    "seed_sources": {
+      "2008-06": {
+        "0059a200": "work\\goal-native-shared-array-20261015\\shared-members.cpp",
+        "0059b310": "work\\goal-native-shared-array-20261015\\shared-members.cpp"
+      }
+    },
+    "keep_partials": true,
+    "builds": [
+      21022
+    ],
+    "profiles": [
+      "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+    ],
+    "append": [
+      ""
+    ],
+    "output": "work\\goal-native-shared-array-20261015\\member-grid",
+    "next": "Pilotbothfullserver; ifsuccessfullobjectfanout acrossallunresolvedonce."
+  },
+  "native-shared-array-member-propagation-2008": {
+    "op": "fanout",
+    "client": "2008-06",
+    "library": "G3D verified shared-owner append family",
+    "hypothesis": "ActualnativeArray<sharedPart>::append79to100 provesowner/copy/recursionABI. Scaleonewinningmembersobjectacrossallunresolved2008, no newtypes/flags/bodyvariants.",
+    "targets": {},
+    "sources": [
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_unit_fcbda0c1820c4cce.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      }
+    ],
+    "next": "Fullservercode/data; inspectresize85onlyfornewbinaryevidence."
+  },
+  "native-shared-array-resize-fpfast-2008": {
+    "op": "grid",
+    "client": "2008-06",
+    "library": "G3D actual shared PartInstance array",
+    "hypothesis": "ActualArrayappend100, nativeresize85nowdiffersonlygrowth-factorFSTPspillsvs targetextendedx87/FIMUL. Newbinaryevidencejustifiesdocumentedfpfastgate, exactgenuinebody/typeunchanged.",
+    "targets": {
+      "addresses": [
+        "0059a200"
+      ],
+      "scores": [
+        0,
+        99
+      ]
+    },
+    "seed_sources": {
+      "2008-06": {
+        "0059a200": "work/goal-native-shared-array-20261015/shared-members.cpp"
+      }
+    },
+    "keep_partials": true,
+    "builds": [
+      21022
+    ],
+    "profiles": [
+      "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast"
+    ],
+    "append": [
+      ""
+    ],
+    "output": "work/goal-native-shared-array-20261015/fast-grid",
+    "next": "Pilotbothfullserver; ifsuccessfullobjectfanout acrossallunresolvedonce."
   }
 }
