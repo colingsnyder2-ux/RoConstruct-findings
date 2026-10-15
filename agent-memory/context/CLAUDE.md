@@ -11,8 +11,14 @@ lists them all.
 
 When the wrapper supplies an assigned source, evidence packet, check command and
 120-second triage budget, setup is already complete. Read this file once, then
-read the assigned source and evidence packet together. Follow the recovery
-preamble and assignment: they constrain the general campaign workflow below.
+read the assigned source and `initial_evidence_file` together when supplied.
+Older wrappers supply only `evidence_file`: first read its JSON through
+`roc.agent_recovery.initial_evidence(packet, evidence_file)` in a fresh Python
+command. This tested reader retains full target assembly, facts and native
+declarations while deferring duplicated source, neighbour bodies and sibling
+source. Read those full-packet sections when the current hypothesis needs them.
+This path uses current disk code without restarting the controller. Follow the
+recovery preamble and assignment: they constrain the general campaign workflow below.
 In `docs/AGENT_GUIDE.md`, read Goal and acceptance first; consult other sections
 only for the current evidence or command. Do not read the whole guide, history,
 recipes or logs before the first experiment. Record a specific blocker if the

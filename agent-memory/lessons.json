@@ -685,5 +685,16 @@
     "outcome": "server_verified",
     "evidence": "work/goal-native-resize-tool-20261015/receipts.json",
     "next": "Onefinalobjectreplays4full100 includingalreadyexactHover. LatermoveIncrementfieldnotclaimednativeclasssize; otherResizebodiesneednativeAPIproof. Park7Resizecontexts (6compiled/1fixedfail) and12Networkcontexts0extras."
+  },
+  {
+    "id": "native-resize-render-and-callback-identity-before-abi-guess",
+    "client": "2008-06",
+    "library": "Native Resize render and capturedDrag callbacks",
+    "hypothesis": "Historical public rendering prototypes and recursive callee RTTI can resolve unknown callbacks without inventing slots or guessing a service from address labels.",
+    "change": "ActualoldDrawAdorn5argheaders+genuine0.1/.6/1resizeColorbody recover2renderloops. Workspace288typedICameraOwner view; queuedhiddenCoordinateFrameargumentisnotgetGCameraarg. CapturedDragservicecreatorchainRTTIidentifiesSoundService; actualjoint/resize/clickAPIs andrawlock().get temporarylifetime give154full100 withnofakeEH.",
+    "exacts_gained": 3,
+    "outcome": "server_verified",
+    "evidence": "work/goal-native-resize-tool-20261015/render-drag-receipts.json",
+    "next": "Finaltwoobjectsreplay7Resizeexacts, only3newcurrent. Park4unchangedcontexts; onMouseMove needsnativefixedincrement/mathAPIproof beforelater2016fieldusage."
   }
 ]

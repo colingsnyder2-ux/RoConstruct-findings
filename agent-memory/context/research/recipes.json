@@ -14754,12 +14754,12 @@
     "op": "fanout",
     "client": "2008-06",
     "library": "Native Camera, geometry, contact force, XML and Lua execution/error families",
-    "hypothesis": "Two fast21022 objects replay71 fullcode/data campaign exacts plus7existingABIcontrols. Fresh607byte0score DescriptorReceiver<PropertyDescriptor>.learnName genuine2016source withproved2008pointervector/twoarg/no checksumrevision, fullprivatefieldsandgenuineunusedAPIdeclarationsretained; sourceoldPropertyContainer checkediterator+ClassDescriptor all_begin/end staticAPIs withnoinstancefields/layoutchanges. ExplicitnativeName lookupbeforebase/search restores100from94. Fourprofilefanout17newserverexacts3696bytes (primary607,15Boostmutable-string split/set/vectorhelpers including580byteiter_split,Classall_end37). Prior54campaign+7ABIcontrols retained. Receiverinobject1keepsClassregistryprivateallClasses externalnaturally, object0unchanged. NativeEnum2slotaudit rerun aftermerge; allpriorABIproof retained. Existingdefaultobjects remain2; noadditionalcompile.",
+    "hypothesis": "Two fast21022 objects replay71 fullcode/data campaign exacts plus7existingABIcontrols. Fresh607byte0score DescriptorReceiver<PropertyDescriptor>.learnName genuine2016source withproved2008pointervector/twoarg/no checksumrevision, fullprivatefieldsandgenuineunusedAPIdeclarationsretained; sourceoldPropertyContainer checkediterator+ClassDescriptor all_begin/end staticAPIs withnoinstancefields/layoutchanges. ExplicitnativeName lookupbeforebase/search restores100from94. Fourprofilefanout17newserverexacts3696bytes (primary607,15Boostmutable-string split/set/vectorhelpers including580byteiter_split,Classall_end37). Prior54campaign+7ABIcontrols retained. Receiverinobject1keepsClassregistryprivateallClasses externalnaturally, object0unchanged. NativeEnum2slotaudit rerun aftermerge; allpriorABIproof retained. Existingdefaultobjects remain2; noadditionalcompile. NativeFileSystem twofreshzero992/548bytefunctions fullnativeWin32/ATLbranches, unchangedoldFileSystemheader, malformednativecacheGUID preserved. Bothserver100normalandfast; foldedobject0withallprevious78controlsplusGetIntegrity existing100: 73campaign+8ABIcontrols81total, still2defaultcompiles. NativeSoundCachemap genuineSoundId/sharedSound wholeinstantiation:552bytezero hintedinsert+2helpers server100, opaquegenuineContentIdoperator< boundary vswronginlinebody75. Fullheadersunchanged. Foldedobject1all81priorcontrols+3fresh84full100,76campaign/8ABIcontrols,still2defaultcompiles. NativeEnum2slot auditretained.",
     "sources": [
       {
         "recipe": "rbxgs-atl90-dll",
         "files": [
-          "roc_cofm_jpeg_default_0_84cfc680f163a269.cpp"
+          "roc_filesystem_default_0_7022eb13c43e9da6.cpp"
         ],
         "builds": [
           21022
@@ -14771,7 +14771,7 @@
       {
         "recipe": "rbxgs-dll",
         "files": [
-          "roc_descriptor_receiver_default_1_80c5431f1ad732bf.cpp"
+          "roc_sound_map_default_1_0acf87ff571bf16c.cpp"
         ],
         "builds": [
           21022
@@ -21263,5 +21263,197 @@
     "targets": {},
     "evidence_resume": true,
     "next": "Fullcode/data/newserverreceipts; fullSoundService allocationlayoutunclaimed."
+  },
+  "native-filesystem-directory-family-pilot-2008": {
+    "op": "fanout",
+    "client": "2008-06",
+    "library": "Native FileSystem directories and genuine Vista/ATL helpers",
+    "hypothesis": "Secondfreshzero992bytefunction actualFileSystem.getUserAppDataDirectory(bool,constchar*) usesfullunchangedoldheader, nativeLocalAppDataLow/LocalAppDataGUIDs, conditionalCREATEflag, nativeCStringA/CoTaskMemFree/Roblox/subdir/CreateDirectoryerror183 flow, genuinepublicCPath.m_strPath buffer APIs, CSIDL_APPDATAthenCOMMON_APPDATA fallback, ReleaseBuffer/AddBackslash. No inventedfields/ABI/privateaccess. Flatbooleancondition99 onlyimportloadsreordered; conventionalnestedifcreate/ifCreateDirectory/ifGetLastError yieldsfullcode/data100. Combinedknown548cache/GetIntegrity remain100bothnormal/fast21022. Two supportedATLRTMprofileallunresolvedfanout.",
+    "sources": [
+      {
+        "recipe": "rbxgs-atl90-dll",
+        "files": [
+          "roc_filesystem_nested_78e80a56ef829311.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD",
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast"
+        ]
+      }
+    ],
+    "targets": {},
+    "output": "work\\large-functions-2008-20261014\\filesystem-native-directory-family-pilot"
+  },
+  "native-resize-mouse-move-fixed-step-pure-cpp-floor-2008": {
+    "op": "fanout",
+    "client": "2008-06",
+    "library": "rbxgs",
+    "hypothesis": "Native0063ee20542 actual2016ResizeonMouseMove algorithm withgenuineoldUIEvent/G3DRay fields, native+/-1 threshold andno latermoveIncrementread. ExistingMath::iFloor API implementedordinaryC++static_cast<int>(floor(value)); genuinecontractfloorthenintegerconversion, no copiedvendorassembler/forcedstate. Allnativefieldprefix/ownerlifetime retained.",
+    "sources": [
+      {
+        "recipe": "rbxgs",
+        "files": [
+          "roc_unit_7625c3176f436ad8.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD",
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast"
+        ]
+      },
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_unit_7625c3176f436ad8.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD",
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast"
+        ]
+      }
+    ],
+    "targets": {},
+    "evidence_resume": true,
+    "next": "Compareactualfullnativebody; parkifroundingrequiresunsupportedimplementation, nevercopyASM."
+  },
+  "native-sound-cache-map-boundary-family-pilot-2008": {
+    "op": "fanout",
+    "client": "2008-06",
+    "library": "Genuine old SoundService SoundId to shared Sound map",
+    "hypothesis": "Fresh552bytezero005ba660 hintSoundChannel actually genuineMSVC stdmap<SoundId,boost::shared_ptr<Sound>> hintedinsert; fulloldSound.h/ContentProvider.h nativeSoundId32byte, mappedsharedptr8,nodecolor34/isnil35 andsizeofnode38. No fabricatedtypes/layout. FulloldContentIdoperator< publicdeclaration retainedopaque asnative; realbodyinotherTUtailjmpMSVCPoperator<string> at55bd50/80235c. Includingrealbody75wronginlineIATcall; declaredboundaryfullcode/data100both21022profiles,50727=44. ExplicitinstantiateactualSoundServiceprivate maptype frompublicgenuinetypes; no privateaccess/fieldchanges. Fourprofileallunresolvedfanout.",
+    "sources": [
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_sound_cache_map_native_boundary_8de67e25f930852a.cpp"
+        ],
+        "builds": [
+          21022,
+          50727
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD",
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast"
+        ]
+      }
+    ],
+    "targets": {},
+    "output": "work\\large-functions-2008-20261014\\sound-cache-map-native-family-pilot"
+  },
+  "native-resize-move-external-ray-float-floor-compiler-context-2008": {
+    "op": "fanout",
+    "client": "2008-06",
+    "library": "rbxgs",
+    "hypothesis": "Target0063ee20 callsactualRay.fromOriginAndDirection518830 outofline. FullgenuineRayheaderfields/access retained, existingstaticfactorydecl externalonly; no noinline attribute orchangedABI. Nativefloorcallresultnarrowedfloatbeforeintegerconversion, genuinefloat-floorcontractimplementedpureC++. Comparehistorical/QIfistcompilerconversion againstnormal, no assemblerwritten.",
+    "sources": [
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_unit_4f02fe8a2426e471.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD",
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD /QIfist",
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast",
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast /QIfist"
+        ]
+      }
+    ],
+    "targets": {},
+    "evidence_resume": true,
+    "next": "Parkifremainingloop/evaluationcontext notproven; no forcedstacklocals."
+  },
+  "native-sound-cache-stock-map-family-pilot-2008": {
+    "op": "fanout",
+    "client": "2008-06",
+    "library": "Genuine old SoundService SoundId to shared Sound map",
+    "hypothesis": "Fresh552bytezero005ba660 hintSoundChannel actually genuineMSVC stdmap<SoundId,boost::shared_ptr<Sound>> hintedinsert; fulloldSound.h/ContentProvider.h nativeSoundId32byte, mappedsharedptr8,nodecolor34/isnil35 andsizeofnode38. No fabricatedtypes/layout. FulloldContentIdoperator< publicdeclaration retainedopaque asnative; realbodyinotherTUtailjmpMSVCPoperator<string> at55bd50/80235c. Includingrealbody75wronginlineIATcall; declaredboundaryfullcode/data100both21022profiles,50727=44. ExplicitinstantiateactualSoundServiceprivate maptype frompublicgenuinetypes; no privateaccess/fieldchanges. Fourprofileallunresolvedfanout. ScaleothergenuineoldSoundService stockSounds stdmap<SoundType,shared_ptr<SoundChannel>> fromunchangedSound.h; no syntheticpayloadtypes. Boundedfourprofilescanonlyunresolved.",
+    "sources": [
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_sound_cache_stock_map_native_1867c8209a85b49b.cpp"
+        ],
+        "builds": [
+          21022,
+          50727
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD",
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast"
+        ]
+      }
+    ],
+    "targets": {},
+    "output": "work\\large-functions-2008-20261014\\sound-cache-stock-map-native-family-pilot"
+  },
+  "native-eight-physics-full-tu-measured-layout-contexts-2008": {
+    "op": "fanout",
+    "client": "2008-06",
+    "library": "rbxgs",
+    "hypothesis": "Eight complete authentic physics translation units, unchanged bodies, with independently measured genuine Primitive/Body/World/Instance declarations. Four compiler contexts per family, all unresolved targets; no invented fields or access changes. New native header combination, not replay of unchanged old SDK objects.",
+    "sources": [
+      {
+        "recipe": "rbxgs",
+        "files": [
+          "roc_unit_9559f609b259c1ed.cpp",
+          "roc_unit_cb5d3a4175f7f12d.cpp",
+          "roc_unit_263f3529d207b465.cpp",
+          "roc_unit_2d65427411af71ce.cpp",
+          "roc_unit_f1c786b823e64902.cpp",
+          "roc_unit_ca0d9e6c34ba6bd9.cpp",
+          "roc_unit_50563d0b12f5bb6b.cpp",
+          "roc_unit_1ced3a4de6e8b1ae.cpp"
+        ],
+        "builds": [
+          21022,
+          50727
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD",
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast"
+        ]
+      }
+    ],
+    "targets": {},
+    "evidence_resume": true,
+    "next": "Inspect actual compiler errors or gains once; park zero-gain contexts."
+  },
+  "native-resize-move-genuine-world-normal-body-context-2008": {
+    "op": "fanout",
+    "client": "2008-06",
+    "library": "rbxgs",
+    "hypothesis": "Native inlines WorldNormal axis/polarity computation; cached genuine2016 Math getWorldNormal body separates column and polarity. Copy this real body into existing complete SDK header, preserve actual signatures/fields; no forced inline attributes. External Ray factory and measured float floor remain.",
+    "sources": [
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_unit_87b629c5c3d2bd1c.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD",
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD /QIfist",
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast",
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast /QIfist"
+        ]
+      }
+    ],
+    "targets": {},
+    "evidence_resume": true,
+    "next": "No further unchanged body trials if inline/context still differs."
   }
 }
