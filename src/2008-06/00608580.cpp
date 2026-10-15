@@ -1,5 +1,4 @@
-// from server: 31% by colin
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs tool/Dragger.cpp
+// roc-lib: rbxgs v8world/Contact.cpp

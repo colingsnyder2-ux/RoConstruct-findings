@@ -21799,5 +21799,43 @@
     ],
     "targets": {},
     "output": "work\\large-functions-2008-20261014\\fmod-error-exact-family-pilot"
+  },
+  "native-large-low-vendor-families-pilot-2008": {
+    "op": "fanout",
+    "client": "2008-06",
+    "library": "Native FMOD SoundService open and profiled RakNet peer families",
+    "hypothesis": "Two initially zero large functions identified from imports and full native flow: 005ba060 is SoundService.openFmod and 004c0420 is ProfiledRakPeer.SendImmediate. Reconstructed former from later genuine body plus target-proven old branches/API; latter is unchanged authentic RakNet 3 SendImmediate compiled under real ProfiledRakPeer macro. No fake layout, padding, ABI or assembly. Four compiler contexts against all unresolved targets.",
+    "sources": [
+      {
+        "recipe": "rbxgs",
+        "files": [
+          "roc_fmod_open_native_99f5a9bdfe488277.cpp"
+        ],
+        "builds": [
+          21022,
+          50727
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD",
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast"
+        ]
+      },
+      {
+        "recipe": "rbxgs-raknet",
+        "files": [
+          "roc_profiled_rakpeer_native_8a2f4aa30947acf3.cpp"
+        ],
+        "builds": [
+          21022,
+          50727
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD",
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast"
+        ]
+      }
+    ],
+    "targets": {},
+    "output": "work\\large-functions-2008-20261014\\vendor-native-family-pilot"
   }
 }
