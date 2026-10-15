@@ -1,4 +1,4 @@
-// from server: 99% by king_originala
+// from server: 100% by colin
 struct Item;
 struct String;
 
@@ -11,15 +11,11 @@ struct String {
     unsigned int length;
     unsigned int capacity;
 
-    String(const char*, Item* volatile&);
+    __declspec(dllimport) String(const char*);
     String(const String&);
+    ~String();
     int compare(unsigned int, unsigned int, const char*, unsigned int) const;
 };
-
-inline String::String(const char* text, Item* volatile& temporary) {
-    temporary = reinterpret_cast<Item*>(this);
-    string_construct(this, text);
-}
 
 inline int String::compare(unsigned int pos, unsigned int count,
                            const char* text, unsigned int size) const {
@@ -71,7 +67,7 @@ void S::f(Item* item) {
     baseCall(item);
     String* text = &item->source.getName()->text;
     if (text->compare(0, text->length, "NetworkClient", 13) == 0) {
-        Verb* verb = lookup.find(String("LockPlayMode", item));
+        Verb* verb = lookup.find(String("LockPlayMode"));
         if (verb)
             verb->invoke(0);
         controller->f();

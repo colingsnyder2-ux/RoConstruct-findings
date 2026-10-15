@@ -1,7 +1,9 @@
-// from server: 99% by king_originala
+// from server: 100% by colin
 struct Color {
     float r, g, b, a;
+    Color() {}
     Color(float);
+    Color& operator=(const Color& other) { r=other.r; g=other.g; b=other.b; a=other.a; return *this; }
 };
 
 __forceinline Color::Color(float v) : r(v), g(v), b(v), a(v) {}
@@ -49,7 +51,7 @@ struct PercentPanel {
 };
 
 struct GuiRoot : PercentPanel {
-    float r, g, b, a;
+    Color backdropColor;
     void* owner;
     bool enabled;
 
@@ -73,19 +75,13 @@ GuiRoot::GuiRoot(const char* name, void* parent, bool white)
 
     owner = 0;
     const Color& zero = zeroColor();
-    r = zero.r;
-    g = zero.g;
-    b = zero.b;
-    a = zero.a;
+    backdropColor = zero;
     enabled = true;
     setName(name);
     owner = parent;
 
     if (white) {
         static Color whiteColor(whiteValue);
-        r = whiteColor.r;
-        g = whiteColor.g;
-        b = whiteColor.b;
-        a = whiteColor.a;
+        backdropColor = whiteColor;
     }
 }

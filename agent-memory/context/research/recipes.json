@@ -1023,5 +1023,259 @@
       }
     ],
     "next": "Keep whole code/data server-verified gains; no invented padding, original declarations remain unproven."
+  },
+  "gui-rect-expression-2008": {
+    "op": "fanout",
+    "library": "RBX GUI rectangle",
+    "hypothesis": "00573310 authentic Rect(pos,pos+getSize()) with real vector/rect types and binary-proven existing slots reaches100; propagate only identical code/data",
+    "targets": {},
+    "sources": [
+      {
+        "recipe": "rbxgs",
+        "files": [
+          "roc_unit_5f85e86853fbb260.cpp",
+          "roc_unit_5ce00537768de8e8.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast"
+        ]
+      }
+    ],
+    "next": "Existing opaque interface is codegen analogue, not original declaration; no unproven layout changes."
+  },
+  "large-particle-cache-grid-2008": {
+    "op": "grid",
+    "client": "2008-06",
+    "library": "Ogre 1.4.5 / native particle caches",
+    "hypothesis": "New manually recovered sparkle and explosion bodies started at0; test historical compiler gates before further source reconstruction.",
+    "targets": {
+      "addresses": [
+        "00674790",
+        "00675360"
+      ],
+      "scores": [
+        0,
+        99
+      ],
+      "sizes": [
+        3000,
+        5000
+      ]
+    },
+    "builds": [
+      21022,
+      50727
+    ],
+    "profiles": [
+      "/O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MD"
+    ],
+    "append": [
+      "",
+      " /fp:fast"
+    ],
+    "output": "work/large-functions-2008-20261014/particle-cache-grid",
+    "next": "Both manual seed compiler grids exhausted. No exacts: do not scale unchanged profiles/source pairs. Recover new lifetime/body evidence on the next large below40 seed.",
+    "result": {
+      "date": "2026-10-15",
+      "targets": 2,
+      "variants": 8,
+      "additional_exacts": 0,
+      "partial_improvements": {
+        "00674790": "42 -> 54, server verified"
+      },
+      "status": "parked",
+      "evidence": "work/large-functions-2008-20261014/particle-cache-grid"
+    }
+  },
+  "rbx-rect-inline-fast-2008": {
+    "op": "fanout",
+    "library": "RBX Rect inline operations",
+    "hypothesis": "00573130 authentic packed point hit test reaches100 under GUI21022 fpfast; force related real inline method emission and test unresolved siblings",
+    "targets": {},
+    "sources": [
+      {
+        "recipe": "rbxgs",
+        "files": [
+          "roc_unit_992e6cd181053ba5.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast"
+        ]
+      }
+    ],
+    "next": "Keep only whole code/data server verified gains; no synthetic operators or class layouts."
+  },
+  "large-mesh-face-seeds-2008": {
+    "op": "grid",
+    "client": "2008-06",
+    "library": "Native BrickMesh face templates",
+    "hypothesis": "Manual Y and X seeds each0to40; reuse recovered generic body with native face enum and packed surface shift on four still-zero siblings.",
+    "targets": {
+      "addresses": [
+        "004dfbb0",
+        "004e07e0",
+        "004e1410",
+        "004e2040"
+      ],
+      "scores": [
+        0,
+        39
+      ],
+      "sizes": [
+        3000,
+        4000
+      ]
+    },
+    "seed_sources": {
+      "2008-06": {
+        "004dfbb0": "work/large-functions-2008-20261014/004dfbb0.cpp",
+        "004e07e0": "work/large-functions-2008-20261014/004e07e0.cpp",
+        "004e1410": "work/large-functions-2008-20261014/004e1410.cpp",
+        "004e2040": "work/large-functions-2008-20261014/004e2040.cpp"
+      }
+    },
+    "keep_partials": true,
+    "builds": [
+      21022,
+      50727
+    ],
+    "profiles": [
+      "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+    ],
+    "append": [
+      "",
+      " /fp:fast"
+    ],
+    "output": "work/large-functions-2008-20261014/mesh-face-seed-grid",
+    "next": "Pilot and scale succeeded for partial recovery: four source-less zeroes now server40; no exacts. Park unchanged source/compiler pairs. Continue largest remaining below40 main caller or other fresh seed.",
+    "result": {
+      "date": "2026-10-15",
+      "targets": 4,
+      "variants": 16,
+      "additional_exacts": 0,
+      "verified_partials": {
+        "004dfbb0": 40,
+        "004e07e0": 40,
+        "004e1410": 40,
+        "004e2040": 40
+      },
+      "status": "parked",
+      "evidence": "work/large-functions-2008-20261014/mesh-face-seed-grid"
+    }
+  },
+  "gui-canvas-assignment-2008": {
+    "op": "fanout",
+    "library": "RBX GUI canvas rendering",
+    "hypothesis": "Two verified GUI render methods require genuine Vector2 construction/assignment and native shared-pointer child access; propagate unchanged compiled bodies",
+    "targets": {},
+    "sources": [
+      {
+        "recipe": "rbxgs",
+        "files": [
+          "roc_unit_39635652f58f6bf1.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast"
+        ]
+      },
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_unit_cc5f1fa5b17a4fd6.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast"
+        ]
+      }
+    ],
+    "next": "Keep only server whole code/data gains; existing layout views are codegen analogues, no new guessed virtual slots."
+  },
+  "large-mesh-build-seed-2008": {
+    "op": "grid",
+    "client": "2008-06",
+    "library": "native BrickMesh level population",
+    "hypothesis": "Full manually drafted7135byte native caller starts0; compare historical compiler/x87 gates after semantic trace recovery.",
+    "targets": {
+      "addresses": [
+        "004e3720"
+      ],
+      "scores": [
+        0,
+        39
+      ],
+      "sizes": [
+        7000,
+        8000
+      ]
+    },
+    "seed_sources": {
+      "2008-06": {
+        "004e3720": "work/large-functions-2008-20261014/004e3720.cpp"
+      }
+    },
+    "keep_partials": true,
+    "builds": [
+      21022,
+      50727
+    ],
+    "profiles": [
+      "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+    ],
+    "append": [
+      "",
+      " /fp:fast"
+    ],
+    "output": "work/large-functions-2008-20261014/mesh-build-seed-grid",
+    "next": "Review retained own-method candidate. No exact or generic scale-up claim for a partial. Park exhausted source/config pairs."
+  },
+  "large-mesh-build-vector-border-2008": {
+    "op": "grid",
+    "client": "2008-06",
+    "library": "native BrickMesh level population",
+    "hypothesis": "Authentic Vector2 border grouping follows observed width/height-before-margin stages and raises own full body to43; gate new source only.",
+    "targets": {
+      "addresses": [
+        "004e3720"
+      ],
+      "scores": [
+        0,
+        99
+      ],
+      "sizes": [
+        7000,
+        8000
+      ]
+    },
+    "seed_sources": {
+      "2008-06": {
+        "004e3720": "work/large-functions-2008-20261014/mesh-build-vector-border-wrapper.cpp"
+      }
+    },
+    "keep_partials": true,
+    "builds": [
+      21022,
+      50727
+    ],
+    "profiles": [
+      "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+    ],
+    "append": [
+      "",
+      " /fp:fast"
+    ],
+    "output": "work/large-functions-2008-20261014/mesh-build-vector-border-grid",
+    "next": "Retain own-method best; independent server verification required. New body originated from0, not a preexisting near-match seed. No broad rewrite without family evidence."
   }
 }

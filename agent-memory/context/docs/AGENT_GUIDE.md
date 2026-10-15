@@ -41,6 +41,9 @@ combine return immediates with caller cleanup; bare `ret` does not prove zero ar
 | Scratch score | `roc check 2008-06 ADDR --file PATH` | compilers | score + diff, saves nothing |
 | Test many variants at once | `roc check-batch 2008-06 ADDR v1.cpp v2.cpp v3.cpp` | compilers | parallel scores, ranked best-first, winner's residue |
 | Check a shared change across assigned targets | `roc agent-check-batch 2008-06 PATH1 PATH2 --hypothesis "shared change"` | assigned sources | concurrent checks, per-target journals and preserved best sources |
+| Read target context in one call | `roc agent-context 2008-06 PATH1 PATH2` | analyzed client, candidate files | sources, target asm, preserved best sources, last five trials; no compile/write |
+| Record a recovery blocker | `roc agent-block 2008-06 ADDR PATH --reason "missing fact; next evidence"` | assigned source/task | records missing evidence and stops that function |
+| Compare completed recovery runs | `roc agent-metrics --limit 20` | completed run summaries | verified improvement events/hour, median first useful check, blocked targets by profile |
 | Named experiments | `roc research list / plan NAME / run NAME` | server | journal in `work/research/NAME/`, verified exacts, memory records |
 | Score one source | `roc check 2008-06 [addr]` | compilers | score + asm diff |
 | Explain a mismatch | `roc classify 2008-06 ADDR FILE` | compilers | mismatch category with evidence |
@@ -52,6 +55,8 @@ combine return immediates with caller cleanup; bare `ret` does not prove zero ar
 | Keep generated units portable | `roc research capture-units` | sources in `src/` | `local/units/generated-units.json` |
 
 `roc --help` groups every command; specialist tools sit under *advanced*.
+Use `agent-check-batch --summary` to omit diffs from console output, or `--json`
+for structured trial results. Full trial journals remain unchanged.
 
 ## Order of work
 
@@ -76,6 +81,16 @@ default in automatic mode.
 New experiments add a recipe to `research/recipes.json` (op `grid` or `fanout`),
 not a new script. Agent-written translation units go through `libs.add_unit` so they
 are stored in `local/units/generated-units.json`, published to RoConstruct-findings `units/`, and downloaded by `roc pull`, so they rebuild identically on every PC.
+
+For manually recovered, source-less families, grid recipes can supply
+`seed_sources: {"2008-06": {"ADDR": "work/campaign/ADDR.cpp"}}`. Seeds are scoped
+to that client and must be workspace C++ files. Current server scores and normal
+target filters still apply; exacts and non-code rows stay excluded. Opt into
+`keep_partials: true` to retain only improving trial candidates under the
+campaign's `candidates/` folder, preserving the best file across resume. This does
+not submit partials or replace stored sources. Review the selected symbol, then
+submit a retained improvement through the normal verifier. Exact-count summaries
+still count only exact matches.
 
 ## Experiment memory
 
@@ -106,6 +121,42 @@ Missing docs are cached in `work/agent-memory/context/`. The server's findings
 publisher exports lessons, context and shared attempts to RoConstruct-findings.
 
 ## Automatic agent worker
+
+The recovery workflow applies to both automatic agents and server-backed custom goals:
+
+- Each model session receives one randomly selected unresolved function. The legacy
+  batch-size setting does not combine unrelated functions in one model session.
+- `work/agent-memory/recovery-queue.sqlite` persists randomized pick rounds across
+  local workers and restarts. Each eligible function gets a turn before repeats;
+  changed evidence gets a fresh turn. Queue reservations are transactional and expire
+  after a crash. Server target claims prevent simultaneous work by other PCs.
+- Every assignment has `evidence.json`: complete target assembly, bounded caller/callee
+  instructions, strings/imports and ABI observations, available authentic header
+  excerpts, and verified sibling source examples marked read-only. Missing declarations
+  are listed explicitly; attribution does not prove layout.
+- Understand behavior/ABI, draft C++, then use the supplied journaled `agent-check`.
+  Do not run baseline checks, compiler grids or near-match scans before drafting.
+- A 120-second no-experiment watchdog records a blocker and releases the function.
+  Unchanged baseline checks do not unlock it. Provider retry waits share this budget.
+  Automatic timeouts cool down for ten minutes; explicit missing-evidence blockers
+  remain parked until their own evidence changes. After a real experiment, the normal
+  per-function time budget applies; prompts stop after three losing hypotheses.
+- A server-verified improvement triggers at most eight unresolved same-shape sibling
+  checks. Each sibling gets a server claim, full code/data verification and its own
+  improvement receipt. Failed later checks preserve earlier verified wins.
+- Task `metrics.json`, run `summary.json` and `agent-metrics` report first useful
+  check latency and verified gains/hour. Local similarity and unverified exacts never
+  count as gains. Rates use complete run wall time, including planning, and count
+  receipt-backed improvement events rather than claiming unique function recoveries.
+
+Current target selection is uniform random over eligible unresolved functions,
+without near-match, area-yield or largest-function priority. Low scores and
+sourceless functions are eligible; sourceless assignments get an empty starter
+whose signature and body must be recovered from binary evidence. Sampling happens
+before grouping selected functions into batches. Solved/data/parked functions,
+client scope and configured size limits still apply. Independent singleton recovery
+is enabled. Older library-campaign ranking below describes retained research tools,
+not the default automatic selection.
 
 Runs inside Workers (same chat, terminal, history and stop control as other workers).
 The Automatic preset explores unfinished libraries and evidence-ranked categories (`--experimental`).
@@ -183,26 +234,23 @@ An in-flight compiler check, submission, or final memory sync may finish afterwa
 Runs can finish early when the target cap or eligible batches are exhausted. Byte
 limits apply to target machine-code size, not C++ source length or total library size.
 Deep has no byte cap; the CLI represents unlimited as `--max-size 0`.
-Automatic prioritizes reusable gains within this budget; it does not exhaust every
-function of a library or guarantee 100%. Individual repair remains disabled.
+Automatic samples unresolved functions within this budget; it does not exhaust every
+function or guarantee 100%. Individual recovery is enabled.
 
 
-- **Ranking.** Areas (family reuse, templates/library, imports, ABI/layout, other
-  near-misses) are ranked by a heuristic plus the server-verified gain rate per target
-  of past batches from every PC (Laplace-smoothed). This is a priority, not a forecast.
-- **Shared targets.** Workers may investigate the same target or area. The server
-  keeps only a server-verified score improvement, so concurrent work cannot replace
-  a better source.
-- **Free phase first.** Verified donors, recipe sources from the batch, and compiler
-  gates for >=90% targets (both builds x kept flags, `/O2`, `/O1`). Pairs of address and
-  source hash that already failed on any PC are skipped.
-- **Paid phase.** One agent batch per coherent group, editing only isolated copies
-  under `work/agent-auto/<run>/` and checking with `roc agent-check`. Two zero-gain
-  hypotheses exhaust a repair batch; a completed zero-gain repair batch parks the
-  group across models until its source, recipe or target extent changes. Failed or
-  unavailable CLI runs do not park it.
-- **Submission.** Best source per target is re-scored locally and submitted; only
-  server-verified improvements count.
+- **Selection.** Persistent random pick rounds replace area-yield and near-match
+  ranking. Client, size, solved/data and evidence-parking exclusions still apply.
+- **Claims.** Transactional local reservations and explicit server target claims
+  prevent simultaneous assignments. The server still verifies every improvement.
+- **Recovery first.** One isolated source per model session under
+  `work/agent-auto/<run>/`; the evidence packet is ready before model launch.
+  Draft from observed behavior/ABI, then journal with `agent-check`.
+- **Cheap checks afterward.** Compiler/donor reuse follows recovery, skipping
+  previously rejected address/source pairs. Verified wins trigger bounded sibling
+  propagation, never edits to already-solved donors.
+- **Submission and metrics.** Preserve and re-score the best candidate; count only
+  server-confirmed receipts. `agent-metrics` reports completed recovery runs by
+  profile; local similarity gains do not inflate the rate.
 
 ## Claude Code and Codex CLIs
 
@@ -228,10 +276,9 @@ RAM; per-tab model and worker parameters stay unchanged. Command jobs queue behi
 other commands. Goal runs skip unchanged reported blockers between cycles. Local 100%
 and already-exact receipts are not new wins. OpenCode appears in the CLI selector,
 loads installed models, and runs with its own standalone server per worker.
-Goal shortlists mix 14 near-misses (95–99%), 7 largest remaining functions and
-3 random remaining functions; shortages fill from remaining source-backed targets.
-Exploration can include scores below 70%. Exact, sourceless and parked targets stay
-excluded. Each listed source is copied into the run's scratch folder with ready
+Goal shortlists uniformly sample up to 24 unresolved functions across eligible scores
+and sizes. Exact and parked targets stay excluded; sourceless targets get starters.
+Each listed source is copied into the run's scratch folder with ready
 check/submit commands, so models need not rediscover files or shell syntax.
 Thinking and tool bursts share one folded activity row; expanding it retains
 reasoning summaries, complete commands and outputs.
@@ -247,9 +294,8 @@ target unresolved siblings; solved donor sources remain read-only.
 Repair prompts include bounded caller/callee names, strings, imports, argument
 slots and observed reads/writes. Agents infer likely behavior, cite one supporting
 fact, and test a C++ change against the bytes; inferred purpose never proves layout
-or ABI. Automatic cycles allow one source-backed singleton (at least 64 bytes)
-after compiler reuse; explicit individual mode still permits more. Changed behavior
-evidence also invalidates parking.
+or ABI. Automatic cycles allow independent randomly sampled singletons. Changed
+behavior evidence also invalidates parking.
 When stuck, compare two materially different source strategies, select the cheapest
 falsifiable experiment, and record rejected ideas. Creativity changes source strategy;
 only target bytes, referenced data and server receipts establish an exact match.
@@ -289,6 +335,10 @@ address.
 
 ## Pitfalls
 
+- `virtual_slots` includes table-to-method loads followed by register-indirect
+  calls. Provenance must identify the same object in ECX at dispatch; register
+  writes, volatile call clobbers and control-flow joins discard stale traces.
+  Slots remain bounded instruction clues, not proof of a class or declaration.
 - `entry_ecx_constructors` records imported constructor calls at offsets traced
   from entry ECX through the straight-line prologue. Calls clobber volatile
   registers; pointer loads and partial-register writes lose the trace. Observations
