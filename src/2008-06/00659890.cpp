@@ -1,4 +1,6 @@
-// from server: 51% by colin
+// from server: 55% by colin
+// roc-cl: 50727
+// roc-flags: /O2 /GS- /EHsc /MD
 extern "C" void __stdcall _invalid_parameter_noinfo();
 
 struct Inner {

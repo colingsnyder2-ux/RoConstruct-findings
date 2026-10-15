@@ -7048,5 +7048,1463 @@
     ],
     "output": "work/goal-native-shared-array-20261015/fast-grid",
     "next": "Pilotbothfullserver; ifsuccessfullobjectfanout acrossallunresolvedonce."
+  },
+  "native-part-array-conversion-owner-view-2008": {
+    "op": "grid",
+    "client": "2008-06",
+    "library": "RBX genuine Primitive array to shared Part array",
+    "hypothesis": "Append100provesactualsharedArrayABI. Caller0059b810 nativeprimitivesToParts usesmeasurednullablePrimitiveownerA4andIMovingdowncast1c0. NativeDebug.h_RELEASEASSERTwasrecipeforced,buttargetlacksassertpaths: TUundefusesactualreleasebranch. Keepactualnativehelperbodies, types, loop/copy/dtor.",
+    "targets": {
+      "addresses": [
+        "0059b810"
+      ],
+      "scores": [
+        0,
+        99
+      ]
+    },
+    "seed_sources": {
+      "2008-06": {
+        "0059b810": "work\\goal-part-array-conversion-core-20261015\\0059b810.cpp"
+      }
+    },
+    "keep_partials": true,
+    "builds": [
+      21022
+    ],
+    "profiles": [
+      "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+    ],
+    "append": [
+      ""
+    ],
+    "output": "work\\goal-part-array-conversion-core-20261015\\grid",
+    "next": "Fullserverpilotbeforeanybroaderrelease-modepropagation."
+  },
+  "native-shared-array-fast-family-propagation-2008": {
+    "op": "fanout",
+    "client": "2008-06",
+    "library": "G3D verified shared-owner append family",
+    "hypothesis": "Actualnativeappend79to100andresize95to100proveentire8bytesharedownerArrayfamily; fastgateeliminatedonlygrowthspills. Scaleonefastobjectacrossallunresolved2008, noadditionaltypes/bodychanges.",
+    "targets": {},
+    "sources": [
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_unit_fcbda0c1820c4cce.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast"
+        ]
+      }
+    ],
+    "next": "Fullservercode/data; inspectresize85onlyfornewbinaryevidence."
+  },
+  "native-reflection-isolated-cores-batch-2008": {
+    "op": "fanout",
+    "client": "2008-06",
+    "library": "Native Tool Accoutrement PVInstance Hopper descriptor cores",
+    "hypothesis": "Previously blocked VS2008 render header now isolated using proven genuine IRenderable core. Retain unchanged native classes/private access and authentic descriptor declarations. Emit all template/accessor/initializer functions; compare every unresolved function once.",
+    "sources": [
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_unit_83a15fd83f2ddba6.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_unit_fbd2fa3f2186e8d7.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_unit_0a5160c3f82cced4.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_unit_d5476a7af8a25735.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      }
+    ],
+    "next": "Server verify full code/data; inspect heldout family residue, park unchanged zero gain.",
+    "result": {
+      "status": "verified",
+      "new_verified": 1,
+      "evidence": "work/batch-native-scale-20261015/native-receipts.json"
+    }
+  },
+  "native-levelbuilder-vptr-float-family-2008": {
+    "op": "fanout",
+    "client": "2008-06",
+    "library": "Native QuadVolume LevelBuilder",
+    "hypothesis": "00500d80 target constructor stores genuine LevelBuilder vtable; native header novtable suppresses store. Remove only that novtable annotation in managed header. Actual float half multiplier target f32 vs candidate f64 justifies normal/fast controls. Full unchanged native TU, actual hierarchy and fields retained.",
+    "sources": [
+      {
+        "recipe": "rbxgs-view",
+        "files": [
+          "roc_unit_a8e62680ef004e5c.cpp"
+        ],
+        "builds": [
+          21022,
+          50727
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast",
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      }
+    ],
+    "next": "Full server verification; park after bounded four object gates.",
+    "result": {
+      "status": "verified",
+      "new_verified": 1,
+      "evidence": "work/batch-native-scale-20261015/native-receipts.json"
+    }
+  },
+  "native-reflection-isolated-cores-heldout-2008": {
+    "op": "fanout",
+    "client": "2008-06",
+    "library": "Native reflection heldout cores",
+    "hypothesis": "PVInstance isolated descriptor core verified one new exact. Heldout six authentic descriptor families emit native templates under21022 DLL without unrelated header dependencies. No invented fields, signatures or used class changes.",
+    "sources": [
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_unit_37dc9d259436df0a.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_unit_34c22b91d5a4ba44.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_unit_18fb4fcdfc51fcf7.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_unit_ebf37d56a7bd8ccd.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_unit_4bdd0a285727cf55.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_unit_ea3bbe42c258e181.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      }
+    ],
+    "next": "Verify every emitted full-code/data match; park unchanged objects after one fanout.",
+    "result": {
+      "status": "verified",
+      "new_verified": 16,
+      "evidence": "work/batch-native-scale-20261015/native-receipts.json"
+    }
+  },
+  "native-release-proven-owner-heldout-2008": {
+    "op": "fanout",
+    "client": "2008-06",
+    "library": "RBX validated release prelude and owner views heldout",
+    "hypothesis": "Verifiedconversionpilot100 proves_RELEASEASSERTabsentbuildandownerA4/downcast1c0. Heldout2genuinenativePrimitive/Partobjects withonlyindependentlyverifiedInstance/Primitive/Partviews. Fouractualcompilerprofiles, no unrelatedconstant/layout search.",
+    "targets": {},
+    "sources": [
+      {
+        "recipe": "rbxgs",
+        "files": [
+          "roc_unit_103a89815837edbc.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast",
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "rbxgs",
+        "files": [
+          "roc_unit_861d95cd9c9deac4.cpp"
+        ],
+        "builds": [
+          50727
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast",
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      }
+    ],
+    "next": "Fullcode/data/servergains; stopafter4objectcohort, parkzero."
+  },
+  "native-reflection-isolated-cores-scale-2008": {
+    "op": "fanout",
+    "client": "2008-06",
+    "library": "Native reflection fourteen-family scale",
+    "hypothesis": "Gyro core produced16 verified204-byte BoundProp constructors. Scale unchanged genuine native descriptor declarations across14 additional families, retaining actual headers/classes/private access; compare all emitted functions to all unresolved targets.",
+    "sources": [
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_unit_516782e7fcaebd73.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_unit_0372bd40fdb8a7ca.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_unit_7c9a735a4d74fe17.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_unit_eee66597b5971847.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_unit_d5b450efc2c6421f.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_unit_de4e94e1919e7371.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_unit_2eb26e87848bb002.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_unit_ea9dfea52870f378.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_unit_df016c513d977c61.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_unit_c78eafa70d840719.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_unit_68cac77bb7e4c3ba.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_unit_ded1e60d3cdeb21c.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_unit_94c4682419f795d9.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_unit_41c6f4f71ebdd95a.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      }
+    ],
+    "next": "Full server code/data receipts; park each unchanged zero-gain unit.",
+    "result": {
+      "status": "parked",
+      "new_verified": 0,
+      "evidence": "work/batch-native-scale-20261015/native-receipts.json"
+    }
+  },
+  "bruteforce-compiler-gates": {
+    "op": "grid",
+    "targets": {
+      "scores": [
+        0,
+        99
+      ]
+    },
+    "builds": [
+      21022,
+      50727
+    ],
+    "profiles": [
+      "keep",
+      "/O2 /GS- /EHsc /MD",
+      "/O1 /GS- /EHsc /MD",
+      "/Od /Ob0 /GS /EHsc /MD"
+    ],
+    "append": [
+      "",
+      " /fp:fast"
+    ],
+    "keep_partials": true,
+    "reuse_history": true,
+    "library": "Client-scoped compiler brute force",
+    "hypothesis": "Bounded known winning compiler/precision gates on each unresolved sourced function. Sequential gates per target; parallel targets. Source bodies remain unchanged; no guessed ABI or field edits. Dependency and target-aware resume prevents repeated gates.",
+    "next": "Native recovery required for sourceless targets; inspect preserved partials for proven source changes.",
+    "improvement_only": true,
+    "reuse_objects": true,
+    "submit_partials": true
+  },
+  "portable-bruteforce": {
+    "op": "sweep",
+    "stages_by_client": {
+      "2008-06": [
+        "native-reflection-isolated-cores-batch-2008",
+        "native-reflection-isolated-cores-heldout-2008",
+        "native-levelbuilder-vptr-float-family-2008",
+        "native-reflection-isolated-cores-scale-2008"
+      ]
+    },
+    "stages": [
+      "bruteforce-compiler-gates",
+      "bruteforce-source-portfolios"
+    ],
+    "hypothesis": "Reuse authentic compiler/template successes, then advance through all sourced unmatched functions with bounded gates, preserved best partials and server-only exact credit. Client-specific source stages never transfer implicitly.",
+    "next": "Register authentic family stages separately for each client; no instant-gain guarantee."
+  },
+  "large-texture-family-gates-2008": {
+    "op": "grid",
+    "client": "2008-06",
+    "library": "native Ogre texture resolve and Mesa mipmap",
+    "hypothesis": "Manual full4073-byte texture resolver0to52, actual Ogre/G3D APIs bridged through standard recipe, validated native fields, manual Mesa mipmaps with observed source-row padding. Same unit emits234-byte Mesa helper39to60; test compiler gates after recovery, keep only improvements.",
+    "targets": {
+      "addresses": [
+        "007aec70",
+        "007ada80"
+      ],
+      "scores": [
+        0,
+        99
+      ]
+    },
+    "seed_sources": {
+      "2008-06": {
+        "007aec70": "work/large-functions-2008-20261014/007aec70.cpp",
+        "007ada80": "work/large-functions-2008-20261014/007aec70.cpp"
+      }
+    },
+    "keep_partials": true,
+    "builds": [
+      21022,
+      50727
+    ],
+    "profiles": [
+      "/O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MD /fp:fast",
+      "/O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MD",
+      "/O2 /Ob1 /Oy /GF /GS- /EHsc /MD",
+      "/Od /Ob0 /GS /EHsc /MD"
+    ],
+    "output": "work/large-functions-2008-20261014/texture-family-gates",
+    "next": "Submit only improved full-body sources; kernel remains partial until natural compiler code/data verification; no invented register ABI."
+  },
+  "native-primitive-coordinate-views-arity-2008": {
+    "op": "grid",
+    "client": "2008-06",
+    "library": "RBX actual coordinate setter views and World bool arity",
+    "hypothesis": "Synthetic84 andearliernativefamilyplateau: targetprovesWorld58/Clump5c/Assemblylink24/root1c/ownerA4/BodyA0/PV94 and3byteguardsA8-Aa. ActualnewerWorldheader2argboolprototypeplusret8/bytecalleeproof. Genuinemethod/helperbodies withtypedviews andobservedguards, releaseprelude; no fieldpadding orinventedflagmeanings.",
+    "targets": {
+      "addresses": [
+        "005e8200"
+      ],
+      "scores": [
+        0,
+        99
+      ]
+    },
+    "seed_sources": {
+      "2008-06": {
+        "005e8200": "work\\goal-primitive-coordinate-core-20261015\\005e8200.cpp"
+      }
+    },
+    "keep_partials": true,
+    "builds": [
+      21022
+    ],
+    "profiles": [
+      "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+    ],
+    "append": [
+      ""
+    ],
+    "output": "work\\goal-primitive-coordinate-core-20261015\\grid",
+    "next": "Fullcode/data/server; distinctnewABIevidencereopensoldfield-onlycohort."
+  },
+  "native-world-tickle-stage-view-arity-2008": {
+    "op": "grid",
+    "client": "2008-06",
+    "library": "RBX actual World tickle stage callback",
+    "hypothesis": "CoordinateSetter100proves2argbooltickle; actualnewerheadersconfirmSleepStage.onWakeUpRequest2bool. TargetWorldstageptr88, genuineIStagefindStagekind5/next8 andnativeWorldhelperinlinecontext. PrimitivegetAssemblyexternaldeclarationkeepsactualcallboundary. No extrafields or guessedprototype.",
+    "targets": {
+      "addresses": [
+        "005e9410"
+      ],
+      "scores": [
+        0,
+        99
+      ]
+    },
+    "seed_sources": {
+      "2008-06": {
+        "005e9410": "work\\goal-world-tickle-core-20261015\\005e9410.cpp"
+      }
+    },
+    "keep_partials": true,
+    "builds": [
+      21022
+    ],
+    "profiles": [
+      "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+    ],
+    "append": [
+      ""
+    ],
+    "output": "work\\goal-world-tickle-core-20261015\\grid",
+    "next": "Fullservercode/data; ifnativecompilefailsmissingheader, onlyactualrequiredincludes."
+  },
+  "native-physics-arity-proven-family-propagation-2008": {
+    "op": "fanout",
+    "client": "2008-06",
+    "library": "RBX verified native physics cores",
+    "hypothesis": "Fan out two newly verified genuine typed-view and two-argument callback objects across all unresolved targets; full referenced-data acceptance.",
+    "sources": [
+      {
+        "recipe": "rbxgs",
+        "files": [
+          "roc_unit_3b800b142fb251e5.cpp",
+          "roc_unit_0ec1b5c0a1712ab3.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD",
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast"
+        ]
+      }
+    ],
+    "targets": {},
+    "next": "Park objects after bounded scan; only reopen with new native evidence.",
+    "result": {
+      "status": "parked",
+      "objects": 4,
+      "new_verified": 0,
+      "evidence": "work/research/native-physics-arity-proven-family-propagation-2008"
+    }
+  },
+  "large-gl-texture-gates-2008": {
+    "op": "grid",
+    "client": "2008-06",
+    "library": "complete native GL texture resolver",
+    "hypothesis": "Complete2204-byte native body with validated catch continuations; source recovered0to48. Bounded compiler-only gates; preserve best source.",
+    "targets": {
+      "addresses": [
+        "007b8610"
+      ],
+      "scores": [
+        0,
+        99
+      ]
+    },
+    "seed_sources": {
+      "2008-06": {
+        "007b8610": "work/large-functions-2008-20261014/007b8610.cpp"
+      }
+    },
+    "keep_partials": true,
+    "builds": [
+      21022,
+      50727
+    ],
+    "profiles": [
+      "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast",
+      "/O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MD /fp:fast",
+      "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD",
+      "/O1 /Ob2 /Oy /GF /GS- /EHsc /MD"
+    ],
+    "output": "work/large-functions-2008-20261014/gl-texture-gates",
+    "next": "Submit full-body gain; park exhausted grid."
+  },
+  "large-texture-recovery-fanout-2008": {
+    "op": "fanout",
+    "client": "2008-06",
+    "library": "native texture family",
+    "hypothesis": "New manual native texture GC exact and two complete resolver objects; propagate authentic emitted functions to all unresolved2008 code with full code/data acceptance.",
+    "sources": [
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_texture_gl_7917fdadad787314.cpp",
+          "roc_texture_ogre_31ec83fd82e33fb1.cpp"
+        ],
+        "builds": [
+          21022,
+          50727
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MD /fp:fast"
+        ]
+      },
+      {
+        "recipe": "ogre-1.4.5-dll",
+        "files": [
+          "roc_texture_collect_1f43ed84bc91727c.cpp"
+        ],
+        "builds": [
+          21022,
+          50727
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MD /fp:fast"
+        ]
+      }
+    ],
+    "targets": {},
+    "output": "work/large-functions-2008-20261014/texture-recovery-fanout",
+    "next": "Park objects after bounded pass; count only server-verified exacts."
+  },
+  "bruteforce-source-portfolios": {
+    "op": "grid",
+    "targets": {
+      "scores": [
+        0,
+        99
+      ]
+    },
+    "portfolio": {
+      "max_candidates": 8,
+      "donors": 3,
+      "family_sources": 4
+    },
+    "builds": [
+      21022,
+      50727
+    ],
+    "profiles": [
+      "context"
+    ],
+    "append": [
+      "",
+      " /fp:fast"
+    ],
+    "keep_partials": true,
+    "reuse_history": true,
+    "improvement_only": true,
+    "hypothesis": "Search every recoverable existing-source portfolio: canonical/local source, journaled best partials, same-shape server exact donors and authentic alternate preprocessing recipes for the same native file. Sweep inlining/frame/optimization contexts preserving other flags; no guessed source layouts or body rewrites. Dependency-target bounds cache skips completed losing gates.",
+    "library": "Client-scoped source portfolios",
+    "next": "Review retained improvements; extend candidate_sources with new binary-proven native cores. Source counts and omissions are reported.",
+    "submit_partials": true,
+    "reuse_objects": true
+  },
+  "bruteforce-source-portfolios-deep": {
+    "op": "grid",
+    "targets": {
+      "scores": [
+        0,
+        99
+      ]
+    },
+    "portfolio": {
+      "max_candidates": 0,
+      "donors": 0,
+      "family_sources": 0
+    },
+    "builds": [
+      21022,
+      50727
+    ],
+    "profiles": [
+      "context"
+    ],
+    "append": [
+      "",
+      " /fp:fast"
+    ],
+    "keep_partials": true,
+    "reuse_history": true,
+    "improvement_only": true,
+    "hypothesis": "Exhaust all indexed existing-source candidates and same-shape exact donors, with no portfolio cap. Same bounded compiler contexts and full server verification; runtime can be substantial.",
+    "library": "Client-scoped source portfolios",
+    "next": "Review retained improvements; extend candidate_sources with new binary-proven native cores. Source counts and omissions are reported.",
+    "submit_partials": true,
+    "reuse_objects": true
+  },
+  "portable-bruteforce-deep": {
+    "op": "sweep",
+    "stages_by_client": {
+      "2008-06": [
+        "native-reflection-isolated-cores-batch-2008",
+        "native-reflection-isolated-cores-heldout-2008",
+        "native-levelbuilder-vptr-float-family-2008",
+        "native-reflection-isolated-cores-scale-2008"
+      ]
+    },
+    "stages": [
+      "bruteforce-compiler-gates",
+      "bruteforce-source-portfolios-deep"
+    ],
+    "hypothesis": "Reuse authentic compiler/template successes, then advance through all sourced unmatched functions with bounded gates, preserved best partials and server-only exact credit. Client-specific source stages never transfer implicitly.",
+    "next": "Register authentic family stages separately for each client; no instant-gain guarantee."
+  },
+  "native-reflection-isolated-cores-heldout2-2008": {
+    "op": "fanout",
+    "client": "2008-06",
+    "library": "Actual remaining RBX reflection cores",
+    "hypothesis": "Six heldout native headers and unchanged real descriptor/function declarations, isolated from unrelated TU method bodies; same verified unused IRenderableBucket omission. No invented classes, fields or ABI. Scan all unresolved functions; full code+data server receipt required.",
+    "sources": [
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_unit_4122f0fde0d36c3f.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_unit_fd82c689f6dd6f04.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_unit_e219eb0e47a0377b.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_unit_2be56a4fb6db12d8.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_unit_02b5c9525bad5614.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_unit_1e8ee6fb9a0be4ef.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      }
+    ],
+    "targets": {},
+    "next": "Park zero-gain objects; fix compile blockers only using actual required includes.",
+    "result": {
+      "status": "parked",
+      "new_verified": 0,
+      "objects": 6,
+      "evidence": "work/goal-native-descriptor-heldout2-20261015/receipts.json"
+    }
+  },
+  "native-function-signal-isolated-cores-2008": {
+    "op": "fanout",
+    "client": "2008-06",
+    "library": "Actual RBX BoundFuncDesc and SignalDesc",
+    "hypothesis": "Unchanged native function/signal descriptor declarations excluded from previous property-core cohorts. Native headers and actual method pointers/types only. Deduplicate original declarations against all previous isolated cores. Full code/data server acceptance.",
+    "sources": [
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_unit_033f5e8ef65c7f83.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_unit_a5db8c566c5ff1e7.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_unit_91400c20591be5a2.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_unit_9fa2a6ae003bc914.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      }
+    ],
+    "targets": {},
+    "next": "Park zero-gain objects; actual required includes only for compile blockers.",
+    "result": {
+      "status": "verified",
+      "new_verified": 4,
+      "objects": 4,
+      "evidence": "work/goal-native-descriptor-heldout2-20261015/receipts.json"
+    }
+  },
+  "native-workspace-descriptors-original-render-base-2008": {
+    "op": "fanout",
+    "client": "2008-06",
+    "library": "Native Workspace descriptor core with required render base",
+    "hypothesis": "Workspace inherits IRenderableBucket: retain entire genuine header/base and use compatible MSVC50727 instead of omitting required class or bypassing access. Native unchanged property/function descriptor declarations.",
+    "sources": [
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_unit_5e00ac96d73d622e.cpp"
+        ],
+        "builds": [
+          50727
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      }
+    ],
+    "targets": {},
+    "next": "Park after bounded full code/data scan.",
+    "result": {
+      "status": "parked",
+      "new_verified": 0,
+      "objects": 1,
+      "evidence": "work/goal-native-descriptor-heldout2-20261015/receipts.json"
+    }
+  },
+  "native-datamodel-function-core-compiler-propagation-2008": {
+    "op": "fanout",
+    "client": "2008-06",
+    "library": "Verified DataModel real function descriptor core",
+    "hypothesis": "Four full server exacts from unchanged DataModel BoundFuncDesc/SignalDesc declarations; test only three remaining build/precision configurations, then park.",
+    "sources": [
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_unit_a5db8c566c5ff1e7.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast"
+        ]
+      },
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_unit_a5db8c566c5ff1e7.cpp"
+        ],
+        "builds": [
+          50727
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD",
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast"
+        ]
+      }
+    ],
+    "targets": {},
+    "next": "Park after bounded full object propagation.",
+    "result": {
+      "status": "parked",
+      "new_verified": 0,
+      "objects": 3,
+      "evidence": "work/goal-native-descriptor-heldout2-20261015/receipts.json"
+    }
+  },
+  "large-adorn-quad-gates-2008": {
+    "op": "grid",
+    "client": "2008-06",
+    "library": "native Ogre Adorn quad",
+    "hypothesis": "Complete1614-byte native quad0to45. Actual Ogre camera/manualobject/mesh/matrix APIs and native field views; bounded compiler gates.",
+    "targets": {
+      "addresses": [
+        "00672f50"
+      ],
+      "scores": [
+        0,
+        99
+      ]
+    },
+    "seed_sources": {
+      "2008-06": {
+        "00672f50": "work/large-functions-2008-20261014/00672f50.cpp"
+      }
+    },
+    "keep_partials": true,
+    "builds": [
+      21022,
+      50727
+    ],
+    "profiles": [
+      "/O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MD /fp:fast",
+      "/O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MD",
+      "/O2 /Ob1 /Oy /GF /GS- /EHsc /MD /fp:fast",
+      "/O1 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast"
+    ],
+    "output": "work/large-functions-2008-20261014/adorn-quad-gates",
+    "next": "Submit best full-body gain then propagate object to fresh targets."
+  },
+  "native-sleep-wake-state-container-core-2008": {
+    "op": "grid",
+    "client": "2008-06",
+    "library": "Actual SleepStage wake/state helpers",
+    "hypothesis": "Actual newer SleepInfo, SleepStage declarations and six native helper bodies. Measured typed views for SleepInfo18, stage set e0/100/120/140/160, rootClump24, rootPrimitive1c, BodyA0/root10/SimBody2c. Preserve genuine IPipelined stage virtuals, std::set and resetAccumulators. Full code/data server verification.",
+    "targets": {
+      "addresses": [
+        "0064b5e0",
+        "0064b6d0"
+      ],
+      "scores": [
+        0,
+        99
+      ]
+    },
+    "seed_sources": {
+      "2008-06": {
+        "0064b5e0": "work\\goal-sleep-wake-core-20261015\\0064b5e0.cpp",
+        "0064b6d0": "work\\goal-sleep-wake-core-20261015\\0064b6d0.cpp"
+      }
+    },
+    "builds": [
+      21022
+    ],
+    "profiles": [
+      "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+    ],
+    "append": [
+      ""
+    ],
+    "keep_partials": true,
+    "output": "work\\goal-sleep-wake-core-20261015\\grid",
+    "next": "If compile succeeds, inspect native helper inline context; bounded compiler gates only after target evidence.",
+    "result": {
+      "status": "verified",
+      "new_verified": 2,
+      "evidence": "work/goal-sleep-stage-loops-20261015/four-receipts.json"
+    }
+  },
+  "native-sleep-wake-proven-core-propagation-2008": {
+    "op": "fanout",
+    "client": "2008-06",
+    "library": "Two verified native SleepStage wake methods and helpers",
+    "hypothesis": "Both native wakeEvent and recursiveWakeEvent100 with full referenced-data/server proof. Scan whole same object for sibling gains; no new layout hypotheses.",
+    "sources": [
+      {
+        "recipe": "rbxgs",
+        "files": [
+          "roc_unit_66cef798498ea6c7.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      }
+    ],
+    "targets": {},
+    "next": "Park after zero-gain scan; no floating math in selected wake bodies, avoid irrelevant fpfast gates.",
+    "result": {
+      "status": "parked",
+      "new_verified": 0,
+      "evidence": "work/goal-sleep-stage-loops-20261015/four-receipts.json"
+    }
+  },
+  "large-adorn-drawing-family-gates-2008": {
+    "op": "grid",
+    "client": "2008-06",
+    "library": "native Ogre Adorn drawing family",
+    "hypothesis": "Three complete native manually recovered large0score methods:quad1614,ray1251,cylinder1274. Shared trueOgre/G3D APIs,native GLU-generator fields,opaque native cache/prototypes. Reuse one managed unit across24 compiler checks.",
+    "targets": {
+      "addresses": [
+        "00672f50",
+        "006726a0",
+        "006735a0"
+      ],
+      "scores": [
+        0,
+        99
+      ]
+    },
+    "seed_sources": {
+      "2008-06": {
+        "00672f50": "work/large-functions-2008-20261014/00672f50.cpp",
+        "006726a0": "work/large-functions-2008-20261014/006726a0.cpp",
+        "006735a0": "work/large-functions-2008-20261014/006735a0.cpp"
+      }
+    },
+    "keep_partials": true,
+    "builds": [
+      21022,
+      50727
+    ],
+    "profiles": [
+      "/O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MD",
+      "/O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MD /fp:fast",
+      "/O2 /Ob1 /Oy /GF /GS- /EHsc /MD",
+      "/O1 /Ob2 /Oy /GF /GS- /EHsc /MD"
+    ],
+    "output": "work/large-functions-2008-20261014/adorn-drawing-family-gates",
+    "next": "Submit best full-body improvements; park exhausted gates."
+  },
+  "large-adorn-drawing-family-fanout-2008": {
+    "op": "fanout",
+    "client": "2008-06",
+    "library": "native Ogre Adorn drawing family",
+    "hypothesis": "Three new full manually recovered native methods in one reusable object. Both2008builds,normal/fastprofiles,fanout all unresolved2008code with referenceddata checks.",
+    "sources": [
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_adorn_draw_family_ad53efc0d0dcc634.cpp"
+        ],
+        "builds": [
+          21022,
+          50727
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MD",
+          "/O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MD /fp:fast"
+        ]
+      }
+    ],
+    "targets": {},
+    "output": "work/large-functions-2008-20261014/adorn-drawing-family-fanout",
+    "next": "Park unchanged objects after pass; record server-only exact credit."
+  },
+  "native-sleep-stage-owned-vector-loops-2008": {
+    "op": "grid",
+    "client": "2008-06",
+    "library": "SleepStage actual native iteration/state helpers",
+    "hypothesis": "New459bytes full exacts prove shared genuine SleepInfo/state/body views. Awake and SleepingChecking targets prove std::set120/140, boolD8/Body30 and checked std::vector receivers40/28/10 cleared at end. Adapt authentic native loops only to these observed storage/lifetime facts.",
+    "targets": {
+      "addresses": [
+        "0064bd80",
+        "0064be80"
+      ],
+      "scores": [
+        0,
+        99
+      ]
+    },
+    "seed_sources": {
+      "2008-06": {
+        "0064bd80": "work\\goal-sleep-stage-loops-20261015\\0064bd80.cpp",
+        "0064be80": "work\\goal-sleep-stage-loops-20261015\\0064be80.cpp"
+      }
+    },
+    "builds": [
+      21022
+    ],
+    "profiles": [
+      "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+    ],
+    "append": [
+      ""
+    ],
+    "keep_partials": true,
+    "output": "work\\goal-sleep-stage-loops-20261015\\grid",
+    "next": "Inspect only factual residue, then bounded compiler gate; full code/data/server receipt.",
+    "result": {
+      "status": "parked",
+      "new_verified": 0,
+      "evidence": "work/goal-sleep-stage-loops-20261015/four-receipts.json"
+    }
+  },
+  "native-sleep-stage-direct-vector-views-2008": {
+    "op": "grid",
+    "client": "2008-06",
+    "library": "Native stage iteration; direct measured vector views",
+    "hypothesis": "Previous native loops compile47/55: local container references hoist receiver addresses into extra stack locals and spill across callbacks. Use direct measured std::vector lvalues at every genuine operation, same storage/algorithm; bounded21022/50727 gates.",
+    "targets": {
+      "addresses": [
+        "0064bd80",
+        "0064be80"
+      ],
+      "scores": [
+        0,
+        99
+      ]
+    },
+    "seed_sources": {
+      "2008-06": {
+        "0064bd80": "work\\goal-sleep-stage-loops-20261015\\0064bd80-direct.cpp",
+        "0064be80": "work\\goal-sleep-stage-loops-20261015\\0064be80-direct.cpp"
+      }
+    },
+    "builds": [
+      21022,
+      50727
+    ],
+    "profiles": [
+      "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+    ],
+    "append": [
+      ""
+    ],
+    "keep_partials": true,
+    "output": "work\\goal-sleep-stage-loops-20261015\\direct-grid",
+    "next": "Keep only full exact or stronger partial. Stop if bounded grid fails; no volatile/dead-store tricks.",
+    "result": {
+      "status": "verified",
+      "new_verified": 2,
+      "evidence": "work/goal-sleep-stage-loops-20261015/four-receipts.json"
+    }
+  },
+  "native-sleep-stage-direct-loop-propagation-2008": {
+    "op": "fanout",
+    "client": "2008-06",
+    "library": "Two verified native stage loops and state helpers",
+    "hypothesis": "Native std::set loops with direct measured stage-owned std::vector views remove receiver spill versus long-lived local references. Both full server100; scan whole winning object once.",
+    "sources": [
+      {
+        "recipe": "rbxgs",
+        "files": [
+          "roc_unit_32e3ce177c352edc.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      }
+    ],
+    "targets": {},
+    "next": "Park zero gain object; remaining SleepStage fields require fresh evidence.",
+    "result": {
+      "status": "parked",
+      "new_verified": 0,
+      "evidence": "work/goal-sleep-stage-loops-20261015/four-receipts.json"
+    }
+  },
+  "native-sleep-edge-indexarray-core-2008": {
+    "op": "grid",
+    "client": "2008-06",
+    "library": "Actual native SleepStage edge callback and IndexArray",
+    "hypothesis": "Target proves IndexArray<Contact,&Contact::steppingIndexFunc> receiver1a0/counterD0. Genuine actual edge callback and actual inline get/setEdgeState bodies match old Edge native fields and vslots. Preserve unused real getAssembly external calls.",
+    "targets": {
+      "addresses": [
+        "0064b1b0"
+      ],
+      "scores": [
+        0,
+        99
+      ]
+    },
+    "seed_sources": {
+      "2008-06": {
+        "0064b1b0": "work\\goal-sleep-edge-core-20261015\\0064b1b0.cpp"
+      }
+    },
+    "builds": [
+      21022
+    ],
+    "profiles": [
+      "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+    ],
+    "append": [
+      ""
+    ],
+    "keep_partials": true,
+    "output": "work\\goal-sleep-edge-core-20261015\\grid",
+    "next": "Inspect genuine inline context then bounded gate. Full code/data/server required."
+  },
+  "native-sleep-contact-indexarray-core-2008": {
+    "op": "grid",
+    "client": "2008-06",
+    "library": "Native Contact IndexArray state transitions",
+    "hypothesis": "Verified edge callback proves actual Contact IndexArray/store24 layout and vtable contracts. Target contact-state method proves stepping/touching IndexArray1a0/1ac and kernel counterD4; actual full native method with only direct typed receiver views.",
+    "targets": {
+      "addresses": [
+        "0064bf90"
+      ],
+      "scores": [
+        0,
+        99
+      ]
+    },
+    "seed_sources": {
+      "2008-06": {
+        "0064bf90": "work\\goal-sleep-contact-core-20261015\\0064bf90.cpp"
+      }
+    },
+    "builds": [
+      21022
+    ],
+    "profiles": [
+      "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+    ],
+    "append": [
+      ""
+    ],
+    "keep_partials": true,
+    "output": "work\\goal-sleep-contact-core-20261015\\grid",
+    "next": "Full server code/data acceptance; inspect only measured residue if partial."
+  },
+  "native-sleep-contact-bounded-compiler-gates-2008": {
+    "op": "grid",
+    "client": "2008-06",
+    "library": "Native Contact IndexArray state transitions",
+    "hypothesis": "Native first result81 versus stored68; only bool liveness/register allocation residue, exact container operations. Bounded native compiler/O1/O2 and intrinsic gates, no semantic changes.",
+    "targets": {
+      "addresses": [
+        "0064bf90"
+      ],
+      "scores": [
+        0,
+        99
+      ]
+    },
+    "seed_sources": {
+      "2008-06": {
+        "0064bf90": "work\\goal-sleep-contact-core-20261015\\0064bf90.cpp"
+      }
+    },
+    "builds": [
+      21022,
+      50727
+    ],
+    "profiles": [
+      "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD",
+      "/O1 /Ob2 /Oy /GF /GS- /EHsc /MD",
+      "/O2 /Ob2 /Oi /Oy /GF /GS- /EHsc /MD"
+    ],
+    "append": [
+      ""
+    ],
+    "keep_partials": true,
+    "output": "work/goal-sleep-contact-core-20261015/compiler-grid",
+    "next": "Full server code/data acceptance; inspect only measured residue if partial."
+  },
+  "large-adorn-box-sphere-gates-2008": {
+    "op": "grid",
+    "client": "2008-06",
+    "library": "native Ogre box/sphere",
+    "hypothesis": "Fresh full1734-byte box and931-byte sphere manually recovered0to46/64. Same unit exact621-byte materialhelper after native field-lifetime correction. One source family bounded gates.",
+    "targets": {
+      "addresses": [
+        "00671fd0",
+        "00672ba0"
+      ],
+      "scores": [
+        0,
+        99
+      ]
+    },
+    "seed_sources": {
+      "2008-06": {
+        "00671fd0": "work/large-functions-2008-20261014/00671fd0.cpp",
+        "00672ba0": "work/large-functions-2008-20261014/00672ba0.cpp"
+      }
+    },
+    "keep_partials": true,
+    "builds": [
+      21022,
+      50727
+    ],
+    "profiles": [
+      "/O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MD /fp:fast",
+      "/O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MD",
+      "/O2 /Ob1 /Oy /GF /GS- /EHsc /MD /fp:fast",
+      "/O1 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast"
+    ],
+    "output": "work/large-functions-2008-20261014/adorn-box-sphere-gates",
+    "next": "Submit only best reviewed gains; park full grid."
+  },
+  "native-adorn-box-sphere-material-fanout-2008": {
+    "op": "fanout",
+    "client": "2008-06",
+    "library": "native Ogre box/sphere/material",
+    "hypothesis": "Manually recovered material exact plus full genuine box/sphere objects; propagate all emitted functions across unresolved2008 code with code/data verification.",
+    "sources": [
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_adorn_box_sphere_material_12e9a5f1f803fc53.cpp"
+        ],
+        "builds": [
+          21022,
+          50727
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MD /fp:fast",
+          "/O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MD"
+        ]
+      }
+    ],
+    "targets": {},
+    "output": "work/large-functions-2008-20261014/adorn-box-sphere-material-fanout",
+    "next": "Count only verified new exacts; park unchanged objects after bounded sweep."
+  },
+  "native-sleep-step-contact-owned-vectors-2008": {
+    "op": "grid",
+    "client": "2008-06",
+    "library": "Native contact stepping and checked deferred vectors",
+    "hypothesis": "Actual complete contact stepping algorithm, genuine ContactList/Contact/Primitive/Body/SleepInfo and four std::vector<Contact*> queues. Target proves member vectors58/70/88/A0 cleared at end, boolD8/intDC, SleepInfo null guard and enum order3/1/2. Preserve measured opaque rejection byte guards A8/AB without inventing names.",
+    "targets": {
+      "addresses": [
+        "0064c280"
+      ],
+      "scores": [
+        0,
+        99
+      ]
+    },
+    "seed_sources": {
+      "2008-06": {
+        "0064c280": "work\\goal-sleep-contact-step-20261015\\0064c280.cpp"
+      }
+    },
+    "builds": [
+      21022
+    ],
+    "profiles": [
+      "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+    ],
+    "append": [
+      ""
+    ],
+    "keep_partials": true,
+    "output": "work\\goal-sleep-contact-step-20261015\\grid",
+    "next": "Full code/data/server receipt; inspect bounded actual residue, preserve all target jump-table bytes."
   }
 }

@@ -1,4 +1,6 @@
-// from server: 76% by king_originala
+// from server: 79% by colin
+// roc-cl: 21022
+// roc-flags: /O1 /GS- /EHsc /MD
 struct Storage;
 
 struct Node {

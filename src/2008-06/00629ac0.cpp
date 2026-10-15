@@ -1,4 +1,6 @@
-// from server: 81% by king_originala
+// from server: 88% by colin
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD /fp:fast
 struct Signal {
     void emit(float*);
 };

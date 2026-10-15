@@ -1,4 +1,6 @@
-// from server: 39% by king_originala
+// from server: 43% by colin
+// roc-cl: 21022
+// roc-flags: /O1 /GS- /EHsc /MD
 struct Iterator {
     void* owner;
     void* node;

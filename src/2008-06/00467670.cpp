@@ -1,4 +1,6 @@
-// from server: 70% by king_originala
+// from server: 75% by colin
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD /fp:fast
 struct Vec2
 {
     float x, y;

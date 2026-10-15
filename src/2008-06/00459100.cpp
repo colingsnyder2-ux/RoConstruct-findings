@@ -1,4 +1,6 @@
-// from server: 88% by atomic.potato
+// from server: 100% by colin
+// roc-cl: 21022
+// roc-flags: /O1 /GS- /EHsc /MD
 extern "C" void* __cdecl sub_6A0926();
 
 struct ToggleFullscreenVerb

@@ -1,4 +1,6 @@
-// from server: 62% by king_originala
+// from server: 76% by colin
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD /fp:fast
 extern float directionScale;
 extern float inversePeriod;
 extern float period;

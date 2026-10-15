@@ -1,4 +1,6 @@
-// from server: 82% by king_originala
+// from server: 84% by colin
+// roc-cl: 50727
+// roc-flags: /O2 /GS- /EHsc /MD
 struct Text;
 extern void (__thiscall *constructText)(void*, const char*);
 extern void (__thiscall *destroyText)(void*);

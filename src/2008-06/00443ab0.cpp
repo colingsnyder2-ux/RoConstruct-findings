@@ -1,4 +1,6 @@
-// from server: 71% by king_originala
+// from server: 84% by colin
+// roc-cl: 21022
+// roc-flags: /O1 /GS- /EHsc /MD
 struct Entry;
 struct Storage {
     Entry* lookup(const void* key);

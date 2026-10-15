@@ -1,4 +1,6 @@
-// from server: 94% by king_originala
+// from server: 97% by colin
+// roc-cl: 50727
+// roc-flags: /O2 /GS- /EHsc /MD
 typedef void (__cdecl *Manager)(void*, void*, int);
 
 union Buffer {

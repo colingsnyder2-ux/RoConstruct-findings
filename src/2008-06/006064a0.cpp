@@ -1,4 +1,6 @@
-// from server: 95% by king_originala
+// from server: 96% by colin
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD /fp:fast
 extern const float half;
 
 struct Vector3

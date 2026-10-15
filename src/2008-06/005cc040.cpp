@@ -1,4 +1,6 @@
-// from server: 54% by colin
+// from server: 55% by colin
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD /fp:fast
 // roc 2008-06 005cc040  unit: RBX::Camera  size: 127 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 005cc040
 

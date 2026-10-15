@@ -1,5 +1,38 @@
 [
   {
+    "id": "direct-container-lvalues-before-reference-spills",
+    "client": "2008-06",
+    "library": "RBX native checked std::set/std::vector stage loops",
+    "hypothesis": "A local reference to a measured container can keep its receiver address live across callbacks and alter stack/register allocation. Direct native typed lvalues can recover original member-access codegen.",
+    "change": "Actual stepAssembliesAwake and stepAssembliesSleepingChecking methods; binary-proven std::set120/140, stage vectors40/28/10, throttlingD8 and Body.canThrottle30. Native2012 static scratch vectors replaced only by target-observed stage-owned typed views and target-observed end clears. Long-lived local references score47/55; identical operations with direct typed views both100 under21022 normal. No volatile/dead-store tricks, invented fields or claimed complete layout.",
+    "exacts_gained": 2,
+    "outcome": "server_verified",
+    "evidence": "work/goal-sleep-stage-loops-20261015/receipts.json",
+    "next": "Only apply when target proves real native type, offset and storage lifetime and diff shows receiver spill. Whole winning object zero extras, parked. Unneeded50727 gates skipped automatically after first100."
+  },
+  {
+    "id": "native-sleep-state-source-and-typed-views",
+    "client": "2008-06",
+    "library": "RBX native SleepStage state and container methods",
+    "hypothesis": "Retain genuine state enums, friendship, checked containers, virtual hierarchy and helper inline context; update only binary-proven receiver projections and actual API revisions.",
+    "change": "SleepInfo pointer at Assembly18; measured rootClump24/rootPrimitive1c/BodyA0/root10/SimBody2c chain; stage std::set e0/100 and actual native getState/changeAssemblyState/resetSleepCount/wakeEvent/recursiveWakeEvent bodies. Newer real const Primitive::getBody returns mutable Body*, matching observed mutating calls. Managed native headers preserve class declarations; no fake padding or vtable methods.",
+    "exacts_gained": 2,
+    "outcome": "server_verified",
+    "evidence": "work/goal-sleep-wake-core-20261015/receipts.json",
+    "next": "Winning whole object gives zero additional exacts, parked. No full class layout claim; target state6 has no recovered native semantic name. Native stage-loop references may hoist container receivers: test direct measured lvalues before compiler tricks."
+  },
+  {
+    "id": "native-shared-array-individual-members-and-fpfast",
+    "client": "2008-06",
+    "library": "G3D actual Array of Boost shared owners",
+    "hypothesis": "Genuine container/value/destructor types recover details synthetic control blocks miss; instantiate only client-used template members.",
+    "change": "Actual Array<shared_ptr<PartInstance>>::append and resize,21022DLL. Whole-class explicit instantiation fails unused compareGT(operator>), so instantiate exact native members. Native resize default85 spills growth coefficient; target extendedx87 justifies /fp:fast100. Native append79to100. No invented element layout/destructor loop.",
+    "exacts_gained": 2,
+    "outcome": "server_verified",
+    "evidence": "work/goal-shared-array-family-verified-20261015/receipts.json",
+    "next": "Member normal/fast object fanout0extras, parked. Releaseassert pilot selection must follow targetabsenceofassertpaths; do notgloballydisableassertions, fourheldoutobjects0."
+  },
+  {
     "id": "embedded-primitive-native-float-overload-family",
     "client": "2008-06",
     "library": "RBX genuine PartInstance and Primitive geometry",

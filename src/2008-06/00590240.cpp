@@ -1,4 +1,6 @@
-// from server: 76% by king_originala
+// from server: 77% by colin
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD /fp:fast
 struct Entry {
     unsigned int data[2];
 };

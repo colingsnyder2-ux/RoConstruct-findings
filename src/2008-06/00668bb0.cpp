@@ -1,4 +1,6 @@
-// from server: 72% by king_originala
+// from server: 80% by colin
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD /fp:fast
 struct Dimensions {
     unsigned int unused;
     float x;

@@ -1,4 +1,6 @@
-// from server: 74% by king_originala
+// from server: 82% by colin
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD /fp:fast
 extern float g83a3e8;
 
 namespace RBX {

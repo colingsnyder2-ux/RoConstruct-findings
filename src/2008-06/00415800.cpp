@@ -1,4 +1,6 @@
-// from server: 88% by king_originala
+// from server: 91% by colin
+// roc-cl: 50727
+// roc-flags: /O2 /GS- /EHsc /MD
 extern "C" void (__cdecl* _invalid_parameter_noinfo)();
 extern "C" void* (__stdcall* GlobalAlloc)(unsigned int, unsigned long);
 extern "C" void* (__stdcall* GlobalLock)(void*);

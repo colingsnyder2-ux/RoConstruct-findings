@@ -1,4 +1,6 @@
-// from server: 77% by king_originala
+// from server: 79% by colin
+// roc-cl: 50727
+// roc-flags: /O2 /GS- /EHsc /MD /fp:fast
 struct Vec3 {
     float x, y, z;
 };

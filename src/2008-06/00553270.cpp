@@ -1,4 +1,6 @@
-// from server: 63% by king_originala
+// from server: 78% by colin
+// roc-cl: 21022
+// roc-flags: /Od /Ob0 /GS /EHsc /MD
 #pragma optimize("y", off)
 
 struct String;

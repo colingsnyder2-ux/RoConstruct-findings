@@ -68,6 +68,7 @@ remain available. `unrecorded` means evidence is missing; it is not a model diag
 | Read target context in one call | `roc agent-context 2008-06 PATH1 PATH2` | analyzed client, candidate files | sources, target asm, preserved best sources, last five trials; no compile/write |
 | Record a recovery blocker | `roc agent-block 2008-06 ADDR PATH --reason "missing fact; next evidence"` | assigned source/task | records missing evidence and stops that function |
 | Compare completed recovery runs | `roc agent-metrics --limit 20` | completed run summaries | verified improvement events/hour, median first useful check, blocked targets by profile |
+| Full sourced-function compiler sweep | `roc brute 2008-06 --jobs 8 --background` | server, compilers, sources | native-family fanout, bounded per-target gates, resumable evidence keys |
 | Named experiments | `roc research list / plan NAME / run NAME` | server | journal in `work/research/NAME/`, verified exacts, memory records |
 | Score one source | `roc check 2008-06 [addr]` | compilers | score + asm diff |
 | Explain a mismatch | `roc classify 2008-06 ADDR FILE` | compilers | mismatch category with evidence |
@@ -115,6 +116,38 @@ default in automatic mode.
    Unused type definitions may be omitted; every used class, base and access rule
    stays intact. Isolating the unused render bucket enabled the real 21022 gate.
 8. **Boundaries** only with proof, through `work/<client>/bounds.json`.
+
+`roc brute CLIENT` runs the `portable-bruteforce` sweep recipe: client-specific native
+family stages, compiler gates, then source portfolios over unresolved functions.
+Portfolios include canonical/local source, retained journal bests and research seeds,
+same-client exact donors with identical instruction shape, and real alternate recipe
+preludes/runtime settings for the same native file. Sourceless targets enter when one
+of those sources exists. They are candidate analogues, never proof of original types.
+The default tries eight distinct candidates and three donors per function; `--deep`
+removes both caps. Every candidate tries measured inlining, frame, optimization and
+precision contexts while preserving the recipe's other flags/defines. This searches
+existing source bodies; it does not invent missing layouts or mutate arbitrary literals.
+`portfolio.candidate_sources[CLIENT][ADDR]` can add newly proven source files to a recipe.
+
+`--limit N` pilots each stage; `--plan` lists stages; `--status` shows the background
+job plus live compiler counts. `--jobs` parallelizes targets while each target's gates
+remain sequential and stop at the first local exact. Only server verification earns
+credit. Better partials stay in the campaign's candidates folder and portfolio stages
+submit only server-confirmed improvements; partial receipts stay separate from exacts.
+No stored source is replaced with a regression. Input snapshots and trial origins make
+each portfolio check reproducible. Uncovered sourceless targets are reported separately
+and require authentic source recovery, templates or a model, not compiler flag search.
+
+Compiler trial reuse keys include expanded library dependencies, target bytes/relocs,
+client binary hash, compiler and flags. Safe length and byte-count upper bounds skip
+fuzzy scoring when a candidate cannot improve the current best; a skipped score is
+recorded as unknown with a ceiling, never a fabricated percentage. Full code/data
+verification still decides exactness. Completed losing gates can be reused across
+campaigns; changed evidence retries them. Failed verification is retryable. State lives
+under `work/research/` and `work/agent-memory/compiler-trials.jsonl`. Other clients use
+their own configured compiler; 2008 native family stages never transfer implicitly.
+The sweep composes normal recipes and their existing journals rather than duplicating
+compilers, matchers or acceptance rules. No instant gain or exact-count promise.
 
 New experiments add a recipe to `research/recipes.json` (op `grid` or `fanout`),
 not a new script. Agent-written translation units go through `libs.add_unit` so they

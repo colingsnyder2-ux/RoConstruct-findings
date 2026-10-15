@@ -1,4 +1,6 @@
-// from server: 82% by king_originala
+// from server: 85% by colin
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD /fp:fast
 struct String;
 typedef void (__thiscall *StringInit)(String *);
 typedef void (__thiscall *StringDestroy)(String *);

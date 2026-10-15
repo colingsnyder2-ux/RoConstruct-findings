@@ -1,4 +1,6 @@
-// from server: 57% by king_originala
+// from server: 87% by colin
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD /fp:fast
 extern "C" double __cdecl sqrt(double);
 #pragma intrinsic(sqrt)
 

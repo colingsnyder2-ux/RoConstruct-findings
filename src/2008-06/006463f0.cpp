@@ -1,4 +1,6 @@
-// from server: 87% by king_originala
+// from server: 90% by colin
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD /fp:fast
 struct Context {
     void update(void* item, bool enabled);
 };

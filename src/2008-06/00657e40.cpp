@@ -1,4 +1,6 @@
-// from server: 70% by king_originala
+// from server: 74% by colin
+// roc-cl: 50727
+// roc-flags: /O2 /GS- /EHsc /MD
 extern "C" void (__cdecl* _invalid_parameter_noinfo)();
 
 extern void (__thiscall* destroyLocale)(void*);

@@ -1,4 +1,6 @@
-// from server: 79% by king_originala
+// from server: 80% by colin
+// roc-cl: 50727
+// roc-flags: /O2 /GS- /EHsc /MD
 struct LocalTime {
     unsigned short year, month, dayOfWeek, day;
     unsigned short hour, minute, second, milliseconds;

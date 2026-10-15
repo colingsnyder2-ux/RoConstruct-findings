@@ -1,4 +1,6 @@
-// from server: 56% by colin
+// from server: 59% by colin
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
 struct CRobloxModule {
     void f(int);
 };

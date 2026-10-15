@@ -1,4 +1,6 @@
-// from server: 49% by king_originala
+// from server: 51% by colin
+// roc-cl: 50727
+// roc-flags: /O2 /GS- /EHsc /MD
 struct StreamBuf {
     int sbumpc();
     int sgetc();

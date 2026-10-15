@@ -1,4 +1,6 @@
-// from server: 79% by king_originala
+// from server: 100% by colin
+// roc-cl: 21022
+// roc-flags: /O1 /GS- /EHsc /MD
 struct State {
     char padding[0x104];
     bool enabled;

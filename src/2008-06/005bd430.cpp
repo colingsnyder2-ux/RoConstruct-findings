@@ -1,4 +1,6 @@
-// from server: 73% by king_originala
+// from server: 75% by colin
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD /fp:fast
 extern "C" int __stdcall applyVolume(void*, float);
 extern "C" void __cdecl checkResult(int);
 

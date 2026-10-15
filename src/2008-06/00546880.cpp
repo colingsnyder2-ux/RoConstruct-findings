@@ -1,5 +1,5 @@
-// from server: 48% by colin
+// from server: 79% by colin
+// roc-cl: 21022
+// roc-flags: /Od /Ob0 /GS /EHsc /MD
 // roc-lang: cpp
-// roc-cl: 50727
-// roc-flags: /Od /Ob1 /GS- /MT
 // roc-lib: wildmagic-2-core Containment/WmlConvexHull2.cpp

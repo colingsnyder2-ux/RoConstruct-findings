@@ -1,4 +1,6 @@
-// from server: 73% by king_originala
+// from server: 84% by colin
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD /fp:fast
 extern "C" {
     extern long (__stdcall *InterlockedDecrement)(volatile long *);
 }

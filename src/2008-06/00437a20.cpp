@@ -1,4 +1,6 @@
-// from server: 58% by king_originala
+// from server: 60% by colin
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD /fp:fast
 extern const float colorScale;
 
 struct Color3 {

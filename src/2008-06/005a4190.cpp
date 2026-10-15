@@ -1,4 +1,6 @@
-// from server: 74% by king_originala
+// from server: 87% by colin
+// roc-cl: 50727
+// roc-flags: /O2 /GS- /EHsc /MD
 struct Storage {
     union {
         double alignment;

@@ -1,4 +1,6 @@
-// from server: 75% by king_originala
+// from server: 78% by colin
+// roc-cl: 50727
+// roc-flags: /O2 /GS- /EHsc /MD
 extern "C" {
 extern void (__stdcall * const EnterCriticalSection)(void*);
 extern void (__stdcall * const LeaveCriticalSection)(void*);

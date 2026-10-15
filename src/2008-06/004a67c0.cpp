@@ -1,4 +1,6 @@
-// from server: 97% by king_originala
+// from server: 99% by colin
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD /fp:fast
 struct Stream {
     bool readBits(void *, int, int);
 };

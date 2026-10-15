@@ -1,4 +1,6 @@
-// from server: 76% by king_originala
+// from server: 94% by colin
+// roc-cl: 50727
+// roc-flags: /Od /Ob0 /GS /EHsc /MD
 #pragma optimize("", off)
 #pragma strict_gs_check(on)
 

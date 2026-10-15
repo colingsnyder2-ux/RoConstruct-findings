@@ -1,4 +1,6 @@
-// from server: 86% by king_originala
+// from server: 88% by colin
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD /fp:fast
 
 
 

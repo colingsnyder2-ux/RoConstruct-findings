@@ -1,4 +1,6 @@
-// from server: 81% by king_originala
+// from server: 84% by colin
+// roc-cl: 50727
+// roc-flags: /O2 /GS- /EHsc /MD
 extern double __cdecl currentTime();
 extern void (__cdecl *invalidParameter)();
 

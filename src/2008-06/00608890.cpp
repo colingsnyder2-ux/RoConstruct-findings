@@ -1,4 +1,6 @@
-// from server: 85% by king_originala
+// from server: 92% by colin
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD /fp:fast
 struct Frame {
     float data[12];
     Frame();

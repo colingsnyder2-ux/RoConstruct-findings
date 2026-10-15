@@ -1,4 +1,6 @@
-// from server: 83% by king_originala
+// from server: 84% by colin
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD /fp:fast
 struct String
 {
     char storage[20];

@@ -1,4 +1,6 @@
-// from server: 81% by king_originala
+// from server: 87% by colin
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD /fp:fast
 typedef void (__thiscall *StringInit)(void *);
 typedef void (__thiscall *StringFini)(void *);
 typedef long (__stdcall *Decrement)(volatile long *);

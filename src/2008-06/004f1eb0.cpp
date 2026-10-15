@@ -1,4 +1,6 @@
-// from server: 75% by king_originala
+// from server: 76% by colin
+// roc-cl: 50727
+// roc-flags: /O2 /GS- /EHsc /MD
 struct Vector3 {
     float x, y, z;
     Vector3(const Vector3&);

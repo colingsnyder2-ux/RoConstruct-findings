@@ -1,4 +1,6 @@
-// from server: 88% by colin
+// from server: 89% by colin
+// roc-cl: 50727
+// roc-flags: /O2 /GS- /EHsc /MD
 // from server: 82% by king_originala
 struct String;
 

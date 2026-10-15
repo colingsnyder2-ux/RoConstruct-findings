@@ -1,4 +1,6 @@
-// from server: 91% by king_originala
+// from server: 95% by colin
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD /fp:fast
 struct PartInstance
 {
     char padding[0x1e8];

@@ -1,4 +1,6 @@
-// from server: 75% by king_originala
+// from server: 94% by colin
+// roc-cl: 21022
+// roc-flags: /Od /Ob0 /GS /EHsc /MD
 #pragma optimize("", off)
 
 void __cdecl operator delete(void *);

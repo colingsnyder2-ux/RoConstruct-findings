@@ -1,4 +1,6 @@
-// from server: 82% by king_originala
+// from server: 85% by colin
+// roc-cl: 50727
+// roc-flags: /O2 /GS- /EHsc /MD
 enum EventType {
     EventNone = 0,
     EventFirst = 1,

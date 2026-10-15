@@ -1,4 +1,6 @@
-// from server: 62% by tester
+// from server: 72% by colin
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD /fp:fast
 struct Point {
     char pad0[0xc];
     float x;

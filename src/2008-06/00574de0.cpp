@@ -1,4 +1,6 @@
-// from server: 61% by tester
+// from server: 66% by colin
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD /fp:fast
 struct GuiItem {
     virtual void v0();
     virtual void v1();

@@ -1,4 +1,6 @@
-// from server: 79% by king_originala
+// from server: 97% by colin
+// roc-cl: 21022
+// roc-flags: /Od /Ob0 /GS /EHsc /MD
 #pragma strict_gs_check(on)
 
 extern "C" void (__thiscall *destroy_string)(void *);

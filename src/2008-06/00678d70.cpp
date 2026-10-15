@@ -1,4 +1,6 @@
-// from server: 65% by colin
+// from server: 69% by colin
+// roc-cl: 50727
+// roc-flags: /O2 /GS- /EHsc /MD
 extern void __cdecl adjust_heap(float*, int, int, float);
 
 #pragma float_control(precise, off, push)

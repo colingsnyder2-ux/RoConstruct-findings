@@ -1,4 +1,6 @@
-// from server: 81% by king_originala
+// from server: 100% by colin
+// roc-cl: 21022
+// roc-flags: /Od /Ob0 /GS /EHsc /MD
 #pragma optimize("", off)
 
 void* __cdecl operator new(unsigned int);

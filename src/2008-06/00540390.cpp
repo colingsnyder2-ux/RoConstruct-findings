@@ -1,4 +1,6 @@
-// from server: 80% by king_originala
+// from server: 100% by colin
+// roc-cl: 21022
+// roc-flags: /Od /Ob0 /GS /EHsc /MD
 #pragma optimize("", off)
 
 extern char G_0082cef0;

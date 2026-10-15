@@ -1,4 +1,6 @@
-// from server: 63% by king_originala
+// from server: 66% by colin
+// roc-cl: 21022
+// roc-flags: /O1 /GS- /EHsc /MD
 extern "C" unsigned long (__stdcall *GetLastError)();
 extern "C" void (__stdcall *SetLastError)(unsigned long);
 extern "C" void __stdcall Cleanup(int, void *);

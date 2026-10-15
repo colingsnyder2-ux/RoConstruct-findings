@@ -1,4 +1,6 @@
-// from server: 52% by colin
+// from server: 56% by colin
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD /fp:fast
 struct GCamera {
     float m[3][4];
     void getVector(int index, float* out);

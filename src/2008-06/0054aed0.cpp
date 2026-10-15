@@ -1,4 +1,6 @@
-// from server: 75% by king_originala
+// from server: 100% by colin
+// roc-cl: 50727
+// roc-flags: /Od /Ob0 /GS /EHsc /MD
 typedef unsigned int size_t;
 
 void * __cdecl operator new(size_t, void *);

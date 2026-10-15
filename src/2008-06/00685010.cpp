@@ -1,4 +1,6 @@
-// from server: 53% by colin
+// from server: 56% by colin
+// roc-cl: 21022
+// roc-flags: /O1 /GS- /EHsc /MD
 struct Vec3 {
     float x;
     float y;

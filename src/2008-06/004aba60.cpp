@@ -1,4 +1,6 @@
-// from server: 91% by king_originala
+// from server: 92% by colin
+// roc-cl: 50727
+// roc-flags: /O2 /GS- /EHsc /MD
 struct BitStream {
     int bitsUsed;
     int bitsAllocated;

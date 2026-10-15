@@ -1,4 +1,6 @@
-// from server: 50% by king_originala
+// from server: 59% by colin
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD /fp:fast
 extern "C" void (__cdecl *_invalid_parameter_noinfo)();
 
 struct Key {

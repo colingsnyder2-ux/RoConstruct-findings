@@ -1,4 +1,6 @@
-// from server: 80% by tester
+// from server: 86% by colin
+// roc-cl: 50727
+// roc-flags: /O2 /GS- /EHsc /MD
 struct S
 {
     void f(void*, void*);

@@ -1,4 +1,6 @@
-// from server: 59% by king_originala
+// from server: 61% by colin
+// roc-cl: 50727
+// roc-flags: /O2 /GS- /EHsc /MD
 struct Address {
     unsigned int ip;
     unsigned short port;
