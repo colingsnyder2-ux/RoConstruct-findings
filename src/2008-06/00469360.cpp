@@ -1,4 +1,134 @@
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MD
+// roc 2008-06 00469360  unit: DxUserInput  size: 1145 bytes
+// Make this compile to the exact bytes below, then: roc check 2008-06 00469360
+//
+// 00469360  803df0e3960000       cmp byte ptr [0x96e3f0], 0
+// 00469367  0f8560040000         jne 0x4697cd
+// 0046936d  57                   push edi
+// 0046936e  33c0                 xor eax, eax
+// 00469370  b900010000           mov ecx, 0x100
+// 00469375  bff0df9600           mov edi, 0x96dff0
+// 0046937a  f3ab                 rep stosd dword ptr es:[edi], eax
+// 0046937c  b85c000000           mov eax, 0x5c
+// 00469381  c705f4df96001b000000 mov dword ptr [0x96dff4], 0x1b
+// 0046938b  c705f8df960031000000 mov dword ptr [0x96dff8], 0x31
+// 00469395  c705fcdf960032000000 mov dword ptr [0x96dffc], 0x32
+// 0046939f  c70500e0960033000000 mov dword ptr [0x96e000], 0x33
+// 004693a9  c70504e0960034000000 mov dword ptr [0x96e004], 0x34
+// 004693b3  c70508e0960035000000 mov dword ptr [0x96e008], 0x35
+// 004693bd  c7050ce0960036000000 mov dword ptr [0x96e00c], 0x36
+// 004693c7  c70510e0960037000000 mov dword ptr [0x96e010], 0x37
+// 004693d1  c70514e0960038000000 mov dword ptr [0x96e014], 0x38
+// 004693db  c70518e0960039000000 mov dword ptr [0x96e018], 0x39
+// 004693e5  c7051ce0960030000000 mov dword ptr [0x96e01c], 0x30
+// 004693ef  c70520e096002d000000 mov dword ptr [0x96e020], 0x2d
+// 004693f9  c70524e096003d000000 mov dword ptr [0x96e024], 0x3d
+// 00469403  c70528e0960008000000 mov dword ptr [0x96e028], 8
+// 0046940d  c7052ce0960009000000 mov dword ptr [0x96e02c], 9
+// 00469417  c70530e0960071000000 mov dword ptr [0x96e030], 0x71
+// 00469421  c70534e0960077000000 mov dword ptr [0x96e034], 0x77
+// 0046942b  c70538e0960065000000 mov dword ptr [0x96e038], 0x65
+// 00469435  c7053ce0960072000000 mov dword ptr [0x96e03c], 0x72
+// 0046943f  c70540e0960074000000 mov dword ptr [0x96e040], 0x74
+// 00469449  c70544e0960079000000 mov dword ptr [0x96e044], 0x79
+// 00469453  c70548e0960075000000 mov dword ptr [0x96e048], 0x75
+// 0046945d  c7054ce0960069000000 mov dword ptr [0x96e04c], 0x69
+// 00469467  c70550e096006f000000 mov dword ptr [0x96e050], 0x6f
+// 00469471  c70554e0960070000000 mov dword ptr [0x96e054], 0x70
+// 0046947b  c70558e096005b000000 mov dword ptr [0x96e058], 0x5b
+// 00469485  c7055ce096005d000000 mov dword ptr [0x96e05c], 0x5d
+// 0046948f  c70560e096000d000000 mov dword ptr [0x96e060], 0xd
+// 00469499  c70564e0960032010000 mov dword ptr [0x96e064], 0x132
+// 004694a3  c70568e0960061000000 mov dword ptr [0x96e068], 0x61
+// 004694ad  c7056ce0960073000000 mov dword ptr [0x96e06c], 0x73
+// 004694b7  c70570e0960064000000 mov dword ptr [0x96e070], 0x64
+// 004694c1  c70574e0960066000000 mov dword ptr [0x96e074], 0x66
+// 004694cb  c70578e0960067000000 mov dword ptr [0x96e078], 0x67
+// 004694d5  c7057ce0960068000000 mov dword ptr [0x96e07c], 0x68
+// 004694df  c70580e096006a000000 mov dword ptr [0x96e080], 0x6a
+// 004694e9  c70584e096006b000000 mov dword ptr [0x96e084], 0x6b
+// 004694f3  c70588e096006c000000 mov dword ptr [0x96e088], 0x6c
+// 004694fd  c7058ce096003b000000 mov dword ptr [0x96e08c], 0x3b
+// 00469507  c70590e0960027000000 mov dword ptr [0x96e090], 0x27
+// 00469511  c70594e0960060000000 mov dword ptr [0x96e094], 0x60
+// 0046951b  c70598e0960030010000 mov dword ptr [0x96e098], 0x130
+// 00469525  a39ce09600           mov dword ptr [0x96e09c], eax
+// 0046952a  a348e19600           mov dword ptr [0x96e148], eax
+// 0046952f  c705a0e096007a000000 mov dword ptr [0x96e0a0], 0x7a
+// 00469539  c705a4e0960078000000 mov dword ptr [0x96e0a4], 0x78
+// 00469543  c705a8e0960063000000 mov dword ptr [0x96e0a8], 0x63
+// 0046954d  c705ace0960076000000 mov dword ptr [0x96e0ac], 0x76
+// 00469557  c705b0e0960062000000 mov dword ptr [0x96e0b0], 0x62
+// 00469561  c705b4e096006e000000 mov dword ptr [0x96e0b4], 0x6e
+// 0046956b  c705b8e096006d000000 mov dword ptr [0x96e0b8], 0x6d
+// 00469575  c705bce096002c000000 mov dword ptr [0x96e0bc], 0x2c
+// 0046957f  c705c0e096002e000000 mov dword ptr [0x96e0c0], 0x2e
+// 00469589  c705c4e096002f000000 mov dword ptr [0x96e0c4], 0x2f
+// 00469593  c705c8e096002f010000 mov dword ptr [0x96e0c8], 0x12f
+// 0046959d  c705cce096000c010000 mov dword ptr [0x96e0cc], 0x10c
+// 004695a7  c705d0e0960034010000 mov dword ptr [0x96e0d0], 0x134
+// 004695b1  c705d4e0960020000000 mov dword ptr [0x96e0d4], 0x20
+// 004695bb  c705d8e096002d010000 mov dword ptr [0x96e0d8], 0x12d
+// 004695c5  c705dce096001a010000 mov dword ptr [0x96e0dc], 0x11a
+// 004695cf  c705e0e096001b010000 mov dword ptr [0x96e0e0], 0x11b
+// 004695d9  c705e4e096001c010000 mov dword ptr [0x96e0e4], 0x11c
+// 004695e3  c705e8e096001d010000 mov dword ptr [0x96e0e8], 0x11d
+// 004695ed  c705ece096001e010000 mov dword ptr [0x96e0ec], 0x11e
+// 004695f7  c705f0e096001f010000 mov dword ptr [0x96e0f0], 0x11f
+// 00469601  c705f4e0960020010000 mov dword ptr [0x96e0f4], 0x120
+// 0046960b  c705f8e0960021010000 mov dword ptr [0x96e0f8], 0x121
+// 00469615  c705fce0960022010000 mov dword ptr [0x96e0fc], 0x122
+// 0046961f  c70500e1960023010000 mov dword ptr [0x96e100], 0x123
+// 00469629  c70504e196002c010000 mov dword ptr [0x96e104], 0x12c
+// 00469633  c70508e196002e010000 mov dword ptr [0x96e108], 0x12e
+// 0046963d  c7050ce1960007010000 mov dword ptr [0x96e10c], 0x107
+// 00469647  c70510e1960008010000 mov dword ptr [0x96e110], 0x108
+// 00469651  c70514e1960009010000 mov dword ptr [0x96e114], 0x109
+// 0046965b  c70518e196000d010000 mov dword ptr [0x96e118], 0x10d
+// 00469665  8b442408             mov eax, dword ptr [esp + 8]
+// 00469669  c7051ce1960004010000 mov dword ptr [0x96e11c], 0x104
+// 00469673  c70520e1960005010000 mov dword ptr [0x96e120], 0x105
+// 0046967d  c70524e1960006010000 mov dword ptr [0x96e124], 0x106
+// 00469687  c70528e196000e010000 mov dword ptr [0x96e128], 0x10e
+// 00469691  c7052ce1960001010000 mov dword ptr [0x96e12c], 0x101
+// 0046969b  c70530e1960002010000 mov dword ptr [0x96e130], 0x102
+// 004696a5  c70534e1960003010000 mov dword ptr [0x96e134], 0x103
+// 004696af  c70538e1960000010000 mov dword ptr [0x96e138], 0x100
+// 004696b9  c7053ce196000a010000 mov dword ptr [0x96e13c], 0x10a
+// 004696c3  c7054ce1960024010000 mov dword ptr [0x96e14c], 0x124
+// 004696cd  c70550e1960025010000 mov dword ptr [0x96e150], 0x125
+// 004696d7  c70580e1960026010000 mov dword ptr [0x96e180], 0x126
+// 004696e1  c70584e1960027010000 mov dword ptr [0x96e184], 0x127
+// 004696eb  c70588e1960028010000 mov dword ptr [0x96e188], 0x128
+// 004696f5  c70524e2960010010000 mov dword ptr [0x96e224], 0x110
+// 004696ff  c70560e296000f010000 mov dword ptr [0x96e260], 0x10f
+// 00469709  c70564e2960031010000 mov dword ptr [0x96e264], 0x131
+// 00469713  c705c4e296000b010000 mov dword ptr [0x96e2c4], 0x10b
+// 0046971d  c705cce296003d010000 mov dword ptr [0x96e2cc], 0x13d
+// 00469727  c705d0e2960033010000 mov dword ptr [0x96e2d0], 0x133
+// 00469731  c70504e3960013000000 mov dword ptr [0x96e304], 0x13
+// 0046973b  c7050ce3960016010000 mov dword ptr [0x96e30c], 0x116
+// 00469745  c70510e3960011010000 mov dword ptr [0x96e310], 0x111
+// 0046974f  c70514e3960018010000 mov dword ptr [0x96e314], 0x118
+// 00469759  c7051ce3960014010000 mov dword ptr [0x96e31c], 0x114
+// 00469763  c70524e3960013010000 mov dword ptr [0x96e324], 0x113
+// 0046976d  c7052ce3960017010000 mov dword ptr [0x96e32c], 0x117
+// 00469777  c70530e3960012010000 mov dword ptr [0x96e330], 0x112
+// 00469781  c70534e3960019010000 mov dword ptr [0x96e334], 0x119
+// 0046978b  c70538e3960015010000 mov dword ptr [0x96e338], 0x115
+// 00469795  c7053ce396007f000000 mov dword ptr [0x96e33c], 0x7f
+// 0046979f  c7055ce3960036010000 mov dword ptr [0x96e35c], 0x136
+// 004697a9  c70560e3960035010000 mov dword ptr [0x96e360], 0x135
+// 004697b3  c70564e396003f010000 mov dword ptr [0x96e364], 0x13f
+// 004697bd  8b0485f0df9600       mov eax, dword ptr [eax*4 + 0x96dff0]
+// 004697c4  c605f0e3960001       mov byte ptr [0x96e3f0], 1
+// 004697cb  5f                   pop edi
+// 004697cc  c3                   ret 
+// 004697cd  8b4c2404             mov ecx, dword ptr [esp + 4]
+// 004697d1  8b048df0df9600       mov eax, dword ptr [ecx*4 + 0x96dff0]
+// 004697d8  c3                   ret 
+// library rbxgs/roc_input_map_alias_9c2f97ba1d40f5a8.cpp (function ?scanToSDL@@YA?AW4SDLKey@@I@Z)
+
 // roc-lang: cpp
-// roc-lib: rbxgs-dll roc_input_map_alias_9c2f97ba1d40f5a8.cpp
+// roc-cl: 21022
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+// roc-lib: rbxgs roc_input_map_alias_9c2f97ba1d40f5a8.cpp
