@@ -7533,6 +7533,9 @@
     "stages_by_client": {
       "2008-06": [
         "auto-native-scorehud-family-2008",
+        "auto-native-chat-command-2008",
+        "auto-native-gui-panel-builder-2008",
+        "auto-native-lua-property-family-2008",
         "native-reflection-isolated-cores-batch-2008",
         "native-reflection-isolated-cores-heldout-2008",
         "native-levelbuilder-vptr-float-family-2008",
@@ -9387,7 +9390,13 @@
     ],
     "keep_partials": true,
     "output": "work\\goal-native-force-motor-core-20261015\\grid",
-    "next": "Inspect actual layout/prototype residue. Do not invent members/padding to recover failed source revision."
+    "next": "Inspect actual layout/prototype residue. Do not invent members/padding to recover failed source revision.",
+    "result": {
+      "status": "parked",
+      "new_verified": 0,
+      "evidence": "work/goal-native-guid-family-verified-20261015/receipts.json",
+      "partial_evidence": "work/goal-native-guid-family-verified-20261015/partial-receipt.json"
+    }
   },
   "large-scorehud-family-gates-2008": {
     "op": "grid",
@@ -9504,7 +9513,13 @@
     ],
     "keep_partials": true,
     "output": "work\\goal-native-guid-owner-revision-20261015\\grid",
-    "next": "Inspect full code and RTTI/data. No global recipe changes or unchecked class-layout claims."
+    "next": "Inspect full code and RTTI/data. No global recipe changes or unchecked class-layout claims.",
+    "result": {
+      "status": "verified",
+      "new_verified": 2,
+      "evidence": "work/goal-native-guid-family-verified-20261015/receipts.json",
+      "partial_evidence": "work/goal-native-guid-family-verified-20261015/partial-receipt.json"
+    }
   },
   "native-bodyforce-weak-part-accumulator-core-2008": {
     "op": "grid",
@@ -9536,7 +9551,13 @@
     ],
     "keep_partials": true,
     "output": "work\\goal-bodyforce-native-weak-core-20261015\\grid",
-    "next": "Inspect true native receiver/alias residue, bounded gates. Full code/data/server required."
+    "next": "Inspect true native receiver/alias residue, bounded gates. Full code/data/server required.",
+    "result": {
+      "status": "parked",
+      "new_verified": 0,
+      "evidence": "work/goal-native-guid-family-verified-20261015/receipts.json",
+      "partial_evidence": "work/goal-native-guid-family-verified-20261015/partial-receipt.json"
+    }
   },
   "native-bodyforce-owner-lifetime-simbody-views-2008": {
     "op": "grid",
@@ -9568,7 +9589,13 @@
     ],
     "keep_partials": true,
     "output": "work\\goal-bodyforce-native-weak-core-20261015\\lifetime-grid",
-    "next": "Inspect true native receiver/alias residue, bounded gates. Full code/data/server required."
+    "next": "Inspect true native receiver/alias residue, bounded gates. Full code/data/server required.",
+    "result": {
+      "status": "parked",
+      "new_verified": 0,
+      "evidence": "work/goal-native-guid-family-verified-20261015/receipts.json",
+      "partial_evidence": "work/goal-native-guid-family-verified-20261015/partial-receipt.json"
+    }
   },
   "native-guiditem-destructor-family-pilot-2008": {
     "op": "fanout",
@@ -9616,7 +9643,13 @@
       }
     ],
     "targets": {},
-    "next": "Scale only if new full server gains; park zero-gain per-class/config objects. No global recipe/header changes."
+    "next": "Scale only if new full server gains; park zero-gain per-class/config objects. No global recipe/header changes.",
+    "result": {
+      "status": "verified",
+      "new_verified": 2,
+      "evidence": "work/goal-native-guid-family-verified-20261015/receipts.json",
+      "partial_evidence": "work/goal-native-guid-family-verified-20261015/partial-receipt.json"
+    }
   },
   "native-bodyforce-commutative-x87-fpfast-2008": {
     "op": "grid",
@@ -9648,7 +9681,13 @@
     ],
     "keep_partials": true,
     "output": "work/goal-bodyforce-native-weak-core-20261015/fpfast-grid",
-    "next": "Inspect true native receiver/alias residue, bounded gates. Full code/data/server required."
+    "next": "Inspect true native receiver/alias residue, bounded gates. Full code/data/server required.",
+    "result": {
+      "status": "parked",
+      "new_verified": 0,
+      "evidence": "work/goal-native-guid-family-verified-20261015/receipts.json",
+      "partial_evidence": "work/goal-native-guid-family-verified-20261015/partial-receipt.json"
+    }
   },
   "native-guiditem-destructor-family-heldout-2008": {
     "op": "fanout",
@@ -9718,7 +9757,13 @@
       }
     ],
     "targets": {},
-    "next": "Park zero-gain class/config objects after single bounded scan."
+    "next": "Park zero-gain class/config objects after single bounded scan.",
+    "result": {
+      "status": "verified",
+      "new_verified": 3,
+      "evidence": "work/goal-native-guid-family-verified-20261015/receipts.json",
+      "partial_evidence": "work/goal-native-guid-family-verified-20261015/partial-receipt.json"
+    }
   },
   "native-guiditem-full-instance-source-2008": {
     "op": "fanout",
@@ -9752,7 +9797,13 @@
       }
     ],
     "targets": {},
-    "next": "Park if no gains, retain field/header facts for narrow new native cores."
+    "next": "Park if no gains, retain field/header facts for narrow new native cores.",
+    "result": {
+      "status": "verified",
+      "new_verified": 1,
+      "evidence": "work/goal-native-guid-family-verified-20261015/receipts.json",
+      "partial_evidence": "work/goal-native-guid-family-verified-20261015/partial-receipt.json"
+    }
   },
   "bruteforce-postmessage-command": {
     "op": "grid",
@@ -9811,7 +9862,13 @@
     ],
     "keep_partials": true,
     "output": "work\\goal-bodyforce-native-weak-core-20261015\\source-first-grid",
-    "next": "Inspect true native receiver/alias residue, bounded gates. Full code/data/server required."
+    "next": "Inspect true native receiver/alias residue, bounded gates. Full code/data/server required.",
+    "result": {
+      "status": "parked",
+      "new_verified": 0,
+      "evidence": "work/goal-native-guid-family-verified-20261015/receipts.json",
+      "partial_evidence": "work/goal-native-guid-family-verified-20261015/partial-receipt.json"
+    }
   },
   "native-guiditem-full-instance-original-assert-mode-2008": {
     "op": "fanout",
@@ -9845,7 +9902,13 @@
       }
     ],
     "targets": {},
-    "next": "Park both full-TU modes after bounded scans; individual native helper contexts still needed."
+    "next": "Park both full-TU modes after bounded scans; individual native helper contexts still needed.",
+    "result": {
+      "status": "parked",
+      "new_verified": 0,
+      "evidence": "work/goal-native-guid-family-verified-20261015/receipts.json",
+      "partial_evidence": "work/goal-native-guid-family-verified-20261015/partial-receipt.json"
+    }
   },
   "large-scorehud-compile-board-gates-2008": {
     "op": "grid",
@@ -10025,5 +10088,3478 @@
     "evidence_resume": true,
     "hypothesis": "Broadsourcecontexts schedule many21022contexts before50727; prior genuine nativeheaders compileonlyunder50727 while some21022units failIRenderable privateheader. Test currentclientnative portfolio baseoptimized contexts under50727 with sameauthentic bodies/preludes/flags, separate from zero-yieldOdscale. No access/field changes.",
     "next": "256context boundedpilot when RAMpermits; inspectserververified gains before expansion."
+  },
+  "native-guiditem-reflection-core-replay-2008": {
+    "op": "fanout",
+    "client": "2008-06",
+    "library": "Previously genuine descriptor cores with newly verified Instance hierarchy",
+    "hypothesis": "Seven direct hierarchy-linked native gains plus one header helper validate recovery; new Instance DescribedBase projection14 versus old4 and corrected owner fields can repair existing genuine PropDescriptor/BoundFunc/Signal bodies. Reuse34oldcores with only measured source-revision aliases, original compiler/assert mode, full code/data checks.",
+    "sources": [
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_unit_c93c9c0d63b121c7.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_unit_20c0223652e3fb14.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_unit_2a955d5f79260d32.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_unit_22a40a9b8ba2a9ec.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_unit_7462be0751387767.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_unit_cd777c9aaa53f273.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_unit_6e457d75d99dced4.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_unit_53a43b629f55bb8c.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_unit_8538865c9e90b892.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_unit_3a1fb9f3a956950f.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_unit_2e380c68fae681fa.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_unit_b62b60a8158b0a6c.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_unit_8b4592fe5348da3d.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_unit_0d3427271149ec1c.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_unit_9e60ccae340b395f.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_unit_ee20692ed6e544b7.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_unit_3c2e8456b7967a88.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_unit_e370b86f9577bc5b.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_unit_0db90f760b51417e.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_unit_85b44748aba911d7.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_unit_1df61a57e8c58958.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_unit_16a2fab6ecfe6626.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_unit_0e5ddab3db5cfa7d.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_unit_3f4aa884ac79ce52.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_unit_05fee3d9b7346925.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_unit_98f82139eab9cd76.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_unit_8b54714ab027d4e1.cpp"
+        ],
+        "builds": [
+          50727
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_unit_4349f38f33416276.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_unit_c34b37b8f15fa7e0.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_unit_36ba7721abcf0177.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_unit_b7659100a028e5e1.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_unit_e478f8a05c6760da.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_unit_0d36f275718afe6d.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_unit_0d00bdcfbb5116da.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      }
+    ],
+    "targets": {},
+    "next": "Park unchanged zero-gain objects; all old recipes remain intact and separately journaled.",
+    "result": {
+      "status": "verified",
+      "new_verified": 8,
+      "evidence": "work/goal-native-guid-family-verified-20261015/receipts.json",
+      "partial_evidence": "work/goal-native-guid-family-verified-20261015/partial-receipt.json"
+    }
+  },
+  "large-chat-health-gates-2008": {
+    "op": "grid",
+    "client": "2008-06",
+    "library": "native ScoreHud team and FFA",
+    "hypothesis": "Fresh0score native ChatOutput render1452 and HealthHud678. Entire genuine ChatOutput/ChatLine declarations retained, unused Players/ChatMessage/Heartbeat definitions omitted with forwards. Native standarddeque field174 (checked proxy/offset18c/size190), genuine ChatLine layout76. HealthHud genuine Visit sharedowner, native findVisit callee query-only audit, public Humanoid relativeHealth floats1a8/1ac, full Rect/Adorn paths. No fabricated fields/vslots/private access changes.",
+    "targets": {
+      "addresses": [
+        "0064fe90",
+        "00656690"
+      ],
+      "scores": [
+        0,
+        99
+      ]
+    },
+    "seed_sources": {
+      "2008-06": {
+        "0064fe90": "work/large-functions-2008-20261014/0064fe90.cpp",
+        "00656690": "work/large-functions-2008-20261014/00656690.cpp"
+      }
+    },
+    "keep_partials": true,
+    "builds": [
+      21022,
+      50727
+    ],
+    "profiles": [
+      "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD",
+      "/O2 /Ob1 /Oy /GF /GS- /EHsc /MD",
+      "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast"
+    ],
+    "output": "work/large-functions-2008-20261014/chat-health-gates",
+    "next": "Submit only verified improvements; all partials remain partials; full code/data required for exacts."
+  },
+  "native-chat-health-fanout-2008": {
+    "op": "fanout",
+    "client": "2008-06",
+    "library": "native ScoreHud and genuine Color palette/templates",
+    "hypothesis": "Two fresh native GUI render sources with real deque/sharedowner helpers,2compilerbuilds normal/fast, across all unresolved2008 code. Preserve code/data/server gates.",
+    "sources": [
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_chatoutput_native_render_1fe1c07a623f1bf3.cpp",
+          "roc_healthhud_native_render_f627a7a9c905230b.cpp"
+        ],
+        "builds": [
+          21022,
+          50727
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast",
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      }
+    ],
+    "targets": {},
+    "output": "work/large-functions-2008-20261014/chat-health-fanout",
+    "next": "Park unchanged objects after bounded pass; count only verified new exacts."
+  },
+  "bruteforce-native-data-residue-audit": {
+    "op": "grid",
+    "client": "2008-06",
+    "library": "Native referenced-data residue audit",
+    "hypothesis": "Wholeobjectfanout suppresses codeexact candidates withbad referenceddata; inspect current99native sources using minimum99 exactonly checks and retained data mismatch diagnostics. Existing source bodies/flags unchanged, both historicalcompilers. No literal or path rewriting without actualdata evidence.",
+    "targets": {
+      "scores": [
+        99,
+        99
+      ],
+      "lib": ".+"
+    },
+    "builds": [
+      21022,
+      50727
+    ],
+    "profiles": [
+      "keep"
+    ],
+    "improvement_only": true,
+    "reuse_objects": true,
+    "next": "Inspect journal diffs beginning Code matches,butdata; derive actual vendor/path/type facts before any correction. Exact gains still require server verification."
+  },
+  "native-guiditem-reflection-release-pilot-2008": {
+    "op": "fanout",
+    "client": "2008-06",
+    "library": "Eight newly hierarchy-correct native reflection cores in actual Release branch",
+    "hypothesis": "New hierarchy replay34objects8newfull exacts. Test8representative unchanged native descriptor cores in existing Debug.h actual release branch; target functions lacking crash/dynamic-check paths may use this source configuration. Full native types, new real hierarchy and referenced-data verification; no global recipe define change.",
+    "sources": [
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_unit_b84a4725132a1443.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_unit_e5d4fc477690d4ca.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_unit_1eb5bb0dbedac226.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_unit_0fd4a6cbd89c1522.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_unit_0e6c26f86ea6d645.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_unit_f6bab40b6da63e8a.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_unit_4a134d2298284e1f.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_unit_10b1ac3f10161d3a.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      }
+    ],
+    "targets": {},
+    "next": "Only scale assertion mode if pilot gains; stop at0, retain original mode winners.",
+    "result": {
+      "status": "parked",
+      "new_verified": 0,
+      "evidence": "work/goal-native-guid-family-verified-20261015/receipts.json",
+      "partial_evidence": "work/goal-native-guid-family-verified-20261015/partial-receipt.json"
+    }
+  },
+  "large-chat-command-gates-2008": {
+    "op": "grid",
+    "client": "2008-06",
+    "library": "native ScoreHud team and FFA",
+    "hypothesis": "Native1439byte ParseCommand initially0, complete boost char_separator/tokenizer, to_lower, SafeChat.getMessage, ChatLine allocation/pushback/lifetime60. Actual72byte ChatMessage revision proved by4963c0 destructors two strings0/1c,owners38/40 and callerret48. Firststring name unknown, codegenlabel senderName; preserve actual genuine string/sharedowner types, no invented padding.",
+    "targets": {
+      "addresses": [
+        "00650660"
+      ],
+      "scores": [
+        0,
+        99
+      ]
+    },
+    "seed_sources": {
+      "2008-06": {
+        "00650660": "work/large-functions-2008-20261014/00650660.cpp"
+      }
+    },
+    "keep_partials": true,
+    "builds": [
+      21022,
+      50727
+    ],
+    "profiles": [
+      "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD",
+      "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast",
+      "/O1 /Ob2 /Oy /GF /GS- /EHsc /MD",
+      "/Od /Ob0 /GS /EHsc /MD"
+    ],
+    "output": "work/large-functions-2008-20261014/chat-command-gates",
+    "next": "Submit only verified improvements; all partials remain partials; full code/data required for exacts."
+  },
+  "native-chat-command-fanout-2008": {
+    "op": "fanout",
+    "client": "2008-06",
+    "library": "native ScoreHud and genuine Color palette/templates",
+    "hypothesis": "Native ParseCommand complete authentic boost tokenizer and container source,4objects versus all unresolved2008 code; full code/data/server acceptance.",
+    "sources": [
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_chatoutput_native_command_d8cd282c24104329.cpp"
+        ],
+        "builds": [
+          21022,
+          50727
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast",
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      }
+    ],
+    "targets": {},
+    "output": "work/large-functions-2008-20261014/chat-command-fanout",
+    "next": "Park unchanged objects after bounded pass; count only verified new exacts."
+  },
+  "auto-native-chat-command-2008": {
+    "op": "fanout",
+    "client": "2008-06",
+    "library": "native ScoreHud and genuine Color palette/templates",
+    "hypothesis": "Manual full1439byte0score chat-command source emitted authentic boost to_lower stdstring helper. Four-object pilot server verified0064fd00 63to100 (105bytes), first automatic normal library discovery profile now fast and reproduces100 with data. Retain only winning21022 fast object.",
+    "sources": [
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_chatoutput_native_command_d8cd282c24104329.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast"
+        ]
+      }
+    ],
+    "targets": {},
+    "output": "work/large-functions-2008-20261014/chat-command-auto",
+    "next": "Park unchanged objects after bounded pass; count only verified new exacts."
+  },
+  "bruteforce-g3d-owner-array-members": {
+    "op": "fanout",
+    "client": "2008-06",
+    "library": "Authentic G3D owner Array unused members",
+    "hypothesis": "Prior actualArray<shared_ptr<PartInstance>> append100 emittedonlyresize/append and wholeclassexplicitinstantiation failedunusedcomparison. Anchor other publicgenuine members inclcopy/assignment/vectorassign/insert/remove/pop/clear/swap andappend2-4, no comparisonfabrication or PartInstance layout. ForwardactualPartInstance onlypointeruse. Compare twoinstallednativeG3Dheaders, optimized/unoptimized21022.",
+    "sources": [
+      {
+        "recipe": "rbxgs-g3d-dll",
+        "files": [
+          "roc_owner_array_members_805ee075da00f9ea.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD",
+          "/Od /Ob0 /GS /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "g3d-6.09-dll",
+        "files": [
+          "roc_owner_array_members_805ee075da00f9ea.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD",
+          "/Od /Ob0 /GS /EHsc /MD"
+        ]
+      }
+    ],
+    "evidence_resume": true,
+    "next": "Verifyknownappend0059b310 control, count only newserverexacts; park zero-gainmembercohort."
+  },
+  "bruteforce-g3d-owner-array-members-native-context": {
+    "op": "fanout",
+    "client": "2008-06",
+    "library": "Authentic G3D owner Array unused members",
+    "hypothesis": "Same genuine publicG3DownerArray anchors, using verified original rbgs-dll include/preprocessing context because standaloneG3Drecipes lackBoostheaders. No appclassdefinitions, onlyforwardPartInstance pointer. No fabricatedcomparisons/layout.",
+    "sources": [
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_owner_array_members_805ee075da00f9ea.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD",
+          "/Od /Ob0 /GS /EHsc /MD"
+        ]
+      }
+    ],
+    "evidence_resume": true,
+    "next": "Verifyknownappend0059b310 control, count only newserverexacts; park zero-gainmembercohort."
+  },
+  "bruteforce-g3d-public-member-families": {
+    "op": "fanout",
+    "client": "2008-06",
+    "library": "Genuine public G3D Array members for observed types",
+    "hypothesis": "Knownownerappendcontrol100 validates standalone publicmemberanchor approach; ownerextras0. NativeactualExplosion/World headers useArray<Primitive*>; IFSModel usesArray<int/Vector2/Vector3>; GApp debugText usesArray<string>. Instantiate genuine publiccopy/assign/vectorassign/insert/remove/pop/clear/swap/append1-4 bodies across thesetypes undernative/upstreamG3Dcontexts. No fakeelementfields/comparisons or classlayouts.",
+    "sources": [
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_array_public_members_da4b00e91f318eb0.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD",
+          "/Od /Ob0 /GS /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "g3d-6.09-dll",
+        "files": [
+          "roc_array_public_members_da4b00e91f318eb0.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD",
+          "/Od /Ob0 /GS /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_array_public_members_1f9d6a79a388d60c.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD",
+          "/Od /Ob0 /GS /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "g3d-6.09-dll",
+        "files": [
+          "roc_array_public_members_1f9d6a79a388d60c.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD",
+          "/Od /Ob0 /GS /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_array_public_members_bd89ce2b9404cfdc.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD",
+          "/Od /Ob0 /GS /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "g3d-6.09-dll",
+        "files": [
+          "roc_array_public_members_bd89ce2b9404cfdc.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD",
+          "/Od /Ob0 /GS /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_array_public_members_224e132048d4a204.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD",
+          "/Od /Ob0 /GS /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "g3d-6.09-dll",
+        "files": [
+          "roc_array_public_members_224e132048d4a204.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD",
+          "/Od /Ob0 /GS /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_array_public_members_76ed29618e9bc802.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD",
+          "/Od /Ob0 /GS /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "g3d-6.09-dll",
+        "files": [
+          "roc_array_public_members_76ed29618e9bc802.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD",
+          "/Od /Ob0 /GS /EHsc /MD"
+        ]
+      }
+    ],
+    "evidence_resume": true,
+    "next": "20context boundedcohort, fullcode/data/server gains only; park unchangedzero-yieldtypes."
+  },
+  "large-arrowpanel-native-gates-2008": {
+    "op": "grid",
+    "client": "2008-06",
+    "library": "native ScoreHud team and FFA",
+    "hypothesis": "Native RTTI confirms ArrowPanel ctor1109 and its full1334byte init, both initial0, misleadingImageKeyButton label. Genuine full ArrowPanel/TopMenuBar/ArrowButton/ImageWidget/MenuSpacer inheritance. Native factories kept external with observed prototypes; no invented allocation sizes/owners. Real threecolumn tree and key/controller cases; native ownmember15c/160 views. SDK inheritedvptr layout candidate only; no exact/runtimeclaims without verification.",
+    "targets": {
+      "addresses": [
+        "00657240",
+        "00657780"
+      ],
+      "scores": [
+        0,
+        99
+      ]
+    },
+    "seed_sources": {
+      "2008-06": {
+        "00657240": "work/large-functions-2008-20261014/00657240.cpp",
+        "00657780": "work/large-functions-2008-20261014/00657780.cpp"
+      }
+    },
+    "keep_partials": true,
+    "builds": [
+      21022,
+      50727
+    ],
+    "profiles": [
+      "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD",
+      "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast",
+      "/O1 /Ob2 /Oy /GF /GS- /EHsc /MD",
+      "/Od /Ob0 /GS /EHsc /MD"
+    ],
+    "output": "work/large-functions-2008-20261014/arrowpanel-native-gates",
+    "next": "Submit only verified improvements; all partials remain partials; full code/data required for exacts."
+  },
+  "bruteforce-g3d-public-member-extra-types": {
+    "op": "fanout",
+    "client": "2008-06",
+    "library": "Genuine G3D publicArray further observed types",
+    "hypothesis": "First5observedtypes membercohort recoveredVector2append23to100. ActualnativeGCamera/Sky headers useArray<Vector4>,Sky/SDLWindow useArray<float>,GWindow usesArray<uint16>/Array<bool>. Applysamegenuinepublicmemberanchors tothesefourtypes, native/upstreamG3Dcontexts, measuredO2/Odflags. No inventedfields/operators/layouts.",
+    "sources": [
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_array_public_members_9dd1ffbfd573b7d4.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD",
+          "/Od /Ob0 /GS /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "g3d-6.09-dll",
+        "files": [
+          "roc_array_public_members_9dd1ffbfd573b7d4.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD",
+          "/Od /Ob0 /GS /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_array_public_members_d306c96e1a29feb9.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD",
+          "/Od /Ob0 /GS /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "g3d-6.09-dll",
+        "files": [
+          "roc_array_public_members_d306c96e1a29feb9.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD",
+          "/Od /Ob0 /GS /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_array_public_members_9267810f7c07951b.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD",
+          "/Od /Ob0 /GS /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "g3d-6.09-dll",
+        "files": [
+          "roc_array_public_members_9267810f7c07951b.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD",
+          "/Od /Ob0 /GS /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_array_public_members_b1dd73fc151fcb53.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD",
+          "/Od /Ob0 /GS /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "g3d-6.09-dll",
+        "files": [
+          "roc_array_public_members_b1dd73fc151fcb53.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD",
+          "/Od /Ob0 /GS /EHsc /MD"
+        ]
+      }
+    ],
+    "evidence_resume": true,
+    "next": "16context boundedcohort; onlyfullserverexact gains count, park losingtypes."
+  },
+  "native-arrowpanel-family-fanout-2008": {
+    "op": "fanout",
+    "client": "2008-06",
+    "library": "native ScoreHud and genuine Color palette/templates",
+    "hypothesis": "Full manually exact1334byte ArrowPanel.init plus genuine noinline GuiItem.addGuiItem body (nativeout-ofline setParent and sharedowner release), samecompleteconstructor82partial. Four-object pilot across all unresolved2008; code/data/server required.",
+    "sources": [
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_arrowpanel_native_attachment_b778e4bd41285e74.cpp"
+        ],
+        "builds": [
+          21022,
+          50727
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast",
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      }
+    ],
+    "targets": {},
+    "output": "work/large-functions-2008-20261014/arrowpanel-native-fanout",
+    "next": "Park unchanged objects after bounded pass; count only verified new exacts."
+  },
+  "auto-native-arrowpanel-family-2008": {
+    "op": "fanout",
+    "client": "2008-06",
+    "library": "native ScoreHud and genuine Color palette/templates",
+    "hypothesis": "Manual large0score1334byte ArrowPanel.init exact plus emitted116byte genuine GuiItem attachment exact. Server verified both. First normal21022 automatic gate independently reproduces both100 including data. Onewinningobject replaces four-object pilot; current targets alreadycredited so rerun mustnotdoublecredit.",
+    "sources": [
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_arrowpanel_native_attachment_b778e4bd41285e74.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      }
+    ],
+    "targets": {},
+    "output": "work/large-functions-2008-20261014/arrowpanel-native-auto",
+    "next": "Superseded in default pipeline by combined nativeGUI panelbuilder oneobject, which independently reproduces bothArrowPanel and palette exacts. Retain old journal for audit; do not rerun unchanged."
+  },
+  "large-guibuilder-palette-menu-gates-2008": {
+    "op": "grid",
+    "client": "2008-06",
+    "library": "native ScoreHud team and FFA",
+    "hypothesis": "Freshlarge0score native GuiBuilder buildRightPaletteItems1661 and buildMenu1337, previously misnamedUnifiedImageWidget. Genuine fullGuiBuilder/GUI inheritance, VerbContainer typedWorkspace base2ec, nativeexternal typedfactory contracts. Full sixbutton camera tree/menu five entries/100x20 children. Nativeownpublic accessor fields108/13c; no fakepadding/virtuals/private access changes.",
+    "targets": {
+      "addresses": [
+        "00602cb0",
+        "00602770"
+      ],
+      "scores": [
+        0,
+        99
+      ]
+    },
+    "seed_sources": {
+      "2008-06": {
+        "00602cb0": "work/large-functions-2008-20261014/00602cb0.cpp",
+        "00602770": "work/large-functions-2008-20261014/00602770.cpp"
+      }
+    },
+    "keep_partials": true,
+    "builds": [
+      21022,
+      50727
+    ],
+    "profiles": [
+      "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD",
+      "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast",
+      "/O1 /Ob2 /Oy /GF /GS- /EHsc /MD",
+      "/Od /Ob0 /GS /EHsc /MD"
+    ],
+    "output": "work/large-functions-2008-20261014/guibuilder-palette-menu-gates",
+    "next": "Submit only verified improvements; all partials remain partials; full code/data required for exacts."
+  },
+  "native-bodymover-weak-event-core-2008": {
+    "op": "grid",
+    "client": "2008-06",
+    "library": "Native BodyMover event with proven weak ownership",
+    "hypothesis": "Real Listener secondary receiver and weak temporaries; target world/lock/prevent guard, embedded Primitive228, actual World bool prototype.",
+    "targets": {
+      "addresses": [
+        "0062fae0"
+      ],
+      "scores": [
+        0,
+        99
+      ]
+    },
+    "seed_sources": {
+      "2008-06": {
+        "0062fae0": "work\\goal-bodymover-event-core-20261015\\0062fae0.cpp"
+      }
+    },
+    "builds": [
+      21022,
+      50727
+    ],
+    "profiles": [
+      "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+    ],
+    "append": [
+      ""
+    ],
+    "keep_partials": true,
+    "output": "work\\goal-bodymover-event-core-20261015\\grid",
+    "result": {
+      "status": "parked",
+      "new_verified": 0,
+      "evidence": "work\\goal-native-guid-virtual-revision-20261015\\receipts.json"
+    }
+  },
+  "native-guiditem-destructor-family-expanded-2008": {
+    "op": "fanout",
+    "client": "2008-06",
+    "library": "Fresh native destructor cores",
+    "hypothesis": "Reuse verified genuine Instance hierarchy across12 fresh native destructor cores, normal/DLL. Only full code/data server gains.",
+    "sources": [
+      {
+        "recipe": "rbxgs",
+        "files": [
+          "roc_unit_db652a2b79efe267.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_unit_db652a2b79efe267.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "rbxgs",
+        "files": [
+          "roc_unit_4953c39883d63dd1.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_unit_4953c39883d63dd1.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "rbxgs",
+        "files": [
+          "roc_unit_1a4e079e6c91028f.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_unit_1a4e079e6c91028f.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "rbxgs",
+        "files": [
+          "roc_unit_76f8469026cfb5e0.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_unit_76f8469026cfb5e0.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "rbxgs",
+        "files": [
+          "roc_unit_9933339977ee1056.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_unit_9933339977ee1056.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "rbxgs",
+        "files": [
+          "roc_unit_83d7d2cc9b0f5a5d.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_unit_83d7d2cc9b0f5a5d.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "rbxgs",
+        "files": [
+          "roc_unit_571cb08a0138d7c8.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_unit_571cb08a0138d7c8.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "rbxgs",
+        "files": [
+          "roc_unit_76a70af24e7a238d.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_unit_76a70af24e7a238d.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "rbxgs",
+        "files": [
+          "roc_unit_784e10b72e3d4d24.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_unit_784e10b72e3d4d24.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "rbxgs",
+        "files": [
+          "roc_unit_67940d2517b8cb70.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_unit_67940d2517b8cb70.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "rbxgs",
+        "files": [
+          "roc_unit_31a4217cb19ee747.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_unit_31a4217cb19ee747.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "rbxgs",
+        "files": [
+          "roc_unit_1e41bbb6e44afed7.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_unit_1e41bbb6e44afed7.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      }
+    ],
+    "targets": {},
+    "next": "Park zero-gain objects, fix required genuine complete-type includes only.",
+    "result": {
+      "status": "verified",
+      "new_verified": 1,
+      "evidence": "work\\goal-native-guid-virtual-revision-20261015\\receipts.json"
+    }
+  },
+  "native-gui-combined-fanout-2008": {
+    "op": "fanout",
+    "client": "2008-06",
+    "library": "native ScoreHud and genuine Color palette/templates",
+    "hypothesis": "Combine two successful manually recovered native largeGUI families into one TU. Firstnormal21022 independently reproduces all3exacts including data:ArrowPanel.init1334,GuiBuilder.palette1661,GuiItem.attach116. Four-object allunresolved pilot; no duplicate credit for3alreadyverified. No fakeallocation/type/ABI changes.",
+    "sources": [
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_native_gui_panel_builder_e28dd62989f390e1.cpp"
+        ],
+        "builds": [
+          21022,
+          50727
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast",
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      }
+    ],
+    "targets": {},
+    "output": "work/large-functions-2008-20261014/native-gui-combined-fanout",
+    "next": "Park unchanged objects after bounded pass; count only verified new exacts."
+  },
+  "native-guiditem-obsolete-guid-hook-event-2008": {
+    "op": "grid",
+    "client": "2008-06",
+    "library": "Actual newer Instance primary virtual list",
+    "hypothesis": "Actual newer Instance omits legacy virtual onGuidChanged; target BodyMover preventBodySleep slot40 vs old44. Remove obsolete native hook, no fake slots/ABI. Existing newer GuidItem inheritance retained.",
+    "targets": {
+      "addresses": [
+        "0062fae0"
+      ],
+      "scores": [
+        0,
+        99
+      ]
+    },
+    "seed_sources": {
+      "2008-06": {
+        "0062fae0": "work\\goal-native-guid-virtual-revision-20261015\\0062fae0.cpp"
+      }
+    },
+    "builds": [
+      21022
+    ],
+    "profiles": [
+      "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+    ],
+    "append": [
+      ""
+    ],
+    "keep_partials": true,
+    "output": "work\\goal-native-guid-virtual-revision-20261015\\event-grid",
+    "result": {
+      "status": "verified",
+      "new_verified": 1,
+      "evidence": "work\\goal-native-guid-virtual-revision-20261015\\receipts.json"
+    }
+  },
+  "auto-native-gui-panel-builder-2008": {
+    "op": "fanout",
+    "client": "2008-06",
+    "library": "native ScoreHud and genuine Color palette/templates",
+    "hypothesis": "Five freshlarge manual0score GUI functions yield3large exacts and2partials. Genuine116byte attachment addsfourth exact. Complete combined source firstnormal21022 independently reproducesall4fullcode/dataexacts4265bytes inoneobject;4objectpilot0additionalexacts,retainonewinner. Default2008 stage includesfullbuildGui1154 alongwithArrowPanel1334,camerapalette1661,attach116. No duplicated credit or ABI fabrication.",
+    "sources": [
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_native_gui_complete_builder_81ac43575f1aba4f.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      }
+    ],
+    "targets": {},
+    "output": "work/large-functions-2008-20261014/native-gui-combined-auto",
+    "next": "Resume journal, one winning normal21022 object only. Combined control evidence native-gui-complete-first-auto-controls.json; park unchanged losing configurations."
+  },
+  "native-guiditem-primary-virtual-family-replay-2008": {
+    "op": "fanout",
+    "client": "2008-06",
+    "library": "Native descriptor and Instance primary virtual family",
+    "hypothesis": "Independent full server exact281byte BodyMover event proves actual newer Instance removal of obsolete GUID virtual hook. Replay prior34 genuine descriptor cores and2 full Instance contexts with this one header delta only.",
+    "sources": [
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_unit_b0e01722ea051b2b.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_unit_badb0264abccf6ee.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_unit_7550aa0c2aaba25e.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_unit_dc3676607efdfca2.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_unit_68d8f4cfa4d371f8.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_unit_5a331ed21b3de3a1.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_unit_2b2d2437b6dddde7.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_unit_fb649921c3e4dfe4.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_unit_134ccaa8abbc4ce2.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_unit_b68b31cb02d54638.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_unit_3404ef79998e8f3d.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_unit_351d4be1b25048c1.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_unit_efbdc130a6f72e83.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_unit_74917a167da37a8f.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_unit_6e2e9c0e79df46b2.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_unit_45c0205754da1ae9.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_unit_58ef7033aa4205c3.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_unit_6fc216889ba8a574.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_unit_0d8ac459be971e86.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_unit_5c8f3723cc52de40.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_unit_ad25527c286eba31.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_unit_e0a22c527f8e253f.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_unit_52dd5e54a5c1b00c.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_unit_c502e3b96ecd03c0.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_unit_e1bfe2de7c8fc5b2.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_unit_430ca6728d49903e.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_unit_6de1570aacb0b93c.cpp"
+        ],
+        "builds": [
+          50727
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_unit_8a497072a02ff8db.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_unit_f18cb6fd3eb076f9.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_unit_0318bfbc7f245f29.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_unit_c227ea409d5cbef3.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_unit_476d4fceb67a3344.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_unit_87799f88645a3bc9.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_unit_03bdc85f51051738.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "rbxgs",
+        "files": [
+          "roc_unit_bc9fa98e8350b2a4.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_unit_bc9fa98e8350b2a4.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      }
+    ],
+    "targets": {},
+    "next": "Park zero-gain objects. No arbitrary virtual shifts; real newer declaration and target slot40 establish this revision.",
+    "result": {
+      "status": "verified",
+      "new_verified": 1,
+      "evidence": "work\\goal-native-guid-virtual-revision-20261015\\receipts.json"
+    }
+  },
+  "native-iequipable-dtor-debug-header-2008": {
+    "op": "fanout",
+    "client": "2008-06",
+    "library": "Native IEquipable destructor required assertion declaration",
+    "hypothesis": "Repair isolated core missing genuine Debug.h include; preserve original native destructor body and proven hierarchy.",
+    "sources": [
+      {
+        "recipe": "rbxgs",
+        "files": [
+          "roc_unit_7413860ba2beb93c.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_unit_7413860ba2beb93c.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      }
+    ],
+    "targets": {},
+    "next": "Park after bounded compile.",
+    "result": {
+      "status": "parked",
+      "new_verified": 0,
+      "evidence": "work\\goal-native-guid-virtual-revision-20261015\\receipts.json"
+    }
+  },
+  "native-guiditem-full-source-heldout-2008": {
+    "op": "fanout",
+    "client": "2008-06",
+    "library": "Six fresh whole native TUs",
+    "hypothesis": "Reuse full verified Instance GuidItem hierarchy and primary virtual revision across unchanged six genuine native source TUs. Full IRenderableBucket retained; actual legacy compiler50727 required. Release assertions absent as proven native cores.",
+    "sources": [
+      {
+        "recipe": "rbxgs",
+        "files": [
+          "roc_unit_dc4dcbaf5d17a1c9.cpp"
+        ],
+        "builds": [
+          50727
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_unit_dc4dcbaf5d17a1c9.cpp"
+        ],
+        "builds": [
+          50727
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "rbxgs",
+        "files": [
+          "roc_unit_a38fd55eead53da3.cpp"
+        ],
+        "builds": [
+          50727
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_unit_a38fd55eead53da3.cpp"
+        ],
+        "builds": [
+          50727
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "rbxgs",
+        "files": [
+          "roc_unit_c2f70c052e111be8.cpp"
+        ],
+        "builds": [
+          50727
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_unit_c2f70c052e111be8.cpp"
+        ],
+        "builds": [
+          50727
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "rbxgs",
+        "files": [
+          "roc_unit_beb9939b9b512b69.cpp"
+        ],
+        "builds": [
+          50727
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_unit_beb9939b9b512b69.cpp"
+        ],
+        "builds": [
+          50727
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "rbxgs",
+        "files": [
+          "roc_unit_de8a2ff6f3008253.cpp"
+        ],
+        "builds": [
+          50727
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_unit_de8a2ff6f3008253.cpp"
+        ],
+        "builds": [
+          50727
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "rbxgs",
+        "files": [
+          "roc_unit_7e5de2ddfd8e3352.cpp"
+        ],
+        "builds": [
+          50727
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_unit_7e5de2ddfd8e3352.cpp"
+        ],
+        "builds": [
+          50727
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      }
+    ],
+    "targets": {},
+    "next": "Park no-gain objects; compiler/context repairs only when justified.",
+    "result": {
+      "status": "parked",
+      "new_verified": 0,
+      "evidence": "work\\goal-native-guid-virtual-revision-20261015\\receipts.json"
+    }
+  },
+  "large-guibuilder-assembly-gates-2008": {
+    "op": "grid",
+    "client": "2008-06",
+    "library": "native ScoreHud team and FFA",
+    "hypothesis": "Fresh0score1154byte GuiBuilder.buildGui. Nine actual builders identified by native strings and constructorRTTI:StatsHud1/2,ChatHud(ChatOutput),ChatMenu,ScoreHud,HealthHud,MainMenu,RightPalette,ControlHud. Callee603c60 ret0c includes hiddenretval+Adorn+int, matches genuine2argheader; suspectedextraargs disproven by actualcaller stack andbody. NativepublicgetGuiRoot sharedowner21c, genuineGuiBuilderfields0/4, exactorder and sharedowner temporary lifetimes; no fakefields/ABI.",
+    "targets": {
+      "addresses": [
+        "00605c20"
+      ],
+      "scores": [
+        0,
+        99
+      ]
+    },
+    "seed_sources": {
+      "2008-06": {
+        "00605c20": "work/large-functions-2008-20261014/00605c20.cpp"
+      }
+    },
+    "keep_partials": true,
+    "builds": [
+      21022,
+      50727
+    ],
+    "profiles": [
+      "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD",
+      "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast",
+      "/O1 /Ob2 /Oy /GF /GS- /EHsc /MD",
+      "/Od /Ob0 /GS /EHsc /MD"
+    ],
+    "output": "work/large-functions-2008-20261014/guibuilder-assembly-gates",
+    "next": "Submit only verified improvements; all partials remain partials; full code/data required for exacts."
+  },
+  "bruteforce-foreign-native-gimage": {
+    "op": "fanout",
+    "client": "2008-06",
+    "library": "Explicit verified native GImage donor replay",
+    "hypothesis": "Server2011-06 0053cba0 fullverified native rbx2016-g3d GImage.cpp under21022/O2 GS- EHsc MD has same447byteinstructionshape as unresolved2008 0050e280. Unitnotalready2008source/trial bank. Replay actualnativefile with explicit2008compilercontexts acrossunresolved2008, not assumedtype/ABItransfer. Excluded soleforeignrawCPP candidate with fixedforeignvtableaddress.",
+    "sources": [
+      {
+        "recipe": "rbx2016-g3d",
+        "files": [
+          "GImage.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /GS- /EHsc /MD",
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      }
+    ],
+    "evidence_resume": true,
+    "next": "Fulltargetcode/data/server required; preserve foreignprovenance work/brute-foreign-shape-bank-20261015/native-candidates.json."
+  },
+  "native-gui-complete-fanout-2008": {
+    "op": "fanout",
+    "client": "2008-06",
+    "library": "native ScoreHud and genuine Color palette/templates",
+    "hypothesis": "Combine new exact1154byte native GUI assembly with prior3exactGUIbuilder family. All4firstnormal21022 fullcode/data controls reproduce100 fromoneobject;4object allunresolved fanout to find extras without duplicatecredits.",
+    "sources": [
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_native_gui_complete_builder_81ac43575f1aba4f.cpp"
+        ],
+        "builds": [
+          21022,
+          50727
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast",
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      }
+    ],
+    "targets": {},
+    "output": "work/large-functions-2008-20261014/native-gui-complete-fanout",
+    "next": "Park unchanged objects after bounded pass; count only verified new exacts."
+  },
+  "native-visit-constructor-guid-revision-2008": {
+    "op": "grid",
+    "client": "2008-06",
+    "library": "Actual Visit constructor",
+    "hypothesis": "Native Visit uploadUrl stdstring and scoped worker natural130/14c under verified GuidItem hierarchy. Target explicitly calls native Instance::setName after NoVisit and pingThread initialization. Preserve real class/prototypes; no literal vptr writes.",
+    "targets": {
+      "addresses": [
+        "005c5220"
+      ],
+      "scores": [
+        0,
+        99
+      ]
+    },
+    "seed_sources": {
+      "2008-06": {
+        "005c5220": "work\\goal-native-visit-constructor-20261015\\005c5220.cpp"
+      }
+    },
+    "builds": [
+      21022,
+      50727
+    ],
+    "profiles": [
+      "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+    ],
+    "append": [
+      ""
+    ],
+    "keep_partials": true,
+    "output": "work\\goal-native-visit-constructor-20261015\\grid",
+    "result": {
+      "status": "verified",
+      "new_verified": 1,
+      "evidence": "work\\goal-native-visit-velocity-round-20261015\\receipts.json"
+    }
+  },
+  "bruteforce-gimage-rotate-old-api": {
+    "op": "fanout",
+    "client": "2008-06",
+    "library": "Genuine GImage rotate algorithm with authentic oldAPI",
+    "hypothesis": "ForeignverifiedGImage rotate96 onlyrealfieldlayout differences. Actual6.09/nativeolderGImage virtualdtor plus_byte/width/height/channels exactlyproves target+4/+8/+c/+10. Preserve genuine oldclass unchanged, implement genuine laterrotate algorithm as freecdecl codegenanalogue using actualoldpublic channels/width andpixel4/byte. ActualgetPixel/setPixel helperbodies retained, nooffsetcasts/padding/privateaccessbypass.",
+    "sources": [
+      {
+        "recipe": "rbxgs-g3d-dll",
+        "files": [
+          "roc_gimage_rotate_old_api_b5e4a881e2d497e4.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /GS- /EHsc /MD",
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "g3d-6.09-dll",
+        "files": [
+          "roc_gimage_rotate_old_api_b5e4a881e2d497e4.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /GS- /EHsc /MD",
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      }
+    ],
+    "evidence_resume": true,
+    "next": "Fullcode/data/server acceptance at0050e280; inspect result before extendingnativeAPI bridges."
+  },
+  "native-world-createjoints-core-2008": {
+    "op": "grid",
+    "client": "2008-06",
+    "library": "Genuine World createJoints",
+    "hypothesis": "Target252byte loop exactly native createJoints(Primitive*,set<Primitive*>*). Compile real class/Array/set/Notifier first before adjusting measured fields. Actual target Primitive::getFastFuzzyExtents retains ContactManager arguments on stack, no fake stdcall.",
+    "targets": {
+      "addresses": [
+        "005ea4d0"
+      ],
+      "scores": [
+        0,
+        99
+      ]
+    },
+    "seed_sources": {
+      "2008-06": {
+        "005ea4d0": "work\\goal-world-native-createjoints-20261015\\005ea4d0.cpp"
+      }
+    },
+    "builds": [
+      21022,
+      50727
+    ],
+    "profiles": [
+      "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+    ],
+    "append": [
+      ""
+    ],
+    "keep_partials": true,
+    "output": "work\\goal-world-native-createjoints-20261015\\grid",
+    "result": {
+      "status": "parked",
+      "new_verified": 0,
+      "evidence": "work\\goal-native-visit-velocity-round-20261015\\receipts.json"
+    }
+  },
+  "native-velocity-setpart-genuine-core-2008": {
+    "op": "grid",
+    "client": "2008-06",
+    "library": "Real VelocityMotor::setPart",
+    "hypothesis": "Native parent helper/Feature CoordinateFrame/MotorJoint methods plus verified genuine GuidItem/weak JointInstance hierarchy and embedded Part primitive. Replace fake storage/reserved local/frame prototypes with unchanged genuine algorithm.",
+    "targets": {
+      "addresses": [
+        "0060a020"
+      ],
+      "scores": [
+        0,
+        99
+      ]
+    },
+    "seed_sources": {
+      "2008-06": {
+        "0060a020": "work\\goal-velocity-native-setpart-20261015\\0060a020.cpp"
+      }
+    },
+    "builds": [
+      21022,
+      50727
+    ],
+    "profiles": [
+      "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+    ],
+    "append": [
+      "",
+      " /fp:fast"
+    ],
+    "keep_partials": true,
+    "output": "work\\goal-velocity-native-setpart-20261015\\grid",
+    "result": {
+      "status": "verified",
+      "new_verified": 1,
+      "evidence": "work\\goal-native-visit-velocity-round-20261015\\receipts.json"
+    }
+  },
+  "native-velocity-feature-proven-hierarchy-family-2008": {
+    "op": "fanout",
+    "client": "2008-06",
+    "library": "Native Feature/Hole/VelocityMotor family",
+    "hypothesis": "SetPart194bytes fullserver100 with genuine types proves parent104/Primitive228/Joint150. Fan out all remaining unchanged original Feature.cpp bodies except Workspace-dependent ancestor method, preserving actual class/descriptor declarations. Omitted unused Bucket only; no source-body arithmetic changes.",
+    "sources": [
+      {
+        "recipe": "rbxgs",
+        "files": [
+          "roc_unit_79c05da32dcaafc2.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD",
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast"
+        ]
+      },
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_unit_79c05da32dcaafc2.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD",
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast"
+        ]
+      }
+    ],
+    "targets": {},
+    "next": "Park zero-gain contexts; required headers only if actual compile errors.",
+    "result": {
+      "status": "verified",
+      "new_verified": 1,
+      "evidence": "work\\goal-native-visit-velocity-round-20261015\\receipts.json"
+    }
+  },
+  "native-world-joint-loop-proven-member-views-2008": {
+    "op": "fanout",
+    "client": "2008-06",
+    "library": "Native World joint loops measured member views",
+    "hypothesis": "Preserve real World/ContactManager/Primitive/JointBuilder/G3DArray/stdset and actual create/destroyJoints algorithms. Target proves contact84,notificationA5,counterEC,ArrayF0. Correct only these genuine member lvalues, no fake class fields, padding or callee ABI.",
+    "sources": [
+      {
+        "recipe": "rbxgs",
+        "files": [
+          "roc_unit_692ebe6ff26b3a44.cpp"
+        ],
+        "builds": [
+          21022,
+          50727
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_unit_692ebe6ff26b3a44.cpp"
+        ],
+        "builds": [
+          21022,
+          50727
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      }
+    ],
+    "targets": {},
+    "next": "Bounded4contexts then park no gains; inspect proper native createJoints residue once.",
+    "result": {
+      "status": "parked",
+      "new_verified": 0,
+      "evidence": "work\\goal-native-visit-velocity-round-20261015\\receipts.json"
+    }
+  },
+  "bruteforce-gimage-static-old-api-family": {
+    "op": "fanout",
+    "client": "2008-06",
+    "library": "Genuine static GImage oldAPI family bridge",
+    "hypothesis": "RotateoldAPI bridge verified447byte0050e280. Actuallaterheader declaresgetPixel/setPixel/interpolateColor/cornerGrad static, so freecdecl analogues preservegenuine signatures; retainactualolderGImage class/virtualdtor/fields/publicAPI, genuinehelperalgorithms andoldpasteSubImage calls. Exportpixelhelpers pluscolorinterpolation/cornergradient for wholeobjectfanout; no fakeclasslayout/virtualmethod/privateaccess changes.",
+    "sources": [
+      {
+        "recipe": "rbxgs-g3d-dll",
+        "files": [
+          "roc_gimage_static_old_api_6c7af3123f485a42.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /GS- /EHsc /MD",
+          "/O2 /GS- /EHsc /MD /fp:fast"
+        ]
+      },
+      {
+        "recipe": "g3d-6.09-dll",
+        "files": [
+          "roc_gimage_static_old_api_6c7af3123f485a42.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /GS- /EHsc /MD",
+          "/O2 /GS- /EHsc /MD /fp:fast"
+        ]
+      }
+    ],
+    "evidence_resume": true,
+    "next": "Verifyrotationcontrol stays100; countonlynew fullservercode/data receipts; park losingobjects."
+  },
+  "large-lua-property-double-gates-2008": {
+    "op": "grid",
+    "client": "2008-06",
+    "library": "native ScoreHud team and FFA",
+    "hypothesis": "Full genuine LuaInstanceBridge TU preserves original staticcaller compiler/register context. Manual nativeaudit identifiespushLuaValue1440 andassignLuaValue2168 (misleadingLuaArguments label). Both have actual double singleton56cd10 branches absent in older SDK body; add genuine typedget/setdouble immediatelyafterfloat, all remaining nativepaths preserved. ActualProperty Descriptor nativefields/prototypes, no fabricatedABI/registerasm. Bounded two compilerbuilds/fourprofiles, park unchanged.",
+    "targets": {
+      "addresses": [
+        "0061abe0",
+        "0061b190"
+      ],
+      "scores": [
+        0,
+        99
+      ]
+    },
+    "seed_sources": {
+      "2008-06": {
+        "0061abe0": "work/large-functions-2008-20261014/0061abe0.cpp",
+        "0061b190": "work/large-functions-2008-20261014/0061b190.cpp"
+      }
+    },
+    "keep_partials": true,
+    "builds": [
+      21022,
+      50727
+    ],
+    "profiles": [
+      "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD",
+      "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast",
+      "/O1 /Ob2 /Oy /GF /GS- /EHsc /MD",
+      "/Od /Ob0 /GS /EHsc /MD"
+    ],
+    "output": "work/large-functions-2008-20261014/lua-property-double-gates",
+    "next": "Submit only verified improvements; all partials remain partials; full code/data required for exacts."
+  },
+  "native-world-joint-loop-index-scope-2008": {
+    "op": "fanout",
+    "client": "2008-06",
+    "library": "Real World loop index lifetime",
+    "hypothesis": "Target streams loop index in EAX after call and delays EBX save until nonempty loop. Move genuine existing int i declaration to method entry, same algorithm/member views. No added dummy local, fake callee prototype, or field.",
+    "sources": [
+      {
+        "recipe": "rbxgs",
+        "files": [
+          "roc_unit_206c3e74b5e247d2.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_unit_206c3e74b5e247d2.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      }
+    ],
+    "targets": {},
+    "next": "Bounded native lifetime trial; park if no full gains.",
+    "result": {
+      "status": "parked",
+      "new_verified": 0,
+      "evidence": "work\\goal-native-visit-velocity-round-20261015\\receipts.json"
+    }
+  },
+  "native-velocity-ancestor-with-proven-setpart-2008": {
+    "op": "grid",
+    "client": "2008-06",
+    "library": "Actual VelocityMotor ancestor callback",
+    "hypothesis": "Preserve native onAncestorChanged plus proven194byte setPart to emit genuine null specialization. Workspace used solely through actual public static World* getWorldIfInWorkspace(const Instance*) contract; no Workspace layout/instances/inheritance inferred. Full genuine other headers retained.",
+    "targets": {
+      "addresses": [
+        "0060a0f0"
+      ],
+      "scores": [
+        0,
+        99
+      ]
+    },
+    "seed_sources": {
+      "2008-06": {
+        "0060a0f0": "work\\goal-velocity-native-ancestor-20261015\\0060a0f0.cpp"
+      }
+    },
+    "builds": [
+      21022,
+      50727
+    ],
+    "profiles": [
+      "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+    ],
+    "append": [
+      ""
+    ],
+    "keep_partials": true,
+    "output": "work\\goal-velocity-native-ancestor-20261015\\grid",
+    "result": {
+      "status": "parked",
+      "new_verified": 0,
+      "evidence": "work\\goal-native-visit-velocity-round-20261015\\receipts.json"
+    }
+  },
+  "native-velocity-ancestor-kernel-stage-enum-2008": {
+    "op": "grid",
+    "client": "2008-06",
+    "library": "Actual IStage Kernel discriminant",
+    "hypothesis": "Only remaining native ancestor diff is actual IPipelined::getWorld Kernel branch comparing7 vs available-header8. Correct measured KERNEL_STAGE enum constant to7; preserve real enum/type/prototypes and all other constants. No claim about unobserved SimJob role.",
+    "targets": {
+      "addresses": [
+        "0060a0f0"
+      ],
+      "scores": [
+        0,
+        99
+      ]
+    },
+    "seed_sources": {
+      "2008-06": {
+        "0060a0f0": "work\\goal-velocity-native-ancestor-20261015\\0060a0f0-kernel7.cpp"
+      }
+    },
+    "builds": [
+      21022
+    ],
+    "profiles": [
+      "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+    ],
+    "append": [
+      ""
+    ],
+    "keep_partials": true,
+    "output": "work\\goal-velocity-native-ancestor-20261015\\kernel7-grid",
+    "result": {
+      "status": "verified",
+      "new_verified": 1,
+      "evidence": "work\\goal-native-visit-velocity-round-20261015\\receipts.json"
+    }
+  },
+  "native-feature-primitive-geometry-inline-family-2008": {
+    "op": "fanout",
+    "client": "2008-06",
+    "library": "Actual Feature coordinate family with measured Primitive",
+    "hypothesis": "Target625byte Feature::computeLocalCoordinateFrame inlines getExtentsLocal reading Part2c4=embeddedPrimitive228+Geometry9c. Reuse prior serververified genuine Primitive getExtentsLocal/Geometry9c typed header, not external old declaration. Whole unchanged native Feature family, four normal/DLL/fast contexts.",
+    "sources": [
+      {
+        "recipe": "rbxgs",
+        "files": [
+          "roc_unit_189f147085beb4c6.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD",
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast"
+        ]
+      },
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_unit_189f147085beb4c6.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD",
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast"
+        ]
+      }
+    ],
+    "targets": {},
+    "next": "Park if no full code/data exact; no unknown enum/field changes.",
+    "result": {
+      "status": "parked",
+      "new_verified": 0,
+      "evidence": "work\\goal-native-visit-velocity-round-20261015\\receipts.json"
+    }
+  },
+  "native-feature-coordinate-multiply-order-2008": {
+    "op": "fanout",
+    "client": "2008-06",
+    "library": "Genuine Feature x87 expression evaluation",
+    "hypothesis": "625byte target differs from native96 only floating evaluation/selection ordering. Swap existing sign*max multiplication operand order independently for x/y, retain genuine actual float sign/max contracts and field types. No dummy spills, register shims, or new locals.",
+    "sources": [
+      {
+        "recipe": "rbxgs",
+        "files": [
+          "roc_unit_860fde98a1f03b1f.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast"
+        ]
+      },
+      {
+        "recipe": "rbxgs",
+        "files": [
+          "roc_unit_167577057902bc13.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast"
+        ]
+      },
+      {
+        "recipe": "rbxgs",
+        "files": [
+          "roc_unit_04a4f43d7b9f24d1.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast"
+        ]
+      }
+    ],
+    "targets": {},
+    "next": "Three bounded semantic-preserving operand trials; park nonexact variants.",
+    "result": {
+      "status": "parked",
+      "new_verified": 0,
+      "evidence": "work\\goal-native-mouse-agent-round-20261015\\receipts.json"
+    }
+  },
+  "large-lua-property-native-gates-2008": {
+    "op": "grid",
+    "client": "2008-06",
+    "library": "native ScoreHud team and FFA",
+    "hypothesis": "Full genuine native Lua property source, restored actual doublebranches. Public SharedPtrBridge registration explicitinstantiation emits real on_newindex callback and independent noinline assignLuaValue; noinline/forwarddeclaration alone rejected(noemission). Setter repeatedp.getDescriptor matchesnative reloads and improves28to43; removegetteralias regresses63to42,rejected. Genuine C++ originalargumentorder restored after reorder unchanged28. Alltypes/bases/accessrules remainintact, no fakeABI/registerassignment/padding. Both targetsinitial0; onlycorrectsymbolpartials eligible.",
+    "targets": {
+      "addresses": [
+        "0061abe0",
+        "0061b190"
+      ],
+      "scores": [
+        0,
+        99
+      ]
+    },
+    "seed_sources": {
+      "2008-06": {
+        "0061abe0": "work/large-functions-2008-20261014/0061abe0.cpp",
+        "0061b190": "work/large-functions-2008-20261014/0061b190.cpp"
+      }
+    },
+    "keep_partials": true,
+    "builds": [
+      21022,
+      50727
+    ],
+    "profiles": [
+      "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD",
+      "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast",
+      "/O1 /Ob2 /Oy /GF /GS- /EHsc /MD",
+      "/Od /Ob0 /GS /EHsc /MD"
+    ],
+    "output": "work/large-functions-2008-20261014/lua-property-native-gates",
+    "next": "Submit only verified improvements; all partials remain partials; full code/data required for exacts."
+  },
+  "native-lua-property-family-fanout-2008": {
+    "op": "fanout",
+    "client": "2008-06",
+    "library": "native ScoreHud and genuine Color palette/templates",
+    "hypothesis": "Full genuine Lua property/native registration family preserves real callbacks and templateinstantiations, restored doublebranches, actualsetter descriptorreloads. FourO2normal/fast objects across both2008builds checkedall unresolvedcode withfullreferenceddata; no wrongsymbolpartial credit.",
+    "sources": [
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_lua_property_native_family_df72ab273215c092.cpp"
+        ],
+        "builds": [
+          21022,
+          50727
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast",
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      }
+    ],
+    "targets": {},
+    "output": "work/large-functions-2008-20261014/lua-property-native-fanout",
+    "next": "Park unchanged objects after bounded pass; count only verified new exacts."
+  },
+  "large-lua-property-callback-gates-2008": {
+    "op": "grid",
+    "client": "2008-06",
+    "library": "native ScoreHud team and FFA",
+    "hypothesis": "Restored genuine ObjectBridge __newindex specialization by explicitinstantiation of public SharedPtrBridge.registerClass. Native817byte caller initially0, full source property lookup/Parent path/otherpropertyassign/errorpaths. Correctsymbol firstnormal21022 score50. Fourcachedcompilercontrols, no fakefields/ABI or accessrulechanges.",
+    "targets": {
+      "addresses": [
+        "0061bda0"
+      ],
+      "scores": [
+        0,
+        99
+      ]
+    },
+    "seed_sources": {
+      "2008-06": {
+        "0061bda0": "work/large-functions-2008-20261014/0061bda0.cpp"
+      }
+    },
+    "keep_partials": true,
+    "builds": [
+      21022,
+      50727
+    ],
+    "profiles": [
+      "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD",
+      "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast"
+    ],
+    "output": "work/large-functions-2008-20261014/lua-property-callback-gates",
+    "next": "Submit only verified improvements; all partials remain partials; full code/data required for exacts."
+  },
+  "native-scriptmouse-cursor-texture-owner-core-2008": {
+    "op": "grid",
+    "client": "2008-06",
+    "library": "Actual ScriptMouseCommand TextureId return",
+    "hypothesis": "Targetdelegates Mouse.getIcon, copying real TextureId(ContentId string+mime). Native source confirms ScriptMouseCommand method/prototype. Observed mouse owner pointer1c selected through actual shared_ptr type, no MouseCommand base-layout reconstruction. Genuine GuidItem root naturally puts Mouse.icon144/command164. No fake Frame/string/storage or reserved EH local.",
+    "targets": {
+      "addresses": [
+        "00643070"
+      ],
+      "scores": [
+        0,
+        99
+      ]
+    },
+    "seed_sources": {
+      "2008-06": {
+        "00643070": "work\\goal-scriptmouse-native-cursor-20261015\\00643070.cpp"
+      }
+    },
+    "builds": [
+      21022,
+      50727
+    ],
+    "profiles": [
+      "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+    ],
+    "append": [
+      ""
+    ],
+    "keep_partials": true,
+    "output": "work\\goal-scriptmouse-native-cursor-20261015\\grid",
+    "result": {
+      "status": "verified",
+      "new_verified": 1,
+      "evidence": "work\\goal-native-mouse-agent-round-20261015\\receipts.json"
+    }
+  },
+  "auto-native-lua-property-family-2008": {
+    "op": "fanout",
+    "client": "2008-06",
+    "library": "native ScoreHud and genuine Color palette/templates",
+    "hypothesis": "Two large0score nativeLua property manualrecoveries and publicregistration callback emission add1newexact116byte genuine sharedownerparenthelper004ab530 87to100. Fourobject pilot verified; firstnormal21022 normalautomaticprofile independently100 withdata. Retainonewinningobject, notfourconfigurations. Three reviewedcorrectsymbolpartialparents63/43/50.",
+    "sources": [
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_lua_property_native_family_df72ab273215c092.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      }
+    ],
+    "targets": {},
+    "output": "work/large-functions-2008-20261014/lua-property-native-auto",
+    "next": "Park unchanged objects after bounded pass; count only verified new exacts."
+  },
+  "bruteforce-native-std-string-abi": {
+    "op": "grid",
+    "client": "2008-06",
+    "library": "Genuine SDK string argument lifetime",
+    "hypothesis": "00419510 imports exactlyMSVCP90 std::basic_string<char> copyctor/dtor andtargetbyvaluecopy28bytes. Canonical99 usesopaqueString28 andinlinefptr wrappers; replaceonlyStringtype withactualstd::string from21022SDK/_DLL, preserving otherbody/prototypes/fields. Test genuineconstructor/destructor exception/lifetime codegen, no stackpadding or fakeAPI.",
+    "targets": {
+      "addresses": [
+        "00419510"
+      ],
+      "scores": [
+        0,
+        99
+      ]
+    },
+    "seed_sources": {
+      "2008-06": {
+        "00419510": "work/brute-native-string-abi-20261015/00419510.cpp"
+      }
+    },
+    "builds": [
+      21022
+    ],
+    "profiles": [
+      "keep"
+    ],
+    "next": "Fullcode/data/server; inspect residue before any family propagation."
+  },
+  "native-mousecommand-obsolete-undo-owner-revision-2008": {
+    "op": "grid",
+    "client": "2008-06",
+    "library": "Actual MouseCommand member ownership revision",
+    "hypothesis": "Base MouseCommand destructor00615780 is20byte two-vptr/tailIRenderable only, no XmlState auto_ptr release. Derived ScriptMouseCommand destructor161 uses mouse1c/control20; genuine preceding base fields naturally size1c when obsolete undoState removed. Remove only original unused member, no padding/virtual edits. Native assert-only destructor source retains erased Releaseassert tokens.",
+    "targets": {
+      "addresses": [
+        "00642fc0"
+      ],
+      "scores": [
+        0,
+        99
+      ]
+    },
+    "seed_sources": {
+      "2008-06": {
+        "00642fc0": "work\\goal-mousecommand-native-owner-revision-20261015\\00642fc0.cpp"
+      }
+    },
+    "builds": [
+      21022,
+      50727
+    ],
+    "profiles": [
+      "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+    ],
+    "append": [
+      ""
+    ],
+    "keep_partials": true,
+    "output": "work\\goal-mousecommand-native-owner-revision-20261015\\grid",
+    "result": {
+      "status": "parked",
+      "new_verified": 0,
+      "evidence": "work\\goal-native-mouse-agent-round-20261015\\receipts.json"
+    }
+  },
+  "native-scriptmouse-dtor-external-base-context-2008": {
+    "op": "grid",
+    "client": "2008-06",
+    "library": "Actual ScriptMouseCommand destructor external base context",
+    "hypothesis": "Previous native82 candidate matches ownership but inlines MouseCommand base dtor into IRenderable dtor, saves EBP. Target calls external actual MouseCommand dtor00615780. Retain genuine base declaration only in derived TU; no forced noinline annotation or fake cleanup.",
+    "targets": {
+      "addresses": [
+        "00642fc0"
+      ],
+      "scores": [
+        0,
+        99
+      ]
+    },
+    "seed_sources": {
+      "2008-06": {
+        "00642fc0": "work\\goal-mousecommand-native-owner-revision-20261015\\00642fc0-external-base.cpp"
+      }
+    },
+    "builds": [
+      21022
+    ],
+    "profiles": [
+      "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+    ],
+    "append": [
+      ""
+    ],
+    "keep_partials": true,
+    "output": "work\\goal-mousecommand-native-owner-revision-20261015\\external-base-grid",
+    "result": {
+      "status": "verified",
+      "new_verified": 1,
+      "evidence": "work\\goal-native-mouse-agent-round-20261015\\receipts.json"
+    }
+  },
+  "native-mousecommand-verified-owner-family-2008": {
+    "op": "fanout",
+    "client": "2008-06",
+    "library": "Native command destructor and ScriptMouse source family",
+    "hypothesis": "ScriptMouse dtor161 fullserver exact proves genuine MouseCommand1c revision removing unused XmlState owner. Replay5actual command destructor cores plus unchanged full ScriptMouseCommand.cpp, normal/DLL. Native PartDrag mega20 now natural1c+runDragger4; no measured member shims.",
+    "sources": [
+      {
+        "recipe": "rbxgs",
+        "files": [
+          "roc_unit_07eb817c70f2ea2a.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_unit_07eb817c70f2ea2a.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "rbxgs",
+        "files": [
+          "roc_unit_0239722d40eccd6f.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_unit_0239722d40eccd6f.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "rbxgs",
+        "files": [
+          "roc_unit_d0aa6d6a095b43b5.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_unit_d0aa6d6a095b43b5.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "rbxgs",
+        "files": [
+          "roc_unit_a57c9d2184ef39fa.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_unit_a57c9d2184ef39fa.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "rbxgs",
+        "files": [
+          "roc_unit_7d2420d2edcf46ad.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_unit_7d2420d2edcf46ad.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "rbxgs",
+        "files": [
+          "roc_unit_90d96c1d696700ef.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_unit_90d96c1d696700ef.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      }
+    ],
+    "targets": {},
+    "next": "Park zero-gain objects after bounded12contexts. Do not claim all command class fields.",
+    "result": {
+      "status": "verified",
+      "new_verified": 1,
+      "evidence": "work\\goal-native-mouse-agent-round-20261015\\receipts.json"
+    }
+  },
+  "native-mouse-topselectable-full-type-core-2008": {
+    "op": "grid",
+    "client": "2008-06",
+    "library": "Actual MouseCommand selectable ancestor traversal",
+    "hypothesis": "Target123byte loop matches real getTopSelectable3d. Use genuine Instance/Part/Workspace/ISelectable3d declarations and verified parent104 hierarchy; preserve required full Workspace IRenderableBucket, compiler50727. No guessed runtime_cast declarations/padding.",
+    "targets": {
+      "addresses": [
+        "006157a0"
+      ],
+      "scores": [
+        0,
+        99
+      ]
+    },
+    "seed_sources": {
+      "2008-06": {
+        "006157a0": "work\\goal-mouse-topselectable-native-20261015\\006157a0.cpp"
+      }
+    },
+    "builds": [
+      50727
+    ],
+    "profiles": [
+      "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+    ],
+    "append": [
+      ""
+    ],
+    "keep_partials": true,
+    "output": "work\\goal-mouse-topselectable-native-20261015\\grid"
+  },
+  "bruteforce-result-native-pair-prefix": {
+    "op": "grid",
+    "client": "2008-06",
+    "library": "SDK pair prefix scheduling analogue",
+    "hypothesis": "00419510 targetcopies two inputDWORDs into result0/4, remainingWrapper starts8. Replaceonlytwo scalarprefix members/initializer withrealstd::pair<int,int>, same8byte storage/alignment andunchangedfunctionABI/body. Testgenuine aggregateconstructor scheduling behind solepush/lea residue; nooriginalpair identityclaim, no guessedpadding/virtualmethods.",
+    "targets": {
+      "addresses": [
+        "00419510"
+      ],
+      "scores": [
+        0,
+        99
+      ]
+    },
+    "seed_sources": {
+      "2008-06": {
+        "00419510": "work/brute-result-pair-20261015/00419510.cpp"
+      }
+    },
+    "builds": [
+      21022
+    ],
+    "profiles": [
+      "keep"
+    ],
+    "next": "Singleboundedhypothesis, fullcode/data/server only; preservecanonical99 onloss."
+  },
+  "native-notifier-range-real-event-family-2008": {
+    "op": "fanout",
+    "client": "2008-06",
+    "library": "Actual Notifier range dispatch templates",
+    "hypothesis": "Target00554ae0 real RaiseRange index/upper/previous and checkedvector listener fields10/14/1c. Instantiate actual existing scalar RunState and PropertyChanged event member, no fakecursor/storage/helper ABI. DLLpreprocessing matches observed _invalid_parameter import; real helper exception handling preserved.",
+    "sources": [
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_unit_310a6d7905dcd943.cpp"
+        ],
+        "builds": [
+          21022,
+          50727
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_unit_bffe10508c23a078.cpp"
+        ],
+        "builds": [
+          21022,
+          50727
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      }
+    ],
+    "targets": {},
+    "next": "Four bounded native objects then park no gains; use actual helper ABI before more class/event variants."
+  },
+  "large-gyro-native-gates-2008": {
+    "op": "grid",
+    "client": "2008-06",
+    "library": "native ScoreHud team and FFA",
+    "hypothesis": "Two fresh0score nativeBodyGyro balance1136/orientation804, fullgenuineSDKformulas. Nativecaller6300d0 adjustsConnector receiver-130 thenpassesBody; fields torque150/154/158,gains148/14c,frame15c proven. NativeBody publicviews root10,sim2c,torque90,cofm28,IBody68; genuineCofm.getMoment publicAPI. Keep coordinateframe/velocity publicboundaries opaqueexternal to avoidwrongSDK privateupdatePV layout; no privatebypass/padding/fakeABI.",
+    "targets": {
+      "addresses": [
+        "0062ec40",
+        "0062e910"
+      ],
+      "scores": [
+        0,
+        99
+      ]
+    },
+    "seed_sources": {
+      "2008-06": {
+        "0062ec40": "work/large-functions-2008-20261014/0062ec40.cpp",
+        "0062e910": "work/large-functions-2008-20261014/0062e910.cpp"
+      }
+    },
+    "keep_partials": true,
+    "builds": [
+      21022,
+      50727
+    ],
+    "profiles": [
+      "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD",
+      "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast",
+      "/O1 /Ob2 /Oy /GF /GS- /EHsc /MD",
+      "/Od /Ob0 /GS /EHsc /MD"
+    ],
+    "output": "work/large-functions-2008-20261014/gyro-native-gates",
+    "next": "Submit only verified improvements; all partials remain partials; full code/data required for exacts."
+  },
+  "native-runservice-source-proven-guid-family-2008": {
+    "op": "fanout",
+    "client": "2008-06",
+    "library": "Actual RunService methods and event contexts",
+    "hypothesis": "Original RunStateOwner.cpp except DataModel-dependent start; all other genuine ctor/dtor/state/stepped/heartbeat/view bodies unchanged. Verified GuidItem hierarchy makes fourth RunState Notifier origin190 as actual helper00554750 proves. Preserve genuine mutex/condition/map/exception types, no invented fields.",
+    "sources": [
+      {
+        "recipe": "rbxgs",
+        "files": [
+          "roc_unit_1abe25aa5a72159c.cpp"
+        ],
+        "builds": [
+          21022,
+          50727
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_unit_1abe25aa5a72159c.cpp"
+        ],
+        "builds": [
+          21022,
+          50727
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      }
+    ],
+    "targets": {},
+    "next": "Four context full source cohort; park zero-gain variants."
+  },
+  "bruteforce-authentic-bind-string-factory": {
+    "op": "fanout",
+    "client": "2008-06",
+    "library": "Authentic Boost bind factory emission",
+    "hypothesis": "00419510 prefix8 plusowner8/string28 matches actual8byteDHTMLWindow memberpointer bindreturn44. Itsactualcallees00417660/00497740/00497dd0 verifiedowner/string copy,dtor andnativeBoostunit. Existingunit instantiates bindclasses/list/storage butnotfreebindfactory. ForceactualBoost bind<void,T,string,sharedptr<T>,string> factory with verifiedexisting declarations/RTTIfamily, noopaqueResult/String replacements or inventedlayout.",
+    "sources": [
+      {
+        "recipe": "boost-1.34.1-dll",
+        "files": [
+          "roc_bind_string_factory_d3f03552e2e2cac8.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /GS- /EHsc /MD",
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      }
+    ],
+    "evidence_resume": true,
+    "next": "Fullservercode/data only; inspect factorysymbol/control before family expansion."
+  },
+  "large-gyro-native-accessor-gates-2008": {
+    "op": "grid",
+    "client": "2008-06",
+    "library": "native ScoreHud team and FFA",
+    "hypothesis": "New full native publicBody accessor bodies preserveprivateupdatePV declaration/access exactly asgenuineBody.h. Onlyownpublic methodscallit andreadnativePVframe94/velocityc4; originalSDKinlinefieldoffsets differ. Gyro balanced1136 0to71,orientation8040to85 fast21022; correcttargetsymbols. FourO2configs only, parkprevious O1/Od losers; no fakepadding/bases/virtuals/privateexposure.",
+    "targets": {
+      "addresses": [
+        "0062ec40",
+        "0062e910"
+      ],
+      "scores": [
+        0,
+        99
+      ]
+    },
+    "seed_sources": {
+      "2008-06": {
+        "0062ec40": "work/large-functions-2008-20261014/0062ec40.cpp",
+        "0062e910": "work/large-functions-2008-20261014/0062e910.cpp"
+      }
+    },
+    "keep_partials": true,
+    "builds": [
+      21022,
+      50727
+    ],
+    "profiles": [
+      "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD",
+      "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast"
+    ],
+    "output": "work/large-functions-2008-20261014/gyro-native-accessor-gates",
+    "next": "Submit only verified improvements; all partials remain partials; full code/data required for exacts."
+  },
+  "native-mouse-topselectable-21022-header-diagnostic-2008": {
+    "op": "grid",
+    "client": "2008-06",
+    "library": "Actual MouseCommand selectable ancestor traversal",
+    "hypothesis": "Determine exact full genuine Workspace/IRenderableBucket compiler21022 blocker; preserve actual private access and class definitions, no minimal fake bases.",
+    "targets": {
+      "addresses": [
+        "006157a0"
+      ],
+      "scores": [
+        0,
+        99
+      ]
+    },
+    "seed_sources": {
+      "2008-06": {
+        "006157a0": "work\\goal-mouse-topselectable-native-20261015\\006157a0.cpp"
+      }
+    },
+    "builds": [
+      21022
+    ],
+    "profiles": [
+      "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+    ],
+    "append": [
+      ""
+    ],
+    "keep_partials": true,
+    "output": "work\\goal-mouse-topselectable-native-20261015\\21022-diagnostic"
+  },
+  "native-gyro-family-fanout-2008": {
+    "op": "fanout",
+    "client": "2008-06",
+    "library": "native ScoreHud and genuine Color palette/templates",
+    "hypothesis": "New complete nativeBodyGyro balance/orientation and genuine Body accessor source with preservedprivateupdatePV. FourO2normal/fast objects, both2008builds, allunresolvedcode withfullreferenceddata; no partialwrong-symbolcredit.",
+    "sources": [
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_gyro_native_public_accessors_0350d6e00e33a6a4.cpp"
+        ],
+        "builds": [
+          21022,
+          50727
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast",
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      }
+    ],
+    "targets": {},
+    "output": "work/large-functions-2008-20261014/gyro-native-fanout",
+    "next": "Park unchanged objects after bounded pass; count only verified new exacts."
   }
 }

@@ -40,6 +40,11 @@ stores before drafting. Native box drawing uses the 100-byte `RBX::IndexBox`, no
 the larger G3D Box; constructor RTTI and the genuine virtual destructor resolve
 that distinction. The cached declaration index also finds classes inside headers
 with different filenames; selected excerpts are read afresh.
+Candidates marked `origin=unit_hint` come from unverified inventory labels when
+RTTI is absent; RTTI candidates take precedence. A stored library wrapper identifies
+candidate source provenance, not the target's native type.
+Header excerpts cap at 2,400 characters near the first declaration. Truncated
+entries retain full file paths; read those files for missing API or layout facts.
 
 Agent evidence includes ECX-relative reads/stores and decoded `return_stack_bytes`
 for the target and up to eight callees. These are instruction clues, not ABI proof:
@@ -510,3 +515,28 @@ round-robins compiler contexts. Recipe inputs stream through bounded compile pre
 `evidence_resume` re-expands current sources and reuses complete COFF object hashes
 only under unchanged binary, function extents/relocations and target filters. Changed
 headers/data retry; failed verification keeps local hits eligible.
+
+The native ChatOutput command unit also gets its verified fast21022 profile first.
+Its authentic boost `to_lower` helper reproduced a new105-byte exact from the
+manual1439-byte handler recovery. Native ChatMessage is72bytes (two strings and
+two shared owners), unlike the older44-byte SDK declaration; destructor stores
+and caller cleanup prove the revision. Preserve genuine member types and access
+rules. Relocation-normalized calls cannot establish API semantics: inspect native
+callees before choosing find versus create service specializations.
+
+The combined native GUI panel-builder unit replays three large manual0score
+recoveries (ArrowPanel.init1334, camera palette1661 and buildGui1154), plus the
+116-byte GuiItem attachment helper under one normal21022 object. The default2008 stage
+replaces its standalone ArrowPanel predecessor; avoid duplicate object builds.
+Native factory calls can stay external when public constructor types and actual
+caller/callee cleanup prove their signatures. Do not invent object padding or
+deleters to rebuild an unproven factory; retain complete recovered caller bodies.
+
+Before a static-helper compiler grid, confirm the intended helper appears in the
+COFF function list. The genuine Lua bridge setter was absent until explicit
+instantiation of public SharedPtrBridge.registerClass emitted its callbacks.
+Noinline or a specialization forward declaration alone did not restore emission.
+Keep genuine classes, bases and access rules. A low score from an unrelated
+function is not evidence that the intended body compiled. Restoring native
+double branches and callback emission also emitted a verified116-byte ownership
+helper; its2008 auto stage needs only the winning normal21022 object.

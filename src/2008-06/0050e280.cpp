@@ -1,5 +1,5 @@
-// from server: 29% by colin
+// from server: 100% by colin
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: g3d-6.09-rbx2008 G3Dcpp/GImage.cpp
+// roc-lib: rbxgs-g3d-dll roc_gimage_rotate_old_api_b5e4a881e2d497e4.cpp

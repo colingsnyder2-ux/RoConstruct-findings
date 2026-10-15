@@ -1,5 +1,22 @@
 [
   {
+    "id": "native-guiditem-inheritance-before-field-padding",
+    "client": "2008-06",
+    "library": "RBX Instance hierarchy and native weak ownership revision",
+    "hypothesis": "RTTI and genuine source revisions can explain many receiver offsets structurally; recover real inheritance and owner types before adding local offset views or synthetic padding.",
+    "change": "Actual newer Instance inherits GuidItem<Instance> first, moves enable_shared_from_this after Notifier bases and removes old separate Guid member. Copy real GuidItem declaration unchanged. This naturally gives vptr0/10/14/20/24, DescribedBase14, parent104, children108 and Instance size130. Target EH array/destructor proves JointInstance2weak part owners140/joint150; BodyMover part weak140/control144. Genuine empty/assert-only destructor bodies recover exacts with real Boost/connection teardown; no fake EH tail.",
+    "exacts_gained": 15,
+    "additional_header_helper_exacts": 1,
+    "outcome": "server_verified",
+    "evidence": "work/goal-native-guid-family-verified-20261015/receipts.json",
+    "portable_headers": {
+      "Instance": "roc_unit_cc3dd87ed7e7c246.cpp",
+      "JointInstance": "roc_unit_ffc89e90dbae649c.cpp",
+      "Gyro": "roc_unit_49d5cd98eaed3b87.cpp"
+    },
+    "next": "16campaign exacts2912bytes:2seed,2first8dtor cores,3heldout cores (oneGuiDrawImage header helper, no sole hierarchy causality),1fullInstance and8reflection replay.34reflection contexts8gains.8release contexts0, original fullInstance assert mode0; parked. No global recipe change/full program layout certification. getGuid/assignGuid remain external genuine API declarations because new private GuidItem field is not accessed through old bodies."
+  },
+  {
     "id": "native-helper-parameter-context-before-forced-store",
     "client": "2008-06",
     "library": "Native TreeStage edge erase with checked set key",
@@ -390,5 +407,41 @@
     "outcome": "reported",
     "evidence": "work/agent-memory/attempts.jsonl (shared suggestion, 99->100)",
     "next": "Check data-only residues for 8-byte padding before changing code."
+  },
+  {
+    "id": "native-guiditem-primary-virtual-revision",
+    "client": "2008-06",
+    "library": "Native Instance and BodyMover",
+    "hypothesis": "Adopting real GuidItem inheritance also requires actual newer Instance primary virtual list.",
+    "change": "Remove obsolete native onGuidChanged virtual hook absent from actual newer Instance; no invented slots. Natural preventBodySleep slot40, not44. Weak lock temporary lifetime follows real condition expression.",
+    "exacts_gained": 2,
+    "outcome": "server_verified",
+    "evidence": "work\\goal-native-guid-virtual-revision-20261015\\receipts.json",
+    "instance_header": "roc_unit_b34763c2f3d3f398.cpp",
+    "next": "36descriptor/fullInstance contexts yield1extra;12fresh wholeTU contexts0, park. Separate Script destructor gain comes from previous genuine GuidItem hierarchy."
+  },
+  {
+    "id": "native-kernel-stage-discriminant-before-abi-changes",
+    "client": "2008-06",
+    "library": "IStage/IPipelined/VelocityMotor",
+    "hypothesis": "Native ancestor callback sole99difference is KernelStage7 vs availableheader8.",
+    "change": "Correct actual measured KERNEL_STAGE constant7 using managed genuine IStage header. Keep other enum values unclaimed; no inferred SimJob layout or added slots. Native setPart body also emits target null specializations when included.",
+    "exacts_gained": 1,
+    "outcome": "server_verified",
+    "evidence": "work\\goal-native-visit-velocity-round-20261015\\receipts.json",
+    "istage_header": "roc_unit_1ca1b106ba673e79.cpp",
+    "next": "Propagate only to measured Kernel comparisons; do not globally guess entire StageType revision. World createJoints field/index/compiler cohorts0,park."
+  },
+  {
+    "id": "native-command-ownership-and-external-base-context",
+    "client": "2008-06",
+    "library": "MouseCommand/ScriptMouseCommand/Mouse",
+    "hypothesis": "Native TextureId return and obsolete XmlState ownership explain actual cursor and dtor ABI.",
+    "change": "Real ScriptMouse cursor delegates Mouse.getIcon; genuine ContentId string+mime32. Native base dtor20 has no XmlState release; remove old unused undoState member, yielding naturalMouse1c. Derived dtor must keep base declaration external; sameTUbase definition inlines different native cleanup82, externalbase100. Genuine rootGuid hierarchy makes Mouse.icon144/command164 naturally.",
+    "exacts_gained": 3,
+    "outcome": "server_verified",
+    "evidence": "work\\goal-native-mouse-agent-round-20261015\\receipts.json",
+    "mousecommand_header": "roc_unit_9958a7131e20354c.cpp",
+    "next": "12command family contexts add Mouse constructor1exact, otherspark. Base20 control already100, no newcredit. Three Feature multiply order variants92/86/81 lose to96; parked."
   }
 ]
