@@ -5522,7 +5522,14 @@
       " /fp:fast"
     ],
     "output": "work/large-functions-2008-20261014/mesh-aggregate-grid",
-    "next": "Inspect own aggregate symbol, verify native aggregation controls, submit only improved source; bounded auto propagation."
+    "next": "Inspect own aggregate symbol, verify native aggregation controls, submit only improved source; bounded auto propagation.",
+    "result": {
+      "date": "2026-10-15",
+      "status": "parked",
+      "new_verified_exacts": 0,
+      "verified_partial_gains": 1,
+      "evidence": "work/large-functions-2008-20261014/aggregate-rtti-summary.json"
+    }
   },
   "audited-openrbx-dll-fifth-cohort-2008": {
     "op": "grid",
@@ -5650,5 +5657,1242 @@
       }
     ],
     "next": "Full referenceddata and groupserver100 only; parkafterboundedzero-gainobjectscan."
+  },
+  "audited-restored-native-family-propagation-2008": {
+    "op": "fanout",
+    "client": "2008-06",
+    "library": "Audited genuine DLL and XTP families",
+    "hypothesis": "196 stale source repairs now independentlyfullverified. Boundedwholeobjectpropagation ofuniquegenuineTUs/configs acrossunresolved2008; no sourceorlayoutedits. Existingexactdonors excluded.",
+    "targets": {},
+    "sources": [
+      {
+        "recipe": "openrbx-client-dll",
+        "files": [
+          "App/reflection/reflection_function.cpp",
+          "App/reflection/reflection_object.cpp",
+          "App/reflection/reflection_property.cpp",
+          "App/reflection/signal.cpp",
+          "App/reflection/type.cpp",
+          "App/script/LuaAtomicClasses.cpp",
+          "App/script/LuaSignalBridge.cpp",
+          "App/script/Script.cpp",
+          "App/util/Guid.cpp",
+          "App/util/Log.cpp",
+          "App/util/Name.cpp",
+          "App/util/RunStateOwner.cpp",
+          "App/util/Utilities.cpp",
+          "App/util/standardout.cpp",
+          "App/v8datamodel/Accoutrement.cpp",
+          "App/v8datamodel/Camera.cpp",
+          "App/v8datamodel/CharacterAppearance.cpp",
+          "App/v8datamodel/DebrisService.cpp",
+          "App/v8datamodel/Decal.cpp",
+          "App/v8datamodel/ForceField.cpp",
+          "App/v8datamodel/GlobalSettings.cpp",
+          "App/v8datamodel/Gyro.cpp",
+          "App/v8datamodel/Message.cpp",
+          "App/v8datamodel/Selection.cpp",
+          "App/v8datamodel/Sky.cpp",
+          "App/v8datamodel/Teams.cpp",
+          "App/v8tree/Instance.cpp",
+          "App/v8tree/Service.cpp",
+          "App/v8world/ClumpStage2.cpp",
+          "App/v8world/IMoving.cpp",
+          "App/v8world/SimJobStage.cpp",
+          "App/v8world/World.cpp",
+          "App/v8xml/SerializerV2.cpp",
+          "App/v8xml/XmlElement.cpp",
+          "App/v8xml/XmlSerializer.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "xtp-11.2.2-lib-strlen",
+        "files": [
+          "Source/CommandBars/XTPControl.cpp",
+          "Source/Common/XTPImageManager.cpp",
+          "Source/DockingPane/XTPDockingPaneSplitterContainer.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /MD /GS /EHsc /Ob1"
+        ]
+      },
+      {
+        "recipe": "rbxgs",
+        "files": [
+          "roc_unit_dc4f94de3a5733d7.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /GS- /EHsc /MD"
+        ]
+      }
+    ],
+    "next": "Fullservercodeanddata only; parkzero-gaincohort."
+  },
+  "large-mesh-aggregate-scale-2008": {
+    "op": "fanout",
+    "client": "2008-06",
+    "library": "recovered native mesh aggregation",
+    "hypothesis": "Server-verified 2369-byte pilot19to54; four native geometry/adjacency controls. Bounded object reuse on other current large below40 functions, exact verifier unchanged.",
+    "targets": {
+      "sizes": [
+        1000,
+        1000000
+      ],
+      "scores": [
+        0,
+        39
+      ]
+    },
+    "sources": [
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_mesh_aggregate_715bbcbbc86bd81c.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/Od /Ob0 /GS /EHsc /MD"
+        ]
+      }
+    ],
+    "output": "work/large-functions-2008-20261014/mesh-aggregate-scale",
+    "next": "Park unchanged compiler object if zero extra exacts; keep RTTI evidence improvement.",
+    "result": {
+      "date": "2026-10-15",
+      "status": "parked",
+      "new_verified_exacts": 0,
+      "verified_partial_gains": 0,
+      "evidence": "work/large-functions-2008-20261014/aggregate-rtti-summary.json"
+    }
+  },
+  "native-instance-remove-children-view-2008": {
+    "op": "grid",
+    "client": "2008-06",
+    "library": "RBX authentic Instance remove and children typed view",
+    "hypothesis": "Native remove95 differs only children receiverf8versus target108 and directCRTversusIAT. Target55b4c3 proves108;4915b0 copiesactual8byte sharedowner. Keep nativeCOW/vector/bind/removebody and alias genuineheaderoneexpression; DLLpreprocessoraddressesCRT. No inventedfields/padding/layoutwholeclassclaim.",
+    "targets": {
+      "addresses": [
+        "0055b4a0"
+      ],
+      "scores": [
+        0,
+        99
+      ]
+    },
+    "seed_sources": {
+      "2008-06": {
+        "0055b4a0": "work\\goal-instance-remove-view-20261015\\0055b4a0.cpp"
+      }
+    },
+    "keep_partials": true,
+    "builds": [
+      21022
+    ],
+    "profiles": [
+      "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+    ],
+    "append": [
+      ""
+    ],
+    "output": "work\\goal-instance-remove-view-20261015\\grid",
+    "next": "Fullcode/data/servergate; ifnativebodymatchespropagateonlyprovenprojection."
+  },
+  "native-teams-remove-container-view-2008": {
+    "op": "grid",
+    "client": "2008-06",
+    "library": "RBX authentic Teams remove child",
+    "hypothesis": "Target5d6441 provesCOWreceiver130; loopvectorC/10stride8provescheckedMSVC21022vector. GenuineTeams::onChildRemoving body onlyprojectsitsnativeCOWtype at130, no inventedfields. SameDLLCRTimportevidence asverifiedInstance remove.",
+    "targets": {
+      "addresses": [
+        "005d6400"
+      ],
+      "scores": [
+        0,
+        99
+      ]
+    },
+    "seed_sources": {
+      "2008-06": {
+        "005d6400": "work\\goal-teams-container-view-20261015\\005d6400.cpp"
+      }
+    },
+    "keep_partials": true,
+    "builds": [
+      21022
+    ],
+    "profiles": [
+      "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+    ],
+    "append": [
+      ""
+    ],
+    "output": "work\\goal-teams-container-view-20261015\\grid",
+    "next": "Fullcode/data/servergate; ifnativebodymatchespropagateonlyprovenprojection."
+  },
+  "native-teams-remove-container-view-minimal-2008": {
+    "op": "grid",
+    "client": "2008-06",
+    "library": "RBX authentic Teams remove child",
+    "hypothesis": "Target5d6441 provesCOWreceiver130; loopvectorC/10stride8provescheckedMSVC21022vector. GenuineTeams::onChildRemoving body onlyprojectsitsnativeCOWtype at130, no inventedfields. SameDLLCRTimportevidence asverifiedInstance remove. FullTeamsTU failed unrelatedIRenderableprivateaccess inModel/Playersincludes. MinimalgenuinemethodTU usesonlyTeams.h, samebody andtypes.",
+    "targets": {
+      "addresses": [
+        "005d6400"
+      ],
+      "scores": [
+        0,
+        99
+      ]
+    },
+    "seed_sources": {
+      "2008-06": {
+        "005d6400": "work\\goal-teams-container-view-20261015\\005d6400-minimal.cpp"
+      }
+    },
+    "keep_partials": true,
+    "builds": [
+      21022
+    ],
+    "profiles": [
+      "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+    ],
+    "append": [
+      ""
+    ],
+    "output": "work\\goal-teams-container-view-20261015\\minimal-grid",
+    "next": "Fullcode/data/servergate; ifnativebodymatchespropagateonlyprovenprojection."
+  },
+  "native-instance-children-view-family-2008": {
+    "op": "fanout",
+    "client": "2008-06",
+    "library": "RBX authentic Instance known children view",
+    "hypothesis": "VerifiedInstance::remove95to100 proveschildren108/nativeCOW. Reuse inline typedview acrossnativeInstanceheader/implementation methods withoutalteringfieldlayouts. Constructors keeporiginalmemberinitializers, existingnativeothermembersnotclaimedcorrect.",
+    "targets": {},
+    "sources": [
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_unit_b2e0265a05c7efbb.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      }
+    ],
+    "next": "Fullcode/data/server only; parkoneobjectifnoextras."
+  },
+  "native-teams-assign-children-view-2008": {
+    "op": "grid",
+    "client": "2008-06",
+    "library": "RBX authentic Teams remove child",
+    "hypothesis": "NativeassignNewPlayerToTeam useschildren108 provenbytarget+verifiedInstance remove. GenuineBrickColor,Team,Teams andInstanceheader withtypedview only; opaquePlayerreceiverexposesonly2actualnonvirtualmethods copiednativePlayer.h, nofield/layoutclaim. AvoidknownIRenderableprivateaccess withoutbypassingprivate.",
+    "targets": {
+      "addresses": [
+        "005d6250"
+      ],
+      "scores": [
+        0,
+        99
+      ]
+    },
+    "seed_sources": {
+      "2008-06": {
+        "005d6250": "work\\goal-teams-container-view-20261015\\005d6250.cpp"
+      }
+    },
+    "keep_partials": true,
+    "builds": [
+      21022
+    ],
+    "profiles": [
+      "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+    ],
+    "append": [
+      ""
+    ],
+    "output": "work\\goal-teams-container-view-20261015\\assign-grid",
+    "next": "Fullcode/data/servergate; ifnativebodymatchespropagateonlyprovenprojection."
+  },
+  "native-instance-teams-typed-view-propagation-2008": {
+    "op": "fanout",
+    "client": "2008-06",
+    "library": "RBX verified Instance and Teams typed views",
+    "hypothesis": "Three freshfullserverexacts0055b4a0,005d6400,005d6250 usebinary-provenchildren108/teams130, genuineCOW/vector/BrickColor/Team/boostbind. Propagate3winningminimalnativeobjects, noextraoffsethypotheses.",
+    "targets": {},
+    "sources": [
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_unit_dff5e80993fd00f4.cpp",
+          "roc_unit_a000eb035600a171.cpp",
+          "roc_unit_51324fc73e5a38ba.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      }
+    ],
+    "next": "Fullcode/dataonly; parkafterboundedzero."
+  },
+  "native-model-primary-proven-views-2008": {
+    "op": "grid",
+    "client": "2008-06",
+    "library": "RBX authentic Model primary setter",
+    "hypothesis": "Native97 residue only4provenoffsets. AliasgenuineInstance isDescendentOf parent104; nativeModelsetter typedviews candidateowner1e4/primary1e0/CF1b0. Noaddedfields orwholelayoutclaim, preserveknownoriginalrbxgsrecipe/build/flags.",
+    "targets": {
+      "addresses": [
+        "00585b30"
+      ],
+      "scores": [
+        0,
+        99
+      ]
+    },
+    "seed_sources": {
+      "2008-06": {
+        "00585b30": "work\\goal-model-primary-view-20261015\\00585b30.cpp"
+      }
+    },
+    "keep_partials": true,
+    "builds": [
+      21022
+    ],
+    "profiles": [
+      "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+    ],
+    "append": [
+      ""
+    ],
+    "output": "work\\goal-model-primary-view-20261015\\grid",
+    "next": "Fullcodeanddata; ifexactboundedminimalobjectpropagationonly."
+  },
+  "native-part-drag-proven-views-2008": {
+    "op": "grid",
+    "client": "2008-06",
+    "library": "RBX genuine PartDragTool key dispatch",
+    "hypothesis": "Native97diffonly3provenreceiverfieldsandEHordering. Typedviewmega20/flag34/ICameraOwnerWorkspace288, preservegenuineonKeyDown body/types. MinimalTU, same50727profile; no guessedclassfields orprivatebypass.",
+    "targets": {
+      "addresses": [
+        "00665ce0"
+      ],
+      "scores": [
+        0,
+        99
+      ]
+    },
+    "seed_sources": {
+      "2008-06": {
+        "00665ce0": "work\\goal-part-drag-views-20261015\\00665ce0.cpp"
+      }
+    },
+    "keep_partials": true,
+    "builds": [
+      50727
+    ],
+    "profiles": [
+      "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+    ],
+    "append": [
+      ""
+    ],
+    "output": "work\\goal-part-drag-views-20261015\\grid",
+    "next": "Fullcodeanddata; ifexactboundedminimalobjectpropagationonly."
+  },
+  "native-model-primary-view-propagation-2008": {
+    "op": "fanout",
+    "client": "2008-06",
+    "library": "RBX verified Model setter source",
+    "hypothesis": "00585b30 nativeprimarysetter97to100294bytes. PropagatewinningmanagednativeTUonce acrossunresolved2008, preserveprovenparent104/candidate1e4/primary1e0/CF1b0 views andknownprofile.",
+    "targets": {},
+    "sources": [
+      {
+        "recipe": "rbxgs",
+        "files": [
+          "roc_unit_75cf58c5197f1326.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      }
+    ],
+    "next": "Fullservercode/data only; parkifzero."
+  },
+  "native-network-marker-proven-views-2008": {
+    "op": "grid",
+    "client": "2008-06",
+    "library": "RBX genuine network Marker sender",
+    "hypothesis": "Native95 matchesallprotocol/controlflowexceptoldfieldsandpacketID. Targetproves4f,NetworkSettingsprintbyte131, incomingqueue2cdc,peer2d50,address2d54. Preserveactualnativequeue/Marker/BitStream/peerABI; typedviews only, minimalgenuinebodyTU50727.",
+    "targets": {
+      "addresses": [
+        "004b9210"
+      ],
+      "scores": [
+        0,
+        99
+      ]
+    },
+    "seed_sources": {
+      "2008-06": {
+        "004b9210": "work\\goal-network-marker-views-20261015\\004b9210.cpp"
+      }
+    },
+    "keep_partials": true,
+    "builds": [
+      50727
+    ],
+    "profiles": [
+      "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+    ],
+    "append": [
+      ""
+    ],
+    "output": "work\\goal-network-marker-views-20261015\\grid",
+    "next": "Fullserververification ofimprovingpartial; known21022IRenderable failure notbypassed."
+  },
+  "native-instance-property-proven-views-2008": {
+    "op": "grid",
+    "client": "2008-06",
+    "library": "RBX genuine XML property reader",
+    "hypothesis": "Native92 shows4provenrevisiondeltas: XmlNameValuePairreceiver8, DescribedBaseview14/descriptorload1c, PropertyDescriptorreadvirtualslot24. Preserveactualproperty/mapiterator/value/nativefunctionsignature; typedvtableview avoidsinventedextra virtualmethods. DLLCRTmatchesIAT.",
+    "targets": {
+      "addresses": [
+        "00559170"
+      ],
+      "scores": [
+        0,
+        99
+      ]
+    },
+    "seed_sources": {
+      "2008-06": {
+        "00559170": "work\\goal-instance-property-view-20261015\\00559170.cpp"
+      }
+    },
+    "keep_partials": true,
+    "builds": [
+      21022
+    ],
+    "profiles": [
+      "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+    ],
+    "append": [
+      ""
+    ],
+    "output": "work\\goal-instance-property-view-20261015\\grid",
+    "next": "Full code/data/servergate; no inferreddescriptorfullclasslayout."
+  },
+  "native-network-marker-core-21022-2008": {
+    "op": "grid",
+    "client": "2008-06",
+    "library": "RBX genuine network Marker sender",
+    "hypothesis": "Native95 matchesallprotocol/controlflowexceptoldfieldsandpacketID. Targetproves4f,NetworkSettingsprintbyte131, incomingqueue2cdc,peer2d50,address2d54. Preserveactualnativequeue/Marker/BitStream/peerABI; typedviews only, minimalgenuinebodyTU50727. MinimalnativecoreTUextractsunchangedactualMarkerdefinition andnativeReplicator::sendMarker declarationonly. GenuineStreaming/BitStream/RakPeerInterface/NetworkSettings; avoidsunrelatedPlayersIRenderableincludes, noprivatebypass. New21022DLLgate.",
+    "targets": {
+      "addresses": [
+        "004b9210"
+      ],
+      "scores": [
+        0,
+        99
+      ]
+    },
+    "seed_sources": {
+      "2008-06": {
+        "004b9210": "work\\goal-network-marker-views-20261015\\004b9210-core.cpp"
+      }
+    },
+    "keep_partials": true,
+    "builds": [
+      21022
+    ],
+    "profiles": [
+      "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+    ],
+    "append": [
+      ""
+    ],
+    "output": "work\\goal-network-marker-views-20261015\\core-grid",
+    "next": "Fullserververification ofimprovingpartial; known21022IRenderable failure notbypassed."
+  },
+  "native-xml-marker-proven-view-propagation-2008": {
+    "op": "fanout",
+    "client": "2008-06",
+    "library": "RBX genuine XML reader and native Marker sender",
+    "hypothesis": "Twofullservernewexacts185+437bytes fromnativeprototypes/typedviews andminimalcoreTU. Propagate2winningobjectsacrossunresolved2008, noadditionalfield/ABIhypotheses.",
+    "targets": {},
+    "sources": [
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_unit_33b45b70bbb1f7b5.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "rbxgs-net-dll",
+        "files": [
+          "roc_unit_cc32e74e273c8479.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      }
+    ],
+    "next": "Fullservercode/data only; parkboundedzero."
+  },
+  "large-handles3d-scale-2008": {
+    "op": "fanout",
+    "client": "2008-06",
+    "library": "native DrawAdorn handles3d",
+    "hypothesis": "Server verified1142-byte handles3d0to100 after float side comparison. Reuse authentic emitted object across all unresolved2008 large below40 functions; no model or score relaxation.",
+    "targets": {
+      "sizes": [
+        1000,
+        1000000
+      ],
+      "scores": [
+        0,
+        39
+      ]
+    },
+    "sources": [
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_handles3d_410275e979a30584.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast"
+        ]
+      }
+    ],
+    "output": "work/large-functions-2008-20261014/handles3d-scale",
+    "next": "Park unchanged object on zero extra exacts.",
+    "result": {
+      "date": "2026-10-15",
+      "status": "parked",
+      "new_verified_exacts": 0,
+      "evidence": "work\\large-functions-2008-20261014\\handles-collision-verified-summary.json"
+    }
+  },
+  "native-handles2d-gates-2008": {
+    "op": "grid",
+    "client": "2008-06",
+    "library": "native DrawAdorn 2D sibling",
+    "hypothesis": "Same native six-handle family: floating side comparison, pointToWorldSpace, camera project xy, min/max rectangle and authentic virtual methods. Native rect float overload is inlined; forceinline copies unchanged authentic Rect2D header body.",
+    "targets": {
+      "addresses": [
+        "00677b20"
+      ],
+      "scores": [
+        0,
+        99
+      ]
+    },
+    "seed_sources": {
+      "2008-06": {
+        "00677b20": "work/large-functions-2008-20261014/00677b20-force.cpp"
+      }
+    },
+    "keep_partials": true,
+    "builds": [
+      21022,
+      50727
+    ],
+    "profiles": [
+      "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD",
+      "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast",
+      "/O2 /Ob1 /Oy /GF /GS- /EHsc /MD",
+      "/O1 /Ob2 /Oy /GF /GS- /EHsc /MD"
+    ],
+    "output": "work/large-functions-2008-20261014/handles2d-gates",
+    "next": "Submit only verified improvement; park exhausted grid.",
+    "result": {
+      "date": "2026-10-15",
+      "status": "parked",
+      "new_verified_exacts": 0,
+      "evidence": "work\\large-functions-2008-20261014\\handles-collision-verified-summary.json"
+    }
+  },
+  "native-server-receive-core-proven-views-2008": {
+    "op": "grid",
+    "client": "2008-06",
+    "library": "RBX native Server receive core",
+    "hypothesis": "TargetServerOnReceivepluginentry subtract130 tofullowner andSignalSource+14. KeepgenuineServer/Peer/Replicator/ClientProxy/factory/signal/protocoltypes. ManagedheaderaliasesretainexactunusedgetPlayerdeclaration andPlayer/Playersforwarddecls, removeunrelatedPlayerIRenderableheaders. New21022DLLcoregate, no guessedclasses/fields/privatebypass.",
+    "targets": {
+      "addresses": [
+        "004a4dc0"
+      ],
+      "scores": [
+        0,
+        99
+      ]
+    },
+    "seed_sources": {
+      "2008-06": {
+        "004a4dc0": "work\\goal-server-receive-core-20261015\\004a4dc0.cpp"
+      }
+    },
+    "keep_partials": true,
+    "builds": [
+      21022
+    ],
+    "profiles": [
+      "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+    ],
+    "append": [
+      ""
+    ],
+    "output": "work\\goal-server-receive-core-20261015\\grid",
+    "next": "Fullcode/data/servergate. Headererrorsresolvedonlywithactualrequirednativeincludes."
+  },
+  "large-block-best-plane-gates-2008": {
+    "op": "grid",
+    "client": "2008-06",
+    "library": "native BlockBlockContact separating axis",
+    "hypothesis": "Native complete1634-byte collision body recovered from authentic getBestPlaneEdge algorithm, one float arg ret4, observed planeContact member and native typed views. Pilot10to82; no fabricated owner layout.",
+    "targets": {
+      "addresses": [
+        "00607280"
+      ],
+      "sizes": [
+        1600,
+        1700
+      ],
+      "scores": [
+        0,
+        99
+      ]
+    },
+    "seed_sources": {
+      "2008-06": {
+        "00607280": "work/large-functions-2008-20261014/00607280.cpp"
+      }
+    },
+    "keep_partials": true,
+    "builds": [
+      21022,
+      50727
+    ],
+    "profiles": [
+      "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast",
+      "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD",
+      "/O2 /Ob1 /Oy /GF /GS- /EHsc /MD /fp:fast",
+      "/Od /Ob0 /GS /EHsc /MD"
+    ],
+    "output": "work/large-functions-2008-20261014/block-best-plane-gates",
+    "next": "Keep best full-body partial; park exhausted grid, then bounded winning-object propagation.",
+    "result": {
+      "date": "2026-10-15",
+      "status": "parked",
+      "new_verified_exacts": 0,
+      "evidence": "work\\large-functions-2008-20261014\\handles-collision-verified-summary.json"
+    }
+  },
+  "native-server-receive-core-stats-2008": {
+    "op": "grid",
+    "client": "2008-06",
+    "library": "RBX native Server receive core",
+    "hypothesis": "TargetServerOnReceivepluginentry subtract130 tofullowner andSignalSource+14. KeepgenuineServer/Peer/Replicator/ClientProxy/factory/signal/protocoltypes. ManagedheaderaliasesretainexactunusedgetPlayerdeclaration andPlayer/Playersforwarddecls, removeunrelatedPlayerIRenderableheaders. New21022DLLcoregate, no guessedclasses/fields/privatebypass. FirsttrialsetupmissingStats::Item actualdefinition. IncludegenuineStats.h. Explicitowner-null conditionalpreservestargetTEST/JE aroundSignalSourceprojection; olduncompiledcastdidnot.",
+    "targets": {
+      "addresses": [
+        "004a4dc0"
+      ],
+      "scores": [
+        0,
+        99
+      ]
+    },
+    "seed_sources": {
+      "2008-06": {
+        "004a4dc0": "work\\goal-server-receive-core-20261015\\004a4dc0-stats.cpp"
+      }
+    },
+    "keep_partials": true,
+    "builds": [
+      21022
+    ],
+    "profiles": [
+      "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+    ],
+    "append": [
+      ""
+    ],
+    "output": "work\\goal-server-receive-core-20261015\\stats-grid",
+    "next": "Fullcode/data/servergate. Headererrorsresolvedonlywithactualrequirednativeincludes."
+  },
+  "large-handle-collision-scale-2008": {
+    "op": "fanout",
+    "client": "2008-06",
+    "library": "native handles and block collision",
+    "hypothesis": "Three source recoveries have server gains1142byte0to100,519byte28to84,1634byte10to86. Fan out latest two full-family objects across current large below40 targets, preserving original server filters and full code/data acceptance.",
+    "targets": {
+      "sizes": [
+        1000,
+        1000000
+      ],
+      "scores": [
+        0,
+        39
+      ]
+    },
+    "sources": [
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_handles_family_9788f1331849ffe3.cpp",
+          "roc_block_best_plane_cc9edb62fb2058b0.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast"
+        ]
+      }
+    ],
+    "output": "work/large-functions-2008-20261014/handle-collision-scale",
+    "next": "Park unchanged objects on zero extra exacts.",
+    "result": {
+      "date": "2026-10-15",
+      "status": "parked",
+      "new_verified_exacts": 0,
+      "evidence": "work\\large-functions-2008-20261014\\handles-collision-verified-summary.json"
+    }
+  },
+  "native-server-receive-core-reference-2008": {
+    "op": "grid",
+    "client": "2008-06",
+    "library": "RBX native Server receive core",
+    "hypothesis": "TargetServerOnReceivepluginentry subtract130 tofullowner andSignalSource+14. KeepgenuineServer/Peer/Replicator/ClientProxy/factory/signal/protocoltypes. ManagedheaderaliasesretainexactunusedgetPlayerdeclaration andPlayer/Playersforwarddecls, removeunrelatedPlayerIRenderableheaders. New21022DLLcoregate, no guessedclasses/fields/privatebypass. FirsttrialsetupmissingStats::Item actualdefinition. IncludegenuineStats.h. Explicitowner-null conditionalpreservestargetTEST/JE aroundSignalSourceprojection; olduncompiledcastdidnot. Pointerbasecastintroducedoldclass-null conversion absenttarget. UsegenuinePluginInterfacebasereference(validthis), obtainowneronlyafterloggingasobservedlifetime. Also381byteinventoryexcludesnormal24byteepilogueat4a4f3d; read-onlyproposed405bodyverificationbeforeanyboundsmutation.",
+    "targets": {
+      "addresses": [
+        "004a4dc0"
+      ],
+      "scores": [
+        0,
+        99
+      ]
+    },
+    "seed_sources": {
+      "2008-06": {
+        "004a4dc0": "work\\goal-server-receive-core-20261015\\004a4dc0-reference.cpp"
+      }
+    },
+    "keep_partials": true,
+    "builds": [
+      21022
+    ],
+    "profiles": [
+      "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+    ],
+    "append": [
+      ""
+    ],
+    "output": "work\\goal-server-receive-core-20261015\\reference-grid",
+    "next": "Fullcode/data/servergate. Headererrorsresolvedonlywithactualrequirednativeincludes."
+  },
+  "native-part-hit-primitive-view-2008": {
+    "op": "grid",
+    "client": "2008-06",
+    "library": "RBX actual Primitive embedded receiver hit-test",
+    "hypothesis": "Native81diff startsoldpointerload1e0versustargetLEA228. Callee5e82c0 isPrimitivegetCoordinateFrame BodyA0->CF94. KeepnativeRay/Vector/HitTest/body, correctonly2getterreceivers totypedPrimitiveview228; existing50727flags.",
+    "targets": {
+      "addresses": [
+        "0059abe0"
+      ],
+      "scores": [
+        0,
+        99
+      ]
+    },
+    "seed_sources": {
+      "2008-06": {
+        "0059abe0": "work\\goal-part-hit-primitive-view-20261015\\0059abe0.cpp"
+      }
+    },
+    "keep_partials": true,
+    "builds": [
+      50727
+    ],
+    "profiles": [
+      "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+    ],
+    "append": [
+      ""
+    ],
+    "output": "work\\goal-part-hit-primitive-view-20261015\\grid",
+    "next": "Fullgroupservercode/data; ifexactoneobjectpropagation."
+  },
+  "native-primitive-grid-proven-view-float-2008": {
+    "op": "grid",
+    "client": "2008-06",
+    "library": "RBX genuine Primitive grid corner",
+    "hypothesis": "Native73 targetgeometryptr9c andFLDf32half, source70/f64half. TypedgenuineGeometryptr9c andfloat .5f selectcorrectnativeoverload. Standardx87fastcontrol justifiedextendedprecisiontargetchains, noalgebrarewrite.",
+    "targets": {
+      "addresses": [
+        "005e8500"
+      ],
+      "scores": [
+        0,
+        99
+      ]
+    },
+    "seed_sources": {
+      "2008-06": {
+        "005e8500": "work\\goal-primitive-grid-view-20261015\\005e8500.cpp"
+      }
+    },
+    "keep_partials": true,
+    "builds": [
+      21022
+    ],
+    "profiles": [
+      "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD",
+      "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast"
+    ],
+    "append": [
+      ""
+    ],
+    "output": "work\\goal-primitive-grid-view-20261015\\grid",
+    "next": "Fullservercode/data; preserveimprovingpartialonly, parkaftertwocontrols."
+  },
+  "native-primitive-proven-field-family-2008": {
+    "op": "fanout",
+    "client": "2008-06",
+    "library": "RBX actual Primitive Geometry and Body views",
+    "hypothesis": "Gridsetter73to100 provesgeometry9c+float/fpfast; hitTest81to100 andcallee5e82c0provePrimitiveBodyA0/CF94. GenuinePVpositionfirst. Reuseonlythoseknownviews inmanagedauthenticPrimitive/Bodyheaders andfullnativePrimitiveTU, nootherfieldshift orwholeclasslayoutclaim.",
+    "targets": {},
+    "sources": [
+      {
+        "recipe": "rbxgs",
+        "files": [
+          "roc_unit_c91e80e017030683.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast",
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      }
+    ],
+    "next": "Fullcode/data/groupservergate; parkafter2objects."
+  },
+  "large-visual-engine-gates-2008": {
+    "op": "grid",
+    "client": "2008-06",
+    "library": "native Ogre VisualEngine destructor",
+    "hypothesis": "Complete native1700-byte visual-engine lifecycle, resource cleanup, cache and mesh diagnostics. RTTI and one vtable slot prove opaque class declaration; native pointer fields4/c/14, actual Root cleanup APIs, validated map<SubMesh*,String> cache prefix and SubMesh indexData count. Pilot25to97; remaining iterator/register schedule.",
+    "targets": {
+      "addresses": [
+        "0067a130"
+      ],
+      "sizes": [
+        1650,
+        1750
+      ],
+      "scores": [
+        0,
+        99
+      ]
+    },
+    "seed_sources": {
+      "2008-06": {
+        "0067a130": "work/large-functions-2008-20261014/0067a130.cpp"
+      }
+    },
+    "keep_partials": true,
+    "builds": [
+      21022,
+      50727
+    ],
+    "profiles": [
+      "/O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MD",
+      "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD",
+      "/O2 /Ob1 /Oy /GF /GS- /EHsc /MD",
+      "/O1 /Ob2 /Oy /GF /GS- /EHsc /MD"
+    ],
+    "output": "work/large-functions-2008-20261014/visual-engine-gates",
+    "next": "Keep full-body partial if grid exhausted; preserve native cache type evidence for large GPU mesh builder.",
+    "result": {
+      "date": "2026-10-15",
+      "status": "parked",
+      "new_verified_exacts": 0,
+      "evidence": "work\\large-functions-2008-20261014\\resource-visual-upload-verified-summary.json"
+    }
+  },
+  "native-part-primitive-proven-family-2008": {
+    "op": "fanout",
+    "client": "2008-06",
+    "library": "RBX genuine PartInstance embedded Primitive views",
+    "hypothesis": "Held-outnativefamily: hitTest81to100provesPartInstancePrimitive228, parentfamily2moreexactsprovesGeometry9c/BodyA0/PVposition94. PropagateonlythoseviewsacrossgenuinePartInstanceheader/body, nootherfieldshifts. Known50727compilesIRenderable; do notprivatebypass21022.",
+    "targets": {},
+    "sources": [
+      {
+        "recipe": "rbxgs",
+        "files": [
+          "roc_unit_9c4ab8bf2043d1fb.cpp"
+        ],
+        "builds": [
+          50727
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD",
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast"
+        ]
+      }
+    ],
+    "next": "Fullservercode/data only; parkafter2objects."
+  },
+  "native-part-accessor-minimal-core-21022-2008": {
+    "op": "fanout",
+    "client": "2008-06",
+    "library": "RBX genuine PartInstance accessor core",
+    "hypothesis": "8verifiedfamilyexacts justifyheldoutnative17methodcore. RemoveonlyunusedIRenderableBucketdefinitionfrommanagedcopy, keepfullnativeIRenderable/privatefields/methodsunchanged, noaccessbypass. Thisenablespreviousblocked21022gate forminimalselectedPartmethodsbasedonprovenviews.",
+    "targets": {},
+    "sources": [
+      {
+        "recipe": "rbxgs",
+        "files": [
+          "roc_unit_4f842e31c2d089ba.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast",
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      }
+    ],
+    "next": "Fullservercode/data; ifheaderstillrequiresBucketcomplete, stopinsteadinventinglayout."
+  },
+  "native-part-drag-render-core-21022-2008": {
+    "op": "grid",
+    "client": "2008-06",
+    "library": "RBX actual PartDragTool minimal native render core",
+    "hypothesis": "Previous50727typedview99onlyTESTversusEHstateordering. NewnativeIRenderablecorekeepsactualclass/privateaccessunchangedbutomitsunusedBucketdefinition, enabling21022DLLwithoutprivatebypass. Samemethod/fields/typeviews; no qualifier/dummydtor/regforcing.",
+    "targets": {
+      "addresses": [
+        "00665ce0"
+      ],
+      "scores": [
+        0,
+        99
+      ]
+    },
+    "seed_sources": {
+      "2008-06": {
+        "00665ce0": "work\\goal-part-drag-views-20261015\\00665ce0-core21022.cpp"
+      }
+    },
+    "keep_partials": true,
+    "builds": [
+      21022
+    ],
+    "profiles": [
+      "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+    ],
+    "append": [
+      ""
+    ],
+    "output": "work\\goal-part-drag-views-20261015\\core21022-grid",
+    "next": "Fullcodeanddata; ifexactboundedminimalobjectpropagationonly."
+  },
+  "native-camera-subject-minimal-core-21022-2008": {
+    "op": "grid",
+    "client": "2008-06",
+    "library": "RBX genuine Camera subject setter minimal core",
+    "hypothesis": "Existing50727native99 hasonlyTESTvsEHstateordering. Earlier21022fullCameraTUfailedunrelatedWorkspace/IRenderableheader. MinimalgenuineCamera+ICameraSubjectandactualpropertydescriptor retainsunchanged99method, enables21022DLL, nosource/lifetime/accesshacks.",
+    "targets": {
+      "addresses": [
+        "005cde10"
+      ],
+      "scores": [
+        0,
+        99
+      ]
+    },
+    "seed_sources": {
+      "2008-06": {
+        "005cde10": "work\\goal-camera-subject-core-20261015\\005cde10.cpp"
+      }
+    },
+    "keep_partials": true,
+    "builds": [
+      21022
+    ],
+    "profiles": [
+      "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+    ],
+    "append": [
+      ""
+    ],
+    "output": "work\\goal-camera-subject-core-20261015\\grid",
+    "next": "Fullcodeanddata; ifexactboundedminimalobjectpropagationonly."
+  },
+  "large-resource-visual-engine-scale-2008": {
+    "op": "fanout",
+    "client": "2008-06",
+    "library": "native Ogre resource and visual engine lifecycle",
+    "hypothesis": "Manual1536-byte release28to100 and1700-byte VisualEngine25to97 plus651-byte native dump34to100 verified. Both exacts replay100 under first normal automatic imported profile. Reuse actual emitted objects on all current2008 large below40 functions.",
+    "targets": {
+      "sizes": [
+        1000,
+        1000000
+      ],
+      "scores": [
+        0,
+        39
+      ]
+    },
+    "sources": [
+      {
+        "recipe": "ogre-1.4.5-dll",
+        "files": [
+          "roc_resource_release_4709ef25b50fc1eb.cpp",
+          "roc_visual_engine_d4ce797c6a771e8f.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MD /fp:fast"
+        ]
+      }
+    ],
+    "output": "work/large-functions-2008-20261014/resource-visual-engine-scale",
+    "next": "Park unchanged objects if zero extras.",
+    "result": {
+      "date": "2026-10-15",
+      "status": "parked",
+      "new_verified_exacts": 0,
+      "evidence": "work\\large-functions-2008-20261014\\resource-visual-upload-verified-summary.json"
+    }
+  },
+  "large-mesh-level-upload-gates-2008": {
+    "op": "grid",
+    "client": "2008-06",
+    "library": "native3779-byte Level GPU upload",
+    "hypothesis": "Complete manual body from native allfour index-width/primitive branches, actual G3DArray/STL layout, proven10arg backend createSubMesh, min/max output and dirty flag. Initial30, native shared outeri and per-branch sharedj lifetimes remove44extra stackbytes and improve54.",
+    "targets": {
+      "addresses": [
+        "00549a50"
+      ],
+      "sizes": [
+        3700,
+        3900
+      ],
+      "scores": [
+        0,
+        99
+      ]
+    },
+    "seed_sources": {
+      "2008-06": {
+        "00549a50": "work/large-functions-2008-20261014/00549a50.cpp"
+      }
+    },
+    "keep_partials": true,
+    "builds": [
+      21022,
+      50727
+    ],
+    "profiles": [
+      "/Od /Ob0 /GS /EHsc /MD",
+      "/Od /Ob0 /GS /EHsc /MD /fp:fast",
+      "/Od /Ob1 /GS /EHsc /MD",
+      "/Od /Ob0 /GS- /EHsc /MD"
+    ],
+    "output": "work/large-functions-2008-20261014/mesh-level-upload-gates",
+    "next": "Preserve best partial, verify intended symbol and full branch contract; park exhausted compiler gates.",
+    "result": {
+      "date": "2026-10-15",
+      "status": "parked",
+      "new_verified_exacts": 0,
+      "evidence": "work\\large-functions-2008-20261014\\resource-visual-upload-verified-summary.json"
+    }
+  },
+  "native-camera-subject-core-helper-context-2008": {
+    "op": "grid",
+    "client": "2008-06",
+    "library": "RBX genuine Camera subject setter minimal core",
+    "hypothesis": "Existing50727native99 hasonlyTESTvsEHstateordering. Earlier21022fullCameraTUfailedunrelatedWorkspace/IRenderableheader. MinimalgenuineCamera+ICameraSubjectandactualpropertydescriptor retainsunchanged99method, enables21022DLL, nosource/lifetime/accesshacks. Firstcore83 omittedgetCameraSubjectInstance andtellCameraMovedbodieswhichwholeoriginalTUinlines. Restorebothunchangedgenuinehelpers, includeactualICameraOwnerinterface; targetprovesinitialfieldloadandtailnull/vtable+cdispatch.",
+    "targets": {
+      "addresses": [
+        "005cde10"
+      ],
+      "scores": [
+        0,
+        99
+      ]
+    },
+    "seed_sources": {
+      "2008-06": {
+        "005cde10": "work\\goal-camera-subject-core-20261015\\005cde10-helper-context.cpp"
+      }
+    },
+    "keep_partials": true,
+    "builds": [
+      21022
+    ],
+    "profiles": [
+      "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+    ],
+    "append": [
+      ""
+    ],
+    "output": "work\\goal-camera-subject-core-20261015\\helper-grid",
+    "next": "Fullcodeanddata; ifexactboundedminimalobjectpropagationonly."
+  },
+  "native-run-dragger-dtor-minimal-core-21022-2008": {
+    "op": "grid",
+    "client": "2008-06",
+    "library": "RBX genuine RunDragger destructor minimal core",
+    "hypothesis": "50727native96onlyweakcontrolTESTvsEHstateorder. GenuineRunDraggerheaderaloneandunchangedemptydestructor omitunrelatedWorkspace/Playerheaders;21022correctcompiler gate nowpossiblewithoutIRenderable/privatebypass. No dummydtor/extraEHobjects: realRay/weak_ptrmembers.",
+    "targets": {
+      "addresses": [
+        "0066c400"
+      ],
+      "scores": [
+        0,
+        99
+      ]
+    },
+    "seed_sources": {
+      "2008-06": {
+        "0066c400": "work\\goal-run-dragger-dtor-core-20261015\\0066c400.cpp"
+      }
+    },
+    "keep_partials": true,
+    "builds": [
+      21022
+    ],
+    "profiles": [
+      "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+    ],
+    "append": [
+      ""
+    ],
+    "output": "work\\goal-run-dragger-dtor-core-20261015\\grid",
+    "next": "Fullcodeanddata; ifexactboundedminimalobjectpropagationonly."
+  },
+  "large-mesh-level-upload-scale-2008": {
+    "op": "fanout",
+    "client": "2008-06",
+    "library": "native3779-byte mesh level upload",
+    "hypothesis": "Complete manual3779byte body10to54, native44byte stack lifetime discrepancy resolved, full16/32bit quad/line branches and10arg backend typed contract. Winning object emitted from authentic STL/G3D definitions; bounded heldout large below40 fanout with unchanged exact verifier.",
+    "targets": {
+      "sizes": [
+        1000,
+        1000000
+      ],
+      "scores": [
+        0,
+        39
+      ]
+    },
+    "sources": [
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_mesh_level_upload_af64f429000cac4e.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/Od /Ob0 /GS /EHsc /MD"
+        ]
+      }
+    ],
+    "output": "work/large-functions-2008-20261014/mesh-level-upload-scale",
+    "next": "Park unchanged object on zero extra exacts.",
+    "result": {
+      "date": "2026-10-15",
+      "status": "parked",
+      "new_verified_exacts": 0,
+      "evidence": "work\\large-functions-2008-20261014\\resource-visual-upload-verified-summary.json"
+    }
+  },
+  "native-render-camera-dtor-core-propagation-2008": {
+    "op": "fanout",
+    "client": "2008-06",
+    "library": "RBX verified native render camera destructor cores",
+    "hypothesis": "Newactual21022cores verifyPartDragTool99to100,Camera99to100,RunDragger96to100 afterunrelatedheadersisolatedwithoutprivatebypass. Propagateonly3winningobjects,noextraEHobjects/fields/flags.",
+    "targets": {},
+    "sources": [
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_unit_c7735b8cebac2b93.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_unit_1a769b8435068ad9.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "rbxgs",
+        "files": [
+          "roc_unit_db0c7425864541a0.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      }
+    ],
+    "next": "Fullcode/dataonly; parkboundedzero."
   }
 }

@@ -27,6 +27,12 @@ fields/offsets/ABIs, replacing a better stored source, hand edits under `clients
 
 ## Tool routing
 
+Recovery packets include relocated RTTI vtable stores in the target and up to eight
+callees, scanning beyond the first eight asm previews. This exposes actual native
+type names when an old library attribution is misleading. Each fact names the
+store instruction, destination, vtable and type descriptor. Constructors and
+destructors both store vptrs; the facts do not establish a layout or calling convention.
+
 Agent evidence includes ECX-relative reads/stores and decoded `return_stack_bytes`
 for the target and up to eight callees. These are instruction clues, not ABI proof:
 combine return immediates with caller cleanup; bare `ret` does not prove zero arguments.
@@ -91,6 +97,8 @@ default in automatic mode.
    reached 100 after C++ redeclarations had failed. Use binary import evidence, not a
    blanket change to every library's runtime.
 3. **Source reuse.** Verified donors of the same shape, library recipes, `roc xcopy`.
+   `xcopy` preserves compact library/archive wrappers and their compiler settings,
+   compiles native objects separately, and checks their referenced data before reuse.
 4. **Authentic templates.** Instantiate real Boost/STL/G3D/Ogre templates for types
    observed in RTTI (`roc/client_templates.py`; +90 Boost/std exacts).
 5. **Compiler gates.** Both 2008 builds (50727, 21022) x a few profiles, pinned with
@@ -99,6 +107,13 @@ default in automatic mode.
 7. **Near-miss repair.** Read target vs candidate asm; fix only what bytes prove: an
    immediate, an allocation size, stack-offset argument sizes, `__declspec(dllimport)`,
    `volatile` for order, `/fp:fast` for x87 order. One hypothesis per trial.
+   A proven subobject offset and genuine type/prototype permit a typed receiver view
+   without inventing missing padding or virtual methods. Isolate minimal native TUs
+   when unrelated headers fail; preserve required value types and inheritance, and
+   expose only genuine declarations on opaque receivers. Never bypass private access.
+   Minimal cores must retain native helper bodies that the original TU inlines.
+   Unused type definitions may be omitted; every used class, base and access rule
+   stays intact. Isolating the unused render bucket enabled the real 21022 gate.
 8. **Boundaries** only with proof, through `work/<client>/bounds.json`.
 
 New experiments add a recipe to `research/recipes.json` (op `grid` or `fanout`),
@@ -112,6 +127,11 @@ path reproduced the verified pilot, and bounded scale verified eight large
 functions. This is a codegen analogue, not evidence of original map value types.
 The 2008 imported `rbxgs-g3d-dll` Sky, Draw and ToneMap sources also get their verified x87 fast gate;
 other source profiles and the base vendor grids retain their existing defaults.
+The content-addressed native handles3d unit gets its verified x87 fast profile first:
+normal automatic discovery reproduces its 1142-byte exact in one gate instead of five.
+Its native side test compares the integer loop index against 1.0f; replacing that
+with an integer comparison changes code generation. Do not generalize that rewrite
+to unrelated functions.
 
 Analysis recognizes aligned SEH tail entries from tiny frame-free dispatchers.
 Every local path must avoid calls, stack changes, stores and nonvolatile writes;
@@ -127,6 +147,13 @@ framed, exact and proven entries remain protected. The 2008 staged audit recover
 the complete 4073-byte texture resolver at 007aec70, formerly cut at 3499 bytes.
 Record reviewed changes in bounds.json, preserve stored sources, and invalidate
 scores measured against the old extents before mining the complete bodies.
+
+Analysis validates relocated MSVC FuncInfo/TryBlockMap/HandlerType metadata to
+identify catch entries. Only handlers using their parent's EBP without creating
+their own frame become EH fragments; independently framed functions stay code.
+The reviewed 2008 audit excluded 24 catches and one interior retry label, including
+ten previously exact fragments. These are denominator corrections, not match gains.
+Preserve sources and historical receipts when pruning function inventory rows.
 
 For manually recovered, source-less families, grid recipes can supply
 `seed_sources: {"2008-06": {"ADDR": "work/campaign/ADDR.cpp"}}`. Seeds are scoped

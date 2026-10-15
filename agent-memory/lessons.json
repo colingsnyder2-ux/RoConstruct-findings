@@ -1,5 +1,39 @@
 [
   {
+    "id": "embedded-primitive-native-float-overload-family",
+    "client": "2008-06",
+    "library": "RBX genuine PartInstance and Primitive geometry",
+    "hypothesis": "LEA receiver versus pointer load can reveal an embedded native subobject; genuine float overload and x87 mode then propagate across geometry methods.",
+    "change": "PartInstance LEA228 calls native Primitive::getCoordinateFrame; Primitive Geometry pointer9c, Body pointerA0 and BodyPVposition94 proved by callee and actual PV declaration. Reuse only these typed views in managed native headers. Use .5f where target loads f32, then documented /fp:fast control. Preserve actual Vector3/CoordinateFrame/Ray/Geometry/Body types.",
+    "exacts_gained": 8,
+    "outcome": "server_verified",
+    "evidence": "work/goal-native-field-verified-20261015/eight-receipts.json",
+    "next": "Original ctor/other field layout unclaimed. Two family objects each normal0/fastwins; no unsupported global shift. Final additional 21022accessor core0extras, parked."
+  },
+  {
+    "id": "minimal-native-core-before-private-access-bypass",
+    "client": "2008-06",
+    "library": "RBX networking and native header recovery",
+    "hypothesis": "Unrelated header errors need not block the correct compiler when only genuine core declarations/types are required.",
+    "change": "Marker sender: extract unchanged native Marker definition, expose exact nonvirtual sendMarker declaration on opaque receiver, retain genuine Streaming/BitStream/queue/shared_ptr/NetworkSettings/peer types and binary-proven views. Compile managed core TU with21022DLL. No private-public macro, invented fields, virtual methods or guessed ABI. Keep used native class/access/inheritance intact; omit only unused definitions. Omitting unused IRenderableBucket enabled21022 PartDragTool100. Preserve inlined native helper bodies: Camera core83 to100 after restoring getter/tellCameraMoved; RunDragger empty genuine dtor/header alone100.",
+    "exacts_gained": 4,
+    "outcome": "server_verified",
+    "evidence": "work/goal-native-xml-marker-verified-20261015/receipts.json; work/goal-native-field-verified-20261015/eleven-receipts.json",
+    "next": "Preserve any inheritance/value types actually used by conversions and calls. Do not claim opaque receivers reconstruct complete class layout. Two-object propagation0extra, parked."
+  },
+  {
+    "id": "native-container-receiver-view-before-padding",
+    "client": "2008-06",
+    "library": "RBX Instance and Teams",
+    "hypothesis": "A near-matching genuine method can use a binary-proven typed container receiver view without guessing missing fields in an older class layout.",
+    "change": "Instance children at108, Teams COW container at130, genuine COW/vector/shared_ptr/boostbind and native bodies, MSVC21022 checkedvector and DLL CRT preprocessing. Managed include_alias headers; opaque Player receiver exposes only exact native nonvirtual method declarations. Never claim the complete old class layout is correct.",
+    "symptom": "Native95/89 versus target differs in receiver projection, checkedvector begin/end and CRT IAT imports; synthetic Teams assignment94 also misses genuine BrickColor/register codegen.",
+    "exacts_gained": 3,
+    "outcome": "server_verified",
+    "evidence": "work/goal-native-instance-teams-verified-20261015/receipts.json",
+    "next": "Prove offsets and callee ABI first; use actual container/value types. Minimal genuine TUs avoid unrelated header failures. Three-object propagation yielded0more, parked."
+  },
+  {
     "id": "crt-dll-preprocessing-before-cpp-prototype-edits",
     "client": "2008-06",
     "library": "OpenRBX DLL CRT preprocessing",

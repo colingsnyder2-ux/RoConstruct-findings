@@ -1,34 +1,5 @@
-// from server: 81% by king_originala
-extern const float halfScale;
-
-struct Vector3 {
-    float x, y, z;
-};
-
-struct SizeData {
-    float unused;
-    Vector3 dimensions;
-};
-
-struct Bounds {
-    float minX, minY, minZ;
-    float maxX, maxY, maxZ;
-};
-
-struct PartInstance {
-    char padding[0x2c4];
-    SizeData* size;
-    Bounds getBounds() const;
-};
-
-Bounds PartInstance::getBounds() const {
-    const Vector3& dimensions = size->dimensions;
-    double x = (double)dimensions.x * halfScale;
-    double y = (double)dimensions.y * halfScale;
-    double z = (double)dimensions.z * halfScale;
-    Bounds result = {
-        (float)-x, (float)-y, (float)-z,
-        (float)x, (float)y, (float)z
-    };
-    return result;
-}
+// from server: 100% by colin
+// roc-lang: cpp
+// roc-cl: 50727
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast
+// roc-lib: rbxgs roc_unit_9c4ab8bf2043d1fb.cpp
