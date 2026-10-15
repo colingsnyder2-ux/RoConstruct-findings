@@ -630,5 +630,27 @@
     "outcome": "server_verified",
     "evidence": "work/goal-native-joint-ctor-20261015/receipts.json",
     "next": "Fournativecallerctorsalready100. Park unchangedshortbody/profilelosers; assess real revision before duplicating ownership into derived classes."
+  },
+  {
+    "id": "native-enum-historical-values-and-owner-namespace",
+    "client": "2008-06",
+    "library": "Historical NetworkSettings/Hopper/CRenderSettings enums",
+    "hypothesis": "Native RTTI and actual addPair callees distinguish source revisions: enum owner namespace, inserted values and legacy remapping can differ even when generic container layout is already exact.",
+    "change": "NativeNetworkSendtwo values0/1 before2016insertions, Hopper8plainpairs beforelaterlegacycollapse, CRenderSettings nativeglobalowner beforelaterRBXnamespace. Preservecompletegenuineownerclassfields/access andactualnested enum definitions/sourcebodies; usebinary-provenhistoricalsubset/labels. No ownerlayoutclaim.",
+    "exacts_gained": 6,
+    "outcome": "server_verified",
+    "evidence": "work/goal-native-enum-remaining-census-20261015/receipts.json",
+    "next": "One21bodyobjectreplays14recentenumwinsfull100. Fourboundedcensus targets needactualhistoricaldeclarations; do not inventmissingnestedenumtypes."
+  },
+  {
+    "id": "native-camera-natural-layout-and-clip-z-input-sign",
+    "client": "2008-06",
+    "library": "RBX Camera native constructor and full family",
+    "hypothesis": "Load proven root inheritance before all dependencies, then use genuine class fields; referenced-data-only failure can be an input sign error hidden by an inlined setter.",
+    "change": "Instance130+actualpolymorphicGCamera68 naturallygivesgoal174/focus1a4/type1d4. ActualGCamera clipsettersstore-z andassertnegativeZ; nativepositive1.25/5000data requiresinput-1.25/-5000. Genuinecoordinatehelpercontextmatchesctor452. FullactualCamera family requiredModelInstanceheader fixes2more; no fieldviews/newfields/accesschanges.",
+    "exacts_gained": 3,
+    "outcome": "server_verified",
+    "evidence": "work/goal-native-camera-constructor-20261015/receipts.json",
+    "next": "Twofullfamilyobjectsreplay9existingexacts; only3newcredit. Park18compiledcontexts and8fixedmissingheaderfailures; otherconstructors need ownnativeproof."
   }
 ]

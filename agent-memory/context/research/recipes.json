@@ -14754,12 +14754,23 @@
     "op": "fanout",
     "client": "2008-06",
     "library": "Native Camera, geometry, contact force, XML and Lua execution/error families",
-    "hypothesis": "Two fast21022 objects replay50 fullcode/data exacts plus existingenumlookupABIcontrol. Fresh622byte31score DataModel.httpPost genuineoldfullsource: nativebackground_function3rdintpriority missingoldSDK; nativecallerpush-1, wrapper597110full100, boundrunner596ea0 forwardsnativeinttoindependentlyresolvedSetThreadPriority IAT. OnlyactualfreefunctionAPIarg addedtofulloldutilboostheader,noclassfield/base/privacychange. FulloldhttpGet/Post andgenuineBoostbind wrapperbody compiledonce fans11newserververifiedexacts (GET/POST/wrapper/8helpers). Prior39exacts retained, ClassDescriptor1slot/EnumDesc2slotABIcontrols retained. Existingdefaultobjects remain2; noadditionalcompile.",
+    "hypothesis": "Two fast21022 objects replay52 fullcode/data campaign exacts plus5existingABIcontrols(enumlookup,4MD5virtualmethods). Twofreshbelow40manualparents: MD5finalizer520bytes24to100(rawbuffer,unsignedbyte,%02x,lengthEAXreuse,actualATL90RTM_DLLheaders), G3DTexture.copyFromScreen736bytes0to100(fullgenuineunchangedG3D6.09Texture.cpp,nativebuildsourcepathandfastFPprelude). Eachsuccessfulfamilyfanout1newverified. Allprior50exacts retained, MD5native/COFF5slots+5methodcontrols, ClassDescriptor1slot/EnumDesc2slotproof retained. Existingdefaultobjects remain2, onlyobject0addsATLheaders; noadditionalcompile.",
     "sources": [
+      {
+        "recipe": "rbxgs-atl90-dll",
+        "files": [
+          "roc_md5_texture_default_0_8e27e1d5869b9f47.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast"
+        ]
+      },
       {
         "recipe": "rbxgs-dll",
         "files": [
-          "roc_http_priority_default_0_e42c37ffc0bf2a22.cpp",
           "roc_registry_wordlist_default_1_2e6179b9c1bfdb05.cpp"
         ],
         "builds": [
@@ -20336,5 +20347,351 @@
     "targets": {},
     "evidence_resume": true,
     "next": "Audit fullcode/data receipts; originalshortSDKbody45parked."
+  },
+  "native-network-hopper-three-historical-enum-ctors-2008": {
+    "op": "fanout",
+    "client": "2008-06",
+    "library": "rbxgs",
+    "hypothesis": "Three remainingnativeEnumDesc constructors. Genuine2016NetworkSettings nestedtwo enum APIs insertedwithoutinstancefields into completeoldheader; native2008Send hasonlyErrorComputation0/RoundRobin1 (laterErrorComputation2/TopN absent). GenuineoldHopper8enum values allplainaddPair calls native64d530, before2016legacycollapse. RealoldEnumDescriptor typeinfo constructor retained.",
+    "sources": [
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_unit_69c7c4c380ae2195.cpp"
+        ],
+        "builds": [
+          21022,
+          50727
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD",
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast"
+        ]
+      }
+    ],
+    "targets": {},
+    "evidence_resume": true,
+    "next": "Nativeallcode/referenceddata/RTTIproof required; no render enum guesses."
+  },
+  "native-render-three-source-proven-enum-heldouts-2008": {
+    "op": "fanout",
+    "client": "2008-06",
+    "library": "rbxgs",
+    "hypothesis": "FullgenuineCRenderSettings declaration retained, requiredrealG3DVector2int16 include; historicalglobalnamespace independentlynativeRTTI (notlaterRBX). Threeactual2016enumctor bodies withnativeoldEnumDescriptor typeidAPI andbinary-provenFramerate Managerlabel. Only nestedenumtypes used; no containingclassobjectinstantiated/layoutclaim, no guessedfields.",
+    "sources": [
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_unit_17a2063a9f68116b.cpp"
+        ],
+        "builds": [
+          21022,
+          50727
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD",
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast"
+        ]
+      }
+    ],
+    "targets": {},
+    "evidence_resume": true,
+    "next": "GraphicsMode/Bevel/Shadow remainunprovedhistoricaldeclarations; no fabricated nestedtypes."
+  },
+  "native-twenty-one-enum-combined-reuse-2008": {
+    "op": "fanout",
+    "client": "2008-06",
+    "library": "rbxgs",
+    "hypothesis": "One real object combines21nativeenum ctor bodies across6priorownerpilot+9heldouts+6freshsiblings. Aliasdirectives precedeallinclude dependencies, source/fields/access unchanged. Priorwins replay separately, no duplicatecredit.",
+    "sources": [
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_unit_1819d05611c25ca5.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      }
+    ],
+    "targets": {},
+    "evidence_resume": true,
+    "next": "Retain onlyafterindependentfullcode/data replay; parkunchanged losers."
+  },
+  "native-md5-finalizer-family-pilot-2008": {
+    "op": "fanout",
+    "client": "2008-06",
+    "library": "Native Win32 MD5 finalizer and full genuine ATL class",
+    "hypothesis": "Fresh520byte24score actualMD5HasherImpl.c_str fullgenuineoldclass fromContentProvider.cpp unchangedhProv4/hHash8/stdstringc andfullMD5Hasher5virtualAPIs. NativeCryptGetHashParam HP_HASHVAL receivesrawallocatedbuffer (oldSDKincorrect&buffer rejected), unsignedDWORDloop andmovzxbyte, literal%02x (old%x/signextensionincorrect). size()==0 genuinepublicstdstringAPI emitsnativecachedlengthmov/test andEAX0reuse; empty()98rejected. Existingrbxgs-atl90-dll providesauthenticpinned2008RTMATLheaders,_DLL. Fullcode/referenceddata100normal21022, independentRTTI/native82dc9c andCOFF5slotsmatch; all5nativevirtualmethodbodies100beforepropagation, nodtorvslot. Fullclassfields/bases/privacyunchanged, nofakeABI/padding/asm. Two supportedVS2008profilesallunresolvedfanout; no incompatibleVS2005ATL9sweep.",
+    "sources": [
+      {
+        "recipe": "rbxgs-atl90-dll",
+        "files": [
+          "roc_md5_native_length_family_7dc6dfbd72b7e96e.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD",
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast"
+        ]
+      }
+    ],
+    "targets": {},
+    "output": "work\\large-functions-2008-20261014\\md5-native-finalizer-family-pilot"
+  },
+  "native-camera-constructor-required-owner-context-2008": {
+    "op": "fanout",
+    "client": "2008-06",
+    "library": "rbxgs",
+    "hypothesis": "005cd9a0 genuineCamera452byte ctor: requiredheader aliases beforedependencies; fullnativeGCamera68 +Instance130 givesgoal174/focus1a4/type1d4 naturally. Compare externalactualsetGCameraCoordinateFrame versus existingnativebodyinlinecontext, no typedviews/newfields.",
+    "sources": [
+      {
+        "recipe": "rbxgs",
+        "files": [
+          "roc_unit_d3f4faeffd444754.cpp",
+          "roc_unit_6c0376d78ddf784a.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD",
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast"
+        ]
+      },
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_unit_d3f4faeffd444754.cpp",
+          "roc_unit_6c0376d78ddf784a.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD",
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast"
+        ]
+      }
+    ],
+    "targets": {},
+    "evidence_resume": true,
+    "next": "Inspectactualcallee/data differences beforeanysource revision."
+  },
+  "native-g3d-texture-build-path-family-pilot-2008": {
+    "op": "fanout",
+    "client": "2008-06",
+    "library": "G3D6.09 native texture build-path identity and FP flags",
+    "hypothesis": "Fresh736byte0score GImageErrorhint actualG3D.Texture.copyFromScreen(Rect2D,bool). FullgenuineunchangedRBXGS/G3D6.09Texture.cpp (samepublicvendortree) withsourceidentity#line1 matchingnativealwaysAssertM filename .\\glg3dcpp\\Texture.cpp. Nativeassertcall473b49 independentlypushesline0x51c=1308 andstringsErrorencounteredduringglBindTexture/e==GL_NONE/path. Nativefield10/sizeMemory/statepushpop/copyTexImage2D/jumptablesallretained, no signature/header/layout/codebodychange. Normal21022=82,50727=80; fast50727=98; fast21022 fullcode/referenceddata100 includingfilenameandasserttext. ExactcompilationbuildpathandFPpreludeproven, no bytepatch/asm/fakefields. FourprofileswholeTUfanoutallunresolved2008code.",
+    "sources": [
+      {
+        "recipe": "rbxgs-g3d-dll",
+        "files": [
+          "roc_texture_native_build_path_ee24dd4928e63081.cpp"
+        ],
+        "builds": [
+          21022,
+          50727
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD",
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast"
+        ]
+      }
+    ],
+    "targets": {},
+    "output": "work\\large-functions-2008-20261014\\g3d-texture-native-build-path-family-pilot"
+  },
+  "native-camera-constructor-real-negative-clip-z-2008": {
+    "op": "fanout",
+    "client": "2008-06",
+    "library": "rbxgs",
+    "hypothesis": "NativeCamera ctor codeexactwithgenuinecoordinatehelper butdata99: target83a5d0+1.25,826de0+5000 whereasSDKsource+clipZ args inline setters negate them. CorrectnativeinputZ to-1.25/-5000, actualsettersemanticsnegativezplane. No field/ABI/codepadding changes.",
+    "sources": [
+      {
+        "recipe": "rbxgs",
+        "files": [
+          "roc_unit_435aad3f0f5b5fb5.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast"
+        ]
+      },
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_unit_435aad3f0f5b5fb5.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast"
+        ]
+      }
+    ],
+    "targets": {},
+    "evidence_resume": true,
+    "next": "Audit fullreferenceddata andserver/sourcehash; retainnaturalnativeclasslayout."
+  },
+  "native-camera-natural-layout-required-full-family-2008": {
+    "op": "fanout",
+    "client": "2008-06",
+    "library": "rbxgs",
+    "hypothesis": "Ctor452full100 proves nativeCamera payload naturallyfitsgenuineInstance130/GCamera68. FullactualoldCamera.cpp with correctnegativeclipZ, Workspace-only askSetParent staysauthenticexternalboundary (unusedfullWorkspaceBucketexcluded); existingenumctoromittedbecausealreadyverifiedelsewhere. Completeactualbodyfamily/nativefieldaccessors, no offsetviews or fields/accesschanges.",
+    "sources": [
+      {
+        "recipe": "rbxgs",
+        "files": [
+          "roc_unit_fb51940eea29f6fe.cpp"
+        ],
+        "builds": [
+          21022,
+          50727
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD",
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast"
+        ]
+      },
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_unit_fb51940eea29f6fe.cpp"
+        ],
+        "builds": [
+          21022,
+          50727
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD",
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast"
+        ]
+      }
+    ],
+    "targets": {},
+    "evidence_resume": true,
+    "next": "Retainfullcode/data/servernewexacts; contextlosersparked."
+  },
+  "native-camera-natural-family-required-model-declaration-2008": {
+    "op": "fanout",
+    "client": "2008-06",
+    "library": "rbxgs",
+    "hypothesis": "FullnativeCamera setCameraSubject dynamiccastsModelInstance; actualrequiredModelInstance.h nowincluded. NativeIRenderableonly header validbecauseCamera/ModelInstance do notinheritBucket, no privateaccess bypass. Prior8missingdeclarationerrors retained. Naturalpayload/clipZ corrected actualbodies.",
+    "sources": [
+      {
+        "recipe": "rbxgs",
+        "files": [
+          "roc_unit_5cb02dbeca051387.cpp"
+        ],
+        "builds": [
+          21022,
+          50727
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD",
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast"
+        ]
+      },
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_unit_5cb02dbeca051387.cpp"
+        ],
+        "builds": [
+          21022,
+          50727
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD",
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast"
+        ]
+      }
+    ],
+    "targets": {},
+    "evidence_resume": true,
+    "next": "Fullcode/data receipts; no repeatedmissing-declarationcontexts."
+  },
+  "native-g3d-binaryinput-authentic-full-family-2008": {
+    "op": "fanout",
+    "client": "2008-06",
+    "library": "g3d-6.09",
+    "hypothesis": "Fresh00515a00537byteNativeBinaryInputfilenamector confirmedentryRTTI+threeexactexceptionstrings. AuthenticcompleteG3D6.09BinaryInput.cpp fullmethodfamily with existingvendorrecipe/sourcepath, no field/prototype changes. Storedfileutilswrapper31isweakfamilyattribution.",
+    "sources": [
+      {
+        "recipe": "g3d-6.09",
+        "files": [
+          "G3Dcpp/BinaryInput.cpp"
+        ],
+        "builds": [
+          21022,
+          50727
+        ],
+        "flags": [
+          "/O2 /GS- /EHsc /MD",
+          "/O2 /GS- /EHsc /MD /fp:fast"
+        ]
+      }
+    ],
+    "targets": {},
+    "evidence_resume": true,
+    "next": "Inspectrealmethodcode/data versusactualctor; no rawbufferorABIanalogue."
+  },
+  "native-cofm-children-family-pilot-2008": {
+    "op": "fanout",
+    "client": "2008-06",
+    "library": "Native complete Cofm mass/moment aggregation",
+    "hypothesis": "Fresh575byte0score unithintunknown actualCofm.updateIfDirty()const. FullgenuineoldCofm.cpp/header fields body0/dirty4/cofm8/mass14/moment18 unchanged; realmass-weightedchildaggregation/twochildloops/momentobjectspace/dirtyclearallretained. FullimmutableoldBodyheader privatefields/bases/accessretained; onlyexistingpublicgetMass,numChildren,getChild,getBranchMass,getPV ownmembertypedviews toprovennative8c/IndexArray1c/cofm28/PV94. Body.updatePV staysprivatecalledinsideitsactualpublicgetPV. Nativebodygetterloads/cachecalls independentlyknown; G3DArrayactualviewlayoutpointer0/size4 proveschildrenbase1c fromnativepointer1c/count20; initial18view98 rejected, correctednative1c100fast21022. Normal21022/50727=65/66, fast50727=85. No inventedfields/base/ABI/padding/asm/privateaccessbypass; no Body allocation/sizeofclaim. Fourprofilesallunresolvedfamilyfanout.",
+    "sources": [
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_cofm_native_children_family_55828f600e8e5824.cpp"
+        ],
+        "builds": [
+          21022,
+          50727
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD",
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast"
+        ]
+      }
+    ],
+    "targets": {},
+    "output": "work\\large-functions-2008-20261014\\cofm-native-children-family-pilot"
+  },
+  "native-binaryinput-real-exception-and-no-tracker-2008": {
+    "op": "fanout",
+    "client": "2008-06",
+    "library": "g3d-6.09",
+    "hypothesis": "Native537BinaryInput ctor original70: targetno globalfiletracker append, twoactualMSVCR90std::exception(constchar*&) constructorsandThrowInfo8d997conlycatchable std::exception forcompressedmemoryfailures. Retainactualformattedstdstring missingfilethrow. Genuinefullvendorclass/body, no fake EH fields; correctnewmanagedrelativezlibinclude.",
+    "sources": [
+      {
+        "recipe": "g3d-6.09",
+        "files": [
+          "roc_unit_71a8b129a2674932.cpp"
+        ],
+        "builds": [
+          21022,
+          50727
+        ],
+        "flags": [
+          "/O2 /GS- /EHsc /MD",
+          "/O2 /GS- /EHsc /MD /fp:fast"
+        ]
+      }
+    ],
+    "targets": {},
+    "evidence_resume": true,
+    "next": "Fulldata/serverreceipts; proveallremainingcallboundariesbeforemorechanges."
   }
 }
