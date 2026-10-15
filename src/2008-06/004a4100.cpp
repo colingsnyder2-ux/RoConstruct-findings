@@ -145,7 +145,8 @@ void Server::change(Peer* oldPeer, Peer* newPeer)
         newPeer->registerCallback(Binding(&Server::callback, this));
 
         Function function(Binding(&Server::callback, this));
+        void* signal = &newPeer->signal;
         connection.assign(
-            manager.connect(&newPeer->signal, function, 10));
+            manager.connect(signal, function, 10));
     }
 }
