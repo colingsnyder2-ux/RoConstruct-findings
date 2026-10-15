@@ -553,5 +553,27 @@
     "outcome": "server_verified",
     "evidence": "work\\goal-native-signal-fire-20261015\\receipts.json",
     "next": "Park8unchangedcontexts. Evenvoid callbackBoostlast_value<void> returnsrealunusable: do not inventResult4/fakeEH to imitateit. 0057b570actualsignatureunproven, do notguess."
+  },
+  {
+    "id": "native-complete-signal-adapters-and-any-assignment-overload",
+    "client": "2008-06",
+    "library": "GenericSlotAdapter and actual Boost function wrappers",
+    "hypothesis": "Fire-onlyroots leave declared adapter/connection members unemitted; genuinecompletebodies trigger manytemplatehelpers. Explicitanytemporary choosesdifferentrealassignmentoverloadthanactualdirectargassignment.",
+    "change": "Completeactualconstructor/connectGeneric/0and2argadapter bodies fromOpenRBX, preserveoldnativeRBXGSclass/prototypes/access. Explicit16classinstantiations emit004921b0voidinvoker220397to100,004b35e0stringbooladapter27177to100,0062a760sharedInstancefloatadapter27694to100. Actualoneargdirectassignmentargs0=arg1 insteadexplicitboostanytemp emits00636740BrickColoradapter17992to100. Fournew929bytes7contexts;canonicalhashesverified. Combinednormal21022nativeobjectreplaysall4+prior7=11full1003045bytes withoutdoublecredit.",
+    "exacts_gained": 4,
+    "outcome": "server_verified",
+    "evidence": "work\\goal-native-signal-adapters-20261015\\receipts.json",
+    "next": "Constoperatoractualrevision1object0parked, allunchangedcontextsparked. 0062adb0provedconstructor notadapter; no bodychanges. Liveworkerunchanged, speedupnotmeasured."
+  },
+  {
+    "id": "native-explosion-required-header-constructor-context",
+    "client": "2008-06",
+    "library": "Explosion genuine constructor/setter family",
+    "hypothesis": "UnusedWorkspace fullTU compilerdependency can hide exactrealclassconstructor; minimalrequiredclassheader preservesnativehierarchy andemitscorrectEH/defaultmemberinit.",
+    "change": "ActualExplosion4methodcore withGuidroot/minimalrequiredIRenderable yieldsctor0062adb028197to100 andsetBlastRadius0062b5c0exact. Entireactualclassnaturallyfitsage144,position148,radius154,pressure158; no padding/offsetviews/newfields. Fourcontexts2new. Heldout11actualconstructors8cores32contextsallcompile0new, parked.",
+    "exacts_gained": 2,
+    "outcome": "server_verified",
+    "evidence": "work\\goal-native-explosion-constructor-20261015\\receipts.json",
+    "next": "Do notreplay32heldoutcontextsunchanged. Agentlatestcycle24targets0journaledchecks1partial0exact; no blindmodelscale-up. preserveactualmetricdistinctionfinalwrappergainsvsjournaledfirstchecks."
   }
 ]

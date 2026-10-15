@@ -1,5 +1,5 @@
-// from server: 31% by colin
-// roc-cl: 21022
-// roc-flags: /O1 /GS- /EHsc /MD
+// from server: 100% by colin
 // roc-lang: cpp
-// roc-lib: rbxgs v8world/SimJobStage.cpp
+// roc-cl: 21022
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+// roc-lib: rbxgs-dll roc_enum_owner_expanded_family_cee52b618254f38b.cpp

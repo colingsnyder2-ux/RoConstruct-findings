@@ -14754,13 +14754,13 @@
     "op": "fanout",
     "client": "2008-06",
     "library": "Native Camera, geometry, contact force, XML and Lua execution/error families",
-    "hypothesis": "Two fast21022 objects independently replay18 fullcode/data native exacts. Main object retains17 Camera/GeoPair/LuaError/XML/Color/Rotate/Contact/Script controls; ContactForce object retains720byteexact. Freshmanual0score targets ContactForce720 actualprivate diagnosticcounters, GeoPair791 actualpublicBody.getPvFast, LuaError703 actualthree-arglua_tolstring/native64bytecharbuffer/bounded12frames. Threefourprofile allunresolvedpilots gained7verifiedexacts. OnecombinedTU changesContactForce stack escape/liveness evenwithrealnoinlineboundaries,95 rejected; preserve real separateTU ratherthanaddfakepadding/opaqueAPI. Existingdefaultstage expanded byonecompile, all18controls retained.",
+    "hypothesis": "Two fast21022 objects replay27 exacts plusindependent enumlookupABIcontrol. Existing17main combinedwithFace722; Contact720 object combinedwithValueString766 and7Enumfamilyexacts. Ninefreshverifiedgains; three manually recoveredlargeparentsbelow40. Fullgenuineclasses/nativeprivatefields; realtypedpublicconstBoostboundary. Enumconstructor100alone maskedbadnewer5slotdraft rejected; finalnative+COFF2slot/RTTI/lookupcode independentlyproved. NativeownerItem20/vectorItema0, nointToEnum. Existingdefaultobjects remain2, noadditionalcompile; allprior18controlsretained.",
     "sources": [
       {
         "recipe": "rbxgs-dll",
         "files": [
-          "roc_expanded_contact_pair_report_family_05178bd0f54ad7e8.cpp",
-          "roc_contact_counter_rbx_23abb95b58555b53.cpp"
+          "roc_value_face_enum_default_0_2a45ea4ff1a14723.cpp",
+          "roc_value_face_enum_default_1_c852d329eb4e19f8.cpp"
         ],
         "builds": [
           21022
@@ -18859,5 +18859,423 @@
     ],
     "targets": {},
     "next": "Parkallunchangedconst/nonconstcontexts afterfullscan; currenthashauditonlynewreceipts."
+  },
+  "native-explosion-four-method-minimal-required-context-2008": {
+    "op": "fanout",
+    "client": "2008-06",
+    "library": "Native Explosion ctor/setter/service core",
+    "hypothesis": "ActualExplosion28197 fakeconstructor missesnativecontracts. Genuinecompleteclass naturallyfitsmeasuredtargetfields withprovenGuidroot andrequiredIRenderableonly; removeonlyunusedWorkspace dependencybyusingfouractualmethodbodies+realstaticPropDescriptor. FourboundednormalDLLfloatcontexts, allunresolvedscan.",
+    "sources": [
+      {
+        "recipe": "rbxgs",
+        "files": [
+          "roc_unit_fd60914847771c1b.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD",
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast"
+        ]
+      },
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_unit_fd60914847771c1b.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD",
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast"
+        ]
+      }
+    ],
+    "targets": {},
+    "next": "Auditactualctor/setter/objecthelpers; parkunchangedconfigs."
+  },
+  "native-reverb-enum-owner-family-pilot-2008": {
+    "op": "fanout",
+    "client": "2008-06",
+    "library": "Native Reverb enum and genuine owner/item-vector metadata",
+    "hypothesis": "Fresh668byte0score SoundServicehint actuallyEnumDesc<ReverbType> ctor, full24pair body genuine2016SoundService.cpp with realoldRTTIbase API. Nativector two maps30/50 +fivevectors70/88/a0/b8/d0; addPair64d530 independently provesa0 storesItem*,notguessedintToEnum. Genuine2016 enumToItem and Item.owner members restore actual old2008revision, removeolder string maps unusednative, no intToEnum absentnative. Itemnative20bytes owner8/valuec/index10. Allfields/bases/privacy real preserved; no padding. Nativevtable837a34 has exactly2 slots (dtor5bae20,lookup4aa0d0); wrongnewer5slotheader ctor100rejected beforeanysubmission. Keeponlyreal lookupconstchar* virtual; actualgenuine lookupcode independently100at4aa0d0. Reverbctor668andaddPair528 bothfullcode/data100normal21022; addPair91fixedactualenumToItem-before-nameMap ordering pernative/genuine2016. Fourprofileallunresolved scale finalcorrect2slotunitonly.",
+    "sources": [
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_reverb_enum_native_owner_9611c02c0e2527a8.cpp"
+        ],
+        "builds": [
+          21022,
+          50727
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD",
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast"
+        ]
+      }
+    ],
+    "targets": {},
+    "output": "work\\large-functions-2008-20261014\\reverb-enum-native-owner-family-pilot"
+  },
+  "native-eleven-constructors-eight-required-header-cores-2008": {
+    "op": "fanout",
+    "client": "2008-06",
+    "library": "Eleven genuine constructors across eight minimal native TUs",
+    "hypothesis": "MinimalgenuineExplosion ctor exact validatespreviousfull-TUcompilerblockercontext. Extract11unchangedactualctorbodies withtheiractualrequiredheader andprovenGuid/Part/Joint aliases, fullnativefields/access preserved; unusedWorkspace sourceincludes omitted, no Bucket-requiredclass omitted. Fourboundedcontextsper8nativecores; allunresolvedscan.",
+    "sources": [
+      {
+        "recipe": "rbxgs",
+        "files": [
+          "roc_unit_923e3dde2fbc0252.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD",
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast"
+        ]
+      },
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_unit_923e3dde2fbc0252.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD",
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast"
+        ]
+      },
+      {
+        "recipe": "rbxgs",
+        "files": [
+          "roc_unit_f5992c9732f1ed15.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD",
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast"
+        ]
+      },
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_unit_f5992c9732f1ed15.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD",
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast"
+        ]
+      },
+      {
+        "recipe": "rbxgs",
+        "files": [
+          "roc_unit_f74ea0b3d7e0fbf6.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD",
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast"
+        ]
+      },
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_unit_f74ea0b3d7e0fbf6.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD",
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast"
+        ]
+      },
+      {
+        "recipe": "rbxgs",
+        "files": [
+          "roc_unit_a69f000ceeb40192.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD",
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast"
+        ]
+      },
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_unit_a69f000ceeb40192.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD",
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast"
+        ]
+      },
+      {
+        "recipe": "rbxgs",
+        "files": [
+          "roc_unit_10f32a4ef359e8ee.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD",
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast"
+        ]
+      },
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_unit_10f32a4ef359e8ee.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD",
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast"
+        ]
+      },
+      {
+        "recipe": "rbxgs",
+        "files": [
+          "roc_unit_77ded18a3e380ab8.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD",
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast"
+        ]
+      },
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_unit_77ded18a3e380ab8.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD",
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast"
+        ]
+      },
+      {
+        "recipe": "rbxgs",
+        "files": [
+          "roc_unit_ac46d22c30065cee.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD",
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast"
+        ]
+      },
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_unit_ac46d22c30065cee.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD",
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast"
+        ]
+      },
+      {
+        "recipe": "rbxgs",
+        "files": [
+          "roc_unit_d88a643bd7f7b92d.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD",
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast"
+        ]
+      },
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_unit_d88a643bd7f7b92d.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD",
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast"
+        ]
+      }
+    ],
+    "targets": {},
+    "next": "Fixonlyactualrequiredmissingheaders ifcompilefails; parkallcompiledlosingcontexts."
+  },
+  "native-enum-owner-expanded-family-pilot-2008": {
+    "op": "fanout",
+    "client": "2008-06",
+    "library": "Native genuine enum owner metadata expanded constructor family",
+    "hypothesis": "Scale successful native Reverb owner/itemvector/two-slotlookup revision using five more complete genuineoldSDK enumctor bodies: CameraType, Feature.TopBottom/LeftRight/InOut and SurfaceType includinglegacySpawn/Bumps. Preserve realclassheaders andnativeprivate owner/itemvector layout; noinventedenums/fields/slots. Independently retain Reverbctor668/addPair528/lookupcontrols100 beforeallunresolvedfourprofilepilot.",
+    "sources": [
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_enum_owner_expanded_family_cee52b618254f38b.cpp"
+        ],
+        "builds": [
+          21022,
+          50727
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD",
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast"
+        ]
+      }
+    ],
+    "targets": {},
+    "output": "work\\large-functions-2008-20261014\\enum-owner-expanded-native-family-pilot"
+  },
+  "native-players-character-owner-lifetime-context-2008": {
+    "op": "fanout",
+    "client": "2008-06",
+    "library": "Native Players character lookup owner lifetime",
+    "hypothesis": "Currentnative0049acd012598 sole TEST/MOVcleanup ordering. PreserveactualPlayers/Player/sharedptr/API andnativebody, testconstexistingowner vs equivalenttemporaryreturn. Minimalrequirednativeheaders plusprovedGuid root; no fakeobjectfields/ABI/volatile. Fourboundedcontexts.",
+    "sources": [
+      {
+        "recipe": "rbxgs-net",
+        "files": [
+          "roc_unit_692f125eba4323d3.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "rbxgs-net-dll",
+        "files": [
+          "roc_unit_692f125eba4323d3.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "rbxgs-net",
+        "files": [
+          "roc_unit_a7aa7ac224500098.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "rbxgs-net-dll",
+        "files": [
+          "roc_unit_a7aa7ac224500098.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      }
+    ],
+    "targets": {},
+    "next": "Parkaftertwoactualownerlifetime contexts; preserveexisting98ifloses."
+  },
+  "native-players-three-bound-call-signatures-proven-view-2008": {
+    "op": "fanout",
+    "client": "2008-06",
+    "library": "Native Players BoundFuncDesc membercall actual typed view",
+    "hypothesis": "164byte49b0b0 native97 provesFunctionSig memberat38. PreserveactualdeclaredMI memberpointertype/prototype; ownprivatecall typedlvalueonly, no fakeclasspadding/vslots or accessbypass. ThreeactualPlayers signatures, native.set vs genuinenewerValueassignment context, fourboundedobjects.",
+    "sources": [
+      {
+        "recipe": "rbxgs-net",
+        "files": [
+          "roc_unit_a9847d05a9f2b800.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "rbxgs-net-dll",
+        "files": [
+          "roc_unit_a9847d05a9f2b800.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "rbxgs-net",
+        "files": [
+          "roc_unit_4084b221a520a5dd.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "rbxgs-net-dll",
+        "files": [
+          "roc_unit_4084b221a520a5dd.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      }
+    ],
+    "targets": {},
+    "next": "Inspectfullscore; preservehigherstoredpartials, parklosingcontexts."
   }
 }
