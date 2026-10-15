@@ -1,47 +1,5 @@
-// from server: 87% by king_originala
-struct Storage {
-    unsigned char data[24];
-};
-
-typedef void (__cdecl *Manager)(const Storage *, Storage *, int);
-
-struct Table {
-    Manager manager;
-};
-
-struct Function {
-    Table *table;
-    unsigned int padding;
-    Storage storage;
-
-    Function(const Function &other);
-    ~Function();
-};
-
-inline Function::Function(const Function &other)
-{
-    table = 0;
-    if (other.table) {
-        table = other.table;
-        other.table->manager(&other.storage, &storage, 0);
-    }
-}
-
-inline Function::~Function()
-{
-    if (table) {
-        Manager manager = table->manager;
-        if (manager)
-            manager(&storage, &storage, 1);
-    }
-}
-
-struct S {
-    S(Function function, const int &first, const int &second);
-    void initialize(Function function, const int &first, const int &second);
-};
-
-S::S(Function function, const int &first, const int &second)
-{
-    initialize(function, first, second);
-}
+// from server: 100% by colin
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+// roc-lib: rbxgs-dll roc_datamodel_http_priority_family_499d1a4013f08de7.cpp

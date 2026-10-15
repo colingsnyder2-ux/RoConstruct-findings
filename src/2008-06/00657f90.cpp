@@ -1,32 +1,5 @@
-// from server: 66% by king_originala
-struct Locale {
-    void* facet;
-
-    Locale(const Locale&);
-    ~Locale();
-};
-
-extern void (__thiscall *facet_incref)(void*);
-extern void (__thiscall *locale_destroy)(Locale*);
-
-inline Locale::Locale(const Locale& other)
-    : facet(other.facet)
-{
-    facet_incref(facet);
-}
-
-inline Locale::~Locale()
-{
-    locale_destroy(this);
-}
-
-struct Result;
-
-void __cdecl helper(Result*, int, int, int, int, unsigned short, Locale, Result*);
-
-Result* __cdecl function(Result* result, int a, int b, int c, int d,
-                        unsigned short flags, Locale locale)
-{
-    helper(result, a, b, c, d, flags, locale, result);
-    return result;
-}
+// from server: 100% by colin
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+// roc-lib: rbxgs-dll roc_wordlist_plain_native_family_a48f6f07beb1c62f.cpp

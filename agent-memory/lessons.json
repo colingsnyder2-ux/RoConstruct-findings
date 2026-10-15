@@ -575,5 +575,60 @@
     "outcome": "server_verified",
     "evidence": "work\\goal-native-explosion-constructor-20261015\\receipts.json",
     "next": "Do notreplay32heldoutcontextsunchanged. Agentlatestcycle24targets0journaledchecks1partial0exact; no blindmodelscale-up. preserveactualmetricdistinctionfinalwrappergainsvsjournaledfirstchecks."
+  },
+  {
+    "id": "native-players-required-header-and-member-pointer-view",
+    "client": "2008-06",
+    "library": "Players character lookup and genuine bound calls",
+    "hypothesis": "AnunusedWorkspace include can forceknownprivateBucketcompilerbug; actualFunctionSig memberoffset andconstowner lifetime canrecovernear-misswithout fakeclasses orvolatile.",
+    "change": "RemoveonlyunusedPlayer.hWorkspaceinclude (noWorkspace API/fields/bases), preservecompletePlayer/Players/Model; genuineIRenderable-onlyheader nowallowed. NativegetPlayerFromCharacter12598to100 withconstexistingowner. BoundFuncDesc1 actualMI FunctionSig atmeasured38 vsold28, typedlvaluewithinownmethod preservesC++membercall; originalValue.set context recovers49b0b016497to100 and49b81019670to100. Trueowner/stdValue/BoostEH. Threecurrenthash/fullserver exacts485bytes; onecombinedobjectreplaysall3.",
+    "exacts_gained": 3,
+    "outcome": "server_verified",
+    "evidence": "work\\goal-native-players-required-headers-20261015\\receipts.json",
+    "next": "Eightinitialcompilerfailuresrecorded;10successfulcontextscomplete. Voidexplicit specialization cannotbeexplicitlyinstantiated, removeinvalidemissionrequest notaccessrules. TwoheldoutInstance/Serviceprovider signatures0; allunchangedloserspark. WholeFunctionDescriptor layoutunclaimed."
+  },
+  {
+    "id": "native-texture-byvalue-copy-before-fake-argument-state",
+    "client": "2008-06",
+    "library": "ShirtGraphic genuine TextureId application",
+    "hypothesis": "FakeStringcopy constructor writesargument-slot pointer to manufacture74bytemethodstate; actualTextureIdbyvalueABI andnativecompiler alreadyprovideit.",
+    "change": "ActualCharacterAppearance.cpp ShirtGraphic.apply +realHumanoid/Part/Decal/TextureId declarations; privategraphicactualTextureId atmeasured134 typedviewonly. Genuineimplicitowner copy emitsstringIATcopy+mimeptr andrequiredstackstate, recovering005d42407485to100. ProvenunusedPlayerWorkspaceinclude repair enablesVC2008withoutchangingaccess/requiredclasses. Fourcore/familycontexts1newfullserver/currenthash exact.",
+    "exacts_gained": 1,
+    "outcome": "server_verified",
+    "evidence": "work\\goal-native-shirt-graphic-20261015\\receipts.json",
+    "next": "WholeCharacterAppearancefamily0extrasparked. Nearby298limbsearch methods needgenuineolderdeclarations; cached2016source incompatible, do notinventhelperAPI/fields/hierarchy."
+  },
+  {
+    "id": "native-camera-image-required-zoom-wrapper-inline-context",
+    "client": "2008-06",
+    "library": "Camera image server view and owner extents wrapper",
+    "hypothesis": "Twooffsetfixes alone do notrestorefullnativebody ifrequiredsmallhelper implementation ismissing; retainactualinlining context rather thanaddingregister/framehacks.",
+    "change": "Camera.setImageServerViewNoLerp59898to100 withactualownCameraType1d4/Goal174 typedviews. Minimalcore83/76 showedextraEDI/frame becausegenuinezoomExtents(viewport) owner/virtualcomputeCameraOwnerExtents wrapper stayedexternal. Restoringunchangedactualtinywrapper removesdiff and21022fpfastfullserver100. Fourinitialidentifiergenerationerrorsfixed;8successfulcontexts1new598, combined2contexts0extras.",
+    "exacts_gained": 1,
+    "outcome": "server_verified",
+    "evidence": "work\\goal-native-camera-math-20261015\\receipts.json",
+    "next": "Parkallunchangedcamera contexts. Existingownerfamilypriorwinsnottwicecredited. WholeCameralayoutunclaimed; nofakehelper/privateaccess/fields/ABI or normal-exit omission."
+  },
+  {
+    "id": "native-enum-rtti-heldouts-before-inventory-label",
+    "client": "2008-06",
+    "library": "Native EnumDesc owner families",
+    "hypothesis": "Native RTTI identifies enum ctor families missed by weak inventory attribution; propagate a fully verified genuine template layout across source-proven enum bodies.",
+    "change": "00615070 inventory RevoluteLink is actual EnumDesc<Controller::InputType>, target strings and immediate enum sequence match unchanged OpenRBX ctor. Verified prior EnumDesc owner/header with two actual virtual slots extends to NormalId, ControllerType, MeshType, PartType, FormFactor and both debug enums, retaining real containing class fields/access. Nine source-native bodies14contexts yields8new3327bytes. One combined21022DLLfastobject independentlyreplaysall8full100.",
+    "exacts_gained": 8,
+    "outcome": "server_verified",
+    "evidence": "work/goal-native-controller-enum-20261015/receipts.json",
+    "next": "Do not re-run unchanged14contexts; new native enum types need actual declarations/values, and current binary/data proof. SoundType body yielded no extra gain; full set remains incomplete."
+  },
+  {
+    "id": "native-joint-constructor-body-follows-weak-owner-revision",
+    "client": "2008-06",
+    "library": "RBX JointInstance native constructor revision",
+    "hypothesis": "A proven new owner layout also needs its actual constructor body; matching vptr/field offsets cannot restore missing ownership work.",
+    "change": "Actual2016JointInstance ctor owns the two primitive-to-part weakassignments previously in oldSDKAutoJoint. Copy genuinector body after independently observed targetcalls/lifetimes, existingnativeweakpart[2]140/joint150 header. No newfields/padding/ABI/access. Oldshortctor45; completebody100whole521.",
+    "exacts_gained": 1,
+    "outcome": "server_verified",
+    "evidence": "work/goal-native-joint-ctor-20261015/receipts.json",
+    "next": "Fournativecallerctorsalready100. Park unchangedshortbody/profilelosers; assess real revision before duplicating ownership into derived classes."
   }
 ]

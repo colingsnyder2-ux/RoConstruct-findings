@@ -1,29 +1,5 @@
-// from server: 93% by king_originala
-inline void* __cdecl operator new(unsigned int, void* p)
-{
-    return p;
-}
-
-inline void __cdecl operator delete(void*, void*)
-{
-}
-
-struct __declspec(align(8)) Inner {
-    char data[64];
-    Inner(const Inner&);
-};
-
-struct Value {
-    Inner inner;
-    int last;
-};
-
-struct S {
-    int first;
-    Value value;
-};
-
-void __cdecl construct(S* destination, const S& source)
-{
-    new (destination) S(source);
-}
+// from server: 100% by colin
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+// roc-lib: rbxgs-dll roc_datamodel_http_priority_family_499d1a4013f08de7.cpp
