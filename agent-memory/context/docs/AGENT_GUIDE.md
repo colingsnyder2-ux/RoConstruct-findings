@@ -33,6 +33,11 @@ type names when an old library attribution is misleading. Each fact names the
 store instruction, destination, vtable and type descriptor. Constructors and
 destructors both store vptrs; the facts do not establish a layout or calling convention.
 
+Packets also include up to sixteen relocated `rtti_type_refs`, exposing template
+types used by dynamic casts even when inventory labels are wrong. These names do
+not prove return ABIs or full layouts. Native header lookup recognizes MSVC
+`__declspec(novtable)` and import/export class declarations.
+
 For 2008, `native_type_headers` adds up to six bounded, read-only declaration
 candidates from available RBX/Ogre/G3D trees. Different versions stay visible;
 they are not ABI proof. Check real fields, bases and destructors against the native

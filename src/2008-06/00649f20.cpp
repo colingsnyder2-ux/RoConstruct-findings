@@ -1,5 +1,5 @@
-// from server: 20% by colin
+// from server: 100% by colin
+// roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast
-// roc-lang: cpp
-// roc-lib: rbxgs v8kernel/Connector.cpp
+// roc-lib: rbxgs-dll roc_face_project_family_daa8904a9d319c98.cpp

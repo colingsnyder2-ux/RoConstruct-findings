@@ -476,5 +476,82 @@
     "outcome": "server_verified",
     "evidence": "work\\goal-lua-protected-full-body-audit-20261015\\receipts.json",
     "next": "Frame exit review packets expose normalcontinuations but do not mutatebounds. Preservetyped catchcontracts and completeclass; never padfakeJump to matchprefix. All loser familyconfigs parked; no automaticworker restart."
+  },
+  {
+    "id": "native-reflection-pointer-any-casts-and-isType-context",
+    "client": "2008-06",
+    "library": "Native Reflection Value conversion family",
+    "hypothesis": "FakeTypeInfo/currentunit labels conceal exact real boostany helper/type identity. Recover genuine template body then preserve public inline call context.",
+    "change": "Cached2016genericConvert algorithm + actualoldValue/Type/Name/boostany. Nativecall415c90/415bd0 are pointeranycast nullreturn helpers, not throwing refcasts. TargetThrowInfo8d1bc8 explicitly stdruntime_error with stdexception base. Genuine Value::isType<string>() fixes97 register mismatch from flattened expression; no dummy local/asm/EH. Realtype_info931034/92bf44 provesVector2int16/ContentId, not staleColor3 labels. Fourfullserver exacts1184bytes; onecombinednativeobject replaysall4 full100.",
+    "exacts_gained": 4,
+    "outcome": "server_verified",
+    "evidence": "work\\goal-native-reflection-revision-20261015\\receipts.json",
+    "next": "Park prior contexts; scalar/math types already8+2 emitted. Enum requires actualXml/GetSet/fullvirtualrevision evidence; do not add slots or fields to chase81. Startup scopedread change28tests, actualspeedupunmeasured."
+  },
+  {
+    "id": "native-boost-any-value-cast-real-noreturn-contract",
+    "client": "2008-06",
+    "library": "Boost any byvalue math cast",
+    "hypothesis": "Nativepointerany casts proved; missing noreturn knowledge can manufacture fallthrough cleanup even when realhelper unconditionallythrows.",
+    "change": "Target0056dfe0 actualVector3 typeinfo plus12byte returnedcopy; realBoost1.34 throw_exception<E> body throwe andtarget40a3f0CxxThrowException alwaysnoreturn. Samegenuinetemplate forwarddeclnoreturn preservesbody/type/ABI, removesincorrectnormalcleanup, nativeVector3 valuecast39to100154bytes. 11actualtypes const/nonconst fourcontexts1new;34nativecorespropagation0park.",
+    "exacts_gained": 1,
+    "outcome": "server_verified",
+    "evidence": "work\\goal-native-boost-any-value-casts-20261015\\receipts.json",
+    "next": "No extra grids on unchangedsource. Actualworkerwrapperempty misdiagnosis fixedvia resolvedsource_path+prompt;38tests, throughputunmeasured, no restart."
+  },
+  {
+    "id": "native-streaming-checked-reader-and-real-scale-data",
+    "client": "2008-06",
+    "library": "RakNet Streaming genuine reader family",
+    "hypothesis": "FakeReadError/Streamnear99maymask a solefloatdatafailure; authentictypes recoverexactcodewithout acceptingwrongreferenceddata.",
+    "change": "RealStreamingdeclarations+RakNetReadBits+G3DVector3+stdruntime_error reproducebrickreader480bytes. Initialcodeexact99 had0.25vsactual819bacfloat0.5; actualSDK0.5x/z restored, Y81e704float0.1. Target32bittemps/MOVSX16x,z/MOVZX16y preserved. BoolreaderrealReadspecialization+checkedthrow46to100142bytes. Sixnativeoperators2contexts1new;fullStreaming4contexts0parked.",
+    "exacts_gained": 2,
+    "outcome": "server_verified",
+    "evidence": "work\\goal-native-streaming-brick-vector-20261015\\receipts.json",
+    "next": "Parklosingcontexts. ActualAppmanagedInstanceheader copiedthroughlibs.add_unit networkrecipe beforeinclude_alias canresolve; no handtoolsedit. ExistingTexturecache99family stillrequiresactualsource."
+  },
+  {
+    "id": "native-render-members-and-frustum-array-access-context",
+    "client": "2008-06",
+    "library": "RenderScene Lighting/Stencil and Extents frustum",
+    "hypothesis": "Native99can be realmemberoffsets oronecommutedLEA; useactualselectednative membertypes andexistingpublicarrayAPI, never invent classpadding or force registers.",
+    "change": "PresetLighting ownnativeSkyRef308/LightingParams310 fixes47699to100. markStencilShadows realArrayunsigned2f8/debugbool304 fixes68799to100. FullunknownRenderScene layoutnotclaimed; onecombinedactualobjectreplaysboth100. NativeExtentsFrustum18799 oneLEAbyte fixedusingactualArray.getCArray indexedaccess context; botharrayforms2boundedobjects1new. Threefullservercurrenthash exacts1350bytes.",
+    "exacts_gained": 3,
+    "outcome": "server_verified",
+    "evidence": "work\\goal-native-renderscene-lighting-20261015\\receipts.json",
+    "next": "36remaining99census0data-only. BroaderRenderScene low native scores need actualMaterial/wholeclassrevision; no fakevslots/fields. Parkallunchangedcontexts; Extents.express99x87orderingremains."
+  },
+  {
+    "id": "native-property-return-owners-and-own-accessor-context",
+    "client": "2008-06",
+    "library": "ConstProperty actual return objects and STL find",
+    "hypothesis": "Fakepointerreturn+volatilelocal hides realownerreturnstate; actualRTTI can identifytypedgettertypes despiteLuaArgumentsinventorylabel.",
+    "change": "GenuineConstPropertygetValue templatewithactualsharedDescribedBase/FunctionRef/sharedconstvector/heldoutsharedInstance returns, stdbad_cast andactualgetDescriptor/getInstance calls yields4x98 exacts. Nontrivialreturnnaturallyemitszero/16byteframe; nofakevolatile/EH. Initialnative95register-only fixedbyownexistingaccessorcontext, notflattenedmembers. RealSTDstring std::find pointer/vectorinstantiations recover62byte650eb096to100. Fivefullserver/currenthash exacts454bytes; onecombinednativeownerobjectreplaysall4.",
+    "exacts_gained": 5,
+    "outcome": "server_verified",
+    "evidence": "work\\goal-native-reflection-property-owner-returns-20261015\\receipts.json",
+    "next": "Packetnow16relocatedtype refs +actualMSVCdeclspecclassdeclarations,40tests andrealpacketverified; runtimegainunmeasured. Park13compiledcontexts, no extra grids."
+  },
+  {
+    "id": "native-humanoid-visitor-and-obsolete-camera-hook",
+    "client": "2008-06",
+    "library": "Humanoid descendant collection and genuine character helpers",
+    "hypothesis": "NativeBoostcallback+newGuidroot recover realrecursivevisitor; oldcameraoverride placement can conceal primaryHumanoidreceiver.",
+    "change": "ActualgetCharacterFromHumanoid/collectAllDescendantCharacterPrims/getIgnorePrims bodies withprovenGuidroot/PartPrimitive228 emitvisitor5d854032757to100. Parentnative55sole14csecondaryreceiver mismatch. Cachedgenuine2016ICharacterSubject omitsobsoletegetIgnorePrims basehook; removingonlyobsoletebase declaration,preservingallfields/bases/access andexistingHumanoidvirtualmethod producesprimaryreceiver58byte5d9db090to100. Fiveunchangedcharacterhelpers heldoutaddsfindRightArm5d7a9013680to100. Onecombinednativeobjectreplaysall3full100; total521bytescurrenthashverified.",
+    "exacts_gained": 3,
+    "outcome": "server_verified",
+    "evidence": "work\\goal-native-humanoid-descendant-visitor-20261015\\receipts.json",
+    "next": "Seven successfulcontexts complete,initial4includeorderfailsretained. Wholecamera/Humanoidpayloadrevision remainsunclaimed; no padding/privateaccess/vslotinvention. Sparklesrequiresactual2008drawinterface/source, laterarchiveincompatible."
+  },
+  {
+    "id": "native-reflection-signal-fire-and-real-unusable-result",
+    "client": "2008-06",
+    "library": "Native Reflection SignalDescImpl and Boostsignals family",
+    "hypothesis": "FakeSignal/control/result classes at97concealrealBoostsignal callback/combiner contracts; truegenuine templates naturallyemitownerEH andunusable returnvalue.",
+    "change": "ActualExplosionSignalDesc sharedInstance,float nativefire18397to100; genuineBoostsignal2 operator45670to100 andcaller7089to100 emitfromsameobject. Add12source-proven Value/Humanoid/Instance/network/RunService signatures: stringsignal1370,stringintsignal2354,CoordinateFramesignal1389,BrickColorsignal1294 allfullserverexact. Eightnativecompilecontexts7new2116bytes, canonicalhashesverified; onecombined16signatureobjectreplaysall7full100.",
+    "exacts_gained": 7,
+    "outcome": "server_verified",
+    "evidence": "work\\goal-native-signal-fire-20261015\\receipts.json",
+    "next": "Park8unchangedcontexts. Evenvoid callbackBoostlast_value<void> returnsrealunusable: do not inventResult4/fakeEH to imitateit. 0057b570actualsignatureunproven, do notguess."
   }
 ]

@@ -1,20 +1,5 @@
-// from server: 96% by king_originala
-struct String {
-    unsigned char data[28];
-};
-
-extern bool (__cdecl *equalString)(const String&, const String&);
-
-String* __cdecl f(String* first, String* last, const String& value)
-{
-    if (first != last) {
-        bool (__cdecl *compare)(const String&, const String&) = equalString;
-        do {
-            if (compare(*first, value))
-                break;
-            ++first;
-        } while (first != last);
-        return first;
-    }
-    return last;
-}
+// from server: 100% by colin
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+// roc-lib: rbxgs-dll roc_unit_c41d67013d7404dc.cpp
