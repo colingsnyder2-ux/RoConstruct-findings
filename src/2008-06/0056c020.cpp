@@ -1,28 +1,5 @@
-// from server: 94% by king_originala
-struct State {
-    void* owner;
-    unsigned int reserved[2];
-    unsigned int begin;
-    unsigned int end;
-};
-
-struct Result {
-    void* owner;
-    unsigned int position;
-};
-
-extern State* __cdecl getState();
-extern "C" void (__cdecl* _invalid_parameter_noinfo)();
-
-Result* __cdecl getResult(Result* output)
-{
-    State* state = getState();
-    unsigned int end = state->end;
-    if (state->begin > end)
-        _invalid_parameter_noinfo();
-
-    void* owner = state->owner;
-    output->position = end;
-    output->owner = owner;
-    return output;
-}
+// from server: 100% by colin
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+// roc-lib: rbxgs-dll roc_descriptor_receiver_native_name_order_7d5f8e8ab29991a4.cpp

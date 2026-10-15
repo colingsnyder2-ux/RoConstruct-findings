@@ -14754,12 +14754,12 @@
     "op": "fanout",
     "client": "2008-06",
     "library": "Native Camera, geometry, contact force, XML and Lua execution/error families",
-    "hypothesis": "Two fast21022 objects replay52 fullcode/data campaign exacts plus5existingABIcontrols(enumlookup,4MD5virtualmethods). Twofreshbelow40manualparents: MD5finalizer520bytes24to100(rawbuffer,unsignedbyte,%02x,lengthEAXreuse,actualATL90RTM_DLLheaders), G3DTexture.copyFromScreen736bytes0to100(fullgenuineunchangedG3D6.09Texture.cpp,nativebuildsourcepathandfastFPprelude). Eachsuccessfulfamilyfanout1newverified. Allprior50exacts retained, MD5native/COFF5slots+5methodcontrols, ClassDescriptor1slot/EnumDesc2slotproof retained. Existingdefaultobjects remain2, onlyobject0addsATLheaders; noadditionalcompile.",
+    "hypothesis": "Two fast21022 objects replay71 fullcode/data campaign exacts plus7existingABIcontrols. Fresh607byte0score DescriptorReceiver<PropertyDescriptor>.learnName genuine2016source withproved2008pointervector/twoarg/no checksumrevision, fullprivatefieldsandgenuineunusedAPIdeclarationsretained; sourceoldPropertyContainer checkediterator+ClassDescriptor all_begin/end staticAPIs withnoinstancefields/layoutchanges. ExplicitnativeName lookupbeforebase/search restores100from94. Fourprofilefanout17newserverexacts3696bytes (primary607,15Boostmutable-string split/set/vectorhelpers including580byteiter_split,Classall_end37). Prior54campaign+7ABIcontrols retained. Receiverinobject1keepsClassregistryprivateallClasses externalnaturally, object0unchanged. NativeEnum2slotaudit rerun aftermerge; allpriorABIproof retained. Existingdefaultobjects remain2; noadditionalcompile.",
     "sources": [
       {
         "recipe": "rbxgs-atl90-dll",
         "files": [
-          "roc_md5_texture_default_0_8e27e1d5869b9f47.cpp"
+          "roc_cofm_jpeg_default_0_84cfc680f163a269.cpp"
         ],
         "builds": [
           21022
@@ -14771,7 +14771,7 @@
       {
         "recipe": "rbxgs-dll",
         "files": [
-          "roc_registry_wordlist_default_1_2e6179b9c1bfdb05.cpp"
+          "roc_descriptor_receiver_default_1_80c5431f1ad732bf.cpp"
         ],
         "builds": [
           21022
@@ -20693,5 +20693,575 @@
     "targets": {},
     "evidence_resume": true,
     "next": "Fulldata/serverreceipts; proveallremainingcallboundariesbeforemorechanges."
+  },
+  "native-binaryinput-real-exception-after-platform-imports-2008": {
+    "op": "fanout",
+    "client": "2008-06",
+    "library": "g3d-6.09",
+    "hypothesis": "Genuineplatform.h186defines_DLL beforeCRT. PriornewexceptionincludebeforeplatformlockedstaticCRT/stdstringheaders causingnative76 despitecorrectexceptiontype/frame. Moveactualexceptionincludeafterplatform; preservetargetMSVCR90IATimports, twoactualstdexceptionfailures/no filetracker.",
+    "sources": [
+      {
+        "recipe": "g3d-6.09",
+        "files": [
+          "roc_unit_d38dd82e9975b3d5.cpp"
+        ],
+        "builds": [
+          21022,
+          50727
+        ],
+        "flags": [
+          "/O2 /GS- /EHsc /MD",
+          "/O2 /GS- /EHsc /MD /fp:fast"
+        ]
+      }
+    ],
+    "targets": {},
+    "evidence_resume": true,
+    "next": "Auditwholecode/referenceddata; ifremainingdiffneednewbinaryevidence."
+  },
+  "native-binaryinput-third-proven-memory-exception-2008": {
+    "op": "fanout",
+    "client": "2008-06",
+    "library": "g3d-6.09",
+    "hypothesis": "Native005157d0189 loadIntoMemory exacterrorstring plusactualMSVCR90stdexceptionctorIAT andthrowinfo prove thirdvendorliteralthrow shouldactualstdexception, retainallnativebuffer/realloc/filelogic. Alreadyverifiedfilenamector kept.",
+    "sources": [
+      {
+        "recipe": "g3d-6.09",
+        "files": [
+          "roc_unit_b4cf93372a277193.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /GS- /EHsc /MD",
+          "/O2 /GS- /EHsc /MD /fp:fast"
+        ]
+      }
+    ],
+    "targets": {},
+    "evidence_resume": true,
+    "next": "Fullserver/currenthash/replaybothactualmethods."
+  },
+  "native-binary-input-exception-family-pilot-2008": {
+    "op": "fanout",
+    "client": "2008-06",
+    "library": "Native G3D BinaryInput file loading and exception revision",
+    "hypothesis": "Fresh537byte31score actualG3D.BinaryInput filector,stdstringref/endian/bool. Fullgenuineold6.09BinaryInput.cpp/header fields/API unchanged; native537byteconstructor includespartialread50MB,1024mallocfallback,zlib/RAII/exceptionandfilemiss paths. Twoactualnativeexceptions std::exception(constchar*) useindependentIAT8028a4; oldSDKthrowscharstrings differs. UnobservedglobalcurrentFilesUsedappend removedfromconstructor becausecompletenativeinit->machineEndian->fileLengthcontainsnoglobaltrackerappend. Fullcode/referenceddata100normal/fast21022,98both50727. Native/COFFBinaryInput828948 RTTI1virtualdestructorslotindependentlyproved, compiledrealdestructor100beforepropagation; nofields/layout/virtualAPIchanges. FourprofilewholeTUallunresolvedfanout.",
+    "sources": [
+      {
+        "recipe": "rbxgs-g3d-dll",
+        "files": [
+          "roc_binary_input_native_exception_699cfcfebbd00ffe.cpp"
+        ],
+        "builds": [
+          21022,
+          50727
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD",
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast"
+        ]
+      }
+    ],
+    "targets": {},
+    "output": "work\\large-functions-2008-20261014\\binary-input-native-exception-family-pilot"
+  },
+  "native-peer-authentic-required-destructor-core-2008": {
+    "op": "fanout",
+    "client": "2008-06",
+    "library": "rbxgs-net",
+    "hypothesis": "004ac830 nativePeer destructor268 hasactualvptr0/10/14/20...130/134 andlogger138/profiler13c/rak140. GenuineSDKPeer::~Peer DetachPlugin(this), completeactualRakPeer/Replicator declarations+verifiedInstancebase revision. No needunavailableProfiledRakPeer ctorclass.",
+    "sources": [
+      {
+        "recipe": "rbxgs-net",
+        "files": [
+          "roc_unit_09963d10112006d8.cpp"
+        ],
+        "builds": [
+          21022,
+          50727
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "rbxgs-net-dll",
+        "files": [
+          "roc_unit_09963d10112006d8.cpp"
+        ],
+        "builds": [
+          21022,
+          50727
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      }
+    ],
+    "targets": {},
+    "evidence_resume": true,
+    "next": "Inspectwholebodyvtable/ownerlayout; no guessedprofiledclass API."
+  },
+  "native-peer-destructor-required-stats-declaration-2008": {
+    "op": "fanout",
+    "client": "2008-06",
+    "library": "rbxgs-net",
+    "hypothesis": "Replicator.h requiredcompleteStats::Item base; addrealStats.h beforeexistingReplicatorheader. AlloriginalPeerdestructor/owners/nativebases preserved. Prior4missingStatscompilefailuresretained.",
+    "sources": [
+      {
+        "recipe": "rbxgs-net",
+        "files": [
+          "roc_unit_ee1b6343cda6fbbc.cpp"
+        ],
+        "builds": [
+          21022,
+          50727
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "rbxgs-net-dll",
+        "files": [
+          "roc_unit_ee1b6343cda6fbbc.cpp"
+        ],
+        "builds": [
+          21022,
+          50727
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      }
+    ],
+    "targets": {},
+    "evidence_resume": true,
+    "next": "Auditnativeclassvtable andallownerdestructionpaths."
+  },
+  "native-gimage-jpeg-lifetime-family-pilot-2008": {
+    "op": "fanout",
+    "client": "2008-06",
+    "library": "Native JPEG encoder, real IJG error handler and GImage lifetimes",
+    "hypothesis": "Fresh577byte29score actualGImage.encodeJPEG. FullgenuineoldGImage_jpeg.cpp source, completeWindowsIJG6bheaders actualunsignedcharboolean yieldsnativejpeg_CreateCompress version62/struct360. Actualnativecallback50b530 usespublicrealjpegerror_mgr output_message/destroy/format_message/JMSG_LENGTH_MAX200 andthrowsstd::runtime_error; catchtypeindependentlydecoded8d1bc8, callbackfull100beforepropagation. GImage fullheader/API/fields/base/privacy unchanged. IsolatedJPEGsource55 dueoutoflinecopy/dtor; actualgenuineGImage copyctor/destructor/clear bodies fromGImage.cpp visibleinsameTU yieldnativeinlineconstruction+cleanup andfullencoder100fast21022, nosyntheticlocals/padding/noinline/asm. Native/COFFGImagevtable81975c1slot plusactualdestructor100independentlyproved. Bothencoder/callbackfullcode/referenceddata100beforefanout. Fourprofileswholegenuinefamilyallunresolvedscale.",
+    "sources": [
+      {
+        "recipe": "rbxgs-g3d-dll",
+        "files": [
+          "roc_gimage_jpeg_native_visible_lifetime_cdeddbeb26c4f2e5.cpp"
+        ],
+        "builds": [
+          21022,
+          50727
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD",
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast"
+        ]
+      }
+    ],
+    "targets": {},
+    "output": "work\\large-functions-2008-20261014\\gimage-jpeg-native-lifetime-family-pilot"
+  },
+  "native-peer-real-profiler-virtual-destructor-revision-2008": {
+    "op": "fanout",
+    "client": "2008-06",
+    "library": "rbxgs-net",
+    "hypothesis": "NativePeer destructor90 solemajorresidueProfiler deletevirtualslot0vsoldSDKnonvirtualinlinewrongfieldcleanup. Genuine2016Profiling.h45 declaresvirtual~Profiler(){}; addactualAPItofulloldProfilerheader preservingallfields/access, no fullprofilerpayloadlayoutclaim. NativeThreadProfilervptrconstructor supportsvirtualclassidentity. Parentdeleteusesactualvirtualdestruction.",
+    "sources": [
+      {
+        "recipe": "rbxgs-net",
+        "files": [
+          "roc_unit_698bb9e97bcd0996.cpp"
+        ],
+        "builds": [
+          21022,
+          50727
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "rbxgs-net-dll",
+        "files": [
+          "roc_unit_698bb9e97bcd0996.cpp"
+        ],
+        "builds": [
+          21022,
+          50727
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      }
+    ],
+    "targets": {},
+    "evidence_resume": true,
+    "next": "Fullcode/data/currenthashverify; no fabricatedEHorProfilerfields."
+  },
+  "native-profiler-two-double-bucket-revision-2008": {
+    "op": "fanout",
+    "client": "2008-06",
+    "library": "rbxgs",
+    "hypothesis": "005c4340 nativeProfilerctor independentlyproves array2048(stride18,loop7ff), doublefields0/8,frames10, Profiler vptr0/bucketTime8/current10/buckets18/lasttimec018/stringc020. Genuine2016Bucket sampleTimeElapsed/wallTimeSpan/frames fields+ctor retained, widthsdoublemeasuredhistoricalvs2016float. FulloldProfilerotherfields/access/nativevirtualdtor preserved; no guessedThreadProfiler initializedfieldtype. ActualoldProfilerctorretained.",
+    "sources": [
+      {
+        "recipe": "rbxgs",
+        "files": [
+          "roc_unit_07f2ce194827702c.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD",
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast"
+        ]
+      },
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_unit_07f2ce194827702c.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD",
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast"
+        ]
+      }
+    ],
+    "targets": {},
+    "evidence_resume": true,
+    "next": "Fullcode/data/sourcehash; nativeThreadProfilerDWORDc040 remainsunexplained."
+  },
+  "native-client-server-full-codeprofiler-owner-revision-2008": {
+    "op": "fanout",
+    "client": "2008-06",
+    "library": "rbxgs-net",
+    "hypothesis": "Native005c43a0RTTI actualCodeProfiler, correctingoldPeerprofilerownerThreadProfiler pointer torealCodeProfiler samepointerlayout withgenuinevirtualProfilerAPI. ActualcompleteClient/Server TU methods use externalPeerctor, do notfabricatehistoricalProfiledRakPeer. RequiredStats/Playerheader/Instance aliases beforedependencies.",
+    "sources": [
+      {
+        "recipe": "rbxgs-net",
+        "files": [
+          "roc_unit_84e78d9b334728ac.cpp",
+          "roc_unit_e6c2aeb7d3afc09b.cpp"
+        ],
+        "builds": [
+          21022,
+          50727
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "rbxgs-net-dll",
+        "files": [
+          "roc_unit_84e78d9b334728ac.cpp",
+          "roc_unit_e6c2aeb7d3afc09b.cpp"
+        ],
+        "builds": [
+          21022,
+          50727
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      }
+    ],
+    "targets": {},
+    "evidence_resume": true,
+    "next": "Fullcode/data newgains only; scopePeerpayloadtypeproofcorrected, no profilerinstancefieldguesses."
+  },
+  "native-descriptor-receiver-name-order-family-pilot-2008": {
+    "op": "fanout",
+    "client": "2008-06",
+    "library": "Native descriptor-name receiver and checked registry iterators",
+    "hypothesis": "Fresh607byte0score actualNetwork.DescriptorReceiver<PropertyDescriptor>.learnName(stdstring,int), ret20. Genuine2016receiver/learnName source adaptedonlyactualnative2008pointervector4bytes/nochecksum/nooutdated writes; full2fieldprivateinstance list(idToDesc,idBits), noaddedfields/bases/access changes. Laterwire/checksumAPIs declarationsonly, notclaimednative2008wireimplementation. FullgenuineoldClassDescriptorheader pluspreviousrealprivateallClasses andgenuine2016publicall_begin/end staticaccessors; noinstancefieldchange. GenuineoldPropertyContainer.findDescriptor checkediterator (base8) anddescriptors_end, notnewrawpointer/hashmapAPI. NativeName.lookup(words1) beforebaseadjust/search proven; explicitName reference resolution emits100versus94combinedexpression, noghostlocals/padding/registerforcing. stdstring2args+pointerstride+checkedvectoraddresses independentlynativeproven. MissingG3Duinttypedef compilefailurefixedwithrealboostcstdint typeforunusedgenuinechecksumdecl. Normal21022fullcode/referenceddata100. Fourprofilesallunresolvedscale.",
+    "sources": [
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_descriptor_receiver_native_name_order_7d5f8e8ab29991a4.cpp"
+        ],
+        "builds": [
+          21022,
+          50727
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD",
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast"
+        ]
+      }
+    ],
+    "targets": {},
+    "output": "work\\large-functions-2008-20261014\\descriptor-receiver-native-name-order-family-pilot"
+  },
+  "native-three-network-families-required-type-revisions-2008": {
+    "op": "fanout",
+    "client": "2008-06",
+    "library": "rbxgs-net",
+    "hypothesis": "ThreeactualnetworkTU families withverifiedInstance130/PartPrimitive228/Primitivegeometry9cBodya0/BodyPV94 andcorrectCodeProfiler owner+native2048x24bucket/realvirtualdestructor. ReplicatorPeerctor/Update andWorkspace-dependentphysicsPacket bodiesremainnativeexternalboundaries, notfabricatedhistoricalProfiledRakPeer orBucketaccessbypass. Allremainingactualbodiesunchanged.",
+    "sources": [
+      {
+        "recipe": "rbxgs-net",
+        "files": [
+          "roc_unit_898ac6cc0a987281.cpp",
+          "roc_unit_65ab4f0a5ce2c266.cpp",
+          "roc_unit_cdaf9308c0ef6dde.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD",
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast"
+        ]
+      },
+      {
+        "recipe": "rbxgs-net-dll",
+        "files": [
+          "roc_unit_898ac6cc0a987281.cpp",
+          "roc_unit_65ab4f0a5ce2c266.cpp",
+          "roc_unit_cdaf9308c0ef6dde.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD",
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast"
+        ]
+      }
+    ],
+    "targets": {},
+    "evidence_resume": true,
+    "next": "Fixactualrequireddeclarationsonly; no guessedlayouts/EH/slots."
+  },
+  "native-resize-find-target-historical-ui-event-pilot-2008": {
+    "op": "fanout",
+    "client": "2008-06",
+    "library": "rbxgs",
+    "hypothesis": "0063f040649 actualResizeTool.findTargetPV sourcealgorithm2016. HistoricalUIEvent/MouseCommand* API fromgenuineoldMouseCommand; nativecalls615d00Rayreturn/5argumentcdecl6656b0 proveExtents/frame/Ray/hitVector/Normal outputs andabsenceoflaterHandleType/mask. FullResizefield/basedeclarations retained, actualArrowbase+Mouse1c naturallyweakPV20/normal2c/hit30. OldNativePartvirtualextents vsnewPrimitivegetterbinaryproven58.",
+    "sources": [
+      {
+        "recipe": "rbxgs",
+        "files": [
+          "roc_unit_d5a2d7e04c44a9d6.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      }
+    ],
+    "targets": {},
+    "evidence_resume": true,
+    "next": "Firstnativecompile/wholefunctiondiff; rejectunsupportedfields/ABIs insteadguessing."
+  },
+  "native-resize-required-pv-declaration-root-receiver-2008": {
+    "op": "fanout",
+    "client": "2008-06",
+    "library": "rbxgs",
+    "hypothesis": "PilotmissingPVInstance declarationfixedbyrealPartInstanceinclude BEFOREfullResizeclass. Nativeworkspace->Instance root0 establishedbyactualWorkspace:ModelInstance:PVInstance:Instancepublicfirst-basechain andtargetpassesworkspaceunchangedintorealServiceClient<Selection>; typedrootreceiveravoidsunusedfullWorkspace/Bucket privatecompilerbug, no accesschanges. Genuinefieldorder/body/native5helperABI unchanged.",
+    "sources": [
+      {
+        "recipe": "rbxgs",
+        "files": [
+          "roc_unit_0de8ae1234efd814.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_unit_0de8ae1234efd814.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      }
+    ],
+    "targets": {},
+    "evidence_resume": true,
+    "next": "Checknativewhole649diff, donotpaddingorforceframe."
+  },
+  "native-resize-genuine-selection-iterator-context-2008": {
+    "op": "fanout",
+    "client": "2008-06",
+    "library": "rbxgs",
+    "hypothesis": "Native649 source74 mainextra8byteframe comesmissingSelection::begin/end wrappers. ExistinggenuineSelection declarations/actualprivateCopyOnWritevector andsize()implementation prove actualselection->begin/end; targetinlinedvectorat154 matches. Defineexistingtwoaccessorsoutoflinebeforebody, no newhelper/field/privatebypass.",
+    "sources": [
+      {
+        "recipe": "rbxgs",
+        "files": [
+          "roc_unit_3ec6397cb9dfa2ae.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_unit_3ec6397cb9dfa2ae.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      }
+    ],
+    "targets": {},
+    "evidence_resume": true,
+    "next": "CheckactualpartvirtualAPI andfullreferenceddata, donotinventvslots."
+  },
+  "native-resize-three-sibling-methods-historical-input-api-2008": {
+    "op": "fanout",
+    "client": "2008-06",
+    "library": "rbxgs",
+    "hypothesis": "Native0063f67073onMouseDown exactflow matchesgenuine2016source withoutlaterpart/getResizeIncrement branch: UIEvent.mousePosition8 ->down3c, axis40/perp44zero, flag28true,capturevirtual24,returnthis oldMouseCommand* API. ThreegenuineCursor/Hover/Down bodies restored; no fields/vslots invented. AlreadyexactHoveronlycontrol.",
+    "sources": [
+      {
+        "recipe": "rbxgs",
+        "files": [
+          "roc_unit_e534916f6a3a6f80.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_unit_e534916f6a3a6f80.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      }
+    ],
+    "targets": {},
+    "evidence_resume": true,
+    "next": "Fullcode/data/receipt/currenthash; latermoveIncrementfieldnotclaimednative."
+  },
+  "native-resize-two-render-methods-real-draw-apis-2008": {
+    "op": "fanout",
+    "client": "2008-06",
+    "library": "rbxgs",
+    "hypothesis": "Nativef2d0/f470Resize renderloops actual2016algorithm, genuineoldDrawAdorn.h exact5argumenthandles3d/2d APIs. WorkspaceactualRootInstanceICameraOwnerpublicbase measured288; realtypedreceiver usesactualconstGCamera& virtualgetGCamera+byvaluegetCoordinateFrame native42bytecallee, noABIinvented. Real2016resizeColorinlinebody0.1/0.6/1 matches3nativefloatconstants. Laterhover/typeextra/maskargsabsentnative andoldSDKprototype.",
+    "sources": [
+      {
+        "recipe": "rbxgs",
+        "files": [
+          "roc_unit_b308f227450a93d0.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_unit_b308f227450a93d0.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      }
+    ],
+    "targets": {},
+    "evidence_resume": true,
+    "next": "Fullcode/data/sourcehash; no fullWorkspace layoutclaim."
+  },
+  "native-cache-directory-guid-family-pilot-2008": {
+    "op": "fanout",
+    "client": "2008-06",
+    "library": "Native Win32 cache directory and genuine Vista/ATL helpers",
+    "hypothesis": "Fresh548byte0score Loghint actuallyFileSystem.getCacheDirectory(bool) fullnativebranches. CompletegenuineoldFileSystem.h fields/bases/access/API unchanged; oldrealVistaGetIntegrity/destructor body, genuine2016VistaTools LoadLibrary/GetProcAddress ctor/knownfolder wrapper. ActualpublicWin32/ATLpath APIs recovernativecallback flow: integrity1 InternetCacheGUID notLocalAppDataLow, knownfolderflagCREATEalways, CStringAwideconversion,appendRoblox,conditionalCreateDirectory/error183,AddBackslash,CommonAppDataRobloxCachefallback/RAII. Initialternaryreturn96; nativeexplicitifreturns restorescodeexact99. CanonicalSDKGUIDclosingbrace differsnativeMALFORMEDliteral lacksclosingbrace (76bytes), nativefailurestatusignored; preserveobservedbug givesfullcode/data100. No extraHRESULTguard/zeroGUID/guessedfields/ABIs/privatebypass/stackpadding. AuthenticpinnedATL90RTM_DLLrecipe two supported21022profilesallunresolvedscale.",
+    "sources": [
+      {
+        "recipe": "rbxgs-atl90-dll",
+        "files": [
+          "roc_cache_directory_native_guid_literal_45a7b6db04e58de0.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD",
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast"
+        ]
+      }
+    ],
+    "targets": {},
+    "output": "work\\large-functions-2008-20261014\\cache-directory-native-guid-family-pilot"
+  },
+  "native-resize-captured-drag-proven-sound-service-2008": {
+    "op": "fanout",
+    "client": "2008-06",
+    "library": "rbxgs",
+    "hypothesis": "0063ed80154 capturedDrag: nativeweaklock temporary releasedBEFOREPartdestroyJoints/resize/join, sourceactualAPIs inoldPartheader andnative5ea4c0/5ea5d0wrappers confirmjointcalls. Native5807b0->4531e0->440980->5bc160RTTI provesSoundscape::SoundService, playSound(SoundType4CLICK) actualpublicSound.h. Rawpointerfromlock.get reproducesrealfullexpressionlifetime, no artificialEHstate orguessedserviceclass.",
+    "sources": [
+      {
+        "recipe": "rbxgs",
+        "files": [
+          "roc_unit_4329760619cd676f.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_unit_4329760619cd676f.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      }
+    ],
+    "targets": {},
+    "evidence_resume": true,
+    "next": "Fullcode/data/newserverreceipts; fullSoundService allocationlayoutunclaimed."
   }
 }

@@ -652,5 +652,38 @@
     "outcome": "server_verified",
     "evidence": "work/goal-native-camera-constructor-20261015/receipts.json",
     "next": "Twofullfamilyobjectsreplay9existingexacts; only3newcredit. Park18compiledcontexts and8fixedmissingheaderfailures; otherconstructors need ownnativeproof."
+  },
+  {
+    "id": "native-vendor-exception-types-and-platform-before-crt",
+    "client": "2008-06",
+    "library": "G3D BinaryInput genuine error paths",
+    "hypothesis": "Native ThrowInfo/IAT proves actual exception class; preserve vendor platform setup before first CRT header or a correct semantic change may silently switch import/codegen context.",
+    "change": "Three nativeOOMpaths useactualstdexception, missingfilekeepsformattedstdstring. G3Dplatform186defines_DLL: movingnewexceptionincludeafterplatform restores importedstdstring/CRT calls. Targetabsenceprovesremoveglobalfiletracker append. Fullnativeclass/header unchanged; no fakeEH/state/ABI.",
+    "exacts_gained": 2,
+    "outcome": "server_verified",
+    "evidence": "work/goal-native-binaryinput-20261015/receipts.json",
+    "next": "Onefullvendorobject replays537+189byte exacts. Sixliteralvendorcensus has0remainingunresolvedmatches in50..2000band; park14unchangedcontexts."
+  },
+  {
+    "id": "native-profiler-virtual-destruction-before-fake-owner-fields",
+    "client": "2008-06",
+    "library": "RBX Network Peer owns Profiling CodeProfiler (nativeRTTI correction)",
+    "hypothesis": "Wrong owned-type virtual destructor API can cause local saves and large inline cleanup residue even when parent member offsets already fit naturally.",
+    "change": "ActualPeer::~Peer DetachPlugin(this), nativeownlogger138/profiler13c/rak140. Native005c43a0RTTI specificallyCodeProfiler, notoldSDKThreadProfiler; usegenuineCodeProfiler ownerpointer. Nativeprofilerdeletevirtualslot0, genuine2016Profilerhasvirtual~Profiler(){} absentoldSDK. AddactualAPIpreservingoldfields/access; no fakeEH/state/destructor. Correctedowner variant alsofullserver100(no duplicatecredit; serverpreservesties). Fullparent268alreadycredited.",
+    "exacts_gained": 1,
+    "outcome": "server_verified",
+    "evidence": "work/goal-native-peer-constructor-20261015/receipts.json",
+    "next": "PeerctorstillneedsactualhistoricalProfiledRakPeerdeclaration;2016Peer&versionnotnativeCodeProfilerpointervariant. NativeCodeProfilertailc040 isactualparent pointer, formerThreadProfilerboolinterpretationwrong. CompleteClient/Serverfamilyscan8contexts4new1034bytes, separatecampaignreceipt."
+  },
+  {
+    "id": "native-resize-selection-iterator-wrappers-before-frame-tricks",
+    "client": "2008-06",
+    "library": "ResizeTool/Selection real iterator wrappers",
+    "hypothesis": "Missing genuine container accessors can add hidden-result iterator temporaries and stack space throughout a large otherwise authentic function. Restore actual accessor bodies instead of forcing the frame.",
+    "change": "ActualResizefindTargetPV649 fromsource-provenlegacyUIEvent/MouseCommandAPI andnativefieldprefix starts74 withSelection::begin/end external. ExistingprivateCopyOnWritevector andpublicaccessors ->selection->begin/end definitions restorefull100. SourceCursor/Down historicalbranch adaptation gives2more. No syntheticlocals/EH/vslots/padding.",
+    "exacts_gained": 3,
+    "outcome": "server_verified",
+    "evidence": "work/goal-native-resize-tool-20261015/receipts.json",
+    "next": "Onefinalobjectreplays4full100 includingalreadyexactHover. LatermoveIncrementfieldnotclaimednativeclasssize; otherResizebodiesneednativeAPIproof. Park7Resizecontexts (6compiled/1fixedfail) and12Networkcontexts0extras."
   }
 ]
