@@ -1,4 +1,4 @@
-// from server: 96% by king_originala
+// from server: 100% by colin
 void* __cdecl operator new(unsigned int);
 void __cdecl operator delete(void*);
 

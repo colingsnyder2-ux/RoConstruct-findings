@@ -1,5 +1,29 @@
 [
   {
+    "id": "native-string-copy-iat-lifetimes",
+    "client": "2008-06",
+    "library": "std::basic_string imported constructors",
+    "hypothesis": "A native imported copy constructor can schedule byvalue EH bookkeeping differently from an inline functionpointer wrapper.",
+    "change": "Use dllimport on the proven copy constructor only; preserve destructor boundaries. Verified005d0ec0,0058d130,005c5400,0049e1d0;005c5490 additionally reuses verified base-initialization donor.",
+    "symptom": "Same instructions except movECX,ESP versus temporary stackslot store order.",
+    "exacts_gained": 5,
+    "outcome": "server_verified",
+    "evidence": "work/goal-verified-lessons-20261015/receipts.json",
+    "next": "One member at a time: imported destructor can hoist IAT to EBX and lose. Wide28-target continuation yielded6partials/0exacts; no blanket repeat without new evidence."
+  },
+  {
+    "id": "reflection-setter-overload-stack-slots",
+    "client": "2008-06",
+    "library": "RBX Reflection PropDescriptor",
+    "hypothesis": "Wrong authentic template overload can mimic stack-layout failure.",
+    "change": "Instantiate getset(int,Setter) and matching descriptor constructor when callers/vtable prove write-only property; do not use getset(Getter,int).",
+    "symptom": "005cfaf0 copied stack slots off4; caller005d0530 EHtemporary slot24 versus2c despite near-identical code.",
+    "exacts_gained": 2,
+    "outcome": "server_verified",
+    "evidence": "work/goal-verified-lessons-20261015/receipts.json",
+    "next": "Trace leading unused argument and property read/write methods before changing layouts or padding. Normalized sym/zero alone is not referenced-data mismatch."
+  },
+  {
     "id": "xtp-vendor-prelude",
     "client": "2008-06",
     "library": "XTP 11.2.2",

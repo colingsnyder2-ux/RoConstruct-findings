@@ -1,4 +1,4 @@
-// from server: 99% by king_originala
+// from server: 100% by colin
 extern int minimumCapacity;
 extern int minimumCapacityInitialized;
 extern const float smallGrowthFactor;

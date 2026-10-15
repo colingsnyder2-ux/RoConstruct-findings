@@ -1,4 +1,6 @@
-// from server: 98% by king_originala
+// from server: 100% by colin
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
 namespace std {
 template<class T> struct char_traits;
 template<class T> class allocator;
@@ -8,7 +10,7 @@ class basic_string {
     unsigned char storage[28];
 public:
     basic_string(const C*);
-    basic_string(const basic_string&);
+    __declspec(dllimport) basic_string(const basic_string&);
     ~basic_string();
 };
 
@@ -25,11 +27,7 @@ inline std::basic_string<C, T, A>::basic_string(const C* text)
     constructString(this, text);
 }
 
-template<class C, class T, class A>
-inline std::basic_string<C, T, A>::basic_string(const basic_string& other)
-{
-    copyString(this, &other);
-}
+
 
 template<class C, class T, class A>
 inline std::basic_string<C, T, A>::~basic_string()

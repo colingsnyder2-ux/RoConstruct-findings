@@ -1,4 +1,6 @@
-// from server: 88% by king_originala
+// from server: 90% by colin
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
 struct String;
 
 extern void (__thiscall *string_copy)(String*, const String&);
@@ -7,14 +9,11 @@ extern void (__thiscall *string_destroy)(String*);
 struct String {
     unsigned char storage[28];
 
-    String(const String&);
+    __declspec(dllimport) String(const String&);
     ~String();
 };
 
-inline String::String(const String& source)
-{
-    string_copy(this, source);
-}
+
 
 inline String::~String()
 {

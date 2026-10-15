@@ -1,4 +1,4 @@
-// from server: 99% by king_originala
+// from server: 100% by colin
 struct Link {
     void* unused;
     void* previous;
@@ -82,21 +82,26 @@ int __stdcall function(void*, Object** output)
     if (object)
         object->table->addRef(object);
 
+    Object* current = object;
     int copied;
     if (!output) {
         copied = static_cast<int>(0x80004003UL);
     } else {
         *output = temporary;
-        if (temporary)
+        if (temporary) {
             temporary->table->addRef(temporary);
+            current = object;
+        }
         copied = 0;
     }
 
-    if (temporary)
+    if (temporary) {
         temporary->table->release(temporary);
+        current = object;
+    }
 
-    if (object)
-        object->table->release(object);
+    if (current)
+        current->table->release(current);
 
     if (state.link)
         state.link->previous = state.previous;

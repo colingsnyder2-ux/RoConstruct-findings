@@ -1,17 +1,17 @@
-// from server: 94% by king_originala
+// from server: 95% by colin
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
 struct String;
 extern String* (__thiscall *stringCopy)(String*, const String*);
 extern void (__thiscall *stringDestroy)(String*);
 
 struct String {
     char storage[28];
-    String(const String& s);
+    __declspec(dllimport) String(const String& s);
     ~String();
 };
 
-inline String::String(const String& s) {
-    stringCopy(this, &s);
-}
+
 
 inline String::~String() {
     stringDestroy(this);

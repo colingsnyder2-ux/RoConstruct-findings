@@ -1,72 +1,74 @@
-// from server: 96% by king_originala
+// from server: 100% by colin
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
 namespace std {
-    template<class T> struct char_traits;
-    template<class T> class allocator;
-    template<class C, class T, class A> class basic_string;
-    typedef basic_string<char, char_traits<char>, allocator<char> > string;
+template<class T> struct char_traits;
+template<class T> class allocator;
+
+template<class C, class T, class A>
+class basic_string {
+    unsigned char storage[28];
+public:
+    basic_string(const C*);
+    __declspec(dllimport) basic_string(const basic_string&);
+    ~basic_string();
+};
+
+typedef basic_string<char, char_traits<char>, allocator<char> > string;
 }
 
-extern void (__thiscall *stringConstruct)(std::string*, const char*);
-extern void (__thiscall *stringCopy)(std::string*, const std::string&);
-extern void (__thiscall *stringDestroy)(std::string*);
+extern void (__thiscall *constructString)(void*, const char*);
+extern void (__thiscall *copyString)(void*, const void*);
+extern void (__thiscall *destroyString)(void*);
 
-namespace std {
-    template<class C, class T, class A>
-    class basic_string {
-        unsigned char storage[28];
-    public:
-        basic_string(const C*);
-        basic_string(const basic_string&);
-        ~basic_string();
-    };
+template<class C, class T, class A>
+inline std::basic_string<C, T, A>::basic_string(const C* text)
+{
+    constructString(this, text);
+}
 
-    template<class C, class T, class A>
-    inline basic_string<C, T, A>::basic_string(const C* text)
-    {
-        stringConstruct(this, text);
-    }
 
-    template<class C, class T, class A>
-    inline basic_string<C, T, A>::basic_string(const basic_string& other)
-    {
-        stringCopy(this, other);
-    }
 
-    template<class C, class T, class A>
-    inline basic_string<C, T, A>::~basic_string()
-    {
-        stringDestroy(this);
-    }
+template<class C, class T, class A>
+inline std::basic_string<C, T, A>::~basic_string()
+{
+    destroyString(this);
 }
 
 extern const float initialValue;
 
-struct Base {
-    unsigned char reserved[32];
+struct Root {
+    unsigned char storage[32];
+    Root(std::string, int);
+    virtual ~Root();
+};
 
-    Base(std::string, int);
+struct __declspec(novtable) ValueBase : Root {
+    float value;
+    ValueBase(const std::string&, int);
+};
+
+struct Base : ValueBase {
+    Base(const std::string&, int);
     virtual ~Base();
 };
 
-struct Intermediate : Base {
-    float value;
-
-    Intermediate(const std::string&, int);
-    virtual ~Intermediate();
-};
-
-struct S : Intermediate {
+struct S : Base {
     S(int);
     virtual ~S();
 };
 
-inline Intermediate::Intermediate(const std::string& name, int argument)
-    : Base(name, argument)
+inline ValueBase::ValueBase(const std::string& name, int argument)
+    : Root(name, argument), value(initialValue)
 {
-    value = initialValue;
+}
+
+inline Base::Base(const std::string& name, int argument)
+    : ValueBase(name, argument)
+{
 }
 
 S::S(int argument)
-    : Intermediate(std::string("SelectionUpBrick"), argument)
+    : Base(std::string("SelectionUpBrick"), argument)
 {
 }

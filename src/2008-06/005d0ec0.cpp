@@ -1,7 +1,6 @@
-// from server: 99% by king_originala
+// from server: 100% by colin
 struct String;
 
-extern String* (__thiscall* stringCopy)(String*, const String&);
 extern void (__thiscall* stringDestroy)(String*);
 extern String* (__cdecl* stringConcat)(String*, const String&, const char*);
 
@@ -14,15 +13,10 @@ struct String {
     unsigned long length;
     unsigned long capacity;
 
-    String(const String&);
+    __declspec(dllimport) String(const String&);
     String(const String&, const char*);
     ~String();
 };
-
-inline String::String(const String& other)
-{
-    stringCopy(this, other);
-}
 
 inline String::String(const String& other, const char* suffix)
 {

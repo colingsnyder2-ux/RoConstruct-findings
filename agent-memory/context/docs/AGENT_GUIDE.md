@@ -82,6 +82,21 @@ New experiments add a recipe to `research/recipes.json` (op `grid` or `fanout`),
 not a new script. Agent-written translation units go through `libs.add_unit` so they
 are stored in `local/units/generated-units.json`, published to RoConstruct-findings `units/`, and downloaded by `roc pull`, so they rebuild identically on every PC.
 
+Automatic template generation includes `tree_erase_map_int.cpp`: an explicit
+call emits inherited `_Tree::erase`, which explicit `std::map` instantiation
+alone missed. Its 2008 profile adds `/Od /Ob0 /GS /EHsc /MD`; the normal library
+path reproduced the verified pilot, and bounded scale verified eight large
+functions. This is a codegen analogue, not evidence of original map value types.
+The 2008 imported `rbxgs-g3d-dll` Sky, Draw and ToneMap sources also get their verified x87 fast gate;
+other source profiles and the base vendor grids retain their existing defaults.
+
+Analysis recognizes aligned SEH tail entries from tiny frame-free dispatchers.
+Every local path must avoid calls, stack changes, stores and nonvolatile writes;
+the target must have an independent SEH prologue. This recovered ToneMap's
+adjacent PS20 entry missed when no int3 separated it from PS14. Record reviewed
+extent corrections in `bounds.json` and verify both complete functions, including
+their referenced data, before counting any recovered matches.
+
 For manually recovered, source-less families, grid recipes can supply
 `seed_sources: {"2008-06": {"ADDR": "work/campaign/ADDR.cpp"}}`. Seeds are scoped
 to that client and must be workspace C++ files. Current server scores and normal
@@ -148,6 +163,9 @@ The recovery workflow applies to both automatic agents and server-backed custom 
   check latency and verified gains/hour. Local similarity and unverified exacts never
   count as gains. Rates use complete run wall time, including planning, and count
   receipt-backed improvement events rather than claiming unique function recoveries.
+- Each model repair assignment saves `agent-output.jsonl` and `model-result.json`
+  beside its source, including exit code, bounded output tail and exception traceback.
+  These survive CLI failures so a run-level `cli_error` can be diagnosed after the UI log closes.
 
 Current target selection is uniform random over eligible unresolved functions,
 without near-match, area-yield or largest-function priority. Low scores and

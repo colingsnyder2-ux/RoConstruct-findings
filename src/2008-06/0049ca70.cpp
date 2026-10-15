@@ -1,4 +1,6 @@
-// from server: 82% by king_originala
+// from server: 83% by colin
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
 extern "C" long __cdecl _InterlockedDecrement(volatile long*);
@@ -14,14 +16,11 @@ extern StringDestroy destroyString;
 struct String {
     char storage[28];
 
-    String(const String&);
+    __declspec(dllimport) String(const String&);
     ~String();
 };
 
-__forceinline String::String(const String& other)
-{
-    copyString(this, other);
-}
+
 
 __forceinline String::~String()
 {

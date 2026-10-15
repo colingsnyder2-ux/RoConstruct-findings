@@ -1,4 +1,4 @@
-// from server: 99% by king_originala
+// from server: 100% by colin
 struct String;
 
 typedef void (__thiscall *StringCtor)(String*);
@@ -7,24 +7,19 @@ typedef void (__thiscall *StringDtor)(String*);
 typedef String& (__thiscall *StringAppend)(String*, int);
 
 extern StringCtor string_ctor;
-extern StringCopyCtor string_copy_ctor;
 extern StringDtor string_dtor;
 extern StringAppend string_append;
 
 struct String {
     char storage[28];
     String();
-    String(const String&);
+    __declspec(dllimport) String(const String&);
     ~String();
     String& operator+=(int);
 };
 
 inline String::String() {
     string_ctor(this);
-}
-
-inline String::String(const String& other) {
-    string_copy_ctor(this, other);
 }
 
 inline String::~String() {

@@ -1,4 +1,332 @@
 {
+  "getter-arity-propagation-2008": {
+    "op": "fanout",
+    "library": "RBX proven getter and helper-arity repairs",
+    "hypothesis": "Propagate constructor-only native MegaDragger fieldviews andworker_thread proven3argument background_function call",
+    "targets": {},
+    "sources": [
+      {
+        "recipe": "rbxgs",
+        "files": [
+          "roc_unit_9fcf1aaf140cd5f6.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "rbxgs",
+        "files": [
+          "roc_unit_bd7bc73f4a540e0e.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      }
+    ],
+    "next": "Only server code/data gains; headers remain typed binary views, no padding or hypothetical callee implementation."
+  },
+  "native-getter-view-batch-2008": {
+    "op": "grid",
+    "client": "2008-06",
+    "library": "RBX binary-proven getter field views",
+    "hypothesis": "Preserve native methods and fieldtypes while correcting proven oldheader getter offsets:RootWorld2e4/WorldContactManager84 andCameraSubject1dc; no fields/padding or ABI invented",
+    "targets": {
+      "addresses": [
+        "0060e540",
+        "005cde10"
+      ],
+      "scores": [
+        0,
+        99
+      ]
+    },
+    "seed_sources": {
+      "2008-06": {
+        "0060e540": "work/goal-native-getter-batch-20261015/0060e540.cpp",
+        "005cde10": "work/goal-native-getter-batch-20261015/005cde10.cpp"
+      }
+    },
+    "keep_partials": true,
+    "builds": [
+      21022,
+      50727
+    ],
+    "profiles": [
+      "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+    ],
+    "append": [
+      ""
+    ],
+    "output": "work/goal-native-getter-batch-20261015/grid",
+    "next": "Submit only full code/data gains; constructor-only MegaDragger unit excludes unrelated math; Camera selected setter invokes no asm helpers."
+  },
+  "primitive-surface-view-2008": {
+    "op": "fanout",
+    "library": "RBX Primitive surface accessor view",
+    "hypothesis": "Verified GlueJoint repair reads SurfaceType array at binaryprovenb8 through native typed accessor; propagate compiled authentic GlueJoint unit",
+    "targets": {},
+    "sources": [
+      {
+        "recipe": "rbxgs",
+        "files": [
+          "roc_unit_86949e9f74318757.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      }
+    ],
+    "next": "Only full code/data serververified gains; no fullclass padding changes or invented fields. Existing legacy Primitive layout remains a codegen view."
+  },
+  "property-initializer-literals-2008": {
+    "op": "grid",
+    "client": "2008-06",
+    "library": "RBX static property initializer literals",
+    "hypothesis": "Five stored99 initializers have exact code but copied graphicsMode/General placeholders; replace only PEverified fullnulterminated property/category strings",
+    "targets": {
+      "addresses": [
+        "007ef4b0",
+        "007ef5b0",
+        "007ef6b0",
+        "007f53b0",
+        "007f5db0"
+      ],
+      "scores": [
+        0,
+        99
+      ]
+    },
+    "seed_sources": {
+      "2008-06": {
+        "007ef4b0": "work/goal-property-init-audit-20261015/candidates/007ef4b0.cpp",
+        "007ef5b0": "work/goal-property-init-audit-20261015/candidates/007ef5b0.cpp",
+        "007ef6b0": "work/goal-property-init-audit-20261015/candidates/007ef6b0.cpp",
+        "007f53b0": "work/goal-property-init-audit-20261015/candidates/007f53b0.cpp",
+        "007f5db0": "work/goal-property-init-audit-20261015/candidates/007f5db0.cpp"
+      }
+    },
+    "keep_partials": true,
+    "builds": [
+      21022
+    ],
+    "profiles": [
+      "/O2 /Ob2 /Oy /GF- /GS- /EHsc /MD"
+    ],
+    "append": [
+      ""
+    ],
+    "output": "work/goal-property-init-audit-20261015/grid",
+    "next": "Only serververified whole code/data matches count; preserve exact Qaulity typo and existing initializer ABI analogues."
+  },
+  "string-import-wide-2008": {
+    "op": "grid",
+    "client": "2008-06",
+    "library": "String constructor import propagation",
+    "hypothesis": "One proven imported copy/cstring constructor change per eligible80-94 source; only single-call forwarding wrappers, no destructor changes",
+    "targets": {
+      "addresses": [
+        "0043bf60",
+        "0060bbb0",
+        "0045ba90",
+        "0044c0d0",
+        "0043bb50",
+        "005b2230",
+        "00656940",
+        "0046d110",
+        "0063eb20",
+        "0063ea30",
+        "00464830",
+        "00596400",
+        "0042ac20",
+        "0049e040",
+        "00619820",
+        "004a7e20",
+        "0049d2b0",
+        "0041fe00",
+        "00616b00",
+        "00411c30",
+        "0049d480",
+        "005c9dc0",
+        "0049ca70",
+        "00448360",
+        "0042c000",
+        "0046e6b0",
+        "0057e730",
+        "0049f460"
+      ],
+      "scores": [
+        0,
+        99
+      ]
+    },
+    "seed_sources": {
+      "2008-06": {
+        "0043bf60": "work/goal-string-import-wide-20261014/0043bf60.cpp",
+        "0060bbb0": "work/goal-string-import-wide-20261014/0060bbb0.cpp",
+        "0045ba90": "work/goal-string-import-wide-20261014/0045ba90.cpp",
+        "0044c0d0": "work/goal-string-import-wide-20261014/0044c0d0.cpp",
+        "0043bb50": "work/goal-string-import-wide-20261014/0043bb50.cpp",
+        "005b2230": "work/goal-string-import-wide-20261014/005b2230.cpp",
+        "00656940": "work/goal-string-import-wide-20261014/00656940.cpp",
+        "0046d110": "work/goal-string-import-wide-20261014/0046d110.cpp",
+        "0063eb20": "work/goal-string-import-wide-20261014/0063eb20.cpp",
+        "0063ea30": "work/goal-string-import-wide-20261014/0063ea30.cpp",
+        "00464830": "work/goal-string-import-wide-20261014/00464830.cpp",
+        "00596400": "work/goal-string-import-wide-20261014/00596400.cpp",
+        "0042ac20": "work/goal-string-import-wide-20261014/0042ac20.cpp",
+        "0049e040": "work/goal-string-import-wide-20261014/0049e040.cpp",
+        "00619820": "work/goal-string-import-wide-20261014/00619820.cpp",
+        "004a7e20": "work/goal-string-import-wide-20261014/004a7e20.cpp",
+        "0049d2b0": "work/goal-string-import-wide-20261014/0049d2b0.cpp",
+        "0041fe00": "work/goal-string-import-wide-20261014/0041fe00.cpp",
+        "00616b00": "work/goal-string-import-wide-20261014/00616b00.cpp",
+        "00411c30": "work/goal-string-import-wide-20261014/00411c30.cpp",
+        "0049d480": "work/goal-string-import-wide-20261014/0049d480.cpp",
+        "005c9dc0": "work/goal-string-import-wide-20261014/005c9dc0.cpp",
+        "0049ca70": "work/goal-string-import-wide-20261014/0049ca70.cpp",
+        "00448360": "work/goal-string-import-wide-20261014/00448360.cpp",
+        "0042c000": "work/goal-string-import-wide-20261014/0042c000.cpp",
+        "0046e6b0": "work/goal-string-import-wide-20261014/0046e6b0.cpp",
+        "0057e730": "work/goal-string-import-wide-20261014/0057e730.cpp",
+        "0049f460": "work/goal-string-import-wide-20261014/0049f460.cpp"
+      }
+    },
+    "keep_partials": true,
+    "builds": [
+      21022
+    ],
+    "profiles": [
+      "/O2 /GS- /EHsc /MD"
+    ],
+    "append": [
+      ""
+    ],
+    "output": "work/goal-string-import-wide-20261014/grid",
+    "next": "Review retained partial gains and submit verifier improvements; never replay losing source hashes or substitute compilation for verification."
+  },
+  "native-math-semantics-batch-2008": {
+    "op": "grid",
+    "client": "2008-06",
+    "library": "Native G3D vector and color semantics",
+    "hypothesis": "Replace six manually simplified vector/color views with authentic G3D types; no selected assembly-dependent math helpers",
+    "targets": {
+      "addresses": [
+        "00677190",
+        "0063fca0",
+        "00609410",
+        "0060fef0",
+        "0066a7c0",
+        "0056f5f0"
+      ],
+      "scores": [
+        0,
+        99
+      ]
+    },
+    "seed_sources": {
+      "2008-06": {
+        "00677190": "work/goal-native-math-batch-20261014/00677190.cpp",
+        "0063fca0": "work/goal-native-math-batch-20261014/0063fca0.cpp",
+        "00609410": "work/goal-native-math-batch-20261014/00609410.cpp",
+        "0060fef0": "work/goal-native-math-batch-20261014/0060fef0.cpp",
+        "0066a7c0": "work/goal-native-math-batch-20261014/0066a7c0.cpp",
+        "0056f5f0": "work/goal-native-math-batch-20261014/0056f5f0.cpp"
+      }
+    },
+    "keep_partials": true,
+    "builds": [
+      21022
+    ],
+    "profiles": [
+      "/O2 /GS- /EHsc /MD"
+    ],
+    "append": [
+      "",
+      " /fp:fast"
+    ],
+    "output": "work/goal-native-math-batch-20261014/grid",
+    "next": "Only server whole code/data gains; reject changes adding unwanted initialization. Selected code uses native constructors/copy only, no asm-based rounding/direction helpers."
+  },
+  "string-import-constructor-batch-2008": {
+    "op": "grid",
+    "client": "2008-06",
+    "library": "String imported constructors",
+    "hypothesis": "Propagate serververified native copy/cstring constructor scheduling repair across nine unresolved wrappers; preserve destructor boundaries",
+    "targets": {
+      "addresses": [
+        "00496480",
+        "004921b0",
+        "0049e1d0",
+        "005c5400",
+        "005c5490",
+        "00470770",
+        "004802a0",
+        "00562670",
+        "0055d400"
+      ],
+      "scores": [
+        0,
+        99
+      ]
+    },
+    "seed_sources": {
+      "2008-06": {
+        "00496480": "work/goal-string-import-batch-20261014/00496480.cpp",
+        "004921b0": "work/goal-string-import-batch-20261014/004921b0.cpp",
+        "0049e1d0": "work/goal-string-import-batch-20261014/0049e1d0.cpp",
+        "005c5400": "work/goal-string-import-batch-20261014/005c5400.cpp",
+        "005c5490": "work/goal-string-import-batch-20261014/005c5490.cpp",
+        "00470770": "work/goal-string-import-batch-20261014/00470770.cpp",
+        "004802a0": "work/goal-string-import-batch-20261014/004802a0.cpp",
+        "00562670": "work/goal-string-import-batch-20261014/00562670.cpp",
+        "0055d400": "work/goal-string-import-batch-20261014/0055d400.cpp"
+      }
+    },
+    "keep_partials": true,
+    "builds": [
+      21022
+    ],
+    "profiles": [
+      "/O2 /GS- /EHsc /MD"
+    ],
+    "append": [
+      ""
+    ],
+    "output": "work/goal-string-import-batch-20261014/grid",
+    "next": "Submit only full verifier gains; reject losing imports and preserve best sources. No destructor import blanket changes."
+  },
+  "reflection-string-setter-2008": {
+    "op": "fanout",
+    "library": "RBX reflection write-only string properties",
+    "hypothesis": "Verified 005cfaf0 uses authentic getset(int, Setter) rather than getset(Getter, int); propagate explicit setter template instantiation",
+    "targets": {},
+    "sources": [
+      {
+        "recipe": "rbxgs",
+        "files": [
+          "roc_unit_97da6effdad7f4e6.cpp",
+          "roc_unit_7b0de2a235279c1c.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      }
+    ],
+    "next": "Accept only server-verified code and referenced-data gains; overload parameter order follows caller and write-only vtable evidence."
+  },
   "ogre-fp-fast-2008": {
     "op": "grid",
     "library": "Ogre 1.4.5 / Roblox subclasses",
@@ -1238,7 +1566,16 @@
       " /fp:fast"
     ],
     "output": "work/large-functions-2008-20261014/mesh-build-seed-grid",
-    "next": "Review retained own-method candidate. No exact or generic scale-up claim for a partial. Park exhausted source/config pairs."
+    "next": "Source/configuration gates exhausted. Preserve verified43 vector-border body; remaining frame/control-flow differences require new evidence. No generic math rewrite or unchanged sweep.",
+    "result": {
+      "date": "2026-10-15",
+      "targets": 1,
+      "variants": 4,
+      "additional_exacts": 0,
+      "best_local": 25,
+      "status": "parked",
+      "evidence": "work/large-functions-2008-20261014/mesh-build-seed-grid"
+    }
   },
   "large-mesh-build-vector-border-2008": {
     "op": "grid",
@@ -1276,6 +1613,800 @@
       " /fp:fast"
     ],
     "output": "work/large-functions-2008-20261014/mesh-build-vector-border-grid",
-    "next": "Retain own-method best; independent server verification required. New body originated from0, not a preexisting near-match seed. No broad rewrite without family evidence."
+    "next": "Source/configuration gates exhausted. Preserve verified43 vector-border body; remaining frame/control-flow differences require new evidence. No generic math rewrite or unchanged sweep.",
+    "result": {
+      "date": "2026-10-15",
+      "targets": 1,
+      "variants": 4,
+      "additional_exacts": 0,
+      "best_local": 43,
+      "status": "parked",
+      "evidence": "work/large-functions-2008-20261014/mesh-build-vector-border-grid",
+      "verified_partial": {
+        "event_id": 20205,
+        "ts": 1792035447.4126692,
+        "before": 0,
+        "after": 43,
+        "verified": 1,
+        "client": "2008-06",
+        "addr": "004e3720",
+        "source_sha256": "fe2b1cb88e690067148e0e5bd46de7654c7b747c7c9ec2277bf6a1953bd0378a"
+      }
+    }
+  },
+  "large-tree-erase-pilot-2008": {
+    "op": "grid",
+    "client": "2008-06",
+    "library": "authentic MSVC checked tree erase",
+    "hypothesis": "Four real 2004-byte functions show unoptimized checked tree erase/rebalance; instantiate authentic std::map as a codegen analogue before any handwritten algorithm. Explicit erase call required: instantiating derived map alone did not emit inherited erase; initial best selected unrelated Insert.",
+    "targets": {
+      "addresses": [
+        "00543670"
+      ],
+      "scores": [
+        0,
+        39
+      ],
+      "sizes": [
+        2000,
+        2100
+      ]
+    },
+    "seed_sources": {
+      "2008-06": {
+        "00543670": "work/large-functions-2008-20261014/tree-erase-wrapper.cpp"
+      }
+    },
+    "keep_partials": true,
+    "builds": [
+      21022,
+      50727
+    ],
+    "profiles": [
+      "/Od /Ob0 /GS /EHsc /MD",
+      "/Od /Ob0 /GS- /EHsc /MD"
+    ],
+    "output": "work/large-functions-2008-20261014/tree-erase-pilot",
+    "next": "Inspect intended erase symbol; if verified pilot succeeds propagate to three matching large low-score siblings, then bounded compiler fanout.",
+    "result": {
+      "date": "2026-10-15",
+      "status": "pilot_verified",
+      "new_verified": 1,
+      "addr": "00543670",
+      "before": 0,
+      "after": 100,
+      "evidence": "work/large-functions-2008-20261014/tree-erase-pilot"
+    }
+  },
+  "large-tree-erase-scale-2008": {
+    "op": "fanout",
+    "client": "2008-06",
+    "library": "authentic MSVC checked tree erase",
+    "hypothesis": "Verified manual 2004-byte erase pilot emitted only after explicitly calling inherited erase; propagate authentic object to all current large below40 targets without original value-type claims.",
+    "targets": {
+      "sizes": [
+        1000,
+        1000000
+      ],
+      "scores": [
+        0,
+        39
+      ]
+    },
+    "sources": [
+      {
+        "recipe": "templates-boost-1_34_1",
+        "files": [
+          "roc_large_tree_c038c7cd2fa8574a.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/Od /Ob0 /GS /EHsc /MD"
+        ]
+      }
+    ],
+    "output": "work/large-functions-2008-20261014/tree-erase-scale",
+    "next": "Audit receipts, preserve exact sources, then add explicit inherited-method anchors to automatic template generation if scale verifies.",
+    "result": {
+      "date": "2026-10-15",
+      "new_verified": 7,
+      "status": "verified",
+      "evidence": "work/large-functions-2008-20261014/tree-erase-verified-summary.json"
+    }
+  },
+  "large-imported-sky-pilot-2008": {
+    "op": "fanout",
+    "client": "2008-06",
+    "library": "authentic RBXGS G3D Sky",
+    "hypothesis": "Native constructor007b47f0 has exact old Sky member prefix and moon/star filenames; old source has all three large bodies. Replay with imported runtime preprocessing, absent from base rbxgs-g3d recipe.",
+    "targets": {
+      "addresses": [
+        "007b47f0",
+        "007b3c80",
+        "007b5120"
+      ],
+      "sizes": [
+        1800,
+        2600
+      ],
+      "scores": [
+        0,
+        39
+      ]
+    },
+    "sources": [
+      {
+        "recipe": "rbxgs-g3d",
+        "files": [
+          "roc_sky_imported_025a289ae082c071.cpp"
+        ],
+        "builds": [
+          21022,
+          50727
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD",
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast"
+        ]
+      }
+    ],
+    "output": "work/large-functions-2008-20261014/imported-sky-pilot",
+    "next": "Only scale if own symbols and independent verification succeed; otherwise inspect target/source mismatch, do not repeat unchanged grid.",
+    "result": {
+      "date": "2026-10-15",
+      "variants": 4,
+      "new_verified": 2,
+      "status": "pilot_verified",
+      "addresses": [
+        "007b3c80",
+        "007b47f0"
+      ]
+    }
+  },
+  "large-imported-sky-scale-2008": {
+    "op": "fanout",
+    "client": "2008-06",
+    "library": "authentic RBXGS G3D Sky imported automatic profile",
+    "hypothesis": "Two manually identified large Sky bodies verified exact with imported CRT and x87 fast; use normal automatic recipe/profile discovery on all remaining large below40 functions.",
+    "targets": {
+      "sizes": [
+        1000,
+        1000000
+      ],
+      "scores": [
+        0,
+        39
+      ]
+    },
+    "sources": [
+      {
+        "recipe": "rbxgs-g3d-dll",
+        "files": [
+          "GLG3Dcpp/Sky.cpp"
+        ],
+        "builds": [
+          21022
+        ]
+      }
+    ],
+    "output": "work/large-functions-2008-20261014/imported-sky-scale",
+    "next": "Audit new receipts; inspect still-zero fromFile own symbol before further source corrections. Do not count exact controls again.",
+    "result": {
+      "date": "2026-10-15",
+      "variants": 5,
+      "new_verified": 0,
+      "status": "parked",
+      "evidence": "work/large-functions-2008-20261014/imported-sky-scale",
+      "manual_partial": {
+        "addr": "007b5120",
+        "score": 68,
+        "server_verified": true
+      }
+    }
+  },
+  "large-imported-draw-tonemap-pilot-2008": {
+    "op": "fanout",
+    "client": "2008-06",
+    "library": "authentic RBXGS G3D Draw and ToneMap",
+    "hypothesis": "Native007b05b0 consumes AABox low/high vectors;007b0c00 consumes CoordinateFrame axes;007b1f10 dispatcher/GL names identify ToneMap. Test authentic imported-runtime x87 bodies, without padding/layout invention.",
+    "targets": {
+      "sizes": [
+        1000,
+        1000000
+      ],
+      "scores": [
+        0,
+        39
+      ]
+    },
+    "sources": [
+      {
+        "recipe": "rbxgs-g3d-dll",
+        "files": [
+          "GLG3Dcpp/Draw.cpp",
+          "GLG3Dcpp/ToneMap.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast",
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      }
+    ],
+    "output": "work/large-functions-2008-20261014/imported-draw-tonemap-pilot",
+    "next": "Inspect own symbols, prove merged ToneMap split independently; only scale successful distinct source evidence.",
+    "result": {
+      "date": "2026-10-15",
+      "variants": 4,
+      "new_verified": 2,
+      "status": "verified",
+      "addresses": [
+        "007b05b0",
+        "007b0c00"
+      ]
+    }
+  },
+  "large-xml-import-pilot-2008": {
+    "op": "grid",
+    "client": "2008-06",
+    "library": "authentic RBXGS TextXmlParser",
+    "hypothesis": "Native parse literals identify existing authentic body; current16 source uses nonimported rbxgs prelude. Test imported runtime and bounded compiler gates before handwritten parsing changes.",
+    "targets": {
+      "addresses": [
+        "0058f6c0"
+      ],
+      "sizes": [
+        2000,
+        3000
+      ],
+      "scores": [
+        0,
+        39
+      ]
+    },
+    "seed_sources": {
+      "2008-06": {
+        "0058f6c0": "work/large-functions-2008-20261014/xml-parser-wrapper.cpp"
+      }
+    },
+    "keep_partials": true,
+    "builds": [
+      21022,
+      50727
+    ],
+    "profiles": [
+      "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+    ],
+    "append": [
+      "",
+      " /fp:fast"
+    ],
+    "output": "work/large-functions-2008-20261014/xml-import-pilot",
+    "next": "Review own parse symbol; submit only verified improvement, scale only with evidence.",
+    "result": {
+      "date": "2026-10-15",
+      "variants": 4,
+      "new_verified": 0,
+      "status": "parked",
+      "verified_partial": {
+        "addr": "0058f6c0",
+        "before": 16,
+        "after": 51
+      },
+      "evidence": "work/large-functions-2008-20261014/tonemap-xml-verified-summary.json"
+    }
+  },
+  "large-tonemap-boundary-2008": {
+    "op": "fanout",
+    "client": "2008-06",
+    "library": "authentic G3D ToneMap corrected method extents",
+    "hypothesis": "Merged1491-byte target splits at independently dispatched SEH entry2140: native PS14=560,PS20=931; own authentic bodies match code and referenced data.",
+    "targets": {
+      "addresses": [
+        "007b1f10",
+        "007b2140"
+      ],
+      "sizes": [
+        500,
+        1000
+      ],
+      "scores": [
+        0,
+        39
+      ]
+    },
+    "sources": [
+      {
+        "recipe": "rbxgs-g3d-dll",
+        "files": [
+          "GLG3Dcpp/ToneMap.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast"
+        ]
+      }
+    ],
+    "output": "work/large-functions-2008-20261014/tonemap-boundary-pilot",
+    "next": "Verify both actual functions; count two smaller exacts, not two large1491-byte recoveries. Preserve scope and other exact extents.",
+    "result": {
+      "date": "2026-10-15",
+      "new_verified": 2,
+      "status": "verified",
+      "sizes": [
+        560,
+        931
+      ],
+      "evidence": "work/large-functions-2008-20261014/tonemap-xml-verified-summary.json"
+    }
+  },
+  "large-win32-context-pilot-2008": {
+    "op": "grid",
+    "client": "2008-06",
+    "library": "authentic G3D Win32Window context initialization",
+    "hypothesis": "Native004815d0 init HWND,bool has settings-copy prefix, pixel-format and context error literals; current12 source is unrelated MeshAlgWeld. Test actual full body before changing the observed shareLists check.",
+    "targets": {
+      "addresses": [
+        "004815d0"
+      ],
+      "sizes": [
+        1300,
+        1500
+      ],
+      "scores": [
+        0,
+        39
+      ]
+    },
+    "seed_sources": {
+      "2008-06": {
+        "004815d0": "work/large-functions-2008-20261014/win32-context-wrapper.cpp"
+      }
+    },
+    "keep_partials": true,
+    "builds": [
+      21022,
+      50727
+    ],
+    "profiles": [
+      "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+    ],
+    "append": [
+      "",
+      " /fp:fast"
+    ],
+    "output": "work/large-functions-2008-20261014/win32-context-pilot",
+    "next": "Inspect own init symbol and native share-list error branch; submit only verified improvement.",
+    "result": {
+      "date": "2026-10-15",
+      "new_verified_exacts": 0,
+      "status": "parked",
+      "verified_partial": {
+        "addr": "004815d0",
+        "before": 12,
+        "after": 99
+      },
+      "evidence": "work/large-functions-2008-20261014/win32-context-verified-summary.json"
+    }
+  },
+  "large-win32-context-throws-2008": {
+    "op": "grid",
+    "client": "2008-06",
+    "library": "native Win32Window exception fork",
+    "hypothesis": "Native three pixel/context failures build std::runtime_error via imported std::string; replace stock alwaysAssertM reporting with this observed throwing contract. Share-list check remains separate next hypothesis.",
+    "targets": {
+      "addresses": [
+        "004815d0"
+      ],
+      "sizes": [
+        1300,
+        1500
+      ],
+      "scores": [
+        0,
+        39
+      ]
+    },
+    "seed_sources": {
+      "2008-06": {
+        "004815d0": "work/large-functions-2008-20261014/win32-context-throw-wrapper.cpp"
+      }
+    },
+    "keep_partials": true,
+    "builds": [
+      21022
+    ],
+    "profiles": [
+      "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+    ],
+    "output": "work/large-functions-2008-20261014/win32-context-throws",
+    "next": "Compare same-compiler stock/assert control, then add only proven wglShareLists failure check.",
+    "result": {
+      "date": "2026-10-15",
+      "new_verified_exacts": 0,
+      "status": "parked",
+      "verified_partial": {
+        "addr": "004815d0",
+        "before": 12,
+        "after": 99
+      },
+      "evidence": "work/large-functions-2008-20261014/win32-context-verified-summary.json"
+    }
+  },
+  "large-win32-context-sharecheck-2008": {
+    "op": "grid",
+    "client": "2008-06",
+    "library": "native Win32Window exception/share-check fork",
+    "hypothesis": "Throwing assertion analogue raised28to94. Native481ab4 checks wglShareLists result and throws same runtime_error message; add exactly that missing check. First boolean-result spelling gave99 with sole cmp-eax-ebx vs test-eax-eax mismatch; explicit BOOL != FALSE follows native comparison. This is a codegen analogue, not proof of original expression.",
+    "targets": {
+      "addresses": [
+        "004815d0"
+      ],
+      "sizes": [
+        1300,
+        1500
+      ],
+      "scores": [
+        0,
+        39
+      ]
+    },
+    "seed_sources": {
+      "2008-06": {
+        "004815d0": "work/large-functions-2008-20261014/win32-context-sharecheck-wrapper.cpp"
+      }
+    },
+    "keep_partials": true,
+    "builds": [
+      21022
+    ],
+    "profiles": [
+      "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+    ],
+    "output": "work/large-functions-2008-20261014/win32-context-sharecheck",
+    "next": "Verify own init and referenced data; if exact, replay through generated-source discovery and run bounded large below40 fanout.",
+    "result": {
+      "date": "2026-10-15",
+      "new_verified_exacts": 0,
+      "status": "parked",
+      "verified_partial": {
+        "addr": "004815d0",
+        "before": 12,
+        "after": 99
+      },
+      "evidence": "work/large-functions-2008-20261014/win32-context-verified-summary.json"
+    }
+  },
+  "large-win32-context-scale-2008": {
+    "op": "fanout",
+    "client": "2008-06",
+    "library": "native G3D Win32Window checked exception fork",
+    "hypothesis": "Manual native exception/share-check analogue gives99, sole cmp-vs-test mismatch. Existing automatic imported profile also gives99; test other large below40 functions from this authentic family, without counting partial as exact or changing global assertion policy.",
+    "targets": {
+      "sizes": [
+        1000,
+        1000000
+      ],
+      "scores": [
+        0,
+        39
+      ]
+    },
+    "sources": [
+      {
+        "recipe": "g3d-6.09-dll",
+        "files": [
+          "roc_win32_sharecheck_4951313ce1f651e5.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /GS- /EHsc /MD"
+        ]
+      }
+    ],
+    "output": "work/large-functions-2008-20261014/win32-context-scale",
+    "next": "Park unchanged family on zero additional exacts; preserve verified99 and native full diff. Do not spend this low-score campaign on arbitrary near-match syntax trials.",
+    "result": {
+      "date": "2026-10-15",
+      "new_verified_exacts": 0,
+      "status": "parked",
+      "verified_partial": {
+        "addr": "004815d0",
+        "before": 12,
+        "after": 99
+      },
+      "evidence": "work/large-functions-2008-20261014/win32-context-verified-summary.json"
+    }
+  },
+  "large-atlas-migration-seed-2008": {
+    "op": "grid",
+    "client": "2008-06",
+    "library": "native legacy texture atlas migration",
+    "hypothesis": "Native6698-byte function is image atlas migration; caller proves by-value filename, Name reference, one unused four-byte slot represented by bool, and float scale. Original unused parameter type unknown. Native private-image trace records all copy/corner-call arguments; authentic GImage/Name headers provide observed layouts.",
+    "targets": {
+      "addresses": [
+        "005ef840"
+      ],
+      "sizes": [
+        6000,
+        7000
+      ],
+      "scores": [
+        0,
+        39
+      ]
+    },
+    "seed_sources": {
+      "2008-06": {
+        "005ef840": "work/large-functions-2008-20261014/atlas-migration-wrapper.cpp"
+      }
+    },
+    "keep_partials": true,
+    "builds": [
+      21022,
+      50727
+    ],
+    "profiles": [
+      "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+    ],
+    "append": [
+      "",
+      " /fp:fast"
+    ],
+    "output": "work/large-functions-2008-20261014/atlas-migration-grid",
+    "next": "Inspect selected own migration symbol and native trace matrix; submit only verified gain, preserve exact/partial distinction. Helper ABIs are observed, not original declaration claims.",
+    "result": {
+      "date": "2026-10-15",
+      "new_verified_exacts": 0,
+      "status": "parked",
+      "verified_partials": {
+        "005ef840": 71,
+        "0050eef0": 36
+      },
+      "evidence": "work/large-functions-2008-20261014/atlas-verified-summary.json"
+    }
+  },
+  "large-atlas-corner-seed-2008": {
+    "op": "grid",
+    "client": "2008-06",
+    "library": "native GImage atlas corner interpolation",
+    "hypothesis": "Parent6698-byte recovery identifies1006-byte low-score callee as corner interpolation, not PPM decoder. Native copies boundary data to canonical square, fills/interpolates padding, then inverse-rotates.",
+    "targets": {
+      "addresses": [
+        "0050eef0"
+      ],
+      "sizes": [
+        1000,
+        1100
+      ],
+      "scores": [
+        0,
+        39
+      ]
+    },
+    "seed_sources": {
+      "2008-06": {
+        "0050eef0": "work/large-functions-2008-20261014/atlas-corner-wrapper.cpp"
+      }
+    },
+    "keep_partials": true,
+    "builds": [
+      21022,
+      50727
+    ],
+    "profiles": [
+      "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+    ],
+    "append": [
+      "",
+      " /fp:fast"
+    ],
+    "output": "work/large-functions-2008-20261014/atlas-corner-grid",
+    "next": "Review own symbol and native pixel contracts; submit only real gain. Header layout and callable stack slots are observed; names remain analogues.",
+    "result": {
+      "date": "2026-10-15",
+      "new_verified_exacts": 0,
+      "status": "parked",
+      "verified_partials": {
+        "005ef840": 71,
+        "0050eef0": 36
+      },
+      "evidence": "work/large-functions-2008-20261014/atlas-verified-summary.json"
+    }
+  },
+  "large-atlas-corner-value-2008": {
+    "op": "grid",
+    "client": "2008-06",
+    "library": "native GImage atlas corner value selection",
+    "hypothesis": "Native selects max(width,height) as a value before increment; std::max reference selection emits pointer choice and cascading register differences. Test value conditional only; native pixel model already matches12cases.",
+    "targets": {
+      "addresses": [
+        "0050eef0"
+      ],
+      "sizes": [
+        1000,
+        1100
+      ],
+      "scores": [
+        0,
+        39
+      ]
+    },
+    "seed_sources": {
+      "2008-06": {
+        "0050eef0": "work/large-functions-2008-20261014/atlas-corner-value-wrapper.cpp"
+      }
+    },
+    "keep_partials": true,
+    "builds": [
+      21022,
+      50727
+    ],
+    "profiles": [
+      "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+    ],
+    "output": "work/large-functions-2008-20261014/atlas-corner-value-grid",
+    "next": "Inspect own value-selection score; no declaration/original compiler claim. Preserve current19 source unless independently improved.",
+    "append": [
+      "",
+      " /fp:fast"
+    ],
+    "result": {
+      "date": "2026-10-15",
+      "new_verified_exacts": 0,
+      "status": "parked",
+      "verified_partials": {
+        "005ef840": 71,
+        "0050eef0": 36
+      },
+      "evidence": "work/large-functions-2008-20261014/atlas-verified-summary.json"
+    }
+  },
+  "large-atlas-corner-resize-2008": {
+    "op": "grid",
+    "client": "2008-06",
+    "library": "native GImage atlas corner initialization",
+    "hypothesis": "Value selection raised19to32. Native starts temporary with vptr then free(null)/calloc and dimensions; try equivalent default construction plus explicit resize, one source grouping change.",
+    "targets": {
+      "addresses": [
+        "0050eef0"
+      ],
+      "sizes": [
+        1000,
+        1100
+      ],
+      "scores": [
+        0,
+        39
+      ]
+    },
+    "seed_sources": {
+      "2008-06": {
+        "0050eef0": "work/large-functions-2008-20261014/atlas-corner-resize-wrapper.cpp"
+      }
+    },
+    "keep_partials": true,
+    "builds": [
+      21022
+    ],
+    "profiles": [
+      "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+    ],
+    "output": "work/large-functions-2008-20261014/atlas-corner-resize-grid",
+    "next": "Retain better own corner source only; if no gain park constructor grouping and submit prior32.",
+    "result": {
+      "date": "2026-10-15",
+      "new_verified_exacts": 0,
+      "status": "parked",
+      "verified_partials": {
+        "005ef840": 71,
+        "0050eef0": 36
+      },
+      "evidence": "work/large-functions-2008-20261014/atlas-verified-summary.json"
+    }
+  },
+  "large-atlas-recovered-scale-2008": {
+    "op": "fanout",
+    "client": "2008-06",
+    "library": "native legacy atlas migration/corner family",
+    "hypothesis": "Full native atlas parent verified71 and value-selection corner analogue32. Portable generated units enter automatic discovery; bounded two-object scale tests remaining large below40 functions without re-counting known partials or claiming exact equivalence.",
+    "targets": {
+      "sizes": [
+        1000,
+        1000000
+      ],
+      "scores": [
+        0,
+        39
+      ]
+    },
+    "sources": [
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_atlas_migration_6f06884acc4766e2.cpp"
+        ],
+        "builds": [
+          50727
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "g3d-6.09-dll",
+        "files": [
+          "roc_atlas_corner_value_972a3bd56304fee2.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      }
+    ],
+    "output": "work/large-functions-2008-20261014/atlas-recovered-scale",
+    "next": "Park unchanged cohort after bounded scale; native contracts and compiler residues determine next recovery, not generic source rewrites.",
+    "result": {
+      "date": "2026-10-15",
+      "new_verified_exacts": 0,
+      "status": "parked",
+      "verified_partials": {
+        "005ef840": 71,
+        "0050eef0": 36
+      },
+      "evidence": "work/large-functions-2008-20261014/atlas-verified-summary.json"
+    }
+  },
+  "large-atlas-corner-fast-scale-2008": {
+    "op": "fanout",
+    "client": "2008-06",
+    "library": "native GImage atlas corner best partial compiler",
+    "hypothesis": "Three new gates on changed value-selection source improved32to36 with50727 fast; one best-object shard tests held-out large below40 functions. This differs from the earlier21022 normal object and makes no exact claim from partial control.",
+    "targets": {
+      "sizes": [
+        1000,
+        1000000
+      ],
+      "scores": [
+        0,
+        39
+      ]
+    },
+    "sources": [
+      {
+        "recipe": "g3d-6.09-dll",
+        "files": [
+          "roc_atlas_corner_value_972a3bd56304fee2.cpp"
+        ],
+        "builds": [
+          50727
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast"
+        ]
+      }
+    ],
+    "output": "work/large-functions-2008-20261014/atlas-corner-fast-scale",
+    "next": "Park unchanged family on zero-gain shard; keep36 verified source and explicit native contract evidence.",
+    "result": {
+      "date": "2026-10-15",
+      "new_verified_exacts": 0,
+      "status": "parked",
+      "verified_partials": {
+        "005ef840": 71,
+        "0050eef0": 36
+      },
+      "evidence": "work/large-functions-2008-20261014/atlas-verified-summary.json"
+    }
   }
 }

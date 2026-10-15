@@ -1,4 +1,6 @@
-// from server: 89% by king_originala
+// from server: 90% by colin
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
 struct Control {
     int modified(int);
     int length(int);
@@ -21,14 +23,11 @@ extern const char* (__thiscall *bufferData)(void*);
 
 struct String {
     char storage[28];
-    String(const char*);
+    __declspec(dllimport) String(const char*);
     ~String();
 };
 
-inline String::String(const char* p)
-{
-    stringCreate(this, p);
-}
+
 
 inline String::~String()
 {

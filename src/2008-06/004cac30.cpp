@@ -1,4 +1,4 @@
-// from server: 92% by king_originala
+// from server: 100% by colin
 struct BitStream {
     int bitsUsed;
     char storage[0x114];
