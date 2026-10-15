@@ -489,3 +489,9 @@ address.
 | `research/reports.json` | index of historical reports, full text in RoConstruct-findings |
 | `src/` | recovered sources (RoConstruct-findings checkout) |
 | `work/`, `tools/`, `local/` | ignored: analysis, journals, compilers, libraries, local archive |
+
+`roc research run bruteforce-portfolio-fanout --jobs 2 --limit 64` pilots whole-object
+fanout from client-scoped portfolios. Limit counts distinct source/config contexts,
+not targets; every emitted function is checked across unresolved code with referenced
+data verification. Remove the limit for a full run. Existing per-target grid journals
+do not imply whole-object coverage. Only server improvement receipts count as gains.

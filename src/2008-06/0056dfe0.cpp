@@ -1,4 +1,6 @@
-// from server: 28% by colin
+// from server: 39% by colin
+// roc-cl: 21022
+// roc-flags: /O1 /GS- /EHsc /MD
 struct type_info {
     bool operator==(const type_info&) const;
 };

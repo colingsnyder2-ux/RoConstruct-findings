@@ -1,5 +1,16 @@
 [
   {
+    "id": "native-indexarray-contact-callback-core",
+    "client": "2008-06",
+    "library": "RBX native Contact IndexArray and deferred contact stepping",
+    "hypothesis": "Authentic IndexArray<Contact,&Contact::steppingIndexFunc>, Edge inline state accessors and actual contact-state enums recover register/call details that padded synthetic containers miss.",
+    "change": "onEdgeAdded95->100115bytes using measured IndexArray1a0 and counterD0; real Contact member index24 and Edge native state8/primitive0c10. Full stepContacts0->100492bytes uses genuine ContactList plus checked member vectors58/70/88/A0, cleared at end. Target moving guard uses nullable SleepInfo18 and states3/1/2; throttleD8,uiStepIdDC and Body bool30 measured. Collision rejection byte guards A8/AB kept unnamed, no semantic field claim.",
+    "exacts_gained": 2,
+    "outcome": "server_verified",
+    "evidence": "work/goal-sleep-contact-round-20261015/receipts.json",
+    "next": "Contact transition native method68->82 is partial, independently server verified; compiler and two declaration-order cohorts exhausted, parked. Winning two objects0extra exacts. No full recovered layout claim."
+  },
+  {
     "id": "direct-container-lvalues-before-reference-spills",
     "client": "2008-06",
     "library": "RBX native checked std::set/std::vector stage loops",

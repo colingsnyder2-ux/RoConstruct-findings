@@ -1,4 +1,6 @@
-// from server: 34% by colin
+// from server: 37% by colin
+// roc-cl: 21022
+// roc-flags: /O1 /GS- /EHsc /MD
 struct SoundService {
     char pad[0x14];
     int field14;

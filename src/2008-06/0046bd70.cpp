@@ -1,4 +1,6 @@
-// from server: 33% by king_originala
+// from server: 37% by colin
+// roc-cl: 21022
+// roc-flags: /Od /Ob0 /GS /EHsc /MD
 struct Source;
 struct Object;
 

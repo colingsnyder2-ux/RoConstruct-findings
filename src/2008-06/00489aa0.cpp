@@ -1,4 +1,6 @@
-// from server: 32% by colin
+// from server: 49% by colin
+// roc-cl: 21022
+// roc-flags: /O1 /GS- /EHsc /MD
 // roc 2008-06 00489aa0  unit: G3D::GWindow  size: 293 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 00489aa0
 

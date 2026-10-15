@@ -1,4 +1,6 @@
-// from server: 30% by colin
+// from server: 41% by colin
+// roc-cl: 21022
+// roc-flags: /Od /Ob0 /GS /EHsc /MD
 struct LocalScript {
     char pad[0x130];
     void* field130;

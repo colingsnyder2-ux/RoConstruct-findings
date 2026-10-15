@@ -1,5 +1,5 @@
-// from server: 31% by colin
-// roc-lang: cpp
+// from server: 36% by colin
 // roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+// roc-flags: /Od /Ob0 /GS /EHsc /MD
+// roc-lang: cpp
 // roc-lib: openrbx-client App/v8world/ClumpStage2.cpp

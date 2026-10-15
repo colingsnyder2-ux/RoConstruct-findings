@@ -8346,7 +8346,13 @@
     ],
     "keep_partials": true,
     "output": "work\\goal-sleep-edge-core-20261015\\grid",
-    "next": "Inspect genuine inline context then bounded gate. Full code/data/server required."
+    "next": "Inspect genuine inline context then bounded gate. Full code/data/server required.",
+    "result": {
+      "status": "verified",
+      "new_verified": 1,
+      "evidence": "work/goal-sleep-contact-round-20261015/receipts.json",
+      "partial_evidence": "work/goal-sleep-contact-round-20261015/partial-receipt.json"
+    }
   },
   "native-sleep-contact-indexarray-core-2008": {
     "op": "grid",
@@ -8378,7 +8384,13 @@
     ],
     "keep_partials": true,
     "output": "work\\goal-sleep-contact-core-20261015\\grid",
-    "next": "Full server code/data acceptance; inspect only measured residue if partial."
+    "next": "Full server code/data acceptance; inspect only measured residue if partial.",
+    "result": {
+      "status": "parked",
+      "new_verified": 0,
+      "evidence": "work/goal-sleep-contact-round-20261015/receipts.json",
+      "partial_evidence": "work/goal-sleep-contact-round-20261015/partial-receipt.json"
+    }
   },
   "native-sleep-contact-bounded-compiler-gates-2008": {
     "op": "grid",
@@ -8413,7 +8425,13 @@
     ],
     "keep_partials": true,
     "output": "work/goal-sleep-contact-core-20261015/compiler-grid",
-    "next": "Full server code/data acceptance; inspect only measured residue if partial."
+    "next": "Full server code/data acceptance; inspect only measured residue if partial.",
+    "result": {
+      "status": "parked",
+      "new_verified": 0,
+      "evidence": "work/goal-sleep-contact-round-20261015/receipts.json",
+      "partial_evidence": "work/goal-sleep-contact-round-20261015/partial-receipt.json"
+    }
   },
   "large-adorn-box-sphere-gates-2008": {
     "op": "grid",
@@ -8505,6 +8523,280 @@
     ],
     "keep_partials": true,
     "output": "work\\goal-sleep-contact-step-20261015\\grid",
-    "next": "Full code/data/server receipt; inspect bounded actual residue, preserve all target jump-table bytes."
+    "next": "Full code/data/server receipt; inspect bounded actual residue, preserve all target jump-table bytes.",
+    "result": {
+      "status": "verified",
+      "new_verified": 1,
+      "evidence": "work/goal-sleep-contact-round-20261015/receipts.json",
+      "partial_evidence": "work/goal-sleep-contact-round-20261015/partial-receipt.json"
+    }
+  },
+  "native-contact-state-bool-declaration-order-2008": {
+    "op": "fanout",
+    "client": "2008-06",
+    "library": "Native contact state local boolean lifetimes",
+    "hypothesis": "Native method81/82 differs only boolean spills/register lifetime; reverse new-state declaration order and pair old/new-state declarations. Identical genuine control flow, no volatile or extra locals. Two normal compilers; four object scans across unresolved inventory.",
+    "sources": [
+      {
+        "recipe": "rbxgs",
+        "files": [
+          "roc_unit_c67b3f8f7d66ff62.cpp"
+        ],
+        "builds": [
+          21022,
+          50727
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      },
+      {
+        "recipe": "rbxgs",
+        "files": [
+          "roc_unit_d9ebdfa6b25c7ac9.cpp"
+        ],
+        "builds": [
+          21022,
+          50727
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      }
+    ],
+    "targets": {},
+    "next": "Park if no exact. Preserve genuine82 partial separately; no unbounded microvariants.",
+    "result": {
+      "status": "parked",
+      "new_verified": 0,
+      "evidence": "work/goal-sleep-contact-round-20261015/receipts.json",
+      "partial_evidence": "work/goal-sleep-contact-round-20261015/partial-receipt.json"
+    }
+  },
+  "bruteforce-portfolio-fanout": {
+    "op": "fanout",
+    "client": "2008-06",
+    "portfolio": {
+      "max_candidates": 0,
+      "donors": 0,
+      "family_sources": 0
+    },
+    "targets": {
+      "scores": [
+        0,
+        99
+      ]
+    },
+    "builds": [
+      21022,
+      50727
+    ],
+    "profiles": [
+      "context"
+    ],
+    "append": [
+      "",
+      " /fp:fast"
+    ],
+    "library": "Client source portfolio object fanout",
+    "hypothesis": "Each unique existing source/compiler context emits multiple functions; test all emitted functions against all unresolved targets rather than only its seed address. Full code/data/server acceptance.",
+    "next": "Measure new exact receipts per distinct object; no hundreds-of-exacts claim without receipts.",
+    "evidence_resume": true
+  },
+  "native-sleep-contact-winning-cores-propagation-2008": {
+    "op": "fanout",
+    "client": "2008-06",
+    "library": "Two fully verified native contact cores",
+    "hypothesis": "Whole-object propagation from new607-byte native edge/contact-step gains. Same winning source/config; no new hypotheses or repeated zero-gain declaration objects.",
+    "sources": [
+      {
+        "recipe": "rbxgs",
+        "files": [
+          "roc_unit_4182866eef5838cb.cpp",
+          "roc_unit_f3d82a98e860a6cd.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      }
+    ],
+    "targets": {},
+    "next": "Park zero gain objects; native contact state82 is a partial only.",
+    "result": {
+      "status": "parked",
+      "new_verified": 0,
+      "evidence": "work/goal-sleep-contact-round-20261015/receipts.json",
+      "partial_evidence": "work/goal-sleep-contact-round-20261015/partial-receipt.json"
+    }
+  },
+  "native-sleep-joint-owned-vector-loop-2008": {
+    "op": "grid",
+    "client": "2008-06",
+    "library": "Native SleepStage joint iteration and moving guard",
+    "hypothesis": "Verified contact-step moving guard and body throttle views apply to native stepJoints. Target proves set1b8, member vectorB8 cleared at end; genuine Joint header/checked iterators and std::vector operations retained.",
+    "targets": {
+      "addresses": [
+        "0064bc60"
+      ],
+      "scores": [
+        0,
+        99
+      ]
+    },
+    "seed_sources": {
+      "2008-06": {
+        "0064bc60": "work\\goal-sleep-joint-loop-20261015\\0064bc60.cpp"
+      }
+    },
+    "builds": [
+      21022
+    ],
+    "profiles": [
+      "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+    ],
+    "append": [
+      ""
+    ],
+    "keep_partials": true,
+    "output": "work\\goal-sleep-joint-loop-20261015\\grid",
+    "next": "Inspect real residue if partial; bounded gates, full code/data/server receipt."
+  },
+  "large-adorn-indexbox-gates-2008": {
+    "op": "grid",
+    "client": "2008-06",
+    "library": "native Ogre/RBXIndexBox box",
+    "hypothesis": "Native ctor007bbed0 relocated RTTI provesRBXIndexBox; originalG3DBox source rejected before submission. Complete actualIndexBox header100byte layout, full1734-byte caller algorithm. Correct-type bounded gates.",
+    "targets": {
+      "addresses": [
+        "00671fd0"
+      ],
+      "scores": [
+        0,
+        99
+      ]
+    },
+    "seed_sources": {
+      "2008-06": {
+        "00671fd0": "work/large-functions-2008-20261014/00671fd0.cpp"
+      }
+    },
+    "keep_partials": true,
+    "builds": [
+      21022,
+      50727
+    ],
+    "profiles": [
+      "/O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MD /fp:fast",
+      "/O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MD",
+      "/O2 /Ob1 /Oy /GF /GS- /EHsc /MD /fp:fast",
+      "/Od /Ob0 /GS /EHsc /MD"
+    ],
+    "output": "work/large-functions-2008-20261014/adorn-indexbox-gates",
+    "next": "Only correct-type gains eligible; park after bounded grid."
+  },
+  "bruteforce-inherited-container-members": {
+    "op": "fanout",
+    "client": "2008-06",
+    "library": "Authentic MSVC inherited map/set members",
+    "hypothesis": "Prior explicit inherited erase anchor verified8exacts. Extend genuine map/set inherited find/bounds/equal_range/count/insert/erase/clear/swap/assignment with existing scalar,pointer,string,shared_ptr element families. Types are codegen analogues, no original declarations claimed.",
+    "sources": [
+      {
+        "recipe": "templates-boost-1_34_1",
+        "files": [
+          "roc_inherited_members_aa9addade12c2dbf.cpp",
+          "roc_inherited_members_8012541ea306ed9d.cpp",
+          "roc_inherited_members_183947454b92bcd3.cpp",
+          "roc_inherited_members_d3d9c0e45266154a.cpp",
+          "roc_inherited_members_e7e3710235da5651.cpp",
+          "roc_inherited_members_f25d577457376ba3.cpp",
+          "roc_inherited_members_91f78b7216bd55ec.cpp",
+          "roc_inherited_members_da93ceda37ec8bae.cpp",
+          "roc_inherited_members_5940d623e1259296.cpp",
+          "roc_inherited_members_0c2f19e3d6d87485.cpp",
+          "roc_inherited_members_0b694772d002bfb6.cpp",
+          "roc_inherited_members_a6e1c4f0e7a37f77.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/Od /Ob0 /GS /EHsc /MD",
+          "/O2 /Ob1 /Oy /GS- /EHsc /MD"
+        ]
+      }
+    ],
+    "next": "Count only server-verified exact receipts. Park two losing cohorts; never infer recovered class layouts.",
+    "evidence_resume": true
+  },
+  "native-sleep-neighbor-computeprop-core-2008": {
+    "op": "grid",
+    "client": "2008-06",
+    "library": "Native SleepStage neighbor tolerances and ComputeProp",
+    "hypothesis": "Actual native methods, CF return-by-value, RunningAverageState and lazy ComputeProp<float,Assembly> receiver50 proven by dirty/cache/member-call target. Exact float literals. Preserve native template/member-pointer ABI, no invented padding.",
+    "targets": {
+      "addresses": [
+        "0064a5f0",
+        "0064a660"
+      ],
+      "scores": [
+        0,
+        99
+      ]
+    },
+    "seed_sources": {
+      "2008-06": {
+        "0064a5f0": "work\\goal-sleep-neighbor-core-20261015\\0064a5f0.cpp",
+        "0064a660": "work\\goal-sleep-neighbor-core-20261015\\0064a660.cpp"
+      }
+    },
+    "builds": [
+      21022
+    ],
+    "profiles": [
+      "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+    ],
+    "append": [
+      ""
+    ],
+    "keep_partials": true,
+    "output": "work\\goal-sleep-neighbor-core-20261015\\grid",
+    "next": "Inspect genuine pointer-to-member representation if mismatch; do not pad or invent ABI."
+  },
+  "native-sleep-neighbor-extended-radius-fpfast-2008": {
+    "op": "grid",
+    "client": "2008-06",
+    "library": "Native SleepStage neighbor tolerances and ComputeProp",
+    "hypothesis": "Genuine ComputeProp pointer-to-member/cache code matches exactly, including offsets60/64; remaining radius FPU spill/reload reflects strict float narrowing. Target holds cached radius on x87 stack through argument formation, so test only /fp:fast with same actual source.",
+    "targets": {
+      "addresses": [
+        "0064a5f0",
+        "0064a660"
+      ],
+      "scores": [
+        0,
+        99
+      ]
+    },
+    "seed_sources": {
+      "2008-06": {
+        "0064a5f0": "work\\goal-sleep-neighbor-core-20261015\\0064a5f0.cpp",
+        "0064a660": "work\\goal-sleep-neighbor-core-20261015\\0064a660.cpp"
+      }
+    },
+    "builds": [
+      21022
+    ],
+    "profiles": [
+      "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast"
+    ],
+    "append": [
+      ""
+    ],
+    "keep_partials": true,
+    "output": "work/goal-sleep-neighbor-core-20261015/fpfast-grid",
+    "next": "Inspect genuine pointer-to-member representation if mismatch; do not pad or invent ABI."
   }
 }

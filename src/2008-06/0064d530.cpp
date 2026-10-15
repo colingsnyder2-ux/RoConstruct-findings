@@ -1,4 +1,6 @@
-// from server: 28% by colin
+// from server: 34% by colin
+// roc-cl: 21022
+// roc-flags: /O1 /GS- /EHsc /MD
 // roc 2008-06 0064d530  unit: RBX::SimJobStage  size: 530 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 0064d530
 
