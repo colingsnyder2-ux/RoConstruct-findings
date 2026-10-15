@@ -7,6 +7,18 @@ server re-verifies it byte-identical.
 Run commands as `roc.cmd <cmd>` (Windows) or `./roc.sh <cmd>` (Linux); `roc --help`
 lists them all.
 
+## Assigned single-function recovery
+
+When the wrapper supplies an assigned source, evidence packet, check command and
+120-second triage budget, setup is already complete. Read this file once, then
+read the assigned source and evidence packet together. Follow the recovery
+preamble and assignment: they constrain the general campaign workflow below.
+In `docs/AGENT_GUIDE.md`, read Goal and acceptance first; consult other sections
+only for the current evidence or command. Do not read the whole guide, history,
+recipes or logs before the first experiment. Record a specific blocker if the
+packet lacks the native declaration or ABI evidence needed for a useful draft.
+All rules below still apply; the wrapper handles submissions and propagation.
+
 ## Get set up (downloads are fine)
 
 1. `roc doctor` - lists what is missing and how to fix it.
