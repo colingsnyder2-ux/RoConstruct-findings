@@ -696,5 +696,16 @@
     "outcome": "server_verified",
     "evidence": "work/goal-native-resize-tool-20261015/render-drag-receipts.json",
     "next": "Finaltwoobjectsreplay7Resizeexacts, only3newcurrent. Park4unchangedcontexts; onMouseMove needsnativefixedincrement/mathAPIproof beforelater2016fieldusage."
+  },
+  {
+    "id": "native-debug-gfxcard-owner-and-zero-initialization",
+    "client": "2008-06",
+    "library": "Native DebugSettings Win32 graphics report",
+    "hypothesis": "A correct algorithm can retain95 from wrong genuine member API or initialization forms; prove receiver identity and preserve ordinary typed native initialization instead of forcing registers.",
+    "change": "Zero1032byte005634b0 mislabelContentProvider identifiedviaEnumDisplayDevicesA/SetupAPI anddriverregistrystrings. Caller407be0 factory565ac0RTTI provesDebugSettings; actualoldDebugSettings.h gfxcard()const missingbody restoresret4. NativeSP_CLASSIMAGELIST_DATA firstclear allEAX viaexplicitmemset, className260 emptystringarray initializer, indexzerobeforecbstore restoresfull100 naturally. ActualSDKWindowsstructs andG3DRegistryUtilpublicAPI; nofield/layout/vslot/ABIinvention, padding orforcedregisters.",
+    "exacts_gained": 1,
+    "outcome": "server_verified",
+    "evidence": "work/goal-native-driver-info-20261015/receipts.json",
+    "next": "20successfulcontexts totalincludes8ContentIdcontainer0and12driverdrafts1; parkedlosingcontexts. Allunresolvedfanoutalreadydone; donotclaimnativefullDebugSettingslayoutfromunusedreceiver."
   }
 ]

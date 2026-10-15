@@ -14754,7 +14754,7 @@
     "op": "fanout",
     "client": "2008-06",
     "library": "Native Camera, geometry, contact force, XML and Lua execution/error families",
-    "hypothesis": "Two fast21022 objects replay71 fullcode/data campaign exacts plus7existingABIcontrols. Fresh607byte0score DescriptorReceiver<PropertyDescriptor>.learnName genuine2016source withproved2008pointervector/twoarg/no checksumrevision, fullprivatefieldsandgenuineunusedAPIdeclarationsretained; sourceoldPropertyContainer checkediterator+ClassDescriptor all_begin/end staticAPIs withnoinstancefields/layoutchanges. ExplicitnativeName lookupbeforebase/search restores100from94. Fourprofilefanout17newserverexacts3696bytes (primary607,15Boostmutable-string split/set/vectorhelpers including580byteiter_split,Classall_end37). Prior54campaign+7ABIcontrols retained. Receiverinobject1keepsClassregistryprivateallClasses externalnaturally, object0unchanged. NativeEnum2slotaudit rerun aftermerge; allpriorABIproof retained. Existingdefaultobjects remain2; noadditionalcompile. NativeFileSystem twofreshzero992/548bytefunctions fullnativeWin32/ATLbranches, unchangedoldFileSystemheader, malformednativecacheGUID preserved. Bothserver100normalandfast; foldedobject0withallprevious78controlsplusGetIntegrity existing100: 73campaign+8ABIcontrols81total, still2defaultcompiles. NativeSoundCachemap genuineSoundId/sharedSound wholeinstantiation:552bytezero hintedinsert+2helpers server100, opaquegenuineContentIdoperator< boundary vswronginlinebody75. Fullheadersunchanged. Foldedobject1all81priorcontrols+3fresh84full100,76campaign/8ABIcontrols,still2defaultcompiles. NativeEnum2slot auditretained.",
+    "hypothesis": "Two fast21022 objects replay71 fullcode/data campaign exacts plus7existingABIcontrols. Fresh607byte0score DescriptorReceiver<PropertyDescriptor>.learnName genuine2016source withproved2008pointervector/twoarg/no checksumrevision, fullprivatefieldsandgenuineunusedAPIdeclarationsretained; sourceoldPropertyContainer checkediterator+ClassDescriptor all_begin/end staticAPIs withnoinstancefields/layoutchanges. ExplicitnativeName lookupbeforebase/search restores100from94. Fourprofilefanout17newserverexacts3696bytes (primary607,15Boostmutable-string split/set/vectorhelpers including580byteiter_split,Classall_end37). Prior54campaign+7ABIcontrols retained. Receiverinobject1keepsClassregistryprivateallClasses externalnaturally, object0unchanged. NativeEnum2slotaudit rerun aftermerge; allpriorABIproof retained. Existingdefaultobjects remain2; noadditionalcompile. NativeFileSystem twofreshzero992/548bytefunctions fullnativeWin32/ATLbranches, unchangedoldFileSystemheader, malformednativecacheGUID preserved. Bothserver100normalandfast; foldedobject0withallprevious78controlsplusGetIntegrity existing100: 73campaign+8ABIcontrols81total, still2defaultcompiles. NativeSoundCachemap genuineSoundId/sharedSound wholeinstantiation:552bytezero hintedinsert+2helpers server100, opaquegenuineContentIdoperator< boundary vswronginlinebody75. Fullheadersunchanged. Foldedobject1all81priorcontrols+3fresh84full100,76campaign/8ABIcontrols,still2defaultcompiles. NativeEnum2slot auditretained. ServiceProvider pilot:two548bytebelow40targets werefusedfind320/create228 pairs, auditedfullEHframes/nativecppcompiledcreate100, reviewedbounds split2withzerobyteschange/exactsallpreserved. NativeactualnamesDebris/Geometry. GenuinefulloldServiceProvider fields/bases/privacy preserved, realmutable/getClassIndex/findconst/Nameonce APIs; nativecache190 withpreviousGuidInstance hierarchy. ExternalnativeCreatablefactory declarationavoidsunprovedDebrisownerallocation. Two228createfunctions server100,320find80/81partialnotexact. Foldedobject1retainall84controls+2fresh86full100,78campaign/8ABIcontrols,still2fastcompiles;Enum2slotauditrerun. FreshReplicatorfullpropertyserializer544initial0/reader597initial31 manualnative12typechain API recovered. FullSDKheadersfields/bases/privacyretained, unusedPlayers/Workspaceinclude replacedactualdependencies/forwarddecls, unusedgetPlayerbodydeclaration; native2argret8reader andownfield2cd4ScopedAssign restore99to100. Fourprofilepilot2new1141bytes. Foldedobject1movedgenuineNetrecipe/dependencyaliasesApprelative, retainedall86controls+2fresh88full100,80campaign/8ABIcontrols,still2fast21022objects;Enum2slotauditrerun.",
     "sources": [
       {
         "recipe": "rbxgs-atl90-dll",
@@ -14769,9 +14769,9 @@
         ]
       },
       {
-        "recipe": "rbxgs-dll",
+        "recipe": "rbxgs-net-dll",
         "files": [
-          "roc_sound_map_default_1_0acf87ff571bf16c.cpp"
+          "roc_replicator_property_default_1_66973a2d8524177a.cpp"
         ],
         "builds": [
           21022
@@ -21455,5 +21455,301 @@
     "targets": {},
     "evidence_resume": true,
     "next": "No further unchanged body trials if inline/context still differs."
+  },
+  "native-contentid-genuine-container-family-pilot-2008": {
+    "op": "fanout",
+    "client": "2008-06",
+    "library": "rbxgs",
+    "hypothesis": "Complete genuine ContentId declaration has stdstring plus Name pointer. SDK requestQueue uses list<ContentId>; native00561070 is vector assignment stride32 and ContentProvider related callers make ContentId plausible, not proof of owner layout or identity. Explicit instantiate actual public ContentId list/vector library types, all access/layout unchanged; candidate only until full bytes/data and server verification. No syntheticpayload or privateaccess.",
+    "sources": [
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_unit_d0c91740bfef73ba.cpp",
+          "roc_unit_911d9fb141d5bd7b.cpp"
+        ],
+        "builds": [
+          21022,
+          50727
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD",
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast"
+        ]
+      }
+    ],
+    "targets": {},
+    "evidence_resume": true,
+    "next": "Parkzero; ifactualstringwidth/type differs, seek native declaration instead of fakefields."
+  },
+  "native-driver-report-real-win32-public-api-pilot-2008": {
+    "op": "fanout",
+    "client": "2008-06",
+    "library": "rbxgs",
+    "hypothesis": "Zero1032byte005634b0 uses EnumDisplayDevicesA with realDISPLAY_DEVICEA424, realSP_CLASSIMAGELIST_DATA12 andSP_DEVINFO_DATA28; actualSetupAPIimports/branches/limits/shortindex andG3DRegistryUtil.readString genuinepublicdeclaration. Directnativealgorithm, no inventedobjects orvslots. Importedstdstring calls require realDLLcontext. Allunresolvedscan4profiles.",
+    "sources": [
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_unit_d46e823249912c94.cpp"
+        ],
+        "builds": [
+          21022,
+          50727
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD",
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast"
+        ]
+      }
+    ],
+    "targets": {},
+    "evidence_resume": true,
+    "next": "Readnativevsactualdiff; oneprovencontextrepair, park ifunproved."
+  },
+  "native-debug-settings-gfxcard-real-owner-context-2008": {
+    "op": "fanout",
+    "client": "2008-06",
+    "library": "rbxgs",
+    "hypothesis": "ActualSDKDebugSettings.h declares gfxcard()const, old.cpp missing body. Nativecaller45ccd7 passesreceiverfrom407be0 which constructsDebugSettings565ac0 andparentsGlobalSettings568f80; bothRTTIindependentlyverified. PreserveexistingmemberAPI, genuinefullheaderallfields/bases/privacy, naturallyhiddenstringresultret4; rejectfreecdeclpilot95 wrongABI. CompleteactualWin32publictypes plusrealRegistryUtil.readString.",
+    "sources": [
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_unit_370106dea9e1f80a.cpp"
+        ],
+        "builds": [
+          21022,
+          50727
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD",
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast"
+        ]
+      }
+    ],
+    "targets": {},
+    "evidence_resume": true,
+    "next": "VerifycodeANDdata; donotclaimcompleteDebugSettingslayoutfromunusedreceiver."
+  },
+  "native-debug-gfxcard-actual-native-initializers-2008": {
+    "op": "fanout",
+    "client": "2008-06",
+    "library": "rbxgs",
+    "hypothesis": "Native typedstructure clearing and emptystringarray initializer contexts; preserveactualmemberABI andcompletegenuineclassdeclarations. No padding, volatility or forcedregisters.",
+    "sources": [
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_unit_09f8f9973c494ab8.cpp"
+        ],
+        "builds": [
+          21022,
+          50727
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD",
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast"
+        ]
+      }
+    ],
+    "targets": {},
+    "evidence_resume": true,
+    "next": "Ifcode/datafull100 serververify; otherwiseparkunprovedTUcontext."
+  },
+  "native-service-provider-create-family-pilot-2008": {
+    "op": "fanout",
+    "client": "2008-06",
+    "library": "Genuine ServiceProvider service cache and creation templates",
+    "hypothesis": "Fresh548byte0score005d2530 and548byte30score006447b0 actuallyfusedfind320/create228; validindependentEHframes/nativeFuncInfo19930522/noinboundfirstflow/nativecppcreate228100; reviewedbounds splitbothwithzerochangedcodebytes, previousscoresinvalidatedsourcesretained noexactcredit. NativeName literalDebrisandGeometry disproveoldSpawner/Climbinghints. CompleteoldServiceProvider fields/bases/accessretained, genuine2016mutablecache/findconst/getClassIndex privateAPI, alreadyverifiednativeGuidInstance hierarchy givesactualserviceArray190. ActualoldNameprivateconstchar** templatescorrectedfromunverifiedchar*& perrealmodern/OpenRBXoncecache, publicdeclare andgenuineFactoryProduct.className definition. Nativecreateindexcachebeforeparent matchesactual2008branch unlike2016reorderedafterparent. GenuineoldDebrisheaderunaltered (legacyunprovedpaddingunused), nativefactorykeptactualpublictemplateopaque withspecializationdeclaration; noallocation/sizeof/DebrisownerABIclaim. Both228functionsfullcode/data100normal21022, find32080partialonly (sharedptrdestructorinliningresidue); no prefixcredit. Allunresolvedfourprofilefanout.",
+    "sources": [
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_service_debris_native_08bb5b501c1290e0.cpp"
+        ],
+        "builds": [
+          21022,
+          50727
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD",
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast"
+        ]
+      }
+    ],
+    "targets": {},
+    "output": "work\\large-functions-2008-20261014\\service-provider-create-native-family-pilot"
+  },
+  "native-content-provider-failed-url-authentic-loop-2008": {
+    "op": "fanout",
+    "client": "2008-06",
+    "library": "rbxgs",
+    "hypothesis": "ActualoldSDKisUrlBad source uses actualprivateFailedUrl stdstring/ptime,list,mutex. Native0055f7b0 measuredrequestSync130 andfailedUrls154 proxy/head+14;typedmemberviews preservegenuinetypes withoutclaimingwholeproviderlayout. Nativeclockimports/ptimecomparisons supportsamealgorithm. No privateaccesschange, fields orABIinvented.",
+    "sources": [
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_unit_e7401d39b2401551.cpp"
+        ],
+        "builds": [
+          21022,
+          50727
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD",
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast"
+        ]
+      }
+    ],
+    "targets": {},
+    "evidence_resume": true,
+    "next": "Fullcode/data/serveronly;parkifactualmembercontract differs."
+  },
+  "native-content-provider-genuine-base-revision-2008": {
+    "op": "fanout",
+    "client": "2008-06",
+    "library": "rbxgs",
+    "hypothesis": "RTTI82df6c provesContentProvider->DescribedNonCreatable<CP,Instance,&sContentProvider> plusemptyService130; actualcached2016samebases, no laterHeartbeat. CompleteSDKmemberfields/private/orderunchanged withnewInstance130. ActualoldisUrlBadbody, no typedoffsetviews, no syntheticlayout. ServiceheaderafterContentIdavoidsrealcircularinclude.",
+    "sources": [
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_unit_00db8fe842d0c314.cpp"
+        ],
+        "builds": [
+          21022,
+          50727
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD",
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast"
+        ]
+      }
+    ],
+    "targets": {},
+    "evidence_resume": true,
+    "next": "PropagatefullgenuineContentProviderfamilyifnativebodymatches."
+  },
+  "native-content-provider-url-end-before-begin-context-2008": {
+    "op": "fanout",
+    "client": "2008-06",
+    "library": "rbxgs",
+    "hypothesis": "NativeendheadEAX load beforeiteratorproxyECX versusSDKbeginfirstEBX. Initializeexistinglistendbeforebegin, no addedstate/helpers/layoutchanges. Genuinefullheadernativebasealready98, actualclock/FailedUrl/listbodypreserved.",
+    "sources": [
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_unit_20d2ec6a12aa22f7.cpp"
+        ],
+        "builds": [
+          21022,
+          50727
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD",
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast"
+        ]
+      }
+    ],
+    "targets": {},
+    "evidence_resume": true,
+    "next": "Fullcode/data/serververify; wholefamilyonlywithgenuinenativefields/API."
+  },
+  "native-content-provider-full-family-real-static-assets-2008": {
+    "op": "fanout",
+    "client": "2008-06",
+    "library": "rbxgs",
+    "hypothesis": "FullgenuineSDKContentProvider.cpp withnativeRTTIprovenDescribedNonCreatable+Servicebase andactualstaticassetpath:005606da assignsstdstringat9740f0; cached2016staticassetpath/setAssetFolder/assetFolder APIs. Removeobsoleteperinstancepath28bytes, no newfields/padding. URLend-before-begin actualnativeordering retained. RequiredexistingATL9context, two supported21022profilesallunresolved.",
+    "sources": [
+      {
+        "recipe": "rbxgs-atl90-dll",
+        "files": [
+          "roc_unit_505f934800ca49ca.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD",
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast"
+        ]
+      }
+    ],
+    "targets": {},
+    "evidence_resume": true,
+    "next": "Collectonlyfullserverreceipts; no near-score/wholelayoutclaims."
+  },
+  "native-content-provider-real-static-register-and-hash-api-2008": {
+    "op": "fanout",
+    "client": "2008-06",
+    "library": "rbxgs",
+    "hypothesis": "TwoactualSDKbodiesfull99 differonlymemberret0xc/24 versusnativecdeclret. Genuinecached2016declaresregisterContent andfindHashFile static; nativecaller005602c9/005602fbpushactualhistoricalargumentswithoutreceiver andcleans36bytesofreusedpendingargs. Markexistingmethodsstatic, keepactualoldstream+NameandContentIdbyvalueargs. No forcedABIattributes, fieldsorhelpers. FullactualproviderfamilytwoATL9contextsallunresolved.",
+    "sources": [
+      {
+        "recipe": "rbxgs-atl90-dll",
+        "files": [
+          "roc_unit_2b0145a356544bdd.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD",
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast"
+        ]
+      }
+    ],
+    "targets": {},
+    "evidence_resume": true,
+    "next": "Serververifygains,currentDBhash;oneobjectreplayfamilycontrols."
+  },
+  "native-replicator-property-family-pilot-2008": {
+    "op": "fanout",
+    "client": "2008-06",
+    "library": "Native Replicator property serializer and reader",
+    "hypothesis": "Fresh544byte0serializeValueand597byte31deserializeValue actualfullgenuineoldReplicator API/native12typechainwitholdStreamingpublicfunctions,RTTIenum/ref,G3Dsizebrickvector. Writerunusedboolret12, readeractual2argsret8 obsoletebooldropped. CompletegenuineoldReplicatorheaderfields/bases/privacy/vslotsunchanged; onlyunneededPlayers/Workspaceinclude replacedexplicitactualdependencies/forwarddecls andunusedinlinegetPlayerbodykeptdeclaration. No privateaccessbypass. Real2016ScopedAssign fullunchangedhelpermatchesRAIIbounceback; onlynativeownfieldview2cd4 (oldheader2cfc) insideactualmember yields99to100. Fullcode/data100bothparentsnormal21022beforefanout. SharedStringDictionaryrealSender/Receiverheader naturallymatchesnative0xe24baseadjust. Noownerlayout/unusedwireAPIclaim; no inventedfields/ABI/padding. Fourprofileallunresolvedscale.",
+    "sources": [
+      {
+        "recipe": "rbxgs-net-dll",
+        "files": [
+          "roc_replicator_property_native_offset_91d34afc4bce4141.cpp"
+        ],
+        "builds": [
+          21022,
+          50727
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD",
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast"
+        ]
+      }
+    ],
+    "targets": {},
+    "output": "work\\large-functions-2008-20261014\\replicator-property-native-family-pilot"
+  },
+  "native-streaming-property-helpers-family-pilot-2008": {
+    "op": "fanout",
+    "client": "2008-06",
+    "library": "Genuine property serialization helpers",
+    "hypothesis": "Propagatefresh544/597byteReplicatornative12typechainpilot toactualoldStreaming sevenpublicstreamtypes bool/int/float/Color3/Vector3/CoordinateFrame/string. Genuine2016NetworkStreaming genericserializebitstream<<getValue anddeserializeread/getInstancenullguard/setValue, sameoldheaderpublictemplates, nofields/ABIchanges. Explicit14actualfunctioninstantiations, actualBitStreamheaderneededforoverloadlookup. Fourprofileallunresolvedscan, independentfromnativeparentvisibility.",
+    "sources": [
+      {
+        "recipe": "rbxgs-net-dll",
+        "files": [
+          "roc_streaming_property_native_fd12bccf16176d81.cpp"
+        ],
+        "builds": [
+          21022,
+          50727
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD",
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast"
+        ]
+      }
+    ],
+    "targets": {},
+    "output": "work\\large-functions-2008-20261014\\streaming-property-native-family-pilot"
   }
 }

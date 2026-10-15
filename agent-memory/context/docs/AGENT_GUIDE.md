@@ -557,3 +557,11 @@ opaque declarations added extra calls; restoring the real accessor bodies and
 proven PV offsets improved the two full methods to71/85. Both remain partial.
 Do not expose private helpers, change access rules, or invent missing base/layout
 fields. A four-object fanout added no exacts and was parked.
+
+For an adjusted SEH frame (`lea ebp,[esp-N]` then `sub esp,N`), an early
+conditional branch may enter the compiler-owned EH tail after the recorded body.
+Treat it as a review lead only when the target is an existing EH row and reaches
+the matching `add ebp,N; mov esp,ebp; pop ebp; ret` exit. Do not auto-merge it.
+For ContentProvider, use the native RTTI-proved DescribedNonCreatable plus Service
+base and genuine static APIs before attempting typed-layout repairs; tied exact
+submissions retain their older canonical source.
