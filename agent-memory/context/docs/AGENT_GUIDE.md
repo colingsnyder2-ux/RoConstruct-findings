@@ -540,3 +540,11 @@ Keep genuine classes, bases and access rules. A low score from an unrelated
 function is not evidence that the intended body compiled. Restoring native
 double branches and callback emission also emitted a verified116-byte ownership
 helper; its2008 auto stage needs only the winning normal21022 object.
+
+Native Body gyro recovery also needs the genuine public accessor bodies when
+the native TU inlines them. Preserve the original private updatePV declaration
+and call it only inside those own public methods, as Body.h does. Public-only
+opaque declarations added extra calls; restoring the real accessor bodies and
+proven PV offsets improved the two full methods to71/85. Both remain partial.
+Do not expose private helpers, change access rules, or invent missing base/layout
+fields. A four-object fanout added no exacts and was parked.
