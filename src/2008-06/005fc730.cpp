@@ -1,4 +1,3 @@
-// from server: 86% by king_originala
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
 extern "C" long __cdecl _InterlockedDecrement(volatile long*);
@@ -15,59 +14,6 @@ struct Control
     void release();
 };
 
-struct ControlSlot
-{
-    Control* value;
-    void assign(const ControlSlot&);
-};
-
-struct Listener
-{
-    char storage[32];
-    void connect(void*);
-};
-
-struct Object
-{
-    char padding[0x64];
-    Listener first;
-    Listener second;
-};
-
-struct Pair
-{
-    Object* object;
-    ControlSlot control;
-    ~Pair();
-};
-
-Pair __cdecl acquire(void*);
-
-struct Padding
-{
-    char storage[0x170];
-};
-
-struct FirstListener
-{
-    unsigned long value;
-};
-
-struct SecondListener
-{
-    unsigned long value;
-};
-
-struct S : Padding, FirstListener, SecondListener
-{
-    char padding[0x20];
-    Object* object;
-    ControlSlot control;
-
-    void assign(const Pair&);
-    void f(void*);
-};
-
 __forceinline void Control::release()
 {
     if (_InterlockedDecrement(&strong) == 0)
@@ -78,29 +24,78 @@ __forceinline void Control::release()
     }
 }
 
-__forceinline Pair::~Pair()
+struct Listener
 {
-    if (control.value)
-        control.value->release();
+    void* vptr;
+};
+
+struct FirstHook : Listener {};
+struct SecondHook : Listener {};
+
+struct Notifier
+{
+    void attach(Listener*);
+};
+
+struct Hub
+{
+    char pad0[0x64];
+    Notifier first;
+    char pad1[0x1f];
+    Notifier second;
+};
+
+struct Holder
+{
+    Control* pointer;
+    Holder& operator=(const Holder&);
+};
+
+struct Shared
+{
+    Hub* pointer;
+    Holder owner;
+    Shared& operator=(const Shared&);
+    ~Shared();
+};
+
+__forceinline Shared& Shared::operator=(const Shared& value)
+{
+    pointer = value.pointer;
+    owner = value.owner;
+    return *this;
 }
 
-__forceinline void S::assign(const Pair& source)
+__forceinline Shared::~Shared()
 {
-    object = source.object;
-    control.assign(source.control);
+    if (owner.pointer)
+        owner.pointer->release();
 }
 
-void S::f(void* argument)
+extern Shared __cdecl acquire(void*);
+
+struct HubPad
 {
-    assign(acquire(argument));
+    char pad[0x170];
+};
 
-    void* firstListener = reinterpret_cast<unsigned long>(this)
-        ? reinterpret_cast<char*>(this) + 0x170 : 0;
-    if (object)
-        object->first.connect(firstListener);
+struct LocalBackpack : HubPad, FirstHook, SecondHook
+{
+    char mid[0x198 - 0x178];
+    Shared hub;
 
-    void* secondListener = reinterpret_cast<unsigned long>(this)
-        ? reinterpret_cast<char*>(this) + 0x174 : 0;
-    if (object)
-        object->second.connect(secondListener);
+    void init(void* argument);
+};
+
+void LocalBackpack::init(void* argument)
+{
+    hub = acquire(argument);
+
+    FirstHook* first = this ? static_cast<FirstHook*>(this) : 0;
+    if (hub.pointer)
+        hub.pointer->first.attach(first);
+
+    SecondHook* second = first ? static_cast<SecondHook*>(this) : 0;
+    if (hub.pointer)
+        hub.pointer->second.attach(second);
 }

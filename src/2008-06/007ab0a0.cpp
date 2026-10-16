@@ -1,500 +1,619 @@
-// =============================================================================
-//  RenderScene_2008.cpp
-//
-//  C++ conversion of the 32-bit x86 (MSVC __thiscall) listing of RenderScene,
-//  RenderScene_2008_assembly_only.asm, addresses 007AB0A0 .. 007AB819.
-//
-//  C++98/03 only -- compiled with MSVC 2005 (50727) / 2008 RTM (21022).
-// =============================================================================
+// roc-cl: 21022
+/*
+ * Reconstructed high-level C++ from Roblox RenderScene (2008), 0x007AB0A0.
+ * Real C++ only: no inline assembly or embedded machine code.
+ * The Ogre declarations below are *interface placeholders* for a syntax check;
+ * replace them with the correct versioned Ogre SDK headers before linking.
+ * Roblox sub_... symbols require implementations/address bindings.
+ * Not a verified byte-exact recreation.
+ */
 
-// MSVC 2005/2008: calling convention AFTER return type (void __cdecl f()).
+#include <string>
+#include <cstdio>
+#include <cmath>
+#include <cstring>
+#include <stdexcept>
+
+#if defined(_MSC_VER) && defined(_M_IX86)
+#define __thiscall
+#define RS_STDCALL __stdcall
+#elif defined(__clang__) && defined(__i386__)
+#define __attribute__((thiscall))
+#define RS_STDCALL __attribute__((stdcall))
+#else
 #define RS_THISCALL
 #define RS_STDCALL
-#define RS_CDECL
+#endif
+
+#ifdef OGRE_NONCLIENT_BUILD
+#undef OGRE_NONCLIENT_BUILD
+#endif
+#include <Ogre.h>
+
 
 namespace rs {
 
-typedef unsigned char  u8;
-typedef unsigned int   u32;
-typedef unsigned long  size_t;
-typedef unsigned long  uintptr_t;
+typedef unsigned char u8;
+typedef unsigned int u32;
 
-// =============================================================================
-// External routines referenced by the listing (not part of this listing)
-// =============================================================================
+template<class T>
+inline T& At(void* p, unsigned offset) {
+    return *reinterpret_cast<T*>(static_cast<unsigned char*>(p) + offset);
+}
 
-// ---- direct calls (E8 rel32) ------------------------------------------------
-void  __cdecl sub_5107B0(void* self, void* out);                 // call 5107B0 : ecx=pose, [esp]=&matrix
-void* __cdecl sub_6A0920(size_t size);                          // call 6A0920 : operator new(size)
-void* __cdecl sub_674160(void* self, void* a, void* b);          // call 674160 : ctor, returns this
-void  __cdecl sub_7A9D30(void* self, void* ctx, u32 flag);       // call 7A9D30 : member helper (ctx, flag)
-void  __cdecl sub_7A9C40(void* self);                            // call 7A9C40 : member helper on target
-u32   __cdecl sub_513E20();                                     // call 513E20 : returns a value in eax
-void  __cdecl sub_513220(void* self, u32 value);                 // call 513220 : ctor(value)
-void  __cdecl sub_510B50(void* self, void* timing);              // call 510B50 : pose.update(timing)
-void* __cdecl sub_67D1F0(void* self);                            // call 67D1F0 : ctor, returns this
-void  __cdecl sub_67C520(void* self);                            // call 67C520 : member helper (no args)
-void  __cdecl sub_548F80(void* self, float v);
-void* __cdecl sub_7A9CE0(void* self, void* a);
-void* __cdecl sub_7A9C90(void* self, void* a);
-void  __cdecl sub_45AD90(void* self);
-void* __cdecl sub_6A17C6(unsigned long size);
-void  __cdecl imp_804338(void* self);
-void* __cdecl imp_804344(void* self);
-void  __cdecl imp_804340(void* self);
-void  __cdecl imp_80425C(void* self, void* src);
-void  __cdecl imp_804498(void* self);
-void  __cdecl sub_548F80(void* self, float v);
-void* __cdecl sub_7A9CE0(void* self, void* a);
-void* __cdecl sub_7A9C90(void* self, void* a);
-void  __stdcall sub_5493E0(void* ctx);                           // call 5493E0 : callee pops its argument
-void  __stdcall sub_54A920(void* ctx);                           // call 54A920 : callee pops its argument
-void  __cdecl sub_6A067A(void* p);                              // call 6A067A : operator delete(p)
+inline void* Addr(void* p, unsigned offset) {
+    return static_cast<unsigned char*>(p) + offset;
+}
 
-// ---- indirect calls through import slots (call [addr]) ----------------------
-void  __cdecl imp_804C78(void* self, void* arg);                 // ecx=&vec4, push &matrix
-void  __cdecl imp_8043B4(void* self, void* vec4);                // ecx=device, push &vec4
-void  __cdecl imp_804EA4(void* self, float a, float b, float c); // ecx=device, 3 floats
-void  __cdecl imp_804E7C(void* self);                            // scope object: enter
-void  __cdecl imp_804E80(void* self);                            // scope object: leave
-int   __stdcall imp_8021AC(void* p);                             // p != 0 -> "pinned": skip release
-void  __cdecl imp_802458(void* self, const char* text);          // NameRef::name ctor(text)
-void  __cdecl imp_802468(void* self);                            // NameRef dtor
-void* __cdecl imp_804E60();                                     // singleton/manager getter
-void  __cdecl imp_804268(void* self, void* src);                 // SharedHandle::operator=(src)
-void* __cdecl imp_8042FC();                                     // manager getter
-void  __cdecl imp_8042F4(void* self, void* src);                 // SharedHandle::operator=(src)
-void  __cdecl imp_804C68(void* self, const void* arg);           // ctor(arg) of a stack temporary
-void* __cdecl imp_804258(void* self);                            // getter on global object
-void  __cdecl imp_8048C4(void* self, void* arg);                 // ctor(arg) of a stack temporary
+template<class R>
+inline R VCall(void* p, unsigned slot) {
+    typedef R (*Fn)(void*);
+    return reinterpret_cast<Fn>((*reinterpret_cast<void***>(p))[slot / 4])(p);
+}
 
-// NULL for MSVC 2005/2008
-#ifndef NULL
-#define NULL 0
+template<class R, class A>
+inline R VCall(void* p, unsigned slot, A a) {
+    typedef R (*Fn)(void*, A);
+    return reinterpret_cast<Fn>((*reinterpret_cast<void***>(p))[slot / 4])(p, a);
+}
+
+template<class R, class A, class B>
+inline R VCall(void* p, unsigned slot, A a, B b) {
+    typedef R (*Fn)(void*, A, B);
+    return reinterpret_cast<Fn>((*reinterpret_cast<void***>(p))[slot / 4])(p, a, b);
+}
+
+template<class R, class A, class B, class C, class D, class E>
+inline R VCall(void* p, unsigned slot, A a, B b, C c, D d, E e) {
+    typedef R (*Fn)(void*, A, B, C, D, E);
+    return reinterpret_cast<Fn>((*reinterpret_cast<void***>(p))[slot / 4])(p, a, b, c, d, e);
+}
+
+struct RefNode { void* value; RefNode* next; };
+
+// These are engine functions whose source/signatures have not been recovered.
+// They must be linked to their original implementations or reconstructed.
+extern "C" long RS_STDCALL rsInterlockedDecrement(volatile long* count);
+extern void sub_5107B0(void* pose, void* matrix);
+extern void* sub_6A0920(unsigned size);
+extern void sub_6A067A(void* memory);
+extern void* sub_674160(void* memory, void* renderer, const std::string& name);
+extern void* sub_67D1F0(void* memory);
+extern void sub_67C520(void* target, Ogre::MeshPtr mesh);
+extern void sub_67C510(void* target, void* contextFields);
+extern void* sub_67D9B0(void* target, void* mesh, int value);
+extern void sub_7A9D30(void* scene, void* context, int flag);
+extern void sub_7A9C40(void* target, Ogre::AxisAlignedBox box);
+extern float* sub_7A9CE0(void* owner, void* key);
+extern float* sub_7A9C90(void* owner, void* key);
+extern void sub_548F80(void* ref, void** result, float value);
+extern void sub_549A50(void* itemRef, void* ctx, Ogre::AxisAlignedBox* box);
+extern void sub_549610(void* itemRef, void* ctx, Ogre::AxisAlignedBox* box);
+extern void sub_5493E0(void* context);
+extern void RS_STDCALL sub_54A920(void* context);
+extern unsigned sub_513E20();
+extern void sub_513220(void* output, unsigned value);
+extern void sub_510B50(void* pose, void* timing);
+extern void* sub_6A17C6(void* value);
+extern void sub_45AD90(void* value);
+extern int RS_STDCALL sub_6850D0(int distanceFlag);
+extern void sub_6850B0(void* entity, int distanceFlag, void* mesh);
+extern void sub_6850F0(void* entity, int distanceFlag);
+extern void sub_55C4C0(std::string* out);
+
+#if defined(_M_IX86) || defined(__i386__)
+typedef char CheckAABBSize[(sizeof(Ogre::AxisAlignedBox) == 0x20) ? 1 : -1];
+typedef char CheckMaterialHandleSize[(sizeof(Ogre::MaterialPtr) == 0x0c) ? 1 : -1];
+typedef char CheckMeshHandleSize[(sizeof(Ogre::MeshPtr) == 0x0c) ? 1 : -1];
 #endif
 
-// =============================================================================
-// Memory helpers
-// =============================================================================
+// These correspond to globals at 0x942EBC, 0x97F36C and 0x9738BC.
+extern u8 gDebugRender;
+extern unsigned gMaterialId;
+extern Ogre::Mesh* gBaseMesh;
 
-// Typed access at a byte offset ("[base + off]").
-template <class T>
-inline T& At(void* base, size_t off) {
-    return *reinterpret_cast<T*>(static_cast<unsigned char*>(base) + off);
-}
-
-// Address of a byte offset ("lea reg, [base + off]").
-inline void* Addr(void* base, size_t off) {
-    return static_cast<unsigned char*>(base) + off;
-}
-
-// Virtual call helpers (overloads for 0-5 args, C++98 compatible).
-template <class R>
-inline R VCall(void* obj, size_t vtblOff) {
-    typedef R (*Fn)(void*);
-    void** vtbl = *reinterpret_cast<void***>(obj);
-    return reinterpret_cast<Fn>(vtbl[vtblOff / 4])(obj);
-}
-
-template <class R, class A1>
-inline R VCall(void* obj, size_t vtblOff, A1 a1) {
-    typedef R (*Fn)(void*, A1);
-    void** vtbl = *reinterpret_cast<void***>(obj);
-    return reinterpret_cast<Fn>(vtbl[vtblOff / 4])(obj, a1);
-}
-
-template <class R, class A1, class A2>
-inline R VCall(void* obj, size_t vtblOff, A1 a1, A2 a2) {
-    typedef R (*Fn)(void*, A1, A2);
-    void** vtbl = *reinterpret_cast<void***>(obj);
-    return reinterpret_cast<Fn>(vtbl[vtblOff / 4])(obj, a1, a2);
-}
-
-template <class R, class A1, class A2, class A3>
-inline R VCall(void* obj, size_t vtblOff, A1 a1, A2 a2, A3 a3) {
-    typedef R (*Fn)(void*, A1, A2, A3);
-    void** vtbl = *reinterpret_cast<void***>(obj);
-    return reinterpret_cast<Fn>(vtbl[vtblOff / 4])(obj, a1, a2, a3);
-}
-
-template <class R, class A1, class A2, class A3, class A4>
-inline R VCall(void* obj, size_t vtblOff, A1 a1, A2 a2, A3 a3, A4 a4) {
-    typedef R (*Fn)(void*, A1, A2, A3, A4);
-    void** vtbl = *reinterpret_cast<void***>(obj);
-    return reinterpret_cast<Fn>(vtbl[vtblOff / 4])(obj, a1, a2, a3, a4);
-}
-
-template <class R, class A1, class A2, class A3, class A4, class A5>
-inline R VCall(void* obj, size_t vtblOff, A1 a1, A2 a2, A3 a3, A4 a4, A5 a5) {
-    typedef R (*Fn)(void*, A1, A2, A3, A4, A5);
-    void** vtbl = *reinterpret_cast<void***>(obj);
-    return reinterpret_cast<Fn>(vtbl[vtblOff / 4])(obj, a1, a2, a3, a4, a5);
-}
-
-template <class R, class A1, class A2, class A3, class A4, class A5, class A6>
-inline R VCall(void* obj, size_t vtblOff, A1 a1, A2 a2, A3 a3, A4 a4, A5 a5, A6 a6) {
-    typedef R (*Fn)(void*, A1, A2, A3, A4, A5, A6);
-    void** vtbl = *reinterpret_cast<void***>(obj);
-    return reinterpret_cast<Fn>(vtbl[vtblOff / 4])(obj, a1, a2, a3, a4, a5, a6);
-}
-
-// String literal located at its address in the original image.
-inline const char* Lit(uintptr_t addr) {
-    return reinterpret_cast<const char*>(addr);
-}
-
-// Vtable pointer installed in the handle temporaries (mov esi, 0x826BC4).
-void* const kSharedRefVTable = reinterpret_cast<void*>(0x826BC4u);
-
-// Module data used by the listing (absolute addresses).
-float g_vec3Cache[3]   = {0.0f, 0.0f, 0.0f};  // 0x96F044 / 0x96F048 / 0x96F04C
-u32   g_vec3CacheFlags = 0;                    // 0x96F050, bit 0 = initialised
-u8    g_942EBC         = 0;                    // 0x942EBC, diagnostics enable
-void* g_9738BC         = NULL;                 // 0x9738BC, global object pointer
-
-// =============================================================================
-// Data layouts recovered from the listing
-// =============================================================================
-
-// 12-byte handle written by the assignment imports (804268 / 8042F4).
-struct SharedHandle {
-    void* vptr;
-    void* ptr;
-    u32*  rc;
+// A query has TWO outputs: the returned pointer to a value and the local
+// ownership handle, which is subsequently decremented/destroyed. Mixing
+// these two was a major bug in the earlier conversion.
+struct QueryResult {
+    void* handle;
+    void* value;
 };
 
-// Name/key temporary: kind at +0, string storage at +4.
-struct NameRef {
-    u32           kind;
-    unsigned char name[0x1C];
-};
-
-// Node of a per-item result list: value at +0, next at +4.
-struct ListNode {
-    void*     value;
-    ListNode* next;
-};
-
-// 4x4 float block filled by sub_5107B0.
-struct Matrix4 {
-    float m[16];
-};
-
-// Offsets of RenderScene fields ([ebp + N] in the listing).
-static const size_t kItems     = 0x008;   // void** items
-static const size_t kItemCount = 0x00C;   // int    itemCount
-static const size_t kBackend   = 0x268;   // void*  backend   (0x248-byte object, created lazily)
-static const size_t kTarget    = 0x26C;   // void*  target    (0x2BC-byte object, created lazily)
-static const size_t kHandle270 = 0x270;   // SharedHandle (assigned via imp_804268)
-static const size_t kFlag274   = 0x274;   // int
-static const size_t kSub27C    = 0x27C;   // embedded sub-object (assigned via imp_8042F4)
-static const size_t kFlag280   = 0x280;   // int
-static const size_t kFlagF4    = 0x2F4;   // bool
-static const size_t kFlagF6    = 0x2F6;   // bool
-static const size_t kClear     = 0x328;   // float clear[3]
-
-// Offsets of the context object (arg1, "edi").
-static const size_t kCtxA      = 0x004;   // object with vtable 268/278/B4
-static const size_t kCtxDevice = 0x008;   // device/renderer object (vtable 114/11C/124)
-static const size_t kCtxFlag   = 0x7F5;   // byte
-
-// Offsets of the pose object (arg2, "esi").
-static const size_t kPose4     = 0x004;   // float
-static const size_t kPoseC     = 0x00C;   // float
-static const size_t kPose10    = 0x010;   // float
-
-// Stack-frame slots: listing operand [esp+N] == frame byte N.
-namespace frame {
-    static const size_t kP18       = 0x18;   // item query result (007AB7CA)
-    static const size_t kOut20     = 0x20;   // item query out-param, pass 1
-    static const size_t kR24       = 0x24;   // int (zeroed at 007AB80A)
-    static const size_t kFloat28   = 0x28;   // float passed by pointer (007AB1E5)
-    static const size_t kP3C       = 0x3C;   // list out-param, pass 2
-    static const size_t kP44       = 0x44;   // list out-param, pass 2
-    static const size_t kP4C       = 0x4C;   // list out-param, pass 2
-    static const size_t kVec4A     = 0x5C;   // {clear.r, clear.g, clear.b, 1} (007AB117)
-    static const size_t kHandleB   = 0x5C;   // SharedHandle reusing kVec4A  (007AB3DD)
-    static const size_t kHandleA   = 0x6C;   // SharedHandle                 (007AB324)
-    static const size_t kNameD8    = 0xD8;   // NameRef                      (007AB24F, 007AB304, 007AB398)
-    static const size_t kVec4One   = 0x100;  // {1, 0, 0, 0}                 (007AB146)
-    static const size_t kGuard230  = 0x230;  // scope object                 (007AB205)
-    static const size_t kMatrix260 = 0x260;  // Matrix4                      (007AB0CF)
-    static const size_t kNameF8    = 0x1F8;  // NameRef                      (007AB398)
-    static const size_t kTiming1A8 = 0x1A8;  // timing object, vec3 at +0x24 (007AB5C5)
+inline QueryResult QueryItem(void* item, unsigned method) {
+    QueryResult r = {0, 0};
+    void* returned = VCall<void*>(item, method, &r.handle);
+    if (returned)
+        r.value = At<void*>(returned, 0);
+    return r;
 }
 
-// =============================================================================
-// Release helpers (the refcount / list teardown sequences of the listing)
-// =============================================================================
+inline void ReleaseRef(void*& handle) {
+    if (!handle)
+        return;
 
-// 007AB35C..007AB374 and 007AB40B..007AB435:
-//   if (h.rc && --*h.rc == 0) h.vptr[1](&h);
-inline void ReleaseHandle(SharedHandle& h) {
-    if (h.rc != NULL && --(*h.rc) == 0) {
-        VCall<void>(&h, 0x04);
-    }
-}
-
-// 007AB4F7..007AB543 (identical blocks at 007AB67A.. and 007AB77A..):
-//   if (slot && !imp_8021AC(slot + 4)) {
-//       for (n = slot->list; n; n = next) { n->value->vtbl[1](); next = n->next; free(n); }
-//       slot->vtbl[0](1);                    // scalar deleting destructor
-//   }
-//   slot = NULL;
-inline void ReleaseSlot(void*& slot) {
-    if (slot != NULL && imp_8021AC(static_cast<char*>(slot) + 4) == 0) {
-        ListNode* node = At<ListNode*>(slot, 0x08);
-        while (node != NULL) {
-            VCall<void>(node->value, 0x04);
-            ListNode* next = node->next;
+    if (rsInterlockedDecrement(reinterpret_cast<volatile long*>(Addr(handle, 4))) == 0) {
+        RefNode* node = At<RefNode*>(handle, 8);
+        while (node) {
+            RefNode* next = node->next;
+            VCall<void>(node->value, 4);
             sub_6A067A(node);
             node = next;
         }
-        VCall<void>(slot, 0x00, 1);
+        VCall<void>(handle, 0, 1);
     }
-    slot = NULL;
+    handle = 0;
 }
 
-// =============================================================================
-// RenderScene
-// =============================================================================
+// Some returned resources use a simpler release path rather than a RefNode list.
+inline void ReleaseResource(void*& handle) {
+    if (!handle)
+        return;
+    if (rsInterlockedDecrement(reinterpret_cast<volatile long*>(Addr(handle, 4))) == 0) {
+        sub_45AD90(handle);
+        VCall<void>(handle, 0, 1);
+    }
+    handle = 0;
+}
+
+inline Ogre::SubMesh* FindSubMesh(void* data) {
+    if (!data || At<u8>(data, 0x1c) != 0)
+        return 0;
+
+    int index = At<int>(data, 0x20);
+    if (index < 0 || !gBaseMesh)
+        return 0;
+    return gBaseMesh->getSubMesh(static_cast<unsigned short>(index));
+}
+
+// The virtual material-container method has five stack arguments in the
+// original disassembly (index, 0, global, global, 0).
+inline void* SelectMaterialEntry(void* container, int index) {
+    return VCall<void*>(container, 0x14,
+        index, 0,
+        reinterpret_cast<void*>(0x96BDFCu),
+        reinterpret_cast<void*>(0x96BE2Cu), 0);
+}
+
+inline void* GetMaterialData(void* item, int index) {
+    QueryResult q = QueryItem(item, 0x14);
+    void* result = q.value ? sub_6A17C6(SelectMaterialEntry(q.value, index)) : 0;
+    ReleaseRef(q.handle);
+    return result;
+}
+
+inline Ogre::TexturePtr GetSkyTexture() {
+    Ogre::TextureManager& textures = Ogre::TextureManager::getSingleton();
+    Ogre::TexturePtr texture = textures.getByName("skysphmap");
+    if (texture.isNull()) {
+        std::string rootPath;
+        sub_55C4C0(&rootPath);
+        Ogre::Image image;
+        image.load(rootPath + "Sky\\skyspheremap.jpg", "General");
+        texture = textures.create("skysphmap", "General");
+        if (!texture.isNull())
+            texture->loadImage(image);
+    }
+    return texture;
+}
+
+inline void ConfigureSky(Ogre::Material* material, float intensity) {
+    Ogre::Pass* pass = material->getTechnique(0)->createPass();
+    pass->setDiffuse(intensity, intensity, intensity, intensity * 0.8f);
+    pass->setAmbient(intensity, intensity, intensity);
+    pass->setSceneBlending((Ogre::SceneBlendFactor)0, (Ogre::SceneBlendFactor)9);
+
+    Ogre::TexturePtr sky = GetSkyTexture();
+    if (!sky.isNull()) {
+        Ogre::TextureUnitState* unit = pass->createTextureUnitState();
+        unit->setTextureName(sky->getName(), (Ogre::TextureType)2);
+        unit->setEnvironmentMap(true, (Ogre::TextureUnitState::EnvMapType)1);
+    }
+}
+
+inline void ConfigurePass(Ogre::Pass* pass, void* layer, void* item, void* info) {
+    float* color = VCall<float*>(layer, 0x18);
+    float alpha = 1.0f - VCall<float>(layer, 0x28);
+    pass->setDiffuse(color[0], color[1], color[2], alpha);
+    pass->setAmbient(color[0], color[1], color[2]);
+
+    int type = At<int>(info, 0x84);
+    if (type >= 1 && type <= 3) {
+        float b = VCall<float>(layer, 0x1c, 1.0f);
+        float g = VCall<float>(layer, 0x1c, b);
+        float r = VCall<float>(layer, 0x1c, g);
+        pass->setSpecular(r, g, b, 1.0f);
+        pass->setShininess(type == 2 ? 40.0f : 18.0f);
+    } else {
+        pass->setSpecular(0.75f, 0.75f, 0.75f, 1.0f);
+        pass->setShininess(10.0f);
+    }
+
+    pass->setDepthBias(At<float>(item, 0x18) * -16.0f, 0.0f);
+    if (VCall<float>(layer, 0x28) > 0.0f || type == 4) {
+        pass->setSceneBlending((Ogre::SceneBlendFactor)7, (Ogre::SceneBlendFactor)9);
+        pass->setDepthWriteEnabled(false);
+    }
+
+    QueryResult textureQuery = QueryItem(layer, 0x0c);
+    if (textureQuery.value) {
+        void* textureData = sub_6A17C6(textureQuery.value);
+        Ogre::TexturePtr* texture = textureData
+            ? reinterpret_cast<Ogre::TexturePtr*>(Addr(textureData, 0x54)) : 0;
+
+        if (texture && !texture->isNull()) {
+            Ogre::TextureUnitState* unit = pass->createTextureUnitState();
+            unit->setColourOperation((Ogre::LayerBlendOperation)2);
+            unit->setTextureFiltering((Ogre::FilterOptions)2, (Ogre::FilterOptions)2, (Ogre::FilterOptions)2);
+            unit->setTextureAddressingMode((Ogre::TextureUnitState::TextureAddressingMode)0, (Ogre::TextureUnitState::TextureAddressingMode)0, (Ogre::TextureUnitState::TextureAddressingMode)0);
+            float* rgb = VCall<float*>(layer, 0x18);
+            unit->setTextureBorderColour(Ogre::ColourValue(rgb[0], rgb[1], rgb[2], 1.0f));
+            unit->setTextureName((*texture)->getName(), (Ogre::TextureType)2);
+            if ((*texture)->isLoaded() && VCall<float>(layer, 0x28) > 0.0f && type == 2) {
+                pass->setSceneBlending((Ogre::SceneBlendType)4);
+                pass->setDepthWriteEnabled(true);
+                pass->setAlphaRejectSettings((Ogre::CompareFunction)6, 1);
+            }
+        }
+    }
+    ReleaseResource(textureQuery.handle);
+}
+
+// materialData is the internal engine material object returned by sub_6A17C6.
+// Its Ogre::MaterialPtr is embedded at +0x2C, underlying pointer at +0x30.
+inline bool BuildItemMaterial(void* item, void* info, void* materialData) {
+    if (!materialData || At<void*>(materialData, 0x30))
+        return false;
+
+    Ogre::MaterialPtr* material = reinterpret_cast<Ogre::MaterialPtr*>(Addr(materialData, 0x2c));
+    char name[8];
+#if defined(_MSC_VER)
+    _snprintf(name, sizeof(name), "m%d", static_cast<int>(gMaterialId++));
+#else
+    std::snprintf(name, sizeof(name), "m%d", static_cast<int>(gMaterialId++));
+#endif
+    *material = Ogre::MaterialManager::getSingleton().create(name, "General");
+    if (material->isNull())
+        return false;
+
+    QueryResult layers = QueryItem(item, 0x14);
+    int count = layers.value ? VCall<int>(layers.value, 0x10) : 0;
+    ReleaseRef(layers.handle);
+
+    for (int i = 0; i < count; ++i) {
+        QueryResult group = QueryItem(item, 0x14);
+        void* entry = group.value ? SelectMaterialEntry(group.value, i) : 0;
+        void* layer = entry ? sub_6A17C6(entry) : 0;
+        ReleaseRef(group.handle);
+        if (!layer)
+            continue;
+
+        Ogre::Technique* technique = (*material)->getTechnique(0);
+        Ogre::Pass* pass = i == 0 ? technique->getPass(0) : technique->createPass();
+        ConfigurePass(pass, layer, item, info);
+    }
+
+    float intensity = VCall<float>(materialData, 0x24);
+    if (intensity > 0.0f)
+        ConfigureSky(material->operator->(), VCall<float>(materialData, 0x24));
+    return true;
+}
+
+// The pair passed to the backend has radius at +0 and center at +4.
+// The previous conversion reversed these, changing the parameter layout.
+struct BoundsInfo {
+    float radius;
+    Ogre::Vector3 center;
+};
+
+inline void UpdateItemBounds(void* backend, void* itemRef, void* data,
+                             void* ctx, bool special) {
+    if (!data || At<u8>(data, 0x1c) == 0)
+        return;
+
+    Ogre::AxisAlignedBox box;
+    if (special)
+        sub_549610(itemRef, ctx, &box);
+    else
+        sub_549A50(itemRef, ctx, &box);
+
+    BoundsInfo b = {box.getHalfSize().length(), box.getCenter()};
+    void* mesh = special ? static_cast<void*>(FindSubMesh(data)) : At<void*>(data, 0x24);
+    VCall<void>(backend, 0x1c4, mesh, &b);
+}
+
+inline Ogre::Vector3 WorldPosition(void* item) {
+    float* m = VCall<float*>(item, 0x1c);
+    return Ogre::Vector3(m[9], m[10], m[11]);
+}
+
+// At 7AC6C0..7AC8C9 the original builds one of two AABBs, then merges
+// it with the target's existing bounds. This was missing from the old code.
+inline void MergeItemBounds(void* backend, void* target, void* item,
+                            void* data, void* selectedMesh) {
+    Ogre::Vector3 pos = WorldPosition(item);
+    if (std::fabs(pos.x) >= 10000.0f ||
+        std::fabs(pos.y) >= 10000.0f ||
+        std::fabs(pos.z) >= 10000.0f)
+        return;
+
+    Ogre::AxisAlignedBox box;
+    if (selectedMesh != At<void*>(data, 0x24)) {
+        float* bounds = VCall<float*>(backend, 0x1c8, selectedMesh);
+        float r = bounds[0];
+        Ogre::Vector3 center(pos.x + bounds[1], pos.y + bounds[2], pos.z + bounds[3]);
+        box = Ogre::AxisAlignedBox(
+            Ogre::Vector3(center.x-r, center.y-r, center.z-r),
+            Ogre::Vector3(center.x+r, center.y+r, center.z+r));
+    } else {
+        void* mesh = At<void*>(data, 0x24);
+        box = Ogre::AxisAlignedBox(
+            Ogre::Vector3(pos.x + At<float>(mesh, 0xcc),
+                          pos.y + At<float>(mesh, 0xd0),
+                          pos.z + At<float>(mesh, 0xd4)),
+            Ogre::Vector3(pos.x + At<float>(mesh, 0xd8),
+                          pos.y + At<float>(mesh, 0xdc),
+                          pos.z + At<float>(mesh, 0xe0)));
+    }
+    sub_7A9C40(target, box);
+}
+
+inline float DetermineItemDistanceFlag(void* item, const unsigned char* poseData) {
+    float* m = VCall<float*>(item, 0x1c);
+    float x = m[9]  - At<float>(const_cast<unsigned char*>(poseData), 0x24);
+    float y = m[10] - At<float>(const_cast<unsigned char*>(poseData), 0x28);
+    float z = m[11] - At<float>(const_cast<unsigned char*>(poseData), 0x2c);
+    float depth = -(x * At<float>(const_cast<unsigned char*>(poseData), 0x08) +
+                    y * At<float>(const_cast<unsigned char*>(poseData), 0x14) +
+                    z * At<float>(const_cast<unsigned char*>(poseData), 0x20));
+    return !(depth < 80.0f) ? 1.0f : 0.0f;
+}
+
+inline void AddPerVertexOffsets(void* info, void* data) {
+    if (At<int>(data, 0x18) != 5 || At<int>(data, 0x10) != 4)
+        return;
+    void* raw = At<void*>(data, 0x0c);
+    if (!raw)
+        return;
+    float* offset = sub_7A9CE0(info, At<void*>(raw, 0));
+    for (int i = 0; i < 4; ++i) {
+        void* key = At<void*>(raw, i * 4);
+        float* pos = sub_7A9C90(info, key);
+        pos[0] += offset[0] * 0.06f;
+        pos[1] += offset[1] * 0.06f;
+        pos[2] += offset[2] * 0.06f;
+    }
+}
+
+inline void UpdateEntityTransform(void* entity, void* item) {
+    float* m = VCall<float*>(item, 0x1c);
+    Ogre::Matrix3 rotation;
+    std::memcpy(&rotation, m, sizeof(rotation));
+    Ogre::Quaternion orientation;
+    orientation.FromRotationMatrix(rotation);
+
+    m = VCall<float*>(item, 0x1c);
+    Ogre::Matrix4 transform;
+    transform.makeTransform(
+        Ogre::Vector3(m[9], m[10], m[11]),
+        Ogre::Vector3(1.0f, 1.0f, 1.0f), orientation);
+    std::memcpy(Addr(entity, 0xf0), &transform, sizeof(transform));
+}
 
 class RenderScene {
 public:
-    // 007AB0A0 : thiscall, this = ecx, ctx = arg1, pose = arg2.
     void Render(void* ctx, void* pose);
 };
 
-void RenderScene::Render(void* ctx, void* pose)
-{
-    using namespace frame;
-    unsigned char f[0x310] = {};   // stack frame ([esp+N] == f[N])
+void RenderScene::Render(void* ctx, void* pose) {
+    void** items = At<void**>(this, 0x08);
+    int count = At<int>(this, 0x0c);
+    void* renderer = At<void*>(ctx, 0x04);
+    Ogre::Camera* camera = At<Ogre::Camera*>(ctx, 0x08);
+    bool enabled = At<u8>(this, 0x2f4) != 0;
+    bool special = At<u8>(ctx, 0x7f5) != 0;
+    void* backend = At<void*>(this, 0x268);
+    void* target = At<void*>(this, 0x26c);
 
-    // ---- 007AB0BF..007AB0E4 : device, matrix, [ctx+4] and flag -------------
-    void* device = *reinterpret_cast<void**>(reinterpret_cast<char*>(ctx) + kCtxDevice);  // mov esi,[edi+8]
-    float* mat = &At<float>(f, kMatrix260);               // lea eax,[esp+260h]
-    sub_5107B0(pose, mat);                               // ecx = pose, push &mat, call
-    bool flagF4 = *reinterpret_cast<u8*>(reinterpret_cast<char*>(this) + kFlagF4) != 0;  // mov al,[ebp+2F4h]
-    void* ctx4  = *reinterpret_cast<void**>(reinterpret_cast<char*>(ctx) + kCtxA);       // mov ecx,[edi+4]
+    unsigned char matrixData[0x80];
+    sub_5107B0(pose, matrixData);
 
-    // ---- 007AB0F2..007AB144 : draw-state update on ctx+4 -------------------
-    if (flagF4) {
-        VCall<void>(ctx4, 0x268, 0x12);                   // push 12h ; call [vtbl+268h]
-        float* v4 = &At<float>(f, kVec4A);               // lea eax,[esp+5Ch]
-        v4[0] = *reinterpret_cast<float*>(reinterpret_cast<char*>(this) + kClear + 0);   // fld [ebp+328h]
-        v4[1] = *reinterpret_cast<float*>(reinterpret_cast<char*>(this) + kClear + 4);   // fld [ebp+32Ch]
-        v4[2] = *reinterpret_cast<float*>(reinterpret_cast<char*>(this) + kClear + 8);   // fld [ebp+330h]
-        v4[3] = 1.0f;                                     // fld1
-        VCall<void>(ctx4, 0x278, static_cast<void*>(v4)); // push &v4 ; call [vtbl+278h]
+    if (enabled) {
+        VCall<void>(renderer, 0x268, 0x12);
+        Ogre::ColourValue background(At<float>(this, 0x328),
+            At<float>(this, 0x32c), At<float>(this, 0x330), 1.0f);
+        VCall<void>(renderer, 0x278, &background);
     } else {
-        VCall<void>(ctx4, 0x268, 0);                      // push 0 ; call [vtbl+268h]
+        VCall<void>(renderer, 0x268, 0);
     }
 
-    // ---- 007AB146..007AB185 : constant vector and device call --------------
-    float* one = &At<float>(f, kVec4One);                // lea eax,[esp+100h]
-    one[0] = 1.0f;                                        // fld1
-    one[1] = 0.0f;                                        // fldz
-    one[2] = 0.0f;
-    one[3] = 0.0f;
-    imp_804C78(one, mat);                                 // ecx=&one, push &mat, call [804C78]
-    imp_8043B4(device, one);                              // ecx=device, push &one, call [8043B4]
+    Ogre::Quaternion cameraOrientation;
+    cameraOrientation.FromRotationMatrix(*reinterpret_cast<Ogre::Matrix3*>(matrixData));
+    camera->setOrientation(cameraOrientation);
+    camera->setPosition(At<float>(matrixData, 0x24), At<float>(matrixData, 0x28),
+                        At<float>(matrixData, 0x2c));
 
-    // ---- 007AB18B..007AB1B0 : device->imp_804EA4(m[9], m[10], m[11]) -------
-    imp_804EA4(device, mat[9], mat[10], mat[11]);
+    VCall<void>(camera, 0x11c, At<float>(pose, 0x0c));
+    VCall<void>(camera, 0x124, At<float>(pose, 0x10));
+    union { float f; u32 word; } clip;
+    clip.f = At<float>(pose, 0x04);
+    VCall<void>(camera, 0x114, &clip.f);
 
-    // ---- 007AB1B6..007AB1FC : renderer calls with pose components ----------
-    void* renderer = *reinterpret_cast<void**>(reinterpret_cast<char*>(ctx) + kCtxDevice);  // mov ecx,[edi+8]
-    VCall<void>(renderer, 0x11C, *reinterpret_cast<float*>(reinterpret_cast<char*>(pose) + kPoseC));   // fld [esi+0Ch]
-    VCall<void>(renderer, 0x124, *reinterpret_cast<float*>(reinterpret_cast<char*>(pose) + kPose10));  // fld [esi+10h]
-    At<float>(f, kFloat28) = *reinterpret_cast<float*>(reinterpret_cast<char*>(pose) + kPose4);        // fld [esi+4] ; fstp [esp+28h]
-    VCall<void>(renderer, 0x114, Addr(f, kFloat28));         // push &[esp+28h]
+    Ogre::Timer timer;
+    timer.reset();
 
-    // ---- 007AB205..007AB21D : scope object enter / leave -------------------
-    imp_804E7C(Addr(f, kGuard230));
-    imp_804E80(Addr(f, kGuard230));
-
-    // ---- 007AB223..007AB2AC : lazily create the backend at this+268h -------
-    if (At<void*>(this, kBackend) == NULL) {
-        void* mem = sub_6A0920(0x248);                    // operator new(0248h)
-        bool  built = false;                              // ebx
-        NameRef& nr = At<NameRef>(f, kNameD8);
-        void* created = NULL;
-        if (mem != NULL) {
-            imp_802458(&nr.name, Lit(0x84F534));          // name = literal @84F534
-            built = true;                                 // mov ebx,1
-            created = sub_674160(mem, At<void*>(ctx, kCtxA), &nr);  // ctor(ctx+4, &nr)
-        }
-        At<void*>(this, kBackend) = created;              // mov [ebp+268h],eax
-        if (built) {
-            imp_802468(&nr);                              // dtor of the temporary
-        }
-        // 007AB2AC : ctx->vtbl[B4h]()->vtbl[C8h](backend)
-        void* r = VCall<void*>(At<void*>(ctx, kCtxA), 0xB4);
-        VCall<void>(r, 0xC8, At<void*>(this, kBackend));
+    if (!backend) {
+        void* mem = sub_6A0920(0x248);
+        backend = mem ? sub_674160(mem, renderer, std::string("rbxroot")) : 0;
+        At<void*>(this, 0x268) = backend;
+        void* registration = VCall<void*>(renderer, 0xb4);
+        VCall<void>(registration, 0xc8, backend);
     }
 
-    // ---- 007AB2CC..007AB2DE : per-frame object update ----------------------
-    u8 flagF6 = At<u8>(this, kFlagF6);                    // mov al,[ebp+2F6h]
-    sub_7A9D30(this, ctx, flagF6 != 0 ? 1u : 0u);        // push flag ; push ctx ; call
+    clip.word = (clip.word & 0xffffff00u) | At<u8>(this, 0x2f6);
+    sub_7A9D30(this, ctx, static_cast<int>(clip.word));
 
-    // ---- 007AB2E3 : read ctx flag, then (if [ebp+274h]==0) pass 1 ---------
-    u8 flag13 = At<u8>(ctx, kCtxFlag);                    // mov dl,[edi+7F5h]
-    if (At<int>(this, kFlag274) == 0) {
-        // 007AB2FF..007AB37D
-        NameRef& nr2 = At<NameRef>(f, kNameD8);
-        imp_802458(&nr2.name, Lit(0x874A70));
-        void* mgr = imp_804E60();
-        SharedHandle& tA = At<SharedHandle>(f, kHandleA);
-        void* res = VCall<void*>(mgr, 0x4C, &tA, &nr2);  // push &nr2 ; push &tA ; call [vtbl+4Ch]
-        imp_804268(Addr(this, kHandle270), res);          // ecx=&[ebp+270h], push res
-        tA.vptr = kSharedRefVTable;                       // mov [esp+6Ch],esi
-        ReleaseHandle(tA);
-        imp_802468(&nr2);
+    Ogre::MaterialPtr* baseMaterial = reinterpret_cast<Ogre::MaterialPtr*>(Addr(this, 0x270));
+    if (At<void*>(this, 0x274) == 0)
+        *baseMaterial = Ogre::MaterialManager::getSingleton().getByName("BaseWhite");
+
+    Ogre::MeshPtr* dummyMesh = reinterpret_cast<Ogre::MeshPtr*>(Addr(this, 0x27c));
+    if (At<void*>(this, 0x280) == 0)
+        *dummyMesh = Ogre::MeshManager::getSingleton().load("rbxdummymesh", "General");
+
+    if (!target && count != 0) {
+        void* mem = sub_6A0920(0x2bc);
+        target = mem ? sub_67D1F0(mem) : 0;
+        At<void*>(this, 0x26c) = target;
+        VCall<void>(backend, 0x130, target);
+        sub_67C520(target, *dummyMesh);
     }
 
-    // ---- 007AB38B..007AB45B : if ([ebp+280h]==0) pass 2 -------------------
-    if (At<int>(this, kFlag280) == 0) {
-        NameRef& nrF8 = At<NameRef>(f, kNameF8);
-        imp_802458(&nrF8.name, Lit(0x8163C4));
-        NameRef& nr2 = At<NameRef>(f, kNameD8);
-        imp_802458(&nr2.name, Lit(0x84D4E4));
-        void* mgr2 = imp_8042FC();
-        SharedHandle& tB = At<SharedHandle>(f, kHandleB);
-        // push 0 ; push 0 ; push 0 ; push &nrF8 ; push &nr2 ; push &tB ; call [vtbl+14h]
-        void* res2 = VCall<void*>(mgr2, 0x14, &tB, &nr2, &nrF8, 0, 0, 0);
-        imp_8042F4(Addr(this, kSub27C), res2);            // ecx=&[ebp+27Ch], push res2
-        tB.vptr = kSharedRefVTable;                       // mov [esp+5Ch],esi
-        ReleaseHandle(tB);
-        imp_802468(&nr2);
-        imp_802468(&nrF8);
-    }
-
-    // ---- 007AB461..007AB4D3 : lazily create the target at this+26Ch -------
-    if (At<void*>(this, kTarget) == NULL && At<int>(this, kItemCount) != 0) {
-        void* mem2 = sub_6A0920(0x2BC);                   // operator new(02BCh)
-        void* target = NULL;
-        if (mem2 != NULL) {
-            target = sub_67D1F0(mem2);                    // ctor, returns this
-        }
-        At<void*>(this, kTarget) = target;                // mov [ebp+26Ch],eax
-        void* backend = At<void*>(this, kBackend);        // mov ecx,[ebp+268h]
-        VCall<void>(backend, 0x130, target);              // push eax ; call [vtbl+130h]
-        unsigned char tmp12[0x0C] = {};                   // sub esp,0Ch ; ecx = esp
-        imp_804C68(tmp12, Addr(this, kSub27C));           // push &[ebp+27Ch] ; call [804C68]
-        sub_67C520(At<void*>(this, kTarget));             // ecx = target
-    }
-
-    // ---- 007AB4D8..007AB54B : pass 1 over items, release their results ----
-    int    count = At<int>(this, kItemCount);
-    void** items = At<void**>(this, kItems);
+    // The first pass only obtains and releases each item's 0x18 reference.
     for (int i = 0; i < count; ++i) {
-        void* item = items[i];                            // mov ecx,[eax+edi*4]
-        if (item == NULL) {
-            continue;                                     // je 7AB547
-        }
-        VCall<void>(item, 0x18, &At<void*>(f, kOut20));   // push &[esp+20h] ; call [vtbl+18h]
-        ReleaseSlot(At<void*>(f, kOut20));                // 7AB4F7..7AB543
+        if (!items[i])
+            continue;
+        QueryResult r = QueryItem(items[i], 0x18);
+        ReleaseRef(r.handle);
     }
 
-    // ---- 007AB54D..007AB5C0 : diagnostics block (g_942EBC && count && flag13)
-    if (g_942EBC != 0 && count != 0 && flag13 != 0) {
-        sub_5493E0(ctx);                                  // push [esp+330h] ; call 5493E0
-        unsigned char tmp8[0x08] = {};                    // sub esp,8
-        imp_804C68(tmp8, Lit(0x9738B8));                  // ecx=esp ; push literal ; call [804C68]
-        sub_67C520(At<void*>(this, kTarget));             // ecx = target
-        void* tgt = At<void*>(this, kTarget);
-        if (At<int>(tgt, kSub27C + 0x18) == 0) {          // cmp [target+27Ch+18h], 0
-            void* g    = g_9738BC;                        // mov ecx,[9738BCh]
-            void* res3 = imp_804258(g);                   // call [804258]
-            unsigned char tmp20[0x20] = {};               // sub esp,20h
-            imp_8048C4(tmp20, res3);                      // push eax ; call [8048C4]
-            sub_7A9C40(At<void*>(this, kTarget));         // ecx = target
-        }
+    if (gDebugRender && count != 0 && special) {
+        sub_5493E0(ctx);
+        sub_67C520(target, *dummyMesh);
+        if (target && gBaseMesh && At<int>(target, 0x294) == 0)
+            sub_7A9C40(target, gBaseMesh->getBounds());
     }
 
-    // ---- 007AB5C5..007AB5D2 : timing object -------------------------------
-    u32 t = sub_513E20();                                 // call 513E20
-    sub_513220(Addr(f, kTiming1A8), t);                   // push eax ; ecx=&[esp+1ACh] ; call 513220
+    // Pose update and lazily initialized zero-vector cache at 0x96F044.
+    unsigned char poseData[0x80];
+    sub_513220(poseData, sub_513E20());
+    static float zero[3] = {0.0f, 0.0f, 0.0f};
+    At<float>(poseData, 0x24) = zero[0];
+    At<float>(poseData, 0x28) = zero[1];
+    At<float>(poseData, 0x2c) = zero[2];
+    sub_510B50(pose, poseData);
 
-    // ---- 007AB5D7..007AB5E9 : lazily initialise the static vec3 cache -----
-    if ((g_vec3CacheFlags & 1u) == 0) {
-        g_vec3CacheFlags |= 1u;                           // or dword [96F050h], 1
-        g_vec3Cache[0] = 0.0f;                            // fldz ; fst ...
-        g_vec3Cache[1] = 0.0f;
-        g_vec3Cache[2] = 0.0f;
-    }
-
-    // ---- 007AB5FB..007AB631 : copy cache into the timing object, call pose --
-    At<float>(f, kTiming1A8 + 0x24) = g_vec3Cache[0];   // fstp [esp+1CCh]
-    At<float>(f, kTiming1A8 + 0x28) = g_vec3Cache[1];   // fstp [esp+1D0h]
-    At<float>(f, kTiming1A8 + 0x2C) = g_vec3Cache[2];   // fstp [esp+1D4h]
-    sub_510B50(pose, Addr(f, kTiming1A8));              // ecx = pose, push &timing ; call
-
-    // ---- 007AB636..007AB819 : pass 2 over items (listing ends at 007AB819) -
     for (int i = 0; i < count; ++i) {
-        void* item = items[i];                            // mov ebx,[edx+eax*4]
-        if (item == NULL) {
-            continue;                                     // je 7ACB33
+        void* item = items[i];
+        if (!item)
+            continue;
+
+        QueryResult visible = QueryItem(item, 0x18);
+        bool hasVisual = visible.value != 0;
+        ReleaseRef(visible.handle);
+
+        QueryResult geometry = QueryItem(item, 0x14);
+        bool hasGeometry = geometry.value != 0;
+        ReleaseRef(geometry.handle);
+        if (!hasVisual || !hasGeometry)
+            continue;
+
+        QueryResult valid = QueryItem(item, 0x14);
+        bool accepted = valid.value && VCall<int>(valid.value, 0x18, 0.0f) != 0;
+        ReleaseRef(valid.handle);
+        if (!accepted)
+            continue;
+
+        QueryResult detail = QueryItem(item, 0x18);
+        void* info = detail.handle;
+        if (!info)
+            continue;
+
+        if (enabled && At<int>(info, 0x80) == 0)
+            sub_54A920(ctx);
+
+        int distanceFlag = 0;
+        if (At<int>(info, 0x10) == 2)
+            distanceFlag = DetermineItemDistanceFlag(item, poseData) != 0.0f ? 1 : 0;
+
+        void* data = 0;
+        sub_548F80(info, &data, static_cast<float>(distanceFlag));
+        bool specialMaterial = At<int>(info, 0x84) == 4 && At<u8>(ctx, 0x806) == 0;
+        if (specialMaterial && data && At<u8>(data, 0x1c)) {
+            sub_548F80(info, &data, 0.0f);
+            AddPerVertexOffsets(info, data);
         }
 
-        // 007AB659 : first query (slot 18h) -> r1 ; flag11 = (*r1 != 0)
-        void* r1 = VCall<void*>(item, 0x18, &At<void*>(f, kP3C));
-        bool flag11 = At<int>(r1, 0) != 0;                // cmp dword [eax],0 ; setne
-        ReleaseSlot(At<void*>(f, kP3C));                  // 7AB67A..7AB6BB
+        bool boundsUpdated = data && At<u8>(data, 0x1c) != 0;
+        if (boundsUpdated)
+            UpdateItemBounds(backend, info, data, ctx, special);
 
-        // 007AB6BF : second query (slot 14h) -> r2 ; flag12 = (*r2 != 0)
-        void* r2 = VCall<void*>(item, 0x14, &At<void*>(f, kP44));
-        bool flag12 = At<int>(r2, 0) != 0;                // cmp dword [eax],0 ; setne
-        ReleaseSlot(At<void*>(f, kP44));                  // 7AB6DA..7AB720
+        void* materialData = GetMaterialData(item, 0);
+        bool materialCreated = BuildItemMaterial(item, info, materialData);
+        void* entity = At<void*>(item, 0x10);
 
-        if (!flag11) continue;                            // cmp byte [esp+11h],0 ; je 7ACB33
-        if (!flag12) continue;                            // cmp byte [esp+12h],0 ; je 7ACB33
-
-        // 007AB73A : third query (slot 14h) -> r3 ; obj = *r3 ; r4 = obj->vtbl[18h](0.0f)
-        void* r3  = VCall<void*>(item, 0x14, &At<void*>(f, kP4C));
-        void* obj = *static_cast<void**>(r3);             // mov ecx,[eax]
-        void* r4  = VCall<void*>(obj, 0x18, 0.0f);        // fldz ; push ecx ; fstp [esp]
-        flag11 = (r4 == NULL);                            // test eax,eax ; sete
-        ReleaseSlot(At<void*>(f, kP4C));                  // 7AB77A..7AB7BB
-
-        if (flag11) continue;                             // cmp byte [esp+11h],0 ; jne 7ACB33
-
-        // 007AB7CA : fourth query (slot 18h) -> p18 (out-param)
-        VCall<void>(item, 0x18, &At<void*>(f, kP18));
-        void* p18 = At<void*>(f, kP18);
-
-        // 007AB7D8 : if ([ebp+2F4h]) and [p18+80h]==0 -> sub_54A920(ctx)
-        if (At<u8>(this, kFlagF4) != 0 && At<int>(p18, 0x80) == 0) {
-            sub_54A920(ctx);                              // push [esp+330h] ; call 54A920
-        }
-
-        // 007AB802 : result slot cleared; if (p18->+10h == 2) take vtbl[1Ch]
-        At<int>(f, kR24) = 0;                             // mov [esp+24h], edi (= 0)
-        if (At<int>(p18, 0x10) == 2) {
-            void* r5 = VCall<void*>(item, 0x1C);          // mov edx,[ebx] ; call [edx+1Ch]
-            float floatVal = 0.0f;
-            {
-                float d0 = At<float>(r5, 0x24) - At<float>(f, kTiming1A8 + 0x24);
-                float d1 = At<float>(r5, 0x28) - At<float>(f, kTiming1A8 + 0x28);
-                float d2 = At<float>(r5, 0x2C) - At<float>(f, kTiming1A8 + 0x2C);
-                float sum = d0 * At<float>(f, kTiming1A8 + 0x20) +
-                            d1 * At<float>(f, kTiming1A8 + 0x1C) +
-                            d2 * At<float>(f, kTiming1A8 + 0x18);
-                floatVal = (sum < 0.0f) ? 1.0f : 0.0f;
+        if (!entity) {
+            void* mesh = special ? static_cast<void*>(FindSubMesh(data))
+                                 : (data ? At<void*>(data, 0x24) : 0);
+            if (!mesh) {
+                ReleaseRef(detail.handle);
+                throw std::runtime_error("Please restart ROBLOX, if you changed your settings but have not restarted");
             }
-            At<int>(f, kR24) = (floatVal != 0.0f) ? 1 : 0;
-            sub_548F80(p18, floatVal);
 
-            if (At<int>(p18, 0x84) == 4) {
-                void** itemObj = &items[i];
-                if (*itemObj && reinterpret_cast<unsigned char*>(*itemObj)[0x1C] && !At<u8>(ctx, kCtxFlag)) {
-                    sub_548F80(p18, 0.0f);
+            entity = sub_67D9B0(target, mesh, distanceFlag);
+            if (entity) {
+                if (special)
+                    At<u8>(entity, 0x13c) = 0;
+                At<u32>(entity, 0x140) = At<u32>(info, 0x80);
+                if ((At<int>(info, 0x80) == 0 && At<int>(info, 0x84) == 1) ||
+                     At<int>(info, 0x84) == 4)
+                    At<u8>(entity, 0x13c) = 0;
+                At<void*>(item, 0x10) = entity;
+                At<void*>(item, 0x0c) = target;
+
+                VCall<void>(entity, 0x48, VCall<float>(item, 0x24));
+                MergeItemBounds(backend, target, item, data, mesh);
+            }
+        } else {
+            if (boundsUpdated || !sub_6850D0(distanceFlag)) {
+                void* mesh = special ? static_cast<void*>(FindSubMesh(data))
+                                     : (data ? At<void*>(data, 0x24) : 0);
+                if (mesh)
+                    sub_6850B0(entity, distanceFlag, mesh);
+            }
+        }
+
+        if (entity) {
+            sub_6850F0(entity, distanceFlag);
+            VCall<void>(entity, 0x48, VCall<float>(item, 0x24));
+            if (materialData && (materialCreated ||
+                    At<void*>(VCall<void*>(entity, 0x04), 0x04) == At<void*>(this, 0x274))) {
+                Ogre::Material* mat = At<Ogre::Material*>(materialData, 0x30);
+                if (mat) {
+                    Ogre::SubEntity* part = reinterpret_cast<Ogre::SubEntity*>(entity);
+                    part->setMaterialName(mat->getName());
                 }
             }
-
-            ReleaseSlot(At<void*>(f, kP18));
+            UpdateEntityTransform(entity, item);
         }
+        ReleaseRef(detail.handle);
+    }
+
+    if (special && gDebugRender) {
+        sub_5493E0(ctx);
+        if (target)
+            sub_67C520(target, *dummyMesh);
+    }
+
+    timer.getMicroseconds();
+    timer.reset();
+    if (target) {
+        sub_67C510(target, Addr(ctx, 0x18));
+        At<u8>(target, 0x279) = 0;
+        VCall<void>(target, 0xd8, 1);
+        At<float>(target, 0x29c) = enabled ? 15.0f : 20.0f;
+        At<int>(target, 0x2a0) = enabled ? 0x258 : 0x28a;
+    }
+
+    Ogre::Root& root = Ogre::Root::getSingleton();
+    if (root._fireFrameStarted()) {
+        VCall<void>(At<void*>(ctx, 0x0c), 0x18);
+        root._fireFrameEnded();
+        timer.getMicroseconds();
     }
 }
 
-}  // namespace rs
+} // namespace rs
+
+// Byte-match status: unmeasured; requires the original MSVC compiler and `roc check`.
+
