@@ -1,4 +1,4 @@
-// from server: 86% by king_originala
+// from server: 100% by colin
 struct Query {
     int (__stdcall **vtable)(Query*, short*);
 };
@@ -15,8 +15,10 @@ struct CBrowserView {
 
 void CBrowserView::invoke(Callback* callback) {
     short value;
+    int result;
     if (query->vtable[31](query, &value) == 0 && value == -1)
-        callback->invoke(1);
+        result = 1;
     else
-        callback->invoke(0);
+        result = 0;
+    callback->invoke(result);
 }

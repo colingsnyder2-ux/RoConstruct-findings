@@ -1,4 +1,4 @@
-// from server: 97% by king_originala
+// from server: 100% by colin
 struct Color8 {
     unsigned char r, g, b;
 };
@@ -45,11 +45,11 @@ void Descriptor::read(void* object, Node* node, void*)
 
     unsigned int packed;
     if (source->value.readPacked(&packed)) {
-        Color8* bytes = reinterpret_cast<Color8*>(&node);
-        bytes->r = static_cast<unsigned char>(packed >> 16);
-        bytes->g = static_cast<unsigned char>(packed >> 8);
-        bytes->b = static_cast<unsigned char>(packed);
-        Color color(*bytes);
+        Color8 bytes;
+        bytes.r = static_cast<unsigned char>(packed >> 16);
+        bytes.g = static_cast<unsigned char>(packed >> 8);
+        bytes.b = static_cast<unsigned char>(packed);
+        Color color(bytes);
         setter->set(object, color);
     } else {
         Node* red = source->find(redKey);

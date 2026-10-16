@@ -1,4 +1,4 @@
-// from server: 88% by king_originala
+// from server: 89% by colin
 typedef long HRESULT;
 
 struct Element {
@@ -59,13 +59,17 @@ SafeArray* __cdecl func_004165e0(Values* values)
     if (result)
         SafeArrayLock(result);
 
-    for (unsigned int i = 0;
-         i < static_cast<unsigned int>(
-             (reinterpret_cast<int>(values->last) -
-              reinterpret_cast<int>(values->first)) >> 3);
-         ++i) {
+    unsigned int i = 0;
+    unsigned int count = static_cast<unsigned int>(
+        (reinterpret_cast<int>(values->last) -
+         reinterpret_cast<int>(values->first)) >> 3);
+    while (i < count) {
         Value* value = values->first + i;
         G1_func_00416370(value, access.f(i));
+        ++i;
+        count = static_cast<unsigned int>(
+            (reinterpret_cast<int>(values->last) -
+             reinterpret_cast<int>(values->first)) >> 3);
     }
 
     SafeArrayUnlock(result);

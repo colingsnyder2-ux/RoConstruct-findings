@@ -1,47 +1,40 @@
-// from server: 41% by colin
+// from server: 77% by colin
 struct DataSource {
     const void* get();
-};
-
-struct RenderSettings {
-    char reserved0[0xC4];
-    float f0;
-    float f1;
-    float f2;
-    float f3;
-    float f4;
-    float f5;
 };
 
 struct VCRenderSettings {
     char reserved0[0x2C8];
     DataSource* dataSource;
+
+    void setValue(const float* value);
 };
 
-extern "C" void __cdecl combine(const void*, const void*, void*);
+extern void __cdecl combine(const void*, const void*, void*);
 
-struct VMember {
-    void apply(const void*);
-};
+extern "C" void __stdcall sub_40DB00(void*);
 
-void VMember::apply(const void* value)
+void VCRenderSettings::setValue(const float* value)
 {
-    DataSource* ds = ((VCRenderSettings*)this)->dataSource;
+    DataSource* ds = dataSource;
     ds->get();
-    RenderSettings* rs = (RenderSettings*)ds;
-    float a = rs->f0;
-    float b = rs->f1;
-    float c = rs->f2;
-    float d = rs->f3;
-    float e = rs->f4;
-    float f = rs->f5;
-    const float* v = (const float*)value;
-    if (v[0] != a && v[1] == b && v[2] == c)
+
+    float local[6];
+    local[0] = *(float*)((char*)ds + 0xC4);
+    local[1] = *(float*)((char*)ds + 0xC8);
+    local[2] = *(float*)((char*)ds + 0xCC);
+    local[3] = *(float*)((char*)ds + 0xD0);
+    local[4] = *(float*)((char*)ds + 0xD4);
+    local[5] = *(float*)((char*)ds + 0xD8);
+
+    if (value[0] == local[0] && value[1] == local[1] && value[2] == local[2])
         return;
-    float tmp[3];
-    tmp[0] = v[0];
-    tmp[1] = v[1];
-    tmp[2] = v[2];
-    combine(tmp, &a, ds);
-    ((VMember*)this)->apply(0);
+
+    local[0] = value[0];
+    local[1] = value[1];
+    local[2] = value[2];
+
+    combine(local, local, (char*)dataSource + 0xC4);
+
+    sub_40DB00(this);
 }

@@ -1,3 +1,5 @@
+// roc-cl: 21022
+// roc-flags: /O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MD
 // from server: 86% by king_originala
 struct DxUserInput
 {
@@ -13,10 +15,12 @@ struct DxUserInput
 
 DxUserInput::DxUserInput()
 {
-    field0 = 0;
-    field4 = 0;
-    field10 = 0;
+    unsigned short zero = 0;
+    unsigned int zero32 = 0;
+    field0 = zero;
+    field4 = zero32;
+    field10 = zero32;
     field2 = 0x4E4;
-    field8 = 0;
-    fieldC = 0;
+    field8 = zero32;
+    fieldC = zero32;
 }

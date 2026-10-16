@@ -1,4 +1,3 @@
-// from server: 65% by colin
 // roc 2008-06 00406930  unit: VCApp::?$CComObject  size: 147 bytes
 
 typedef unsigned short wchar_t_;
@@ -7,6 +6,7 @@ extern "C" __declspec(dllimport) int __stdcall MultiByteToWideChar(unsigned int 
     const char* lpMultiByteStr, int cbMultiByte, wchar_t_* lpWideCharStr, int cchWideChar);
 extern "C" __declspec(dllimport) void* __stdcall SysAllocStringLen(const wchar_t_* str, unsigned int len);
 extern "C" __declspec(dllimport) void __stdcall SysFreeString(void* bstr);
+extern "C" void __stdcall AtlThrowImpl(long);
 
 struct CComBSTR {
     void* m_str;
@@ -22,10 +22,10 @@ void CComBSTR::AssignBSTR(void* p) {
 
 struct VCAppCComObject {
     void* m_str;
-    void* Assign(const char* src);
+    VCAppCComObject* Assign(const char* src);
 };
 
-void* VCAppCComObject::Assign(const char* src) {
+VCAppCComObject* VCAppCComObject::Assign(const char* src) {
     void* old = m_str;
     SysFreeString(old);
     void* result = 0;
@@ -55,8 +55,7 @@ void* VCAppCComObject::Assign(const char* src) {
     }
     m_str = result;
     if (result == 0 && src != 0) {
-        extern void __stdcall ThrowOleError(long);
-        ThrowOleError(0x8007000E);
+        AtlThrowImpl(0x8007000E);
     }
-    return result;
+    return this;
 }

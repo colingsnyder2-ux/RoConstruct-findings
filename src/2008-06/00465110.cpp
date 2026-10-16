@@ -1,15 +1,37 @@
-// from server: 42% by colin
-struct CScriptEditor {
-    void f(int unused, int type, int value);
+// roc-flags: /O2 /GS- /EHsc /MD
+extern const char event_00975770[];
+extern const char event_00973d54[];
+
+struct Pair {
+    const char* first;
+    int second;
+
+    __forceinline Pair(const char* a, int b);
+    __forceinline Pair(const Pair& other);
 };
 
-extern "C" void __cdecl helper(int type, int value);
-
-void CScriptEditor::f(int unused, int type, int value)
+__forceinline Pair::Pair(const char* a, int b)
 {
-    if (type == 0x975770) {
-        helper(type, value);
-    } else if (type == 0x973d54) {
-        helper(type, value);
+    first = a;
+    second = b;
+}
+
+__forceinline Pair::Pair(const Pair& other)
+{
+    second = other.second;
+    first = other.first;
+}
+
+struct CScriptEditor {
+    void f(int, Pair);
+    void func_00465110(int id, const char* event, volatile int value);
+};
+
+void CScriptEditor::func_00465110(int id, const char* event, volatile int value)
+{
+    if (event == event_00975770) {
+        f(id, Pair(event, value));
+    } else if (event == event_00973d54) {
+        f(id, Pair(event, value));
     }
 }

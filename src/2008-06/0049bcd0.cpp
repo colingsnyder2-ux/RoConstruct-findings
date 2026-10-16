@@ -1,4 +1,4 @@
-// from server: 95% by king_originala
+// from server: 96% by colin
 void __cdecl operator delete(void*) throw();
 
 extern void (__thiscall *destroy_string)(void*);
@@ -67,7 +67,8 @@ void S::clear()
             if (capacity <= slot)
                 slot -= capacity;
 
-            map[slot]->~Element();
+            Element* elem = map[slot];
+            elem->~Element();
 
             if (--count == 0)
                 first = 0;
@@ -84,6 +85,6 @@ void S::clear()
     if (map != 0)
         operator delete(map);
 
-    map = 0;
     capacity = 0;
+    map = 0;
 }
