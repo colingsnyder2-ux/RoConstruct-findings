@@ -1,265 +1,262 @@
-// roc 2008-06 0043ee40  unit: RBX::Soundscape::VSoundId::?$ContentItem  size: 836 bytes
-// Make this compile to the exact bytes below, then: roc check 2008-06 0043ee40
-//
-// 0043ee40  55                   push ebp
-// 0043ee41  8bec                 mov ebp, esp
-// 0043ee43  6aff                 push -1
-// 0043ee45  6800097c00           push 0x7c0900
-// 0043ee4a  64a100000000         mov eax, dword ptr fs:[0]
-// 0043ee50  50                   push eax
-// 0043ee51  64892500000000       mov dword ptr fs:[0], esp
-// 0043ee58  83ec6c               sub esp, 0x6c
-// 0043ee5b  53                   push ebx
-// 0043ee5c  56                   push esi
-// 0043ee5d  57                   push edi
-// 0043ee5e  8965f0               mov dword ptr [ebp - 0x10], esp
-// 0043ee61  8bd9                 mov ebx, ecx
-// 0043ee63  33f6                 xor esi, esi
-// 0043ee65  6a04                 push 4
-// 0043ee67  895dec               mov dword ptr [ebp - 0x14], ebx
-// 0043ee6a  8975fc               mov dword ptr [ebp - 4], esi
-// 0043ee6d  e8ae1a2600           call 0x6a0920
-// 0043ee72  83c404               add esp, 4
-// 0043ee75  3bc6                 cmp eax, esi
-// 0043ee77  7407                 je 0x43ee80
-// 0043ee79  8d4da0               lea ecx, [ebp - 0x60]
-// 0043ee7c  8908                 mov dword ptr [eax], ecx
-// 0043ee7e  eb02                 jmp 0x43ee82
-// 0043ee80  33c0                 xor eax, eax
-// 0043ee82  8945a0               mov dword ptr [ebp - 0x60], eax
-// 0043ee85  8975ac               mov dword ptr [ebp - 0x54], esi
-// 0043ee88  8975b0               mov dword ptr [ebp - 0x50], esi
-// 0043ee8b  8975b4               mov dword ptr [ebp - 0x4c], esi
-// 0043ee8e  8b8328010000         mov eax, dword ptr [ebx + 0x128]
-// 0043ee94  8b9030020000         mov edx, dword ptr [eax + 0x230]
-// 0043ee9a  8bb320010000         mov esi, dword ptr [ebx + 0x120]
-// 0043eea0  0518020000           add eax, 0x218
-// 0043eea5  8b00                 mov eax, dword ptr [eax]
-// 0043eea7  c645fc02             mov byte ptr [ebp - 4], 2
-// 0043eeab  8955c8               mov dword ptr [ebp - 0x38], edx
-// 0043eeae  8945c4               mov dword ptr [ebp - 0x3c], eax
-// 0043eeb1  39b31c010000         cmp dword ptr [ebx + 0x11c], esi
-// 0043eeb7  7606                 jbe 0x43eebf
-// 0043eeb9  ff1590288000         call dword ptr [0x802890]
-// 0043eebf  8b8b10010000         mov ecx, dword ptr [ebx + 0x110]
-// 0043eec5  8975d0               mov dword ptr [ebp - 0x30], esi
-// 0043eec8  8bb31c010000         mov esi, dword ptr [ebx + 0x11c]
-// 0043eece  894dcc               mov dword ptr [ebp - 0x34], ecx
-// 0043eed1  3bb320010000         cmp esi, dword ptr [ebx + 0x120]
-// 0043eed7  7606                 jbe 0x43eedf
-// 0043eed9  ff1590288000         call dword ptr [0x802890]
-// 0043eedf  8bbb10010000         mov edi, dword ptr [ebx + 0x110]
-// 0043eee5  897dd4               mov dword ptr [ebp - 0x2c], edi
-// 0043eee8  8975d8               mov dword ptr [ebp - 0x28], esi
-// 0043eeeb  eb03                 jmp 0x43eef0
-// 0043eeed  8d4900               lea ecx, [ecx]
-// 0043eef0  85ff                 test edi, edi
-// 0043eef2  7405                 je 0x43eef9
-// 0043eef4  3b7dcc               cmp edi, dword ptr [ebp - 0x34]
-// 0043eef7  7406                 je 0x43eeff
-// 0043eef9  ff1590288000         call dword ptr [0x802890]
-// 0043eeff  3b75d0               cmp esi, dword ptr [ebp - 0x30]
-// 0043ef02  0f8462010000         je 0x43f06a
-// 0043ef08  85ff                 test edi, edi
-// 0043ef0a  0f850a010000         jne 0x43f01a
-// 0043ef10  ff1590288000         call dword ptr [0x802890]
-// 0043ef16  3b7710               cmp esi, dword ptr [edi + 0x10]
-// 0043ef19  7206                 jb 0x43ef21
-// 0043ef1b  ff1590288000         call dword ptr [0x802890]
-// 0043ef21  8b16                 mov edx, dword ptr [esi]
-// 0043ef23  8b8b28010000         mov ecx, dword ptr [ebx + 0x128]
-// 0043ef29  8d45e8               lea eax, [ebp - 0x18]
-// 0043ef2c  8955e8               mov dword ptr [ebp - 0x18], edx
-// 0043ef2f  50                   push eax
-// 0043ef30  8d55bc               lea edx, [ebp - 0x44]
-// 0043ef33  81c118020000         add ecx, 0x218
-// 0043ef39  52                   push edx
-// 0043ef3a  e8e1b3ffff           call 0x43a320
-// 0043ef3f  8b7dbc               mov edi, dword ptr [ebp - 0x44]
-// 0043ef42  85ff                 test edi, edi
-// 0043ef44  7405                 je 0x43ef4b
-// 0043ef46  3b7dc4               cmp edi, dword ptr [ebp - 0x3c]
-// 0043ef49  7406                 je 0x43ef51
-// 0043ef4b  ff1590288000         call dword ptr [0x802890]
-// 0043ef51  8b75c0               mov esi, dword ptr [ebp - 0x40]
-// 0043ef54  3b75c8               cmp esi, dword ptr [ebp - 0x38]
-// 0043ef57  0f84dd000000         je 0x43f03a
-// 0043ef5d  85ff                 test edi, edi
-// 0043ef5f  0f85bc000000         jne 0x43f021
-// 0043ef65  ff1590288000         call dword ptr [0x802890]
-// 0043ef6b  33c0                 xor eax, eax
-// 0043ef6d  3b7018               cmp esi, dword ptr [eax + 0x18]
-// 0043ef70  7506                 jne 0x43ef78
-// 0043ef72  ff1590288000         call dword ptr [0x802890]
-// 0043ef78  8b5e1c               mov ebx, dword ptr [esi + 0x1c]
-// 0043ef7b  3b5e20               cmp ebx, dword ptr [esi + 0x20]
-// 0043ef7e  7606                 jbe 0x43ef86
-// 0043ef80  ff1590288000         call dword ptr [0x802890]
-// 0043ef86  8b4610               mov eax, dword ptr [esi + 0x10]
-// 0043ef89  895de0               mov dword ptr [ebp - 0x20], ebx
-// 0043ef8c  8b1d90288000         mov ebx, dword ptr [0x802890]
-// 0043ef92  8945dc               mov dword ptr [ebp - 0x24], eax
-// 0043ef95  85ff                 test edi, edi
-// 0043ef97  0f858b000000         jne 0x43f028
-// 0043ef9d  ffd3                 call ebx
-// 0043ef9f  8b45dc               mov eax, dword ptr [ebp - 0x24]
-// 0043efa2  3b7718               cmp esi, dword ptr [edi + 0x18]
-// 0043efa5  7505                 jne 0x43efac
-// 0043efa7  ffd3                 call ebx
-// 0043efa9  8b45dc               mov eax, dword ptr [ebp - 0x24]
-// 0043efac  8b7e20               mov edi, dword ptr [esi + 0x20]
-// 0043efaf  397e1c               cmp dword ptr [esi + 0x1c], edi
-// 0043efb2  7605                 jbe 0x43efb9
-// 0043efb4  ffd3                 call ebx
-// 0043efb6  8b45dc               mov eax, dword ptr [ebp - 0x24]
-// 0043efb9  8b7610               mov esi, dword ptr [esi + 0x10]
-// 0043efbc  8d642400             lea esp, [esp]
-// 0043efc0  85c0                 test eax, eax
-// 0043efc2  7404                 je 0x43efc8
-// 0043efc4  3bc6                 cmp eax, esi
-// 0043efc6  7405                 je 0x43efcd
-// 0043efc8  ffd3                 call ebx
-// 0043efca  8b45dc               mov eax, dword ptr [ebp - 0x24]
-// 0043efcd  397de0               cmp dword ptr [ebp - 0x20], edi
-// 0043efd0  7465                 je 0x43f037
-// 0043efd2  8b1d90288000         mov ebx, dword ptr [0x802890]
-// 0043efd8  85c0                 test eax, eax
-// 0043efda  7553                 jne 0x43f02f
-// 0043efdc  ffd3                 call ebx
-// 0043efde  33c0                 xor eax, eax
-// 0043efe0  8b4de0               mov ecx, dword ptr [ebp - 0x20]
-// 0043efe3  3b4810               cmp ecx, dword ptr [eax + 0x10]
-// 0043efe6  7202                 jb 0x43efea
-// 0043efe8  ffd3                 call ebx
-// 0043efea  8b55e0               mov edx, dword ptr [ebp - 0x20]
-// 0043efed  52                   push edx
-// 0043efee  8d4da0               lea ecx, [ebp - 0x60]
-// 0043eff1  e81a11feff           call 0x420110
-// 0043eff6  8b45dc               mov eax, dword ptr [ebp - 0x24]
-// 0043eff9  85c0                 test eax, eax
-// 0043effb  7536                 jne 0x43f033
-// 0043effd  ffd3                 call ebx
-// 0043efff  33c0                 xor eax, eax
-// 0043f001  8b4de0               mov ecx, dword ptr [ebp - 0x20]
-// 0043f004  3b4810               cmp ecx, dword ptr [eax + 0x10]
-// 0043f007  7202                 jb 0x43f00b
-// 0043f009  ffd3                 call ebx
-// 0043f00b  8345e008             add dword ptr [ebp - 0x20], 8
-// 0043f00f  8b1d90288000         mov ebx, dword ptr [0x802890]
-// 0043f015  8b45dc               mov eax, dword ptr [ebp - 0x24]
-// 0043f018  eba6                 jmp 0x43efc0
-// 0043f01a  8b3f                 mov edi, dword ptr [edi]
-// 0043f01c  e9f5feffff           jmp 0x43ef16
-// 0043f021  8b07                 mov eax, dword ptr [edi]
-// 0043f023  e945ffffff           jmp 0x43ef6d
-// 0043f028  8b3f                 mov edi, dword ptr [edi]
-// 0043f02a  e973ffffff           jmp 0x43efa2
-// 0043f02f  8b00                 mov eax, dword ptr [eax]
-// 0043f031  ebad                 jmp 0x43efe0
-// 0043f033  8b00                 mov eax, dword ptr [eax]
-// 0043f035  ebca                 jmp 0x43f001
-// 0043f037  8b5dec               mov ebx, dword ptr [ebp - 0x14]
-// 0043f03a  8b45d4               mov eax, dword ptr [ebp - 0x2c]
-// 0043f03d  85c0                 test eax, eax
-// 0043f03f  7525                 jne 0x43f066
-// 0043f041  ff1590288000         call dword ptr [0x802890]
-// 0043f047  33c0                 xor eax, eax
-// 0043f049  8b55d8               mov edx, dword ptr [ebp - 0x28]
-// 0043f04c  3b5010               cmp edx, dword ptr [eax + 0x10]
-// 0043f04f  7206                 jb 0x43f057
-// 0043f051  ff1590288000         call dword ptr [0x802890]
-// 0043f057  8345d804             add dword ptr [ebp - 0x28], 4
-// 0043f05b  8b7dd4               mov edi, dword ptr [ebp - 0x2c]
-// 0043f05e  8b75d8               mov esi, dword ptr [ebp - 0x28]
-// 0043f061  e98afeffff           jmp 0x43eef0
-// 0043f066  8b00                 mov eax, dword ptr [eax]
-// 0043f068  ebdf                 jmp 0x43f049
-// 0043f06a  8b7508               mov esi, dword ptr [ebp + 8]
-// 0043f06d  d906                 fld dword ptr [esi]
-// 0043f06f  8b75c0               mov esi, dword ptr [ebp - 0x40]
-// 0043f072  33c9                 xor ecx, ecx
-// 0043f074  d95d08               fstp dword ptr [ebp + 8]
-// 0043f077  8b7d08               mov edi, dword ptr [ebp + 8]
-// 0043f07a  b820a74300           mov eax, 0x43a720
-// 0043f07f  8bd8                 mov ebx, eax
-// 0043f081  8b45b0               mov eax, dword ptr [ebp - 0x50]
-// 0043f084  894d8c               mov dword ptr [ebp - 0x74], ecx
-// 0043f087  8b4dac               mov ecx, dword ptr [ebp - 0x54]
-// 0043f08a  ba10f27100           mov edx, 0x71f210
-// 0043f08f  895594               mov dword ptr [ebp - 0x6c], edx
-// 0043f092  894508               mov dword ptr [ebp + 8], eax
-// 0043f095  3bc8                 cmp ecx, eax
-// 0043f097  760c                 jbe 0x43f0a5
-// 0043f099  ff1590288000         call dword ptr [0x802890]
-// 0043f09f  8b45b0               mov eax, dword ptr [ebp - 0x50]
-// 0043f0a2  8b4dac               mov ecx, dword ptr [ebp - 0x54]
-// 0043f0a5  8b55a0               mov edx, dword ptr [ebp - 0x60]
-// 0043f0a8  8955bc               mov dword ptr [ebp - 0x44], edx
-// 0043f0ab  894de8               mov dword ptr [ebp - 0x18], ecx
-// 0043f0ae  3bc8                 cmp ecx, eax
-// 0043f0b0  7606                 jbe 0x43f0b8
-// 0043f0b2  ff1590288000         call dword ptr [0x802890]
-// 0043f0b8  8b4d8c               mov ecx, dword ptr [ebp - 0x74]
-// 0043f0bb  8b5594               mov edx, dword ptr [ebp - 0x6c]
-// 0043f0be  83ec18               sub esp, 0x18
-// 0043f0c1  8bc4                 mov eax, esp
-// 0043f0c3  8918                 mov dword ptr [eax], ebx
-// 0043f0c5  894804               mov dword ptr [eax + 4], ecx
-// 0043f0c8  8b4dec               mov ecx, dword ptr [ebp - 0x14]
-// 0043f0cb  894808               mov dword ptr [eax + 8], ecx
-// 0043f0ce  8b4dbc               mov ecx, dword ptr [ebp - 0x44]
-// 0043f0d1  89500c               mov dword ptr [eax + 0xc], edx
-// 0043f0d4  8b55e8               mov edx, dword ptr [ebp - 0x18]
-// 0043f0d7  897010               mov dword ptr [eax + 0x10], esi
-// 0043f0da  897814               mov dword ptr [eax + 0x14], edi
-// 0043f0dd  8b4508               mov eax, dword ptr [ebp + 8]
-// 0043f0e0  50                   push eax
-// 0043f0e1  8b45a0               mov eax, dword ptr [ebp - 0x60]
-// 0043f0e4  51                   push ecx
-// 0043f0e5  52                   push edx
-// 0043f0e6  50                   push eax
-// 0043f0e7  8d4d88               lea ecx, [ebp - 0x78]
-// 0043f0ea  51                   push ecx
-// 0043f0eb  e850d8ffff           call 0x43c940
-// 0043f0f0  8b75ec               mov esi, dword ptr [ebp - 0x14]
-// 0043f0f3  8b8628010000         mov eax, dword ptr [esi + 0x128]
-// 0043f0f9  33c9                 xor ecx, ecx
-// 0043f0fb  83c42c               add esp, 0x2c
-// 0043f0fe  398898010000         cmp dword ptr [eax + 0x198], ecx
-// 0043f104  7472                 je 0x43f178
-// 0043f106  8b8098010000         mov eax, dword ptr [eax + 0x198]
-// 0043f10c  894db8               mov dword ptr [ebp - 0x48], ecx
-// 0043f10f  894dbc               mov dword ptr [ebp - 0x44], ecx
-// 0043f112  894dc0               mov dword ptr [ebp - 0x40], ecx
-// 0043f115  50                   push eax
-// 0043f116  8d4db8               lea ecx, [ebp - 0x48]
-// 0043f119  c645fc03             mov byte ptr [ebp - 4], 3
-// 0043f11d  e8de7d1300           call 0x576f00
-// 0043f122  8b962c010000         mov edx, dword ptr [esi + 0x12c]
-// 0043f128  8b4204               mov eax, dword ptr [edx + 4]
-// 0043f12b  8d4804               lea ecx, [eax + 4]
-// 0043f12e  c645fc04             mov byte ptr [ebp - 4], 4
-// 0043f132  ff1564248000         call dword ptr [0x802464]
-// 0043f138  8b8e28010000         mov ecx, dword ptr [esi + 0x128]
-// 0043f13e  8b9198010000         mov edx, dword ptr [ecx + 0x198]
-// 0043f144  52                   push edx
-// 0043f145  50                   push eax
-// 0043f146  e875d41400           call 0x58c5c0
-// 0043f14b  8b8628010000         mov eax, dword ptr [esi + 0x128]
-// 0043f151  8b8098010000         mov eax, dword ptr [eax + 0x198]
-// 0043f157  8b90f0010000         mov edx, dword ptr [eax + 0x1f0]
-// 0043f15d  8d88f0010000         lea ecx, [eax + 0x1f0]
-// 0043f163  8b02                 mov eax, dword ptr [edx]
-// 0043f165  83c408               add esp, 8
-// 0043f168  6a01                 push 1
-// 0043f16a  ffd0                 call eax
-// 0043f16c  8d4db8               lea ecx, [ebp - 0x48]
-// 0043f16f  c645fc02             mov byte ptr [ebp - 4], 2
-// 0043f173  e848821300           call 0x5773c0
-// 0043f178  8d4da0               lea ecx, [ebp - 0x60]
-// 0043f17b  c645fc00             mov byte ptr [ebp - 4], 0
-// 0043f17f  e85c3e1600           call 0x5a2fe0
+// from server: 24% by colin
+struct ContentItem {
+    int __cdecl f(int* arg);
+};
 
-void func_0043ee40()
+struct Holder {
+    int pad0[0x44];
+    int pad1[0x44];
+    int* begin;
+    int* end;
+    int* cap;
+    int pad2[0x4];
+    int* begin2;
+    int* end2;
+    int* cap2;
+    int pad3[0x4];
+    void* ptr128;
+    void* ptr12c;
+};
+
+extern "C" void _invalid_parameter_noinfo();
+extern "C" void* __cdecl operator_new(unsigned int);
+extern "C" void __cdecl func_58c5c0(void*, void*);
+extern "C" void __cdecl func_576f00(void*, void*);
+extern "C" void __cdecl func_5773c0(void*);
+extern "C" void __cdecl func_5a2fe0(void*);
+extern "C" void __cdecl func_43a320(void*, void*, void*);
+extern "C" void __cdecl func_43c940(void*, void*, void*, void*, void*, void*);
+extern "C" void __cdecl func_420110(void*, void*);
+
+int ContentItem::f(int* arg)
 {
+    Holder* self = (Holder*)this;
+    int* p = arg;
+    int result = 0;
+    int* local60 = 0;
+    int local54 = 0;
+    int local50 = 0;
+    int local4c = 0;
+    int local40 = 0;
+
+    void* mem = operator_new(4);
+    if (mem) {
+        *(int**)mem = (int*)&local60;
+    } else {
+        mem = 0;
+    }
+    local60 = (int*)mem;
+
+    void* v128 = self->ptr128;
+    int edx = *(int*)((char*)v128 + 0x230);
+    int* esi = self->begin;
+    int* eax = (int*)((char*)v128 + 0x218);
+    int eaxv = *eax;
+
+    int local38 = edx;
+    int local3c = eaxv;
+
+    if (self->end < esi) {
+        _invalid_parameter_noinfo();
+    }
+
+    int* ecx = self->begin;
+    int local30 = (int)esi;
+    int* esi2 = self->end;
+    int local34 = (int)ecx;
+
+    if (esi2 > self->cap) {
+        _invalid_parameter_noinfo();
+    }
+
+    int* edi = self->begin;
+    int local2c = (int)edi;
+    int local28 = (int)esi2;
+
+    while (1) {
+        if (edi != 0 && edi == (int*)local34) {
+        } else {
+            _invalid_parameter_noinfo();
+        }
+
+        if ((int*)local28 == (int*)local30) {
+            break;
+        }
+
+        if (edi != 0) {
+            edi = *(int**)edi;
+        } else {
+            _invalid_parameter_noinfo();
+        }
+
+        if ((int*)local28 < (int*)((char*)edi + 0x10)) {
+            _invalid_parameter_noinfo();
+        }
+
+        int edx2 = *(int*)local28;
+        int* ecx2 = (int*)self->ptr128;
+        int local18 = edx2;
+        int* eax2 = &local18;
+        int local44;
+        ecx2 = (int*)((char*)ecx2 + 0x218);
+        func_43a320(ecx2, &local44, eax2);
+
+        int* edi2 = (int*)local44;
+        if (edi2 != 0 && edi2 == (int*)local3c) {
+        } else {
+            _invalid_parameter_noinfo();
+        }
+
+        int* esi3 = (int*)local40;
+        if (esi3 == (int*)local38) {
+            break;
+        }
+
+        if (edi2 != 0) {
+            edi2 = *(int**)edi2;
+        } else {
+            _invalid_parameter_noinfo();
+        }
+
+        if (esi3 != (int*)((char*)edi2 + 0x18)) {
+            _invalid_parameter_noinfo();
+        }
+
+        int* ebx = (int*)((char*)esi3 + 0x1c);
+        if (ebx > (int*)((char*)esi3 + 0x20)) {
+            _invalid_parameter_noinfo();
+        }
+
+        int* eax3 = (int*)((char*)esi3 + 0x10);
+        int local20 = (int)ebx;
+        int local24 = (int)eax3;
+
+        if (edi2 != 0) {
+            edi2 = *(int**)edi2;
+        } else {
+            _invalid_parameter_noinfo();
+        }
+
+        if (esi3 == (int*)((char*)edi2 + 0x18)) {
+            _invalid_parameter_noinfo();
+        }
+
+        int* edi3 = (int*)((char*)esi3 + 0x20);
+        if ((int*)((char*)esi3 + 0x1c) > edi3) {
+            _invalid_parameter_noinfo();
+        }
+
+        int* esi4 = (int*)((char*)esi3 + 0x10);
+
+        while (1) {
+            if (eax3 != 0 && eax3 == esi4) {
+            } else {
+                _invalid_parameter_noinfo();
+            }
+
+            if ((int*)local20 == edi3) {
+                break;
+            }
+
+            if (eax3 != 0) {
+                eax3 = *(int**)eax3;
+            } else {
+                _invalid_parameter_noinfo();
+            }
+
+            if ((int*)local20 < (int*)((char*)eax3 + 0x10)) {
+                _invalid_parameter_noinfo();
+            }
+
+            func_420110(&local60, (void*)local20);
+
+            if (eax3 != 0) {
+                eax3 = *(int**)eax3;
+            } else {
+                _invalid_parameter_noinfo();
+            }
+
+            if ((int*)local20 < (int*)((char*)eax3 + 0x10)) {
+                _invalid_parameter_noinfo();
+            }
+
+            local20 += 8;
+            eax3 = (int*)local24;
+        }
+
+        if (local2c != 0) {
+        } else {
+            _invalid_parameter_noinfo();
+        }
+
+        if ((int*)local28 < (int*)((char*)local2c + 0x10)) {
+            _invalid_parameter_noinfo();
+        }
+
+        local28 += 4;
+        edi = (int*)local2c;
+        esi2 = (int*)local28;
+    }
+
+    float fv = *(float*)p;
+    int local8 = *(int*)&fv;
+
+    int local74 = 0;
+    int local6c = 0x71f210;
+    int local8b = local50;
+    int ecx3 = local54;
+
+    if (ecx3 > local8b) {
+        _invalid_parameter_noinfo();
+        local8b = local50;
+        ecx3 = local54;
+    }
+
+    int edx3 = (int)local60;
+    int local44b = edx3;
+    int local18b = ecx3;
+
+    if (ecx3 > local8b) {
+        _invalid_parameter_noinfo();
+    }
+
+    int ecx4 = local74;
+    int edx4 = local6c;
+
+    int args[6];
+    args[0] = 0x43a720;
+    args[1] = ecx4;
+    args[2] = (int)self;
+    args[3] = edx4;
+    args[4] = local40;
+    args[5] = local8;
+
+    int local78;
+    func_43c940(&local78, (void*)local60, (void*)local18b, (void*)local44b, (void*)local8b, args);
+
+    int* esi5 = (int*)self;
+    int* eax4 = (int*)self->ptr128;
+    if (*(int*)((char*)eax4 + 0x198) != 0) {
+        int* eax5 = *(int**)((char*)eax4 + 0x198);
+        int local48 = 0;
+        int local44c = 0;
+        int local40c = 0;
+        func_576f00(&local48, eax5);
+        int* edx5 = (int*)self->ptr12c;
+        int eax6 = *(int*)((char*)edx5 + 4);
+        func_58c5c0((void*)eax6, (void*)eax6);
+        int* ecx6 = (int*)self->ptr128;
+        int* edx6 = *(int**)((char*)ecx6 + 0x198);
+        func_58c5c0(edx6, (void*)eax6);
+        int* eax7 = (int*)self->ptr128;
+        int* eax8 = *(int**)((char*)eax7 + 0x198);
+        int* edx7 = *(int**)((char*)eax8 + 0x1f0);
+        int* ecx7 = (int*)((char*)eax8 + 0x1f0);
+        int eax9 = *edx7;
+        ((void(__thiscall*)(void*, int))eax9)(ecx7, 1);
+        func_5773c0(&local48);
+    }
+
+    func_5a2fe0(&local60);
+    return result;
 }
