@@ -1,4 +1,4 @@
-// from server: 99% by colin
+// from server: 100% by colin
 struct Node
 {
     char padding0[0x44];
@@ -8,10 +8,16 @@ struct Node
     Node* right;
 };
 
+struct Sentinel
+{
+    char padding[0x50];
+    unsigned int link;
+};
+
 struct Owner
 {
     char padding0[4];
-    Node* anchor;
+    Sentinel* anchor;
 };
 
 struct Result
@@ -27,9 +33,10 @@ struct S
 
 bool S::find(int key, Result* result, int unused)
 {
-    Node* previous = (this ? (Owner*)((char*)this - 12) : 0)->anchor;
+    Sentinel* anchor = (this ? (Owner*)((char*)this - 12) : 0)->anchor;
+    Node* previous = (Node*)anchor;
     unsigned int root =
-        (this ? (Owner*)((char*)this - 12) : 0)->anchor->key & ~1u;
+        (this ? (Owner*)((char*)this - 12) : 0)->anchor->link & ~1u;
     Node* current = root ? (Node*)(root - 0x50) : 0;
     bool left = true;
 
