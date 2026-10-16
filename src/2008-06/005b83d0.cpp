@@ -1,5 +1,5 @@
-// from server: 73% by king_originala
-extern "C" void (__cdecl *invalid_parameter_noinfo)();
+// from server: 74% by colin
+extern "C" void __cdecl invalid_parameter_noinfo();
 
 struct Container;
 

@@ -1,4 +1,4 @@
-// from server: 82% by king_originala
+// from server: 90% by colin
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
 
@@ -34,9 +34,9 @@ __forceinline Shared::Shared(const Shared& other)
 
 __forceinline Shared::~Shared() {
     Control* p = control;
-    if (p && _InterlockedExchangeAdd(&p->strong, -1) == 0) {
+    if (p && _InterlockedExchangeAdd(&p->strong, -1) == 1) {
         p->dispose();
-        if (_InterlockedExchangeAdd(&p->weak, -1) == 0)
+        if (_InterlockedExchangeAdd(&p->weak, -1) == 1)
             p->destroy();
     }
 }

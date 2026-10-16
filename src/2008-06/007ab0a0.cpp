@@ -34,6 +34,19 @@ void  __cdecl sub_513220(void* self, u32 value);                 // call 513220 
 void  __cdecl sub_510B50(void* self, void* timing);              // call 510B50 : pose.update(timing)
 void* __cdecl sub_67D1F0(void* self);                            // call 67D1F0 : ctor, returns this
 void  __cdecl sub_67C520(void* self);                            // call 67C520 : member helper (no args)
+void  __cdecl sub_548F80(void* self, float v);
+void* __cdecl sub_7A9CE0(void* self, void* a);
+void* __cdecl sub_7A9C90(void* self, void* a);
+void  __cdecl sub_45AD90(void* self);
+void* __cdecl sub_6A17C6(unsigned long size);
+void  __cdecl imp_804338(void* self);
+void* __cdecl imp_804344(void* self);
+void  __cdecl imp_804340(void* self);
+void  __cdecl imp_80425C(void* self, void* src);
+void  __cdecl imp_804498(void* self);
+void  __cdecl sub_548F80(void* self, float v);
+void* __cdecl sub_7A9CE0(void* self, void* a);
+void* __cdecl sub_7A9C90(void* self, void* a);
 void  __stdcall sub_5493E0(void* ctx);                           // call 5493E0 : callee pops its argument
 void  __stdcall sub_54A920(void* ctx);                           // call 54A920 : callee pops its argument
 void  __cdecl sub_6A067A(void* p);                              // call 6A067A : operator delete(p)
@@ -459,12 +472,27 @@ void RenderScene::Render(void* ctx, void* pose)
         At<int>(f, kR24) = 0;                             // mov [esp+24h], edi (= 0)
         if (At<int>(p18, 0x10) == 2) {
             void* r5 = VCall<void*>(item, 0x1C);          // mov edx,[ebx] ; call [edx+1Ch]
-            float st0 = At<float>(r5, 0x24);              // 007AB819 : fld dword ptr [eax+24h]
-            (void)st0;
-            // The listing ends at 007AB819. Instructions from 007AB81D onward
-            // (rest of this loop body, the 007AB86F branch, the loop
-            // increment at 007ACB33, the exit at 007ACB49 and the SEH epilogue)
-            // are not part of the supplied file and cannot be converted from it.
+            float floatVal = 0.0f;
+            {
+                float d0 = At<float>(r5, 0x24) - At<float>(f, kTiming1A8 + 0x24);
+                float d1 = At<float>(r5, 0x28) - At<float>(f, kTiming1A8 + 0x28);
+                float d2 = At<float>(r5, 0x2C) - At<float>(f, kTiming1A8 + 0x2C);
+                float sum = d0 * At<float>(f, kTiming1A8 + 0x20) +
+                            d1 * At<float>(f, kTiming1A8 + 0x1C) +
+                            d2 * At<float>(f, kTiming1A8 + 0x18);
+                floatVal = (sum < 0.0f) ? 1.0f : 0.0f;
+            }
+            At<int>(f, kR24) = (floatVal != 0.0f) ? 1 : 0;
+            sub_548F80(p18, floatVal);
+
+            if (At<int>(p18, 0x84) == 4) {
+                void** itemObj = &items[i];
+                if (*itemObj && reinterpret_cast<unsigned char*>(*itemObj)[0x1C] && !At<u8>(ctx, kCtxFlag)) {
+                    sub_548F80(p18, 0.0f);
+                }
+            }
+
+            ReleaseSlot(At<void*>(f, kP18));
         }
     }
 }

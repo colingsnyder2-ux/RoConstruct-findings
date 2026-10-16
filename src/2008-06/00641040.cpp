@@ -1,6 +1,6 @@
-// from server: 64% by colin
-// roc-cl: 21022
-// roc-flags: /O2 /GS- /EHsc /MD /fp:fast
+// from server: 66% by colin
+
+
 struct Vec3 { float x, y, z; };
 struct Mat3 { float m[9]; };
 struct Frame { Mat3 rot; Vec3 pos; };
@@ -44,12 +44,9 @@ void AxisMoveTool::func(void* arg)
     b.z = -*(float*)((char*)p + 8);
 
     if (h->sub_640B40(&a)) {
-        c.x = b.x + a.x;
-        c.y = b.y + a.y;
-        c.z = b.z + a.z;
-        c.x *= g_819bac;
-        c.y *= g_819bac;
-        c.z *= g_819bac;
+        c.x = (b.x + a.x) * g_819bac;
+        c.y = (b.y + a.y) * g_819bac;
+        c.z = (b.z + a.z) * g_819bac;
 
         void* q = sub_513E20();
         h->sub_513220(q);
@@ -58,15 +55,15 @@ void AxisMoveTool::func(void* arg)
         f.pos.y = c.y;
         f.pos.z = c.z;
 
+        d.x = b.x - a.x;
+        d.y = b.y - a.y;
+        d.z = b.z - a.z;
+
         void* unk = *(void**)((char*)this + 0x14);
         void* obj = *(void**)((char*)unk + 0x288);
         void* (*fn)(void*) = *(void* (**)(void*))((char*)obj + 8);
         void* r = fn(obj);
         void* r2 = h->sub_5107B0(&d);
-
-        d.x = b.x - a.x;
-        d.y = b.y - a.y;
-        d.z = b.z - a.z;
 
         sub_6776A0(&f, &d, arg, 1, (char*)r2 + 0x24);
     }

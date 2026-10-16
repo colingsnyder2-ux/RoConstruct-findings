@@ -1,53 +1,69 @@
-// from server: 56% by colin
-// roc-cl: 21022
-// roc-flags: /O1 /GS- /EHsc /MD
-struct Vec3 {
+// from server: 58% by colin
+
+
+
+
+struct Vector3 {
     float x;
     float y;
     float z;
 };
 
 struct Camera {
-    const Vec3& getDerivedPosition() const;
+    const Vector3& getDerivedPosition() const;
 };
 
-struct Node {
-    char pad0[0x28];
-    Camera* mCamera;
+struct SceneNode {
+    virtual void unused0();
+    virtual void unused1();
+    virtual void unused2();
+    virtual void unused3();
+    virtual void unused4();
+    virtual void unused5();
+    virtual void unused6();
+    virtual void unused7();
+    virtual void unused8();
+    virtual void unused9();
+    virtual void unused10();
+    virtual void unused11();
+    virtual void unused12();
+    virtual void unused13();
+    virtual void unused14();
+    virtual void unused15();
+    virtual void unused16();
+    virtual void unused17();
+    virtual void* getCreator();
 };
+
+void* __stdcall __RTDynamicCast(void*, int, void*, void*, int);
 
 struct RbxSubEntity {
     char pad0[0x28];
-    Node* mNode;
+    SceneNode* node;
     char pad1[0xe8 - 0x2c];
-    int mIndex;
-    float mValue;
-    char pad2[0xfc - 0xe8 - 4];
-    float mX;
-    char pad3[0x10c - 0xfc - 4];
-    float mY;
-    char pad4[0x11c - 0x10c - 4];
-    float mZ;
-    float f(int index);
+    int cachedNode;
+    float cachedDistance;
+    char pad2[0xfc - 0xec];
+    float posX;
+    char pad3[0x10c - 0x100];
+    float posY;
+    char pad4[0x11c - 0x110];
+    float posZ;
+
+    float getDistanceTo(const Camera* camera);
 };
 
-extern "C" int __cdecl sub_006A17C6(int);
-extern "C" void* __cdecl sub_00932CEC();
-extern "C" void* __cdecl sub_00932D04();
-
-float RbxSubEntity::f(int index)
-{
-    if (mIndex == index) {
-        return mValue;
+float RbxSubEntity::getDistanceTo(const Camera* camera) {
+    if (this->cachedNode == (int)camera) {
+        return this->cachedDistance;
     }
-    Camera* cam = mNode->mCamera;
-    int v = sub_006A17C6(((int (__thiscall*)(Camera*, int, void*, void*, int))*(void**)(*(int*)cam + 0x48))(cam, 0, (void*)0x932CEC, (void*)0x932D04, 0));
-    float a = mX;
-    float b = mY;
-    float c = mZ;
-    const Vec3& p = cam->getDerivedPosition();
-    float dx = a - p.x;
-    float dy = b - p.y;
-    float dz = c - p.z;
+
+    void* creator = this->node->getCreator();
+    void* cam = __RTDynamicCast((void*)camera, 0, (void*)0x932cec, (void*)0x932d04, 0);
+
+    float dx = this->posX - camera->getDerivedPosition().x;
+    float dy = this->posY - camera->getDerivedPosition().y;
+    float dz = this->posZ - camera->getDerivedPosition().z;
+
     return dx * dx + dy * dy + dz * dz;
 }

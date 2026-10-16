@@ -1,4 +1,4 @@
-// from server: 89% by king_originala
+// from server: 98% by colin
 struct Link;
 
 struct Node
@@ -36,25 +36,25 @@ bool Sender::f(Node* value, Node* cursor, int unused)
 
     if (original != end)
     {
-        cursor = original ? reinterpret_cast<Node*>(
+        Node* tmp = original ? reinterpret_cast<Node*>(
             reinterpret_cast<char*>(original) + 0x50) : 0;
 
-        previousLink(reinterpret_cast<Link**>(&cursor));
+        previousLink(reinterpret_cast<Link**>(&tmp));
 
-        Node* previous = cursor ? reinterpret_cast<Node*>(
-            reinterpret_cast<char*>(cursor) - 0x50) : 0;
+        Node* previous = tmp ? reinterpret_cast<Node*>(
+            reinterpret_cast<char*>(tmp) - 0x50) : 0;
 
         if (value->priority < previous->priority)
             return false;
     }
 
-    cursor = original ? reinterpret_cast<Node*>(
+    Node* tmp2 = original ? reinterpret_cast<Node*>(
         reinterpret_cast<char*>(original) + 0x50) : 0;
 
-    nextLink(reinterpret_cast<Link**>(&cursor));
+    nextLink(reinterpret_cast<Link**>(&tmp2));
 
-    Node* next = cursor ? reinterpret_cast<Node*>(
-        reinterpret_cast<char*>(cursor) - 0x50) : 0;
+    Node* next = tmp2 ? reinterpret_cast<Node*>(
+        reinterpret_cast<char*>(tmp2) - 0x50) : 0;
 
     owner = this ? reinterpret_cast<Owner*>(
         reinterpret_cast<char*>(this) - 12) : 0;

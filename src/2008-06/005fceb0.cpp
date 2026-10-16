@@ -1,64 +1,42 @@
-// from server: 88% by king_originala
-extern unsigned char table_841364[];
-extern unsigned char table_841354[];
-extern unsigned char table_84134c[];
-extern unsigned char table_841344[];
-extern unsigned char table_841334[];
-extern unsigned char table_841324[];
-extern unsigned char table_841314[];
-extern unsigned char table_841304[];
-extern unsigned char table_8412f4[];
-extern unsigned char table_8412e4[];
-extern unsigned char table_8412dc[];
-extern unsigned char table_8412d0[];
-extern unsigned char table_8412c4[];
-extern unsigned char table_8412b8[];
-extern unsigned char table_8412ac[];
-extern unsigned char table_8412a0[];
-extern unsigned char table_841294[];
-
+// from server: 100% by colin
 struct LocalBackpackItem
 {
-    volatile unsigned long storage[0x1ac / 4];
-
-    void initializeBase();
-    LocalBackpackItem* initialize();
+    LocalBackpackItem* construct();
 };
 
-LocalBackpackItem* LocalBackpackItem::initialize()
+extern "C" void __fastcall sub_005fcbc0(LocalBackpackItem* self);
+
+LocalBackpackItem* LocalBackpackItem::construct()
 {
-    initializeBase();
-
-    storage[0x000 / 4] = (unsigned long)table_841364;
-    storage[0x010 / 4] = (unsigned long)table_841354;
-    storage[0x014 / 4] = (unsigned long)table_84134c;
-    storage[0x020 / 4] = (unsigned long)table_841344;
-    storage[0x024 / 4] = (unsigned long)table_841334;
-    storage[0x044 / 4] = (unsigned long)table_841324;
-    storage[0x064 / 4] = (unsigned long)table_841314;
-    storage[0x084 / 4] = (unsigned long)table_841304;
-    storage[0x0a4 / 4] = (unsigned long)table_8412f4;
-    storage[0x0c4 / 4] = (unsigned long)table_8412e4;
-    storage[0x130 / 4] = (unsigned long)table_8412dc;
-    storage[0x168 / 4] = (unsigned long)table_8412d0;
-    storage[0x16c / 4] = (unsigned long)table_8412c4;
-    storage[0x170 / 4] = (unsigned long)table_8412b8;
-    storage[0x174 / 4] = (unsigned long)table_8412ac;
-    storage[0x178 / 4] = (unsigned long)table_8412a0;
-    storage[0x17c / 4] = (unsigned long)table_841294;
-
-    storage[0x180 / 4] = 0;
-    storage[0x184 / 4] = 0;
-    storage[0x188 / 4] = 0;
-    storage[0x18c / 4] = 0;
-    storage[0x190 / 4] = 0;
-    storage[0x194 / 4] = 0;
-    storage[0x198 / 4] = 0;
-    storage[0x19c / 4] = 0;
-    storage[0x1a0 / 4] = 0;
-    storage[0x1a4 / 4] = 0;
-    storage[0x1a8 / 4] = 0xffffffffUL;
-    storage[0x160 / 4] = 1;
-
+    sub_005fcbc0(this);
+    *(int*)((char*)this + 0x00) = 0x841364;
+    *(int*)((char*)this + 0x10) = 0x841354;
+    *(int*)((char*)this + 0x14) = 0x84134c;
+    *(int*)((char*)this + 0x20) = 0x841344;
+    *(int*)((char*)this + 0x24) = 0x841334;
+    *(int*)((char*)this + 0x44) = 0x841324;
+    *(int*)((char*)this + 0x64) = 0x841314;
+    *(int*)((char*)this + 0x84) = 0x841304;
+    *(int*)((char*)this + 0xa4) = 0x8412f4;
+    *(int*)((char*)this + 0xc4) = 0x8412e4;
+    *(int*)((char*)this + 0x130) = 0x8412dc;
+    *(int*)((char*)this + 0x168) = 0x8412d0;
+    *(int*)((char*)this + 0x16c) = 0x8412c4;
+    *(int*)((char*)this + 0x170) = 0x8412b8;
+    *(int*)((char*)this + 0x174) = 0x8412ac;
+    *(int*)((char*)this + 0x178) = 0x8412a0;
+    *(int*)((char*)this + 0x17c) = 0x841294;
+    *(volatile int*)((char*)this + 0x180) = 0;
+    *(int*)((char*)this + 0x184) = 0;
+    *(int*)((char*)this + 0x188) = 0;
+    *(int*)((char*)this + 0x18c) = 0;
+    *(int*)((char*)this + 0x190) = 0;
+    *(int*)((char*)this + 0x194) = 0;
+    *(int*)((char*)this + 0x198) = 0;
+    *(int*)((char*)this + 0x19c) = 0;
+    *(int*)((char*)this + 0x1a0) = 0;
+    *(int*)((char*)this + 0x1a4) = 0;
+    *(int*)((char*)this + 0x1a8) = -1;
+    *(int*)((char*)this + 0x160) = 1;
     return this;
 }

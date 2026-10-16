@@ -1,9 +1,8 @@
-// from server: 88% by king_originala
+// from server: 90% by colin
 typedef unsigned int size_t;
 
-extern "C" void (__cdecl *_invalid_parameter_noinfo)();
+extern "C" void __cdecl _invalid_parameter_noinfo();
 extern void *__cdecl operator new(size_t);
-extern void __cdecl operator delete(void *);
 
 struct Vector3 {
     float x, y, z;
@@ -120,11 +119,13 @@ Texture *__cdecl f(const Vector3 &position, int mode)
         return texture;
     }
 
-    Map *owner = reinterpret_cast<Map *>(proxy);
-    if (!proxy)
+    Map *owner;
+    if (!proxy) {
         _invalid_parameter_noinfo();
-    else
+        owner = 0;
+    } else {
         owner = proxy->container;
+    }
 
     if (found.node == owner->endNode)
         _invalid_parameter_noinfo();
