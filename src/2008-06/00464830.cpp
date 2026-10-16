@@ -1,6 +1,4 @@
-// from server: 90% by colin
-// roc-cl: 21022
-// roc-flags: /O2 /GS- /EHsc /MD
+// from server: 91% by colin
 struct Control {
     int modified(int);
     int length(int);
@@ -23,11 +21,9 @@ extern const char* (__thiscall *bufferData)(void*);
 
 struct String {
     char storage[28];
-    __declspec(dllimport) String(const char*);
+    String(const char*);
     ~String();
 };
-
-
 
 inline String::~String()
 {
@@ -37,7 +33,7 @@ inline String::~String()
 struct Buffer {
     char* storage;
     Buffer();
-    __declspec(nothrow) ~Buffer();
+    ~Buffer();
     char* get(int, int);
     void release(int);
     const char* data();

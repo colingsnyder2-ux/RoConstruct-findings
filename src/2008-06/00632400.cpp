@@ -1,4 +1,4 @@
-// from server: 81% by king_originala
+// from server: 85% by colin
 unsigned int __cdecl getName();
 
 extern unsigned char table0[];
@@ -68,9 +68,10 @@ S* S::init()
     v130 = table130;
     v138 = table138;
 
-    forceX = initialForce;
-    forceY = initialForce;
-    forceZ = initialForce;
+    float f = initialForce;
+    forceX = f;
+    forceY = f;
+    forceZ = f;
     velocityX = 0.0f;
     velocityY = initialVelocityY;
     velocityZ = 0.0f;

@@ -1,4 +1,4 @@
-// from server: 87% by king_originala
+// from server: 88% by colin
 extern char table00[], table10[], table14[], table20[], table24[];
 extern char table44[], table64[], table84[], tablea4[], tablec4[];
 extern char table130[];
@@ -31,7 +31,7 @@ S::S(int argument)
     slots[0xa4 / 4] = tablea4;
     slots[0xc4 / 4] = tablec4;
     slots[0x130 / 4] = table130;
-    value166 = 0;
     value164 = 0;
+    value166 = 0;
     g(argument);
 }
