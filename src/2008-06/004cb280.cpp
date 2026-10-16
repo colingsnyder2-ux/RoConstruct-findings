@@ -1,4 +1,4 @@
-// from server: 89% by colin
+// from server: 99% by colin
 struct Node
 {
     char padding0[0x44];
@@ -37,15 +37,14 @@ bool S::find(int key, Result* result, int unused)
     {
         previous = current;
         Node* next;
-        if (key < current->key)
+        left = key < current->key;
+        if (left)
         {
             next = current->left;
-            left = true;
         }
         else
         {
             next = current->right;
-            left = false;
         }
         current = next ? (Node*)((char*)next - 0x50) : 0;
     }

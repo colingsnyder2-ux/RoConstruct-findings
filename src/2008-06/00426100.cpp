@@ -1,8 +1,8 @@
-// from server: 78% by king_originala
+// from server: 83% by colin
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
 
-extern "C" void (__cdecl* _invalid_parameter_noinfo)();
+extern "C" void __cdecl _invalid_parameter_noinfo();
 void* __cdecl operator new(unsigned int);
 void __cdecl operator delete(void*);
 

@@ -1,4 +1,4 @@
-// from server: 94% by king_originala
+// from server: 99% by colin
 struct Stopwatch
 {
     void start();
@@ -38,8 +38,11 @@ void S::f()
 
     if (second)
     {
-        delete first;
-        first = 0;
+        if (first)
+        {
+            delete first;
+            first = 0;
+        }
         delete second;
     }
 
