@@ -1,5 +1,5 @@
-// from server: 81% by king_originala
-extern "C" void (__cdecl *_invalid_parameter_noinfo)();
+// from server: 89% by colin
+extern "C" void __cdecl _invalid_parameter_noinfo();
 
 struct Tree;
 
@@ -81,7 +81,7 @@ void CSelectionTreeCtrl::func_00424600(int key)
     last.owner = tree.owner;
     Owner *owner = found.owner;
 
-    if (!owner || owner != last.owner)
+    if (owner != last.owner)
         _invalid_parameter_noinfo();
 
     Node *node = found.node;

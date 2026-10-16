@@ -1,6 +1,6 @@
-// from server: 72% by king_originala
-extern "C" long (__stdcall * const InterlockedIncrement)(long *) throw();
-extern "C" long (__stdcall * const InterlockedDecrement)(long *) throw();
+// from server: 78% by colin
+extern "C" long __stdcall InterlockedIncrement(long *);
+extern "C" long __stdcall InterlockedDecrement(long *);
 
 void * __cdecl operator new(unsigned int);
 void __cdecl operator delete(void *);
@@ -29,7 +29,7 @@ struct Resource
 
 struct ResourcePtr
 {
-    Resource *const value;
+    Resource *value;
 
     ResourcePtr(Resource *);
     ~ResourcePtr();

@@ -1,37 +1,8 @@
-// from server: 63% by king_originala
+// from server: 66% by colin
 struct Vec {
     float x, y, z;
     float normalize(float);
-    Vec operator*(float) const;
-    Vec operator+(const Vec&) const;
 };
-
-inline Vec Vec::operator*(float s) const
-{
-    Vec v;
-    v.x = x * s;
-    v.y = y * s;
-    v.z = z * s;
-    return v;
-}
-
-inline Vec Vec::operator+(const Vec& b) const
-{
-    Vec v;
-    v.x = x + b.x;
-    v.y = y + b.y;
-    v.z = z + b.z;
-    return v;
-}
-
-inline Vec vector(float x, float y, float z)
-{
-    Vec v;
-    v.x = x;
-    v.y = y;
-    v.z = z;
-    return v;
-}
 
 struct Box {
     Vec low, high;
@@ -102,9 +73,10 @@ Vec S::f(const Box& region)
         offset.y = 0.0f;
         offset.normalize(normalizationLimit);
 
-        Vec extent = vector((region.high.x - region.low.x) * half,
-                            0.0f,
-                            (region.high.z - region.low.z) * half);
+        Vec extent;
+        extent.x = (region.high.x - region.low.x) * half;
+        extent.y = 0.0f;
+        extent.z = (region.high.z - region.low.z) * half;
 
         Collection parts;
         collect(character, &parts);
@@ -112,17 +84,21 @@ Vec S::f(const Box& region)
         Box characterBounds;
         bounds(&characterBounds, &parts);
 
-        Vec position =
-            vector(extent.x * offset.x,
-                   verticalScale * offset.y,
-                   extent.z * offset.z) * placementScale
-            + vector((characterBounds.high.x + characterBounds.low.x) * half,
-                     characterBounds.low.y,
-                     (characterBounds.high.z + characterBounds.low.z) * half);
+        Vec position;
+        position.x = extent.x * offset.x * placementScale
+            + (characterBounds.high.x + characterBounds.low.x) * half;
+        position.y = verticalScale * offset.y * placementScale
+            + characterBounds.low.y;
+        position.z = extent.z * offset.z * placementScale
+            + (characterBounds.high.z + characterBounds.low.z) * half;
 
         Vec temporary;
         Vec* result = convert(&temporary, &position);
-        return vector(result->x, result->y, result->z);
+        Vec out;
+        out.x = result->x;
+        out.y = result->y;
+        out.z = result->z;
+        return out;
     }
     return fallback();
 }

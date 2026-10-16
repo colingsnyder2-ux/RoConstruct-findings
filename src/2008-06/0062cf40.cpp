@@ -1,6 +1,5 @@
-// from server: 71% by king_originala
+// from server: 74% by colin
 struct FlagStand;
-struct Owner;
 
 struct Node {
     Node *next;
@@ -23,8 +22,6 @@ struct Owner {
 struct Argument {
     Owner *getOwner();
 };
-
-#pragma pointers_to_members(full_generality, multiple_inheritance)
 
 struct Bind {
     void (FlagStand::*function)();
@@ -56,7 +53,7 @@ struct FlagStand {
     unsigned char padding[0x3e8];
     Connection connection;
     void callback();
-    void changed(Argument *, Argument *);
+    void changed(Argument *oldValue, Argument *newValue);
 };
 
 void FlagStand::changed(Argument *oldValue, Argument *newValue)
@@ -71,8 +68,11 @@ void FlagStand::changed(Argument *oldValue, Argument *newValue)
         head->prev = node;
         node->prev->next = node;
 
-        volatile unsigned long extra;
-        Bind bind = { &FlagStand::callback, 0, extra, this };
+        Bind bind;
+        bind.function = &FlagStand::callback;
+        bind.padding = 0;
+        bind.extra = 0;
+        bind.object = this;
 
         Function function(bind);
         connection.assign(dispatcher.connect(
