@@ -30,6 +30,14 @@
 #endif
 #include <Ogre.h>
 
+#if defined(_MSC_VER)
+#define RS_FORCEINLINE __forceinline
+#elif defined(__GNUC__) || defined(__clang__)
+#define RS_FORCEINLINE inline __attribute__((always_inline))
+#else
+#define RS_FORCEINLINE inline
+#endif
+
 
 namespace rs {
 
@@ -156,7 +164,7 @@ inline void ReleaseResource(void*& handle) {
     handle = 0;
 }
 
-inline Ogre::SubMesh* FindSubMesh(void* data) {
+RS_FORCEINLINE Ogre::SubMesh* FindSubMesh(void* data) {
     if (!data || At<u8>(data, 0x1c) != 0)
         return 0;
 
@@ -182,7 +190,7 @@ inline void* GetMaterialData(void* item, int index) {
     return result;
 }
 
-inline Ogre::TexturePtr GetSkyTexture() {
+RS_FORCEINLINE Ogre::TexturePtr GetSkyTexture() {
     Ogre::TextureManager& textures = Ogre::TextureManager::getSingleton();
     Ogre::TexturePtr texture = textures.getByName("skysphmap");
     if (texture.isNull()) {
@@ -197,7 +205,7 @@ inline Ogre::TexturePtr GetSkyTexture() {
     return texture;
 }
 
-inline void ConfigureSky(Ogre::Material* material, float intensity) {
+RS_FORCEINLINE void ConfigureSky(Ogre::Material* material, float intensity) {
     Ogre::Pass* pass = material->getTechnique(0)->createPass();
     pass->setDiffuse(intensity, intensity, intensity, intensity * 0.8f);
     pass->setAmbient(intensity, intensity, intensity);
@@ -211,7 +219,7 @@ inline void ConfigureSky(Ogre::Material* material, float intensity) {
     }
 }
 
-inline void ConfigurePass(Ogre::Pass* pass, void* layer, void* item, void* info) {
+RS_FORCEINLINE void ConfigurePass(Ogre::Pass* pass, void* layer, void* item, void* info) {
     float* color = VCall<float*>(layer, 0x18);
     float alpha = 1.0f - VCall<float>(layer, 0x28);
     pass->setDiffuse(color[0], color[1], color[2], alpha);
@@ -261,7 +269,7 @@ inline void ConfigurePass(Ogre::Pass* pass, void* layer, void* item, void* info)
 
 // materialData is the internal engine material object returned by sub_6A17C6.
 // Its Ogre::MaterialPtr is embedded at +0x2C, underlying pointer at +0x30.
-inline bool BuildItemMaterial(void* item, void* info, void* materialData) {
+RS_FORCEINLINE bool BuildItemMaterial(void* item, void* info, void* materialData) {
     if (!materialData || At<void*>(materialData, 0x30))
         return false;
 
@@ -306,7 +314,7 @@ struct BoundsInfo {
     Ogre::Vector3 center;
 };
 
-inline void UpdateItemBounds(void* backend, void* itemRef, void* data,
+RS_FORCEINLINE void UpdateItemBounds(void* backend, void* itemRef, void* data,
                              void* ctx, bool special) {
     if (!data || At<u8>(data, 0x1c) == 0)
         return;
@@ -322,14 +330,14 @@ inline void UpdateItemBounds(void* backend, void* itemRef, void* data,
     VCall<void>(backend, 0x1c4, mesh, &b);
 }
 
-inline Ogre::Vector3 WorldPosition(void* item) {
+RS_FORCEINLINE Ogre::Vector3 WorldPosition(void* item) {
     float* m = VCall<float*>(item, 0x1c);
     return Ogre::Vector3(m[9], m[10], m[11]);
 }
 
 // At 7AC6C0..7AC8C9 the original builds one of two AABBs, then merges
 // it with the target's existing bounds. This was missing from the old code.
-inline void MergeItemBounds(void* backend, void* target, void* item,
+RS_FORCEINLINE void MergeItemBounds(void* backend, void* target, void* item,
                             void* data, void* selectedMesh) {
     Ogre::Vector3 pos = WorldPosition(item);
     if (std::fabs(pos.x) >= 10000.0f ||
@@ -369,7 +377,7 @@ inline float DetermineItemDistanceFlag(void* item, const unsigned char* poseData
     return !(depth < 80.0f) ? 1.0f : 0.0f;
 }
 
-inline void AddPerVertexOffsets(void* info, void* data) {
+RS_FORCEINLINE void AddPerVertexOffsets(void* info, void* data) {
     if (At<int>(data, 0x18) != 5 || At<int>(data, 0x10) != 4)
         return;
     void* raw = At<void*>(data, 0x0c);
@@ -385,7 +393,7 @@ inline void AddPerVertexOffsets(void* info, void* data) {
     }
 }
 
-inline void UpdateEntityTransform(void* entity, void* item) {
+RS_FORCEINLINE void UpdateEntityTransform(void* entity, void* item) {
     float* m = VCall<float*>(item, 0x1c);
     Ogre::Matrix3 rotation;
     std::memcpy(&rotation, m, sizeof(rotation));
@@ -547,7 +555,7 @@ void RenderScene::Render(void* ctx, void* pose) {
                                  : (data ? At<void*>(data, 0x24) : 0);
             if (!mesh) {
                 ReleaseRef(detail.handle);
-                throw std::runtime_error("Please restart ROBLOX, if you changed your settings but have not restarted");
+                throw std::exception("Please restart ROBLOX, if you changed your settings but have not restarted");
             }
 
             entity = sub_67D9B0(target, mesh, distanceFlag);
