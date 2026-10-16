@@ -1,4 +1,4 @@
-// from server: 84% by king_originala
+// from server: 100% by colin
 struct Exception;
 typedef void (__thiscall *ExceptionConstructor)(Exception *, const char * const &);
 extern ExceptionConstructor exceptionConstructor;
@@ -22,8 +22,7 @@ __forceinline Exception::Exception()
 
 void func_005039e0()
 {
-    const char *text = "shouldn't be here";
     Exception value;
-    exceptionConstructor(&value, text);
+    exceptionConstructor(&value, "shouldn't be here");
     throwException(&value, &exceptionThrowInfo);
 }

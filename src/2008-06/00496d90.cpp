@@ -1,4 +1,4 @@
-// from server: 95% by king_originala
+// from server: 100% by colin
 extern void (__cdecl *invalid_parameter_handler)();
 
 struct Payload
@@ -30,9 +30,8 @@ struct S
 void S::f(Payload value) throw()
 {
     Iteration state;
-    unsigned count = static_cast<unsigned>(last - first);
     state.index = 0;
-    state.count = count;
+    state.count = static_cast<unsigned>(last - first);
     state.previous = iteration;
     iteration = &state;
 
@@ -45,7 +44,8 @@ void S::f(Payload value) throw()
             if (index >= static_cast<unsigned>(last - first))
                 handler();
 
-            dispatch(value, first[index]);
+            void* element = first[index];
+            dispatch(value, element);
             ++state.index;
         }
         while (state.index < state.count);

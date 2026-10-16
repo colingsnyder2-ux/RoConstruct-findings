@@ -1,6 +1,9 @@
-// from server: 86% by king_originala
-extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
-#pragma intrinsic(_InterlockedExchangeAdd)
+// from server: 100% by colin
+// roc-cl 21022
+// roc-flags /O2 /GS /EHsc /MD
+
+extern "C" long __cdecl _InterlockedDecrement(volatile long*);
+#pragma intrinsic(_InterlockedDecrement)
 
 struct Control {
     virtual void reserved();
@@ -20,24 +23,38 @@ inline Shared::~Shared()
 {
     Control* p = control;
     if (p) {
-        if (_InterlockedExchangeAdd(&p->strong, -1) == 0) {
+        if (_InterlockedDecrement(&p->strong) == 0) {
             p->dispose();
-            if (_InterlockedExchangeAdd(&p->weak, -1) == 0)
+            if (_InterlockedDecrement(&p->weak) == 0)
                 p->destroy();
         }
     }
 }
 
-extern void (__thiscall* stringDestructor)(void*);
+namespace std {
+    template<class _Elem>
+    class char_traits {
+    };
+
+    template<class _Ty>
+    class allocator {
+    };
+
+    template<class _Elem, class _Traits, class _Alloc>
+    class basic_string {
+        char _data[28];
+    public:
+        __declspec(dllimport) ~basic_string();
+    };
+}
 
 struct String {
-    char storage[28];
+    std::basic_string<char, std::char_traits<char>, std::allocator<char> > data;
     ~String();
 };
 
 inline String::~String()
 {
-    stringDestructor(this);
 }
 
 struct Base {
