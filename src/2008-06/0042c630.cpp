@@ -1,8 +1,6 @@
 // from server: 96% by king_originala
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
-extern "C" long __cdecl _InterlockedDecrement(volatile long*);
-#pragma intrinsic(_InterlockedDecrement)
 
 struct Control {
     virtual void unused() = 0;
@@ -40,9 +38,9 @@ inline Shared::Shared(const Shared& other)
 inline Shared::~Shared() {
     if (control) {
         Control* p = control;
-        if (_InterlockedDecrement(&p->strong) == 0) {
+        if (_InterlockedExchangeAdd(&p->strong, -1) == 1) {
             p->dispose();
-            if (_InterlockedDecrement(&p->weak) == 0)
+            if (_InterlockedExchangeAdd(&p->weak, -1) == 1)
                 p->destroy();
         }
     }
@@ -108,7 +106,9 @@ struct Binder {
 
 Binder::Binder(Shared value, void* first, void* second)
     : owner(value), context(first) {
-    Function function(Functor(callback, first, second));
-    connection = manager.connect(
-        value.pointer ? &value.pointer->part : 0, function, 10);
+    __try {
+        Function function(Functor(callback, first, second));
+        connection = manager.connect(
+            value.pointer ? &value.pointer->part : 0, function, 10);
+    } __finally {}
 }

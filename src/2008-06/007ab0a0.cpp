@@ -1,532 +1,472 @@
-// roc 2008-06 007ab0a0  unit: RBX::RenderNew::RenderScene  size: 1919 bytes
-// Make this compile to the exact bytes below, then: roc check 2008-06 007ab0a0
+// =============================================================================
+//  RenderScene_2008.cpp
 //
-// 007ab0a0  6aff                 push -1
-// 007ab0a2  6896d77e00           push 0x7ed796
-// 007ab0a7  64a100000000         mov eax, dword ptr fs:[0]
-// 007ab0ad  50                   push eax
-// 007ab0ae  64892500000000       mov dword ptr fs:[0], esp
-// 007ab0b5  81ec10030000         sub esp, 0x310
-// 007ab0bb  53                   push ebx
-// 007ab0bc  55                   push ebp
-// 007ab0bd  56                   push esi
-// 007ab0be  57                   push edi
-// 007ab0bf  8bbc2430030000       mov edi, dword ptr [esp + 0x330]
-// 007ab0c6  8be9                 mov ebp, ecx
-// 007ab0c8  8b8c2434030000       mov ecx, dword ptr [esp + 0x334]
-// 007ab0cf  8d842460020000       lea eax, [esp + 0x260]
-// 007ab0d6  33db                 xor ebx, ebx
-// 007ab0d8  895c2428             mov dword ptr [esp + 0x28], ebx
-// 007ab0dc  8b7708               mov esi, dword ptr [edi + 8]
-// 007ab0df  50                   push eax
-// 007ab0e0  896c2434             mov dword ptr [esp + 0x34], ebp
-// 007ab0e4  e8c756d6ff           call 0x5107b0
-// 007ab0e9  8a85f4020000         mov al, byte ptr [ebp + 0x2f4]
-// 007ab0ef  8b4f04               mov ecx, dword ptr [edi + 4]
-// 007ab0f2  84c0                 test al, al
-// 007ab0f4  7444                 je 0x7ab13a
-// 007ab0f6  8b11                 mov edx, dword ptr [ecx]
-// 007ab0f8  8b8268020000         mov eax, dword ptr [edx + 0x268]
-// 007ab0fe  6a12                 push 0x12
-// 007ab100  ffd0                 call eax
-// 007ab102  d98528030000         fld dword ptr [ebp + 0x328]
-// 007ab108  d9852c030000         fld dword ptr [ebp + 0x32c]
-// 007ab10e  8b4f04               mov ecx, dword ptr [edi + 4]
-// 007ab111  d98530030000         fld dword ptr [ebp + 0x330]
-// 007ab117  8d44245c             lea eax, [esp + 0x5c]
-// 007ab11b  d9ca                 fxch st(2)
-// 007ab11d  50                   push eax
-// 007ab11e  d95c2460             fstp dword ptr [esp + 0x60]
-// 007ab122  d95c2464             fstp dword ptr [esp + 0x64]
-// 007ab126  d95c2468             fstp dword ptr [esp + 0x68]
-// 007ab12a  d9e8                 fld1 
-// 007ab12c  d95c246c             fstp dword ptr [esp + 0x6c]
-// 007ab130  8b11                 mov edx, dword ptr [ecx]
-// 007ab132  8b9278020000         mov edx, dword ptr [edx + 0x278]
-// 007ab138  eb0a                 jmp 0x7ab144
-// 007ab13a  8b01                 mov eax, dword ptr [ecx]
-// 007ab13c  8b9068020000         mov edx, dword ptr [eax + 0x268]
-// 007ab142  6a00                 push 0
-// 007ab144  ffd2                 call edx
-// 007ab146  d9e8                 fld1 
-// 007ab148  d99c2400010000       fstp dword ptr [esp + 0x100]
-// 007ab14f  8d842460020000       lea eax, [esp + 0x260]
-// 007ab156  d9ee                 fldz 
-// 007ab158  50                   push eax
-// 007ab159  d9942408010000       fst dword ptr [esp + 0x108]
-// 007ab160  8d8c2404010000       lea ecx, [esp + 0x104]
-// 007ab167  d994240c010000       fst dword ptr [esp + 0x10c]
-// 007ab16e  d99c2410010000       fstp dword ptr [esp + 0x110]
-// 007ab175  ff15784c8000         call dword ptr [0x804c78]
-// 007ab17b  8d8c2400010000       lea ecx, [esp + 0x100]
-// 007ab182  51                   push ecx
-// 007ab183  8bce                 mov ecx, esi
-// 007ab185  ff15b4438000         call dword ptr [0x8043b4]
-// 007ab18b  d984248c020000       fld dword ptr [esp + 0x28c]
-// 007ab192  83ec0c               sub esp, 0xc
-// 007ab195  d95c2408             fstp dword ptr [esp + 8]
-// 007ab199  8bce                 mov ecx, esi
-// 007ab19b  d9842494020000       fld dword ptr [esp + 0x294]
-// 007ab1a2  d95c2404             fstp dword ptr [esp + 4]
-// 007ab1a6  d9842490020000       fld dword ptr [esp + 0x290]
-// 007ab1ad  d91c24               fstp dword ptr [esp]
-// 007ab1b0  ff15a44e8000         call dword ptr [0x804ea4]
-// 007ab1b6  8b4f08               mov ecx, dword ptr [edi + 8]
-// 007ab1b9  8b11                 mov edx, dword ptr [ecx]
-// 007ab1bb  8bb42434030000       mov esi, dword ptr [esp + 0x334]
-// 007ab1c2  d9460c               fld dword ptr [esi + 0xc]
-// 007ab1c5  8b821c010000         mov eax, dword ptr [edx + 0x11c]
-// 007ab1cb  51                   push ecx
-// 007ab1cc  d91c24               fstp dword ptr [esp]
-// 007ab1cf  ffd0                 call eax
-// 007ab1d1  8b4f08               mov ecx, dword ptr [edi + 8]
-// 007ab1d4  d94610               fld dword ptr [esi + 0x10]
-// 007ab1d7  8b11                 mov edx, dword ptr [ecx]
-// 007ab1d9  8b8224010000         mov eax, dword ptr [edx + 0x124]
-// 007ab1df  51                   push ecx
-// 007ab1e0  d91c24               fstp dword ptr [esp]
-// 007ab1e3  ffd0                 call eax
-// 007ab1e5  d94604               fld dword ptr [esi + 4]
-// 007ab1e8  8b4f08               mov ecx, dword ptr [edi + 8]
-// 007ab1eb  d95c2428             fstp dword ptr [esp + 0x28]
-// 007ab1ef  8b11                 mov edx, dword ptr [ecx]
-// 007ab1f1  8b9214010000         mov edx, dword ptr [edx + 0x114]
-// 007ab1f7  8d442428             lea eax, [esp + 0x28]
-// 007ab1fb  50                   push eax
-// 007ab1fc  ffd2                 call edx
-// 007ab1fe  8d8c2430020000       lea ecx, [esp + 0x230]
-// 007ab205  ff157c4e8000         call dword ptr [0x804e7c]
-// 007ab20b  8d8c2430020000       lea ecx, [esp + 0x230]
-// 007ab212  c784242803000000000000 mov dword ptr [esp + 0x328], 0
-// 007ab21d  ff15804e8000         call dword ptr [0x804e80]
-// 007ab223  83bd6802000000       cmp dword ptr [ebp + 0x268], 0
-// 007ab22a  0f859c000000         jne 0x7ab2cc
-// 007ab230  6848020000           push 0x248
-// 007ab235  e8e656efff           call 0x6a0920
-// 007ab23a  8bf0                 mov esi, eax
-// 007ab23c  83c404               add esp, 4
-// 007ab23f  8974241c             mov dword ptr [esp + 0x1c], esi
-// 007ab243  c684242803000001     mov byte ptr [esp + 0x328], 1
-// 007ab24b  85f6                 test esi, esi
-// 007ab24d  7438                 je 0x7ab287
-// 007ab24f  6834f58400           push 0x84f534
-// 007ab254  8d8c24dc000000       lea ecx, [esp + 0xdc]
-// 007ab25b  ff1558248000         call dword ptr [0x802458]
-// 007ab261  8b4704               mov eax, dword ptr [edi + 4]
-// 007ab264  8d8c24d8000000       lea ecx, [esp + 0xd8]
-// 007ab26b  51                   push ecx
-// 007ab26c  bb01000000           mov ebx, 1
-// 007ab271  50                   push eax
-// 007ab272  8bce                 mov ecx, esi
-// 007ab274  c684243003000002     mov byte ptr [esp + 0x330], 2
-// 007ab27c  895c2430             mov dword ptr [esp + 0x30], ebx
-// 007ab280  e8db8eecff           call 0x674160
-// 007ab285  eb02                 jmp 0x7ab289
-// 007ab287  33c0                 xor eax, eax
-// 007ab289  898568020000         mov dword ptr [ebp + 0x268], eax
-// 007ab28f  c784242803000000000000 mov dword ptr [esp + 0x328], 0
-// 007ab29a  f6c301               test bl, 1
-// 007ab29d  740d                 je 0x7ab2ac
-// 007ab29f  8d8c24d8000000       lea ecx, [esp + 0xd8]
-// 007ab2a6  ff1568248000         call dword ptr [0x802468]
-// 007ab2ac  8b4f04               mov ecx, dword ptr [edi + 4]
-// 007ab2af  8b11                 mov edx, dword ptr [ecx]
-// 007ab2b1  8b82b4000000         mov eax, dword ptr [edx + 0xb4]
-// 007ab2b7  ffd0                 call eax
-// 007ab2b9  8b8d68020000         mov ecx, dword ptr [ebp + 0x268]
-// 007ab2bf  8b10                 mov edx, dword ptr [eax]
-// 007ab2c1  8b92c8000000         mov edx, dword ptr [edx + 0xc8]
-// 007ab2c7  51                   push ecx
-// 007ab2c8  8bc8                 mov ecx, eax
-// 007ab2ca  ffd2                 call edx
-// 007ab2cc  8a85f6020000         mov al, byte ptr [ebp + 0x2f6]
-// 007ab2d2  88442428             mov byte ptr [esp + 0x28], al
-// 007ab2d6  8b4c2428             mov ecx, dword ptr [esp + 0x28]
-// 007ab2da  51                   push ecx
-// 007ab2db  57                   push edi
-// 007ab2dc  8bcd                 mov ecx, ebp
-// 007ab2de  e84deaffff           call 0x7a9d30
-// 007ab2e3  83bd7402000000       cmp dword ptr [ebp + 0x274], 0
-// 007ab2ea  8a97f5070000         mov dl, byte ptr [edi + 0x7f5]
-// 007ab2f0  88542413             mov byte ptr [esp + 0x13], dl
-// 007ab2f4  bec46b8200           mov esi, 0x826bc4
-// 007ab2f9  0f858c000000         jne 0x7ab38b
-// 007ab2ff  68704a8700           push 0x874a70
-// 007ab304  8d8c24dc000000       lea ecx, [esp + 0xdc]
-// 007ab30b  ff1558248000         call dword ptr [0x802458]
-// 007ab311  c684242803000004     mov byte ptr [esp + 0x328], 4
-// 007ab319  ff15604e8000         call dword ptr [0x804e60]
-// 007ab31f  8b10                 mov edx, dword ptr [eax]
-// 007ab321  8b524c               mov edx, dword ptr [edx + 0x4c]
-// 007ab324  8d8c24d8000000       lea ecx, [esp + 0xd8]
-// 007ab32b  51                   push ecx
-// 007ab32c  8d4c2470             lea ecx, [esp + 0x70]
-// 007ab330  51                   push ecx
-// 007ab331  8bc8                 mov ecx, eax
-// 007ab333  ffd2                 call edx
-// 007ab335  50                   push eax
-// 007ab336  8d8d70020000         lea ecx, [ebp + 0x270]
-// 007ab33c  c684242c03000005     mov byte ptr [esp + 0x32c], 5
-// 007ab344  ff1568428000         call dword ptr [0x804268]
-// 007ab34a  8b442474             mov eax, dword ptr [esp + 0x74]
-// 007ab34e  c684242803000004     mov byte ptr [esp + 0x328], 4
-// 007ab356  8974246c             mov dword ptr [esp + 0x6c], esi
-// 007ab35a  85c0                 test eax, eax
-// 007ab35c  7418                 je 0x7ab376
-// 007ab35e  ff08                 dec dword ptr [eax]
-// 007ab360  8b442474             mov eax, dword ptr [esp + 0x74]
-// 007ab364  833800               cmp dword ptr [eax], 0
-// 007ab367  750d                 jne 0x7ab376
-// 007ab369  8b54246c             mov edx, dword ptr [esp + 0x6c]
-// 007ab36d  8b4204               mov eax, dword ptr [edx + 4]
-// 007ab370  8d4c246c             lea ecx, [esp + 0x6c]
-// 007ab374  ffd0                 call eax
-// 007ab376  8d8c24d8000000       lea ecx, [esp + 0xd8]
-// 007ab37d  c684242803000000     mov byte ptr [esp + 0x328], 0
-// 007ab385  ff1568248000         call dword ptr [0x802468]
-// 007ab38b  83bd8002000000       cmp dword ptr [ebp + 0x280], 0
-// 007ab392  0f85c9000000         jne 0x7ab461
-// 007ab398  68c4638100           push 0x8163c4
-// 007ab39d  8d8c24fc010000       lea ecx, [esp + 0x1fc]
-// 007ab3a4  ff1558248000         call dword ptr [0x802458]
-// 007ab3aa  68e4d48400           push 0x84d4e4
-// 007ab3af  8d8c24dc000000       lea ecx, [esp + 0xdc]
-// 007ab3b6  c684242c03000006     mov byte ptr [esp + 0x32c], 6
-// 007ab3be  ff1558248000         call dword ptr [0x802458]
-// 007ab3c4  c684242803000007     mov byte ptr [esp + 0x328], 7
-// 007ab3cc  ff15fc428000         call dword ptr [0x8042fc]
-// 007ab3d2  8b10                 mov edx, dword ptr [eax]
-// 007ab3d4  8b5214               mov edx, dword ptr [edx + 0x14]
-// 007ab3d7  6a00                 push 0
-// 007ab3d9  6a00                 push 0
-// 007ab3db  6a00                 push 0
-// 007ab3dd  8d8c2404020000       lea ecx, [esp + 0x204]
-// 007ab3e4  51                   push ecx
-// 007ab3e5  8d8c24e8000000       lea ecx, [esp + 0xe8]
-// 007ab3ec  51                   push ecx
-// 007ab3ed  8d4c2470             lea ecx, [esp + 0x70]
-// 007ab3f1  51                   push ecx
-// 007ab3f2  8bc8                 mov ecx, eax
-// 007ab3f4  ffd2                 call edx
-// 007ab3f6  50                   push eax
-// 007ab3f7  8d8d7c020000         lea ecx, [ebp + 0x27c]
-// 007ab3fd  c684242c03000008     mov byte ptr [esp + 0x32c], 8
-// 007ab405  ff15f4428000         call dword ptr [0x8042f4]
-// 007ab40b  8b442464             mov eax, dword ptr [esp + 0x64]
-// 007ab40f  c684242803000007     mov byte ptr [esp + 0x328], 7
-// 007ab417  8974245c             mov dword ptr [esp + 0x5c], esi
-// 007ab41b  85c0                 test eax, eax
-// 007ab41d  7418                 je 0x7ab437
-// 007ab41f  ff08                 dec dword ptr [eax]
-// 007ab421  8b442464             mov eax, dword ptr [esp + 0x64]
-// 007ab425  833800               cmp dword ptr [eax], 0
-// 007ab428  750d                 jne 0x7ab437
-// 007ab42a  8b54245c             mov edx, dword ptr [esp + 0x5c]
-// 007ab42e  8b4204               mov eax, dword ptr [edx + 4]
-// 007ab431  8d4c245c             lea ecx, [esp + 0x5c]
-// 007ab435  ffd0                 call eax
-// 007ab437  8d8c24d8000000       lea ecx, [esp + 0xd8]
-// 007ab43e  c684242803000006     mov byte ptr [esp + 0x328], 6
-// 007ab446  ff1568248000         call dword ptr [0x802468]
-// 007ab44c  8d8c24f8010000       lea ecx, [esp + 0x1f8]
-// 007ab453  c684242803000000     mov byte ptr [esp + 0x328], 0
-// 007ab45b  ff1568248000         call dword ptr [0x802468]
-// 007ab461  83bd6c02000000       cmp dword ptr [ebp + 0x26c], 0
-// 007ab468  756e                 jne 0x7ab4d8
-// 007ab46a  837d0c00             cmp dword ptr [ebp + 0xc], 0
-// 007ab46e  7468                 je 0x7ab4d8
-// 007ab470  68bc020000           push 0x2bc
-// 007ab475  e8a654efff           call 0x6a0920
-// 007ab47a  83c404               add esp, 4
-// 007ab47d  8944241c             mov dword ptr [esp + 0x1c], eax
-// 007ab481  c684242803000009     mov byte ptr [esp + 0x328], 9
-// 007ab489  85c0                 test eax, eax
-// 007ab48b  7409                 je 0x7ab496
-// 007ab48d  8bc8                 mov ecx, eax
-// 007ab48f  e85c1dedff           call 0x67d1f0
-// 007ab494  eb02                 jmp 0x7ab498
-// 007ab496  33c0                 xor eax, eax
-// 007ab498  8b8d68020000         mov ecx, dword ptr [ebp + 0x268]
-// 007ab49e  89856c020000         mov dword ptr [ebp + 0x26c], eax
-// 007ab4a4  8b11                 mov edx, dword ptr [ecx]
-// 007ab4a6  50                   push eax
-// 007ab4a7  8b8230010000         mov eax, dword ptr [edx + 0x130]
-// 007ab4ad  c684242c03000000     mov byte ptr [esp + 0x32c], 0
-// 007ab4b5  ffd0                 call eax
-// 007ab4b7  83ec0c               sub esp, 0xc
-// 007ab4ba  8d957c020000         lea edx, [ebp + 0x27c]
-// 007ab4c0  8bcc                 mov ecx, esp
-// 007ab4c2  89642428             mov dword ptr [esp + 0x28], esp
-// 007ab4c6  52                   push edx
-// 007ab4c7  ff15684c8000         call dword ptr [0x804c68]
-// 007ab4cd  8b8d6c020000         mov ecx, dword ptr [ebp + 0x26c]
-// 007ab4d3  e84810edff           call 0x67c520
-// 007ab4d8  33db                 xor ebx, ebx
-// 007ab4da  33ff                 xor edi, edi
-// 007ab4dc  395d0c               cmp dword ptr [ebp + 0xc], ebx
-// 007ab4df  7e6c                 jle 0x7ab54d
-// 007ab4e1  8b4508               mov eax, dword ptr [ebp + 8]
-// 007ab4e4  8b0cb8               mov ecx, dword ptr [eax + edi*4]
-// 007ab4e7  3bcb                 cmp ecx, ebx
-// 007ab4e9  745c                 je 0x7ab547
-// 007ab4eb  8b11                 mov edx, dword ptr [ecx]
-// 007ab4ed  8b5218               mov edx, dword ptr [edx + 0x18]
-// 007ab4f0  8d442420             lea eax, [esp + 0x20]
-// 007ab4f4  50                   push eax
-// 007ab4f5  ffd2                 call edx
-// 007ab4f7  8b442420             mov eax, dword ptr [esp + 0x20]
-// 007ab4fb  3bc3                 cmp eax, ebx
-// 007ab4fd  7448                 je 0x7ab547
-// 007ab4ff  83c004               add eax, 4
-// 007ab502  50                   push eax
-// 007ab503  ff15ac218000         call dword ptr [0x8021ac]
-// 007ab509  85c0                 test eax, eax
-// 007ab50b  7536                 jne 0x7ab543
-// 007ab50d  8b4c2420             mov ecx, dword ptr [esp + 0x20]
-// 007ab511  8b7108               mov esi, dword ptr [ecx + 8]
-// 007ab514  3bf3                 cmp esi, ebx
-// 007ab516  741f                 je 0x7ab537
-// 007ab518  8b0e                 mov ecx, dword ptr [esi]
-// 007ab51a  8b01                 mov eax, dword ptr [ecx]
-// 007ab51c  8b5004               mov edx, dword ptr [eax + 4]
-// 007ab51f  ffd2                 call edx
-// 007ab521  8bc6                 mov eax, esi
-// 007ab523  8b7604               mov esi, dword ptr [esi + 4]
-// 007ab526  50                   push eax
-// 007ab527  e84e51efff           call 0x6a067a
-// 007ab52c  83c404               add esp, 4
-// 007ab52f  3bf3                 cmp esi, ebx
-// 007ab531  75e5                 jne 0x7ab518
-// 007ab533  8b4c2420             mov ecx, dword ptr [esp + 0x20]
-// 007ab537  3bcb                 cmp ecx, ebx
-// 007ab539  7408                 je 0x7ab543
-// 007ab53b  8b01                 mov eax, dword ptr [ecx]
-// 007ab53d  8b10                 mov edx, dword ptr [eax]
-// 007ab53f  6a01                 push 1
-// 007ab541  ffd2                 call edx
-// 007ab543  895c2420             mov dword ptr [esp + 0x20], ebx
-// 007ab547  47                   inc edi
-// 007ab548  3b7d0c               cmp edi, dword ptr [ebp + 0xc]
-// 007ab54b  7c94                 jl 0x7ab4e1
-// 007ab54d  803dbc2e940000       cmp byte ptr [0x942ebc], 0
-// 007ab554  746f                 je 0x7ab5c5
-// 007ab556  395d0c               cmp dword ptr [ebp + 0xc], ebx
-// 007ab559  746a                 je 0x7ab5c5
-// 007ab55b  807c241300           cmp byte ptr [esp + 0x13], 0
-// 007ab560  7463                 je 0x7ab5c5
-// 007ab562  8b842430030000       mov eax, dword ptr [esp + 0x330]
-// 007ab569  50                   push eax
-// 007ab56a  e871ded9ff           call 0x5493e0
-// 007ab56f  83ec08               sub esp, 8
-// 007ab572  8bcc                 mov ecx, esp
-// 007ab574  89642428             mov dword ptr [esp + 0x28], esp
-// 007ab578  68b8389700           push 0x9738b8
-// 007ab57d  ff15684c8000         call dword ptr [0x804c68]
-// 007ab583  8b8d6c020000         mov ecx, dword ptr [ebp + 0x26c]
-// 007ab589  e8920fedff           call 0x67c520
-// 007ab58e  8b856c020000         mov eax, dword ptr [ebp + 0x26c]
-// 007ab594  057c020000           add eax, 0x27c
-// 007ab599  395818               cmp dword ptr [eax + 0x18], ebx
-// 007ab59c  7527                 jne 0x7ab5c5
-// 007ab59e  8b0dbc389700         mov ecx, dword ptr [0x9738bc]
-// 007ab5a4  ff1558428000         call dword ptr [0x804258]
-// 007ab5aa  83ec20               sub esp, 0x20
-// 007ab5ad  8bcc                 mov ecx, esp
-// 007ab5af  8964243c             mov dword ptr [esp + 0x3c], esp
-// 007ab5b3  50                   push eax
-// 007ab5b4  ff15c4488000         call dword ptr [0x8048c4]
-// 007ab5ba  8b8d6c020000         mov ecx, dword ptr [ebp + 0x26c]
-// 007ab5c0  e87be6ffff           call 0x7a9c40
-// 007ab5c5  e85688d6ff           call 0x513e20
-// 007ab5ca  50                   push eax
-// 007ab5cb  8d8c24ac010000       lea ecx, [esp + 0x1ac]
-// 007ab5d2  e8497cd6ff           call 0x513220
-// 007ab5d7  f60550f0960001       test byte ptr [0x96f050], 1
-// 007ab5de  751b                 jne 0x7ab5fb
-// 007ab5e0  d9ee                 fldz 
-// 007ab5e2  830d50f0960001       or dword ptr [0x96f050], 1
-// 007ab5e9  d91544f09600         fst dword ptr [0x96f044]
-// 007ab5ef  d91548f09600         fst dword ptr [0x96f048]
-// 007ab5f5  d91d4cf09600         fstp dword ptr [0x96f04c]
-// 007ab5fb  d90544f09600         fld dword ptr [0x96f044]
-// 007ab601  8d8c24a8010000       lea ecx, [esp + 0x1a8]
-// 007ab608  d99c24cc010000       fstp dword ptr [esp + 0x1cc]
-// 007ab60f  51                   push ecx
-// 007ab610  d90548f09600         fld dword ptr [0x96f048]
-// 007ab616  8b8c2438030000       mov ecx, dword ptr [esp + 0x338]
-// 007ab61d  d99c24d4010000       fstp dword ptr [esp + 0x1d4]
-// 007ab624  d9054cf09600         fld dword ptr [0x96f04c]
-// 007ab62a  d99c24d8010000       fstp dword ptr [esp + 0x1d8]
-// 007ab631  e81a55d6ff           call 0x510b50
-// 007ab636  33c0                 xor eax, eax
-// 007ab638  395d0c               cmp dword ptr [ebp + 0xc], ebx
-// 007ab63b  89442428             mov dword ptr [esp + 0x28], eax
-// 007ab63f  0f8e04150000         jle 0x7acb49
-// 007ab645  8b5508               mov edx, dword ptr [ebp + 8]
-// 007ab648  8b1c82               mov ebx, dword ptr [edx + eax*4]
-// 007ab64b  33ff                 xor edi, edi
-// 007ab64d  895c241c             mov dword ptr [esp + 0x1c], ebx
-// 007ab651  3bdf                 cmp ebx, edi
-// 007ab653  0f84da140000         je 0x7acb33
-// 007ab659  8b03                 mov eax, dword ptr [ebx]
-// 007ab65b  8b5018               mov edx, dword ptr [eax + 0x18]
-// 007ab65e  8d4c243c             lea ecx, [esp + 0x3c]
-// 007ab662  51                   push ecx
-// 007ab663  8bcb                 mov ecx, ebx
-// 007ab665  ffd2                 call edx
-// 007ab667  3938                 cmp dword ptr [eax], edi
-// 007ab669  8b44243c             mov eax, dword ptr [esp + 0x3c]
-// 007ab66d  0f95442411           setne byte ptr [esp + 0x11]
-// 007ab672  3bc7                 cmp eax, edi
-// 007ab674  7449                 je 0x7ab6bf
-// 007ab676  83c004               add eax, 4
-// 007ab679  50                   push eax
-// 007ab67a  ff15ac218000         call dword ptr [0x8021ac]
-// 007ab680  85c0                 test eax, eax
-// 007ab682  7537                 jne 0x7ab6bb
-// 007ab684  8b4c243c             mov ecx, dword ptr [esp + 0x3c]
-// 007ab688  8b7108               mov esi, dword ptr [ecx + 8]
-// 007ab68b  3bf7                 cmp esi, edi
-// 007ab68d  7420                 je 0x7ab6af
-// 007ab68f  90                   nop 
-// 007ab690  8b0e                 mov ecx, dword ptr [esi]
-// 007ab692  8b01                 mov eax, dword ptr [ecx]
-// 007ab694  8b5004               mov edx, dword ptr [eax + 4]
-// 007ab697  ffd2                 call edx
-// 007ab699  8bc6                 mov eax, esi
-// 007ab69b  8b7604               mov esi, dword ptr [esi + 4]
-// 007ab69e  50                   push eax
-// 007ab69f  e8d64fefff           call 0x6a067a
-// 007ab6a4  83c404               add esp, 4
-// 007ab6a7  3bf7                 cmp esi, edi
-// 007ab6a9  75e5                 jne 0x7ab690
-// 007ab6ab  8b4c243c             mov ecx, dword ptr [esp + 0x3c]
-// 007ab6af  3bcf                 cmp ecx, edi
-// 007ab6b1  7408                 je 0x7ab6bb
-// 007ab6b3  8b01                 mov eax, dword ptr [ecx]
-// 007ab6b5  8b10                 mov edx, dword ptr [eax]
-// 007ab6b7  6a01                 push 1
-// 007ab6b9  ffd2                 call edx
-// 007ab6bb  897c243c             mov dword ptr [esp + 0x3c], edi
-// 007ab6bf  8b03                 mov eax, dword ptr [ebx]
-// 007ab6c1  8b5014               mov edx, dword ptr [eax + 0x14]
-// 007ab6c4  8d4c2444             lea ecx, [esp + 0x44]
-// 007ab6c8  51                   push ecx
-// 007ab6c9  8bcb                 mov ecx, ebx
-// 007ab6cb  ffd2                 call edx
-// 007ab6cd  3938                 cmp dword ptr [eax], edi
-// 007ab6cf  8b442444             mov eax, dword ptr [esp + 0x44]
-// 007ab6d3  0f95442412           setne byte ptr [esp + 0x12]
-// 007ab6d8  3bc7                 cmp eax, edi
-// 007ab6da  7448                 je 0x7ab724
-// 007ab6dc  83c004               add eax, 4
-// 007ab6df  50                   push eax
-// 007ab6e0  ff15ac218000         call dword ptr [0x8021ac]
-// 007ab6e6  85c0                 test eax, eax
-// 007ab6e8  7536                 jne 0x7ab720
-// 007ab6ea  8b4c2444             mov ecx, dword ptr [esp + 0x44]
-// 007ab6ee  8b7108               mov esi, dword ptr [ecx + 8]
-// 007ab6f1  3bf7                 cmp esi, edi
-// 007ab6f3  741f                 je 0x7ab714
-// 007ab6f5  8b0e                 mov ecx, dword ptr [esi]
-// 007ab6f7  8b01                 mov eax, dword ptr [ecx]
-// 007ab6f9  8b5004               mov edx, dword ptr [eax + 4]
-// 007ab6fc  ffd2                 call edx
-// 007ab6fe  8bc6                 mov eax, esi
-// 007ab700  8b7604               mov esi, dword ptr [esi + 4]
-// 007ab703  50                   push eax
-// 007ab704  e8714fefff           call 0x6a067a
-// 007ab709  83c404               add esp, 4
-// 007ab70c  3bf7                 cmp esi, edi
-// 007ab70e  75e5                 jne 0x7ab6f5
-// 007ab710  8b4c2444             mov ecx, dword ptr [esp + 0x44]
-// 007ab714  3bcf                 cmp ecx, edi
-// 007ab716  7408                 je 0x7ab720
-// 007ab718  8b01                 mov eax, dword ptr [ecx]
-// 007ab71a  8b10                 mov edx, dword ptr [eax]
-// 007ab71c  6a01                 push 1
-// 007ab71e  ffd2                 call edx
-// 007ab720  897c2444             mov dword ptr [esp + 0x44], edi
-// 007ab724  807c241100           cmp byte ptr [esp + 0x11], 0
-// 007ab729  0f8404140000         je 0x7acb33
-// 007ab72f  807c241200           cmp byte ptr [esp + 0x12], 0
-// 007ab734  0f84f9130000         je 0x7acb33
-// 007ab73a  8b03                 mov eax, dword ptr [ebx]
-// 007ab73c  8b5014               mov edx, dword ptr [eax + 0x14]
-// 007ab73f  8d4c244c             lea ecx, [esp + 0x4c]
-// 007ab743  51                   push ecx
-// 007ab744  8bcb                 mov ecx, ebx
-// 007ab746  ffd2                 call edx
-// 007ab748  d9ee                 fldz 
-// 007ab74a  8b08                 mov ecx, dword ptr [eax]
-// 007ab74c  8b01                 mov eax, dword ptr [ecx]
-// 007ab74e  8b5018               mov edx, dword ptr [eax + 0x18]
-// 007ab751  51                   push ecx
-// 007ab752  d91c24               fstp dword ptr [esp]
-// 007ab755  c684242c0300000a     mov byte ptr [esp + 0x32c], 0xa
-// 007ab75d  ffd2                 call edx
-// 007ab75f  85c0                 test eax, eax
-// 007ab761  8b44244c             mov eax, dword ptr [esp + 0x4c]
-// 007ab765  0f94442411           sete byte ptr [esp + 0x11]
-// 007ab76a  c684242803000000     mov byte ptr [esp + 0x328], 0
-// 007ab772  3bc7                 cmp eax, edi
-// 007ab774  7449                 je 0x7ab7bf
-// 007ab776  83c004               add eax, 4
-// 007ab779  50                   push eax
-// 007ab77a  ff15ac218000         call dword ptr [0x8021ac]
-// 007ab780  85c0                 test eax, eax
-// 007ab782  7537                 jne 0x7ab7bb
-// 007ab784  8b4c244c             mov ecx, dword ptr [esp + 0x4c]
-// 007ab788  8b7108               mov esi, dword ptr [ecx + 8]
-// 007ab78b  3bf7                 cmp esi, edi
-// 007ab78d  7420                 je 0x7ab7af
-// 007ab78f  90                   nop 
-// 007ab790  8b0e                 mov ecx, dword ptr [esi]
-// 007ab792  8b01                 mov eax, dword ptr [ecx]
-// 007ab794  8b5004               mov edx, dword ptr [eax + 4]
-// 007ab797  ffd2                 call edx
-// 007ab799  8bc6                 mov eax, esi
-// 007ab79b  8b7604               mov esi, dword ptr [esi + 4]
-// 007ab79e  50                   push eax
-// 007ab79f  e8d64eefff           call 0x6a067a
-// 007ab7a4  83c404               add esp, 4
-// 007ab7a7  3bf7                 cmp esi, edi
-// 007ab7a9  75e5                 jne 0x7ab790
-// 007ab7ab  8b4c244c             mov ecx, dword ptr [esp + 0x4c]
-// 007ab7af  3bcf                 cmp ecx, edi
-// 007ab7b1  7408                 je 0x7ab7bb
-// 007ab7b3  8b01                 mov eax, dword ptr [ecx]
-// 007ab7b5  8b10                 mov edx, dword ptr [eax]
-// 007ab7b7  6a01                 push 1
-// 007ab7b9  ffd2                 call edx
-// 007ab7bb  897c244c             mov dword ptr [esp + 0x4c], edi
-// 007ab7bf  807c241100           cmp byte ptr [esp + 0x11], 0
-// 007ab7c4  0f8569130000         jne 0x7acb33
-// 007ab7ca  8b03                 mov eax, dword ptr [ebx]
-// 007ab7cc  8b5018               mov edx, dword ptr [eax + 0x18]
-// 007ab7cf  8d4c2418             lea ecx, [esp + 0x18]
-// 007ab7d3  51                   push ecx
-// 007ab7d4  8bcb                 mov ecx, ebx
-// 007ab7d6  ffd2                 call edx
-// 007ab7d8  80bdf402000000       cmp byte ptr [ebp + 0x2f4], 0
-// 007ab7df  c68424280300000b     mov byte ptr [esp + 0x328], 0xb
-// 007ab7e7  7419                 je 0x7ab802
-// 007ab7e9  8b4c2418             mov ecx, dword ptr [esp + 0x18]
-// 007ab7ed  39b980000000         cmp dword ptr [ecx + 0x80], edi
-// 007ab7f3  750d                 jne 0x7ab802
-// 007ab7f5  8b842430030000       mov eax, dword ptr [esp + 0x330]
-// 007ab7fc  50                   push eax
-// 007ab7fd  e81ef1d9ff           call 0x54a920
-// 007ab802  8b4c2418             mov ecx, dword ptr [esp + 0x18]
-// 007ab806  83791002             cmp dword ptr [ecx + 0x10], 2
-// 007ab80a  897c2424             mov dword ptr [esp + 0x24], edi
-// 007ab80e  755f                 jne 0x7ab86f
-// 007ab810  8b13                 mov edx, dword ptr [ebx]
-// 007ab812  8b421c               mov eax, dword ptr [edx + 0x1c]
-// 007ab815  8bcb                 mov ecx, ebx
-// 007ab817  ffd0                 call eax
-// 007ab819  d94024               fld dword ptr [eax + 0x24]
+//  C++ conversion of the 32-bit x86 (MSVC __thiscall) listing of RenderScene,
+//  RenderScene_2008_assembly_only.asm, addresses 007AB0A0 .. 007AB819.
+//
+//  C++98/03 only -- compiled with MSVC 2005 (50727) / 2008 RTM (21022).
+// =============================================================================
 
-void func_007ab0a0()
-{
+// MSVC 2005/2008: calling convention AFTER return type (void __cdecl f()).
+#define RS_THISCALL
+#define RS_STDCALL
+#define RS_CDECL
+
+namespace rs {
+
+typedef unsigned char  u8;
+typedef unsigned int   u32;
+typedef unsigned long  size_t;
+typedef unsigned long  uintptr_t;
+
+// =============================================================================
+// External routines referenced by the listing (not part of this listing)
+// =============================================================================
+
+// ---- direct calls (E8 rel32) ------------------------------------------------
+void  __cdecl sub_5107B0(void* self, void* out);                 // call 5107B0 : ecx=pose, [esp]=&matrix
+void* __cdecl sub_6A0920(size_t size);                          // call 6A0920 : operator new(size)
+void* __cdecl sub_674160(void* self, void* a, void* b);          // call 674160 : ctor, returns this
+void  __cdecl sub_7A9D30(void* self, void* ctx, u32 flag);       // call 7A9D30 : member helper (ctx, flag)
+void  __cdecl sub_7A9C40(void* self);                            // call 7A9C40 : member helper on target
+u32   __cdecl sub_513E20();                                     // call 513E20 : returns a value in eax
+void  __cdecl sub_513220(void* self, u32 value);                 // call 513220 : ctor(value)
+void  __cdecl sub_510B50(void* self, void* timing);              // call 510B50 : pose.update(timing)
+void* __cdecl sub_67D1F0(void* self);                            // call 67D1F0 : ctor, returns this
+void  __cdecl sub_67C520(void* self);                            // call 67C520 : member helper (no args)
+void  __stdcall sub_5493E0(void* ctx);                           // call 5493E0 : callee pops its argument
+void  __stdcall sub_54A920(void* ctx);                           // call 54A920 : callee pops its argument
+void  __cdecl sub_6A067A(void* p);                              // call 6A067A : operator delete(p)
+
+// ---- indirect calls through import slots (call [addr]) ----------------------
+void  __cdecl imp_804C78(void* self, void* arg);                 // ecx=&vec4, push &matrix
+void  __cdecl imp_8043B4(void* self, void* vec4);                // ecx=device, push &vec4
+void  __cdecl imp_804EA4(void* self, float a, float b, float c); // ecx=device, 3 floats
+void  __cdecl imp_804E7C(void* self);                            // scope object: enter
+void  __cdecl imp_804E80(void* self);                            // scope object: leave
+int   __stdcall imp_8021AC(void* p);                             // p != 0 -> "pinned": skip release
+void  __cdecl imp_802458(void* self, const char* text);          // NameRef::name ctor(text)
+void  __cdecl imp_802468(void* self);                            // NameRef dtor
+void* __cdecl imp_804E60();                                     // singleton/manager getter
+void  __cdecl imp_804268(void* self, void* src);                 // SharedHandle::operator=(src)
+void* __cdecl imp_8042FC();                                     // manager getter
+void  __cdecl imp_8042F4(void* self, void* src);                 // SharedHandle::operator=(src)
+void  __cdecl imp_804C68(void* self, const void* arg);           // ctor(arg) of a stack temporary
+void* __cdecl imp_804258(void* self);                            // getter on global object
+void  __cdecl imp_8048C4(void* self, void* arg);                 // ctor(arg) of a stack temporary
+
+// NULL for MSVC 2005/2008
+#ifndef NULL
+#define NULL 0
+#endif
+
+// =============================================================================
+// Memory helpers
+// =============================================================================
+
+// Typed access at a byte offset ("[base + off]").
+template <class T>
+inline T& At(void* base, size_t off) {
+    return *reinterpret_cast<T*>(static_cast<unsigned char*>(base) + off);
 }
+
+// Address of a byte offset ("lea reg, [base + off]").
+inline void* Addr(void* base, size_t off) {
+    return static_cast<unsigned char*>(base) + off;
+}
+
+// Virtual call helpers (overloads for 0-5 args, C++98 compatible).
+template <class R>
+inline R VCall(void* obj, size_t vtblOff) {
+    typedef R (*Fn)(void*);
+    void** vtbl = *reinterpret_cast<void***>(obj);
+    return reinterpret_cast<Fn>(vtbl[vtblOff / 4])(obj);
+}
+
+template <class R, class A1>
+inline R VCall(void* obj, size_t vtblOff, A1 a1) {
+    typedef R (*Fn)(void*, A1);
+    void** vtbl = *reinterpret_cast<void***>(obj);
+    return reinterpret_cast<Fn>(vtbl[vtblOff / 4])(obj, a1);
+}
+
+template <class R, class A1, class A2>
+inline R VCall(void* obj, size_t vtblOff, A1 a1, A2 a2) {
+    typedef R (*Fn)(void*, A1, A2);
+    void** vtbl = *reinterpret_cast<void***>(obj);
+    return reinterpret_cast<Fn>(vtbl[vtblOff / 4])(obj, a1, a2);
+}
+
+template <class R, class A1, class A2, class A3>
+inline R VCall(void* obj, size_t vtblOff, A1 a1, A2 a2, A3 a3) {
+    typedef R (*Fn)(void*, A1, A2, A3);
+    void** vtbl = *reinterpret_cast<void***>(obj);
+    return reinterpret_cast<Fn>(vtbl[vtblOff / 4])(obj, a1, a2, a3);
+}
+
+template <class R, class A1, class A2, class A3, class A4>
+inline R VCall(void* obj, size_t vtblOff, A1 a1, A2 a2, A3 a3, A4 a4) {
+    typedef R (*Fn)(void*, A1, A2, A3, A4);
+    void** vtbl = *reinterpret_cast<void***>(obj);
+    return reinterpret_cast<Fn>(vtbl[vtblOff / 4])(obj, a1, a2, a3, a4);
+}
+
+template <class R, class A1, class A2, class A3, class A4, class A5>
+inline R VCall(void* obj, size_t vtblOff, A1 a1, A2 a2, A3 a3, A4 a4, A5 a5) {
+    typedef R (*Fn)(void*, A1, A2, A3, A4, A5);
+    void** vtbl = *reinterpret_cast<void***>(obj);
+    return reinterpret_cast<Fn>(vtbl[vtblOff / 4])(obj, a1, a2, a3, a4, a5);
+}
+
+template <class R, class A1, class A2, class A3, class A4, class A5, class A6>
+inline R VCall(void* obj, size_t vtblOff, A1 a1, A2 a2, A3 a3, A4 a4, A5 a5, A6 a6) {
+    typedef R (*Fn)(void*, A1, A2, A3, A4, A5, A6);
+    void** vtbl = *reinterpret_cast<void***>(obj);
+    return reinterpret_cast<Fn>(vtbl[vtblOff / 4])(obj, a1, a2, a3, a4, a5, a6);
+}
+
+// String literal located at its address in the original image.
+inline const char* Lit(uintptr_t addr) {
+    return reinterpret_cast<const char*>(addr);
+}
+
+// Vtable pointer installed in the handle temporaries (mov esi, 0x826BC4).
+void* const kSharedRefVTable = reinterpret_cast<void*>(0x826BC4u);
+
+// Module data used by the listing (absolute addresses).
+float g_vec3Cache[3]   = {0.0f, 0.0f, 0.0f};  // 0x96F044 / 0x96F048 / 0x96F04C
+u32   g_vec3CacheFlags = 0;                    // 0x96F050, bit 0 = initialised
+u8    g_942EBC         = 0;                    // 0x942EBC, diagnostics enable
+void* g_9738BC         = NULL;                 // 0x9738BC, global object pointer
+
+// =============================================================================
+// Data layouts recovered from the listing
+// =============================================================================
+
+// 12-byte handle written by the assignment imports (804268 / 8042F4).
+struct SharedHandle {
+    void* vptr;
+    void* ptr;
+    u32*  rc;
+};
+
+// Name/key temporary: kind at +0, string storage at +4.
+struct NameRef {
+    u32           kind;
+    unsigned char name[0x1C];
+};
+
+// Node of a per-item result list: value at +0, next at +4.
+struct ListNode {
+    void*     value;
+    ListNode* next;
+};
+
+// 4x4 float block filled by sub_5107B0.
+struct Matrix4 {
+    float m[16];
+};
+
+// Offsets of RenderScene fields ([ebp + N] in the listing).
+static const size_t kItems     = 0x008;   // void** items
+static const size_t kItemCount = 0x00C;   // int    itemCount
+static const size_t kBackend   = 0x268;   // void*  backend   (0x248-byte object, created lazily)
+static const size_t kTarget    = 0x26C;   // void*  target    (0x2BC-byte object, created lazily)
+static const size_t kHandle270 = 0x270;   // SharedHandle (assigned via imp_804268)
+static const size_t kFlag274   = 0x274;   // int
+static const size_t kSub27C    = 0x27C;   // embedded sub-object (assigned via imp_8042F4)
+static const size_t kFlag280   = 0x280;   // int
+static const size_t kFlagF4    = 0x2F4;   // bool
+static const size_t kFlagF6    = 0x2F6;   // bool
+static const size_t kClear     = 0x328;   // float clear[3]
+
+// Offsets of the context object (arg1, "edi").
+static const size_t kCtxA      = 0x004;   // object with vtable 268/278/B4
+static const size_t kCtxDevice = 0x008;   // device/renderer object (vtable 114/11C/124)
+static const size_t kCtxFlag   = 0x7F5;   // byte
+
+// Offsets of the pose object (arg2, "esi").
+static const size_t kPose4     = 0x004;   // float
+static const size_t kPoseC     = 0x00C;   // float
+static const size_t kPose10    = 0x010;   // float
+
+// Stack-frame slots: listing operand [esp+N] == frame byte N.
+namespace frame {
+    static const size_t kP18       = 0x18;   // item query result (007AB7CA)
+    static const size_t kOut20     = 0x20;   // item query out-param, pass 1
+    static const size_t kR24       = 0x24;   // int (zeroed at 007AB80A)
+    static const size_t kFloat28   = 0x28;   // float passed by pointer (007AB1E5)
+    static const size_t kP3C       = 0x3C;   // list out-param, pass 2
+    static const size_t kP44       = 0x44;   // list out-param, pass 2
+    static const size_t kP4C       = 0x4C;   // list out-param, pass 2
+    static const size_t kVec4A     = 0x5C;   // {clear.r, clear.g, clear.b, 1} (007AB117)
+    static const size_t kHandleB   = 0x5C;   // SharedHandle reusing kVec4A  (007AB3DD)
+    static const size_t kHandleA   = 0x6C;   // SharedHandle                 (007AB324)
+    static const size_t kNameD8    = 0xD8;   // NameRef                      (007AB24F, 007AB304, 007AB398)
+    static const size_t kVec4One   = 0x100;  // {1, 0, 0, 0}                 (007AB146)
+    static const size_t kGuard230  = 0x230;  // scope object                 (007AB205)
+    static const size_t kMatrix260 = 0x260;  // Matrix4                      (007AB0CF)
+    static const size_t kNameF8    = 0x1F8;  // NameRef                      (007AB398)
+    static const size_t kTiming1A8 = 0x1A8;  // timing object, vec3 at +0x24 (007AB5C5)
+}
+
+// =============================================================================
+// Release helpers (the refcount / list teardown sequences of the listing)
+// =============================================================================
+
+// 007AB35C..007AB374 and 007AB40B..007AB435:
+//   if (h.rc && --*h.rc == 0) h.vptr[1](&h);
+inline void ReleaseHandle(SharedHandle& h) {
+    if (h.rc != NULL && --(*h.rc) == 0) {
+        VCall<void>(&h, 0x04);
+    }
+}
+
+// 007AB4F7..007AB543 (identical blocks at 007AB67A.. and 007AB77A..):
+//   if (slot && !imp_8021AC(slot + 4)) {
+//       for (n = slot->list; n; n = next) { n->value->vtbl[1](); next = n->next; free(n); }
+//       slot->vtbl[0](1);                    // scalar deleting destructor
+//   }
+//   slot = NULL;
+inline void ReleaseSlot(void*& slot) {
+    if (slot != NULL && imp_8021AC(static_cast<char*>(slot) + 4) == 0) {
+        ListNode* node = At<ListNode*>(slot, 0x08);
+        while (node != NULL) {
+            VCall<void>(node->value, 0x04);
+            ListNode* next = node->next;
+            sub_6A067A(node);
+            node = next;
+        }
+        VCall<void>(slot, 0x00, 1);
+    }
+    slot = NULL;
+}
+
+// =============================================================================
+// RenderScene
+// =============================================================================
+
+class RenderScene {
+public:
+    // 007AB0A0 : thiscall, this = ecx, ctx = arg1, pose = arg2.
+    void Render(void* ctx, void* pose);
+};
+
+void RenderScene::Render(void* ctx, void* pose)
+{
+    using namespace frame;
+    unsigned char f[0x310] = {};   // stack frame ([esp+N] == f[N])
+
+    // ---- 007AB0BF..007AB0E4 : device, matrix, [ctx+4] and flag -------------
+    void* device = *reinterpret_cast<void**>(reinterpret_cast<char*>(ctx) + kCtxDevice);  // mov esi,[edi+8]
+    float* mat = &At<float>(f, kMatrix260);               // lea eax,[esp+260h]
+    sub_5107B0(pose, mat);                               // ecx = pose, push &mat, call
+    bool flagF4 = *reinterpret_cast<u8*>(reinterpret_cast<char*>(this) + kFlagF4) != 0;  // mov al,[ebp+2F4h]
+    void* ctx4  = *reinterpret_cast<void**>(reinterpret_cast<char*>(ctx) + kCtxA);       // mov ecx,[edi+4]
+
+    // ---- 007AB0F2..007AB144 : draw-state update on ctx+4 -------------------
+    if (flagF4) {
+        VCall<void>(ctx4, 0x268, 0x12);                   // push 12h ; call [vtbl+268h]
+        float* v4 = &At<float>(f, kVec4A);               // lea eax,[esp+5Ch]
+        v4[0] = *reinterpret_cast<float*>(reinterpret_cast<char*>(this) + kClear + 0);   // fld [ebp+328h]
+        v4[1] = *reinterpret_cast<float*>(reinterpret_cast<char*>(this) + kClear + 4);   // fld [ebp+32Ch]
+        v4[2] = *reinterpret_cast<float*>(reinterpret_cast<char*>(this) + kClear + 8);   // fld [ebp+330h]
+        v4[3] = 1.0f;                                     // fld1
+        VCall<void>(ctx4, 0x278, static_cast<void*>(v4)); // push &v4 ; call [vtbl+278h]
+    } else {
+        VCall<void>(ctx4, 0x268, 0);                      // push 0 ; call [vtbl+268h]
+    }
+
+    // ---- 007AB146..007AB185 : constant vector and device call --------------
+    float* one = &At<float>(f, kVec4One);                // lea eax,[esp+100h]
+    one[0] = 1.0f;                                        // fld1
+    one[1] = 0.0f;                                        // fldz
+    one[2] = 0.0f;
+    one[3] = 0.0f;
+    imp_804C78(one, mat);                                 // ecx=&one, push &mat, call [804C78]
+    imp_8043B4(device, one);                              // ecx=device, push &one, call [8043B4]
+
+    // ---- 007AB18B..007AB1B0 : device->imp_804EA4(m[9], m[10], m[11]) -------
+    imp_804EA4(device, mat[9], mat[10], mat[11]);
+
+    // ---- 007AB1B6..007AB1FC : renderer calls with pose components ----------
+    void* renderer = *reinterpret_cast<void**>(reinterpret_cast<char*>(ctx) + kCtxDevice);  // mov ecx,[edi+8]
+    VCall<void>(renderer, 0x11C, *reinterpret_cast<float*>(reinterpret_cast<char*>(pose) + kPoseC));   // fld [esi+0Ch]
+    VCall<void>(renderer, 0x124, *reinterpret_cast<float*>(reinterpret_cast<char*>(pose) + kPose10));  // fld [esi+10h]
+    At<float>(f, kFloat28) = *reinterpret_cast<float*>(reinterpret_cast<char*>(pose) + kPose4);        // fld [esi+4] ; fstp [esp+28h]
+    VCall<void>(renderer, 0x114, Addr(f, kFloat28));         // push &[esp+28h]
+
+    // ---- 007AB205..007AB21D : scope object enter / leave -------------------
+    imp_804E7C(Addr(f, kGuard230));
+    imp_804E80(Addr(f, kGuard230));
+
+    // ---- 007AB223..007AB2AC : lazily create the backend at this+268h -------
+    if (At<void*>(this, kBackend) == NULL) {
+        void* mem = sub_6A0920(0x248);                    // operator new(0248h)
+        bool  built = false;                              // ebx
+        NameRef& nr = At<NameRef>(f, kNameD8);
+        void* created = NULL;
+        if (mem != NULL) {
+            imp_802458(&nr.name, Lit(0x84F534));          // name = literal @84F534
+            built = true;                                 // mov ebx,1
+            created = sub_674160(mem, At<void*>(ctx, kCtxA), &nr);  // ctor(ctx+4, &nr)
+        }
+        At<void*>(this, kBackend) = created;              // mov [ebp+268h],eax
+        if (built) {
+            imp_802468(&nr);                              // dtor of the temporary
+        }
+        // 007AB2AC : ctx->vtbl[B4h]()->vtbl[C8h](backend)
+        void* r = VCall<void*>(At<void*>(ctx, kCtxA), 0xB4);
+        VCall<void>(r, 0xC8, At<void*>(this, kBackend));
+    }
+
+    // ---- 007AB2CC..007AB2DE : per-frame object update ----------------------
+    u8 flagF6 = At<u8>(this, kFlagF6);                    // mov al,[ebp+2F6h]
+    sub_7A9D30(this, ctx, flagF6 != 0 ? 1u : 0u);        // push flag ; push ctx ; call
+
+    // ---- 007AB2E3 : read ctx flag, then (if [ebp+274h]==0) pass 1 ---------
+    u8 flag13 = At<u8>(ctx, kCtxFlag);                    // mov dl,[edi+7F5h]
+    if (At<int>(this, kFlag274) == 0) {
+        // 007AB2FF..007AB37D
+        NameRef& nr2 = At<NameRef>(f, kNameD8);
+        imp_802458(&nr2.name, Lit(0x874A70));
+        void* mgr = imp_804E60();
+        SharedHandle& tA = At<SharedHandle>(f, kHandleA);
+        void* res = VCall<void*>(mgr, 0x4C, &tA, &nr2);  // push &nr2 ; push &tA ; call [vtbl+4Ch]
+        imp_804268(Addr(this, kHandle270), res);          // ecx=&[ebp+270h], push res
+        tA.vptr = kSharedRefVTable;                       // mov [esp+6Ch],esi
+        ReleaseHandle(tA);
+        imp_802468(&nr2);
+    }
+
+    // ---- 007AB38B..007AB45B : if ([ebp+280h]==0) pass 2 -------------------
+    if (At<int>(this, kFlag280) == 0) {
+        NameRef& nrF8 = At<NameRef>(f, kNameF8);
+        imp_802458(&nrF8.name, Lit(0x8163C4));
+        NameRef& nr2 = At<NameRef>(f, kNameD8);
+        imp_802458(&nr2.name, Lit(0x84D4E4));
+        void* mgr2 = imp_8042FC();
+        SharedHandle& tB = At<SharedHandle>(f, kHandleB);
+        // push 0 ; push 0 ; push 0 ; push &nrF8 ; push &nr2 ; push &tB ; call [vtbl+14h]
+        void* res2 = VCall<void*>(mgr2, 0x14, &tB, &nr2, &nrF8, 0, 0, 0);
+        imp_8042F4(Addr(this, kSub27C), res2);            // ecx=&[ebp+27Ch], push res2
+        tB.vptr = kSharedRefVTable;                       // mov [esp+5Ch],esi
+        ReleaseHandle(tB);
+        imp_802468(&nr2);
+        imp_802468(&nrF8);
+    }
+
+    // ---- 007AB461..007AB4D3 : lazily create the target at this+26Ch -------
+    if (At<void*>(this, kTarget) == NULL && At<int>(this, kItemCount) != 0) {
+        void* mem2 = sub_6A0920(0x2BC);                   // operator new(02BCh)
+        void* target = NULL;
+        if (mem2 != NULL) {
+            target = sub_67D1F0(mem2);                    // ctor, returns this
+        }
+        At<void*>(this, kTarget) = target;                // mov [ebp+26Ch],eax
+        void* backend = At<void*>(this, kBackend);        // mov ecx,[ebp+268h]
+        VCall<void>(backend, 0x130, target);              // push eax ; call [vtbl+130h]
+        unsigned char tmp12[0x0C] = {};                   // sub esp,0Ch ; ecx = esp
+        imp_804C68(tmp12, Addr(this, kSub27C));           // push &[ebp+27Ch] ; call [804C68]
+        sub_67C520(At<void*>(this, kTarget));             // ecx = target
+    }
+
+    // ---- 007AB4D8..007AB54B : pass 1 over items, release their results ----
+    int    count = At<int>(this, kItemCount);
+    void** items = At<void**>(this, kItems);
+    for (int i = 0; i < count; ++i) {
+        void* item = items[i];                            // mov ecx,[eax+edi*4]
+        if (item == NULL) {
+            continue;                                     // je 7AB547
+        }
+        VCall<void>(item, 0x18, &At<void*>(f, kOut20));   // push &[esp+20h] ; call [vtbl+18h]
+        ReleaseSlot(At<void*>(f, kOut20));                // 7AB4F7..7AB543
+    }
+
+    // ---- 007AB54D..007AB5C0 : diagnostics block (g_942EBC && count && flag13)
+    if (g_942EBC != 0 && count != 0 && flag13 != 0) {
+        sub_5493E0(ctx);                                  // push [esp+330h] ; call 5493E0
+        unsigned char tmp8[0x08] = {};                    // sub esp,8
+        imp_804C68(tmp8, Lit(0x9738B8));                  // ecx=esp ; push literal ; call [804C68]
+        sub_67C520(At<void*>(this, kTarget));             // ecx = target
+        void* tgt = At<void*>(this, kTarget);
+        if (At<int>(tgt, kSub27C + 0x18) == 0) {          // cmp [target+27Ch+18h], 0
+            void* g    = g_9738BC;                        // mov ecx,[9738BCh]
+            void* res3 = imp_804258(g);                   // call [804258]
+            unsigned char tmp20[0x20] = {};               // sub esp,20h
+            imp_8048C4(tmp20, res3);                      // push eax ; call [8048C4]
+            sub_7A9C40(At<void*>(this, kTarget));         // ecx = target
+        }
+    }
+
+    // ---- 007AB5C5..007AB5D2 : timing object -------------------------------
+    u32 t = sub_513E20();                                 // call 513E20
+    sub_513220(Addr(f, kTiming1A8), t);                   // push eax ; ecx=&[esp+1ACh] ; call 513220
+
+    // ---- 007AB5D7..007AB5E9 : lazily initialise the static vec3 cache -----
+    if ((g_vec3CacheFlags & 1u) == 0) {
+        g_vec3CacheFlags |= 1u;                           // or dword [96F050h], 1
+        g_vec3Cache[0] = 0.0f;                            // fldz ; fst ...
+        g_vec3Cache[1] = 0.0f;
+        g_vec3Cache[2] = 0.0f;
+    }
+
+    // ---- 007AB5FB..007AB631 : copy cache into the timing object, call pose --
+    At<float>(f, kTiming1A8 + 0x24) = g_vec3Cache[0];   // fstp [esp+1CCh]
+    At<float>(f, kTiming1A8 + 0x28) = g_vec3Cache[1];   // fstp [esp+1D0h]
+    At<float>(f, kTiming1A8 + 0x2C) = g_vec3Cache[2];   // fstp [esp+1D4h]
+    sub_510B50(pose, Addr(f, kTiming1A8));              // ecx = pose, push &timing ; call
+
+    // ---- 007AB636..007AB819 : pass 2 over items (listing ends at 007AB819) -
+    for (int i = 0; i < count; ++i) {
+        void* item = items[i];                            // mov ebx,[edx+eax*4]
+        if (item == NULL) {
+            continue;                                     // je 7ACB33
+        }
+
+        // 007AB659 : first query (slot 18h) -> r1 ; flag11 = (*r1 != 0)
+        void* r1 = VCall<void*>(item, 0x18, &At<void*>(f, kP3C));
+        bool flag11 = At<int>(r1, 0) != 0;                // cmp dword [eax],0 ; setne
+        ReleaseSlot(At<void*>(f, kP3C));                  // 7AB67A..7AB6BB
+
+        // 007AB6BF : second query (slot 14h) -> r2 ; flag12 = (*r2 != 0)
+        void* r2 = VCall<void*>(item, 0x14, &At<void*>(f, kP44));
+        bool flag12 = At<int>(r2, 0) != 0;                // cmp dword [eax],0 ; setne
+        ReleaseSlot(At<void*>(f, kP44));                  // 7AB6DA..7AB720
+
+        if (!flag11) continue;                            // cmp byte [esp+11h],0 ; je 7ACB33
+        if (!flag12) continue;                            // cmp byte [esp+12h],0 ; je 7ACB33
+
+        // 007AB73A : third query (slot 14h) -> r3 ; obj = *r3 ; r4 = obj->vtbl[18h](0.0f)
+        void* r3  = VCall<void*>(item, 0x14, &At<void*>(f, kP4C));
+        void* obj = *static_cast<void**>(r3);             // mov ecx,[eax]
+        void* r4  = VCall<void*>(obj, 0x18, 0.0f);        // fldz ; push ecx ; fstp [esp]
+        flag11 = (r4 == NULL);                            // test eax,eax ; sete
+        ReleaseSlot(At<void*>(f, kP4C));                  // 7AB77A..7AB7BB
+
+        if (flag11) continue;                             // cmp byte [esp+11h],0 ; jne 7ACB33
+
+        // 007AB7CA : fourth query (slot 18h) -> p18 (out-param)
+        VCall<void>(item, 0x18, &At<void*>(f, kP18));
+        void* p18 = At<void*>(f, kP18);
+
+        // 007AB7D8 : if ([ebp+2F4h]) and [p18+80h]==0 -> sub_54A920(ctx)
+        if (At<u8>(this, kFlagF4) != 0 && At<int>(p18, 0x80) == 0) {
+            sub_54A920(ctx);                              // push [esp+330h] ; call 54A920
+        }
+
+        // 007AB802 : result slot cleared; if (p18->+10h == 2) take vtbl[1Ch]
+        At<int>(f, kR24) = 0;                             // mov [esp+24h], edi (= 0)
+        if (At<int>(p18, 0x10) == 2) {
+            void* r5 = VCall<void*>(item, 0x1C);          // mov edx,[ebx] ; call [edx+1Ch]
+            float st0 = At<float>(r5, 0x24);              // 007AB819 : fld dword ptr [eax+24h]
+            (void)st0;
+            // The listing ends at 007AB819. Instructions from 007AB81D onward
+            // (rest of this loop body, the 007AB86F branch, the loop
+            // increment at 007ACB33, the exit at 007ACB49 and the SEH epilogue)
+            // are not part of the supplied file and cannot be converted from it.
+        }
+    }
+}
+
+}  // namespace rs

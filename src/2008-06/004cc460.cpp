@@ -1,6 +1,3 @@
-// from server: 72% by king_originala
-extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
-#pragma intrinsic(_InterlockedExchangeAdd)
 extern "C" long __cdecl _InterlockedDecrement(volatile long*);
 #pragma intrinsic(_InterlockedDecrement)
 
@@ -8,9 +5,9 @@ extern "C" void __cdecl freeMemory(void*);
 
 struct Control
 {
-    virtual void unused() = 0;
-    virtual void dispose() = 0;
-    virtual void destroy() = 0;
+    virtual void unused();
+    virtual void dispose();
+    virtual void destroy();
     volatile long strong;
     volatile long weak;
 };
@@ -22,7 +19,7 @@ struct Link
 
 struct Node
 {
-    void* value;
+    int value;
     Control* control;
     char padding[104];
     Link link;
@@ -43,13 +40,16 @@ void S::clear()
     Link** bucket = buckets;
     Link** end = bucket + count;
 
+    if (bucket == end)
+        return;
+
     for (; bucket != end; ++bucket)
     {
         Link* current = *bucket;
         while (current != reinterpret_cast<Link*>(bucket))
         {
             Node* node = reinterpret_cast<Node*>(
-                reinterpret_cast<char*>(current) - 112);
+                reinterpret_cast<char*>(current) - 0x70);
             Control* control = node->control;
             Link* next = current->next;
 
