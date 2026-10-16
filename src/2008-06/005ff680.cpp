@@ -1,4 +1,4 @@
-// from server: 53% by king_originala
+// from server: 62% by colin
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
 
@@ -70,6 +70,9 @@ struct S
 Shared S::get()
 {
     Shared result;
-    result = source ? source->get() : create();
+    if (source)
+        result = source->get();
+    else
+        result = create();
     return result;
 }

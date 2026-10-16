@@ -1,4 +1,4 @@
-// from server: 91% by king_originala
+// from server: 96% by colin
 struct Base {
     unsigned char storage[0x134];
     Base();
@@ -23,9 +23,9 @@ Sound::Sound() : Base()
     unsigned long *endpoint =
         reinterpret_cast<unsigned long *>(storage + 0x14);
 
-    *endpoint = 0x838248;
     *reinterpret_cast<unsigned long *>(storage) = 0x838204;
     *reinterpret_cast<unsigned long *>(storage + 0x10) = 0x8381f4;
+    *endpoint = 0x838248;
     *reinterpret_cast<unsigned long *>(storage + 0x20) = 0x8381ec;
     *reinterpret_cast<unsigned long *>(storage + 0x24) = 0x8381dc;
     *reinterpret_cast<unsigned long *>(storage + 0x44) = 0x8381cc;

@@ -1,4 +1,4 @@
-// from server: 89% by king_originala
+// from server: 90% by colin
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
 extern "C" long __cdecl _InterlockedDecrement(volatile long*);
@@ -33,9 +33,9 @@ struct Shared {
     ~Shared() {
         if (control) {
             Control* p = control;
-            if (_InterlockedDecrement(&p->use_count) == 0) {
+            if (_InterlockedExchangeAdd(&p->use_count, -1) == 1) {
                 p->dispose();
-                if (_InterlockedDecrement(&p->weak_count) == 0)
+                if (_InterlockedExchangeAdd(&p->weak_count, -1) == 1)
                     p->destroy();
             }
         }

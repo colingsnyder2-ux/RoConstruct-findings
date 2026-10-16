@@ -1,4 +1,4 @@
-// from server: 95% by king_originala
+// from server: 97% by colin
 struct Vector3 {
     float x, y, z;
 };
@@ -39,7 +39,7 @@ void Point::setPosition(const Vector3* value)
     double a = s->m20 * z + s->m10 * y + s->m00 * x;
     double b = s->m21 * z + s->m11 * y + s->m01 * x;
 
+    local.z = (float)c;
     local.x = (float)a;
     local.y = (float)b;
-    local.z = (float)c;
 }
