@@ -34,6 +34,8 @@ extern "C" {
 struct Text;
 extern void (__thiscall *constructText)(Text *, const char *);
 
+extern const char formatString[];
+
 struct Text {
     void *data;
     Text(const char *s) { constructText(this, s); }
@@ -74,6 +76,6 @@ struct S {
 void S::setValue(const float *value)
 {
     char buffer[32];
-    sprintf(buffer, "%.3g", *value);
+    sprintf(buffer, formatString, *value);
     setText(Text(buffer));
 }

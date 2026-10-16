@@ -1,14 +1,4 @@
-// from server: 90% by king_originala
-struct String;
-struct Format;
-
-extern void (__thiscall *string_destroy)(String *);
-extern const char *(__thiscall *string_c_str)(const String *);
-extern void (__thiscall *format_construct)(Format *);
-extern void (__thiscall *format_destroy)(Format *);
-extern const char *(__thiscall *format_text)(const Format *);
-extern void (__cdecl *format_print)(Format *, const char *, ...);
-
+// from server: 92% by colin
 struct String {
     char storage[28];
     ~String() throw();
@@ -22,27 +12,34 @@ struct Format {
     const char *text() const;
 };
 
-__forceinline String::~String() throw()
+extern void (__thiscall *string_destroy)(String *);
+extern const char *(__thiscall *string_c_str)(const String *);
+extern void (__thiscall *format_construct)(Format *);
+extern void (__thiscall *format_destroy)(Format *);
+extern const char *(__thiscall *format_text)(const Format *);
+extern void (__cdecl *format_print)(Format *, const char *, ...);
+
+String::~String() throw()
 {
     string_destroy(this);
 }
 
-__forceinline const char *String::c_str() const
+const char *String::c_str() const
 {
     return string_c_str(this);
 }
 
-__forceinline Format::Format()
+Format::Format()
 {
     format_construct(this);
 }
 
-__forceinline Format::~Format() throw()
+Format::~Format() throw()
 {
     format_destroy(this);
 }
 
-__forceinline const char *Format::text() const
+const char *Format::text() const
 {
     return format_text(this);
 }
@@ -69,4 +66,5 @@ void CWrapperView::func_42edd0(Target *target)
     TargetMethod *table = target->vtable;
     const char *text = output.text();
     table[3](target, text);
+    value.~String();
 }

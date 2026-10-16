@@ -1,18 +1,6 @@
-// from server: 51% by colin
-struct S {
-};
-
-extern "C" int __stdcall g_strcmp(const void*, const void*);
-
-void __cdecl f(void* a, void* b, void* c, void* d)
-{
-    char* p = (char*)c;
-    char* q = (char*)d;
-    while (p != q) {
-        if (g_strcmp(p + 8, q) == 0)
-            break;
-        p = *(char**)p;
-    }
-    *(void**)a = b;
-    *((void**)a + 1) = p;
-}
+// from server: 55% by colin
+// from server: 55% by colin
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: rbxgs util/RunStateOwner.cpp

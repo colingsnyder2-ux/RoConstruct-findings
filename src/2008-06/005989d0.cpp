@@ -1,34 +1,19 @@
-// from server: 71% by king_originala
+// from server: 80% by colin
 
 
 
 
-struct Vector {
-    float x, y, z;
-    Vector(float a, float b, float c);
+extern "C" void __cdecl sub_5137F0(float* dst, const float* a, const float* b);
+
+struct S {
+    float f0, f4, f8, f0c, f10, f14, f18, f1c, f20, f24, f28, f2c;
 };
 
-inline Vector::Vector(float a, float b, float c)
-    : x(a), y(b), z(c)
+void __cdecl transform(const S* a, const S* b, S* out)
 {
-}
+    sub_5137F0((float*)out, (const float*)a, (const float*)b);
 
-struct Transform {
-    float m[3][3];
-    Vector t;
-};
-
-extern void __cdecl multiplyMatrix(const Transform*, const Transform*, Transform*);
-
-void __cdecl combine(const Transform* a, const Transform* b, Transform* out)
-{
-    multiplyMatrix(a, b, out);
-
-    out->t = Vector(
-        (a->m[0][2] * b->t.z + a->m[0][1] * b->t.y)
-            + b->t.x * a->m[0][0] + a->t.x,
-        (a->m[1][2] * b->t.z + a->m[1][0] * b->t.x)
-            + a->m[1][1] * b->t.y + a->t.y,
-        (a->m[2][2] * b->t.z + a->m[2][0] * b->t.x)
-            + a->m[2][1] * b->t.y + a->t.z);
+    out->f24 = a->f8 * b->f2c + a->f4 * b->f28 + b->f24 * a->f0 + a->f24;
+    out->f28 = a->f14 * b->f2c + a->f0c * b->f24 + a->f10 * b->f28 + a->f28;
+    out->f2c = a->f20 * b->f2c + a->f18 * b->f24 + a->f1c * b->f28 + a->f2c;
 }

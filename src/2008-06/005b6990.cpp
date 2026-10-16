@@ -1,16 +1,21 @@
-// from server: 78% by king_originala
-extern "C" int __stdcall query(void *, bool *);
+// from server: 100% by colin
+struct FMOD_Channel;
+
+extern "C" int __stdcall FMOD_Channel_isPlaying(FMOD_Channel *channel, bool *playing);
 
 struct DropperTool {
-    unsigned char padding[0x13c];
-    void *handle;
-    bool check();
+    char padding[0x13c];
+    FMOD_Channel *channel;
+    bool isPlaying();
 };
 
-bool DropperTool::check() {
-    if (!handle)
+bool DropperTool::isPlaying()
+{
+    if (!channel)
         return false;
 
-    bool value;
-    return (query(handle, &value) != 0x24) & value;
+    bool playing;
+    if (FMOD_Channel_isPlaying(channel, &playing) == 0x24)
+        return false;
+    return playing;
 }
