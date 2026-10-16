@@ -1,8 +1,6 @@
-// from server: 84% by colin
-// roc-cl: 50727
-// roc-flags: /O2 /GS- /EHsc /MD
-extern double __cdecl currentTime();
-extern void (__cdecl *invalidParameter)();
+// from server: 87% by colin
+extern "C" double __cdecl currentTime();
+extern "C" void __cdecl invalidParameter();
 
 struct Exception {
     char data[56];
@@ -49,41 +47,36 @@ void TimerService::update()
     double now = currentTime();
     void (__cdecl *reportInvalid)() = invalidParameter;
 
-again:
-    if (count == 0)
-        return;
+    while (count != 0) {
+        Entry *entry = *entries;
+        Proxy *p = proxy;
+        Container *container;
 
-    Entry *entry = *entries;
-    Proxy *p = proxy;
-    Container *container;
+        if (!p) {
+            reportInvalid();
+            container = 0;
+        }
+        else {
+            container = p->container;
+        }
 
-    if (!p) {
-        reportInvalid();
-        container = 0;
+        if (entry == container->end)
+            reportInvalid();
+
+        if (!(now >= entry->time))
+            return;
+
+        try {
+            Callback *callback = entry->callback;
+            if (!callback)
+                throwException(Exception());
+            void (__cdecl *invoke)(void *) = callback->invoke;
+            invoke(entry->argument);
+        }
+        catch (...) {
+        }
+
+        ++entries;
+        --count;
     }
-    else {
-        container = p->container;
-    }
-
-    if (entry == container->end)
-        reportInvalid();
-
-    if (!(now >= entry->time))
-        return;
-
-    try {
-        Callback *callback = entry->callback;
-        if (!callback)
-            throwException(Exception());
-        void (__cdecl *invoke)(void *) = callback->invoke;
-        invoke(entry->argument);
-        goto advance;
-    }
-    catch (...) {
-    }
-
-advance:
-    ++entries;
-    --count;
-    goto again;
 }
