@@ -1,4 +1,4 @@
-// from server: 59% by king_originala
+// from server: 78% by colin
 struct Script {
     virtual ~Script();
     bool f(Script* node);
@@ -20,12 +20,12 @@ S* S::f(Script* node)
     char* owner = reinterpret_cast<char*>(this) - 0x340;
 
     if (!script) {
-        if (checkOwner(owner, 1))
-            return owner ? reinterpret_cast<S*>(owner + 0x340) : 0;
+        if (checkOwner(owner, 1) && owner)
+            return reinterpret_cast<S*>(owner + 0x340);
     } else {
         Script* character = getCharacter(owner);
-        if (character && node->f(character))
-            return owner ? reinterpret_cast<S*>(owner + 0x340) : 0;
+        if (character && node->f(character) && owner)
+            return reinterpret_cast<S*>(owner + 0x340);
     }
 
     return 0;

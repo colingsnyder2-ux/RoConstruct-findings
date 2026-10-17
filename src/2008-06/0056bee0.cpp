@@ -1,4 +1,4 @@
-// from server: 81% by king_originala
+// from server: 84% by colin
 void* __cdecl operator new(unsigned int);
 extern unsigned int globalValue;
 
@@ -69,8 +69,8 @@ Result* S::f(void* argument, bool force)
         result->last = 0;
     }
 
-    unsigned int value = globalValue;
     void* nodeName = name;
+    unsigned int value = globalValue;
     Node* node = static_cast<Node*>(operator new(24));
     if (node) {
         node->next = 0;

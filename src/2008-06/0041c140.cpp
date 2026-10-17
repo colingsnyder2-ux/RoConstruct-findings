@@ -1,84 +1,57 @@
-// from server: 27% by colin
-struct FuncDesc;
+// from server: 37% by colin
+// roc 2008-06 0041c140  unit: VDHTMLWindow::?$BoundFuncDesc  size: 159 bytes
 
-struct Descriptor {
-    void* vtable;
+struct DescribedBase {
+    virtual void unknown0();
+    virtual void unknown1();
+    virtual void unknown2();
 };
 
-struct FunctionDescriptor {
-    void* vtable;
-    char pad[0x38];
-    void* callback;
-    void* context;
+struct DHTMLWindow {
+    char pad[0x40];
+    DescribedBase* field40;
+    DescribedBase* field44;
 };
 
-struct ArgList {
-    void* vtable;
-    void* data;
+struct Arg {
+    void* a;
+    void* b;
 };
 
-struct ArgHolder {
-    void* first;
-    void* second;
+struct SomeObj {
+    virtual void v0();
+    virtual void v1(Arg* arg, int n);
 };
 
-struct BoundFuncDesc : FunctionDescriptor {
-    void* function;
-    void declareSignature();
-    void invoke(void* args, int count);
-};
-
-extern "C" void* __cdecl getTypeInfo();
-extern "C" void* __cdecl getArgType();
-extern "C" void* __cdecl getArgName();
-extern "C" void* __cdecl getSignatureType();
-
-extern "C" void* __stdcall sub_6a17c6(void* a, void* b, void* c, void* d, void* e);
+extern "C" void* __cdecl sub_6a17c6(void* a, void* b, void* c, void* d, void* e);
 extern "C" void __cdecl sub_6a158c(void* a, void* b);
-extern "C" void* __cdecl sub_5947f0(void* a);
-extern "C" void __cdecl sub_5944e0(void* a, void* b);
+extern "C" void __cdecl sub_5947f0(void* a);
 
-extern void* __cdecl __RTDynamicCast(void*, int, void*, void*, int);
-extern void __cdecl _CxxThrowException(void*, void*);
-extern void __cdecl bad_cast_ctor(void*, const char*);
+extern void* __stdcall func_802864(void* a);
 
-void BoundFuncDesc::declareSignature()
-{
-    ArgHolder holder;
-    holder.first = this->callback;
-    if (this->context) {
-        void** vt = (void**)this->context;
-        void* fn = vt[2];
-        typedef void* (__thiscall *F)(void*);
-        holder.second = ((F)fn)(this->context);
+extern char g_80ba34;
+extern char g_8d362c;
+extern char g_9291fc;
+extern char g_92c210;
+
+struct VDHTMLWindow_BoundFuncDesc {
+    void method(SomeObj* obj);
+};
+
+void VDHTMLWindow_BoundFuncDesc::method(SomeObj* obj) {
+    DHTMLWindow* self = (DHTMLWindow*)this;
+    Arg arg;
+    arg.a = self->field40;
+    if (self->field44) {
+        arg.b = (void*)((int(__thiscall*)(DescribedBase*))((*(void***)self->field44)[2]))(self->field44);
     } else {
-        holder.second = 0;
+        arg.b = 0;
     }
-
-    void** argvt = (void**)this->function;
-    void* fn = argvt[1];
-    typedef void (__thiscall *G)(void*, ArgHolder*, int);
-    ((G)fn)(this->function, &holder, 1);
-
-    void* result = sub_6a17c6(holder.second, 0, (void*)0x9291fc, (void*)0x92c210, 0);
-    void* esi = result;
-    if (!esi) {
-        bad_cast_ctor((char*)0x80ba34, "bad cast");
-        _CxxThrowException((void*)0x8d362c, (void*)0x80ba34);
+    obj->v1(&arg, 1);
+    void* r = sub_6a17c6(0, &g_9291fc, &g_92c210, 0, arg.b);
+    if (!r) {
+        func_802864(&g_80ba34);
+        sub_6a158c(&g_8d362c, &g_80ba34);
     }
-
-    void* sig = sub_5947f0(&holder);
-    sub_5944e0(sig, esi);
-
-    void* cb = this->callback;
-    void* ctx = this->context;
-    typedef void (__thiscall *H)(void*, void*);
-    ((H)cb)(ctx, esi);
-
-    if (holder.first) {
-        void** vt = (void**)holder.first;
-        void* fn2 = vt[0];
-        typedef void (__thiscall *I)(void*, int);
-        ((I)fn2)(holder.first, 1);
-    }
+    sub_5947f0(&arg);
 }

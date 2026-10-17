@@ -1,57 +1,56 @@
-// from server: 47% by colin
+// from server: 62% by colin
 extern "C" void __stdcall _invalid_parameter_noinfo();
 
 struct Node {
     Node* parent;
     Node* left;
     Node* right;
-    int color;
-    int key;
-    int value;
-};
-
-struct Tree {
-    Node* header;
-    int count;
+    char color;
+    char pad[3];
+    int field1c;
 };
 
 struct Iter {
     Node* node;
-    Tree* tree;
+    Node* root;
 };
 
 struct S {
-    Tree* tree;
-    int pad[5];
+    char pad[0x18];
+    Node* head;
     bool f();
 };
 
-void __fastcall advance(Iter* it);
+void __fastcall sub_6510f0(Iter* it);
 
 bool S::f() {
-    Tree* t = *(Tree**)((char*)this + 0x18);
-    Node* header = t->header;
+    Node* head = this->head;
     Node* root = *(Node**)this;
-    Iter it;
-    it.node = root;
-    it.tree = t;
-    Node* cur = it.node;
-    if (cur == 0 || cur == root) {
-        _invalid_parameter_noinfo();
-    }
-    while (it.node != header) {
-        if (it.node == 0) {
+    Node* cur = head->parent;
+    Node* it = root;
+    while (true) {
+        if (it != 0 && it != root) {
             _invalid_parameter_noinfo();
-            if (it.node->parent == it.node) {
+        }
+        if (cur == head) {
+            return true;
+        }
+        if (it == 0) {
+            _invalid_parameter_noinfo();
+            if (cur == it->parent) {
                 _invalid_parameter_noinfo();
             }
-            if (it.node->right != 0) {
+            if (cur->field1c != 0) {
                 return false;
             }
-            advance(&it);
+            Iter tmp;
+            tmp.node = it;
+            tmp.root = cur;
+            sub_6510f0(&tmp);
+            cur = tmp.root;
+            it = tmp.node;
         } else {
-            it.node = it.node->parent;
+            it = it->parent;
         }
     }
-    return true;
 }

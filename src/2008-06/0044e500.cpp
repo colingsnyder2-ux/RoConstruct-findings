@@ -1,4 +1,4 @@
-// from server: 92% by king_originala
+// from server: 96% by colin
 typedef unsigned int size_t;
 
 inline void *__cdecl operator new(size_t, void *address)
@@ -34,7 +34,10 @@ Value *__cdecl copyValues(const Value *first, const Value *last,
     Value *begin = destination;
     try {
         for (; first != last; ++first, ++destination)
-            new (destination) Value(*first);
+        {
+            Value *current = destination;
+            new (current) Value(*first);
+        }
     } catch (...) {
         for (; begin != destination; ++begin)
             begin->~Value();

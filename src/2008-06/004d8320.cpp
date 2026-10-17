@@ -1,37 +1,46 @@
-// from server: 47% by colin
-struct Container {
+// from server: 56% by colin
+struct Inner {
     int* begin;
-    int* end;
+    int count;
 };
 
-struct Inner {
-    char pad0[4];
-    Container c;
+struct Outer {
+    char pad[8];
+    Inner inner;
 };
 
 struct S {
-    char pad0[4];
-    Inner* inner;
-    void method(int* arg);
+    char pad[4];
+    Outer* outer;
+    void f(int* value);
 };
 
-extern "C" void __stdcall sub_598fa0(int* dst, int* src);
-extern "C" void __stdcall sub_4d7890(Container* c, int index, int count);
+void __stdcall erase_helper(int* pos, int* last);
 
-void S::method(int* arg)
+void __stdcall remove_at(Inner* self, int index);
+
+void S::f(int* value)
 {
-    Inner* in = this->inner;
-    Container* c = &in->c;
-    int count = c->end - c->begin;
+    Outer* o = outer;
+    Inner* in = &o->inner;
+    int count = in->count;
     int idx = -1;
-    int target = *arg;
-    for (int i = 0; i < count; ++i) {
-        if (c->begin[i] == target) {
-            idx = i;
-            break;
-        }
+    if (count > 0) {
+        int target = *value;
+        int* p = in->begin;
+        int i = 0;
+        do {
+            if (*p == target) {
+                idx = i;
+                break;
+            }
+            ++i;
+            ++p;
+        } while (i < count);
     }
-    int* last = c->begin + count - 1;
-    sub_598fa0(c->begin + idx, last);
-    sub_4d7890(c, count - 1, 1);
+    int* begin = in->begin;
+    int n = in->count;
+    int* last = begin + n - 1;
+    erase_helper(begin + idx, last);
+    remove_at(in, in->count - 1);
 }

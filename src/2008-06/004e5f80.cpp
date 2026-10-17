@@ -1,4 +1,4 @@
-// from server: 79% by king_originala
+// from server: 80% by colin
 extern "C" double __cdecl fabs(double);
 #pragma intrinsic(fabs)
 
@@ -33,7 +33,7 @@ bool S::f()
         z = fabs(z);
 
         double m = x > y ? x : y;
-        return (z < m ? z : m) >= threshold;
+        return (z < m ? z : m) > threshold;
     }
     return false;
 }

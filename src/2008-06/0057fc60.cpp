@@ -1,83 +1,59 @@
-// from server: 59% by king_originala
-namespace RBX {
-    struct Instance {
-        virtual ~Instance();
-    };
-
-    struct ModelInstance : Instance {
-        virtual ~ModelInstance();
-    };
-}
-
-extern "C" void (__cdecl * const _imp___invalid_parameter_noinfo)();
-
-struct Iterator {
-    void* owner;
-    RBX::ModelInstance** position;
-    Iterator();
+// from server: 64% by colin
+struct Instance {
+    void* vtable;
+    int refs;
 };
 
-struct Selection {
-    void* owner;
-    unsigned int reserved[2];
-    RBX::ModelInstance** first;
-    RBX::ModelInstance** last;
-
-    void insert(RBX::ModelInstance* const*);
-    Iterator erase(Iterator);
+struct ModelInstance : Instance {
+    int pad;
 };
 
-struct Change {
-    RBX::Instance* added;
-    unsigned int reserved;
-    RBX::ModelInstance* removed;
-};
+extern "C" void* __cdecl sub_6A17C6(void*, void*, void*, void*, int);
+extern "C" void __cdecl sub_802890();
+extern "C" void __cdecl sub_4213A0(void*, void*);
+extern "C" void __cdecl sub_459830(void*, void*, void*, void*);
 
 struct FilteredSelection {
-    unsigned int reserved[3];
-    Selection selection;
+    char pad0[0xc];
+    void* begin;
+    void* end;
+    void* cap;
 
-    void update(Change*);
+    void Add(Instance* inst);
 };
 
-void FilteredSelection::update(Change* change)
+void FilteredSelection::Add(Instance* inst)
 {
-    RBX::ModelInstance* added =
-        dynamic_cast<RBX::ModelInstance*>(change->added);
-
-    if (added)
-        selection.insert(&added);
-
-    RBX::ModelInstance* removed = change->removed;
-    if (removed) {
-        RBX::ModelInstance** finish = selection.last;
-        if (selection.first > finish)
-            _imp___invalid_parameter_noinfo();
-
-        RBX::ModelInstance** position = selection.first;
-        if (position > selection.last)
-            _imp___invalid_parameter_noinfo();
-
-        void* owner = selection.owner;
-
-        while (position != finish) {
-            if (*position == removed)
-                break;
-            ++position;
+    void* p = sub_6A17C6(inst->vtable, 0, (void*)0x92907c, (void*)0x932a40, 0);
+    if (p) {
+        sub_4213A0(&begin, &p);
+    }
+    Instance* other = *(Instance**)((char*)inst + 8);
+    if (other) {
+        void* e = end;
+        if (begin > e) {
+            sub_802890();
         }
-
-        finish = selection.last;
-        if (selection.first > finish)
-            _imp___invalid_parameter_noinfo();
-
-        if (!owner || owner != selection.owner)
-            _imp___invalid_parameter_noinfo();
-
-        if (position != finish) {
-            Iterator where;
-            where.owner = owner;
-            where.position = position;
-            selection.erase(where);
+        void* b = begin;
+        if (b > cap) {
+            sub_802890();
+        }
+        void* first = begin;
+        void* it = b;
+        while (it != e) {
+            if (*(Instance**)it == other) break;
+            it = (char*)it + 4;
+        }
+        void* c = cap;
+        if (begin > c) {
+            sub_802890();
+        }
+        void* bb = begin;
+        if (first && first != bb) {
+            sub_802890();
+        }
+        if (it != c) {
+            sub_459830(this, &it, first, it);
         }
     }
 }

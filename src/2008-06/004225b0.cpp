@@ -1,4 +1,4 @@
-// from server: 81% by king_originala
+// from server: 86% by colin
 extern char sourceType;
 extern char targetType;
 
@@ -16,7 +16,7 @@ extern "C" S* __cdecl runtimeCast(void*, int, void*, void*, int);
 int S::f()
 {
     if (value)
-        return value;
+        return 0;
 
     if (runtimeCast(parent, 0, &sourceType, &targetType, 0) &&
         runtimeCast(parent, 0, &sourceType, &targetType, 0)->f())

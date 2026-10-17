@@ -1,4 +1,4 @@
-// from server: 42% by colin
+// from server: 45% by colin
 struct Vec {
     int* begin;
     int* end;
@@ -52,7 +52,7 @@ void S::f()
             int* e = outer.end;
             int* c = outer.cap;
 
-            int cap = (b == 0) ? 0 : (int)((char*)c - (char*)b) >> 2;
+            int cap = (b != 0) ? 0 : (int)((char*)c - (char*)b) >> 2;
             int len = (int)((char*)e - (char*)b) >> 2;
 
             if ((unsigned)len < (unsigned)cap) {

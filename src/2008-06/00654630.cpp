@@ -1,44 +1,44 @@
-// from server: 52% by colin
+// from server: 56% by colin
+extern "C" void* __cdecl operator_new(unsigned int);
+extern "C" void __stdcall invalid_parameter_noinfo();
+extern "C" void __stdcall string_ctor(void*);
 
-
-
-
-extern "C" void __stdcall _invalid_parameter_noinfo();
-extern "C" void __stdcall basic_string_ctor(void*);
-
-struct Inner {
+struct Element {
     char pad[0x18];
-    void assign(const void*);
+};
+
+struct Container {
+    char pad0[0xc];
+    Element* begin;
+    Element* end;
+    void push_back(Element*);
 };
 
 struct ScoreHud {
     char pad0[0xc];
-    Inner* begin;
-    Inner* end;
-    char pad1[0x8];
-    Inner tail;
-    void func(int count, const void* arg);
+    Element* begin;
+    Element* end;
+    void func(int);
+    void reserve(int);
 };
 
-void ScoreHud::func(int count, const void* arg)
-{
-    int i;
-    Inner* it;
-    char buf[0x1c];
-
+void ScoreHud::func(int count) {
+    this->reserve(count);
+    int i = 0;
     if (count > 0) {
-        i = 0;
-        it = begin;
+        int offset = 0;
         do {
-            if ((unsigned int)i >= (unsigned int)((end - begin) / 0x18)) {
-                _invalid_parameter_noinfo();
+            unsigned int n = (unsigned int)((this->end - this->begin) / 0x18);
+            if ((unsigned int)i >= n) {
+                invalid_parameter_noinfo();
             }
-            basic_string_ctor(buf);
-            it->assign(arg);
+            Element* e = (Element*)((char*)this->begin + offset);
+            char buf[0x1c];
+            string_ctor(buf);
+            Container* c = (Container*)e;
+            c->push_back((Element*)buf);
             i++;
-            it++;
+            offset += 0x18;
         } while (i < count);
     }
-    basic_string_ctor(buf);
-    tail.assign(arg);
 }

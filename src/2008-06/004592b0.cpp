@@ -1,50 +1,57 @@
-// from server: 56% by colin
+// from server: 61% by colin
 struct CRobloxView {
     char pad0[0x20];
     void* field_20;
-    char pad1[0x90];
+    char pad24[0xb0 - 0x24];
     char field_b0[0x20];
-    char pad2[0xd0];
-    void* field_1a0;
-    char pad3[0x38];
+    char pad_d0[0x180 - 0xd0];
+    char field_180[0x20];
+    int field_1a0;
+    char pad_1a4[0x1d8 - 0x1a4];
     void* field_1d8;
-    void sub_6a0a4c(int, int, int, int, int);
-    void func_004592b0();
+
+    void sub_4592B0();
 };
 
-extern "C" int __stdcall GetClientRect(void*, void*);
+struct Rect {
+    int left;
+    int top;
+    int right;
+    int bottom;
+};
 
-void CRobloxView::func_004592b0()
+extern "C" int __stdcall GetClientRect(void*, Rect*);
+
+struct S_func_006a0a4c {
+    void f(int, int, int, int, int);
+};
+
+void CRobloxView::sub_4592B0()
 {
-    int rect[4];
-    GetClientRect(field_20, rect);
+    Rect rc;
+    GetClientRect(field_20, &rc);
 
-    int width = rect[2] - rect[0];
-    int height = rect[3] - rect[1];
+    int w = rc.right - rc.left;
+    int h = rc.bottom - rc.top;
 
-    int w = width;
-    int h = height;
+    int x = w;
+    int y = h;
 
-    if (field_1d8 != 0 && *(int*)((char*)field_1d8 + 0x20) != 0) {
-        h = height - 0xe1;
-    }
+    if (field_1d8 != 0 && *(int*)((char*)field_1d8 + 0x20) != 0)
+        y = h - 0xe1;
 
-    if (field_1a0 != 0) {
-        w = width - 0x14;
-    }
+    if (field_1a0 != 0)
+        x = w - 0x14;
 
-    int a = (w < 0) ? 0 : w;
-    int b = (h < 0) ? 0 : h;
+    int a = (x < 0) ? 0 : x;
+    int b = (y < 0) ? 0 : y;
 
-    if (*(int*)((char*)this + 0xd0) != 0) {
-        ((CRobloxView*)((char*)this + 0xb0))->sub_6a0a4c(0, 0, b, a, 1);
-    }
+    if (*(int*)((char*)this + 0xd0) != 0)
+        ((S_func_006a0a4c*)(field_b0))->f(0, b, a, 1, 0);
 
-    if (field_1d8 != 0 && *(int*)((char*)field_1d8 + 0x20) != 0) {
-        sub_6a0a4c(0, 0xe1, b, height, 1);
-    }
+    if (field_1d8 != 0 && *(int*)((char*)field_1d8 + 0x20) != 0)
+        ((S_func_006a0a4c*)field_1d8)->f(a, 0xe1, h, 1, 0);
 
-    if (field_1a0 != 0) {
-        ((CRobloxView*)((char*)this + 0x180))->sub_6a0a4c(0, a, b, 0x14, 1);
-    }
+    if (field_1a0 != 0)
+        ((S_func_006a0a4c*)(field_180))->f(0, b, a, 0x14, 1);
 }

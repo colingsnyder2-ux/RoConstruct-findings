@@ -1,4 +1,4 @@
-// from server: 44% by colin
+// from server: 49% by colin
 struct Vec3 {
     float x, y, z;
 };
@@ -40,7 +40,7 @@ void Humanoid::method(Vec3* other, bool b)
     float dx = pos.x - other->x;
     float dy = pos.y - other->y;
     float dz = pos.z - other->z;
-    float dist = (float)sqrt(dx*dx + dy*dy + dz*dz);
+    float dist = (float)sqrt(dx*dy + dx*dy + dz*dz);
     flag3c = (dist < tolerance) ? true : false;
 
     ServiceProvider* sp = func_00491e50((Instance*)this);

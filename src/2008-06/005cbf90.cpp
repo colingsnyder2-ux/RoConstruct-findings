@@ -1,33 +1,31 @@
-// from server: 49% by colin
-struct Camera {
-    char padding[0x198];
-    float x;
-    float y;
-    float z;
-    char padding2[0x24];
-    float fx;
-    float fy;
-    float fz;
-    bool isCharacterCamera(float threshold) const;
+// from server: 50% by colin
+struct S_func_005cbf90 {
+    char pad0[0x198];
+    float m_198;
+    float m_19c;
+    float m_1a0;
+    char pad1[0x1c8 - 0x1a4];
+    float m_1c8;
+    float m_1cc;
+    float m_1d0;
+    float f(int arg);
 };
 
-extern const float g_maxDistance;
-extern const float g_minDistance;
-extern "C" double __cdecl sqrt(double);
+extern float g_819bac;
+extern "C" float __stdcall sqrtf(float);
 
-bool Camera::isCharacterCamera(float threshold) const
+float S_func_005cbf90::f(int arg)
 {
-    float dx = x - fx;
-    float dy = y - fy;
-    float dz = z - fz;
-    float dist = dx * dx + dy * dy + dz * dz;
-    dist = (float)sqrt((double)dist);
-    if (threshold > 0.0f) {
-        if (dist > g_maxDistance)
-            return false;
-    } else {
-        if (!(dist <= g_minDistance))
-            return false;
+    float dx = m_198 - m_1c8;
+    float dy = m_19c - m_1cc;
+    float dz = m_1a0 - m_1d0;
+    float dist = dx * dy + dx * dy + dz * dz;
+    float len = sqrtf(dist);
+    if (arg > 0) {
+        if (!(len > g_819bac)) {
+            return len;
+        }
+        return 0.0f;
     }
-    return true;
+    return len;
 }

@@ -1,4 +1,4 @@
-// from server: 4% by colin
+// from server: 54% by colin
 struct Link {
     unsigned int parent;
     Link* left;
@@ -13,44 +13,47 @@ struct Node {
 };
 
 struct Owner {
-    char pad[0x280];
-    Node node;
+    char padding0[4];
+    Node* node;
 };
 
-struct S {
-    bool find(unsigned int key, unsigned int* out, bool flag);
-    void* insert(unsigned int key, void* value);
+struct Receiver {
+    bool find(Node* node, void* out, unsigned char flag);
+    void* allocate(void* arg, void* storage);
+    bool method(void* arg1, void* arg2);
 };
 
-void __stdcall sub_4c6980(void* a, unsigned int b, unsigned int c, void* d);
+extern "C" void __cdecl finalize(void* a, void* b, void* c, void* d);
 
-bool S::find(unsigned int key, unsigned int* out, bool flag)
+bool Receiver::method(void* arg1, void* arg2)
 {
-    return false;
-}
-
-void* S::insert(unsigned int key, void* value)
-{
-    return 0;
-}
-
-void* __stdcall sub_4c8cf0(S* self, unsigned int key, void* value)
-{
-    unsigned int out = 0;
     unsigned char flag = 0;
-    if (!self->find(key, &out, flag))
+    void* out = 0;
+    Node* node = *(Node**)((char*)arg1 + 8);
+
+    if (!find(node, &out, flag))
     {
-        if (out)
-            return (void*)(out - 0x280);
-        return 0;
+        if (out != 0)
+            return (char*)out - 0x280 != 0;
+        return false;
     }
-    void* result = self->insert(key, value);
-    if (result == value)
+
+    void* result = allocate(arg1, arg2);
+    if (result == arg2)
     {
-        Owner* owner = (Owner*)((char*)self - 0xc);
-        Node* n1 = owner->node.link.left ? (Node*)((char*)owner->node.link.left - 0x280) : 0;
-        Node* n2 = value ? (Node*)((char*)value - 0x280) : 0;
-        sub_4c6980(n2, out, (unsigned int)n1, 0);
+        Owner* owner = 0;
+        if (this != 0)
+            owner = (Owner*)((char*)this - 0xc);
+        Node* n1 = 0;
+        if (owner != 0)
+            n1 = *(Node**)((char*)owner + 4);
+        void* p1 = 0;
+        if (n1 != 0)
+            p1 = (char*)n1 + 0x280;
+        void* p2 = 0;
+        if (arg2 != 0)
+            p2 = (char*)arg2 + 0x280;
+        finalize(p2, out, arg1, p1);
     }
-    return result;
+    return result != 0;
 }

@@ -1,4 +1,4 @@
-// from server: 72% by king_originala
+// from server: 96% by colin
 typedef unsigned long DWORD;
 
 extern "C" {
@@ -58,13 +58,14 @@ int StreamBuffer::read(void *buffer, DWORD length)
     DWORD available;
     DWORD received;
 
-    if (WinHttpQueryDataAvailable(handle, &available) && available) {
-        if (!WinHttpReadData(handle, buffer, length, &received)) {
-            std::string message("InternetReadFile failed");
-            throw std::runtime_error(message);
-        }
-        return received;
-    } else {
+    if (!WinHttpQueryDataAvailable(handle, &available))
         return -1;
+    if (available == 0)
+        return -1;
+
+    if (!WinHttpReadData(handle, buffer, length, &received)) {
+        std::string message("InternetReadFile failed");
+        throw std::runtime_error(message);
     }
+    return received;
 }

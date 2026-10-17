@@ -1,4 +1,4 @@
-// from server: 65% by colin
+// from server: 69% by colin
 struct Container;
 struct Node;
 
@@ -81,7 +81,7 @@ void Container::processAll()
             break;
         case 2:
             {
-                __declspec(align(8)) Iterator result;
+                Iterator result;
                 Iterator last;
                 last.node = value->head;
                 last.proxy = value->proxy;

@@ -1,45 +1,31 @@
-// from server: 45% by colin
+// from server: 70% by colin
+
+
+
+
 struct ScoreHud {
     int getState();
-    void setState(int, int);
-    void setSomething(int);
-    void update(int);
+    void setA(int, int);
+    void setB(int);
+    void dispatch(int);
 };
 
-extern "C" int __stdcall getState_impl(ScoreHud*);
-extern "C" void __stdcall setState_impl(ScoreHud*, int, int);
-extern "C" void __stdcall setSomething_impl(ScoreHud*, int);
-
-int ScoreHud::getState()
+void ScoreHud::dispatch(int arg)
 {
-    return getState_impl(this);
-}
-
-void ScoreHud::setState(int a, int b)
-{
-    setState_impl(this, a, b);
-}
-
-void ScoreHud::setSomething(int a)
-{
-    setSomething_impl(this, a);
-}
-
-void ScoreHud::update(int value)
-{
-    int state = getState();
-    if (state > 3) {
-        return;
-    }
-    switch (state) {
+    int s = getState();
+    switch (s)
+    {
     case 0:
-        setState(value, 2);
+        setA(arg, 2);
         break;
     case 1:
-        setState(value, 3);
+        setA(arg, 3);
         break;
     case 2:
-        setSomething(value);
+        setB(arg);
+        break;
+    case 3:
+        setB(arg);
         break;
     default:
         break;

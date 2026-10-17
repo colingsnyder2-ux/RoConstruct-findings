@@ -1,4 +1,4 @@
-// from server: 77% by king_originala
+// from server: 88% by colin
 extern "C" long (__stdcall *SendMessageA)(void *, unsigned int, unsigned int, long);
 extern "C" void (__cdecl *free)(void *);
 
@@ -16,7 +16,8 @@ struct S {
 void S::removeItem(int index)
 {
     long (__stdcall *send)(void *, unsigned int, unsigned int, long) = SendMessageA;
-    if (index < send(control->window, 0x18B, 0, 0))
+    void *w = control->window;
+    if (index < send(w, 0x18B, 0, 0))
         send(control->window, 0x182, index, 0);
 }
 

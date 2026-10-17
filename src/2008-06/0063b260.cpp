@@ -1,35 +1,26 @@
-// from server: 62% by colin
-struct DescribedBase;
-
-struct GetSet {
-    virtual bool isReadOnly() const;
-    virtual bool isWriteOnly() const;
-    virtual void getValue(const DescribedBase* object, void* out) const;
-    virtual void setValue(DescribedBase* object, const void* value) const;
-};
-
-struct BoundPropGetSet {
+// from server: 87% by colin
+struct S {
     char pad0[4];
-    int memberOffset;
-    char pad8[4];
-    void (*changed)(void*, const void*);
-    char pad14[4];
-    int descOffset;
-
-    void setValue(DescribedBase* object, const double* value);
+    int field4;
+    int field8;
+    char padC[4];
+    int field10;
+    int field14;
+    void set(void* object, double* value);
 };
 
-extern "C" void __fastcall sub_40db00(int ecx, int arg);
+extern "C" void __stdcall sub_40DB00(int);
 
-void BoundPropGetSet::setValue(DescribedBase* object, const double* value)
+void S::set(void* object, double* value)
 {
-    char* obj = object ? reinterpret_cast<char*>(object) - 20 : 0;
-    double* field = reinterpret_cast<double*>(obj + memberOffset);
-    if (*value != *field) {
-        *field = *value;
-        if (changed) {
-            changed(reinterpret_cast<char*>(this) + descOffset + reinterpret_cast<int>(obj), 0);
+    char* base = object ? static_cast<char*>(object) - 20 : 0;
+    double* target = reinterpret_cast<double*>(field8 + reinterpret_cast<int>(base));
+    if (*value != *target) {
+        *target = *value;
+        if (field10) {
+            void (__thiscall *fn)(void*, int) = reinterpret_cast<void (__thiscall *)(void*, int)>(field10);
+            fn(reinterpret_cast<void*>(field14 + reinterpret_cast<int>(base)), field4);
         }
-        sub_40db00(reinterpret_cast<int>(obj), 0);
+        sub_40DB00(field4);
     }
 }
