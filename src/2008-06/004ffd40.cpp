@@ -1,7 +1,4 @@
-// from server: 21% by colin
-// Reconstructed from the target machine code.
-// 32-bit x86, MSVC VS2008 (/O2 /GS- /EHsc /MD).
-
+// from server: 25% by colin
 extern "C" {
     double __cdecl ceil(double);
 }
@@ -22,7 +19,12 @@ extern float g_826e6c;
 extern float g_83a3e4;
 
 struct CylinderBuilder {
+    int field0;
+    Vec2 v4;
+    int fieldC;
     unsigned int flags;
+    float f18;
+    float f1c;
 
     void build(
         float a,
@@ -39,8 +41,7 @@ void CylinderBuilder::build(float a, float b, float c, int d, int e, int f, int 
     unsigned int mode = (flags >> 6) & 7;
 
     Vec2 v40;
-    Vec2 v48;
-    sub_6784d0(&v40, (const Vec2*)((char*)this + 4));
+    sub_6784d0(&v40, &v4);
 
     float fa = a < 0.0f ? -a : a;
     float fb = b < 0.0f ? -b : b;
@@ -51,7 +52,7 @@ void CylinderBuilder::build(float a, float b, float c, int d, int e, int f, int 
     float v4c = fc;
 
     bool eq;
-    if (f == 0) {
+    if (f != 0) {
         eq = (fa == fb);
     } else {
         eq = false;
@@ -75,7 +76,6 @@ void CylinderBuilder::build(float a, float b, float c, int d, int e, int f, int 
     int   v20i = 1;
     short ax = (short)v18i;
     if ((short)1 < ax) {
-        // keep v18i
     } else {
         v18i = v20i;
     }
@@ -103,7 +103,7 @@ void CylinderBuilder::build(float a, float b, float c, int d, int e, int f, int 
     float ny = -tmp.y;
 
     Vec2 tmp2;
-    sub_5185d0(&tmp2, &v48);
+    sub_5185d0(&tmp2, (const Vec2*)&v48f);
     float nx2 = -tmp2.x;
     float ny2 = -tmp2.y;
 
@@ -126,9 +126,9 @@ void CylinderBuilder::build(float a, float b, float c, int d, int e, int f, int 
         }
     } else if (d == 1) {
         v28 = 0.0f;
-        v2c = *(float*)((char*)this + 0x1c);
-        v18 = *(float*)((char*)this + 0x18);
-        v1c = -*(float*)((char*)this + 0x1c);
+        v2c = f1c;
+        v18 = f18;
+        v1c = -f1c;
     } else if (d == 2) {
         v28 = 0.0f;
         v2c = 0.0f;

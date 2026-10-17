@@ -1,4 +1,4 @@
-// from server: 77% by king_originala
+// from server: 98% by colin
 namespace std {
     class bad_cast {
         const char* message;
@@ -16,7 +16,9 @@ struct Value {
 };
 
 inline Value* copyValue(Value* source) {
-    return source ? source->clone() : 0;
+    if (source)
+        return source->clone();
+    return 0;
 }
 
 struct Argument {
