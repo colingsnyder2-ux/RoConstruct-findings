@@ -1,4 +1,4 @@
-// from server: 98% by king_originala
+// from server: 100% by colin
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
 extern "C" long __cdecl _InterlockedDecrement(volatile long*);
@@ -21,8 +21,10 @@ struct Reference {
 
 __forceinline Reference::Reference(const Reference& other)
     : control(other.control) {
-    if (control)
-        _InterlockedExchangeAdd(&control->strong, 1);
+    if (control) {
+        volatile long* c = &control->strong;
+        _InterlockedExchangeAdd(c, 1);
+    }
 }
 
 __forceinline Reference::~Reference() {
@@ -106,9 +108,12 @@ void CChatPrompt::update(Parent* parent, int selected) {
     if (parent) {
         object = createObject();
         object.pointer->owner = this;
-        object.pointer->setValue(parent->value);
+        int v = parent->value;
+        object.pointer->setValue(v);
     }
 
-    if (active)
-        setEnabled(result != 0);
+    if (active) {
+        int flag = (result != 0);
+        setEnabled(flag);
+    }
 }

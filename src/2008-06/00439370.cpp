@@ -1,7 +1,7 @@
-// from server: 82% by king_originala
+// from server: 87% by colin
 extern "C" {
-    extern void (__cdecl *_invalid_parameter_noinfo)();
-    extern int (__stdcall *PostMessageA)(void *, unsigned int, unsigned int, long);
+    extern void __cdecl _invalid_parameter_noinfo();
+    extern int __stdcall PostMessageA(void *, unsigned int, unsigned int, long);
 }
 
 struct Lock {
@@ -21,13 +21,13 @@ struct Guard {
     ~Guard();
 };
 
-inline Guard::Guard(Lock *p) : lock(p), active(false)
+Guard::Guard(Lock *p) : lock(p), active(false)
 {
     lock->acquire();
     active = true;
 }
 
-inline Guard::~Guard()
+Guard::~Guard()
 {
     if (active)
         lock->release();

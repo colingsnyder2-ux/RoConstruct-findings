@@ -1,4 +1,4 @@
-// from server: 73% by king_originala
+// from server: 75% by colin
 struct Base
 {
     unsigned int words[78];
@@ -16,18 +16,8 @@ struct Member
 struct String
 {
     unsigned char storage[28];
-
-    String(const char* text)
-    {
-        typedef void (__thiscall *Constructor)(String*, const char*);
-        ((Constructor*)0x802458)[0](this, text);
-    }
-
-    ~String()
-    {
-        typedef void (__thiscall *Destructor)(String*);
-        ((Destructor*)0x802468)[0](this);
-    }
+    String(const char* text);
+    ~String();
 };
 
 struct Sender : Base
@@ -37,6 +27,19 @@ struct Sender : Base
     Sender();
     void setName(const String&);
 };
+
+extern "C" void __stdcall string_ctor(String*, const char*);
+extern "C" void __stdcall string_dtor(String*);
+
+String::String(const char* text)
+{
+    string_ctor(this, text);
+}
+
+String::~String()
+{
+    string_dtor(this);
+}
 
 Sender::Sender()
     : Base(),

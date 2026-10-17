@@ -1,4 +1,4 @@
-// from server: 98% by colin
+// from server: 99% by colin
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
 extern "C" long __cdecl _InterlockedDecrement(volatile long*);
@@ -32,8 +32,10 @@ struct Shared {
 inline Shared::Shared(const Shared& other)
     : pointer(other.pointer), control(other.control)
 {
-    if (control)
-        _InterlockedExchangeAdd(&control->strong, 1);
+    if (control) {
+        volatile long* c = &control->strong;
+        _InterlockedExchangeAdd(c, 1);
+    }
 }
 
 inline Shared::~Shared()

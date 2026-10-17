@@ -1,4 +1,4 @@
-// from server: 95% by king_originala
+// from server: 96% by colin
 struct Stream;
 struct Part;
 struct Body;
@@ -76,7 +76,8 @@ struct S {
 void S::f(Stream *stream, Source *source)
 {
     if (source) {
-        Part *part = resolve(source->link->object);
+        Link *lk = source->link;
+        Part *part = resolve(lk->object);
         if (part && !state->excluded(part) && state->encode(stream, part)) {
             Body *body = part->getBody();
             World *world = state->vtable->getWorld(state);

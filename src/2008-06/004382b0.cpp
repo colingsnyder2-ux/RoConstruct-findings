@@ -1,4 +1,4 @@
-// from server: 98% by king_originala
+// from server: 99% by colin
 typedef unsigned int size_t;
 
 void* __cdecl operator new(size_t);
@@ -143,7 +143,8 @@ void Item::activate(int argument)
     if (show_popup(owner, 0x88, rect.right, rect.bottom, handle, 0, 0)
         && popup->accepted)
     {
-        set_value(make_value(popup->get_color()));
+        int color = popup->get_color();
+        set_value(make_value(color));
     }
 
     owner->release();

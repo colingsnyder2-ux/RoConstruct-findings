@@ -1,4 +1,4 @@
-// from server: 98% by king_originala
+// from server: 100% by colin
 struct Vector3 {
     float x, y, z;
 
@@ -84,9 +84,7 @@ void GroupDragTool::update(int argument)
                     current.y - previous.y,
                     current.z - previous.z));
 
-        previous.x = current.x;
-        previous.y = current.y;
-        previous.z = current.z;
+        previous = current;
 
         state->move(displacement);
     }
