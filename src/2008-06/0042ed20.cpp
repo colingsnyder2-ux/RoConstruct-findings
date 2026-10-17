@@ -1,14 +1,4 @@
-// from server: 59% by king_originala
-struct String;
-struct Text;
-
-extern void (__thiscall *destroyString)(String *);
-extern const char *(__thiscall *stringData)(const String *);
-extern void (__thiscall *constructText)(Text *);
-extern void (__thiscall *destroyText)(Text *);
-extern const char *(__thiscall *textData)(const Text *);
-extern void (__cdecl *formatText)(Text *, const char *, ...);
-
+// from server: 92% by colin
 struct String {
     char storage[28];
     ~String();
@@ -21,6 +11,13 @@ struct Text {
     ~Text();
     const char *c_str() const;
 };
+
+extern void (__thiscall *destroyString)(String *);
+extern const char *(__thiscall *stringData)(const String *);
+extern void (__thiscall *constructText)(Text *);
+extern void (__thiscall *destroyText)(Text *);
+extern const char *(__thiscall *textData)(const Text *);
+extern void (__cdecl *formatText)(Text *, const char *, ...);
 
 inline String::~String()
 {
@@ -66,5 +63,7 @@ void __stdcall func_42ed20(Output *output)
     String value = formatCount(count);
     Text text;
     formatText(&text, "VAR %s", value.c_str());
-    output->table->write(output, text.c_str());
+    OutputTable *t = output->table;
+    t->write(output, text.c_str());
+    value.~String();
 }

@@ -1,4 +1,4 @@
-// from server: 68% by king_originala
+// from server: 77% by colin
 extern char lookupData[];
 
 struct S;
@@ -12,7 +12,7 @@ struct Temporary
 
 struct Result
 {
-    void* consume(Temporary value, void* argument);
+    void* consume(Temporary* value, void* argument);
 };
 
 struct S
@@ -32,7 +32,8 @@ void* S::f(void* input, Result** result, void* argument)
     *result = lookup(input, 0, lookupData);
     if (*result)
     {
-        void* value = (*result)->consume(Temporary(this, input), argument);
+        Temporary temp(this, input);
+        void* value = (*result)->consume(&temp, argument);
         if (value)
             return value;
     }

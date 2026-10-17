@@ -1,4 +1,4 @@
-// from server: 43% by colin
+// from server: 44% by colin
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
 
@@ -34,14 +34,14 @@ struct BoundFuncDesc {
     void* offset44;
     Descriptor* offset48;
 
-    void invoke(void* args);
+    void invoke(void* args, int);
 };
 
 extern void* __cdecl operator_new(unsigned int, int, const char*, int, int);
 extern void __cdecl throw_bad_cast(const char*);
 extern RefPtr* __cdecl make_refptr(RefPtr*, RefCounted*);
 
-void BoundFuncDesc::invoke(void* args) {
+void BoundFuncDesc::invoke(void* args, int) {
     void* local8 = offset44;
     void* localc;
     if (offset48) {

@@ -1,4 +1,4 @@
-// from server: 11% by colin
+// from server: 20% by colin
 extern "C" void __stdcall _invalid_parameter_noinfo();
 
 struct Node {
@@ -17,20 +17,6 @@ struct Tree {
 
 struct Map {
     Tree tree;
-};
-
-struct SoundId;
-
-struct ContentItem {
-    char pad0[0x124];
-    void* begin;
-    char pad1[0x8];
-    void* end;
-    char pad2[0x4];
-    void* cap;
-    char pad3[0x4];
-    void* field13c;
-    void* field140;
 };
 
 struct Inner {
@@ -57,6 +43,19 @@ struct Operation {
     int value;
 };
 
+struct ContentItem {
+    char pad0[0x124];
+    void* begin;
+    char pad1[0x8];
+    void* end;
+    char pad2[0x4];
+    void* cap;
+    char pad3[0x4];
+    void* field13c;
+    void* field140;
+    void method(char* arg);
+};
+
 void* __cdecl operator new(unsigned int);
 void __cdecl operator delete(void*);
 
@@ -69,9 +68,7 @@ long __cdecl sub_5773c0(void*, void*);
 void __cdecl sub_58c5c0(void*, void*);
 void __cdecl sub_5a2fe0(void*);
 
-void ContentItem_method(ContentItem* self, char* arg);
-
-void ContentItem_method(ContentItem* self, char* arg)
+void ContentItem::method(char* arg)
 {
     void* local68;
     void* local5c;
@@ -106,35 +103,34 @@ void ContentItem_method(ContentItem* self, char* arg)
     local58 = 0;
     local54 = 0;
 
-    Inner* inner = (Inner*)self->field13c;
+    Inner* inner = (Inner*)field13c;
     void* v230 = *(void**)((char*)inner + 0x230);
     void* v218 = *(void**)((char*)inner + 0x218);
-    void* v134 = self->end;
+    void* v134 = end;
 
     local38 = v230;
     local3c = v218;
 
-    if ((unsigned int)self->cap > (unsigned int)v134) {
+    if ((unsigned int)cap > (unsigned int)v134) {
         _invalid_parameter_noinfo();
     }
 
-    void* v124 = self->begin;
+    void* v124 = begin;
     local30 = v134;
-    void* v130 = self->cap;
+    void* v130 = cap;
     local34 = v124;
 
-    if ((unsigned int)v130 > (unsigned int)self->end) {
+    if ((unsigned int)v130 > (unsigned int)end) {
         _invalid_parameter_noinfo();
     }
 
-    void* edi = self->begin;
+    void* edi = begin;
     void* esi = v130;
     local2c = edi;
     local28 = esi;
 
     while (1) {
         if (edi != 0 && edi == local34) {
-            // ok
         } else {
             _invalid_parameter_noinfo();
         }
@@ -148,12 +144,11 @@ void ContentItem_method(ContentItem* self, char* arg)
             _invalid_parameter_noinfo();
         }
         void* edx = *(void**)esi;
-        Inner* in2 = (Inner*)self->field13c;
+        Inner* in2 = (Inner*)field13c;
         local18 = edx;
         sub_43a320((char*)in2 + 0x218, &local4c);
         void* edi2 = local4c;
         if (edi2 != 0 && edi2 == local3c) {
-            // ok
         } else {
             _invalid_parameter_noinfo();
         }
@@ -187,7 +182,6 @@ void ContentItem_method(ContentItem* self, char* arg)
         void* esi3 = *(void**)((char*)esi2 + 0x10);
         while (1) {
             if (eax != 0 && eax == esi3) {
-                // ok
             } else {
                 _invalid_parameter_noinfo();
             }
@@ -210,7 +204,6 @@ void ContentItem_method(ContentItem* self, char* arg)
             local20 = (char*)local20 + 8;
         }
         if (local2c != 0) {
-            // ok
         } else {
             _invalid_parameter_noinfo();
         }
@@ -244,26 +237,26 @@ void ContentItem_method(ContentItem* self, char* arg)
     Operation op;
     op.apply = (void (__thiscall*)(void*, void*, int*))0x43a1d0;
     op.object = (char*)local7c;
-    op.displacement = (int)self;
+    op.displacement = (int)this;
     op.get = (void* (__thiscall*)(void*))0x71f210;
     op.unused = (int)edi4;
     op.value = (int)local38b;
 
     sub_43c940((int)local68, (char*)local4c, (int)local18, (char*)arg2, op);
 
-    Inner* in3 = (Inner*)self->field13c;
+    Inner* in3 = (Inner*)field13c;
     if (in3->ptr198 != 0) {
         local50 = 0;
         local4c = 0;
         local48 = 0;
         sub_576f00(in3->ptr198);
-        void* v140 = self->field140;
+        void* v140 = field140;
         void* eax3 = *(void**)((char*)v140 + 4);
         void* ecx3 = (char*)eax3 + 4;
         void* r = ((void* (__thiscall*)(void*))*(void**)0x802464)(ecx3);
-        Inner* in4 = (Inner*)self->field13c;
+        Inner* in4 = (Inner*)field13c;
         sub_58c5c0(r, in4->ptr198);
-        Inner* in5 = (Inner*)self->field13c;
+        Inner* in5 = (Inner*)field13c;
         Obj1f0* o = (Obj1f0*)((char*)in5->ptr198 + 0x1f0);
         VTable* vt = o->vt;
         void (*fn)(void*, int) = (void (*)(void*, int))vt->slots[0];

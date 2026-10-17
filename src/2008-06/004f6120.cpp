@@ -1,4 +1,4 @@
-// from server: 35% by colin
+// from server: 41% by colin
 struct Vector2 { float x, y; };
 struct Vector3 { float x, y, z; };
 
@@ -9,14 +9,13 @@ extern float g_826e6c;
 extern float g_83a3e4;
 
 float sub_4f1ff0(int);
-void sub_5185d0_helper(Vector2* out, Vector2* in);
+void sub_5185d0(Vector2* out, Vector2* in);
 void sub_4f35d0(Vector3* a, Vector2* b, Vector2* c, Vector3* d, Vector3* e, int f, int g);
 void sub_4f54d0(void* self, int a, int b);
 
 struct PBBBuilder {
     int field0;
-    int field4;
-    int field8;
+    Vector2 field4;
     int fieldC;
     unsigned int field10;
     void build(Vector3* a, Vector3* b, int c, int d, int e, int f);
@@ -36,7 +35,7 @@ void PBBBuilder::build(Vector3* a, Vector3* b, int c, int d, int e, int f)
     int sel = bits & 7;
 
     Vector2 tmp;
-    sub_5185d0_helper(&tmp, (Vector2*)((char*)this + 4));
+    sub_5185d0(&tmp, &this->field4);
 
     float f0 = a->x; if (f0 < 0) f0 = -f0;
     float f1 = a->y; if (f1 < 0) f1 = -f1;
@@ -47,7 +46,7 @@ void PBBBuilder::build(Vector3* a, Vector3* b, int c, int d, int e, int f)
     arr[2] = f2;
 
     bool flag;
-    if (f == 0) {
+    if (f != 0) {
         flag = (f0 == f1);
     } else {
         flag = false;
@@ -62,23 +61,20 @@ void PBBBuilder::build(Vector3* a, Vector3* b, int c, int d, int e, int f)
         count = 1;
     }
 
-    unsigned short w0 = 0;
-    unsigned short w2 = 0;
-
     short sval = *(short*)((char*)&tmp + (idx * 2));
     int q = (int)sval / count;
     unsigned short qq = (unsigned short)q;
     unsigned short one = 1;
     unsigned short chosen = (one < qq) ? qq : one;
 
-    *(unsigned short*)((char*)&idx + w0 * 2) = chosen;
-    *(unsigned short*)((char*)&w2 + idx * 2) = (unsigned short)sval;
+    *(unsigned short*)((char*)&idx + 0) = chosen;
+    *(unsigned short*)((char*)&tmp + idx * 2) = (unsigned short)sval;
 
     Vector2 p0, p1;
-    sub_5185d0_helper(&p0, (Vector2*)a);
+    sub_5185d0(&p0, (Vector2*)a);
     p0.x = -p0.x;
     p0.y = -p0.y;
-    sub_5185d0_helper(&p1, (Vector2*)b);
+    sub_5185d0(&p1, (Vector2*)b);
     p1.x = -p1.x;
     p1.y = -p1.y;
 
