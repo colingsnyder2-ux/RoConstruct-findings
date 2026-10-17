@@ -1,4 +1,4 @@
-// from server: 90% by king_originala
+// from server: 100% by colin
 struct Value {
     bool toFloat(float* result);
 };
@@ -24,10 +24,9 @@ struct Descriptor {
 
 void Descriptor::apply(void* object, Variant* value, int unused)
 {
-    Variant* original = value;
-    if (!original->isEmpty()) {
-        float* result = reinterpret_cast<float*>(&value);
-        if (original->value.toFloat(result))
-            setter->set(object, *result);
+    if (!value->isEmpty()) {
+        float result;
+        if (value->value.toFloat(&result))
+            setter->set(object, result);
     }
 }

@@ -1,4 +1,4 @@
-// from server: 73% by king_originala
+// from server: 79% by colin
 struct Descriptor {
     bool equals(const Descriptor& other) const;
 };
@@ -13,7 +13,8 @@ struct Object {
 
 int __stdcall matches(Object* object)
 {
-    if (object->descriptor->equals(firstDescriptor()) ||
+    Descriptor* d = object->descriptor;
+    if (d->equals(firstDescriptor()) ||
         object->descriptor->equals(secondDescriptor()))
         return 1;
     return 0;

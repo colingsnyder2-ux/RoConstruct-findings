@@ -1,40 +1,39 @@
-// from server: 77% by colin
-struct DataSource {
+// from server: 82% by colin
+struct DataSource
+{
     const void* get();
 };
 
-struct VCRenderSettings {
-    char reserved0[0x2C8];
+struct VCRenderSettings
+{
+    char padding[0x2C8];
     DataSource* dataSource;
-
     void setValue(const float* value);
 };
 
-extern void __cdecl combine(const void*, const void*, void*);
-
-extern "C" void __stdcall sub_40DB00(void*);
+extern void __cdecl sub_614040(DataSource* source, const float* value);
+extern void __stdcall sub_40DB00(VCRenderSettings* self, const void* prop);
 
 void VCRenderSettings::setValue(const float* value)
 {
     DataSource* ds = dataSource;
     ds->get();
 
-    float local[6];
-    local[0] = *(float*)((char*)ds + 0xC4);
-    local[1] = *(float*)((char*)ds + 0xC8);
-    local[2] = *(float*)((char*)ds + 0xCC);
-    local[3] = *(float*)((char*)ds + 0xD0);
-    local[4] = *(float*)((char*)ds + 0xD4);
-    local[5] = *(float*)((char*)ds + 0xD8);
+    float current[6];
+    current[0] = *(float*)((char*)ds + 0xC4);
+    current[1] = *(float*)((char*)ds + 0xC8);
+    current[2] = *(float*)((char*)ds + 0xCC);
+    current[3] = *(float*)((char*)ds + 0xD0);
+    current[4] = *(float*)((char*)ds + 0xD4);
+    current[5] = *(float*)((char*)ds + 0xD8);
 
-    if (value[0] == local[0] && value[1] == local[1] && value[2] == local[2])
+    if (value[0] == current[0] && value[1] == current[1] && value[2] == current[2])
         return;
 
-    local[0] = value[0];
-    local[1] = value[1];
-    local[2] = value[2];
+    current[0] = value[0];
+    current[1] = value[1];
+    current[2] = value[2];
 
-    combine(local, local, (char*)dataSource + 0xC4);
-
-    sub_40DB00(this);
+    sub_614040(dataSource, current);
+    sub_40DB00(this, (const void*)0x97632c);
 }

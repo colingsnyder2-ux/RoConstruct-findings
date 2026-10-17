@@ -1,27 +1,57 @@
-// from server: 33% by colin
-struct EventData
-{
-    void* field0;
-    void* field4;
-    void* field8;
-    void* fieldC;
-    void* field10;
-    void* field14;
+// from server: 41% by colin
+struct EventData;
 
-    void method();
+struct Listener
+{
+    void detach(EventData*);
 };
 
-extern "C" void __cdecl sub_004574B0(void*);
-extern "C" void __cdecl sub_004116F0(void*, void*);
-
-void EventData::method()
+struct RefCount
 {
-    if (fieldC)
+    virtual ~RefCount();
+    virtual void dispose() = 0;
+    virtual void destroy() = 0;
+
+    volatile long strong;
+    volatile long weak;
+};
+
+struct SharedData
+{
+    void* object;
+    RefCount* control;
+};
+
+struct EventBase
+{
+    virtual ~EventBase();
+};
+
+struct EventData : EventBase
+{
+    SharedData data;
+    Listener* listener;
+
+    virtual ~EventData();
+};
+
+__forceinline EventBase::~EventBase()
+{
+}
+
+EventData::~EventData()
+{
+    if (listener)
+        listener->detach(this);
+
+    RefCount* p = data.control;
+    if (p)
     {
-        sub_004574B0(this);
-        sub_004116F0(&field10, &field10);
-        void** vtable = *(void***)fieldC;
-        void (*fn)(void*, void*) = (void (*)(void*, void*))vtable[2];
-        fn(fieldC, field4);
+        if (--p->strong == 0)
+        {
+            p->dispose();
+            if (--p->weak == 0)
+                p->destroy();
+        }
     }
 }

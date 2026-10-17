@@ -1,72 +1,66 @@
-// from server: 53% by king_originala
-struct String {
-    char storage[28];
-    String(const String&);
-    ~String();
-};
+// from server: 60% by colin
+struct TypeInfo {};
 
-extern void (__thiscall *stringCopy)(String*, const String&);
-extern void (__thiscall *stringDestroy)(String*);
+struct Holder;
 
-__forceinline String::String(const String& other) {
-    stringCopy(this, other);
-}
-
-__forceinline String::~String() {
-    stringDestroy(this);
-}
-
-struct Value {
-    virtual ~Value();
+struct HolderTable {
+    void *(__thiscall *destroy)(Holder *, unsigned int);
 };
 
 struct Holder {
-    Value* value;
-    Holder(const String&);
-    ~Holder();
-    void swap(Holder&);
+    const HolderTable *table;
 };
 
-__forceinline Holder::~Holder() {
-    if (value)
-        delete value;
+extern bool (__thiscall *type_equal)(const TypeInfo *, const TypeInfo &);
+extern const TypeInfo int_type;
+extern const TypeInfo float_type;
+extern const TypeInfo double_type;
+extern const double double_zero;
+
+extern Holder *__cdecl make_holder();
+
+struct String {
+    unsigned char storage[28];
+    String(const String &);
+    ~String();
+};
+
+extern void (__stdcall *string_copy_ctor)(String *, const String &);
+extern void (__stdcall *string_dtor)(String *);
+
+inline String::String(const String &s)
+{
+    string_copy_ctor(this, s);
 }
 
-__forceinline void Holder::swap(Holder& other) {
-    if (this != &other) {
-        Value* old = other.value;
-        other.value = value;
-        value = old;
-    }
+inline String::~String()
+{
+    string_dtor(this);
 }
 
-struct Result {
-    void* type;
-    Holder owner;
+struct BoundFuncDesc {
+    unsigned char pad[0x38];
+    void *(__thiscall *fn)(void *, void *);
+    unsigned char *ctx;
+    void *invoke(void *, void *, void *);
 };
 
-struct Input {
-    const String& get(unsigned char);
-};
+extern void *__cdecl get_type_holder(void *);
+extern void *__cdecl get_value_holder(void *);
+extern void *__cdecl make_value();
 
-struct Selector {
-    const unsigned char* get();
-};
-
-extern void* __cdecl getType();
-
-struct Base1 {};
-struct Base2 {};
-struct Object : Base1, Base2 {};
-
-struct S {
-    char padding[56];
-    String (Object::*method)(String);
-    void f(Object*, Result*, Input*, Selector*);
-};
-
-void S::f(Object* object, Result* result, Input* input, Selector* selector) {
-    String returned = (object->*method)(input->get(*selector->get()));
-    result->type = getType();
-    Holder(returned).swap(result->owner);
+void *BoundFuncDesc::invoke(void *a, void *b, void *c)
+{
+    void *t = get_type_holder(a);
+    unsigned char ch = *(unsigned char *)t;
+    void *v = get_value_holder(b);
+    String s(*(const String *)v);
+    void *result = fn(ctx + (int)c, &s);
+    void *holder = make_value();
+    *(void **)holder = result;
+    void **slot = (void **)((char *)holder + 4);
+    void *tmp = &s;
+    void *r = (void *)0;
+    (void)r;
+    return holder;
 }

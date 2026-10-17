@@ -1,9 +1,9 @@
-// from server: 87% by king_originala
+// from server: 90% by colin
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
 
 extern "C" {
-extern void (__stdcall *SysFreeString)(unsigned short *);
+extern void __stdcall SysFreeString(unsigned short *);
 }
 
 typedef void (__cdecl *Manager)(void *, void *, int);
@@ -93,7 +93,7 @@ struct Shared {
 __forceinline Shared::~Shared()
 {
     Control *object = control;
-    if (object && _InterlockedExchangeAdd(&object->count, -1) == 0)
+    if (object && _InterlockedExchangeAdd(&object->count, -1) == 1)
         object->release();
 }
 

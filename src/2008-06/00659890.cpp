@@ -1,47 +1,68 @@
-// from server: 57% by colin
-extern "C" void __stdcall _invalid_parameter_noinfo();
+// from server: 61% by colin
+extern "C" void __cdecl _invalid_parameter_noinfo();
 
-struct Inner {
-    char pad[0x0c];
-    int* begin;
-    int* end;
+struct Key {
+    unsigned int a;
+    unsigned int b;
+    unsigned int c;
 };
 
-struct Outer {
-    char pad[0x64];
-    unsigned short* field64;
+struct Node {
+    void* owner;
+    Node* next;
+    unsigned int reserved0;
+    unsigned int reserved1;
+    unsigned int a;
+    unsigned int b;
+    unsigned int c;
+};
+
+struct Entry {
+    Node* node;
+};
+
+struct Bucket {
+    unsigned int reserved[3];
+    Entry* begin;
+    Entry* end;
+};
+
+struct Other {
+    unsigned int reserved[8];
+    unsigned short shift;
 };
 
 struct S {
-    char pad[0x20];
-    unsigned short field20;
-    int find(int a, int b, int c);
+    unsigned int reserved[3];
+    Bucket buckets[1];
+
+    Node* find(void* owner, Key* key);
 };
 
-int S::find(int a, int b, int c)
+Node* S::find(void* owner, Key* key)
 {
-    int* p = &a;
-    unsigned int h = (unsigned int)p[2] * 0x4f9ffb7u;
-    h ^= (unsigned int)p[1] * 0x127409fu;
-    h ^= (unsigned int)p[0] * 0x466f45du;
+    unsigned int hash = key->b * 0x127409f;
+    hash ^= key->c * 0x4f9ffb7;
+    hash ^= key->a * 0x466f45d;
 
-    Outer* o = (Outer*)a;
-    unsigned short sh = *(unsigned short*)((char*)o->field64 + 0x20);
-    unsigned int mask = 0xffffu >> sh;
-    h &= mask;
+    unsigned int shift = ((Other*)owner)->shift;
+    unsigned int mask = 0xffff;
+    mask = (int)mask >> shift;
 
-    Inner* inner = (Inner*)((char*)this + sh * 24 + 0xc);
+    Bucket* bucket = &buckets[shift * 3];
+    hash &= mask;
 
-    int count = (int)(((char*)inner->end - (char*)inner->begin) >> 3);
-    if (h >= (unsigned int)count)
+    if (hash >= (unsigned int)(bucket->end - bucket->begin))
         _invalid_parameter_noinfo();
 
-    int* node = (int*)((char*)inner->begin + h * 8);
-    while (*(int*)node != a)
-    {
-        node = (int*)*(int*)((char*)node + 4);
-        if (node == 0)
+    Node* node = bucket->begin[hash].node;
+    while (node) {
+        if (node->owner == owner &&
+            node->a == key->a &&
+            node->b == key->b &&
+            node->c == key->c)
             break;
+        node = node->next;
     }
-    return (int)node;
+    return node;
 }

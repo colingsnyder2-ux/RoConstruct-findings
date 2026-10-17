@@ -1,4 +1,4 @@
-// from server: 70% by colin
+// from server: 97% by colin
 struct Extents {
     float lowX;
     float lowY;
@@ -9,40 +9,32 @@ struct Extents {
     bool overlapsOrTouches(const Extents& other) const;
 };
 
-struct Contact {
-    virtual void slot0();
-    virtual int kind();
-    bool computeIsColliding(float overlapIgnored);
-    bool stepContact();
-    void deleteAllConnectors();
-    int numConnectors() const;
-    void* getConnector(int i);
+extern float g_81c3b8;
+extern float g_82d030;
+
+struct BlockBlockContact {
+    char pad[0xc];
+    int field_c;
+    int field_10;
+    char pad2[0x54 - 0x14];
+    float field_54;
+    bool check();
+    bool testZero(float v);
+    void slot0();
 };
 
-struct BlockBlockContact : public Contact {
-    char pad[0x54 - sizeof(Contact)];
-    float overlapIgnored;
-    bool computeIsColliding(float overlapIgnored);
-    bool stepContact();
-    bool computeIsCollidingInternal(float overlapIgnored);
-    void generateDataForMovingAssemblyStage();
-};
-
-extern float g_float_81c3b8;
-extern float g_float_82d030;
-
-bool BlockBlockContact::stepContact() {
-    Extents* e0 = (Extents*)((char*)this + 0xc);
-    Extents* e1 = (Extents*)((char*)this + 0x10);
-    if (e0->overlapsOrTouches(*e1)) {
-        if (this->computeIsCollidingInternal(0.0f)) {
-            this->overlapIgnored = g_float_81c3b8;
+bool BlockBlockContact::check() {
+    Extents* a = (Extents*)(field_c + 0x80);
+    Extents* b = (Extents*)(field_10 + 0x80);
+    if (a->overlapsOrTouches(*b)) {
+        if (testZero(0.0f)) {
+            field_54 = g_81c3b8;
         } else {
-            this->overlapIgnored = g_float_82d030;
+            field_54 = g_82d030;
         }
     } else {
-        this->overlapIgnored = g_float_82d030;
+        field_54 = g_82d030;
     }
-    this->generateDataForMovingAssemblyStage();
-    return this->overlapIgnored < 0.0f;
+    slot0();
+    return field_54 < 0.0f;
 }

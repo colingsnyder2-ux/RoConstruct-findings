@@ -1,4 +1,4 @@
-// from server: 79% by king_originala
+// from server: 88% by colin
 struct Object
 {
     unsigned char padding[20];
@@ -45,11 +45,12 @@ struct S : Base
 
 S::S(Object* object) : Base(object)
 {
+    Object* saved = object;
     table0 = table_84cdb0;
     table4 = table_84cda8;
     table160 = table_84cd98;
 
-    Node* node = registry_97a348.lookup(object ? &object->part : 0);
+    Node* node = registry_97a348.lookup(saved ? &saved->part : 0);
     if (node)
-        node->signal.invoke(&object, 0);
+        node->signal.invoke(&saved, 0);
 }

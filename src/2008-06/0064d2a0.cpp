@@ -1,46 +1,54 @@
-// from server: 77% by king_originala
-struct Temporary {
-    virtual ~Temporary();
+// from server: 94% by colin
+struct S_func_005e6110 {
+    char pad0[64];
+    int m_x;
+    int f();
 };
 
-struct Result {
-    void finish();
+struct I_func_005e6160 {
+    char pad[160];
+    int m_x;
 };
 
-struct Source;
-
-struct Stage {
-    virtual void slot0();
-    virtual void slot1();
-    virtual void slot2();
-    virtual Result* select(int);
-
-    void accept(Temporary*);
-    void f(Source*);
+struct S_func_005e6160 {
+    char pad[28];
+    I_func_005e6160* m_p;
+    int f();
 };
 
-struct Source {
-    virtual void slot0();
-    virtual void slot1();
-    virtual void advance();
+extern float __cdecl infinity();
 
-    int getTemporary();
-    int getValue();
-    void attach(int);
+struct S_func_00645840 {
+    int field0;
+    int field4;
+    void f(int);
 };
 
-void Stage::f(Source* source)
+struct S_func_0064d180 {
+    void f(int);
+};
+
+struct S_func_0064d2a0 {
+    void f(int);
+};
+
+void S_func_0064d2a0::f(int a)
 {
-    Temporary* temporary =
-        reinterpret_cast<Temporary*>(source->getTemporary());
-
-    accept(temporary);
-
-    if (temporary)
-        delete temporary;
-
-    int value = source->getValue();
-    select(value)->finish();
-    source->advance();
-    source->attach(reinterpret_cast<int>(this));
+    S_func_005e6110* p = (S_func_005e6110*)a;
+    int r = p->f();
+    ((S_func_0064d180*)this)->f(r);
+    if (r != 0) {
+        int* vt = *(int**)r;
+        void (__thiscall *fn)(void*, int) = (void (__thiscall *)(void*, int))vt[0];
+        fn((void*)r, 1);
+    }
+    int v = ((S_func_005e6160*)a)->f();
+    int* vt2 = *(int**)this;
+    int (__thiscall *fn2)(void*) = (int (__thiscall *)(void*))vt2[3];
+    int res = fn2((void*)this);
+    infinity();
+    int* vt3 = *(int**)a;
+    void (__thiscall *fn3)(void*) = (void (__thiscall *)(void*))vt3[2];
+    fn3((void*)a);
+    ((S_func_00645840*)a)->f((int)this);
 }

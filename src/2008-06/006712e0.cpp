@@ -1,4 +1,4 @@
-// from server: 97% by king_originala
+// from server: 99% by colin
 extern "C" void (__cdecl *_invalid_parameter_noinfo)();
 
 struct String;
@@ -77,9 +77,9 @@ MeshPtr S::f(String key)
 
     if (owner && owner != expected) {
         invalid = _invalid_parameter_noinfo;
+        invalid();
     } else {
         invalid = _invalid_parameter_noinfo;
-        invalid();
     }
 
     if (node != finish) {

@@ -1,40 +1,43 @@
-// from server: 17% by colin
+// from server: 80% by colin
+
+
+
+
 struct Vector3 {
     float x, y, z;
+    Vector3() {}
     Vector3(const Vector3&);
-    Vector3(float a, float b, float c) : x(a), y(b), z(c) {}
 };
 
-struct Matrix3 {
-    float elements[9];
-    Matrix3(const Matrix3&);
+struct S {
+    void f(int);
 };
-
-unsigned int func_0063e420();
-unsigned int func_006492c0();
 
 extern float g_81c3b8;
 extern float g_832a18;
 
-struct UString_sink_stream_buffer {
-    void write(int n);
-};
+unsigned int func_0063e420();
+unsigned int func_006492c0();
+void func_005faaa0(S*, Vector3*);
 
-void UString_sink_stream_buffer::write(int n)
+void S::f(int arg)
 {
-    int d = (int)func_0063e420();
-    if (n % d != 0)
+    if (arg % (int)func_0063e420() != 0)
         return;
 
-    int d2 = (int)func_0063e420();
-    int q = n / d2;
+    int q = arg / (int)func_0063e420();
 
     float a = 0.0f;
     float b = 0.0f;
 
-    int d3 = (int)func_006492c0();
-    int r = q % d3;
-    switch (r & 3) {
+    int r = q % (int)func_006492c0();
+    int m = r & 0x80000003;
+    if (m < 0) {
+        m = (m - 1) | 0xfffffffc;
+        m = m + 1;
+    }
+
+    switch (m) {
     case 0:
         a = 1.0f;
         break;
@@ -49,6 +52,10 @@ void UString_sink_stream_buffer::write(int n)
         break;
     }
 
-    Vector3 v(a * g_832a18, b * g_832a18, 0.0f);
-    (void)v;
+    Vector3 v;
+    v.x = a * g_832a18;
+    v.y = b * g_832a18;
+    v.z = 0.0f;
+
+    func_005faaa0(this, &v);
 }

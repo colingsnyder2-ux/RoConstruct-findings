@@ -1,4 +1,4 @@
-// from server: 47% by colin
+// from server: 49% by colin
 namespace std {
 template<class T> struct char_traits;
 template<class T> class allocator;
@@ -14,34 +14,29 @@ public:
 typedef basic_string<char, char_traits<char>, allocator<char> > string;
 }
 
-extern "C" void * __cdecl malloc(unsigned int);
+extern "C" void* __stdcall malloc(unsigned int);
+extern "C" void __stdcall free(void*);
 
-struct GuiDrawImage {
-    unsigned char storage[0x164];
-    GuiDrawImage();
-    ~GuiDrawImage();
+struct VTool {
+    void BoundPropGetSet(void*, const std::string&);
 };
 
-struct UnifiedWidget {
-    unsigned char storage[0x1c];
-    void construct(const std::string &, int);
+struct UnifiedImageWidget {
+    void sub_6015F0(void*, const std::string&);
+    void sub_64E8C0(const std::string&);
+    void* method(void* a, const std::string& b);
 };
 
-struct UnifiedImageWidget : UnifiedWidget {
-    GuiDrawImage guiImageDraw;
-    std::string imageName;
-    unsigned imageState;
-    UnifiedImageWidget(const std::string &, int);
-};
-
-UnifiedImageWidget::UnifiedImageWidget(const std::string &imageName, int imageState)
-{
-    GuiDrawImage *draw = (GuiDrawImage *)malloc(0x164);
-    if (draw) {
-        draw->GuiDrawImage::GuiDrawImage();
+void* UnifiedImageWidget::method(void* a, const std::string& b) {
+    void* mem = malloc(0x164);
+    void* result;
+    if (mem) {
+        std::string tmp(b);
+        ((VTool*)mem)->BoundPropGetSet(a, tmp);
+        result = mem;
+    } else {
+        result = 0;
     }
-    this->construct(std::string(imageName), imageState);
-    if (draw) {
-        draw->~GuiDrawImage();
-    }
+    sub_6015F0(a, b);
+    return result;
 }

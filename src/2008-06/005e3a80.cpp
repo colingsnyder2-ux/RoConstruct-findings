@@ -1,4 +1,4 @@
-// from server: 90% by colin
+// from server: 98% by colin
 struct Node;
 struct Joint;
 struct World;
@@ -62,12 +62,17 @@ void Joint::f(void* argument)
 
     World* newWorld;
     Parent* p = parent;
-    if (p && p->category->equals(categoryInstance())) {
-        Provider* provider = findProvider(this);
-        if (provider)
-            newWorld = provider->world;
-        else
-            newWorld = 0;
+    if (p) {
+        Category* cat = p->category;
+        if (cat->equals(categoryInstance())) {
+            Provider* provider = findProvider(this);
+            if (provider)
+                newWorld = provider->world;
+            else
+                newWorld = 0;
+        } else {
+            newWorld = findWorld(this);
+        }
     } else {
         newWorld = findWorld(this);
     }

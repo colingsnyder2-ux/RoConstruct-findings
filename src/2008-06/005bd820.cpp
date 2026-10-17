@@ -1,4 +1,4 @@
-// from server: 89% by king_originala
+// from server: 92% by colin
 extern "C" void (__cdecl* _invalid_parameter_noinfo)();
 
 struct Value {
@@ -52,10 +52,12 @@ void S::f(int key)
 
     Node* node = reinterpret_cast<Node* volatile&>(it.node);
     if (node != head) {
-        if (!owner)
+        if (!owner) {
             invalid();
-        else
             owner = reinterpret_cast<Tree**>(*owner);
+        } else {
+            owner = reinterpret_cast<Tree**>(*owner);
+        }
 
         if (node == reinterpret_cast<Tree*>(owner)->head)
             invalid();

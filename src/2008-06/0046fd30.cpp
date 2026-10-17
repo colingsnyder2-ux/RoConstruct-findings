@@ -1,49 +1,60 @@
-// from server: 59% by colin
-extern "C" {
-    int __cdecl sub_50A940();
-    int __cdecl sub_50A9B0();
+// from server: 99% by colin
+struct String {
+    unsigned int allocator;
+    union {
+        char buffer[16];
+        char* pointer;
+    } storage;
+    unsigned int length;
+    unsigned int capacity;
+
+    String(const char*);
+    ~String();
+};
+
+extern void (__thiscall* constructString)(String*, const char*);
+extern void (__thiscall* destroyString)(String*);
+
+__forceinline String::String(const char* text)
+{
+    constructString(this, text);
 }
 
-struct StdString {
-    char buf[24];
-    StdString(const char*);
-    ~StdString();
-};
-
-extern void __stdcall sub_802458(StdString*, const char*);
-extern void __stdcall sub_802468(StdString*);
-extern void __stdcall sub_8027F4(int);
-extern int (__stdcall *sub_94278C)(StdString*, int, const char*, int, const char*, int);
-
-extern bool g_96EE8E;
-extern bool g_96EE65;
-extern bool g_96EE75;
-
-struct GLCaps {
-    static bool init();
-};
-
-bool GLCaps::init()
+__forceinline String::~String()
 {
-    if (g_96EE8E)
-        return g_96EE75;
-    if (g_96EE65)
-        return g_96EE75;
+    destroyString(this);
+}
 
-    sub_50A940();
+extern bool initialized;
+extern bool ignoreAssertion;
+extern const char assertionExpression[];
+extern const char assertionMessage[];
+extern const char assertionFile[];
 
-    bool result = false;
-    if (sub_94278C != 0) {
-        StdString s("GLCaps has not been initialized.");
-        int r = sub_94278C(&s, 1, "GLCaps has not been initialized.", 0x231, ".\\glg3dcpp\\GLCaps.cpp", 1);
-        if (r)
-            result = true;
-        sub_802468(&s);
+extern bool (__cdecl* assertionHandler)(
+    const char*, const String&, const char*, int, bool*, bool);
+
+extern void (__stdcall* terminateProcess)(int);
+extern void __cdecl lockAssertions();
+extern void __cdecl unlockAssertions();
+extern void __cdecl initGLCaps();
+
+void __cdecl checkGLCaps()
+{
+    if (!ignoreAssertion && !initialized) {
+        lockAssertions();
+        bool terminate = assertionHandler &&
+            assertionHandler(
+                assertionExpression,
+                String(assertionMessage),
+                assertionFile,
+                561,
+                &ignoreAssertion,
+                true);
+        if (terminate) {
+            terminateProcess(-1);
+        }
+        unlockAssertions();
     }
-
-    if (result)
-        sub_8027F4(-1);
-
-    sub_50A9B0();
-    return g_96EE75;
+    initGLCaps();
 }
