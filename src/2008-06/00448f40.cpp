@@ -1,5 +1,6 @@
-// from server: 60% by colin
+// from server: 69% by colin
 struct CRenderSettings {
+    char pad[0x144];
     float field_144;
     float field_148;
     void sub_448FD0(float);

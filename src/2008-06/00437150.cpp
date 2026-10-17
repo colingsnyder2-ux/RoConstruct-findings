@@ -1,4 +1,4 @@
-// from server: 24% by colin
+// from server: 26% by colin
 struct CStandardOutputView {
     char pad0[0x118];
     void* field_118;
@@ -35,7 +35,6 @@ void CStandardOutputView::func_437150(void* a, void* b, void* c, void* d)
 
     sub_8034b8(buf1);
     sub_8034b8(buf2);
-    sub_8034b8(buf3);
 
     v1 = sub_436150(*(void**)((char*)buf1 - 0xc), buf1, 0, 0, 0);
     v2 = sub_436150(*(void**)((char*)buf2 - 0xc), buf2, v1, v1, 0);

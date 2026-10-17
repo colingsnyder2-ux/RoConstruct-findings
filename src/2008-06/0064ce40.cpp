@@ -1,5 +1,5 @@
-// from server: 83% by king_originala
-extern "C" void (__cdecl * _invalid_parameter_noinfo)();
+// from server: 84% by colin
+extern "C" void __cdecl _invalid_parameter_noinfo();
 
 struct Object {
     virtual void v0();
@@ -67,12 +67,11 @@ void S::f(int argument)
         if (currentNode == endNode)
             return;
 
-        if (currentOwner)
-            goto resolveOwner;
+        if (!currentOwner) {
+            _invalid_parameter_noinfo();
+            currentOwner = reinterpret_cast<Owner*>(currentOwner->tree);
+        }
 
-        _invalid_parameter_noinfo();
-
-    checkNode:
         if (currentNode == reinterpret_cast<Tree*>(currentOwner)->head)
             _invalid_parameter_noinfo();
 
@@ -81,8 +80,4 @@ void S::f(int argument)
         currentNode = it.node;
         currentOwner = it.owner;
     }
-
-resolveOwner:
-    currentOwner = reinterpret_cast<Owner*>(currentOwner->tree);
-    goto checkNode;
 }
