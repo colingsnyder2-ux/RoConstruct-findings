@@ -1,15 +1,14 @@
-// from server: 66% by king_originala
-extern "C" void (__cdecl * const _invalid_parameter_noinfo)();
-
-struct String;
-extern void (__thiscall * const destroyString)(String*);
+// from server: 75% by colin
+extern "C" void __cdecl _invalid_parameter_noinfo();
 
 struct String {
     unsigned char storage[28];
     ~String();
 };
 
-inline String::~String() {
+extern void (__thiscall * const destroyString)(String*);
+
+String::~String() {
     destroyString(this);
 }
 
@@ -47,7 +46,7 @@ struct Vector {
 extern unsigned int __cdecl lookup(String*);
 extern Vector& __cdecl registry();
 
-inline Iterator Vector::begin() {
+Iterator Vector::begin() {
     Entry** position = first;
     if (position > last)
         _invalid_parameter_noinfo();
@@ -57,7 +56,7 @@ inline Iterator Vector::begin() {
     return result;
 }
 
-inline Iterator Vector::end() {
+Iterator Vector::end() {
     Entry** position = last;
     if (first > position)
         _invalid_parameter_noinfo();
@@ -67,13 +66,13 @@ inline Iterator Vector::end() {
     return result;
 }
 
-inline bool Iterator::operator!=(const Iterator& other) const {
+bool Iterator::operator!=(const Iterator& other) const {
     if (!owner || owner != other.owner)
         _invalid_parameter_noinfo();
     return position != other.position;
 }
 
-inline Entry*& Iterator::operator*() const {
+Entry*& Iterator::operator*() const {
     if (!owner)
         _invalid_parameter_noinfo();
     Vector* container = owner ? owner->container : 0;
@@ -82,7 +81,7 @@ inline Entry*& Iterator::operator*() const {
     return *position;
 }
 
-inline Iterator& Iterator::operator++() {
+Iterator& Iterator::operator++() {
     if (!owner)
         _invalid_parameter_noinfo();
     Vector* container = owner ? owner->container : 0;
@@ -102,7 +101,9 @@ struct S {
 
 void S::assign(String name, unsigned int index) {
     unsigned int key = lookup(&name);
-    for (Iterator i = registry().begin(); i != registry().end(); ++i) {
+    Iterator i = registry().begin();
+    Iterator e = registry().end();
+    for (; i != e; ++i) {
         if ((*i)->key == key) {
             Entry*& entry = *i;
             if (index >= static_cast<unsigned int>(last - first))

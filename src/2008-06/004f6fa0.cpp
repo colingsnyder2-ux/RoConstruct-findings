@@ -1,19 +1,16 @@
-// from server: 19% by colin
-// roc 2008-06 004f6fa0  unit: RBX::ViewNew::WedgeBuilder
-// Make this compile to the exact bytes below, then: roc check 2008-06 004f6fa0
-
+// from server: 20% by colin
 extern "C" {
     __declspec(dllimport) int __stdcall InterlockedDecrement(int volatile*);
     __declspec(dllimport) int __stdcall InterlockedIncrement(int volatile*);
     __declspec(dllimport) double __cdecl ceil(double);
 }
 
-struct Vector3 {
-    float x, y, z;
-};
-
 struct Vector2 {
     float x, y;
+};
+
+struct Vector3 {
+    float x, y, z;
 };
 
 struct WedgeBuilder {
@@ -70,16 +67,12 @@ void WedgeBuilder::buildBottom(int purpose)
     arr[0] = 0;
     arr[1] = 0;
 
-    short s0 = *(short*)((char*)&v58 + (edi == 0 ? 0 : 0));
-    (void)s0;
-
-    int idx = edi;
-    short val = *(short*)((char*)&v58 - idx * 2);
+    short val = *(short*)((char*)&v58 - edi * 2);
     int q = (int)val / ebx;
     short qs = (short)q;
     short one = 1;
     short chosen = (one < qs) ? qs : one;
-    arr[idx] = chosen;
+    arr[edi] = chosen;
 
     float fv58 = v58;
     Vector2 v2a, v2b;
@@ -113,8 +106,9 @@ void WedgeBuilder::buildBottom(int purpose)
     }
 
     int i = 0;
+    float f3c = 0;
     while (i < ebx) {
-        float f34, f3c;
+        float f34;
         if (i == ebx - 1) {
             f34 = (edi == 0) ? v50 : v54;
             if (purpose == 0 && ebx != 0) {
@@ -136,9 +130,5 @@ void WedgeBuilder::buildBottom(int purpose)
 
         f3c = f34;
         i++;
-    }
-
-    if (purpose == 0) {
-        // cleanup path
     }
 }

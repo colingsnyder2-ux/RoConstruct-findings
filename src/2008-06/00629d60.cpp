@@ -1,4 +1,4 @@
-// from server: 79% by king_originala
+// from server: 95% by colin
 #pragma float_control(precise, off)
 
 struct Vec3
@@ -103,7 +103,7 @@ extern const float secondaryScale;
 
 void Explosion::explode(Parts* parts)
 {
-    if (0.0f < pressure)
+    if (pressure > 0.0f)
     {
         Context* context = getContext(this);
         for (int i = 0; i < parts->count; ++i)

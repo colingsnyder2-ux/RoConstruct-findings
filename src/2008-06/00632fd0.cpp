@@ -1,4 +1,4 @@
-// from server: 77% by king_originala
+// from server: 78% by colin
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
 
@@ -38,7 +38,7 @@ extern char property;
 struct Rocket {
     char storage[0x14c];
     Pair value;
-    char padding[0x0c];
+    char padding[0x10];
     bool flag;
 
     void notify(const void*);

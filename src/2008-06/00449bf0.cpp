@@ -1,4 +1,4 @@
-// from server: 50% by colin
+// from server: 58% by colin
 struct CIDEDocManager;
 
 struct Helper
@@ -26,10 +26,10 @@ extern "C" void __stdcall DragAcceptFiles(void* hwnd, int accept);
 extern "C" void* __stdcall sub_6A0920(unsigned int size);
 extern "C" void __stdcall sub_6A1238();
 
-extern "C" void sub_42E4C0(void* self, int arg);
-extern "C" void sub_4321F0(void* self);
-extern "C" void sub_4309F0(void* self);
-extern "C" void sub_430F50(void* self, int arg);
+struct Obj42E4C0 { void f(int arg); };
+struct Obj4321F0 { void* f(); };
+struct Obj4309F0 { void f(); };
+struct Obj430F50 { void f(int arg); };
 
 int CIDEDocManager::create(int value)
 {
@@ -38,7 +38,7 @@ int CIDEDocManager::create(int value)
         void* hwnd = *(void**)((char*)field20 + 0x20);
         if (IsWindowVisible(hwnd) == 0)
         {
-            sub_42E4C0(field20, field4c);
+            ((Obj42E4C0*)field20)->f(field4c);
         }
         void* p = field20;
         return *(int*)((char*)p + 0x20) != 0;
@@ -48,8 +48,7 @@ int CIDEDocManager::create(int value)
     void* obj = 0;
     if (mem != 0)
     {
-        sub_4321F0(mem);
-        obj = mem;
+        obj = ((Obj4321F0*)mem)->f();
     }
 
     if (obj == 0)
@@ -67,17 +66,17 @@ int CIDEDocManager::create(int value)
 
     if (value != 0)
     {
-        sub_4309F0(obj);
+        ((Obj4309F0*)obj)->f();
     }
     else
     {
-        sub_430F50(obj, 0);
+        ((Obj430F50*)obj)->f(0);
     }
 
     void* hwnd = *(void**)((char*)obj + 0x20);
     DragAcceptFiles(hwnd, 1);
 
-    sub_42E4C0(obj, field4c);
+    ((Obj42E4C0*)obj)->f(field4c);
 
     if (field90 == 0 && field92 == 0)
     {

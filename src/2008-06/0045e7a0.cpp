@@ -1,4 +1,4 @@
-// from server: 97% by king_originala
+// from server: 98% by colin
 extern "C" {
     extern void* (__stdcall *GetParent)(void*);
     extern int (__stdcall *InvalidateRgn)(void*, void*, int);
@@ -32,12 +32,12 @@ struct S {
 S* __stdcall fromHandle(void*);
 
 struct Bounds {
-    unsigned char reserved0[0x1c];
+    unsigned char reserved0[0x28];
     int left;
     int top;
     int right;
     int bottom;
-    unsigned char reserved1[0x34];
+    unsigned char reserved1[0x28];
 
     Bounds(S*);
     ~Bounds();

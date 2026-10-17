@@ -1,4 +1,4 @@
-// from server: 35% by colin
+// from server: 36% by colin
 struct Vec3 { float x, y, z; };
 
 struct GCamera {
@@ -12,10 +12,9 @@ struct EnumPropDescriptor {
     char pad0[0x1dc];
     int field1dc;
     int field1e0;
-    char pad1e4[0xe0];
+    char pad1e4[0x44];
+    char field228[0x9c];
     float* field2c4;
-    char pad2c8[0x100];
-    char field228[0x100];
 
     bool doGetSetImpl(int arg1, int arg2);
 };
@@ -29,11 +28,11 @@ extern "C" {
     void __cdecl sub_59D8A0(void* self, void* a);
     void __cdecl sub_59DB90(void* self, void* a);
     void __cdecl sub_59B4F0(void* self);
-    float g_81c3b8;
-    float g_8288c0;
-    float g_826e60;
-    float g_819bac;
-    float g_82b3b0;
+    extern float g_81c3b8;
+    extern float g_8288c0;
+    extern float g_826e60;
+    extern float g_819bac;
+    extern float g_82b3b0;
 }
 
 bool EnumPropDescriptor::doGetSetImpl(int arg1, int arg2)
