@@ -1,5 +1,11 @@
-// from server: 46% by colin
+// from server: 48% by colin
 struct CRobloxControlColorSelector {
+    int field_0x0;
+    int field_0x4;
+    int field_0x8;
+    int field_0xc;
+    int field_0x10;
+    int field_0x14;
     int field_0x9c;
     int field_0xc0;
     int field_0xc4;
@@ -9,15 +15,14 @@ struct CRobloxControlColorSelector {
     int method_0x78();
     void* method_0x84();
     void* getSomething();
-    void drawItem(int, int, int, int, int, int, int, int, int, int, int, int, int, int);
-    void method_0x6a135e(int*, int);
-    void method_0x6a1358(int*, void*, void*);
+    void drawItem(int);
+    void _invalid_parameter_noinfo();
 };
 
 extern int g_96dd30;
 extern int g_96dd34;
 
-extern "C" void __stdcall _invalid_parameter_noinfo();
+
 extern "C" void __stdcall InflateRect(int*, int, int);
 extern "C" void* __stdcall mfc_2263();
 extern "C" void* __stdcall mfc_2470();
@@ -29,7 +34,7 @@ void __fastcall sub_6a1358(void* self, int* a, void* b, void* c);
 void* __fastcall sub_6dfd40();
 void* __fastcall sub_6df520(void* self, int n);
 
-void CRobloxControlColorSelector::drawItem(int a, int b, int c, int d, int e, int f, int g, int h, int i, int j, int k, int l, int m, int n)
+void CRobloxControlColorSelector::drawItem(int n)
 {
     int count = (g_96dd34 - g_96dd30) / 12;
     if (count <= 0)

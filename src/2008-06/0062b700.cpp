@@ -1,4 +1,4 @@
-// from server: 87% by colin
+// from server: 91% by colin
 #pragma float_control(precise, off)
 
 extern const float threshold;
@@ -71,7 +71,8 @@ void Explosion::update(int, int, float delta)
             World *world = getWorld(object);
             const float r = radius;
             Box box(x + r, y + r, z + r, x - r, y - r, z - r);
-            world->query->collect(box, 0, results);
+            Query *q = world->query;
+            q->collect(box, 0, results);
             object->first(results);
             object->second(results);
         }

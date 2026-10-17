@@ -1,4 +1,4 @@
-// from server: 88% by king_originala
+// from server: 89% by colin
 namespace RBX {
     struct Instance {
         virtual ~Instance();
@@ -46,7 +46,9 @@ void* S::f(RBX::Instance* object)
             if (!equal)
                 return 0;
         } else {
-            if (!(local && equal) && !enabled)
+            if (!local && !enabled)
+                return 0;
+            if (local && !equal && !enabled)
                 return 0;
         }
         return reinterpret_cast<char*>(provider) + 0x340;

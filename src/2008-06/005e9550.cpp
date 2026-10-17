@@ -1,4 +1,4 @@
-// from server: 89% by king_originala
+// from server: 90% by colin
 struct Vector3 { float x, y, z; };
 
 struct Item {
@@ -37,15 +37,15 @@ void Service::f(void*)
         Shape* shape = (Shape*)item->getBulletSphereShape();
         bool special;
 
-        if (!shape->kind ||
-            (shape->kind->value != 3 &&
-             shape->kind->value != 1 &&
-             shape->kind->value != 2)) {
-            special = false;
-        } else {
+        if (shape->kind &&
+            (shape->kind->value == 3 ||
+             shape->kind->value == 1 ||
+             shape->kind->value == 2)) {
             special = true;
             if (item != shape->link->item)
                 continue;
+        } else {
+            special = false;
         }
 
         item->getValue();

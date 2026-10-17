@@ -1,4 +1,4 @@
-// from server: 86% by king_originala
+// from server: 91% by colin
 struct Lock {
     void acquire();
     void release();
@@ -66,7 +66,7 @@ void* __cdecl lookup(const void* key) {
     Node* end = map->head;
     Proxy* expected = map->proxy;
 
-    if (!proxy || proxy != expected)
+    if (proxy && proxy != expected)
         _invalid_parameter_noinfo();
 
     Node* node = iterator.node;
@@ -76,7 +76,7 @@ void* __cdecl lookup(const void* key) {
         if (!proxy)
             _invalid_parameter_noinfo();
 
-        Map* owner = proxy ? proxy->owner : 0;
+        Map* owner = proxy->owner;
         if (node == owner->head)
             _invalid_parameter_noinfo();
 

@@ -1,6 +1,4 @@
-// from server: 76% by colin
-// roc-cl: 21022
-// roc-flags: /O2 /GS- /EHsc /MD /fp:fast
+// from server: 83% by colin
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
 
@@ -9,30 +7,7 @@ extern "C" void __cdecl releaseMemory(void*);
 struct Vector
 {
     float x, y, z;
-
-    Vector();
-    Vector(float, float, float);
-    Vector(const Vector&);
-    ~Vector();
 };
-
-inline Vector::Vector()
-{
-}
-
-inline Vector::Vector(float a, float b, float c)
-    : x(a), y(b), z(c)
-{
-}
-
-inline Vector::Vector(const Vector& v)
-    : x(v.x), y(v.y), z(v.z)
-{
-}
-
-inline Vector::~Vector()
-{
-}
 
 struct Control
 {
@@ -134,20 +109,23 @@ struct S
 Vector S::f(const Shared& input, Ray ray)
 {
     if (!context)
-        return Vector(defaultVector.x, defaultVector.y, defaultVector.z);
+        return defaultVector;
 
     Shared shared(input);
     Geometry* geometry = context->world->geometry;
-    Vector result(0.0f, 0.0f, 0.0f);
+    Vector result;
+    result.x = 0.0f;
+    result.y = 0.0f;
+    result.z = 0.0f;
     List list;
 
     if (!geometry->intersect(ray, list, shared, result, &intersectionOption))
     {
         const Ray& temporary = ray.transformed();
-        result = Vector(temporary.direction.x + ray.origin.x,
-                        temporary.direction.y + ray.origin.y,
-                        temporary.direction.z + ray.origin.z);
+        result.x = temporary.direction.x + ray.origin.x;
+        result.y = temporary.direction.y + ray.origin.y;
+        result.z = temporary.direction.z + ray.origin.z;
     }
 
-    return Vector(result.x, result.y, result.z);
+    return result;
 }
