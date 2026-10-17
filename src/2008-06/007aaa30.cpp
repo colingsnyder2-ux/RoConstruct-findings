@@ -1,9 +1,5 @@
-// from server: 50% by colin
+// from server: 51% by colin
 struct RenderScene {
-    void dtor();
-};
-
-struct Sub {
     void dtor();
 };
 
@@ -14,7 +10,7 @@ extern "C" void __cdecl sub_7AA980(void*);
 extern "C" int __stdcall InterlockedDecrement(int*);
 extern "C" void __cdecl sub_804CA4(void*);
 extern "C" void __cdecl sub_804E70(void*);
-extern "C" void __cdecl sub_8021AC(void*);
+extern "C" void* __stdcall sub_8021AC(void*);
 extern "C" void __cdecl sub_804484(void);
 
 void RenderScene::dtor()
@@ -24,24 +20,25 @@ void RenderScene::dtor()
     if (p != 0) {
         int* q = *(int**)((char*)p + 0x1d4);
         int* r = *(int**)q;
-        void (__thiscall *fn)(void*) = (void (__thiscall *)(void*))*(int*)((char*)r + 0xb4);
-        fn(q);
+        void* (__thiscall *fn)(void*) = (void* (__thiscall *)(void*))*(int*)((char*)r + 0xb4);
+        int* ret = (int*)fn(q);
         int* s = *(int**)((char*)this + 0x268);
-        int* t = *(int**)s;
-        void (__thiscall *fn2)(void*) = (void (__thiscall *)(void*))*(int*)((char*)t + 0xe0);
-        fn2(s);
+        int* t = *(int**)ret;
+        sub_804484();
+        void (__thiscall *fn2)(void*, void*) = (void (__thiscall *)(void*, void*))*(int*)((char*)t + 0xe0);
+        fn2(ret, 0);
         int* u = *(int**)((char*)this + 0x268);
         if (u != 0) {
             int* v = *(int**)u;
-            void (__thiscall *fn3)(void*) = (void (__thiscall *)(void*))*(int*)v;
-            fn3(u);
+            void (__thiscall *fn3)(void*, int) = (void (__thiscall *)(void*, int))*(int*)v;
+            fn3(u, 1);
         }
     }
     int* w = *(int**)((char*)this + 0x26c);
     if (w != 0) {
         int* x = *(int**)w;
-        void (__thiscall *fn4)(void*) = (void (__thiscall *)(void*))*(int*)x;
-        fn4(w);
+        void (__thiscall *fn4)(void*, int) = (void (__thiscall *)(void*, int))*(int*)x;
+        fn4(w, 1);
     }
     void* y = *(void**)((char*)this + 0x318);
     alignedFree(y);
@@ -56,8 +53,8 @@ void RenderScene::dtor()
             int* ab = *(int**)((char*)this + 0x30c);
             if (ab != 0) {
                 int* ac = *(int**)ab;
-                void (__thiscall *fn5)(void*) = (void (__thiscall *)(void*))*(int*)ac;
-                fn5(ab);
+                void (__thiscall *fn5)(void*, int) = (void (__thiscall *)(void*, int))*(int*)ac;
+                fn5(ab, 1);
             }
         }
         *(int*)((char*)this + 0x30c) = 0;
@@ -70,8 +67,8 @@ void RenderScene::dtor()
             int* af = *(int**)((char*)this + 0x308);
             if (af != 0) {
                 int* ag = *(int**)af;
-                void (__thiscall *fn6)(void*) = (void (__thiscall *)(void*))*(int*)ag;
-                fn6(af);
+                void (__thiscall *fn6)(void*, int) = (void (__thiscall *)(void*, int))*(int*)ag;
+                fn6(af, 1);
             }
         }
         *(int*)((char*)this + 0x308) = 0;
@@ -84,8 +81,8 @@ void RenderScene::dtor()
             int* aj = *(int**)((char*)this + 0x2f0);
             if (aj != 0) {
                 int* ak = *(int**)aj;
-                void (__thiscall *fn7)(void*) = (void (__thiscall *)(void*))*(int*)ak;
-                fn7(aj);
+                void (__thiscall *fn7)(void*, int) = (void (__thiscall *)(void*, int))*(int*)ak;
+                fn7(aj, 1);
             }
         }
         *(int*)((char*)this + 0x2f0) = 0;
@@ -98,8 +95,8 @@ void RenderScene::dtor()
             int* an = *(int**)((char*)this + 0x2d0);
             if (an != 0) {
                 int* ao = *(int**)an;
-                void (__thiscall *fn8)(void*) = (void (__thiscall *)(void*))*(int*)ao;
-                fn8(an);
+                void (__thiscall *fn8)(void*, int) = (void (__thiscall *)(void*, int))*(int*)ao;
+                fn8(an, 1);
             }
         }
         *(int*)((char*)this + 0x2d0) = 0;

@@ -1,6 +1,5 @@
-// from server: 70% by king_originala
-extern "C" int (__stdcall *GetLocaleInfoA)(
-    unsigned long, unsigned long, char*, int);
+// from server: 74% by colin
+extern "C" int __stdcall GetLocaleInfoA(unsigned long, unsigned long, char*, int);
 
 struct Base {
     char data[0x54];
@@ -37,6 +36,7 @@ struct S : Base {
 
 S::S()
 {
+    member_58.Member::Member();
     field_b4 = (void*)0x81aa5c;
     field_b8 = 0;
     field_c4 = 0;

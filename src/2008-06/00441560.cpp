@@ -1,18 +1,4 @@
-// from server: 48% by colin
-struct BrickColor {
-    int number;
-    BrickColor(int number);
-};
-
-struct BrickMap {
-    struct ColorInfo {
-        bool valid;
-        unsigned char r, g, b;
-    };
-    static BrickMap& singleton();
-    void* map;
-};
-
+// from server: 59% by colin
 struct Color3 {
     float r, g, b;
 };
@@ -29,19 +15,25 @@ struct BrickColorX {
     virtual Color3* getColor3(Color3* out);
     void setColor3(Color3* color);
     void construct(int number);
+    void sub_711AC0();
 };
 
-extern "C" void* __stdcall sub_803ED4();
+struct SomeObj {
+    void method();
+};
+
+extern "C" void* __stdcall sub_803ED4(void*);
 extern "C" void __stdcall sub_803F14(void*);
-extern "C" void __stdcall sub_711AC0();
+
 extern "C" void __stdcall sub_43F890();
 
 void BrickColorX::construct(int number)
 {
-    void* colors = sub_803ED4();
+    SomeObj obj;
+    sub_803ED4(&obj);
     sub_711AC0();
     Color3 c;
     Color3* p = getColor3(&c);
     setColor3(p);
-    sub_803F14(0);
+    sub_803F14(&obj);
 }
