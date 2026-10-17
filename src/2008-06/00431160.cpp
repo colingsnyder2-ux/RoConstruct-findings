@@ -1,4 +1,4 @@
-// from server: 98% by king_originala
+// from server: 100% by colin
 struct Float3
 {
     float r, g, b;
@@ -46,9 +46,8 @@ extern MainFrame mainFrame;
 
 void CDataModelPropGrid::func_431160(int, int)
 {
-    PackedColor initial = currentColor;
     Float3 floats;
-    RGB rgb(*initial.getColor(&floats));
+    RGB rgb(*PackedColor(currentColor).getColor(&floats));
 
     unsigned int color =
         ((static_cast<unsigned int>(rgb.b) << 8) | rgb.g) << 8 | rgb.r;

@@ -1,4 +1,4 @@
-// from server: 96% by colin
+// from server: 100% by colin
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
 extern "C" long __cdecl _InterlockedIncrement(volatile long*);
@@ -31,8 +31,8 @@ struct Shared {
     }
 
     ~Shared() {
-        Control* p = reference.pointer;
-        if (p) {
+        if (reference.pointer) {
+            Control* p = reference.pointer;
             if (_InterlockedDecrement(&p->strong) == 0) {
                 p->dispose();
                 if (_InterlockedDecrement(&p->weak) == 0)

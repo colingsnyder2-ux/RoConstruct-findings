@@ -1,4 +1,4 @@
-// from server: 95% by colin
+// from server: 100% by colin
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD /fp:fast
 struct PartInstance
@@ -23,7 +23,7 @@ struct FilterCharacterOcclusion
 int FilterCharacterOcclusion::filter(PartInstance* p)
 {
     PartInstance* part = GetSetImpl::get(p);
-    if ((unsigned char)part->canX() && !(threshold >= part->value))
+    if ((unsigned char)part->canX() && !(part->value > threshold))
         return 2;
     return 1;
 }

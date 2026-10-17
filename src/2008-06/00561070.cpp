@@ -1,4 +1,4 @@
-// from server: 98% by king_originala
+// from server: 100% by colin
 struct Element {
     unsigned char data[32];
 };
@@ -57,8 +57,10 @@ S& S::operator=(const S& other)
                     destroy(first, last);
                     release_storage(first);
                 }
-                if (allocate(other.last - other.first))
-                    last = construct(other.first, other.last, first);
+                if (allocate(other.last - other.first)) {
+                    Element* dest = first;
+                    last = construct(other.first, other.last, dest);
+                }
             }
         }
     }

@@ -1,6 +1,4 @@
-// from server: 66% by colin
-struct Iterator;
-
+// from server: 71% by colin
 struct Node {
     Node* left;
     Node* parent;
@@ -11,18 +9,17 @@ struct Node {
     unsigned char nil;
 };
 
+struct Iterator {
+    void* owner;
+    Node* node;
+};
+
 struct Tree {
     void* owner;
     unsigned char padding[20];
     Node* head;
     Iterator* lower(Iterator* result, const unsigned* key);
     void erase(Iterator* result, Iterator position);
-};
-
-struct Iterator {
-    void* owner;
-    Node* node;
-    void next();
 };
 
 struct S {
@@ -86,7 +83,7 @@ void S::f(unsigned value, unsigned key)
             break;
         }
 
-        current.next();
+        current.node = node->right;
         node = current.node;
         owner = current.owner;
     }

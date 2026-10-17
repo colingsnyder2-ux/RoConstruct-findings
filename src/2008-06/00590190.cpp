@@ -1,4 +1,4 @@
-// from server: 97% by colin
+// from server: 100% by colin
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD /fp:fast
 struct Vector {
@@ -64,8 +64,8 @@ struct S {
 Vector S::f()
 {
     const float zero = 0.0f;
-    float savedY = maximum(zero, value.y);
-    value.y = savedY;
+    value.y = maximum(zero, value.y);
+    float savedY = value.y;
 
     Box storage;
     const Box* box = bounds(&storage);

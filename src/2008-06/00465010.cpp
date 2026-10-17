@@ -1,4 +1,4 @@
-// from server: 99% by king_originala
+// from server: 100% by colin
 extern unsigned long table0;
 extern unsigned long tableEC;
 extern unsigned long tableF0;
@@ -70,6 +70,6 @@ S::S()
     field154 = 0;
     field155 = 0;
     field156 = 0;
-    field15c = 0;
     field158 = (unsigned long)&table158;
+    field15c = 0;
 }

@@ -1,4 +1,4 @@
-// from server: 97% by king_originala
+// from server: 99% by colin
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
 extern "C" long __cdecl _InterlockedDecrement(volatile long*);
@@ -27,7 +27,10 @@ inline Shared::Shared(const Shared& other)
     : object(other.object), counter(other.counter)
 {
     if (counter)
-        _InterlockedExchangeAdd(&counter->strong, 1);
+    {
+        volatile long* strong = &counter->strong;
+        _InterlockedExchangeAdd(strong, 1);
+    }
 }
 
 inline Shared::~Shared()

@@ -1,4 +1,4 @@
-// from server: 17% by colin
+// from server: 21% by colin
 extern "C" void __stdcall _invalid_parameter_noinfo();
 
 struct Inner {
@@ -16,7 +16,6 @@ struct S {
     void* b2;
     void* e2;
     void* c2;
-    char pad2[0x134 - 0x134 + 4];
     Inner* inner;
     void* other;
     int __cdecl f(void** arg);

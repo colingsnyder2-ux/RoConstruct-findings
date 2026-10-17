@@ -1,8 +1,8 @@
-// from server: 80% by king_originala
+// from server: 81% by colin
 struct String;
 
-extern void (__thiscall *copyString)(String*, const String&);
-extern void (__thiscall *destroyString)(String*);
+extern void __stdcall copyString(String*, const String*);
+extern void __stdcall destroyString(String*);
 
 struct String {
     unsigned char storage[28];
@@ -12,7 +12,7 @@ struct String {
 
 inline String::String(const String& other)
 {
-    copyString(this, other);
+    copyString(this, &other);
 }
 
 inline String::~String()

@@ -1,4 +1,4 @@
-// from server: 82% by king_originala
+// from server: 83% by colin
 struct Short2
 {
     short x, y;
@@ -38,10 +38,9 @@ void DxUserInput::f(float* x, float* y)
     case 0:
         if (keyMode() || flag)
         {
-            const Short2& p = getPosition();
-            float coordinates[2] = { float(p.x), float(p.y) };
-            absolutePosition(x, y, position,
-                *reinterpret_cast<const Vec2*>(coordinates));
+            Short2 p = getPosition();
+            Vec2 v(p);
+            absolutePosition(x, y, position, v);
         }
         else if (specialMode())
         {

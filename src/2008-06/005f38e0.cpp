@@ -1,22 +1,21 @@
-// from server: 73% by colin
+// from server: 77% by colin
 struct Buffer {
     int pubsync();
 };
 
 struct Stream {
-    unsigned char padding[8];
     int* offsets;
 };
 
 struct S {
-    Stream** stream;
+    Stream* stream;
     unsigned int flags;
     ~S();
 };
 
 S::~S()
 {
-    Stream* p = *stream;
+    Stream* p = stream;
     unsigned int state = flags;
     try {
         if (state & 2)

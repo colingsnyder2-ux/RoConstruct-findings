@@ -1,4 +1,4 @@
-// from server: 94% by king_originala
+// from server: 96% by colin
 #pragma float_control(precise, off)
 extern "C" double __cdecl sqrt(double);
 #pragma intrinsic(sqrt)
@@ -37,6 +37,8 @@ struct S
     Vector velocity;
     float amount;
     float factor;
+    float extra0;
+    float extra1;
 
     float first();
     Rotation getRotation(float);
@@ -76,8 +78,8 @@ void S::update(float dt, float)
                                 + vel.z * vel.z;
             float s = scale;
             vel.x *= s;
-            vel.y = (float)sqrt(lengthSquared) * s;
-            vel.z *= s;
+            extra0 = (float)sqrt(lengthSquared) * s;
+            extra1 = extra1 * s;
         }
     }
 }

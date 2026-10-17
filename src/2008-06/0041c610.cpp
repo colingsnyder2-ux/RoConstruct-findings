@@ -1,10 +1,10 @@
-// from server: 98% by colin
+// from server: 99% by colin
 namespace std {
     class bad_cast {
         const char* message;
         int owned;
     public:
-        explicit bad_cast(const char*);
+        __declspec(dllimport) explicit bad_cast(const char*);
         virtual ~bad_cast();
     };
 }

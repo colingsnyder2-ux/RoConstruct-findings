@@ -1,4 +1,4 @@
-// from server: 96% by king_originala
+// from server: 100% by colin
 namespace std {
 template<class T> struct char_traits {};
 template<class T> struct allocator {};
@@ -7,8 +7,8 @@ template<class C, class Traits = char_traits<C>,
          class Alloc = allocator<C> >
 struct basic_string {
     char storage[28];
-    ~basic_string();
-    const C* c_str() const;
+    __declspec(dllimport) ~basic_string();
+    __declspec(dllimport) const C* c_str() const;
 };
 }
 
