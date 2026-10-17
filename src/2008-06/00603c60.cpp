@@ -1,4 +1,4 @@
-// from server: 37% by colin
+// from server: 40% by colin
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
 
@@ -25,6 +25,11 @@ struct Product164 {
     Product164(void*, void*, void*);
 };
 
+struct SharedPtr {
+    void* ptr;
+    void* ref;
+};
+
 struct UnifiedImageWidget {
     char pad0[4];
     void* field4;
@@ -37,10 +42,9 @@ struct UnifiedImageWidget {
 
 extern "C" void* __cdecl getVector3();
 extern "C" void __cdecl func601db0(void*);
-extern "C" void* __cdecl func602650(void*, void*, int, int);
-extern "C" void* __cdecl func6026e0(void*, float, float);
+extern "C" void* __cdecl func602650(SharedPtr*, void*, int, int);
+extern "C" void* __cdecl func6026e0(SharedPtr*, float, float);
 extern "C" void __cdecl func600f10(void*);
-extern "C" void __cdecl func7baf10();
 
 extern "C" void* __stdcall func802458();
 extern "C" void* __stdcall func802468();
@@ -76,10 +80,10 @@ void __thiscall UnifiedImageWidget::construct(const std_string& name, int state,
 
     destroyString(&str);
 
-    void* self = *(void**)this;
-    void* r1 = func602650(&str, self, arg3, 1);
-    void* p1 = *(void**)r1;
-    void* p1b = *(void**)((char*)r1 + 4);
+    SharedPtr r1;
+    func602650(&r1, *(void**)this, arg3, 1);
+    void* p1 = r1.ptr;
+    void* p1b = r1.ref;
     if (p1b) {
         _InterlockedExchangeAdd((volatile long*)((char*)p1b + 4), 1);
     }
@@ -97,9 +101,10 @@ void __thiscall UnifiedImageWidget::construct(const std_string& name, int state,
     }
 
     float g = g_81ccbc;
-    void* r2 = func6026e0(&str, g, g);
-    void* p2 = *(void**)r2;
-    void* p2b = *(void**)((char*)r2 + 4);
+    SharedPtr r2;
+    func6026e0(&r2, g, g);
+    void* p2 = r2.ptr;
+    void* p2b = r2.ref;
     if (p2b) {
         _InterlockedExchangeAdd((volatile long*)((char*)p2b + 4), 1);
     }
@@ -116,10 +121,10 @@ void __thiscall UnifiedImageWidget::construct(const std_string& name, int state,
         }
     }
 
-    void* self2 = *(void**)this;
-    void* r3 = func602650(&str, self2, arg3, 2);
-    void* p3 = *(void**)r3;
-    void* p3b = *(void**)((char*)r3 + 4);
+    SharedPtr r3;
+    func602650(&r3, *(void**)this, arg3, 2);
+    void* p3 = r3.ptr;
+    void* p3b = r3.ref;
     if (p3b) {
         _InterlockedExchangeAdd((volatile long*)((char*)p3b + 4), 1);
     }

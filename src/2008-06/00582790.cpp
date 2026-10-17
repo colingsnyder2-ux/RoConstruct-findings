@@ -1,4 +1,4 @@
-// from server: 52% by king_originala
+// from server: 56% by colin
 struct Context {
     void prepare();
 };
@@ -15,11 +15,13 @@ struct S {
     char padding[0x0C];
     Context* context;
     Resolver resolver;
-    void f(int);
+    void f();
 };
 
-void S::f(int)
+void S::f()
 {
-    context->prepare();
-    resolver.get(1)->setState(2);
+    Context* c = context;
+    c->prepare();
+    Result* r = resolver.get(1);
+    r->setState(2);
 }
