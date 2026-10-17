@@ -1,4 +1,4 @@
-// from server: 67% by king_originala
+// from server: 68% by colin
 struct Subject {
     void changed();
     void assign();
@@ -45,7 +45,7 @@ struct S {
 
 void S::f()
 {
-    if (func_0049ac80(this) != this)
+    if (this != func_0049ac80(this))
         return;
 
     RBX::ServiceProvider* provider =

@@ -1,80 +1,91 @@
-// from server: 89% by king_originala
-extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
-#pragma intrinsic(_InterlockedExchangeAdd)
+// from server: 100% by 2gx
+/* 2gx, 2026 */
 
-struct State;
+typedef unsigned int u32;
+typedef unsigned short u16;
 
-struct Global {
-    char padding[0x70];
-    State* mainState;
+extern "C" void __cdecl lua_reset_a(void*, void*);
+extern "C" void __cdecl lua_reset_b(void*, int);
+extern "C" int __cdecl lua_retry(void*, void*, int);
+extern "C" void __cdecl lua_callback();
+
+struct LuaState {
+    unsigned char pad00[0x08];
+    u32 field08;
+    u32 field0C;
+    u32 field10;
+    u32 field14;
+    unsigned char pad18[0x08];
+    void* field20;
+    unsigned char pad24[0x04];
+    u32* field28;
+    unsigned char pad2C[0x08];
+    u16 field34;
+    unsigned char pad36[0x3E];
+    u32 field74;
 };
 
-struct CallInfo {
-    void* base;
+struct LuaOwner {
+    unsigned char pad00[0x10];
+    void* state;
 };
 
-struct State {
-    char padding0[8];
-    void* top;
-    void* base;
-    Global* global;
-    CallInfo* current;
-    char padding1[8];
-    void* stack;
-    char padding2[4];
-    CallInfo* initial;
-    char padding3[8];
-    unsigned short calls;
-    char padding4[0x3e];
-    int status;
-};
+extern "C" long __cdecl _InterlockedDecrement(volatile long*);
 
-struct Control {
-    virtual void unused();
+struct RefControl {
+    virtual void reserved();
     virtual void dispose();
     virtual void destroy();
     volatile long strong;
     volatile long weak;
-};
-
-struct Prefix {
-    int* count;
-    Control* control;
-    void* reserved;
-};
-
-extern void __cdecl closeObjects(State*, void*);
-extern void __cdecl collectObjects(State*, int);
-extern void __cdecl protectedCallback(State*, void*);
-extern int __cdecl protectedCall(State*, void (__cdecl *)(State*, void*), void*);
-extern void __fastcall closeState(State*);
-
-void __cdecl close(State* input)
-{
-    State* state = input->global->mainState;
-    closeObjects(state, state->stack);
-    collectObjects(state, 1);
-    state->status = 0;
-
-    do {
-        state->current = state->initial;
-        state->base = state->top = state->current->base;
-        state->calls = 0;
-    } while (protectedCall(state, protectedCallback, 0));
-
-    Prefix* prefix = reinterpret_cast<Prefix*>(state) - 1;
-    --*prefix->count;
-
-    Control* control = prefix->control;
-    if (control) {
-        volatile long* strong = &control->strong;
-        if (!_InterlockedExchangeAdd(strong, -1)) {
-            control->dispose();
-            volatile long* weak = &control->weak;
-            if (!_InterlockedExchangeAdd(weak, -1))
-                control->destroy();
+    void release() {
+        if (_InterlockedDecrement(&strong) == 0) {
+            dispose();
+            if (_InterlockedDecrement(&weak) == 0)
+                destroy();
         }
     }
+};
 
-    closeState(state);
+extern "C" void __cdecl finish_step_a(LuaState*, void*);
+extern "C" void __cdecl finish_step_b(LuaState*);
+extern "C" void __cdecl finish_step_c(LuaState*, void*, u32, void*);
+extern "C" void* __cdecl finish_realloc(LuaState*, void*, u32, void*);
+struct LuaGlobal {
+    void* data00;
+    u32 field04;
+    u32 count08;
+    void* (__cdecl *frealloc)(void*, void*, u32, u32);
+    void* ud;
+    unsigned char pad14[0x20];
+    void* data34;
+    unsigned char pad38[0x04];
+    u32 size3c;
+};
+
+static __declspec(noinline) void __cdecl lua_finish(LuaState* state) {
+    finish_step_a(state, state->field20);
+    
+}
+
+
+void __cdecl func_00623e30(LuaOwner* owner) {
+    unsigned char* raw = static_cast<unsigned char*>(owner->state);
+    LuaState* state = *reinterpret_cast<LuaState**>(raw + 0x70);
+    lua_reset_a(state, state->field20);
+    lua_reset_b(state, 1);
+    state->field74 = 0;
+    do {
+        u32* current = state->field28;
+        state->field14 = reinterpret_cast<u32>(current);
+        state->field08 = *current;
+        state->field0C = state->field08;
+        state->field34 = 0;
+    } while (lua_retry(state, reinterpret_cast<void*>(&lua_callback), 0) != 0);
+    --**reinterpret_cast<u32**>(reinterpret_cast<unsigned char*>(state) - 0x0C);
+    RefControl* control = *reinterpret_cast<RefControl**>(
+        reinterpret_cast<unsigned char*>(state) - 0x08);
+    if (control)
+        control->release();
+    lua_finish(state);
 }

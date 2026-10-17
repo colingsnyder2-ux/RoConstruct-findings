@@ -1,8 +1,8 @@
-// from server: 61% by king_originala
+// from server: 65% by colin
 struct Container;
 struct Node;
 
-extern "C" void (__cdecl* _invalid_parameter_noinfo)();
+extern "C" void __cdecl _invalid_parameter_noinfo();
 
 struct Proxy {
     Container* owner;

@@ -1,4 +1,4 @@
-// from server: 71% by king_originala
+// from server: 78% by colin
 struct Listener {
     char padding[12];
     int active;
@@ -23,13 +23,14 @@ SoundService* __cdecl findService(SoundService*);
 
 void SoundService::update()
 {
+    Listener* self = &listener;
     if (enabled && (flags & 1) && listener.active) {
         SoundService* service = findService(this);
         if (service)
-            service->listener.attach(&listener);
+            service->listener.attach(self);
     } else {
         SoundService* service = findService(this);
         if (service)
-            service->listener.detach(&listener);
+            service->listener.detach(self);
     }
 }

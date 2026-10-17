@@ -1,9 +1,9 @@
-// from server: 73% by king_originala
+// from server: 78% by colin
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
 
-extern "C" int (__stdcall *ReleaseCapture)();
-extern "C" long (__stdcall *SendMessageA)(void*, unsigned int, unsigned int, long);
+extern "C" int __stdcall ReleaseCapture();
+extern "C" long __stdcall SendMessageA(void*, unsigned int, unsigned int, long);
 
 struct Control {
     unsigned int reserved;

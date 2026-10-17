@@ -1,4 +1,4 @@
-// from server: 41% by colin
+// from server: 67% by colin
 struct Arg {
     char pad[0x14];
 };
@@ -25,17 +25,24 @@ struct Vtbl {
     void (__stdcall *fn)(void*, Arg*, void*);
 };
 
-extern "C" void __stdcall sub_576f00(void*, void*);
-extern "C" void __stdcall sub_5773c0(void*);
+void* __cdecl operator new(unsigned int);
+
+struct Ref {
+    void* value;
+    Ref& operator=(const Ref&);
+    ~Ref();
+};
 
 void Outer::method(Arg* a, void* b)
 {
-    void* tmp = 0;
-    void* tmp2 = 0;
-    sub_576f00(&tmp, p128->p198);
+    Ref tmp;
+    tmp.value = 0;
+    void* p = p128->p198;
+    tmp = *(Ref*)&p;
     Arg* arg = a ? (Arg*)((char*)a + 0x14) : 0;
     Inner* inner = p12c;
-    Vtbl* vt = *(Vtbl**)inner->p18;
-    vt->fn(inner->p18, arg, b);
-    sub_5773c0(&tmp);
+    void* obj = inner->p18;
+    Vtbl* vt = *(Vtbl**)obj;
+    vt->fn(obj, arg, b);
+    tmp.~Ref();
 }
