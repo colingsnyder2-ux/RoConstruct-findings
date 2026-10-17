@@ -1,42 +1,47 @@
-// from server: 45% by colin
-struct LocalBackpackItem {
-    char pad[0x168];
-    int field_168;
-    int field_16c;
-    char pad2[0x178 - 0x170];
-    int field_178;
-    int field_17c;
-    char pad3[0x188 - 0x180];
-    int field_188;
-
-    void func_005fc150();
+// from server: 53% by colin
+struct Vector
+{
+    void remove(void*);
 };
 
-extern void func_0055afd0();
-extern void func_005e5a80();
-extern void func_00456e80();
-
-void LocalBackpackItem::func_005fc150()
+struct Object
 {
-    func_0055afd0();
-    if (field_188 != 0) {
-        int* p = &field_188;
-        int v = *p;
-        if (v != 0) {
-            func_005e5a80();
-        }
-        v = *p;
-        if (v != 0) {
-            func_005e5a80();
-        }
-        v = *p;
-        if (v != 0) {
-            func_005e5a80();
-        }
-        v = *p;
-        if (v != 0) {
-            func_005e5a80();
-        }
-        func_00456e80();
+    char pad0[0x24];
+    Vector v24;
+    char pad1[0x1c];
+    Vector v44;
+    char pad2[0xc8];
+    Vector v130;
+    char pad3[0x1c];
+    Vector v150;
+};
+
+struct LocalBackpackItem
+{
+    char pad0[0x168];
+    Vector v168;
+    Vector v16c;
+    char pad1[0x8];
+    Vector v178;
+    Vector v17c;
+    char pad2[0x8];
+    Object* obj188;
+
+    void f();
+};
+
+extern "C" void __cdecl sub_55afd0(LocalBackpackItem*);
+extern "C" void __cdecl sub_456e80(Object**);
+
+void LocalBackpackItem::f()
+{
+    sub_55afd0(this);
+    if (obj188 != 0)
+    {
+        obj188->v24.remove(&v168);
+        obj188->v44.remove(&v16c);
+        obj188->v130.remove(&v178);
+        obj188->v150.remove(&v17c);
+        sub_456e80(&obj188);
     }
 }

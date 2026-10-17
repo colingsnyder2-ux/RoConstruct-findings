@@ -1,4 +1,4 @@
-// from server: 99% by colin
+// from server: 100% by colin
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD
 #include <typeinfo>
@@ -10,12 +10,10 @@ namespace RBX {
             virtual ~DescribedBase();
         };
     }
-
-    namespace Network {
-        class Server : public Reflection::DescribedBase {
-        };
-    }
 }
+
+class DHTMLWindow : public RBX::Reflection::DescribedBase {
+};
 
 struct Content {
     virtual ~Content();
@@ -75,8 +73,8 @@ void BoundFuncDesc::invoke(RBX::Reflection::DescribedBase* source,
     Value b(second);
     arguments->assign(2, &b);
 
-    RBX::Network::Server* server =
-        dynamic_cast<RBX::Network::Server*>(source);
+    DHTMLWindow* server =
+        dynamic_cast<DHTMLWindow*>(source);
 
     if (!server)
         throw std::bad_cast("bad cast");

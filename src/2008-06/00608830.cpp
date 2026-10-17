@@ -1,4 +1,4 @@
-// from server: 69% by colin
+// from server: 70% by colin
 struct Extents {
     float lowX;
     float lowY;
@@ -44,5 +44,5 @@ bool BlockBlockContact::stepContact() {
         this->overlapIgnored = g_float_82d030;
     }
     this->generateDataForMovingAssemblyStage();
-    return this->overlapIgnored >= 0.0f;
+    return this->overlapIgnored < 0.0f;
 }

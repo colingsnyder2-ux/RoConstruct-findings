@@ -1,41 +1,39 @@
-// from server: 63% by colin
+// from server: 72% by colin
 struct String {
     unsigned char data[28];
     String();
     ~String();
 };
 
-struct Name;
-
-extern const Name& __cdecl getLocalScope();
-
-struct GetSet {
-    virtual void slot0();
-    virtual void slot1();
-    virtual void slot2();
-    virtual void setValue(const Name&, void*);
-};
-
-struct PropertyDescriptor {
-    void* m_value;
-    void* m_getter;
-    void* m_setter;
-    unsigned m_attributes;
-    unsigned m_seenAttributes;
-};
-
-struct TypedPropertyDescriptor : PropertyDescriptor {
-    GetSet* getset;
-    bool setDescriptor(const Name& name, void* value);
-};
-
-bool TypedPropertyDescriptor::setDescriptor(const Name& name, void* value) {
+struct Name {
     String s;
-    if (&getLocalScope() == &name) {
-        s.~String();
-        return false;
+};
+
+struct TypedPropertyDescriptor {
+    char pad[0x18];
+    void* field18;
+    bool setValue(const Name& name, const String& value);
+};
+
+extern "C" void __stdcall String_ctor(String*);
+extern "C" void __stdcall String_dtor(String*);
+extern const Name& __cdecl getLocalScope();
+extern bool __cdecl compareName(const Name&, const Name&);
+
+bool TypedPropertyDescriptor::setValue(const Name& name, const String& value) {
+    String local;
+    String_ctor(&local);
+    const Name& scope = getLocalScope();
+    bool result = compareName(scope, name);
+    if (result) {
+        void* obj = field18;
+        void** vtable = *(void***)obj;
+        typedef void (__thiscall *SetFn)(void*, const String&);
+        SetFn fn = (SetFn)vtable[3];
+        fn(obj, value);
+        String_dtor(&local);
+        return true;
     }
-    getset->setValue(name, value);
-    s.~String();
-    return true;
+    String_dtor(&local);
+    return false;
 }

@@ -1,4 +1,4 @@
-// from server: 76% by colin
+// from server: 79% by colin
 extern int G_942df8;
 extern char G_96d4b8;
 
@@ -10,10 +10,10 @@ void __stdcall f_449120(int a)
     int v1 = 1000;
     int* p;
     if (a > 1) {
-        if (a >= 1000) {
-            p = &v1;
-        } else {
+        if (a < 1000) {
             p = &a;
+        } else {
+            p = &v1;
         }
     } else {
         p = &v0;

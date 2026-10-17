@@ -1,6 +1,6 @@
-// from server: 92% by colin
-// roc-cl: 50727
-// roc-flags: /O2 /GS- /EHsc /MD
+// from server: 100% by colin
+
+
 struct BitStream {
     int bitsUsed;
     int bitsAllocated;
@@ -42,10 +42,13 @@ struct S {
 
 S::~S()
 {
-    if (((stream.bitsUsed + 7) >> 3) > 0) {
+    int bytes = (stream.bitsUsed + 7) >> 3;
+    if (bytes > 0) {
         Prepare(&stream, 0);
-        peer->table->Send(peer, &stream, 2, 3, 0,
-                          owner->address, owner->port, 0);
+        Peer* p = peer;
+        Owner* o = owner;
+        p->table->Send(p, &stream, 2, 3, 0,
+                       o->address, o->port, 0);
     }
     stream.Reset();
 }

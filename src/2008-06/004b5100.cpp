@@ -1,4 +1,4 @@
-// from server: 94% by king_originala
+// from server: 96% by colin
 typedef unsigned int size_t;
 
 inline void* operator new(size_t, void* p) { return p; }
@@ -40,7 +40,11 @@ S* S::construct(void* argument)
     data[86] = 0;
 
     if (!reinterpret_cast<bool (__cdecl*)(Pair*)>(func_0060a2f0)(&value)) {
-        new (data + 88) Pair(value);
+        Pair* p = new (data + 88) Pair(value);
+        if (p) {
+            p->function = value.function;
+            p->argument = value.argument;
+        }
         data[86] = 0x824a2c;
     } else {
         data[86] = 0;

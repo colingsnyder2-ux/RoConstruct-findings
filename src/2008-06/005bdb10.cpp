@@ -1,4 +1,4 @@
-// from server: 48% by colin
+// from server: 57% by colin
 extern "C" void* __stdcall sub_802458();
 
 struct String {
@@ -32,17 +32,12 @@ void Obj::target()
 {
     void* p = this->field154;
     void* q = *(void**)((char*)p + 4);
-    this->method_4b0d80(q);
-
     Inner* in = &this->inner;
-    void* a = in->field18;
-    *(void**)((char*)a + 4) = a;
-    void* b = in->field18;
+    in->field0 = in;
+    in->field4 = in;
+    in->field8 = in;
     in->field1C = 0;
-    *(void**)b = b;
-    void* c = in->field18;
-    *(void**)((char*)c + 8) = c;
-
+    this->method_4b0d80(q);
     this->method_55afd0();
 
     {

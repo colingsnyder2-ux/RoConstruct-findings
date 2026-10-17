@@ -1,9 +1,8 @@
-// from server: 71% by king_originala
-extern "C" unsigned long (__stdcall *GetCurrentThreadId)();
-extern "C" void (__cdecl *_invalid_parameter_noinfo)();
+// from server: 73% by colin
+extern "C" unsigned long __stdcall GetCurrentThreadId();
+extern "C" void __cdecl _invalid_parameter_noinfo();
 
 void* __cdecl operator new(unsigned int);
-void __cdecl operator delete(void*);
 
 struct Object {
     unsigned char reserved[36];
@@ -60,17 +59,17 @@ struct Guard {
     ~Guard();
 };
 
-inline Guard::Guard(Lock* p) : lock(p) {
+Guard::Guard(Lock* p) : lock(p) {
     lock->acquire();
     active = 1;
 }
 
-inline Guard::~Guard() {
+Guard::~Guard() {
     if (active)
         lock->release();
 }
 
-inline Object*& Iterator::dereference() const {
+Object*& Iterator::dereference() const {
     if (!owner)
         _invalid_parameter_noinfo();
 

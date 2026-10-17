@@ -1,98 +1,48 @@
-// from server: 55% by colin
+// from server: 61% by colin
+struct Node;
+
+struct Sender
+{
+    char pad[8];
+    double value;
+    bool compare(Node* a, Node* b, Node* c);
+};
+
 struct Node
 {
     char pad0[8];
     double value;
+    char pad1[0x58];
+    Node* next;
 };
 
-struct Container
+extern "C" Node* __cdecl sub_4C6710(Node** p);
+extern "C" Node* __cdecl sub_4C66C0(Node** p);
+
+bool Sender::compare(Node* a, Node* b, Node* c)
 {
-    char pad0[4];
-    Node *first;
-};
+    Node* self = (Node*)((char*)this - 0xc);
+    Node* first = self->next;
+    Node* firstNode = first ? (Node*)((char*)first - 0x60) : 0;
 
-struct Base
-{
-    char pad0[4];
-    Container *container;
-};
-
-struct Holder
-{
-    char pad0[0x60];
-    Node node;
-};
-
-struct Sender
-{
-    char pad0[0xc];
-    Base base;
-
-    bool check(Node *node, double value, Node *other);
-};
-
-extern "C" Node *__cdecl find_lower(Node **slot);
-extern "C" Node *__cdecl find_upper(Node **slot);
-
-bool Sender::check(Node *node, double value, Node *other)
-{
-    Base *self = &this->base;
-    Container *c = self->container;
-    Node *current = c->first;
-
-    if (node != current)
+    if (c != firstNode)
     {
-        Node *slot;
-        if (node)
-        {
-            slot = &((Holder *)node)->node;
-        }
-        else
-        {
-            slot = 0;
-        }
-        Node *found = find_lower(&slot);
-        Node *result;
-        if (found)
-        {
-            result = (Node *)((char *)found - 0x60);
-        }
-        else
-        {
-            result = 0;
-        }
-        if (!(result->value < value))
-        {
+        Node* tmp = c ? (Node*)((char*)c + 0x60) : 0;
+        Node* r = sub_4C6710(&tmp);
+        Node* rn = r ? (Node*)((char*)r - 0x60) : 0;
+        if (rn->value == a->value)
             return false;
-        }
     }
 
-    Node *slot2;
-    if (node)
-    {
-        slot2 = &((Holder *)node)->node;
-    }
-    else
-    {
-        slot2 = 0;
-    }
-    Node *found2 = find_upper(&slot2);
-    Node *result2;
-    if (found2)
-    {
-        result2 = (Node *)((char *)found2 - 0x60);
-    }
-    else
-    {
-        result2 = 0;
-    }
+    Node* tmp2 = c ? (Node*)((char*)c + 0x60) : 0;
+    Node* r2 = sub_4C66C0(&tmp2);
+    Node* rn2 = r2 ? (Node*)((char*)r2 - 0x60) : 0;
 
-    if (result2 != self->container->first)
+    Node* self2 = (Node*)((char*)this - 0xc);
+    if (rn2 != self2->next)
     {
-        if (!(value < result2->value))
-        {
+        if (a->value == rn2->value)
             return false;
-        }
     }
 
     return true;

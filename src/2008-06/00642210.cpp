@@ -1,6 +1,6 @@
-// from server: 85% by colin
-// roc-cl: 50727
-// roc-flags: /O2 /GS- /EHsc /MD
+// from server: 100% by colin
+
+
 enum EventType {
     EventNone = 0,
     EventFirst = 1,
@@ -45,9 +45,12 @@ Result Widget::handle(Event* event)
         reinterpret_cast<char*>(this) - 0x130);
 
     if (base->table->enabled(base)) {
-        EventType type = event->type;
-        if (type >= EventFirst && type <= EventLast)
-            return base->process(event);
+        int type = (int)event->type;
+        if (type < 1)
+            return Result();
+        if (type > 7)
+            return Result();
+        return base->process(event);
     }
 
     return Result();
