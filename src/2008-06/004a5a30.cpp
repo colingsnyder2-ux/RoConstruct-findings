@@ -1,4 +1,4 @@
-// from server: 72% by king_originala
+// from server: 100% by colin
 struct Object;
 struct Input;
 
@@ -31,6 +31,8 @@ struct Sink {
 void __cdecl process(Input* input, Sink* sink)
 {
     Object* object = input->object;
-    input = object->table->slots[12](object, input->value);
-    sink->write(&input, object->context->count + 1, true);
+    int value = input->value;
+    Input* result = object->table->slots[12](object, value);
+    int count = object->context->count + 1;
+    sink->write(&result, count, true);
 }

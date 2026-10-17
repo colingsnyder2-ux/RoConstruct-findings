@@ -1,4 +1,4 @@
-// from server: 66% by colin
+// from server: 71% by colin
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
 
@@ -32,9 +32,9 @@ struct BodyGyro {
 void BodyGyro::method(void* arg1, void* arg2)
 {
     void* local;
-    outer.inner.getSomething(&local);
+    void** result = (void**)outer.inner.getSomething(&local);
     void* obj = local;
-    void* field = *(void**)((char*)obj + 0x2c8);
+    void* field = *(void**)(*(char**)result + 0x2c8);
 
     if (obj != 0) {
         RefCounted* rc = (RefCounted*)obj;

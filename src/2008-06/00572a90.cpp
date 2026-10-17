@@ -1,4 +1,4 @@
-// from server: 80% by king_originala
+// from server: 82% by colin
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
 
@@ -62,9 +62,9 @@ Value* S::func_00572a90(Value* result, int key)
 
     Proxy* proxy = position.proxy;
     Node* head = container->head;
-    container = reinterpret_cast<Tree*>(container->proxy);
+    Proxy* root = container->proxy;
 
-    if (!proxy || proxy != reinterpret_cast<Proxy*>(container))
+    if (!proxy || proxy != root)
         _invalid_parameter_noinfo();
 
     Node* node = position.node;
@@ -78,7 +78,8 @@ Value* S::func_00572a90(Value* result, int key)
         if (node == reinterpret_cast<Tree*>(proxy)->head)
             _invalid_parameter_noinfo();
 
-        *result = node->value;
+        result->object = node->value.object;
+        result->control = node->value.control;
         if (result->control)
             _InterlockedExchangeAdd(&result->control->references, 1);
     }

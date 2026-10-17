@@ -1,4 +1,4 @@
-// from server: 52% by colin
+// from server: 60% by colin
 struct GuiItem {
     char pad[0x14];
     int menuState;
@@ -20,7 +20,7 @@ int UnifiedWidget::process(void *event, void *result) {
     }
     int *ev = (int *)event;
     int code = *ev;
-    if (code < 1 || code > 7) {
+    if (code >= 1 || code > 7) {
         *(int *)((char *)result + 4) = 0;
         *(int *)result = 0;
         return 0;

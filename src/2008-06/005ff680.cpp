@@ -1,4 +1,4 @@
-// from server: 62% by colin
+// from server: 92% by colin
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
 
@@ -30,10 +30,10 @@ inline Count::~Count()
     Control* p = control;
     if (p)
     {
-        if (_InterlockedExchangeAdd(&p->useCount, -1) == 0)
+        if (_InterlockedExchangeAdd(&p->useCount, -1) == 1)
         {
             p->dispose();
-            if (_InterlockedExchangeAdd(&p->weakCount, -1) == 0)
+            if (_InterlockedExchangeAdd(&p->weakCount, -1) == 1)
                 p->destroy();
         }
     }

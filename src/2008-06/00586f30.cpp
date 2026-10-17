@@ -1,30 +1,35 @@
-// from server: 41% by colin
-// roc-cl: 21022
-// roc-flags: /Od /Ob0 /GS /EHsc /MD
-struct LocalScript {
-    char pad[0x130];
-    void* field130;
-    void setEmbeddedCode(const void* value);
+// from server: 43% by colin
+// roc 2008-06 00586f30  unit: RBX::LocalScript  size: 144 bytes
+
+extern "C" {
+    int __stdcall sub_8023D8(const char*, const char*);
+    void* __stdcall sub_80245C();
+    void* __stdcall sub_6A0920(unsigned int);
+}
+
+struct String {
+    char buf[0x1c];
+    String(const String&);
 };
 
-extern "C" int __stdcall sub_6a0920(unsigned int size);
-extern "C" void __stdcall sub_80245c(void* p, const void* value);
-extern "C" void __stdcall sub_55e1d0(void* p, void* value);
-extern "C" void __stdcall sub_40db00(void* p, const void* value);
-extern "C" bool __stdcall sub_8023d8(const void* a, const void* b);
+struct LocalScript {
+    char pad[0x130];
+    String field130;
+    void sub_40DB00(const char*);
+    void sub_55E1D0(String*);
+    void func(const char*);
+};
 
-void LocalScript::setEmbeddedCode(const void* value)
-{
-    if (sub_8023d8(field130, value)) {
-        void* p = (void*)sub_6a0920(0x1c);
-        void* obj;
+void LocalScript::func(const char* arg) {
+    if (sub_8023D8(field130.buf, arg)) {
+        void* p = sub_6A0920(0x1c);
+        String* s;
         if (p) {
-            sub_80245c(p, value);
-            obj = p;
+            s = (String*)sub_80245C();
         } else {
-            obj = 0;
+            s = 0;
         }
-        sub_55e1d0(&field130, obj);
-        sub_40db00(this, (const void*)0x975770);
+        sub_55E1D0(s);
+        sub_40DB00((const char*)0x975770);
     }
 }

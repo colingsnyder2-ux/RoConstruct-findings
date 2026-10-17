@@ -1,4 +1,4 @@
-// from server: 79% by king_originala
+// from server: 82% by colin
 extern unsigned char table0[], table10[], table14[], table20[];
 extern unsigned char table24[], table44[], table64[], table84[];
 extern unsigned char tableA4[], tableC4[], table130[], table138[];
@@ -58,11 +58,11 @@ S* S::init()
     t130 = table130;
     t138 = table138;
     flag148 = 0;
+    field14C = 0;
+    field150 = 0;
     field154 = 0.0f;
     field158 = 0.0f;
-    field14C = 0;
     field15C = 0.0f;
-    field150 = 0;
     flag164 = 0;
     field160 = value160;
     field168 = value168;
@@ -71,7 +71,8 @@ S* S::init()
     field174 = value174;
     field178 = value178;
     field17C = value17C;
-    field184 = field180 = value180;
+    field180 = value180;
+    field184 = field180;
     field188 = 0.0f;
     field18C = value18C;
     return this;

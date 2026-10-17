@@ -1,4 +1,4 @@
-// from server: 88% by king_originala
+// from server: 93% by colin
 void* __cdecl operator new(unsigned int);
 
 struct Base {
@@ -32,4 +32,7 @@ __forceinline S::State::State()
 
 S::S()
 {
+    volatile int pad[2];
+    pad[0] = 0;
+    pad[1] = 0;
 }

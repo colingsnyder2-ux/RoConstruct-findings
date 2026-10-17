@@ -1,4 +1,4 @@
-// from server: 14% by colin
+// from server: 20% by colin
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
 
@@ -57,7 +57,7 @@ struct PhysicsReceiver
 
 struct DirectPhysicsReceiver : PhysicsReceiver
 {
-    void receivePacket(BitStream& bitstream, unsigned int timeStamp, void* stats);
+    void __cdecl receivePacket(BitStream& bitstream, unsigned int timeStamp, void* stats);
 };
 
 extern void* __cdecl sub_49e890();

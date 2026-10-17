@@ -1,18 +1,18 @@
-// from server: 72% by colin
-// roc-cl: 21022
-// roc-flags: /O2 /GS- /EHsc /MD /fp:fast
+// from server: 88% by colin
 struct Point {
-    char pad0[0xc];
+    char padding0[0x0C];
+    void* link;
     float x;
     float y;
     float z;
-    float rx;
-    float ry;
-    float rz;
-    float wx;
-    float wy;
-    float wz;
-    void compute();
+    float out0;
+    float out1;
+    float out2;
+    float out3;
+    float out4;
+    float out5;
+
+    void update();
 };
 
 extern float g_96f044;
@@ -20,18 +20,13 @@ extern float g_96f048;
 extern float g_96f04c;
 extern unsigned int g_96f050;
 
-void Point::compute()
+void Point::update()
 {
-    float* m = *(float**)((char*)this + 0xc);
-    float* base = m + 0x25;
+    float* m = (float*)((char*)link + 0x94);
 
-    float a = base[2] * z + base[1] * y + base[0] * x + base[9];
-    float b = base[5] * z + base[3] * x + base[4] * y + base[10];
-    float c = base[8] * z + base[6] * x + base[7] * y + base[11];
-
-    rx = a;
-    ry = b;
-    rz = c;
+    out0 = m[2] * m[1] + z * y + m[0] * x + m[9];
+    out1 = m[5] * z + m[3] * x + m[4] * y + m[10];
+    out2 = m[8] * z + m[6] * x + m[7] * y + m[11];
 
     if (!(g_96f050 & 1))
     {
@@ -41,7 +36,7 @@ void Point::compute()
         g_96f04c = 0.0f;
     }
 
-    wx = g_96f044;
-    wy = g_96f048;
-    wz = g_96f04c;
+    out3 = g_96f044;
+    out4 = g_96f048;
+    out5 = g_96f04c;
 }

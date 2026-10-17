@@ -1,4 +1,4 @@
-// from server: 34% by colin
+// from server: 65% by colin
 struct StandardOut {
     char pad[0x20];
     char* buffer;
@@ -10,14 +10,17 @@ struct StandardOut {
 
 extern int g_946274;
 
+extern "C" int __cdecl func_5f9c30(int, int, const char*, int, int);
+extern "C" int __cdecl func_5f8b60(int, int, const char*, int, int);
+
 int StandardOut::method(int a, const char* b, int c)
 {
     if (flag30 == 0) {
         if (g_946274 == 0) {
-            return ((int (__cdecl*)(int, int, const char*, int, int))0x5f9c30)(1, a, b, 0, c);
+            return func_5f9c30(1, a, b, 0, c);
         }
         if (g_946274 == 1) {
-            return ((int (__cdecl*)(int, int, const char*, int, int))0x5f8b60)(1, a, b, 0, c);
+            return func_5f8b60(1, a, b, 0, c);
         }
         return 0;
     }
@@ -29,10 +32,10 @@ int StandardOut::method(int a, const char* b, int c)
         p = buffer;
 
     if (g_946274 == 0) {
-        return ((int (__cdecl*)(int, int, const char*, int, int))0x5f9c30)(1, a, p, c, 0);
+        return func_5f9c30(1, (int)p, b, c, 0);
     }
     if (g_946274 == 1) {
-        return ((int (__cdecl*)(int, int, const char*, int, int))0x5f8b60)(1, a, p, c, 0);
+        return func_5f8b60(1, (int)p, b, c, 0);
     }
     return 0;
 }

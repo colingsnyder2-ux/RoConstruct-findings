@@ -1,4 +1,4 @@
-// from server: 54% by colin
+// from server: 63% by colin
 struct Mutex {
     void lock();
     void unlock();
@@ -9,52 +9,37 @@ struct Key {
     unsigned int second;
 };
 
+struct Descriptor;
+
 struct Registry {
     unsigned char padding[32];
     Mutex mutex;
 };
 
-struct Name {
-    static const Name& declare(const char* s);
+struct Guid {
+    static const Guid& getLocalScope();
 };
 
 struct Creator {
-    void* vtable;
-    int field_4;
-    int field_8;
-    int field_c;
-};
-
-struct CreatorsMap {
-    void insert(const Name* name, Creator* creator);
-};
-
-struct FactoryProduct {
     unsigned char padding[0x130];
-    CreatorsMap creators;
+    Registry registry;
+    void insert(Descriptor* d, Key* k);
 };
 
-struct S_func_004a8ae0 {
-    unsigned char padding[0x130];
-    CreatorsMap creators;
-    void f(void* a1, void* a2);
-};
+extern "C" void __stdcall sub_4a7e20(void* self, void* d, Key* k);
+extern "C" void __stdcall sub_4a5600(void* self, Key* k, int count);
 
-extern "C" void __stdcall func_49bba0(void* p);
-extern "C" void __stdcall func_4a7e20(void* p1, void* p2);
-extern "C" void __stdcall func_4a5600(void* p1, void* p2, void* p3);
-extern "C" void* __stdcall func_554270();
-
-void S_func_004a8ae0::f(void* a1, void* a2)
+void Creator::insert(Descriptor* d, Key* k)
 {
-    if (a1 != 0) {
-        func_49bba0(a1);
-        int v8 = *(int*)((char*)a1 + 8);
-        int vc = *(int*)((char*)a1 + 0xc);
-        func_4a7e20((char*)this + 0x130, (void*)(v8 + 4));
-        func_4a5600(a2, (void*)0x18, &v8);
+    if (d) {
+        ((Mutex*)d)->lock();
+        Key local;
+        local.first = *(unsigned int*)((char*)d + 8);
+        local.second = *(unsigned int*)((char*)d + 0xc);
+        sub_4a7e20(&this->registry, (char*)d + 8, &local);
+        sub_4a5600(k, &local, 1);
     } else {
-        void* p = func_554270();
-        func_4a7e20((char*)this + 0x130, (char*)p + 4);
+        const Guid& g = Guid::getLocalScope();
+        sub_4a7e20(&this->registry, k, (Key*)((char*)&g + 4));
     }
 }

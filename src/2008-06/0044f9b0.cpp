@@ -1,11 +1,11 @@
-// from server: 86% by king_originala
+// from server: 87% by colin
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
 
 extern "C" long __cdecl _InterlockedDecrement(volatile long*);
 #pragma intrinsic(_InterlockedDecrement)
 
-extern "C" void (__stdcall *SysFreeString)(wchar_t*);
+extern "C" void __stdcall SysFreeString(wchar_t*);
 
 struct RefCount
 {
@@ -89,7 +89,7 @@ int CRobloxDoc::func_0044f9b0(const wchar_t* text)
     {
         Shared state = owner->get();
         void* object = state.object;
-        rejected = !(!checkFirst(object, 1) || checkSecond(object, 1));
+        rejected = !(checkFirst(object, 1) && checkSecond(object, 1));
     }
 
     if (rejected)

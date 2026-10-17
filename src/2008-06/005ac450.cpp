@@ -1,4 +1,4 @@
-// from server: 76% by king_originala
+// from server: 92% by colin
 extern "C" void (__cdecl *invalid_parameter_noinfo)();
 
 struct Node {
@@ -44,13 +44,13 @@ Function __cdecl for_each(Iterator begin, Iterator end, Function function)
         if (!owner || owner != finish.owner)
             invalid();
 
-        if (node == *reinterpret_cast<Node* volatile*>(&finish.node))
+        if (node == finish.node)
             break;
 
-        if (owner)
-            owner = reinterpret_cast<Owner*>(owner->container);
-        else
+        if (!owner)
             invalid();
+        else
+            owner = reinterpret_cast<Owner*>(owner->container);
 
         if (node == reinterpret_cast<Container*>(owner)->sentinel)
             invalid();

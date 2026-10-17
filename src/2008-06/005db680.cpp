@@ -1,4 +1,4 @@
-// from server: 32% by colin
+// from server: 37% by colin
 struct Vec3 { float x, y, z; };
 
 struct Obj {
@@ -74,7 +74,7 @@ struct Humanoid {
     char pad1[0x1a8 - 0x108];
     float f1a8;
     float f1ac;
-    void func(Vec3* out, Obj* a, Obj* b);
+    void func(Obj* a, Obj* b);
 };
 
 extern "C" {
@@ -101,7 +101,7 @@ Obj* func_5d7560();
 void func_4f35d0(Vec3*, Vec3*, Vec3*, Vec3*);
 Obj* func_5148b0();
 
-void Humanoid::func(Vec3* out, Obj* a, Obj* b)
+void Humanoid::func(Obj* a, Obj* b)
 {
     Obj* o = func_5d8a10();
     if (!o) return;
@@ -123,7 +123,7 @@ void Humanoid::func(Vec3* out, Obj* a, Obj* b)
     float dx = *(float*)((char*)q + 0x24) - p.x;
     float dy = *(float*)((char*)q + 0x28) - p.y;
     float dz = *(float*)((char*)q + 0x2c) - p.z;
-    float dist = dx*dy + dx*dy + dz*dz;
+    float dist = dx*dx + dy*dy + dz*dz;
     dist = (float)sqrt(dist);
 
     if (g_8163a4 >= dist) return;
@@ -148,51 +148,31 @@ void Humanoid::func(Vec3* out, Obj* a, Obj* b)
     Obj* t2 = func_5149f0();
     Vec3 v4 = *(Vec3*)t2;
 
-    Vec3 v5;
-    v5.x = v4.x;
-    v5.y = v4.y;
-    v5.z = v4.z;
-
-    Vec3 v6;
-    v6.x = v3.x;
-    v6.y = v3.y;
-    v6.z = v3.z;
-
-    Vec3 v7;
-    v7.x = v1.x;
-    v7.y = v1.y;
-    v7.z = v1.z;
-
-    Vec3 v8;
-    v8.x = v2.x;
-    v8.y = v2.y;
-    v8.z = v2.z;
-
     Vec3 v9;
     v9.x = 1.0f;
     v9.y = 1.0f;
     v9.z = 1.0f;
 
     Vec3 v10;
-    func_5185d0(&v10, &v7, &v8, mode, 2, 3, 0, (double)mode, &v9);
+    func_5185d0(&v10, &v1, &v2, mode, 2, 3, 0, (double)mode, &v9);
 
     Obj* o2 = *(Obj**)a;
     void (__thiscall* fn)(Obj*, Vec3*, Obj*, Vec3*) = *(void (__thiscall**)(Obj*, Vec3*, Obj*, Vec3*))((char*)o2 + 0x34);
-    fn(a, &v10, obj104, &v6);
+    fn(a, &v10, obj104, &v4);
 
     float f = (float)mode;
     float half = f * g_819bac;
     float ratio = f1a8 / f1ac;
 
     Vec3 v11;
-    v11.x = v7.x - half;
-    v11.y = v7.y + half;
-    v11.z = v7.z;
+    v11.x = v1.x - half;
+    v11.y = v1.y + half;
+    v11.z = v1.z;
 
     Vec3 v12;
-    v12.x = v8.x - half;
-    v12.y = v8.y + half;
-    v12.z = v8.z;
+    v12.x = v2.x - half;
+    v12.y = v2.y + half;
+    v12.z = v2.z;
 
     Vec3 v13;
     v13.x = v11.x + ratio;
@@ -207,18 +187,13 @@ void Humanoid::func(Vec3* out, Obj* a, Obj* b)
     Obj* t3 = func_5d7560();
     Vec3 v15 = *(Vec3*)t3;
 
-    Vec3 v16;
-    v16.x = v15.x;
-    v16.y = v15.y;
-    v16.z = v15.z;
-
     Vec3 v17;
     v17.x = 1.0f;
     v17.y = 1.0f;
     v17.z = 1.0f;
 
     Vec3 v18;
-    func_4f35d0(&v18, &v16, &v13, &v17);
+    func_4f35d0(&v18, &v15, &v13, &v17);
 
     void (__thiscall* fn2)(Obj*, Vec3*, Vec3*) = *(void (__thiscall**)(Obj*, Vec3*, Vec3*))((char*)*(Obj**)a + 0x2c);
     fn2(a, &v18, &v14);
@@ -226,18 +201,13 @@ void Humanoid::func(Vec3* out, Obj* a, Obj* b)
     Obj* t4 = func_5148b0();
     Vec3 v19 = *(Vec3*)t4;
 
-    Vec3 v20;
-    v20.x = v19.x;
-    v20.y = v19.y;
-    v20.z = v19.z;
-
     Vec3 v21;
     v21.x = 1.0f;
     v21.y = 1.0f;
     v21.z = 1.0f;
 
     Vec3 v22;
-    func_4f35d0(&v22, &v20, &v11, &v21);
+    func_4f35d0(&v22, &v19, &v11, &v21);
 
     void (__thiscall* fn3)(Obj*, Vec3*, Vec3*) = *(void (__thiscall**)(Obj*, Vec3*, Vec3*))((char*)*(Obj**)a + 0x2c);
     fn3(a, &v22, &v12);

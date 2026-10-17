@@ -1,4 +1,4 @@
-// from server: 88% by king_originala
+// from server: 100% by colin
 struct Handle {
     int first;
     int second;
@@ -41,7 +41,12 @@ struct S {
 void S::f(void* value, int argument)
 {
     Temporary temporary(source->value);
-    destination->receiver->invoke(
-        value ? static_cast<char*>(value) + 0x14 : 0,
-        argument);
+    char* p = static_cast<char*>(value);
+    if (p != 0)
+        p += 0x14;
+    else
+        p = 0;
+    Destination* d = destination;
+    Receiver* r = d->receiver;
+    r->invoke(p, argument);
 }

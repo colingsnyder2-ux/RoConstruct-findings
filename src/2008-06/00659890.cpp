@@ -1,6 +1,4 @@
-// from server: 55% by colin
-// roc-cl: 50727
-// roc-flags: /O2 /GS- /EHsc /MD
+// from server: 57% by colin
 extern "C" void __stdcall _invalid_parameter_noinfo();
 
 struct Inner {
@@ -10,8 +8,8 @@ struct Inner {
 };
 
 struct Outer {
-    char pad[0x0c];
-    Inner* inner;
+    char pad[0x64];
+    unsigned short* field64;
 };
 
 struct S {
@@ -22,12 +20,13 @@ struct S {
 
 int S::find(int a, int b, int c)
 {
-    int* p = (int*)&a;
+    int* p = &a;
     unsigned int h = (unsigned int)p[2] * 0x4f9ffb7u;
     h ^= (unsigned int)p[1] * 0x127409fu;
     h ^= (unsigned int)p[0] * 0x466f45du;
 
-    unsigned short sh = *(unsigned short*)((char*)this + 0x20);
+    Outer* o = (Outer*)a;
+    unsigned short sh = *(unsigned short*)((char*)o->field64 + 0x20);
     unsigned int mask = 0xffffu >> sh;
     h &= mask;
 
