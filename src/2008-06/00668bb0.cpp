@@ -1,8 +1,5 @@
-// from server: 80% by colin
-// roc-cl: 21022
-// roc-flags: /O2 /GS- /EHsc /MD /fp:fast
+// from server: 85% by colin
 struct Dimensions {
-    unsigned int unused;
     float x;
     float y;
     float z;
@@ -16,20 +13,19 @@ struct S {
 };
 
 extern "C" double __cdecl floor(double);
-#pragma intrinsic(floor)
 
 double __cdecl f(S* object)
 {
     float* d = &object->dimensions->x;
     double area;
 
-    if (d[0] < d[1]) {
-        if (d[0] < d[2])
+    if (d[1] < d[0]) {
+        if (d[2] < d[0])
             area = d[2] * d[1];
         else
             area = d[1] * d[0];
     } else {
-        if (d[1] < d[2])
+        if (d[2] < d[1])
             area = d[2] * d[0];
         else
             area = d[1] * d[0];

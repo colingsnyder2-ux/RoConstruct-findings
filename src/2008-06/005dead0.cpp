@@ -1,4 +1,4 @@
-// from server: 43% by colin
+// from server: 50% by colin
 struct Matrix3 {
     float elements[9];
 };
@@ -8,10 +8,7 @@ struct GCamera {
     Matrix3 viewMatrix;
 };
 
-extern float g_fov;
-extern float g_near;
-extern float g_far;
-
+extern float g_value;
 extern char g_initFlags;
 
 extern "C" void __cdecl Matrix3_ctor(Matrix3* self, float a, float b, float c);
@@ -30,13 +27,13 @@ int Message::getCameraIndex() const {
 
     if (!(g_initFlags & 1)) {
         g_initFlags |= 1;
-        Matrix3_ctor(&defaultProj, 0.0f, g_fov, g_near);
+        Matrix3_ctor(&defaultProj, 0.0f, g_value, 0.0f);
         initialized = -1;
     }
 
     if (!(g_initFlags & 2)) {
         g_initFlags |= 2;
-        Matrix3_ctor(&defaultView, g_fov, 0.0f, g_far);
+        Matrix3_ctor(&defaultView, 0.0f, g_value, 0.0f);
         initialized = -1;
     }
 

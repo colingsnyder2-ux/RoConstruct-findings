@@ -1,4 +1,4 @@
-// from server: 34% by colin
+// from server: 48% by colin
 struct String {
     char storage[28];
     String(const String&);
@@ -51,16 +51,14 @@ void BoundFuncDesc::invoke(Arguments* args, int arg2) {
 
     void* result = sub_6a17c6(local14, (void*)0x9291fc, (void*)0x94f728, 0, 0);
     if (!result) {
-        char buf[28];
-        stringCopyCtor(buf, (void*)0x80ba34);
-        sub_6a158c(buf, (void*)0x8d362c);
+        String buf((const String&)*(String*)0x80ba34);
+        sub_6a158c(&buf, (void*)0x8d362c);
     }
 
     void* s = sub_56ea60(&local8);
     void* s2 = sub_56f0b0(&local10, s);
-    char tmp[28];
-    stringCopyCtor(tmp, s2);
-    ((void (__thiscall*)(void*, void*))field38)(this, tmp);
+    String tmp((const String&)*(String*)s2);
+    ((void (__thiscall*)(void*, void*))field38)(this, &tmp);
 
     if (localc) {
         ((void (__thiscall*)(void*, int))((void**)localc)[0])(localc, 1);
