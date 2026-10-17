@@ -1,4 +1,4 @@
-// from server: 22% by colin
+// from server: 24% by colin
 extern "C" void __stdcall invalid_parameter_noinfo();
 
 struct GuardBase {
@@ -14,20 +14,7 @@ struct Guard : GuardBase {
     Guard(void* p);
 };
 
-struct Item;
-
-struct EnumDescriptor {
-    char pad000[0x10];
-    void* field10;
-    void* field14;
-    char pad018[0x100];
-    void* field118;
-    char pad11c[0xdc];
-    int field1f8;
-
-    bool convertToValue(unsigned int index, void* value) const;
-    bool convertToString(unsigned int index, void* value) const;
-};
+struct EnumDescriptor;
 
 struct Item {
     char pad000[4];
@@ -64,7 +51,7 @@ void Item::destroy(unsigned int flags) {
 
     if (cur == last) {
         EnumDescriptor* owner = (EnumDescriptor*)((char*)this - 0x118);
-        owner->field1f8 = (found == 0) ? 1 : 0;
+        *(int*)((char*)owner + 0xe0) = (found == 0) ? 1 : 0;
         return;
     }
 
@@ -116,5 +103,5 @@ void Item::destroy(unsigned int flags) {
     }
 
     EnumDescriptor* owner = (EnumDescriptor*)((char*)this - 0x118);
-    owner->field1f8 = (found == 0) ? 1 : 0;
+    *(int*)((char*)owner + 0xe0) = (found == 0) ? 1 : 0;
 }

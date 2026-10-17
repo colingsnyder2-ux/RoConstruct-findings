@@ -1,4 +1,4 @@
-// from server: 67% by king_originala
+// from server: 68% by colin
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
 extern "C" long __cdecl _InterlockedDecrement(volatile long*);
@@ -51,7 +51,10 @@ inline Guard::~Guard()
 
 void Descriptor::f(void* value)
 {
-    Guard guard = { this, 0, 0 };
+    Guard guard;
+    guard.owner = this;
+    guard.pointer = 0;
+    guard.control = 0;
     if (value)
         guard.acquire(1, value)->finish();
     attach(new Object(this, value));

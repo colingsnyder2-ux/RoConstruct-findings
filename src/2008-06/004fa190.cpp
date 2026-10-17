@@ -1,4 +1,4 @@
-// from server: 18% by colin
+// from server: 19% by colin
 struct Vector2 { float x, y; };
 struct Vector3 { float x, y, z; };
 
@@ -8,25 +8,11 @@ extern "C" {
     long __stdcall InterlockedDecrement(long*);
 }
 
-struct RefCounted {
-    void* vfptr;
-    long refcount;
-    void* pad;
-};
-
-struct Node {
-    Node* next;
-    void* data;
-};
-
-struct List {
-    void* pad0;
-    Node* head;
-};
-
 struct TorsoBuilder {
     char pad[0x10];
     unsigned int flags;
+    char pad2[0x80 - 0x14];
+    void* list;
     void build(float a, float b, float c, float d, float e, float f,
                float g, float h, float i, float j, float k, float l);
 };
@@ -153,14 +139,15 @@ void TorsoBuilder::build(float a, float b, float c, float d, float e, float f,
         }
     }
 
-    List* list = (List*)this->pad[0x80];
+    void* list = this->list;
     if (list) {
         if (InterlockedDecrement((long*)((char*)list + 4)) == 0) {
-            Node* node = list->head;
+            void* node = *(void**)((char*)list + 8);
             while (node) {
-                Node* next = node->next;
-                void** vt = *(void***)node->data;
-                ((void(__thiscall*)(void*))vt[1])(node->data);
+                void* next = *(void**)((char*)node + 4);
+                void* data = *(void**)node;
+                void** vt = *(void***)data;
+                ((void(__thiscall*)(void*))vt[1])(data);
                 sub_6a067a(node);
                 node = next;
             }

@@ -1,9 +1,4 @@
-// from server: 22% by colin
-// roc-cl: 21022
-// roc-flags: /O2 /GS- /EHsc /MD /fp:fast
-// roc 2008-06 004fe070  unit: RBX::ViewNew::CylinderBuilder  size: 723 bytes
-// Make this compile to the exact bytes below, then: roc check 2008-06 004fe070
-
+// from server: 27% by colin
 extern "C" void __cdecl sub_5EC200(float *dst, float *src);
 extern "C" void *__cdecl sub_6A0956(int size);
 extern "C" void __cdecl sub_6A094A(void *p);
@@ -18,12 +13,13 @@ extern float g_819bac;
 struct CylinderBuilder {
     char pad0[4];
     int field4;
-    void build(int a, int b, int c, int d, int e, int f, int g, int h, int i, int j, int k, int l);
+    void build(float *args);
 };
 
-void CylinderBuilder::build(int a, int b, int c, int d, int e, int f, int g, int h, int i, int j, int k, int l)
+void CylinderBuilder::build(float *args)
 {
-    float v58, v5c, v60, v64, v68, v6c, v70, v74;
+    float v58, v5c, v60;
+    float v64, v68, v6c, v70, v74;
     float v2c, v30, v34, v38, v3c, v40, v44, v48, v4c, v50, v54;
     float v14, v18, v1c, v20, v24, v28;
     float v0c, v10;
@@ -31,31 +27,30 @@ void CylinderBuilder::build(int a, int b, int c, int d, int e, int f, int g, int
     int i2, j2;
     int *arr;
     int total;
-    float *tmp;
 
     sub_5EC200(&v58, (float *)&field4);
 
     v6c = (float)(v58 < 0 ? -v58 : v58);
-    n34 = *(short *)((char *)&a + 0x28);
+    n34 = *(short *)((char *)args + 0x28);
     v70 = (float)(v5c < 0 ? -v5c : v5c);
-    n36 = *(short *)((char *)&a + 0x2a);
+    n36 = *(short *)((char *)args + 0x2a);
     v74 = (float)(v60 < 0 ? -v60 : v60);
 
-    v3c = (float)(*(float *)((char *)&a + 8) - *(float *)&a) / (float)(n34 + 1);
-    v40 = (float)(*(float *)((char *)&a + 0xc) - *(float *)((char *)&a + 4)) / (float)(n36 + 1);
-    v44 = *(float *)((char *)&a + 0x1c) / (float)(n34 + 1);
-    v48 = *(float *)((char *)&a + 0x20) / (float)(n36 + 1);
-    v4c = *(float *)((char *)&a + 0x24);
+    v3c = (args[2] - args[0]) / (float)(n34 + 1);
+    v40 = (args[3] - args[1]) / (float)(n36 + 1);
+    v44 = args[7] / (float)(n34 + 1);
+    v48 = args[8] / (float)(n36 + 1);
+    v4c = args[9];
 
     total = (n36 + 1) * (n34 + 1);
     arr = (int *)sub_6A0956(total * 4);
 
-    v0c = *(float *)&a;
-    v10 = *(float *)((char *)&a + 0x14);
+    v0c = args[0];
+    v10 = args[5];
 
     for (i2 = 0; i2 <= n34; i2++) {
-        v14 = *(float *)((char *)&a + 4);
-        v18 = *(float *)((char *)&a + 0x18);
+        v14 = args[1];
+        v18 = args[6];
         for (j2 = 0; j2 <= n36; j2++) {
             float v58b, v5cb, v60b;
             float v2cb, v30b;
@@ -65,19 +60,19 @@ void CylinderBuilder::build(int a, int b, int c, int d, int e, int f, int g, int
 
             v58b = v0c;
             v5cb = v14;
-            v60b = *(float *)((char *)&a + 0x10);
+            v60b = args[4];
 
             v2cb = v0c;
             v30b = v14;
             v34b = v0c;
             v38b = v14;
 
-            sub_4FDCC0((char *)&a + 4, &v2cb, &v30b, &v34b, &v38b, &v54b);
+            sub_4FDCC0((char *)args + 4, &v2cb, &v30b, &v34b, &v38b, &v54b);
 
             r = sub_509BA0();
-            if (r[0] == *(float *)((char *)&a + 0x1c) && r[1] == *(float *)((char *)&a + 0x20)) {
-                v2cb = *(float *)((char *)&a + 0x14);
-                v30b = *(float *)((char *)&a + 0x18);
+            if (r[0] == args[7] && r[1] == args[8]) {
+                v2cb = args[5];
+                v30b = args[6];
             }
 
             v2cb *= g_819bac;
@@ -100,7 +95,7 @@ void CylinderBuilder::build(int a, int b, int c, int d, int e, int f, int g, int
 
     for (i2 = 0; i2 < n34; i2++) {
         for (j2 = 0; j2 < n36; j2++) {
-            sub_500EB0((char *)&a + 4,
+            sub_500EB0((char *)args + 4,
                 arr[i2 * (n36 + 1) + j2],
                 arr[i2 * (n36 + 1) + j2 + 1],
                 arr[(i2 + 1) * (n36 + 1) + j2 + 1],

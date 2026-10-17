@@ -1,4 +1,4 @@
-// from server: 78% by colin
+// from server: 85% by colin
 extern unsigned char table0[];
 extern unsigned char table10[];
 extern unsigned char table14[];
@@ -75,9 +75,10 @@ S *S::construct()
     vC4 = tableC4;
     v130 = table130;
     v138 = table138;
-    f150 = g150;
-    f154 = g150;
-    f158 = g150;
+    float t = g150;
+    f150 = t;
+    f154 = t;
+    f158 = t;
     f15C = 0.0f;
     f160 = g160;
     f164 = 0.0f;

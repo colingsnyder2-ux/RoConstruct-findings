@@ -1,8 +1,4 @@
-// from server: 58% by colin
-
-
-
-
+// from server: 76% by colin
 struct Vector3 {
     float x;
     float y;
@@ -14,24 +10,24 @@ struct Camera {
 };
 
 struct SceneNode {
-    virtual void unused0();
-    virtual void unused1();
-    virtual void unused2();
-    virtual void unused3();
-    virtual void unused4();
-    virtual void unused5();
-    virtual void unused6();
-    virtual void unused7();
-    virtual void unused8();
-    virtual void unused9();
-    virtual void unused10();
-    virtual void unused11();
-    virtual void unused12();
-    virtual void unused13();
-    virtual void unused14();
-    virtual void unused15();
-    virtual void unused16();
-    virtual void unused17();
+    virtual void v0();
+    virtual void v1();
+    virtual void v2();
+    virtual void v3();
+    virtual void v4();
+    virtual void v5();
+    virtual void v6();
+    virtual void v7();
+    virtual void v8();
+    virtual void v9();
+    virtual void v10();
+    virtual void v11();
+    virtual void v12();
+    virtual void v13();
+    virtual void v14();
+    virtual void v15();
+    virtual void v16();
+    virtual void v17();
     virtual void* getCreator();
 };
 
@@ -40,9 +36,9 @@ void* __stdcall __RTDynamicCast(void*, int, void*, void*, int);
 struct RbxSubEntity {
     char pad0[0x28];
     SceneNode* node;
-    char pad1[0xe8 - 0x2c];
-    int cachedNode;
+    char pad1[0xe4 - 0x2c];
     float cachedDistance;
+    int cachedNode;
     char pad2[0xfc - 0xec];
     float posX;
     char pad3[0x10c - 0x100];
@@ -61,9 +57,15 @@ float RbxSubEntity::getDistanceTo(const Camera* camera) {
     void* creator = this->node->getCreator();
     void* cam = __RTDynamicCast((void*)camera, 0, (void*)0x932cec, (void*)0x932d04, 0);
 
-    float dx = this->posX - camera->getDerivedPosition().x;
-    float dy = this->posY - camera->getDerivedPosition().y;
-    float dz = this->posZ - camera->getDerivedPosition().z;
+    float px = this->posX;
+    float py = this->posY;
+    float pz = this->posZ;
+
+    const Vector3& p = camera->getDerivedPosition();
+
+    float dx = px - p.x;
+    float dy = py - p.y;
+    float dz = pz - p.z;
 
     return dx * dx + dy * dy + dz * dz;
 }
