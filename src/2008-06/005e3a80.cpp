@@ -1,4 +1,4 @@
-// from server: 75% by king_originala
+// from server: 90% by colin
 struct Node;
 struct Joint;
 struct World;
@@ -33,7 +33,7 @@ struct Provider {
 };
 
 struct Joint {
-    char pad0[0x104];
+    char pad[0x104];
     Parent* parent;
     char pad1[0x48];
     Node* node;
@@ -61,7 +61,8 @@ void Joint::f(void* argument)
     }
 
     World* newWorld;
-    if (parent && parent->category->equals(categoryInstance())) {
+    Parent* p = parent;
+    if (p && p->category->equals(categoryInstance())) {
         Provider* provider = findProvider(this);
         if (provider)
             newWorld = provider->world;

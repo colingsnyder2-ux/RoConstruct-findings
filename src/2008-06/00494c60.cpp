@@ -1,4 +1,4 @@
-// from server: 96% by king_originala
+// from server: 97% by colin
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
 extern "C" long __cdecl _InterlockedDecrement(volatile long*);
@@ -101,12 +101,14 @@ inline Shared::~Shared()
 
 inline Buffer::~Buffer()
 {
-    if (data)
-        sub_6a067a(data);
+    void* d = data;
+    if (d)
+        sub_6a067a(d);
     data = 0;
     size = 0;
     capacity = 0;
-    sub_6a067a(allocation);
+    void* a = allocation;
+    sub_6a067a(a);
 }
 
 S::~S()

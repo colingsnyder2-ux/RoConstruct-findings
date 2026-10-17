@@ -1,4 +1,4 @@
-// from server: 70% by king_originala
+// from server: 73% by colin
 struct Buffer {
     int pubsync();
 };
@@ -16,8 +16,8 @@ struct S {
 
 S::~S()
 {
-    unsigned int state = flags;
     Stream* p = *stream;
+    unsigned int state = flags;
     try {
         if (state & 2)
             (*reinterpret_cast<Buffer**>(

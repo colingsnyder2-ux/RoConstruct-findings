@@ -1,6 +1,7 @@
-// from server: 47% by colin
+// from server: 49% by colin
 struct String {
-    const char* c_str() const;
+    String(const char* s);
+    ~String();
 };
 
 struct Descriptor {
@@ -20,8 +21,6 @@ struct RefItem : Base {
     int field_0x10c;
 };
 
-extern "C" void* __stdcall sub_803f10(void*, const char*);
-
 RefItem::RefItem(const String& name, int attributes) {
     construct(name, attributes);
     *(void**)this = (void*)0x814dbc;
@@ -31,7 +30,6 @@ RefItem::RefItem(const String& name, int attributes) {
     setFlags(f | 2);
     int f2 = getFlags();
     setFlags(f2 & ~1);
-    String s;
-    sub_803f10(&s, "(Script)");
+    String s("(Script)");
     setName(s);
 }

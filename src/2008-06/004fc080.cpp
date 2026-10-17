@@ -1,10 +1,4 @@
-// from server: 34% by atomic.potato
-// roc 2008-06 004fc080  unit: RBX::ViewNew::TorsoBuilder  size: 711 bytes
-// Make this compile to the exact bytes below, then: roc check 2008-06 004fc080
-
-extern "C" __declspec(dllimport) double __stdcall ceil(double);
-extern "C" __declspec(dllimport) double __stdcall fabs(double);
-
+// from server: 35% by colin
 struct V2 { float x, y; };
 struct V3 { float x, y, z; };
 
@@ -23,6 +17,9 @@ extern "C" void __cdecl sub_5185D0(V3*, V2*);
 extern float g_819bac;
 extern float g_826e6c;
 extern float g_83a3e4;
+
+extern "C" double __stdcall ceil(double);
+extern "C" double __cdecl fabs(double);
 
 void TorsoBuilder::build(int a, int b, int c)
 {

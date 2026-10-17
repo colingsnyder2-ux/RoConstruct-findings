@@ -1,4 +1,4 @@
-// from server: 92% by king_originala
+// from server: 97% by colin
 extern "C" int (__stdcall *PostMessageA)(void*, unsigned int, unsigned int, long);
 extern "C" void (__thiscall *destroyString)(void*);
 
@@ -31,7 +31,8 @@ struct Queue {
 inline void Queue::pop_front()
 {
     if (count != 0) {
-        blocks[start]->text.~String();
+        Entry* e = blocks[start];
+        e->text.~String();
         ++start;
         if (capacity <= start)
             start = 0;
@@ -70,7 +71,7 @@ struct View {
     unsigned int reserved;
     Queue queue;
     Mutex mutex;
-    void submit(Entry);
+    void submit(Entry value);
 };
 
 void View::submit(Entry value)
@@ -82,6 +83,7 @@ void View::submit(Entry value)
 
     queue.append(&value);
 
-    if (queue.count > 250)
+    unsigned int n = queue.count;
+    if (n > 250)
         queue.pop_front();
 }
