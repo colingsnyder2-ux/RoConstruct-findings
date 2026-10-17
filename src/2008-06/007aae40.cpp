@@ -1,4 +1,153 @@
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: openrbx-client Rendering/RenderLib/RenderScene.cpp
+// from server: 52% by colin
+struct RenderScene {
+    char pad0[0x14];
+    float f14;
+    float f18;
+    float f1c;
+    float f20;
+    char pad24[0x268 - 0x24];
+    int i268;
+    int i26c;
+    char pad270[0x27c - 0x270];
+    char c27c[0x288 - 0x27c];
+    int i288;
+    int i28c;
+    int i290;
+    int i294;
+    int i298;
+    int i29c;
+    int i2a0;
+    int i2a4;
+    int i2a8;
+    int i2ac;
+    int i2b0;
+    int i2b4;
+    int i2b8;
+    int i2bc;
+    int i2c0;
+    int i2c4;
+    int i2c8;
+    int i2cc;
+    char c2d0[0x2f0 - 0x2d0];
+    int i2f0;
+    char pad2f4[0x308 - 0x2f4];
+    int i308;
+    int i30c;
+    char c310;
+    char pad311[0x314 - 0x311];
+    float f314;
+    int i318;
+    int i31c;
+    int i320;
+    char c324;
+    char pad325[0x360 - 0x325];
+    float f360;
+    float f364;
+    float f368;
+    float f36c;
+    float f370;
+    float f374;
+    float f378;
+    float f37c;
+    float f380;
+    float f384;
+    float f388;
+    float f38c;
+    float f390;
+    float f394;
+    float f398;
+    char c3a0[0x498 - 0x3a0];
+    char c498[0x4a0 - 0x498];
+
+    RenderScene();
+};
+
+extern "C" void __stdcall sub_504FD0();
+extern "C" void __stdcall sub_804300();
+extern "C" void __stdcall sub_804C90();
+extern "C" void __stdcall sub_489470();
+extern "C" void __stdcall sub_7B6860();
+extern "C" void __stdcall sub_503960();
+extern "C" void __stdcall sub_598FA0();
+extern "C" void __stdcall sub_45AD90();
+extern "C" void __stdcall sub_476550();
+extern "C" void __stdcall sub_8021AC();
+
+extern double dbl_96F018;
+extern int dword_96F020;
+extern int* ptr_8024AC;
+extern float flt_819BAC;
+
+RenderScene::RenderScene()
+{
+    sub_504FD0();
+    i26c = 0;
+    *(int*)this = 0x8749dc;
+    sub_804300();
+    sub_804C90();
+    i288 = 0;
+    i28c = 0;
+    i290 = 0;
+    i294 = 0;
+    i298 = 0;
+    i29c = 0;
+    i2a0 = 0;
+    i2a4 = 0;
+    i2a8 = 0;
+    i2ac = 0;
+    i2b0 = 0;
+    i2b4 = 0;
+    i2b8 = 0;
+    i2bc = 0;
+    i2c0 = 0;
+    i2c4 = 0;
+    i2c8 = 0;
+    i2cc = 0;
+    sub_489470();
+    i2f0 = 0;
+    i308 = 0;
+    i30c = 0;
+    c310 = 0;
+    if ((dword_96F020 & 1) == 0) {
+        dword_96F020 |= 1;
+        dbl_96F018 = *(double*)ptr_8024AC;
+    }
+    f314 = (float)dbl_96F018;
+    i318 = 0;
+    i31c = 0;
+    i320 = 0;
+    c324 = 0;
+    f360 = 0.0f;
+    f364 = 0.0f;
+    f368 = 0.0f;
+    f36c = 0.0f;
+    f370 = 0.0f;
+    f374 = 0.0f;
+    f378 = 0.0f;
+    f37c = 0.0f;
+    f380 = 0.0f;
+    f384 = 0.0f;
+    f388 = 0.0f;
+    f38c = 0.0f;
+    f390 = 0.0f;
+    f394 = 0.0f;
+    f398 = 0.0f;
+    sub_7B6860();
+    sub_7B6860();
+    sub_503960();
+    sub_598FA0();
+    sub_598FA0();
+    sub_45AD90();
+    sub_8021AC();
+    i268 = 0;
+    float tmp[4];
+    tmp[0] = flt_819BAC;
+    tmp[1] = flt_819BAC;
+    tmp[2] = 1.0f;
+    tmp[3] = 1.0f;
+    sub_476550();
+    f14 = tmp[2];
+    f18 = tmp[1];
+    f1c = tmp[1];
+    f20 = tmp[2];
+}

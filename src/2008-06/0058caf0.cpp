@@ -1,6 +1,4 @@
-// from server: 51% by colin
-// roc-cl: 50727
-// roc-flags: /O2 /GS- /EHsc /MD
+// from server: 53% by colin
 struct StreamBuf {
     int sbumpc();
     int sgetc();
@@ -10,15 +8,6 @@ typedef int (StreamBuf::*StreamCall)();
 extern StreamCall sbumpc_ptr;
 extern StreamCall sgetc_ptr;
 
-struct String;
-typedef void (String::*StringDefaultCall)();
-typedef void (String::*StringTextCall)(const char*);
-typedef String& (String::*StringAppendCall)(char);
-
-extern StringDefaultCall string_default_ptr;
-extern StringTextCall string_text_ptr;
-extern StringAppendCall string_append_ptr;
-
 struct String {
     char storage[28];
     String();
@@ -27,6 +16,14 @@ struct String {
     ~String();
     String& operator+=(char);
 };
+
+typedef void (String::*StringDefaultCall)();
+typedef void (String::*StringTextCall)(const char*);
+typedef String& (String::*StringAppendCall)(char);
+
+extern StringDefaultCall string_default_ptr;
+extern StringTextCall string_text_ptr;
+extern StringAppendCall string_append_ptr;
 
 inline String::String()
 {
@@ -66,8 +63,8 @@ String Verb::readTag()
         if (count++ > 4)
             throw Error(String("tag expected after Byte-Order-Mark"));
 
-        char c = static_cast<char>((stream->*sgetc_ptr)());
-        if ((stream->*sbumpc_ptr)() == -1)
+        char c = static_cast<char>(stream->sgetc());
+        if (stream->sbumpc() == -1)
             throw Error(String("Expected '<' but got EOF in Xml stream"));
 
         if (c == '<')
@@ -79,8 +76,8 @@ String Verb::readTag()
 
     char c;
     do {
-        c = static_cast<char>((stream->*sgetc_ptr)());
-        if ((stream->*sbumpc_ptr)() == -1)
+        c = static_cast<char>(stream->sgetc());
+        if (stream->sbumpc() == -1)
             throw Error(String("Expected '>' but got EOF in Xml stream"));
         tag += c;
     } while (c != '>');

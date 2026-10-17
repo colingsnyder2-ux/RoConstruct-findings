@@ -1,4 +1,4 @@
-// from server: 73% by king_originala
+// from server: 78% by colin
 extern unsigned char table0[];
 extern unsigned char table10[];
 extern unsigned char table14[];
@@ -12,10 +12,12 @@ extern unsigned char tableC4[];
 extern unsigned char table130[];
 extern unsigned char table138[];
 
-extern float initial148;
-extern float initial14C;
-extern float initialForce;
-extern float initial160;
+extern float g148;
+extern float g14C;
+extern float g150;
+extern float g160;
+
+unsigned int __cdecl getName();
 
 struct S {
     unsigned char *v0;
@@ -52,15 +54,16 @@ struct S {
     float f16C;
     float f170;
 
-    void initialize(const char *);
     S *construct();
 };
 
 S *S::construct()
 {
-    initialize("BodyPosition");
+    getName();
 
+    f148 = g148;
     v0 = table0;
+    f14C = g14C;
     v10 = table10;
     v14 = table14;
     v20 = table20;
@@ -72,14 +75,11 @@ S *S::construct()
     vC4 = tableC4;
     v130 = table130;
     v138 = table138;
-
-    f148 = initial148;
-    f14C = initial14C;
-    f150 = initialForce;
-    f154 = initialForce;
-    f158 = initialForce;
+    f150 = g150;
+    f154 = g150;
+    f158 = g150;
     f15C = 0.0f;
-    f160 = initial160;
+    f160 = g160;
     f164 = 0.0f;
     f168 = 0.0f;
     f16C = 0.0f;

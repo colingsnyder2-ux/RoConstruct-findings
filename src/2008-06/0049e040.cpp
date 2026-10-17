@@ -1,29 +1,15 @@
-// from server: 88% by king_originala
+// from server: 89% by colin
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
 
 void* __cdecl operator new(unsigned int);
 void __cdecl operator delete(void*);
 
-struct String;
-extern String* (__thiscall *stringCopy)(String*, const String&);
-extern void (__thiscall *stringDestroy)(String*);
-
 struct String {
     unsigned char data[28];
     String(const String&);
     ~String();
 };
-
-__forceinline String::String(const String& other)
-{
-    stringCopy(this, other);
-}
-
-__forceinline String::~String()
-{
-    stringDestroy(this);
-}
 
 struct Storage {
     unsigned char data[40];
@@ -52,12 +38,12 @@ struct Shared {
     Shared(const Shared&);
 };
 
-__forceinline Shared::Shared(Storage* p) : pointer(p), count(p)
+Shared::Shared(Storage* p) : pointer(p), count(p)
 {
     func_0047d410(&count, p, p);
 }
 
-__forceinline Shared::Shared(const Shared& other)
+Shared::Shared(const Shared& other)
     : pointer(other.pointer), count(other.count)
 {
     if (count.pointer) {
@@ -87,7 +73,7 @@ struct Function {
     ~Function();
 };
 
-__forceinline Function::~Function()
+Function::~Function()
 {
     if (manager) {
         Manager f = *manager;
@@ -112,16 +98,16 @@ struct ThreadOwner {
     void reset(Thread*);
 };
 
-__forceinline ThreadOwner::ThreadOwner() : pointer(0)
+ThreadOwner::ThreadOwner() : pointer(0)
 {
 }
 
-__forceinline ThreadOwner::~ThreadOwner()
+ThreadOwner::~ThreadOwner()
 {
     delete pointer;
 }
 
-__forceinline void ThreadOwner::reset(Thread* p)
+void ThreadOwner::reset(Thread* p)
 {
     Thread* old = pointer;
     pointer = p;
