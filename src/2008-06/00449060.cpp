@@ -1,4 +1,4 @@
-// from server: 48% by colin
+// from server: 53% by colin
 namespace RBX {
 
 class CRenderSettings
@@ -21,7 +21,7 @@ void CRenderSettings::setAASamples(float value)
         return;
     }
     antialiasingMode = *chosen;
-    extern void raisePropertyChanged(const void*);
+    extern void (__stdcall *raisePropertyChanged)(const void*);
     raisePropertyChanged((const void*)0x96d480);
 }
 

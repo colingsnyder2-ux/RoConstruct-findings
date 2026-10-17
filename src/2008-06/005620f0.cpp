@@ -1,17 +1,17 @@
-// from server: 60% by king_originala
+// from server: 64% by colin
+extern "C" void __cdecl _invalid_parameter_noinfo();
+
 void* __cdecl operator new(unsigned int);
 void __cdecl operator delete(void*);
-extern "C" void (__cdecl* invalid_parameter)();
-
-struct Text;
-extern Text* (__thiscall* construct_text)(Text*);
-extern Text& (__thiscall* assign_text)(Text*, const Text&);
 
 struct Text {
     unsigned char storage[28];
     Text();
     Text& operator=(const Text&);
 };
+
+extern Text* (__thiscall* construct_text)(Text*);
+extern Text& (__thiscall* assign_text)(Text*, const Text&);
 
 inline Text::Text()
 {
@@ -139,14 +139,14 @@ int S::f()
         Node* node = *front;
         QueueState* state;
         if (!proxy) {
-            invalid_parameter();
+            _invalid_parameter_noinfo();
             state = 0;
         } else {
             state = proxy->state;
         }
 
         if (node == state->sentinel)
-            invalid_parameter();
+            _invalid_parameter_noinfo();
 
         Key* source = &node->key;
         key.text = source->text;

@@ -1,4 +1,4 @@
-// from server: 23% by colin
+// from server: 25% by colin
 struct Vector2 { float x, y; };
 struct Vector3 { float x, y, z; };
 
@@ -59,7 +59,7 @@ void TorsoBuilder::build(int a, int b, int c)
 
     short s0 = 0;
     short s1 = 0;
-    short v = v2.x;
+    short v = *(short*)&v2.x;
     int q = (int)v / count;
     short qs = (short)q;
     short one = 1;

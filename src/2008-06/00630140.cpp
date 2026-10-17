@@ -1,4 +1,4 @@
-// from server: 46% by colin
+// from server: 47% by colin
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
 
@@ -35,10 +35,10 @@ extern "C" void* __cdecl sub_4a6100(void* a, void* b, void* c);
 extern "C" void __cdecl sub_658d20(void* p);
 
 struct BodyPosition {
-    void step(float dt, int a, int b);
+    void step(float dt, int a);
 };
 
-void BodyPosition::step(float dt, int a, int b)
+void BodyPosition::step(float dt, int a)
 {
     char buf[0x20];
     void* obj;

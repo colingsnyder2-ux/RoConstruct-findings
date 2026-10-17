@@ -1,5 +1,4 @@
-// from server: 67% by colin
-// from server: 66% by king_originala
+// from server: 69% by colin
 namespace std {
 template<class T> struct char_traits;
 template<class T> class allocator;
@@ -34,7 +33,7 @@ __forceinline Parser::~Parser()
 {
 }
 
-void process(std::string source)
+int process(std::string source)
 {
     try {
         std::string result;
@@ -42,4 +41,5 @@ void process(std::string source)
         parser.parse(result);
     } catch (...) {
     }
+    return 1;
 }

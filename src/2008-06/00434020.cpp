@@ -1,6 +1,6 @@
-// from server: 32% by colin
+// from server: 33% by colin
 extern "C" {
-    void* __stdcall sub_802944(void*);
+    void __stdcall sub_802944(void*);
     void* __stdcall sub_802464(void*);
     void* __stdcall sub_803F10(void*);
     void* __stdcall sub_802FD8(void*);
@@ -37,10 +37,10 @@ struct CMemberTreeView {
     Obj* field_108;
     Obj* field_10C;
     Obj* field_110;
-    void func(const char*, Obj*, Obj*, Obj*);
+    void func(const char*, Obj*, Obj*);
 };
 
-void CMemberTreeView::func(const char* a, Obj* b, Obj* c, Obj* d)
+void CMemberTreeView::func(const char* a, Obj* b, Obj* c)
 {
     Obj* o = field_F8;
     if (o) {
