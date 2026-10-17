@@ -1,6 +1,4 @@
-// from server: 73% by colin
-// roc-cl: 21022
-// roc-flags: /O2 /GS- /EHsc /MD /fp:fast
+// from server: 74% by colin
 struct Vec3 {
     float x, y, z;
 };
@@ -93,7 +91,7 @@ void S::update()
                 model->baseOffsets[2]);
 
         Frame frame = frameInterface->getFrame();
-        float distance;
+        float distance = frame.position.x;
         Vec3 position;
         position.x = frame.position.x;
         position.z = frame.position.z;

@@ -1,6 +1,4 @@
-// from server: 75% by colin
-// roc-cl: 21022
-// roc-flags: /O2 /GS- /EHsc /MD /fp:fast
+// from server: 77% by colin
 extern "C" int __stdcall applyVolume(void*, float);
 extern "C" void __cdecl checkResult(int);
 
@@ -18,13 +16,18 @@ struct Sound {
 
 void Sound::setVolume(float value)
 {
-    double clamped = value <= 0.0 ? 0.0 :
-                     value >= 1.0 ? 1.0 : (double)value;
+    float clamped;
+    if (value <= 0.0f)
+        clamped = 0.0f;
+    else if (value >= 1.0f)
+        clamped = 1.0f;
+    else
+        clamped = value;
 
     if (clamped != volume) {
-        volume = (float)clamped;
+        volume = clamped;
         if (handle)
-            checkResult(applyVolume(handle, (float)clamped));
+            checkResult(applyVolume(handle, clamped));
         notify(&volumeProperty);
     }
 }

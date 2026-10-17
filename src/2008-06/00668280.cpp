@@ -1,5 +1,5 @@
-// from server: 61% by king_originala
-struct Tree;
+// from server: 66% by colin
+struct Iterator;
 
 struct Node {
     Node* left;
@@ -11,32 +11,27 @@ struct Node {
     unsigned char nil;
 };
 
-struct Owner {
-    Tree* tree;
+struct Tree {
+    void* owner;
+    unsigned char padding[20];
+    Node* head;
+    Iterator* lower(Iterator* result, const unsigned* key);
+    void erase(Iterator* result, Iterator position);
 };
 
 struct Iterator {
-    Owner* owner;
+    void* owner;
     Node* node;
     void next();
 };
-
-struct Tree {
-    Owner* owner;
-    unsigned char padding[20];
-    Node* head;
-
-    Iterator* lower(Iterator* result, const unsigned* key);
-    Iterator* erase(Iterator* result, Iterator position);
-};
-
-extern "C" void (__cdecl* invalid_parameter_noinfo)();
 
 struct S {
     unsigned char padding[48];
     Tree tree;
     void f(unsigned value, unsigned key);
 };
+
+extern "C" void __cdecl _invalid_parameter_noinfo();
 
 void S::f(unsigned value, unsigned key)
 {
@@ -45,8 +40,10 @@ void S::f(unsigned value, unsigned key)
 
     Tree* t = &tree;
     Iterator temporary;
-    Iterator current = *t->lower(&temporary, &key);
-    Owner* owner = current.owner;
+    Iterator current;
+    t->lower(&current, &key);
+
+    void* owner = current.owner;
     Node* node = current.node;
 
     for (;;) {
@@ -63,23 +60,23 @@ void S::f(unsigned value, unsigned key)
             }
         }
 
-        Owner* expected = t->owner;
+        void* expected = t->owner;
         if (!owner || owner != expected)
-            invalid_parameter_noinfo();
+            _invalid_parameter_noinfo();
 
         if (node == end)
             break;
 
-        Tree* container;
+        void* container;
         if (!owner) {
-            invalid_parameter_noinfo();
+            _invalid_parameter_noinfo();
             container = 0;
         } else {
-            container = owner->tree;
+            container = *(void**)owner;
         }
 
-        if (node == container->head)
-            invalid_parameter_noinfo();
+        if (node == ((Tree*)container)->head)
+            _invalid_parameter_noinfo();
 
         if (node->value == value) {
             Iterator position;
