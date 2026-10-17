@@ -1,33 +1,32 @@
-// from server: 54% by king_originala
-struct Result {
-    void process();
+// from server: 57% by colin
+struct Link {
+    void update();
 };
 
-struct Object {
-    virtual void slot0();
-    virtual void slot1();
-    virtual Result* get();
+struct Item {
+    char padding[4];
+    Link *link;
 };
 
-struct Node {
-    Node* next;
-    Node* previous;
-    Object* object;
+struct List {
+    Item *head;
 };
 
-struct S {
-    unsigned char padding[36];
-    Node* head;
-
-    void run();
+struct SimJobStage {
+    char padding[0x24];
+    List *list;
+    void f();
 };
 
-void S::run()
+void SimJobStage::f()
 {
-    Node* const sentinel = head;
-    for (Node* node = sentinel->next; node != sentinel; node = node->next) {
-        Object* const object = node->object;
-        if (object->get())
-            object->get()->process();
+    List *l = list;
+    Item *it = l->head;
+    while (it != (Item *)l) {
+        Link *link = it->link;
+        if (link->update(), link->update(), link != 0) {
+            link->update();
+        }
+        it = (Item *)it->padding;
     }
 }

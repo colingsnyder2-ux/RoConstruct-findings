@@ -1,26 +1,23 @@
-// from server: 78% by colin
+// from server: 100% by colin
+extern "C" void* (__thiscall *sub_80244c)(void*, const char*);
+extern "C" void sub_49eb30();
+extern "C" void sub_49eba0();
+extern "C" void sub_491360();
+extern "C" void sub_49a8a0();
+extern "C" void sub_49ec10();
+extern "C" void sub_49ec80();
+extern "C" void sub_49e890();
+
 struct S {
-    void __cdecl f(const char*);
-    void sub_49EB30();
 };
 
-extern "C" void* __stdcall sub_80244C(const char*);
-
-extern "C" void __stdcall sub_49EBA0();
-extern "C" void __stdcall sub_491360();
-extern "C" void __stdcall sub_49A8A0();
-extern "C" void __stdcall sub_49EC10();
-extern "C" void __stdcall sub_49EC80();
-extern "C" void __stdcall sub_49E890();
-
-void S::f(const char* s)
-{
-    sub_80244C(s);
-    sub_49EB30();
-    sub_49EBA0();
+void __cdecl f(const char* s) {
+    sub_80244c((void*)0x970b88, s);
+    sub_49eb30();
+    sub_49eba0();
     sub_491360();
-    sub_49A8A0();
-    sub_49EC10();
-    sub_49EC80();
-    sub_49E890();
+    sub_49a8a0();
+    sub_49ec10();
+    sub_49ec80();
+    sub_49e890();
 }

@@ -1,4 +1,4 @@
-// from server: 76% by colin
+// from server: 77% by colin
 struct Vector3 {
     float x;
     float y;
@@ -55,7 +55,7 @@ float RbxSubEntity::getDistanceTo(const Camera* camera) {
     }
 
     void* creator = this->node->getCreator();
-    void* cam = __RTDynamicCast((void*)camera, 0, (void*)0x932cec, (void*)0x932d04, 0);
+    void* cam = __RTDynamicCast(creator, 0, (void*)0x932cec, (void*)0x932d04, 0);
 
     float px = this->posX;
     float py = this->posY;

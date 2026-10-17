@@ -1,35 +1,35 @@
-// from server: 43% by colin
+// from server: 44% by colin
 // roc 2008-06 00586f30  unit: RBX::LocalScript  size: 144 bytes
 
-extern "C" {
-    int __stdcall sub_8023D8(const char*, const char*);
-    void* __stdcall sub_80245C();
-    void* __stdcall sub_6A0920(unsigned int);
-}
+extern "C" int __stdcall sub_8023d8(void*, void*);
+extern "C" void* __stdcall sub_80245c(void*, void*);
+extern "C" void* __cdecl sub_6a0920(unsigned int);
 
-struct String {
-    char buf[0x1c];
-    String(const String&);
+struct Str {
+    void* data;
+    int len;
+    int cap;
 };
 
 struct LocalScript {
     char pad[0x130];
-    String field130;
-    void sub_40DB00(const char*);
-    void sub_55E1D0(String*);
-    void func(const char*);
+    Str field130;
+    void setScript(void*);
 };
 
-void LocalScript::func(const char* arg) {
-    if (sub_8023D8(field130.buf, arg)) {
-        void* p = sub_6A0920(0x1c);
-        String* s;
-        if (p) {
-            s = (String*)sub_80245C();
+void sub_55e1d0(Str*, void*);
+void sub_40db00(LocalScript*, void*);
+
+void LocalScript::setScript(void* p) {
+    if (sub_8023d8(field130.data, p)) {
+        void* mem = sub_6a0920(0x1c);
+        void* obj;
+        if (mem) {
+            obj = sub_80245c(mem, p);
         } else {
-            s = 0;
+            obj = 0;
         }
-        sub_55E1D0(s);
-        sub_40DB00((const char*)0x975770);
+        sub_55e1d0(&field130, obj);
+        sub_40db00(this, (void*)0x975770);
     }
 }

@@ -1,4 +1,4 @@
-// from server: 73% by colin
+// from server: 75% by colin
 struct CRenderSettings {
     char pad[0x144];
     float field_144;
@@ -15,13 +15,13 @@ void CRenderSettings::setAASamples(float value) {
         sub_448FD0(value);
         value = *esi;
     }
-    if (!(value < *esi)) {
+    if (value == *esi) {
         esi = &value;
     }
     float v = *esi;
     float zero = 0.0f;
     float* p;
-    if (v < zero) {
+    if (v == zero) {
         p = &v;
     } else {
         p = &zero;

@@ -1,18 +1,23 @@
-// from server: 73% by colin
-struct JointsService {
-    char pad[0x138];
-    void onAdded(void*);
-    void addJoint(void*);
+// from server: 86% by colin
+struct IRenderableBucket
+{
+    void onAdded(void *);
 };
 
-extern "C" void __stdcall sub_55ae20(void*);
-extern "C" void* __stdcall sub_6a17c6(void*, void*, void*, void*, void*);
-
-void JointsService::addJoint(void* arg)
+struct JointsService
 {
-    sub_55ae20(arg);
-    void* r = sub_6a17c6(arg, 0, (void*)0x92907c, (void*)0x939f70, 0);
-    if (r) {
-        onAdded(r);
+    void addChild(void *);
+};
+
+void __stdcall sub_55AE20(void *);
+void *__cdecl sub_6A17C6(void *, int, void *, void *, int);
+
+void JointsService::addChild(void *child)
+{
+    sub_55AE20(child);
+    void *r = sub_6A17C6(child, 0, (void *)0x92907c, (void *)0x939f70, 0);
+    if (r)
+    {
+        ((IRenderableBucket *)((char *)this + 0x138))->onAdded(r);
     }
 }

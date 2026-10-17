@@ -1,4 +1,4 @@
-// from server: 65% by colin
+// from server: 69% by colin
 struct StandardOut {
     char pad[0x20];
     char* buffer;
@@ -10,8 +10,8 @@ struct StandardOut {
 
 extern int g_946274;
 
-extern "C" int __cdecl func_5f9c30(int, int, const char*, int, int);
-extern "C" int __cdecl func_5f8b60(int, int, const char*, int, int);
+extern "C" int __stdcall func_5f9c30(int, int, const char*, int, int);
+extern "C" int __stdcall func_5f8b60(int, int, const char*, int, int);
 
 int StandardOut::method(int a, const char* b, int c)
 {

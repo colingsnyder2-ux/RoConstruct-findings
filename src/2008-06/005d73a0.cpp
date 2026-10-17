@@ -1,22 +1,9 @@
-// from server: 40% by colin
+// from server: 46% by colin
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
 
-struct TimerService;
-
-struct ServiceProvider {
-    char pad[0x130];
-    TimerService* timerService;
-    char pad2[4];
-};
-
-struct TimerService {
-    char pad[0x130];
-    TimerService* next;
-    char pad2[4];
-};
-
-struct RefCounted {
+struct RefCounted
+{
     virtual void unused();
     virtual void dispose();
     virtual void destroy();
@@ -24,45 +11,79 @@ struct RefCounted {
     volatile long weak;
 };
 
-extern "C" void __cdecl func_618a40(void*, void*);
-extern "C" void __cdecl func_5e5a80(void*, void*);
-extern "C" void __cdecl func_4218a0(void*, void*);
-extern "C" void __cdecl func_4025b0(void*, void*);
-
-void __stdcall TimerService_set(TimerService* self, void* arg1, void* arg2)
+struct Node
 {
-    ServiceProvider* sp = 0;
-    if (self) {
-        sp = (ServiceProvider*)((char*)self + 0x130);
+    Node* next;
+    Node* prev;
+};
+
+struct ListHead
+{
+    Node* head;
+};
+
+struct TimerService
+{
+    char pad0[0x130];
+    ListHead list;
+    RefCounted* obj;
+    ListHead list2;
+    void func(void* a, void* b);
+};
+
+extern "C" void __cdecl sub_5E5A80(void*, void*);
+extern "C" void* __cdecl sub_618A40(void*, void*);
+extern "C" void __cdecl sub_4025B0(void*, void*);
+extern "C" void __cdecl sub_4218A0(void*, void*);
+
+void TimerService::func(void* a, void* b)
+{
+    Node* n;
+    if (this)
+        n = (Node*)((char*)this + 0x130);
+    else
+        n = 0;
+
+    Node* cur = *(Node**)((char*)this + 0x134);
+    if (cur)
+    {
+        sub_5E5A80((char*)cur + 0x130, n);
     }
-    TimerService* other = self->next;
-    if (other) {
-        func_5e5a80((char*)other + 0x130, sp);
-    }
-    RefCounted* rc = 0;
-    if (arg1) {
-        rc = (RefCounted*)arg1;
-        _InterlockedExchangeAdd(&rc->strong, -1);
-    }
-    void* tmp = 0;
-    func_618a40(&tmp, rc);
-    self->next = *(TimerService**)tmp;
-    func_4025b0((char*)self + 0x138, (char*)tmp + 4);
-    if (tmp) {
-        RefCounted* r = (RefCounted*)tmp;
-        if (_InterlockedExchangeAdd(&r->strong, -1) == 1) {
-            r->dispose();
-            if (_InterlockedExchangeAdd(&r->weak, -1) == 1) {
-                r->destroy();
-            }
+
+    RefCounted* r = (RefCounted*)b;
+    void* v;
+    if (r)
+        v = (void*)r;
+    else
+        v = 0;
+
+    void* tmp;
+    sub_618A40(&tmp, v);
+    *(void**)((char*)this + 0x134) = *(void**)tmp;
+    sub_4025B0((char*)this + 0x138, (char*)tmp + 4);
+
+    RefCounted* old = (RefCounted*)tmp;
+    if (old)
+    {
+        if (_InterlockedExchangeAdd(&old->strong, -1) == 1)
+        {
+            old->destroy();
+        }
+        if (_InterlockedExchangeAdd(&old->weak, -1) == 1)
+        {
+            old->dispose();
         }
     }
-    ServiceProvider* sp2 = 0;
-    if (self) {
-        sp2 = (ServiceProvider*)((char*)self + 0x130);
-    }
-    TimerService* other2 = self->next;
-    if (other2) {
-        func_4218a0((char*)other2 + 0x130, sp2);
+
+    Node* n2;
+    if (this)
+        n2 = (Node*)((char*)this + 0x130);
+    else
+        n2 = 0;
+
+    Node* cur2 = *(Node**)((char*)this + 0x134);
+    if (cur2)
+    {
+        sub_4218A0((char*)cur2 + 0x130, n2);
     }
 }

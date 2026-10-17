@@ -1,6 +1,4 @@
-// from server: 86% by colin
-// roc-cl: 50727
-// roc-flags: /O2 /GS- /EHsc /MD
+// from server: 100% by colin
 struct S
 {
     void f(void*, void*);
@@ -8,15 +6,16 @@ struct S
 
 void S::f(void* a, void* b)
 {
+    void** head = (void**)b;
+    void* node;
     if (a)
     {
-        *(void**)((char*)a + 0x70) = *(void**)b;
-        *(void**)b = (char*)a + 0x70;
+        node = (char*)a + 0x70;
     }
     else
     {
-        void* p = 0;
-        *(void**)p = *(void**)b;
-        *(void**)b = p;
+        node = 0;
     }
+    *(void**)node = *head;
+    *head = node;
 }

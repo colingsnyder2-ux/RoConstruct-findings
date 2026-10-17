@@ -1,4 +1,4 @@
-// from server: 78% by colin
+// from server: 80% by colin
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
 
@@ -19,9 +19,9 @@ struct Handle {
 inline Handle::~Handle()
 {
     if (pn) {
-        if (_InterlockedExchangeAdd(&pn->use, -1) == 0) {
+        if (_InterlockedExchangeAdd(&pn->use, -1) == 1) {
             pn->dispose();
-            if (_InterlockedExchangeAdd(&pn->weak, -1) == 0)
+            if (_InterlockedExchangeAdd(&pn->weak, -1) == 1)
                 pn->destroy();
         }
     }

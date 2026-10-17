@@ -1,47 +1,56 @@
-// from server: 46% by colin
-struct Holder {
-    void* field0;
-    char pad[4];
-    void* field8;
-    void invoke(void* arg);
+// from server: 69% by colin
+struct Descriptor;
+
+struct Receiver {
+    virtual void slot0();
+    virtual void slot1();
+    virtual void slot2();
+    virtual void slot3();
+    virtual void slot4();
+    virtual void slot5();
+    virtual void slot6();
+    virtual void slot7();
+    virtual void invoke(void* context, const Descriptor* descriptor);
 };
 
-struct Obj5A7570 {
-    void* method5A7570();
+struct ThreadStorage {
+    void* get();
+    void set(void* value);
+    void dispose(void* value);
 };
 
-struct Obj5A76B0 {
-    void method5A76B0(void* p);
+ThreadStorage* __cdecl currentStorage();
+
+struct Scope {
+    void* saved;
+    Scope(int value);
+    ~Scope();
 };
 
-struct Obj5A6FF0 {
-    void method5A6FF0(void* p);
-};
-
-extern "C" void __cdecl sub_42BC10(void* p, int n);
-extern "C" void* __cdecl sub_42BBB0();
-
-void Holder::invoke(void* arg)
+inline Scope::~Scope()
 {
-    void* local = 0;
-    sub_42BC10(&local, 2);
-
-    void* p0 = field0;
-    if (p0 == 0)
-        p0 = (char*)p0 + 0x14;
-    else
-        p0 = 0;
-
-    void* p8 = field8;
-    void** vt = *(void***)p8;
-    void (*fn)(void*, void*, void*) = (void (*)(void*, void*, void*))vt[7];
-    fn(p8, arg, p0);
-
-    Obj5A7570* obj = (Obj5A7570*)sub_42BBB0();
-    void* r = obj->method5A7570();
-    if (r != local) {
-        ((Obj5A76B0*)obj)->method5A76B0(local);
-        if (r != 0)
-            ((Obj5A6FF0*)obj)->method5A6FF0(r);
+    ThreadStorage* storage = currentStorage();
+    void* previous = storage->get();
+    if (previous != saved) {
+        storage->set(saved);
+        if (previous)
+            storage->dispose(previous);
     }
+}
+
+struct Holder {
+    void* object;
+    unsigned int reserved;
+    Receiver* receiver;
+
+    void operator()(const Descriptor* descriptor);
+};
+
+void Holder::operator()(const Descriptor* descriptor)
+{
+    Scope scope(2);
+    void* context = object
+        ? static_cast<char*>(object) + 20
+        : 0;
+    receiver->invoke(context, descriptor);
 }

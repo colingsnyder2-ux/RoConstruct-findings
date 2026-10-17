@@ -1,4 +1,4 @@
-// from server: 69% by king_originala
+// from server: 76% by colin
 struct String;
 extern void (__thiscall *string_copy)(String *, const String &);
 extern void (__thiscall *string_destroy)(String *);
@@ -22,7 +22,7 @@ struct Value {
     unsigned int extra;
 };
 
-extern Value __cdecl make_value(const char *);
+extern Value *__cdecl make_value(Value *, const char *);
 
 struct Camera;
 typedef void (__thiscall *CameraMethod)(Camera *, int, const Value &);
@@ -33,6 +33,7 @@ struct Camera {
 };
 
 void Camera::setCursor(int argument) {
-    Value value(make_value("Textures\\ArrowCursor.png"));
-    methods[7](this, argument, value);
+    Value value = *make_value((Value *)0, "Textures\\ArrowCursor.png");
+    Value copy(value);
+    methods[7](this, argument, copy);
 }

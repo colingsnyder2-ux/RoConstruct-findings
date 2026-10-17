@@ -1,4 +1,4 @@
-// from server: 42% by king_originala
+// from server: 59% by colin
 struct Node {
     Node* next;
 };
@@ -67,8 +67,8 @@ void S::f(Range* other)
     void* output = helper.get(1);
     Range* r = &range;
     {
-        Iterator first2 = r->begin();
         Iterator first1 = other->begin();
+        Iterator first2 = r->begin();
         difference(first1, other->end(), first2, r->end(),
                    output, Empty());
     }

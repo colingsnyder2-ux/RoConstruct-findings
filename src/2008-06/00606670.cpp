@@ -1,4 +1,4 @@
-// from server: 67% by king_originala
+// from server: 74% by colin
 #pragma float_control(precise, off)
 
 struct Helper {
@@ -48,7 +48,8 @@ void Connector::func(int a, int b)
     d1 *= negative;
     d2 *= negative;
 
-    field18 = -(f0 * d0 + f1 * d1 + f2 * d2) > field14;
+    float sum = f0 * d0 + f1 * d1 + f2 * d2;
+    field18 = (-sum > field14) ? 1 : 0;
 
     float n0 = -d0;
     float n1 = -d1;
@@ -59,7 +60,7 @@ void Connector::func(int a, int b)
     *(float*)(first + 0x30) += n2;
 
     int second = fieldC + 0x28;
-    *(float*)second += d0;
-    *(float*)(second + 4) += d1;
-    *(float*)(second + 8) += d2;
+    *(float*)second += n0;
+    *(float*)(second + 4) += n1;
+    *(float*)(second + 8) += n2;
 }

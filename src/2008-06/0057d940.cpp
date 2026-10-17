@@ -1,4 +1,4 @@
-// from server: 28% by colin
+// from server: 46% by colin
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
 
@@ -17,34 +17,35 @@ struct Children
     ChildEntry* last;
 };
 
+unsigned int __cdecl childCount(Children* children, int a);
+
 struct RefCounted
 {
-    virtual void unknown0();
-    virtual void unknown1();
-    virtual void unknown2();
-    volatile long refCount1;
-    volatile long refCount2;
+    virtual void destroy();
+    virtual void destroy2();
+    volatile long refcount;
+    volatile long refcount2;
 };
 
 struct AllCanSelectCommand
 {
-    void doIt(Instance* dataState);
+    void* field0;
+    RefCounted* ref;
+    void execute(Children* children);
 };
 
-extern "C" unsigned int __cdecl childCount(Instance* instance);
-
-void AllCanSelectCommand::doIt(Instance* dataState)
+void AllCanSelectCommand::execute(Children* children)
 {
-    childCount(dataState);
-    RefCounted* rc = (RefCounted*)dataState;
-    if (rc)
+    childCount(children, 1);
+    RefCounted* r = this->ref;
+    if (r)
     {
-        if (_InterlockedExchangeAdd(&rc->refCount1, -1) == 1)
+        if (_InterlockedExchangeAdd(&r->refcount, -1) == 1)
         {
-            rc->unknown1();
-            if (_InterlockedExchangeAdd(&rc->refCount2, -1) == 1)
+            r->destroy();
+            if (_InterlockedExchangeAdd(&r->refcount2, -1) == 1)
             {
-                rc->unknown2();
+                r->destroy2();
             }
         }
     }

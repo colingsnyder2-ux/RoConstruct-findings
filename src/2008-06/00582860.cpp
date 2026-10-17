@@ -1,4 +1,4 @@
-// from server: 71% by king_originala
+// from server: 89% by colin
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
 
@@ -37,11 +37,12 @@ struct Handle {
 
 inline Handle::~Handle()
 {
-    if (control) {
-        if (_InterlockedExchangeAdd(&control->strong, -1) == 1) {
-            control->dispose();
-            if (_InterlockedExchangeAdd(&control->weak, -1) == 1)
-                control->destroy();
+    Control* c = control;
+    if (c) {
+        if (_InterlockedExchangeAdd(&c->strong, -1) == 1) {
+            c->dispose();
+            if (_InterlockedExchangeAdd(&c->weak, -1) == 1)
+                c->destroy();
         }
     }
 }
@@ -57,10 +58,12 @@ struct GroupSelectionVerb {
 bool GroupSelectionVerb::enabled()
 {
     Selection* selection = context.get(1)->selection;
-    if ((unsigned)(selection->last - selection->first) == 0)
+    int count = (int)(((char*)selection->last - (char*)selection->first) >> 3);
+    if (count <= 0)
         return false;
 
     Handle temporary = { source, 0, 0 };
     selection = temporary.get(1)->selection;
-    return (unsigned)(selection->last - selection->first) > 1;
+    int count2 = (int)(((char*)selection->last - (char*)selection->first) >> 3);
+    return count2 > 1;
 }

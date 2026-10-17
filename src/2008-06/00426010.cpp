@@ -1,4 +1,4 @@
-// from server: 82% by king_originala
+// from server: 83% by colin
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
 
@@ -89,7 +89,9 @@ void S::f()
 {
     value = query();
     refresh();
-    Guard guard(owner->table->acquire(owner));
-    parent->first.remove(&firstLink);
-    parent->second.remove(&secondLink);
+    Owner* o = owner;
+    Guard guard(o->table->acquire(o));
+    Parent* p = parent;
+    p->first.remove(&firstLink);
+    p->second.remove(&secondLink);
 }
