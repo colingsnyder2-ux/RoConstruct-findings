@@ -1,4 +1,4 @@
-// from server: 77% by king_originala
+// from server: 80% by colin
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
 
@@ -29,9 +29,9 @@ __forceinline Shared::~Shared()
 {
     Control* p = control;
     if (p) {
-        if (_InterlockedExchangeAdd(&p->strong, -1) - 1 == 0) {
+        if (_InterlockedExchangeAdd(&p->strong, -1) == 1) {
             p->dispose();
-            if (_InterlockedExchangeAdd(&p->weak, -1) - 1 == 0)
+            if (_InterlockedExchangeAdd(&p->weak, -1) == 1)
                 p->destroy();
         }
     }
@@ -39,7 +39,6 @@ __forceinline Shared::~Shared()
 
 struct Temporary {
     Shared pointer;
-    int padding;
     int value;
 
     Temporary(Shared);

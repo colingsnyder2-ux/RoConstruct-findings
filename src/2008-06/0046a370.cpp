@@ -1,4 +1,4 @@
-// from server: 79% by king_originala
+// from server: 80% by colin
 struct String
 {
     char* data;
@@ -10,7 +10,7 @@ struct String
     String& operator=(const char* text);
 };
 
-extern "C" int __stdcall VerQueryValueA(
+extern "C" __declspec(dllimport) int __stdcall VerQueryValueA(
     const void* block,
     const char* subBlock,
     void** value,

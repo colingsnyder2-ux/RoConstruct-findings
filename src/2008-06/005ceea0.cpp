@@ -1,6 +1,4 @@
-// from server: 86% by colin
-// roc-cl: 21022
-// roc-flags: /O2 /GS- /EHsc /MD /fp:fast
+// from server: 89% by colin
 extern const float half;
 
 struct Vec2
@@ -16,9 +14,9 @@ struct S
 
 Vec2 S::f(int horizontal, int vertical)
 {
-    Vec2 result = { x0 + x1, y0 + y1 };
-    result.x *= half;
-    result.y *= half;
+    Vec2 result;
+    result.x = (x1 + x0) * half;
+    result.y = (y1 + y0) * half;
 
     switch (horizontal)
     {

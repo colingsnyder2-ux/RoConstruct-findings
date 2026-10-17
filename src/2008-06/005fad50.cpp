@@ -1,4 +1,4 @@
-// from server: 79% by king_originala
+// from server: 86% by colin
 struct S_func_005fa610 {
     char pad0[4];
     int m_x;
@@ -24,9 +24,10 @@ struct S {
 
 void S::f(S_func_005fa610* value)
 {
-    Buffer* buffer = &storage->buffer;
-    S_func_005fa610* copy = value;
+    Storage* st = storage;
+    Buffer* buffer = &st->buffer;
     int size = buffer->size;
+    S_func_005fa610* copy = value;
     *copy->f() = size;
     buffer->append(&copy);
 }

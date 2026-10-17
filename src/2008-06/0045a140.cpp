@@ -1,4 +1,4 @@
-// from server: 90% by king_originala
+// from server: 98% by colin
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
 extern "C" long __cdecl _InterlockedDecrement(volatile long*);
@@ -99,7 +99,8 @@ int View::refresh(int, int)
                 desired = true;
         }
 
-        if (desired != (state != 0)) {
+        bool current = (state != 0);
+        if (desired != current) {
             if (desired)
                 pane.configure(this, getObject().pointer);
             else

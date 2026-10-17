@@ -1,4 +1,4 @@
-// from server: 78% by king_originala
+// from server: 81% by colin
 typedef unsigned int size_t;
 
 extern "C" long __stdcall InterlockedIncrement(volatile long*);
@@ -98,7 +98,9 @@ Reference func_00500b90(int a, int b, String text, int option)
 {
     Head* head = new Head;
     Reference owner(head);
-    if (!head->initialize(a, b, Parameters(text, option)))
-        return Reference();
-    return Reference(owner);
+    if (head->initialize(a, b, Parameters(text, option)))
+    {
+        return Reference(owner);
+    }
+    return Reference();
 }
