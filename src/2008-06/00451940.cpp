@@ -1,4 +1,4 @@
-// from server: 66% by colin
+// from server: 70% by colin
 extern "C" void __cdecl free_6a067a(void* p);
 extern "C" void __cdecl sub_6a0a1c(void* p);
 
@@ -51,10 +51,11 @@ VCRobloxDoc::~VCRobloxDoc()
         free_6a067a(p84);
     }
 
-    free_6a067a(this->p78);
+    void* p78 = this->p78;
     this->p84 = 0;
     this->p88 = 0;
     this->p8c = 0;
+    free_6a067a(p78);
 
     Inner74* p74 = this->p74;
     if (p74 != 0) {
