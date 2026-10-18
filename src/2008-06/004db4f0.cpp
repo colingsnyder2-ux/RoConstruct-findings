@@ -1,3 +1,4 @@
+// from server: 87% by colin
 // from server: 80% by king_originala
 // roc 2008-06 004db4f0  unit: RBX::ViewNew::ViewRbxGfx  size: 209 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 004db4f0
@@ -100,12 +101,8 @@ struct ProductBase {
 
 struct Product : ProductBase {
     virtual void slot0();
-    ~Product();
+    __declspec(dllimport) ~Product() throw();
 };
-
-inline Product::~Product()
-{
-}
 
 struct Resource {
     void release();
