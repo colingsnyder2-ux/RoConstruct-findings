@@ -1,100 +1,85 @@
-// from server: 47% by colin
+// from server: 48% by colin
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
 
-struct Control {
-    virtual void reserved();
-    virtual void dispose();
-    virtual void destroy();
-    volatile long strong;
-    volatile long weak;
+extern "C" void* __cdecl G_func_6a0968();
+extern "C" void G_func_6a0962();
+extern "C" void G_func_6a095c(void*, void*);
+extern "C" void G_func_6a067a(void*);
+
+extern "C" void* __stdcall G_imp_802360(void*, int);
+extern "C" void* __stdcall G_imp_802364(void*, void*);
+extern "C" void* __stdcall G_imp_8023d4(void*);
+extern "C" void* __stdcall G_imp_803ed8(void*, const char*, int, int);
+extern "C" void* __stdcall G_imp_803ee0(void*);
+extern "C" void* __stdcall G_imp_803f14(void*);
+
+void G_func_411b40(void*);
+void G_func_413a70(void*);
+void G_func_5773c0(void*);
+
+struct S {
+    void* field00;
+    void* field04;
+    void* field08;
+    void* field0C;
+    void* field10;
+    void* field14;
+    void* field18;
+    void* field1C;
+    void* field20;
+    void* field24;
+    void* field28;
+
+    void f(void* a, void* b);
+    void* g1();
+    void g2(void*, void*);
 };
 
-struct Shared {
-    void* ptr;
-    Control* control;
-};
-
-struct Ofstream {
-    char data[0x30];
-    Ofstream();
-    ~Ofstream();
-    void open(const char* name, int mode, int prot);
-};
-
-struct Workspace {
-    char pad[0x24];
-    Shared shared;
-    void* method750(void*);
-    void method860(void*, void*);
-    void method8d0(const char* name, int a, int b);
-};
-
-extern "C" void* __cdecl sub_6a0968();
-extern "C" void __cdecl sub_6a0962();
-extern "C" void __cdecl sub_6a095c(void*, int);
-extern "C" void __cdecl sub_6a067a(void*);
-extern "C" void __cdecl sub_5773c0(void*);
-extern "C" void __cdecl sub_413a70(void*);
-extern "C" void __cdecl sub_411b40(void*);
-
-typedef void (__stdcall *Fn802360)(int);
-typedef void (__stdcall *Fn802364)(void*);
-typedef void* (__stdcall *Fn803ed8)(void*, int, int);
-typedef void* (__stdcall *Fn803ee0)(void*);
-typedef void (__stdcall *Fn803f14)(void*);
-typedef void (__stdcall *Fn8023d4)(void*);
-
-extern Fn802360 g_802360;
-extern Fn802364 g_802364;
-extern Fn803ed8 g_803ed8;
-extern Fn803ee0 g_803ee0;
-extern Fn803f14 g_803f14;
-extern Fn8023d4 g_8023d4;
-
-void Workspace::method8d0(const char* name, int a, int b)
+void S::f(void* a, void* b)
 {
-    char buf[0xa8];
-    Ofstream* ofs = reinterpret_cast<Ofstream*>(buf + 0x18);
-    void* tmp = 0;
+    char buf[0xA8];
 
-    sub_6a0968();
-    sub_6a0962();
+    G_func_6a0968();
+    G_func_6a0962();
 
-    g_802360(1);
-    g_802364(buf + 0x24);
+    G_imp_802360(buf + 0x1C, 1);
 
-    void* h = g_803ed8(const_cast<char*>(name), 0x22, 0x40);
-    void* r = g_803ee0(h);
-    g_802364(buf + 0x2c);
+    void* h = G_imp_803ed8(buf + 0x04, (const char*)a, 0x22, 0x40);
+    void* r = G_imp_803ee0(h);
+    G_imp_802364(buf + 0x24, r);
 
-    g_803f14(buf + 4);
+    G_imp_803f14(buf + 0x04);
 
-    Shared local;
-    local.ptr = shared.ptr;
-    local.control = shared.control;
-    if (local.control)
-        _InterlockedExchangeAdd(&local.control->strong, 1);
-
-    sub_411b40(buf + 0x1c);
-
-    void* v = method750(buf + 4);
-    void* w = *reinterpret_cast<void**>(v);
-    method860(buf + 0x20, w);
-
-    if (tmp) {
-        sub_413a70(tmp);
-        sub_6a067a(tmp);
+    void* p24 = field24;
+    void* p28 = field28;
+    *(void**)(buf + 0x18) = p24;
+    *(void**)(buf + 0x1C) = p28;
+    if (p28) {
+        _InterlockedExchangeAdd((volatile long*)((char*)p28 + 4), 1);
     }
 
-    sub_5773c0(buf + 0x14);
-    g_8023d4(buf + 0x20);
+    G_func_411b40(buf + 0x14);
 
-    if (local.ptr) {
-        *reinterpret_cast<void**>(static_cast<char*>(local.ptr) + 4) = local.control;
+    void* q = g1();
+    void* v = *(void**)q;
+    g2(v, buf + 0x18);
+
+    void* c = *(void**)(buf + 0x04);
+    if (c) {
+        G_func_413a70(c);
+        G_func_6a067a(c);
     }
 
-    if (*reinterpret_cast<void**>(buf + 0x10)) {
-        sub_6a095c(*reinterpret_cast<void**>(buf + 0xc), 0);
+    G_func_5773c0(buf + 0x0C);
+    G_imp_8023d4(buf + 0x18);
+
+    void* e = *(void**)(buf + 0x0C);
+    if (e) {
+        *(void**)((char*)e + 4) = *(void**)(buf + 0x08);
+    }
+
+    if (*(void**)(buf + 0x14)) {
+        G_func_6a095c(0, *(void**)(buf + 0x10));
     }
 }

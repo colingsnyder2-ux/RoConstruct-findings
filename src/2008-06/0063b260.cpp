@@ -1,4 +1,4 @@
-// from server: 87% by colin
+// from server: 91% by colin
 struct S {
     char pad0[4];
     int field4;
@@ -15,7 +15,7 @@ void S::set(void* object, double* value)
 {
     char* base = object ? static_cast<char*>(object) - 20 : 0;
     double* target = reinterpret_cast<double*>(field8 + reinterpret_cast<int>(base));
-    if (*value != *target) {
+    if (*target != *value) {
         *target = *value;
         if (field10) {
             void (__thiscall *fn)(void*, int) = reinterpret_cast<void (__thiscall *)(void*, int)>(field10);

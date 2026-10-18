@@ -1,4 +1,4 @@
-// from server: 78% by king_originala
+// from server: 83% by colin
 extern "C" void* __cdecl cast_object(void*, long, const void*, const void*, int);
 extern "C" void (__cdecl* _invalid_parameter_noinfo)();
 
@@ -35,53 +35,45 @@ struct FilteredSelection {
 
 void FilteredSelection::update(Change* argument)
 {
-    Selection* s = reinterpret_cast<Selection*>(this);
-    Change* change = *static_cast<Change* volatile*>(&argument);
+    Change* change = argument;
+    void* added = change->added;
 
-    argument = static_cast<Change*>(
-        cast_object(change->added, 0, &instance_type, &pvinstance_type, 0));
+    void* result = cast_object(added, 0, &instance_type, &pvinstance_type, 0);
+    if (result)
+        this->selection.insert(&result);
 
-    if (argument)
-        reinterpret_cast<Selection*>(
-            reinterpret_cast<char*>(s) + 12)->insert(
-                reinterpret_cast<void* const*>(&argument));
-
-    change = static_cast<Change*>(change->removed);
-    argument = change;
-    if (change) {
-        s = reinterpret_cast<Selection*>(reinterpret_cast<char*>(s) + 12);
+    void* removed = change->removed;
+    if (removed) {
+        Selection* s = &this->selection;
 
         void** finish = s->last;
         if (s->first > finish)
             _invalid_parameter_noinfo();
 
-        change = reinterpret_cast<Change*>(s->first);
-        if (reinterpret_cast<void**>(change) > s->last)
+        void** pos = s->first;
+        if (pos > s->last)
             _invalid_parameter_noinfo();
 
         Iterator position;
         position.owner = s->owner;
-        *static_cast<void*** volatile>(&position.position) =
-            reinterpret_cast<void**>(change);
+        position.position = pos;
 
-        while (reinterpret_cast<void**>(change) != finish) {
-            if (*reinterpret_cast<void**>(change) ==
-                *reinterpret_cast<void* volatile*>(&argument))
+        while (pos != finish) {
+            if (*pos == removed)
                 break;
-            change = reinterpret_cast<Change*>(
-                reinterpret_cast<char*>(change) + 4);
+            pos++;
         }
 
         finish = s->last;
         if (s->first > finish)
             _invalid_parameter_noinfo();
 
-        void* owner = *static_cast<void* volatile*>(&s->owner);
+        void* owner = s->owner;
         if (!position.owner || position.owner != owner)
             _invalid_parameter_noinfo();
 
-        if (reinterpret_cast<void**>(change) != finish) {
-            position.position = reinterpret_cast<void**>(change);
+        if (pos != finish) {
+            position.position = pos;
             s->erase(position);
         }
     }

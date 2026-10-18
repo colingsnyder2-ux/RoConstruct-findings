@@ -1,5 +1,5 @@
-// from server: 88% by king_originala
-extern "C" void (__cdecl *invalidParameter)();
+// from server: 90% by colin
+extern "C" void __cdecl invalidParameter();
 
 struct Vec3 {
     float x, y, z;

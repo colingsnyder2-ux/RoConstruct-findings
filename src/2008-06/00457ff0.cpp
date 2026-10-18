@@ -1,4 +1,4 @@
-// from server: 61% by king_originala
+// from server: 69% by colin
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
 
@@ -38,37 +38,6 @@ Shared::~Shared()
     }
 }
 
-struct Base
-{
-    unsigned long table;
-    unsigned char reserved[80];
-    ~Base();
-};
-
-struct OwnerBase : Base
-{
-    ~OwnerBase();
-};
-
-OwnerBase::~OwnerBase()
-{
-    Control* p = *reinterpret_cast<Control**>(
-        reinterpret_cast<unsigned char*>(this) + 0xa0);
-    if (p && _InterlockedExchangeAdd(&p->strong, -1) == 1)
-    {
-        p->dispose();
-        if (_InterlockedExchangeAdd(&p->weak, -1) == 1)
-            p->destroy();
-    }
-}
-
-struct First
-{
-    unsigned long table;
-    unsigned char reserved[32];
-    ~First();
-};
-
 extern "C" void __cdecl release(void*);
 extern "C" void __cdecl deallocate(void*);
 
@@ -82,6 +51,18 @@ struct Storage
     unsigned char reserved1[4];
     void* owner;
     ~Storage();
+};
+
+struct Storage2
+{
+    void* first;
+    unsigned int reserved[2];
+    void* begin;
+    void* end;
+    void* limit;
+    unsigned int extra;
+    void* last;
+    ~Storage2();
 };
 
 struct List
@@ -105,12 +86,16 @@ struct Guard
     ~Guard();
 };
 
-struct S : OwnerBase
+struct S
 {
-    First first;
-    Storage second;
+    unsigned long table;
+    unsigned char reserved[0x50];
+    unsigned long table2;
+    unsigned char reserved2[0x20];
+    unsigned long table3;
+    unsigned char reserved3[0x20];
     Shared observed;
-    unsigned long reserved;
+    unsigned long reserved4;
     Shared owner;
 
     ~S();
@@ -119,12 +104,12 @@ struct S : OwnerBase
 S::~S()
 {
     table = 0x818a74;
-    first.table = 0x818a5c;
-    second.allocation = reinterpret_cast<void*>(0x818a48);
+    table2 = 0x818a5c;
+    table3 = 0x818a48;
 
     Guard guard(observed);
     if (owner.object)
-        static_cast<Owner*>(owner.object)->first.remove(&first);
+        static_cast<Owner*>(owner.object)->first.remove(&table2);
     if (owner.object)
-        static_cast<Owner*>(owner.object)->second.remove(&second);
+        static_cast<Owner*>(owner.object)->second.remove(&table3);
 }

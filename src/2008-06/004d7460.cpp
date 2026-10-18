@@ -1,5 +1,5 @@
-// from server: 82% by king_originala
-extern "C" long (__stdcall *InterlockedDecrement)(volatile long *);
+// from server: 100% by colin
+extern "C" __declspec(dllimport) long __stdcall InterlockedDecrement(volatile long *);
 
 struct Control
 {

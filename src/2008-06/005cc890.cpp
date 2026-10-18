@@ -1,40 +1,34 @@
-// from server: 55% by colin
+// from server: 63% by colin
+extern float g828b60;
+extern float g83a310;
+extern float g81e704;
+extern float g83a3ec;
+
 extern "C" double __cdecl acos(double);
 
-extern float g_828b60;
-extern float g_83a310;
-extern float g_81e704;
-extern float g_83a3ec;
-
 struct GCamera {
-    float data[9];
-    void getVector(int index, float* out);
+    void getAxis(int index, float* out);
 };
 
-struct VCamera {
+struct S {
     char pad[0x174];
-    GCamera camera;
-    void sub_5cc740(float angle);
-    void sub_5cc890(int arg);
+    GCamera cam;
+    void method(float arg);
 };
 
-void GCamera::getVector(int index, float* out) {
-    out[0] = data[index];
-    out[1] = data[index + 3];
-    out[2] = data[index + 6];
-}
+void GCamera_getAxis(GCamera* self, float* out, int index);
 
-void VCamera::sub_5cc890(int arg) {
-    float v = g_828b60;
-    float vec[3];
-    camera.getVector(2, vec);
-    float x = vec[0] * v;
-    float y = vec[1] * v;
-    float z = vec[2] * v;
-    float len = (float)acos((double)v);
-    float a = len * g_83a310 * g_81e704;
-    int i = (int)a;
-    int total = i + arg;
-    float result = (float)total * g_83a3ec - x;
-    sub_5cc740(result);
+void S::method(float arg) {
+    float v = g828b60;
+    float tmp[3];
+    GCamera_getAxis(&cam, tmp, 2);
+    float x = tmp[0] * v;
+    float y = tmp[1] * v;
+    float z = tmp[2] * v;
+    float a = (float)acos((double)v);
+    float r = a * g83a310 * g81e704;
+    int i = (int)r;
+    int total = i + *(int*)((char*)&arg + 4);
+    float f = (float)total * g83a3ec - v;
+    ((void (__thiscall*)(S*, float))0x5cc740)(this, f);
 }

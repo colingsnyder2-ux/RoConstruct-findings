@@ -1,4 +1,4 @@
-// from server: 69% by king_originala
+// from server: 82% by colin
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
 
@@ -20,10 +20,13 @@ struct Pair {
     }
 
     ~Pair() {
-        if (control && _InterlockedExchangeAdd(&control->strong, -1) != 1) {
-            control->dispose();
-            if (_InterlockedExchangeAdd(&control->weak, -1) == 1)
-                control->destroy();
+        Control* p = control;
+        if (p) {
+            if (_InterlockedExchangeAdd(&p->strong, -1) == 1) {
+                p->dispose();
+                if (_InterlockedExchangeAdd(&p->weak, -1) == 1)
+                    p->destroy();
+            }
         }
     }
 };

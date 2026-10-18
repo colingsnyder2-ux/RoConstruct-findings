@@ -1,49 +1,35 @@
-// from server: 60% by colin
-struct GuiItem {
-    char pad[0x14];
-    int menuState;
-};
-
+// from server: 75% by colin
 struct UnifiedWidget {
-    int processShown_OutOfTitle(void *event);
-    int processShown_InTitle(void *event);
-    int processShown(void *event);
-    int process(void *event, void *result);
+    char pad[0x14];
+    int mode;
+    int f(int *a, int *b);
 };
 
-int UnifiedWidget::process(void *event, void *result) {
-    GuiItem *item = (GuiItem *)((char *)this - 0x130);
-    if (!(*(bool (__thiscall **)(GuiItem *))(*(int *)item + 0x54))(item)) {
-        *(int *)((char *)result + 4) = 0;
-        *(int *)result = 0;
-        return 0;
-    }
-    int *ev = (int *)event;
-    int code = *ev;
-    if (code >= 1 || code > 7) {
-        *(int *)((char *)result + 4) = 0;
-        *(int *)result = 0;
-        return 0;
-    }
-    int state = *(int *)((char *)this + 0x14);
-    if (state > 3) {
-        *(int *)((char *)result + 4) = 0;
-        *(int *)result = 0;
-        return 0;
-    }
-    switch (state) {
+extern "C" int __fastcall sub_574860(void *self, int *a, int *b);
+extern "C" int __fastcall sub_574760(void *self, int *a, int *b);
+extern "C" int __fastcall sub_574de0(void *self, int *a, int *b);
+
+int UnifiedWidget::f(int *a, int *b)
+{
+    UnifiedWidget *self = (UnifiedWidget *)((char *)this - 0x130);
+    int (*vtbl)(void *) = *(int (**)(void *))self;
+    if (!((char (__fastcall *)(void *))vtbl)(self))
+        goto fail;
+    if (*a < 1 || *a > 7)
+        goto fail;
+    switch (this->mode) {
     case 0:
-        processShown_OutOfTitle(event);
-        return *(int *)result;
+        sub_574860(self, a, b);
+        return (int)b;
     case 1:
-        processShown_InTitle(event);
-        return *(int *)result;
+        sub_574760(self, a, b);
+        return (int)b;
     case 2:
-        processShown(event);
-        return *(int *)result;
-    default:
-        *(int *)((char *)result + 4) = 0;
-        *(int *)result = 0;
-        return 0;
+        sub_574de0(self, a, b);
+        return (int)b;
     }
+fail:
+    b[1] = 0;
+    b[0] = 0;
+    return (int)b;
 }

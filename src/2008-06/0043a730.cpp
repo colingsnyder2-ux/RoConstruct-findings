@@ -1,54 +1,49 @@
-// from server: 64% by colin
-void* __cdecl operator new(unsigned int);
+// from server: 69% by colin
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
+void* __cdecl operator new(unsigned int);
+void __cdecl operator delete(void*);
 
-struct RefCounted
-{
+struct RefCounted {
     void* value;
     RefCounted& operator=(const RefCounted&);
     ~RefCounted();
 };
 
-struct Inner
-{
-    virtual float getValue(void*);
+struct Inner {
+    char pad[0x198];
+    int field;
 };
 
-struct Holder
-{
+struct TargetVtbl {
+    char pad[8];
+    float (__thiscall* getValue)(struct Target*, void*);
+};
+
+struct Target {
+    TargetVtbl* vtbl;
+};
+
+struct Src {
     char pad[0x18];
+    Target* target;
+};
+
+struct S {
+    char pad[0x128];
     Inner* inner;
+    Src* src;
+
+    float GetValue(void*);
 };
 
-struct S
+float S::GetValue(void* arg)
 {
-    char pad0[0x128];
-    void* field128;
-    Holder* field12c;
-
-    float method(void* arg);
-};
-
-float S::method(void* arg)
-{
-    void* obj = *(void**)((char*)field128 + 0x198);
-
-    RefCounted ref;
-    ref.value = 0;
-    *(void**)&ref = operator new(0x14);
-    *(void**)&ref = obj;
-
-    void* p = *(void**)&ref;
-    if (p != 0)
-        p = (char*)p + 0x14;
-    else
-        p = 0;
-
-    Holder* h = field12c;
-    Inner* in = h->inner;
-    float result = in->getValue(p);
-
-    _InterlockedExchangeAdd((volatile long*)&ref, -1);
-
+    RefCounted r;
+    r.value = 0;
+    r = RefCounted();
+    void* p = operator new(0x14);
+    void* q = (p != 0) ? (char*)p + 0x14 : 0;
+    Target* t = src->target;
+    float result = t->vtbl->getValue(t, q);
     return result;
 }

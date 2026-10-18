@@ -1,4 +1,4 @@
-// from server: 41% by colin
+// from server: 52% by colin
 struct EventData;
 
 struct Listener
@@ -6,20 +6,10 @@ struct Listener
     void detach(EventData*);
 };
 
-struct RefCount
-{
-    virtual ~RefCount();
-    virtual void dispose() = 0;
-    virtual void destroy() = 0;
-
-    volatile long strong;
-    volatile long weak;
-};
-
 struct SharedData
 {
     void* object;
-    RefCount* control;
+    void* control;
 };
 
 struct EventBase
@@ -29,8 +19,9 @@ struct EventBase
 
 struct EventData : EventBase
 {
-    SharedData data;
+    void* field4;
     Listener* listener;
+    SharedData data;
 
     virtual ~EventData();
 };
@@ -39,19 +30,16 @@ __forceinline EventBase::~EventBase()
 {
 }
 
+extern "C" void __cdecl copy_shared(SharedData*, SharedData*);
+
 EventData::~EventData()
 {
-    if (listener)
-        listener->detach(this);
-
-    RefCount* p = data.control;
-    if (p)
+    Listener* l = listener;
+    if (l)
     {
-        if (--p->strong == 0)
-        {
-            p->dispose();
-            if (--p->weak == 0)
-                p->destroy();
-        }
+        l->detach(this);
+        SharedData tmp;
+        copy_shared(&tmp, &data);
+        l->detach(this);
     }
 }

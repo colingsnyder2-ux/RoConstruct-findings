@@ -1,4 +1,4 @@
-// from server: 99% by colin
+// from server: 100% by colin
 typedef unsigned int size_t;
 
 inline void *__cdecl operator new(size_t, void *address)
@@ -13,13 +13,16 @@ inline void __cdecl operator delete(void *, void *)
 typedef void (__thiscall *CopyObject)(void *, const void *);
 extern CopyObject copyObject;
 
+typedef void (__thiscall *DestroyObject)(void *);
+extern DestroyObject destroyObject;
+
 struct Value {
     unsigned long first;
     unsigned long second;
     unsigned long object;
 
     Value(const Value &source);
-    ~Value();
+    ~Value() { destroyObject(&object); }
 };
 
 inline Value::Value(const Value &source)

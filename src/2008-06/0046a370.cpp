@@ -1,4 +1,4 @@
-// from server: 80% by colin
+// from server: 86% by colin
 struct String
 {
     char* data;
@@ -15,6 +15,8 @@ extern "C" __declspec(dllimport) int __stdcall VerQueryValueA(
     const char* subBlock,
     void** value,
     unsigned int* length);
+
+extern "C" int __cdecl sub_7A6368(void*, void*);
 
 struct DxUserInput
 {
@@ -36,7 +38,7 @@ String DxUserInput::query(const String& name)
     void* value = 0;
     unsigned int length = 0;
 
-    if (VerQueryValueA(block, path, &value, &length))
+    if (sub_7A6368(block, (void*)VerQueryValueA(block, path, &value, &length)))
         result = static_cast<const char*>(value);
 
     return result;

@@ -1,4 +1,4 @@
-// from server: 46% by why2
+// from server: 57% by Viper
 // roc 2009-06 005be030  unit: RBX::AggregateChunk  size: 15 bytes
 // Make this compile to the exact bytes below, then: roc check 2009-06 005be030
 //
@@ -11,7 +11,7 @@
 // 005be03e  c3                   ret
 
 struct S {
-    void f(void*);
+    void __cdecl f(void*);
 };
 
 extern "C" void __stdcall sub_560bc0(void*, int);

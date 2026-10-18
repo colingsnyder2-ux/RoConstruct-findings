@@ -1,39 +1,35 @@
-// from server: 94% by colin
-struct Interface;
-
-struct Unknown {
-    long __stdcall queryInterface(const void *iid, void **out);
+// from server: 100% by colin
+struct IUnknown {
+    virtual long __stdcall QueryInterface(const void *riid, void **ppvObject);
+    virtual unsigned long __stdcall AddRef();
+    virtual unsigned long __stdcall Release();
 };
 
-struct Object {
-    long (__stdcall *vtable)(Object *, const void *, void **);
-};
+extern "C" const unsigned char g_iid1[16];
+extern "C" const unsigned char g_iid2[16];
 
-extern const unsigned char iid1[16];
-extern const unsigned char iid2[16];
-
-long __stdcall queryInterface(void *self, const void *iid, void **out)
+extern "C" long __stdcall Proxy_QueryInterface(void *self, const void *riid, void **ppvObject)
 {
-    if (out == 0)
-        return 0x80004003;
+    if (ppvObject == 0)
+        return (long)0x80004003UL;
 
-    *out = 0;
+    *ppvObject = 0;
 
-    const unsigned int *id = static_cast<const unsigned int *>(iid);
-    const unsigned int *g1 = reinterpret_cast<const unsigned int *>(iid1);
-    const unsigned int *g2 = reinterpret_cast<const unsigned int *>(iid2);
+    const unsigned int *guid = (const unsigned int *)riid;
+    const unsigned int *g1 = (const unsigned int *)g_iid1;
+    const unsigned int *g2 = (const unsigned int *)g_iid2;
 
     bool match = false;
-    if (id[0] == 0xb196b286 && id[1] == g1[0] && id[2] == g1[1] && id[3] == g1[2])
+    if (guid[0] == 0xb196b286 && guid[1] == g1[0] && guid[2] == g1[1] && guid[3] == g1[2])
         match = true;
-    else if (id[0] == 0 && id[1] == 0 && id[2] == 0xc0 && id[3] == 0x46000000)
+    else if (guid[0] == 0 && guid[1] == 0 && guid[2] == 0xc0 && guid[3] == 0x46000000)
         match = true;
 
     if (!match)
-        return 0x80004002;
+        return (long)0x80004002UL;
 
-    *out = self;
-    Object *obj = static_cast<Object *>(self);
-    obj->vtable(obj, iid, out);
+    *ppvObject = self;
+    IUnknown *unk = (IUnknown *)self;
+    unk->AddRef();
     return 0;
 }

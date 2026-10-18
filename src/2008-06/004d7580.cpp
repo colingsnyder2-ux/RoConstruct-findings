@@ -1,5 +1,12 @@
-// from server: 66% by colin
-// roc-lang: cpp
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MT
-// roc-lib: ogre-1.4.9 OgreAlignedAllocator.cpp
+// from server: 68% by colin
+extern "C" void __cdecl G1_func_006a165b(void*, int, int, void*);
+
+struct S {
+    void f();
+};
+
+void S::f()
+{
+    G1_func_006a165b(this, 4, 4, (void*)0x502a70);
+    G1_func_006a165b(this, 4, 1, (void*)0x502a70);
+}

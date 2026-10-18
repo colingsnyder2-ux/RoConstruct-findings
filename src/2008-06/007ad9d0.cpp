@@ -1,4 +1,4 @@
-// from server: 61% by king_originala
+// from server: 62% by colin
 struct S {
     void __fastcall f(int rowStep, int channels, unsigned int width,
                       unsigned int height, unsigned char* output,
@@ -13,7 +13,7 @@ void __fastcall S::f(int rowStep, int channels, unsigned int width,
     int halfWidth = static_cast<int>(width >> 1);
     int halfHeight = static_cast<int>(height >> 1);
 
-    if (height == 1) {
+    if (width == 1) {
         if (halfWidth > 0) {
             int rows = halfWidth;
             do {
@@ -29,11 +29,10 @@ void __fastcall S::f(int rowStep, int channels, unsigned int width,
                 source += rowStep;
             } while (--rows);
         }
-    } else if (width == 1) {
+    } else if (height == 1) {
         int adjustment = stride - rowStep;
         if (halfHeight > 0) {
             adjustment += stride;
-            width = adjustment;
             int rows = halfHeight;
             do {
                 int count = channels;
@@ -45,7 +44,7 @@ void __fastcall S::f(int rowStep, int channels, unsigned int width,
                         *output++ = static_cast<unsigned char>((first + second) / 2);
                     } while (--count);
                 }
-                source += static_cast<int>(width);
+                source += adjustment;
             } while (--rows);
         }
     }

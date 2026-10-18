@@ -1,7 +1,7 @@
-// from server: 98% by colin
+// from server: 99% by colin
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD /fp:fast
-extern "C" long __stdcall InterlockedDecrement(volatile long *);
+extern "C" __declspec(dllimport) long __stdcall InterlockedDecrement(volatile long *);
 extern const float upperLimit;
 
 struct Control
