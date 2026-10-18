@@ -1,14 +1,10 @@
-// from server: 66% by colin
-
-
-
-
+// from server: 70% by colin
 struct Vector4 {
     float x, y, z, w;
 };
 
 struct RenderSystem {
-    virtual void setWorldMatrix(const Vector4* m, const Vector4* v, const Vector4* p, const Vector4* t);
+    virtual void setWorldMatrix(const Vector4* m, const Vector4* v);
 };
 
 struct Root {
@@ -59,7 +55,7 @@ void RbxSceneNode::update(float a, float b, float c, float d, const Vector4* v) 
     m.z = v->z;
     m.w = v->w;
 
-    rs->setWorldMatrix(&m, &t, 0, 0);
+    rs->setWorldMatrix(&m, &t);
 
     Node n;
     *(int*)(n.data + 0) = 0;

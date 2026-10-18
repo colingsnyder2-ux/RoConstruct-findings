@@ -1,6 +1,6 @@
-// from server: 41% by colin
+// from server: 45% by colin
 extern "C" {
-    int __stdcall SHGetFolderPathA(void*, int, void*, unsigned long, char*);
+    int __stdcall SHGetFolderPathA(void*, unsigned long, void*, unsigned long, char*);
     int __stdcall ShellExecuteA(void*, const char*, const char*, const char*, const char*, int);
 }
 
@@ -27,11 +27,10 @@ struct CRobloxDoc {
 void CRobloxDoc::OpenCommonDocumentFolder()
 {
     char path[0x104];
-    if (SHGetFolderPathA(0, 0x2e, 0, 0, path) == 0)
+    if (SHGetFolderPathA(0, 0x2e, 0, 0, path) != 0)
     {
-        CString s(path);
-        CString msg("Unable to get common document folder");
-        g_strArray.Add(msg);
+        CString s("Unable to get common document folder");
+        g_strArray.Add(s);
     }
 
     CString open("open");

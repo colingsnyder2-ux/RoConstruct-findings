@@ -1,8 +1,7 @@
-// from server: 49% by colin
+// from server: 52% by colin
 // roc 2008-06 004faa30  unit: RBX::ViewNew::TorsoBuilder  size: 178 bytes
-// Make this compile to the exact bytes below, then: roc check 2008-06 004faa30
 
-extern "C" long __stdcall InterlockedDecrement(long* p);
+extern "C" long __stdcall InterlockedDecrement(long*);
 
 struct Handle {
     void* value;
@@ -15,22 +14,20 @@ struct Inner {
     unsigned long flags;
     Handle handle;
     float a, b, c;
-    float d;
-    Inner();
+    Inner(const Inner* other);
     ~Inner();
 };
 
 struct TorsoBuilder {
     void init();
-    void construct(Inner* inner, float f, short a, short b, int c);
+    void construct(Inner* out, const Inner* src, float w, short a, short b, int c);
 };
 
-void TorsoBuilder::construct(Inner* inner, float f, short a, short b, int c) {
-    Inner tmp;
-    tmp.x = (float)a;
-    tmp.y = (float)b;
-    tmp.d = f;
+void TorsoBuilder::construct(Inner* out, const Inner* src, float w, short a, short b, int c)
+{
+    Inner tmp(src);
     tmp.table = 0x827100;
+    tmp.c = w;
     this->init();
     if (tmp.handle.value) {
         if (InterlockedDecrement((long*)((char*)tmp.handle.value + 4)) == 0) {

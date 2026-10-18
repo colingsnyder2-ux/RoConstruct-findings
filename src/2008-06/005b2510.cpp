@@ -1,4 +1,4 @@
-// from server: 51% by colin
+// from server: 57% by colin
 struct Sub {
     char pad[0x14];
     void destroy();
@@ -21,7 +21,7 @@ struct Accoutrement {
 
 void Accoutrement::f(int target, int unused)
 {
-    while (target != state) {
+    do {
         if (target > state) {
             switch (state) {
             case 0:
@@ -41,7 +41,7 @@ void Accoutrement::f(int target, int unused)
                 state = n;
                 notify((const char*)0x976ccc);
             }
-        } else {
+        } else if (target < state) {
             int s = state - 1;
             switch (s) {
             case 0:
@@ -65,5 +65,5 @@ void Accoutrement::f(int target, int unused)
                 notify((const char*)0x976ccc);
             }
         }
-    }
+    } while (target != state);
 }

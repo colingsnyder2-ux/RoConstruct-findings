@@ -1,16 +1,18 @@
-// from server: 75% by atomic.potato
-struct VInstance_EventDesc {
-    int pad[42];
-    void *value;
-    void set(void *);
+// from server: 94% by intel
+extern "C" void __stdcall Function_00414da0(void *);
+
+struct EventDesc_008c9540
+{
+    char pad0[164];
+    void *m_value;
+    void Set(void *value);
 };
 
-extern "C" void __cdecl EventDesc_Set(void *);
-
-void VInstance_EventDesc::set(void *value)
+void EventDesc_008c9540::Set(void *value)
 {
-    if (this->value != value) {
-        this->value = value;
-        EventDesc_Set((void *)0x00e539a4);
+    if (m_value != value)
+    {
+        m_value = value;
+        Function_00414da0((void *)0xe53a34);
     }
 }

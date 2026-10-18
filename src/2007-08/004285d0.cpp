@@ -1,4 +1,4 @@
-// from server: 26% by colin
+// from server: 29% by Viper
 struct COleException {
     char pad[0x14];
     unsigned long m_dwHelpContext;
@@ -27,7 +27,7 @@ int COleException::ReportError(unsigned long dwHelpContext, const char* lpszClas
         return 0;
 
     pMsg = LocalAlloc(0x40, 0x200);
-    if (pMsg == 0)
+    if (pMsg != 0)
         return 0;
 
     FormatMessageA(0x1000, 0, dwError, 0x400, (char*)pMsg, 0x200, 0);

@@ -1,4 +1,5 @@
-extern "C" int (__stdcall * const lstrlenA)(const char *);
+// from server: 52% by colin
+extern "C" int __stdcall lstrlenA(const char *);
 extern int __cdecl LookupType(const char *, unsigned short *);
 
 struct ByteBuffer {
@@ -18,12 +19,12 @@ struct S {
 long S::f()
 {
     char token[4096];
-    unsigned int type = 0;
+    unsigned short type = 0;
     long result = NextToken(token);
     if (result < 0)
         return result;
 
-    if (!LookupType(token, reinterpret_cast<unsigned short *>(&type)))
+    if (!LookupType(token, &type))
         return (long)0x80020009UL;
 
     SkipSpace();
@@ -32,7 +33,7 @@ long S::f()
         return result;
 
     try {
-        switch ((unsigned short)type) {
+        switch (type) {
         case 8:
             {
                 ByteBuffer value;
@@ -64,7 +65,7 @@ long S::f()
                     return (long)0x80020009UL;
 
                 int count = length / 2;
-                type = count;
+                type = (unsigned short)count;
                 ByteBuffer bytes;
                 bytes.data = 0;
 

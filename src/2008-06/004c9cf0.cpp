@@ -1,4 +1,4 @@
-// from server: 93% by colin
+// from server: 98% by colin
 extern float g_float_93cc40;
 
 struct Inner {
@@ -26,8 +26,8 @@ struct Obj {
 void __cdecl init(Sender* out)
 {
     Inner* in = ((Obj*)*(void**)out)->getInner();
-    Sender* dst = (Sender*)((char*)out + 0x10);
-    *(Inner*)dst = *in;
+    Inner* dst = (Inner*)((char*)out + 0x10);
+    *dst = *in;
     dst->a = in->a;
     dst->b = in->b;
     dst->c = in->c;

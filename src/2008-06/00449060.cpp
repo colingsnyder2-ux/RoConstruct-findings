@@ -1,4 +1,4 @@
-// from server: 78% by colin
+// from server: 79% by colin
 struct CRenderSettings {
     char padding[0x14c];
     float value14c;
@@ -18,7 +18,7 @@ void CRenderSettings::setValue(float v)
         src = &zero;
 
     float* chosen;
-    if (value150 == *src)
+    if (value150 < *src)
         chosen = &value150;
     else
         chosen = src;

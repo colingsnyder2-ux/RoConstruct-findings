@@ -1,4 +1,4 @@
-// from server: 97% by king_originala
+// from server: 100% by colin
 typedef int (__thiscall *Getter)(void *);
 typedef void (__thiscall *Setter)(void *, int);
 
@@ -25,7 +25,7 @@ Function __cdecl apply(Iterator first, Iterator last, Function function)
     for (; current != end; current += 8)
     {
         int value = function.getter(current);
-        function.setter(function.adjustment + function.object, value);
+        function.setter((void *)(function.adjustment + (int)function.object), value);
     }
     return function;
 }

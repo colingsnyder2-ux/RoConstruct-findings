@@ -1,6 +1,6 @@
-// from server: 56% by colin
-// roc-cl: 21022
-// roc-flags: /O2 /GS- /EHsc /MD /fp:fast
+// from server: 57% by colin
+
+
 struct GCamera {
     float m[3][4];
     void getVector(int index, float* out);
@@ -16,20 +16,16 @@ struct Message {
 
 extern float g_scale;
 
+extern "C" void __stdcall appendSphere(float* v);
+
 void Message::render2d(void* adorn)
 {
     float v[3];
     float s = g_scale;
     ((GCamera*)this)->getVector(2, v);
-    float nx = v[0] * s;
-    float ny = v[1] * s;
-    float nz = v[2] * s;
-    float px = x + nx;
-    float py = y + ny;
-    float pz = z + nz;
     float out[3];
-    out[0] = px;
-    out[1] = py;
-    out[2] = pz;
-    ((void (__stdcall*)(float*))0x518e20)(out);
+    out[0] = v[0] * s + x;
+    out[1] = v[1] * s + y;
+    out[2] = v[2] * s + z;
+    appendSphere(out);
 }

@@ -1,4 +1,4 @@
-// from server: 98% by colin
+// from server: 100% by colin
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD /fp:fast
 struct Vector {
@@ -21,9 +21,9 @@ extern "C" Stream *__cdecl writeFlag(Stream *, bool);
 void __cdecl writePosition(Stream *stream, const Vector &value, bool force)
 {
     if (!force &&
-        value.x <= maximumXZ && value.x >= minimumXZ &&
-        value.y <= maximumY && value.y >= minimumY &&
-        value.z <= maximumXZ && value.z >= minimumXZ)
+        !(value.x > maximumXZ) && !(value.x < minimumXZ) &&
+        !(value.y > maximumY) && !(value.y < minimumY) &&
+        !(value.z > maximumXZ) && !(value.z < minimumXZ))
     {
         writeFlag(stream, true);
 

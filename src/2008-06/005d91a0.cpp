@@ -1,4 +1,4 @@
-// from server: 89% by king_originala
+// from server: 90% by colin
 struct Vector3
 {
     float x, y, z;
@@ -35,7 +35,7 @@ float S::f()
             float scale = scale_828b60;
             Vector3 temporary;
             Vector3 *v = matrix->column(&temporary, 2);
-            Vector3 scaled = { v->x * scale, v->y * scale, v->z * scale };
+            Vector3 scaled = { v->z * scale, v->y * scale, v->x * scale };
             return call_5de650(scaled);
         }
     }

@@ -1,4 +1,4 @@
-// from server: 84% by colin
+// from server: 85% by colin
 void* __cdecl operator new(unsigned int);
 extern unsigned int globalValue;
 
@@ -53,7 +53,7 @@ Result* S::f(void* argument, bool force)
     if (!force) {
         if (table->check(this))
             return 0;
-        if (!((flags >> 1) & 1))
+        if (!(flags & 2))
             return 0;
     }
 
@@ -67,6 +67,8 @@ Result* S::f(void* argument, bool force)
         result->value = value;
         result->first = 0;
         result->last = 0;
+    } else {
+        result = 0;
     }
 
     void* nodeName = name;
