@@ -1,4 +1,4 @@
-// from server: 69% by king_originala
+// from server: 75% by colin
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
 extern "C" long __cdecl _InterlockedDecrement(volatile long*);
@@ -31,16 +31,16 @@ inline Shared::Shared(const Shared& other)
 
 inline Shared::~Shared() {
     Control* p = control;
-    if (p && _InterlockedDecrement(&p->strong) == 0) {
+    if (p && _InterlockedExchangeAdd(&p->strong, -1) == 1) {
         p->dispose();
-        if (_InterlockedDecrement(&p->weak) == 0)
+        if (_InterlockedExchangeAdd(&p->weak, -1) == 1)
             p->destroy();
     }
 }
 
 struct Guard {
     unsigned char storage[12];
-    Guard(Shared);
+    Guard(const Shared&);
     ~Guard();
 };
 
@@ -141,7 +141,7 @@ extern void __cdecl set_document(int, S*);
 
 void S::f() {
     {
-        Guard guard(static_cast<const Shared&>(get()));
+        Guard guard(get());
 
         InvalidHandler invalid = _invalid_parameter_noinfo;
         Iterator first = items.begin(invalid);

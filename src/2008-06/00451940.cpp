@@ -1,8 +1,4 @@
-// from server: 54% by colin
-
-
-
-
+// from server: 66% by colin
 extern "C" void __cdecl free_6a067a(void* p);
 extern "C" void __cdecl sub_6a0a1c(void* p);
 
@@ -28,7 +24,7 @@ struct VCRobloxDoc {
     Opaque28 m0;               // 0x04
     Opaque28 m1;               // 0x2c
     Inner54 m2;                // 0x54
-    Opaque24 m3;               // 0x70
+    char pad58[0x1c];          // 0x58
     Inner74* p74;              // 0x74
     void* p78;                 // 0x78
     char pad7c[8];             // 0x7c

@@ -1,4 +1,4 @@
-// from server: 78% by colin
+// from server: 79% by colin
 struct Inner
 {
     char padding[4];
@@ -23,7 +23,7 @@ S* S::assign(S* other)
     field0 = other->field0;
     sub_4025B0(&inner, &other->inner);
     field8 = other->field8;
-    struct Block { int v[9]; float a, b, c; };
+    struct Block { int v[9]; };
     *reinterpret_cast<Block*>(reinterpret_cast<char*>(this) + 0x10) =
         *reinterpret_cast<Block*>(reinterpret_cast<char*>(other) + 0x10);
     f40 = other->f40;

@@ -1,4 +1,4 @@
-// from server: 80% by colin
+// from server: 81% by colin
 struct Vector3 {
     float x, y, z;
 };
@@ -7,29 +7,15 @@ struct Camera {
     Vector3 const& getDerivedPosition() const;
 };
 
-struct Node {
-    char pad0[0x28];
-    Camera* camera;
-    char pad2[0xe8 - 0x2c];
-    int cachedId;
-    float cachedValue;
-    char pad3[0xfc - 0xf0];
-    float fx;
-    char pad4[0x10c - 0x100];
-    float fy;
-    char pad5[0x11c - 0x110];
-    float fz;
-};
-
 extern "C" int __cdecl sub_6A17C6(void*);
 
 struct RbxSubEntity {
     char pad[0x28];
     void* node;
-    char pad2[0xe8 - 0x2c];
-    int cachedId;
+    char pad2[0xe4 - 0x2c];
     float cachedValue;
-    char pad3[0xfc - 0xf0];
+    int cachedId;
+    char pad3[0xfc - 0xec];
     float fx;
     char pad4[0x10c - 0x100];
     float fy;

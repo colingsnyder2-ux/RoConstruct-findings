@@ -1,4 +1,4 @@
-// from server: 52% by colin
+// from server: 56% by colin
 struct RenderScene {
     char pad0[0x14];
     float f14;
@@ -62,6 +62,12 @@ struct RenderScene {
     RenderScene();
 };
 
+struct Obj270 { void ctor(); };
+struct Obj27C { void ctor(); };
+struct Obj2D0 { void ctor(); };
+struct Obj3A0 { void ctor(); };
+struct Obj498 { void ctor(); };
+
 extern "C" void __stdcall sub_504FD0();
 extern "C" void __stdcall sub_804300();
 extern "C" void __stdcall sub_804C90();
@@ -81,10 +87,10 @@ extern float flt_819BAC;
 RenderScene::RenderScene()
 {
     sub_504FD0();
-    i26c = 0;
     *(int*)this = 0x8749dc;
-    sub_804300();
-    sub_804C90();
+    i26c = 0;
+    ((Obj270*)((char*)this + 0x270))->ctor();
+    ((Obj27C*)((char*)this + 0x27c))->ctor();
     i288 = 0;
     i28c = 0;
     i290 = 0;
@@ -103,7 +109,7 @@ RenderScene::RenderScene()
     i2c4 = 0;
     i2c8 = 0;
     i2cc = 0;
-    sub_489470();
+    ((Obj2D0*)((char*)this + 0x2d0))->ctor();
     i2f0 = 0;
     i308 = 0;
     i30c = 0;
@@ -132,8 +138,8 @@ RenderScene::RenderScene()
     f390 = 0.0f;
     f394 = 0.0f;
     f398 = 0.0f;
-    sub_7B6860();
-    sub_7B6860();
+    ((Obj3A0*)((char*)this + 0x3a0))->ctor();
+    ((Obj498*)((char*)this + 0x498))->ctor();
     sub_503960();
     sub_598FA0();
     sub_598FA0();

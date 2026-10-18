@@ -1,4 +1,4 @@
-// from server: 72% by colin
+// from server: 77% by Viper
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
 
@@ -27,7 +27,7 @@ void __cdecl sub_62fef6();
 void __cdecl sub_62fc62();
 
 struct Replicator {
-    Item* DeleteInstanceItem(int flag, Item* src);
+    Item* __cdecl DeleteInstanceItem(int flag, Item* src);
 };
 
 Item* Replicator::DeleteInstanceItem(int flag, Item* src) {
