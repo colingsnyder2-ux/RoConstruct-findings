@@ -1,4 +1,4 @@
-// from server: 77% by king_originala
+// from server: 79% by colin
 struct Interface
 {
     virtual long __stdcall QueryInterface(const void* iid, void** result) = 0;
@@ -34,12 +34,11 @@ long __stdcall f(S* object, const void* iid, int* supported, void** result)
             *result = original->value;
             return status;
         }
-    }
-    else
-    {
-        *supported = 0;
+        *result = 0;
+        return status;
     }
 
+    *supported = 0;
     *result = 0;
     return status;
 }

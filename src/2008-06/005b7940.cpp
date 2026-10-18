@@ -1,10 +1,8 @@
-// from server: 87% by king_originala
+// from server: 90% by colin
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
 
-extern "C" {
-    extern void (__cdecl *invalid_parameter_noinfo)();
-}
+extern "C" void __cdecl _invalid_parameter_noinfo();
 
 struct String {
     char storage[28];
@@ -70,21 +68,21 @@ Callback __cdecl process(Iterator first, Iterator last, Callback callback)
 
     for (;;) {
         if (!owner || owner != finish.owner)
-            invalid_parameter_noinfo();
+            _invalid_parameter_noinfo();
 
         if (node == finish.node)
             break;
 
         Tree* tree;
         if (!owner) {
-            invalid_parameter_noinfo();
+            _invalid_parameter_noinfo();
             tree = reinterpret_cast<Tree*>(owner);
         } else {
             tree = owner->tree;
         }
 
         if (node == tree->sentinel)
-            invalid_parameter_noinfo();
+            _invalid_parameter_noinfo();
 
         {
             Value value(node->value);

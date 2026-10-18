@@ -1,4 +1,4 @@
-// from server: 98% by colin
+// from server: 100% by colin
 struct Scope
 {
     const char* name;
@@ -37,7 +37,8 @@ struct S_func_004ab9c0
 int S_func_004ab9c0::f(int value)
 {
     Scope first(scopeName1, false);
-    Scope second(scopeName2, false);
+    const char* name2 = scopeName2;
+    Scope second(name2, false);
     Target* t = target;
     TargetTable* tbl = t->table;
     int (__thiscall* fn)(Target*, int) = tbl->invoke;

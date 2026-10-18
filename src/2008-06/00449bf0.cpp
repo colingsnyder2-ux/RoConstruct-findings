@@ -1,4 +1,4 @@
-// from server: 58% by colin
+// from server: 59% by colin
 struct CIDEDocManager;
 
 struct Helper
@@ -57,8 +57,8 @@ int CIDEDocManager::create(int value)
     }
 
     void** vtbl = *(void***)obj;
-    int (__stdcall *fn)(void*, int, int, int, int) =
-        (int (__stdcall *)(void*, int, int, int, int))vtbl[0x148 / 4];
+    int (__thiscall *fn)(void*, int, int, int, int) =
+        (int (__thiscall *)(void*, int, int, int, int))vtbl[0x148 / 4];
     if (fn(obj, 0x80, 0xcf8000, 0, 0) == 0)
     {
         return 0;

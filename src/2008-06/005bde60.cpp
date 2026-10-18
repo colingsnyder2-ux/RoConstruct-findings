@@ -1,31 +1,24 @@
-// from server: 89% by king_originala
-struct String;
-extern bool (__cdecl *string_equals)(const String&, const char*);
+// from server: 100% by colin
 
-struct StringConverterBool
+
+
+extern "C" __declspec(dllimport) bool __cdecl std_string_eq_cstr(const void* str, const char* cstr);
+
+bool ParseBool(const char* value, bool* out);
+
+bool ParseBool(const char* value, bool* out)
 {
-    static bool __cdecl convertToValue(const String& text, bool& value);
-};
+    bool (__cdecl *eq)(const void*, const char*) = std_string_eq_cstr;
 
-bool __cdecl StringConverterBool::convertToValue(const String& text, bool& value)
-{
-    bool (__cdecl *equals)(const String&, const char*) = string_equals;
-
-    if (equals(text, "true") ||
-        equals(text, "True") ||
-        equals(text, "TRUE"))
+    if (eq(value, "true") || eq(value, "True") || eq(value, "TRUE"))
     {
-        value = true;
+        *out = true;
         return true;
     }
-
-    if (equals(text, "false") ||
-        equals(text, "False") ||
-        equals(text, "FALSE"))
+    if (eq(value, "false") || eq(value, "False") || eq(value, "FALSE"))
     {
-        value = false;
+        *out = false;
         return true;
     }
-
     return false;
 }

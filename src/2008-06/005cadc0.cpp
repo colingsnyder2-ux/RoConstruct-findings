@@ -1,4 +1,4 @@
-// from server: 82% by king_originala
+// from server: 83% by colin
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
 
@@ -110,7 +110,7 @@ struct Controller
 
 void Controller::update(void* excluded, float time)
 {
-    if (nextTime > time)
+    if (time < nextTime)
         return;
 
     nextTime = rand() * randomScale + time + delayOffset;

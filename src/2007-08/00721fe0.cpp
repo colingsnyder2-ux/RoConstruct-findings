@@ -1,4 +1,4 @@
-// from server: 30% by colin
+// from server: 38% by Viper
 struct CXTButtonThemeOfficeXP {
     char pad0[0x20];
     unsigned int field20;
@@ -17,6 +17,7 @@ struct CXTButtonThemeOfficeXP {
     char fieldb8[0x30];
 
     int sub_721fe0(void* arg0, int arg1);
+    void* sub_668f70();
 };
 
 extern "C" {
@@ -28,7 +29,7 @@ extern "C" {
 extern "C" void* __stdcall sub_7383be(void*);
 extern "C" void __stdcall sub_6308b0(void*, void*, int);
 extern "C" void __stdcall sub_6308aa(void*, void*, int, int);
-extern "C" void* __stdcall sub_668f70();
+
 extern "C" void* __stdcall sub_668770(void*, int);
 extern "C" bool __stdcall sub_714a80(void*);
 

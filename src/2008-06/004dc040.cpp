@@ -1,44 +1,56 @@
-// from server: 36% by colin
+// from server: 38% by colin
 extern "C" long __cdecl _InterlockedDecrement(volatile long*);
-extern "C" void* __stdcall InterlockedDecrement(void*);
+#pragma intrinsic(_InterlockedDecrement)
 
-struct GImage {
-    void release();
-};
+extern "C" int __stdcall InterlockedDecrement_imp(void*);
 
-struct Obj {
-    char pad0[0x14];
-    void* field14;
-    char pad18[0x30];
-    void* field48;
-    char pad4c[0x44];
-    unsigned char field44;
+struct RefCounted {
+    void* pad0;
+    void* pad4;
+    void* ptr8;
+    void* release();
 };
 
 struct ViewG3D {
     char pad0[0x14];
     void* field14;
-    char pad18[0x30];
+    char pad18[0x2c];
+    void* field44;
     void* field48;
-    char pad4c[0x44];
-    unsigned char field44;
     void update();
 };
 
+struct Other {
+    char pad0[0x240];
+    char flag240;
+    char pad241[0x93];
+    void* field2d4;
+};
+
+struct Holder {
+    void* p;
+    ~Holder();
+};
+
+extern "C" void* __cdecl func5ebbb0(void* out, void* arg);
+extern "C" void __cdecl func502a70(void* p);
+extern "C" void __cdecl func598fa0(void* self, void* val);
+
 void ViewG3D::update() {
-    if (field44 != 0)
+    if (*(char*)((char*)this + 0x44) != 0)
         return;
-    void* p = field14;
-    void* esi;
-    if (p != 0) {
-        esi = ((void* (__thiscall*)(void*))0x4b3870)(p);
+
+    Other* o;
+    if (field14 != 0) {
+        o = (Other*)((RefCounted*)field14)->release();
     } else {
-        esi = 0;
+        o = 0;
     }
-    if (*(unsigned char*)((char*)esi + 0x240) == 0) {
+
+    if (o->flag240 == 0) {
         if (field48 != 0) {
-            if (InterlockedDecrement((char*)field48 + 4) == 0) {
-                ((void (__thiscall*)(void*))0x45ad90)(field48);
+            if (InterlockedDecrement_imp((char*)field48 + 4) == 0) {
+                func502a70(field48);
                 if (field48 != 0) {
                     void** vt = *(void***)field48;
                     ((void (__thiscall*)(void*, int))vt[0])(field48, 1);
@@ -48,11 +60,14 @@ void ViewG3D::update() {
         }
         return;
     }
+
     if (field48 != 0)
         return;
-    void* tmp = 0;
-    void* r = ((void* (__cdecl*)(void*, void*))0x5ebbb0)(&tmp, *(void**)((char*)esi + 0x2d4));
-    void* val = *(void**)r;
-    ((void (__thiscall*)(void**, void*))0x598fa0)(&field48, val);
-    ((void (__thiscall*)(void*))0x502a70)(&tmp);
+
+    Holder h;
+    h.p = 0;
+    func5ebbb0(&h, o->field2d4);
+    void* val = *(void**)h.p;
+    func598fa0(&field48, val);
+    h.~Holder();
 }

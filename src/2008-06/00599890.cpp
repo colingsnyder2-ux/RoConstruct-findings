@@ -1,4 +1,4 @@
-// from server: 89% by king_originala
+// from server: 90% by colin
 #pragma float_control(precise, off)
 
 struct Ray;
@@ -79,13 +79,13 @@ int S::f(const Ray& source, int* faceIndex)
             collisionTime, collisionInside);
 
     for (int i = 0; i < 3; ++i) {
-        if (reinterpret_cast<float*>(&high)[i] ==
-            reinterpret_cast<float*>(&point)[i]) {
+        if (reinterpret_cast<float*>(&point)[i] ==
+            reinterpret_cast<float*>(&high)[i]) {
             *faceIndex = i;
             return faces.get(i);
         }
-        if (reinterpret_cast<float*>(&low)[i] ==
-            reinterpret_cast<float*>(&point)[i]) {
+        if (reinterpret_cast<float*>(&point)[i] ==
+            reinterpret_cast<float*>(&low)[i]) {
             *faceIndex = i + 3;
             return faces.get(i + 3);
         }

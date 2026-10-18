@@ -1,8 +1,8 @@
-// from server: 66% by king_originala
+// from server: 71% by colin
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
 
-extern "C" void (__cdecl* const _invalid_parameter_noinfo)();
+extern "C" void __cdecl _invalid_parameter_noinfo();
 
 namespace RBX {
 struct Instance {
@@ -149,7 +149,8 @@ void S::f(Argument* argument) {
         assign(acquire(func_00421cb0(argument->instance)));
         if (selection) {
             Iterator current = selection->children->begin();
-            while (current != selection->children->end()) {
+            Iterator last = selection->children->end();
+            while (current != last) {
                 RBX::ModelInstance* model =
                     dynamic_cast<RBX::ModelInstance*>((*current).value);
                 if (model)

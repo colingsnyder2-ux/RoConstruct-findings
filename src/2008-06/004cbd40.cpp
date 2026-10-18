@@ -1,4 +1,4 @@
-// from server: 98% by colin
+// from server: 100% by colin
 struct VTable {
     char pad[0xb0];
     int (__thiscall *func)(void*, int, int);
@@ -39,7 +39,7 @@ struct Target {
     char pad11[3];
     int field14;
     Sub sub;
-    char pad2c[0x100];
+    char pad2c[0xf8];
     int field12c;
     int field130;
     void* init(Obj1* a, Obj2* b);

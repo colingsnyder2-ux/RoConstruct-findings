@@ -1,4 +1,4 @@
-// from server: 75% by colin
+// from server: 83% by colin
 struct Vec2 {
     float x;
     float y;
@@ -16,10 +16,15 @@ struct Window {
     void* handle;
 };
 
-extern "C" void __stdcall EnterCriticalSection(void*);
-extern "C" void __stdcall LeaveCriticalSection(void*);
-extern "C" int __stdcall GetClientRect(void*, Rect*);
-extern Vec2 __cdecl sample(void*, int);
+extern "C" {
+    extern void (__stdcall *EnterCriticalSection)(void*);
+    extern void (__stdcall *LeaveCriticalSection)(void*);
+    extern int (__stdcall *GetClientRect)(void*, Rect*);
+}
+
+extern float g_scale;
+
+extern Vec2* __cdecl sample(Vec2* out, void* input, int a);
 
 struct DxUserInput {
     char padding0[0x34];
@@ -38,12 +43,16 @@ Vec2 DxUserInput::f()
     Rect rect;
     GetClientRect(window->handle, &rect);
 
-    float cx = (float)(rect.right - rect.left) * 0.5f;
-    float cy = (float)(rect.bottom - rect.top) * 0.5f;
+    float cx = (float)(rect.right - rect.left) * g_scale;
+    float cy = (float)(rect.bottom - rect.top) * g_scale;
 
-    Vec2 offset = sample(input, 10);
-    result.x = offset.x + cx;
-    result.y = offset.y + cy;
+    Vec2 scaled;
+    scaled.x = cx;
+    scaled.y = cy;
+
+    Vec2* offset = sample(&scaled, input, 10);
+    result.x = offset->x + scaled.x;
+    result.y = offset->y + scaled.y;
 
     LeaveCriticalSection(criticalSection);
     return result;

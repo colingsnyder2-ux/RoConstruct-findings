@@ -1,4 +1,4 @@
-// from server: 70% by colin
+// from server: 74% by colin
 extern "C" void __stdcall _invalid_parameter_noinfo();
 
 struct Node {
@@ -30,8 +30,8 @@ bool S::f() {
     Node* it = root;
     Iter tmp;
     while (true) {
-        tmp.node = it;
         tmp.root = cur;
+        tmp.node = it;
         if (it != 0 && it != root) {
             _invalid_parameter_noinfo();
         }
