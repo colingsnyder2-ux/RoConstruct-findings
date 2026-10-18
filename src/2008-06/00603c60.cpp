@@ -1,4 +1,4 @@
-// from server: 40% by colin
+// from server: 50% by atomic.potato
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
 
@@ -30,28 +30,35 @@ struct SharedPtr {
     void* ref;
 };
 
+struct RefCounted {
+    virtual ~RefCounted();
+    virtual void destroy();
+    virtual void dealloc();
+};
+
 struct UnifiedImageWidget {
-    char pad0[4];
+    void* field0;
     void* field4;
     char pad8[0x30];
     std_string imageName;
     unsigned imageState;
+    SharedPtr result;
 
-    void __thiscall construct(const std_string& name, int state, int arg3);
+    SharedPtr* construct(const std_string& name, int state, int arg3);
 };
 
 extern "C" void* __cdecl getVector3();
 extern "C" void __cdecl func601db0(void*);
-extern "C" void* __cdecl func602650(SharedPtr*, void*, int, int);
-extern "C" void* __cdecl func6026e0(SharedPtr*, float, float);
-extern "C" void __cdecl func600f10(void*);
+extern "C" SharedPtr* __cdecl func602650(SharedPtr*, void*, int, int);
+extern "C" SharedPtr* __cdecl func6026e0(SharedPtr*, float, float);
+extern "C" void __cdecl func600f10(RefCounted*);
 
-extern "C" void* __stdcall func802458();
-extern "C" void* __stdcall func802468();
+extern "C" void __stdcall stringCtor(std_string*, const char*);
+extern void stringDtor(std_string*);
 
 extern float g_81ccbc;
 
-void __thiscall UnifiedImageWidget::construct(const std_string& name, int state, int arg3)
+SharedPtr* __thiscall UnifiedImageWidget::construct(const std_string& name, int state, int arg3)
 {
     void* v = getVector3();
     float f0 = *(float*)((char*)v + 0);
@@ -73,7 +80,7 @@ void __thiscall UnifiedImageWidget::construct(const std_string& name, int state,
 
     std_string str("ControlHud");
 
-    void* obj = *(void**)this;
+    void* obj = field0;
     void** vt = *(void***)obj;
     void (*fn)(void*, std_string*) = (void (*)(void*, std_string*))vt[1];
     fn(obj, &str);
@@ -81,21 +88,18 @@ void __thiscall UnifiedImageWidget::construct(const std_string& name, int state,
     destroyString(&str);
 
     SharedPtr r1;
-    func602650(&r1, *(void**)this, arg3, 1);
-    void* p1 = r1.ptr;
-    void* p1b = r1.ref;
+    func602650(&r1, field0, arg3, 1);
+    RefCounted* p1b = (RefCounted*)r1.ref;
     if (p1b) {
         _InterlockedExchangeAdd((volatile long*)((char*)p1b + 4), 1);
     }
-    func600f10(*(void**)((char*)&str + 0));
-    void* old = *(void**)((char*)&str + 4);
+    func600f10((RefCounted*)r1.ptr);
+    RefCounted* old = (RefCounted*)r1.ref;
     if (old) {
         if (_InterlockedExchangeAdd((volatile long*)((char*)old + 4), -1) == 1) {
-            void** ovt = *(void***)old;
-            ((void (*)(void*))ovt[1])(old);
+            old->destroy();
             if (_InterlockedExchangeAdd((volatile long*)((char*)old + 8), -1) == 1) {
-                void** ovt2 = *(void***)old;
-                ((void (*)(void*))ovt2[2])(old);
+                old->dealloc();
             }
         }
     }
@@ -103,58 +107,49 @@ void __thiscall UnifiedImageWidget::construct(const std_string& name, int state,
     float g = g_81ccbc;
     SharedPtr r2;
     func6026e0(&r2, g, g);
-    void* p2 = r2.ptr;
-    void* p2b = r2.ref;
+    RefCounted* p2b = (RefCounted*)r2.ref;
     if (p2b) {
         _InterlockedExchangeAdd((volatile long*)((char*)p2b + 4), 1);
     }
-    func600f10(*(void**)((char*)&str + 0));
-    void* old2 = *(void**)((char*)&str + 4);
+    func600f10((RefCounted*)r2.ptr);
+    RefCounted* old2 = (RefCounted*)r2.ref;
     if (old2) {
         if (_InterlockedExchangeAdd((volatile long*)((char*)old2 + 4), -1) == 1) {
-            void** ovt = *(void***)old2;
-            ((void (*)(void*))ovt[1])(old2);
+            old2->destroy();
             if (_InterlockedExchangeAdd((volatile long*)((char*)old2 + 8), -1) == 1) {
-                void** ovt2 = *(void***)old2;
-                ((void (*)(void*))ovt2[2])(old2);
+                old2->dealloc();
             }
         }
     }
 
     SharedPtr r3;
-    func602650(&r3, *(void**)this, arg3, 2);
-    void* p3 = r3.ptr;
-    void* p3b = r3.ref;
+    func602650(&r3, field0, arg3, 2);
+    RefCounted* p3b = (RefCounted*)r3.ref;
     if (p3b) {
         _InterlockedExchangeAdd((volatile long*)((char*)p3b + 4), 1);
     }
-    func600f10(*(void**)((char*)&str + 0));
-    void* old3 = *(void**)((char*)&str + 4);
+    func600f10((RefCounted*)r3.ptr);
+    RefCounted* old3 = (RefCounted*)r3.ref;
     if (old3) {
         if (_InterlockedExchangeAdd((volatile long*)((char*)old3 + 4), -1) == 1) {
-            void** ovt = *(void***)old3;
-            ((void (*)(void*))ovt[1])(old3);
+            old3->destroy();
             if (_InterlockedExchangeAdd((volatile long*)((char*)old3 + 8), -1) == 1) {
-                void** ovt2 = *(void***)old3;
-                ((void (*)(void*))ovt2[2])(old3);
+                old3->dealloc();
             }
         }
     }
 
-    void* dst = *(void**)((char*)&str + 0x40);
-    *(void**)dst = p1;
-    *(void**)((char*)dst + 4) = p1b;
-    if (p1b) {
-        _InterlockedExchangeAdd((volatile long*)((char*)p1b + 4), 1);
-    }
-    if (p1b) {
-        if (_InterlockedExchangeAdd((volatile long*)((char*)p1b + 4), -1) == 1) {
-            void** ovt = *(void***)p1b;
-            ((void (*)(void*))ovt[1])(p1b);
-            if (_InterlockedExchangeAdd((volatile long*)((char*)p1b + 8), -1) == 1) {
-                void** ovt2 = *(void***)p1b;
-                ((void (*)(void*))ovt2[2])(p1b);
+    result.ptr = r1.ptr;
+    result.ref = r1.ref;
+    RefCounted* rb = (RefCounted*)result.ref;
+    if (rb) {
+        if (_InterlockedExchangeAdd((volatile long*)((char*)rb + 4), -1) == 1) {
+            rb->destroy();
+            if (_InterlockedExchangeAdd((volatile long*)((char*)rb + 8), -1) == 1) {
+                rb->dealloc();
             }
         }
     }
+
+    return &result;
 }

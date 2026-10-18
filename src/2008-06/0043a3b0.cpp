@@ -1,92 +1,188 @@
-// from server: 14% by colin
-struct Buffer
-{
-    void *first;
-    void *last;
-    void *limit;
-    Buffer();
-    ~Buffer();
-    void initialize(int);
-};
+// from server: 35% by atomic.potato
+typedef void (__cdecl *InvalidParam)();
+typedef void (__stdcall *OutputDebugStringA_t)(const char*);
+typedef void (__thiscall *SetHidden_t)(void*, int);
 
-struct Temporary
-{
-    Buffer buffer;
-    Temporary(int);
-};
+extern "C" InvalidParam _invalid_parameter_noinfo;
+extern "C" OutputDebugStringA_t OutputDebugStringA;
+
+struct Item;
+struct ItemBool;
 
 struct Item
 {
-    char pad0[0x10];
-    unsigned int field10;
-    unsigned int field14;
-    char pad18[0x108];
-    void setHidden(int);
-    bool convertToValue(void *value) const;
-    bool convertToString(void *value) const;
+    void* vtable;
+    void* first;
+    void* last;
+    void* limit;
+    void* constraints_first;
+    void* constraints_last;
+    void* constraints_limit;
 };
 
-struct EnumDescriptor
+struct ItemBool
 {
-    char pad0[0x120];
-    void setHidden(int);
+    void* vtable;
+    void* first;
+    void* last;
+    void* limit;
+    void* constraints_first;
+    void* constraints_last;
+    void* constraints_limit;
 };
 
-extern "C" void __stdcall _invalid_parameter_noinfo();
+int __fastcall initialize(Item* pThis, void*, int value);
+void __fastcall insertConstraint(ItemBool* pThis, void*, void* value, void* result);
+void __fastcall setHidden(ItemBool* pThis, void*, int hidden);
+void __fastcall onConstraintsChanged(ItemBool* pThis, void*);
 
-struct Outer
+void __fastcall onConstraintsChanged(ItemBool* pThis, void*)
 {
-    char pad0[0x120];
-    void method(void *arg);
+    pThis = pThis;
+}
+
+struct S
+{
+    void* vtable;
+    void* first;
+    void* last;
+    void* limit;
+    void* constraints_first;
+    void* constraints_last;
+    void* constraints_limit;
+
+    void f(void* arg);
 };
 
-void Outer::method(void *arg)
+void S::f(void* arg)
 {
-    unsigned int *p = (unsigned int *)arg;
-    unsigned int v0 = p[0];
-    unsigned int v1 = p[6];
-
-    unsigned int *self = (unsigned int *)this;
-    unsigned int a = self[4];
-    unsigned int b = self[5];
-    unsigned int c = self[1];
-
+    void* edx = *(void**)arg;
+    void* ecx = *(void**)((char*)arg + 0x18);
+    void* edi = this;
+    void* esi = *(void**)((char*)edi + 0x10);
     unsigned char flag = 0;
 
-    if (a > b)
+    if ((unsigned char*)esi > (unsigned char*)*(void**)((char*)edi + 0x14))
         _invalid_parameter_noinfo();
 
-    unsigned int d = self[4];
-    unsigned int e = self[5];
-    unsigned int f = self[1];
+    void* ebp = *(void**)((char*)edi + 4);
+    void* ebx = esi;
+    esi = *(void**)((char*)edi + 0x14);
 
-    if (d > e)
+    if ((unsigned char*)*(void**)((char*)edi + 0x10) > (unsigned char*)esi)
         _invalid_parameter_noinfo();
 
-    unsigned int g = self[1];
+    void* eax = *(void**)((char*)edi + 4);
 
-    if (c != 0 && c != g)
+    if (ebp != 0 && ebp != eax)
         _invalid_parameter_noinfo();
 
-    if (a == e)
+    if (ebx == esi)
     {
-        bool r = (flag == 0);
-        ((EnumDescriptor *)((char *)this - 0x120))->setHidden(r ? 1 : 0);
+        unsigned char c = !flag;
+        setHidden((ItemBool*)((char*)edi - 0x120), 0, c);
         return;
     }
 
-    if (c == 0)
-    {
+    if (ebp == 0)
         _invalid_parameter_noinfo();
-        unsigned int *q = 0;
-        if (a < q[4])
+
+    while (ebx != esi)
+    {
+        if (ebp == 0)
             _invalid_parameter_noinfo();
 
-        unsigned int h = *(unsigned int *)a;
-        Temporary tmp(0);
-        (void)tmp;
-        (void)h;
-        (void)v0;
-        (void)v1;
+        if ((unsigned char*)ebx >= (unsigned char*)*(void**)0x10)
+            _invalid_parameter_noinfo();
+
+        void* value = *(void**)ebx;
+        void* result;
+        insertConstraint((ItemBool*)edi, 0, value, &result);
+
+        void* saved_edi = *(void**)((char*)edi + 4);
+        if (saved_edi != 0 && saved_edi != edx)
+            _invalid_parameter_noinfo();
+
+        void* saved_esi = result;
+        if (saved_esi == ecx)
+        {
+            if (ebp != 0)
+            {
+                while (1)
+                {
+                    void* ebp_inner = *(void**)((char*)saved_esi + 0x1c);
+                    void* edi_inner = *(void**)((char*)saved_esi + 0x20);
+
+                    if ((unsigned char*)ebp_inner > (unsigned char*)edi_inner)
+                        _invalid_parameter_noinfo();
+
+                    void* ebx_inner = *(void**)((char*)saved_esi + 0x10);
+
+                    if (ebp_inner == edi_inner)
+                        break;
+
+                    if (!flag)
+                    {
+                        if (ebx_inner == 0)
+                            _invalid_parameter_noinfo();
+
+                        if ((unsigned char*)ebp_inner >= (unsigned char*)*(void**)0x10)
+                            _invalid_parameter_noinfo();
+
+                        void* item_value = *(void**)ebp_inner;
+                        ItemBool* inner = (ItemBool*)((char*)edi - 0x120);
+                        unsigned char r = (unsigned char)initialize((Item*)inner, 0, (int)(unsigned __int64)item_value);
+                        void* vt = *(void**)inner;
+                        void (__fastcall **setter)(ItemBool*, void*, unsigned char*) = (void (__fastcall **)(ItemBool*, void*, unsigned char*))((char*)vt + 0xf4);
+                        setter[0](inner, 0, &r);
+                    }
+                    else
+                    {
+                        if (ebx_inner == 0)
+                            _invalid_parameter_noinfo();
+
+                        if ((unsigned char*)ebp_inner >= (unsigned char*)*(void**)0x10)
+                            _invalid_parameter_noinfo();
+
+                        void* item_value = *(void**)ebp_inner;
+                        ItemBool* inner = (ItemBool*)((char*)edi - 0x120);
+                        unsigned char r = (unsigned char)initialize((Item*)inner, 0, (int)(unsigned __int64)item_value);
+                        void* vt = *(void**)inner;
+                        void (__fastcall **setter)(ItemBool*, void*, unsigned char*, void*) = (void (__fastcall **)(ItemBool*, void*, unsigned char*, void*))((char*)vt + 0xf8);
+                        unsigned char out_val = 0;
+                        setter[0](inner, 0, &r, &out_val);
+                        if (!out_val)
+                        {
+                            OutputDebugStringA(">Authoring");
+                            onConstraintsChanged((ItemBool*)((char*)edi - 0x120), 0);
+                            setHidden((ItemBool*)((char*)edi - 0x120), 0, 0);
+                            return;
+                        }
+                    }
+
+                    flag = 1;
+
+                    if (ebx_inner == 0)
+                        _invalid_parameter_noinfo();
+
+                    if ((unsigned char*)ebp_inner >= (unsigned char*)*(void**)0x10)
+                        _invalid_parameter_noinfo();
+
+                    ebp_inner = (void*)((char*)ebp_inner + 8);
+                    saved_esi = (void*)((char*)saved_esi + 0);
+                    ebx_inner = ebx_inner;
+                }
+            }
+            ebx = (void*)((char*)ebx + 4);
+            if (ebp == 0)
+                _invalid_parameter_noinfo();
+            if ((unsigned char*)ebx >= (unsigned char*)*(void**)0x10)
+                _invalid_parameter_noinfo();
+            continue;
+        }
+        break;
     }
+
+    unsigned char c = !flag;
+    setHidden((ItemBool*)((char*)edi - 0x120), 0, c);
 }

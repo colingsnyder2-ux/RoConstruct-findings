@@ -1,58 +1,57 @@
-// from server: 75% by king_originala
-struct Listener {
-    char storage;
-};
+// from server: 80% by colin
+extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
+#pragma intrinsic(_InterlockedExchangeAdd)
 
-struct Connection {
-    virtual void slot0();
-    virtual void slot1();
-    virtual void slot2();
-    virtual void slot3();
-    virtual void slot4();
-    virtual void slot5();
-    virtual void release(int);
-};
-
-struct Event {
-    void disconnect(Listener*);
-    void connect(Listener*);
-};
-
-struct Service {
-    char padding[0x150];
-    Event event;
-};
-
-struct Instance {
-    Service* getService();
-};
-
-struct Humanoid {
-    char padding[0x1a4];
-    Listener listener;
-    char gap[0x7b];
-    Connection* connection;
-
-    void change(Instance*, Instance*);
-};
-
-void Humanoid::change(Instance* previous, Instance* next)
+struct VInstance
 {
-    if (previous) {
-        if (connection)
-            connection->release(1);
-        connection = 0;
+    void* getSomething();
+};
 
-        Listener* target = this ? &listener : 0;
-        Service* service = previous->getService();
-        if (service)
-            service->event.disconnect(target);
+struct Listener
+{
+    void remove(void*);
+};
+
+struct JointsService
+{
+    void remove(void*);
+};
+
+struct Humanoid
+{
+    void* field_0x220;
+    char pad[0x1a4 - 4];
+    void* field_0x1a4;
+    void setSomething(void* a, void* b);
+};
+
+void Humanoid::setSomething(void* a, void* b)
+{
+    if (a)
+    {
+        if (field_0x220)
+        {
+            void** vt = *(void***)field_0x220;
+            typedef void (__thiscall *Fn)(void*, int);
+            ((Fn)vt[6])(field_0x220, 1);
+        }
+        field_0x220 = 0;
+        void* self = this ? (void*)((char*)this + 0x1a4) : 0;
+        VInstance* v = (VInstance*)a;
+        void* r = v->getSomething();
+        if (r)
+        {
+            ((JointsService*)((char*)r + 0x150))->remove(self);
+        }
     }
-
-    if (next) {
-        Listener* target = this ? &listener : 0;
-        Service* service = next->getService();
-        if (service)
-            service->event.connect(target);
+    if (b)
+    {
+        void* self = this ? (void*)((char*)this + 0x1a4) : 0;
+        VInstance* v = (VInstance*)b;
+        void* r = v->getSomething();
+        if (r)
+        {
+            ((Listener*)((char*)r + 0x150))->remove(self);
+        }
     }
 }

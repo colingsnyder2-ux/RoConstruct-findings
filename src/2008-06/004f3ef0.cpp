@@ -1,7 +1,7 @@
-// from server: 31% by colin
+// from server: 32% by atomic.potato
 struct V3 { float x, y, z; };
 
-extern "C" double __stdcall ceil(double);
+extern "C" double __cdecl ceil(double);
 
 extern float g_819bac;
 extern float g_83a3e4;
@@ -10,7 +10,7 @@ extern float g_826e6c;
 struct Vec2 { float x, y; };
 
 struct S {
-    int f(int a, int b, float c, float d, float e, int g);
+    int __thiscall f(int a, int b, float c, float d, float e, int g);
     int field0;
     int field4;
     int field8;
@@ -24,7 +24,7 @@ extern "C" float __cdecl sub_4f1ff0(int n);
 extern "C" void __cdecl sub_4f35d0(int a, int b, float* p, float* q, float* r, void* s);
 extern "C" void __cdecl sub_4f2b80(int a, int b, float* p, float* q, float* r, void* s);
 
-int S::f(int a, int b, float c, float d, float e, int g)
+int __thiscall S::f(int a, int b, float c, float d, float e, int g)
 {
     int ebp = field10 & 7;
     int local10 = (int)this;

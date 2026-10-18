@@ -1,4 +1,4 @@
-// from server: 44% by king_originala
+// from server: 47% by colin
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
 
@@ -10,18 +10,6 @@ struct Control {
     volatile long weak;
 };
 
-struct Shared {
-    void* pointer;
-    Control* control;
-};
-
-struct Bound {
-    void (__cdecl *function)();
-    int adjustment;
-    Shared object;
-    void (__cdecl *callback)();
-};
-
 struct FunctionTable {
     void (__cdecl *manager)(void*, void*, int);
 };
@@ -30,42 +18,46 @@ struct Function {
     FunctionTable* table;
     unsigned int reserved;
     unsigned int storage[6];
-    void assign(const Bound&);
+    ~Function();
 };
 
-struct Queue {
-    void append(Function);
+struct Allocator {
+    void* (*alloc)(void*, unsigned int);
 };
 
-struct S {
-    void f();
+extern "C" void* __cdecl sub_618a40(void*, void*, void*);
+extern "C" void __cdecl sub_419620(void*, void*, void*);
+extern "C" void* __cdecl sub_41b090(void*);
+extern "C" void __cdecl sub_41a530(void*);
+
+struct DHTMLWindowService {
+    void append();
 };
 
-extern Queue* queue;
-extern void __cdecl bound_function();
-extern void __cdecl callback();
-extern Shared __cdecl acquire(S*);
-extern Bound __cdecl bind_function(void (__cdecl *)(), int, Shared,
-                                  void (__cdecl *)());
-
-inline Function make_function(S* p)
+void DHTMLWindowService::append()
 {
-    Bound b = bind_function(bound_function, 0, acquire(p), callback);
-    Function result;
-    result.table = 0;
-    result.assign(b);
-    Control* control = b.object.control;
-    if (control) {
-        if (_InterlockedExchangeAdd(&control->strong, -1) == 0) {
-            control->dispose();
-            if (_InterlockedExchangeAdd(&control->weak, -1) == 0)
-                control->destroy();
+    void* v1;
+    void* v2;
+    void* v3;
+    void* v4;
+    Control* ctrl;
+    long old;
+
+    sub_618a40(&v1, &v2, (void*)0x42b5f0);
+    sub_419620(&v3, (void*)0x4185c0, 0);
+    v4 = sub_41b090(&v3);
+
+    ctrl = (Control*)v4;
+    if (ctrl) {
+        old = _InterlockedExchangeAdd(&ctrl->strong, -1);
+        if (old == 1) {
+            ctrl->dispose();
+            old = _InterlockedExchangeAdd(&ctrl->weak, -1);
+            if (old == 1) {
+                ctrl->destroy();
+            }
         }
     }
-    return result;
-}
 
-void S::f()
-{
-    queue->append(make_function(this));
+    sub_41a530(*(void**)0x96cc4c);
 }

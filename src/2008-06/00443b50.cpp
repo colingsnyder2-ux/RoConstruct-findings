@@ -1,27 +1,11 @@
-// from server: 65% by colin
+// from server: 80% by colin
 extern "C" void* __cdecl __RTDynamicCast(void*, long, void*, void*, int);
 extern char instance_type;
 extern char properties_type;
 
-struct Instance {
-    char padding[0x110];
-    void* name;
-};
-
-struct Ptr {
-    Instance* px;
-    void* pn;
-};
-
 struct Entry {
     void* object;
     void* other;
-};
-
-struct Storage;
-
-struct Owner {
-    Storage* storage;
 };
 
 struct S {
@@ -30,24 +14,26 @@ struct S {
     void* f(void* arg);
 };
 
-void* sub_557950(void* a, void* b);
-void* sub_4438c0(void* a);
+struct T {
+    void* sub_557950(void* a);
+    void* sub_4438c0();
+};
 
 void* S::f(void* arg) {
     void* ecx = this->field130;
     void* eax;
     if (ecx != 0) {
-        Entry* e = (Entry*)((Ptr*)arg)->px;
+        Entry* e = *(Entry**)((char*)arg + 0xc);
         void* p = (void*)((char*)e->other + 4);
-        eax = sub_557950(ecx, p);
+        eax = ((T*)ecx)->sub_557950(p);
     } else {
         eax = 0;
     }
     if (eax != 0) {
-        void* r = sub_4438c0(eax);
+        void* r = ((T*)eax)->sub_4438c0();
         if (r != 0) {
-            void* d = (void*)((char*)((Ptr*)arg)->pn + 4);
-            return sub_557950(r, d);
+            void* d = (void*)((char*)(*(void**)((char*)arg + 4)) + 4);
+            return ((T*)r)->sub_557950(d);
         }
     }
     return 0;

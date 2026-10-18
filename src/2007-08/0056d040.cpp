@@ -1,10 +1,10 @@
-// from server: 23% by colin
+// from server: 26% by Viper
 struct Lua_State;
 
 struct RBX_Lua_FunctionRef {
     void* ref;
     void* state;
-    void assign(void* other);
+    void __cdecl assign(void* other);
 };
 
 extern "C" {

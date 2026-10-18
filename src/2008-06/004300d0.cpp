@@ -1,4 +1,4 @@
-// from server: 65% by colin
+// from server: 69% by colin
 struct RGB
 {
     unsigned char r, g, b;
@@ -10,60 +10,56 @@ struct Color
     RGB getRGB() const;
 };
 
-struct ColorF
-{
-    float r, g, b, a;
-};
-
 struct Color3uint8
 {
-    unsigned char r, g, b, a;
-};
-
-struct ColorSource
-{
-    ColorF color() const;
-};
-
-struct Color3uint8Source
-{
-    Color3uint8 fromColor(ColorF c);
-};
-
-struct Wrapper
-{
-    void f(unsigned int);
+    unsigned char r, g, b;
 };
 
 struct CWrapperView
 {
-    void method(int);
+    void destroy(int);
 };
 
-extern ColorSource *g_colorSource;
-
-void CWrapperView::method(int arg)
+struct Item
 {
-    int *self = (int *)this;
-    int *p = (int *)self[5];
-    if (p)
+    void setRGB(unsigned int rgb);
+};
+
+extern unsigned int g_colorValue;
+
+extern "C" void *__cdecl sub_5b6270(void *destination, unsigned int value);
+extern "C" void *__cdecl sub_5106a0(void *destination, void *source);
+
+void CWrapperView::destroy(int param)
+{
+    int *view = (int *)param;
+    int *obj = (int *)view[5];
+    if (obj)
     {
-        int *c = (int *)p[0xfc / 4];
-        int idx = self[2];
-        int *esi;
-        if (idx >= 0 && idx < c[0x2c / 4])
+        int *container = (int *)obj[0xfc / 4];
+        int idx = view[2];
+        Item *item;
+        if (idx >= 0 && idx < container[0x2c / 4])
         {
-            esi = (int *)((int *)c[0x28 / 4])[idx];
+            int *arr = (int *)container[0x28 / 4];
+            item = (Item *)arr[idx];
         }
         else
         {
-            esi = 0;
+            item = 0;
         }
-        ColorF cf = g_colorSource->color();
-        Color3uint8 c3 = ((Color3uint8Source *)&c3)->fromColor(cf);
-        unsigned int packed = ((unsigned int)c3.r) | (((unsigned int)c3.g) << 8) | (((unsigned int)c3.b) << 16);
-        ((Wrapper *)esi)->f(packed);
+
+        unsigned int tmp = g_colorValue;
+        Color3uint8 c;
+        sub_5b6270(&c, tmp);
+        Color3uint8 c2;
+        sub_5106a0(&c2, &c);
+
+        unsigned int packed = ((unsigned int)c2.b << 16) | ((unsigned int)c2.g << 8) | (unsigned int)c2.r;
+        item->setRGB(packed);
     }
-    void (__thiscall *fn)(void *, int) = *(void (__thiscall **)(void *, int))self[0];
-    fn(this, 1);
+
+    int *vtable = (int *)view[0];
+    void (__thiscall *fn)(void *) = (void (__thiscall *)(void *))vtable[0];
+    fn(view);
 }

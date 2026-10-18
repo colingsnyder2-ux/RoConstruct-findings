@@ -1,4 +1,4 @@
-// from server: 82% by king_originala
+// from server: 84% by colin
 struct Vector {
     float x, y, z;
 };
@@ -135,11 +135,10 @@ Texture *__cdecl getTexture(const Vector *vector, int value)
         return texture;
     }
 
-    Map *owner = reinterpret_cast<Map *>(p);
+    Map *owner;
     if (!p)
         _invalid_parameter_noinfo();
-    else
-        owner = p->owner;
+    owner = p->owner;
 
     if (it.node == owner->end)
         _invalid_parameter_noinfo();

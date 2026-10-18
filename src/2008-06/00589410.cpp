@@ -1,4 +1,4 @@
-// from server: 94% by king_originala
+// from server: 100% by colin
 struct Resource {
     virtual ~Resource();
 };
@@ -44,14 +44,13 @@ struct S {
 
 void S::f(Property* property)
 {
-    Property* p = property;
-    if (p->excluded())
+    if (property->excluded())
         return;
-    if (p->readOnly())
+    if (property->readOnly())
         return;
 
     Value value;
-    p->read(object ? object + 20 : 0, &value);
-    property = p;
-    values.store(&property, &value)->finish();
+    property->read(object ? object + 20 : 0, &value);
+    Property* p = property;
+    values.store(&p, &value)->finish();
 }

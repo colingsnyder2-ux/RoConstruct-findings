@@ -1,32 +1,34 @@
-// from server: 63% by colin
+// from server: 69% by colin
 namespace std {
 template<class T> struct char_traits;
 template<class T> class allocator;
 template<class T, class Traits, class Alloc>
 class __declspec(dllimport) basic_string {
-    char storage[28];
+char storage[28];
 public:
-    basic_string(const T*);
-    basic_string(const basic_string&);
-    ~basic_string();
+basic_string(const T*);
+basic_string(const basic_string&);
+~basic_string();
 };
 typedef basic_string<char, char_traits<char>, allocator<char> > string;
 }
 
-extern "C" __declspec(dllimport) void __stdcall sub_80245c(void*, void*);
-
-extern "C" void __cdecl sub_42ce50(void*, void*);
+extern "C" void* __stdcall sub_80245c(void*, void*);
 
 struct S {
-    char pad0[0x14];
-    int field14;
-    char pad1[0x130 - 0x18];
-    std::string field130;
-    void func(int);
+    int f(std::string* arg);
 };
 
-void S::func(int arg) {
-    int* p = (this != 0) ? &this->field14 : 0;
-    std::string tmp(this->field130);
-    sub_42ce50((void*)0x97d428, p);
+int S::f(std::string* arg) {
+    char* p = (char*)this;
+    std::string* src;
+    if (p != 0)
+        src = (std::string*)(p + 0x14);
+    else
+        src = 0;
+    char tmp[28];
+    sub_80245c(tmp, p + 0x130);
+    std::string* dst = (std::string*)0x97d428;
+    dst->basic_string<char, std::char_traits<char>, std::allocator<char> >::basic_string<char, std::char_traits<char>, std::allocator<char> >(*src);
+    return 0;
 }

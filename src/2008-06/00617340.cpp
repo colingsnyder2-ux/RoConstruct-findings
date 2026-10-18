@@ -1,4 +1,4 @@
-// from server: 66% by king_originala
+// from server: 67% by colin
 extern char registration_data;
 void __cdecl registration_callback();
 void __cdecl register_callback(void (__cdecl*)(), void*);
@@ -41,7 +41,7 @@ void* S::f() {
     unsigned index = (unsigned)func_00616240();
     Storage& storage = values;
 
-    if (index + 1 > (unsigned)(storage.last - storage.first)) {
+    if (index + 1 > (unsigned)(storage.limit - storage.first)) {
         storage.resize(index + 1, Value());
         return 0;
     }

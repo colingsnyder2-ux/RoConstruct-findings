@@ -1,4 +1,4 @@
-// from server: 26% by colin
+// from server: 27% by atomic.potato
 struct CStandardOutputView {
     char pad0[0x118];
     void* field_118;
@@ -17,6 +17,7 @@ extern "C" {
     void __stdcall sub_8034b0(void*, int);
     void __stdcall sub_8034b4(void*, void*, void*, void*);
     void __stdcall sub_8034b8(void*);
+    void __stdcall sub_8034bc(void*);
     void __stdcall sub_802838(void*, int, void*);
     void* __stdcall sub_802900(void*);
     void __stdcall sub_802944(void*);
@@ -33,6 +34,7 @@ void CStandardOutputView::func_437150(void* a, void* b, void* c, void* d)
     void* v4;
     int state = 0;
 
+    sub_8034bc(a);
     sub_8034b8(buf1);
     sub_8034b8(buf2);
 
