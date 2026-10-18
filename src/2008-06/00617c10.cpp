@@ -1,8 +1,7 @@
-// from server: 53% by colin
+// from server: 72% by colin
 struct InputObject;
-struct Instance;
 
-struct MouseCommand {
+struct BoxSelectCommand {
     virtual void v0();
     virtual void v1();
     virtual void v2();
@@ -103,59 +102,55 @@ struct MouseCommand {
     virtual void v97();
     virtual void v98();
     virtual void v99();
-};
-
-struct ServiceClientBase {
-    void* ptr;
-};
-
-struct BoxSelectCommand {
-    void* vtable;
-    char pad[0x28];
-    bool reverseSelecting;
-    char pad2[1];
-    short mouseDownViewX;
-    short mouseDownViewY;
-    short mouseCurrentViewX;
-    short mouseCurrentViewY;
-    char pad3[0x18];
-    void* selectionPtr;
-    void* setHead;
-    int setSize;
-    void* setEnd;
 
     void onMouseDown(InputObject* inputObject);
 };
 
-extern "C" void __cdecl func_00669050(void* set, void* item);
+struct SetNode {
+    SetNode* next;
+    SetNode* prev;
+    SetNode* self;
+};
+
+struct Set {
+    char pad[0x18];
+    SetNode* head;
+    int size;
+};
+
+struct InputVt {
+    virtual bool check(int code);
+};
+
+extern "C" void __cdecl func_00669050(Set* set, void* item);
 extern "C" void* __cdecl func_00581cc0(void* set, int val);
 extern "C" void __cdecl func_005675d0(void* node);
 
 void BoxSelectCommand::onMouseDown(InputObject* inputObject) {
     void* sel = *(void**)((char*)this + 0x4c);
     void* item = *(void**)((char*)sel + 4);
-    func_00669050((char*)this + 0x34, item);
+    Set* set = (Set*)((char*)this + 0x34);
+    func_00669050(set, item);
 
-    void* head = *(void**)((char*)this + 0x34 + 0x18);
-    *(void**)((char*)head + 4) = head;
-    head = *(void**)((char*)this + 0x34 + 0x18);
-    *(int*)((char*)this + 0x34 + 0x1c) = 0;
-    *(void**)head = head;
-    void* node = *(void**)((char*)this + 0x34 + 0x18);
-    *(void**)((char*)node + 8) = node;
+    SetNode* head = set->head;
+    head->prev = head;
+    head = set->head;
+    set->size = 0;
+    head->next = head;
+    SetNode* node = set->head;
+    node->self = node;
 
     void** vt = *(void***)this;
     void (*fn)(void*) = (void (*)(void*))vt[9];
     fn(this);
 
     void* input = *(void**)((char*)inputObject + 4);
-    void** ivt = *(void***)input;
-    bool (*check)(void*, int) = (bool (*)(void*, int))ivt[5];
-    bool r = check(input, 0x12f);
+    InputVt* ivt = *(InputVt**)input;
+    bool r = ivt->check(0x12f);
     if (!r) {
-        r = check(input, 0x130);
+        r = ivt->check(0x130);
     }
-    reverseSelecting = r;
+    *(bool*)((char*)this + 0x28) = r;
     if (!r) {
         void* s = func_00581cc0((char*)this + 0x1c, 1);
         func_005675d0(s);

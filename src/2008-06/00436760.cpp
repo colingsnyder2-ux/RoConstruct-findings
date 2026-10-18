@@ -1,6 +1,4 @@
-// from server: 80% by colin
-// roc-cl: 50727
-// roc-flags: /O2 /GS- /EHsc /MD
+// from server: 81% by colin
 struct Object;
 typedef unsigned long (__stdcall *ObjectMethod)(Object *);
 
@@ -22,8 +20,8 @@ struct COutputView {
 
 void COutputView::clear()
 {
-    while (count != 0) {
-        if (count != 0) {
+    if (count != 0) {
+        while (count != 0) {
             unsigned int position = offset + count - 1;
             unsigned int block = position >> 2;
             if (mapSize <= block)

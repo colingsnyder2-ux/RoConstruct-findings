@@ -1,4 +1,7 @@
-// from server: 54% by colin
+// from server: 59% by colin
+inline void* operator new(unsigned int, void* p) { return p; }
+inline void operator delete(void*, void*) {}
+
 struct Link {
     unsigned int parent;
     Link* left;
@@ -13,47 +16,35 @@ struct Node {
 };
 
 struct Owner {
-    char padding0[4];
+    char pad[8];
     Node* node;
 };
 
 struct Receiver {
-    bool find(Node* node, void* out, unsigned char flag);
-    void* allocate(void* arg, void* storage);
-    bool method(void* arg1, void* arg2);
+    bool find(unsigned int key, Node** out, bool flag);
+    void* alloc(Node* n, void* arg);
 };
 
-extern "C" void __cdecl finalize(void* a, void* b, void* c, void* d);
+extern "C" void sub_4c6980(void* a, void* b, void* c, void* d);
 
-bool Receiver::method(void* arg1, void* arg2)
+void* __stdcall sub_4c8cf0(Receiver* self, unsigned int key, void* arg)
 {
-    unsigned char flag = 0;
-    void* out = 0;
-    Node* node = *(Node**)((char*)arg1 + 8);
-
-    if (!find(node, &out, flag))
+    Node* out = 0;
+    bool flag = false;
+    if (!self->find(key, &out, flag))
     {
-        if (out != 0)
-            return (char*)out - 0x280 != 0;
-        return false;
+        if (out)
+            return (char*)out - 0x280;
+        return 0;
     }
-
-    void* result = allocate(arg1, arg2);
-    if (result == arg2)
+    void* result = self->alloc(out, arg);
+    if (result == arg)
     {
-        Owner* owner = 0;
-        if (this != 0)
-            owner = (Owner*)((char*)this - 0xc);
-        Node* n1 = 0;
-        if (owner != 0)
-            n1 = *(Node**)((char*)owner + 4);
-        void* p1 = 0;
-        if (n1 != 0)
-            p1 = (char*)n1 + 0x280;
-        void* p2 = 0;
-        if (arg2 != 0)
-            p2 = (char*)arg2 + 0x280;
-        finalize(p2, out, arg1, p1);
+        Node* n = self ? (Node*)((char*)self - 0xc) : 0;
+        Owner* owner = n ? (Owner*)n->reserved[1] : 0;
+        void* a = owner ? (void*)((char*)owner + 0x280) : 0;
+        void* b = arg ? (void*)((char*)arg + 0x280) : 0;
+        sub_4c6980(b, out, a, b);
     }
-    return result != 0;
+    return result;
 }

@@ -1,6 +1,8 @@
-// from server: 65% by king_originala
-extern void* __cdecl allocate(unsigned int, unsigned int);
-extern void* __cdecl fill(void*, int, unsigned int);
+// from server: 70% by colin
+extern "C" void* __cdecl allocate(unsigned int, unsigned int);
+extern "C" void* __cdecl fill(void*, int, unsigned int);
+extern "C" void __cdecl free_node(void*);
+extern "C" void __cdecl sub_4e7880(void*, void*);
 
 struct Buffer
 {
@@ -9,13 +11,13 @@ struct Buffer
     int capacity;
 
     Buffer();
-    virtual ~Buffer();
+    ~Buffer();
     Buffer& operator=(const Buffer&);
     void clear();
     void copy(const Buffer&);
 };
 
-inline Buffer::Buffer()
+Buffer::Buffer()
 {
     capacity = 10;
     size = 0;
@@ -23,12 +25,12 @@ inline Buffer::Buffer()
     fill(data, 0, capacity * 4);
 }
 
-inline Buffer::~Buffer()
+Buffer::~Buffer()
 {
     clear();
 }
 
-inline Buffer& Buffer::operator=(const Buffer& other)
+Buffer& Buffer::operator=(const Buffer& other)
 {
     if (this != &other)
     {
@@ -48,8 +50,9 @@ struct S
     S(int, Buffer, int, int);
 };
 
-S::S(int a, Buffer b, int c, int d) : second(0)
+S::S(int a, Buffer b, int c, int d)
 {
+    second = 0;
     second = a;
     buffer = b;
     first = c;

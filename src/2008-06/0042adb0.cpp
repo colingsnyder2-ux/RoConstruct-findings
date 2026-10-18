@@ -1,9 +1,9 @@
-// from server: 72% by colin
+// from server: 76% by colin
 struct S_func_0042adb0 {
     int f(int a1, int a2, int a3);
 };
 
-extern "C" int __stdcall sub_0042AD40(const char* a1, const char* a2);
+extern "C" int __cdecl sub_0042AD40(const char* a1, const char* a2);
 
 int S_func_0042adb0::f(int a1, int a2, int a3)
 {

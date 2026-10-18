@@ -1,4 +1,4 @@
-// from server: 88% by king_originala
+// from server: 100% by colin
 struct FaceMap {
     int lookup(int face);
 };
@@ -45,13 +45,12 @@ void S::f(int firstBody, int secondBody, int firstFace, int secondFace)
     Contact* contact = create(
         firstGeometry, secondGeometry, 6, firstIndex, secondIndex);
 
-    FaceMap* secondMap = bodies[secondBody]->faces;
-    secondFace = secondMap->lookup(secondFace);
+    int mappedSecond = bodies[secondBody]->faces->lookup(secondFace);
+    int mappedFirst = bodies[firstBody]->faces->lookup(firstFace);
 
-    FaceMap* firstMap = bodies[firstBody]->faces;
-    contact->firstFace = firstMap->lookup(firstFace);
+    contact->firstFace = mappedFirst;
     contact->firstIndex = firstIndex;
     contact->secondIndex = secondIndex;
-    contact->secondFace = secondFace;
+    contact->secondFace = mappedSecond;
     contact->kind = 6;
 }

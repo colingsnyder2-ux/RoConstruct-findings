@@ -1,6 +1,4 @@
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MD
-// from server: 90% by king_originala
+// from server: 100% by colin
 struct Vector2 {
     float x;
     float y;
@@ -14,10 +12,11 @@ struct Input {
 void __cdecl f(Vector2* result, const Input* input)
 {
     result->x = 0.0f;
-    result->y = 0.0f;
-    float val = (float)input->value;
-    if (input->axis == 0)
-        result->x = val;
-    else
-        result->y = val;
+    if (input->axis == 0) {
+        result->y = 0.0f;
+        result->x = (float)input->value;
+    } else {
+        result->y = 0.0f;
+        result->y = (float)input->value;
+    }
 }

@@ -1,48 +1,63 @@
-// from server: 47% by tester
+// from server: 57% by colin
+extern "C" void __stdcall _invalid_parameter_noinfo();
+
+struct MapNode
+{
+    MapNode *left;
+    MapNode *parent;
+    MapNode *right;
+    int color;
+    int value;
+    int key;
+};
+
+struct Map
+{
+    MapNode *header;
+    int size;
+};
+
 struct ColorMap
 {
     char pad[0x3c];
-    struct Node
-    {
-        Node* next;
-        char pad1[0xc];
-        int value;
-        Node* prev;
-    };
-    Node* head;
-    char pad2[0x14];
-    Node* tail;
+    Map map;
 
-    int find(int key);
+    int lookup(int key);
 };
 
-extern "C" void __stdcall _invalid_parameter_noinfo();
-
-extern "C" void __stdcall sub_5B3990(void* out, void* out2, void* container);
-
-int ColorMap::find(int key)
+struct MapHelper
 {
-    Node* result;
-    Node* end;
-    sub_5B3990(&result, &end, &head);
+    void findNode(MapNode **out, int *keyPtr);
+};
 
-    Node* first = head;
-    Node* last = tail;
-    Node* cur = result;
+extern void (__thiscall *findNodeFn)(MapHelper *, MapNode **, int *);
 
-    if (cur != last)
+int ColorMap::lookup(int key)
+{
+    MapNode *result;
+    findNodeFn((MapHelper *)&map, &result, &key);
+
+    MapNode *header = map.header;
+    MapNode *end = header->parent;
+    MapNode *node = result;
+
+    if (node == 0 || node == header)
     {
-        while (cur != last)
+        _invalid_parameter_noinfo();
+    }
+
+    if (node != end)
+    {
+        if (node == 0)
         {
-            if (cur->value == key)
-                break;
-            cur = cur->next;
+            _invalid_parameter_noinfo();
         }
+        while (node != header->parent)
+        {
+            _invalid_parameter_noinfo();
+            node = node->left;
+        }
+        return node->value;
     }
-    else
-    {
-        return 0;
-    }
-
-    return cur->value;
+    return 0;
 }

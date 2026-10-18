@@ -1,12 +1,8 @@
-// from server: 43% by colin
-
-
-
-
+// from server: 44% by colin
 extern "C" void* __stdcall sub_802458(void*);
 extern "C" void __stdcall sub_802468(void*);
 extern "C" void __stdcall sub_802890();
-extern "C" void __stdcall sub_803f10(void*);
+extern "C" void __stdcall sub_803f10(void*, int);
 extern "C" void __stdcall sub_803f14(void*);
 extern "C" void __stdcall sub_6a96f0(int, void*);
 
@@ -56,7 +52,7 @@ void CBrowserView::sub_410ea0(int arg) {
     if (!eq)
         return;
     int tmp = arg;
-    sub_803f10(&tmp);
+    sub_803f10(&tmp, arg);
     sub_6a96f0(field_118, &tmp);
     sub_803f14(&tmp);
 }

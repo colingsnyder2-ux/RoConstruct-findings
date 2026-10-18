@@ -1,4 +1,4 @@
-// from server: 86% by king_originala
+// from server: 98% by colin
 namespace std {
     template<class T> struct char_traits;
     template<class T> class allocator;
@@ -48,8 +48,8 @@ Command::Command(Owner* source, String text)
     if (text.capacity < 16)
         characters = text.storage.buffer;
 
-    name = intern_name(characters, -1);
+    void* interned = intern_name(characters, -1);
+    name = interned;
     owner = source;
-    source = (Owner*)name;
-    *owner->commands.lookup(source) = this;
+    *owner->commands.lookup((Owner*)interned) = this;
 }

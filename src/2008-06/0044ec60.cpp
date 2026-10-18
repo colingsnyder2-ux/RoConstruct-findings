@@ -1,17 +1,16 @@
-// from server: 52% by colin
+// from server: 55% by colin
 struct CRobloxControlColorSelector
 {
-    char pad0[0x174];
+    char pad0[0x20];
+    int field_20;
+    char pad1[0x174 - 0x24];
     int field_174;
     int field_178;
-    char pad1[4];
-    int field_180;
-    char pad2[0x17c - 0x184 + 0x184];
     unsigned char field_17c;
+    char pad2[3];
+    int field_180;
     void sub_6adad0();
     void sub_6ab360(int);
-    void sub_44eb90(int);
-
     void sub_44ec60();
 };
 
@@ -20,6 +19,7 @@ extern int g_96dd34;
 extern void* g_802890;
 
 void* __cdecl sub_5b5c80();
+void __cdecl sub_44eb90(int);
 
 void CRobloxControlColorSelector::sub_44ec60()
 {

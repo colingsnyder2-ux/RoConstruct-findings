@@ -1,46 +1,62 @@
-// from server: 50% by colin
+// from server: 53% by colin
 struct GCamera {
     float m[9];
-    GCamera& operator=(const GCamera& other);
-    void set(float a, float b, float c, float d);
+    GCamera& operator=(const GCamera&);
+    void set(float, float, float, float);
 };
 
 struct Message {
-    Message* f(int type);
+    Message* f(int);
 };
 
 extern float g_81c3b8;
 
-Message* makeMessageA();
-Message* makeMessageB();
-Message* makeMessageC();
+Message* getDefault1();
+Message* getDefault2();
+Message* getDefault3();
 
-Message* Message::f(int type) {
+Message* Message::f(int n) {
     Message* self = this;
-    switch (type) {
+    switch (n) {
     case 0: {
-        GCamera cam;
-        cam.set(0.0f, 0.0f, 0.0f, 0.0f);
+        float a = 0.0f;
+        float b = 1.0f;
+        float c = 0.0f;
+        float d = g_81c3b8;
+        float e = 1.0f;
+        float f2 = 0.0f;
+        float g = 1.0f;
+        float h = 0.0f;
+        float i = 1.0f;
+        ((GCamera*)self)->set(a, b, c, d);
         return self;
     }
     case 1: {
-        Message* m = makeMessageA();
-        *self = *m;
+        Message* r = getDefault1();
+        ((GCamera*)self)->operator=(*(GCamera*)r);
         return self;
     }
     case 2: {
-        GCamera cam;
-        cam.set(0.0f, g_81c3b8, 0.0f, 1.0f);
+        float a = 0.0f;
+        float b = g_81c3b8;
+        float c = 0.0f;
+        float d = 1.0f;
+        float e = 0.0f;
+        float f2 = 1.0f;
+        float g = 0.0f;
+        float h = 1.0f;
+        float i = 0.0f;
+        ((GCamera*)self)->set(a, b, c, d);
         return self;
     }
     case 3: {
-        Message* m = makeMessageB();
-        *self = *m;
+        Message* r = getDefault2();
+        ((GCamera*)self)->operator=(*(GCamera*)r);
         return self;
     }
     default: {
-        Message* m = makeMessageC();
-        *self = *m;
+        Message* r = getDefault3();
+        ((GCamera*)self)->operator=(*(GCamera*)r);
         return self;
     }
     }

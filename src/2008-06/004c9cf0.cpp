@@ -1,5 +1,38 @@
-// from server: 62% by colin
-// roc-cl: 21022
-// roc-flags: /O1 /GS- /EHsc /MD
-// roc-lang: cpp
-// roc-lib: openrbx-client App/v8tree/Instance.cpp
+// from server: 85% by colin
+extern float g_float_93cc40;
+
+struct Inner {
+    char pad[0x24];
+    float a;
+    float b;
+    float c;
+};
+
+struct Sender {
+    void* vtable;
+    char pad[0x0C];
+    char data[0x24];
+    float a;
+    float b;
+    float c;
+    char pad2[0x08];
+    float f40;
+    int f44;
+};
+
+extern "C" Inner* __stdcall getInner(void* obj);
+
+struct VInstance {
+};
+
+void __cdecl init(Sender* out)
+{
+    Inner* in = getInner(*(void**)out);
+    Sender* dst = (Sender*)((char*)out + 0x10);
+    *(Inner*)dst = *in;
+    dst->a = in->a;
+    dst->b = in->b;
+    dst->c = in->c;
+    out->f40 = g_float_93cc40;
+    out->f44 = 0;
+}

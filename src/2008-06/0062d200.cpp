@@ -1,4 +1,4 @@
-// from server: 79% by king_originala
+// from server: 81% by colin
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
 
@@ -29,9 +29,9 @@ inline Shared::~Shared()
 {
     Control* p = control;
     if (p) {
-        if (_InterlockedExchangeAdd(&p->strong, -1) == 0) {
+        if (_InterlockedExchangeAdd(&p->strong, -1) == 1) {
             p->dispose();
-            if (_InterlockedExchangeAdd(&p->weak, -1) == 0)
+            if (_InterlockedExchangeAdd(&p->weak, -1) == 1)
                 p->destroy();
         }
     }
@@ -53,8 +53,8 @@ void __cdecl render(Shared object, void* context, int phase)
 {
     PartInstance* part = dynamic_cast<PartInstance*>(object.object);
     if (part && part->value != 0.0f) {
-        double t = (phase < 15 ? phase : 30 - phase) * (double)scale;
-        Color color = { (float)t, 0.0f, (float)(1.0 - t), alpha };
+        float t = (phase < 15 ? phase : 30 - phase) * scale;
+        Color color = { t, part->value, 1.0f - part->value, alpha };
         submit(build(context, color));
     }
 }

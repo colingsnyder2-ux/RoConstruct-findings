@@ -1,4 +1,4 @@
-// from server: 45% by colin
+// from server: 48% by colin
 struct Root {
     static Root& getSingleton();
     void* getRenderSystem();
@@ -30,7 +30,7 @@ struct Node {
 struct RbxSceneNode {
     char pad[0x50];
     Node::List::Node2* node;
-    void setPosition(float x, float y, float z, float w, const Vec4& v);
+    void setPosition(float x, float y, float z, float w, const Vec4& v, void* arg);
 };
 
 extern "C" {
@@ -38,7 +38,7 @@ extern "C" {
     extern void* (__stdcall* getRenderSystemFn)(void*);
 }
 
-void RbxSceneNode::setPosition(float x, float y, float z, float w, const Vec4& v) {
+void RbxSceneNode::setPosition(float x, float y, float z, float w, const Vec4& v, void* arg) {
     float a = x;
     float b = y;
     float c = z;
@@ -59,8 +59,9 @@ void RbxSceneNode::setPosition(float x, float y, float z, float w, const Vec4& v
     fn(rs, &tmp, &tmp);
 
     Node::List::Node2* n = this->node;
-    Node::List::Node2* result = ((Node::List*)((char*)this + 0x3c))->insert(n, n);
-    ((Node::List*)((char*)this + 0x3c))->erase(result);
+    Node::List* lst = (Node::List*)((char*)this + 0x3c);
+    Node::List::Node2* result = lst->insert(n, (Node::List::Node2*)arg);
+    lst->erase((Node::List::Node2*)1);
     this->node = result;
     result->next->next = result;
 }

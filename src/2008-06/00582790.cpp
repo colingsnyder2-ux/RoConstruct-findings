@@ -1,27 +1,19 @@
-// from server: 56% by colin
-struct Context {
-    void prepare();
+// from server: 63% by colin
+struct StopCommand {
+    char padding[0xC];
+    void* field_C;
+    int field_10;
+    void dispose();
 };
 
-struct Result {
-    void setState(int);
-};
+void sub_57D250(void*);
+void* sub_581C00(void*, int);
+void sub_554DA0(void*);
 
-struct Resolver {
-    Result* get(int);
-};
-
-struct S {
-    char padding[0x0C];
-    Context* context;
-    Resolver resolver;
-    void f();
-};
-
-void S::f()
+void StopCommand::dispose()
 {
-    Context* c = context;
-    c->prepare();
-    Result* r = resolver.get(1);
-    r->setState(2);
+    sub_57D250(field_C);
+    void* p = sub_581C00(&field_10, 1);
+    *(int*)p = 2;
+    sub_554DA0(p);
 }
