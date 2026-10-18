@@ -1,4 +1,4 @@
-// from server: 62% by colin
+// from server: 63% by colin
 struct TypeInfo {};
 
 struct Holder;
@@ -42,14 +42,14 @@ struct BoundFuncDesc {
     unsigned char pad[0x38];
     void *(__thiscall *fn)(void *, void *);
     unsigned char *ctx;
-    void *invoke(void *, void *, void *, void *);
+    void invoke(void *, void *, void *, void *);
 };
 
 extern void *__cdecl get_type_holder(void *);
 extern void *__cdecl get_value_holder(void *);
 extern void *__cdecl make_value();
 
-void *BoundFuncDesc::invoke(void *a, void *b, void *c, void *out)
+void BoundFuncDesc::invoke(void *a, void *b, void *c, void *out)
 {
     void *t = get_type_holder(a);
     unsigned char ch = *(unsigned char *)t;
@@ -64,5 +64,5 @@ void *BoundFuncDesc::invoke(void *a, void *b, void *c, void *out)
     (void)copied;
     (void)slot;
     (void)tmp;
-    return out;
+    (void)result;
 }

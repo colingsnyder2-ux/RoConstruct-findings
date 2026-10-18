@@ -1,30 +1,33 @@
-// from server: 39% by colin
-struct PhysicsSender {
-    char pad[4];
-};
-
-struct SimJobTracker {
-    char pad[0x30];
-};
-
-struct RoundRobinPhysicsSender : PhysicsSender {
-    SimJobTracker jobStagePos;
-    double lastCharacterSendTime;
-    float lastBufferCheckTime;
-    int field44;
-    float field48;
-
-    RoundRobinPhysicsSender(const RoundRobinPhysicsSender& other);
-};
-
-extern "C" void __stdcall sub_4025b0(void* dst, const void* src);
-
-RoundRobinPhysicsSender::RoundRobinPhysicsSender(const RoundRobinPhysicsSender& other)
+// from server: 78% by colin
+struct Inner
 {
-    *(PhysicsSender*)this = *(const PhysicsSender*)&other;
-    sub_4025b0(&jobStagePos, &other.jobStagePos);
-    lastCharacterSendTime = other.lastCharacterSendTime;
-    lastBufferCheckTime = other.lastBufferCheckTime;
-    field44 = other.field44;
-    field48 = other.field48;
+    char padding[4];
+};
+
+struct S
+{
+    int field0;
+    Inner inner;
+    double field8;
+    char data[0x30];
+    float f40;
+    int f44;
+    float f48;
+    S* assign(S* other);
+};
+
+extern "C" void __stdcall sub_4025B0(Inner* dst, Inner* src);
+
+S* S::assign(S* other)
+{
+    field0 = other->field0;
+    sub_4025B0(&inner, &other->inner);
+    field8 = other->field8;
+    struct Block { int v[9]; float a, b, c; };
+    *reinterpret_cast<Block*>(reinterpret_cast<char*>(this) + 0x10) =
+        *reinterpret_cast<Block*>(reinterpret_cast<char*>(other) + 0x10);
+    f40 = other->f40;
+    f44 = other->f44;
+    f48 = other->f48;
+    return this;
 }

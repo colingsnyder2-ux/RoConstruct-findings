@@ -1,4 +1,4 @@
-// from server: 41% by colin
+// from server: 42% by Viper
 // roc 2007-08 005454a0  size: 84 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 005454a0
 
@@ -13,7 +13,7 @@ struct Item {
 
 struct Holder {
     Item* ptr;
-    void construct(Item* src);
+    void __cdecl construct(Item* src);
 };
 
 void Holder::construct(Item* src)

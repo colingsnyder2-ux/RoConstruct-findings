@@ -1,8 +1,4 @@
-// from server: 70% by colin
-
-
-
-
+// from server: 78% by colin
 struct ScoreHud {
     int getState();
     void setA(int, int);
@@ -12,8 +8,7 @@ struct ScoreHud {
 
 void ScoreHud::dispatch(int arg)
 {
-    int s = getState();
-    switch (s)
+    switch (getState())
     {
     case 0:
         setA(arg, 2);
@@ -22,12 +17,8 @@ void ScoreHud::dispatch(int arg)
         setA(arg, 3);
         break;
     case 2:
-        setB(arg);
-        break;
     case 3:
         setB(arg);
-        break;
-    default:
         break;
     }
 }

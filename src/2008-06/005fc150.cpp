@@ -1,56 +1,53 @@
-// from server: 61% by colin
-struct Vector
-{
-    void remove(void*);
-};
+// from server: 63% by colin
+extern "C" void (__cdecl *invalid_parameter_noinfo)();
 
-struct Object
-{
-    char pad0[0x24];
-    Vector v24;
-    char pad1[0x1c];
-    Vector v44;
-    char pad2[0xc8];
-    Vector v130;
-    char pad3[0x1c];
-    Vector v150;
-};
+struct Object;
 
-struct LocalBackpackItem
-{
-    char pad0[0x168];
-    Vector v168;
-    Vector v16c;
-    char pad1[0x8];
-    Vector v178;
-    Vector v17c;
-    char pad2[0x8];
-    Object* obj188;
-
+struct Base {
     void f();
 };
 
-extern "C" void __cdecl sub_55afd0(LocalBackpackItem*);
-extern "C" void __cdecl sub_456e80(Object**);
+struct S : Base {
+    char pad[0x168];
+    int field168;
+    int field16c;
+    char pad2[0x178 - 0x16c - 4];
+    int field178;
+    int field17c;
+    char pad3[0x188 - 0x17c - 4];
+    Object* field188;
 
-void LocalBackpackItem::f()
+    void g();
+};
+
+void S::g()
 {
-    sub_55afd0(this);
-    Object** p = &obj188;
-    if (*p != 0)
-    {
-        Object* o = *p;
-        if (o != 0)
-            o->v24.remove(&v168);
-        o = *p;
-        if (o != 0)
-            o->v44.remove(&v16c);
-        o = *p;
-        if (o != 0)
-            o->v130.remove(&v178);
-        o = *p;
-        if (o != 0)
-            o->v150.remove(&v17c);
-        sub_456e80(p);
+    Base::f();
+    if (field188 != 0) {
+        Object* o = field188;
+        if (o != 0) {
+            void* p = (char*)o + 0x24;
+            void* q = &field168;
+            ((void (__thiscall*)(void*, void*))0x5e5a80)(p, q);
+        }
+        o = field188;
+        if (o != 0) {
+            void* p = (char*)o + 0x44;
+            void* q = &field16c;
+            ((void (__thiscall*)(void*, void*))0x5e5a80)(p, q);
+        }
+        o = field188;
+        if (o != 0) {
+            void* p = (char*)o + 0x130;
+            void* q = &field178;
+            ((void (__thiscall*)(void*, void*))0x5e5a80)(p, q);
+        }
+        o = field188;
+        if (o != 0) {
+            void* p = (char*)o + 0x150;
+            void* q = &field17c;
+            ((void (__thiscall*)(void*, void*))0x5e5a80)(p, q);
+        }
+        ((void (__thiscall*)(void*))0x456e80)(&field188);
     }
 }

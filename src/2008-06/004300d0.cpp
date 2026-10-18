@@ -1,4 +1,4 @@
-// from server: 64% by colin
+// from server: 65% by colin
 struct RGB
 {
     unsigned char r, g, b;
@@ -10,20 +10,29 @@ struct Color
     RGB getRGB() const;
 };
 
-struct Vector3
-{
-    float x, y, z;
-};
-
 struct ColorF
 {
     float r, g, b, a;
 };
 
-struct S
+struct Color3uint8
+{
+    unsigned char r, g, b, a;
+};
+
+struct ColorSource
 {
     ColorF color() const;
-    Vector3 f() const;
+};
+
+struct Color3uint8Source
+{
+    Color3uint8 fromColor(ColorF c);
+};
+
+struct Wrapper
+{
+    void f(unsigned int);
 };
 
 struct CWrapperView
@@ -31,32 +40,30 @@ struct CWrapperView
     void method(int);
 };
 
-extern ColorF g_color;
+extern ColorSource *g_colorSource;
 
 void CWrapperView::method(int arg)
 {
-    int* self = (int*)this;
-    int* p = (int*)self[5];
+    int *self = (int *)this;
+    int *p = (int *)self[5];
     if (p)
     {
-        int* c = (int*)p[0xfc / 4];
+        int *c = (int *)p[0xfc / 4];
         int idx = self[2];
-        int* esi;
+        int *esi;
         if (idx >= 0 && idx < c[0x2c / 4])
         {
-            esi = (int*)((int*)c[0x28 / 4])[idx];
+            esi = (int *)((int *)c[0x28 / 4])[idx];
         }
         else
         {
             esi = 0;
         }
-        ColorF cf = g_color;
-        Color col;
-        col.value = *(unsigned int*)&cf;
-        RGB rgb = col.getRGB();
-        unsigned int packed = ((unsigned int)rgb.b << 16) | ((unsigned int)rgb.g << 8) | rgb.r;
-        ((void (__thiscall*)(void*, unsigned int))0x44de10)(esi, packed);
+        ColorF cf = g_colorSource->color();
+        Color3uint8 c3 = ((Color3uint8Source *)&c3)->fromColor(cf);
+        unsigned int packed = ((unsigned int)c3.r) | (((unsigned int)c3.g) << 8) | (((unsigned int)c3.b) << 16);
+        ((Wrapper *)esi)->f(packed);
     }
-    void (__thiscall* fn)(void*, int) = *(void (__thiscall**)(void*, int))self[0];
+    void (__thiscall *fn)(void *, int) = *(void (__thiscall **)(void *, int))self[0];
     fn(this, 1);
 }

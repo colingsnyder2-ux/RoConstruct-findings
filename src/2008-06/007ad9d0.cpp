@@ -1,4 +1,4 @@
-// from server: 62% by colin
+// from server: 63% by colin
 struct S {
     void __fastcall f(int rowStep, int channels, unsigned int width,
                       unsigned int height, unsigned char* output,
@@ -30,9 +30,8 @@ void __fastcall S::f(int rowStep, int channels, unsigned int width,
             } while (--rows);
         }
     } else if (height == 1) {
-        int adjustment = stride - rowStep;
+        int adjustment = stride + stride - rowStep;
         if (halfHeight > 0) {
-            adjustment += stride;
             int rows = halfHeight;
             do {
                 int count = channels;

@@ -1,4 +1,4 @@
-// from server: 98% by colin
+// from server: 100% by colin
 namespace std {
     template<class T> struct char_traits;
     template<class T> class allocator;
@@ -14,7 +14,7 @@ namespace std {
         unsigned length;
         unsigned capacity;
 
-        ~basic_string();
+        __declspec(dllimport) ~basic_string();
     };
 }
 

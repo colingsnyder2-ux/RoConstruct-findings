@@ -1,32 +1,28 @@
-// from server: 41% by colin
-extern "C" {
-    int __stdcall sub_55BD60(void*, void*);
-    void* __stdcall sub_80240C(void*, void*);
-    void __stdcall sub_802468(void*);
-}
+// from server: 68% by colin
+// roc 2008-06 00598610  unit: RBX::Decal  size: 126 bytes
 
-struct VMember {
-    void assign(const char*);
+struct RBXString {
+    void assign(const RBXString& other);
+    ~RBXString();
 };
 
-struct String {
-    char buf[0x1c];
-};
+extern "C" int __stdcall sub_55BD60(void* a, void* b);
+extern "C" void* __stdcall sub_80240C(void* a);
+extern "C" void __stdcall sub_802468(void* a);
 
-struct Decal {
+struct RBXDecal {
     char pad[0x144];
-    String str;
-    int f(int, int, int, int, int, int, int, int);
+    RBXString name;
+    void setProperty(const char* name, const RBXString& value);
+    void construct(const RBXString& value);
 };
 
-int Decal::f(int a, int b, int c, int d, int e, int f_, int g, int h) {
-    int local = 0;
-    if (sub_55BD60(&str, &local)) {
-        sub_80240C(&str, &local);
-        str.buf[0x1c] = 0;
-        *(int*)((char*)this + 0x144 + 0x1c) = h;
-        ((VMember*)this)->assign((const char*)0x975f14);
+void RBXDecal::construct(const RBXString& value) {
+    RBXString temp;
+    if (sub_55BD60(&this->name, &temp)) {
+        sub_80240C(&temp);
+        this->name.assign(value);
+        this->setProperty((const char*)0x975f14, value);
     }
-    sub_802468(&local);
-    return 0;
+    sub_802468(&temp);
 }

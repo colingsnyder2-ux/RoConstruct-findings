@@ -1,11 +1,11 @@
-// from server: 34% by colin
+// from server: 35% by colin
 struct CPatchedControlComboBox {
     void sub_42F490();
 };
 
-extern "C" void __stdcall sub_42F380(void*);
-extern "C" void __stdcall sub_42F290(void*, unsigned int, unsigned int, void*);
-extern "C" void __stdcall sub_6BDE60(void*, unsigned int);
+extern "C" void __cdecl sub_42F380(void*);
+extern "C" void __cdecl sub_42F290(void*, unsigned int, unsigned int, void*);
+extern "C" void __cdecl sub_6BDE60(void*, unsigned int);
 
 void CPatchedControlComboBox::sub_42F490()
 {

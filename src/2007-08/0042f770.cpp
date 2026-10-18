@@ -1,4 +1,4 @@
-// from server: 33% by colin
+// from server: 34% by Viper
 typedef unsigned int DWORD;
 typedef unsigned short WORD;
 typedef unsigned char BYTE;
@@ -25,7 +25,7 @@ struct RBX_BrickColor {
 struct RBX_DataModel;
 
 struct RBX_Listener {
-    bool evaluate(RBX_DataModel* dataModel);
+    bool __cdecl evaluate(RBX_DataModel* dataModel);
 };
 
 extern "C" void* __stdcall sub_630478(void*, void*);

@@ -1,10 +1,10 @@
-// from server: 76% by king_originala
+// from server: 77% by colin
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
 extern "C" long __cdecl _InterlockedDecrement(volatile long*);
 #pragma intrinsic(_InterlockedDecrement)
 
-extern "C" void (__cdecl* _invalid_parameter_noinfo)();
+extern "C" void __cdecl _invalid_parameter_noinfo();
 
 struct Object {
     void func_00598c70();
@@ -83,10 +83,9 @@ bool __cdecl testObject(Shared value);
 
 void __cdecl process(Container* container)
 {
-    for (unsigned int i = 0;
-         i < static_cast<unsigned int>(container->last - container->first);
-         ++i) {
-        if (i >= static_cast<unsigned int>(container->last - container->first))
+    unsigned int count = static_cast<unsigned int>(container->last - container->first);
+    for (unsigned int i = 0; i < count; ++i) {
+        if (i >= count)
             _invalid_parameter_noinfo();
 
         Shared value = container->first[i].get();

@@ -1,37 +1,32 @@
-// from server: 33% by tester
+// from server: 41% by colin
+extern "C" void* __stdcall sub_4328C0();
+
 struct CMarshalWindow {
-    void* vftable;          // 0x00
-    int field_04;           // 0x04
-    int field_08;           // 0x08
-    int field_0c;           // 0x0c
-    int field_10;           // 0x10
-    int field_14;           // 0x14
-    int field_18;           // 0x18
-    int field_1c;           // 0x1c
-    int field_20;           // 0x20
-    int field_24;           // 0x24
-    int field_28;           // 0x28
-    char sub_2c[0x2c];      // 0x2c .. placeholder for subobject
-    void* construct(int);
+    void* vtable;
+    int field_4;
+    char pad_8[12];
+    int field_14;
+    int field_18;
+    int field_1c;
+    int field_20;
+    int field_24;
+    int field_28;
+    char pad_2c[4];
+
+    CMarshalWindow(int arg);
+    void sub_432B50(int a, int b, int c, int d, int e, int f);
 };
 
-extern "C" void __stdcall sub_4328C0(void*);
-extern "C" void __stdcall sub_432B50(CMarshalWindow*, int, int, int, int, int, int, int);
-
-void* CMarshalWindow::construct(int arg)
+CMarshalWindow::CMarshalWindow(int arg)
 {
-    int* p;
-    this->field_04 = 0;
-    this->field_14 = 0;
-    this->field_18 = 0;
-    this->field_1c = 0;
-    this->field_20 = *(int*)0x802dc4;
-    this->field_24 = 0;
-    this->vftable = (void*)0x811c50;
-    sub_4328C0(&this->sub_2c);
-    this->field_28 = arg;
-    p = &arg;
-    sub_432B50(this, arg, 0x80000000, 0, 0, 0, 0, 0);
-
-    return this;
+    vtable = (void*)0x811c50;
+    field_4 = 0;
+    field_14 = 0;
+    field_18 = 0;
+    field_1c = 0;
+    field_20 = *(int*)0x802dc4;
+    field_24 = 0;
+    sub_4328C0();
+    field_28 = arg;
+    sub_432B50(arg, 0, 0x80000000, 0, 0, 0);
 }

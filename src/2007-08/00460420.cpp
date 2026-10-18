@@ -1,6 +1,7 @@
-// from server: 42% by colin
+// from server: 44% by Viper
 struct CScriptEditor {
     void sub_460420(int);
+    void* sub_77DDAC();
 };
 
 extern "C" void* __cdecl sub_45D230();
@@ -11,7 +12,7 @@ struct Helper {
     void* sub_45C790(void*, int);
 };
 
-extern "C" void* __stdcall sub_77DDAC();
+
 extern "C" void* __stdcall sub_77DD98();
 extern "C" void* __stdcall sub_77D5A4(void*, int, void*, void*, void*);
 extern "C" void* __stdcall sub_77DDBC();
