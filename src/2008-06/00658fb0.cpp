@@ -1,4 +1,4 @@
-// from server: 24% by colin
+// from server: 26% by colin
 struct Vector3 {
     float x, y, z;
     Vector3();
@@ -29,7 +29,7 @@ struct ArrowButton {
     float dt;
     char pad1[4];
     bool active;
-    char pad2[4];
+    char pad2[3];
     Vector3 pos30;
     Vector3 pos3c;
     Vector3 pos48;

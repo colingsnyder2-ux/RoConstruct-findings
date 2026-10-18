@@ -1,4 +1,4 @@
-// from server: 82% by king_originala
+// from server: 90% by colin
 void* __cdecl operator new(unsigned int);
 void __cdecl operator delete(void*);
 
@@ -74,6 +74,8 @@ __forceinline ListenerData::ListenerData()
 
 S::S()
 {
+    volatile int guard = 1;
     thread = GetCurrentThreadId();
     context = getContext();
+    (void)guard;
 }

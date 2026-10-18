@@ -1,4 +1,4 @@
-// from server: 37% by colin
+// from server: 38% by Viper
 struct CRbxPlayDocTemplate
 {
     char pad[0x20];
@@ -8,10 +8,11 @@ struct CRbxPlayDocTemplate
     void* field_0x2c;
     void sub_6306ca(void*);
     void* func_00447f30(void*);
+    void sub_6306d6();
 };
 
 extern "C" void* __stdcall sub_62fef6(unsigned int);
-extern "C" void __stdcall sub_6306d6();
+
 extern "C" void __stdcall sub_630724(void*, void*, void*, int);
 extern "C" void* __stdcall sub_453520();
 extern "C" void* __stdcall sub_455e10();
