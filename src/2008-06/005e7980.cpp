@@ -1,64 +1,44 @@
-// from server: 65% by colin
-// roc-cl: 21022
-// roc-flags: /O2 /GS- /EHsc /MD /fp:fast
-struct Vector3 {
-    float x, y, z;
-};
-
-struct Bounds {
-    Vector3 minimum, maximum;
-};
-
-struct Frame {
-    char reserved[0x94];
-    float rotation[9];
-    Vector3 position;
+// from server: 76% by colin
+struct DataSource {
     const void* get();
 };
 
-struct Shape;
-typedef Vector3 (__thiscall *ExtentFunction)(Shape*, const float*);
-
-struct Shape {
-    ExtentFunction* vtable;
-};
-
-extern const float boundsMargin;
-
 struct Geometry {
-    char reserved[0x9C];
-    Shape* shape;
-    Frame* frame;
-    Bounds getBounds();
+    char pad0[0x9c];
+    DataSource* dataSource;
+    void* fieldA0;
+    void* fieldA4;
+    void compute(void* out);
 };
 
-Bounds Geometry::getBounds() {
-    Frame* rotationFrame = frame;
-    rotationFrame->get();
+void Geometry::compute(void* out) {
+    DataSource* ds = *(DataSource**)((char*)this + 0xa0);
+    ds->get();
+    DataSource* ds2 = *(DataSource**)((char*)this + 0xa0);
+    ds2->get();
 
-    Frame* positionFrame = frame;
-    positionFrame->get();
+    DataSource* src = *(DataSource**)((char*)this + 0x9c);
+    void* vtable = *(void**)src;
+    float* (__thiscall* fn)(void*, void*, void*) = *(float* (__thiscall**)(void*, void*, void*))((char*)vtable + 0x14);
 
-    Vector3 extent = shape->vtable[5](shape, rotationFrame->rotation);
+    float local[3];
+    float* r = fn(src, local, (char*)ds + 0x94);
 
-    Vector3 maximum = {
-        extent.x + positionFrame->position.x,
-        positionFrame->position.y + extent.y,
-        positionFrame->position.z + extent.z
-    };
+    float* o = (float*)out;
+    float* s = (float*)ds2;
 
-    Vector3 minimum = {
-        positionFrame->position.x - extent.x,
-        positionFrame->position.y - extent.y,
-        positionFrame->position.z - extent.z
-    };
+    o[0] = r[0] + s[0xb8 / 4];
+    o[1] = r[1] + s[0xbc / 4];
+    o[2] = r[2] + s[0xc0 / 4];
+    o[3] = s[0xb8 / 4] - r[0];
+    o[4] = s[0xbc / 4] - r[1];
+    o[5] = s[0xc0 / 4] - r[2];
 
-    Bounds result = { minimum, maximum };
-    result.minimum.x -= boundsMargin;
-    result.minimum.y -= boundsMargin;
-    result.minimum.z -= boundsMargin;
-    result.maximum.x += boundsMargin;
-    result.maximum.y += boundsMargin;
-    result.maximum.z += boundsMargin;
-    return result;
+    float depth = *(float*)0x82748c;
+    o[0] = o[0] - depth;
+    o[1] = o[1] - depth;
+    o[2] = o[2] - depth;
+    o[3] = o[3] + depth;
+    o[4] = o[4] + depth;
+    o[5] = o[5] + depth;
 }

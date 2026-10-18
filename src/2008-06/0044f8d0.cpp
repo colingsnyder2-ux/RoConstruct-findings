@@ -1,63 +1,66 @@
-// from server: 52% by colin
+// from server: 54% by colin
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
 
-struct Control
-{
-    virtual ~Control();
-    virtual void dispose() = 0;
-    virtual void destroy() = 0;
-    volatile long use_count;
-    volatile long weak_count;
-
-    void release();
+struct sp_counted_base {
+    virtual ~sp_counted_base();
+    virtual void dispose();
+    virtual void destroy();
+    long use_count_;
+    long weak_count_;
 };
 
-inline void Control::release()
+struct SharedCount {
+    sp_counted_base* pi_;
+    SharedCount();
+    SharedCount(const SharedCount&);
+    ~SharedCount();
+};
+
+struct SharedPtr {
+    void* px;
+    SharedCount pn;
+    SharedPtr();
+};
+
+extern "C" unsigned char __cdecl func_00495e60(int, int);
+extern "C" unsigned char __cdecl func_00495e70(int, int);
+extern "C" void __cdecl func_0046a940();
+extern "C" void __cdecl func_006a09f8();
+
+struct CRobloxDoc {
+    char pad[0x94];
+    void* field_94;
+    int method(int, int);
+};
+
+int CRobloxDoc::method(int a, int b)
 {
-    if (_InterlockedExchangeAdd(&use_count, -1) == 1)
-    {
-        dispose();
-        if (_InterlockedExchangeAdd(&weak_count, -1) == 1)
-            destroy();
+    SharedPtr sp;
+    func_0046a940();
+    int v = *(int*)&sp.pn.pi_;
+    unsigned char r1 = func_00495e60(v, 1);
+    unsigned char r2;
+    if (r1) {
+        r2 = func_00495e70(v, 1);
+        if (!r2)
+            r2 = 0;
+        else
+            r2 = 1;
+    } else {
+        r2 = 1;
     }
-}
-
-struct Handle
-{
-    void* object;
-    Control* control;
-    ~Handle();
-};
-
-inline Handle::~Handle()
-{
-    if (control)
-        control->release();
-}
-
-struct Source
-{
-    Handle get();
-};
-
-extern bool G1_func_00495e60(int, void*);
-extern bool G1_func_00495e70(int, void*);
-
-struct CRobloxDoc
-{
-    char padding0[0x94];
-    Source* source;
-
-    void func_0044f8d0(int a, int b);
-    void func_0044f8d0_helper(int a, int b);
-};
-
-void CRobloxDoc::func_0044f8d0(int a, int b)
-{
-    Handle h = source->get();
-    bool flag = G1_func_00495e60(1, h.object) && G1_func_00495e70(1, h.object);
-    if (!flag)
-        return;
-    func_0044f8d0_helper(a, b);
+    unsigned char bl = (r2 == 0) ? 1 : 0;
+    sp_counted_base* pi = sp.pn.pi_;
+    if (pi) {
+        if (_InterlockedExchangeAdd(&pi->use_count_, -1) == 1) {
+            pi->dispose();
+            if (_InterlockedExchangeAdd(&pi->weak_count_, -1) == 1)
+                pi->destroy();
+        }
+    }
+    if (bl)
+        return 0;
+    func_006a09f8();
+    return 0;
 }

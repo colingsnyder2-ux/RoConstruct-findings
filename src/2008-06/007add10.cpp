@@ -1,8 +1,4 @@
-// from server: 64% by king_originala
-
-
-
-
+// from server: 66% by colin
 #pragma float_control(precise, off)
 
 extern const float blendOffset;
@@ -23,22 +19,22 @@ const T& smaller(const T& a, const T& b)
 
 void __cdecl blend(const unsigned char* source, unsigned char* output)
 {
-    const int zero = 0;
-    const int maximum = 255;
+    int zero = 0;
+    int maximum = 255;
     int offset = source - output;
     int count = 3;
 
     do
     {
         int amount = *output;
-        const float one = 1.0f;
+        float one = 1.0f;
         float scale = blendScale;
         float value = (float)output[offset];
 
         if (amount > 130)
         {
             float factor = ((float)amount - blendOffset) * scale;
-            const float& weight = smaller(factor, one);
+            float weight = smaller(factor, one);
             value = value * (one - weight) + weight * lightScale;
         }
         else if (amount < 126)
