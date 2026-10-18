@@ -1,30 +1,21 @@
-// from server: 47% by king_originala
-struct Level {
-    void append(const unsigned int* value);
-    void __cdecl addQuad(unsigned int a, unsigned int b,
-                         unsigned int c, unsigned int d);
+// from server: 57% by colin
+struct S {
+    void __cdecl f(unsigned short a, unsigned short b, unsigned short c);
+    void g(unsigned short *p);
 };
 
-void __cdecl Level::addQuad(unsigned int a, unsigned int b,
-                           unsigned int c, unsigned int d)
-{
-    unsigned int first = a;
-
-    a = (unsigned short)first;
-    append(&a);
-
-    a = (unsigned short)b;
-    append(&a);
-
-    a = (unsigned short)c;
-    append(&a);
-
-    a = (unsigned short)first;
-    append(&a);
-
-    a = (unsigned short)c;
-    append(&a);
-
-    a = (unsigned short)d;
-    append(&a);
+void S::f(unsigned short a, unsigned short b, unsigned short c) {
+    unsigned short v;
+    v = a;
+    g(&v);
+    v = b;
+    g(&v);
+    v = c;
+    g(&v);
+    v = a;
+    g(&v);
+    v = c;
+    g(&v);
+    v = b;
+    g(&v);
 }

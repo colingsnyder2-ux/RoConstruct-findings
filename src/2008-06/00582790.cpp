@@ -1,4 +1,4 @@
-// from server: 63% by colin
+// from server: 64% by colin
 struct StopCommand {
     char padding[0xC];
     void* field_C;
@@ -6,9 +6,9 @@ struct StopCommand {
     void dispose();
 };
 
-void sub_57D250(void*);
-void* sub_581C00(void*, int);
-void sub_554DA0(void*);
+void __fastcall sub_57D250(void*);
+void* __fastcall sub_581C00(void*, int);
+void __fastcall sub_554DA0(void*);
 
 void StopCommand::dispose()
 {

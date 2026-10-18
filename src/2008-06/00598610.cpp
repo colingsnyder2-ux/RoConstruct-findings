@@ -1,28 +1,28 @@
-// from server: 68% by colin
+// from server: 70% by colin
 // roc 2008-06 00598610  unit: RBX::Decal  size: 126 bytes
 
-struct RBXString {
-    void assign(const RBXString& other);
-    ~RBXString();
+struct RBX_String {
+    void assign(const RBX_String&);
+    ~RBX_String();
 };
 
-extern "C" int __stdcall sub_55BD60(void* a, void* b);
-extern "C" void* __stdcall sub_80240C(void* a);
-extern "C" void __stdcall sub_802468(void* a);
+extern "C" int __stdcall sub_55BD60(void*, void*);
+extern "C" void* __stdcall sub_80240C(void*, void*);
+extern "C" void __stdcall sub_802468(void*);
 
-struct RBXDecal {
+struct RBX_Decal {
     char pad[0x144];
-    RBXString name;
-    void setProperty(const char* name, const RBXString& value);
-    void construct(const RBXString& value);
+    RBX_String name;
+    void setSomething(const RBX_String*);
+    void construct(void* a, void* b, void* c, void* d, void* e, void* f, void* g, void* h);
 };
 
-void RBXDecal::construct(const RBXString& value) {
-    RBXString temp;
-    if (sub_55BD60(&this->name, &temp)) {
-        sub_80240C(&temp);
-        this->name.assign(value);
-        this->setProperty((const char*)0x975f14, value);
+void RBX_Decal::construct(void* a, void* b, void* c, void* d, void* e, void* f, void* g, void* h) {
+    RBX_String tmp;
+    if (sub_55BD60(&tmp, &name)) {
+        sub_80240C(&name, &tmp);
+        name.assign(tmp);
+        setSomething(&tmp);
     }
-    sub_802468(&temp);
+    sub_802468(&tmp);
 }

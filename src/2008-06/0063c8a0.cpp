@@ -1,4 +1,4 @@
-// from server: 29% by colin
+// from server: 37% by colin
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
 
@@ -7,7 +7,6 @@ struct V3 { float x, y, z; };
 struct Seat {
     char pad[0x418];
     void* weld;
-    char pad2[4];
     void createSeatWeld(void* h);
 };
 
@@ -25,13 +24,13 @@ void* sub_598cb0(void* self);
 void sub_513220(void* self, void* arg);
 void sub_4782d0(void* self);
 void sub_518b90(void* self, void* arg);
-void sub_476700(void* self, void* arg);
-void sub_478330(void* self, void* arg);
+void* sub_476700(void* self, void* arg);
+void* sub_478330(void* self, void* arg);
 void* sub_5d90a0(void* self);
 void* sub_5e7570(void* self);
 void sub_5e8200(void* self, void* arg);
 void* sub_5e82c0(void* self);
-void sub_60e8f0(void* self, void* arg);
+void* sub_60e8f0(void* self, void* arg);
 void sub_614170(void* self);
 void sub_5e7760(void* self, void* arg);
 void* sub_4b2620(void* arg);
@@ -123,7 +122,7 @@ void Seat::createSeatWeld(void* h)
     void* jj = sub_4b2620(&tmp);
     void* kk = *(void**)jj;
     this->weld = kk;
-    sub_4025b0(&this->pad2[0], (char*)jj + 4);
+    sub_4025b0(&this->pad[0], (char*)jj + 4);
 
     if (jj) {
         long old = _InterlockedExchangeAdd((volatile long*)((char*)jj + 4), -1);

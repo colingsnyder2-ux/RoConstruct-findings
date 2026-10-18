@@ -1,4 +1,4 @@
-// from server: 92% by king_originala
+// from server: 94% by colin
 extern "C" void (__cdecl *invalid_parameter_noinfo)();
 
 struct Node {
@@ -57,10 +57,12 @@ Functor __cdecl run(Position first, Position last, Functor functor)
         if (node == current.endNode)
             break;
 
-        if (!owner)
+        if (!owner) {
             invalid();
-        else
             owner = owner->next;
+        } else {
+            owner = owner->next;
+        }
 
         if (node == owner->sentinel)
             invalid();

@@ -1,6 +1,4 @@
-// from server: 79% by colin
-// roc-cl: 21022
-// roc-flags: /O1 /GS- /EHsc /MD
+// from server: 100% by colin
 struct Storage;
 
 struct Node {
@@ -30,7 +28,7 @@ struct Descriptor {
     Node* find(Argument* argument);
 };
 
-inline Node* Storage::lookup(const char* key)
+Node* Storage::lookup(const char* key)
 {
     if (this)
         return find(key);
@@ -39,11 +37,14 @@ inline Node* Storage::lookup(const char* key)
 
 Node* Descriptor::find(Argument* argument)
 {
-    Node* node = storage->lookup(argument->parent->key + 4);
+    Storage* s = storage;
+    Node* node = s ? s->lookup(argument->parent->key + 4) : 0;
     if (node) {
         Storage* next = node->convert();
-        if (next)
-            return next->find(argument->key + 4);
+        if (next) {
+            const char* key = argument->key + 4;
+            return next->find(key);
+        }
     }
     return 0;
 }

@@ -1,25 +1,18 @@
-// from server: 54% by colin
+// from server: 55% by colin
 extern "C" void* __cdecl cast_object(void*, long, const void*, const void*, int);
 extern "C" void __cdecl invalid_parameter_noinfo();
 
 extern char instance_type;
 extern char part_type;
 
-struct Iterator
-{
-    void* owner;
-    void** current;
-};
-
 struct Selection
 {
     void* owner;
-    unsigned int reserved[2];
     void** first;
     void** last;
 
     void insert(void* const*);
-    Iterator* erase(Iterator*, void*, void**);
+    void** erase(void**, void*, void**);
 };
 
 struct Argument
@@ -40,14 +33,13 @@ struct S
 void S::update(Argument* argument)
 {
     Argument* original = argument;
-    argument = static_cast<Argument*>(
-        cast_object(original->object, 0, &instance_type, &part_type, 0));
+    void* obj = cast_object(original->object, 0, &instance_type, &part_type, 0);
 
-    if (argument)
-        selection.insert(reinterpret_cast<void* const*>(&argument));
+    if (obj)
+        selection.insert(&obj);
 
-    argument = static_cast<Argument*>(original->removed);
-    if (argument)
+    void* removed = original->removed;
+    if (removed)
     {
         void** finish = selection.last;
         if (selection.first > finish)
@@ -58,13 +50,10 @@ void S::update(Argument* argument)
             invalid_parameter_noinfo();
 
         void* owner = selection.owner;
-        Iterator position;
-        position.owner = owner;
-        position.current = current;
 
         while (current != finish)
         {
-            if (*current == argument)
+            if (*current == removed)
                 break;
             ++current;
         }
@@ -77,6 +66,6 @@ void S::update(Argument* argument)
             invalid_parameter_noinfo();
 
         if (current != finish)
-            selection.erase(&position, owner, current);
+            selection.erase(current, owner, current);
     }
 }

@@ -1,4 +1,4 @@
-// from server: 35% by colin
+// from server: 36% by colin
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
 
@@ -9,18 +9,8 @@ struct String {
     ~String();
 };
 
-struct Name {
-    void* ptr;
-};
-
-struct RefCounted {
-    long refcount;
-    virtual void destroy();
-    virtual void destroy2();
-};
-
 struct SharedPtr {
-    RefCounted* ptr;
+    void* ptr;
     SharedPtr();
     SharedPtr(const SharedPtr&);
     ~SharedPtr();
@@ -30,7 +20,6 @@ struct Instance {
     char pad[0x14];
     void* property;
     char pad2[4];
-    void* getProperty();
 };
 
 struct Creator {
@@ -40,18 +29,18 @@ struct Creator {
     void construct(Instance*, SharedPtr);
 };
 
-extern void __cdecl func_0080f058(void*);
 extern void __cdecl func_00802458(void*, const char*);
 extern void __cdecl func_0080245c(void*, void*);
 extern void __cdecl func_00802468(void*);
 extern void __cdecl func_00802890();
 extern void __cdecl func_0080f034(void*);
+extern void __cdecl func_0080f058(void*);
 extern void __cdecl func_008d1bc8(void*);
-extern void __cdecl func_0096cc4c(void*);
+extern void* __cdecl func_0096cc4c();
 
 extern void __cdecl func_00409d50(void*, void*);
 extern void __cdecl func_006a158c(void*, void*);
-extern void __cdecl func_00554180(void*, void*);
+extern void* __cdecl func_00554180(void*);
 extern void __cdecl func_0061ba10(void*, void*, void*);
 extern void __cdecl func_00509b10(void*, void*, void*);
 extern void __cdecl func_004174b0(void*, void*);
@@ -68,7 +57,7 @@ void Creator::construct(Instance* instance, SharedPtr sp)
         String s2(s1);
         func_006a158c(&s2, &func_008d1bc8);
     }
-    void* prop = instance->getProperty();
+    void* prop = func_00554180(&instance->property);
     void* p = instance->property;
     void* v = (char*)p + 8;
     void* out;
@@ -97,11 +86,13 @@ void Creator::construct(Instance* instance, SharedPtr sp)
     func_0041cf60(&sp);
     func_0041a530(&func_0096cc4c);
     if (sp.ptr != 0) {
-        RefCounted* rc = sp.ptr;
-        if (_InterlockedExchangeAdd(&rc->refcount, -1) == 1) {
-            rc->destroy();
+        void* rc = sp.ptr;
+        if (_InterlockedExchangeAdd((volatile long*)((char*)rc + 4), -1) == 1) {
+            void** vt = *(void***)rc;
+            ((void (__thiscall*)(void*))vt[1])(rc);
             if (_InterlockedExchangeAdd((volatile long*)((char*)rc + 8), -1) == 1) {
-                rc->destroy2();
+                void** vt2 = *(void***)rc;
+                ((void (__thiscall*)(void*))vt2[2])(rc);
             }
         }
     }
