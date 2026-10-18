@@ -1,4 +1,4 @@
-// from server: 65% by king_originala
+// from server: 68% by colin
 extern "C" void* __cdecl allocate_aligned(unsigned int, unsigned int);
 extern "C" void* __cdecl fill_memory(void*, int, unsigned int);
 
@@ -49,8 +49,8 @@ struct S
 };
 
 S::S(int ownerValue, Array source, int firstValue, int lastValue)
-    : owner(0)
 {
+    owner = 0;
     owner = ownerValue;
     values = source;
     first = firstValue;

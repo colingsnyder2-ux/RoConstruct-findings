@@ -1,4 +1,4 @@
-// from server: 56% by colin
+// from server: 58% by colin
 extern "C" void* __cdecl operator_new(unsigned int);
 extern "C" void __stdcall invalid_parameter_noinfo();
 extern "C" void __stdcall string_ctor(void*);
@@ -18,11 +18,11 @@ struct ScoreHud {
     char pad0[0xc];
     Element* begin;
     Element* end;
-    void func(int);
+    void func(int, int);
     void reserve(int);
 };
 
-void ScoreHud::func(int count) {
+void ScoreHud::func(int a, int count) {
     this->reserve(count);
     int i = 0;
     if (count > 0) {
@@ -41,4 +41,8 @@ void ScoreHud::func(int count) {
             offset += 0x18;
         } while (i < count);
     }
+    char buf2[0x1c];
+    string_ctor(buf2);
+    Container* c2 = (Container*)((char*)this + 0x18);
+    c2->push_back((Element*)buf2);
 }

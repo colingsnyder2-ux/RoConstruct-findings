@@ -1,4 +1,4 @@
-// from server: 92% by king_originala
+// from server: 93% by colin
 extern const float increment;
 extern const float limit;
 
@@ -16,7 +16,7 @@ void S::reserve(unsigned int count)
     if (count > threshold) {
         unsigned int capacity = ~0u;
         double required = count / loadFactor + increment;
-        if (required >= limit)
+        if (required > limit)
             capacity = static_cast<unsigned int>(required);
         rehash(capacity);
     }

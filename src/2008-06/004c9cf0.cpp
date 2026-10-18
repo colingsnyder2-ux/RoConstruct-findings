@@ -1,8 +1,12 @@
-// from server: 98% by colin
+// from server: 100% by colin
 extern float g_float_93cc40;
 
+struct DataBlock {
+    char data[0x24];
+};
+
 struct Inner {
-    char pad[0x24];
+    char data[0x24];
     float a;
     float b;
     float c;
@@ -26,11 +30,11 @@ struct Obj {
 void __cdecl init(Sender* out)
 {
     Inner* in = ((Obj*)*(void**)out)->getInner();
-    Inner* dst = (Inner*)((char*)out + 0x10);
-    *dst = *in;
-    dst->a = in->a;
-    dst->b = in->b;
-    dst->c = in->c;
+    DataBlock* dst = (DataBlock*)((char*)out + 0x10);
+    *(DataBlock*)dst = *(DataBlock*)in;
+    ((Inner*)dst)->a = in->a;
+    ((Inner*)dst)->b = in->b;
+    ((Inner*)dst)->c = in->c;
     out->f40 = g_float_93cc40;
     out->f44 = 0;
 }

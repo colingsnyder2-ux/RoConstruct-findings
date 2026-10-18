@@ -1,4 +1,4 @@
-// from server: 63% by colin
+// from server: 64% by colin
 struct S {
     char pad0[4];
     int field4;
@@ -59,8 +59,8 @@ int S::f()
     }
     sub_58C5C0(eax, ecx);
 
-    {
-        int (*fp)() = (int (*)())*(int *)(*(int *)ecx);
-        return fp();
-    }
+    ecx = this->fieldC;
+    eax = *(int *)ecx;
+    eax = *(int *)eax;
+    return ((int (*)())eax)();
 }

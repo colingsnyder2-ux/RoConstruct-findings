@@ -1,12 +1,10 @@
-// from server: 74% by colin
+// from server: 78% by colin
 extern "C" void __stdcall _invalid_parameter_noinfo();
 
 struct Node {
     Node* parent;
-    Node* left;
-    Node* right;
-    char color;
-    char pad[3];
+    char pad[0x14];
+    Node* field18;
     int field1c;
 };
 
@@ -40,7 +38,7 @@ bool S::f() {
         }
         if (it == 0) {
             _invalid_parameter_noinfo();
-            if (cur == it->parent) {
+            if (cur == it->field18) {
                 _invalid_parameter_noinfo();
             }
             if (cur->field1c != 0) {

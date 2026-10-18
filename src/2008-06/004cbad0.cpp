@@ -1,4 +1,4 @@
-// from server: 68% by king_originala
+// from server: 80% by colin
 struct Node {
     unsigned char reserved[8];
     void* object;
@@ -39,7 +39,13 @@ void S::process(Predicate* predicate, Tracker* tracker, Node* exempt)
             Node* node = *first;
             Owner** proxy = owner;
             void (__cdecl *handler)() = invalid_parameter_handler;
-            Owner* container = proxy ? *proxy : (handler(), (Owner*)0);
+            Owner* container;
+            if (proxy)
+                container = *proxy;
+            else {
+                handler();
+                container = 0;
+            }
             if (node == container->sentinel)
                 handler();
             tracker->setObject(node->object);
@@ -47,13 +53,13 @@ void S::process(Predicate* predicate, Tracker* tracker, Node* exempt)
 
         unsigned int index = 0;
         Node* node = tracker->current();
-        while (index < count) {
+        do {
             Node* previous = node;
             ++index;
             node = next(node);
             if (previous != exempt && !predicate->accepts(previous))
                 break;
-        }
+        } while (index < count);
         tracker->setObject(node);
     }
 }
