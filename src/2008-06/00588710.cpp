@@ -1,4 +1,4 @@
-// from server: 79% by colin
+// from server: 80% by colin
 extern "C" void __cdecl _invalid_parameter_noinfo();
 
 struct Payload
@@ -50,19 +50,18 @@ void S::f()
         Node* end = head;
         Proxy* endProxy = proxy;
 
-        if (!currentProxy || currentProxy != endProxy)
+        if (currentProxy && currentProxy != endProxy)
             _invalid_parameter_noinfo();
 
         if (node == end)
             break;
 
-        S* owner = reinterpret_cast<S*>(currentProxy);
         if (!currentProxy)
             _invalid_parameter_noinfo();
         else
-            owner = currentProxy->owner;
+            currentProxy = reinterpret_cast<Proxy*>(currentProxy->owner);
 
-        if (node == owner->head)
+        if (node == reinterpret_cast<Node*>(currentProxy))
             _invalid_parameter_noinfo();
 
         node->value.f();

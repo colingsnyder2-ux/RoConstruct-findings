@@ -1,11 +1,11 @@
-// from server: 94% by colin
+// from server: 96% by colin
 extern "C" void __stdcall _invalid_parameter_noinfo();
 
 struct BallBallContact {
-    int find(int a, int b, int c, int d, int e, int f);
+    int find(int a, int b);
 };
 
-int BallBallContact::find(int a, int b, int c, int d, int e, int f)
+int BallBallContact::find(int a, int b)
 {
     int* key = (int*)b;
     unsigned int h = (unsigned int)key[2] * 0x4f9ffb7u;
@@ -23,11 +23,13 @@ int BallBallContact::find(int a, int b, int c, int d, int e, int f)
 
     int* node = (int*)(table[3] + h * 8);
     int* entry = (int*)*node;
-    while (entry)
+    for (;;)
     {
         if (entry[0] == a && entry[5] == key[0] && entry[6] == key[1] && entry[7] == key[2])
             break;
         entry = (int*)entry[1];
+        if (!entry)
+            break;
     }
     return (int)entry;
 }

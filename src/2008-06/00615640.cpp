@@ -1,4 +1,4 @@
-// from server: 62% by colin
+// from server: 65% by colin
 struct Result {
     char padding[28];
     int value;
@@ -19,7 +19,10 @@ struct S {
 };
 
 void S::f(void *arg1, int arg2) {
-    Result r = iface->get(arg2);
-    *(int*)((char*)this + 16) = r.value;
+    Result r = ((Interface *)arg1)->get(arg2);
+    char buf[32];
+    *(Result *)buf = r;
+    *(int *)(buf + 28) = *(int *)((char *)&r + 28);
+    ((Interface *)arg1)->slot0();
     r.~Result();
 }

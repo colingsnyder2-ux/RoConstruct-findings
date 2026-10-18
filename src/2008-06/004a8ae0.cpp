@@ -1,4 +1,4 @@
-// from server: 77% by colin
+// from server: 81% by colin
 struct Mutex {
     void lock();
     void unlock();
@@ -9,44 +9,32 @@ struct Key {
     unsigned int second;
 };
 
-struct Descriptor;
-
-struct Registry {
-    unsigned char padding[32];
-    Mutex mutex;
+struct Stream {
+    void writeBits(const unsigned*, int, bool);
 };
 
-struct Guid {
-    static const Guid& getLocalScope();
+struct Target {
+    unsigned char pad[0x130];
+    void methodA(Stream*, const Key*);
 };
 
 struct Creator {
-    void* field0;
-    void* field4;
-    void* field8;
-    void* fieldC;
-    unsigned char pad[0x130 - 0x10];
-    Registry registry;
-
-    void method(void* a, void* b);
+    void invoke(Stream*, const Key*);
 };
 
-void sub_4a7e20(void* self, void* a, void* b);
-void sub_4a5600(void* self, void* a, int b, int c);
+extern "C" void __cdecl sub_554270();
 
-void Creator::method(void* a, void* b)
+void Creator::invoke(Stream* stream, const Key* key)
 {
-    if (a != 0) {
-        ((Mutex*)a)->lock();
-        void* p8 = *(void**)((char*)a + 8);
-        void* pc = *(void**)((char*)a + 0xc);
-        void* local[2];
-        local[0] = p8;
-        local[1] = pc;
-        sub_4a7e20(&this->registry, b, (char*)p8 + 4);
-        sub_4a5600(b, local, 0x18, 1);
+    if (key) {
+        ((Mutex*)key)->lock();
+        Key local;
+        local.first = key->first;
+        local.second = key->second;
+        ((Target*)((char*)this + 0x130))->methodA(stream, &local);
+        stream->writeBits((const unsigned*)&local, 0x18, true);
     } else {
-        const Guid& g = Guid::getLocalScope();
-        sub_4a7e20(&this->registry, b, (char*)&g + 4);
+        sub_554270();
+        ((Target*)((char*)this + 0x130))->methodA(stream, key);
     }
 }

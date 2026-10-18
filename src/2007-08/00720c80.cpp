@@ -1,4 +1,4 @@
-// from server: 31% by colin
+// from server: 43% by Viper
 struct CXTCaptionButtonThemeOfficeXP {
     char pad[0x24];
     int field_24;
@@ -23,9 +23,10 @@ struct CXTCaptionButtonThemeOfficeXP {
 
     void sub_720940();
     void init();
+    void* sub_668f70();
 };
 
-extern "C" void* __stdcall sub_668f70();
+
 extern "C" void* __stdcall sub_668770(void* p, int n);
 
 void CXTCaptionButtonThemeOfficeXP::init()

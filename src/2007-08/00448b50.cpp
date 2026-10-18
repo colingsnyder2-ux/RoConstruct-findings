@@ -1,6 +1,6 @@
-// from server: 54% by colin
+// from server: 55% by Viper
 struct CRbxDocTemplate {
-    void sub_448b50(int);
+    void __cdecl sub_448b50(int);
 };
 
 struct RefCounted {

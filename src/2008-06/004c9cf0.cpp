@@ -1,4 +1,4 @@
-// from server: 90% by colin
+// from server: 93% by colin
 extern float g_float_93cc40;
 
 struct Inner {
@@ -15,7 +15,6 @@ struct Sender {
     float a;
     float b;
     float c;
-    char pad2[0x08];
     float f40;
     int f44;
 };

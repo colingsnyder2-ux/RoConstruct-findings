@@ -1,4 +1,4 @@
-// from server: 53% by colin
+// from server: 61% by colin
 struct Vector
 {
     void remove(void*);
@@ -36,12 +36,21 @@ extern "C" void __cdecl sub_456e80(Object**);
 void LocalBackpackItem::f()
 {
     sub_55afd0(this);
-    if (obj188 != 0)
+    Object** p = &obj188;
+    if (*p != 0)
     {
-        obj188->v24.remove(&v168);
-        obj188->v44.remove(&v16c);
-        obj188->v130.remove(&v178);
-        obj188->v150.remove(&v17c);
-        sub_456e80(&obj188);
+        Object* o = *p;
+        if (o != 0)
+            o->v24.remove(&v168);
+        o = *p;
+        if (o != 0)
+            o->v44.remove(&v16c);
+        o = *p;
+        if (o != 0)
+            o->v130.remove(&v178);
+        o = *p;
+        if (o != 0)
+            o->v150.remove(&v17c);
+        sub_456e80(p);
     }
 }

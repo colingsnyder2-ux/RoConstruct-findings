@@ -1,4 +1,4 @@
-// from server: 85% by colin
+// from server: 86% by colin
 unsigned int __cdecl getName();
 
 extern unsigned char table0[];
@@ -51,8 +51,8 @@ struct S {
 
 S* S::init()
 {
-    typedef unsigned int (__thiscall *Initializer)(S*, const char*);
-    reinterpret_cast<Initializer>(&getName)(this, objectName);
+    typedef unsigned int (__cdecl *Initializer)(const char*);
+    reinterpret_cast<Initializer>(&getName)(objectName);
 
     p = initialP;
     v0 = table0;

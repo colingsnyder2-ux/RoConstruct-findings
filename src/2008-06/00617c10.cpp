@@ -1,4 +1,4 @@
-// from server: 72% by colin
+// from server: 76% by colin
 struct InputObject;
 
 struct BoxSelectCommand {
@@ -122,6 +122,18 @@ struct InputVt {
     virtual bool check(int code);
 };
 
+struct TreeStage {
+    void func(void* item);
+};
+
+struct Unknown1 {
+    void func(int);
+};
+
+struct Unknown2 {
+    void func();
+};
+
 extern "C" void __cdecl func_00669050(Set* set, void* item);
 extern "C" void* __cdecl func_00581cc0(void* set, int val);
 extern "C" void __cdecl func_005675d0(void* node);
@@ -152,8 +164,10 @@ void BoxSelectCommand::onMouseDown(InputObject* inputObject) {
     }
     *(bool*)((char*)this + 0x28) = r;
     if (!r) {
-        void* s = func_00581cc0((char*)this + 0x1c, 1);
-        func_005675d0(s);
+        Unknown1* u1 = (Unknown1*)((char*)this + 0x1c);
+        u1->func(1);
+        Unknown2* u2 = (Unknown2*)u1;
+        u2->func();
     }
     int v = *(int*)((char*)inputObject + 8);
     *(int*)((char*)this + 0x2a) = v;

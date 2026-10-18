@@ -1,20 +1,28 @@
-// from server: 79% by atomic.potato
-extern "C" void CallTarget(void *, void *);
+// from server: 100% by Viper
+struct Target79BA80
+{
+    void Method();
+};
 
 struct EventDesc
 {
     unsigned long offset30;
     unsigned long offset34;
-    void *f(unsigned long *);
+    void Dispatch(void *);
 };
 
-void *EventDesc::f(unsigned long *value)
+void EventDesc::Dispatch(void *value)
 {
-    unsigned long *p = value ? value - 7 : 0;
-    unsigned long v = *(unsigned long *)((char *)p + 0x138);
-    unsigned long index = *(unsigned long *)((char *)this + 0x34);
-    unsigned long base = *(unsigned long *)((char *)this + 0x30);
-    void *result = (void *)((char *)v + index + base + (unsigned long)p + 0x138);
-    CallTarget(this, result);
-    return result;
+    unsigned long eax = (unsigned long)value;
+    if (eax)
+        eax -= 0x1c;
+    else
+        eax = 0;
+
+    unsigned long edx = *(unsigned long *)(eax + 0x138);
+    unsigned long esi = *(unsigned long *)((char *)this + 0x34);
+    edx = *(unsigned long *)(edx + esi);
+    edx += *(unsigned long *)((char *)this + 0x30);
+
+    ((Target79BA80 *)(edx + eax + 0x138))->Method();
 }

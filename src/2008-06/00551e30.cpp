@@ -1,4 +1,4 @@
-// from server: 98% by colin
+// from server: 100% by colin
 // roc-cl: 21022
 // roc-flags: /Od /Ob0 /GS /EHsc /MD
 #pragma optimize("", off)
@@ -39,8 +39,8 @@ struct EmptyState {
 struct TexturePtr {
     void* object;
     void* control;
-    TexturePtr();
-    ~TexturePtr();
+    __declspec(dllimport) TexturePtr();
+    __declspec(dllimport) ~TexturePtr();
 };
 
 struct TextureProxy : Base {

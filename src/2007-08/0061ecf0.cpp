@@ -1,4 +1,4 @@
-// from server: 57% by colin
+// from server: 60% by Viper
 struct Node {
     char pad0[8];
     Node* left;
@@ -16,7 +16,7 @@ struct ScoreHud {
 
 void __stdcall sub_62fc62(void* p);
 
-extern "C" void (__stdcall *g_dtor)(void*);
+extern "C" void (__thiscall *g_dtor)(void*);
 
 void ScoreHud::destroy(Node* n)
 {

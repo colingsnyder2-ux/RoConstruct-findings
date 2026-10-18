@@ -1,8 +1,14 @@
-// from server: 89% by king_originala
+// from server: 100% by colin
+struct Vftable
+{
+    void* entries[8];
+};
+
+const Vftable S_vftable = {0, 0, 0, 0, 0, 0, 0, 0};
+
 struct Base
 {
     char storage[0xF4];
-    Base();
 };
 
 struct S : Base
@@ -11,15 +17,19 @@ struct S : Base
     S();
 };
 
+extern "C" void __stdcall sub_6a10fa();
+
 S::S()
 {
-    *(unsigned int*)this = 0x00812BC4;
-    fields[0] = 0;
-    fields[1] = 0;
-    fields[2] = 0;
-    fields[3] = 0;
-    fields[4] = 0;
-    fields[5] = 0;
-    fields[6] = 0;
-    fields[7] = 0;
+    sub_6a10fa();
+    *(volatile void**)this = (void*)&S_vftable;
+    volatile unsigned int* f = fields;
+    f[0] = 0;
+    f[1] = 0;
+    f[2] = 0;
+    f[3] = 0;
+    f[4] = 0;
+    f[5] = 0;
+    f[6] = 0;
+    f[7] = 0;
 }

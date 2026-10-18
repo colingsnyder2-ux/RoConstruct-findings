@@ -1,4 +1,4 @@
-// from server: 69% by colin
+// from server: 73% by colin
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 void* __cdecl operator new(unsigned int);
 void __cdecl operator delete(void*);
@@ -11,7 +11,7 @@ struct RefCounted {
 
 struct Inner {
     char pad[0x198];
-    int field;
+    void* field;
 };
 
 struct TargetVtbl {
@@ -38,12 +38,19 @@ struct S {
 
 float S::GetValue(void* arg)
 {
+    void* obj = *(void**)((char*)inner + 0x198);
+
     RefCounted r;
     r.value = 0;
-    r = RefCounted();
-    void* p = operator new(0x14);
+    r = *(RefCounted*)&obj;
+
+    void* p = r.value;
     void* q = (p != 0) ? (char*)p + 0x14 : 0;
+
     Target* t = src->target;
     float result = t->vtbl->getValue(t, q);
+
+    r.~RefCounted();
+
     return result;
 }
