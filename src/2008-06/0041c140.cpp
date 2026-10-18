@@ -1,16 +1,13 @@
-// from server: 37% by colin
-// roc 2008-06 0041c140  unit: VDHTMLWindow::?$BoundFuncDesc  size: 159 bytes
-
+// from server: 43% by colin
 struct DescribedBase {
-    virtual void unknown0();
-    virtual void unknown1();
-    virtual void unknown2();
+    virtual void v0();
+    virtual void v1();
+    virtual void* v2();
 };
 
-struct DHTMLWindow {
-    char pad[0x40];
-    DescribedBase* field40;
-    DescribedBase* field44;
+struct SomeObj {
+    virtual void v0();
+    virtual void v1(void* arg, int n);
 };
 
 struct Arg {
@@ -18,16 +15,20 @@ struct Arg {
     void* b;
 };
 
-struct SomeObj {
-    virtual void v0();
-    virtual void v1(Arg* arg, int n);
+struct DHTMLWindow {
+    char pad[0x38];
+    void* field38;
+    void* field3c;
+    DescribedBase* field40;
+    DescribedBase* field44;
 };
 
 extern "C" void* __cdecl sub_6a17c6(void* a, void* b, void* c, void* d, void* e);
 extern "C" void __cdecl sub_6a158c(void* a, void* b);
-extern "C" void __cdecl sub_5947f0(void* a);
+extern "C" void* __cdecl sub_5947f0(void* a);
+extern "C" void __cdecl sub_5944e0(void* a, void* b);
 
-extern void* __stdcall func_802864(void* a);
+extern "C" void* __stdcall func_802864(void* a);
 
 extern char g_80ba34;
 extern char g_8d362c;
@@ -43,7 +44,7 @@ void VDHTMLWindow_BoundFuncDesc::method(SomeObj* obj) {
     Arg arg;
     arg.a = self->field40;
     if (self->field44) {
-        arg.b = (void*)((int(__thiscall*)(DescribedBase*))((*(void***)self->field44)[2]))(self->field44);
+        arg.b = self->field44->v2();
     } else {
         arg.b = 0;
     }
@@ -53,5 +54,7 @@ void VDHTMLWindow_BoundFuncDesc::method(SomeObj* obj) {
         func_802864(&g_80ba34);
         sub_6a158c(&g_8d362c, &g_80ba34);
     }
-    sub_5947f0(&arg);
+    void* tmp = sub_5947f0(&arg);
+    sub_5944e0(tmp, 0);
+    ((void (__thiscall*)(DHTMLWindow*, int))self->field38)(self, (int)r);
 }

@@ -1,4 +1,4 @@
-// from server: 69% by king_originala
+// from server: 74% by colin
 struct Property {
     char pad[728];
     float value;
@@ -68,7 +68,7 @@ Freefall::Freefall(Human* human)
 
     Entry* entry = registry.find(owner ? &owner->identity : 0);
     if (entry)
-        entry->signal.fire(&human, 1);
+        entry->signal.fire(&owner, 1);
 
     if (owner->first()) {
         savedFirst = owner->first()->f();

@@ -1,4 +1,4 @@
-// from server: 68% by king_originala
+// from server: 69% by colin
 extern unsigned char table[];
 
 struct Pair {
@@ -38,14 +38,15 @@ struct S {
     unsigned char padding6d[3];
     unsigned char field70;
 
-    S* initialize(unsigned int);
+    S* initialize(unsigned int, unsigned short, unsigned short);
 };
 
-S* S::initialize(unsigned int argument)
+S* S::initialize(unsigned int argument, unsigned short arg2, unsigned short arg3)
 {
     Pair pair;
-    pair.first = (unsigned short)argument;
-    pair.second = (unsigned short)argument;
+    pair.first = arg2;
+    pair.second = arg3;
+    pair.unused = 0;
 
     Input input;
     input.zero = 0;

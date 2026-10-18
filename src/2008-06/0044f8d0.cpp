@@ -1,4 +1,4 @@
-// from server: 51% by colin
+// from server: 52% by colin
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
 
@@ -11,21 +11,15 @@ struct Control
     volatile long weak_count;
 
     void release();
-    void weak_release();
 };
-
-inline void Control::weak_release()
-{
-    if (_InterlockedExchangeAdd(&weak_count, -1) == 1)
-        destroy();
-}
 
 inline void Control::release()
 {
     if (_InterlockedExchangeAdd(&use_count, -1) == 1)
     {
         dispose();
-        weak_release();
+        if (_InterlockedExchangeAdd(&weak_count, -1) == 1)
+            destroy();
     }
 }
 
@@ -64,9 +58,6 @@ void CRobloxDoc::func_0044f8d0(int a, int b)
     Handle h = source->get();
     bool flag = G1_func_00495e60(1, h.object) && G1_func_00495e70(1, h.object);
     if (!flag)
-    {
-        h.~Handle();
         return;
-    }
     func_0044f8d0_helper(a, b);
 }

@@ -1,4 +1,4 @@
-// from server: 24% by colin
+// from server: 25% by colin
 struct PBBBuilder {
     char pad0[4];
     int field4;
@@ -15,9 +15,6 @@ extern "C" {
     void __cdecl sub_6a094a(void*);
     void __cdecl sub_6a067a(void*);
     int __stdcall InterlockedDecrement(int*);
-    int __stdcall mfc265(void*);
-    int __stdcall mfc266(void*);
-    int __stdcall mfc800(void*);
 }
 
 extern float g_819bac;
@@ -25,7 +22,7 @@ extern float g_819bac;
 void PBBBuilder::build(int a, int b, int c, int d, int e, int f, int g, int h, int i, int j, int k, int l, int m, int n, int o, int p, int q, int r, int s, int t)
 {
     float f0, f1, f2, f3, f4, f5, f6, f7;
-    int w0, w1, w2, w3, w4, w5, w6, w7;
+    int w0, w1, w2, w3;
     float* fp;
     int* ip;
     int cnt;
@@ -35,18 +32,11 @@ void PBBBuilder::build(int a, int b, int c, int d, int e, int f, int g, int h, i
     float stepx, stepy;
     float startx, starty;
     float curx, cury;
-    float dx, dy;
-    float u0, v0, u1, v1;
-    float du, dv;
-    float* verts;
+    float uu, vv;
     int* indices;
     int nverts;
-    int nidx;
-    int i2, j2;
-    float* tmp;
-    int* tmpi;
+    int i2;
     void* p1;
-    void* p2;
     int* ref;
 
     sub_6784d0(&this->field4, &w0);
@@ -70,10 +60,8 @@ void PBBBuilder::build(int a, int b, int c, int d, int e, int f, int g, int h, i
     starty = f5 / (float)(nrows + 1);
 
     nverts = (ncols + 1) * (nrows + 1);
-    nidx = nverts * 4;
 
-    verts = (float*)sub_6a0956(nidx * 4);
-    indices = (int*)verts;
+    indices = (int*)sub_6a0956(nverts * 4 * 4);
 
     curx = f0;
     cury = f2;
@@ -88,8 +76,6 @@ void PBBBuilder::build(int a, int b, int c, int d, int e, int f, int g, int h, i
                     float py = ry;
                     float pz = f6;
                     float pw = 1.0f;
-                    float uu = startx;
-                    float vv = starty;
                     float* sh = sub_509ba0();
                     if (sh[0] == f7 && sh[1] == f4) {
                         uu = f1;
@@ -128,7 +114,7 @@ void PBBBuilder::build(int a, int b, int c, int d, int e, int f, int g, int h, i
     for (i2 = 0; i2 < nverts; i2++) {
         sub_548640((void*)indices[i2]);
     }
-    sub_6a094a(verts);
+    sub_6a094a(indices);
 
     if (w0 != 0) {
         if (InterlockedDecrement((int*)(w0 + 4)) == 0) {

@@ -1,11 +1,11 @@
-// from server: 48% by colin
+// from server: 55% by colin
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
 
 extern "C" void* __cdecl G_func_6a0968();
-extern "C" void G_func_6a0962();
-extern "C" void G_func_6a095c(void*, void*);
-extern "C" void G_func_6a067a(void*);
+extern "C" void __cdecl G_func_6a0962(void*);
+extern "C" void __cdecl G_func_6a095c(void*, void*);
+extern "C" void __cdecl G_func_6a067a(void*);
 
 extern "C" void* __stdcall G_imp_802360(void*, int);
 extern "C" void* __stdcall G_imp_802364(void*, void*);
@@ -14,9 +14,9 @@ extern "C" void* __stdcall G_imp_803ed8(void*, const char*, int, int);
 extern "C" void* __stdcall G_imp_803ee0(void*);
 extern "C" void* __stdcall G_imp_803f14(void*);
 
-void G_func_411b40(void*);
-void G_func_413a70(void*);
-void G_func_5773c0(void*);
+void __cdecl G_func_411b40(void*);
+void __cdecl G_func_413a70(void*);
+void __cdecl G_func_5773c0(void*);
 
 struct S {
     void* field00;
@@ -40,8 +40,8 @@ void S::f(void* a, void* b)
 {
     char buf[0xA8];
 
-    G_func_6a0968();
-    G_func_6a0962();
+    void* v1 = G_func_6a0968();
+    G_func_6a0962(v1);
 
     G_imp_802360(buf + 0x1C, 1);
 

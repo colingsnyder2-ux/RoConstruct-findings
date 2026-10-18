@@ -1,39 +1,40 @@
-// from server: 81% by colin
-struct Object;
-typedef unsigned long (__stdcall *ObjectMethod)(Object *);
+// from server: 100% by colin
+extern "C" void __cdecl free_mem(void *);
 
-struct Object {
-    ObjectMethod *vtable;
+struct Item;
+
+struct ItemVTable {
+    void (__stdcall *slots[3])(Item *);
 };
 
-extern "C" void __cdecl release_memory(void *);
+struct Item {
+    ItemVTable *vtable;
+};
 
 struct COutputView {
     unsigned char padding[16];
-    Object ***map;
+    Item ***map;
     unsigned int mapSize;
-    unsigned int offset;
-    unsigned int count;
+    unsigned int first;
+    unsigned int size;
 
     void clear();
 };
 
 void COutputView::clear()
 {
-    if (count != 0) {
-        while (count != 0) {
-            unsigned int position = offset + count - 1;
-            unsigned int block = position >> 2;
-            if (mapSize <= block)
-                block -= mapSize;
+    while (size != 0) {
+        if (size != 0) {
+            unsigned int idx = size + first - 1;
+            unsigned int bucket = idx >> 2;
+            if (mapSize <= bucket)
+                bucket -= mapSize;
+            Item *&item = map[bucket][idx & 3];
+            if (item != 0)
+                item->vtable->slots[2](item);
 
-            Object **entry = map[block] + (position & 3);
-            Object *object = *entry;
-            if (object != 0)
-                object->vtable[2](object);
-
-            if (--count == 0)
-                offset = 0;
+            if (--size == 0)
+                first = 0;
         }
     }
 
@@ -41,11 +42,11 @@ void COutputView::clear()
     while (i > 0) {
         --i;
         if (map[i] != 0)
-            release_memory(map[i]);
+            free_mem(map[i]);
     }
 
     if (map != 0)
-        release_memory(map);
+        free_mem(map);
 
     mapSize = 0;
     map = 0;

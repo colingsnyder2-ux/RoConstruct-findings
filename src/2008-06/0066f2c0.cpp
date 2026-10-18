@@ -1,4 +1,4 @@
-// from server: 35% by colin
+// from server: 36% by colin
 struct Vec2 { float x, y; };
 struct Vec3 { float x, y, z; };
 
@@ -9,9 +9,6 @@ extern float g_826918;
 extern float g_82ca40;
 extern int g_97a504;
 
-extern void *__cdecl func_793d50_helper();
-extern void *__cdecl func_5d90a0_helper();
-
 struct S {
     char pad0[0xe4];
     float f_e4;
@@ -20,12 +17,11 @@ struct S {
     float f_10c;
     float f_110;
 
-    void *getSomething();
     void method_643a70(Vec3 *out, float dt);
     void method_643b60(Vec3 *out);
     float method_643360();
     bool method_643330();
-    void method_66eb90(float dt);
+    void method_66eb90(float dt, float dt2);
 };
 
 extern "C" void *__cdecl func_793d50();
@@ -42,7 +38,7 @@ extern "C" void __cdecl func_5e7760(void *self, void *arg);
 extern "C" void *__cdecl func_56b620(void *self);
 extern "C" void __cdecl func_4937f0(void *self, float *val);
 
-void S::method_66eb90(float dt)
+void S::method_66eb90(float dt, float dt2)
 {
     void *a = func_793d50();
     void *b = func_5d90a0(a);
@@ -106,10 +102,9 @@ void S::method_66eb90(float dt)
         float len = v1.x * v1.x + v1.y * v1.y + v1.z * v1.z;
         void *res = func_56b620((void *)g_97a504);
         if (res) {
-            float sq = len;
-            float root = 0.0f;
-            if (sq >= 0.0f) {
-                float x = sq;
+            float root = len;
+            if (root >= 0.0f) {
+                float x = root;
                 float y = x;
                 float z = y;
                 float w = z;
@@ -141,5 +136,5 @@ void S::method_66eb90(float dt)
         }
     }
 
-    method_66eb90(dt);
+    method_66eb90(dt, dt2);
 }

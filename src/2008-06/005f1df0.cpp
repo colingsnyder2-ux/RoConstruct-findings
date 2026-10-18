@@ -1,8 +1,8 @@
-// from server: 93% by king_originala
+// from server: 100% by colin
 extern "C" {
-    extern unsigned long (__stdcall *WaitForSingleObject)(void*, unsigned long);
-    extern int (__stdcall *ReleaseMutex)(void*);
-    extern int (__stdcall *ReleaseSemaphore)(void*, long, long*);
+    __declspec(dllimport) unsigned long __stdcall WaitForSingleObject(void*, unsigned long);
+    __declspec(dllimport) int __stdcall ReleaseMutex(void*);
+    __declspec(dllimport) int __stdcall ReleaseSemaphore(void*, long, long*);
 }
 
 struct S {
@@ -18,6 +18,9 @@ struct S {
 void S::method()
 {
     unsigned long (__stdcall *wait)(void*, unsigned long) = WaitForSingleObject;
+    int (__stdcall *relmutex)(void*) = ReleaseMutex;
+    int (__stdcall *relsem)(void*, long, long*) = ReleaseSemaphore;
+
     wait(field4, 0xffffffffUL);
     wait(field8, 0xffffffffUL);
 
@@ -29,7 +32,7 @@ void S::method()
         field14 = remaining;
         if (remaining == 0) {
             if (field10 != 0) {
-                ReleaseSemaphore(field0, 1, 0);
+                relsem(field0, 1, 0);
                 edi = 0;
             } else if (ebp != 0) {
                 fieldC = 0;
@@ -41,18 +44,18 @@ void S::method()
         if (count == 0x7fffffff) {
             wait(field0, 0xffffffffUL);
             field10 -= fieldC;
-            ReleaseSemaphore(field0, 1, 0);
+            relsem(field0, 1, 0);
             fieldC = 0;
         }
     }
 
-    ReleaseMutex(field8);
+    relmutex(field8);
 
     if (edi == 1) {
         while (ebp != 0) {
             wait(field4, 0xffffffffUL);
             --ebp;
         }
-        ReleaseSemaphore(field0, 1, 0);
+        relsem(field0, 1, 0);
     }
 }
