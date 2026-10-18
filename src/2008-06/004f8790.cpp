@@ -1,4 +1,4 @@
-// from server: 26% by colin
+// from server: 29% by colin
 struct Vector3 { float x, y, z; };
 
 struct WedgeBuilder {
@@ -21,27 +21,21 @@ extern float g_819bac;
 
 void WedgeBuilder::build(int a, int b, int c, int d, int e, int f, int g, int h, int i, int j, int k, int l, int m)
 {
-    Vector3 v1, v2;
+    Vector3 v1;
     sub_5EC1E0(&v1, &field4);
 
     int w = (short)a;
     int hh = (short)b;
     int w1 = w + 1;
-    int h1 = hh + 1;
-    int count = w1 * h1;
+    int count = w1 * (hh + 1);
 
     float fx = (float)w;
     float fy = (float)hh;
 
-    float f1 = (float)d - (float)c;
-    float f2 = (float)f - (float)e;
-    float f3 = (float)h - (float)g;
-    float f4 = (float)j - (float)i;
-
-    float r1 = f1 / fx;
-    float r2 = f2 / fy;
-    float r3 = f3 / fx;
-    float r4 = f4 / fy;
+    float r1 = ((float)d - (float)c) / fx;
+    float r2 = ((float)f - (float)e) / fy;
+    float r3 = ((float)h - (float)g) / fx;
+    float r4 = ((float)j - (float)i) / fy;
 
     float* arr = (float*)sub_6A0956(count * 4);
 
@@ -50,12 +44,6 @@ void WedgeBuilder::build(int a, int b, int c, int d, int e, int f, int g, int h,
     float baseZ = (float)g;
     float baseW = (float)i;
 
-    float stepX = r1;
-    float stepY = r2;
-    float stepZ = r3;
-    float stepW = r4;
-
-    int idx = 0;
     for (int row = 0; row <= hh; row++) {
         float curX = baseX;
         float curY = baseY;
@@ -68,15 +56,9 @@ void WedgeBuilder::build(int a, int b, int c, int d, int e, int f, int g, int h,
             float pw = curW;
 
             float* sh = sub_509BA0();
-            float sx = sh[0];
-            float sy = sh[1];
-
-            if (sx == (float)k && sy == (float)l) {
+            if (sh[0] == (float)k && sh[1] == (float)l) {
                 px = (float)g;
                 py = (float)i;
-            } else {
-                px = curX;
-                py = curY;
             }
 
             float t = g_819bac;
@@ -92,24 +74,24 @@ void WedgeBuilder::build(int a, int b, int c, int d, int e, int f, int g, int h,
             p2.z = pw;
 
             sub_5EC1E0(&p1, &v1);
-            sub_5EC1E0(&p2, &v2);
+            sub_5EC1E0(&p2, &v1);
 
             void* result = 0;
             sub_548000(&result, &p1, &p2, 1);
 
-            baseX += stepX;
-            baseY += stepY;
+            baseX += r1;
+            baseY += r2;
 
             int off = (row + 1) * w1 + col;
             arr[off] = *(float*)&result;
 
-            curX += stepX;
-            curY += stepY;
-            curZ += stepZ;
-            curW += stepW;
+            curX += r1;
+            curY += r2;
+            curZ += r3;
+            curW += r4;
         }
-        baseZ += stepZ;
-        baseW += stepW;
+        baseZ += r3;
+        baseW += r4;
     }
 
     for (int row = 0; row < hh; row++) {

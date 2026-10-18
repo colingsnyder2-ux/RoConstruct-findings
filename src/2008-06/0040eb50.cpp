@@ -1,33 +1,39 @@
-// from server: 88% by king_originala
-struct Guid {
-    unsigned long a, b, c, d;
+// from server: 94% by colin
+struct Interface;
+
+struct Unknown {
+    long __stdcall queryInterface(const void *iid, void **out);
 };
 
-extern const Guid eventInterfaceId;
-
-struct S {
-    virtual long __stdcall QueryInterface(const Guid& iid, void** result);
-    virtual unsigned long __stdcall AddRef();
+struct Object {
+    long (__stdcall *vtable)(Object *, const void *, void **);
 };
 
-long __stdcall S::QueryInterface(const Guid& iid, void** result)
+extern const unsigned char iid1[16];
+extern const unsigned char iid2[16];
+
+long __stdcall queryInterface(void *self, const void *iid, void **out)
 {
-    if (!result)
-        return (long)0x80004003UL;
+    if (out == 0)
+        return 0x80004003;
 
-    *result = 0;
+    *out = 0;
 
-    if (!(iid.a == 0xb196b286UL &&
-          iid.b == eventInterfaceId.b &&
-          iid.c == eventInterfaceId.c &&
-          iid.d == eventInterfaceId.d) &&
-        !(iid.a == 0 &&
-          iid.b == 0 &&
-          iid.c == 0xc0UL &&
-          iid.d == 0x46000000UL))
-        return (long)0x80004002UL;
+    const unsigned int *id = static_cast<const unsigned int *>(iid);
+    const unsigned int *g1 = reinterpret_cast<const unsigned int *>(iid1);
+    const unsigned int *g2 = reinterpret_cast<const unsigned int *>(iid2);
 
-    *result = this;
-    AddRef();
+    bool match = false;
+    if (id[0] == 0xb196b286 && id[1] == g1[0] && id[2] == g1[1] && id[3] == g1[2])
+        match = true;
+    else if (id[0] == 0 && id[1] == 0 && id[2] == 0xc0 && id[3] == 0x46000000)
+        match = true;
+
+    if (!match)
+        return 0x80004002;
+
+    *out = self;
+    Object *obj = static_cast<Object *>(self);
+    obj->vtable(obj, iid, out);
     return 0;
 }

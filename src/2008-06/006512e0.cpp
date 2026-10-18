@@ -1,19 +1,14 @@
-// from server: 68% by king_originala
+// from server: 74% by colin
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
 
-struct String;
-extern void (__thiscall *constructString)(String*, const char*);
-extern void (__thiscall *destroyString)(String*);
-
 struct String {
     char storage[28];
-    String(const char* text) { constructString(this, text); }
-    ~String() { destroyString(this); }
+    String(const char*);
+    ~String();
 };
 
 struct Control {
-    virtual ~Control();
     virtual void dispose();
     virtual void destroy();
     volatile long references;
@@ -74,12 +69,10 @@ int S::f()
         {
             Shared objects = owner->get();
             Collection* collection = objects.object;
-            for (unsigned int i = 0;
-                 i < static_cast<unsigned int>(
-                     (reinterpret_cast<char*>(collection->last) -
-                      reinterpret_cast<char*>(collection->first)) >> 3);
-                 ++i) {
-                Entry* entry = (*collection)[i].object;
+            unsigned int count = (unsigned int)((reinterpret_cast<char*>(collection->last) -
+                                                 reinterpret_cast<char*>(collection->first)) >> 3);
+            for (unsigned int i = 0; i < count; ++i) {
+                Entry* entry = collection->operator[](i).object;
                 void* found;
                 {
                     String name("leaderstats");

@@ -1,4 +1,4 @@
-// from server: 63% by colin
+// from server: 77% by colin
 struct Mutex {
     void lock();
     void unlock();
@@ -21,25 +21,32 @@ struct Guid {
 };
 
 struct Creator {
-    unsigned char padding[0x130];
+    void* field0;
+    void* field4;
+    void* field8;
+    void* fieldC;
+    unsigned char pad[0x130 - 0x10];
     Registry registry;
-    void insert(Descriptor* d, Key* k);
+
+    void method(void* a, void* b);
 };
 
-extern "C" void __stdcall sub_4a7e20(void* self, void* d, Key* k);
-extern "C" void __stdcall sub_4a5600(void* self, Key* k, int count);
+void sub_4a7e20(void* self, void* a, void* b);
+void sub_4a5600(void* self, void* a, int b, int c);
 
-void Creator::insert(Descriptor* d, Key* k)
+void Creator::method(void* a, void* b)
 {
-    if (d) {
-        ((Mutex*)d)->lock();
-        Key local;
-        local.first = *(unsigned int*)((char*)d + 8);
-        local.second = *(unsigned int*)((char*)d + 0xc);
-        sub_4a7e20(&this->registry, (char*)d + 8, &local);
-        sub_4a5600(k, &local, 1);
+    if (a != 0) {
+        ((Mutex*)a)->lock();
+        void* p8 = *(void**)((char*)a + 8);
+        void* pc = *(void**)((char*)a + 0xc);
+        void* local[2];
+        local[0] = p8;
+        local[1] = pc;
+        sub_4a7e20(&this->registry, b, (char*)p8 + 4);
+        sub_4a5600(b, local, 0x18, 1);
     } else {
         const Guid& g = Guid::getLocalScope();
-        sub_4a7e20(&this->registry, k, (Key*)((char*)&g + 4));
+        sub_4a7e20(&this->registry, b, (char*)&g + 4);
     }
 }

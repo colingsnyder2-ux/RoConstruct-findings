@@ -1,4 +1,4 @@
-// from server: 85% by king_originala
+// from server: 87% by colin
 extern float defaultFirst;
 extern float defaultSecond;
 
@@ -13,10 +13,6 @@ inline Value::Value()
     : kind(0), first(defaultFirst), second(defaultSecond)
 {
 }
-
-struct Property {
-    void* get();
-};
 
 struct Values {
     char padding[0xd0];
@@ -49,11 +45,12 @@ struct FaceInstance {
 
 void FaceInstance::setSecond(float second)
 {
-    Value value = part->values.get(face);
+    const Value& ref = part->values.get(face);
+    Value value = ref;
     if (second != value.second) {
         value.second = second;
         part->values.set(face, &value);
         part->setShouldRender(face);
-        part->notify(reinterpret_cast<Property*>(part->f(face))->get());
+        part->notify(reinterpret_cast<void*>(part->f(face)));
     }
 }

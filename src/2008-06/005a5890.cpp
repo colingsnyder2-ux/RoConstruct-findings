@@ -1,4 +1,4 @@
-// from server: 91% by king_originala
+// from server: 97% by colin
 namespace RBX {
     struct Instance {
         virtual ~Instance();
@@ -89,7 +89,8 @@ int Workspace::update(int argument) {
 
         if (location && renderable) {
             RBX::Frame frame = location->getFrame();
-            reinterpret_cast<Processor*>(processor)->process(frame, argument)->finish();
+            Processor* p = *reinterpret_cast<Processor**>(processor);
+            p->process(frame, argument)->finish();
         }
 
         if (hopper)

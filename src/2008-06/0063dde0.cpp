@@ -1,4 +1,4 @@
-// from server: 85% by king_originala
+// from server: 100% by colin
 struct String;
 
 typedef String* (__thiscall *StringConstructor)(String*, const char*);
@@ -16,8 +16,12 @@ struct S {
 String* S::f(String* result)
 {
     volatile int temporary = 0;
-    if (active && anchored) {
-        constructString(result, "UnAnchorCursor");
+    if (active) {
+        if (anchored) {
+            constructString(result, "UnAnchorCursor");
+            return result;
+        }
+        constructString(result, "AnchorCursor");
         return result;
     }
     constructString(result, "AnchorCursor");

@@ -1,4 +1,4 @@
-// from server: 72% by colin
+// from server: 75% by colin
 struct String {
     unsigned char data[28];
     String();
@@ -9,31 +9,26 @@ struct Name {
     String s;
 };
 
-struct TypedPropertyDescriptor {
+struct Descriptor {
     char pad[0x18];
     void* field18;
     bool setValue(const Name& name, const String& value);
 };
 
-extern "C" void __stdcall String_ctor(String*);
-extern "C" void __stdcall String_dtor(String*);
-extern const Name& __cdecl getLocalScope();
-extern bool __cdecl compareName(const Name&, const Name&);
+extern "C" void* __cdecl getLocalScope();
+extern bool __cdecl compareName(const Name& a, const Name& b);
 
-bool TypedPropertyDescriptor::setValue(const Name& name, const String& value) {
+bool Descriptor::setValue(const Name& name, const String& value)
+{
     String local;
-    String_ctor(&local);
-    const Name& scope = getLocalScope();
-    bool result = compareName(scope, name);
-    if (result) {
+    const Name& scope = *(const Name*)getLocalScope();
+    if (compareName(scope, name)) {
         void* obj = field18;
-        void** vtable = *(void***)obj;
-        typedef void (__thiscall *SetFn)(void*, const String&);
-        SetFn fn = (SetFn)vtable[3];
-        fn(obj, value);
-        String_dtor(&local);
+        void** vtbl = *(void***)obj;
+        typedef void (__thiscall *Fn)(void*, const Name&, const String&);
+        Fn fn = (Fn)vtbl[3];
+        fn(obj, name, value);
         return true;
     }
-    String_dtor(&local);
     return false;
 }

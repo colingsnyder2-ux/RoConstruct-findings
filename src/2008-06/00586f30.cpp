@@ -1,35 +1,27 @@
-// from server: 44% by colin
-// roc 2008-06 00586f30  unit: RBX::LocalScript  size: 144 bytes
-
-extern "C" int __stdcall sub_8023d8(void*, void*);
-extern "C" void* __stdcall sub_80245c(void*, void*);
-extern "C" void* __cdecl sub_6a0920(unsigned int);
-
-struct Str {
-    void* data;
-    int len;
-    int cap;
-};
-
-struct LocalScript {
+// from server: 51% by colin
+struct S {
     char pad[0x130];
-    Str field130;
-    void setScript(void*);
+    void* field130;
+    void f(void* arg);
 };
 
-void sub_55e1d0(Str*, void*);
-void sub_40db00(LocalScript*, void*);
+extern "C" void* __cdecl sub_6A0920(unsigned int size);
+extern "C" void __cdecl sub_55E1D0(void* dst, void* src);
+extern "C" void __cdecl sub_40DB00(void* self, void* arg);
 
-void LocalScript::setScript(void* p) {
-    if (sub_8023d8(field130.data, p)) {
-        void* mem = sub_6a0920(0x1c);
-        void* obj;
-        if (mem) {
-            obj = sub_80245c(mem, p);
+extern "C" bool __stdcall str_neq(void* a, void* b);
+extern "C" void* __stdcall str_ctor_copy(void* dst, void* src);
+
+void S::f(void* arg) {
+    if (str_neq(field130, arg)) {
+        void* p = sub_6A0920(0x1c);
+        void* q;
+        if (p) {
+            q = str_ctor_copy(p, arg);
         } else {
-            obj = 0;
+            q = 0;
         }
-        sub_55e1d0(&field130, obj);
-        sub_40db00(this, (void*)0x975770);
+        sub_55E1D0(&field130, q);
+        sub_40DB00(this, (void*)0x975770);
     }
 }
