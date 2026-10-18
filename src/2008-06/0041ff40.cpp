@@ -1,3 +1,4 @@
+// from server: 100% by colin
 // from server: 91% by king_originala
 // roc 2008-06 0041ff40  unit: CInsertObjectDialog  size: 239 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 0041ff40
@@ -115,15 +116,10 @@ struct Member7C {
 
 struct Member94 {
     char storage[4];
-    __declspec(nothrow) ~Member94();
+    __declspec(dllimport) ~Member94() throw();
 };
 
 extern void (__thiscall *release94)(Member94*);
-
-inline Member94::~Member94()
-{
-    release94(this);
-}
 
 struct B_func_00412f30 {
     virtual ~B_func_00412f30();

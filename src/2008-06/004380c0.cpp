@@ -1,3 +1,4 @@
+// from server: 100% by colin
 // from server: 94% by king_originala
 // roc 2008-06 004380c0  unit: MVCXTPPropertyGridItem::?$XItem  size: 153 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 004380c0
@@ -59,7 +60,7 @@ struct X_00437ed0 {
 struct StringHandle {
     int value;
     StringHandle(X_00437ed0* owner, Str_00437ed0*& copied);
-    ~StringHandle() throw();
+    __declspec(dllimport) ~StringHandle() throw();
 };
 
 struct NarrowString {
@@ -78,11 +79,6 @@ inline StringHandle::StringHandle(
     X_00437ed0* owner, Str_00437ed0*& copied)
 {
     copied = owner->copy(reinterpret_cast<Str_00437ed0*>(this));
-}
-
-inline StringHandle::~StringHandle() throw()
-{
-    release_string(reinterpret_cast<Str_00437ed0*>(this));
 }
 
 inline NarrowString::NarrowString(const char* text)

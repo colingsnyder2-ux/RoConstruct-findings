@@ -1,3 +1,4 @@
+// from server: 87% by colin
 // from server: 82% by colin
 // roc-cl: 50727
 // roc-flags: /O2 /GS- /EHsc /MD
@@ -13,7 +14,7 @@ struct String {
 
     String(const char *);
     String(const String &);
-    ~String() throw();
+    __declspec(dllimport) ~String() throw();
     bool empty() const;
 };
 
@@ -23,10 +24,6 @@ inline String::String(const char *text) {
 
 inline String::String(const String &other) {
     stringCopy(this, other);
-}
-
-inline String::~String() throw() {
-    stringDestroy(this);
 }
 
 inline bool String::empty() const {

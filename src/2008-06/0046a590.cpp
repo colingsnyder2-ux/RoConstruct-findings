@@ -1,3 +1,4 @@
+// from server: 100% by colin
 // from server: 95% by king_originala
 // roc 2008-06 0046a590  unit: CWebToolbox  size: 167 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 0046a590
@@ -65,21 +66,34 @@ struct String
     void *data;
 
     String();
-    ~String() throw();
+    __declspec(dllimport) ~String() throw();
     const char *text() const;
 };
 
-extern String __cdecl make_exception();
+struct TempString
+{
+    void *data;
+    ~TempString() throw();
+    const char *text() const;
+};
+
+__forceinline TempString::~TempString() throw()
+{
+    stringDestructor(this);
+}
+
+__forceinline const char *TempString::text() const
+{
+    return stringText(this);
+}
+
+extern TempString __cdecl make_exception();
 
 __forceinline String::String()
 {
     stringConstructor(this);
 }
 
-__forceinline String::~String() throw()
-{
-    stringDestructor(this);
-}
 
 __forceinline const char *String::text() const
 {

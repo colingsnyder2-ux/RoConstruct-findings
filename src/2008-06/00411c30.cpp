@@ -1,3 +1,4 @@
+// from server: 86% by colin
 // from server: 85% by colin
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD
@@ -8,7 +9,7 @@ struct Text
 {
     unsigned char data[4];
     Text();
-    ~Text();
+    __declspec(dllimport) ~Text() throw();
     bool empty() const;
     const char* c_str() const;
 };
@@ -21,11 +22,6 @@ extern const char* (__thiscall *text_data)(const Text*);
 __forceinline Text::Text()
 {
     text_construct(this);
-}
-
-__forceinline Text::~Text()
-{
-    text_destroy(this);
 }
 
 __forceinline bool Text::empty() const
