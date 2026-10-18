@@ -1,19 +1,20 @@
-// from server: 54% by colin
+// from server: 55% by colin
 struct String
 {
     char data[28];
     const char* c_str() const;
 };
 
-extern const char* (__thiscall *stringCStr)(const String*);
-
 struct S
 {
-    S* f(String);
+    void f(String value);
 };
 
-S* S::f(String value)
+void S::f(String value)
 {
-    stringCStr(&value);
-    return this;
+    const char* p = value.c_str();
+    void* r = (void*)p;
+    void** vt = *(void***)this;
+    void (*fn)(void*, void*) = (void (*)(void*, void*))vt[24];
+    fn(this, r);
 }

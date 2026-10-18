@@ -1,4 +1,4 @@
-// from server: 83% by king_originala
+// from server: 92% by colin
 struct PartInstance;
 
 struct PhysicsService {
@@ -33,7 +33,7 @@ void __cdecl func_005e74c0(PartInstance* x, PartInstance* y)
     Primitive* first = x->primitive;
     Primitive* second = y->primitive;
 
-    if (x->interfaceObject->enabled()) {
+    if (y->interfaceObject->enabled()) {
         int* state;
         if (((state = first->holder->state) != 0 &&
              (*state == 3 || *state == 1 || *state == 2)) ||

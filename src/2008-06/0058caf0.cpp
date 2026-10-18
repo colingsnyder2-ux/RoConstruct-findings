@@ -1,4 +1,4 @@
-// from server: 53% by colin
+// from server: 69% by colin
 struct StreamBuf {
     int sbumpc();
     int sgetc();
@@ -59,22 +59,18 @@ String Verb::readTag()
     int count = 0;
     skipWhitespace();
 
-    for (;;) {
+    char c;
+    do {
+        if (stream->sgetc() == -1)
+            throw Error(String("Expected '<' but got EOF in Xml stream"));
         if (count++ > 4)
             throw Error(String("tag expected after Byte-Order-Mark"));
-
-        char c = static_cast<char>(stream->sgetc());
-        if (stream->sbumpc() == -1)
-            throw Error(String("Expected '<' but got EOF in Xml stream"));
-
-        if (c == '<')
-            break;
-    }
+        c = static_cast<char>(stream->sbumpc());
+    } while (c != '<');
 
     String tag;
-    tag += '<';
+    tag += c;
 
-    char c;
     do {
         c = static_cast<char>(stream->sgetc());
         if (stream->sbumpc() == -1)
