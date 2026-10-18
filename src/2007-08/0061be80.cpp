@@ -1,4 +1,4 @@
-// from server: 49% by colin
+// from server: 50% by Viper
 struct Base {
     void construct();
 };
@@ -11,10 +11,10 @@ struct VWidget {
 struct NonFactoryProduct : Base {
     char pad0[0x100 - sizeof(Base)];
     VWidget widget;
-    void ctor(int a, int b);
+    void* ctor(int a, int b);
 };
 
-void NonFactoryProduct::ctor(int a, int b) {
+void* NonFactoryProduct::ctor(int a, int b) {
     Base::construct();
     *(void**)this = (void*)0x7c3fec;
     *(void**)((char*)this + 4) = (void*)0x7c3fe0;
@@ -27,4 +27,6 @@ void NonFactoryProduct::ctor(int a, int b) {
     *(void**)((char*)this + 0x8c) = (void*)0x7c3f78;
     *(void**)((char*)this + 0xe8) = (void*)0x7c3f70;
     widget.initWidget(a, b);
+
+    return this;
 }

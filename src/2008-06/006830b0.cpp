@@ -1,5 +1,4 @@
-// from server: 61% by colin
-
+// from server: 66% by colin
 
 
 
@@ -69,7 +68,8 @@ void RbxSceneNode::update(float a, float b, float c, float d, const Vector4* v) 
 
     ListNodeBase* pos = this->node;
     List* lst = &this->list;
-    ListNodeBase* result = lst->insert(pos, &n);
-    lst->erase(pos);
-    this->node = result;
+    ListNodeBase* result = lst->insert(pos->next, &n);
+    lst->erase(result);
+    pos->next = result;
+    result->next->next = result;
 }

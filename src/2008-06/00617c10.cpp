@@ -1,5 +1,41 @@
-// from server: 76% by colin
+// from server: 77% by colin
 struct InputObject;
+
+struct SetNode {
+    SetNode* next;
+    SetNode* prev;
+    SetNode* self;
+};
+
+struct Set {
+    char pad[0x18];
+    SetNode* head;
+    int size;
+};
+
+struct InputVt;
+
+struct InputObj {
+    char pad[4];
+    InputVt* vt;
+    int val;
+};
+
+struct InputVt {
+    virtual bool check(int code);
+};
+
+struct Unknown1 {
+    void func(int);
+};
+
+struct Unknown2 {
+    void func();
+};
+
+extern "C" void __cdecl func_00669050(Set* set, void* item);
+extern "C" void* __cdecl func_00581cc0(void* set, int val);
+extern "C" void __cdecl func_005675d0(void* node);
 
 struct BoxSelectCommand {
     virtual void v0();
@@ -106,38 +142,6 @@ struct BoxSelectCommand {
     void onMouseDown(InputObject* inputObject);
 };
 
-struct SetNode {
-    SetNode* next;
-    SetNode* prev;
-    SetNode* self;
-};
-
-struct Set {
-    char pad[0x18];
-    SetNode* head;
-    int size;
-};
-
-struct InputVt {
-    virtual bool check(int code);
-};
-
-struct TreeStage {
-    void func(void* item);
-};
-
-struct Unknown1 {
-    void func(int);
-};
-
-struct Unknown2 {
-    void func();
-};
-
-extern "C" void __cdecl func_00669050(Set* set, void* item);
-extern "C" void* __cdecl func_00581cc0(void* set, int val);
-extern "C" void __cdecl func_005675d0(void* node);
-
 void BoxSelectCommand::onMouseDown(InputObject* inputObject) {
     void* sel = *(void**)((char*)this + 0x4c);
     void* item = *(void**)((char*)sel + 4);
@@ -156,8 +160,8 @@ void BoxSelectCommand::onMouseDown(InputObject* inputObject) {
     void (*fn)(void*) = (void (*)(void*))vt[9];
     fn(this);
 
-    void* input = *(void**)((char*)inputObject + 4);
-    InputVt* ivt = *(InputVt**)input;
+    InputObj* io = (InputObj*)inputObject;
+    InputVt* ivt = io->vt;
     bool r = ivt->check(0x12f);
     if (!r) {
         r = ivt->check(0x130);
@@ -169,8 +173,8 @@ void BoxSelectCommand::onMouseDown(InputObject* inputObject) {
         Unknown2* u2 = (Unknown2*)u1;
         u2->func();
     }
-    int v = *(int*)((char*)inputObject + 8);
+    int v = io->val;
     *(int*)((char*)this + 0x2a) = v;
-    int v2 = *(int*)((char*)inputObject + 8);
+    int v2 = io->val;
     *(int*)((char*)this + 0x2e) = v2;
 }

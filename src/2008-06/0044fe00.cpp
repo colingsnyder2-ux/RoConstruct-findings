@@ -1,4 +1,4 @@
-// from server: 65% by king_originala
+// from server: 66% by colin
 struct Text;
 struct String;
 
@@ -95,9 +95,9 @@ Text __cdecl copy_document(Document* document, const char* suffix)
     result.append(suffix);
     result.append(".rbxl");
 
-    bool failed = document->object->copy(Wide(result.c_str())) != 0;
+    long hr = document->object->copy(Wide(result.c_str()));
 
-    if (failed)
+    if (hr != 0)
         throw Error(String("Failed to copy document"));
 
     return result;

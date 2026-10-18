@@ -1,6 +1,6 @@
-// from server: 41% by colin
+// from server: 42% by Viper
 struct S {
-    void f(int* a, int* b, int* c);
+    void __cdecl f(int* a, int* b, int* c);
 };
 
 void S::f(int* a, int* b, int* c)

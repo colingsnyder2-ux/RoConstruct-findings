@@ -1,15 +1,15 @@
-// from server: 82% by atomic.potato
-extern "C" void __stdcall sym(double, void *, void *);
-
+// from server: 100% by Viper
 struct HeartbeatTask
 {
-    char padding[0x1e0];
-    double value;
-    void *method(void *, void *);
+    char pad[0x1e0];
+    double field;
+    int method(int a, int b);
 };
 
-void *HeartbeatTask::method(void *a, void *b)
+extern "C" int __stdcall sub_79bdd0(int, int, double);
+
+int HeartbeatTask::method(int a, int b)
 {
-    sym(value, a, b);
+    sub_79bdd0(a, b, field);
     return a;
 }

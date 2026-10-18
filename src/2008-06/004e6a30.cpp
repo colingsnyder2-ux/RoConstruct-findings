@@ -1,4 +1,4 @@
-// from server: 81% by colin
+// from server: 82% by colin
 struct PartChunk {
     void* vtable;
     unsigned char padding[0xb8];
@@ -40,19 +40,16 @@ void PartChunk::method_4e6a30(void* arg)
         set(this, v);
 
         char* f2 = field_bc;
+        typedef float (__thiscall *GetFn)(PartChunk*);
+        GetFn get = *(GetFn*)(*(char**)this + 0x24);
+        float r = get(this);
         if (*(int*)(f2 + 0x1c8) != 0) {
-            typedef float (__thiscall *GetFn)(PartChunk*);
-            GetFn get = *(GetFn*)(*(char**)this + 0x24);
-            float r = get(this);
             if (r < g_819bac) {
                 typedef void (__thiscall *SetFn2)(PartChunk*, float);
                 SetFn2 set2 = *(SetFn2*)(*(char**)this + 0x20);
                 set2(this, r);
             }
         } else {
-            typedef float (__thiscall *GetFn)(PartChunk*);
-            GetFn get = *(GetFn*)(*(char**)this + 0x24);
-            float r = get(this);
             if (r == g_827494) {
                 typedef void (__thiscall *SetFn2)(PartChunk*, float);
                 SetFn2 set2 = *(SetFn2*)(*(char**)this + 0x20);

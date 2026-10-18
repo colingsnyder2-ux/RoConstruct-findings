@@ -1,9 +1,9 @@
-// from server: 56% by Intel
+// from server: 66% by Viper
 extern "C" float __cdecl _fltused;
 
 namespace RBX {
     struct SpatialFilter {
-        float method(float value);
+        float __cdecl method(float value);
     };
 }
 

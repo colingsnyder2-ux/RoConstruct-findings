@@ -1,4 +1,4 @@
-// from server: 93% by king_originala
+// from server: 95% by colin
 void __cdecl alignedFree(void*);
 
 extern bool flag1;
@@ -15,7 +15,7 @@ struct Dispatch
 struct Secondary
 {
     int padding;
-    Dispatch dispatch;
+    Dispatch* dispatch;
 };
 
 struct Owner
@@ -84,7 +84,7 @@ void S::notify(void* argument)
                     static_cast<char*>(object) + 0x138)->notify(argument);
 
             if (!disabled)
-                owner->secondary->dispatch.notify(argument);
+                owner->secondary->dispatch->notify(argument);
 
             if (flag1 && flag2)
             {

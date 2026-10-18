@@ -1,4 +1,4 @@
-// from server: 43% by colin
+// from server: 45% by colin
 struct DescribedBase {
     virtual void v0();
     virtual void v1();
@@ -36,7 +36,7 @@ extern char g_9291fc;
 extern char g_92c210;
 
 struct VDHTMLWindow_BoundFuncDesc {
-    void method(SomeObj* obj);
+    void __cdecl method(SomeObj* obj);
 };
 
 void VDHTMLWindow_BoundFuncDesc::method(SomeObj* obj) {

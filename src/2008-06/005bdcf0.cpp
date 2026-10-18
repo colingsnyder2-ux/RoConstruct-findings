@@ -1,4 +1,4 @@
-// from server: 31% by colin
+// from server: 49% by colin
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
 
@@ -22,18 +22,18 @@ struct SoundService {
     void update(void*, void*);
 };
 
-extern void* __cdecl getInstance(void*);
-extern void __cdecl removeListener(void*, void*);
-extern void __cdecl addListener(void*, void*);
-extern void __cdecl clearSlot(void*, void*);
-extern void __cdecl destroySlot(void*);
-extern void __cdecl resetService(SoundService*);
-extern void __cdecl stopService(SoundService*);
-extern void __cdecl refreshService(SoundService*);
-extern void* __cdecl getSource(void*);
-extern void __cdecl buildListener(void*, SoundService*);
-extern void __cdecl assignSlot(void*, void*);
-extern void __cdecl releaseRef(RefCounted*);
+extern void* (__thiscall *getInstance)(void*);
+extern void (__thiscall *removeListener)(void*, void*);
+extern void (__thiscall *addListener)(void*, void*);
+extern void (__thiscall *clearSlot)(void*, void*);
+extern void (__thiscall *destroySlot)(void*);
+extern void (__thiscall *resetService)(SoundService*);
+extern void (__thiscall *stopService)(SoundService*);
+extern void (__thiscall *refreshService)(SoundService*);
+extern void* (__thiscall *getSource)(void*);
+extern void (__thiscall *buildListener)(void*, SoundService*);
+extern void (__thiscall *assignSlot)(void*, void*);
+extern void (__thiscall *releaseRef)(RefCounted*);
 
 void SoundService::update(void* a, void* b)
 {

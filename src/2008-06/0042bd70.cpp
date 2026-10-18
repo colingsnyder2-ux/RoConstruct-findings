@@ -1,4 +1,4 @@
-// from server: 69% by colin
+// from server: 70% by colin
 struct Descriptor;
 
 struct Receiver {
@@ -9,7 +9,6 @@ struct Receiver {
     virtual void slot4();
     virtual void slot5();
     virtual void slot6();
-    virtual void slot7();
     virtual void invoke(void* context, const Descriptor* descriptor);
 };
 

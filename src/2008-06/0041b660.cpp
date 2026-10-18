@@ -1,4 +1,4 @@
-// from server: 47% by colin
+// from server: 51% by colin
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
 
@@ -21,11 +21,7 @@ struct Function {
     ~Function();
 };
 
-struct Allocator {
-    void* (*alloc)(void*, unsigned int);
-};
-
-extern "C" void* __cdecl sub_618a40(void*, void*, void*);
+extern "C" void __cdecl sub_618a40(void*, void*, void*);
 extern "C" void __cdecl sub_419620(void*, void*, void*);
 extern "C" void* __cdecl sub_41b090(void*);
 extern "C" void __cdecl sub_41a530(void*);
@@ -36,15 +32,16 @@ struct DHTMLWindowService {
 
 void DHTMLWindowService::append()
 {
-    void* v1;
-    void* v2;
+    char buf1[8];
+    char buf2[8];
     void* v3;
     void* v4;
     Control* ctrl;
     long old;
 
-    sub_618a40(&v1, &v2, (void*)0x42b5f0);
-    sub_419620(&v3, (void*)0x4185c0, 0);
+    sub_618a40(buf1, buf2, (void*)0x42b5f0);
+    sub_419620(buf1, (void*)0x4185c0, 0);
+    v3 = 0;
     v4 = sub_41b090(&v3);
 
     ctrl = (Control*)v4;

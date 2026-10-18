@@ -1,4 +1,4 @@
-// from server: 35% by colin
+// from server: 36% by Viper
 extern "C" unsigned long __stdcall FormatMessageA(unsigned long, const void*, unsigned long, unsigned long, char*, unsigned long, void*);
 extern "C" unsigned long __stdcall GetLastError();
 
@@ -14,7 +14,7 @@ extern "C" int __cdecl sub_5017C0(char*, const char*, ...);
 
 struct CRenderSettings
 {
-    char* formatError(char* out, unsigned long errorCode);
+    char* __cdecl formatError(char* out, unsigned long errorCode);
 };
 
 char* CRenderSettings::formatError(char* out, unsigned long errorCode)

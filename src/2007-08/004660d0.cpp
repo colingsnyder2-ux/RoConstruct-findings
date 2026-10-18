@@ -1,10 +1,10 @@
-// from server: 36% by colin
+// from server: 39% by Viper
 extern "C" void __cdecl sub_0059C8D0(float*, float*);
 extern "C" void __cdecl sub_00466020(float*, float*, float*);
 
 struct DxUserInput
 {
-    void update(float* a1, float* a2, float* a3, int a4, float a5);
+    void __cdecl update(float* a1, float* a2, float* a3, int a4, float a5);
 };
 
 void DxUserInput::update(float* a1, float* a2, float* a3, int a4, float a5)
