@@ -1,4 +1,4 @@
-// from server: 58% by colin
+// from server: 59% by colin
 // roc 2008-06 00556b00  unit: RBX::VRunService::?$BoundFuncDesc  size: 531 bytes
 
 extern "C" {
@@ -125,7 +125,7 @@ void VRunService::init()
     *(int*)((char*)this + 0x2b4 + 0x18) = 0;
     *(int*)((char*)this + 0x2b4 + 0x1c) = 0;
 
-    String s((const char*)0x82d628);
+    String s("Run Service");
     this->method_55af90(&s);
     s.~String();
 

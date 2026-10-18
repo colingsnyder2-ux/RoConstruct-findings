@@ -1,7 +1,4 @@
-// from server: 59% by colin
-inline void* operator new(unsigned int, void* p) { return p; }
-inline void operator delete(void*, void*) {}
-
+// from server: 65% by colin
 struct Link {
     unsigned int parent;
     Link* left;
@@ -15,36 +12,42 @@ struct Node {
     Link link;
 };
 
-struct Owner {
-    char pad[8];
-    Node* node;
+struct Flag {
+    bool value;
 };
 
 struct Receiver {
-    bool find(unsigned int key, Node** out, bool flag);
-    void* alloc(Node* n, void* arg);
+    bool find(unsigned int* key, Node** position, Flag flag);
+    Node* insert(unsigned int* key, Node* node);
+    Node* receive(unsigned int* key, Node* node);
 };
 
-extern "C" void sub_4c6980(void* a, void* b, void* c, void* d);
+extern "C" void __cdecl sub_4C6980(Node* a, Node* b, Node* c, Node* d);
 
-void* __stdcall sub_4c8cf0(Receiver* self, unsigned int key, void* arg)
+Node* Receiver::receive(unsigned int* key, Node* node)
 {
-    Node* out = 0;
-    bool flag = false;
-    if (!self->find(key, &out, flag))
+    char* base = this ? reinterpret_cast<char*>(this) - 12 : 0;
+    unsigned int* savedKey = key;
+
+    Flag flag;
+    flag.value = false;
+    key = reinterpret_cast<unsigned int*>(base + 8);
+    if (!find(savedKey, reinterpret_cast<Node**>(&key), flag))
     {
-        if (out)
-            return (char*)out - 0x280;
+        Node* result = reinterpret_cast<Node*>(key);
+        if (result)
+            return reinterpret_cast<Node*>(reinterpret_cast<char*>(result) - 0x280);
         return 0;
     }
-    void* result = self->alloc(out, arg);
-    if (result == arg)
+
+    Node* result = insert(savedKey, node);
+    if (result == node)
     {
-        Node* n = self ? (Node*)((char*)self - 0xc) : 0;
-        Owner* owner = n ? (Owner*)n->reserved[1] : 0;
-        void* a = owner ? (void*)((char*)owner + 0x280) : 0;
-        void* b = arg ? (void*)((char*)arg + 0x280) : 0;
-        sub_4c6980(b, out, a, b);
+        Node* a = this ? reinterpret_cast<Node*>(reinterpret_cast<char*>(this) - 12) : 0;
+        Node* b = a ? *reinterpret_cast<Node**>(reinterpret_cast<char*>(a) + 4) : 0;
+        Node* c = b ? reinterpret_cast<Node*>(reinterpret_cast<char*>(b) + 0x280) : 0;
+        Node* d = node ? reinterpret_cast<Node*>(reinterpret_cast<char*>(node) + 0x280) : 0;
+        sub_4C6980(d, reinterpret_cast<Node*>(key), c, 0);
     }
     return result;
 }

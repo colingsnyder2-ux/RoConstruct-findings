@@ -1,4 +1,4 @@
-// from server: 43% by colin
+// from server: 47% by colin
 extern "C" {
     int __stdcall GetStartupInfoA(void*);
     int __stdcall InterlockedCompareExchange(int*, int, int);
@@ -57,7 +57,7 @@ void f_6a18e6()
 {
     f_6a1fbc(0x58, 0x900b40);
     int ebx = 0;
-    int local1c = 0;
+    int quoted = 0;
     char buf[0x50];
     ((void (__stdcall*)(void*))g_8022c4)(buf);
     int esi = *(int*)(*(int*)(*(int*)0x18) + 4);
@@ -98,7 +98,6 @@ void f_6a18e6()
         }
     }
     char* p = *(char**)g_802678;
-    int quoted = 0;
     for (;;) {
         char c = *p;
         if ((unsigned char)c <= 0x20 && (c != 0 || quoted == 0)) {

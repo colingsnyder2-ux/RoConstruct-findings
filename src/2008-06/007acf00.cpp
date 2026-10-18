@@ -1,16 +1,14 @@
-// from server: 84% by colin
-struct OgreMaterialPtr {
+// from server: 93% by colin
+struct MaterialPtr {
     void* p;
+    MaterialPtr& operator=(const MaterialPtr& o);
 };
 
-extern "C" void __stdcall sub_598FA0(OgreMaterialPtr* dst, const OgreMaterialPtr* src);
-
-struct MaterialLevel {
+struct Obj {
     char pad0[4];
-    char inArray;
-    char pad5[3];
-    OgreMaterialPtr field8;
-    OgreMaterialPtr fieldC;
+    char b4;
+    MaterialPtr m8;
+    MaterialPtr mc;
     float f10;
     float f14;
     float f18;
@@ -18,25 +16,39 @@ struct MaterialLevel {
     float f20;
     float f24;
     float f28;
-    OgreMaterialPtr field2c;
-    MaterialLevel* assign(const MaterialLevel* other);
+    MaterialPtr m2c;
 };
 
-extern "C" void (__stdcall *g_assign2c)(OgreMaterialPtr*, const OgreMaterialPtr*);
+extern "C" void __stdcall sub_598fa0(MaterialPtr* dst, MaterialPtr* src);
 
-MaterialLevel* MaterialLevel::assign(const MaterialLevel* other)
+struct Level {
+    char pad0[4];
+    char b4;
+    MaterialPtr m8;
+    MaterialPtr mc;
+    float f10;
+    float f14;
+    float f18;
+    float f1c;
+    float f20;
+    float f24;
+    float f28;
+    MaterialPtr m2c;
+    Level* assign(const Obj* o);
+};
+
+Level* Level::assign(const Obj* o)
 {
-    inArray = other->inArray;
-    sub_598FA0(&field8, &other->field8);
-    sub_598FA0(&fieldC, &other->fieldC);
-    f10 = other->f10;
-    f14 = other->f14;
-    f18 = other->f18;
-    f1c = other->f1c;
-    f20 = other->f20;
-    f24 = other->f24;
-    f28 = other->f28;
-    g_assign2c(&field2c, &other->field2c);
-
+    b4 = o->b4;
+    m8 = o->m8;
+    mc = o->mc;
+    f10 = o->f10;
+    f14 = o->f14;
+    f18 = o->f18;
+    f1c = o->f1c;
+    f20 = o->f20;
+    f24 = o->f24;
+    f28 = o->f28;
+    m2c = o->m2c;
     return this;
 }

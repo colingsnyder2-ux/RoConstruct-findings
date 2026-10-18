@@ -1,4 +1,4 @@
-// from server: 61% by colin
+// from server: 62% by colin
 struct CRobloxView {
     char pad0[0x20];
     void* field_20;
@@ -47,11 +47,11 @@ void CRobloxView::sub_4592B0()
     int b = (y < 0) ? 0 : y;
 
     if (*(int*)((char*)this + 0xd0) != 0)
-        ((S_func_006a0a4c*)(field_b0))->f(0, b, a, 1, 0);
+        ((S_func_006a0a4c*)(field_b0))->f(0, 0, b, a, 1);
 
     if (field_1d8 != 0 && *(int*)((char*)field_1d8 + 0x20) != 0)
-        ((S_func_006a0a4c*)field_1d8)->f(a, 0xe1, h, 1, 0);
+        ((S_func_006a0a4c*)field_1d8)->f(a, 0, 0xe1, h, 1);
 
     if (field_1a0 != 0)
-        ((S_func_006a0a4c*)(field_180))->f(0, b, a, 0x14, 1);
+        ((S_func_006a0a4c*)(field_180))->f(0, 0, b, a, 0x14);
 }

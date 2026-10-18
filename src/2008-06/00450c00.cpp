@@ -1,4 +1,4 @@
-// from server: 22% by colin
+// from server: 24% by colin
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
 
@@ -10,7 +10,7 @@ struct Result {
 };
 
 struct Source {
-    void copy(Result* output);
+    Result* copy(Result* output);
 };
 
 struct Control {
@@ -19,10 +19,6 @@ struct Control {
     virtual void destroy();
     volatile long strong;
     volatile long weak;
-};
-
-struct Shared {
-    Control* ptr;
 };
 
 struct RBX_DataModel {
@@ -40,11 +36,11 @@ struct CRobloxDoc {
 void CRobloxDoc::func(Result* out)
 {
     Result local;
-    source->copy(&local);
-    bool has = (local.first != 0);
+    Result* p = source->copy(&local);
+    bool has = (p->first != 0);
 
-    if (local.second != 0) {
-        Control* c = (Control*)local.second;
+    Control* c = (Control*)p->second;
+    if (c != 0) {
         if (_InterlockedExchangeAdd(&c->strong, -1) == 1) {
             c->dispose();
             if (_InterlockedExchangeAdd(&c->weak, -1) == 1) {
@@ -55,25 +51,25 @@ void CRobloxDoc::func(Result* out)
 
     if (has) {
         Result r;
-        source->copy(&r);
-        Control* c = (Control*)r.second;
-        if (c != 0) {
-            _InterlockedExchangeAdd(&c->strong, 1);
+        Result* q = source->copy(&r);
+        Control* c2 = (Control*)q->second;
+        if (c2 != 0) {
+            _InterlockedExchangeAdd(&c2->strong, 1);
         }
         double fps = ((RBX_DataModel*)0)->get();
         char buf[32];
         sprintf(buf, "%.3gfps", 1000.0 / fps);
-        if (c != 0) {
-            if (_InterlockedExchangeAdd(&c->strong, -1) == 1) {
-                c->dispose();
-                if (_InterlockedExchangeAdd(&c->weak, -1) == 1) {
-                    c->destroy();
+        if (c2 != 0) {
+            if (_InterlockedExchangeAdd(&c2->strong, -1) == 1) {
+                c2->dispose();
+                if (_InterlockedExchangeAdd(&c2->weak, -1) == 1) {
+                    c2->destroy();
                 }
             }
         }
         if (out != 0) {
-            out->first = r.first;
-            out->second = r.second;
+            out->first = q->first;
+            out->second = q->second;
         }
     }
 }

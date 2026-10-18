@@ -1,4 +1,4 @@
-// from server: 84% by king_originala
+// from server: 92% by colin
 #pragma float_control(precise, on)
 
 extern float defaultFirst;
@@ -53,7 +53,7 @@ void Face::setFirst(float value)
     Value copy =
         reinterpret_cast<Store*>(reinterpret_cast<char*>(part) + 0x228)->get(index);
 
-    if (value != copy.first) {
+    if (value > copy.first) {
         copy.first = value;
         reinterpret_cast<Store*>(reinterpret_cast<char*>(part) + 0x228)->set(index, &copy);
         part->setShouldRender(index);

@@ -1,4 +1,4 @@
-// from server: 80% by king_originala
+// from server: 86% by colin
 struct EventData;
 
 struct Value
@@ -7,11 +7,18 @@ struct Value
     void* second;
 
     Value(const Value& other);
+    Value(void* a, void* b);
 };
 
 inline Value::Value(const Value& other)
 {
     *this = other;
+}
+
+inline Value::Value(void* a, void* b)
+{
+    first = a;
+    second = b;
 }
 
 struct Listener
@@ -41,7 +48,8 @@ void EventData::invoke()
         try
         {
             listener->prepare(this);
-            listener->dispatch(source, value);
+            Value temp(value.first, value.second);
+            listener->dispatch(source, temp);
         }
         catch (...)
         {

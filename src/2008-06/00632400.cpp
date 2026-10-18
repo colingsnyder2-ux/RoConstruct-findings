@@ -1,4 +1,6 @@
-// from server: 86% by colin
+// from server: 88% by colin
+#pragma float_control(precise, off)
+
 unsigned int __cdecl getName();
 
 extern unsigned char table0[];

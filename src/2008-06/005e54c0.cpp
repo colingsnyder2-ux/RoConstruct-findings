@@ -1,23 +1,26 @@
-// from server: 86% by colin
-struct IRenderableBucket
-{
-    void onAdded(void *);
+// from server: 100% by colin
+struct IRenderable;
+
+struct IRenderableBucket {
+    void onAdded(IRenderable* r);
 };
 
-struct JointsService
-{
-    void addChild(void *);
+struct JointsService {
+    char pad[0x138];
+    IRenderableBucket bucket;
+    void addInstance(void* inst);
 };
 
-void __stdcall sub_55AE20(void *);
-void *__cdecl sub_6A17C6(void *, int, void *, void *, int);
+struct Other {
+    void sub_55AE20(void* inst);
+};
 
-void JointsService::addChild(void *child)
-{
-    sub_55AE20(child);
-    void *r = sub_6A17C6(child, 0, (void *)0x92907c, (void *)0x939f70, 0);
-    if (r)
-    {
-        ((IRenderableBucket *)((char *)this + 0x138))->onAdded(r);
+extern "C" void* __cdecl sub_6A17C6(void* inst, int a, void* b, void* c, int d);
+
+void JointsService::addInstance(void* inst) {
+    ((Other*)this)->sub_55AE20(inst);
+    void* r = sub_6A17C6(inst, 0, (void*)0x92907c, (void*)0x939f70, 0);
+    if (r) {
+        bucket.onAdded((IRenderable*)r);
     }
 }

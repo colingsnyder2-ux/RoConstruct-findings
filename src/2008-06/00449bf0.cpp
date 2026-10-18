@@ -1,4 +1,4 @@
-// from server: 59% by colin
+// from server: 60% by colin
 struct CIDEDocManager;
 
 struct Helper
@@ -78,11 +78,12 @@ int CIDEDocManager::create(int value)
 
     ((Obj42E4C0*)obj)->f(field4c);
 
+    field20 = obj;
+
     if (field90 == 0 && field92 == 0)
     {
         sub_6A1238();
     }
 
-    field20 = obj;
     return 1;
 }
