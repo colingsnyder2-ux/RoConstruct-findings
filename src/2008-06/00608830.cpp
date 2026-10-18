@@ -1,4 +1,4 @@
-// from server: 97% by colin
+// from server: 100% by colin
 struct Extents {
     float lowX;
     float lowY;
@@ -24,9 +24,7 @@ struct BlockBlockContact {
 };
 
 bool BlockBlockContact::check() {
-    Extents* a = (Extents*)(field_c + 0x80);
-    Extents* b = (Extents*)(field_10 + 0x80);
-    if (a->overlapsOrTouches(*b)) {
+    if (((Extents*)(field_c + 0x80))->overlapsOrTouches(*(Extents*)(field_10 + 0x80))) {
         if (testZero(0.0f)) {
             field_54 = g_81c3b8;
         } else {
@@ -36,5 +34,5 @@ bool BlockBlockContact::check() {
         field_54 = g_82d030;
     }
     slot0();
-    return field_54 < 0.0f;
+    return field_54 <= 0.0f;
 }

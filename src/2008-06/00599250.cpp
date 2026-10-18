@@ -1,4 +1,4 @@
-// from server: 96% by colin
+// from server: 100% by colin
 struct VPartInstance {
     int type;
     void getPos0(float* out);
@@ -13,13 +13,13 @@ struct VPartInstance {
 
 void VPartInstance::compute(float* out)
 {
-    float v[6];
+    float v[8];
     v[0] = 0.0f;
     v[1] = 0.0f;
     v[2] = 0.0f;
-    v[3] = 0.0f;
     v[4] = 0.0f;
     v[5] = 0.0f;
+    v[6] = 0.0f;
 
     switch (type) {
     case 0: getPos0(v); break;

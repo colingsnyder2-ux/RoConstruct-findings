@@ -1,4 +1,4 @@
-// from server: 70% by colin
+// from server: 71% by colin
 extern "C" void* __cdecl allocate(unsigned int, unsigned int);
 extern "C" void* __cdecl fill(void*, int, unsigned int);
 extern "C" void __cdecl free_node(void*);
@@ -47,10 +47,10 @@ struct S
     Buffer buffer;
     int last;
 
-    S(int, Buffer, int, int);
+    S(int, Buffer, int, int, int);
 };
 
-S::S(int a, Buffer b, int c, int d)
+S::S(int a, Buffer b, int c, int d, int e)
 {
     second = 0;
     second = a;

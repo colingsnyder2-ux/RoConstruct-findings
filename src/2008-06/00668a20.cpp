@@ -1,6 +1,6 @@
-// from server: 47% by colin
-// roc-cl: 21022
-// roc-flags: /O2 /GS- /EHsc /MD /fp:fast
+// from server: 48% by colin
+
+
 extern const float translationWeight;
 extern const float retainedWeight;
 
@@ -33,23 +33,44 @@ struct JointStage
 
 void JointStage::update(const Transform& transform, float amount)
 {
-    Vector3 blendedPosition = {
-        transform.translation[0] * translationWeight + position.x * retainedWeight,
-        transform.translation[1] * translationWeight + position.y * retainedWeight,
-        transform.translation[2] * translationWeight + position.z * retainedWeight
-    };
-    position = blendedPosition;
+    float tx = transform.translation[0];
+    float ty = transform.translation[1];
+    float tz = transform.translation[2];
 
-    amount = translationWeight * amount;
+    float px = position.x;
+    float py = position.y;
+    float pz = position.z;
+
+    float nx = tx * translationWeight + px * retainedWeight;
+    float ny = ty * translationWeight + py * retainedWeight;
+    float nz = tz * translationWeight + pz * retainedWeight;
+
+    position.x = nx;
+    position.y = ny;
+    position.z = nz;
+
+    float a = translationWeight * amount;
 
     Quaternion converted;
     const Quaternion& rotation = converted.fromTransform(transform);
 
-    Quaternion blendedOrientation = {
-        rotation.x * amount + orientation.x * retainedWeight,
-        rotation.y * amount + orientation.y * retainedWeight,
-        rotation.z * amount + orientation.z * retainedWeight,
-        rotation.w * amount + orientation.w * retainedWeight
-    };
-    orientation = blendedOrientation;
+    float rx = rotation.x;
+    float ry = rotation.y;
+    float rz = rotation.z;
+    float rw = rotation.w;
+
+    float ox = orientation.x;
+    float oy = orientation.y;
+    float oz = orientation.z;
+    float ow = orientation.w;
+
+    float bx = rx * a + ox * retainedWeight;
+    float by = ry * a + oy * retainedWeight;
+    float bz = rz * a + oz * retainedWeight;
+    float bw = rw * a + ow * retainedWeight;
+
+    orientation.x = bx;
+    orientation.y = by;
+    orientation.z = bz;
+    orientation.w = bw;
 }

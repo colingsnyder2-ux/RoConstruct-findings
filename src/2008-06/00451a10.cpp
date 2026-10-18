@@ -1,20 +1,31 @@
-// from server: 45% by colin
+// from server: 93% by colin
+
+
+
+
 extern "C" void* __stdcall sub_554270();
-extern "C" void* __stdcall sub_5644A0(void* self, void* arg);
+
+struct Map {
+    int* lookup(int* key);
+};
 
 struct VerbBinder {
     char pad[0x54];
-    void* field54;
-    void __stdcall insert(int a, int b);
+    Map map;
+    void insert(int a, int b);
 };
 
-void __stdcall VerbBinder::insert(int a, int b) {
-    void* v;
+void VerbBinder::insert(int a, int b) {
+    int* p;
     if (a != 0) {
-        v = *(void**)(a + 4);
+        int v = *(int*)(a + 4);
+        int key = b;
+        p = map.lookup(&key);
+        *p = v;
     } else {
-        v = sub_554270();
+        int v = (int)sub_554270();
+        int key = b;
+        p = map.lookup(&key);
+        *p = v;
     }
-    void* p = sub_5644A0(&field54, &b);
-    *(void**)p = v;
 }

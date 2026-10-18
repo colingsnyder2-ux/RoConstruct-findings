@@ -1,41 +1,54 @@
-// from server: 60% by colin
-struct RefCounted {
+// from server: 64% by colin
+void* __cdecl operator new(unsigned int);
+extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
+
+struct RefCounted
+{
     void* value;
-    RefCounted();
+    RefCounted& operator=(const RefCounted&);
     ~RefCounted();
 };
 
-struct Object {
-    char padding[0x198];
-    void* value;
-};
-
-struct Holder {
-    char padding[0x18];
-    void* object;
-};
-
-struct Interface {
-    virtual void slot0() = 0;
-    virtual void slot1() = 0;
-    virtual float slot2(void*) = 0;
-};
-
-struct Item {
-    char padding[0x128];
-    Object* provider;
-    Holder* holder;
-
-    float f(void* argument);
-};
-
-float Item::f(void* argument)
+struct Inner
 {
-    RefCounted guard;
-    guard.value = provider->value;
-    void* value = argument ? (char*)argument + 0x14 : 0;
-    Holder* active = holder;
-    Interface* object = (Interface*)active->object;
-    float result = object->slot2(value);
+    virtual float getValue(void*);
+};
+
+struct Holder
+{
+    char pad[0x18];
+    Inner* inner;
+};
+
+struct S
+{
+    char pad0[0x128];
+    void* field128;
+    Holder* field12c;
+
+    float method(void* arg);
+};
+
+float S::method(void* arg)
+{
+    void* obj = *(void**)((char*)field128 + 0x198);
+
+    RefCounted ref;
+    ref.value = 0;
+    *(void**)&ref = operator new(0x14);
+    *(void**)&ref = obj;
+
+    void* p = *(void**)&ref;
+    if (p != 0)
+        p = (char*)p + 0x14;
+    else
+        p = 0;
+
+    Holder* h = field12c;
+    Inner* in = h->inner;
+    float result = in->getValue(p);
+
+    _InterlockedExchangeAdd((volatile long*)&ref, -1);
+
     return result;
 }

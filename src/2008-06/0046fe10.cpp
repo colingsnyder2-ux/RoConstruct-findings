@@ -1,10 +1,11 @@
-// from server: 42% by colin
+// from server: 45% by colin
 extern "C" {
-    void __cdecl G3D_Log_ctor();
-    void __cdecl G3D_Log_dtor();
-    void __stdcall std_string_ctor(void*, const char*);
-    void __stdcall std_string_dtor(void*);
-    void __cdecl exit(int);
+    void __cdecl sub_50A940();
+    void __cdecl sub_50A9B0();
+    void __stdcall sub_802458(void*, const char*);
+    void __stdcall sub_802468(void*);
+    void __cdecl sub_8027F4(int);
+    void __cdecl sub_8027F4_exit(int);
 }
 
 extern bool GLCaps__initialized;
@@ -18,22 +19,22 @@ bool GLCaps_init()
     if (GLCaps__checkedForBugs)
         return GLCaps__initialized;
 
-    G3D_Log_ctor();
+    sub_50A940();
 
     bool result = false;
     if (GLCaps__assertHandler)
     {
         char buf[28];
-        std_string_ctor(buf, "GLCaps has not been initialized.");
-        result = ((bool (__stdcall *)(const char*, const char*, int, const char*, const char*))GLCaps__assertHandler)(
-            "GLCaps has not been initialized.", ".\\glg3dcpp\\GLCaps.cpp", 0x237, "_initialized", 0);
-        std_string_dtor(buf);
+        sub_802458(buf, "GLCaps has not been initialized.");
+        result = ((bool (__stdcall *)(const char*, const char*, int, const char*, int))GLCaps__assertHandler)(
+            "GLCaps has not been initialized.", ".\\glg3dcpp\\GLCaps.cpp", 0x237, "_initialized", 1);
+        sub_802468(buf);
     }
 
     if (result)
-        exit(-1);
+        sub_8027F4(-1);
 
-    G3D_Log_dtor();
+    sub_50A9B0();
 
     return GLCaps__initialized;
 }

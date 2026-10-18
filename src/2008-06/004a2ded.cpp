@@ -1,4 +1,4 @@
-// from server: 41% by king_originala
+// from server: 50% by colin
 struct String {
     unsigned long allocator;
     union {
@@ -34,9 +34,6 @@ struct S {
 
 int S::f(String player, Address *remote)
 {
-    if (!remote)
-        return 0;
-
     String name;
     String *result = player.substr(&name, 4);
     const char *text;

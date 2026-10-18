@@ -1,19 +1,24 @@
-// from server: 58% by colin
-struct KeyboardSecondaryController
-{
-    char pad0[0xc];
-    void* field_c;
-    float getValue(int key);
-};
-
+// from server: 69% by colin
 struct InputObject
 {
+    virtual void v0();
+    virtual void v1();
+    virtual void v2();
+    virtual void v3();
+    virtual void v4();
     virtual bool check(int value);
 };
 
 struct InputObject2
 {
     virtual bool check(int value);
+};
+
+struct KeyboardSecondaryController
+{
+    char pad0[0xc];
+    void* field_c;
+    float getValue(int key);
 };
 
 extern float g_float_81c3b8;

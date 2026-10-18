@@ -1,4 +1,4 @@
-// from server: 77% by colin
+// from server: 79% by colin
 extern "C" int __stdcall applyVolume(void*, float);
 extern "C" void __cdecl checkResult(int);
 
@@ -24,7 +24,7 @@ void Sound::setVolume(float value)
     else
         clamped = value;
 
-    if (clamped != volume) {
+    if (volume != clamped) {
         volume = clamped;
         if (handle)
             checkResult(applyVolume(handle, clamped));

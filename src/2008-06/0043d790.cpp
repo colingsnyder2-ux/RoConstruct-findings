@@ -1,27 +1,22 @@
-// from server: 90% by king_originala
-struct Interface {
-    virtual void apply(int value);
+// from server: 91% by colin
+struct CXTPPropertyGridItem {
+    char reserved00[0x24];
+    void* items[3];
+
+    CXTPPropertyGridItem(void* value);
 };
 
-struct Base {
-    char padding[0x24];
-    void apply(int value);
+struct Vector3Item : CXTPPropertyGridItem {
+    Vector3Item(void* value);
 };
 
-struct Vector3Item : Base {
-    char* children[3];
-    void apply(int value);
-};
-
-void Vector3Item::apply(int value)
+Vector3Item::Vector3Item(void* value)
+    : CXTPPropertyGridItem(value)
 {
-    Base::apply(value);
-
-    char** current = children;
-    int remaining = 3;
-    do {
-        if (*current)
-            reinterpret_cast<Interface*>(*current + 0x10c)->apply(value);
-        ++current;
-    } while (--remaining);
+    for (int i = 0; i < 3; ++i) {
+        if (items[i] != 0) {
+            void** vtable = *(void***)((char*)items[i] + 0x10C);
+            ((void (__thiscall*)(void*, void*))vtable[0])((char*)items[i] + 0x10C, value);
+        }
+    }
 }

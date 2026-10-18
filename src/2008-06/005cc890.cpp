@@ -1,4 +1,4 @@
-// from server: 53% by colin
+// from server: 55% by colin
 extern "C" double __cdecl acos(double);
 
 extern float g_828b60;
@@ -31,7 +31,7 @@ void VCamera::sub_5cc890(int arg) {
     float x = vec[0] * v;
     float y = vec[1] * v;
     float z = vec[2] * v;
-    float len = acos((double)z);
+    float len = (float)acos((double)v);
     float a = len * g_83a310 * g_81e704;
     int i = (int)a;
     int total = i + arg;

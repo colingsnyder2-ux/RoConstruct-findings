@@ -1,7 +1,17 @@
-// from server: 63% by colin
+// from server: 64% by colin
 extern "C" void* __cdecl __RTDynamicCast(void*, long, void*, void*, int);
 extern char instance_type;
 extern char properties_type;
+
+struct Instance {
+    char padding[0x110];
+    void* name;
+};
+
+struct Ptr {
+    Instance* px;
+    void* pn;
+};
 
 struct Entry {
     void* object;
@@ -14,37 +24,29 @@ struct Owner {
     Storage* storage;
 };
 
-struct Storage {
-    Owner* owner;
-    unsigned char padding[8];
-    Entry* begin;
-    Entry* end;
-};
-
-extern "C" void* __cdecl sub_557950(void*);
-
 struct S {
-    unsigned char padding[0x130];
-    Storage* storage;
+    char pad[0x130];
+    void* field130;
     void* f(void* arg);
 };
 
-void* S::f(void* arg)
-{
-    Storage* s = storage;
-    void* result;
-    if (s) {
-        Entry* e = *(Entry**)((char*)arg + 0xc);
-        void* p = *(void**)((char*)e + 4);
-        result = sub_557950((char*)p + 4);
+void* sub_557950(void* a, void* b);
+
+void* S::f(void* arg) {
+    void* ecx = this->field130;
+    void* eax;
+    if (ecx != 0) {
+        Entry* e = (Entry*)((Ptr*)arg)->px;
+        void* p = (void*)((char*)e->other + 4);
+        eax = sub_557950(ecx, p);
     } else {
-        result = 0;
+        eax = 0;
     }
-    if (result) {
-        void* r = ((void* (__thiscall*)(void*))0x4438c0)(result);
-        if (r) {
-            void* q = (char*)*(void**)((char*)arg + 4) + 4;
-            return sub_557950(q);
+    if (eax != 0) {
+        void* r = ((void* (__thiscall*)(void*))0x4438c0)(eax);
+        if (r != 0) {
+            void* d = (void*)((char*)((Ptr*)arg)->pn + 4);
+            return sub_557950(r, d);
         }
     }
     return 0;

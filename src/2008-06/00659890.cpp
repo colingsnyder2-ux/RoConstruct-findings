@@ -1,68 +1,33 @@
-// from server: 61% by colin
-extern "C" void __cdecl _invalid_parameter_noinfo();
+// from server: 94% by colin
+extern "C" void __stdcall _invalid_parameter_noinfo();
 
-struct Key {
-    unsigned int a;
-    unsigned int b;
-    unsigned int c;
+struct BallBallContact {
+    int find(int a, int b, int c, int d, int e, int f);
 };
 
-struct Node {
-    void* owner;
-    Node* next;
-    unsigned int reserved0;
-    unsigned int reserved1;
-    unsigned int a;
-    unsigned int b;
-    unsigned int c;
-};
-
-struct Entry {
-    Node* node;
-};
-
-struct Bucket {
-    unsigned int reserved[3];
-    Entry* begin;
-    Entry* end;
-};
-
-struct Other {
-    unsigned int reserved[8];
-    unsigned short shift;
-};
-
-struct S {
-    unsigned int reserved[3];
-    Bucket buckets[1];
-
-    Node* find(void* owner, Key* key);
-};
-
-Node* S::find(void* owner, Key* key)
+int BallBallContact::find(int a, int b, int c, int d, int e, int f)
 {
-    unsigned int hash = key->b * 0x127409f;
-    hash ^= key->c * 0x4f9ffb7;
-    hash ^= key->a * 0x466f45d;
+    int* key = (int*)b;
+    unsigned int h = (unsigned int)key[2] * 0x4f9ffb7u;
+    h ^= (unsigned int)key[1] * 0x127409fu;
+    h ^= (unsigned int)key[0] * 0x466f45du;
 
-    unsigned int shift = ((Other*)owner)->shift;
-    unsigned int mask = 0xffff;
-    mask = (int)mask >> shift;
+    int shift = *(unsigned short*)(*(int*)(a + 0x64) + 0x20);
+    unsigned int mask = (unsigned int)(0xffff >> shift);
+    h &= mask;
 
-    Bucket* bucket = &buckets[shift * 3];
-    hash &= mask;
-
-    if (hash >= (unsigned int)(bucket->end - bucket->begin))
+    int* table = (int*)((char*)this + shift * 24 + 0xc);
+    int count = (table[4] - table[3]) >> 3;
+    if (h >= (unsigned int)count)
         _invalid_parameter_noinfo();
 
-    Node* node = bucket->begin[hash].node;
-    while (node) {
-        if (node->owner == owner &&
-            node->a == key->a &&
-            node->b == key->b &&
-            node->c == key->c)
+    int* node = (int*)(table[3] + h * 8);
+    int* entry = (int*)*node;
+    while (entry)
+    {
+        if (entry[0] == a && entry[5] == key[0] && entry[6] == key[1] && entry[7] == key[2])
             break;
-        node = node->next;
+        entry = (int*)entry[1];
     }
-    return node;
+    return (int)entry;
 }
