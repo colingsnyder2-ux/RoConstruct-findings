@@ -1,11 +1,7 @@
-// from server: 97% by king_originala
+// from server: 100% by colin
 struct Flag {
     bool value;
     Flag(const Flag &other) : value(other.value) {}
-};
-
-struct Error {
-    char data[40];
 };
 
 struct Callback {
@@ -19,14 +15,15 @@ struct S {
 
 void S::f(Flag flag, Callback *callback)
 {
-    void *object = 0;
+    volatile char scratch[40];
     try {
-        if (this != object)
+        void *object = 0;
+        if (this)
             object = reinterpret_cast<char *>(this) - 0x1a0;
         callback->invoke(object, flag);
         __assume(0);
     }
-    catch (Error error) {
-        throw;
+    catch (...) {
+        scratch[0] = 0;
     }
 }

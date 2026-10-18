@@ -1,4 +1,4 @@
-// from server: 69% by colin
+// from server: 72% by colin
 namespace std {
 template<class T> struct char_traits;
 template<class T> class allocator;
@@ -39,6 +39,7 @@ int process(std::string source)
         std::string result;
         Parser parser(source);
         parser.parse(result);
+        result = source;
     } catch (...) {
     }
     return 1;

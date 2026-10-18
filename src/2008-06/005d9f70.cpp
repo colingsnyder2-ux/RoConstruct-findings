@@ -1,6 +1,6 @@
-// from server: 49% by king_originala
+// from server: 54% by colin
 extern "C" void* __cdecl cast_object(void*, long, const void*, const void*, int);
-extern "C" void (__cdecl* invalid_parameter_noinfo)();
+extern "C" void __cdecl invalid_parameter_noinfo();
 
 extern char instance_type;
 extern char part_type;

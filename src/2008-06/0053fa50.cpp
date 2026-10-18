@@ -1,4 +1,4 @@
-// from server: 94% by colin
+// from server: 100% by colin
 // roc-cl: 50727
 // roc-flags: /Od /Ob0 /GS /EHsc /MD
 #pragma optimize("", off)
@@ -63,7 +63,7 @@ void S::f(Node* node, bool enabled)
         bool erased;
         {
             Key key(node);
-            erased = inactive.erase(key) != 1;
+            erased = inactive.erase(key) == 1;
         }
         if (erased) {
             Key key(node);

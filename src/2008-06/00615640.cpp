@@ -1,6 +1,5 @@
-// from server: 65% by colin
+// from server: 68% by colin
 struct Result {
-    char padding[28];
     int value;
     Result(const Result&);
     ~Result();
@@ -14,15 +13,31 @@ struct Interface {
 
 struct S {
     char padding[24];
-    Interface *iface;
-    void f(void *arg1, int arg2);
+    Interface* iface;
 };
 
-void S::f(void *arg1, int arg2) {
-    Result r = ((Interface *)arg1)->get(arg2);
-    char buf[32];
-    *(Result *)buf = r;
-    *(int *)(buf + 28) = *(int *)((char *)&r + 28);
-    ((Interface *)arg1)->slot0();
-    r.~Result();
+extern "C" void __stdcall string_copy(void*, const void*);
+extern "C" void __stdcall string_destroy(void*);
+
+struct String {
+    char data[28];
+    String(const String&);
+    ~String();
+};
+
+struct Target {
+    char pad[16];
+    void assign(const String&);
+};
+
+struct Holder {
+    String str;
+    Target* target;
+    void set(const String&, int);
+};
+
+void Holder::set(const String& source, int)
+{
+    String tmp(source);
+    target->assign(tmp);
 }

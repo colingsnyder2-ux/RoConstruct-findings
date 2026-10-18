@@ -1,16 +1,11 @@
-// from server: 2% by colin
+// from server: 7% by colin
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
-
-struct RefCounted {
-    void AddRef();
-    void Release();
-};
 
 struct Instance {
     void* vtable;
     char pad[0x100];
-    Instance* findChildByName(const char* name);
+    Instance* getChild();
 };
 
 struct PartInstance : Instance {
@@ -22,10 +17,7 @@ struct Adorn {
 };
 
 struct ViewRbxGfx {
-    void render3dAdorn(Adorn* adorn);
-    void render2dAdorn(Adorn* adorn);
     void render3dAdorn(Adorn* adorn, Instance* instance);
-    void render2dAdorn(Adorn* adorn, Instance* instance);
 };
 
 extern "C" void* __cdecl operator_new(unsigned int size);
@@ -41,7 +33,7 @@ extern "C" void __stdcall sub_600660(void* a);
 
 void ViewRbxGfx::render3dAdorn(Adorn* adorn, Instance* instance)
 {
-    Instance* child = instance->findChildByName("Model");
+    Instance* child = instance->getChild();
     if (child) {
         PartInstance* part = (PartInstance*)child;
         void* prim = part->getPartPrimitive();

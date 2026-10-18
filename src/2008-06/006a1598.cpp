@@ -1,4 +1,4 @@
-// from server: 66% by king_originala
+// from server: 78% by colin
 typedef void (__thiscall *ElementFunction)(void *);
 
 extern "C" void __stdcall array_unwind(
@@ -13,11 +13,11 @@ extern "C" void __stdcall vector_constructor(
     ElementFunction constructor,
     ElementFunction destructor)
 {
-    volatile int success = 0;
-    volatile int i;
+    int success = 0;
+    int i = 0;
 
     __try {
-        for (i = 0; i < count; ++i) {
+        for (; i < count; ++i) {
             constructor(ptr);
             ptr = (char *)ptr + size;
         }

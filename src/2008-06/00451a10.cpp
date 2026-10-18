@@ -1,31 +1,28 @@
-// from server: 93% by colin
+// from server: 97% by colin
+struct Name;
 
-
-
-
-extern "C" void* __stdcall sub_554270();
+Name const& __cdecl getLocalScope();
 
 struct Map {
-    int* lookup(int* key);
+    char data[84];
+    void** lookup(void* const* key);
 };
 
-struct VerbBinder {
-    char pad[0x54];
+struct S_func_00451a10 {
+    char pad[84];
     Map map;
-    void insert(int a, int b);
+    void f(void* key, void* node);
 };
 
-void VerbBinder::insert(int a, int b) {
-    int* p;
-    if (a != 0) {
-        int v = *(int*)(a + 4);
-        int key = b;
-        p = map.lookup(&key);
-        *p = v;
+void S_func_00451a10::f(void* key, void* node)
+{
+    if (node) {
+        void* value = *(void**)((char*)node + 4);
+        void* k = key;
+        *map.lookup(&k) = value;
     } else {
-        int v = (int)sub_554270();
-        int key = b;
-        p = map.lookup(&key);
-        *p = v;
+        void* value = (void*)&getLocalScope();
+        void* k = key;
+        *map.lookup(&k) = value;
     }
 }

@@ -1,4 +1,4 @@
-// from server: 56% by tester
+// from server: 63% by colin
 struct S {
     char pad0[4];
     int field4;
@@ -10,15 +10,14 @@ struct S {
     int f();
 };
 
-extern "C" int __stdcall sub_5805D0(int);
-extern "C" int __stdcall sub_57EA40(int);
-extern "C" int __stdcall sub_5CDDD0(int);
-extern "C" int __stdcall sub_5CDE10(int);
-extern "C" int __stdcall sub_58C5C0(int, int);
+extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
+extern "C" int __cdecl sub_57EA40(int);
+extern "C" int __cdecl sub_5CDDD0(int);
+extern "C" int __cdecl sub_5CDE10(int);
+extern "C" int __cdecl sub_58C5C0(int, int);
 
 int S::f()
 {
-    int v;
     int eax;
     int edi;
     int ecx;
@@ -26,7 +25,7 @@ int S::f()
 
     ecx = this->field20;
     if (ecx != 0) {
-        eax = sub_5805D0(ecx);
+        eax = _InterlockedExchangeAdd((volatile long*)ecx, 0);
     } else {
         eax = 0;
     }
@@ -53,17 +52,15 @@ int S::f()
     eax = this->field4;
     ecx = this->fieldC;
     eax += 4;
-    if (*(int *)(eax + 0x18) >= 0x10) {
+    if (*(unsigned int *)(eax + 0x18) >= 0x10) {
         eax = *(int *)(eax + 4);
     } else {
         eax += 4;
     }
     sub_58C5C0(eax, ecx);
 
-    ecx = *(int *)((char *)&v + 0xc);
-    eax = *(int *)ecx;
     {
-        int (*fp)() = (int (*)())*(int *)eax;
+        int (*fp)() = (int (*)())*(int *)(*(int *)ecx);
         return fp();
     }
 }

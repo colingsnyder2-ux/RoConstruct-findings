@@ -1,4 +1,4 @@
-// from server: 74% by colin
+// from server: 76% by Viper
 // roc 2007-08 005352c0  unit: std::logic_error  size: 109 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 005352c0
 
@@ -12,10 +12,9 @@ struct Vec3 {
 };
 
 struct S {
-    int f(void* a);
 };
 
-int S::f(void* a)
+int __cdecl f(void* a)
 {
     void* p1;
     void* p2;

@@ -1,4 +1,4 @@
-// from server: 64% by colin
+// from server: 65% by colin
 extern "C" void* __cdecl __RTDynamicCast(void*, long, void*, void*, int);
 extern char instance_type;
 extern char properties_type;
@@ -31,6 +31,7 @@ struct S {
 };
 
 void* sub_557950(void* a, void* b);
+void* sub_4438c0(void* a);
 
 void* S::f(void* arg) {
     void* ecx = this->field130;
@@ -43,7 +44,7 @@ void* S::f(void* arg) {
         eax = 0;
     }
     if (eax != 0) {
-        void* r = ((void* (__thiscall*)(void*))0x4438c0)(eax);
+        void* r = sub_4438c0(eax);
         if (r != 0) {
             void* d = (void*)((char*)((Ptr*)arg)->pn + 4);
             return sub_557950(r, d);

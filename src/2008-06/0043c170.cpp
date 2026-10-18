@@ -1,4 +1,4 @@
-// from server: 14% by colin
+// from server: 15% by colin
 struct Guard {
     void* object;
     void* control;
@@ -8,28 +8,16 @@ struct Guard {
     void acquire(void*);
 };
 
-struct Item {
-    char pad0[0x10];
-    int count;
-    int capacity;
-    char pad1[0x100];
-    int hidden;
-    char pad2[0x100];
-    void SetHidden(int);
-};
-
 struct Vector3 {
     float x, y, z;
 };
-
-struct EnumDescriptor;
 
 struct EnumItem {
     const char* name;
     int attributes;
     int value;
     unsigned int index;
-    EnumDescriptor* owner;
+    void* owner;
 };
 
 struct EnumDescriptor {
@@ -54,6 +42,7 @@ struct Converter {
     void SetHidden(int);
     bool convertToValue(unsigned int index, Vector3* out) const;
     bool convertToString(unsigned int index, void* out) const;
+    void convert(const EnumDescriptor* desc, Vector3* out);
 };
 
 extern "C" void __stdcall _invalid_parameter_noinfo();
@@ -64,7 +53,7 @@ void Converter::SetHidden(int v)
 {
     if (v != hidden) {
         hidden = v;
-        ((Item*)((char*)this + 0xbc))->SetHidden(v);
+        ((Converter*)((char*)this + 0xbc))->SetHidden(v);
     }
 }
 
@@ -72,24 +61,11 @@ void EnumDescriptor::SetHidden(int v)
 {
     if (v != hidden) {
         hidden = v;
-        ((Item*)((char*)this + 0xbc))->SetHidden(v);
+        ((Converter*)((char*)this + 0xbc))->SetHidden(v);
     }
 }
 
-struct EnumConverter {
-    char pad0[0x10];
-    EnumItem** begin;
-    EnumItem** end;
-    char pad1[0x100];
-    int hidden;
-    char pad2[0x100];
-    void SetHidden(int);
-    bool convertToValue(unsigned int index, Vector3* out) const;
-    bool convertToString(unsigned int index, void* out) const;
-    void convert(const EnumDescriptor* desc, Vector3* out);
-};
-
-void EnumConverter::convert(const EnumDescriptor* desc, Vector3* out)
+void Converter::convert(const EnumDescriptor* desc, Vector3* out)
 {
     Vector3 zero;
     zero.x = 0.0f;

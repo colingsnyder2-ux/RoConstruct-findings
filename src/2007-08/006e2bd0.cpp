@@ -1,4 +1,4 @@
-// from server: 38% by colin
+// from server: 39% by Viper
 struct CXTPDockingPaneTabbedContainer {
     char pad0[0x20];
     int field_0x20;
@@ -16,7 +16,7 @@ struct CXTPDockingPaneTabbedContainer {
     void func_006e2bd0(int, int);
 };
 
-extern "C" int __stdcall sub_006e4770(int, int);
+extern "C" int (__thiscall *sub_006e4770)(int, int);
 extern "C" int __stdcall sub_006e0540(int, int);
 extern "C" int __stdcall sub_0066ed20(int);
 extern "C" int __stdcall sub_0073853e(int, int);
