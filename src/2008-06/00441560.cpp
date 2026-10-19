@@ -1,4 +1,20 @@
+// from server: 60% by colin
 // from server: 59% by colin
+// roc 2008-06 00441560  unit: RBX::VBrickColor::?$XItem  size: 31 bytes
+// Make this compile to the exact bytes below, then: roc check 2008-06 00441560
+//
+// 00441560  6aff                 push -1
+// 00441562  6899037c00           push 0x7c0399
+// 00441567  64a100000000         mov eax, dword ptr fs:[0]
+// 0044156d  50                   push eax
+// 0044156e  64892500000000       mov dword ptr fs:[0], esp
+// 00441575  51                   push ecx
+// 00441576  56                   push esi
+// 00441577  8bf1                 mov esi, ecx
+// 00441579  51                   push ecx
+// 0044157a  8d44241c             lea eax, [esp + 0x1c]
+#include <intrin.h>
+
 struct Color3 {
     float r, g, b;
 };
@@ -30,6 +46,7 @@ extern "C" void __stdcall sub_43F890();
 void BrickColorX::construct(int number)
 {
     SomeObj obj;
+    _ReadWriteBarrier();
     sub_803ED4(&obj);
     sub_711AC0();
     Color3 c;

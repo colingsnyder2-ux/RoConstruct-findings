@@ -1,61 +1,68 @@
+// from server: 100% by user
 // from server: 99% by king_originala
-extern "C" long (__stdcall *InterlockedDecrement)(volatile long *);
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD /fp:fast
+extern "C" __declspec(dllimport) long __stdcall InterlockedDecrement(volatile long *);
 
-struct Ref
+struct Control
 {
-    virtual ~Ref();
-    volatile long count;
-    void release();
+    virtual ~Control();
+    volatile long references;
+    void dispose();
 };
 
-struct Ptr
+template <class T>
+struct ReferenceCountedPointer
 {
-    Ref *p;
-    ~Ptr();
-};
+    T *m_pointer;
 
-inline Ptr::~Ptr()
-{
-    if (p && InterlockedDecrement(&p->count) == 0)
+    ~ReferenceCountedPointer()
     {
-        p->release();
-        delete p;
+        if (m_pointer && InterlockedDecrement(&m_pointer->references) == 0)
+        {
+            m_pointer->dispose();
+            if (m_pointer)
+                delete m_pointer;
+        }
     }
-}
 
-struct Handle
-{
-    Ref *p;
-    Handle &assign(Ref *);
+    void setPointer(T *);
+
+    const ReferenceCountedPointer<T>& operator=(const ReferenceCountedPointer<T>& p)
+    {
+        setPointer(p.m_pointer);
+        return *this;
+    }
 };
 
-struct Maker
+struct EffectSettings
 {
-    char storage[0x14];
-    Ptr create(float, float, bool, float, Handle *, void *, void *);
+    ReferenceCountedPointer<Control> update(float, float, bool, float, void *, void *, void *);
 };
 
-struct S
+struct RenderScene
 {
-    char pad0[0x24];
-    float x;
-    float y;
-    char pad1[0x2c8];
-    Maker maker;
-    Handle first;
-    Handle second;
-    bool enabled;
-    char pad2[3];
-    float scale;
-    char pad3[0x88];
-    char data[0xf8];
-    char other;
+    char padding0[0x24];
+    float shadingQuality;
+    float meshDetail;
+    char padding1[0x2f4 - 0x2c];
+    EffectSettings effectSettings;
+    char padding2[0x308 - 0x2f5];
+    ReferenceCountedPointer<Control> desiredLighting;
+    ReferenceCountedPointer<Control> lighting;
+    bool shadows;
+    char padding3[3];
+    float cameraDistance;
+    char padding4[0x3a0 - 0x318];
+    char desiredSkyParameters[0xf8];
+    char skyParameters;
 
-    void f(const Ptr &);
+    void setLighting(const ReferenceCountedPointer<Control>&);
 };
 
-void S::f(const Ptr &value)
+void RenderScene::setLighting(const ReferenceCountedPointer<Control>& L)
 {
-    first.assign(value.p);
-    second.assign(maker.create(x, y, enabled, scale, &first, data, &other).p);
+    desiredLighting = L;
+    lighting = effectSettings.update(shadingQuality, meshDetail, shadows, cameraDistance,
+                                     &desiredLighting, desiredSkyParameters, &skyParameters);
 }

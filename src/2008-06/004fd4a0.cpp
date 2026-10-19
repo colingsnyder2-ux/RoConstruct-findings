@@ -1,6 +1,8 @@
+// from server: 72% by colin
 // from server: 68% by colin
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD /fp:fast
+#include <intrin.h>
 extern "C" double __cdecl fabs(double);
 extern "C" double __cdecl sqrt(double);
 #pragma intrinsic(fabs, sqrt)
@@ -20,6 +22,7 @@ void normalize(Vector3& v)
     if (fabs(v.x) > fabs(v.y)) {
         if (v.x == 0.0f) {
             v.x *= 0.0f;
+            _ReadWriteBarrier();
             v.y *= 0.0f;
             return;
         }

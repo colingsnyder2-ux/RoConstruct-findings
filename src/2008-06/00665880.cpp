@@ -1,6 +1,8 @@
+// from server: 59% by colin
 // from server: 58% by colin
 // roc-cl: 50727
 // roc-flags: /O2 /GS- /EHsc /MD /fp:fast
+#include <intrin.h>
 struct Vector {
     float x, y, z;
 };
@@ -46,6 +48,7 @@ void __cdecl renderBox(const Box& box, unsigned int a,
 
     if (!(zeroFlags & 1)) {
         zeroFlags |= 1;
+        _ReadWriteBarrier();
         zeroVector.x = 0.0f;
         zeroVector.y = 0.0f;
         zeroVector.z = 0.0f;

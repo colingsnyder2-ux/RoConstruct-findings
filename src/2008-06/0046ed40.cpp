@@ -1,3 +1,5 @@
+// from server: 67% by colin
+// from server: 66% by colin
 // roc 2008-06 0046ed40  unit: RBX::LDraw2Lua::LDrawCommand  size: 546 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 0046ed40
 //
@@ -154,6 +156,7 @@
 // 0046ef55  64890d00000000       mov dword ptr fs:[0], ecx
 // 0046ef5c  83c42c               add esp, 0x2c
 // 0046ef5f  c22000               ret 0x20
+#include <intrin.h>
 
 // roc-lang: cpp
 // roc-cl: 21022
@@ -194,6 +197,7 @@ struct LDrawCommand
 bool LDrawCommand::writeCFrame(std::ostream& stream, Text offset)
 {
     double value = atof(offset.c_str());
+    _ReadWriteBarrier();
     stream << "part.CFrame = CFrame.new("
         << x * 0.05 << "," << y * -0.05 - value << "," << z * -0.05 << ","
         << r00 << "," << r01 << "," << r02 << "," << r10 << "," << r11 << ","

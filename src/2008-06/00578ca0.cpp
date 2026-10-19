@@ -1,6 +1,8 @@
+// from server: 47% by colin
 // from server: 45% by colin
 // roc-cl: 21022
 // roc-flags: /O1 /GS- /EHsc /MD
+#include <intrin.h>
 extern bool enabled;
 extern void __cdecl alignedFree(void*);
 
@@ -75,6 +77,7 @@ void S::f(float elapsed)
     case 3:
     case 4:
         active = state->mode == 1;
+        _ReadWriteBarrier();
         break;
     case 1:
     case 2:

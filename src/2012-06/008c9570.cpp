@@ -1,9 +1,9 @@
-// from server: 94% by intel
+// from server: 100% by intel
 extern "C" void __stdcall Function_00414da0(void *);
 
 struct EventDesc_008c9540
 {
-    char pad0[164];
+    char pad0[168];
     void *m_value;
     void Set(void *value);
 };

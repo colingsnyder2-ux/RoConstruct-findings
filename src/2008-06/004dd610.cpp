@@ -1,6 +1,8 @@
+// from server: 60% by colin
 // from server: 59% by colin
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD /fp:fast
+#include <intrin.h>
 extern "C" void (__cdecl *_invalid_parameter_noinfo)();
 
 struct Key {
@@ -47,6 +49,7 @@ Result *S::f(Result *result, const Key &key)
 {
     Node *parent = head;
     Node *current = head->parent;
+    _ReadWriteBarrier();
     bool left = true;
 
     while (!current->nil) {

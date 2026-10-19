@@ -1,6 +1,8 @@
+// from server: 69% by colin
 // from server: 68% by colin
 // roc-cl: 50727
 // roc-flags: /O2 /GS- /EHsc /MD
+#include <intrin.h>
 struct Point {
     int x, y, z;
 };
@@ -27,6 +29,7 @@ void S::update(void *a, void *b, const Box *range,
                 Point point;
                 point.x = x;
                 point.y = y;
+                _ReadWriteBarrier();
                 point.z = z;
 
                 bool inNew =

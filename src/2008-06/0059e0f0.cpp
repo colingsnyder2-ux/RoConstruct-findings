@@ -1,4 +1,4 @@
-// from server: 89% by colin
+// from server: 100% by colin
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD /fp:fast
 // from server: 81% by colin
@@ -53,15 +53,15 @@ struct Settings {
 
 void Settings::setValue(float value) {
     float clamped;
-    if (value < 0.0f) {
+    if (value <= 0.0f) {
         clamped = 0.0f;
-    } else if (value > 1.0f) {
+    } else if (value >= 1.0f) {
         clamped = 1.0f;
     } else {
         clamped = value;
     }
 
-    if (*reinterpret_cast<float*>(reinterpret_cast<char*>(this) + 0x2dc) != clamped) {
+    if (clamped != *reinterpret_cast<float*>(reinterpret_cast<char*>(this) + 0x2dc)) {
         reinterpret_cast<FloatProperty*>(reinterpret_cast<char*>(this) + 0x228)->set(clamped);
         notify(&descriptor);
     }

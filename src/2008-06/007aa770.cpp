@@ -1,3 +1,4 @@
+// from server: 100% by user
 // from server: 99% by colin
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD /fp:fast
@@ -11,63 +12,66 @@ struct Control
     void dispose();
 };
 
-struct Handle
+template <class T>
+struct ReferenceCountedPointer
 {
-    Control *object;
+    T *m_pointer;
 
-    ~Handle()
+    ~ReferenceCountedPointer()
     {
-        if (object && InterlockedDecrement(&object->references) == 0)
+        if (m_pointer && InterlockedDecrement(&m_pointer->references) == 0)
         {
-            object->dispose();
-            if (object)
-                delete object;
+            m_pointer->dispose();
+            if (m_pointer)
+                delete m_pointer;
         }
+    }
+
+    void setPointer(T *);
+
+    const ReferenceCountedPointer<T>& operator=(const ReferenceCountedPointer<T>& p)
+    {
+        setPointer(p.m_pointer);
+        return *this;
     }
 };
 
-struct Pointer
+struct EffectSettings
 {
-    Control *object;
-    void assign(Control *);
+    ReferenceCountedPointer<Control> update(float, float, bool, float, void *, void *, void *);
 };
 
-struct Generator
-{
-    Handle generate(float, float, bool, float, void *, void *, void *);
-};
-
-struct Scene
+struct RenderScene
 {
     char padding0[0x24];
     float first;
     float second;
     char padding1[0x2f4 - 0x2c];
-    Generator generator;
+    EffectSettings effectSettings;
     char padding2[0x308 - 0x2f5];
-    unsigned long output;
-    Pointer pointer;
-    bool enabled;
+    unsigned long desiredLighting;
+    ReferenceCountedPointer<Control> lighting;
+    bool shadows;
     char padding3[3];
-    float fourth;
+    float cameraDistance;
     char padding4[0x3a0 - 0x318];
-    char output2[0xf8];
-    char output3;
+    char desiredSkyParameters[0xf8];
+    char skyParameters;
 
-    void update(float, float, bool, float);
+    void setThrottle(float, float, bool, float);
 };
 
-void Scene::update(float a, float b, bool c, float d)
+void RenderScene::setThrottle(float t, float m, bool s, float c)
 {
-    float value = a <= 0.0f ? 0.0f : a >= upperLimit ? upperLimit : a;
+    float value = t <= 0.0f ? 0.0f : t >= upperLimit ? upperLimit : t;
 
-    if (value != first || b != second || c != enabled || d != fourth)
+    if (value != first || m != second || s != shadows || c != cameraDistance)
     {
         first = value;
-        second = b;
-        fourth = d;
-        enabled = c;
-        pointer.assign(generator.generate(value, b, c, d,
-                                          &output, output2, &output3).object);
+        second = m;
+        cameraDistance = c;
+        shadows = s;
+        lighting = effectSettings.update(value, m, s, c,
+                                         &desiredLighting, desiredSkyParameters, &skyParameters);
     }
 }
