@@ -1,4 +1,4 @@
-// from server: 41% by colin
+// from server: 43% by TrollStein
 extern "C" {
     void* __cdecl malloc(unsigned int size);
     void __cdecl free(void* ptr);
@@ -7,7 +7,7 @@ extern "C" {
 }
 
 struct CXTPCommandBar {
-    int sub_6498C0(void* p1, void* p2, unsigned int* p3, unsigned int* p4);
+    int __cdecl sub_6498C0(void* p1, void* p2, unsigned int* p3, unsigned int* p4);
 };
 
 int CXTPCommandBar::sub_6498C0(void* p1, void* p2, unsigned int* p3, unsigned int* p4) {

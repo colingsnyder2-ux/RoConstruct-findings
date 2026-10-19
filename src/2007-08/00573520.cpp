@@ -1,14 +1,14 @@
-// from server: 40% by colin
+// from server: 42% by TrollStein
 struct Decal {
     char pad0[0x0c];
     int field_0c;
     char pad10[0x80];
     int field_8c;
-    void construct();
+    void* construct();
     int helper();
 };
 
-void Decal::construct() {
+void* Decal::construct() {
     helper();
     field_0c = 0;
     *(int*)((char*)this + 0x00) = 0x7aa68c;
@@ -21,4 +21,6 @@ void Decal::construct() {
     *(int*)((char*)this + 0x74) = 0x7aa62c;
     *(int*)((char*)this + 0x8c) = 0x7aa61c;
     field_0c = helper();
+
+    return this;
 }

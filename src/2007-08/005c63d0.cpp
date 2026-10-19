@@ -1,4 +1,4 @@
-// from server: 51% by colin
+// from server: 56% by TrollStein
 struct lua_exception {
     char pad0[4];
     char state;
@@ -8,7 +8,7 @@ struct lua_exception {
     int field14;
     char pad3[16];
     int field28;
-    int resume(int n);
+    int __cdecl resume(int n);
 };
 
 int lua_exception::resume(int n)

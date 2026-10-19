@@ -1,6 +1,8 @@
+// from server: 72% by colin
 // from server: 71% by colin
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD /fp:fast
+#include <intrin.h>
 struct Vec2 {
     float x, y;
 };
@@ -52,6 +54,7 @@ struct Hint {
 void Hint::render(Renderer* renderer)
 {
     Rect viewport = renderer->table->viewport(renderer);
+    _ReadWriteBarrier();
 
     Vec2 first;
     first.x = viewport.x0;

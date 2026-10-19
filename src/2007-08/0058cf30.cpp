@@ -1,8 +1,8 @@
-// from server: 41% by colin
+// from server: 42% by TrollStein
 struct SoundService {
     char pad[0x14];
     int field14;
-    bool getListenerValues(unsigned short* out);
+    bool __cdecl getListenerValues(unsigned short* out);
 };
 
 extern "C" {

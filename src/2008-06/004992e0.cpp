@@ -1,4 +1,4 @@
-// from server: 79% by colin
+// from server: 86% by colin
 // from server: 71% by king_originala
 // roc 2008-06 004992e0  unit: RBX::Network::VPlayers::?$SignalDesc  size: 60 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 004992e0
@@ -26,6 +26,7 @@
 // 00499317  894804               mov dword ptr [eax + 4], ecx
 // 0049931a  5e                   pop esi
 // 0049931b  c3                   ret 
+#include <intrin.h>
 struct Value { int data; };
 struct Node { Node* next; Node* prev; Value value; };
 struct Iterator {
@@ -44,6 +45,7 @@ struct Function {
 Function __cdecl func(Iterator first, Iterator last, Function function)
 {
     Node* node = first.node;
+    _ReadWriteBarrier();
     Node* end = last.node;
     for (; node != end; node = node->next)
         function(node->value);

@@ -1,4 +1,4 @@
-// from server: 73% by colin
+// from server: 80% by TrollStein
 // roc 2007-08 00634430  unit: CXTPCommandBar  size: 162 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 00634430
 
@@ -11,7 +11,7 @@ struct CXTPCommandBar {
     int sub_6301e4();
     int sub_6338d0(int);
     int sub_6342d0(int, int, int, int, int, int, int);
-    int sub_634430(int, int, int, int, int, int);
+    int __cdecl sub_634430(int, int, int, int, int, int);
 };
 
 int CXTPCommandBar::sub_634430(int a1, int a2, int a3, int a4, int a5, int a6)

@@ -1,6 +1,8 @@
+// from server: 77% by colin
 // from server: 74% by colin
 // roc-cl: 50727
 // roc-flags: /O2 /GS- /EHsc /MD
+#include <intrin.h>
 struct Seat;
 typedef void (Seat::*SeatMethod)();
 
@@ -51,6 +53,7 @@ void Seat::update(int disconnectFirst, int connectNow)
 
     if (connectNow) {
         BoundMethod bound(&Seat::callback, this);
+        _ReadWriteBarrier();
         Function function(bound);
         connection = manager.create(
             this ? static_cast<void*>(reinterpret_cast<char*>(this) + 0x14) : 0,

@@ -1,4 +1,4 @@
-// from server: 47% by colin
+// from server: 48% by TrollStein
 // roc 2007-08 0044f210  unit: CRobloxDoc  size: 243 bytes
 // library xtp-11.2.2-vc8/Source\SyntaxEdit\XTPSyntaxEditView.cpp
 
@@ -12,7 +12,7 @@ extern "C" {
 }
 
 struct CRobloxDoc {
-    int CopyStream(void* src, void* dst);
+    int __cdecl CopyStream(void* src, void* dst);
 };
 
 int CRobloxDoc::CopyStream(void* src, void* dst)

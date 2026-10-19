@@ -1,4 +1,4 @@
-// from server: 43% by colin
+// from server: 45% by TrollStein
 struct EnumPropDescriptor {
     void* field_00;
     void* field_04;
@@ -16,13 +16,13 @@ struct EnumPropDescriptor {
     void* field_74;
     char pad_78[0x14];
     void* field_8c;
-    void construct();
+    void* construct();
 };
 
 extern "C" void __stdcall sub_542E20();
 extern "C" void* __stdcall sub_543C80();
 
-void EnumPropDescriptor::construct()
+void* EnumPropDescriptor::construct()
 {
     sub_542E20();
     field_0c = 0;
@@ -36,4 +36,6 @@ void EnumPropDescriptor::construct()
     field_74 = (void*)0x7a6a88;
     field_8c = (void*)0x7a6a78;
     field_0c = sub_543C80();
+
+    return this;
 }

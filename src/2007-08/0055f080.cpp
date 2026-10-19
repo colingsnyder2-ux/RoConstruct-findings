@@ -1,4 +1,4 @@
-// from server: 46% by colin
+// from server: 47% by TrollStein
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
 
@@ -18,7 +18,7 @@ struct Container {
 };
 
 struct Backpack {
-    void addObject(Container* c, RefCounted* r);
+    void __cdecl addObject(Container* c, RefCounted* r);
 };
 
 void Backpack::addObject(Container* c, RefCounted* r)

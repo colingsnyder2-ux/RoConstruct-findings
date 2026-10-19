@@ -1,6 +1,6 @@
-// from server: 24% by colin
+// from server: 25% by TrollStein
 struct S {
-    void* f(void*);
+    void* __cdecl f(void*);
 };
 
 extern "C" void __cdecl sub_54D560();

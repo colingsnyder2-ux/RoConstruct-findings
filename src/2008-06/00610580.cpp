@@ -1,9 +1,16 @@
-// from server: 84% by colin
+// from server: 100% by colin
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD /fp:fast
+// roc 2008-06 00610580  (agentH rewrite)
+
 struct Vector3
 {
     float x, y, z;
+    Vector3() {}
+    Vector3(float a, float b, float c) : x(a), y(b), z(c) {}
+    Vector3 operator+(const Vector3& o) const { return Vector3(x + o.x, y + o.y, z + o.z); }
+    Vector3 operator*(float s) const { return Vector3(x * s, y * s, z * s); }
+    bool operator==(const Vector3& o) const { return x == o.x && y == o.y && z == o.z; }
 };
 
 extern const float half;
@@ -28,15 +35,7 @@ void __cdecl subdivideVector(
     if (!testVector(result, context))
         return;
 
-    double x = (double)start->x + end->x;
-    double y = (double)start->y + end->y;
-    double z = (double)start->z + end->z;
-
-    Vector3 average = {
-        (float)(x * half),
-        (float)(y * half),
-        (float)(z * half)
-    };
+    Vector3 average = (*start + *end) * 0.51f;
 
     if (!(adjustmentInitialized & 1))
     {
@@ -52,9 +51,7 @@ void __cdecl subdivideVector(
     transformVector(result, &midpoint, scale);
     bool accepted = testVector(result, context);
 
-    if ((double)end->x == (double)midpoint.x &&
-        (double)end->y == (double)midpoint.y &&
-        (double)end->z == (double)midpoint.z)
+    if (midpoint == *end)
     {
         if (accepted)
             transformVector(result, start, scale);

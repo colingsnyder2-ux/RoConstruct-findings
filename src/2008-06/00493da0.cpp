@@ -1,4 +1,6 @@
-// from server: 51% by colin
+// from server: 52% by colin
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD /fp:fast
 // roc 2008-06 00493da0  unit: RBX::VShirt::?$FactoryProduct  size: 657 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 00493da0
 //

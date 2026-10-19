@@ -1,9 +1,9 @@
-// from server: 35% by colin
+// from server: 38% by TrollStein
 struct Assembly;
 struct Primitive;
 
 struct AssemblyStage {
-    Assembly* onEngineChanging(Primitive* p);
+    Assembly* __cdecl onEngineChanging(Primitive* p);
 };
 
 extern "C" int __cdecl sub_60A200(int, int, int, int);

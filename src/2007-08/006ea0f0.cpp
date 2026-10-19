@@ -1,7 +1,7 @@
-// from server: 44% by colin
+// from server: 50% by TrollStein
 struct CXTPDockingPaneVisualStudio2005SecondTheme
 {
-    int GetThemeValue(int nIndex);
+    int __cdecl GetThemeValue(int nIndex);
 };
 
 extern "C" void __stdcall sub_66f110(int);

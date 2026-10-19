@@ -1,3 +1,4 @@
+// from server: 82% by colin
 // from server: 75% by king_originala
 // roc 2008-06 00665b00  unit: RBX::PartDragTool  size: 87 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 00665b00
@@ -80,7 +81,8 @@ void S::f(void* argument)
     {
         active34 = true;
         source20->activate();
-        receiver1c->apply(value18, source20->collect(), value38);
+        void* value18Copy = value18;
+        receiver1c->apply(value18Copy, source20->collect(), value38);
     }
     slot2(argument);
 }

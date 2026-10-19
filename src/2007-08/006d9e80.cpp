@@ -1,4 +1,4 @@
-// from server: 43% by colin
+// from server: 44% by TrollStein
 struct POINT { int x; int y; };
 
 struct CXTPDockingPaneAutoHideWnd
@@ -53,7 +53,7 @@ void* CXTPDockingPaneAutoHideWnd::func_6d9950(int a, int b, int c, int d)
     return 0;
 }
 
-void func_6d9e80(CXTPDockingPaneAutoHideWnd* self, int nMessage)
+void __stdcall func_6d9e80(CXTPDockingPaneAutoHideWnd* self, int nMessage)
 {
     if (nMessage == 4)
     {
