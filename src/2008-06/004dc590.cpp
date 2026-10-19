@@ -1,4 +1,7 @@
+// from server: 89% by colin
 // from server: 83% by colin
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD /fp:fast
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD /fp:fast
 struct Key
@@ -27,20 +30,19 @@ struct S
 
 Node* S::f(const Key& key)
 {
-    Node* result = head;
     Node* node = head->parent;
+    Node* result = head;
 
     while (!node->nil)
     {
-        if (node->key.x < key.x ? true :
-            node->key.x > key.x ? false :
-            node->key.y < key.y ? true :
-            node->key.y > key.y ? false :
-            node->key.z < key.z ? true :
-            node->key.z > key.z ? false :
-            node->key.u < key.u ? true :
-            node->key.u > key.u ? false :
-            node->key.i < key.i)
+        if (node->key.x < key.x ||
+            (!(node->key.x > key.x) &&
+             (node->key.y < key.y ||
+              (!(node->key.y > key.y) &&
+               (node->key.z < key.z ||
+                (!(node->key.z > key.z) &&
+                 (node->key.u < key.u ||
+                  (!(node->key.u > key.u) && node->key.i < key.i))))))))
         {
             node = node->right;
         }

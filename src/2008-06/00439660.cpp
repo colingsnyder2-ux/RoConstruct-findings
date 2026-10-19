@@ -1,8 +1,13 @@
+// from server: 67% by colin
 // from server: 66% by colin
 // roc-cl: 50727
 // roc-flags: /O2 /GS- /EHsc /MD
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
+extern "C" long __cdecl _InterlockedIncrement(volatile long*);
+#pragma intrinsic(_InterlockedIncrement)
+extern "C" long __cdecl _InterlockedDecrement(volatile long*);
+#pragma intrinsic(_InterlockedDecrement)
 
 extern "C" void (__cdecl* _invalid_parameter_noinfo)();
 
@@ -130,9 +135,9 @@ void S::remove(Argument* argument)
 
     RefCount* count = temporary.count;
     if (count) {
-        if (_InterlockedExchangeAdd(&count->strong, -1) == 1) {
+        if (_InterlockedDecrement(&count->strong) == 0) {
             count->dispose();
-            if (_InterlockedExchangeAdd(&count->weak, -1) == 1)
+            if (_InterlockedDecrement(&count->weak) == 0)
                 count->destroy();
         }
     }

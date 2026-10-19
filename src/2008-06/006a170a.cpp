@@ -1,6 +1,8 @@
+// from server: 63% by colin
 // from server: 61% by colin
 // roc-cl: 21022
 // roc-flags: /O1 /GS- /EHsc /MD
+extern "C" __declspec(dllimport) int __stdcall dword_802690(int);
 
 
 
@@ -17,7 +19,6 @@ extern "C" int __stdcall sub_6a17a6();
 
 extern int dword_97F70C;
 extern int dword_97F708;
-extern int (__stdcall *dword_802690)(int);
 extern int (__stdcall *dword_802694)(int);
 extern int (__stdcall *dword_80269C)(int, int*, int*);
 

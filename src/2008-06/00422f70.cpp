@@ -1,4 +1,4 @@
-// from server: 87% by colin
+// from server: 100% by colin
 // from server: 86% by king_originala
 // roc 2008-06 00422f70  unit: CRobloxTreeCtrl  size: 80 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 00422f70
@@ -37,8 +37,8 @@
 // 00422fbc  5b                   pop ebx
 // 00422fbd  c20c00               ret 0xc
 #include <intrin.h>
+extern "C" __declspec(dllimport) long __stdcall SendMessageA(void*, unsigned int, unsigned int, long);
 
-extern "C" long (__stdcall *SendMessageA)(void*, unsigned int, unsigned int, long);
 extern "C" void __stdcall func_006a0bde(long);
 
 struct Handler
@@ -60,10 +60,8 @@ void CRobloxTreeCtrl::func_00422f70(unsigned int key, unsigned int repeat, unsig
 {
     if (key == 0x71)
     {
-        long (__stdcall *send)(void*, unsigned int, unsigned int, long) = SendMessageA;
-        _ReadWriteBarrier();
-        long item = send(window, 0x110a, 9, 0);
-        func_006a0bde(send(window, 0x110e, 0, item));
+        long item = SendMessageA(window, 0x110a, 9, 0);
+        func_006a0bde(SendMessageA(window, 0x110e, 0, item));
     }
     handler.func_006de610(key, repeat, flags);
 }

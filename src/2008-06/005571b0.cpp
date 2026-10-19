@@ -1,3 +1,4 @@
+// from server: 100% by colin
 // from server: 97% by colin
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD /fp:fast
@@ -26,9 +27,11 @@ struct Registry {
     Receiver* find(void* key);
 };
 
-struct S {
-    unsigned char padding0[0x14];
-    unsigned char key[0x13C];
+extern Registry registry;
+
+struct Pad { unsigned char padding0[0x14]; };
+struct Key { unsigned char data[0x13C]; };
+struct S : Pad, Key {
     StepSignal signal;
     double elapsed;
 
@@ -40,7 +43,7 @@ void S::step(float delta)
     float time = (float)(elapsed += delta);
     signal.fire(StepEvent(time, delta));
 
-    Receiver* receiver = ((Registry*)0x973BB8)->find(key);
+    Receiver* receiver = registry.find(static_cast<Key*>(this));
     if (receiver)
         receiver->signal.fire(delta, time, delta);
 }

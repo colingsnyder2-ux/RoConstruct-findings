@@ -1,4 +1,4 @@
-// from server: 82% by colin
+// from server: 100% by colin
 // from server: 81% by king_originala
 // roc 2008-06 00467880  unit: DxUserInput  size: 377 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 00467880
@@ -118,21 +118,29 @@
 // 004679f3  83c454               add esp, 0x54
 // 004679f6  c20c00               ret 0xc
 
-extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
-#pragma intrinsic(_InterlockedExchangeAdd)
+extern "C" long __cdecl _InterlockedDecrement(volatile long*);
+#pragma intrinsic(_InterlockedDecrement)
 
-extern "C" void __stdcall EnterCriticalSection(void*);
-extern "C" void __stdcall LeaveCriticalSection(void*);
+extern "C" __declspec(dllimport) void __stdcall EnterCriticalSection(void*);
+extern "C" __declspec(dllimport) void __stdcall LeaveCriticalSection(void*);
 
-struct String
+struct __declspec(dllimport) String
 {
     unsigned char storage[28];
     String(const char*);
     ~String();
-    __declspec(dllimport) const char* c_str() const;
+    const char* c_str() const;
 };
 
-String __cdecl operator+(const String&, const char*);
+struct __declspec(dllimport) StringName
+{
+    unsigned char storage[28];
+    StringName(const char*);
+    ~StringName();
+};
+
+__declspec(dllimport) String __cdecl operator+(const String&, const char*);
+__declspec(dllimport) String __cdecl operator+(const StringName&, const char*);
 
 struct RefCount
 {
@@ -160,13 +168,13 @@ inline void* Shared::get() const
 
 inline Shared::~Shared()
 {
-    RefCount* p = count;
-    if (p)
+    if (count)
     {
-        if (_InterlockedExchangeAdd(&p->strong, -1) == 1)
+        RefCount* p = count;
+        if (_InterlockedDecrement(&p->strong) == 0)
         {
             p->dispose();
-            if (_InterlockedExchangeAdd(&p->weak, -1) == 1)
+            if (_InterlockedDecrement(&p->weak) == 0)
                 p->destroy();
         }
     }
@@ -228,14 +236,14 @@ bool DxUserInput::read(void* data, unsigned long* count, Device* device)
         break;
     case 1:
         {
-            String name(device == keyboard ? "Keyboard " : "Mouse ");
-            String message = name + "DI_BUFFEROVERFLOW!";
+            StringName name(device == keyboard ? "Keyboard " : "Mouse ");
+            String message = name + "DI_BUFFEROVERFLOW!\n";
             report(getService().get(), 3, message.c_str());
         }
         break;
     default:
         {
-            String name(device == keyboard ? "Keyboard " : "Mouse ");
+            StringName name(device == keyboard ? "Keyboard " : "Mouse ");
         }
         return false;
     }

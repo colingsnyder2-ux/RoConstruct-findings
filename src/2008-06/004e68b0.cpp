@@ -1,3 +1,4 @@
+// from server: 100% by colin
 // from server: 97% by colin
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD /fp:fast
@@ -89,7 +90,8 @@ void S::f()
 
     {
         Ptr self(this);
-        Handler* handler = holder->handler;
+        Holder* h = holder;
+        Handler* handler = h->handler;
         handler->update(self, model->state == 0);
     }
 

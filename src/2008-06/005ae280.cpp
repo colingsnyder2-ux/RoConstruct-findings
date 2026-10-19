@@ -1,3 +1,4 @@
+// from server: 62% by colin
 // from server: 59% by colin
 // roc-cl: 50727
 // roc-flags: /O2 /GS- /EHsc /MD
@@ -65,7 +66,7 @@ struct Range
     char padding[20];
     void **last;
     Range(void *);
-    ~Range();
+    __declspec(dllimport) ~Range() throw();
 };
 
 struct Iterator

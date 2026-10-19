@@ -1,3 +1,4 @@
+// from server: 100% by colin
 // from server: 93% by king_originala
 // roc 2008-06 00581510  unit: RBX::FollowCameraCommand  size: 131 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 00581510
@@ -112,8 +113,8 @@ void S::f(Callback* callback)
     container->interfaceObject.get(4)->first();
     container->interfaceObject.get(value)->second();
 
-    String* text = &owner->text;
     Container* destination = container;
+    String* text = &owner->text;
     const char* characters = text->capacity >= 16
         ? text->storage.pointer
         : text->storage.buffer;

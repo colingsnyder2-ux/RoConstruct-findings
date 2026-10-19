@@ -1,3 +1,4 @@
+// from server: 100% by colin
 // from server: 99% by colin
 // roc 2008-06 00578ad0  unit: RBX::VTool::?$FactoryProduct::Creator  size: 162 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 00578ad0
@@ -73,16 +74,22 @@ struct Callback
 bool __cdecl func_0060a2f0(const int*);
 extern unsigned char function_table;
 
+struct CallbackHolder
+{
+    Callback callback;
+    __forceinline CallbackHolder(const Callback& c) : callback(c) {}
+};
+
 struct Node
 {
     int value;
-    Callback callback;
+    CallbackHolder holder;
 
     Node(int, const Callback&);
 };
 
 __forceinline Node::Node(int v, const Callback& c)
-    : value(v), callback(c)
+    : value(v), holder(c)
 {
 }
 

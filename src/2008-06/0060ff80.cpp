@@ -1,6 +1,8 @@
+// from server: 80% by colin
 // from server: 79% by colin
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD /fp:fast
+extern "C" __declspec(dllimport) void __stdcall g_802890();
 struct Mat34 {
     float m[12];
 };
@@ -22,7 +24,6 @@ extern "C" void* __stdcall sub_005e82c0();
 extern "C" void __stdcall sub_0060fc20(void*, void*);
 
 extern float g_819bac;
-extern void (__stdcall *g_802890)();
 
 struct BlockBlockContact {
     void* f(void* out, ContactList* list);

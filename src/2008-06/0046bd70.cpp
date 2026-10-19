@@ -1,13 +1,10 @@
-// from server: 37% by colin
-// roc-cl: 21022
-// roc-flags: /Od /Ob0 /GS /EHsc /MD
+// from server: 38% by colin
 struct Source;
-struct Object;
 
 extern "C" void * __stdcall current_context();
 extern "C" void __stdcall unlock_context(unsigned long, unsigned long);
 extern "C" void __cdecl free_object(void *);
-extern "C" long __stdcall create_object(Object **);
+extern "C" long __stdcall create_object(Source **);
 extern "C" void __cdecl report_error(int, long, const char *, int);
 extern "C" __declspec(noreturn) void __stdcall raise_error(long, const char *);
 
@@ -28,32 +25,6 @@ inline Guard::~Guard()
         context[1] = saved;
     if (locked)
         unlock_context(0, token);
-}
-
-struct Owner {
-    Source *pointer;
-
-    ~Owner();
-    operator Source *() const;
-};
-
-struct Source {
-    Owner get();
-    long query(Source *, void *);
-    void destroy();
-};
-
-inline Owner::~Owner()
-{
-    if (pointer) {
-        pointer->destroy();
-        free_object(pointer);
-    }
-}
-
-inline Owner::operator Source *() const
-{
-    return pointer;
 }
 
 struct Interface {
@@ -78,6 +49,17 @@ struct Object {
     Inner inner;
 };
 
+struct Source {
+    unsigned long padding;
+    Interface interface_value;
+    unsigned long reserved;
+    Inner inner;
+
+    Interface *get();
+    long query(Interface *, void *);
+    void destroy();
+};
+
 struct InterfaceOwner {
     Interface *pointer;
 
@@ -97,9 +79,9 @@ inline InterfaceOwner::~InterfaceOwner()
         pointer->table->release(pointer);
 }
 
-extern "C" long __stdcall reconstruct(Owner source, Interface **output)
+extern "C" long __stdcall reconstruct(Source *source, Interface **output)
 {
-    Object *object = 0;
+    Source *object = 0;
     Guard guard(current_context());
 
     if (create_object(&object)) {
@@ -108,29 +90,22 @@ extern "C" long __stdcall reconstruct(Owner source, Interface **output)
                     reinterpret_cast<const char *>(0x8164f8));
     }
 
-    Object *saved = object;
+    Source *saved = object;
 
-    source.pointer->query(
-        source.pointer->get(),
-        &saved->inner ? &saved->inner.interface_value : 0) == 0
-        ? (void)0
-        : (report_error(
-               1,
-               source.pointer->query(
-                   source.pointer->get(),
-                   &saved->inner ? &saved->inner.interface_value : 0),
-               ".\\Workspace.cpp", 304),
-           raise_error(
-               source.pointer->query(
-                   source.pointer->get(),
-                   &saved->inner ? &saved->inner.interface_value : 0),
-               reinterpret_cast<const char *>(0x8164f8)));
-
-    if (source.pointer) {
-        source.pointer->destroy();
-        free_object(source.pointer);
+    if (source->query(
+            (saved && (saved->padding, &saved->inner)) ? &saved->inner.interface_value : 0,
+            &saved->inner) != 0) {
+        report_error(1, source->query(&saved->inner.interface_value, &saved->inner),
+                     ".\\Workspace.cpp", 304);
+        raise_error(source->query(&saved->inner.interface_value, &saved->inner),
+                    reinterpret_cast<const char *>(0x8164f8));
     }
-    source.pointer = 0;
+
+    if (source) {
+        source->destroy();
+        free_object(source);
+    }
+    source = 0;
 
     InterfaceOwner result(saved ? &saved->interface_value : 0);
 

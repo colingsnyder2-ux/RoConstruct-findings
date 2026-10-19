@@ -1,14 +1,17 @@
+// from server: 98% by colin
 // from server: 76% by colin
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD /fp:fast
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD /fp:fast
+extern "C" __declspec(dllimport) long __stdcall InterlockedIncrement(volatile long*);
+extern "C" __declspec(dllimport) long __stdcall InterlockedDecrement(volatile long*);
 typedef unsigned int size_t;
 
 void* __cdecl operator new(size_t);
 void __cdecl operator delete(void*);
 
 extern "C" {
-    extern long (__stdcall *InterlockedIncrement)(volatile long*);
-    extern long (__stdcall *InterlockedDecrement)(volatile long*);
 }
 
 struct Vector3 {
@@ -92,10 +95,8 @@ Builder::Builder(const Vector3& size, int mode) : Base() {
     {
         Reference object(new Object(5));
         this->object = object;
-        {
-            Temporary temporary(object, size, mode);
-            temporary.finish(0);
-        }
+        Temporary temporary(object, size, mode);
+        temporary.finish(0);
     }
 
     if (enabled) {

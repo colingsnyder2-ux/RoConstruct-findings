@@ -1,4 +1,4 @@
-// from server: 96% by colin
+// from server: 100% by colin
 // from server: 95% by king_originala
 // roc 2008-06 004e8690  unit: RBX::Network::Players::Plugin  size: 133 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 004e8690
@@ -79,6 +79,7 @@ struct Iterator
     Node* node;
 
     bool equal(void* otherOwner, Node* otherNode) const;
+    bool operator==(const Iterator& o) const { if (!(owner && owner == o.owner)) invalid_parameter_noinfo(); return node == o.node; }
 };
 
 struct S
@@ -89,6 +90,7 @@ struct S
 
     Node* lower_bound(const Key* key);
     Iterator find(const Key* key);
+    Iterator end() { Iterator it; it.owner = owner; it.node = head; return it; }
 };
 
 inline bool Key::less(const Key& other) const
@@ -111,27 +113,16 @@ Iterator S::find(const Key* key)
 {
     Iterator found;
     found.node = lower_bound(key);
-
     if (!this)
         invalid_parameter_noinfo();
-
     found.owner = owner;
-    _ReadWriteBarrier();
-    Node* last = head;
-
     Iterator finish;
     Iterator* selected;
-
-    if (!found.equal(owner, last) && !key->less(found.node->key))
-    {
-        selected = &found;
-    }
-    else
-    {
+    if (found == end() || key->less(found.node->key)) {
         finish.node = head;
         finish.owner = owner;
         selected = &finish;
-    }
-
+    } else
+        selected = &found;
     return *selected;
 }
