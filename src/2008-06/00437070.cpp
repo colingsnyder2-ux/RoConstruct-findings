@@ -1,4 +1,4 @@
-// from server: 97% by colin
+// from server: 98% by king_originala
 extern "C" int (__stdcall *PostMessageA)(void*, unsigned int, unsigned int, long);
 extern "C" void (__thiscall *destroyString)(void*);
 
@@ -81,7 +81,7 @@ void View::submit(Entry value)
     if (queue.count == 0)
         PostMessageA(*(void**)((char*)this - 256), 0x465, 0, 0);
 
-    queue.append(&value);
+    queue.append((const char*)&value + 4);
 
     unsigned int n = queue.count;
     if (n > 250)

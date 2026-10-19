@@ -1,3 +1,4 @@
+// from server: 41% by colin
 // from server: 39% by king_originala
 // roc 2008-06 0042db20  unit: VCLuaFunction::?$CComObject  size: 386 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 0042db20
@@ -117,7 +118,7 @@ struct Content {
 struct String {
     char storage[28];
     String(const char*);
-    ~String();
+    __declspec(dllimport) ~String() throw();
 };
 
 struct BString {

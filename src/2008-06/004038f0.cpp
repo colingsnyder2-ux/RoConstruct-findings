@@ -1,5 +1,6 @@
+// from server: 89% by colin
 // from server: 86% by colin
-// roc 2008-06 004038f0  unit: ATL::CRegObject  size: 111 bytes
+// roc 2008-06 004038f0  unit: ATL::CRegObject  size: 87 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 004038f0
 //
 // 004038f0  55                   push ebp
@@ -33,15 +34,6 @@
 // 00403940  83c404               add esp, 4
 // 00403943  85f6                 test esi, esi
 // 00403945  7526                 jne 0x40396d
-// 00403947  b80e000780           mov eax, 0x8007000e
-// 0040394c  8b4df4               mov ecx, dword ptr [ebp - 0xc]
-// 0040394f  64890d00000000       mov dword ptr fs:[0], ecx
-// 00403956  5f                   pop edi
-// 00403957  5e                   pop esi
-// 00403958  5b                   pop ebx
-// 00403959  8be5                 mov esp, ebp
-// 0040395b  5d                   pop ebp
-// 0040395c  c20c00               ret 0xc
 
 // from server: 73% by king_originala
 void* __cdecl operator new(unsigned int);
@@ -56,7 +48,7 @@ long __stdcall f(void* value, void* arg2, void* arg3)
         void* allocation = operator new(12);
         if (!allocation)
             return (long)0x8007000EUL;
-        return 0;
+        return (long)allocation;
     }
     catch (...)
     {

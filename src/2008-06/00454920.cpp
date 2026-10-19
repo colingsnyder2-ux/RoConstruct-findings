@@ -1,3 +1,4 @@
+// from server: 71% by colin
 // from server: 69% by king_originala
 // roc 2008-06 00454920  unit: CRobloxDoc  size: 409 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 00454920
@@ -224,7 +225,7 @@ namespace std
     template<class T, class Traits, class Allocator> struct basic_string
     {
         char storage[28];
-        ~basic_string();
+        __declspec(dllimport) ~basic_string() throw();
         const T* c_str() const;
     };
 }

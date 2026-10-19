@@ -1,6 +1,10 @@
+// from server: 86% by colin
 // from server: 78% by colin
 // roc-cl: 50727
 // roc-flags: /O2 /GS- /EHsc /MD
+// roc-cl: 50727
+// roc-flags: /O2 /GS- /EHsc /MD
+#include <intrin.h>
 extern "C" {
 extern void (__stdcall * const EnterCriticalSection)(void*);
 extern void (__stdcall * const LeaveCriticalSection)(void*);
@@ -82,6 +86,7 @@ Object* getObject()
         objects.find(&it, &id);
         Proxy* proxy = it.proxy;
         Node* end = objects.head;
+        _ReadWriteBarrier();
 
         if (!proxy || proxy != objects.proxy)
             _invalid_parameter_noinfo();
@@ -89,6 +94,7 @@ Object* getObject()
         Node* node = it.node;
         if (node != end) {
             void (__cdecl *invalid)() = _invalid_parameter_noinfo;
+            _ReadWriteBarrier();
             Map* container;
             if (proxy)
                 container = proxy->container;

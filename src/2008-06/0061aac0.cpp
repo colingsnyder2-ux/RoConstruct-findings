@@ -1,3 +1,4 @@
+// from server: 100% by colin
 // from server: 93% by colin
 // roc 2008-06 0061aac0  unit: RBX::Lua::LuaArguments  size: 275 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 0061aac0
@@ -90,6 +91,7 @@
 // 0061abc8  64890d00000000       mov dword ptr fs:[0], ecx
 // 0061abcf  83c45c               add esp, 0x5c
 // 0061abd2  c3                   ret 
+#include <intrin.h>
 
 extern "C" long __cdecl _InterlockedDecrement(volatile long*);
 #pragma intrinsic(_InterlockedDecrement)
@@ -160,6 +162,7 @@ Result __cdecl reconstruct(void* source, int index)
 
     if (value.object) {
         char* p = value.object;
+        _ReadWriteBarrier();
         if (!__RTDynamicCast(p, 0, (void*)0x9291fc,
                             (void*)0x92907c, 0)) {
             p = *(char**)(p + 8);

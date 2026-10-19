@@ -1,6 +1,8 @@
+// from server: 98% by colin
 // from server: 92% by colin
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD /fp:fast
+#include <intrin.h>
 struct Frame {
     float data[12];
     Frame();
@@ -49,6 +51,7 @@ void S::draw(Renderer* renderer)
 
     for (int i = 0; i < count; ++i) {
         double c = colorComponent;
+        _ReadWriteBarrier();
         double x = entries[i].x;
         double y = entries[i].y;
         double z = entries[i].z;

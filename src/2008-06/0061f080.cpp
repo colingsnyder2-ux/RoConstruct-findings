@@ -1,4 +1,4 @@
-// from server: 92% by king_originala
+// from server: 95% by king_originala
 struct Container;
 
 struct Node {
@@ -39,7 +39,7 @@ void* __cdecl lookup(int key)
         reportError();
 
     if (node != sentinel) {
-        Container* actual = 0;
+        Container* actual = reinterpret_cast<Container*>(owner);
         if (!owner)
             reportError();
         else

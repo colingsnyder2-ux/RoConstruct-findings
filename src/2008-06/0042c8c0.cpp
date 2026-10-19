@@ -1,4 +1,4 @@
-// from server: 17% by colin
+// from server: 30% by colin
 // roc 2008-06 0042c8c0  unit: CLuaHtmlView::Binder  size: 1026 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 0042c8c0
 //
@@ -321,7 +321,7 @@ extern "C" void __stdcall sub_42C760(void*, void*);
 struct String {
     char storage[28];
     String(const char*);
-    ~String();
+    __declspec(dllimport) ~String() throw();
 };
 
 struct Binder {

@@ -1,3 +1,4 @@
+// from server: 94% by colin
 // from server: 89% by king_originala
 // roc 2008-06 0064d0f0  unit: RBX::SimJobStage  size: 129 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 0064d0f0
@@ -57,6 +58,7 @@
 // 0064d16c  5d                   pop ebp
 // 0064d16d  5b                   pop ebx
 // 0064d16e  c20400               ret 4
+#include <intrin.h>
 
 struct Edge;
 
@@ -111,6 +113,7 @@ struct Stage {
 void Stage::addEdge(Edge* edge)
 {
     Edge* saved = edge;
+    _ReadWriteBarrier();
 
     if (saved->getObject())
         saved->getObject()->edge = saved;

@@ -1,4 +1,4 @@
-// from server: 79% by king_originala
+// from server: 81% by colin
 typedef unsigned long DWORD;
 
 extern "C" long __stdcall InterlockedIncrement(volatile long *);
@@ -31,7 +31,7 @@ struct Slot {
     ~Slot();
 };
 
-struct Counts {
+struct __declspec(dllimport) Counts {
     DWORD first;
     DWORD second;
     __forceinline Counts();
@@ -102,19 +102,15 @@ struct __declspec(novtable) S : Counts, Head {
     virtual void dispatch();
 };
 
-__forceinline Counts::Counts() : first(0), second(0)
-{
-}
-
 __forceinline Interface::Interface() : table(0x0082d708)
 {
 }
 
 __forceinline Head::Head() : flag(0)
 {
-    signal.table = 0x0082d870;
     *reinterpret_cast<DWORD *>(this) = 0x0082d884;
     interfacePart.table = 0x0082d878;
+    signal.table = 0x0082d870;
     signal.secondary = 0x0082d868;
     slots0.table = 0x0082d858;
     slots1.table = 0x0082d848;

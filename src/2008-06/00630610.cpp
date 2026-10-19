@@ -1,3 +1,4 @@
+// from server: 91% by colin
 // from server: 87% by king_originala
 // roc 2008-06 00630610  unit: RBX::BodyThrust  size: 355 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 00630610
@@ -107,6 +108,7 @@
 // 00630768  e84328feff           call 0x612fb0
 // 0063076d  83c420               add esp, 0x20
 // 00630770  c20800               ret 8
+#include <intrin.h>
 
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
@@ -184,6 +186,7 @@ void S::f(float, float)
     SharedPart result;
     SharedPart* acquired = handle.get(&result);
     RefCount* count = result.count;
+    _ReadWriteBarrier();
     Body* body = acquired->object->body;
 
     if (count)

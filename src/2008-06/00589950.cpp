@@ -1,4 +1,4 @@
-// from server: 93% by king_originala
+// from server: 96% by king_originala
 struct Empty1 {
     Empty1();
 };
@@ -13,7 +13,7 @@ inline Empty2::Empty2() {}
 struct A {
     int unused;
     int first;
-    int second;
+    volatile int second;
     int third;
     int fourth;
 
