@@ -1,104 +1,54 @@
-// from server: 84% by king_originala
-typedef unsigned long DWORD;
+// from server: 100% by colin
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc 2008-06 00616b00  (agentH rewrite)
 
-void* __cdecl operator new(unsigned int);
-void __cdecl operator delete(void*);
+#include <string>
+#include <vector>
 
-struct String;
-extern void (__thiscall *stringConstruct)(String*, const char*);
-extern void (__thiscall *stringDestroy)(String*);
+struct B00 { virtual void f00(); char pad[0x0c]; };
+struct B10 { virtual void f10(); };
+struct B14 { virtual void f14(); char pad[0x08]; };
+struct B20 { virtual void f20(); };
+struct B24 { virtual void f24(); char pad[0x1c]; };
+struct B44 { virtual void f44(); char pad[0x1c]; };
+struct B64 { virtual void f64(); char pad[0x1c]; };
+struct B84 { virtual void f84(); char pad[0x1c]; };
+struct Ba4 { virtual void fa4(); char pad[0x1c]; };
+struct Bc4 { virtual void fc4(); char pad[0x68]; };
 
-struct String {
-    char storage[28];
-    String(const char*);
-    ~String();
-};
-
-inline String::String(const char* text) {
-    stringConstruct(this, text);
-}
-
-inline String::~String() {
-    stringDestroy(this);
-}
-
-struct Base {
-    char storage[0x130];
+struct Base : B00, B10, B14, B20, B24, B44, B64, B84, Ba4, Bc4 {
     Base();
     ~Base();
 };
 
-struct Selection;
+struct __declspec(novtable) Listener { virtual void f130(); };
+
+struct Item;
+
+struct RefCount;
+struct Count {
+    RefCount* pi;
+    Count() : pi(0) {}
+    ~Count();
+};
 
 struct Reference {
-    void* object;
-    void* count;
-    Reference(Selection*);
-    ~Reference();
+    void* px;
+    Count pn;
+    Reference() : px(0) {}
 };
 
-struct Proxy {
-    void* owner;
-};
-
-struct ContainerBase {
-    Proxy* proxy;
-    DWORD reserved[2];
-    ContainerBase();
-    ~ContainerBase();
-};
-
-struct Container : ContainerBase {
-    void* first;
-    void* last;
-    void* limit;
-    Container();
-    ~Container();
-};
-
-struct Selection : Base {
-    DWORD table;
+struct Selection : Base, Listener {
     Reference reference;
-    Container items;
+    std::vector<Item*> items;
 
     Selection();
-    void setName(const String&);
+    void setName(const std::string&);
 };
 
-__forceinline Reference::Reference(Selection* owner) {
-    DWORD* words = reinterpret_cast<DWORD*>(owner);
-    words[0x00 / 4] = 0x843b0c;
-    words[0x10 / 4] = 0x843afc;
-    words[0x14 / 4] = 0x843af4;
-    words[0x20 / 4] = 0x843aec;
-    words[0x24 / 4] = 0x843adc;
-    words[0x44 / 4] = 0x843acc;
-    words[0x64 / 4] = 0x843abc;
-    words[0x84 / 4] = 0x843aac;
-    words[0xa4 / 4] = 0x843a9c;
-    words[0xc4 / 4] = 0x843a8c;
-    words[0x130 / 4] = 0x843a84;
-    object = 0;
-    count = 0;
-}
-
-inline ContainerBase::ContainerBase() {
-    Proxy* p = static_cast<Proxy*>(operator new(4));
-    if (p)
-        p->owner = this;
-    else
-        p = 0;
-    proxy = p;
-}
-
-inline Container::Container() : ContainerBase() {
-    first = 0;
-    last = 0;
-    limit = 0;
-}
-
 Selection::Selection()
-    : Base(), reference(this), items() {
-    String name("FilteredSelection");
+{
+    std::string name("FilteredSelection");
     setName(name);
 }

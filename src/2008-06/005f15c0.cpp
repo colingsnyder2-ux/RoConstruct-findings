@@ -1,4 +1,4 @@
-// from server: 96% by colin
+// from server: 100% by colin
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD /fp:fast
 // from server: 87% by colin
@@ -94,11 +94,12 @@ inline const Value& Values::get(int index) const
     return empty;
 }
 
+struct Property { void* descriptor(); };
 struct PartInstance {
     char padding[0x228];
     Values values;
     void setShouldRender(int);
-    int* f(int);
+    Property* f(int);
     void notify(void*);
 };
 
@@ -116,6 +117,6 @@ void FaceInstance::setSecond(float second)
         value.second = second;
         part->values.set(face, &value);
         part->setShouldRender(face);
-        part->notify(reinterpret_cast<void*>(part->f(face)));
+        part->notify(part->f(face)->descriptor());
     }
 }

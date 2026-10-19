@@ -1,4 +1,4 @@
-// from server: 69% by colin
+// from server: 70% by TrollStein
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
 
@@ -18,7 +18,7 @@ struct Result {
 };
 
 struct ClearBackpack {
-    Result clear(Iter* first, Iter* last, void (__cdecl *fn)(Iter*));
+    Result __cdecl clear(Iter* first, Iter* last, void (__cdecl *fn)(Iter*));
 };
 
 Result ClearBackpack::clear(Iter* first, Iter* last, void (__cdecl *fn)(Iter*)) {

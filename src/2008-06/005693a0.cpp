@@ -1,35 +1,13 @@
-// from server: 84% by colin
-// roc-cl: 50727
+// from server: 100% by colin
+// roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD
-struct Text;
-extern void (__thiscall *constructText)(void*, const char*);
-extern void (__thiscall *destroyText)(void*);
-extern "C" __int64 (__cdecl *readTime)(__int64*);
 
-struct Text {
-    unsigned allocator;
-    union {
-        char buffer[16];
-        char* pointer;
-    };
-    unsigned length;
-    unsigned capacity;
+#include <string>
+#include <vector>
+#include <time.h>
+#include <stdarg.h>
 
-    ~Text();
-    const char* c_str() const;
-};
-
-inline Text::~Text() {
-    destroyText(this);
-}
-
-__forceinline const char* Text::c_str() const {
-    if (capacity >= 16)
-        return pointer;
-    return buffer;
-}
-
-extern Text __cdecl formatText(const char*, char*);
+extern std::string __cdecl formatText(const char*, char*);
 
 struct Stream {
     Stream& appendText(int, const char*);
@@ -67,55 +45,49 @@ inline Lock::~Lock() {
 
 struct Record {
     int severity;
-    unsigned allocator;
-    union {
-        char buffer[16];
-        char* pointer;
-    };
-    unsigned length;
-    unsigned capacity;
+    std::string text;
     __int64 timestamp;
 
-    Record(int, const char*);
-    Record(const Record&);
+    Record(int s, const char* p) : severity(s), text(p) {
+        _time64(&timestamp);
+    }
 };
-
-__forceinline Record::Record(int s, const char* p) : severity(s) {
-    constructText(&allocator, p);
-    readTime(&timestamp);
-}
 
 struct Provider {
     char prefix[16];
     void** begin;
     void** end;
     char reserved[16];
+    unsigned size() const { return end - begin; }
     Mutex mutex;
 
     void emit(Record);
 };
 
-void __cdecl output(Provider* provider, volatile int severity, const char* format, ...)
+static inline Stream* currentStream()
 {
-    Text text = formatText(format, reinterpret_cast<char*>(&format + 1));
+    return streamProvider ? streamProvider->getStream() : 0;
+}
 
-    if (streamProvider && streamProvider->getStream()) {
-        int s = severity;
-        if (s == 3) {
-            const char* p = text.c_str();
-            (streamProvider ? streamProvider->getStream() : 0)->appendText(2, p);
-        } else if (s == 2) {
-            const char* p = text.c_str();
-            (streamProvider ? streamProvider->getStream() : 0)->appendText(1, p);
-        } else if (s == 1) {
-            const char* p = text.c_str();
-            (streamProvider ? streamProvider->getStream() : 0)->appendText(0, p);
-        }
+void __cdecl output(Provider* provider, int severity, const char* format, ...)
+{
+    va_list args;
+    va_start(args, format);
+    std::string text = formatText(format, args);
+    va_end(args);
+
+    if (currentStream()) {
+        if (severity == 3)
+            currentStream()->appendText(2, text.c_str());
+        else if (severity == 2)
+            currentStream()->appendText(1, text.c_str());
+        else if (severity == 1)
+            currentStream()->appendText(0, text.c_str());
     }
 
-    if (static_cast<unsigned>(provider->end - provider->begin) > 0) {
+    if (provider->size() > 0) {
         Lock lock(provider->mutex);
-        if (static_cast<unsigned>(provider->end - provider->begin) > 0)
+        if (provider->size() > 0)
             provider->emit(Record(severity, text.c_str()));
     }
 }

@@ -1,15 +1,14 @@
-// from server: 70% by colin
+// from server: 77% by TrollStein
 struct type_info {
     bool __thiscall operator==(const type_info&) const;
 };
 
 struct S {
-    void* f(void*, unsigned int);
 };
 
 extern "C" void* __cdecl sub_005f20f0(void*, unsigned int, unsigned char);
 
-void* S::f(void* a, unsigned int b)
+void* __cdecl f(void* a, unsigned int b)
 {
     if (b == 2) {
         void* p = a;

@@ -1,5 +1,4 @@
-// from server: 84% by colin
-// from server: 82% by king_originala
+// from server: 100% by colin
 // roc 2008-06 00582230  unit: RBX::BoolPropertyVerb  size: 200 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 00582230
 //
@@ -78,6 +77,15 @@
 
 extern "C" void (__stdcall *_invalid_parameter_noinfo)();
 
+struct Context;
+extern bool __cdecl isLocked(Context*);
+extern void __cdecl unlock(Context*);
+static __declspec(noinline) void prepare(Context* c)
+{
+    if (isLocked(c))
+        unlock(c);
+}
+
 struct Range {
     unsigned char* storage;
     unsigned char padding[8];
@@ -128,14 +136,19 @@ inline Operation::Operation(Property* p, bool v)
 
 struct Result {
     unsigned char* storage;
+    unsigned index;
     Result();
 };
 
-extern Result __cdecl apply(
-    unsigned char*, unsigned, unsigned char*, unsigned, Operation);
+struct Iterator {
+    unsigned char* storage;
+    unsigned index;
+    Iterator(unsigned char* s, unsigned i) : storage(s), index(i) {}
+};
+extern Operation __cdecl apply(Iterator, Iterator, Operation);
 
 namespace RBX {
-    void __cdecl handle(int, int);
+    void __cdecl handle(const char*, Context*);
 }
 
 struct S {
@@ -146,17 +159,15 @@ struct S {
 
     unsigned char padding[16];
     Reference reference;
-    volatile int context;
+    Context* context;
     Property* property;
 
-    void prepare();
     void run(Completion*);
 };
 
 void S::run(Completion* completion)
 {
-    int unused = context;
-    prepare();
+    prepare(context);
 
     Operation operation(property, !state());
 
@@ -164,14 +175,14 @@ void S::run(Completion* completion)
     unsigned end = endRange->last;
     if (endRange->first > end)
         _invalid_parameter_noinfo();
-    unsigned char* endStorage = endRange->storage;
+    Iterator last(endRange->storage, end);
 
     Range* beginRange = reference.get(1)->range;
     unsigned begin = beginRange->first;
     if (begin > beginRange->last)
         _invalid_parameter_noinfo();
 
-    apply(beginRange->storage, begin, endStorage, end, operation);
+    apply(Iterator(beginRange->storage, begin), last, operation);
 
     String* name = &property->name;
     const char* text;
@@ -180,7 +191,6 @@ void S::run(Completion* completion)
     else
         text = name->text.local;
 
-    int contextValue = context;
-    RBX::handle(reinterpret_cast<int>(text), contextValue);
+    RBX::handle(text, context);
     completion->finish(1);
 }

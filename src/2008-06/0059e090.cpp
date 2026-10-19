@@ -1,3 +1,4 @@
+// from server: 100% by colin
 // from server: 92% by colin
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD /fp:fast
@@ -23,7 +24,7 @@ void Settings::set(float amount)
     float clamped = amount <= 0.0f ? 0.0f :
                     upperLimit <= amount ? upperLimit : amount;
 
-    if (current != clamped) {
+    if (clamped != current) {
         value.set(clamped);
         notify(&propertyDescriptor);
     }

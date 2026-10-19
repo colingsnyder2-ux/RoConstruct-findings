@@ -1,4 +1,4 @@
-// from server: 18% by colin
+// from server: 39% by TrollStein
 extern "C" {
     int __stdcall sub_77E674(int, int, void*);
     void* __stdcall sub_77E540(void*, void*);
@@ -10,10 +10,9 @@ extern "C" {
 
 struct S {
     char pad[0x18];
-    int f(int);
 };
 
-int S::f(int arg)
+int __cdecl f(int arg)
 {
     char buf[0xa0];
     int local;

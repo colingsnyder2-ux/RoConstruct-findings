@@ -1,3 +1,4 @@
+// from server: 59% by colin
 // from server: 57% by colin
 // roc-cl: 50727
 // roc-flags: /O2 /GS- /EHsc /MD
@@ -94,6 +95,8 @@ struct FontTemporary {
         }
     }
 };
+struct BothAllocator : Allocator { BothAllocator() {} };
+
 
 extern FontPointer font;
 Text __cdecl makeFontName(const char *);
@@ -127,7 +130,7 @@ Adorn::Adorn(void *p)
       material2(),
       sequence1(),
       sequence2(),
-      map1(Allocator(), Allocator()),
+      map1(BothAllocator(), BothAllocator()),
       value1(0),
       sequence3(),
       map2(Allocator(), Allocator()),

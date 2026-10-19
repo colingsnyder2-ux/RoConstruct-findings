@@ -1,3 +1,4 @@
+// from server: 100% by colin
 // from server: 92% by colin
 // roc 2008-06 004e6050  unit: RBX::ViewNew::PartChunk  size: 155 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 004e6050
@@ -94,32 +95,27 @@ struct S {
 
 S &S::operator=(const S &other)
 {
-    Container **destination = values;
-    Container *const *source = other.values;
-    int remaining = 4;
-    do {
-        Container *replacement = *source;
-        if (replacement != *destination) {
-            if (*destination) {
-                if (InterlockedDecrement(&(*destination)->references) == 0) {
-                    Node *node = (*destination)->head;
+    for (int i = 0; i < 4; ++i) {
+        Container *replacement = other.values[i];
+        if (replacement != values[i]) {
+            if (values[i]) {
+                if (InterlockedDecrement(&values[i]->references) == 0) {
+                    Node *node = values[i]->head;
                     while (node) {
                         node->object->release();
                         Node *old = node;
                         node = node->next;
                         operator delete(old);
                     }
-                    delete *destination;
+                    delete values[i];
                 }
-                *destination = 0;
+                values[i] = 0;
             }
             if (replacement) {
-                *destination = replacement;
+                values[i] = replacement;
                 InterlockedIncrement(&replacement->references);
             }
         }
-        ++destination;
-        ++source;
-    } while (--remaining);
+    }
     return *this;
 }
