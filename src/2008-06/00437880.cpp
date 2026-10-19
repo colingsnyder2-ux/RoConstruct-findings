@@ -1,3 +1,4 @@
+// from server: 100% by colin
 // from server: 97% by colin
 // roc 2008-06 00437880  unit: MVCXTPPropertyGridItem::?$XItem  size: 70 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 00437880
@@ -34,11 +35,9 @@ extern "C" {
 struct Text;
 extern void (__thiscall *constructText)(Text *, const char *);
 
-extern const char formatString[];
-
 struct Text {
     void *data;
-    Text(const char *s) { constructText(this, s); }
+    __declspec(dllimport) Text(const char *s);
     Text(const Text &);
     ~Text();
 };
@@ -76,6 +75,6 @@ struct S {
 void S::setValue(const float *value)
 {
     char buffer[32];
-    sprintf(buffer, formatString, *value);
+    sprintf(buffer, "%.3g", *value);
     setText(Text(buffer));
 }

@@ -1,4 +1,4 @@
-// from server: 37% by colin
+// from server: 39% by colin
 struct S {
     char pad[0x1c];
     float f1c;
@@ -25,8 +25,6 @@ extern "C" int __cdecl func_004dc4e0(int, int);
 extern float g_819bac;
 extern double g_826fd0;
 
-extern "C" double __cdecl sqrt(double);
-
 void S::f()
 {
     float a, b, c;
@@ -44,16 +42,14 @@ void S::f()
     }
     if (d == 0) {
         int t = *(int*)(m_bc + 0x1dc);
+        int e = m_d8;
         if (t == 0) {
-            int e = m_d8;
             int r = func_004eedb0(*(int*)(e + 0x140), e + 0x16c, (int)&a);
             func_00598fa0(m_cc, r);
         } else if (t == 1) {
-            int e = m_d8;
             int r = func_004edeb0(*(int*)(e + 0x140), e + 0x16c, (int)&a);
             func_00598fa0(m_cc, r);
         } else if (t == 2) {
-            int e = m_d8;
             int r = func_004ef2b0(*(int*)(e + 0x140), e + 0x16c, (int)&a);
             func_00598fa0(m_cc, r);
         }
@@ -88,7 +84,7 @@ void S::f()
             func_004dc4e0(m_cc, r);
         }
     }
-    float sq = (float)sqrt(g_826fd0);
+    float sq = (float)g_826fd0;
     float fa = a < 0 ? -a : a;
     float fb = b < 0 ? -b : b;
     float fc = c < 0 ? -c : c;

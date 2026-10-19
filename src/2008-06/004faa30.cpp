@@ -1,3 +1,4 @@
+// from server: 53% by colin
 // from server: 52% by colin
 // roc 2008-06 004faa30  unit: RBX::ViewNew::TorsoBuilder  size: 178 bytes
 
@@ -15,7 +16,7 @@ struct Inner {
     Handle handle;
     float a, b, c;
     Inner(const Inner* other);
-    ~Inner();
+    __declspec(dllimport) ~Inner() throw();
 };
 
 struct TorsoBuilder {

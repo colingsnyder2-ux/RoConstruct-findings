@@ -1,5 +1,5 @@
-// from server: 96% by colin
-extern "C" void __stdcall _invalid_parameter_noinfo();
+// from server: 100% by king_originala
+extern "C" void (__stdcall *_invalid_parameter_noinfo)();
 
 struct BallBallContact {
     int find(int a, int b);

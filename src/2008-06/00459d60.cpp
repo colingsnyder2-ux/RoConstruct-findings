@@ -1,6 +1,8 @@
-// from server: 92% by king_originala
+// from server: 97% by king_originala
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
+extern "C" long __cdecl _InterlockedDecrement(volatile long*);
+#pragma intrinsic(_InterlockedDecrement)
 
 extern "C" int (__stdcall *PostMessageA)(void*, unsigned int, unsigned int, long);
 extern "C" int (__thiscall *compareName)(const void*, const char*);
@@ -44,9 +46,9 @@ __forceinline Shared::~Shared()
 {
     Reference* p = reference;
     if (p) {
-        if (_InterlockedExchangeAdd(&p->strong, -1) - 1 == 0) {
+        if (_InterlockedDecrement(&p->strong) == 0) {
             p->dispose();
-            if (_InterlockedExchangeAdd(&p->weak, -1) - 1 == 0)
+            if (_InterlockedDecrement(&p->weak) == 0)
                 p->destroy();
         }
     }

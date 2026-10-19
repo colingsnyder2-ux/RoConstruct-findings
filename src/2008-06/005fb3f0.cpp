@@ -1,4 +1,4 @@
-// from server: 95% by king_originala
+// from server: 96% by king_originala
 struct Scope
 {
     const char* name;
@@ -101,9 +101,10 @@ void Kernel::f(float delta, float unused, bool selective, bool alternate)
     }
 
     float dt = timeStep();
-    int steps = stepCount();
-    if (steps > 0)
+    int count = stepCount();
+    if (count > 0)
     {
+        int steps = count;
         do
         {
             for (int i = 0; i < s->phases.count; ++i)

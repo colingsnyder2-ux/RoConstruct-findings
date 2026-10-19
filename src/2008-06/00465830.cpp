@@ -1,3 +1,4 @@
+// from server: 100% by colin
 // from server: 98% by king_originala
 // roc 2008-06 00465830  unit: CScriptEditor  size: 361 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 00465830
@@ -122,37 +123,26 @@ struct RefCount {
     volatile long weak;
 };
 
-struct Shared {
-    void* object;
-    RefCount* count;
-    Shared();
-    Shared(const Shared&);
-    ~Shared();
+struct Count {
+    RefCount* pi;
+    Count() : pi(0) {}
+    Count(const Count& o) : pi(o.pi) { if (pi) _InterlockedExchangeAdd(&pi->strong, 1); }
+    ~Count()
+    {
+        RefCount* p = pi;
+        if (p && _InterlockedDecrement(&p->strong) == 0) {
+            p->dispose();
+            if (_InterlockedDecrement(&p->weak) == 0)
+                p->destroy();
+        }
+    }
 };
 
-__forceinline Shared::Shared()
-{
-    object = 0;
-    count = 0;
-}
-
-__forceinline Shared::Shared(const Shared& other)
-{
-    object = other.object;
-    count = other.count;
-    if (count)
-        _InterlockedExchangeAdd(&count->strong, 1);
-}
-
-__forceinline Shared::~Shared()
-{
-    RefCount* p = count;
-    if (p && _InterlockedDecrement(&p->strong) == 0) {
-        p->dispose();
-        if (_InterlockedDecrement(&p->weak) == 0)
-            p->destroy();
-    }
-}
+struct Shared {
+    void* object;
+    Count count;
+    Shared() : object(0) {}
+};
 
 struct Base {
     virtual ~Base();

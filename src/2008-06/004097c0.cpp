@@ -1,4 +1,4 @@
-// from server: 89% by colin
+// from server: 90% by colin
 // from server: 86% by king_originala
 // roc 2008-06 004097c0  unit: RBX::VSelection::?$FactoryProduct::Creator  size: 352 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 004097c0
@@ -106,7 +106,7 @@ struct VersionInfo {
     char description[128];
 };
 
-extern "C" int __stdcall GetVersionExA(VersionInfo *);
+extern "C" __declspec(dllimport) int __stdcall GetVersionExA(VersionInfo *);
 extern "C" void * __cdecl memset(void *, int, unsigned int);
 
 struct String;
@@ -146,7 +146,7 @@ struct Request {
     String headers;
     Request(const char *);
     ~Request();
-    __declspec(dllimport) void execute(String *);
+    void execute(String *);
 };
 
 extern DWORD versionInitialized;

@@ -1,9 +1,10 @@
+// from server: 72% by colin
 // from server: 70% by colin
 // roc 2008-06 00598610  unit: RBX::Decal  size: 126 bytes
 
 struct RBX_String {
     void assign(const RBX_String&);
-    ~RBX_String();
+    __declspec(dllimport) ~RBX_String() throw();
 };
 
 extern "C" int __stdcall sub_55BD60(void*, void*);

@@ -1,4 +1,4 @@
-// from server: 98% by colin
+// from server: 100% by colin
 // from server: 95% by colin
 // roc 2008-06 00580b50  unit: RBX::ClearStarterpack  size: 174 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 00580b50
@@ -75,7 +75,8 @@ struct Source {
     Product* getProduct();
 };
 
-extern "C" void __cdecl initializeProduct(void*, Product*);
+struct ProductRef { Product* p; void* o; };
+extern "C" void __cdecl initializeProduct(ProductRef*, Product*);
 
 struct Base {
     unsigned int data[2];
@@ -85,8 +86,7 @@ struct Base {
 };
 
 struct ClearStarterpack : Base {
-    Product* product;
-    void* productOwner;
+    ProductRef product;
     Source* source;
     unsigned int first;
     unsigned int second;
@@ -103,6 +103,5 @@ ClearStarterpack::ClearStarterpack(int value, String name, Source* owner)
     source = owner;
     first = 0;
     second = 0;
-    _ReadWriteBarrier();
-    savedSource = owner;
+    *(Source* volatile*)&savedSource = owner;
 }

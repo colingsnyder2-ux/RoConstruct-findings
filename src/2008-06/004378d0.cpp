@@ -1,3 +1,4 @@
+// from server: 100% by colin
 // from server: 96% by colin
 // roc 2008-06 004378d0  unit: HVCXTPPropertyGridItem::?$XItem  size: 65 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 004378d0
@@ -35,7 +36,7 @@ extern void (__thiscall *constructText)(Text *, const char *);
 
 struct Text {
     void *data;
-    Text(const char *s) { constructText(this, s); }
+    __declspec(dllimport) Text(const char *s);
     Text(const Text &);
     ~Text();
 };
