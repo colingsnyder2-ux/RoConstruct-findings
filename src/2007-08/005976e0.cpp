@@ -1,4 +1,4 @@
-// from server: 26% by colin
+// from server: 32% by TrollStein
 extern "C" void* __cdecl malloc(unsigned int size);
 
 struct Item {
@@ -17,7 +17,7 @@ struct S {
     char pad[8];
     TypedStatsItem* m_item;
 
-    TypedStatsItem* createItem(void* value);
+    TypedStatsItem* __cdecl createItem(void* value);
 };
 
 TypedStatsItem* S::createItem(void* value) {

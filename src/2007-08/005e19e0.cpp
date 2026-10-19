@@ -1,4 +1,4 @@
-// from server: 84% by colin
+// from server: 90% by TrollStein
 struct Vec3 {
     float x;
     float y;
@@ -8,7 +8,7 @@ struct Vec3 {
 struct S {
     void* field0;
     void* field4;
-    void method(Vec3* out, Vec3* in);
+    void __cdecl method(Vec3* out, Vec3* in);
 };
 
 extern float g_008bd12c;

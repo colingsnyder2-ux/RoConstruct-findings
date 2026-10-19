@@ -1,4 +1,4 @@
-// from server: 46% by colin
+// from server: 47% by TrollStein
 struct CSelectionPropGrid {
     char pad[0xd8];
     void* field_d8;
@@ -26,7 +26,7 @@ bool CSelectionPropGrid::func_00430ee0(unsigned char arg)
     if (v1 == 0)
         return false;
 
-    typedef bool (__stdcall *fn1)(void*, int, unsigned char);
+    typedef bool (__thiscall *fn1)(void*, int, unsigned char);
     fn1 f1 = *(fn1*)(*(int*)v1 + 0x14c);
     if (!f1(v1, 0x80, arg))
         return false;
