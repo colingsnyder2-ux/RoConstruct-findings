@@ -1,129 +1,155 @@
-// from server: 24% by colin
-struct Vec2 { float x; float y; };
+// from server: 38% by colin
 
-struct PBBBuilder {
-    char pad0[0x10];
-    unsigned int flags;
-    void build(float a, float b, float c, int mode, int count, int extra);
-};
-
-extern "C" {
-    void __stdcall sub_5ec220(Vec2* out, Vec2* in);
-    void __stdcall sub_5185d0(Vec2* out, Vec2* in);
-    float __stdcall sub_4f1ff0(int n);
-    void __stdcall sub_4f35d0(float* a, float* b, float* c, float* d, int e, int f);
-    void __stdcall sub_4f5810(int a);
-    double __cdecl ceil(double x);
-}
+extern "C" double __stdcall ceil(double);
+extern "C" float __stdcall sub_4f1ff0(int);
+extern "C" void __stdcall sub_4f35d0(float*, float*, float*, float*, int, int);
+extern "C" void __stdcall sub_4fdd90(void*, int);
+extern "C" void __stdcall sub_5ec1c0(void*, void*);
+extern "C" void __stdcall sub_5185d0(void*, void*);
 
 extern float g_819bac;
 extern float g_826e6c;
 extern float g_83a3e4;
 
-void PBBBuilder::build(float a, float b, float c, int mode, int count, int extra)
+struct CylinderBuilder {
+    char pad[0x10];
+    unsigned int flags;
+    void buildTop(int, int, int, int, int, int, int, int, int);
+};
+
+void CylinderBuilder::buildTop(int a1, int a2, int a3, int a4, int a5, int a6, int a7, int a8, int a9)
 {
-    Vec2 v;
-    sub_5ec220(&v, (Vec2*)&this->pad0[0]);
+    float v44, v48, v4c;
+    float v30, v34, v38, v3c;
+    float v18, v1c, v20, v24, v28, v2c;
+    int ebx;
+    int esi;
+    int ebp;
+    int i;
+    int tmp;
 
-    float fa = a < 0 ? -a : a;
-    float fb = b < 0 ? -b : b;
-    float fc = c < 0 ? -c : c;
+    ebp = (this->flags >> 3) & 7;
 
-    unsigned int f = this->flags >> 15;
-    f &= 7;
+    sub_5ec1c0(&this->pad[4], &v44);
 
-    int sel;
-    if (extra != 0) {
-        if (fa == fb) {
-            sel = 1;
+    v44 = (float)(v44 < 0 ? -v44 : v44);
+    v48 = (float)(v48 < 0 ? -v48 : v48);
+    v4c = (float)(v4c < 0 ? -v4c : v4c);
+
+    {
+        float f1 = v44;
+        float f2 = v48;
+        float f3 = v4c;
+        v44 = f1;
+        v48 = f2;
+        v4c = f3;
+    }
+
+    if (a9 != 0) {
+        if (v44 == v48) {
+            esi = 0;
         } else {
-            sel = 0;
+            esi = 1;
         }
     } else {
-        sel = 0;
+        esi = 1;
     }
 
-    int n;
-    if (extra == 0 && f != 0) {
-        float arr[3];
-        arr[0] = fa;
-        arr[1] = fb;
-        arr[2] = fc;
-        n = (int)ceil((double)(arr[sel] * g_819bac));
+    if (a9 == 0 && ebp != 0) {
+        float f = (&v44)[esi];
+        f = (float)(f * (double)g_819bac);
+        tmp = (int)ceil((double)f);
+        ebx = tmp;
     } else {
-        n = 1;
+        ebx = 1;
     }
 
-    short idx = (short)(int)v.x;
-    int q = (int)idx / n;
-    short qs = (short)q;
-    short one = 1;
-    short chosen = (one < qs) ? qs : one;
-
-    short arr2[3];
-    arr2[0] = idx;
-    arr2[1] = 0;
-    arr2[2] = 0;
-    arr2[sel] = chosen;
-
-    float f1 = fc;
-    float f2 = fa;
-    float f3 = fb;
-
-    Vec2 t1;
-    sub_5185d0(&t1, (Vec2*)&v);
-    float nx = -t1.x;
-    float ny = -t1.y;
-
-    Vec2 t2;
-    sub_5185d0(&t2, (Vec2*)&v);
-
-    float p0 = 0.0f, p1 = 0.0f, p2 = 0.0f, p3 = 0.0f;
-
-    if (mode == 0) {
-        if (f == 0) {
-            p0 = g_83a3e4;
-            p1 = g_819bac;
-            p3 = g_819bac;
+    {
+        short s0 = 0;
+        short s1 = 0;
+        int idx = esi + esi;
+        short* p = (short*)((char*)&v44 + 0x16 - idx);
+        short di = *p;
+        int eax = (int)di;
+        int q = eax / ebx;
+        short q16 = (short)q;
+        int one = 1;
+        int val18 = (int)(unsigned short)q16;
+        int val20 = 1;
+        short* sel;
+        if ((short)one < (short)val18) {
+            sel = (short*)&val18;
         } else {
-            p1 = sub_4f1ff0(f);
-            p2 = f1 + f1;
-            p3 = g_819bac;
-            if (sel == 1) {
-                p2 = -p2;
-            }
+            sel = (short*)&val20;
         }
-    } else if (mode == 1) {
-        p1 = this->pad0[0x1c];
-        p2 = this->pad0[0x18];
-        p3 = -this->pad0[0x1c];
-    } else if (mode == 2) {
-        p3 = 0.0f;
+        short chosen = *sel;
+        ((short*)((char*)&v18))[idx / 2] = chosen;
+        ((short*)((char*)&v18 - idx))[0] = di;
     }
 
-    int i = 0;
-    while (i < n) {
-        float cur;
-        if (i == n - 1) {
-            cur = arr2[sel];
-            if (extra == 0 && count != 0) {
-                p2 = (cur - p3) * p2 * g_83a3e4;
+    {
+        float f = v4c;
+        v20 = f;
+    }
+
+    sub_5185d0(&v44, &v30);
+    v30 = -v30;
+    v34 = -v34;
+    sub_5185d0(&v44, &v38);
+
+    v28 = 0.0f;
+    v2c = 0.0f;
+    v18 = 0.0f;
+    v1c = 0.0f;
+
+    if (a9 == 0) {
+        if (ebp == 0) {
+            v28 = g_83a3e4;
+            v2c = g_819bac;
+            v1c = g_819bac;
+            v18 = g_819bac;
+        } else {
+            v2c = 0.0f;
+            v2c = sub_4f1ff0(ebp);
+            v20 = v30 * 2.0f;
+            v18 = g_819bac;
+            if (esi == 1) {
+                v18 = -v18;
+            }
+        }
+    } else if (a9 == 1) {
+        v28 = 0.0f;
+        v2c = *(float*)((char*)this + 0x1c);
+        v18 = *(float*)((char*)this + 0x18);
+        v1c = -*(float*)((char*)this + 0x1c);
+    } else if (a9 == 2) {
+        v28 = 0.0f;
+        v2c = 0.0f;
+        v18 = 0.0f;
+        v1c = 0.0f;
+    }
+
+    for (i = 0; i < ebx; i++) {
+        if (i == ebx - 1) {
+            v30 = (&v44)[esi];
+            if (a9 == 0 && a5 != 0) {
+                v18 = (v30 - (&v38)[esi]) * (&v18)[esi] * g_83a3e4;
             }
         } else {
-            cur = p3 + g_826e6c;
+            v30 = (&v38)[esi] + g_826e6c;
         }
 
-        float args[4];
-        args[0] = p2;
-        args[1] = p1;
-        args[2] = nx;
-        args[3] = ny;
+        {
+            float args[5];
+            args[0] = v18;
+            args[1] = v1c;
+            args[2] = v28;
+            args[3] = v2c;
+            args[4] = v20;
+            sub_4f35d0(args, &v30, &v44, &v38, esi, ebp);
+        }
 
-        float out[4];
-        sub_4f35d0(args, &out[0], &out[1], &out[2], sel, count);
-        sub_4f5810(extra);
-
-        p3 = cur;
-        i++;
+        sub_4fdd90((void*)a1, a2);
+        (&v38)[esi] = (&v30)[esi];
     }
 }

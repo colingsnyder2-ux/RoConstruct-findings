@@ -1,126 +1,136 @@
-// from server: 13% by colin
-struct Vector3 { float x, y, z; };
-struct Vector2 { float x, y; };
+// from server: 20% by colin
+//
 
 extern "C" {
-    __declspec(dllimport) int __stdcall InterlockedDecrement(int*);
-    __declspec(dllimport) int __stdcall InterlockedIncrement(int*);
+    __declspec(dllimport) int __stdcall InterlockedDecrement(int volatile*);
+    __declspec(dllimport) int __stdcall InterlockedIncrement(int volatile*);
     __declspec(dllimport) double __cdecl ceil(double);
 }
 
-extern float g_819bac;
-extern float g_83a3e4;
-extern float g_826e6c;
-
-float __cdecl sub_4f1ff0(int);
-void __cdecl sub_4f35d0();
-void __cdecl sub_4f6a80();
-void __cdecl sub_5185d0(Vector3* dst, Vector3* src);
-void __cdecl sub_5ec200(void* dst, void* src);
-void __cdecl sub_6a067a(void* p);
-
-struct WedgeBuilder {
-    int f(int a1, int a2, int a3, int a4, int a5, int a6, int a7, int a8, int a9, int a10, int a11);
+struct Vector2 {
+    float x, y;
 };
 
-int WedgeBuilder::f(int a1, int a2, int a3, int a4, int a5, int a6, int a7, int a8, int a9, int a10, int a11)
+struct Vector3 {
+    float x, y, z;
+};
+
+struct WedgeBuilder {
+    char pad0[4];
+    int field4;
+    char pad8[8];
+    int field10;
+    char pad14[8];
+    float field18;
+    float field1c;
+    void buildBottom(int purpose);
+};
+
+extern "C" void __cdecl sub_6784d0(void*, void*);
+extern "C" void __cdecl sub_5185d0(void*, void*);
+extern "C" float __cdecl sub_4f1ff0(int);
+extern "C" void __cdecl sub_4f35d0(void*, void*, void*);
+extern "C" void __cdecl sub_4f66d0(void*);
+extern "C" void __cdecl sub_6a067a(void*);
+
+extern float g_819bac;
+extern float g_826e6c;
+extern float g_83a3e4;
+
+void WedgeBuilder::buildBottom(int purpose)
 {
-    int ebp = (*(int*)((char*)this + 0x10) >> 12) & 7;
-
+    int mode = (field10 >> 6) & 7;
     float v50, v54, v58;
-    sub_5ec200(&v50, (char*)this + 4);
+    sub_6784d0(&field4, &v50);
+    float a = v50 < 0 ? -v50 : v50;
+    float b = v54 < 0 ? -v54 : v54;
+    float c = v58 < 0 ? -v58 : v58;
+    v50 = a;
+    v54 = b;
+    v58 = c;
 
-    float f50 = v50 < 0 ? -v50 : v50;
-    float f54 = v54 < 0 ? -v54 : v54;
-    float f58 = v58 < 0 ? -v58 : v58;
-
-    int edi;
-    if (a11 == 0) {
-        if (f50 == f54) {
-            edi = 0;
-        } else {
-            edi = 1;
-        }
+    int flag;
+    if (purpose == 0) {
+        if (a == b) flag = 1; else flag = 0;
     } else {
-        edi = 1;
+        flag = 0;
     }
+    int edi = flag ? 0 : 1;
 
     int ebx;
-    if (a11 == 0 && ebp != 0) {
-        float t = (edi == 0 ? f50 : f54) * g_819bac;
-        ebx = (int)ceil(t);
+    if (purpose == 0 && mode != 0) {
+        float f = (edi == 0) ? v50 : v54;
+        ebx = (int)ceil(f * g_819bac);
     } else {
         ebx = 1;
     }
 
-    short arr10[2];
-    arr10[0] = 0;
-    arr10[1] = 0;
+    short arr[2];
+    arr[0] = 0;
+    arr[1] = 0;
 
-    short v18;
-    short v1c = 1;
+    short val = *(short*)((char*)&v58 - edi * 2);
+    int q = (int)val / ebx;
+    short qs = (short)q;
+    short one = 1;
+    short chosen = (one < qs) ? qs : one;
+    arr[edi] = chosen;
 
-    short src = *(short*)((char*)&a9 + 2 - edi * 2);
-    int q = (int)src / ebx;
-    v18 = (short)q;
+    float fv58 = v58;
+    Vector2 v2a, v2b;
+    sub_5185d0(&v50, &v2a);
+    sub_5185d0(&v50, &v2b);
 
-    short chosen = (v1c < v18) ? v18 : v1c;
-    arr10[edi] = chosen;
-
-    Vector3 tmpA;
-    Vector3 tmpB;
-    sub_5185d0(&tmpA, &tmpA);
-    tmpA.x = -tmpA.x;
-    tmpA.y = -tmpA.y;
-    sub_5185d0(&tmpB, &tmpB);
-
-    float v2c = 0, v30 = 0, v24 = 0, v28 = 0;
-
-    int mode = a10;
-    if (mode == 0) {
-        if (ebp == 0) {
-            v2c = g_83a3e4;
-            v30 = g_819bac;
-            v24 = g_819bac;
-            v28 = g_819bac;
+    float f24 = 0, f28 = 0, f2c = 0, f30 = 0;
+    int p = purpose;
+    if (p == 0) {
+        if (mode == 0) {
+            f2c = g_83a3e4;
+            f30 = g_819bac;
+            f28 = g_819bac;
+            f24 = g_83a3e4;
         } else {
-            v30 = 0;
-            v30 = sub_4f1ff0(ebp);
-            v2c = v58 * 2.0f;
-            v24 = g_819bac;
-            if (edi == 1) {
-                v24 = -v24;
-            }
+            f30 = sub_4f1ff0(mode);
+            f2c = v58 * 2.0f;
+            f24 = g_819bac;
+            if (edi == 1) f24 = -f24;
         }
-    } else if (mode == 1) {
-        v2c = 0;
-        v30 = *(float*)((char*)this + 0x1c);
-        v24 = *(float*)((char*)this + 0x18);
-        v28 = -*(float*)((char*)this + 0x1c);
-    } else if (mode == 2) {
-        v2c = 0;
-        v30 = 0;
-        v24 = 0;
-        v28 = 0;
+    } else if (p == 1) {
+        f2c = 0;
+        f30 = field1c;
+        f24 = field18;
+        f28 = -field1c;
+    } else if (p == 2) {
+        f24 = 0;
+        f28 = 0;
+        f2c = 0;
+        f30 = 0;
     }
 
-    float v34 = 0, v3c = 0;
-
-    for (int i = 0; i < ebx; i++) {
+    int i = 0;
+    float f3c = 0;
+    while (i < ebx) {
+        float f34;
         if (i == ebx - 1) {
-            v34 = (edi == 0 ? f50 : f54);
-            if (a10 == 0 && a11 != 0) {
-                float d = v34 - v3c;
-                v24 = d * v24 * g_83a3e4;
+            f34 = (edi == 0) ? v50 : v54;
+            if (purpose == 0 && ebx != 0) {
+                f24 = (f34 - f3c) * f24 * g_83a3e4;
             }
         } else {
-            v34 = v3c + g_826e6c;
+            f34 = f3c + g_826e6c;
         }
 
-        sub_4f35d0();
-        sub_4f6a80();
-        v3c = v34;
-    }
+        float fa = f24;
+        float fb = f30;
+        float fc = f2c;
+        float fd = f28;
 
-    return 0;
+        Vector3 v3;
+        sub_4f35d0(&v3, &v2a, &v2b);
+
+        sub_4f66d0(&v3);
+
+        f3c = f34;
+        i++;
+    }
 }

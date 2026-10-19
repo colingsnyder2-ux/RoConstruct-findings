@@ -1,113 +1,96 @@
-// from server: 25% by colin
+// from server: 27% by colin
+//
+
+struct Vec2 { float x, y; };
+struct Vec4 { float x, y, z, w; };
+
+extern "C" {
+    void __cdecl sub_5EC1A0(void* dst, const void* src);
+    void* __cdecl sub_6A0956(int size);
+    void __cdecl sub_6A094A(void* p);
+    float* __cdecl sub_509BA0();
+    void __cdecl sub_548000(void* out, const void* a, const void* b, int c);
+    void __cdecl sub_548640(void* p);
+    void __cdecl sub_500EB0(void* self, int a, int b, int c, int d);
+}
+
+extern float g_819bac;
+
 struct PBBBuilder {
     char pad0[4];
     int field4;
-    void build(int, int, int, int, int, int, int, int, int, int, int, int, int);
+    void method(int a, int b, int c, int d, int e, int f, int g, int h, int i, int j, int k, int l, int m);
 };
 
-extern "C" {
-    void __cdecl sub_5EC1E0(void*, void*);
-    void* __cdecl sub_6A0956(unsigned int);
-    float* __cdecl sub_509BA0();
-    void __cdecl sub_548000(void*, void*, void*, int);
-    void __cdecl sub_500EB0(void*, int, int, int, int);
-    void __cdecl sub_548640(void*);
-    void __cdecl sub_6A094A(void*);
-}
-
-extern float g_819BAC;
-
-void PBBBuilder::build(int a1, int a2, int a3, int a4, int a5, int a6, int a7, int a8, int a9, int a10, int a11, int a12, int a13)
+void PBBBuilder::method(int a, int b, int c, int d, int e, int f, int g, int h, int i, int j, int k, int l, int m)
 {
     char buf[0x6c];
-    sub_5EC1E0(buf, &field4);
-
-    short s1 = *(short*)((char*)&a1 + 0);
-    short s2 = *(short*)((char*)&a1 + 2);
-    int n1 = s1 + 1;
-    int n2 = s2 + 1;
+    sub_5EC1A0(buf + 0x24, &field4);
+    short w1 = *(short*)((char*)&a + 0);
+    short w2 = *(short*)((char*)&a + 2);
+    int n1 = w1 + 1;
+    int n2 = w2 + 1;
     int total = n1 * n2;
-
-    float f1 = (float)s1;
-    float f2 = (float)s2;
-
-    float d1 = (*(float*)((char*)&a1 + 4) - *(float*)((char*)&a1 + 0)) / f1;
-    float d2 = (*(float*)((char*)&a1 + 8) - *(float*)((char*)&a1 + 4)) / f2;
-
-    float* arr = (float*)sub_6A0956((unsigned int)total * 4);
-
-    float base1 = *(float*)((char*)&a1 + 4);
-    float base2 = *(float*)((char*)&a1 + 8);
-
-    int i = 0;
+    float f1 = (*(float*)((char*)&a + 0x14) - *(float*)((char*)&a + 0x0c)) / (float)n1;
+    float f2 = (*(float*)((char*)&a + 0x18) - *(float*)((char*)&a + 0x10)) / (float)n2;
+    float f3 = *(float*)((char*)&a + 0x2c) / *(float*)((char*)&a + 0x28);
+    float f4 = *(float*)((char*)&a + 0x30) / *(float*)((char*)&a + 0x28);
+    float* arr = (float*)sub_6A0956(total * 4);
     float acc1 = 0.0f;
-    while (i <= s2) {
-        int j = 0;
-        float acc2 = 0.0f;
-        while (j <= s1) {
-            float v1 = base1 + acc1;
-            float v2 = base2 + acc2;
-            float v3 = *(float*)((char*)&a1 + 12);
-            float v4 = *(float*)((char*)&a1 + 16);
+    float acc2 = 0.0f;
+    for (int i2 = 0; i2 <= w2; i2++) {
+        float cur1 = *(float*)((char*)&a + 0x08);
+        float cur2 = *(float*)((char*)&a + 0x1c);
+        for (int j2 = 0; j2 <= w1; j2++) {
+            float v2 = cur1;
+            float v3 = cur2;
             float v5 = 1.0f;
-
-            float t1, t2;
-            if (v5 < v3) {
-                t1 = v3 - v5;
-                t2 = (v3 - v5) * *(float*)((char*)&a1 + 20);
+            float r1, r2;
+            if (v5 < v2) {
+                r1 = v2 - v5;
+                r2 = (v2 - v5) * *(float*)((char*)&a + 0x04);
             } else {
-                t1 = v3 + v5;
-                t2 = (v3 + v5) * *(float*)((char*)&a1 + 20);
+                r1 = v2 + v5;
+                r2 = v2 + v5;
             }
-
             float* sh = sub_509BA0();
-            float u1, u2;
-            if (sh[0] == *(float*)((char*)&a1 + 24) && sh[1] == *(float*)((char*)&a1 + 28)) {
-                u1 = *(float*)((char*)&a1 + 32);
-                u2 = *(float*)((char*)&a1 + 36);
+            float sx, sy;
+            if (sh[0] == *(float*)((char*)&a + 0x18) && sh[1] == *(float*)((char*)&a + 0x1c)) {
+                sx = *(float*)((char*)&a + 0x10);
+                sy = *(float*)((char*)&a + 0x14);
             } else {
-                u1 = v1;
-                u2 = v2;
+                sx = v2;
+                sy = v3;
             }
-
-            float m1 = u1 * g_819BAC;
-            float m2 = u2 * g_819BAC;
-
-            float p1[2], p2[2];
-            sub_5EC1E0(p1, &v1);
-            sub_5EC1E0(p2, &v2);
-
-            char out[16];
-            sub_548000(out, p1, p2, 1);
-
-            acc1 += *(float*)(out + 0);
-            acc2 += *(float*)(out + 4);
-
-            int idx = (s2 + 1) * i + j;
-            ((int*)arr)[idx] = *(int*)out;
-
-            j++;
+            float m1 = sx * g_819bac;
+            float m2 = sy * g_819bac;
+            Vec2 p1, p2;
+            sub_5EC1A0(&p1, &m1);
+            sub_5EC1A0(&p2, &m2);
+            Vec4 out;
+            sub_548000(&out, &p1, &p2, 1);
+            acc1 += out.x;
+            acc2 += out.z;
+            int off = (w2 + 1) * i2 + j2;
+            ((int*)arr)[off] = (int)*(float*)&out;
+            cur1 += f1;
+            cur2 += f2;
         }
-        i++;
+        acc1 += f3;
+        acc2 += f4;
     }
-
-    int k = 0;
-    while (k < s2) {
-        int m = 0;
-        while (m < s1) {
-            int idx0 = (s1 + 1) * k + m;
-            int idx1 = idx0 + 1;
-            int idx2 = idx0 + (s1 + 1);
-            int idx3 = idx2 + 1;
-            sub_500EB0((void*)this, ((int*)arr)[idx0], ((int*)arr)[idx1], ((int*)arr)[idx2], ((int*)arr)[idx3]);
-            m++;
+    for (int i3 = 0; i3 < w2; i3++) {
+        for (int j3 = 0; j3 < w1; j3++) {
+            int o = (w1 + 1) * i3 + j3;
+            int a1 = ((int*)arr)[o];
+            int a2 = ((int*)arr)[o + 1];
+            int a3 = ((int*)arr)[o + w1 + 1];
+            int a4 = ((int*)arr)[o + w1 + 2];
+            sub_500EB0(this, a1, a2, a3, a4);
         }
-        k++;
     }
-
-    unsigned int cnt = (unsigned int)total;
-    for (unsigned int q = 0; q < cnt; q++) {
-        sub_548640((void*)((int*)arr)[q]);
+    for (unsigned int i4 = 0; i4 < (unsigned int)total; i4++) {
+        sub_548640(((void**)arr)[i4]);
     }
     sub_6A094A(arr);
 }

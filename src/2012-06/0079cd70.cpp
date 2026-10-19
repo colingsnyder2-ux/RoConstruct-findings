@@ -1,9 +1,11 @@
-// from server: 79% by atomic.potato
-extern "C" void __stdcall EventDescDispatch(void *);
+// from server: 100% by intel
+struct Target79BA80
+{
+    void Method();
+};
 
 struct EventDesc
 {
-    unsigned long pad30[12];
     unsigned long offset30;
     unsigned long offset34;
     void Dispatch(void *);
@@ -11,15 +13,16 @@ struct EventDesc
 
 void EventDesc::Dispatch(void *value)
 {
-    unsigned char *p = (unsigned char *)value;
-    unsigned long base = (unsigned long)p;
+    unsigned long eax = (unsigned long)value;
+    if (eax)
+        eax -= 0x1c;
+    else
+        eax = 0;
 
-    if (p != 0)
-        base -= 0x1c;
+    unsigned long edx = *(unsigned long *)(eax + 0x138);
+    unsigned long esi = *(unsigned long *)((char *)this + 0x34);
+    edx = *(unsigned long *)(edx + esi);
+    edx += *(unsigned long *)((char *)this + 0x30);
 
-    unsigned long table = *(unsigned long *)(base + 0x138);
-    unsigned long entry = *(unsigned long *)(table + offset34);
-    unsigned long address = entry + offset30 + base + 0x138;
-
-    EventDescDispatch((void *)address);
+    ((Target79BA80 *)(edx + eax + 0x138))->Method();
 }

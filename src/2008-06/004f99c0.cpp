@@ -1,171 +1,129 @@
-// from server: 26% by colin
-// roc 2008-06 004f99c0  unit: RBX::ViewNew::WedgeBuilder  size: 722 bytes
-// Make this compile to the exact bytes below, then: roc check 2008-06 004f99c0
+// from server: 41% by colin
+//
+
+struct Vector2 { float x, y; };
+struct Vector3 { float x, y, z; };
 
 extern "C" double __stdcall ceil(double);
 
-struct Vector2 {
-    float x;
-    float y;
+extern float g_819bac;
+extern float g_826e6c;
+extern float g_83a3e4;
+
+float sub_4f1ff0(int);
+void sub_5185d0(Vector2* out, Vector2* in);
+void sub_4f35d0(Vector3* a, Vector2* b, Vector2* c, Vector3* d, Vector3* e, int f, int g);
+void sub_4f54d0(void* self, int a, int b);
+
+struct PBBBuilder {
+    int field0;
+    Vector2 field4;
+    int fieldC;
+    unsigned int field10;
+    void build(Vector3* a, Vector3* b, int c, int d, int e, int f);
 };
 
-struct Vector3 {
-    float x;
-    float y;
-    float z;
-};
-
-struct WedgeBuilder {
-    char pad0[0x10];
-    unsigned int flags;
-    void buildSide(int side, int a, int b, int c, int d);
-};
-
-extern float g_one;
-extern float g_half;
-extern float g_negone;
-
-float __stdcall getSideValue(int side);
-
-void __stdcall buildWedgeFace(const Vector3* a, const Vector3* b, const Vector3* c, int side, int idx);
-
-void __stdcall emitWedge(int a, int b);
-
-void __stdcall copyVec2(const Vector2* src, Vector2* dst);
-
-void __stdcall copyVec3(const Vector3* src, Vector3* dst);
-
-void WedgeBuilder::buildSide(int side, int a, int b, int c, int d)
+void PBBBuilder::build(Vector3* a, Vector3* b, int c, int d, int e, int f)
 {
-    unsigned int f = this->flags;
-    unsigned int mode = (f >> 15) & 7;
-
-    Vector2 uv;
-    copyVec2((const Vector2*)((char*)this + 4), &uv);
-
-    float ax = uv.x;
-    float ay = uv.y;
-    if (ax < 0.0f) ax = -ax;
-    if (ay < 0.0f) ay = -ay;
-
-    float bx = (float)a;
-    float by = (float)b;
-    if (bx < 0.0f) bx = -bx;
-    if (by < 0.0f) by = -by;
-
-    float vx = ax;
-    float vy = ay;
-    float vz = bx;
-
-    bool degenerate;
-    if (d == 0) {
-        degenerate = (vx == vy);
-    } else {
-        degenerate = false;
-    }
-
-    int useOther = degenerate ? 0 : 1;
-
+    float arr[4];
+    float arr2[4];
+    float arr3[4];
+    float arr4[4];
+    int idx;
+    int i;
     int count;
-    if (d == 0 && mode != 0) {
-        float scaled = (useOther ? vy : vx) * g_half;
-        double ceiled = ceil((double)scaled);
-        count = (int)ceiled;
+
+    unsigned int bits = this->field10 >> 9;
+    int sel = bits & 7;
+
+    Vector2 tmp;
+    sub_5185d0(&tmp, &this->field4);
+
+    float f0 = a->x; if (f0 < 0) f0 = -f0;
+    float f1 = a->y; if (f1 < 0) f1 = -f1;
+    float f2 = a->z; if (f2 < 0) f2 = -f2;
+
+    arr[0] = f0;
+    arr[1] = f1;
+    arr[2] = f2;
+
+    bool flag;
+    if (f != 0) {
+        flag = (f0 == f1);
+    } else {
+        flag = false;
+    }
+    idx = flag ? 0 : 1;
+
+    if (f == 0 && sel != 0) {
+        double dv = (double)arr[idx] * (double)g_819bac;
+        float cf = (float)ceil(dv);
+        count = (int)cf;
     } else {
         count = 1;
     }
 
-    short base = (short)side;
-    short idx = (short)useOther;
+    short sval = *(short*)((char*)&tmp + (idx * 2));
+    int q = (int)sval / count;
+    unsigned short qq = (unsigned short)q;
+    unsigned short one = 1;
+    unsigned short chosen = (one < qq) ? qq : one;
 
-    short v0 = (short)((int)base / count);
-    short v1 = (short)((int)idx / count);
+    *(unsigned short*)((char*)&idx + 0) = chosen;
+    *(unsigned short*)((char*)&tmp + idx * 2) = (unsigned short)sval;
 
-    short lo = (v0 < 1) ? v0 : (short)1;
-    short hi = (v1 < 1) ? v1 : (short)1;
+    Vector2 p0, p1;
+    sub_5185d0(&p0, (Vector2*)a);
+    p0.x = -p0.x;
+    p0.y = -p0.y;
+    sub_5185d0(&p1, (Vector2*)b);
+    p1.x = -p1.x;
+    p1.y = -p1.y;
 
-    Vector3 p0;
-    Vector3 p1;
-
-    float z0 = vz;
-    float z1 = vy;
-
-    Vector2 t0;
-    Vector2 t1;
-    copyVec2((const Vector2*)((char*)this + 4), &t0);
-    copyVec2((const Vector2*)((char*)this + 4), &t1);
-
-    float nx = -t0.x;
-    float ny = -t0.y;
-    float nz = 0.0f;
-
-    float u0 = 0.0f;
-    float u1 = 0.0f;
-    float w0 = 0.0f;
-    float w1 = 0.0f;
-
-    switch (c) {
-    case 0:
-        if (mode == 0) {
-            u0 = g_one;
-            u1 = g_half;
-            w0 = g_half;
-            w1 = g_half;
+    if (f == 0) {
+        if (sel == 0) {
+            arr2[0] = g_83a3e4;
+            arr2[1] = g_819bac;
+            arr2[2] = g_819bac;
+            arr2[3] = g_819bac;
         } else {
-            u0 = 0.0f;
-            u1 = 0.0f;
-            w0 = 0.0f;
-            w1 = 0.0f;
+            arr2[idx] = 0.0f;
+            arr2[idx] = sub_4f1ff0(sel);
+            arr3[idx] = arr[idx] * 2.0f;
+            arr4[idx] = g_819bac;
+            if (idx == 1) {
+                arr4[1] = -arr4[1];
+            }
         }
-        break;
-    case 1:
-        u0 = 0.0f;
-        u1 = 0.0f;
-        w0 = 0.0f;
-        w1 = 0.0f;
-        break;
-    case 2:
-        u0 = 0.0f;
-        u1 = 0.0f;
-        w0 = 0.0f;
-        w1 = 0.0f;
-        break;
-    default:
-        break;
+    } else if (f == 1) {
+        arr2[0] = 0.0f;
+        arr2[1] = b->y;
+        arr2[2] = b->x;
+        arr2[3] = -b->y;
+    } else if (f == 2) {
+        arr2[0] = 0.0f;
+        arr2[1] = 0.0f;
+        arr2[2] = 0.0f;
+        arr2[3] = 0.0f;
     }
 
-    int i = 0;
-    while (i < count) {
-        float cur;
+    for (i = 0; i < count; i++) {
         if (i == count - 1) {
-            cur = z0;
-            if (d == 0 && c != 0) {
-                cur = (z0 - z1) * w0 * g_half;
+            arr3[idx] = arr[idx];
+            if (f == 0 && c != 0) {
+                arr4[idx] = (arr[idx] - arr3[idx]) * arr4[idx] * g_83a3e4;
             }
         } else {
-            cur = z1 + g_one;
+            arr3[idx] = arr[idx] + g_826e6c;
         }
 
-        Vector3 va;
-        va.x = u0;
-        va.y = u1;
-        va.z = cur;
+        Vector3 vv;
+        vv.x = arr4[0];
+        vv.y = arr4[1];
+        vv.z = arr4[2];
 
-        Vector3 vb;
-        vb.x = w0;
-        vb.y = w1;
-        vb.z = cur;
-
-        Vector3 vc;
-        vc.x = nx;
-        vc.y = ny;
-        vc.z = nz;
-
-        buildWedgeFace(&va, &vb, &vc, side, i);
-
-        emitWedge(a, b);
-
-        z1 = cur;
-        i++;
+        sub_4f35d0(&vv, &p0, &p1, (Vector3*)&arr3, (Vector3*)&arr2, sel, (int)this);
+        sub_4f54d0(this, d, e);
+        arr2[idx] = arr3[idx];
     }
 }

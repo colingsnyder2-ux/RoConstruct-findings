@@ -1,70 +1,85 @@
-// from server: 79% by king_originala
-struct String;
+// from server: 81% by colin
+//
+
+//
+
+struct String {
+    char* data;
+    const char* c_str() const;
+    int compare(const char*) const;
+    __declspec(dllimport) ~String() throw();
+};
+
 extern const char* (__thiscall* string_data)(const String*);
 extern int (__thiscall* string_compare)(const String*, const char*);
 extern void (__thiscall* string_destroy)(String*);
 
-struct String {
-    void* data;
-    ~String() { string_destroy(this); }
-    const char* c_str() const { return string_data(this); }
-    int compare(const char* s) const { return string_compare(this, s); }
-};
+inline const char* String::c_str() const
+{
+    return string_data(this);
+}
+
+inline int String::compare(const char* value) const
+{
+    return string_compare(this, value);
+}
 
 struct Descriptor {
     char pad[8];
-    int key;
+    void* key;
 };
 
 struct Item {
-    char pad0[0x114];
-    char signal[0x20];
+    char pad[0x10c];
+    char handle[0x20];
     Descriptor* descriptor;
-    String name();
+    String copy();
 };
 
-struct Array {
+struct Items {
     char pad[0x28];
     int count;
-    Item* at(int index);
+    Item* at(int);
 };
 
-struct List {
+struct Group {
     char pad[0xc0];
-    Array* items;
-    void insert(int index, Item* item);
+    Items* items;
+    void insert(int, Item*);
 };
 
 struct Listener {
-    void connect(void** signal);
+    char pad[0x18];
+    void notify(void**);
 };
 
 struct Map {
-    void** lookup(Descriptor** key);
+    void** find(void**);
 };
 
-struct S_func_00439a70 {
-    char pad0[0x19c];
+struct Selection {
+    char pad[0x19c];
     Listener listener;
-    char pad1[0x17];
     Map map;
-    List* find(int key);
-    void f(Item* item);
+    Group* group(void*);
+    void f(Item*);
 };
 
-void S_func_00439a70::f(Item* item)
+void Selection::f(Item* item)
 {
-    List* list = find(item->descriptor->key);
+    Group* selected = group(item->descriptor->key);
     int index = 0;
-    for (; index < list->items->count; ++index) {
-        if (item->name().compare(list->items->at(index)->name().c_str()) < 0)
+    for (; index < selected->items->count; ++index) {
+        if (item->copy().compare(selected->items->at(index)->copy().c_str()) < 0)
             break;
     }
-    list->insert(index, item);
 
-    Descriptor* key = item->descriptor;
-    void** slot = map.lookup(&key);
-    void* signal = item->signal;
-    *slot = signal;
-    listener.connect(&signal);
+    selected->insert(index, item);
+
+    void* key = item->descriptor;
+    void** value = map.find(&key);
+    void* handle = item->handle;
+    *value = handle;
+    key = handle;
+    listener.notify(&key);
 }

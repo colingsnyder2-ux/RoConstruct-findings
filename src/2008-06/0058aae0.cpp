@@ -1,47 +1,58 @@
-// from server: 73% by king_originala
-struct Value
-{
-    unsigned int words[4];
-};
+// from server: 79% by colin
+//
 
 void* __cdecl operator new(unsigned int);
 void __cdecl operator delete(void*);
 
-struct Resource
-{
-    unsigned char data[40];
-    Resource();
+struct Payload {
+    int a, b, c, d;
 };
 
-struct Base
-{
-    Resource* first;
-    void* second;
+struct Embedded {
+    int* state;
+    int reserved;
+    Payload payload;
 
-    Base() : first(0), second(0) {}
-    ~Base();
-    void attach(Resource*);
+    Embedded(Payload, int);
+    ~Embedded();
 };
 
-struct Member
-{
-    Value value;
-    unsigned int extra;
-
-    Member(Value, unsigned int);
-    ~Member();
+struct Object {
+    char storage[40];
+    Object();
 };
 
-struct S : Base
-{
-    Member member;
+struct Control {
+    void* pointer;
 
-    S(const Value&);
+    Control();
+    ~Control();
+};
+
+struct Owner {
+    Object* object;
+    Control control;
+
+    Owner();
+    ~Owner();
+    void set(Object*);
+};
+
+inline Owner::Owner() : object(0), control()
+{
+}
+
+struct Part {
+    Owner owner;
+    Embedded embedded;
+
+    Part(const Payload&);
     void finish();
 };
 
-S::S(const Value& value) : member(value, 0)
+Part::Part(const Payload& value)
+    : owner(), embedded(value, 0)
 {
-    attach(new Resource);
+    owner.set(new Object);
     finish();
 }

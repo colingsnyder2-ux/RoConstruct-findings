@@ -1,51 +1,61 @@
-// from server: 65% by king_originala
-extern void* __cdecl allocate(unsigned int, unsigned int);
-extern void* __cdecl fill(void*, int, unsigned int);
+// from server: 73% by colin
+//
+
+//
+
+extern "C" void* __cdecl allocate_buffer(unsigned int, unsigned int);
+extern "C" void* __cdecl fill_buffer(void*, int, unsigned int);
+extern const unsigned int array_table[];
 
 struct Array
 {
-    int count;
+    const unsigned int* table;
+    unsigned int size;
     void* data;
-    int capacity;
+    unsigned int capacity;
 
-    Array();
-    virtual ~Array();
+    Array(unsigned int*);
+    __declspec(dllimport) ~Array() throw();
+    Array& operator=(const Array&);
     void clear();
     void copy(const Array&);
 };
 
-inline Array::Array()
+inline Array::Array(unsigned int* base)
 {
-    capacity = 10;
-    count = 0;
-    data = allocate(40, 16);
-    fill(data, 0, capacity * 4);
+    base[2] = reinterpret_cast<unsigned int>(array_table);
+    base[5] = 10;
+    base[3] = 0;
+    void* p = allocate_buffer(40, 16);
+    base[4] = reinterpret_cast<unsigned int>(p);
+    fill_buffer(p, 0, base[5] * 4);
 }
 
-inline Array::~Array()
+inline Array& Array::operator=(const Array& other)
 {
-    clear();
+    if (this != &other)
+    {
+        clear();
+        copy(other);
+    }
+    return *this;
 }
 
-struct Plugin
+struct S
 {
-    void* first;
-    void* second;
+    unsigned int first;
+    void* owner;
     Array values;
-    void* last;
+    unsigned int last;
 
-    Plugin(void*, Array, void*, void*);
+    S(void*, Array, unsigned int, unsigned int);
 };
 
-Plugin::Plugin(void* p, Array a, void* q, void* r)
-    : second(0)
+S::S(void* p, Array a, unsigned int x, unsigned int y)
+    : owner(0), values(reinterpret_cast<unsigned int*>(this))
 {
-    second = p;
-    if (&values != &a)
-    {
-        values.clear();
-        values.copy(a);
-    }
-    first = q;
-    last = r;
+    owner = p;
+    values = a;
+    first = x;
+    last = y;
 }

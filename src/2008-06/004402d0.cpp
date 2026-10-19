@@ -1,41 +1,31 @@
-// from server: 27% by colin
+// from server: 32% by colin
+//
+
 struct ContentItem {
-    char pad0[0x118];
+    char pad0[0x110];
     void* begin;
-    char pad11c[8];
+    char pad1[0x8];
     void* end;
-    void* cap;
-    char pad12c[4];
-    void* field130;
-
-    void func(void* arg);
+    char pad2[0x4];
+    void* end2;
+    char pad3[0x4];
+    void* field128;
+    void* field12c;
+    int f();
 };
 
-extern "C" void __stdcall _invalid_parameter_noinfo();
-extern "C" void* __cdecl func_43a320(void*, void*);
-extern "C" void __cdecl func_43c940(void*, void*, void*, void*, void*);
-extern "C" void __cdecl func_576f00(void*, void*);
-extern "C" void __cdecl func_5773c0(void*);
-extern "C" void* __cdecl func_58c5c0(void*, void*);
-extern "C" void __cdecl func_5a2fe0(void*);
-extern "C" void __cdecl func_420110(void*, void*);
-extern "C" void* __cdecl func_6a0920(unsigned int);
+extern "C" void* __cdecl sub_6A0920(int);
+extern "C" void __cdecl sub_802890();
+extern "C" void sub_43A320(void*, void*, void*);
+extern "C" void sub_420110(void*, void*);
+extern "C" void sub_43C940(void*, void*, void*, void*, void*, void*);
+extern "C" void* __cdecl sub_576F00(unsigned int);
+extern "C" void sub_5773C0(void*);
+extern "C" void sub_58C5C0(void*, void*);
+extern "C" void sub_5A2FE0(void*);
+extern "C" void* __cdecl sub_802464(void*);
 
-struct Inner {
-    char pad0[0x198];
-    void* field198;
-    char pad19c[0x1f0 - 0x19c];
-    void* field1f0;
-};
-
-struct Outer {
-    char pad0[0x130];
-    Inner* field130;
-    char pad134[4];
-    void* field134;
-};
-
-void ContentItem::func(void* arg)
+int ContentItem::f()
 {
     void* local60;
     void* local54;
@@ -52,13 +42,13 @@ void ContentItem::func(void* arg)
     void* local24;
     void* local20;
     void* local18;
+    void* local48;
     void* local74;
     void* local6c;
-    void* local48;
-    void* localb8;
-    void* eax_val;
+    void* local78;
+    void* local8;
 
-    void* p = func_6a0920(4);
+    void* p = sub_6A0920(4);
     if (p) {
         *(void**)p = &local60;
     } else {
@@ -69,183 +59,196 @@ void ContentItem::func(void* arg)
     local50 = 0;
     local4c = 0;
 
-    Outer* outer = (Outer*)this;
-    Inner* inner = outer->field130;
-    local38 = *(void**)((char*)inner + 0x230);
-    local3c = *(void**)((char*)inner + 0x218);
+    void* eax = *(void**)((char*)this + 0x128);
+    void* edx = *(void**)((char*)eax + 0x230);
+    void* esi = *(void**)((char*)this + 0x120);
+    eax = (char*)eax + 0x218;
+    eax = *(void**)eax;
+    local38 = edx;
+    local3c = eax;
 
-    void* esi = *(void**)((char*)this + 0x128);
-    if (*(unsigned int*)((char*)this + 0x124) > (unsigned int)esi) {
-        _invalid_parameter_noinfo();
+    if (*(unsigned int*)((char*)this + 0x11c) > (unsigned int)esi) {
+        sub_802890();
     }
+    void* ecx = *(void**)((char*)this + 0x110);
     local30 = esi;
-    void* ecx_val = *(void**)((char*)this + 0x118);
-    esi = *(void**)((char*)this + 0x124);
-    local34 = ecx_val;
-    if ((unsigned int)esi > *(unsigned int*)((char*)this + 0x128)) {
-        _invalid_parameter_noinfo();
+    esi = *(void**)((char*)this + 0x11c);
+    local34 = ecx;
+    if ((unsigned int)esi > *(unsigned int*)((char*)this + 0x120)) {
+        sub_802890();
     }
-    void* edi = *(void**)((char*)this + 0x118);
+    void* edi = *(void**)((char*)this + 0x110);
     local2c = edi;
     local28 = esi;
 
     while (1) {
-        if (edi) {
-            if (edi == local34) goto skip1;
+        if (edi != 0 && edi == local34) {
+        } else {
+            sub_802890();
         }
-        _invalid_parameter_noinfo();
-    skip1:
-        if (esi == local30) break;
-        if (edi) {
+        if (esi == local30) {
+            break;
+        }
+        if (edi != 0) {
             edi = *(void**)edi;
         } else {
-            _invalid_parameter_noinfo();
+            sub_802890();
         }
         if ((unsigned int)esi < *(unsigned int*)((char*)edi + 0x10)) {
-            _invalid_parameter_noinfo();
-        }
-        void* edx_val = *(void**)esi;
-        Inner* inner2 = outer->field130;
-        local18 = edx_val;
-        func_43a320((char*)inner2 + 0x218, &local44);
-        edi = local44;
-        if (edi) {
-            if (edi == local3c) goto skip2;
-        }
-        _invalid_parameter_noinfo();
-    skip2:
-        esi = local40;
-        if (esi == local38) {
-            goto done_outer;
-        }
-        if (edi) {
-            edi = *(void**)edi;
         } else {
-            _invalid_parameter_noinfo();
+            sub_802890();
         }
-        if (esi != *(void**)((char*)edi + 0x18)) {
-            _invalid_parameter_noinfo();
-        }
-        void* ebx_val = *(void**)((char*)esi + 0x1c);
-        if ((unsigned int)ebx_val > *(unsigned int*)((char*)esi + 0x20)) {
-            _invalid_parameter_noinfo();
-        }
-        eax_val = *(void**)((char*)esi + 0x10);
-        local20 = ebx_val;
-        local24 = eax_val;
-        if (edi) {
-            edi = *(void**)edi;
+        void* edx2 = *(void**)esi;
+        void* ecx2 = *(void**)((char*)this + 0x128);
+        local18 = edx2;
+        ecx2 = (char*)ecx2 + 0x218;
+        sub_43A320(ecx2, &local44, &local18);
+
+        void* edi2 = local44;
+        if (edi2 != 0 && edi2 == local3c) {
         } else {
-            _invalid_parameter_noinfo();
+            sub_802890();
         }
-        if (esi != *(void**)((char*)edi + 0x18)) {
-            _invalid_parameter_noinfo();
+        void* esi2 = local40;
+        if (esi2 == local38) {
+            goto after_inner;
         }
-        void* edi2 = *(void**)((char*)esi + 0x20);
-        if (*(unsigned int*)((char*)esi + 0x1c) > (unsigned int)edi2) {
-            _invalid_parameter_noinfo();
-        }
-        esi = *(void**)((char*)esi + 0x10);
-        if (eax_val) {
-            if (eax_val == esi) goto skip3;
-        }
-        _invalid_parameter_noinfo();
-    skip3:
-        if (local20 == edi2) goto done_inner;
-        if (eax_val) {
-            eax_val = *(void**)eax_val;
+        if (edi2 != 0) {
+            edi2 = *(void**)edi2;
         } else {
-            _invalid_parameter_noinfo();
+            sub_802890();
         }
-        if ((unsigned int)local20 < *(unsigned int*)((char*)eax_val + 0x10)) {
-            _invalid_parameter_noinfo();
-        }
-        func_420110(&local60, local20);
-        if (local24) {
-            eax_val = *(void**)local24;
+        if (esi2 == *(void**)((char*)0 + 0x18)) {
         } else {
-            _invalid_parameter_noinfo();
+            sub_802890();
         }
-        if ((unsigned int)local20 < *(unsigned int*)((char*)eax_val + 0x10)) {
-            _invalid_parameter_noinfo();
+        void* ebx = *(void**)((char*)esi2 + 0x1c);
+        if ((unsigned int)ebx > *(unsigned int*)((char*)esi2 + 0x20)) {
+            sub_802890();
         }
-        local20 = (char*)local20 + 8;
-        eax_val = local24;
-        goto skip3;
-    done_inner:
+        void* eax2 = *(void**)((char*)esi2 + 0x10);
+        local20 = ebx;
+        local24 = eax2;
+
+        if (edi2 != 0) {
+            edi2 = *(void**)edi2;
+        } else {
+            sub_802890();
+        }
+        if (esi2 == *(void**)((char*)edi2 + 0x18)) {
+        } else {
+            sub_802890();
+        }
+        void* edi3 = *(void**)((char*)esi2 + 0x20);
+        if (*(unsigned int*)((char*)esi2 + 0x1c) > (unsigned int)edi3) {
+            sub_802890();
+        }
+        void* esi3 = *(void**)((char*)esi2 + 0x10);
+
+        while (1) {
+            if (eax2 != 0 && eax2 == esi3) {
+            } else {
+                sub_802890();
+            }
+            if (local20 == edi3) {
+                break;
+            }
+            if (eax2 != 0) {
+                eax2 = *(void**)eax2;
+            } else {
+                sub_802890();
+            }
+            if ((unsigned int)local20 < *(unsigned int*)((char*)eax2 + 0x10)) {
+            } else {
+                sub_802890();
+            }
+            sub_420110(&local60, local20);
+            if (eax2 != 0) {
+                eax2 = *(void**)eax2;
+            } else {
+                sub_802890();
+            }
+            if ((unsigned int)local20 < *(unsigned int*)((char*)eax2 + 0x10)) {
+            } else {
+                sub_802890();
+            }
+            local20 = (char*)local20 + 8;
+        }
+        goto after_inner2;
+after_inner:
         ;
+after_inner2:
+        if (local2c != 0) {
+            local2c = *(void**)local2c;
+        } else {
+            sub_802890();
+        }
+        if ((unsigned int)local28 < *(unsigned int*)((char*)local2c + 0x10)) {
+        } else {
+            sub_802890();
+        }
+        local28 = (char*)local28 + 4;
+        edi = local2c;
+        esi = local28;
     }
-done_outer:
-    if (local2c) {
-        eax_val = *(void**)local2c;
-    } else {
-        _invalid_parameter_noinfo();
-    }
-    if ((unsigned int)local28 < *(unsigned int*)((char*)eax_val + 0x10)) {
-        _invalid_parameter_noinfo();
-    }
-    local28 = (char*)local28 + 4;
-    edi = local2c;
-    esi = local28;
-    goto skip1;
 
-    void* arg_val = *(void**)arg;
-    void* edi_val = local40;
-    void* ebx_val2 = (void*)0x43c500;
-    void* eax_val2 = local50;
-    void* ecx_val2 = local54;
-    void* edx_val2 = (void*)0x71f210;
+    void* arg8 = *(void**)((char*)this + 0x120);
+    void* edi4 = local40;
+    void* eax3 = (void*)0x43A720;
+    void* ebx2 = eax3;
+    void* eax4 = local50;
+    void* ecx3 = local54;
+    void* edx3 = (void*)0x71F210;
     local74 = 0;
-    local6c = edx_val2;
-    arg = eax_val2;
-    if ((unsigned int)ecx_val2 > (unsigned int)eax_val2) {
-        _invalid_parameter_noinfo();
-        eax_val2 = local50;
-        ecx_val2 = local54;
+    local6c = edx3;
+    local8 = eax4;
+    if ((unsigned int)ecx3 > (unsigned int)eax4) {
+        sub_802890();
+        eax4 = local50;
+        ecx3 = local54;
     }
-    void* edx_val3 = local60;
-    local44 = edx_val3;
-    local18 = ecx_val2;
-    if ((unsigned int)ecx_val2 > (unsigned int)eax_val2) {
-        _invalid_parameter_noinfo();
+    void* edx4 = local60;
+    local44 = edx4;
+    local18 = ecx3;
+    if ((unsigned int)ecx3 > (unsigned int)eax4) {
+        sub_802890();
     }
-    void* ecx_val3 = local74;
-    void* edx_val4 = local6c;
-    void* eax_val3 = (char*)0 - 0x18;
-    *(void**)((char*)eax_val3 + 0) = ebx_val2;
-    *(void**)((char*)eax_val3 + 4) = ecx_val3;
-    void* ecx_val4 = (void*)this;
-    *(void**)((char*)eax_val3 + 8) = ecx_val4;
-    void* ecx_val5 = local44;
-    *(void**)((char*)eax_val3 + 0xc) = edx_val4;
-    void* edx_val5 = local18;
-    *(void**)((char*)eax_val3 + 0x10) = edi_val;
-    *(void**)((char*)eax_val3 + 0x14) = arg_val;
-    void* eax_val4 = arg;
-    func_43c940(&localb8, local60, edx_val5, ecx_val5, eax_val4);
+    void* ecx4 = local74;
+    void* edx5 = local6c;
 
-    void* esi_val = (void*)this;
-    Inner* inner3 = *(Inner**)((char*)esi_val + 0x130);
-    if (inner3->field198) {
-        void* eax_val5 = inner3->field198;
+    void* stack[6];
+    stack[0] = ebx2;
+    stack[1] = ecx4;
+    stack[2] = this;
+    stack[3] = edx5;
+    stack[4] = edi4;
+    stack[5] = arg8;
+
+    sub_43C940(&local78, local44, local18, local8, local44, stack);
+
+    void* esi4 = this;
+    void* eax5 = *(void**)((char*)esi4 + 0x128);
+    if (*(void**)((char*)eax5 + 0x198) != 0) {
+        void* eax6 = *(void**)((char*)eax5 + 0x198);
         local48 = 0;
         local44 = 0;
         local40 = 0;
-        func_576f00(&local48, eax_val5);
-        void* edx_val6 = *(void**)((char*)esi_val + 0x134);
-        void* eax_val6 = *(void**)((char*)edx_val6 + 4);
-        void* ecx_val6 = (char*)eax_val6 + 4;
-        void* eax_val7 = func_58c5c0(ecx_val6, 0);
-        Inner* inner4 = *(Inner**)((char*)esi_val + 0x130);
-        void* edx_val7 = inner4->field198;
-        func_58c5c0(eax_val7, edx_val7);
-        Inner* inner5 = *(Inner**)((char*)esi_val + 0x130);
-        void* eax_val8 = inner5->field198;
-        void* edx_val8 = *(void**)((char*)eax_val8 + 0x1f0);
-        void* ecx_val7 = (char*)eax_val8 + 0x1f0;
-        void* eax_val9 = *(void**)edx_val8;
-        ((void(__thiscall*)(void*, int))eax_val9)(ecx_val7, 1);
-        func_5773c0(&local48);
+        sub_576F00((unsigned int)eax6);
+        void* edx6 = *(void**)((char*)esi4 + 0x12c);
+        void* eax7 = *(void**)((char*)edx6 + 4);
+        void* ecx5 = (char*)eax7 + 4;
+        void* r = sub_802464(ecx5);
+        void* ecx6 = *(void**)((char*)esi4 + 0x128);
+        void* edx7 = *(void**)((char*)ecx6 + 0x198);
+        sub_58C5C0(r, edx7);
+        void* eax8 = *(void**)((char*)esi4 + 0x128);
+        void* eax9 = *(void**)((char*)eax8 + 0x198);
+        void* edx8 = *(void**)((char*)eax9 + 0x1f0);
+        void* ecx7 = (char*)eax9 + 0x1f0;
+        void* eax10 = *(void**)edx8;
+        ((void(__thiscall*)(void*, int))eax10)(ecx7, 1);
+        sub_5773C0(&local48);
     }
-    func_5a2fe0(&local60);
+    sub_5A2FE0(&local60);
+    return 0;
 }

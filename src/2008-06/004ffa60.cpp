@@ -1,160 +1,129 @@
-// from server: 30% by colin
+// from server: 41% by colin
+//
+
 struct Vector2 { float x, y; };
 struct Vector3 { float x, y, z; };
 
 extern "C" double __stdcall ceil(double);
 
-struct CylinderBuilder {
-    int f(int a, int b, int c, int d);
-};
-
-extern "C" void __cdecl sub_5EC220(void*, void*);
-extern "C" void __cdecl sub_5185D0(Vector2* out, const Vector3* in);
-extern "C" float __cdecl sub_4F1FF0(int);
-extern "C" void __cdecl sub_4F35D0(Vector3* a, Vector3* b, Vector3* c, Vector3* d, Vector3* e);
-extern "C" void __cdecl sub_4FE930(void* self, int a, int b);
-
 extern float g_819bac;
 extern float g_826e6c;
 extern float g_83a3e4;
 
-int CylinderBuilder::f(int arg0, int arg1, int arg2, int arg3)
+float sub_4f1ff0(int);
+void sub_5185d0(Vector2* out, Vector2* in);
+void sub_4f35d0(Vector3* a, Vector2* b, Vector2* c, Vector3* d, Vector3* e, int f, int g);
+void sub_4f54d0(void* self, int a, int b);
+
+struct PBBBuilder {
+    int field0;
+    Vector2 field4;
+    int fieldC;
+    unsigned int field10;
+    void build(Vector3* a, Vector3* b, int c, int d, int e, int f);
+};
+
+void PBBBuilder::build(Vector3* a, Vector3* b, int c, int d, int e, int f)
 {
-    int saved = *(int*)((char*)this + 0x10);
-    int mode = (saved >> 15) & 7;
+    float arr[4];
+    float arr2[4];
+    float arr3[4];
+    float arr4[4];
+    int idx;
+    int i;
+    int count;
 
-    Vector2 v2a;
-    sub_5EC220((char*)this + 4, &v2a);
+    unsigned int bits = this->field10 >> 9;
+    int sel = bits & 7;
 
-    float f0 = *(float*)((char*)&arg0 + 0);
-    (void)f0;
+    Vector2 tmp;
+    sub_5185d0(&tmp, &this->field4);
 
-    float a = *(float*)((char*)&arg0 + 0);
-    float b = *(float*)((char*)&arg1 + 0);
-    float c = *(float*)((char*)&arg2 + 0);
+    float f0 = a->x; if (f0 < 0) f0 = -f0;
+    float f1 = a->y; if (f1 < 0) f1 = -f1;
+    float f2 = a->z; if (f2 < 0) f2 = -f2;
 
-    float fa = a < 0 ? -a : a;
-    float fb = b < 0 ? -b : b;
-    float fc = c < 0 ? -c : c;
-
-    float vals[2];
-    vals[0] = fa;
-    vals[1] = fb;
-    float extra = fc;
+    arr[0] = f0;
+    arr[1] = f1;
+    arr[2] = f2;
 
     bool flag;
-    if (arg3 == 0) {
-        flag = (fa == fb);
+    if (f != 0) {
+        flag = (f0 == f1);
     } else {
         flag = false;
     }
-    int idx = flag ? 0 : 1;
+    idx = flag ? 0 : 1;
 
-    int count;
-    if (arg3 == 0 && mode != 0) {
-        float t = vals[idx] * g_819bac;
-        double ct = ceil((double)t);
-        count = (int)ct;
+    if (f == 0 && sel != 0) {
+        double dv = (double)arr[idx] * (double)g_819bac;
+        float cf = (float)ceil(dv);
+        count = (int)cf;
     } else {
         count = 1;
     }
 
-    short arr[2];
-    arr[0] = 0;
-    arr[1] = 0;
+    short sval = *(short*)((char*)&tmp + (idx * 2));
+    int q = (int)sval / count;
+    unsigned short qq = (unsigned short)q;
+    unsigned short one = 1;
+    unsigned short chosen = (one < qq) ? qq : one;
 
-    short v = *(short*)((char*)&v2a + (idx * 2));
-    int q = (int)v / count;
-    short qs = (short)q;
+    *(unsigned short*)((char*)&idx + 0) = chosen;
+    *(unsigned short*)((char*)&tmp + idx * 2) = (unsigned short)sval;
 
-    short one = 1;
-    short chosen;
-    if (one < qs) {
-        chosen = qs;
-    } else {
-        chosen = one;
-    }
-    arr[idx] = chosen;
+    Vector2 p0, p1;
+    sub_5185d0(&p0, (Vector2*)a);
+    p0.x = -p0.x;
+    p0.y = -p0.y;
+    sub_5185d0(&p1, (Vector2*)b);
+    p1.x = -p1.x;
+    p1.y = -p1.y;
 
-    float fv = extra;
-
-    Vector2 out2;
-    sub_5185D0(&out2, (const Vector3*)&v2a);
-    float nx = -out2.x;
-    float ny = -out2.y;
-
-    Vector2 out3;
-    sub_5185D0(&out3, (const Vector3*)&v2a);
-
-    float r0 = 0, r1 = 0, r2 = 0, r3 = 0;
-
-    int sel = arg3;
-    if (sel == 0) {
-        if (mode == 0) {
-            r0 = g_83a3e4;
-            r1 = g_819bac;
-            r2 = g_819bac;
-            r3 = g_819bac;
+    if (f == 0) {
+        if (sel == 0) {
+            arr2[0] = g_83a3e4;
+            arr2[1] = g_819bac;
+            arr2[2] = g_819bac;
+            arr2[3] = g_819bac;
         } else {
-            r1 = sub_4F1FF0(mode);
-            r0 = extra * 2.0f;
-            r2 = g_819bac;
-            r3 = g_819bac;
+            arr2[idx] = 0.0f;
+            arr2[idx] = sub_4f1ff0(sel);
+            arr3[idx] = arr[idx] * 2.0f;
+            arr4[idx] = g_819bac;
             if (idx == 1) {
-                r2 = -r2;
+                arr4[1] = -arr4[1];
             }
         }
-    } else if (sel == 1) {
-        r0 = *(float*)((char*)&arg0 + 0x1c);
-        r1 = *(float*)((char*)&arg0 + 0x18);
-        r2 = *(float*)((char*)&arg0 + 0x1c);
-        r3 = -r2;
-    } else if (sel == 2) {
-        r0 = 0;
-        r1 = 0;
-        r2 = 0;
-        r3 = 0;
-    } else {
-        r0 = 0;
-        r1 = 0;
-        r2 = 0;
-        r3 = 0;
+    } else if (f == 1) {
+        arr2[0] = 0.0f;
+        arr2[1] = b->y;
+        arr2[2] = b->x;
+        arr2[3] = -b->y;
+    } else if (f == 2) {
+        arr2[0] = 0.0f;
+        arr2[1] = 0.0f;
+        arr2[2] = 0.0f;
+        arr2[3] = 0.0f;
     }
 
-    float prev = 0;
-
-    for (int i = 0; i < count; i++) {
-        float cur;
+    for (i = 0; i < count; i++) {
         if (i == count - 1) {
-            cur = vals[idx];
-            if (arg3 == 0 && *(int*)((char*)&arg0 + 0x24) != 0) {
-                float d = cur - prev;
-                float m = d * r2;
-                m = m * g_83a3e4;
-                r2 = m;
+            arr3[idx] = arr[idx];
+            if (f == 0 && c != 0) {
+                arr4[idx] = (arr[idx] - arr3[idx]) * arr4[idx] * g_83a3e4;
             }
         } else {
-            cur = prev + g_826e6c;
+            arr3[idx] = arr[idx] + g_826e6c;
         }
 
-        Vector3 p1, p2, p3;
-        p1.x = r0;
-        p1.y = r1;
-        p1.z = r2;
-        p2.x = r3;
-        p2.y = r0;
-        p2.z = r1;
-        p3.x = r2;
-        p3.y = r3;
-        p3.z = r0;
+        Vector3 vv;
+        vv.x = arr4[0];
+        vv.y = arr4[1];
+        vv.z = arr4[2];
 
-        Vector3 outv;
-        sub_4F35D0(&outv, &p1, &p2, &p3, &p1);
-
-        sub_4FE930((void*)this, arg2, arg3);
-
-        prev = cur;
+        sub_4f35d0(&vv, &p0, &p1, (Vector3*)&arr3, (Vector3*)&arr2, sel, (int)this);
+        sub_4f54d0(this, d, e);
+        arr2[idx] = arr3[idx];
     }
-
-    return 0;
 }

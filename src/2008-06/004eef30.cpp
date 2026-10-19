@@ -1,10 +1,15 @@
-// from server: 38% by colin
+// from server: 42% by colin
+//
+
+//
+
 #pragma float_control(precise, off)
 
 extern "C" void __cdecl free_node(void*);
 extern "C" void __cdecl aligned_free(void*);
 extern "C" void __stdcall destroy_value(void*);
-extern "C" void __stdcall destroy_array(void*, unsigned int, int, void (__stdcall *)(void*));
+extern "C" void __stdcall destroy_array(
+    void*, unsigned int, int, void (__stdcall *)(void*));
 
 extern "C" long __stdcall InterlockedIncrement(long*);
 extern "C" long __stdcall InterlockedDecrement(long*);
@@ -28,22 +33,28 @@ struct Block {
     unsigned char padding[8];
     Node** buckets;
     unsigned int capacity;
-    unsigned int count;
+    unsigned char padding2[0x48];
+    int count;
 };
 
 struct Texture {
     unsigned char padding[8];
     Block* block;
-    unsigned int counter;
-    unsigned int field_5c;
+    void __cdecl insert(unsigned int, const void*);
+};
 
-    void* __cdecl insert(unsigned int, unsigned int);
+struct Guard {
+    void* vtable;
+    void* prev;
+    int state;
+    Guard();
+    ~Guard();
 };
 
 struct HashEntry {
     unsigned int a;
     unsigned int b;
-    unsigned char padding[16];
+    unsigned char padding[0x10];
     HashEntry* next;
 };
 
@@ -51,132 +62,70 @@ struct HashTable {
     unsigned char padding[8];
     HashEntry** buckets;
     unsigned int capacity;
-    unsigned int count;
+    unsigned char padding2[0x4c];
+    int count;
+    void* find(unsigned int);
+    void insert(unsigned int, const void*);
 };
 
-struct Guard {
+struct Value {
     void* ptr;
-    unsigned int flags;
-    unsigned int size;
-    void* vtable;
-    Guard();
-    ~Guard();
+    Value();
+    __declspec(dllimport) ~Value() throw();
+};
+
+struct Holder {
+    void* ptr;
+    void* get();
 };
 
 struct RefCounted {
     void* vtable;
-    unsigned int refcount;
-    void* data;
+    void* refptr;
     void release();
 };
 
-struct Holder {
-    RefCounted* ptr;
-    void set(RefCounted*);
-};
+extern "C" void __cdecl destroy_value_cdecl(void*);
 
-struct MapNode {
-    unsigned int a;
-    unsigned int b;
-    unsigned char padding[16];
-    MapNode* next;
-};
-
-struct Map {
-    unsigned char padding[8];
-    MapNode** buckets;
-    unsigned int capacity;
-    unsigned int count;
-    void insert(unsigned int, unsigned int, void*);
-};
-
-struct Pair {
-    unsigned int a;
-    unsigned int b;
-};
-
-struct Slot {
-    void* ptr;
-    void* get();
-    void set(void*);
-    unsigned int hashCode();
-};
-
-struct Container {
-    unsigned char padding[8];
-    Slot* slot;
-    unsigned int count;
-    unsigned int field_5c;
-    void* lookup(unsigned int, unsigned int);
-    void* insert(unsigned int, unsigned int);
-};
-
-struct ViewNew {
-    struct Texture* texture;
-};
-
-void* Texture::insert(unsigned int a, unsigned int b)
+void Texture::insert(unsigned int key, const void* value)
 {
+    Guard guard;
     HashTable* table = (HashTable*)this->block;
-    HashEntry* entry = table->buckets[a % table->capacity];
-    while (entry) {
-        if (entry->a == a && entry->b == b)
-            break;
-        entry = entry->next;
-    }
 
+    HashEntry* entry = (HashEntry*)table->find(key);
     if (!entry) {
-        Guard guard;
-        guard.ptr = 0;
-        guard.flags = 0;
-        guard.size = 0;
-        guard.vtable = (void*)0x826c04;
-
-        void* mem = operator new(0x28);
-        guard.ptr = mem;
-        guard.flags = 1;
-
-        Map* map = (Map*)this->block;
-        map->insert(a, b, &guard);
-
-        guard.flags = 0;
-        guard.vtable = (void*)0x826c04;
-        guard.~Guard();
+        Value v;
+        table->insert(key, value);
+        entry = (HashEntry*)table->find(key);
     }
 
-    HashEntry* found = table->buckets[a % table->capacity];
-    while (found) {
-        if (found->a == a && found->b == b)
-            break;
-        found = found->next;
+    if (!((Holder*)&entry->a)->get()) {
+        void* p = operator new(4);
+        ((Holder*)&entry->a)->ptr = p;
     }
 
-    Slot* slot = (Slot*)((char*)found + 8);
-    if (!slot->hashCode()) {
-        void* mem = operator new(4);
-        slot->set(mem);
-    }
-
-    void* result = slot->get();
-    if (!*(void**)result) {
-        RefCounted* obj = (RefCounted*)operator new(0x8c);
-        if (obj) {
-            obj->vtable = (void*)0x4fd6b0;
-            obj->refcount = 1;
-            obj->data = 0;
+    void* slot = ((Holder*)&entry->a)->get();
+    if (!slot) {
+        Node* node = (Node*)operator new(0x8c);
+        if (node) {
+            node->hash = key;
+            node->key.x = 0;
+            node->key.y = 0;
+            node->key.z = 0;
+            node->value = 0;
+            node->next = 0;
         }
-        *(void**)result = obj;
-        InterlockedIncrement((long*)&this->field_5c);
-        if (this->field_5c % 100 == 0) {
-            void* p = *(void**)result;
-            if (p) {
-                InterlockedIncrement((long*)((char*)p + 4));
-                if (InterlockedDecrement((long*)((char*)p + 4)) == 0) {
-                    ((RefCounted*)p)->release();
+        ((Holder*)&entry->a)->ptr = node;
+        InterlockedIncrement((long*)&table->count);
+        if (table->count % 100 == 0) {
+            RefCounted* r = (RefCounted*)entry->next;
+            if (r) {
+                InterlockedDecrement((long*)&r->refptr);
+                if (!InterlockedDecrement((long*)&r->refptr)) {
+                    r->release();
+                    (*(void (__thiscall**)(RefCounted*, int))r->vtable)(r, 1);
                 }
             }
         }
     }
-
-    return *(void**)result;
 }

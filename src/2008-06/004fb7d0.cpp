@@ -1,109 +1,132 @@
-// from server: 23% by atomic.potato
-// roc 2008-06 004fb7d0  unit: RBX::ViewNew::TorsoBuilder  size: 739 bytes
+// from server: 29% by colin
+//
 
-extern "C" void __cdecl sub_5EC200(void*, void*);
-extern "C" void* __cdecl sub_6A0956(int);
-extern "C" void __cdecl sub_6A094A(void*);
-extern "C" void* __cdecl sub_509BA0();
-extern "C" void __cdecl sub_548000(void*, void*, void*, int);
-extern "C" void __cdecl sub_548640(void*);
-extern "C" void __cdecl sub_500EB0(void*, void*, void*, void*);
+struct Vector3 { float x, y, z; };
+
+struct TorsoBuilder {
+    int f(int a, int b, int c, int d, int e, int f, int g, int h, int i, int j, int k, int l);
+};
+
+extern "C" void __cdecl sub_5EC220(float* out, float* in);
+extern "C" void* __cdecl sub_6A0956(int size);
+extern "C" float* __cdecl sub_509BA0();
+extern "C" void* __cdecl sub_548000(float* a, float* b, float* c, int d);
+extern "C" void __cdecl sub_500EB0(void* self, void* a, void* b, void* c, void* d);
+extern "C" void __cdecl sub_548640(void* p);
+extern "C" void __cdecl sub_6A094A(void* p);
 
 extern float g_819bac;
 
-struct TorsoBuilder {
-    char pad0[4];
-    void build(int a, int b, int c, int d, int e, int f, int g, int h, int i, int j, int k, int l);
-};
-
-void TorsoBuilder::build(int a, int b, int c, int d, int e, int f, int g, int h, int i, int j, int k, int l)
+int TorsoBuilder::f(int a, int b, int c, int d, int e, int f, int g, int h, int i, int j, int k, int l)
 {
-    float v44, v48, v4c, v50, v54;
-    float f18, f1c, f20, f24;
-    float f28, f2c, f30, f34;
-    float f38, f3c, f40;
-    float f60, f64, f68, f6c, f70;
-    float f74, f78, f7c;
-    int n34, n36;
-    int i2, j2;
-    void* arr;
-    float fx, fy;
-    float f10, f14;
-    int idx;
+    float v[3];
+    sub_5EC220(v, (float*)((char*)this + 4));
 
-    sub_5EC200((char*)this + 4, &f60);
+    float ax = v[0]; if (ax < 0) ax = -ax;
+    float ay = v[1]; if (ay < 0) ay = -ay;
+    float az = v[2]; if (az < 0) az = -az;
 
-    f74 = (float)(f60 < 0 ? -f60 : f60);
-    n34 = (short)a;
-    f78 = (float)(f64 < 0 ? -f64 : f64);
-    n36 = (short)b;
-    f7c = (float)(f68 < 0 ? -f68 : f68);
+    int n1 = (short)i;
+    int n2 = (short)j;
+    int w1 = n1 + 1;
+    int w2 = n2 + 1;
+    int total = w1 * w2;
 
-    v44 = (float)(n34 + 1);
-    v48 = (float)(n36 + 1);
-    v4c = (float)(n34 + 1);
-    v50 = (float)(n36 + 1);
-    v54 = (float)(n34 + 1);
+    float stepX = (float)((float)e - (float)a) / (float)w1;
+    float stepY = (float)((float)f - (float)b) / (float)w2;
+    float stepZ = (float)((float)g - (float)c) / (float)w1;
 
-    v44 = (f - c) / v44;
-    v48 = (g - d) / v48;
-    v4c = (h - e) / v4c;
-    v50 = (i - j) / v50;
-    v54 = k / v54;
+    void** arr = (void**)sub_6A0956(total * 4);
 
-    arr = sub_6A0956((n34 + 1) * (n36 + 1) * 4);
+    float curX = (float)a;
+    float curY = (float)b;
+    float curZ = (float)c;
 
-    f18 = (float)c;
-    f1c = (float)e;
-    f20 = (float)j;
-    f24 = (float)k;
+    int row = 0;
+    while (row <= n1) {
+        float rowX = (float)a;
+        float rowZ = (float)c;
+        int col = 0;
+        while (col <= n2) {
+            float px = rowX;
+            float py = curY;
+            float pz = rowZ;
 
-    i2 = 0;
-    while (i2 <= n34) {
-        f10 = (float)d;
-        f14 = (float)i;
-        j2 = 0;
-        while (j2 <= n36) {
-            f38 = f10;
-            f3c = f14;
-            f40 = 1.0f;
-            f60 = f18;
-            f64 = f1c;
-            f68 = f20;
-            f6c = f24;
-            f70 = 1.0f;
-            sub_5EC200(&f60, &f74);
-            sub_5EC200(&f74, &f70);
-            sub_548000(&f70, &f6c, &f60, 1);
-            f38 += f60;
-            f3c += f64;
-            idx = (n36 + 1) * i2 + j2;
-            ((void**)arr)[idx] = (void*)0;
-            j2++;
-            f10 += v44;
-            f14 += v48;
+            float out1[3];
+            float out2[3];
+            float out3[3];
+
+            float tmp[3];
+            tmp[0] = px;
+            tmp[1] = py;
+            tmp[2] = pz;
+            sub_5EC220(out1, tmp);
+
+            float tmp2[3];
+            tmp2[0] = px;
+            tmp2[1] = py;
+            tmp2[2] = pz;
+            sub_5EC220(out2, tmp2);
+
+            float tmp3[3];
+            tmp3[0] = px;
+            tmp3[1] = py;
+            tmp3[2] = pz;
+            sub_5EC220(out3, tmp3);
+
+            void* res = sub_548000(out1, out2, out3, 1);
+
+            float* shader = sub_509BA0();
+            if (shader[0] == g_819bac && shader[1] == g_819bac) {
+                px = curX;
+                pz = curZ;
+            }
+
+            float sx = px * g_819bac;
+            float sz = pz * g_819bac;
+
+            float p1[3];
+            p1[0] = sx;
+            p1[1] = py;
+            p1[2] = sz;
+            float p2[3];
+            sub_5EC220(p2, p1);
+
+            float p3[3];
+            sub_5EC220(p3, p2);
+
+            void* res2 = sub_548000(p3, p2, p1, 1);
+
+            rowX += stepX;
+            rowZ += stepZ;
+
+            int idx = (n2 + 1) * row + col;
+            arr[idx] = res2;
+
+            col++;
         }
-        i2++;
-        f18 += v4c;
-        f1c += v50;
+        curY += stepY;
+        row++;
     }
 
-    i2 = 0;
-    while (i2 < n34) {
-        j2 = 0;
-        while (j2 < n36) {
-            idx = (n36 + 1) * i2 + j2;
-            sub_500EB0((void*)0, ((void**)arr)[idx], ((void**)arr)[idx + 1], ((void**)arr)[idx + n36 + 1]);
-            j2++;
+    int r = 0;
+    while (r < n1) {
+        int cc = 0;
+        while (cc < n2) {
+            int base = (n2 + 1) * r + cc;
+            int base2 = base + (n2 + 1);
+            sub_500EB0(this, arr[base], arr[base + 1], arr[base2], arr[base2 + 1]);
+            cc++;
         }
-        i2++;
+        r++;
     }
 
-    i2 = 0;
-    while (i2 < (unsigned)((n34 + 1) * (n36 + 1))) {
-        sub_548640(((void**)arr)[i2]);
-        i2++;
+    int q = 0;
+    while (q < total) {
+        sub_548640(arr[q]);
+        q++;
     }
 
     sub_6A094A(arr);
+    return 0;
 }

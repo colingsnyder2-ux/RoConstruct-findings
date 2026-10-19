@@ -1,78 +1,16 @@
-// from server: 91% by king_originala
+// from server: 97% by colin
+//
+
+//
+
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
 extern "C" long __cdecl _InterlockedDecrement(volatile long*);
 #pragma intrinsic(_InterlockedDecrement)
 
 extern "C" void __cdecl free(void*);
-void __cdecl operator delete(void*);
 
-struct Interface0 {
-    virtual void slot();
-    unsigned char padding[12];
-};
-
-struct Interface1 {
-    virtual void slot();
-};
-
-struct Interface2 {
-    virtual void slot();
-    unsigned char padding[8];
-};
-
-struct Interface3 {
-    virtual void slot();
-};
-
-struct Interface4 {
-    virtual void slot();
-    unsigned char padding[28];
-};
-
-struct Interface5 {
-    virtual void slot();
-    unsigned char padding[28];
-};
-
-struct Interface6 {
-    virtual void slot();
-    unsigned char padding[28];
-};
-
-struct Interface7 {
-    virtual void slot();
-    unsigned char padding[28];
-};
-
-struct Interface8 {
-    virtual void slot();
-    unsigned char padding[28];
-};
-
-struct Interface9 {
-    virtual void slot();
-    unsigned char padding[104];
-};
-
-struct Base : Interface0, Interface1, Interface2, Interface3,
-              Interface4, Interface5, Interface6, Interface7,
-              Interface8, Interface9 {
-    virtual ~Base();
-};
-
-struct Connection;
-
-struct ConnectionOwner {
-    void disconnect(Connection*);
-};
-
-struct Connection {
-    virtual void slot();
-    ConnectionOwner* owner;
-};
-
-struct RefCount {
+struct Control {
     virtual void unused();
     virtual void dispose();
     virtual void destroy();
@@ -80,61 +18,115 @@ struct RefCount {
     volatile long weak;
 };
 
-struct SharedRef {
-    RefCount* value;
-    ~SharedRef();
+struct B0 {
+    virtual ~B0();
+    unsigned long padding[3];
 };
 
-struct Buffers {
+struct B1 {
+    virtual ~B1();
+};
+
+struct B2 {
+    virtual ~B2();
+    unsigned long padding[2];
+};
+
+struct B3 {
+    virtual ~B3();
+};
+
+struct B4 {
+    virtual ~B4();
+    unsigned long padding[7];
+};
+
+struct B5 {
+    virtual ~B5();
+    unsigned long padding[7];
+};
+
+struct B6 {
+    virtual ~B6();
+    unsigned long padding[7];
+};
+
+struct B7 {
+    virtual ~B7();
+    unsigned long padding[7];
+};
+
+struct B8 {
+    virtual ~B8();
+    unsigned long padding[7];
+};
+
+struct B9 {
+    virtual ~B9();
+    unsigned long padding[26];
+};
+
+struct Base : B0, B1, B2, B3, B4, B5, B6, B7, B8, B9 {
+    virtual ~Base();
+};
+
+struct Connection;
+
+struct Holder {
+    virtual void unused();
+    Connection* connection;
+};
+
+struct Connection {
+    void disconnect(Holder*);
+};
+
+struct ControlRef {
+    Control* control;
+    ~ControlRef();
+};
+
+struct Buffer {
+    void* allocation;
+    unsigned long reserved[2];
     void* first;
     void* last;
     void* limit;
-    void* selectedFirst;
-    void* selectedLast;
-    void* selectedLimit;
-    ~Buffers();
+    ~Buffer();
 };
 
-struct S : Base, Connection {
-    SharedRef reference;
-    Buffers buffers;
-    virtual void slot();
+struct S : Base, Holder {
+    ControlRef reference;
+    Buffer buffer;
     virtual ~S();
-    void* deletingDestructor(unsigned int flags);
 };
 
-inline SharedRef::~SharedRef()
+__forceinline ControlRef::~ControlRef()
 {
-    RefCount* p = value;
+    Control* p = control;
     if (p) {
-        if (_InterlockedDecrement(&p->strong) == 0) {
+        volatile long& strong = p->strong;
+        if (_InterlockedDecrement(&strong) == 0) {
             p->dispose();
-            if (_InterlockedDecrement(&p->weak) == 0)
+            volatile long& weak = p->weak;
+            if (_InterlockedDecrement(&weak) == 0)
                 p->destroy();
         }
     }
 }
 
-inline Buffers::~Buffers()
+__forceinline Buffer::~Buffer()
 {
-    if (selectedFirst)
-        free(selectedFirst);
-    selectedFirst = 0;
-    selectedLast = 0;
-    selectedLimit = 0;
-    free(first);
+    if (first)
+        free(first);
+    first = 0;
+    last = 0;
+    limit = 0;
+    free(allocation);
 }
 
 S::~S()
 {
-    if (owner)
-        owner->disconnect(static_cast<Connection*>(this));
-}
-
-void* S::deletingDestructor(unsigned int flags)
-{
-    this->S::~S();
-    if (flags & 1)
-        operator delete(this);
-    return this;
+    if (connection)
+        connection->disconnect(this);
 }

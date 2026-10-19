@@ -1,48 +1,54 @@
-// from server: 67% by colin
-struct Arg {
-    char pad[0x14];
+// from server: 98% by colin
+//
+
+struct Handle {
+    int first;
+    int second;
+    Handle() : first(0), second(0) {}
+    ~Handle();
 };
 
-struct Inner {
-    char pad[0x18];
-    void* p18;
+struct Temporary {
+    Handle handle;
+    int third;
+    void init(int value);
+    Temporary(int value) : third(0) { init(value); }
+    ~Temporary();
 };
 
-struct Mid {
-    char pad[0x198];
-    void* p198;
+struct Source {
+    char padding[0x198];
+    int value;
 };
 
-struct Outer {
-    char pad[0x128];
-    Mid* p128;
-    Inner* p12c;
-    void method(Arg* a, void* b);
+struct Receiver {
+    virtual void slot0();
+    virtual void slot1();
+    virtual void slot2();
+    virtual void invoke(void* value, int argument);
 };
 
-struct Vtbl {
-    char pad[0xc];
-    void (__stdcall *fn)(void*, Arg*, void*);
+struct Destination {
+    char padding[0x18];
+    Receiver* receiver;
 };
 
-void* __cdecl operator new(unsigned int);
-
-struct Ref {
-    void* value;
-    Ref& operator=(const Ref&);
-    ~Ref();
+struct S {
+    char padding[0x134];
+    Source* source;
+    Destination* destination;
+    void f(void* value, int argument);
 };
 
-void Outer::method(Arg* a, void* b)
+void S::f(void* value, int argument)
 {
-    Ref tmp;
-    tmp.value = 0;
-    void* p = p128->p198;
-    tmp = *(Ref*)&p;
-    Arg* arg = a ? (Arg*)((char*)a + 0x14) : 0;
-    Inner* inner = p12c;
-    void* obj = inner->p18;
-    Vtbl* vt = *(Vtbl**)obj;
-    vt->fn(obj, arg, b);
-    tmp.~Ref();
+    Temporary temporary(source->value);
+    char* p = static_cast<char*>(value);
+    if (p != 0)
+        p += 0x14;
+    else
+        p = 0;
+    Destination* d = destination;
+    Receiver* r = d->receiver;
+    r->invoke(p, argument);
 }

@@ -1,158 +1,148 @@
-// from server: 30% by colin
-struct Vector2 {
-    float x;
-    float y;
+// from server: 34% by colin
+//
+
+struct VMaterialBase {
+    char pad[0x10];
+    unsigned int flags;
+    void func(float a, float b, float c, int d, int e);
 };
 
-struct Vector3 {
-    float x;
-    float y;
-    float z;
-    Vector2 xy() const;
-};
-
-extern "C" double __stdcall ceil(double);
+extern "C" {
+    double __stdcall ceil(double);
+}
 
 extern float g_819bac;
 extern float g_826e6c;
 extern float g_83a3e4;
 
-float sub_4f1ff0(int mode);
+void __stdcall sub_6784d0(void*, void*);
+void __stdcall sub_5185d0(float*, float*);
+float __stdcall sub_4f1ff0(int);
+void __stdcall sub_4f35d0(void*, void*, void*, void*, void*);
+void __stdcall sub_4f3260(void*, void*, void*, void*, void*);
 
-struct S {
-    char pad[0x10];
-    unsigned int flags;
-    void method(float a, float b, float c, int d, int e);
-};
-
-void sub_4f35d0(S* self, Vector3* v, Vector2* uv, float* extra, int a, int b);
-void sub_4f2ef0(S* self, Vector3* v, Vector2* uv, float* extra, int a, int b, short c);
-
-void S::method(float a, float b, float c, int d, int e)
+void VMaterialBase::func(float a, float b, float c, int d, int e)
 {
-    unsigned int mode = (this->flags >> 15) & 7;
+    float v38;
+    float v44, v48, v4c;
+    float v30, v34, v38b;
+    float v18, v1c, v20, v24, v28, v2c;
+    int ebp;
+    int esi;
+    int ebx;
+    int edi;
+    int i;
+    float f;
 
-    float fa = a < 0.0f ? -a : a;
-    float fb = b < 0.0f ? -b : b;
-    float fc = c < 0.0f ? -c : c;
+    ebp = (flags >> 6) & 7;
 
-    int idx;
-    if (e == 0) {
-        idx = (fa < fb) ? 1 : 0;
-    } else {
-        idx = 0;
-    }
+    sub_6784d0(&v38, &flags);
 
-    int count;
-    if (e == 0 && mode != 0) {
-        float vals[3];
-        vals[0] = fa;
-        vals[1] = fb;
-        vals[2] = fc;
-        count = (int)ceil((double)(vals[idx] * g_819bac));
-    } else {
-        count = 1;
-    }
-
-    float fvals[3];
-    fvals[0] = fa;
-    fvals[1] = fb;
-    fvals[2] = fc;
-
-    float out[3];
-    out[0] = 0.0f;
-    out[1] = 0.0f;
-    out[2] = 0.0f;
-
-    float step[3];
-    step[0] = 0.0f;
-    step[1] = 0.0f;
-    step[2] = 0.0f;
-
-    float cur[3];
-    cur[0] = 0.0f;
-    cur[1] = 0.0f;
-    cur[2] = 0.0f;
-
-    float prev[3];
-    prev[0] = 0.0f;
-    prev[1] = 0.0f;
-    prev[2] = 0.0f;
+    v44 = a < 0 ? -a : a;
+    v48 = b < 0 ? -b : b;
+    v4c = c < 0 ? -c : c;
 
     if (d == 0) {
-        if (mode == 0) {
-            out[0] = g_83a3e4;
-            out[1] = g_819bac;
-            out[2] = g_819bac;
-            cur[0] = g_819bac;
-            cur[1] = g_819bac;
-            cur[2] = g_819bac;
+        if (v44 == v48) {
+            esi = 0;
         } else {
-            out[idx] = sub_4f1ff0(mode);
-            step[idx] = fvals[idx] * 2.0f;
-            cur[idx] = g_819bac;
-            if (idx == 1) {
-                cur[0] = -cur[0];
+            esi = 1;
+        }
+    } else {
+        esi = 1;
+    }
+
+    if (d == 0 && ebp != 0) {
+        f = (float)((int)ceil(v44 * g_819bac));
+        ebx = (int)f;
+    } else {
+        ebx = 1;
+    }
+
+    {
+        short tmp;
+        short arr[2];
+        short val;
+        int idx;
+
+        idx = esi + esi;
+        tmp = *(short*)((char*)&v38 + 0x2a - idx);
+        val = (short)((int)tmp / ebx);
+        if (val < 1) val = 1;
+        *(short*)((char*)&v18 + idx) = val;
+        *(short*)((char*)&v18 + 0x2a - idx) = tmp;
+    }
+
+    {
+        float tmp2[2];
+        sub_5185d0(&v38, tmp2);
+        v30 = -tmp2[0];
+        v34 = -tmp2[1];
+    }
+
+    {
+        float tmp2[2];
+        sub_5185d0(&v38, tmp2);
+        v28 = 0.0f;
+        v2c = 0.0f;
+        v18 = 0.0f;
+        v1c = 0.0f;
+    }
+
+    if (d == 0) {
+        if (ebp == 0) {
+            v28 = g_83a3e4;
+            v2c = g_819bac;
+            v1c = g_819bac;
+            v18 = g_819bac;
+        } else {
+            v2c = sub_4f1ff0(ebp);
+            v20 = v30 * 2.0f;
+            v18 = g_819bac;
+            if (esi == 1) {
+                v18 = -v18;
             }
         }
     } else if (d == 1) {
-        out[0] = 0.0f;
-        out[1] = 0.0f;
-        out[2] = 0.0f;
-        cur[0] = 0.0f;
-        cur[1] = 0.0f;
-        cur[2] = 0.0f;
+        v28 = 0.0f;
+        v2c = *(float*)((char*)this + 0x1c);
+        v18 = *(float*)((char*)this + 0x18);
+        v1c = -*(float*)((char*)this + 0x1c);
     } else if (d == 2) {
-        out[0] = 0.0f;
-        out[1] = 0.0f;
-        out[2] = 0.0f;
-        cur[0] = 0.0f;
-        cur[1] = 0.0f;
-        cur[2] = 0.0f;
+        v28 = 0.0f;
+        v2c = 0.0f;
+        v18 = 0.0f;
+        v1c = 0.0f;
     }
 
-    for (int i = 0; i < count; i++) {
-        if (i == count - 1) {
-            step[idx] = fvals[idx];
+    for (i = 0; i < ebx; i++) {
+        if (i == ebx - 1) {
+            v30 = v44;
             if (d == 0 && e != 0) {
-                cur[idx] = (fvals[idx] - prev[idx]) * cur[idx] * g_83a3e4;
+                v18 = (v44 - v48) * v18 * g_83a3e4;
             }
         } else {
-            step[idx] = prev[idx] + g_826e6c;
+            v30 = v48 + g_826e6c;
         }
 
-        Vector3 vv;
-        vv.x = cur[0];
-        vv.y = cur[1];
-        vv.z = cur[2];
+        {
+            float args[5];
+            args[0] = v18;
+            args[1] = v1c;
+            args[2] = v28;
+            args[3] = v2c;
+            args[4] = v30;
+            sub_4f35d0(this, &v38, args, &v30, &v34);
+        }
 
-        Vector2 uu;
-        uu.x = out[0];
-        uu.y = out[1];
+        {
+            float args[5];
+            args[0] = v30;
+            args[1] = v34;
+            args[2] = v38b;
+            sub_4f3260(this, args, &v30, &v34, &v38b);
+        }
 
-        float extra[3];
-        extra[0] = out[2];
-        extra[1] = 0.0f;
-        extra[2] = 0.0f;
-
-        sub_4f35d0(this, &vv, &uu, extra, idx, i);
-
-        Vector3 vv2;
-        vv2.x = 0.0f;
-        vv2.y = 0.0f;
-        vv2.z = 0.0f;
-
-        Vector2 uu2;
-        uu2.x = 0.0f;
-        uu2.y = 0.0f;
-
-        float extra2[3];
-        extra2[0] = 0.0f;
-        extra2[1] = 0.0f;
-        extra2[2] = 0.0f;
-
-        sub_4f2ef0(this, &vv2, &uu2, extra2, idx, i, 0);
-
-        prev[idx] = step[idx];
+        v34 = v30;
     }
 }

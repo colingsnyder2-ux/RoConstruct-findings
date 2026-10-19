@@ -1,46 +1,58 @@
-// from server: 63% by king_originala
+// from server: 67% by colin
+//
+
+extern char registration_data;
+void __cdecl registration_callback();
+void __cdecl register_callback(void (__cdecl*)(), void*);
+void* __cdecl func_00616240();
+extern "C" void (__cdecl* _invalid_parameter_noinfo)();
+
+struct Owner {
+    void release();
+};
+
 struct Value {
     void* pointer;
-    void* control;
+    Owner* owner;
 
-    Value() : pointer(0), control(0) {}
-    ~Value();
+    Value() : pointer(0), owner(0) {}
+    ~Value() {
+        if (owner)
+            owner->release();
+    }
 };
 
 struct Storage {
-    unsigned char padding[12];
+    char padding[12];
     Value* first;
     Value* last;
     Value* limit;
 
-    void resize(unsigned int count, Value value);
+    void resize(unsigned count, Value value);
 };
 
-extern int initializationFlag;
-extern void __cdecl initialize();
-extern void __cdecl initializeOnce(void (__cdecl* function)(), int* flag);
-extern void* __cdecl func_004ab4d0();
-extern "C" void (__cdecl* _invalid_parameter_noinfo)();
-
-struct Creator {
-    unsigned char padding[0x190];
+struct S {
+    char padding[0x190];
     Storage values;
 
-    void* get();
+    void* f();
 };
 
-void* Creator::get()
-{
-    initializeOnce(initialize, &initializationFlag);
-    unsigned int index = (unsigned int)func_004ab4d0();
+void* S::f() {
+    register_callback(registration_callback, &registration_data);
+    unsigned index = (unsigned)func_00616240();
+    Storage& storage = values;
 
-    if (index + 1 > (unsigned int)(values.last - values.first)) {
-        values.resize(index + 1, Value());
+    if (index + 1 > (unsigned)(storage.limit - storage.first)) {
+        storage.resize(index + 1, Value());
         return 0;
     }
 
-    if (index >= (unsigned int)(values.last - values.first))
+    if (index >= (unsigned)(storage.last - storage.first))
         _invalid_parameter_noinfo();
 
-    return values.first[index].pointer;
+    void* result = storage.first[index].pointer;
+    if (result)
+        return result;
+    return 0;
 }

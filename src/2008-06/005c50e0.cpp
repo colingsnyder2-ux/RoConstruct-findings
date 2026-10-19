@@ -1,69 +1,87 @@
-// from server: 48% by colin
-struct String {
-    char storage[28];
-    String(const String&);
-    ~String();
+// from server: 88% by colin
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
+#include <typeinfo>
+
+
+namespace RBX {
+    namespace Reflection {
+        class DescribedBase { public:
+            virtual ~DescribedBase();
+        };
+    }
+}
+
+class DHTMLWindow : public RBX::Reflection::DescribedBase {
 };
+
+struct Content {
+    virtual ~Content();
+    virtual void type() const;
+    virtual Content* clone() const;
+};
+
+struct Value {
+    int value;
+    Content* content;
+
+    static Content* copyContent(Content*);
+    Value(const Value&);
+    ~Value();
+    int* get();
+};
+
+inline Content* Value::copyContent(Content* source)
+{
+    if (source)
+        return source->clone();
+    return 0;
+}
+
+inline Value::Value(const Value& other)
+    : value(other.value), content(copyContent(other.content))
+{
+}
+
+inline Value::~Value()
+{
+    if (content)
+        delete content;
+}
 
 struct Arguments {
-    virtual void v0();
-    virtual void v1(int, void*);
+    virtual void unused();
+    virtual void assign(int, Value*);
 };
 
-struct Base {
-    char pad[0x38];
-    void* field38;
-    void* field3c;
-    void* field40;
-    void* field44;
-    void* field48;
-    void* field4c;
+struct BoundFuncDesc {
+    char padding[56];
+    void (__thiscall* function)(void*, int, int);
+    int adjustment;
+    Value first;
+    Value second;
+
+    void invoke(RBX::Reflection::DescribedBase*, Arguments*);
 };
 
-extern "C" void* __stdcall sub_6a17c6(void*, void*, void*, int, void*);
-extern "C" void __stdcall sub_6a158c(void*, void*);
-extern "C" void* __stdcall sub_56ea60(void*);
-extern "C" void* __stdcall sub_56f0b0(void*, void*);
-extern "C" void* __stdcall stringCopyCtor(void*, void*);
+void BoundFuncDesc::invoke(RBX::Reflection::DescribedBase* source,
+                           Arguments* arguments)
+{
+    Value a(first);
+    arguments->assign(1, &a);
 
-struct BoundFuncDesc : Base {
-    void invoke(Arguments* args, int arg2);
-};
+    Value b(second);
+    arguments->assign(2, &b);
 
-void BoundFuncDesc::invoke(Arguments* args, int arg2) {
-    void* local10 = field40;
-    void* local14;
-    if (field44) {
-        local14 = ((void* (__thiscall*)(void*))((void**)field44)[2])(field44);
-    } else {
-        local14 = 0;
-    }
-    args->v1(1, &local10);
+    DHTMLWindow* server =
+        dynamic_cast<DHTMLWindow*>(source);
 
-    void* local8 = field48;
-    void* localc;
-    if (field4c) {
-        localc = ((void* (__thiscall*)(void*))((void**)field4c)[2])(field4c);
-    } else {
-        localc = 0;
-    }
-    args->v1(2, &local8);
+    if (!server)
+        throw std::bad_cast("bad cast");
 
-    void* result = sub_6a17c6(local14, (void*)0x9291fc, (void*)0x94f728, 0, 0);
-    if (!result) {
-        String buf((const String&)*(String*)0x80ba34);
-        sub_6a158c(&buf, (void*)0x8d362c);
-    }
+    int* secondValue = b.get();
+    int* firstValue = a.get();
 
-    void* s = sub_56ea60(&local8);
-    void* s2 = sub_56f0b0(&local10, s);
-    String tmp((const String&)*(String*)s2);
-    ((void (__thiscall*)(void*, void*))field38)(this, &tmp);
-
-    if (localc) {
-        ((void (__thiscall*)(void*, int))((void**)localc)[0])(localc, 1);
-    }
-    if (local14) {
-        ((void (__thiscall*)(void*, int))((void**)local14)[0])(local14, 1);
-    }
+    function(reinterpret_cast<char*>(server) + adjustment,
+             *firstValue, *secondValue);
 }

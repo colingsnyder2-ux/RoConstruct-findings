@@ -1,110 +1,117 @@
-// from server: 27% by colin
-extern "C" void __cdecl sub_5EC200(float *dst, float *src);
-extern "C" void *__cdecl sub_6A0956(int size);
-extern "C" void __cdecl sub_6A094A(void *p);
-extern "C" void __cdecl sub_548640(void *p);
-extern "C" int __cdecl sub_548000(float *a, float *b, float *c, int d);
-extern "C" float *__cdecl sub_509BA0();
-extern "C" void __cdecl sub_4FDCC0(void *self, float *a, float *b, float *c, float *d, float *e);
-extern "C" void __cdecl sub_500EB0(void *self, int a, int b, int c, int d);
+// from server: 28% by colin
+//
 
-extern float g_819bac;
+struct Vec3 { float x, y, z; };
+
+extern "C" {
+    void __cdecl sub_5EC1C0(Vec3* out, const Vec3* in);
+    void* __cdecl sub_6A0956(unsigned int size);
+    void __cdecl sub_6A094A(void* p);
+    void __cdecl sub_548640(void* p);
+    int __cdecl sub_548000(Vec3* a, Vec3* b, Vec3* c, int d);
+    void __cdecl sub_4FDCC0(void* self, Vec3* a, Vec3* b, Vec3* c, Vec3* d, Vec3* e);
+    Vec3* __cdecl sub_509BA0();
+    void __cdecl sub_500EB0(void* self, int a, int b, int c, int d);
+}
 
 struct CylinderBuilder {
     char pad0[4];
-    int field4;
-    void build(float *args);
+    Vec3 field4;
+    void build(int a, int b, int c, int d, int e, int f, int g, int h, int i, int j, int k, int l);
 };
 
-void CylinderBuilder::build(float *args)
+void CylinderBuilder::build(int a, int b, int c, int d, int e, int f, int g, int h, int i, int j, int k, int l)
 {
-    float v58, v5c, v60;
-    float v64, v68, v6c, v70, v74;
-    float v2c, v30, v34, v38, v3c, v40, v44, v48, v4c, v50, v54;
-    float v14, v18, v1c, v20, v24, v28;
-    float v0c, v10;
-    int n34, n36;
-    int i2, j2;
-    int *arr;
-    int total;
+    Vec3 v;
+    sub_5EC1C0(&v, &field4);
 
-    sub_5EC200(&v58, (float *)&field4);
+    float ax = v.x < 0 ? -v.x : v.x;
+    float ay = v.y < 0 ? -v.y : v.y;
+    float az = v.z < 0 ? -v.z : v.z;
 
-    v6c = (float)(v58 < 0 ? -v58 : v58);
-    n34 = *(short *)((char *)args + 0x28);
-    v70 = (float)(v5c < 0 ? -v5c : v5c);
-    n36 = *(short *)((char *)args + 0x2a);
-    v74 = (float)(v60 < 0 ? -v60 : v60);
+    short sa = (short)a;
+    short sb = (short)b;
+    short sc = (short)c;
+    short sd = (short)d;
 
-    v3c = (args[2] - args[0]) / (float)(n34 + 1);
-    v40 = (args[3] - args[1]) / (float)(n36 + 1);
-    v44 = args[7] / (float)(n34 + 1);
-    v48 = args[8] / (float)(n36 + 1);
-    v4c = args[9];
+    int na = sa + 1;
+    int nb = sb + 1;
+    int nc = sc + 1;
+    int nd = sd + 1;
 
-    total = (n36 + 1) * (n34 + 1);
-    arr = (int *)sub_6A0956(total * 4);
+    float fx = (float)na;
+    float fy = (float)nb;
+    float fz = (float)nc;
+    float fw = (float)nd;
 
-    v0c = args[0];
-    v10 = args[5];
+    float r1 = ((float)e - (float)f) / fx;
+    float r2 = ((float)g - (float)h) / fy;
+    float r3 = (float)i / fz;
+    float r4 = (float)j / fw;
 
-    for (i2 = 0; i2 <= n34; i2++) {
-        v14 = args[1];
-        v18 = args[6];
-        for (j2 = 0; j2 <= n36; j2++) {
-            float v58b, v5cb, v60b;
-            float v2cb, v30b;
-            float v34b, v38b;
-            float v54b;
-            float *r;
+    int total = nd * na;
+    int* arr = (int*)sub_6A0956(total * 4);
 
-            v58b = v0c;
-            v5cb = v14;
-            v60b = args[4];
+    float baseX = (float)f;
+    float baseY = (float)h;
+    float curX = baseX;
+    float curY = baseY;
 
-            v2cb = v0c;
-            v30b = v14;
-            v34b = v0c;
-            v38b = v14;
+    for (int row = 0; row <= sa; row++) {
+        float rowX = (float)e;
+        float rowY = (float)i;
+        float rowZ = (float)j;
+        for (int col = 0; col <= sb; col++) {
+            Vec3 p1, p2, p3, p4;
+            p1.x = curX; p1.y = curY; p1.z = (float)g;
+            p2.x = curX; p2.y = curY; p2.z = (float)k;
+            p3.x = rowX; p3.y = rowY; p3.z = rowZ;
+            p4.x = rowX; p4.y = rowY; p4.z = rowZ;
 
-            sub_4FDCC0((char *)args + 4, &v2cb, &v30b, &v34b, &v38b, &v54b);
+            sub_4FDCC0(&field4, &p1, &p2, &p3, &p4, &p4);
 
-            r = sub_509BA0();
-            if (r[0] == args[7] && r[1] == args[8]) {
-                v2cb = args[5];
-                v30b = args[6];
+            Vec3* sh = sub_509BA0();
+            float sx, sy;
+            if (sh->x == (float)i && sh->y == (float)j) {
+                sx = (float)h;
+                sy = (float)i;
+            } else {
+                sx = p3.x;
+                sy = p3.y;
             }
 
-            v2cb *= g_819bac;
-            v30b *= g_819bac;
+            float gv = *(float*)0x819bac;
+            Vec3 q1, q2;
+            q1.x = sx * gv;
+            q1.y = sy * gv;
+            q1.z = 0;
+            sub_5EC1C0(&q1, &q1);
+            sub_5EC1C0(&q2, &q1);
 
-            sub_5EC200(&v4c, &v2cb);
-            sub_5EC200(&v64, &v58b);
+            int idx = sub_548000(&p1, &p2, &q1, 1);
 
-            arr[i2 * (n36 + 1) + j2] = sub_548000(&v64, &v58b, &v4c, 1);
+            curX += q1.x;
+            curY += q1.y;
 
-            v34b += v58b;
-            v38b += v5cb;
-
-            v14 += v40;
-            v18 += v48;
+            int stride = nd;
+            arr[row * stride + col] = idx;
         }
-        v0c += v3c;
-        v10 += v44;
+        curX += r1;
+        curY += r2;
     }
 
-    for (i2 = 0; i2 < n34; i2++) {
-        for (j2 = 0; j2 < n36; j2++) {
-            sub_500EB0((char *)args + 4,
-                arr[i2 * (n36 + 1) + j2],
-                arr[i2 * (n36 + 1) + j2 + 1],
-                arr[(i2 + 1) * (n36 + 1) + j2 + 1],
-                arr[(i2 + 1) * (n36 + 1) + j2]);
+    for (int row = 0; row < sa; row++) {
+        for (int col = 0; col < sb; col++) {
+            int i0 = row * nd + col;
+            int i1 = i0 + 1;
+            int i2 = i0 + nd;
+            int i3 = i2 + 1;
+            sub_500EB0(&field4, arr[i0], arr[i1], arr[i2], arr[i3]);
         }
     }
 
-    for (i2 = 0; i2 < total; i2++) {
-        sub_548640((void *)arr[i2]);
+    for (int m = 0; m < total; m++) {
+        sub_548640((void*)arr[m]);
     }
 
     sub_6A094A(arr);

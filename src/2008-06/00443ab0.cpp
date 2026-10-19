@@ -1,40 +1,52 @@
-// from server: 84% by colin
-// roc-cl: 21022
-// roc-flags: /O1 /GS- /EHsc /MD
-struct Entry;
+// from server: 100% by colin
+//
+
+struct Storage;
+
+struct Node {
+    Storage* convert();
+};
+
 struct Storage {
-    Entry* lookup(const void* key);
+    Node* find(const char* key);
+    Node* lookup(const char* key);
 };
 
-struct Entry {
-    Storage* get();
-};
-
-struct Parent {
-    char padding[4];
-    char* key;
+struct Link {
+    void* reserved;
+    const char* key;
 };
 
 struct Argument {
-    char padding0[4];
-    char* key;
-    char padding1[4];
-    Parent* parent;
+    void* reserved0;
+    const char* key;
+    void* reserved8;
+    Link* parent;
 };
 
-struct S {
-    char padding[0x130];
+struct Descriptor {
+    char reserved[0x130];
     Storage* storage;
-    Entry* f(Argument* argument);
+    Node* find(Argument* argument);
 };
 
-Entry* S::f(Argument* argument)
+Node* Storage::lookup(const char* key)
 {
-    Entry* entry = storage ? storage->lookup(argument->parent->key + 4) : 0;
-    if (entry) {
-        Storage* next = entry->get();
-        if (next)
-            return next->lookup(argument->key + 4);
+    if (this)
+        return find(key);
+    return 0;
+}
+
+Node* Descriptor::find(Argument* argument)
+{
+    Storage* s = storage;
+    Node* node = s ? s->lookup(argument->parent->key + 4) : 0;
+    if (node) {
+        Storage* next = node->convert();
+        if (next) {
+            const char* key = argument->key + 4;
+            return next->find(key);
+        }
     }
     return 0;
 }

@@ -1,50 +1,127 @@
-// from server: 94% by king_originala
-extern void __cdecl callback();
+// from server: 100% by colin
+#include <intrin.h>
+// from server: 85% by colin
+// Make this compile to the exact bytes below, then: roc check 2008-06 0045ecc0
+//
+
+// from server: 84% by king_originala
+// Make this compile to the exact bytes below, then: roc check 2008-06 0045ecc0
+//
+
+struct Part0 {
+    virtual void slot0();
+    char padding[12];
+};
+
+struct Part10 {
+    virtual void slot10();
+};
+
+struct Part14 {
+    virtual void slot14();
+    char padding[8];
+};
+
+struct Part20 {
+    virtual void slot20();
+};
+
+struct Part24 {
+    virtual void slot24();
+    char padding[28];
+};
+
+struct Part44 {
+    virtual void slot44();
+    char padding[28];
+};
+
+struct Part64 {
+    virtual void slot64();
+    char padding[28];
+};
+
+struct Part84 {
+    virtual void slot84();
+    char padding[28];
+};
+
+struct Parta4 {
+    virtual void slota4();
+    char padding[28];
+};
+
+struct Partc4 {
+    virtual void slotc4();
+    char padding[104];
+};
+
+struct Base : Part0, Part10, Part14, Part20, Part24, Part44, Part64, Part84, Parta4, Partc4 {
+    Base();
+};
+
+struct S : Base {
+    double value;
+    unsigned char text[28];
+    S();
+};
+
+extern void __cdecl func_005ec170(void *);
 extern bool __cdecl func_0060a2f0();
 
+typedef void (__cdecl *Fn)(void *);
+
+struct List1 {
+    void *a1;
+    List1(void *a) : a1(a) {}
+};
+
 struct Pair {
-    void (__cdecl *function)();
-    unsigned long argument;
+    Fn function;
+    List1 list;
+    Pair(Fn f, const List1 &l) : function(f), list(l) {}
 };
 
-struct S {
-    unsigned long words[90];
-
-    void initialize();
-    S* construct(unsigned long argument);
-};
-
-S* S::construct(unsigned long argument)
+inline Pair bind(Fn f, void *a)
 {
-    initialize();
+    return Pair(f, List1(a));
+}
 
-    Pair pair;
-    pair.function = callback;
+inline void *__cdecl operator new(unsigned int, void *p)
+{
+    return p;
+}
 
-    words[0] = 0x00837f1c;
-    words[4] = 0x00837f10;
-    words[5] = 0x00837f08;
-    words[8] = 0x00837f00;
-    words[9] = 0x00837ef0;
-    words[17] = 0x00837ee0;
-    words[25] = 0x00837ed0;
-    words[33] = 0x00837ec0;
-    words[41] = 0x00837eb0;
-    words[49] = 0x00837ea0;
+extern const char targetTable[];
 
-    pair.argument = argument;
-    words[86] = 0;
+struct FunctionBase {
+    unsigned long state;
+    unsigned long padding;
+    union { char buffer[8]; } functor;
+    FunctionBase() : state(0) {}
+};
 
-    if (!((bool (__cdecl *)(Pair*))func_0060a2f0)(&pair)) {
-        Pair* destination = reinterpret_cast<Pair*>(&words[88]);
-        if (destination) {
-            destination->function = pair.function;
-            destination->argument = pair.argument;
-        }
-        words[86] = 0x00837954;
-        return this;
+struct Function : FunctionBase {
+    __forceinline Function(Pair f) : FunctionBase()
+    {
+        assign(f);
     }
+    __forceinline void assign(const Pair& f)
+    {
+        if (!reinterpret_cast<bool (__cdecl *)(Pair *)>(&func_0060a2f0)(const_cast<Pair*>(&f))) {
+            new (&functor) Pair(f);
+            state = (unsigned long)targetTable;
+        } else {
+            state = 0;
+        }
+    }
+};
 
-    words[86] = 0;
-    return this;
+struct Item : S {
+    Function target;
+    Item(void *);
+};
+
+Item::Item(void *argument) : target(bind(&func_005ec170, argument))
+{
 }

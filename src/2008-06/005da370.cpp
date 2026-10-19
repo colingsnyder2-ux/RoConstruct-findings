@@ -1,53 +1,58 @@
-// from server: 64% by king_originala
-extern "C" void __cdecl callback();
-extern "C" void __cdecl register_callback(void (__cdecl*)(), void*);
-extern char callback_state;
-extern void* func_005d78f0();
-extern "C" void (__cdecl* invalid_parameter_noinfo)();
+// from server: 67% by colin
+//
 
-struct Control {
+extern char registration_data;
+void __cdecl registration_callback();
+void __cdecl register_callback(void (__cdecl*)(), void*);
+void* __cdecl func_00616240();
+extern "C" void (__cdecl* _invalid_parameter_noinfo)();
+
+struct Owner {
     void release();
 };
 
-struct Entry {
-    void* value;
-    Control* control;
+struct Value {
+    void* pointer;
+    Owner* owner;
 
-    Entry() : value(0), control(0) {}
-    ~Entry() {
-        if (control)
-            control->release();
+    Value() : pointer(0), owner(0) {}
+    ~Value() {
+        if (owner)
+            owner->release();
     }
 };
 
-struct Entries {
-    char pad[12];
-    Entry* begin;
-    Entry* end;
-    Entry* capacity;
+struct Storage {
+    char padding[12];
+    Value* first;
+    Value* last;
+    Value* limit;
 
-    void resize(unsigned count, Entry value);
+    void resize(unsigned count, Value value);
 };
 
 struct S {
-    char pad[0x190];
-    Entries entries;
+    char padding[0x190];
+    Storage values;
 
     void* f();
 };
 
-void* S::f()
-{
-    register_callback(callback, &callback_state);
-    unsigned index = reinterpret_cast<unsigned>(func_005d78f0());
+void* S::f() {
+    register_callback(registration_callback, &registration_data);
+    unsigned index = (unsigned)func_00616240();
+    Storage& storage = values;
 
-    if (index + 1 > static_cast<unsigned>(entries.end - entries.begin)) {
-        entries.resize(index + 1, Entry());
+    if (index + 1 > (unsigned)(storage.limit - storage.first)) {
+        storage.resize(index + 1, Value());
         return 0;
     }
 
-    if (index >= static_cast<unsigned>(entries.end - entries.begin))
-        invalid_parameter_noinfo();
+    if (index >= (unsigned)(storage.last - storage.first))
+        _invalid_parameter_noinfo();
 
-    return entries.begin[index].value;
+    void* result = storage.first[index].pointer;
+    if (result)
+        return result;
+    return 0;
 }

@@ -1,56 +1,66 @@
-// from server: 73% by colin
-extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
-void* __cdecl operator new(unsigned int);
-void __cdecl operator delete(void*);
+// from server: 94% by colin
+//
 
-struct RefCounted {
-    void* value;
-    RefCounted& operator=(const RefCounted&);
-    ~RefCounted();
+struct GuardData {
+    int first;
+    int second;
+    int third;
+
+    GuardData();
+    void acquire(void*);
+    ~GuardData();
 };
 
-struct Inner {
-    char pad[0x198];
-    void* field;
-};
-
-struct TargetVtbl {
-    char pad[8];
-    float (__thiscall* getValue)(struct Target*, void*);
-};
-
-struct Target {
-    TargetVtbl* vtbl;
-};
-
-struct Src {
-    char pad[0x18];
-    Target* target;
-};
-
-struct S {
-    char pad[0x128];
-    Inner* inner;
-    Src* src;
-
-    float GetValue(void*);
-};
-
-float S::GetValue(void* arg)
+inline GuardData::GuardData()
 {
-    void* obj = *(void**)((char*)inner + 0x198);
+    first = 0;
+    second = 0;
+}
 
-    RefCounted r;
-    r.value = 0;
-    r = *(RefCounted*)&obj;
+struct Guard {
+    GuardData data;
+    Guard(void*);
+};
 
-    void* p = r.value;
-    void* q = (p != 0) ? (char*)p + 0x14 : 0;
+inline Guard::Guard(void* value)
+{
+    data.third = 0;
+    data.acquire(value);
+}
 
-    Target* t = src->target;
-    float result = t->vtbl->getValue(t, q);
+struct Argument {
+    char padding[0x14];
+    int value;
+};
 
-    r.~RefCounted();
+struct Interface {
+    virtual void first();
+    virtual void second();
+    virtual int invoke(int*);
+};
 
-    return result;
+struct Context {
+    char padding[0x198];
+    void* value;
+};
+
+struct Owner {
+    char padding[0x18];
+    Interface* object;
+};
+
+struct Item {
+    char padding[0x128];
+    Context* context;
+    Owner* owner;
+
+    int f(Argument*);
+};
+
+int Item::f(Argument* argument)
+{
+    Guard guard(context->value);
+    int* value = argument ? &argument->value : 0;
+    Owner* currentOwner = owner;
+    return currentOwner->object->invoke(value);
 }

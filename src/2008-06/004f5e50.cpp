@@ -1,46 +1,52 @@
-// from server: 30% by colin
-struct Vector2 { float x; float y; };
-struct Vector3 { float x; float y; float z; };
+// from server: 38% by colin
 
 extern "C" double __stdcall ceil(double);
+extern "C" float __stdcall sub_4f1ff0(int);
+extern "C" void __stdcall sub_4f35d0(float*, float*, float*, float*, int, int);
+extern "C" void __stdcall sub_4fdd90(void*, int);
+extern "C" void __stdcall sub_5ec1c0(void*, void*);
+extern "C" void __stdcall sub_5185d0(void*, void*);
 
 extern float g_819bac;
-extern float g_83a3e4;
 extern float g_826e6c;
+extern float g_83a3e4;
 
-void __cdecl sub_5ec1c0(void* dst, void* src);
-void __cdecl sub_5185d0(Vector2* out, const Vector3* v);
-float __cdecl sub_4f1ff0(int n);
-void __cdecl sub_4f35d0(Vector3* a, Vector3* b, Vector3* c, int d, int e, float f, float g);
-void __cdecl sub_4f51a0(int a, int b);
-
-struct PBBBuilder {
-    int field0;
-    int field4;
-    int field8;
-    int fieldC;
-    unsigned int field10;
-    void func(float a, float b, float c, int d, int e, int f);
+struct CylinderBuilder {
+    char pad[0x10];
+    unsigned int flags;
+    void buildTop(int, int, int, int, int, int, int, int, int);
 };
 
-void PBBBuilder::func(float a, float b, float c, int d, int e, int f)
+void CylinderBuilder::buildTop(int a1, int a2, int a3, int a4, int a5, int a6, int a7, int a8, int a9)
 {
     float v44, v48, v4c;
-    float fa = a < 0 ? -a : a;
-    float fb = b < 0 ? -b : b;
-    float fc = c < 0 ? -c : c;
-    v44 = fa;
-    v48 = fb;
-    v4c = fc;
-
-    int ebp = (this->field10 >> 3) & 7;
-
-    Vector2 tmp;
-    sub_5ec1c0(&tmp, &this->field4);
-
+    float v30, v34, v38, v3c;
+    float v18, v1c, v20, v24, v28, v2c;
+    int ebx;
     int esi;
-    if (f == 0) {
-        if (fa == fb) {
+    int ebp;
+    int i;
+    int tmp;
+
+    ebp = (this->flags >> 3) & 7;
+
+    sub_5ec1c0(&this->pad[4], &v44);
+
+    v44 = (float)(v44 < 0 ? -v44 : v44);
+    v48 = (float)(v48 < 0 ? -v48 : v48);
+    v4c = (float)(v4c < 0 ? -v4c : v4c);
+
+    {
+        float f1 = v44;
+        float f2 = v48;
+        float f3 = v4c;
+        v44 = f1;
+        v48 = f2;
+        v4c = f3;
+    }
+
+    if (a9 != 0) {
+        if (v44 == v48) {
             esi = 0;
         } else {
             esi = 1;
@@ -49,128 +55,101 @@ void PBBBuilder::func(float a, float b, float c, int d, int e, int f)
         esi = 1;
     }
 
-    int ebx;
-    if (f == 0 && ebp != 0) {
-        float* arr = &v44;
-        double r = ceil((double)(arr[esi] * g_819bac));
-        ebx = (int)r;
+    if (a9 == 0 && ebp != 0) {
+        float f = (&v44)[esi];
+        f = (float)(f * (double)g_819bac);
+        tmp = (int)ceil((double)f);
+        ebx = tmp;
     } else {
         ebx = 1;
     }
 
-    short w10 = 0;
-    short w12 = 0;
-    short* base = &w10;
-    short val = base[esi];
-    int q = (int)val / ebx;
-    unsigned short uq = (unsigned short)q;
-    int i18 = (int)uq;
-    int i20 = 1;
-    short cmpv = (short)uq;
-    int* psel;
-    if ((short)1 < cmpv) {
-        psel = &i18;
-    } else {
-        psel = &i20;
+    {
+        short s0 = 0;
+        short s1 = 0;
+        int idx = esi + esi;
+        short* p = (short*)((char*)&v44 + 0x16 - idx);
+        short di = *p;
+        int eax = (int)di;
+        int q = eax / ebx;
+        short q16 = (short)q;
+        int one = 1;
+        int val18 = (int)(unsigned short)q16;
+        int val20 = 1;
+        short* sel;
+        if ((short)one < (short)val18) {
+            sel = (short*)&val18;
+        } else {
+            sel = (short*)&val20;
+        }
+        short chosen = *sel;
+        ((short*)((char*)&v18))[idx / 2] = chosen;
+        ((short*)((char*)&v18 - idx))[0] = di;
     }
-    short sel = *(short*)psel;
-    short* dst = &w10;
-    dst[esi] = sel;
 
-    float v20 = v4c;
-    short* dst2 = &w12;
-    dst2[esi] = val;
+    {
+        float f = v4c;
+        v20 = f;
+    }
 
-    Vector2 r1;
-    sub_5185d0(&r1, (const Vector3*)&v44);
-    float nx = -r1.x;
-    float ny = -r1.y;
+    sub_5185d0(&v44, &v30);
+    v30 = -v30;
+    v34 = -v34;
+    sub_5185d0(&v44, &v38);
 
-    Vector2 r2;
-    sub_5185d0(&r2, (const Vector3*)&v48);
-    float nz = -r2.x;
-    float nw = -r2.y;
+    v28 = 0.0f;
+    v2c = 0.0f;
+    v18 = 0.0f;
+    v1c = 0.0f;
 
-    float f28 = 0.0f;
-    float f2c = 0.0f;
-    float f18 = 0.0f;
-    float f1c = 0.0f;
-
-    if (f == 0) {
+    if (a9 == 0) {
         if (ebp == 0) {
-            f28 = g_83a3e4;
-            f2c = g_819bac;
-            float* arr = &f1c;
-            arr[esi] = g_819bac;
-            float* arr2 = &f18;
-            arr2[esi] = g_819bac;
+            v28 = g_83a3e4;
+            v2c = g_819bac;
+            v1c = g_819bac;
+            v18 = g_819bac;
         } else {
-            float* arr = &f2c;
-            arr[esi] = 0.0f;
-            float r = sub_4f1ff0(ebp);
-            float* arr2 = &f2c;
-            arr2[esi] = r;
-            float* arr3 = &v4c;
-            float t = arr3[esi];
-            float* arr4 = &f18;
-            arr4[esi] = t + t;
-            float* arr5 = &f18;
-            arr5[esi] = g_819bac;
+            v2c = 0.0f;
+            v2c = sub_4f1ff0(ebp);
+            v20 = v30 * 2.0f;
+            v18 = g_819bac;
             if (esi == 1) {
-                f18 = -f18;
+                v18 = -v18;
             }
         }
-    } else if (f == 1) {
-        f28 = 0.0f;
-        f2c = 0.0f;
-        f18 = 0.0f;
-        f1c = 0.0f;
-    } else if (f == 2) {
-        f28 = 0.0f;
-        f2c = 0.0f;
-        f18 = 0.0f;
-        f1c = 0.0f;
+    } else if (a9 == 1) {
+        v28 = 0.0f;
+        v2c = *(float*)((char*)this + 0x1c);
+        v18 = *(float*)((char*)this + 0x18);
+        v1c = -*(float*)((char*)this + 0x1c);
+    } else if (a9 == 2) {
+        v28 = 0.0f;
+        v2c = 0.0f;
+        v18 = 0.0f;
+        v1c = 0.0f;
     }
 
-    for (int i = 0; i < ebx; i++) {
+    for (i = 0; i < ebx; i++) {
         if (i == ebx - 1) {
-            float* arr = &v44;
-            float t = arr[esi];
-            float* arr2 = &v44;
-            arr2[esi] = t;
-            if (f == 0 && d != 0) {
-                float* arr3 = &v48;
-                float t2 = t - arr3[esi];
-                float* arr4 = &f18;
-                t2 = t2 * arr4[esi];
-                t2 = t2 * g_83a3e4;
-                float* arr5 = &f18;
-                arr5[esi] = t2;
+            v30 = (&v44)[esi];
+            if (a9 == 0 && a5 != 0) {
+                v18 = (v30 - (&v38)[esi]) * (&v18)[esi] * g_83a3e4;
             }
         } else {
-            float* arr = &v48;
-            float t = arr[esi] + g_826e6c;
-            float* arr2 = &v44;
-            arr2[esi] = t;
+            v30 = (&v38)[esi] + g_826e6c;
         }
 
-        Vector3 va;
-        va.x = f18;
-        va.y = f2c;
-        va.z = f28;
-        Vector3 vb;
-        vb.x = v44;
-        vb.y = v48;
-        vb.z = v4c;
-        Vector3 vc;
-        vc.x = f1c;
-        vc.y = f2c;
-        vc.z = f28;
-        sub_4f35d0(&va, &vb, &vc, esi, ebp, 0.0f, 0.0f);
-        sub_4f51a0(esi, ebp);
-        float* arr = &v44;
-        float t = arr[esi];
-        float* arr2 = &v48;
-        arr2[esi] = t;
+        {
+            float args[5];
+            args[0] = v18;
+            args[1] = v1c;
+            args[2] = v28;
+            args[3] = v2c;
+            args[4] = v20;
+            sub_4f35d0(args, &v30, &v44, &v38, esi, ebp);
+        }
+
+        sub_4fdd90((void*)a1, a2);
+        (&v38)[esi] = (&v30)[esi];
     }
 }

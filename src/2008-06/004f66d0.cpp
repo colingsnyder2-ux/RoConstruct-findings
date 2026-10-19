@@ -1,132 +1,142 @@
-// from server: 25% by colin
-struct PBBBuilder {
-    char pad0[4];
-    int field4;
-    void build(int, int, int, int, int, int, int, int, int, int, int, int, int, int, int, int, int, int, int, int);
-};
+// from server: 31% by colin
+//
 
 extern "C" {
-    void __cdecl sub_6784d0(void*, void*);
-    void* __cdecl sub_6a0956(int);
-    float* __cdecl sub_509ba0();
-    void __cdecl sub_548000(void*, void*, void*, int);
-    void __cdecl sub_500eb0(void*, int, int, int, int);
-    void __cdecl sub_548640(void*);
-    void __cdecl sub_6a094a(void*);
-    void __cdecl sub_6a067a(void*);
-    int __stdcall InterlockedDecrement(int*);
+    int __stdcall sub_5ec200(void*, void*);
+    int __stdcall sub_6a0956(int);
+    void* __stdcall sub_509ba0();
+    int __stdcall sub_548000(void*, void*, void*, int);
+    int __stdcall sub_500eb0(int, int, int, int);
+    int __stdcall sub_548640(void*);
+    int __stdcall sub_6a094a(void*);
+    int __stdcall sub_6a067a(void*);
+    int __stdcall sub_8021ac(void*);
 }
 
-extern float g_819bac;
+struct PBBBuilder {
+    void func_004f6a80(
+        int a1, int a2, int a3, int a4,
+        int a5, int a6, int a7, int a8,
+        int a9, int a10, int a11, int a12,
+        int a13, int a14, int a15, int a16,
+        int a17, int a18, int a19, int a20);
+};
 
-void PBBBuilder::build(int a, int b, int c, int d, int e, int f, int g, int h, int i, int j, int k, int l, int m, int n, int o, int p, int q, int r, int s, int t)
+void PBBBuilder::func_004f6a80(
+    int a1, int a2, int a3, int a4,
+    int a5, int a6, int a7, int a8,
+    int a9, int a10, int a11, int a12,
+    int a13, int a14, int a15, int a16,
+    int a17, int a18, int a19, int a20)
 {
-    float f0, f1, f2, f3, f4, f5, f6, f7;
-    int w0, w1, w2, w3;
-    float* fp;
-    int* ip;
-    int cnt;
-    int idx;
-    int row, col;
-    int nrows, ncols;
-    float stepx, stepy;
-    float startx, starty;
-    float curx, cury;
-    float uu, vv;
-    int* indices;
-    int nverts;
-    int i2;
-    void* p1;
-    int* ref;
+    char buf[0x6c];
+    int* p = (int*)buf;
+    p[0] = 0;
+    sub_5ec200((char*)this + 4, buf + 0x48);
 
-    sub_6784d0(&this->field4, &w0);
+    short s1 = *(short*)((char*)&a1 + 0x30);
+    short s2 = *(short*)((char*)&a1 + 0x32);
+    int n1 = s1 + 1;
+    int n2 = s2 + 1;
+    int total = n1 * n2;
 
-    ncols = (short)((int*)&a)[0];
-    nrows = (short)((int*)&a)[1];
+    float f1 = *(float*)((char*)&a1 + 0x10) - *(float*)((char*)&a1 + 0x08);
+    float f2 = *(float*)((char*)&a1 + 0x14) - *(float*)((char*)&a1 + 0x0c);
+    float f3 = *(float*)((char*)&a1 + 0x28);
+    float f4 = *(float*)((char*)&a1 + 0x2c);
 
-    f0 = *(float*)&b;
-    f1 = *(float*)&c;
-    f2 = *(float*)&d;
-    f3 = *(float*)&e;
-    f4 = *(float*)&f;
-    f5 = *(float*)&g;
-    f6 = *(float*)&h;
-    f7 = *(float*)&i;
+    float r1 = f1 / (float)n1;
+    float r2 = f2 / (float)n2;
+    float r3 = f3 / (float)n1;
+    float r4 = f4 / (float)n2;
 
-    stepx = (f1 - f0) / (float)(ncols + 1);
-    stepy = (f3 - f2) / (float)(nrows + 1);
+    int* arr = (int*)sub_6a0956(total * 4);
 
-    startx = f4 / (float)(ncols + 1);
-    starty = f5 / (float)(nrows + 1);
+    float base1 = *(float*)((char*)&a1 + 0x0c);
+    float base2 = *(float*)((char*)&a1 + 0x20);
+    float step1 = *(float*)((char*)&a1 + 0x18);
+    float step2 = *(float*)((char*)&a1 + 0x1c);
 
-    nverts = (ncols + 1) * (nrows + 1);
+    int i;
+    float acc1 = 0.0f;
+    float acc2 = 0.0f;
+    for (i = 0; i <= s2; i++) {
+        float cur1 = base1;
+        float cur2 = base2;
+        int j;
+        for (j = 0; j <= s1; j++) {
+            float v1 = cur1;
+            float v2 = cur2;
+            float v3 = *(float*)((char*)&a1 + 0x10);
+            float v4 = 1.0f;
 
-    indices = (int*)sub_6a0956(nverts * 4 * 4);
-
-    curx = f0;
-    cury = f2;
-
-    if (nrows >= 0) {
-        for (row = 0; row <= nrows; row++) {
-            float rx = curx;
-            float ry = cury;
-            if (ncols >= 0) {
-                for (col = 0; col <= ncols; col++) {
-                    float px = rx;
-                    float py = ry;
-                    float pz = f6;
-                    float pw = 1.0f;
-                    float* sh = sub_509ba0();
-                    if (sh[0] == f7 && sh[1] == f4) {
-                        uu = f1;
-                        vv = f2;
-                    } else {
-                        uu = px;
-                        vv = py;
-                    }
-                    uu *= g_819bac;
-                    vv *= g_819bac;
-                    sub_6784d0(&uu, &w1);
-                    sub_6784d0(&vv, &w2);
-                    sub_548000(&w3, &w1, &w2, 1);
-                    rx += stepx;
-                    ry += stepy;
-                    idx = (ncols + 1) * row + col;
-                    indices[idx] = w3;
-                }
+            if (v3 < v4) {
+                v4 = v4 - *(float*)((char*)&a1 + 0x04);
+            } else {
+                v4 = v4 + *(float*)((char*)&a1 + 0x04);
             }
-            curx += startx;
-            cury += starty;
+
+            float v5 = v4;
+            if (v5 < v2) {
+                v5 = v5 - v2;
+            } else {
+                v5 = v5 + v2;
+            }
+
+            float* g = (float*)sub_509ba0();
+            float gx = g[0];
+            float gy = g[1];
+            float rx, ry;
+            if (gx == *(float*)((char*)&a1 + 0x24) && gy == *(float*)((char*)&a1 + 0x28)) {
+                rx = *(float*)((char*)&a1 + 0x14);
+                ry = *(float*)((char*)&a1 + 0x18);
+            } else {
+                rx = v1;
+                ry = v2;
+            }
+
+            float scale = *(float*)0x819bac;
+            rx = rx * scale;
+            ry = ry * scale;
+
+            float tmp1[4];
+            float tmp2[4];
+            sub_5ec200(&v1, tmp1);
+            sub_5ec200(&v3, tmp2);
+            sub_548000(tmp2, tmp1, &v5, 1);
+
+            cur1 = cur1 + r1;
+            cur2 = cur2 + r2;
+            arr[i * n1 + j] = (int)sub_548000(tmp2, tmp1, &v5, 1);
+        }
+        acc1 = acc1 + r3;
+        acc2 = acc2 + r4;
+    }
+
+    for (i = 0; i < s2; i++) {
+        int j;
+        for (j = 0; j < s1; j++) {
+            int idx = i * n1 + j;
+            sub_500eb0(arr[idx], arr[idx + 1], arr[idx + n1], arr[idx + n1 + 1]);
         }
     }
 
-    for (row = 0; row < nrows; row++) {
-        for (col = 0; col < ncols; col++) {
-            int base = (ncols + 1) * row + col;
-            int a0 = indices[base];
-            int a1 = indices[base + 1];
-            int a2 = indices[base + ncols + 1];
-            int a3 = indices[base + ncols + 2];
-            sub_500eb0(this, a0, a1, a2, a3);
-        }
+    for (i = 0; i < total; i++) {
+        sub_548640((void*)arr[i]);
     }
+    sub_6a094a(arr);
 
-    for (i2 = 0; i2 < nverts; i2++) {
-        sub_548640((void*)indices[i2]);
-    }
-    sub_6a094a(indices);
-
-    if (w0 != 0) {
-        if (InterlockedDecrement((int*)(w0 + 4)) == 0) {
-            void* p = *(void**)(w0 + 8);
-            while (p != 0) {
-                void* next = *(void**)((char*)p + 4);
-                (*(void(**)(void*))**(void***)p)(p);
-                sub_6a067a(p);
-                p = next;
+    if (a20) {
+        if (sub_8021ac((char*)a20 + 4) == 0) {
+            void* node = *(void**)((char*)a20 + 8);
+            while (node) {
+                void* next = *(void**)((char*)node + 4);
+                (*(void(**)(void*))**(void***)node)(node);
+                sub_6a067a(node);
+                node = next;
             }
-            if (w0 != 0) {
-                (*(void(**)(void*, int))**(void***)w0)((void*)w0, 1);
+            if (a20) {
+                (*(void(**)(int))**(void***)a20)(1);
             }
         }
     }

@@ -1,129 +1,127 @@
-// from server: 76% by king_originala
-typedef unsigned int size_t;
-
-extern "C" {
-    extern long (__stdcall * const InterlockedIncrement)(volatile long *);
-    extern long (__stdcall * const InterlockedDecrement)(volatile long *);
-}
-
-void * __cdecl operator new(size_t);
-void __cdecl operator delete(void *);
-
-struct Vector3 {
+// from server: 77% by colin
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast
+extern "C" __declspec(dllimport) long __stdcall InterlockedIncrement(volatile long*);
+extern "C" __declspec(dllimport) long __stdcall InterlockedDecrement(volatile long*);
+namespace G3D {
+class Vector2 {
+public:
+    float x, y;
+    Vector2() {}
+    Vector2(float _x, float _y) : x(_x), y(_y) {}
+    Vector2(const Vector2& v) { x = v.x; y = v.y; }
+    Vector2& operator=(const Vector2& v) { x = v.x; y = v.y; return *this; }
+    Vector2 operator*(float s) const { return Vector2(x * s, y * s); }
+    Vector2 operator/(const Vector2& v) const { return Vector2(x / v.x, y / v.y); }
+};
+class Vector3 {
+public:
     float x, y, z;
-    Vector3(const Vector3 &);
+    Vector3() {}
+    Vector3(const Vector3& V) : x(V.x), y(V.y), z(V.z) {}
+    Vector2 xy() const;
 };
-
-inline Vector3::Vector3(const Vector3 &v)
-    : x(v.x), y(v.y), z(v.z)
-{
-}
-
-struct Object {
-    virtual ~Object();
-    volatile long references;
-    char data[32];
-
-    Object(int);
-    void dispose();
+class AtomicInt32 {
+    volatile long _value;
+public:
+    void increment() { InterlockedIncrement(&_value); }
+    unsigned int decrement() { return InterlockedDecrement(&_value) != 0; }
 };
-
-struct Reference {
-    Object *pointer;
-    explicit Reference(Object *);
-    ~Reference();
+class ReferenceCountedObject {
+public:
+    AtomicInt32 ReferenceCountedObject_refCount;
+    void* ReferenceCountedObject_weakPointer;
+    void ReferenceCountedObject_zeroWeakPointers();
+    virtual ~ReferenceCountedObject() {}
 };
-
-inline Reference::Reference(Object *p) : pointer(0)
-{
-    if (p) {
-        pointer = p;
-        InterlockedIncrement(&p->references);
-    }
-}
-
-inline Reference::~Reference()
-{
-    if (pointer && InterlockedDecrement(&pointer->references) == 0) {
-        pointer->dispose();
-        if (pointer)
-            delete pointer;
-    }
-}
-
-struct Slot {
-    Object *pointer;
-    void assign(const Reference &);
-};
-
-struct Base {
-    virtual ~Base();
-    char reserved0[8];
-    Slot slot;
-    char reserved1[116];
-
-    Base();
-};
-
-struct Result {
-    float data[3];
-    Result(const Result &);
-    const Vector3 &dimensions() const;
-};
-
-struct Scratch {
-    char data[8];
-};
-
-Result __cdecl calculate(const Vector3 &, const Vector3 &, Scratch *);
-extern const float scaleFactor;
-
-struct Shape {
-    char data[20];
-    Object *pointer;
-    float scaleX, scaleY;
-
-    Shape(Reference &, Vector3, int, int);
-    void configure(const Vector3 &, int);
-    ~Shape();
-};
-
-inline Shape::~Shape()
-{
-    if (pointer) {
-        if (InterlockedDecrement(&pointer->references) == 0) {
-            pointer->dispose();
-            if (pointer)
-                delete pointer;
+template <class T>
+class ReferenceCountedPointer {
+private:
+    T* m_pointer;
+    void zeroPointer() {
+        if (m_pointer != 0) {
+            if (m_pointer->ReferenceCountedObject_refCount.decrement() == 0) {
+                m_pointer->ReferenceCountedObject_zeroWeakPointers();
+                delete m_pointer;
+            }
+            m_pointer = 0;
         }
-        pointer = 0;
     }
-}
-
-struct CylinderBuilder : Base {
-    int kind;
-
-    CylinderBuilder(const Vector3 &, const Vector3 &, const Vector3 &);
-    virtual ~CylinderBuilder();
+    void setPointer(T* x) {
+        if (x != m_pointer) {
+            zeroPointer();
+            if (x != 0) {
+                m_pointer = x;
+                m_pointer->ReferenceCountedObject_refCount.increment();
+            }
+        }
+    }
+public:
+    ReferenceCountedPointer() : m_pointer(0) {}
+    ReferenceCountedPointer(T* p) : m_pointer(0) { setPointer(p); }
+    ~ReferenceCountedPointer() { zeroPointer(); }
 };
-
-CylinderBuilder::CylinderBuilder(const Vector3 &size,
-                                 const Vector3 &direction,
-                                 const Vector3 &divisor)
-    : Base()
+template <class T>
+class Array {
+    T* data;
+    int num;
+    int numAllocated;
+public:
+    void push_back(const T& value);
+};
+class RenderDevice { public: enum Primitive { QUADS = 5 }; };
+}
+namespace RBX {
+enum NormalId { NORM_X };
+namespace Render {
+class Mesh : public G3D::ReferenceCountedObject {
+public:
+    class Level : public G3D::ReferenceCountedObject {
+    public:
+        Level(G3D::RenderDevice::Primitive primitive);
+        char pad[0x28 - 0xc];
+    };
+    Mesh();
+    virtual ~Mesh();
+protected:
+    G3D::Array<G3D::ReferenceCountedPointer<Level> > levels;
+};
+}
+namespace View {
+class RenderSurfaceTypes { public: unsigned int data; RenderSurfaceTypes() : data(0) {} };
+G3D::Vector3 mapToUvw_Legacy(const G3D::Vector3& size, NormalId face);
+class LevelBuilder {
+public:
+    enum Usage { Surface = 0, Decal = 1 };
+    LevelBuilder(const G3D::ReferenceCountedPointer<Render::Mesh::Level>& level, G3D::Vector3 size, RenderSurfaceTypes surfaceTypes);
+    virtual void buildFace(NormalId face, Usage usage);
+protected:
+    char pad[0x14 - 4];
+    G3D::ReferenceCountedPointer<Render::Mesh::Level> level;
+public:
+    G3D::Vector2 textureScale;
+};
+class CylinderBuilder : public LevelBuilder {
+    int sides;
+public:
+    CylinderBuilder(const G3D::ReferenceCountedPointer<Render::Mesh::Level>& level, G3D::Vector3 size, RenderSurfaceTypes surfaceTypes)
+        : LevelBuilder(level, size, surfaceTypes), sides(6) {}
+    virtual void buildFace(NormalId face, Usage usage);
+};
+class CylinderAlongXMesh : public Render::Mesh {
+public:
+    CylinderAlongXMesh(const G3D::Vector3& size, NormalId textureFace, const G3D::Vector2& studsPerTile);
+};
+CylinderAlongXMesh::CylinderAlongXMesh(const G3D::Vector3& size, NormalId textureFace, const G3D::Vector2& studsPerTile)
 {
-    kind = 3;
-    Reference reference(new Object(5));
-    slot.assign(reference);
+    G3D::ReferenceCountedPointer<Render::Mesh::Level> level = new Render::Mesh::Level(G3D::RenderDevice::QUADS);
+    levels.push_back(level);
 
-    Shape shape(reference, size, 0, 12);
-    Scratch scratch;
-    const Vector3 &dimensions =
-        calculate(size, direction, &scratch).dimensions();
+    CylinderBuilder builder(level, size, RenderSurfaceTypes());
+    builder.textureScale = mapToUvw_Legacy(size, textureFace).xy() * 2.0f / studsPerTile;
 
-    float x = dimensions.x * scaleFactor / divisor.x;
-    float y = dimensions.y * scaleFactor / divisor.y;
-    shape.scaleX = x;
-    shape.scaleY = y;
-    shape.configure(direction, 1);
+    builder.buildFace(textureFace, LevelBuilder::Decal);
+}
+}
 }

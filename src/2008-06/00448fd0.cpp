@@ -1,40 +1,29 @@
-// from server: 83% by king_originala
-extern const float limit;
-extern const char property;
+// from server: 84% by colin
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD /fp:fast
 
-inline const float &maximum(const float &a, const float &b)
-{
-    return a < b ? b : a;
-}
+extern const char renderSettingsChanged;
 
-inline const float &minimum(const float &a, const float &b)
-{
-    return b < a ? b : a;
-}
-
-struct S
-{
-    char storage[0x144];
-    float lower;
-    float current;
-
-    void setLower(float value);
-    void notify(const void *descriptor);
-    void setValue(float value);
+struct CRenderSettings {
+    char pad[0x144];
+    float field_144;
+    float field_148;
+    void sub_448FD0(float);
+    void sub_40DB00(const void*);
+    void setAASamples(float);
 };
 
-void S::setValue(float value)
-{
-    if (lower > value)
-        setLower(value);
+inline const float& minimum(const float& a, const float& b) { return a < b ? a : b; }
+inline const float& maximum(const float& a, const float& b) { return a < b ? b : a; }
 
-    value = maximum(lower, value);
-    const float cap = limit;
-    float selected = minimum(cap, value);
-
-    if (selected != current)
-    {
-        current = selected;
-        notify(&property);
+void CRenderSettings::setAASamples(float value) {
+    if (value > field_148)
+        sub_448FD0(value);
+    value = minimum(value, field_148);
+    float zero = 0.0f;
+    float result = maximum(zero, value);
+    if (result != field_144) {
+        field_144 = result;
+        sub_40DB00(&renderSettingsChanged);
     }
 }

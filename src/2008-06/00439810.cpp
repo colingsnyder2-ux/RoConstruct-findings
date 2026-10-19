@@ -1,16 +1,28 @@
-// from server: 79% by king_originala
-struct String;
-extern const char* (__thiscall* string_text)(const String*);
-extern int (__thiscall* string_compare)(const String*, const char*);
-extern void (__thiscall* string_destroy)(String*);
+// from server: 81% by colin
+//
+
+//
 
 struct String {
     char* data;
-    ~String() throw() { string_destroy(this); }
-    bool less(const String& other) const {
-        return string_compare(this, string_text(&other)) < 0;
-    }
+    const char* c_str() const;
+    int compare(const char*) const;
+    __declspec(dllimport) ~String() throw();
 };
+
+extern const char* (__thiscall* string_data)(const String*);
+extern int (__thiscall* string_compare)(const String*, const char*);
+extern void (__thiscall* string_destroy)(String*);
+
+inline const char* String::c_str() const
+{
+    return string_data(this);
+}
+
+inline int String::compare(const char* value) const
+{
+    return string_compare(this, value);
+}
 
 struct Descriptor {
     char pad[8];
@@ -18,56 +30,56 @@ struct Descriptor {
 };
 
 struct Item {
-    char pad[0x120];
-    char node[0x20];
+    char pad[0x10c];
+    char handle[0x20];
     Descriptor* descriptor;
-    String name();
+    String copy();
 };
 
-struct Array {
+struct Items {
     char pad[0x28];
     int count;
-    Item* at(int index);
+    Item* at(int);
 };
 
 struct Group {
     char pad[0xc0];
-    Array* items;
-    void insert(int index, Item* item);
+    Items* items;
+    void insert(int, Item*);
 };
 
 struct Listener {
-    char data[0x18];
-    void attach(void** value);
+    char pad[0x18];
+    void notify(void**);
 };
 
 struct Map {
-    void** lookup(void** key);
+    void** find(void**);
 };
 
-struct S {
+struct Selection {
     char pad[0x19c];
     Listener listener;
     Map map;
-    Group* find(void* key);
-    void f(Item* item);
+    Group* group(void*);
+    void f(Item*);
 };
 
-void S::f(Item* item)
+void Selection::f(Item* item)
 {
-    Group* group = find(item->descriptor->key);
+    Group* selected = group(item->descriptor->key);
     int index = 0;
-    for (; index < group->items->count; ++index) {
-        Item* current = group->items->at(index);
-        if (item->name().less(current->name()))
+    for (; index < selected->items->count; ++index) {
+        if (item->copy().compare(selected->items->at(index)->copy().c_str()) < 0)
             break;
     }
 
-    group->insert(index, item);
+    selected->insert(index, item);
 
     void* key = item->descriptor;
-    void* node = item->node;
-    *map.lookup(&key) = node;
-    key = node;
-    listener.attach(&key);
+    void** value = map.find(&key);
+    void* handle = item->handle;
+    *value = handle;
+    key = handle;
+    listener.notify(&key);
 }

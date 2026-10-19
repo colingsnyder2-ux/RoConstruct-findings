@@ -1,70 +1,54 @@
-// from server: 91% by colin
-struct Storage
-{
-    unsigned long a, b;
+// from server: 98% by colin
+//
 
-    Storage() : a(0), b(0) {}
-    ~Storage();
+struct Handle {
+    int first;
+    int second;
+    Handle() : first(0), second(0) {}
+    ~Handle();
 };
 
-struct Temporary : Storage
-{
-    unsigned long c;
-
-    Temporary(void *p);
-    void initialize(void *p);
+struct Temporary {
+    Handle handle;
+    int third;
+    void init(int value);
+    Temporary(int value) : third(0) { init(value); }
     ~Temporary();
 };
 
-inline Temporary::Temporary(void *p) : c(0)
-{
-    initialize(p);
-}
-
-struct Argument
-{
-    char pad[0x14];
-    unsigned char data;
+struct Source {
+    char padding[0x198];
+    int value;
 };
 
-struct Source
-{
-    char pad[0x198];
-    void *value;
+struct Receiver {
+    virtual void slot0();
+    virtual void slot1();
+    virtual void slot2();
+    virtual void invoke(void* value, int argument);
 };
 
-struct Target
-{
-    struct VTable
-    {
-        void *pad[3];
-        void (__thiscall *method)(Target *, void *, unsigned long);
-    };
-
-    VTable *vtable;
+struct Destination {
+    char padding[0x18];
+    Receiver* receiver;
 };
 
-struct Link
-{
-    char pad[0x18];
-    Target *target;
+struct S {
+    char padding[0x134];
+    Source* source;
+    Destination* destination;
+    void f(void* value, int argument);
 };
 
-struct S
-{
-    char pad[0x13c];
-    Source *source;
-    Link *link;
-
-    void f(Argument *argument, unsigned long value);
-};
-
-void S::f(Argument *argument, unsigned long value)
+void S::f(void* value, int argument)
 {
     Temporary temporary(source->value);
-    void *p = 0;
-    if (argument)
-        p = (char*)argument + 0x14;
-    Target *target = link->target;
-    target->vtable->method(target, p, value);
+    char* p = static_cast<char*>(value);
+    if (p != 0)
+        p += 0x14;
+    else
+        p = 0;
+    Destination* d = destination;
+    Receiver* r = d->receiver;
+    r->invoke(p, argument);
 }

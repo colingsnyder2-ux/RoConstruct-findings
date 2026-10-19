@@ -1,16 +1,15 @@
-// from server: 71% by colin
-extern void __cdecl adjust_heap(float*, int, int, float);
+// from server: 100% by colin
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD /fp:fast
+// VS2008 <algorithm> std::sort on float* (family of 006789e0 _Unguarded_partition<float*>).
+#include <algorithm>
 
-#pragma float_control(precise, off, push)
-void __cdecl sort_heap(float* first, float* last)
-{
-    int bytes = (char*)last - (char*)first;
-    while (bytes > 4)
-    {
-        float value = *(float*)((char*)first + bytes - 4);
-        *(float*)((char*)first + bytes - 4) = first[0];
-        adjust_heap(first, 0, (bytes - 4) >> 2, value);
-        bytes -= 4;
-    }
-}
-#pragma float_control(pop)
+template void std::sort<float*>(float*, float*);
+template void std::_Sort<float*, int>(float*, float*, int);
+template void std::_Median<float*>(float*, float*, float*);
+template void std::_Med3<float*>(float*, float*, float*);
+template void std::_Insertion_sort<float*>(float*, float*);
+template void std::make_heap<float*>(float*, float*);
+template void std::sort_heap<float*>(float*, float*);
+template std::pair<float*, float*> std::_Unguarded_partition<float*>(float*, float*);

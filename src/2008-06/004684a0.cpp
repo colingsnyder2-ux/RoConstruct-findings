@@ -1,3 +1,4 @@
+// from server: 92% by Espeon
 // from server: 90% by king_originala
 struct Vector2 {
     float x;
@@ -8,6 +9,7 @@ struct Vector2int16 {
     short x;
     short y;
     Vector2int16(const Vector2&);
+    Vector2int16(){}
 };
 
 struct S;
@@ -19,6 +21,7 @@ struct Event {
     short zeroX;
     short zeroY;
     Vector2int16 value;
+    Event(int t,S* s,const Vector2int16& p,const Vector2int16& v){value=v;position=p;zeroX=0;zeroY=0;type=t;source=s;}
 };
 
 struct S {
@@ -38,7 +41,6 @@ void S::f(int type, const Vector2& position)
         active = false;
 
     Vector2int16 p(position);
-    Vector2int16 v = getValue();
-    Event event = { type, this, p, 0, 0, v };
+    Event event(type,this,p,getValue());
     dispatch(event);
 }

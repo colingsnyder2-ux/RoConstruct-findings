@@ -1,46 +1,64 @@
-// from server: 57% by colin
-struct GLCaps {
-    static bool _loadedExtensions;
-    static bool _initialized;
-    static bool _checkedForBugs;
-    static bool checkForBugs();
+// from server: 99% by colin
+//
+
+//
+
+struct String {
+    unsigned int allocator;
+    union {
+        char buffer[16];
+        char* pointer;
+    } storage;
+    unsigned int length;
+    unsigned int capacity;
+
+    String(const char*);
+    ~String();
 };
 
-bool GLCaps::_loadedExtensions = false;
-bool GLCaps::_initialized = false;
-bool GLCaps::_checkedForBugs = false;
+extern void (__thiscall* constructString)(String*, const char*);
+extern void (__thiscall* destroyString)(String*);
 
-struct StdString {
-    char buf[24];
-    StdString(const char*);
-    ~StdString();
-};
-
-extern "C" void __cdecl sub_50A940();
-extern "C" void __cdecl sub_50A9B0();
-extern "C" void __stdcall sub_8027F4(int);
-extern "C" void __stdcall sub_802458(StdString*, const char*);
-extern "C" void __stdcall sub_802468(StdString*);
-extern "C" int __cdecl sub_94278C(const char*, const char*, int, const char*, int, StdString*, int);
-
-bool GLCaps::checkForBugs()
+__forceinline String::String(const char* text)
 {
-    if (_loadedExtensions || _initialized)
-        return _initialized;
+    constructString(this, text);
+}
 
-    sub_50A940();
+__forceinline String::~String()
+{
+    destroyString(this);
+}
 
-    bool result = false;
-    if (sub_94278C != 0) {
-        StdString buf("GLCaps has not been initialized.");
-        result = sub_94278C("GLCaps has not been initialized.", ".\\glg3dcpp\\GLCaps.cpp", 0x23d, "_initialized", 1, &buf, 1) != 0;
-        buf.~StdString();
+extern bool initialized;
+extern bool ignoreAssertion;
+extern const char assertionExpression[];
+extern const char assertionMessage[];
+extern const char assertionFile[];
+
+extern bool (__cdecl* assertionHandler)(
+    const char*, const String&, const char*, int, bool*, bool);
+
+extern void (__stdcall* terminateProcess)(int);
+extern void __cdecl lockAssertions();
+extern void __cdecl unlockAssertions();
+extern bool glCapsInitialized;
+
+bool __cdecl checkGLCaps()
+{
+    if (!ignoreAssertion && !initialized) {
+        lockAssertions();
+        bool terminate = assertionHandler &&
+            assertionHandler(
+                assertionExpression,
+                String(assertionMessage),
+                assertionFile,
+                561,
+                &ignoreAssertion,
+                true);
+        if (terminate) {
+            terminateProcess(-1);
+        }
+        unlockAssertions();
     }
-
-    if (result) {
-        sub_8027F4(-1);
-    }
-
-    sub_50A9B0();
-    return _initialized;
+    return glCapsInitialized;
 }

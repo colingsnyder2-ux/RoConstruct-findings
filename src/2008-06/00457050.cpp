@@ -1,53 +1,24 @@
-// from server: 82% by king_originala
-typedef unsigned long DWORD;
+// from server: 100% by colin
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
 
-extern "C" DWORD (__stdcall *GetCurrentThreadId)();
-extern DWORD __cdecl getValue();
-void* __cdecl operator new(unsigned int);
+#include <vector>
 
-struct Storage;
+extern "C" __declspec(dllimport) unsigned long __stdcall GetCurrentThreadId();
+extern void* __cdecl getContext();
 
-struct Proxy {
-    Storage** pointer;
-
-    Proxy(Storage* owner);
-    ~Proxy();
-};
-
-struct Storage {
-    Proxy proxy;
-    unsigned int reserved[2];
-    unsigned int first;
-    unsigned int second;
-    unsigned int third;
-
-    Storage();
-    ~Storage();
-};
-
-struct S {
-    virtual ~S();
-    Storage storage;
-    DWORD threadId;
-    DWORD value;
+struct S
+{
+    std::vector<void*> storage;
+    unsigned long threadId;
+    void* context;
 
     S();
+    virtual ~S();
 };
-
-inline Proxy::Proxy(Storage* owner)
-{
-    pointer = new Storage*(owner);
-}
-
-inline Storage::Storage() : proxy(this)
-{
-    first = 0;
-    second = 0;
-    third = 0;
-}
 
 S::S()
 {
     threadId = GetCurrentThreadId();
-    value = getValue();
+    context = getContext();
 }

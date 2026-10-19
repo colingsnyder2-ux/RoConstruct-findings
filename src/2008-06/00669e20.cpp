@@ -1,45 +1,63 @@
-// from server: 45% by colin
-// roc 2008-06 00669e20  unit: RBX::TreeStage  size: 233 bytes
+// from server: 74% by colin
+//
 
-struct CNameItem {
-    void ctor();
+struct Part
+{
+    unsigned char padding[0xb8];
+    int state[1];
 };
 
-struct Obj {
-    char pad[0xb8];
-    int arr[1];
+struct Frame
+{
+    unsigned char data[0x30];
+    Frame();
 };
 
-struct Result {
-    char pad[0x88];
+extern bool __cdecl compatible(Part*, Part*, int, int);
+extern void __cdecl getFrames(Part*, Part*, int, int, Frame*, Frame*);
+
+void* __cdecl operator new(unsigned int);
+void __cdecl operator delete(void*);
+
+struct JointBase
+{
+    unsigned char data[0x84];
+    JointBase(Part*, Part*, const Frame&, const Frame&);
+    virtual void type();
 };
 
-extern "C" void __cdecl sub_4782d0(void* p);
-extern "C" int __cdecl sub_645560(Obj* a, int b, Obj* c, int d);
-extern "C" void __cdecl sub_645980(void* out1, void* out2, Obj* a, int b, Obj* c, int d);
-extern "C" void* __cdecl sub_6a0920(unsigned int size);
-extern "C" void __cdecl sub_6455c0(Result* self, Obj* a, int b, void* out1, void* out2);
-
-struct TreeStage {
-    Result* make(Obj* a, int b, Obj* c, int d);
+struct Joint : JointBase
+{
+    Joint(Part*, Part*, const Frame&, const Frame&);
+    virtual void type();
 };
 
-Result* TreeStage::make(Obj* a, int b, Obj* c, int d) {
-    int v1 = c->arr[b];
-    int v2 = a->arr[d];
-    if (v1 != 2 && v2 != 2)
+__forceinline Joint::Joint(Part* a, Part* b, const Frame& x, const Frame& y)
+    : JointBase(a, b, x, y)
+{
+}
+
+Joint* __cdecl func_00669d30(Part* a, Part* b, int i, int j)
+{
+    int left = a->state[i];
+    int right = b->state[j];
+
+    if (left == 3)
+    {
+        if (right != 4)
+            return 0;
+    }
+    else
+    {
+        if (left != 4 || right != 3)
+            return 0;
+    }
+
+    if (!compatible(a, b, i, j))
         return 0;
-    if (!sub_645560(a, d, c, b))
-        return 0;
-    char buf1[0x30];
-    char buf2[0x30];
-    sub_4782d0(buf1);
-    sub_4782d0(buf2);
-    sub_645980(buf1, buf2, a, d, c, b);
-    Result* r = (Result*)sub_6a0920(0x88);
-    if (!r)
-        return 0;
-    sub_6455c0(r, a, d, buf1, buf2);
-    *(void**)r = (void*)0x83e0bc;
-    return r;
+
+    Frame x;
+    Frame y;
+    getFrames(a, b, i, j, &x, &y);
+    return new Joint(a, b, x, y);
 }

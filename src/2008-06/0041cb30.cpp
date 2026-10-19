@@ -1,36 +1,65 @@
-// from server: 52% by colin
-struct String {
-    char data[28];
-    ~String();
+// from server: 88% by colin
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+#include <string>
+extern "C" {
+}
+
+
+
+
+
+
+
+struct Service;
+
+struct Shared {
+    void* object;
+    void* control;
+    Shared(const Shared&);
 };
 
-struct Argument {
-    unsigned int prefix[2];
-    String text;
-    unsigned int suffix[6];
+Shared __cdecl getShared(Service*);
+
+struct Callback {
+    void (__cdecl *function)();
+    int adjustment;
 };
 
-extern bool __cdecl func_0060a2f0();
-extern void __cdecl func_00418fb0(void*, const Argument*);
-extern void __cdecl func_005944e0(void*, const Argument*);
-extern void __cdecl func_00618a40(void*, void*);
-extern void __cdecl func_00419400(void*, void*, void*);
-extern void __cdecl func_0041a530(void*);
-extern void __cdecl func_00594470(void*);
-extern void __cdecl func_0041c860();
+void __cdecl callback();
 
-struct S {
-    void func_0041cb30(int, int, int, int, int, int, int, int, int);
+struct Bind {
+    unsigned char data[48];
+    Bind(const Bind&);
 };
 
-void S::func_0041cb30(int a1, int a2, int a3, int a4, int a5, int a6, int a7, int a8, int a9)
+Bind __cdecl makeBind(Callback, Shared, std::string);
+
+struct FunctionTable {
+    void (__cdecl *manager)(void*, void*, int);
+};
+
+struct Function {
+    FunctionTable* table;
+    unsigned int reserved;
+    unsigned int storage[6];
+    Function(const Function&);
+    Function(Bind, int);
+};
+
+struct Queue {
+    void append(Function);
+};
+
+extern Queue* queue;
+
+struct Service {
+    void submit(std::string);
+};
+
+void Service::submit(std::string text)
 {
-    Argument argument;
-    argument.prefix[0] = 0;
-    func_005944e0(&argument, 0);
-    func_00618a40(&argument, this);
-    func_00419400(0, (void*)0x417b40, &argument);
-    func_0041c860();
-    func_0041a530(*(void**)0x96cc4c);
-    func_00594470(&argument);
+    Callback target = { callback, 0 };
+    queue->append(Function(makeBind(target, getShared(this), text), 0));
 }

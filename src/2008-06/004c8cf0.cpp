@@ -1,51 +1,56 @@
-// from server: 77% by colin
-struct Link {
-    unsigned int parent;
-    Link* left;
-    Link* right;
-};
+// from server: 83% by colin
+//
 
-struct Node {
-    unsigned int reserved[2];
-    unsigned int key;
-    char padding[0x280 - 12];
-    Link link;
-};
+struct Link;
 
-struct Flag {
+struct Tag {
     bool value;
 };
 
-struct Receiver {
-    bool find(unsigned int* key, Node** position, Flag flag);
-    Node* insert(unsigned int* key, Node* node);
-    Node* receive(unsigned int* key, Node* node);
+struct Position {
+    Tag tag;
+    Link *link;
 };
 
-extern "C" void __cdecl sub_4C6980(Node* a, Node* b, Node* c, Node* d);
+struct Object {
+    char reserved[0x44];
+    void *key;
+};
 
-Node* Receiver::receive(unsigned int* key, Node* node)
+struct Product;
+
+extern "C" void __cdecl insert(Link *node, Position position, Link *owner);
+
+struct Factory {
+    bool find(void *key, Position *position, Tag tag);
+    Product *construct(void *argument, void *storage);
+    Product *create(Object *argument, Product *storage);
+};
+
+Product *Factory::create(Object *argument, Product *storage)
 {
-    unsigned int* savedKey = key;
-    Node* found = 0;
+    Position position;
+    position.tag.value = false;
 
-    Flag flag;
-    flag.value = false;
-    if (!find(savedKey, &found, flag))
-    {
-        if (found)
-            return reinterpret_cast<Node*>(reinterpret_cast<char*>(found) - 0x280);
+    if (!find(argument->key, &position, position.tag)) {
+        if (position.link)
+            return reinterpret_cast<Product *>(
+                reinterpret_cast<char *>(position.link) - 0x50);
         return 0;
     }
 
-    Node* result = insert(savedKey, node);
-    if (result == node)
-    {
-        Node* a = this ? reinterpret_cast<Node*>(reinterpret_cast<char*>(this) - 12) : 0;
-        Node* b = a ? *reinterpret_cast<Node**>(reinterpret_cast<char*>(a) + 4) : 0;
-        Node* c = b ? reinterpret_cast<Node*>(reinterpret_cast<char*>(b) + 0x280) : 0;
-        Node* d = node ? reinterpret_cast<Node*>(reinterpret_cast<char*>(node) + 0x280) : 0;
-        sub_4C6980(d, found, c, 0);
+    Product *result = construct(argument, storage);
+    if (result == storage) {
+        char *base = this ? reinterpret_cast<char *>(this) - 0x0C : 0;
+        Product *owner = *reinterpret_cast<Product **>(base + 4);
+        Link *ownerLink = owner
+            ? reinterpret_cast<Link *>(reinterpret_cast<char *>(owner) + 0x50)
+            : 0;
+        Link *storageLink = storage
+            ? reinterpret_cast<Link *>(reinterpret_cast<char *>(storage) + 0x50)
+            : 0;
+        insert(storageLink, position, ownerLink);
     }
+
     return result;
 }

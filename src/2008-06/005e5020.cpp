@@ -1,3 +1,6 @@
+// from server: 100% by Espeon
+extern "C" void _ReadWriteBarrier();
+#pragma intrinsic(_ReadWriteBarrier)
 // from server: 87% by colin
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD /fp:fast
@@ -23,10 +26,13 @@ struct S {
 
 void S::f(float value)
 {
-    if (value != target->value &&
-        fabs(value - target->value) >
-            (fabs(value) + toleranceBase) * toleranceScale) {
-        target->value = value;
+    Target* object=target;
+    float previous=object->value;
+    _ReadWriteBarrier();
+    if (value != previous &&
+        !(fabs(value - previous) <=
+            (fabs(value) + toleranceBase) * toleranceScale)) {
+        object->value = value;
         notify(&descriptor);
     }
 }

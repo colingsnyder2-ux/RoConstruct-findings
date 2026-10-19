@@ -1,67 +1,57 @@
-// from server: 60% by colin
-// roc-cl: 50727
-// roc-flags: /O2 /GS- /EHsc /MD
+// from server: 64% by colin
+//
+
 typedef unsigned int size_t;
 
 void* __cdecl operator new(size_t);
 void __cdecl operator delete(void*);
 
-struct Owner {
+struct OwnedPointer {
     void* p;
-
-    Owner() : p(0) {}
-    Owner(Owner& other) : p(other.release()) {}
-    ~Owner() {
+    OwnedPointer() : p(0) {}
+    ~OwnedPointer() {
         if (p)
             operator delete(p);
     }
-
-    void* release() {
-        void* result = p;
-        p = 0;
-        return result;
-    }
 };
-
-extern void* __cdecl descriptor();
 
 struct Base {
     virtual ~Base();
-    unsigned int storage[5];
+    unsigned char data[20];
+    void* getter;
 
-    Base(void*, int, int, Owner, void*);
+    Base(void*, int, int, OwnedPointer, int);
 };
 
 struct S;
 
-struct Callback {
-    virtual void invoke();
+struct Getter {
+    virtual ~Getter();
     S* object;
-    int first;
-    int second;
-    void* state1;
-    void* state2;
-    void* state3;
-    unsigned int unused;
+    int functionLow;
+    int functionHigh;
+    int state0;
+    int state1;
+    int state2;
+    int reserved;
 
-    Callback(S* s, int a, int b)
-        : object(s), first(a), second(b),
-          state1(0), state2(0), state3(0) {}
+    Getter(S* object_, int low, int high)
+        : object(object_), functionLow(low), functionHigh(high),
+          state0(0), state1(0), state2(0) {}
 };
 
 struct S : Base {
-    Callback* callback;
-
-    S(int, int, int, int, Owner);
+    static void* descriptor();
+    S(int, int, int, int, int);
     virtual ~S();
 };
 
-S::S(int a, int b, int c, int d, Owner owner)
-    : Base(descriptor(), a, b, Owner(), owner.release())
+S::S(int a, int b, int low, int high, int flags)
+    : Base(descriptor(), a, b, OwnedPointer(), flags)
 {
-    Callback* replacement = new Callback(this, c, d);
-    Callback* previous = callback;
-    if (replacement != previous && previous)
-        delete previous;
-    callback = replacement;
+    Getter* replacement = new Getter(this, low, high);
+    void* old = getter;
+    if (replacement != old && old)
+        operator delete(old);
+    getter = replacement;
 }

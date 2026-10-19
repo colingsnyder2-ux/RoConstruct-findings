@@ -1,60 +1,24 @@
-// from server: 83% by king_originala
-void* __cdecl operator new(unsigned int);
-extern "C" unsigned long (__stdcall *GetCurrentThreadId)();
-extern unsigned long __cdecl queryValue();
-extern unsigned char captionTable[];
+// from server: 100% by colin
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
 
-struct Base {
-    void* table;
+#include <vector>
 
-    Base();
-    ~Base();
-};
+extern "C" __declspec(dllimport) unsigned long __stdcall GetCurrentThreadId();
+extern void* __cdecl getContext();
 
-struct ProxyBase {
-    ProxyBase** proxy;
-    unsigned long reserved[2];
-
-    ProxyBase();
-    ~ProxyBase();
-};
-
-struct Container : ProxyBase {
-    void* first;
-    void* last;
-    void* limit;
-
-    Container();
-    ~Container();
-};
-
-struct S : Base {
-    Container data;
+struct S
+{
+    std::vector<void*> storage;
     unsigned long threadId;
-    unsigned long value;
+    void* context;
 
     S();
+    virtual ~S();
 };
 
-__forceinline Base::Base()
-    : table(captionTable)
-{
-}
-
-__forceinline ProxyBase::ProxyBase()
-    : proxy(new ProxyBase*(this))
-{
-}
-
-__forceinline Container::Container()
-    : first(0), last(0), limit(0)
-{
-}
-
 S::S()
-    : Base(),
-      data(),
-      threadId(GetCurrentThreadId()),
-      value(queryValue())
 {
+    threadId = GetCurrentThreadId();
+    context = getContext();
 }

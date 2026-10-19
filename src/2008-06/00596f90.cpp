@@ -1,3 +1,4 @@
+// from server: 100% by colin
 // from server: 99% by colin
 // roc 2008-06 00596f90  unit: RBX::worker_thread::Udata::?$sp_counted_impl_p  size: 162 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 00596f90
@@ -74,10 +75,15 @@ struct Stored {
     Stored(const Argument&);
 };
 
+struct Holder {
+    Stored value;
+    __forceinline Holder(const Argument& a) : value(a) {}
+};
+
 struct Block {
     void* pointer;
     unsigned int padding;
-    Stored value;
+    Holder value;
 
     Block(void*, const Argument&);
 };

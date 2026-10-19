@@ -1,120 +1,126 @@
-// from server: 89% by king_originala
-namespace RBX {
-    class Instance;
-    class ServiceProvider;
-}
+// from server: 99% by colin
+//
 
-RBX::ServiceProvider* __cdecl func_00465210(RBX::Instance*);
-extern "C" void (__cdecl* invalid_parameter_noinfo)();
+//
+
+//
+extern "C" __declspec(dllimport) void __stdcall _invalid_parameter_noinfo();
 
 void* __cdecl operator new(unsigned int);
+void __cdecl operator delete(void*);
 
-struct Result;
-void __cdecl func_005a1680(Result*, const Result*);
 
-struct Result {
+struct SharedPtr;
+void __cdecl copySharedPtr(SharedPtr*, const SharedPtr*);
+
+struct SharedPtr {
     void* object;
     void* control;
-
-    Result(const Result&);
-    ~Result();
+    SharedPtr(const SharedPtr&);
+    ~SharedPtr();
 };
 
-inline Result::Result(const Result& other) {
-    func_005a1680(this, &other);
+inline SharedPtr::SharedPtr(const SharedPtr& source) {
+    copySharedPtr(this, &source);
+}
+
+struct Allocator {
+    char storage[4];
+    ~Allocator();
+};
+
+inline Allocator::~Allocator() {
 }
 
 struct String;
-void __cdecl func_0055bd80(String*, const char*);
+void __cdecl initializeString(String*, const char*);
 
 struct String {
-    unsigned char storage[32];
-
+    Allocator allocator;
+    char storage[28];
     String(const char*);
     String(const String&);
     ~String();
 };
 
 inline String::String(const char* text) {
-    func_0055bd80(this, text);
+    initializeString(this, text);
 }
 
-struct Vector;
+struct Instance;
 
-struct VectorBase {
+struct Vector {
     struct Proxy {
         Vector* owner;
         Proxy(Vector*);
     };
 
     Proxy* proxy;
-    unsigned int reserved[2];
-
-    VectorBase(Vector*);
-    ~VectorBase();
-};
-
-inline VectorBase::Proxy::Proxy(Vector* p) {
-    owner = p;
-}
-
-inline VectorBase::VectorBase(Vector* p) {
-    proxy = new Proxy(p);
-}
-
-struct Vector : VectorBase {
-    Result* first;
-    Result* last;
-    Result* limit;
+    char allocator1[4];
+    char allocator2[4];
+    SharedPtr* first;
+    SharedPtr* last;
+    SharedPtr* limit;
 
     Vector();
     ~Vector();
-    Result& front();
 };
 
-inline Vector::Vector() : VectorBase(this) {
-    first = 0;
-    last = 0;
-    limit = 0;
+inline Vector::Proxy::Proxy(Vector* value) : owner(value) {
 }
 
-inline Result& Vector::front() {
-    Result* p = first;
-    void (__cdecl* report)() = invalid_parameter_noinfo;
-
-    if (p > last)
-        report();
-
-    Vector* owner;
-    if (!proxy) {
-        report();
-        owner = 0;
-    } else {
-        owner = proxy->owner;
+struct VectorBuy : Vector {
+    VectorBuy();
+    ~VectorBuy();
+    bool buy(unsigned int capacity)
+    {
+        first = 0; last = 0; limit = 0;
+        if (capacity == 0)
+            return false;
+        first = (SharedPtr*)operator new(capacity * sizeof(SharedPtr));
+        last = first;
+        limit = first + capacity;
+        return true;
     }
-
-    if (p >= owner->last)
-        report();
-
-    return *p;
-}
-
-namespace RBX {
-    class ServiceProvider {
-    public:
-        void func_005628e0(String, Vector*);
-    };
-}
-
-struct RocketTool {
-    unsigned char padding[24];
-    RBX::Instance* instance;
-
-    Result f();
 };
 
-Result RocketTool::f() {
-    Vector objects;
-    func_00465210(instance)->func_005628e0(String("Fonts\\Rocket.rbxm"), &objects);
-    return objects.front();
+inline Vector::Vector()
+    : proxy(new Proxy(this)) {
+}
+
+inline VectorBuy::VectorBuy() {
+    buy(0);
+}
+
+struct ServiceProvider {
+    void load(String, Vector*);
+};
+
+ServiceProvider* __cdecl func_00465210(Instance*);
+
+struct SlingshotTool {
+    char padding[0x18];
+    Instance* instance;
+    SharedPtr func();
+};
+
+SharedPtr SlingshotTool::func() {
+    VectorBuy result;
+    func_00465210(instance)->load(
+        String("Fonts\\SlingshotPellet.rbxm"), &result);
+
+    SharedPtr* position = result.first;
+
+    if (position > result.last)
+        _invalid_parameter_noinfo();
+
+    Vector::Proxy* aux = result.proxy;
+    if (!(aux != 0))
+        _invalid_parameter_noinfo();
+    Vector* owner = aux ? aux->owner : 0;
+
+    if (position >= owner->last)
+        _invalid_parameter_noinfo();
+
+    return *position;
 }

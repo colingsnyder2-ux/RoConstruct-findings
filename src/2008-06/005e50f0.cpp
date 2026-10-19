@@ -1,40 +1,8 @@
-// from server: 62% by king_originala
-typedef unsigned int size_t;
+// from server: 96% by colin
+//
+// library boost-1.40.0/libs\regex\src\instances.cpp (function ??0?$named_subexpressions@D@re_detail@boost@@QAE@XZ)
 
-void* __cdecl operator new(size_t);
-
-struct Storage {
-    void** proxy;
-    unsigned int unused0;
-    unsigned int unused1;
-    unsigned int first;
-    unsigned int last;
-    unsigned int limit;
-
-    Storage();
-    ~Storage();
-};
-
-struct S {
-    virtual ~S();
-
-    Storage storage;
-    unsigned int value0;
-    unsigned int value1;
-
-    S();
-};
-
-inline Storage::Storage()
-    : proxy(new void*(this)),
-      first(0),
-      last(0),
-      limit(0)
-{
-}
-
-S::S()
-    : value0(0),
-      value1(0)
-{
-}
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: boost-1.40.0 libs/regex/src/instances.cpp

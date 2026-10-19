@@ -1,110 +1,138 @@
-// from server: 24% by colin
-// roc-cl: 21022
-// roc-flags: /O2 /GS- /EHsc /MD /fp:fast
-struct Vec3 { float x, y, z; };
+// from server: 29% by colin
+//
 
 struct CylinderBuilder {
     char pad0[4];
-    void buildTop(int a, int b, int c, int d, int e, int f, int g, int h, int i, int j, int k, int l, int m);
+    int field4;
+    void build(float, float, float, float, float, float, float, float, short, short, int, int, int, int);
 };
 
-extern "C" void __cdecl sub_6784D0(Vec3* dst, const Vec3* src);
-extern "C" void* __cdecl sub_6A0956(int size);
-extern "C" void __cdecl sub_6A094A(void* p);
-extern "C" void __cdecl sub_548640(void* p);
-extern "C" void __cdecl sub_548000(Vec3* a, Vec3* b, Vec3* c, int d, Vec3* e);
-extern "C" void __cdecl sub_4FDBD0(void* a, Vec3* b, Vec3* c, Vec3* d, Vec3* e, float f);
-extern "C" void __cdecl sub_500EB0(void* a, int b, int c, int d, int e);
+extern "C" void __cdecl sub_5EC1A0(float*, float*);
+extern "C" void* __cdecl sub_6A0956(int);
+extern "C" void __cdecl sub_4FDBD0(int*, float*, float*, float*, float*, float*, float*);
 extern "C" float* __cdecl sub_509BA0();
+extern "C" void* __cdecl sub_548000(float*, float*, float*, int);
+extern "C" void __cdecl sub_500EB0(int, void*, void*, void*, void*);
+extern "C" void __cdecl sub_548640(void*);
+extern "C" void __cdecl sub_6A094A(void*);
 
-extern float g_819BAC;
+extern float g_819bac;
 
-void CylinderBuilder::buildTop(int a, int b, int c, int d, int e, int f, int g, int h, int i, int j, int k, int l, int m)
+void CylinderBuilder::build(float a10, float a14, float a18, float a1c, float a20, float a24, float a28, float a2c, short a38, short a3a, int a34, int a30, int a2c2, int a28b)
 {
-    Vec3 v1, v2, v3;
-    sub_6784D0(&v1, (const Vec3*)((char*)this + 4));
+    float v[3];
+    sub_5EC1A0(v, (float*)&this->field4);
 
-    float f1 = v1.x; if (f1 < 0) f1 = -f1;
-    float f2 = v1.y; if (f2 < 0) f2 = -f2;
-    float f3 = v1.z; if (f3 < 0) f3 = -f3;
+    float f74 = v[0] < 0 ? -v[0] : v[0];
+    float f78 = v[1] < 0 ? -v[1] : v[1];
+    float f7c = v[2] < 0 ? -v[2] : v[2];
 
-    int n1 = *(short*)&i + 1;
-    int n2 = *(short*)&j + 1;
-    int total = n1 * n2;
+    int n38 = a38;
+    int n3a = a3a;
 
-    float d1 = (*(float*)&d - *(float*)&c) / (float)n1;
-    float d2 = (*(float*)&f - *(float*)&e) / (float)n2;
-    float d3 = *(float*)&h / *(float*)&g;
-    float d4 = *(float*)&l / *(float*)&k;
+    float f44 = (a18 - a10) / (float)(n38 + 1);
+    float f4c = (a1c - a14) / (float)(n3a + 1);
+    float f50 = a2c / f74;
+    float f54 = a30 / f78;
 
+    int total = (n3a + 1) * (n38 + 1);
     void** arr = (void**)sub_6A0956(total * 4);
 
-    float baseX = *(float*)&c;
-    float baseY = *(float*)&e;
-    float stepX = 0.0f;
-    float stepY = 0.0f;
+    float curX = a10;
+    float curY = a14;
+    float curZ = a24;
+    float curW = a28;
 
-    int row = 0;
-    while (row <= *(short*)&i) {
-        float curX = baseX;
-        float curY = baseY;
-        int col = 0;
-        while (col <= *(short*)&j) {
-            Vec3 p1, p2, p3;
-            p1.x = curX; p1.y = curY; p1.z = *(float*)&g;
-            p2.x = curX; p2.y = curY; p2.z = *(float*)&g;
-            p3.x = curX; p3.y = curY; p3.z = 1.0f;
+    int i = 0;
+    while (i <= n38) {
+        float rowX = a14;
+        float rowZ = a28;
+        int j = 0;
+        while (j <= n3a) {
+            float px = curX;
+            float py = rowX;
+            float pz = curZ;
+            float pw = rowZ;
 
-            sub_4FDBD0((char*)this + 8, &p1, &p2, &p3, &p3, 1.0f);
+            float tmp[3];
+            tmp[0] = px;
+            tmp[1] = py;
+            tmp[2] = pz;
+
+            float q[3];
+            q[0] = px;
+            q[1] = py;
+            q[2] = pz;
+
+            float r[3];
+            r[0] = a20;
+            r[1] = a20;
+            r[2] = a20;
+
+            float s[3];
+            s[0] = px;
+            s[1] = py;
+            s[2] = pz;
+
+            float t[3];
+            t[0] = 1.0f;
+            t[1] = 1.0f;
+            t[2] = 1.0f;
+
+            sub_4FDBD0((int*)&this->field4, tmp, q, r, s, t, 0);
 
             float* sh = sub_509BA0();
-            float sx, sy;
-            if (sh[0] == *(float*)&h && sh[1] == *(float*)&l) {
-                sx = *(float*)&e;
-                sy = *(float*)&f;
+            float u, vv;
+            if (sh[0] == a2c && sh[1] == a30) {
+                u = a24;
+                vv = a28;
             } else {
-                sx = p1.x;
-                sy = p1.y;
+                u = tmp[0];
+                vv = tmp[1];
             }
-            sx *= g_819BAC;
-            sy *= g_819BAC;
 
-            Vec3 t1, t2;
-            sub_6784D0(&t1, &p1);
-            sub_6784D0(&t2, &p2);
-            Vec3 out;
-            sub_548000(&out, &t1, &t2, 1, &p3);
+            float uv[2];
+            uv[0] = u * g_819bac;
+            uv[1] = vv * g_819bac;
 
-            curX += out.x;
-            curY += out.y;
+            float uv2[2];
+            sub_5EC1A0(uv2, uv);
 
-            int idx = (*(short*)&j + 1) * row + col;
-            arr[idx] = (void*)(int)out.z;
+            float uv3[2];
+            sub_5EC1A0(uv3, uv2);
 
-            col++;
+            void* res = (void*)sub_548000(uv3, uv2, uv, 1);
+
+            curX += tmp[0];
+            curZ += tmp[1];
+
+            arr[i * (n3a + 1) + j] = res;
+
+            j++;
+            rowX += f4c;
+            rowZ += f50;
         }
-        baseX += stepX;
-        baseY += stepY;
-        row++;
+        i++;
+        curX += f44;
+        curY += f4c;
     }
 
-    int r = 0;
-    while (r < *(short*)&i) {
-        int c2 = 0;
-        while (c2 < *(short*)&j) {
-            int i0 = (*(short*)&j + 1) * r + c2;
-            int i1 = i0 + 1;
-            int i2 = i0 + (*(short*)&j + 1);
-            int i3 = i2 + 1;
-            sub_500EB0((char*)this + 8, (int)arr[i0], (int)arr[i1], (int)arr[i2], (int)arr[i3]);
-            c2++;
+    int k = 0;
+    while (k < n38) {
+        int m = 0;
+        while (m < n3a) {
+            int idx = k * (n3a + 1) + m;
+            sub_500EB0((int)this, arr[idx], arr[idx + 1], arr[idx + n3a + 1], arr[idx + n3a + 2]);
+            m++;
         }
-        r++;
+        k++;
     }
 
-    unsigned int n = (unsigned int)total;
-    for (unsigned int q = 0; q < n; q++) {
-        sub_548640(arr[q]);
+    unsigned int c = 0;
+    while (c < (unsigned int)total) {
+        sub_548640(arr[c]);
+        c++;
     }
+
     sub_6A094A(arr);
 }

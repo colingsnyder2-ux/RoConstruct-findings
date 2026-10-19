@@ -1,36 +1,37 @@
-// from server: 71% by colin
-extern "C" void* __cdecl allocate(unsigned int, unsigned int);
-extern "C" void* __cdecl fill(void*, int, unsigned int);
-extern "C" void __cdecl free_node(void*);
-extern "C" void __cdecl sub_4e7880(void*, void*);
+// from server: 73% by colin
+//
 
-struct Buffer
+//
+
+extern "C" void* __cdecl allocate_buffer(unsigned int, unsigned int);
+extern "C" void* __cdecl fill_buffer(void*, int, unsigned int);
+extern const unsigned int array_table[];
+
+struct Array
 {
-    int size;
+    const unsigned int* table;
+    unsigned int size;
     void* data;
-    int capacity;
+    unsigned int capacity;
 
-    Buffer();
-    ~Buffer();
-    Buffer& operator=(const Buffer&);
+    Array(unsigned int*);
+    __declspec(dllimport) ~Array() throw();
+    Array& operator=(const Array&);
     void clear();
-    void copy(const Buffer&);
+    void copy(const Array&);
 };
 
-Buffer::Buffer()
+inline Array::Array(unsigned int* base)
 {
-    capacity = 10;
-    size = 0;
-    data = allocate(40, 16);
-    fill(data, 0, capacity * 4);
+    base[2] = reinterpret_cast<unsigned int>(array_table);
+    base[5] = 10;
+    base[3] = 0;
+    void* p = allocate_buffer(40, 16);
+    base[4] = reinterpret_cast<unsigned int>(p);
+    fill_buffer(p, 0, base[5] * 4);
 }
 
-Buffer::~Buffer()
-{
-    clear();
-}
-
-Buffer& Buffer::operator=(const Buffer& other)
+inline Array& Array::operator=(const Array& other)
 {
     if (this != &other)
     {
@@ -42,19 +43,19 @@ Buffer& Buffer::operator=(const Buffer& other)
 
 struct S
 {
-    int first;
-    int second;
-    Buffer buffer;
-    int last;
+    unsigned int first;
+    void* owner;
+    Array values;
+    unsigned int last;
 
-    S(int, Buffer, int, int, int);
+    S(void*, Array, unsigned int, unsigned int);
 };
 
-S::S(int a, Buffer b, int c, int d, int e)
+S::S(void* p, Array a, unsigned int x, unsigned int y)
+    : owner(0), values(reinterpret_cast<unsigned int*>(this))
 {
-    second = 0;
-    second = a;
-    buffer = b;
-    first = c;
-    last = d;
+    owner = p;
+    values = a;
+    first = x;
+    last = y;
 }

@@ -1,58 +1,58 @@
-// from server: 81% by king_originala
-typedef unsigned int size_t;
+// from server: 90% by colin
+//
 
-extern "C" {
-    extern void* (__cdecl *malloc)(size_t);
-}
-extern void (__thiscall *destroy_string)(void*);
+extern "C" void* (__cdecl *allocate)(unsigned int);
+extern "C" void __cdecl free(void*);
 
-namespace std {
-    template<class T> struct char_traits;
-    template<class T> class allocator;
+struct String {
+    char storage[28];
+    ~String();
+};
 
-    template<class T, class Traits, class Allocator>
-    class basic_string {
-        unsigned char storage[28];
-    public:
-        ~basic_string();
-    };
+extern void (__thiscall *destroyString)(String*);
 
-    template<class T, class Traits, class Allocator>
-    inline basic_string<T, Traits, Allocator>::~basic_string()
-    {
-        destroy_string(this);
-    }
-
-    typedef basic_string<char, char_traits<char>, allocator<char> > string;
-}
-
-inline void* operator new(size_t size) throw()
+inline String::~String()
 {
-    return malloc(size);
+    destroyString(this);
 }
 
-void operator delete(void*) throw();
-
-struct Empty {
-    volatile unsigned char value;
-    Empty();
+struct Deleter {
+    unsigned char unused;
+    Deleter();
 };
 
-inline Empty::Empty() : value(0) {}
+inline Deleter::Deleter() : unused(0)
+{
+}
 
-struct Object {
-    unsigned char storage[0x15c];
-    Object(const std::string&, int, int);
+struct Node {
+    char storage[384];
+
+    Node(void*, const String&);
+    static void* operator new(unsigned int) throw();
+    static void operator delete(void*);
 };
 
-struct Result {
-    Object* pointer;
+inline void* Node::operator new(unsigned int size) throw()
+{
+    return allocate(size);
+}
+
+inline void Node::operator delete(void* p)
+{
+    free(p);
+}
+
+struct Pointer {
+    Node* object;
     void* control;
-    Result(Object*, Empty);
-    ~Result();
+
+    Pointer(Node*, Deleter);
+    ~Pointer();
 };
 
-Result create(std::string text, int value)
+Pointer __cdecl makePointer(void* owner, String name)
 {
-    return Result(new Object(text, value, 0), Empty());
+    Deleter deleter;
+    return Pointer(new Node(owner, name), deleter);
 }

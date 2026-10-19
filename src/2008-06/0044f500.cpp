@@ -1,19 +1,29 @@
-// from server: 86% by king_originala
-typedef void (__thiscall *StringDestroy)(void *);
-typedef int (__thiscall *StringConvert)(void *, int);
+// from server: 88% by colin
+//
 
-extern StringDestroy string_destroy;
-extern StringConvert string_convert;
+//
 
-struct String
+struct Text;
+typedef void (__thiscall *TextDestructor)(Text *);
+typedef int (__thiscall *TextValue)(const Text *);
+
+extern TextDestructor destroy_text;
+extern TextValue text_value;
+
+struct Text
 {
-    unsigned long value;
-    ~String() { string_destroy(this); }
-    int convert(int n) { return string_convert(this, n); }
+    void *data;
+    __declspec(dllimport) ~Text() throw();
+    int value() const;
 };
 
-extern String __cdecl make_string();
-extern String __cdecl operator+(const String &, const char *);
+inline int Text::value() const
+{
+    return text_value(this);
+}
+
+extern Text __cdecl make_text();
+extern Text __cdecl append_text(const Text &, const char *);
 
 struct Primary
 {
@@ -28,17 +38,17 @@ struct Secondary
 
 struct Base : Primary, Secondary
 {
-    Base(int, int);
+    Base(int, int, int);
 };
 
-struct Document : Base
+struct CPublishAsPlaceDialog : Base
 {
-    Document(int, int);
+    CPublishAsPlaceDialog(int, int);
     virtual void primary();
     virtual void secondary();
 };
 
-Document::Document(int first, int second)
-    : Base(second, (make_string() + "/IDE/Upload.aspx").convert(first))
+CPublishAsPlaceDialog::CPublishAsPlaceDialog(int first, int second)
+    : Base(first, append_text(make_text(), "/Game/Upload.aspx").value(), second)
 {
 }

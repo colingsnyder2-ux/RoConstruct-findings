@@ -1,115 +1,132 @@
-// from server: 16% by colin
-struct Vec3 { float x, y, z; };
+// from server: 29% by colin
+//
+
+struct Vector3 { float x, y, z; };
 
 struct TorsoBuilder {
-    char pad0[4];
-    int field4;
-    void build(
-        void (__stdcall *cb)(Vec3*, Vec3*, Vec3*, Vec3*, int),
-        float x0, float y0, float z0,
-        float x1, float y1, float z1,
-        float u0, float v0,
-        float u1, float v1,
-        int nu, short nv, short nw);
+    int f(int a, int b, int c, int d, int e, int f, int g, int h, int i, int j, int k, int l);
 };
 
-extern "C" void __cdecl sub_5EC1C0(Vec3* out, const void* in);
-extern "C" void* __cdecl sub_6A0956(unsigned int size);
-extern "C" void* __cdecl sub_509BA0();
-extern "C" void __cdecl sub_548000(Vec3* out, const Vec3* a, const Vec3* b, int flag);
+extern "C" void __cdecl sub_5EC220(float* out, float* in);
+extern "C" void* __cdecl sub_6A0956(int size);
+extern "C" float* __cdecl sub_509BA0();
+extern "C" void* __cdecl sub_548000(float* a, float* b, float* c, int d);
 extern "C" void __cdecl sub_500EB0(void* self, void* a, void* b, void* c, void* d);
 extern "C" void __cdecl sub_548640(void* p);
 extern "C" void __cdecl sub_6A094A(void* p);
 
-extern float g_float_819BAC;
+extern float g_819bac;
 
-void TorsoBuilder::build(
-    void (__stdcall *cb)(Vec3*, Vec3*, Vec3*, Vec3*, int),
-    float x0, float y0, float z0,
-    float x1, float y1, float z1,
-    float u0, float v0,
-    float u1, float v1,
-    int nu, short nv, short nw)
+int TorsoBuilder::f(int a, int b, int c, int d, int e, int f, int g, int h, int i, int j, int k, int l)
 {
-    Vec3 tmp;
-    sub_5EC1C0(&tmp, &this->field4);
+    float v[3];
+    sub_5EC220(v, (float*)((char*)this + 4));
 
-    float ax = tmp.x; if (ax < 0) ax = -ax;
-    float ay = tmp.y; if (ay < 0) ay = -ay;
-    float az = tmp.z; if (az < 0) az = -az;
+    float ax = v[0]; if (ax < 0) ax = -ax;
+    float ay = v[1]; if (ay < 0) ay = -ay;
+    float az = v[2]; if (az < 0) az = -az;
 
-    int nvi = (int)nv;
-    int nwi = (int)nw;
+    int n1 = (short)i;
+    int n2 = (short)j;
+    int w1 = n1 + 1;
+    int w2 = n2 + 1;
+    int total = w1 * w2;
 
-    float du = (u1 - u0) / (float)(nvi + 1);
-    float dv = (v1 - v0) / (float)(nwi + 1);
-    float sx = (x1 - x0) / (float)(nvi + 1);
-    float sy = (y1 - y0) / (float)(nwi + 1);
-    float sz = (z1 - z0) / (float)(nu + 1);
+    float stepX = (float)((float)e - (float)a) / (float)w1;
+    float stepY = (float)((float)f - (float)b) / (float)w2;
+    float stepZ = (float)((float)g - (float)c) / (float)w1;
 
-    int total = (nwi + 1) * (nvi + 1);
-    void** arr = (void**)sub_6A0956((unsigned int)(total * 4));
+    void** arr = (void**)sub_6A0956(total * 4);
 
-    float curX = x0;
-    float curY = y0;
-    float curZ = z0;
+    float curX = (float)a;
+    float curY = (float)b;
+    float curZ = (float)c;
 
-    for (int i = 0; i <= nvi; i++) {
-        float rowX = x0;
-        float rowY = y0;
-        float rowZ = z0;
-        for (int j = 0; j <= nwi; j++) {
-            Vec3 a, b, c, d;
-            a.x = rowX; a.y = rowY; a.z = rowZ;
-            b.x = rowX + sx; b.y = rowY; b.z = rowZ;
-            c.x = rowX; c.y = rowY + sy; c.z = rowZ;
-            d.x = rowX + sx; d.y = rowY + sy; d.z = rowZ;
+    int row = 0;
+    while (row <= n1) {
+        float rowX = (float)a;
+        float rowZ = (float)c;
+        int col = 0;
+        while (col <= n2) {
+            float px = rowX;
+            float py = curY;
+            float pz = rowZ;
 
-            Vec3 uv0, uv1;
-            uv0.x = u0; uv0.y = v0; uv0.z = 0;
-            uv1.x = u0 + du; uv1.y = v0 + dv; uv1.z = 0;
+            float out1[3];
+            float out2[3];
+            float out3[3];
 
-            Vec3 out;
-            sub_548000(&out, &uv0, &uv1, 1);
+            float tmp[3];
+            tmp[0] = px;
+            tmp[1] = py;
+            tmp[2] = pz;
+            sub_5EC220(out1, tmp);
 
-            Vec3* p = (Vec3*)sub_509BA0();
-            if (p->x == u0 && p->y == v0) {
-                a.x = x0;
-                a.y = y0;
+            float tmp2[3];
+            tmp2[0] = px;
+            tmp2[1] = py;
+            tmp2[2] = pz;
+            sub_5EC220(out2, tmp2);
+
+            float tmp3[3];
+            tmp3[0] = px;
+            tmp3[1] = py;
+            tmp3[2] = pz;
+            sub_5EC220(out3, tmp3);
+
+            void* res = sub_548000(out1, out2, out3, 1);
+
+            float* shader = sub_509BA0();
+            if (shader[0] == g_819bac && shader[1] == g_819bac) {
+                px = curX;
+                pz = curZ;
             }
 
-            Vec3 scaled;
-            scaled.x = a.x * g_float_819BAC;
-            scaled.y = a.y * g_float_819BAC;
-            scaled.z = a.z;
+            float sx = px * g_819bac;
+            float sz = pz * g_819bac;
 
-            Vec3 r1, r2;
-            sub_5EC1C0(&r1, &scaled);
-            sub_5EC1C0(&r2, &out);
+            float p1[3];
+            p1[0] = sx;
+            p1[1] = py;
+            p1[2] = sz;
+            float p2[3];
+            sub_5EC220(p2, p1);
 
-            cb(&r1, &r2, &b, &c, 1);
+            float p3[3];
+            sub_5EC220(p3, p2);
 
-            rowX += sx;
-            rowY += sy;
-            rowZ += sz;
+            void* res2 = sub_548000(p3, p2, p1, 1);
 
-            int idx = (nvi + 1) * i + j;
-            arr[idx] = (void*)0;
+            rowX += stepX;
+            rowZ += stepZ;
+
+            int idx = (n2 + 1) * row + col;
+            arr[idx] = res2;
+
+            col++;
         }
-        curX += du;
-        curY += dv;
+        curY += stepY;
+        row++;
     }
 
-    for (int i = 0; i < nvi; i++) {
-        for (int j = 0; j < nwi; j++) {
-            int base = (nvi + 1) * i + j;
-            sub_500EB0(this, arr[base], arr[base + 1], arr[base + nvi + 1], arr[base + nvi + 2]);
+    int r = 0;
+    while (r < n1) {
+        int cc = 0;
+        while (cc < n2) {
+            int base = (n2 + 1) * r + cc;
+            int base2 = base + (n2 + 1);
+            sub_500EB0(this, arr[base], arr[base + 1], arr[base2], arr[base2 + 1]);
+            cc++;
         }
+        r++;
     }
 
-    for (int i = 0; i < total; i++) {
-        sub_548640(arr[i]);
+    int q = 0;
+    while (q < total) {
+        sub_548640(arr[q]);
+        q++;
     }
 
     sub_6A094A(arr);
+    return 0;
 }

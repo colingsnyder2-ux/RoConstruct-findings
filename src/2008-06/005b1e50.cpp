@@ -1,70 +1,102 @@
-// from server: 76% by king_originala
-#pragma pointers_to_members(full_generality, virtual_inheritance)
+// from server: 92% by colin
+//
 
-struct S;
-
-struct Binder
+struct Source
 {
-    void (S::*function)();
-    S *object;
-};
-
-struct Function
-{
-    unsigned char storage[40];
-
-    Function(const Binder &);
-    ~Function();
+    char padding[20];
 };
 
 struct Connection
 {
-    unsigned char storage[16];
-
+    char storage[16];
     ~Connection();
-    Connection &operator=(const Connection &);
+};
+
+struct ConnectionSlot
+{
+    char storage[20];
+    ConnectionSlot& operator=(const Connection&);
+};
+
+struct Tool
+{
+    char padding0[0x104];
+    Source* source;
+    char padding1[0x110];
+    ConnectionSlot firstConnection;
+    ConnectionSlot secondConnection;
+
+    void firstCallback();
+    void secondCallback();
+    void connectSignals();
+};
+
+typedef void (Tool::*MemberFunction)();
+
+struct Callback
+{
+    MemberFunction function;
+    int adjustment;
+    int virtualAdjustment;
+    int reserved;
+
+    Callback(MemberFunction);
+};
+
+struct Bound
+{
+    Callback callback;
+    Tool* object;
+    int reserved;
+
+    Bound(Callback, Tool*);
+};
+
+struct Function
+{
+    union
+    {
+        double alignment;
+        char storage[40];
+    };
+
+    Function(const Bound&);
+    ~Function();
 };
 
 struct Signal
 {
-    Connection connect(void *, const Function &, int);
+    Connection connect(void*, const Function&, int);
 };
 
-extern Signal signal1;
-extern Signal signal2;
+extern Signal signalFirst;
+extern Signal signalSecond;
 
-struct S
+inline Callback::Callback(MemberFunction f)
+    : function(f), adjustment(0), virtualAdjustment(0)
 {
-    unsigned char padding0[0x104];
-    unsigned char *source;
-    unsigned char padding1[0x94];
-    Connection connection1;
-    unsigned char padding2[4];
-    Connection connection2;
+}
 
-    void callback1();
-    void callback2();
-    void f();
-};
-
-void S::f()
+inline Bound::Bound(Callback f, Tool* p)
+    : callback(f), object(p)
 {
-    Binder binder;
-    binder.function = &S::callback1;
-    binder.object = this;
+}
+
+void Tool::connectSignals()
+{
+    void* endpoint = 0;
 
     {
-        Function function(binder);
-        connection1 = signal1.connect(source ? source + 0x14 : 0,
-                                      function, 10);
+        Function function(Bound(Callback(&Tool::firstCallback), this));
+        firstConnection = signalFirst.connect(
+            source ? reinterpret_cast<char*>(source) + 20 : endpoint,
+            function, 10);
     }
 
-    binder.function = &S::callback2;
-    binder.object = this;
-
     {
-        Function function(binder);
-        connection2 = signal2.connect(source ? source + 0x14 : 0,
-                                      function, 10);
+        Function function(Bound(Callback(&Tool::secondCallback), this));
+        if (source)
+            endpoint = reinterpret_cast<char*>(source) + 20;
+        secondConnection = signalSecond.connect(endpoint, function, 10);
     }
 }

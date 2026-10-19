@@ -1,4 +1,22 @@
-// from server: 34% by colin
+// from server: 41% by colin
+//
+
+//
+
+#pragma float_control(precise, off)
+
+extern "C" void __cdecl free_node(void*);
+extern "C" void __cdecl aligned_free(void*);
+extern "C" void __stdcall destroy_value(void*);
+extern "C" void __stdcall destroy_array(
+    void*, unsigned int, int, void (__stdcall *)(void*));
+
+extern "C" long __stdcall InterlockedIncrement(long*);
+extern "C" long __stdcall InterlockedDecrement(long*);
+
+void* __cdecl operator new(unsigned int);
+void __cdecl operator delete(void*);
+
 struct Vector3 {
     float x, y, z;
     unsigned int hashCode() const;
@@ -13,118 +31,101 @@ struct Node {
 
 struct Block {
     unsigned char padding[8];
-};
-
-struct Table {
-    unsigned char padding[8];
-    Block** buckets;
-    unsigned int bucketCount;
-    unsigned char padding2[0x4c];
+    Node** buckets;
+    unsigned int capacity;
+    unsigned char padding2[0x48];
     int count;
 };
 
+struct Texture {
+    unsigned char padding[8];
+    Block* block;
+    void __cdecl insert(unsigned int, const void*);
+};
+
+struct Guard {
+    void* vtable;
+    void* prev;
+    int state;
+    Guard();
+    ~Guard();
+};
+
+struct HashEntry {
+    unsigned int a;
+    unsigned int b;
+    unsigned char padding[0x10];
+    HashEntry* next;
+};
+
+struct HashTable {
+    unsigned char padding[8];
+    HashEntry** buckets;
+    unsigned int capacity;
+    unsigned char padding2[0x4c];
+    int count;
+    void* find(unsigned int);
+    void insert(unsigned int, const void*);
+};
+
+struct Value {
+    void* ptr;
+    Value();
+    __declspec(dllimport) ~Value() throw();
+};
+
+struct Holder {
+    void* ptr;
+    void* get();
+};
+
 struct RefCounted {
-    int refCount;
+    void* vtable;
+    void* refptr;
+    void release();
 };
 
-struct Texture : RefCounted {
-    unsigned int f(unsigned int);
-};
+extern "C" void __cdecl destroy_value_cdecl(void*);
 
-extern "C" void __cdecl free_node(void*);
-extern "C" void __cdecl aligned_free(void*);
-extern "C" void __stdcall destroy_value(void*);
-extern "C" void __stdcall destroy_array(void*, unsigned int, int, void (__stdcall *)(void*));
-
-void* __cdecl operator new(unsigned int);
-void __cdecl operator delete(void*);
-
-extern "C" void __cdecl sub_557330(void*, void*);
-extern "C" void __cdecl sub_563090(void*);
-extern "C" void __cdecl sub_5630e0(void*);
-extern "C" void* __cdecl sub_508580(unsigned int, unsigned int);
-extern "C" void __cdecl sub_508a30(void*, int, unsigned int);
-extern "C" void __cdecl sub_4e93b0(void*, void*, void*);
-extern "C" void __cdecl sub_4d7e30(void*);
-extern "C" unsigned int __cdecl sub_4e5cd0(void*, void*);
-extern "C" void* __cdecl sub_4e5d30(void*, void*);
-extern "C" void __cdecl sub_4e7630(void*, void*, void*);
-extern "C" void __cdecl sub_6a1598(void*, int, int, void*, void*);
-extern "C" void __cdecl sub_6a165b(void*, int, int, void*, void*);
-extern "C" void* __cdecl sub_6a0920(unsigned int);
-extern "C" void* __cdecl sub_4fa590(void*, void*, unsigned int);
-extern "C" void __cdecl sub_598fa0(void*, void*);
-extern "C" void __cdecl sub_4eca60();
-extern "C" void __cdecl sub_45ad90(void*);
-
-extern "C" void* __stdcall InterlockedIncrement(int*);
-extern "C" void* __stdcall InterlockedDecrement(int*);
-
-unsigned int Texture::f(unsigned int key)
+void Texture::insert(unsigned int key, const void* value)
 {
-    Table* t = *(Table**)0x972730;
-    sub_557330((void*)0x4d9870, (void*)0x972748);
-    sub_563090((char*)t + 0x10);
+    Guard guard;
+    HashTable* table = (HashTable*)this->block;
 
-    unsigned int bucket = key % t->bucketCount;
-    Node* node = (Node*)t->buckets[bucket];
-
-    while (node) {
-        if (node->hash == key && *(unsigned int*)&node->key == key)
-            break;
-        node = node->next;
+    HashEntry* entry = (HashEntry*)table->find(key);
+    if (!entry) {
+        Value v;
+        table->insert(key, value);
+        entry = (HashEntry*)table->find(key);
     }
 
-    if (!node) {
-        void* mem = sub_508580(0x28, 0x10);
-        sub_508a30(mem, 0, 0x28);
-        sub_4e93b0(t, &key, mem);
-        sub_4d7e30(mem);
+    if (!((Holder*)&entry->a)->get()) {
+        void* p = operator new(4);
+        ((Holder*)&entry->a)->ptr = p;
     }
 
-    bucket = key % t->bucketCount;
-    node = (Node*)t->buckets[bucket];
-    while (node) {
-        if (node->hash == key && *(unsigned int*)&node->key == key)
-            break;
-        node = node->next;
-    }
-
-    void* val = &node->value;
-    if (!sub_4e5cd0(val, &key)) {
-        void* tmp = 0;
-        sub_6a1598(&tmp, 4, 1, (void*)0x4f0810, (void*)0x502a70);
-        sub_4e7630(val, &key, &tmp);
-        sub_6a165b(&tmp, 4, 1, (void*)0x502a70, 0);
-    }
-
-    void* slot = sub_4e5d30(val, &key);
-    void* result = *(void**)slot;
-    if (!result) {
-        void* obj = sub_6a0920(0x8c);
-        if (obj)
-            result = sub_4fa590(obj, &key, key);
-        else
-            result = 0;
-        sub_598fa0(slot, result);
-
-        if (++t->count % 100 == 0) {
-            void* n = *(void**)slot;
-            RefCounted* r = 0;
-            if (n) {
-                r = (RefCounted*)n;
-                InterlockedIncrement(&r->refCount);
-            }
-            sub_4eca60();
+    void* slot = ((Holder*)&entry->a)->get();
+    if (!slot) {
+        Node* node = (Node*)operator new(0x8c);
+        if (node) {
+            node->hash = key;
+            node->key.x = 0;
+            node->key.y = 0;
+            node->key.z = 0;
+            node->value = 0;
+            node->next = 0;
+        }
+        ((Holder*)&entry->a)->ptr = node;
+        InterlockedIncrement((long*)&table->count);
+        if (table->count % 100 == 0) {
+            RefCounted* r = (RefCounted*)entry->next;
             if (r) {
-                if (InterlockedDecrement(&r->refCount) == 0) {
-                    sub_45ad90(r);
-                    (*(void(__thiscall**)(void*, int))*(void**)r)(r, 1);
+                InterlockedDecrement((long*)&r->refptr);
+                if (!InterlockedDecrement((long*)&r->refptr)) {
+                    r->release();
+                    (*(void (__thiscall**)(RefCounted*, int))r->vtable)(r, 1);
                 }
             }
         }
     }
-
-    sub_5630e0((char*)t + 0x10);
-    return (unsigned int)result;
 }

@@ -1,144 +1,132 @@
-// from server: 24% by colin
-// roc-cl: 21022
-// roc-flags: /O2 /GS- /EHsc /MD /fp:fast
-// roc 2008-06 004fac10  unit: RBX::ViewNew::TorsoBuilder  size: 739 bytes
+// from server: 29% by colin
+//
 
-extern "C" void __cdecl sub_5EC1A0(float* dst, float* src);
+struct Vector3 { float x, y, z; };
+
+struct TorsoBuilder {
+    int f(int a, int b, int c, int d, int e, int f, int g, int h, int i, int j, int k, int l);
+};
+
+extern "C" void __cdecl sub_5EC220(float* out, float* in);
 extern "C" void* __cdecl sub_6A0956(int size);
-extern "C" void __cdecl sub_6A094A(void* p);
-extern "C" void* __cdecl sub_509BA0();
-extern "C" void __cdecl sub_548000(void* a, void* b, void* c, void* d, int e);
+extern "C" float* __cdecl sub_509BA0();
+extern "C" void* __cdecl sub_548000(float* a, float* b, float* c, int d);
+extern "C" void __cdecl sub_500EB0(void* self, void* a, void* b, void* c, void* d);
 extern "C" void __cdecl sub_548640(void* p);
-extern "C" void __cdecl sub_500EB0(void* self, int a, int b, int c, int d);
+extern "C" void __cdecl sub_6A094A(void* p);
 
 extern float g_819bac;
 
-struct TorsoBuilder {
-    char pad0[4];
-    float field4;
-    void build(int a, int b, int c, int d, int e, int f, int g, int h, int i, int j, int k, int l);
-};
-
-void TorsoBuilder::build(int a, int b, int c, int d, int e, int f, int g, int h, int i, int j, int k, int l)
+int TorsoBuilder::f(int a, int b, int c, int d, int e, int f, int g, int h, int i, int j, int k, int l)
 {
-    float v44, v48, v4c, v50, v54;
-    float f74, f78, f7c;
-    float local1c, local20;
-    float local10, local14;
-    float local34, local38;
-    float local3c, local40;
-    float local54, local58;
-    float local60, local68;
-    float local70, local74, local78, local90;
-    float locala0;
-    int local2c;
-    int local24;
-    int local28;
-    short s34, s36;
-    int* esi;
-    int ebx, edi, ecx;
-    int eax_;
+    float v[3];
+    sub_5EC220(v, (float*)((char*)this + 4));
 
-    sub_5EC1A0(&local70, &field4);
+    float ax = v[0]; if (ax < 0) ax = -ax;
+    float ay = v[1]; if (ay < 0) ay = -ay;
+    float az = v[2]; if (az < 0) az = -az;
 
-    f74 = local70; if (f74 < 0) f74 = -f74;
-    f78 = local74; if (f78 < 0) f78 = -f78;
-    f7c = local78; if (f7c < 0) f7c = -f7c;
+    int n1 = (short)i;
+    int n2 = (short)j;
+    int w1 = n1 + 1;
+    int w2 = n2 + 1;
+    int total = w1 * w2;
 
-    s34 = *(short*)((char*)&a + 0);
-    s36 = *(short*)((char*)&a + 2);
+    float stepX = (float)((float)e - (float)a) / (float)w1;
+    float stepY = (float)((float)f - (float)b) / (float)w2;
+    float stepZ = (float)((float)g - (float)c) / (float)w1;
 
-    local2c = s34 + 1;
-    edi = s36 + 1;
-    edi = edi * local2c;
+    void** arr = (void**)sub_6A0956(total * 4);
 
-    v44 = (float)(s34 + 1);
-    v44 = (float)(*(float*)&b - *(float*)&a) / v44;
+    float curX = (float)a;
+    float curY = (float)b;
+    float curZ = (float)c;
 
-    v48 = (float)(s36 + 1);
-    v48 = (float)(*(float*)&d - *(float*)&c) / v48;
+    int row = 0;
+    while (row <= n1) {
+        float rowX = (float)a;
+        float rowZ = (float)c;
+        int col = 0;
+        while (col <= n2) {
+            float px = rowX;
+            float py = curY;
+            float pz = rowZ;
 
-    v4c = *(float*)&e / v48;
-    v50 = *(float*)&f / v44;
-    v54 = *(float*)&g / v44;
+            float out1[3];
+            float out2[3];
+            float out3[3];
 
-    esi = (int*)sub_6A0956(edi * 4);
+            float tmp[3];
+            tmp[0] = px;
+            tmp[1] = py;
+            tmp[2] = pz;
+            sub_5EC220(out1, tmp);
 
-    local1c = *(float*)&a;
-    local20 = *(float*)&e;
+            float tmp2[3];
+            tmp2[0] = px;
+            tmp2[1] = py;
+            tmp2[2] = pz;
+            sub_5EC220(out2, tmp2);
 
-    ebx = 0;
-    if (ebx <= s34) {
-        do {
-            local1c = *(float*)&c;
-            local20 = *(float*)&f;
-            edi = 0;
-            if (edi <= s36) {
-                do {
-                    local60 = local10;
-                    local68 = local14;
-                    local70 = *(float*)&h;
-                    local3c = local1c;
-                    local40 = local20;
-                    local54 = local1c;
-                    local58 = local20;
-                    local90 = 1.0f;
+            float tmp3[3];
+            tmp3[0] = px;
+            tmp3[1] = py;
+            tmp3[2] = pz;
+            sub_5EC220(out3, tmp3);
 
-                    ((void (__stdcall*)(void*, void*, void*, void*, void*))*(void**)&a)(&local3c, &local54, &local70, &local90, &local90);
+            void* res = sub_548000(out1, out2, out3, 1);
 
-                    void* p = sub_509BA0();
-                    float* pf = (float*)p;
-                    if (pf[0] == *(float*)&e && pf[1] == *(float*)&f) {
-                        local34 = *(float*)&e;
-                        local38 = *(float*)&f;
-                    }
-
-                    local54 = local34 * g_819bac;
-                    local58 = local38 * g_819bac;
-
-                    sub_5EC1A0(&local54, &local90);
-                    sub_5EC1A0(&local70, &locala0);
-                    sub_548000(&local90, &locala0, &local60, &local68, 1);
-
-                    local3c = local60 + local3c;
-                    local40 = local68 + local40;
-
-                    ecx = (s36 + 1) * ebx + edi;
-                    esi[ecx] = (int)p;
-
-                    edi++;
-                } while (edi <= s36);
+            float* shader = sub_509BA0();
+            if (shader[0] == g_819bac && shader[1] == g_819bac) {
+                px = curX;
+                pz = curZ;
             }
-            local10 = local3c + local10;
-            local14 = v44 + local14;
-            ebx++;
-        } while (ebx <= s34);
+
+            float sx = px * g_819bac;
+            float sz = pz * g_819bac;
+
+            float p1[3];
+            p1[0] = sx;
+            p1[1] = py;
+            p1[2] = sz;
+            float p2[3];
+            sub_5EC220(p2, p1);
+
+            float p3[3];
+            sub_5EC220(p3, p2);
+
+            void* res2 = sub_548000(p3, p2, p1, 1);
+
+            rowX += stepX;
+            rowZ += stepZ;
+
+            int idx = (n2 + 1) * row + col;
+            arr[idx] = res2;
+
+            col++;
+        }
+        curY += stepY;
+        row++;
     }
 
-    ecx = 0;
-    ebx = 0;
-    if (ecx < s34) {
-        do {
-            edi = 0;
-            if (edi < s36) {
-                do {
-                    eax_ = (s36 + 1) * ebx + edi;
-                    ecx = eax_ + s36 + 1;
-                    sub_500EB0((void*)local24, esi[eax_], esi[eax_ + 1], esi[ecx], esi[ecx + 1]);
-                    edi++;
-                } while (edi < s36);
-            }
-            ebx++;
-        } while (ebx < s34);
+    int r = 0;
+    while (r < n1) {
+        int cc = 0;
+        while (cc < n2) {
+            int base = (n2 + 1) * r + cc;
+            int base2 = base + (n2 + 1);
+            sub_500EB0(this, arr[base], arr[base + 1], arr[base2], arr[base2 + 1]);
+            cc++;
+        }
+        r++;
     }
 
-    ebx = 0;
-    if (local24 > 0) {
-        do {
-            sub_548640((void*)esi[ebx]);
-            ebx++;
-        } while (ebx < local24);
+    int q = 0;
+    while (q < total) {
+        sub_548640(arr[q]);
+        q++;
     }
 
-    sub_6A094A(esi);
+    sub_6A094A(arr);
+    return 0;
 }

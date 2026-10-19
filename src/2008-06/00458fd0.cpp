@@ -1,28 +1,42 @@
-// from server: 47% by colin
-extern "C" void* __stdcall G_string_ctor(void*, const char*);
-extern "C" double __cdecl G_time();
-extern "C" void __cdecl G_init_5833e0(void*, int);
-
-extern char g_str_TogglePlayMode[];
-extern void* g_vtable_8190c4;
-extern void* g_vtable_8190d8;
-
-struct InsertModelFromRobloxVerb
-{
-    void* vtable;
-    char pad[0xc];
-    double field10;
-
-    void* init(int);
+// from server: 56% by colin
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+#include <string>
+struct Context {
+    int value;
 };
 
-void* InsertModelFromRobloxVerb::init(int arg)
-{
-    char buf[0x1c];
-    G_string_ctor(buf, g_str_TogglePlayMode);
-    G_init_5833e0(this, arg);
-    this->vtable = &g_vtable_8190c4;
-    this->field10 = G_time();
+struct OwnerPadding {
+    char storage[0x1c8];
+};
 
-    return this;
+struct Owner : OwnerPadding, Context {
+};
+
+extern double __cdecl readTime();
+
+struct Base {
+    int storage[2];
+
+    Base(Context*, std::string);
+    virtual ~Base();
+};
+
+struct CRobloxView : Base {
+    void* argument;
+    Owner* owner;
+    int reserved;
+    double timestamp;
+
+    CRobloxView(void*, Owner*);
+    virtual ~CRobloxView();
+};
+
+CRobloxView::CRobloxView(void* value, Owner* source)
+    : Base(static_cast<Context*>(source), "ToggleToolbox")
+{
+    argument = value;
+    owner = source;
+    timestamp = readTime();
 }

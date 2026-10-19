@@ -1,35 +1,50 @@
-// from server: 37% by colin
+// from server: 96% by colin
 // roc-cl: 21022
-// roc-flags: /O1 /GS- /EHsc /MD
-struct SoundService {
-    char pad[0x14];
-    int field14;
-    bool getPropertyValue(const char* name, double* out);
+// roc-flags: /O2 /GS- /EHsc /MD /fp:fast
+
+struct String
+{
+    char storage[20];
+    unsigned int length;
+    unsigned int capacity;
 };
 
-extern "C" {
-    int __stdcall sub_5BE360(int);
-    int __stdcall string_compare(const void*, const char*);
-}
+__declspec(dllimport) bool __cdecl equalString(const String&, const char*);
+extern const float* infinityValue;
+extern const float* nanValue;
+extern float __cdecl parseFloat(const String&);
 
-extern double _Inf;
-extern double _Nan;
-
-bool SoundService::getPropertyValue(const char* name, double* out) {
-    if (field14 == 0)
+bool __cdecl stringToFloat(const String& text, float& result)
+{
+    unsigned n = text.length;
+    if (!n)
         return false;
-    if (string_compare(this, "%.9g")) {
-        *out = _Inf;
+
+    if (equalString(text, "INF"))
+    {
+        result = *infinityValue;
         return true;
     }
-    if (string_compare(this, "-INF")) {
-        *out = -_Inf;
+
+    if (equalString(text, "-INF"))
+    {
+        result = -*infinityValue;
         return true;
     }
-    if (string_compare(this, "D$0P")) {
-        *out = _Nan;
+
+    if (equalString(text, "NAN"))
+    {
+        result = *nanValue;
         return true;
     }
-    *out = (double)sub_5BE360((int)this);
-    return true;
+
+    try
+    {
+        result = parseFloat(text);
+        return true;
+    }
+    catch (...)
+    {
+        return false;
+    }
 }

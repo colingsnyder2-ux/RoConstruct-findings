@@ -1,106 +1,113 @@
-// from server: 23% by colin
-struct Vector3 {
-    float x, y, z;
-};
+// from server: 29% by colin
+//
+
+struct Vec4 { float x, y, z, w; };
+
+extern "C" {
+    void __cdecl sub_5ec220(void* dst, const void* src);
+    void* __cdecl sub_6a0956(unsigned int size);
+    void __cdecl sub_6a094a(void* p);
+    float* __cdecl sub_509ba0();
+    void __cdecl sub_548000(void* a, void* b, void* c, int d);
+    void __cdecl sub_500eb0(void* self, void* a, void* b, void* c, void* d);
+    void __cdecl sub_548640(void* p);
+}
+
+extern float g_819bac;
 
 struct WedgeBuilder {
-    int field0;
-    int field1;
-    int field2;
-    void build(int a, int b, int c, int d, int e, int f, int g, int h, int i, int j, int k, int l, int m);
+    char pad0[4];
+    int field4;
+    void build(short a, short b, float c, float d, float e, float f, float g, float h, float i, float j, float k, float l, float m);
 };
 
-struct PBBBuilder {
-    void method(void* a, void* b, void* c, void* d);
-};
-
-extern "C" void __cdecl sub_6784D0(Vector3* out, const Vector3* in);
-extern "C" void* __cdecl sub_6A0956(unsigned int size);
-extern "C" void __cdecl sub_6A094A(void* ptr);
-extern "C" float* __cdecl sub_509BA0();
-extern "C" void* __cdecl sub_548000(Vector3* a, Vector3* b, Vector3* c, int d);
-extern "C" void __cdecl sub_548640(void* ptr);
-
-extern float g_float_819BAC;
-
-void WedgeBuilder::build(int a, int b, int c, int d, int e, int f, int g, int h, int i, int j, int k, int l, int m)
+void WedgeBuilder::build(short a, short b, float c, float d, float e, float f, float g, float h, float i, float j, float k, float l, float m)
 {
-    Vector3 v1;
-    sub_6784D0(&v1, (const Vector3*)&field0);
+    char buf[0x6c];
 
-    int w = (short)i;
-    int hh = (short)j;
-    int count = (w + 1) * (hh + 1);
+    sub_5ec220(buf + 0x24, &field4);
 
-    float fx = (float)w;
-    float fy = (float)hh;
+    int n1 = (int)a + 1;
+    int n2 = (int)b + 1;
+    int total = n1 * n2;
 
-    float dx = ((float)e - (float)c) / fx;
-    float dy = ((float)f - (float)d) / fy;
-    float dz = ((float)g - (float)a) / fx;
-    float dw = ((float)h - (float)b) / fy;
+    float r1 = (e - c) / (float)n1;
+    float r2 = (f - d) / (float)n2;
+    float r3 = g / (float)n1;
+    float r4 = h / (float)n2;
 
-    void** arr = (void**)sub_6A0956(count * 4);
+    void** arr = (void**)sub_6a0956(total * 4);
 
-    float baseX = (float)c;
-    float baseY = (float)d;
-    float baseZ = (float)a;
-    float baseW = (float)b;
+    float fa = c;
+    float fb = d;
+    float fc = 0.0f;
+    float fd = 0.0f;
 
-    float curZ = baseZ;
-    float curW = baseW;
+    int outer = 0;
+    while (outer <= (int)b) {
+        float fe = fa;
+        float ff = fb;
+        int inner = 0;
+        while (inner <= (int)a) {
+            float fh = fe;
+            float fi = ff;
+            float fj = e;
+            float fk = 1.0f;
 
-    for (int row = 0; row <= hh; row++) {
-        float curX = baseX;
-        float curY = baseY;
-        for (int col = 0; col <= w; col++) {
-            Vector3 p;
-            p.x = curX;
-            p.y = curY;
-            p.z = curZ;
-
-            float* sh = sub_509BA0();
-            float u, vv;
-            if (sh[0] == (float)e && sh[1] == (float)f) {
-                u = (float)g;
-                vv = (float)h;
+            if (fk < fi) {
+                fi = fi - fk;
             } else {
-                u = curX;
-                vv = curY;
+                fi = fi + fk;
             }
 
-            Vector3 t1, t2;
-            t1.x = u * g_float_819BAC;
-            t1.y = vv * g_float_819BAC;
-            t1.z = 0.0f;
-            t2.x = 0.0f;
-            t2.y = 0.0f;
-            t2.z = 1.0f;
+            if (fh > fj) {
+                fh = fh - fj;
+            } else {
+                fh = fh + fj;
+            }
 
-            Vector3 n1, n2;
-            sub_6784D0(&n1, &t1);
-            sub_6784D0(&n2, &t2);
+            float* sh = sub_509ba0();
+            float sx = sh[0];
+            float sy = sh[1];
 
-            void* vert = sub_548000(&p, &n1, &n2, 1);
-            arr[row * (w + 1) + col] = vert;
+            float px, py;
+            if (sx == g && sy == h) {
+                px = e;
+                py = f;
+            } else {
+                px = fh;
+                py = fi;
+            }
 
-            curX += dx;
-            curY += dy;
+            float m1 = px * g_819bac;
+            float m2 = py * g_819bac;
+
+            float v1[4];
+            float v2[4];
+            v1[0] = fh; v1[1] = fi; v1[2] = fk; v1[3] = 1.0f;
+            v2[0] = m1; v2[1] = m2; v2[2] = 1.0f; v2[3] = 1.0f;
+
+            sub_5ec220(buf + 0x54, v1);
+            sub_5ec220(buf + 0x64, v2);
+
+            void* res;
+            sub_548000(&res, buf + 0x54, buf + 0x64, 1);
+
+            fe = fe + r1;
+            ff = ff + r2;
+
+            int idx = (int)b * outer + inner;
+            arr[idx] = res;
+
+            inner++;
         }
-        curZ += dz;
-        curW += dw;
+        fa = fa + r3;
+        fb = fb + r4;
+        outer++;
     }
 
-    for (int row = 0; row < hh; row++) {
-        for (int col = 0; col < w; col++) {
-            int idx = row * (w + 1) + col;
-            ((PBBBuilder*)this)->method(arr[idx], arr[idx + 1], arr[idx + w + 1], arr[idx + w + 2]);
-        }
+    for (int q = 0; q < total; q++) {
+        sub_548640(arr[q]);
     }
-
-    for (int n = 0; n < count; n++) {
-        sub_548640(arr[n]);
-    }
-
-    sub_6A094A(arr);
+    sub_6a094a(arr);
 }

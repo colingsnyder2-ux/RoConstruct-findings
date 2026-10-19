@@ -1,37 +1,49 @@
-// from server: 80% by king_originala
-typedef unsigned long DWORD;
+// from server: 86% by colin
+//
 
-struct S
-{
-    unsigned char reserved[8];
-    DWORD* begin;
-
-    long init(DWORD* first, DWORD* last, void* owner, DWORD flags);
+struct Entry {
+    void* object;
+    unsigned long cookie;
 };
 
-long S::init(DWORD* first, DWORD* last, void* owner, DWORD flags)
+struct S {
+    void* vtable;
+    long references;
+    Entry* begin;
+    Entry* end;
+    Entry* current;
+    unsigned long flags;
+    void* owner;
+
+    long Init(Entry* first, Entry* last, void* source, unsigned long mode);
+};
+
+long S::Init(Entry* first, Entry* last, void* source, unsigned long mode)
 {
-    if (flags == 3)
-    {
-        try
-        {
-            begin = new DWORD[last - first];
+    if (mode == 3) {
+        try {
+            begin = new Entry[last - first];
         }
-        catch (...)
-        {
+        catch (...) {
+            begin = 0;
         }
 
         if (!begin)
-            return (long)0x8007000EUL;
+            return (long)0x8007000E;
 
-        DWORD* destination = begin;
-        while (first != last)
-            *destination++ = *first++;
-    }
-    else
-    {
+        end = begin;
+        while (first != last) {
+            *end = *first;
+            ++end;
+            ++first;
+        }
+    } else {
         begin = first;
+        end = last;
     }
 
+    current = begin;
+    flags = mode;
+    owner = source;
     return 0;
 }

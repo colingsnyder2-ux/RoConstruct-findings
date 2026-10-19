@@ -1,21 +1,27 @@
-// from server: 87% by colin
-// roc-cl: 21022
-// roc-flags: /O2 /GS- /EHsc /MD /fp:fast
+// from server: 91% by colin
+//
+
 extern "C" double __cdecl sqrt(double);
 #pragma intrinsic(sqrt)
+#pragma float_control(precise, off)
 
-extern float tolerance;
+extern const float epsilon;
 
 struct Vector {
     float x, y, z;
-    float normalize(float);
+
+    Vector() {}
+    Vector(const Vector& value)
+        : x(value.x), y(value.y), z(value.z) {}
+
+    float unitize(float tolerance);
 };
 
 struct Matrix {
     float elements[9];
     Matrix(const Matrix&);
-    Vector column(int) const;
-    void setColumn(int, const Vector&);
+    Vector column(int index) const;
+    void setColumn(int index, const Vector& value);
 };
 
 struct Frame {
@@ -23,14 +29,16 @@ struct Frame {
     Vector translation;
 };
 
-struct Accoutrement {
-    char padding[0x158];
+struct Tool {
+    char padding[0x1cc];
     Frame frame;
-    void apply(const Frame&);
-    void f(const Vector&);
+
+    void orient(const Vector& direction);
+    bool different(const Frame& value);
 };
 
-void Accoutrement::f(const Vector& direction) {
+void Tool::orient(const Vector& direction)
+{
     Frame result = frame;
     Vector oldY = result.rotation.column(1);
     Vector oldZ = result.rotation.column(2);
@@ -46,18 +54,18 @@ void Accoutrement::f(const Vector& direction) {
 
     Vector z;
     z.x = x.y * oldY.z - x.z * oldY.y;
-    z.y = x.z * oldY.x - x.x * oldY.z;
+    z.y = oldY.x * x.z - x.x * oldY.z;
     z.z = x.x * oldY.y - x.y * oldY.x;
-    z.normalize(tolerance);
+    z.unitize(epsilon);
 
     Vector y;
     y.x = z.y * x.z - z.z * x.y;
-    y.y = z.z * x.x - z.x * x.z;
+    y.y = z.z * x.x - x.z * z.x;
     y.z = z.x * x.y - z.y * x.x;
-    y.normalize(tolerance);
+    y.unitize(epsilon);
 
     result.rotation.setColumn(0, x);
     result.rotation.setColumn(1, y);
     result.rotation.setColumn(2, z);
-    apply(result);
+    different(result);
 }

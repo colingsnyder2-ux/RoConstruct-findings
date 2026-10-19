@@ -1,51 +1,57 @@
-// from server: 64% by king_originala
-extern void __cdecl callback();
-extern unsigned char registration;
-extern void __cdecl register_selection(void (__cdecl *)(), void*);
-extern void* __cdecl func_0057d800();
-extern "C" void __cdecl _invalid_parameter_noinfo();
+// from server: 67% by colin
+//
 
-struct Value {
-    void* object;
-    void* control;
+extern char registration_data;
+void __cdecl registration_callback();
+void __cdecl register_callback(void (__cdecl*)(), void*);
+void* __cdecl func_00616240();
+extern "C" void (__cdecl* _invalid_parameter_noinfo)();
 
-    Value();
-    ~Value();
+struct Owner {
+    void release();
 };
 
-inline Value::Value() : object(0), control(0) {}
+struct Value {
+    void* pointer;
+    Owner* owner;
+
+    Value() : pointer(0), owner(0) {}
+    ~Value() {
+        if (owner)
+            owner->release();
+    }
+};
 
 struct Storage {
-    unsigned char reserved[12];
+    char padding[12];
     Value* first;
     Value* last;
     Value* limit;
 
-    void resize(unsigned int count, Value value);
+    void resize(unsigned count, Value value);
 };
 
 struct S {
-    unsigned char reserved[0x190];
+    char padding[0x190];
     Storage values;
 
-    void* get();
+    void* f();
 };
 
-void* S::get()
-{
-    register_selection(callback, &registration);
-    unsigned int index =
-        reinterpret_cast<unsigned int>(func_0057d800());
+void* S::f() {
+    register_callback(registration_callback, &registration_data);
+    unsigned index = (unsigned)func_00616240();
+    Storage& storage = values;
 
-    if (index + 1 > static_cast<unsigned int>(values.last - values.first)) {
-        values.resize(index + 1, Value());
+    if (index + 1 > (unsigned)(storage.limit - storage.first)) {
+        storage.resize(index + 1, Value());
         return 0;
     }
 
-    if (index >= static_cast<unsigned int>(values.last - values.first))
+    if (index >= (unsigned)(storage.last - storage.first))
         _invalid_parameter_noinfo();
 
-    void* result = values.first[index].object;
+    void* result = storage.first[index].pointer;
     if (result)
         return result;
     return 0;

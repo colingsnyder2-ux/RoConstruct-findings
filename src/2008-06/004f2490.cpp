@@ -1,126 +1,144 @@
-// from server: 30% by colin
+// from server: 38% by colin
+//
 
+struct S {
+    int f(int, int, int, int, int, int, int, int, int, int, int, int, int, int);
+    char pad[4];
+};
 
-
-
-extern "C" void __cdecl sub_5EC200(float* dst, const float* src);
-extern "C" void* __cdecl sub_6A0956(unsigned int size);
-extern "C" void __cdecl sub_6A094A(void* p);
-extern "C" void __cdecl sub_548640(void* p);
-extern "C" void* __cdecl sub_509BA0();
-extern "C" void __cdecl sub_548000(float* out, const float* a, const float* b, int flag);
+extern "C" void __cdecl sub_5EC1C0(float*, float*);
+extern "C" void* __cdecl sub_6A0956(unsigned int);
+extern "C" float* __cdecl sub_509BA0();
+extern "C" void __cdecl sub_548000(float*, float*, float*, int);
+extern "C" void __cdecl sub_500EB0(int, int, int, int);
+extern "C" void __cdecl sub_548640(void*);
+extern "C" void __cdecl sub_6A094A(void*);
 
 extern float g_826e38;
 extern float g_819bac;
 
-struct VMaterialBase {
-    int field0;
-    float field4;
-    void Build(int a, int b, int c, int d, int e, int f, int g, int h, int i, int j, int k, int l, int m, int n);
-};
-
-void VMaterialBase::Build(int a, int b, int c, int d, int e, int f, int g, int h, int i, int j, int k, int l, int m, int n)
+int S::f(int a0, int a1, int a2, int a3, int a4, int a5, int a6, int a7, int a8, int a9, int a10, int a11, int a12, int a13)
 {
-    float v[4];
-    sub_5EC200(v, &field4);
+    float v[8];
+    sub_5EC1C0((float*)((char*)this + 4), v);
 
-    float ax = v[0] < 0 ? -v[0] : v[0];
-    float ay = v[1] < 0 ? -v[1] : v[1];
-    float az = v[2] < 0 ? -v[2] : v[2];
+    float f0 = v[1];
+    if (f0 < 0) f0 = -f0;
+    float f1 = v[2];
+    if (f1 < 0) f1 = -f1;
+    float f2 = v[3];
+    if (f2 < 0) f2 = -f2;
 
-    int w = *(short*)((char*)&a + 0);
-    int hh = *(short*)((char*)&a + 2);
-    int ww = w + 1;
-    int hhh = hh + 1;
-    int count = ww * hhh;
+    int w0 = *(short*)((char*)&a12 + 0);
+    int w1 = *(short*)((char*)&a12 + 2);
+    int w2 = *(short*)((char*)&a13 + 0);
+    int w3 = *(short*)((char*)&a13 + 2);
 
-    float f0 = ((float)e - (float)c) / (float)count;
-    float f1 = ((float)f - (float)d) / (float)count;
-    float f2 = (float)g / (float)count;
-    float f3 = (float)h / (float)count;
+    int n0 = w0 + 1;
+    int n1 = w1 + 1;
+    int total = n0 * n1;
 
-    void* arr = sub_6A0956(count * 4);
+    float d0 = (*(float*)((char*)&a10 + 0) - *(float*)((char*)&a9 + 0)) / (float)n0;
+    float d1 = (*(float*)((char*)&a10 + 4) - *(float*)((char*)&a9 + 4)) / (float)n1;
 
-    float base0 = (float)c;
-    float base1 = (float)d;
-    float step0 = (float)i;
-    float step1 = (float)j;
+    float e0 = *(float*)((char*)&a11 + 0) / (float)n0;
+    float e1 = *(float*)((char*)&a11 + 4) / (float)n1;
 
-    int rows = *(short*)((char*)&a + 2);
-    int cols = *(short*)((char*)&a + 0);
+    int* arr = (int*)sub_6A0956((unsigned int)total * 4);
 
+    float base0 = *(float*)((char*)&a9 + 0);
+    float base1 = *(float*)((char*)&a9 + 4);
     float acc0 = 0.0f;
     float acc1 = 0.0f;
 
-    int r = 0;
-    while (r <= rows) {
-        float rowAcc0 = acc0;
-        float rowAcc1 = acc1;
-        int cc = 0;
-        while (cc <= cols) {
-            float p0 = base0 + rowAcc0;
-            float p1 = base1 + rowAcc1;
-            float p2 = 1.0f;
+    int i = 0;
+    while (i <= w2) {
+        float row0 = base0;
+        float row1 = base1;
+        int j = 0;
+        while (j <= w3) {
+            float p0 = row0;
+            float p1 = row1;
+            float p2 = 0.0f;
+            float p3 = 1.0f;
 
-            float t0, t1;
-            if (p0 < 0.0f) {
-                t0 = p0 + g_826e38;
-            } else {
-                t0 = p0 - g_826e38;
-            }
-            if (p1 < 0.0f) {
-                t1 = p1 + g_826e38;
-            } else {
-                t1 = p1 - g_826e38;
-            }
+            float t0 = p0;
+            float t1 = p1;
+            float t2 = p2;
+            float t3 = p3;
 
-            float uv[2];
-            for (int q = 0; q < 2; q++) {
-                if (*(unsigned char*)((char*)&a + 0x10 + q)) {
-                    float val = (q == 0 ? t0 : t1);
-                    uv[q] = val / (q == 0 ? f2 : f3) * (q == 0 ? step0 : step1);
+            if (t0 < 0.0f) t0 = t0 - g_826e38;
+            else t0 = t0 + g_826e38;
+            if (t1 < 0.0f) t1 = t1 - g_826e38;
+            else t1 = t1 + g_826e38;
+
+            float u0 = t0;
+            float u1 = t1;
+
+            float q[2];
+            for (int k = 0; k < 2; k++) {
+                if (k == 0) {
+                    if (*(char*)((char*)&a13 + 0) != 0)
+                        q[k] = u0 / (float)n0 * e0;
+                    else
+                        q[k] = e0;
                 } else {
-                    uv[q] = (q == 0 ? step0 : step1);
+                    if (*(char*)((char*)&a13 + 0) != 0)
+                        q[k] = u1 / (float)n1 * e1;
+                    else
+                        q[k] = e1;
                 }
             }
 
-            float* sh = (float*)sub_509BA0();
-            float s0, s1;
-            if (sh[0] == (float)k && sh[1] == (float)l) {
-                s0 = (float)f;
-                s1 = (float)g;
+            float* sh = sub_509BA0();
+            float sx, sy;
+            if (sh[0] == *(float*)((char*)&a10 + 0) && sh[1] == *(float*)((char*)&a10 + 4)) {
+                sx = *(float*)((char*)&a10 + 4);
+                sy = *(float*)((char*)&a10 + 8);
             } else {
-                s0 = p0;
-                s1 = p1;
+                sx = u0;
+                sy = u1;
             }
 
-            float out0 = s0 * g_819bac;
-            float out1 = s1 * g_819bac;
+            float r0 = sx * g_819bac;
+            float r1 = sy * g_819bac;
 
-            float tmp[4];
-            sub_5EC200(tmp, &out0);
-            float tmp2[4];
-            sub_5EC200(tmp2, &out1);
+            float out0[4];
+            float out1[4];
+            sub_5EC1C0(&r0, out0);
+            sub_5EC1C0(&r1, out1);
+            sub_548000(out0, out1, q, 1);
 
-            float res[4];
-            sub_548000(res, tmp, tmp2, 1);
+            acc0 = acc0 + out0[0];
+            acc1 = acc1 + out0[1];
 
-            rowAcc0 += res[0];
-            rowAcc1 += res[1];
+            int idx = (w3 + 1) * i + j;
+            arr[idx] = (int)out0[0];
 
-            int idx = (*(short*)((char*)&a + 0x12) + 1) * r + cc;
-            ((void**)arr)[idx] = (void*)(int)res[0];
-
-            cc++;
+            row0 = row0 + d0;
+            row1 = row1 + d1;
+            j++;
         }
-        acc0 += step0;
-        acc1 += step1;
-        r++;
+        base0 = base0 + e0;
+        base1 = base1 + e1;
+        i++;
     }
 
-    int total = count;
-    for (int q = 0; q < total; q++) {
-        sub_548640(((void**)arr)[q]);
+    int m = 0;
+    while (m < w2) {
+        int n = 0;
+        while (n < w3) {
+            int idx = (w3 + 1) * m + n;
+            sub_500EB0(arr[idx], arr[idx + 1], arr[idx + w3 + 1], arr[idx + w3 + 2]);
+            n++;
+        }
+        m++;
+    }
+
+    unsigned int cnt = (unsigned int)total;
+    for (unsigned int k = 0; k < cnt; k++) {
+        sub_548640((void*)arr[k]);
     }
     sub_6A094A(arr);
+    return 0;
 }

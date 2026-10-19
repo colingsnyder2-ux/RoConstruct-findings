@@ -1,50 +1,8 @@
-// from server: 71% by king_originala
-typedef unsigned int size_t;
-void* __cdecl operator new(size_t);
+// from server: 91% by colin
+//
+// library openrbx-client/App\v8datamodel\RootInstance.cpp (function ??0ICameraOwner@RBX@@QAE@XZ)
 
-struct Name {
-    char storage[48];
-    Name();
-    ~Name();
-};
-
-struct Links;
-
-struct Owner {
-    Links* value;
-    Owner(Links*);
-};
-
-struct Links {
-    Owner* owner;
-    unsigned int reserved[2];
-    void* first;
-    void* last;
-    void* end;
-    Links();
-    ~Links();
-};
-
-struct Item {
-    unsigned int reserved;
-    Name name;
-    Links links;
-    Item();
-};
-
-__forceinline Owner::Owner(Links* p)
-    : value(p)
-{
-}
-
-__forceinline Links::Links()
-{
-    owner = new Owner(this);
-    first = 0;
-    last = 0;
-    end = 0;
-}
-
-Item::Item()
-{
-}
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+// roc-lib: openrbx-client App/v8datamodel/RootInstance.cpp

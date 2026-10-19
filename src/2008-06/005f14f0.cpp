@@ -1,5 +1,7 @@
-// from server: 92% by colin
-#pragma float_control(precise, on)
+// from server: 97% by colin
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD /fp:fast
+//
 
 extern float defaultFirst;
 extern float defaultSecond;
@@ -16,48 +18,44 @@ inline Value::Value()
 {
 }
 
-struct Store {
+struct Values {
     char padding[0xd0];
-    Value* values[6];
-    const Value& get(int index) const;
-    void set(int index, const Value* value);
+    Value* entries[1];
+    const Value& get(int) const;
+    void set(int, const Value*);
 };
 
-inline const Value& Store::get(int index) const
+inline const Value& Values::get(int index) const
 {
-    if (values[index])
-        return *values[index];
-
+    if (entries[index])
+        return *entries[index];
     static Value empty;
     return empty;
 }
 
-struct Result {
-    int get();
+struct Property { void* descriptor(); };
+struct PartInstance {
+    char padding[0x228];
+    Values values;
+    void setShouldRender(int);
+    Property* f(int);
+    void notify(void*);
 };
 
-struct Part {
-    void setShouldRender(int index);
-    int* f(int index);
-    void notify(int value);
+struct FaceInstance {
+    PartInstance* part;
+    int face;
+    void setSecond(float);
 };
 
-struct Face {
-    Part* part;
-    int index;
-    void setFirst(float value);
-};
-
-void Face::setFirst(float value)
+void FaceInstance::setSecond(float second)
 {
-    Value copy =
-        reinterpret_cast<Store*>(reinterpret_cast<char*>(part) + 0x228)->get(index);
-
-    if (value > copy.first) {
-        copy.first = value;
-        reinterpret_cast<Store*>(reinterpret_cast<char*>(part) + 0x228)->set(index, &copy);
-        part->setShouldRender(index);
-        int result = reinterpret_cast<Result*>(part->f(index))->get();
-        part->notify(result);
+    const Value& ref = part->values.get(face);
+    Value value = ref;
+    if (value.second != second) {
+        value.second = second;
+        part->values.set(face, &value);
+        part->setShouldRender(face);
+        part->notify(part->f(face)->descriptor());
     }
 }

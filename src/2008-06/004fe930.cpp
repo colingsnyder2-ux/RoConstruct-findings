@@ -1,121 +1,138 @@
-// from server: 28% by atomic.potato
-struct Vec3 { float x, y, z; };
+// from server: 29% by colin
+//
 
 struct CylinderBuilder {
     char pad0[4];
-    void build();
+    int field4;
+    void build(float, float, float, float, float, float, float, float, short, short, int, int, int, int);
 };
 
-extern "C" void __stdcall sub_5ec220(void*, void*);
-extern "C" void* __stdcall sub_6a0956(int);
-extern "C" void* __stdcall sub_509ba0();
-extern "C" void __stdcall sub_4fdbd0(void*, void*, void*, void*, void*, void*);
-extern "C" void __stdcall sub_548000(void*, void*, void*, int);
-extern "C" void __stdcall sub_500eb0(void*, void*, void*, void*, void*);
-extern "C" void __stdcall sub_548640(void*);
-extern "C" void __stdcall sub_6a094a(void*);
+extern "C" void __cdecl sub_5EC1A0(float*, float*);
+extern "C" void* __cdecl sub_6A0956(int);
+extern "C" void __cdecl sub_4FDBD0(int*, float*, float*, float*, float*, float*, float*);
+extern "C" float* __cdecl sub_509BA0();
+extern "C" void* __cdecl sub_548000(float*, float*, float*, int);
+extern "C" void __cdecl sub_500EB0(int, void*, void*, void*, void*);
+extern "C" void __cdecl sub_548640(void*);
+extern "C" void __cdecl sub_6A094A(void*);
 
 extern float g_819bac;
 
-void CylinderBuilder::build()
+void CylinderBuilder::build(float a10, float a14, float a18, float a1c, float a20, float a24, float a28, float a2c, short a38, short a3a, int a34, int a30, int a2c2, int a28b)
 {
-    char buf[0x84];
-    void** verts;
-    int i, j;
-    int nRows, nCols;
-    float uStep, vStep;
-    float u0, v0;
-    float uCur, vCur;
-    float uAcc, vAcc;
-    float du, dv;
-    float tmp1, tmp2, tmp3;
-    float f1, f2;
-    Vec3 pt;
-    Vec3 pt2;
-    Vec3 pt3;
-    int total;
+    float v[3];
+    sub_5EC1A0(v, (float*)&this->field4);
 
-    sub_5ec220(&buf[0x60], (char*)this + 4);
+    float f74 = v[0] < 0 ? -v[0] : v[0];
+    float f78 = v[1] < 0 ? -v[1] : v[1];
+    float f7c = v[2] < 0 ? -v[2] : v[2];
 
-    tmp1 = *(float*)&buf[0x64];
-    if (tmp1 < 0) tmp1 = -tmp1;
-    tmp2 = *(float*)&buf[0x68];
-    if (tmp2 < 0) tmp2 = -tmp2;
-    tmp3 = *(float*)&buf[0x6c];
-    if (tmp3 < 0) tmp3 = -tmp3;
+    int n38 = a38;
+    int n3a = a3a;
 
-    nRows = *(short*)((char*)&buf[0] + 0x38);
-    nCols = *(short*)((char*)&buf[0] + 0x3a);
+    float f44 = (a18 - a10) / (float)(n38 + 1);
+    float f4c = (a1c - a14) / (float)(n3a + 1);
+    float f50 = a2c / f74;
+    float f54 = a30 / f78;
 
-    {
-        float a = *(float*)((char*)&buf[0] + 0x18) - *(float*)((char*)&buf[0] + 0x10);
-        float b = *(float*)((char*)&buf[0] + 0x1c) - *(float*)((char*)&buf[0] + 0x14);
-        float c = *(float*)((char*)&buf[0] + 0x2c);
-        float d = *(float*)((char*)&buf[0] + 0x30);
-        uStep = a / (float)(nRows + 1);
-        vStep = b / (float)(nCols + 1);
-        du = c / (float)(nRows + 1);
-        dv = d / (float)(nCols + 1);
-    }
+    int total = (n3a + 1) * (n38 + 1);
+    void** arr = (void**)sub_6A0956(total * 4);
 
-    total = (nRows + 1) * (nCols + 1);
-    verts = (void**)sub_6a0956(total * 4);
+    float curX = a10;
+    float curY = a14;
+    float curZ = a24;
+    float curW = a28;
 
-    u0 = *(float*)((char*)&buf[0] + 0x10);
-    v0 = *(float*)((char*)&buf[0] + 0x24);
+    int i = 0;
+    while (i <= n38) {
+        float rowX = a14;
+        float rowZ = a28;
+        int j = 0;
+        while (j <= n3a) {
+            float px = curX;
+            float py = rowX;
+            float pz = curZ;
+            float pw = rowZ;
 
-    for (i = 0; i <= nRows; i++) {
-        uCur = *(float*)((char*)&buf[0] + 0x14);
-        vCur = *(float*)((char*)&buf[0] + 0x28);
-        for (j = 0; j <= nCols; j++) {
-            float uu = u0;
-            float vv = vCur;
-            float ww = *(float*)((char*)&buf[0] + 0x20);
-            pt.x = uu;
-            pt.y = vv;
-            pt.z = ww;
-            pt2.x = uu;
-            pt2.y = vv;
-            pt2.z = 1.0f;
-            sub_4fdbd0((char*)&buf[0] + 8, &pt, &pt2, &pt3, &pt, &pt2);
-            {
-                float* r = (float*)sub_509ba0();
-                if (r[0] == *(float*)((char*)&buf[0] + 0x2c) &&
-                    r[1] == *(float*)((char*)&buf[0] + 0x30)) {
-                    f1 = *(float*)((char*)&buf[0] + 0x24);
-                    f2 = *(float*)((char*)&buf[0] + 0x28);
-                } else {
-                    f1 = pt.x;
-                    f2 = pt.y;
-                }
-                f1 *= g_819bac;
-                f2 *= g_819bac;
-                sub_5ec220(&buf[0x54], &f1);
-                sub_5ec220(&buf[0x68], &f2);
-                sub_548000(&buf[0x90], &buf[0x60], &buf[0x54], 1);
-                uAcc += *(float*)&buf[0x60];
-                vAcc += *(float*)&buf[0x68];
-                verts[(nCols + 1) * i + j] = (void*)0;
+            float tmp[3];
+            tmp[0] = px;
+            tmp[1] = py;
+            tmp[2] = pz;
+
+            float q[3];
+            q[0] = px;
+            q[1] = py;
+            q[2] = pz;
+
+            float r[3];
+            r[0] = a20;
+            r[1] = a20;
+            r[2] = a20;
+
+            float s[3];
+            s[0] = px;
+            s[1] = py;
+            s[2] = pz;
+
+            float t[3];
+            t[0] = 1.0f;
+            t[1] = 1.0f;
+            t[2] = 1.0f;
+
+            sub_4FDBD0((int*)&this->field4, tmp, q, r, s, t, 0);
+
+            float* sh = sub_509BA0();
+            float u, vv;
+            if (sh[0] == a2c && sh[1] == a30) {
+                u = a24;
+                vv = a28;
+            } else {
+                u = tmp[0];
+                vv = tmp[1];
             }
-            uCur += uStep;
-            vCur += vStep;
+
+            float uv[2];
+            uv[0] = u * g_819bac;
+            uv[1] = vv * g_819bac;
+
+            float uv2[2];
+            sub_5EC1A0(uv2, uv);
+
+            float uv3[2];
+            sub_5EC1A0(uv3, uv2);
+
+            void* res = (void*)sub_548000(uv3, uv2, uv, 1);
+
+            curX += tmp[0];
+            curZ += tmp[1];
+
+            arr[i * (n3a + 1) + j] = res;
+
+            j++;
+            rowX += f4c;
+            rowZ += f50;
         }
-        u0 += du;
-        v0 += dv;
+        i++;
+        curX += f44;
+        curY += f4c;
     }
 
-    for (i = 0; i < nRows; i++) {
-        for (j = 0; j < nCols; j++) {
-            int a = (nCols + 1) * i + j;
-            int b = a + 1;
-            int c = a + (nCols + 1);
-            int d = c + 1;
-            sub_500eb0((char*)&buf[0] + 8, verts[a], verts[b], verts[c], verts[d]);
+    int k = 0;
+    while (k < n38) {
+        int m = 0;
+        while (m < n3a) {
+            int idx = k * (n3a + 1) + m;
+            sub_500EB0((int)this, arr[idx], arr[idx + 1], arr[idx + n3a + 1], arr[idx + n3a + 2]);
+            m++;
         }
+        k++;
     }
 
-    for (i = 0; i < total; i++) {
-        sub_548640(verts[i]);
+    unsigned int c = 0;
+    while (c < (unsigned int)total) {
+        sub_548640(arr[c]);
+        c++;
     }
-    sub_6a094a(verts);
+
+    sub_6A094A(arr);
 }

@@ -1,32 +1,41 @@
-// from server: 87% by king_originala
+// from server: 92% by colin
+//
+
+extern void (__thiscall* string_destructor)(void*);
+
 namespace std
 {
-    template<class T> struct char_traits;
-    template<class T> class allocator;
+    template<class T> struct char_traits {};
+    template<class T> struct allocator {};
 
-    template<class C, class Traits, class Alloc>
+    template<class C, class T, class A>
     class basic_string
     {
-        char storage[32];
+        char data[28];
     public:
-        basic_string(const basic_string&);
         ~basic_string();
     };
+
+    template<class C, class T, class A>
+    inline basic_string<C, T, A>::~basic_string()
+    {
+        string_destructor(this);
+    }
 }
 
 typedef std::basic_string<char, std::char_traits<char>, std::allocator<char> > Value;
 
-struct StoredValue
+struct Managed
 {
-    virtual ~StoredValue();
+    virtual ~Managed();
 };
 
 struct Holder
 {
-    StoredValue* value;
+    Managed* value;
     Holder(const Value&);
     ~Holder();
-    void swap(Holder&);
+    void swap(Managed*&);
 };
 
 inline Holder::~Holder()
@@ -35,42 +44,51 @@ inline Holder::~Holder()
         delete value;
 }
 
-inline void Holder::swap(Holder& other)
+inline void Holder::swap(Managed*& other)
 {
-    if (this != &other)
+    if (&value != &other)
     {
-        StoredValue* old = value;
-        value = other.value;
-        other.value = old;
+        Managed* old = value;
+        value = other;
+        other = old;
     }
 }
+
+inline void assignValue(Managed*& destination, const Value& source)
+{
+    Holder(source).swap(destination);
+}
+
+struct Getter
+{
+    virtual void slot0();
+    virtual void slot1();
+    virtual Value get(void*);
+};
+
+extern void* __cdecl func_00615490();
 
 struct Result
 {
     void* type;
-    Holder holder;
+    Managed* value;
+    void set(const Value&);
 };
 
-extern void* __cdecl getType();
-
-struct Accessor
+inline void Result::set(const Value& source)
 {
-    virtual void slot0() = 0;
-    virtual void slot1() = 0;
-    virtual Value get(void*) = 0;
-};
+    type = func_00615490();
+    assignValue(value, source);
+}
 
-struct Descriptor
+struct S
 {
     char padding[24];
-    Accessor* accessor;
-    void read(void*, Result*);
+    Getter* getter;
+    void func_0059f280(void*, Result*);
 };
 
-void Descriptor::read(void* object, Result* result)
+void S::func_0059f280(void* object, Result* result)
 {
-    const Value& value = accessor->get(object);
-    result->type = getType();
-    Holder& destination = result->holder;
-    Holder(value).swap(destination);
+    result->set(getter->get(object));
 }

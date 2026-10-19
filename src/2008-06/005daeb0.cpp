@@ -1,86 +1,79 @@
-// from server: 73% by colin
+// from server: 91% by colin
+//
+
+#include <typeinfo>
 // roc-cl: 21022
-// roc-flags: /O2 /GS- /EHsc /MD /fp:fast
-namespace std {
-    class exception {
-    protected:
-        const char* message;
-        int owned;
-    public:
-        virtual ~exception();
-    };
+// roc-flags: /O2 /GS- /EHsc /MD
+struct Control
+{
+    virtual ~Control();
+    virtual void unused();
+    virtual Control *clone();
 
-    class bad_cast : public exception {
-    public:
-        bad_cast(const char*);
-    };
-}
-
-struct Holder {
-    virtual ~Holder() {}
-    virtual void unused() = 0;
-    virtual Holder* clone() const = 0;
+    static Control *copy(Control *);
 };
 
-struct Value {
-    void* type;
-    Holder* holder;
+inline Control *Control::copy(Control *p)
+{
+    if (p)
+        return p->clone();
+    return 0;
+}
 
-    Value(const Value&);
+struct Value
+{
+    void *data;
+    Control *control;
+
+    Value(void *, Control *);
     ~Value();
-    float* get();
+    const double *number();
 };
 
-inline Value::Value(const Value& other)
-    : type(other.type), holder(other.holder ? other.holder->clone() : 0) {}
-
-inline Value::~Value() {
-    if (holder)
-        delete holder;
+inline Value::Value(void *p, Control *c)
+    : data(p), control(Control::copy(c))
+{
 }
 
-struct Arguments {
-    virtual void unused() = 0;
-    virtual void read(int, Value*) = 0;
+inline Value::~Value()
+{
+    if (control)
+        delete control;
+}
+
+struct Arguments
+{
+    virtual void unused();
+    virtual void get(int, Value *);
 };
 
-namespace RBX {
-    namespace Reflection {
-        struct DescribedBase {
-            virtual ~DescribedBase();
-        };
-    }
+namespace RBX { namespace Reflection { class DescribedBase { public: virtual ~DescribedBase(); }; } }
+using RBX::Reflection::DescribedBase;
 
-    struct Humanoid : Reflection::DescribedBase {
-        char padding[0x14c];
-        int* adjustmentTable;
-    };
-}
+namespace RBX { class ScriptContext : public DescribedBase {}; }
+using RBX::ScriptContext;
 
-typedef void (__thiscall *Setter)(void*, float);
 
-struct S {
+
+struct S
+{
     char padding[0x38];
-    Setter setter;
+    void (__thiscall *callback)(void *, double);
     int adjustment;
-    int tableOffset;
-    Value value;
+    void *data;
+    Control *control;
 
-    void invoke(RBX::Reflection::DescribedBase*, Arguments*);
+    void f(DescribedBase *, Arguments *);
 };
 
-void S::invoke(RBX::Reflection::DescribedBase* object, Arguments* arguments) {
-    Value temporary(value);
-    arguments->read(1, &temporary);
+void S::f(DescribedBase *object, Arguments *arguments)
+{
+    Value value(data, control);
+    arguments->get(1, &value);
 
-    RBX::Humanoid* humanoid = dynamic_cast<RBX::Humanoid*>(object);
-    if (!humanoid)
+    ScriptContext *context = dynamic_cast<ScriptContext *>(object);
+    if (!context)
         throw std::bad_cast("bad cast");
 
-    float result = *temporary.get();
-    int offset = *reinterpret_cast<int*>(
-        reinterpret_cast<char*>(humanoid->adjustmentTable) + tableOffset);
-
-    setter(reinterpret_cast<char*>(humanoid) + 0x150 + offset + adjustment,
-           result);
+    callback(reinterpret_cast<char *>(context) + adjustment, *value.number());
 }

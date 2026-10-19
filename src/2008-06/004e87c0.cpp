@@ -1,34 +1,37 @@
-// from server: 68% by colin
-extern "C" void* __cdecl allocate_aligned(unsigned int, unsigned int);
-extern "C" void* __cdecl fill_memory(void*, int, unsigned int);
+// from server: 73% by colin
+//
+
+//
+
+extern "C" void* __cdecl allocate_buffer(unsigned int, unsigned int);
+extern "C" void* __cdecl fill_buffer(void*, int, unsigned int);
+extern const unsigned int array_table[];
 
 struct Array
 {
-    int count;
+    const unsigned int* table;
+    unsigned int size;
     void* data;
-    int capacity;
+    unsigned int capacity;
 
-    Array();
-    virtual ~Array();
+    Array(unsigned int*);
+    __declspec(dllimport) ~Array() throw();
     Array& operator=(const Array&);
     void clear();
     void copy(const Array&);
 };
 
-__forceinline Array::Array()
+inline Array::Array(unsigned int* base)
 {
-    capacity = 10;
-    count = 0;
-    data = allocate_aligned(40, 16);
-    fill_memory(data, 0, capacity * 4);
+    base[2] = reinterpret_cast<unsigned int>(array_table);
+    base[5] = 10;
+    base[3] = 0;
+    void* p = allocate_buffer(40, 16);
+    base[4] = reinterpret_cast<unsigned int>(p);
+    fill_buffer(p, 0, base[5] * 4);
 }
 
-__forceinline Array::~Array()
-{
-    clear();
-}
-
-__forceinline Array& Array::operator=(const Array& other)
+inline Array& Array::operator=(const Array& other)
 {
     if (this != &other)
     {
@@ -40,19 +43,19 @@ __forceinline Array& Array::operator=(const Array& other)
 
 struct S
 {
-    int first;
-    int owner;
+    unsigned int first;
+    void* owner;
     Array values;
-    int last;
+    unsigned int last;
 
-    S(int, Array, int, int);
+    S(void*, Array, unsigned int, unsigned int);
 };
 
-S::S(int ownerValue, Array source, int firstValue, int lastValue)
+S::S(void* p, Array a, unsigned int x, unsigned int y)
+    : owner(0), values(reinterpret_cast<unsigned int*>(this))
 {
-    owner = 0;
-    owner = ownerValue;
-    values = source;
-    first = firstValue;
-    last = lastValue;
+    owner = p;
+    values = a;
+    first = x;
+    last = y;
 }

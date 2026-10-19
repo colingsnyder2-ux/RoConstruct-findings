@@ -1,114 +1,106 @@
-// from server: 62% by king_originala
-extern "C" void (__cdecl* invalid_parameter_noinfo)();
+// from server: 74% by colin
+//
 
-struct Result {
-    __declspec(nothrow) virtual void destroy(int);
+extern "C" void (__cdecl *invalid_parameter_noinfo)();
+
+struct Object {
+    void release();
+    Object* get();
+    void notify(int);
 };
 
-struct Action {
-    void apply(int);
+struct Sequence {
+    void* owner;
+    unsigned char padding[8];
+    unsigned int first;
+    unsigned int last;
 };
 
-struct Context {
-    void update();
-    Action* action();
+struct Container {
+    unsigned char padding[0x154];
+    Sequence* sequence;
 };
 
-struct Selection {
-    unsigned char* data;
-    unsigned reserved[2];
-    unsigned first;
-    unsigned last;
+struct Accessor {
+    Container* get(int);
+    unsigned char padding[12];
 };
 
-struct Model {
-    char reserved[0x154];
-    Selection* selection;
-};
-
-struct Access {
-    Model* get(int);
-    char reserved[12];
-};
-
-struct String {
-    unsigned reserved;
+struct Text {
+    unsigned char padding[4];
     union {
-        char text[16];
-        char* pointer;
-    } storage;
-    unsigned length;
-    unsigned capacity;
-
-    const char* data() const;
+        char small[16];
+        char* large;
+    };
+    unsigned int length;
+    unsigned int capacity;
 };
-
-inline const char* String::data() const
-{
-    if (capacity >= 16)
-        return storage.pointer;
-    return storage.text;
-}
 
 struct Name {
-    unsigned reserved;
-    String text;
+    unsigned char padding[4];
+    Text text;
 };
 
-extern void __cdecl callback(unsigned char*);
-extern void __cdecl traverse(
-    unsigned*, unsigned char*, unsigned, unsigned,
-    unsigned, void (__cdecl*)(unsigned char*), unsigned char*);
-extern void __cdecl handle(const char*, unsigned);
+struct Argument {
+    virtual int finish(int) = 0;
+};
+
+struct Iterator {
+    void* owner;
+    void* context;
+};
+
+extern void __cdecl operation();
+extern Iterator* __cdecl apply(
+    Iterator*, void*, unsigned int, void*, unsigned int,
+    void (__cdecl *)(), void*);
+extern void __cdecl handle(const char*, unsigned int);
 
 struct S {
-    unsigned reserved0;
+    unsigned char padding0[4];
     Name* name;
-    unsigned reserved8;
-    unsigned value;
-    unsigned reserved10;
-    Access access;
-    Context* volatile context;
+    unsigned int padding8;
+    unsigned int value;
+    unsigned int padding10;
+    Accessor accessor;
+    Object* object;
 
     void prepare();
-    void __cdecl run(Result*);
+    int __cdecl run(Argument*);
 };
 
-void S::run(Result* result)
+int S::run(Argument* argument)
 {
-    Context* saved = context;
+    Object* previous = object;
     prepare();
 
-    Context* current = context;
-    if (current)
-        current->update();
+    if (object)
+        object->release();
 
-    struct Locals {
-        unsigned temporary;
-        unsigned char* data;
-    } local;
-
-    Selection* begin = access.get(1)->selection;
-    unsigned first = begin->last;
-    if (begin->first > first)
-        invalid_parameter_noinfo();
-    local.data = begin->data;
-
-    Selection* end = access.get(1)->selection;
-    unsigned last = end->first;
-    if (last > end->last)
+    Sequence* endSequence = accessor.get(1)->sequence;
+    unsigned int last = endSequence->last;
+    if (endSequence->first > last)
         invalid_parameter_noinfo();
 
-    traverse(&local.temporary, end->data, last, local.temporary,
-             first, &callback, local.data);
+    Iterator result;
+    result.context = endSequence->owner;
 
-    current = context;
-    Action* action = current ? current->action() : 0;
-    action->apply(8);
+    Sequence* beginSequence = accessor.get(1)->sequence;
+    unsigned int first = beginSequence->first;
+    if (first > beginSequence->last)
+        invalid_parameter_noinfo();
 
-    unsigned argument = value;
-    const String* text = &name->text;
-    handle(text->data(), argument);
+    apply(&result, beginSequence->owner, first, result.owner, last,
+          operation, result.context);
 
-    result->destroy(1);
+    Object* target = object ? object->get() : 0;
+    target->notify(8);
+
+    unsigned int argumentValue = value;
+    Text* text = &name->text;
+    const char* characters =
+        text->capacity >= 16 ? text->large : text->small;
+    handle(characters, argumentValue);
+
+    return argument->finish(1);
 }

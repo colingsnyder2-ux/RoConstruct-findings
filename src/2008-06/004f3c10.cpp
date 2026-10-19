@@ -1,134 +1,148 @@
-// from server: 28% by colin
-struct V2 {
-    float x, y;
-};
+// from server: 34% by colin
+//
 
-extern "C" double __stdcall ceil(double);
-
-extern float g_819bac;
-extern float g_83a3e4;
-extern float g_826e6c;
-
-float helper_4f1ff0(int n);
-void helper_4f35d0(void* self, int idx, float* a, float* b, float* c, unsigned short* t);
-void helper_4f2810(void* self, float a, float b, unsigned short t);
-
-struct S {
-    int f(float a, float b, float c, int d, int e);
+struct VMaterialBase {
     char pad[0x10];
     unsigned int flags;
+    void func(float a, float b, float c, int d, int e);
 };
 
-int S::f(float a, float b, float c, int d, int e)
+extern "C" {
+    double __stdcall ceil(double);
+}
+
+extern float g_819bac;
+extern float g_826e6c;
+extern float g_83a3e4;
+
+void __stdcall sub_6784d0(void*, void*);
+void __stdcall sub_5185d0(float*, float*);
+float __stdcall sub_4f1ff0(int);
+void __stdcall sub_4f35d0(void*, void*, void*, void*, void*);
+void __stdcall sub_4f3260(void*, void*, void*, void*, void*);
+
+void VMaterialBase::func(float a, float b, float c, int d, int e)
 {
-    int mode = (flags >> 9) & 7;
+    float v38;
+    float v44, v48, v4c;
+    float v30, v34, v38b;
+    float v18, v1c, v20, v24, v28, v2c;
+    int ebp;
+    int esi;
+    int ebx;
+    int edi;
+    int i;
+    float f;
 
-    V2 v;
-    v.x = 0;
-    v.y = 0;
+    ebp = (flags >> 6) & 7;
 
-    float fa = a < 0 ? -a : a;
-    float fb = b < 0 ? -b : b;
-    float fc = c < 0 ? -c : c;
+    sub_6784d0(&v38, &flags);
 
-    float arr[2];
-    arr[0] = fa;
-    arr[1] = fb;
-
-    int idx;
-    if (e == 0) {
-        idx = (fa == fb) ? 1 : 0;
-    } else {
-        idx = 0;
-    }
-
-    int count;
-    if (e == 0 && mode != 0) {
-        count = (int)ceil((double)(arr[idx] * g_819bac));
-    } else {
-        count = 1;
-    }
-
-    unsigned short tmp[2];
-    tmp[0] = 0;
-    tmp[1] = 0;
-
-    short val = (short)((unsigned short*)&v)[idx];
-    int q = (int)val / count;
-    unsigned short qq = (unsigned short)q;
-
-    unsigned short one = 1;
-    unsigned short chosen;
-    if (one < qq) {
-        chosen = qq;
-    } else {
-        chosen = one;
-    }
-    tmp[idx] = chosen;
-
-    float farr[2];
-    farr[0] = fc;
-    farr[1] = 0;
-
-    float p0 = 0, p1 = 0, p2 = 0, p3 = 0;
+    v44 = a < 0 ? -a : a;
+    v48 = b < 0 ? -b : b;
+    v4c = c < 0 ? -c : c;
 
     if (d == 0) {
-        if (mode == 0) {
-            p0 = g_83a3e4;
-            p1 = g_819bac;
-            p3 = g_819bac;
+        if (v44 == v48) {
+            esi = 0;
         } else {
-            p1 = helper_4f1ff0(mode);
-            p0 = farr[idx] * 2.0f;
-            p3 = g_819bac;
-            if (idx == 1) {
-                p3 = -p3;
+            esi = 1;
+        }
+    } else {
+        esi = 1;
+    }
+
+    if (d == 0 && ebp != 0) {
+        f = (float)((int)ceil(v44 * g_819bac));
+        ebx = (int)f;
+    } else {
+        ebx = 1;
+    }
+
+    {
+        short tmp;
+        short arr[2];
+        short val;
+        int idx;
+
+        idx = esi + esi;
+        tmp = *(short*)((char*)&v38 + 0x2a - idx);
+        val = (short)((int)tmp / ebx);
+        if (val < 1) val = 1;
+        *(short*)((char*)&v18 + idx) = val;
+        *(short*)((char*)&v18 + 0x2a - idx) = tmp;
+    }
+
+    {
+        float tmp2[2];
+        sub_5185d0(&v38, tmp2);
+        v30 = -tmp2[0];
+        v34 = -tmp2[1];
+    }
+
+    {
+        float tmp2[2];
+        sub_5185d0(&v38, tmp2);
+        v28 = 0.0f;
+        v2c = 0.0f;
+        v18 = 0.0f;
+        v1c = 0.0f;
+    }
+
+    if (d == 0) {
+        if (ebp == 0) {
+            v28 = g_83a3e4;
+            v2c = g_819bac;
+            v1c = g_819bac;
+            v18 = g_819bac;
+        } else {
+            v2c = sub_4f1ff0(ebp);
+            v20 = v30 * 2.0f;
+            v18 = g_819bac;
+            if (esi == 1) {
+                v18 = -v18;
             }
         }
     } else if (d == 1) {
-        p0 = 0;
-        p1 = ((V2*)((char*)this + 0x18))->y;
-        p2 = ((V2*)((char*)this + 0x18))->x;
-        p3 = -((V2*)((char*)this + 0x18))->y;
+        v28 = 0.0f;
+        v2c = *(float*)((char*)this + 0x1c);
+        v18 = *(float*)((char*)this + 0x18);
+        v1c = -*(float*)((char*)this + 0x1c);
     } else if (d == 2) {
-        p0 = 0;
-        p1 = 0;
-        p2 = 0;
-        p3 = 0;
+        v28 = 0.0f;
+        v2c = 0.0f;
+        v18 = 0.0f;
+        v1c = 0.0f;
     }
 
-    int i = 0;
-    while (i < count) {
-        float cur;
-        if (i == count - 1) {
-            cur = arr[idx];
-            farr[idx] = cur;
+    for (i = 0; i < ebx; i++) {
+        if (i == ebx - 1) {
+            v30 = v44;
             if (d == 0 && e != 0) {
-                farr[idx] = (cur - farr[idx]) * p3 * g_83a3e4;
+                v18 = (v44 - v48) * v18 * g_83a3e4;
             }
         } else {
-            cur = farr[idx] + g_826e6c;
-            farr[idx] = cur;
+            v30 = v48 + g_826e6c;
         }
 
-        float args[2];
-        args[0] = p2;
-        args[1] = p3;
+        {
+            float args[5];
+            args[0] = v18;
+            args[1] = v1c;
+            args[2] = v28;
+            args[3] = v2c;
+            args[4] = v30;
+            sub_4f35d0(this, &v38, args, &v30, &v34);
+        }
 
-        float args2[2];
-        args2[0] = p0;
-        args2[1] = p1;
+        {
+            float args[5];
+            args[0] = v30;
+            args[1] = v34;
+            args[2] = v38b;
+            sub_4f3260(this, args, &v30, &v34, &v38b);
+        }
 
-        float args3[2];
-        args3[0] = p2;
-        args3[1] = p3;
-
-        helper_4f35d0(this, idx, args, args2, args3, tmp);
-
-        helper_4f2810(this, p0, p1, tmp[idx]);
-
-        i++;
+        v34 = v30;
     }
-
-    return 0;
 }

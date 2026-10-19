@@ -1,173 +1,148 @@
-// from server: 27% by colin
-// roc-cl: 50727
-// roc-flags: /O2 /GS- /EHsc /MD
-struct Vec2
-{
-    float x;
-    float y;
-};
+// from server: 34% by colin
+//
 
-struct Vec3
-{
-    float x;
-    float y;
-    float z;
-};
-
-struct Obj
-{
+struct VMaterialBase {
     char pad[0x10];
     unsigned int flags;
-
-    void func(float a1, float a2, float a3,
-    int a4, int a5, int a6, int a7);
+    void func(float a, float b, float c, int d, int e);
 };
 
-extern "C" float __stdcall ceil(double);
+extern "C" {
+    double __stdcall ceil(double);
+}
+
 extern float g_819bac;
 extern float g_826e6c;
 extern float g_83a3e4;
 
-extern void sub_5ec200(void *, Vec2 *);
-extern Vec2 *sub_5185d0(Vec3 *, Vec2 *);
-extern float sub_4f1ff0(int);
-extern void sub_4f2490(void *, Vec3 *, Vec2 *, float, float, unsigned short);
-extern void sub_4f35d0(void *, Vec3 *, Vec2 *, Vec2 *, int, int);
+void __stdcall sub_6784d0(void*, void*);
+void __stdcall sub_5185d0(float*, float*);
+float __stdcall sub_4f1ff0(int);
+void __stdcall sub_4f35d0(void*, void*, void*, void*, void*);
+void __stdcall sub_4f3260(void*, void*, void*, void*, void*);
 
-void Obj::func(
-    float a1, float a2, float a3,
-    int a4, int a5, int a6, int a7)
+void VMaterialBase::func(float a, float b, float c, int d, int e)
 {
-    unsigned int mode = (flags >> 12) & 7;
-    Vec2 v;
-    sub_5ec200((char *)this + 4, &v);
+    float v38;
+    float v44, v48, v4c;
+    float v30, v34, v38b;
+    float v18, v1c, v20, v24, v28, v2c;
+    int ebp;
+    int esi;
+    int ebx;
+    int edi;
+    int i;
+    float f;
 
-    float f0 = v.x < 0.0f ? -v.x : v.x;
-    float f1 = v.y < 0.0f ? -v.y : v.y;
-    float f2 = a3 < 0.0f ? -a3 : a3;
+    ebp = (flags >> 6) & 7;
 
-    bool b;
-    if (a7 == 0)
-    {
-        b = !(f0 == f1);
-    }
-    else
-    {
-        b = false;
-    }
+    sub_6784d0(&v38, &flags);
 
-    int idx = b ? 1 : 0;
+    v44 = a < 0 ? -a : a;
+    v48 = b < 0 ? -b : b;
+    v4c = c < 0 ? -c : c;
 
-    int count;
-    if (a7 == 0 && mode != 0)
-    {
-        float scaled = (idx == 0 ? f0 : f1) * g_819bac;
-        float c = ceil(scaled);
-        count = (int)c;
-    }
-    else
-    {
-        count = 1;
-    }
-
-    unsigned short arr[2];
-    arr[0] = 0;
-    arr[1] = 0;
-
-    short raw = *(short *)((char *)&v + idx * 2);
-    int q = (int)raw / count;
-    unsigned short qv = (unsigned short)q;
-
-    unsigned short one = 1;
-    unsigned short chosen = (one < qv) ? one : qv;
-    arr[idx] = chosen;
-
-    float f2s = f2;
-
-    Vec2 out;
-    sub_5185d0((Vec3 *)&v, &out);
-    float nx = -out.x;
-    float ny = -out.y;
-
-    float r0 = 0.0f;
-    float r1 = 0.0f;
-    float r2 = 0.0f;
-    float r3 = 0.0f;
-
-    if (a6 == 0)
-    {
-        if (mode == 0)
-        {
-            r0 = g_83a3e4;
-            r1 = g_819bac;
-            r3 = g_819bac;
+    if (d == 0) {
+        if (v44 == v48) {
+            esi = 0;
+        } else {
+            esi = 1;
         }
-        else
-        {
-            r1 = sub_4f1ff0(mode);
-            r0 = f2s * 2.0f;
-            r3 = g_819bac;
-            if (idx == 1)
-            {
-                r0 = -r0;
+    } else {
+        esi = 1;
+    }
+
+    if (d == 0 && ebp != 0) {
+        f = (float)((int)ceil(v44 * g_819bac));
+        ebx = (int)f;
+    } else {
+        ebx = 1;
+    }
+
+    {
+        short tmp;
+        short arr[2];
+        short val;
+        int idx;
+
+        idx = esi + esi;
+        tmp = *(short*)((char*)&v38 + 0x2a - idx);
+        val = (short)((int)tmp / ebx);
+        if (val < 1) val = 1;
+        *(short*)((char*)&v18 + idx) = val;
+        *(short*)((char*)&v18 + 0x2a - idx) = tmp;
+    }
+
+    {
+        float tmp2[2];
+        sub_5185d0(&v38, tmp2);
+        v30 = -tmp2[0];
+        v34 = -tmp2[1];
+    }
+
+    {
+        float tmp2[2];
+        sub_5185d0(&v38, tmp2);
+        v28 = 0.0f;
+        v2c = 0.0f;
+        v18 = 0.0f;
+        v1c = 0.0f;
+    }
+
+    if (d == 0) {
+        if (ebp == 0) {
+            v28 = g_83a3e4;
+            v2c = g_819bac;
+            v1c = g_819bac;
+            v18 = g_819bac;
+        } else {
+            v2c = sub_4f1ff0(ebp);
+            v20 = v30 * 2.0f;
+            v18 = g_819bac;
+            if (esi == 1) {
+                v18 = -v18;
             }
         }
-    }
-    else if (a6 == 1)
-    {
-        r1 = *(float *)((char *)this + 0x1c);
-        r0 = *(float *)((char *)this + 0x18);
-        r3 = -*(float *)((char *)this + 0x1c);
-    }
-    else if (a6 == 2)
-    {
-        r3 = 0.0f;
+    } else if (d == 1) {
+        v28 = 0.0f;
+        v2c = *(float*)((char*)this + 0x1c);
+        v18 = *(float*)((char*)this + 0x18);
+        v1c = -*(float*)((char*)this + 0x1c);
+    } else if (d == 2) {
+        v28 = 0.0f;
+        v2c = 0.0f;
+        v18 = 0.0f;
+        v1c = 0.0f;
     }
 
-    int i = 0;
-    while (i < count)
-    {
-        float cur;
-        if (i == count - 1)
-        {
-            cur = (idx == 0 ? f0 : f1);
-            if (a6 == 0 && a5 != 0)
-            {
-                float diff = cur - (idx == 0 ? nx : ny);
-                float prod = diff * (idx == 0 ? r0 : r1);
-                float res = prod * g_83a3e4;
-                if (idx == 0)
-                    r0 = res;
-                else
-                    r1 = res;
+    for (i = 0; i < ebx; i++) {
+        if (i == ebx - 1) {
+            v30 = v44;
+            if (d == 0 && e != 0) {
+                v18 = (v44 - v48) * v18 * g_83a3e4;
             }
+        } else {
+            v30 = v48 + g_826e6c;
         }
-        else
+
         {
-            cur = (idx == 0 ? nx : ny) + g_826e6c;
+            float args[5];
+            args[0] = v18;
+            args[1] = v1c;
+            args[2] = v28;
+            args[3] = v2c;
+            args[4] = v30;
+            sub_4f35d0(this, &v38, args, &v30, &v34);
         }
 
-        Vec2 p;
-        p.x = r0;
-        p.y = r1;
+        {
+            float args[5];
+            args[0] = v30;
+            args[1] = v34;
+            args[2] = v38b;
+            sub_4f3260(this, args, &v30, &v34, &v38b);
+        }
 
-        Vec2 q2;
-        q2.x = r2;
-        q2.y = r3;
-
-        Vec3 tmp;
-        sub_4f35d0((char *)this + 4, &tmp, &p, &q2, idx, i);
-
-        Vec2 uv;
-        uv.x = a1;
-        uv.y = a2;
-        sub_4f2490((char *)this + 4, &tmp, &uv, cur, 0.0f, arr[idx]);
-
-        if (idx == 0)
-            r0 = cur;
-        else
-            r1 = cur;
-
-        i++;
+        v34 = v30;
     }
 }

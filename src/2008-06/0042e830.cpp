@@ -1,75 +1,52 @@
-// from server: 58% by colin
-struct Str_0042e700 { int words[8]; };
+// from server: 89% by colin
+//
 
-struct X_0042e700
-{
-    char pad[0x44];
-    Str_0042e700 value;
-    Str_0042e700* copy(Str_0042e700* out);
+//
+
+struct Str;
+extern bool (__thiscall* str_empty)(const Str*);
+extern Str* (__thiscall* str_text)(Str*, const char*);
+extern Str* (__thiscall* str_copy)(Str*, const Str*) throw();
+extern void (__thiscall* str_destroy)(Str*) throw();
+
+struct Str {
+    char* data;
+    Str(const char*);
+    Str(const Str&) throw();
+    __declspec(dllimport) ~Str() throw();
+    bool empty() const;
 };
 
-extern void (__thiscall* str_ctor_0042e700)(Str_0042e700*, Str_0042e700*);
-
-Str_0042e700* X_0042e700::copy(Str_0042e700* out)
+inline Str::Str(const char* text)
 {
-    volatile int zero = 0;
-    str_ctor_0042e700(out, &value);
-    return out;
+    str_text(this, text);
 }
 
-struct CRobloxControlColorSelector
+inline Str::Str(const Str& other) throw()
 {
-    char pad0[0xe8];
-    char field_e8;
-    char pad1[0x15c - 0xe9];
-    X_0042e700* field_15c;
+    str_copy(this, &other);
+}
 
-    CRobloxControlColorSelector* method(char* arg);
+inline bool Str::empty() const
+{
+    return str_empty(this);
+}
+
+struct X {
+    Str copy();
 };
 
-extern "C" int (__stdcall* fn_802fd8)(void*);
-extern "C" void (__stdcall* fn_803f10)(void*, const char*);
-extern "C" void (__stdcall* fn_803ed4)(void*, void*);
-extern "C" void (__stdcall* fn_803f14)(void*);
+struct S {
+    char padding[0xec];
+    Str caption;
+    char padding2[0x6c];
+    X* parent;
+    Str getCaption();
+};
 
-CRobloxControlColorSelector* CRobloxControlColorSelector::method(char* arg)
+Str S::getCaption()
 {
-    char local10[8];
-    char local18[8];
-    int state = 0;
-    void* result;
-
-    if (fn_802fd8(&field_e8))
-    {
-        if (field_15c == 0)
-        {
-            result = field_15c->copy((Str_0042e700*)local10);
-            state = 1;
-        }
-        else
-        {
-            fn_803f10(local18, ">Authoring");
-            state = 2;
-            result = local18;
-        }
-    }
-    else
-    {
-        result = &field_e8;
-    }
-
-    fn_803ed4(arg, result);
-
-    state |= 4;
-    if (state & 2)
-    {
-        state &= ~2;
-        fn_803f14(local10);
-    }
-    if (state & 1)
-    {
-        fn_803f14(local18);
-    }
-
-    return this;
+    return !caption.empty()
+        ? caption
+        : (parent ? parent->copy() : Str(">Authoring"));
 }

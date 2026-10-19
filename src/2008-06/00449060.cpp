@@ -1,3 +1,4 @@
+// from server: 100% by Espeon
 // from server: 89% by colin
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD /fp:fast
@@ -39,26 +40,25 @@
 
 struct CRenderSettings {
     char padding[0x14c];
-    float value14c;
-    float value150;
+    volatile float value14c;
+    volatile float value150;
     void setValue(float);
+    void notifyChange(void*);
 };
 
-extern "C" void __stdcall notifyChange(void*);
+
 
 void CRenderSettings::setValue(float v)
 {
     float zero = 0.0f;
     float* src;
-    if (v == zero)
+    if (zero < v)
         src = &v;
     else
         src = &zero;
 
-    float* chosen;
-    if (value150 < *src)
-        chosen = &value150;
-    else
+    volatile float* chosen = &value150;
+    if (value150 > *src)
         chosen = src;
 
     float result = *chosen;

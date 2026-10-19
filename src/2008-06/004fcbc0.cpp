@@ -1,153 +1,183 @@
-// from server: 45% by colin
-// roc 2008-06 004fcbc0  unit: RBX::ViewNew::TorsoBuilder  size: 711 bytes
-// Make this compile to the exact bytes below, then: roc check 2008-06 004fcbc0
-
-extern "C" __declspec(dllimport) double __stdcall ceil(double);
-
-struct V2 { float x, y; };
-struct V3 { float x, y, z; };
+// from server: 48% by colin
+//
 
 struct TorsoBuilder {
-    char pad0[0x10];
-    unsigned int flags;
-    void method(int a, int b, int c);
+    void build(int a, int b, int c);
 };
 
-extern "C" void __cdecl sub_5ec220(void*, void*);
-extern "C" void __cdecl sub_5185d0(void*, void*);
-extern "C" void __cdecl sub_4f35d0(void*, void*, void*, void*, void*);
-extern "C" void __cdecl sub_4fbac0(void*, void*);
-extern "C" float __cdecl sub_4f1ff0(int);
+extern "C" {
+    void __stdcall sub_6784D0(int* out, int* in);
+    void __stdcall sub_5185D0(float* out, float* in);
+    float __stdcall sub_4F1FF0(int n);
+    void __stdcall sub_4F35D0(float* a, float* b, float* c, float* d, float* e, float* f);
+    void __stdcall sub_4FB1F0(int* p);
+    double __cdecl ceil(double x);
+}
 
-extern float g_819bac;
-extern float g_826e6c;
-extern float g_83a3e4;
+extern float g_819BAC;
+extern float g_826E6C;
+extern float g_83A3E4;
 
-void TorsoBuilder::method(int a, int b, int c)
+void TorsoBuilder::build(int a, int b, int c)
 {
-    float v44, v48, v4c;
-    float v18, v1c, v28, v2c;
-    float v30, v38;
-    int ebx;
+    int local10;
+    int local14;
+    int local18;
+    int local1C;
+    int local20;
+    int local24;
+    int local28;
+    int local2C;
+    int local30;
+    int local34;
+    int local38;
+    int local3C;
+    int local40;
+    int local44;
+    int local48;
+    int local4C;
+    int local50;
+    int local54;
+    int local58;
+    int local5C;
+
+    int ebp = (*(int*)((char*)this + 0x10) >> 6) & 7;
+
+    sub_6784D0(&local3C, (int*)((char*)this + 4));
+
+    float f44 = *(float*)&local44;
+    if (f44 < 0.0f) f44 = -f44;
+    float f48 = *(float*)&local48;
+    if (f48 < 0.0f) f48 = -f48;
+    float f4C = *(float*)&local38;
+    if (f4C < 0.0f) f4C = -f4C;
+
+    int ecx = local5C;
     int esi;
-    int edi;
-    int ebp;
-    unsigned short w10, w12;
-    int i20;
-    int i18;
-    V2 tmp;
-
-    ebp = (this->flags >> 0xf) & 7;
-
-    sub_5ec220(&v44, &this->pad0[4]);
-
-    v44 = (float)(v44 < 0 ? -v44 : v44);
-    v48 = (float)(v48 < 0 ? -v48 : v48);
-    v4c = (float)(v4c < 0 ? -v4c : v4c);
-
-    {
-        float fa = v44;
-        float fb = v48;
-        float fc = v4c;
-        v44 = fa;
-        v48 = fb;
-        v4c = fc;
-    }
-
-    if (c != 0) {
-        esi = (v44 == v48) ? 0 : 1;
+    if (ecx == 0) {
+        if (f44 == f48) {
+            esi = 0;
+        } else {
+            esi = 1;
+        }
     } else {
-        esi = 0;
+        esi = 1;
     }
 
-    if (c == 0 && ebp != 0) {
-        float f = (&v44)[esi];
-        f = (float)(f * g_819bac);
-        v2c = (float)ceil((double)f);
-        ebx = (int)v2c;
+    int ebx;
+    if (ecx == 0 && ebp != 0) {
+        float v = (&f44)[esi] * g_819BAC;
+        double d = ceil((double)v);
+        ebx = (int)d;
     } else {
         ebx = 1;
     }
 
-    w10 = 0;
-    w12 = 0;
-    {
-        unsigned short t = *(unsigned short*)((char*)&v44 + 0x16 - esi*2);
-        edi = (int)(short)t;
+    short w10 = 0;
+    short w12 = 0;
+    int ecx2 = esi + esi;
+    short di = *(short*)((char*)&local58 - ecx2);
+    int eax2 = (int)di;
+    int div = eax2 / ebx;
+    short ax = (short)div;
+    int local18v = (int)(unsigned short)ax;
+    int local20v = 1;
+    short cmpv = (short)local20v;
+    short* psel;
+    if (cmpv < (short)local18v) {
+        psel = (short*)&local18v;
+    } else {
+        psel = (short*)&local20v;
     }
-    i20 = 1;
-    {
-        int q = edi / ebx;
-        i18 = (int)(unsigned short)q;
-    }
-    {
-        unsigned short cmpv = 1;
-        unsigned short qv = (unsigned short)i18;
-        unsigned short* p;
-        if (cmpv < qv) p = (unsigned short*)&i18;
-        else p = (unsigned short*)&i20;
-        *(unsigned short*)((char*)&w10 + esi*2) = *p;
-    }
-    v2c = v4c;
-    *(unsigned short*)((char*)&w12 - esi*2) = (unsigned short)edi;
+    short sel = *psel;
+    *(short*)((char*)&local10 + ecx2) = sel;
+    *(short*)((char*)&local10 - ecx2) = di;
 
-    sub_5185d0(&v44, &tmp);
-    v28 = -tmp.x;
-    v2c = -tmp.y;
+    float f20 = f4C;
+    sub_5185D0((float*)&local38, (float*)&local48);
+    float t0 = -((float*)&local38)[0];
+    float t1 = -((float*)&local38)[1];
+    float local3C2 = t0;
+    float local40v = t1;
+    sub_5185D0((float*)&local30, (float*)&local48);
 
-    sub_5185d0(&v44, &tmp);
+    float zero = 0.0f;
+    int eax3 = local5C;
+    eax3 -= 0;
+    float local28v = zero;
+    float local2Cv = zero;
+    float local18f = zero;
+    float local1Cf = zero;
 
-    v18 = 0.0f;
-    v1c = 0.0f;
-    v28 = 0.0f;
-    v2c = 0.0f;
-
-    if (c == 0) {
+    if (eax3 == 0) {
         if (ebp == 0) {
-            v28 = g_83a3e4;
-            v2c = g_819bac;
-            (&v18)[esi] = g_819bac;
-            (&v1c)[-esi] = g_819bac;
+            local28v = g_83A3E4;
+            int eax4 = esi * 4;
+            local2Cv = g_819BAC;
+            float* edx = (float*)((char*)&local1C - eax4);
+            *edx = g_819BAC;
+            *(float*)((char*)&local18 + eax4) = g_819BAC;
         } else {
-            (&v2c)[-esi] = 0.0f;
-            v2c = sub_4f1ff0(ebp);
-            (&v1c)[-esi] = (&v4c)[-esi] * 2.0f;
-            (&v18)[esi] = g_819bac;
+            int edi2 = esi * 4;
+            float* eax5 = (float*)((char*)&local2C - edi2);
+            *eax5 = zero;
+            float r = sub_4F1FF0(ebp);
+            *(float*)((char*)&local2C + edi2) = r;
+            float* ecx3 = (float*)((char*)&local4C - edi2);
+            float v2 = *ecx3;
+            float* edx2 = (float*)((char*)&local20 - edi2);
+            *edx2 = v2 + v2;
+            *(float*)((char*)&local18 + edi2) = g_819BAC;
             if (esi == 1) {
-                v18 = -v18;
+                local18f = -local18f;
             }
         }
-    } else if (c == 1) {
-        v28 = 0.0f;
-        v2c = this->pad0[0x1c];
-        v18 = this->pad0[0x18];
-        v1c = -this->pad0[0x1c];
-    } else if (c == 2) {
-        v1c = 0.0f;
+    } else {
+        eax3 -= 1;
+        if (eax3 == 0) {
+            local28v = zero;
+            local2Cv = *(float*)((char*)&local14 + 0x1C);
+            local18f = *(float*)((char*)&local14 + 0x18);
+            local1Cf = -*(float*)((char*)&local14 + 0x1C);
+        } else {
+            eax3 -= 1;
+            if (eax3 == 0) {
+                local28v = zero;
+                local2Cv = zero;
+                local18f = zero;
+                local1Cf = zero;
+            }
+        }
     }
 
-    edi = 0;
-    while (edi < ebx) {
-        if (edi == ebx - 1) {
-            v30 = (&v44)[esi];
-            if (c == 0 && i20 != 0) {
-                (&v18)[esi] = ((&v44)[esi] - (&v38)[esi]) * (&v18)[esi] * g_83a3e4;
+    int edi3 = 0;
+    if (ebx > 0) {
+        int ebp2 = local54;
+        while (edi3 < ebx) {
+            int eax6 = ebx - 1;
+            if (edi3 == eax6) {
+                float f = (&f44)[esi];
+                (&local30)[esi] = f;
+                if (local5C == 0 && local24 != 0) {
+                    float v3 = f - (&local38)[esi];
+                    v3 = v3 * (&local18f)[esi];
+                    v3 = v3 * g_83A3E4;
+                    (&local18f)[esi] = v3;
+                }
+            } else {
+                float v4 = (&local38)[esi] + g_826E6C;
+                (&local30)[esi] = v4;
             }
-        } else {
-            v30 = (&v38)[esi] + g_826e6c;
-        }
 
-        {
-            float args[5];
-            args[0] = v18;
-            args[1] = v1c;
-            args[2] = v28;
-            args[3] = v2c;
-            args[4] = v30;
-            sub_4f35d0(&args[0], &args[1], &args[2], &args[3], &args[4]);
+            int eax7 = local10;
+            float f18 = local18f;
+            float f2C = local2Cv;
+            float f30 = (&local30)[esi];
+            float f44b = (&f44)[esi];
+            sub_4F35D0((float*)&local58, (float*)&local48, (float*)&local30, (float*)&local18f, (float*)&local2Cv, (float*)&local44);
+            sub_4FB1F0(&ebp2);
+            (&local38)[esi] = (&local30)[esi];
+            edi3++;
         }
-        sub_4fbac0(this, &v30);
-        (&v38)[esi] = v30;
-        edi++;
     }
 }

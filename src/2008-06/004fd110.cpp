@@ -1,5 +1,5 @@
-// from server: 62% by colin
-// roc-cl: 50727
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+// from server: 75% by colin
 // roc-lang: cpp
-// roc-lib: rbxgs-view CylinderMesh.cpp
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: openrbx-client-dll roc_espeon_cylindersurfacetypes_4e8426dfb94586ba.cpp
