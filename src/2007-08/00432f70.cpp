@@ -1,4 +1,4 @@
-// from server: 31% by colin
+// from server: 35% by TrollStein
 struct ICreator {
     virtual void dummy0();
     virtual void dummy1();
@@ -14,7 +14,7 @@ extern "C" void __stdcall sub_583300(void*, int);
 
 struct FactoryProduct {
     Creator* creator;
-    void init(Creator* c);
+    void __cdecl init(Creator* c);
 };
 
 void FactoryProduct::init(Creator* c)

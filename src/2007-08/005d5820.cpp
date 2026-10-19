@@ -1,16 +1,16 @@
-// from server: 45% by colin
+// from server: 46% by TrollStein
 struct RBX_PAVRunService_sp_counted_impl_pd {
     char pad[0x114];
     int field114;
     int field118;
     float field11c;
     float field120;
-    void init(int a, int b, float c, float d);
+    void* init(int a, int b, float c, float d);
 };
 
 extern "C" void __fastcall sub_59cec0(void* p);
 
-void RBX_PAVRunService_sp_counted_impl_pd::init(int a, int b, float c, float d)
+void* RBX_PAVRunService_sp_counted_impl_pd::init(int a, int b, float c, float d)
 {
     sub_59cec0(this);
     field114 = a;
@@ -27,4 +27,6 @@ void RBX_PAVRunService_sp_counted_impl_pd::init(int a, int b, float c, float d)
     field118 = b;
     field11c = c;
     field120 = d;
+
+    return this;
 }

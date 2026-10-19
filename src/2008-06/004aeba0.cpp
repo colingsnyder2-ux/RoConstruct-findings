@@ -1,3 +1,4 @@
+// from server: 100% by Espeon
 // from server: 94% by king_originala
 struct Node {
     char padding[16];
@@ -15,7 +16,7 @@ struct Iterator {
 };
 
 extern "C" {
-    extern void (__cdecl *invalid_parameter_noinfo)();
+    extern __declspec(dllimport) void __cdecl invalid_parameter_noinfo();
 }
 
 struct Writer {
@@ -47,3 +48,4 @@ void S::f(Writer* writer, int key)
     int value = position->node->value;
     writer->write(&value, count, 1);
 }
+

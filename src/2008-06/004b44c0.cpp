@@ -1,3 +1,4 @@
+// from server: 99% by Espeon
 // from server: 97% by colin
 // from server: 81% by king_originala
 // roc 2008-06 004b44c0  unit: RBX::Network::VPeer::?$BoundFuncDesc  size: 239 bytes
@@ -92,7 +93,15 @@ struct Control
     virtual void destroy() = 0;
     volatile long strong;
     volatile long weak;
+    void release();
 };
+
+inline void Control::release() {
+    if (_InterlockedDecrement(&strong) == 0) {
+        dispose();
+        if (_InterlockedDecrement(&weak) == 0) destroy();
+    }
+}
 
 struct Payload
 {
@@ -152,16 +161,8 @@ S* S::func_004b44c0(Argument argument, unsigned int, unsigned int)
     tag = 0;
     func_004b3570(&value);
 
-    Control* p = value.control;
-    if (p)
-    {
-        if (_InterlockedDecrement(&p->strong) == 0)
-        {
-            p->dispose();
-            if (_InterlockedDecrement(&p->weak) == 0)
-                p->destroy();
-        }
-    }
+    if (value.control)
+        value.control->release();
 
     return this;
 }

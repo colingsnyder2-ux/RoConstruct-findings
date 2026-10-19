@@ -1,10 +1,10 @@
-// from server: 72% by colin
+// from server: 74% by TrollStein
 struct type_info {
     bool operator==(const type_info&) const;
 };
 
 extern "C" type_info G1_type_info_00898c30;
-extern "C" bool (__stdcall *G2_func_0077e708)(const type_info*, const type_info*);
+extern "C" bool (__thiscall *G2_func_0077e708)(const type_info*, const type_info*);
 extern "C" int __cdecl func_005f20f0(int, int, int);
 
 int func_0052e7f0(int a, int b, int c)

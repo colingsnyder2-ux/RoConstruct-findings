@@ -1,4 +1,4 @@
-// from server: 8% by colin
+// from server: 9% by TrollStein
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
 
@@ -95,7 +95,7 @@ struct SharedPtr {
 
 struct Creator {
     Object* getObject();
-    SharedPtr getShared();
+    SharedPtr __cdecl getShared();
 };
 
 struct FactoryProduct {

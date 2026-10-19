@@ -1,4 +1,6 @@
-// from server: 89% by king_originala
+// from server: 100% by Espeon
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
 struct Iterator
 {
     void* owner;
@@ -14,7 +16,7 @@ struct Function
 
 Function __cdecl apply(Iterator, Iterator, Function);
 void __cdecl callback(void*, void*);
-extern "C" void (__cdecl *_invalid_parameter_noinfo)();
+extern "C" __declspec(dllimport) void __cdecl _invalid_parameter_noinfo();
 
 struct Selection
 {

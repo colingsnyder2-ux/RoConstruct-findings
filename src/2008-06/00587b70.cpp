@@ -1,5 +1,7 @@
-// from server: 90% by king_originala
-extern "C" void (__cdecl *_invalid_parameter_noinfo)();
+// from server: 100% by Espeon
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
+extern "C" __declspec(dllimport) void __cdecl _invalid_parameter_noinfo();
 
 struct String {};
 extern String &(__thiscall *string_assign)(String *, const String *);

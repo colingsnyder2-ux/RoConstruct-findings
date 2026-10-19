@@ -1,3 +1,4 @@
+// from server: 100% by Espeon
 // from server: 91% by king_originala
 struct String
 {
@@ -32,7 +33,7 @@ struct Proxy
     S *container;
 };
 
-extern void (__cdecl *_invalid_parameter_noinfo)();
+extern __declspec(dllimport) void __cdecl _invalid_parameter_noinfo();
 extern bool (__cdecl *string_less)(const String &, const String &);
 
 struct Iterator
@@ -85,16 +86,9 @@ Value &S::lookup(const String &key)
         insert(position, Pair(key, empty)).unpack(owner, node);
     }
 
-    S *container;
     if (!owner)
-    {
         _invalid_parameter_noinfo();
-        container = 0;
-    }
-    else
-    {
-        container = owner->container;
-    }
+    S *container = owner ? owner->container : 0;
 
     if (node == container->head)
         _invalid_parameter_noinfo();

@@ -1,4 +1,4 @@
-// from server: 51% by colin
+// from server: 52% by TrollStein
 struct TimeSpan {
     int ticks;
 };
@@ -10,7 +10,7 @@ struct Time {
 
 extern "C" void __stdcall sub_726780(int* out, int flag);
 
-int __stdcall sub_7262e0(
+int __cdecl sub_7262e0(
     int a1, int a2, int a3, int a4,
     int a5, int a6, int a7, int a8,
     int* result)

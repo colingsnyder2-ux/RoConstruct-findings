@@ -1,9 +1,9 @@
-// from server: 20% by colin
+// from server: 21% by TrollStein
 extern "C" void __stdcall sub_40CC20(void*);
 extern "C" int __stdcall sub_54D620(void*, void*, void*, void*, void*);
 
 struct S {
-    int f(void* a, void* b);
+    int __cdecl f(void* a, void* b);
 };
 
 int S::f(void* a, void* b) {

@@ -1,4 +1,4 @@
-// from server: 31% by colin
+// from server: 32% by TrollStein
 struct Vector3 {
     float x, y, z;
 };
@@ -11,10 +11,9 @@ struct World {
     float field10;
     float field14;
     float field18;
-    void func(const Vector3* a, const Vector3* b, Vector3* out);
 };
 
-void World::func(const Vector3* a, const Vector3* b, Vector3* out) {
+void __cdecl func(const Vector3* a, const Vector3* b, Vector3* out) {
     float ax = a->x;
     float ay = a->y;
     float az = a->z;

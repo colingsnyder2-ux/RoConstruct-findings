@@ -1,4 +1,4 @@
-// from server: 83% by colin
+// from server: 86% by TrollStein
 // roc 2007-08 004992b0  size: 41 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 004992b0
 

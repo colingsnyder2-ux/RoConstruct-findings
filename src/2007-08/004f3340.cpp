@@ -1,7 +1,7 @@
-// from server: 27% by colin
+// from server: 28% by TrollStein
 extern "C" unsigned long long __stdcall perf_counter_thing(unsigned long long, unsigned long long, unsigned long long, unsigned long long);
 
-unsigned long long __stdcall wrapper(unsigned long long (*fn)(unsigned long long), unsigned long long arg)
+unsigned long long __cdecl wrapper(unsigned long long (*fn)(unsigned long long), unsigned long long arg)
 {
     unsigned long long start;
     unsigned long long end;

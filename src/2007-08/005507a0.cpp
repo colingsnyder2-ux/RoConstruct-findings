@@ -1,4 +1,4 @@
-// from server: 36% by colin
+// from server: 40% by TrollStein
 extern "C" {
     void __stdcall func_0054fa30();
     void __stdcall func_0054f590();
@@ -11,7 +11,7 @@ struct S {
     char pad2[0x1c];
     int field_40;
     int field_44;
-    void func_005507a0(int a, int b);
+    void __cdecl func_005507a0(int a, int b);
 };
 
 void S::func_005507a0(int a, int b)

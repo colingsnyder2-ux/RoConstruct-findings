@@ -1,5 +1,7 @@
-// from server: 86% by king_originala
-extern "C" void (__cdecl *invalid_parameter_noinfo)();
+// from server: 100% by Espeon
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
+extern "C" __declspec(dllimport) void __cdecl invalid_parameter_noinfo();
 extern "C" void* __cdecl runtime_cast(void*, int, const void*, const void*, int);
 
 extern char instance_type;
@@ -60,12 +62,8 @@ void* PartTool::findCamera()
                 break;
 
             Children* container;
-            if (!owner) {
-                report();
-                container = 0;
-            } else {
-                container = owner->container;
-            }
+            if (!owner) report();
+    container = owner ? owner->container : 0;
             if (current >= container->last)
                 report();
 
@@ -77,12 +75,8 @@ void* PartTool::findCamera()
             if (result)
                 return result;
 
-            if (!owner) {
-                report();
-                container = 0;
-            } else {
-                container = owner->container;
-            }
+            if (!owner) report();
+    container = owner ? owner->container : 0;
             if (current >= container->last)
                 report();
             ++current;

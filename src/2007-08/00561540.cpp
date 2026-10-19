@@ -1,4 +1,4 @@
-// from server: 31% by colin
+// from server: 32% by TrollStein
 extern "C" void* __stdcall malloc(unsigned int size);
 
 struct Creator {
@@ -6,7 +6,7 @@ struct Creator {
 };
 
 struct FactoryProduct {
-    void init(void* a, void* b, void* c);
+    void __cdecl init(void* a, void* b, void* c);
 };
 
 void FactoryProduct::init(void* a, void* b, void* c) {

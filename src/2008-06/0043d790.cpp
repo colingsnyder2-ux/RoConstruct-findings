@@ -1,18 +1,19 @@
+// from server: 100% by Espeon
 // from server: 91% by colin
 struct CXTPPropertyGridItem {
     char reserved00[0x24];
     void* items[3];
 
-    CXTPPropertyGridItem(void* value);
+    void setValue(void* value);
 };
 
 struct Vector3Item : CXTPPropertyGridItem {
-    Vector3Item(void* value);
+    void setValue(void* value);
 };
 
-Vector3Item::Vector3Item(void* value)
-    : CXTPPropertyGridItem(value)
+void Vector3Item::setValue(void* value)
 {
+    CXTPPropertyGridItem::setValue(value);
     for (int i = 0; i < 3; ++i) {
         if (items[i] != 0) {
             void** vtable = *(void***)((char*)items[i] + 0x10C);
@@ -20,3 +21,4 @@ Vector3Item::Vector3Item(void* value)
         }
     }
 }
+

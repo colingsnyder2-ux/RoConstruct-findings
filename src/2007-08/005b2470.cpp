@@ -1,8 +1,8 @@
-// from server: 48% by colin
+// from server: 51% by TrollStein
 struct S_005b2470
 {
     char pad[0xec];
-    S_005b2470* ctor(void*);
+    S_005b2470* __cdecl ctor(void*);
 };
 
 struct S_006091c0

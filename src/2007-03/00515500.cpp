@@ -1,4 +1,4 @@
-// from server: 46% by colin
+// from server: 50% by TrollStein
 // roc-lang: c
 // roc-cl: 21022
 // roc-flags: /O2 /Ob1 /GS- /MD

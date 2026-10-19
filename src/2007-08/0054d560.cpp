@@ -1,4 +1,4 @@
-// from server: 29% by colin
+// from server: 30% by TrollStein
 struct allocator {
     char* allocate(unsigned int, const void*);
     void deallocate(char*, unsigned int);
@@ -9,7 +9,7 @@ struct streambuf {
 };
 
 struct S {
-    int f(char*, int);
+    int __cdecl f(char*, int);
 };
 
 extern "C" void* __stdcall sub_77E618(void*, void*);

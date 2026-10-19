@@ -1,6 +1,6 @@
-// from server: 80% by colin
+// from server: 96% by TrollStein
 struct CNameItem {
-    void construct(const char* name, int value, int index);
+    void __cdecl construct(const char* name, int value, int index);
 };
 
 void CNameItem::construct(const char* name, int value, int index)
