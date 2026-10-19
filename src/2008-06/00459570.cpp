@@ -1,3 +1,4 @@
+// from server: 100% by Espeon
 // from server: 93% by colin
 // from server: 92% by king_originala
 // roc 2008-06 00459570  unit: CRobloxView  size: 236 bytes
@@ -82,24 +83,19 @@ extern "C" {
     extern int (__stdcall *InflateRect)(Rect *, int, int);
 }
 
-extern void *__cdecl make_exception(void *);
+
 
 typedef void (__thiscall *StringDestructor)(void *);
 extern StringDestructor destroyString;
 
 struct String {
     void *data;
-    String(int);
+
     String(const String &);
     __declspec(dllimport) ~String() throw();
 };
 
-inline String::String(int)
-{
-    make_exception(this);
-}
-
-
+extern String __cdecl getBaseUrl();
 
 extern String __cdecl concatenate(const String &, const char *);
 extern void __cdecl showHelp(Rect, void *, String, int);
@@ -127,5 +123,5 @@ void S::f()
     int limit = 480;
     rect.bottom = minimum(height, limit) - rect.top;
 
-    showHelp(rect, browser, concatenate(String(0), "/Game/Help.aspx"), 0);
+    showHelp(rect, browser, concatenate(getBaseUrl(), "/Game/Help.aspx"), 0);
 }

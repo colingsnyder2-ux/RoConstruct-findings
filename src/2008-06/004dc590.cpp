@@ -1,3 +1,4 @@
+// from server: 100% by Espeon
 // from server: 89% by colin
 // from server: 83% by colin
 // roc-cl: 21022
@@ -9,6 +10,7 @@ struct Key
     float x, y, z;
     unsigned int u;
     int i;
+    __forceinline bool operator<(const Key& k) const { if(x<k.x)return true;if(x>k.x)return false;if(y<k.y)return true;if(y>k.y)return false;if(z<k.z)return true;if(z>k.z)return false;if(u<k.u)return true;if(u>k.u)return false;if(i<k.i)return true;return false;}
 };
 
 struct Node
@@ -35,14 +37,7 @@ Node* S::f(const Key& key)
 
     while (!node->nil)
     {
-        if (node->key.x < key.x ||
-            (!(node->key.x > key.x) &&
-             (node->key.y < key.y ||
-              (!(node->key.y > key.y) &&
-               (node->key.z < key.z ||
-                (!(node->key.z > key.z) &&
-                 (node->key.u < key.u ||
-                  (!(node->key.u > key.u) && node->key.i < key.i))))))))
+        if (node->key < key)
         {
             node = node->right;
         }

@@ -1,3 +1,6 @@
+// from server: 100% by Espeon
+extern "C" void _ReadWriteBarrier();
+#pragma intrinsic(_ReadWriteBarrier)
 // from server: 84% by king_originala
 struct Base
 {
@@ -10,6 +13,7 @@ struct Base
 
 inline Base::Base() : first(0), second(0)
 {
+    _ReadWriteBarrier();
 }
 
 struct Pair
@@ -40,11 +44,8 @@ struct S : Base
     virtual ~S();
 };
 
-S::S(unsigned int value)
+S::S(unsigned int value) : field18(value),field1c(true),field20(-1)
 {
-    field0c = 0;
-    field24 = 0;
-    field18 = value;
-    field1c = true;
-    field20 = -1;
+    field0c=0;
+    field24=0;
 }

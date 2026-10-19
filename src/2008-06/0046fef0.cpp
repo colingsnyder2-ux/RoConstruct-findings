@@ -1,4 +1,4 @@
-// from server: 99% by colin
+// from server: 100% by colin
 //
 
 //
@@ -52,7 +52,7 @@ bool __cdecl checkGLCaps()
                 assertionExpression,
                 String(assertionMessage),
                 assertionFile,
-                561,
+                573,
                 &ignoreAssertion,
                 true);
         if (terminate) {

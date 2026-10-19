@@ -1,6 +1,7 @@
+// from server: 100% by Espeon
 // from server: 86% by king_originala
-extern const float initialExtent;
-extern const float initialScale;
+static const float initialExtent=0.5f;
+static const float initialScale=-1.0f;
 
 struct PointerStorage {
     unsigned int unused;

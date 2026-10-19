@@ -1,3 +1,4 @@
+// from server: 100% by Espeon
 // from server: 85% by colin
 // roc-cl: 50727
 // roc-flags: /O2 /GS- /EHsc /MD
@@ -17,22 +18,10 @@ struct S {
 
     void* find();
     void update(int, void*);
+    inline int desired();
     void f();
 };
 
-void S::f()
-{
-    int result;
-    if (!find()) {
-        result = 0;
-    } else if (!validate(this)) {
-        result = 1;
-    } else {
-        Controller* controller = resolve(parent);
-        if (!controller)
-            result = 2;
-        else
-            result = controller->check() ? 4 : 0;
-    }
-    update(result, context(this));
-}
+inline int desiredParent(void* parent){Controller* controller=resolve(parent);if(!controller)return 2;return controller->check()?4:0;}
+inline int S::desired(){if(!find())return 0;if(!validate(this))return 1;return desiredParent(parent);}
+void S::f(){int result=desired();update(result,context(this));}

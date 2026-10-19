@@ -1,26 +1,28 @@
-// from server: 59% by atomic.potato
-extern "C" void Function004c0290(void *);
+// from server: 100% by intel
+struct Target79BA80
+{
+    void Method();
+};
 
 struct EventDesc
 {
-    unsigned long value30;
-    unsigned long value34;
-    void *f(unsigned long *);
+    unsigned long offset30;
+    unsigned long offset34;
+    void Dispatch(void *);
 };
 
-void *EventDesc::f(unsigned long *p)
+void EventDesc::Dispatch(void *value)
 {
-    unsigned long *a;
-    unsigned long *b;
-
-    if (p)
-        a = (unsigned long *)((char *)p - 0x1c);
+    unsigned long eax = (unsigned long)value;
+    if (eax)
+        eax -= 0x1c;
     else
-        a = 0;
+        eax = 0;
 
-    b = (unsigned long *)((char *)a + 0x138);
-    b = (unsigned long *)((char *)b + value34);
-    b = (unsigned long *)((char *)b + value30);
-    Function004c0290((char *)b + (unsigned long)a + 0x138);
-    return 0;
+    unsigned long edx = *(unsigned long *)(eax + 0x138);
+    unsigned long esi = *(unsigned long *)((char *)this + 0x34);
+    edx = *(unsigned long *)(edx + esi);
+    edx += *(unsigned long *)((char *)this + 0x30);
+
+    ((Target79BA80 *)(edx + eax + 0x138))->Method();
 }
