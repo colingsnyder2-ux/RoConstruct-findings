@@ -1,41 +1,43 @@
-// from server: 82% by colin
+// from server: 100% by colin
+// roc-lang: cpp
 // roc-cl: 21022
-// roc-flags: /O2 /GS- /EHsc /MD /fp:fast
-struct Vector3 {
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast
+namespace G3D {
+class Vector3 {
+public:
     float x, y, z;
+    Vector3() {}
+    Vector3(float a, float b, float c) : x(a), y(b), z(c) {}
+    Vector3 operator-(const Vector3& v) const { return Vector3(x - v.x, y - v.y, z - v.z); }
+    Vector3& operator+=(const Vector3& v) { x += v.x; y += v.y; z += v.z; return *this; }
+    Vector3 cross(const Vector3& r) const { return Vector3(y * r.z - z * r.y, z * r.x - x * r.z, x * r.y - y * r.x); }
 };
-
-struct S {
-    char padding0[8];
+}
+namespace RBX {
+class Body;
+class SimBody {
+    void update();
+    void updateIfDirty() { if (dirty) update(); }
+public:
+    Body* body;
+    float dt;
     bool dirty;
-    char padding1[39];
-    Vector3 position;
-    char padding2[96];
-    Vector3 linear;
-    Vector3 angular;
-
-    void refresh();
-    void apply(const Vector3& force, const Vector3& point);
+    float rotation[9];
+    G3D::Vector3 translation;
+    char rest[0x9c - 0x3c];
+    G3D::Vector3 force;
+    G3D::Vector3 torque;
+    static G3D::Vector3 accumulateInline(const G3D::Vector3& _force, const G3D::Vector3& pvWorld, const G3D::Vector3& worldPos)
+    {
+        G3D::Vector3 temp = worldPos - pvWorld;
+        return temp.cross(_force);
+    }
+    void accumulateForce(const G3D::Vector3& _force, const G3D::Vector3& worldPos);
 };
-
-void S::apply(const Vector3& force, const Vector3& point)
+void SimBody::accumulateForce(const G3D::Vector3& _force, const G3D::Vector3& worldPos)
 {
-    if (dirty)
-        refresh();
-
-    linear.x += force.x;
-    linear.y += force.y;
-    linear.z += force.z;
-
-    double x = (double)point.x - position.x;
-    double y = (double)point.y - position.y;
-    double z = (double)point.z - position.z;
-
-    double cx = y * force.z - z * force.y;
-    double cy = z * force.x - x * force.z;
-    double cz = x * force.y - y * force.x;
-
-    angular.x = (float)(angular.x + cx);
-    angular.y = (float)(angular.y + cy);
-    angular.z = (float)(angular.z + cz);
+    updateIfDirty();
+    force += _force;
+    torque += accumulateInline(_force, translation, worldPos);
+}
 }

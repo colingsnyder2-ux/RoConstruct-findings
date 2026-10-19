@@ -1,6 +1,10 @@
+// from server: 100% by colin
 // from server: 91% by king_originala
-extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
-#pragma intrinsic(_InterlockedExchangeAdd)
+// roc 2008-06 004b96b0  unit: RBX::Network::VIdSerializer::?$NonFactoryProduct  size: 877 bytes
+// Make this compile to the exact bytes below, then: roc check 2008-06 004b96b0
+//
+
+#include <intrin.h>
 
 void __cdecl operator delete(void*) throw();
 
@@ -35,38 +39,32 @@ struct Shared {
 __forceinline Shared::~Shared()
 {
     Control* c = control;
-    if (c && _InterlockedExchangeAdd(&c->strong, -1) == 0) {
+    if (c && _InterlockedDecrement(&c->strong) == 0) {
         c->dispose();
-        if (_InterlockedExchangeAdd(&c->weak, -1) == 0)
+        if (_InterlockedDecrement(&c->weak) == 0)
             c->destroy();
     }
 }
 
-struct Base {
-    unsigned long table;
-    char a[12];
-    unsigned long table10;
-    unsigned long table14;
-    char b[8];
-    unsigned long table20;
-    unsigned long table24;
-    char c[28];
-    unsigned long table44;
-    char d[28];
-    unsigned long table64;
-    char e[28];
-    unsigned long table84;
-    char f[28];
-    unsigned long tablea4;
-    char g[28];
-    unsigned long tablec4;
-    char h[0x2b74 - 0xc8];
+struct I00 { virtual void f00(); unsigned char data[0xc]; };
+struct I10 { virtual void f10(); };
+struct I14 { virtual void f14(); unsigned char data[0x8]; };
+struct I20 { virtual void f20(); };
+struct I24 { virtual void f24(); unsigned char data[0x1c]; };
+struct I44 { virtual void f44(); unsigned char data[0x1c]; };
+struct I64 { virtual void f64(); unsigned char data[0x1c]; };
+struct I84 { virtual void f84(); unsigned char data[0x1c]; };
+struct Ia4 { virtual void fa4(); unsigned char data[0x1c]; };
+struct Ic4 { virtual void fc4(); unsigned char data[0x2b74 - 0xc8]; };
+
+struct Base : I00, I10, I14, I20, I24, I44, I64, I84, Ia4, Ic4 {
     ~Base();
 };
 
 struct Sub {
-    virtual ~Sub();
+    virtual void f0();
     char data[8];
+    ~Sub();
 };
 
 struct Container32 {
@@ -96,7 +94,8 @@ struct Head {
 
 __forceinline Head::~Head()
 {
-    operator delete(p);
+    void* d = p;
+    operator delete(d);
 }
 
 struct Tree {
@@ -129,7 +128,8 @@ __forceinline Buffer::~Buffer()
     first = 0;
     last = 0;
     limit = 0;
-    operator delete(storage);
+    void* st = storage;
+    operator delete(st);
 }
 
 struct ContainerBase {
@@ -155,7 +155,8 @@ __forceinline LargeContainer::~LargeContainer()
     first = 0;
     last = 0;
     limit = 0;
-    operator delete(storage);
+    void* st = storage;
+    operator delete(st);
 }
 
 struct Callback {
@@ -163,8 +164,7 @@ struct Callback {
     Function* table;
 };
 
-struct S : Base {
-    Sub sub;
+struct S : Base, Sub {
     Owner owner2b80;
     Owner owner2b84;
     Shared shared;
@@ -197,18 +197,7 @@ struct S : Base {
 
 S::~S()
 {
-    Sub* s = &sub;
-    *reinterpret_cast<volatile unsigned long*>(&table) = 0x8254fc;
-    *reinterpret_cast<volatile unsigned long*>(&table10) = 0x8254f0;
-    *reinterpret_cast<volatile unsigned long*>(&table14) = 0x8254e8;
-    *reinterpret_cast<volatile unsigned long*>(&table20) = 0x8254e0;
-    *reinterpret_cast<volatile unsigned long*>(&table24) = 0x8254d0;
-    *reinterpret_cast<volatile unsigned long*>(&table44) = 0x8254c0;
-    *reinterpret_cast<volatile unsigned long*>(&table64) = 0x8254b0;
-    *reinterpret_cast<volatile unsigned long*>(&table84) = 0x8254a0;
-    *reinterpret_cast<volatile unsigned long*>(&tablea4) = 0x825490;
-    *reinterpret_cast<volatile unsigned long*>(&tablec4) = 0x825480;
-    *reinterpret_cast<volatile unsigned long*>(s) = 0x825450;
+    Sub* s = this;
     Callback* c = callback;
     if (c)
         c->table[59](c, s);

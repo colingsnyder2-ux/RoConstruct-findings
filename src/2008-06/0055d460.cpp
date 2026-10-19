@@ -1,3 +1,4 @@
+// from server: 83% by colin
 // from server: 81% by king_originala
 // roc 2008-06 0055d460  unit: RBX::MD5HasherImpl  size: 195 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 0055d460
@@ -66,6 +67,10 @@
 
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
+extern "C" long __cdecl _InterlockedIncrement(volatile long*);
+#pragma intrinsic(_InterlockedIncrement)
+extern "C" long __cdecl _InterlockedDecrement(volatile long*);
+#pragma intrinsic(_InterlockedDecrement)
 
 extern "C" long __cdecl _InterlockedDecrement(volatile long*);
 #pragma intrinsic(_InterlockedDecrement)
@@ -91,7 +96,7 @@ inline Shared::Shared(const Shared& other)
     : pointer(other.pointer), control(other.control)
 {
     if (control)
-        _InterlockedExchangeAdd(&control->strong, 1);
+        _InterlockedIncrement(&control->strong);
 }
 
 inline Shared::~Shared()

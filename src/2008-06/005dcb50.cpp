@@ -1,3 +1,4 @@
+// from server: 100% by colin
 // from server: 98% by colin
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD /fp:fast
@@ -7,6 +8,13 @@ struct Vec2 {
 
 struct Vec3 {
     float x, y, z;
+};
+
+struct V2 {
+    float x, y;
+    V2(float _x, float _y) : x(_x), y(_y) {}
+    V2 operator+(const V2& v) const { return V2(x + v.x, y + v.y); }
+    V2 operator*(float s) const { return V2(s * x, s * y); }
 };
 
 struct Color {
@@ -38,7 +46,7 @@ struct Renderer {
     virtual void slot10() = 0;
     virtual void fillRect(const Rect&, const Color&) = 0;
     virtual void slot12() = 0;
-    virtual void drawText(const Rect&, const void*, const Vec2&,
+    virtual void drawText(const Rect&, const void*, const V2&,
                           double, const Color&, const Color&,
                           int, int, int) = 0;
 };
@@ -68,12 +76,7 @@ void S::render(Renderer* renderer)
     area.high.x = bounds.high.x;
     area.high.y = bounds.high.y;
 
-    double centerX = (double)area.low.x + area.high.x;
-    double centerY = (double)area.low.y + area.high.y;
-
-    Vec2 center;
-    center.x = (float)(centerX * halfValue);
-    center.y = (float)(centerY * halfValue);
+    V2 c = (V2(area.low.x, area.low.y) + V2(area.high.x, area.high.y)) * halfValue;
 
     Work work;
     work.fill.background.r = halfValue;
@@ -96,6 +99,6 @@ void S::render(Renderer* renderer)
     work.text.foreground.b = one.z;
     work.text.foreground.a = 1.0f;
 
-    renderer->drawText(area, storage + 0x140, center, textSize,
+    renderer->drawText(area, storage + 0x140, c, textSize,
                        work.text.foreground, work.text.outline, 2, 2, 0);
 }

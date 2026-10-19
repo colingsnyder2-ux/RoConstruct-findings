@@ -1,8 +1,13 @@
+// from server: 76% by colin
 // from server: 71% by colin
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD /fp:fast
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
+extern "C" long __cdecl _InterlockedIncrement(volatile long*);
+#pragma intrinsic(_InterlockedIncrement)
+extern "C" long __cdecl _InterlockedDecrement(volatile long*);
+#pragma intrinsic(_InterlockedDecrement)
 
 struct String;
 extern void (__thiscall *stringConstruct)(String*, const char*);
@@ -44,16 +49,16 @@ inline Pointer<T>::Pointer(const Pointer& other)
     : object(other.object), control(other.control)
 {
     if (control)
-        _InterlockedExchangeAdd(&control->strong, 1);
+        _InterlockedIncrement(&control->strong);
 }
 
 template<class T>
 inline Pointer<T>::~Pointer()
 {
     Control* p = control;
-    if (p && _InterlockedExchangeAdd(&p->strong, -1) == 1) {
+    if (p && _InterlockedDecrement(&p->strong) == 0) {
         p->dispose();
-        if (_InterlockedExchangeAdd(&p->weak, -1) == 1)
+        if (_InterlockedDecrement(&p->weak) == 0)
             p->destroy();
     }
 }

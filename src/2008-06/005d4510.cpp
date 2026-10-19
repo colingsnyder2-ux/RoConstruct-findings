@@ -1,8 +1,13 @@
+// from server: 77% by colin
 // from server: 74% by colin
 // roc-cl: 50727
 // roc-flags: /O2 /GS- /EHsc /MD
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
+extern "C" long __cdecl _InterlockedIncrement(volatile long*);
+#pragma intrinsic(_InterlockedIncrement)
+extern "C" long __cdecl _InterlockedDecrement(volatile long*);
+#pragma intrinsic(_InterlockedDecrement)
 
 namespace std {
     template<class T> struct char_traits {};
@@ -39,9 +44,9 @@ struct Count {
     Count() : control(0) {}
     ~Count() {
         Control* p = control;
-        if (p && _InterlockedExchangeAdd(&p->strong, -1) == 1) {
+        if (p && _InterlockedDecrement(&p->strong) == 0) {
             p->dispose();
-            if (_InterlockedExchangeAdd(&p->weak, -1) == 1)
+            if (_InterlockedDecrement(&p->weak) == 0)
                 p->destroy();
         }
     }

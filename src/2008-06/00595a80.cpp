@@ -1,3 +1,4 @@
+// from server: 89% by colin
 // from server: 80% by colin
 // roc 2008-06 00595a80  size: 56 bytes
 
@@ -13,9 +14,11 @@ void f()
             {
             }
         }
-        __except (0)
+        __finally
         {
-            __assume(0);
         }
+    }
+    for (;;)
+    {
     }
 }

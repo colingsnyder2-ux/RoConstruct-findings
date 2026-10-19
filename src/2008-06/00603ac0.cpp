@@ -1,8 +1,13 @@
+// from server: 93% by colin
 // from server: 86% by colin
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD /fp:fast
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
+extern "C" long __cdecl _InterlockedIncrement(volatile long*);
+#pragma intrinsic(_InterlockedIncrement)
+extern "C" long __cdecl _InterlockedDecrement(volatile long*);
+#pragma intrinsic(_InterlockedDecrement)
 
 struct Control {
     virtual ~Control();
@@ -55,23 +60,23 @@ inline Shared::Shared(const Shared& other)
     : pointer(other.pointer), control(other.control)
 {
     if (control)
-        _InterlockedExchangeAdd(&control->strong, 1);
+        _InterlockedIncrement(&control->strong);
 }
 
 inline Shared::Shared(const ChildShared& other)
     : pointer((Widget*)other.pointer), control(other.control)
 {
     if (control)
-        _InterlockedExchangeAdd(&control->strong, 1);
+        _InterlockedIncrement(&control->strong);
 }
 
 inline Shared::~Shared()
 {
     if (control) {
         Control* p = control;
-        if (_InterlockedExchangeAdd(&p->strong, -1) == 1) {
+        if (_InterlockedDecrement(&p->strong) == 0) {
             p->dispose();
-            if (_InterlockedExchangeAdd(&p->weak, -1) == 1)
+            if (_InterlockedDecrement(&p->weak) == 0)
                 p->destroy();
         }
     }
@@ -81,9 +86,9 @@ inline ChildShared::~ChildShared()
 {
     if (control) {
         Control* p = control;
-        if (_InterlockedExchangeAdd(&p->strong, -1) == 1) {
+        if (_InterlockedDecrement(&p->strong) == 0) {
             p->dispose();
-            if (_InterlockedExchangeAdd(&p->weak, -1) == 1)
+            if (_InterlockedDecrement(&p->weak) == 0)
                 p->destroy();
         }
     }

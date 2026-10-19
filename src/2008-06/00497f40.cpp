@@ -1,3 +1,4 @@
+// from server: 59% by colin
 // from server: 58% by king_originala
 // roc 2008-06 00497f40  unit: RBX::Network::Players  size: 239 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 00497f40
@@ -92,6 +93,10 @@
 
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
+extern "C" long __cdecl _InterlockedIncrement(volatile long*);
+#pragma intrinsic(_InterlockedIncrement)
+extern "C" long __cdecl _InterlockedDecrement(volatile long*);
+#pragma intrinsic(_InterlockedDecrement)
 
 extern "C" void (__cdecl* _invalid_parameter_noinfo)();
 
@@ -122,7 +127,7 @@ inline Pair::Pair(const Pair& other) {
     object = other.object;
     control = other.control;
     if (control)
-        _InterlockedExchangeAdd(&control->references, 1);
+        _InterlockedIncrement(&control->references);
 }
 
 struct Vector;

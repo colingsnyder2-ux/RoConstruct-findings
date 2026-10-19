@@ -1,4 +1,4 @@
-// from server: 85% by colin
+// from server: 86% by colin
 // from server: 82% by colin
 // roc 2008-06 00572a90  unit: RBX::ServiceProvider  size: 167 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 00572a90
@@ -146,7 +146,7 @@ Value* S::func_00572a90(Value* result, int key)
         result->object = node->value.object;
         result->control = node->value.control;
         if (result->control)
-            _InterlockedExchangeAdd(&result->control->references, 1);
+            _InterlockedIncrement(&result->control->references);
     }
     else
     {

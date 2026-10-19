@@ -1,4 +1,4 @@
-// from server: 82% by colin
+// from server: 89% by colin
 // from server: 80% by king_originala
 // roc 2008-06 005a44d0  unit: RBX::RootInstance  size: 210 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 005a44d0
@@ -71,8 +71,8 @@
 // 005a459c  83c414               add esp, 0x14
 // 005a459f  c20c00               ret 0xc
 
-extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
-#pragma intrinsic(_InterlockedExchangeAdd)
+extern "C" long __cdecl _InterlockedDecrement(volatile long*);
+#pragma intrinsic(_InterlockedDecrement)
 
 struct StringData {
     char data[28];
@@ -105,11 +105,11 @@ struct Shared {
 
 inline Shared::~Shared()
 {
-    Control* p = control;
-    if (p) {
-        if (_InterlockedExchangeAdd(&p->strong, -1) == 1) {
+    if (control) {
+        Control* p = control;
+        if (_InterlockedDecrement(&p->strong) == 0) {
             p->dispose();
-            if (_InterlockedExchangeAdd(&p->weak, -1) == 1)
+            if (_InterlockedDecrement(&p->weak) == 0)
                 p->destroy();
         }
     }

@@ -1,8 +1,13 @@
+// from server: 84% by colin
 // from server: 80% by colin
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD /fp:fast
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
+extern "C" long __cdecl _InterlockedIncrement(volatile long*);
+#pragma intrinsic(_InterlockedIncrement)
+extern "C" long __cdecl _InterlockedDecrement(volatile long*);
+#pragma intrinsic(_InterlockedDecrement)
 
 namespace std {
 template<class T> struct char_traits;
@@ -45,16 +50,16 @@ inline Shared::Shared(const Shared& other)
     : object(other.object), control(other.control)
 {
     if (control)
-        _InterlockedExchangeAdd(&control->refcount, 1);
+        _InterlockedIncrement(&control->refcount);
 }
 
 inline Shared::~Shared()
 {
     if (control) {
         RefCounted* p = control;
-        if (_InterlockedExchangeAdd(&p->refcount, -1) == 1) {
+        if (_InterlockedDecrement(&p->refcount) == 0) {
             p->dispose();
-            if (_InterlockedExchangeAdd(&p->weakrefcount, -1) == 1)
+            if (_InterlockedDecrement(&p->weakrefcount) == 0)
                 p->destroy();
         }
     }

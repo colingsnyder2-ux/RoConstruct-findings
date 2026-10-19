@@ -1,3 +1,4 @@
+// from server: 74% by colin
 // from server: 72% by king_originala
 // roc 2008-06 00558ff0  unit: RBX::VInstance::?$NonFactoryProduct  size: 383 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 00558ff0
@@ -126,6 +127,10 @@
 
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
+extern "C" long __cdecl _InterlockedIncrement(volatile long*);
+#pragma intrinsic(_InterlockedIncrement)
+extern "C" long __cdecl _InterlockedDecrement(volatile long*);
+#pragma intrinsic(_InterlockedDecrement)
 
 extern "C" void (__cdecl* const invalid_parameter)();
 
@@ -197,18 +202,18 @@ struct Node {
 
 inline NodePtr::~NodePtr() {
     RefCount* control = count;
-    if (control && _InterlockedExchangeAdd(&control->strong, -1) == 1) {
+    if (control && _InterlockedDecrement(&control->strong) == 0) {
         control->dispose();
-        if (_InterlockedExchangeAdd(&control->weak, -1) == 1)
+        if (_InterlockedDecrement(&control->weak) == 0)
             control->destroy();
     }
 }
 
 inline VectorPtr::~VectorPtr() {
     RefCount* control = count;
-    if (control && _InterlockedExchangeAdd(&control->strong, -1) == 1) {
+    if (control && _InterlockedDecrement(&control->strong) == 0) {
         control->dispose();
-        if (_InterlockedExchangeAdd(&control->weak, -1) == 1)
+        if (_InterlockedDecrement(&control->weak) == 0)
             control->destroy();
     }
 }

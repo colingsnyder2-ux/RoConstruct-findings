@@ -1,4 +1,4 @@
-// from server: 94% by colin
+// from server: 97% by colin
 // from server: 92% by king_originala
 // roc 2008-06 0040fbf0  unit: VCBrowserViewExternal::?$CComAggObject  size: 130 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 0040fbf0
@@ -87,16 +87,14 @@ long __cdecl CreateInstance(S** result)
 
     try {
         object = new S;
-        if (object) {
-            ++object->references;
-            status = 0;
-            --object->references;
-        }
-        else {
-            object = 0;
-        }
     }
     catch (...) {
+    }
+
+    if (object) {
+        ++object->references;
+        status = 0;
+        --object->references;
     }
 
     *result = object;
