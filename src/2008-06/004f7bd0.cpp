@@ -1,3 +1,4 @@
+// from server: 100% by user
 // from server: 99% by colin
 // roc 2008-06 004f7bd0  unit: RBX::ViewNew::WedgeBuilder  size: 171 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 004f7bd0
@@ -84,14 +85,14 @@ struct Value : S {
     Value(const Value&);
 };
 
-struct Pair {
-    unsigned short first, second;
-    Pair(unsigned short, unsigned short);
+struct Vector2int16 {
+    short x, y;
+    Vector2int16(int x, int y) : x(static_cast<short>(x)), y(static_cast<short>(y)) {}
 };
 
 struct Builder {
-    void submit(Value, Pair, int);
-    void build(Value, unsigned short, unsigned short, int);
+    void submit(Value, Vector2int16, int);
+    void build(Value, const unsigned, const unsigned, int);
 };
 
 inline Handle::~Handle()
@@ -109,17 +110,8 @@ inline Value::Value(const Value& other) : S(other)
     table = reinterpret_cast<unsigned long>(derivedTable);
 }
 
-inline Pair::Pair(unsigned short a, unsigned short b)
-    : first(a), second(b)
+void Builder::build(Value value, const unsigned first,
+                    const unsigned second, int purpose)
 {
-}
-
-void Builder::build(Value value, unsigned short first,
-                    unsigned short second, int purpose)
-{
-    int savedPurpose = purpose;
-    Pair& pair = reinterpret_cast<Pair&>(purpose);
-    pair.first = first;
-    pair.second = second;
-    submit(value, pair, savedPurpose);
+    submit(value, Vector2int16(first, second), purpose);
 }
