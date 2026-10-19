@@ -1,24 +1,23 @@
+// from server: 80% by colin
 // from server: 55% by colin
 // roc 2008-06 004e5ff0  unit: RBX::ViewNew::PartChunk  size: 52 bytes
-
-struct Src {
-    float data[12];
+struct Vector3 {
+    float x, y, z;
+    Vector3& operator=(const Vector3& o) { x = o.x; y = o.y; z = o.z; return *this; }
 };
-
+struct Matrix3 { float m[9]; };
+struct CoordinateFrame {
+    Matrix3 rotation;
+    Vector3 translation;
+};
+struct Body { const CoordinateFrame& getFrame(); };
 struct PartChunk {
     char pad0[0x28];
-    float field28[9];
-    float field4c;
-    float field50;
-    float field54;
+    CoordinateFrame frame;
     char pad58[0xbc - 0x58];
-    void* fieldbc;
+    Body* body;
     void copyFrom();
 };
-
-extern "C" Src* __stdcall sub_598cb0(void* self);
-
 void PartChunk::copyFrom() {
-    Src* src = sub_598cb0(fieldbc);
-    *(Src*)field28 = *src;
+    frame = body->getFrame();
 }

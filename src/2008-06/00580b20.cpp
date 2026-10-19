@@ -1,3 +1,4 @@
+// from server: 100% by colin
 // from server: 79% by colin
 // roc 2008-06 00580b20  unit: RBX::ClearStarterpack  size: 40 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 00580b20
@@ -18,31 +19,28 @@
 // 00580b3e  8bc8                 mov ecx, eax
 // 00580b40  e88ba4fdff           call 0x55afd0
 // 00580b45  c20400               ret 4
-
-struct Result {
-    void clear();
-};
-
-struct Entry {
-    Result* get();
-};
-
-struct ClearStarterpack {
-    unsigned char padding[12];
-    Entry* volatile entry;
-
-    void prepare();
-    void run(void*);
-};
-
-void ClearStarterpack::run(void*)
+struct Context;
+extern bool __cdecl isLocked(Context*);
+extern void __cdecl unlock(Context*);
+// 0057d250 takes its argument in esi: a static function of this file (custom calling convention).
+static __declspec(noinline) void prepare(Context* c)
 {
-    Entry* saved = entry;
-    prepare();
-    if (entry) {
-        Result* result = entry->get();
-        if (result)
-            result->clear();
+    if (isLocked(c))
+        unlock(c);
+}
+
+struct Container { void clear(); };
+struct Context { Container* findStarterPack(); };
+struct ClearStarterpack {
+    char padding[0xc];
+    Context* context;
+    void doIt(int);
+};
+void ClearStarterpack::doIt(int)
+{
+    prepare(context);
+    if (context) {
+        if (Container* pack = context->findStarterPack())
+            pack->clear();
     }
-    (void)saved;
 }
