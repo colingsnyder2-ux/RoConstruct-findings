@@ -1,4 +1,4 @@
-// from server: 45% by colin
+// from server: 46% by TrollStein
 struct Assembly
 {
     char pad0[0x0c];
@@ -14,7 +14,7 @@ struct Assembly
     char pad58[0x30];
     float field88;
 
-    void func(int a, int b);
+    void* func(int a, int b);
 };
 
 struct Helper1
@@ -42,7 +42,7 @@ extern "C" void __cdecl func_5095d0(int* a, int* b);
 extern "C" int __cdecl func_4750b0(int* a);
 extern "C" void __cdecl func_473200(int* a, int* b);
 
-void Assembly::func(int a, int b)
+void* Assembly::func(int a, int b)
 {
     int local1[3];
     int local2[3];
@@ -76,4 +76,6 @@ void Assembly::func(int a, int b)
     {
         func_4750b0(local5);
     }
+
+    return this;
 }

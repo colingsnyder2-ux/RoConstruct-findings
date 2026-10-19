@@ -1,8 +1,8 @@
-// from server: 16% by colin
+// from server: 17% by TrollStein
 extern "C" void* __cdecl malloc(unsigned int size);
 
 struct Item {
-    void construct(void* p);
+    void __cdecl construct(void* p);
 };
 
 struct TypedStatsItem : Item {

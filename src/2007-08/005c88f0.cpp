@@ -1,4 +1,4 @@
-// from server: 64% by colin
+// from server: 65% by TrollStein
 struct Ctx {
     char pad0[0x68];
     void* field68;
@@ -61,7 +61,7 @@ extern "C" void __stdcall sub_5c8680(void*);
 extern "C" void* __stdcall sub_62fef6(int);
 extern "C" void __stdcall sub_5be6b0(void*, void*);
 
-void* __stdcall sub_5c88f0(AllocFn alloc, InitFn init)
+void* __cdecl sub_5c88f0(AllocFn alloc, InitFn init)
 {
     void* mem = alloc(0x184, 0, 0, 0);
     if (mem == 0)

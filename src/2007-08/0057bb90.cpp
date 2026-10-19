@@ -1,4 +1,4 @@
-// from server: 78% by colin
+// from server: 90% by TrollStein
 // roc 2007-08 0057bb90  unit: RBX::Workspace  size: 83 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 0057bb90
 
@@ -13,7 +13,7 @@ struct type_info {
 };
 
 struct RBX_Workspace {
-    void* method(int selector, void* arg);
+    void* __cdecl method(int selector, void* arg);
 };
 
 void* RBX_Workspace::method(int selector, void* arg)

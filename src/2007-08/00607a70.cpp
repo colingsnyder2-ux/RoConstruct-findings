@@ -1,4 +1,4 @@
-// from server: 36% by colin
+// from server: 37% by TrollStein
 struct ClumpStage {
     char pad[0xb4];
     int field_b4;
@@ -10,10 +10,11 @@ struct ClumpStage {
     void func_606c70(int);
 
     void func_607a70(int param);
+    void func_77e6d8();
 };
 
 extern "C" int __stdcall func_5b4830(int);
-extern "C" void __stdcall func_77e6d8();
+
 
 void ClumpStage::func_607a70(int param)
 {

@@ -1,4 +1,4 @@
-// from server: 58% by colin
+// from server: 59% by TrollStein
 // roc 2007-08 00544ed0  unit: RBX::VDebugSettings::?$GlobalSettingsItem  size: 101 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 00544ed0
 
@@ -18,7 +18,7 @@ struct String {
 bool operator==(const String& lhs, const char* rhs);
 
 struct GlobalSettingsItem {
-    bool isHttpUrl(const String& url);
+    bool __cdecl isHttpUrl(const String& url);
 };
 
 bool GlobalSettingsItem::isHttpUrl(const String& url)

@@ -1,10 +1,10 @@
-// from server: 35% by colin
+// from server: 37% by TrollStein
 struct ScoreHud {
     char pad0[4];
     void* begin;
     void* end;
     void* cap;
-    void insert(void* pos, unsigned int count, const void* value);
+    void __cdecl insert(void* pos, unsigned int count, const void* value);
 };
 
 extern "C" void __cdecl sub_429A50(void* dst, const void* src);

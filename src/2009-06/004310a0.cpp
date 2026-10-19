@@ -1,6 +1,6 @@
-// from server: 52% by why2
+// from server: 56% by TrollStein
 struct S {
-    int f(const char* a);
+    int __cdecl f(const char* a);
 };
 
 int S::f(const char* a) {

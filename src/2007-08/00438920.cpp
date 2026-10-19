@@ -1,4 +1,4 @@
-// from server: 25% by colin
+// from server: 31% by TrollStein
 struct VColor3 {
     float r;
     float g;
@@ -6,7 +6,7 @@ struct VColor3 {
 };
 
 struct XItem {
-    void setColor(const VColor3& color);
+    void __cdecl setColor(const VColor3& color);
 };
 
 void XItem::setColor(const VColor3& color)

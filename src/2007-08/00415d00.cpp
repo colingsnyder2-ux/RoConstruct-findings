@@ -1,7 +1,7 @@
-// from server: 76% by colin
+// from server: 87% by TrollStein
 struct VCContent
 {
-    int QueryInterface(int, void*);
+    int __cdecl QueryInterface(int, void*);
 };
 
 extern "C" int __stdcall type_info_equal(const void*, const void*);

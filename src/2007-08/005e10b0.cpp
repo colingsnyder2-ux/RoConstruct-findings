@@ -1,6 +1,6 @@
-// from server: 74% by colin
+// from server: 75% by TrollStein
 struct VMotorFeature {
-    void func(void* a, void* b);
+    void __cdecl func(void* a, void* b);
 };
 
 extern float g_5e10b0_0;

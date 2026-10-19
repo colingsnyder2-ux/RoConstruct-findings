@@ -1,4 +1,4 @@
-// from server: 20% by colin
+// from server: 21% by TrollStein
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
 
@@ -14,7 +14,7 @@ struct MarshaledListener
 extern "C" void __stdcall sub_4A6C60(void*, void*);
 extern "C" void __stdcall sub_454150(void*, void*);
 
-void sub_454500(MarshaledListener* self, int a2, int a3, int a4, int a5)
+void __stdcall sub_454500(MarshaledListener* self, int a2, int a3, int a4, int a5)
 {
     self->vptr = (void*)0x7921F0;
     self->field4 = 0;

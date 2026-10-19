@@ -1,4 +1,4 @@
-// from server: 25% by colin
+// from server: 29% by TrollStein
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
 
@@ -35,7 +35,7 @@ struct DescribedBase {
 };
 
 struct BoundPropGetSetCtor {
-    BoundPropGetSet* construct(BoundProp* desc, int member, int changed);
+    BoundPropGetSet* __cdecl construct(BoundProp* desc, int member, int changed);
 };
 
 BoundPropGetSet* BoundPropGetSetCtor::construct(BoundProp* desc, int member, int changed)

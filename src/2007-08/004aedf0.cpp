@@ -1,11 +1,11 @@
-// from server: 27% by colin
+// from server: 32% by TrollStein
 struct ICreator {
     virtual void v0();
     virtual void v1();
 };
 
 struct Creator : ICreator {
-    void construct(void* a, void* b);
+    void __cdecl construct(void* a, void* b);
 };
 
 extern "C" void* __cdecl malloc(unsigned int size);

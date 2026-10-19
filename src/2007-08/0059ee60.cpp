@@ -1,10 +1,10 @@
-// from server: 52% by colin
+// from server: 53% by TrollStein
 struct GuiDrawImage {
     char pad[0x18];
 };
 
 struct BackpackItem {
-    void construct();
+    void* construct();
     void setName(const char* value);
     char pad0[0x8c - 0x4];
     GuiDrawImage guiImageDraw;
@@ -18,7 +18,7 @@ extern "C" {
     void __stdcall DeleteCriticalSection(void*);
 }
 
-void BackpackItem::construct()
+void* BackpackItem::construct()
 {
     char buf[0x20];
     setName("StarterPack");
@@ -34,4 +34,6 @@ void BackpackItem::construct()
     *(void**)((char*)this + 0xe8) = (void*)0x7b28b8;
     InitializeCriticalSection(buf);
     DeleteCriticalSection(buf);
+
+    return this;
 }

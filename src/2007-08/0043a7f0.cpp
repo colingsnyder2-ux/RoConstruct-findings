@@ -1,4 +1,4 @@
-// from server: 46% by colin
+// from server: 49% by TrollStein
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
 
@@ -15,7 +15,7 @@ struct MapResult {
 };
 
 struct CMap {
-    MapResult insert_range(MapIterPair* first, MapIterPair* last);
+    MapResult __cdecl insert_range(MapIterPair* first, MapIterPair* last);
 };
 
 MapResult CMap::insert_range(MapIterPair* first, MapIterPair* last) {
