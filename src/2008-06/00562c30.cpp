@@ -1,6 +1,6 @@
-// from server: 90% by king_originala
+// from server: 94% by king_originala
 typedef unsigned int size_t;
-void* __cdecl operator new(size_t) throw();
+void* __cdecl operator new(size_t);
 void __cdecl operator delete(void*);
 
 extern const unsigned long table0[], table10[], table14[], table20[];

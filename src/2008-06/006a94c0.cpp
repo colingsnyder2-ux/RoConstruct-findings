@@ -1,7 +1,7 @@
-// from server: 70% by colin
+// from server: 72% by colin
 extern "C" {
     int __stdcall GetClassNameA(void* hWnd, char* lpClassName, int nMaxCount);
-    int __stdcall _mbscmp(const unsigned char* s1, const unsigned char* s2);
+    int __cdecl _mbscmp(const unsigned char* s1, const unsigned char* s2);
     int __stdcall PostMessageA(void* hWnd, unsigned int Msg, unsigned int wParam, long lParam);
     long __stdcall CallNextHookEx(void* hhk, int nCode, unsigned int wParam, long lParam);
 }

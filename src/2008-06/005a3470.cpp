@@ -1,4 +1,4 @@
-// from server: 90% by king_originala
+// from server: 97% by colin
 namespace RBX {
     class Instance;
     class ModelInstance;
@@ -69,8 +69,9 @@ void S::method(int, int, int) {
     receiver->func_005ce960(&state);
 
     if (state.func_005a0190()) {
-        int oldCount = count++;
         void* base = (char*)this - 0xfc;
+        int oldCount = count;
+        count = oldCount + 1;
         void** table = *(void***)base;
         Result* result =
             ((Result* (__thiscall*)(void*, State*, int))table[1])

@@ -1,3 +1,4 @@
+// from server: 100% by colin
 // from server: 97% by colin
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD /fp:fast
@@ -59,7 +60,8 @@ struct Point
 void Point::update(int value)
 {
     Vector3 position = { 0.0f, 0.0f, 0.0f };
-    Humanoid* humanoid = findHumanoid(player);
+    const Player* playerCopy = player;
+    Humanoid* humanoid = findHumanoid(playerCopy);
 
     if (humanoid)
     {

@@ -1,5 +1,16 @@
+// from server: 100% by colin
 // from server: 98% by colin
+// roc 2008-06 00666350  unit: RBX::PartDragTool  size: 15 bytes
+// Make this compile to the exact bytes below, then: roc check 2008-06 00666350
+//
+// 00666350  b801000000           mov eax, 1
+// 00666355  840574d99700         test byte ptr [0x97d974], al
+// 0066635b  7524                 jne 0x666381
+
 struct S_func_00666350 {
+    float f0;
+    float f1;
+    float f2;
     void __cdecl f(float* out);
 };
 
@@ -18,7 +29,7 @@ void __cdecl S_func_00666350::f(float* out)
         g_97d96c = g_82746c;
         g_97d970 = g_819dcc;
     }
-    out[0] = g_97d968;
-    out[1] = g_97d96c;
-    out[2] = g_97d970;
+    f0 = g_97d968;
+    f1 = g_97d96c;
+    f2 = g_97d970;
 }

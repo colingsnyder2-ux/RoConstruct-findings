@@ -1,4 +1,4 @@
-// from server: 93% by king_originala
+// from server: 100% by king_originala
 extern "C" {
     extern void (__cdecl* _invalid_parameter_noinfo)();
 }
@@ -34,6 +34,7 @@ struct S {
 
 bool S::f(unsigned int key)
 {
+    Container& container = this->container;
     Iterator last;
     last.node = container.end;
     last.owner = container.owner;
