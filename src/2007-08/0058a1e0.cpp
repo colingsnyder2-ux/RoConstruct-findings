@@ -1,4 +1,4 @@
-// from server: 35% by colin
+// from server: 42% by TrollStein
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
 
@@ -29,6 +29,7 @@ struct FactoryProduct {
     CreatorsMap map12c;
 
     void* construct(bool flag, void* arg);
+    void sub_77e6d8();
 };
 
 struct StringImpl {
@@ -44,7 +45,7 @@ struct SharedPtr {
     long* pn;
 };
 
-extern "C" void __stdcall sub_77e6d8();
+
 extern "C" void __stdcall sub_77e6ac();
 extern "C" void* __stdcall sub_77e69c(void*, void*, void*);
 

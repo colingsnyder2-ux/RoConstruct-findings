@@ -1,6 +1,6 @@
-// from server: 44% by colin
+// from server: 45% by TrollStein
 struct ArrowPanel {
-    void construct(const char* name, int a, int b);
+    void __cdecl construct(const char* name, int a, int b);
 };
 
 extern "C" void* __stdcall malloc(unsigned int);

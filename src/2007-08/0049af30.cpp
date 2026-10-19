@@ -1,4 +1,4 @@
-// from server: 75% by colin
+// from server: 83% by TrollStein
 // roc 2007-08 0049af30  unit: seg_00490000  size: 46 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 0049af30
 
@@ -11,10 +11,9 @@ struct T {
 extern "C" int __fastcall sub_49aaa0(T*);
 
 struct S {
-    char f(void*);
 };
 
-char S::f(void* a) {
+char __cdecl f(void* a) {
     T* p = (T*)sub_486830(a);
     int r;
     if (p) {

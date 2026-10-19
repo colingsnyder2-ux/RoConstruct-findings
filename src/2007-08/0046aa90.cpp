@@ -1,4 +1,4 @@
-// from server: 25% by colin
+// from server: 26% by TrollStein
 struct E {
     int v[16];
 };
@@ -11,7 +11,7 @@ struct Vec {
 
 struct S {
     Vec v;
-    void f(int, int, int);
+    void __cdecl f(int, int, int);
 };
 
 extern "C" void __cdecl sub_46A600(void*, int);

@@ -1,6 +1,6 @@
-// from server: 38% by colin
+// from server: 43% by TrollStein
 struct Log {
-    float parseFloat(const char* str);
+    float __cdecl parseFloat(const char* str);
 };
 
 extern "C" {

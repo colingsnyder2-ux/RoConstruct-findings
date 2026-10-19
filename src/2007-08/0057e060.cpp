@@ -1,4 +1,4 @@
-// from server: 73% by colin
+// from server: 75% by TrollStein
 // roc 2007-08 0057e060  unit: RBX::Workspace  size: 68 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 0057e060
 
@@ -11,7 +11,7 @@ struct bad_cast_ctor {
 };
 
 struct RBX_Workspace {
-    void func(int);
+    void __cdecl func(int);
 };
 
 void RBX_Workspace::func(int a)

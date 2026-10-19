@@ -1,4 +1,4 @@
-// from server: 65% by colin
+// from server: 82% by TrollStein
 // roc 2007-08 005e9a30  unit: RBX::VFlagStand::?$FactoryProduct  size: 105 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 005e9a30
 
@@ -10,7 +10,7 @@ struct VFlagStand {
     void* creators;
     void* findCreator(RBXName* name);
     void* nextCreator(void* prev);
-    int checkInstance(Instance* inst);
+    int __cdecl checkInstance(Instance* inst);
 };
 
 extern "C" void* __cdecl sub_573d40(void*);

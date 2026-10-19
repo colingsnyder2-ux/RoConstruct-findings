@@ -1,11 +1,10 @@
-// from server: 70% by colin
+// from server: 71% by TrollStein
 extern "C" void __cdecl sub_4660D0(float*, float*, float*, float*, int, float);
 
 struct S {
-    float f(float*, float*, float*);
 };
 
-float S::f(float* a, float* b, float* c) {
+float __cdecl f(float* a, float* b, float* c) {
     float t = a[1] + b[1];
     sub_4660D0(a, b, c, &t, 6, 0.0f);
     c[1] = 0.0f;

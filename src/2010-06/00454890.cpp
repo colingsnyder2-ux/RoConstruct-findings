@@ -1,4 +1,4 @@
-// from server: 71% by atomic.potato
+// from server: 73% by TrollStein
 struct CRobloxControlMaterialSelector {
     char padding[0x188];
     int value;

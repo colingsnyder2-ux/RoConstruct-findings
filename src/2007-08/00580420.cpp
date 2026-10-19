@@ -1,6 +1,6 @@
-// from server: 67% by colin
+// from server: 72% by TrollStein
 struct S_func_00580420 {
-    bool f(const char* s, bool* out);
+    bool __cdecl f(const char* s, bool* out);
 };
 
 extern "C" int (__stdcall* g_compare)(const char*, const char*);

@@ -1,4 +1,4 @@
-// from server: 38% by colin
+// from server: 39% by TrollStein
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
 
@@ -68,7 +68,7 @@ extern float g_8bd130;
 extern float g_8bd134;
 extern int g_8bd138;
 
-void Command_doIt(Command* self, void* dataState)
+void __stdcall Command_doIt(Command* self, void* dataState)
 {
     Vec3 pos;
     Vec3 sum;

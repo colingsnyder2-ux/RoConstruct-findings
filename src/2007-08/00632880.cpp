@@ -1,6 +1,6 @@
-// from server: 45% by colin
+// from server: 46% by TrollStein
 struct CXTPCommandBarKeyboardTip {
-    void SetSite(void* pSite);
+    void __cdecl SetSite(void* pSite);
 };
 
 extern "C" void __stdcall sub_630490(void* p);

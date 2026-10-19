@@ -1,4 +1,4 @@
-// from server: 79% by colin
+// from server: 83% by TrollStein
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
 
@@ -21,10 +21,9 @@ extern "C" void* __cdecl sub_62FEF6(unsigned int);
 extern "C" void __cdecl sub_62FC62(void*);
 
 struct S {
-    void* f(Holder* other, int flag);
 };
 
-void* S::f(Holder* other, int flag) {
+void* __cdecl f(Holder* other, int flag) {
     if (flag == 0) {
         Holder* p = (Holder*)sub_62FEF6(0x18);
         if (p == 0) {

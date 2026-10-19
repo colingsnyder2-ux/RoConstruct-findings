@@ -1,4 +1,4 @@
-// from server: 62% by colin
+// from server: 63% by TrollStein
 struct ChatOutput {
     char pad0[0xfc];
     int field_fc;
@@ -8,7 +8,7 @@ struct ChatOutput {
     void func(int a, int b);
 };
 
-extern "C" int __stdcall sub_432530(int, int);
+extern "C" int (__thiscall *sub_432530)(int, int);
 extern "C" int __stdcall sub_57aa50(int, int, int);
 extern "C" int __stdcall sub_450ec0(int);
 extern "C" int __stdcall sub_40e750(int);

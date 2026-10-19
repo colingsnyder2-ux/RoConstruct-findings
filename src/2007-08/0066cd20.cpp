@@ -1,15 +1,16 @@
-// from server: 56% by colin
+// from server: 57% by TrollStein
 struct CXTPToolBar {
     char pad[0x84];
     int m_nCount;
 
     void Func(int* pArg);
+    void sub_66ADF0();
 };
 
 extern "C" void __stdcall sub_66C6C0(int* p);
 extern "C" void* __cdecl sub_62FEF6(unsigned int size);
 extern "C" void __stdcall sub_632910(int index);
-extern "C" void __stdcall sub_66ADF0();
+
 extern "C" void __stdcall sub_66AFB0(void* p);
 extern "C" void __stdcall sub_6D2910(void* a, void* b);
 

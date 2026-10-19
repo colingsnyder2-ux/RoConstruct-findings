@@ -1,4 +1,4 @@
-// from server: 30% by colin
+// from server: 32% by TrollStein
 struct RBXName;
 
 struct ICreator {
@@ -9,7 +9,7 @@ struct ICreator {
 };
 
 struct CreatorImpl {
-    void construct(RBXName* name);
+    void __cdecl construct(RBXName* name);
 };
 
 extern "C" void* __cdecl malloc(unsigned int size);

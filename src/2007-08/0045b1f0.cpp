@@ -1,4 +1,4 @@
-// from server: 25% by colin
+// from server: 26% by TrollStein
 struct StatsItem {
     char pad0[0x128];
     int field128;
@@ -16,7 +16,7 @@ void* sub_45AFB0(void*, const char*, void*);
 void* sub_45B0D0(void*, const char*, void*);
 void* sub_5974E0(void*, const char*);
 
-StatsItem* StatsItem_ctor(StatsItem* self, int arg)
+StatsItem* __stdcall StatsItem_ctor(StatsItem* self, int arg)
 {
     sub_45AAC0(self);
     self->field128 = arg;

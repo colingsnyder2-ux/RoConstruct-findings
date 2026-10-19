@@ -1,4 +1,4 @@
-// from server: 28% by colin
+// from server: 29% by TrollStein
 // roc 2007-08 005025e0  unit: G3D::Log  size: 658 bytes
 // Make this compile to the exact bytes below, then: roc check 2007-08 005025e0
 
@@ -52,7 +52,7 @@ extern "C" {
 }
 
 struct G3D_Log {
-    bool writeEntry(int severity, const char* message, const char* file, int line);
+    bool __cdecl writeEntry(int severity, const char* message, const char* file, int line);
 };
 
 bool G3D_Log::writeEntry(int severity, const char* message, const char* file, int line)

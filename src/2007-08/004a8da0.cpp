@@ -1,4 +1,4 @@
-// from server: 38% by colin
+// from server: 39% by TrollStein
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
 
@@ -19,7 +19,7 @@ struct Result {
 extern "C" void __cdecl sub_4A6E90(void*, void*, void*);
 
 struct VClient {
-    Result* method(int* a, RefCounted* b, int* c, int d);
+    Result* __cdecl method(int* a, RefCounted* b, int* c, int d);
 };
 
 Result* VClient::method(int* a, RefCounted* b, int* c, int d) {

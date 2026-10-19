@@ -1,12 +1,12 @@
-// from server: 9% by colin
+// from server: 16% by TrollStein
 struct ArrowPanel {
-    void construct(const void* src);
+    void* construct(const void* src);
 };
 
 extern "C" void* __stdcall malloc(unsigned int size);
 extern "C" void __stdcall destroy_string(void* p);
 
-void ArrowPanel::construct(const void* src)
+void* ArrowPanel::construct(const void* src)
 {
     void* mem = malloc(0x138);
     if (mem) {
@@ -16,4 +16,6 @@ void ArrowPanel::construct(const void* src)
         // result = some_constructor(mem, src, &tmp)
         // then call 0x623310 with (this, result, tmp)
     }
+
+    return this;
 }

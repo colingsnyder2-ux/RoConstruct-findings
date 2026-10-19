@@ -1,4 +1,4 @@
-// from server: 39% by colin
+// from server: 41% by TrollStein
 // from server: 35% by colin
 // roc 2008-06 00437d60  unit: std::D::DU?$char_traits::V?$basic_string::?$XItem  size: 268 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 00437d60
@@ -94,7 +94,7 @@ extern "C" {
 }
 
 struct Item {
-    void construct(const char* name);
+    void __cdecl construct(const char* name);
 };
 
 void Item::construct(const char* name) {

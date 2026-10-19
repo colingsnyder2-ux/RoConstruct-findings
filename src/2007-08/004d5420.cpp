@@ -1,4 +1,4 @@
-// from server: 39% by colin
+// from server: 40% by TrollStein
 struct Part {
     char pad0[0x50];
 };
@@ -46,7 +46,7 @@ void* __stdcall sub_4d00a0(void*, void*);
 void __stdcall sub_474f70(void*, void*);
 void* __stdcall sub_4eb0a0(void*, void*, void*);
 
-Part* __stdcall sub_4d5420(Part* self, int a2)
+Part* __cdecl sub_4d5420(Part* self, int a2)
 {
     Node* n;
     unsigned int idx;

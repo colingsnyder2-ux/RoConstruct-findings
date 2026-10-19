@@ -1,4 +1,4 @@
-// from server: 60% by colin
+// from server: 71% by TrollStein
 struct LocalBackpackItem {
     char pad[0x138];
     int field138;
@@ -13,12 +13,12 @@ struct LocalBackpackItem {
     int field15c;
     int field160;
     int field118;
-    void construct();
+    void* construct();
 };
 
 extern void func_005d1250();
 
-void LocalBackpackItem::construct()
+void* LocalBackpackItem::construct()
 {
     func_005d1250();
     *(int*)((char*)this + 0x120) = 0x788350;
@@ -55,4 +55,6 @@ void LocalBackpackItem::construct()
     field15c = 0;
     field160 = -1;
     field118 = 1;
+
+    return this;
 }

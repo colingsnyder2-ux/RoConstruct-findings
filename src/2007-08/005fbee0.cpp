@@ -1,4 +1,4 @@
-// from server: 39% by colin
+// from server: 40% by TrollStein
 struct Vector3 {
     float x, y, z;
 };
@@ -13,7 +13,7 @@ struct CFrame {
 struct SlingshotTool {
     char pad[0x24];
     float x, y, z;
-    void method(int, int, int);
+    void* method(int, int, int);
 };
 
 extern "C" {
@@ -44,7 +44,7 @@ extern float dword_8C6E00;
 extern float dword_8C6E04;
 extern int dword_8C6E08;
 
-void SlingshotTool::method(int a2, int a3, int a4) {
+void* SlingshotTool::method(int a2, int a3, int a4) {
     float local18 = 0.0f;
     float local1c = 0.0f;
     float local20 = 0.0f;
@@ -122,4 +122,6 @@ void SlingshotTool::method(int a2, int a3, int a4) {
     out[4] = dword_8BD130;
     out[5] = dword_8BD134;
     sub_52FB80(a4, (int)&out[0], (int)&out[3]);
+
+    return this;
 }

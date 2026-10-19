@@ -1,4 +1,4 @@
-// from server: 21% by colin
+// from server: 22% by TrollStein
 struct CXTPCommandBarAnimation {
     void* m_pCommandBar;
     char m_pad[0x8];
@@ -36,7 +36,7 @@ extern "C" void __fastcall sub_6c9080(void*);
 extern "C" void __fastcall sub_6c9220(void*, int, void*);
 extern "C" void __fastcall sub_6c92e0(void*, void*, void*);
 
-extern "C" void* (__stdcall *g_pfnCreateCompatibleBitmap)(void*, int, int);
+extern "C" void* (__thiscall *g_pfnCreateCompatibleBitmap)(void*, int, int);
 extern "C" void* (__stdcall *g_pfnCreateRectRgnIndirect)(void*);
 extern "C" void* (__stdcall *g_pfnSelectObject)(void*, void*);
 extern "C" int (__stdcall *g_pfnCopyRect)(void*, void*, void*, void*);
