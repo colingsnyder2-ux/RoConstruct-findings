@@ -1,23 +1,28 @@
-// from server: 88% by atomic.potato
-struct S
+// from server: 100% by intel
+struct Target79BA80
 {
-    unsigned long a30;
-    unsigned long a34;
-    void f(void *);
+    void Method();
 };
 
-extern "C" void Call7851a0(void *);
-
-void S::f(void *p)
+struct EventDesc
 {
-    unsigned long *v = (unsigned long *)p;
-    if (v)
-        v = (unsigned long *)((char *)v - 0x1c);
-    else
-        v = 0;
+    unsigned long offset30;
+    unsigned long offset34;
+    void Dispatch(void *);
+};
 
-    unsigned long x = *(unsigned long *)((char *)v + 0x138);
-    x = *(unsigned long *)((char *)x + a34);
-    x += a30;
-    Call7851a0((char *)x + (unsigned long)v + 0x138);
+void EventDesc::Dispatch(void *value)
+{
+    unsigned long eax = (unsigned long)value;
+    if (eax)
+        eax -= 0x1c;
+    else
+        eax = 0;
+
+    unsigned long edx = *(unsigned long *)(eax + 0x138);
+    unsigned long esi = *(unsigned long *)((char *)this + 0x34);
+    edx = *(unsigned long *)(edx + esi);
+    edx += *(unsigned long *)((char *)this + 0x30);
+
+    ((Target79BA80 *)(edx + eax + 0x138))->Method();
 }
