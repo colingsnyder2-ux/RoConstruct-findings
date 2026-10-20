@@ -16,6 +16,7 @@ void Clump::mark() {
     unsigned char one = 1;
     f14 = one;
     f54 = one;
+    _ReadWriteBarrier();
     f69 = one;
     Clump** pp = &f20;
     while (*pp != 0) {

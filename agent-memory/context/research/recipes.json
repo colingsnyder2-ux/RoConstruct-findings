@@ -22196,5 +22196,154 @@
     ],
     "output": "work\\big-mining-2008-20261020\\mesh-plain-cache-gates",
     "next": "Keep only strict server-verified improvements. Do not rerun unchanged grids."
+  },
+  "native-scriptcontext-enums-guiditem-gates-2008": {
+    "op": "grid",
+    "client": "2008-06",
+    "library": "Native ScriptContext Enum bridges and genuine GuidItem Instance layout",
+    "hypothesis": "Recovered native Lua globals, three Enum bridge registrations and weak libraries, count hook, globalState138 allocator1f0 yieldEvent1a8 views. Genuine upstream GuidItem base restores reflection14/enable_shared-e4/parent104. Native frame54 already reproduced; remaining stack cleanup, callback effects and temporary slots may depend on compiler inlining.",
+    "targets": {
+      "addresses": [
+        "005aefa0"
+      ],
+      "scores": [
+        0,
+        99
+      ]
+    },
+    "seed_sources": {
+      "2008-06": {
+        "005aefa0": "work\\big-mining-2008-20261020\\scriptcontext-genuine-guiditem.cpp"
+      }
+    },
+    "keep_partials": true,
+    "submit_partials": true,
+    "builds": [
+      21022,
+      50727
+    ],
+    "profiles": [
+      "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD",
+      "/O2 /Ob1 /Oy /GF /GS- /EHsc /MD",
+      "/O1 /Ob2 /Oy /GF /GS- /EHsc /MD"
+    ],
+    "output": "work\\big-mining-2008-20261020\\scriptcontext-gates",
+    "next": "Keep strict independently verified gains only. Propagate changed TU once and park exhausted gates."
+  },
+  "native-scriptcontext-enums-guiditem-family-2008": {
+    "op": "fanout",
+    "client": "2008-06",
+    "library": "Native ScriptContext and Lua bridge template family",
+    "hypothesis": "Final2190B openState verified100 with genuine SingletonBridge const enum pointers and native GuidItem layout. Propagate actual final TU to every unresolved function.",
+    "sources": [
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_scriptcontext_genuine_singleton_enums17e79b7e49ea6c20.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      }
+    ],
+    "output": "work\\big-mining-2008-20261020\\scriptcontext-family-fanout",
+    "next": "Accept only independently verified code plus referenced-data exacts."
+  },
+  "native-lua-enum-property-guiditem-gates-2008": {
+    "op": "grid",
+    "client": "2008-06",
+    "library": "Native Lua property enum validation and descriptor APIs",
+    "hypothesis": "New native Item.owner8/valuec, EnumItem number/string validation, throwable string callee, GuidItem Instance base and observed isWriteOnly/getVariant/setVariant virtual APIs reproduce native setter98 frame98. Gate changed TU across setter/getter/index/newindex and actual2008 compilers; all stored better sources protected.",
+    "targets": {
+      "addresses": [
+        "0061b190",
+        "0061abe0",
+        "0061c2c0",
+        "0061bda0"
+      ],
+      "scores": [
+        0,
+        99
+      ]
+    },
+    "seed_sources": {
+      "2008-06": {
+        "0061b190": "work\\big-mining-2008-20261020\\lua-property-native-all-descriptor-overrides.cpp",
+        "0061abe0": "work\\big-mining-2008-20261020\\lua-property-native-all-descriptor-overrides.cpp",
+        "0061c2c0": "work\\big-mining-2008-20261020\\lua-property-native-all-descriptor-overrides.cpp",
+        "0061bda0": "work\\big-mining-2008-20261020\\lua-property-native-all-descriptor-overrides.cpp"
+      }
+    },
+    "keep_partials": true,
+    "submit_partials": true,
+    "builds": [
+      21022,
+      50727
+    ],
+    "profiles": [
+      "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD",
+      "/O2 /Ob1 /Oy /GF /GS- /EHsc /MD",
+      "/O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MD"
+    ],
+    "output": "work\\big-mining-2008-20261020\\lua-property-family-gates",
+    "next": "Accept only strict server gains. Setter final Name error expression scheduling remains; getter needs genuine EnumItem return path."
+  },
+  "native-lua-enum-property-guiditem-family-2008": {
+    "op": "fanout",
+    "client": "2008-06",
+    "library": "Native Lua property and SingletonBridge templates",
+    "hypothesis": "Propagate final genuine enum/property/GuidItem TU across every unresolved code and referenced-data target.",
+    "sources": [
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_lua_property_native_all_descriptor_overrides162576d32fe43e43.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      }
+    ],
+    "output": "work\\big-mining-2008-20261020\\lua-property-family-fanout",
+    "next": "Keep strict independently server-reverified exacts only."
+  },
+  "native-declaration-html-completion-eh-gates-2008": {
+    "op": "grid",
+    "client": "2008-06",
+    "library": "Native CDeclarationView CHtmlView ATL/MSHTML completion",
+    "hypothesis": "2074B native function reconstructed from actual COM GUIDs, seven HTML IDs, Variant values, pointer member offsets and cleanup. Local91 differs only seven missing EH state stores2/4/6/8/a/c/e before string VARIANT construction (35bytes). Test synchronous versus asynchronous exception model under both actual compilers.",
+    "targets": {
+      "addresses": [
+        "004346b0"
+      ],
+      "scores": [
+        0,
+        99
+      ]
+    },
+    "seed_sources": {
+      "2008-06": {
+        "004346b0": "work\\big-mining-2008-20261020\\declaration-view-native-html-complete.cpp"
+      }
+    },
+    "builds": [
+      21022,
+      50727
+    ],
+    "profiles": [
+      "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD",
+      "/O2 /Ob2 /Oy /GF /GS- /EHs /MD",
+      "/O2 /Ob2 /Oy /GF /GS- /EHa /MD"
+    ],
+    "keep_partials": true,
+    "submit_partials": true,
+    "output": "work\\big-mining-2008-20261020\\declaration-html-eh-gates",
+    "next": "Strict server gains only; if backend unavailable preserve exact draft/receipts pending retry, never replace better source."
   }
 }

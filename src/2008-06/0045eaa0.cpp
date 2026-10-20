@@ -1,3 +1,4 @@
+// from server: 100% by EspClaude
 // from server: 93% by king_originala
 // roc 2008-06 0045eaa0  unit: CRobloxWnd  size: 43 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 0045eaa0
@@ -20,13 +21,13 @@
 // 0045eac9  5e                   pop esi
 // 0045eaca  c3                   ret 
 
+struct Data { int data[2]; };
+struct Pad { char padding0[0x54]; };
 struct Receiver {
-    void notify(void*);
+    void notify(Data&);
 };
 
-struct S {
-    char padding0[0x54];
-    int data[2];
+struct S : Pad, Data {
     int mode;
     char padding1[0x18];
     Receiver* receiver;
@@ -45,5 +46,5 @@ void S::f()
         handled = second();
 
     if (!handled && receiver)
-        receiver->notify(data);
+        receiver->notify(*this);
 }

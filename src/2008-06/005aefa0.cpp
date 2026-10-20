@@ -1,9 +1,11 @@
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs-dll roc_scriptcontext_opaque_workspaceffccbea67fd7eb58.cpp
+// roc-lib: rbxgs-dll roc_scriptcontext_genuine_singleton_enums17e79b7e49ea6c20.cpp
 
 // Candidate translation unit (score above; library headers required).
+#include "roc_genuine_lua_singleton_enum_headerf079742c7efc6c9f.cpp"
+#pragma include_alias("v8tree/Instance.h", "roc_instance_genuine_guiditem_headerf016862b4461fbce.cpp")
 #include "script/ScriptContext.h"
 #include "script/Script.h"
 #include "script/ScriptEvent.h"
@@ -58,6 +60,18 @@ const char* RBX::sScriptContext = "ScriptContext";
 #define globalState (*reinterpret_cast<lua_State**>(reinterpret_cast<char*>(this)+0x138))
 #define allocator (*reinterpret_cast<boost::scoped_ptr<LuaAllocator>*>(reinterpret_cast<char*>(this)+0x1f0))
 #define yieldEvent (*reinterpret_cast<boost::scoped_ptr<Lua::YieldingThreads>*>(reinterpret_cast<char*>(this)+0x1a8))
+// Native Lua callbacks: lua_CFunction / lua_Hook contracts and observed calls.
+extern int luaTime(lua_State*);
+extern int luaVersion(lua_State*);
+extern int luaPrintIdentity(lua_State*);
+extern void luaInstructionHook(lua_State*, lua_Debug*);
+
+namespace RBX { namespace Lua {
+template<> const char* Bridge<AllEnumDescriptorsPtr, false>::className = "Enums";
+template<> const char* Bridge<EnumDescriptorPtr, false>::className = "Enum";
+template<> const char* Bridge<EnumDescriptorItemPtr, false>::className = "EnumItem";
+} }
+
 void ScriptContext::openState()
 {
     if (!globalState)
@@ -98,6 +112,9 @@ void ScriptContext::openState()
         _openLibInline(globalState, luaopen_math, LUA_MATHLIBNAME);
         _openLibInline(globalState, luaopen_table, LUA_TABLIBNAME);
 
+        Lua::Enums::registerClass(globalState);
+        Lua::Enum::registerClass(globalState);
+        Lua::EnumItem::registerClass(globalState);
         Lua::ObjectBridge::registerClass(globalState);
         Lua::SignalBridge::registerClass(globalState);
         Lua::SignalConnectionBridge::registerClass(globalState);
@@ -107,6 +124,9 @@ void ScriptContext::openState()
         Lua::BrickColorBridge::registerClass(globalState);
         Lua::ThreadRef::NodeBridge::registerClass(globalState);
 
+        Lua::Enums::registerClassLibrary(globalState);
+        Lua::Enum::registerClassLibrary(globalState);
+        Lua::EnumItem::registerClassLibrary(globalState);
         Lua::CoordinateFrameBridge::registerClassLibrary(globalState);
         Lua::Vector3Bridge::registerClassLibrary(globalState);
         Lua::Color3Bridge::registerClassLibrary(globalState);
@@ -137,6 +157,10 @@ void ScriptContext::openState()
         lua_pushcfunction(globalState, ScriptContext::tick);
         lua_settable(globalState, LUA_GLOBALSINDEX);
 
+        lua_pushstring(globalState, "time");
+        lua_pushcfunction(globalState, luaTime);
+        lua_settable(globalState, LUA_GLOBALSINDEX);
+
         lua_pushstring(globalState, "wait");
         lua_pushcfunction(globalState, ScriptContext::wait);
         lua_settable(globalState, LUA_GLOBALSINDEX);
@@ -145,8 +169,8 @@ void ScriptContext::openState()
         lua_pushcfunction(globalState, ScriptContext::delay);
         lua_settable(globalState, LUA_GLOBALSINDEX);
 
-        lua_pushstring(globalState, "trustedThread");
-        lua_pushcfunction(globalState, ScriptContext::trustedThread);
+        lua_pushstring(globalState, "printidentity");
+        lua_pushcfunction(globalState, luaPrintIdentity);
         lua_settable(globalState, LUA_GLOBALSINDEX);
 
         lua_pushstring(globalState, "dofile");
@@ -161,7 +185,14 @@ void ScriptContext::openState()
         lua_pushcfunction(globalState, ScriptContext::stats);
         lua_settable(globalState, LUA_GLOBALSINDEX);
 
+        lua_pushstring(globalState, "version");
+        lua_pushcfunction(globalState, luaVersion);
+        lua_settable(globalState, LUA_GLOBALSINDEX);
+
+        Lua::Enums::declareAllEnums(globalState);
         yieldEvent.reset(new Lua::YieldingThreads(this));
+        if (*reinterpret_cast<int*>(reinterpret_cast<char*>(this) + 0x1cc))
+            lua_sethook(globalState, luaInstructionHook, LUA_MASKCOUNT, 1000);
     }
 }
 
