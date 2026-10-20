@@ -1,4 +1,4 @@
-// from server: 98% by colin
+// from server: 100% by colin
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
@@ -12,8 +12,9 @@ struct Children {
 class Instance {
 public:
     virtual ~Instance();
+    char pad[0xcc];
     Children* children;
-    char pad[0x198 - 8];
+    char pad2[0xc4];
     size_t numChildren() const { return children ? children->v.size() : 0; }
     Instance* getChild(size_t i) const { return children->v[i].p; }
 };

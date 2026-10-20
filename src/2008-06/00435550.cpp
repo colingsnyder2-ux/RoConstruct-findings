@@ -1,4 +1,4 @@
-// from server: 95% by king_originala
+// from server: 100% by colin
 // roc 2008-06 00435550  unit: CDeclarationView  size: 209 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 00435550
 //
@@ -116,14 +116,23 @@ void func_00435550(int* count, String* output, const Entry* entry)
     if (*count > 0)
         append_text(output, separator);
 
-    append_text(output, string_data(&entry->second->node->text));
-    append_text(output, middle);
-    append_text(output, string_data(&entry->first->text));
-
-    if (entry->third.value == entry->second)
     {
-        append_text(output, suffix);
-        append_string(output, entry->third.render());
+        const Node* n = entry->second->node;
+        append_text(output, string_data(&n->text));
+    }
+    append_text(output, middle);
+    {
+        const Node* f = entry->first;
+        append_text(output, string_data(&f->text));
+    }
+
+    {
+        const Link* v = entry->third.value;
+        if (v == entry->second)
+        {
+            append_text(output, suffix);
+            append_string(output, entry->third.render());
+        }
     }
 
     ++*count;

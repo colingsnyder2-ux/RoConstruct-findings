@@ -10,5 +10,7 @@ struct S {
 
 void __cdecl f(S* p)
 {
-    p->callback(p->object + p->adjustment, p->argument);
+    int argument = p->argument;
+    int adjustment = p->adjustment;
+    p->callback(p->object + adjustment, argument);
 }

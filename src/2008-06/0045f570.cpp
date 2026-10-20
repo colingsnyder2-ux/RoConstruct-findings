@@ -1,4 +1,7 @@
-// from server: 99% by king_originala
+// from server: 100% by colin
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast
 struct String;
 extern void (__thiscall *constructString)(String *, const char *);
 extern void (__thiscall *destroyString)(String *);
@@ -63,7 +66,7 @@ void S::RenderStatsItem() {
     int count = profileCount;
 
     if (!count) {
-        String text("Bprofiled5");
+        String text("n/a");
         Item *item = profile;
         item->value = 0.0;
         item->text = text;
@@ -73,10 +76,10 @@ void S::RenderStatsItem() {
             formatItem(profile, 0.0, "%.0f%%, %.2g", 0.0, 1.0);
         } else {
             total -= profileBegin;
-            double samples = double(count);
+            float samples = float(count);
             count = total + count;
-            double elapsed = double(count);
-            double ratio = (samples - elapsed) / (samples - 1.0);
+            float elapsed = float(count);
+            float ratio = (samples - elapsed) / (samples - 1.0f);
             formatItem(profile, ratio, "%.0f%%, %.2g",
                        100.0f * ratio, samples / elapsed);
         }

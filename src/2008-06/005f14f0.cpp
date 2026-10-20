@@ -52,8 +52,8 @@ void FaceInstance::setSecond(float second)
 {
     const Value& ref = part->values.get(face);
     Value value = ref;
-    if (value.second != second) {
-        value.second = second;
+    if (value.first != second) {
+        value.first = second;
         part->values.set(face, &value);
         part->setShouldRender(face);
         part->notify(part->f(face)->descriptor());

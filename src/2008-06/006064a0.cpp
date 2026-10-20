@@ -87,7 +87,7 @@ void RotateConnector::update(int, int)
     {
         if (second->dirty)
             second->refresh();
-        second->x = force.x + second->x;
+        second->x = *reinterpret_cast<volatile float*>(&force.x) + second->x;
         second->y += force.y;
         second->z += force.z;
     }
