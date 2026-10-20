@@ -1,3 +1,4 @@
+// from server: 98% by colin
 // from server: 96% by colin
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD /fp:fast
@@ -34,6 +35,7 @@ struct RotateConnector
     void update(int, int);
 };
 
+#include <intrin.h>
 void RotateConnector::update(int, int)
 {
     Vector3 axis = { 0.0f, 0.0f, 0.0f };
@@ -49,12 +51,14 @@ void RotateConnector::update(int, int)
 
     double previous = position;
     position += increment;
+    _ReadWriteBarrier();
 
     Body *first = *reinterpret_cast<Body **>(
         *reinterpret_cast<char **>(
             *reinterpret_cast<char **>(
                 reinterpret_cast<char *>(joint0) + 12) + 16) + 44);
 
+    _ReadWriteBarrier();
     double scale = (previous - measured) * strength;
     Vector3 force;
     double x = axis.x * scale;

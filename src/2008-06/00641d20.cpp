@@ -1,4 +1,4 @@
-// from server: 93% by king_originala
+// from server: 100% by colin
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
 extern "C" long __cdecl _InterlockedDecrement(volatile long*);
@@ -21,10 +21,16 @@ struct Shared
     Control* control;
 };
 
+struct Count
+{
+    Control* control;
+    long useCount() const { return control ? control->strong : 0; }
+};
+
 struct Entry
 {
     char* object;
-    Control* control;
+    Count count;
     Shared* lock(Shared* result);
 };
 
@@ -52,11 +58,7 @@ void S::f(Listener* listener)
             if (i >= (unsigned int)(end - begin))
                 invalid_parameter_noinfo();
 
-            Entry* entry = begin + i;
-            Control* control = *reinterpret_cast<Control**>(
-                reinterpret_cast<char*>(entry) + 4);
-
-            if (control && control->strong != 0)
+            if (begin[i].count.useCount() != 0)
             {
                 if (i >= (unsigned int)(end - begin))
                     invalid_parameter_noinfo();

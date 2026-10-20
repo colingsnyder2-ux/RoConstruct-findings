@@ -1,7 +1,8 @@
+// from server: 85% by colin
 // from server: 78% by colin
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD /fp:fast
-extern "C" void __cdecl _invalid_parameter_noinfo();
+extern "C" __declspec(dllimport) void __cdecl _invalid_parameter_noinfo();
 
 struct Iterator {
     void* owner;

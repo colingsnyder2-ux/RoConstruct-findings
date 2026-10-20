@@ -1,49 +1,14 @@
-// from server: 93% by king_originala
-extern "C" void (__cdecl *_invalid_parameter_noinfo)();
-extern "C" void _ReadWriteBarrier();
-#pragma intrinsic(_ReadWriteBarrier)
-
-struct Container {
-    char padding[0x10];
-    int **end;
-};
-
-struct Owner {
-    Container *container;
-};
-
+// from server: 100% by colin
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
+#include <vector>
 struct S {
     char padding[0x13c];
-    Owner *owner;
-    char reserved[8];
-    int **begin;
-    int **end;
+    std::vector<int*> items;
     int *f();
 };
-
 int *S::f()
 {
-    unsigned count = static_cast<unsigned>(end - begin);
-    _ReadWriteBarrier();
-
-    if (count > 0) {
-        void (__cdecl *invalid)() = _invalid_parameter_noinfo;
-        int **p = begin;
-        if (p > end)
-            invalid();
-
-        Container *c = reinterpret_cast<Container *>(owner);
-        if (!c) {
-            invalid();
-
-        check:
-            if (p >= c->end)
-                invalid();
-            return *p;
-        }
-
-        c = reinterpret_cast<Owner *>(c)->container;
-        goto check;
-    }
+    if (items.size() > 0) return items.front();
     return 0;
 }
