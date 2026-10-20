@@ -1,17 +1,16 @@
-// from server: 96% by atomic.potato
+// from server: 100% by intel
+extern "C" void __cdecl Function_0090e980(void *, int);
+extern "C" void __cdecl Function_00982114(void *);
+
 struct S
 {
-    void __cdecl f(void *);
 };
 
-extern "C" void __cdecl sub_90dc10(void *, int);
-extern "C" void __cdecl sub_982114(void *);
-
-void __cdecl S::f(void *p)
+void __cdecl f(void *p)
 {
     if (p)
     {
-        sub_90dc10(p, *(int *)((char *)p + 12));
-        sub_982114(p);
+        Function_0090e980(p, *(int *)((char *)p + 12));
+        Function_00982114(p);
     }
 }
