@@ -1,109 +1,16 @@
-// from server: 69% by colin
-struct Container;
-struct Node;
+// from server: 100% by Espeon
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: rbxgs-dll roc_espeon_historyrecordalignment9ea6b04d3cefe074.cpp
 
-extern "C" void __cdecl _invalid_parameter_noinfo();
+// Candidate translation unit (score above; library headers required).
+#include <set>
+#include <algorithm>
+#include <boost/bind.hpp>
+struct Value {unsigned a,b;void* content;bool operator<(const Value&)const;};
+struct Instance {void setParent(Instance*);};
+struct __declspec(align(8)) Record {char prefix[4];Instance* object;int reserved;int mode;Instance* parent;int reserved14;std::set<Value> values;void restoreValue(const Value&);void restore();void processValue(const Value&);void process();bool operator<(const Record&)const;};
 
-struct Proxy {
-    Container* owner;
-};
-
-struct Object {
-    void setParent(Object*);
-};
-
-struct Iterator {
-    Proxy* proxy;
-    Node* node;
-    void advance();
-};
-
-struct Payload {
-    unsigned int reserved;
-    Object* object;
-    unsigned int unused;
-    int kind;
-    unsigned int padding[2];
-    Proxy* proxy;
-    unsigned int padding2[5];
-    Node* head;
-    void process();
-};
-
-struct Node {
-    Node* next;
-    unsigned int padding[3];
-    Payload value;
-};
-
-struct Container {
-    Proxy* proxy;
-    unsigned int padding[5];
-    Node* head;
-    void processAll();
-};
-
-extern void __cdecl processValue(Payload*);
-extern Iterator* __cdecl processRange(
-    Iterator*, Iterator, Iterator,
-    void (__cdecl*)(Payload*), Payload*
-);
-
-void Container::processAll()
-{
-    Iterator it;
-    Node* node = head->next;
-    Proxy* owner = proxy;
-    it.node = node;
-    it.proxy = owner;
-
-    for (;;) {
-        Node* end = head;
-        Proxy* current = proxy;
-        if (!owner || owner != current)
-            _invalid_parameter_noinfo();
-
-        if (node == end)
-            break;
-
-        if (!owner)
-            _invalid_parameter_noinfo();
-        else
-            owner = reinterpret_cast<Proxy*>(owner->owner);
-
-        if (node == reinterpret_cast<Container*>(owner)->head)
-            _invalid_parameter_noinfo();
-
-        Payload* value = &node->value;
-        switch (value->kind) {
-        case 1:
-            value->object->setParent(0);
-            break;
-        case 2:
-            {
-                Iterator result;
-                Iterator last;
-                last.node = value->head;
-                last.proxy = value->proxy;
-                Iterator first;
-                first.node = last.node->next;
-                first.proxy = last.proxy;
-                processRange(&result, first, last, &processValue, value);
-            }
-            it.advance();
-            node = it.node;
-            owner = it.proxy;
-            continue;
-        case 3:
-            value->process();
-            it.advance();
-            node = it.node;
-            owner = it.proxy;
-            continue;
-        }
-
-        it.advance();
-        node = it.node;
-        owner = it.proxy;
-    }
-}
+struct History {std::set<Record> records;void process();};
+void History::process(){for(std::set<Record>::iterator i=records.begin();i!=records.end();++i){Record& r=const_cast<Record&>(*i);switch(r.mode){case 1:r.object->setParent(0);break;case 2:std::for_each(r.values.begin(),r.values.end(),boost::bind(&Record::processValue,&r,_1));break;case 3:r.process();break;}}}

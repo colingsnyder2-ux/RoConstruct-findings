@@ -1,8 +1,9 @@
+// from server: 98% by EspClaude
 // from server: 95% by Espeon
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: rbxgs-dll roc_espeon_stringencoderimport05f27d647b87f8fa.cpp
+// roc-lib: rbxgs-dll roc_espclaude_bd7f3bcf02400e3e.cpp
 
 // Candidate translation unit (score above; library headers required).
 #include <map>
@@ -60,6 +61,11 @@ struct Result {
     Proxy* proxy;
     Node* node;
     bool inserted;
+    Node& deref() const {
+        if (!proxy) invalidParameter();
+        if (node == (proxy ? proxy->container : 0)->sentinel) invalidParameter();
+        return *node;
+    }
 };
 
 struct Stream {
@@ -87,11 +93,11 @@ void S::encode(Stream* stream, const String& text) {
     Result result = insert(Key(text, (unsigned char)next));
 
     if (!result.inserted) {
+        Node* node=result.node;
         Proxy* proxy=result.proxy;
         if (!proxy) invalidParameter();
         Container* container=proxy ? proxy->container : 0;
-        Node* node=result.node;
-        if(container->sentinel==node) invalidParameter();
+        if(node==container->sentinel) invalidParameter();
         stream->write(node->index);
         return;
     }
@@ -102,3 +108,4 @@ void S::encode(Stream* stream, const String& text) {
     writeString(stream, text);
     next = next % 127 + 1;
 }
+

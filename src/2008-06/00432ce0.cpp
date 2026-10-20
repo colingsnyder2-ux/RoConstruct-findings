@@ -1,8 +1,9 @@
+// from server: 100% by EspClaude
 // from server: 95% by Espeon
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: openrbx-client-dll roc_espeon_threadmap_6774ee7cf4a9717a.cpp
+// roc-lib: openrbx-client-dll roc_espclaude_03b9162679b3b420.cpp
 
 // Candidate translation unit (score above; library headers required).
 #include <map>
@@ -18,7 +19,7 @@ extern unsigned char criticalSection[24];
 struct Lock {void* section;bool locked;Lock(void* p):section(p){EnterCriticalSection(section);locked=true;}void release(){LeaveCriticalSection(section);locked=false;}~Lock(){if(locked)LeaveCriticalSection(section);}};
 Object* getObject() {
  Lock lock(criticalSection);
- unsigned long thread=GetCurrentThreadId();
+ unsigned int thread=GetCurrentThreadId();
  Map::iterator it=objects.find(thread);
  if(it!=objects.end()) {
   ++it->second->references;
@@ -30,3 +31,4 @@ Object* getObject() {
  ++object->references;
  lock.release();return object;
 }
+
