@@ -1,5 +1,5 @@
-// from server: 92% by colin
-//
+// from server: 93% by Espeon
+
 
 struct Source
 {
@@ -22,7 +22,7 @@ struct Tool
 {
     char padding0[0x104];
     Source* source;
-    char padding1[0x110];
+    char padding1[0x94];
     ConnectionSlot firstConnection;
     ConnectionSlot secondConnection;
 
