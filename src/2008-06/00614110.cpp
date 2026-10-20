@@ -1,4 +1,7 @@
-// from server: 76% by king_originala
+// from server: 100% by Espeon
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
+
 struct Value {
     unsigned int data[9];
     bool operator!=(const Value& other) const;
@@ -17,6 +20,11 @@ struct Link {
     void setValue(const Value& other);
 };
 
+void Link::reset(){
+ if(flag28&&flag28[4])return;
+ if(parent)parent->reset();else if(flag2c)flag2c[8]=1;
+ if(flag28)flag28[4]=1;
+}
 void Link::setValue(const Value& other)
 {
     if (value != other) {

@@ -1,9 +1,9 @@
-// from server: 94% by intel
+// from server: 100% by intel
 extern "C" void __declspec(nothrow) __stdcall GlobalAdvancedSettingsItemChanged(int);
 
 struct GlobalAdvancedSettingsItem
 {
-    char padding[172];
+    char padding[176];
     int value;
     void set(int);
 };

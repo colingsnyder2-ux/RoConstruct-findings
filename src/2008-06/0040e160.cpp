@@ -1,3 +1,4 @@
+// from server: 100% by Espeon
 // from server: 81% by king_originala
 struct String;
 
@@ -10,18 +11,15 @@ extern void (__cdecl *concatenate)(String*, const char*, int, const char*, unsig
 
 struct String {
     char* data;
-    String(void* manager);
-    ~String();
+    __declspec(dllimport) void* manager() const throw();
+    __declspec(dllimport) String(void* manager) throw();
+    String(const String&);
+    ~String() throw();
 };
-
-inline String::String(void* manager)
-{
-    constructString(this, manager);
-}
 
 String __cdecl operator+(const String& source, const char* suffix)
 {
-    String result(getManager(&source));
+    String result(source.manager());
     unsigned int length = stringLength(suffix);
     concatenate(&result, getString(&source), getLength(&source), suffix, length);
     return result;
