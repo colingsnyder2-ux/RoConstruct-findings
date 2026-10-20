@@ -1,4 +1,4 @@
-// from server: 92% by colin
+// from server: 98% by colin
 //
 
 extern void (__thiscall* string_destructor)(void*);
@@ -11,7 +11,7 @@ namespace std
     template<class C, class T, class A>
     class basic_string
     {
-        char data[28];
+        char data[32];
     public:
         ~basic_string();
     };

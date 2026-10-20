@@ -1,3 +1,4 @@
+// from server: 93% by colin
 // from server: 92% by colin
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD /fp:fast
@@ -6,7 +7,7 @@ struct Result {
 };
 
 struct S {
-    char padding[0x1c8];
+    char padding[0x1ce];
     short x, y, width, height;
 
     Result* f(Result* result) const;

@@ -1,11 +1,11 @@
-// from server: 84% by colin
+// from server: 85% by colin
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD /fp:fast
 
 extern const char renderSettingsChanged;
 
 struct CRenderSettings {
-    char pad[0x144];
+    char pad[0x148];
     float field_144;
     float field_148;
     void sub_448FD0(float);

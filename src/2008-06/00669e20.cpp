@@ -1,4 +1,4 @@
-// from server: 74% by colin
+// from server: 89% by colin
 //
 
 struct Part
@@ -42,14 +42,14 @@ Joint* __cdecl func_00669d30(Part* a, Part* b, int i, int j)
     int left = a->state[i];
     int right = b->state[j];
 
-    if (left == 3)
+    if (left == 2)
     {
-        if (right != 4)
+        if (right != 2)
             return 0;
     }
     else
     {
-        if (left != 4 || right != 3)
+        if (left != 2 || right != 2)
             return 0;
     }
 

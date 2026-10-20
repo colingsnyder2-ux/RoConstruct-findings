@@ -1,4 +1,4 @@
-// from server: 88% by colin
+// from server: 91% by colin
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
@@ -30,7 +30,7 @@ struct Callback {
 void __cdecl callback();
 
 struct Bind {
-    unsigned char data[48];
+    unsigned char data[64];
     Bind(const Bind&);
 };
 

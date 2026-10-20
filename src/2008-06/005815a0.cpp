@@ -1,4 +1,4 @@
-// from server: 99% by colin
+// from server: 100% by colin
 //
 
 //
@@ -64,7 +64,7 @@ void Command::execute(Disposable* disposable)
 {
     Subject* subject = (source ? source->get() : 0)->resolve();
 
-    model->cameras.getCamera()->setType(1);
+    model->cameras.getCamera()->setType(2);
     model->cameras.getCamera()->setSubject(subject);
 
     Model* target = model;

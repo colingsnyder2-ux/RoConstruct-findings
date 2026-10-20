@@ -1,82 +1,76 @@
-// from server: 92% by king_originala
-#pragma float_control(precise, off)
+// from server: 94% by colin
+//
 
 extern "C" double __cdecl sqrt(double);
 #pragma intrinsic(sqrt)
+#pragma float_control(precise, off)
 
-extern const float tolerance;
-
-struct Vector {
+struct Vector3 {
     float x, y, z;
-
-    Vector();
-    Vector(float a, float b, float c);
-    Vector(const Vector& value);
-    Vector unit() const;
-    Vector cross(const Vector& value) const;
-    float normalize(float epsilon);
+    float unitize(float);
 };
 
-inline Vector::Vector()
-{
-}
-
-inline Vector::Vector(float a, float b, float c)
-    : x(a), y(b), z(c)
-{
-}
-
-inline Vector::Vector(const Vector& value)
-    : x(value.x), y(value.y), z(value.z)
-{
-}
-
-inline Vector Vector::unit() const
-{
-    float scale = 1.0f / (float)sqrt(x * x + y * y + z * z);
-    return Vector(x * scale, y * scale, z * scale);
-}
-
-inline Vector Vector::cross(const Vector& value) const
-{
-    return Vector(y * value.z - z * value.y,
-                  z * value.x - x * value.z,
-                  x * value.y - y * value.x);
-}
-
-struct Matrix {
-    float elements[9];
-
-    Matrix(const Matrix&);
-    Vector column(int index) const;
-    void setColumn(int index, const Vector& value);
+struct Matrix3 {
+    float data[9];
+    Matrix3(const Matrix3&);
+    Vector3 column(int) const;
+    void setColumn(int, const Vector3&);
 };
 
 struct Frame {
-    Matrix rotation;
-    Vector translation;
+    Matrix3 rotation;
+    Vector3 translation;
+
+    Frame(const Frame& source)
+        : rotation(source.rotation) {
+        translation.x = source.translation.x;
+        translation.y = source.translation.y;
+        translation.z = source.translation.z;
+    }
 };
 
-struct S {
-    char reserved[0x158];
+extern const float normalizationTolerance;
+
+struct Tool {
+    char padding[0x158];
     Frame frame;
-
-    void apply(const Frame&);
-    void func_005b28d0(const Vector& direction);
+    void setFrame(const Frame&);
+    void orient(const Vector3&);
 };
 
-void S::func_005b28d0(const Vector& direction)
-{
-    Frame result = frame;
-    Vector right = result.rotation.column(0);
-    Vector back = result.rotation.column(2);
-    Vector up = direction.unit();
-    Vector newBack = right.cross(up);
-    newBack.normalize(tolerance);
-    Vector newRight = up.cross(newBack);
-    newRight.normalize(tolerance);
+void Tool::orient(const Vector3& direction) {
+    Frame result(frame);
+
+    Vector3 right = result.rotation.column(0);
+    Vector3 back = result.rotation.column(2);
+
+    float inverseLength = 1.0f / (float)sqrt(
+        direction.x * direction.x +
+        direction.y * direction.y +
+        direction.z * direction.z);
+
+    Vector3 up = {
+        direction.x * inverseLength,
+        direction.y * inverseLength,
+        direction.z * inverseLength
+    };
+
+    Vector3 newBack = {
+        right.y * up.z - right.z * up.y,
+        right.z * up.x - right.x * up.z,
+        right.x * up.y - right.y * up.x
+    };
+    newBack.unitize(normalizationTolerance);
+
+    Vector3 newRight = {
+        up.y * newBack.z - up.z * newBack.y,
+        up.z * newBack.x - up.x * newBack.z,
+        up.x * newBack.y - up.y * newBack.x
+    };
+    newRight.unitize(normalizationTolerance);
+
     result.rotation.setColumn(0, newRight);
     result.rotation.setColumn(1, up);
     result.rotation.setColumn(2, newBack);
-    apply(result);
+    setFrame(result);
 }

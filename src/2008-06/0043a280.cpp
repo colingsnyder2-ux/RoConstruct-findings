@@ -1,4 +1,4 @@
-// from server: 98% by colin
+// from server: 100% by colin
 //
 
 struct Handle {
@@ -34,7 +34,7 @@ struct Destination {
 };
 
 struct S {
-    char padding[0x134];
+    char padding[0x13c];
     Source* source;
     Destination* destination;
     void f(void* value, int argument);

@@ -1,3 +1,4 @@
+// from server: 74% by colin
 // from server: 73% by colin
 // roc 2008-06 00467440  unit: CSettingsDialog  size: 89 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 00467440
@@ -14,7 +15,7 @@ struct G3D_Rect {
     int y2;
 };
 
-extern "C" int __stdcall GetClientRect(void* hwnd, G3D_Rect* rect);
+extern "C" __declspec(dllimport) int __stdcall GetClientRect(void* hwnd, G3D_Rect* rect);
 extern "C" short __cdecl round_to_short(float value);
 
 struct CSettingsDialog {
