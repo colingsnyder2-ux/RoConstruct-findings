@@ -1,3 +1,4 @@
+// from server: 100% by Espeon
 // from server: 82% by colin
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD /fp:fast
@@ -28,8 +29,8 @@ bool RBX::Camera::adjust(float delta) {
 
     static float limit = g83a3e8;
     double value = (double)delta + y;
-    value = -(double)limit >= value ? -(double)limit : value;
-    value = value >= (double)limit ? (double)limit : value;
+    value = -(double)limit >= value ? -(double)limit :
+        (value >= (double)limit ? (double)limit : value);
 
     if (value != y) {
         setAngles(x, (float)value, z);

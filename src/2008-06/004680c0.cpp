@@ -1,3 +1,4 @@
+// from server: 92% by Espeon
 // from server: 82% by king_originala
 struct Point {
     int x;
@@ -9,11 +10,11 @@ struct Vec2 {
     float y;
 };
 
-extern "C" int (__stdcall *ClientToScreen)(void *, Point *);
-extern "C" int (__stdcall *SetCursorPos)(int, int);
-extern "C" void *(__stdcall *LoadCursorA)(void *, const char *);
-extern "C" void *(__stdcall *SetCursor)(void *);
-extern "C" int (__stdcall *InvalidateRect)(void *, const void *, int);
+extern "C" __declspec(dllimport) int __stdcall ClientToScreen(void *, Point *);
+extern "C" __declspec(dllimport) int __stdcall SetCursorPos(int, int);
+extern "C" __declspec(dllimport) void* __stdcall LoadCursorA(void *, const char *);
+extern "C" __declspec(dllimport) void* __stdcall SetCursor(void *);
+extern "C" __declspec(dllimport) int __stdcall InvalidateRect(void *, const void *, int);
 
 extern void initializeCursor();
 

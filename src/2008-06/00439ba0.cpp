@@ -1,3 +1,5 @@
+// from server: 84% by Espeon
+// roc-cl: 50727
 // from server: 82% by colin
 // from server: 78% by king_originala
 // roc 2008-06 00439ba0  unit: CSelectionPropGrid  size: 297 bytes
@@ -93,24 +95,14 @@
 
 struct String {
     char* data;
-    const char* c_str() const;
-    int compare(const char*) const;
+    __declspec(dllimport) const char* c_str() const;
+    __declspec(dllimport) int compare(const char*) const;
     __declspec(dllimport) ~String() throw();
 };
 
 extern const char* (__thiscall* string_data)(const String*);
 extern int (__thiscall* string_compare)(const String*, const char*);
 extern void (__thiscall* string_destroy)(String*);
-
-inline const char* String::c_str() const
-{
-    return string_data(this);
-}
-
-inline int String::compare(const char* value) const
-{
-    return string_compare(this, value);
-}
 
 struct Descriptor {
     char pad[8];

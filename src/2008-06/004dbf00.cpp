@@ -1,3 +1,6 @@
+// from server: 100% by Espeon
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD /fp:fast
 // from server: 80% by colin
 // from server: 73% by king_originala
 // roc 2008-06 004dbf00  unit: RBX::ViewNew::ViewG3D  size: 306 bytes
@@ -107,6 +110,7 @@ inline Vector3::Vector3(const Vector3 &v)
 
 struct Color4 {
     float r, g, b, a;
+    Color4(const Color4& v):r(v.r),g(v.g),b(v.b),a(v.a) {}
     Color4 &operator=(const Color4 &);
 };
 
@@ -125,10 +129,12 @@ struct StateBlock {
     ~StateBlock();
 };
 
-struct __declspec(dllimport) Handle {
+struct Handle {
     void *pointer;
-    Handle();
-    Handle(const Handle &);
+    Handle(void* p=0):pointer(p) { if(p) retain(); }
+    void retain();
+    ~Handle();
+    __declspec(dllimport) Handle(const Handle &);
 };
 
 struct Renderer {
@@ -183,5 +189,6 @@ void S::f()
         image = 0;
     }
 
-    renderer->color = scene->color;
+    Color4 color = scene->color;
+    renderer->color = color;
 }

@@ -1,3 +1,4 @@
+// from server: 100% by Espeon
 // from server: 81% by colin
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD /fp:fast
@@ -89,10 +90,11 @@ struct Vector3 {
 
 struct S {
     void f(int);
+    void apply(Vector3*);
 };
 
-extern float g_81c3b8;
-extern float g_832a18;
+static const float g_81c3b8 = -1.0f;
+static const float g_832a18 = 0.4f;
 
 unsigned int func_0063e420();
 unsigned int func_006492c0();
@@ -105,35 +107,31 @@ void S::f(int arg)
 
     int q = arg / (int)func_0063e420();
 
-    float a = 0.0f;
-    float b = 0.0f;
+    Vector3 v;
+    v.x = 0.0f;
+    v.y = 0.0f;
 
-    int r = q % (int)func_006492c0();
-    int m = r & 0x80000003;
-    if (m < 0) {
-        m = (m - 1) | 0xfffffffc;
-        m = m + 1;
-    }
+    int r = q / (int)func_006492c0();
+    int m = r % 4;
 
     switch (m) {
     case 0:
-        a = 1.0f;
+        v.x = 1.0f;
         break;
     case 1:
-        b = 1.0f;
+        v.y = 1.0f;
         break;
     case 2:
-        a = g_81c3b8;
+        v.x = g_81c3b8;
         break;
     case 3:
-        b = g_81c3b8;
+        v.y = g_81c3b8;
         break;
     }
 
-    Vector3 v;
-    v.x = a * g_832a18;
-    v.y = b * g_832a18;
+    v.x *= g_832a18;
+    v.y *= g_832a18;
     v.z = 0.0f;
 
-    func_005faaa0(this, &v);
+    apply(&v);
 }

@@ -1,4 +1,6 @@
-// from server: 85% by colin
+// from server: 100% by Espeon
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD /fp:fast
 extern unsigned char table0[];
 extern unsigned char table10[];
 extern unsigned char table14[];
@@ -17,7 +19,7 @@ extern float g14C;
 extern float g150;
 extern float g160;
 
-unsigned int __cdecl getName();
+extern const char className[];
 
 struct S {
     unsigned char *v0;
@@ -42,30 +44,32 @@ struct S {
     unsigned char pad134[4];
     unsigned char *v138;
     unsigned char pad13C[12];
-    float f148;
-    float f14C;
-    float f150;
-    float f154;
-    float f158;
-    float f15C;
-    float f160;
-    float f164;
-    float f168;
-    float f16C;
-    float f170;
+    volatile float f148;
+    volatile float f14C;
+    volatile float f150;
+    volatile float f154;
+    volatile float f158;
+    volatile float f15C;
+    volatile float f160;
+    volatile float f164;
+    volatile float f168;
+    volatile float f16C;
+    volatile float f170;
 
     S *construct();
+    void initialize(const char*);
 };
 
 S *S::construct()
 {
-    getName();
+    initialize(className);
 
     f148 = g148;
     v0 = table0;
     f14C = g14C;
     v10 = table10;
     v14 = table14;
+    float t = g150;
     v20 = table20;
     v24 = table24;
     v44 = table44;
@@ -75,7 +79,6 @@ S *S::construct()
     vC4 = tableC4;
     v130 = table130;
     v138 = table138;
-    float t = g150;
     f150 = t;
     f154 = t;
     f158 = t;
