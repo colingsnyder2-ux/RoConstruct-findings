@@ -33,10 +33,12 @@ void S::visit(Node* node)
     for (int i = 0; i < node->childCount; ++i) {
         Node* child = node->children[i];
         if (child->value > 0) {
+            NodeList* list = &nodes;
             Node* entry = child;
-            child->index = nodes.size;
-            nodes.append(entry);
+            child->index = list->size;
+            list->append(entry);
         }
         visit(child);
     }
 }
+

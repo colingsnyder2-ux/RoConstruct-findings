@@ -3,7 +3,6 @@
 
 struct Entry {
     void* object;
-    unsigned long cookie;
 };
 
 struct S {
@@ -47,3 +46,4 @@ long S::Init(Entry* first, Entry* last, void* source, unsigned long mode)
     owner = source;
     return 0;
 }
+

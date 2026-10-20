@@ -1,48 +1,5 @@
-// from server: 73% by king_originala
-struct Signal
-{
-    char data[0x20];
-    void remove(void* slot);
-};
-
-struct Object
-{
-    char padding[0x64];
-    Signal first;
-    Signal second;
-};
-
-struct Handle
-{
-    Object* pointer;
-    void reset();
-};
-
-struct S
-{
-    char padding[0x170];
-    void* firstSlot;
-    void* secondSlot;
-    char padding2[0x20];
-    Handle handle;
-
-    void func_005fc100();
-};
-
-void S::func_005fc100()
-{
-    if (handle.pointer)
-    {
-        Object* object = *(Object* volatile*)&handle.pointer;
-        void* slot = &firstSlot;
-        if (object)
-            object->first.remove(slot);
-
-        object = *(Object* volatile*)&handle.pointer;
-        slot = &secondSlot;
-        if (object)
-            object->second.remove(slot);
-
-        handle.reset();
-    }
-}
+// from server: 100% by Espeon
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: rbxgs-dll roc_espeon_backpacknativebases03a1ff65d9fa471a.cpp

@@ -1,3 +1,4 @@
+// from server: 95% by colin
 // from server: 94% by colin
 // from server: 81% by king_originala
 // roc 2008-06 005e9800  unit: RBX::PhysicsService  size: 59 bytes
@@ -42,7 +43,8 @@ void S::f(int value, Callback *callback)
         void *object = 0;
         if (this)
             object = reinterpret_cast<char *>(this) - 96;
-        callback->invoke(object, value);
+        Callback* volatile localCallback = callback;
+        localCallback->invoke(object, value);
         __assume(0);
     }
     catch (...) {
@@ -51,3 +53,4 @@ void S::f(int value, Callback *callback)
         throw;
     }
 }
+

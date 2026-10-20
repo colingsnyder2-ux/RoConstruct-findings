@@ -1,3 +1,4 @@
+// from server: 100% by EspClaude
 // from server: 98% by king_originala
 // roc 2008-06 0045e6c0  unit: CRobloxWnd  size: 220 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 0045e6c0
@@ -74,8 +75,9 @@ struct Context {
     void* get();
 };
 
+struct View;
 struct Renderer {
-    void render(void*);
+    void render(View*);
 };
 
 extern void* currentContext;
@@ -97,10 +99,16 @@ __forceinline FlagGuard::~FlagGuard() {
     *flag = saved;
 }
 
-struct CRobloxWnd {
+struct Base0 {
     unsigned char padding0[0x54];
+};
+
+struct View {
     int viewport[2];
     int mode;
+};
+
+struct CRobloxWnd : Base0, View {
     unsigned char padding1[0x10];
     Context* context;
     unsigned char padding2[4];
@@ -126,7 +134,7 @@ void CRobloxWnd::draw(void* argument) {
         glClear(0x4100);
     } else if (!enabled) {
         if (renderer)
-            renderer->render(viewport);
+            renderer->render(this);
     } else {
         currentContext = context->get();
         if (mode == 2)

@@ -1,3 +1,4 @@
+// from server: 96% by colin
 // from server: 93% by colin
 // roc-lang: cpp
 // roc-cl: 21022
@@ -40,7 +41,9 @@ public:
 };
 void GeoPair::forceToBodies(const G3D::Vector3& _force, const G3D::Vector3& _position)
 {
-    this->body0->accumulateForce(-_force, _position);
+    Body* first = this->body0;
+    first->accumulateForce(-_force, _position);
     this->body1->accumulateForce(_force, _position);
 }
 }
+

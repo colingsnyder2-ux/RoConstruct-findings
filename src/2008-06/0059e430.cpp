@@ -1,31 +1,5 @@
-// from server: 50% by colin
-struct VCRenderSettings {
-    unsigned char pad[0x328];
-    float value;
-    void setEnum(float v);
-};
-
-extern float g_min;
-extern float g_max;
-extern float g_one;
-extern void (__cdecl *g_notify)(float);
-
-void VCRenderSettings::setEnum(float v)
-{
-    if (!(v < g_min) && !(v > g_max)) {
-        if (value != g_one) {
-            value = g_one;
-            g_notify(g_one);
-        }
-    } else if (v < g_min) {
-        if (value != g_min) {
-            value = g_min;
-            g_notify(g_min);
-        }
-    } else {
-        if (value != g_max) {
-            value = g_max;
-            g_notify(g_max);
-        }
-    }
-}
+// from server: 100% by Espeon
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: rbxgs-dll roc_espeon_qualityvolatile11857824d6c617cf.cpp

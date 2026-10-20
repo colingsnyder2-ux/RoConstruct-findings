@@ -1,3 +1,4 @@
+// from server: 94% by colin
 // from server: 88% by colin
 // from server: 86% by king_originala
 // roc 2008-06 005faff0  unit: UString_sink::?$stream_buffer  size: 86 bytes
@@ -87,11 +88,13 @@ void Sink::collect(Source* source)
             if (parent->tag != -1 &&
                 node != parent &&
                 node->index < 0) {
+                NodeList* list = &nodes;
                 source = reinterpret_cast<Source*>(node);
-                node->index = nodes.size;
+                node->index = list->size;
                 _ReadWriteBarrier();
-                nodes.append(reinterpret_cast<Node* const&>(source));
+                list->append(reinterpret_cast<Node* const&>(source));
             }
         }
     }
 }
+

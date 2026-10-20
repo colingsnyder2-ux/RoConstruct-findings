@@ -67,6 +67,9 @@ int S::equal(S* other)
     void* handle = window->handle;
     MessageFunction send = SendMessageA;
     long count = send(handle, 0x18B, 0, 0);
-    _ReadWriteBarrier();
-    return count == send(other->window->handle, 0x18B, 0, 0);
+    WindowData* otherWindow = other->window;
+    return count == send(otherWindow->handle, 0x18B, 0, 0);
 }
+
+
+

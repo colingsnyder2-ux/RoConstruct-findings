@@ -1,3 +1,4 @@
+#include <intrin.h>
 // from server: 93% by colin
 // from server: 92% by colin
 // roc-cl: 21022
@@ -7,7 +8,7 @@ struct Result {
 };
 
 struct S {
-    char padding[0x1ce];
+    char padding[0x1c8];
     short x, y, width, height;
 
     Result* f(Result* result) const;
@@ -18,6 +19,7 @@ Result* S::f(Result* result) const {
     float b = (float)y;
     float c = (float)width;
     float d = (float)height;
+    _ReadWriteBarrier();
 
     result->x = a;
     result->y = b;
@@ -25,3 +27,5 @@ Result* S::f(Result* result) const {
     result->height = d;
     return result;
 }
+
+

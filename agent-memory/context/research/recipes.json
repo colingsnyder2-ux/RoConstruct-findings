@@ -22022,5 +22022,123 @@
       }
     ],
     "output": "work/large-functions-2008-20261014/source-ranked-exact-fanout-21022"
+  },
+  "big-sphere-position-first-gates-2008": {
+    "op": "grid",
+    "client": "2008-06",
+    "library": "Native SGI-derived Ogre sphere",
+    "hypothesis": "Native position/index before normal and texture in seven direct loops improves largest 8924-byte target41to51. New body only: both real compilers and three bounded optimization/floating profiles; preserve only improving partials. No layout or ABI edits.",
+    "targets": {
+      "addresses": [
+        "006892d0"
+      ],
+      "scores": [
+        0,
+        99
+      ]
+    },
+    "seed_sources": {
+      "2008-06": {
+        "006892d0": "work\\big-mining-2008-20261020\\sphere-position-first.cpp"
+      }
+    },
+    "builds": [
+      21022,
+      50727
+    ],
+    "profiles": [
+      "/O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MD /fp:fast",
+      "/O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MD",
+      "/O1 /Ob1 /Oy /GF /GS- /EHsc /MD /fp:fast"
+    ],
+    "keep_partials": true,
+    "output": "work\\big-mining-2008-20261020\\sphere-gates"
+  },
+  "big-quadric-branch-temporary-gates-2008": {
+    "op": "grid",
+    "client": "2008-06",
+    "library": "Native Ogre GLU quadrics with target-proven branch temporaries",
+    "hypothesis": "Separate branch-local Vector3 materialization explains sphere96byte stack deficit and reproduces complete2ec0frame; sphere index initialized at entry restores native early zero register. Checked disk accessor reproduces native54byte helper100. Gate these new source bodies only under two real compiler builds and normal/fast inlining contexts; all improvements independently server verified.",
+    "targets": {
+      "addresses": [
+        "006892d0",
+        "00687860",
+        "00685ea0"
+      ],
+      "scores": [
+        0,
+        99
+      ]
+    },
+    "seed_sources": {
+      "2008-06": {
+        "006892d0": "work\\big-mining-2008-20261020\\sphere-index-initialization.cpp",
+        "00687860": "work\\big-mining-2008-20261020\\disk-unsigned-normals.cpp",
+        "00685ea0": "work\\big-mining-2008-20261020\\cylinder-branch-temporaries.cpp"
+      }
+    },
+    "builds": [
+      21022,
+      50727
+    ],
+    "profiles": [
+      "/O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MD /fp:fast",
+      "/O2 /Ob1 /Oi /Ot /Oy /GF /GS- /EHsc /MD /fp:fast",
+      "/O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MD"
+    ],
+    "keep_partials": true,
+    "submit_partials": true,
+    "output": "work\\big-mining-2008-20261020\\quadric-gates"
+  },
+  "native-atlas-four-sample-order-2008": {
+    "op": "fanout",
+    "client": "2008-06",
+    "library": "Native atlas four-pixel integer downsample",
+    "hypothesis": "Complete6698-byte native atlas recovery99 with only four byte sample loads/add order different. Each uint8 sum at most1020, so22 remaining operand permutations are mathematically equivalent. No constants/layout/ABI changes; targeted exact-only object fanout against this one parent. Two already rejected permutations excluded.",
+    "sources": [
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_atlas_sum_0132_6a2dde59b0d4c4e6.cpp",
+          "roc_atlas_sum_0213_3b5a80735dd588ff.cpp",
+          "roc_atlas_sum_0231_a48804aa138076e2.cpp",
+          "roc_atlas_sum_0312_5820d73cafaf5a86.cpp",
+          "roc_atlas_sum_0321_b31b097cf1ca7af3.cpp",
+          "roc_atlas_sum_1023_8bec3506429a2585.cpp",
+          "roc_atlas_sum_1032_f98944e33234c7f9.cpp",
+          "roc_atlas_sum_1203_452bc08f1b250564.cpp",
+          "roc_atlas_sum_1230_20b87901316aa981.cpp",
+          "roc_atlas_sum_1302_615b37d5165a6bee.cpp",
+          "roc_atlas_sum_1320_c237cb42f39a1edc.cpp",
+          "roc_atlas_sum_2013_9a9a80ab01a03212.cpp",
+          "roc_atlas_sum_2031_43dcdefe79ca0328.cpp",
+          "roc_atlas_sum_2130_174b289db1fd893e.cpp",
+          "roc_atlas_sum_2301_a0ad4d0074e8c7c1.cpp",
+          "roc_atlas_sum_2310_fb62905de8c6dd16.cpp",
+          "roc_atlas_sum_3012_5a5941220ddca97a.cpp",
+          "roc_atlas_sum_3021_08d738bfd9978359.cpp",
+          "roc_atlas_sum_3102_02bf7e0ea465e521.cpp",
+          "roc_atlas_sum_3120_e69118c65f84a13c.cpp",
+          "roc_atlas_sum_3201_2b55e874872c37cc.cpp",
+          "roc_atlas_sum_3210_95d97aa871d99dbc.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      }
+    ],
+    "targets": {
+      "addresses": [
+        "005ef840"
+      ],
+      "scores": [
+        0,
+        99
+      ]
+    },
+    "output": "work\\big-mining-2008-20261020\\atlas-sum-permutation-fanout"
   }
 }

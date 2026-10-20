@@ -31,7 +31,7 @@ bool __cdecl match(Part* a, Part* b, Joint* joint, int extended)
             valid = checkFirst(joint);
 
         if (valid && b->link->parent == a->link) {
-            int same = a->identity == b->identity;
+            unsigned char same = a->identity == b->identity;
             if (!extended)
                 return same;
             return same || a->f() == b->f();
@@ -40,3 +40,4 @@ bool __cdecl match(Part* a, Part* b, Joint* joint, int extended)
     }
     return false;
 }
+
