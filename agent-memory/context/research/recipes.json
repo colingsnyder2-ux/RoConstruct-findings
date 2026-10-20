@@ -22345,5 +22345,103 @@
     "submit_partials": true,
     "output": "work\\big-mining-2008-20261020\\declaration-html-eh-gates",
     "next": "Strict server gains only; if backend unavailable preserve exact draft/receipts pending retry, never replace better source."
+  },
+  "native-declaration-view-dom-family-2008": {
+    "op": "fanout",
+    "client": "2008-06",
+    "library": "Native DeclarationView MSHTML and ATL C++ unwind family",
+    "hypothesis": "Final actual TU has separately server-verified2074B completion and1092B DOM updater exacts. Uses genuine SDK interfaces, CPPUNWIND prelude and observed public string import boundaries. Propagate exact unchanged TU to every other unresolved code+referenced-data target.",
+    "sources": [
+      {
+        "recipe": "rbxgs-atl90-dll",
+        "files": [
+          "roc_declaration_view_native_string_boundaries706ef8adc45a4d91.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      }
+    ],
+    "output": "work\\big-mining-2008-20261020\\declaration-view-dom-family-fanout",
+    "next": "Keep independently server-verified gains only; unrelated better stored sources remain protected."
+  },
+  "native-winhttp-eh-mbcs-inlining-gates-2008": {
+    "op": "grid",
+    "client": "2008-06",
+    "library": "Native WinHTTP EH and multibyte compiler prelude",
+    "hypothesis": "New source44->67 verified after proper CPPUNWIND and native GET-first. Source _MBCS matches native _mbscmp trait. Native query CStringA ctor/comparison/dtor are out-of-line while source may inline. Gate only actual21022 with altered inlining to test boundaries before managed SDK public method annotations.",
+    "targets": {
+      "addresses": [
+        "005f8b60"
+      ],
+      "scores": [
+        0,
+        99
+      ]
+    },
+    "seed_sources": {
+      "2008-06": {
+        "005f8b60": "work\\big-mining-2008-20261020\\winhttp-native-mbcs-prelude.cpp"
+      }
+    },
+    "builds": [
+      21022
+    ],
+    "profiles": [
+      "/O2 /Ob1 /Oy /GF /GS- /EHsc /MD",
+      "/O2 /Ob0 /Oy /GF /GS- /EHsc /MD",
+      "/O1 /Ob2 /Oy /GF /GS- /EHsc /MD"
+    ],
+    "keep_partials": true,
+    "submit_partials": true,
+    "output": "work\\big-mining-2008-20261020\\winhttp-prelude-inlining-gates",
+    "next": "Keep only strict server improvements; source native header buffers256/512 already proven, no padding guesses."
+  },
+  "native-declaration-descriptor-family-2008": {
+    "op": "fanout",
+    "client": "2008-06",
+    "library": "Native reflection descriptor declaration formatter",
+    "hypothesis": "Server-verified1048B formatter uses genuine checked stdlist/Boost bind and shared_ptr destruction. Propagate unchanged compiler object against all other unresolved functions.",
+    "sources": [
+      {
+        "recipe": "rbxgs-atl90-dll",
+        "files": [
+          "roc_declaration_descriptor_public_name_cstr_e4dda9fbc10cd43e.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      }
+    ],
+    "output": "work\\big-mining-2008-20261020\\declaration-descriptor-family-fanout",
+    "next": "Preserve only independently server-verified gains; continue largest unmatched native functions."
+  },
+  "native-statistics-hud-genuine-fields-family-2008": {
+    "op": "fanout",
+    "client": "2008-06",
+    "library": "Native GuiBuilder statistics HUDs and genuine TextDisplay member setter",
+    "hypothesis": "Unchanged TU independently server100 for3416B+3300B HUDs; real Layout field assignment lifetimes, CopyOnWrite checked children, genuine TextDisplay member math, width310/260. Propagate compiler object to all other unresolved code+data.",
+    "sources": [
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_hud_native_widths_f832140a2f3f7f31.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast"
+        ]
+      }
+    ],
+    "output": "work\\big-mining-2008-20261020\\statistics-hud-genuine-fields-family-fanout",
+    "next": "Preserve independently verified gains and continue largest remaining native functions."
   }
 }

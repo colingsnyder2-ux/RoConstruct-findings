@@ -1,9 +1,13 @@
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs-atl90-dll roc_http_winhttp_buffers_2ef88c615963e2ca.cpp
+// roc-lib: rbxgs-atl90-dll roc_winhttp_native_mbcs_preludebceeeaef319e095e.cpp
 
 // Candidate translation unit (score above; library headers required).
+// Native CString comparison569d30 imports _mbscmp.
+#define _MBCS 1
+// /EHsc prelude is required before the library preprocessor.
+#define _CPPUNWIND 1
 #define _SCL_SECURE_NO_DEPRECATE // required to disable a warning
 #include "util/Http.h"
 #include <windows.h>
@@ -105,7 +109,8 @@ void NativeHttp::requestWinHttp(bool isPost,std::istream& data,bool compressData
  if(additionalHeaders)failure(WinHttpAddRequestHeaders(request,ATL::CComBSTR(additionalHeaders),-1,WINHTTP_ADDREQ_FLAG_ADD)==TRUE,"WinHttpAddRequestHeaders");
  failure(WinHttpAddRequestHeaders(request,L"Accept-Encoding: gzip\r\n",-1,WINHTTP_ADDREQ_FLAG_ADD)==TRUE,"WinHttpAddRequestHeaders failed");
  boost::iostreams::gzip_params gzipParams(boost::iostreams::zlib::default_compression);
- if(isPost) {
+ if(!isPost) failure(WinHttpSendRequest(request,NULL,0,NULL,0,0,0)==TRUE,"WinHttpSendRequest failed");
+ else {
   std::string uploadData;
   {
    boost::iostreams::filtering_stream<boost::iostreams::output> out;
@@ -115,7 +120,7 @@ void NativeHttp::requestWinHttp(bool isPost,std::istream& data,bool compressData
    }
    out.push(String_sink(uploadData));boost::iostreams::copy(data,out);
   }
-  int length=(int)uploadData.size();
+  std::string::size_type length=uploadData.size();
   if(length>10000) {
    std::string sizeHeader=G3D::format("Roblox-Content-Size: %d\r\n",length);
    failure(WinHttpAddRequestHeaders(request,ATL::CComBSTR(sizeHeader.c_str()),-1,WINHTTP_ADDREQ_FLAG_ADD)==TRUE,"HttpAddRequestHeaders failed");
@@ -124,7 +129,7 @@ void NativeHttp::requestWinHttp(bool isPost,std::istream& data,bool compressData
    failure(WinHttpAddRequestHeaders(request,ATL::CComBSTR(hashHeader.c_str()),-1,WINHTTP_ADDREQ_FLAG_ADD)==TRUE,"HttpAddRequestHeaders failed");
   }
   failure(WinHttpSendRequest(request,NULL,0,(void*)uploadData.c_str(),length,length,0)==TRUE,"WinHttpSendRequest failed");
- }else failure(WinHttpSendRequest(request,NULL,0,NULL,0,0,0)==TRUE,"WinHttpSendRequest failed");
+ }
  failure(WinHttpReceiveResponse(request,NULL)==TRUE,"WinHttpReceiveResponse");
  {
   boost::iostreams::filtering_stream<boost::iostreams::input> in;

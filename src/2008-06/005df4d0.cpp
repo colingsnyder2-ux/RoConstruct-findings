@@ -9,13 +9,21 @@ struct Message {
     char pad[0x17c];
     bool flag;
     char pad2[0x1a4 - 0x17d];
-    const void* getPersistentDataCost() const;
+    struct Cost { float x, y, z; };
+    Cost getPersistentDataCost() const;
 };
 
-const void* Message::getPersistentDataCost() const {
+Message::Cost Message::getPersistentDataCost() const {
+    const Cost* source;
     if (flag)
-        return (const char*)this + 0x198;
-    return (const char*)this + 0x1a4;
+        source = reinterpret_cast<const Cost*>((const char*)this + 0x198);
+    else
+        source = reinterpret_cast<const Cost*>((const char*)this + 0x1a4);
+    Cost result;
+    result.x = source->x;
+    result.y = source->y;
+    result.z = source->z;
+    return result;
 }
 
 }

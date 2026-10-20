@@ -17,6 +17,41 @@
     "next": "16campaign exacts2912bytes:2seed,2first8dtor cores,3heldout cores (oneGuiDrawImage header helper, no sole hierarchy causality),1fullInstance and8reflection replay.34reflection contexts8gains.8release contexts0, original fullInstance assert mode0; parked. No global recipe change/full program layout certification. getGuid/assignGuid remain external genuine API declarations because new private GuidItem field is not accessed through old bodies."
   },
   {
+    "id": "native-hud-layout-field-lifetimes-and-real-member-math",
+    "client": "2008-06",
+    "library": "GuiBuilder statistics HUD and genuine TextDisplay",
+    "hypothesis": "Preserve original aggregate member assignments and real class member setter bodies before adjusting frames or forcing volatile reads.",
+    "change": "Two targets3416/3300B93->100. Native GuiBuilder sets Layout offset.x/y separately; Vector2int16 assignment creates different local lifetime and38instead3c frame. Genuine CopyOnWrite child pointer preserves safe-bool compare/reload. Correct native GuidItem-derived TextDisplay has fontSize160/guiSize13c; genuine setFontSize reads stored class field and emits FILD, while expanded opaque views constantfold values. Keep independently proven opaque receiver interfaces where oldcompleteheader virtual slots differ. Second HUD actual width260 vs310source, caught only referenced-data verification.",
+    "exacts_gained": 2,
+    "outcome": "server_verified",
+    "evidence": [
+      "work\\big-mining-2008-20261020\\006041d0-hud-native-widths-exact-receipt.json",
+      "work\\big-mining-2008-20261020\\00604f30-hud-native-widths-exact-receipt.json"
+    ],
+    "portable_unit": "rbxgs-dll roc_hud_native_widths_f832140a2f3f7f31.cpp",
+    "next": "Unchanged object heldout fanout0extra. Avoid volatile forced field loads28/25, ordinary stored-alias93, globally changing Instance headers, or fake stack padding."
+  },
+  {
+    "id": "native-atl-preprocess-cppunwind-and-dom-import-boundaries",
+    "client": "2008-06",
+    "library": "ATL9 RTM/MFC90/MSHTML native app code",
+    "hypothesis": "An EP stage without EH flags can silently change native ATL/Boost exception behavior before compiling with EHsc. Recover actual compiler prelude before padding frames or inventing cleanup.",
+    "change": "libs.preprocess runs EP without grid flags. Missing_CPPUNWIND sets_ATL_NO_EXCEPTIONS in atldef and BOOST_NO_EXCEPTIONS in boost visualc.hpp. Native401000 invokes MFC memory/OLE exception imports. Per-source#define_CPPUNWIND1 before SDK includes recovers seven EH state stores in2074B OnDocumentComplete, matching100 code+data.1092B adjacent DOM updater also100 after only genuine public CString IsEmpty/PCXSTR and std::string c_str methods get noinline annotations through managed exact RTM header copies; target imports these APIs. No fake padding/vtable interfaces.",
+    "exacts_gained": 2,
+    "additional_family_exacts": 1,
+    "verified_partial_gains": {
+      "005f8b60": "44->57 proper unwind, then67 native GET-first; unsigned and_MBCS native traits tie67"
+    },
+    "outcome": "server_verified",
+    "evidence": [
+      "work\\big-mining-2008-20261020\\declaration-view-cppunwind-exact-receipt.json",
+      "work\\big-mining-2008-20261020\\declaration-view-native-dom-update-exact-receipt.json",
+      "work\\big-mining-2008-20261020\\declaration-view-dom-family-fanout\\native-declaration-view-dom-family-2008.jsonl",
+      "work\\big-mining-2008-20261020\\winhttp-native-preludes-get-first-receipt.json"
+    ],
+    "next": "Use per-source compiler-prelude evidence, not global recipe mutations that alter existing exacts. EHs91, EHa83, named empty Variant91 rejected;50727 ATL9 SAL parse failure. WinInet CPP57 tie, Lua setter98 tie, XML63 tie. Keep named recipe/compiler histories; do not repeat unchanged variants."
+  },
+  {
     "id": "native-helper-parameter-context-before-forced-store",
     "client": "2008-06",
     "library": "Native TreeStage edge erase with checked set key",

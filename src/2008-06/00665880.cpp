@@ -1,71 +1,11 @@
-// from server: 59% by colin
-// from server: 58% by colin
-// roc-cl: 50727
-// roc-flags: /O2 /GS- /EHsc /MD /fp:fast
-#include <intrin.h>
-struct Vector {
-    float x, y, z;
-};
+// roc-lang: cpp
+// roc-cl: 30729
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+// roc-lib: rbxgs roc_espeon_effectboxnativef8ebe80909dcc36d.cpp
 
-struct Box {
-    Vector low, high;
-};
-
-struct Matrix {
-    float elements[9];
-    Matrix(const Matrix&);
-};
-
-struct Frame {
-    Matrix rotation;
-    Vector translation;
-};
-
-extern float halfScale;
-extern Vector zeroVector;
-extern unsigned int zeroFlags;
-
-extern const Matrix& __cdecl identityMatrix();
-extern void __cdecl drawBox(const Box&, const Frame&,
-                           unsigned int, unsigned int, unsigned int);
-
-void __cdecl renderBox(const Box& box, unsigned int a,
-                       unsigned int b, unsigned int c)
-{
-    Vector center = {
-        (box.high.x + box.low.x) * halfScale,
-        (box.high.y + box.low.y) * halfScale,
-        (box.high.z + box.low.z) * halfScale
-    };
-
-    Frame frame = { identityMatrix(), center };
-
-    Vector extent = {
-        (box.high.x - box.low.x) * halfScale,
-        (box.high.y - box.low.y) * halfScale,
-        (box.high.z - box.low.z) * halfScale
-    };
-
-    if (!(zeroFlags & 1)) {
-        zeroFlags |= 1;
-        _ReadWriteBarrier();
-        zeroVector.x = 0.0f;
-        zeroVector.y = 0.0f;
-        zeroVector.z = 0.0f;
-    }
-
-    Box local = {
-        {
-            zeroVector.x - extent.x,
-            zeroVector.y - extent.y,
-            zeroVector.z - extent.z
-        },
-        {
-            zeroVector.x + extent.x,
-            zeroVector.y + extent.y,
-            zeroVector.z + extent.z
-        }
-    };
-
-    drawBox(local, frame, a, b, c);
-}
+// Candidate translation unit (score above; library headers required).
+#pragma float_control(precise,off,push)
+#include "util/Extents.h"
+#include "G3D/Ray.h"
+bool testEffect(const RBX::Extents&,const G3D::CoordinateFrame&,const G3D::Ray&,G3D::Vector3&,int&);
+bool hit(const RBX::Extents& box,const G3D::Ray& ray,G3D::Vector3& point,int& face){G3D::CoordinateFrame frame(box.center());RBX::Extents local=RBX::Extents::fromCenterCorner(G3D::Vector3::zero(),box.size()*0.5f);return testEffect(local,frame,ray,point,face);}

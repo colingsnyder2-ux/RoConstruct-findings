@@ -1,10 +1,16 @@
-// from server: 63% by colin
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs-dll roc_lua_property_native_family_df72ab273215c092.cpp
+// roc-lib: rbxgs-dll roc_lua_property_native_enum_item_return7b7f4c9cba7784d7.cpp
 
 // Candidate translation unit (score above; library headers required).
+#pragma include_alias("reflection/reflection.h", "roc_reflection_genuine_enum_item_override_headerca182f89d3d1ca65.cpp")
+#pragma include_alias("reflection/enumconverter.h", "roc_enum_item_genuine_owner_header4eec83b4b5d2a3a5.cpp")
+#pragma include_alias("reflection/enumConverter.h", "roc_enum_item_genuine_owner_header4eec83b4b5d2a3a5.cpp")
+#pragma include_alias("reflection/property.h", "roc_property_genuine_enum_item_getter_headerce87b8225f71388f.cpp")
+#pragma include_alias("v8tree/Instance.h", "roc_instance_genuine_guiditem_headerf016862b4461fbce.cpp")
+#include "roc_genuine_lua_singleton_enum_headerf079742c7efc6c9f.cpp"
+namespace RBX { namespace Lua { template<> const char* Bridge<EnumDescriptorItemPtr, false>::className = "EnumItem"; } }
 // Native setter reloads its descriptor across type branches. Getter retains
 // its genuine source alias: removing it reduced the measured similarity.
 #include "script/LuaInstanceBridge.h"
@@ -18,6 +24,8 @@
 #include "v8tree/Instance.h"
 #include "G3D/format.h"
 #include "G3D/Vector3.h"
+
+namespace RBX { namespace Lua { extern const char* throwable_lua_tostring(lua_State*, int); } }
 
 // matches generally aren't very good here
 
@@ -180,7 +188,7 @@ static void pushLuaValue(ConstProperty p, lua_State* L)
     EnumPropertyDescriptor* enumDesc = dynamic_cast<EnumPropertyDescriptor*>(&descriptor);
     if (enumDesc)
     {
-        lua_pushinteger(L, enumDesc->getEnumValue(p.getInstance()));
+        EnumItem::push(L, enumDesc->getEnumItem(p.getInstance()));
         return;
     }
 
@@ -314,7 +322,7 @@ static __declspec(noinline) void assignLuaValue(Property p, lua_State* L, int in
 
     if (p.getDescriptor().type == Type::singleton<std::string>())
     {
-        p.setValue<std::string>(lua_tostring(L, index));
+        p.setValue<std::string>(throwable_lua_tostring(L, index));
         return;
     }
 
@@ -364,23 +372,40 @@ static __declspec(noinline) void assignLuaValue(Property p, lua_State* L, int in
     // seems like an inline, but i can't get it to work
     if (dynamic_cast<TypedPropertyDescriptor<SoundId>*>(const_cast<PropertyDescriptor*>(&p.getDescriptor())))
     {
-        p.setValue<SoundId>(ContentId(lua_tostring(L, index)));
+        p.setValue<SoundId>(ContentId(throwable_lua_tostring(L, index)));
         return;
     }
 
     if (dynamic_cast<TypedPropertyDescriptor<TextureId>*>(const_cast<PropertyDescriptor*>(&p.getDescriptor())))
     {
-        p.setValue<TextureId>(ContentId(lua_tostring(L, index)));
+        p.setValue<TextureId>(ContentId(throwable_lua_tostring(L, index)));
         return;
     }
 
-    EnumPropertyDescriptor* enumDesc = dynamic_cast<EnumPropertyDescriptor*>(const_cast<PropertyDescriptor*>(&p.getDescriptor()));
-    if (enumDesc)
-    {
-        int value = lua_tointeger(L, index);
-        enumDesc->setEnumValue(p.getInstance(), value);
-        return;
-    }
+	const EnumPropertyDescriptor* enumDesc = dynamic_cast<const EnumPropertyDescriptor*>(&p.getDescriptor());
+	if (enumDesc!=NULL)
+	{
+		EnumDescriptorItemPtr item;
+		if (EnumItem::getItem(L, index, item))
+		{
+			if (!enumDesc->setEnumItem(p.getInstance(), *item))
+				throw std::runtime_error(G3D::format("Invalid type %s for enum %s", item->owner.name.c_str(), enumDesc->name.c_str()));
+		}
+		else if (lua_isnumber(L, index))
+		{
+			if (!enumDesc->setEnumValue(p.getInstance(), lua_tointeger(L, index) ))
+				throw std::runtime_error(G3D::format("Invalid value %d for enum %s", static_cast<int>(lua_tointeger(L, index)), enumDesc->name.c_str()));
+		}
+		else if (lua_isstring(L, index))
+		{
+			if (!enumDesc->setStringValue(p.getInstance(), lua_tostring(L, index)))
+				throw std::runtime_error(G3D::format("Invalid value \"%s\" for enum %s", lua_tostring(L, index), enumDesc->name.c_str()));
+		} 
+		else
+			throw std::runtime_error(G3D::format("Invalid value for enum %s", enumDesc->name.c_str()));
+		return;
+	}
+
 
     RefPropertyDescriptor* refDesc = dynamic_cast<RefPropertyDescriptor*>(const_cast<PropertyDescriptor*>(&p.getDescriptor()));
     if (refDesc)

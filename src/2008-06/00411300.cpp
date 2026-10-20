@@ -12,5 +12,8 @@ void ChatEnter::method(int* out, int* a)
         PostMessageA(p, 0x468, 0, 0);
         out[0] = 1;
         out[1] = 0;
+    } else {
+        out[0] = 0;
+        out[1] = 0;
     }
 }

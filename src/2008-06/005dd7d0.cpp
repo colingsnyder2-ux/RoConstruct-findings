@@ -7,8 +7,8 @@ extern float* _FSnan;
 
 int f(float value)
 {
-    return *_FInf == value ||
-           -*_FInf == value ||
-           *_FNan == value ||
-           *_FSnan == value;
+    return value == *_FInf ||
+           value == -*_FInf ||
+           value == *_FNan ||
+           value == *_FSnan;
 }

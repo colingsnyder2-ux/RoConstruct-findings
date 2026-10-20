@@ -1,10 +1,15 @@
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast
-// roc-lib: rbxgs-dll roc_hud_observed_8b61d4c6473da678.cpp
+// roc-lib: rbxgs-dll roc_hud_native_widths_f832140a2f3f7f31.cpp
 
 // Candidate translation unit (score above; library headers required).
+#pragma include_alias("v8tree/Instance.h", "roc_instance_genuine_guiditem_headerf016862b4461fbce.cpp")
+#define _CPPUNWIND 1
 #include "gui/Layout.h"
+#include "gui/Gui.h"
+namespace RBX { inline void TextDisplay::setFontSize(int size) { fontSize=size; setGuiSize(G3D::Vector2(fontSize*10.0f,fontSize*2.0f)); } }
+#include "util/Utilities.h"
 #include <G3D/Color3.h>
 #include <boost/shared_ptr.hpp>
 #include <vector>
@@ -13,14 +18,14 @@
 namespace HudRecovery {
 class Item { public: virtual ~Item(); virtual void setName(const std::string&); };
 class Text : public Item { public:
- void setFontSize(int value) { *reinterpret_cast<int*>(reinterpret_cast<char*>(this)+0x160)=value; *reinterpret_cast<G3D::Vector2*>(reinterpret_cast<char*>(this)+0x13c)=G3D::Vector2(value*10.0f,value*2.0f); }
+ void setFontSize(int value) { reinterpret_cast<RBX::TextDisplay*>(this)->setFontSize(value); }
  void setFontColor(const G3D::Color4& value) { *reinterpret_cast<G3D::Color4*>(reinterpret_cast<char*>(this)+0x164)=value; }
  void setBorderColor(const G3D::Color4& value) { *reinterpret_cast<G3D::Color4*>(reinterpret_cast<char*>(this)+0x174)=value; }
  void setGuiSize(const G3D::Vector2& value) { *reinterpret_cast<G3D::Vector2*>(reinterpret_cast<char*>(this)+0x13c)=value; }
 };
 class Panel : public Item { public:
  void addGuiItem(boost::shared_ptr<Item>);
- std::vector<boost::shared_ptr<Item> >* children() const {return *reinterpret_cast<std::vector<boost::shared_ptr<Item> >* const*>(reinterpret_cast<const char*>(this)+0x108);}
+ const RBX::CopyOnWrite<std::vector<boost::shared_ptr<Item> > >& children() const {return *reinterpret_cast<const RBX::CopyOnWrite<std::vector<boost::shared_ptr<Item> > >*>(reinterpret_cast<const char*>(this)+0x108);}
  size_t numChildren() const {return children()?children()->size():0;}
  Item* child(size_t index) const {return (*children())[index].get();}
  void setVisible(bool value) { *reinterpret_cast<bool*>(reinterpret_cast<char*>(this)+0x158)=value; }
@@ -34,7 +39,7 @@ boost::shared_ptr<Text> shareText(void*);
 const G3D::Color4& background();
 class Builder {public: boost::shared_ptr<Panel> stats1();boost::shared_ptr<Panel> stats2();};
 boost::shared_ptr<Panel> Builder::stats1() {
- RBX::Layout layout; layout.xLocation=RBX::Rect::LEFT;layout.yLocation=RBX::Rect::BOTTOM;layout.offset=G3D::Vector2int16(50,40);layout.layoutStyle=RBX::Layout::VERTICAL;layout.backdropColor=background();
+ RBX::Layout layout; layout.xLocation=RBX::Rect::LEFT;layout.yLocation=RBX::Rect::BOTTOM;layout.offset.x=50;layout.offset.y=40;layout.layoutStyle=RBX::Layout::VERTICAL;layout.backdropColor=background();
  boost::shared_ptr<RelativePanel> panel=createPanel(layout);
  panel->setName("StatsHud1");
  panel->addGuiItem(createText("","----- World ----"));
@@ -69,7 +74,7 @@ boost::shared_ptr<Panel> Builder::stats1() {
  return panel;
 }
 boost::shared_ptr<Panel> Builder::stats2() {
- RBX::Layout layout; layout.xLocation=RBX::Rect::RIGHT;layout.yLocation=RBX::Rect::BOTTOM;layout.offset=G3D::Vector2int16(50,40);layout.layoutStyle=RBX::Layout::VERTICAL;layout.backdropColor=background();
+ RBX::Layout layout; layout.xLocation=RBX::Rect::RIGHT;layout.yLocation=RBX::Rect::BOTTOM;layout.offset.x=50;layout.offset.y=40;layout.layoutStyle=RBX::Layout::VERTICAL;layout.backdropColor=background();
  boost::shared_ptr<RelativePanel> panel=createPanel(layout);
  panel->setName("StatsHud2");
  panel->addGuiItem(createText("","----- Contacts ----"));
@@ -97,7 +102,7 @@ boost::shared_ptr<Panel> Builder::stats2() {
  for(size_t i=0;i<panel->numChildren();++i) {
   Item* item=panel->child(i);
   boost::shared_ptr<Text> text=shareText(item?reinterpret_cast<char*>(item)+0xe4:0);
-  text->setFontSize(14);text->setFontColor(G3D::Color4(G3D::Color3::purple(),1.0f));text->setBorderColor(G3D::Color4::clear());text->setGuiSize(G3D::Vector2(310.0f,22.0f));
+  text->setFontSize(14);text->setFontColor(G3D::Color4(G3D::Color3::purple(),1.0f));text->setBorderColor(G3D::Color4::clear());text->setGuiSize(G3D::Vector2(260.0f,22.0f));
  }
  panel->setVisible(false);
  return panel;

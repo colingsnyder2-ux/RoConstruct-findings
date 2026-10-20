@@ -5,9 +5,19 @@ struct Message {
     char alignment[3];
     char first[0xc];
     char second[0xc];
-    char* getPtr() const;
+    struct Cost { float x, y, z; };
+    Cost getPtr() const;
 };
 
-char* Message::getPtr() const {
-    return flag ? (char*)first : (char*)second;
+Message::Cost Message::getPtr() const {
+    const Cost* source;
+    if (flag)
+        source = reinterpret_cast<const Cost*>(first);
+    else
+        source = reinterpret_cast<const Cost*>(second);
+    Cost result;
+    result.x = source->x;
+    result.y = source->y;
+    result.z = source->z;
+    return result;
 }

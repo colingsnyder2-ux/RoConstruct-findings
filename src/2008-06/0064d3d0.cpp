@@ -1,9 +1,14 @@
+// roc-cl: 50727
 // from server: 57% by colin
 struct Link {
-    void update();
+    virtual void slot0();
+    virtual void slot1();
+    virtual Link* update();
+    void finish();
 };
 
 struct Item {
+    Item* next;
     char padding[4];
     Link *link;
 };
@@ -24,9 +29,8 @@ void SimJobStage::f()
     Item *it = l->head;
     while (it != (Item *)l) {
         Link *link = it->link;
-        if (link->update(), link->update(), link != 0) {
-            link->update();
-        }
-        it = (Item *)it->padding;
+        if (link->update())
+            link->update()->finish();
+        it = it->next;
     }
 }

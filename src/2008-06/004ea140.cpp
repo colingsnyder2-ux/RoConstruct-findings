@@ -1,62 +1,13 @@
-// from server: 93% by colin
+// from server: 100% by Espeon
 // roc-lang: cpp
 // roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: rbxgs-dll roc_espeon_decalcachepointerorderb8662ca4108cc8fa.cpp
+
+// Candidate translation unit (score above; library headers required).
 #include <map>
-extern "C" __declspec(dllimport) long __stdcall InterlockedDecrement(volatile long*);
-namespace G3D {
-class Vector3 {
-public:
-    float x, y, z;
-    Vector3() {}
-    Vector3(const Vector3& V) : x(V.x), y(V.y), z(V.z) {}
-    operator float*() { return (float*)this; }
-    operator const float*() const { return (const float*)this; }
-};
-class AtomicInt32 {
-    volatile long _value;
-public:
-    unsigned int decrement() { return InterlockedDecrement(&_value) != 0; }
-};
-class ReferenceCountedObject {
-public:
-    AtomicInt32 ReferenceCountedObject_refCount;
-    void* ReferenceCountedObject_weakPointer;
-    void ReferenceCountedObject_zeroWeakPointers();
-    virtual ~ReferenceCountedObject() {}
-};
-template <class T>
-class ReferenceCountedPointer {
-private:
-    T* m_pointer;
-    void zeroPointer() {
-        if (m_pointer != 0) {
-            if (m_pointer->ReferenceCountedObject_refCount.decrement() == 0) {
-                m_pointer->ReferenceCountedObject_zeroWeakPointers();
-                delete m_pointer;
-            }
-            m_pointer = 0;
-        }
-    }
-    void setPointer(T* x);
-public:
-    ReferenceCountedPointer() : m_pointer(0) {}
-    ReferenceCountedPointer(const ReferenceCountedPointer<T>& p) : m_pointer(0) { setPointer(p.m_pointer); }
-    ~ReferenceCountedPointer() {
-        T* pointer = m_pointer;
-        if (pointer != 0) {
-            if (pointer->ReferenceCountedObject_refCount.decrement() == 0) {
-                pointer->ReferenceCountedObject_zeroWeakPointers();
-                delete pointer;
-            }
-        }
-    }
-    const ReferenceCountedPointer<T>& operator=(const ReferenceCountedPointer<T>& p) {
-        setPointer(p.m_pointer);
-        return *this;
-    }
-};
-}
+#include <G3D/Vector3.h>
+#include <G3D/ReferenceCount.h>
 namespace RBX {
 enum NormalId { NORM_X };
 namespace Render { class Mesh : public G3D::ReferenceCountedObject {}; }
@@ -78,7 +29,7 @@ public:
                 return true;
             if (face > other.face)
                 return false;
-            return size < other.size;
+            return static_cast<const float*>(size) < static_cast<const float*>(other.size);
         }
     };
     typedef std::map<DecalKey, G3D::ReferenceCountedPointer<Render::Mesh> > DecalCache;
