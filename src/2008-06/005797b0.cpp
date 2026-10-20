@@ -1,7 +1,6 @@
-// from server: 99% by colin
-//
+// from server: 100% by Espeon
 
-//
+
 
 namespace std {
     class bad_cast {
@@ -50,9 +49,7 @@ namespace RBX {
     }
 }
 
-class DHTMLWindow : public RBX::Reflection::DescribedBase {
-    virtual void reserved();
-};
+namespace RBX {class DataModel : public Reflection::DescribedBase {virtual void reserved();};}
 
 struct Arguments {
     virtual void reserved();
@@ -66,7 +63,7 @@ struct S {
     Argument third;
 
     void invoke(RBX::Reflection::DescribedBase*, Arguments*);
-    void dispatch(DHTMLWindow*, void*, Argument*, Argument*, Argument*);
+    void dispatch(RBX::DataModel*, void*, Argument*, Argument*, Argument*);
 };
 
 void S::invoke(RBX::Reflection::DescribedBase* instance, Arguments* arguments) {
@@ -79,7 +76,7 @@ void S::invoke(RBX::Reflection::DescribedBase* instance, Arguments* arguments) {
     Argument c(third);
     arguments->set(3, &c);
 
-    DHTMLWindow* window = dynamic_cast<DHTMLWindow*>(instance);
+    RBX::DataModel* window = dynamic_cast<RBX::DataModel*>(instance);
     if (!window)
         throw std::bad_cast("bad cast");
 

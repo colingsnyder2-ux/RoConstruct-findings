@@ -1,9 +1,7 @@
-// from server: 99% by colin
-//
+// from server: 100% by Espeon
 
-//
 
-//
+
 extern "C" __declspec(dllimport) void __stdcall _invalid_parameter_noinfo();
 
 void* __cdecl operator new(unsigned int);
@@ -33,7 +31,7 @@ inline Allocator::~Allocator() {
 }
 
 struct String;
-void __cdecl initializeString(String*, const char*);
+String* __cdecl initializeString(String*, const char*);
 
 struct String {
     Allocator allocator;
@@ -92,6 +90,8 @@ inline VectorBuy::VectorBuy() {
     buy(0);
 }
 
+String __cdecl makeString(const char*);
+
 struct ServiceProvider {
     void load(String, Vector*);
 };
@@ -107,7 +107,7 @@ struct SlingshotTool {
 SharedPtr SlingshotTool::func() {
     VectorBuy result;
     func_00465210(instance)->load(
-        String("Fonts\\SlingshotPellet.rbxm"), &result);
+        makeString("Fonts\\Rocket.rbxm"), &result);
 
     SharedPtr* position = result.first;
 

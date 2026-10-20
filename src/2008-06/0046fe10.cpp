@@ -1,7 +1,6 @@
-// from server: 99% by colin
-//
+// from server: 100% by Espeon
 
-//
+
 
 struct String {
     unsigned int allocator;
@@ -52,7 +51,7 @@ bool __cdecl checkGLCaps()
                 assertionExpression,
                 String(assertionMessage),
                 assertionFile,
-                561,
+                567,
                 &ignoreAssertion,
                 true);
         if (terminate) {

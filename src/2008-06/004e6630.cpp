@@ -1,13 +1,13 @@
-// from server: 98% by colin
-//
+// from server: 99% by Espeon
+
 
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
 extern "C" long __cdecl _InterlockedDecrement(volatile long*);
 #pragma intrinsic(_InterlockedDecrement)
 
-extern "C" long (__stdcall *InterlockedIncrement)(volatile long*);
-extern "C" long (__stdcall *InterlockedDecrement)(volatile long*);
+extern "C" __declspec(dllimport) long __stdcall InterlockedIncrement(volatile long*);
+extern "C" __declspec(dllimport) long __stdcall InterlockedDecrement(volatile long*);
 
 struct Node {
     char padding[0x104];
@@ -84,10 +84,10 @@ struct Holder {
 };
 
 struct Part : Intrusive {
-    char padding[0xb4];
-    Node* node;
-    char padding2[0x10];
+    char padding[0xc8];
     Holder* holder;
+    char padding2[4];
+    Node* node;
     void f(Shared);
 };
 

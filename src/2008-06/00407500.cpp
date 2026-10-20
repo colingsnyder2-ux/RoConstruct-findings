@@ -1,13 +1,9 @@
-// from server: 98% by colin
-//
+// from server: 100% by Espeon
 
-//
 
-//
 
-//
 
-//
+
 
 typedef unsigned short WCHAR;
 
@@ -107,7 +103,7 @@ struct S {
 };
 
 struct Owner {
-    unsigned char storage[8];
+    unsigned char storage[4];
     S object;
     Site site;
 };
@@ -115,7 +111,7 @@ struct Owner {
 int S::checkSite()
 {
     Owner *owner = this
-        ? reinterpret_cast<Owner *>(reinterpret_cast<char *>(this) - 8)
+        ? reinterpret_cast<Owner *>(reinterpret_cast<char *>(this) - 4)
         : 0;
 
     ComPtr site;

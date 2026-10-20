@@ -1,12 +1,14 @@
-// from server: 80% by colin
+// from server: 100% by Espeon
 struct StreamBuffer {};
-struct BasicIOS {};
+struct BasicIOS {StreamBuffer* get_buffer()const;};
 struct OutputStream : virtual BasicIOS {};
 
 extern bool (__cdecl *uncaught_exception)();
 extern void (__thiscall *output_suffix)(OutputStream *);
 extern StreamBuffer *(__thiscall *get_buffer)(const BasicIOS *);
 extern void (__thiscall *unlock_buffer)(StreamBuffer *);
+
+inline StreamBuffer* BasicIOS::get_buffer()const {return ::get_buffer(this);}
 
 struct SentryBase
 {
@@ -21,9 +23,8 @@ struct Sentry : SentryBase
 
 SentryBase::~SentryBase()
 {
-    StreamBuffer *buf = get_buffer(static_cast<BasicIOS *>(stream));
-    if (buf)
-        unlock_buffer(buf);
+    if (stream->get_buffer())
+        unlock_buffer(stream->get_buffer());
 }
 
 Sentry::~Sentry()

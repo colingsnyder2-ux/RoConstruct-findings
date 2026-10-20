@@ -1,3 +1,4 @@
+// from server: 100% by Espeon
 // from server: 88% by colin
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD /fp:fast
@@ -83,15 +84,9 @@
 // 004e6afc  5e                   pop esi
 // 004e6afd  c20400               ret 4
 
-struct PartChunk {
-    void* vtable;
-    unsigned char padding[0xb8];
-    char* field_bc;
-    void method_4e6740();
-    void method_4e68b0();
-    void method_4e6a30(void* arg);
-};
-
+struct Part{char p0[0x1c8];int flag;char p1[0x224-0x1cc];float transparency;};
+struct PartChunk{virtual void slot0();virtual void slot1();virtual void slot2();virtual void slot3();virtual void slot4();virtual void slot5();virtual void slot6();virtual void slot7();virtual void set(float);virtual float get();char padding[0xb8];Part* field_bc;void method_4e6740();void method_4e68b0();void method_4e6a30(void*);};
+extern char propertyA,propertyB,propertyC,propertyD;
 extern "C" bool __cdecl is_type(void* type);
 
 extern float g_819bac;
@@ -99,16 +94,16 @@ extern float g_827494;
 
 void PartChunk::method_4e6a30(void* arg)
 {
-    if (arg == (void*)0x976148) {
+    if (arg == &propertyA) {
         method_4e6740();
         method_4e68b0();
         return;
     }
-    if (arg == (void*)0x976128) {
+    if (arg == &propertyB) {
         method_4e68b0();
         return;
     }
-    if (arg == (void*)0x9760a8) {
+    if (arg == &propertyC) {
         method_4e6740();
         return;
     }
@@ -116,29 +111,9 @@ void PartChunk::method_4e6a30(void* arg)
         method_4e6740();
         return;
     }
-    if (arg == (void*)0x97626c) {
-        char* f = field_bc;
-        float v = *(float*)(f + 0x224);
-        typedef void (__thiscall *SetFn)(PartChunk*, float);
-        SetFn set = *(SetFn*)(*(char**)this + 0x20);
-        set(this, v);
-
-        char* f2 = field_bc;
-        typedef float (__thiscall *GetFn)(PartChunk*);
-        GetFn get = *(GetFn*)(*(char**)this + 0x24);
-        float r = get(this);
-        if (*(int*)(f2 + 0x1c8) != 0) {
-            if (r < g_819bac) {
-                typedef void (__thiscall *SetFn2)(PartChunk*, float);
-                SetFn2 set2 = *(SetFn2*)(*(char**)this + 0x20);
-                set2(this, r);
-            }
-        } else {
-            if (g_827494 == r) {
-                typedef void (__thiscall *SetFn2)(PartChunk*, float);
-                SetFn2 set2 = *(SetFn2*)(*(char**)this + 0x20);
-                set2(this, 0.0f);
-            }
-        }
+    if (arg == &propertyD) {
+        set(field_bc->transparency);
+        if(field_bc->flag){if(get()<0.5f)set(0.5f);}
+        else {if(get()<1.0f)set(0.0f);}
     }
 }
