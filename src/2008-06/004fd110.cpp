@@ -1,5 +1,5 @@
-// from server: 75% by colin
+// from server: 95% by Espeon
 // roc-lang: cpp
 // roc-cl: 21022
-// roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: openrbx-client-dll roc_espeon_cylindersurfacetypes_4e8426dfb94586ba.cpp
+// roc-flags: /O2 /GS- /EHsc /MD /fp:fast
+// roc-lib: rbxgs-dll roc_espeon_spheredecalinlinefc809a8b6864ec7e.cpp
