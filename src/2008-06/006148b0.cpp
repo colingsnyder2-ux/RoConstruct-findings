@@ -1,4 +1,6 @@
-// from server: 87% by king_originala
+// from server: 100% by Espeon
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
 void* __cdecl operator new(unsigned int);
 void __cdecl operator delete(void*);
 
@@ -37,6 +39,8 @@ struct Body {
     Body* calcRoot();
     void setRoot(Body*);
 };
+
+__declspec(noinline) void Body::setRoot(Body*newRoot){root=newRoot;for(int i=0;i<childCount;++i)children[i]->setRoot(newRoot);}
 
 void Body::setParent(Body* value)
 {
@@ -79,3 +83,4 @@ void Body::setParent(Body* value)
         } while ((int)i < childCount);
     }
 }
+

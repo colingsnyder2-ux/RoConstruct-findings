@@ -1,4 +1,4 @@
-// from server: 99% by king_originala
+// from server: 100% by Gemini
 struct String;
 extern void (__thiscall* string_copy_ctor)(String*, const String&);
 extern void (__thiscall* string_dtor)(String*);
@@ -82,14 +82,14 @@ struct S {
 
     Factory* factory();
     void consume(Object*, int);
-    void f(String, int, int);
+    void f(Argument, int);
 };
 
 inline Factory* S::factory() {
     return provider ? provider->getFactory() : 0;
 }
 
-void S::f(String text, int value, int option) {
-    Pointer object(factory()->create(Argument(text, value)));
+void S::f(Argument arg, int option) {
+    Pointer object(factory()->create(arg));
     consume(object.value, option);
 }

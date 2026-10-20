@@ -1,6 +1,6 @@
-// from server: 89% by colin
-//
-
+// from server: 100% by Espeon
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
 struct Part
 {
     unsigned char padding[0xb8];
@@ -42,22 +42,12 @@ Joint* __cdecl func_00669d30(Part* a, Part* b, int i, int j)
     int left = a->state[i];
     int right = b->state[j];
 
-    if (left == 2)
-    {
-        if (right != 2)
-            return 0;
-    }
-    else
-    {
-        if (left != 2 || right != 2)
-            return 0;
-    }
-
-    if (!compatible(a, b, i, j))
-        return 0;
+    if ((left == 2 || right == 2) && compatible(a,b,i,j)) {
 
     Frame x;
     Frame y;
     getFrames(a, b, i, j, &x, &y);
     return new Joint(a, b, x, y);
+    }
+    return 0;
 }

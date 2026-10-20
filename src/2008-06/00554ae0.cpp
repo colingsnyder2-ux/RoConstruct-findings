@@ -1,38 +1,28 @@
-// from server: 98% by king_originala
-extern "C" void (__cdecl *invalid_parameter_handler)();
+// from server: 100% by Gemini
+#include <vector>
 
 struct S {
     struct Cursor {
-        unsigned index;
-        unsigned limit;
+        size_t index;
+        size_t limit;
         Cursor* previous;
     };
 
-    unsigned reserved[4];
-    void** begin;
-    void** end;
-    void** capacity;
-    Cursor* current;
+    virtual ~S();
+    mutable std::vector<void*> listeners;
+    mutable Cursor* current;
 
-    void invoke(void* argument, void* element);
-    void run(void* argument);
+    void invoke(int argument, void* element) const;
+    void run(int argument) const throw();
 };
 
-void S::run(void* argument)
+void S::run(int argument) const throw()
 {
-    Cursor cursor = { 0, unsigned(end - begin), current };
+    Cursor cursor = { 0, listeners.size(), current };
     current = &cursor;
 
-    if (cursor.index < cursor.limit) {
-        void (__cdecl *handler)() = invalid_parameter_handler;
-        do {
-            unsigned index = cursor.index;
-            if (index >= unsigned(end - begin))
-                handler();
-
-            invoke(argument, begin[index]);
-            ++cursor.index;
-        } while (cursor.index < cursor.limit);
+    while (cursor.index < cursor.limit) {
+        invoke(argument, listeners[cursor.index++]);
     }
 
     current = cursor.previous;
