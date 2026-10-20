@@ -1,40 +1,218 @@
-// roc 2008-06 0064f830  unit: RBX::ImageKeyButton  size: 140 bytes
-// Make this compile to the exact bytes below, then: roc check 2008-06 0064f830
-//
-// 0064f830  8b442404             mov eax, dword ptr [esp + 4]
-// 0064f834  83f806               cmp eax, 6
-// 0064f837  772a                 ja 0x64f863
-// 0064f839  ff2485a0f86400       jmp dword ptr [eax*4 + 0x64f8a0]
-// 0064f840  e9bb0cfbff           jmp 0x600500
-// 0064f845  e966feffff           jmp 0x64f6b0
-// 0064f84a  e9a1feffff           jmp 0x64f6f0
-// 0064f84f  e9dcfeffff           jmp 0x64f730
-// 0064f854  e917ffffff           jmp 0x64f770
-// 0064f859  e952ffffff           jmp 0x64f7b0
-// 0064f85e  e98dffffff           jmp 0x64f7f0
-// 0064f863  b801000000           mov eax, 1
-// 0064f868  840524d99700         test byte ptr [0x97d924], al
-// 0064f86e  752a                 jne 0x64f89a
-// 0064f870  d905d8ba8400         fld dword ptr [0x84bad8]
-// 0064f876  090524d99700         or dword ptr [0x97d924], eax
-// 0064f87c  d91d18d99700         fstp dword ptr [0x97d918]
-// 0064f882  d905d4ba8400         fld dword ptr [0x84bad4]
-// 0064f888  d91d1cd99700         fstp dword ptr [0x97d91c]
-// 0064f88e  d905d0ba8400         fld dword ptr [0x84bad0]
-// 0064f894  d91d20d99700         fstp dword ptr [0x97d920]
-// 0064f89a  b818d99700           mov eax, 0x97d918
-// 0064f89f  c3                   ret 
-// 0064f8a0  40                   inc eax
-// 0064f8a1  f8                   clc 
-// 0064f8a2  640045f8             add byte ptr fs:[ebp - 8], al
-// 0064f8a6  64004af8             add byte ptr fs:[edx - 8], cl
-// 0064f8aa  64004ff8             add byte ptr fs:[edi - 8], cl
-// 0064f8ae  640054f864           add byte ptr fs:[eax + edi*8 + 0x64], dl
-// 0064f8b3  0059f8               add byte ptr [ecx - 8], bl
-// 0064f8b6  64005ef8             add byte ptr fs:[esi - 8], bl
-// library rbxgs/roc_scorehud_compile_board_59229c00dc6d423a.cpp (function ?colorFromIndex8@Color@RBX@@SAABVColor3@G3D@@H@Z)
-
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
 // roc-lib: rbxgs roc_scorehud_compile_board_59229c00dc6d423a.cpp
+
+// Candidate translation unit (score above; library headers required).
+#include <gui/ScoreHud.h>
+#include <typeinfo>
+#include <v8datamodel/Teams.h>
+#include <v8datamodel/Team.h>
+#include <util/Utilities.h>
+#include <util/Color.h>
+#include <G3D/Color3.h>
+#include <G3D/Color4.h>
+namespace RBX {
+// Existing native service specialization; retain the native call boundary.
+template<> Teams* ServiceProvider::find<Teams>(const Instance*);
+template<> Teams* ServiceProvider::create<Teams>(const Instance*);
+template<> Network::Players* ServiceProvider::find<Network::Players>(const Instance*);
+// Genuine public accessor bodies on opaque native receivers. Public SDK controls
+// prove their old inline offsets differ (name100/childrenf8/size134 vs native
+// name110/children108/size13c). These methods model their own native fields;
+// no private declarations/access modifiers, padding or virtual slots are changed.
+class InstanceApi {
+public:
+    Instance* findFirstChildByName(const std::string&) const;
+    size_t numChildren() const {
+        const boost::shared_ptr<Instances>& children=*(const boost::shared_ptr<Instances>*)((const char*)this+0x108);
+        return children ? children->size() : 0;
+    }
+    Instance* getChild(size_t i) {
+        return (**(const boost::shared_ptr<Instances>*)((const char*)this+0x108))[i].get();
+    }
+    const std::string& getName() const {
+        return *(const std::string*)((const char*)this+0x110);
+    }
+};
+class GuiItemApi {
+public:
+    void setGuiSize(const G3D::Vector2& value) {
+        *(G3D::Vector2*)((char*)this+0x13c)=value;
+    }
+};
+class PlayersApi {
+public:
+    boost::shared_ptr<const Instances> getPlayers();
+    int numPlayers() const {
+        return (int)(*(const CopyOnWrite<std::vector<boost::shared_ptr<Instance>>>*)((const char*)this+0x198))->size();
+    }
+};
+void ScoreHud::renderTeamDeathmatchLeaderboard(Adorn* adorn,BoardType mode) {
+    LeaderboardData data(this);
+    data.CompileData();
+    Teams* teams=ServiceProvider::find<Teams>(this);
+    if(!teams) return;
+    float scale=adorn->getViewport().width()/1024.0f;
+    float row=14.0f*scale;
+    unsigned teamCount=((InstanceApi*)teams)->numChildren();
+    Network::Players* nativePlayers=*(Network::Players**)((char*)this+0x150);
+    unsigned playerCount=((PlayersApi*)nativePlayers)->numPlayers();
+    unsigned rows=mode==TEAM_DEATHMATCH ? playerCount+3*(teamCount+1) : playerCount+3*teamCount+2;
+    ((GuiItemApi*)this)->setGuiSize(G3D::Vector2(scale*(mode==TEAM_DEATHMATCH?320.0f:240.0f),rows*row));
+    Rect rect=getMyRect();
+    adorn->rect2d(rect.toRect2D(),GuiItem::translucentBackdrop());
+    if(mode==TEAM_DEATHMATCH) {
+        for(unsigned col=0;col<data.statNamesList.size()+1;++col) {
+            G3D::Vector2 position(rect.low.x,rect.low.y);
+            float width=rect.high.x-rect.low.x;
+            std::string label("Team");
+            if(col) {
+                position.x+=width*0.5f+width*0.5f/data.statNamesList.size()*(col-1);
+                label=data.statNamesList[col-1];
+            }
+            adorn->drawFont2D(label,position,row,G3D::Color4(G3D::Color3::white(),1),G3D::Color4::zero(),Adorn::XALIGN_LEFT,Adorn::YALIGN_TOP,Adorn::PROPORTIONAL_SPACING);
+        }
+        rect.low.y+=row;
+    }
+    for(unsigned teamIndex=0;teamIndex<((InstanceApi*)teams)->numChildren();++teamIndex) {
+        Team* team=dynamic_cast<Team*>(((InstanceApi*)teams)->getChild(teamIndex));
+        if(!team) continue;
+        for(unsigned col=0;col<data.statNamesList.size()+1;++col) {
+            G3D::Vector2 position(rect.low.x,rect.low.y);
+            float width=rect.high.x-rect.low.x;
+            std::string label=((InstanceApi*)team)->getName();
+            if(col) {
+                position.x+=width*0.5f+width*0.5f/data.statNamesList.size()*(col-1);
+                label=StringConverter<int>::convertToString(data.teamTotals[team][data.statNamesList[col-1]]);
+            }
+            adorn->drawFont2D(label,position,row,G3D::Color4(team->getTeamColor().color3(),1),G3D::Color4(0,0,0,1),Adorn::XALIGN_LEFT,Adorn::YALIGN_TOP,Adorn::PROPORTIONAL_SPACING);
+        }
+        rect.low.y+=row;
+        adorn->line2d(G3D::Vector2(rect.low.x+2,rect.low.y+7),G3D::Vector2(rect.high.x-2,rect.low.y+7),G3D::Color4(team->getTeamColor().color3(),1));
+        rect.low.y+=row;
+        for(unsigned player=0;player<data.playersByTeamList[team].size();++player) {
+            for(unsigned col=0;col<data.statNamesList.size()+1;++col) {
+                G3D::Vector2 position(rect.low.x,rect.low.y);
+                float width=rect.high.x-rect.low.x;
+                std::string label=data.playersByTeamList[team][player];
+                if(col) {
+                    position.x+=width*0.5f+width*0.5f/data.statNamesList.size()*(col-1);
+                    int stat=data.statMap[data.playersByTeamList[team][player]][data.statNamesList[col-1]];
+                    label=StringConverter<int>::convertToString(stat);
+                }
+                adorn->drawFont2D(label,position,row,G3D::Color4(team->getTeamColor().color3(),1),G3D::Color4::zero(),Adorn::XALIGN_LEFT,Adorn::YALIGN_TOP,Adorn::PROPORTIONAL_SPACING);
+                if(!col) position.x-=5.0f; // Observed native post-draw store.
+            }
+            rect.low.y+=row;
+        }
+        rect.low.y+=row;
+    }
+}
+
+// Native00669f60 consumes one string reference, returns a32-bit hash; caller
+// retains the lowthree bits for the genuine Color::colorFromIndex8 palette.
+unsigned int playerNameHash(const std::string&);
+void ScoreHud::renderFFALeaderboard(Adorn* adorn) {
+    BoardData data;
+    BuildBoardData(data);
+    if(data.fields.empty()) return;
+    bool hasStats=data.fields.size()!=1;
+    float viewportWidth=adorn->getViewport().width();
+    float row=viewportWidth/1024.0f*14.0f;
+    float width=viewportWidth*0.33f;
+    if(!hasStats) width*=0.5f;
+    ((GuiItemApi*)this)->setGuiSize(G3D::Vector2(width,(data.data.size()+2.5f)*row));
+    Rect rect=getMyRect();
+    adorn->rect2d(rect.toRect2D(),GuiItem::translucentBackdrop());
+    for(unsigned col=0;col<data.fields.size();++col) {
+        G3D::Vector2 position(rect.low.x,rect.low.y);
+        float extent=rect.high.x-rect.low.x;
+        if(col) position.x+=extent*0.5f+extent*0.5f/data.fields.size()*(col-1);
+        adorn->drawFont2D(data.fields[col],position,row,G3D::Color4(G3D::Color3::white(),1),G3D::Color4::zero(),Adorn::XALIGN_LEFT,Adorn::YALIGN_TOP,Adorn::PROPORTIONAL_SPACING);
+    }
+    rect.low.y+=row*2;
+    for(unsigned col=0;col<data.fields.size();++col) {
+        for(unsigned index=0;index<data.data.size();++index) {
+            G3D::Color3 color=G3D::Color3::white();
+            if(!col) color=Color::colorFromIndex8(playerNameHash(data.data[index][0])&7);
+            float extent=rect.high.x-rect.low.x;
+            G3D::Vector2 position(rect.low.x,rect.low.y+index*row);
+            if(col) position.x+=extent*0.5f+extent*0.5f/data.fields.size()*(col-1);
+            adorn->drawFont2D(data.data[index][col],position,row,G3D::Color4(color,1),G3D::Color4::zero(),Adorn::XALIGN_LEFT,Adorn::YALIGN_TOP,Adorn::PROPORTIONAL_SPACING);
+        }
+    }
+}
+
+// Native RTTI object 00960f78 is Value<int,&sIntValue> with the older char*
+// non-type template argument. Use the actual CRT interface and external native
+// type_info object instead of substituting the newer SDK's differently named type.
+extern const type_info nativeIntValueType;
+extern "C" void* __cdecl __RTDynamicCast(void*,long,void*,void*,int);
+// Actual descriptor's GetSet pointer at0097d39c. Native getValue slot8 takes
+// const DescribedBase*, returns int (__thiscall). No synthetic virtual class.
+extern void* nativeIntValueGetter;
+static int readNativeIntValue(Instance* instance) {
+    typedef int (__thiscall *GetValue)(void*,const Reflection::DescribedBase*);
+    return ((GetValue)(*(void***)nativeIntValueGetter)[2])(
+        nativeIntValueGetter,instance?(const Reflection::DescribedBase*)((char*)instance+0x14):0);
+}
+class TeamsApi {
+public:
+    boost::shared_ptr<const Instances> getTeams();
+};
+void ScoreHud::BuildBoardData(BoardData& board) {
+    Network::Players* nativePlayers=*(Network::Players**)((char*)this+0x150);
+    if(!nativePlayers) return;
+    boost::shared_ptr<const Instances> roster=((PlayersApi*)nativePlayers)->getPlayers();
+    for(unsigned i=0;i<roster->size();++i) {
+        Instance* player=(*roster)[i].get();
+        Instance* stats=((InstanceApi*)player)->findFirstChildByName("leaderstats");
+        if(stats) {
+            board.SetSize(roster->size(),((InstanceApi*)stats)->numChildren()+1);
+            board.AddField("Player",0);
+            for(unsigned j=0;j<((InstanceApi*)stats)->numChildren();++j)
+                board.AddField(((InstanceApi*)((InstanceApi*)stats)->getChild(j))->getName(),j+1);
+            board.data[i][0]=((InstanceApi*)player)->getName();
+            for(unsigned j=0;j<((InstanceApi*)stats)->numChildren();++j) {
+                __RTDynamicCast(((InstanceApi*)stats)->getChild(j),0,(void*)&typeid(Instance),(void*)&nativeIntValueType,0);
+                int value=readNativeIntValue(((InstanceApi*)stats)->getChild(j));
+                board.data[i][j+1]=StringConverter<int>::convertToString(value);
+            }
+        } else {
+            board.SetSize(roster->size(),1);
+            board.AddField("Player List",0);
+            board.data[i][0]=((InstanceApi*)player)->getName();
+        }
+    }
+    for(unsigned i=0;i<roster->size();++i)
+        if(board.data[i][0].size()>16) board.data[i][0].resize(16);
+}
+void LeaderboardData::CompileData() {
+    Network::Players* players=ServiceProvider::find<Network::Players>(context);
+    Teams* teams=ServiceProvider::create<Teams>(context);
+    boost::shared_ptr<const Instances> teamList=((TeamsApi*)teams)->getTeams();
+    boost::shared_ptr<const Instances> roster=((PlayersApi*)players)->getPlayers();
+    for(unsigned i=0;i<roster->size();++i) {
+        Instance* player=(*roster)[i].get();
+        playersByTeamList[teams->getTeamFromPlayer((Network::Player*)player)].push_back(((InstanceApi*)player)->getName());
+        Instance* stats=((InstanceApi*)player)->findFirstChildByName("leaderstats");
+        if(stats) {
+            for(unsigned j=0;j<((InstanceApi*)stats)->numChildren();++j) {
+                Instance* value=(Instance*)__RTDynamicCast(((InstanceApi*)stats)->getChild(j),0,(void*)&typeid(Instance),(void*)&nativeIntValueType,0);
+                if(value) AddTuple(((InstanceApi*)player)->getName(),teams->getTeamFromPlayer((Network::Player*)player),((InstanceApi*)value)->getName(),readNativeIntValue(value));
+            }
+        }
+    }
+    if(!teams) return;
+    for(unsigned i=0;i<((InstanceApi*)teams)->numChildren();++i) {
+        Team* team=dynamic_cast<Team*>(((InstanceApi*)teams)->getChild(i));
+        if(!team) continue;
+        for(unsigned j=0;j<statNamesList.size();++j) {
+            teamTotals[team][statNamesList[j]]=0;
+            for(unsigned k=0;k<playersByTeamList[team].size();++k)
+                teamTotals[team][statNamesList[j]]+=statMap[playersByTeamList[team][k]][statNamesList[j]];
+        }
+    }
+}
+}

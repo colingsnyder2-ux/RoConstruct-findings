@@ -1,48 +1,77 @@
-// roc 2007-03 00481e60  unit: seg_00480000  size: 94 bytes
-// Make this compile to the exact bytes below, then: roc check 2007-03 00481e60
-//
-// 00481e60  53                   push ebx
-// 00481e61  55                   push ebp
-// 00481e62  8bd9                 mov ebx, ecx
-// 00481e64  33ed                 xor ebp, ebp
-// 00481e66  396b0c               cmp dword ptr [ebx + 0xc], ebp
-// 00481e69  7e39                 jle 0x481ea4
-// 00481e6b  56                   push esi
-// 00481e6c  57                   push edi
-// 00481e6d  8d4900               lea ecx, [ecx]
-// 00481e70  8b4308               mov eax, dword ptr [ebx + 8]
-// 00481e73  8b34a8               mov esi, dword ptr [eax + ebp*4]
-// 00481e76  85f6                 test esi, esi
-// 00481e78  7420                 je 0x481e9a
-// 00481e7a  8d9b00000000         lea ebx, [ebx]
-// 00481e80  8b7e68               mov edi, dword ptr [esi + 0x68]
-// 00481e83  8d4e04               lea ecx, [esi + 4]
-// 00481e86  e835f2ffff           call 0x4810c0
-// 00481e8b  56                   push esi
-// 00481e8c  e8cf140700           call 0x4f3360
-// 00481e91  83c404               add esp, 4
-// 00481e94  85ff                 test edi, edi
-// 00481e96  8bf7                 mov esi, edi
-// 00481e98  75e6                 jne 0x481e80
-// 00481e9a  83c501               add ebp, 1
-// 00481e9d  3b6b0c               cmp ebp, dword ptr [ebx + 0xc]
-// 00481ea0  7cce                 jl 0x481e70
-// 00481ea2  5f                   pop edi
-// 00481ea3  5e                   pop esi
-// 00481ea4  8b4b08               mov ecx, dword ptr [ebx + 8]
-// 00481ea7  51                   push ecx
-// 00481ea8  e8d3140700           call 0x4f3380
-// 00481ead  83c404               add esp, 4
-// 00481eb0  33c0                 xor eax, eax
-// 00481eb2  5d                   pop ebp
-// 00481eb3  894308               mov dword ptr [ebx + 8], eax
-// 00481eb6  89430c               mov dword ptr [ebx + 0xc], eax
-// 00481eb9  894304               mov dword ptr [ebx + 4], eax
-// 00481ebc  5b                   pop ebx
-// 00481ebd  c3                   ret 
-// library rbxgs-render/DepthBlur.cpp (function ?freeMemory@?$Table@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@VArg@ArgList@VertexAndPixelShader@G3D@@@G3D@@AAEXXZ)
-
 // roc-lang: cpp
 // roc-cl: 50727
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
 // roc-lib: rbxgs-render DepthBlur.cpp
+
+// Candidate translation unit (score above; library headers required).
+#include "RenderLib/DepthBlur.h"
+#include <GLG3D/Draw.h>
+#include <GLG3D/GLCaps.h>
+
+namespace RBX
+{
+	namespace Render
+	{
+		DepthBlur::DepthBlur()
+		{
+			if (G3D::GLCaps::supports_GL_ARB_shader_objects() &&
+				G3D::GLCaps::supports_GL_ARB_shading_language_100() &&
+				G3D::GLCaps::supports_GL_EXT_texture_rectangle())
+			{
+				shader = G3D::Shader::fromStrings(
+					"", 
+					STR(
+					uniform sampler2D depth; 
+					uniform sampler2D color; 
+					void main(void) { 
+						float d = texture2D(depth, gl_TexCoord[0].xy).r; 
+						float b = max(0.0, d - 0.99) * 100.0; 
+						vec2 s = g3d_sampler2DInvSize(color) * b * 2.0; 
+						vec3 c0 = texture2D(color, gl_TexCoord[0].xy + vec2( s.x, s.y)).rgb; 
+						vec3 c1 = texture2D(color, gl_TexCoord[0].xy + vec2(-s.x, s.y)).rgb; 
+						vec3 c2 = texture2D(color, gl_TexCoord[0].xy + vec2( s.x, -s.y)).rgb; 
+						vec3 c3 = texture2D(color, gl_TexCoord[0].xy + vec2(-s.x, -s.y)).rgb; 
+						vec3 c4 = texture2D(color, gl_TexCoord[0].xy + vec2( 0, s.y)).rgb; 
+						vec3 c5 = texture2D(color, gl_TexCoord[0].xy + vec2(-s.x, 0)).rgb; 
+						vec3 c6 = texture2D(color, gl_TexCoord[0].xy + vec2( 0, -s.y)).rgb; 
+						vec3 c7 = texture2D(color, gl_TexCoord[0].xy + vec2( s.x, 0)).rgb; 
+						vec3 c8 = texture2D(color, gl_TexCoord[0].xy).rgb; 
+						gl_FragColor.rgb = (c0 + c1 + c2 + c3 + c4 + c5 + c6 + c7 + c8) / 9.0; 
+						gl_FragColor.a = 1.0; 
+					}
+					)
+				);
+
+				shader->setPreserveState(false);
+			}
+		}
+
+		void DepthBlur::apply(G3D::RenderDevice* rd)
+		{
+			if (shader.notNull())
+			{
+				rd->push2D();
+				G3D::Rect2D screenRect = rd->getViewport();
+
+				allocateTextures(screenRect);
+				depth->copyFromScreen(screenRect);
+				color->copyFromScreen(screenRect);
+				rd->setShader(shader);
+			
+				G3D::Draw::fastRect2D(screenRect, rd);
+				rd->pop2D();
+			}
+		}
+
+		void DepthBlur::allocateTextures(const G3D::Rect2D& screenRect)
+		{
+			if (depth.isNull() || depth->vector2Bounds() != screenRect.wh())
+			{
+				depth = G3D::Texture::createEmpty("Depth Buffer", screenRect.width(), screenRect.height(), G3D::TextureFormat::depth(0), G3D::Texture::DIM_2D_NPOT, G3D::Texture::Parameters::video());
+				color = G3D::Texture::createEmpty("Color Buffer", screenRect.width(), screenRect.height(), G3D::TextureFormat::RGB8, G3D::Texture::DIM_2D_NPOT, G3D::Texture::Parameters::video());
+				shader->args.set("depth", depth);
+				shader->args.set("color", color);
+			}
+		}
+	}
+}

@@ -1,142 +1,404 @@
-// roc 2007-03 0043a320  unit: seg_00430000  size: 293 bytes
-// Make this compile to the exact bytes below, then: roc check 2007-03 0043a320
-//
-// 0043a320  56                   push esi
-// 0043a321  57                   push edi
-// 0043a322  8b7c240c             mov edi, dword ptr [esp + 0xc]
-// 0043a326  8bf1                 mov esi, ecx
-// 0043a328  3bf7                 cmp esi, edi
-// 0043a32a  0f840e010000         je 0x43a43e
-// 0043a330  53                   push ebx
-// 0043a331  8b5f04               mov ebx, dword ptr [edi + 4]
-// 0043a334  85db                 test ebx, ebx
-// 0043a336  55                   push ebp
-// 0043a337  740c                 je 0x43a345
-// 0043a339  8b6f08               mov ebp, dword ptr [edi + 8]
-// 0043a33c  8bd5                 mov edx, ebp
-// 0043a33e  2bd3                 sub edx, ebx
-// 0043a340  c1fa02               sar edx, 2
-// 0043a343  750e                 jne 0x43a353
-// 0043a345  e8c6f8ffff           call 0x439c10
-// 0043a34a  5d                   pop ebp
-// 0043a34b  5b                   pop ebx
-// 0043a34c  5f                   pop edi
-// 0043a34d  8bc6                 mov eax, esi
-// 0043a34f  5e                   pop esi
-// 0043a350  c20400               ret 4
-// 0043a353  8b4604               mov eax, dword ptr [esi + 4]
-// 0043a356  85c0                 test eax, eax
-// 0043a358  7504                 jne 0x43a35e
-// 0043a35a  33c9                 xor ecx, ecx
-// 0043a35c  eb08                 jmp 0x43a366
-// 0043a35e  8b4e08               mov ecx, dword ptr [esi + 8]
-// 0043a361  2bc8                 sub ecx, eax
-// 0043a363  c1f902               sar ecx, 2
-// 0043a366  3bd1                 cmp edx, ecx
-// 0043a368  7740                 ja 0x43a3aa
-// 0043a36a  50                   push eax
-// 0043a36b  55                   push ebp
-// 0043a36c  53                   push ebx
-// 0043a36d  e80ef4ffff           call 0x439780
-// 0043a372  8b4704               mov eax, dword ptr [edi + 4]
-// 0043a375  83c40c               add esp, 0xc
-// 0043a378  85c0                 test eax, eax
-// 0043a37a  7514                 jne 0x43a390
-// 0043a37c  8b4604               mov eax, dword ptr [esi + 4]
-// 0043a37f  5d                   pop ebp
-// 0043a380  33ff                 xor edi, edi
-// 0043a382  8d0cb8               lea ecx, [eax + edi*4]
-// 0043a385  5b                   pop ebx
-// 0043a386  5f                   pop edi
-// 0043a387  894e08               mov dword ptr [esi + 8], ecx
-// 0043a38a  8bc6                 mov eax, esi
-// 0043a38c  5e                   pop esi
-// 0043a38d  c20400               ret 4
-// 0043a390  8b7f08               mov edi, dword ptr [edi + 8]
-// 0043a393  2bf8                 sub edi, eax
-// 0043a395  8b4604               mov eax, dword ptr [esi + 4]
-// 0043a398  5d                   pop ebp
-// 0043a399  c1ff02               sar edi, 2
-// 0043a39c  8d0cb8               lea ecx, [eax + edi*4]
-// 0043a39f  5b                   pop ebx
-// 0043a3a0  5f                   pop edi
-// 0043a3a1  894e08               mov dword ptr [esi + 8], ecx
-// 0043a3a4  8bc6                 mov eax, esi
-// 0043a3a6  5e                   pop esi
-// 0043a3a7  c20400               ret 4
-// 0043a3aa  85c0                 test eax, eax
-// 0043a3ac  7504                 jne 0x43a3b2
-// 0043a3ae  33c9                 xor ecx, ecx
-// 0043a3b0  eb08                 jmp 0x43a3ba
-// 0043a3b2  8b4e0c               mov ecx, dword ptr [esi + 0xc]
-// 0043a3b5  2bc8                 sub ecx, eax
-// 0043a3b7  c1f902               sar ecx, 2
-// 0043a3ba  3bd1                 cmp edx, ecx
-// 0043a3bc  773c                 ja 0x43a3fa
-// 0043a3be  85c0                 test eax, eax
-// 0043a3c0  7504                 jne 0x43a3c6
-// 0043a3c2  33c9                 xor ecx, ecx
-// 0043a3c4  eb08                 jmp 0x43a3ce
-// 0043a3c6  8b4e08               mov ecx, dword ptr [esi + 8]
-// 0043a3c9  2bc8                 sub ecx, eax
-// 0043a3cb  c1f902               sar ecx, 2
-// 0043a3ce  8bd3                 mov edx, ebx
-// 0043a3d0  50                   push eax
-// 0043a3d1  8d1c8a               lea ebx, [edx + ecx*4]
-// 0043a3d4  53                   push ebx
-// 0043a3d5  52                   push edx
-// 0043a3d6  e8a5f3ffff           call 0x439780
-// 0043a3db  8b5608               mov edx, dword ptr [esi + 8]
-// 0043a3de  8b4708               mov eax, dword ptr [edi + 8]
-// 0043a3e1  83c40c               add esp, 0xc
-// 0043a3e4  52                   push edx
-// 0043a3e5  50                   push eax
-// 0043a3e6  53                   push ebx
-// 0043a3e7  8bce                 mov ecx, esi
-// 0043a3e9  e882631300           call 0x570770
-// 0043a3ee  5d                   pop ebp
-// 0043a3ef  5b                   pop ebx
-// 0043a3f0  894608               mov dword ptr [esi + 8], eax
-// 0043a3f3  5f                   pop edi
-// 0043a3f4  8bc6                 mov eax, esi
-// 0043a3f6  5e                   pop esi
-// 0043a3f7  c20400               ret 4
-// 0043a3fa  85c0                 test eax, eax
-// 0043a3fc  7409                 je 0x43a407
-// 0043a3fe  50                   push eax
-// 0043a3ff  e8ec3c1e00           call 0x61e0f0
-// 0043a404  83c404               add esp, 4
-// 0043a407  8b4f04               mov ecx, dword ptr [edi + 4]
-// 0043a40a  85c9                 test ecx, ecx
-// 0043a40c  7504                 jne 0x43a412
-// 0043a40e  33c0                 xor eax, eax
-// 0043a410  eb08                 jmp 0x43a41a
-// 0043a412  8b4708               mov eax, dword ptr [edi + 8]
-// 0043a415  2bc1                 sub eax, ecx
-// 0043a417  c1f802               sar eax, 2
-// 0043a41a  50                   push eax
-// 0043a41b  8bce                 mov ecx, esi
-// 0043a41d  e87ef4ffff           call 0x4398a0
-// 0043a422  84c0                 test al, al
-// 0043a424  7416                 je 0x43a43c
-// 0043a426  8b4e04               mov ecx, dword ptr [esi + 4]
-// 0043a429  8b5708               mov edx, dword ptr [edi + 8]
-// 0043a42c  8b4704               mov eax, dword ptr [edi + 4]
-// 0043a42f  51                   push ecx
-// 0043a430  52                   push edx
-// 0043a431  50                   push eax
-// 0043a432  8bce                 mov ecx, esi
-// 0043a434  e837631300           call 0x570770
-// 0043a439  894608               mov dword ptr [esi + 8], eax
-// 0043a43c  5d                   pop ebp
-// 0043a43d  5b                   pop ebx
-// 0043a43e  5f                   pop edi
-// 0043a43f  8bc6                 mov eax, esi
-// 0043a441  5e                   pop esi
-// 0043a442  c20400               ret 4
-// library rbxgs/v8world\SpatialHash.cpp (function ??4?$vector@PAVSpatialNode@RBX@@V?$allocator@PAVSpatialNode@RBX@@@std@@@std@@QAEAAV01@ABV01@@Z)
-
 // roc-lang: cpp
 // roc-cl: 50727
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
 // roc-lib: rbxgs v8world/SpatialHash.cpp
+
+// Candidate translation unit (score above; library headers required).
+#include "v8world/SpatialHash.h"
+#include "v8world/Primitive.h"
+#include "v8world/ContactManager.h"
+#include "v8world/World.h"
+#include "v8world/Assembly.h"
+#include "util/debug.h"
+#include <G3D/AABox.h>
+#include <G3D/CollisionDetection.h>
+
+namespace RBX
+{
+	size_t SpatialHash::numBuckets()
+	{
+		return 0x10000;
+	}
+
+	SpatialHash::SpatialHash(World* world, ContactManager* contactManager) 
+		:world(world), 
+		contactManager(contactManager), 
+		extraNodes(0), 
+		nodesOut(0), 
+		maxBucket(0)
+	{
+		std::vector<SpatialNode*> temp(numBuckets());
+		this->nodes.swap(temp);
+	}
+
+	SpatialHash::~SpatialHash()
+	{
+		RBXASSERT(this->nodes.size() == numBuckets());
+
+		for (size_t i = 0; i < numBuckets(); i++)
+		{
+			if (this->nodes[i])
+			{
+				while (this->nodes[i])
+				{
+					SpatialNode* backup = this->nodes[i];
+					this->nodes[i] = this->nodes[i]->nextHashLink;
+					delete backup;
+					this->nodesOut--;
+				}
+			}
+		}
+
+		while (this->extraNodes)
+		{
+			SpatialNode* node = this->extraNodes;
+			this->extraNodes = node->nextHashLink;
+			delete node;
+		}
+
+		RBXASSERT(this->nodesOut == 0);
+	}
+
+	int SpatialHash::getHash(const Vector3int32& grid)
+	{
+		int result = grid.x * -0xba3 ^ grid.y * 0x409f ^ grid.z * -0x49;
+		result &= (numBuckets()-1);
+		RBXASSERT(result >= 0);
+		RBXASSERT(result < (int)numBuckets());
+		return result;
+	}
+
+	Vector3int32 SpatialHash::realToHashGrid(const G3D::Vector3& realPoint)
+	{
+		return Vector3int32::floor(realPoint * 0.125f);
+	}
+
+	Extents SpatialHash::hashGridToRealExtents(const G3D::Vector3& hashGrid)
+	{
+		return Extents(hashGrid * 8.0f, (hashGrid + G3D::Vector3(1, 1, 1)) * 8.0f);
+	}
+
+	void SpatialHash::computeMinMax(const Extents& extents, Vector3int32& min, Vector3int32& max)
+	{
+		min = SpatialHash::realToHashGrid(extents.min());
+		max = SpatialHash::realToHashGrid(extents.max());
+	}
+
+	void SpatialHash::removeNodeFromHash(SpatialNode* remove)
+	{
+		SpatialNode** temp = &this->nodes[remove->hashId];
+		while (*temp != remove)
+		{
+			temp = &(*temp)->nextHashLink;
+		}
+		*temp = remove->nextHashLink;
+	}
+
+	SpatialNode* SpatialHash::findNode(Primitive* p, const Vector3int32& grid)
+	{
+		int hash = SpatialHash::getHash(grid);
+		SpatialNode* result = this->nodes[hash];
+		while (result->primitive != p || result->gridId != grid)
+		{
+			result = result->nextHashLink;
+		}
+		return result;
+	}
+
+	void SpatialHash::destroyNode(SpatialNode* destroy)
+	{
+		SpatialNode* nextPrimitiveLink = destroy->nextPrimitiveLink;
+		SpatialNode* prevPrimitiveLink = destroy->prevPrimitiveLink;
+
+		if (nextPrimitiveLink)
+			nextPrimitiveLink->prevPrimitiveLink = prevPrimitiveLink;
+
+		if (prevPrimitiveLink)
+			prevPrimitiveLink->nextPrimitiveLink = nextPrimitiveLink;
+		else
+			destroy->primitive->spatialNodes = nextPrimitiveLink;
+
+		removeNodeFromHash(destroy);
+
+		int destroyHash = destroy->hashId;
+		Vector3int32 destroyGrid = destroy->gridId;
+
+		for (SpatialNode* node = nodes[destroyHash]; node != NULL; node = node->nextHashLink)
+		{
+			if (node->gridId == destroyGrid)
+			{
+				Primitive* destroyPrim = destroy->primitive;
+				Primitive* nodePrim = node->primitive;
+				RBXASSERT(nodePrim != destroyPrim);
+				if (Primitive::getContact(destroyPrim, nodePrim) && !shareCommonGrid(destroyPrim, nodePrim))
+					this->contactManager->onReleasePair(destroyPrim, nodePrim);
+			}
+		}
+
+		destroy->nextHashLink = this->extraNodes;
+		--this->nodesOut;
+		this->extraNodes = destroy;
+	}
+
+	bool SpatialHash::shareCommonGrid(Primitive* me, Primitive* other)
+	{
+		SpatialNode* spatialNodes = me->spatialNodes;
+		while (true)
+		{
+			if (!spatialNodes)
+				return false;
+			int hashId = spatialNodes->hashId;
+			SpatialNode* currentNode = this->nodes[hashId];
+			while (currentNode)
+			{
+				if (currentNode->primitive == other && currentNode->gridId == spatialNodes->gridId)
+					return true;
+				currentNode = currentNode->nextHashLink;
+			}
+			spatialNodes = spatialNodes->nextPrimitiveLink;
+		}
+	}
+
+	void SpatialHash::addNode(Primitive* p, const Vector3int32& grid)
+	{
+		int hash = getHash(grid);
+
+		SpatialNode* node = this->extraNodes;
+		++this->nodesOut;
+		if (node)
+			this->extraNodes = node->nextHashLink;
+		else
+			node = new SpatialNode();
+
+		node->primitive = p;
+		node->gridId = grid;
+		node->hashId = hash;
+
+		SpatialNode* oldNodes = p->spatialNodes;
+		p->spatialNodes = node;
+		node->nextPrimitiveLink = oldNodes;
+		node->prevPrimitiveLink = NULL;
+		if (oldNodes)
+			oldNodes->prevPrimitiveLink = node;
+
+		SpatialNode* linkedNode = this->nodes[hash];
+		node->nextHashLink = linkedNode;
+		this->nodes[hash] = node;
+
+		int numNodes = 1;
+		while (linkedNode)
+		{
+			++numNodes;
+
+			Primitive* linkedP = linkedNode->primitive;
+			if (linkedP != p && linkedNode->gridId == grid)
+			{
+				if (!Primitive::getContact(p, linkedP))
+					this->contactManager->onNewPair(p, linkedP);
+			}
+			else
+			{
+				RBXASSERT(grid != linkedNode->gridId);
+			}
+
+			linkedNode = linkedNode->nextHashLink;
+		}
+
+		this->maxBucket = std::max(this->maxBucket, numNodes);
+	}
+
+	void SpatialHash::changeMinMax(Primitive* p, const Extents& change, const Extents& oldBox, const Extents& newBox)
+	{
+		Vector3int32 min = Vector3int32::floor(change.min());
+		Vector3int32 max = Vector3int32::floor(change.max());
+
+		for (int i = min.x; i <= max.x; ++i)
+		{
+			for (int j = min.y; j <= max.y; ++j)
+			{
+				for (int k = min.z; k <= max.z; ++k)
+				{
+					bool inNew = newBox.contains(G3D::Vector3(i, j, k));
+					bool inOld = oldBox.contains(G3D::Vector3(i, j, k));
+
+					if (inNew)
+					{
+						if (!inOld)
+							addNode(p, Vector3int32(i, j, k));
+					}
+					else if (inOld)
+					{
+						SpatialNode* node = findNode(p, Vector3int32(i, j, k));
+						destroyNode(node);
+					}
+				}
+			}
+		}
+	}
+
+	void SpatialHash::primitiveExtentsChanged(Primitive* p)
+	{
+		RBXASSERT(p->spatialNodes);
+		Vector3int32 newMin;
+		Vector3int32 newMax;
+		const Extents& fuzzyExtents = p->getFastFuzzyExtents();
+		SpatialHash::computeMinMax(fuzzyExtents, newMin, newMax);
+		if (newMin != p->oldSpatialMin || newMax != p->oldSpatialMax)
+		{
+			Extents newBox(newMin, newMax);
+			Extents oldBox(p->oldSpatialMin, p->oldSpatialMax);
+			if (newBox.overlapsOrTouches(oldBox))
+			{
+				Extents unionBox(newBox);
+				unionBox.unionWith(oldBox);
+				this->changeMinMax(p, unionBox, oldBox, newBox);
+			}
+			else
+			{
+				this->changeMinMax(p, oldBox, oldBox, newBox);
+				this->changeMinMax(p, newBox, oldBox, newBox);
+			}
+			p->oldSpatialMin = newMin;
+			p->oldSpatialMax = newMax;
+
+		}
+	}
+
+	void SpatialHash::onPrimitiveExtentsChanged(Primitive* p)
+	{
+		this->primitiveExtentsChanged(p);
+	}
+
+	void SpatialHash::onPrimitiveAdded(Primitive* p)
+	{
+		RBXASSERT(!p->spatialNodes);
+		Vector3int32 newMin;
+		Vector3int32 newMax;
+		const Extents& fuzzyExtents = p->getFastFuzzyExtents();
+		SpatialHash::computeMinMax(fuzzyExtents, newMin, newMax);
+		p->oldSpatialMin = newMin;
+		p->oldSpatialMax = newMax;
+		for (int i = newMin.x; i <= newMax.x; i++)
+		{
+			for (int j = newMin.y; j <= newMax.y; j++)
+			{
+				for (int k = newMin.z; k <= newMax.z; k++)
+				{
+					this->addNode(p, Vector3int32(i, j, k));
+				}
+			}
+		}
+	}
+
+	void SpatialHash::onPrimitiveRemoved(Primitive* p)
+	{
+		for (SpatialNode* node = p->spatialNodes; node != NULL; node = p->spatialNodes)
+			destroyNode(node);
+	}
+
+	void SpatialHash::onAllPrimitivesMoved()
+	{
+		const G3D::Array<Primitive*>& primitives = this->world->getPrimitives();
+		for (int i = 0; i < primitives.size(); i++)
+		{
+			Primitive* primitive = primitives[i];
+			RBXASSERT(primitive);
+			RBXASSERT(primitive->getClump());
+			if (primitive->getAssembly()->moving())
+				this->primitiveExtentsChanged(primitive);
+		}
+	}
+
+	void SpatialHash::getPrimitivesInGrid(const Vector3int32& grid, G3D::Array<Primitive*>& found)
+	{
+		RBXASSERT(found.size() == 0);
+		int hash = SpatialHash::getHash(grid);
+		SpatialNode* node = this->nodes[hash];
+		while (node)
+		{
+			if (node->gridId == grid)
+				found.append(node->primitive);
+
+			node = node->nextHashLink;
+		}
+	}
+
+	void SpatialHash::getPrimitivesTouchingExtents(const Extents& extents, const Primitive* ignore, G3D::Array<Primitive*>& answer)
+	{
+		RBXASSERT(answer.size() == 0);
+		Vector3int32 min;
+		Vector3int32 max;
+		SpatialHash::computeMinMax(extents, min, max);
+		G3D::Array<Primitive*> foundThisGrid;
+
+		for (int i = min.x; i <= max.x; i++)
+		{
+			for (int j = min.y; j <= max.y; j++)
+			{
+				for (int k = min.z; k <= max.z; k++)
+				{
+					foundThisGrid.fastClear();
+					this->getPrimitivesInGrid(Vector3int32(i, j, k), foundThisGrid);
+					for (int l = 0; l < foundThisGrid.size(); l++)
+					{
+						Primitive* primitive = foundThisGrid[l];
+						if (primitive != ignore && !answer.contains(primitive))
+						{
+							if (extents.overlapsOrTouches(primitive->getFastFuzzyExtents()))
+								answer.append(primitive);
+						}
+					}
+				}
+			}
+		}
+		RBXASSERT(foundThisGrid.size() < 200);
+	}
+
+	bool SpatialHash::getNextGrid(Vector3int32& grid, const G3D::Ray& unitRay, float maxDistance)
+	{
+		Vector3int32 min;
+		Vector3int32 max;
+
+		for (int i = 0; i < 3; i++)
+		{
+			min[i] = unitRay.direction[i] < 0.0f ? -1 : 0;
+			max[i] = unitRay.direction[i] > 0.0f ? 1 : 0;
+		}
+
+		G3D::Vector3 gridF = grid.toVector3();
+		float distanceSquared = G3D::square(maxDistance + 16.0f);
+
+		for (int idfk = 1; idfk <= 3; idfk++)
+		{
+			for (int i = min.x; i <= max.x; i++)
+			{
+				for (int j = min.y; j <= max.y; j++)
+				{
+					for (int k = min.z; k <= max.z; k++)
+					{
+						if (abs(i)+abs(j)+abs(k) == idfk)
+						{
+							G3D::Vector3 offset(i, j, k);
+							G3D::Vector3 offsetGridF = (offset + gridF);
+							G3D::AABox box(offsetGridF * 8.0f, (offsetGridF + G3D::Vector3(1,1,1)) * 8.0f);
+							G3D::Vector3 location;
+
+							bool hit = G3D::CollisionDetection::collisionLocationForMovingPointFixedAABox(
+								unitRay.origin,
+								unitRay.direction,
+								box,
+								location);
+
+							if (hit && (location - unitRay.origin).squaredMagnitude() < distanceSquared)
+							{
+									grid = Vector3int32::floor(offset + gridF);
+									return true;
+							}
+						}
+					}
+				}
+			}
+		}
+		return false;
+	}
+}

@@ -1,62 +1,371 @@
-// roc 2007-03 00534180  unit: seg_00530000  size: 168 bytes
-// Make this compile to the exact bytes below, then: roc check 2007-03 00534180
-//
-// 00534180  83ec54               sub esp, 0x54
-// 00534183  56                   push esi
-// 00534184  57                   push edi
-// 00534185  8bf9                 mov edi, ecx
-// 00534187  8b87b8feffff         mov eax, dword ptr [edi - 0x148]
-// 0053418d  8b4804               mov ecx, dword ptr [eax + 4]
-// 00534190  8b9439b8feffff       mov edx, dword ptr [ecx + edi - 0x148]
-// 00534197  8b4204               mov eax, dword ptr [edx + 4]
-// 0053419a  8d8c39b8feffff       lea ecx, [ecx + edi - 0x148]
-// 005341a1  ffd0                 call eax
-// 005341a3  85c0                 test eax, eax
-// 005341a5  746c                 je 0x534213
-// 005341a7  8b8f64ffffff         mov ecx, dword ptr [edi - 0x9c]
-// 005341ad  e8dee70300           call 0x572990
-// 005341b2  8bf0                 mov esi, eax
-// 005341b4  56                   push esi
-// 005341b5  8d4c2430             lea ecx, [esp + 0x30]
-// 005341b9  e8c2a7fcff           call 0x4fe980
-// 005341be  d94624               fld dword ptr [esi + 0x24]
-// 005341c1  d95c2450             fstp dword ptr [esp + 0x50]
-// 005341c5  81c734ffffff         add edi, 0xffffff34
-// 005341cb  d94628               fld dword ptr [esi + 0x28]
-// 005341ce  57                   push edi
-// 005341cf  d95c2458             fstp dword ptr [esp + 0x58]
-// 005341d3  8d4c240c             lea ecx, [esp + 0xc]
-// 005341d7  d9462c               fld dword ptr [esi + 0x2c]
-// 005341da  51                   push ecx
-// 005341db  8d4c2434             lea ecx, [esp + 0x34]
-// 005341df  d95c2460             fstp dword ptr [esp + 0x60]
-// 005341e3  e818a9fcff           call 0x4feb00
-// 005341e8  8b742460             mov esi, dword ptr [esp + 0x60]
-// 005341ec  50                   push eax
-// 005341ed  8bce                 mov ecx, esi
-// 005341ef  e88ca7fcff           call 0x4fe980
-// 005341f4  d9442450             fld dword ptr [esp + 0x50]
-// 005341f8  d95e24               fstp dword ptr [esi + 0x24]
-// 005341fb  5f                   pop edi
-// 005341fc  d9442450             fld dword ptr [esp + 0x50]
-// 00534200  8bc6                 mov eax, esi
-// 00534202  d95e28               fstp dword ptr [esi + 0x28]
-// 00534205  d9442454             fld dword ptr [esp + 0x54]
-// 00534209  d95e2c               fstp dword ptr [esi + 0x2c]
-// 0053420c  5e                   pop esi
-// 0053420d  83c454               add esp, 0x54
-// 00534210  c20400               ret 4
-// 00534213  8b742460             mov esi, dword ptr [esp + 0x60]
-// 00534217  8bce                 mov ecx, esi
-// 00534219  e8520ff4ff           call 0x475170
-// 0053421e  5f                   pop edi
-// 0053421f  8bc6                 mov eax, esi
-// 00534221  5e                   pop esi
-// 00534222  83c454               add esp, 0x54
-// 00534225  c20400               ret 4
-// library rbxgs/v8datamodel\ModelInstance.cpp (function ?getLocation@ModelInstance@RBX@@UBE?BVCoordinateFrame@G3D@@XZ)
-
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
 // roc-lib: rbxgs v8datamodel/ModelInstance.cpp
+
+// Candidate translation unit (score above; library headers required).
+#include "v8datamodel/ModelInstance.h"
+#include "v8datamodel/PartInstance.h"
+#include "humanoid/Humanoid.h"
+#include "v8world/Primitive.h"
+#include "tool/DragUtilities.h"
+#include "AppDraw/Draw.h"
+
+static bool physicalCharacterHacked = false;
+
+namespace RBX
+{
+	const char* sModel = "Model";
+
+	static const Name& partName = Name::declare(sModel, 2000);
+
+	static Reflection::PropDescriptor<ModelInstance, G3D::CoordinateFrame> desc_ModelInPrimary("ModelInPrimary", "Data", &ModelInstance::getModelInPrimary, &ModelInstance::setModelInPrimary, Reflection::PropertyDescriptor::STREAMING); // L25
+	static Reflection::RefPropDescriptor<ModelInstance, PartInstance> primaryPartProp("PrimaryPart", "Data", &ModelInstance::getPrimaryPartInternal, &ModelInstance::setPrimaryPart, Reflection::PropertyDescriptor::STANDARD); // L26
+	static Reflection::BoundFuncDesc<ModelInstance, void(), 0> desc_breakJoints(&ModelInstance::breakJoints, "BreakJoints", Reflection::FunctionDescriptor::AnyCaller); // L27
+	static Reflection::BoundFuncDesc<ModelInstance, void(), 0> desc_makeJoints(&ModelInstance::makeJoints, "MakeJoints", Reflection::FunctionDescriptor::AnyCaller); // L28
+
+	static Reflection::BoundFuncDesc<ModelInstance, void(G3D::Vector3), 1> model_moveFunctionOld(&PVInstance::moveToPoint, "move", "location", Reflection::FunctionDescriptor::AnyCaller); // L30
+	static Reflection::BoundFuncDesc<ModelInstance, void(G3D::Vector3), 1> model_moveFunction(&PVInstance::moveToPoint, "MoveTo", "location", Reflection::FunctionDescriptor::AnyCaller); // L31
+
+	bool ModelInstance::showModelCoord = false;
+
+#pragma warning (push)
+#pragma warning (disable : 4355) // warning C4355: 'this' : used in base member initializer list
+	ModelInstance::ModelInstance()
+		: Base("Model"),
+		  modelInPrimary(),
+		  primaryPart(NULL),
+		  FlagHeight(this, &ModelInstance::computeFlagHeight),
+		  LocalGridExtents(this, &ModelInstance::computeLocalGridExtents),
+		  WorldGridExtents(this, &ModelInstance::computeWorldGridExtents)
+	{
+		if (!physicalCharacterHacked)
+		{
+			const Name& name = Name::declare("PhysicalCharacter", -1);
+			AbstractFactoryProduct<Instance>::getCreators()[&name] = &getCreator();
+			physicalCharacterHacked = true;
+		}
+	}
+#pragma warning (pop)
+
+	ModelInstance::~ModelInstance()
+	{
+		RBXASSERT(!primaryPart);
+	}
+
+	void ModelInstance::dirtyAll() const
+	{
+		LocalGridExtents.setDirty();
+		WorldGridExtents.setDirty();
+		FlagHeight.setDirty();
+	}
+
+	bool ModelInstance::askSetParent(const Instance* instance) const
+	{
+		return dynamic_cast<const ModelInstance*>(instance) != NULL;
+	}
+
+	void ModelInstance::onExtentsChanged() const
+	{
+		dirtyAll();
+		PVInstance::onExtentsChanged();
+	}
+
+	void ModelInstance::onDescendentAdded(Instance* instance)
+	{
+		PVInstance::onDescendentAdded(instance);
+		dirtyAll();
+
+		if (instance == candidatePrimaryPart.get())
+		{
+			RBXASSERT(primaryPart != candidatePrimaryPart.get());
+			candidatePrimaryPart.reset();
+
+			updatePrimaryPart(rbx_static_cast<PartInstance*>(instance));
+		}
+
+		shouldRenderSetDirty();
+	}
+
+	void ModelInstance::onDescendentRemoving(const boost::shared_ptr<Instance>& instance)
+	{
+		if (primaryPart == instance.get())
+			primaryPart = NULL;
+
+		if (candidatePrimaryPart == instance)
+		{
+			RBXASSERT(0);
+			candidatePrimaryPart.reset();
+		}
+
+		dirtyAll();
+		shouldRenderSetDirty();
+		PVInstance::onDescendentRemoving(instance);
+	}
+
+	const Primitive* ModelInstance::getBiggestPrimitive() const
+	{
+		const PartInstance* primaryPart = getPrimaryPartConst();
+		if (primaryPart)
+			return primaryPart->getPrimitive();
+
+		return NULL;
+	}
+
+	void ModelInstance::updatePrimaryPart(PartInstance* set) const
+	{
+		if (primaryPart == set)
+		{
+			RBXASSERT(!set || primaryPart->isDescendentOf(this));
+		}
+		else if (set)
+		{
+			RBXASSERT(!set->getParent() || set->isDescendentOf(this));
+			if (primaryPart)
+			{
+				RBXASSERT(primaryPart->isDescendentOf(this));
+				G3D::Matrix3 oldMe = getLocation().rotation;
+				modelInPrimary = G3D::CoordinateFrame(primaryPart->getCoordinateFrame().rotation.transpose() * oldMe, G3D::Vector3::zero());
+				primaryPart = set;
+			}
+			else
+			{
+				modelInPrimary = G3D::CoordinateFrame();
+				primaryPart = set;
+			}
+		}
+		else
+		{
+			modelInPrimary = G3D::CoordinateFrame();
+			primaryPart = NULL;
+		}
+	}
+
+	void ModelInstance::setPrimaryPart(PartInstance* set)
+	{
+		if (!set || set->isDescendentOf(this))
+		{
+			candidatePrimaryPart.reset();
+			updatePrimaryPart(set);
+		}
+		else
+		{
+			candidatePrimaryPart = shared_from(set);
+
+			if (primaryPart)
+			{
+				modelInPrimary = G3D::CoordinateFrame();
+				primaryPart = NULL;
+			}
+		}
+
+		raisePropertyChanged(primaryPartProp);
+	}
+
+	static void makeJ(Instance* instance)
+	{
+		PartInstance* partInstance = dynamic_cast<PartInstance*>(instance);
+		if (partInstance)
+		{
+			partInstance->join();
+		}
+		else
+		{
+			ModelInstance* modelInstance = dynamic_cast<ModelInstance*>(instance);
+			if (modelInstance)
+				modelInstance->for_eachChild(makeJ);
+		}
+	}
+
+	void ModelInstance::makeJoints()
+	{
+		for_eachChild(makeJ);
+	}
+
+	static void breakJ(Instance* instance)
+	{
+		PartInstance* partInstance = dynamic_cast<PartInstance*>(instance);
+		if (partInstance)
+		{
+			partInstance->destroyJoints();
+		}
+		else
+		{
+			ModelInstance* modelInstance = dynamic_cast<ModelInstance*>(instance);
+			if (modelInstance)
+				modelInstance->for_eachChild(breakJ);
+		}
+	}
+
+	void ModelInstance::breakJoints()
+	{
+		for_eachChild(breakJ);
+	}
+
+	float ModelInstance::computeFlagHeight() const
+	{
+		float answer = 6.0f;
+
+		if (primaryPart)
+		{
+			RBXASSERT(primaryPart->isDescendentOf(this));
+			float primaryPartY = primaryPart->getExtentsWorld().max().y;
+			answer = (getExtentsWorld().max().y - primaryPartY) + 6.0f;
+		}
+
+		return answer;
+	}
+
+	PartInstance* ModelInstance::getPrimaryPartInternal() const
+	{
+		if (primaryPart)
+		{
+			RBXASSERT(primaryPart->isDescendentOf(this));
+			return primaryPart;
+		}
+		else
+		{
+			float biggest = -1.0f;
+			PartInstance* biggestPart = NULL;
+			for (size_t i = 0; i < numChildren(); ++i)
+			{
+				const Instance* child = getChild(i);
+				const PVInstance* pvChild = dynamic_cast<const PVInstance*>(child);
+				if (pvChild)
+				{
+					const Primitive* primitive = pvChild->getBiggestPrimitive();
+					if (primitive)
+					{
+						PartInstance* part = PartInstance::fromPrimitive(const_cast<Primitive*>(primitive));
+						RBXASSERT(!part || part->isDescendentOf(this));
+
+						float area = part->getExtentsWorld().areaXZ();
+						if (area > biggest)
+						{
+							biggest = area;
+							biggestPart = part;
+						}
+					}
+				}
+			}
+
+			updatePrimaryPart(biggestPart);
+			return biggestPart;
+		}
+	}
+
+	Extents ModelInstance::computeLocalGridExtents() const
+	{
+		std::vector<const Primitive*> primitives;
+		DragUtilities::getPrimitivesConst(this, primitives);
+
+		Extents answer = Extents::negativeInfiniteExtents();
+
+		for (size_t i = 0; i < primitives.size(); i++)
+		{
+			const Primitive* primitive = primitives[i];
+			Extents localExtents = primitive->getExtentsLocal();
+			Extents childExtentsInMe = localExtents.express(primitive->getCoordinateFrame(), getLocation());
+			answer.unionWith(childExtentsInMe);
+		}
+
+		return primitives.size() != 0 ? answer : Extents::zero();
+	}
+
+	Extents ModelInstance::computeWorldGridExtents() const
+	{
+		return LocalGridExtents.getValue().express(getLocation(), G3D::CoordinateFrame());
+	}
+
+	void ModelInstance::legacyTraverseState(const G3D::CoordinateFrame& parentState)
+	{
+		RBXASSERT(legacyOffset);
+
+		if (getChildren())
+		{
+			int count = (int)getChildren()->size();
+			if (count > 0)
+			{
+				G3D::CoordinateFrame myState = parentState * (*legacyOffset);
+				for (int i = 0; i < count; ++i)
+				{
+					Instance* child = getChild(i);
+					PVInstance* pvChild = dynamic_cast<PVInstance*>(child);
+					if (pvChild)
+						pvChild->legacyTraverseState(myState);
+				}
+			}
+		}
+	}
+
+	const G3D::CoordinateFrame ModelInstance::getLocation() const
+	{
+		if (getPrimaryPartConst())
+		{
+			G3D::CoordinateFrame cf = primaryPart->getCoordinateFrame();
+			return G3D::CoordinateFrame(cf.rotation * modelInPrimary.rotation, cf.translation);
+		}
+
+		return G3D::CoordinateFrame();
+	}
+
+	bool ModelInstance::hitTest(const G3D::Ray& worldRay, G3D::Vector3& worldHitPoint)
+	{
+		for (size_t i = 0; i < numChildren(); ++i)
+		{
+			Instance* child = getChild(i);
+			PVInstance* pvChild = dynamic_cast<PVInstance*>(child);
+			if (pvChild)
+			{
+				if (pvChild->hitTest(worldRay, worldHitPoint))
+					return true;
+			}
+		}
+
+		return false;
+	}
+
+	bool ModelInstance::shouldRender3dAdorn() const
+	{
+		return isTopLevelPVInstance() && showModelCoord;
+	}
+
+	void ModelInstance::render3dAdorn(Adorn* adorn)
+	{
+		if (isTopLevelPVInstance())
+		{
+			if (showModelCoord)
+				renderCoordinateFrame(adorn);
+		}
+	}
+
+	void ModelInstance::render3dSelect(Adorn* adorn, SelectState selectState)
+	{
+		Extents localExtents = getExtentsLocal();
+		G3D::CoordinateFrame location = getLocation();
+		location.translation = location.pointToWorldSpace(localExtents.center());
+
+		Part part(Part::BLOCK_PART, localExtents.size(), G3D::Color3::white(), location);
+		Draw::selectionBox(part, adorn, selectState);
+	}
+
+	void ModelInstance::onCameraNear(float distance)
+	{
+		for (size_t i = 0; i < numChildren(); ++i)
+		{
+			Instance* child = getChild(i);
+			ICameraSubject* cameraSubject = dynamic_cast<ICameraSubject*>(child);
+			if (cameraSubject)
+				cameraSubject->onCameraNear(distance);
+		}
+	}
+
+	void ModelInstance::getCameraIgnorePrimitives(std::vector<const Primitive*>& primitives)
+	{
+		DragUtilities::getPrimitivesConst(this, primitives);
+
+		Humanoid* humanoid = findFirstChildOfType<Humanoid>();
+		if (humanoid)
+			humanoid->getIgnorePrims(primitives);
+	}
+}

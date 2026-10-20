@@ -1,28 +1,108 @@
-// roc 2007-08 004e3ec0  unit: WedgeBuilder  size: 60 bytes
-// Make this compile to the exact bytes below, then: roc check 2007-08 004e3ec0
-//
-// 004e3ec0  83ec0c               sub esp, 0xc
-// 004e3ec3  d94120               fld dword ptr [ecx + 0x20]
-// 004e3ec6  b801000000           mov eax, 1
-// 004e3ecb  66890424             mov word ptr [esp], ax
-// 004e3ecf  d95c2404             fstp dword ptr [esp + 4]
-// 004e3ed3  d9e8                 fld1 
-// 004e3ed5  6689442402           mov word ptr [esp + 2], ax
-// 004e3eda  8b442410             mov eax, dword ptr [esp + 0x10]
-// 004e3ede  d95c2408             fstp dword ptr [esp + 8]
-// 004e3ee2  8b1424               mov edx, dword ptr [esp]
-// 004e3ee5  50                   push eax
-// 004e3ee6  8b44240c             mov eax, dword ptr [esp + 0xc]
-// 004e3eea  52                   push edx
-// 004e3eeb  8b54240c             mov edx, dword ptr [esp + 0xc]
-// 004e3eef  50                   push eax
-// 004e3ef0  52                   push edx
-// 004e3ef1  e8daf0ffff           call 0x4e2fd0
-// 004e3ef6  83c40c               add esp, 0xc
-// 004e3ef9  c20400               ret 4
-// library rbxgs-view/WedgeMesh.cpp (function ?buildLeft@WedgeBuilder@@MAEXW4Purpose@LevelBuilder@View@RBX@@@Z)
-
 // roc-lang: cpp
 // roc-cl: 50727
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
 // roc-lib: rbxgs-view WedgeMesh.cpp
+
+// Candidate translation unit (score above; library headers required).
+#include "WedgeMesh.h"
+
+class DeformFront
+{
+	const float inset;
+public:
+	DeformFront(float inset)
+		: inset(inset)
+	{
+	}
+	void operator()(G3D::Vector3&, G3D::Vector3&, G3D::Vector2&, const G3D::Vector3&, const G3D::Vector2int16&);
+};
+
+class DeformSide3
+{
+	const float inset;
+	const float flip;
+public:
+	DeformSide3(float inset, bool flip)
+		: inset(inset),
+		  flip(flip ? -1.0f : 1.0f)
+	{
+	}
+	void operator()(G3D::Vector3&, G3D::Vector3&, G3D::Vector2&, const G3D::Vector3&, const G3D::Vector2int16&);
+};
+
+class DeformTop3
+{
+	const float inset;
+public:
+	DeformTop3(float inset)
+		: inset(inset)
+	{
+	}
+	void operator()(G3D::Vector3&, G3D::Vector3&, G3D::Vector2&, const G3D::Vector3&, const G3D::Vector2int16&);
+};
+
+void WedgeBuilder::buildRight(RBX::View::LevelBuilder::Purpose purpose)
+{
+	buildFace<RBX::NORM_X>(DeformSide3(bevel, true), G3D::Vector2int16(1, 1), purpose);
+}
+
+void WedgeBuilder::buildTop(RBX::View::LevelBuilder::Purpose purpose)
+{
+	buildFace<RBX::NORM_Y>(DeformTop3(bevel), G3D::Vector2int16(1, 1), purpose);
+}
+
+void WedgeBuilder::buildBack(RBX::View::LevelBuilder::Purpose purpose)
+{
+	buildFace<RBX::NORM_Z>(*this, 1, 1, purpose);
+}
+
+void WedgeBuilder::buildLeft(RBX::View::LevelBuilder::Purpose purpose)
+{
+	buildFace<RBX::NORM_X_NEG>(DeformSide3(bevel, false), G3D::Vector2int16(1, 1), purpose);
+}
+
+void WedgeBuilder::buildBottom(RBX::View::LevelBuilder::Purpose purpose)
+{
+	buildFace<RBX::NORM_Y_NEG>(*this, 1, 1, purpose);
+}
+
+void WedgeBuilder::buildFront(RBX::View::LevelBuilder::Purpose purpose)
+{
+	buildFace<RBX::NORM_Z_NEG>(DeformFront(bevel), G3D::Vector2int16(1, 1), purpose);
+}
+
+static const float bevel = 0.065f;
+
+namespace RBX
+{
+	namespace View
+	{
+		WedgeMesh::WedgeMesh(const G3D::Vector3& size, RenderSurfaceTypes surfaceTypes)
+		{
+			levels.push_back(new Render::Mesh::Level(G3D::RenderDevice::QUADS));
+
+			WedgeBuilder builder(levels.last(), size, surfaceTypes, 0.0f);
+			builder.build(LevelBuilder::Surface);
+		}
+
+		WedgeMesh::WedgeMesh(const G3D::Vector3& size, NormalId decalFace)
+		{
+			G3D::ReferenceCountedPointer<Render::Mesh::Level> level = new Render::Mesh::Level(G3D::RenderDevice::QUADS);
+			levels.push_back(level);
+
+			WedgeBuilder builder(level, size, RenderSurfaceTypes(), bevel);
+			builder.buildFace(decalFace, LevelBuilder::Decal);
+		}
+
+		WedgeMesh::WedgeMesh(const G3D::Vector3& size, NormalId textureFace, const G3D::Vector2& studsPerTile)
+		{
+			G3D::ReferenceCountedPointer<Render::Mesh::Level> level = new Render::Mesh::Level(G3D::RenderDevice::QUADS);
+			levels.push_back(level);
+
+			WedgeBuilder builder(level, size, RenderSurfaceTypes(), bevel);
+			builder.textureScale = mapToUvw_Legacy(size, textureFace).xy() * 2.0f / studsPerTile;
+
+			builder.buildFace(textureFace, LevelBuilder::Decal);
+		}
+	}
+}

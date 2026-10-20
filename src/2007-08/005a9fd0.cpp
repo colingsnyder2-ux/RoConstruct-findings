@@ -1,91 +1,515 @@
-// roc 2007-08 005a9fd0  unit: RBX::VHumanoid::?$SignalDesc  size: 241 bytes
-// Make this compile to the exact bytes below, then: roc check 2007-08 005a9fd0
-//
-// 005a9fd0  83ec14               sub esp, 0x14
-// 005a9fd3  55                   push ebp
-// 005a9fd4  56                   push esi
-// 005a9fd5  57                   push edi
-// 005a9fd6  8bf1                 mov esi, ecx
-// 005a9fd8  83467801             add dword ptr [esi + 0x78], 1
-// 005a9fdc  6a00                 push 0
-// 005a9fde  8d7e7c               lea edi, [esi + 0x7c]
-// 005a9fe1  6a00                 push 0
-// 005a9fe3  8bcf                 mov ecx, edi
-// 005a9fe5  e886a3fcff           call 0x574370
-// 005a9fea  8b6c2424             mov ebp, dword ptr [esp + 0x24]
-// 005a9fee  57                   push edi
-// 005a9fef  55                   push ebp
-// 005a9ff0  8bcd                 mov ecx, ebp
-// 005a9ff2  e899ac0000           call 0x5b4c90
-// 005a9ff7  8b4e30               mov ecx, dword ptr [esi + 0x30]
-// 005a9ffa  50                   push eax
-// 005a9ffb  e8b0540500           call 0x5ff4b0
-// 005aa000  83be8000000000       cmp dword ptr [esi + 0x80], 0
-// 005aa007  c744240c00000000     mov dword ptr [esp + 0xc], 0
-// 005aa00f  0f8ea3000000         jle 0x5aa0b8
-// 005aa015  53                   push ebx
-// 005aa016  8b5c242c             mov ebx, dword ptr [esp + 0x2c]
-// 005aa01a  8d9b00000000         lea ebx, [ebx]
-// 005aa020  85db                 test ebx, ebx
-// 005aa022  8b467c               mov eax, dword ptr [esi + 0x7c]
-// 005aa025  8b4c2410             mov ecx, dword ptr [esp + 0x10]
-// 005aa029  8b3c88               mov edi, dword ptr [eax + ecx*4]
-// 005aa02c  897c242c             mov dword ptr [esp + 0x2c], edi
-// 005aa030  7438                 je 0x5aa06a
-// 005aa032  8b5304               mov edx, dword ptr [ebx + 4]
-// 005aa035  8d44242c             lea eax, [esp + 0x2c]
-// 005aa039  50                   push eax
-// 005aa03a  8d4c2420             lea ecx, [esp + 0x20]
-// 005aa03e  51                   push ecx
-// 005aa03f  8bcb                 mov ecx, ebx
-// 005aa041  89542420             mov dword ptr [esp + 0x20], edx
-// 005aa045  e806b50500           call 0x605550
-// 005aa04a  8be8                 mov ebp, eax
-// 005aa04c  8b4500               mov eax, dword ptr [ebp]
-// 005aa04f  85c0                 test eax, eax
-// 005aa051  7404                 je 0x5aa057
-// 005aa053  3bc3                 cmp eax, ebx
-// 005aa055  7406                 je 0x5aa05d
-// 005aa057  ff15d8e67700         call dword ptr [0x77e6d8]
-// 005aa05d  8b542418             mov edx, dword ptr [esp + 0x18]
-// 005aa061  395504               cmp dword ptr [ebp + 4], edx
-// 005aa064  8b6c2428             mov ebp, dword ptr [esp + 0x28]
-// 005aa068  7536                 jne 0x5aa0a0
-// 005aa06a  57                   push edi
-// 005aa06b  55                   push ebp
-// 005aa06c  e8afad0000           call 0x5b4e20
-// 005aa071  83c408               add esp, 8
-// 005aa074  85c0                 test eax, eax
-// 005aa076  7528                 jne 0x5aa0a0
-// 005aa078  57                   push edi
-// 005aa079  55                   push ebp
-// 005aa07a  e831ef0500           call 0x608fb0
-// 005aa07f  8bf8                 mov edi, eax
-// 005aa081  83c408               add esp, 8
-// 005aa084  85ff                 test edi, edi
-// 005aa086  7418                 je 0x5aa0a0
-// 005aa088  57                   push edi
-// 005aa089  8bce                 mov ecx, esi
-// 005aa08b  e870feffff           call 0x5a9f00
-// 005aa090  57                   push edi
-// 005aa091  8bce                 mov ecx, esi
-// 005aa093  c6465201             mov byte ptr [esi + 0x52], 1
-// 005aa097  e884f8ffff           call 0x5a9920
-// 005aa09c  c6465200             mov byte ptr [esi + 0x52], 0
-// 005aa0a0  8b442410             mov eax, dword ptr [esp + 0x10]
-// 005aa0a4  83c001               add eax, 1
-// 005aa0a7  3b8680000000         cmp eax, dword ptr [esi + 0x80]
-// 005aa0ad  89442410             mov dword ptr [esp + 0x10], eax
-// 005aa0b1  0f8c69ffffff         jl 0x5aa020
-// 005aa0b7  5b                   pop ebx
-// 005aa0b8  5f                   pop edi
-// 005aa0b9  5e                   pop esi
-// 005aa0ba  5d                   pop ebp
-// 005aa0bb  83c414               add esp, 0x14
-// 005aa0be  c20800               ret 8
-// library openrbx-client/App\v8world\World.cpp (function ?createJoints@World@RBX@@AAEXPAVPrimitive@2@PAV?$set@PAVPrimitive@RBX@@U?$less@PAVPrimitive@RBX@@@std@@V?$allocator@PAVPrimitive@RBX@@@4@@std@@@Z)
-
 // roc-lang: cpp
 // roc-cl: 50727
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
 // roc-lib: openrbx-client-dll App/v8world/World.cpp
+
+// Candidate translation unit (score above; library headers required).
+#include "v8world/World.h"
+
+#include "decomp.h"
+#include "util/standardout.h"
+#include "v8kernel/Constants.h"
+#include "v8kernel/Kernel.h"
+#include "v8world/Assembly2.h"
+#include "v8world/Clump2.h"
+#include "v8world/ClumpStage2.h"
+#include "v8world/Contact.h"
+#include "v8world/Joint.h"
+#include "v8world/JointBuilder.h"
+#include "v8world/JointStage.h"
+#include "v8world/SimJobStage.h"
+#include "v8world/SleepStage2.h"
+#include "v8world/SpatialHash.h"
+
+#include <G3D/System.h>
+#include <G3D/g3dmath.h>
+#include <algorithm>
+#include <cmath>
+
+namespace RBX {
+
+bool World::disableEnvironmentalThrottle;
+
+// FUNCTION: WEBSERVICE 0x100cef80
+Kernel* World::getKernel() const
+{
+	return jointStage->getKernel();
+}
+
+// FUNCTION: WEBSERVICE 0x100cef90
+int World::getNumBodies() const
+{
+	return getKernel()->numBodies();
+}
+
+// FUNCTION: WEBSERVICE 0x100cefb0
+int World::getNumPoints() const
+{
+	return getKernel()->numPoints();
+}
+
+// FUNCTION: WEBSERVICE 0x100cefd0
+int World::getNumConstraints() const
+{
+	return getKernel()->numConnectors();
+}
+
+// FUNCTION: WEBSERVICE 0x100ceff0
+int World::getMetric(IWorldStage::MetricType metricType) const
+{
+	return jointStage->getMetric(metricType);
+}
+
+// FUNCTION: WEBSERVICE 0x100cf000
+int World::getNumHashNodes() const
+{
+	return contactManager->getSpatialHash()->getNodesOut();
+}
+
+// FUNCTION: WEBSERVICE 0x100cf010
+int World::getMaxBucketSize() const
+{
+	return contactManager->getSpatialHash()->getMaxBucket();
+}
+
+// FUNCTION: WEBSERVICE 0x100cf020
+void World::onPrimitiveContactParametersChanged(Primitive* p)
+{
+	Contact* c = p->getFirstContact();
+
+	while (c != NULL) {
+		c->onPrimitiveContactParametersChanged();
+		c = p->getNextContact(c);
+	}
+}
+
+// FUNCTION: WEBSERVICE 0x100cf050
+void World::onPrimitiveExtentsChanged(Primitive* p)
+{
+	contactManager->onPrimitiveExtentsChanged(p);
+}
+
+// FUNCTION: WEBSERVICE 0x100cf060
+void World::onAssemblyExtentsChanged(Assembly* a)
+{
+	PrimIterator pEnd = a->assemblyPrimEnd();
+
+	for (PrimIterator it = a->assemblyPrimBegin(); it != pEnd; ++it) {
+		contactManager->onPrimitiveExtentsChanged(*it);
+	}
+}
+
+// FUNCTION: WEBSERVICE 0x100cf0c0
+void World::onPrimitiveGeometryTypeChanged(Primitive* p)
+{
+	contactManager->onPrimitiveGeometryTypeChanged(p);
+}
+
+// FUNCTION: WEBSERVICE 0x100cf0d0
+void World::onJointPrimitiveNulling(Joint* j, Primitive* p)
+{
+	jointStage->onJointPrimitiveNulling(j, p);
+}
+
+// FUNCTION: WEBSERVICE 0x100cf0e0
+void World::onJointPrimitiveSet(Joint* j, Primitive* p)
+{
+	jointStage->onJointPrimitiveSet(j, p);
+}
+
+// FUNCTION: WEBSERVICE 0x100cf0f0
+void World::insertContact(Contact* c)
+{
+	jointStage->onEdgeAdded(c);
+	numContacts++;
+}
+
+// FUNCTION: WEBSERVICE 0x100cf110
+void World::destroyContact(Contact* c)
+{
+	jointStage->onEdgeRemoving(c);
+	delete c;
+	numContacts--;
+}
+
+ClumpStage* World::getClumpStage()
+{
+	return static_cast<ClumpStage*>(jointStage->findStage(IStage::CLUMP_STAGE));
+}
+
+SleepStage* World::getSleepStage()
+{
+	return static_cast<SleepStage*>(jointStage->findStage(IStage::SLEEP_STAGE));
+}
+
+// FUNCTION: WEBSERVICE 0x100cf140
+SimJobStage& World::getSimJobStage()
+{
+	return *static_cast<SimJobStage*>(jointStage->findStage(IStage::SIMJOB_STAGE));
+}
+
+// FUNCTION: WEBSERVICE 0x100cf170
+const SleepStage* World::getSleepStage() const
+{
+	return static_cast<const SleepStage*>(jointStage->findStage(IStage::SLEEP_STAGE));
+}
+
+// FUNCTION: WEBSERVICE 0x100cf1a0
+void World::ticklePrimitive(Primitive* p, bool recursive)
+{
+	Assembly* assembly = p->getAssembly();
+
+	if (assembly != NULL) {
+		getSleepStage()->onWakeUpRequest(assembly, recursive);
+	}
+}
+
+// FUNCTION: WEBSERVICE 0x100cf1f0
+void World::onPrimitiveCanSleepChanged(Primitive* p)
+{
+	getClumpStage()->onPrimitiveCanSleepChanged(p);
+}
+
+// FUNCTION: WEBSERVICE 0x100cf230
+void World::onPrimitiveAddedAnchor(Primitive* p)
+{
+	getClumpStage()->onPrimitiveAddedAnchor(p);
+}
+
+// FUNCTION: WEBSERVICE 0x100cf270
+void World::onPrimitiveRemovedAnchor(Primitive* p)
+{
+	getClumpStage()->onPrimitiveRemovedAnchor(p);
+}
+
+// FUNCTION: WEBSERVICE 0x100cf2b0 FOLDED
+void World::onPrimitiveCanCollideChanged(Primitive* p)
+{
+	getClumpStage()->onPrimitiveCanCollideChanged(p);
+}
+
+// FUNCTION: WEBSERVICE 0x100cf2b0 FOLDED
+void World::onMotorAngleChanged(MotorJoint* motorJoint)
+{
+	getClumpStage()->onMotorAngleChanged(motorJoint);
+}
+
+// FUNCTION: WEBSERVICE 0x100cf2f0
+void World::update()
+{
+	getClumpStage()->process();
+}
+
+// FUNCTION: WEBSERVICE 0x100cf320
+void World::addedBodyForce()
+{
+	getSleepStage()->addedBodyForce();
+}
+
+// FUNCTION: WEBSERVICE 0x100cf510
+void World::onPrimitiveTouched(Primitive* touchP, Primitive* touchOtherP)
+{
+	touch.append(touchP);
+	touchOther.append(touchOtherP);
+}
+
+// FUNCTION: WEBSERVICE 0x100cf540
+void World::computeFallen(G3D::Array<Primitive*>& fallen) const
+{
+	const SleepStage::AssemblySet& awake = getSleepStage()->getAwakeAssemblies();
+
+	for (SleepStage::CAssemblySetIt cIt = awake.begin(); cIt != awake.end(); cIt++) {
+
+		Assembly* assembly = *cIt;
+
+		if (assembly->getAssemblyPrimitive()->getCoordinateFrame().translation.y < -500.0f) {
+
+			PrimIterator pEnd = assembly->assemblyPrimEnd();
+
+			for (PrimIterator it = assembly->assemblyPrimBegin(); it != pEnd; ++it) {
+
+				Primitive* p = *it;
+
+				if (p->getCoordinateFrame().translation.y < -500.0f) {
+					fallen.append(p);
+				}
+			}
+		}
+	}
+}
+
+// FUNCTION: WEBSERVICE 0x100cf6b0
+void World::insertPrimitive(Primitive* p)
+{
+	primitives.fastAppend(p);
+	p->world = this;
+
+	jointStage->onPrimitiveAdded(p);
+	contactManager->onPrimitiveAdded(p);
+}
+
+static bool inIgnoreGroup(std::set<Primitive*>* ignoreGroup, Primitive* p)
+{
+	return ignoreGroup != NULL && ignoreGroup->find(p) != ignoreGroup->end();
+}
+
+inline void World::destroyJoint(Joint* joint)
+{
+	inJointNotification = true;
+	Notifier<World, AutoDestroy>::raise(AutoDestroy(joint));
+	inJointNotification = false;
+}
+
+inline void World::removeFromBreakable(Joint* j)
+{
+	if (j->isBreakable()) {
+		breakableJoints.erase(j);
+	}
+}
+
+// FUNCTION: WEBSERVICE 0x100cfaf0
+void World::doBreakJoints()
+{
+	std::set<Joint*>::iterator it = breakableJoints.begin();
+
+	while (it != breakableJoints.end()) {
+
+		Joint* joint = *it;
+		++it;
+
+		if (joint->inKernel() && joint->isBroken()) {
+			destroyJoint(joint);
+		}
+	}
+}
+
+// FUNCTION: WEBSERVICE 0x100cfcd0
+float World::step(float desiredInterval)
+{
+	Profiling::Mark mark(*profilingWorldStep, true);
+
+	update();
+
+	double startTime = G3D::System::getTick();
+
+	bool throttling = false;
+
+	int steps = std::max(1, G3D::iRound((float) floor(Constants::worldStepsPerSec() * desiredInterval)));
+
+	for (int j = 0; j < steps; j++) {
+
+		int uiStepId = worldStepId / Constants::worldStepsPerUiStep();
+
+		if (worldStepId % Constants::worldStepsPerUiStep() == 0) {
+
+			Profiling::Mark mark(*profilingUiStep, false);
+
+			doBreakJoints();
+
+			touch.resize(0, false);
+			touchOther.resize(0, false);
+
+			inStepCode = true;
+
+			getClumpStage()->stepUi(uiStepId);
+
+			getSimJobStage().notifyMovingPrimitives();
+
+			inStepCode = false;
+		}
+
+		{
+			inStepCode = true;
+
+			Profiling::Mark mark(*profilingBroadphase, false);
+
+			contactManager->stepWorld();
+
+			inStepCode = false;
+		}
+
+		inStepCode = true;
+
+		jointStage->stepWorld(worldStepId, uiStepId, throttling);
+
+		inStepCode = false;
+
+		throttling = !disableEnvironmentalThrottle && canThrottle &&
+					 G3D::System::getTick() > startTime + Constants::worldDt() * (j + 1);
+
+		worldStepId++;
+	}
+
+	return Constants::worldDt() * steps;
+}
+
+// FUNCTION: WEBSERVICE 0x100d0020
+void World::insertJoint(Joint* j)
+{
+	Primitive* p0 = j->getPrimitive(0);
+	Primitive* p1 = j->getPrimitive(1);
+
+	if (p0 != NULL && p1 != NULL) {
+		Joint* existing = Primitive::getJoint(p0, p1);
+
+		if (existing != NULL) {
+			destroyJoint(existing);
+		}
+	}
+
+	jointStage->onEdgeAdded(j);
+
+	numJoints++;
+
+	if (j->isBreakable()) {
+		breakableJoints.insert(j);
+	}
+}
+
+// FUNCTION: WEBSERVICE 0x100d0090
+void World::destroyJoints(Primitive* p, std::set<Primitive*>* ignoreGroup)
+{
+	Joint* j = p->getFirstJoint();
+
+	while (j != NULL) {
+		Joint* joint = j;
+		j = p->getNextJoint(j);
+
+		if (Joint::isAutoJoinJoint(joint)) {
+			Primitive* other = joint->otherPrimitive(p);
+
+			if (!inIgnoreGroup(ignoreGroup, other)) {
+				destroyJoint(joint);
+			}
+		}
+	}
+}
+
+// FUNCTION: WEBSERVICE 0x100d0140
+void World::destroyJoints(Primitive* p)
+{
+	destroyJoints(p, NULL);
+}
+
+// FUNCTION: WEBSERVICE 0x100d0150
+void World::createJoints(Primitive* p, std::set<Primitive*>* ignoreGroup)
+{
+	numLinkCalls++;
+
+	tempPrimitives.resize(0, false);
+
+	contactManager->getPrimitivesTouchingExtents(p->getFastFuzzyExtents(), p, tempPrimitives);
+
+	for (int i = 0; i < tempPrimitives.size(); i++) {
+
+		Primitive* other = tempPrimitives[i];
+
+		if (!inIgnoreGroup(ignoreGroup, other) && Primitive::getJoint(p, other) == NULL) {
+
+			Joint* joint = JointBuilder::canJoin(p, other);
+
+			if (joint != NULL) {
+
+				insertJoint(joint);
+
+				inJointNotification = true;
+				Notifier<World, AutoJoin>::raise(AutoJoin(joint));
+				inJointNotification = false;
+			}
+		}
+	}
+}
+
+// FUNCTION: WEBSERVICE 0x100d0250
+void World::createJoints(Primitive* p)
+{
+	createJoints(p, NULL);
+}
+
+// FUNCTION: WEBSERVICE 0x100d0260
+World::~World()
+{
+	delete jointStage;
+
+	delete contactManager;
+}
+
+// FUNCTION: WEBSERVICE 0x100d0420
+void World::removeJoint(Joint* j)
+{
+	removeFromBreakable(j);
+
+	jointStage->onEdgeRemoving(j);
+
+	numJoints--;
+}
+
+// FUNCTION: WEBSERVICE 0x100d0460
+void World::joinAll()
+{
+	for (int i = 0; i < getNumPrimitives(); i++) {
+		createJoints(primitives[i]);
+	}
+}
+
+// FUNCTION: WEBSERVICE 0x100d0490
+void World::removePrimitive(Primitive* p)
+{
+	destroyJoints(p);
+
+	contactManager->onPrimitiveRemoved(p);
+
+	jointStage->onPrimitiveRemoving(p);
+
+	primitives.fastRemove(p);
+
+	p->world = NULL;
+}
+
+// FUNCTION: WEBSERVICE 0x100d04f0
+World::World()
+	: contactManager(new ContactManager(this)), jointStage(new JointStage(NULL, this)), canThrottle(true),
+	  inStepCode(false), inJointNotification(false), worldStepId(0), numJoints(0), numContacts(0), numLinkCalls(0),
+	  profilingWorldStep(new Profiling::CodeProfiler("World Step")),
+	  profilingUiStep(new Profiling::CodeProfiler("UI Step")),
+	  profilingBroadphase(new Profiling::CodeProfiler("Broadphase"))
+{
+	profilingBroadphase->parent = profilingWorldStep.get();
+	profilingUiStep->parent = profilingWorldStep.get();
+
+	getSleepStage()->profilingCollision->parent = profilingWorldStep.get();
+	getSleepStage()->profilingWake->parent = profilingWorldStep.get();
+	getSleepStage()->profilingSleep->parent = profilingWorldStep.get();
+
+	getKernel()->profilingKernel->parent = profilingWorldStep.get();
+}
+
+// FUNCTION: WEBSERVICE 0x100d07f0
+void World::destroyJointsToWorld(const G3D::Array<Primitive*>& primitives)
+{
+	std::set<Primitive*> ignore;
+
+	for (int i = 0; i < primitives.size(); i++) {
+		ignore.insert(primitives[i]);
+	}
+
+	for (int i = 0; i < primitives.size(); i++) {
+		destroyJoints(primitives[i], &ignore);
+	}
+}
+
+// FUNCTION: WEBSERVICE 0x100d08d0
+void World::createJointsToWorld(const G3D::Array<Primitive*>& primitives)
+{
+	std::set<Primitive*> ignore;
+
+	for (int i = 0; i < primitives.size(); i++) {
+		ignore.insert(primitives[i]);
+	}
+
+	for (int i = 0; i < primitives.size(); i++) {
+		createJoints(primitives[i], &ignore);
+	}
+}
+
+} // namespace RBX

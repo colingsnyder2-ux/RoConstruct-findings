@@ -1,18 +1,124 @@
-// roc 2007-08 007751c0  unit: seg_00770000  size: 37 bytes
-// Make this compile to the exact bytes below, then: roc check 2007-08 007751c0
-//
-// 007751c0  6860dc7b00           push 0x7bdc60
-// 007751c5  6808617900           push 0x796108
-// 007751ca  685cdc7b00           push 0x7bdc5c
-// 007751cf  b9a86f8c00           mov ecx, 0x8c6fa8
-// 007751d4  e8973ae7ff           call 0x5e8c70
-// 007751d9  6890bf7700           push 0x77bf90
-// 007751de  e840bbebff           call 0x630d23
-// 007751e3  59                   pop ecx
-// 007751e4  c3                   ret 
-// library rbxgs/v8datamodel\Explosion.cpp (function ??__Esignal_Hit@RBX@@YAXXZ)
-
 // roc-lang: cpp
 // roc-cl: 50727
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
 // roc-lib: rbxgs v8datamodel/Explosion.cpp
+
+// Candidate translation unit (score above; library headers required).
+#include "v8datamodel/Explosion.h"
+#include "v8datamodel/Workspace.h"
+#include "v8datamodel/PartInstance.h"
+#include "v8world/ContactManager.h"
+#include "v8world/World.h"
+
+namespace RBX
+{
+	static Reflection::PropDescriptor<Explosion, float> propBlastRadius("BlastRadius", "Data", &Explosion::getBlastRadius, &Explosion::setBlastRadius, Reflection::PropertyDescriptor::STANDARD);
+
+	Reflection::SignalDesc<Explosion, void(boost::shared_ptr<Instance>, float)> signal_Hit("Hit", "part", "distance");
+
+	Reflection::BoundProp<G3D::Vector3, 1> Explosion::propPosition("Position", "Data", &Explosion::position, Reflection::PropertyDescriptor::STANDARD);
+	Reflection::BoundProp<float, 1> Explosion::propBlastPressure("BlastPressure", "Data", &Explosion::blastPressure, Reflection::PropertyDescriptor::STANDARD);
+
+	Explosion::Explosion()
+		: blastRadius(4.0f),
+		  blastPressure(500000.0f),
+		  age(0.0f)
+	{
+		setName("Explosion");
+	}
+
+	bool Explosion::askSetParent(const Instance* instance) const
+	{
+		return true;
+	}
+
+	void Explosion::setBlastRadius(float _blastRadius)
+	{
+		float newRadius = G3D::clamp(_blastRadius, 0.0f, 100.0f);
+		if (blastRadius != newRadius)
+		{
+			blastRadius = newRadius;
+			raisePropertyChanged(propBlastRadius);
+		}
+	}
+
+	void Explosion::signalBlast(const G3D::Array<Primitive*>& primitives)
+	{
+		if (!signal_Hit.empty(this))
+		{
+			for (int i = 0; i < primitives.size(); i++)
+			{
+				Primitive* current = primitives[i];
+
+				if (blastRadius * 2.0f > current->getRadius())
+				{
+					if (Instance* part = PartInstance::fromPrimitive(current))
+					{
+						float distance = (current->getCoordinateFrame().translation - position).magnitude();
+						signal_Hit.fire(this, shared_from(part), distance);
+					}
+				}
+			}
+		}
+	}
+
+	//99% match
+	void Explosion::doBlast(const G3D::Array<Primitive*>& primitives)
+	{
+		if (blastPressure > 0.0f)
+		{
+			World* world = Workspace::getMyWorldFast(this);
+			RBXASSERT(world);
+
+			for (int i = 0; i < primitives.size(); i++)
+			{
+				Primitive* current = primitives[i];
+
+				if (blastRadius * 2.0f > current->getRadius())
+				{
+					PartInstance::fromPrimitive(current)->destroyJoints();
+				}
+			}
+
+			world->update();
+
+			for (int i = 0; i < primitives.size(); i++)
+			{
+				Primitive* current = primitives[i];
+
+				if (blastRadius * 2.0f > current->getRadius())
+				{
+					G3D::Vector3 delta = current->getCoordinateFrame().translation - position;
+					G3D::Vector3 normal = delta == G3D::Vector3::zero() ? G3D::Vector3::unitY() : delta.direction();
+					RBXASSERT(normal.magnitude() <= 1.001);
+
+					float radius = current->getRadius();
+					float squaredRadius = radius * radius;
+
+					G3D::Vector3 impulse = normal * blastPressure * squaredRadius * (1.0f/4560.0f);
+					G3D::Vector3 force = impulse * Constants::kernelStepsPerSec();
+
+					world->ticklePrimitive(current);
+
+					Body* body = current->getBody();
+
+					const G3D::Vector3& pos = body->getCoordinateFrame().translation;
+					body->accumulateForce(force, pos);
+
+					current->getBody()->accumulateTorque(force * 0.5f * radius);
+
+					world->addedBodyForce();
+				}
+			}
+		}
+	}
+
+	void Explosion::onServiceProvider(const ServiceProvider* oldProvider, const ServiceProvider* newProvider)
+	{
+		Notifier<RunService, Stepped>::disconnect(ServiceProvider::find<RunService>(oldProvider), this);
+
+		Instance::onServiceProvider(oldProvider, newProvider);
+
+		Notifier<RunService, Stepped>::connect(ServiceProvider::find<RunService>(newProvider), this);
+	}
+}

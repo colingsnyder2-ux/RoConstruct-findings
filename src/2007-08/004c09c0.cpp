@@ -1,254 +1,1292 @@
 // from server: 100% by auto
-// roc 2007-08 004c09c0  unit: RakPeer  size: 710 bytes
-// Make this compile to the exact bytes below, then: roc check 2007-08 004c09c0
-//
-// 004c09c0  55                   push ebp
-// 004c09c1  8d6c24b0             lea ebp, [esp - 0x50]
-// 004c09c5  81ec20010000         sub esp, 0x120
-// 004c09cb  56                   push esi
-// 004c09cc  8b7564               mov esi, dword ptr [ebp + 0x64]
-// 004c09cf  8b06                 mov eax, dword ptr [esi]
-// 004c09d1  8b4e04               mov ecx, dword ptr [esi + 4]
-// 004c09d4  8b5608               mov edx, dword ptr [esi + 8]
-// 004c09d7  894500               mov dword ptr [ebp], eax
-// 004c09da  8b460c               mov eax, dword ptr [esi + 0xc]
-// 004c09dd  89450c               mov dword ptr [ebp + 0xc], eax
-// 004c09e0  33c0                 xor eax, eax
-// 004c09e2  894d04               mov dword ptr [ebp + 4], ecx
-// 004c09e5  57                   push edi
-// 004c09e6  895508               mov dword ptr [ebp + 8], edx
-// 004c09e9  894510               mov dword ptr [ebp + 0x10], eax
-// 004c09ec  894514               mov dword ptr [ebp + 0x14], eax
-// 004c09ef  894518               mov dword ptr [ebp + 0x18], eax
-// 004c09f2  89451c               mov dword ptr [ebp + 0x1c], eax
-// 004c09f5  33c9                 xor ecx, ecx
-// 004c09f7  8b448d00             mov eax, dword ptr [ebp + ecx*4]
-// 004c09fb  85c0                 test eax, eax
-// 004c09fd  8d50ff               lea edx, [eax - 1]
-// 004c0a00  89548d00             mov dword ptr [ebp + ecx*4], edx
-// 004c0a04  7508                 jne 0x4c0a0e
-// 004c0a06  83c101               add ecx, 1
-// 004c0a09  83f908               cmp ecx, 8
-// 004c0a0c  72e9                 jb 0x4c09f7
-// 004c0a0e  8b7d60               mov edi, dword ptr [ebp + 0x60]
-// 004c0a11  53                   push ebx
-// 004c0a12  8d4500               lea eax, [ebp]
-// 004c0a15  50                   push eax
-// 004c0a16  8bc8                 mov ecx, eax
-// 004c0a18  51                   push ecx
-// 004c0a19  57                   push edi
-// 004c0a1a  e851a9ffff           call 0x4bb370
-// 004c0a1f  8b5500               mov edx, dword ptr [ebp]
-// 004c0a22  8b4d08               mov ecx, dword ptr [ebp + 8]
-// 004c0a25  8b4504               mov eax, dword ptr [ebp + 4]
-// 004c0a28  8b5d5c               mov ebx, dword ptr [ebp + 0x5c]
-// 004c0a2b  895540               mov dword ptr [ebp + 0x40], edx
-// 004c0a2e  8b550c               mov edx, dword ptr [ebp + 0xc]
-// 004c0a31  894d48               mov dword ptr [ebp + 0x48], ecx
-// 004c0a34  8b4e04               mov ecx, dword ptr [esi + 4]
-// 004c0a37  894544               mov dword ptr [ebp + 0x44], eax
-// 004c0a3a  8b06                 mov eax, dword ptr [esi]
-// 004c0a3c  89554c               mov dword ptr [ebp + 0x4c], edx
-// 004c0a3f  8b5608               mov edx, dword ptr [esi + 8]
-// 004c0a42  898d74ffffff         mov dword ptr [ebp - 0x8c], ecx
-// 004c0a48  898570ffffff         mov dword ptr [ebp - 0x90], eax
-// 004c0a4e  8b460c               mov eax, dword ptr [esi + 0xc]
-// 004c0a51  8d8d30ffffff         lea ecx, [ebp - 0xd0]
-// 004c0a57  899578ffffff         mov dword ptr [ebp - 0x88], edx
-// 004c0a5d  51                   push ecx
-// 004c0a5e  8d9570ffffff         lea edx, [ebp - 0x90]
-// 004c0a64  89857cffffff         mov dword ptr [ebp - 0x84], eax
-// 004c0a6a  33c0                 xor eax, eax
-// 004c0a6c  52                   push edx
-// 004c0a6d  53                   push ebx
-// 004c0a6e  894580               mov dword ptr [ebp - 0x80], eax
-// 004c0a71  894584               mov dword ptr [ebp - 0x7c], eax
-// 004c0a74  894588               mov dword ptr [ebp - 0x78], eax
-// 004c0a77  89458c               mov dword ptr [ebp - 0x74], eax
-// 004c0a7a  e8f1a8ffff           call 0x4bb370
-// 004c0a7f  8b8d34ffffff         mov ecx, dword ptr [ebp - 0xcc]
-// 004c0a85  8b8530ffffff         mov eax, dword ptr [ebp - 0xd0]
-// 004c0a8b  8b9538ffffff         mov edx, dword ptr [ebp - 0xc8]
-// 004c0a91  894d24               mov dword ptr [ebp + 0x24], ecx
-// 004c0a94  8d4d30               lea ecx, [ebp + 0x30]
-// 004c0a97  51                   push ecx
-// 004c0a98  894520               mov dword ptr [ebp + 0x20], eax
-// 004c0a9b  8b853cffffff         mov eax, dword ptr [ebp - 0xc4]
-// 004c0aa1  895528               mov dword ptr [ebp + 0x28], edx
-// 004c0aa4  56                   push esi
-// 004c0aa5  8d5540               lea edx, [ebp + 0x40]
-// 004c0aa8  89452c               mov dword ptr [ebp + 0x2c], eax
-// 004c0aab  52                   push edx
-// 004c0aac  8d4520               lea eax, [ebp + 0x20]
-// 004c0aaf  50                   push eax
-// 004c0ab0  e80bd6ffff           call 0x4be0c0
-// 004c0ab5  8b7568               mov esi, dword ptr [ebp + 0x68]
-// 004c0ab8  8b0e                 mov ecx, dword ptr [esi]
-// 004c0aba  8b4608               mov eax, dword ptr [esi + 8]
-// 004c0abd  8b5604               mov edx, dword ptr [esi + 4]
-// 004c0ac0  83c428               add esp, 0x28
-// 004c0ac3  894de0               mov dword ptr [ebp - 0x20], ecx
-// 004c0ac6  8b4e0c               mov ecx, dword ptr [esi + 0xc]
-// 004c0ac9  8945e8               mov dword ptr [ebp - 0x18], eax
-// 004c0acc  33c0                 xor eax, eax
-// 004c0ace  8955e4               mov dword ptr [ebp - 0x1c], edx
-// 004c0ad1  894dec               mov dword ptr [ebp - 0x14], ecx
-// 004c0ad4  8945f0               mov dword ptr [ebp - 0x10], eax
-// 004c0ad7  8945f4               mov dword ptr [ebp - 0xc], eax
-// 004c0ada  8945f8               mov dword ptr [ebp - 8], eax
-// 004c0add  8945fc               mov dword ptr [ebp - 4], eax
-// 004c0ae0  8b4c85e0             mov ecx, dword ptr [ebp + eax*4 - 0x20]
-// 004c0ae4  85c9                 test ecx, ecx
-// 004c0ae6  8d51ff               lea edx, [ecx - 1]
-// 004c0ae9  895485e0             mov dword ptr [ebp + eax*4 - 0x20], edx
-// 004c0aed  7508                 jne 0x4c0af7
-// 004c0aef  83c001               add eax, 1
-// 004c0af2  83f808               cmp eax, 8
-// 004c0af5  72e9                 jb 0x4c0ae0
-// 004c0af7  8d45e0               lea eax, [ebp - 0x20]
-// 004c0afa  50                   push eax
-// 004c0afb  8bc8                 mov ecx, eax
-// 004c0afd  51                   push ecx
-// 004c0afe  57                   push edi
-// 004c0aff  e86ca8ffff           call 0x4bb370
-// 004c0b04  8b55e0               mov edx, dword ptr [ebp - 0x20]
-// 004c0b07  8b4de8               mov ecx, dword ptr [ebp - 0x18]
-// 004c0b0a  8b45e4               mov eax, dword ptr [ebp - 0x1c]
-// 004c0b0d  895520               mov dword ptr [ebp + 0x20], edx
-// 004c0b10  8b55ec               mov edx, dword ptr [ebp - 0x14]
-// 004c0b13  894d28               mov dword ptr [ebp + 0x28], ecx
-// 004c0b16  8b4e04               mov ecx, dword ptr [esi + 4]
-// 004c0b19  894524               mov dword ptr [ebp + 0x24], eax
-// 004c0b1c  8b06                 mov eax, dword ptr [esi]
-// 004c0b1e  89552c               mov dword ptr [ebp + 0x2c], edx
-// 004c0b21  8b5608               mov edx, dword ptr [esi + 8]
-// 004c0b24  894d94               mov dword ptr [ebp - 0x6c], ecx
-// 004c0b27  894590               mov dword ptr [ebp - 0x70], eax
-// 004c0b2a  8b460c               mov eax, dword ptr [esi + 0xc]
-// 004c0b2d  8d8d50ffffff         lea ecx, [ebp - 0xb0]
-// 004c0b33  895598               mov dword ptr [ebp - 0x68], edx
-// 004c0b36  51                   push ecx
-// 004c0b37  8d5590               lea edx, [ebp - 0x70]
-// 004c0b3a  89459c               mov dword ptr [ebp - 0x64], eax
-// 004c0b3d  33c0                 xor eax, eax
-// 004c0b3f  52                   push edx
-// 004c0b40  53                   push ebx
-// 004c0b41  8945a0               mov dword ptr [ebp - 0x60], eax
-// 004c0b44  8945a4               mov dword ptr [ebp - 0x5c], eax
-// 004c0b47  8945a8               mov dword ptr [ebp - 0x58], eax
-// 004c0b4a  8945ac               mov dword ptr [ebp - 0x54], eax
-// 004c0b4d  e81ea8ffff           call 0x4bb370
-// 004c0b52  8b8d54ffffff         mov ecx, dword ptr [ebp - 0xac]
-// 004c0b58  8b8550ffffff         mov eax, dword ptr [ebp - 0xb0]
-// 004c0b5e  8b9558ffffff         mov edx, dword ptr [ebp - 0xa8]
-// 004c0b64  894d44               mov dword ptr [ebp + 0x44], ecx
-// 004c0b67  8d4dd0               lea ecx, [ebp - 0x30]
-// 004c0b6a  51                   push ecx
-// 004c0b6b  894540               mov dword ptr [ebp + 0x40], eax
-// 004c0b6e  8b855cffffff         mov eax, dword ptr [ebp - 0xa4]
-// 004c0b74  895548               mov dword ptr [ebp + 0x48], edx
-// 004c0b77  56                   push esi
-// 004c0b78  8d5520               lea edx, [ebp + 0x20]
-// 004c0b7b  89454c               mov dword ptr [ebp + 0x4c], eax
-// 004c0b7e  52                   push edx
-// 004c0b7f  8d4540               lea eax, [ebp + 0x40]
-// 004c0b82  50                   push eax
-// 004c0b83  e838d5ffff           call 0x4be0c0
-// 004c0b88  83c428               add esp, 0x28
-// 004c0b8b  33c0                 xor eax, eax
-// 004c0b8d  5b                   pop ebx
-// 004c0b8e  8bff                 mov edi, edi
-// 004c0b90  8b4c05dc             mov ecx, dword ptr [ebp + eax - 0x24]
-// 004c0b94  8b54053c             mov edx, dword ptr [ebp + eax + 0x3c]
-// 004c0b98  3bca                 cmp ecx, edx
-// 004c0b9a  0f87d1000000         ja 0x4c0c71
-// 004c0ba0  7208                 jb 0x4c0baa
-// 004c0ba2  83e804               sub eax, 4
-// 004c0ba5  83f8f4               cmp eax, -0xc
-// 004c0ba8  7de6                 jge 0x4c0b90
-// 004c0baa  8d4530               lea eax, [ebp + 0x30]
-// 004c0bad  50                   push eax
-// 004c0bae  8d4dd0               lea ecx, [ebp - 0x30]
-// 004c0bb1  51                   push ecx
-// 004c0bb2  e8c98cffff           call 0x4b9880
-// 004c0bb7  8d55d0               lea edx, [ebp - 0x30]
-// 004c0bba  56                   push esi
-// 004c0bbb  52                   push edx
-// 004c0bbc  e81f8dffff           call 0x4b98e0
-// 004c0bc1  83c410               add esp, 0x10
-// 004c0bc4  8b7558               mov esi, dword ptr [ebp + 0x58]
-// 004c0bc7  8b456c               mov eax, dword ptr [ebp + 0x6c]
-// 004c0bca  56                   push esi
-// 004c0bcb  50                   push eax
-// 004c0bcc  8d4dd0               lea ecx, [ebp - 0x30]
-// 004c0bcf  51                   push ecx
-// 004c0bd0  e8fba1ffff           call 0x4badd0
-// 004c0bd5  56                   push esi
-// 004c0bd6  8d5590               lea edx, [ebp - 0x70]
-// 004c0bd9  52                   push edx
-// 004c0bda  56                   push esi
-// 004c0bdb  e890a7ffff           call 0x4bb370
-// 004c0be0  8d8570ffffff         lea eax, [ebp - 0x90]
-// 004c0be6  50                   push eax
-// 004c0be7  56                   push esi
-// 004c0be8  e8b3aaffff           call 0x4bb6a0
-// 004c0bed  8b4d30               mov ecx, dword ptr [ebp + 0x30]
-// 004c0bf0  8b5534               mov edx, dword ptr [ebp + 0x34]
-// 004c0bf3  8b4538               mov eax, dword ptr [ebp + 0x38]
-// 004c0bf6  83c420               add esp, 0x20
-// 004c0bf9  894db0               mov dword ptr [ebp - 0x50], ecx
-// 004c0bfc  8b4d3c               mov ecx, dword ptr [ebp + 0x3c]
-// 004c0bff  8955b4               mov dword ptr [ebp - 0x4c], edx
-// 004c0c02  8945b8               mov dword ptr [ebp - 0x48], eax
-// 004c0c05  33c0                 xor eax, eax
-// 004c0c07  8d55b0               lea edx, [ebp - 0x50]
-// 004c0c0a  894dbc               mov dword ptr [ebp - 0x44], ecx
-// 004c0c0d  8945c0               mov dword ptr [ebp - 0x40], eax
-// 004c0c10  8945c4               mov dword ptr [ebp - 0x3c], eax
-// 004c0c13  8945c8               mov dword ptr [ebp - 0x38], eax
-// 004c0c16  8945cc               mov dword ptr [ebp - 0x34], eax
-// 004c0c19  895568               mov dword ptr [ebp + 0x68], edx
-// 004c0c1c  c7456401000000       mov dword ptr [ebp + 0x64], 1
-// 004c0c23  8b7568               mov esi, dword ptr [ebp + 0x68]
-// 004c0c26  8b7d58               mov edi, dword ptr [ebp + 0x58]
-// 004c0c29  8b4d64               mov ecx, dword ptr [ebp + 0x64]
-// 004c0c2c  8b06                 mov eax, dword ptr [esi]
-// 004c0c2e  33d2                 xor edx, edx
-// 004c0c30  0107                 add dword ptr [edi], eax
-// 004c0c32  8b4604               mov eax, dword ptr [esi + 4]
-// 004c0c35  114704               adc dword ptr [edi + 4], eax
-// 004c0c38  8b4608               mov eax, dword ptr [esi + 8]
-// 004c0c3b  114708               adc dword ptr [edi + 8], eax
-// 004c0c3e  8b460c               mov eax, dword ptr [esi + 0xc]
-// 004c0c41  11470c               adc dword ptr [edi + 0xc], eax
-// 004c0c44  e322                 jecxz 0x4c0c68
-// 004c0c46  42                   inc edx
-// 004c0c47  42                   inc edx
-// 004c0c48  8b04d6               mov eax, dword ptr [esi + edx*8]
-// 004c0c4b  1104d7               adc dword ptr [edi + edx*8], eax
-// 004c0c4e  8b44d604             mov eax, dword ptr [esi + edx*8 + 4]
-// 004c0c52  1144d704             adc dword ptr [edi + edx*8 + 4], eax
-// 004c0c56  8b44d608             mov eax, dword ptr [esi + edx*8 + 8]
-// 004c0c5a  1144d708             adc dword ptr [edi + edx*8 + 8], eax
-// 004c0c5e  8b44d60c             mov eax, dword ptr [esi + edx*8 + 0xc]
-// 004c0c62  1144d70c             adc dword ptr [edi + edx*8 + 0xc], eax
-// 004c0c66  e2de                 loop 0x4c0c46
-// 004c0c68  5f                   pop edi
-// 004c0c69  5e                   pop esi
-// 004c0c6a  83c550               add ebp, 0x50
-// 004c0c6d  8be5                 mov esp, ebp
-// 004c0c6f  5d                   pop ebp
-// 004c0c70  c3                   ret 
-// 004c0c71  8d4d30               lea ecx, [ebp + 0x30]
-// 004c0c74  51                   push ecx
-// 004c0c75  8d55d0               lea edx, [ebp - 0x30]
-// 004c0c78  52                   push edx
-// 004c0c79  e8028cffff           call 0x4b9880
-// 004c0c7e  83c408               add esp, 8
-// 004c0c81  e93effffff           jmp 0x4c0bc4
-
 // from server: 20% by colin
 // roc-lang: cpp
 // roc-cl: 50727
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
 // roc-lib: rbxgs-raknet ReplicaManager.cpp
+
+// Candidate translation unit (score above; library headers required).
+#include "ReplicaManager.h"
+#include "RakPeerInterface.h"
+#include "GetTime.h"
+#include "MessageIdentifiers.h"
+#include "BitStream.h"
+#include "Replica.h"
+#include <memory.h>
+#include <assert.h>
+#include <stdio.h> // For my debug printfs
+#include "RakAssert.h"
+#include "NetworkIDManager.h"
+
+#ifdef _MSC_VER
+#pragma warning( push )
+#endif
+
+int ReplicaManager::CommandStructComp( Replica* const &key, const ReplicaManager::CommandStruct &data )
+{
+	if (key->GetSortPriority() < data.replica->GetSortPriority())
+		return -1;
+	else if (key->GetSortPriority() > data.replica->GetSortPriority())
+		return 1;
+	if (key->GetAllocationNumber() < data.replica->GetAllocationNumber())
+		return -1;
+	if (key->GetAllocationNumber()==data.replica->GetAllocationNumber())
+		return 0;
+	return 1;
+}
+
+int ReplicaManager::RegisteredReplicaComp( Replica* const &key, const ReplicaManager::RegisteredReplica &data )
+{
+	if (key->GetAllocationNumber() < data.replica->GetAllocationNumber())
+		return -1;
+	if (key->GetAllocationNumber()==data.replica->GetAllocationNumber())
+		return 0;
+	return 1;
+}
+
+int ReplicaManager::RegisteredReplicaRefOrderComp( const unsigned int &key, const ReplicaManager::RegisteredReplica &data )
+{
+	if (key < data.referenceOrder)
+		return -1;
+	if (key==data.referenceOrder)
+		return 0;
+	return 1;
+}
+
+int ReplicaManager::RemoteObjectComp( Replica* const &key, const ReplicaManager::RemoteObject &data )
+{
+	if (key->GetAllocationNumber() < data.replica->GetAllocationNumber())
+		return -1;
+	if (key->GetAllocationNumber()==data.replica->GetAllocationNumber())
+		return 0;
+	return 1;
+}
+
+int ReplicaManager::ParticipantStructComp( const SystemAddress &key, ReplicaManager::ParticipantStruct * const &data )
+{
+	if (key < data->systemAddress)
+		return -1;
+	if (key==data->systemAddress)
+		return 0;
+	return 1;
+}
+
+ReplicaManager::ReplicaManager()
+{
+	_constructionCB=0;
+	_sendDownloadCompleteCB=0;
+	_receiveDownloadCompleteCB=0;
+	rakPeer=0;
+	sendChannel=0;
+	autoParticipateNewConnections=false;
+	defaultScope=false;
+	autoConstructToNewParticipants=false;
+	autoSerializeInScope=false;
+	nextReferenceIndex=0;
+#ifdef _DEBUG
+	inUpdate=false;
+#endif
+}
+ReplicaManager::~ReplicaManager()
+{
+	Clear();
+}
+void ReplicaManager::SetAutoParticipateNewConnections(bool autoAdd)
+{
+	autoParticipateNewConnections=autoAdd;
+}
+bool ReplicaManager::AddParticipant(SystemAddress systemAddress)
+{
+	assert(systemAddress!=UNASSIGNED_SYSTEM_ADDRESS);
+
+	// If this player is already in the list of participants, just return.
+	ParticipantStruct *participantStruct;
+	participantStruct=GetParticipantBySystemAddress(systemAddress);
+	if (participantStruct)
+		return false;
+
+	// Create a new participant with this systemAddress
+	participantStruct = new ParticipantStruct;
+	participantStruct->systemAddress=systemAddress;
+
+	// Signal that when done sending SendConstruction for each existing object, we call sendDownloadCompleteCB
+	participantStruct->callDownloadCompleteCB=true;
+
+    // Add the new participant to the list of participants
+	participantList.Insert(systemAddress,participantStruct, true);
+
+	/*
+	if (autoConstructToNewParticipants)
+	{
+		// Signal that we need to call SendConstruction for each existing object to this participant
+		unsigned i;
+		CommandStruct replicaAndCommand;
+		replicaAndCommand.command=REPLICA_EXPLICIT_CONSTRUCTION;
+		if (defaultScope==true)
+			replicaAndCommand.command |= REPLICA_SCOPE_TRUE;
+		replicaAndCommand.userFlags=0;
+
+		// Auto replicate objects in the order they were originally referenced, rather than the random sorted order they are in now
+		// This way dependencies are created first.
+		DataStructures::OrderedList<unsigned int, RegisteredReplica, ReplicaManager::RegisteredReplicaRefOrderComp> sortByRefList;
+		for (i=0; i < replicatedObjects.Size(); i++)
+			sortByRefList.Insert(replicatedObjects[i].referenceOrder, replicatedObjects[i]);
+
+		for (i=0; i < sortByRefList.Size(); i++)
+		{
+			replicaAndCommand.replica=sortByRefList[i].replica;
+			participantStruct->commandList.Insert(replicaAndCommand.replica,replicaAndCommand);
+		}
+	}
+	*/
+
+
+	if (autoConstructToNewParticipants)
+	{
+		// Signal that we need to call SendConstruction for each existing object to this participant
+		unsigned i;
+		CommandStruct replicaAndCommand;
+		replicaAndCommand.command=REPLICA_EXPLICIT_CONSTRUCTION;
+		if (defaultScope==true)
+			replicaAndCommand.command |= REPLICA_SCOPE_TRUE;
+		replicaAndCommand.userFlags=0;
+		for (i=0; i < replicatedObjects.Size(); i++)
+		{
+			replicaAndCommand.replica=replicatedObjects[i].replica;
+			participantStruct->commandList.Insert(replicaAndCommand);
+		}
+	}
+
+	return true;
+}
+bool ReplicaManager::RemoveParticipant(SystemAddress systemAddress)
+{
+	assert(systemAddress!=UNASSIGNED_SYSTEM_ADDRESS);
+
+	// Find this participant by systemAddress
+	ParticipantStruct *participantStruct;
+	participantStruct=GetParticipantBySystemAddress(systemAddress);
+
+	// If found, remove and free this participant structure
+	if (participantStruct)
+	{
+		participantList.Remove(systemAddress);
+		delete participantStruct;
+		return true;
+	}
+
+	return false;
+}
+
+void ReplicaManager::Construct(Replica *replica, bool isCopy, SystemAddress systemAddress, bool broadcast)
+{
+	assert(replica);
+
+	unsigned i;
+	ParticipantStruct *participantStruct;
+	CommandStruct replicaAndCommand;
+	unsigned index;
+	bool objectExists;
+	replicaAndCommand.replica=replica;
+	replicaAndCommand.userFlags=0;
+    
+	ReferencePointer(replica);
+
+	for (i=0; i < participantList.Size(); i++)
+	{
+		participantStruct=participantList[i];
+		if ((broadcast==true && systemAddress!=participantStruct->systemAddress) || 
+			(broadcast==false && systemAddress==participantStruct->systemAddress))
+		{
+			if (participantStruct->remoteObjectList.HasData(replica)==false)
+			{
+				index = GetCommandListReplicaIndex(participantStruct->commandList, replica, &objectExists);
+				// index = participantStruct->commandList.GetIndexFromKey(replica, &objectExists);
+				if (objectExists)
+				{
+#ifdef _DEBUG
+					// Implicit is only used for objects that were not already registered.
+					assert(isCopy==false);
+#endif
+					participantStruct->commandList[index].command|=REPLICA_EXPLICIT_CONSTRUCTION; // Set this bit
+					participantStruct->commandList[index].command&=0xFF ^ REPLICA_IMPLICIT_CONSTRUCTION; // Unset this bit
+
+					if (defaultScope==true && (participantStruct->commandList[index].command & REPLICA_SCOPE_FALSE) == 0)
+						participantStruct->commandList[index].command |= REPLICA_SCOPE_TRUE;
+				}
+				else
+				{
+					if (isCopy)
+						replicaAndCommand.command=REPLICA_IMPLICIT_CONSTRUCTION; // Set this bit
+					else
+						replicaAndCommand.command=REPLICA_EXPLICIT_CONSTRUCTION; // Set this bit
+
+					if (defaultScope==true)
+						replicaAndCommand.command |= REPLICA_SCOPE_TRUE;
+
+					participantStruct->commandList.Insert(replicaAndCommand);
+				}
+			}
+		}
+	}
+
+	// Update immediately, otherwise if we take action on this object the first frame, the action packets will arrive before the object is created
+	Update(rakPeer);
+}
+void ReplicaManager::Destruct(Replica *replica, SystemAddress systemAddress, bool broadcast)
+{
+	assert(replica);
+
+	bool sendTimestamp;
+	bool objectExists;
+	unsigned replicatedObjectsIndex;
+	replicatedObjectsIndex = replicatedObjects.GetIndexFromKey(replica, &objectExists);
+	if (objectExists==false)
+		return;
+
+	// For each existing participant, send a packet telling them of this object destruction
+	RakNet::BitStream outBitstream, userDataBitStream;
+	unsigned i,tempIndex;
+	bool replicaReferenced;
+	ParticipantStruct *participantStruct;
+	replicaReferenced=false;
+	for (i=0; i < participantList.Size(); i++)
+	{
+		participantStruct=participantList[i];
+
+		if ((broadcast==true && systemAddress!=participantStruct->systemAddress) || 
+			(broadcast==false && systemAddress==participantStruct->systemAddress))
+		{
+			// Remove any remote object state tracking for this object, for this player
+			tempIndex = participantStruct->remoteObjectList.GetIndexFromKey(replica, &objectExists);
+			if (objectExists)
+			{
+				// Send the destruction packet immediately
+				if (replica->GetNetworkID()!=UNASSIGNED_NETWORK_ID &&
+					(replicatedObjects[replicatedObjectsIndex].allowedInterfaces & REPLICA_SEND_DESTRUCTION))
+				{
+					userDataBitStream.Reset();
+					userDataBitStream.Write((MessageID)ID_REPLICA_MANAGER_DESTRUCTION);
+					userDataBitStream.Write(replica->GetNetworkID());
+					sendTimestamp=false;
+					ReplicaReturnResult res = replica->SendDestruction(&userDataBitStream, participantStruct->systemAddress, &sendTimestamp);
+					if (res==REPLICA_PROCESSING_DONE)
+					{
+						outBitstream.Reset();
+						if (sendTimestamp)
+						{
+							outBitstream.Write((MessageID)ID_TIMESTAMP);
+							outBitstream.Write(RakNet::GetTime());
+							outBitstream.Write(&userDataBitStream);
+							rakPeer->Send(&outBitstream, HIGH_PRIORITY, RELIABLE_ORDERED, sendChannel, participantStruct->systemAddress, false);
+						}
+						else
+							rakPeer->Send(&userDataBitStream, HIGH_PRIORITY, RELIABLE_ORDERED, sendChannel, participantStruct->systemAddress, false);
+					}
+				}
+
+				participantStruct->remoteObjectList.RemoveAtIndex(tempIndex);
+			}
+
+			// Remove any pending commands that reference this object, for this player
+			tempIndex = GetCommandListReplicaIndex(participantStruct->commandList, replica, &objectExists);
+		//	tempIndex = participantStruct->commandList.GetIndexFromKey(replica, &objectExists);
+			if (objectExists)
+				participantStruct->commandList.RemoveAtIndex(tempIndex);
+		}
+		else if (replicaReferenced==false)
+		{
+			bool objectExists;
+			GetCommandListReplicaIndex(participantStruct->commandList, replica, &objectExists);
+			// See if any commands or objects reference replica
+			//if (participantStruct->commandList.HasData(replica))
+			if (objectExists)
+				replicaReferenced=true;
+			else if (participantStruct->remoteObjectList.HasData(replica))
+				replicaReferenced=true;
+		}
+	}
+
+	// Remove replica from the list if no commands and no remote objects reference it
+	if (replicaReferenced==false)
+		replicatedObjects.RemoveAtIndex(replicatedObjectsIndex);
+}
+void ReplicaManager::ReferencePointer(Replica *replica)
+{
+	// Start tracking this object, if we are not already
+	if (replicatedObjects.HasData(replica)==false)
+	{
+		RegisteredReplica replicaAndTime;
+		replicaAndTime.replica=replica;
+		replicaAndTime.lastDeserializeTrue=0;
+		replicaAndTime.allowedInterfaces=REPLICA_SET_ALL;
+		replicaAndTime.referenceOrder=nextReferenceIndex++;
+		replicatedObjects.Insert(replica,replicaAndTime, true);
+		/// Try setting the network ID manager if the user forgot
+		if (replica->GetNetworkIDManager()==0)
+			replica->SetNetworkIDManager(rakPeer->GetNetworkIDManager());
+	}
+}
+void ReplicaManager::DereferencePointer(Replica *replica)
+{
+	bool objectExists;
+	unsigned replicatedObjectsIndex;
+	unsigned tempIndex;
+	replicatedObjectsIndex = replicatedObjects.GetIndexFromKey(replica, &objectExists);
+	if (objectExists==false)
+		return;
+	replicatedObjects.RemoveAtIndex(replicatedObjectsIndex);
+
+	ParticipantStruct *participantStruct;
+	unsigned i;
+	for (i=0; i < participantList.Size(); i++)
+	{
+		participantStruct=participantList[i];
+
+		// Remove any pending commands that reference this object for any player
+		tempIndex = GetCommandListReplicaIndex(participantStruct->commandList, replica, &objectExists);
+	//	tempIndex = participantStruct->commandList.GetIndexFromKey(replica, &objectExists);
+		if (objectExists)
+			participantStruct->commandList.RemoveAtIndex(tempIndex);
+
+		// Remove any remote object state tracking for this object for any player
+		tempIndex = participantStruct->remoteObjectList.GetIndexFromKey(replica, &objectExists);
+		if (objectExists)
+			participantStruct->remoteObjectList.RemoveAtIndex(tempIndex);
+	}
+}
+void ReplicaManager::SetScope(Replica *replica, bool inScope, SystemAddress systemAddress, bool broadcast)
+{
+	assert(replica);
+
+	// Autoreference the pointer if necessary.  This way the user can call functions on an object without having to worry
+	// About the order of operations.
+	ReferencePointer(replica);
+
+	// For each player that we want, flag to call SendScopeChange if inScope is different from what they already have
+	unsigned i;
+	ParticipantStruct *participantStruct;
+	bool objectExists;
+	unsigned index;
+	CommandStruct replicaAndCommand;
+	if (inScope)
+		replicaAndCommand.command=REPLICA_SCOPE_TRUE;
+	else
+		replicaAndCommand.command=REPLICA_SCOPE_FALSE;
+	replicaAndCommand.replica=replica;
+	replicaAndCommand.userFlags=0;
+	for (i=0; i < participantList.Size(); i++)
+	{
+		participantStruct=participantList[i];
+
+		if ((broadcast==true && systemAddress!=participantStruct->systemAddress) || 
+			(broadcast==false && systemAddress==participantStruct->systemAddress))
+		{
+			// If there is already a pending command for this object, add to it.  Otherwise, add a new pending command
+			index = GetCommandListReplicaIndex(participantStruct->commandList, replica, &objectExists);
+//			index = participantStruct->commandList.GetIndexFromKey(replica, &objectExists);
+            if (objectExists)
+			{
+				// Update a pending command
+				if (inScope)
+				{
+					participantStruct->commandList[index].command&=0xFF ^ REPLICA_SCOPE_FALSE; // Unset this bit
+					participantStruct->commandList[index].command|=REPLICA_SCOPE_TRUE; // Set this bit
+				}
+				else
+				{
+					participantStruct->commandList[index].command&=0xFF ^ REPLICA_SCOPE_TRUE; // Unset this bit
+					participantStruct->commandList[index].command|=REPLICA_SCOPE_FALSE; // Set this bit
+				}						
+			}
+			else
+			{
+				// Add a new command, since there are no pending commands for this object
+				participantStruct->commandList.Insert(replicaAndCommand);
+			}
+		}
+	}
+}
+void ReplicaManager::SignalSerializeNeeded(Replica *replica, SystemAddress systemAddress, bool broadcast)
+{
+	assert(replica);
+
+	// Autoreference the pointer if necessary.  This way the user can call functions on an object without having to worry
+	// About the order of operations.
+	if (replicatedObjects.HasData(replica)==false)
+		ReferencePointer(replica);
+
+	// For each player that we want, if this object exists on that system, flag to call Serialize
+	// (this may not necessarily happen - it depends on if the object is inScope when Update actually processes it.)
+	unsigned i;
+	ParticipantStruct *participantStruct;
+	bool objectExists;
+	unsigned index;
+	CommandStruct replicaAndCommand;
+	replicaAndCommand.command=REPLICA_SERIALIZE;
+	replicaAndCommand.replica=replica;
+	replicaAndCommand.userFlags=0;
+	for (i=0; i < participantList.Size(); i++)
+	{
+		participantStruct=participantList[i];
+
+		if ((broadcast==true && systemAddress!=participantStruct->systemAddress) || 
+			(broadcast==false && systemAddress==participantStruct->systemAddress))
+		{
+			// If there is already a pending command for this object, add to it.  Otherwise, add a new pending command
+			// index = participantStruct->commandList.GetIndexFromKey(replica, &objectExists);
+			index = GetCommandListReplicaIndex(participantStruct->commandList, replica, &objectExists);
+			if (objectExists)
+			{
+				participantStruct->commandList[index].command|=REPLICA_SERIALIZE; // Set this bit			
+			}
+			else
+			{
+				// Add a new command, since there are no pending commands for this object
+				participantStruct->commandList.Insert(replicaAndCommand);
+			}
+		}
+	}
+}
+void ReplicaManager::SetReceiveConstructionCB(ReceiveConstructionInterface *ReceiveConstructionInterface)
+{
+	// Just overwrite the construction callback pointer
+	_constructionCB=ReceiveConstructionInterface;
+}
+void ReplicaManager::SetDownloadCompleteCB(SendDownloadCompleteInterface *sendDownloadComplete, ReceiveDownloadCompleteInterface *receiveDownloadComplete)
+{
+	// Just overwrite the send and receive download complete pointers.
+	_sendDownloadCompleteCB=sendDownloadComplete;
+	_receiveDownloadCompleteCB=receiveDownloadComplete;
+}
+void ReplicaManager::SetSendChannel(unsigned char channel)
+{
+	// Change the send channel from the default of 0
+	sendChannel=channel;
+}
+void ReplicaManager::SetAutoConstructToNewParticipants(bool autoConstruct)
+{
+	autoConstructToNewParticipants=autoConstruct;
+}
+void ReplicaManager::SetDefaultScope(bool scope)
+{
+	defaultScope=scope;
+}
+void ReplicaManager::SetAutoSerializeInScope(bool autoSerialize)
+{
+	autoSerializeInScope=autoSerialize;
+}
+void ReplicaManager::EnableReplicaInterfaces(Replica *replica, unsigned char interfaceFlags)
+{
+	bool objectExists;
+	unsigned replicatedObjectsIndex;
+	replicatedObjectsIndex = replicatedObjects.GetIndexFromKey(replica, &objectExists);
+	if (objectExists==false)
+	{
+		// Autoreference the pointer if necessary.  This way the user can call functions on an object without having to worry
+		// About the order of operations.
+		ReferencePointer(replica);
+		replicatedObjectsIndex = replicatedObjects.GetIndexFromKey(replica, &objectExists);
+	}
+	replicatedObjects[replicatedObjectsIndex].allowedInterfaces|=interfaceFlags;
+}
+void ReplicaManager::DisableReplicaInterfaces(Replica *replica, unsigned char interfaceFlags)
+{
+	bool objectExists;
+	unsigned replicatedObjectsIndex;
+	replicatedObjectsIndex = replicatedObjects.GetIndexFromKey(replica, &objectExists);
+	if (objectExists==false)
+	{
+		// Autoreference the pointer if necessary.  This way the user can call functions on an object without having to worry
+		// About the order of operations.
+		ReferencePointer(replica);
+		replicatedObjectsIndex = replicatedObjects.GetIndexFromKey(replica, &objectExists);
+	}
+	replicatedObjects[replicatedObjectsIndex].allowedInterfaces&= 0xFF ^ interfaceFlags;
+}
+bool ReplicaManager::IsConstructed(Replica *replica, SystemAddress systemAddress)
+{
+	ParticipantStruct *participantStruct = GetParticipantBySystemAddress(systemAddress);
+	if (participantStruct)
+	{
+		bool objectExists;
+		participantStruct->remoteObjectList.GetIndexFromKey(replica, &objectExists);
+		return objectExists;
+	}
+	return false;
+}
+bool ReplicaManager::IsInScope(Replica *replica, SystemAddress systemAddress)
+{
+	ParticipantStruct *participantStruct = GetParticipantBySystemAddress(systemAddress);
+	if (participantStruct)
+	{
+		bool objectExists;
+		unsigned remoteObjectListIndex = participantStruct->remoteObjectList.GetIndexFromKey(replica, &objectExists);
+		if (objectExists)
+			return participantStruct->remoteObjectList[remoteObjectListIndex].inScope;
+	}
+	return false;
+}
+unsigned ReplicaManager::GetReplicaCount(void) const
+{
+	return replicatedObjects.Size();
+}
+Replica *ReplicaManager::GetReplicaAtIndex(unsigned index)
+{
+	return replicatedObjects[index].replica;
+}
+unsigned ReplicaManager::GetParticipantCount(void) const
+{
+	return participantList.Size();
+}
+SystemAddress ReplicaManager::GetParticipantAtIndex(unsigned index)
+{
+	return participantList[index]->systemAddress;
+}
+bool ReplicaManager::HasParticipant(SystemAddress systemAddress)
+{
+	return participantList.HasData(systemAddress);
+}
+void ReplicaManager::SignalSerializationFlags(Replica *replica, SystemAddress systemAddress, bool broadcast, bool set, unsigned int flags)
+{
+	assert(replica);
+
+	// Autoreference the pointer if necessary.  This way the user can call functions on an object without having to worry
+	// About the order of operations.
+	ReferencePointer(replica);
+
+	CommandStruct replicaAndCommand;
+	replicaAndCommand.replica=replica;
+	replicaAndCommand.userFlags=flags;
+	replicaAndCommand.command=0;
+
+	bool objectExists;
+	unsigned i, index;
+	ParticipantStruct *participantStruct;
+	for (i=0; i < participantList.Size(); i++)
+	{
+		participantStruct=participantList[i];
+
+		if ((broadcast==true && systemAddress!=participantStruct->systemAddress) || 
+			(broadcast==false && systemAddress==participantStruct->systemAddress))
+		{
+			// Set the flags in the object if the object exists
+			index = participantStruct->remoteObjectList.GetIndexFromKey(replica, &objectExists);
+			if (objectExists)
+			{
+				if (set)
+					participantStruct->remoteObjectList[index].userFlags|=flags; // Set these user flags
+				else
+					participantStruct->remoteObjectList[index].userFlags&=~flags; // Unset these user flags
+			}
+			else
+			{
+				// The object is not yet created.  Add to the pending command, or create a new command.
+				// index = participantStruct->commandList.GetIndexFromKey(replica, &objectExists);
+				index = GetCommandListReplicaIndex(participantStruct->commandList, replica, &objectExists);
+				if (objectExists)
+				{
+					if (set)
+						participantStruct->commandList[index].userFlags|=flags; // Set these user flags
+					else
+						participantStruct->commandList[index].userFlags&=~flags; // Unset these user flags
+				}
+				else if (set)
+				{
+					// Add a new command, since there are no pending commands for this object
+					participantStruct->commandList.Insert(replicaAndCommand);
+				}
+			}
+		}
+	}
+}
+unsigned int* ReplicaManager::AccessSerializationFlags(Replica *replica, SystemAddress systemAddress)
+{
+	assert(replica);
+
+	// Autoreference the pointer if necessary.  This way the user can call functions on an object without having to worry
+	// About the order of operations.
+	ReferencePointer(replica);
+
+	unsigned index;
+	bool objectExists;
+	ParticipantStruct *participantStruct;
+	CommandStruct replicaAndCommand;
+	replicaAndCommand.replica=replica;
+	replicaAndCommand.userFlags=0;
+	replicaAndCommand.command=0;
+
+	participantStruct=GetParticipantBySystemAddress(systemAddress);
+	if (participantStruct)
+	{
+		// Set the flags in the object if the object exists
+		index = participantStruct->remoteObjectList.GetIndexFromKey(replica, &objectExists);
+		if (objectExists)
+		{
+			return &(participantStruct->remoteObjectList[index].userFlags);
+		}
+		else
+		{
+//			index = participantStruct->commandList.GetIndexFromKey(replica, &objectExists);
+			index = GetCommandListReplicaIndex(participantStruct->commandList, replica, &objectExists);
+			if (objectExists)
+			{
+				return &(participantStruct->commandList[index].userFlags);
+			}
+			else
+			{
+				// Add a new command, since there are no pending commands for this object
+				//index =
+					participantStruct->commandList.Insert(replicaAndCommand);
+				// return &(participantStruct->commandList[index].userFlags);
+					return & (participantStruct->commandList[participantStruct->commandList.Size()-1].userFlags);
+			}
+		}
+	}
+
+	// No such participant
+	return 0;
+}
+
+void ReplicaManager::Clear(void)
+{
+	// Free all memory
+	unsigned i;
+	for (i=0; i < participantList.Size(); i++)
+		delete participantList[i];
+	participantList.Clear();
+	replicatedObjects.Clear();
+	nextReferenceIndex=0;
+}
+void ReplicaManager::AssertReplicatedObjectsClear(void)
+{
+	RakAssert(replicatedObjects.Size()==0);
+}
+void ReplicaManager::AssertParticipantsClear(void)
+{
+	RakAssert(participantList.Size()==0);
+}
+void ReplicaManager::OnAttach(RakPeerInterface *peer)
+{
+	rakPeer=peer;
+}
+void ReplicaManager::Update(RakPeerInterface *peer)
+{
+	if (participantList.Size()==0)
+		return;
+
+	// Check for recursive calls, which is not supported and should not happen
+#ifdef _DEBUG
+	RakAssert(inUpdate==false);
+	inUpdate=true;
+#endif
+
+	unsigned participantIndex, remoteObjectListIndex, replicatedObjectsIndex;
+	ReplicaReturnResult res;
+	bool sendTimestamp;
+	ParticipantStruct *participantStruct;
+	unsigned commandListIndex;
+	RakNet::BitStream outBitstream, userDataBitstream;
+	RakNetTime currentTime;
+	bool objectExists;
+	PacketPriority priority;
+	PacketReliability reliability;
+	ReceivedCommand *receivedCommand;
+	Replica *replica;
+//	unsigned int userFlags;
+	unsigned char command;
+	currentTime=0;
+
+	// For each participant
+	for (participantIndex=0; participantIndex < participantList.Size(); participantIndex++)
+	{
+		participantStruct = participantList[participantIndex];
+
+		// Sends the download complete packet
+		// If callDownloadCompleteCB is true then check all the remaining objects starting at commandListIndex
+		// I scan every frame in case the callback returns false to delay, and after that time a new object is Replicated
+		if (participantStruct->callDownloadCompleteCB)
+		{
+			bool anyHasConstruction;
+			unsigned j;
+			anyHasConstruction=false;
+			for (j=0; j < participantStruct->commandList.Size(); j++)
+			{
+				if (participantStruct->commandList[j].command & REPLICA_EXPLICIT_CONSTRUCTION)
+				{
+					anyHasConstruction=true;
+					break;
+				}
+			}
+			// If none have REPLICA_EXPLICIT_CONSTRUCTION, send ID_REPLICA_MANAGER_DOWNLOAD_COMPLETE and set callDownloadCompleteCB false
+			if (anyHasConstruction==false)
+			{
+				ReplicaReturnResult sendDLComplete;
+				userDataBitstream.Reset();
+				if (_sendDownloadCompleteCB)
+					sendDLComplete=_sendDownloadCompleteCB->SendDownloadComplete(&userDataBitstream, currentTime, participantStruct->systemAddress, this); // If you return false, this will be called again next update
+				else
+					sendDLComplete=REPLICA_CANCEL_PROCESS;
+				if (sendDLComplete==REPLICA_PROCESSING_DONE)
+				{
+					outBitstream.Reset();
+					outBitstream.Write((MessageID)ID_REPLICA_MANAGER_DOWNLOAD_COMPLETE);
+					outBitstream.Write(&userDataBitstream, userDataBitstream.GetNumberOfBitsUsed());
+					peer->Send(&outBitstream, HIGH_PRIORITY, RELIABLE_ORDERED, sendChannel, participantStruct->systemAddress, false);
+					participantStruct->callDownloadCompleteCB=false;
+				}
+				else if (sendDLComplete==REPLICA_CANCEL_PROCESS)
+				{
+					participantStruct->callDownloadCompleteCB=false;
+				}
+				else
+				{
+					assert(sendDLComplete==REPLICA_PROCESS_LATER);
+					// else REPLICA_PROCESS_LATER
+				}
+			}
+		}
+
+		// For each CommandStruct to send
+		for (commandListIndex=0; commandListIndex < participantStruct->commandList.Size(); commandListIndex++)
+		{
+			// Only call RakNet::GetTime() once because it's slow
+			if (currentTime==0)
+				currentTime=RakNet::GetTime();
+
+			replica=participantStruct->commandList[commandListIndex].replica;
+			command=participantStruct->commandList[commandListIndex].command;
+		//	userFlags=participantStruct->commandList[commandListIndex].userFlags;
+			replicatedObjectsIndex=replicatedObjects.GetIndexFromKey(replica, &objectExists);
+#ifdef _DEBUG
+			assert(objectExists);
+#endif
+			if (objectExists==false)
+				continue;
+
+			// If construction is set, call SendConstruction.  The only precondition is that the object was not already created,
+			// which was checked in ReplicaManager::Replicate
+			if (command & REPLICA_EXPLICIT_CONSTRUCTION)
+			{
+				if (replicatedObjects[replicatedObjectsIndex].allowedInterfaces & REPLICA_SEND_CONSTRUCTION)
+				{
+					userDataBitstream.Reset();
+					sendTimestamp=false;
+					res=replica->SendConstruction(currentTime, participantStruct->systemAddress,
+						participantStruct->commandList[commandListIndex].userFlags, &userDataBitstream, &sendTimestamp);
+
+					if (res==REPLICA_PROCESSING_DONE)
+					{
+						outBitstream.Reset();
+						// If SendConstruction returns true and writes to outBitStream, do this send.  Clear the construction command.  Then process the next command for this CommandStruct, if any.
+						if (sendTimestamp)
+						{
+							outBitstream.Write((MessageID)ID_TIMESTAMP);
+							outBitstream.Write(currentTime);
+						}
+						outBitstream.Write((MessageID)ID_REPLICA_MANAGER_CONSTRUCTION);
+						// It's required to send an NetworkID if available.
+						// Problem:
+						// A->B->C
+						//	|  |
+						//	D->E
+						//
+						// A creates.
+						// B->C->E->D->B will cycle forever.
+						// Fix is to always include an networkID.  Objects are not created if that object id already is present.
+						if (replica->GetNetworkID()!=UNASSIGNED_NETWORK_ID)
+						{
+							outBitstream.Write(true);
+							outBitstream.Write(replica->GetNetworkID());
+						}
+						else
+							outBitstream.Write(false);
+
+						outBitstream.Write(&userDataBitstream, userDataBitstream.GetNumberOfBitsUsed());
+
+						peer->Send(&outBitstream, HIGH_PRIORITY, RELIABLE_ORDERED, sendChannel, participantStruct->systemAddress, false);
+
+						// Turn off this bit
+						participantStruct->commandList[commandListIndex].command &= 0xFF ^ REPLICA_EXPLICIT_CONSTRUCTION;
+
+						// Add the object to the participant's object list, indicating this object has been remotely created
+						RemoteObject remoteObject;
+						remoteObject.replica=replica;
+						//remoteObject.inScope=defaultScope;
+						remoteObject.inScope=false;
+						remoteObject.lastSendTime=0;
+						remoteObject.userFlags=participantStruct->commandList[commandListIndex].userFlags;
+						// Create an entry for this object.  We do this now, even if the user might refuse the SendConstruction override,
+						// because that call may be delayed and other commands sent while that is pending.  We always do the REPLICA_EXPLICIT_CONSTRUCTION call first.
+						participantStruct->remoteObjectList.Insert(remoteObject.replica,remoteObject, true);
+					}
+					else if (res==REPLICA_PROCESS_IMPLICIT)
+					{
+						// Turn off this bit
+						participantStruct->commandList[commandListIndex].command &= 0xFF ^ REPLICA_EXPLICIT_CONSTRUCTION;
+
+						// Add the object to the participant's object list, indicating this object has been remotely created
+						RemoteObject remoteObject;
+						remoteObject.replica=replica;
+						//remoteObject.inScope=defaultScope;
+						remoteObject.inScope=false;
+						remoteObject.lastSendTime=0;
+						remoteObject.userFlags=participantStruct->commandList[commandListIndex].userFlags;
+						// Create an entry for this object.  We do this now, even if the user might refuse the SendConstruction override,
+						// because that call may be delayed and other commands sent while that is pending.  We always do the REPLICA_EXPLICIT_CONSTRUCTION call first.
+						participantStruct->remoteObjectList.Insert(remoteObject.replica,remoteObject, true);
+					}
+					else if (res==REPLICA_PROCESS_LATER)
+					{
+						continue;
+					}
+					else // REPLICA_CANCEL_PROCESS
+					{
+						assert(res==REPLICA_CANCEL_PROCESS);
+						participantStruct->commandList[commandListIndex].command=0;
+					}
+				}
+				else
+				{
+					// Don't allow construction, or anything else for this object, as the construction send call is disallowed
+					participantStruct->commandList[commandListIndex].command=0;
+				}
+			}
+			else if (command & REPLICA_IMPLICIT_CONSTRUCTION)
+			{
+				// Turn off this bit
+				participantStruct->commandList[commandListIndex].command &= 0xFF ^ REPLICA_IMPLICIT_CONSTRUCTION;
+
+				// Add the object to the participant's object list, indicating this object is assumed to be remotely created
+				RemoteObject remoteObject;
+				remoteObject.replica=replica;
+				//remoteObject.inScope=defaultScope;
+				remoteObject.inScope=false;
+				remoteObject.lastSendTime=0;
+				remoteObject.userFlags=participantStruct->commandList[commandListIndex].userFlags;
+				// Create an entry for this object.  We do this now, even if the user might refuse the SendConstruction override,
+				// because that call may be delayed and other commands sent while that is pending.  We always do the REPLICA_EXPLICIT_CONSTRUCTION call first.
+				participantStruct->remoteObjectList.Insert(remoteObject.replica,remoteObject, true);
+			}
+
+			// The remaining commands, SendScopeChange and Serialize, require the object the command references exists on the remote system, so check that
+			remoteObjectListIndex = participantStruct->remoteObjectList.GetIndexFromKey(replica, &objectExists);
+			if (objectExists)
+			{
+				command = participantStruct->commandList[commandListIndex].command;
+
+				// Process SendScopeChange.
+				if ((command & (REPLICA_SCOPE_TRUE | REPLICA_SCOPE_FALSE)))
+				{
+					if (replica->GetNetworkID()==UNASSIGNED_NETWORK_ID)
+						continue; // Not set yet so call this later.
+
+					if (replicatedObjects[replicatedObjectsIndex].allowedInterfaces & REPLICA_SEND_SCOPE_CHANGE)
+					{
+						bool scopeTrue = (command & REPLICA_SCOPE_TRUE)!=0;
+
+						// Only send scope changes if the requested change is different from what they already have
+						if (participantStruct->remoteObjectList[remoteObjectListIndex].inScope!=scopeTrue)
+						{
+							userDataBitstream.Reset();
+							sendTimestamp=false;
+							res=replica->SendScopeChange(scopeTrue, &userDataBitstream, currentTime, participantStruct->systemAddress, &sendTimestamp);
+
+							if (res==REPLICA_PROCESSING_DONE)
+							{
+								// If the user returns true and does write to outBitstream, do this send.  Clear the scope change command. Then process the next command for this CommandStruct, if any.
+								outBitstream.Reset();
+								if (sendTimestamp)
+								{
+									outBitstream.Write((MessageID)ID_TIMESTAMP);
+									outBitstream.Write(currentTime);
+								}
+								outBitstream.Write((MessageID)ID_REPLICA_MANAGER_SCOPE_CHANGE);
+								outBitstream.Write(replica->GetNetworkID());
+								outBitstream.Write(&userDataBitstream, userDataBitstream.GetNumberOfBitsUsed());
+								peer->Send(&outBitstream, HIGH_PRIORITY, RELIABLE_ORDERED, sendChannel, participantStruct->systemAddress, false);
+
+								// Set the scope for this object and system
+								participantStruct->remoteObjectList[remoteObjectListIndex].inScope=scopeTrue;
+
+								// If scope is true, turn on serialize, since you virtually always want to serialize when an object goes in scope
+								if (scopeTrue && autoSerializeInScope)
+									participantStruct->commandList[commandListIndex].command |= REPLICA_SERIALIZE;
+
+								// Turn off these bits - Call is processed
+								participantStruct->commandList[commandListIndex].command &= 0xFF ^ (REPLICA_SCOPE_TRUE | REPLICA_SCOPE_FALSE);
+							}
+							else if (res==REPLICA_CANCEL_PROCESS)
+							{
+								// Turn off these bits - Call is canceled
+								participantStruct->commandList[commandListIndex].command &= 0xFF ^ (REPLICA_SCOPE_TRUE | REPLICA_SCOPE_FALSE);
+							}
+							else
+							{
+								// If the user returns false and the scope is currently set to false, just continue with another CommandStruct.  Don't process serialization until scoping is resolved first.
+								if (scopeTrue==false)
+									continue;
+
+								// If the user returns false and the scope is currently set to false, process the next command for this CommandStruct, if any.
+							}
+						}
+					}
+					else
+					{
+						// Turn off these bits - Call is disallowed
+						participantStruct->commandList[commandListIndex].command &= 0xFF ^ (REPLICA_SCOPE_TRUE | REPLICA_SCOPE_FALSE);
+
+						// Set the scope - even if the actual send is disabled we might still be able to serialize.
+						participantStruct->remoteObjectList[remoteObjectListIndex].inScope=(command & REPLICA_SCOPE_TRUE)!=0;
+					}
+				}
+
+				command = participantStruct->commandList[commandListIndex].command;
+				// Process Serialize
+				if ((command & REPLICA_SERIALIZE))
+				{
+					if (replica->GetNetworkID()==UNASSIGNED_NETWORK_ID)
+						continue; // Not set yet so call this later.
+
+					// If scope is currently false for this object in the RemoteObject list, cancel this serialize as the scope changed before the serialization went out
+					if (participantStruct->remoteObjectList[remoteObjectListIndex].inScope && (replicatedObjects[replicatedObjectsIndex].allowedInterfaces & REPLICA_SEND_SERIALIZE))
+					{
+						do 
+						{
+							userDataBitstream.Reset();
+							priority=HIGH_PRIORITY;
+							reliability=RELIABLE_ORDERED;
+							sendTimestamp=false;
+							res=replica->Serialize(&sendTimestamp, &userDataBitstream, participantStruct->remoteObjectList[remoteObjectListIndex].lastSendTime, &priority, &reliability, currentTime, participantStruct->systemAddress, participantStruct->remoteObjectList[remoteObjectListIndex].userFlags);
+
+							if (res==REPLICA_PROCESSING_DONE || res==REPLICA_PROCESS_AGAIN)
+							{
+								participantStruct->remoteObjectList[remoteObjectListIndex].lastSendTime=currentTime;
+
+								outBitstream.Reset();
+								if (sendTimestamp)
+								{
+									outBitstream.Write((MessageID)ID_TIMESTAMP);
+									outBitstream.Write(currentTime);
+								}
+								outBitstream.Write((MessageID)ID_REPLICA_MANAGER_SERIALIZE);
+								outBitstream.Write(replica->GetNetworkID());
+								outBitstream.Write(&userDataBitstream, userDataBitstream.GetNumberOfBitsUsed());
+								peer->Send(&outBitstream, priority, reliability, sendChannel, participantStruct->systemAddress, false);		
+
+								// Clear the serialize bit when done
+								if (res==REPLICA_PROCESSING_DONE)
+									participantStruct->commandList[commandListIndex].command &= 0xFF ^ REPLICA_SERIALIZE;
+								// else res==REPLICA_PROCESS_AGAIN so it will repeat the enclosing do {} while(); loop
+							}
+							else if (res==REPLICA_CANCEL_PROCESS)
+							{
+								// Clear the serialize bit
+								participantStruct->commandList[commandListIndex].command &= 0xFF ^ REPLICA_SERIALIZE;
+							}
+							else
+							{
+								// if the user returns REPLICA_PROCESS_LATER, just continue with another CommandStruct.
+								assert(res==REPLICA_PROCESS_LATER);
+							}
+						} while(res==REPLICA_PROCESS_AGAIN);
+					}
+					else
+					{
+						// Cancel this serialize
+						participantStruct->commandList[commandListIndex].command &= 0xFF ^ REPLICA_SERIALIZE;
+					}
+				}
+			}
+		}
+
+		// Go through the command list and delete all cleared commands, from back to front.  It is more efficient to do this than to delete them as we process
+		commandListIndex=participantStruct->commandList.Size();
+		if (commandListIndex>0)
+		{
+#ifdef _MSC_VER
+#pragma warning( disable : 4127 ) // warning C4127: conditional expression is constant
+#endif
+			while (1)
+			{
+				if (participantStruct->commandList[commandListIndex-1].command==0)
+				{
+					// If this is the last item in the list, and it probably is, then it just changes a number rather than shifts the entire array
+					participantStruct->commandList.RemoveAtIndex(commandListIndex-1);
+				}
+
+				if (--commandListIndex==0)
+					break;
+			}
+		}
+		
+		// Now process queued receives
+		while (participantStruct->pendingCommands.Size())
+		{
+			receivedCommand=participantStruct->pendingCommands.Pop();
+			participantStruct=GetParticipantBySystemAddress(receivedCommand->systemAddress);
+			if (participantStruct)
+			{
+				res=ProcessReceivedCommand(participantStruct, receivedCommand);
+				// Returning false means process this command again later
+				if (res==REPLICA_PROCESS_LATER)
+				{
+					// Push the command back in the queue
+					participantStruct->pendingCommands.PushAtHead(receivedCommand);
+
+					// Stop processing, because all processing is in order
+					break;
+				}
+				else
+				{
+					assert(res==REPLICA_CANCEL_PROCESS);
+				}
+			}
+			
+			// Done with this command, so delete it
+			delete receivedCommand->userData;
+			delete receivedCommand;
+		}
+	}
+#ifdef _DEBUG
+	inUpdate=false;
+#endif
+}
+#ifdef _MSC_VER
+#pragma warning( disable : 4100 ) // warning C4100: <variable name> : unreferenced formal parameter
+#endif
+void ReplicaManager::OnCloseConnection(RakPeerInterface *peer, SystemAddress systemAddress)
+{
+	RemoveParticipant(systemAddress);
+}
+#ifdef _MSC_VER
+#pragma warning( disable : 4100 ) // warning C4100: <variable name> : unreferenced formal parameter
+#endif
+void ReplicaManager::OnShutdown(RakPeerInterface *peer)
+{
+	Clear();
+}
+PluginReceiveResult ReplicaManager::OnReceive(RakPeerInterface *peer, Packet *packet)
+{
+	unsigned char packetIdentifier;
+	if ( ( unsigned char ) packet->data[ 0 ] == ID_TIMESTAMP )
+	{
+		if ( packet->length > sizeof( unsigned char ) + sizeof( unsigned int ) )
+			packetIdentifier = ( unsigned char ) packet->data[ sizeof( unsigned char ) + sizeof( unsigned int ) ];
+		else
+			return RR_STOP_PROCESSING_AND_DEALLOCATE;
+	}
+	else
+		packetIdentifier = ( unsigned char ) packet->data[ 0 ];
+
+	switch (packetIdentifier)
+	{
+	case ID_NEW_INCOMING_CONNECTION:
+	case ID_CONNECTION_REQUEST_ACCEPTED:
+		if (autoParticipateNewConnections)
+			AddParticipant(packet->systemAddress);
+		return RR_CONTINUE_PROCESSING;
+	case ID_DISCONNECTION_NOTIFICATION:
+	case ID_CONNECTION_LOST:
+		OnCloseConnection(peer, packet->systemAddress);
+		return RR_CONTINUE_PROCESSING;
+	case ID_REPLICA_MANAGER_DOWNLOAD_COMPLETE:
+		if (_receiveDownloadCompleteCB==0)
+		{
+			return RR_STOP_PROCESSING_AND_DEALLOCATE;
+		}
+	case ID_REPLICA_MANAGER_CONSTRUCTION:
+	case ID_REPLICA_MANAGER_DESTRUCTION:
+	case ID_REPLICA_MANAGER_SCOPE_CHANGE:
+	case ID_REPLICA_MANAGER_SERIALIZE:
+		{
+			ParticipantStruct *participantStruct;
+			bool hasNetworkId;
+			ReceivedCommand receivedCommand;
+			bool b=true;
+			RakNet::BitStream inBitstream(packet->data, packet->length, false);
+			// SetWriteOffset is used here to get around a design flaw, where I should have had the bitstream constructor take bits, rather than bytes
+			// It sets the actual number of bits in the packet
+			inBitstream.SetWriteOffset(packet->bitSize);
+			receivedCommand.systemAddress=packet->systemAddress;
+			receivedCommand.command=packetIdentifier;
+
+			if ( ( unsigned char ) packet->data[ 0 ] == ID_TIMESTAMP )
+			{
+				inBitstream.IgnoreBits(8);
+				b=inBitstream.Read(receivedCommand.u1);
+			}
+			else
+				receivedCommand.u1=0;
+			inBitstream.IgnoreBits(8); // Ignore the packet id
+			receivedCommand.networkID=UNASSIGNED_NETWORK_ID;
+			if (packetIdentifier==ID_REPLICA_MANAGER_CONSTRUCTION) // ID_REPLICA_MANAGER_CONSTRUCTION has an optional networkID
+			{
+				b=inBitstream.Read(hasNetworkId);
+				if (hasNetworkId)
+					b=inBitstream.Read(receivedCommand.networkID);
+			}
+			else if (packetIdentifier!=ID_REPLICA_MANAGER_DOWNLOAD_COMPLETE)
+			{
+				b=inBitstream.Read(receivedCommand.networkID); // Other packets always have an networkID
+			}
+
+			if (b==false)
+			{
+				// Invalid packet
+#ifdef _DEBUG
+				assert(0);
+#endif
+				return RR_STOP_PROCESSING_AND_DEALLOCATE;
+			}
+			receivedCommand.userData=&inBitstream;
+			participantStruct=GetParticipantBySystemAddress(receivedCommand.systemAddress);
+			if (participantStruct)
+			{
+				// .Size()>0 is because commands are always processed in order.  If a command is delayed, no further commands are processed.
+				// ProcessReceivedCommand(...)==false means that the use signaled to delay a command
+				if (participantStruct->pendingCommands.Size()>0 || ProcessReceivedCommand(participantStruct, &receivedCommand)==REPLICA_PROCESS_LATER)
+				{
+					// Copy the data and add this to a queue that will call ProcessReceivedCommand again in Update.
+
+					// Allocate and copy structure
+					ReceivedCommand *rc = new ReceivedCommand;
+					memcpy(rc, &receivedCommand, sizeof(ReceivedCommand));
+
+					// Allocate and copy inBitstream remaining data
+					rc->userData = new RakNet::BitStream;
+					rc->userData->Write(&inBitstream, inBitstream.GetNumberOfBitsUsed());
+
+					participantStruct->pendingCommands.Push(rc);
+				}
+			}
+
+			return RR_STOP_PROCESSING_AND_DEALLOCATE;
+		}
+	}
+
+	return RR_CONTINUE_PROCESSING;
+}
+
+ReplicaManager::ParticipantStruct* ReplicaManager::GetParticipantBySystemAddress(const SystemAddress systemAddress) const
+{
+	bool objectExists;
+	unsigned index;
+	index = participantList.GetIndexFromKey(systemAddress, &objectExists);
+	if (objectExists==false)
+		return 0;
+	return participantList[index];
+}
+#ifdef _MSC_VER
+#pragma warning( disable : 4100 ) // warning C4100: <variable name> : unreferenced formal parameter
+#pragma warning( disable : 4701 ) // warning C4701: local variable <variable name> may be used without having been initialized
+#endif
+ReplicaReturnResult ReplicaManager::ProcessReceivedCommand(ParticipantStruct *participantStruct, ReceivedCommand *receivedCommand)
+{
+	// If this assert hits you didn't first call RakPeer::SetNetworkIDManager as required.
+	RakAssert(rakPeer->GetNetworkIDManager());
+	if (rakPeer->GetNetworkIDManager()==0)
+		return REPLICA_CANCEL_PROCESS;
+
+	Replica *replica = (Replica*) rakPeer->GetNetworkIDManager()->GET_BASE_OBJECT_FROM_ID(receivedCommand->networkID);
+	
+	bool objectExists;
+	unsigned index;
+	ReplicaReturnResult b;
+	if (replica)
+	{
+		index = replicatedObjects.GetIndexFromKey(replica, &objectExists);
+		if (objectExists==false)
+		{
+			if (receivedCommand->command==ID_REPLICA_MANAGER_CONSTRUCTION)
+			{
+				// Object already exists with this ID, but call construction anyway
+#ifdef _DEBUG
+				assert(_constructionCB);
+#endif
+				// Call the registered callback.  If it crashes, you forgot to register the callback in SetReceiveConstructionCB
+				return _constructionCB->ReceiveConstruction(receivedCommand->userData, receivedCommand->u1, receivedCommand->networkID, replica, receivedCommand->systemAddress, this);
+			}
+			else
+			{
+				// This networkID is already in use but ReferencePointer was never called on it.
+				// RakAssert(0);
+				return REPLICA_CANCEL_PROCESS;
+			}
+			
+		}
+	}
+
+	if (receivedCommand->command==ID_REPLICA_MANAGER_SERIALIZE)
+	{
+		if (replica && (replicatedObjects[index].allowedInterfaces & REPLICA_RECEIVE_SERIALIZE))
+		{
+			b=replica->Deserialize(receivedCommand->userData, receivedCommand->u1, replicatedObjects[index].lastDeserializeTrue, receivedCommand->systemAddress);
+			if (b==REPLICA_PROCESSING_DONE)
+				replicatedObjects[index].lastDeserializeTrue=RakNet::GetTime();
+			return b;
+		}
+	}
+	else if (receivedCommand->command==ID_REPLICA_MANAGER_CONSTRUCTION)
+	{
+		// If networkID already exists on this system, ignore the packet
+#ifdef _DEBUG
+		assert(_constructionCB);
+#endif
+		// Call the registered callback.  If it crashes, you forgot to register the callback in SetReceiveConstructionCB
+		return _constructionCB->ReceiveConstruction(receivedCommand->userData, receivedCommand->u1, receivedCommand->networkID, replica, receivedCommand->systemAddress, this);
+	}
+	else if (receivedCommand->command==ID_REPLICA_MANAGER_SCOPE_CHANGE)
+	{
+		if (replica && (replicatedObjects[index].allowedInterfaces & REPLICA_RECEIVE_SCOPE_CHANGE))
+		{
+			return replica->ReceiveScopeChange(receivedCommand->userData, receivedCommand->systemAddress, receivedCommand->u1);
+		}
+	}
+	else if (receivedCommand->command==ID_REPLICA_MANAGER_DESTRUCTION)
+	{
+		if (replica && (replicatedObjects[index].allowedInterfaces & REPLICA_RECEIVE_DESTRUCTION))
+		{
+			return replica->ReceiveDestruction(receivedCommand->userData, receivedCommand->systemAddress, receivedCommand->u1);
+		}        
+	}
+	else if (receivedCommand->command==ID_REPLICA_MANAGER_DOWNLOAD_COMPLETE)
+	{
+		if (_receiveDownloadCompleteCB)
+		{
+			return _receiveDownloadCompleteCB->ReceiveDownloadComplete(receivedCommand->userData, receivedCommand->systemAddress, this);
+		}
+	}
+
+	return REPLICA_CANCEL_PROCESS;
+}
+
+ReplicaManager::ParticipantStruct::~ParticipantStruct()
+{
+	ReceivedCommand *receivedCommand;
+	while ( pendingCommands.Size() )
+	{
+		receivedCommand=pendingCommands.Pop();
+		delete receivedCommand->userData;
+		delete receivedCommand;
+	}
+}
+
+unsigned ReplicaManager::GetCommandListReplicaIndex(const DataStructures::List<ReplicaManager::CommandStruct> &commandList, Replica *replica, bool *objectExists) const
+{
+	unsigned i;
+	for (i=0; i < commandList.Size(); i++)
+	{
+		if (commandList[i].replica==replica)
+		{
+			*objectExists=true;
+			return i;
+		}
+	}
+	*objectExists=false;
+	return 0;
+}
+
+#ifdef _MSC_VER
+#pragma warning( pop )
+#endif

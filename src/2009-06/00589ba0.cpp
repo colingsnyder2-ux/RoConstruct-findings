@@ -1,72 +1,155 @@
-// roc 2009-06 00589ba0  unit: seg_00580000  size: 157 bytes
-// Make this compile to the exact bytes below, then: roc check 2009-06 00589ba0
-//
-// 00589ba0  d9ee                 fldz 
-// 00589ba2  8b54240c             mov edx, dword ptr [esp + 0xc]
-// 00589ba6  8bc1                 mov eax, ecx
-// 00589ba8  8b4c2404             mov ecx, dword ptr [esp + 4]
-// 00589bac  c70014b78c00         mov dword ptr [eax], 0x8cb714
-// 00589bb2  d95004               fst dword ptr [eax + 4]
-// 00589bb5  d95008               fst dword ptr [eax + 8]
-// 00589bb8  d9580c               fstp dword ptr [eax + 0xc]
-// 00589bbb  d902                 fld dword ptr [edx]
-// 00589bbd  d821                 fsub dword ptr [ecx]
-// 00589bbf  d94204               fld dword ptr [edx + 4]
-// 00589bc2  d86104               fsub dword ptr [ecx + 4]
-// 00589bc5  d94208               fld dword ptr [edx + 8]
-// 00589bc8  8b542408             mov edx, dword ptr [esp + 8]
-// 00589bcc  d86108               fsub dword ptr [ecx + 8]
-// 00589bcf  d902                 fld dword ptr [edx]
-// 00589bd1  d821                 fsub dword ptr [ecx]
-// 00589bd3  d94204               fld dword ptr [edx + 4]
-// 00589bd6  d86104               fsub dword ptr [ecx + 4]
-// 00589bd9  d94208               fld dword ptr [edx + 8]
-// 00589bdc  d86108               fsub dword ptr [ecx + 8]
-// 00589bdf  d9c1                 fld st(1)
-// 00589be1  d8cc                 fmul st(4)
-// 00589be3  d9c1                 fld st(1)
-// 00589be5  d8ce                 fmul st(6)
-// 00589be7  dee9                 fsubp st(1)
-// 00589be9  d9c9                 fxch st(1)
-// 00589beb  d8ce                 fmul st(6)
-// 00589bed  d9cc                 fxch st(4)
-// 00589bef  d8cb                 fmul st(3)
-// 00589bf1  deec                 fsubp st(4)
-// 00589bf3  d9cc                 fxch st(4)
-// 00589bf5  deca                 fmulp st(2)
-// 00589bf7  decc                 fmulp st(4)
-// 00589bf9  dee3                 fsubrp st(3)
-// 00589bfb  d9c2                 fld st(2)
-// 00589bfd  d8cb                 fmul st(3)
-// 00589bff  d9c1                 fld st(1)
-// 00589c01  d8ca                 fmul st(2)
-// 00589c03  dec1                 faddp st(1)
-// 00589c05  d9c2                 fld st(2)
-// 00589c07  d8cb                 fmul st(3)
-// 00589c09  dec1                 faddp st(1)
-// 00589c0b  d9fa                 fsqrt 
-// 00589c0d  d9e8                 fld1 
-// 00589c0f  def1                 fdivrp st(1)
-// 00589c11  dcca                 fmul st(2), st(0)
-// 00589c13  dcc9                 fmul st(1), st(0)
-// 00589c15  decb                 fmulp st(3)
-// 00589c17  d9c9                 fxch st(1)
-// 00589c19  d95804               fstp dword ptr [eax + 4]
-// 00589c1c  d95808               fstp dword ptr [eax + 8]
-// 00589c1f  d9580c               fstp dword ptr [eax + 0xc]
-// 00589c22  d94008               fld dword ptr [eax + 8]
-// 00589c25  d84904               fmul dword ptr [ecx + 4]
-// 00589c28  d9400c               fld dword ptr [eax + 0xc]
-// 00589c2b  d84908               fmul dword ptr [ecx + 8]
-// 00589c2e  dec1                 faddp st(1)
-// 00589c30  d901                 fld dword ptr [ecx]
-// 00589c32  d84804               fmul dword ptr [eax + 4]
-// 00589c35  dec1                 faddp st(1)
-// 00589c37  d95810               fstp dword ptr [eax + 0x10]
-// 00589c3a  c20c00               ret 0xc
-// library g3d-6.09-rbx2008/G3Dcpp\Plane.cpp (function ??0Plane@G3D@@QAE@ABVVector3@1@00@Z)
-
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD /fp:fast
 // roc-lib: g3d-6.09-rbx2008 G3Dcpp/Plane.cpp
+
+// Candidate translation unit (score above; library headers required).
+/**
+ @file Plane.cpp
+ 
+ @maintainer Morgan McGuire, matrix@graphics3d.com
+ 
+ @created 2003-02-06
+ @edited  2006-01-29
+ */
+
+#include "G3D/platform.h"
+#include "G3D/Plane.h"
+#include "G3D/BinaryOutput.h"
+#include "G3D/BinaryInput.h"
+#include "G3D/stringutils.h"
+
+namespace G3D {
+
+Plane::Plane(class BinaryInput& b) {
+	deserialize(b);
+}
+
+
+void Plane::serialize(class BinaryOutput& b) const {
+	_normal.serialize(b);
+	b.writeFloat64(_distance);
+}
+
+
+void Plane::deserialize(class BinaryInput& b) {
+	_normal.deserialize(b);
+	_distance = (float)b.readFloat64();
+}
+
+
+Plane::Plane(
+    Vector4      point0,
+    Vector4      point1,
+    Vector4      point2) {
+
+    debugAssertM(
+        point0.w != 0 || 
+        point1.w != 0 || 
+        point2.w != 0,
+        "At least one point must be finite.");
+
+    // Rotate the points around so that the finite points come first.
+
+    while ((point0.w == 0) && 
+           ((point1.w == 0) || (point2.w != 0))) {
+        Vector4 temp = point0;
+        point0 = point1;
+        point1 = point2;
+        point2 = temp;
+    }
+
+    Vector3 dir1;
+    Vector3 dir2;
+
+    if (point1.w == 0) {
+        // 1 finite, 2 infinite points; the plane must contain
+        // the direction of the two direcitons
+        dir1 = point1.xyz();
+        dir2 = point2.xyz();
+    } else if (point2.w != 0) {
+        // 3 finite points, the plane must contain the directions
+        // betwseen the points.
+        dir1 = point1.xyz() - point0.xyz();
+        dir2 = point2.xyz() - point0.xyz();
+    } else {
+        // 2 finite, 1 infinite point; the plane must contain
+        // the direction between the first two points and the
+        // direction of the third point.
+        dir1 = point1.xyz() - point0.xyz();
+        dir2 = point2.xyz();
+    }
+
+    _normal   = dir1.cross(dir2).direction();
+    _distance = _normal.dot(point0.xyz());
+}
+
+
+Plane::Plane(
+    const Vector3&      point0,
+    const Vector3&      point1,
+    const Vector3&      point2) {
+
+    _normal   = (point1 - point0).cross(point2 - point0).direction();
+    _distance = _normal.dot(point0);
+}
+
+
+Plane::Plane(
+    const Vector3&      __normal,
+    const Vector3&      point) {
+
+    _normal   = __normal.direction();
+    _distance  = _normal.dot(point);
+}
+
+
+Plane Plane::fromEquation(float a, float b, float c, float d) {
+    Vector3 n(a, b, c);
+    float magnitude = n.magnitude();
+    d /= magnitude;
+    n /= magnitude;
+    return Plane(n, -d);
+}
+
+
+void Plane::flip() {
+    _normal   = -_normal;
+    _distance  = -_distance;
+}
+
+
+void Plane::getEquation(Vector3& n, float& d) const {
+    double _d;
+    getEquation(n, _d);
+    d = (float)_d;
+}
+
+void Plane::getEquation(Vector3& n, double& d) const {
+    n = _normal;
+    d = -_distance;
+}
+
+
+void Plane::getEquation(float& a, float& b, float& c, float& d) const {
+    double _a, _b, _c, _d;
+    getEquation(_a, _b, _c, _d);
+    a = (float)_a;
+    b = (float)_b;
+    c = (float)_c;
+    d = (float)_d;
+}
+
+void Plane::getEquation(double& a, double& b, double& c, double& d) const {
+    a = _normal.x;
+    b = _normal.y;
+    c = _normal.z;
+    d = -_distance;
+}
+
+
+std::string Plane::toString() const {
+    return format("Plane(%g, %g, %g, %g)", _normal.x, _normal.y, _normal.z, _distance);
+}
+
+}

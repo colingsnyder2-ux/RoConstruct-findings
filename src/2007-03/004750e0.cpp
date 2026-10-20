@@ -1,44 +1,98 @@
-// roc 2007-03 004750e0  unit: seg_00470000  size: 82 bytes
-// Make this compile to the exact bytes below, then: roc check 2007-03 004750e0
-//
-// 004750e0  56                   push esi
-// 004750e1  8bf1                 mov esi, ecx
-// 004750e3  8b4608               mov eax, dword ptr [esi + 8]
-// 004750e6  57                   push edi
-// 004750e7  8b3e                 mov edi, dword ptr [esi]
-// 004750e9  03c0                 add eax, eax
-// 004750eb  6a10                 push 0x10
-// 004750ed  50                   push eax
-// 004750ee  e8ddea0700           call 0x4f3bd0
-// 004750f3  8b4c2414             mov ecx, dword ptr [esp + 0x14]
-// 004750f7  8906                 mov dword ptr [esi], eax
-// 004750f9  8b7608               mov esi, dword ptr [esi + 8]
-// 004750fc  83c408               add esp, 8
-// 004750ff  3bce                 cmp ecx, esi
-// 00475101  7d02                 jge 0x475105
-// 00475103  8bf1                 mov esi, ecx
-// 00475105  8d1470               lea edx, [eax + esi*2]
-// 00475108  3bc2                 cmp eax, edx
-// 0047510a  8bcf                 mov ecx, edi
-// 0047510c  7316                 jae 0x475124
-// 0047510e  8bff                 mov edi, edi
-// 00475110  85c0                 test eax, eax
-// 00475112  7406                 je 0x47511a
-// 00475114  668b31               mov si, word ptr [ecx]
-// 00475117  668930               mov word ptr [eax], si
-// 0047511a  83c002               add eax, 2
-// 0047511d  83c102               add ecx, 2
-// 00475120  3bc2                 cmp eax, edx
-// 00475122  72ec                 jb 0x475110
-// 00475124  57                   push edi
-// 00475125  e856e20700           call 0x4f3380
-// 0047512a  83c404               add esp, 4
-// 0047512d  5f                   pop edi
-// 0047512e  5e                   pop esi
-// 0047512f  c20400               ret 4
-// library rbxgs-render/Chunk.cpp (function ?realloc@?$Array@G@G3D@@AAEXH@Z)
-
 // roc-lang: cpp
 // roc-cl: 50727
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
 // roc-lib: rbxgs-render Chunk.cpp
+
+// Candidate translation unit (score above; library headers required).
+#include "RenderLib/Chunk.h"
+
+namespace RBX
+{
+	namespace Render
+	{
+		const float Chunk::DECAL_OFFSET = -0.2f;
+		const float Chunk::TEXTURE_OFFSET = -0.1f;
+
+		const G3D::CoordinateFrame AggregateChunk::identity;
+
+		AggregateChunk::AggregateChunk(const G3D::ReferenceCountedPointer<Chunk>& firstChunk)
+			: Chunk(firstChunk->polygonOffset),
+			  _castsShadows(firstChunk->castsShadows()),
+			  _cullable(firstChunk->cullable())
+		{
+			if (!randomColors)
+				material = firstChunk->getMaterial();
+
+			RenderStats::aggregateChunkCount++;
+			RenderStats::chunkCount--;
+
+			if (randomColors)
+			{
+				material = new Material;
+				material->appendLevel(NULL, (G3D::Color3::wheelRandom() + G3D::Color3::white()) / 2.0f, 0.0f, 50.0f, 0.0f, 0.0f);
+			}
+		}
+
+		AggregateChunk::~AggregateChunk()
+		{
+			RenderStats::chunkCount++;
+			RenderStats::aggregateChunkCount--;
+			RenderStats::aggregatedChunkCount -= components.size();
+		}
+
+		void AggregateChunk::makeMesh()
+		{
+			mesh = Mesh::aggregate(components, _cframe, radius);
+		}
+
+		void AggregateChunk::renderShadows(G3D::RenderDevice* rd, const G3D::GLight& light, bool caps, float shadowVertexDistance)
+		{
+			if (light != shadowSource)
+			{
+				shadowSource = light;
+				shadowIndexArray.clear();
+				shadowIndexArray16.clear();
+
+				if (material->veryTransparent())
+					return;
+
+				static G3D::Array<G3D::Vector3> shadowVertex;
+
+				shadowVertex.clear();
+				shadowVertex.push_back(-light.position.xyz().direction() * shadowVertexDistance);
+
+				G3D::Vector3 worldLight = light.position.xyz().direction();
+				mesh->computeDirectionalShadowVolume(cframe(), worldLight, shadowIndexArray, shadowVertex, caps);
+
+				if (shadowVertex.size() < 65536)
+				{
+					int size = shadowIndexArray.size();
+
+					shadowIndexArray16.resize(size);
+					for (int i = 0; i < size; i++)
+						shadowIndexArray16[i] = shadowIndexArray[i];
+
+					shadowIndexArray.clear();
+				}
+
+				G3D::ReferenceCountedPointer<G3D::VARArea> area = G3D::VARArea::create(shadowVertex.size() * 12, G3D::VARArea::WRITE_EVERY_FEW_FRAMES);
+				shadowVAR = G3D::VAR(shadowVertex, area);
+			}
+
+			if (shadowIndexArray.size() > 0)
+			{
+				rd->beginIndexedPrimitives();
+				rd->setVertexArray(shadowVAR);
+				rd->sendIndices(G3D::RenderDevice::TRIANGLES, shadowIndexArray.size(), shadowIndexArray.begin());
+				rd->endIndexedPrimitives();
+			}
+			else if (shadowIndexArray16.size() > 0)
+			{
+				rd->beginIndexedPrimitives();
+				rd->setVertexArray(shadowVAR);
+				rd->sendIndices(G3D::RenderDevice::TRIANGLES, shadowIndexArray16.size(), shadowIndexArray16.begin());
+				rd->endIndexedPrimitives();
+			}
+		}
+	}
+}

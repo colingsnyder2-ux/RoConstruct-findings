@@ -1,34 +1,199 @@
-// roc 2009-12 0047d730  unit: RBX::LDraw2Lua::LuaWriter  size: 101 bytes
-// Make this compile to the exact bytes below, then: roc check 2009-12 0047d730
-//
-// 0047d730  8b542408             mov edx, dword ptr [esp + 8]
-// 0047d734  f30f106908           movss xmm5, dword ptr [ecx + 8]
-// 0047d739  f30f105904           movss xmm3, dword ptr [ecx + 4]
-// 0047d73e  f30f105208           movss xmm2, dword ptr [edx + 8]
-// 0047d743  f30f106204           movss xmm4, dword ptr [edx + 4]
-// 0047d748  8b442404             mov eax, dword ptr [esp + 4]
-// 0047d74c  0f28cd               movaps xmm1, xmm5
-// 0047d74f  f30f59cc             mulss xmm1, xmm4
-// 0047d753  0f28c3               movaps xmm0, xmm3
-// 0047d756  f30f59c2             mulss xmm0, xmm2
-// 0047d75a  f30f5cc1             subss xmm0, xmm1
-// 0047d75e  f30f100a             movss xmm1, dword ptr [edx]
-// 0047d762  f30f1100             movss dword ptr [eax], xmm0
-// 0047d766  f30f1001             movss xmm0, dword ptr [ecx]
-// 0047d76a  0f28f1               movaps xmm6, xmm1
-// 0047d76d  f30f59f5             mulss xmm6, xmm5
-// 0047d771  0f28e8               movaps xmm5, xmm0
-// 0047d774  f30f59ea             mulss xmm5, xmm2
-// 0047d778  f30f59c4             mulss xmm0, xmm4
-// 0047d77c  f30f59cb             mulss xmm1, xmm3
-// 0047d780  f30f5cf5             subss xmm6, xmm5
-// 0047d784  f30f5cc1             subss xmm0, xmm1
-// 0047d788  f30f117004           movss dword ptr [eax + 4], xmm6
-// 0047d78d  f30f114008           movss dword ptr [eax + 8], xmm0
-// 0047d792  c20800               ret 8
-// library g3d-6.09/G3Dcpp\Capsule.cpp (function ?cross@Vector3@G3D@@QBE?AV12@ABV12@@Z)
-
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD /arch:SSE2 /fp:fast
 // roc-lib: g3d-6.09 G3Dcpp/Capsule.cpp
+
+// Candidate translation unit (score above; library headers required).
+/**
+ @file Capsule.cpp
+  
+ @maintainer Morgan McGuire, matrix@graphics3d.com
+
+ @created 2003-02-07
+ @edited  2005-08-18
+
+ Copyright 2000-2005, Morgan McGuire.
+ All rights reserved.
+ */
+
+#include "G3D/Capsule.h"
+#include "G3D/BinaryInput.h"
+#include "G3D/BinaryOutput.h"
+#include "G3D/LineSegment.h"
+#include "G3D/Sphere.h"
+#include "G3D/CoordinateFrame.h"
+#include "G3D/Line.h"
+#include "G3D/AABox.h"
+
+namespace G3D {
+
+Capsule::Capsule(class BinaryInput& b) {
+	deserialize(b);
+}
+
+
+Capsule::Capsule() {
+}
+
+
+Capsule::Capsule(const Vector3& _p1, const Vector3& _p2, double _r) 
+	: p1(_p1), p2(_p2), radius(_r) {
+}
+
+
+void Capsule::serialize(class BinaryOutput& b) const {
+	p1.serialize(b);
+	p2.serialize(b);
+	b.writeFloat64(radius);
+}
+
+
+void Capsule::deserialize(class BinaryInput& b) {
+	p1.deserialize(b);
+	p2.deserialize(b);
+	radius = b.readFloat64();
+}
+
+
+Line Capsule::getAxis() const {
+	return Line::fromTwoPoints(p1, p2);
+}
+
+
+Vector3 Capsule::getPoint1() const {
+	return p1;
+}
+
+
+Vector3 Capsule::getPoint2() const {
+	return p2;
+}
+
+
+float Capsule::getRadius() const {
+	return (float)radius;
+}
+
+
+float Capsule::getVolume() const {
+	return 
+		// Sphere volume
+		pow(radius, 3) * G3D_PI * 4 / 3 +
+
+		// Cylinder volume
+		pow(radius, 2) * (p1 - p2).magnitude();
+}
+
+
+float Capsule::getSurfaceArea() const {
+
+	return
+		// Sphere area
+		pow(radius, 2) * 4 * G3D_PI +
+
+		// Cylinder area
+		2 * G3D_PI * radius * (p1 - p2).magnitude();
+}
+
+
+void Capsule::getBounds(AABox& out) const {
+    Vector3 min = p1.min(p2) - (Vector3(1, 1, 1) * radius);
+    Vector3 max = p1.max(p2) + (Vector3(1, 1, 1) * radius);
+
+    out = AABox(min, max);
+}
+
+bool Capsule::contains(const Vector3& p) const { 
+    return LineSegment::fromTwoPoints(p1, p2).distanceSquared(p) <= square(radius);
+}
+
+
+void Capsule::getRandomSurfacePoint(Vector3& p, Vector3& N) const {
+    float h = height();
+    float r = getRadius();
+
+    // Create a random point on a standard capsule and then rotate to the global frame.
+
+    // Relative areas
+    float capRelArea  = sqrt(r) / 2.0f;
+    float sideRelArea = r * h;
+
+    float r1 = random(0, capRelArea * 2 + sideRelArea);
+
+    if (r1 < capRelArea * 2) {
+
+        // Select a point uniformly at random on a sphere
+        N = Sphere(Vector3::zero(), 1).randomSurfacePoint();
+        p = N * r;
+        p.y += sign(p.y) * h / 2.0f;
+    } else {
+        // Side
+        float a = random(0, G3D_TWO_PI);
+        N.x = cos(a);
+        N.y = 0;
+        N.z = sin(a);
+        p.x = N.x * r;
+        p.z = N.y * r;
+        p.y = random(-h / 2.0f, h / 2.0f);
+    }
+
+    // Transform to world space
+    CoordinateFrame cframe;
+    getReferenceFrame(cframe);
+    
+    p = cframe.pointToWorldSpace(p);
+    N = cframe.normalToWorldSpace(N);
+}
+
+
+void Capsule::getReferenceFrame(CoordinateFrame& cframe) const {
+    cframe.translation = center();
+
+    Vector3 Y = (p1 - p2).direction();
+    Vector3 X = (abs(Y.dot(Vector3::unitX())) > 0.9) ? Vector3::unitY() : Vector3::unitX();
+    Vector3 Z = X.cross(Y).direction();
+    X = Y.cross(Z);        
+    cframe.rotation.setColumn(0, X);
+    cframe.rotation.setColumn(1, Y);
+    cframe.rotation.setColumn(2, Z);
+}
+
+
+Vector3 Capsule::randomInteriorPoint() const {
+    float h = height();
+    float r = getRadius();
+
+    // Create a random point in a standard capsule and then rotate to the global frame.
+
+    Vector3 p;
+
+    float hemiVolume = G3D_PI * (r*r*r) * 4 / 6.0;
+    float cylVolume = G3D_PI * square(r) * h;
+    
+    float r1 = random(0, 2.0 * hemiVolume + cylVolume);
+
+    if (r1 < 2.0 * hemiVolume) {
+
+        p = Sphere(Vector3::zero(), r).randomInteriorPoint();
+
+        p.y += sign(p.y) * h / 2.0f;
+
+    } else {
+
+        // Select a point uniformly at random on a disk
+        float a = random(0, G3D_TWO_PI);
+        float r2 = sqrt(random(0, 1)) * r;
+
+        p = Vector3(cos(a) * r2,
+                    random(-h / 2.0f, h / 2.0f),
+                    sin(a) * r2);
+    }
+
+    // Transform to world space
+    CoordinateFrame cframe;
+    getReferenceFrame(cframe);
+    
+    return cframe.pointToWorldSpace(p);
+}
+
+} // namespace

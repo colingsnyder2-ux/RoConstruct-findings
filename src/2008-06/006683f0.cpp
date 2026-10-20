@@ -1,59 +1,207 @@
-// roc 2008-06 006683f0  unit: RBX::JointStage  size: 114 bytes
-// Make this compile to the exact bytes below, then: roc check 2008-06 006683f0
-//
-// 006683f0  53                   push ebx
-// 006683f1  56                   push esi
-// 006683f2  57                   push edi
-// 006683f3  8b7c2410             mov edi, dword ptr [esp + 0x10]
-// 006683f7  8bf1                 mov esi, ecx
-// 006683f9  8b4f04               mov ecx, dword ptr [edi + 4]
-// 006683fc  8b01                 mov eax, dword ptr [ecx]
-// 006683fe  8b5004               mov edx, dword ptr [eax + 4]
-// 00668401  ffd2                 call edx
-// 00668403  8bd8                 mov ebx, eax
-// 00668405  8b06                 mov eax, dword ptr [esi]
-// 00668407  8b5004               mov edx, dword ptr [eax + 4]
-// 0066840a  8bce                 mov ecx, esi
-// 0066840c  ffd2                 call edx
-// 0066840e  3bd8                 cmp ebx, eax
-// 00668410  7e19                 jle 0x66842b
-// 00668412  8b4e08               mov ecx, dword ptr [esi + 8]
-// 00668415  8b01                 mov eax, dword ptr [ecx]
-// 00668417  8b5014               mov edx, dword ptr [eax + 0x14]
-// 0066841a  57                   push edi
-// 0066841b  ffd2                 call edx
-// 0066841d  56                   push esi
-// 0066841e  8bcf                 mov ecx, edi
-// 00668420  e81bd4fdff           call 0x645840
-// 00668425  5f                   pop edi
-// 00668426  5e                   pop esi
-// 00668427  5b                   pop ebx
-// 00668428  c20400               ret 4
-// 0066842b  8d442410             lea eax, [esp + 0x10]
-// 0066842f  50                   push eax
-// 00668430  8d4e10               lea ecx, [esi + 0x10]
-// 00668433  897c2414             mov dword ptr [esp + 0x14], edi
-// 00668437  e8241bf8ff           call 0x5e9f60
-// 0066843c  8b4f0c               mov ecx, dword ptr [edi + 0xc]
-// 0066843f  51                   push ecx
-// 00668440  57                   push edi
-// 00668441  8bce                 mov ecx, esi
-// 00668443  e838feffff           call 0x668280
-// 00668448  8b5710               mov edx, dword ptr [edi + 0x10]
-// 0066844b  52                   push edx
-// 0066844c  57                   push edi
-// 0066844d  8bce                 mov ecx, esi
-// 0066844f  e82cfeffff           call 0x668280
-// 00668454  56                   push esi
-// 00668455  8bcf                 mov ecx, edi
-// 00668457  e8e4d3fdff           call 0x645840
-// 0066845c  5f                   pop edi
-// 0066845d  5e                   pop esi
-// 0066845e  5b                   pop ebx
-// 0066845f  c20400               ret 4
-// library openrbx-client/App\v8world\JointStage.cpp (function ?onEdgeRemoving@JointStage@RBX@@UAEXPAVEdge@2@@Z)
-
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
 // roc-lib: openrbx-client App/v8world/JointStage.cpp
+
+// Candidate translation unit (score above; library headers required).
+#include "v8world/JointStage.h"
+
+#include "decomp.h"
+#include "v8world/ClumpStage2.h"
+#include "v8world/Joint.h"
+#include "v8world/Primitive.h"
+
+#include <cstddef>
+#include <vector>
+
+namespace RBX {
+ClumpStage* JointStage::getClumpStage()
+{
+	return static_cast<ClumpStage*>(getDownstream());
+}
+
+void JointStage::moveEdgeToDownstream(Edge* e)
+{
+	getDownstreamWS()->onEdgeAdded(e);
+}
+
+void JointStage::removeEdgeFromDownstream(Edge* e)
+{
+	getDownstreamWS()->onEdgeRemoving(e);
+}
+
+void JointStage::removeFromList(Joint* j)
+{
+	incompleteJoints.erase(j);
+}
+
+void JointStage::insertToList(Joint* j)
+{
+	incompleteJoints.insert(j);
+}
+
+void JointStage::insertToMap(Joint* j, Primitive* p)
+{
+	if (p != NULL) {
+		jointMap.insert(std::make_pair(p, j));
+	}
+}
+
+bool JointStage::edgeHasPrimitivesDownstream(Edge* e)
+{
+	Primitive* prim0 = e->getPrimitive(0);
+	Primitive* prim1 = e->getPrimitive(1);
+
+	return prim0 != NULL && prim1 != NULL && prim0->inPipeline() && prim1->inPipeline() &&
+		   prim0->downstreamOfStage(this) && prim1->downstreamOfStage(this);
+}
+
+// FUNCTION: WEBSERVICE 0x10118350
+void JointStage::removeFromMap(Joint* j, Primitive* p)
+{
+	do {
+		if (p == NULL) {
+			break;
+		}
+
+		JointMap::iterator pos;
+
+		for (pos = jointMap.lower_bound(p); pos != jointMap.upper_bound(p); ++pos) {
+			if (pos->second == j) {
+				jointMap.erase(pos);
+				return;
+			}
+		}
+	} while (0);
+}
+
+// FUNCTION: WEBSERVICE 0x10118480
+void JointStage::onJointPrimitiveNulling(Joint* j, Primitive* nulling)
+{
+	if (j->downstreamOfStage(this)) {
+		removeEdgeFromDownstream(j);
+
+		insertToList(j);
+
+		insertToMap(j, j->otherPrimitive(nulling));
+	}
+	else {
+		removeFromMap(j, nulling);
+	}
+}
+
+// FUNCTION: WEBSERVICE 0x10118510
+void JointStage::onJointPrimitiveSet(Joint* j, Primitive* p)
+{
+	if (edgeHasPrimitivesDownstream(j)) {
+		removeFromList(j);
+
+		removeFromMap(j, j->otherPrimitive(p));
+
+		moveEdgeToDownstream(j);
+	}
+	else {
+		insertToMap(j, p);
+	}
+}
+
+// FUNCTION: WEBSERVICE 0x101185c0
+void JointStage::onEdgeAdded(Edge* e)
+{
+	e->putInPipeline(this);
+
+	if (edgeHasPrimitivesDownstream(e)) {
+		moveEdgeToDownstream(e);
+	}
+	else {
+		Joint* j = static_cast<Joint*>(e);
+
+		insertToList(j);
+		insertToMap(j, j->getPrimitive(0));
+		insertToMap(j, j->getPrimitive(1));
+	}
+}
+
+// FUNCTION: WEBSERVICE 0x10118680
+void JointStage::onEdgeRemoving(Edge* e)
+{
+	if (e->downstreamOfStage(this)) {
+		removeEdgeFromDownstream(e);
+	}
+	else {
+		Joint* j = static_cast<Joint*>(e);
+
+		removeFromList(j);
+		removeFromMap(j, j->getPrimitive(0));
+		removeFromMap(j, j->getPrimitive(1));
+	}
+
+	e->removeFromPipeline(this);
+}
+
+// FUNCTION: WEBSERVICE 0x10118700
+JointStage::JointStage(IStage* upstream, World* world) : IWorldStage(upstream, new ClumpStage(this, world), world)
+{
+}
+
+// STUB: WEBSERVICE 0x101188f0
+void JointStage::onPrimitiveAdded(Primitive* p)
+{
+	p->putInPipeline(this);
+
+	getClumpStage()->onPrimitiveAdded(p);
+
+	std::vector<Joint*> jointsToPush;
+
+	JointMap::iterator pos;
+
+	for (pos = jointMap.lower_bound(p); pos != jointMap.upper_bound(p); ++pos) {
+		if (edgeHasPrimitivesDownstream(pos->second)) {
+			jointsToPush.push_back(pos->second);
+		}
+	}
+
+	for (unsigned int i = 0; i < jointsToPush.size(); ++i) {
+		Joint* j = jointsToPush[i];
+
+		removeFromList(j);
+		removeFromMap(j, p);
+		removeFromMap(j, j->otherPrimitive(p));
+
+		moveEdgeToDownstream(j);
+	}
+}
+
+// FUNCTION: WEBSERVICE 0x10118b40
+void JointStage::onPrimitiveRemoving(Primitive* p)
+{
+	std::vector<Joint*> jointsToPop;
+
+	Joint* j = p->getFirstJoint();
+
+	while (j != NULL) {
+		if (j->getJointType() != Joint::ANCHOR_JOINT && j->getJointType() != Joint::FREE_JOINT) {
+
+			jointsToPop.push_back(j);
+		}
+
+		j = p->getNextJoint(j);
+	}
+
+	for (unsigned int i = 0; i < jointsToPop.size(); ++i) {
+
+		Joint* joint = jointsToPop[i];
+
+		removeEdgeFromDownstream(joint);
+
+		insertToList(joint);
+		insertToMap(joint, p);
+		insertToMap(joint, joint->otherPrimitive(p));
+	}
+
+	getClumpStage()->onPrimitiveRemoving(p);
+
+	p->removeFromPipeline(this);
+}
+
+} // namespace RBX

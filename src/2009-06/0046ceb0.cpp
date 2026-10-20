@@ -1,49 +1,213 @@
-// roc 2009-06 0046ceb0  unit: DxUserInput  size: 161 bytes
-// Make this compile to the exact bytes below, then: roc check 2009-06 0046ceb0
-//
-// 0046ceb0  6aff                 push -1
-// 0046ceb2  6845348500           push 0x853445
-// 0046ceb7  64a100000000         mov eax, dword ptr fs:[0]
-// 0046cebd  50                   push eax
-// 0046cebe  64892500000000       mov dword ptr fs:[0], esp
-// 0046cec5  51                   push ecx
-// 0046cec6  56                   push esi
-// 0046cec7  8bf1                 mov esi, ecx
-// 0046cec9  89742404             mov dword ptr [esp + 4], esi
-// 0046cecd  8d442418             lea eax, [esp + 0x18]
-// 0046ced1  50                   push eax
-// 0046ced2  c744241400000000     mov dword ptr [esp + 0x14], 0
-// 0046ceda  e8b1f6ffff           call 0x46c590
-// 0046cedf  8b4c245c             mov ecx, dword ptr [esp + 0x5c]
-// 0046cee3  8b542460             mov edx, dword ptr [esp + 0x60]
-// 0046cee7  8b442464             mov eax, dword ptr [esp + 0x64]
-// 0046ceeb  894e44               mov dword ptr [esi + 0x44], ecx
-// 0046ceee  8b4c2468             mov ecx, dword ptr [esp + 0x68]
-// 0046cef2  894e50               mov dword ptr [esi + 0x50], ecx
-// 0046cef5  8d4e58               lea ecx, [esi + 0x58]
-// 0046cef8  c644241001           mov byte ptr [esp + 0x10], 1
-// 0046cefd  895648               mov dword ptr [esi + 0x48], edx
-// 0046cf00  89464c               mov dword ptr [esi + 0x4c], eax
-// 0046cf03  c6465400             mov byte ptr [esi + 0x54], 0
-// 0046cf07  ff15c0e48900         call dword ptr [0x89e4c0]
-// 0046cf0d  8bce                 mov ecx, esi
-// 0046cf0f  c644241002           mov byte ptr [esp + 0x10], 2
-// 0046cf14  e847ffffff           call 0x46ce60
-// 0046cf19  8d4c2434             lea ecx, [esp + 0x34]
-// 0046cf1d  c744241003000000     mov dword ptr [esp + 0x10], 3
-// 0046cf25  ff15c4e48900         call dword ptr [0x89e4c4]
-// 0046cf2b  8d4c2418             lea ecx, [esp + 0x18]
-// 0046cf2f  c7442410ffffffff     mov dword ptr [esp + 0x10], 0xffffffff
-// 0046cf37  ff15c4e48900         call dword ptr [0x89e4c4]
-// 0046cf3d  8b4c2408             mov ecx, dword ptr [esp + 8]
-// 0046cf41  8bc6                 mov eax, esi
-// 0046cf43  5e                   pop esi
-// 0046cf44  64890d00000000       mov dword ptr fs:[0], ecx
-// 0046cf4b  83c410               add esp, 0x10
-// 0046cf4e  c25400               ret 0x54
-// library rbxgs/v8datamodel\Lighting.cpp (function ??0?$token_iterator@V?$char_separator@DU?$char_traits@D@std@@@boost@@V?$_String_const_iterator@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@4@@boost@@QAE@V?$char_separator@DU?$char_traits@D@std@@@1@V?$_String_const_iterator@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@1@Z)
-
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
 // roc-lib: rbxgs v8datamodel/Lighting.cpp
+
+// Candidate translation unit (score above; library headers required).
+#include "v8datamodel/Lighting.h"
+#include "util/RunStateOwner.h"
+
+namespace RBX
+{
+	const char* sLighting = "Lighting";
+
+	static Reflection::PropDescriptor<Lighting, G3D::Color3> desc_AmbientTop("TopAmbientV9", "Appearance", &Lighting::getAmbientTop, &Lighting::setAmbientTop, Reflection::PropertyDescriptor::STANDARD);
+	static Reflection::PropDescriptor<Lighting, G3D::Color3> desc_AmbientBottom("BottomAmbientV9", "Appearance", &Lighting::getAmbientBottom, &Lighting::setAmbientBottom, Reflection::PropertyDescriptor::STANDARD);
+	static Reflection::PropDescriptor<Lighting, G3D::Color3> desc_LightColor("SpotLightV9", "Appearance", &Lighting::getLightColor, &Lighting::setLightColor, Reflection::PropertyDescriptor::STANDARD);
+	static Reflection::PropDescriptor<Lighting, G3D::Color3> desc_ClearColor("ClearColor", "Appearance", &Lighting::getClearColor3, &Lighting::setClearColor3, Reflection::PropertyDescriptor::STANDARD);
+	static Reflection::PropDescriptor<Lighting, std::string> prop_Time("TimeOfDay", "Data", &Lighting::getTimeStr, &Lighting::setTimeStr, Reflection::PropertyDescriptor::STANDARD);
+	static Reflection::PropDescriptor<Lighting, float> prop_GeographicLatitude("GeographicLatitude", "Data", &Lighting::getGeographicLatitude, &Lighting::setGeographicLatitude, Reflection::PropertyDescriptor::STANDARD);
+
+	static Reflection::BoundFuncDesc<Lighting, float(void), 0> prop_GetMoonPhase(&Lighting::getMoonPhase, "GetMoonPhase", Reflection::FunctionDescriptor::AnyCaller);
+	static Reflection::BoundFuncDesc<Lighting, G3D::Vector3(void), 0> prop_GetMoonPosition(&Lighting::getMoonPosition, "GetMoonDirection", Reflection::FunctionDescriptor::AnyCaller);
+	static Reflection::BoundFuncDesc<Lighting, G3D::Vector3(void), 0> prop_GetSunPosition(&Lighting::getSunPosition, "GetSunDirection", Reflection::FunctionDescriptor::AnyCaller);
+	static Reflection::BoundFuncDesc<Lighting, double(void), 0> prop_GetMinutesAfterMidnight(&Lighting::getMinutesAfterMidnight, "GetMinutesAfterMidnight", Reflection::FunctionDescriptor::AnyCaller);
+	static Reflection::BoundFuncDesc<Lighting, void(double), 1> prop_SetMinutesAfterMidnight(&Lighting::setMinutesAfterMidnight, "SetMinutesAfterMidnight", "minutes", Reflection::FunctionDescriptor::AnyCaller);
+
+	Lighting::Lighting()
+		: Base(),
+		  ambientTop(209/255.0f, 208/255.0f, 217/255.0f),
+		  ambientBottom(122/255.0f, 134/255.0f, 120/255.0f),
+		  hasSky(true),
+		  clearColor(G3D::Color3::white()),
+		  timeOfDay(boost::posix_time::duration_from_string("14:00:00"))
+	{
+		skyParameters.lightColor = G3D::Color3(152/255.0f, 137/255.0f, 102/255.0f);
+		skyParameters.setTime(timeOfDay.total_seconds());
+		setName("Lighting");
+	}
+
+	G3D::Vector3 Lighting::getMoonPosition()
+	{
+		return (skyParameters.physicallyCorrect) ? skyParameters.trueMoonPosition : skyParameters.moonPosition;
+	}
+
+	G3D::Vector3 Lighting::getSunPosition()
+	{
+		return (skyParameters.physicallyCorrect) ? skyParameters.trueSunPosition : skyParameters.sunPosition;
+	}
+
+	void Lighting::replaceSky(Sky* newSky)
+	{
+		while (Sky* currentSky = findFirstChildOfType<Sky>())
+		{
+			currentSky->setParent(NULL);
+		}
+
+		newSky->setParent(this);
+	}
+
+	std::string Lighting::getTimeStr() const
+	{
+		return boost::posix_time::to_simple_string(timeOfDay);
+	}
+
+	void Lighting::setTimeStr(const std::string& value)
+	{
+		setTime(boost::posix_time::duration_from_string(value));
+	}
+
+	void Lighting::setClearColor(G3D::Color4 value)
+	{
+		if (value != clearColor)
+		{
+			clearColor = value;
+
+			raisePropertyChanged(desc_ClearColor);
+			fireLightingChanged(false);
+			RunService* runService = ServiceProvider::find<RunService>(this);
+			if (runService)
+				runService->invalidateRunViews();
+		}
+	}
+
+	void Lighting::setLightColor(G3D::Color3 value)
+	{
+		if (value != skyParameters.lightColor)
+		{
+			skyParameters.lightColor = value;
+
+			raisePropertyChanged(desc_LightColor);
+			fireLightingChanged(false);
+			RunService* runService = ServiceProvider::find<RunService>(this);
+			if (runService)
+				runService->invalidateRunViews();
+		}
+	}
+
+	void Lighting::setAmbientBottom(G3D::Color3 value)
+	{
+		if (value != ambientBottom)
+		{
+			ambientBottom = value;
+
+			raisePropertyChanged(desc_AmbientBottom);
+			fireLightingChanged(false);
+			RunService* runService = ServiceProvider::find<RunService>(this);
+			if (runService)
+				runService->invalidateRunViews();
+		}
+	}
+
+	void Lighting::setAmbientTop(G3D::Color3 value)
+	{
+		if (value != ambientTop)
+		{
+			ambientTop = value;
+
+			raisePropertyChanged(desc_AmbientTop);
+			fireLightingChanged(false);
+			RunService* runService = ServiceProvider::find<RunService>(this);
+			if (runService)
+				runService->invalidateRunViews();
+		}
+	}
+
+	void Lighting::setGeographicLatitude(float value)
+	{
+		if (value != skyParameters.geoLatitude)
+		{
+			skyParameters.geoLatitude = value;
+
+			raisePropertyChanged(prop_GeographicLatitude);
+			fireLightingChanged(false);
+			RunService* runService = ServiceProvider::find<RunService>(this);
+			if (runService)
+				runService->invalidateRunViews();
+		}
+	}
+
+	void Lighting::setTime(const boost::posix_time::time_duration& value)
+	{
+		int totalSeconds = value.total_seconds();
+		totalSeconds -= (totalSeconds / 86400) * 86400;
+
+		if (timeOfDay.total_seconds() != totalSeconds)
+		{
+			timeOfDay = boost::posix_time::seconds(totalSeconds);
+			skyParameters.setTime(timeOfDay.total_seconds());
+
+			raisePropertyChanged(prop_Time);
+			fireLightingChanged(false);
+			RunService* runService = ServiceProvider::find<RunService>(this);
+			if (runService)
+				runService->invalidateRunViews();
+		}
+	}
+
+	double Lighting::getMinutesAfterMidnight()
+	{
+		return timeOfDay.total_milliseconds() / 60000.0;
+	}
+
+	void Lighting::setMinutesAfterMidnight(double value)
+	{
+		setTime(boost::posix_time::seconds(value * 60.0));
+	}
+
+	void Lighting::onChildAdded(Instance* child)
+	{
+		Sky* newSky = dynamic_cast<Sky*>(child);
+
+		if (newSky)
+		{
+			sky = shared_from(newSky);
+
+			fireLightingChanged(true);
+			RunService* runService = ServiceProvider::find<RunService>(this);
+			if (runService)
+				runService->invalidateRunViews();
+		}
+	}
+
+	void Lighting::onChildRemoving(Instance* child)
+	{
+		if (sky.get() == child)
+		{
+			sky.reset();
+
+			fireLightingChanged(true);
+			RunService* runService = ServiceProvider::find<RunService>(this);
+			if (runService)
+				runService->invalidateRunViews();
+		}
+	}
+
+	void Lighting::onChildChanged(Instance* instance, const PropertyChanged& event)
+	{
+		Instance::onChildChanged(instance, event);
+		if (sky.get() == instance)
+		{
+			fireLightingChanged(true);
+
+			RunService* runService = ServiceProvider::find<RunService>(this);
+			if (runService)
+				runService->invalidateRunViews();
+		}
+	}
+
+	bool Lighting::askAddChild(const Instance* instance) const
+	{
+		return dynamic_cast<const Sky*>(instance) != NULL;
+	}
+}

@@ -101,6 +101,13 @@ remain available. `unrecorded` means evidence is missing; it is not a model diag
 | Submit gains | `roc submit 2008-06 [addr ...]` | server, user | server-verified receipt |
 | Keep generated units portable | `roc research capture-units` | sources in `src/` | `local/units/generated-units.json` |
 
+LLM-written gains belong in **Player Mining**. Submit with the actual model:
+`roc submit CLIENT ADDR --model gpt-6.1-sol` for GPT-6.1 Sol; other LLMs must use
+their own model name. Agent-launched submissions inherit `ROC_AGENT_MODEL` unless
+overridden by `--model`. Do not label LLM work `roc repair`, `roc auto`, or another
+automatic command: those labels belong to Server Mining. Missing model names are
+shown as Unknown model, never guessed from another worker's settings.
+
 `roc --help` groups every command; specialist tools sit under *advanced*.
 Use `agent-check-batch --summary` to omit diffs from console output, or `--json`
 for structured trial results. Full trial journals remain unchanged.

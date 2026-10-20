@@ -1,74 +1,327 @@
-// roc 2010-06 00523490  unit: RBX::MeshGen  size: 199 bytes
-// Make this compile to the exact bytes below, then: roc check 2010-06 00523490
-//
-// 00523490  6aff                 push -1
-// 00523492  6889e19800           push 0x98e189
-// 00523497  64a100000000         mov eax, dword ptr fs:[0]
-// 0052349d  50                   push eax
-// 0052349e  64892500000000       mov dword ptr fs:[0], esp
-// 005234a5  51                   push ecx
-// 005234a6  53                   push ebx
-// 005234a7  56                   push esi
-// 005234a8  8bf1                 mov esi, ecx
-// 005234aa  89742408             mov dword ptr [esp + 8], esi
-// 005234ae  8b4630               mov eax, dword ptr [esi + 0x30]
-// 005234b1  33db                 xor ebx, ebx
-// 005234b3  c744241403000000     mov dword ptr [esp + 0x14], 3
-// 005234bb  3bc3                 cmp eax, ebx
-// 005234bd  7428                 je 0x5234e7
-// 005234bf  83c004               add eax, 4
-// 005234c2  50                   push eax
-// 005234c3  ff157ca39e00         call dword ptr [0x9ea37c]
-// 005234c9  85c0                 test eax, eax
-// 005234cb  7517                 jne 0x5234e4
-// 005234cd  8b4e30               mov ecx, dword ptr [esi + 0x30]
-// 005234d0  e84b06f6ff           call 0x483b20
-// 005234d5  8b4e30               mov ecx, dword ptr [esi + 0x30]
-// 005234d8  3bcb                 cmp ecx, ebx
-// 005234da  7408                 je 0x5234e4
-// 005234dc  8b01                 mov eax, dword ptr [ecx]
-// 005234de  8b10                 mov edx, dword ptr [eax]
-// 005234e0  6a01                 push 1
-// 005234e2  ffd2                 call edx
-// 005234e4  895e30               mov dword ptr [esi + 0x30], ebx
-// 005234e7  8b4624               mov eax, dword ptr [esi + 0x24]
-// 005234ea  50                   push eax
-// 005234eb  c644241802           mov byte ptr [esp + 0x18], 2
-// 005234f0  e8cba40200           call 0x54d9c0
-// 005234f5  895e24               mov dword ptr [esi + 0x24], ebx
-// 005234f8  895e28               mov dword ptr [esi + 0x28], ebx
-// 005234fb  895e2c               mov dword ptr [esi + 0x2c], ebx
-// 005234fe  8b4e18               mov ecx, dword ptr [esi + 0x18]
-// 00523501  51                   push ecx
-// 00523502  c644241c01           mov byte ptr [esp + 0x1c], 1
-// 00523507  e8b4a40200           call 0x54d9c0
-// 0052350c  895e18               mov dword ptr [esi + 0x18], ebx
-// 0052350f  895e1c               mov dword ptr [esi + 0x1c], ebx
-// 00523512  895e20               mov dword ptr [esi + 0x20], ebx
-// 00523515  8b560c               mov edx, dword ptr [esi + 0xc]
-// 00523518  52                   push edx
-// 00523519  885c2420             mov byte ptr [esp + 0x20], bl
-// 0052351d  e89ea40200           call 0x54d9c0
-// 00523522  895e0c               mov dword ptr [esi + 0xc], ebx
-// 00523525  895e10               mov dword ptr [esi + 0x10], ebx
-// 00523528  895e14               mov dword ptr [esi + 0x14], ebx
-// 0052352b  8b06                 mov eax, dword ptr [esi]
-// 0052352d  50                   push eax
-// 0052352e  c7442424ffffffff     mov dword ptr [esp + 0x24], 0xffffffff
-// 00523536  e885a40200           call 0x54d9c0
-// 0052353b  8b4c241c             mov ecx, dword ptr [esp + 0x1c]
-// 0052353f  83c410               add esp, 0x10
-// 00523542  891e                 mov dword ptr [esi], ebx
-// 00523544  895e04               mov dword ptr [esi + 4], ebx
-// 00523547  895e08               mov dword ptr [esi + 8], ebx
-// 0052354a  5e                   pop esi
-// 0052354b  5b                   pop ebx
-// 0052354c  64890d00000000       mov dword ptr fs:[0], ecx
-// 00523553  83c410               add esp, 0x10
-// 00523556  c3                   ret 
-// library openrbx-client/Rendering\RenderLib\Mesh.cpp (function ??1ShadowSurface@Mesh@Render@RBX@@QAE@XZ)
-
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
 // roc-lib: openrbx-client Rendering/RenderLib/Mesh.cpp
+
+// Candidate translation unit (score above; library headers required).
+#include "renderlib/Mesh.h"
+
+#include "renderlib/Chunk.h"
+
+namespace RBX {
+namespace Render {
+
+G3D::MeshAlg::Geometry Mesh::visibleGeometry;
+G3D::Array<G3D::Vector2> Mesh::texCoordArray;
+G3D::Array<G3D::Vector3> Mesh::tangentArray;
+Mesh::VertexList Mesh::vertexRefCounts;
+Mesh::VertexList Mesh::freeList;
+G3D::VAR Mesh::vertexVAR;
+G3D::VAR Mesh::normalVAR;
+G3D::VAR Mesh::texCoordVAR;
+G3D::VAR Mesh::tangentVAR;
+bool Mesh::varDirty;
+
+static int vertexRefCount;
+static bool init;
+
+// FUNCTION: WEBSERVICE 0x101655f0
+void Mesh::endRender(G3D::RenderDevice* rd)
+{
+	rd->endIndexedPrimitives();
+}
+
+// FUNCTION: WEBSERVICE 0x10165830
+unsigned int Mesh::allocVertex(unsigned int i, unsigned int count)
+{
+	vertexRefCounts[i] += count;
+	vertexRefCount += count;
+
+	return i;
+}
+
+// FUNCTION: WEBSERVICE 0x10165fc0
+const Mesh::LevelRef Mesh::detailLevel(float meshLOD) const
+{
+	return levels[detailIndex(levels.size() * meshLOD)].getPointer();
+}
+
+// FUNCTION: WEBSERVICE 0x10166020
+void Mesh::sendGeometry(const Level* lvl, G3D::RenderDevice* rd)
+{
+	if (lvl != NULL && lvl->indexArray.size() > 0) {
+		rd->sendIndices(lvl->primitive, lvl->indexArray);
+	}
+}
+
+// FUNCTION: WEBSERVICE 0x10166cc0
+unsigned int Mesh::allocVertex(
+	const G3D::Vector3& vertex,
+	const G3D::Vector3& normal,
+	const G3D::Vector2& tex,
+	bool share
+)
+{
+	if (!varDirty) {
+		varDirty = true;
+	}
+
+	if (freeList.size() == 0) {
+		int index = visibleGeometry.vertexArray.size();
+
+		visibleGeometry.vertexArray.append(vertex);
+		visibleGeometry.normalArray.append(normal);
+		texCoordArray.append(tex);
+		tangentArray.append(G3D::Vector3::zero());
+		vertexRefCounts.append(1);
+		vertexRefCount++;
+
+		return index;
+	}
+
+	unsigned int index = freeList.last();
+	freeList.resize(freeList.size() - 1, false);
+
+	visibleGeometry.vertexArray[index] = vertex;
+	visibleGeometry.normalArray[index] = normal;
+	texCoordArray[index] = tex;
+	tangentArray[index] = G3D::Vector3::zero();
+	vertexRefCounts[index] = 1;
+	vertexRefCount++;
+
+	return index;
+}
+
+// STUB: WEBSERVICE 0x10166e40
+void Mesh::freeVertex(unsigned int i)
+{
+	int* refCounts = vertexRefCounts.getCArray();
+
+	if (refCounts != NULL) {
+		vertexRefCount--;
+
+		if (refCounts[i] == 1) {
+			refCounts[i] = 0;
+			freeList.append(i);
+			return;
+		}
+
+		refCounts[i]--;
+	}
+}
+
+// FUNCTION: WEBSERVICE 0x10166e80
+Mesh::Level::~Level()
+{
+	for (int i = 0; i < indexArray.size(); i++) {
+		freeVertex(indexArray[i]);
+	}
+}
+
+// FUNCTION: WEBSERVICE 0x10166f50
+Mesh::~Mesh()
+{
+}
+
+// FUNCTION: WEBSERVICE 0x10166fc0
+void Mesh::makeVAR()
+{
+	if (varDirty) {
+		G3D::VARAreaRef area =
+			G3D::VARArea::create(visibleGeometry.vertexArray.size() * 44 + 1024, G3D::VARArea::WRITE_ONCE);
+
+		vertexVAR = G3D::VAR(visibleGeometry.vertexArray, area);
+		normalVAR = G3D::VAR(visibleGeometry.normalArray, area);
+		texCoordVAR = G3D::VAR(texCoordArray, area);
+		tangentVAR = G3D::VAR(tangentArray, area);
+
+		varDirty = false;
+	}
+}
+
+// FUNCTION: WEBSERVICE 0x10167400
+void Mesh::beginRender(G3D::RenderDevice* rd, bool usetexCoords, bool useTangent)
+{
+	makeVAR();
+	rd->beginIndexedPrimitives();
+
+	if (vertexVAR.valid()) {
+		rd->setVertexArray(vertexVAR);
+	}
+
+	if (normalVAR.valid()) {
+		rd->setNormalArray(normalVAR);
+	}
+
+	if (usetexCoords) {
+		if (texCoordVAR.valid()) {
+			rd->setTexCoordArray(0, texCoordVAR);
+		}
+	}
+
+	if (useTangent) {
+		if (tangentVAR.valid()) {
+			rd->setTexCoordArray(2, tangentVAR);
+		}
+	}
+}
+
+// FUNCTION: WEBSERVICE 0x10167600
+void Mesh::initStatics()
+{
+	visibleGeometry.vertexArray.resize(1);
+	visibleGeometry.normalArray.resize(1);
+	texCoordArray.resize(1);
+	tangentArray.resize(1);
+	vertexRefCounts.resize(1);
+	vertexRefCounts[0] = 1;
+	freeList.resize(0);
+}
+
+// STUB: WEBSERVICE 0x101676c0
+void Mesh::computeDirectionalShadowVolume(
+	const G3D::CoordinateFrame& cframe,
+	const G3D::Vector3& wsLightVector,
+	G3D::Array<unsigned int>& indexArray,
+	G3D::Array<G3D::Vector3>& shadowVertex,
+	bool generateLightCap
+) const
+{
+	G3D::Vector3 objectLight = cframe.rotation.transpose() * wsLightVector;
+	const G3D::Array<G3D::Vector3>& geometry = shadowSurface.geometry;
+
+	static G3D::Array<bool> backface;
+	backface.resize(shadowSurface.faceNormalArray.size(), false);
+
+	for (int f = 0; f < shadowSurface.faceNormalArray.size(); f++) {
+		backface[f] = shadowSurface.faceNormalArray[f].dot(objectLight) < 0;
+	}
+
+	if (generateLightCap) {
+		for (int f = 0; f < backface.size(); f++) {
+			if (!backface[f]) {
+				int n = shadowVertex.size();
+				indexArray.append(n, n + 1, n + 2);
+
+				const G3D::MeshAlg::Face& face = shadowSurface.faceArray[f];
+				const G3D::Vector3& v0 = geometry[face.vertexIndex[0]];
+				const G3D::Vector3& v1 = geometry[face.vertexIndex[1]];
+				const G3D::Vector3& v2 = geometry[face.vertexIndex[2]];
+
+				shadowVertex
+					.append(cframe.pointToWorldSpace(v0), cframe.pointToWorldSpace(v1), cframe.pointToWorldSpace(v2));
+			}
+		}
+	}
+
+	for (int e = 0; e < shadowSurface.edgeArray.size(); e++) {
+		const G3D::MeshAlg::Edge& edge = shadowSurface.edgeArray[e];
+		bool b0 = backface[edge.faceIndex[0]];
+
+		if (b0 != backface[edge.faceIndex[1]]) {
+			int n = shadowVertex.size();
+			const G3D::Vector3& v0 = geometry[edge.vertexIndex[0]];
+			const G3D::Vector3& v1 = geometry[edge.vertexIndex[1]];
+
+			G3D::Vector3 p0 = cframe.pointToWorldSpace(v0);
+			G3D::Vector3 p1 = cframe.pointToWorldSpace(v1);
+
+			shadowVertex.append(p0, p1);
+
+			if (b0) {
+				indexArray.append(n, n + 1, 0);
+			}
+			else {
+				indexArray.append(n + 1, n, 0);
+			}
+		}
+	}
+}
+
+// FUNCTION: WEBSERVICE 0x10167b50
+Mesh::Level::Level(G3D::RenderDevice::Primitive primitive) : primitive(primitive)
+{
+}
+
+// FUNCTION: WEBSERVICE 0x10167bb0
+Mesh::Mesh()
+{
+	if (!init) {
+		initStatics();
+		init = true;
+	}
+
+	debugBoundingRadius = 0.0f;
+}
+
+// STUB: WEBSERVICE 0x10167d70
+G3D::ReferenceCountedPointer<Mesh> Mesh::aggregate(
+	const std::vector<G3D::ReferenceCountedPointer<Chunk> >& chunkArray,
+	G3D::CoordinateFrame& outCFrame,
+	float& outBoundingRadius
+)
+{
+	STUB(0x10167d70);
+	return NULL;
+}
+
+// FUNCTION: WEBSERVICE 0x101689d0
+void Mesh::computeShadowSurface(const LevelRef& level)
+{
+	shadowSurface.dropShadowGeometry = level;
+	shadowSurface.geometry.resize(0, false);
+
+	G3D::Array<G3D::Vector3> rawGeometry;
+
+	for (int i = 0; i < level->indexArray.size(); i++) {
+		G3D::Vector3 v = visibleGeometry.vertexArray[level->indexArray[i]];
+		rawGeometry.append(v);
+	}
+
+	G3D::Array<int> indexArray;
+
+	if (level->primitive == G3D::RenderDevice::TRIANGLES) {
+		G3D::MeshAlg::createIndexArray(level->indexArray.size(), indexArray);
+	}
+	else {
+		G3D::Array<int> tmp;
+		G3D::MeshAlg::createIndexArray(level->indexArray.size(), tmp);
+		G3D::MeshAlg::toIndexedTriList(tmp, (G3D::MeshAlg::Primitive) level->primitive, indexArray);
+	}
+
+	G3D::Array<G3D::Vector3> newVertexPositions;
+	G3D::Array<int> toNew;
+	G3D::Array<int> toOld;
+	G3D::MeshAlg::computeWeld(rawGeometry, shadowSurface.geometry, toNew, toOld, 1e-05);
+
+	for (int i = 0; i < indexArray.size(); i++) {
+		indexArray[i] = toNew[indexArray[i]];
+	}
+
+	G3D::Array<G3D::MeshAlg::Vertex> vertexArray;
+	G3D::MeshAlg::computeAdjacency(
+		shadowSurface.geometry,
+		indexArray,
+		shadowSurface.faceArray,
+		shadowSurface.edgeArray,
+		vertexArray
+	);
+
+	for (int i = 0; i < shadowSurface.edgeArray.size(); i++) {
+	}
+
+	shadowSurface.faceNormalArray.resize(shadowSurface.faceArray.size());
+
+	for (int f = 0; f < shadowSurface.faceNormalArray.size(); f++) {
+		G3D::Vector3 vertex[3];
+
+		for (int i = 0; i < 3; i++) {
+			vertex[i] = shadowSurface.geometry[shadowSurface.faceArray[f].vertexIndex[i]];
+		}
+
+		shadowSurface.faceNormalArray[f] = (vertex[1] - vertex[0]).cross(vertex[2] - vertex[0]).direction();
+	}
+}
+
+} // namespace Render
+} // namespace RBX

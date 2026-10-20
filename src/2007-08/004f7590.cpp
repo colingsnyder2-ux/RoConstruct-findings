@@ -1,29 +1,68 @@
-// roc 2007-08 004f7590  unit: seg_004f0000  size: 69 bytes
-// Make this compile to the exact bytes below, then: roc check 2007-08 004f7590
-//
-// 004f7590  83ec10               sub esp, 0x10
-// 004f7593  8b442414             mov eax, dword ptr [esp + 0x14]
-// 004f7597  d900                 fld dword ptr [eax]
-// 004f7599  d91c24               fstp dword ptr [esp]
-// 004f759c  d94004               fld dword ptr [eax + 4]
-// 004f759f  d95c2404             fstp dword ptr [esp + 4]
-// 004f75a3  d94008               fld dword ptr [eax + 8]
-// 004f75a6  8d81a8040000         lea eax, [ecx + 0x4a8]
-// 004f75ac  d95c2408             fstp dword ptr [esp + 8]
-// 004f75b0  d90424               fld dword ptr [esp]
-// 004f75b3  d918                 fstp dword ptr [eax]
-// 004f75b5  d9442404             fld dword ptr [esp + 4]
-// 004f75b9  d95804               fstp dword ptr [eax + 4]
-// 004f75bc  d9442408             fld dword ptr [esp + 8]
-// 004f75c0  d95808               fstp dword ptr [eax + 8]
-// 004f75c3  d9e8                 fld1 
-// 004f75c5  d9580c               fstp dword ptr [eax + 0xc]
-// 004f75c8  83c410               add esp, 0x10
-// 004f75cb  89442404             mov dword ptr [esp + 4], eax
-// 004f75cf  ff2540ea7700         jmp dword ptr [0x77ea40]
-// library rbxgs-render/Material.cpp (function ?setColor@RenderDevice@G3D@@QAEXABVColor3@2@@Z)
-
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
 // roc-lib: rbxgs-render Material.cpp
+
+// Candidate translation unit (score above; library headers required).
+#include "RenderLib/Material.h"
+
+namespace RBX
+{
+	namespace Render
+	{
+		Material::Level::Level(G3D::ReferenceCountedPointer<TextureProxy> baseTexture, G3D::Color3 color, float specular, float shiny, float reflect, float transparent)
+			: emptyLevel(false),
+			  mBaseTexture(baseTexture),
+			  mColor(color),
+			  mSpecular(specular),
+			  mShiny(shiny),
+			  mReflect(reflect),
+			  mTransparent(transparent)
+		{
+			if (baseTexture.notNull())
+				mMatte = baseTexture->alphaOnlyVersion();
+
+			if (mTransparent > 0.0f)
+				mReflect = 0.0f;
+		}
+
+		Material::Level::Level()
+			: emptyLevel(true),
+			  mColor(G3D::Color3::white()),
+			  mSpecular(0.0f),
+			  mShiny(0.0f),
+			  mReflect(0.0f),
+			  mTransparent(0.0f)
+		{
+		}
+
+		Material::Level::~Level() {}
+
+		void Material::Level::configureRenderDevice(G3D::RenderDevice* renderDevice) const
+		{
+			renderDevice->setColor(mColor);
+			renderDevice->setSpecularCoefficient(mSpecular);
+			renderDevice->setShininess(mShiny);
+			renderDevice->setTexture(0, baseTexture(renderDevice));
+		}
+
+		Material::Material() {}
+		Material::~Material() {}
+
+		const Material::Level& Material::appendEmptyLevel()
+		{
+			return levels.next();
+		}
+
+		const Material::Level& Material::appendLevel(G3D::ReferenceCountedPointer<TextureProxy> baseTexture, G3D::Color3 color, float specular, float shiny, float reflect, float transparent)
+		{
+			levels.push_back(Material::Level(baseTexture, color, specular, shiny, reflect, transparent));
+			return levels.last();
+		}
+
+		bool Material::veryTransparent() const
+		{
+			return levels.size() > 0 && levels.front().mTransparent > 0.25f;
+		}
+	}
+}

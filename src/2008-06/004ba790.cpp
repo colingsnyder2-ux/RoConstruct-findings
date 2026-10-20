@@ -1,69 +1,422 @@
-// roc 2008-06 004ba790  unit: RBX::Network::IdSerializer  size: 162 bytes
-// Make this compile to the exact bytes below, then: roc check 2008-06 004ba790
-//
-// 004ba790  83ec08               sub esp, 8
-// 004ba793  56                   push esi
-// 004ba794  8bf1                 mov esi, ecx
-// 004ba796  807e1400             cmp byte ptr [esi + 0x14], 0
-// 004ba79a  57                   push edi
-// 004ba79b  8b7c2414             mov edi, dword ptr [esp + 0x14]
-// 004ba79f  7420                 je 0x4ba7c1
-// 004ba7a1  8b07                 mov eax, dword ptr [edi]
-// 004ba7a3  8b4e10               mov ecx, dword ptr [esi + 0x10]
-// 004ba7a6  3bc1                 cmp eax, ecx
-// 004ba7a8  7517                 jne 0x4ba7c1
-// 004ba7aa  8b542418             mov edx, dword ptr [esp + 0x18]
-// 004ba7ae  8b460c               mov eax, dword ptr [esi + 0xc]
-// 004ba7b1  8b0e                 mov ecx, dword ptr [esi]
-// 004ba7b3  8b12                 mov edx, dword ptr [edx]
-// 004ba7b5  5f                   pop edi
-// 004ba7b6  8954c104             mov dword ptr [ecx + eax*8 + 4], edx
-// 004ba7ba  5e                   pop esi
-// 004ba7bb  83c408               add esp, 8
-// 004ba7be  c20800               ret 8
-// 004ba7c1  6840a24b00           push 0x4ba240
-// 004ba7c6  8d442418             lea eax, [esp + 0x18]
-// 004ba7ca  50                   push eax
-// 004ba7cb  57                   push edi
-// 004ba7cc  8bce                 mov ecx, esi
-// 004ba7ce  e89d520100           call 0x4cfa70
-// 004ba7d3  807c241400           cmp byte ptr [esp + 0x14], 0
-// 004ba7d8  7420                 je 0x4ba7fa
-// 004ba7da  8b16                 mov edx, dword ptr [esi]
-// 004ba7dc  89460c               mov dword ptr [esi + 0xc], eax
-// 004ba7df  8b0f                 mov ecx, dword ptr [edi]
-// 004ba7e1  894e10               mov dword ptr [esi + 0x10], ecx
-// 004ba7e4  8b4c2418             mov ecx, dword ptr [esp + 0x18]
-// 004ba7e8  c6461401             mov byte ptr [esi + 0x14], 1
-// 004ba7ec  8b09                 mov ecx, dword ptr [ecx]
-// 004ba7ee  5f                   pop edi
-// 004ba7ef  894cc204             mov dword ptr [edx + eax*8 + 4], ecx
-// 004ba7f3  5e                   pop esi
-// 004ba7f4  83c408               add esp, 8
-// 004ba7f7  c20800               ret 8
-// 004ba7fa  8b17                 mov edx, dword ptr [edi]
-// 004ba7fc  8b442418             mov eax, dword ptr [esp + 0x18]
-// 004ba800  8b08                 mov ecx, dword ptr [eax]
-// 004ba802  6840a24b00           push 0x4ba240
-// 004ba807  8954240c             mov dword ptr [esp + 0xc], edx
-// 004ba80b  6a01                 push 1
-// 004ba80d  8d542410             lea edx, [esp + 0x10]
-// 004ba811  52                   push edx
-// 004ba812  894c2418             mov dword ptr [esp + 0x18], ecx
-// 004ba816  57                   push edi
-// 004ba817  8bce                 mov ecx, esi
-// 004ba819  e862fcffff           call 0x4ba480
-// 004ba81e  89460c               mov dword ptr [esi + 0xc], eax
-// 004ba821  8b07                 mov eax, dword ptr [edi]
-// 004ba823  5f                   pop edi
-// 004ba824  894610               mov dword ptr [esi + 0x10], eax
-// 004ba827  c6461401             mov byte ptr [esi + 0x14], 1
-// 004ba82b  5e                   pop esi
-// 004ba82c  83c408               add esp, 8
-// 004ba82f  c20800               ret 8
-// library rbxgs-raknet/StringCompressor.cpp (function ?Set@?$Map@HPAVHuffmanEncodingTree@@$1??$defaultMapKeyComparison@H@DataStructures@@YAHABH0@Z@DataStructures@@QAEXABHABQAVHuffmanEncodingTree@@@Z)
-
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
 // roc-lib: rbxgs-raknet StringCompressor.cpp
+
+// Candidate translation unit (score above; library headers required).
+/// \file
+///
+/// This file is part of RakNet Copyright 2003 Kevin Jenkins.
+///
+/// Usage of RakNet is subject to the appropriate license agreement.
+/// Creative Commons Licensees are subject to the
+/// license found at
+/// http://creativecommons.org/licenses/by-nc/2.5/
+/// Single application licensees are subject to the license found at
+/// http://www.rakkarsoft.com/SingleApplicationLicense.html
+/// Custom license users are subject to the terms therein.
+/// GPL license users are subject to the GNU General Public
+/// License as published by the Free
+/// Software Foundation; either version 2 of the License, or (at your
+/// option) any later version.
+
+#include "StringCompressor.h"
+#include "DS_HuffmanEncodingTree.h"
+#include "BitStream.h"
+#include <assert.h>
+#include <string.h>
+#include <memory.h>
+
+StringCompressor* StringCompressor::instance=0;
+int StringCompressor::referenceCount=0;
+
+void StringCompressor::AddReference(void)
+{
+	if (++referenceCount==1)
+	{
+		instance = new StringCompressor;
+	}
+}
+void StringCompressor::RemoveReference(void)
+{
+	assert(referenceCount > 0);
+
+	if (referenceCount > 0)
+	{
+		if (--referenceCount==0)
+		{
+			delete instance;
+			instance=0;
+		}
+	}
+}
+
+StringCompressor* StringCompressor::Instance(void)
+{
+	return instance;
+}
+
+unsigned int englishCharacterFrequencies[ 256 ] =
+{
+	0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		722,
+		0,
+		0,
+		2,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		11084,
+		58,
+		63,
+		1,
+		0,
+		31,
+		0,
+		317,
+		64,
+		64,
+		44,
+		0,
+		695,
+		62,
+		980,
+		266,
+		69,
+		67,
+		56,
+		7,
+		73,
+		3,
+		14,
+		2,
+		69,
+		1,
+		167,
+		9,
+		1,
+		2,
+		25,
+		94,
+		0,
+		195,
+		139,
+		34,
+		96,
+		48,
+		103,
+		56,
+		125,
+		653,
+		21,
+		5,
+		23,
+		64,
+		85,
+		44,
+		34,
+		7,
+		92,
+		76,
+		147,
+		12,
+		14,
+		57,
+		15,
+		39,
+		15,
+		1,
+		1,
+		1,
+		2,
+		3,
+		0,
+		3611,
+		845,
+		1077,
+		1884,
+		5870,
+		841,
+		1057,
+		2501,
+		3212,
+		164,
+		531,
+		2019,
+		1330,
+		3056,
+		4037,
+		848,
+		47,
+		2586,
+		2919,
+		4771,
+		1707,
+		535,
+		1106,
+		152,
+		1243,
+		100,
+		0,
+		2,
+		0,
+		10,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0
+};
+
+StringCompressor::StringCompressor()
+{
+	DataStructures::Map<int, HuffmanEncodingTree *>::IMPLEMENT_DEFAULT_COMPARISON();
+
+	// Make a default tree immediately, since this is used for RPC possibly from multiple threads at the same time
+	HuffmanEncodingTree *huffmanEncodingTree = new HuffmanEncodingTree;
+	huffmanEncodingTree->GenerateFromFrequencyTable( englishCharacterFrequencies );
+
+	huffmanEncodingTrees.Set(0, huffmanEncodingTree);
+}
+void StringCompressor::GenerateTreeFromStrings( unsigned char *input, unsigned inputLength, int languageID )
+{
+	HuffmanEncodingTree *huffmanEncodingTree;
+	if (huffmanEncodingTrees.Has(languageID))
+	{
+		huffmanEncodingTree = huffmanEncodingTrees.Get(languageID);
+		delete huffmanEncodingTree;
+	}
+
+	unsigned index;
+	unsigned int frequencyTable[ 256 ];
+
+	if ( inputLength == 0 )
+		return ;
+
+	// Zero out the frequency table
+	memset( frequencyTable, 0, sizeof( frequencyTable ) );
+
+	// Generate the frequency table from the strings
+	for ( index = 0; index < inputLength; index++ )
+		frequencyTable[ input[ index ] ] ++;
+
+	// Build the tree
+	huffmanEncodingTree = new HuffmanEncodingTree;
+	huffmanEncodingTree->GenerateFromFrequencyTable( frequencyTable );
+	huffmanEncodingTrees.Set(languageID, huffmanEncodingTree);
+}
+
+StringCompressor::~StringCompressor()
+{
+	for (unsigned i=0; i < huffmanEncodingTrees.Size(); i++)
+		delete huffmanEncodingTrees[i];
+}
+
+void StringCompressor::EncodeString( const char *input, int maxCharsToWrite, RakNet::BitStream *output, int languageID )
+{
+	HuffmanEncodingTree *huffmanEncodingTree;
+	if (huffmanEncodingTrees.Has(languageID)==false)
+		return;
+	huffmanEncodingTree=huffmanEncodingTrees.Get(languageID);
+
+	if ( input == 0 )
+	{
+		output->WriteCompressed( (unsigned int) 0 );
+		return ;
+	}
+
+	RakNet::BitStream encodedBitStream;
+
+	unsigned int stringBitLength;
+
+	int charsToWrite;
+
+	if ( maxCharsToWrite<=0 || ( int ) strlen( input ) < maxCharsToWrite )
+		charsToWrite = ( int ) strlen( input );
+	else
+		charsToWrite = maxCharsToWrite - 1;
+
+	huffmanEncodingTree->EncodeArray( ( unsigned char* ) input, charsToWrite, &encodedBitStream );
+
+	stringBitLength = encodedBitStream.GetNumberOfBitsUsed();
+
+	output->WriteCompressed( stringBitLength );
+
+	output->WriteBits( encodedBitStream.GetData(), stringBitLength );
+}
+
+bool StringCompressor::DecodeString( char *output, int maxCharsToWrite, RakNet::BitStream *input, int languageID )
+{
+	HuffmanEncodingTree *huffmanEncodingTree;
+	if (huffmanEncodingTrees.Has(languageID)==false)
+		return false;
+	huffmanEncodingTree=huffmanEncodingTrees.Get(languageID);
+
+	unsigned int stringBitLength;
+	int bytesInStream;
+
+	output[ 0 ] = 0;
+
+	if ( input->ReadCompressed( stringBitLength ) == false )
+		return false;
+
+	if ( (unsigned) input->GetNumberOfUnreadBits() < stringBitLength )
+		return false;
+
+	bytesInStream = huffmanEncodingTree->DecodeArray( input, stringBitLength, maxCharsToWrite, ( unsigned char* ) output );
+
+	if ( bytesInStream < maxCharsToWrite )
+		output[ bytesInStream ] = 0;
+	else
+		output[ maxCharsToWrite - 1 ] = 0;
+
+	return true;
+}

@@ -1,12 +1,59 @@
-// roc 2007-03 005eb4c0  unit: seg_005e0000  size: 14 bytes
-// Make this compile to the exact bytes below, then: roc check 2007-03 005eb4c0
-//
-// 005eb4c0  8b442404             mov eax, dword ptr [esp + 4]
-// 005eb4c4  8b84818c000000       mov eax, dword ptr [ecx + eax*4 + 0x8c]
-// 005eb4cb  c20400               ret 4
-// library rbxgs/v8datamodel\Surface.cpp (function ?getSurfaceType@Primitive@RBX@@QBE?AW4SurfaceType@2@W4NormalId@2@@Z)
-
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
 // roc-lib: rbxgs v8datamodel/Surface.cpp
+
+// Candidate translation unit (score above; library headers required).
+#include "v8datamodel/Surface.h"
+#include "v8datamodel/PartInstance.h"
+
+namespace RBX
+{
+	Surface::Surface(PartInstance* partInstance, NormalId surfId)
+		: partInstance(partInstance),
+		  surfId(surfId)
+	{
+	}
+
+	bool Surface::isControllable() const
+	{
+		Controller::InputType inputType = getInput();
+		return inputType != Controller::NO_INPUT && inputType != Controller::CONSTANT_INPUT && inputType != Controller::SIN_INPUT;
+	}
+
+	SurfaceType Surface::getSurfaceType() const
+	{
+		RBXASSERT(partInstance->getPrimitive());
+		return partInstance->getPrimitive()->getSurfaceType(surfId);
+	}
+
+	void Surface::setSurfaceType(SurfaceType type)
+	{
+		if (type != getSurfaceType())
+		{
+			partInstance->getPrimitive()->setSurfaceType(surfId, type);
+			partInstance->onSurfaceChanged(surfId);
+			partInstance->raisePropertyChanged(partInstance->getSurfaces().getSurfaceType(surfId));
+		}
+	}
+
+	// the functions below don't match 100% most likely due to Primitive::getSurfaceData
+
+	Controller::InputType Surface::getInput() const
+	{
+		RBXASSERT(partInstance->getPrimitive());
+		return partInstance->getPrimitive()->getSurfaceData(surfId).inputType;
+	}
+
+	float Surface::getParamA() const
+	{
+		RBXASSERT(partInstance->getPrimitive());
+		return partInstance->getPrimitive()->getSurfaceData(surfId).paramA;
+	}
+
+	float Surface::getParamB() const
+	{
+		RBXASSERT(partInstance->getPrimitive());
+		return partInstance->getPrimitive()->getSurfaceData(surfId).paramB;
+	}
+}

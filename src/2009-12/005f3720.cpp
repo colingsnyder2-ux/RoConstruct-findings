@@ -1,16 +1,55 @@
-// roc 2009-12 005f3720  unit: seg_005f0000  size: 23 bytes
-// Make this compile to the exact bytes below, then: roc check 2009-12 005f3720
-//
-// 005f3720  8bc1                 mov eax, ecx
-// 005f3722  8b4c2404             mov ecx, dword ptr [esp + 4]
-// 005f3726  668b11               mov dx, word ptr [ecx]
-// 005f3729  668910               mov word ptr [eax], dx
-// 005f372c  668b4904             mov cx, word ptr [ecx + 4]
-// 005f3730  66894802             mov word ptr [eax + 2], cx
-// 005f3734  c20400               ret 4
-// library rbx2016-g3d/Vector2int16.cpp (function ??0Vector2int16@G3D@@QAE@QAH@Z)
-
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD /arch:SSE2 /fp:fast
 // roc-lib: rbx2016-g3d Vector2int16.cpp
+
+// Candidate translation unit (score above; library headers required).
+/**
+ @file Vector2int16.cpp
+ 
+ @author Morgan McGuire, http://graphics.cs.williams.edu
+  
+ @created 2003-08-09
+ @edited  2006-01-29
+ */
+
+#include "G3D/platform.h"
+#include "G3D/g3dmath.h"
+#include "G3D/Vector2int16.h"
+#include "G3D/Vector2.h"
+
+namespace G3D {
+
+Vector2int16::Vector2int16(const class Vector2& v) {
+    x = (int16)iFloor(v.x + 0.5);
+    y = (int16)iFloor(v.y + 0.5);
+}
+
+Vector2int16::Vector2int16(int coordinate[2]) {
+    x = (int16)coordinate[0];
+    y = (int16)coordinate[1];
+}
+
+
+
+Vector2int16 Vector2int16::clamp(const Vector2int16& lo, const Vector2int16& hi) {
+    return Vector2int16(iClamp(x, lo.x, hi.x), iClamp(y, lo.y, hi.y));
+}
+
+Vector2int16 Vector2int16::xx() const {
+	return Vector2int16(x,x);
+}
+
+Vector2int16 Vector2int16::xy() const {
+	return Vector2int16(x,y);
+}
+
+Vector2int16 Vector2int16::yx() const {
+	return Vector2int16(y,x);
+}
+
+Vector2int16 Vector2int16::yy() const {
+	return Vector2int16(y,y);
+}
+
+}

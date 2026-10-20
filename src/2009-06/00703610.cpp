@@ -1,69 +1,150 @@
-// roc 2009-06 00703610  unit: RBX::AdornG3D  size: 184 bytes
-// Make this compile to the exact bytes below, then: roc check 2009-06 00703610
-//
-// 00703610  6aff                 push -1
-// 00703612  6808dd8500           push 0x85dd08
-// 00703617  64a100000000         mov eax, dword ptr fs:[0]
-// 0070361d  50                   push eax
-// 0070361e  64892500000000       mov dword ptr fs:[0], esp
-// 00703625  51                   push ecx
-// 00703626  56                   push esi
-// 00703627  8d442404             lea eax, [esp + 4]
-// 0070362b  50                   push eax
-// 0070362c  8bf1                 mov esi, ecx
-// 0070362e  e8ad190000           call 0x704fe0
-// 00703633  83c404               add esp, 4
-// 00703636  dd442424             fld qword ptr [esp + 0x24]
-// 0070363a  8b4c243c             mov ecx, dword ptr [esp + 0x3c]
-// 0070363e  8b542438             mov edx, dword ptr [esp + 0x38]
-// 00703642  8b442434             mov eax, dword ptr [esp + 0x34]
-// 00703646  51                   push ecx
-// 00703647  8b4c2434             mov ecx, dword ptr [esp + 0x34]
-// 0070364b  52                   push edx
-// 0070364c  8b542434             mov edx, dword ptr [esp + 0x34]
-// 00703650  50                   push eax
-// 00703651  8b44242c             mov eax, dword ptr [esp + 0x2c]
-// 00703655  51                   push ecx
-// 00703656  8b4c242c             mov ecx, dword ptr [esp + 0x2c]
-// 0070365a  52                   push edx
-// 0070365b  8b5604               mov edx, dword ptr [esi + 4]
-// 0070365e  8b74242c             mov esi, dword ptr [esp + 0x2c]
-// 00703662  83ec08               sub esp, 8
-// 00703665  dd1c24               fstp qword ptr [esp]
-// 00703668  50                   push eax
-// 00703669  51                   push ecx
-// 0070366a  8b4c2428             mov ecx, dword ptr [esp + 0x28]
-// 0070366e  52                   push edx
-// 0070366f  56                   push esi
-// 00703670  c744243c00000000     mov dword ptr [esp + 0x3c], 0
-// 00703678  e823421400           call 0x8478a0
-// 0070367d  8b442404             mov eax, dword ptr [esp + 4]
-// 00703681  c7442410ffffffff     mov dword ptr [esp + 0x10], 0xffffffff
-// 00703689  85c0                 test eax, eax
-// 0070368b  7427                 je 0x7036b4
-// 0070368d  83c004               add eax, 4
-// 00703690  50                   push eax
-// 00703691  ff15a4e18900         call dword ptr [0x89e1a4]
-// 00703697  85c0                 test eax, eax
-// 00703699  7519                 jne 0x7036b4
-// 0070369b  8b4c2404             mov ecx, dword ptr [esp + 4]
-// 0070369f  e8dc16d4ff           call 0x444d80
-// 007036a4  8b4c2404             mov ecx, dword ptr [esp + 4]
-// 007036a8  85c9                 test ecx, ecx
-// 007036aa  7408                 je 0x7036b4
-// 007036ac  8b01                 mov eax, dword ptr [ecx]
-// 007036ae  8b10                 mov edx, dword ptr [eax]
-// 007036b0  6a01                 push 1
-// 007036b2  ffd2                 call edx
-// 007036b4  8b4c2408             mov ecx, dword ptr [esp + 8]
-// 007036b8  8bc6                 mov eax, esi
-// 007036ba  5e                   pop esi
-// 007036bb  64890d00000000       mov dword ptr fs:[0], ecx
-// 007036c2  83c410               add esp, 0x10
-// 007036c5  c22800               ret 0x28
-// library rbxgs-appdraw/AdornG3D.cpp (function ?drawFont2D@AdornG3D@RBX@@UBE?AVVector2@G3D@@ABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@ABV34@NABVColor4@4@2W4XAlign@Adorn@2@W4YAlign@92@W4Spacing@92@@Z)
-
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
 // roc-lib: rbxgs-appdraw AdornG3D.cpp
+
+// Candidate translation unit (score above; library headers required).
+#include "AppDraw/AdornG3D.h"
+#include "AppDraw/DrawPrimitives.h"
+#include "AppDraw/Fonts.h"
+#include "GLG3D/Draw.h"
+#include "GLG3D/Texture.h"
+#include "RenderLib/TextureProxy.h"
+#include "RbxGraphics/TextureProxyBase.h"
+
+namespace RBX
+{
+    G3D::Rect2D AdornG3D::getViewport() const
+    {
+        return renderDevice->getViewport();
+    }
+
+    int AdornG3D::getWidth() const
+    {
+        return renderDevice->getWidth();
+    }
+
+    int AdornG3D::getHeight() const
+    {
+        return renderDevice->getHeight();
+    }
+
+    G3D::Rect2D AdornG3D::getTextureSize(TextureProxyBaseRef _texture) const
+    {
+        if (_texture.notNull())
+        {
+            Render::TextureProxy* textureProxy = static_cast<Render::TextureProxy*>(_texture.getPointer());
+            G3D::TextureRef texture = textureProxy->resolve(renderDevice);
+
+            if (texture.notNull())
+                return texture->rect2DBounds();
+        }
+
+        return G3D::Rect2D();
+    }
+
+    void AdornG3D::setTexture(int id, TextureProxyBaseRef _texture)
+    {
+        if (_texture.notNull())
+        {
+            Render::TextureProxy* textureProxy = static_cast<Render::TextureProxy*>(_texture.getPointer());
+            renderDevice->setTexture(id, textureProxy->resolve(renderDevice));
+        }
+        else
+        {
+            renderDevice->setTexture(id, NULL);
+        }
+    }
+
+    void AdornG3D::rect2d(const G3D::Rect2D& rect, const G3D::Color4& color) const
+    {
+        DrawPrimitives::rect2d(Rect(rect), renderDevice, color);
+    }
+
+    void AdornG3D::outlineRect2d(const G3D::Rect2D& rect, float thick, const G3D::Color4& color) const
+    {
+        DrawPrimitives::outlineRect2d(Rect(rect), thick, renderDevice, color);
+    }
+
+    void AdornG3D::line2d(const G3D::Vector2& p0, const G3D::Vector2& p1, const G3D::Color4& color) const
+    {
+        DrawPrimitives::line2d(p0, p1, renderDevice, color);
+    }
+
+    G3D::Vector2 AdornG3D::get2DStringBounds(const std::string& s, double size, Adorn::Spacing spacing) const
+    {
+        G3D::GFontRef font = Fonts::getFont();
+        return font->get2DStringBounds(s, size, static_cast<G3D::GFont::Spacing>(spacing));
+    }
+
+    G3D::Vector2 AdornG3D::drawFont2D(const std::string& s, const G3D::Vector2& pos2d, double size, const G3D::Color4& color, const G3D::Color4& outline, Adorn::XAlign xalign, Adorn::YAlign yalign, Adorn::Spacing spacing) const
+    {
+        G3D::GFontRef font = Fonts::getFont();
+        return font->draw2D(renderDevice, s, pos2d, size, color, outline, static_cast<G3D::GFont::XAlign>(xalign), static_cast<G3D::GFont::YAlign>(yalign), static_cast<G3D::GFont::Spacing>(spacing));
+    }
+
+    void AdornG3D::setObjectToWorldMatrix(const G3D::CoordinateFrame& c)
+    {
+        renderDevice->setObjectToWorldMatrix(c);
+    }
+
+    void AdornG3D::box(const G3D::AABox& box, const G3D::Color4& solidColor, const G3D::Color4& wireColor)
+    {
+        setColor(solidColor);
+        DrawPrimitives::rawBox(box, renderDevice);
+    }
+
+    void AdornG3D::sphere(const G3D::Sphere& sphere, const G3D::Color4& solidColor, const G3D::Color4& wireColor)
+    {
+        setColor(solidColor);
+        DrawPrimitives::rawSphere(sphere.radius, renderDevice);
+    }
+
+    void AdornG3D::explosion(const G3D::Sphere& sph, const G3D::Color4& solidColor, const G3D::Color4& wireColor)
+    {
+        sphere(sph, solidColor, wireColor);
+    }
+
+    void AdornG3D::cylinderAlongX(float radius, float length, const G3D::Color4& solidColor, const G3D::Color4& wireColor)
+    {
+        setColor(solidColor);
+        DrawPrimitives::rawCylinderAlongX(radius, length, renderDevice);
+    }
+
+    void AdornG3D::ray(const G3D::Ray& ray, const G3D::Color4& color, float scale)
+    {
+        G3D::Draw::ray(ray, renderDevice, color, scale);
+    }
+
+    void AdornG3D::lineSegment(const G3D::LineSegment& lineSegment, const G3D::Color4& color, float scale)
+    {
+        G3D::Draw::lineSegment(lineSegment, renderDevice, color, scale);
+    }
+
+    void AdornG3D::axes(const G3D::Color4& xColor, const G3D::Color4& yColor, const G3D::Color4& zColor, float scale)
+    {
+        G3D::Draw::axes(renderDevice, xColor, yColor, zColor, scale);
+    }
+
+    void AdornG3D::quad(const G3D::Vector3& v0, const G3D::Vector3& v1, const G3D::Vector3& v2, const G3D::Vector3& v3, const G3D::Color4& color)
+    {
+        setColor(color);
+        renderDevice->beginPrimitive(G3D::RenderDevice::QUADS);
+        renderDevice->sendVertex(v0);
+        renderDevice->sendVertex(v1);
+        renderDevice->sendVertex(v2);
+        renderDevice->sendVertex(v3);
+        renderDevice->endPrimitive();
+    }
+
+    TextureProxyBaseRef AdornG3D::createTextureProxy(const std::string& filename)
+    {
+        Render::TextureProxy* proxy = new Render::TextureProxy(textureManager, filename, false);
+        return TextureProxyBaseRef(proxy);
+    }
+
+    void AdornG3D::setColor(const G3D::Color4& color)
+    {
+        renderDevice->setColor(color);
+    }
+}

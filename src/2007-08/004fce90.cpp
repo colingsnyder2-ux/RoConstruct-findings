@@ -1,82 +1,416 @@
 // from server: 100% by auto
-// roc 2007-08 004fce90  unit: RBX::Render::AggregateChunk  size: 167 bytes
-// Make this compile to the exact bytes below, then: roc check 2007-08 004fce90
-//
-// 004fce90  51                   push ecx
-// 004fce91  8b4c2408             mov ecx, dword ptr [esp + 8]
-// 004fce95  56                   push esi
-// 004fce96  8b742414             mov esi, dword ptr [esp + 0x14]
-// 004fce9a  8bc6                 mov eax, esi
-// 004fce9c  2bc1                 sub eax, ecx
-// 004fce9e  c1f802               sar eax, 2
-// 004fcea1  83f828               cmp eax, 0x28
-// 004fcea4  7e7a                 jle 0x4fcf20
-// 004fcea6  83c001               add eax, 1
-// 004fcea9  99                   cdq 
-// 004fceaa  53                   push ebx
-// 004fceab  8b5c241c             mov ebx, dword ptr [esp + 0x1c]
-// 004fceaf  83e207               and edx, 7
-// 004fceb2  03c2                 add eax, edx
-// 004fceb4  55                   push ebp
-// 004fceb5  c1f803               sar eax, 3
-// 004fceb8  57                   push edi
-// 004fceb9  8d14c500000000       lea edx, [eax*8]
-// 004fcec0  89542420             mov dword ptr [esp + 0x20], edx
-// 004fcec4  53                   push ebx
-// 004fcec5  8d3c8500000000       lea edi, [eax*4]
-// 004fcecc  03d1                 add edx, ecx
-// 004fcece  8d040f               lea eax, [edi + ecx]
-// 004fced1  52                   push edx
-// 004fced2  50                   push eax
-// 004fced3  51                   push ecx
-// 004fced4  89442420             mov dword ptr [esp + 0x20], eax
-// 004fced8  e8e3feffff           call 0x4fcdc0
-// 004fcedd  8b6c242c             mov ebp, dword ptr [esp + 0x2c]
-// 004fcee1  53                   push ebx
-// 004fcee2  8d042f               lea eax, [edi + ebp]
-// 004fcee5  50                   push eax
-// 004fcee6  8bcd                 mov ecx, ebp
-// 004fcee8  2bcf                 sub ecx, edi
-// 004fceea  55                   push ebp
-// 004fceeb  51                   push ecx
-// 004fceec  e8cffeffff           call 0x4fcdc0
-// 004fcef1  53                   push ebx
-// 004fcef2  8bc6                 mov eax, esi
-// 004fcef4  2bc7                 sub eax, edi
-// 004fcef6  56                   push esi
-// 004fcef7  2b742448             sub esi, dword ptr [esp + 0x48]
-// 004fcefb  50                   push eax
-// 004fcefc  56                   push esi
-// 004fcefd  89442448             mov dword ptr [esp + 0x48], eax
-// 004fcf01  e8bafeffff           call 0x4fcdc0
-// 004fcf06  8b542448             mov edx, dword ptr [esp + 0x48]
-// 004fcf0a  8b442440             mov eax, dword ptr [esp + 0x40]
-// 004fcf0e  53                   push ebx
-// 004fcf0f  52                   push edx
-// 004fcf10  55                   push ebp
-// 004fcf11  50                   push eax
-// 004fcf12  e8a9feffff           call 0x4fcdc0
-// 004fcf17  83c440               add esp, 0x40
-// 004fcf1a  5f                   pop edi
-// 004fcf1b  5d                   pop ebp
-// 004fcf1c  5b                   pop ebx
-// 004fcf1d  5e                   pop esi
-// 004fcf1e  59                   pop ecx
-// 004fcf1f  c3                   ret 
-// 004fcf20  8b542418             mov edx, dword ptr [esp + 0x18]
-// 004fcf24  8b442410             mov eax, dword ptr [esp + 0x10]
-// 004fcf28  52                   push edx
-// 004fcf29  56                   push esi
-// 004fcf2a  50                   push eax
-// 004fcf2b  51                   push ecx
-// 004fcf2c  e88ffeffff           call 0x4fcdc0
-// 004fcf31  83c410               add esp, 0x10
-// 004fcf34  5e                   pop esi
-// 004fcf35  59                   pop ecx
-// 004fcf36  c3                   ret 
-// library g3d-6.09/GLG3Dcpp\PosedModel.cpp (function ??$_Median@PAV?$ReferenceCountedPointer@VPosedModel2D@G3D@@@G3D@@P6A_NABV12@0@Z@std@@YAXPAV?$ReferenceCountedPointer@VPosedModel2D@G3D@@@G3D@@00P6A_NABV12@1@Z@Z)
-
 // roc-lang: cpp
 // roc-cl: 50727
 // roc-flags: /O2 /GS- /EHsc /MD
 // roc-lib: g3d-6.09 GLG3Dcpp/PosedModel.cpp
+
+// Candidate translation unit (score above; library headers required).
+/**
+  @file PosedModel.cpp
+  
+  @maintainer Morgan McGuire, matrix@graphics3d.com
+
+  @created 2003-11-15
+  @edited  2006-02-24
+ */ 
+
+#include "GLG3D/PosedModel.h"
+#include "GLG3D/RenderDevice.h"
+#include "G3D/Sphere.h"
+#include "G3D/Box.h"
+
+namespace G3D {
+
+class ModelSorter {
+public:
+    double                  sortKey;
+    PosedModelRef           model;
+
+    ModelSorter() {}
+
+    ModelSorter(const PosedModelRef& m, const Vector3& axis) : model(m) {
+        static Sphere s;
+        m->getWorldSpaceBoundingSphere(s);
+        sortKey = axis.dot(s.center);
+    }
+
+    inline bool operator>(const ModelSorter& s) const {
+        return sortKey > s.sortKey;
+    }
+
+    inline bool operator<(const ModelSorter& s) const {
+        return sortKey < s.sortKey;
+    }
+};
+
+
+void PosedModel::sort(
+    const Array<PosedModelRef>& inModels, 
+    const Vector3&              wsLook,
+    Array<PosedModelRef>&       opaque,
+    Array<PosedModelRef>&       transparent) {
+
+    Array<ModelSorter> op;
+    Array<ModelSorter> tr;
+    
+    for (int m = 0; m < inModels.size(); ++m) {
+        if (inModels[m]->hasTransparency()) {
+            tr.append(ModelSorter(inModels[m], wsLook));
+        } else {
+            op.append(ModelSorter(inModels[m], wsLook));
+        }
+    }
+
+    // Sort
+    tr.sort(SORT_DECREASING);
+    op.sort(SORT_INCREASING);
+
+    transparent.resize(tr.size(), DONT_SHRINK_UNDERLYING_ARRAY);
+    for (int m = 0; m < tr.size(); ++m) {
+        transparent[m] = tr[m].model;
+    }
+
+    opaque.resize(op.size(), DONT_SHRINK_UNDERLYING_ARRAY);
+    for (int m = 0; m < op.size(); ++m) {
+        opaque[m] = op[m].model;
+    }
+}
+
+
+void PosedModel::sort(
+    const Array<PosedModelRef>& inModels, 
+    const Vector3&              wsLook,
+    Array<PosedModelRef>&       opaque) { 
+
+    if (&inModels == &opaque) {
+        // The user is trying to sort in place.  Make a separate array for them.
+        Array<PosedModelRef> temp = inModels;
+        sort(temp, wsLook, opaque);
+        return;
+    }
+
+    Array<ModelSorter> op;
+    
+    for (int m = 0; m < inModels.size(); ++m) {
+        op.append(ModelSorter(inModels[m], wsLook));
+    }
+
+    // Sort
+    op.sort(SORT_INCREASING);
+
+    opaque.resize(op.size(), DONT_SHRINK_UNDERLYING_ARRAY);
+    for (int m = 0; m < op.size(); ++m) {
+        opaque[m] = op[m].model;
+    }
+}
+
+
+void PosedModel::getWorldSpaceGeometry(MeshAlg::Geometry& geometry) const {
+    CoordinateFrame c;
+    getCoordinateFrame(c);
+
+    const MeshAlg::Geometry& osgeometry = objectSpaceGeometry();
+    c.pointToWorldSpace(osgeometry.vertexArray, geometry.vertexArray);
+    c.normalToWorldSpace(osgeometry.normalArray, geometry.normalArray);
+}
+
+
+CoordinateFrame PosedModel::coordinateFrame() const {
+    CoordinateFrame c;
+    getCoordinateFrame(c);
+    return c;
+}
+
+
+Sphere PosedModel::objectSpaceBoundingSphere() const {
+    Sphere s;
+    getObjectSpaceBoundingSphere(s);
+    return s;
+}
+
+
+void PosedModel::getWorldSpaceBoundingSphere(Sphere& s) const {
+    CoordinateFrame C;
+    getCoordinateFrame(C);
+    getObjectSpaceBoundingSphere(s);
+    s = C.toWorldSpace(s);
+}
+
+
+Sphere PosedModel::worldSpaceBoundingSphere() const {
+    Sphere s;
+    getWorldSpaceBoundingSphere(s);
+    return s;
+}
+
+
+Box PosedModel::objectSpaceBoundingBox() const {
+    Box b;
+    getObjectSpaceBoundingBox(b);
+    return b;
+}
+
+
+void PosedModel::getWorldSpaceBoundingBox(Box& box) const {
+    CoordinateFrame C;
+    getCoordinateFrame(C);
+    getObjectSpaceBoundingBox(box);
+    box = C.toWorldSpace(box);
+}
+
+
+Box PosedModel::worldSpaceBoundingBox() const {
+    Box b;
+    getWorldSpaceBoundingBox(b);
+    return b;
+}
+
+
+void PosedModel::getObjectSpaceFaceNormals(Array<Vector3>& faceNormals, bool normalize) const {
+    const MeshAlg::Geometry& geometry = objectSpaceGeometry();
+    const Array<MeshAlg::Face>& faceArray = faces();
+
+    MeshAlg::computeFaceNormals(geometry.vertexArray, faceArray, faceNormals, normalize);
+}
+
+
+void PosedModel::getWorldSpaceFaceNormals(Array<Vector3>& faceNormals, bool normalize) const {
+    MeshAlg::Geometry geometry;
+    getWorldSpaceGeometry(geometry);
+
+    const Array<MeshAlg::Face>& faceArray = faces();
+
+    MeshAlg::computeFaceNormals(geometry.vertexArray, faceArray, faceNormals, normalize);
+}
+
+
+void PosedModel::renderNonShadowed(
+    RenderDevice* rd,
+    const LightingRef& lighting) const {
+
+    rd->pushState();
+        if (rd->colorWrite()) {
+            rd->setAmbientLightColor(lighting->ambientTop);
+            Color3 C = lighting->ambientBottom - lighting->ambientTop;
+
+            int shift = 0;
+            if ((C.r != 0) || (C.g != 0) || (C.b != 0)) {
+                rd->setLight(0, GLight::directional(-Vector3::unitY(), C, false));
+                ++shift;
+            }
+
+            for (int L = 0; L < iMin(7, lighting->lightArray.size()); ++L) {
+                rd->setLight(L + shift, lighting->lightArray[L]);
+            }
+            rd->enableLighting();
+        }
+        render(rd);
+    rd->popState();
+}
+
+
+void PosedModel::renderShadowedLightPass(
+    RenderDevice* rd, 
+    const GLight& light) const {
+
+    rd->pushState();
+        rd->enableLighting();
+        rd->setBlendFunc(RenderDevice::BLEND_ONE, RenderDevice::BLEND_ONE);
+        rd->setLight(0, light);
+        rd->setAmbientLightColor(Color3::black());
+        render(rd);
+    rd->popState();
+}
+
+
+void PosedModel::renderShadowMappedLightPass(
+    RenderDevice* rd, 
+    const GLight& light,
+    const Matrix4& lightMVP,
+    const TextureRef& shadowMap) const {
+
+    rd->pushState();
+        rd->setBlendFunc(RenderDevice::BLEND_ONE, RenderDevice::BLEND_ONE);
+        rd->configureShadowMap(1, lightMVP, shadowMap);
+        rd->setLight(0, light);
+        rd->enableLighting();
+        rd->setAmbientLightColor(Color3::black());
+        render(rd);
+    rd->popState();
+}
+
+   
+void PosedModel::defaultRender(RenderDevice* rd) const {
+    const MeshAlg::Geometry& geometry = objectSpaceGeometry();
+
+    VARAreaRef area = VARArea::create(sizeof(Vector3)*2*geometry.vertexArray.size() + 16);
+
+    rd->pushState();
+        rd->setObjectToWorldMatrix(coordinateFrame());
+        rd->beginIndexedPrimitives();
+            rd->setNormalArray(VAR(geometry.normalArray, area));
+            rd->setVertexArray(VAR(geometry.vertexArray, area));
+            rd->sendIndices(RenderDevice::TRIANGLES, triangleIndices());
+        rd->endIndexedPrimitives();
+    rd->popState();
+}
+
+
+void PosedModel::render(RenderDevice* rd) const {
+    defaultRender(rd);
+}
+
+////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+std::string PosedModelWrapper::name() const {
+    return model->name();
+}
+
+
+void PosedModelWrapper::getCoordinateFrame(CoordinateFrame& c) const {
+    model->getCoordinateFrame(c);
+}
+
+
+CoordinateFrame PosedModelWrapper::coordinateFrame() const {
+    return model->coordinateFrame();
+}
+
+
+const MeshAlg::Geometry& PosedModelWrapper::objectSpaceGeometry() const {
+    return model->objectSpaceGeometry();
+}
+
+
+void PosedModelWrapper::getWorldSpaceGeometry(MeshAlg::Geometry& geometry) const {
+    model->getWorldSpaceGeometry(geometry);
+}
+
+
+void PosedModelWrapper::getObjectSpaceFaceNormals(Array<Vector3>& faceNormals, bool normalize) const {
+    model->getObjectSpaceFaceNormals(faceNormals, normalize);
+}
+
+
+void PosedModelWrapper::getWorldSpaceFaceNormals(Array<Vector3>& faceNormals, bool normalize) const {
+    model->getWorldSpaceFaceNormals(faceNormals, normalize);
+}
+
+const Array<Vector3>& PosedModelWrapper::objectSpaceFaceNormals(bool normalize) const {
+	return model->objectSpaceFaceNormals(normalize);
+}
+
+
+
+const Array<MeshAlg::Face>& PosedModelWrapper::faces() const {
+    return model->faces();
+}
+
+
+const Array<MeshAlg::Edge>& PosedModelWrapper::edges() const {
+    return model->edges();
+}
+
+
+const Array<MeshAlg::Vertex>& PosedModelWrapper::vertices() const {
+    return model->vertices();
+}
+
+
+const Array<Vector2>& PosedModelWrapper::texCoords() const {
+    return model->texCoords();
+}
+
+
+bool PosedModelWrapper::hasTexCoords() const {
+	return model->hasTexCoords();
+}
+
+
+const Array<MeshAlg::Face>& PosedModelWrapper::weldedFaces() const {
+    return model->weldedFaces();
+}
+
+
+const Array<MeshAlg::Edge>& PosedModelWrapper::weldedEdges() const {
+    return model->weldedEdges();
+}
+
+
+const Array<MeshAlg::Vertex>& PosedModelWrapper::weldedVertices() const {
+    return model->weldedVertices();
+}
+
+
+const Array<int>& PosedModelWrapper::triangleIndices() const {
+    return model->triangleIndices();
+}
+
+
+void PosedModelWrapper::getObjectSpaceBoundingSphere(Sphere& s) const {
+    model->getObjectSpaceBoundingSphere(s);
+}
+
+
+Sphere PosedModelWrapper::objectSpaceBoundingSphere() const {
+    return model->objectSpaceBoundingSphere();
+}
+
+
+void PosedModelWrapper::getWorldSpaceBoundingSphere(Sphere& s) const {
+    model->getWorldSpaceBoundingSphere(s);
+}
+
+
+Sphere PosedModelWrapper::worldSpaceBoundingSphere() const {
+    return model->worldSpaceBoundingSphere();
+}
+
+
+void PosedModelWrapper::getObjectSpaceBoundingBox(Box& box) const {
+    model->getObjectSpaceBoundingBox(box);
+}
+
+
+Box PosedModelWrapper::objectSpaceBoundingBox() const {
+    return model->objectSpaceBoundingBox();
+}
+
+
+void PosedModelWrapper::getWorldSpaceBoundingBox(Box& box) const {
+    model->getWorldSpaceBoundingBox(box);
+}
+
+
+Box PosedModelWrapper::worldSpaceBoundingBox() const {
+    return model->worldSpaceBoundingBox();
+}
+
+
+void PosedModelWrapper::render(class RenderDevice* renderDevice) const { 
+    model->render(renderDevice);
+}
+
+
+int PosedModelWrapper::numBoundaryEdges() const {
+    return model->numBoundaryEdges();
+}
+
+
+int PosedModelWrapper::numWeldedBoundaryEdges() const {
+    return model->numWeldedBoundaryEdges();
+}
+
+////////////////////////////////////////////////////
+
+static bool depthGreaterThan(const PosedModel2DRef& a, const PosedModel2DRef& b) {
+    return a->depth() > b->depth();
+}
+
+void PosedModel2D::sort(Array<PosedModel2DRef>& array) {
+    array.sort(depthGreaterThan);
+}
+
+}

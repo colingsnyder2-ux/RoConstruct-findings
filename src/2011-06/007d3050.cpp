@@ -1,35 +1,141 @@
 // from server: 100% by auto
-// roc 2011-06 007d3050  unit: RBX::ScoreHud  size: 61 bytes
-// Make this compile to the exact bytes below, then: roc check 2011-06 007d3050
-//
-// 007d3050  53                   push ebx
-// 007d3051  56                   push esi
-// 007d3052  57                   push edi
-// 007d3053  8b7c2410             mov edi, dword ptr [esp + 0x10]
-// 007d3057  807f3500             cmp byte ptr [edi + 0x35], 0
-// 007d305b  8bd9                 mov ebx, ecx
-// 007d305d  8bf7                 mov esi, edi
-// 007d305f  7526                 jne 0x7d3087
-// 007d3061  8b4608               mov eax, dword ptr [esi + 8]
-// 007d3064  50                   push eax
-// 007d3065  8bcb                 mov ecx, ebx
-// 007d3067  e8e4ffffff           call 0x7d3050
-// 007d306c  8b36                 mov esi, dword ptr [esi]
-// 007d306e  8d4f0c               lea ecx, [edi + 0xc]
-// 007d3071  e8aae0ffff           call 0x7d1120
-// 007d3076  57                   push edi
-// 007d3077  e8dc6f0300           call 0x80a058
-// 007d307c  83c404               add esp, 4
-// 007d307f  807e3500             cmp byte ptr [esi + 0x35], 0
-// 007d3083  8bfe                 mov edi, esi
-// 007d3085  74da                 je 0x7d3061
-// 007d3087  5f                   pop edi
-// 007d3088  5e                   pop esi
-// 007d3089  5b                   pop ebx
-// 007d308a  c20400               ret 4
-// library boost-1.34.1/libs\signals\src\named_slot_map.cpp (function ?_Erase@?$_Tree@V?$_Tmap_traits@Vstored_group@detail@signals@boost@@V?$list@Uconnection_slot_pair@detail@signals@boost@@V?$allocator@Uconnection_slot_pair@detail@signals@boost@@@std@@@std@@V?$function2@_NVstored_group@detail@signals@boost@@V1234@V?$allocator@Vfunction_base@boost@@@std@@@4@V?$allocator@U?$pair@$$CBVstored_group@detail@signals@boost@@V?$list@Uconnection_slot_pair@detail@signals@boost@@V?$allocator@Uconnection_slot_pair@detail@signals@boost@@@std@@@std@@@std@@@6@$0A@@std@@@std@@IAEXPAU_Node@?$_Tree_nod@V?$_Tmap_traits@Vstored_group@detail@signals@boost@@V?$list@Uconnection_slot_pair@detail@signals@boost@@V?$allocator@Uconnection_slot_pair@detail@signals@boost@@@std@@@std@@V?$function2@_NVstored_group@detail@signals@boost@@V1234@V?$allocator@Vfunction_base@boost@@@std@@@4@V?$allocator@U?$pair@$$CBVstored_group@detail@signals@boost@@V?$list@Uconnection_slot_pair@detail@signals@boost@@V?$allocator@Uconnection_slot_pair@detail@signals@boost@@@std@@@std@@@std@@@6@$0A@@std@@@2@@Z)
-
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD
 // roc-lib: boost-1.34.1 libs/signals/src/named_slot_map.cpp
+
+// Candidate translation unit (score above; library headers required).
+// Boost.Signals library
+
+// Copyright Douglas Gregor 2001-2004. Use, modification and
+// distribution is subject to the Boost Software License, Version
+// 1.0. (See accompanying file LICENSE_1_0.txt or copy at
+// http://www.boost.org/LICENSE_1_0.txt)
+
+// For more information, see http://www.boost.org
+
+#define BOOST_SIGNALS_SOURCE
+
+#include <boost/signals/detail/named_slot_map.hpp>
+#include <cassert>
+#include <map>
+#include <list>
+#include <typeinfo>
+
+namespace boost { namespace BOOST_SIGNALS_NAMESPACE { namespace detail {
+
+typedef std::list<connection_slot_pair> group_list;
+typedef group_list::iterator slot_pair_iterator;
+typedef std::map<stored_group, group_list, compare_type> slot_container_type;
+typedef slot_container_type::iterator group_iterator;
+typedef slot_container_type::const_iterator const_group_iterator;
+
+
+#if BOOST_WORKAROUND(_MSC_VER, <= 1400)
+void named_slot_map_iterator::decrement() { assert(false); }
+void named_slot_map_iterator::advance(difference_type) { assert(false); }
+#endif
+
+named_slot_map::named_slot_map(const compare_type& compare) : groups(compare)
+{
+  clear();
+}
+
+void named_slot_map::clear()
+{
+  groups.clear();
+  groups[stored_group(stored_group::sk_front)];
+  groups[stored_group(stored_group::sk_back)];
+  back = groups.end();
+  --back;
+}
+
+named_slot_map::iterator named_slot_map::begin()
+{
+  return named_slot_map::iterator(groups.begin(), groups.end());
+}
+
+named_slot_map::iterator named_slot_map::end()
+{
+  return named_slot_map::iterator(groups.end(), groups.end());
+}
+
+named_slot_map::iterator
+named_slot_map::insert(const stored_group& name, const connection& con,
+                       const any& slot, connect_position at)
+{
+  group_iterator group;
+  if (name.empty()) {
+    switch (at) {
+    case at_front: group = groups.begin(); break;
+    case at_back: group = back; break;
+    }
+  } else {
+    group = groups.find(name);
+    if (group == groups.end()) {
+      slot_container_type::value_type v(name, group_list());
+      group = groups.insert(v).first;
+    }
+  }
+  iterator it;
+  it.group = group;
+  it.last_group = groups.end();
+
+  switch (at) {
+  case at_back:
+    group->second.push_back(connection_slot_pair(con, slot));
+    it.slot_ = group->second.end();
+    it.slot_assigned = true;
+    --(it.slot_);
+    break;
+
+  case at_front:
+    group->second.push_front(connection_slot_pair(con, slot));
+    it.slot_ = group->second.begin();
+    it.slot_assigned = true;
+    break;
+  }
+  return it;
+}
+
+void named_slot_map::disconnect(const stored_group& name)
+{
+  group_iterator group = groups.find(name);
+  if (group != groups.end()) {
+    slot_pair_iterator i = group->second.begin();
+    while (i != group->second.end()) {
+      slot_pair_iterator next = i;
+      ++next;
+      i->first.disconnect();
+      i = next;
+    }
+    groups.erase(group);
+  }
+}
+
+void named_slot_map::erase(iterator pos)
+{
+  // Erase the slot
+  pos.slot_->first.disconnect();
+  pos.group->second.erase(pos.slot_);
+}
+
+void named_slot_map::remove_disconnected_slots()
+{
+  // Remove any disconnected slots
+  group_iterator g = groups.begin();
+  while (g != groups.end()) {
+    slot_pair_iterator s = g->second.begin();
+    while (s != g->second.end()) {
+      if (s->first.connected()) ++s;
+      else g->second.erase(s++);
+    }
+
+    // Clear out empty groups
+    if (empty(g)) groups.erase(g++);
+    else ++g;
+  }
+}
+
+
+} } }

@@ -1,29 +1,40 @@
-// roc 2009-06 004097e0  unit: VAuthoringSettings::?$FactoryProduct  size: 45 bytes
-// Make this compile to the exact bytes below, then: roc check 2009-06 004097e0
-//
-// 004097e0  8b442404             mov eax, dword ptr [esp + 4]
-// 004097e4  56                   push esi
-// 004097e5  8bf1                 mov esi, ecx
-// 004097e7  8b08                 mov ecx, dword ptr [eax]
-// 004097e9  890e                 mov dword ptr [esi], ecx
-// 004097eb  8b4804               mov ecx, dword ptr [eax + 4]
-// 004097ee  85c9                 test ecx, ecx
-// 004097f0  7410                 je 0x409802
-// 004097f2  8b11                 mov edx, dword ptr [ecx]
-// 004097f4  8b4208               mov eax, dword ptr [edx + 8]
-// 004097f7  ffd0                 call eax
-// 004097f9  894604               mov dword ptr [esi + 4], eax
-// 004097fc  8bc6                 mov eax, esi
-// 004097fe  5e                   pop esi
-// 004097ff  c20400               ret 4
-// 00409802  33c0                 xor eax, eax
-// 00409804  894604               mov dword ptr [esi + 4], eax
-// 00409807  8bc6                 mov eax, esi
-// 00409809  5e                   pop esi
-// 0040980a  c20400               ret 4
-// library openrbx-client/App\reflection\type.cpp (function ??0Value@Reflection@RBX@@QAE@ABV012@@Z)
-
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
 // roc-lib: openrbx-client App/reflection/type.cpp
+
+// Candidate translation unit (score above; library headers required).
+#include "reflection/type.h"
+
+namespace RBX {
+namespace Reflection {
+
+// FUNCTION: WEBSERVICE 0x100711b0
+template <>
+const Type& Type::singleton<void>()
+{
+	static Type type("void", typeid(void));
+
+	return type;
+}
+
+// FUNCTION: WEBSERVICE 0x10071220
+Value::Value() : _type(&Type::singleton<void>())
+{
+}
+
+// FUNCTION: WEBSERVICE 0x10071260
+void SignatureDescriptor::addArgument(const Name& name, const Type& type, const Value& defaultValue)
+{
+	Item i = {&name, &type, defaultValue};
+
+	arguments.push_back(i);
+}
+
+// FUNCTION: WEBSERVICE 0x10071310
+SignatureDescriptor::SignatureDescriptor() : resultType(&Type::singleton<void>())
+{
+}
+
+} // namespace Reflection
+} // namespace RBX

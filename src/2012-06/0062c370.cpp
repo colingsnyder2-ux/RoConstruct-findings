@@ -1,18 +1,90 @@
 // from server: 100% by auto
-// roc 2012-06 0062c370  unit: G3D::Sphere  size: 22 bytes
-// Make this compile to the exact bytes below, then: roc check 2012-06 0062c370
-//
-// 0062c370  8b442404             mov eax, dword ptr [esp + 4]
-// 0062c374  50                   push eax
-// 0062c375  e8a6ffffff           call 0x62c320
-// 0062c37a  33c9                 xor ecx, ecx
-// 0062c37c  84c0                 test al, al
-// 0062c37e  0f94c1               sete cl
-// 0062c381  8ac1                 mov al, cl
-// 0062c383  c20400               ret 4
-// library g3d-6.09/G3Dcpp\GLight.cpp (function ??9GLight@G3D@@QBE_NABV01@@Z)
-
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD
 // roc-lib: g3d-6.09 G3Dcpp/GLight.cpp
+
+// Candidate translation unit (score above; library headers required).
+/**
+  @file GLight.cpp
+
+  @maintainer Morgan McGuire, matrix@graphics3d.com
+
+  @created 2003-11-12
+  @edited  2005-01-10
+*/
+
+#include "G3D/GLight.h"
+
+namespace G3D {
+
+GLight::GLight() {
+    position        = Vector4(0, 0, 0, 0);
+    color           = Color3::white();
+    spotDirection   = Vector3(0, 0, -1);
+    spotCutoff      = 180;
+    enabled         = false;
+    attenuation[0]  = 1.0;
+    attenuation[1]  = 0.0;
+    attenuation[2]  = 0.0;
+    specular        = true;
+    diffuse         = true;
+}
+
+
+GLight GLight::directional(const Vector3& toLight, const Color3& color, bool s, bool d) {
+    GLight L;
+    L.position = Vector4(toLight.direction(), 0);
+    L.color    = color;
+    L.specular = s;
+    L.diffuse  = d;
+    return L;
+}
+
+
+GLight GLight::point(const Vector3& pos, const Color3& color, double constAtt, double linAtt, double quadAtt, bool s, bool d) {
+    GLight L;
+    L.position = Vector4(pos, 1);
+    L.color    = color;
+    L.attenuation[0] = constAtt;
+    L.attenuation[1] = linAtt;
+    L.attenuation[2] = quadAtt;
+    L.specular       = s;
+    L.diffuse        = d;
+    return L;
+}
+
+
+GLight GLight::spot(const Vector3& pos, const Vector3& pointDirection, double cutOffAngleDegrees, const Color3& color, double constAtt, double linAtt, double quadAtt, bool s, bool d) {
+    GLight L;
+    L.position = Vector4(pos, 1);
+    L.spotDirection = pointDirection;
+    L.spotCutoff = cutOffAngleDegrees;
+    L.color    = color;
+    L.attenuation[0] = constAtt;
+    L.attenuation[1] = linAtt;
+    L.attenuation[2] = quadAtt;
+    L.specular       = s;
+    L.diffuse        = d;
+    return L;
+}
+
+
+bool GLight::operator==(const GLight& other) const {
+    return (position == other.position) && 
+        (spotDirection == other.spotDirection) &&
+        (spotCutoff == other.spotCutoff) &&
+        (attenuation[0] == other.attenuation[0]) &&
+        (attenuation[1] == other.attenuation[1]) &&
+        (attenuation[2] == other.attenuation[2]) &&
+        (color == other.color) &&
+        (enabled == other.enabled) &&
+        (specular == other.specular) &&
+        (diffuse == other.diffuse);
+}
+
+bool GLight::operator!=(const GLight& other) const {
+    return !(*this == other);
+}
+
+}

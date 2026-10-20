@@ -1,49 +1,161 @@
-// roc 2007-03 004e38c0  unit: seg_004e0000  size: 103 bytes
-// Make this compile to the exact bytes below, then: roc check 2007-03 004e38c0
-//
-// 004e38c0  83ec10               sub esp, 0x10
-// 004e38c3  53                   push ebx
-// 004e38c4  55                   push ebp
-// 004e38c5  8b6c2420             mov ebp, dword ptr [esp + 0x20]
-// 004e38c9  56                   push esi
-// 004e38ca  57                   push edi
-// 004e38cb  55                   push ebp
-// 004e38cc  8bf1                 mov esi, ecx
-// 004e38ce  e81df6ffff           call 0x4e2ef0
-// 004e38d3  85f6                 test esi, esi
-// 004e38d5  8bd8                 mov ebx, eax
-// 004e38d7  895c2414             mov dword ptr [esp + 0x14], ebx
-// 004e38db  7506                 jne 0x4e38e3
-// 004e38dd  ff1544e97700         call dword ptr [0x77e944]
-// 004e38e3  8b7e04               mov edi, dword ptr [esi + 4]
-// 004e38e6  3bdf                 cmp ebx, edi
-// 004e38e8  89742410             mov dword ptr [esp + 0x10], esi
-// 004e38ec  7415                 je 0x4e3903
-// 004e38ee  83c30c               add ebx, 0xc
-// 004e38f1  53                   push ebx
-// 004e38f2  8bcd                 mov ecx, ebp
-// 004e38f4  e897f5ffff           call 0x4e2e90
-// 004e38f9  84c0                 test al, al
-// 004e38fb  7506                 jne 0x4e3903
-// 004e38fd  8d4c2410             lea ecx, [esp + 0x10]
-// 004e3901  eb0c                 jmp 0x4e390f
-// 004e3903  897c241c             mov dword ptr [esp + 0x1c], edi
-// 004e3907  89742418             mov dword ptr [esp + 0x18], esi
-// 004e390b  8d4c2418             lea ecx, [esp + 0x18]
-// 004e390f  8b11                 mov edx, dword ptr [ecx]
-// 004e3911  8b442424             mov eax, dword ptr [esp + 0x24]
-// 004e3915  8b4904               mov ecx, dword ptr [ecx + 4]
-// 004e3918  5f                   pop edi
-// 004e3919  5e                   pop esi
-// 004e391a  5d                   pop ebp
-// 004e391b  8910                 mov dword ptr [eax], edx
-// 004e391d  894804               mov dword ptr [eax + 4], ecx
-// 004e3920  5b                   pop ebx
-// 004e3921  83c410               add esp, 0x10
-// 004e3924  c20800               ret 8
-// library rbxgs-render/AggregatingSceneManager.cpp (function ?find@?$_Tree@V?$_Tmap_traits@UBucketKey@AggregatingSceneManager@Render@RBX@@V?$ReferenceCountedPointer@VBucket@AggregatingSceneManager@Render@RBX@@@G3D@@U?$less@UBucketKey@AggregatingSceneManager@Render@RBX@@@std@@V?$allocator@U?$pair@$$CBUBucketKey@AggregatingSceneManager@Render@RBX@@V?$ReferenceCountedPointer@VBucket@AggregatingSceneManager@Render@RBX@@@G3D@@@std@@@8@$0A@@std@@@std@@QAE?AViterator@12@ABUBucketKey@AggregatingSceneManager@Render@RBX@@@Z)
-
 // roc-lang: cpp
 // roc-cl: 50727
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
 // roc-lib: rbxgs-render AggregatingSceneManager.cpp
+
+// Candidate translation unit (score above; library headers required).
+#include "RenderLib/AggregatingSceneManager.h"
+
+namespace RBX
+{
+	namespace Render
+	{
+		AggregatingSceneManager::AggregatingSceneManager(RenderScene* renderScene)
+			: SceneManager(renderScene)
+		{
+		}
+
+		AggregatingSceneManager::~AggregatingSceneManager() {}
+
+		void AggregatingSceneManager::addModel(const G3D::ReferenceCountedPointer<Chunk>& chunk)
+		{
+			addToScene(chunk);
+		}
+
+		void AggregatingSceneManager::removeModel(const G3D::ReferenceCountedPointer<Chunk>& chunk)
+		{
+			invalidSleepingModels.erase(chunk);
+			invalidMovingModels.erase(chunk);
+
+			G3D::ReferenceCountedPointer<AggregateChunk> aggregate = chunk->aggregate.createStrongPtr();
+			if (aggregate.notNull())
+				deconstructAggregate(aggregate);
+
+			removeFromScene(chunk);
+			dequeueSleepingChunk(chunk);
+		}
+
+		void AggregatingSceneManager::setSleeping(const G3D::ReferenceCountedPointer<Chunk>& chunk, bool sleeping)
+		{
+			if (sleeping)
+			{
+				bool erased = invalidMovingModels.erase(chunk) == 1;
+
+				if (erased)
+					invalidSleepingModels.insert(chunk);
+
+				queueSleepingChunk(chunk);
+			}
+			else
+			{
+				bool erased = invalidSleepingModels.erase(chunk) == 1;
+
+				if (erased)
+					invalidMovingModels.insert(chunk);
+
+				G3D::ReferenceCountedPointer<AggregateChunk> aggregate = chunk->aggregate.createStrongPtr();
+				if (aggregate.notNull())
+					deconstructAggregate(aggregate);
+
+				dequeueSleepingChunk(chunk);
+			}
+		}
+
+		void AggregatingSceneManager::invalidateModel(const G3D::ReferenceCountedPointer<Chunk>& chunk, bool isSleeping)
+		{
+			if (isSleeping)
+				invalidSleepingModels.insert(chunk);
+			else
+				invalidMovingModels.insert(chunk);
+		}
+
+		void AggregatingSceneManager::dequeueSleepingChunk(const G3D::ReferenceCountedPointer<Chunk>& chunk)
+		{
+			std::map<BucketKey, G3D::ReferenceCountedPointer<Bucket>>::iterator iter = buckets.begin();
+			std::map<BucketKey, G3D::ReferenceCountedPointer<Bucket>>::iterator end = buckets.end();
+
+			for (; iter != end; iter++)
+			{
+				if (iter->second->dequeueSleepingChunk(chunk))
+					break;
+			}
+		}
+
+		void AggregatingSceneManager::clear()
+		{
+			invalidSleepingModels.clear();
+			invalidMovingModels.clear();
+
+			std::map<BucketKey, G3D::ReferenceCountedPointer<Bucket>>::iterator iter = buckets.begin();
+			std::map<BucketKey, G3D::ReferenceCountedPointer<Bucket>>::iterator end = buckets.end();
+
+			for (; iter != end; iter++)
+			{
+				iter->second->clear();
+			}
+
+			clearScene();
+		}
+
+		bool AggregatingSceneManager::Bucket::dequeueSleepingChunk(const G3D::ReferenceCountedPointer<Chunk>& chunk)
+		{
+			std::vector<G3D::ReferenceCountedPointer<Chunk>>::iterator found = std::find(queue.begin(), queue.end(), chunk);
+
+			if (found != queue.end())
+			{
+				queue.erase(found);
+				return true;
+			}
+			else
+			{
+				return false;
+			}
+		}
+
+		void AggregatingSceneManager::queueSleepingChunk(const G3D::ReferenceCountedPointer<Chunk>& chunk)
+		{
+			G3D::ReferenceCountedPointer<Bucket> queue;
+
+			{
+				BucketKey key(chunk);
+
+				std::map<BucketKey, G3D::ReferenceCountedPointer<Bucket>>::iterator iter = buckets.find(key);
+
+				if (iter == buckets.end())
+				{
+					queue = new Bucket;
+					buckets[key] = queue;
+				}
+				else
+				{
+					queue = iter->second;
+				}
+			}
+
+			queue->addToQueue(chunk);
+		}
+
+		bool AggregatingSceneManager::BucketKey::operator<(const AggregatingSceneManager::BucketKey& that) const
+		{
+			if (this->material < that.material)
+				return true;
+			if (this->material > that.material)
+				return false;
+
+			if (this->castsShadows < that.castsShadows)
+				return true;
+			if (this->castsShadows > that.castsShadows)
+				return false;
+
+			if (this->polygonOffset < that.polygonOffset)
+				return true;
+			if (this->polygonOffset > that.polygonOffset)
+				return false;
+
+			if (this->cullable < that.cullable)
+				return true;
+			else
+				return false;
+		}
+	}
+}

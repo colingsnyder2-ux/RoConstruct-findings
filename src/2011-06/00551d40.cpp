@@ -1,34 +1,210 @@
 // from server: 100% by auto
-// roc 2011-06 00551d40  unit: G3D::Sphere  size: 92 bytes
-// Make this compile to the exact bytes below, then: roc check 2011-06 00551d40
-//
-// 00551d40  8b442404             mov eax, dword ptr [esp + 4]
-// 00551d44  f30f104104           movss xmm0, dword ptr [ecx + 4]
-// 00551d49  f30f5c00             subss xmm0, dword ptr [eax]
-// 00551d4d  f30f10510c           movss xmm2, dword ptr [ecx + 0xc]
-// 00551d52  f30f5c5008           subss xmm2, dword ptr [eax + 8]
-// 00551d57  f30f104908           movss xmm1, dword ptr [ecx + 8]
-// 00551d5c  f30f5c4804           subss xmm1, dword ptr [eax + 4]
-// 00551d61  f30f105910           movss xmm3, dword ptr [ecx + 0x10]
-// 00551d66  0f28e0               movaps xmm4, xmm0
-// 00551d69  f30f59e0             mulss xmm4, xmm0
-// 00551d6d  0f28c2               movaps xmm0, xmm2
-// 00551d70  f30f59c2             mulss xmm0, xmm2
-// 00551d74  f30f58e0             addss xmm4, xmm0
-// 00551d78  0f28c1               movaps xmm0, xmm1
-// 00551d7b  f30f59c1             mulss xmm0, xmm1
-// 00551d7f  f30f58e0             addss xmm4, xmm0
-// 00551d83  0f28c3               movaps xmm0, xmm3
-// 00551d86  f30f59c3             mulss xmm0, xmm3
-// 00551d8a  0f2fc4               comiss xmm0, xmm4
-// 00551d8d  7208                 jb 0x551d97
-// 00551d8f  b801000000           mov eax, 1
-// 00551d94  c20400               ret 4
-// 00551d97  33c0                 xor eax, eax
-// 00551d99  c20400               ret 4
-// library rbx2016-g3d/Sphere.cpp (function ?contains@Sphere@G3D@@QBE_NABVVector3@2@@Z)
-
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD /arch:SSE2 /fp:fast
 // roc-lib: rbx2016-g3d Sphere.cpp
+
+// Candidate translation unit (score above; library headers required).
+/**
+ @file Sphere.cpp
+ 
+ Sphere class
+ 
+ @maintainer Morgan McGuire, http://graphics.cs.williams.edu
+ 
+ @created 2001-04-17
+ @edited  2009-01-20
+ */
+
+#include "G3D/platform.h"
+#include "G3D/Sphere.h"
+#include "G3D/AABox.h"
+#include "G3D/Plane.h"
+
+namespace G3D {
+
+int32 Sphere::dummy;
+
+std::string Sphere::toString() const {
+    return format("Sphere(<%g, %g, %g>, %g)", 
+                  center.x, center.y, center.z, radius);
+}
+
+
+bool Sphere::contains(const Vector3& point) const {
+    float distance = (center - point).squaredMagnitude();
+    return distance <= square(radius);
+}
+
+
+bool Sphere::contains(const Sphere& other) const {
+    float distance = (center - other.center).squaredMagnitude();
+    return (radius >= other.radius) && (distance <= square(radius - other.radius));
+}
+
+
+bool Sphere::intersects(const Sphere& other) const {
+    return (other.center - center).length() <= (radius + other.radius);
+}
+
+
+void Sphere::merge(const Sphere& other) {
+    if (other.contains(*this)) {
+        *this = other;
+    } else if (! contains(other)) {
+        // The farthest distance is along the axis between the centers, which
+        // must not be colocated since neither contains the other.
+        Vector3 toMe = center - other.center;
+        // Get a point on the axis from each
+        toMe = toMe.direction();
+        const Vector3& A = center + toMe * radius;
+        const Vector3& B = other.center - toMe * other.radius;
+
+        // Now just bound the A->B segment
+        center = (A + B) * 0.5f;
+        radius = (A - B).length();
+    }
+    // (if this contains other, we're done)
+}
+
+
+bool Sphere::culledBy(
+    const Array<Plane>&		plane,
+    int&				    cullingPlaneIndex,
+    const uint32			inMask,
+    uint32&					outMask) const {
+    
+    return culledBy(plane.getCArray(), plane.size(), cullingPlaneIndex, inMask, outMask);
+}
+    
+
+bool Sphere::culledBy(
+                      const Array<Plane>&		plane,
+                      int&				    cullingPlaneIndex,
+                      const uint32			inMask) const {
+    
+    return culledBy(plane.getCArray(), plane.size(), cullingPlaneIndex, inMask);
+}
+
+
+bool Sphere::culledBy(
+    const class Plane*  plane,
+    int                 numPlanes,
+    int&				cullingPlane,
+    const uint32		_inMask,
+    uint32&             childMask) const {
+
+    if (radius == finf()) {
+        // No plane can cull the infinite box
+        return false;
+    }
+
+	uint32 inMask = _inMask;
+	debugAssert(numPlanes < 31);
+
+    childMask = 0;
+
+    // See if there is one plane for which all of the
+	// vertices are in the negative half space.
+    for (int p = 0; p < numPlanes; p++) {
+
+		// Only test planes that are not masked
+		if ((inMask & 1) != 0) {
+		
+            bool culledLow = ! plane[p].halfSpaceContainsFinite(center + plane[p].normal() * radius);
+            bool culledHigh = ! plane[p].halfSpaceContainsFinite(center - plane[p].normal() * radius);
+
+			if (culledLow) {
+				// Plane p culled the sphere
+				cullingPlane = p;
+
+                // The caller should not recurse into the children,
+                // since the parent is culled.  If they do recurse,
+                // make them only test against this one plane, which
+                // will immediately cull the volume.
+                childMask = 1 << p;
+				return true;
+
+            } else if (culledHigh) {
+                // The bounding volume straddled the plane; we have
+                // to keep testing against this plane
+                childMask |= (1 << p);
+            }
+		}
+
+        // Move on to the next bit.
+		inMask = inMask >> 1;
+    }
+
+    // None of the planes could cull this box
+	cullingPlane = -1;
+    return false;
+}
+
+
+bool Sphere::culledBy(
+    const class Plane*  plane,
+    int                 numPlanes,
+	int&				cullingPlane,
+	const uint32		_inMask) const {
+
+	uint32 inMask = _inMask;
+	debugAssert(numPlanes < 31);
+
+    // See if there is one plane for which all of the
+	// vertices are in the negative half space.
+    for (int p = 0; p < numPlanes; p++) {
+
+		// Only test planes that are not masked
+		if ((inMask & 1) != 0) {
+			bool culled = ! plane[p].halfSpaceContains(center + plane[p].normal() * radius);
+			if (culled) {
+				// Plane p culled the sphere
+				cullingPlane = p;
+				return true;
+            }
+		}
+
+        // Move on to the next bit.
+		inMask = inMask >> 1;
+    }
+
+    // None of the planes could cull this box
+	cullingPlane = -1;
+    return false;
+}
+
+
+Vector3 Sphere::randomSurfacePoint() const {
+    return Vector3::random() * radius + center;
+}
+
+
+Vector3 Sphere::randomInteriorPoint() const {
+    Vector3 result;
+    do {
+        result = Vector3(uniformRandom(-1, 1), 
+                         uniformRandom(-1, 1), 
+                         uniformRandom(-1, 1));
+    } while (result.squaredMagnitude() >= 1.0f);
+
+    return result * radius + center;
+}
+
+
+float Sphere::volume() const {
+    return (float)pi() * (4.0f / 3.0f) * powf((float)radius, 3.0f);
+}
+
+
+float Sphere::area() const {
+    return (float)pi() * 4.0f * powf((float)radius, 2.0f);
+}
+
+
+void Sphere::getBounds(AABox& out) const {
+    Vector3 extent(radius, radius, radius);
+    out = AABox(center - extent, center + extent);
+}
+
+} // namespace

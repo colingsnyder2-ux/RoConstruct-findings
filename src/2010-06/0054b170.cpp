@@ -1,41 +1,317 @@
-// roc 2010-06 0054b170  unit: RBX::AggregateChunk  size: 61 bytes
-// Make this compile to the exact bytes below, then: roc check 2010-06 0054b170
-//
-// 0054b170  53                   push ebx
-// 0054b171  8b5c2408             mov ebx, dword ptr [esp + 8]
-// 0054b175  56                   push esi
-// 0054b176  57                   push edi
-// 0054b177  8b7c2414             mov edi, dword ptr [esp + 0x14]
-// 0054b17b  2bfb                 sub edi, ebx
-// 0054b17d  c1ff02               sar edi, 2
-// 0054b180  8bc7                 mov eax, edi
-// 0054b182  99                   cdq 
-// 0054b183  2bc2                 sub eax, edx
-// 0054b185  8bf0                 mov esi, eax
-// 0054b187  d1fe                 sar esi, 1
-// 0054b189  85f6                 test esi, esi
-// 0054b18b  7e1c                 jle 0x54b1a9
-// 0054b18d  55                   push ebp
-// 0054b18e  8b6c241c             mov ebp, dword ptr [esp + 0x1c]
-// 0054b192  8b44b3fc             mov eax, dword ptr [ebx + esi*4 - 4]
-// 0054b196  4e                   dec esi
-// 0054b197  55                   push ebp
-// 0054b198  50                   push eax
-// 0054b199  57                   push edi
-// 0054b19a  56                   push esi
-// 0054b19b  53                   push ebx
-// 0054b19c  e8affeffff           call 0x54b050
-// 0054b1a1  83c414               add esp, 0x14
-// 0054b1a4  85f6                 test esi, esi
-// 0054b1a6  7fea                 jg 0x54b192
-// 0054b1a8  5d                   pop ebp
-// 0054b1a9  5f                   pop edi
-// 0054b1aa  5e                   pop esi
-// 0054b1ab  5b                   pop ebx
-// 0054b1ac  c3                   ret 
-// library rbxgs/v8world\Assembly.cpp (function ??$_Make_heap@PAPAVMotorJoint@RBX@@HPAV12@P6A_NPBV12@0@Z@std@@YAXPAPAVMotorJoint@RBX@@0P6A_NPBV12@1@ZPAH0@Z)
-
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
 // roc-lib: rbxgs v8world/Assembly.cpp
+
+// Candidate translation unit (score above; library headers required).
+#include "v8world/Assembly.h"
+#include "v8world/Primitive.h"
+#include "v8world/Clump.h"
+#include "v8world/Edge.h"
+#include "v8world/MotorJoint.h"
+#include "v8world/IMoving.h"
+
+namespace RBX
+{
+	// TODO: check which of these are meant for the header
+
+	void Assembly::putInKernel(Kernel* _kernel)
+	{
+		IPipelined::putInKernel(_kernel);
+		rootClump->putInKernel(_kernel);
+	}
+
+	void Assembly::removeFromKernel()
+	{
+		RBXASSERT(getKernel());
+		rootClump->removeFromKernel(getKernel());
+		IPipelined::removeFromKernel();
+	}
+
+	Primitive* Assembly::getMainPrimitive() const
+	{
+		return rootClump->getRootPrimitive();
+	}
+
+	bool Assembly::getAnchored() const
+	{
+		return rootClump->getAnchored();
+	}
+
+	int Assembly::getDof() const
+	{
+		return getAnchored() ? 0 : 6;
+	}
+
+	Sim::AssemblyState Assembly::getSleepStatus()
+	{
+		return rootClump->getSleepStatus();
+	}
+
+	bool Assembly::moving()
+	{
+		return !getAnchored() && getSleepStatus() == Sim::AWAKE;
+	}
+
+	int Assembly::getSleepCount() const
+	{
+		return sleepCount;
+	}
+
+	void Assembly::setSleepCount(int count)
+	{
+		sleepCount = count;
+	}
+
+	void Assembly::incrementSleepCount()
+	{
+		++sleepCount;
+	}
+
+	Mechanism* Assembly::getMechanism()
+	{
+		return mechanism;
+	}
+
+	bool Assembly::calcShouldSleep()
+	{
+		return rootClump->calcShouldSleep();
+	}
+
+	bool Assembly::okNeighborSleep()
+	{
+		return rootClump->okNeighborSleep();
+	}
+
+	bool Assembly::forceNeighborAwake()
+	{
+		return rootClump->forceNeighborAwake();
+	}
+
+	void Assembly::setSleepStatus(Sim::AssemblyState _set)
+	{
+		rootClump->setSleepStatus(_set);
+	}
+
+	void Assembly::onPrimitiveCanSleepChanged(Primitive* p)
+	{
+		rootClump->onPrimitiveCanSleepChanged(p);
+	}
+
+	Assembly* Assembly::otherAssembly(Edge* edge) const
+	{
+		Assembly* a1 = edge->getPrimitive(0)->getAssembly();
+		Assembly* a2 = edge->getPrimitive(1)->getAssembly();
+		return a1 != this ? a1 : a2;
+	}
+
+	size_t Assembly::numMotors() const
+	{
+		return motors.size();
+	}
+
+	bool Assembly::getCanSleep()
+	{
+		return !Primitive::disableSleep && rootClump->getCanSleep() && Assembly::numMotors() == 0;
+	}
+
+	Primitive* Assembly::PrimIterator::operator*() const
+	{
+		return *primIterator;
+	}
+
+	Assembly::PrimIterator Assembly::PrimIterator::begin(const Assembly* assembly)
+	{
+		const std::set<Clump*>& clumps = assembly->getClumps();
+		std::set<Clump*>::const_iterator start = clumps.begin();
+		RBXASSERT(start != clumps.end());
+
+		return PrimIterator(assembly, start, (*start)->clumpPrimBegin());
+	}
+
+	Assembly::PrimIterator Assembly::PrimIterator::end(const Assembly* assembly)
+	{
+		const std::set<Clump*>& clumps = assembly->getClumps();
+		std::set<Clump*>::const_iterator begin = clumps.begin(); // unused, although iterator check for it was not discarded
+		std::set<Clump*>::const_iterator end = --clumps.end();
+
+		return PrimIterator(assembly, end, (*end)->clumpPrimEnd());
+	}
+
+	void Assembly::stepUi(int uiStepId)
+	{
+		typedef std::vector<MotorJoint*>::const_iterator Iterator;
+
+		for (Iterator iter = motors.begin(); iter != motors.end(); iter++)
+		{
+			(*iter)->stepUi(uiStepId);
+		}
+	}
+
+	Assembly::PrimIterator& Assembly::PrimIterator::operator++()
+	{
+		RBXASSERT(clumpIterator != assembly->getClumps().end());
+
+		Clump* clump = *clumpIterator;
+		primIterator++;
+
+		if (primIterator == clump->clumpPrimEnd())
+		{
+			clumpIterator++;
+			if (clumpIterator == assembly->getClumps().end())
+			{
+				*this = end(assembly);
+			}
+			else
+			{
+				primIterator = (*clumpIterator)->clumpPrimBegin();
+				RBXASSERT(primIterator != (*clumpIterator)->clumpPrimEnd());
+			}
+		}
+
+		return *this;
+	}
+
+	void Assembly::notifyMoved()
+	{
+		const Assembly::PrimIterator itEnd = Assembly::PrimIterator::end(this);
+		Assembly::PrimIterator it = Assembly::PrimIterator::begin(this);
+
+		// TODO: is operator!= right?
+		for (; it != itEnd; ++it)
+		{
+			(*it)->getOwner()->notifyMoved();
+		}
+	}
+
+	void Assembly::removeMotor(MotorJoint* m)
+	{
+		typedef std::vector<MotorJoint*>::iterator Iterator;
+		Iterator iter = std::find(motors.begin(), motors.end(), m);
+
+		RBXASSERT(iter != motors.end());
+		motors.erase(iter);
+	}
+
+	bool Assembly::containsExternalEdge(Edge* e)
+	{
+		return externalEdges.find(e) != externalEdges.end();
+	}
+
+	bool Assembly::containsInternalEdge(Edge* e)
+	{
+		return internalEdges.find(e) != internalEdges.end();
+	}
+
+	void Assembly::insertClump(Clump* c)
+	{
+		bool success = clumps.insert(c).second;
+		RBXASSERT(success);
+		c->setAssembly(this);
+	}
+
+	void Assembly::addExternalEdge(Edge* e)
+	{
+		bool success = externalEdges.insert(e).second;
+		RBXASSERT(success);
+	}
+
+	void Assembly::addInternalEdge(Edge* e)
+	{
+		bool success = internalEdges.insert(e).second;
+		RBXASSERT(success);
+	}
+
+	void Assembly::addInconsistentMotor(MotorJoint* m)
+	{
+		bool success = inconsistentMotors.insert(m).second;
+		RBXASSERT(success);
+	}
+
+	Assembly::~Assembly()
+	{
+		RBXASSERT(!mechanism);
+		RBXASSERT(clumps.empty());
+		RBXASSERT(motors.empty());
+		RBXASSERT(inconsistentMotors.empty());
+		RBXASSERT(externalEdges.empty());
+		RBXASSERT(internalEdges.empty());
+	}
+
+	void Assembly::removeClump(Clump* c)
+	{
+		if (c == rootClump)
+			rootClump = NULL;
+		c->setAssembly(NULL);
+		c->getRootPrimitive()->getBody()->setParent(NULL);
+
+		size_t removed = clumps.erase(c);
+		RBXASSERT(removed == 1);
+	}
+
+	void Assembly::removeExternalEdge(Edge* e)
+	{
+		size_t removed = externalEdges.erase(e);
+		RBXASSERT(removed == 1);
+	}
+
+	void Assembly::removeInternalEdge(Edge* e)
+	{
+		size_t removed = internalEdges.erase(e);
+		RBXASSERT(removed == 1);
+	}
+
+	void Assembly::removeInconsistentMotor(MotorJoint* m)
+	{
+		size_t removed = inconsistentMotors.erase(m);
+		RBXASSERT(removed == 1);
+	}
+
+	Assembly::Assembly(Clump* root)
+		: IPipelined(),
+		  rootClump(root),
+		  clumps(),
+		  internalEdges(),
+		  externalEdges(),
+		  motors(),
+		  inconsistentMotors(),
+		  mechanism(NULL),
+		  sleepCount(0)
+	{
+		insertClump(root);
+	}
+
+	// TODO: check if this matches
+	bool lessMotorHash(const MotorJoint* m0, const MotorJoint* m1)
+	{
+		return m0->hashCode() < m1->hashCode();
+	}
+
+	const MotorJoint* Assembly::getMotorConst(unsigned int motorId) const
+	{
+		if (motorId >= motors.size())
+			return NULL;
+
+		std::sort(motors.begin(), motors.end(), lessMotorHash);
+		return motors[motorId];
+	}
+
+	MotorJoint* Assembly::getMotor(unsigned int motorId)
+	{
+		return const_cast<MotorJoint*>(getMotorConst(motorId));
+	}
+
+	void Assembly::addClump(Clump* c, MotorJoint* m)
+	{
+		insertClump(c);
+
+		Primitive* p = (m->getPrimitive(0)->getClump() == c) ? m->getPrimitive(0) : m->getPrimitive(1);
+		Primitive* other = m->otherPrimitive(p);
+
+		RBXASSERT(clumps.find(other->getClump()) != clumps.end());
+
+		c->getRootPrimitive()->getBody()->setParent(other->getBody());
+		RBXASSERT(std::find(motors.begin(), motors.end(), m) == motors.end());
+		motors.push_back(m);
+	}
+}

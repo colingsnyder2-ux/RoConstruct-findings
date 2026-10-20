@@ -1,42 +1,150 @@
-// roc 2009-12 0044bb70  unit: CRobloxApp  size: 80 bytes
-// Make this compile to the exact bytes below, then: roc check 2009-12 0044bb70
-//
-// 0044bb70  56                   push esi
-// 0044bb71  8bf1                 mov esi, ecx
-// 0044bb73  8b06                 mov eax, dword ptr [esi]
-// 0044bb75  57                   push edi
-// 0044bb76  8b7c240c             mov edi, dword ptr [esp + 0xc]
-// 0044bb7a  3bf8                 cmp edi, eax
-// 0044bb7c  743d                 je 0x44bbbb
-// 0044bb7e  85c0                 test eax, eax
-// 0044bb80  7429                 je 0x44bbab
-// 0044bb82  83c004               add eax, 4
-// 0044bb85  50                   push eax
-// 0044bb86  ff1508b29800         call dword ptr [0x98b208]
-// 0044bb8c  85c0                 test eax, eax
-// 0044bb8e  7515                 jne 0x44bba5
-// 0044bb90  8b0e                 mov ecx, dword ptr [esi]
-// 0044bb92  e889f4ffff           call 0x44b020
-// 0044bb97  8b0e                 mov ecx, dword ptr [esi]
-// 0044bb99  85c9                 test ecx, ecx
-// 0044bb9b  7408                 je 0x44bba5
-// 0044bb9d  8b01                 mov eax, dword ptr [ecx]
-// 0044bb9f  8b10                 mov edx, dword ptr [eax]
-// 0044bba1  6a01                 push 1
-// 0044bba3  ffd2                 call edx
-// 0044bba5  c70600000000         mov dword ptr [esi], 0
-// 0044bbab  85ff                 test edi, edi
-// 0044bbad  740c                 je 0x44bbbb
-// 0044bbaf  893e                 mov dword ptr [esi], edi
-// 0044bbb1  83c704               add edi, 4
-// 0044bbb4  57                   push edi
-// 0044bbb5  ff150cb29800         call dword ptr [0x98b20c]
-// 0044bbbb  5f                   pop edi
-// 0044bbbc  5e                   pop esi
-// 0044bbbd  c20400               ret 4
-// library rbxgs-appdraw/AdornG3D.cpp (function ?setPointer@?$ReferenceCountedPointer@VTexture@G3D@@@G3D@@AAEXPAVTexture@2@@Z)
-
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
 // roc-lib: rbxgs-appdraw AdornG3D.cpp
+
+// Candidate translation unit (score above; library headers required).
+#include "AppDraw/AdornG3D.h"
+#include "AppDraw/DrawPrimitives.h"
+#include "AppDraw/Fonts.h"
+#include "GLG3D/Draw.h"
+#include "GLG3D/Texture.h"
+#include "RenderLib/TextureProxy.h"
+#include "RbxGraphics/TextureProxyBase.h"
+
+namespace RBX
+{
+    G3D::Rect2D AdornG3D::getViewport() const
+    {
+        return renderDevice->getViewport();
+    }
+
+    int AdornG3D::getWidth() const
+    {
+        return renderDevice->getWidth();
+    }
+
+    int AdornG3D::getHeight() const
+    {
+        return renderDevice->getHeight();
+    }
+
+    G3D::Rect2D AdornG3D::getTextureSize(TextureProxyBaseRef _texture) const
+    {
+        if (_texture.notNull())
+        {
+            Render::TextureProxy* textureProxy = static_cast<Render::TextureProxy*>(_texture.getPointer());
+            G3D::TextureRef texture = textureProxy->resolve(renderDevice);
+
+            if (texture.notNull())
+                return texture->rect2DBounds();
+        }
+
+        return G3D::Rect2D();
+    }
+
+    void AdornG3D::setTexture(int id, TextureProxyBaseRef _texture)
+    {
+        if (_texture.notNull())
+        {
+            Render::TextureProxy* textureProxy = static_cast<Render::TextureProxy*>(_texture.getPointer());
+            renderDevice->setTexture(id, textureProxy->resolve(renderDevice));
+        }
+        else
+        {
+            renderDevice->setTexture(id, NULL);
+        }
+    }
+
+    void AdornG3D::rect2d(const G3D::Rect2D& rect, const G3D::Color4& color) const
+    {
+        DrawPrimitives::rect2d(Rect(rect), renderDevice, color);
+    }
+
+    void AdornG3D::outlineRect2d(const G3D::Rect2D& rect, float thick, const G3D::Color4& color) const
+    {
+        DrawPrimitives::outlineRect2d(Rect(rect), thick, renderDevice, color);
+    }
+
+    void AdornG3D::line2d(const G3D::Vector2& p0, const G3D::Vector2& p1, const G3D::Color4& color) const
+    {
+        DrawPrimitives::line2d(p0, p1, renderDevice, color);
+    }
+
+    G3D::Vector2 AdornG3D::get2DStringBounds(const std::string& s, double size, Adorn::Spacing spacing) const
+    {
+        G3D::GFontRef font = Fonts::getFont();
+        return font->get2DStringBounds(s, size, static_cast<G3D::GFont::Spacing>(spacing));
+    }
+
+    G3D::Vector2 AdornG3D::drawFont2D(const std::string& s, const G3D::Vector2& pos2d, double size, const G3D::Color4& color, const G3D::Color4& outline, Adorn::XAlign xalign, Adorn::YAlign yalign, Adorn::Spacing spacing) const
+    {
+        G3D::GFontRef font = Fonts::getFont();
+        return font->draw2D(renderDevice, s, pos2d, size, color, outline, static_cast<G3D::GFont::XAlign>(xalign), static_cast<G3D::GFont::YAlign>(yalign), static_cast<G3D::GFont::Spacing>(spacing));
+    }
+
+    void AdornG3D::setObjectToWorldMatrix(const G3D::CoordinateFrame& c)
+    {
+        renderDevice->setObjectToWorldMatrix(c);
+    }
+
+    void AdornG3D::box(const G3D::AABox& box, const G3D::Color4& solidColor, const G3D::Color4& wireColor)
+    {
+        setColor(solidColor);
+        DrawPrimitives::rawBox(box, renderDevice);
+    }
+
+    void AdornG3D::sphere(const G3D::Sphere& sphere, const G3D::Color4& solidColor, const G3D::Color4& wireColor)
+    {
+        setColor(solidColor);
+        DrawPrimitives::rawSphere(sphere.radius, renderDevice);
+    }
+
+    void AdornG3D::explosion(const G3D::Sphere& sph, const G3D::Color4& solidColor, const G3D::Color4& wireColor)
+    {
+        sphere(sph, solidColor, wireColor);
+    }
+
+    void AdornG3D::cylinderAlongX(float radius, float length, const G3D::Color4& solidColor, const G3D::Color4& wireColor)
+    {
+        setColor(solidColor);
+        DrawPrimitives::rawCylinderAlongX(radius, length, renderDevice);
+    }
+
+    void AdornG3D::ray(const G3D::Ray& ray, const G3D::Color4& color, float scale)
+    {
+        G3D::Draw::ray(ray, renderDevice, color, scale);
+    }
+
+    void AdornG3D::lineSegment(const G3D::LineSegment& lineSegment, const G3D::Color4& color, float scale)
+    {
+        G3D::Draw::lineSegment(lineSegment, renderDevice, color, scale);
+    }
+
+    void AdornG3D::axes(const G3D::Color4& xColor, const G3D::Color4& yColor, const G3D::Color4& zColor, float scale)
+    {
+        G3D::Draw::axes(renderDevice, xColor, yColor, zColor, scale);
+    }
+
+    void AdornG3D::quad(const G3D::Vector3& v0, const G3D::Vector3& v1, const G3D::Vector3& v2, const G3D::Vector3& v3, const G3D::Color4& color)
+    {
+        setColor(color);
+        renderDevice->beginPrimitive(G3D::RenderDevice::QUADS);
+        renderDevice->sendVertex(v0);
+        renderDevice->sendVertex(v1);
+        renderDevice->sendVertex(v2);
+        renderDevice->sendVertex(v3);
+        renderDevice->endPrimitive();
+    }
+
+    TextureProxyBaseRef AdornG3D::createTextureProxy(const std::string& filename)
+    {
+        Render::TextureProxy* proxy = new Render::TextureProxy(textureManager, filename, false);
+        return TextureProxyBaseRef(proxy);
+    }
+
+    void AdornG3D::setColor(const G3D::Color4& color)
+    {
+        renderDevice->setColor(color);
+    }
+}

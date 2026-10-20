@@ -1,18 +1,71 @@
-// roc 2009-12 0047d660  unit: RBX::LDraw2Lua::LuaWriter  size: 38 bytes
-// Make this compile to the exact bytes below, then: roc check 2009-12 0047d660
-//
-// 0047d660  b801000000           mov eax, 1
-// 0047d665  840510ccb700         test byte ptr [0xb7cc10], al
-// 0047d66b  7513                 jne 0x47d680
-// 0047d66d  090510ccb700         or dword ptr [0xb7cc10], eax
-// 0047d673  a1b0b59800           mov eax, dword ptr [0x98b5b0]
-// 0047d678  dd00                 fld qword ptr [eax]
-// 0047d67a  dd1d08ccb700         fstp qword ptr [0xb7cc08]
-// 0047d680  b808ccb700           mov eax, 0xb7cc08
-// 0047d685  c3                   ret 
-// library rbxgs-appdraw/HitTest.cpp (function ?inf@G3D@@YAABNXZ)
-
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
 // roc-lib: rbxgs-appdraw HitTest.cpp
+
+// Candidate translation unit (score above; library headers required).
+#include "AppDraw/HitTest.h"
+#include "G3D/CollisionDetection.h"
+#include "G3D/AABox.h"
+#include "G3D/Capsule.h"
+#include "G3D/Sphere.h"
+
+namespace RBX
+{
+    bool HitTest::hitTestBox(const Part& part, G3D::Ray& rayInPartCoords, G3D::Vector3& hitPointInPartCoords, float gridToReal)
+    {
+        G3D::Vector3 halfRealSize = part.gridSize * gridToReal * 0.5;
+
+        return G3D::CollisionDetection::collisionLocationForMovingPointFixedAABox(
+            rayInPartCoords.origin,
+            rayInPartCoords.direction,
+            G3D::AABox(-halfRealSize, halfRealSize),
+            hitPointInPartCoords
+        );
+    }
+
+    bool HitTest::hitTestBall(const Part& part, G3D::Ray& rayInPartCoords, G3D::Vector3& hitPointInPartCoords, float gridToReal)
+    {
+        float radius = part.gridSize.x * gridToReal * 0.5;
+
+        return G3D::CollisionDetection::collisionTimeForMovingPointFixedSphere(
+            rayInPartCoords.origin,
+            rayInPartCoords.direction,
+            G3D::Sphere(G3D::Vector3::ZERO3, radius),
+            hitPointInPartCoords
+        ) != G3D::inf();
+    }
+
+
+    bool HitTest::hitTestCylinder(const Part& part, G3D::Ray& rayInPartCoords, G3D::Vector3& hitPointInPartCoords, float gridToReal)
+    {
+        float radius = part.gridSize.z * gridToReal * 0.5;
+
+        G3D::Vector3 p0(part.gridSize.x * gridToReal * 0.5, 0, 0);
+
+        return G3D::CollisionDetection::collisionTimeForMovingPointFixedCapsule(
+            rayInPartCoords.origin,
+            rayInPartCoords.direction,
+            G3D::Capsule(G3D::Vector3::ZERO3, p0, radius),
+            hitPointInPartCoords
+        ) != G3D::inf();
+    }
+
+
+    bool HitTest::hitTest(const Part& part, G3D::Ray& rayInPartCoords, G3D::Vector3& hitPointInPartCoords, float gridToReal)
+    {
+        switch (part.type)
+        {
+            case Part::BALL_PART:
+                return hitTestBall(part, rayInPartCoords, hitPointInPartCoords, gridToReal);
+
+            case Part::BLOCK_PART:
+                return hitTestBox(part, rayInPartCoords, hitPointInPartCoords, gridToReal);
+
+            case Part::CYLINDER_PART:
+                return hitTestCylinder(part, rayInPartCoords, hitPointInPartCoords, gridToReal);
+        }
+
+        return false;
+    }
+}

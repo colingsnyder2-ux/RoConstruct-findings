@@ -1,59 +1,303 @@
-// roc 2008-06 0049c590  unit: RBX::Network::VPlayers::?$BoundFuncDesc  size: 146 bytes
-// Make this compile to the exact bytes below, then: roc check 2008-06 0049c590
-//
-// 0049c590  51                   push ecx
-// 0049c591  8d44244c             lea eax, [esp + 0x4c]
-// 0049c595  50                   push eax
-// 0049c596  8d4c2410             lea ecx, [esp + 0x10]
-// 0049c59a  e8b1eaf6ff           call 0x40b050
-// 0049c59f  84c0                 test al, al
-// 0049c5a1  7577                 jne 0x49c61a
-// 0049c5a3  56                   push esi
-// 0049c5a4  8b3590288000         mov esi, dword ptr [0x802890]
-// 0049c5aa  8d9b00000000         lea ebx, [ebx]
-// 0049c5b0  8b4c244c             mov ecx, dword ptr [esp + 0x4c]
-// 0049c5b4  803900               cmp byte ptr [ecx], 0
-// 0049c5b7  7545                 jne 0x49c5fe
-// 0049c5b9  8b442420             mov eax, dword ptr [esp + 0x20]
-// 0049c5bd  85c0                 test eax, eax
-// 0049c5bf  750a                 jne 0x49c5cb
-// 0049c5c1  ffd6                 call esi
-// 0049c5c3  8b442420             mov eax, dword ptr [esp + 0x20]
-// 0049c5c7  85c0                 test eax, eax
-// 0049c5c9  7404                 je 0x49c5cf
-// 0049c5cb  8b00                 mov eax, dword ptr [eax]
-// 0049c5cd  eb02                 jmp 0x49c5d1
-// 0049c5cf  33c0                 xor eax, eax
-// 0049c5d1  8b542424             mov edx, dword ptr [esp + 0x24]
-// 0049c5d5  3b5014               cmp edx, dword ptr [eax + 0x14]
-// 0049c5d8  7502                 jne 0x49c5dc
-// 0049c5da  ffd6                 call esi
-// 0049c5dc  8b442424             mov eax, dword ptr [esp + 0x24]
-// 0049c5e0  83c008               add eax, 8
-// 0049c5e3  50                   push eax
-// 0049c5e4  8d4c240b             lea ecx, [esp + 0xb]
-// 0049c5e8  51                   push ecx
-// 0049c5e9  8d4c2450             lea ecx, [esp + 0x50]
-// 0049c5ed  e83eaeffff           call 0x497430
-// 0049c5f2  8b44244c             mov eax, dword ptr [esp + 0x4c]
-// 0049c5f6  803800               cmp byte ptr [eax], 0
-// 0049c5f9  7503                 jne 0x49c5fe
-// 0049c5fb  c60001               mov byte ptr [eax], 1
-// 0049c5fe  8d4c2410             lea ecx, [esp + 0x10]
-// 0049c602  e8c9d8ffff           call 0x499ed0
-// 0049c607  8d542450             lea edx, [esp + 0x50]
-// 0049c60b  52                   push edx
-// 0049c60c  8d4c2414             lea ecx, [esp + 0x14]
-// 0049c610  e83beaf6ff           call 0x40b050
-// 0049c615  84c0                 test al, al
-// 0049c617  7497                 je 0x49c5b0
-// 0049c619  5e                   pop esi
-// 0049c61a  8b442408             mov eax, dword ptr [esp + 8]
-// 0049c61e  59                   pop ecx
-// 0049c61f  c28400               ret 0x84
-// library openrbx-client/App\v8tree\Instance.cpp (function ??$?RV?$slot_call_iterator@U?$caller@V?$shared_ptr@VInstance@RBX@@@boost@@V?$function@$$A6AXV?$shared_ptr@VInstance@RBX@@@boost@@@ZV?$allocator@X@std@@@2@@?$call_bound1@X@detail@signals@boost@@Vnamed_slot_map_iterator@345@@detail@signals@boost@@@?$last_value@X@boost@@QBE?AUunusable@01@V?$slot_call_iterator@U?$caller@V?$shared_ptr@VInstance@RBX@@@boost@@V?$function@$$A6AXV?$shared_ptr@VInstance@RBX@@@boost@@@ZV?$allocator@X@std@@@2@@?$call_bound1@X@detail@signals@boost@@Vnamed_slot_map_iterator@345@@detail@signals@1@0@Z)
-
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
 // roc-lib: openrbx-client-dll App/v8tree/Instance.cpp
+
+// Candidate translation unit (score above; library headers required).
+#include "v8tree/Instance.h"
+
+#include "decomp.h"
+
+#include <algorithm>
+#include <cstddef>
+
+namespace RBX {
+
+const char sInstance[] = "Instance";
+
+const Reflection::RefPropDescriptor<Instance, Instance> Instance::propParent(
+	"Parent",
+	"Data",
+	&Instance::getParent,
+	&Instance::setParent,
+	Reflection::PropertyDescriptor::UI
+);
+
+Reflection::SignalDesc<Instance, void(shared_ptr<Instance>)> Instance::event_childAdded("ChildAdded", "child");
+
+Reflection::SignalDesc<Instance, void(shared_ptr<Instance>)> Instance::event_childRemoved("ChildRemoved", "child");
+
+Reflection::SignalDesc<Instance, void(shared_ptr<Instance>)> Instance::event_ancestryChanged(
+	"AncestryChanged",
+	"child"
+);
+
+Reflection::SignalDesc<Instance, void(const Reflection::PropertyDescriptor*)> Instance::event_propertyChanged(
+	"Changed",
+	"property"
+);
+
+ChildAdded::ChildAdded(Instance* child) : child(shared_from(child))
+{
+}
+
+ChildRemoved::ChildRemoved(Instance* child) : child(shared_from(child))
+{
+}
+
+// STUB: WEBSERVICE 0x10047af0
+void Instance::onChildChanged(Instance* instance, const PropertyChanged& event)
+{
+	if (parent != NULL) {
+		parent->onChildChanged(instance, event);
+	}
+}
+
+// FUNCTION: WEBSERVICE 0x10047b20
+bool Instance::contains(const Instance* child) const
+{
+	while (child != 0) {
+		if (child == this) {
+			return true;
+		}
+
+		child = child->parent;
+	}
+
+	return false;
+}
+
+// FUNCTION: WEBSERVICE 0x10048340
+void Instance::readProperties(const XmlElement* container, IReferenceBinder& binder)
+{
+	for (XmlElement* child = container->firstChild(); child != NULL; child = child->nextSibling()) {
+		readProperty(child, binder);
+	}
+}
+
+// FUNCTION: WEBSERVICE 0x10048370
+void Instance::writeChildren(XmlElement* container)
+{
+	const std::vector<shared_ptr<Instance> >* kids = children.operator->();
+
+	if (kids != NULL) {
+		for (std::vector<shared_ptr<Instance> >::const_iterator it = kids->begin(); it != kids->end(); ++it) {
+			XmlElement* child = (*it)->write();
+
+			if (child != NULL) {
+				container->addChild(child);
+			}
+		}
+	}
+}
+
+// STUB: WEBSERVICE 0x100483f0
+Instance* Instance::findFirstChildByName(const std::string& findName) const
+{
+	STUB(0x100483f0);
+	return NULL;
+}
+
+// FUNCTION: WEBSERVICE 0x10048fb0
+void Instance::signalDescendentAdded(Instance* instance, Instance* beginParent, Instance* oldParent)
+{
+	for (Instance* walk = beginParent; walk != NULL; walk = walk->parent) {
+		if (walk == oldParent) {
+			break;
+		}
+
+		if (walk->isAncestorOf(oldParent)) {
+			break;
+		}
+
+		walk->onDescendentAdded(instance);
+	}
+
+	boost::shared_ptr<const std::vector<shared_ptr<Instance> > > c = instance->children.read();
+
+	if (c) {
+		for (std::vector<shared_ptr<Instance> >::const_iterator it = c->begin(); it != c->end(); ++it) {
+			signalDescendentAdded(it->get(), beginParent, oldParent);
+		}
+	}
+}
+
+// FUNCTION: WEBSERVICE 0x100490d0
+void Instance::signalDescendentRemoving(
+	const shared_ptr<Instance>& instance,
+	Instance* beginParent,
+	Instance* newParent
+)
+{
+	for (Instance* walk = beginParent; walk != NULL; walk = walk->parent) {
+		if (walk == newParent) {
+			break;
+		}
+
+		if (walk->isAncestorOf(newParent)) {
+			break;
+		}
+
+		walk->onDescendentRemoving(instance);
+	}
+
+	boost::shared_ptr<const std::vector<shared_ptr<Instance> > > c = instance->children.read();
+
+	if (c) {
+		for (std::vector<shared_ptr<Instance> >::const_iterator it = c->begin(); it != c->end(); ++it) {
+			signalDescendentRemoving(*it, beginParent, newParent);
+		}
+	}
+}
+
+// STUB: WEBSERVICE 0x10049d40
+XmlElement* Instance::write()
+{
+	STUB(0x10049d40);
+	return NULL;
+}
+
+// STUB: WEBSERVICE 0x1004a010
+void Instance::readProperty(const XmlElement* propertyElement, IReferenceBinder& binder)
+{
+	STUB(0x1004a010);
+}
+
+// STUB: WEBSERVICE 0x1004cdf0
+shared_ptr<Instance> Instance::createChild(const Name& className)
+{
+	STUB(0x1004cdf0);
+	return shared_ptr<Instance>();
+}
+
+// STUB: WEBSERVICE 0x1004d0b0
+Instance::~Instance()
+{
+}
+
+// STUB: WEBSERVICE 0x1004da80
+void Instance::setParent(Instance* newParent)
+{
+	if (newParent == parent) {
+		return;
+	}
+
+	shared_ptr<Instance> oldParent = shared_from(parent);
+	shared_ptr<Instance> self = shared_from_this();
+
+	if (oldParent) {
+		if (!oldParent->contains(newParent)) {
+			signalDescendentRemoving(self, oldParent.get(), newParent);
+		}
+
+		oldParent->onChildRemoving(this);
+
+		shared_ptr<std::vector<shared_ptr<Instance> > >& children = oldParent->children.write();
+
+		children->erase(std::find(children->begin(), children->end(), self));
+
+		if (children->size() == 0) {
+			oldParent->children.reset();
+		}
+
+		parent = NULL;
+
+		event_childRemoved.fire(oldParent.get(), self);
+
+		oldParent->Notifier<Instance, ChildRemoved>::raise(this);
+		oldParent->onChildRemoved(this);
+
+		if (oldParent->numChildren() == 0) {
+			oldParent->onLastChildRemoved();
+		}
+	}
+
+	if (newParent != NULL) {
+		newParent->children.write()->push_back(self);
+	}
+
+	parent = newParent;
+
+	if (newParent != NULL) {
+		newParent->onChildAdded(this);
+
+		if (!newParent->contains(oldParent.get())) {
+			signalDescendentAdded(this, newParent, oldParent.get());
+		}
+
+		newParent->Notifier<Instance, ChildAdded>::raise(this);
+
+		event_childAdded.fire(newParent, self);
+	}
+
+	onAncestorChanged(AncestorChanged(this, oldParent.get(), newParent));
+	raisePropertyChanged(propParent);
+}
+
+// STUB: WEBSERVICE 0x1004ddb0
+void Instance::onAncestorChanged(const AncestorChanged& event)
+{
+	STUB(0x1004ddb0);
+}
+
+// STUB: WEBSERVICE 0x1004dee0
+void Instance::onDescendentAdded(Instance* instance)
+{
+	STUB(0x1004dee0);
+}
+
+// STUB: WEBSERVICE 0x1004df50
+void Instance::onDescendentRemoving(const shared_ptr<Instance>& instance)
+{
+	STUB(0x1004df50);
+}
+
+// STUB: WEBSERVICE 0x1004e040
+void Instance::setName(const std::string& value)
+{
+	STUB(0x1004e040);
+}
+
+// STUB: WEBSERVICE 0x1004e0f0
+void Instance::predelete()
+{
+	STUB(0x1004e0f0);
+}
+
+// STUB: WEBSERVICE 0x1004e5e0
+void Instance::readChild(const XmlElement* childElement, IReferenceBinder& binder)
+{
+	STUB(0x1004e5e0);
+}
+
+// STUB: WEBSERVICE 0x1004e6e0
+void Instance::readChildren(const XmlElement* element, IReferenceBinder& binder)
+{
+	if (element != NULL) {
+		const XmlElement* item = element->findFirstChildByTag(tag_Item);
+
+		while (item != NULL) {
+			readChild(item, binder);
+			item = element->findNextChildWithSameTag(item);
+		}
+	}
+}
+
+// FUNCTION: WEBSERVICE 0x1004e7b0
+void Instance::predelete(Instance* instance)
+{
+	instance->predelete();
+}
+
+// STUB: WEBSERVICE 0x1004eb10
+Instance::Instance() : parent(0), archivable(true)
+{
+}
+
+// STUB: WEBSERVICE 0x1004ec70
+Instance::Instance(const char* name) : name(name), parent(0), archivable(true)
+{
+	STUB(0x1004ec70);
+}
+
+} // namespace RBX

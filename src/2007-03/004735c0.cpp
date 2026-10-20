@@ -1,46 +1,98 @@
-// roc 2007-03 004735c0  unit: seg_00470000  size: 111 bytes
-// Make this compile to the exact bytes below, then: roc check 2007-03 004735c0
-//
-// 004735c0  8bc1                 mov eax, ecx
-// 004735c2  8b4c2404             mov ecx, dword ptr [esp + 4]
-// 004735c6  d901                 fld dword ptr [ecx]
-// 004735c8  d918                 fstp dword ptr [eax]
-// 004735ca  d94104               fld dword ptr [ecx + 4]
-// 004735cd  d95804               fstp dword ptr [eax + 4]
-// 004735d0  d94108               fld dword ptr [ecx + 8]
-// 004735d3  d95808               fstp dword ptr [eax + 8]
-// 004735d6  d9410c               fld dword ptr [ecx + 0xc]
-// 004735d9  d9580c               fstp dword ptr [eax + 0xc]
-// 004735dc  d94110               fld dword ptr [ecx + 0x10]
-// 004735df  d95810               fstp dword ptr [eax + 0x10]
-// 004735e2  d94114               fld dword ptr [ecx + 0x14]
-// 004735e5  d95814               fstp dword ptr [eax + 0x14]
-// 004735e8  d94118               fld dword ptr [ecx + 0x18]
-// 004735eb  d95818               fstp dword ptr [eax + 0x18]
-// 004735ee  dd4120               fld qword ptr [ecx + 0x20]
-// 004735f1  dd5820               fstp qword ptr [eax + 0x20]
-// 004735f4  dd4128               fld qword ptr [ecx + 0x28]
-// 004735f7  dd5828               fstp qword ptr [eax + 0x28]
-// 004735fa  dd4130               fld qword ptr [ecx + 0x30]
-// 004735fd  dd5830               fstp qword ptr [eax + 0x30]
-// 00473600  dd4138               fld qword ptr [ecx + 0x38]
-// 00473603  dd5838               fstp qword ptr [eax + 0x38]
-// 00473606  d94140               fld dword ptr [ecx + 0x40]
-// 00473609  d95840               fstp dword ptr [eax + 0x40]
-// 0047360c  d94144               fld dword ptr [ecx + 0x44]
-// 0047360f  d95844               fstp dword ptr [eax + 0x44]
-// 00473612  d94148               fld dword ptr [ecx + 0x48]
-// 00473615  d95848               fstp dword ptr [eax + 0x48]
-// 00473618  0fb6514c             movzx edx, byte ptr [ecx + 0x4c]
-// 0047361c  88504c               mov byte ptr [eax + 0x4c], dl
-// 0047361f  0fb6514d             movzx edx, byte ptr [ecx + 0x4d]
-// 00473623  88504d               mov byte ptr [eax + 0x4d], dl
-// 00473626  8a494e               mov cl, byte ptr [ecx + 0x4e]
-// 00473629  88484e               mov byte ptr [eax + 0x4e], cl
-// 0047362c  c20400               ret 4
-// library rbxgs-render/Chunk.cpp (function ??4GLight@G3D@@QAEAAV01@ABV01@@Z)
-
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
 // roc-lib: rbxgs-render Chunk.cpp
+
+// Candidate translation unit (score above; library headers required).
+#include "RenderLib/Chunk.h"
+
+namespace RBX
+{
+	namespace Render
+	{
+		const float Chunk::DECAL_OFFSET = -0.2f;
+		const float Chunk::TEXTURE_OFFSET = -0.1f;
+
+		const G3D::CoordinateFrame AggregateChunk::identity;
+
+		AggregateChunk::AggregateChunk(const G3D::ReferenceCountedPointer<Chunk>& firstChunk)
+			: Chunk(firstChunk->polygonOffset),
+			  _castsShadows(firstChunk->castsShadows()),
+			  _cullable(firstChunk->cullable())
+		{
+			if (!randomColors)
+				material = firstChunk->getMaterial();
+
+			RenderStats::aggregateChunkCount++;
+			RenderStats::chunkCount--;
+
+			if (randomColors)
+			{
+				material = new Material;
+				material->appendLevel(NULL, (G3D::Color3::wheelRandom() + G3D::Color3::white()) / 2.0f, 0.0f, 50.0f, 0.0f, 0.0f);
+			}
+		}
+
+		AggregateChunk::~AggregateChunk()
+		{
+			RenderStats::chunkCount++;
+			RenderStats::aggregateChunkCount--;
+			RenderStats::aggregatedChunkCount -= components.size();
+		}
+
+		void AggregateChunk::makeMesh()
+		{
+			mesh = Mesh::aggregate(components, _cframe, radius);
+		}
+
+		void AggregateChunk::renderShadows(G3D::RenderDevice* rd, const G3D::GLight& light, bool caps, float shadowVertexDistance)
+		{
+			if (light != shadowSource)
+			{
+				shadowSource = light;
+				shadowIndexArray.clear();
+				shadowIndexArray16.clear();
+
+				if (material->veryTransparent())
+					return;
+
+				static G3D::Array<G3D::Vector3> shadowVertex;
+
+				shadowVertex.clear();
+				shadowVertex.push_back(-light.position.xyz().direction() * shadowVertexDistance);
+
+				G3D::Vector3 worldLight = light.position.xyz().direction();
+				mesh->computeDirectionalShadowVolume(cframe(), worldLight, shadowIndexArray, shadowVertex, caps);
+
+				if (shadowVertex.size() < 65536)
+				{
+					int size = shadowIndexArray.size();
+
+					shadowIndexArray16.resize(size);
+					for (int i = 0; i < size; i++)
+						shadowIndexArray16[i] = shadowIndexArray[i];
+
+					shadowIndexArray.clear();
+				}
+
+				G3D::ReferenceCountedPointer<G3D::VARArea> area = G3D::VARArea::create(shadowVertex.size() * 12, G3D::VARArea::WRITE_EVERY_FEW_FRAMES);
+				shadowVAR = G3D::VAR(shadowVertex, area);
+			}
+
+			if (shadowIndexArray.size() > 0)
+			{
+				rd->beginIndexedPrimitives();
+				rd->setVertexArray(shadowVAR);
+				rd->sendIndices(G3D::RenderDevice::TRIANGLES, shadowIndexArray.size(), shadowIndexArray.begin());
+				rd->endIndexedPrimitives();
+			}
+			else if (shadowIndexArray16.size() > 0)
+			{
+				rd->beginIndexedPrimitives();
+				rd->setVertexArray(shadowVAR);
+				rd->sendIndices(G3D::RenderDevice::TRIANGLES, shadowIndexArray16.size(), shadowIndexArray16.begin());
+				rd->endIndexedPrimitives();
+			}
+		}
+	}
+}

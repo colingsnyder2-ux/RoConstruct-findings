@@ -1,44 +1,57 @@
-// roc 2008-06 00600f10  unit: RBX::VTool::?$BoundPropGetSet  size: 116 bytes
-// Make this compile to the exact bytes below, then: roc check 2008-06 00600f10
-//
-// 00600f10  64a100000000         mov eax, dword ptr fs:[0]
-// 00600f16  6aff                 push -1
-// 00600f18  6868617c00           push 0x7c6168
-// 00600f1d  50                   push eax
-// 00600f1e  64892500000000       mov dword ptr fs:[0], esp
-// 00600f25  56                   push esi
-// 00600f26  51                   push ecx
-// 00600f27  8b4c2418             mov ecx, dword ptr [esp + 0x18]
-// 00600f2b  c744241000000000     mov dword ptr [esp + 0x10], 0
-// 00600f33  e8b899f5ff           call 0x55a8f0
-// 00600f38  8b742418             mov esi, dword ptr [esp + 0x18]
-// 00600f3c  c744240cffffffff     mov dword ptr [esp + 0xc], 0xffffffff
-// 00600f44  85f6                 test esi, esi
-// 00600f46  742a                 je 0x600f72
-// 00600f48  8d4604               lea eax, [esi + 4]
-// 00600f4b  83c9ff               or ecx, 0xffffffff
-// 00600f4e  f00fc108             lock xadd dword ptr [eax], ecx
-// 00600f52  751e                 jne 0x600f72
-// 00600f54  8b16                 mov edx, dword ptr [esi]
-// 00600f56  8b4204               mov eax, dword ptr [edx + 4]
-// 00600f59  8bce                 mov ecx, esi
-// 00600f5b  ffd0                 call eax
-// 00600f5d  8d4e08               lea ecx, [esi + 8]
-// 00600f60  83caff               or edx, 0xffffffff
-// 00600f63  f00fc111             lock xadd dword ptr [ecx], edx
-// 00600f67  7509                 jne 0x600f72
-// 00600f69  8b06                 mov eax, dword ptr [esi]
-// 00600f6b  8b5008               mov edx, dword ptr [eax + 8]
-// 00600f6e  8bce                 mov ecx, esi
-// 00600f70  ffd2                 call edx
-// 00600f72  8b4c2404             mov ecx, dword ptr [esp + 4]
-// 00600f76  64890d00000000       mov dword ptr fs:[0], ecx
-// 00600f7d  5e                   pop esi
-// 00600f7e  83c40c               add esp, 0xc
-// 00600f81  c20800               ret 8
-// library rbxgs/roc_arrowpanel_native_attachment_b778e4bd41285e74.cpp (function ?addGuiItem@GuiItem@RBX@@QAEXV?$shared_ptr@VGuiItem@RBX@@@boost@@@Z)
-
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
 // roc-lib: rbxgs roc_arrowpanel_native_attachment_b778e4bd41285e74.cpp
+
+// Candidate translation unit (score above; library headers required).
+#include <gui/ArrowPanel.h>
+namespace RBX {
+// Native factory call boundaries601fd0/657000/656f60/657190/6026e0.
+// Genuine public constructor types plus native argument copies/cleanup prove
+// these prototypes. External factories retain their native allocations/owners;
+// no synthetic object sizes, padding, deleters or virtual slots are modeled.
+boost::shared_ptr<TopMenuBar> nativeArrowColumn(const char*,Layout::Style);
+boost::shared_ptr<TopMenuBar> nativeNamedArrowColumn(std::string,Layout::Style);
+boost::shared_ptr<ImageWidget> nativeArrowImage(Adorn*,std::string);
+boost::shared_ptr<ArrowButton> nativeArrowButton(Adorn*,std::string,SDLKey,Controller::ControllerType,DataModel*);
+boost::shared_ptr<MenuSpacer> nativeArrowSpacer(float,float);
+void ArrowPanel::init(Adorn* adorn,const std::string& title,const std::string& up,const std::string& down,const std::string& left,const std::string& right,SDLKey upKey,SDLKey downKey,SDLKey leftKey,SDLKey rightKey) {
+    boost::shared_ptr<TopMenuBar> leftPanel=nativeArrowColumn("LeftPanel",Layout::VERTICAL);
+    leftPanel->addGuiItem(nativeArrowImage(adorn,title));
+    leftPanel->addGuiItem(nativeArrowButton(adorn,left,leftKey,*(Controller::ControllerType*)((char*)this+0x160),*(DataModel**)((char*)this+0x15c)));
+    boost::shared_ptr<TopMenuBar> forwardBackPanel=nativeArrowColumn("ForwardBackPanel",Layout::VERTICAL);
+    forwardBackPanel->addGuiItem(nativeArrowButton(adorn,up,upKey,*(Controller::ControllerType*)((char*)this+0x160),*(DataModel**)((char*)this+0x15c)));
+    forwardBackPanel->addGuiItem(nativeArrowButton(adorn,down,downKey,*(Controller::ControllerType*)((char*)this+0x160),*(DataModel**)((char*)this+0x15c)));
+    boost::shared_ptr<TopMenuBar> rightPanel=nativeNamedArrowColumn(right,Layout::VERTICAL);
+    rightPanel->addGuiItem(nativeArrowSpacer(32.0f,32.0f));
+    rightPanel->addGuiItem(nativeArrowButton(adorn,right,rightKey,*(Controller::ControllerType*)((char*)this+0x160),*(DataModel**)((char*)this+0x15c)));
+    addGuiItem(leftPanel);
+    addGuiItem(forwardBackPanel);
+    addGuiItem(rightPanel);
+}
+ArrowPanel::ArrowPanel(Adorn* adorn,DataModel* model,Controller::ControllerType type)
+    :TopMenuBar("ArrowPanel",Layout::HORIZONTAL,false) {
+    // Native own members15c/160, later than the older SDK's inherited layout.
+    *(DataModel**)((char*)this+0x15c)=model;
+    *(Controller::ControllerType*)((char*)this+0x160)=type;
+    switch(type) {
+    case Controller::PLAYER_CONTROLLER:
+        init(adorn,"Character","W_key","S_key","A_key","D_key",SDLK_w,SDLK_s,SDLK_a,SDLK_d);
+        break;
+    case Controller::SECONDARY_CONTROLLER:
+        init(adorn,"Controller2","W_key","S_key","A_key","D_key",SDLK_w,SDLK_s,SDLK_a,SDLK_d);
+        break;
+    case Controller::PRIMARY_CONTROLLER:
+        init(adorn,"Controller1","U_key","J_key","H_key","K_key",SDLK_u,SDLK_j,SDLK_h,SDLK_k);
+        break;
+    }
+}
+}
+
+namespace RBX {
+// Genuine public API, native600f10: attach child to this, release passed owner.
+// Keep observed out-of-line boundary used by all native panel builders.
+__declspec(noinline) void GuiItem::addGuiItem(boost::shared_ptr<GuiItem> item) {
+    item->setParent(this);
+}
+}

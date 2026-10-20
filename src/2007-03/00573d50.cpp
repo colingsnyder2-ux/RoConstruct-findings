@@ -1,34 +1,151 @@
-// roc 2007-03 00573d50  unit: seg_00570000  size: 61 bytes
-// Make this compile to the exact bytes below, then: roc check 2007-03 00573d50
-//
-// 00573d50  8b4c2404             mov ecx, dword ptr [esp + 4]
-// 00573d54  8b44240c             mov eax, dword ptr [esp + 0xc]
-// 00573d58  56                   push esi
-// 00573d59  8b74240c             mov esi, dword ptr [esp + 0xc]
-// 00573d5d  3bce                 cmp ecx, esi
-// 00573d5f  742a                 je 0x573d8b
-// 00573d61  57                   push edi
-// 00573d62  85c0                 test eax, eax
-// 00573d64  741a                 je 0x573d80
-// 00573d66  8b11                 mov edx, dword ptr [ecx]
-// 00573d68  8910                 mov dword ptr [eax], edx
-// 00573d6a  8b5104               mov edx, dword ptr [ecx + 4]
-// 00573d6d  85d2                 test edx, edx
-// 00573d6f  895004               mov dword ptr [eax + 4], edx
-// 00573d72  740c                 je 0x573d80
-// 00573d74  83c208               add edx, 8
-// 00573d77  bf01000000           mov edi, 1
-// 00573d7c  f00fc13a             lock xadd dword ptr [edx], edi
-// 00573d80  83c108               add ecx, 8
-// 00573d83  83c008               add eax, 8
-// 00573d86  3bce                 cmp ecx, esi
-// 00573d88  75d8                 jne 0x573d62
-// 00573d8a  5f                   pop edi
-// 00573d8b  5e                   pop esi
-// 00573d8c  c3                   ret 
-// library rbxgs/tool\MegaDragger.cpp (function ??$_Uninit_copy@PBV?$weak_ptr@VPartInstance@RBX@@@boost@@PAV12@V?$allocator@V?$weak_ptr@VPartInstance@RBX@@@boost@@@std@@@std@@YAPAV?$weak_ptr@VPartInstance@RBX@@@boost@@PBV12@0PAV12@AAV?$allocator@V?$weak_ptr@VPartInstance@RBX@@@boost@@@0@U_Nonscalar_ptr_iterator_tag@0@U_Range_checked_iterator_tag@0@@Z)
-
 // roc-lang: cpp
 // roc-cl: 50727
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
 // roc-lib: rbxgs tool/MegaDragger.cpp
+
+// Candidate translation unit (score above; library headers required).
+#include "tool/MegaDragger.h"
+#include "tool/DragUtilities.h"
+#include "tool/Dragger.h"
+#include "v8world/ContactManager.h"
+#include "v8datamodel/PartInstance.h"
+#include "v8datamodel/RootInstance.h"
+#include "v8datamodel/MouseCommand.h"
+
+namespace RBX
+{
+	MegaDragger::MegaDragger(PartInstance* mousePartPtr, const std::vector<PVInstance*>& pvInstances, RootInstance* rootInstance)
+		: mousePart(shared_from(mousePartPtr)),
+		  dragParts(),
+		  joined(true),
+		  rootInstance(rootInstance),
+          contactManager(rootInstance->getWorld()->getContactManager())
+	{
+		DragUtilities::pvsToParts(pvInstances, dragParts);
+	}
+
+	MegaDragger::MegaDragger(PartInstance* mousePartPtr, const std::vector<boost::weak_ptr<PartInstance>>& partArray, RootInstance* rootInstance)
+		: mousePart(shared_from(mousePartPtr)),
+		  dragParts(partArray),
+		  rootInstance(rootInstance),
+		  joined(true),
+		  contactManager(rootInstance->getWorld()->getContactManager())
+	{
+	}
+
+
+	MegaDragger::~MegaDragger()
+	{
+		if (!joined)
+		{
+			RBXASSERT(0);
+			DragUtilities::joinAndStopDragging(dragParts);
+		}
+	}
+
+	void MegaDragger::startDragging()
+	{
+		DragUtilities::unJoinAndSetDragging(dragParts);
+
+		if (PartInstance::nonNullInWorkspace(mousePart.lock()))
+		{
+			rootInstance->setCameraIgnoreParts(mousePart.lock().get());
+		}
+		joined = false;
+	}
+
+	void MegaDragger::continueDragging()
+	{
+		RBXASSERT(!joined);
+		DragUtilities::unJoinAndSetDragging(dragParts);
+	}
+
+	void MegaDragger::finishDragging()
+	{
+		RBXASSERT(!joined);
+		rootInstance->clearCameraIgnoreParts();
+		DragUtilities::joinAndStopDragging(dragParts);
+		if (DragUtilities::anyPartAlive(dragParts))
+		{
+			rootInstance->setInsertPoint(DragUtilities::computeExtents(dragParts).topCenter());
+		}
+		joined = true;
+	}
+
+	G3D::Vector3 MegaDragger::hitObjectOrPlane(const UIEvent& uiEvent)
+	{
+		G3D::Vector3 result;
+		G3D::Array<Primitive*> primitives;
+		DragUtilities::partsToPrimitives(dragParts, primitives);
+		DragUtilities::hitObjectOrPlane(contactManager, MouseCommand::getUnitMouseRay(uiEvent, rootInstance), &primitives, result);
+		return result;
+	}
+
+	void MegaDragger::alignAndCleanParts()
+	{
+		RBXASSERT(!joined);
+		if (PartInstance::nonNullInWorkspace(mousePart.lock()))
+		{
+			PartInstance* part = mousePart.lock().get();
+
+			if (!part->aligned())
+			{
+				G3D::CoordinateFrame snap = part->worldSnapLocation();
+				G3D::CoordinateFrame snapToGrid = Math::snapToGrid(snap, Dragger::dragSnap());
+				DragUtilities::move(dragParts, snap, snapToGrid);
+			}
+		}
+		DragUtilities::clean(dragParts);
+	}
+
+	G3D::Vector3 MegaDragger::safeMoveYDrop(const G3D::Vector3& tryDrag)
+	{
+		RBXASSERT(!joined);
+		RBXASSERT(tryDrag == Math::toGrid(tryDrag, 0.1f));
+
+		G3D::Array<Primitive*> primitives;
+		DragUtilities::partsToPrimitives(dragParts, primitives);
+
+		RBXASSERT(primitives.size() > 0);
+
+		G3D::Vector3 result = Dragger::safeMoveYDrop(primitives, tryDrag, contactManager);
+
+		RBXASSERT(!contactManager.intersectingOthers(primitives, 0.01f));
+		return result;
+	}
+
+	G3D::Vector3 MegaDragger::safeMoveNoDrop(const G3D::Vector3& tryDrag)
+	{
+		RBXASSERT(!joined);
+		RBXASSERT(tryDrag == Math::toGrid(tryDrag, 0.1f));
+
+		G3D::Array<Primitive*> primitives;
+		DragUtilities::partsToPrimitives(dragParts, primitives);
+
+		RBXASSERT(primitives.size() > 0);
+
+		G3D::Vector3 result = Dragger::safeMoveNoDrop(primitives, tryDrag, contactManager);
+
+		RBXASSERT(!contactManager.intersectingOthers(primitives, 0.01f));
+		return result;
+	}
+
+	void MegaDragger::safeRotate(const G3D::Matrix3& rotMatrix)
+	{
+		RBXASSERT(!joined);
+
+		G3D::Array<Primitive*> primitives;
+		DragUtilities::partsToPrimitives(dragParts, primitives);
+
+		RBXASSERT(primitives.size() > 0);
+
+		Dragger::safeRotate(primitives, rotMatrix, contactManager);
+
+		RBXASSERT(!contactManager.intersectingOthers(primitives, 0.01f));
+	}
+
+	bool MegaDragger::mousePartAlive()
+	{
+		return PartInstance::nonNullInWorkspace(mousePart.lock());
+	}
+}

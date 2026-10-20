@@ -1,57 +1,47 @@
-// roc 2008-06 00633090  unit: RBX::VExplosion::?$BoundPropGetSet  size: 116 bytes
-// Make this compile to the exact bytes below, then: roc check 2008-06 00633090
-//
-// 00633090  8b442404             mov eax, dword ptr [esp + 4]
-// 00633094  56                   push esi
-// 00633095  57                   push edi
-// 00633096  8bf1                 mov esi, ecx
-// 00633098  85c0                 test eax, eax
-// 0063309a  7405                 je 0x6330a1
-// 0063309c  8d78ec               lea edi, [eax - 0x14]
-// 0063309f  eb02                 jmp 0x6330a3
-// 006330a1  33ff                 xor edi, edi
-// 006330a3  8b4608               mov eax, dword ptr [esi + 8]
-// 006330a6  8b542410             mov edx, dword ptr [esp + 0x10]
-// 006330aa  d902                 fld dword ptr [edx]
-// 006330ac  8d0c38               lea ecx, [eax + edi]
-// 006330af  d819                 fcomp dword ptr [ecx]
-// 006330b1  dfe0                 fnstsw ax
-// 006330b3  f6c444               test ah, 0x44
-// 006330b6  7a1a                 jp 0x6330d2
-// 006330b8  d94204               fld dword ptr [edx + 4]
-// 006330bb  d85904               fcomp dword ptr [ecx + 4]
-// 006330be  dfe0                 fnstsw ax
-// 006330c0  f6c444               test ah, 0x44
-// 006330c3  7a0d                 jp 0x6330d2
-// 006330c5  d94208               fld dword ptr [edx + 8]
-// 006330c8  d85908               fcomp dword ptr [ecx + 8]
-// 006330cb  dfe0                 fnstsw ax
-// 006330cd  f6c444               test ah, 0x44
-// 006330d0  7b2d                 jnp 0x6330ff
-// 006330d2  d902                 fld dword ptr [edx]
-// 006330d4  d919                 fstp dword ptr [ecx]
-// 006330d6  d94204               fld dword ptr [edx + 4]
-// 006330d9  d95904               fstp dword ptr [ecx + 4]
-// 006330dc  d94208               fld dword ptr [edx + 8]
-// 006330df  d95908               fstp dword ptr [ecx + 8]
-// 006330e2  8b4610               mov eax, dword ptr [esi + 0x10]
-// 006330e5  85c0                 test eax, eax
-// 006330e7  740b                 je 0x6330f4
-// 006330e9  8b4e04               mov ecx, dword ptr [esi + 4]
-// 006330ec  51                   push ecx
-// 006330ed  8b4e14               mov ecx, dword ptr [esi + 0x14]
-// 006330f0  03cf                 add ecx, edi
-// 006330f2  ffd0                 call eax
-// 006330f4  8b5604               mov edx, dword ptr [esi + 4]
-// 006330f7  52                   push edx
-// 006330f8  8bcf                 mov ecx, edi
-// 006330fa  e801aaddff           call 0x40db00
-// 006330ff  5f                   pop edi
-// 00633100  5e                   pop esi
-// 00633101  c20800               ret 8
-// library rbxgs/roc_unit_68d8f4cfa4d371f8.cpp (function ?setValue@?$BoundPropGetSet@VRocket@RBX@@@?$BoundProp@VVector3@G3D@@$00@Reflection@RBX@@UBEXPAVDescribedBase@34@ABVVector3@G3D@@@Z)
-
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast
 // roc-lib: rbxgs roc_unit_68d8f4cfa4d371f8.cpp
+
+// Candidate translation unit (score above; library headers required).
+#pragma include_alias("v8tree/Instance.h", "roc_unit_b34763c2f3d3f398.cpp")
+#pragma include_alias("v8datamodel/JointInstance.h", "roc_unit_ffc89e90dbae649c.cpp")
+#pragma include_alias("v8datamodel/Gyro.h", "roc_unit_49d5cd98eaed3b87.cpp")
+#pragma include_alias("util/IRenderable.h", "roc_unit_b8671ae8d3010f90.cpp")
+#include "v8datamodel/Gyro.h"
+namespace RBX {
+	const char* sBodyPosition = "BodyPosition";
+	const char* sBodyVelocity = "BodyVelocity";
+	const char* sBodyGyro = "BodyGyro";
+	const char* sBodyForce = "BodyForce";
+	const char* sBodyThrust = "BodyThrust";
+	const char* sRocket = "Rocket";
+	Reflection::RefPropDescriptor<Rocket, PartInstance> Rocket::prop_Target("Target", "Goals", &Rocket::getTarget, &Rocket::setTarget, Reflection::PropertyDescriptor::STANDARD);
+	Reflection::BoundProp<G3D::Vector3, 1> Rocket::prop_targetOffset("TargetOffset", "Goals", &Rocket::targetOffset, &Rocket::onGoalChanged, Reflection::PropertyDescriptor::STANDARD);
+	Reflection::BoundProp<float, 1> Rocket::prop_targetRadius("TargetRadius", "Goals", &Rocket::targetRadius, &Rocket::onGoalChanged, Reflection::PropertyDescriptor::STANDARD);
+	Reflection::BoundProp<float, 1> Rocket::prop_MaxSpeed("MaxSpeed", "Thrust", &Rocket::maxSpeed, Reflection::PropertyDescriptor::STANDARD);
+	Reflection::BoundProp<float, 1> Rocket::prop_MaxThrust("MaxThrust", "Thrust", &Rocket::maxThrust, Reflection::PropertyDescriptor::STANDARD);
+	Reflection::BoundProp<float, 1> Rocket::prop_ThrustP("ThrustP", "Thrust", &Rocket::kThrustP, Reflection::PropertyDescriptor::STANDARD);
+	Reflection::BoundProp<float, 1> Rocket::prop_ThrustD("ThrustD", "Thrust", &Rocket::kThrustD, Reflection::PropertyDescriptor::STANDARD);
+	Reflection::BoundProp<float, 1> Rocket::prop_TurnP("TurnP", "Turn", &Rocket::kTurnP, Reflection::PropertyDescriptor::STANDARD);
+	Reflection::BoundProp<float, 1> Rocket::prop_TurnD("TurnD", "Turn", &Rocket::kTurnD, Reflection::PropertyDescriptor::STANDARD);
+	Reflection::BoundProp<G3D::Vector3, 1> Rocket::prop_MaxTorque("MaxTorque", "Turn", &Rocket::maxTorque, Reflection::PropertyDescriptor::STANDARD);
+	Reflection::BoundProp<float, 1> Rocket::prop_CartoonFactor("CartoonFactor", "Goals", &Rocket::cartoonFactor, Reflection::PropertyDescriptor::STANDARD);
+	Reflection::BoundFuncDesc<Rocket, void(void), 0> Rocket::func_Fire(&Rocket::fire, "Fire", Reflection::FunctionDescriptor::AnyCaller);
+	Reflection::BoundFuncDesc<Rocket, void(void), 0> Rocket::func_Abort(&Rocket::abort, "Abort", Reflection::FunctionDescriptor::AnyCaller);
+	Reflection::SignalDesc<Rocket, void(void)> Rocket::event_ReachedTarget("ReachedTarget");
+	Reflection::BoundProp<float, 1> BodyGyro::prop_kP("P", "Goals", &BodyGyro::kP, Reflection::PropertyDescriptor::STANDARD);
+	Reflection::BoundProp<float, 1> BodyGyro::prop_kD("D", "Goals", &BodyGyro::kD, Reflection::PropertyDescriptor::STANDARD);
+	Reflection::BoundProp<G3D::Vector3, 1> BodyGyro::prop_maxTorque("maxTorque", "Goals", &BodyGyro::maxTorque, Reflection::PropertyDescriptor::STANDARD);
+	Reflection::BoundProp<G3D::CoordinateFrame, 1> BodyGyro::prop_cframe("cframe", "Goals", &BodyGyro::cframe, Reflection::PropertyDescriptor::STANDARD);
+	Reflection::BoundProp<float, 1> BodyPosition::prop_kP("P", "Goals", &BodyPosition::kP, Reflection::PropertyDescriptor::STANDARD);
+	Reflection::BoundProp<float, 1> BodyPosition::prop_kD("D", "Goals", &BodyPosition::kD, Reflection::PropertyDescriptor::STANDARD);
+	Reflection::BoundProp<G3D::Vector3, 1> BodyPosition::prop_maxForce("maxForce", "Goals", &BodyPosition::maxForce, Reflection::PropertyDescriptor::STANDARD);
+	Reflection::BoundProp<G3D::Vector3, 1> BodyPosition::prop_position("position", "Goals", &BodyPosition::position, Reflection::PropertyDescriptor::STANDARD);
+	Reflection::BoundProp<float, 1> BodyVelocity::prop_kP("P", "Goals", &BodyVelocity::kP, Reflection::PropertyDescriptor::STANDARD);
+	Reflection::BoundProp<G3D::Vector3, 1> BodyVelocity::prop_maxForce("maxForce", "Goals", &BodyVelocity::maxForce, Reflection::PropertyDescriptor::STANDARD);
+	Reflection::BoundProp<G3D::Vector3, 1> BodyVelocity::prop_velocity("velocity", "Goals", &BodyVelocity::velocity, Reflection::PropertyDescriptor::STANDARD);
+	Reflection::BoundProp<G3D::Vector3, 1> BodyForce::prop_Force("force", "Goals", &BodyForce::force, Reflection::PropertyDescriptor::STANDARD);
+	Reflection::BoundProp<G3D::Vector3, 1> BodyThrust::prop_force("force", "Goals", &BodyThrust::force, Reflection::PropertyDescriptor::STANDARD);
+	Reflection::BoundProp<G3D::Vector3, 1> BodyThrust::prop_location("location", "Goals", &BodyThrust::location, Reflection::PropertyDescriptor::STANDARD);
+}

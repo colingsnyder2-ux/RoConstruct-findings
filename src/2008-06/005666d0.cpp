@@ -1,16 +1,36 @@
-// roc 2008-06 005666d0  unit: RBX::VTeam::?$FactoryProduct  size: 34 bytes
-// Make this compile to the exact bytes below, then: roc check 2008-06 005666d0
-//
-// 005666d0  8b442404             mov eax, dword ptr [esp + 4]
-// 005666d4  398130010000         cmp dword ptr [ecx + 0x130], eax
-// 005666da  7413                 je 0x5666ef
-// 005666dc  898130010000         mov dword ptr [ecx + 0x130], eax
-// 005666e2  c7442404cc489700     mov dword ptr [esp + 4], 0x9748cc
-// 005666ea  e91174eaff           jmp 0x40db00
-// 005666ef  c20400               ret 4
-// library openrbx-client/App\v8datamodel\FaceInstance.cpp (function ?setFace@FaceInstance@RBX@@QAEXW4NormalId@2@@Z)
-
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
 // roc-lib: openrbx-client App/v8datamodel/FaceInstance.cpp
+
+// Candidate translation unit (score above; library headers required).
+#include "v8datamodel/FaceInstance.h"
+
+#include "reflection/property.h"
+
+namespace RBX {
+
+const char sFaceInstance[] = "FaceInstance";
+
+// FUNCTION: WEBSERVICE 0x101219f0
+FaceInstance::FaceInstance() : face(NORM_Z_NEG)
+{
+}
+
+const Reflection::EnumPropDescriptor<FaceInstance, NormalId> FaceInstance::prop_Face(
+	"Face",
+	"Data",
+	&RBX::FaceInstance::getFace,
+	&RBX::FaceInstance::setFace
+);
+
+// FUNCTION: WEBSERVICE 0x10121d10
+void FaceInstance::setFace(NormalId value)
+{
+	if (face != value) {
+		face = value;
+		raisePropertyChanged(prop_Face);
+	}
+}
+
+} // namespace RBX

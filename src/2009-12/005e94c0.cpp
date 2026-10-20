@@ -1,39 +1,129 @@
-// roc 2009-12 005e94c0  unit: seg_005e0000  size: 117 bytes
-// Make this compile to the exact bytes below, then: roc check 2009-12 005e94c0
-//
-// 005e94c0  6aff                 push -1
-// 005e94c2  6839ea9300           push 0x93ea39
-// 005e94c7  64a100000000         mov eax, dword ptr fs:[0]
-// 005e94cd  50                   push eax
-// 005e94ce  64892500000000       mov dword ptr fs:[0], esp
-// 005e94d5  51                   push ecx
-// 005e94d6  f6056031b80001       test byte ptr [0xb83160], 1
-// 005e94dd  7542                 jne 0x5e9521
-// 005e94df  830d6031b80001       or dword ptr [0xb83160], 1
-// 005e94e6  6a0c                 push 0xc
-// 005e94e8  c744241000000000     mov dword ptr [esp + 0x10], 0
-// 005e94f0  e86ba32000           call 0x7f3860
-// 005e94f5  83c404               add esp, 4
-// 005e94f8  890424               mov dword ptr [esp], eax
-// 005e94fb  c644240c01           mov byte ptr [esp + 0xc], 1
-// 005e9500  85c0                 test eax, eax
-// 005e9502  7409                 je 0x5e950d
-// 005e9504  8bc8                 mov ecx, eax
-// 005e9506  e8d50a0000           call 0x5e9fe0
-// 005e950b  eb02                 jmp 0x5e950f
-// 005e950d  33c0                 xor eax, eax
-// 005e950f  68800e9800           push 0x980e80
-// 005e9514  a35c31b800           mov dword ptr [0xb8315c], eax
-// 005e9519  e80bb42000           call 0x7f4929
-// 005e951e  83c404               add esp, 4
-// 005e9521  8b4c2404             mov ecx, dword ptr [esp + 4]
-// 005e9525  a15c31b800           mov eax, dword ptr [0xb8315c]
-// 005e952a  64890d00000000       mov dword ptr fs:[0], ecx
-// 005e9531  83c410               add esp, 0x10
-// 005e9534  c3                   ret 
-// library openrbx-client/Rendering\RenderLib\EffectSettings.cpp (function ?getDepthBlur@EffectSettings@Render@RBX@@SAPAVDepthBlur@23@XZ)
-
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
 // roc-lib: openrbx-client Rendering/RenderLib/EffectSettings.cpp
+
+// Candidate translation unit (score above; library headers required).
+#include "renderlib/EffectSettings.h"
+
+#include <GLG3D/glcalls.h>
+#include <algorithm>
+#include <memory>
+
+namespace RBX {
+namespace Render {
+
+// STUB: WEBSERVICE 0x101f7750
+static bool brighter(const G3D::GLight& A, const G3D::GLight& B)
+{
+	return (A.color.r + A.color.g + A.color.b) / 3.0 * (1.2 - A.position.w) >
+		   (B.color.r + B.color.g + B.color.b) / 3.0 * (1.2 - B.position.w);
+}
+
+// FUNCTION: WEBSERVICE 0x101f8950
+G3D::ToneMap* EffectSettings::getToneMap()
+{
+	static std::auto_ptr<G3D::ToneMap> toneMap(new G3D::ToneMap());
+	return toneMap.get();
+}
+
+// FUNCTION: WEBSERVICE 0x101f89e0
+DepthBlur* EffectSettings::getDepthBlur()
+{
+	static std::auto_ptr<DepthBlur> depthBlur(new DepthBlur());
+	return depthBlur.get();
+}
+
+// STUB: WEBSERVICE 0x101f8bc0
+G3D::ReferenceCountedPointer<G3D::Lighting> EffectSettings::update(
+	float shadingDetail,
+	float meshDetail,
+	bool shadows,
+	float cameraDistanceFromCharacters,
+	const G3D::ReferenceCountedPointer<G3D::Lighting>& desiredLighting,
+	const G3D::LightingParameters& desiredSkyParameters,
+	G3D::LightingParameters& outSkyParameters
+)
+{
+	int numShadowLights =
+		desiredLighting->shadowedLightArray.size() >= 8 ? 8 : desiredLighting->shadowedLightArray.size();
+	int maxLights = G3D::glGetInteger(GL_MAX_LIGHTS) - 3;
+	int numNonShadowLights =
+		desiredLighting->lightArray.size() >= maxLights ? maxLights : desiredLighting->lightArray.size();
+	numNonShadowLights = numNonShadowLights > 0 ? numNonShadowLights : 0;
+
+	_groundLOD = 1.0f;
+	_LODShift = 0.0f;
+	_skyBox = false;
+	_alphaBlendShadowLights = true;
+	_stencilShadows = false;
+	_useAllLightsInUnshadowedPass = false;
+	_toneMap = false;
+	_hemisphereLighting = false;
+	_depthBlur = false;
+	_farCullZ = -G3D::inf();
+
+	G3D::ReferenceCountedPointer<G3D::Lighting> lighting = G3D::Lighting::create();
+	*lighting = *desiredLighting;
+
+	G3D::glGetInteger(GL_STENCIL_BITS);
+
+	if (meshDetail >= 10) {
+		_skyBox = true;
+	}
+
+	_groundLOD = G3D::lerp(0.0f, 1.0f, (float) (meshDetail / 100.0));
+
+	if (meshDetail >= 30.0) {
+		_hemisphereLighting = true;
+	}
+
+	_LODShift = G3D::lerp(-1.0f, 1.0f, (float) (meshDetail / 100.0));
+
+	if (shadows && numShadowLights > 0) {
+		_stencilShadows = true;
+		numShadowLights = 1;
+
+		if (numNonShadowLights == 0) {
+			_alphaBlendShadowLights = false;
+		}
+	}
+
+	std::sort(lighting->shadowedLightArray.begin(), lighting->shadowedLightArray.end(), brighter);
+
+	int excessShadowLights = lighting->shadowedLightArray.size() - numShadowLights;
+
+	if (excessShadowLights > 0) {
+		for (int i = 0; i < excessShadowLights; i++) {
+			lighting->lightArray.append(
+				lighting->shadowedLightArray[lighting->shadowedLightArray.size() - excessShadowLights + i]
+			);
+		}
+
+		lighting->shadowedLightArray.resize(lighting->shadowedLightArray.size() - excessShadowLights, true);
+	}
+
+	std::sort(lighting->lightArray.begin(), lighting->lightArray.end(), brighter);
+
+	int excessLights = lighting->lightArray.size() - numNonShadowLights;
+
+	if (excessLights > 0) {
+		lighting->lightArray.resize(lighting->lightArray.size() - excessLights, true);
+	}
+
+	_useAllLightsInUnshadowedPass = _stencilShadows == false;
+
+	if (_toneMap) {
+		getToneMap()->setEnabled(true);
+		lighting = getToneMap()->prepareLighting(lighting);
+		outSkyParameters = getToneMap()->prepareLightingParameters(desiredSkyParameters);
+	}
+	else {
+		outSkyParameters = desiredSkyParameters;
+	}
+
+	return lighting;
+}
+
+} // namespace Render
+} // namespace RBX

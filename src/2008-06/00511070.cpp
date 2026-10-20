@@ -1,172 +1,446 @@
 // from server: 100% by auto
-// roc 2008-06 00511070  unit: G3D::GCamera  size: 450 bytes
-// Make this compile to the exact bytes below, then: roc check 2008-06 00511070
-//
-// 00511070  83ec40               sub esp, 0x40
-// 00511073  53                   push ebx
-// 00511074  8b5c244c             mov ebx, dword ptr [esp + 0x4c]
-// 00511078  55                   push ebp
-// 00511079  8b6c2454             mov ebp, dword ptr [esp + 0x54]
-// 0051107d  56                   push esi
-// 0051107e  8bf1                 mov esi, ecx
-// 00511080  8b06                 mov eax, dword ptr [esi]
-// 00511082  57                   push edi
-// 00511083  8b7c2454             mov edi, dword ptr [esp + 0x54]
-// 00511087  3bf8                 cmp edi, eax
-// 00511089  7210                 jb 0x51109b
-// 0051108b  8b4e04               mov ecx, dword ptr [esi + 4]
-// 0051108e  c1e104               shl ecx, 4
-// 00511091  03c8                 add ecx, eax
-// 00511093  3bf9                 cmp edi, ecx
-// 00511095  0f8201010000         jb 0x51119c
-// 0051109b  3bd8                 cmp ebx, eax
-// 0051109d  7210                 jb 0x5110af
-// 0051109f  8b5604               mov edx, dword ptr [esi + 4]
-// 005110a2  c1e204               shl edx, 4
-// 005110a5  03d0                 add edx, eax
-// 005110a7  3bda                 cmp ebx, edx
-// 005110a9  0f82ed000000         jb 0x51119c
-// 005110af  3be8                 cmp ebp, eax
-// 005110b1  7210                 jb 0x5110c3
-// 005110b3  8b4e04               mov ecx, dword ptr [esi + 4]
-// 005110b6  c1e104               shl ecx, 4
-// 005110b9  03c8                 add ecx, eax
-// 005110bb  3be9                 cmp ebp, ecx
-// 005110bd  0f82d9000000         jb 0x51119c
-// 005110c3  8b4c2460             mov ecx, dword ptr [esp + 0x60]
-// 005110c7  3bc8                 cmp ecx, eax
-// 005110c9  7210                 jb 0x5110db
-// 005110cb  8b5604               mov edx, dword ptr [esi + 4]
-// 005110ce  c1e204               shl edx, 4
-// 005110d1  03d0                 add edx, eax
-// 005110d3  3bca                 cmp ecx, edx
-// 005110d5  0f82c5000000         jb 0x5111a0
-// 005110db  8b4e04               mov ecx, dword ptr [esi + 4]
-// 005110de  8d5103               lea edx, [ecx + 3]
-// 005110e1  3b5608               cmp edx, dword ptr [esi + 8]
-// 005110e4  7d56                 jge 0x51113c
-// 005110e6  c1e104               shl ecx, 4
-// 005110e9  03c8                 add ecx, eax
-// 005110eb  7406                 je 0x5110f3
-// 005110ed  57                   push edi
-// 005110ee  e85d54f6ff           call 0x476550
-// 005110f3  8b4e04               mov ecx, dword ptr [esi + 4]
-// 005110f6  41                   inc ecx
-// 005110f7  c1e104               shl ecx, 4
-// 005110fa  030e                 add ecx, dword ptr [esi]
-// 005110fc  7406                 je 0x511104
-// 005110fe  53                   push ebx
-// 005110ff  e84c54f6ff           call 0x476550
-// 00511104  8b4e04               mov ecx, dword ptr [esi + 4]
-// 00511107  83c102               add ecx, 2
-// 0051110a  c1e104               shl ecx, 4
-// 0051110d  030e                 add ecx, dword ptr [esi]
-// 0051110f  7406                 je 0x511117
-// 00511111  55                   push ebp
-// 00511112  e83954f6ff           call 0x476550
-// 00511117  8b4e04               mov ecx, dword ptr [esi + 4]
-// 0051111a  83c103               add ecx, 3
-// 0051111d  c1e104               shl ecx, 4
-// 00511120  030e                 add ecx, dword ptr [esi]
-// 00511122  740a                 je 0x51112e
-// 00511124  8b442460             mov eax, dword ptr [esp + 0x60]
-// 00511128  50                   push eax
-// 00511129  e82254f6ff           call 0x476550
-// 0051112e  83460404             add dword ptr [esi + 4], 4
-// 00511132  5f                   pop edi
-// 00511133  5e                   pop esi
-// 00511134  5d                   pop ebp
-// 00511135  5b                   pop ebx
-// 00511136  83c440               add esp, 0x40
-// 00511139  c21000               ret 0x10
-// 0051113c  83c104               add ecx, 4
-// 0051113f  6a00                 push 0
-// 00511141  51                   push ecx
-// 00511142  8bce                 mov ecx, esi
-// 00511144  e807fdffff           call 0x510e50
-// 00511149  8b4e04               mov ecx, dword ptr [esi + 4]
-// 0051114c  83e904               sub ecx, 4
-// 0051114f  c1e104               shl ecx, 4
-// 00511152  030e                 add ecx, dword ptr [esi]
-// 00511154  57                   push edi
-// 00511155  e8f653f6ff           call 0x476550
-// 0051115a  8b4e04               mov ecx, dword ptr [esi + 4]
-// 0051115d  83e903               sub ecx, 3
-// 00511160  c1e104               shl ecx, 4
-// 00511163  030e                 add ecx, dword ptr [esi]
-// 00511165  53                   push ebx
-// 00511166  e8e553f6ff           call 0x476550
-// 0051116b  8b4e04               mov ecx, dword ptr [esi + 4]
-// 0051116e  83e902               sub ecx, 2
-// 00511171  c1e104               shl ecx, 4
-// 00511174  030e                 add ecx, dword ptr [esi]
-// 00511176  55                   push ebp
-// 00511177  e8d453f6ff           call 0x476550
-// 0051117c  8b5604               mov edx, dword ptr [esi + 4]
-// 0051117f  8b4c2460             mov ecx, dword ptr [esp + 0x60]
-// 00511183  8b06                 mov eax, dword ptr [esi]
-// 00511185  c1e204               shl edx, 4
-// 00511188  51                   push ecx
-// 00511189  8d4c02f0             lea ecx, [edx + eax - 0x10]
-// 0051118d  e8be53f6ff           call 0x476550
-// 00511192  5f                   pop edi
-// 00511193  5e                   pop esi
-// 00511194  5d                   pop ebp
-// 00511195  5b                   pop ebx
-// 00511196  83c440               add esp, 0x40
-// 00511199  c21000               ret 0x10
-// 0051119c  8b4c2460             mov ecx, dword ptr [esp + 0x60]
-// 005111a0  d907                 fld dword ptr [edi]
-// 005111a2  8d542420             lea edx, [esp + 0x20]
-// 005111a6  d95c2440             fstp dword ptr [esp + 0x40]
-// 005111aa  8d442430             lea eax, [esp + 0x30]
-// 005111ae  d94704               fld dword ptr [edi + 4]
-// 005111b1  d95c2444             fstp dword ptr [esp + 0x44]
-// 005111b5  d94708               fld dword ptr [edi + 8]
-// 005111b8  d95c2448             fstp dword ptr [esp + 0x48]
-// 005111bc  d9470c               fld dword ptr [edi + 0xc]
-// 005111bf  d95c244c             fstp dword ptr [esp + 0x4c]
-// 005111c3  d903                 fld dword ptr [ebx]
-// 005111c5  d95c2430             fstp dword ptr [esp + 0x30]
-// 005111c9  d94304               fld dword ptr [ebx + 4]
-// 005111cc  d95c2434             fstp dword ptr [esp + 0x34]
-// 005111d0  d94308               fld dword ptr [ebx + 8]
-// 005111d3  d95c2438             fstp dword ptr [esp + 0x38]
-// 005111d7  d9430c               fld dword ptr [ebx + 0xc]
-// 005111da  d95c243c             fstp dword ptr [esp + 0x3c]
-// 005111de  d94500               fld dword ptr [ebp]
-// 005111e1  d95c2420             fstp dword ptr [esp + 0x20]
-// 005111e5  d94504               fld dword ptr [ebp + 4]
-// 005111e8  d95c2424             fstp dword ptr [esp + 0x24]
-// 005111ec  d94508               fld dword ptr [ebp + 8]
-// 005111ef  d95c2428             fstp dword ptr [esp + 0x28]
-// 005111f3  d9450c               fld dword ptr [ebp + 0xc]
-// 005111f6  d95c242c             fstp dword ptr [esp + 0x2c]
-// 005111fa  d901                 fld dword ptr [ecx]
-// 005111fc  d95c2410             fstp dword ptr [esp + 0x10]
-// 00511200  d94104               fld dword ptr [ecx + 4]
-// 00511203  d95c2414             fstp dword ptr [esp + 0x14]
-// 00511207  d94108               fld dword ptr [ecx + 8]
-// 0051120a  d95c2418             fstp dword ptr [esp + 0x18]
-// 0051120e  d9410c               fld dword ptr [ecx + 0xc]
-// 00511211  8d4c2410             lea ecx, [esp + 0x10]
-// 00511215  51                   push ecx
-// 00511216  d95c2420             fstp dword ptr [esp + 0x20]
-// 0051121a  52                   push edx
-// 0051121b  50                   push eax
-// 0051121c  8d4c244c             lea ecx, [esp + 0x4c]
-// 00511220  51                   push ecx
-// 00511221  8bce                 mov ecx, esi
-// 00511223  e848feffff           call 0x511070
-// 00511228  5f                   pop edi
-// 00511229  5e                   pop esi
-// 0051122a  5d                   pop ebp
-// 0051122b  5b                   pop ebx
-// 0051122c  83c440               add esp, 0x40
-// 0051122f  c21000               ret 0x10
-// library g3d-6.09/G3Dcpp\GCamera.cpp (function ?append@?$Array@VVector4@G3D@@@G3D@@QAEXABVVector4@2@000@Z)
-
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD
 // roc-lib: g3d-6.09 G3Dcpp/GCamera.cpp
+
+// Candidate translation unit (score above; library headers required).
+/**
+  @file GCamera.cpp
+
+  @author Morgan McGuire, matrix@graphics3d.com
+ 
+  @created 2001-04-15
+  @edited  2006-01-11
+*/
+
+#include "G3D/platform.h"
+#include "G3D/GCamera.h"
+#include "G3D/Rect2D.h"
+#include "G3D/BinaryInput.h"
+#include "G3D/BinaryOutput.h"
+#include "G3D/Ray.h"
+
+namespace G3D {
+
+
+GCamera::GCamera() {
+    nearPlane   = 0.1f;
+    farPlane    = (float)inf();
+	setFieldOfView((float)toRadians(55.0f));
+}
+
+
+GCamera::~GCamera() {
+}
+
+
+CoordinateFrame GCamera::getCoordinateFrame() const {
+	return cframe;
+}
+
+
+void GCamera::getCoordinateFrame(CoordinateFrame& c) const {
+	c = cframe;
+}
+
+
+void GCamera::setCoordinateFrame(const CoordinateFrame& c) {
+	cframe = c;
+}
+
+
+void GCamera::setFieldOfView(float angle) {
+	debugAssert((angle < G3D_PI) && (angle > 0));
+
+	fieldOfView = angle;
+
+	// Solve for the corresponding image plane depth, as if the extent
+	// of the film was 1x1.
+	imagePlaneDepth = 1.0f / (2.0f * tanf(angle / 2.0f));
+}
+ 
+
+void GCamera::setImagePlaneDepth(
+    float                                   depth,
+    const class Rect2D&                     viewport) {
+	
+    debugAssert(depth > 0);
+	setFieldOfView(2.0f * atanf(viewport.height() / (2.0f * depth)));
+}
+
+
+float GCamera::getImagePlaneDepth(
+    const class Rect2D&                     viewport) const {
+
+    // The image plane depth has been pre-computed for 
+    // a 1x1 image.  Now that the image is width x height, 
+    // we need to scale appropriately. 
+
+    return imagePlaneDepth * viewport.height();
+}
+
+
+float GCamera::getViewportWidth(const Rect2D& viewport) const {
+    return getViewportHeight(viewport) * viewport.width() / viewport.height();
+}
+
+
+float GCamera::getViewportHeight(const Rect2D& viewport) const {
+    (void)viewport;
+    return nearPlane / imagePlaneDepth;
+}
+
+
+Ray GCamera::worldRay(
+    float                                  x,
+    float                                  y,
+    const Rect2D&                           viewport) const {
+
+    int screenWidth  = iFloor(viewport.width());
+    int screenHeight = iFloor(viewport.height());
+
+    Ray out;
+    // Set the origin to 0
+    out.origin = Vector3::zero();
+
+    float cx = screenWidth  / 2.0f;
+    float cy = screenHeight / 2.0f;
+
+    out.direction =
+        Vector3( (x - cx) * -CoordinateFrame::zLookDirection,
+                -(y - cy),
+                 getImagePlaneDepth(viewport) * CoordinateFrame::zLookDirection);
+
+    out = cframe.toWorldSpace(out);
+
+    // Normalize the direction (we didn't do it before)
+    out.direction = out.direction.direction();
+
+    return out;
+}
+
+
+Vector3 GCamera::project(
+    const Vector3&                      point,
+    const Rect2D&                       viewport) const {
+
+    int screenWidth  = (int)viewport.width();
+    int screenHeight = (int)viewport.height();
+
+    Vector3 out = cframe.pointToObjectSpace(point);
+    float w = out.z * CoordinateFrame::zLookDirection;
+
+    if (w <= 0) {
+        return Vector3::inf();
+    }
+    debugAssert(w > 0);
+
+    // Find where it hits an image plane of these dimensions
+    float zImagePlane = getImagePlaneDepth(viewport);
+
+    // Recover the distance
+    float rhw = zImagePlane / w;
+
+    // Add the image center, flip the y axis
+    out.x = screenWidth / 2.0f - (rhw * out.x * CoordinateFrame::zLookDirection);
+    out.y = screenHeight / 2.0f - (rhw * out.y);
+    out.z = rhw;
+
+    return out;
+}
+
+
+float GCamera::worldToScreenSpaceArea(float area, float z, const Rect2D& viewport) const {
+
+    if (z >= 0) {
+        return (float)inf();
+    }
+
+    float zImagePlane = getImagePlaneDepth(viewport);
+
+    return area * (float)square(zImagePlane / z);
+}
+
+
+/*
+double GCamera::getZValue(
+    double              x,
+    double              y,
+    const class Rect2D&                     viewport    int                 width,
+    int                 height,
+    double              lineOffset) const {
+
+    double depth = renderDevice->getDepthBufferValue((int)x, (int)(height - y));
+
+    double n = -nearPlane;
+    double f = -farPlane;
+
+    // Undo the hyperbolic scaling.
+    // Derivation:
+    //                  a = ((1/out) - (1/n)) / ((1/f) - (1/n))
+    //              depth = (1-a) * lineOffset) + (a * 1)
+    //
+    //              depth = lineOffset + a * (-lineOffset + 1)
+    //              depth = lineOffset + (((1/z) - (1/n)) / ((1/f) - (1/n))) * (1 - lineOffset)
+    // depth - lineOffset = (((1/z) - (1/n)) / ((1/f) - (1/n))) * (1 - lineOffset)
+    //
+    //(depth - lineOffset) / (1 - lineOffset) = (((1/z) - (1/n)) / ((1/f) - (1/n)))
+    //((1/f) - (1/n)) * (depth - lineOffset) / (1 - lineOffset) = ((1/z) - (1/n))  
+    //(((1/f) - (1/n)) * (depth - lineOffset) / (1 - lineOffset)) + 1/n = (1/z) 
+    //
+    // z = 1/( (((1/f) - (1/n)) * (depth - lineOffset) / (1 - lineOffset)) + 1/n)
+
+    if (f >= inf) {
+        // Infinite far plane
+        return  1 / (((-1/n) * (depth - lineOffset) / (1 - lineOffset)) + 1/n);
+    } else {
+        return  1 / ((((1/f) - (1/n)) * (depth - lineOffset) / (1 - lineOffset)) + 1/n);
+    }
+}
+*/
+
+
+void GCamera::getClipPlanes(
+    const Rect2D&       viewport,
+    Array<Plane>&       clip) const {
+
+    Frustum fr;
+    getFrustum(viewport, fr);
+    clip.resize(fr.faceArray.size(), DONT_SHRINK_UNDERLYING_ARRAY);
+    for (int f = 0; f < clip.size(); ++f) {
+        clip[f] = fr.faceArray[f].plane;
+    }
+
+    /*
+    clip.resize(0, DONT_SHRINK_UNDERLYING_ARRAY);
+
+    double screenWidth  = viewport.width();
+    double screenHeight = viewport.height();
+
+	// First construct the planes.  Do this in the order of near, left,
+    // right, bottom, top, far so that early out clipping tests are likely
+    // to end quickly.
+
+	double fovx = screenWidth * fieldOfView / screenHeight;
+
+	// Near (recall that nearPlane, farPlane are positive numbers, so
+	// we need to negate them to produce actual z values.)
+	clip.append(Plane(Vector3(0,0,-1), Vector3(0,0,-nearPlane)));
+
+    // Right
+    clip.append(Plane(Vector3(-cos(fovx/2), 0, -sin(fovx/2)), Vector3::zero()));
+
+	// Left
+	clip.append(Plane(Vector3(-clip.last().normal().x, 0, clip.last().normal().z), Vector3::zero()));
+
+    // Top
+    clip.append(Plane(Vector3(0, -cos(fieldOfView/2), -sin(fieldOfView/2)), Vector3::zero()));
+
+	// Bottom
+	clip.append(Plane(Vector3(0, -clip.last().normal().y, clip.last().normal().z), Vector3::zero()));
+
+    // Far
+    if (farPlane < inf()) {
+    	clip.append(Plane(Vector3(0, 0, 1), Vector3(0, 0, -farPlane)));
+    }
+
+	// Now transform the planes to world space
+	for (int p = 0; p < clip.size(); ++p) {
+		// Since there is no scale factor, we don't have to 
+		// worry about the inverse transpose of the normal.
+        Vector3 normal;
+        float d;
+
+        clip[p].getEquation(normal, d);
+		
+		Vector3 newNormal = cframe.rotation * normal;
+	    
+        if (isFinite(d)) {
+    		d = (newNormal * -d + cframe.translation).dot(newNormal);
+    		clip[p] = Plane(newNormal, newNormal * d);
+        } else {
+            // When d is infinite, we can't multiply 0's by it without
+            // generating NaNs.
+            clip[p] = Plane::fromEquation(newNormal.x, newNormal.y, newNormal.z, d);
+        }
+	}
+    */
+}
+
+
+GCamera::Frustum GCamera::frustum(const Rect2D& viewport) const {
+    Frustum f;
+    getFrustum(viewport, f);
+    return f;
+}
+
+
+void GCamera::getFrustum(const Rect2D& viewport, Frustum& fr) const {
+
+    // The volume is the convex hull of the vertices definining the view
+    // frustum and the light source point at infinity.
+
+    const float x               = getViewportWidth(viewport) / 2;
+    const float y               = getViewportHeight(viewport) / 2;
+    const float z               = getNearPlaneZ();
+    const float w               = z / getFarPlaneZ();
+	const float fovx            = x * fieldOfView / y;
+
+    // Near face (ccw from UR)
+    fr.vertexPos.append(
+        Vector4( x,  y, z, 1),
+        Vector4(-x,  y, z, 1),
+        Vector4(-x, -y, z, 1),
+        Vector4( x, -y, z, 1));
+
+    // Far face (ccw from UR, from origin)
+    fr.vertexPos.append(
+        Vector4( x,  y, z, w),
+        Vector4(-x,  y, z, w),
+        Vector4(-x, -y, z, w),
+        Vector4( x, -y, z, w));
+
+    Frustum::Face face;
+
+    // Near plane (wind backwards so normal faces into frustum)
+	// Recall that nearPlane, farPlane are positive numbers, so
+	// we need to negate them to produce actual z values.
+	face.plane = Plane(Vector3(0,0,-1), Vector3(0,0,-nearPlane));
+    face.vertexIndex[0] = 3;
+    face.vertexIndex[1] = 2;
+    face.vertexIndex[2] = 1;
+    face.vertexIndex[3] = 0;
+    fr.faceArray.append(face);
+
+    // Right plane
+    face.plane = Plane(Vector3(-cosf(fovx/2), 0, -sinf(fovx/2)), Vector3::zero());
+    face.vertexIndex[0] = 0;
+    face.vertexIndex[1] = 4;
+    face.vertexIndex[2] = 7;
+    face.vertexIndex[3] = 3;
+    fr.faceArray.append(face);
+
+    // Left plane
+	face.plane = Plane(Vector3(-fr.faceArray.last().plane.normal().x, 0, fr.faceArray.last().plane.normal().z), Vector3::zero());
+    face.vertexIndex[0] = 5;
+    face.vertexIndex[1] = 1;
+    face.vertexIndex[2] = 2;
+    face.vertexIndex[3] = 6;
+    fr.faceArray.append(face);
+
+    // Top plane
+    face.plane = Plane(Vector3(0, -cosf(fieldOfView/2.0f), -sinf(fieldOfView/2.0f)), Vector3::zero());
+    face.vertexIndex[0] = 1;
+    face.vertexIndex[1] = 5;
+    face.vertexIndex[2] = 4;
+    face.vertexIndex[3] = 0;
+    fr.faceArray.append(face);
+
+    // Bottom plane
+	face.plane = Plane(Vector3(0, -fr.faceArray.last().plane.normal().y, fr.faceArray.last().plane.normal().z), Vector3::zero());
+    face.vertexIndex[0] = 2;
+    face.vertexIndex[1] = 3;
+    face.vertexIndex[2] = 7;
+    face.vertexIndex[3] = 6;
+    fr.faceArray.append(face);
+
+    // Far plane
+    if (farPlane < inf()) {
+    	face.plane = Plane(Vector3(0, 0, 1), Vector3(0, 0, -farPlane));
+        face.vertexIndex[0] = 4;
+        face.vertexIndex[1] = 5;
+        face.vertexIndex[2] = 6;
+        face.vertexIndex[3] = 7;
+        fr.faceArray.append(face);
+    }
+
+    // Transform vertices to world space
+    for (int v = 0; v < fr.vertexPos.size(); ++v) {
+        fr.vertexPos[v] = cframe.toWorldSpace(fr.vertexPos[v]);
+    }
+
+	// Transform planes to world space
+	for (int p = 0; p < fr.faceArray.size(); ++p) {
+		// Since there is no scale factor, we don't have to 
+		// worry about the inverse transpose of the normal.
+        Vector3 normal;
+        float d;
+
+        fr.faceArray[p].plane.getEquation(normal, d);
+		
+		Vector3 newNormal = cframe.rotation * normal;
+	    
+        if (isFinite(d)) {
+    		d = (newNormal * -d + cframe.translation).dot(newNormal);
+    		fr.faceArray[p].plane = Plane(newNormal, newNormal * d);
+        } else {
+            // When d is infinite, we can't multiply 0's by it without
+            // generating NaNs.
+            fr.faceArray[p].plane = Plane::fromEquation(newNormal.x, newNormal.y, newNormal.z, d);
+        }
+	}
+}
+
+
+void GCamera::get3DViewportCorners(
+    const Rect2D& viewport,
+    Vector3& outUR,
+    Vector3& outUL,
+    Vector3& outLL,
+    Vector3& outLR) const {
+
+    // Must be kept in sync with getFrustum()
+
+    const float sign            = CoordinateFrame::zLookDirection;
+    const float w               = -sign * getViewportWidth(viewport) / 2.0f;
+    const float h               = getViewportHeight(viewport) / 2.0f;
+    const float z               = -sign * getNearPlaneZ();
+
+    // Compute the points
+    outUR = Vector3( w,  h, z);
+    outUL = Vector3(-w,  h, z);
+    outLL = Vector3(-w, -h, z);
+    outLR = Vector3( w, -h, z);
+
+    // Take to world space
+    outUR = cframe.pointToWorldSpace(outUR);
+    outUL = cframe.pointToWorldSpace(outUL);
+    outLR = cframe.pointToWorldSpace(outLR);
+    outLL = cframe.pointToWorldSpace(outLL);
+}
+
+
+void GCamera::setPosition(const Vector3& t) { 
+    cframe.translation = t;
+}
+
+
+void GCamera::lookAt(const Vector3& position, const Vector3& up) { 
+    cframe.lookAt(position, up);
+}
+
+
+void GCamera::serialize(BinaryOutput& bo) const {
+	bo.writeFloat64(fieldOfView);
+	bo.writeFloat64(imagePlaneDepth);
+	debugAssert(nearPlane > 0.0f);
+	bo.writeFloat64(nearPlane);
+	debugAssert(farPlane > 0.0f);
+	bo.writeFloat64(farPlane);
+	cframe.serialize(bo);
+}
+
+
+void GCamera::deserialize(BinaryInput& bi) {
+	fieldOfView = (float)bi.readFloat64();
+	imagePlaneDepth = (float)bi.readFloat64();
+	nearPlane = (float)bi.readFloat64();
+	debugAssert(nearPlane > 0.0f);
+	farPlane = (float)bi.readFloat64();
+	debugAssert(farPlane > 0.0f);
+	cframe.deserialize(bi);
+}
+
+
+} // namespace

@@ -1,138 +1,1127 @@
 // from server: 100% by auto
-// roc 2007-08 004be0c0  unit: RakPeer  size: 418 bytes
-// Make this compile to the exact bytes below, then: roc check 2007-08 004be0c0
-//
-// 004be0c0  81ec80000000         sub esp, 0x80
-// 004be0c6  53                   push ebx
-// 004be0c7  55                   push ebp
-// 004be0c8  56                   push esi
-// 004be0c9  57                   push edi
-// 004be0ca  8b842494000000       mov eax, dword ptr [esp + 0x94]
-// 004be0d1  8b08                 mov ecx, dword ptr [eax]
-// 004be0d3  8b5004               mov edx, dword ptr [eax + 4]
-// 004be0d6  894c2430             mov dword ptr [esp + 0x30], ecx
-// 004be0da  8b4808               mov ecx, dword ptr [eax + 8]
-// 004be0dd  89542434             mov dword ptr [esp + 0x34], edx
-// 004be0e1  8b500c               mov edx, dword ptr [eax + 0xc]
-// 004be0e4  33c0                 xor eax, eax
-// 004be0e6  89442440             mov dword ptr [esp + 0x40], eax
-// 004be0ea  89442444             mov dword ptr [esp + 0x44], eax
-// 004be0ee  89442448             mov dword ptr [esp + 0x48], eax
-// 004be0f2  8944244c             mov dword ptr [esp + 0x4c], eax
-// 004be0f6  8b842498000000       mov eax, dword ptr [esp + 0x98]
-// 004be0fd  894c2438             mov dword ptr [esp + 0x38], ecx
-// 004be101  8b08                 mov ecx, dword ptr [eax]
-// 004be103  8954243c             mov dword ptr [esp + 0x3c], edx
-// 004be107  8b5004               mov edx, dword ptr [eax + 4]
-// 004be10a  894c2470             mov dword ptr [esp + 0x70], ecx
-// 004be10e  8b4808               mov ecx, dword ptr [eax + 8]
-// 004be111  89542474             mov dword ptr [esp + 0x74], edx
-// 004be115  8b500c               mov edx, dword ptr [eax + 0xc]
-// 004be118  33c0                 xor eax, eax
-// 004be11a  89842480000000       mov dword ptr [esp + 0x80], eax
-// 004be121  89842484000000       mov dword ptr [esp + 0x84], eax
-// 004be128  89842488000000       mov dword ptr [esp + 0x88], eax
-// 004be12f  8984248c000000       mov dword ptr [esp + 0x8c], eax
-// 004be136  8b84249c000000       mov eax, dword ptr [esp + 0x9c]
-// 004be13d  894c2478             mov dword ptr [esp + 0x78], ecx
-// 004be141  8b08                 mov ecx, dword ptr [eax]
-// 004be143  8954247c             mov dword ptr [esp + 0x7c], edx
-// 004be147  8b5004               mov edx, dword ptr [eax + 4]
-// 004be14a  894c2450             mov dword ptr [esp + 0x50], ecx
-// 004be14e  8b4808               mov ecx, dword ptr [eax + 8]
-// 004be151  89542454             mov dword ptr [esp + 0x54], edx
-// 004be155  8b500c               mov edx, dword ptr [eax + 0xc]
-// 004be158  33c0                 xor eax, eax
-// 004be15a  89442460             mov dword ptr [esp + 0x60], eax
-// 004be15e  89442464             mov dword ptr [esp + 0x64], eax
-// 004be162  89442468             mov dword ptr [esp + 0x68], eax
-// 004be166  8944246c             mov dword ptr [esp + 0x6c], eax
-// 004be16a  89442414             mov dword ptr [esp + 0x14], eax
-// 004be16e  89442418             mov dword ptr [esp + 0x18], eax
-// 004be172  8944241c             mov dword ptr [esp + 0x1c], eax
-// 004be176  89442420             mov dword ptr [esp + 0x20], eax
-// 004be17a  89442424             mov dword ptr [esp + 0x24], eax
-// 004be17e  89442428             mov dword ptr [esp + 0x28], eax
-// 004be182  8944242c             mov dword ptr [esp + 0x2c], eax
-// 004be186  8d442430             lea eax, [esp + 0x30]
-// 004be18a  894c2458             mov dword ptr [esp + 0x58], ecx
-// 004be18e  50                   push eax
-// 004be18f  8d4c2454             lea ecx, [esp + 0x54]
-// 004be193  89542460             mov dword ptr [esp + 0x60], edx
-// 004be197  51                   push ecx
-// 004be198  8bd0                 mov edx, eax
-// 004be19a  52                   push edx
-// 004be19b  c744241c01000000     mov dword ptr [esp + 0x1c], 1
-// 004be1a3  e8c8d1ffff           call 0x4bb370
-// 004be1a8  83c40c               add esp, 0xc
-// 004be1ab  33f6                 xor esi, esi
-// 004be1ad  33ed                 xor ebp, ebp
-// 004be1af  90                   nop 
-// 004be1b0  8b5cac70             mov ebx, dword ptr [esp + ebp*4 + 0x70]
-// 004be1b4  85db                 test ebx, ebx
-// 004be1b6  bf20000000           mov edi, 0x20
-// 004be1bb  746a                 je 0x4be227
-// 004be1bd  8d4900               lea ecx, [ecx]
-// 004be1c0  f6c301               test bl, 1
-// 004be1c3  7456                 je 0x4be21b
-// 004be1c5  85f6                 test esi, esi
-// 004be1c7  742b                 je 0x4be1f4
-// 004be1c9  8da42400000000       lea esp, [esp]
-// 004be1d0  8d442430             lea eax, [esp + 0x30]
-// 004be1d4  50                   push eax
-// 004be1d5  e8c6baffff           call 0x4b9ca0
-// 004be1da  8d4c2434             lea ecx, [esp + 0x34]
-// 004be1de  51                   push ecx
-// 004be1df  8d542458             lea edx, [esp + 0x58]
-// 004be1e3  52                   push edx
-// 004be1e4  8bc1                 mov eax, ecx
-// 004be1e6  50                   push eax
-// 004be1e7  e884d1ffff           call 0x4bb370
-// 004be1ec  83c410               add esp, 0x10
-// 004be1ef  83ee01               sub esi, 1
-// 004be1f2  75dc                 jne 0x4be1d0
-// 004be1f4  8d4c2410             lea ecx, [esp + 0x10]
-// 004be1f8  51                   push ecx
-// 004be1f9  8d542434             lea edx, [esp + 0x34]
-// 004be1fd  52                   push edx
-// 004be1fe  8bc1                 mov eax, ecx
-// 004be200  50                   push eax
-// 004be201  e89ae3ffff           call 0x4bc5a0
-// 004be206  8d4c241c             lea ecx, [esp + 0x1c]
-// 004be20a  51                   push ecx
-// 004be20b  8d542460             lea edx, [esp + 0x60]
-// 004be20f  52                   push edx
-// 004be210  8bc1                 mov eax, ecx
-// 004be212  50                   push eax
-// 004be213  e858d1ffff           call 0x4bb370
-// 004be218  83c418               add esp, 0x18
-// 004be21b  d1eb                 shr ebx, 1
-// 004be21d  83c601               add esi, 1
-// 004be220  83ef01               sub edi, 1
-// 004be223  85db                 test ebx, ebx
-// 004be225  7599                 jne 0x4be1c0
-// 004be227  83c501               add ebp, 1
-// 004be22a  03f7                 add esi, edi
-// 004be22c  83fd04               cmp ebp, 4
-// 004be22f  0f827bffffff         jb 0x4be1b0
-// 004be235  8b8424a0000000       mov eax, dword ptr [esp + 0xa0]
-// 004be23c  8b4c2410             mov ecx, dword ptr [esp + 0x10]
-// 004be240  8b542414             mov edx, dword ptr [esp + 0x14]
-// 004be244  5f                   pop edi
-// 004be245  8908                 mov dword ptr [eax], ecx
-// 004be247  8b4c2414             mov ecx, dword ptr [esp + 0x14]
-// 004be24b  895004               mov dword ptr [eax + 4], edx
-// 004be24e  8b542418             mov edx, dword ptr [esp + 0x18]
-// 004be252  5e                   pop esi
-// 004be253  5d                   pop ebp
-// 004be254  894808               mov dword ptr [eax + 8], ecx
-// 004be257  89500c               mov dword ptr [eax + 0xc], edx
-// 004be25a  5b                   pop ebx
-// 004be25b  81c480000000         add esp, 0x80
-// 004be261  c3                   ret 
-
 // from server: 29% by colin
 // roc-lang: cpp
 // roc-cl: 50727
 // roc-flags: /O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MT
 // roc-lib: ogre-1.6.4 OgreAutoParamDataSource.cpp
+
+// Candidate translation unit (score above; library headers required).
+/*
+-----------------------------------------------------------------------------
+This source file is part of OGRE
+    (Object-oriented Graphics Rendering Engine)
+For the latest info, see http://www.ogre3d.org
+
+Copyright (c) 2000-2006 Torus Knot Software Ltd
+Also see acknowledgements in Readme.html
+
+This program is free software; you can redistribute it and/or modify it under
+the terms of the GNU Lesser General Public License as published by the Free Software
+Foundation; either version 2 of the License, or (at your option) any later
+version.
+
+This program is distributed in the hope that it will be useful, but WITHOUT
+ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more details.
+
+You should have received a copy of the GNU Lesser General Public License along with
+this program; if not, write to the Free Software Foundation, Inc., 59 Temple
+Place - Suite 330, Boston, MA 02111-1307, USA, or go to
+http://www.gnu.org/copyleft/lesser.txt.
+
+You may alternatively use this source under the terms of a specific version of
+the OGRE Unrestricted License provided you have obtained such a license from
+Torus Knot Software Ltd.
+-----------------------------------------------------------------------------
+*/
+#include "OgreStableHeaders.h"
+
+#include "OgreAutoParamDataSource.h"
+#include "OgreRenderable.h"
+#include "OgreCamera.h"
+#include "OgreRenderTarget.h"
+#include "OgreControllerManager.h"
+#include "OgreMath.h"
+#include "OgreRoot.h"
+#include "OgreRenderSystem.h"
+
+namespace Ogre {
+    const Matrix4 PROJECTIONCLIPSPACE2DTOIMAGESPACE_PERSPECTIVE(
+        0.5,    0,    0,  0.5, 
+        0,   -0.5,    0,  0.5, 
+        0,      0,    1,    0,
+        0,      0,    0,    1);
+
+    //-----------------------------------------------------------------------------
+    AutoParamDataSource::AutoParamDataSource()
+        : mWorldMatrixDirty(true),
+         mViewMatrixDirty(true),
+         mProjMatrixDirty(true),
+         mWorldViewMatrixDirty(true),
+         mViewProjMatrixDirty(true),
+         mWorldViewProjMatrixDirty(true),
+         mInverseWorldMatrixDirty(true),
+         mInverseWorldViewMatrixDirty(true),
+         mInverseViewMatrixDirty(true),
+         mInverseTransposeWorldMatrixDirty(true),
+         mInverseTransposeWorldViewMatrixDirty(true),
+		 mCameraPositionDirty(true),
+         mCameraPositionObjectSpaceDirty(true),
+		 mSceneDepthRangeDirty(true),
+		 mLodCameraPositionDirty(true),
+		 mLodCameraPositionObjectSpaceDirty(true),
+         mCurrentRenderable(0),
+         mCurrentCamera(0), 
+		 mCameraRelativeRendering(false),
+         mCurrentRenderTarget(0),
+         mCurrentViewport(0), 
+		 mCurrentSceneManager(0),
+		 mMainCamBoundsInfo(0),
+         mCurrentPass(0)
+    {
+        mBlankLight.setDiffuseColour(ColourValue::Black);
+        mBlankLight.setSpecularColour(ColourValue::Black);
+        mBlankLight.setAttenuation(0,1,0,0);
+		for(size_t i = 0; i < OGRE_MAX_SIMULTANEOUS_LIGHTS; ++i)
+		{
+			mTextureViewProjMatrixDirty[i] = true;
+			mTextureWorldViewProjMatrixDirty[i] = true;
+			mSpotlightViewProjMatrixDirty[i] = true;
+			mSpotlightWorldViewProjMatrixDirty[i] = true;
+			mCurrentTextureProjector[i] = 0;
+			mShadowCamDepthRangesDirty[i] = false;
+		}
+
+    }
+    //-----------------------------------------------------------------------------
+    AutoParamDataSource::~AutoParamDataSource()
+    {
+    }
+	//-----------------------------------------------------------------------------
+    const Light& AutoParamDataSource::getLight(size_t index) const
+    {
+        // If outside light range, return a blank light to ensure zeroised for program
+		if (index < mCurrentLightList->size())
+		{
+			return *((*mCurrentLightList)[index]);
+		}
+		else
+        {
+            return mBlankLight;
+        }        
+    }
+    //-----------------------------------------------------------------------------
+    void AutoParamDataSource::setCurrentRenderable(const Renderable* rend)
+    {
+		mCurrentRenderable = rend;
+		mWorldMatrixDirty = true;
+        mViewMatrixDirty = true;
+        mProjMatrixDirty = true;
+		mWorldViewMatrixDirty = true;
+        mViewProjMatrixDirty = true;
+		mWorldViewProjMatrixDirty = true;
+		mInverseWorldMatrixDirty = true;
+        mInverseViewMatrixDirty = true;
+		mInverseWorldViewMatrixDirty = true;
+		mInverseTransposeWorldMatrixDirty = true;
+		mInverseTransposeWorldViewMatrixDirty = true;
+		mCameraPositionObjectSpaceDirty = true;
+		mLodCameraPositionObjectSpaceDirty = true;
+		for(size_t i = 0; i < OGRE_MAX_SIMULTANEOUS_LIGHTS; ++i)
+		{
+			mTextureWorldViewProjMatrixDirty[i] = true;
+			mSpotlightWorldViewProjMatrixDirty[i] = true;
+		}
+
+    }
+    //-----------------------------------------------------------------------------
+    void AutoParamDataSource::setCurrentCamera(const Camera* cam, bool useCameraRelative)
+    {
+        mCurrentCamera = cam;
+		mCameraRelativeRendering = useCameraRelative;
+		mCameraRelativePosition = cam->getDerivedPosition();
+        mViewMatrixDirty = true;
+        mProjMatrixDirty = true;
+        mWorldViewMatrixDirty = true;
+        mViewProjMatrixDirty = true;
+        mWorldViewProjMatrixDirty = true;
+        mInverseViewMatrixDirty = true;
+        mInverseWorldViewMatrixDirty = true;
+        mInverseTransposeWorldViewMatrixDirty = true;
+        mCameraPositionObjectSpaceDirty = true;
+        mCameraPositionDirty = true;
+		mLodCameraPositionObjectSpaceDirty = true;
+		mLodCameraPositionDirty = true;
+    }
+    //-----------------------------------------------------------------------------
+    void AutoParamDataSource::setCurrentLightList(const LightList* ll)
+    {
+        mCurrentLightList = ll;
+		for(size_t i = 0; i < ll->size() && i < OGRE_MAX_SIMULTANEOUS_LIGHTS; ++i)
+		{
+			mSpotlightViewProjMatrixDirty[i] = true;
+			mSpotlightWorldViewProjMatrixDirty[i] = true;
+		}
+
+    }
+	//---------------------------------------------------------------------
+	float AutoParamDataSource::getLightNumber(size_t index) const
+	{
+		return static_cast<float>(getLight(index)._getIndexInFrame());
+	}
+	//-----------------------------------------------------------------------------
+	const ColourValue& AutoParamDataSource::getLightDiffuseColour(size_t index) const
+	{
+		return getLight(index).getDiffuseColour();
+	}
+	//-----------------------------------------------------------------------------
+	const ColourValue& AutoParamDataSource::getLightSpecularColour(size_t index) const
+	{
+		return getLight(index).getSpecularColour();
+	}
+	//-----------------------------------------------------------------------------
+	const ColourValue AutoParamDataSource::getLightDiffuseColourWithPower(size_t index) const
+	{
+		const Light& l = getLight(index);
+		ColourValue scaled(l.getDiffuseColour());
+		Real power = l.getPowerScale();
+		// scale, but not alpha
+		scaled.r *= power;
+		scaled.g *= power;
+		scaled.b *= power;
+		return scaled;
+	}
+	//-----------------------------------------------------------------------------
+	const ColourValue AutoParamDataSource::getLightSpecularColourWithPower(size_t index) const
+	{
+		const Light& l = getLight(index);
+		ColourValue scaled(l.getSpecularColour());
+		Real power = l.getPowerScale();
+		// scale, but not alpha
+		scaled.r *= power;
+		scaled.g *= power;
+		scaled.b *= power;
+		return scaled;
+	}
+	//-----------------------------------------------------------------------------
+	const Vector3& AutoParamDataSource::getLightPosition(size_t index) const
+	{
+		return getLight(index).getDerivedPosition(true);
+	}
+	//-----------------------------------------------------------------------------
+	Vector4 AutoParamDataSource::getLightAs4DVector(size_t index) const
+	{
+		return getLight(index).getAs4DVector(true);
+	}
+	//-----------------------------------------------------------------------------
+	const Vector3& AutoParamDataSource::getLightDirection(size_t index) const
+	{
+		return getLight(index).getDerivedDirection();
+	}
+	//-----------------------------------------------------------------------------
+	Real AutoParamDataSource::getLightPowerScale(size_t index) const
+	{
+		return getLight(index).getPowerScale();
+	}
+	//-----------------------------------------------------------------------------
+	Vector4 AutoParamDataSource::getLightAttenuation(size_t index) const
+	{
+		// range, const, linear, quad
+        const Light& l = getLight(index);
+		return Vector4(l.getAttenuationRange(),
+				       l.getAttenuationConstant(),
+					   l.getAttenuationLinear(),
+					   l.getAttenuationQuadric());
+	}
+	//-----------------------------------------------------------------------------
+	Vector4 AutoParamDataSource::getSpotlightParams(size_t index) const
+	{
+		// inner, outer, fallof, isSpot
+		const Light& l = getLight(index);
+		if (l.getType() == Light::LT_SPOTLIGHT)
+		{
+			return Vector4(Math::Cos(l.getSpotlightInnerAngle().valueRadians() * 0.5),
+						   Math::Cos(l.getSpotlightOuterAngle().valueRadians() * 0.5),
+						   l.getSpotlightFalloff(),
+						   1.0);
+		}
+		else
+		{
+			// Use safe values which result in no change to point & dir light calcs
+			// The spot factor applied to the usual lighting calc is 
+			// pow((dot(spotDir, lightDir) - y) / (x - y), z)
+			// Therefore if we set z to 0.0f then the factor will always be 1
+			// since pow(anything, 0) == 1
+			// However we also need to ensure we don't overflow because of the division
+			// therefore set x = 1 and y = 0 so divisor doesn't change scale
+			return Vector4(1.0, 0.0, 0.0, 1.0); // since the main op is pow(.., vec4.z), this will result in 1.0
+		}
+	}
+	//-----------------------------------------------------------------------------
+	void AutoParamDataSource::setMainCamBoundsInfo(VisibleObjectsBoundsInfo* info)
+	{
+		mMainCamBoundsInfo = info;
+		mSceneDepthRangeDirty = true;
+	}
+	//-----------------------------------------------------------------------------
+	void AutoParamDataSource::setCurrentSceneManager(const SceneManager* sm)
+	{
+		mCurrentSceneManager = sm;
+	}
+    //-----------------------------------------------------------------------------
+    void AutoParamDataSource::setWorldMatrices(const Matrix4* m, size_t count)
+    {
+        mWorldMatrixArray = m;
+        mWorldMatrixCount = count;
+        mWorldMatrixDirty = false;
+    }
+    //-----------------------------------------------------------------------------
+    const Matrix4& AutoParamDataSource::getWorldMatrix(void) const
+    {
+        if (mWorldMatrixDirty)
+        {
+            mWorldMatrixArray = mWorldMatrix;
+            mCurrentRenderable->getWorldTransforms(mWorldMatrix);
+            mWorldMatrixCount = mCurrentRenderable->getNumWorldTransforms();
+			if (mCameraRelativeRendering)
+			{
+				for (size_t i = 0; i < mWorldMatrixCount; ++i)
+				{
+					mWorldMatrix[i].setTrans(mWorldMatrix[i].getTrans() - mCameraRelativePosition);
+				}
+			}
+            mWorldMatrixDirty = false;
+        }
+        return mWorldMatrixArray[0];
+    }
+    //-----------------------------------------------------------------------------
+    size_t AutoParamDataSource::getWorldMatrixCount(void) const
+    {
+		// trigger derivation
+		getWorldMatrix();
+        return mWorldMatrixCount;
+    }
+    //-----------------------------------------------------------------------------
+    const Matrix4* AutoParamDataSource::getWorldMatrixArray(void) const
+    {
+		// trigger derivation
+		getWorldMatrix();
+        return mWorldMatrixArray;
+    }
+    //-----------------------------------------------------------------------------
+    const Matrix4& AutoParamDataSource::getViewMatrix(void) const
+    {
+        if (mViewMatrixDirty)
+        {
+            if (mCurrentRenderable && mCurrentRenderable->getUseIdentityView())
+                mViewMatrix = Matrix4::IDENTITY;
+            else
+			{
+                mViewMatrix = mCurrentCamera->getViewMatrix(true);
+				if (mCameraRelativeRendering)
+				{
+					mViewMatrix.setTrans(Vector3::ZERO);
+				}
+
+			}
+            mViewMatrixDirty = false;
+        }
+        return mViewMatrix;
+    }
+    //-----------------------------------------------------------------------------
+    const Matrix4& AutoParamDataSource::getViewProjectionMatrix(void) const
+    {
+        if (mViewProjMatrixDirty)
+        {
+            mViewProjMatrix = getProjectionMatrix() * getViewMatrix();
+            mViewProjMatrixDirty = false;
+        }
+        return mViewProjMatrix;
+    }
+    //-----------------------------------------------------------------------------
+    const Matrix4& AutoParamDataSource::getProjectionMatrix(void) const
+    {
+        if (mProjMatrixDirty)
+        {
+            // NB use API-independent projection matrix since GPU programs
+            // bypass the API-specific handedness and use right-handed coords
+            if (mCurrentRenderable && mCurrentRenderable->getUseIdentityProjection())
+            {
+                // Use identity projection matrix, still need to take RS depth into account.
+                RenderSystem* rs = Root::getSingleton().getRenderSystem();
+                rs->_convertProjectionMatrix(Matrix4::IDENTITY, mProjectionMatrix, true);
+            }
+            else
+            {
+                mProjectionMatrix = mCurrentCamera->getProjectionMatrixWithRSDepth();
+            }
+            if (mCurrentRenderTarget && mCurrentRenderTarget->requiresTextureFlipping())
+            {
+                // Because we're not using setProjectionMatrix, this needs to be done here
+                // Invert transformed y
+                mProjectionMatrix[1][0] = -mProjectionMatrix[1][0];
+                mProjectionMatrix[1][1] = -mProjectionMatrix[1][1];
+                mProjectionMatrix[1][2] = -mProjectionMatrix[1][2];
+                mProjectionMatrix[1][3] = -mProjectionMatrix[1][3];
+            }
+            mProjMatrixDirty = false;
+        }
+        return mProjectionMatrix;
+    }
+    //-----------------------------------------------------------------------------
+    const Matrix4& AutoParamDataSource::getWorldViewMatrix(void) const
+    {
+        if (mWorldViewMatrixDirty)
+        {
+            mWorldViewMatrix = getViewMatrix().concatenateAffine(getWorldMatrix());
+            mWorldViewMatrixDirty = false;
+        }
+        return mWorldViewMatrix;
+    }
+    //-----------------------------------------------------------------------------
+    const Matrix4& AutoParamDataSource::getWorldViewProjMatrix(void) const
+    {
+        if (mWorldViewProjMatrixDirty)
+        {
+            mWorldViewProjMatrix = getProjectionMatrix() * getWorldViewMatrix();
+            mWorldViewProjMatrixDirty = false;
+        }
+        return mWorldViewProjMatrix;
+    }
+    //-----------------------------------------------------------------------------
+    const Matrix4& AutoParamDataSource::getInverseWorldMatrix(void) const
+    {
+        if (mInverseWorldMatrixDirty)
+        {
+            mInverseWorldMatrix = getWorldMatrix().inverseAffine();
+            mInverseWorldMatrixDirty = false;
+        }
+        return mInverseWorldMatrix;
+    }
+    //-----------------------------------------------------------------------------
+    const Matrix4& AutoParamDataSource::getInverseWorldViewMatrix(void) const
+    {
+        if (mInverseWorldViewMatrixDirty)
+        {
+            mInverseWorldViewMatrix = getWorldViewMatrix().inverseAffine();
+            mInverseWorldViewMatrixDirty = false;
+        }
+        return mInverseWorldViewMatrix;
+    }
+    //-----------------------------------------------------------------------------
+    const Matrix4& AutoParamDataSource::getInverseViewMatrix(void) const
+    {
+        if (mInverseViewMatrixDirty)
+        {
+            mInverseViewMatrix = getViewMatrix().inverseAffine();
+            mInverseViewMatrixDirty = false;
+        }
+        return mInverseViewMatrix;
+    }
+    //-----------------------------------------------------------------------------
+    const Matrix4& AutoParamDataSource::getInverseTransposeWorldMatrix(void) const
+    {
+        if (mInverseTransposeWorldMatrixDirty)
+        {
+            mInverseTransposeWorldMatrix = getInverseWorldMatrix().transpose();
+            mInverseTransposeWorldMatrixDirty = false;
+        }
+        return mInverseTransposeWorldMatrix;
+    }
+    //-----------------------------------------------------------------------------
+    const Matrix4& AutoParamDataSource::getInverseTransposeWorldViewMatrix(void) const
+    {
+        if (mInverseTransposeWorldViewMatrixDirty)
+        {
+            mInverseTransposeWorldViewMatrix = getInverseWorldViewMatrix().transpose();
+            mInverseTransposeWorldViewMatrixDirty = false;
+        }
+        return mInverseTransposeWorldViewMatrix;
+    }
+    //-----------------------------------------------------------------------------
+    const Vector4& AutoParamDataSource::getCameraPosition(void) const
+    {
+		if(mCameraPositionDirty)
+		{
+			Vector3 vec3 = mCurrentCamera->getDerivedPosition();
+			if (mCameraRelativeRendering)
+			{
+				vec3 -= mCameraRelativePosition;
+			}
+			mCameraPosition[0] = vec3[0];
+			mCameraPosition[1] = vec3[1];
+			mCameraPosition[2] = vec3[2];
+			mCameraPosition[3] = 1.0;
+			mCameraPositionDirty = false;
+		}
+		return mCameraPosition;
+    }    
+    //-----------------------------------------------------------------------------
+    const Vector4& AutoParamDataSource::getCameraPositionObjectSpace(void) const
+    {
+        if (mCameraPositionObjectSpaceDirty)
+        {
+			if (mCameraRelativeRendering)
+			{
+				mCameraPositionObjectSpace = 
+					getInverseWorldMatrix().transformAffine(Vector3::ZERO);
+			}
+			else
+			{
+				mCameraPositionObjectSpace = 
+					getInverseWorldMatrix().transformAffine(mCurrentCamera->getDerivedPosition());
+			}
+            mCameraPositionObjectSpaceDirty = false;
+        }
+        return mCameraPositionObjectSpace;
+    }
+	//-----------------------------------------------------------------------------
+	const Vector4& AutoParamDataSource::getLodCameraPosition(void) const
+	{
+		if(mLodCameraPositionDirty)
+		{
+			Vector3 vec3 = mCurrentCamera->getLodCamera()->getDerivedPosition();
+            if (mCameraRelativeRendering)
+            {
+                vec3 -= mCameraRelativePosition;
+            }
+			mLodCameraPosition[0] = vec3[0];
+			mLodCameraPosition[1] = vec3[1];
+			mLodCameraPosition[2] = vec3[2];
+			mLodCameraPosition[3] = 1.0;
+			mLodCameraPositionDirty = false;
+		}
+		return mLodCameraPosition;
+	}
+	//-----------------------------------------------------------------------------
+	const Vector4& AutoParamDataSource::getLodCameraPositionObjectSpace(void) const
+	{
+		if (mLodCameraPositionObjectSpaceDirty)
+		{
+            if (mCameraRelativeRendering)
+			{
+				mLodCameraPositionObjectSpace = 
+					getInverseWorldMatrix().transformAffine(mCurrentCamera->getLodCamera()->getDerivedPosition()
+						- mCameraRelativePosition);
+			}
+			else
+			{
+			    mLodCameraPositionObjectSpace = 
+				    getInverseWorldMatrix().transformAffine(mCurrentCamera->getLodCamera()->getDerivedPosition());
+            }
+            mLodCameraPositionObjectSpaceDirty = false;
+		}
+		return mLodCameraPositionObjectSpace;
+	}
+    //-----------------------------------------------------------------------------
+	void AutoParamDataSource::setAmbientLightColour(const ColourValue& ambient)
+	{
+		mAmbientLight = ambient;
+	}
+	//---------------------------------------------------------------------
+	float AutoParamDataSource::getLightCount() const
+	{
+		return static_cast<float>(mCurrentLightList->size());
+	}
+	//---------------------------------------------------------------------
+	float AutoParamDataSource::getLightCastsShadows(size_t index) const
+	{
+		return getLight(index).getCastShadows() ? 1.0f : 0.0f;
+	}
+    //-----------------------------------------------------------------------------
+	const ColourValue& AutoParamDataSource::getAmbientLightColour(void) const
+	{
+		return mAmbientLight;
+		
+	}
+    //-----------------------------------------------------------------------------
+    void AutoParamDataSource::setCurrentPass(const Pass* pass)
+    {
+        mCurrentPass = pass;
+    }
+    //-----------------------------------------------------------------------------
+    const Pass* AutoParamDataSource::getCurrentPass(void) const
+    {
+        return mCurrentPass;
+    }
+    //-----------------------------------------------------------------------------
+    Vector4 AutoParamDataSource::getTextureSize(size_t index) const
+    {
+        Vector4 size = Vector4(1,1,1,1);
+
+        if (index < mCurrentPass->getNumTextureUnitStates())
+        {
+            const TexturePtr& tex = mCurrentPass->getTextureUnitState(
+				static_cast<unsigned short>(index))->_getTexturePtr();
+            if (!tex.isNull())
+            {
+                size.x = tex->getWidth();
+                size.y = tex->getHeight();
+                size.z = tex->getDepth();
+            }
+        }
+
+        return size;
+    }
+    //-----------------------------------------------------------------------------
+    Vector4 AutoParamDataSource::getInverseTextureSize(size_t index) const
+    {
+        Vector4 size = getTextureSize(index);
+        return 1 / size;
+    }
+    //-----------------------------------------------------------------------------
+    Vector4 AutoParamDataSource::getPackedTextureSize(size_t index) const
+    {
+        Vector4 size = getTextureSize(index);
+        return Vector4(size.x, size.y, 1 / size.x, 1 / size.y);
+    }
+    //-----------------------------------------------------------------------------
+    const ColourValue& AutoParamDataSource::getSurfaceAmbientColour(void) const
+    {
+        return mCurrentPass->getAmbient();
+    }
+    //-----------------------------------------------------------------------------
+    const ColourValue& AutoParamDataSource::getSurfaceDiffuseColour(void) const
+    {
+        return mCurrentPass->getDiffuse();
+    }
+    //-----------------------------------------------------------------------------
+    const ColourValue& AutoParamDataSource::getSurfaceSpecularColour(void) const
+    {
+        return mCurrentPass->getSpecular();
+    }
+    //-----------------------------------------------------------------------------
+    const ColourValue& AutoParamDataSource::getSurfaceEmissiveColour(void) const
+    {
+        return mCurrentPass->getSelfIllumination();
+    }
+    //-----------------------------------------------------------------------------
+    Real AutoParamDataSource::getSurfaceShininess(void) const
+    {
+        return mCurrentPass->getShininess();
+    }
+    //-----------------------------------------------------------------------------
+    ColourValue AutoParamDataSource::getDerivedAmbientLightColour(void) const
+    {
+        return getAmbientLightColour() * getSurfaceAmbientColour();
+    }
+    //-----------------------------------------------------------------------------
+    ColourValue AutoParamDataSource::getDerivedSceneColour(void) const
+    {
+        ColourValue result = getDerivedAmbientLightColour() + getSurfaceEmissiveColour();
+        result.a = getSurfaceDiffuseColour().a;
+        return result;
+    }
+    //-----------------------------------------------------------------------------
+    void AutoParamDataSource::setFog(FogMode mode, const ColourValue& colour,
+        Real expDensity, Real linearStart, Real linearEnd)
+    {
+        (void)mode; // ignored
+        mFogColour = colour;
+        mFogParams.x = expDensity;
+        mFogParams.y = linearStart;
+        mFogParams.z = linearEnd;
+        mFogParams.w = linearEnd != linearStart ? 1 / (linearEnd - linearStart) : 0;
+    }
+    //-----------------------------------------------------------------------------
+    const ColourValue& AutoParamDataSource::getFogColour(void) const
+    {
+        return mFogColour;
+    }
+    //-----------------------------------------------------------------------------
+    const Vector4& AutoParamDataSource::getFogParams(void) const
+    {
+        return mFogParams;
+    }
+    //-----------------------------------------------------------------------------
+    void AutoParamDataSource::setTextureProjector(const Frustum* frust, size_t index = 0)
+    {
+		if (index < OGRE_MAX_SIMULTANEOUS_LIGHTS)
+		{
+			mCurrentTextureProjector[index] = frust;
+			mTextureViewProjMatrixDirty[index] = true;
+			mTextureWorldViewProjMatrixDirty[index] = true;
+			mShadowCamDepthRangesDirty[index] = true;
+		}
+
+    }
+    //-----------------------------------------------------------------------------
+    const Matrix4& AutoParamDataSource::getTextureViewProjMatrix(size_t index) const
+    {
+		if (index < OGRE_MAX_SIMULTANEOUS_LIGHTS)
+		{
+			if (mTextureViewProjMatrixDirty[index] && mCurrentTextureProjector[index])
+			{
+				if (mCameraRelativeRendering)
+				{
+					// World positions are now going to be relative to the camera position
+					// so we need to alter the projector view matrix to compensate
+					Matrix4 viewMatrix;
+					mCurrentTextureProjector[index]->calcViewMatrixRelative(
+						mCurrentCamera->getDerivedPosition(), viewMatrix);
+					mTextureViewProjMatrix[index] = 
+						PROJECTIONCLIPSPACE2DTOIMAGESPACE_PERSPECTIVE * 
+						mCurrentTextureProjector[index]->getProjectionMatrixWithRSDepth() * 
+						viewMatrix;
+				}
+				else
+				{
+					mTextureViewProjMatrix[index] = 
+						PROJECTIONCLIPSPACE2DTOIMAGESPACE_PERSPECTIVE * 
+						mCurrentTextureProjector[index]->getProjectionMatrixWithRSDepth() * 
+						mCurrentTextureProjector[index]->getViewMatrix();
+				}
+				mTextureViewProjMatrixDirty[index] = false;
+			}
+			return mTextureViewProjMatrix[index];
+		}
+		else
+			return Matrix4::IDENTITY;
+    }
+	//-----------------------------------------------------------------------------
+	const Matrix4& AutoParamDataSource::getTextureWorldViewProjMatrix(size_t index) const
+	{
+		if (index < OGRE_MAX_SIMULTANEOUS_LIGHTS)
+		{
+			if (mTextureWorldViewProjMatrixDirty[index] && mCurrentTextureProjector[index])
+			{
+				mTextureWorldViewProjMatrix[index] = 
+					getTextureViewProjMatrix(index)	* getWorldMatrix();
+				mTextureWorldViewProjMatrixDirty[index] = false;
+			}
+			return mTextureWorldViewProjMatrix[index];
+		}
+		else
+			return Matrix4::IDENTITY;
+	}
+	//-----------------------------------------------------------------------------
+	const Matrix4& AutoParamDataSource::getSpotlightViewProjMatrix(size_t index) const
+	{
+		if (index < OGRE_MAX_SIMULTANEOUS_LIGHTS)
+		{
+			const Light& l = getLight(index);
+
+			if (&l != &mBlankLight && 
+				l.getType() == Light::LT_SPOTLIGHT &&
+				mSpotlightViewProjMatrixDirty[index])
+			{
+				Frustum frust;
+				SceneNode dummyNode(0);
+				dummyNode.attachObject(&frust);
+
+				frust.setProjectionType(PT_PERSPECTIVE);
+				frust.setFOVy(l.getSpotlightOuterAngle());
+				frust.setAspectRatio(1.0f);
+				// set near clip the same as main camera, since they are likely
+				// to both reflect the nature of the scene
+				frust.setNearClipDistance(mCurrentCamera->getNearClipDistance());
+				// Calculate position, which same as spotlight position, in camera-relative coords if required
+				dummyNode.setPosition(l.getDerivedPosition(true));
+				// Calculate direction, which same as spotlight direction
+				Vector3 dir = - l.getDerivedDirection(); // backwards since point down -z
+				dir.normalise();
+				Vector3 up = Vector3::UNIT_Y;
+				// Check it's not coincident with dir
+				if (Math::Abs(up.dotProduct(dir)) >= 1.0f)
+				{
+					// Use camera up
+					up = Vector3::UNIT_Z;
+				}
+				// cross twice to rederive, only direction is unaltered
+				Vector3 left = dir.crossProduct(up);
+				left.normalise();
+				up = dir.crossProduct(left);
+				up.normalise();
+				// Derive quaternion from axes
+				Quaternion q;
+				q.FromAxes(left, up, dir);
+				dummyNode.setOrientation(q);
+
+				// The view matrix here already includes camera-relative changes if necessary
+				// since they are built into the frustum position
+				mSpotlightViewProjMatrix[index] = 
+					PROJECTIONCLIPSPACE2DTOIMAGESPACE_PERSPECTIVE * 
+					frust.getProjectionMatrixWithRSDepth() * 
+					frust.getViewMatrix();
+
+				mSpotlightViewProjMatrixDirty[index] = false;
+			}
+			return mSpotlightViewProjMatrix[index];
+		}
+		else
+			return Matrix4::IDENTITY;
+	}
+	//-----------------------------------------------------------------------------
+	const Matrix4& AutoParamDataSource::getSpotlightWorldViewProjMatrix(size_t index) const
+	{
+		if (index < OGRE_MAX_SIMULTANEOUS_LIGHTS)
+		{
+			const Light& l = getLight(index);
+
+			if (&l != &mBlankLight && 
+				l.getType() == Light::LT_SPOTLIGHT &&
+				mSpotlightWorldViewProjMatrixDirty[index])
+			{
+				mSpotlightWorldViewProjMatrix[index] = 
+					getSpotlightViewProjMatrix(index) * getWorldMatrix();
+				mSpotlightWorldViewProjMatrixDirty[index] = false;
+			}
+			return mSpotlightWorldViewProjMatrix[index];
+		}
+		else
+			return Matrix4::IDENTITY;
+	}
+//-----------------------------------------------------------------------------
+  const Matrix4& AutoParamDataSource::getTextureTransformMatrix(size_t index) const
+  {
+    // make sure the current pass is set
+    assert(mCurrentPass && "current pass is NULL!");
+    // check if there is a texture unit with the given index in the current pass
+    if(index < mCurrentPass->getNumTextureUnitStates())
+    {
+      // texture unit existent, return its currently set transform
+      return mCurrentPass->getTextureUnitState(static_cast<unsigned short>(index))->getTextureTransform();
+    }
+    else
+    {
+      // no such texture unit, return unity
+      return Matrix4::IDENTITY;
+    }
+  }
+    //-----------------------------------------------------------------------------
+    void AutoParamDataSource::setCurrentRenderTarget(const RenderTarget* target)
+    {
+        mCurrentRenderTarget = target;
+    }
+    //-----------------------------------------------------------------------------
+    const RenderTarget* AutoParamDataSource::getCurrentRenderTarget(void) const
+    {
+        return mCurrentRenderTarget;
+    }
+    //-----------------------------------------------------------------------------
+    void AutoParamDataSource::setCurrentViewport(const Viewport* viewport)
+    {
+        mCurrentViewport = viewport;
+    }
+    //-----------------------------------------------------------------------------
+	void AutoParamDataSource::setShadowDirLightExtrusionDistance(Real dist)
+	{
+		mDirLightExtrusionDistance = dist;
+	}
+    //-----------------------------------------------------------------------------
+	Real AutoParamDataSource::getShadowExtrusionDistance(void) const
+	{
+		const Light& l = getLight(0); // only ever applies to one light at once
+		if (l.getType() == Light::LT_DIRECTIONAL)
+		{
+			// use constant
+			return mDirLightExtrusionDistance;
+		}
+		else
+		{
+			// Calculate based on object space light distance
+			// compared to light attenuation range
+			Vector3 objPos = getInverseWorldMatrix().transformAffine(l.getDerivedPosition(true));
+			return l.getAttenuationRange() - objPos.length();
+		}
+	}
+    //-----------------------------------------------------------------------------
+    const Renderable* AutoParamDataSource::getCurrentRenderable(void) const
+    {
+        return mCurrentRenderable;
+    }
+	//-----------------------------------------------------------------------------
+	Matrix4 AutoParamDataSource::getInverseViewProjMatrix(void) const
+	{
+		return this->getViewProjectionMatrix().inverse();
+	}
+	//-----------------------------------------------------------------------------
+	Matrix4 AutoParamDataSource::getInverseTransposeViewProjMatrix(void) const
+	{
+		return this->getInverseViewProjMatrix().transpose();
+	}
+	//-----------------------------------------------------------------------------
+	Matrix4 AutoParamDataSource::getTransposeViewProjMatrix(void) const
+	{
+		return this->getViewProjectionMatrix().transpose();
+	}
+	//-----------------------------------------------------------------------------
+	Matrix4 AutoParamDataSource::getTransposeViewMatrix(void) const
+	{
+		return this->getViewMatrix().transpose();
+	}
+	//-----------------------------------------------------------------------------
+	Matrix4 AutoParamDataSource::getInverseTransposeViewMatrix(void) const
+	{
+		return this->getInverseViewMatrix().transpose();
+	}
+	//-----------------------------------------------------------------------------
+	Matrix4 AutoParamDataSource::getTransposeProjectionMatrix(void) const
+	{
+		return this->getProjectionMatrix().transpose();
+	}
+	//-----------------------------------------------------------------------------
+	Matrix4 AutoParamDataSource::getInverseProjectionMatrix(void) const 
+	{
+		return this->getProjectionMatrix().inverse();
+	}
+	//-----------------------------------------------------------------------------
+	Matrix4 AutoParamDataSource::getInverseTransposeProjectionMatrix(void) const
+	{
+		return this->getInverseProjectionMatrix().transpose();
+	}
+	//-----------------------------------------------------------------------------
+	Matrix4 AutoParamDataSource::getTransposeWorldViewProjMatrix(void) const
+	{
+		return this->getWorldViewProjMatrix().transpose();
+	}
+	//-----------------------------------------------------------------------------
+	Matrix4 AutoParamDataSource::getInverseWorldViewProjMatrix(void) const
+	{
+		return this->getWorldViewProjMatrix().inverse();
+	}
+	//-----------------------------------------------------------------------------
+	Matrix4 AutoParamDataSource::getInverseTransposeWorldViewProjMatrix(void) const
+	{
+		return this->getInverseWorldViewProjMatrix().transpose();
+	}
+	//-----------------------------------------------------------------------------
+	Matrix4 AutoParamDataSource::getTransposeWorldViewMatrix(void) const
+	{
+		return this->getWorldViewMatrix().transpose();
+	}
+	//-----------------------------------------------------------------------------
+	Matrix4 AutoParamDataSource::getTransposeWorldMatrix(void) const
+	{
+		return this->getWorldMatrix().transpose();
+	}
+    //-----------------------------------------------------------------------------
+    Real AutoParamDataSource::getTime(void) const
+    {
+        return ControllerManager::getSingleton().getElapsedTime();
+    }
+	//-----------------------------------------------------------------------------
+	Real AutoParamDataSource::getTime_0_X(Real x) const
+	{
+		return fmod(this->getTime(), x);
+	}
+	//-----------------------------------------------------------------------------
+	Real AutoParamDataSource::getCosTime_0_X(Real x) const
+	{ 
+		return cos(this->getTime_0_X(x)); 
+	}
+	//-----------------------------------------------------------------------------
+	Real AutoParamDataSource::getSinTime_0_X(Real x) const
+	{ 
+		return sin(this->getTime_0_X(x)); 
+	}
+	//-----------------------------------------------------------------------------
+	Real AutoParamDataSource::getTanTime_0_X(Real x) const
+	{ 
+		return tan(this->getTime_0_X(x)); 
+	}
+	//-----------------------------------------------------------------------------
+	Vector4 AutoParamDataSource::getTime_0_X_packed(Real x) const
+	{
+		Real t = this->getTime_0_X(x);
+		return Vector4(t, sin(t), cos(t), tan(t));
+	}
+	//-----------------------------------------------------------------------------
+	Real AutoParamDataSource::getTime_0_1(Real x) const
+	{ 
+		return this->getTime_0_X(x)/x; 
+	}
+	//-----------------------------------------------------------------------------
+	Real AutoParamDataSource::getCosTime_0_1(Real x) const
+	{ 
+		return cos(this->getTime_0_1(x)); 
+	}
+	//-----------------------------------------------------------------------------
+	Real AutoParamDataSource::getSinTime_0_1(Real x) const
+	{ 
+		return sin(this->getTime_0_1(x)); 
+	}
+	//-----------------------------------------------------------------------------
+	Real AutoParamDataSource::getTanTime_0_1(Real x) const
+	{ 
+		return tan(this->getTime_0_1(x)); 
+	}
+	//-----------------------------------------------------------------------------
+	Vector4 AutoParamDataSource::getTime_0_1_packed(Real x) const
+	{
+		Real t = this->getTime_0_1(x);
+		return Vector4(t, sin(t), cos(t), tan(t));
+	}
+	//-----------------------------------------------------------------------------
+	Real AutoParamDataSource::getTime_0_2Pi(Real x) const
+	{ 
+		return this->getTime_0_X(x)/x*2*Math::PI; 
+	}
+	//-----------------------------------------------------------------------------
+	Real AutoParamDataSource::getCosTime_0_2Pi(Real x) const
+	{ 
+		return cos(this->getTime_0_2Pi(x)); 
+	}
+	//-----------------------------------------------------------------------------
+	Real AutoParamDataSource::getSinTime_0_2Pi(Real x) const
+	{ 
+		return sin(this->getTime_0_2Pi(x)); 
+	}
+	//-----------------------------------------------------------------------------
+	Real AutoParamDataSource::getTanTime_0_2Pi(Real x) const
+	{ 
+		return tan(this->getTime_0_2Pi(x)); 
+	}
+	//-----------------------------------------------------------------------------
+	Vector4 AutoParamDataSource::getTime_0_2Pi_packed(Real x) const
+	{
+		Real t = this->getTime_0_2Pi(x);
+		return Vector4(t, sin(t), cos(t), tan(t));
+	}
+	//-----------------------------------------------------------------------------
+	Real AutoParamDataSource::getFrameTime(void) const
+	{
+		return ControllerManager::getSingleton().getFrameTimeSource()->getValue();
+	}
+	//-----------------------------------------------------------------------------
+	Real AutoParamDataSource::getFPS() const
+	{
+		return mCurrentRenderTarget->getLastFPS();
+	}
+	//-----------------------------------------------------------------------------
+	Real AutoParamDataSource::getViewportWidth() const
+	{ 
+		return mCurrentViewport->getActualWidth(); 
+	}
+	//-----------------------------------------------------------------------------
+	Real AutoParamDataSource::getViewportHeight() const
+	{ 
+		return mCurrentViewport->getActualHeight(); 
+	}
+	//-----------------------------------------------------------------------------
+	Real AutoParamDataSource::getInverseViewportWidth() const
+	{ 
+		return 1.0f/mCurrentViewport->getActualWidth(); 
+	}
+	//-----------------------------------------------------------------------------
+	Real AutoParamDataSource::getInverseViewportHeight() const
+	{ 
+		return 1.0f/mCurrentViewport->getActualHeight(); 
+	}
+	//-----------------------------------------------------------------------------
+	Vector3 AutoParamDataSource::getViewDirection() const
+	{
+		return mCurrentCamera->getDerivedDirection();
+	}
+	//-----------------------------------------------------------------------------
+	Vector3 AutoParamDataSource::getViewSideVector() const
+	{ 
+		return mCurrentCamera->getDerivedRight();
+	}
+	//-----------------------------------------------------------------------------
+	Vector3 AutoParamDataSource::getViewUpVector() const
+	{ 
+		return mCurrentCamera->getDerivedUp();
+	}
+	//-----------------------------------------------------------------------------
+	Real AutoParamDataSource::getFOV() const
+	{ 
+		return mCurrentCamera->getFOVy().valueRadians(); 
+	}
+	//-----------------------------------------------------------------------------
+	Real AutoParamDataSource::getNearClipDistance() const
+	{ 
+		return mCurrentCamera->getNearClipDistance(); 
+	}
+	//-----------------------------------------------------------------------------
+	Real AutoParamDataSource::getFarClipDistance() const
+	{ 
+		return mCurrentCamera->getFarClipDistance(); 
+	}
+	//-----------------------------------------------------------------------------
+    int AutoParamDataSource::getPassNumber(void) const
+    {
+        return mPassNumber;
+    }
+	//-----------------------------------------------------------------------------
+    void AutoParamDataSource::setPassNumber(const int passNumber)
+    {
+        mPassNumber = passNumber;
+    }
+	//-----------------------------------------------------------------------------
+    void AutoParamDataSource::incPassNumber(void)
+    {
+        ++mPassNumber;
+    }
+	//-----------------------------------------------------------------------------
+	const Vector4& AutoParamDataSource::getSceneDepthRange() const
+	{
+		static Vector4 dummy(0, 100000, 100000, 1/100000);
+
+		if (mSceneDepthRangeDirty)
+		{
+			// calculate depth information
+			Real depthRange = mMainCamBoundsInfo->maxDistanceInFrustum - mMainCamBoundsInfo->minDistanceInFrustum;
+			if (depthRange > std::numeric_limits<Real>::epsilon())
+			{
+				mSceneDepthRange = Vector4(
+					mMainCamBoundsInfo->minDistanceInFrustum,
+					mMainCamBoundsInfo->maxDistanceInFrustum,
+					depthRange,
+					1.0f / depthRange);
+			}
+			else
+			{
+				mSceneDepthRange = dummy;
+			}
+			mSceneDepthRangeDirty = false;
+		}
+
+		return mSceneDepthRange;
+
+	}
+	//-----------------------------------------------------------------------------
+	const Vector4& AutoParamDataSource::getShadowSceneDepthRange(size_t index) const
+	{
+		static Vector4 dummy(0, 100000, 100000, 1/100000);
+
+		if (!mCurrentSceneManager->isShadowTechniqueTextureBased())
+			return dummy;
+
+		if (index < OGRE_MAX_SIMULTANEOUS_LIGHTS)
+		{
+			if (mShadowCamDepthRangesDirty[index] && mCurrentTextureProjector[index])
+			{
+				const VisibleObjectsBoundsInfo& info = 
+					mCurrentSceneManager->getVisibleObjectsBoundsInfo(
+						(Camera*)mCurrentTextureProjector[index]);
+
+				Real depthRange = info.maxDistanceInFrustum - info.minDistanceInFrustum;
+				if (depthRange > std::numeric_limits<Real>::epsilon())
+				{
+					mShadowCamDepthRanges[index] = Vector4(
+						info.minDistanceInFrustum,
+						info.maxDistanceInFrustum,
+						depthRange,
+						1.0f / depthRange);
+				}
+				else
+				{
+					mShadowCamDepthRanges[index] = dummy;
+				}
+
+				mShadowCamDepthRangesDirty[index] = false;
+			}
+			return mShadowCamDepthRanges[index];
+		}
+		else
+			return dummy;
+	}
+	//---------------------------------------------------------------------
+	const ColourValue& AutoParamDataSource::getShadowColour() const
+	{
+		return mCurrentSceneManager->getShadowColour();
+	}
+
+}
+

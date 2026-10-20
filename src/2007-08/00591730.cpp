@@ -1,42 +1,81 @@
-// roc 2007-08 00591730  unit: RBX::ObjectValue  size: 120 bytes
-// Make this compile to the exact bytes below, then: roc check 2007-08 00591730
-//
-// 00591730  6aff                 push -1
-// 00591732  68bb6a7500           push 0x756abb
-// 00591737  64a100000000         mov eax, dword ptr fs:[0]
-// 0059173d  50                   push eax
-// 0059173e  64892500000000       mov dword ptr fs:[0], esp
-// 00591745  83ec08               sub esp, 8
-// 00591748  c7042400000000       mov dword ptr [esp], 0
-// 0059174f  6814010000           push 0x114
-// 00591754  c644240400           mov byte ptr [esp + 4], 0
-// 00591759  ff15d0e67700         call dword ptr [0x77e6d0]
-// 0059175f  83c404               add esp, 4
-// 00591762  89442404             mov dword ptr [esp + 4], eax
-// 00591766  85c0                 test eax, eax
-// 00591768  c744241000000000     mov dword ptr [esp + 0x10], 0
-// 00591770  7409                 je 0x59177b
-// 00591772  8bc8                 mov ecx, eax
-// 00591774  e867fcffff           call 0x5913e0
-// 00591779  eb02                 jmp 0x59177d
-// 0059177b  33c0                 xor eax, eax
-// 0059177d  8b0c24               mov ecx, dword ptr [esp]
-// 00591780  56                   push esi
-// 00591781  8b74241c             mov esi, dword ptr [esp + 0x1c]
-// 00591785  51                   push ecx
-// 00591786  50                   push eax
-// 00591787  8bce                 mov ecx, esi
-// 00591789  c744241cffffffff     mov dword ptr [esp + 0x1c], 0xffffffff
-// 00591791  e89aeaffff           call 0x590230
-// 00591796  8b4c240c             mov ecx, dword ptr [esp + 0xc]
-// 0059179a  8bc6                 mov eax, esi
-// 0059179c  5e                   pop esi
-// 0059179d  64890d00000000       mov dword ptr fs:[0], ecx
-// 005917a4  83c414               add esp, 0x14
-// 005917a7  c3                   ret 
-// library rbxgs/v8datamodel\Seat.cpp (function ??$create@VWeld@RBX@@@?$Creatable@VInstance@RBX@@@RBX@@SA?AV?$shared_ptr@VWeld@RBX@@@boost@@XZ)
-
 // roc-lang: cpp
 // roc-cl: 50727
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
 // roc-lib: rbxgs v8datamodel/Seat.cpp
+
+// Candidate translation unit (score above; library headers required).
+#include "v8datamodel/Seat.h"
+#include "v8datamodel/PartInstance.h"
+#include "v8datamodel/JointInstance.h"
+#include "v8datamodel/Workspace.h"
+#include "humanoid/Humanoid.h"
+#include "Network/Players.h"
+
+namespace RBX
+{
+	Seat::Seat()
+		: sleepTime(0.0f)
+	{
+		setName("Seat");
+	}
+
+	void Seat::seatCharacter(Humanoid* h)
+	{
+		weld = Creatable::create<Weld>();
+
+		PartInstance* torso = h->getTorso();
+		RBXASSERT(torso);
+
+		const G3D::CoordinateFrame& unused = torso->getCoordinateFrame();
+
+		weld->setName("SeatWeld");
+		weld->setPart0(this);
+		weld->setPart1(torso);
+
+		G3D::CoordinateFrame C0;
+		C0.lookAt(G3D::Vector3(0.0f, -1.0f, 0.0f), G3D::Vector3(0.0f, 0.0f, -1.0f));
+
+		C0.translation = G3D::Vector3(0.0f, 3.0f, 0.0f);
+
+		G3D::CoordinateFrame C1;
+		C1.lookAt(G3D::Vector3(0.0f, -1.0f, 0.0f), G3D::Vector3(0.0f, 0.0f, -1.0f));
+
+		C1.translation = G3D::Vector3(0.0f, 0.6f, 0.0f);
+
+		weld->setC0(C0);
+		weld->setC1(C1);
+		weld->setParent(this);
+	}
+
+	void Seat::unseatCharacter()
+	{
+		sleepTime = G3D::System::getLocalTime();
+
+		if (weld)
+		{
+			weld->setParent(NULL);
+			weld.reset();
+		}
+	}
+
+	void Seat::onEvent_humanoidJumped(bool active)
+	{
+		unseatCharacter();
+		humanoidJumped.disconnect();
+	}
+
+	void Seat::onServiceProvider(const ServiceProvider* oldProvider, const ServiceProvider* newProvider)
+	{
+		Instance::onServiceProvider(oldProvider, newProvider);
+
+		if (!oldProvider)
+		{
+			seatTouched = PartInstance::event_Touched.connect(this, boost::bind(&Seat::onEvent_seatTouched, this, _1));
+		}
+
+		if (!newProvider)
+		{
+			seatTouched.disconnect();
+		}
+	}
+}

@@ -1,55 +1,142 @@
-// roc 2007-03 00455d80  unit: seg_00450000  size: 127 bytes
-// Make this compile to the exact bytes below, then: roc check 2007-03 00455d80
-//
-// 00455d80  d9ee                 fldz 
-// 00455d82  8b4c2404             mov ecx, dword ptr [esp + 4]
-// 00455d86  d911                 fst dword ptr [ecx]
-// 00455d88  d95104               fst dword ptr [ecx + 4]
-// 00455d8b  d95108               fst dword ptr [ecx + 8]
-// 00455d8e  d9590c               fstp dword ptr [ecx + 0xc]
-// 00455d91  d9442410             fld dword ptr [esp + 0x10]
-// 00455d95  d9442408             fld dword ptr [esp + 8]
-// 00455d99  d8d1                 fcom st(1)
-// 00455d9b  dfe0                 fnstsw ax
-// 00455d9d  f6c441               test ah, 0x41
-// 00455da0  8d442410             lea eax, [esp + 0x10]
-// 00455da4  7404                 je 0x455daa
-// 00455da6  8d442408             lea eax, [esp + 8]
-// 00455daa  d900                 fld dword ptr [eax]
-// 00455dac  d919                 fstp dword ptr [ecx]
-// 00455dae  d9442414             fld dword ptr [esp + 0x14]
-// 00455db2  d944240c             fld dword ptr [esp + 0xc]
-// 00455db6  d8d1                 fcom st(1)
-// 00455db8  dfe0                 fnstsw ax
-// 00455dba  f6c441               test ah, 0x41
-// 00455dbd  8d442414             lea eax, [esp + 0x14]
-// 00455dc1  7404                 je 0x455dc7
-// 00455dc3  8d44240c             lea eax, [esp + 0xc]
-// 00455dc7  d900                 fld dword ptr [eax]
-// 00455dc9  d95904               fstp dword ptr [ecx + 4]
-// 00455dcc  d9ca                 fxch st(2)
-// 00455dce  d8db                 fcomp st(3)
-// 00455dd0  dfe0                 fnstsw ax
-// 00455dd2  ddda                 fstp st(2)
-// 00455dd4  f6c405               test ah, 5
-// 00455dd7  8d442410             lea eax, [esp + 0x10]
-// 00455ddb  7b04                 jnp 0x455de1
-// 00455ddd  8d442408             lea eax, [esp + 8]
-// 00455de1  d900                 fld dword ptr [eax]
-// 00455de3  d95908               fstp dword ptr [ecx + 8]
-// 00455de6  ded9                 fcompp 
-// 00455de8  dfe0                 fnstsw ax
-// 00455dea  f6c405               test ah, 5
-// 00455ded  8d442414             lea eax, [esp + 0x14]
-// 00455df1  7b04                 jnp 0x455df7
-// 00455df3  8d44240c             lea eax, [esp + 0xc]
-// 00455df7  d900                 fld dword ptr [eax]
-// 00455df9  8bc1                 mov eax, ecx
-// 00455dfb  d9590c               fstp dword ptr [ecx + 0xc]
-// 00455dfe  c3                   ret 
-// library rbxgs/tool\ToolsArrow.cpp (function ?xyxy@Rect2D@G3D@@SA?AV12@MMMM@Z)
-
 // roc-lang: cpp
 // roc-cl: 50727
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
 // roc-lib: rbxgs tool/ToolsArrow.cpp
+
+// Candidate translation unit (score above; library headers required).
+#include "tool/ToolsArrow.h"
+#include "tool/DragTool.h"
+#include "v8datamodel/Camera.h"
+#include "v8datamodel/PartInstance.h"
+#include "v8datamodel/Selection.h"
+#include "v8datamodel/Workspace.h"
+#include <G3D/Rect2D.h>
+
+namespace RBX
+{
+	const std::string ArrowToolBase::getCursorName() const
+	{
+		return overInstance ? "DragCursor" : "ArrowCursor";
+	}
+
+	void ArrowToolBase::onMouseIdle(const UIEvent& uiEvent)
+	{
+		overInstance = getUnlockedPart(uiEvent) != NULL;
+	}
+
+	void ArrowToolBase::onMouseHover(const UIEvent& uiEvent)
+	{
+		onMouseIdle(uiEvent);
+	}
+
+	MouseCommand* ArrowToolBase::onMouseDown(const UIEvent& uiEvent)
+	{
+		RBXASSERT(uiEvent.eventType == UIEvent::MOUSE_LEFT_BUTTON_DOWN);
+
+		G3D::Vector3 hitWorld;
+
+		PartInstance* part = getUnlockedPart(uiEvent, hitWorld);
+		if (part)
+		{
+			Instance* top = getTopSelectable3d(part);
+			UserInputBase* input = uiEvent.userInput;
+
+			ServiceClient<Selection> selection(workspace);
+
+			if (!input->keyDown(SDLK_RSHIFT) && !input->keyDown(SDLK_LSHIFT) &&
+				!input->keyDown(SDLK_RCTRL) && !input->keyDown(SDLK_LCTRL))
+			{
+				if (!selection->isSelected(top))
+				{
+					selection->setSelection(top);
+				}
+
+				if (uiEvent.eventType == UIEvent::MOUSE_LEFT_BUTTON_DOWN)
+				{
+					ServiceClient<FilteredSelection<Instance>> instanceSelection(workspace);
+					return DragTool::onMouseDown(part, hitWorld, instanceSelection->items(), uiEvent, workspace);
+				}
+			}
+			else
+			{
+				if (selection->isSelected(top))
+					selection->removeFromSelection(top);
+				else
+					selection->addToSelection(top);
+			}
+
+			return NULL;
+		}
+		else
+		{
+			MouseCommand* newCommand = new BoxSelectCommand(workspace);
+			return newCommand->onMouseDown(uiEvent);
+		}
+	}
+
+	BoxSelectCommand::BoxSelectCommand(Workspace* workspace)
+		: Base(workspace),
+		  selection((Instance*)workspace)
+	{
+	}
+
+	MouseCommand* BoxSelectCommand::onMouseDown(const UIEvent& uiEvent)
+	{
+		previousItemsInBox.clear();
+		capture();
+
+		UserInputBase* input = uiEvent.userInput;
+		reverseSelecting = input->keyDown(SDLK_RSHIFT) || input->keyDown(SDLK_LSHIFT);
+
+		if (!reverseSelecting)
+			selection->clearSelection();
+
+		mouseDownView = uiEvent.mousePosition;
+		mouseCurrentView = uiEvent.mousePosition;
+		return this;
+	}
+
+	void BoxSelectCommand::onMouseMove(const UIEvent& uiEvent)
+	{
+		mouseCurrentView = uiEvent.mousePosition;
+
+		std::set<Instance*> instances;
+		getMouseInstances(instances, uiEvent, G3D::Rect2D::xyxy(mouseDownView.x, mouseDownView.y, mouseCurrentView.x, mouseCurrentView.y));
+
+		if (reverseSelecting)
+			selectReverse(instances);
+		else
+			selectAnd(instances);
+	}
+
+	void BoxSelectCommand::render2d(Adorn* adorn)
+	{
+		G3D::Rect2D temp = G3D::Rect2D::xyxy(mouseDownView.x, mouseDownView.y, mouseCurrentView.x, mouseCurrentView.y);
+		adorn->outlineRect2d(temp, 0.5f, G3D::Color3::gray());
+	}
+
+	void BoxSelectCommand::getMouseInstances(std::set<Instance*>& instances, const UIEvent& uiEvent, G3D::Rect2D& selectBox)
+	{
+		Camera* camera = workspace->getCamera();
+		G3D::Rect2D viewport = G3D::Rect2D::xyxy(0.0f, 0.0f, uiEvent.windowSize.x, uiEvent.windowSize.y);
+
+		for (size_t i = 0; i < workspace->numChildren(); i++)
+		{
+			ILocation* location = workspace->queryTypedChild<ILocation>((int)i);
+			ISelectable3d* selectable3d = workspace->queryTypedChild<ISelectable3d>((int)i);
+
+			if (location && selectable3d)
+			{
+				Instance* instance = workspace->getChild(i);
+				if (!PartInstance::getLocked(instance))
+				{
+					G3D::Vector3 gridPos = location->getLocation().translation;
+					G3D::Vector3 projection = camera->getGCamera().project(gridPos, viewport);
+
+					if (selectBox.contains(projection.xy()))
+						instances.insert(instance);
+				}
+			}
+		}
+	}
+}

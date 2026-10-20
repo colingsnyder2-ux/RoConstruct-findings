@@ -1,101 +1,455 @@
-// roc 2009-06 004c4850  unit: RBX::Network::Players::Plugin  size: 249 bytes
-// Make this compile to the exact bytes below, then: roc check 2009-06 004c4850
-//
-// 004c4850  8b442404             mov eax, dword ptr [esp + 4]
-// 004c4854  53                   push ebx
-// 004c4855  55                   push ebp
-// 004c4856  56                   push esi
-// 004c4857  8bf1                 mov esi, ecx
-// 004c4859  8b6e04               mov ebp, dword ptr [esi + 4]
-// 004c485c  894604               mov dword ptr [esi + 4], eax
-// 004c485f  f60574dba30001       test byte ptr [0xa3db74], 1
-// 004c4866  57                   push edi
-// 004c4867  7514                 jne 0x4c487d
-// 004c4869  830d74dba30001       or dword ptr [0xa3db74], 1
-// 004c4870  bb0a000000           mov ebx, 0xa
-// 004c4875  891d70dba300         mov dword ptr [0xa3db70], ebx
-// 004c487b  eb06                 jmp 0x4c4883
-// 004c487d  8b1d70dba300         mov ebx, dword ptr [0xa3db70]
-// 004c4883  8b7e04               mov edi, dword ptr [esi + 4]
-// 004c4886  8b4e08               mov ecx, dword ptr [esi + 8]
-// 004c4889  3bf9                 cmp edi, ecx
-// 004c488b  7e6b                 jle 0x4c48f8
-// 004c488d  85c9                 test ecx, ecx
-// 004c488f  7509                 jne 0x4c489a
-// 004c4891  894608               mov dword ptr [esi + 8], eax
-// 004c4894  55                   push ebp
-// 004c4895  e982000000           jmp 0x4c491c
-// 004c489a  3bfb                 cmp edi, ebx
-// 004c489c  7d06                 jge 0x4c48a4
-// 004c489e  895e08               mov dword ptr [esi + 8], ebx
-// 004c48a1  55                   push ebp
-// 004c48a2  eb78                 jmp 0x4c491c
-// 004c48a4  d90548e88b00         fld dword ptr [0x8be848]
-// 004c48aa  8bc1                 mov eax, ecx
-// 004c48ac  03c0                 add eax, eax
-// 004c48ae  03c0                 add eax, eax
-// 004c48b0  03c0                 add eax, eax
-// 004c48b2  3d801a0600           cmp eax, 0x61a80
-// 004c48b7  760a                 jbe 0x4c48c3
-// 004c48b9  ddd8                 fstp st(0)
-// 004c48bb  d905a0ef8b00         fld dword ptr [0x8befa0]
-// 004c48c1  eb0f                 jmp 0x4c48d2
-// 004c48c3  3d00fa0000           cmp eax, 0xfa00
-// 004c48c8  7608                 jbe 0x4c48d2
-// 004c48ca  ddd8                 fstp st(0)
-// 004c48cc  d90544d08b00         fld dword ptr [0x8bd044]
-// 004c48d2  8bd9                 mov ebx, ecx
-// 004c48d4  895c2418             mov dword ptr [esp + 0x18], ebx
-// 004c48d8  da4c2418             fimul dword ptr [esp + 0x18]
-// 004c48dc  e8df552500           call 0x719ec0
-// 004c48e1  2bc3                 sub eax, ebx
-// 004c48e3  03c7                 add eax, edi
-// 004c48e5  894608               mov dword ptr [esi + 8], eax
-// 004c48e8  8b0d70dba300         mov ecx, dword ptr [0xa3db70]
-// 004c48ee  3bc1                 cmp eax, ecx
-// 004c48f0  7d03                 jge 0x4c48f5
-// 004c48f2  894e08               mov dword ptr [esi + 8], ecx
-// 004c48f5  55                   push ebp
-// 004c48f6  eb24                 jmp 0x4c491c
-// 004c48f8  b856555555           mov eax, 0x55555556
-// 004c48fd  f7e9                 imul ecx
-// 004c48ff  8bc2                 mov eax, edx
-// 004c4901  c1e81f               shr eax, 0x1f
-// 004c4904  03c2                 add eax, edx
-// 004c4906  3bf8                 cmp edi, eax
-// 004c4908  7f19                 jg 0x4c4923
-// 004c490a  807c241800           cmp byte ptr [esp + 0x18], 0
-// 004c490f  7412                 je 0x4c4923
-// 004c4911  3bfb                 cmp edi, ebx
-// 004c4913  7e0e                 jle 0x4c4923
-// 004c4915  3bfd                 cmp edi, ebp
-// 004c4917  7c02                 jl 0x4c491b
-// 004c4919  8bfd                 mov edi, ebp
-// 004c491b  57                   push edi
-// 004c491c  8bce                 mov ecx, esi
-// 004c491e  e85df7ffff           call 0x4c4080
-// 004c4923  3b6e04               cmp ebp, dword ptr [esi + 4]
-// 004c4926  8bc5                 mov eax, ebp
-// 004c4928  7d18                 jge 0x4c4942
-// 004c492a  d9ee                 fldz 
-// 004c492c  8b0e                 mov ecx, dword ptr [esi]
-// 004c492e  8d0cc1               lea ecx, [ecx + eax*8]
-// 004c4931  85c9                 test ecx, ecx
-// 004c4933  7405                 je 0x4c493a
-// 004c4935  d911                 fst dword ptr [ecx]
-// 004c4937  d95104               fst dword ptr [ecx + 4]
-// 004c493a  40                   inc eax
-// 004c493b  3b4604               cmp eax, dword ptr [esi + 4]
-// 004c493e  7cec                 jl 0x4c492c
-// 004c4940  ddd8                 fstp st(0)
-// 004c4942  5f                   pop edi
-// 004c4943  5e                   pop esi
-// 004c4944  5d                   pop ebp
-// 004c4945  5b                   pop ebx
-// 004c4946  c20800               ret 8
-// library g3d-6.09-rbx2008/G3Dcpp\ConvexPolyhedron.cpp (function ?resize@?$Array@VVector2@G3D@@@G3D@@QAEXH_N@Z)
-
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD /fp:fast
 // roc-lib: g3d-6.09-rbx2008 G3Dcpp/ConvexPolyhedron.cpp
+
+// Candidate translation unit (score above; library headers required).
+/**
+  @file ConvexPolyhedron.cpp
+  
+  @author Morgan McGuire, morgan@graphics3d.com
+
+  @created 2001-11-11
+  @edited  2006-01-10
+ 
+  Copyright 2000-2006, Morgan McGuire.
+  All rights reserved.
+ */
+
+#include "G3D/platform.h"
+#include "G3D/ConvexPolyhedron.h"
+#include "G3D/debug.h"
+
+namespace G3D {
+
+ConvexPolygon::ConvexPolygon(const Array<Vector3>& __vertex) : _vertex(__vertex) {
+    // Intentionally empty
+}
+
+
+bool ConvexPolygon::isEmpty() const {
+    return (_vertex.length() == 0) || (getArea() <= fuzzyEpsilon);
+}
+
+
+float ConvexPolygon::getArea() const {
+
+    if (_vertex.length() < 3) {
+        return 0;
+    }
+
+    float sum = 0;
+
+    int length = _vertex.length();
+    // Split into triangle fan, compute individual area
+    for (int v = 2; v < length; v++) {
+        int i0 = 0;
+        int i1 = v - 1;
+        int i2 = v;
+
+        sum += (_vertex[i1] - _vertex[i0]).cross(_vertex[i2] - _vertex[i0]).magnitude() / 2; 
+    }
+
+    return sum;
+}
+
+void ConvexPolygon::cut(const Plane& plane, ConvexPolygon &above, ConvexPolygon &below) {
+    DirectedEdge edge;
+    cut(plane, above, below, edge);
+}
+
+void ConvexPolygon::cut(const Plane& plane, ConvexPolygon &above, ConvexPolygon &below, DirectedEdge &newEdge) {
+    above._vertex.resize(0);
+    below._vertex.resize(0);
+
+    if (isEmpty()) {
+        //debugPrintf("Empty\n");
+        return;
+    }
+
+    int v = 0;
+    int length = _vertex.length();
+
+
+    Vector3 polyNormal = normal();
+    Vector3 planeNormal= plane.normal();
+
+    // See if the polygon is *in* the plane.
+    if (planeNormal.fuzzyEq(polyNormal) || planeNormal.fuzzyEq(-polyNormal)) {
+        // Polygon is parallel to the plane.  It must be either above,
+        // below, or in the plane.
+
+        double a, b, c, d;
+        Vector3 pt = _vertex[0];
+
+        plane.getEquation(a,b,c,d);
+        float r = (float)(a * pt.x + b * pt.y + c * pt.z + d);
+
+        if (fuzzyGe(r, 0)) {
+            // The polygon is entirely in the plane.
+            //debugPrintf("Entirely above\n");
+            above = *this;
+            return;
+        } else {
+            //debugPrintf("Entirely below (1)\n");
+            below = *this;
+            return;
+        }
+    }
+
+
+    // Number of edges crossing the plane.  Used for 
+    // debug assertions.
+    int count = 0;
+
+    // True when the last _vertex we looked at was above the plane
+    bool lastAbove = plane.halfSpaceContains(_vertex[v]);
+
+    if (lastAbove) {
+        above._vertex.append(_vertex[v]);
+    } else {
+        below._vertex.append(_vertex[v]);
+    }
+
+    for (v = 1; v < length; v++) {
+        bool isAbove = plane.halfSpaceContains(_vertex[v]);
+    
+        if (lastAbove ^ isAbove) {
+            // Switched sides.
+            // Create an interpolated point that lies
+            // in the plane, between the two points.
+            Line line = Line::fromTwoPoints(_vertex[v - 1], _vertex[v]);
+            Vector3 interp = line.intersection(plane);
+            
+            if (! interp.isFinite()) {
+
+                // Since the polygon is not in the plane (we checked above), 
+                // it must be the case that this edge (and only this edge)
+                // is in the plane.  This only happens when the polygon is
+                // entirely below the plane except for one edge.  This edge
+                // forms a degenerate polygon, so just treat the whole polygon
+                // as below the plane.
+                below = *this;
+                above._vertex.resize(0);
+                //debugPrintf("Entirely below\n");
+                return;
+            }                
+
+            above._vertex.append(interp);
+            below._vertex.append(interp);
+            if (lastAbove) {
+                newEdge.stop = interp;
+            } else {
+                newEdge.start = interp;
+            }
+            count++;
+        }
+
+        lastAbove = isAbove;
+        if (lastAbove) {
+            above._vertex.append(_vertex[v]);
+        } else {
+            below._vertex.append(_vertex[v]);
+        }
+    }
+
+    // Loop back to the first point, seeing if an interpolated point is
+    // needed.
+    bool isAbove = plane.halfSpaceContains(_vertex[0]);
+    if (lastAbove ^ isAbove) {
+        Line line = Line::fromTwoPoints(_vertex[length - 1], _vertex[0]);
+        Vector3 interp = line.intersection(plane);
+        if (! interp.isFinite()) {
+            // Since the polygon is not in the plane (we checked above), 
+            // it must be the case that this edge (and only this edge)
+            // is in the plane.  This only happens when the polygon is
+            // entirely below the plane except for one edge.  This edge
+            // forms a degenerate polygon, so just treat the whole polygon
+            // as below the plane.
+            below = *this;
+            above._vertex.resize(0);
+            //debugPrintf("Entirely below\n");
+            return;
+        }                
+
+        above._vertex.append(interp);
+        below._vertex.append(interp);
+        debugAssertM(count < 2, "Convex polygons may only intersect planes at two edges.");
+        if (lastAbove) {
+            newEdge.stop = interp;
+        } else {
+            newEdge.start = interp;
+        }
+        count++;
+    }
+
+    debugAssertM((count == 2) || (count == 0), "Convex polygons may only intersect planes at two edges.");
+}
+
+ConvexPolygon ConvexPolygon::inverse() const {
+    ConvexPolygon result;
+    int length = _vertex.length();
+    result._vertex.resize(length);
+    
+    for (int v = 0; v < length; v++) {
+        result._vertex[v] = _vertex[length - v - 1];
+    }
+
+    return result;
+}
+
+void ConvexPolygon::removeDuplicateVertices(){
+	// Any valid polygon should have 3 or more vertices, but why take chances?
+	if(_vertex.size() >= 2){
+
+		// Remove duplicate vertices.
+		for(int i=0;i<_vertex.size()-1;++i){
+			if(_vertex[i].fuzzyEq(_vertex[i+1])){
+				_vertex.remove(i+1);
+				--i; // Don't move forward.
+			}
+		}
+		
+		// Check the last vertex against the first.
+		if(_vertex[_vertex.size()-1].fuzzyEq(_vertex[0])){
+			_vertex.pop();
+		}
+	}
+}
+
+//////////////////////////////////////////////////////////////////////////////
+
+ConvexPolyhedron::ConvexPolyhedron(const Array<ConvexPolygon>& _face) : face(_face) {
+    // Intentionally empty
+}
+
+float ConvexPolyhedron::getVolume() const {
+
+    if (face.length() < 4) {
+        return 0;
+    }
+
+    // The volume of any pyramid is 1/3 * h * base area.
+    // Discussion at: http://nrich.maths.org/mathsf/journalf/oct01/art1/
+
+    float sum = 0;
+
+    // Choose the first _vertex of the first face as the origin.
+    // This lets us skip one face, too, and avoids negative heights.
+    Vector3 v0 = face[0]._vertex[0];
+    for (int f = 1; f < face.length(); f++) {        
+        const ConvexPolygon& poly = face[f];
+        
+        float height = (poly._vertex[0] - v0).dot(poly.normal());
+        float base   = poly.getArea();
+
+        sum += height * base;
+    }
+
+    return sum / 3;
+}
+
+bool ConvexPolyhedron::isEmpty() const {
+    return (face.length() == 0) || (getVolume() <= fuzzyEpsilon);
+}
+
+void ConvexPolyhedron::cut(const Plane& plane, ConvexPolyhedron &above, ConvexPolyhedron &below) {
+    above.face.resize(0);
+    below.face.resize(0);
+
+    Array<DirectedEdge> edge;
+
+    int f;
+    
+    // See if the plane cuts this polyhedron at all.  Detect when
+    // the polyhedron is entirely to one side or the other.
+    //{
+        int numAbove = 0, numIn = 0, numBelow = 0;
+        bool ruledOut = false;
+        double d;
+        Vector3 abc;
+        plane.getEquation(abc, d);
+
+        // This number has to be fairly large to prevent precision problems down
+        // the road.
+        const float eps = 0.005f;
+        for (f = face.length() - 1; (f >= 0) && (!ruledOut); f--) {
+            const ConvexPolygon& poly = face[f];
+            for (int v = poly._vertex.length() - 1; (v >= 0) && (!ruledOut); v--) { 
+                double r = abc.dot(poly._vertex[v]) + d;
+                if (r > eps) {
+                    numAbove++;
+                } else if (r < -eps) {
+                    numBelow++;
+                } else {
+                    numIn++;
+                }
+
+                ruledOut = (numAbove != 0) && (numBelow !=0);
+            }
+        }
+
+        if (numBelow == 0) {
+            above = *this;
+            return;
+        } else if (numAbove == 0) {
+            below = *this;
+            return;
+        }
+    //}
+
+    // Clip each polygon, collecting split edges.
+    for (f = face.length() - 1; f >= 0; f--) {
+        ConvexPolygon a, b;
+        DirectedEdge e;
+        face[f].cut(plane, a, b, e);
+
+        bool aEmpty = a.isEmpty();
+        bool bEmpty = b.isEmpty();
+
+        //debugPrintf("\n");
+        if (! aEmpty) {
+            //debugPrintf(" Above %f\n", a.getArea());
+            above.face.append(a);
+        }
+
+        if (! bEmpty) {
+            //debugPrintf(" Below %f\n", b.getArea());
+            below.face.append(b);
+        }
+
+        if (! aEmpty && ! bEmpty) {
+            //debugPrintf(" == Split\n");
+            edge.append(e);
+        } else {
+            // Might be the case that the polygon is entirely on 
+            // one side of the plane yet there is an edge we need
+            // because it touches the plane.
+            // 
+            // Extract the non-empty _vertex list and examine it.
+            // If we find exactly one edge in the plane, add that edge.
+            const Array<Vector3>& _vertex = (aEmpty ? b._vertex : a._vertex);
+            int L = _vertex.length();
+            int count = 0;
+            for (int v = 0; v < L; v++) {
+                if (plane.fuzzyContains(_vertex[v]) && plane.fuzzyContains(_vertex[(v + 1) % L])) {
+                    e.start = _vertex[v];
+                    e.stop = _vertex[(v + 1) % L];
+                    count++;
+                }
+            }
+
+            if (count == 1) {
+                edge.append(e);
+            }
+        }
+    }
+
+    if (above.face.length() == 1) {
+        // Only one face above means that this entire 
+        // polyhedron is below the plane.  Move that face over.
+        below.face.append(above.face[0]);
+        above.face.resize(0);
+    } else if (below.face.length() == 1) {
+        // This shouldn't happen, but it arises in practice
+        // from numerical imprecision.
+        above.face.append(below.face[0]);
+        below.face.resize(0);
+    }
+
+    if ((above.face.length() > 0) && (below.face.length() > 0)) {
+        // The polyhedron was actually cut; create a cap polygon
+        ConvexPolygon cap;
+
+        // Collect the final polgyon by sorting the edges
+        int numVertices = edge.length();
+/*debugPrintf("\n");
+for (int xx=0; xx < numVertices; xx++) {
+    std::string s1 = edge[xx].start.toString();
+    std::string s2 = edge[xx].stop.toString();
+    debugPrintf("%s -> %s\n", s1.c_str(), s2.c_str());
+}
+*/
+
+        // Need at least three points to make a polygon
+        debugAssert(numVertices >= 3);
+
+        Vector3 last_vertex = edge.last().stop;
+        cap._vertex.append(last_vertex);
+
+        // Search for the next _vertex.  Because of accumulating
+        // numerical error, we have to find the closest match, not 
+        // just the one we expect.
+        for (int v = numVertices - 1; v >= 0; v--) {
+            // matching edge index
+            int index = 0;
+            int num = edge.length();
+            double distance = (edge[index].start - last_vertex).squaredMagnitude();
+            for (int e = 1; e < num; e++) {
+                double d = (edge[e].start - last_vertex).squaredMagnitude();
+
+                if (d < distance) {
+                    // This is the new closest one
+                    index = e;
+                    distance = d;
+                }
+            }
+
+            // Don't tolerate ridiculous error.
+            debugAssertM(distance < 0.02, "Edge missing while closing polygon.");
+
+            last_vertex = edge[index].stop;
+            cap._vertex.append(last_vertex);
+        }
+        
+        //debugPrintf("\n");
+        //debugPrintf("Cap (both) %f\n", cap.getArea());
+        above.face.append(cap);
+        below.face.append(cap.inverse());
+    }
+
+    // Make sure we put enough faces on each polyhedra
+    debugAssert((above.face.length() == 0) || (above.face.length() >= 4));   
+    debugAssert((below.face.length() == 0) || (below.face.length() >= 4));
+}
+
+///////////////////////////////////////////////
+
+ConvexPolygon2D::ConvexPolygon2D(const Array<Vector2>& pts, bool reverse) : m_vertex(pts) {
+    if (reverse) {
+        m_vertex.reverse();
+    }
+}
+
+
+bool ConvexPolygon2D::contains(const Vector2& p, bool reverse) const {
+    // Compute the signed area of each polygon from p to an edge.  
+    // If the area is non-negative for all polygons then p is inside 
+    // the polygon.  (To adapt this algorithm for a concave polygon,
+    // the *sum* of the areas must be non-negative).
+
+    float r = reverse ? -1 : 1;
+
+    for (int i0 = 0; i0 < m_vertex.size(); ++i0) {
+        int i1 = (i0 + 1) % m_vertex.size();
+        const Vector2& v0 = m_vertex[i0];
+        const Vector2& v1 = m_vertex[i1];
+
+        Vector2 e0 = v0 - p;
+        Vector2 e1 = v1 - p;
+
+        // Area = (1/2) cross product, negated to be ccw in
+        // a 2D space; we neglect the 1/2
+        float area = -(e0.x * e1.y - e0.y * e1.x);
+
+        if (area * r < 0) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+
+}
+

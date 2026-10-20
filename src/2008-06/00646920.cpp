@@ -1,29 +1,121 @@
-// roc 2008-06 00646920  unit: RBX::RotatePJoint  size: 54 bytes
-// Make this compile to the exact bytes below, then: roc check 2008-06 00646920
-//
-// 00646920  8b442410             mov eax, dword ptr [esp + 0x10]
-// 00646924  8b542408             mov edx, dword ptr [esp + 8]
-// 00646928  56                   push esi
-// 00646929  50                   push eax
-// 0064692a  8b44240c             mov eax, dword ptr [esp + 0xc]
-// 0064692e  8bf1                 mov esi, ecx
-// 00646930  8b4c2414             mov ecx, dword ptr [esp + 0x14]
-// 00646934  51                   push ecx
-// 00646935  52                   push edx
-// 00646936  50                   push eax
-// 00646937  8bce                 mov ecx, esi
-// 00646939  e882ecffff           call 0x6455c0
-// 0064693e  8b4c2418             mov ecx, dword ptr [esp + 0x18]
-// 00646942  51                   push ecx
-// 00646943  8bce                 mov ecx, esi
-// 00646945  c70614ae8400         mov dword ptr [esi], 0x84ae14
-// 0064694b  e850ffffff           call 0x6468a0
-// 00646950  8bc6                 mov eax, esi
-// 00646952  5e                   pop esi
-// 00646953  c21400               ret 0x14
-// library rbxgs/v8world\MutilJoint.cpp (function ??0MultiJoint@RBX@@IAE@PAVPrimitive@1@0ABVCoordinateFrame@G3D@@1H@Z)
-
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
 // roc-lib: rbxgs v8world/MutilJoint.cpp
+
+// Candidate translation unit (score above; library headers required).
+#include "v8world/MultiJoint.h"
+#include "v8world/Primitive.h"
+
+namespace RBX
+{
+	void MultiJoint::init(int numBreaking)
+	{
+		numBreakingConnectors = numBreaking;
+		numConnector = 0;
+
+		for (int i = 0; i < 4; i++)
+		{
+			point[(i*2)] = NULL;
+			point[(i*2)+1] = NULL;
+			connector[i] = NULL;
+		}
+	}
+
+	MultiJoint::MultiJoint(int numBreaking)
+		: Joint()
+	{
+		init(numBreaking);
+	}
+
+	MultiJoint::MultiJoint(
+		Primitive* p0,
+		Primitive* p1,
+		const G3D::CoordinateFrame& jointCoord0,
+		const G3D::CoordinateFrame& jointCoord1,
+		int numBreaking)
+		: Joint(p0, p1, jointCoord0, jointCoord1)
+	{
+		init(numBreaking);
+	}
+
+	MultiJoint::~MultiJoint()
+	{
+		RBXASSERT(connector[0] == NULL);
+		RBXASSERT(numConnector == 0);
+	}
+
+	void MultiJoint::putInKernel(Kernel* _kernel)
+	{
+		IPipelined::putInKernel(_kernel);
+	}
+
+	void MultiJoint::addToMultiJoint(Point* point0, Point* point1, Connector* _connector)
+	{
+		RBXASSERT(numConnector < 4);
+
+		point[(numConnector*2)] = point0;
+		point[(numConnector*2)+1] = point1;
+		connector[numConnector] = _connector;
+
+		getKernel()->insertConnector(_connector);
+		++numConnector;
+	}
+
+	Point* MultiJoint::getPoint(int id)
+	{
+		RBXASSERT(id < 8);
+		RBXASSERT(point[id]);
+		return point[id];
+	}
+
+	void MultiJoint::removeFromKernel()
+	{
+		RBXASSERT(this->inKernel());
+
+		for (int i = 0; i < numConnector; i++)
+		{
+			RBXASSERT(point[(i*2)]);
+			RBXASSERT(point[(i*2)+1]);
+
+			getKernel()->deletePoint(point[(i*2)]);
+			getKernel()->deletePoint(point[(i*2)+1]);
+			point[(i*2)] = NULL;
+			point[(i*2)+1] = NULL;
+
+			RBXASSERT(connector[i]);
+
+			getKernel()->removeConnector(connector[i]);
+			delete connector[i];
+			connector[i] = NULL;
+		}
+
+		numConnector = 0;
+
+		IPipelined::removeFromKernel();
+		RBXASSERT(!this->inKernel());
+	}
+
+	bool MultiJoint::isBroken() const
+	{
+		RBXASSERT(numBreakingConnectors <= numConnector);
+		RBXASSERT(this->inKernel());
+
+		for (int i = 0; i < numBreakingConnectors; i++)
+		{
+			RBXASSERT(connector[i]);
+			if (connector[i]->getBroken())
+				return true;
+		}
+
+		return false;
+	}
+
+	float MultiJoint::getJointK()
+	{
+		float k1 = getPrimitive(1)->getJointK();
+		float k0 = getPrimitive(0)->getJointK();
+
+		return G3D::min(k0, k1);
+	}
+}

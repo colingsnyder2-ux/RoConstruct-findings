@@ -1,21 +1,39 @@
 // from server: 100% by auto
-// roc 2010-06 005f2630  unit: TextXmlParser  size: 26 bytes
-// Make this compile to the exact bytes below, then: roc check 2010-06 005f2630
-//
-// 005f2630  6a14                 push 0x14
-// 005f2632  e869531b00           call 0x7a79a0
-// 005f2637  83c404               add esp, 4
-// 005f263a  85c0                 test eax, eax
-// 005f263c  7402                 je 0x5f2640
-// 005f263e  8900                 mov dword ptr [eax], eax
-// 005f2640  8d4804               lea ecx, [eax + 4]
-// 005f2643  85c9                 test ecx, ecx
-// 005f2645  7402                 je 0x5f2649
-// 005f2647  8901                 mov dword ptr [ecx], eax
-// 005f2649  c3                   ret 
-// library boost-1.34.1/libs\regex\src\instances.cpp (function ?_Buynode@?$list@U?$pair@V?$shared_ptr@$$CBV?$w32_regex_traits_implementation@D@re_detail@boost@@@boost@@PBK@std@@V?$allocator@U?$pair@V?$shared_ptr@$$CBV?$w32_regex_traits_implementation@D@re_detail@boost@@@boost@@PBK@std@@@2@@std@@IAEPAU_Node@?$_List_nod@U?$pair@V?$shared_ptr@$$CBV?$w32_regex_traits_implementation@D@re_detail@boost@@@boost@@PBK@std@@V?$allocator@U?$pair@V?$shared_ptr@$$CBV?$w32_regex_traits_implementation@D@re_detail@boost@@@boost@@PBK@std@@@2@@2@XZ)
-
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD
 // roc-lib: boost-1.34.1 libs/regex/src/instances.cpp
+
+// Candidate translation unit (score above; library headers required).
+/*
+ *
+ * Copyright (c) 1998-2002
+ * John Maddock
+ *
+ * Use, modification and distribution are subject to the 
+ * Boost Software License, Version 1.0. (See accompanying file 
+ * LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+ *
+ */
+
+ /*
+  *   LOCATION:    see http://www.boost.org for most recent version.
+  *   FILE:        instances.cpp
+  *   VERSION:     see <boost/version.hpp>
+  *   DESCRIPTION: regex narrow character template instances.
+  */
+
+#define BOOST_REGEX_SOURCE
+
+#include <boost/regex/config.hpp>
+
+#if !defined(BOOST_REGEX_NO_EXTERNAL_TEMPLATES)
+#define BOOST_REGEX_NARROW_INSTANTIATE
+
+#ifdef __BORLANDC__
+#pragma hrdstop
+#endif
+
+#include <boost/regex.hpp>
+
+#endif

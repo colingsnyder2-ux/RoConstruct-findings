@@ -1,42 +1,36 @@
-// roc 2008-06 00440980  unit: RBX::Soundscape::VSoundId::?$ContentItem  size: 120 bytes
-// Make this compile to the exact bytes below, then: roc check 2008-06 00440980
-//
-// 00440980  6aff                 push -1
-// 00440982  683b467d00           push 0x7d463b
-// 00440987  64a100000000         mov eax, dword ptr fs:[0]
-// 0044098d  50                   push eax
-// 0044098e  64892500000000       mov dword ptr fs:[0], esp
-// 00440995  83ec08               sub esp, 8
-// 00440998  c7042400000000       mov dword ptr [esp], 0
-// 0044099f  68c8010000           push 0x1c8
-// 004409a4  c644240400           mov byte ptr [esp + 4], 0
-// 004409a9  ff15b0288000         call dword ptr [0x8028b0]
-// 004409af  83c404               add esp, 4
-// 004409b2  89442404             mov dword ptr [esp + 4], eax
-// 004409b6  c744241000000000     mov dword ptr [esp + 0x10], 0
-// 004409be  85c0                 test eax, eax
-// 004409c0  7409                 je 0x4409cb
-// 004409c2  8bc8                 mov ecx, eax
-// 004409c4  e897b71700           call 0x5bc160
-// 004409c9  eb02                 jmp 0x4409cd
-// 004409cb  33c0                 xor eax, eax
-// 004409cd  8b0c24               mov ecx, dword ptr [esp]
-// 004409d0  56                   push esi
-// 004409d1  8b74241c             mov esi, dword ptr [esp + 0x1c]
-// 004409d5  51                   push ecx
-// 004409d6  50                   push eax
-// 004409d7  8bce                 mov ecx, esi
-// 004409d9  c744241cffffffff     mov dword ptr [esp + 0x1c], 0xffffffff
-// 004409e1  e8eafeffff           call 0x4408d0
-// 004409e6  8b4c240c             mov ecx, dword ptr [esp + 0xc]
-// 004409ea  8bc6                 mov eax, esi
-// 004409ec  5e                   pop esi
-// 004409ed  64890d00000000       mov dword ptr fs:[0], ecx
-// 004409f4  83c414               add esp, 0x14
-// 004409f7  c3                   ret 
-// library openrbx-client/App\v8datamodel\GlobalSettings.cpp (function ??$create@VGlobalSettings@RBX@@@?$Creatable@VInstance@RBX@@@RBX@@SA?AV?$shared_ptr@VGlobalSettings@RBX@@@boost@@XZ)
-
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
 // roc-lib: openrbx-client-dll App/v8datamodel/GlobalSettings.cpp
+
+// Candidate translation unit (score above; library headers required).
+#include "v8datamodel/GlobalSettings.h"
+
+#include "util/Name.h"
+
+namespace RBX {
+
+const char sGlobalSettings[] = "GlobalSettings";
+
+boost::recursive_mutex GlobalSettings::mutex;
+
+// FUNCTION: WEBSERVICE 0x100b7370
+GlobalSettings::GlobalSettings()
+{
+	setName("Global Settings");
+}
+
+// FUNCTION: WEBSERVICE 0x100b74f0
+boost::shared_ptr<GlobalSettings> GlobalSettings::singleton()
+{
+	boost::recursive_mutex::scoped_lock lock(mutex);
+
+	static boost::shared_ptr<GlobalSettings> sing = Creatable<Instance>::create<GlobalSettings>();
+
+	return sing;
+}
+
+} // namespace RBX
+
+template const RBX::Name& RBX::Name::doDeclare<RBX::sGlobalSettings>();
+template void RBX::Name::callDoDeclare<RBX::sGlobalSettings>();

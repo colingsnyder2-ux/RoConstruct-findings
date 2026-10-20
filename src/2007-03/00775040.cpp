@@ -1,42 +1,228 @@
-// roc 2007-03 00775040  unit: seg_00770000  size: 88 bytes
-// Make this compile to the exact bytes below, then: roc check 2007-03 00775040
-//
-// 00775040  53                   push ebx
-// 00775041  55                   push ebp
-// 00775042  56                   push esi
-// 00775043  57                   push edi
-// 00775044  6a05                 push 5
-// 00775046  83ec0c               sub esp, 0xc
-// 00775049  8bc4                 mov eax, esp
-// 0077504b  b9b06a5b00           mov ecx, 0x5b6ab0
-// 00775050  8908                 mov dword ptr [eax], ecx
-// 00775052  33d2                 xor edx, edx
-// 00775054  895004               mov dword ptr [eax + 4], edx
-// 00775057  83ec0c               sub esp, 0xc
-// 0077505a  33f6                 xor esi, esi
-// 0077505c  897008               mov dword ptr [eax + 8], esi
-// 0077505f  8bc4                 mov eax, esp
-// 00775061  bfa03a5300           mov edi, 0x533aa0
-// 00775066  8938                 mov dword ptr [eax], edi
-// 00775068  6814bf7a00           push 0x7abf14
-// 0077506d  33db                 xor ebx, ebx
-// 0077506f  33ed                 xor ebp, ebp
-// 00775071  895804               mov dword ptr [eax + 4], ebx
-// 00775074  68fc8f7b00           push 0x7b8ffc
-// 00775079  b914ff8b00           mov ecx, 0x8bff14
-// 0077507e  896808               mov dword ptr [eax + 8], ebp
-// 00775081  e88a18e4ff           call 0x5b6910
-// 00775086  6810b57700           push 0x77b510
-// 0077508b  e823a1eaff           call 0x61f1b3
-// 00775090  83c404               add esp, 4
-// 00775093  5f                   pop edi
-// 00775094  5e                   pop esi
-// 00775095  5d                   pop ebp
-// 00775096  5b                   pop ebx
-// 00775097  c3                   ret 
-// library rbxgs/v8datamodel\PVInstance.cpp (function ??__Eprop_ControllerFlagShown@RBX@@YAXXZ)
-
 // roc-lang: cpp
 // roc-cl: 50727
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
 // roc-lib: rbxgs v8datamodel/PVInstance.cpp
+
+// Candidate translation unit (score above; library headers required).
+#include "v8datamodel/PVInstance.h"
+#include "v8datamodel/UserController.h"
+#include "v8datamodel/Workspace.h"
+
+namespace RBX
+{
+	const char* sPVInstance = "PVInstance";
+
+	static Reflection::PropDescriptor<PVInstance, G3D::CoordinateFrame> desc_CoordFrame("CoordinateFrame", "Data", NULL, &PVInstance::setPVGridOffsetLegacy, Reflection::PropertyDescriptor::LEGACY); // L23
+	static Reflection::PropDescriptor<PVInstance, bool> prop_ControllerFlagShown("ControllerFlagShown", "Appearance", &PVInstance::getShowControllerFlag, &PVInstance::setShowControllerFlag, Reflection::PropertyDescriptor::STANDARD); // L32
+	const Reflection::EnumPropDescriptor<PVInstance, Controller::ControllerType> PVInstance::prop_ControllerType("Controller", "Behavior", &PVInstance::getControllerType, &PVInstance::setControllerType, Reflection::PropertyDescriptor::STANDARD); // L34
+
+#pragma warning (push)
+#pragma warning (disable : 4355) // warning C4355: 'this' : used in base member initializer list
+	PVInstance::PVInstance(const char* name)
+		: Base(name),
+		  IsControllable(this, &PVInstance::computeIsControllable),
+		  IsTopFlag(this, &PVInstance::computeIsTopFlag),
+		  TopPVController(this, &PVInstance::computeTopPVController),
+		  controllerType(Controller::NO_CONTROLLER),
+		  showControllerFlag(true),
+		  legacyOffset(NULL)
+	{
+	}
+#pragma warning (pop)
+
+	void PVInstance::moveToPoint(G3D::Vector3 point)
+	{
+		Workspace* workspace = Workspace::findWorkspace(this);
+		if (workspace)
+			workspace->moveToPoint(this, point);
+	}
+
+	void PVInstance::clearLegacyOffset()
+	{
+		legacyOffset.reset();
+
+		for (size_t i = 0; i < numChildren(); ++i)
+		{
+			PVInstance* pvChild = queryTypedChild<PVInstance>((int)i);
+			if (pvChild)
+				pvChild->clearLegacyOffset();
+		}
+	}
+
+	void PVInstance::readProperty(const XmlElement* propertyElement, IReferenceBinder& binder)
+	{
+		if (propertyElement->getTag() == "Feature")
+		{
+			const Name* name = NULL;
+
+			bool foundNameAttribute = propertyElement->findAttributeValue(name_name, name);
+			RBXASSERT(foundNameAttribute);
+
+			if (*name == "Part")
+			{
+				readProperties(propertyElement, binder);
+				return;
+			}
+			if (*name == "Item")
+			{
+				readProperties(propertyElement, binder);
+				return;
+			}
+		}
+
+		return Instance::readProperty(propertyElement, binder);
+	}
+
+	PVInstance::~PVInstance()
+	{
+	}
+
+	void PVInstance::onChildControllerChanged()
+	{
+		dirtyAll();
+
+		PVInstance* pvParent = queryTypedParent<PVInstance>();
+		if (pvParent)
+			pvParent->onChildControllerChanged();
+	}
+
+	void PVInstance::onParentControllerChanged()
+	{
+		dirtyAll();
+
+		for (size_t i = 0; i < numChildren(); ++i)
+		{
+			PVInstance* pvChild = queryTypedChild<PVInstance>((int)i);
+			if (pvChild)
+				pvChild->onParentControllerChanged();
+		}
+	}
+
+	void PVInstance::dirtyAll()
+	{
+		TopPVController.setDirty();
+		IsControllable.setDirty();
+		IsTopFlag.setDirty();
+	}
+
+	void PVInstance::onDescendentAdded(Instance* instance)
+	{
+		Instance::onDescendentAdded(instance);
+
+		dirtyAll();
+	}
+
+	void PVInstance::onDescendentRemoving(const boost::shared_ptr<Instance>& instance)
+	{
+		dirtyAll();
+
+		Instance::onDescendentRemoving(instance);
+	}
+
+	bool PVInstance::computeIsControllable() const
+	{
+		for (size_t i = 0; i < numChildren(); ++i)
+		{
+			const IControllable* controllableChild = queryTypedChild<IControllable>((int)i);
+			if (controllableChild)
+			{
+				if (controllableChild->isControllable())
+					return true;
+			}
+		}
+
+		return false;
+	}
+
+	G3D::ReferenceCountedPointer<Controller> PVInstance::computeTopPVController() const
+	{
+		if (!isTopLevelPVInstance())
+		{
+			G3D::ReferenceCountedPointer<RBX::Controller> controller = getTypedParent<PVInstance>()->TopPVController;
+
+			if (controller.notNull())
+			{
+				if (controller->getControllerType() != Controller::NO_CONTROLLER && !controller->isUserController())
+					return controller;
+			}
+		}
+
+		ControllerService* controllerService = ServiceProvider::create<ControllerService>(this);
+		return controllerService ? controllerService->getController(controllerType, this) : NULL;
+	}
+
+	void PVInstance::onChildAdded(Instance* instance)
+	{
+		PVInstance* pvInstance = dynamic_cast<PVInstance*>(instance);
+		if (pvInstance)
+		{
+			pvInstance->onChildControllerChanged();
+			pvInstance->onParentControllerChanged();
+		}
+	}
+
+	void PVInstance::onChildRemoving(Instance* instance)
+	{
+		PVInstance* pvInstance = dynamic_cast<PVInstance*>(instance);
+		if (pvInstance)
+		{
+			pvInstance->onChildControllerChanged();
+			pvInstance->onParentControllerChanged();
+		}
+	}
+
+	void PVInstance::renderCoordinateFrame(Adorn* adorn)
+	{
+		adorn->setObjectToWorldMatrix(getLocation());
+		adorn->axes(G3D::Color3::red(), G3D::Color3::green(), G3D::Color3::blue(), 10.0f);
+	}
+
+	bool PVInstance::computeIsTopFlag() const
+	{
+		if (!IsControllable.getValue() || controllerType == Controller::NO_CONTROLLER)
+			return false;
+
+		if (isTopLevelPVInstance())
+			return true;
+
+		return getTypedParent<PVInstance>()->getTopPVController()->getControllerType() == Controller::NO_CONTROLLER;
+	}
+
+	void PVInstance::setPVGridOffsetLegacy(const G3D::CoordinateFrame& _offset)
+	{
+		RBXASSERT(this->isTopLevelPVInstance());
+
+		if (!legacyOffset)
+		{
+			legacyOffset.reset(new G3D::CoordinateFrame());
+			*legacyOffset = _offset;
+		}
+	}
+
+	void PVInstance::onExtentsChanged() const
+	{
+		const PVInstance* pvParent = queryTypedParent<PVInstance>();
+		if (pvParent)
+			pvParent->onExtentsChanged();
+	}
+
+	void PVInstance::setControllerType(Controller::ControllerType _control)
+	{
+		if (controllerType != _control)
+		{
+			controllerType = _control;
+			onChildControllerChanged();
+			onParentControllerChanged();
+			raisePropertyChanged(prop_ControllerType);
+		}
+	}
+
+	void PVInstance::setShowControllerFlag(bool _showControllerFlag)
+	{
+		if (showControllerFlag != _showControllerFlag)
+		{
+			showControllerFlag = _showControllerFlag;
+			raisePropertyChanged(prop_ControllerFlagShown);
+		}
+	}
+}

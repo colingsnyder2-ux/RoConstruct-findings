@@ -1,40 +1,98 @@
-// roc 2007-03 005e1a60  unit: seg_005e0000  size: 102 bytes
-// Make this compile to the exact bytes below, then: roc check 2007-03 005e1a60
-//
-// 005e1a60  6aff                 push -1
-// 005e1a62  686bc37500           push 0x75c36b
-// 005e1a67  64a100000000         mov eax, dword ptr fs:[0]
-// 005e1a6d  50                   push eax
-// 005e1a6e  64892500000000       mov dword ptr fs:[0], esp
-// 005e1a75  51                   push ecx
-// 005e1a76  56                   push esi
-// 005e1a77  6a28                 push 0x28
-// 005e1a79  8bf1                 mov esi, ecx
-// 005e1a7b  e888c60300           call 0x61e108
-// 005e1a80  83c404               add esp, 4
-// 005e1a83  89442404             mov dword ptr [esp + 4], eax
-// 005e1a87  85c0                 test eax, eax
-// 005e1a89  c744241000000000     mov dword ptr [esp + 0x10], 0
-// 005e1a91  741f                 je 0x5e1ab2
-// 005e1a93  8b4c2418             mov ecx, dword ptr [esp + 0x18]
-// 005e1a97  56                   push esi
-// 005e1a98  51                   push ecx
-// 005e1a99  8bc8                 mov ecx, eax
-// 005e1a9b  e860f4ffff           call 0x5e0f00
-// 005e1aa0  5e                   pop esi
-// 005e1aa1  8b4c2404             mov ecx, dword ptr [esp + 4]
-// 005e1aa5  64890d00000000       mov dword ptr fs:[0], ecx
-// 005e1aac  83c410               add esp, 0x10
-// 005e1aaf  c20400               ret 4
-// 005e1ab2  8b4c2408             mov ecx, dword ptr [esp + 8]
-// 005e1ab6  33c0                 xor eax, eax
-// 005e1ab8  5e                   pop esi
-// 005e1ab9  64890d00000000       mov dword ptr fs:[0], ecx
-// 005e1ac0  83c410               add esp, 0x10
-// 005e1ac3  c20400               ret 4
-// library rbxgs/util\RunStateOwner.cpp (function ?newSignalInstance@?$TSignalDesc@$$A6AXM@Z@Reflection@RBX@@EBEPAVSignalInstance@23@AAVSignalSource@23@@Z)
-
 // roc-lang: cpp
 // roc-cl: 50727
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
 // roc-lib: rbxgs util/RunStateOwner.cpp
+
+// Candidate translation unit (score above; library headers required).
+#include "util/RunStateOwner.h"
+#include "v8datamodel/DataModel.h"
+
+namespace RBX
+{
+	static Reflection::BoundFuncDesc<RunService, void(void), 0> runFunction(&RunService::run, "Run", Reflection::FunctionDescriptor::NeedTrustedCaller);
+	static Reflection::BoundFuncDesc<RunService, void(void), 0> pauseFunction(&RunService::pause, "Pause", Reflection::FunctionDescriptor::NeedTrustedCaller);
+	static Reflection::BoundFuncDesc<RunService, void(void), 0> resetFunction(&RunService::reset, "Reset", Reflection::FunctionDescriptor::NeedTrustedCaller);
+
+	static Reflection::SignalDesc<RunService, void(float)> event_Heartbeat("Heartbeat", "interval");
+
+	RunService::RunService()
+		: framePeriod(1.0f/30.0f),
+		  runState(RS_NORMAL),
+		  invalidRunViewCount(0),
+		  stopRequested(false),
+		  runDisabled(false)
+	{
+		setName("Run Service");
+	}
+
+	RunService::~RunService()
+	{
+		RBXASSERT(views.empty());
+	}
+
+	void RunService::endRunThread(bool join)
+	{
+		stopRequested = true;
+		stateChangedCondition.notify_all();
+
+		if (join)
+			runThread->join();
+	}
+
+	void RunService::onAncestorChanged(const AncestorChanged& event)
+	{
+		if (!getParent())
+		{
+			stopRequested = true;
+			stateChangedCondition.notify_all();
+		}
+	}
+
+	void RunService::setRunState(RunState newState)
+	{
+		RunTransition transition(runState, newState);
+		runState = newState;
+
+		Notifier<RunService, RunState>::raise(newState);
+		Notifier<RunService, RunTransition>::raise(transition);
+	}
+
+	void RunService::raiseStepped(float time, float step)
+	{
+		Notifier<RunService, Stepped>::raise(Stepped(time, step));
+		event_Stepped.fire(this, time, step);
+	}
+
+	void RunService::raiseHeartbeat(float time, float step)
+	{
+		Notifier<RunService, Heartbeat>::raise(Heartbeat(time, step));
+		event_Heartbeat.fire(this, step);
+	}
+
+	void RunService::invalidateRunViews()
+	{
+		boost::mutex::scoped_lock lock(viewMutex);
+
+		if (invalidRunViewCount == 0)
+		{
+			invalidRunViewCount = (int)views.size();
+			if (invalidRunViewCount > 0)
+			{
+				for (std::map<IRunView*, bool>::iterator iter = views.begin(); iter != views.end(); iter++)
+				{
+					iter->first->InvalidateRunView();
+					iter->second = false;
+				}
+				runViewsDoneCondition.notify_all();
+			}
+		}
+	}
+
+	void RunService::start()
+	{
+		RBXASSERT(!runThread);
+
+		boost::shared_ptr<DataModel> dataModel = shared_from(dynamic_cast<DataModel*>(getParent()));
+		runThread.reset(new boost::thread(background_function(boost::bind(&RunService::runProc, shared_from(this), dataModel), "rbx_runProc")));
+	}
+}

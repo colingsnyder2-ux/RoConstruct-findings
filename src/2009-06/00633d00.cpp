@@ -1,42 +1,100 @@
-// roc 2009-06 00633d00  unit: RBX::VScriptContext::?$FactoryProduct  size: 100 bytes
-// Make this compile to the exact bytes below, then: roc check 2009-06 00633d00
-//
-// 00633d00  83ec0c               sub esp, 0xc
-// 00633d03  d9442414             fld dword ptr [esp + 0x14]
-// 00633d07  56                   push esi
-// 00633d08  8b742414             mov esi, dword ptr [esp + 0x14]
-// 00633d0c  d95c2404             fstp dword ptr [esp + 4]
-// 00633d10  d944241c             fld dword ptr [esp + 0x1c]
-// 00633d14  6a0c                 push 0xc
-// 00633d16  d95c240c             fstp dword ptr [esp + 0xc]
-// 00633d1a  56                   push esi
-// 00633d1b  d9442428             fld dword ptr [esp + 0x28]
-// 00633d1f  d95c2414             fstp dword ptr [esp + 0x14]
-// 00633d23  e8a8600800           call 0x6b9dd0
-// 00633d28  83c408               add esp, 8
-// 00633d2b  85c0                 test eax, eax
-// 00633d2d  7414                 je 0x633d43
-// 00633d2f  d9442404             fld dword ptr [esp + 4]
-// 00633d33  d918                 fstp dword ptr [eax]
-// 00633d35  d9442408             fld dword ptr [esp + 8]
-// 00633d39  d95804               fstp dword ptr [eax + 4]
-// 00633d3c  d944240c             fld dword ptr [esp + 0xc]
-// 00633d40  d95808               fstp dword ptr [eax + 8]
-// 00633d43  a1f02aa200           mov eax, dword ptr [0xa22af0]
-// 00633d48  50                   push eax
-// 00633d49  68f0d8ffff           push 0xffffd8f0
-// 00633d4e  56                   push esi
-// 00633d4f  e87c580800           call 0x6b95d0
-// 00633d54  6afe                 push -2
-// 00633d56  56                   push esi
-// 00633d57  e8045c0800           call 0x6b9960
-// 00633d5c  83c414               add esp, 0x14
-// 00633d5f  5e                   pop esi
-// 00633d60  83c40c               add esp, 0xc
-// 00633d63  c3                   ret 
-// library openrbx-client/App\script\ScriptContext.cpp (function ?pushVector3@Vector3Bridge@Lua@RBX@@SAXPAUlua_State@@VVector3@G3D@@@Z)
-
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
 // roc-lib: openrbx-client App/script/ScriptContext.cpp
+
+// Candidate translation unit (score above; library headers required).
+#include "script/ScriptContext.h"
+
+#include "reflection/signal.h"
+#include "script/LuaAtomicClasses.h"
+#include "util/Name.h"
+#include "v8datamodel/DebugSettings.h"
+#include "v8datamodel/Stats.h"
+
+namespace RBX {
+
+char sScriptContext[] = "ScriptContext";
+
+namespace Lua {
+
+template <>
+const char* Bridge<boost::shared_ptr<Reflection::DescribedBase>, 0>::className = "Object";
+
+} // namespace Lua
+
+// FUNCTION: WEBSERVICE 0x1005eb00
+ScriptContext& ScriptContext::getContext(lua_State* L)
+{
+	lua_pushlightuserdata(L, (void*) 0x43);
+	lua_gettable(L, LUA_GLOBALSINDEX);
+
+	ScriptContext* context = static_cast<ScriptContext*>(lua_touserdata(L, -1));
+
+	lua_settop(L, -2);
+
+	return *context;
+}
+
+// STUB: WEBSERVICE 0x1005eb60
+void ScriptContext::onEvent(const RunService* source, RunTransition event)
+{
+	STUB(0x1005eb60);
+}
+
+// FUNCTION: WEBSERVICE 0x1005f880
+void Lua::CoordinateFrameBridge::pushCoordinateFrame(lua_State* L, G3D::CoordinateFrame value)
+{
+	pushNewObject(L, value);
+}
+
+// FUNCTION: WEBSERVICE 0x1005f8c0
+void Lua::Vector3Bridge::pushVector3(lua_State* L, G3D::Vector3 value)
+{
+	pushNewObject(L, value);
+}
+
+// FUNCTION: WEBSERVICE 0x1005f910
+void Lua::Color3Bridge::pushColor3(lua_State* L, G3D::Color3 value)
+{
+	pushNewObject(L, value);
+}
+
+// STUB: WEBSERVICE 0x100673d0
+ScriptContext::Result ScriptContext::resume(lua_State* L, int nargs)
+{
+	STUB(0x100673d0);
+	return Success;
+}
+
+// STUB: WEBSERVICE 0x10068880
+void ScriptContext::onEvent(const RunService* source, Heartbeat event)
+{
+	STUB(0x10068880);
+}
+
+} // namespace RBX
+
+template void RBX::Lua::SharedPtrBridge<RBX::Reflection::DescribedBase>::push(
+	lua_State* L,
+	boost::shared_ptr<RBX::Reflection::DescribedBase> instance
+);
+
+template void RBX::Lua::SharedPtrBridge<RBX::Reflection::SignalInstance>::push(
+	lua_State* L,
+	boost::shared_ptr<RBX::Reflection::SignalInstance> instance
+);
+
+template const RBX::Name& RBX::Name::doDeclare<RBX::Stats::sStatsItem>();
+template const RBX::Name& RBX::Name::doDeclare<RBX::Stats::sStats>();
+template const RBX::Name& RBX::Name::doDeclare<RBX::sDebugSettings>();
+template void RBX::Name::callDoDeclare<RBX::Stats::sStatsItem>();
+template void RBX::Name::callDoDeclare<RBX::Stats::sStats>();
+template void RBX::Name::callDoDeclare<RBX::sDebugSettings>();
+
+template class RBX::FactoryProduct<RBX::ScriptContext, RBX::Instance, RBX::sScriptContext>;
+template class RBX::Reflection::Described<
+	RBX::ScriptContext,
+	RBX::sScriptContext,
+	RBX::FactoryProduct<RBX::ScriptContext, RBX::Instance, RBX::sScriptContext> >;
+template class RBX::DescribedCreatable<RBX::ScriptContext, RBX::Instance, RBX::sScriptContext>;

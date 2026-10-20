@@ -1,43 +1,123 @@
-// roc 2007-08 00608d40  unit: RBX::SimJobStage  size: 86 bytes
-// Make this compile to the exact bytes below, then: roc check 2007-08 00608d40
-//
-// 00608d40  83ec08               sub esp, 8
-// 00608d43  56                   push esi
-// 00608d44  8b742410             mov esi, dword ptr [esp + 0x10]
-// 00608d48  57                   push edi
-// 00608d49  8bf9                 mov edi, ecx
-// 00608d4b  837f1801             cmp dword ptr [edi + 0x18], 1
-// 00608d4f  760c                 jbe 0x608d5d
-// 00608d51  56                   push esi
-// 00608d52  8d4710               lea eax, [edi + 0x10]
-// 00608d55  50                   push eax
-// 00608d56  e8a504eaff           call 0x4a9200
-// 00608d5b  eb02                 jmp 0x608d5f
-// 00608d5d  33c0                 xor eax, eax
-// 00608d5f  50                   push eax
-// 00608d60  56                   push esi
-// 00608d61  e8da3bfaff           call 0x5ac940
-// 00608d66  8b4e20               mov ecx, dword ptr [esi + 0x20]
-// 00608d69  8b561c               mov edx, dword ptr [esi + 0x1c]
-// 00608d6c  83c408               add esp, 8
-// 00608d6f  51                   push ecx
-// 00608d70  52                   push edx
-// 00608d71  8d442410             lea eax, [esp + 0x10]
-// 00608d75  50                   push eax
-// 00608d76  8d4f10               lea ecx, [edi + 0x10]
-// 00608d79  e8a2e01100           call 0x726e20
-// 00608d7e  8bce                 mov ecx, esi
-// 00608d80  e80bffffff           call 0x608c90
-// 00608d85  56                   push esi
-// 00608d86  e8d76e0200           call 0x62fc62
-// 00608d8b  83c404               add esp, 4
-// 00608d8e  5f                   pop edi
-// 00608d8f  5e                   pop esi
-// 00608d90  83c408               add esp, 8
-// 00608d93  c20400               ret 4
-// library openrbx-client/App\v8world\SimJobStage.cpp (function ?destroyMechanism@SimJobStage@RBX@@AAEXPAVMechanism@2@@Z)
-
 // roc-lang: cpp
 // roc-cl: 50727
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
 // roc-lib: openrbx-client App/v8world/SimJobStage.cpp
+
+// Candidate translation unit (score above; library headers required).
+#include "v8world/SimJobStage.h"
+
+#include "decomp.h"
+#include "v8kernel/Kernel.h"
+#include "v8world/Assembly2.h"
+#include "v8world/Primitive.h"
+
+#include <algorithm>
+#include <cstddef>
+#include <functional>
+
+namespace RBX {
+
+// FUNCTION: WEBSERVICE 0x1011c900
+void SimJobStage::onEdgeRemoving(Edge* e)
+{
+	e->removeFromKernel();
+
+	e->removeFromStage(this);
+}
+
+// FUNCTION: WEBSERVICE 0x1011c990
+SimJobStage::SimJobStage(IStage* upstream, World* world) : IWorldStage(upstream, new Kernel(this), world)
+{
+}
+
+// FUNCTION: WEBSERVICE 0x1011ca60
+void SimJobStage::notifyMovingPrimitives()
+{
+	std::for_each(mechanisms.begin(), mechanisms.end(), std::mem_fun(&Mechanism::notifyMovingPrimitives));
+}
+
+// FUNCTION: WEBSERVICE 0x1011cb40
+void SimJobStage::destroyMechanism(Mechanism* m)
+{
+	Mechanism* next = mechanisms.size() > 1 ? nextMechanism(mechanisms, m) : NULL;
+
+	MechanismTracker::transferTrackers(m, next);
+
+	mechanisms.erase(m->myIt);
+
+	delete m;
+}
+
+void SimJobStage::insertMechanism(Mechanism* mechanism)
+{
+	mechanisms.push_back(mechanism);
+
+	mechanism->myIt = --mechanisms.end();
+}
+
+// FUNCTION: WEBSERVICE 0x1011cba0
+void SimJobStage::onAssemblyAdded(Assembly* a)
+{
+	a->putInPipeline(this);
+
+	Mechanism* mechanism = new Mechanism();
+	mechanism->insertAssembly(a);
+
+	insertMechanism(mechanism);
+
+	a->putInKernel(getKernel());
+}
+
+// FUNCTION: WEBSERVICE 0x1011cc80
+void SimJobStage::onAssemblyRemoving(Assembly* a)
+{
+	a->removeFromKernel();
+
+	Mechanism* mechanism = a->getMechanism();
+
+	mechanism->removeAssembly(a);
+
+	if (mechanism->getAssemblies().size() == 0) {
+		destroyMechanism(mechanism);
+	}
+
+	a->removeFromStage(this);
+}
+
+// FUNCTION: WEBSERVICE 0x1011ccc0
+void SimJobStage::combineMechanisms(Edge* e)
+{
+	Assembly* a0 = e->getPrimitive(0)->getAssembly();
+	Assembly* a1 = e->getPrimitive(1)->getAssembly();
+
+	Mechanism* m0 = a0->getMechanism();
+	Mechanism* m1 = a1->getMechanism();
+
+	if (m0 != m1) {
+		Mechanism* bigger = m0->getAssemblies().size() > m1->getAssemblies().size() ? m0 : m1;
+		Mechanism* smaller = bigger == m0 ? m1 : m0;
+
+		bigger->absorb(smaller);
+
+		destroyMechanism(smaller);
+	}
+}
+
+// FUNCTION: WEBSERVICE 0x1011cd20
+void SimJobStage::onEdgeAdded(Edge* e)
+{
+	e->putInPipeline(this);
+
+	if (e->getEdgeType() == Edge::JOINT) {
+		Assembly* a0 = e->getPrimitive(0)->getAssembly();
+		Assembly* a1 = e->getPrimitive(1)->getAssembly();
+
+		if (a0->inOrDownstreamOfStage(this) && a1->inOrDownstreamOfStage(this)) {
+			combineMechanisms(e);
+		}
+	}
+
+	e->putInKernel(getKernel());
+}
+
+} // namespace RBX

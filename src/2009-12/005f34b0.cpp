@@ -1,60 +1,236 @@
-// roc 2009-12 005f34b0  unit: seg_005f0000  size: 110 bytes
-// Make this compile to the exact bytes below, then: roc check 2009-12 005f34b0
-//
-// 005f34b0  53                   push ebx
-// 005f34b1  8b5c240c             mov ebx, dword ptr [esp + 0xc]
-// 005f34b5  8b4314               mov eax, dword ptr [ebx + 0x14]
-// 005f34b8  55                   push ebp
-// 005f34b9  8b6c240c             mov ebp, dword ptr [esp + 0xc]
-// 005f34bd  394514               cmp dword ptr [ebp + 0x14], eax
-// 005f34c0  7257                 jb 0x5f3519
-// 005f34c2  56                   push esi
-// 005f34c3  33f6                 xor esi, esi
-// 005f34c5  57                   push edi
-// 005f34c6  85c0                 test eax, eax
-// 005f34c8  7e41                 jle 0x5f350b
-// 005f34ca  3bf0                 cmp esi, eax
-// 005f34cc  7606                 jbe 0x5f34d4
-// 005f34ce  ff1560b79800         call dword ptr [0x98b760]
-// 005f34d4  837b1810             cmp dword ptr [ebx + 0x18], 0x10
-// 005f34d8  7205                 jb 0x5f34df
-// 005f34da  8b7b04               mov edi, dword ptr [ebx + 4]
-// 005f34dd  eb03                 jmp 0x5f34e2
-// 005f34df  8d7b04               lea edi, [ebx + 4]
-// 005f34e2  3b7514               cmp esi, dword ptr [ebp + 0x14]
-// 005f34e5  7606                 jbe 0x5f34ed
-// 005f34e7  ff1560b79800         call dword ptr [0x98b760]
-// 005f34ed  837d1810             cmp dword ptr [ebp + 0x18], 0x10
-// 005f34f1  7205                 jb 0x5f34f8
-// 005f34f3  8b4504               mov eax, dword ptr [ebp + 4]
-// 005f34f6  eb03                 jmp 0x5f34fb
-// 005f34f8  8d4504               lea eax, [ebp + 4]
-// 005f34fb  8a0c37               mov cl, byte ptr [edi + esi]
-// 005f34fe  3a0c30               cmp cl, byte ptr [eax + esi]
-// 005f3501  750f                 jne 0x5f3512
-// 005f3503  8b4314               mov eax, dword ptr [ebx + 0x14]
-// 005f3506  46                   inc esi
-// 005f3507  3bf0                 cmp esi, eax
-// 005f3509  7cc1                 jl 0x5f34cc
-// 005f350b  5f                   pop edi
-// 005f350c  5e                   pop esi
-// 005f350d  5d                   pop ebp
-// 005f350e  b001                 mov al, 1
-// 005f3510  5b                   pop ebx
-// 005f3511  c3                   ret 
-// 005f3512  5f                   pop edi
-// 005f3513  5e                   pop esi
-// 005f3514  5d                   pop ebp
-// 005f3515  32c0                 xor al, al
-// 005f3517  5b                   pop ebx
-// 005f3518  c3                   ret 
-// 005f3519  5d                   pop ebp
-// 005f351a  32c0                 xor al, al
-// 005f351c  5b                   pop ebx
-// 005f351d  c3                   ret 
-// library g3d-6.09/G3Dcpp\stringutils.cpp (function ?beginsWith@G3D@@YA_NABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@0@Z)
-
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /GS /EHsc /MD
 // roc-lib: g3d-6.09 G3Dcpp/stringutils.cpp
+
+// Candidate translation unit (score above; library headers required).
+/**
+ @file stringutils.cpp
+
+ @maintainer Morgan McGuire, matrix@graphics3d.com
+
+ @created 2000-09-09
+ @edited  2005-09-10
+*/
+
+#include "G3D/platform.h"
+#include "G3D/stringutils.h"
+#include "G3D/BinaryInput.h"
+#include <algorithm>
+
+namespace G3D {
+
+#ifdef G3D_WIN32
+    // disable: "C++ exception handler used"
+#   pragma warning (push)
+#   pragma warning (disable : 4530)
+    const char* NEWLINE = "\r\n";
+#else
+    const char* NEWLINE = "\n";
+    static bool iswspace(int ch) { return (ch==' ' || ch=='\t' || ch=='\n'); }
+#endif
+
+bool beginsWith(
+    const std::string& test,
+    const std::string& pattern) {
+
+    if (test.size() >= pattern.size()) {
+        for (int i = 0; i < (int)pattern.size(); ++i) {
+            if (pattern[i] != test[i]) {
+                return false;
+            }
+        }
+        return true;
+    } else {
+        return false;
+    }
+}
+
+
+bool endsWith(
+    const std::string& test,
+    const std::string& pattern) {
+
+    if (test.size() >= pattern.size()) {
+        int te = test.size() - 1;
+        int pe = pattern.size() - 1;
+        for (int i = pattern.size() - 1; i >= 0; --i) {
+            if (pattern[pe - i] != test[te - i]) {
+                return false;
+            }
+        }
+        return true;
+    } else {
+        return false;
+    }
+}
+
+
+std::string wordWrap(
+    const std::string&      input,
+    int                     numCols) {
+
+    std::string output;
+    size_t      c = 0;
+    int         len;
+
+    // Don't make lines less than this length
+    int         minLength = numCols / 4;
+    size_t      inLen = input.size();
+
+    bool first = true;
+    while (c < inLen) {
+        if (first) {
+            first = false;
+        } else {
+            output += NEWLINE;
+        }
+
+        if ((int)inLen - (int)c - 1 < numCols) {
+            // The end
+            output += input.substr(c, inLen - c);
+            break;
+        }
+
+        len = numCols;
+
+        // Look at character c + numCols, see if it is a space.
+        while ((len > minLength) &&
+               (input[c + len] != ' ')) {
+            len--;
+        }
+
+        if (len == minLength) {
+            // Just crop
+            len = numCols;
+
+        }
+
+        output += input.substr(c, len);
+        c += len;
+        if (c < input.size()) {
+            // Collapse multiple spaces.
+            while ((input[c] == ' ') && (c < input.size())) {
+                c++;
+            }
+        }
+    }
+
+    return output;
+}
+
+
+int stringCompare(
+    const std::string&      s1,
+    const std::string&      s2) {
+
+    return stringPtrCompare(&s1, &s2);
+}
+
+
+int stringPtrCompare(
+    const std::string*      s1,
+    const std::string*      s2) {
+
+    return s1->compare(*s2);
+}
+
+
+std::string toUpper(const std::string& x) {
+    std::string result = x;
+    std::transform(result.begin(), result.end(), result.begin(), toupper);
+    return result;
+}
+
+
+std::string toLower(const std::string& x) {
+    std::string result = x;
+    std::transform(result.begin(), result.end(), result.begin(), tolower);
+    return result;
+}
+
+
+Array<std::string> stringSplit(
+    const std::string&          x,
+    char                        splitChar) {
+
+    size_t prev, cur = 0;
+    Array<std::string> out;
+
+    while (cur < x.size()) {
+        prev = cur;
+        cur = x.find(splitChar, prev + 1);
+
+        if (cur == std::string::npos) {
+            cur = x.size();
+        }
+
+        out.append(x.substr(prev, cur - prev));
+        ++cur;
+    }
+
+    return out;
+}
+
+
+std::string stringJoin(
+    const Array<std::string>&   a,
+    char                        joinChar) {
+
+    std::string out;
+
+    for (int i = 0; i < (int)a.size() - 1; ++i) {
+        out += a[i] + joinChar;
+    }
+
+    if (a.size() > 0) {
+        return out + a.last();
+    } else {
+        return out;
+    }
+}
+
+
+std::string stringJoin(
+    const Array<std::string>&   a,
+    const std::string&          joinStr) {
+
+    std::string out;
+
+    for (int i = 0; i < (int)a.size() - 1; ++i) {
+        out += a[i] + joinStr;
+    }
+
+    if (a.size() > 0) {
+        return out + a.last();
+    } else {
+        return out;
+    }
+}
+
+
+std::string trimWhitespace(
+    const std::string&              s) {
+
+    size_t left = 0;
+    
+    // Trim from left
+    while ((left < s.length()) && iswspace(s[left])) {
+        ++left;
+    }
+
+    int right = s.length() - 1;
+    // Trim from right
+    while ((right > (int)left) && iswspace(s[right])) {
+        --right;
+    }
+    
+    return s.substr(left, right - left + 1);
+}
+
+}; // namespace
+
+#undef NEWLINE
+#ifdef G3D_WIN32
+#   pragma warning (pop)
+#endif

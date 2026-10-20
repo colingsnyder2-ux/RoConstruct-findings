@@ -1,30 +1,129 @@
-// roc 2007-08 0053dfb0  unit: RBX::Script  size: 49 bytes
-// Make this compile to the exact bytes below, then: roc check 2007-08 0053dfb0
-//
-// 0053dfb0  56                   push esi
-// 0053dfb1  8b742408             mov esi, dword ptr [esp + 8]
-// 0053dfb5  85f6                 test esi, esi
-// 0053dfb7  57                   push edi
-// 0053dfb8  8bf9                 mov edi, ecx
-// 0053dfba  7413                 je 0x53dfcf
-// 0053dfbc  8bce                 mov ecx, esi
-// 0053dfbe  e84d04efff           call 0x42e410
-// 0053dfc3  85c0                 test eax, eax
-// 0053dfc5  7408                 je 0x53dfcf
-// 0053dfc7  57                   push edi
-// 0053dfc8  8bc8                 mov ecx, eax
-// 0053dfca  e891bbffff           call 0x539b60
-// 0053dfcf  8b442410             mov eax, dword ptr [esp + 0x10]
-// 0053dfd3  50                   push eax
-// 0053dfd4  56                   push esi
-// 0053dfd5  8bcf                 mov ecx, edi
-// 0053dfd7  e874ca0300           call 0x57aa50
-// 0053dfdc  5f                   pop edi
-// 0053dfdd  5e                   pop esi
-// 0053dfde  c20800               ret 8
-// library rbxgs/script\Script.cpp (function ?onServiceProvider@Script@RBX@@MAEXPBVServiceProvider@2@0@Z)
-
 // roc-lang: cpp
 // roc-cl: 50727
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
 // roc-lib: rbxgs script/Script.cpp
+
+// Candidate translation unit (score above; library headers required).
+#include "script/Script.h"
+#include "script/ScriptContext.h"
+#include "v8tree/Service.h"
+#include "boost/thread/once.hpp"
+
+using namespace RBX;
+
+const Reflection::PropDescriptor<Script, std::string> Script::prop_EmbeddedSourceCode("Source", "Data", &Script::getEmbeddedCode, &Script::setEmbeddedCode, Reflection::PropertyDescriptor::LEGACY);
+const Reflection::PropDescriptor<Script, ContentId> Script::prop_SourceCodeId("LinkedSource", "Data", &Script::getScriptId, &Script::setScriptId, Reflection::PropertyDescriptor::LEGACY);
+Reflection::BoundProp<bool, true> Script::prop_Disabled("Disabled", "Behavior", &Script::disabled, Reflection::PropertyDescriptor::STANDARD);
+
+static boost::shared_ptr<const std::string> helloWorld;
+static boost::once_flag flagInitScriptCpp = BOOST_ONCE_INIT;
+
+void initScriptCpp()
+{
+    helloWorld.reset(new std::string("print(\"Hello world!\")\r\n"));
+}
+
+const char* RBX::sScript = "Script";
+
+Script::Script()
+    : DescribedCreatable("Script"),
+      disabled(false),
+      owner(NULL)
+{
+    boost::call_once(&initScriptCpp, flagInitScriptCpp);
+    embeddedSource = helloWorld;
+}
+
+const char* RBX::sLocalScript = "LocalScript";
+
+LocalScript::LocalScript()
+{
+    setName("LocalScript");
+}
+
+Script::~Script()
+{
+    RBXASSERT(owner == NULL);
+}
+
+void Script::setEmbeddedCode(const std::string& value)
+{
+    if (getEmbeddedCode() != value)
+    {
+        embeddedSource.reset(new std::string(value));
+        raisePropertyChanged(prop_EmbeddedSourceCode);
+    }
+}
+
+void Script::setScriptId(const ContentId& value)
+{
+    if (getScriptId() != value)
+    {
+        scriptId = value;
+        requestCode();
+        raisePropertyChanged(prop_SourceCodeId);
+    }
+}
+
+void Script::onAncestorChanged(const AncestorChanged& event)
+{
+    Instance::onAncestorChanged(event);
+
+    IScriptOwner* newOwner = NULL;
+    Instance* parent = this->getParent();
+
+    while (parent)
+    {
+        IScriptOwner* parentOwner = dynamic_cast<IScriptOwner*>(parent);
+
+        if (parentOwner)
+        {
+            newOwner = parentOwner->scriptShouldRun(this);
+
+            if (newOwner)
+                break;
+        }
+
+        parent = parent->getParent();
+    }
+
+    if (newOwner != owner)
+    {
+        if (owner)
+            owner->releaseScript(this);
+
+        owner = newOwner;
+
+        ScriptContext* sc = ServiceProvider::find<ScriptContext>(this);
+
+        if (sc)
+        {
+            sc->removeScript(this);
+
+            if (owner)
+                owner->runScript(this, sc);
+        }
+    }
+}
+
+void Script::onServiceProvider(const ServiceProvider* oldProvider, const ServiceProvider* newProvider)
+{
+	if (ScriptContext* sc = ServiceProvider::find<ScriptContext>(oldProvider))
+	{
+		sc->removeScript(this);
+	}
+
+	Instance::onServiceProvider(oldProvider, newProvider);
+}
+
+boost::shared_ptr<const std::string> Script::requestCode()
+{
+    if (scriptId.isNull())
+    {
+        return embeddedSource;
+    }
+    else 
+    {
+        return ContentProvider::singleton().requestContentString(scriptId);
+    }
+}

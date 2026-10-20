@@ -1,35 +1,149 @@
 // from server: 100% by auto
-// roc 2007-08 006acdc0  unit: CXTPRibbonBar  size: 70 bytes
-// Make this compile to the exact bytes below, then: roc check 2007-08 006acdc0
-//
-// 006acdc0  51                   push ecx
-// 006acdc1  56                   push esi
-// 006acdc2  8d442404             lea eax, [esp + 4]
-// 006acdc6  50                   push eax
-// 006acdc7  6a04                 push 4
-// 006acdc9  6a00                 push 0
-// 006acdcb  6850cd6a00           push 0x6acd50
-// 006acdd0  8bf1                 mov esi, ecx
-// 006acdd2  6a00                 push 0
-// 006acdd4  6a00                 push 0
-// 006acdd6  c70600000000         mov dword ptr [esi], 0
-// 006acddc  c7460c00000000       mov dword ptr [esi + 0xc], 0
-// 006acde3  ff1588d17700         call dword ptr [0x77d188]
-// 006acde9  85c0                 test eax, eax
-// 006acdeb  894608               mov dword ptr [esi + 8], eax
-// 006acdee  7413                 je 0x6ace03
-// 006acdf0  6aff                 push -1
-// 006acdf2  50                   push eax
-// 006acdf3  ff1504d27700         call dword ptr [0x77d204]
-// 006acdf9  8b4e08               mov ecx, dword ptr [esi + 8]
-// 006acdfc  51                   push ecx
-// 006acdfd  ff158cd17700         call dword ptr [0x77d18c]
-// 006ace03  5e                   pop esi
-// 006ace04  59                   pop ecx
-// 006ace05  c3                   ret 
-// library xtp-11.2.2-vc8/Source\CommandBars\XTPSoundManager.cpp (function ?StartThread@CXTPSoundManager@@AAEXXZ)
-
 // roc-lang: cpp
 // roc-cl: 50727
 // roc-flags: /O2 /GS- /MD
 // roc-lib: xtp-11.2.2-vc8 Source/CommandBars/XTPSoundManager.cpp
+
+// Candidate translation unit (score above; library headers required).
+// XTPSoundManager.cpp : implementation of the CXTPSoundManager class.
+//
+// This file is a part of the XTREME COMMANDBARS MFC class library.
+// (c)1998-2007 Codejock Software, All Rights Reserved.
+//
+// THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
+// RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
+// CONSENT OF CODEJOCK SOFTWARE.
+//
+// THIS SOURCE CODE CAN ONLY BE USED UNDER THE TERMS AND CONDITIONS OUTLINED
+// IN THE XTREME TOOLKIT PRO LICENSE AGREEMENT. CODEJOCK SOFTWARE GRANTS TO
+// YOU (ONE SOFTWARE DEVELOPER) THE LIMITED RIGHT TO USE THIS SOFTWARE ON A
+// SINGLE COMPUTER.
+//
+// CONTACT INFORMATION:
+// support@codejock.com
+// http://www.codejock.com
+//
+/////////////////////////////////////////////////////////////////////////////
+
+#include "stdafx.h"
+
+#include "XTPSoundManager.h"
+
+#pragma warning (disable : 4201)
+	#include <mmsystem.h>
+#pragma warning (default : 4201)
+
+#pragma message("   Automatically linking with WinMM library")
+#pragma message("      (Windows Multimedia System)")
+#pragma comment(lib, "winmm.lib")
+
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#undef THIS_FILE
+static char THIS_FILE[] = __FILE__;
+#endif
+
+CXTPSoundManager::CXTPSoundManager()
+{
+	m_hThread = 0;
+	m_bSystemSounds = TRUE;
+	m_bTerminate = FALSE;
+	m_soundState = xtpSoundNone;
+}
+
+CXTPSoundManager* AFX_CDECL XTPSoundManager()
+{
+	static CXTPSoundManager s_managerInstance;
+	return &s_managerInstance;
+}
+
+CXTPSoundManager::~CXTPSoundManager()
+{
+	StopThread();
+}
+
+DWORD WINAPI CXTPSoundManager::SoundThreadProc(LPVOID)
+{
+	XTPSoundManagerState& soundState = XTPSoundManager()->m_soundState;
+
+	while (!XTPSoundManager()->m_bTerminate)
+	{
+		switch (soundState)
+		{
+		case xtpSoundMenuCommand:
+			::PlaySound (_T("MenuCommand"), NULL, (SND_SYNC | SND_NODEFAULT | SND_ALIAS | SND_NOWAIT));
+			soundState = xtpSoundNone;
+			break;
+
+		case xtpSoundMenuPopup:
+			::PlaySound (_T("MenuPopup"), NULL, (SND_SYNC | SND_NODEFAULT | SND_ALIAS | SND_NOWAIT));
+			soundState = xtpSoundNone;
+			break;
+		}
+
+		::Sleep (5);
+	}
+
+	::PlaySound(NULL, NULL, SND_PURGE);
+
+	return 0;
+}
+
+void CXTPSoundManager::StartThread()
+{
+	ASSERT (m_hThread == NULL);
+
+	m_soundState = xtpSoundNone;
+	m_bTerminate = FALSE;
+
+	DWORD dwThreadID;
+
+	m_hThread = ::CreateThread(NULL, 0, SoundThreadProc, NULL, CREATE_SUSPENDED, &dwThreadID);
+	if (m_hThread != NULL)
+	{
+		::SetThreadPriority(m_hThread, THREAD_PRIORITY_BELOW_NORMAL);
+		::ResumeThread(m_hThread);
+	}
+
+}
+
+void CXTPSoundManager::StopThread()
+{
+	if (m_hThread)
+	{
+		m_bTerminate = TRUE;
+
+		DWORD dwCount = 0, dwExitCode = 0;
+
+		while (GetExitCodeThread(m_hThread, &dwExitCode) && dwExitCode == STILL_ACTIVE)
+		{
+			dwCount++;
+
+			if (dwCount > 10)
+			{
+				TerminateThread(m_hThread, 0);
+				break;
+			}
+
+			::WaitForSingleObject(m_hThread, 100);
+		}
+
+		::CloseHandle(m_hThread);
+		m_hThread = 0;
+	}
+}
+
+void CXTPSoundManager::PlaySystemSound(XTPSoundManagerState state)
+{
+	if (m_bSystemSounds)
+	{
+		if (m_hThread == 0)
+			StartThread();
+
+		m_soundState = state;
+	}
+}
+void CXTPSoundManager::EnableSystemSounds(BOOL bEnable)
+{
+	m_bSystemSounds = bEnable;
+}

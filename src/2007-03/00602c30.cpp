@@ -1,45 +1,124 @@
-// roc 2007-03 00602c30  unit: seg_00600000  size: 93 bytes
-// Make this compile to the exact bytes below, then: roc check 2007-03 00602c30
-//
-// 00602c30  8b442404             mov eax, dword ptr [esp + 4]
-// 00602c34  56                   push esi
-// 00602c35  8b74240c             mov esi, dword ptr [esp + 0xc]
-// 00602c39  85f6                 test esi, esi
-// 00602c3b  57                   push edi
-// 00602c3c  8bf9                 mov edi, ecx
-// 00602c3e  8907                 mov dword ptr [edi], eax
-// 00602c40  897704               mov dword ptr [edi + 4], esi
-// 00602c43  740c                 je 0x602c51
-// 00602c45  8d4e04               lea ecx, [esi + 4]
-// 00602c48  ba01000000           mov edx, 1
-// 00602c4d  f00fc111             lock xadd dword ptr [ecx], edx
-// 00602c51  85f6                 test esi, esi
-// 00602c53  d9442414             fld dword ptr [esp + 0x14]
-// 00602c57  d95f08               fstp dword ptr [edi + 8]
-// 00602c5a  742a                 je 0x602c86
-// 00602c5c  8d4604               lea eax, [esi + 4]
-// 00602c5f  83c9ff               or ecx, 0xffffffff
-// 00602c62  f00fc108             lock xadd dword ptr [eax], ecx
-// 00602c66  751e                 jne 0x602c86
-// 00602c68  8b16                 mov edx, dword ptr [esi]
-// 00602c6a  8b4204               mov eax, dword ptr [edx + 4]
-// 00602c6d  8bce                 mov ecx, esi
-// 00602c6f  ffd0                 call eax
-// 00602c71  8d4e08               lea ecx, [esi + 8]
-// 00602c74  83caff               or edx, 0xffffffff
-// 00602c77  f00fc111             lock xadd dword ptr [ecx], edx
-// 00602c7b  7509                 jne 0x602c86
-// 00602c7d  8b06                 mov eax, dword ptr [esi]
-// 00602c7f  8b5008               mov edx, dword ptr [eax + 8]
-// 00602c82  8bce                 mov ecx, esi
-// 00602c84  ffd2                 call edx
-// 00602c86  8bc7                 mov eax, edi
-// 00602c88  5f                   pop edi
-// 00602c89  5e                   pop esi
-// 00602c8a  c20c00               ret 0xc
-// library rbxgs/v8datamodel\Explosion.cpp (function ??0?$args2@V?$shared_ptr@VInstance@RBX@@@boost@@MH@detail@signals@boost@@QAE@V?$shared_ptr@VInstance@RBX@@@3@M@Z)
-
 // roc-lang: cpp
 // roc-cl: 50727
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
 // roc-lib: rbxgs v8datamodel/Explosion.cpp
+
+// Candidate translation unit (score above; library headers required).
+#include "v8datamodel/Explosion.h"
+#include "v8datamodel/Workspace.h"
+#include "v8datamodel/PartInstance.h"
+#include "v8world/ContactManager.h"
+#include "v8world/World.h"
+
+namespace RBX
+{
+	static Reflection::PropDescriptor<Explosion, float> propBlastRadius("BlastRadius", "Data", &Explosion::getBlastRadius, &Explosion::setBlastRadius, Reflection::PropertyDescriptor::STANDARD);
+
+	Reflection::SignalDesc<Explosion, void(boost::shared_ptr<Instance>, float)> signal_Hit("Hit", "part", "distance");
+
+	Reflection::BoundProp<G3D::Vector3, 1> Explosion::propPosition("Position", "Data", &Explosion::position, Reflection::PropertyDescriptor::STANDARD);
+	Reflection::BoundProp<float, 1> Explosion::propBlastPressure("BlastPressure", "Data", &Explosion::blastPressure, Reflection::PropertyDescriptor::STANDARD);
+
+	Explosion::Explosion()
+		: blastRadius(4.0f),
+		  blastPressure(500000.0f),
+		  age(0.0f)
+	{
+		setName("Explosion");
+	}
+
+	bool Explosion::askSetParent(const Instance* instance) const
+	{
+		return true;
+	}
+
+	void Explosion::setBlastRadius(float _blastRadius)
+	{
+		float newRadius = G3D::clamp(_blastRadius, 0.0f, 100.0f);
+		if (blastRadius != newRadius)
+		{
+			blastRadius = newRadius;
+			raisePropertyChanged(propBlastRadius);
+		}
+	}
+
+	void Explosion::signalBlast(const G3D::Array<Primitive*>& primitives)
+	{
+		if (!signal_Hit.empty(this))
+		{
+			for (int i = 0; i < primitives.size(); i++)
+			{
+				Primitive* current = primitives[i];
+
+				if (blastRadius * 2.0f > current->getRadius())
+				{
+					if (Instance* part = PartInstance::fromPrimitive(current))
+					{
+						float distance = (current->getCoordinateFrame().translation - position).magnitude();
+						signal_Hit.fire(this, shared_from(part), distance);
+					}
+				}
+			}
+		}
+	}
+
+	//99% match
+	void Explosion::doBlast(const G3D::Array<Primitive*>& primitives)
+	{
+		if (blastPressure > 0.0f)
+		{
+			World* world = Workspace::getMyWorldFast(this);
+			RBXASSERT(world);
+
+			for (int i = 0; i < primitives.size(); i++)
+			{
+				Primitive* current = primitives[i];
+
+				if (blastRadius * 2.0f > current->getRadius())
+				{
+					PartInstance::fromPrimitive(current)->destroyJoints();
+				}
+			}
+
+			world->update();
+
+			for (int i = 0; i < primitives.size(); i++)
+			{
+				Primitive* current = primitives[i];
+
+				if (blastRadius * 2.0f > current->getRadius())
+				{
+					G3D::Vector3 delta = current->getCoordinateFrame().translation - position;
+					G3D::Vector3 normal = delta == G3D::Vector3::zero() ? G3D::Vector3::unitY() : delta.direction();
+					RBXASSERT(normal.magnitude() <= 1.001);
+
+					float radius = current->getRadius();
+					float squaredRadius = radius * radius;
+
+					G3D::Vector3 impulse = normal * blastPressure * squaredRadius * (1.0f/4560.0f);
+					G3D::Vector3 force = impulse * Constants::kernelStepsPerSec();
+
+					world->ticklePrimitive(current);
+
+					Body* body = current->getBody();
+
+					const G3D::Vector3& pos = body->getCoordinateFrame().translation;
+					body->accumulateForce(force, pos);
+
+					current->getBody()->accumulateTorque(force * 0.5f * radius);
+
+					world->addedBodyForce();
+				}
+			}
+		}
+	}
+
+	void Explosion::onServiceProvider(const ServiceProvider* oldProvider, const ServiceProvider* newProvider)
+	{
+		Notifier<RunService, Stepped>::disconnect(ServiceProvider::find<RunService>(oldProvider), this);
+
+		Instance::onServiceProvider(oldProvider, newProvider);
+
+		Notifier<RunService, Stepped>::connect(ServiceProvider::find<RunService>(newProvider), this);
+	}
+}

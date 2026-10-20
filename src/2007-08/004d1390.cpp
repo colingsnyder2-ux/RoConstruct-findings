@@ -1,50 +1,216 @@
-// roc 2007-08 004d1390  unit: RBX::View::Part  size: 124 bytes
-// Make this compile to the exact bytes below, then: roc check 2007-08 004d1390
-//
-// 004d1390  56                   push esi
-// 004d1391  57                   push edi
-// 004d1392  8b7c240c             mov edi, dword ptr [esp + 0xc]
-// 004d1396  81ff58298c00         cmp edi, 0x8c2958
-// 004d139c  8bf1                 mov esi, ecx
-// 004d139e  750e                 jne 0x4d13ae
-// 004d13a0  e8bbfdffff           call 0x4d1160
-// 004d13a5  8bce                 mov ecx, esi
-// 004d13a7  e8a4feffff           call 0x4d1250
-// 004d13ac  eb1c                 jmp 0x4d13ca
-// 004d13ae  81ffc0288c00         cmp edi, 0x8c28c0
-// 004d13b4  740f                 je 0x4d13c5
-// 004d13b6  57                   push edi
-// 004d13b7  e8e4560e00           call 0x5b6aa0
-// 004d13bc  83c404               add esp, 4
-// 004d13bf  84c0                 test al, al
-// 004d13c1  7407                 je 0x4d13ca
-// 004d13c3  8bce                 mov ecx, esi
-// 004d13c5  e896fdffff           call 0x4d1160
-// 004d13ca  81ff1c298c00         cmp edi, 0x8c291c
-// 004d13d0  751e                 jne 0x4d13f0
-// 004d13d2  8bce                 mov ecx, esi
-// 004d13d4  e8f7efffff           call 0x4d03d0
-// 004d13d9  84c0                 test al, al
-// 004d13db  7423                 je 0x4d1400
-// 004d13dd  8bce                 mov ecx, esi
-// 004d13df  e87cfdffff           call 0x4d1160
-// 004d13e4  8bce                 mov ecx, esi
-// 004d13e6  e865feffff           call 0x4d1250
-// 004d13eb  5f                   pop edi
-// 004d13ec  5e                   pop esi
-// 004d13ed  c20400               ret 4
-// 004d13f0  81ff38298c00         cmp edi, 0x8c2938
-// 004d13f6  7408                 je 0x4d1400
-// 004d13f8  81ff48288c00         cmp edi, 0x8c2848
-// 004d13fe  7507                 jne 0x4d1407
-// 004d1400  8bce                 mov ecx, esi
-// 004d1402  e849feffff           call 0x4d1250
-// 004d1407  5f                   pop edi
-// 004d1408  5e                   pop esi
-// 004d1409  c20400               ret 4
-// library openrbx-client/RbxView\Part.cpp (function ?onPropertyChanged@Part@View@RBX@@MAEXPBVPropertyDescriptor@Reflection@3@@Z)
-
 // roc-lang: cpp
 // roc-cl: 50727
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
 // roc-lib: openrbx-client RbxView/Part.cpp
+
+// Candidate translation unit (score above; library headers required).
+#include "Part.h"
+
+#include "MaterialFactory.h"
+#include "MeshFactory.h"
+#include "PBBMesh.h"
+#include "View.h"
+#include "v8datamodel/PartInstance.h"
+#include "v8datamodel/Workspace.h"
+#include "v8datamodel/custommesh.h"
+
+#include <boost/bind.hpp>
+
+namespace RBX {
+namespace View {
+
+// FUNCTION: WEBSERVICE 0x100e6150 FOLDED
+bool PartChunk::castsShadows() const
+{
+	return true;
+}
+
+// FUNCTION: WEBSERVICE 0x100e6150 FOLDED
+bool PartChunk::cullable() const
+{
+	return true;
+}
+
+// STUB: WEBSERVICE 0x1016c240
+float primaryComponent(const G3D::Vector3& v)
+{
+	float nx = G3D::abs(v.x);
+	float ny = G3D::abs(v.y);
+	float nz = G3D::abs(v.z);
+
+	return G3D::max(G3D::max(nx, ny), nz);
+}
+
+// FUNCTION: WEBSERVICE 0x1016c6d0
+bool Part::usesMegaTexture() const
+{
+	if (specialShape == NULL && partInstance->getPartType() == RBX::Part::BLOCK_PART) {
+		G3D::Vector3 size = partInstance->getPartSizeXml();
+
+		return primaryComponent(size) < 30.0;
+	}
+
+	return false;
+}
+
+// FUNCTION: WEBSERVICE 0x1016c740
+const G3D::CoordinateFrame& PartChunk::cframe()
+{
+	coordinateFrame = partInstance->getCoordinateFrame();
+
+	return coordinateFrame;
+}
+
+// STUB: WEBSERVICE 0x1016cd00
+G3D::ReferenceCountedPointer<Render::Material> Part::getMaterial()
+{
+	STUB(0x1016cd00);
+	return material;
+}
+
+// FUNCTION: WEBSERVICE 0x1016d060
+void Part::onEvent(const PartInstance* source, CanAggregateChanged event)
+{
+	view->sceneManager->setSleeping(this, event.canClump);
+}
+
+// FUNCTION: WEBSERVICE 0x1016d100
+void PartChunk::onAncestorChanged(boost::shared_ptr<Instance>)
+{
+	Workspace* workspace = Workspace::findWorkspace(partInstance.get());
+	Instance* parent;
+
+	if (workspace == NULL ||
+		(workspace != (parent = partInstance->getParent()) && (parent == NULL || !parent->isDescendentOf(workspace)))) {
+		view->sceneManager->removeModel(this);
+	}
+}
+
+// FUNCTION: WEBSERVICE 0x1016d320
+void PartChunk::invalidateMesh()
+{
+	mesh = NULL;
+
+	view->sceneManager->invalidateModel(this, partInstance->getCanAggregate());
+}
+
+// FUNCTION: WEBSERVICE 0x1016d410
+void PartChunk::invalidateMaterial()
+{
+	material = NULL;
+	materialInvalid = true;
+
+	view->sceneManager->invalidateModel(this, partInstance->getCanAggregate());
+}
+
+// FUNCTION: WEBSERVICE 0x1016d500
+void PartChunk::onSpecialShapeChanged()
+{
+	invalidateMesh();
+	invalidateMaterial();
+}
+
+// FUNCTION: WEBSERVICE 0x1016d510
+void PartChunk::onPropertyChanged(const Reflection::PropertyDescriptor* descriptor)
+{
+	if (descriptor == &PartInstance::prop_Size) {
+		invalidateMesh();
+		invalidateMaterial();
+	}
+	else if (descriptor == &PartInstance::prop_shapeXml) {
+		invalidateMesh();
+	}
+	else if (Surfaces::isSurfaceDescriptor(*descriptor)) {
+		invalidateMesh();
+	}
+}
+
+// FUNCTION: WEBSERVICE 0x1016d550
+void Part::onPropertyChanged(const Reflection::PropertyDescriptor* descriptor)
+{
+	PartChunk::onPropertyChanged(descriptor);
+
+	if (descriptor == &PartInstance::prop_Color) {
+		if (usesMegaTexture()) {
+			invalidateMesh();
+		}
+
+		invalidateMaterial();
+	}
+	else if (descriptor == &PartInstance::prop_Transparency || descriptor == &PartInstance::prop_Reflectance) {
+		invalidateMaterial();
+	}
+}
+
+// FUNCTION: WEBSERVICE 0x1016d5d0
+G3D::ReferenceCountedPointer<Render::Mesh> PartChunk::getMesh()
+{
+	if (mesh.isNull()) {
+		updateMesh();
+	}
+
+	return mesh;
+}
+
+// FUNCTION: WEBSERVICE 0x1016e0e0
+void PartChunk::onChildRemoved(boost::shared_ptr<Instance> child)
+{
+	if (child.get() == specialShape) {
+		shapePropertyChangedConnection.disconnect();
+		specialShape = NULL;
+		invalidateMesh();
+	}
+}
+
+// FUNCTION: WEBSERVICE 0x1016f210
+PartChunk::~PartChunk()
+{
+}
+
+// FUNCTION: WEBSERVICE 0x101703a0
+Part::~Part()
+{
+	if (partInstance) {
+		partInstance->Notifier<PartInstance, CanAggregateChanged>::removeListener(this);
+	}
+}
+
+// STUB: WEBSERVICE 0x101722a0
+void Part::updateMesh()
+{
+	STUB(0x101722a0);
+}
+
+// STUB: WEBSERVICE 0x10173c90
+void PartChunk::onChildAdded(boost::shared_ptr<Instance> child)
+{
+	SpecialShape* specialShape = dynamic_cast<SpecialShape*>(child.get());
+
+	if (specialShape != NULL) {
+		this->specialShape = specialShape;
+
+		shapePropertyChangedConnection = Instance::event_propertyChanged.connect(
+			specialShape,
+			boost::bind(&PartChunk::onSpecialShapeChanged, this),
+			10
+		);
+
+		invalidateMesh();
+	}
+}
+
+// STUB: WEBSERVICE 0x10174160
+PartChunk::PartChunk(float polygonOffset, const boost::shared_ptr<PartInstance>& partInstance, View* view)
+	: Render::Chunk(polygonOffset), partInstance(partInstance), materialInvalid(true), view(view), specialShape(NULL)
+{
+	view->sceneManager->addModel(this);
+}
+
+// STUB: WEBSERVICE 0x10174800
+Part::Part(const boost::shared_ptr<PartInstance>& partInstance, View* view) : PartChunk(0.0f, partInstance, view)
+{
+	STUB(0x10174800);
+}
+
+} // namespace View
+} // namespace RBX

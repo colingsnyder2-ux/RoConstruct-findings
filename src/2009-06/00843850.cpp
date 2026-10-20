@@ -1,149 +1,650 @@
 // from server: 100% by auto
-// roc 2009-06 00843850  unit: Ogre::RbxSceneNode  size: 383 bytes
-// Make this compile to the exact bytes below, then: roc check 2009-06 00843850
-//
-// 00843850  6aff                 push -1
-// 00843852  68f0398800           push 0x8839f0
-// 00843857  64a100000000         mov eax, dword ptr fs:[0]
-// 0084385d  50                   push eax
-// 0084385e  64892500000000       mov dword ptr fs:[0], esp
-// 00843865  51                   push ecx
-// 00843866  53                   push ebx
-// 00843867  56                   push esi
-// 00843868  8bf1                 mov esi, ecx
-// 0084386a  57                   push edi
-// 0084386b  8974240c             mov dword ptr [esp + 0xc], esi
-// 0084386f  c706f4489200         mov dword ptr [esi], 0x9248f4
-// 00843875  8b4644               mov eax, dword ptr [esi + 0x44]
-// 00843878  50                   push eax
-// 00843879  c744241c07000000     mov dword ptr [esp + 0x1c], 7
-// 00843881  e80a7ad2ff           call 0x56b290
-// 00843886  33db                 xor ebx, ebx
-// 00843888  895e44               mov dword ptr [esi + 0x44], ebx
-// 0084388b  895e48               mov dword ptr [esi + 0x48], ebx
-// 0084388e  895e4c               mov dword ptr [esi + 0x4c], ebx
-// 00843891  8b4e38               mov ecx, dword ptr [esi + 0x38]
-// 00843894  51                   push ecx
-// 00843895  c644242006           mov byte ptr [esp + 0x20], 6
-// 0084389a  e8f179d2ff           call 0x56b290
-// 0084389f  8b3da4e18900         mov edi, dword ptr [0x89e1a4]
-// 008438a5  895e38               mov dword ptr [esi + 0x38], ebx
-// 008438a8  895e3c               mov dword ptr [esi + 0x3c], ebx
-// 008438ab  895e40               mov dword ptr [esi + 0x40], ebx
-// 008438ae  8b4634               mov eax, dword ptr [esi + 0x34]
-// 008438b1  83c408               add esp, 8
-// 008438b4  c644241805           mov byte ptr [esp + 0x18], 5
-// 008438b9  3bc3                 cmp eax, ebx
-// 008438bb  7424                 je 0x8438e1
-// 008438bd  83c004               add eax, 4
-// 008438c0  50                   push eax
-// 008438c1  ffd7                 call edi
-// 008438c3  85c0                 test eax, eax
-// 008438c5  7517                 jne 0x8438de
-// 008438c7  8b4e34               mov ecx, dword ptr [esi + 0x34]
-// 008438ca  e8b114c0ff           call 0x444d80
-// 008438cf  8b4e34               mov ecx, dword ptr [esi + 0x34]
-// 008438d2  3bcb                 cmp ecx, ebx
-// 008438d4  7408                 je 0x8438de
-// 008438d6  8b11                 mov edx, dword ptr [ecx]
-// 008438d8  8b02                 mov eax, dword ptr [edx]
-// 008438da  6a01                 push 1
-// 008438dc  ffd0                 call eax
-// 008438de  895e34               mov dword ptr [esi + 0x34], ebx
-// 008438e1  8b4630               mov eax, dword ptr [esi + 0x30]
-// 008438e4  c644241804           mov byte ptr [esp + 0x18], 4
-// 008438e9  3bc3                 cmp eax, ebx
-// 008438eb  7424                 je 0x843911
-// 008438ed  83c004               add eax, 4
-// 008438f0  50                   push eax
-// 008438f1  ffd7                 call edi
-// 008438f3  85c0                 test eax, eax
-// 008438f5  7517                 jne 0x84390e
-// 008438f7  8b4e30               mov ecx, dword ptr [esi + 0x30]
-// 008438fa  e88114c0ff           call 0x444d80
-// 008438ff  8b4e30               mov ecx, dword ptr [esi + 0x30]
-// 00843902  3bcb                 cmp ecx, ebx
-// 00843904  7408                 je 0x84390e
-// 00843906  8b11                 mov edx, dword ptr [ecx]
-// 00843908  8b02                 mov eax, dword ptr [edx]
-// 0084390a  6a01                 push 1
-// 0084390c  ffd0                 call eax
-// 0084390e  895e30               mov dword ptr [esi + 0x30], ebx
-// 00843911  8b462c               mov eax, dword ptr [esi + 0x2c]
-// 00843914  c644241803           mov byte ptr [esp + 0x18], 3
-// 00843919  3bc3                 cmp eax, ebx
-// 0084391b  7424                 je 0x843941
-// 0084391d  83c004               add eax, 4
-// 00843920  50                   push eax
-// 00843921  ffd7                 call edi
-// 00843923  85c0                 test eax, eax
-// 00843925  7517                 jne 0x84393e
-// 00843927  8b4e2c               mov ecx, dword ptr [esi + 0x2c]
-// 0084392a  e85114c0ff           call 0x444d80
-// 0084392f  8b4e2c               mov ecx, dword ptr [esi + 0x2c]
-// 00843932  3bcb                 cmp ecx, ebx
-// 00843934  7408                 je 0x84393e
-// 00843936  8b11                 mov edx, dword ptr [ecx]
-// 00843938  8b02                 mov eax, dword ptr [edx]
-// 0084393a  6a01                 push 1
-// 0084393c  ffd0                 call eax
-// 0084393e  895e2c               mov dword ptr [esi + 0x2c], ebx
-// 00843941  8b4628               mov eax, dword ptr [esi + 0x28]
-// 00843944  c644241802           mov byte ptr [esp + 0x18], 2
-// 00843949  3bc3                 cmp eax, ebx
-// 0084394b  7424                 je 0x843971
-// 0084394d  83c004               add eax, 4
-// 00843950  50                   push eax
-// 00843951  ffd7                 call edi
-// 00843953  85c0                 test eax, eax
-// 00843955  7517                 jne 0x84396e
-// 00843957  8b4e28               mov ecx, dword ptr [esi + 0x28]
-// 0084395a  e82114c0ff           call 0x444d80
-// 0084395f  8b4e28               mov ecx, dword ptr [esi + 0x28]
-// 00843962  3bcb                 cmp ecx, ebx
-// 00843964  7408                 je 0x84396e
-// 00843966  8b11                 mov edx, dword ptr [ecx]
-// 00843968  8b02                 mov eax, dword ptr [edx]
-// 0084396a  6a01                 push 1
-// 0084396c  ffd0                 call eax
-// 0084396e  895e28               mov dword ptr [esi + 0x28], ebx
-// 00843971  8b4624               mov eax, dword ptr [esi + 0x24]
-// 00843974  c644241801           mov byte ptr [esp + 0x18], 1
-// 00843979  3bc3                 cmp eax, ebx
-// 0084397b  7424                 je 0x8439a1
-// 0084397d  83c004               add eax, 4
-// 00843980  50                   push eax
-// 00843981  ffd7                 call edi
-// 00843983  85c0                 test eax, eax
-// 00843985  7517                 jne 0x84399e
-// 00843987  8b4e24               mov ecx, dword ptr [esi + 0x24]
-// 0084398a  e8f113c0ff           call 0x444d80
-// 0084398f  8b4e24               mov ecx, dword ptr [esi + 0x24]
-// 00843992  3bcb                 cmp ecx, ebx
-// 00843994  7408                 je 0x84399e
-// 00843996  8b11                 mov edx, dword ptr [ecx]
-// 00843998  8b02                 mov eax, dword ptr [edx]
-// 0084399a  6a01                 push 1
-// 0084399c  ffd0                 call eax
-// 0084399e  895e24               mov dword ptr [esi + 0x24], ebx
-// 008439a1  6860d14900           push 0x49d160
-// 008439a6  6a06                 push 6
-// 008439a8  6a04                 push 4
-// 008439aa  8d4e0c               lea ecx, [esi + 0xc]
-// 008439ad  51                   push ecx
-// 008439ae  885c2428             mov byte ptr [esp + 0x28], bl
-// 008439b2  e8bf61edff           call 0x719b76
-// 008439b7  8b4c2410             mov ecx, dword ptr [esp + 0x10]
-// 008439bb  5f                   pop edi
-// 008439bc  c706a8fc8b00         mov dword ptr [esi], 0x8bfca8
-// 008439c2  5e                   pop esi
-// 008439c3  5b                   pop ebx
-// 008439c4  64890d00000000       mov dword ptr fs:[0], ecx
-// 008439cb  83c410               add esp, 0x10
-// 008439ce  c3                   ret 
-// library g3d-6.09/GLG3Dcpp\Sky.cpp (function ??1Sky@G3D@@UAE@XZ)
-
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD
 // roc-lib: g3d-6.09 GLG3Dcpp/Sky.cpp
+
+// Candidate translation unit (score above; library headers required).
+/** 
+  @file Sky.cpp
+
+  @author Morgan McGuire, matrix@graphics3d.com
+
+  @created 2002-10-04
+  @edited  2006-02-11
+  */
+
+#include "G3D/fileutils.h"
+#include "GLG3D/glcalls.h"
+#include "GLG3D/Sky.h"
+#include "GLG3D/LightingParameters.h"
+#include "G3D/BinaryInput.h"
+#include "G3D/g3dmath.h"
+#include "GLG3D/TextureFormat.h"
+#include "GLG3D/getOpenGLState.h"
+
+namespace G3D {
+
+#define SHORT_TO_FLOAT(x) ((2.0f*x+1.0f)*(1.0f/65535.0f))
+
+
+SkyRef Sky::fromCubeMap(
+    RenderDevice*                       rd,
+    TextureRef                          _cubeMap,
+    const std::string&                  directory,
+    bool                                _drawCelestialBodies,
+    double                              quality) {
+
+    debugAssertM(
+        (directory == "") || 
+        (directory[directory.size() - 1] == '/') || 
+        (directory[directory.size() - 1] == '\\'), 
+        "Directory must end in a slash");
+
+    debugAssert( _cubeMap.notNull() );
+    debugAssert( _cubeMap->getDimension() == Texture::DIM_CUBE_MAP );
+
+    TextureRef t[6];
+    t[0] = _cubeMap;
+    for (int i = 1; i < 6; ++i) {
+        t[i] = NULL;
+    }    
+
+    return new Sky(rd, t, directory, true, _drawCelestialBodies, quality);
+}
+    
+
+SkyRef Sky::fromFile(
+    RenderDevice*                       rd,
+    const std::string&                  directory,
+    const std::string&                  filename,
+    bool                                _drawCelestialBodies,
+    double                              quality,
+    int                                 scaleDownFactor) {
+
+    std::string f[6];
+    f[0] = filename;
+    for (int i = 1; i < 6; ++i) {
+        f[i] = "";
+    }
+    return Sky::fromFile(rd, directory, f, _drawCelestialBodies, quality, scaleDownFactor);
+}
+
+
+SkyRef Sky::fromFile(
+    RenderDevice*                       rd,
+    const std::string&                  directory,
+    const std::string                   _filename[6],
+    bool                                _drawCelestialBodies,
+    double                              quality,
+    int                                 scaleDownFactor) {
+
+    debugAssertM(
+        (directory == "") || 
+        (directory[directory.size() - 1] == '/') || 
+        (directory[directory.size() - 1] == '\\'), 
+        "Directory must end in a slash");
+
+    const TextureFormat* format;
+    const TextureFormat* alphaFormat;
+    std::string filename = _filename[0];
+
+    if (quality > .66) {
+        format      = TextureFormat::RGB8;
+        alphaFormat = TextureFormat::RGBA8;
+    } else if (quality > .33) {
+        format      = TextureFormat::RGB_DXT1;
+        alphaFormat = TextureFormat::RGBA_DXT1;
+    } else {
+        format      = TextureFormat::RGBA_DXT5;
+        alphaFormat = TextureFormat::RGBA_DXT5;
+    }
+
+    // Look for the filename
+    // Parse the filename into a base name and extension
+    std::string filenameBase;
+    std::string filenameExt;
+    std::string fullFilename = filename;
+
+    if (_filename[1] == "") {
+        // First look relative to the current directory
+        Texture::splitFilenameAtWildCard(fullFilename, filenameBase, filenameExt);
+
+        if (! fileExists(filenameBase + "up" + filenameExt)) {
+            // Look relative to the specified directory
+            filenameBase = directory + filenameBase;
+        }
+    }
+
+    TextureRef faceTextures[6];
+    bool useCubeMap;
+
+    if (GLCaps::supports_GL_ARB_texture_cube_map() && ! GLCaps::hasBug_normalMapTexGen()) {
+   
+        if (_filename[1] == "") {
+            // Specified one cube map
+            faceTextures[0] = Texture::fromFile(filenameBase + "*" + filenameExt, format, Texture::CLAMP, Texture::TRILINEAR_MIPMAP, Texture::DIM_CUBE_MAP, 1.0, Texture::DEPTH_NORMAL, 1.0, 1.0f / scaleDownFactor);
+        } else {
+            // Specified six filenames
+            faceTextures[0] = Texture::fromFile(_filename, format, Texture::CLAMP, Texture::TRILINEAR_MIPMAP, Texture::DIM_CUBE_MAP, 1.0, Texture::DEPTH_NORMAL, 1.0, 1.0f / scaleDownFactor);
+        }
+
+        // For the cube map case, we don't need the other five texture slots
+        for (int t = 1; t < 6; ++t) {
+            faceTextures[t] = NULL;
+        }
+
+        useCubeMap = true;
+
+    } else {
+
+        // This card doesn't support cube maps; it probably has low memory as well, so we
+        // switch to bilinear instead of trilinear to save space on the mipmaps.
+
+        static const char* ext[] = {"up", "lf", "rt", "bk", "ft", "dn"};
+
+        if (_filename[1] == "") {
+            // Specified one cube map
+            for (int t = 0; t < 6; ++t) {
+                faceTextures[t] = Texture::fromFile(filenameBase + ext[t] + filenameExt, 
+                    format, Texture::CLAMP, Texture::BILINEAR_NO_MIPMAP, Texture::DIM_2D,
+                    1.0, Texture::DEPTH_NORMAL, 1.0, 1.0f / scaleDownFactor);
+            }
+        } else {
+            // Specified six textures
+            for (int t = 0; t < 6; ++t) {
+                faceTextures[t] = Texture::fromFile(_filename[t], 
+                    format, Texture::CLAMP, Texture::BILINEAR_NO_MIPMAP, Texture::DIM_2D,
+                    1.0, Texture::DEPTH_NORMAL, 1.0, 1.0f / scaleDownFactor);
+            }
+        }
+
+        useCubeMap = false;
+    }
+    
+    return new Sky(rd, faceTextures, directory, useCubeMap, _drawCelestialBodies, quality);
+}
+
+
+Sky::Sky(
+    RenderDevice*                       rd,
+    TextureRef                          textures[6],
+    const std::string&                   directory,
+    bool                                useCubeMap,
+    bool                                _drawCelestialBodies,
+    double                              quality) :
+    drawCelestialBodies(_drawCelestialBodies),
+    renderDevice(rd) {
+
+    if (useCubeMap) {
+        cubeMap = textures[0];
+    } else {
+        for (int i = 0; i < 6; ++i) {
+            texture[i] = textures[i];
+        }
+    }
+
+    const TextureFormat* format;
+    const TextureFormat* alphaFormat;
+
+    if (quality > .66) {
+        format      = TextureFormat::RGB8;
+        alphaFormat = TextureFormat::RGBA8;
+    } else if (quality > .33) {
+        format      = TextureFormat::RGB_DXT1;
+        alphaFormat = TextureFormat::RGBA_DXT1;
+    } else {
+        format      = TextureFormat::RGBA_DXT5;
+        alphaFormat = TextureFormat::RGBA_DXT5;
+    }
+
+    if (drawCelestialBodies) {
+        moon     = Texture::fromTwoFiles(directory + "moon.jpg", directory + "moon-alpha.jpg",
+            alphaFormat, Texture::TRANSPARENT_BORDER, Texture::BILINEAR_NO_MIPMAP, Texture::DIM_2D, 
+            Texture::DEPTH_NORMAL, 1.0);
+
+        sun      = Texture::fromFile(directory + "sun.jpg", format, Texture::TRANSPARENT_BORDER, Texture::BILINEAR_NO_MIPMAP, Texture::DIM_2D, 1.0, Texture::DEPTH_NORMAL, 1.0);
+        disk     = Texture::fromFile(directory + "lensflare.jpg", format, Texture::TRANSPARENT_BORDER, Texture::BILINEAR_NO_MIPMAP, Texture::DIM_2D, 1.0, Texture::DEPTH_NORMAL, 1.0);
+        sunRays  = Texture::fromFile(directory + "sun-rays.jpg", format, Texture::TRANSPARENT_BORDER, Texture::BILINEAR_NO_MIPMAP, Texture::DIM_2D, 1.0, Texture::DEPTH_NORMAL, 1.0);
+    
+        int i = 0;
+
+	    // If file exists, load the real starfield
+        if (fileExists(directory + "real.str")) {
+            BinaryInput in(directory + "real.str", G3D_LITTLE_ENDIAN, true);
+            int16 numStars;
+		    float32 x, y, z;
+
+	        std::string header = in.readString(5);
+	        debugAssert(header == "STARS"); (void)header;
+
+	        numStars = in.readInt16();
+	        star.resize(numStars);
+	        starIntensity.resize(numStars);
+
+		    // Read X, Y, Z, and intensity
+		    for(i = 0; i < numStars; i++) {
+			    x = SHORT_TO_FLOAT(in.readInt16());
+			    y = SHORT_TO_FLOAT(in.readInt16());
+			    z = SHORT_TO_FLOAT(in.readInt16());
+
+			    star[i] = Vector4(x, y, z, 0);
+
+			    starIntensity[i] = square(SHORT_TO_FLOAT(in.readInt16())) + .3f;
+	        }
+        } else {
+		    // Create a random starfield
+   		    star.resize(3000);
+    	    starIntensity.resize(star.size());
+   		    for (i = star.size() - 1; i >= 0; --i) {
+   			    star[i] = Vector4(Vector3::random(), 0);
+   			    starIntensity[i] = square(uniformRandom()) + .3f;
+   		    }
+ 	    }
+    }
+}
+
+
+Sky::~Sky() {
+}
+
+
+/**
+ Used to draw the sky, moon, and lens flare
+
+ @param C center
+ @param X a unit axis
+ @param Y a unit axis perpendicular to X
+ @param r radius of the sphere
+ */
+static void drawCelestialSphere(
+    RenderDevice*                       renderDevice,
+    const Vector4&                      C,
+    const Vector4&                      X,
+    const Vector4&                      Y,
+    const double                        r,
+    const Color4                        color) {
+
+    renderDevice->setColor(color);
+    renderDevice->beginPrimitive(RenderDevice::QUADS);
+		renderDevice->setTexCoord(0, Vector2(0, 0));
+        renderDevice->sendVertex(C + ( X + Y) * r);
+        renderDevice->setTexCoord(0, Vector2(0, 1));
+        renderDevice->sendVertex(C + ( X - Y) * r);
+        renderDevice->setTexCoord(0, Vector2(1, 1));
+		renderDevice->sendVertex(C + (-X - Y) * r);
+        renderDevice->setTexCoord(0, Vector2(1, 0));
+		renderDevice->sendVertex(C + (-X + Y) * r);
+	renderDevice->endPrimitive();
+}
+
+
+static void hackProjectionMatrix(RenderDevice* renderDevice) {
+	
+    Matrix4 P = renderDevice->getProjectionMatrix();
+
+    // Set the 3rd row (2nd index) so the depth always is in the middle of the depth range.
+
+    P[2][0] = 0;
+    P[2][1] = 0;
+    P[2][2] = -0.5;
+    P[2][3] = 0;
+
+    renderDevice->setProjectionMatrix(P);
+}
+
+
+void Sky::vertex(RenderDevice* renderDevice, 
+                 float x, float y, float z, float s, float t) const {
+    const double w = 0;
+    const bool cube = (cubeMap.notNull());
+
+    if (cube) {
+        // Texcoord generation will move this normal to tex coord 0
+        renderDevice->setNormal(Vector3(x,y,z));
+    } else {
+        if (!GLCaps::supports_GL_EXT_texture_edge_clamp()) {
+            // Move the edge coordinates towards the center just
+            // enough that the black clamped border isn't sampled.
+            if (s == 0) {
+                s += (0.6f / (float)texture[0]->texelWidth());
+            } else if (s == 1) {
+                s -= (0.6f / (float)texture[0]->texelWidth());
+            }
+            if (t == 0) {
+                t += (0.6f / (float)texture[0]->texelHeight());
+            } else if (t == 1) {
+                t -= (0.6f / (float)texture[0]->texelHeight());
+            }
+        }
+        renderDevice->setTexCoord(0, Vector2(s, t));
+    }
+    
+    renderDevice->sendVertex(Vector4(x,y,z,w));
+}
+
+
+void Sky::renderBox(RenderDevice* renderDevice) const {
+    renderDevice->pushState();
+
+    bool cube = (cubeMap.notNull());
+
+    if (cube) {
+        renderDevice->setTexture(0, cubeMap);
+
+        // On Radeon Mobility, explicit cube map coordinates don't work right.
+        // We instead put cube map coords in the normals and use texgen to copy
+        // them over
+        glActiveTextureARB(GL_TEXTURE0_ARB + 0);
+        glTexGeni(GL_S, GL_TEXTURE_GEN_MODE, GL_NORMAL_MAP_ARB);
+        glTexGeni(GL_T, GL_TEXTURE_GEN_MODE, GL_NORMAL_MAP_ARB);
+        glTexGeni(GL_R, GL_TEXTURE_GEN_MODE, GL_NORMAL_MAP_ARB);
+        glEnable(GL_TEXTURE_GEN_S);
+        glEnable(GL_TEXTURE_GEN_T);
+        glEnable(GL_TEXTURE_GEN_R);
+
+        CoordinateFrame cframe = renderDevice->getCameraToWorldMatrix();
+        cframe.translation = Vector3::zero();
+        renderDevice->setTextureMatrix(0, cframe);
+
+    } else {
+        // In the 6-texture case, the sky box is rotated 90 degrees
+        // (this is because the textures are loaded incorrectly)
+        CoordinateFrame cframe;
+        cframe.rotation = Matrix3::fromAxisAngle(Vector3::unitY(), toRadians(-90));
+        renderDevice->setObjectToWorldMatrix(cframe);
+        renderDevice->setTexture(0, texture[BK]);
+    }
+
+    float s = 1;
+    renderDevice->beginPrimitive(RenderDevice::QUADS);
+        vertex(renderDevice, -s, +s, -s, 0, 0);
+        vertex(renderDevice, -s, -s, -s, 0, 1);
+        vertex(renderDevice, +s, -s, -s, 1, 1);
+        vertex(renderDevice, +s, +s, -s, 1, 0);
+	renderDevice->endPrimitive();
+        
+    if (! cube) {
+        renderDevice->setTexture(0, texture[LT]);
+    }
+
+    renderDevice->beginPrimitive(RenderDevice::QUADS);
+        vertex(renderDevice, -s, +s, +s, 0, 0);
+        vertex(renderDevice, -s, -s, +s, 0, 1);
+        vertex(renderDevice, -s, -s, -s, 1, 1);
+        vertex(renderDevice, -s, +s, -s, 1, 0);
+	renderDevice->endPrimitive();
+
+    
+    if (! cube) {
+        renderDevice->setTexture(0, texture[FT]);
+    }
+
+    renderDevice->beginPrimitive(RenderDevice::QUADS);
+        vertex(renderDevice, +s, +s, +s, 0, 0);
+        vertex(renderDevice, +s, -s, +s, 0, 1);
+        vertex(renderDevice, -s, -s, +s, 1, 1);
+        vertex(renderDevice, -s, +s, +s, 1, 0);
+	renderDevice->endPrimitive();
+
+    if (! cube) {
+        renderDevice->setTexture(0, texture[RT]);
+    }
+
+    renderDevice->beginPrimitive(RenderDevice::QUADS);
+        vertex(renderDevice, +s, +s, +s, 1, 0);
+        vertex(renderDevice, +s, +s, -s, 0, 0);
+        vertex(renderDevice, +s, -s, -s, 0, 1);
+        vertex(renderDevice, +s, -s, +s, 1, 1);
+	renderDevice->endPrimitive();
+
+    if (! cube) {
+        renderDevice->setTexture(0, texture[UP]);
+    }
+
+    renderDevice->beginPrimitive(RenderDevice::QUADS);
+        vertex(renderDevice, +s, +s, +s, 1, 1);
+        vertex(renderDevice, -s, +s, +s, 1, 0);
+        vertex(renderDevice, -s, +s, -s, 0, 0);
+        vertex(renderDevice, +s, +s, -s, 0, 1);
+	renderDevice->endPrimitive();
+
+    if (! cube) {
+        renderDevice->setTexture(0, texture[DN]);
+    }
+
+    renderDevice->beginPrimitive(RenderDevice::QUADS);
+        vertex(renderDevice, +s, -s, -s, 0, 0);
+        vertex(renderDevice, -s, -s, -s, 0, 1);
+        vertex(renderDevice, -s, -s, +s, 1, 1);
+        vertex(renderDevice, +s, -s, +s, 1, 0);
+	renderDevice->endPrimitive();
+
+    if (cube) {
+        glDisable(GL_TEXTURE_GEN_S);
+        glDisable(GL_TEXTURE_GEN_T);
+        glDisable(GL_TEXTURE_GEN_R);
+    }
+    renderDevice->popState();
+
+}
+
+
+void Sky::render(
+    RenderDevice* renderDevice,
+    const LightingParameters&           lighting) {
+    debugAssertGLOk();
+    debugAssert(renderDevice != NULL);
+
+    renderDevice->pushState();
+        // Ignore depth, make sure we're not clipped by the far plane
+        hackProjectionMatrix(renderDevice);
+
+        // Eliminate the translation of the camera
+        CoordinateFrame matrix(Vector3::zero());
+	    matrix.rotation = renderDevice->getCameraToWorldMatrix().rotation;
+        renderDevice->setCameraToWorldMatrix(matrix);
+        renderDevice->setObjectToWorldMatrix(CoordinateFrame());
+
+        renderDevice->setColor(lighting.skyAmbient * renderDevice->getBrightScale());
+        renderDevice->setCullFace(RenderDevice::CULL_BACK);
+        renderDevice->disableDepthWrite();
+        renderDevice->setDepthTest(RenderDevice::DEPTH_ALWAYS_PASS);
+
+
+	    // Draw the sky box
+        renderDevice->resetTextureUnit(0);
+        debugAssertGLOk();
+        renderBox(renderDevice);
+        debugAssertGLOk();
+
+        if (drawCelestialBodies) {   
+            drawMoonAndStars(renderDevice, lighting);
+
+            drawSun(renderDevice, lighting);
+        }
+
+    renderDevice->popState();
+}
+
+
+void Sky::drawMoonAndStars(
+    RenderDevice*               renderDevice, 
+    const LightingParameters&   lighting) {
+
+    Vector3 moonPosition = lighting.physicallyCorrect ? lighting.trueMoonPosition : lighting.moonPosition;
+
+    Vector4 L(moonPosition,0);
+    Vector3 LcrossZ = moonPosition.cross(Vector3::unitZ()).direction();
+	Vector4 X(LcrossZ, 0);
+    Vector4 Y(moonPosition.cross(LcrossZ), 0);
+
+    // Draw stars
+    if (lighting.moonPosition.y > -0.3f) {
+
+        float k = (3.001 - square(lighting.skyAmbient.length()));// * renderDevice->getBrightScale();
+		float s = k;
+		k *= renderDevice->getBrightScale();
+		renderDevice->pushState();
+            // Rotate stars
+			renderDevice->setObjectToWorldMatrix((lighting.physicallyCorrect ? lighting.trueStarFrame : lighting.starFrame));
+			renderDevice->setBlendFunc(RenderDevice::BLEND_SRC_ALPHA, RenderDevice::BLEND_ONE);
+
+            // We use raw GL calls here for performance since the changing point size
+            // precludes the use of a vertex array.
+            glPushAttrib(GL_POINT_BIT|GL_CURRENT_BIT);
+
+                for (int i = star.size() - 1; i >= 0; --i) {
+                    const float b = starIntensity[i] * k;
+					glPointSize(starIntensity[i] * s);
+					glBegin(GL_POINTS);
+						glColor3f(b * lighting.emissiveScale.r, b * lighting.emissiveScale.g, b * lighting.emissiveScale.b);
+						glVertex3fv(star[i]);
+                    glEnd();
+                }
+
+            glPopAttrib();
+
+        renderDevice->popState();
+    }
+
+    renderDevice->setTexture(0, moon);
+    renderDevice->setBlendFunc(RenderDevice::BLEND_SRC_ALPHA, RenderDevice::BLEND_ONE_MINUS_SRC_ALPHA);
+    renderDevice->setAlphaTest(RenderDevice::ALPHA_GEQUAL, 0.05);
+    drawCelestialSphere(renderDevice, L, X, Y, .06, Color4(lighting.emissiveScale, min(1.0f, max(0.0f, moonPosition.y * 4.0f))));
+}
+
+
+void Sky::drawSun(
+    RenderDevice*               renderDevice, 
+    const LightingParameters&   lighting) {
+
+    Vector3 sunPosition = lighting.physicallyCorrect ? lighting.trueSunPosition : lighting.sunPosition;
+	
+    // Sun vector
+    Vector4 L(sunPosition,0);
+    Vector3 LcrossZ = sunPosition.cross(Vector3::unitZ()).direction();
+    Vector4 X(LcrossZ, 0);
+    Vector4 Y(sunPosition.cross(LcrossZ), 0);
+    
+    renderDevice->setTexture(0, sun);
+    renderDevice->setBlendFunc(RenderDevice::BLEND_ONE, RenderDevice::BLEND_ONE);
+    Color3 c(lighting.emissiveScale * .8f);
+
+    if (sunPosition.y < 0) {
+        // Fade out the sun as it goes below the horizon
+        c *= max(0.0f, (sunPosition.y + 0.1f) * 10.0f);
+    }
+
+    drawCelestialSphere(renderDevice, L, X, Y, 0.12f, c);
+}
+
+
+void Sky::renderLensFlare(
+    RenderDevice* renderDevice, 
+    const LightingParameters&           lighting) {
+	
+    debugAssert(renderDevice != NULL);
+
+    if (! drawCelestialBodies) {
+        return;
+    }
+
+    Vector3 sunPosition = lighting.physicallyCorrect ? lighting.trueSunPosition : lighting.sunPosition;
+
+    if (sunPosition.y < -.1) {
+        return;
+    }
+
+    renderDevice->pushState();
+
+        CoordinateFrame camera = renderDevice->getCameraToWorldMatrix();
+	    CoordinateFrame matrix;
+    	matrix.rotation = camera.rotation;
+        renderDevice->setCameraToWorldMatrix(matrix);
+	    renderDevice->setObjectToWorldMatrix(CoordinateFrame());
+
+        renderDevice->setColor(lighting.skyAmbient);
+        renderDevice->setCullFace(RenderDevice::CULL_BACK);
+        renderDevice->disableDepthWrite();
+        renderDevice->setDepthTest(RenderDevice::DEPTH_ALWAYS_PASS);
+        renderDevice->resetTextureUnit(0);
+
+        // Compute the sun's position using the 3D transformation
+        Vector4 pos = renderDevice->project(Vector4(sunPosition, 0));
+
+        if (sunPosition.dot(camera.getLookVector()) > 0) {
+
+            // Number of visible points on the sun
+            int visible = 0;
+            for (int dx = -1; dx <= 1; ++dx) {
+                for (int dy = -1; dy <= 1; ++dy) {
+                    double distanceToSun = 
+                        renderDevice->getDepthBufferValue(
+                         iRound(pos.x + dx * 15.0),
+                         iRound(pos.y + dy * 15.0));
+                    visible += (distanceToSun >= .99999) ? 1 : 0;
+                }
+            }
+
+            double fractionOfSunVisible = visible / 9.0;
+
+            if (fractionOfSunVisible > 0.0) {
+
+                // We need to switch to an infinite projection matrix
+                // to draw the flares.  Note that we must make this
+                // change *after* the depth buffer values have been
+                // read back.
+                hackProjectionMatrix(renderDevice);
+
+                renderDevice->setBlendFunc(RenderDevice::BLEND_ONE,
+                                           RenderDevice::BLEND_ONE);
+
+                // Make flares fade out near sunset and sunrise
+                float flareBrightness = sqrtf(max(sunPosition.y * 4.0f, 0.0f));
+
+                // Sun position
+                Vector4 L(sunPosition,0);
+                Vector3 LcrossZ = sunPosition.cross(Vector3::unitZ()).direction();
+                Vector4 X(LcrossZ, 0);
+				Vector4 Y(sunPosition.cross(LcrossZ), 0);
+
+                // Sun rays at dawn
+                if ((sunPosition.x > 0) && 
+                    (sunPosition.y >= -.1)) {
+
+                    renderDevice->setTexture(0, sunRays);
+                    double occlusionAttenuation = 
+                        (1 - square(2*fractionOfSunVisible - 1));
+
+                    Color4 col =
+                        Color4(1,1,1,1) * (occlusionAttenuation *
+                            0.4f * max(0.0f, min(1.0f, 1.0f - sunPosition.y * 2.0f / sqrtf(2.0f))));
+                    drawCelestialSphere(renderDevice, L, X , Y, 0.6, col);
+                }
+
+                renderDevice->setTexture(0, sun);
+                drawCelestialSphere(renderDevice, L, X, Y, .13f,
+                                    lighting.emissiveScale * fractionOfSunVisible * .5f);
+
+                // Lens flare
+                Vector4 C(camera.getLookVector(), 0);
+                static const double position[] = { .5,                    .5,                    -.25,                     -.75,                .45,                      .6,                    -.5,                   -.1,                   .55,                     -1.5,                       -2,                         1};
+                static const double size[]     = { .12,                   .05,                    .02,                      .02,                .02,                      .02,                    .01,                  .01,                   .01,                     .01,                        .01,                        0.05}; 
+                static const Color3 color[]    = {Color3(6, 4, 0) / 255, Color3(6, 4, 0) / 255, Color3(0, 12, 0) / 255, Color3(0, 12, 0) / 255, Color3(0, 12, 0) / 255, Color3(0, 12, 0) / 255, Color3(10, 0, 0) /255,  Color3(0, 12, 0) / 255, Color3(10,0,0) / 255, Color3::fromARGB(0x192125)/10,   Color3::fromARGB(0x1F2B1D)/10, Color3::fromARGB(0x1F2B1D)/10};
+                int numFlares     = 12;
+
+                renderDevice->setTexture(0, disk);
+                for (int i = 0; i < numFlares; ++i) {
+                    drawCelestialSphere(renderDevice, 
+                         C + (C - L) * (float)position[i], X, Y, (float)size[i], 
+                         Color4(color[i] * lighting.emissiveScale * flareBrightness, 1));
+                }
+            }
+        }
+
+    renderDevice->popState();
+}
+
+} // namespace
+

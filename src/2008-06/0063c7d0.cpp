@@ -1,26 +1,81 @@
-// roc 2008-06 0063c7d0  unit: RBX::VSeat::?$FactoryProduct  size: 50 bytes
-// Make this compile to the exact bytes below, then: roc check 2008-06 0063c7d0
-//
-// 0063c7d0  8b44240c             mov eax, dword ptr [esp + 0xc]
-// 0063c7d4  83f803               cmp eax, 3
-// 0063c7d7  741e                 je 0x63c7f7
-// 0063c7d9  8b542408             mov edx, dword ptr [esp + 8]
-// 0063c7dd  c644240c00           mov byte ptr [esp + 0xc], 0
-// 0063c7e2  8b4c240c             mov ecx, dword ptr [esp + 0xc]
-// 0063c7e6  51                   push ecx
-// 0063c7e7  50                   push eax
-// 0063c7e8  8b44240c             mov eax, dword ptr [esp + 0xc]
-// 0063c7ec  52                   push edx
-// 0063c7ed  50                   push eax
-// 0063c7ee  e89dfdffff           call 0x63c590
-// 0063c7f3  83c410               add esp, 0x10
-// 0063c7f6  c3                   ret 
-// 0063c7f7  8b4c2408             mov ecx, dword ptr [esp + 8]
-// 0063c7fb  c70178169600         mov dword ptr [ecx], 0x961678
-// 0063c801  c3                   ret 
-// library rbxgs/v8datamodel\Seat.cpp (function ?manage@?$functor_manager@V?$bind_t@XV?$mf1@XVSeat@RBX@@V?$shared_ptr@VInstance@RBX@@@boost@@@_mfi@boost@@V?$list2@V?$value@PAVSeat@RBX@@@_bi@boost@@V?$arg@$00@3@@_bi@3@@_bi@boost@@V?$allocator@X@std@@@function@detail@boost@@SAXABTfunction_buffer@234@AAT5234@W4functor_manager_operation_type@234@@Z)
-
 // roc-lang: cpp
 // roc-cl: 50727
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
 // roc-lib: rbxgs v8datamodel/Seat.cpp
+
+// Candidate translation unit (score above; library headers required).
+#include "v8datamodel/Seat.h"
+#include "v8datamodel/PartInstance.h"
+#include "v8datamodel/JointInstance.h"
+#include "v8datamodel/Workspace.h"
+#include "humanoid/Humanoid.h"
+#include "Network/Players.h"
+
+namespace RBX
+{
+	Seat::Seat()
+		: sleepTime(0.0f)
+	{
+		setName("Seat");
+	}
+
+	void Seat::seatCharacter(Humanoid* h)
+	{
+		weld = Creatable::create<Weld>();
+
+		PartInstance* torso = h->getTorso();
+		RBXASSERT(torso);
+
+		const G3D::CoordinateFrame& unused = torso->getCoordinateFrame();
+
+		weld->setName("SeatWeld");
+		weld->setPart0(this);
+		weld->setPart1(torso);
+
+		G3D::CoordinateFrame C0;
+		C0.lookAt(G3D::Vector3(0.0f, -1.0f, 0.0f), G3D::Vector3(0.0f, 0.0f, -1.0f));
+
+		C0.translation = G3D::Vector3(0.0f, 3.0f, 0.0f);
+
+		G3D::CoordinateFrame C1;
+		C1.lookAt(G3D::Vector3(0.0f, -1.0f, 0.0f), G3D::Vector3(0.0f, 0.0f, -1.0f));
+
+		C1.translation = G3D::Vector3(0.0f, 0.6f, 0.0f);
+
+		weld->setC0(C0);
+		weld->setC1(C1);
+		weld->setParent(this);
+	}
+
+	void Seat::unseatCharacter()
+	{
+		sleepTime = G3D::System::getLocalTime();
+
+		if (weld)
+		{
+			weld->setParent(NULL);
+			weld.reset();
+		}
+	}
+
+	void Seat::onEvent_humanoidJumped(bool active)
+	{
+		unseatCharacter();
+		humanoidJumped.disconnect();
+	}
+
+	void Seat::onServiceProvider(const ServiceProvider* oldProvider, const ServiceProvider* newProvider)
+	{
+		Instance::onServiceProvider(oldProvider, newProvider);
+
+		if (!oldProvider)
+		{
+			seatTouched = PartInstance::event_Touched.connect(this, boost::bind(&Seat::onEvent_seatTouched, this, _1));
+		}
+
+		if (!newProvider)
+		{
+			seatTouched.disconnect();
+		}
+	}
+}

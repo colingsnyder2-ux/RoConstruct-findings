@@ -1,38 +1,160 @@
-// roc 2009-12 0068bb00  unit: ArchiveBinder  size: 100 bytes
-// Make this compile to the exact bytes below, then: roc check 2009-12 0068bb00
-//
-// 0068bb00  6aff                 push -1
-// 0068bb02  6898639400           push 0x946398
-// 0068bb07  64a100000000         mov eax, dword ptr fs:[0]
-// 0068bb0d  50                   push eax
-// 0068bb0e  64892500000000       mov dword ptr fs:[0], esp
-// 0068bb15  51                   push ecx
-// 0068bb16  56                   push esi
-// 0068bb17  8bf1                 mov esi, ecx
-// 0068bb19  57                   push edi
-// 0068bb1a  89742408             mov dword ptr [esp + 8], esi
-// 0068bb1e  8d7e3c               lea edi, [esi + 0x3c]
-// 0068bb21  8bcf                 mov ecx, edi
-// 0068bb23  c744241400000000     mov dword ptr [esp + 0x14], 0
-// 0068bb2b  e8d0700900           call 0x722c00
-// 0068bb30  8b3f                 mov edi, dword ptr [edi]
-// 0068bb32  57                   push edi
-// 0068bb33  e8227d1600           call 0x7f385a
-// 0068bb38  83c404               add esp, 4
-// 0068bb3b  8d4e1c               lea ecx, [esi + 0x1c]
-// 0068bb3e  e8dd380b00           call 0x73f420
-// 0068bb43  8d4e04               lea ecx, [esi + 4]
-// 0068bb46  c7442414ffffffff     mov dword ptr [esp + 0x14], 0xffffffff
-// 0068bb4e  e89d70dbff           call 0x442bf0
-// 0068bb53  8b4c240c             mov ecx, dword ptr [esp + 0xc]
-// 0068bb57  5f                   pop edi
-// 0068bb58  5e                   pop esi
-// 0068bb59  64890d00000000       mov dword ptr fs:[0], ecx
-// 0068bb60  83c410               add esp, 0x10
-// 0068bb63  c3                   ret 
-// library rbxgs/v8xml\SerializerV2.cpp (function ??1ArchiveBinder@@QAE@XZ)
-
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
 // roc-lib: rbxgs v8xml/SerializerV2.cpp
+
+// Candidate translation unit (score above; library headers required).
+#include "v8xml/SerializerV2.h"
+#include "v8datamodel/DataModel.h"
+#include <boost/bind.hpp>
+#include <algorithm>
+
+bool ArchiveBinder::resolveRefs()
+{
+	size_t counts = std::count_if(idrefBindings.begin(), idrefBindings.end(), boost::bind(&ArchiveBinder::resolveIDREF, this, _1));
+
+	return MergeBinder::resolveRefs() && counts == idrefBindings.size();
+}
+
+bool ArchiveBinder::resolveIDREF(IDREFBinding binding)
+{
+	std::string s;
+	bool success = binding.valueIDREF->getValue(s);
+
+	RBXASSERT(success);
+	RBXASSERT(value_IDREF_nil.name.compare(s));
+	RBXASSERT(value_IDREF_null.name.compare(s));
+	RBXASSERT(s != "");
+
+	std::map<std::string, RBX::InstanceHandle>::iterator found = idMap.find(s);
+	if (found != idMap.end())
+	{
+		RBX::InstanceHandle& foundHandle = found->second;
+		binding.idref->assignIDREF(binding.propertyOwner,foundHandle);
+		return true;
+	}
+	else
+	{
+		binding.idref->assignIDREF(binding.propertyOwner,RBX::InstanceHandle(NULL));
+		return false;
+	}
+}
+
+bool ArchiveBinder::processID(const XmlNameValuePair* valueID, RBX::Instance* source)
+{
+	if (!MergeBinder::processID(valueID, source))
+	{
+		std::string s;
+		bool success = valueID->getValue(s);
+
+		RBXASSERT(success);
+		RBXASSERT(idMap.find(s) == idMap.end());
+
+		idMap[s] = shared_from(source);
+	}
+
+	return true;
+}
+
+bool ArchiveBinder::processIDREF(const XmlNameValuePair* valueIDREF, RBX::Reflection::DescribedBase* propertyOwner, const RBX::IIDREF* idref)
+{
+	if (!MergeBinder::processIDREF(valueIDREF, propertyOwner, idref))
+	{
+		IDREFBinding binding = {valueIDREF, propertyOwner, idref};
+		idrefBindings.push_back(binding);
+	}
+
+	return true;
+}
+
+static void buildIsolationMap(XmlElement* element, std::map<RBX::Instance*, RBX::InstanceHandle>& isolationMap)
+{
+	XmlAttribute* referent = element->findAttribute(name_referent);
+	if (referent)
+	{
+		RBX::InstanceHandle h;
+		bool success = referent->getValue(h);
+
+		RBXASSERT(success);
+		RBXASSERT(isolationMap.find(h.getTarget().get()) == isolationMap.end());
+
+		isolationMap[h.getTarget().get()] = RBX::InstanceHandle();
+	}
+
+	for (XmlElement* child = element->firstChild(); child != NULL; child = element->nextChild(child))
+	{
+		buildIsolationMap(child, isolationMap);
+	}
+}
+
+static void isolate(XmlElement* element, const std::map<RBX::Instance*, RBX::InstanceHandle>& isolationMap)
+{
+	element->replaceHandles(isolationMap);
+
+	for (XmlAttribute* attr = element->getFirstAttribute(); attr != NULL; attr = element->getNextAttribute(attr))
+	{
+		attr->replaceHandles(isolationMap);
+	}
+
+	for (XmlElement* elem = element->firstChild(); elem != NULL; elem = element->nextChild(elem))
+	{
+		isolate(elem, isolationMap);
+	}
+}
+
+void SerializerV2::isolateHandles(XmlElement* root)
+{
+	std::map<RBX::Instance*, RBX::InstanceHandle> isolationMap;
+
+	buildIsolationMap(root, isolationMap);
+	isolate(root, isolationMap);
+}
+
+XmlElement* SerializerV2::newRootElement()
+{
+	static const RBX::Name& tag_xmlnsxmime = RBX::Name::declare("xmlns:xmime", -1);
+
+	XmlElement* thisElement = new XmlElement(tag_roblox);
+	thisElement->addAttribute(tag_xmlnsxmime,"http://www.w3.org/2005/05/xmlmime");
+	thisElement->addAttribute(tag_xmlnsxsi,"http://www.w3.org/2001/XMLSchema-instance");
+	thisElement->addAttribute(tag_xsinoNamespaceSchemaLocation,"http://www.roblox.com/roblox.xsd");
+
+	thisElement->addAttribute(tag_version, 4);
+
+	thisElement->pushBackChild(new XmlElement(tag_External, &value_IDREF_null));
+	thisElement->pushBackChild(new XmlElement(tag_External, &value_IDREF_nil));
+
+	return thisElement;
+}
+
+void SerializerV2::load(XmlElement* root, RBX::DataModel* dataModel)
+{
+	ArchiveBinder binder;
+	dataModel->readChildren(root, binder);
+
+	binder.resolveRefs();
+}
+
+void SerializerV2::loadXML(std::istream& stream, RBX::DataModel* dataModel)
+{
+	TextXmlParser machine(stream.rdbuf());
+	std::auto_ptr<XmlElement> root = machine.parse();
+
+	if (root->getTag() == tag_roblox)
+	{
+		XmlAttribute* version = root->findAttribute(tag_version);
+		if (!version->getValue(schemaVersionLoading))
+			throw std::runtime_error("SerializerV2::loadXML no version number");
+
+		if (schemaVersionLoading < 4)
+			throw std::runtime_error("SerializerV2::loadXML schemaVersionLoading<4");
+
+		load(root.get(), dataModel);
+		dataModel->setDirty(false);
+	}
+	else
+	{
+		schemaVersionLoading = 1;
+		throw std::runtime_error("SerializerV2::loadXML ill-formed XML. No Roblox tag");
+	}
+}

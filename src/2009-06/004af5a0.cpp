@@ -1,157 +1,990 @@
 // from server: 100% by auto
-// roc 2009-06 004af5a0  unit: G3D::Shader  size: 362 bytes
-// Make this compile to the exact bytes below, then: roc check 2009-06 004af5a0
-//
-// 004af5a0  57                   push edi
-// 004af5a1  8b3d74e48900         mov edi, dword ptr [0x89e474]
-// 004af5a7  68b03d8c00           push 0x8c3db0
-// 004af5ac  56                   push esi
-// 004af5ad  ffd7                 call edi
-// 004af5af  83c408               add esp, 8
-// 004af5b2  84c0                 test al, al
-// 004af5b4  7407                 je 0x4af5bd
-// 004af5b6  b806140000           mov eax, 0x1406
-// 004af5bb  5f                   pop edi
-// 004af5bc  c3                   ret 
-// 004af5bd  68a83d8c00           push 0x8c3da8
-// 004af5c2  56                   push esi
-// 004af5c3  ffd7                 call edi
-// 004af5c5  83c408               add esp, 8
-// 004af5c8  84c0                 test al, al
-// 004af5ca  7407                 je 0x4af5d3
-// 004af5cc  b8508b0000           mov eax, 0x8b50
-// 004af5d1  5f                   pop edi
-// 004af5d2  c3                   ret 
-// 004af5d3  68a03d8c00           push 0x8c3da0
-// 004af5d8  56                   push esi
-// 004af5d9  ffd7                 call edi
-// 004af5db  83c408               add esp, 8
-// 004af5de  84c0                 test al, al
-// 004af5e0  7407                 je 0x4af5e9
-// 004af5e2  b8518b0000           mov eax, 0x8b51
-// 004af5e7  5f                   pop edi
-// 004af5e8  c3                   ret 
-// 004af5e9  68983d8c00           push 0x8c3d98
-// 004af5ee  56                   push esi
-// 004af5ef  ffd7                 call edi
-// 004af5f1  83c408               add esp, 8
-// 004af5f4  84c0                 test al, al
-// 004af5f6  7407                 je 0x4af5ff
-// 004af5f8  b8528b0000           mov eax, 0x8b52
-// 004af5fd  5f                   pop edi
-// 004af5fe  c3                   ret 
-// 004af5ff  68943d8c00           push 0x8c3d94
-// 004af604  56                   push esi
-// 004af605  ffd7                 call edi
-// 004af607  83c408               add esp, 8
-// 004af60a  84c0                 test al, al
-// 004af60c  7407                 je 0x4af615
-// 004af60e  b804140000           mov eax, 0x1404
-// 004af613  5f                   pop edi
-// 004af614  c3                   ret 
-// 004af615  688c3d8c00           push 0x8c3d8c
-// 004af61a  56                   push esi
-// 004af61b  ffd7                 call edi
-// 004af61d  83c408               add esp, 8
-// 004af620  84c0                 test al, al
-// 004af622  7407                 je 0x4af62b
-// 004af624  b8568b0000           mov eax, 0x8b56
-// 004af629  5f                   pop edi
-// 004af62a  c3                   ret 
-// 004af62b  68843d8c00           push 0x8c3d84
-// 004af630  56                   push esi
-// 004af631  ffd7                 call edi
-// 004af633  83c408               add esp, 8
-// 004af636  84c0                 test al, al
-// 004af638  7407                 je 0x4af641
-// 004af63a  b85a8b0000           mov eax, 0x8b5a
-// 004af63f  5f                   pop edi
-// 004af640  c3                   ret 
-// 004af641  687c3d8c00           push 0x8c3d7c
-// 004af646  56                   push esi
-// 004af647  ffd7                 call edi
-// 004af649  83c408               add esp, 8
-// 004af64c  84c0                 test al, al
-// 004af64e  7407                 je 0x4af657
-// 004af650  b85b8b0000           mov eax, 0x8b5b
-// 004af655  5f                   pop edi
-// 004af656  c3                   ret 
-// 004af657  68743d8c00           push 0x8c3d74
-// 004af65c  56                   push esi
-// 004af65d  ffd7                 call edi
-// 004af65f  83c408               add esp, 8
-// 004af662  84c0                 test al, al
-// 004af664  7407                 je 0x4af66d
-// 004af666  b85c8b0000           mov eax, 0x8b5c
-// 004af66b  5f                   pop edi
-// 004af66c  c3                   ret 
-// 004af66d  68683d8c00           push 0x8c3d68
-// 004af672  56                   push esi
-// 004af673  ffd7                 call edi
-// 004af675  83c408               add esp, 8
-// 004af678  84c0                 test al, al
-// 004af67a  7407                 je 0x4af683
-// 004af67c  b85d8b0000           mov eax, 0x8b5d
-// 004af681  5f                   pop edi
-// 004af682  c3                   ret 
-// 004af683  685c3d8c00           push 0x8c3d5c
-// 004af688  56                   push esi
-// 004af689  ffd7                 call edi
-// 004af68b  83c408               add esp, 8
-// 004af68e  84c0                 test al, al
-// 004af690  7407                 je 0x4af699
-// 004af692  b85e8b0000           mov eax, 0x8b5e
-// 004af697  5f                   pop edi
-// 004af698  c3                   ret 
-// 004af699  68503d8c00           push 0x8c3d50
-// 004af69e  56                   push esi
-// 004af69f  ffd7                 call edi
-// 004af6a1  83c408               add esp, 8
-// 004af6a4  84c0                 test al, al
-// 004af6a6  7407                 je 0x4af6af
-// 004af6a8  b85f8b0000           mov eax, 0x8b5f
-// 004af6ad  5f                   pop edi
-// 004af6ae  c3                   ret 
-// 004af6af  68443d8c00           push 0x8c3d44
-// 004af6b4  56                   push esi
-// 004af6b5  ffd7                 call edi
-// 004af6b7  83c408               add esp, 8
-// 004af6ba  84c0                 test al, al
-// 004af6bc  7407                 je 0x4af6c5
-// 004af6be  b8608b0000           mov eax, 0x8b60
-// 004af6c3  5f                   pop edi
-// 004af6c4  c3                   ret 
-// 004af6c5  68343d8c00           push 0x8c3d34
-// 004af6ca  56                   push esi
-// 004af6cb  ffd7                 call edi
-// 004af6cd  83c408               add esp, 8
-// 004af6d0  84c0                 test al, al
-// 004af6d2  7407                 je 0x4af6db
-// 004af6d4  b8638b0000           mov eax, 0x8b63
-// 004af6d9  5f                   pop edi
-// 004af6da  c3                   ret 
-// 004af6db  68243d8c00           push 0x8c3d24
-// 004af6e0  56                   push esi
-// 004af6e1  ffd7                 call edi
-// 004af6e3  83c408               add esp, 8
-// 004af6e6  84c0                 test al, al
-// 004af6e8  7407                 je 0x4af6f1
-// 004af6ea  b8628b0000           mov eax, 0x8b62
-// 004af6ef  5f                   pop edi
-// 004af6f0  c3                   ret 
-// 004af6f1  68103d8c00           push 0x8c3d10
-// 004af6f6  56                   push esi
-// 004af6f7  ffd7                 call edi
-// 004af6f9  0fb6c0               movzx eax, al
-// 004af6fc  83c408               add esp, 8
-// 004af6ff  f7d8                 neg eax
-// 004af701  1bc0                 sbb eax, eax
-// 004af703  25648b0000           and eax, 0x8b64
-// 004af708  5f                   pop edi
-// 004af709  c3                   ret 
-// library g3d-6.09/GLG3Dcpp\Shader.cpp (function ?toGLType@G3D@@YAIABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@Z)
-
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD
 // roc-lib: g3d-6.09 GLG3Dcpp/Shader.cpp
+
+// Candidate translation unit (score above; library headers required).
+/**
+ @file Shader.cpp
+ 
+ @maintainer Morgan McGuire, morgan@graphics3d.com
+ 
+ @created 2004-04-24
+ @edited  2006-02-15
+ */
+
+#include "G3D/fileutils.h"
+#include "GLG3D/Shader.h"
+#include "GLG3D/GLCaps.h"
+#include "GLG3D/getOpenGLState.h"
+#include "GLG3D/RenderDevice.h"
+
+namespace G3D {
+
+bool Shader::hasArgument(const std::string& argname) const {
+    const Set<std::string>& uniformNames = _vertexAndPixelShader->uniformNames;
+    return uniformNames.contains(argname);
+}
+
+
+bool Shader::ok() const {
+    return _vertexAndPixelShader->ok();
+}
+
+
+bool Shader::supportsPixelShaders() {
+    return
+        GLCaps::supports_GL_ARB_shader_objects() && 
+        GLCaps::supports_GL_ARB_shading_language_100() &&
+        GLCaps::supports_GL_ARB_fragment_shader();
+}
+
+
+bool Shader::supportsVertexShaders() {
+    return
+        GLCaps::supports_GL_ARB_shader_objects() && 
+        GLCaps::supports_GL_ARB_shading_language_100() &&
+        GLCaps::supports_GL_ARB_vertex_shader();
+}
+
+
+void Shader::beforePrimitive(class RenderDevice* renderDevice) {
+    if (_preserveState) {
+        renderDevice->pushState();
+    }
+
+    if (_useUniforms == DEFINE_G3D_UNIFORMS) {
+        const CoordinateFrame& o2w = renderDevice->getObjectToWorldMatrix();
+        const CoordinateFrame& c2w = renderDevice->getCameraToWorldMatrix();
+
+        const Set<std::string>& uniformNames = _vertexAndPixelShader->uniformNames;
+
+        // Bind matrices
+        if (uniformNames.contains("g3d_ObjectToWorldMatrix")) {
+            args.set("g3d_ObjectToWorldMatrix", o2w);
+        }
+
+        if (uniformNames.contains("g3d_CameraToWorldMatrix")) {
+            args.set("g3d_CameraToWorldMatrix", c2w);
+        }
+
+        if (uniformNames.contains("g3d_WorldToObjectMatrix")) {
+            args.set("g3d_WorldToObjectMatrix", o2w.inverse());
+        }
+
+        if (uniformNames.contains("g3d_WorldToCameraMatrix")) {
+            args.set("g3d_WorldToCameraMatrix", c2w.inverse());
+        }
+
+        if (uniformNames.contains("g3d_NumLights")) {
+            if (glGetBoolean(GL_LIGHTING)) {
+                // Search for the highest light number
+                int i = 7;
+                while (i >= 0 && ! glGetBoolean(GL_LIGHT0 + i)) {
+                    --i;
+                }
+                args.set("g3d_NumLights", i + 1);
+            } else {
+                args.set("g3d_NumLights", 0);
+            }
+        }
+
+        if (uniformNames.contains("g3d_ObjectLight0")) {
+            Vector4 cL;
+            // OpenGL lights are already in camera space, so take them
+            // from camera to world to object space.
+            glGetLightfv(GL_LIGHT0, GL_POSITION, cL);
+            args.set("g3d_ObjectLight0", o2w.toObjectSpace(c2w.toWorldSpace(cL)));
+        }
+
+        if (uniformNames.contains("g3d_NumTextures")) {
+            // Search for the highest texture number
+            int i = 7;
+            while (i >= 0 && ! glGetBoolean(GL_TEXTURE0_ARB + i)) {
+                --i;
+            }
+            args.set("g3d_NumTextures", i + 1);
+        }
+    }
+
+    renderDevice->setVertexAndPixelShader(_vertexAndPixelShader, args);
+}
+
+
+void Shader::afterPrimitive(class RenderDevice* renderDevice) {
+    if (_preserveState) {
+        renderDevice->popState();
+    }
+}
+
+
+const std::string& Shader::messages() const {
+    return _vertexAndPixelShader->messages();
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+void VertexAndPixelShader::GPUShader::replaceG3DSize(std::string& code, std::string& uniformString) {
+
+    // Ensure that uniforms are only declared once
+    Set<std::string> newUniforms;
+
+    std::string funcName = "g3d_sampler2DSize(";
+    std::string prefix   = "     (";
+    std::string postfix  = ".xy)";
+
+    for (int count = 0; count < 2; ++count) {
+
+        size_t last = 0;
+        while (true) {
+            int next = code.find(funcName, last);
+            if (next == std::string::npos) {
+                break;
+            }
+
+            size_t nameStart = next + funcName.length();
+            size_t nameEnd   = code.find(')', nameStart);
+
+            alwaysAssertM(nameEnd != std::string::npos,
+                "Could not find the end of " + funcName + ") expression");
+
+            std::string name = code.substr(nameStart, nameEnd - nameStart);
+
+            std::string decoratedName = "g3d_sz2D_" + name;
+
+            std::string replacement = prefix + decoratedName + postfix;
+            for (size_t i = 0; i < replacement.size(); ++i) {
+                code[i + next] = replacement[i];
+            }
+
+            newUniforms.insert(decoratedName);
+
+            last = nameEnd;
+
+        } // Iterating through all instances
+
+        // On the second iteration, replace g3d_invSize.
+        funcName = "g3d_sampler2DInvSize(";
+        prefix   = "        (";
+        postfix  = ".zw)";
+    }
+
+    // Add the unique uniforms to the header for the code.
+    Set<std::string>::Iterator current = newUniforms.begin();
+    const Set<std::string>::Iterator end = newUniforms.end();
+    while (current != end) {
+        uniformString += "uniform vec4 " + *current + "; "; 
+        ++current;
+    }
+}
+
+
+void VertexAndPixelShader::GPUShader::init(
+	const std::string&	name,
+	const std::string&	code,
+	bool				_fromFile,
+	bool				debug,	
+	GLenum				glType,
+	const std::string&	type,
+    UseG3DUniforms      uniforms) {
+
+    std::string uniformString = 
+        STR(
+        uniform mat4 g3d_WorldToObjectMatrix;
+        uniform mat4 g3d_ObjectToWorldMatrix;
+        uniform mat4 g3d_WorldToCameraMatrix;
+        uniform mat4 g3d_CameraToWorldMatrix;
+        uniform int  g3d_NumLights;
+        uniform int  g3d_NumTextures;
+        uniform vec4 g3d_ObjectLight0;);
+
+	_name			= name;
+	_shaderType		= type;
+	_glShaderType	= glType;
+	_ok				= true;
+	fromFile		= _fromFile;
+	_fixedFunction	= (name == "") && (code == "");
+
+	if (! _fixedFunction) {
+
+        switch (glType) {
+        case GL_VERTEX_SHADER_ARB:
+            if (! Shader::supportsVertexShaders()) {
+                _ok = false;
+                _messages = "This graphics card does not support vertex shaders.";
+            }
+            break;
+
+        case GL_FRAGMENT_SHADER_ARB:
+            if (! Shader::supportsPixelShaders()) {
+                _ok = false;
+                _messages = "This graphics card does not support pixel shaders.";
+            }
+            break;
+        }
+
+		if (fromFile) {
+			if (fileExists(_name)) {
+				_code = readFileAsString(_name);
+			} else {
+				_ok = false;
+				_messages = format("Could not load shader file \"%s\".", 
+					_name.c_str());
+			}
+        } else {
+            _code = code;
+        }
+
+        bool shifted = false;
+
+        if ((uniforms == DEFINE_G3D_UNIFORMS) && (_code.size() > 0)) {
+            // Replace g3d_size and g3d_invSize with corresponding magic names
+
+            replaceG3DSize(_code, uniformString);
+
+	        _code		= uniformString + "\n" + _code + "\n";
+            shifted = true;
+        } else {
+            // Just add a newline to the end
+            _code += "\n";
+        }
+
+		if (_ok) {
+			compile();
+		}
+
+		if (debug) {
+            // Check for compilation errors
+            if (! ok()) {
+                if (shifted) {
+                    debugPrintf("\n[Line numbers in the following shader errors are shifted by one.]\n");
+                }
+                debugPrintf("%s", messages().c_str());
+    			alwaysAssertM(ok(), messages());
+            }
+		}
+	}
+
+}
+
+
+void VertexAndPixelShader::GPUShader::compile() {
+
+    GLint compiled = GL_FALSE;
+	_glShaderObject = glCreateShaderObjectARB(glShaderType());
+
+    // Compile the shader
+	GLint length = _code.length();
+    const GLcharARB* codePtr = static_cast<const GLcharARB*>(_code.c_str());
+
+	glShaderSourceARB(_glShaderObject, 1, &codePtr, &length);
+	glCompileShaderARB(_glShaderObject);
+	glGetObjectParameterivARB(_glShaderObject, GL_OBJECT_COMPILE_STATUS_ARB, &compiled);
+
+    // Read the result of compilation
+	GLint	  maxLength;
+	glGetObjectParameterivARB(_glShaderObject, GL_OBJECT_INFO_LOG_LENGTH_ARB, &maxLength);
+    GLcharARB* pInfoLog = (GLcharARB *)malloc(maxLength * sizeof(GLcharARB));
+	glGetInfoLogARB(_glShaderObject, maxLength, &length, pInfoLog);
+
+	int c = 0;
+    // Copy the result to the output string, prepending the filename
+	while (pInfoLog[c] != '\0') {
+		_messages += _name;
+		while (pInfoLog[c] != '\n' && pInfoLog[c] != '\r' && pInfoLog[c] != '\0') {
+			_messages += pInfoLog[c];
+			++c;
+		}
+
+		if (pInfoLog[c] == '\r' && pInfoLog[c + 1] == '\n') {
+			// Windows newline
+			#ifdef G3D_WIN32
+				_messages += "\r\n";
+			#else
+				_messages += "\n";
+			#endif
+			c += 2;
+		} else if (pInfoLog[c] == '\r' && pInfoLog[c + 1] != '\n') {
+			// Dangling \r; treat it as a newline
+			_messages += "\r\n";
+			++c;
+		} else if (pInfoLog[c] == '\n') {
+			// Newline
+			#ifdef G3D_WIN32
+				_messages += "\r\n";
+			#else
+				_messages += "\n";
+			#endif
+			++c;
+		}
+	}
+	free(pInfoLog);
+
+    _ok = (compiled == GL_TRUE);
+}
+
+
+VertexAndPixelShader::GPUShader::~GPUShader() {
+	if (! _fixedFunction) {
+		glDeleteObjectARB(_glShaderObject);
+	}
+}
+
+
+////////////////////////////////////////////////////////////////////////////////////
+
+VertexAndPixelShader::VertexAndPixelShader(
+	const std::string&  vsCode,
+	const std::string&  vsFilename,
+	bool                vsFromFile,
+	const std::string&  psCode,
+	const std::string&  psFilename,
+	bool                psFromFile,
+    bool                debug,
+    UseG3DUniforms      uniforms) :
+        _ok(true) {
+
+    if (! GLCaps::supports_GL_ARB_shader_objects()) {
+        _messages = "This graphics card does not support GL_ARB_shader_objects.";
+        _ok = false;
+        return;
+    }
+
+	vertexShader.init(vsFilename, vsCode, vsFromFile, debug, GL_VERTEX_SHADER_ARB, "Vertex Shader", uniforms);
+	pixelShader.init(psFilename, psCode, psFromFile, debug, GL_FRAGMENT_SHADER_ARB, "Pixel Shader", uniforms);
+    
+    _vertCompileMessages += vertexShader.messages();
+    _messages += 
+		std::string("Compiling ") + vertexShader.shaderType() + " " + vsFilename + NEWLINE +
+		vertexShader.messages() + NEWLINE + NEWLINE;
+    if (! vertexShader.ok()) {
+        _ok = false;
+    }
+
+    if (! pixelShader.ok()) {
+        _ok = false;
+    }    
+    _fragCompileMessages += pixelShader.messages();
+    _messages += 
+		std::string("Compiling ") + pixelShader.shaderType() + " " + psFilename + NEWLINE +
+		pixelShader.messages() + NEWLINE + NEWLINE;
+
+    lastTextureUnit = -1;
+
+    if (_ok) {
+        // Create GL object
+        _glProgramObject = glCreateProgramObjectARB();
+
+        // Attach vertex and pixel shaders
+        if (! vertexShader.fixedFunction()) {
+            glAttachObjectARB(_glProgramObject, vertexShader.glShaderObject());
+        }
+
+        if (! pixelShader.fixedFunction()) {
+            glAttachObjectARB(_glProgramObject, pixelShader.glShaderObject());
+        }
+
+        // Link
+        GLint linked = GL_FALSE;
+        glLinkProgramARB(_glProgramObject);
+
+        // Read back messages
+	    glGetObjectParameterivARB(_glProgramObject, GL_OBJECT_LINK_STATUS_ARB, &linked);
+        GLint maxLength = 0, length = 0;
+	    glGetObjectParameterivARB(_glProgramObject, GL_OBJECT_INFO_LOG_LENGTH_ARB, &maxLength);
+	    GLcharARB* pInfoLog = (GLcharARB *)malloc(maxLength * sizeof(GLcharARB));
+	    glGetInfoLogARB(_glProgramObject, maxLength, &length, pInfoLog);
+
+        _messages += std::string("Linking\n") + std::string(pInfoLog) + "\n";
+        _linkMessages += std::string(pInfoLog);
+	    free(pInfoLog);
+        _ok = _ok && (linked == GL_TRUE);
+
+        if (debug) {
+            alwaysAssertM(_ok, _messages);
+        }
+    }
+
+    if (_ok) {
+        uniformNames.clear();
+        computeUniformArray();
+        // note that the extra uniforms are computed from the original code,
+        // not from the code that has the g3d uniforms prepended.
+        addUniformsFromCode(vsFromFile ? readFileAsString(vsFilename) : vsCode);
+        addUniformsFromCode(psFromFile ? readFileAsString(psFilename) : psCode);
+
+        // Add all uniforms to the name list
+        for (int i = uniformArray.size() - 1; i >= 0; --i) {
+            uniformNames.insert(uniformArray[i].name);
+        }
+    }
+}
+
+
+bool VertexAndPixelShader::isSamplerType(GLenum e) {
+    return
+       (e == GL_SAMPLER_1D_ARB) ||
+       (e == GL_SAMPLER_2D_ARB) ||
+       (e == GL_SAMPLER_2D_RECT_ARB) ||
+       (e == GL_SAMPLER_3D_ARB) ||
+       (e == GL_SAMPLER_CUBE_ARB) ||
+       (e == GL_SAMPLER_1D_SHADOW_ARB) ||
+       (e == GL_SAMPLER_2D_SHADOW_ARB) ||
+       (e == GL_SAMPLER_2D_RECT_SHADOW_ARB);
+}
+
+
+/** Converts a type name to a GL enum */
+static GLenum toGLType(const std::string& s) {
+    if (s == "float") {
+        return GL_FLOAT;
+    } else if (s == "vec2") {
+        return GL_FLOAT_VEC2_ARB;
+    } else if (s == "vec3") {
+        return GL_FLOAT_VEC3_ARB;
+    } else if (s == "vec4") {
+        return GL_FLOAT_VEC4_ARB;
+
+    } else if (s == "int") {
+        return GL_INT;
+
+    } else if (s == "bool") {
+        return GL_BOOL_ARB;
+
+    } else if (s == "mat2") {
+        return GL_FLOAT_MAT2_ARB;
+    } else if (s == "mat3") {
+        return GL_FLOAT_MAT3_ARB;
+    } else if (s == "mat4") {
+        return GL_FLOAT_MAT4_ARB;
+
+    } else if (s == "sampler1D") {
+        return GL_SAMPLER_1D_ARB;
+    } else if (s == "sampler2D") {
+        return GL_SAMPLER_2D_ARB;
+    } else if (s == "sampler3D") {
+        return GL_SAMPLER_3D_ARB;
+    } else if (s == "samplerCube") {
+        return GL_SAMPLER_CUBE_ARB;
+    } else if (s == "sampler2DRect") {
+        return GL_SAMPLER_2D_RECT_ARB;
+    } else if (s == "sampler2DShadow") {
+        return GL_SAMPLER_2D_SHADOW_ARB;
+    } else if (s == "sampler2DRectShadow") {
+        return GL_SAMPLER_2D_RECT_SHADOW_ARB;
+    } else {
+        debugAssertM(false, std::string("Unknown type in shader: ") + s);
+        return 0;
+    }
+}
+
+
+void VertexAndPixelShader::addUniformsFromCode(const std::string& code) {
+    TextInput ti(TextInput::FROM_STRING, code);
+
+    while (ti.hasMore()) {
+        if ((ti.peek().type() == Token::SYMBOL) && (ti.peek().string() == "uniform")) {
+            // Read the definition
+            ti.readSymbol("uniform");
+
+            // Maybe read "const"
+            if ((ti.peek().type() == Token::SYMBOL) && (ti.peek().string() == "const")) {
+                ti.readSymbol("const");
+            }
+
+            // Read the type
+            GLenum type = toGLType(ti.readSymbol());
+
+            // Read the name
+            std::string name = ti.readSymbol();
+
+            if ((ti.peek().type() == Token::SYMBOL) && (ti.peek().string() == "[")) {
+                ti.readSymbol("[");
+                ti.readNumber();
+                ti.readSymbol("]");
+            }
+
+            // Read the semi-colon
+            ti.readSymbol(";");
+
+            // See if this variable is already declared.
+            bool found = false;
+
+            for (int i = 0; i < uniformArray.size(); ++i) {
+                if (uniformArray[i].name == name) {
+                    found = true;
+                    break;
+                }
+            } 
+
+            if (! found) {
+                // Add the definition
+                uniformArray.next();
+
+                uniformArray.last().dummy = true;
+                uniformArray.last().location = -1;
+                uniformArray.last().name = name;
+                uniformArray.last().size = 1;
+                uniformArray.last().type = type;
+
+                // Don't allocate texture units for unused variables
+                uniformArray.last().textureUnit = -1;
+            }
+
+        } else {
+            // Consume the token
+            ti.read();
+        }
+    }
+}
+
+
+void VertexAndPixelShader::computeUniformArray() {
+    uniformArray.clear();
+
+    GLint maxLength;
+    GLint uniformCount;
+
+    // On ATI cards, we are required to call glUseProgramObjectARB before glGetUniformLocationARB.
+    // First, store the old program.
+    GLenum oldProgram = glGetHandleARB(GL_PROGRAM_OBJECT_ARB);
+    glUseProgramObjectARB(glProgramObject());
+
+    // Get the number of uniforms, and the length of the longest name.
+    glGetObjectParameterivARB(glProgramObject(), GL_OBJECT_ACTIVE_UNIFORM_MAX_LENGTH_ARB, &maxLength);
+    glGetObjectParameterivARB(glProgramObject(), GL_OBJECT_ACTIVE_UNIFORMS_ARB, &uniformCount);
+
+    uniformArray.resize(0);
+
+    GLcharARB* name = (GLcharARB *) malloc(maxLength * sizeof(GLcharARB));
+    
+    // Loop over glGetActiveUniformARB and store the results away.
+    for (int i = 0; i < uniformCount; ++i) {
+
+        GLint size;
+        GLenum type;
+
+	    glGetActiveUniformARB(glProgramObject(), 
+            i, maxLength, NULL, &size, &type, name);
+
+        uniformArray.next().name = name;
+
+        uniformArray.last().location = glGetUniformLocationARB(glProgramObject(), name);
+        
+        bool isGLBuiltIn = (uniformArray.last().location == -1) || 
+            ((strlen(name) > 3) && beginsWith(std::string(name), "gl_"));
+
+        uniformArray.last().dummy = isGLBuiltIn;
+
+        if (! isGLBuiltIn) {
+            uniformArray.last().size = size;
+            uniformArray.last().type = type;
+
+            if (isSamplerType(type)) {
+                ++lastTextureUnit;
+                uniformArray.last().textureUnit = lastTextureUnit;
+            } else {
+                uniformArray.last().textureUnit = -1;
+            }
+        }
+    }
+
+    free(name);
+
+    glUseProgramObjectARB(oldProgram);
+}
+
+
+VertexAndPixelShaderRef VertexAndPixelShader::fromStrings(
+	const std::string& vs,
+    const std::string& ps,
+    UseG3DUniforms u,
+    bool debugErrors) {
+
+    return new VertexAndPixelShader(vs, "", false, ps, "", false, debugErrors, u);
+}
+
+
+VertexAndPixelShaderRef VertexAndPixelShader::fromStrings(
+    const std::string& vsName,
+	const std::string& vs,
+    const std::string& psName,
+    const std::string& ps,
+    UseG3DUniforms u,
+    bool debugErrors) {
+
+    return new VertexAndPixelShader(vs, vsName, false, ps, psName, false, debugErrors, u);
+}
+
+
+VertexAndPixelShaderRef VertexAndPixelShader::fromFiles(
+	const std::string& vsFilename,
+    const std::string& psFilename,
+    UseG3DUniforms u,
+    bool debugErrors) {
+
+	std::string vs;
+	std::string ps;
+
+	if (vsFilename != "") {
+		vs = readFileAsString(vs);
+	}
+
+	if (psFilename != "") {
+		ps = readFileAsString(ps);
+	}
+
+    return new VertexAndPixelShader(vs, vsFilename, true, ps, psFilename, true, debugErrors, u);
+}
+
+
+VertexAndPixelShader::~VertexAndPixelShader() {
+    glDeleteObjectARB(_glProgramObject);
+}
+
+
+bool VertexAndPixelShader::fullySupported() {
+    return
+        GLCaps::supports_GL_ARB_shader_objects() && 
+        GLCaps::supports_GL_ARB_shading_language_100() &&
+        GLCaps::supports_GL_ARB_fragment_shader() &&
+        GLCaps::supports_GL_ARB_vertex_shader();
+}
+
+
+GLenum VertexAndPixelShader::canonicalType(GLenum e) {
+
+    switch (e) {
+    case GL_INT:
+    case GL_BOOL_ARB:
+        return GL_FLOAT;
+
+    case GL_INT_VEC2_ARB:
+    case GL_BOOL_VEC2_ARB:
+        return GL_FLOAT_VEC2_ARB;
+
+    case GL_INT_VEC3_ARB:
+    case GL_BOOL_VEC3_ARB:
+        return GL_FLOAT_VEC3_ARB;
+
+    case GL_INT_VEC4_ARB:
+    case GL_BOOL_VEC4_ARB:
+        return GL_FLOAT_VEC4_ARB;
+
+    case GL_SAMPLER_2D_SHADOW_ARB:
+	case GL_SAMPLER_2D_ARB:
+		return GL_TEXTURE_2D;
+
+	case GL_SAMPLER_CUBE_ARB:
+		return GL_TEXTURE_CUBE_MAP_ARB;
+ 
+    case GL_SAMPLER_2D_RECT_SHADOW_ARB:
+	case GL_SAMPLER_2D_RECT_ARB:
+		return GL_TEXTURE_RECTANGLE_EXT;
+
+    default:
+        // Return the input
+        return e;    
+    }
+}
+
+
+void VertexAndPixelShader::validateArgList(const ArgList& args) const {
+    int numVariables = 0;
+
+    // Iterate through formal bindings
+    for (int u = 0; u < uniformArray.size(); ++u) {
+        const UniformDeclaration& decl = uniformArray[u];
+
+        // Only count variables that need to be set in code
+        if (! decl.dummy) {
+            ++numVariables;
+        }
+
+        bool declared = false;
+        bool performTypeCheck = true;
+
+        if (beginsWith(decl.name, "g3d_sz2D_")) {
+            // This is the autogenerated dimensions of a texture.
+            std::string textureName  = decl.name.substr(9, decl.name.length() - 9);
+            declared = args.argTable.containsKey(textureName);
+            performTypeCheck = false;
+
+            if (! declared && ! decl.dummy) {
+                throw ArgumentError(
+                    format("No value provided for VertexAndPixelShader uniform variable %s.",
+                        textureName.c_str()));
+            }
+
+        } else {
+
+            declared = args.argTable.containsKey(decl.name);
+
+            if (! declared && ! decl.dummy) {
+                throw ArgumentError(
+                    format("No value provided for VertexAndPixelShader uniform variable %s of type %s.",
+                        decl.name.c_str(), GLenumToString(decl.type)));
+            }
+        }
+
+        if (declared && performTypeCheck) {
+            const ArgList::Arg& arg = args.argTable[decl.name];
+
+            // check the type
+            if (canonicalType(arg.type) != canonicalType(decl.type)) {
+                std::string v1 = GLenumToString(decl.type);
+                std::string v2 = GLenumToString(arg.type);
+                std::string v1c = GLenumToString(canonicalType(decl.type));
+                std::string v2c = GLenumToString(canonicalType(arg.type));
+                throw ArgumentError(
+                format("Variable %s was declared as type %s (%s) and the value provided at runtime had type %s (%s).",
+                        decl.name.c_str(), v1.c_str(), v1c.c_str(), v2.c_str(), v2.c_str()));
+            }
+        }
+
+    }
+
+    if (numVariables < args.argTable.size()) {
+        // Some variables were unused.  Figure out which they were.
+        Table<std::string, ArgList::Arg>::Iterator arg = args.argTable.begin();
+        Table<std::string, ArgList::Arg>::Iterator end = args.argTable.end();
+
+        while (arg != end) {
+            // See if this arg was in the formal binding list
+
+            bool foundArgument = false;
+            
+            for (int u = 0; u < uniformArray.size(); ++u) {
+                if (uniformArray[u].name == arg->key) {
+                    foundArgument = true;
+                    break;
+                }
+            }
+
+            if (! foundArgument) {
+                throw ArgumentError(
+                std::string("Extra VertexAndPixelShader uniform variable provided at runtime: ") + arg->key + ".");
+            }
+
+            ++arg;
+        }
+    }
+
+}
+
+
+void VertexAndPixelShader::bindArgList(RenderDevice* rd, const ArgList& args) const {
+    rd->forceVertexAndPixelShaderBind();
+
+    validateArgList(args);
+
+    // Iterate through the formal parameter list
+    for (int u = 0; u < uniformArray.size(); ++u) {
+        const UniformDeclaration& decl  = uniformArray[u];
+    
+        if (decl.dummy) {
+            // Don't set this variable; it is unused.
+            continue;
+        }
+
+        int location = uniformArray[u].location;
+
+        if (beginsWith(decl.name, "g3d_sz2D_")) {
+            // This is the autogenerated dimensions of a texture.
+
+            std::string textureName  = decl.name.substr(9, decl.name.length() - 9);
+
+            const ArgList::Arg& value = args.argTable.get(textureName); 
+
+            // Compute the vector of size and inverse size
+            float w = value.texture->getTexelWidth();
+            float h = value.texture->getTexelHeight();
+            Vector4 v(w, h, 1.0f / w, 1.0f / h);
+
+            glUniform4fvARB(location, 1, v);
+
+        } else {
+
+            // Normal user defined variable
+
+            const ArgList::Arg&       value = args.argTable.get(decl.name); 
+
+            // Bind based on the declared type
+            switch (canonicalType(decl.type)) {
+            case GL_TEXTURE_1D:
+                debugAssertM(false, "1D texture binding not implemented");
+                break;
+
+            case GL_TEXTURE_2D:
+            case GL_TEXTURE_CUBE_MAP_ARB:
+            case GL_TEXTURE_RECTANGLE_EXT:
+                // Textures are bound as if they were integers.  The
+                // value of the texture is the texture unit into which
+                // the texture is placed.
+                debugAssert(decl.textureUnit >= 0);
+                glUniform1iARB(location, decl.textureUnit);
+                rd->setTexture(decl.textureUnit, value.texture);
+                break;
+
+            case GL_TEXTURE_3D:
+                debugAssertM(false, "3D texture binding not implemented");
+                break;
+
+            case GL_FLOAT:
+                glUniform1fvARB(location, 1, value.vector[0]);
+                break;
+
+            case GL_FLOAT_VEC2_ARB:
+                glUniform2fvARB(location, 1, value.vector[0]);
+                break;
+
+            case GL_FLOAT_VEC3_ARB:
+                glUniform3fvARB(location, 1, value.vector[0]);
+                break;
+
+            case GL_FLOAT_VEC4_ARB:
+                glUniform4fvARB(location, 1, value.vector[0]);
+                break;
+
+            case GL_INT:
+            case GL_BOOL_ARB:
+                // OpenGL allows us to treat bools as ints, but not ints as floats
+                glUniform1iARB(location, (int)value.vector[0][0]);
+                break;
+
+            case GL_INT_VEC2_ARB:
+            case GL_BOOL_VEC2_ARB:
+                glUniform2iARB(location, (int)value.vector[0].x, (int)value.vector[0].y);
+                break;
+
+            case GL_INT_VEC3_ARB:
+            case GL_BOOL_VEC3_ARB:
+                glUniform3iARB(location, (int)value.vector[0].x, (int)value.vector[0].y,
+                    (int)value.vector[0].z);
+                break;
+
+            case GL_INT_VEC4_ARB:
+            case GL_BOOL_VEC4_ARB:
+                glUniform4iARB(location, (int)value.vector[0].x, (int)value.vector[1].y,
+                    (int)value.vector[2].z, (int)value.vector[3].w);
+                break;
+
+            case GL_FLOAT_MAT2_ARB:
+                debugAssertM(false, "GL_FLOAT_MAT2_ARB binding not implemented");
+                break;
+
+            case GL_FLOAT_MAT3_ARB:
+                {
+                    float m[9];
+                    for (int i = 0, c = 0; c < 3; ++c) {
+                        for (int r = 0; r < 3; ++r, ++i) {
+                            m[i] = value.vector[r][c];
+                        }
+                    }
+                    glUniformMatrix3fvARB(location, 1, GL_FALSE, m);
+                }            
+                break;
+
+            case GL_FLOAT_MAT4_ARB:
+                {
+                    float m[16];
+                    for (int i = 0, c = 0; c < 4; ++c) {
+                        for (int r = 0; r < 4; ++r, ++i) {
+                            m[i] = value.vector[r][c];
+                        }
+                    }
+                    glUniformMatrix4fvARB(location, 1, GL_FALSE, m);
+                }
+                break;
+
+            default:
+                alwaysAssertM(false, format("Unsupported argument type: %s", GLenumToString(decl.type)));
+            } // switch on type
+        } // if g3d_sz2D_ variable
+    }
+}
+
+
+////////////////////////////////////////////////////////////////////////
+
+void VertexAndPixelShader::ArgList::set(const std::string& var, const TextureRef& val) {
+    Arg arg;
+    debugAssert(val.notNull());
+    arg.type    = val->getOpenGLTextureTarget();
+    arg.texture = val;
+    argTable.set(var, arg);
+
+}
+
+
+void VertexAndPixelShader::ArgList::set(const std::string& var, const CoordinateFrame& val) {
+    set(var, Matrix4(val));
+}
+
+
+void VertexAndPixelShader::ArgList::set(const std::string& var, const Matrix4& val) {
+    Arg arg;
+    arg.type = GL_FLOAT_MAT4_ARB;
+    for (int r = 0; r < 4; ++r) {
+        arg.vector[r] = val.getRow(r);
+    }
+
+    argTable.set(var, arg);
+}
+
+
+void VertexAndPixelShader::ArgList::set(const std::string& var, const Vector4& val) {
+    Arg arg;
+    arg.type = GL_FLOAT_VEC4_ARB;
+    arg.vector[0] = val;
+    argTable.set(var, arg);
+}
+
+
+void VertexAndPixelShader::ArgList::set(const std::string& var, const Vector3& val) {
+    Arg arg;
+    arg.type = GL_FLOAT_VEC3_ARB;
+    arg.vector[0] = Vector4(val, 0);
+    argTable.set(var, arg);
+}
+
+
+void VertexAndPixelShader::ArgList::set(const std::string& var, const Color4& val) {
+    Arg arg;
+    arg.type = GL_FLOAT_VEC4_ARB;
+    arg.vector[0] = Vector4(val.r, val.g, val.b, val.a);
+    argTable.set(var, arg);
+}
+
+
+void VertexAndPixelShader::ArgList::set(const std::string& var, const Color3& val) {
+    Arg arg;
+    arg.type = GL_FLOAT_VEC3_ARB;
+    arg.vector[0] = Vector4(val.r, val.g, val.b, 0);
+    argTable.set(var, arg);
+
+}
+
+void VertexAndPixelShader::ArgList::set(const std::string& var, const Vector2& val) {
+    Arg arg;
+    arg.type = GL_FLOAT_VEC2_ARB;
+    arg.vector[0] = Vector4(val, 0, 0);
+    argTable.set(var, arg);
+}
+
+
+void VertexAndPixelShader::ArgList::set(const std::string& var, float          val) {
+    Arg arg;
+    arg.type = GL_FLOAT;
+    arg.vector[0] = Vector4(val, 0, 0, 0);
+    argTable.set(var, arg);
+}
+
+
+void VertexAndPixelShader::ArgList::clear() {
+    argTable.clear();
+}
+
+
+}

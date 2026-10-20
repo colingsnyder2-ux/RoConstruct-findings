@@ -1,30 +1,88 @@
-// roc 2008-06 005dd360  unit: RBX::Message  size: 42 bytes
-// Make this compile to the exact bytes below, then: roc check 2008-06 005dd360
-//
-// 005dd360  56                   push esi
-// 005dd361  57                   push edi
-// 005dd362  8bf9                 mov edi, ecx
-// 005dd364  33f6                 xor esi, esi
-// 005dd366  397710               cmp dword ptr [edi + 0x10], esi
-// 005dd369  7e1a                 jle 0x5dd385
-// 005dd36b  53                   push ebx
-// 005dd36c  8b5c2410             mov ebx, dword ptr [esp + 0x10]
-// 005dd370  8b470c               mov eax, dword ptr [edi + 0xc]
-// 005dd373  8b0cb0               mov ecx, dword ptr [eax + esi*4]
-// 005dd376  8b11                 mov edx, dword ptr [ecx]
-// 005dd378  8b420c               mov eax, dword ptr [edx + 0xc]
-// 005dd37b  53                   push ebx
-// 005dd37c  ffd0                 call eax
-// 005dd37e  46                   inc esi
-// 005dd37f  3b7710               cmp esi, dword ptr [edi + 0x10]
-// 005dd382  7cec                 jl 0x5dd370
-// 005dd384  5b                   pop ebx
-// 005dd385  5f                   pop edi
-// 005dd386  5e                   pop esi
-// 005dd387  c20400               ret 4
-// library openrbx-client/App\util\IRenderable.cpp (function ?render3dAdornItems@IRenderableBucket@RBX@@QAEXPAVAdorn@2@@Z)
-
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
 // roc-lib: openrbx-client App/util/IRenderable.cpp
+
+// Candidate translation unit (score above; library headers required).
+#include "util/IRenderable.h"
+
+namespace RBX {
+
+IRenderable::~IRenderable()
+{
+}
+
+// FUNCTION: WEBSERVICE 0x100a66c0
+IRenderableBucket::~IRenderableBucket()
+{
+}
+
+// FUNCTION: WEBSERVICE 0x100a6730
+void IRenderableBucket::render2dItems(Adorn* adorn)
+{
+	for (int i = 0; i < renderable2ds.size(); i++) {
+		renderable2ds[i]->render2d(adorn);
+	}
+}
+
+// FUNCTION: WEBSERVICE 0x100a6760
+void IRenderableBucket::render3dAdornItems(Adorn* adorn)
+{
+	for (int i = 0; i < renderable3ds.size(); i++) {
+		renderable3ds[i]->render3dAdorn(adorn);
+	}
+}
+
+// FUNCTION: WEBSERVICE 0x100a6800
+void IRenderableBucket::recomputeShouldRender(IRenderable* renderable)
+{
+	if (renderable->shouldRender2d()) {
+		if (renderable->index2d < 0) {
+			renderable2ds.fastAppend(renderable);
+		}
+	}
+	else if (renderable->index2d >= 0) {
+		renderable2ds.fastRemove(renderable);
+	}
+
+	if (renderable->shouldRender3dAdorn()) {
+		if (renderable->index3d < 0) {
+			renderable3ds.fastAppend(renderable);
+		}
+	}
+	else if (renderable->index3d >= 0) {
+		renderable3ds.fastRemove(renderable);
+	}
+}
+
+// FUNCTION: WEBSERVICE 0x100a68d0
+void IRenderableBucket::onAdded(IRenderable* renderable)
+{
+	renderable->bucket = this;
+
+	recomputeShouldRender(renderable);
+}
+
+// FUNCTION: WEBSERVICE 0x100a68e0
+void IRenderableBucket::onRemoving(IRenderable* renderable)
+{
+	if (renderable->index2d >= 0) {
+		renderable2ds.fastRemove(renderable);
+	}
+
+	if (renderable->index3d >= 0) {
+		renderable3ds.fastRemove(renderable);
+	}
+
+	renderable->bucket = NULL;
+}
+
+// FUNCTION: WEBSERVICE 0x100a6960
+void IRenderable::shouldRenderSetDirty()
+{
+	if (bucket != NULL) {
+		bucket->recomputeShouldRender(this);
+	}
+}
+
+} // namespace RBX

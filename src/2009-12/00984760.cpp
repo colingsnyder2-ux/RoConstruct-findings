@@ -1,23 +1,76 @@
-// roc 2009-12 00984760  unit: seg_00980000  size: 61 bytes
-// Make this compile to the exact bytes below, then: roc check 2009-12 00984760
-//
-// 00984760  a14002b900           mov eax, dword ptr [0xb90240]
-// 00984765  85c0                 test eax, eax
-// 00984767  7409                 je 0x984772
-// 00984769  50                   push eax
-// 0098476a  e8ebf0e6ff           call 0x7f385a
-// 0098476f  83c404               add esp, 4
-// 00984772  a13402b900           mov eax, dword ptr [0xb90234]
-// 00984777  50                   push eax
-// 00984778  c7054002b90000000000 mov dword ptr [0xb90240], 0
-// 00984782  c7054402b90000000000 mov dword ptr [0xb90244], 0
-// 0098478c  c7054802b90000000000 mov dword ptr [0xb90248], 0
-// 00984796  e8bff0e6ff           call 0x7f385a
-// 0098479b  59                   pop ecx
-// 0098479c  c3                   ret 
-// library rbxgs/reflection\reflection_property.cpp (function ??__Fs@?1??allEnums@EnumDescriptor@Reflection@RBX@@CAAAV?$vector@PBVEnumDescriptor@Reflection@RBX@@V?$allocator@PBVEnumDescriptor@Reflection@RBX@@@std@@@std@@XZ@YAXXZ)
-
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
 // roc-lib: rbxgs reflection/reflection_property.cpp
+
+// Candidate translation unit (score above; library headers required).
+#include "reflection/enumconverter.h"
+#include "reflection/property.h"
+#include "reflection/object.h"
+
+namespace RBX
+{
+	namespace Reflection
+	{
+		// TODO: check if type singletons are matching
+		template<>
+		const Type& Type::singleton<const PropertyDescriptor*>()
+		{
+			static Type type("Property", typeid(const PropertyDescriptor*));
+			return type;
+		}
+
+		PropertyDescriptor::PropertyDescriptor(ClassDescriptor& classDescriptor, const Type& type, const char* name, const char* category, Functionality flags)
+			: MemberDescriptor(classDescriptor, name, category),
+			  bIsPublic(((flags >> 0) & 1) != 0),
+			  bCanStreamWrite(((flags >> 2) & 1) != 0),
+			  type(type)
+		{
+			classDescriptor.PropertyContainer::declare(this);
+		}
+
+		void PropertyDescriptor::read(DescribedBase* instance, const XmlElement* element, IReferenceBinder& binder) const
+		{
+			readValue(instance, element, binder);
+		}
+
+		XmlElement* PropertyDescriptor::write(const DescribedBase* instance, bool ignoreWriteProtection) const
+		{
+			if (!ignoreWriteProtection)
+			{
+				if (isReadOnly())
+					return NULL;
+
+				if (!canStreamWrite())
+					return NULL;
+			}
+
+			XmlElement* element = new XmlElement(type.tag);
+			element->addAttribute(name_name, &this->name);
+
+			writeValue(instance, element);
+			return element;
+		}
+
+		std::vector<const EnumDescriptor*>& EnumDescriptor::allEnums()
+		{
+			static std::vector<const EnumDescriptor*> s;
+			return s;
+		}
+
+		EnumDescriptor::EnumDescriptor(const char* typeName, const type_info& type)
+			: Type(typeName, type, "token"),
+			  allItems(),
+			  enumCount(0),
+			  enumCountMSB(0)
+		{
+			allEnums().push_back(this);
+		}
+
+		EnumDescriptor::~EnumDescriptor()
+		{
+			RBXASSERT(std::find(allEnums().begin(), allEnums().end(), this) != allEnums().end());
+			allEnums().erase(std::find(allEnums().begin(), allEnums().end(), this));
+		}
+	}
+}

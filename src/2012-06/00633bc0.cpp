@@ -1,40 +1,206 @@
 // from server: 100% by auto
-// roc 2012-06 00633bc0  unit: G3D::Random  size: 88 bytes
-// Make this compile to the exact bytes below, then: roc check 2012-06 00633bc0
-//
-// 00633bc0  51                   push ecx
-// 00633bc1  8b01                 mov eax, dword ptr [ecx]
-// 00633bc3  8b5008               mov edx, dword ptr [eax + 8]
-// 00633bc6  56                   push esi
-// 00633bc7  ffd2                 call edx
-// 00633bc9  89442404             mov dword ptr [esp + 4], eax
-// 00633bcd  db442404             fild dword ptr [esp + 4]
-// 00633bd1  85c0                 test eax, eax
-// 00633bd3  7d06                 jge 0x633bdb
-// 00633bd5  dc0578fdb400         fadd qword ptr [0xb4fd78]
-// 00633bdb  8b742410             mov esi, dword ptr [esp + 0x10]
-// 00633bdf  8bc6                 mov eax, esi
-// 00633be1  2b44240c             sub eax, dword ptr [esp + 0xc]
-// 00633be5  83ec08               sub esp, 8
-// 00633be8  40                   inc eax
-// 00633be9  89442418             mov dword ptr [esp + 0x18], eax
-// 00633bed  db442418             fild dword ptr [esp + 0x18]
-// 00633bf1  dec9                 fmulp st(1)
-// 00633bf3  dc0d983bb800         fmul qword ptr [0xb83b98]
-// 00633bf9  da442414             fiadd dword ptr [esp + 0x14]
-// 00633bfd  dd1c24               fstp qword ptr [esp]
-// 00633c00  e831ff3400           call 0x983b36
-// 00633c05  83c408               add esp, 8
-// 00633c08  e8a3f93400           call 0x9835b0
-// 00633c0d  3bc6                 cmp eax, esi
-// 00633c0f  7e02                 jle 0x633c13
-// 00633c11  8bc6                 mov eax, esi
-// 00633c13  5e                   pop esi
-// 00633c14  59                   pop ecx
-// 00633c15  c20800               ret 8
-// library rbx2016-g3d/Random.cpp (function ?integer@Random@G3D@@UAEHHH@Z)
-
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD /arch:SSE2 /fp:fast
 // roc-lib: rbx2016-g3d Random.cpp
+
+// Candidate translation unit (score above; library headers required).
+/**
+ @file Random.cpp
+ 
+ @maintainer Morgan McGuire, http://graphics.cs.williams.edu
+ 
+ @created 2009-01-02
+ @edited  2009-03-29
+
+ Copyright 2000-2009, Morgan McGuire.
+ All rights reserved.
+ */
+#include "G3D/Random.h"
+
+namespace G3D {
+
+Random& Random::common() {
+    static Random r;
+    return r;
+}
+
+Random::Random(void* x) : state(NULL){
+    (void)x;
+}
+
+
+Random::Random(uint32 seed){
+    const uint32 X = 1812433253UL;
+
+    state = new uint32[N];
+    state[0] = seed;
+    for (index = 1; index < (int)N; ++index) {
+        state[index] = X * (state[index - 1] ^ (state[index - 1] >> 30)) + index;
+    }
+}
+
+
+Random::~Random() {
+    delete[] state;
+    state = NULL;
+}
+
+
+uint32 Random::bits() {
+    // See http://en.wikipedia.org/wiki/Mersenne_twister
+
+    // Make a local copy of the index variable to ensure that it
+    // is not out of bounds
+    int localIndex = index;
+
+    // Automatically checks for index < 0 if corrupted
+    // by unsynchronized threads.
+    if ((unsigned int)localIndex >= (unsigned int)N) {
+        generate();
+        localIndex = 0;
+    }
+    // Increment the global index.  It may go out of bounds on
+    // multiple threads, but the above check ensures that the
+    // array index actually used never goes out of bounds.
+    // It doesn't matter if we grab the same array index twice
+    // on two threads, since the distribution of random numbers
+    // will still be uniform.
+    ++index;
+    // Return the next random in the sequence
+    uint32 r = state[localIndex];
+
+    // Temper the result
+    r ^=  r >> U;
+    r ^= (r << S) & B;
+    r ^= (r << T) & C;
+    r ^=  r >> L;
+    
+    return r;    
+}
+
+
+/** Generate the next N ints, and store them for readback later */
+void Random::generate() {
+    // Lower R bits
+    static const uint32 LOWER_MASK = (1LU << R) - 1;
+
+    // Upper (32 - R) bits
+    static const uint32 UPPER_MASK = 0xFFFFFFFF << R;
+    static const uint32 mag01[2] = {0UL, (uint32)A};
+
+    // First N - M
+    for (unsigned int i = 0; i < N - M; ++i) {    
+        uint32 x = (state[i] & UPPER_MASK) | (state[i + 1] & LOWER_MASK);
+        state[i] = state[i + M] ^ (x >> 1) ^ mag01[x & 1];
+    }
+
+    // Rest
+    for (unsigned int i = N - M + 1; i < N - 1; ++i) {    
+        uint32 x = (state[i] & UPPER_MASK) | (state[i + 1] & LOWER_MASK);
+        state[i] = state[i + (M - N)] ^ (x >> 1) ^ mag01[x & 1];
+    }
+        
+    uint32 y = (state[N - 1] & UPPER_MASK) | (state[0] & LOWER_MASK);
+    state[N - 1] = state[M - 1] ^ (y >> 1) ^ mag01[y & 1];
+    index = 0;
+
+}
+
+    
+int Random::integer(int low, int high) {
+    int r = iFloor(low + (high - low + 1) * (double)bits() / 0xFFFFFFFFUL);
+
+    // There is a *very small* chance of generating
+    // a number larger than high.
+    if (r > high) {
+        return high;
+    } else {
+        return r;
+    }
+}
+
+    
+float Random::gaussian(float mean, float stdev) {
+
+    // Using Box-Mueller method from http://www.taygeta.com/random/gaussian.html
+    // Modified to specify standard deviation and mean of distribution
+    float w, x1, x2;
+
+    // Loop until w is less than 1 so that log(w) is negative
+    do {
+        x1 = uniform(-1.0, 1.0);
+        x2 = uniform(-1.0, 1.0);
+
+        w = float(square(x1) + square(x2));
+    } while (w > 1.0f);
+
+    // Transform to gassian distribution
+    // Multiply by sigma (stdev ^ 2) and add mean.
+    return x2 * (float)square(stdev) * sqrtf((-2.0f * logf(w) ) / w) + mean; 
+}
+
+
+void Random::cosHemi(float& x, float& y, float& z) {
+    const float e1 = uniform();
+    const float e2 = uniform();
+
+    // Jensen's method 
+    const float sin_theta = sqrtf(1.0f - e1);
+    const float cos_theta = sqrtf(e1);
+    const float phi = 6.28318531f * e2;
+
+    x = cos(phi) * sin_theta;
+    y = sin(phi) * sin_theta;
+    z = cos_theta;
+
+    // We could also use Malley's method (pbrt p.657), since they are the same cost:
+    //
+    //  r = sqrt(e1);
+    //  t = 2*pi*e2;
+    //  x = cos(t)*r;
+    //  y = sin(t)*r;
+    //  z = sqrt(1.0 - x*x + y*y);
+}
+
+
+void Random::cosPowHemi(const float k, float& x, float& y, float& z) {
+    const float e1 = uniform();
+    const float e2 = uniform();
+
+    const float cos_theta = pow(e1, 1.0f / (k + 1.0f));
+    const float sin_theta = sqrtf(1.0f - square(cos_theta));
+    const float phi = 6.28318531f * e2;
+
+    x = cos(phi) * sin_theta;
+    y = sin(phi) * sin_theta;
+    z = cos_theta;
+}
+
+
+void Random::hemi(float& x, float& y, float& z) {
+    sphere(x, y, z);
+    z = fabsf(z);
+}
+
+
+void Random::sphere(float& x, float& y, float& z) {
+    // Squared magnitude
+    float m2;
+
+    // Rejection sample
+    do {
+        x = uniform() * 2.0f - 1.0f, 
+        y = uniform() * 2.0f - 1.0f,
+        z = uniform() * 2.0f - 1.0f;
+        m2 = x*x + y*y + z*z;
+    } while (m2 >= 1.0f);
+
+    // Divide by magnitude to produce a unit vector
+    float s = rsqrt(m2);
+    x *= s;
+    y *= s;
+    z *= s;
+}
+
+} // G3D

@@ -1,90 +1,419 @@
-// roc 2007-08 0055dea0  unit: RBX::DataModel  size: 248 bytes
-// Make this compile to the exact bytes below, then: roc check 2007-08 0055dea0
-//
-// 0055dea0  64a100000000         mov eax, dword ptr fs:[0]
-// 0055dea6  6aff                 push -1
-// 0055dea8  68083c7500           push 0x753c08
-// 0055dead  50                   push eax
-// 0055deae  64892500000000       mov dword ptr fs:[0], esp
-// 0055deb5  83ec14               sub esp, 0x14
-// 0055deb8  53                   push ebx
-// 0055deb9  8b5c2428             mov ebx, dword ptr [esp + 0x28]
-// 0055debd  56                   push esi
-// 0055debe  57                   push edi
-// 0055debf  53                   push ebx
-// 0055dec0  8bf1                 mov esi, ecx
-// 0055dec2  e8a9f4ffff           call 0x55d370
-// 0055dec7  85f6                 test esi, esi
-// 0055dec9  8bf8                 mov edi, eax
-// 0055decb  7506                 jne 0x55ded3
-// 0055decd  ff15d8e67700         call dword ptr [0x77e6d8]
-// 0055ded3  3b7e04               cmp edi, dword ptr [esi + 4]
-// 0055ded6  7413                 je 0x55deeb
-// 0055ded8  8d470c               lea eax, [edi + 0xc]
-// 0055dedb  50                   push eax
-// 0055dedc  8bcb                 mov ecx, ebx
-// 0055dede  e82df80200           call 0x58d710
-// 0055dee3  84c0                 test al, al
-// 0055dee5  0f8481000000         je 0x55df6c
-// 0055deeb  8b0b                 mov ecx, dword ptr [ebx]
-// 0055deed  8b5b04               mov ebx, dword ptr [ebx + 4]
-// 0055def0  85db                 test ebx, ebx
-// 0055def2  894c2414             mov dword ptr [esp + 0x14], ecx
-// 0055def6  895c2418             mov dword ptr [esp + 0x18], ebx
-// 0055defa  740c                 je 0x55df08
-// 0055defc  83c304               add ebx, 4
-// 0055deff  ba01000000           mov edx, 1
-// 0055df04  f00fc113             lock xadd dword ptr [ebx], edx
-// 0055df08  c744241c00000000     mov dword ptr [esp + 0x1c], 0
-// 0055df10  8d442414             lea eax, [esp + 0x14]
-// 0055df14  50                   push eax
-// 0055df15  57                   push edi
-// 0055df16  56                   push esi
-// 0055df17  8d4c2418             lea ecx, [esp + 0x18]
-// 0055df1b  51                   push ecx
-// 0055df1c  8bce                 mov ecx, esi
-// 0055df1e  c744243800000000     mov dword ptr [esp + 0x38], 0
-// 0055df26  e875fdffff           call 0x55dca0
-// 0055df2b  8b30                 mov esi, dword ptr [eax]
-// 0055df2d  8b7804               mov edi, dword ptr [eax + 4]
-// 0055df30  8b442418             mov eax, dword ptr [esp + 0x18]
-// 0055df34  85c0                 test eax, eax
-// 0055df36  c7442428ffffffff     mov dword ptr [esp + 0x28], 0xffffffff
-// 0055df3e  742c                 je 0x55df6c
-// 0055df40  8bd8                 mov ebx, eax
-// 0055df42  83c004               add eax, 4
-// 0055df45  83caff               or edx, 0xffffffff
-// 0055df48  f00fc110             lock xadd dword ptr [eax], edx
-// 0055df4c  751e                 jne 0x55df6c
-// 0055df4e  8b03                 mov eax, dword ptr [ebx]
-// 0055df50  8b5004               mov edx, dword ptr [eax + 4]
-// 0055df53  8bcb                 mov ecx, ebx
-// 0055df55  ffd2                 call edx
-// 0055df57  8d4308               lea eax, [ebx + 8]
-// 0055df5a  83c9ff               or ecx, 0xffffffff
-// 0055df5d  f00fc108             lock xadd dword ptr [eax], ecx
-// 0055df61  7509                 jne 0x55df6c
-// 0055df63  8b13                 mov edx, dword ptr [ebx]
-// 0055df65  8b4208               mov eax, dword ptr [edx + 8]
-// 0055df68  8bcb                 mov ecx, ebx
-// 0055df6a  ffd0                 call eax
-// 0055df6c  85f6                 test esi, esi
-// 0055df6e  7506                 jne 0x55df76
-// 0055df70  ff15d8e67700         call dword ptr [0x77e6d8]
-// 0055df76  3b7e04               cmp edi, dword ptr [esi + 4]
-// 0055df79  7506                 jne 0x55df81
-// 0055df7b  ff15d8e67700         call dword ptr [0x77e6d8]
-// 0055df81  8b4c2420             mov ecx, dword ptr [esp + 0x20]
-// 0055df85  8d4714               lea eax, [edi + 0x14]
-// 0055df88  5f                   pop edi
-// 0055df89  5e                   pop esi
-// 0055df8a  5b                   pop ebx
-// 0055df8b  64890d00000000       mov dword ptr fs:[0], ecx
-// 0055df92  83c420               add esp, 0x20
-// 0055df95  c20400               ret 4
-// library openrbx-client/App\v8xml\XmlElement.cpp (function ??A?$map@VInstanceHandle@RBX@@HU?$less@VInstanceHandle@RBX@@@std@@V?$allocator@U?$pair@$$CBVInstanceHandle@RBX@@H@std@@@4@@std@@QAEAAHABVInstanceHandle@RBX@@@Z)
-
 // roc-lang: cpp
 // roc-cl: 50727
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
 // roc-lib: openrbx-client-dll App/v8xml/XmlElement.cpp
+
+// Candidate translation unit (score above; library headers required).
+#include "v8xml/XmlElement.h"
+
+#include "util/ContentProvider.h"
+#include "util/Handle.h"
+#include "util/Name.h"
+#include "util/Utilities.h"
+#include "v8xml/XmlSerializer.h"
+
+#include <cstdio>
+
+const RBX::Name& value_IDREF_null = RBX::Name::declare("null", 1);
+const RBX::Name& value_IDREF_nil = RBX::Name::declare("nil", 2);
+const RBX::Name& name_xsinil = RBX::Name::declare("xsi:nil", 3);
+const RBX::Name& name_xsitype = RBX::Name::declare("xsi:type", 4);
+const RBX::Name& tag_xmlnsxsi = RBX::Name::declare("xmlns:xsi", 5);
+const RBX::Name& name_root = RBX::Name::declare("root", 6);
+const RBX::Name& name_referent = RBX::Name::declare("referent", 7);
+const RBX::Name& name_DeleteItem = RBX::Name::declare("DeleteItem", 8);
+const RBX::Name& tag_roblox = RBX::Name::declare("roblox", 9);
+const RBX::Name& tag_version = RBX::Name::declare("version", 10);
+const RBX::Name& tag_External = RBX::Name::declare("External", 11);
+const RBX::Name& name_Ref = RBX::Name::declare("Ref", 12);
+const RBX::Name& name_token = RBX::Name::declare("token", 13);
+const RBX::Name& name_name = RBX::Name::declare("name", 14);
+const RBX::Name& tag_Refs = RBX::Name::declare("Refs", 21);
+const RBX::Name& tag_X = RBX::Name::declare("X", 23);
+const RBX::Name& tag_Y = RBX::Name::declare("Y", 24);
+const RBX::Name& tag_Z = RBX::Name::declare("Z", 25);
+const RBX::Name& tag_R00 = RBX::Name::declare("R00", 26);
+const RBX::Name& tag_R01 = RBX::Name::declare("R01", 27);
+const RBX::Name& tag_R02 = RBX::Name::declare("R02", 28);
+const RBX::Name& tag_R10 = RBX::Name::declare("R10", 29);
+const RBX::Name& tag_R11 = RBX::Name::declare("R11", 30);
+const RBX::Name& tag_R12 = RBX::Name::declare("R12", 31);
+const RBX::Name& tag_R20 = RBX::Name::declare("R20", 32);
+const RBX::Name& tag_R21 = RBX::Name::declare("R21", 33);
+const RBX::Name& tag_R22 = RBX::Name::declare("R22", 34);
+const RBX::Name& tag_R = RBX::Name::declare("R", 35);
+const RBX::Name& tag_G = RBX::Name::declare("G", 36);
+const RBX::Name& tag_B = RBX::Name::declare("B", 37);
+const RBX::Name& tag_class = RBX::Name::declare("class", 38);
+const RBX::Name& tag_Item = RBX::Name::declare("Item", 39);
+const RBX::Name& tag_Properties = RBX::Name::declare("Properties", 40);
+const RBX::Name& tag_Feature = RBX::Name::declare("Feature", 41);
+const RBX::Name& tag_hash = RBX::Name::declare("hash", 45);
+const RBX::Name& tag_null = RBX::Name::lookup("null");
+const RBX::Name& tag_mimeType = RBX::Name::declare("mimeType", 48);
+const RBX::Name& tag_xsinoNamespaceSchemaLocation = RBX::Name::declare("xsi:noNamespaceSchemaLocation", 49);
+
+// FUNCTION: WEBSERVICE 0x10084ac0
+XmlNameValuePair::XmlNameValuePair(const RBX::Name& tag, const char* text) : tag(tag), valueType(STRING)
+{
+	stringValue = new std::string(text);
+}
+
+// FUNCTION: WEBSERVICE 0x1008efe0
+bool XmlNameValuePair::isValueEqual(const RBX::Name* value) const
+{
+	switch (valueType) {
+	case STRING: {
+		const std::string& text = *stringValue;
+
+		return value->name.compare(text) == 0;
+	}
+	case NAME:
+		return value == nameValue;
+	default:
+		return false;
+	}
+}
+
+// FUNCTION: WEBSERVICE 0x1008f020
+template <>
+bool XmlNameValuePair::isValueType<RBX::ContentId>() const
+{
+	return valueType == CONTENTID;
+}
+
+// FUNCTION: WEBSERVICE 0x1008f030
+template <>
+bool XmlNameValuePair::isValueType<std::string>() const
+{
+	return valueType == STRING;
+}
+
+// FUNCTION: WEBSERVICE 0x1008f040
+bool XmlNameValuePair::getValue(std::string& value) const
+{
+	if (valueType == STRING) {
+		value = *stringValue;
+		return true;
+	}
+
+	return false;
+}
+
+// FUNCTION: WEBSERVICE 0x1008f060
+const XmlElement* XmlElement::findFirstChildByTag(const RBX::Name& _tag) const
+{
+	for (const XmlElement* child = firstChild(); child != NULL; child = child->nextSibling()) {
+		if (&child->getTag() == &_tag) {
+			return child;
+		}
+	}
+
+	return NULL;
+}
+
+// FUNCTION: WEBSERVICE 0x1008f080
+const XmlElement* XmlElement::findNextChildWithSameTag(const XmlElement* node) const
+{
+	for (const XmlElement* next = node->nextSibling(); next != NULL; next = next->nextSibling()) {
+		if (&next->getTag() == &node->getTag()) {
+			return next;
+		}
+	}
+
+	return NULL;
+}
+
+// FUNCTION: WEBSERVICE 0x1008f0e0
+const XmlAttribute* XmlElement::findAttribute(const RBX::Name& name) const
+{
+	for (const XmlAttribute* attribute = attributes.firstChild(); attribute != NULL;
+		 attribute = attribute->nextSibling()) {
+		if (&attribute->getTag() == &name) {
+			return attribute;
+		}
+	}
+
+	return NULL;
+}
+
+XmlAttribute* XmlElement::findAttribute(const RBX::Name& name)
+{
+	for (XmlAttribute* attribute = attributes.firstChild(); attribute != NULL; attribute = attribute->nextSibling()) {
+		if (&attribute->getTag() == &name) {
+			return attribute;
+		}
+	}
+
+	return NULL;
+}
+
+// FUNCTION: WEBSERVICE 0x1008f100
+void XmlNameValuePair::clearValue() const
+{
+	switch (valueType) {
+	case STRING:
+		delete stringValue;
+		break;
+	case CONTENTID:
+		delete contentIdValue;
+		break;
+	case HANDLE:
+		delete handleValue;
+		break;
+	}
+
+	valueType = NONE;
+}
+
+// FUNCTION: WEBSERVICE 0x1008f190
+bool XmlNameValuePair::getValue(const RBX::Name*& value) const
+{
+	if (valueType == NAME) {
+		value = nameValue;
+		return true;
+	}
+
+	if (valueType == STRING) {
+		value = &RBX::Name::declare(stringValue->c_str(), -1);
+
+		XmlNameValuePair* self = const_cast<XmlNameValuePair*>(this);
+
+		self->clearValue();
+
+		self->nameValue = value;
+		self->valueType = NAME;
+
+		return true;
+	}
+
+	return false;
+}
+
+// FUNCTION: WEBSERVICE 0x1008f200
+bool XmlNameValuePair::getValue(RBX::ContentId& value) const
+{
+	if (valueType == CONTENTID) {
+		value = *contentIdValue;
+		return true;
+	}
+
+	if (valueType == STRING) {
+		value = RBX::ContentId(*stringValue);
+
+		XmlNameValuePair* self = const_cast<XmlNameValuePair*>(this);
+
+		self->clearValue();
+
+		self->contentIdValue = new RBX::ContentId(value);
+		self->valueType = CONTENTID;
+
+		return true;
+	}
+
+	return false;
+}
+
+// FUNCTION: WEBSERVICE 0x1008f320
+bool XmlNameValuePair::getValue(int& value) const
+{
+	if (valueType == INT) {
+		value = intValue;
+		return true;
+	}
+
+	if (valueType == STRING && RBX::StringConverter<int>::convertToValue(*stringValue, value)) {
+		XmlNameValuePair* self = const_cast<XmlNameValuePair*>(this);
+
+		self->clearValue();
+
+		self->intValue = value;
+		self->valueType = INT;
+
+		return true;
+	}
+
+	return false;
+}
+
+// FUNCTION: WEBSERVICE 0x1008f380
+bool XmlNameValuePair::getValue(unsigned int& value) const
+{
+	if (valueType == UINT) {
+		value = uintValue;
+		return true;
+	}
+
+	if (valueType == STRING && RBX::StringConverter<unsigned int>::convertToValue(*stringValue, value)) {
+		XmlNameValuePair* self = const_cast<XmlNameValuePair*>(this);
+
+		self->clearValue();
+
+		self->uintValue = value;
+		self->valueType = UINT;
+
+		return true;
+	}
+
+	return false;
+}
+
+// FUNCTION: WEBSERVICE 0x1008f3e0
+bool XmlNameValuePair::getValue(bool& value) const
+{
+	if (valueType == BOOL) {
+		value = boolValue;
+		return true;
+	}
+
+	if (valueType == STRING && RBX::StringConverter<bool>::convertToValue(*stringValue, value)) {
+		XmlNameValuePair* self = const_cast<XmlNameValuePair*>(this);
+
+		self->clearValue();
+
+		self->boolValue = value;
+		self->valueType = BOOL;
+
+		return true;
+	}
+
+	return false;
+}
+
+// FUNCTION: WEBSERVICE 0x1008f440
+bool XmlNameValuePair::getValue(float& value) const
+{
+	if (valueType == FLOAT) {
+		value = floatValue;
+		return true;
+	}
+
+	if (valueType == STRING && RBX::StringConverter<float>::convertToValue(*stringValue, value)) {
+		XmlNameValuePair* self = const_cast<XmlNameValuePair*>(this);
+
+		self->clearValue();
+
+		self->floatValue = value;
+		self->valueType = FLOAT;
+
+		return true;
+	}
+
+	return false;
+}
+
+// STUB: WEBSERVICE 0x1008f4a0
+bool XmlNameValuePair::getValue(double& value) const
+{
+	if (valueType == DOUBLE) {
+		value = doubleValue;
+		return true;
+	}
+
+	if (valueType == FLOAT) {
+		value = floatValue;
+	}
+	else if (valueType != STRING || !RBX::StringConverter<double>::convertToValue(*stringValue, value)) {
+		return false;
+	}
+
+	XmlNameValuePair* self = const_cast<XmlNameValuePair*>(this);
+
+	self->clearValue();
+
+	self->doubleValue = value;
+	self->valueType = DOUBLE;
+
+	return true;
+}
+
+// STUB: WEBSERVICE 0x1008f510
+bool XmlNameValuePair::getValue(RBX::InstanceHandle& value) const
+{
+	XmlNameValuePair* self = const_cast<XmlNameValuePair*>(this);
+
+	if (valueType == NAME && nameValue == &value_IDREF_null) {
+		self->clearValue();
+
+		self->handleValue = new RBX::InstanceHandle(NULL);
+		self->valueType = HANDLE;
+	}
+	else if (valueType == STRING && value_IDREF_null.name.compare(*stringValue) == 0) {
+		self->clearValue();
+
+		self->handleValue = new RBX::InstanceHandle(NULL);
+		self->valueType = HANDLE;
+	}
+	else if (valueType == STRING && *stringValue == "") {
+		self->clearValue();
+
+		self->handleValue = new RBX::InstanceHandle(NULL);
+		self->valueType = HANDLE;
+	}
+
+	if (valueType == HANDLE) {
+		value = *handleValue;
+		return true;
+	}
+
+	return false;
+}
+
+// FUNCTION: WEBSERVICE 0x1008f640
+bool XmlElement::isXsiNil() const
+{
+	const XmlAttribute* attribute = findAttribute(name_xsinil);
+
+	bool isNil;
+
+	return attribute != NULL && attribute->getValue(isNil) && isNil;
+}
+
+// STUB: WEBSERVICE 0x1008fe70
+std::string XmlNameValuePair::toString(XmlWriter* writer) const
+{
+	switch (valueType) {
+
+	case BOOL:
+		return RBX::StringConverter<bool>::convertToString(boolValue);
+
+	case INT:
+		return RBX::StringConverter<int>::convertToString(intValue);
+
+	case UINT:
+		return RBX::StringConverter<unsigned int>::convertToString(uintValue);
+
+	case FLOAT:
+		return RBX::StringConverter<float>::convertToString(floatValue);
+
+	case DOUBLE:
+		return RBX::StringConverter<double>::convertToString(doubleValue);
+
+	case NAME:
+		return nameValue->name;
+
+	case HANDLE:
+		if (!handleValue->getTarget()) {
+			return value_IDREF_null.name;
+		}
+		else {
+			char buffer[32];
+
+			sprintf(buffer, "RBX%d", writer->getHandleIndex(*handleValue));
+
+			return buffer;
+		}
+
+	case STRING:
+		return *stringValue;
+
+	case CONTENTID:
+		return contentIdValue->toString();
+
+	case NONE:
+		return "";
+
+	default:
+		return "";
+	}
+}

@@ -1,11 +1,71 @@
-// roc 2007-03 00553f40  unit: seg_00550000  size: 7 bytes
-// Make this compile to the exact bytes below, then: roc check 2007-03 00553f40
-//
-// 00553f40  8b8184000000         mov eax, dword ptr [ecx + 0x84]
-// 00553f46  c3                   ret 
-// library rbxgs/reflection\reflection_object.cpp (function ?getBase@ClassDescriptor@Reflection@RBX@@QBEPBV123@XZ)
-
 // roc-lang: cpp
 // roc-cl: 50727
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
 // roc-lib: rbxgs reflection/reflection_object.cpp
+
+// Candidate translation unit (score above; library headers required).
+#include "reflection/member.h"
+#include "reflection/object.h"
+
+namespace RBX
+{
+	namespace Reflection
+	{
+		bool ClassDescriptor::lockedDown = false;
+
+		ClassDescriptor::ClassDescriptor(ClassDescriptor& base, const char* name)
+			: Descriptor(name),
+			  PropertyContainer(&base),
+			  SignalContainer(&base),
+			  FunctionContainer(&base),
+			  derivedClasses(),
+			  base(&base)
+		{
+			RBXASSERT(!lockedDown);
+
+			{
+				boost::recursive_mutex::scoped_lock lock(sync());
+				base.derivedClasses.push_back(this);
+			}
+		}
+
+		ClassDescriptor::ClassDescriptor()
+			: Descriptor("<<<ROOT>>>"),
+			  PropertyContainer(NULL),
+			  SignalContainer(NULL),
+			  FunctionContainer(NULL),
+			  derivedClasses(),
+			  base(NULL)
+		{
+		}
+
+		bool ClassDescriptor::operator==(const ClassDescriptor& other) const
+		{
+			return this == &other;
+		}
+
+		bool ClassDescriptor::operator!=(const ClassDescriptor& other) const
+		{
+			return this != &other;
+		}
+
+		bool MemberDescriptor::isMemberOf(const ClassDescriptor& classDescriptor) const
+		{
+			const ClassDescriptor* p = &classDescriptor;
+			do
+			{
+				if (p == &owner)
+					return true;
+				p = p->getBase();
+			}
+			while (p != &ClassDescriptor::rootDescriptor());
+
+			return false;
+		}
+
+		bool MemberDescriptor::isMemberOf(const DescribedBase* instance) const
+		{
+			return isMemberOf(instance->getDescriptor());
+		}
+	}
+}

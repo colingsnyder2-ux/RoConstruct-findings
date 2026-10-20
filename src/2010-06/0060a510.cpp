@@ -1,73 +1,186 @@
-// roc 2010-06 0060a510  unit: std::strstream  size: 140 bytes
-// Make this compile to the exact bytes below, then: roc check 2010-06 0060a510
-//
-// 0060a510  53                   push ebx
-// 0060a511  8b5c2408             mov ebx, dword ptr [esp + 8]
-// 0060a515  55                   push ebp
-// 0060a516  56                   push esi
-// 0060a517  57                   push edi
-// 0060a518  8b7c2418             mov edi, dword ptr [esp + 0x18]
-// 0060a51c  57                   push edi
-// 0060a51d  53                   push ebx
-// 0060a51e  e86dffffff           call 0x60a490
-// 0060a523  8b4c2424             mov ecx, dword ptr [esp + 0x24]
-// 0060a527  8bf0                 mov esi, eax
-// 0060a529  8b442428             mov eax, dword ptr [esp + 0x28]
-// 0060a52d  50                   push eax
-// 0060a52e  51                   push ecx
-// 0060a52f  e85cffffff           call 0x60a490
-// 0060a534  83c410               add esp, 0x10
-// 0060a537  8be8                 mov ebp, eax
-// 0060a539  8bcb                 mov ecx, ebx
-// 0060a53b  83fe01               cmp esi, 1
-// 0060a53e  7402                 je 0x60a542
-// 0060a540  8bcf                 mov ecx, edi
-// 0060a542  8b44241c             mov eax, dword ptr [esp + 0x1c]
-// 0060a546  83fd01               cmp ebp, 1
-// 0060a549  7404                 je 0x60a54f
-// 0060a54b  8b442420             mov eax, dword ptr [esp + 0x20]
-// 0060a54f  50                   push eax
-// 0060a550  51                   push ecx
-// 0060a551  e83affffff           call 0x60a490
-// 0060a556  83c408               add esp, 8
-// 0060a559  83f8ff               cmp eax, -1
-// 0060a55c  7436                 je 0x60a594
-// 0060a55e  85c0                 test eax, eax
-// 0060a560  740f                 je 0x60a571
-// 0060a562  33d2                 xor edx, edx
-// 0060a564  83f801               cmp eax, 1
-// 0060a567  0f94c2               sete dl
-// 0060a56a  5f                   pop edi
-// 0060a56b  5e                   pop esi
-// 0060a56c  5d                   pop ebp
-// 0060a56d  5b                   pop ebx
-// 0060a56e  8bc2                 mov eax, edx
-// 0060a570  c3                   ret 
-// 0060a571  83fe01               cmp esi, 1
-// 0060a574  7402                 je 0x60a578
-// 0060a576  8bfb                 mov edi, ebx
-// 0060a578  8b442420             mov eax, dword ptr [esp + 0x20]
-// 0060a57c  83fd01               cmp ebp, 1
-// 0060a57f  7404                 je 0x60a585
-// 0060a581  8b44241c             mov eax, dword ptr [esp + 0x1c]
-// 0060a585  50                   push eax
-// 0060a586  57                   push edi
-// 0060a587  e804ffffff           call 0x60a490
-// 0060a58c  83c408               add esp, 8
-// 0060a58f  5f                   pop edi
-// 0060a590  5e                   pop esi
-// 0060a591  5d                   pop ebp
-// 0060a592  5b                   pop ebx
-// 0060a593  c3                   ret 
-// 0060a594  5f                   pop edi
-// 0060a595  5e                   pop esi
-// 0060a596  5d                   pop ebp
-// 0060a597  83c8ff               or eax, 0xffffffff
-// 0060a59a  5b                   pop ebx
-// 0060a59b  c3                   ret 
-// library openrbx-client/App\util\Guid.cpp (function ?compare@Guid@RBX@@SAHPBV12@000@Z)
-
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
 // roc-lib: openrbx-client App/util/Guid.cpp
+
+// Candidate translation unit (score above; library headers required).
+#include "util/Guid.h"
+
+#include "decomp.h"
+#include "util/Name.h"
+
+#define NOMINMAX
+
+#include <algorithm>
+#include <boost/thread/once.hpp>
+#include <objbase.h>
+#include <stdio.h>
+#include <windows.h>
+
+namespace RBX {
+
+static const Name* localScope;
+static long nextIndex;
+
+// FUNCTION: WEBSERVICE 0x1003d410
+void Guid::generateGUID(std::string& result)
+{
+	GUID guid;
+
+	result = "RBX";
+
+	CoCreateGuid(&guid);
+
+	WCHAR wszGUID[64] = L"";
+	char ansiClsid[64];
+
+	StringFromGUID2(guid, wszGUID, 64);
+	WideCharToMultiByte(CP_ACP, 0, wszGUID, 64, ansiClsid, 64, NULL, NULL);
+
+	result += ansiClsid;
+
+	result.erase(0x28, 1);
+	result.erase(0x1b, 1);
+	result.erase(0x16, 1);
+	result.erase(0x11, 1);
+	result.erase(0x0c, 1);
+	result.erase(0x03, 1);
+}
+
+// FUNCTION: WEBSERVICE 0x1003d4e0
+void Guid::assign(Data data)
+{
+	this->data = data;
+}
+
+// FUNCTION: WEBSERVICE 0x1003d4f0
+bool Guid::Data::operator<(const Data& other) const
+{
+	const Name* otherScope = other.scope;
+	const Name* thisScope = scope;
+	int order = 0;
+
+	if (thisScope != otherScope) {
+		order = thisScope->name.compare(otherScope->name);
+
+		if (order != -1 && order != 0) {
+			return false;
+		}
+	}
+
+	if (order == 0) {
+		return index < other.index;
+	}
+
+	return true;
+}
+
+// FUNCTION: WEBSERVICE 0x1003d540
+int Guid::compare(const Guid* a, const Guid* b)
+{
+	const Name* scopeA = a != NULL ? a->data.scope : NULL;
+	const Name* scopeB = b != NULL ? b->data.scope : NULL;
+	int order;
+
+	if (scopeA == NULL) {
+		order = scopeB != NULL ? -1 : 0;
+	}
+	else if (scopeB == NULL) {
+		order = 1;
+	}
+	else if (scopeA == scopeB) {
+		order = 0;
+	}
+	else {
+		order = scopeA->name.compare(scopeB->name);
+	}
+
+	if (order != -1) {
+		if (order != 0 && order != 1) {
+			return 0;
+		}
+
+		if (order == 0) {
+			int indexA = a != NULL ? a->data.index : 0;
+			int indexB = b != NULL ? b->data.index : 0;
+
+			if (indexA > indexB) {
+				return 1;
+			}
+
+			return indexA >= indexB ? 0 : -1;
+		}
+
+		return 1;
+	}
+
+	return -1;
+}
+
+// FUNCTION: WEBSERVICE 0x1003d5d0
+int Guid::compare(const Guid* a0, const Guid* a1, const Guid* b0, const Guid* b1)
+{
+	int a = compare(a0, a1);
+	int b = compare(b0, b1);
+	const Guid* worseA = a == 1 ? a0 : a1;
+	int order = compare(worseA, b == 1 ? b0 : b1);
+
+	if (order != -1) {
+		if (order != 0) {
+			return order == 1;
+		}
+
+		const Guid* betterA = a == 1 ? a1 : a0;
+
+		return compare(betterA, b == 1 ? b1 : b0);
+	}
+
+	return -1;
+}
+
+// FUNCTION: WEBSERVICE 0x1003d660
+static void initLocalScope()
+{
+	std::string guid;
+
+	Guid::generateGUID(guid);
+	localScope = &Name::declare(guid.c_str(), -1);
+}
+
+// FUNCTION: WEBSERVICE 0x1003d6e0
+const Name& Guid::getLocalScope()
+{
+	static boost::once_flag flag = BOOST_ONCE_INIT;
+
+	boost::call_once(initLocalScope, flag);
+
+	return *localScope;
+}
+
+// FUNCTION: WEBSERVICE 0x1003d700
+Guid::Guid()
+{
+	data.scope = &getLocalScope();
+	data.index = InterlockedIncrement(&nextIndex);
+}
+
+// FUNCTION: WEBSERVICE 0x1003d730
+std::string Guid::Data::readableString(int scopeLength) const
+{
+	char buffer[64];
+
+	if (scopeLength > 0) {
+		std::string s = scope->name;
+
+		s = s.substr(std::min<size_t>(3, s.size()), std::min(scopeLength, 32));
+
+		sprintf(buffer, "%s_%d", s.c_str(), index);
+	}
+	else {
+		sprintf(buffer, "%d", index);
+	}
+
+	return std::string(buffer);
+}
+
+} // namespace RBX

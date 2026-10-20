@@ -1,290 +1,881 @@
 // from server: 100% by auto
-// roc 2008-06 00438db0  unit: IIHAAH::?$CMap  size: 884 bytes
-// Make this compile to the exact bytes below, then: roc check 2008-06 00438db0
-//
-// 00438db0  83ec14               sub esp, 0x14
-// 00438db3  53                   push ebx
-// 00438db4  55                   push ebp
-// 00438db5  56                   push esi
-// 00438db6  8bf1                 mov esi, ecx
-// 00438db8  8b4c2424             mov ecx, dword ptr [esp + 0x24]
-// 00438dbc  8b4118               mov eax, dword ptr [ecx + 0x18]
-// 00438dbf  f7d0                 not eax
-// 00438dc1  57                   push edi
-// 00438dc2  89742414             mov dword ptr [esp + 0x14], esi
-// 00438dc6  a801                 test al, 1
-// 00438dc8  0f847d010000         je 0x438f4b
-// 00438dce  8b560c               mov edx, dword ptr [esi + 0xc]
-// 00438dd1  52                   push edx
-// 00438dd2  e871832600           call 0x6a1148
-// 00438dd7  837e0c00             cmp dword ptr [esi + 0xc], 0
-// 00438ddb  0f8439030000         je 0x43911a
-// 00438de1  33c0                 xor eax, eax
-// 00438de3  8944241c             mov dword ptr [esp + 0x1c], eax
-// 00438de7  394608               cmp dword ptr [esi + 8], eax
-// 00438dea  0f862a030000         jbe 0x43911a
-// 00438df0  8b4e04               mov ecx, dword ptr [esi + 4]
-// 00438df3  8b2c81               mov ebp, dword ptr [ecx + eax*4]
-// 00438df6  896c2410             mov dword ptr [esp + 0x10], ebp
-// 00438dfa  85ed                 test ebp, ebp
-// 00438dfc  0f8422010000         je 0x438f24
-// 00438e02  eb04                 jmp 0x438e08
-// 00438e04  8b6c2410             mov ebp, dword ptr [esp + 0x10]
-// 00438e08  8d5504               lea edx, [ebp + 4]
-// 00438e0b  89542418             mov dword ptr [esp + 0x18], edx
-// 00438e0f  85ed                 test ebp, ebp
-// 00438e11  0f8426010000         je 0x438f3d
-// 00438e17  8b442428             mov eax, dword ptr [esp + 0x28]
-// 00438e1b  8b4818               mov ecx, dword ptr [eax + 0x18]
-// 00438e1e  f7d1                 not ecx
-// 00438e20  bf01000000           mov edi, 1
-// 00438e25  f6c101               test cl, 1
-// 00438e28  7436                 je 0x438e60
-// 00438e2a  8d9b00000000         lea ebx, [ebx]
-// 00438e30  8bdf                 mov ebx, edi
-// 00438e32  81ffffffff1f         cmp edi, 0x1fffffff
-// 00438e38  7205                 jb 0x438e3f
-// 00438e3a  bbffffff1f           mov ebx, 0x1fffffff
-// 00438e3f  8b4c2428             mov ecx, dword ptr [esp + 0x28]
-// 00438e43  8d349d00000000       lea esi, [ebx*4]
-// 00438e4a  56                   push esi
-// 00438e4b  55                   push ebp
-// 00438e4c  e8df822600           call 0x6a1130
-// 00438e51  2bfb                 sub edi, ebx
-// 00438e53  03ee                 add ebp, esi
-// 00438e55  85ff                 test edi, edi
-// 00438e57  77d7                 ja 0x438e30
-// 00438e59  eb36                 jmp 0x438e91
-// 00438e5b  eb03                 jmp 0x438e60
-// 00438e5d  8d4900               lea ecx, [ecx]
-// 00438e60  8bdf                 mov ebx, edi
-// 00438e62  81ffffffff1f         cmp edi, 0x1fffffff
-// 00438e68  7205                 jb 0x438e6f
-// 00438e6a  bbffffff1f           mov ebx, 0x1fffffff
-// 00438e6f  8b4c2428             mov ecx, dword ptr [esp + 0x28]
-// 00438e73  8d349d00000000       lea esi, [ebx*4]
-// 00438e7a  56                   push esi
-// 00438e7b  55                   push ebp
-// 00438e7c  e8a9822600           call 0x6a112a
-// 00438e81  3bc6                 cmp eax, esi
-// 00438e83  0f85b9000000         jne 0x438f42
-// 00438e89  2bfb                 sub edi, ebx
-// 00438e8b  03ee                 add ebp, esi
-// 00438e8d  85ff                 test edi, edi
-// 00438e8f  77cf                 ja 0x438e60
-// 00438e91  8b6c2418             mov ebp, dword ptr [esp + 0x18]
-// 00438e95  85ed                 test ebp, ebp
-// 00438e97  0f84a0000000         je 0x438f3d
-// 00438e9d  8b542428             mov edx, dword ptr [esp + 0x28]
-// 00438ea1  8b4218               mov eax, dword ptr [edx + 0x18]
-// 00438ea4  f7d0                 not eax
-// 00438ea6  bf01000000           mov edi, 1
-// 00438eab  a801                 test al, 1
-// 00438ead  7431                 je 0x438ee0
-// 00438eaf  90                   nop 
-// 00438eb0  8bdf                 mov ebx, edi
-// 00438eb2  81ffffffff1f         cmp edi, 0x1fffffff
-// 00438eb8  7205                 jb 0x438ebf
-// 00438eba  bbffffff1f           mov ebx, 0x1fffffff
-// 00438ebf  8b4c2428             mov ecx, dword ptr [esp + 0x28]
-// 00438ec3  8d349d00000000       lea esi, [ebx*4]
-// 00438eca  56                   push esi
-// 00438ecb  55                   push ebp
-// 00438ecc  e85f822600           call 0x6a1130
-// 00438ed1  2bfb                 sub edi, ebx
-// 00438ed3  03ee                 add ebp, esi
-// 00438ed5  85ff                 test edi, edi
-// 00438ed7  77d7                 ja 0x438eb0
-// 00438ed9  eb32                 jmp 0x438f0d
-// 00438edb  eb03                 jmp 0x438ee0
-// 00438edd  8d4900               lea ecx, [ecx]
-// 00438ee0  8bdf                 mov ebx, edi
-// 00438ee2  81ffffffff1f         cmp edi, 0x1fffffff
-// 00438ee8  7205                 jb 0x438eef
-// 00438eea  bbffffff1f           mov ebx, 0x1fffffff
-// 00438eef  8b4c2428             mov ecx, dword ptr [esp + 0x28]
-// 00438ef3  8d349d00000000       lea esi, [ebx*4]
-// 00438efa  56                   push esi
-// 00438efb  55                   push ebp
-// 00438efc  e829822600           call 0x6a112a
-// 00438f01  3bc6                 cmp eax, esi
-// 00438f03  753d                 jne 0x438f42
-// 00438f05  2bfb                 sub edi, ebx
-// 00438f07  03ee                 add ebp, esi
-// 00438f09  85ff                 test edi, edi
-// 00438f0b  77d3                 ja 0x438ee0
-// 00438f0d  8b4c2410             mov ecx, dword ptr [esp + 0x10]
-// 00438f11  8b4108               mov eax, dword ptr [ecx + 8]
-// 00438f14  89442410             mov dword ptr [esp + 0x10], eax
-// 00438f18  85c0                 test eax, eax
-// 00438f1a  0f85e4feffff         jne 0x438e04
-// 00438f20  8b44241c             mov eax, dword ptr [esp + 0x1c]
-// 00438f24  8b542414             mov edx, dword ptr [esp + 0x14]
-// 00438f28  40                   inc eax
-// 00438f29  8944241c             mov dword ptr [esp + 0x1c], eax
-// 00438f2d  3b4208               cmp eax, dword ptr [edx + 8]
-// 00438f30  0f83e4010000         jae 0x43911a
-// 00438f36  8bf2                 mov esi, edx
-// 00438f38  e9b3feffff           jmp 0x438df0
-// 00438f3d  e8027a2600           call 0x6a0944
-// 00438f42  6a00                 push 0
-// 00438f44  6a03                 push 3
-// 00438f46  e8d9812600           call 0x6a1124
-// 00438f4b  e8f2812600           call 0x6a1142
-// 00438f50  89442410             mov dword ptr [esp + 0x10], eax
-// 00438f54  85c0                 test eax, eax
-// 00438f56  0f84be010000         je 0x43911a
-// 00438f5c  8d642400             lea esp, [esp]
-// 00438f60  8b442428             mov eax, dword ptr [esp + 0x28]
-// 00438f64  8b4818               mov ecx, dword ptr [eax + 0x18]
-// 00438f67  bd01000000           mov ebp, 1
-// 00438f6c  296c2410             sub dword ptr [esp + 0x10], ebp
-// 00438f70  f7d1                 not ecx
-// 00438f72  8d5c241c             lea ebx, [esp + 0x1c]
-// 00438f76  f6c101               test cl, 1
-// 00438f79  7435                 je 0x438fb0
-// 00438f7b  8bfd                 mov edi, ebp
-// 00438f7d  8d4900               lea ecx, [ecx]
-// 00438f80  8bef                 mov ebp, edi
-// 00438f82  81ffffffff1f         cmp edi, 0x1fffffff
-// 00438f88  7205                 jb 0x438f8f
-// 00438f8a  bdffffff1f           mov ebp, 0x1fffffff
-// 00438f8f  8b4c2428             mov ecx, dword ptr [esp + 0x28]
-// 00438f93  8d34ad00000000       lea esi, [ebp*4]
-// 00438f9a  56                   push esi
-// 00438f9b  53                   push ebx
-// 00438f9c  e88f812600           call 0x6a1130
-// 00438fa1  2bfd                 sub edi, ebp
-// 00438fa3  03de                 add ebx, esi
-// 00438fa5  85ff                 test edi, edi
-// 00438fa7  77d7                 ja 0x438f80
-// 00438fa9  eb36                 jmp 0x438fe1
-// 00438fab  eb03                 jmp 0x438fb0
-// 00438fad  8d4900               lea ecx, [ecx]
-// 00438fb0  8bfd                 mov edi, ebp
-// 00438fb2  81fdffffff1f         cmp ebp, 0x1fffffff
-// 00438fb8  7205                 jb 0x438fbf
-// 00438fba  bfffffff1f           mov edi, 0x1fffffff
-// 00438fbf  8b4c2428             mov ecx, dword ptr [esp + 0x28]
-// 00438fc3  8d34bd00000000       lea esi, [edi*4]
-// 00438fca  56                   push esi
-// 00438fcb  53                   push ebx
-// 00438fcc  e859812600           call 0x6a112a
-// 00438fd1  3bc6                 cmp eax, esi
-// 00438fd3  0f8569ffffff         jne 0x438f42
-// 00438fd9  2bef                 sub ebp, edi
-// 00438fdb  03de                 add ebx, esi
-// 00438fdd  85ed                 test ebp, ebp
-// 00438fdf  77cf                 ja 0x438fb0
-// 00438fe1  8b542428             mov edx, dword ptr [esp + 0x28]
-// 00438fe5  8b4218               mov eax, dword ptr [edx + 0x18]
-// 00438fe8  f7d0                 not eax
-// 00438fea  8d5c2418             lea ebx, [esp + 0x18]
-// 00438fee  a801                 test al, 1
-// 00438ff0  7439                 je 0x43902b
-// 00438ff2  bf01000000           mov edi, 1
-// 00438ff7  eb07                 jmp 0x439000
-// 00438ff9  8da42400000000       lea esp, [esp]
-// 00439000  8bef                 mov ebp, edi
-// 00439002  81ffffffff1f         cmp edi, 0x1fffffff
-// 00439008  7205                 jb 0x43900f
-// 0043900a  bdffffff1f           mov ebp, 0x1fffffff
-// 0043900f  8b4c2428             mov ecx, dword ptr [esp + 0x28]
-// 00439013  8d34ad00000000       lea esi, [ebp*4]
-// 0043901a  56                   push esi
-// 0043901b  53                   push ebx
-// 0043901c  e80f812600           call 0x6a1130
-// 00439021  2bfd                 sub edi, ebp
-// 00439023  03de                 add ebx, esi
-// 00439025  85ff                 test edi, edi
-// 00439027  77d7                 ja 0x439000
-// 00439029  eb36                 jmp 0x439061
-// 0043902b  bd01000000           mov ebp, 1
-// 00439030  8bfd                 mov edi, ebp
-// 00439032  81fdffffff1f         cmp ebp, 0x1fffffff
-// 00439038  7205                 jb 0x43903f
-// 0043903a  bfffffff1f           mov edi, 0x1fffffff
-// 0043903f  8b4c2428             mov ecx, dword ptr [esp + 0x28]
-// 00439043  8d34bd00000000       lea esi, [edi*4]
-// 0043904a  56                   push esi
-// 0043904b  53                   push ebx
-// 0043904c  e8d9802600           call 0x6a112a
-// 00439051  3bc6                 cmp eax, esi
-// 00439053  0f85e9feffff         jne 0x438f42
-// 00439059  2bef                 sub ebp, edi
-// 0043905b  03de                 add ebx, esi
-// 0043905d  85ed                 test ebp, ebp
-// 0043905f  77cf                 ja 0x439030
-// 00439061  8b5c241c             mov ebx, dword ptr [esp + 0x1c]
-// 00439065  8b7c2414             mov edi, dword ptr [esp + 0x14]
-// 00439069  8b6f08               mov ebp, dword ptr [edi + 8]
-// 0043906c  8bf3                 mov esi, ebx
-// 0043906e  c1ee04               shr esi, 4
-// 00439071  33d2                 xor edx, edx
-// 00439073  8bc6                 mov eax, esi
-// 00439075  f7f5                 div ebp
-// 00439077  8b4f04               mov ecx, dword ptr [edi + 4]
-// 0043907a  89542420             mov dword ptr [esp + 0x20], edx
-// 0043907e  85c9                 test ecx, ecx
-// 00439080  7422                 je 0x4390a4
-// 00439082  8b0491               mov eax, dword ptr [ecx + edx*4]
-// 00439085  85c0                 test eax, eax
-// 00439087  7417                 je 0x4390a0
-// 00439089  8da42400000000       lea esp, [esp]
-// 00439090  39700c               cmp dword ptr [eax + 0xc], esi
-// 00439093  7504                 jne 0x439099
-// 00439095  3918                 cmp dword ptr [eax], ebx
-// 00439097  746f                 je 0x439108
-// 00439099  8b4008               mov eax, dword ptr [eax + 8]
-// 0043909c  85c0                 test eax, eax
-// 0043909e  75f0                 jne 0x439090
-// 004390a0  85c9                 test ecx, ecx
-// 004390a2  753c                 jne 0x4390e0
-// 004390a4  33c9                 xor ecx, ecx
-// 004390a6  8bc5                 mov eax, ebp
-// 004390a8  ba04000000           mov edx, 4
-// 004390ad  f7e2                 mul edx
-// 004390af  0f90c1               seto cl
-// 004390b2  f7d9                 neg ecx
-// 004390b4  0bc8                 or ecx, eax
-// 004390b6  51                   push ecx
-// 004390b7  e89a782600           call 0x6a0956
-// 004390bc  83c404               add esp, 4
-// 004390bf  894704               mov dword ptr [edi + 4], eax
-// 004390c2  85c0                 test eax, eax
-// 004390c4  0f8473feffff         je 0x438f3d
-// 004390ca  8d0cad00000000       lea ecx, [ebp*4]
-// 004390d1  51                   push ecx
-// 004390d2  6a00                 push 0
-// 004390d4  50                   push eax
-// 004390d5  e82a862600           call 0x6a1704
-// 004390da  83c40c               add esp, 0xc
-// 004390dd  896f08               mov dword ptr [edi + 8], ebp
-// 004390e0  837f0400             cmp dword ptr [edi + 4], 0
-// 004390e4  0f8453feffff         je 0x438f3d
-// 004390ea  53                   push ebx
-// 004390eb  8bcf                 mov ecx, edi
-// 004390ed  e84e832e00           call 0x721440
-// 004390f2  8b4c2420             mov ecx, dword ptr [esp + 0x20]
-// 004390f6  89700c               mov dword ptr [eax + 0xc], esi
-// 004390f9  8b5704               mov edx, dword ptr [edi + 4]
-// 004390fc  8b148a               mov edx, dword ptr [edx + ecx*4]
-// 004390ff  895008               mov dword ptr [eax + 8], edx
-// 00439102  8b5704               mov edx, dword ptr [edi + 4]
-// 00439105  89048a               mov dword ptr [edx + ecx*4], eax
-// 00439108  837c241000           cmp dword ptr [esp + 0x10], 0
-// 0043910d  8b4c2418             mov ecx, dword ptr [esp + 0x18]
-// 00439111  894804               mov dword ptr [eax + 4], ecx
-// 00439114  0f8546feffff         jne 0x438f60
-// 0043911a  5f                   pop edi
-// 0043911b  5e                   pop esi
-// 0043911c  5d                   pop ebp
-// 0043911d  5b                   pop ebx
-// 0043911e  83c414               add esp, 0x14
-// 00439121  c20400               ret 4
-// library xtp-11.2.2/Source\Controls\XTMDIWndTab.cpp (function ?Serialize@?$CMap@PAUHWND__@@PAU1@PAUHICON__@@AAPAU2@@@UAEXAAVCArchive@@@Z)
-
 // roc-lang: cpp
 // roc-cl: 30729
 // roc-flags: /O2 /GS- /MD
 // roc-lib: xtp-11.2.2 Source/Controls/XTMDIWndTab.cpp
+
+// Candidate translation unit (score above; library headers required).
+// XTMDIWndTab.cpp : implementation file
+//
+// This file is a part of the XTREME CONTROLS MFC class library.
+// (c)1998-2007 Codejock Software, All Rights Reserved.
+//
+// THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
+// RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
+// CONSENT OF CODEJOCK SOFTWARE.
+//
+// THIS SOURCE CODE CAN ONLY BE USED UNDER THE TERMS AND CONDITIONS OUTLINED
+// IN THE XTREME TOOLKIT PRO LICENSE AGREEMENT. CODEJOCK SOFTWARE GRANTS TO
+// YOU (ONE SOFTWARE DEVELOPER) THE LIMITED RIGHT TO USE THIS SOFTWARE ON A
+// SINGLE COMPUTER.
+//
+// CONTACT INFORMATION:
+// support@codejock.com
+// http://www.codejock.com
+//
+/////////////////////////////////////////////////////////////////////////////
+
+#include "stdafx.h"
+#include "Resource.h"
+
+#include "Common/XTPVC80Helpers.h"
+#include "Common/XTPSystemHelpers.h"
+
+#include "XTGlobal.h"
+#include "XTVC50Helpers.h"
+#include "XTTabCtrlButtons.h"
+#include "XTTabBase.h"
+#include "XTMDIWndTab.h"
+
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#undef THIS_FILE
+static char THIS_FILE[] = __FILE__;
+#endif
+
+/////////////////////////////////////////////////////////////////////////////
+// CXTMDIClientWnd
+
+CXTMDIClientWnd::CXTMDIClientWnd(CXTMDIWndTab* pMDIWndTab)
+{
+	ASSERT_VALID(pMDIWndTab);
+	m_pMDIWndTab = pMDIWndTab;
+	m_iBorderGap = pMDIWndTab->m_iBorderGap + ::GetSystemMetrics(SM_CXSIZEFRAME);
+}
+
+CXTMDIClientWnd::~CXTMDIClientWnd()
+{
+}
+
+BEGIN_MESSAGE_MAP(CXTMDIClientWnd, CWnd)
+	//{{AFX_MSG_MAP(CXTMDIClientWnd)
+	//}}AFX_MSG_MAP
+	ON_MESSAGE(WM_MDICREATE, OnMDICreate)
+	ON_MESSAGE(WM_MDIDESTROY, OnMDIDestroy)
+	ON_MESSAGE(WM_MDIACTIVATE, OnMDIActivate)
+END_MESSAGE_MAP()
+
+/////////////////////////////////////////////////////////////////////////////
+// CXTMDIClientWnd message handlers
+
+LRESULT CXTMDIClientWnd::OnMDICreate(WPARAM /*wParam*/, LPARAM /*lParam*/)
+{
+	LRESULT lResult = Default();
+	m_pMDIWndTab->OnMDICreate((HWND)lResult);
+	return lResult;
+}
+
+LRESULT CXTMDIClientWnd::OnMDIDestroy(WPARAM wParam, LPARAM /*lParam*/)
+{
+	LRESULT lResult = Default();
+	m_pMDIWndTab->OnMDIDestroy((HWND)wParam);
+	return lResult;
+}
+
+LRESULT CXTMDIClientWnd::OnMDIActivate(WPARAM wParam, LPARAM /*lParam*/)
+{
+	LRESULT lResult = Default();
+	m_pMDIWndTab->OnMDIActivate((HWND)wParam);
+	return lResult;
+}
+
+void CXTMDIClientWnd::CalcWindowRect(LPRECT lpClientRect, UINT nAdjustType)
+{
+	if (::IsWindow(m_pMDIWndTab->m_hWnd) && m_pMDIWndTab->IsWindowVisible())
+	{
+		m_pMDIWndTab->MoveWindow(lpClientRect);
+
+		DWORD dwStyle = m_pMDIWndTab->GetStyle();
+
+		CRect rcTab;
+		m_pMDIWndTab->GetItemRect(m_pMDIWndTab->GetCurSel(), &rcTab);
+
+		int cy = rcTab.Height() * m_pMDIWndTab->GetRowCount();
+		int cx = rcTab.Width () * m_pMDIWndTab->GetRowCount();
+
+		// vertical tabs
+		if (dwStyle & TCS_VERTICAL)
+		{
+			// Right
+			if (dwStyle & TCS_RIGHT)
+			{
+				lpClientRect->top += m_iBorderGap;
+				lpClientRect->left += m_iBorderGap;
+				lpClientRect->right -= cx + m_iBorderGap + 2;
+				lpClientRect->bottom -= m_iBorderGap;
+			}
+
+			// Left
+			else
+			{
+				lpClientRect->top += m_iBorderGap;
+				lpClientRect->left += cx + m_iBorderGap + 2;
+				lpClientRect->right -= m_iBorderGap;
+				lpClientRect->bottom -= m_iBorderGap;
+			}
+		}
+
+		// horizontal tabs
+		else
+		{
+			// Bottom
+			if (dwStyle & TCS_BOTTOM)
+			{
+				lpClientRect->top += m_iBorderGap;
+				lpClientRect->left += m_iBorderGap;
+				lpClientRect->right -= m_iBorderGap;
+				lpClientRect->bottom -= cy + m_iBorderGap + 2;
+			}
+
+			// Top
+			else
+			{
+				lpClientRect->top += cy + m_iBorderGap + 2;
+				lpClientRect->left += m_iBorderGap;
+				lpClientRect->right -= m_iBorderGap;
+				lpClientRect->bottom -= m_iBorderGap;
+			}
+		}
+	}
+
+	CWnd::CalcWindowRect(lpClientRect, nAdjustType);
+}
+
+/////////////////////////////////////////////////////////////////////////////
+// CXTMDIWndTab
+
+CXTMDIWndTab::CXTMDIWndTab()
+{
+	m_bNoIcons = FALSE;
+	m_iBorderGap = 5;
+	m_nPos = 0;
+	m_nDefCmd = 0;
+	m_popupMenuID = 0;
+	m_hActiveChild = NULL;
+	m_pMDIClientWnd = NULL;
+	m_pMDIFrameWnd = NULL;
+	m_bXPBorder = false;
+	m_dwInitSignature = 1;
+
+	ImplAttach(this);
+}
+
+CXTMDIWndTab::~CXTMDIWndTab()
+{
+	SAFE_DELETE (m_pMDIClientWnd);
+
+	while (!m_arMDIChildern.IsEmpty())
+	{
+		MDICHILD* pMDIChild = m_arMDIChildern.RemoveHead();
+		SAFE_DELETE(pMDIChild);
+	}
+}
+
+IMPLEMENT_THEME_REFRESH(CXTMDIWndTab, CTabCtrl)
+IMPLEMENT_DYNAMIC(CXTMDIWndTab, CTabCtrl)
+
+BEGIN_MESSAGE_MAP(CXTMDIWndTab, CTabCtrl)
+	//{{AFX_MSG_MAP(CXTMDIWndTab)
+	ON_WM_NCCALCSIZE()
+	ON_WM_NCPAINT()
+	ON_NOTIFY_REFLECT(TCN_SELCHANGE, OnSelchange)
+	ON_WM_DESTROY()
+	ON_WM_RBUTTONDOWN()
+	//}}AFX_MSG_MAP
+	ON_MESSAGE_VOID(WM_IDLEUPDATECMDUI, OnIdleUpdateCmdUI)
+	ON_COMMAND(XT_IDC_TAB_CLOSE, OnTabClose)
+	ON_TABCTRL_REFLECT()
+END_MESSAGE_MAP()
+
+/////////////////////////////////////////////////////////////////////////////
+// CXTMDIWndTab message handlers
+
+bool CXTMDIWndTab::Init()
+{
+	if (!CXTMDIWndTabBase::Init())
+		return false;
+
+	ShowNavButtons(xtNavBtnShowAll);
+
+	int cx = ::GetSystemMetrics(SM_CXSMICON);
+	int cy = ::GetSystemMetrics(SM_CYSMICON);
+
+	if (!m_imageList.Create(cx, cy, ILC_COLOR16 | ILC_MASK, 0, 1))
+	{
+		TRACE0("Unable to create CXTMDIWndTab image list.\n");
+		return FALSE;
+	}
+
+	SetImageList(&m_imageList);
+	InitializeFont();
+
+	return true;
+}
+
+BOOL CXTMDIWndTab::Install(CMDIFrameWnd* pMDIFrameWnd, DWORD dwStyle/*= TCS_BOTTOM | TCS_HOTTRACK*/, BOOL bNoIcons/*= FALSE*/)
+{
+	ASSERT_VALID(pMDIFrameWnd);                // must be valid.
+	ASSERT_KINDOF(CMDIFrameWnd, pMDIFrameWnd); // must be MDI frame window.
+
+	m_bNoIcons = bNoIcons;
+	m_pMDIFrameWnd = pMDIFrameWnd;
+	m_iBorderGap = GetSafeTheme()->GetTheme() != xtThemeDefault ? 1 : 5;
+
+	dwStyle |= WS_VISIBLE | WS_CHILD | WS_CLIPCHILDREN;
+
+	if (!Create(dwStyle, CRect(0, 0, 0, 0), m_pMDIFrameWnd, AFX_IDC_TAB_CONTROL))
+	{
+		TRACE0("Unable to create CXTMDIWndTab control.\n");
+		return FALSE;
+	}
+
+	m_pMDIClientWnd = new CXTMDIClientWnd(this);
+	ASSERT(m_pMDIClientWnd != NULL);
+
+	if (!m_pMDIClientWnd->SubclassWindow(m_pMDIFrameWnd->m_hWndMDIClient))
+		return FALSE;
+
+	// Retrieve the current active MDI child window.
+	CMDIChildWnd* pActiveChild = (CMDIChildWnd*)m_pMDIFrameWnd->MDIGetActive();
+	if (pActiveChild != NULL)
+	{
+		// Get the first top-level window in the list.
+		CMDIChildWnd* pChildFrame = (CMDIChildWnd*)pActiveChild->GetWindow(GW_HWNDLAST);
+		while (pChildFrame != NULL)
+		{
+			// Insert the tab and get the next frame on the window manager's list
+			InsertTabWnd(pChildFrame, FALSE);
+			pChildFrame = (CMDIChildWnd*)pChildFrame->GetWindow(GW_HWNDPREV);
+		}
+	}
+
+	// Force parent frame to re-adjust layout.
+	m_pMDIFrameWnd->RecalcLayout();
+
+	return TRUE;
+}
+
+BOOL CXTMDIWndTab::UnInstall()
+{
+	// Remove all of the items from the child array.
+	while (!m_arMDIChildern.IsEmpty())
+	{
+		MDICHILD* pMDIChild = m_arMDIChildern.RemoveHead();
+		SAFE_DELETE(pMDIChild);
+	}
+
+	CXTTabCtrlButtons* pNavBtns = GetButtons();
+	if (pNavBtns && pNavBtns->GetSafeHwnd())
+	{
+		pNavBtns->UnSubclassTabButtons();
+	}
+
+	if (::IsWindow(m_hWnd) && m_pMDIFrameWnd)
+	{
+		// Unsubclass the MDI client and free the dynamic memory.
+		m_pMDIClientWnd->UnsubclassWindow();
+		SAFE_DELETE (m_pMDIClientWnd);
+
+		// Force parent frame to re-adjust layout.
+		m_pMDIFrameWnd->RecalcLayout();
+
+		// Destroy this window.
+		return DestroyWindow();
+	}
+
+	return FALSE;
+}
+
+void CXTMDIWndTab::InsertTabWnd(CMDIChildWnd* pChildWnd, BOOL bRecalcLayout/*= TRUE*/)
+{
+	ASSERT_VALID(pChildWnd); // must be valid.
+
+	// Try to locate the icon for the MDI window by calling WM_GETICON
+	// first, this will give us the correct icon if the user has called
+	// SetIcon(...) for the child frame.
+	HICON hIcon = (HICON)::SendMessage(pChildWnd->m_hWnd, WM_GETICON, FALSE, 0);
+
+	// If the icon returned is NULL, then try using GCLP_HICONSM to get the
+	// document icon for the child frame
+	if (hIcon == NULL)
+	{
+		hIcon = (HICON)(ULONG_PTR)::GetClassLongPtr(pChildWnd->m_hWnd, GCLP_HICONSM);
+	}
+
+	// If no icon was found, then use the default windows logo icon.
+	if (hIcon == NULL)
+	{
+		hIcon = AfxGetApp()->LoadStandardIcon(IDI_WINLOGO);
+	}
+	m_imageList.Add(hIcon);
+
+	// Get the window text for the frame.
+	CXTStringHelper strWindowText = GetChildWndText(pChildWnd->GetSafeHwnd());
+
+	int iItem = GetItemCount();
+
+	MDICHILD* pMDIChild = new MDICHILD;
+	ASSERT(pMDIChild != NULL);
+
+	pMDIChild->iItem = iItem;
+	pMDIChild->hWnd = pChildWnd->GetSafeHwnd();
+	pMDIChild->strItem = strWindowText;
+
+	m_arMDIChildern.AddTail(pMDIChild);
+
+	if (GetSafeTheme()->GetTheme() != xtThemeDefault)
+	{
+		OnAddPadding(strWindowText);
+	}
+
+	// Insert the new item into the tab control.
+	TC_ITEM tci;
+	tci.mask = TCIF_IMAGE | TCIF_PARAM | TCIF_TEXT;
+	tci.pszText = (TCHAR*)(LPCTSTR)strWindowText;
+	tci.cchTextMax = strWindowText.GetLength();
+	tci.iImage = m_imageList.GetImageCount()-1;
+	tci.lParam = (LPARAM)pMDIChild;
+
+	if (m_bNoIcons)
+	{
+		tci.iImage = -1;
+	}
+
+	InsertItem(iItem, &tci);
+
+	if (m_pMDIFrameWnd->MDIGetActive() == pChildWnd)
+	{
+		SetCurSel(iItem);
+	}
+
+	// defer request to complete initialization
+	RecalcLayout(bRecalcLayout);
+}
+
+void CXTMDIWndTab::RecalcLayout(BOOL bDelayRecalc)
+{
+	// refresh labels
+	RefreshTabLabels();
+
+	// Recalc frame layout.
+	if (bDelayRecalc)
+	{
+		m_pMDIFrameWnd->DelayRecalcLayout();
+	}
+}
+
+void CXTMDIWndTab::RefreshIndexes()
+{
+	int iItem;
+	for (iItem = 0; iItem < GetItemCount(); ++iItem)
+	{
+		TC_ITEM tci;
+		tci.mask = TCIF_PARAM;
+
+		if (GetItem(iItem, &tci))
+		{
+			MDICHILD* pMDIChild = (MDICHILD*)tci.lParam;
+			ASSERT(pMDIChild != NULL);
+
+			if (pMDIChild) pMDIChild->iItem = iItem;
+		}
+	}
+}
+
+void CXTMDIWndTab::OnMDICreate(HWND hWnd)
+{
+	CMDIChildWnd* pActiveChild = (CMDIChildWnd*)CWnd::FromHandle(hWnd);
+	if (pActiveChild != NULL)
+	{
+		InsertTabWnd(pActiveChild);
+	}
+
+	RefreshIndexes();
+}
+
+void CXTMDIWndTab::OnMDIDestroy(HWND hWnd)
+{
+	// Loop through all of the tabs to find the view that has closed.
+	int iItem;
+	for (iItem = 0; iItem < GetItemCount(); ++iItem)
+	{
+		// Get the item data for this tab.
+		TC_ITEM tci;
+		tci.mask = TCIF_PARAM;
+
+		if (GetItem(iItem, &tci))
+		{
+			MDICHILD* pMDIChild = (MDICHILD*)tci.lParam;
+			ASSERT(pMDIChild != NULL);
+
+			// If it is the closed window remove it and exit loop.
+			if (pMDIChild && (hWnd == pMDIChild->hWnd))
+			{
+				POSITION pos = m_arMDIChildern.Find(pMDIChild);
+				if (pos)
+				{
+					m_arMDIChildern.RemoveAt(pos);
+					SAFE_DELETE(pMDIChild);
+				}
+
+				DeleteItem(iItem);
+				break;
+			}
+		}
+	}
+
+	RefreshIndexes();
+	RecalcLayout(TRUE);
+}
+
+void CXTMDIWndTab::OnMDIActivate(HWND hWnd)
+{
+	// Loop through all of the tabs to find the view that has activated.
+	int iItem;
+	for (iItem = 0; iItem < GetItemCount(); ++iItem)
+	{
+		// Get the item data for this tab.
+		TC_ITEM tci;
+		tci.mask = TCIF_PARAM;
+
+		if (GetItem(iItem, &tci))
+		{
+			MDICHILD* pMDIChild = (MDICHILD*)tci.lParam;
+			ASSERT(pMDIChild != NULL);
+
+			// If it is the activated window select it and exit loop.
+			if (pMDIChild && (hWnd == pMDIChild->hWnd))
+			{
+				SetCurSel(iItem);
+				break;
+			}
+		}
+	}
+}
+
+bool CXTMDIWndTab::SetTabIcon(int iIndex, HICON& hIcon)
+{
+	TC_ITEM tci;
+	tci.mask = TCIF_PARAM;
+
+	if (GetItem(iIndex, &tci))
+	{
+		MDICHILD* pMDIChild = (MDICHILD*)tci.lParam;
+		ASSERT(pMDIChild != NULL);
+		if (!pMDIChild)
+			return false;
+
+		return SetTabIcon(pMDIChild->hWnd, hIcon);
+	}
+
+	return false;
+}
+
+bool CXTMDIWndTab::SetTabIcon(HWND hChildWnd, HICON& hIcon)
+{
+	if (!hIcon || !::IsWindow(hChildWnd))
+	{
+		return false;
+	}
+
+	m_mapTabIcons.SetAt(hChildWnd, hIcon);
+	return true;
+}
+
+bool CXTMDIWndTab::SetTabLabel(int iIndex, CString& strLabel)
+{
+	TC_ITEM tci;
+	tci.mask = TCIF_PARAM;
+
+	if (GetItem(iIndex, &tci))
+	{
+		MDICHILD* pMDIChild = (MDICHILD*)tci.lParam;
+		ASSERT(pMDIChild != NULL);
+		if (!pMDIChild)
+			return false;
+
+		return SetTabLabel(pMDIChild->hWnd, strLabel);
+	}
+
+	return false;
+}
+
+bool CXTMDIWndTab::SetTabLabel(HWND hChildWnd, CString& strLabel)
+{
+	if (strLabel.IsEmpty() || !::IsWindow(hChildWnd))
+	{
+		return false;
+	}
+
+	m_mapTabLabels.SetAt(hChildWnd, strLabel);
+	return true;
+}
+
+CString CXTMDIWndTab::GetChildWndText(HWND hWnd) const
+{
+	// Check to see if the user has defined a label for the tab first.
+	CString strTitle;
+	if (m_mapTabLabels.Lookup(hWnd, strTitle))
+	{
+		return strTitle;
+	}
+
+	// Get a pointer to the frame window.
+	CMDIChildWnd* pChildFrame = (CMDIChildWnd*)CWnd::FromHandle(hWnd);
+	if (!::IsWindow(pChildFrame->GetSafeHwnd()))
+	{
+		return _T("");
+	}
+
+	// Get the window text for the frame and use it for the tab label.
+	pChildFrame->GetWindowText(strTitle);
+
+	// If the string is empty the document's title.
+	if (strTitle.IsEmpty())
+	{
+		CWnd* pChildWnd = pChildFrame->GetWindow(GW_CHILD);
+		while (pChildWnd)
+		{
+			if (pChildWnd->IsKindOf(RUNTIME_CLASS(CView)))
+			{
+				// Get a pointer to the view's document.
+				CDocument* pDoc = ((CView*)pChildWnd)->GetDocument();
+				if (pDoc == NULL)
+				{
+					return _T("");
+				}
+
+				// Set the return string value
+				strTitle = pDoc->GetTitle();
+
+				// Reset the frames title
+				pChildFrame->SetWindowText(strTitle);
+
+				// Return the document title.
+				return strTitle;
+			}
+			pChildWnd = pChildWnd->GetWindow(GW_HWNDNEXT);
+		}
+	}
+
+	// Return the MDI frame window's title.
+	return strTitle;
+}
+
+BOOL CXTMDIWndTab::RefreshActiveSel()
+{
+	// Get the active MDI window, if NULL return FALSE.
+	HWND hWndActiveChild = m_pMDIFrameWnd->MDIGetActive()->GetSafeHwnd();
+	if (hWndActiveChild == NULL)
+	{
+		m_hActiveChild = NULL;
+		return FALSE;
+	}
+
+	// Loop through all of the tabs to find the view that has activated.
+	bool bSelectionChanged = false;
+	if (POSITION pos = m_arMDIChildern.GetHeadPosition())
+	{
+		do
+		{
+			MDICHILD* pMDIChild = m_arMDIChildern.GetNext(pos);
+			ASSERT(pMDIChild != NULL);
+
+			// We have found the handle to the active MDI window,
+			// lets see if the tab is selected.
+			if (pMDIChild && (pMDIChild->hWnd == hWndActiveChild))
+			{
+				// If the active child pointer does not match, then
+				// make sure that the tab is selected then save the pointer.
+				bSelectionChanged = hWndActiveChild != m_hActiveChild;
+				if (bSelectionChanged)
+				{
+					SetCurSel(pMDIChild->iItem);
+					m_hActiveChild = hWndActiveChild;
+				}
+			}
+		}
+		while (pos != NULL && !bSelectionChanged);
+	}
+	return bSelectionChanged;
+}
+
+void CXTMDIWndTab::RefreshTabLabels()
+{
+	// Loop through all of the tabs to find the view that has activated.
+	POSITION pos = m_arMDIChildern.GetHeadPosition();
+	while (pos != NULL)
+	{
+		bool bSetItem = false;
+
+		MDICHILD* pMDIChild = m_arMDIChildern.GetNext(pos);
+		ASSERT(pMDIChild != NULL);
+		if (!pMDIChild)
+			continue;
+
+		// Get the window text for the child frame and the tab item.
+		CXTStringHelper strWindowText = GetChildWndText(pMDIChild->hWnd);
+
+		TCHAR szText[_MAX_PATH];
+		szText[0] = 0;
+
+		TC_ITEM tci;
+		tci.mask = TCIF_TEXT | TCIF_IMAGE;
+		tci.cchTextMax = _countof(szText);
+		tci.pszText = szText;
+
+		// Get the item data for the tab.
+		if (GetItem(pMDIChild->iItem, &tci))
+		{
+			CString strTabLabel = szText;
+
+			if (GetSafeTheme()->GetTheme() != xtThemeDefault)
+			{
+				OnAddPadding(strWindowText);
+			}
+
+			// If they do not match then update the tab item label.
+			if (strTabLabel != strWindowText)
+			{
+				STRCPY_S(szText, _MAX_PATH, strWindowText);
+				tci.cchTextMax = strWindowText.GetLength();
+
+				bSetItem = true;
+			}
+
+			if (!m_bNoIcons)
+			{
+				// Check to see if the user set the icon for the tab label.
+				HICON hIcon = 0;
+				if (!m_mapTabIcons.Lookup(pMDIChild->hWnd, hIcon))
+				{
+					// The user may have set the icon for the child by calling WM_SETICON.  If
+					// WM_GETICON returns an icon we need to make sure the tab icon has been updated.
+
+					hIcon = (HICON)::SendMessage(pMDIChild->hWnd, WM_GETICON, FALSE, 0);
+
+					// Insert the icon into map to avoid failed Lookup().
+					m_mapTabIcons.SetAt(pMDIChild->hWnd, hIcon);
+				}
+
+				// Replace the image in image list ONLY when Lookup() failed.
+				if ((hIcon != NULL) && (tci.iImage != -1))
+				{
+					bSetItem = true;
+					m_imageList.Replace(tci.iImage, hIcon);
+				}
+			}
+
+			if (bSetItem)
+			{
+				VERIFY(SetItem(pMDIChild->iItem, &tci));
+			}
+		}
+	}
+}
+
+void CXTMDIWndTab::OnIdleUpdateCmdUI()
+{
+	if (m_pMDIFrameWnd)
+	{
+		RefreshActiveSel();
+		RefreshTabLabels();
+	}
+}
+
+void CXTMDIWndTab::OnNcCalcSize(BOOL bCalcValidRects, NCCALCSIZE_PARAMS FAR* lpncsp)
+{
+	RECT& rc = lpncsp->rgrc[0];
+
+	if (rc.bottom - rc.top > m_iBorderGap * 2)
+	{
+		rc.top += m_iBorderGap;
+		rc.bottom -= m_iBorderGap;
+	}
+	else
+	{
+		rc.top = rc.bottom;
+	}
+
+	if (rc.right - rc.left > m_iBorderGap * 2)
+	{
+		rc.left += m_iBorderGap;
+		rc.right -= m_iBorderGap;
+	}
+	else
+	{
+		rc.left = rc.right;
+	}
+
+	CTabCtrl::OnNcCalcSize(bCalcValidRects, lpncsp);
+}
+
+void CXTMDIWndTab::OnNcPaint()
+{
+	CWindowDC dc(this);
+
+	CRect rectClient;
+	GetClientRect(rectClient);
+	CRect rectWindow;
+	GetWindowRect(rectWindow);
+	rectWindow.OffsetRect(-rectWindow.left, -rectWindow.top);
+
+	if (rectWindow.Width() > rectClient.Width())
+	{
+		dc.DrawEdge(rectWindow, BDR_SUNKENOUTER, BF_RECT);
+	}
+}
+
+void CXTMDIWndTab::OnSelchange(NMHDR* /*pNMHDR*/, LRESULT* pResult)
+{
+	// Get the item data for the currently selected tab.
+	TC_ITEM tci;
+	tci.mask = TCIF_PARAM;
+
+	if (GetItem(GetCurSel(), &tci))
+	{
+		MDICHILD* pMDIChild = (MDICHILD*)tci.lParam;
+		ASSERT(pMDIChild != NULL);
+		if (!pMDIChild)
+			return;
+
+		// Get the pointer to the currently selected tab window.
+		CWnd* pActiveWnd = CWnd::FromHandle(pMDIChild->hWnd);
+		ASSERT_VALID(pActiveWnd);
+
+		// Activate the new tab window.
+		m_pMDIFrameWnd->MDIActivate(pActiveWnd);
+	}
+
+	*pResult = 0;
+}
+
+void CXTMDIWndTab::OnDestroy()
+{
+	CTabCtrl::OnDestroy();
+
+	// Delete the image list.
+	m_imageList.DeleteImageList();
+
+	// Set the active and parent windows to NULL.
+	m_hActiveChild = NULL;
+	m_pMDIFrameWnd = NULL;
+}
+
+int CXTMDIWndTab::TabFromPoint(CPoint point) const
+{
+	TCHITTESTINFO tch;
+	memset(&tch, 0, sizeof(TCHITTESTINFO));
+
+	if (point == CPoint(0, 0))
+	{
+		CPoint pt;
+		GetCursorPos(&pt);
+		ScreenToClient(&pt);
+		tch.pt = pt;
+	}
+	else
+	{
+		tch.pt = point;
+	}
+
+	return HitTest(&tch);
+}
+
+CMDIChildWnd* CXTMDIWndTab::GetFrameWnd(int iIndex) const
+{
+	if (iIndex == -1)
+		iIndex = m_iHitTest;
+
+	TC_ITEM tci;
+	tci.mask = TCIF_PARAM;
+
+	if (GetItem(iIndex, &tci))
+	{
+		MDICHILD* pMDIChild = (MDICHILD*)tci.lParam;
+		ASSERT(pMDIChild != NULL);
+		if (!pMDIChild)
+			return NULL;
+
+		return DYNAMIC_DOWNCAST(CMDIChildWnd, CWnd::FromHandle(pMDIChild->hWnd));
+	}
+
+	return NULL;
+}
+
+CMDIChildWnd* CXTMDIWndTab::GetFrameWnd(CPoint point) const
+{
+	return GetFrameWnd(TabFromPoint(point));
+}
+
+void CXTMDIWndTab::OnRButtonDown(UINT /*nFlags*/, CPoint point)
+{
+	// Get the tab index based upon the cursor position.
+	m_iHitTest = TabFromPoint(point);
+	if (m_iHitTest != -1)
+	{
+		if (m_popupMenuID != 0)
+		{
+			CPoint pt = point;
+			ClientToScreen(&pt);
+
+			CMenu popupMenu;
+			VERIFY(popupMenu.LoadMenu(m_popupMenuID));
+
+			CMenu* pPopup = popupMenu.GetSubMenu(m_nPos);
+			ASSERT(pPopup != NULL);
+			if (!pPopup)
+				return;
+
+			if (m_nDefCmd != 0)
+			{
+				::SetMenuDefaultItem(pPopup->m_hMenu, m_nDefCmd, FALSE);
+			}
+
+			CWnd* pWndPopupOwner = GetOwner();
+			ASSERT_VALID(pWndPopupOwner);
+
+			pPopup->TrackPopupMenu(TPM_LEFTALIGN | TPM_RIGHTBUTTON,
+				pt.x, pt.y, pWndPopupOwner);
+		}
+	}
+}
+
+void CXTMDIWndTab::InitializeFont()
+{
+	HGDIOBJ hFont = XTAuxData().font.GetSafeHandle();
+
+	// if the tabs are vertical, use the vertical menu font.
+	if ((GetStyle() & TCS_VERTICAL) == TCS_VERTICAL)
+		hFont = XTAuxData().fontVert.GetSafeHandle();
+
+	if (hFont != NULL)
+	{
+		if (XTOSVersionInfo()->IsWin95())
+			PostMessage(WM_SETFONT, (WPARAM)hFont, MAKELPARAM(TRUE, 0));
+		else
+			SendMessage(WM_SETFONT, (WPARAM)hFont, MAKELPARAM(TRUE, 0));
+	}
+}
+
+void CXTMDIWndTab::OnTabClose()
+{
+	if (m_pMDIFrameWnd)
+	{
+		CMDIChildWnd* pActiveChild = (CMDIChildWnd*)m_pMDIFrameWnd->MDIGetActive();
+		if (pActiveChild != NULL)
+		{
+			pActiveChild->SendMessage(WM_CLOSE);
+		}
+	}
+}

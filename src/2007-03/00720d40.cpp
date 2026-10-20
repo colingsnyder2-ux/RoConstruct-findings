@@ -1,276 +1,529 @@
-// roc 2007-03 00720d40  unit: seg_00720000  size: 760 bytes
-// Make this compile to the exact bytes below, then: roc check 2007-03 00720d40
-//
-// 00720d40  83ec10               sub esp, 0x10
-// 00720d43  f744242000800000     test dword ptr [esp + 0x20], 0x8000
-// 00720d4b  53                   push ebx
-// 00720d4c  55                   push ebp
-// 00720d4d  56                   push esi
-// 00720d4e  57                   push edi
-// 00720d4f  be01000000           mov esi, 1
-// 00720d54  7408                 je 0x720d5e
-// 00720d56  814c243000400000     or dword ptr [esp + 0x30], 0x4000
-// 00720d5e  8b442428             mov eax, dword ptr [esp + 0x28]
-// 00720d62  8b08                 mov ecx, dword ptr [eax]
-// 00720d64  8b5004               mov edx, dword ptr [eax + 4]
-// 00720d67  8b5c242c             mov ebx, dword ptr [esp + 0x2c]
-// 00720d6b  894c2410             mov dword ptr [esp + 0x10], ecx
-// 00720d6f  8b4808               mov ecx, dword ptr [eax + 8]
-// 00720d72  89542414             mov dword ptr [esp + 0x14], edx
-// 00720d76  8b500c               mov edx, dword ptr [eax + 0xc]
-// 00720d79  894c2418             mov dword ptr [esp + 0x18], ecx
-// 00720d7d  8954241c             mov dword ptr [esp + 0x1c], edx
-// 00720d81  83e303               and ebx, 3
-// 00720d84  e8470af6ff           call 0x6817d0
-// 00720d89  85db                 test ebx, ebx
-// 00720d8b  8b7838               mov edi, dword ptr [eax + 0x38]
-// 00720d8e  8b2d38ef7700         mov ebp, dword ptr [0x77ef38]
-// 00720d94  7512                 jne 0x720da8
-// 00720d96  8b5c242c             mov ebx, dword ptr [esp + 0x2c]
-// 00720d9a  83e30c               and ebx, 0xc
-// 00720d9d  0f84f2010000         je 0x720f95
-// 00720da3  8364242cf3           and dword ptr [esp + 0x2c], 0xfffffff3
-// 00720da8  8b442430             mov eax, dword ptr [esp + 0x30]
-// 00720dac  a900400000           test eax, 0x4000
-// 00720db1  744b                 je 0x720dfe
-// 00720db3  a900800000           test eax, 0x8000
-// 00720db8  7427                 je 0x720de1
-// 00720dba  f6c303               test bl, 3
-// 00720dbd  7411                 je 0x720dd0
-// 00720dbf  6a06                 push 6
-// 00720dc1  ffd5                 call ebp
-// 00720dc3  8bf0                 mov esi, eax
-// 00720dc5  8b442430             mov eax, dword ptr [esp + 0x30]
-// 00720dc9  8bde                 mov ebx, esi
-// 00720dcb  e9ad000000           jmp 0x720e7d
-// 00720dd0  6a05                 push 5
-// 00720dd2  ffd5                 call ebp
-// 00720dd4  8bf0                 mov esi, eax
-// 00720dd6  8b442430             mov eax, dword ptr [esp + 0x30]
-// 00720dda  8bde                 mov ebx, esi
-// 00720ddc  e99c000000           jmp 0x720e7d
-// 00720de1  f6c303               test bl, 3
-// 00720de4  740a                 je 0x720df0
-// 00720de6  8b7730               mov esi, dword ptr [edi + 0x30]
-// 00720de9  8bde                 mov ebx, esi
-// 00720deb  e98d000000           jmp 0x720e7d
-// 00720df0  6a0f                 push 0xf
-// 00720df2  ffd5                 call ebp
-// 00720df4  8bf0                 mov esi, eax
-// 00720df6  8b442430             mov eax, dword ptr [esp + 0x30]
-// 00720dfa  8bde                 mov ebx, esi
-// 00720dfc  eb7f                 jmp 0x720e7d
-// 00720dfe  83c3ff               add ebx, -1
-// 00720e01  83fb07               cmp ebx, 7
-// 00720e04  0f877f010000         ja 0x720f89
-// 00720e0a  ff249d18107200       jmp dword ptr [ebx*4 + 0x721018]
-// 00720e11  a900100000           test eax, 0x1000
-// 00720e16  7408                 je 0x720e20
-// 00720e18  8b5f2c               mov ebx, dword ptr [edi + 0x2c]
-// 00720e1b  8b7734               mov esi, dword ptr [edi + 0x34]
-// 00720e1e  eb5d                 jmp 0x720e7d
-// 00720e20  6a16                 push 0x16
-// 00720e22  ffd5                 call ebp
-// 00720e24  8b7734               mov esi, dword ptr [edi + 0x34]
-// 00720e27  8bd8                 mov ebx, eax
-// 00720e29  8b442430             mov eax, dword ptr [esp + 0x30]
-// 00720e2d  eb4e                 jmp 0x720e7d
-// 00720e2f  a900100000           test eax, 0x1000
-// 00720e34  740f                 je 0x720e45
-// 00720e36  6a16                 push 0x16
-// 00720e38  ffd5                 call ebp
-// 00720e3a  8b7730               mov esi, dword ptr [edi + 0x30]
-// 00720e3d  8bd8                 mov ebx, eax
-// 00720e3f  8b442430             mov eax, dword ptr [esp + 0x30]
-// 00720e43  eb38                 jmp 0x720e7d
-// 00720e45  8b5f2c               mov ebx, dword ptr [edi + 0x2c]
-// 00720e48  8b7730               mov esi, dword ptr [edi + 0x30]
-// 00720e4b  eb30                 jmp 0x720e7d
-// 00720e4d  a900100000           test eax, 0x1000
-// 00720e52  7408                 je 0x720e5c
-// 00720e54  8b5f34               mov ebx, dword ptr [edi + 0x34]
-// 00720e57  8b772c               mov esi, dword ptr [edi + 0x2c]
-// 00720e5a  eb21                 jmp 0x720e7d
-// 00720e5c  8b5f30               mov ebx, dword ptr [edi + 0x30]
-// 00720e5f  8b772c               mov esi, dword ptr [edi + 0x2c]
-// 00720e62  eb19                 jmp 0x720e7d
-// 00720e64  a900100000           test eax, 0x1000
-// 00720e69  7405                 je 0x720e70
-// 00720e6b  8b5f30               mov ebx, dword ptr [edi + 0x30]
-// 00720e6e  eb03                 jmp 0x720e73
-// 00720e70  8b5f34               mov ebx, dword ptr [edi + 0x34]
-// 00720e73  6a16                 push 0x16
-// 00720e75  ffd5                 call ebp
-// 00720e77  8bf0                 mov esi, eax
-// 00720e79  8b442430             mov eax, dword ptr [esp + 0x30]
-// 00720e7d  a810                 test al, 0x10
-// 00720e7f  741c                 je 0x720e9d
-// 00720e81  8b4c2424             mov ecx, dword ptr [esp + 0x24]
-// 00720e85  50                   push eax
-// 00720e86  56                   push esi
-// 00720e87  53                   push ebx
-// 00720e88  8d44241c             lea eax, [esp + 0x1c]
-// 00720e8c  50                   push eax
-// 00720e8d  51                   push ecx
-// 00720e8e  e82dfeffff           call 0x720cc0
-// 00720e93  83c414               add esp, 0x14
-// 00720e96  8bf0                 mov esi, eax
-// 00720e98  e9f9feffff           jmp 0x720d96
-// 00720e9d  a804                 test al, 4
-// 00720e9f  7436                 je 0x720ed7
-// 00720ea1  8b442418             mov eax, dword ptr [esp + 0x18]
-// 00720ea5  2b8734010000         sub eax, dword ptr [edi + 0x134]
-// 00720eab  8b54241c             mov edx, dword ptr [esp + 0x1c]
-// 00720eaf  2b542414             sub edx, dword ptr [esp + 0x14]
-// 00720eb3  56                   push esi
-// 00720eb4  52                   push edx
-// 00720eb5  8b54241c             mov edx, dword ptr [esp + 0x1c]
-// 00720eb9  89442420             mov dword ptr [esp + 0x20], eax
-// 00720ebd  8b8f34010000         mov ecx, dword ptr [edi + 0x134]
-// 00720ec3  51                   push ecx
-// 00720ec4  52                   push edx
-// 00720ec5  50                   push eax
-// 00720ec6  8b442438             mov eax, dword ptr [esp + 0x38]
-// 00720eca  50                   push eax
-// 00720ecb  e870faffff           call 0x720940
-// 00720ed0  8b442448             mov eax, dword ptr [esp + 0x48]
-// 00720ed4  83c418               add esp, 0x18
-// 00720ed7  a808                 test al, 8
-// 00720ed9  7436                 je 0x720f11
-// 00720edb  8b44241c             mov eax, dword ptr [esp + 0x1c]
-// 00720edf  2b8738010000         sub eax, dword ptr [edi + 0x138]
-// 00720ee5  8b542418             mov edx, dword ptr [esp + 0x18]
-// 00720ee9  56                   push esi
-// 00720eea  8b742428             mov esi, dword ptr [esp + 0x28]
-// 00720eee  89442420             mov dword ptr [esp + 0x20], eax
-// 00720ef2  8b8f38010000         mov ecx, dword ptr [edi + 0x138]
-// 00720ef8  51                   push ecx
-// 00720ef9  8b4c2418             mov ecx, dword ptr [esp + 0x18]
-// 00720efd  2bd1                 sub edx, ecx
-// 00720eff  52                   push edx
-// 00720f00  50                   push eax
-// 00720f01  51                   push ecx
-// 00720f02  56                   push esi
-// 00720f03  e838faffff           call 0x720940
-// 00720f08  8b442448             mov eax, dword ptr [esp + 0x48]
-// 00720f0c  83c418               add esp, 0x18
-// 00720f0f  eb04                 jmp 0x720f15
-// 00720f11  8b742424             mov esi, dword ptr [esp + 0x24]
-// 00720f15  a801                 test al, 1
-// 00720f17  7436                 je 0x720f4f
-// 00720f19  8b442414             mov eax, dword ptr [esp + 0x14]
-// 00720f1d  8b4c241c             mov ecx, dword ptr [esp + 0x1c]
-// 00720f21  8b9734010000         mov edx, dword ptr [edi + 0x134]
-// 00720f27  53                   push ebx
-// 00720f28  2bc8                 sub ecx, eax
-// 00720f2a  51                   push ecx
-// 00720f2b  52                   push edx
-// 00720f2c  50                   push eax
-// 00720f2d  8b442420             mov eax, dword ptr [esp + 0x20]
-// 00720f31  50                   push eax
-// 00720f32  56                   push esi
-// 00720f33  e808faffff           call 0x720940
-// 00720f38  8b4c2428             mov ecx, dword ptr [esp + 0x28]
-// 00720f3c  8b442448             mov eax, dword ptr [esp + 0x48]
-// 00720f40  83c418               add esp, 0x18
-// 00720f43  038f34010000         add ecx, dword ptr [edi + 0x134]
-// 00720f49  894c2410             mov dword ptr [esp + 0x10], ecx
-// 00720f4d  eb04                 jmp 0x720f53
-// 00720f4f  8b4c2410             mov ecx, dword ptr [esp + 0x10]
-// 00720f53  a802                 test al, 2
-// 00720f55  7428                 je 0x720f7f
-// 00720f57  8b9738010000         mov edx, dword ptr [edi + 0x138]
-// 00720f5d  8b442418             mov eax, dword ptr [esp + 0x18]
-// 00720f61  53                   push ebx
-// 00720f62  52                   push edx
-// 00720f63  8b54241c             mov edx, dword ptr [esp + 0x1c]
-// 00720f67  2bc1                 sub eax, ecx
-// 00720f69  50                   push eax
-// 00720f6a  52                   push edx
-// 00720f6b  51                   push ecx
-// 00720f6c  56                   push esi
-// 00720f6d  e8cef9ffff           call 0x720940
-// 00720f72  8b8738010000         mov eax, dword ptr [edi + 0x138]
-// 00720f78  83c418               add esp, 0x18
-// 00720f7b  01442414             add dword ptr [esp + 0x14], eax
-// 00720f7f  be01000000           mov esi, 1
-// 00720f84  e90dfeffff           jmp 0x720d96
-// 00720f89  5f                   pop edi
-// 00720f8a  5e                   pop esi
-// 00720f8b  5d                   pop ebp
-// 00720f8c  33c0                 xor eax, eax
-// 00720f8e  5b                   pop ebx
-// 00720f8f  83c410               add esp, 0x10
-// 00720f92  c21000               ret 0x10
-// 00720f95  8b5c2430             mov ebx, dword ptr [esp + 0x30]
-// 00720f99  f7c300080000         test ebx, 0x800
-// 00720f9f  7441                 je 0x720fe2
-// 00720fa1  f6c310               test bl, 0x10
-// 00720fa4  7404                 je 0x720faa
-// 00720fa6  33f6                 xor esi, esi
-// 00720fa8  eb38                 jmp 0x720fe2
-// 00720faa  f7c300800000         test ebx, 0x8000
-// 00720fb0  7404                 je 0x720fb6
-// 00720fb2  6a05                 push 5
-// 00720fb4  eb02                 jmp 0x720fb8
-// 00720fb6  6a0f                 push 0xf
-// 00720fb8  ffd5                 call ebp
-// 00720fba  8b4c241c             mov ecx, dword ptr [esp + 0x1c]
-// 00720fbe  8b542418             mov edx, dword ptr [esp + 0x18]
-// 00720fc2  50                   push eax
-// 00720fc3  8b442418             mov eax, dword ptr [esp + 0x18]
-// 00720fc7  2bc8                 sub ecx, eax
-// 00720fc9  51                   push ecx
-// 00720fca  8b4c2418             mov ecx, dword ptr [esp + 0x18]
-// 00720fce  2bd1                 sub edx, ecx
-// 00720fd0  52                   push edx
-// 00720fd1  50                   push eax
-// 00720fd2  8b442434             mov eax, dword ptr [esp + 0x34]
-// 00720fd6  51                   push ecx
-// 00720fd7  50                   push eax
-// 00720fd8  e863f9ffff           call 0x720940
-// 00720fdd  83c418               add esp, 0x18
-// 00720fe0  8bf0                 mov esi, eax
-// 00720fe2  f7c300200000         test ebx, 0x2000
-// 00720fe8  741f                 je 0x721009
-// 00720fea  8b442428             mov eax, dword ptr [esp + 0x28]
-// 00720fee  8b4c2410             mov ecx, dword ptr [esp + 0x10]
-// 00720ff2  8b542414             mov edx, dword ptr [esp + 0x14]
-// 00720ff6  8908                 mov dword ptr [eax], ecx
-// 00720ff8  8b4c2418             mov ecx, dword ptr [esp + 0x18]
-// 00720ffc  895004               mov dword ptr [eax + 4], edx
-// 00720fff  8b54241c             mov edx, dword ptr [esp + 0x1c]
-// 00721003  894808               mov dword ptr [eax + 8], ecx
-// 00721006  89500c               mov dword ptr [eax + 0xc], edx
-// 00721009  5f                   pop edi
-// 0072100a  8bc6                 mov eax, esi
-// 0072100c  5e                   pop esi
-// 0072100d  5d                   pop ebp
-// 0072100e  5b                   pop ebx
-// 0072100f  83c410               add esp, 0x10
-// 00721012  c21000               ret 0x10
-// 00721015  8d4900               lea ecx, [ecx]
-// 00721018  110e                 adc dword ptr [esi], ecx
-// 0072101a  7200                 jb 0x72101c
-// 0072101c  4d                   dec ebp
-// 0072101d  0e                   push cs
-// 0072101e  7200                 jb 0x721020
-// 00721020  890f                 mov dword ptr [edi], ecx
-// 00721022  7200                 jb 0x721024
-// 00721024  2f                   das 
-// 00721025  0e                   push cs
-// 00721026  7200                 jb 0x721028
-// 00721028  890f                 mov dword ptr [edi], ecx
-// 0072102a  7200                 jb 0x72102c
-// 0072102c  890f                 mov dword ptr [edi], ecx
-// 0072102e  7200                 jb 0x721030
-// 00721030  890f                 mov dword ptr [edi], ecx
-// 00721032  7200                 jb 0x721034
-// 00721034  640e                 push cs
-// 00721036  7200                 jb 0x721038
-// library xtp-11.2.2-vc8/Source\SkinFramework\XTPSkinDrawTools.cpp (function ?XTRSkinFrameworkDrawEdge@@YGHPAUHDC__@@PAUtagRECT@@II@Z)
-
 // roc-lang: cpp
 // roc-cl: 50727
 // roc-flags: /O2 /GS- /MD
 // roc-lib: xtp-11.2.2-vc8 Source/SkinFramework/XTPSkinDrawTools.cpp
+
+// Candidate translation unit (score above; library headers required).
+// XTPSkinDrawTools.cpp
+//
+// This file is a part of the XTREME SKINFRAMEWORK MFC class library.
+// (c)1998-2007 Codejock Software, All Rights Reserved.
+//
+// THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
+// RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
+// CONSENT OF CODEJOCK SOFTWARE.
+//
+// THIS SOURCE CODE CAN ONLY BE USED UNDER THE TERMS AND CONDITIONS OUTLINED
+// IN THE XTREME TOOLKIT PRO LICENSE AGREEMENT. CODEJOCK SOFTWARE GRANTS TO
+// YOU (ONE SOFTWARE DEVELOPER) THE LIMITED RIGHT TO USE THIS SOFTWARE ON A
+// SINGLE COMPUTER.
+//
+// CONTACT INFORMATION:
+// support@codejock.com
+// http://www.codejock.com
+//
+/////////////////////////////////////////////////////////////////////////////
+
+#include "stdafx.h"
+
+#include "Common/XTPVC80Helpers.h"
+#include "Common/XTPImageManager.h"
+
+#include "XTPSkinDrawTools.h"
+#include "XTPSkinObject.h"
+#include "XTPSkinManager.h"
+
+
+#ifdef _DEBUG
+#undef THIS_FILE
+static char THIS_FILE[]=__FILE__;
+#define new DEBUG_NEW
+#endif
+
+
+BOOL XTPFillSolidRect(HDC hdc, int x, int y, int cx, int cy, COLORREF clr)
+{
+	COLORREF clrOld = ::SetBkColor(hdc, clr);
+	::ExtTextOut(hdc, 0, 0, ETO_OPAQUE, CRect(x, y, x + cx, y + cy), NULL, 0, NULL);
+	::SetBkColor(hdc, clrOld);
+	return TRUE;
+}
+
+BOOL XTPFillSolidRect(HDC hdc, LPRECT lprc, COLORREF clr)
+{
+	COLORREF clrOld = ::SetBkColor(hdc, clr);
+	::ExtTextOut(hdc, 0, 0, ETO_OPAQUE, lprc, NULL, 0, NULL);
+	::SetBkColor(hdc, clrOld);
+	return TRUE;
+}
+
+void XTPFillSolidRect(HDC hdc, int x, int y, int cx, int cy, HBRUSH hBrush)
+{
+	::FillRect(hdc, CRect(x, y, x + cx, y + cy), hBrush);
+}
+
+
+void AFX_CDECL XTPSkinFrameworkDrawFrame(HDC hdc, LPRECT lprc, int nSize, COLORREF clr)
+{
+	XTPFillSolidRect(hdc, lprc->left, lprc->top, lprc->right - lprc->left - nSize, nSize, clr);
+	XTPFillSolidRect(hdc, lprc->left, lprc->top, nSize, lprc->bottom - lprc->top - nSize, clr);
+	XTPFillSolidRect(hdc, lprc->right, lprc->top, -nSize, lprc->bottom - lprc->top, clr);
+	XTPFillSolidRect(hdc, lprc->left, lprc->bottom, lprc->right - lprc->left, -nSize, clr);
+}
+
+void AFX_CDECL XTPSkinFrameworkDrawFrame(HDC hdc, LPRECT lprc, int nSize, HBRUSH hBrush)
+{
+	XTPFillSolidRect(hdc, lprc->left, lprc->top, lprc->right - lprc->left - nSize, nSize, hBrush);
+	XTPFillSolidRect(hdc, lprc->left, lprc->top, nSize, lprc->bottom - lprc->top - nSize, hBrush);
+	XTPFillSolidRect(hdc, lprc->right - nSize, lprc->top, nSize, lprc->bottom - lprc->top, hBrush);
+	XTPFillSolidRect(hdc, lprc->left, lprc->bottom - nSize, lprc->right - lprc->left, nSize, hBrush);
+}
+
+
+DWORD DrawDiagonalLine(
+	HDC    hdc,
+	LPRECT lprc,
+	int    iDirection,
+	int    iThickness,
+	UINT   flags,
+	COLORREF clr)
+{
+	RECT    rc;
+	LPLONG  py;
+	int     cx;
+	int     cy;
+	int     dx;
+	int     dy;
+	LPINT   pc;
+
+	CXTPSkinManagerMetrics* pMetrics = XTPSkinManager()->GetMetrics();
+
+	if (IsRectEmpty(lprc))
+		return 0L;
+
+	rc = *lprc;
+	iThickness--;
+
+	cy = rc.bottom - rc.top;
+	cx = rc.right - rc.left;
+
+	if (!flags && (cy != cx))
+		cy -= iThickness * pMetrics->m_cyBorder;
+
+	if (cy >= cx)
+	{
+		cy /= cx;
+		pc = &cy;
+
+		cx = pMetrics->m_cxBorder;
+
+	}
+	else
+	{
+		cx /= cy;
+		pc = &cx;
+
+		cy = pMetrics->m_cyBorder;
+	}
+
+	dx = cx;
+	dy = iDirection * cy;
+
+	*pc = (*pc + iThickness) * pMetrics->m_cyBorder;
+
+	rc.right  -= cx;
+	rc.bottom -= cy;
+
+	py = ((iDirection < 0) ? &rc.top : &rc.bottom);
+
+	while ((rc.left <= rc.right) && (rc.top <= rc.bottom))
+	{
+		if (!(flags & BF_MIDDLE))
+		{
+			XTPFillSolidRect(hdc, rc.left, *py, cx, cy, clr);
+		}
+		else
+		{
+			if (cy > pMetrics->m_cyBorder)
+			{
+				if (flags & BF_LEFT)
+					XTPFillSolidRect(hdc, rc.left, lprc->top, cx, *py - lprc->top + cy, clr);
+				else
+					XTPFillSolidRect(hdc, rc.left, *py, cx, lprc->bottom - *py, clr);
+			}
+			else
+			{
+				if (flags & BF_TOP)
+					XTPFillSolidRect(hdc, rc.left, *py, lprc->right - rc.left, cy, clr);
+				else
+
+					XTPFillSolidRect(hdc, lprc->left, *py, rc.left - lprc->left + cx, cy, clr);
+			}
+		}
+
+		rc.left += dx;
+		*py     -= dy;
+	}
+
+	return MAKELONG(cx, cy);
+}
+
+
+BOOL DrawDiagonal(HDC hdc, LPRECT lprc, COLORREF clrTopLeft, COLORREF clrBottomRight, UINT flags)
+{
+	int nDirection = 1;
+
+	switch (flags & (BF_RECT | BF_DIAGONAL))
+	{
+	case BF_DIAGONAL_ENDTOPLEFT:
+	case BF_DIAGONAL_ENDBOTTOMRIGHT:
+		nDirection = -1;
+		break;
+	}
+
+	DWORD dAdjust = DrawDiagonalLine(hdc, lprc, nDirection, 1, (flags & ~BF_MIDDLE),
+		((flags & BF_BOTTOM) ? clrBottomRight : clrTopLeft));
+
+	if (flags & BF_TOP)
+		lprc->left += LOWORD(dAdjust);
+	else
+		lprc->right -= LOWORD(dAdjust);
+
+	if (flags & BF_RIGHT)
+		lprc->top += HIWORD(dAdjust);
+	else
+		lprc->bottom -= HIWORD(dAdjust);
+
+	return TRUE;
+}
+
+#ifndef BDR_OUTER
+#define BDR_OUTER       0x0003
+#endif
+
+#ifndef BDR_INNER
+#define BDR_INNER       0x000c
+#endif
+
+
+
+BOOL WINAPI XTRSkinFrameworkDrawEdge(HDC hdc, LPRECT lprc, UINT edge, UINT flags)
+{
+	COLORREF clrTopLeft;
+	COLORREF clrBottomRight;
+
+	BOOL fResult = TRUE;
+
+	if (flags & BF_MONO)
+		flags |= BF_FLAT;
+
+	RECT rc = *lprc;
+
+	UINT bdrType = (edge & BDR_OUTER);
+
+	CXTPSkinManagerMetrics* pMetrics = XTPSkinManager()->GetMetrics();
+
+	if (bdrType)
+	{
+
+DrawBorder:
+
+		if (flags & BF_FLAT)
+		{
+			if (flags & BF_MONO)
+				clrBottomRight = (bdrType & BDR_OUTER) ? GetSysColor(COLOR_WINDOWFRAME) : GetSysColor(COLOR_WINDOW);
+			else
+				clrBottomRight = (bdrType & BDR_OUTER) ? pMetrics->m_clrEdgeShadow : GetSysColor(COLOR_3DFACE);
+
+			clrTopLeft = clrBottomRight;
+		}
+		else
+		{
+			switch (bdrType)
+			{
+			case BDR_RAISEDOUTER:
+				clrTopLeft = ((flags & BF_SOFT) ? pMetrics->m_clrEdgeHighLight : GetSysColor(COLOR_3DLIGHT));
+				clrBottomRight = pMetrics->m_clrEdgeDkShadow;
+				break;
+
+			case BDR_RAISEDINNER:
+				clrTopLeft = ((flags & BF_SOFT) ? GetSysColor(COLOR_3DLIGHT) : pMetrics->m_clrEdgeHighLight);
+				clrBottomRight = pMetrics->m_clrEdgeShadow;
+				break;
+
+			case BDR_SUNKENOUTER:
+				clrTopLeft = ((flags & BF_SOFT) ? pMetrics->m_clrEdgeDkShadow : pMetrics->m_clrEdgeShadow);
+				clrBottomRight = pMetrics->m_clrEdgeHighLight;
+				break;
+
+			case BDR_SUNKENINNER:
+				clrTopLeft = ((flags & BF_SOFT) ? pMetrics->m_clrEdgeShadow : pMetrics->m_clrEdgeDkShadow);
+				clrBottomRight = GetSysColor(COLOR_3DLIGHT);
+				break;
+
+			default:
+				return FALSE;
+			}
+		}
+
+		if (flags & BF_DIAGONAL)
+		{
+			fResult = DrawDiagonal(hdc, &rc, clrTopLeft, clrBottomRight, flags);
+		}
+		else
+		{
+			if (flags & BF_RIGHT)
+			{
+				rc.right -= pMetrics->m_cxBorder;
+				XTPFillSolidRect(hdc, rc.right, rc.top, pMetrics->m_cxBorder, rc.bottom - rc.top, clrBottomRight);
+			}
+			if (flags & BF_BOTTOM)
+			{
+				rc.bottom -= pMetrics->m_cyBorder;
+				XTPFillSolidRect(hdc, rc.left, rc.bottom,  rc.right - rc.left, pMetrics->m_cyBorder, clrBottomRight);
+			}
+			if (flags & BF_LEFT)
+			{
+				XTPFillSolidRect(hdc, rc.left, rc.top, pMetrics->m_cxBorder, rc.bottom - rc.top, clrTopLeft);
+				rc.left += pMetrics->m_cxBorder;
+			}
+			if (flags & BF_TOP)
+			{
+				XTPFillSolidRect(hdc, rc.left, rc.top, rc.right - rc.left, pMetrics->m_cyBorder, clrTopLeft);
+				rc.top += pMetrics->m_cyBorder;
+			}
+			fResult = TRUE;
+		}
+	}
+
+	bdrType = (edge & BDR_INNER);
+
+	if (bdrType)
+	{
+		edge &= ~BDR_INNER;
+		goto DrawBorder;
+	}
+
+	if (flags & BF_MIDDLE)
+	{
+		if (flags & BF_DIAGONAL)
+			fResult = FALSE; // TODO!
+		else
+			fResult = XTPFillSolidRect(hdc, rc.left, rc.top, rc.right - rc.left, rc.bottom - rc.top, ((flags & BF_MONO) ? GetSysColor(COLOR_WINDOW) : GetSysColor(COLOR_3DFACE)));
+	}
+
+	if (flags & BF_ADJUST)
+		*lprc = rc;
+
+	return fResult;
+}
+
+int AFX_CDECL XTPGetParentDCClipBox(HWND   pwnd, HDC    hdc, LPRECT lprc)
+{
+	if (GetClipBox(hdc, lprc) == NULLREGION)
+		return FALSE;
+
+	if ((GetClassLongPtr(pwnd, GCL_STYLE) & CS_PARENTDC) == 0)
+		return TRUE;
+
+	RECT rc;
+	::GetClientRect(pwnd, &rc);
+
+	return IntersectRect(lprc, lprc, &rc);
+}
+
+BOOL WINAPI XTRSkinFrameworkDrawFrameControl(HDC hdc, LPRECT lprc,  UINT uType,  UINT uState)
+{
+	if (uType == DFC_SCROLL && uState == DFCS_SCROLLSIZEGRIP)
+	{
+		XTPFillSolidRect(hdc, lprc, GetSysColor(COLOR_3DFACE));
+
+		CXTPSkinManagerClass* pClassScrollBar = XTPSkinManager()->GetSkinClass(_T("SCROLLBAR"));
+		pClassScrollBar->DrawThemeBackground(CDC::FromHandle(hdc), SBP_SIZEBOX, SZB_RIGHTALIGN, lprc);
+
+		return TRUE;
+	}
+	int nType = uState & 0xF;
+
+	if (uType == DFC_BUTTON && ((uState | DFCS_PUSHED | BF_ADJUST)  == (DFCS_BUTTONPUSH | DFCS_PUSHED | BF_ADJUST)))
+	{
+		RECT rc = *lprc;
+
+		XTRSkinFrameworkDrawEdge(hdc, &rc,
+			(uState & (DFCS_PUSHED | DFCS_CHECKED)) ? EDGE_SUNKEN : EDGE_RAISED,
+				(UINT)(BF_ADJUST | BF_RECT));
+
+		XTPFillSolidRect(hdc, &rc, GetSysColor(COLOR_3DFACE));
+
+		if (uState & BF_ADJUST)
+			*lprc = rc;
+
+		return TRUE;
+	}
+
+	if ((uType == DFC_SCROLL) && (nType == DFCS_SCROLLLEFT || nType == DFCS_SCROLLRIGHT ||
+		nType == DFCS_SCROLLUP ||  nType == DFCS_SCROLLDOWN))
+	{
+		int nState = 1;
+		if (uState & DFCS_PUSHED) nState = 3;
+		if (uState & DFCS_INACTIVE) nState = 4;
+
+		CXTPSkinManagerClass* pClassScrollBar = XTPSkinManager()->GetSkinClass(_T("SCROLLBAR"));
+		pClassScrollBar->DrawThemeBackground(CDC::FromHandle(hdc), SBP_ARROWBTN, nType * 4 + nState, lprc);
+
+		return TRUE;
+	}
+
+	return FALSE;
+}
+
+void AFX_CDECL XTPSkinFrameworkGetIconSize(HICON hImage, int* pcx, int* pcy)
+{
+	*pcx = 32;
+	*pcy = 32;
+
+	ICONINFO iconInfo;
+	if (!GetIconInfo(hImage, &iconInfo))
+		return;
+
+	BITMAP bm;
+	if (!GetObject(iconInfo.hbmMask, sizeof(BITMAP), &bm))
+		return;
+
+	*pcx = bm.bmWidth;
+	*pcy = bm.bmHeight;
+
+	if (!iconInfo.hbmColor)
+	{
+		*pcy /= 2;
+	}
+
+	if (iconInfo.hbmColor) DeleteObject(iconInfo.hbmColor);
+	if (iconInfo.hbmMask) DeleteObject(iconInfo.hbmMask);
+}
+
+
+HPALETTE XTPSkinFrameworkCreatePaletteFromDIBitmap(LPBITMAPINFO pbmi)
+{
+	DWORD nNumColors = pbmi->bmiHeader.biClrUsed;
+	if (!nNumColors && pbmi->bmiHeader.biBitCount <= 8)
+		nNumColors = 1 << pbmi->bmiHeader.biBitCount;
+
+	if (!nNumColors)
+		return NULL;
+
+	PLOGPALETTE pLogPalette = (PLOGPALETTE)malloc(sizeof(LOGPALETTE) + nNumColors * sizeof(PALETTEENTRY));
+	if (!pLogPalette)
+		return NULL;
+
+	pLogPalette->palNumEntries = (WORD)nNumColors;
+	pLogPalette->palVersion = 0x300;
+
+	for (WORD i = 0; i < nNumColors; i++)
+	{
+		pLogPalette->palPalEntry[i].peBlue = pbmi->bmiColors[i].rgbBlue;
+		pLogPalette->palPalEntry[i].peRed = pbmi->bmiColors[i].rgbRed;
+		pLogPalette->palPalEntry[i].peGreen = pbmi->bmiColors[i].rgbGreen;
+		pLogPalette->palPalEntry[i].peFlags = 0;
+	}
+
+	HPALETTE hPalette = CreatePalette(pLogPalette);
+
+	free(pLogPalette);
+
+	return hPalette;
+}
+
+HBITMAP XTPSkinFrameworkCreateDDBFromPackedDIBitmap(LPBITMAPINFO pbmi, HPALETTE hPalette)
+{
+	// Find out how big the bmiColors is
+	int nNumColors = (int)pbmi->bmiHeader.biClrUsed;
+	if (!nNumColors && pbmi->bmiHeader.biBitCount <= 8)
+		nNumColors = 1 << pbmi->bmiHeader.biBitCount;
+
+	LPVOID lpBits = &pbmi->bmiColors[nNumColors];
+
+	HDC hDC = GetDC(NULL);
+	HPALETTE hOldPal = SelectPalette(hDC, hPalette, FALSE);
+
+	HBITMAP hBitmap = CreateDIBitmap(hDC, &pbmi->bmiHeader, CBM_INIT, lpBits, pbmi, DIB_RGB_COLORS);
+
+	SelectPalette(hDC, hOldPal, FALSE);
+	ReleaseDC(NULL, hDC);
+
+	return hBitmap;
+}
+
+
+HBITMAP AFX_CDECL XTPSkinFrameworkLoadBitmap(HMODULE hModule, LPCTSTR lpszResourceName, BOOL& bAlpha)
+{
+	if (CXTPImageManagerIcon::IsPngBitmapResource(hModule, lpszResourceName))
+	{
+		return CXTPImageManagerIcon::LoadBitmapFromResource(hModule, lpszResourceName, &bAlpha);
+	}
+
+
+	#define BitmapWidth(cx, bpp)  (((((cx) * (bpp)) + 31) & ~31) >> 3)
+
+	HRSRC hResource = FindResource(hModule, lpszResourceName, RT_BITMAP);
+	if (hResource == NULL)
+		return NULL;
+
+	HGLOBAL hGlobal = LoadResource(hModule, hResource);
+	if (hGlobal == NULL)
+		return NULL;
+
+	LPBITMAPINFO pResourceInfo = (LPBITMAPINFO)::LockResource(hGlobal);
+	if (!pResourceInfo)
+		return NULL;
+
+	int biSizeImage = BitmapWidth(pResourceInfo->bmiHeader.biWidth,
+		pResourceInfo->bmiHeader.biBitCount) * pResourceInfo->bmiHeader.biHeight;
+
+
+	bAlpha = pResourceInfo->bmiHeader.biBitCount == 32;
+	HBITMAP hbmResult = NULL;
+
+	if (SizeofResource(hModule, hResource) >= int(biSizeImage + sizeof(BITMAPINFOHEADER)))
+	{
+		CDC dcSrc;
+		dcSrc.CreateCompatibleDC(NULL);
+
+		if (pResourceInfo->bmiHeader.biBitCount >= 24)
+		{
+			PBITMAPINFO pBitmapInfo = (PBITMAPINFO)malloc(sizeof(BITMAPINFOHEADER) + sizeof(COLORREF) * 3);
+			ASSERT(pBitmapInfo != NULL);
+			if (!pBitmapInfo)
+				return NULL;
+
+			MEMCPY_S(pBitmapInfo, &pResourceInfo->bmiHeader, sizeof(BITMAPINFOHEADER));
+			pBitmapInfo->bmiHeader.biSizeImage = biSizeImage;
+
+			BYTE* pDestBits = NULL;
+			HBITMAP hBmp = CreateDIBSection(dcSrc, pBitmapInfo, DIB_RGB_COLORS, (void**)&pDestBits, NULL, 0);
+
+			if (hBmp && pDestBits)
+			{
+				MEMCPY_S(pDestBits, &pResourceInfo->bmiColors, biSizeImage);
+				hbmResult = hBmp;
+			}
+			free(pBitmapInfo);
+		}
+		else
+		{
+			HPALETTE hPalette = XTPSkinFrameworkCreatePaletteFromDIBitmap(pResourceInfo);
+
+			hbmResult = XTPSkinFrameworkCreateDDBFromPackedDIBitmap(pResourceInfo, hPalette);
+
+			if (hPalette)
+			{
+				DeleteObject(hPalette);
+			}
+		}
+	}
+
+	UnlockResource(hGlobal);
+	FreeResource(hGlobal);
+
+	return hbmResult ;
+}

@@ -1,23 +1,98 @@
-// roc 2010-06 0088d190  unit: CXTSplitterWndTheme  size: 32 bytes
-// Make this compile to the exact bytes below, then: roc check 2010-06 0088d190
-//
-// 0088d190  56                   push esi
-// 0088d191  57                   push edi
-// 0088d192  8bf1                 mov esi, ecx
-// 0088d194  e81774bcff           call 0x4545b0
-// 0088d199  8b3d04ba9e00         mov edi, dword ptr [0x9eba04]
-// 0088d19f  6a0f                 push 0xf
-// 0088d1a1  ffd7                 call edi
-// 0088d1a3  6a10                 push 0x10
-// 0088d1a5  894614               mov dword ptr [esi + 0x14], eax
-// 0088d1a8  ffd7                 call edi
-// 0088d1aa  5f                   pop edi
-// 0088d1ab  894618               mov dword ptr [esi + 0x18], eax
-// 0088d1ae  5e                   pop esi
-// 0088d1af  c3                   ret 
-// library xtp-11.2.2/Source\Controls\XTSplitterWndTheme.cpp (function ?RefreshMetrics@CXTSplitterWndTheme@@UAEXXZ)
-
 // roc-lang: cpp
 // roc-cl: 30729
 // roc-flags: /O2 /GS- /MD
 // roc-lib: xtp-11.2.2 Source/Controls/XTSplitterWndTheme.cpp
+
+// Candidate translation unit (score above; library headers required).
+// XTSplitterWndTheme.cpp: implementation of the XTSplitterWndTheme class.
+//
+// This file is a part of the XTREME CONTROLS MFC class library.
+// (c)1998-2007 Codejock Software, All Rights Reserved.
+//
+// THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
+// RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
+// CONSENT OF CODEJOCK SOFTWARE.
+//
+// THIS SOURCE CODE CAN ONLY BE USED UNDER THE TERMS AND CONDITIONS OUTLINED
+// IN THE XTREME TOOLKIT PRO LICENSE AGREEMENT. CODEJOCK SOFTWARE GRANTS TO
+// YOU (ONE SOFTWARE DEVELOPER) THE LIMITED RIGHT TO USE THIS SOFTWARE ON A
+// SINGLE COMPUTER.
+//
+// CONTACT INFORMATION:
+// support@codejock.com
+// http://www.codejock.com
+//
+/////////////////////////////////////////////////////////////////////////////
+
+#include "stdafx.h"
+#include "Common/XTPWinThemeWrapper.h"
+#include "Common/XTPColorManager.h"
+#include "Common/XTPDrawHelpers.h"
+
+#include "XTThemeManager.h"
+#include "XTSplitterWndTheme.h"
+
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#undef THIS_FILE
+static char THIS_FILE[] = __FILE__;
+#endif
+
+IMPLEMENT_THEME_FACTORY(CXTSplitterWndTheme)
+
+/////////////////////////////////////////////////////////////////////////////
+// CXTSplitterWndTheme
+
+CXTSplitterWndTheme::CXTSplitterWndTheme()
+{
+}
+
+void CXTSplitterWndTheme::RefreshMetrics()
+{
+	CXTThemeManagerStyle ::RefreshMetrics();
+
+	m_clrSplitterFace = GetSysColor(COLOR_3DFACE);
+	m_clrSplitterBorders = GetSysColor(COLOR_3DSHADOW);
+}
+
+/////////////////////////////////////////////////////////////////////////////
+// CXTSplitterWndThemeOfficeXP
+
+void CXTSplitterWndThemeOfficeXP::RefreshMetrics()
+{
+	CXTSplitterWndTheme::RefreshMetrics();
+}
+
+/////////////////////////////////////////////////////////////////////////////
+// CXTSplitterWndThemeOffice2003
+
+void CXTSplitterWndThemeOffice2003::RefreshMetrics()
+{
+	CXTSplitterWndThemeOfficeXP::RefreshMetrics();
+
+	if (!XTPColorManager()->IsLunaColorsDisabled())
+	{
+		XTPCurrentSystemTheme systemTheme = XTPColorManager()->GetCurrentSystemTheme();
+
+		switch (systemTheme)
+		{
+		case xtpSystemThemeBlue:
+		case xtpSystemThemeRoyale:
+		case xtpSystemThemeAero:
+			m_clrSplitterFace = RGB(216, 231, 252);
+			m_clrSplitterBorders = RGB(158, 190, 245);
+			break;
+
+		case xtpSystemThemeOlive:
+			m_clrSplitterFace = RGB(226, 231, 191);
+			m_clrSplitterBorders = RGB(171, 192, 138);
+			break;
+
+		case xtpSystemThemeSilver:
+			m_clrSplitterFace = RGB(223, 223, 234);
+			m_clrSplitterBorders = RGB(177, 176, 195);
+			break;
+		}
+
+	}
+}

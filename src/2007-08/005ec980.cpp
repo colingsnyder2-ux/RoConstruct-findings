@@ -1,25 +1,124 @@
-// roc 2007-08 005ec980  unit: RBX::VExplosion::?$BoundPropGetSet  size: 44 bytes
-// Make this compile to the exact bytes below, then: roc check 2007-08 005ec980
-//
-// 005ec980  8b442408             mov eax, dword ptr [esp + 8]
-// 005ec984  85c0                 test eax, eax
-// 005ec986  7405                 je 0x5ec98d
-// 005ec988  83c0fc               add eax, -4
-// 005ec98b  eb02                 jmp 0x5ec98f
-// 005ec98d  33c0                 xor eax, eax
-// 005ec98f  8b4908               mov ecx, dword ptr [ecx + 8]
-// 005ec992  d90401               fld dword ptr [ecx + eax]
-// 005ec995  03c8                 add ecx, eax
-// 005ec997  8b442404             mov eax, dword ptr [esp + 4]
-// 005ec99b  d918                 fstp dword ptr [eax]
-// 005ec99d  d94104               fld dword ptr [ecx + 4]
-// 005ec9a0  d95804               fstp dword ptr [eax + 4]
-// 005ec9a3  d94108               fld dword ptr [ecx + 8]
-// 005ec9a6  d95808               fstp dword ptr [eax + 8]
-// 005ec9a9  c20800               ret 8
-// library rbxgs/v8datamodel\Explosion.cpp (function ?getValue@?$BoundPropGetSet@VExplosion@RBX@@@?$BoundProp@VVector3@G3D@@$00@Reflection@RBX@@UBE?AVVector3@G3D@@PBVDescribedBase@34@@Z)
-
 // roc-lang: cpp
 // roc-cl: 50727
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
 // roc-lib: rbxgs v8datamodel/Explosion.cpp
+
+// Candidate translation unit (score above; library headers required).
+#include "v8datamodel/Explosion.h"
+#include "v8datamodel/Workspace.h"
+#include "v8datamodel/PartInstance.h"
+#include "v8world/ContactManager.h"
+#include "v8world/World.h"
+
+namespace RBX
+{
+	static Reflection::PropDescriptor<Explosion, float> propBlastRadius("BlastRadius", "Data", &Explosion::getBlastRadius, &Explosion::setBlastRadius, Reflection::PropertyDescriptor::STANDARD);
+
+	Reflection::SignalDesc<Explosion, void(boost::shared_ptr<Instance>, float)> signal_Hit("Hit", "part", "distance");
+
+	Reflection::BoundProp<G3D::Vector3, 1> Explosion::propPosition("Position", "Data", &Explosion::position, Reflection::PropertyDescriptor::STANDARD);
+	Reflection::BoundProp<float, 1> Explosion::propBlastPressure("BlastPressure", "Data", &Explosion::blastPressure, Reflection::PropertyDescriptor::STANDARD);
+
+	Explosion::Explosion()
+		: blastRadius(4.0f),
+		  blastPressure(500000.0f),
+		  age(0.0f)
+	{
+		setName("Explosion");
+	}
+
+	bool Explosion::askSetParent(const Instance* instance) const
+	{
+		return true;
+	}
+
+	void Explosion::setBlastRadius(float _blastRadius)
+	{
+		float newRadius = G3D::clamp(_blastRadius, 0.0f, 100.0f);
+		if (blastRadius != newRadius)
+		{
+			blastRadius = newRadius;
+			raisePropertyChanged(propBlastRadius);
+		}
+	}
+
+	void Explosion::signalBlast(const G3D::Array<Primitive*>& primitives)
+	{
+		if (!signal_Hit.empty(this))
+		{
+			for (int i = 0; i < primitives.size(); i++)
+			{
+				Primitive* current = primitives[i];
+
+				if (blastRadius * 2.0f > current->getRadius())
+				{
+					if (Instance* part = PartInstance::fromPrimitive(current))
+					{
+						float distance = (current->getCoordinateFrame().translation - position).magnitude();
+						signal_Hit.fire(this, shared_from(part), distance);
+					}
+				}
+			}
+		}
+	}
+
+	//99% match
+	void Explosion::doBlast(const G3D::Array<Primitive*>& primitives)
+	{
+		if (blastPressure > 0.0f)
+		{
+			World* world = Workspace::getMyWorldFast(this);
+			RBXASSERT(world);
+
+			for (int i = 0; i < primitives.size(); i++)
+			{
+				Primitive* current = primitives[i];
+
+				if (blastRadius * 2.0f > current->getRadius())
+				{
+					PartInstance::fromPrimitive(current)->destroyJoints();
+				}
+			}
+
+			world->update();
+
+			for (int i = 0; i < primitives.size(); i++)
+			{
+				Primitive* current = primitives[i];
+
+				if (blastRadius * 2.0f > current->getRadius())
+				{
+					G3D::Vector3 delta = current->getCoordinateFrame().translation - position;
+					G3D::Vector3 normal = delta == G3D::Vector3::zero() ? G3D::Vector3::unitY() : delta.direction();
+					RBXASSERT(normal.magnitude() <= 1.001);
+
+					float radius = current->getRadius();
+					float squaredRadius = radius * radius;
+
+					G3D::Vector3 impulse = normal * blastPressure * squaredRadius * (1.0f/4560.0f);
+					G3D::Vector3 force = impulse * Constants::kernelStepsPerSec();
+
+					world->ticklePrimitive(current);
+
+					Body* body = current->getBody();
+
+					const G3D::Vector3& pos = body->getCoordinateFrame().translation;
+					body->accumulateForce(force, pos);
+
+					current->getBody()->accumulateTorque(force * 0.5f * radius);
+
+					world->addedBodyForce();
+				}
+			}
+		}
+	}
+
+	void Explosion::onServiceProvider(const ServiceProvider* oldProvider, const ServiceProvider* newProvider)
+	{
+		Notifier<RunService, Stepped>::disconnect(ServiceProvider::find<RunService>(oldProvider), this);
+
+		Instance::onServiceProvider(oldProvider, newProvider);
+
+		Notifier<RunService, Stepped>::connect(ServiceProvider::find<RunService>(newProvider), this);
+	}
+}

@@ -1,32 +1,103 @@
-// roc 2009-06 006b8740  unit: RBX::UniversalTool  size: 61 bytes
-// Make this compile to the exact bytes below, then: roc check 2009-06 006b8740
-//
-// 006b8740  83ec10               sub esp, 0x10
-// 006b8743  56                   push esi
-// 006b8744  8bf1                 mov esi, ecx
-// 006b8746  837e0800             cmp dword ptr [esi + 8], 0
-// 006b874a  752c                 jne 0x6b8778
-// 006b874c  8b06                 mov eax, dword ptr [esi]
-// 006b874e  8b10                 mov edx, dword ptr [eax]
-// 006b8750  6a00                 push 0
-// 006b8752  c746081e000000       mov dword ptr [esi + 8], 0x1e
-// 006b8759  ffd2                 call edx
-// 006b875b  8b4604               mov eax, dword ptr [esi + 4]
-// 006b875e  85c0                 test eax, eax
-// 006b8760  7416                 je 0x6b8778
-// 006b8762  8d4c2404             lea ecx, [esp + 4]
-// 006b8766  51                   push ecx
-// 006b8767  8d54240c             lea edx, [esp + 0xc]
-// 006b876b  52                   push edx
-// 006b876c  8d4804               lea ecx, [eax + 4]
-// 006b876f  8974240c             mov dword ptr [esp + 0xc], esi
-// 006b8773  e8b8e9e2ff           call 0x4e7130
-// 006b8778  5e                   pop esi
-// 006b8779  83c410               add esp, 0x10
-// 006b877c  c3                   ret 
-// library openrbx-client/App\v8world\IMoving.cpp (function ?notifyMoved@IMoving@RBX@@QAEXXZ)
-
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
 // roc-lib: openrbx-client App/v8world/IMoving.cpp
+
+// Candidate translation unit (score above; library headers required).
+#include "v8world/IMoving.h"
+
+#include "decomp.h"
+
+#include <cstddef>
+
+namespace RBX {
+
+// FUNCTION: WEBSERVICE 0x100d0be0
+IMoving::IMoving() : iMovingManager(NULL), stepsToSleep(0)
+{
+}
+
+bool IMoving::checkSleep()
+{
+	if (stepsToSleep > 1) {
+		stepsToSleep--;
+
+		return false;
+	}
+
+	stepsToSleep = 0;
+	onCanAggregateChanged(true);
+
+	return true;
+}
+
+void IMoving::makeMoving()
+{
+	if (iMovingManager != NULL) {
+		iMovingManager->moved(this);
+	}
+}
+
+// FUNCTION: WEBSERVICE 0x100d0c80
+IMovingManager::~IMovingManager()
+{
+}
+
+// FUNCTION: WEBSERVICE 0x100d0cc0
+void IMovingManager::remove(IMoving* iMoving)
+{
+	if (current != moving.end() && *current == iMoving) {
+		current = moving.erase(current);
+	}
+	else {
+		moving.erase(iMoving);
+	}
+}
+
+// FUNCTION: WEBSERVICE 0x100d0d50
+void IMovingManager::onMovingHeartbeat()
+{
+	for (current = moving.begin(); current != moving.end();) {
+		IMoving* m = *current;
+
+		if (m->checkSleep()) {
+			remove(m);
+		}
+		else {
+			++current;
+		}
+	}
+}
+
+// FUNCTION: WEBSERVICE 0x100d0de0
+void IMoving::setMovingManager(IMovingManager* _iMovingManager)
+{
+	if (iMovingManager != NULL) {
+		iMovingManager->remove(this);
+	}
+
+	iMovingManager = _iMovingManager;
+
+	if (_iMovingManager != NULL && stepsToSleep > 0) {
+		onCanAggregateChanged(false);
+		makeMoving();
+	}
+}
+
+// FUNCTION: WEBSERVICE 0x100d0e40
+void IMoving::notifyMoved()
+{
+	if (stepsToSleep == 0) {
+		stepsToSleep = 30;
+		onCanAggregateChanged(false);
+		makeMoving();
+	}
+}
+
+// FUNCTION: WEBSERVICE 0x100d0e80
+IMovingManager::IMovingManager()
+{
+	current = moving.end();
+}
+
+} // namespace RBX

@@ -1,19 +1,112 @@
-// roc 2007-08 005e5e20  unit: RBX::NewNullTool  size: 32 bytes
-// Make this compile to the exact bytes below, then: roc check 2007-08 005e5e20
-//
-// 005e5e20  8b442404             mov eax, dword ptr [esp + 4]
-// 005e5e24  56                   push esi
-// 005e5e25  50                   push eax
-// 005e5e26  8bf1                 mov esi, ecx
-// 005e5e28  e8e3deffff           call 0x5e3d10
-// 005e5e2d  c70624d27b00         mov dword ptr [esi], 0x7bd224
-// 005e5e33  c746040cd27b00       mov dword ptr [esi + 4], 0x7bd20c
-// 005e5e3a  8bc6                 mov eax, esi
-// 005e5e3c  5e                   pop esi
-// 005e5e3d  c20400               ret 4
-// library rbxgs/tool\GroupDragTool.cpp (function ??$?0PAVWorkspace@RBX@@@?$Named@VMouseCommand@RBX@@$1?sGroupDragTool@2@3PBDB@RBX@@QAE@PAVWorkspace@1@@Z)
-
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
 // roc-lib: rbxgs tool/GroupDragTool.cpp
+
+// Candidate translation unit (score above; library headers required).
+#include "tool/GroupDragTool.h"
+#include "tool/Dragger.h"
+#include "util/Math.h"
+
+namespace RBX
+{
+	GroupDragTool::GroupDragTool(PartInstance* mousePart, const G3D::Vector3& hitPointWorld, const std::vector<boost::weak_ptr<PartInstance>>& partArray, Workspace* workspace)
+		: Base(workspace),
+		  dragging(false)
+	{
+		RBXASSERT(mousePart);
+		megaDragger.reset(new MegaDragger(mousePart, partArray, (RootInstance*)workspace));
+	}
+
+	GroupDragTool::~GroupDragTool()
+	{
+		if (dragging)
+			RBXASSERT(0);
+	}
+
+	const std::string GroupDragTool::getCursorName() const
+	{
+		return dragging ? "GrabRotateCursor" : "DragCursor";
+	}
+
+	MouseCommand* GroupDragTool::onKeyDown(const UIEvent& uiEvent)
+	{
+		if (dragging)
+		{
+			switch (uiEvent.key)
+			{
+			case SDLK_r:
+				megaDragger->safeRotate(Math::matrixRotateY());
+				break;
+			case SDLK_t:
+				megaDragger->safeRotate(Math::matrixTiltZ());
+				break;
+			}
+
+			return this;
+		}
+		else
+		{
+			RBXASSERT(0);
+			return NULL;
+		}
+	}
+
+	MouseCommand* GroupDragTool::onMouseDown(const UIEvent& uiEvent)
+	{
+		downPoint = uiEvent.mousePosition;
+		capture();
+
+		return this;
+	}
+
+	void GroupDragTool::onMouseIdle(const UIEvent& uiEvent)
+	{
+		RBXASSERT(captured());
+
+		G3D::Vector3 hit;
+
+		if (captured() && dragging && megaDragger->mousePartAlive() &&
+			Math::intersectRayPlane(getSearchRay(uiEvent), G3D::Plane(G3D::Vector3::unitY(), G3D::Vector3::zero()), hit))
+		{
+			hit = megaDragger->hitObjectOrPlane(uiEvent);
+			megaDragger->continueDragging();
+
+			G3D::Vector3 hitSnapped = Dragger::toGrid(hit);
+			G3D::Vector3 delta = Dragger::toGrid(hitSnapped - lastHit);
+			lastHit = hitSnapped;
+
+			megaDragger->safeMoveYDrop(delta);
+		}
+	}
+
+	void GroupDragTool::onMouseMove(const UIEvent& uiEvent)
+	{
+		RBXASSERT(captured());
+
+		if (!dragging && (G3D::Vector2(uiEvent.mousePosition) - downPoint).length() > 4.0f)
+		{
+			dragging = true;
+
+			megaDragger->startDragging();
+			megaDragger->alignAndCleanParts();
+			lastHit = megaDragger->hitObjectOrPlane(uiEvent);
+		}
+
+		onMouseIdle(uiEvent);
+	}
+
+	MouseCommand* GroupDragTool::onMouseUp(const UIEvent& uiEvent)
+	{
+		RBXASSERT(captured());
+
+		if (dragging)
+		{
+			megaDragger->finishDragging();
+			dragging = false;
+		}
+
+		releaseCapture();
+		return NULL;
+	}
+}

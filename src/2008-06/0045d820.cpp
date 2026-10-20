@@ -1,22 +1,101 @@
-// roc 2008-06 0045d820  unit: RBX::AdornG3D  size: 39 bytes
-// Make this compile to the exact bytes below, then: roc check 2008-06 0045d820
-//
-// 0045d820  56                   push esi
-// 0045d821  8bf1                 mov esi, ecx
-// 0045d823  8d4e08               lea ecx, [esi + 8]
-// 0045d826  c701d89c8100         mov dword ptr [ecx], 0x819cd8
-// 0045d82c  e84feeffff           call 0x45c680
-// 0045d831  f644240801           test byte ptr [esp + 8], 1
-// 0045d836  7409                 je 0x45d841
-// 0045d838  56                   push esi
-// 0045d839  e83c2e2400           call 0x6a067a
-// 0045d83e  83c404               add esp, 4
-// 0045d841  8bc6                 mov eax, esi
-// 0045d843  5e                   pop esi
-// 0045d844  c20400               ret 4
-// library rbxgs-view/View.cpp (function ??_GNode@?$Table@VRenderSurfaceTypes@View@RBX@@V?$Table@VVector3@G3D@@UVariations@?$MeshFactory@VCylinderAlongXMesh@View@RBX@@$00@View@RBX@@@G3D@@@G3D@@QAEPAXI@Z)
-
 // roc-lang: cpp
 // roc-cl: 50727
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
 // roc-lib: rbxgs-view View.cpp
+
+// Candidate translation unit (score above; library headers required).
+#include "RbxView/View.h"
+#include "BrickMesh.h"
+#include "CylinderMesh.h"
+#include "SphereMesh.h"
+#include "PBBMesh.h"
+#include "Part.h"
+#include "RenderLib/AggregatingSceneManager.h"
+#include "v8datamodel/Lighting.h"
+#include "v8datamodel/DataModel.h"
+#include "v8datamodel/Workspace.h"
+#include "v8datamodel/Decal.h"
+
+namespace RBX
+{
+	namespace View
+	{
+		View::View(boost::shared_ptr<DataModel> dataModel)
+			: dataModel(dataModel),
+			  renderLibScene(new Render::RenderScene),
+			  textureManager(new G3D::TextureManager),
+			  lightingValid(false)
+		{
+			sceneManager.reset(new Render::AggregatingSceneManager(renderLibScene.get()));
+			materialFactory.reset(new MaterialFactory(textureManager.get()));
+
+			renderLibScene->setThrottle(0.0f, 0.0f, false, 0.0f);
+
+			Lighting* lighting = ServiceProvider::find<Lighting>(dataModel.get());
+			lightingChangedConnection = Lighting::event_LightingChanged.connect(lighting, boost::bind(&View::invalidateLighting, this, _1));
+
+			dataModel->getWorkspace()->visitDescendents(boost::bind(&View::onWorkspaceDescendentAdded, this, _1));
+			workspaceDescendentAddedConnection = Instance::event_descendentAdded.connect(dataModel->getWorkspace(), boost::bind(&View::onWorkspaceDescendentAdded, this, _1));
+		}
+
+		View::~View()
+		{
+			sceneManager->clear();
+
+			Lighting* unused = ServiceProvider::create<Lighting>(dataModel.get());
+
+			MeshFactory<CylinderAlongXMesh, 1>::flushCache();
+			MeshFactory<SphereMesh, 1>::flushCache();
+			MeshFactory<PBBMesh, 4>::flushCache();
+			BrickMesh::flushCache();
+		}
+
+		void View::suppressSkybox()
+		{
+			Lighting* lighting = ServiceProvider::create<Lighting>(dataModel.get());
+
+			renderLibScene->presetLighting(NULL, lighting->getSkyParameters(), lighting->getAmbientTop(), lighting->getAmbientBottom());
+			sky = NULL;
+			renderLibScene->colorClearValue = lighting->getClearColor();
+		}
+
+		Instance* View::getWorkspace()
+		{
+			return dataModel->getWorkspace();
+		}
+
+		float View::getMeshDetail() const
+		{
+			return renderLibScene->getMeshDetail();
+		}
+
+		float View::getShadingQuality() const
+		{
+			return renderLibScene->getShadingQuality();
+		}
+
+		RenderStats& View::getRenderStats()
+		{
+			return renderLibScene->renderStats;
+		}
+
+		void View::invalidateLighting(bool updateSkybox)
+		{
+			lightingValid = false;
+			if (updateSkybox)
+				sky = NULL;
+		}
+
+		void View::render(void* rd)
+		{
+			updateLighting();
+			sceneManager->prerender(0.1f); // intentional type mismatch! causes value of constant to be different
+			renderLibScene->render((G3D::RenderDevice*)rd, dataModel->getWorkspace()->getGCamera());
+		}
+
+		void View::updateSettings(float shadingQuality, float meshDetail, bool shadows, float cameraDistance)
+		{
+			renderLibScene->setThrottle(shadingQuality, meshDetail, shadows, cameraDistance);
+		}
+	}
+}

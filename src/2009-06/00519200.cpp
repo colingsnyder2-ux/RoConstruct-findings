@@ -1,52 +1,120 @@
-// roc 2009-06 00519200  unit: RBX::PartChunk  size: 114 bytes
-// Make this compile to the exact bytes below, then: roc check 2009-06 00519200
-//
-// 00519200  55                   push ebp
-// 00519201  8bec                 mov ebp, esp
-// 00519203  6aff                 push -1
-// 00519205  68b1dd8500           push 0x85ddb1
-// 0051920a  64a100000000         mov eax, dword ptr fs:[0]
-// 00519210  50                   push eax
-// 00519211  64892500000000       mov dword ptr fs:[0], esp
-// 00519218  83ec0c               sub esp, 0xc
-// 0051921b  53                   push ebx
-// 0051921c  56                   push esi
-// 0051921d  57                   push edi
-// 0051921e  8965f0               mov dword ptr [ebp - 0x10], esp
-// 00519221  6a2c                 push 0x2c
-// 00519223  e810f81f00           call 0x718a38
-// 00519228  8bf0                 mov esi, eax
-// 0051922a  83c404               add esp, 4
-// 0051922d  8975ec               mov dword ptr [ebp - 0x14], esi
-// 00519230  c745fc00000000       mov dword ptr [ebp - 4], 0
-// 00519237  8975e8               mov dword ptr [ebp - 0x18], esi
-// 0051923a  c645fc01             mov byte ptr [ebp - 4], 1
-// 0051923e  85f6                 test esi, esi
-// 00519240  741b                 je 0x51925d
-// 00519242  8b4518               mov eax, dword ptr [ebp + 0x18]
-// 00519245  8b4d14               mov ecx, dword ptr [ebp + 0x14]
-// 00519248  8b5510               mov edx, dword ptr [ebp + 0x10]
-// 0051924b  50                   push eax
-// 0051924c  8b450c               mov eax, dword ptr [ebp + 0xc]
-// 0051924f  51                   push ecx
-// 00519250  8b4d08               mov ecx, dword ptr [ebp + 8]
-// 00519253  52                   push edx
-// 00519254  50                   push eax
-// 00519255  51                   push ecx
-// 00519256  8bce                 mov ecx, esi
-// 00519258  e813f8ffff           call 0x518a70
-// 0051925d  8b4df4               mov ecx, dword ptr [ebp - 0xc]
-// 00519260  5f                   pop edi
-// 00519261  8bc6                 mov eax, esi
-// 00519263  5e                   pop esi
-// 00519264  64890d00000000       mov dword ptr fs:[0], ecx
-// 0051926b  5b                   pop ebx
-// 0051926c  8be5                 mov esp, ebp
-// 0051926e  5d                   pop ebp
-// 0051926f  c21400               ret 0x14
-// library openrbx-client/RbxView\PBBMesh.cpp (function ?_Buynode@?$_Tree@V?$_Tmap_traits@VTextureKey@?$MeshFactory@VPBBMesh@View@RBX@@$03@View@RBX@@V?$ReferenceCountedPointer@VMesh@Render@RBX@@@G3D@@U?$less@VTextureKey@?$MeshFactory@VPBBMesh@View@RBX@@$03@View@RBX@@@std@@V?$allocator@U?$pair@$$CBVTextureKey@?$MeshFactory@VPBBMesh@View@RBX@@$03@View@RBX@@V?$ReferenceCountedPointer@VMesh@Render@RBX@@@G3D@@@std@@@8@$0A@@std@@@std@@IAEPAU_Node@?$_Tree_nod@V?$_Tmap_traits@VTextureKey@?$MeshFactory@VPBBMesh@View@RBX@@$03@View@RBX@@V?$ReferenceCountedPointer@VMesh@Render@RBX@@@G3D@@U?$less@VTextureKey@?$MeshFactory@VPBBMesh@View@RBX@@$03@View@RBX@@@std@@V?$allocator@U?$pair@$$CBVTextureKey@?$MeshFactory@VPBBMesh@View@RBX@@$03@View@RBX@@V?$ReferenceCountedPointer@VMesh@Render@RBX@@@G3D@@@std@@@8@$0A@@std@@@2@PAU342@00ABU?$pair@$$CBVTextureKey@?$MeshFactory@VPBBMesh@View@RBX@@$03@View@RBX@@V?$ReferenceCountedPointer@VMesh@Render@RBX@@@G3D@@@2@D@Z)
-
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
 // roc-lib: openrbx-client RbxView/PBBMesh.cpp
+
+// Candidate translation unit (score above; library headers required).
+#include "PBBMesh.h"
+
+#include "QuadVolume.h"
+
+#include <G3D/Vector3int16.h>
+
+// SIZE 0x28
+class PBBBuilder : public RBX::View::LevelBuilder
+{
+private:
+	G3D::Vector3int16 strips; // 0x20
+
+public:
+	PBBBuilder(
+		G3D::ReferenceCountedPointer<RBX::Render::Mesh::Level>& level,
+		G3D::Vector3 size,
+		RBX::View::RenderSurfaceTypes surfaceTypes
+	);
+
+protected:
+	virtual void buildTop(Purpose purpose);    // vtable+0x04
+	virtual void buildBottom(Purpose purpose); // vtable+0x08
+	virtual void buildLeft(Purpose purpose);   // vtable+0x0c
+	virtual void buildRight(Purpose purpose);  // vtable+0x10
+	virtual void buildFront(Purpose purpose);  // vtable+0x14
+	virtual void buildBack(Purpose purpose);   // vtable+0x18
+};
+
+DECOMP_SIZE_ASSERT(PBBBuilder, 0x28)
+
+// STUB: WEBSERVICE 0x1017abc0
+PBBBuilder::PBBBuilder(
+	G3D::ReferenceCountedPointer<RBX::Render::Mesh::Level>& level,
+	G3D::Vector3 size,
+	RBX::View::RenderSurfaceTypes surfaceTypes
+)
+	: RBX::View::LevelBuilder(level, size, surfaceTypes), strips(0, 0, 0)
+{
+	strips.x = G3D::max(1, (int) (size.x / 6.0));
+	strips.y = G3D::max(1, (int) (size.y / 6.0));
+	strips.z = G3D::max(1, (int) (size.z / 6.0));
+
+	strips.x = G3D::min(4, (int) strips.x);
+	strips.y = G3D::min(4, (int) strips.y);
+	strips.z = G3D::min(4, (int) strips.z);
+}
+
+// STUB: WEBSERVICE 0x1017d7c0
+void PBBBuilder::buildTop(Purpose)
+{
+	STUB(0x1017d7c0);
+}
+
+// STUB: WEBSERVICE 0x1017d820
+void PBBBuilder::buildBottom(Purpose)
+{
+	STUB(0x1017d820);
+}
+
+// STUB: WEBSERVICE 0x1017d880
+void PBBBuilder::buildLeft(Purpose)
+{
+	STUB(0x1017d880);
+}
+
+// STUB: WEBSERVICE 0x1017d8e0
+void PBBBuilder::buildRight(Purpose)
+{
+	STUB(0x1017d8e0);
+}
+
+// STUB: WEBSERVICE 0x1017d940
+void PBBBuilder::buildFront(Purpose)
+{
+	STUB(0x1017d940);
+}
+
+// STUB: WEBSERVICE 0x1017d9a0
+void PBBBuilder::buildBack(Purpose)
+{
+	STUB(0x1017d9a0);
+}
+
+namespace RBX {
+namespace View {
+
+// STUB: WEBSERVICE 0x1017da00
+PBBMesh::PBBMesh(const G3D::Vector3& size, NormalId decalFace)
+{
+	Render::Mesh::LevelRef level = new Render::Mesh::Level(G3D::RenderDevice::QUADS);
+
+	levels.append(level);
+
+	PBBBuilder builder(level, size, RenderSurfaceTypes());
+
+	builder.buildFace(decalFace, LevelBuilder::Decal);
+}
+
+// STUB: WEBSERVICE 0x1017db60
+PBBMesh::PBBMesh(const G3D::Vector3& size, NormalId, const G3D::Vector2&)
+{
+	Render::Mesh::LevelRef level = new Render::Mesh::Level(G3D::RenderDevice::QUADS);
+
+	levels.append(level);
+
+	PBBBuilder builder(level, size, RenderSurfaceTypes());
+}
+
+template PBBMesh* MeshFactory<PBBMesh, 4>::createDecal(const G3D::Vector3&, NormalId);
+
+template PBBMesh* MeshFactory<PBBMesh, 4>::createTexture(const G3D::Vector3&, NormalId, const G3D::Vector2&);
+
+} // namespace View
+} // namespace RBX

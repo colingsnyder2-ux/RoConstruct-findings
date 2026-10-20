@@ -1,3 +1,4 @@
+// from server: 100% by colin
 // from server: 96% by king_originala
 extern "C" long (__stdcall *InterlockedDecrement)(volatile long *);
 
@@ -47,7 +48,7 @@ struct Holder8 {
     ~Holder8();
 };
 
-inline Holder8::Holder8() : value(0) {}
+inline Holder8::Holder8() {}
 
 struct Holder16 {
     void *value;
@@ -85,6 +86,6 @@ struct TextureProxy : Base {
 };
 
 TextureProxy::TextureProxy(Pointer p)
-    : field30(0), field34(false), field40(p) {
-    assignString(&name, ">Authoring");
+    : field30(0), field40((field34 = false, field38.value = 0, p)) {
+    assignString(&name, "");
 }

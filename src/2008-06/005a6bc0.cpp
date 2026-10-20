@@ -1,59 +1,150 @@
-// roc 2008-06 005a6bc0  unit: RBX::Workspace  size: 153 bytes
-// Make this compile to the exact bytes below, then: roc check 2008-06 005a6bc0
-//
-// 005a6bc0  83ec44               sub esp, 0x44
-// 005a6bc3  8b4c244c             mov ecx, dword ptr [esp + 0x4c]
-// 005a6bc7  c7042400000000       mov dword ptr [esp], 0
-// 005a6bce  81f9e8030000         cmp ecx, 0x3e8
-// 005a6bd4  7308                 jae 0x5a6bde
-// 005a6bd6  51                   push ecx
-// 005a6bd7  6868418300           push 0x834168
-// 005a6bdc  eb54                 jmp 0x5a6c32
-// 005a6bde  81f940420f00         cmp ecx, 0xf4240
-// 005a6be4  7317                 jae 0x5a6bfd
-// 005a6be6  b8d34d6210           mov eax, 0x10624dd3
-// 005a6beb  f7e1                 mul ecx
-// 005a6bed  c1ea06               shr edx, 6
-// 005a6bf0  52                   push edx
-// 005a6bf1  6860418300           push 0x834160
-// 005a6bf6  8d4c240c             lea ecx, [esp + 0xc]
-// 005a6bfa  51                   push ecx
-// 005a6bfb  eb3a                 jmp 0x5a6c37
-// 005a6bfd  81f900ca9a3b         cmp ecx, 0x3b9aca00
-// 005a6c03  7317                 jae 0x5a6c1c
-// 005a6c05  b883de1b43           mov eax, 0x431bde83
-// 005a6c0a  f7e1                 mul ecx
-// 005a6c0c  c1ea12               shr edx, 0x12
-// 005a6c0f  52                   push edx
-// 005a6c10  6858418300           push 0x834158
-// 005a6c15  8d54240c             lea edx, [esp + 0xc]
-// 005a6c19  52                   push edx
-// 005a6c1a  eb1b                 jmp 0x5a6c37
-// 005a6c1c  b883bee012           mov eax, 0x12e0be83
-// 005a6c21  f7e1                 mul ecx
-// 005a6c23  2bca                 sub ecx, edx
-// 005a6c25  d1e9                 shr ecx, 1
-// 005a6c27  03ca                 add ecx, edx
-// 005a6c29  c1e91d               shr ecx, 0x1d
-// 005a6c2c  51                   push ecx
-// 005a6c2d  6850418300           push 0x834150
-// 005a6c32  8d44240c             lea eax, [esp + 0xc]
-// 005a6c36  50                   push eax
-// 005a6c37  ff1530288000         call dword ptr [0x802830]
-// 005a6c3d  83c40c               add esp, 0xc
-// 005a6c40  56                   push esi
-// 005a6c41  8b74244c             mov esi, dword ptr [esp + 0x4c]
-// 005a6c45  8d4c2408             lea ecx, [esp + 8]
-// 005a6c49  51                   push ecx
-// 005a6c4a  8bce                 mov ecx, esi
-// 005a6c4c  ff1558248000         call dword ptr [0x802458]
-// 005a6c52  8bc6                 mov eax, esi
-// 005a6c54  5e                   pop esi
-// 005a6c55  83c444               add esp, 0x44
-// 005a6c58  c3                   ret 
-// library openrbx-client/App\util\Log.cpp (function ?formatMem@Log@RBX@@SA?AV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@I@Z)
-
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
 // roc-lib: openrbx-client-dll App/util/Log.cpp
+
+// Candidate translation unit (score above; library headers required).
+#include "util/Log.h"
+
+#include "decomp.h"
+
+#include <cstdio>
+#include <windows.h>
+
+namespace RBX {
+
+DECOMP_SIZE_ASSERT(Log, 0xac)
+DECOMP_SIZE_ASSERT(ILogProvider, 0x04)
+
+Log::Severity Log::aggregateWorstSeverity = Log::Information;
+ILogProvider* Log::provider;
+
+static const char* information = "          ";
+static const char* warning = " Warning: ";
+static const char* error = " Error:   ";
+
+// FUNCTION: WEBSERVICE 0x1003d880
+void Log::setLogProvider(ILogProvider* provider)
+{
+	Log::provider = provider;
+}
+
+// FUNCTION: WEBSERVICE 0x1003d890
+std::string Log::formatMem(unsigned int bytes)
+{
+	char buffer[64];
+
+	if (bytes < 1000) {
+		sprintf(buffer, "%dB", bytes);
+	}
+	else if (bytes < 1000000) {
+		sprintf(buffer, "%dKB", bytes / 1000);
+	}
+	else if (bytes < 1000000000) {
+		sprintf(buffer, "%dMB", bytes / 1000000);
+	}
+	else {
+		sprintf(buffer, "%dGB", bytes / 1000000000);
+	}
+
+	return std::string(buffer);
+}
+
+// FUNCTION: WEBSERVICE 0x1003d930
+std::string Log::formatTime(double time)
+{
+	char buffer[64];
+
+	if (time == 0.0) {
+		sprintf(buffer, "0s");
+	}
+
+	if (time < 0.0) {
+		sprintf(buffer, "%.3gs", time);
+	}
+	else if (time >= 0.1) {
+		sprintf(buffer, "%.3gs", time);
+	}
+	else {
+		sprintf(buffer, "%.3gms", time * 1000.0);
+	}
+
+	return std::string(buffer);
+}
+
+} // namespace RBX
+
+// FUNCTION: WEBSERVICE 0x1003de60
+static void timeStamp(std::ofstream& stream, bool includeDate)
+{
+	SYSTEMTIME systemTime;
+	GetLocalTime(&systemTime);
+
+	char s[256];
+
+	if (includeDate) {
+		sprintf(s, "%02u.%02u.%u ", systemTime.wDay, systemTime.wMonth, systemTime.wYear);
+		stream << s;
+	}
+
+	sprintf(s, "%02u:%02u.%03u ", systemTime.wHour, systemTime.wMinute, systemTime.wMilliseconds);
+	stream << s;
+	stream.flush();
+}
+
+namespace RBX {
+
+// FUNCTION: WEBSERVICE 0x1003def0
+Log::Log(const char* logFile, const char* name) : worstSeverity(Information), logFile(logFile), stream(logFile)
+{
+	::timeStamp(stream, true);
+	stream << "Log \"" << name << "\"\n";
+	stream.flush();
+}
+
+// FUNCTION: WEBSERVICE 0x1003dfa0
+Log::~Log()
+{
+	::timeStamp(stream, true);
+	stream << "End Log\n";
+}
+
+// FUNCTION: WEBSERVICE 0x1003e020
+void Log::writeEntry(Severity severity, const char* message)
+{
+	std::ofstream* out = currentStream();
+
+	SYSTEMTIME now;
+	GetLocalTime(&now);
+
+	char stamp[256];
+	sprintf(stamp, "%02u:%02u.%03u ", now.wHour, now.wMinute, now.wMilliseconds);
+
+	*out << stamp;
+	out->flush();
+
+	switch (severity) {
+	case Error:
+		*currentStream() << error;
+	case Warning:
+		*currentStream() << warning;
+	case Information:
+		*currentStream() << information;
+	}
+
+	*currentStream() << message;
+	stream << '\n';
+	currentStream()->flush();
+}
+
+std::string Log::timeStamp()
+{
+	return std::string();
+}
+
+std::ofstream* Log::currentStream()
+{
+	return &provider->provideLog()->stream;
+}
+
+} // namespace RBX

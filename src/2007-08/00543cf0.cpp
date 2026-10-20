@@ -1,55 +1,293 @@
-// roc 2007-08 00543cf0  unit: RBX::Debugable::W4AssertAction::?$EnumDesc  size: 153 bytes
-// Make this compile to the exact bytes below, then: roc check 2007-08 00543cf0
-//
-// 00543cf0  64a100000000         mov eax, dword ptr fs:[0]
-// 00543cf6  6aff                 push -1
-// 00543cf8  6800c67500           push 0x75c600
-// 00543cfd  50                   push eax
-// 00543cfe  64892500000000       mov dword ptr fs:[0], esp
-// 00543d05  8b442424             mov eax, dword ptr [esp + 0x24]
-// 00543d09  8b54241c             mov edx, dword ptr [esp + 0x1c]
-// 00543d0d  56                   push esi
-// 00543d0e  50                   push eax
-// 00543d0f  8b442420             mov eax, dword ptr [esp + 0x20]
-// 00543d13  8bf1                 mov esi, ecx
-// 00543d15  8b4c2428             mov ecx, dword ptr [esp + 0x28]
-// 00543d19  51                   push ecx
-// 00543d1a  52                   push edx
-// 00543d1b  50                   push eax
-// 00543d1c  8d4c2438             lea ecx, [esp + 0x38]
-// 00543d20  51                   push ecx
-// 00543d21  e84af1ffff           call 0x542e70
-// 00543d26  8b10                 mov edx, dword ptr [eax]
-// 00543d28  83c40c               add esp, 0xc
-// 00543d2b  8bcc                 mov ecx, esp
-// 00543d2d  c70000000000         mov dword ptr [eax], 0
-// 00543d33  c744241400000000     mov dword ptr [esp + 0x14], 0
-// 00543d3b  8964242c             mov dword ptr [esp + 0x2c], esp
-// 00543d3f  8911                 mov dword ptr [ecx], edx
-// 00543d41  8b442420             mov eax, dword ptr [esp + 0x20]
-// 00543d45  8b4c241c             mov ecx, dword ptr [esp + 0x1c]
-// 00543d49  50                   push eax
-// 00543d4a  51                   push ecx
-// 00543d4b  c644241c01           mov byte ptr [esp + 0x1c], 1
-// 00543d50  e82bffffff           call 0x543c80
-// 00543d55  50                   push eax
-// 00543d56  8bce                 mov ecx, esi
-// 00543d58  c644242000           mov byte ptr [esp + 0x20], 0
-// 00543d5d  e87e15f0ff           call 0x4452e0
-// 00543d62  8b542428             mov edx, dword ptr [esp + 0x28]
-// 00543d66  52                   push edx
-// 00543d67  e8f6be0e00           call 0x62fc62
-// 00543d6c  8b4c2408             mov ecx, dword ptr [esp + 8]
-// 00543d70  83c404               add esp, 4
-// 00543d73  c70660697a00         mov dword ptr [esi], 0x7a6960
-// 00543d79  8bc6                 mov eax, esi
-// 00543d7b  64890d00000000       mov dword ptr fs:[0], ecx
-// 00543d82  5e                   pop esi
-// 00543d83  83c40c               add esp, 0xc
-// 00543d86  c21800               ret 0x18
-// library rbxgs/v8datamodel\DebugSettings.cpp (function ??$?0P8DebugSettings@RBX@@BEMXZH@?$PropDescriptor@VDebugSettings@RBX@@M@Reflection@RBX@@QAE@PBD0P8DebugSettings@2@BEMXZHW4Functionality@PropertyDescriptor@12@@Z)
-
 // roc-lang: cpp
 // roc-cl: 50727
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
 // roc-lib: rbxgs v8datamodel/DebugSettings.cpp
+
+// Candidate translation unit (score above; library headers required).
+#include "RenderLib/Chunk.h"
+#include "RenderLib/Profiler.h"
+#include "v8datamodel/DebugSettings.h"
+#include "v8datamodel/PartInstance.h"
+#include "v8datamodel/ModelInstance.h"
+#include "v8datamodel/Workspace.h"
+#include "v8world/Primitive.h"
+#include "v8world/World.h"
+
+static RBX::Reflection::PropDescriptor<RBX::DebugSettings, bool> prop_AnchoredParts("ShowAnchors", "Display", &RBX::DebugSettings::getShowAnchoredParts, &RBX::DebugSettings::setShowAnchoredParts, RBX::Reflection::PropertyDescriptor::STANDARD);
+static RBX::Reflection::PropDescriptor<RBX::DebugSettings, bool> prop_HighlightSleepParts("HighlightSleepParts", "Display", &RBX::DebugSettings::getHighlightSleepParts, &RBX::DebugSettings::setHighlightSleepParts, RBX::Reflection::PropertyDescriptor::STANDARD);
+static RBX::Reflection::PropDescriptor<RBX::DebugSettings, bool> prop_HighlightAwakeParts("HighlightAwakeParts", "Display", &RBX::DebugSettings::getHighlightAwakeParts, &RBX::DebugSettings::setHighlightAwakeParts, RBX::Reflection::PropertyDescriptor::STANDARD);
+static RBX::Reflection::PropDescriptor<RBX::DebugSettings, bool> prop_PartCoordinateFrames("ShowPartCoords", "Display", &RBX::DebugSettings::getShowPartCoordinateFrames, &RBX::DebugSettings::setShowPartCoordinateFrames, RBX::Reflection::PropertyDescriptor::STANDARD);
+static RBX::Reflection::PropDescriptor<RBX::DebugSettings, bool> prop_UnalignedParts("ShowUnalignedParts", "Display", &RBX::DebugSettings::getShowUnalignedParts, &RBX::DebugSettings::setShowUnalignedParts, RBX::Reflection::PropertyDescriptor::STANDARD);
+static RBX::Reflection::PropDescriptor<RBX::DebugSettings, bool> prop_ShowAggregation("ShowAggregation", "Display", &RBX::DebugSettings::getShowAggregation, &RBX::DebugSettings::setShowAggregation, RBX::Reflection::PropertyDescriptor::STANDARD);
+static RBX::Reflection::PropDescriptor<RBX::DebugSettings, bool> prop_ModelCoordinateFrames("ShowModelCoords", "Display", &RBX::DebugSettings::getShowModelCoordinateFrames, &RBX::DebugSettings::setShowModelCoordinateFrames, RBX::Reflection::PropertyDescriptor::STANDARD);
+static RBX::Reflection::PropDescriptor<RBX::DebugSettings, bool> prop_WorldCoordinateFrames("ShowWorldCoords", "Display", &RBX::DebugSettings::getShowWorldCoordinateFrames, &RBX::DebugSettings::setShowWorldCoordinateFrames, RBX::Reflection::PropertyDescriptor::STANDARD);
+static RBX::Reflection::PropDescriptor<RBX::DebugSettings, bool> prop_SpanningTree("ShowTree", "Display", &RBX::DebugSettings::getShowSpanningTree, &RBX::DebugSettings::setShowSpanningTree, RBX::Reflection::PropertyDescriptor::STANDARD);
+static RBX::Reflection::PropDescriptor<RBX::DebugSettings, bool> prop_DisableSleep("DisableSleep", "Display", &RBX::DebugSettings::getDisableSleep, &RBX::DebugSettings::setDisableSleep, RBX::Reflection::PropertyDescriptor::STANDARD);
+static RBX::Reflection::PropDescriptor<RBX::DebugSettings, bool> prop_DisableEnvironmentalThrottle("DisableEnvironmentalThrottle", "Display", &RBX::DebugSettings::getDisableEnvironmentalThrottle, &RBX::DebugSettings::setDisableEnvironmentalThrottle, RBX::Reflection::PropertyDescriptor::STANDARD);
+
+static RBX::Reflection::PropDescriptor<RBX::DebugSettings, bool> prop_ValidatingDebug("ValidatingDebug", "Errors", &RBX::DebugSettings::getValidatingDebug, &RBX::DebugSettings::setValidatingDebug, RBX::Reflection::PropertyDescriptor::STANDARD);
+static RBX::Reflection::PropDescriptor<RBX::DebugSettings, RBX::Debugable::AssertAction> prop_assertAction("AssertAction", "Errors", &RBX::DebugSettings::getAssertAction, &RBX::DebugSettings::setAssertAction, RBX::Reflection::PropertyDescriptor::STANDARD);
+static RBX::Reflection::PropDescriptor<RBX::DebugSettings, RBX::DebugSettings::ErrorReporting> prop_errorReporting("errorReporting", "Errors", &RBX::DebugSettings::getErrorReporting, &RBX::DebugSettings::setErrorReporting, RBX::Reflection::PropertyDescriptor::STANDARD);
+
+static RBX::Reflection::PropDescriptor<RBX::DebugSettings, float> prop_shaderModel("ShaderModel", "Profile", &RBX::DebugSettings::shaderModel, NULL, RBX::Reflection::PropertyDescriptor::STANDARD);
+static RBX::Reflection::PropDescriptor<RBX::DebugSettings, int> prop_videoMemory("VideoMemory", "Profile", &RBX::DebugSettings::videoMemory, NULL, RBX::Reflection::PropertyDescriptor::STANDARD);
+static RBX::Reflection::PropDescriptor<RBX::DebugSettings, int> prop_cpuSpeed("CpuSpeed", "Profile", &RBX::DebugSettings::cpuSpeed, NULL, RBX::Reflection::PropertyDescriptor::STANDARD);
+static RBX::Reflection::PropDescriptor<RBX::DebugSettings, int> prop_osPlatformId("OsPlatformId", "Profile", &RBX::DebugSettings::osPlatformId, NULL, RBX::Reflection::PropertyDescriptor::STANDARD);
+static RBX::Reflection::PropDescriptor<RBX::DebugSettings, std::string> prop_osVer("OsVer", "Profile", &RBX::DebugSettings::osVer, NULL, RBX::Reflection::PropertyDescriptor::STANDARD);
+static RBX::Reflection::PropDescriptor<RBX::DebugSettings, std::string> prop_glVendor("GlVendor", "Profile", &RBX::DebugSettings::glVendor, NULL, RBX::Reflection::PropertyDescriptor::STANDARD);
+static RBX::Reflection::PropDescriptor<RBX::DebugSettings, std::string> prop_gfxcard("GfxCard", "Profile", &RBX::DebugSettings::gfxcard, NULL, RBX::Reflection::PropertyDescriptor::STANDARD);
+static RBX::Reflection::PropDescriptor<RBX::DebugSettings, std::string> prop_cpu("CPU", "Profile", &RBX::DebugSettings::cpu, NULL, RBX::Reflection::PropertyDescriptor::STANDARD);
+static RBX::Reflection::PropDescriptor<RBX::DebugSettings, int> prop_ram("RAM", "Profile", &RBX::DebugSettings::ram, NULL, RBX::Reflection::PropertyDescriptor::STANDARD);
+static RBX::Reflection::PropDescriptor<RBX::DebugSettings, std::string> prop_resolution("Resolution", "Profile", &RBX::DebugSettings::resolution, NULL, RBX::Reflection::PropertyDescriptor::STANDARD);
+
+RBX::Reflection::BoundProp<bool, 1> prop_SoundWarnings("SoundWarnings", "Errors", &RBX::DebugSettings::soundWarnings, RBX::Reflection::PropertyDescriptor::STANDARD);
+
+namespace RBX
+{
+	DebugSettings::DebugSettings()
+		: stackTracingEnabled(true),
+		  ioEnabled(false),
+		  soundWarnings(false),
+		  errorReporting(Prompt)
+	{
+		setName("Diagnostics");
+	}
+
+	bool DebugSettings::getShowAnchoredParts() const
+	{
+		return PartInstance::showAnchoredParts;
+	}
+
+	bool DebugSettings::getShowAggregation() const
+	{
+		return Render::AggregateChunk::randomColors;
+	}
+
+	bool DebugSettings::getShowUnalignedParts() const
+	{
+		return PartInstance::showUnalignedParts;
+	}
+
+	bool DebugSettings::getHighlightSleepParts() const
+	{
+		return PartInstance::highlightSleepParts;
+	}
+
+	bool DebugSettings::getHighlightAwakeParts() const
+	{
+		return PartInstance::highlightAwakeParts;
+	}
+
+	bool DebugSettings::getShowPartCoordinateFrames() const
+	{
+		return PartInstance::showPartCoord;
+	}
+
+	bool DebugSettings::getShowModelCoordinateFrames() const
+	{
+		return ModelInstance::showModelCoord;
+	}
+
+	bool DebugSettings::getShowWorldCoordinateFrames() const
+	{
+		return Workspace::showWorldCoord;
+	}
+
+	bool DebugSettings::getDisableSleep() const
+	{
+		return Primitive::disableSleep;
+	}
+
+	bool DebugSettings::getDisableEnvironmentalThrottle() const
+	{
+		return World::disableEnvironmentalThrottle;
+	}
+
+	bool DebugSettings::getShowSpanningTree() const
+	{
+		return PartInstance::showSpanningTree;
+	}
+
+	void DebugSettings::setShowAnchoredParts(bool value)
+	{
+		if (value != PartInstance::showAnchoredParts)
+		{
+			PartInstance::showAnchoredParts = value;
+			raisePropertyChanged(prop_AnchoredParts);
+		}
+	}
+
+	void DebugSettings::setShowAggregation(bool value)
+	{
+		if (value != Render::AggregateChunk::randomColors)
+		{
+			Render::AggregateChunk::randomColors = value;
+			raisePropertyChanged(prop_PartCoordinateFrames);
+		}
+	}
+
+	void DebugSettings::setShowUnalignedParts(bool value)
+	{
+		if (value != PartInstance::showUnalignedParts)
+		{
+			PartInstance::showUnalignedParts = value;
+			raisePropertyChanged(prop_PartCoordinateFrames);
+		}
+	}
+
+	void DebugSettings::setHighlightSleepParts(bool value)
+	{
+		if (value != PartInstance::highlightSleepParts)
+		{
+			PartInstance::highlightSleepParts = value;
+			raisePropertyChanged(prop_PartCoordinateFrames);
+		}
+	}
+
+	void DebugSettings::setHighlightAwakeParts(bool value)
+	{
+		if (value != PartInstance::highlightAwakeParts)
+		{
+			PartInstance::highlightAwakeParts = value;
+			raisePropertyChanged(prop_PartCoordinateFrames);
+		}
+	}
+
+	void DebugSettings::setShowPartCoordinateFrames(bool value)
+	{
+		if (value != PartInstance::showPartCoord)
+		{
+			PartInstance::showPartCoord = value;
+			raisePropertyChanged(prop_PartCoordinateFrames);
+		}
+	}
+
+	void DebugSettings::setShowModelCoordinateFrames(bool value)
+	{
+		if (value != ModelInstance::showModelCoord)
+		{
+			ModelInstance::showModelCoord = value;
+			raisePropertyChanged(prop_ModelCoordinateFrames);
+		}
+	}
+
+	void DebugSettings::setShowWorldCoordinateFrames(bool value)
+	{
+		if (value != Workspace::showWorldCoord)
+		{
+			Workspace::showWorldCoord = value;
+			raisePropertyChanged(prop_WorldCoordinateFrames);
+		}
+	}
+
+	void DebugSettings::setDisableSleep(bool value)
+	{
+		if (value != Primitive::disableSleep)
+		{
+			Primitive::disableSleep = value;
+			raisePropertyChanged(prop_DisableSleep);
+		}
+	}
+
+	void DebugSettings::setDisableEnvironmentalThrottle(bool value)
+	{
+		if (value != World::disableEnvironmentalThrottle)
+		{
+			World::disableEnvironmentalThrottle = value;
+			raisePropertyChanged(prop_DisableEnvironmentalThrottle);
+		}
+	}
+
+	void DebugSettings::setShowSpanningTree(bool value)
+	{
+		if (value != PartInstance::showSpanningTree)
+		{
+			PartInstance::showSpanningTree = value;
+			raisePropertyChanged(prop_SpanningTree);
+		}
+	}
+
+	void DebugSettings::setValidatingDebug(bool value)
+	{
+		if (value != Debugable::validatingDebug)
+		{
+			Debugable::validatingDebug = value;
+			raisePropertyChanged(prop_ValidatingDebug);
+		}
+	}
+
+	void DebugSettings::setAssertAction(Debugable::AssertAction value)
+	{
+		if (value != Debugable::assertAction)
+		{
+			Debugable::assertAction = value;
+			raisePropertyChanged(prop_assertAction);
+		}
+	}
+
+	void DebugSettings::setErrorReporting(ErrorReporting value)
+	{
+		if (value != errorReporting)
+		{
+			errorReporting = value;
+			raisePropertyChanged(prop_errorReporting);
+		}
+	}
+
+	float DebugSettings::shaderModel() const
+	{
+		return Render::SpecData().shaderModel;
+	}
+
+	int DebugSettings::videoMemory() const
+	{
+		return Render::SpecData().videoMemory;
+	}
+
+	int DebugSettings::cpuSpeed() const
+	{
+		return Render::SpecData().CPUSpeed;
+	}
+
+	std::string DebugSettings::glVendor() const
+	{
+		return Render::SpecData().glVendor;
+	}
+
+	std::string DebugSettings::cpu() const
+	{
+		return Render::SpecData().cpu;
+	}
+
+	int DebugSettings::ram() const
+	{
+		return Render::SpecData().ram;
+	}
+
+	std::string DebugSettings::resolution() const
+	{
+		return Render::SpecData().resolution;
+	}
+
+	std::string DebugSettings::osVer() const
+	{
+		OSVERSIONINFOA osvi;
+		ZeroMemory((char*)&osvi + sizeof(DWORD), sizeof(OSVERSIONINFOA) - sizeof(DWORD)); // dwOSVersionInfoSize is the first element
+		osvi.dwOSVersionInfoSize = sizeof(OSVERSIONINFOA);
+
+		GetVersionExA(&osvi);
+
+		return G3D::format("%d.%d.%d.%d", osvi.dwOSVersionInfoSize, osvi.dwMajorVersion, osvi.dwMinorVersion, osvi.dwBuildNumber);
+	}
+
+	int DebugSettings::osPlatformId() const
+	{
+		OSVERSIONINFOA osvi;
+		ZeroMemory((char*)&osvi + sizeof(DWORD), sizeof(OSVERSIONINFOA) - sizeof(DWORD));
+		osvi.dwOSVersionInfoSize = sizeof(OSVERSIONINFOA);
+
+		GetVersionExA(&osvi);
+
+		return osvi.dwPlatformId;
+	}
+}

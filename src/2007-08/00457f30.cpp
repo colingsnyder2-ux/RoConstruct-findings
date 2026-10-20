@@ -1,41 +1,214 @@
-// roc 2007-08 00457f30  unit: RBX::Adorn  size: 86 bytes
-// Make this compile to the exact bytes below, then: roc check 2007-08 00457f30
-//
-// 00457f30  8a442408             mov al, byte ptr [esp + 8]
-// 00457f34  56                   push esi
-// 00457f35  57                   push edi
-// 00457f36  8b7c240c             mov edi, dword ptr [esp + 0xc]
-// 00457f3a  8bf1                 mov esi, ecx
-// 00457f3c  893e                 mov dword ptr [esi], edi
-// 00457f3e  884628               mov byte ptr [esi + 0x28], al
-// 00457f41  a1344c8c00           mov eax, dword ptr [0x8c4c34]
-// 00457f46  85c0                 test eax, eax
-// 00457f48  7435                 je 0x457f7f
-// 00457f4a  50                   push eax
-// 00457f4b  ff1558d27700         call dword ptr [0x77d258]
-// 00457f51  8d4e20               lea ecx, [esi + 0x20]
-// 00457f54  51                   push ecx
-// 00457f55  8d5618               lea edx, [esi + 0x18]
-// 00457f58  894604               mov dword ptr [esi + 4], eax
-// 00457f5b  52                   push edx
-// 00457f5c  8d4610               lea eax, [esi + 0x10]
-// 00457f5f  50                   push eax
-// 00457f60  8d4e08               lea ecx, [esi + 8]
-// 00457f63  51                   push ecx
-// 00457f64  ff155cd27700         call dword ptr [0x77d25c]
-// 00457f6a  50                   push eax
-// 00457f6b  ff151cd37700         call dword ptr [0x77d31c]
-// 00457f71  8b15344c8c00         mov edx, dword ptr [0x8c4c34]
-// 00457f77  57                   push edi
-// 00457f78  52                   push edx
-// 00457f79  ff1560d27700         call dword ptr [0x77d260]
-// 00457f7f  5f                   pop edi
-// 00457f80  8bc6                 mov eax, esi
-// 00457f82  5e                   pop esi
-// 00457f83  c20800               ret 8
-// library rbxgs/v8kernel\Kernel.cpp (function ??0Mark@Profiling@RBX@@QAE@AAVCodeProfiler@12@_N@Z)
-
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
 // roc-lib: rbxgs v8kernel/Kernel.cpp
+
+// Candidate translation unit (score above; library headers required).
+#include "v8kernel/Kernel.h"
+#include "util/Debug.h"
+#include "v8kernel/Constants.h"
+#include "v8kernel/Connector.h"
+using namespace RBX;
+
+int Kernel::numKernels;
+
+Kernel::Kernel(RBX::IStage* upstream) 
+			:IStage(upstream, NULL),
+			inStepCode(0),
+			profilingKernel(new Profiling::CodeProfiler("Kernel")),
+			kernelData(new KernelData()),
+			maxBodies(0),
+			maxPoints(0),
+			maxConnectors(0){numKernels++;}
+
+Kernel::~Kernel()
+{
+	Kernel::numKernels--;
+	RBXASSERT(!inStepCode);
+	delete kernelData;
+
+}
+
+void Kernel::insertBody(RBX::Body *b)
+{
+	kernelData->bodies.fastAppend(b);
+}
+
+inline void Kernel::insertPoint(RBX::Point *p)
+{
+	RBXASSERT(!inStepCode);
+	kernelData->points.fastAppend(p);
+}
+
+void Kernel::insertConnector(RBX::Connector *c)
+{
+	RBXASSERT(!inStepCode);
+	kernelData->connectors.fastAppend(c);
+}
+
+void Kernel::insertConnector2ndPass(RBX::Connector *c)
+{
+	RBXASSERT(!inStepCode);
+	kernelData->connectors2ndPass.fastAppend(c);
+}
+
+void Kernel::removeBody(Body *b) 
+{
+	RBXASSERT(!inStepCode);
+	kernelData->bodies.fastRemove(b);
+}
+
+inline void Kernel::removePoint(RBX::Point *p)
+{
+	RBXASSERT(!inStepCode);
+	kernelData->points.fastRemove(p);
+}
+
+void Kernel::removeConnector(RBX::Connector *c)
+{
+	RBXASSERT(!inStepCode);
+	realTimeConnectors.resize(0, false);
+	kernelData->connectors.fastRemove(c);
+}
+
+void Kernel::removeConnector2ndPass(RBX::Connector *c) 
+{
+	RBXASSERT(!inStepCode);
+	kernelData->connectors2ndPass.fastRemove(c);
+}
+
+int Kernel::numBodies() const { return kernelData->bodies.size(); }
+int Kernel::numPoints() const { return kernelData->points.size(); }
+int Kernel::numConnectors() const { return kernelData->connectors.size(); }
+
+Point* Kernel::newPoint(Body* _body, const G3D::Vector3& worldPos)
+{
+	RBXASSERT(!inStepCode);
+	Point* nPoint = new Point(_body);
+
+	nPoint->setWorldPos(worldPos);
+
+	//find any pre-existing point
+	for (int i = 0; i < kernelData->points.size(); i++)
+	{
+		if (Point::sameBodyAndOffset(*nPoint, *kernelData->points[i]))
+		{
+			kernelData->points[i]->numOwners++;
+			delete nPoint;
+			return kernelData->points[i];
+		}
+	}
+	insertPoint(nPoint);
+	return nPoint;
+}
+
+void Kernel::deletePoint(RBX::Point* _point)
+{
+	RBXASSERT(!inStepCode);
+
+	if (_point) 
+	{
+		_point->numOwners--;
+		if (_point->numOwners == 0) 
+		{
+			removePoint(_point);
+			delete _point;
+		}
+	}
+}
+
+void Kernel::stepWorld(int worldStepId, int uiStepId, bool throttling) 
+{
+	IndexArray<Body, &Body::getKernelIndex>& bodies = kernelData->bodies;
+	IndexArray<Point, &Point::getKernelIndex>& points = kernelData->points;
+	IndexArray<Connector, &Connector::getKernelIndex>& connectors = kernelData->connectors;
+	IndexArray<Connector, &Connector::getKernelIndex>& connectors2ndPass = kernelData->connectors2ndPass;
+
+	RBXASSERT(!inStepCode);
+	inStepCode = true;
+	Profiling::Mark mark = Profiling::Mark(*profilingKernel.get(), false);
+	float kernelDt = Constants::kernelDt();
+	int kernelSteps = Constants::kernelStepsPerWorldStep();
+
+	if (throttling) {
+		realTimeConnectors.resize(0, false);
+
+		for (int i = 0; i < connectors.size(); i++){
+			if (!connectors[i]->canThrottle())
+			{
+				realTimeConnectors.append(connectors[i]);
+			}
+		}
+	}
+
+	for (int i = 0; i < kernelSteps; i++)
+	{
+		for (int j = 0; j < points.size(); j++)
+		{
+			points[j]->step();
+		}
+
+		if (throttling)
+		{
+			for (int j = 0; j < realTimeConnectors.size(); j++)
+			{
+				realTimeConnectors[j]->computeForce(kernelDt, throttling);
+			}
+		}
+		else
+		{
+			for (int j = 0; j < connectors.size(); j++)
+			{
+				connectors[j]->computeForce(kernelDt, throttling);
+			}
+		}
+
+		for (int j = 0; j < points.size(); j++)
+		{
+			points[j]->forceToBody();
+		}
+
+		for (int j = 0; j < connectors2ndPass.size(); j++)
+		{
+			connectors2ndPass[j]->computeForce(kernelDt, throttling);
+		}
+
+		for (int j = 0; j < bodies.size(); j++)
+		{
+			bodies[j]->step(kernelDt, throttling);
+		}
+	}
+	inStepCode = false;
+}
+
+float Kernel::connectorSpringEnergy() const
+{
+	float totalEnergy = 0.0;
+
+	for (int i = 0; i < kernelData->connectors.size(); i++)
+		totalEnergy += kernelData->connectors[i]->potentialEnergy();
+
+	return totalEnergy;
+}
+
+float Kernel::bodyKineticEnergy() const
+{
+	float totalEnergy = 0.0;
+
+	for (int i = 0; i < kernelData->bodies.size(); i++)
+		totalEnergy += kernelData->bodies[i]->kineticEnergy();
+
+	return totalEnergy;
+}
+
+//in original source this was in kernel.h
+float Kernel::totalKineticEnergy() const
+{
+	return connectorSpringEnergy() + bodyKineticEnergy();
+}
+
+//hack to make compiler not to optimize out findStage
+void Kernel::matchDummy()
+{
+	maxBodies = *(int*)findStage(SLEEP_STAGE);
+}

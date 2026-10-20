@@ -1,53 +1,303 @@
-// roc 2012-06 009f44d0  unit: CXTPPropertyGridItemColor::?8??OnInplaceButtonDown::CPropertyGridItemColorColorPopup  size: 156 bytes
-// Make this compile to the exact bytes below, then: roc check 2012-06 009f44d0
-//
-// 009f44d0  56                   push esi
-// 009f44d1  8bf1                 mov esi, ecx
-// 009f44d3  e8c8250700           call 0xa66aa0
-// 009f44d8  83780800             cmp dword ptr [eax + 8], 0
-// 009f44dc  b804000000           mov eax, 4
-// 009f44e1  898694000000         mov dword ptr [esi + 0x94], eax
-// 009f44e7  898698000000         mov dword ptr [esi + 0x98], eax
-// 009f44ed  b806000000           mov eax, 6
-// 009f44f2  7505                 jne 0x9f44f9
-// 009f44f4  b80a000000           mov eax, 0xa
-// 009f44f9  8986a0000000         mov dword ptr [esi + 0xa0], eax
-// 009f44ff  89869c000000         mov dword ptr [esi + 0x9c], eax
-// 009f4505  8b442408             mov eax, dword ptr [esp + 8]
-// 009f4509  8b08                 mov ecx, dword ptr [eax]
-// 009f450b  898e6c010000         mov dword ptr [esi + 0x16c], ecx
-// 009f4511  8b5004               mov edx, dword ptr [eax + 4]
-// 009f4514  899670010000         mov dword ptr [esi + 0x170], edx
-// 009f451a  8b4808               mov ecx, dword ptr [eax + 8]
-// 009f451d  898e74010000         mov dword ptr [esi + 0x174], ecx
-// 009f4523  8b500c               mov edx, dword ptr [eax + 0xc]
-// 009f4526  8b4c2418             mov ecx, dword ptr [esp + 0x18]
-// 009f452a  51                   push ecx
-// 009f452b  8b4c2414             mov ecx, dword ptr [esp + 0x14]
-// 009f452f  899678010000         mov dword ptr [esi + 0x178], edx
-// 009f4535  8b542418             mov edx, dword ptr [esp + 0x18]
-// 009f4539  52                   push edx
-// 009f453a  8b542414             mov edx, dword ptr [esp + 0x14]
-// 009f453e  81c900000080         or ecx, 0x80000000
-// 009f4544  51                   push ecx
-// 009f4545  52                   push edx
-// 009f4546  8b10                 mov edx, dword ptr [eax]
-// 009f4548  83ec10               sub esp, 0x10
-// 009f454b  8bcc                 mov ecx, esp
-// 009f454d  8911                 mov dword ptr [ecx], edx
-// 009f454f  8b5004               mov edx, dword ptr [eax + 4]
-// 009f4552  895104               mov dword ptr [ecx + 4], edx
-// 009f4555  8b5008               mov edx, dword ptr [eax + 8]
-// 009f4558  8b400c               mov eax, dword ptr [eax + 0xc]
-// 009f455b  895108               mov dword ptr [ecx + 8], edx
-// 009f455e  89410c               mov dword ptr [ecx + 0xc], eax
-// 009f4561  8bce                 mov ecx, esi
-// 009f4563  e818320700           call 0xa67780
-// 009f4568  5e                   pop esi
-// 009f4569  c21400               ret 0x14
-// library xtp-11.2.2/Source\Controls\XTColorPopup.cpp (function ?Create@CXTColorPopup@@UAEHAAVCRect@@PAVCWnd@@KKK@Z)
-
 // roc-lang: cpp
 // roc-cl: 30729
 // roc-flags: /O2 /GS- /MD
 // roc-lib: xtp-11.2.2 Source/Controls/XTColorPopup.cpp
+
+// Candidate translation unit (score above; library headers required).
+// XTColorPopup.cpp : implementation file
+//
+// This file is a part of the XTREME CONTROLS MFC class library.
+// (c)1998-2007 Codejock Software, All Rights Reserved.
+//
+// THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
+// RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
+// CONSENT OF CODEJOCK SOFTWARE.
+//
+// THIS SOURCE CODE CAN ONLY BE USED UNDER THE TERMS AND CONDITIONS OUTLINED
+// IN THE XTREME TOOLKIT PRO LICENSE AGREEMENT. CODEJOCK SOFTWARE GRANTS TO
+// YOU (ONE SOFTWARE DEVELOPER) THE LIMITED RIGHT TO USE THIS SOFTWARE ON A
+// SINGLE COMPUTER.
+//
+// CONTACT INFORMATION:
+// support@codejock.com
+// http://www.codejock.com
+//
+/////////////////////////////////////////////////////////////////////////////
+
+#include "stdafx.h"
+
+#include "Common/XTPDrawHelpers.h"
+#include "Common/XTPWinThemeWrapper.h"
+#include "Common/XTPColorManager.h"
+#include "Common/XTPSystemHelpers.h"
+
+#include "Resource.h"
+#include "XTDefines.h"
+#include "XTGlobal.h"
+#include "XTColorSelectorCtrl.h"
+#include "XTWndShadow.h"
+#include "XTColorPopup.h"
+#include "XTColorSelectorCtrlTheme.h"
+
+#ifdef _XTP_INCLUDE_CONTROLBARS
+#include "ControlBars/XTOptionsManager.h"
+#include "ControlBars/XTDelegate.h"
+#include "ControlBars/XTControlbar.h"
+#include "ControlBars/XTToolBar.h"
+#include "ControlBars/XTCoolMenu.h"
+#endif
+
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#undef THIS_FILE
+static char THIS_FILE[] = __FILE__;
+#endif
+
+/////////////////////////////////////////////////////////////////////////////
+// CXTColorPopup
+
+CXTColorPopup::CXTColorPopup(BOOL bAutoDelete/*= FALSE*/, LPARAM callerParam /*= 0*/)
+: m_callerParam(callerParam)
+{
+	m_bAutoDelete = bAutoDelete;
+	m_bDisplayShadow = TRUE;
+}
+
+CXTColorPopup::~CXTColorPopup()
+{
+
+}
+
+BEGIN_MESSAGE_MAP(CXTColorPopup, CXTColorSelectorCtrl)
+	//{{AFX_MSG_MAP(CXTColorPopup)
+	ON_WM_ACTIVATE()
+	ON_WM_DESTROY()
+	ON_WM_CREATE()
+	ON_WM_KILLFOCUS()
+	ON_WM_LBUTTONDOWN()
+	ON_WM_NCPAINT()
+	ON_WM_NCCALCSIZE()
+	//}}AFX_MSG_MAP
+END_MESSAGE_MAP()
+
+/////////////////////////////////////////////////////////////////////////////
+// CXTColorPopup message handlers
+
+BOOL CXTColorPopup::Create(CRect& rect, CWnd* pParentWnd, DWORD dwPopup, COLORREF clrColor,
+	COLORREF clrDefault/*= CLR_DEFAULT*/)
+{
+	BOOL bOfficeTheme = GetTheme()->GetTheme() != xtThemeDefault;
+
+	if (bOfficeTheme)
+	{
+		SetBorders(4, 4, 6, 6);
+	}
+	else
+	{
+		SetBorders(4, 4, 10, 10);
+	}
+
+	m_rcExclude = rect;
+
+#ifdef _XTP_INCLUDE_CONTROLBARS
+	if (bOfficeTheme && DYNAMIC_DOWNCAST(CXTToolBar, pParentWnd)) rect.bottom--;
+#endif
+
+	return CXTColorSelectorCtrl::Create(rect, pParentWnd, dwPopup | WS_POPUP, clrColor, clrDefault);
+}
+
+void CXTColorPopup::PostNcDestroy()
+{
+	CXTPMouseMonitor::SetupHook(NULL);
+
+	if (m_bAutoDelete)
+	{
+		delete this;
+	}
+}
+
+void CXTColorPopup::OnActivate(UINT nState, CWnd* pWndOther, BOOL bMinimized)
+{
+	CWnd::OnActivate(nState, pWndOther, bMinimized);
+
+	// If we lose activation (other than to the color dialog) post
+	// a close message...
+
+	if (nState == WA_INACTIVE && !IsColorDlgVisible())
+	{
+		PostMessage(WM_CLOSE);
+	}
+}
+
+void CXTColorPopup::OnDestroy()
+{
+	CWnd::OnDestroy();
+
+	// Inform the parent that we are closing up.
+	m_pParentWnd->SendMessage(CPN_XT_CLOSEUP,
+		(WPARAM)m_clrColor, m_callerParam);
+
+#ifdef _XTP_INCLUDE_CONTROLBARS
+	CXTCoolMenu::m_iMenuBarAlign = 0;
+	if (DYNAMIC_DOWNCAST(CXTToolBar, m_pParentWnd))
+	{
+		int iIndex = ((CXTToolBar*)m_pParentWnd)->CommandToIndex((UINT)m_callerParam);
+		((CXTToolBar*)m_pParentWnd)->SetDroppedItem(iIndex, false);
+		m_pParentWnd->Invalidate(FALSE);
+	}
+#endif
+}
+
+
+int CXTColorPopup::OnCreate(LPCREATESTRUCT lpCreateStruct)
+{
+	if (CXTColorSelectorCtrl::OnCreate(lpCreateStruct) == -1)
+		return -1;
+
+	BOOL bOfficeTheme = GetTheme()->GetTheme() != xtThemeDefault;
+
+	if (bOfficeTheme)
+	{
+		ModifyStyle(WS_DLGFRAME | WS_THICKFRAME | WS_BORDER, 0, SWP_FRAMECHANGED);
+		ModifyStyleEx(WS_EX_STATICEDGE | WS_EX_WINDOWEDGE | WS_EX_DLGMODALFRAME, 0, SWP_FRAMECHANGED);
+	}
+	else
+	{
+		ModifyStyle(0, WS_DLGFRAME, SWP_FRAMECHANGED);
+	}
+
+	if (bOfficeTheme && XTAuxData().bMenuShadows && m_bDisplayShadow)
+	{
+		XTShadowsManager()->SetShadow(m_hWnd, m_rcExclude);
+
+#ifdef _XTP_INCLUDE_CONTROLBARS
+		if (CXTCoolMenu::m_iMenuBarAlign && !m_rcExclude.IsRectEmpty())
+			XTShadowsManager()->SetShadow(m_rcExclude, m_hWnd);
+#endif
+	}
+
+	CXTPWindowRect rcWindow(this);
+	CRect rcWork = XTPMultiMonitor()->GetWorkArea(rcWindow);
+
+	bool bMoveWindow = false;
+	CSize size = rcWindow.Size();
+
+	// move right
+	if (rcWindow.left < rcWork.left)
+	{
+		rcWindow.left = rcWork.left;
+		rcWindow.right = rcWindow.left + size.cx;
+		bMoveWindow = true;
+	}
+
+	// move left
+	else if (rcWindow.right > rcWork.right)
+	{
+		rcWindow.right = rcWork.right;
+		rcWindow.left = rcWindow.right - size.cx;
+		bMoveWindow = true;
+	}
+
+	// move up
+	if (rcWindow.bottom > rcWork.bottom)
+	{
+		rcWindow.bottom = rcWork.bottom;
+		rcWindow.top = rcWindow.bottom - size.cy;
+		bMoveWindow = true;
+	}
+
+	if (bMoveWindow)
+	{
+		MoveWindow(&rcWindow);
+	}
+
+	CXTPMouseMonitor::SetupHook(this);
+
+	m_pParentWnd->SendMessage(CPN_XT_DROPDOWN,
+		(WPARAM)m_clrColor, m_callerParam);
+
+	return 0;
+}
+
+// Adds a window to send color picker notifications to.
+void CXTColorPopup::AddListener(HWND hwndListener)
+{
+	m_listeners.Add(hwndListener);
+}
+
+void CXTColorPopup::EndSelection(int nCurSel)
+{
+	CXTPMouseMonitor::SetupHook(NULL);
+
+	OnEndSelection(nCurSel, m_callerParam);
+
+	PostMessage(WM_CLOSE);
+
+}
+
+void CXTColorPopup::OnKillFocus(CWnd* pNewWnd)
+{
+	CWnd::OnKillFocus(pNewWnd);
+
+	if (!m_pColorDlg)
+	{
+		EndSelection(-1);
+	}
+}
+
+void CXTColorPopup::OnLButtonDown(UINT nFlags, CPoint point)
+{
+	CRect rc;
+	GetClientRect(&rc);
+
+	if (!rc.PtInRect(point) && !IsColorDlgVisible())
+	{
+		EndSelection(-1);
+		return;
+	}
+	CXTColorSelectorCtrl::OnLButtonDown(nFlags, point);
+}
+
+void CXTColorPopup::OnNcPaint()
+{
+	BOOL bOfficeTheme = GetTheme()->GetTheme() != xtThemeDefault;
+
+	if (bOfficeTheme)
+	{
+		CWindowDC dc(this);
+		const COLORREF clrFrame = GetXtremeColor(XPCOLOR_MENUBAR_BORDER);
+		CRect rc;
+		GetWindowRect(&rc);
+		int cx = rc.Width(); // for right border is exclusive
+		int cy = rc.Height() ; // see above
+		dc.Draw3dRect(0, 0, cx, cy, clrFrame, clrFrame);
+
+	#ifdef _XTP_INCLUDE_CONTROLBARS
+		if (!m_rcExclude.IsRectEmpty())
+			::DrawAdjacentBorder(&dc, GetXtremeColor(XPCOLOR_TOOLBAR_FACE), m_rcExclude, rc);
+	#endif
+
+	}
+	else
+	{
+		Default();
+	}
+}
+
+void CXTColorPopup::OnNcCalcSize(BOOL bCalcValidRects, NCCALCSIZE_PARAMS FAR* lpncsp)
+{
+	BOOL bOfficeTheme = GetTheme()->GetTheme() != xtThemeDefault;
+
+	if (bOfficeTheme)
+	{
+		// adjust non-client area for border space
+		lpncsp->rgrc[0].left += 1;
+		lpncsp->rgrc[0].top += 1;
+		lpncsp->rgrc[0].right += -1;
+		lpncsp->rgrc[0].bottom += -1;
+	}
+	else
+	{
+		CWnd::OnNcCalcSize(bCalcValidRects, lpncsp);
+	}
+}

@@ -1,64 +1,150 @@
-// roc 2007-08 0057ff70  unit: RBX::Workspace  size: 163 bytes
-// Make this compile to the exact bytes below, then: roc check 2007-08 0057ff70
-//
-// 0057ff70  83ec44               sub esp, 0x44
-// 0057ff73  d9ee                 fldz 
-// 0057ff75  56                   push esi
-// 0057ff76  dd442450             fld qword ptr [esp + 0x50]
-// 0057ff7a  8b3568e97700         mov esi, dword ptr [0x77e968]
-// 0057ff80  dde1                 fucom st(1)
-// 0057ff82  c744240400000000     mov dword ptr [esp + 4], 0
-// 0057ff8a  dfe0                 fnstsw ax
-// 0057ff8c  ddd9                 fstp st(1)
-// 0057ff8e  f6c444               test ah, 0x44
-// 0057ff91  7a15                 jp 0x57ffa8
-// 0057ff93  8d442408             lea eax, [esp + 8]
-// 0057ff97  ddd8                 fstp st(0)
-// 0057ff99  6874bf7a00           push 0x7abf74
-// 0057ff9e  50                   push eax
-// 0057ff9f  ffd6                 call esi
-// 0057ffa1  dd442458             fld qword ptr [esp + 0x58]
-// 0057ffa5  83c408               add esp, 8
-// 0057ffa8  d9ee                 fldz 
-// 0057ffaa  83ec08               sub esp, 8
-// 0057ffad  d8d9                 fcomp st(1)
-// 0057ffaf  dfe0                 fnstsw ax
-// 0057ffb1  f6c441               test ah, 0x41
-// 0057ffb4  750f                 jne 0x57ffc5
-// 0057ffb6  dd1c24               fstp qword ptr [esp]
-// 0057ffb9  686cbf7a00           push 0x7abf6c
-// 0057ffbe  8d4c2414             lea ecx, [esp + 0x14]
-// 0057ffc2  51                   push ecx
-// 0057ffc3  eb31                 jmp 0x57fff6
-// 0057ffc5  dd0528b17800         fld qword ptr [0x78b128]
-// 0057ffcb  d8d9                 fcomp st(1)
-// 0057ffcd  dfe0                 fnstsw ax
-// 0057ffcf  f6c441               test ah, 0x41
-// 0057ffd2  7a0f                 jp 0x57ffe3
-// 0057ffd4  dd1c24               fstp qword ptr [esp]
-// 0057ffd7  686cbf7a00           push 0x7abf6c
-// 0057ffdc  8d542414             lea edx, [esp + 0x14]
-// 0057ffe0  52                   push edx
-// 0057ffe1  eb13                 jmp 0x57fff6
-// 0057ffe3  dc0d70f57900         fmul qword ptr [0x79f570]
-// 0057ffe9  8d442410             lea eax, [esp + 0x10]
-// 0057ffed  dd1c24               fstp qword ptr [esp]
-// 0057fff0  6864bf7a00           push 0x7abf64
-// 0057fff5  50                   push eax
-// 0057fff6  ffd6                 call esi
-// 0057fff8  8b74245c             mov esi, dword ptr [esp + 0x5c]
-// 0057fffc  83c410               add esp, 0x10
-// 0057ffff  8d4c2408             lea ecx, [esp + 8]
-// 00580003  51                   push ecx
-// 00580004  8bce                 mov ecx, esi
-// 00580006  ff1598e67700         call dword ptr [0x77e698]
-// 0058000c  8bc6                 mov eax, esi
-// 0058000e  5e                   pop esi
-// 0058000f  83c444               add esp, 0x44
-// 00580012  c3                   ret 
-// library openrbx-client/App\util\Log.cpp (function ?formatTime@Log@RBX@@SA?AV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@N@Z)
-
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
 // roc-lib: openrbx-client-dll App/util/Log.cpp
+
+// Candidate translation unit (score above; library headers required).
+#include "util/Log.h"
+
+#include "decomp.h"
+
+#include <cstdio>
+#include <windows.h>
+
+namespace RBX {
+
+DECOMP_SIZE_ASSERT(Log, 0xac)
+DECOMP_SIZE_ASSERT(ILogProvider, 0x04)
+
+Log::Severity Log::aggregateWorstSeverity = Log::Information;
+ILogProvider* Log::provider;
+
+static const char* information = "          ";
+static const char* warning = " Warning: ";
+static const char* error = " Error:   ";
+
+// FUNCTION: WEBSERVICE 0x1003d880
+void Log::setLogProvider(ILogProvider* provider)
+{
+	Log::provider = provider;
+}
+
+// FUNCTION: WEBSERVICE 0x1003d890
+std::string Log::formatMem(unsigned int bytes)
+{
+	char buffer[64];
+
+	if (bytes < 1000) {
+		sprintf(buffer, "%dB", bytes);
+	}
+	else if (bytes < 1000000) {
+		sprintf(buffer, "%dKB", bytes / 1000);
+	}
+	else if (bytes < 1000000000) {
+		sprintf(buffer, "%dMB", bytes / 1000000);
+	}
+	else {
+		sprintf(buffer, "%dGB", bytes / 1000000000);
+	}
+
+	return std::string(buffer);
+}
+
+// FUNCTION: WEBSERVICE 0x1003d930
+std::string Log::formatTime(double time)
+{
+	char buffer[64];
+
+	if (time == 0.0) {
+		sprintf(buffer, "0s");
+	}
+
+	if (time < 0.0) {
+		sprintf(buffer, "%.3gs", time);
+	}
+	else if (time >= 0.1) {
+		sprintf(buffer, "%.3gs", time);
+	}
+	else {
+		sprintf(buffer, "%.3gms", time * 1000.0);
+	}
+
+	return std::string(buffer);
+}
+
+} // namespace RBX
+
+// FUNCTION: WEBSERVICE 0x1003de60
+static void timeStamp(std::ofstream& stream, bool includeDate)
+{
+	SYSTEMTIME systemTime;
+	GetLocalTime(&systemTime);
+
+	char s[256];
+
+	if (includeDate) {
+		sprintf(s, "%02u.%02u.%u ", systemTime.wDay, systemTime.wMonth, systemTime.wYear);
+		stream << s;
+	}
+
+	sprintf(s, "%02u:%02u.%03u ", systemTime.wHour, systemTime.wMinute, systemTime.wMilliseconds);
+	stream << s;
+	stream.flush();
+}
+
+namespace RBX {
+
+// FUNCTION: WEBSERVICE 0x1003def0
+Log::Log(const char* logFile, const char* name) : worstSeverity(Information), logFile(logFile), stream(logFile)
+{
+	::timeStamp(stream, true);
+	stream << "Log \"" << name << "\"\n";
+	stream.flush();
+}
+
+// FUNCTION: WEBSERVICE 0x1003dfa0
+Log::~Log()
+{
+	::timeStamp(stream, true);
+	stream << "End Log\n";
+}
+
+// FUNCTION: WEBSERVICE 0x1003e020
+void Log::writeEntry(Severity severity, const char* message)
+{
+	std::ofstream* out = currentStream();
+
+	SYSTEMTIME now;
+	GetLocalTime(&now);
+
+	char stamp[256];
+	sprintf(stamp, "%02u:%02u.%03u ", now.wHour, now.wMinute, now.wMilliseconds);
+
+	*out << stamp;
+	out->flush();
+
+	switch (severity) {
+	case Error:
+		*currentStream() << error;
+	case Warning:
+		*currentStream() << warning;
+	case Information:
+		*currentStream() << information;
+	}
+
+	*currentStream() << message;
+	stream << '\n';
+	currentStream()->flush();
+}
+
+std::string Log::timeStamp()
+{
+	return std::string();
+}
+
+std::ofstream* Log::currentStream()
+{
+	return &provider->provideLog()->stream;
+}
+
+} // namespace RBX

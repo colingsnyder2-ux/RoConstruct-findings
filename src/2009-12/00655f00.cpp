@@ -1,42 +1,127 @@
-// roc 2009-12 00655f00  unit: RBX::VBodyGyro::?$FactoryProduct::Creator  size: 119 bytes
-// Make this compile to the exact bytes below, then: roc check 2009-12 00655f00
-//
-// 00655f00  6aff                 push -1
-// 00655f02  684bad9300           push 0x93ad4b
-// 00655f07  64a100000000         mov eax, dword ptr fs:[0]
-// 00655f0d  50                   push eax
-// 00655f0e  64892500000000       mov dword ptr fs:[0], esp
-// 00655f15  83ec08               sub esp, 8
-// 00655f18  c7042400000000       mov dword ptr [esp], 0
-// 00655f1f  6864010000           push 0x164
-// 00655f24  c644240400           mov byte ptr [esp + 4], 0
-// 00655f29  e832d91900           call 0x7f3860
-// 00655f2e  83c404               add esp, 4
-// 00655f31  89442404             mov dword ptr [esp + 4], eax
-// 00655f35  c744241000000000     mov dword ptr [esp + 0x10], 0
-// 00655f3d  85c0                 test eax, eax
-// 00655f3f  7409                 je 0x655f4a
-// 00655f41  8bc8                 mov ecx, eax
-// 00655f43  e8f8370e00           call 0x739740
-// 00655f48  eb02                 jmp 0x655f4c
-// 00655f4a  33c0                 xor eax, eax
-// 00655f4c  8b0c24               mov ecx, dword ptr [esp]
-// 00655f4f  56                   push esi
-// 00655f50  8b74241c             mov esi, dword ptr [esp + 0x1c]
-// 00655f54  51                   push ecx
-// 00655f55  50                   push eax
-// 00655f56  8bce                 mov ecx, esi
-// 00655f58  c744241cffffffff     mov dword ptr [esp + 0x1c], 0xffffffff
-// 00655f60  e8ebfeffff           call 0x655e50
-// 00655f65  8b4c240c             mov ecx, dword ptr [esp + 0xc]
-// 00655f69  8bc6                 mov eax, esi
-// 00655f6b  5e                   pop esi
-// 00655f6c  64890d00000000       mov dword ptr fs:[0], ecx
-// 00655f73  83c414               add esp, 0x14
-// 00655f76  c3                   ret 
-// library openrbx-client/App\v8datamodel\Decal.cpp (function ??$create@VTexture@RBX@@@?$Creatable@VInstance@RBX@@@RBX@@SA?AV?$shared_ptr@VTexture@RBX@@@boost@@XZ)
-
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
 // roc-lib: openrbx-client App/v8datamodel/Decal.cpp
+
+// Candidate translation unit (score above; library headers required).
+#include "v8datamodel/Decal.h"
+
+#include "reflection/property.h"
+
+namespace RBX {
+
+char sTexture[] = "Texture";
+
+char sDecal[] = "Decal";
+
+using namespace Reflection;
+
+const PropDescriptor<Decal, TextureId> Decal::prop_Texture(
+	"Texture",
+	"Appearance",
+	&RBX::Decal::getTexture,
+	&RBX::Decal::setTexture
+);
+
+const PropDescriptor<Decal, float> Decal::prop_Specular(
+	"Specular",
+	"Appearance",
+	&RBX::Decal::getSpecular,
+	&RBX::Decal::setSpecular
+);
+
+const PropDescriptor<Decal, float> Decal::prop_Shiny(
+	"Shiny",
+	"Appearance",
+	&RBX::Decal::getShiny,
+	&RBX::Decal::setShiny
+);
+
+const PropDescriptor<Texture, float> Texture::prop_StudsPerTileU(
+	"StudsPerTileU",
+	"Appearance",
+	&RBX::Texture::getStudsPerTileU,
+	&RBX::Texture::setStudsPerTileU
+);
+
+const PropDescriptor<Texture, float> Texture::prop_StudsPerTileV(
+	"StudsPerTileV",
+	"Appearance",
+	&RBX::Texture::getStudsPerTileV,
+	&RBX::Texture::setStudsPerTileV
+);
+
+// FUNCTION: WEBSERVICE 0x100fff70
+Decal::Decal() : specular(0.0f), shiny(20.0f)
+{
+	setName("Decal");
+}
+
+// FUNCTION: WEBSERVICE 0x10100170
+void Decal::setTexture(TextureId value)
+{
+	if (texture != value) {
+		texture = value;
+		raisePropertyChanged(prop_Texture);
+	}
+}
+
+// FUNCTION: WEBSERVICE 0x101001f0
+void Decal::setSpecular(float value)
+{
+	if (specular != value && value >= 0.0f) {
+		specular = value;
+		raisePropertyChanged(prop_Specular);
+	}
+}
+
+// FUNCTION: WEBSERVICE 0x10100230
+void Decal::setShiny(float value)
+{
+	if (shiny != value && value > 0.0f) {
+		shiny = value;
+		raisePropertyChanged(prop_Shiny);
+	}
+}
+
+// FUNCTION: WEBSERVICE 0x10100270
+void Texture::setStudsPerTileU(float value)
+{
+	if (studsPerTile.x != value && value > 0.0f) {
+		studsPerTile.x = value;
+		raisePropertyChanged(prop_StudsPerTileU);
+	}
+}
+
+// FUNCTION: WEBSERVICE 0x101002b0
+void Texture::setStudsPerTileV(float value)
+{
+	if (studsPerTile.y != value && value > 0.0f) {
+		studsPerTile.y = value;
+		raisePropertyChanged(prop_StudsPerTileV);
+	}
+}
+
+// FUNCTION: WEBSERVICE 0x101003c0
+Texture::Texture() : studsPerTile(2.0f, 2.0f)
+{
+	setName("Texture");
+}
+
+namespace Reflection {
+
+// FUNCTION: WEBSERVICE 0x1012dd60 FOLDED
+template <>
+const Type& Type::singleton<TextureId>()
+{
+	return singleton<ContentId>();
+}
+
+} // namespace Reflection
+
+} // namespace RBX
+
+template class RBX::FactoryProduct<RBX::Texture, RBX::Decal, RBX::sTexture>;
+template class RBX::Reflection::
+	Described<RBX::Texture, RBX::sTexture, RBX::FactoryProduct<RBX::Texture, RBX::Decal, RBX::sTexture> >;
+template class RBX::DescribedCreatable<RBX::Texture, RBX::Decal, RBX::sTexture>;

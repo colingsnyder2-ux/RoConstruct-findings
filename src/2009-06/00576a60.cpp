@@ -1,511 +1,2008 @@
-// roc 2009-06 00576a60  unit: G3D::LineSegment  size: 1286 bytes
-// Make this compile to the exact bytes below, then: roc check 2009-06 00576a60
-//
-// 00576a60  83ec60               sub esp, 0x60
-// 00576a63  53                   push ebx
-// 00576a64  8b5c246c             mov ebx, dword ptr [esp + 0x6c]
-// 00576a68  55                   push ebp
-// 00576a69  8d442420             lea eax, [esp + 0x20]
-// 00576a6d  50                   push eax
-// 00576a6e  8bcb                 mov ecx, ebx
-// 00576a70  e8db360100           call 0x58a150
-// 00576a75  8d4c245c             lea ecx, [esp + 0x5c]
-// 00576a79  51                   push ecx
-// 00576a7a  8bcb                 mov ecx, ebx
-// 00576a7c  8be8                 mov ebp, eax
-// 00576a7e  e8ed360100           call 0x58a170
-// 00576a83  d900                 fld dword ptr [eax]
-// 00576a85  d86500               fsub dword ptr [ebp]
-// 00576a88  51                   push ecx
-// 00576a89  8d4c2418             lea ecx, [esp + 0x18]
-// 00576a8d  d9542454             fst dword ptr [esp + 0x54]
-// 00576a91  d94004               fld dword ptr [eax + 4]
-// 00576a94  d86504               fsub dword ptr [ebp + 4]
-// 00576a97  d9542458             fst dword ptr [esp + 0x58]
-// 00576a9b  d94008               fld dword ptr [eax + 8]
-// 00576a9e  d86508               fsub dword ptr [ebp + 8]
-// 00576aa1  d954245c             fst dword ptr [esp + 0x5c]
-// 00576aa5  d9ee                 fldz 
-// 00576aa7  d9542430             fst dword ptr [esp + 0x30]
-// 00576aab  d9542434             fst dword ptr [esp + 0x34]
-// 00576aaf  d9542438             fst dword ptr [esp + 0x38]
-// 00576ab3  d954243c             fst dword ptr [esp + 0x3c]
-// 00576ab7  d9542440             fst dword ptr [esp + 0x40]
-// 00576abb  d95c2444             fstp dword ptr [esp + 0x44]
-// 00576abf  d9ca                 fxch st(2)
-// 00576ac1  d95c2418             fstp dword ptr [esp + 0x18]
-// 00576ac5  d95c241c             fstp dword ptr [esp + 0x1c]
-// 00576ac9  d95c2420             fstp dword ptr [esp + 0x20]
-// 00576acd  d90574a48c00         fld dword ptr [0x8ca474]
-// 00576ad3  d91c24               fstp dword ptr [esp]
-// 00576ad6  e855e9ffff           call 0x575430
-// 00576adb  6a01                 push 1
-// 00576add  d95c2410             fstp dword ptr [esp + 0x10]
-// 00576ae1  8d542418             lea edx, [esp + 0x18]
-// 00576ae5  52                   push edx
-// 00576ae6  8d442440             lea eax, [esp + 0x40]
-// 00576aea  50                   push eax
-// 00576aeb  8d4c2438             lea ecx, [esp + 0x38]
-// 00576aef  51                   push ecx
-// 00576af0  e88be9ffff           call 0x575480
-// 00576af5  d906                 fld dword ptr [esi]
-// 00576af7  d84c243c             fmul dword ptr [esp + 0x3c]
-// 00576afb  83c40c               add esp, 0xc
-// 00576afe  d94608               fld dword ptr [esi + 8]
-// 00576b01  8d4c2448             lea ecx, [esp + 0x48]
-// 00576b05  d84c2438             fmul dword ptr [esp + 0x38]
-// 00576b09  dec1                 faddp st(1)
-// 00576b0b  d94604               fld dword ptr [esi + 4]
-// 00576b0e  d84c2434             fmul dword ptr [esp + 0x34]
-// 00576b12  dec1                 faddp st(1)
-// 00576b14  d95c2448             fstp dword ptr [esp + 0x48]
-// 00576b18  d906                 fld dword ptr [esi]
-// 00576b1a  d84c243c             fmul dword ptr [esp + 0x3c]
-// 00576b1e  d94608               fld dword ptr [esi + 8]
-// 00576b21  d84c2444             fmul dword ptr [esp + 0x44]
-// 00576b25  dec1                 faddp st(1)
-// 00576b27  d94604               fld dword ptr [esi + 4]
-// 00576b2a  d84c2440             fmul dword ptr [esp + 0x40]
-// 00576b2e  dec1                 faddp st(1)
-// 00576b30  d95c244c             fstp dword ptr [esp + 0x4c]
-// 00576b34  d906                 fld dword ptr [esi]
-// 00576b36  d84c2418             fmul dword ptr [esp + 0x18]
-// 00576b3a  d94608               fld dword ptr [esi + 8]
-// 00576b3d  d84c2420             fmul dword ptr [esp + 0x20]
-// 00576b41  dec1                 faddp st(1)
-// 00576b43  d94604               fld dword ptr [esi + 4]
-// 00576b46  d84c241c             fmul dword ptr [esp + 0x1c]
-// 00576b4a  dec1                 faddp st(1)
-// 00576b4c  d95c2450             fstp dword ptr [esp + 0x50]
-// 00576b50  d90574a48c00         fld dword ptr [0x8ca474]
-// 00576b56  d91c24               fstp dword ptr [esp]
-// 00576b59  e8d2e8ffff           call 0x575430
-// 00576b5e  d9542410             fst dword ptr [esp + 0x10]
-// 00576b62  d9e8                 fld1 
-// 00576b64  def1                 fdivrp st(1)
-// 00576b66  8d54245c             lea edx, [esp + 0x5c]
-// 00576b6a  d95c2408             fstp dword ptr [esp + 8]
-// 00576b6e  52                   push edx
-// 00576b6f  8bcb                 mov ecx, ebx
-// 00576b71  e8da350100           call 0x58a150
-// 00576b76  8b4c246c             mov ecx, dword ptr [esp + 0x6c]
-// 00576b7a  d901                 fld dword ptr [ecx]
-// 00576b7c  d820                 fsub dword ptr [eax]
-// 00576b7e  d94104               fld dword ptr [ecx + 4]
-// 00576b81  d86004               fsub dword ptr [eax + 4]
-// 00576b84  d94108               fld dword ptr [ecx + 8]
-// 00576b87  8bcb                 mov ecx, ebx
-// 00576b89  d86008               fsub dword ptr [eax + 8]
-// 00576b8c  d9442434             fld dword ptr [esp + 0x34]
-// 00576b90  d8c9                 fmul st(1)
-// 00576b92  d9c2                 fld st(2)
-// 00576b94  d84c2430             fmul dword ptr [esp + 0x30]
-// 00576b98  dec1                 faddp st(1)
-// 00576b9a  d9c3                 fld st(3)
-// 00576b9c  d84c242c             fmul dword ptr [esp + 0x2c]
-// 00576ba0  dec1                 faddp st(1)
-// 00576ba2  d95c2420             fstp dword ptr [esp + 0x20]
-// 00576ba6  d9442440             fld dword ptr [esp + 0x40]
-// 00576baa  d8c9                 fmul st(1)
-// 00576bac  d9c2                 fld st(2)
-// 00576bae  d84c243c             fmul dword ptr [esp + 0x3c]
-// 00576bb2  dec1                 faddp st(1)
-// 00576bb4  d9c3                 fld st(3)
-// 00576bb6  d84c2438             fmul dword ptr [esp + 0x38]
-// 00576bba  dec1                 faddp st(1)
-// 00576bbc  d95c2424             fstp dword ptr [esp + 0x24]
-// 00576bc0  d84c241c             fmul dword ptr [esp + 0x1c]
-// 00576bc4  d9c9                 fxch st(1)
-// 00576bc6  d84c2418             fmul dword ptr [esp + 0x18]
-// 00576bca  dec1                 faddp st(1)
-// 00576bcc  d9c9                 fxch st(1)
-// 00576bce  d84c2414             fmul dword ptr [esp + 0x14]
-// 00576bd2  dec1                 faddp st(1)
-// 00576bd4  d95c2428             fstp dword ptr [esp + 0x28]
-// 00576bd8  e8b3350100           call 0x58a190
-// 00576bdd  dcc8                 fmul st(0), st(0)
-// 00576bdf  5d                   pop ebp
-// 00576be0  d9442448             fld dword ptr [esp + 0x48]
-// 00576be4  5b                   pop ebx
-// 00576be5  d9c0                 fld st(0)
-// 00576be7  d9e1                 fabs 
-// 00576be9  dc1da0b88c00         fcomp qword ptr [0x8cb8a0]
-// 00576bef  dfe0                 fnstsw ax
-// 00576bf1  f6c401               test ah, 1
-// 00576bf4  0f84b4020000         je 0x576eae
-// 00576bfa  d90574a48c00         fld dword ptr [0x8ca474]
-// 00576c00  d85c2408             fcomp dword ptr [esp + 8]
-// 00576c04  dfe0                 fnstsw ax
-// 00576c06  f6c441               test ah, 0x41
-// 00576c09  0f849f020000         je 0x576eae
-// 00576c0f  d9442440             fld dword ptr [esp + 0x40]
-// 00576c13  d9c0                 fld st(0)
-// 00576c15  d8c9                 fmul st(1)
-// 00576c17  d944243c             fld dword ptr [esp + 0x3c]
-// 00576c1b  d9c0                 fld st(0)
-// 00576c1d  d8c9                 fmul st(1)
-// 00576c1f  dec2                 faddp st(2)
-// 00576c21  d944241c             fld dword ptr [esp + 0x1c]
-// 00576c25  dccb                 fmul st(3), st(0)
-// 00576c27  d9442418             fld dword ptr [esp + 0x18]
-// 00576c2b  dcca                 fmul st(2), st(0)
-// 00576c2d  d9cc                 fxch st(4)
-// 00576c2f  dec2                 faddp st(2)
-// 00576c31  dcc8                 fmul st(0), st(0)
-// 00576c33  d9c3                 fld st(3)
-// 00576c35  decc                 fmulp st(4)
-// 00576c37  dec3                 faddp st(3)
-// 00576c39  d9ca                 fxch st(2)
-// 00576c3b  dee4                 fsubrp st(4)
-// 00576c3d  d9cb                 fxch st(3)
-// 00576c3f  d9542408             fst dword ptr [esp + 8]
-// 00576c43  d9c1                 fld st(1)
-// 00576c45  d8ca                 fmul st(2)
-// 00576c47  d9c1                 fld st(1)
-// 00576c49  d8cd                 fmul st(5)
-// 00576c4b  dee9                 fsubp st(1)
-// 00576c4d  d9ee                 fldz 
-// 00576c4f  d8d1                 fcom st(1)
-// 00576c51  dfe0                 fnstsw ax
-// 00576c53  f6c441               test ah, 0x41
-// 00576c56  7512                 jne 0x576c6a
-// 00576c58  ddd9                 fstp st(1)
-// 00576c5a  dddc                 fstp st(4)
-// 00576c5c  ddda                 fstp st(2)
-// 00576c5e  ddda                 fstp st(2)
-// 00576c60  ddd9                 fstp st(1)
-// 00576c62  33c0                 xor eax, eax
-// 00576c64  ddd8                 fstp st(0)
-// 00576c66  83c460               add esp, 0x60
-// 00576c69  c3                   ret 
-// 00576c6a  d8d1                 fcom st(1)
-// 00576c6c  33c9                 xor ecx, ecx
-// 00576c6e  dfe0                 fnstsw ax
-// 00576c70  f6c405               test ah, 5
-// 00576c73  0f8a93000000         jp 0x576d0c
-// 00576c79  ddda                 fstp st(2)
-// 00576c7b  d9fa                 fsqrt 
-// 00576c7d  d9e8                 fld1 
-// 00576c7f  def5                 fdivrp st(5)
-// 00576c81  d9c2                 fld st(2)
-// 00576c83  d9e0                 fchs 
-// 00576c85  d8e1                 fsub st(1)
-// 00576c87  d8cd                 fmul st(5)
-// 00576c89  d9542464             fst dword ptr [esp + 0x64]
-// 00576c8d  d8cc                 fmul st(4)
-// 00576c8f  d9442420             fld dword ptr [esp + 0x20]
-// 00576c93  dcc1                 fadd st(1), st(0)
-// 00576c95  d9cb                 fxch st(3)
-// 00576c97  d8d1                 fcom st(1)
-// 00576c99  dfe0                 fnstsw ax
-// 00576c9b  f6c441               test ah, 0x41
-// 00576c9e  7a1f                 jp 0x576cbf
-// 00576ca0  d9442404             fld dword ptr [esp + 4]
-// 00576ca4  d8da                 fcomp st(2)
-// 00576ca6  dfe0                 fnstsw ax
-// 00576ca8  ddd9                 fstp st(1)
-// 00576caa  f6c401               test ah, 1
-// 00576cad  7512                 jne 0x576cc1
-// 00576caf  d9442464             fld dword ptr [esp + 0x64]
-// 00576cb3  b901000000           mov ecx, 1
-// 00576cb8  d80c24               fmul dword ptr [esp]
-// 00576cbb  dd1f                 fstp qword ptr [edi]
-// 00576cbd  eb02                 jmp 0x576cc1
-// 00576cbf  ddd9                 fstp st(1)
-// 00576cc1  d9442404             fld dword ptr [esp + 4]
-// 00576cc5  d9ca                 fxch st(2)
-// 00576cc7  d8e4                 fsub st(4)
-// 00576cc9  dece                 fmulp st(6)
-// 00576ccb  d9c5                 fld st(5)
-// 00576ccd  d8cd                 fmul st(5)
-// 00576ccf  d8c3                 fadd st(3)
-// 00576cd1  d8d1                 fcom st(1)
-// 00576cd3  dfe0                 fnstsw ax
-// 00576cd5  f6c401               test ah, 1
-// 00576cd8  7515                 jne 0x576cef
-// 00576cda  d8da                 fcomp st(2)
-// 00576cdc  dfe0                 fnstsw ax
-// 00576cde  f6c441               test ah, 0x41
-// 00576ce1  7a0e                 jp 0x576cf1
-// 00576ce3  d9cd                 fxch st(5)
-// 00576ce5  41                   inc ecx
-// 00576ce6  d80c24               fmul dword ptr [esp]
-// 00576ce9  dd5ccff8             fstp qword ptr [edi + ecx*8 - 8]
-// 00576ced  eb04                 jmp 0x576cf3
-// 00576cef  ddd8                 fstp st(0)
-// 00576cf1  dddd                 fstp st(5)
-// 00576cf3  83f902               cmp ecx, 2
-// 00576cf6  0f85bf000000         jne 0x576dbb
-// 00576cfc  ddd9                 fstp st(1)
-// 00576cfe  8bc1                 mov eax, ecx
-// 00576d00  ddda                 fstp st(2)
-// 00576d02  ddda                 fstp st(2)
-// 00576d04  ddd9                 fstp st(1)
-// 00576d06  ddd8                 fstp st(0)
-// 00576d08  83c460               add esp, 0x60
-// 00576d0b  c3                   ret 
-// 00576d0c  ddd9                 fstp st(1)
-// 00576d0e  d9c2                 fld st(2)
-// 00576d10  def5                 fdivrp st(5)
-// 00576d12  d9cc                 fxch st(4)
-// 00576d14  d9e0                 fchs 
-// 00576d16  d9542464             fst dword ptr [esp + 0x64]
-// 00576d1a  d8cb                 fmul st(3)
-// 00576d1c  d9442420             fld dword ptr [esp + 0x20]
-// 00576d20  dcc1                 fadd st(1), st(0)
-// 00576d22  d9cd                 fxch st(5)
-// 00576d24  d8d1                 fcom st(1)
-// 00576d26  dfe0                 fnstsw ax
-// 00576d28  f6c441               test ah, 0x41
-// 00576d2b  7a2d                 jp 0x576d5a
-// 00576d2d  d9442404             fld dword ptr [esp + 4]
-// 00576d31  d8d2                 fcom st(2)
-// 00576d33  dfe0                 fnstsw ax
-// 00576d35  ddda                 fstp st(2)
-// 00576d37  f6c401               test ah, 1
-// 00576d3a  7526                 jne 0x576d62
-// 00576d3c  dddd                 fstp st(5)
-// 00576d3e  b801000000           mov eax, 1
-// 00576d43  dddb                 fstp st(3)
-// 00576d45  dddb                 fstp st(3)
-// 00576d47  ddd8                 fstp st(0)
-// 00576d49  ddd9                 fstp st(1)
-// 00576d4b  ddd8                 fstp st(0)
-// 00576d4d  d9442464             fld dword ptr [esp + 0x64]
-// 00576d51  d80c24               fmul dword ptr [esp]
-// 00576d54  dd1f                 fstp qword ptr [edi]
-// 00576d56  83c460               add esp, 0x60
-// 00576d59  c3                   ret 
-// 00576d5a  ddd9                 fstp st(1)
-// 00576d5c  d9442404             fld dword ptr [esp + 4]
-// 00576d60  d9c9                 fxch st(1)
-// 00576d62  d9cd                 fxch st(5)
-// 00576d64  d9ca                 fxch st(2)
-// 00576d66  d9c2                 fld st(2)
-// 00576d68  d8cd                 fmul st(5)
-// 00576d6a  dec4                 faddp st(4)
-// 00576d6c  d9c2                 fld st(2)
-// 00576d6e  d8cb                 fmul st(3)
-// 00576d70  dec1                 faddp st(1)
-// 00576d72  d9542408             fst dword ptr [esp + 8]
-// 00576d76  d9c3                 fld st(3)
-// 00576d78  d8cc                 fmul st(4)
-// 00576d7a  dee1                 fsubrp st(1)
-// 00576d7c  d8d5                 fcom st(5)
-// 00576d7e  dfe0                 fnstsw ax
-// 00576d80  f6c441               test ah, 0x41
-// 00576d83  756c                 jne 0x576df1
-// 00576d85  d9fa                 fsqrt 
-// 00576d87  d9c3                 fld st(3)
-// 00576d89  d9e0                 fchs 
-// 00576d8b  d8e1                 fsub st(1)
-// 00576d8d  d9c0                 fld st(0)
-// 00576d8f  d8ce                 fmul st(6)
-// 00576d91  d8c4                 fadd st(4)
-// 00576d93  d8df                 fcomp st(7)
-// 00576d95  dfe0                 fnstsw ax
-// 00576d97  f6c441               test ah, 0x41
-// 00576d9a  7a25                 jp 0x576dc1
-// 00576d9c  d80c24               fmul dword ptr [esp]
-// 00576d9f  41                   inc ecx
-// 00576da0  dd5ccff8             fstp qword ptr [edi + ecx*8 - 8]
-// 00576da4  83f902               cmp ecx, 2
-// 00576da7  751a                 jne 0x576dc3
-// 00576da9  ddd8                 fstp st(0)
-// 00576dab  8bc1                 mov eax, ecx
-// 00576dad  ddd9                 fstp st(1)
-// 00576daf  ddda                 fstp st(2)
-// 00576db1  ddda                 fstp st(2)
-// 00576db3  ddd9                 fstp st(1)
-// 00576db5  ddd8                 fstp st(0)
-// 00576db7  83c460               add esp, 0x60
-// 00576dba  c3                   ret 
-// 00576dbb  d9442408             fld dword ptr [esp + 8]
-// 00576dbf  eba5                 jmp 0x576d66
-// 00576dc1  ddd8                 fstp st(0)
-// 00576dc3  d8e3                 fsub st(3)
-// 00576dc5  d9c0                 fld st(0)
-// 00576dc7  d8cd                 fmul st(5)
-// 00576dc9  d8c3                 fadd st(3)
-// 00576dcb  d8de                 fcomp st(6)
-// 00576dcd  dfe0                 fnstsw ax
-// 00576dcf  f6c441               test ah, 0x41
-// 00576dd2  7a2e                 jp 0x576e02
-// 00576dd4  d80c24               fmul dword ptr [esp]
-// 00576dd7  41                   inc ecx
-// 00576dd8  dd5ccff8             fstp qword ptr [edi + ecx*8 - 8]
-// 00576ddc  83f902               cmp ecx, 2
-// 00576ddf  7523                 jne 0x576e04
-// 00576de1  ddd9                 fstp st(1)
-// 00576de3  8bc1                 mov eax, ecx
-// 00576de5  ddda                 fstp st(2)
-// 00576de7  ddda                 fstp st(2)
-// 00576de9  ddd9                 fstp st(1)
-// 00576deb  ddd8                 fstp st(0)
-// 00576ded  83c460               add esp, 0x60
-// 00576df0  c3                   ret 
-// 00576df1  d9c5                 fld st(5)
-// 00576df3  dae9                 fucompp 
-// 00576df5  dfe0                 fnstsw ax
-// 00576df7  f6c444               test ah, 0x44
-// 00576dfa  7a08                 jp 0x576e04
-// 00576dfc  d9c2                 fld st(2)
-// 00576dfe  d9e0                 fchs 
-// 00576e00  ebc3                 jmp 0x576dc5
-// 00576e02  ddd8                 fstp st(0)
-// 00576e04  d9c3                 fld st(3)
-// 00576e06  d8c9                 fmul st(1)
-// 00576e08  deeb                 fsubp st(3)
-// 00576e0a  d9c2                 fld st(2)
-// 00576e0c  d8cb                 fmul st(3)
-// 00576e0e  d9c2                 fld st(2)
-// 00576e10  dcc0                 fadd st(0), st(0)
-// 00576e12  d8ea                 fsubr st(2)
-// 00576e14  d8ca                 fmul st(2)
-// 00576e16  d8442408             fadd dword ptr [esp + 8]
-// 00576e1a  dee9                 fsubp st(1)
-// 00576e1c  d8d5                 fcom st(5)
-// 00576e1e  dfe0                 fnstsw ax
-// 00576e20  f6c441               test ah, 0x41
-// 00576e23  7562                 jne 0x576e87
-// 00576e25  dddd                 fstp st(5)
-// 00576e27  d9cc                 fxch st(4)
-// 00576e29  d9fa                 fsqrt 
-// 00576e2b  d9c2                 fld st(2)
-// 00576e2d  d9e0                 fchs 
-// 00576e2f  d8e1                 fsub st(1)
-// 00576e31  d9c0                 fld st(0)
-// 00576e33  d8cd                 fmul st(5)
-// 00576e35  d8c3                 fadd st(3)
-// 00576e37  d8de                 fcomp st(6)
-// 00576e39  dfe0                 fnstsw ax
-// 00576e3b  f6c401               test ah, 1
-// 00576e3e  751d                 jne 0x576e5d
-// 00576e40  d80c24               fmul dword ptr [esp]
-// 00576e43  41                   inc ecx
-// 00576e44  dd5ccff8             fstp qword ptr [edi + ecx*8 - 8]
-// 00576e48  83f902               cmp ecx, 2
-// 00576e4b  7512                 jne 0x576e5f
-// 00576e4d  ddd8                 fstp st(0)
-// 00576e4f  8bc1                 mov eax, ecx
-// 00576e51  ddd8                 fstp st(0)
-// 00576e53  ddd9                 fstp st(1)
-// 00576e55  ddd8                 fstp st(0)
-// 00576e57  ddd8                 fstp st(0)
-// 00576e59  83c460               add esp, 0x60
-// 00576e5c  c3                   ret 
-// 00576e5d  ddd8                 fstp st(0)
-// 00576e5f  dee2                 fsubrp st(2)
-// 00576e61  d9c1                 fld st(1)
-// 00576e63  decb                 fmulp st(3)
-// 00576e65  dec2                 faddp st(2)
-// 00576e67  d9c9                 fxch st(1)
-// 00576e69  d8da                 fcomp st(2)
-// 00576e6b  dfe0                 fnstsw ax
-// 00576e6d  ddd9                 fstp st(1)
-// 00576e6f  f6c401               test ah, 1
-// 00576e72  7532                 jne 0x576ea6
-// 00576e74  d80c24               fmul dword ptr [esp]
-// 00576e77  41                   inc ecx
-// 00576e78  dd5ccff8             fstp qword ptr [edi + ecx*8 - 8]
-// 00576e7c  83f902               cmp ecx, 2
-// 00576e7f  7527                 jne 0x576ea8
-// 00576e81  8bc1                 mov eax, ecx
-// 00576e83  83c460               add esp, 0x60
-// 00576e86  c3                   ret 
-// 00576e87  dded                 fucomp st(5)
-// 00576e89  dfe0                 fnstsw ax
-// 00576e8b  dddc                 fstp st(4)
-// 00576e8d  f6c444               test ah, 0x44
-// 00576e90  7a0e                 jp 0x576ea0
-// 00576e92  d9c9                 fxch st(1)
-// 00576e94  d9e0                 fchs 
-// 00576e96  d9c0                 fld st(0)
-// 00576e98  decb                 fmulp st(3)
-// 00576e9a  d9ca                 fxch st(2)
-// 00576e9c  dec1                 faddp st(1)
-// 00576e9e  ebc9                 jmp 0x576e69
-// 00576ea0  ddd8                 fstp st(0)
-// 00576ea2  ddd9                 fstp st(1)
-// 00576ea4  ddd8                 fstp st(0)
-// 00576ea6  ddd8                 fstp st(0)
-// 00576ea8  8bc1                 mov eax, ecx
-// 00576eaa  83c460               add esp, 0x60
-// 00576ead  c3                   ret 
-// 00576eae  ddd8                 fstp st(0)
-// 00576eb0  d94604               fld dword ptr [esi + 4]
-// 00576eb3  d84c244c             fmul dword ptr [esp + 0x4c]
-// 00576eb7  d94608               fld dword ptr [esi + 8]
-// 00576eba  d84c2450             fmul dword ptr [esp + 0x50]
-// 00576ebe  dec1                 faddp st(1)
-// 00576ec0  d906                 fld dword ptr [esi]
-// 00576ec2  d84c2448             fmul dword ptr [esp + 0x48]
-// 00576ec6  dec1                 faddp st(1)
-// 00576ec8  d9442418             fld dword ptr [esp + 0x18]
-// 00576ecc  dcc8                 fmul st(0), st(0)
-// 00576ece  deea                 fsubp st(2)
-// 00576ed0  d944241c             fld dword ptr [esp + 0x1c]
-// 00576ed4  dcc8                 fmul st(0), st(0)
-// 00576ed6  deea                 fsubp st(2)
-// 00576ed8  d9ee                 fldz 
-// 00576eda  d8d1                 fcom st(1)
-// 00576edc  dfe0                 fnstsw ax
-// 00576ede  f6c441               test ah, 0x41
-// 00576ee1  753a                 jne 0x576f1d
-// 00576ee3  d8d2                 fcom st(2)
-// 00576ee5  dfe0                 fnstsw ax
-// 00576ee7  f6c441               test ah, 0x41
-// 00576eea  7a31                 jp 0x576f1d
-// 00576eec  ddd9                 fstp st(1)
-// 00576eee  b802000000           mov eax, 2
-// 00576ef3  ddd8                 fstp st(0)
-// 00576ef5  d9fa                 fsqrt 
-// 00576ef7  d9442420             fld dword ptr [esp + 0x20]
-// 00576efb  d9c0                 fld st(0)
-// 00576efd  d8c2                 fadd st(2)
-// 00576eff  d90424               fld dword ptr [esp]
-// 00576f02  dcc9                 fmul st(1), st(0)
-// 00576f04  d9c9                 fxch st(1)
-// 00576f06  dd1f                 fstp qword ptr [edi]
-// 00576f08  d9442404             fld dword ptr [esp + 4]
-// 00576f0c  dee2                 fsubrp st(2)
-// 00576f0e  d9c9                 fxch st(1)
-// 00576f10  dec2                 faddp st(2)
-// 00576f12  dec9                 fmulp st(1)
-// 00576f14  d9e0                 fchs 
-// 00576f16  dd5f08               fstp qword ptr [edi + 8]
-// 00576f19  83c460               add esp, 0x60
-// 00576f1c  c3                   ret 
-// 00576f1d  d8d1                 fcom st(1)
-// 00576f1f  dfe0                 fnstsw ax
-// 00576f21  ddd9                 fstp st(1)
-// 00576f23  f6c405               test ah, 5
-// 00576f26  0f8a34fdffff         jp 0x576c60
-// 00576f2c  d8d9                 fcomp st(1)
-// 00576f2e  dfe0                 fnstsw ax
-// 00576f30  f6c441               test ah, 0x41
-// 00576f33  0f8a29fdffff         jp 0x576c62
-// 00576f39  d9fa                 fsqrt 
-// 00576f3b  b802000000           mov eax, 2
-// 00576f40  d9442420             fld dword ptr [esp + 0x20]
-// 00576f44  d9c0                 fld st(0)
-// 00576f46  d8c2                 fadd st(2)
-// 00576f48  d90424               fld dword ptr [esp]
-// 00576f4b  dcc9                 fmul st(1), st(0)
-// 00576f4d  d9c9                 fxch st(1)
-// 00576f4f  d9e0                 fchs 
-// 00576f51  dd1f                 fstp qword ptr [edi]
-// 00576f53  d9442404             fld dword ptr [esp + 4]
-// 00576f57  dee2                 fsubrp st(2)
-// 00576f59  d9c9                 fxch st(1)
-// 00576f5b  dec2                 faddp st(2)
-// 00576f5d  dec9                 fmulp st(1)
-// 00576f5f  dd5f08               fstp qword ptr [edi + 8]
-// 00576f62  83c460               add esp, 0x60
-// 00576f65  c3                   ret 
-// library g3d-6.09-rbx2008/G3Dcpp\CollisionDetection.cpp (function ?findRayCapsuleIntersectionAux@G3D@@YAHABVVector3@1@0ABVCapsule@1@QAN@Z)
-
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD /fp:fast
 // roc-lib: g3d-6.09-rbx2008 G3Dcpp/CollisionDetection.cpp
+
+// Candidate translation unit (score above; library headers required).
+/**
+  @file CollisionDetection.cpp
+  
+  @maintainer Morgan McGuire, matrix@graphics3d.com
+  @cite Bounce direction based on Paul Nettle's ftp://ftp.3dmaileffects.com/pub/FluidStudios/CollisionDetection/Fluid_Studios_Generic_Collision_Detection_for_Games_Using_Ellipsoids.pdf and comments by Max McGuire.  Ray-sphere code by Eric Haines.
+
+  @created 2001-11-24
+  @edited  2006-02-19
+ */
+
+#include "G3D/CoordinateFrame.h"
+#include "G3D/platform.h"
+#include "G3D/CollisionDetection.h"
+#include "G3D/debugAssert.h"
+#include "G3D/vectorMath.h"
+#include "G3D/Capsule.h"
+#include "G3D/Plane.h"
+#include "G3D/Line.h"
+#include "G3D/LineSegment.h"
+#include "G3D/Sphere.h"
+#include "G3D/Box.h"
+#include "G3D/Triangle.h"
+#include "G3D/Vector3.h"
+#include "G3D/AABox.h"
+
+namespace G3D {
+
+bool CollisionDetection::ignoreBool;
+Vector3	CollisionDetection::ignore;
+Array<Vector3> CollisionDetection::ignoreArray;
+
+
+
+Vector3 CollisionDetection::separatingAxisForSolidBoxSolidBox(
+        const int separatingAxisIndex,
+        const Box & box1,
+        const Box & box2) {
+    debugAssert(separatingAxisIndex >= 0);
+    debugAssert(separatingAxisIndex < 15);
+    Vector3 axis;
+    if (separatingAxisIndex < 3) {
+        axis = box1.axis(separatingAxisIndex);
+    } else if (separatingAxisIndex < 6) {
+        axis = box2.axis(separatingAxisIndex - 3);
+    } else {
+        int box1Index = (separatingAxisIndex - 6) / 3;
+        int box2Index = (separatingAxisIndex - 6) % 3;
+        axis = cross(box1.axis(box1Index), box2.axis(box2Index));
+    }
+    return axis;
+}
+
+#ifdef G3D_WIN32
+#   pragma warning (push)
+#   pragma warning (disable : 4244)
+#endif
+
+float CollisionDetection::projectedDistanceForSolidBoxSolidBox(
+    const int           separatingAxisIndex,
+    const Vector3 &     a,
+    const Vector3 &     b,
+    const Vector3 &     D,
+    const double*       c,
+    const double*       ca,
+    const double*       ad,
+    const double*       bd)
+{
+    (void)D;
+
+    float R0 = 0.0f;
+    float R1 = 0.0f;
+    float R = 0.0f;
+    switch (separatingAxisIndex) {
+    case 0:
+        // A0
+        R0 = a[0];
+        R1 = b[0] * ca[0] + b[1] * ca[1] + b[2] * ca[2];
+        R = fabs(ad[0]);
+        break;
+    case 1:
+        // A1
+        R0 = a[1];
+        R1 = b[0] * ca[3] + b[1] * ca[4] + b[2] * ca[5];
+        R = fabs(ad[1]);
+        break;
+    case 2:
+        // A2
+        R0 = a[2];
+        R1 = b[0] * ca[6] + b[1] * ca[7] + b[2] * ca[8];
+        R = fabs(ad[2]);
+        break;
+    case 3:
+        // B0
+        R0 = a[0] * ca[0] + a[1] * ca[3] + a[2] * ca[6];
+        R1 = b[0];
+        R = fabs(bd[0]);
+        break;
+    case 4:
+        // B1
+        R0 = a[0] * ca[1] + a[1] * ca[4] + a[2] * ca[7];
+        R1 = b[1];
+        R = fabs(bd[1]);
+        break;
+    case 5:
+        // B2
+        R0 = a[0] * ca[2] + a[1] * ca[5] + a[2] * ca[8];
+        R1 = b[2];
+        R = fabs(bd[2]);
+        break;
+    case 6:
+        // A0 x B0
+        R0 = a[1] * ca[6] + a[2] * ca[3];
+        R1 = b[1] * ca[2] + b[2] * ca[1];
+        R = fabs(c[3] * ad[2] - c[6] * ad[1]);
+        break;
+    case 7:
+        // A0 x B1
+        R0 = a[1] * ca[7] + a[2] * ca[4];
+        R1 = b[0] * ca[2] + b[2] * ca[0];
+        R = fabs(c[4] * ad[2] - c[7] * ad[1]);
+        break;
+    case 8:
+        // A0 x B2
+        R0 = a[1] * ca[8] + a[2] * ca[5];
+        R1 = b[0] * ca[1] + b[1] * ca[0];
+        R = fabs(c[5] * ad[2] - c[8] * ad[1]);
+        break;
+    case 9:
+        // A1 x B0
+        R0 = a[0] * ca[6] + a[2] * ca[0];
+        R1 = b[1] * ca[5] + b[2] * ca[4];
+        R = fabs(c[6] * ad[0] - c[0] * ad[2]);
+        break;
+    case 10:
+        // A1 x B1
+        R0 = a[0] * ca[7] + a[2] * ca[1];
+        R1 = b[0] * ca[5] + b[2] * ca[3];
+        R = fabs(c[7] * ad[0] - c[1] * ad[2]);
+        break;
+    case 11:
+        // A1 x B2
+        R0 = a[0] * ca[8] + a[2] * ca[2];
+        R1 = b[0] * ca[4] + b[1] * ca[3];
+        R = fabs(c[8] * ad[0] - c[2] * ad[2]);
+        break;
+    case 12:
+        // A2 x B0
+        R0 = a[0] * ca[3] + a[1] * ca[0];
+        R1 = b[1] * ca[8] + b[2] * ca[7];
+        R = fabs(c[0] * ad[1] - c[3] * ad[0]);
+        break;
+    case 13:
+        // A2 x B1
+        R0 = a[0] * ca[4] + a[1] * ca[1];
+        R1 = b[0] * ca[8] + b[2] * ca[6];
+        R = fabs(c[1] * ad[1] - c[4] * ad[0]);
+        break;
+    case 14:
+        // A2 x B2
+        R0 = a[0] * ca[5] + a[1] * ca[2];
+        R1 = b[0] * ca[7] + b[1] * ca[6];
+        R = fabs(c[2] * ad[1] - c[5] * ad[0]);
+        break;
+    default:
+        debugAssertM(false, "fell through switch statement");
+    }
+
+    return (R - (R0 + R1));
+}
+
+
+bool CollisionDetection::parallelAxisForSolidBoxSolidBox(
+        const double* ca,
+        const double epsilon,
+        int & axis1,
+        int & axis2) {
+    const double parallelDot = 1.0 - epsilon;
+    for (int i = 0; i < 9; i++) {
+        if (ca[i] >= parallelDot) {
+            axis1 = i / 3;
+            axis2 = i % 3;
+            return true;
+        }
+    }
+    return false;
+}
+
+
+
+
+void CollisionDetection::fillSolidBoxSolidBoxInfo(
+        const Box & box1,
+        const Box & box2,
+        Vector3 & a,
+        Vector3 & b,
+        Vector3 & D,
+        double* c,
+        double* ca,
+        double* ad,
+        double* bd) {
+    // length between center and each side of box1 and box2
+    a = box1.extent() * 0.5;
+    b = box2.extent() * 0.5;
+
+    // difference between centers of box1 and box2
+    D = box2.center() - box1.center();
+
+    // store the value of all possible dot products between the
+    // axes of box1 and box2, c_{row, col} in the Eberly paper
+    // corresponds to c[row * 3 + col] for this 9 element array.
+    //
+    // c[] holds signed values, ca[] hold absolute values
+    for (int i = 0; i < 9; i++) {
+        c[i] = dot(box1.axis(i / 3), box2.axis(i % 3));
+        ca[i] = fabs(c[i]);
+    }
+
+    // store all possible dot products between the axes of box1 and D,
+    // as well as the axes of box2 and D
+    for (int i = 0; i < 3; i++) {
+        ad[i] = dot(box1.axis(i), D);
+        bd[i] = dot(box2.axis(i), D);
+    }
+}
+
+
+
+bool CollisionDetection::conservativeBoxBoxTest(
+        const Vector3 & a, const Vector3 & b, const Vector3 & D) {
+    // do a quick bounding sphere test because it is relatively
+    // cheap, (three dot products, two sqrts, and a few others)
+    double boxRadius1 = a.magnitude();
+    double boxRadius2 = b.magnitude();
+    return (D.squaredMagnitude() < square(boxRadius1 + boxRadius2));
+}
+
+
+
+
+bool CollisionDetection::fixedSolidBoxIntersectsFixedSolidBox(
+    const Box&      box1,
+    const Box&      box2,
+	const int		lastSeparatingAxis) {
+    // for explanations of the variable please refer to the
+    // paper and fillSolidBoxSolidBoxInfo()
+    Vector3 a;
+    Vector3 b;
+    Vector3 D;
+    double c[9];
+    double ca[9];
+    double ad[3];
+    double bd[3];
+
+    fillSolidBoxSolidBoxInfo(box1, box2, a, b, D, c, ca, ad, bd);
+
+    int dummy1, dummy2;
+    bool parallelAxes = parallelAxisForSolidBoxSolidBox(ca, 0.00001,
+            dummy1, dummy2);
+
+    // check the separating axis from the last time step
+    if (lastSeparatingAxis != -1 &&
+            (lastSeparatingAxis < 6 || !parallelAxes)) {
+        double projectedDistance = projectedDistanceForSolidBoxSolidBox(
+                lastSeparatingAxis, a, b, D, c, ca, ad, bd);
+
+        // the separating axis from the last time step is still
+        // valid, the boxes do not intersect
+        if (projectedDistance > 0.0) {
+            return false;
+        }
+    }
+
+    // test if the boxes can be separated by a plane normal to
+    // any of the three axes of box1, any of the three axes of box2,
+    // or any of the 9 possible cross products of axes from box1
+    // and box2
+    for (int i = 0; i < 15; i++) {
+        // do not need to check edge-edge cases if any two of
+        // the axes are parallel
+        if (parallelAxes && i == 6) {
+            return true;
+        }
+
+        double projectedDistance =
+            projectedDistanceForSolidBoxSolidBox(i, a, b, D, c, ca, ad, bd);
+
+        // found a separating axis, the boxes do not intersect
+        if (projectedDistance > 0.0) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+
+
+void CollisionDetection::closestPointsBetweenLineAndLine(
+        const Line & line1,
+        const Line & line2,
+        Vector3 & closest1,
+        Vector3 & closest2) {
+    // TODO make accessors for Line that don't make a copy of data
+    Vector3 P0 = line1.point();
+    Vector3 u = line1.direction();
+    Vector3 Q0 = line2.point();
+    Vector3 v = line2.direction();
+    Vector3 w0 = P0 - Q0;
+
+    // a = 1.0, c = 1.0
+    double  b = dot(u, v);
+    double  d = dot(u, w0);
+    double  e = dot(v, w0);
+    double  D = 1.0 - b * b;
+    double  sc, tc;
+
+    static const double epsilon = 0.00001;
+
+    if (D < epsilon) {
+        // lines are parallel, choose P0 as one point, find the point
+        // on line2 that is closest to P0
+        sc = 0.0;
+        tc = (b > 1.0) ? (d / b) : (e / 1.0);
+    } else {
+        // lines are not parallel
+        sc = (b * e - 1.0 * d) / D;
+        tc = (1.0 * e - b * d) / D;
+    }
+
+    closest1 = P0 + (sc * u);
+    closest2 = Q0 + (tc * v);
+}
+
+
+
+float CollisionDetection::penetrationDepthForFixedBoxFixedBox(
+    const Box&      box1,
+    const Box&      box2,
+    Array<Vector3>& contactPoints,
+    Array<Vector3>& contactNormals,
+    const int lastSeparatingAxis) {
+
+    contactPoints.resize(0, DONT_SHRINK_UNDERLYING_ARRAY);
+    contactNormals.resize(0, DONT_SHRINK_UNDERLYING_ARRAY);
+
+    Vector3 a;
+    Vector3 b;
+    Vector3 D;
+    double c[9];
+    double ca[9];
+    double ad[3];
+    double bd[3];
+
+    debugAssert(lastSeparatingAxis >= -1);
+    debugAssert(lastSeparatingAxis < 15);
+
+    fillSolidBoxSolidBoxInfo(box1, box2, a, b, D, c, ca, ad, bd);
+
+    int axis1, axis2;
+    bool parallelAxes = parallelAxisForSolidBoxSolidBox(ca, 0.00001,
+            axis1, axis2);
+
+
+    // check the separating axis from the last time step
+    if (lastSeparatingAxis != -1 &&
+            (lastSeparatingAxis < 6 || !parallelAxes)) {
+        float projectedDistance = projectedDistanceForSolidBoxSolidBox(
+                lastSeparatingAxis, a, b, D, c, ca, ad, bd);
+
+        // the separating axis from the last time step is still
+        // valid, the boxes do not intersect
+        if (projectedDistance > 0.0) {
+            return -projectedDistance;
+        }
+    }
+
+    // test if the boxes can be separated by a plane normal to
+    // any of the three axes of box1, any of the three axes of box2,
+    // (test 9 possible cross products later)
+	float penetration = -(float)G3D::inf();
+    int penetrationAxisIndex = -1;
+
+    for (int i = 0; i < 6; i++) {
+        float projectedDistance =
+            projectedDistanceForSolidBoxSolidBox(i, a, b, D, c, ca, ad, bd);
+
+        // found a separating axis, the boxes do not intersect
+        if (projectedDistance > 0.0) {
+            return -projectedDistance;
+        }
+
+        // keep track of the axis that is least violated
+        if (projectedDistance > penetration) {
+            penetration = projectedDistance;
+            penetrationAxisIndex = i;
+        }
+    }
+
+
+    // for each edge-edge case we have to adjust the magnitude of
+    // penetration since we did not include the dot(L, L) denominator
+    // that can be smaller than 1.0 for the edge-edge cases.
+	if (!parallelAxes) {
+	    double edgeDistances[9];
+
+		// run through edge-edge cases to see if we can find a separating axis
+		for (int i = 6; i < 15; i++) {
+			float projectedDistance =
+				projectedDistanceForSolidBoxSolidBox(i, a, b, D, c, ca, ad, bd);
+
+			// found a separating axis, the boxes do not intersect,
+			// correct magnitude and return projected distance
+			if (projectedDistance > 0.0) {
+				Vector3 L = separatingAxisForSolidBoxSolidBox(i, box1, box2);
+				projectedDistance /= dot(L, L);
+				return -projectedDistance;
+			}
+
+			edgeDistances[i - 6] = projectedDistance;
+		}
+
+		// no separating axis found, the boxes do intersect,
+		// correct the magnitudes of the projectedDistance values
+		for (int i = 6; i < 15; i++) {
+			// find the negative penetration value with the smallest magnitude,
+			// the adjustment done for the edge-edge cases only increases
+			// magnitude by dividing by a number smaller than 1 and greater than 0
+			float projectedDistance = (float)edgeDistances[i - 6];
+			if (projectedDistance > penetration) {
+				Vector3 L = separatingAxisForSolidBoxSolidBox(i, box1, box2);
+				projectedDistance /= dot(L, L);
+				if (projectedDistance > penetration) {
+					penetration = projectedDistance;
+					penetrationAxisIndex = i;
+				}
+			}
+		}
+	}
+
+	// get final separating axis vector
+    Vector3 L = separatingAxisForSolidBoxSolidBox(penetrationAxisIndex,
+            box1, box2);
+
+    // set L to be the normal that faces away from box1
+    if (dot(L, D) < 0) {
+        L = -L;
+    }
+
+    Vector3 contactPoint;
+
+    if (penetrationAxisIndex < 6) {
+        // vertex to face collision, find deepest colliding vertex
+        const Box* vertexBox;
+        const Box* faceBox;
+        Vector3 faceNormal = L;
+
+        // L will be the outward facing normal for the faceBox
+        if (penetrationAxisIndex < 3) {
+            faceBox = & box1;
+            vertexBox = & box2;
+            if (dot(L, D) < 0) {
+                faceNormal = -L;
+            }
+        } else {
+            faceBox = & box2;
+            vertexBox = & box1;
+            if (dot(L, D) > 0) {
+                faceNormal = -L;
+            }
+        }
+
+        // find the vertex that is farthest away in the direction
+        // face normal direction
+        int deepestPointIndex = 0;
+        float deepestPointDot = dot(faceNormal, vertexBox->getCorner(0));
+        for (int i = 1; i < 8; i++) {
+            float dotProduct = dot(faceNormal, vertexBox->getCorner(i));
+            if (dotProduct < deepestPointDot) {
+                deepestPointDot = dotProduct;
+                deepestPointIndex = i;
+            }
+        }
+        
+        // return the point half way between the deepest point and the
+        // contacting face
+        contactPoint = vertexBox->getCorner(deepestPointIndex) +
+            (-penetration * 0.5 * faceNormal);
+    } else {
+        // edge-edge case, find the two ege lines
+        int edge1 = (penetrationAxisIndex - 6) / 3;
+        int edge2 = (penetrationAxisIndex - 6) % 3;
+        Vector3 linePoint1 = box1.center();
+        Vector3 linePoint2 = box2.center();
+        Vector3 lineDir1;
+        Vector3 lineDir2;
+
+        // find edge line by finding the edge axis, and the
+        // other two axes that are closest to the other box
+        for (int i = 0; i < 3; i++ ) {
+            if (i == edge1) {
+                lineDir1 = box1.axis(i);
+            } else {
+                Vector3 axis = box1.axis(i);
+                if (dot(axis, L) < 0) {
+                    axis = -axis;
+                }
+                linePoint1 += axis * a[i];
+            }
+
+            if (i == edge2) {
+                lineDir2 = box2.axis(i);
+            } else {
+                Vector3 axis = box2.axis(i);
+                if (dot(axis, L) > 0) {
+                    axis = -axis;
+                }
+                linePoint2 += axis * b[i];
+            }
+        }
+
+        // make lines from the two closest edges, and find
+        // the points that on each line that are closest to the other
+        Line line1 = Line::fromPointAndDirection(linePoint1, lineDir1);
+        Line line2 = Line::fromPointAndDirection(linePoint2, lineDir2);
+        Vector3 closest1;
+        Vector3 closest2;
+
+        closestPointsBetweenLineAndLine(line1, line2, closest1, closest2);
+        
+        // take the average of the two closest edge points for the final
+        // contact point
+        contactPoint = (closest1 + closest2) * 0.5;
+    }
+
+    contactPoints.push(contactPoint);
+    contactNormals.push(L);
+
+    return -penetration;
+
+}
+
+
+
+
+float CollisionDetection::penetrationDepthForFixedSphereFixedBox(
+    const Sphere&   sphere,
+    const Box&      box,
+    Array<Vector3>& contactPoints,
+    Array<Vector3>& contactNormals) {
+
+    contactPoints.resize(0, DONT_SHRINK_UNDERLYING_ARRAY);
+    contactNormals.resize(0, DONT_SHRINK_UNDERLYING_ARRAY);
+
+    // In its local coordinate frame, the box measures
+    // 2 * halfExtent[a] along dimesion a.
+    Vector3 halfExtent(box.extent(0), box.extent(1), box.extent(2));
+    halfExtent *= 0.5f;
+
+    CoordinateFrame boxFrame;
+    box.getLocalFrame(boxFrame);
+
+    // Transform the sphere to the box's coordinate frame.
+    Vector3 center = boxFrame.pointToObjectSpace(sphere.center);
+
+    // Find the square of the distance from the sphere to the box
+
+
+    // Distance along each axis from the closest side of the box
+    // to the sphere center.  Negative values are *inside* the box.
+    Vector3 distOutsideBox;
+
+    // Divide space up into the 27 regions corresponding
+    // to {+|-|0}X, {+|-|0}Y, {+|-|0}Z and classify the
+    // sphere center into one of them.
+    Vector3 centerRegion;
+
+    // In the edge collision case, the edge is between vertices
+    // (constant + variable) and (constant - variable).
+    Vector3 constant, variable;
+
+    int numNonZero = 0;
+
+    // Iterate over axes
+    for (int a = 0; a < 3; ++a) { 
+        // For each (box side), see which direction the sphere
+        // is outside the box (positive or negative).  Add the
+        // square of that distance to the total distance from 
+        // the box.
+
+        float distanceFromLow  = -halfExtent[a] - center[a];
+        float distanceFromHigh = center[a] - halfExtent[a];
+
+        if (fabsf(distanceFromLow) < fabsf(distanceFromHigh)) {
+            distOutsideBox[a] = distanceFromLow;
+        } else {
+            distOutsideBox[a] = distanceFromHigh;
+        }
+
+        if (distanceFromLow < 0.0) {
+            if (distanceFromHigh < 0.0) {
+                // Inside the box
+                centerRegion[a] = 0.0;
+                variable[a]     = 1.0;
+            } else {
+                // Off the high side
+                centerRegion[a] = 1.0;
+                constant[a]     = halfExtent[a];
+                ++numNonZero;
+            }
+        } else if (distanceFromHigh < 0.0) {
+            // Off the low side
+            centerRegion[a] = -1.0;
+            constant[a]     = -halfExtent[a];
+            ++numNonZero;
+        } else {
+            debugAssertM(false, 
+                "distanceFromLow and distanceFromHigh cannot both be positive");
+        }
+    }
+
+    // Squared distance between the outside of the box and the
+    // sphere center.
+    float d2 = Vector3::zero().max(distOutsideBox).squaredMagnitude();
+
+    if (d2 > square(sphere.radius)) {
+        // There is no penetration because the distance is greater
+        // than the radius of the sphere.  This is the common case
+        // and we quickly exit.
+        return -1;
+    }
+
+    // We know there is some penetration but need to classify it.
+    //
+    // Examine the region that contains the center of the sphere. If
+    // there is exactly one non-zero axis, the collision is with a 
+    // plane.  If there are exactly two non-zero axes, the collision
+    // is with an edge.  If all three axes are non-zero, the collision is
+    // with a vertex.  If there are no non-zero axes, the center is inside
+    // the box.
+
+    double depth = -1;
+    switch (numNonZero) {
+    case 3: // Vertex collision
+        // The collision point is the vertex at constant, the normal
+        // is the vector from there to the sphere center.
+        contactNormals.append(boxFrame.normalToWorldSpace(constant - center));
+        contactPoints.append(boxFrame.pointToWorldSpace(constant));
+        depth = sphere.radius - sqrt(d2);
+        break;
+
+    case 2: // Edge collision
+        {
+            // TODO: unwrapping the edge constructor and closest point
+            // code will probably make it faster.
+
+            // Determine the edge
+            Line line = Line::fromPointAndDirection(constant, variable);
+
+            // Penetration depth:
+            depth = sphere.radius - sqrt(d2);
+
+            // The contact point is the closes point to the sphere on the line 
+            Vector3 X = line.closestPoint(center);
+            contactNormals.append(boxFrame.normalToWorldSpace(X - center).direction());
+            contactPoints.append(boxFrame.pointToWorldSpace(X));
+        }
+        break;
+
+    case 1: // Plane collision
+        {
+            // The plane normal is the centerRegion vector,
+            // so the sphere normal is the negative.  Take
+            // it to world space from box-space.
+
+            // Center region doesn't need to be normalized because
+            // it is known to contain only one non-zero value
+            // and that value is +/- 1.
+            Vector3 N = boxFrame.normalToWorldSpace(-centerRegion);
+            contactNormals.append(N);
+
+            // Penetration depth:
+            depth = sphere.radius - sqrtf(d2);
+
+            // Compute the contact point from the penetration depth
+            contactPoints.append(sphere.center + N * (sphere.radius - depth));
+        }
+        break;
+
+    case 0: // Volume collision
+
+        // The sphere center is inside the box.  This is an easy case
+        // to handle.  Note that all axes of distOutsideBox must
+        // be negative.  
+    
+        // Arbitratily choose the sphere center as a contact point
+        contactPoints.append(sphere.center);
+
+        // Find the least-negative penetration axis.
+        //
+        // We could have computed this during the loop over the axes,
+        // but since volume collisions are rare (they only occur with
+        // large time steps), this case will seldom be executed and
+        // should not be optimized at the expense of the others.
+        if (distOutsideBox.x > distOutsideBox.y) {
+            if (distOutsideBox.x > distOutsideBox.z) {
+                // Smallest penetration on x-axis
+                // Chose normal based on which side we're closest to.
+                // Keep in mind that this is a normal to the sphere,
+                // so it is the inverse of the box normal.
+                if (center.x > 0) {
+                    contactNormals.append(boxFrame.normalToWorldSpace(-Vector3::unitX()));
+                } else {
+                    contactNormals.append(boxFrame.normalToWorldSpace(Vector3::unitX()));
+                }
+                depth = -distOutsideBox.x;
+            } else {
+                // Smallest penetration on z-axis
+                goto ZAXIS;
+            }
+        } else if (distOutsideBox.y > distOutsideBox.z) {
+            // Smallest penetration on y-axis
+            // Chose normal based on which side we're closest to.
+            // Keep in mind that this is a normal to the sphere,
+            // so it is the inverse of the box normal.
+            if (center.y > 0) {
+                contactNormals.append(boxFrame.normalToWorldSpace(-Vector3::unitY()));
+            } else {
+                contactNormals.append(boxFrame.normalToWorldSpace(Vector3::unitY()));
+            }
+            depth = -distOutsideBox.y;
+        } else {
+            // Smallest on z-axis
+ZAXIS:
+            // Chose normal based on which side we're closest to.
+            // Keep in mind that this is a normal to the sphere,
+            // so it is the inverse of the box normal.
+            if (center.z > 0) {
+                contactNormals.append(boxFrame.normalToWorldSpace(-Vector3::unitZ()));
+            } else {
+                contactNormals.append(boxFrame.normalToWorldSpace(Vector3::unitZ()));
+            }
+            depth = -distOutsideBox.z;
+        }
+        break;
+
+    default:
+        debugAssertM(false, "Fell through switch");
+        break;
+    }
+
+    return depth;
+}
+
+
+float CollisionDetection::penetrationDepthForFixedSphereFixedSphere(
+    const Sphere&           sphereA,
+    const Sphere&           sphereB,
+    Array<Vector3>&         contactPoints,
+    Array<Vector3>&         contactNormals) {
+
+    Vector3 axis = sphereB.center - sphereA.center;
+    double radius = sphereA.radius + sphereB.radius;
+    double mag = axis.magnitude();
+    axis /= mag;
+    double depth = -(mag - radius);
+
+    contactPoints.resize(0, DONT_SHRINK_UNDERLYING_ARRAY);
+    contactNormals.resize(0, DONT_SHRINK_UNDERLYING_ARRAY);
+
+    if (depth >= 0) {
+        contactPoints.append(sphereA.center + axis * (sphereA.radius - depth / 2));
+        contactNormals.append(axis);
+    }
+
+    return depth;
+}
+
+
+float CollisionDetection::penetrationDepthForFixedSphereFixedPlane(
+    const Sphere&           sphereA,
+    const Plane&            planeB,
+    Array<Vector3>&         contactPoints,
+    Array<Vector3>&         contactNormals) {
+
+    Vector3 N;
+    double d;
+
+    planeB.getEquation(N, d);
+    
+    double depth = -(sphereA.center.dot(N) + d - sphereA.radius);
+
+    contactPoints.resize(0, DONT_SHRINK_UNDERLYING_ARRAY);
+    contactNormals.resize(0, DONT_SHRINK_UNDERLYING_ARRAY);
+
+    if (depth >= 0) {
+        contactPoints.append(N * (depth - sphereA.radius) + sphereA.center);
+        contactNormals.append(N);
+    }
+
+    return depth;
+}
+
+
+float CollisionDetection::penetrationDepthForFixedBoxFixedPlane(
+    const Box&          box,
+    const Plane&        plane,
+    Array<Vector3>&     contactPoints,
+    Array<Vector3>&     contactNormals) {
+
+    Vector3 N;
+    double d;
+    
+    plane.getEquation(N, d);
+
+    contactPoints.resize(0, DONT_SHRINK_UNDERLYING_ARRAY);
+    contactNormals.resize(0, DONT_SHRINK_UNDERLYING_ARRAY);
+
+    float lowest = (float)inf();
+    for (int i = 0; i < 8; ++i) {
+        const Vector3 vertex = box.corner(i);
+        
+        float x = vertex.dot(N) + (float)d;
+        
+        if (x <= 0) {
+            // All vertices below the plane should be contact points.
+            contactPoints.append(vertex);
+            contactNormals.append(-N);
+        }
+
+        lowest = min(lowest, x);
+    }
+
+    // Depth should be a positive number
+    return -lowest;
+}
+
+
+float CollisionDetection::collisionTimeForMovingPointFixedPlane(
+    const Vector3&  point,
+    const Vector3&  velocity,
+    const Plane&    plane,
+    Vector3&        location,
+    Vector3&        outNormal) {
+
+    // Solve for the time at which normal.dot(point + velocity) + d == 0.
+    double d;
+    Vector3 normal;
+    plane.getEquation(normal, d);
+    
+    float vdotN = velocity.dot(normal);
+    float pdotN = point.dot(normal);
+
+    if (fuzzyEq(pdotN + d, 0)) {
+        // The point is *in* the plane.
+        location = point;
+        outNormal = normal;
+        return 0;
+    }
+
+    if (vdotN >= 0) {
+        // no collision will occur
+        location = Vector3::inf();
+        return (float)inf();
+    }
+
+    float t = -(pdotN + d) / vdotN;
+    if (t < 0) {
+        location = Vector3::inf();
+        return (float)inf();
+    } else {
+        location = point + velocity * t;
+        outNormal = normal;
+        return t;
+    }
+}
+
+
+float CollisionDetection::collisionTimeForMovingPointFixedSphere(
+    const Vector3&  point,
+    const Vector3&  velocity,
+    const Sphere&   sphere,
+    Vector3&        location,
+    Vector3&        outNormal) {
+
+    double  speed     = velocity.magnitude();
+    Vector3 direction = velocity / speed;
+
+    Vector3 L = sphere.center - point;
+    double d = L.dot(direction);
+
+    double L2 = L.dot(L);
+    double R2 = sphere.radius * sphere.radius;
+    double D2 = d * d;
+
+    if ((d < 0) && (L2 > R2)) {
+        location = Vector3::inf();
+        return inf();
+    }
+
+    double M2 = L2 - D2;
+
+    if (M2 > R2) {
+        location = Vector3::inf();
+        return inf();
+    }
+
+    double q = sqrt(R2 - M2);
+    double time;
+
+    if (L2 > R2) {
+        time = d - q;
+    } else {
+        time = d + q;
+    }
+
+    time /= speed;
+
+    location  = point + velocity * time;
+    outNormal = (location - sphere.center).direction();
+
+    return time;
+}
+
+
+float CollisionDetection::collisionTimeForMovingSphereFixedSphere(
+    const Sphere&   movingSphere,
+    const Vector3&  velocity,
+    const Sphere&   fixedSphere,
+    Vector3&        location,
+    Vector3&        outNormal) {
+
+    double time = collisionTimeForMovingPointFixedSphere(movingSphere.center, velocity, Sphere(fixedSphere.center, fixedSphere.radius + movingSphere.radius), location, outNormal);
+
+    if (time < inf()) {
+        // Location is now the center of the moving sphere at the collision time.
+        // Adjust for the size of the moving sphere.  Two spheres always collide
+        // along a line between their centers.
+        location += (location - fixedSphere.center) * movingSphere.radius / fixedSphere.radius;
+    }
+
+    return time;
+}
+
+
+/*
+float CollisionDetection::collisionTimeForMovingPointFixedTriangle(
+    const Vector3&			point,
+    const Vector3&			velocity,
+    const Triangle&       triangle,
+    Vector3&				outLocation,
+    Vector3&                outNormal) {
+
+    double time = collisionTimeForMovingPointFixedPlane(point, velocity, triangle.plane(), outLocation, outNormal);
+
+    if (time == inf()) {
+        // No collision with the plane of the triangle.
+        return inf();
+    }
+
+    if (isPointInsideTriangle(triangle.vertex(0), triangle.vertex(1), triangle.vertex(2), triangle.normal(), outLocation, triangle.primaryAxis())) {
+        // Collision occured inside the triangle
+        return time;
+    } else {
+        // Missed the triangle
+        outLocation = Vector3::inf();
+        return inf();
+    }
+}*/
+
+/*
+float CollisionDetection::collisionTimeForMovingPointFixedTriangle(
+    const Vector3& orig,
+    const Vector3& dir,
+    const Vector3& vert0,
+    const Vector3& vert1,
+    const Vector3& vert2) {
+
+    // Barycenteric coords
+    double u, v;
+    #define EPSILON 0.000001
+    #define CROSS(dest,v1,v2) \
+              dest[0]=v1[1]*v2[2]-v1[2]*v2[1]; \
+              dest[1]=v1[2]*v2[0]-v1[0]*v2[2]; \
+              dest[2]=v1[0]*v2[1]-v1[1]*v2[0];
+
+    #define DOT(v1,v2) (v1[0]*v2[0]+v1[1]*v2[1]+v1[2]*v2[2])
+
+    #define SUB(dest,v1,v2) \
+              dest[0]=v1[0]-v2[0]; \
+              dest[1]=v1[1]-v2[1]; \
+              dest[2]=v1[2]-v2[2]; 
+
+    double edge1[3], edge2[3], tvec[3], pvec[3], qvec[3];
+    
+    // find vectors for two edges sharing vert0
+    SUB(edge1, vert1, vert0);
+    SUB(edge2, vert2, vert0);
+    
+    // begin calculating determinant - also used to calculate U parameter
+    CROSS(pvec, dir, edge2);
+    
+    // if determinant is near zero, ray lies in plane of triangle
+    const double det = DOT(edge1, pvec);
+    
+    if (det < EPSILON) {
+        return inf();
+    }
+    
+    // calculate distance from vert0 to ray origin
+    SUB(tvec, orig, vert0);
+    
+    // calculate U parameter and test bounds
+    u = DOT(tvec, pvec);
+    if ((u < 0.0) || (u > det)) {
+        // Hit the plane outside the triangle
+        return inf();
+    }
+    
+    // prepare to test V parameter
+    CROSS(qvec, tvec, edge1);
+    
+    // calculate V parameter and test bounds
+    v = DOT(dir, qvec);
+    if ((v < 0.0) || (u + v > det)) {
+        // Hit the plane outside the triangle
+        return inf();
+    }
+    
+    // calculate t, scale parameters, ray intersects triangle
+    // If we want u,v, we can compute this
+    // double t = DOT(edge2, qvec);
+    //const double inv_det = 1.0 / det;
+    //t *= inv_det;
+    //u *= inv_det;
+    //v *= inv_det;
+    // return t;
+
+    // Case where we don't need correct (u, v):
+
+    const double t = DOT(edge2, qvec);
+    
+    if (t >= 0) {
+        // Note that det must be positive
+        return t / det;
+    } else {
+        // We had to travel backwards in time to intersect
+        return inf();
+    }
+
+    #undef EPSILON
+    #undef CROSS
+    #undef DOT
+    #undef SUB
+}
+*/
+
+float CollisionDetection::collisionTimeForMovingPointFixedBox(
+    const Vector3&          point,
+    const Vector3&          velocity,
+    const Box&              box,
+    Vector3&                location,
+    Vector3&                outNormal) {
+
+    double    bestTime;
+
+    Vector3 normal;
+    Vector3 v[4];
+
+    // Prime the loop
+    int f = 0;
+    box.getFaceCorners(f, v[0], v[1], v[2], v[3]);
+    bestTime = collisionTimeForMovingPointFixedRectangle(point, velocity, v[0], v[1], v[2], v[3], location, normal);
+    outNormal = normal;
+
+    // Check other faces
+    for (f = 1; f < 6; ++f) {
+        Vector3 pos;
+        box.getFaceCorners(f, v[0], v[1], v[2], v[3]);
+        float time = collisionTimeForMovingPointFixedRectangle(point, velocity, v[0], v[1], v[2], v[3], pos, normal);
+        if (time < bestTime) {
+            bestTime = time;
+            outNormal = normal;
+            location = pos;
+        }
+    }
+
+    return bestTime;
+}
+
+
+float CollisionDetection::collisionTimeForMovingPointFixedAABox(
+    const Vector3&          origin,
+    const Vector3&          dir,
+    const AABox&            box,
+    Vector3&                location,
+    bool&                   Inside,
+    Vector3&                normal) {
+
+    if (collisionLocationForMovingPointFixedAABox(origin, dir, box, location, Inside, normal)) {
+        return (location - origin).magnitude();
+    } else {
+        return (float)inf();
+    }
+}
+
+
+bool CollisionDetection::collisionLocationForMovingPointFixedAABox(
+    const Vector3&          origin,
+    const Vector3&          dir,
+    const AABox&            box,
+    Vector3&                location,
+    bool&                   Inside,
+    Vector3&                normal) {
+
+    // Integer representation of a floating-point value.
+    #define IR(x)	((uint32&)x)
+
+    Inside = true;
+	const Vector3& MinB = box.low();
+	const Vector3& MaxB = box.high();
+	Vector3 MaxT(-1.0f, -1.0f, -1.0f);
+
+	// Find candidate planes.
+    for (int i = 0; i < 3; ++i) {
+		if (origin[i] < MinB[i]) {
+			location[i]	= MinB[i];
+			Inside      = false;
+
+			// Calculate T distances to candidate planes
+            if (IR(dir[i])) {
+                MaxT[i] = (MinB[i] - origin[i]) / dir[i];
+            }
+        } else if (origin[i] > MaxB[i]) {
+			location[i]	= MaxB[i];
+			Inside	    = false;
+
+			// Calculate T distances to candidate planes
+            if (IR(dir[i])) {
+                MaxT[i] = (MaxB[i] - origin[i]) / dir[i];
+            }
+		}
+	}
+
+	if (Inside) {
+    	// Ray origin inside bounding box
+		return false;
+	}
+
+	// Get largest of the maxT's for final choice of intersection
+	int WhichPlane = 0;
+    if (MaxT[1] > MaxT[WhichPlane])	{
+        WhichPlane = 1;
+    }
+
+    if (MaxT[2] > MaxT[WhichPlane])	{
+        WhichPlane = 2;
+    }
+
+	// Check final candidate actually inside box
+    if (IR(MaxT[WhichPlane]) & 0x80000000) {
+        // Miss the box
+        return false;
+    }
+
+	for (int i = 0; i < 3; ++i) {
+        if (i != WhichPlane) {
+			location[i] = origin[i] + MaxT[WhichPlane] * dir[i];
+            if ((location[i] < MinB[i]) ||
+                (location[i] > MaxB[i])) {
+                // On this plane we're outside the box extents, so
+                // we miss the box
+                return false;
+            }
+		}
+	}
+
+    // Choose the normal to be the plane normal facing into the ray
+    normal = Vector3::zero();
+    normal[WhichPlane] = (dir[WhichPlane] > 0) ? -1.0 : 1.0;
+
+	return true;
+
+    #undef IR
+}
+
+
+
+float CollisionDetection::collisionTimeForMovingPointFixedRectangle(
+    const Vector3&      point,
+    const Vector3&      velocity,
+    const Vector3&      v0,
+    const Vector3&      v1,
+    const Vector3&      v2,
+    const Vector3&      v3,
+    Vector3&            location,
+    Vector3&            outNormal) {
+
+    Plane plane = Plane(v0, v1, v2);
+
+    float time = collisionTimeForMovingPointFixedPlane(point, velocity, plane, location, outNormal);
+
+    if (time == inf()) {
+        // No collision is ever going to happen
+        return time;
+    }
+
+    if (isPointInsideRectangle(v0, v1, v2, v3, plane.normal(), location)) {
+        // The intersection point is inside the rectangle; that is the location where
+        // the point hits the rectangle.
+        return time;
+    } else {
+        return inf();
+    }
+}
+
+/** Used by findRayCapsuleIntersection.
+    @cite From magic software http://www.magic-software.com/Source/Intersection3D/MgcIntr3DLinCap.cpp */
+static int findRayCapsuleIntersectionAux(
+	const Vector3&		rkOrigin,
+	const Vector3&		rkDirection,
+    const Capsule&		rkCapsule,
+	double   			afT[2]) {
+
+	Vector3 capsuleDirection = rkCapsule.getPoint2() - rkCapsule.getPoint1();
+
+    // set up quadratic Q(t) = a*t^2 + 2*b*t + c
+    Vector3 kU, kV, kW = capsuleDirection;
+    float fWLength = kW.unitize();
+    Vector3::generateOrthonormalBasis(kU, kV, kW);
+    Vector3 kD(kU.dot(rkDirection), kV.dot(rkDirection), kW.dot(rkDirection));
+    float fDLength = kD.unitize();
+
+    float fEpsilon = 1e-6f;
+
+    float fInvDLength = 1.0f/fDLength;
+    Vector3 kDiff = rkOrigin - rkCapsule.getPoint1();
+    Vector3 kP(kU.dot(kDiff),kV.dot(kDiff),kW.dot(kDiff));
+    float fRadiusSqr = square(rkCapsule.getRadius());
+
+    float fInv, fA, fB, fC, fDiscr, fRoot, fT, fTmp;
+
+    // Is the velocity parallel to the capsule direction? (or zero)
+    if ((abs(kD.z) >= 1.0f - fEpsilon) || (fDLength < fEpsilon)) {
+
+        float fAxisDir = rkDirection.dot(capsuleDirection);
+
+        fDiscr = fRadiusSqr - kP.x*kP.x - kP.y*kP.y;
+        if ((fAxisDir < 0) && (fDiscr >= 0.0f)) {
+            // Velocity anti-parallel to the capsule direction
+            fRoot = sqrt(fDiscr);
+            afT[0] = (kP.z + fRoot)*fInvDLength;
+            afT[1] = -(fWLength - kP.z + fRoot)*fInvDLength;
+            return 2;
+        } else if ((fAxisDir > 0) && (fDiscr >= 0.0f)) {
+            // Velocity parallel to the capsule direction
+            fRoot = sqrt(fDiscr);
+            afT[0] = -(kP.z + fRoot)*fInvDLength;
+            afT[1] = (fWLength - kP.z + fRoot)*fInvDLength;
+            return 2;
+        } else {
+            // sphere heading wrong direction, or no velocity at all
+            return 0;
+        }   
+    }
+
+    // test intersection with infinite cylinder
+    fA = kD.x*kD.x + kD.y*kD.y;
+    fB = kP.x*kD.x + kP.y*kD.y;
+    fC = kP.x*kP.x + kP.y*kP.y - fRadiusSqr;
+    fDiscr = fB*fB - fA*fC;
+    if (fDiscr < 0.0f) {
+        // line does not intersect infinite cylinder
+        return 0;
+    }
+
+    int iQuantity = 0;
+
+    if (fDiscr > 0.0f) {
+        // line intersects infinite cylinder in two places
+        fRoot = sqrt(fDiscr);
+        fInv = 1.0f/fA;
+        fT = (-fB - fRoot)*fInv;
+        fTmp = kP.z + fT*kD.z;
+        if ((0.0f <= fTmp) && (fTmp <= fWLength)) {
+            afT[iQuantity] = fT * fInvDLength;
+            iQuantity++;
+		}
+
+        fT = (-fB + fRoot)*fInv;
+        fTmp = kP.z + fT*kD.z;
+        
+		if ((0.0f <= fTmp) && (fTmp <= fWLength)) {
+            afT[iQuantity++] = fT*fInvDLength;
+		}
+
+        if (iQuantity == 2) {
+            // line intersects capsule wall in two places
+            return 2;
+        }
+    } else {
+        // line is tangent to infinite cylinder
+        fT = -fB/fA;
+        fTmp = kP.z + fT*kD.z;
+        if ((0.0f <= fTmp) && (fTmp <= fWLength)) {
+            afT[0] = fT*fInvDLength;
+            return 1;
+        }
+    }
+
+    // test intersection with bottom hemisphere
+    // fA = 1
+    fB += kP.z*kD.z;
+    fC += kP.z*kP.z;
+    fDiscr = fB*fB - fC;
+    if (fDiscr > 0.0f) {
+        fRoot = sqrt(fDiscr);
+        fT = -fB - fRoot;
+        fTmp = kP.z + fT*kD.z;
+        if (fTmp <= 0.0f) {
+            afT[iQuantity++] = fT*fInvDLength;
+            if (iQuantity == 2) {
+                return 2;
+			}
+        }
+
+        fT = -fB + fRoot;
+        fTmp = kP.z + fT*kD.z;
+        if (fTmp <= 0.0f) {
+            afT[iQuantity++] = fT*fInvDLength;
+            if (iQuantity == 2) {
+                return 2;
+			}
+        }
+    } else if (fDiscr == 0.0f) {
+        fT = -fB;
+        fTmp = kP.z + fT*kD.z;
+        if (fTmp <= 0.0f) {
+            afT[iQuantity++] = fT*fInvDLength;
+            if (iQuantity == 2) {
+                return 2;
+			}
+        }
+    }
+
+    // test intersection with top hemisphere
+    // fA = 1
+    fB -= kD.z*fWLength;
+    fC += fWLength*(fWLength - 2.0f*kP.z);
+
+    fDiscr = fB*fB - fC;
+    if (fDiscr > 0.0f) {
+        fRoot = sqrt(fDiscr);
+        fT = -fB - fRoot;
+        fTmp = kP.z + fT*kD.z;
+        if (fTmp >= fWLength) {
+            afT[iQuantity++] = fT*fInvDLength;
+            if (iQuantity == 2) {
+                return 2;
+			}
+        }
+
+        fT = -fB + fRoot;
+        fTmp = kP.z + fT*kD.z;
+        if (fTmp >= fWLength) {
+            afT[iQuantity++] = fT*fInvDLength;
+            if (iQuantity == 2) {
+                return 2;
+			}
+        }
+    } else if (fDiscr == 0.0f) {
+        fT = -fB;
+        fTmp = kP.z + fT*kD.z;
+        if (fTmp >= fWLength) {
+            afT[iQuantity++] = fT*fInvDLength;
+            if (iQuantity == 2) {
+                return 2;
+			}
+        }
+    }
+
+    return iQuantity;
+}
+
+
+/** Used by collisionTimeForMovingPointFixedCapsule.
+    @cite From magic software http://www.magic-software.com/Source/Intersection3D/MgcIntr3DLinCap.cpp
+	
+	@param rkRay      The ray
+	@param rkCapsule  The capsule
+	@param riQuantity The number of intersections found
+	@param akPoint    The intersections found
+	@return           True if there is at least one intersection
+	*/
+static bool findRayCapsuleIntersection(
+	const Ray&			rkRay,
+	const Capsule&		rkCapsule,
+	int&				riQuantity,
+	Vector3				akPoint[2]) {
+
+    double afT[2];
+    riQuantity = findRayCapsuleIntersectionAux(rkRay.origin, rkRay.direction, rkCapsule, afT);
+
+    // Only return intersections that occur in the future
+    int iClipQuantity = 0;
+	int i;
+    for (i = 0; i < riQuantity; i++) {
+        if (afT[i] >= 0.0f) {
+            akPoint[iClipQuantity] = rkRay.origin + afT[i] * rkRay.direction;
+            iClipQuantity++;
+        }
+    }
+
+    riQuantity = iClipQuantity;
+    return (riQuantity > 0);
+}
+
+float CollisionDetection::collisionTimeForMovingPointFixedCapsule(
+	const Vector3&		point,
+	const Vector3&		velocity,
+	const Capsule&		capsule,
+	Vector3&		    location,
+    Vector3&            outNormal) {
+
+	float timeScale = velocity.magnitude();
+
+    if (timeScale == 0.0f) {
+        timeScale = 1;
+    }
+
+	Vector3 direction = velocity / timeScale;
+	int numIntersections;
+	Vector3 intersection[2];
+	findRayCapsuleIntersection(Ray::fromOriginAndDirection(point, direction), capsule, numIntersections, intersection);
+
+	if (numIntersections == 2) {
+		// A collision can only occur if there are two intersections.  If there is one
+		// intersection, that one is exiting the capsule.  
+
+		// Find the entering intersection (the first one that occurs).
+		float d0 = (intersection[0] - point).squaredMagnitude();
+		float d1 = (intersection[1] - point).squaredMagnitude();
+
+        // Compute the surface normal (if we aren't ignoring the result)
+        if (&outNormal != &ignore) {
+            Vector3 p2 = LineSegment::fromTwoPoints(capsule.getPoint1(), capsule.getPoint2()).closestPoint(point);
+            outNormal = (point - p2).direction();
+        }
+
+        if (d0 > d1) {
+			location = intersection[1];
+			return sqrt(d1) / timeScale;
+		} else {
+			location = intersection[0];
+			return sqrt(d0) / timeScale;
+		}
+	} else {
+		// No entering intersection discovered; return no intersection.
+		location = Vector3::inf();
+		return inf();
+	}
+}
+
+
+float CollisionDetection::collisionTimeForMovingSphereFixedPlane(
+    const Sphere&		sphere,
+    const Vector3&		velocity,
+    const Plane&		plane,
+    Vector3&			location,
+    Vector3&            outNormal) {
+
+	if (sphere.radius == 0) {
+		// Optimization for zero radius sphere
+        return collisionTimeForMovingPointFixedPlane(sphere.center, velocity, plane, location, outNormal);
+	}
+
+    // The collision point on the sphere will be the point at
+    // center - (radius * normal).  Collisions only occur when
+    // the sphere is travelling into the plane.
+
+    double d;
+    plane.getEquation(outNormal, d);
+    
+    double vdotN = velocity.dot(outNormal);
+
+    if (fuzzyGt(vdotN, 0)) {
+        // No collision when the sphere is moving towards a backface.
+        location = Vector3::inf();
+        return (float)inf();
+    }
+
+    float cdotN = sphere.center.dot(outNormal);
+
+    // Distance from the center to the plane
+    float distance = cdotN + (float)d;
+
+    // Where is the collision on the sphere?
+    Vector3 point = sphere.center - (sphere.radius * outNormal);
+
+    if (fuzzyLe(G3D::abs(distance), sphere.radius)) {
+        // Already interpenetrating
+        location = sphere.center - distance * outNormal;
+        return 0;
+    } else {
+        return collisionTimeForMovingPointFixedPlane(point, velocity, plane, location, outNormal);
+    }
+
+}
+
+
+float CollisionDetection::collisionTimeForMovingSphereFixedTriangle(
+    const class Sphere&		sphere,
+    const Vector3&		    velocity,
+    const Triangle&         triangle,
+    Vector3&				outLocation,
+    Vector3&                outNormal) {
+
+    Vector3 dummy;
+
+    outNormal = triangle.normal();
+    float time = collisionTimeForMovingSphereFixedPlane(sphere, velocity, triangle.plane(), outLocation, dummy);
+
+    if (time == inf()) {
+        // No collision is ever going to happen
+        return time;
+    }
+
+    if (isPointInsideTriangle(triangle.vertex(0), triangle.vertex(1), triangle.vertex(2), triangle.normal(), outLocation, triangle.primaryAxis())) {
+        // The intersection point is inside the triangle; that is the location where
+        // the sphere hits the triangle.
+        return time;
+    }
+
+    // Switch over to moving the triangle towards a fixed sphere and see at what time
+    // they will hit.
+
+    // Closest point on the triangle to the sphere intersection with the plane.
+    Vector3 point = closestPointToTrianglePerimeter(triangle._vertex, triangle.edgeDirection, triangle.edgeMagnitude, outLocation);
+
+    double t = collisionTimeForMovingPointFixedSphere(point, -velocity, sphere, dummy, dummy);
+
+    // The collision occured at the point, if it occured.  The normal was the plane normal,
+    // computed above.
+
+    return t;
+}
+
+
+float CollisionDetection::collisionTimeForMovingSphereFixedRectangle(
+    const Sphere&       sphere,
+    const Vector3&      velocity,
+    const Vector3&      v0,
+    const Vector3&      v1,
+    const Vector3&      v2,
+    const Vector3&      v3,
+    Vector3&            location,
+    Vector3&            outNormal) {
+
+    Plane plane(v0, v1, v2);
+
+    float time = collisionTimeForMovingSphereFixedPlane(sphere, velocity, plane, location, outNormal);
+
+    if (time == inf()) {
+        // No collision is ever going to happen
+        return time;
+    }
+
+    if (isPointInsideRectangle(v0, v1, v2, v3, plane.normal(), location)) {
+        // The intersection point is inside the rectangle; that is the location where
+        // the sphere hits the rectangle.
+        return time;
+    }
+
+    // Switch over to moving the rectangle towards a fixed sphere and see at what time
+    // they will hit.
+
+    Vector3 point = closestPointToRectanglePerimeter(v0, v1, v2, v3, sphere.center);
+
+    Vector3 dummy;
+    double t = collisionTimeForMovingPointFixedSphere(point, -velocity, sphere, location, dummy);
+
+    // Normal is the plane normal, location is the original location of the point.
+    location = point;
+
+    return t;
+}
+
+
+float CollisionDetection::collisionTimeForMovingSphereFixedBox(
+    const Sphere&       sphere,
+    const Vector3&      velocity,
+    const Box&          box,
+    Vector3&            location,
+    Vector3&            outNormal) {
+
+    // TODO: test if sphere is already inside box
+
+    double    bestTime;
+
+    Vector3 v[4];
+    int f = 0;
+    box.getFaceCorners(f, v[0], v[1], v[2], v[3]);
+    bestTime = collisionTimeForMovingSphereFixedRectangle(sphere, velocity, v[0], v[1], v[2], v[3], location, outNormal);
+
+    for (f = 1; f < 6; ++f) {
+        Vector3 pos, normal;
+        box.getFaceCorners(f, v[0], v[1], v[2], v[3]);
+        float time = collisionTimeForMovingSphereFixedRectangle(sphere, velocity, v[0], v[1], v[2], v[3], pos, normal);
+        if (time < bestTime) {
+            bestTime  = time;
+            location  = pos;
+            outNormal = normal;
+        }
+    }
+
+    return bestTime;
+}
+
+
+float CollisionDetection::collisionTimeForMovingSphereFixedCapsule(
+	const Sphere&		sphere,
+	const Vector3&		velocity,
+	const Capsule&		capsule,
+	Vector3&		    location,
+    Vector3&            outNormal) {
+
+    (void)outNormal;
+
+	Capsule _capsule(capsule.getPoint1(), capsule.getPoint2(), capsule.getRadius() + sphere.radius);
+
+    Vector3 normal;
+	double time = collisionTimeForMovingPointFixedCapsule(sphere.center, velocity, _capsule, location, normal);
+    
+    if (time < inf()) {
+        // Location is now the position of the center of the sphere at the time of collision.
+        // We have to adjust the collision location for the size of the sphere.
+        location -= sphere.radius * normal;
+    }
+
+    return time;
+}
+
+
+Vector3 CollisionDetection::bounceDirection(
+    const Sphere&   sphere,
+    const Vector3&  velocity,
+    const float     collisionTime,
+    const Vector3&  collisionLocation,
+    const Vector3&  collisionNormal) {
+
+	// Location when the collision occurs
+    Vector3 sphereLocation  = sphere.center + velocity * collisionTime;
+
+    Vector3 normal          = (sphereLocation - collisionLocation);
+    if (fuzzyEq(normal.squaredMagnitude(), 0)) {
+        normal = collisionNormal;
+    } else {
+        normal.unitize();
+    }
+
+    Vector3 direction       = velocity.direction();
+
+    // Reflect direction about the normal
+    return direction - 2.0 * normal * normal.dot(direction);
+}
+
+
+Vector3 CollisionDetection::slideDirection(
+    const Sphere&   sphere,
+    const Vector3&  velocity,
+    const float      collisionTime,
+    const Vector3&  collisionLocation) {
+
+    Vector3 sphereLocation  = sphere.center + velocity * collisionTime;
+    Vector3 normal          = (sphereLocation - collisionLocation).direction();
+    Vector3 direction       = velocity.direction();
+
+    // subtract off the part in the direction away from the normal.
+    return direction - normal * normal.dot(direction);
+}
+
+
+Vector3 CollisionDetection::closestPointOnLineSegment(
+    const Vector3& v0,
+    const Vector3& v1,
+    const Vector3& point) {
+
+    Vector3 edge       = (v1 - v0);
+    double  edgeLength = edge.magnitude();
+
+    return closestPointOnLineSegment(v0, v1, edge / edgeLength, edgeLength, point);
+}
+
+
+Vector3 CollisionDetection::closestPointOnLineSegment(
+    const Vector3& v0,
+    const Vector3& v1,
+    const Vector3& edgeDirection,
+    const float    edgeLength,
+    const Vector3& point) {
+
+    debugAssert((v1 - v0).direction().fuzzyEq(edgeDirection));
+    debugAssert(fuzzyEq((v1 - v0).magnitude(), edgeLength));
+
+    Vector3 c = point - v0;
+    float t = edgeDirection.dot(c);
+
+    if (t < 0) {
+        return v0;
+    } else if (t > edgeLength) {
+        return v1;
+    } else {
+        return v0 + edgeDirection * t;
+    }
+}
+
+
+Vector3 CollisionDetection::closestPointToTrianglePerimeter(
+    const Vector3&			v0, 
+    const Vector3&			v1,
+    const Vector3&			v2,
+    const Vector3&			point) {
+    
+    Vector3 v[3] = {v0, v1, v2};
+    Vector3 edgeDirection[3] = {(v1 - v0), (v2 - v1), (v0 - v2)};
+    double edgeLength[3];
+    
+    for (int i = 0; i < 3; ++i) {
+        edgeLength[i] = edgeDirection[i].magnitude();
+        edgeDirection[i] /= edgeLength[i];
+    }
+
+    return closestPointToTrianglePerimeter(v, edgeDirection, edgeLength, point);
+}
+
+
+Vector3 CollisionDetection::closestPointToTrianglePerimeter(
+    const Vector3   v[3],
+    const Vector3   edgeDirection[3],
+    const double    edgeLength[3],
+    const Vector3&  point) {
+
+    // Closest point on each segment
+    Vector3 r[3];
+
+    // Distance squared
+    double d[3];
+
+    // Index of the next point
+    static int next[] = {1, 2, 0};
+
+    for (int i = 0; i < 3; ++i) {
+        r[i] = closestPointOnLineSegment(v[i], v[next[i]], edgeDirection[i], edgeLength[i], point);
+        d[i] = (r[i] - point).squaredMagnitude();
+    }
+
+    if (d[0] < d[1]) {
+        if (d[0] < d[2]) {
+            return r[0];
+        } else {
+            return r[2];
+        }
+    } else {
+        if (d[1] < d[2]) {
+            return r[1];
+        } else {
+            return r[2];
+        }
+    }
+}
+
+
+bool CollisionDetection::isPointInsideTriangle(
+    const Vector3&			v0,
+    const Vector3&			v1,
+    const Vector3&			v2,
+    const Vector3&			normal,
+    const Vector3&			point,
+    Vector3::Axis           primaryAxis) {
+    
+    if (primaryAxis == Vector3::DETECT_AXIS) {
+        primaryAxis = normal.primaryAxis();
+    }
+
+    // Check that the point is within the triangle using a Barycentric
+    // coordinate test on a two dimensional plane.
+    int i, j;
+
+    switch (primaryAxis) {
+    case Vector3::X_AXIS:
+        i = Vector3::Z_AXIS;
+        j = Vector3::Y_AXIS;
+        break;
+
+    case Vector3::Y_AXIS:
+        i = Vector3::Z_AXIS;
+        j = Vector3::X_AXIS;
+        break;
+
+    case Vector3::Z_AXIS:
+        i = Vector3::X_AXIS;
+        j = Vector3::Y_AXIS;
+        break;
+
+    default:
+        // This case is here to supress a warning on Linux
+        i = j = 0;
+        debugAssertM(false, "Should not get here.");
+        break;
+    }
+
+
+    // 2D area via crossproduct
+    #define AREA2(d, e, f)  (((e)[i] - (d)[i]) * ((f)[j] - (d)[j]) - ((f)[i] - (d)[i]) * ((e)[j] - (d)[j]))
+
+    // Area of the polygon
+    double  area = AREA2(v0, v1, v2);
+    if (area == 0) {
+        return (v0 == point);
+    }
+
+    debugAssert(area != 0);
+
+    double a = AREA2(point, v1, v2) / area;
+
+    if (a < 0) {
+        return false;
+    }
+
+    double b = AREA2(v0,  point, v2) / area;
+
+    if ((b < 0) || ((1 - (a + b)) < 0)) {
+        return false;
+    }
+
+    #undef AREA2
+
+    return true;
+}
+
+
+bool CollisionDetection::isPointInsideRectangle(
+    const Vector3& v0,
+    const Vector3& v1,
+    const Vector3& v2,
+    const Vector3& v3,
+    const Vector3& normal,
+    const Vector3& point) {
+
+    return isPointInsideTriangle(v0, v1, v2, normal, point) ||
+           isPointInsideTriangle(v2, v3, v0, normal, point);  
+}
+
+
+Vector3 CollisionDetection::closestPointToRectanglePerimeter(
+    const Vector3& v0,
+    const Vector3& v1,
+    const Vector3& v2,
+    const Vector3& v3,
+    const Vector3& point) {
+
+    Vector3 r0 = closestPointOnLineSegment(v0, v1, point);
+    Vector3 r1 = closestPointOnLineSegment(v1, v2, point);
+    Vector3 r2 = closestPointOnLineSegment(v2, v3, point);
+    Vector3 r3 = closestPointOnLineSegment(v3, v0, point);
+
+    double d0 = (r0 - point).squaredMagnitude();
+    double d1 = (r1 - point).squaredMagnitude();
+    double d2 = (r2 - point).squaredMagnitude();
+    double d3 = (r3 - point).squaredMagnitude();
+
+    if (d0 < d1) {
+        if (d0 < d2) {
+            if (d0 < d3) {
+                return r0;
+            } else {
+                return r3;
+            }
+        } else {
+            if (d2 < d3) {
+                return r2;
+            } else {
+                return r3;
+            }
+        }
+    } else {
+        if (d1 < d2) {
+            if (d1 < d3) {
+                return r1;
+            } else {
+                return r3;
+            }
+        } else {
+            if (d2 < d3) {
+                return r2;
+            } else {
+                return r3;
+            }
+        }
+    }
+}
+
+
+Vector3 CollisionDetection::closestPointToRectangle(
+    const Vector3&      v0,
+    const Vector3&      v1,
+    const Vector3&      v2,
+    const Vector3&      v3,
+    const Vector3&      point) {
+
+    Plane plane(v0, v1, v2);
+
+    // Project the point into the plane
+    double a, b, c, d;
+    plane.getEquation(a, b, c, d);
+    
+    double distance = a*point.x + b*point.y + c*point.z + d;
+    Vector3 planePoint = point - distance * plane.normal();
+
+    if (isPointInsideRectangle(v0, v1, v2, v3, plane.normal(), planePoint)) {
+        return planePoint;
+    } else {
+        return closestPointToRectanglePerimeter(v0, v1, v2, v3, planePoint);
+    }
+}
+
+
+bool CollisionDetection::fixedSolidSphereIntersectsFixedSolidSphere(
+    const Sphere&           sphere1,
+    const Sphere&           sphere2) {
+    
+    return (sphere1.center - sphere2.center).squaredMagnitude() < square(sphere1.radius + sphere2.radius);
+}
+
+
+bool CollisionDetection::fixedSolidSphereIntersectsFixedSolidBox(
+    const Sphere&           sphere,
+    const Box&              box) {
+
+    // If the center of the sphere is within the box, the whole
+    // sphere is within the box.
+    if (box.contains(sphere.center)) {
+        return true;
+    }
+
+    double r2 = square(sphere.radius);
+
+    // Find the closest point on the surface of the box to the sphere.  If
+    // this point is within the sphere's radius, they intersect.
+    int f;
+    for (f = 0; f < 6; ++f) {
+        Vector3 v0, v1, v2, v3;
+        box.getFaceCorners(f, v0, v1, v2, v3);
+        if ((closestPointToRectangle(v0, v1, v2, v3, sphere.center) - sphere.center).squaredMagnitude() <= r2) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+
+bool CollisionDetection::movingSpherePassesThroughFixedBox(
+    const Sphere&           sphere,
+    const Vector3&          velocity,
+    const Box&              box,
+    double                  timeLimit) {
+
+    // If they intersect originally, they definitely pass through each other.
+    if (fixedSolidSphereIntersectsFixedSolidBox(sphere, box)) {
+        return true;
+    }
+
+    // See if the sphere hits the box during the time period.
+    Vector3 dummy1, dummy2;
+
+    return (collisionTimeForMovingSphereFixedBox(sphere, velocity, box, dummy1, dummy2) < timeLimit);
+}
+
+
+bool CollisionDetection::movingSpherePassesThroughFixedSphere(
+    const Sphere&           sphere,
+    const Vector3&          velocity,
+    const Sphere&           fixedSphere,
+    double                  timeLimit) {
+
+    if (fixedSolidSphereIntersectsFixedSolidSphere(sphere, fixedSphere)) {
+        return true;
+    }
+
+    // Extend the fixed sphere by the radius of the moving sphere
+    Sphere bigFixed(fixedSphere.center, fixedSphere.radius + sphere.radius);
+    Vector3 dummy1, dummy2;
+
+    // If the sphere collides with the other sphere during the time limit, it passes through
+    return (collisionTimeForMovingPointFixedSphere(sphere.center, velocity, bigFixed, dummy1, dummy2) < timeLimit);
+}
+
+
+} // namespace
+#ifdef G3D_WIN32
+#pragma warning (pop)
+#endif

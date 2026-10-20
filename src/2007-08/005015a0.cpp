@@ -1,37 +1,218 @@
 // from server: 100% by auto
-// roc 2007-08 005015a0  unit: G3D::Shader  size: 100 bytes
-// Make this compile to the exact bytes below, then: roc check 2007-08 005015a0
-//
-// 005015a0  51                   push ecx
-// 005015a1  ba01000000           mov edx, 1
-// 005015a6  841560098c00         test byte ptr [0x8c0960], dl
-// 005015ac  754f                 jne 0x5015fd
-// 005015ae  a108d18b00           mov eax, dword ptr [0x8bd108]
-// 005015b3  091560098c00         or dword ptr [0x8c0960], edx
-// 005015b9  84c2                 test dl, al
-// 005015bb  8b0d64e57700         mov ecx, dword ptr [0x77e564]
-// 005015c1  7522                 jne 0x5015e5
-// 005015c3  0bc2                 or eax, edx
-// 005015c5  84c2                 test dl, al
-// 005015c7  a308d18b00           mov dword ptr [0x8bd108], eax
-// 005015cc  dd01                 fld qword ptr [ecx]
-// 005015ce  dd1d00d18b00         fstp qword ptr [0x8bd100]
-// 005015d4  750f                 jne 0x5015e5
-// 005015d6  0bc2                 or eax, edx
-// 005015d8  a308d18b00           mov dword ptr [0x8bd108], eax
-// 005015dd  dd01                 fld qword ptr [ecx]
-// 005015df  dd1d00d18b00         fstp qword ptr [0x8bd100]
-// 005015e5  dd0500d18b00         fld qword ptr [0x8bd100]
-// 005015eb  d91c24               fstp dword ptr [esp]
-// 005015ee  d90424               fld dword ptr [esp]
-// 005015f1  d91558098c00         fst dword ptr [0x8c0958]
-// 005015f7  d91d5c098c00         fstp dword ptr [0x8c095c]
-// 005015fd  b858098c00           mov eax, 0x8c0958
-// 00501602  59                   pop ecx
-// 00501603  c3                   ret 
-// library g3d-6.09/G3Dcpp\Vector2.cpp (function ?inf@Vector2@G3D@@SAABV12@XZ)
-
 // roc-lang: cpp
 // roc-cl: 50727
 // roc-flags: /O2 /GS- /EHsc /MD
 // roc-lib: g3d-6.09 G3Dcpp/Vector2.cpp
+
+// Candidate translation unit (score above; library headers required).
+/**
+ @file Vector2.cpp
+ 
+ 2D vector class, used for texture coordinates primarily.
+ 
+ @maintainer Morgan McGuire, matrix@graphics3d.com
+ 
+ @cite Portions based on Dave Eberly'x Magic Software Library
+  at http://www.magic-software.com
+ 
+ @created 2001-06-02
+ @edited  2006-01-16
+ */
+
+#include "G3D/platform.h"
+#include <stdlib.h>
+#include "G3D/Vector2.h"
+#include "G3D/g3dmath.h"
+#include "G3D/format.h"
+#include "G3D/BinaryInput.h"
+#include "G3D/BinaryOutput.h"
+#include "G3D/TextInput.h"
+#include "G3D/TextOutput.h"
+
+namespace G3D {
+
+const Vector2& Vector2::zero() {
+    static Vector2 v(0, 0);
+    return v;
+}
+
+const Vector2& Vector2::unitX() {
+    static Vector2 v(1, 0);
+    return v;
+}
+
+const Vector2& Vector2::unitY() {
+    static Vector2 v(0, 1);
+    return v;
+}
+
+const Vector2& Vector2::inf() { 
+	static Vector2 v((float)G3D::inf(), (float)G3D::inf());
+	return v; 
+}
+
+const Vector2& Vector2::nan() { 
+	static Vector2 v((float)G3D::nan(), (float)G3D::nan()); 
+	return v; 
+}
+
+const Vector2& Vector2::minFinite() {
+	static Vector2 v(-FLT_MAX, -FLT_MAX); 
+	return v; 
+}
+
+const Vector2& Vector2::maxFinite() {
+	static Vector2 v(FLT_MAX, FLT_MAX); 
+	return v; 
+}
+
+
+
+// Deprecated.
+const Vector2 Vector2::ZERO(0, 0);
+const Vector2 Vector2::UNIT_S(1, 0);
+const Vector2 Vector2::UNIT_T(0, 1);
+
+unsigned int Vector2::hashCode() const {
+    unsigned int xhash = (*(int*)(void*)(&x));
+    unsigned int yhash = (*(int*)(void*)(&y));
+
+    return xhash + (yhash * 37);
+}
+
+Vector2::Vector2(BinaryInput& b) {
+    deserialize(b);
+}
+
+void Vector2::deserialize(BinaryInput& b) {
+    x = b.readFloat32();
+    y = b.readFloat32();
+}
+
+void Vector2::serialize(BinaryOutput& b) const {
+    b.writeFloat32(x);
+    b.writeFloat32(y);
+}
+
+
+
+void Vector2::deserialize(TextInput& t) {
+    t.readSymbol("(");
+    x = (float)t.readNumber();
+    t.readSymbol(",");
+    y = (float)t.readNumber();
+    t.readSymbol(")");
+}
+
+
+void Vector2::serialize(TextOutput& t) const {
+   t.writeSymbol("(");
+   t.writeNumber(x);
+   t.writeSymbol(",");
+   t.writeNumber(y);
+   t.writeSymbol(")");
+}
+
+//----------------------------------------------------------------------------
+
+Vector2 Vector2::random() {
+    Vector2 result;
+
+    do {
+        result = Vector2((float)symmetricRandom(), (float)symmetricRandom());
+    } while ((result.squaredLength() > 1.0f) || (result.squaredLength() == 1.0f));
+
+    result.unitize();
+
+    return result;
+}
+
+//----------------------------------------------------------------------------
+Vector2 Vector2::operator/ (float fScalar) const {
+    Vector2 kQuot;
+
+    if ( fScalar != 0.0f ) {
+		float fInvScalar = 1.0f / fScalar;
+        kQuot.x = fInvScalar * x;
+        kQuot.y = fInvScalar * y;
+        return kQuot;
+    } else {
+        return Vector2::inf();
+    }
+}
+
+//----------------------------------------------------------------------------
+Vector2& Vector2::operator/= (float fScalar) {
+    if (fScalar != 0.0f) {
+		float fInvScalar = 1.0f / fScalar;
+        x *= fInvScalar;
+        y *= fInvScalar;
+    } else {
+        x = (float)G3D::inf();
+        y = (float)G3D::inf();
+    }
+
+    return *this;
+}
+
+//----------------------------------------------------------------------------
+float Vector2::unitize (float fTolerance) {
+	float fLength = length();
+
+    if (fLength > fTolerance) {
+		float fInvLength = 1.0f / fLength;
+        x *= fInvLength;
+        y *= fInvLength;
+    } else {
+        fLength = 0.0;
+    }
+
+    return fLength;
+}
+
+//----------------------------------------------------------------------------
+
+std::string Vector2::toString() const {
+    return G3D::format("(%g, %g)", x, y);
+}
+
+// 2-char swizzles
+
+Vector2 Vector2::xx() const  { return Vector2       (x, x); }
+Vector2 Vector2::yx() const  { return Vector2       (y, x); }
+Vector2 Vector2::xy() const  { return Vector2       (x, y); }
+Vector2 Vector2::yy() const  { return Vector2       (y, y); }
+
+// 3-char swizzles
+
+Vector3 Vector2::xxx() const  { return Vector3       (x, x, x); }
+Vector3 Vector2::yxx() const  { return Vector3       (y, x, x); }
+Vector3 Vector2::xyx() const  { return Vector3       (x, y, x); }
+Vector3 Vector2::yyx() const  { return Vector3       (y, y, x); }
+Vector3 Vector2::xxy() const  { return Vector3       (x, x, y); }
+Vector3 Vector2::yxy() const  { return Vector3       (y, x, y); }
+Vector3 Vector2::xyy() const  { return Vector3       (x, y, y); }
+Vector3 Vector2::yyy() const  { return Vector3       (y, y, y); }
+
+// 4-char swizzles
+
+Vector4 Vector2::xxxx() const  { return Vector4       (x, x, x, x); }
+Vector4 Vector2::yxxx() const  { return Vector4       (y, x, x, x); }
+Vector4 Vector2::xyxx() const  { return Vector4       (x, y, x, x); }
+Vector4 Vector2::yyxx() const  { return Vector4       (y, y, x, x); }
+Vector4 Vector2::xxyx() const  { return Vector4       (x, x, y, x); }
+Vector4 Vector2::yxyx() const  { return Vector4       (y, x, y, x); }
+Vector4 Vector2::xyyx() const  { return Vector4       (x, y, y, x); }
+Vector4 Vector2::yyyx() const  { return Vector4       (y, y, y, x); }
+Vector4 Vector2::xxxy() const  { return Vector4       (x, x, x, y); }
+Vector4 Vector2::yxxy() const  { return Vector4       (y, x, x, y); }
+Vector4 Vector2::xyxy() const  { return Vector4       (x, y, x, y); }
+Vector4 Vector2::yyxy() const  { return Vector4       (y, y, x, y); }
+Vector4 Vector2::xxyy() const  { return Vector4       (x, x, y, y); }
+Vector4 Vector2::yxyy() const  { return Vector4       (y, x, y, y); }
+Vector4 Vector2::xyyy() const  { return Vector4       (x, y, y, y); }
+Vector4 Vector2::yyyy() const  { return Vector4       (y, y, y, y); }
+
+
+
+} // namespace

@@ -1,65 +1,258 @@
 // from server: 100% by auto
-// roc 2008-06 005a75d0  unit: RBX::Log  size: 190 bytes
-// Make this compile to the exact bytes below, then: roc check 2008-06 005a75d0
-//
-// 005a75d0  55                   push ebp
-// 005a75d1  8bec                 mov ebp, esp
-// 005a75d3  6aff                 push -1
-// 005a75d5  6808307d00           push 0x7d3008
-// 005a75da  64a100000000         mov eax, dword ptr fs:[0]
-// 005a75e0  50                   push eax
-// 005a75e1  64892500000000       mov dword ptr fs:[0], esp
-// 005a75e8  83ec2c               sub esp, 0x2c
-// 005a75eb  53                   push ebx
-// 005a75ec  56                   push esi
-// 005a75ed  57                   push edi
-// 005a75ee  8965f0               mov dword ptr [ebp - 0x10], esp
-// 005a75f1  68546b9700           push 0x976b54
-// 005a75f6  6800735a00           push 0x5a7300
-// 005a75fb  8bf9                 mov edi, ecx
-// 005a75fd  e82efdfaff           call 0x557330
-// 005a7602  83c408               add esp, 8
-// 005a7605  833d5c6b970000       cmp dword ptr [0x976b5c], 0
-// 005a760c  7516                 jne 0x5a7624
-// 005a760e  8d4dd8               lea ecx, [ebp - 0x28]
-// 005a7611  e81a0efcff           call 0x568430
-// 005a7616  68304f8d00           push 0x8d4f30
-// 005a761b  8d45d8               lea eax, [ebp - 0x28]
-// 005a761e  50                   push eax
-// 005a761f  e8689f0f00           call 0x6a158c
-// 005a7624  8b35586b9700         mov esi, dword ptr [0x976b58]
-// 005a762a  8bce                 mov ecx, esi
-// 005a762c  8975e8               mov dword ptr [ebp - 0x18], esi
-// 005a762f  e8acd6feff           call 0x594ce0
-// 005a7634  bb01000000           mov ebx, 1
-// 005a7639  885dec               mov byte ptr [ebp - 0x14], bl
-// 005a763c  8d4d08               lea ecx, [ebp + 8]
-// 005a763f  51                   push ecx
-// 005a7640  8b0d5c6b9700         mov ecx, dword ptr [0x976b5c]
-// 005a7646  c745fc00000000       mov dword ptr [ebp - 4], 0
-// 005a764d  885dfc               mov byte ptr [ebp - 4], bl
-// 005a7650  e84b9de7ff           call 0x4213a0
-// 005a7655  a15c6b9700           mov eax, dword ptr [0x976b5c]
-// 005a765a  8b5010               mov edx, dword ptr [eax + 0x10]
-// 005a765d  2b500c               sub edx, dword ptr [eax + 0xc]
-// 005a7660  8bce                 mov ecx, esi
-// 005a7662  c1fa02               sar edx, 2
-// 005a7665  2bd3                 sub edx, ebx
-// 005a7667  8917                 mov dword ptr [edi], edx
-// 005a7669  011d606b9700         add dword ptr [0x976b60], ebx
-// 005a766f  c745fcffffffff       mov dword ptr [ebp - 4], 0xffffffff
-// 005a7676  e885d6feff           call 0x594d00
-// 005a767b  8b4df4               mov ecx, dword ptr [ebp - 0xc]
-// 005a767e  5f                   pop edi
-// 005a767f  5e                   pop esi
-// 005a7680  64890d00000000       mov dword ptr fs:[0], ecx
-// 005a7687  5b                   pop ebx
-// 005a7688  8be5                 mov esp, ebp
-// 005a768a  5d                   pop ebp
-// 005a768b  c20400               ret 4
-// library boost-1.34.1/libs\thread\src\tss.cpp (function ?init@tss@detail@boost@@AAEXPAV?$function1@XPAXV?$allocator@Vfunction_base@boost@@@std@@@3@@Z)
-
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD
 // roc-lib: boost-1.34.1 libs/thread/src/tss.cpp
+
+// Candidate translation unit (score above; library headers required).
+// Copyright (C) 2001-2003 William E. Kempf
+// Copyright (C) 2006 Roland Schwarz
+//
+//  Distributed under the Boost Software License, Version 1.0. (See accompanying 
+//  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
+#include <boost/thread/detail/config.hpp>
+
+#include <boost/thread/tss.hpp>
+#ifndef BOOST_THREAD_NO_TSS_CLEANUP
+
+#include <boost/thread/once.hpp>
+#include <boost/thread/mutex.hpp>
+#include <boost/thread/exceptions.hpp>
+#include <vector>
+#include <string>
+#include <stdexcept>
+#include <cassert>
+
+#if defined(BOOST_HAS_WINTHREADS)
+#   include <windows.h>
+#   include <boost/thread/detail/tss_hooks.hpp>
+#endif
+
+namespace {
+
+typedef std::vector<void*> tss_slots;
+typedef std::vector<boost::function1<void, void*>*> tss_data_cleanup_handlers_type;
+
+boost::once_flag tss_data_once = BOOST_ONCE_INIT;
+boost::mutex* tss_data_mutex = 0;
+tss_data_cleanup_handlers_type* tss_data_cleanup_handlers = 0;
+#if defined(BOOST_HAS_WINTHREADS)
+    DWORD tss_data_native_key=TLS_OUT_OF_INDEXES;
+#elif defined(BOOST_HAS_PTHREADS)
+    pthread_key_t tss_data_native_key;
+#elif defined(BOOST_HAS_MPTASKS)
+    TaskStorageIndex tss_data_native_key;
+#endif
+int tss_data_use = 0;
+
+void tss_data_inc_use(boost::mutex::scoped_lock& lk)
+{
+    ++tss_data_use;
+}
+
+void tss_data_dec_use(boost::mutex::scoped_lock& lk)
+{
+    if (0 == --tss_data_use)
+    {
+        tss_data_cleanup_handlers_type::size_type i;
+        for (i = 0; i < tss_data_cleanup_handlers->size(); ++i)
+        {
+            delete (*tss_data_cleanup_handlers)[i];
+        }
+        delete tss_data_cleanup_handlers;
+        tss_data_cleanup_handlers = 0;
+        lk.unlock();
+        delete tss_data_mutex;
+        tss_data_mutex = 0;
+#if defined(BOOST_HAS_WINTHREADS)
+        TlsFree(tss_data_native_key);
+        tss_data_native_key=TLS_OUT_OF_INDEXES;
+#elif defined(BOOST_HAS_PTHREADS)
+        pthread_key_delete(tss_data_native_key);
+#elif defined(BOOST_HAS_MPTASKS)
+        // Don't know what to put here.
+        // But MPTASKS isn't currently maintained anyways...
+#endif
+    }
+}
+
+extern "C" void cleanup_slots(void* p)
+{
+    tss_slots* slots = static_cast<tss_slots*>(p);
+    boost::mutex::scoped_lock lock(*tss_data_mutex);
+    for (tss_slots::size_type i = 0; i < slots->size(); ++i)
+    {
+        (*(*tss_data_cleanup_handlers)[i])((*slots)[i]);
+        (*slots)[i] = 0;
+    }
+#if defined(BOOST_HAS_WINTHREADS)
+    TlsSetValue(tss_data_native_key,0);
+#endif
+    tss_data_dec_use(lock);
+    delete slots;
+}
+
+void init_tss_data()
+{
+    std::auto_ptr<tss_data_cleanup_handlers_type> 
+        temp(new tss_data_cleanup_handlers_type);
+
+    std::auto_ptr<boost::mutex> temp_mutex(new boost::mutex);
+    if (temp_mutex.get() == 0)
+        throw boost::thread_resource_error();
+
+#if defined(BOOST_HAS_WINTHREADS)
+    //Force the cleanup implementation library to be linked in
+    tss_cleanup_implemented();
+
+    //Allocate tls slot
+    tss_data_native_key = TlsAlloc();
+    if (tss_data_native_key == TLS_OUT_OF_INDEXES)
+        return;
+#elif defined(BOOST_HAS_PTHREADS)
+    int res = pthread_key_create(&tss_data_native_key, &cleanup_slots);
+    if (res != 0)
+        return;
+#elif defined(BOOST_HAS_MPTASKS)
+    OSStatus status = MPAllocateTaskStorageIndex(&tss_data_native_key);
+    if (status != noErr)
+        return;
+#endif
+
+    // The life time of cleanup handlers and mutex is beeing
+    // managed by a reference counting technique.
+    // This avoids a memory leak by releasing the global data
+    // after last use only, since the execution order of cleanup
+    // handlers is unspecified on any platform with regards to
+    // C++ destructor ordering rules.
+    tss_data_cleanup_handlers = temp.release();
+    tss_data_mutex = temp_mutex.release();
+}
+
+#if defined(BOOST_HAS_WINTHREADS)
+tss_slots* get_slots(bool alloc);
+
+void __cdecl tss_thread_exit()
+{
+    tss_slots* slots = get_slots(false);
+    if (slots)
+        cleanup_slots(slots);
+}
+#endif
+
+tss_slots* get_slots(bool alloc)
+{
+    tss_slots* slots = 0;
+
+#if defined(BOOST_HAS_WINTHREADS)
+    slots = static_cast<tss_slots*>(
+        TlsGetValue(tss_data_native_key));
+#elif defined(BOOST_HAS_PTHREADS)
+    slots = static_cast<tss_slots*>(
+        pthread_getspecific(tss_data_native_key));
+#elif defined(BOOST_HAS_MPTASKS)
+    slots = static_cast<tss_slots*>(
+        MPGetTaskStorageValue(tss_data_native_key));
+#endif
+
+    if (slots == 0 && alloc)
+    {
+        std::auto_ptr<tss_slots> temp(new tss_slots);
+
+#if defined(BOOST_HAS_WINTHREADS)
+        if (at_thread_exit(&tss_thread_exit) == -1)
+            return 0;
+        if (!TlsSetValue(tss_data_native_key, temp.get()))
+            return 0;
+#elif defined(BOOST_HAS_PTHREADS)
+        if (pthread_setspecific(tss_data_native_key, temp.get()) != 0)
+            return 0;
+#elif defined(BOOST_HAS_MPTASKS)
+        if (MPSetTaskStorageValue(tss_data_native_key, temp.get()) != noErr)
+            return 0;
+#endif
+        {
+            boost::mutex::scoped_lock lock(*tss_data_mutex);
+            tss_data_inc_use(lock);
+        }
+        slots = temp.release();
+    }
+
+    return slots;
+}
+
+} // namespace
+
+namespace boost {
+
+namespace detail {
+void tss::init(boost::function1<void, void*>* pcleanup)
+{
+    boost::call_once(&init_tss_data, tss_data_once);
+    if (tss_data_cleanup_handlers == 0)
+        throw thread_resource_error();
+    boost::mutex::scoped_lock lock(*tss_data_mutex);
+    try
+    {
+        tss_data_cleanup_handlers->push_back(pcleanup);
+        m_slot = tss_data_cleanup_handlers->size() - 1;
+        tss_data_inc_use(lock);
+    }
+    catch (...)
+    {
+        throw thread_resource_error();
+    }
+}
+
+tss::~tss()
+{
+    boost::mutex::scoped_lock lock(*tss_data_mutex);
+    tss_data_dec_use(lock);
+}
+
+void* tss::get() const
+{
+    tss_slots* slots = get_slots(false);
+
+    if (!slots)
+        return 0;
+
+    if (m_slot >= slots->size())
+        return 0;
+
+    return (*slots)[m_slot];
+}
+
+void tss::set(void* value)
+{
+    tss_slots* slots = get_slots(true);
+
+    if (!slots)
+        throw boost::thread_resource_error();
+
+    if (m_slot >= slots->size())
+    {
+        try
+        {
+            slots->resize(m_slot + 1);
+        }
+        catch (...)
+        {
+            throw boost::thread_resource_error();
+        }
+    }
+
+    (*slots)[m_slot] = value;
+}
+
+void tss::cleanup(void* value)
+{
+    boost::mutex::scoped_lock lock(*tss_data_mutex);
+    (*(*tss_data_cleanup_handlers)[m_slot])(value);
+}
+
+} // namespace detail
+} // namespace boost
+
+#endif //BOOST_THREAD_NO_TSS_CLEANUP

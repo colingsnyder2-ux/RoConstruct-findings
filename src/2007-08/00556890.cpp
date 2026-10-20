@@ -1,29 +1,127 @@
-// roc 2007-08 00556890  unit: RBX::TextDisplay  size: 80 bytes
-// Make this compile to the exact bytes below, then: roc check 2007-08 00556890
-//
-// 00556890  6aff                 push -1
-// 00556892  68c8307500           push 0x7530c8
-// 00556897  64a100000000         mov eax, dword ptr fs:[0]
-// 0055689d  50                   push eax
-// 0055689e  64892500000000       mov dword ptr fs:[0], esp
-// 005568a5  51                   push ecx
-// 005568a6  56                   push esi
-// 005568a7  8bf1                 mov esi, ecx
-// 005568a9  89742404             mov dword ptr [esp + 4], esi
-// 005568ad  8d8efc000000         lea ecx, [esi + 0xfc]
-// 005568b3  c744241000000000     mov dword ptr [esp + 0x10], 0
-// 005568bb  ff15ace67700         call dword ptr [0x77e6ac]
-// 005568c1  8bce                 mov ecx, esi
-// 005568c3  c7442410ffffffff     mov dword ptr [esp + 0x10], 0xffffffff
-// 005568cb  e89066ebff           call 0x40cf60
-// 005568d0  8b4c2408             mov ecx, dword ptr [esp + 8]
-// 005568d4  5e                   pop esi
-// 005568d5  64890d00000000       mov dword ptr fs:[0], ecx
-// 005568dc  83c410               add esp, 0x10
-// 005568df  c3                   ret 
-// library openrbx-client/App\v8datamodel\Decal.cpp (function ??1Decal@RBX@@UAE@XZ)
-
 // roc-lang: cpp
 // roc-cl: 50727
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
 // roc-lib: openrbx-client-dll App/v8datamodel/Decal.cpp
+
+// Candidate translation unit (score above; library headers required).
+#include "v8datamodel/Decal.h"
+
+#include "reflection/property.h"
+
+namespace RBX {
+
+char sTexture[] = "Texture";
+
+char sDecal[] = "Decal";
+
+using namespace Reflection;
+
+const PropDescriptor<Decal, TextureId> Decal::prop_Texture(
+	"Texture",
+	"Appearance",
+	&RBX::Decal::getTexture,
+	&RBX::Decal::setTexture
+);
+
+const PropDescriptor<Decal, float> Decal::prop_Specular(
+	"Specular",
+	"Appearance",
+	&RBX::Decal::getSpecular,
+	&RBX::Decal::setSpecular
+);
+
+const PropDescriptor<Decal, float> Decal::prop_Shiny(
+	"Shiny",
+	"Appearance",
+	&RBX::Decal::getShiny,
+	&RBX::Decal::setShiny
+);
+
+const PropDescriptor<Texture, float> Texture::prop_StudsPerTileU(
+	"StudsPerTileU",
+	"Appearance",
+	&RBX::Texture::getStudsPerTileU,
+	&RBX::Texture::setStudsPerTileU
+);
+
+const PropDescriptor<Texture, float> Texture::prop_StudsPerTileV(
+	"StudsPerTileV",
+	"Appearance",
+	&RBX::Texture::getStudsPerTileV,
+	&RBX::Texture::setStudsPerTileV
+);
+
+// FUNCTION: WEBSERVICE 0x100fff70
+Decal::Decal() : specular(0.0f), shiny(20.0f)
+{
+	setName("Decal");
+}
+
+// FUNCTION: WEBSERVICE 0x10100170
+void Decal::setTexture(TextureId value)
+{
+	if (texture != value) {
+		texture = value;
+		raisePropertyChanged(prop_Texture);
+	}
+}
+
+// FUNCTION: WEBSERVICE 0x101001f0
+void Decal::setSpecular(float value)
+{
+	if (specular != value && value >= 0.0f) {
+		specular = value;
+		raisePropertyChanged(prop_Specular);
+	}
+}
+
+// FUNCTION: WEBSERVICE 0x10100230
+void Decal::setShiny(float value)
+{
+	if (shiny != value && value > 0.0f) {
+		shiny = value;
+		raisePropertyChanged(prop_Shiny);
+	}
+}
+
+// FUNCTION: WEBSERVICE 0x10100270
+void Texture::setStudsPerTileU(float value)
+{
+	if (studsPerTile.x != value && value > 0.0f) {
+		studsPerTile.x = value;
+		raisePropertyChanged(prop_StudsPerTileU);
+	}
+}
+
+// FUNCTION: WEBSERVICE 0x101002b0
+void Texture::setStudsPerTileV(float value)
+{
+	if (studsPerTile.y != value && value > 0.0f) {
+		studsPerTile.y = value;
+		raisePropertyChanged(prop_StudsPerTileV);
+	}
+}
+
+// FUNCTION: WEBSERVICE 0x101003c0
+Texture::Texture() : studsPerTile(2.0f, 2.0f)
+{
+	setName("Texture");
+}
+
+namespace Reflection {
+
+// FUNCTION: WEBSERVICE 0x1012dd60 FOLDED
+template <>
+const Type& Type::singleton<TextureId>()
+{
+	return singleton<ContentId>();
+}
+
+} // namespace Reflection
+
+} // namespace RBX
+
+template class RBX::FactoryProduct<RBX::Texture, RBX::Decal, RBX::sTexture>;
+template class RBX::Reflection::
+	Described<RBX::Texture, RBX::sTexture, RBX::FactoryProduct<RBX::Texture, RBX::Decal, RBX::sTexture> >;
+template class RBX::DescribedCreatable<RBX::Texture, RBX::Decal, RBX::sTexture>;

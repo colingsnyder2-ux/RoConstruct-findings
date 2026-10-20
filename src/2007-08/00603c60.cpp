@@ -1,104 +1,411 @@
-// roc 2007-08 00603c60  unit: RBX::JointStage  size: 295 bytes
-// Make this compile to the exact bytes below, then: roc check 2007-08 00603c60
-//
-// 00603c60  6aff                 push -1
-// 00603c62  68afc17500           push 0x75c1af
-// 00603c67  64a100000000         mov eax, dword ptr fs:[0]
-// 00603c6d  50                   push eax
-// 00603c6e  64892500000000       mov dword ptr fs:[0], esp
-// 00603c75  83ec08               sub esp, 8
-// 00603c78  55                   push ebp
-// 00603c79  56                   push esi
-// 00603c7a  57                   push edi
-// 00603c7b  8bf1                 mov esi, ecx
-// 00603c7d  6a28                 push 0x28
-// 00603c7f  89742410             mov dword ptr [esp + 0x10], esi
-// 00603c83  e86ec20200           call 0x62fef6
-// 00603c88  83c404               add esp, 4
-// 00603c8b  89442410             mov dword ptr [esp + 0x10], eax
-// 00603c8f  8b7c2428             mov edi, dword ptr [esp + 0x28]
-// 00603c93  33ed                 xor ebp, ebp
-// 00603c95  3bc5                 cmp eax, ebp
-// 00603c97  896c241c             mov dword ptr [esp + 0x1c], ebp
-// 00603c9b  740b                 je 0x603ca8
-// 00603c9d  57                   push edi
-// 00603c9e  56                   push esi
-// 00603c9f  8bc8                 mov ecx, eax
-// 00603ca1  e84a380200           call 0x6274f0
-// 00603ca6  eb02                 jmp 0x603caa
-// 00603ca8  33c0                 xor eax, eax
-// 00603caa  8b4c2424             mov ecx, dword ptr [esp + 0x24]
-// 00603cae  53                   push ebx
-// 00603caf  894e04               mov dword ptr [esi + 4], ecx
-// 00603cb2  894608               mov dword ptr [esi + 8], eax
-// 00603cb5  897e0c               mov dword ptr [esi + 0xc], edi
-// 00603cb8  8d7e10               lea edi, [esi + 0x10]
-// 00603cbb  bb01000000           mov ebx, 1
-// 00603cc0  8bcf                 mov ecx, edi
-// 00603cc2  895c2420             mov dword ptr [esp + 0x20], ebx
-// 00603cc6  c7060c2c7c00         mov dword ptr [esi], 0x7c2c0c
-// 00603ccc  e8df56faff           call 0x5a93b0
-// 00603cd1  894704               mov dword ptr [edi + 4], eax
-// 00603cd4  885811               mov byte ptr [eax + 0x11], bl
-// 00603cd7  8b4704               mov eax, dword ptr [edi + 4]
-// 00603cda  894004               mov dword ptr [eax + 4], eax
-// 00603cdd  8b4704               mov eax, dword ptr [edi + 4]
-// 00603ce0  8900                 mov dword ptr [eax], eax
-// 00603ce2  8b4704               mov eax, dword ptr [edi + 4]
-// 00603ce5  894008               mov dword ptr [eax + 8], eax
-// 00603ce8  896f08               mov dword ptr [edi + 8], ebp
-// 00603ceb  8d7e1c               lea edi, [esi + 0x1c]
-// 00603cee  8bcf                 mov ecx, edi
-// 00603cf0  c644242002           mov byte ptr [esp + 0x20], 2
-// 00603cf5  e8b656faff           call 0x5a93b0
-// 00603cfa  894704               mov dword ptr [edi + 4], eax
-// 00603cfd  885811               mov byte ptr [eax + 0x11], bl
-// 00603d00  8b4704               mov eax, dword ptr [edi + 4]
-// 00603d03  894004               mov dword ptr [eax + 4], eax
-// 00603d06  8b4704               mov eax, dword ptr [edi + 4]
-// 00603d09  8900                 mov dword ptr [eax], eax
-// 00603d0b  8b4704               mov eax, dword ptr [edi + 4]
-// 00603d0e  894008               mov dword ptr [eax + 8], eax
-// 00603d11  896f08               mov dword ptr [edi + 8], ebp
-// 00603d14  8d7e28               lea edi, [esi + 0x28]
-// 00603d17  8bcf                 mov ecx, edi
-// 00603d19  c644242003           mov byte ptr [esp + 0x20], 3
-// 00603d1e  e88d56faff           call 0x5a93b0
-// 00603d23  894704               mov dword ptr [edi + 4], eax
-// 00603d26  885811               mov byte ptr [eax + 0x11], bl
-// 00603d29  8b4704               mov eax, dword ptr [edi + 4]
-// 00603d2c  894004               mov dword ptr [eax + 4], eax
-// 00603d2f  8b4704               mov eax, dword ptr [edi + 4]
-// 00603d32  8900                 mov dword ptr [eax], eax
-// 00603d34  8b4704               mov eax, dword ptr [edi + 4]
-// 00603d37  894008               mov dword ptr [eax + 8], eax
-// 00603d3a  896f08               mov dword ptr [edi + 8], ebp
-// 00603d3d  6840000200           push 0x20040
-// 00603d42  c644242404           mov byte ptr [esp + 0x24], 4
-// 00603d47  e8aac10200           call 0x62fef6
-// 00603d4c  83c404               add esp, 4
-// 00603d4f  8944242c             mov dword ptr [esp + 0x2c], eax
-// 00603d53  3bc5                 cmp eax, ebp
-// 00603d55  c644242005           mov byte ptr [esp + 0x20], 5
-// 00603d5a  5b                   pop ebx
-// 00603d5b  7411                 je 0x603d6e
-// 00603d5d  68282c7c00           push 0x7c2c28
-// 00603d62  8bc8                 mov ecx, eax
-// 00603d64  e8f7def8ff           call 0x591c60
-// 00603d69  894634               mov dword ptr [esi + 0x34], eax
-// 00603d6c  eb03                 jmp 0x603d71
-// 00603d6e  896e34               mov dword ptr [esi + 0x34], ebp
-// 00603d71  8b4c2414             mov ecx, dword ptr [esp + 0x14]
-// 00603d75  5f                   pop edi
-// 00603d76  8bc6                 mov eax, esi
-// 00603d78  5e                   pop esi
-// 00603d79  5d                   pop ebp
-// 00603d7a  64890d00000000       mov dword ptr fs:[0], ecx
-// 00603d81  83c414               add esp, 0x14
-// 00603d84  c20800               ret 8
-// library rbxgs/v8world\SleepStage.cpp (function ??0SleepStage@RBX@@QAE@PAVIStage@1@PAVWorld@1@@Z)
-
 // roc-lang: cpp
 // roc-cl: 50727
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
 // roc-lib: rbxgs v8world/SleepStage.cpp
+
+// Candidate translation unit (score above; library headers required).
+#include "v8world/SleepStage.h"
+#include "v8world/Assembly.h"
+#include "v8world/Edge.h"
+#include "v8world/Primitive.h"
+#include "v8world/SeparateStage.h"
+#include "v8world/CollisionStage.h"
+
+namespace RBX
+{
+#pragma warning (push)
+#pragma warning (disable : 4355) // warning C4355: 'this' : used in base member initializer list
+	SleepStage::SleepStage(IStage* upstream, World* world)
+		: IWorldStage(upstream, new SeparateStage(this, world), world),
+		  profilingSleep(new Profiling::CodeProfiler("Sleep"))
+	{
+	}
+#pragma warning (pop)
+
+	SleepStage::~SleepStage()
+	{
+		RBXASSERT(awake.empty());
+		RBXASSERT(sleepingChecking.empty());
+		RBXASSERT(sleepingDeeply.empty());
+	}
+
+	int SleepStage::stepsToSleep()
+	{
+		return 20;
+	}
+
+	std::set<Assembly*>& SleepStage::statusToArray(Sim::AssemblyState status)
+	{
+		if (status == Sim::AWAKE)
+			return awake;
+		else if (status == Sim::SLEEPING_CHECKING)
+			return sleepingChecking;
+		else
+			return sleepingDeeply;
+	}
+
+	CollisionStage* SleepStage::getCollisionStage()
+	{
+		return rbx_static_cast<CollisionStage*>(getUpstreamWS());
+	}
+
+	void SleepStage::stepWorld(int worldStepId, int uiStepId, bool throttling)
+	{
+		{
+			Profiling::Mark mark(*profilingSleep.get(), false);
+
+			checkAwakeAssemblies(throttling);
+			if (worldStepId % 4 == 0)
+				checkSleepingAssemblies();
+		}
+
+		RBXASSERT(getDownstream());
+		getDownstream()->stepWorld(worldStepId, uiStepId, throttling);
+	}
+
+	void SleepStage::remove(Assembly* assembly)
+	{
+		if (assembly->getSleepStatus() == Sim::AWAKE)
+		{
+			RBXASSERT(assembly->downstreamOfStage(this));
+			rbx_static_cast<SeparateStage*>(getDownstreamWS())->onAssemblyRemoving(assembly);
+		}
+
+		RBXASSERT(assembly->inStage(this));
+
+		std::set<Assembly*>& assemblyArray = statusToArray(assembly->getSleepStatus());
+		size_t removed = assemblyArray.erase(assembly);
+		RBXASSERT(removed == 1);
+
+		assembly->setSleepStatus(Sim::AWAKE);
+		assembly->setSleepCount(0);
+	}
+
+	void SleepStage::insert(Assembly* assembly, Sim::AssemblyState newStatus)
+	{
+		RBXASSERT(assembly->getSleepCount() == 0);
+		RBXASSERT(assembly->getSleepStatus() == Sim::AWAKE);
+		RBXASSERT(!assembly->downstreamOfStage(this));
+
+		std::set<Assembly*>& assemblyArray = statusToArray(newStatus);
+		bool inserted = assemblyArray.insert(assembly).second;
+		RBXASSERT(inserted);
+
+		assembly->setSleepStatus(newStatus);
+		if (assembly->getSleepStatus() == Sim::AWAKE)
+		{
+			rbx_static_cast<SeparateStage*>(getDownstreamWS())->onAssemblyAdded(assembly);
+		}
+	}
+
+	void SleepStage::changeSleepStatus(Assembly* assembly, Sim::AssemblyState newStatus)
+	{
+		remove(assembly);
+		insert(assembly, newStatus);
+	}
+
+	void SleepStage::onAssemblyAdded(Assembly* assembly)
+	{
+		RBXASSERT(!assembly->getAnchored());
+		RBXASSERT(assembly->getSleepStatus() == Sim::AWAKE);
+
+		assembly->putInStage(this);
+		insert(assembly, Sim::AWAKE);
+	}
+
+	void SleepStage::onAssemblyRemoving(Assembly* assembly)
+	{
+		RBXASSERT(assembly->inOrDownstreamOfStage(this));
+
+		remove(assembly);
+		RBXASSERT(assembly->getSleepStatus() == Sim::AWAKE);
+		assembly->removeFromStage(this);
+	}
+
+	void SleepStage::onEdgeAdded(Edge* e)
+	{
+		RBXASSERT(!e->inOrDownstreamOfStage(this));
+
+		Assembly* a0 = e->getPrimitive(0)->getAssembly();
+		Assembly* a1 = e->getPrimitive(1)->getAssembly();
+
+		RBXASSERT(!a0->getAnchored() || !a1->getAnchored());
+		RBXASSERT(a0->inOrDownstreamOfStage(this) || a1->inOrDownstreamOfStage(this));
+
+		bool a0Awoken = false;
+		bool a1Awoken = false;
+
+		if (!a0->getAnchored() && a0->getSleepStatus() != Sim::AWAKE)
+		{
+			wakeAssembly(a0);
+			a0Awoken = true;
+		}
+
+		if (!a1->getAnchored() && a1->getSleepStatus() != Sim::AWAKE)
+		{
+			wakeAssembly(a1);
+			a1Awoken = true;
+		}
+
+		IWorldStage::onEdgeAdded(e);
+
+		if (a0Awoken)
+			wakeAssemblyAndNeighbors(a0, 8);
+
+		if (a1Awoken)
+			wakeAssemblyAndNeighbors(a1, 8);
+	}
+
+	void SleepStage::onEdgeRemoving(Edge* e)
+	{
+		RBXASSERT(e->inOrDownstreamOfStage(this));
+
+		if (e->downstreamOfStage(this))
+			getDownstreamWS()->onEdgeRemoving(e);
+
+		Assembly* a0 = e->getPrimitive(0)->getAssembly();
+		Assembly* a1 = e->getPrimitive(1)->getAssembly();
+		RBXASSERT(a0->inOrDownstreamOfStage(this) || a1->inOrDownstreamOfStage(this));
+
+		e->removeFromStage(this);
+
+		if (a0->getSleepStatus() != Sim::AWAKE)
+			wakeAssemblyAndNeighbors(a0, 8);
+		if (a1->getSleepStatus() != Sim::AWAKE)
+			wakeAssemblyAndNeighbors(a1, 8);
+	}
+
+	bool SleepStage::shouldSleep(Assembly* assembly)
+	{
+		RBXASSERT(assembly->getSleepStatus() == Sim::AWAKE);
+		if (!assembly->getCanSleep())
+			return false;
+		if (!assembly->calcShouldSleep())
+			return false;
+
+		typedef std::set<Edge*>::iterator Iterator;
+		for (Iterator it = assembly->getExternalEdges().begin(); it != assembly->getExternalEdges().end(); it++)
+		{
+			Edge* e = *it;
+			if (e->inOrDownstreamOfStage(this))
+			{
+				Assembly* otherAssembly = assembly->otherAssembly(e);
+				if (otherAssembly->getSleepStatus() == Sim::AWAKE &&
+					!otherAssembly->getAnchored() &&
+					!otherAssembly->okNeighborSleep())
+					return false;
+			}
+		}
+		return true;
+	}
+
+	Sim::AssemblyState SleepStage::shouldWakeOrSleepDeeply(Assembly* assembly)
+	{
+		RBXASSERT(assembly->getSleepStatus() == Sim::SLEEPING_CHECKING);
+		if (!assembly->getCanSleep())
+			return Sim::AWAKE;
+
+		typedef std::set<Edge*>::iterator Iterator;
+		bool deep = true;
+
+		for (Iterator it = assembly->getExternalEdges().begin(); it != assembly->getExternalEdges().end(); it++)
+		{
+			Edge* e = *it;
+			if (e->inOrDownstreamOfStage(this))
+			{
+				Assembly* otherAssembly = assembly->otherAssembly(e);
+				if (otherAssembly->getSleepStatus() == Sim::AWAKE && !otherAssembly->getAnchored())
+				{
+					deep = false;
+					if (otherAssembly->forceNeighborAwake())
+						return Sim::AWAKE;
+				}
+			}
+		}
+		return deep ? Sim::SLEEPING_DEEPLY : Sim::SLEEPING_CHECKING;
+	}
+
+	void SleepStage::goToSleep(Assembly* assembly)
+	{
+		RBXASSERT(assembly->getSleepStatus() == Sim::AWAKE);
+
+		typedef std::set<Edge*>::iterator Iterator;
+		for (Iterator it = assembly->getExternalEdges().begin(); it != assembly->getExternalEdges().end(); it++)
+		{
+			Edge* e = *it;
+			if (e->downstreamOfStage(this))
+			{
+				Assembly* otherAssembly = assembly->otherAssembly(e);
+				if (!otherAssembly->moving())
+				{
+					getDownstreamWS()->onEdgeRemoving(e);
+				}
+			}
+		}
+
+		changeSleepStatus(assembly, Sim::SLEEPING_CHECKING);
+
+		getCollisionStage()->onSleepChanged(assembly);
+	}
+
+	void SleepStage::wakeAssembly(Assembly* assembly)
+	{
+		RBXASSERT(assembly->getSleepStatus() != Sim::AWAKE);
+		RBXASSERT(!assembly->getAnchored());
+		RBXASSERT(assembly->inOrDownstreamOfStage(this));
+
+		changeSleepStatus(assembly, Sim::AWAKE);
+	}
+
+	void SleepStage::wakeAssemblyAndNeighbors(Assembly* assembly, int recurseDepth)
+	{
+		if (assembly->getAnchored())
+			return;
+
+		if (assembly->getSleepStatus() != Sim::AWAKE)
+			wakeAssembly(assembly);
+
+		typedef std::set<Edge*>::iterator Iterator;
+		for (Iterator it = assembly->getExternalEdges().begin(); it != assembly->getExternalEdges().end(); it++)
+		{
+			Edge* e = *it;
+			if (e->inStage(this))
+			{
+				if (!e->downstreamOfStage(this))
+				{
+					getDownstreamWS()->onEdgeAdded(e);
+				}
+
+				Assembly* otherAssembly = assembly->otherAssembly(e);
+				if (recurseDepth > 0)
+				{
+					if (otherAssembly->getSleepStatus() != Sim::AWAKE)
+					{
+						wakeAssemblyAndNeighbors(otherAssembly, recurseDepth - 1);
+					}
+				}
+				else
+				{
+					if (otherAssembly->getSleepStatus() == Sim::SLEEPING_DEEPLY)
+					{
+						changeSleepStatus(otherAssembly, Sim::SLEEPING_CHECKING);
+					}
+				}
+			}
+		}
+
+		getCollisionStage()->onSleepChanged(assembly);
+	}
+
+	void SleepStage::onLosingContact(const G3D::Array<Contact*>& separating)
+	{
+		for (int i = 0; i < separating.size(); ++i)
+		{
+			Contact* c = separating[i];
+
+			Assembly* a0 = c->getPrimitive(0)->getAssembly();
+			Assembly* a1 = c->getPrimitive(1)->getAssembly();
+
+			RBXASSERT(a0->inOrDownstreamOfStage(this) || a1->inOrDownstreamOfStage(this));
+
+			if (a0->getSleepStatus() != Sim::AWAKE)
+				wakeAssemblyAndNeighbors(a0, 8);
+			if (a1->getSleepStatus() != Sim::AWAKE)
+				wakeAssemblyAndNeighbors(a1, 8);
+		}
+
+		for (int i = 0; i < separating.size(); ++i)
+		{
+			Contact* c = separating[i];
+
+			RBXASSERT(c->inOrDownstreamOfStage(this));
+			if (c->downstreamOfStage(this))
+			{
+				getDownstreamWS()->onEdgeRemoving(c);
+			}
+
+			RBXASSERT(c->inStage(this));
+			c->removeFromStage(this);
+		}
+
+		getCollisionStage()->onLosingContact(separating);
+	}
+
+	void SleepStage::onWakeUpRequest(Assembly* assembly)
+	{
+		if (assembly->inPipeline() && assembly->inOrDownstreamOfStage(this) && assembly->getSleepStatus() != Sim::AWAKE)
+			wakeAssemblyAndNeighbors(assembly, 8);
+	}
+
+	void SleepStage::checkAwakeAssemblies(bool throttling)
+	{
+		G3D::Array<Assembly*> tempToSleep;
+
+		typedef std::set<Assembly*>::iterator Iterator;
+		for (Iterator it = awake.begin(); it != awake.end(); it++)
+		{
+			Assembly* assembly = *it;
+			RBXASSERT(!assembly->getAnchored());
+
+			if (!throttling || !assembly->getMainPrimitive()->getBody()->getCanThrottle())
+			{
+				if (shouldSleep(assembly))
+				{
+					assembly->incrementSleepCount();
+					if (assembly->getSleepCount() > stepsToSleep())
+					{
+						assembly->setSleepCount(0);
+						tempToSleep.append(assembly);
+					}
+				}
+				else
+				{
+					assembly->setSleepCount(0);
+				}
+			}
+		}
+
+		for (int i = 0; i < tempToSleep.size(); ++i)
+		{
+			goToSleep(tempToSleep[i]);
+		}
+	}
+
+	void SleepStage::checkSleepingAssemblies()
+	{
+		G3D::Array<Assembly*> tempToWake;
+		G3D::Array<Assembly*> tempToDeep;
+
+		typedef std::set<Assembly*>::iterator Iterator;
+		for (Iterator it = sleepingChecking.begin(); it != sleepingChecking.end(); it++)
+		{
+			Assembly* assembly = *it;
+			RBXASSERT(!assembly->getAnchored());
+			RBXASSERT(assembly->getSleepCount() == 0);
+
+			Sim::AssemblyState state = shouldWakeOrSleepDeeply(assembly);
+
+			switch (state)
+			{
+			case Sim::AWAKE:
+				tempToWake.append(assembly);
+				break;
+			case Sim::SLEEPING_DEEPLY:
+				tempToDeep.append(assembly);
+				break;
+			}
+		}
+
+		for (int i = 0; i < tempToWake.size(); ++i)
+		{
+			Assembly* assembly = tempToWake[i];
+			wakeAssemblyAndNeighbors(assembly, 0);
+		}
+
+		for (int i = 0; i < tempToDeep.size(); ++i)
+		{
+			Assembly* assembly = tempToDeep[i];
+			changeSleepStatus(assembly, Sim::SLEEPING_DEEPLY);
+		}
+	}
+}

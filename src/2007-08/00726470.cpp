@@ -1,67 +1,378 @@
 // from server: 100% by auto
-// roc 2007-08 00726470  unit: boost::thread_resource_error  size: 141 bytes
-// Make this compile to the exact bytes below, then: roc check 2007-08 00726470
-//
-// 00726470  83ec14               sub esp, 0x14
-// 00726473  53                   push ebx
-// 00726474  8b1d20d27700         mov ebx, dword ptr [0x77d220]
-// 0072647a  55                   push ebp
-// 0072647b  56                   push esi
-// 0072647c  8b742424             mov esi, dword ptr [esp + 0x24]
-// 00726480  57                   push edi
-// 00726481  33ed                 xor ebp, ebp
-// 00726483  8b0e                 mov ecx, dword ptr [esi]
-// 00726485  8b5604               mov edx, dword ptr [esi + 4]
-// 00726488  8d442410             lea eax, [esp + 0x10]
-// 0072648c  50                   push eax
-// 0072648d  83ec10               sub esp, 0x10
-// 00726490  8bc4                 mov eax, esp
-// 00726492  8908                 mov dword ptr [eax], ecx
-// 00726494  8b4e08               mov ecx, dword ptr [esi + 8]
-// 00726497  895004               mov dword ptr [eax + 4], edx
-// 0072649a  8b560c               mov edx, dword ptr [esi + 0xc]
-// 0072649d  894808               mov dword ptr [eax + 8], ecx
-// 007264a0  89500c               mov dword ptr [eax + 0xc], edx
-// 007264a3  e838feffff           call 0x7262e0
-// 007264a8  8b442424             mov eax, dword ptr [esp + 0x24]
-// 007264ac  83c414               add esp, 0x14
-// 007264af  50                   push eax
-// 007264b0  ffd3                 call ebx
-// 007264b2  8d4c2414             lea ecx, [esp + 0x14]
-// 007264b6  6a01                 push 1
-// 007264b8  51                   push ecx
-// 007264b9  e8c2020000           call 0x726780
-// 007264be  8b06                 mov eax, dword ptr [esi]
-// 007264c0  8b54241c             mov edx, dword ptr [esp + 0x1c]
-// 007264c4  8b4e04               mov ecx, dword ptr [esi + 4]
-// 007264c7  8b7c2420             mov edi, dword ptr [esp + 0x20]
-// 007264cb  83c408               add esp, 8
-// 007264ce  3bc2                 cmp eax, edx
-// 007264d0  751f                 jne 0x7264f1
-// 007264d2  3bcf                 cmp ecx, edi
-// 007264d4  751d                 jne 0x7264f3
-// 007264d6  8b4608               mov eax, dword ptr [esi + 8]
-// 007264d9  2b44241c             sub eax, dword ptr [esp + 0x1c]
-// 007264dd  85c0                 test eax, eax
-// 007264df  7e08                 jle 0x7264e9
-// 007264e1  83c501               add ebp, 1
-// 007264e4  83fd05               cmp ebp, 5
-// 007264e7  7c9a                 jl 0x726483
-// 007264e9  5f                   pop edi
-// 007264ea  5e                   pop esi
-// 007264eb  5d                   pop ebp
-// 007264ec  5b                   pop ebx
-// 007264ed  83c414               add esp, 0x14
-// 007264f0  c3                   ret 
-// 007264f1  3bcf                 cmp ecx, edi
-// 007264f3  7cf4                 jl 0x7264e9
-// 007264f5  7fea                 jg 0x7264e1
-// 007264f7  3bc2                 cmp eax, edx
-// 007264f9  76ee                 jbe 0x7264e9
-// 007264fb  ebe4                 jmp 0x7264e1
-// library boost-1.34.1/libs\thread\src\thread.cpp (function ?sleep@thread@boost@@SAXABUxtime@2@@Z)
-
 // roc-lang: cpp
 // roc-cl: 50727
 // roc-flags: /O2 /GS- /EHsc /MD
 // roc-lib: boost-1.34.1 libs/thread/src/thread.cpp
+
+// Candidate translation unit (score above; library headers required).
+// Copyright (C) 2001-2003
+// William E. Kempf
+//
+//  Distributed under the Boost Software License, Version 1.0. (See accompanying 
+//  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
+#include <boost/thread/detail/config.hpp>
+
+#include <boost/thread/thread.hpp>
+#include <boost/thread/xtime.hpp>
+#include <boost/thread/condition.hpp>
+#include <cassert>
+
+#if defined(BOOST_HAS_WINTHREADS)
+#   include <windows.h>
+#   if !defined(BOOST_NO_THREADEX)
+#      include <process.h>
+#   endif
+#elif defined(BOOST_HAS_MPTASKS)
+#   include <DriverServices.h>
+
+#   include "init.hpp"
+#   include "safe.hpp"
+#   include <boost/thread/tss.hpp>
+#endif
+
+#include "timeconv.inl"
+
+#if defined(BOOST_HAS_WINTHREADS)
+#   include "boost/thread/detail/tss_hooks.hpp"
+#endif
+
+namespace {
+
+#if defined(BOOST_HAS_WINTHREADS) && defined(BOOST_NO_THREADEX)
+// Windows CE doesn't define _beginthreadex
+
+struct ThreadProxyData
+{
+    typedef unsigned (__stdcall* func)(void*);
+    func start_address_;
+    void* arglist_;
+    ThreadProxyData(func start_address,void* arglist) : start_address_(start_address), arglist_(arglist) {}
+};
+
+DWORD WINAPI ThreadProxy(LPVOID args)
+{
+    ThreadProxyData* data=reinterpret_cast<ThreadProxyData*>(args);
+    DWORD ret=data->start_address_(data->arglist_);
+    delete data;
+    return ret;
+}
+
+inline unsigned _beginthreadex(void* security, unsigned stack_size, unsigned (__stdcall* start_address)(void*),
+void* arglist, unsigned initflag,unsigned* thrdaddr)
+{
+    DWORD threadID;
+    HANDLE hthread=CreateThread(static_cast<LPSECURITY_ATTRIBUTES>(security),stack_size,ThreadProxy,
+        new ThreadProxyData(start_address,arglist),initflag,&threadID);
+    if (hthread!=0)
+        *thrdaddr=threadID;
+    return reinterpret_cast<unsigned>(hthread);
+}
+#endif
+
+class thread_param
+{
+public:
+    thread_param(const boost::function0<void>& threadfunc)
+        : m_threadfunc(threadfunc), m_started(false)
+    {
+    }
+    void wait()
+    {
+        boost::mutex::scoped_lock scoped_lock(m_mutex);
+        while (!m_started)
+            m_condition.wait(scoped_lock);
+    }
+    void started()
+    {
+        boost::mutex::scoped_lock scoped_lock(m_mutex);
+        m_started = true;
+        m_condition.notify_one();
+    }
+
+    boost::mutex m_mutex;
+    boost::condition m_condition;
+    const boost::function0<void>& m_threadfunc;
+    bool m_started;
+};
+
+} // unnamed namespace
+
+extern "C" {
+#if defined(BOOST_HAS_WINTHREADS)
+    unsigned __stdcall thread_proxy(void* param)
+#elif defined(BOOST_HAS_PTHREADS)
+        static void* thread_proxy(void* param)
+#elif defined(BOOST_HAS_MPTASKS)
+        static OSStatus thread_proxy(void* param)
+#endif
+    {
+        //try
+        //{
+            thread_param* p = static_cast<thread_param*>(param);
+            boost::function0<void> threadfunc = p->m_threadfunc;
+            p->started();
+            threadfunc();
+#if defined(BOOST_HAS_WINTHREADS)
+            on_thread_exit();
+#endif
+        //}
+        //catch (...)
+        //{
+#if defined(BOOST_HAS_WINTHREADS)
+        //    on_thread_exit();
+#endif
+        //}
+#if defined(BOOST_HAS_MPTASKS)
+        ::boost::detail::thread_cleanup();
+#endif
+        return 0;
+    }
+
+}
+
+namespace boost {
+
+thread::thread()
+    : m_joinable(false)
+{
+#if defined(BOOST_HAS_WINTHREADS)
+    m_thread = reinterpret_cast<void*>(GetCurrentThread());
+    m_id = GetCurrentThreadId();
+#elif defined(BOOST_HAS_PTHREADS)
+    m_thread = pthread_self();
+#elif defined(BOOST_HAS_MPTASKS)
+    threads::mac::detail::thread_init();
+    threads::mac::detail::create_singletons();
+    m_pTaskID = MPCurrentTaskID();
+    m_pJoinQueueID = kInvalidID;
+#endif
+}
+
+thread::thread(const function0<void>& threadfunc)
+    : m_joinable(true)
+{
+    thread_param param(threadfunc);
+#if defined(BOOST_HAS_WINTHREADS)
+    m_thread = reinterpret_cast<void*>(_beginthreadex(0, 0, &thread_proxy,
+                                           &param, 0, &m_id));
+    if (!m_thread)
+        throw thread_resource_error();
+#elif defined(BOOST_HAS_PTHREADS)
+    int res = 0;
+    res = pthread_create(&m_thread, 0, &thread_proxy, &param);
+    if (res != 0)
+        throw thread_resource_error();
+#elif defined(BOOST_HAS_MPTASKS)
+    threads::mac::detail::thread_init();
+    threads::mac::detail::create_singletons();
+    OSStatus lStatus = noErr;
+
+    m_pJoinQueueID = kInvalidID;
+    m_pTaskID = kInvalidID;
+
+    lStatus = MPCreateQueue(&m_pJoinQueueID);
+    if (lStatus != noErr) throw thread_resource_error();
+
+    lStatus = MPCreateTask(&thread_proxy, &param, 0UL, m_pJoinQueueID, NULL,
+        NULL, 0UL, &m_pTaskID);
+    if (lStatus != noErr)
+    {
+        lStatus = MPDeleteQueue(m_pJoinQueueID);
+        assert(lStatus == noErr);
+        throw thread_resource_error();
+    }
+#endif
+    param.wait();
+}
+
+thread::~thread()
+{
+    if (m_joinable)
+    {
+#if defined(BOOST_HAS_WINTHREADS)
+        int res = 0;
+        res = CloseHandle(reinterpret_cast<HANDLE>(m_thread));
+        assert(res);
+#elif defined(BOOST_HAS_PTHREADS)
+        pthread_detach(m_thread);
+#elif defined(BOOST_HAS_MPTASKS)
+        assert(m_pJoinQueueID != kInvalidID);
+        OSStatus lStatus = MPDeleteQueue(m_pJoinQueueID);
+        assert(lStatus == noErr);
+#endif
+    }
+}
+
+bool thread::operator==(const thread& other) const
+{
+#if defined(BOOST_HAS_WINTHREADS)
+    return other.m_id == m_id;
+#elif defined(BOOST_HAS_PTHREADS)
+    return pthread_equal(m_thread, other.m_thread) != 0;
+#elif defined(BOOST_HAS_MPTASKS)
+    return other.m_pTaskID == m_pTaskID;
+#endif
+}
+
+bool thread::operator!=(const thread& other) const
+{
+    return !operator==(other);
+}
+
+void thread::join()
+{
+    assert(m_joinable); //See race condition comment below
+    int res = 0;
+#if defined(BOOST_HAS_WINTHREADS)
+    res = WaitForSingleObject(reinterpret_cast<HANDLE>(m_thread), INFINITE);
+    assert(res == WAIT_OBJECT_0);
+    res = CloseHandle(reinterpret_cast<HANDLE>(m_thread));
+    assert(res);
+#elif defined(BOOST_HAS_PTHREADS)
+    res = pthread_join(m_thread, 0);
+    assert(res == 0);
+#elif defined(BOOST_HAS_MPTASKS)
+    OSStatus lStatus = threads::mac::detail::safe_wait_on_queue(
+        m_pJoinQueueID, NULL, NULL, NULL, kDurationForever);
+    assert(lStatus == noErr);
+#endif
+    // This isn't a race condition since any race that could occur would
+    // have us in undefined behavior territory any way.
+    m_joinable = false;
+}
+
+void thread::sleep(const xtime& xt)
+{
+    for (int foo=0; foo < 5; ++foo)
+    {
+#if defined(BOOST_HAS_WINTHREADS)
+        int milliseconds;
+        to_duration(xt, milliseconds);
+        Sleep(milliseconds);
+#elif defined(BOOST_HAS_PTHREADS)
+#   if defined(BOOST_HAS_PTHREAD_DELAY_NP)
+        timespec ts;
+        to_timespec_duration(xt, ts);
+        int res = 0;
+        res = pthread_delay_np(&ts);
+        assert(res == 0);
+#   elif defined(BOOST_HAS_NANOSLEEP)
+        timespec ts;
+        to_timespec_duration(xt, ts);
+
+        //  nanosleep takes a timespec that is an offset, not
+        //  an absolute time.
+        nanosleep(&ts, 0);
+#   else
+        mutex mx;
+        mutex::scoped_lock lock(mx);
+        condition cond;
+        cond.timed_wait(lock, xt);
+#   endif
+#elif defined(BOOST_HAS_MPTASKS)
+        int microseconds;
+        to_microduration(xt, microseconds);
+        Duration lMicroseconds(kDurationMicrosecond * microseconds);
+        AbsoluteTime sWakeTime(DurationToAbsolute(lMicroseconds));
+        threads::mac::detail::safe_delay_until(&sWakeTime);
+#endif
+        xtime cur;
+        xtime_get(&cur, TIME_UTC);
+        if (xtime_cmp(xt, cur) <= 0)
+            return;
+    }
+}
+
+void thread::yield()
+{
+#if defined(BOOST_HAS_WINTHREADS)
+    Sleep(0);
+#elif defined(BOOST_HAS_PTHREADS)
+#   if defined(BOOST_HAS_SCHED_YIELD)
+    int res = 0;
+    res = sched_yield();
+    assert(res == 0);
+#   elif defined(BOOST_HAS_PTHREAD_YIELD)
+    int res = 0;
+    res = pthread_yield();
+    assert(res == 0);
+#   else
+    xtime xt;
+    xtime_get(&xt, TIME_UTC);
+    sleep(xt);
+#   endif
+#elif defined(BOOST_HAS_MPTASKS)
+    MPYield();
+#endif
+}
+
+thread_group::thread_group()
+{
+}
+
+thread_group::~thread_group()
+{
+    // We shouldn't have to scoped_lock here, since referencing this object
+    // from another thread while we're deleting it in the current thread is
+    // going to lead to undefined behavior any way.
+    for (std::list<thread*>::iterator it = m_threads.begin();
+         it != m_threads.end(); ++it)
+    {
+        delete (*it);
+    }
+}
+
+thread* thread_group::create_thread(const function0<void>& threadfunc)
+{
+    // No scoped_lock required here since the only "shared data" that's
+    // modified here occurs inside add_thread which does scoped_lock.
+    std::auto_ptr<thread> thrd(new thread(threadfunc));
+    add_thread(thrd.get());
+    return thrd.release();
+}
+
+void thread_group::add_thread(thread* thrd)
+{
+    mutex::scoped_lock scoped_lock(m_mutex);
+
+    // For now we'll simply ignore requests to add a thread object multiple
+    // times. Should we consider this an error and either throw or return an
+    // error value?
+    std::list<thread*>::iterator it = std::find(m_threads.begin(),
+        m_threads.end(), thrd);
+    assert(it == m_threads.end());
+    if (it == m_threads.end())
+        m_threads.push_back(thrd);
+}
+
+void thread_group::remove_thread(thread* thrd)
+{
+    mutex::scoped_lock scoped_lock(m_mutex);
+
+    // For now we'll simply ignore requests to remove a thread object that's
+    // not in the group. Should we consider this an error and either throw or
+    // return an error value?
+    std::list<thread*>::iterator it = std::find(m_threads.begin(),
+        m_threads.end(), thrd);
+    assert(it != m_threads.end());
+    if (it != m_threads.end())
+        m_threads.erase(it);
+}
+
+void thread_group::join_all()
+{
+    mutex::scoped_lock scoped_lock(m_mutex);
+    for (std::list<thread*>::iterator it = m_threads.begin();
+         it != m_threads.end(); ++it)
+    {
+        (*it)->join();
+    }
+}
+
+int thread_group::size()
+{
+        return m_threads.size();
+}
+
+} // namespace boost

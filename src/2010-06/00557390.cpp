@@ -1,85 +1,178 @@
 // from server: 100% by auto
-// roc 2010-06 00557390  unit: seg_00550000  size: 276 bytes
-// Make this compile to the exact bytes below, then: roc check 2010-06 00557390
-//
-// 00557390  6aff                 push -1
-// 00557392  68dc129900           push 0x9912dc
-// 00557397  64a100000000         mov eax, dword ptr fs:[0]
-// 0055739d  50                   push eax
-// 0055739e  64892500000000       mov dword ptr fs:[0], esp
-// 005573a5  81ecc4000000         sub esp, 0xc4
-// 005573ab  55                   push ebp
-// 005573ac  8bac24dc000000       mov ebp, dword ptr [esp + 0xdc]
-// 005573b3  56                   push esi
-// 005573b4  57                   push edi
-// 005573b5  8bbc24e8000000       mov edi, dword ptr [esp + 0xe8]
-// 005573bc  57                   push edi
-// 005573bd  55                   push ebp
-// 005573be  c744241400000000     mov dword ptr [esp + 0x14], 0
-// 005573c6  ff15e0a79e00         call dword ptr [0x9ea7e0]
-// 005573cc  40                   inc eax
-// 005573cd  83c408               add esp, 8
-// 005573d0  3da1000000           cmp eax, 0xa1
-// 005573d5  0f8e8b000000         jle 0x557466
-// 005573db  3d40420f00           cmp eax, 0xf4240
-// 005573e0  7d26                 jge 0x557408
-// 005573e2  6841420f00           push 0xf4241
-// 005573e7  e8b437fbff           call 0x50aba0
-// 005573ec  57                   push edi
-// 005573ed  55                   push ebp
-// 005573ee  8bf0                 mov esi, eax
-// 005573f0  6840420f00           push 0xf4240
-// 005573f5  56                   push esi
-// 005573f6  ff156ca79e00         call dword ptr [0x9ea76c]
-// 005573fc  83c414               add esp, 0x14
-// 005573ff  c68640420f0000       mov byte ptr [esi + 0xf4240], 0
-// 00557406  eb14                 jmp 0x55741c
-// 00557408  50                   push eax
-// 00557409  e89237fbff           call 0x50aba0
-// 0055740e  57                   push edi
-// 0055740f  8bf0                 mov esi, eax
-// 00557411  55                   push ebp
-// 00557412  56                   push esi
-// 00557413  ff15dca79e00         call dword ptr [0x9ea7dc]
-// 00557419  83c410               add esp, 0x10
-// 0055741c  56                   push esi
-// 0055741d  8d4c2414             lea ecx, [esp + 0x14]
-// 00557421  ff1510a49e00         call dword ptr [0x9ea410]
-// 00557427  56                   push esi
-// 00557428  c78424dc00000000000000 mov dword ptr [esp + 0xdc], 0
-// 00557433  e87837fbff           call 0x50abb0
-// 00557438  8bb424e4000000       mov esi, dword ptr [esp + 0xe4]
-// 0055743f  83c404               add esp, 4
-// 00557442  8d442410             lea eax, [esp + 0x10]
-// 00557446  50                   push eax
-// 00557447  8bce                 mov ecx, esi
-// 00557449  ff150ca49e00         call dword ptr [0x9ea40c]
-// 0055744f  8d4c2410             lea ecx, [esp + 0x10]
-// 00557453  c78424d8000000ffffffff mov dword ptr [esp + 0xd8], 0xffffffff
-// 0055745e  ff1500a49e00         call dword ptr [0x9ea400]
-// 00557464  eb24                 jmp 0x55748a
-// 00557466  57                   push edi
-// 00557467  8d4c2430             lea ecx, [esp + 0x30]
-// 0055746b  55                   push ebp
-// 0055746c  51                   push ecx
-// 0055746d  ff15dca79e00         call dword ptr [0x9ea7dc]
-// 00557473  8bb424ec000000       mov esi, dword ptr [esp + 0xec]
-// 0055747a  83c40c               add esp, 0xc
-// 0055747d  8d54242c             lea edx, [esp + 0x2c]
-// 00557481  52                   push edx
-// 00557482  8bce                 mov ecx, esi
-// 00557484  ff1510a49e00         call dword ptr [0x9ea410]
-// 0055748a  8b8c24d0000000       mov ecx, dword ptr [esp + 0xd0]
-// 00557491  5f                   pop edi
-// 00557492  8bc6                 mov eax, esi
-// 00557494  5e                   pop esi
-// 00557495  5d                   pop ebp
-// 00557496  64890d00000000       mov dword ptr fs:[0], ecx
-// 0055749d  81c4d0000000         add esp, 0xd0
-// 005574a3  c3                   ret 
-// library g3d-6.09/G3Dcpp\format.cpp (function ?vformat@G3D@@YA?AV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PBDPAD@Z)
-
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD
 // roc-lib: g3d-6.09 G3Dcpp/format.cpp
+
+// Candidate translation unit (score above; library headers required).
+/**
+ @file format.cpp
+
+ @author Morgan McGuire, graphics3d.com
+
+ @created 2000-09-09
+ @edited  2006-04-30
+*/
+
+#include "G3D/format.h"
+#include "G3D/platform.h"
+#include "G3D/System.h"
+
+#ifdef G3D_WIN32
+    #include <math.h>
+    #define vsnprintf _vsnprintf
+    #define NEWLINE "\r\n"
+#else
+    #include <stdarg.h>
+    #define NEWLINE "\n"
+#endif
+
+#ifdef _MSC_VER
+    // disable: "C++ exception handler used"
+#   pragma warning (push)
+#   pragma warning (disable : 4530)
+#endif // _MSC_VER
+
+// If your platform does not have vsnprintf, you can find a
+// implementation at http://www.ijs.si/software/snprintf/
+
+namespace G3D {
+
+std::string __cdecl format(const char* fmt,...) {
+    va_list argList;
+    va_start(argList,fmt);
+    std::string result = vformat(fmt, argList);
+    va_end(argList);
+
+    return result;
+}
+
+#if defined(G3D_WIN32) && (_MSC_VER >= 1300)
+// Both MSVC6 and 7 seem to use the non-standard vsnprintf
+// so we are using vscprintf to determine buffer size, however
+// only MSVC7 headers include vscprintf for some reason.
+std::string vformat(const char *fmt, va_list argPtr) {
+    // We draw the line at a 1MB string.
+    const int maxSize = 1000000;
+
+    // If the string is less than 161 characters,
+    // allocate it on the stack because this saves
+    // the malloc/free time.
+    const int bufSize = 161;
+	char stackBuffer[bufSize];
+
+    int actualSize = _vscprintf(fmt, argPtr) + 1;
+
+    if (actualSize > bufSize) {
+
+        // Now use the heap.
+        char* heapBuffer = NULL;
+
+        if (actualSize < maxSize) {
+
+            heapBuffer = (char*)System::malloc(maxSize + 1);
+            vsnprintf(heapBuffer, maxSize, fmt, argPtr);
+            heapBuffer[maxSize] = '\0';
+        } else {
+            heapBuffer = (char*)System::malloc(actualSize);
+            vsprintf(heapBuffer, fmt, argPtr);            
+        }
+
+        std::string formattedString(heapBuffer);
+        System::free(heapBuffer);
+        return formattedString;
+    } else {
+
+        vsprintf(stackBuffer, fmt, argPtr);
+        return std::string(stackBuffer);
+    }
+}
+
+#elif defined(G3D_WIN32) && (_MSC_VER < 1300)
+
+std::string vformat(const char *fmt, va_list argPtr) {
+    // We draw the line at a 1MB string.
+    const int maxSize = 1000000;
+
+    // If the string is less than 161 characters,
+    // allocate it on the stack because this saves
+    // the malloc/free time.
+    const int bufSize = 161;
+	char stackBuffer[bufSize];
+
+    int actualWritten = vsnprintf(stackBuffer, bufSize, fmt, argPtr);
+
+    // Not a big enough buffer, bufSize characters written
+    if (actualWritten == -1) {
+
+        int heapSize = 512;
+        double powSize = 1.0;
+        char* heapBuffer = (char*)System::malloc(heapSize);
+        
+        while ((vsnprintf(heapBuffer, heapSize, fmt, argPtr) == -1) &&
+            (heapSize  < maxSize)) {
+
+            heapSize = iCeil(heapSize * ::pow((double)2.0, powSize++));
+            heapBuffer = (char*)System::realloc(heapBuffer, heapSize);
+        }
+
+        heapBuffer[heapSize-1] = '\0';
+
+        std::string heapString(heapBuffer);
+        System::free(heapBuffer);
+
+        return heapString;
+    } else {
+
+        return std::string(stackBuffer);
+    }
+}
+
+#else
+
+// glibc 2.1 has been updated to the C99 standard
+std::string vformat(const char* fmt, va_list argPtr) {
+    // If the string is less than 161 characters,
+    // allocate it on the stack because this saves
+    // the malloc/free time.  The number 161 is chosen
+    // to support two lines of text on an 80 character
+    // console (plus the null terminator).
+    const int bufSize = 161;
+    char stackBuffer[bufSize];
+
+    int numChars = vsnprintf(stackBuffer, bufSize, fmt, argPtr);
+
+    if (numChars >= bufSize) {
+      // We didn't allocate a big enough string.
+      char* heapBuffer = (char*)System::malloc((numChars + 1) * sizeof(char));
+
+      assert(heapBuffer);
+      int numChars2 = vsnprintf(heapBuffer, numChars + 1, fmt, argPtr);
+      assert(numChars2 == numChars);
+
+      std::string result(heapBuffer);
+      
+      System::free(heapBuffer);
+
+      return result;
+
+    } else {
+
+      return std::string(stackBuffer);
+
+    }
+}
+
+#endif
+
+} // namespace
+
+#ifdef G3D_WIN32
+#   undef vsnprintf
+#endif
+
+#ifdef _MSC_VER
+#   pragma warning (pop)
+#endif
+
+#undef NEWLINE

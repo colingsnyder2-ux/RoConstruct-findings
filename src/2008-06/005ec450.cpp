@@ -1,98 +1,252 @@
-// roc 2008-06 005ec450  unit: RBX::Sky  size: 280 bytes
-// Make this compile to the exact bytes below, then: roc check 2008-06 005ec450
-//
-// 005ec450  8b44240c             mov eax, dword ptr [esp + 0xc]
-// 005ec454  83f805               cmp eax, 5
-// 005ec457  0f87a9000000         ja 0x5ec506
-// 005ec45d  ff248550c55e00       jmp dword ptr [eax*4 + 0x5ec550]
-// 005ec464  8b4c2408             mov ecx, dword ptr [esp + 8]
-// 005ec468  d94108               fld dword ptr [ecx + 8]
-// 005ec46b  8b442404             mov eax, dword ptr [esp + 4]
-// 005ec46f  d9e0                 fchs 
-// 005ec471  d918                 fstp dword ptr [eax]
-// 005ec473  d94104               fld dword ptr [ecx + 4]
-// 005ec476  d95804               fstp dword ptr [eax + 4]
-// 005ec479  d901                 fld dword ptr [ecx]
-// 005ec47b  d95808               fstp dword ptr [eax + 8]
-// 005ec47e  c3                   ret 
-// 005ec47f  8b4c2408             mov ecx, dword ptr [esp + 8]
-// 005ec483  d901                 fld dword ptr [ecx]
-// 005ec485  8b442404             mov eax, dword ptr [esp + 4]
-// 005ec489  d9e0                 fchs 
-// 005ec48b  d918                 fstp dword ptr [eax]
-// 005ec48d  d94108               fld dword ptr [ecx + 8]
-// 005ec490  d95804               fstp dword ptr [eax + 4]
-// 005ec493  d94104               fld dword ptr [ecx + 4]
-// 005ec496  d95808               fstp dword ptr [eax + 8]
-// 005ec499  c3                   ret 
-// 005ec49a  8b4c2408             mov ecx, dword ptr [esp + 8]
-// 005ec49e  8b442404             mov eax, dword ptr [esp + 4]
-// 005ec4a2  d901                 fld dword ptr [ecx]
-// 005ec4a4  d918                 fstp dword ptr [eax]
-// 005ec4a6  d94104               fld dword ptr [ecx + 4]
-// 005ec4a9  d95804               fstp dword ptr [eax + 4]
-// 005ec4ac  d94108               fld dword ptr [ecx + 8]
-// 005ec4af  d95808               fstp dword ptr [eax + 8]
-// 005ec4b2  c3                   ret 
-// 005ec4b3  8b4c2408             mov ecx, dword ptr [esp + 8]
-// 005ec4b7  8b442404             mov eax, dword ptr [esp + 4]
-// 005ec4bb  d94108               fld dword ptr [ecx + 8]
-// 005ec4be  d918                 fstp dword ptr [eax]
-// 005ec4c0  d94104               fld dword ptr [ecx + 4]
-// 005ec4c3  d95804               fstp dword ptr [eax + 4]
-// 005ec4c6  d901                 fld dword ptr [ecx]
-// 005ec4c8  d9e0                 fchs 
-// 005ec4ca  d95808               fstp dword ptr [eax + 8]
-// 005ec4cd  c3                   ret 
-// 005ec4ce  8b4c2408             mov ecx, dword ptr [esp + 8]
-// 005ec4d2  8b442404             mov eax, dword ptr [esp + 4]
-// 005ec4d6  d901                 fld dword ptr [ecx]
-// 005ec4d8  d918                 fstp dword ptr [eax]
-// 005ec4da  d94108               fld dword ptr [ecx + 8]
-// 005ec4dd  d95804               fstp dword ptr [eax + 4]
-// 005ec4e0  d94104               fld dword ptr [ecx + 4]
-// 005ec4e3  d9e0                 fchs 
-// 005ec4e5  d95808               fstp dword ptr [eax + 8]
-// 005ec4e8  c3                   ret 
-// 005ec4e9  8b4c2408             mov ecx, dword ptr [esp + 8]
-// 005ec4ed  d901                 fld dword ptr [ecx]
-// 005ec4ef  8b442404             mov eax, dword ptr [esp + 4]
-// 005ec4f3  d9e0                 fchs 
-// 005ec4f5  d918                 fstp dword ptr [eax]
-// 005ec4f7  d94104               fld dword ptr [ecx + 4]
-// 005ec4fa  d95804               fstp dword ptr [eax + 4]
-// 005ec4fd  d94108               fld dword ptr [ecx + 8]
-// 005ec500  d9e0                 fchs 
-// 005ec502  d95808               fstp dword ptr [eax + 8]
-// 005ec505  c3                   ret 
-// 005ec506  b801000000           mov eax, 1
-// 005ec50b  840500389700         test byte ptr [0x973800], al
-// 005ec511  751c                 jne 0x5ec52f
-// 005ec513  d9e8                 fld1 
-// 005ec515  090500389700         or dword ptr [0x973800], eax
-// 005ec51b  d91df4379700         fstp dword ptr [0x9737f4]
-// 005ec521  d9ee                 fldz 
-// 005ec523  d915f8379700         fst dword ptr [0x9737f8]
-// 005ec529  d91dfc379700         fstp dword ptr [0x9737fc]
-// 005ec52f  8b442404             mov eax, dword ptr [esp + 4]
-// 005ec533  d905f4379700         fld dword ptr [0x9737f4]
-// 005ec539  d918                 fstp dword ptr [eax]
-// 005ec53b  d905f8379700         fld dword ptr [0x9737f8]
-// 005ec541  d95804               fstp dword ptr [eax + 4]
-// 005ec544  d905fc379700         fld dword ptr [0x9737fc]
-// 005ec54a  d95808               fstp dword ptr [eax + 8]
-// 005ec54d  c3                   ret 
-// 005ec54e  8bff                 mov edi, edi
-// 005ec550  64c45e00             les ebx, ptr fs:[esi]
-// 005ec554  7fc4                 jg 0x5ec51a
-// 005ec556  5e                   pop esi
-// 005ec557  009ac45e00b3         add byte ptr [edx - 0x4cffa13c], bl
-// 005ec55d  c45e00               les ebx, ptr [esi]
-// 005ec560  ce                   into 
-// 005ec561  c45e00               les ebx, ptr [esi]
-// library rbxgs-dll/util\NormalId.cpp (function ?objectToUvw@RBX@@YA?AVVector3@G3D@@ABV23@W4NormalId@1@@Z)
-
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
 // roc-lib: rbxgs-dll util/NormalId.cpp
+
+// Candidate translation unit (score above; library headers required).
+#include "util/NormalId.h"
+#include "util/Debug.h"
+
+using namespace G3D;
+
+namespace RBX
+{
+	NormalId intToNormalId(int num)
+	{
+		return (NormalId)num;
+	}
+
+	bool validNormalId(NormalId id)
+	{
+		return id >= NORM_X && id <= NORM_Z_NEG;
+	}
+
+	NormalId RBX::normalIdOpposite(NormalId normalId)
+	{
+		return (NormalId)((normalId + NORM_X_NEG) % NORM_UNDEFINED);
+	}
+
+	//35% match, too lazy to do better right now
+	const Vector3& normalIdToVector3(NormalId normalId)
+	{
+		switch (normalId)
+		{
+			case NORM_X:
+				{
+				static Vector3 x_0(1.0f, 0.0f, 0.0f);
+				return x_0;
+				}
+			case NORM_Y:
+				{
+				static Vector3 y_0(0.0f, 1.0f, 0.0f);
+				return y_0;
+				}
+			case NORM_Z:
+				{
+				static Vector3 z_0(0.0f, 0.0f, 1.0f);
+				return z_0;
+				}
+			case NORM_X_NEG:
+				{
+				static Vector3 xn_0(-1.0f, 0.0f, 0.0f);
+				return xn_0;
+				}
+			case NORM_Y_NEG:
+				{
+				static Vector3 yn_0(0.0f, -1.0f, 0.0f);
+				return yn_0;
+				}
+			case NORM_Z_NEG:
+				{
+				static Vector3 zn_0(0.0f, 0.0f, -1.0f);
+				return zn_0;
+				}
+		}
+		RBXASSERT(0);
+		return G3D::Vector3::zero();
+	}
+
+	NormalId Vector3ToNormalId(const G3D::Vector3& v)
+	{
+		RBXASSERT((v == Vector3::unitX()) || (v == Vector3::unitY()) || (v == Vector3::unitZ()) || (v == -Vector3::unitX()) || (v == -Vector3::unitY()) || (v == -Vector3::unitZ()));
+		if (v.x == 1.0f)
+			return NORM_X;
+		if (v.y == 1.0f)
+			return NORM_Y;
+		if (v.z == 1.0f)
+			return NORM_Z;
+		if (v.x == -1.0f)
+			return NORM_X_NEG;
+		if (v.y == -1.0f)
+			return NORM_Y_NEG;
+		if (v.z == -1.0f)
+			return NORM_Z_NEG;
+		RBXASSERT(0);
+		return NORM_UNDEFINED;
+	}
+
+	NormalId Matrix3ToNormalId(const G3D::Matrix3& m)
+	{
+		return Vector3ToNormalId(m.getColumn(2));
+	}
+
+	NormalId normalIdToU(NormalId id)
+	{
+		switch (id)
+		{
+		case NORM_X:
+			return NORM_Z_NEG;
+		case NORM_Y:
+			return NORM_X_NEG;
+		case NORM_Z:
+			return NORM_X;
+		case NORM_X_NEG:
+			return NORM_Z;
+		case NORM_Y_NEG:
+			return NORM_X;
+		case NORM_Z_NEG:
+			return NORM_X_NEG;
+		default:
+			RBXASSERT(0);
+			return NORM_Y;
+		}
+	}
+
+	NormalId normalIdToV(NormalId id)
+	{
+		switch (id)
+		{
+		case NORM_X:
+			return NORM_Y;
+		case NORM_Y:
+			return NORM_Z;
+		case NORM_Z:
+			return NORM_Y;
+		case NORM_X_NEG:
+			return NORM_Y;
+		case NORM_Y_NEG:
+			return NORM_Z;
+		case NORM_Z_NEG:
+			return NORM_Y;
+		default:
+			RBXASSERT(0);
+			return NORM_Y;
+		}
+	}
+
+	const G3D::Matrix3& normalIdToMatrix3(NormalId normalId)
+	{
+		switch (normalId)
+		{
+		case NORM_X:
+			{
+				static const G3D::Matrix3 x = normalIdToMatrix3Internal(NORM_X);
+				return x;
+			}
+		case NORM_Y:
+			{
+				static const G3D::Matrix3 y = normalIdToMatrix3Internal(NORM_Y);
+				return y;
+			}
+		case NORM_Z:
+			{
+				static const G3D::Matrix3 z = normalIdToMatrix3Internal(NORM_Z);
+				return z;
+			}
+		case NORM_X_NEG:
+			{
+				static const G3D::Matrix3 xn = normalIdToMatrix3Internal(NORM_X_NEG);
+				return xn;
+			}
+		case NORM_Y_NEG:
+			{
+				static const G3D::Matrix3 yn = normalIdToMatrix3Internal(NORM_Y_NEG);
+				return yn;
+			}
+		case NORM_Z_NEG:
+			{
+				static const G3D::Matrix3 zn = normalIdToMatrix3Internal(NORM_Z_NEG);
+				return zn;
+			}
+		default:
+			{
+				RBXASSERT(0);
+				return G3D::Matrix3::identity();
+			}
+		}
+	}
+
+	G3D::Matrix3 normalIdToMatrix3Internal(NormalId normalId)
+	{
+		G3D::Vector3 uInObject = uvwToObject(G3D::Vector3::unitX(), normalId);
+		G3D::Vector3 vInObject = uvwToObject(G3D::Vector3::unitY(), normalId);
+		G3D::Vector3 wInObject = uvwToObject(G3D::Vector3::unitZ(), normalId);
+
+		RBXASSERT(uInObject == uvwToObject(objectToUvw(uInObject, normalId), normalId));
+		RBXASSERT(vInObject == uvwToObject(objectToUvw(vInObject, normalId), normalId));
+		RBXASSERT(wInObject == uvwToObject(objectToUvw(wInObject, normalId), normalId));
+
+		RBXASSERT(uInObject == normalIdToVector3(normalIdToU(normalId)));
+		RBXASSERT(vInObject == normalIdToVector3(normalIdToV(normalId)));
+		RBXASSERT(wInObject == normalIdToVector3(normalId));
+
+		return G3D::Matrix3(
+			uInObject.x, vInObject.x, wInObject.x,
+			uInObject.y, vInObject.y, wInObject.y,
+			uInObject.z, vInObject.z, wInObject.z
+		);
+	}
+
+	template<NormalId faceId>
+	G3D::Vector3 uvwToObject(const G3D::Vector3& v)
+	{
+		return uvwToObject(v, faceId);
+	}
+
+	G3D::Vector3 uvwToObject(const G3D::Vector3& uvwPt, NormalId faceId)
+	{
+		switch (faceId)
+		{
+		case NORM_X:
+			return G3D::Vector3(uvwPt.z, uvwPt.y, -uvwPt.x);
+		case NORM_Y:
+			return G3D::Vector3(-uvwPt.x, uvwPt.z, uvwPt.y);
+		case NORM_Z:
+			return G3D::Vector3(uvwPt.x, uvwPt.y, uvwPt.z);
+		case NORM_X_NEG:
+			return G3D::Vector3(-uvwPt.z, uvwPt.y, uvwPt.x);
+		case NORM_Y_NEG:
+			return G3D::Vector3(uvwPt.x, -uvwPt.z, uvwPt.y);
+		case NORM_Z_NEG:
+			return G3D::Vector3(-uvwPt.x, uvwPt.y, -uvwPt.z);
+		default:
+			return G3D::Vector3::unitX();
+		}
+	}
+
+	G3D::Vector3 objectToUvw(const G3D::Vector3& objectPt, NormalId faceId)
+	{
+		switch (faceId)
+		{
+		case NORM_X:
+			return G3D::Vector3(-objectPt.z, objectPt.y, objectPt.x);
+		case NORM_Y:
+			return G3D::Vector3(-objectPt.x, objectPt.z, objectPt.y);
+		case NORM_Z:
+			return G3D::Vector3(objectPt.x, objectPt.y, objectPt.z);
+		case NORM_X_NEG:
+			return G3D::Vector3(objectPt.z, objectPt.y, -objectPt.x);
+		case NORM_Y_NEG:
+			return G3D::Vector3(objectPt.x, objectPt.z, -objectPt.y);
+		case NORM_Z_NEG:
+			return G3D::Vector3(-objectPt.x, objectPt.y, -objectPt.z);
+		default:
+			return G3D::Vector3::unitX();
+		}
+	}
+
+	G3D::Vector3 mapToUvw_Legacy(const G3D::Vector3& ptInObject, NormalId faceId)
+	{
+		return uvwToObject(ptInObject, faceId);
+	}
+}

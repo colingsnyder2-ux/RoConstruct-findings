@@ -1,548 +1,1681 @@
 // from server: 100% by auto
-// roc 2008-06 00508c00  unit: G3D::Shader  size: 2731 bytes
-// Make this compile to the exact bytes below, then: roc check 2008-06 00508c00
-//
-// 00508c00  6aff                 push -1
-// 00508c02  6898bc7c00           push 0x7cbc98
-// 00508c07  64a100000000         mov eax, dword ptr fs:[0]
-// 00508c0d  50                   push eax
-// 00508c0e  64892500000000       mov dword ptr fs:[0], esp
-// 00508c15  81ec50010000         sub esp, 0x150
-// 00508c1b  53                   push ebx
-// 00508c1c  56                   push esi
-// 00508c1d  57                   push edi
-// 00508c1e  6816b78000           push 0x80b716
-// 00508c23  8d4c2410             lea ecx, [esp + 0x10]
-// 00508c27  ff1558248000         call dword ptr [0x802458]
-// 00508c2d  6816b78000           push 0x80b716
-// 00508c32  8d4c2464             lea ecx, [esp + 0x64]
-// 00508c36  c784246801000000000000 mov dword ptr [esp + 0x168], 0
-// 00508c41  ff1558248000         call dword ptr [0x802458]
-// 00508c47  6816b78000           push 0x80b716
-// 00508c4c  8d4c242c             lea ecx, [esp + 0x2c]
-// 00508c50  c684246801000001     mov byte ptr [esp + 0x168], 1
-// 00508c58  ff1558248000         call dword ptr [0x802458]
-// 00508c5e  6816b78000           push 0x80b716
-// 00508c63  8d8c2480000000       lea ecx, [esp + 0x80]
-// 00508c6a  c684246801000002     mov byte ptr [esp + 0x168], 2
-// 00508c72  ff1558248000         call dword ptr [0x802458]
-// 00508c78  6828e58100           push 0x81e528
-// 00508c7d  8d4c2448             lea ecx, [esp + 0x48]
-// 00508c81  c684246801000003     mov byte ptr [esp + 0x168], 3
-// 00508c89  ff1558248000         call dword ptr [0x802458]
-// 00508c8f  b304                 mov bl, 4
-// 00508c91  68007a8200           push 0x827a00
-// 00508c96  8d8c249c000000       lea ecx, [esp + 0x9c]
-// 00508c9d  889c2468010000       mov byte ptr [esp + 0x168], bl
-// 00508ca4  ff1558248000         call dword ptr [0x802458]
-// 00508caa  8bb4246c010000       mov esi, dword ptr [esp + 0x16c]
-// 00508cb1  8d44240c             lea eax, [esp + 0xc]
-// 00508cb5  50                   push eax
-// 00508cb6  8d4c2464             lea ecx, [esp + 0x64]
-// 00508cba  51                   push ecx
-// 00508cbb  8d542430             lea edx, [esp + 0x30]
-// 00508cbf  52                   push edx
-// 00508cc0  8d842488000000       lea eax, [esp + 0x88]
-// 00508cc7  50                   push eax
-// 00508cc8  8d4c2454             lea ecx, [esp + 0x54]
-// 00508ccc  51                   push ecx
-// 00508ccd  8d9424ac000000       lea edx, [esp + 0xac]
-// 00508cd4  52                   push edx
-// 00508cd5  8bce                 mov ecx, esi
-// 00508cd7  c684247c01000005     mov byte ptr [esp + 0x17c], 5
-// 00508cdf  e88ca20000           call 0x512f70
-// 00508ce4  8d8c2498000000       lea ecx, [esp + 0x98]
-// 00508ceb  889c2464010000       mov byte ptr [esp + 0x164], bl
-// 00508cf2  ff1568248000         call dword ptr [0x802468]
-// 00508cf8  8d4c2444             lea ecx, [esp + 0x44]
-// 00508cfc  c684246401000003     mov byte ptr [esp + 0x164], 3
-// 00508d04  ff1568248000         call dword ptr [0x802468]
-// 00508d0a  8d4c247c             lea ecx, [esp + 0x7c]
-// 00508d0e  c684246401000002     mov byte ptr [esp + 0x164], 2
-// 00508d16  ff1568248000         call dword ptr [0x802468]
-// 00508d1c  8d4c2428             lea ecx, [esp + 0x28]
-// 00508d20  c684246401000001     mov byte ptr [esp + 0x164], 1
-// 00508d28  ff1568248000         call dword ptr [0x802468]
-// 00508d2e  8d4c2460             lea ecx, [esp + 0x60]
-// 00508d32  c684246401000000     mov byte ptr [esp + 0x164], 0
-// 00508d3a  ff1568248000         call dword ptr [0x802468]
-// 00508d40  83cfff               or edi, 0xffffffff
-// 00508d43  8d4c240c             lea ecx, [esp + 0xc]
-// 00508d47  89bc2464010000       mov dword ptr [esp + 0x164], edi
-// 00508d4e  ff1568248000         call dword ptr [0x802468]
-// 00508d54  8bce                 mov ecx, esi
-// 00508d56  e8259d0000           call 0x512a80
-// 00508d5b  8bce                 mov ecx, esi
-// 00508d5d  e85e960000           call 0x5123c0
-// 00508d62  68ccf78000           push 0x80f7cc
-// 00508d67  8d4c2410             lea ecx, [esp + 0x10]
-// 00508d6b  ff1558248000         call dword ptr [0x802458]
-// 00508d71  c784246401000006000000 mov dword ptr [esp + 0x164], 6
-// 00508d7c  e80ffbffff           call 0x508890
-// 00508d81  50                   push eax
-// 00508d82  8d442410             lea eax, [esp + 0x10]
-// 00508d86  50                   push eax
-// 00508d87  e8b4efffff           call 0x507d40
-// 00508d8c  83c408               add esp, 8
-// 00508d8f  8d4c240c             lea ecx, [esp + 0xc]
-// 00508d93  89bc2464010000       mov dword ptr [esp + 0x164], edi
-// 00508d9a  ff1568248000         call dword ptr [0x802468]
-// 00508da0  8bce                 mov ecx, esi
-// 00508da2  e849960000           call 0x5123f0
-// 00508da7  6816b78000           push 0x80b716
-// 00508dac  8d8c249c000000       lea ecx, [esp + 0x9c]
-// 00508db3  ff1558248000         call dword ptr [0x802458]
-// 00508db9  6816b78000           push 0x80b716
-// 00508dbe  8d4c2448             lea ecx, [esp + 0x48]
-// 00508dc2  c784246801000007000000 mov dword ptr [esp + 0x168], 7
-// 00508dcd  ff1558248000         call dword ptr [0x802458]
-// 00508dd3  6816b78000           push 0x80b716
-// 00508dd8  8d8c2480000000       lea ecx, [esp + 0x80]
-// 00508ddf  c684246801000008     mov byte ptr [esp + 0x168], 8
-// 00508de7  ff1558248000         call dword ptr [0x802458]
-// 00508ded  6816b78000           push 0x80b716
-// 00508df2  8d4c242c             lea ecx, [esp + 0x2c]
-// 00508df6  c684246801000009     mov byte ptr [esp + 0x168], 9
-// 00508dfe  ff1558248000         call dword ptr [0x802458]
-// 00508e04  6816b78000           push 0x80b716
-// 00508e09  8d4c2464             lea ecx, [esp + 0x64]
-// 00508e0d  c68424680100000a     mov byte ptr [esp + 0x168], 0xa
-// 00508e15  ff1558248000         call dword ptr [0x802458]
-// 00508e1b  b30b                 mov bl, 0xb
-// 00508e1d  681ce58100           push 0x81e51c
-// 00508e22  8d4c2410             lea ecx, [esp + 0x10]
-// 00508e26  889c2468010000       mov byte ptr [esp + 0x168], bl
-// 00508e2d  ff1558248000         call dword ptr [0x802458]
-// 00508e33  8d8c2498000000       lea ecx, [esp + 0x98]
-// 00508e3a  51                   push ecx
-// 00508e3b  8d542448             lea edx, [esp + 0x48]
-// 00508e3f  52                   push edx
-// 00508e40  8d842484000000       lea eax, [esp + 0x84]
-// 00508e47  50                   push eax
-// 00508e48  8d4c2434             lea ecx, [esp + 0x34]
-// 00508e4c  51                   push ecx
-// 00508e4d  8d542470             lea edx, [esp + 0x70]
-// 00508e51  52                   push edx
-// 00508e52  8d442420             lea eax, [esp + 0x20]
-// 00508e56  50                   push eax
-// 00508e57  8bce                 mov ecx, esi
-// 00508e59  c684247c0100000c     mov byte ptr [esp + 0x17c], 0xc
-// 00508e61  e80aa10000           call 0x512f70
-// 00508e66  8d4c240c             lea ecx, [esp + 0xc]
-// 00508e6a  889c2464010000       mov byte ptr [esp + 0x164], bl
-// 00508e71  ff1568248000         call dword ptr [0x802468]
-// 00508e77  8d4c2460             lea ecx, [esp + 0x60]
-// 00508e7b  c68424640100000a     mov byte ptr [esp + 0x164], 0xa
-// 00508e83  ff1568248000         call dword ptr [0x802468]
-// 00508e89  8d4c2428             lea ecx, [esp + 0x28]
-// 00508e8d  c684246401000009     mov byte ptr [esp + 0x164], 9
-// 00508e95  ff1568248000         call dword ptr [0x802468]
-// 00508e9b  8d4c247c             lea ecx, [esp + 0x7c]
-// 00508e9f  c684246401000008     mov byte ptr [esp + 0x164], 8
-// 00508ea7  ff1568248000         call dword ptr [0x802468]
-// 00508ead  8d4c2444             lea ecx, [esp + 0x44]
-// 00508eb1  c684246401000007     mov byte ptr [esp + 0x164], 7
-// 00508eb9  ff1568248000         call dword ptr [0x802468]
-// 00508ebf  8d8c2498000000       lea ecx, [esp + 0x98]
-// 00508ec6  89bc2464010000       mov dword ptr [esp + 0x164], edi
-// 00508ecd  ff1568248000         call dword ptr [0x802468]
-// 00508ed3  8bce                 mov ecx, esi
-// 00508ed5  e8a69b0000           call 0x512a80
-// 00508eda  8bce                 mov ecx, esi
-// 00508edc  e89f9b0000           call 0x512a80
-// 00508ee1  6816b78000           push 0x80b716
-// 00508ee6  8d8c249c000000       lea ecx, [esp + 0x9c]
-// 00508eed  ff1558248000         call dword ptr [0x802458]
-// 00508ef3  c78424640100000d000000 mov dword ptr [esp + 0x164], 0xd
-// 00508efe  6816b78000           push 0x80b716
-// 00508f03  8d4c2448             lea ecx, [esp + 0x48]
-// 00508f07  ff1558248000         call dword ptr [0x802458]
-// 00508f0d  6816b78000           push 0x80b716
-// 00508f12  8d8c2480000000       lea ecx, [esp + 0x80]
-// 00508f19  c68424680100000e     mov byte ptr [esp + 0x168], 0xe
-// 00508f21  ff1558248000         call dword ptr [0x802458]
-// 00508f27  6816b78000           push 0x80b716
-// 00508f2c  8d4c242c             lea ecx, [esp + 0x2c]
-// 00508f30  c68424680100000f     mov byte ptr [esp + 0x168], 0xf
-// 00508f38  ff1558248000         call dword ptr [0x802458]
-// 00508f3e  6828e58100           push 0x81e528
-// 00508f43  8d4c2464             lea ecx, [esp + 0x64]
-// 00508f47  c684246801000010     mov byte ptr [esp + 0x168], 0x10
-// 00508f4f  ff1558248000         call dword ptr [0x802458]
-// 00508f55  b311                 mov bl, 0x11
-// 00508f57  68fc798200           push 0x8279fc
-// 00508f5c  8d4c2410             lea ecx, [esp + 0x10]
-// 00508f60  889c2468010000       mov byte ptr [esp + 0x168], bl
-// 00508f67  ff1558248000         call dword ptr [0x802458]
-// 00508f6d  8d8c2498000000       lea ecx, [esp + 0x98]
-// 00508f74  51                   push ecx
-// 00508f75  8d542448             lea edx, [esp + 0x48]
-// 00508f79  52                   push edx
-// 00508f7a  8d842484000000       lea eax, [esp + 0x84]
-// 00508f81  50                   push eax
-// 00508f82  8d4c2434             lea ecx, [esp + 0x34]
-// 00508f86  51                   push ecx
-// 00508f87  8d542470             lea edx, [esp + 0x70]
-// 00508f8b  52                   push edx
-// 00508f8c  8d442420             lea eax, [esp + 0x20]
-// 00508f90  50                   push eax
-// 00508f91  8bce                 mov ecx, esi
-// 00508f93  c684247c01000012     mov byte ptr [esp + 0x17c], 0x12
-// 00508f9b  e8d09f0000           call 0x512f70
-// 00508fa0  8d4c240c             lea ecx, [esp + 0xc]
-// 00508fa4  889c2464010000       mov byte ptr [esp + 0x164], bl
-// 00508fab  ff1568248000         call dword ptr [0x802468]
-// 00508fb1  8d4c2460             lea ecx, [esp + 0x60]
-// 00508fb5  c684246401000010     mov byte ptr [esp + 0x164], 0x10
-// 00508fbd  ff1568248000         call dword ptr [0x802468]
-// 00508fc3  8d4c2428             lea ecx, [esp + 0x28]
-// 00508fc7  c68424640100000f     mov byte ptr [esp + 0x164], 0xf
-// 00508fcf  ff1568248000         call dword ptr [0x802468]
-// 00508fd5  8d4c247c             lea ecx, [esp + 0x7c]
-// 00508fd9  c68424640100000e     mov byte ptr [esp + 0x164], 0xe
-// 00508fe1  ff1568248000         call dword ptr [0x802468]
-// 00508fe7  8d4c2444             lea ecx, [esp + 0x44]
-// 00508feb  c68424640100000d     mov byte ptr [esp + 0x164], 0xd
-// 00508ff3  ff1568248000         call dword ptr [0x802468]
-// 00508ff9  8d8c2498000000       lea ecx, [esp + 0x98]
-// 00509000  89bc2464010000       mov dword ptr [esp + 0x164], edi
-// 00509007  ff1568248000         call dword ptr [0x802468]
-// 0050900d  8bce                 mov ecx, esi
-// 0050900f  e86c9a0000           call 0x512a80
-// 00509014  8bce                 mov ecx, esi
-// 00509016  e8a5930000           call 0x5123c0
-// 0050901b  6820e58100           push 0x81e520
-// 00509020  8d4c2410             lea ecx, [esp + 0x10]
-// 00509024  ff1558248000         call dword ptr [0x802458]
-// 0050902a  c784246401000013000000 mov dword ptr [esp + 0x164], 0x13
-// 00509035  e8d6f7ffff           call 0x508810
-// 0050903a  50                   push eax
-// 0050903b  8d4c2410             lea ecx, [esp + 0x10]
-// 0050903f  51                   push ecx
-// 00509040  e8fbecffff           call 0x507d40
-// 00509045  83c408               add esp, 8
-// 00509048  8d4c240c             lea ecx, [esp + 0xc]
-// 0050904c  89bc2464010000       mov dword ptr [esp + 0x164], edi
-// 00509053  ff1568248000         call dword ptr [0x802468]
-// 00509059  68ec798200           push 0x8279ec
-// 0050905e  8d4c2410             lea ecx, [esp + 0x10]
-// 00509062  ff1558248000         call dword ptr [0x802458]
-// 00509068  c784246401000014000000 mov dword ptr [esp + 0x164], 0x14
-// 00509073  e888f8ffff           call 0x508900
-// 00509078  50                   push eax
-// 00509079  8d542410             lea edx, [esp + 0x10]
-// 0050907d  52                   push edx
-// 0050907e  e8bdecffff           call 0x507d40
-// 00509083  83c408               add esp, 8
-// 00509086  8d4c240c             lea ecx, [esp + 0xc]
-// 0050908a  89bc2464010000       mov dword ptr [esp + 0x164], edi
-// 00509091  ff1568248000         call dword ptr [0x802468]
-// 00509097  68e0798200           push 0x8279e0
-// 0050909c  8d4c2410             lea ecx, [esp + 0x10]
-// 005090a0  ff1558248000         call dword ptr [0x802458]
-// 005090a6  c784246401000015000000 mov dword ptr [esp + 0x164], 0x15
-// 005090b1  e85af0ffff           call 0x508110
-// 005090b6  0fb60505359700       movzx eax, byte ptr [0x973505]
-// 005090bd  50                   push eax
-// 005090be  8d4c2410             lea ecx, [esp + 0x10]
-// 005090c2  51                   push ecx
-// 005090c3  e8b8edffff           call 0x507e80
-// 005090c8  83c408               add esp, 8
-// 005090cb  8d4c240c             lea ecx, [esp + 0xc]
-// 005090cf  89bc2464010000       mov dword ptr [esp + 0x164], edi
-// 005090d6  ff1568248000         call dword ptr [0x802468]
-// 005090dc  68d8798200           push 0x8279d8
-// 005090e1  8d4c2410             lea ecx, [esp + 0x10]
-// 005090e5  ff1558248000         call dword ptr [0x802458]
-// 005090eb  c784246401000016000000 mov dword ptr [esp + 0x164], 0x16
-// 005090f6  e815f0ffff           call 0x508110
-// 005090fb  0fb61501359700       movzx edx, byte ptr [0x973501]
-// 00509102  52                   push edx
-// 00509103  8d442410             lea eax, [esp + 0x10]
-// 00509107  50                   push eax
-// 00509108  e873edffff           call 0x507e80
-// 0050910d  83c408               add esp, 8
-// 00509110  8d4c240c             lea ecx, [esp + 0xc]
-// 00509114  89bc2464010000       mov dword ptr [esp + 0x164], edi
-// 0050911b  ff1568248000         call dword ptr [0x802468]
-// 00509121  68d0798200           push 0x8279d0
-// 00509126  8d4c2410             lea ecx, [esp + 0x10]
-// 0050912a  ff1558248000         call dword ptr [0x802458]
-// 00509130  c784246401000017000000 mov dword ptr [esp + 0x164], 0x17
-// 0050913b  e8d0efffff           call 0x508110
-// 00509140  0fb60d02359700       movzx ecx, byte ptr [0x973502]
-// 00509147  51                   push ecx
-// 00509148  8d542410             lea edx, [esp + 0x10]
-// 0050914c  52                   push edx
-// 0050914d  e82eedffff           call 0x507e80
-// 00509152  83c408               add esp, 8
-// 00509155  8d4c240c             lea ecx, [esp + 0xc]
-// 00509159  89bc2464010000       mov dword ptr [esp + 0x164], edi
-// 00509160  ff1568248000         call dword ptr [0x802468]
-// 00509166  68c8798200           push 0x8279c8
-// 0050916b  8d4c2410             lea ecx, [esp + 0x10]
-// 0050916f  ff1558248000         call dword ptr [0x802458]
-// 00509175  c784246401000018000000 mov dword ptr [esp + 0x164], 0x18
-// 00509180  e88befffff           call 0x508110
-// 00509185  0fb60503359700       movzx eax, byte ptr [0x973503]
-// 0050918c  50                   push eax
-// 0050918d  8d4c2410             lea ecx, [esp + 0x10]
-// 00509191  51                   push ecx
-// 00509192  e8e9ecffff           call 0x507e80
-// 00509197  83c408               add esp, 8
-// 0050919a  8d4c240c             lea ecx, [esp + 0xc]
-// 0050919e  89bc2464010000       mov dword ptr [esp + 0x164], edi
-// 005091a5  ff1568248000         call dword ptr [0x802468]
-// 005091ab  68bc798200           push 0x8279bc
-// 005091b0  8d4c2410             lea ecx, [esp + 0x10]
-// 005091b4  ff1558248000         call dword ptr [0x802458]
-// 005091ba  c784246401000019000000 mov dword ptr [esp + 0x164], 0x19
-// 005091c5  e846efffff           call 0x508110
-// 005091ca  0fb61504359700       movzx edx, byte ptr [0x973504]
-// 005091d1  52                   push edx
-// 005091d2  8d442410             lea eax, [esp + 0x10]
-// 005091d6  50                   push eax
-// 005091d7  e8a4ecffff           call 0x507e80
-// 005091dc  83c408               add esp, 8
-// 005091df  89bc2464010000       mov dword ptr [esp + 0x164], edi
-// 005091e6  8d4c240c             lea ecx, [esp + 0xc]
-// 005091ea  ff1568248000         call dword ptr [0x802468]
-// 005091f0  68b0798200           push 0x8279b0
-// 005091f5  8d4c2410             lea ecx, [esp + 0x10]
-// 005091f9  ff1558248000         call dword ptr [0x802458]
-// 005091ff  c78424640100001a000000 mov dword ptr [esp + 0x164], 0x1a
-// 0050920a  e801efffff           call 0x508110
-// 0050920f  0fb60d00359700       movzx ecx, byte ptr [0x973500]
-// 00509216  51                   push ecx
-// 00509217  8d542410             lea edx, [esp + 0x10]
-// 0050921b  52                   push edx
-// 0050921c  e85fecffff           call 0x507e80
-// 00509221  83c408               add esp, 8
-// 00509224  8d4c240c             lea ecx, [esp + 0xc]
-// 00509228  89bc2464010000       mov dword ptr [esp + 0x164], edi
-// 0050922f  ff1568248000         call dword ptr [0x802468]
-// 00509235  8bce                 mov ecx, esi
-// 00509237  e8b4910000           call 0x5123f0
-// 0050923c  6816b78000           push 0x80b716
-// 00509241  8d8c249c000000       lea ecx, [esp + 0x9c]
-// 00509248  ff1558248000         call dword ptr [0x802458]
-// 0050924e  6816b78000           push 0x80b716
-// 00509253  8d4c2448             lea ecx, [esp + 0x48]
-// 00509257  c78424680100001b000000 mov dword ptr [esp + 0x168], 0x1b
-// 00509262  ff1558248000         call dword ptr [0x802458]
-// 00509268  6816b78000           push 0x80b716
-// 0050926d  8d8c2480000000       lea ecx, [esp + 0x80]
-// 00509274  c68424680100001c     mov byte ptr [esp + 0x168], 0x1c
-// 0050927c  ff1558248000         call dword ptr [0x802458]
-// 00509282  6816b78000           push 0x80b716
-// 00509287  8d4c242c             lea ecx, [esp + 0x2c]
-// 0050928b  c68424680100001d     mov byte ptr [esp + 0x168], 0x1d
-// 00509293  ff1558248000         call dword ptr [0x802458]
-// 00509299  6816b78000           push 0x80b716
-// 0050929e  8d4c2464             lea ecx, [esp + 0x64]
-// 005092a2  c68424680100001e     mov byte ptr [esp + 0x168], 0x1e
-// 005092aa  ff1558248000         call dword ptr [0x802458]
-// 005092b0  b31f                 mov bl, 0x1f
-// 005092b2  681ce58100           push 0x81e51c
-// 005092b7  8d4c2410             lea ecx, [esp + 0x10]
-// 005092bb  889c2468010000       mov byte ptr [esp + 0x168], bl
-// 005092c2  ff1558248000         call dword ptr [0x802458]
-// 005092c8  8d842498000000       lea eax, [esp + 0x98]
-// 005092cf  50                   push eax
-// 005092d0  8d4c2448             lea ecx, [esp + 0x48]
-// 005092d4  51                   push ecx
-// 005092d5  8d942484000000       lea edx, [esp + 0x84]
-// 005092dc  52                   push edx
-// 005092dd  8d442434             lea eax, [esp + 0x34]
-// 005092e1  50                   push eax
-// 005092e2  8d4c2470             lea ecx, [esp + 0x70]
-// 005092e6  51                   push ecx
-// 005092e7  8d542420             lea edx, [esp + 0x20]
-// 005092eb  52                   push edx
-// 005092ec  8bce                 mov ecx, esi
-// 005092ee  c684247c01000020     mov byte ptr [esp + 0x17c], 0x20
-// 005092f6  e8759c0000           call 0x512f70
-// 005092fb  8d4c240c             lea ecx, [esp + 0xc]
-// 005092ff  889c2464010000       mov byte ptr [esp + 0x164], bl
-// 00509306  ff1568248000         call dword ptr [0x802468]
-// 0050930c  8d4c2460             lea ecx, [esp + 0x60]
-// 00509310  c68424640100001e     mov byte ptr [esp + 0x164], 0x1e
-// 00509318  ff1568248000         call dword ptr [0x802468]
-// 0050931e  8d4c2428             lea ecx, [esp + 0x28]
-// 00509322  c68424640100001d     mov byte ptr [esp + 0x164], 0x1d
-// 0050932a  ff1568248000         call dword ptr [0x802468]
-// 00509330  8d4c247c             lea ecx, [esp + 0x7c]
-// 00509334  c68424640100001c     mov byte ptr [esp + 0x164], 0x1c
-// 0050933c  ff1568248000         call dword ptr [0x802468]
-// 00509342  8d4c2444             lea ecx, [esp + 0x44]
-// 00509346  c68424640100001b     mov byte ptr [esp + 0x164], 0x1b
-// 0050934e  ff1568248000         call dword ptr [0x802468]
-// 00509354  8d8c2498000000       lea ecx, [esp + 0x98]
-// 0050935b  89bc2464010000       mov dword ptr [esp + 0x164], edi
-// 00509362  ff1568248000         call dword ptr [0x802468]
-// 00509368  8bce                 mov ecx, esi
-// 0050936a  e811970000           call 0x512a80
-// 0050936f  8bce                 mov ecx, esi
-// 00509371  e80a970000           call 0x512a80
-// 00509376  6816b78000           push 0x80b716
-// 0050937b  8d8c249c000000       lea ecx, [esp + 0x9c]
-// 00509382  ff1558248000         call dword ptr [0x802458]
-// 00509388  6816b78000           push 0x80b716
-// 0050938d  8d4c2448             lea ecx, [esp + 0x48]
-// 00509391  c784246801000021000000 mov dword ptr [esp + 0x168], 0x21
-// 0050939c  ff1558248000         call dword ptr [0x802458]
-// 005093a2  6816b78000           push 0x80b716
-// 005093a7  8d8c2480000000       lea ecx, [esp + 0x80]
-// 005093ae  c684246801000022     mov byte ptr [esp + 0x168], 0x22
-// 005093b6  ff1558248000         call dword ptr [0x802458]
-// 005093bc  6816b78000           push 0x80b716
-// 005093c1  8d4c242c             lea ecx, [esp + 0x2c]
-// 005093c5  c684246801000023     mov byte ptr [esp + 0x168], 0x23
-// 005093cd  ff1558248000         call dword ptr [0x802458]
-// 005093d3  6828e58100           push 0x81e528
-// 005093d8  8d4c2464             lea ecx, [esp + 0x64]
-// 005093dc  c684246801000024     mov byte ptr [esp + 0x168], 0x24
-// 005093e4  ff1558248000         call dword ptr [0x802458]
-// 005093ea  b325                 mov bl, 0x25
-// 005093ec  68c8f48100           push 0x81f4c8
-// 005093f1  8d4c2410             lea ecx, [esp + 0x10]
-// 005093f5  889c2468010000       mov byte ptr [esp + 0x168], bl
-// 005093fc  ff1558248000         call dword ptr [0x802458]
-// 00509402  8d842498000000       lea eax, [esp + 0x98]
-// 00509409  50                   push eax
-// 0050940a  8d4c2448             lea ecx, [esp + 0x48]
-// 0050940e  51                   push ecx
-// 0050940f  8d942484000000       lea edx, [esp + 0x84]
-// 00509416  52                   push edx
-// 00509417  8d442434             lea eax, [esp + 0x34]
-// 0050941b  50                   push eax
-// 0050941c  8d4c2470             lea ecx, [esp + 0x70]
-// 00509420  51                   push ecx
-// 00509421  8d542420             lea edx, [esp + 0x20]
-// 00509425  52                   push edx
-// 00509426  8bce                 mov ecx, esi
-// 00509428  c684247c01000026     mov byte ptr [esp + 0x17c], 0x26
-// 00509430  e83b9b0000           call 0x512f70
-// 00509435  8d4c240c             lea ecx, [esp + 0xc]
-// 00509439  889c2464010000       mov byte ptr [esp + 0x164], bl
-// 00509440  ff1568248000         call dword ptr [0x802468]
-// 00509446  8d4c2460             lea ecx, [esp + 0x60]
-// 0050944a  c684246401000024     mov byte ptr [esp + 0x164], 0x24
-// 00509452  ff1568248000         call dword ptr [0x802468]
-// 00509458  8d4c2428             lea ecx, [esp + 0x28]
-// 0050945c  c684246401000023     mov byte ptr [esp + 0x164], 0x23
-// 00509464  ff1568248000         call dword ptr [0x802468]
-// 0050946a  8d4c247c             lea ecx, [esp + 0x7c]
-// 0050946e  c684246401000022     mov byte ptr [esp + 0x164], 0x22
-// 00509476  ff1568248000         call dword ptr [0x802468]
-// 0050947c  8d4c2444             lea ecx, [esp + 0x44]
-// 00509480  c684246401000021     mov byte ptr [esp + 0x164], 0x21
-// 00509488  ff1568248000         call dword ptr [0x802468]
-// 0050948e  8d8c2498000000       lea ecx, [esp + 0x98]
-// 00509495  89bc2464010000       mov dword ptr [esp + 0x164], edi
-// 0050949c  ff1568248000         call dword ptr [0x802468]
-// 005094a2  8bce                 mov ecx, esi
-// 005094a4  e8d7950000           call 0x512a80
-// 005094a9  8bce                 mov ecx, esi
-// 005094ab  e8108f0000           call 0x5123c0
-// 005094b0  68a0798200           push 0x8279a0
-// 005094b5  8d4c2410             lea ecx, [esp + 0x10]
-// 005094b9  ff1558248000         call dword ptr [0x802458]
-// 005094bf  8d44240c             lea eax, [esp + 0xc]
-// 005094c3  68e4ed0000           push 0xede4
-// 005094c8  50                   push eax
-// 005094c9  c784246c01000027000000 mov dword ptr [esp + 0x16c], 0x27
-// 005094d4  e8f7eaffff           call 0x507fd0
-// 005094d9  83c408               add esp, 8
-// 005094dc  8d4c240c             lea ecx, [esp + 0xc]
-// 005094e0  89bc2464010000       mov dword ptr [esp + 0x164], edi
-// 005094e7  ff1568248000         call dword ptr [0x802468]
-// 005094ed  6890798200           push 0x827990
-// 005094f2  8d4c2410             lea ecx, [esp + 0x10]
-// 005094f6  ff1558248000         call dword ptr [0x802458]
-// 005094fc  c784246401000028000000 mov dword ptr [esp + 0x164], 0x28
-// 00509507  e864f4ffff           call 0x508970
-// 0050950c  50                   push eax
-// 0050950d  8d4c2410             lea ecx, [esp + 0x10]
-// 00509511  51                   push ecx
-// 00509512  e829e8ffff           call 0x507d40
-// 00509517  83c408               add esp, 8
-// 0050951a  8d4c240c             lea ecx, [esp + 0xc]
-// 0050951e  89bc2464010000       mov dword ptr [esp + 0x164], edi
-// 00509525  ff1568248000         call dword ptr [0x802468]
-// 0050952b  8bce                 mov ecx, esi
-// 0050952d  e8be8e0000           call 0x5123f0
-// 00509532  6816b78000           push 0x80b716
-// 00509537  8d8c2444010000       lea ecx, [esp + 0x144]
-// 0050953e  ff1558248000         call dword ptr [0x802458]
-// 00509544  6816b78000           push 0x80b716
-// 00509549  8d8c240c010000       lea ecx, [esp + 0x10c]
-// 00509550  c784246801000029000000 mov dword ptr [esp + 0x168], 0x29
-// 0050955b  ff1558248000         call dword ptr [0x802458]
-// 00509561  6816b78000           push 0x80b716
-// 00509566  8d8c24d4000000       lea ecx, [esp + 0xd4]
-// 0050956d  c68424680100002a     mov byte ptr [esp + 0x168], 0x2a
-// 00509575  ff1558248000         call dword ptr [0x802458]
-// 0050957b  6816b78000           push 0x80b716
-// 00509580  8d8c2428010000       lea ecx, [esp + 0x128]
-// 00509587  c68424680100002b     mov byte ptr [esp + 0x168], 0x2b
-// 0050958f  ff1558248000         call dword ptr [0x802458]
-// 00509595  6816b78000           push 0x80b716
-// 0050959a  8d8c24f0000000       lea ecx, [esp + 0xf0]
-// 005095a1  c68424680100002c     mov byte ptr [esp + 0x168], 0x2c
-// 005095a9  ff1558248000         call dword ptr [0x802458]
-// 005095af  b32d                 mov bl, 0x2d
-// 005095b1  681ce58100           push 0x81e51c
-// 005095b6  8d8c24b8000000       lea ecx, [esp + 0xb8]
-// 005095bd  889c2468010000       mov byte ptr [esp + 0x168], bl
-// 005095c4  ff1558248000         call dword ptr [0x802458]
-// 005095ca  8d942440010000       lea edx, [esp + 0x140]
-// 005095d1  52                   push edx
-// 005095d2  8d84240c010000       lea eax, [esp + 0x10c]
-// 005095d9  50                   push eax
-// 005095da  8d8c24d8000000       lea ecx, [esp + 0xd8]
-// 005095e1  51                   push ecx
-// 005095e2  8d942430010000       lea edx, [esp + 0x130]
-// 005095e9  52                   push edx
-// 005095ea  8d8424fc000000       lea eax, [esp + 0xfc]
-// 005095f1  50                   push eax
-// 005095f2  8d8c24c8000000       lea ecx, [esp + 0xc8]
-// 005095f9  51                   push ecx
-// 005095fa  8bce                 mov ecx, esi
-// 005095fc  c684247c0100002e     mov byte ptr [esp + 0x17c], 0x2e
-// 00509604  e867990000           call 0x512f70
-// 00509609  8d8c24b4000000       lea ecx, [esp + 0xb4]
-// 00509610  889c2464010000       mov byte ptr [esp + 0x164], bl
-// 00509617  ff1568248000         call dword ptr [0x802468]
-// 0050961d  8d8c24ec000000       lea ecx, [esp + 0xec]
-// 00509624  c68424640100002c     mov byte ptr [esp + 0x164], 0x2c
-// 0050962c  ff1568248000         call dword ptr [0x802468]
-// 00509632  8d8c2424010000       lea ecx, [esp + 0x124]
-// 00509639  c68424640100002b     mov byte ptr [esp + 0x164], 0x2b
-// 00509641  ff1568248000         call dword ptr [0x802468]
-// 00509647  8d8c24d0000000       lea ecx, [esp + 0xd0]
-// 0050964e  c68424640100002a     mov byte ptr [esp + 0x164], 0x2a
-// 00509656  ff1568248000         call dword ptr [0x802468]
-// 0050965c  8d8c2408010000       lea ecx, [esp + 0x108]
-// 00509663  c684246401000029     mov byte ptr [esp + 0x164], 0x29
-// 0050966b  ff1568248000         call dword ptr [0x802468]
-// 00509671  89bc2464010000       mov dword ptr [esp + 0x164], edi
-// 00509678  8d8c2440010000       lea ecx, [esp + 0x140]
-// 0050967f  ff1568248000         call dword ptr [0x802468]
-// 00509685  8bce                 mov ecx, esi
-// 00509687  e8f4930000           call 0x512a80
-// 0050968c  8bce                 mov ecx, esi
-// 0050968e  e8ed930000           call 0x512a80
-// 00509693  8b8c245c010000       mov ecx, dword ptr [esp + 0x15c]
-// 0050969a  5f                   pop edi
-// 0050969b  5e                   pop esi
-// 0050969c  5b                   pop ebx
-// 0050969d  64890d00000000       mov dword ptr fs:[0], ecx
-// 005096a4  81c45c010000         add esp, 0x15c
-// 005096aa  c3                   ret 
-// library g3d-6.09/G3Dcpp\System.cpp (function ?describeSystem@System@G3D@@SAXAAVTextOutput@2@@Z)
-
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD
 // roc-lib: g3d-6.09 G3Dcpp/System.cpp
+
+// Candidate translation unit (score above; library headers required).
+/** 
+  @file System.cpp
+ 
+  @maintainer Morgan McGuire, matrix@graphics3d.com
+
+  Note: every routine must call init() first.
+
+  There are two kinds of detection used in this file.  At compile
+  time, the _MSC_VER #define is used to determine whether x86 assembly
+  can be used at all.  At runtime, processor detection is used to
+  determine if we can safely call the routines that use that assembly.
+
+  @cite Rob Wyatt http://www.gamasutra.com/features/wyatts_world/19990709/processor_detection_01.htm
+  @cite Benjamin Jurke http://www.flipcode.com/cgi-bin/msg.cgi?showThread=COTD-ProcessorDetectionClass&forum=cotd&id=-1
+  @cite Michael Herf http://www.stereopsis.com/memcpy.html
+
+  @created 2003-01-25
+  @edited  2006-05-17
+ */
+
+#include "G3D/platform.h"
+#include "G3D/System.h"
+#include "G3D/debug.h"
+#include "G3D/g3derror.h"
+#include "G3D/fileutils.h"
+#include "G3D/TextOutput.h"
+#include "G3D/G3DGameUnits.h"
+#include "G3D/Crypto.h"
+
+#ifdef G3D_WIN32
+
+    #include <conio.h>
+    #include <sys/timeb.h>
+#   include "G3D/RegistryUtil.h"
+
+#elif defined(G3D_LINUX) 
+
+    #include <stdlib.h>
+    #include <stdio.h>
+    #include <errno.h>
+    #include <sys/types.h>
+    #include <sys/select.h>
+    #include <termios.h>
+    #include <stropts.h>
+    #include <unistd.h>
+    #include <sys/ioctl.h>
+    #include <sys/time.h>
+    #include <pthread.h>
+
+#elif defined(G3D_OSX)
+
+    #include <stdlib.h>
+    #include <stdio.h>
+    #include <errno.h>
+    #include <sys/types.h>
+    #include <sys/select.h>
+    #include <termios.h>
+    #include <unistd.h>
+    #include <sys/time.h>
+    #include <pthread.h>
+
+    #include <sstream>
+    #include <CoreServices/CoreServices.h>
+#endif
+
+#if defined(SSE)
+    #include <xmmintrin.h>
+#endif
+
+namespace G3D {
+
+uint32 crc32(const void* byte, size_t numBytes) {
+    return Crypto::crc32(byte, numBytes);
+}
+
+
+std::string demoFindData(bool errorIfNotFound) {
+
+    // Directories that might contain the data
+    Array<std::string> potential;
+
+    // Look back up the directory tree
+    std::string x = "../";
+    std::string f = "";
+    for (int i = 0; i < 6; ++i) {
+        potential.append(f);
+        f = f + x;
+    }
+    
+    // Hard-code in likely install directories
+    int ver = G3D_VER;
+    std::string lname = format("g3d-%d_%02d", ver / 10000, (ver / 100) % 100);
+
+    if (G3D_VER % 10 != 0) {
+        lname = lname + format("-b%02d/", ver % 100);
+    } else {
+        lname = lname + "/";
+    }
+
+    std::string lpath = "libraries/" + lname;
+    #ifdef G3D_WIN32
+        potential.append(std::string("c:/") + lpath);
+        potential.append(std::string("d:/") + lpath);
+        potential.append(std::string("e:/") + lpath);
+        potential.append(std::string("f:/") + lpath);
+        potential.append(std::string("g:/") + lpath);
+        potential.append(std::string("x:/") + lpath);
+        potential.append(std::string("c:/users/morgan/data/"));
+    #else
+        potential.append(std::string("/course/cs224/") + lpath);
+        potential.append(std::string("/map/gfx0/common/games/") + lpath);
+    #endif
+
+    // Scan all potentials for the font directory
+    for (int p = 0; p < potential.size();  ++p) {
+        std::string path = potential[p];
+        if (fileExists(path + "data") && fileExists(path + "data/font")) {
+            return path + "data/";
+        }
+    }
+
+    if (errorIfNotFound) {
+        const char* choice[] = {"Exit"};
+
+        prompt("Demo Error", "The demo could not locate the data directory.  "
+            "The data is required to run this demo.  If you have not downloaded "
+            "the data zipfile, get it from http://g3d-cpp.sf.net.  If you have "
+            "downloaded it, it needs to be no more than 4 directories above the "
+            "demo directory.", choice, 1, true);
+    }
+
+    return "";
+}
+
+static int                                      _CPUSpeed           = 0;
+static bool                                     _rdtsc              = false;
+static bool                                     _mmx                = false;
+static bool                                     _sse                = false;
+static bool                                     _sse2               = false;
+static bool                                     _3dnow              = false;
+static char                                     _cpuVendorCstr[1024] = {'U', 'n', 'k', 'n', 'o', 'w', 'n', '\0'};
+static bool                                     _cpuID              = false;
+static G3DEndian                                _machineEndian      = G3D_LITTLE_ENDIAN;
+static char                                     _cpuArchCstr[1024];
+static char                                     _operatingSystemCstr[1024];
+
+#ifdef G3D_WIN32
+/** Used by getTick() for timing */
+static LARGE_INTEGER                            _start;
+static LARGE_INTEGER                            _counterFrequency;
+#else
+static struct timeval                           _start;
+#endif
+
+static char                                     versionCstr[1024];
+System::OutOfMemoryCallback                     System::outOfMemoryCallback = NULL;
+
+#ifdef G3D_OSX
+    long System::m_OSXCPUSpeed;
+    double System::m_secondsPerNS;
+#endif
+
+/** The Real-World time of System::getTick() time 0.  Set by initTime */
+static RealTime             realWorldGetTickTime0;
+
+
+static int               maxSupportedCPUIDLevel = 0;
+static int            maxSupportedExtendedLevel = 0;
+
+#define checkBit(var, bit)   ((var & (1 << bit)) ? true : false)
+
+/** Checks if the CPUID command is available on the processor (called from init) */
+static void checkForCPUID();
+
+/** ReadRead the standard processor extensions.  Called from init(). */
+static void getStandardProcessorExtensions();
+
+/** Called from init */
+static void initTime();
+
+
+bool System::hasCPUID() {
+    init();
+    return _cpuID;
+}
+
+bool System::hasRDTSC() {
+    init();
+    return _rdtsc;
+}
+
+
+bool System::hasSSE() {
+    init();
+    return _sse;
+}
+
+
+bool System::hasSSE2() {
+    init();
+    return _sse2;
+}
+
+
+bool System::hasMMX() {
+    init();
+    return _mmx;
+}
+
+
+bool System::has3DNow() {
+    init();
+    return _3dnow;
+}
+
+
+const std::string& System::cpuVendor() {
+    init();
+    static const std::string _cpuVendor = _cpuVendorCstr;
+    return _cpuVendor;
+}
+
+
+G3DEndian System::machineEndian() {
+    init();
+    return _machineEndian;
+}
+
+const std::string& System::operatingSystem() {
+    init();
+    static const std::string _operatingSystem =_operatingSystemCstr;
+    return _operatingSystem;
+}
+        
+
+const std::string& System::cpuArchitecture() {
+    init();
+    static const std::string _cpuArch = _cpuArchCstr;
+    return _cpuArch;
+}
+
+const std::string& System::build() {
+    const static std::string b =
+#   ifdef _DEBUG
+        "Debug";
+#   else 
+        "Release";
+#   endif
+
+    return b;
+}
+
+const std::string& System::version() {
+    init();
+
+    static const std::string _version = versionCstr;
+    return _version;
+}
+
+
+void System::init() {
+    // Cannot use most G3D data structures or utility functions in here because
+    // they are not initialized.
+
+    static bool initialized = false;
+
+    if (initialized) {
+        return;
+    }
+
+    initialized = true;
+
+    if ((G3D_VER % 100) != 0) {
+        sprintf(versionCstr, "G3D %d.%02d beta %d",
+            G3D_VER / 10000,
+            (G3D_VER / 100) % 100,
+            G3D_VER % 100);
+    } else {
+        sprintf(versionCstr, "G3D %d.%02d",
+            G3D_VER / 10000,
+            (G3D_VER / 100) % 100);
+    }
+
+    unsigned long eaxreg, ebxreg, ecxreg, edxreg;
+    eaxreg = ebxreg = ecxreg = edxreg = 0;
+ 
+    // First of all we check if the CPUID command is available
+    checkForCPUID();
+
+    // Figure out if this machine is little or big endian.
+    {
+        int32 a = 1;
+        if (*(uint8*)&a == 1) {
+            _machineEndian = G3D_LITTLE_ENDIAN;
+        } else {
+            _machineEndian = G3D_BIG_ENDIAN;
+        }
+    }
+
+    if (_cpuID) {
+        // Process the CPUID information
+
+        // We read the standard CPUID level 0x00000000 which should
+        // be available on every x86 processor.  This fills out
+        // a string with the processor vendor tag.
+        #ifdef _MSC_VER
+            __asm {
+                push eax
+                push ebx
+                push ecx
+                push edx
+                mov eax, 0
+                cpuid
+                mov eaxreg, eax
+                mov ebxreg, ebx
+                mov edxreg, edx
+                mov ecxreg, ecx
+                pop edx
+                pop ecx
+                pop ebx
+                pop eax
+            }
+        #elif defined(__GNUC__) && defined(i386)
+            asm (
+                "movl $0, %%eax \n"
+                "cpuid          \n"
+                "movl %%eax, %0 \n"
+                "movl %%ebx, %1 \n"
+                "movl %%ecx, %2 \n"
+                "movl %%edx, %3 \n"
+                : 
+                "=m" (eaxreg), 
+                "=m" (ebxreg), 
+                "=m" (ecxreg), 
+                "=m" (edxreg) 
+                :
+                // No inputs
+                : 
+                "%eax","%ebx","%ecx","%edx" );
+        #else
+            ebxreg = 0;
+            edxreg = 0;
+            ecxreg = 0;
+        #endif
+
+        // Then we connect the single register values to the vendor string
+        *((unsigned long *) _cpuVendorCstr)       = ebxreg;
+        *((unsigned long *) (_cpuVendorCstr + 4)) = edxreg;
+        *((unsigned long *) (_cpuVendorCstr + 8)) = ecxreg;
+        _cpuVendorCstr[12] = '\0';
+
+        // We can also read the max. supported standard CPUID level
+        maxSupportedCPUIDLevel = eaxreg & 0xFFFF;
+
+        // Then we read the ext. CPUID level 0x80000000
+        #ifdef _MSC_VER
+            __asm {
+                push eax
+                push ebx
+                push ecx
+                push edx
+                mov eax, 0x80000000
+                cpuid
+                mov eaxreg, eax
+                pop edx
+                pop ecx
+                pop ebx
+                pop eax
+            }
+        #elif defined(__GNUC__) && defined(i386)
+            asm (
+                "movl $0x80000000, %%eax \n"
+                "cpuid                   \n"
+                "movl %%eax, %0          \n"
+                : 
+                "=m" (eaxreg)
+                :
+                // No inputs
+                : 
+                "%eax", "%ebx", "%ecx", "%edx" );
+        #else
+            eaxreg = 0;
+        #endif
+
+        // ...to check the max. supported extended CPUID level
+        maxSupportedExtendedLevel = eaxreg;
+
+        // Then we switch to the specific processor vendors.
+        // Fill out _cpuArch based on this information.  It will
+        // be overwritten by the next block of code on Windows,
+        // but on Linux will stand.
+        switch (ebxreg) {
+        case 0x756E6547:        // GenuineIntel
+            strcpy(_cpuArchCstr, "Intel Processor");
+            break;
+            
+        case 0x68747541:        // AuthenticAMD
+            strcpy(_cpuArchCstr, "AMD Processor");
+            break;
+
+        case 0x69727943:        // CyrixInstead
+            strcpy(_cpuArchCstr, "Cyrix Processor");
+            break;
+
+        default:
+            strcpy(_cpuArchCstr, "Unknown Processor Vendor");
+            break;
+        }
+    }
+
+    #ifdef G3D_WIN32
+        bool success = RegistryUtil::readInt32("HKEY_LOCAL_MACHINE\\HARDWARE\\DESCRIPTION\\System\\CentralProcessor\\0\\~MHz", _CPUSpeed);
+
+        SYSTEM_INFO systemInfo;
+        GetSystemInfo(&systemInfo);
+        char* arch;
+        switch (systemInfo.wProcessorArchitecture) {
+        case PROCESSOR_ARCHITECTURE_INTEL:
+            arch = "Intel";
+            break;
+    
+        case PROCESSOR_ARCHITECTURE_MIPS:
+            arch = "MIPS";
+            break;
+
+        case PROCESSOR_ARCHITECTURE_ALPHA:
+            arch = "Alpha";
+            break;
+
+        case PROCESSOR_ARCHITECTURE_PPC:
+            arch = "Power PC";
+            break;
+
+        default:
+            arch = "Unknown";
+        }
+
+        uint32 maxAddr = (uint32)systemInfo.lpMaximumApplicationAddress;
+        sprintf(_cpuArchCstr, "%d x %d-bit %s processor @ %4.1 GHz",
+                    systemInfo.dwNumberOfProcessors,
+                    (int)(::log((double)maxAddr) / ::log(2.0) + 2.0),
+                    arch,
+                    _CPUSpeed / (1024.0 * 1024));
+
+        OSVERSIONINFO osVersionInfo;
+        osVersionInfo.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
+        success = GetVersionEx(&osVersionInfo) != 0;
+
+        if (success) {
+            sprintf(_operatingSystemCstr, "Windows %d.%d build %d Platform %d %s",
+                osVersionInfo.dwMajorVersion, 
+                osVersionInfo.dwMinorVersion,
+                osVersionInfo.dwBuildNumber,
+                osVersionInfo.dwPlatformId,
+                osVersionInfo.szCSDVersion);
+        } else {
+            strcpy(_operatingSystemCstr, "Windows");
+        }
+    
+    #elif defined(G3D_LINUX)
+
+        {
+            // Shell out to the 'uname' command
+
+            FILE* f = popen("uname -a", "r");
+
+            int len = 100;
+            char* r = (char*)::malloc(len * sizeof(char));
+            fgets(r, len, f);
+            // Remove trailing newline
+            if (r[strlen(r) - 1] == '\n') {
+                r[strlen(r) - 1] = '\0';
+            }
+            fclose(f);
+
+            strcpy(_operatingSystemCstr, r);
+            ::free(r);
+        }
+
+    #elif defined(G3D_OSX)
+
+        //Operating System:
+        SInt32 macVersion;
+        Gestalt(gestaltSystemVersion, &macVersion);
+
+        int major = (macVersion >> 8) & 0xFF;
+        int minor = (macVersion >> 4) & 0xF;
+        int revision = macVersion & 0xF;
+
+        sprintf(_operatingSystemCstr, "OS X %x.%x.%x", major, minor, revision); 
+                 
+        //Clock Cycle Timing Information:
+        Gestalt('pclk', &System::m_OSXCPUSpeed);
+        _CPUSpeed = iRound((double)m_OSXCPUSpeed / (1024 * 1024));
+        m_secondsPerNS = 1.0 / 1.0e9;
+        
+        //System Architecture:
+        SInt32 CPUtype;
+        Gestalt('cpuf', &CPUtype);
+        switch (CPUtype){
+        case 0x0108:
+            strcpy(_cpuArchCstr, "PPC G3");
+            strcpy(_cpuVendorCstr, "Motorola");
+            break;
+        case 0x010C:
+            strcpy(_cpuArchCstr, "PPC G4");
+            strcpy(_cpuVendorCstr, "Motorola");
+            break;
+        case 0x0139:
+            strcpy(_cpuArchCstr, "PPC G5");
+            strcpy(_cpuVendorCstr, "IBM");
+            break;
+        }
+            
+    #endif
+
+    initTime();
+
+    getStandardProcessorExtensions();
+}
+
+
+void checkForCPUID() {
+    unsigned long bitChanged = 0;
+
+    // We've to check if we can toggle the flag register bit 21.
+    // If we can't the processor does not support the CPUID command.
+    
+#   ifdef _MSC_VER
+        __asm {
+                push eax
+                push ebx
+                pushfd
+                pushfd
+                pop   eax
+                mov   ebx, eax
+                xor   eax, 0x00200000 
+                push  eax
+                popfd
+                pushfd
+                pop   eax
+                popfd
+                xor   eax, ebx 
+                mov   bitChanged, eax
+                pop ebx
+                pop eax
+        }
+
+#    elif defined(__GNUC__) && defined(i386)
+        // Linux
+        __asm__ (
+"        pushfl                      # Get original EFLAGS             \n"
+"        pushfl                                                        \n"
+"        popl    %%eax                                                 \n"
+"        movl    %%eax, %%ecx                                          \n"
+"        xorl    $0x200000, %%eax    # Flip ID bit in EFLAGS           \n"
+"        pushl   %%eax               # Save new EFLAGS value on stack  \n"
+"        popfl                       # Replace current EFLAGS value    \n"
+"        pushfl                      # Get new EFLAGS                  \n"
+"        popl    %%eax               # Store new EFLAGS in EAX         \n"
+"        popfl                                                         \n"
+"        xorl    %%ecx, %%eax        # Can not toggle ID bit,          \n"
+"        movl    %%eax, %0           # We have CPUID support           \n"
+        : "=m" (bitChanged)
+        : // No inputs
+        : "%eax", "%ecx"
+        );
+
+#    else               
+       // Unknown architecture
+        _cpuID = false;
+#    endif
+
+    _cpuID = ((bitChanged) ? true : false);
+}
+
+
+void getStandardProcessorExtensions() {
+    if (! _cpuID) {
+        return;
+    }
+
+    unsigned long features;
+
+    // Invoking CPUID with '1' in EAX fills out edx with a bit string.
+    // The bits of this value indicate the presence or absence of 
+    // useful processor features.
+    #ifdef _MSC_VER
+        // Windows
+
+            __asm {
+            push eax
+            push ebx
+            push ecx
+            push edx
+                    mov eax, 1
+                    cpuid
+                    mov features, edx
+            pop edx
+            pop ecx
+            pop ebx
+            pop eax
+            }
+
+    #elif defined(__GNUC__) && defined(i386)
+        // Linux
+        __asm__ (
+                "movl    $1, %%eax                                                 \n"
+                "cpuid                       # Get family/model/stepping/features  \n"
+                "movl    %%edx, %0                                                 \n"
+                : 
+                "=m" (features)
+                : 
+                // No inputs
+                : 
+                "%eax", "%ebx", "%ecx", "%edx" );
+
+    #else
+        // Other
+        features = 0;
+    #endif
+    
+        // FPU_FloatingPointUnit                                                        = checkBit(features, 0);
+        // VME_Virtual8086ModeEnhancements                                      = checkBit(features, 1);
+        // DE_DebuggingExtensions                                                       = checkBit(features, 2);
+        // PSE_PageSizeExtensions                                                       = checkBit(features, 3);
+        // TSC_TimeStampCounter                                                         = checkBit(features, 4);
+        // MSR_ModelSpecificRegisters                                           = checkBit(features, 5);
+        // PAE_PhysicalAddressExtension                                         = checkBit(features, 6);
+        // MCE_MachineCheckException                                            = checkBit(features, 7);
+        // CX8_COMPXCHG8B_Instruction                                           = checkBit(features, 8);
+        // APIC_AdvancedProgrammableInterruptController         = checkBit(features, 9);
+        // APIC_ID                                                                                      = (ebxreg >> 24) & 0xFF;
+        // SEP_FastSystemCall                                                           = checkBit(features, 11);
+        // MTRR_MemoryTypeRangeRegisters                                        = checkBit(features, 12);
+        // PGE_PTE_GlobalFlag                                                           = checkBit(features, 13);
+        // MCA_MachineCheckArchitecture                                         = checkBit(features, 14);
+        // CMOV_ConditionalMoveAndCompareInstructions           = checkBit(features, 15);
+
+    // (According to SDL)
+        _rdtsc                                                                  = checkBit(features, 16);
+
+        // PSE36_36bitPageSizeExtension                                         = checkBit(features, 17);
+        // PN_ProcessorSerialNumber                                                     = checkBit(features, 18);
+        // CLFSH_CFLUSH_Instruction                                                     = checkBit(features, 19);
+        // CLFLUSH_InstructionCacheLineSize                                     = (ebxreg >> 8) & 0xFF;
+        // DS_DebugStore                                                                        = checkBit(features, 21);
+        // ACPI_ThermalMonitorAndClockControl                           = checkBit(features, 22);
+        _mmx                                                                                            = checkBit(features, 23);
+        // FXSR_FastStreamingSIMD_ExtensionsSaveRestore         = checkBit(features, 24);
+        _sse                                                                                            = checkBit(features, 25);
+        _sse2                                                                                           = checkBit(features, 26);
+        // SS_SelfSnoop                                                                         = checkBit(features, 27);
+        // HT_HyperThreading                                                            = checkBit(features, 28);
+        // HT_HyterThreadingSiblings = (ebxreg >> 16) & 0xFF;
+        // TM_ThermalMonitor                                                            = checkBit(features, 29);
+        // IA64_Intel64BitArchitecture                                          = checkBit(features, 30);
+        _3dnow                                              = checkBit(features, 31);
+}
+
+
+#undef checkBit
+
+
+
+#if defined(SSE)
+
+// Copy in 128 bytes chunks, where each chunk contains 8*float32x4 = 8 * 4 * 4 bytes = 128 bytes
+//
+//
+void memcpySSE2(void* dst, const void* src, int nbytes) {
+    int remainingBytes = nbytes;
+
+    if (nbytes > 128) {
+
+        // Number of chunks
+        int N = nbytes / 128;
+
+        float* restrict d = (float*)dst;
+        const float* restrict s = (const float*)src;
+    
+        // Finish when the destination pointer has moved 8N elements 
+        float* stop = d + (N * 8 * 4);
+
+        while (d < stop) {
+            // Inner loop unrolled 8 times
+            const __m128 r0 = _mm_loadu_ps(s);
+            const __m128 r1 = _mm_loadu_ps(s + 4);
+            const __m128 r2 = _mm_loadu_ps(s + 8);
+            const __m128 r3 = _mm_loadu_ps(s + 12);
+            const __m128 r4 = _mm_loadu_ps(s + 16);
+            const __m128 r5 = _mm_loadu_ps(s + 20);
+            const __m128 r6 = _mm_loadu_ps(s + 24);
+            const __m128 r7 = _mm_loadu_ps(s + 28);
+
+            _mm_storeu_ps(d, r0);
+            _mm_storeu_ps(d + 4, r1);
+            _mm_storeu_ps(d + 8, r2);
+            _mm_storeu_ps(d + 12, r3);
+            _mm_storeu_ps(d + 16, r4);
+            _mm_storeu_ps(d + 20, r5);
+            _mm_storeu_ps(d + 24, r6);
+            _mm_storeu_ps(d + 28, r7);
+
+            s += 32;
+            d += 32;
+        }
+
+        remainingBytes -= N * 8 * 4 * 4; 
+    }
+
+    if (remainingBytes > 0) {
+        // Memcpy the rest
+        memcpy((uint8*)dst + (nbytes - remainingBytes), (const uint8*)src + (nbytes - remainingBytes), remainingBytes); 
+    }
+}
+#else
+
+    // Fall back to memcpy
+    void memcpySSE2(void *dst, const void *src, int nbytes) {
+        memcpy(dst, src, nbytes);
+    }
+
+#endif
+
+#if defined(G3D_WIN32) && defined(SSE)
+/** Michael Herf's fast memcpy */
+void memcpyMMX(void* dst, const void* src, int nbytes) {
+    int remainingBytes = nbytes;
+
+    if (nbytes > 64) {
+            _asm {
+                    mov esi, src 
+                    mov edi, dst 
+                    mov ecx, nbytes 
+                    shr ecx, 6 // 64 bytes per iteration 
+
+    loop1: 
+                    movq mm1,  0[ESI] // Read in source data 
+                    movq mm2,  8[ESI]
+                    movq mm3, 16[ESI]
+                    movq mm4, 24[ESI] 
+                    movq mm5, 32[ESI]
+                    movq mm6, 40[ESI]
+                    movq mm7, 48[ESI]
+                    movq mm0, 56[ESI]
+
+                    movntq  0[EDI], mm1 // Non-temporal stores 
+                    movntq  8[EDI], mm2 
+                    movntq 16[EDI], mm3 
+                    movntq 24[EDI], mm4 
+                    movntq 32[EDI], mm5 
+                    movntq 40[EDI], mm6 
+                    movntq 48[EDI], mm7 
+                    movntq 56[EDI], mm0 
+
+                    add esi, 64 
+                    add edi, 64 
+                    dec ecx 
+                    jnz loop1 
+
+                    emms
+            }
+            remainingBytes -= ((nbytes >> 6) << 6); 
+    }
+
+    if (remainingBytes > 0) {
+        // Memcpy the rest
+        memcpy((uint8*)dst + (nbytes - remainingBytes), (const uint8*)src + (nbytes - remainingBytes), remainingBytes); 
+    }
+}
+
+#else
+    // Fall back to memcpy
+    void memcpyMMX(void *dst, const void *src, int nbytes) {
+        memcpy(dst, src, nbytes);
+    }
+
+#endif
+
+
+void System::memcpy(void* dst, const void* src, size_t numBytes) {
+    if (System::hasSSE2() && System::hasMMX()) {
+        G3D::memcpyMMX(dst, src, numBytes);
+    } else if (System::hasSSE() && System::hasMMX()) {
+        G3D::memcpyMMX(dst, src, numBytes);
+    } else {
+        ::memcpy(dst, src, numBytes);
+    }
+}
+
+
+/** Michael Herf's fastest memset. n32 must be filled with the same
+    character repeated. */
+#if defined(G3D_WIN32) && defined(SSE)
+
+// On x86 processors, use MMX
+void memfill(void *dst, int n32, unsigned long i) {
+
+    int originalSize = i;
+    int bytesRemaining = i;
+
+    if (i > 16) {
+        
+        bytesRemaining = i % 16;
+        i -= bytesRemaining;
+                __asm {
+                        movq mm0, n32
+                        punpckldq mm0, mm0
+                        mov edi, dst
+
+                loopwrite:
+
+                        movntq 0[edi], mm0
+                        movntq 8[edi], mm0
+
+                        add edi, 16
+                        sub i, 16
+                        jg loopwrite
+
+                        emms
+                }
+    }
+
+    if (bytesRemaining > 0) {
+        ::memset((uint8*)dst + (originalSize - bytesRemaining), n32, bytesRemaining); 
+    }
+}
+
+#else
+
+// For non x86 processors, we fall back to the standard memset
+void memfill(void *dst, int n32, unsigned long i) {
+    ::memset(dst, n32, i);
+}
+
+#endif
+
+
+void System::memset(void* dst, uint8 value, size_t numBytes) {
+    if (System::hasSSE() && System::hasMMX()) {
+        uint32 v = value;
+        v = v + (v << 8) + (v << 16) + (v << 24); 
+        G3D::memfill(dst, v, numBytes);
+    } else {
+        ::memset(dst, value, numBytes);
+    }
+}
+
+
+std::string System::currentProgramFilename() {
+    char filename[2048];
+
+    #ifdef G3D_WIN32
+    {
+        GetModuleFileName(NULL, filename, sizeof(filename));
+    } 
+    #else
+    {
+            int ret = readlink("/proc/self/exe", filename, sizeof(filename));
+            
+            // In case of an error, leave the handling up to the caller
+        if (ret == -1) {
+                    return "";
+        }
+            
+        debugAssert((int)sizeof(filename) > ret);
+            
+            // Ensure proper NULL termination
+            filename[ret] = 0;      
+    }
+    #endif
+
+    return filename;
+}
+
+
+void System::sleep(RealTime t) {
+
+    // Overhead of calling this function.
+    static const RealTime OVERHEAD = .000006;
+
+    RealTime now = getTick();
+    RealTime wakeupTime = now + t - OVERHEAD;
+
+    RealTime remainingTime = wakeupTime - now;
+    RealTime sleepTime = 0;
+
+    while (remainingTime > 0) {
+        
+
+        if (remainingTime > 0.001) {
+            // Safe to use Sleep with a time... sleep for half the remaining time
+            sleepTime = max(remainingTime * .5, 0.0005);
+        } else if (remainingTime > 0.0001) {
+            // Safe to use Sleep with a zero time;
+            // causes the program to yield only
+            // the current time slice, and then return.
+            sleepTime = 0;
+        } else {
+            // Not safe to use Sleep; busy wait
+            sleepTime = -1;
+        }
+
+        if (sleepTime >= 0) {
+            #ifdef G3D_WIN32
+                // Translate to milliseconds
+                Sleep((int)(sleepTime * 1e3));
+            #else
+                // Translate to microseconds
+                usleep((int)(sleepTime * 1e6));
+            #endif
+        }
+
+        now = getTick();
+        remainingTime = wakeupTime - now;
+    }
+}
+
+
+void System::consoleClearScreen() {
+    #ifdef G3D_WIN32
+        system("cls");
+    #else
+        system("clear");
+    #endif
+}
+
+
+bool System::consoleKeyPressed() {
+    #ifdef G3D_WIN32
+    
+        return _kbhit() != 0;
+
+    #else
+    
+        static const int STDIN = 0;
+        static bool initialized = false;
+
+        if (! initialized) {
+            // Use termios to turn off line buffering
+            termios term;
+            tcgetattr(STDIN, &term);
+            term.c_lflag &= ~ICANON;
+            tcsetattr(STDIN, TCSANOW, &term);
+            setbuf(stdin, NULL);
+            initialized = true;
+        }
+
+        #ifdef G3D_LINUX
+
+            int bytesWaiting;
+            ioctl(STDIN, FIONREAD, &bytesWaiting);
+            return bytesWaiting;
+
+        #else
+
+            timeval timeout;
+            fd_set rdset;
+
+            FD_ZERO(&rdset);
+            FD_SET(STDIN, &rdset);
+            timeout.tv_sec  = 0;
+            timeout.tv_usec = 0;
+
+            return select(STDIN + 1, &rdset, NULL, NULL, &timeout);
+        #endif
+    #endif
+}
+
+
+int System::consoleReadKey() {
+    #ifdef G3D_WIN32
+        return _getch();
+    #else
+        char c;
+        read(0, &c, 1);
+        return c;
+    #endif
+}
+
+
+void initTime() {
+    #ifdef G3D_WIN32
+        if (QueryPerformanceFrequency(&_counterFrequency)) {
+            QueryPerformanceCounter(&_start);
+        }
+
+        struct _timeb t;
+        _ftime(&t);
+
+        realWorldGetTickTime0 = (RealTime)t.time - t.timezone * G3D::MINUTE + (t.dstflag ? G3D::HOUR : 0);
+
+    #else
+        gettimeofday(&_start, NULL);
+        // "sse" = "seconds since epoch".  The time
+        // function returns the seconds since the epoch
+        // GMT (perhaps more correctly called UTC). 
+        time_t gmt = time(NULL);
+        
+        // No call to free or delete is needed, but subsequent
+        // calls to asctime, ctime, mktime, etc. might overwrite
+        // local_time_vals. 
+        tm* localTimeVals = localtime(&gmt);
+    
+        time_t local = gmt;
+        
+        if (localTimeVals) {
+            // tm_gmtoff is already corrected for daylight savings.
+            local = local + localTimeVals->tm_gmtoff;
+        }
+        
+        realWorldGetTickTime0 = local;
+    #endif
+}
+
+
+RealTime System::getTick() { 
+    init();
+    #ifdef G3D_WIN32
+        LARGE_INTEGER now;
+        QueryPerformanceCounter(&now);
+
+        return (RealTime)(now.QuadPart - _start.QuadPart) /
+                _counterFrequency.QuadPart;
+    #else
+        // Linux resolution defaults to 100Hz.
+        // There is no need to do a separate RDTSC call as gettimeofday
+        // actually uses RDTSC when on systems that support it, otherwise
+        // it uses the system clock.
+        struct timeval now;
+        gettimeofday(&now, NULL);
+
+        return (now.tv_sec  - _start.tv_sec) +
+               (now.tv_usec - _start.tv_usec) / 1e6;
+    #endif
+}
+
+
+RealTime System::getLocalTime() {
+    return getTick() + realWorldGetTickTime0;
+}
+
+
+////////////////////////////////////////////////////////////////
+class BufferPool {
+public:
+
+    /** Only store buffers up to these sizes (in bytes) in each pool->
+        Different pools have different management strategies.
+
+        A large block is preallocated for tiny buffers; they are used with
+        tremendous frequency.  Other buffers are allocated as demanded.
+      */
+    enum {tinyBufferSize = 128, smallBufferSize = 1024, medBufferSize = 4096};
+
+    /** 
+       Most buffers we're allowed to store.
+       64000 * 128  = 8 MB (preallocated)
+        1024 * 1024 = 1 MB (allocated on demand)
+        1024 * 4096 = 4 MB (allocated on demand)
+     */
+    enum {maxTinyBuffers = 64000, maxSmallBuffers = 1024, maxMedBuffers = 1024};
+
+private:
+
+    class MemBlock {
+    public:
+        void*           ptr;
+        size_t          bytes;
+
+        inline MemBlock() : ptr(NULL), bytes(0) {}
+        inline MemBlock(void* p, size_t b) : ptr(p), bytes(b) {}
+    };
+
+    MemBlock smallPool[maxSmallBuffers];
+    int smallPoolSize;
+
+    MemBlock medPool[maxMedBuffers];
+    int medPoolSize;
+
+    /** The tiny pool is a single block of storage into which all tiny
+        objects are allocated.  This provides better locality for
+        small objects and avoids the search time, since all tiny
+        blocks are exactly the same size. */
+    void* tinyPool[maxTinyBuffers];
+    int tinyPoolSize;
+
+    /** Pointer to the data in the tiny pool */
+    void* tinyHeap;
+
+#   ifdef G3D_WIN32
+    CRITICAL_SECTION    mutex;
+#   else
+    pthread_mutex_t     mutex;
+#   endif
+
+    /** Provide synchronization between threads */
+    void lock() {
+#       ifdef G3D_WIN32
+            EnterCriticalSection(&mutex);
+#       else
+            pthread_mutex_lock(&mutex);
+#       endif
+    }
+
+    void unlock() {
+#       ifdef G3D_WIN32
+            LeaveCriticalSection(&mutex);
+#       else
+            pthread_mutex_unlock(&mutex);
+#       endif
+    }
+
+    /** 
+     Malloc out of the tiny heap.
+     */
+    inline void* tinyMalloc(size_t bytes) {
+        // Note that we ignore the actual byte size
+        // and create a constant size block.
+        (void)bytes;
+        debugAssert(tinyBufferSize >= bytes);
+
+        void* ptr = NULL;
+
+        if (tinyPoolSize > 0) {
+            --tinyPoolSize;
+            // Return the last one
+            ptr = tinyPool[tinyPoolSize];
+        }
+
+        return ptr;
+    }
+
+    /** Returns true if this is a pointer into the tiny heap. */
+    bool inTinyHeap(void* ptr) {
+        return (ptr >= tinyHeap) && 
+               (ptr < (uint8*)tinyHeap + maxTinyBuffers * tinyBufferSize);
+    }
+
+    void tinyFree(void* ptr) {
+        debugAssert(tinyPoolSize < maxTinyBuffers);
+
+        // Put the pointer back into the free list
+        tinyPool[tinyPoolSize] = ptr;
+        ++tinyPoolSize;
+
+    }
+
+    void flushPool(MemBlock* pool, int& poolSize) {
+        for (int i = 0; i < poolSize; ++i) {
+            ::free(pool->ptr);
+            pool->ptr = NULL;
+            pool->bytes = 0;
+        }
+        poolSize = 0;
+    }
+
+
+    /**  Allocate out of a specific pool->  Return NULL if no suitable 
+         memory was found. 
+    
+         */
+    void* malloc(MemBlock* pool, int& poolSize, size_t bytes) {
+
+        // OPT: find the smallest block that satisfies the request.
+
+        // See if there's something we can use in the buffer pool->
+        // Search backwards since usually we'll re-use the last one.
+        for (int i = (int)poolSize - 1; i >= 0; --i) {
+            if (pool[i].bytes >= bytes) {
+                // We found a suitable entry in the pool->
+
+                // No need to offset the pointer; it is already offset
+                void* ptr = pool[i].ptr;
+
+                // Remove this element from the pool
+                --poolSize;
+                pool[i] = pool[poolSize];
+
+                return ptr;
+            }
+        }
+
+        return NULL;
+    }
+
+public:
+
+    /** Count of memory allocations that have occurred. */
+    int totalMallocs;
+    int mallocsFromTinyPool;
+    int mallocsFromSmallPool;
+    int mallocsFromMedPool;
+
+    /** Amount of memory currently allocated (according to the application). 
+        This does not count the memory still remaining in the buffer pool,
+        but does count extra memory required for rounding off to the size
+        of a buffer.
+        Primarily useful for detecting leaks.*/
+    // TODO: make me an atomic int!
+    int bytesAllocated;
+
+    BufferPool() {
+        totalMallocs         = 0;
+
+        mallocsFromTinyPool  = 0;
+        mallocsFromSmallPool = 0;
+        mallocsFromMedPool   = 0;
+
+        bytesAllocated       = true;
+
+        tinyPoolSize         = 0;
+        tinyHeap             = NULL;
+
+        smallPoolSize        = 0;
+
+        medPoolSize          = 0;
+
+
+        // Initialize the tiny heap as a bunch of pointers into one
+        // pre-allocated buffer.
+        tinyHeap = ::malloc(maxTinyBuffers * tinyBufferSize);
+        for (int i = 0; i < maxTinyBuffers; ++i) {
+            tinyPool[i] = (uint8*)tinyHeap + (tinyBufferSize * i);
+        }
+        tinyPoolSize = maxTinyBuffers;
+
+#       ifdef G3D_WIN32
+            InitializeCriticalSection(&mutex);
+#       else
+            pthread_mutex_init(&mutex, NULL);
+#       endif
+    }
+
+
+    ~BufferPool() {
+        ::free(tinyHeap);
+#       ifdef G3D_WIN32
+            DeleteCriticalSection(&mutex);
+#       else
+            // No destruction on pthreads
+#       endif
+    }
+
+    
+    void* realloc(void* ptr, size_t bytes) {
+        if (ptr == NULL) {
+            return malloc(bytes);
+        }
+
+        if (inTinyHeap(ptr)) {
+            if (bytes <= tinyBufferSize) {
+                // The old pointer actually had enough space.
+                return ptr;
+            } else {
+                // Free the old pointer and malloc
+                
+                void* newPtr = malloc(bytes);
+                System::memcpy(newPtr, ptr, tinyBufferSize);
+                tinyFree(ptr);
+                return newPtr;
+
+            }
+        } else {
+            // In one of our heaps.
+
+            // See how big the block really was
+            size_t realSize = ((uint32*)ptr)[-1];
+            if (bytes <= realSize) {
+                // The old block was big enough.
+                return ptr;
+            }
+
+            // Need to reallocate
+            void* newPtr = malloc(bytes);
+            System::memcpy(newPtr, ptr, realSize);
+            free(ptr);
+            return newPtr;
+        }
+    }
+
+
+    void* malloc(size_t bytes) {
+        lock();
+        ++totalMallocs;
+
+        if (bytes <= tinyBufferSize) {
+
+            void* ptr = tinyMalloc(bytes);
+
+            if (ptr) {
+                ++mallocsFromTinyPool;
+                unlock();
+                return ptr;
+            }
+
+        } 
+        
+        // Failure to allocate a tiny buffer is allowed to flow
+        // through to a small buffer
+        if (bytes <= smallBufferSize) {
+            
+            void* ptr = malloc(smallPool, smallPoolSize, bytes);
+
+            if (ptr) {
+                ++mallocsFromSmallPool;
+                unlock();
+                return ptr;
+            }
+
+        } else  if (bytes <= medBufferSize) {
+            // Note that a small allocation failure does *not* fall
+            // through into a medium allocation because that would
+            // waste the medium buffer's resources.
+
+            void* ptr = malloc(medPool, medPoolSize, bytes);
+
+            if (ptr) {
+                ++mallocsFromMedPool;
+                unlock();
+                return ptr;
+            }
+        }
+
+        bytesAllocated += 4 + bytes;
+        unlock();
+
+        // Heap allocate
+
+        // Allocate 4 extra bytes for our size header (unfortunate,
+        // since malloc already added its own header).
+        void* ptr = ::malloc(bytes + 4);
+
+        if (ptr == NULL) {
+            // Flush memory pools to try and recover space
+            flushPool(smallPool, smallPoolSize);
+            flushPool(medPool, medPoolSize);
+            ptr = ::malloc(bytes + 4);
+        }
+
+
+        if (ptr == NULL) {
+            if ((System::outOfMemoryCallback != NULL) &&
+                (System::outOfMemoryCallback(bytes + 4, true) == true)) {
+                // Re-attempt the malloc
+                ptr = ::malloc(bytes + 4);
+            }
+        }
+
+        if (ptr == NULL) {
+            if (System::outOfMemoryCallback != NULL) {
+                // Notify the application
+                System::outOfMemoryCallback(bytes + 4, false);
+            }
+            return NULL;
+        }
+
+        *(uint32*)ptr = bytes;
+
+        return (uint8*)ptr + 4;
+    }
+
+
+    void free(void* ptr) {
+        if (ptr == NULL) {
+            // Free does nothing on null pointers
+            return;
+        }
+
+        debugAssert(isValidPointer(ptr));
+
+        if (inTinyHeap(ptr)) {
+            lock();
+            tinyFree(ptr);
+            unlock();
+            return;
+        }
+
+        uint32 bytes = ((uint32*)ptr)[-1];
+
+        lock();
+        if (bytes <= smallBufferSize) {
+            if (smallPoolSize < maxSmallBuffers) {
+                smallPool[smallPoolSize] = MemBlock(ptr, bytes);
+                ++smallPoolSize;
+                unlock();
+                return;
+            }
+        } else if (bytes <= medBufferSize) {
+            if (medPoolSize < maxMedBuffers) {
+                medPool[medPoolSize] = MemBlock(ptr, bytes);
+                ++medPoolSize;
+                unlock();
+                return;
+            }
+        }
+        bytesAllocated -= bytes + 4;
+        unlock();
+
+        // Free; the buffer pools are full or this is too big to store.
+        ::free((uint8*)ptr - 4);
+    }
+
+    std::string performance() const {
+        if (totalMallocs > 0) {
+            int pooled = mallocsFromTinyPool +
+                         mallocsFromSmallPool + 
+                         mallocsFromMedPool;
+
+            int total = totalMallocs;
+
+            return format("malloc performance: %5.1f%% <= %db, %5.1f%% <= %db, "
+                          "%5.1f%% <= %db, %5.1f%% > %db",
+                          100.0 * mallocsFromTinyPool  / total,
+                          BufferPool::tinyBufferSize,
+                          100.0 * mallocsFromSmallPool / total,
+                          BufferPool::smallBufferSize,
+                          100.0 * mallocsFromMedPool   / total,
+                          BufferPool::medBufferSize,
+                          100.0 * (1.0 - (double)pooled / total),
+                          BufferPool::medBufferSize);
+        } else {
+            return "No System::malloc calls made yet.";
+        }
+    }
+
+    std::string status() const {
+        return format("preallocated shared buffers: %5d/%d x %db",
+            maxTinyBuffers - tinyPoolSize, maxTinyBuffers, tinyBufferSize);
+    }
+};
+
+// Dynamically allocated because we need to ensure that
+// the buffer pool is still around when the last global variable 
+// is deallocated.
+static BufferPool* bufferpool = NULL;
+
+std::string System::mallocPerformance() {    
+#ifndef NO_BUFFERPOOL
+    return bufferpool->performance();
+#else
+	return "NO_BUFFERPOOL";
+#endif
+}
+
+std::string System::mallocStatus() {    
+#ifndef NO_BUFFERPOOL
+    return bufferpool->status();
+#else
+	return "NO_BUFFERPOOL";
+#endif
+}
+
+
+void System::resetMallocPerformanceCounters() {
+#ifndef NO_BUFFERPOOL
+    bufferpool->totalMallocs         = 0;
+    bufferpool->mallocsFromMedPool   = 0;
+    bufferpool->mallocsFromSmallPool = 0;
+    bufferpool->mallocsFromTinyPool  = 0;
+#endif
+}
+
+
+#ifndef NO_BUFFERPOOL
+inline void initMem() {
+    // Putting the test here ensures that the system is always
+    // initialized, even when globals are being allocated.
+    static bool initialized = false;
+    if (! initialized) {
+        bufferpool = new BufferPool();
+        initialized = true;
+    }
+}
+#endif
+
+
+void* System::malloc(size_t bytes) {
+#ifndef NO_BUFFERPOOL
+    initMem();
+    return bufferpool->malloc(bytes);
+#else
+    return ::malloc(bytes);
+#endif
+}
+
+void* System::calloc(size_t n, size_t x) {
+#ifndef NO_BUFFERPOOL
+    void* b = System::malloc(n * x);
+    System::memset(b, 0, n * x);
+    return b;
+#else
+    return ::calloc(n, x);
+#endif
+}
+
+
+void* System::realloc(void* block, size_t bytes) {
+#ifndef NO_BUFFERPOOL
+    initMem();
+    return bufferpool->realloc(block, bytes);
+#else
+	return ::realloc(block, bytes);
+#endif
+}
+
+
+void System::free(void* p) {
+#ifndef NO_BUFFERPOOL
+    bufferpool->free(p);
+#else
+	return ::free(p);
+#endif
+}
+
+
+void* System::alignedMalloc(size_t bytes, size_t alignment) {
+    alwaysAssertM(isPow2(alignment), "alignment must be a power of 2");
+
+    // We must align to at least a word boundary.
+    alignment = iMax(alignment, sizeof(void *));
+
+    // Pad the allocation size with the alignment size and the
+    // size of the redirect pointer.
+    size_t totalBytes = bytes + alignment + sizeof(void*);
+
+    size_t truePtr = (size_t)System::malloc(totalBytes);
+
+    if (truePtr == 0) {
+        // malloc returned NULL
+        return NULL;
+    }
+
+    debugAssert(isValidHeapPointer((void*)truePtr));
+    #ifdef G3D_WIN32
+    // The blocks we return will not be valid Win32 debug heap
+    // pointers because they are offset 
+    //  debugAssert(_CrtIsValidPointer((void*)truePtr, totalBytes, TRUE) );
+    #endif
+
+    // The return pointer will be the next aligned location (we must at least
+    // leave space for the redirect pointer, however).
+    size_t  alignedPtr = truePtr + sizeof(void*);
+
+    // 2^n - 1 has the form 1111... in binary.
+    uint32 bitMask = (alignment - 1);
+
+    // Advance forward until we reach an aligned location.
+    while ((alignedPtr & bitMask) != 0) {
+        alignedPtr += sizeof(void*);
+    }
+
+    debugAssert(alignedPtr - truePtr + bytes <= totalBytes);
+
+    // Immediately before the aligned location, write the true array location
+    // so that we can free it correctly.
+    size_t* redirectPtr = (size_t *)(alignedPtr - sizeof(void *));
+    redirectPtr[0] = truePtr;
+
+    debugAssert(isValidHeapPointer((void*)truePtr));
+
+    #ifdef G3D_WIN32
+        debugAssert( _CrtIsValidPointer((void*)alignedPtr, bytes, TRUE) );
+    #endif
+    return (void *)alignedPtr;
+}
+
+
+void System::alignedFree(void* _ptr) {
+    if (_ptr == NULL) {
+        return;
+    }
+
+    size_t alignedPtr = (size_t)_ptr;
+
+    // Back up one word from the pointer the user passed in.
+    // We now have a pointer to a pointer to the true start
+    // of the memory block.
+    size_t* redirectPtr = (size_t*)(alignedPtr - sizeof(void *));
+
+    // Dereference that pointer so that ptr = true start
+    void* truePtr = (void*)redirectPtr[0];
+
+    debugAssert(isValidHeapPointer((void*)truePtr));
+    System::free(truePtr);
+}
+
+
+void System::setEnv(const std::string& name, const std::string& value) {
+    std::string cmd = name + "=" + value;
+#   ifdef G3D_WIN32
+        _putenv(cmd.c_str());
+#   else
+        // Many linux implementations of putenv expect char*
+        putenv(const_cast<char*>(cmd.c_str()));
+#   endif
+}
+
+const char* System::getEnv(const std::string& name) {
+    return getenv(name.c_str());
+}
+
+static void var(TextOutput& t, const std::string& name, const std::string& val) {
+    t.writeSymbols(name,"=");
+    t.writeString(val);
+    t.writeNewline();
+}
+
+
+static void var(TextOutput& t, const std::string& name, const bool val) {
+    t.writeSymbols(name, "=", val ? "Yes" : "No");
+    t.writeNewline();
+}
+
+
+static void var(TextOutput& t, const std::string& name, const int val) {
+    t.writeSymbols(name,"=");
+    t.writeNumber(val);
+    t.writeNewline();
+}
+
+void System::describeSystem(
+    std::string&        s) {
+
+    TextOutput t;
+    describeSystem(t);
+    t.commitString(s);
+}
+
+void System::describeSystem(
+    TextOutput& t) {
+
+    t.writeSymbols("OS", "{");
+    t.writeNewline();
+    t.pushIndent();
+        var(t, "Name", System::operatingSystem());
+    t.popIndent();
+    t.writeSymbols("}");
+    t.writeNewline();
+    t.writeNewline();
+
+    t.writeSymbols("CPU", "{");
+    t.writeNewline();
+    t.pushIndent();
+        var(t, "Vendor", System::cpuVendor());
+        var(t, "Architecture", System::cpuArchitecture());
+        var(t, "hasCPUID", System::hasCPUID());
+        var(t, "hasMMX", System::hasMMX());
+        var(t, "hasSSE", System::hasSSE());
+        var(t, "hasSSE2", System::hasSSE2());
+        var(t, "has3DNow", System::has3DNow());
+        var(t, "hasRDTSC", System::hasRDTSC());
+    t.popIndent();
+    t.writeSymbols("}");
+    t.writeNewline();
+    t.writeNewline();
+       
+    t.writeSymbols("G3D", "{");
+    t.writeNewline();
+    t.pushIndent();
+        var(t, "Link version", G3D_VER);
+        var(t, "Compile version", System::version());
+    t.popIndent();
+    t.writeSymbols("}");
+    t.writeNewline();
+    t.writeNewline();
+}
+
+int System::cpuSpeedMHz() {
+    return _CPUSpeed;
+}
+
+}  // namespace

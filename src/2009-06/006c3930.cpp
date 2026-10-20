@@ -1,53 +1,221 @@
 // from server: 100% by auto
-// roc 2009-06 006c3930  unit: lua_exception  size: 119 bytes
-// Make this compile to the exact bytes below, then: roc check 2009-06 006c3930
-//
-// 006c3930  53                   push ebx
-// 006c3931  56                   push esi
-// 006c3932  8b74240c             mov esi, dword ptr [esp + 0xc]
-// 006c3936  8b5e10               mov ebx, dword ptr [esi + 0x10]
-// 006c3939  57                   push edi
-// 006c393a  8bfe                 mov edi, esi
-// 006c393c  e86fffffff           call 0x6c38b0
-// 006c3941  6a02                 push 2
-// 006c3943  6a00                 push 0
-// 006c3945  56                   push esi
-// 006c3946  e805880200           call 0x6ec150
-// 006c394b  6a02                 push 2
-// 006c394d  894648               mov dword ptr [esi + 0x48], eax
-// 006c3950  c7465005000000       mov dword ptr [esi + 0x50], 5
-// 006c3957  8b7e10               mov edi, dword ptr [esi + 0x10]
-// 006c395a  6a00                 push 0
-// 006c395c  56                   push esi
-// 006c395d  83c760               add edi, 0x60
-// 006c3960  e8eb870200           call 0x6ec150
-// 006c3965  6a20                 push 0x20
-// 006c3967  56                   push esi
-// 006c3968  8907                 mov dword ptr [edi], eax
-// 006c396a  c7470805000000       mov dword ptr [edi + 8], 5
-// 006c3971  e86a900200           call 0x6ec9e0
-// 006c3976  56                   push esi
-// 006c3977  e824640200           call 0x6e9da0
-// 006c397c  56                   push esi
-// 006c397d  e81ed80200           call 0x6f11a0
-// 006c3982  6a11                 push 0x11
-// 006c3984  6894b68e00           push 0x8eb694
-// 006c3989  56                   push esi
-// 006c398a  e8b1910200           call 0x6ecb40
-// 006c398f  80480520             or byte ptr [eax + 5], 0x20
-// 006c3993  83c005               add eax, 5
-// 006c3996  8b4344               mov eax, dword ptr [ebx + 0x44]
-// 006c3999  83c434               add esp, 0x34
-// 006c399c  03c0                 add eax, eax
-// 006c399e  5f                   pop edi
-// 006c399f  03c0                 add eax, eax
-// 006c39a1  5e                   pop esi
-// 006c39a2  894340               mov dword ptr [ebx + 0x40], eax
-// 006c39a5  5b                   pop ebx
-// 006c39a6  c3                   ret 
-// library lua-5.1.4/lstate.c (function _f_luaopen)
-
 // roc-lang: c
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /MD
 // roc-lib: lua-5.1.4 lstate.c
+
+// Candidate translation unit (score above; library headers required).
+/*
+** $Id: lstate.c,v 2.36.1.2 2008/01/03 15:20:39 roberto Exp $
+** Global State
+** See Copyright Notice in lua.h
+*/
+
+
+#include <stddef.h>
+
+#define lstate_c
+#define LUA_CORE
+
+#include "lua.h"
+
+#include "ldebug.h"
+#include "ldo.h"
+#include "lfunc.h"
+#include "lgc.h"
+#include "llex.h"
+#include "lmem.h"
+#include "lstate.h"
+#include "lstring.h"
+#include "ltable.h"
+#include "ltm.h"
+
+
+#define state_size(x)	(sizeof(x) + LUAI_EXTRASPACE)
+#define fromstate(l)	(cast(lu_byte *, (l)) - LUAI_EXTRASPACE)
+#define tostate(l)   (cast(lua_State *, cast(lu_byte *, l) + LUAI_EXTRASPACE))
+
+
+/*
+** Main thread combines a thread state and the global state
+*/
+typedef struct LG {
+  lua_State l;
+  global_State g;
+} LG;
+  
+
+
+static void stack_init (lua_State *L1, lua_State *L) {
+  /* initialize CallInfo array */
+  L1->base_ci = luaM_newvector(L, BASIC_CI_SIZE, CallInfo);
+  L1->ci = L1->base_ci;
+  L1->size_ci = BASIC_CI_SIZE;
+  L1->end_ci = L1->base_ci + L1->size_ci - 1;
+  /* initialize stack array */
+  L1->stack = luaM_newvector(L, BASIC_STACK_SIZE + EXTRA_STACK, TValue);
+  L1->stacksize = BASIC_STACK_SIZE + EXTRA_STACK;
+  L1->top = L1->stack;
+  L1->stack_last = L1->stack+(L1->stacksize - EXTRA_STACK)-1;
+  /* initialize first ci */
+  L1->ci->func = L1->top;
+  setnilvalue(L1->top++);  /* `function' entry for this `ci' */
+  L1->base = L1->ci->base = L1->top;
+  L1->ci->top = L1->top + LUA_MINSTACK;
+}
+
+
+static void freestack (lua_State *L, lua_State *L1) {
+  luaM_freearray(L, L1->base_ci, L1->size_ci, CallInfo);
+  luaM_freearray(L, L1->stack, L1->stacksize, TValue);
+}
+
+
+/*
+** open parts that may cause memory-allocation errors
+*/
+static void f_luaopen (lua_State *L, void *ud) {
+  global_State *g = G(L);
+  UNUSED(ud);
+  stack_init(L, L);  /* init stack */
+  sethvalue(L, gt(L), luaH_new(L, 0, 2));  /* table of globals */
+  sethvalue(L, registry(L), luaH_new(L, 0, 2));  /* registry */
+  luaS_resize(L, MINSTRTABSIZE);  /* initial size of string table */
+  luaT_init(L);
+  luaX_init(L);
+  luaS_fix(luaS_newliteral(L, MEMERRMSG));
+  g->GCthreshold = 4*g->totalbytes;
+}
+
+
+static void preinit_state (lua_State *L, global_State *g) {
+  G(L) = g;
+  L->stack = NULL;
+  L->stacksize = 0;
+  L->errorJmp = NULL;
+  L->hook = NULL;
+  L->hookmask = 0;
+  L->basehookcount = 0;
+  L->allowhook = 1;
+  resethookcount(L);
+  L->openupval = NULL;
+  L->size_ci = 0;
+  L->nCcalls = L->baseCcalls = 0;
+  L->status = 0;
+  L->base_ci = L->ci = NULL;
+  L->savedpc = NULL;
+  L->errfunc = 0;
+  setnilvalue(gt(L));
+}
+
+
+static void close_state (lua_State *L) {
+  global_State *g = G(L);
+  luaF_close(L, L->stack);  /* close all upvalues for this thread */
+  luaC_freeall(L);  /* collect all objects */
+  lua_assert(g->rootgc == obj2gco(L));
+  lua_assert(g->strt.nuse == 0);
+  luaM_freearray(L, G(L)->strt.hash, G(L)->strt.size, TString *);
+  luaZ_freebuffer(L, &g->buff);
+  freestack(L, L);
+  lua_assert(g->totalbytes == sizeof(LG));
+  (*g->frealloc)(g->ud, fromstate(L), state_size(LG), 0);
+}
+
+
+lua_State *luaE_newthread (lua_State *L) {
+  lua_State *L1 = tostate(luaM_malloc(L, state_size(lua_State)));
+  luaC_link(L, obj2gco(L1), LUA_TTHREAD);
+  preinit_state(L1, G(L));
+  stack_init(L1, L);  /* init stack */
+  setobj2n(L, gt(L1), gt(L));  /* share table of globals */
+  L1->hookmask = L->hookmask;
+  L1->basehookcount = L->basehookcount;
+  L1->hook = L->hook;
+  resethookcount(L1);
+  lua_assert(iswhite(obj2gco(L1)));
+  return L1;
+}
+
+
+void luaE_freethread (lua_State *L, lua_State *L1) {
+  luaF_close(L1, L1->stack);  /* close all upvalues for this thread */
+  lua_assert(L1->openupval == NULL);
+  luai_userstatefree(L1);
+  freestack(L, L1);
+  luaM_freemem(L, fromstate(L1), state_size(lua_State));
+}
+
+
+LUA_API lua_State *lua_newstate (lua_Alloc f, void *ud) {
+  int i;
+  lua_State *L;
+  global_State *g;
+  void *l = (*f)(ud, NULL, 0, state_size(LG));
+  if (l == NULL) return NULL;
+  L = tostate(l);
+  g = &((LG *)L)->g;
+  L->next = NULL;
+  L->tt = LUA_TTHREAD;
+  g->currentwhite = bit2mask(WHITE0BIT, FIXEDBIT);
+  L->marked = luaC_white(g);
+  set2bits(L->marked, FIXEDBIT, SFIXEDBIT);
+  preinit_state(L, g);
+  g->frealloc = f;
+  g->ud = ud;
+  g->mainthread = L;
+  g->uvhead.u.l.prev = &g->uvhead;
+  g->uvhead.u.l.next = &g->uvhead;
+  g->GCthreshold = 0;  /* mark it as unfinished state */
+  g->strt.size = 0;
+  g->strt.nuse = 0;
+  g->strt.hash = NULL;
+  setnilvalue(registry(L));
+  luaZ_initbuffer(L, &g->buff);
+  g->panic = NULL;
+  g->gcstate = GCSpause;
+  g->rootgc = obj2gco(L);
+  g->sweepstrgc = 0;
+  g->sweepgc = &g->rootgc;
+  g->gray = NULL;
+  g->grayagain = NULL;
+  g->weak = NULL;
+  g->tmudata = NULL;
+  g->totalbytes = sizeof(LG);
+  g->gcpause = LUAI_GCPAUSE;
+  g->gcstepmul = LUAI_GCMUL;
+  g->gcdept = 0;
+  for (i=0; i<NUM_TAGS; i++) g->mt[i] = NULL;
+  if (luaD_rawrunprotected(L, f_luaopen, NULL) != 0) {
+    /* memory allocation error: free partial state */
+    close_state(L);
+    L = NULL;
+  }
+  else
+    luai_userstateopen(L);
+  return L;
+}
+
+
+static void callallgcTM (lua_State *L, void *ud) {
+  UNUSED(ud);
+  luaC_callGCTM(L);  /* call GC metamethods for all udata */
+}
+
+
+LUA_API void lua_close (lua_State *L) {
+  L = G(L)->mainthread;  /* only the main thread can be closed */
+  lua_lock(L);
+  luaF_close(L, L->stack);  /* close all upvalues for this thread */
+  luaC_separateudata(L, 1);  /* separate udata that have GC metamethods */
+  L->errfunc = 0;  /* no error function during GC metamethods */
+  do {  /* repeat until no more errors */
+    L->ci = L->base_ci;
+    L->base = L->top = L->ci->base;
+    L->nCcalls = L->baseCcalls = 0;
+  } while (luaD_rawrunprotected(L, callallgcTM, NULL) != 0);
+  lua_assert(G(L)->tmudata == NULL);
+  luai_userstateclose(L);
+  close_state(L);
+}
+

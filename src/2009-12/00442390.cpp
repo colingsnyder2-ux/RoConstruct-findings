@@ -1,64 +1,160 @@
-// roc 2009-12 00442390  unit: 1RBX::Metadata::VReflection::?$FactoryProduct  size: 138 bytes
-// Make this compile to the exact bytes below, then: roc check 2009-12 00442390
-//
-// 00442390  8b44240c             mov eax, dword ptr [esp + 0xc]
-// 00442394  56                   push esi
-// 00442395  8b742408             mov esi, dword ptr [esp + 8]
-// 00442399  3b74240c             cmp esi, dword ptr [esp + 0xc]
-// 0044239d  7479                 je 0x442418
-// 0044239f  53                   push ebx
-// 004423a0  55                   push ebp
-// 004423a1  57                   push edi
-// 004423a2  8d780c               lea edi, [eax + 0xc]
-// 004423a5  8b0e                 mov ecx, dword ptr [esi]
-// 004423a7  8908                 mov dword ptr [eax], ecx
-// 004423a9  8b5604               mov edx, dword ptr [esi + 4]
-// 004423ac  8957f8               mov dword ptr [edi - 8], edx
-// 004423af  8b4e08               mov ecx, dword ptr [esi + 8]
-// 004423b2  894ffc               mov dword ptr [edi - 4], ecx
-// 004423b5  8b6e0c               mov ebp, dword ptr [esi + 0xc]
-// 004423b8  3b2f                 cmp ebp, dword ptr [edi]
-// 004423ba  7446                 je 0x442402
-// 004423bc  85ed                 test ebp, ebp
-// 004423be  740c                 je 0x4423cc
-// 004423c0  8d5504               lea edx, [ebp + 4]
-// 004423c3  b801000000           mov eax, 1
-// 004423c8  f00fc102             lock xadd dword ptr [edx], eax
-// 004423cc  8b1f                 mov ebx, dword ptr [edi]
-// 004423ce  85db                 test ebx, ebx
-// 004423d0  742a                 je 0x4423fc
-// 004423d2  8d4b04               lea ecx, [ebx + 4]
-// 004423d5  83caff               or edx, 0xffffffff
-// 004423d8  f00fc111             lock xadd dword ptr [ecx], edx
-// 004423dc  751e                 jne 0x4423fc
-// 004423de  8b03                 mov eax, dword ptr [ebx]
-// 004423e0  8b5004               mov edx, dword ptr [eax + 4]
-// 004423e3  8bcb                 mov ecx, ebx
-// 004423e5  ffd2                 call edx
-// 004423e7  8d4308               lea eax, [ebx + 8]
-// 004423ea  83c9ff               or ecx, 0xffffffff
-// 004423ed  f00fc108             lock xadd dword ptr [eax], ecx
-// 004423f1  7509                 jne 0x4423fc
-// 004423f3  8b13                 mov edx, dword ptr [ebx]
-// 004423f5  8b4208               mov eax, dword ptr [edx + 8]
-// 004423f8  8bcb                 mov ecx, ebx
-// 004423fa  ffd0                 call eax
-// 004423fc  8b44241c             mov eax, dword ptr [esp + 0x1c]
-// 00442400  892f                 mov dword ptr [edi], ebp
-// 00442402  83c010               add eax, 0x10
-// 00442405  83c610               add esi, 0x10
-// 00442408  83c710               add edi, 0x10
-// 0044240b  8944241c             mov dword ptr [esp + 0x1c], eax
-// 0044240f  3b742418             cmp esi, dword ptr [esp + 0x18]
-// 00442413  7590                 jne 0x4423a5
-// 00442415  5f                   pop edi
-// 00442416  5d                   pop ebp
-// 00442417  5b                   pop ebx
-// 00442418  5e                   pop esi
-// 00442419  c3                   ret 
-// library rbxgs/v8xml\SerializerV2.cpp (function ??$_Copy_opt@PAUIDREFItem@MergeBinder@RBX@@PAU123@Uforward_iterator_tag@std@@@std@@YAPAUIDREFItem@MergeBinder@RBX@@PAU123@00Uforward_iterator_tag@0@U_Nonscalar_ptr_iterator_tag@0@U_Range_checked_iterator_tag@0@@Z)
-
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
 // roc-lib: rbxgs v8xml/SerializerV2.cpp
+
+// Candidate translation unit (score above; library headers required).
+#include "v8xml/SerializerV2.h"
+#include "v8datamodel/DataModel.h"
+#include <boost/bind.hpp>
+#include <algorithm>
+
+bool ArchiveBinder::resolveRefs()
+{
+	size_t counts = std::count_if(idrefBindings.begin(), idrefBindings.end(), boost::bind(&ArchiveBinder::resolveIDREF, this, _1));
+
+	return MergeBinder::resolveRefs() && counts == idrefBindings.size();
+}
+
+bool ArchiveBinder::resolveIDREF(IDREFBinding binding)
+{
+	std::string s;
+	bool success = binding.valueIDREF->getValue(s);
+
+	RBXASSERT(success);
+	RBXASSERT(value_IDREF_nil.name.compare(s));
+	RBXASSERT(value_IDREF_null.name.compare(s));
+	RBXASSERT(s != "");
+
+	std::map<std::string, RBX::InstanceHandle>::iterator found = idMap.find(s);
+	if (found != idMap.end())
+	{
+		RBX::InstanceHandle& foundHandle = found->second;
+		binding.idref->assignIDREF(binding.propertyOwner,foundHandle);
+		return true;
+	}
+	else
+	{
+		binding.idref->assignIDREF(binding.propertyOwner,RBX::InstanceHandle(NULL));
+		return false;
+	}
+}
+
+bool ArchiveBinder::processID(const XmlNameValuePair* valueID, RBX::Instance* source)
+{
+	if (!MergeBinder::processID(valueID, source))
+	{
+		std::string s;
+		bool success = valueID->getValue(s);
+
+		RBXASSERT(success);
+		RBXASSERT(idMap.find(s) == idMap.end());
+
+		idMap[s] = shared_from(source);
+	}
+
+	return true;
+}
+
+bool ArchiveBinder::processIDREF(const XmlNameValuePair* valueIDREF, RBX::Reflection::DescribedBase* propertyOwner, const RBX::IIDREF* idref)
+{
+	if (!MergeBinder::processIDREF(valueIDREF, propertyOwner, idref))
+	{
+		IDREFBinding binding = {valueIDREF, propertyOwner, idref};
+		idrefBindings.push_back(binding);
+	}
+
+	return true;
+}
+
+static void buildIsolationMap(XmlElement* element, std::map<RBX::Instance*, RBX::InstanceHandle>& isolationMap)
+{
+	XmlAttribute* referent = element->findAttribute(name_referent);
+	if (referent)
+	{
+		RBX::InstanceHandle h;
+		bool success = referent->getValue(h);
+
+		RBXASSERT(success);
+		RBXASSERT(isolationMap.find(h.getTarget().get()) == isolationMap.end());
+
+		isolationMap[h.getTarget().get()] = RBX::InstanceHandle();
+	}
+
+	for (XmlElement* child = element->firstChild(); child != NULL; child = element->nextChild(child))
+	{
+		buildIsolationMap(child, isolationMap);
+	}
+}
+
+static void isolate(XmlElement* element, const std::map<RBX::Instance*, RBX::InstanceHandle>& isolationMap)
+{
+	element->replaceHandles(isolationMap);
+
+	for (XmlAttribute* attr = element->getFirstAttribute(); attr != NULL; attr = element->getNextAttribute(attr))
+	{
+		attr->replaceHandles(isolationMap);
+	}
+
+	for (XmlElement* elem = element->firstChild(); elem != NULL; elem = element->nextChild(elem))
+	{
+		isolate(elem, isolationMap);
+	}
+}
+
+void SerializerV2::isolateHandles(XmlElement* root)
+{
+	std::map<RBX::Instance*, RBX::InstanceHandle> isolationMap;
+
+	buildIsolationMap(root, isolationMap);
+	isolate(root, isolationMap);
+}
+
+XmlElement* SerializerV2::newRootElement()
+{
+	static const RBX::Name& tag_xmlnsxmime = RBX::Name::declare("xmlns:xmime", -1);
+
+	XmlElement* thisElement = new XmlElement(tag_roblox);
+	thisElement->addAttribute(tag_xmlnsxmime,"http://www.w3.org/2005/05/xmlmime");
+	thisElement->addAttribute(tag_xmlnsxsi,"http://www.w3.org/2001/XMLSchema-instance");
+	thisElement->addAttribute(tag_xsinoNamespaceSchemaLocation,"http://www.roblox.com/roblox.xsd");
+
+	thisElement->addAttribute(tag_version, 4);
+
+	thisElement->pushBackChild(new XmlElement(tag_External, &value_IDREF_null));
+	thisElement->pushBackChild(new XmlElement(tag_External, &value_IDREF_nil));
+
+	return thisElement;
+}
+
+void SerializerV2::load(XmlElement* root, RBX::DataModel* dataModel)
+{
+	ArchiveBinder binder;
+	dataModel->readChildren(root, binder);
+
+	binder.resolveRefs();
+}
+
+void SerializerV2::loadXML(std::istream& stream, RBX::DataModel* dataModel)
+{
+	TextXmlParser machine(stream.rdbuf());
+	std::auto_ptr<XmlElement> root = machine.parse();
+
+	if (root->getTag() == tag_roblox)
+	{
+		XmlAttribute* version = root->findAttribute(tag_version);
+		if (!version->getValue(schemaVersionLoading))
+			throw std::runtime_error("SerializerV2::loadXML no version number");
+
+		if (schemaVersionLoading < 4)
+			throw std::runtime_error("SerializerV2::loadXML schemaVersionLoading<4");
+
+		load(root.get(), dataModel);
+		dataModel->setDirty(false);
+	}
+	else
+	{
+		schemaVersionLoading = 1;
+		throw std::runtime_error("SerializerV2::loadXML ill-formed XML. No Roblox tag");
+	}
+}

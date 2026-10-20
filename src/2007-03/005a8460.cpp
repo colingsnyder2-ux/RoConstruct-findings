@@ -1,37 +1,114 @@
-// roc 2007-03 005a8460  unit: seg_005a0000  size: 71 bytes
-// Make this compile to the exact bytes below, then: roc check 2007-03 005a8460
-//
-// 005a8460  51                   push ecx
-// 005a8461  56                   push esi
-// 005a8462  8bf1                 mov esi, ecx
-// 005a8464  8b06                 mov eax, dword ptr [esi]
-// 005a8466  85c0                 test eax, eax
-// 005a8468  57                   push edi
-// 005a8469  741b                 je 0x5a8486
-// 005a846b  8d4c2408             lea ecx, [esp + 8]
-// 005a846f  51                   push ecx
-// 005a8470  83c00c               add eax, 0xc
-// 005a8473  50                   push eax
-// 005a8474  89742410             mov dword ptr [esp + 0x10], esi
-// 005a8478  e8f3feffff           call 0x5a8370
-// 005a847d  83c408               add esp, 8
-// 005a8480  c70600000000         mov dword ptr [esi], 0
-// 005a8486  8b7c2410             mov edi, dword ptr [esp + 0x10]
-// 005a848a  85ff                 test edi, edi
-// 005a848c  7413                 je 0x5a84a1
-// 005a848e  8d542410             lea edx, [esp + 0x10]
-// 005a8492  52                   push edx
-// 005a8493  8d4f0c               lea ecx, [edi + 0xc]
-// 005a8496  89742414             mov dword ptr [esp + 0x14], esi
-// 005a849a  e8a1cdfdff           call 0x585240
-// 005a849f  893e                 mov dword ptr [esi], edi
-// 005a84a1  5f                   pop edi
-// 005a84a2  5e                   pop esi
-// 005a84a3  59                   pop ecx
-// 005a84a4  c20400               ret 4
-// library openrbx-client/App\v8world\Mechanism.cpp (function ?setMechanism@MechanismTracker@RBX@@QAEXPAVMechanism@2@@Z)
-
 // roc-lang: cpp
 // roc-cl: 50727
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
 // roc-lib: openrbx-client App/v8world/Mechanism.cpp
+
+// Candidate translation unit (score above; library headers required).
+#include "v8world/Mechanism.h"
+
+#include "decomp.h"
+#include "util/StlExtra.h"
+#include "v8world/Assembly2.h"
+#include "v8world/Primitive.h"
+
+#include <cstddef>
+
+namespace RBX {
+
+// FUNCTION: WEBSERVICE 0x1005ecd0
+Mechanism* MechanismTracker::getMechanism()
+{
+	return mechanism;
+}
+
+// FUNCTION: WEBSERVICE 0x10127280
+Mechanism* Mechanism::getMechanismFromPrimitive(const Primitive* primitive)
+{
+	if (primitive != NULL) {
+		Assembly* assembly = primitive->getAssembly();
+
+		if (assembly != NULL) {
+			return assembly->getMechanism();
+		}
+	}
+
+	return NULL;
+}
+
+// FUNCTION: WEBSERVICE 0x101272a0
+bool MechanismTracker::tracking()
+{
+	return mechanism ? true : false;
+}
+
+// FUNCTION: WEBSERVICE 0x101272b0
+void Mechanism::notifyMovingPrimitives()
+{
+	AssemblySet::iterator it;
+
+	for (it = assemblies.begin(); it != assemblies.end(); ++it) {
+		(*it)->notifyMoved();
+	}
+}
+
+// FUNCTION: WEBSERVICE 0x10127320
+void Mechanism::insertAssembly(Assembly* a)
+{
+	assemblies.insert(a);
+
+	a->setMechanism(this);
+}
+
+// FUNCTION: WEBSERVICE 0x10127350
+void Mechanism::removeAssembly(Assembly* a)
+{
+	assemblies.erase(a);
+
+	a->setMechanism(NULL);
+}
+
+// FUNCTION: WEBSERVICE 0x10127370
+void Mechanism::absorb(Mechanism* smaller)
+{
+	while (smaller->assemblies.size() != 0) {
+		Assembly* assembly = *smaller->assemblies.begin();
+
+		smaller->removeAssembly(assembly);
+
+		insertAssembly(assembly);
+	}
+}
+
+// FUNCTION: WEBSERVICE 0x101274c0
+void MechanismTracker::stopTracking()
+{
+	if (mechanism != NULL) {
+		fastRemoveShort(mechanism->trackers, this);
+
+		mechanism = NULL;
+	}
+}
+
+// FUNCTION: WEBSERVICE 0x101274f0
+void MechanismTracker::setMechanism(Mechanism* m)
+{
+	stopTracking();
+
+	if (m != NULL) {
+		m->trackers.push_back(this);
+
+		mechanism = m;
+	}
+}
+
+// FUNCTION: WEBSERVICE 0x10127540
+void MechanismTracker::transferTrackers(Mechanism* from, Mechanism* to)
+{
+	while (from->trackers.size() != 0) {
+		MechanismTracker* tracker = from->trackers.back();
+
+		tracker->setMechanism(to);
+	}
+}
+
+} // namespace RBX

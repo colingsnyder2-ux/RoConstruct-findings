@@ -1,39 +1,153 @@
-// roc 2012-06 00973dd0  unit: std::D::DU?$char_traits::V?$basic_string::?$thread_specific_ptr::delete_data  size: 111 bytes
-// Make this compile to the exact bytes below, then: roc check 2012-06 00973dd0
-//
-// 00973dd0  6aff                 push -1
-// 00973dd2  6888e0a900           push 0xa9e088
-// 00973dd7  64a100000000         mov eax, dword ptr fs:[0]
-// 00973ddd  50                   push eax
-// 00973dde  64892500000000       mov dword ptr fs:[0], esp
-// 00973de5  51                   push ecx
-// 00973de6  56                   push esi
-// 00973de7  8bf1                 mov esi, ecx
-// 00973de9  8b4c2418             mov ecx, dword ptr [esp + 0x18]
-// 00973ded  83ec30               sub esp, 0x30
-// 00973df0  8bc4                 mov eax, esp
-// 00973df2  c70600000000         mov dword ptr [esi], 0
-// 00973df8  8d542450             lea edx, [esp + 0x50]
-// 00973dfc  89642434             mov dword ptr [esp + 0x34], esp
-// 00973e00  8908                 mov dword ptr [eax], ecx
-// 00973e02  8d4808               lea ecx, [eax + 8]
-// 00973e05  52                   push edx
-// 00973e06  c744244400000000     mov dword ptr [esp + 0x44], 0
-// 00973e0e  e82d2cadff           call 0x446a40
-// 00973e13  8bce                 mov ecx, esi
-// 00973e15  e8f6feffff           call 0x973d10
-// 00973e1a  8d4c2420             lea ecx, [esp + 0x20]
-// 00973e1e  c7442410ffffffff     mov dword ptr [esp + 0x10], 0xffffffff
-// 00973e26  e8c5f5ffff           call 0x9733f0
-// 00973e2b  8b4c2408             mov ecx, dword ptr [esp + 8]
-// 00973e2f  8bc6                 mov eax, esi
-// 00973e31  64890d00000000       mov dword ptr fs:[0], ecx
-// 00973e38  5e                   pop esi
-// 00973e39  83c410               add esp, 0x10
-// 00973e3c  c23400               ret 0x34
-// library rbxgs/util\boost.cpp (function ??$?0V?$bind_t@XP6AXV?$shared_ptr@Udata@worker_thread@RBX@@@boost@@ABV?$function0@W4work_result@worker_thread@RBX@@V?$allocator@Vfunction_base@boost@@@std@@@2@@ZV?$list2@V?$value@V?$shared_ptr@Udata@worker_thread@RBX@@@boost@@@_bi@boost@@V?$value@V?$function0@W4work_result@worker_thread@RBX@@V?$allocator@Vfunction_base@boost@@@std@@@boost@@@23@@_bi@2@@_bi@boost@@@?$function0@XV?$allocator@Vfunction_base@boost@@@std@@@boost@@QAE@V?$bind_t@XP6AXV?$shared_ptr@Udata@worker_thread@RBX@@@boost@@ABV?$function0@W4work_result@worker_thread@RBX@@V?$allocator@Vfunction_base@boost@@@std@@@2@@ZV?$list2@V?$value@V?$shared_ptr@Udata@worker_thread@RBX@@@boost@@@_bi@boost@@V?$value@V?$function0@W4work_result@worker_thread@RBX@@V?$allocator@Vfunction_base@boost@@@std@@@boost@@@23@@_bi@2@@_bi@1@H@Z)
-
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
 // roc-lib: rbxgs util/boost.cpp
+
+// Candidate translation unit (score above; library headers required).
+#include "util/boost.hpp"
+#include "util/standardout.h"
+#include "util/Debug.h"
+#include <boost/bind.hpp>
+#include <windows.h>
+#include <boost/thread/tss.hpp>
+#include <boost/thread/once.hpp>
+
+namespace RBX
+{
+	namespace boost_detail
+	{
+		boost::thread_specific_ptr<std::string>* foo;
+		
+		boost::once_flag once_init_foo = BOOST_ONCE_INIT;
+		void init_foo()
+		{
+			static boost::thread_specific_ptr<std::string> value;
+			foo = &value;
+		}
+
+		void set_foo(std::string* value)
+		{
+			boost::call_once(&boost_detail::init_foo, boost_detail::once_init_foo);
+			boost_detail::foo->reset(value);
+		}
+	}
+
+	// Thread name stuff based on https://docs.microsoft.com/en-us/previous-versions/visualstudio/visual-studio-2008/xcb2z8hs(v=vs.90)
+	static bool nameThreads = true;
+
+	typedef struct tagTHREADNAME_INFO
+	{
+		DWORD dwType;
+		LPCSTR szName;
+		DWORD dwThreadID;
+		DWORD dwFlags;
+	} THREADNAME_INFO;
+
+	void SetThreadName(DWORD dwThreadID, LPCSTR szThreadName)
+	{
+		THREADNAME_INFO info;
+		info.dwType = 0x1000;
+		info.szName = szThreadName;
+		info.dwThreadID = dwThreadID;
+		info.dwFlags = 0;
+
+		__try
+		{
+			if (nameThreads)
+				RaiseException(0x406D1388, 0, sizeof(info)/sizeof(ULONG_PTR), (ULONG_PTR*)&info);
+		}
+		__except (EXCEPTION_CONTINUE_EXECUTION)
+		{
+		}
+	}
+
+	void set_thread_name(const char* name)
+	{
+		boost_detail::set_foo(new std::string(name));
+		SetThreadName(GetCurrentThreadId(), name);
+	}
+
+	class ThreadPrioritySetter
+	{
+	private:
+		const int old;
+		bool success;
+	  
+	public:
+		ThreadPrioritySetter(int priority)
+			: old(GetThreadPriority(GetCurrentThread())),
+			  success(SetThreadPriority(GetCurrentThread(), priority) == TRUE)
+		{
+		}
+		~ThreadPrioritySetter()
+		{
+			if (success)
+				SetThreadPriority(GetCurrentThread(), old);
+		}
+	};
+
+	void run_in_background(const boost::function0<void>& threadfunc, std::string name)
+	{
+		try
+		{
+			set_thread_name(name.c_str());
+
+			{
+				ThreadPrioritySetter set(THREAD_PRIORITY_BELOW_NORMAL);
+				threadfunc();
+			}
+		}
+		catch (std::exception& ex)
+		{
+			StandardOut::singleton()->print(MESSAGE_ERROR, "Crashed via C++ exception in run_in_background:", ex.what());
+			RBXASSERT(false);
+		}
+	}
+
+	boost::function0<void> background_function(const boost::function0<void>& threadfunc, const char* name)
+	{
+		return boost::bind(&run_in_background, threadfunc, std::string(name));
+	}
+
+	worker_thread::worker_thread(const boost::function0<enum work_result>& work_function, const char* name)
+		: _data(new data()),
+		  thread(background_function(boost::bind(&threadProc, _data, work_function), name))
+	{
+	}
+
+	worker_thread::~worker_thread()
+	{
+		boost::mutex::scoped_lock scoped_lock(_data->sync);
+		_data->endRequest = true;
+		_data->wakeCondition.notify_all();
+	}
+
+	void worker_thread::join()
+	{
+		{
+			boost::mutex::scoped_lock scoped_lock(_data->sync);
+			_data->endRequest = true;
+			_data->wakeCondition.notify_all();
+		}
+
+		thread.join();
+	}
+
+	void worker_thread::wake()
+	{
+		boost::mutex::scoped_lock scoped_lock(_data->sync);
+		_data->wakeCondition.notify_all();
+	}
+
+	void worker_thread::threadProc(boost::shared_ptr<data> data, const boost::function0<enum work_result>& work_function)
+	{
+		while (!data->endRequest)
+		{
+			if (work_function() != more)
+			{
+				boost::mutex::scoped_lock scoped_lock(data->sync);
+				data->wakeCondition.wait(scoped_lock);	
+			}
+		}
+	}
+}

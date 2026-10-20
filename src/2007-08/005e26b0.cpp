@@ -1,50 +1,302 @@
-// roc 2007-08 005e26b0  unit: seg_005e0000  size: 121 bytes
-// Make this compile to the exact bytes below, then: roc check 2007-08 005e26b0
-//
-// 005e26b0  6aff                 push -1
-// 005e26b2  686baa7500           push 0x75aa6b
-// 005e26b7  64a100000000         mov eax, dword ptr fs:[0]
-// 005e26bd  50                   push eax
-// 005e26be  64892500000000       mov dword ptr fs:[0], esp
-// 005e26c5  51                   push ecx
-// 005e26c6  53                   push ebx
-// 005e26c7  56                   push esi
-// 005e26c8  8bf1                 mov esi, ecx
-// 005e26ca  57                   push edi
-// 005e26cb  8974240c             mov dword ptr [esp + 0xc], esi
-// 005e26cf  33db                 xor ebx, ebx
-// 005e26d1  395e08               cmp dword ptr [esi + 8], ebx
-// 005e26d4  895c2418             mov dword ptr [esp + 0x18], ebx
-// 005e26d8  7406                 je 0x5e26e0
-// 005e26da  53                   push ebx
-// 005e26db  e8d0fdffff           call 0x5e24b0
-// 005e26e0  8b7e20               mov edi, dword ptr [esi + 0x20]
-// 005e26e3  3bfb                 cmp edi, ebx
-// 005e26e5  7410                 je 0x5e26f7
-// 005e26e7  8bcf                 mov ecx, edi
-// 005e26e9  e832a5e2ff           call 0x40cc20
-// 005e26ee  57                   push edi
-// 005e26ef  e86ed50400           call 0x62fc62
-// 005e26f4  83c404               add esp, 4
-// 005e26f7  895e20               mov dword ptr [esi + 0x20], ebx
-// 005e26fa  8b4610               mov eax, dword ptr [esi + 0x10]
-// 005e26fd  50                   push eax
-// 005e26fe  c744241cffffffff     mov dword ptr [esp + 0x1c], 0xffffffff
-// 005e2706  e805d1f1ff           call 0x4ff810
-// 005e270b  8b4c2414             mov ecx, dword ptr [esp + 0x14]
-// 005e270f  83c404               add esp, 4
-// 005e2712  895e10               mov dword ptr [esi + 0x10], ebx
-// 005e2715  895e14               mov dword ptr [esi + 0x14], ebx
-// 005e2718  895e18               mov dword ptr [esi + 0x18], ebx
-// 005e271b  5f                   pop edi
-// 005e271c  5e                   pop esi
-// 005e271d  5b                   pop ebx
-// 005e271e  64890d00000000       mov dword ptr fs:[0], ecx
-// 005e2725  83c410               add esp, 0x10
-// 005e2728  c3                   ret 
-// library openrbx-client/App\v8kernel\Body.cpp (function ??1Body@RBX@@QAE@XZ)
-
 // roc-lang: cpp
 // roc-cl: 50727
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
 // roc-lib: openrbx-client App/v8kernel/Body.cpp
+
+// Candidate translation unit (score above; library headers required).
+#include "v8kernel/Body.h"
+
+#include "decomp.h"
+#include "util/Math.h"
+#include "v8kernel/Link.h"
+#include "v8kernel/SimBody.h"
+
+#include <cstddef>
+
+namespace RBX {
+
+// FUNCTION: WEBSERVICE 0x1009ad20
+void Body::updatePV() const
+{
+	if (parent != NULL && stateIndex != root->getStateIndex()) {
+		const PV& parentPv = parent->getPV();
+
+		pv = parentPv.pvAtLocalCoord(link != NULL ? link->getChildInParent() : meInParent);
+
+		stateIndex = root->getStateIndex();
+	}
+}
+
+// FUNCTION: WEBSERVICE 0x101049f0
+int Body::getNextStateIndex()
+{
+	static int p = 1;
+
+	p = p + 1;
+
+	if (p == 0x7fffffff) {
+		p = 1;
+	}
+
+	return p;
+}
+
+// FUNCTION: WEBSERVICE 0x10104a10
+void Body::advanceStateIndex()
+{
+	stateIndex = getNextStateIndex();
+}
+
+// FUNCTION: WEBSERVICE 0x10104a40
+void Body::makeCofmDirty()
+{
+	if (cofm == NULL || !cofm->getIsDirty()) {
+
+		if (parent != NULL) {
+
+			parent->makeCofmDirty();
+		}
+		else {
+
+			if (simBody != NULL) {
+				simBody->makeDirty();
+			}
+		}
+
+		if (cofm != NULL) {
+			cofm->makeDirty();
+		}
+	}
+}
+
+// FUNCTION: WEBSERVICE 0x10104a80
+void Body::step(float dt, bool throttling)
+{
+	if (throttling && canThrottle) {
+		simBody->resetAccumulators();
+		return;
+	}
+
+	simBody->step(dt);
+
+	pv = cofm == NULL ? simBody->getPV() : simBody->getOwnerPV();
+
+	stateIndex = getNextStateIndex();
+}
+
+// FUNCTION: WEBSERVICE 0x10104b50
+void Body::setPv(const PV& _pv)
+{
+	if (parent == NULL) {
+
+		pv = _pv;
+
+		if (simBody != NULL) {
+			simBody->makeDirty();
+		}
+
+		advanceStateIndex();
+	}
+}
+
+// FUNCTION: WEBSERVICE 0x10104be0
+void Body::setVelocity(const Velocity& worldVelocity)
+{
+	if (parent == NULL) {
+		pv.velocity = worldVelocity;
+		advanceStateIndex();
+
+		if (simBody != NULL) {
+			simBody->makeDirty();
+		}
+	}
+}
+
+// FUNCTION: WEBSERVICE 0x10104c60
+void Body::setMass(float _mass)
+{
+	if (mass != _mass) {
+		makeCofmDirty();
+
+		mass = _mass;
+	}
+}
+
+// FUNCTION: WEBSERVICE 0x10104cc0
+void Body::setMoment(const Matrix3& _momentInBody)
+{
+	if (moment != _momentInBody) {
+		makeCofmDirty();
+
+		moment = _momentInBody;
+	}
+}
+
+// FUNCTION: WEBSERVICE 0x10104db0
+void Body::setMeInParent(const CoordinateFrame& _meInParent)
+{
+	if (link != NULL) {
+
+		link->setBody(NULL);
+		link = NULL;
+	}
+
+	if (parent != NULL) {
+		meInParent = _meInParent;
+		makeCofmDirty();
+		root->advanceStateIndex();
+	}
+}
+
+// FUNCTION: WEBSERVICE 0x10104e60
+void Body::setMeInParent(Link* _link)
+{
+	if (link != NULL && link != _link) {
+		link->setBody(NULL);
+	}
+
+	if (parent != NULL) {
+		link = _link;
+		_link->setBody(this);
+		makeCofmDirty();
+		root->advanceStateIndex();
+	}
+}
+
+// FUNCTION: WEBSERVICE 0x10104ee0
+void Body::setCoordinateFrame(const CoordinateFrame& worldCoord)
+{
+	setPv(PV(worldCoord, getPV().velocity));
+}
+
+// FUNCTION: WEBSERVICE 0x10104f60
+Vector3 Body::getBranchCofmPos() const
+{
+	return cofm != NULL ? getPV().position.pointToWorldSpace(cofm->getCofmInBody()) : getPV().position.translation;
+}
+
+// FUNCTION: WEBSERVICE 0x10104fc0
+CoordinateFrame Body::getBranchCofmCoordinateFrame() const
+{
+	return CoordinateFrame(getCoordinateFrame().rotation, getBranchCofmPos());
+}
+
+// FUNCTION: WEBSERVICE 0x10105010
+void Body::resetRoot(Body* newRoot)
+{
+	root = newRoot;
+
+	for (int i = 0; i < numChildren(); ++i) {
+		getChild(i)->resetRoot(newRoot);
+	}
+}
+
+// FUNCTION: WEBSERVICE 0x10105040
+Matrix3 Body::getIWorldAtPoint(const Vector3& point) const
+{
+	return Math::getIWorldAtPoint(getPV().position.translation, point, getIWorld(), getMass());
+}
+
+// FUNCTION: WEBSERVICE 0x101050c0
+Matrix3 Body::getBranchIWorldAtPoint(const Vector3& point) const
+{
+	return Math::getIWorldAtPoint(getBranchCofmPos(), point, getBranchIWorld(), getBranchMass());
+}
+
+// FUNCTION: WEBSERVICE 0x10105150
+float Body::kineticEnergy() const
+{
+	return ((getIWorld() * pv.velocity.rotational).dot(pv.velocity.rotational) +
+			pv.velocity.linear.dot(pv.velocity.linear) * mass) *
+		   0.5f;
+}
+
+// FUNCTION: WEBSERVICE 0x10105240
+void Body::onChildRemoved(Body* child)
+{
+	children.fastRemove(child);
+
+	if (numChildren() == 0) {
+		delete cofm;
+		cofm = NULL;
+	}
+
+	makeCofmDirty();
+}
+
+// FUNCTION: WEBSERVICE 0x101052d0
+void Body::onChildAdded(Body* child)
+{
+	makeCofmDirty();
+
+	children.fastAppend(child);
+
+	if (cofm == NULL) {
+		cofm = new Cofm(this);
+	}
+}
+
+// FUNCTION: WEBSERVICE 0x10105390
+void Body::setParent(Body* newParent)
+{
+	if (parent != newParent) {
+
+		if (link != NULL) {
+			link->setBody(NULL);
+			link = NULL;
+		}
+
+		if (parent != NULL) {
+			parent->onChildRemoved(this);
+		}
+		else {
+			delete simBody;
+			simBody = NULL;
+		}
+
+		parent = newParent;
+
+		if (newParent != NULL) {
+			newParent->onChildAdded(this);
+		}
+		else {
+			simBody = new SimBody(this);
+		}
+
+		Body* newRoot = calcRoot();
+
+		newRoot->advanceStateIndex();
+
+		resetRoot(newRoot);
+	}
+}
+
+// FUNCTION: WEBSERVICE 0x101054a0
+Body::Body()
+	: root(NULL), parent(NULL), index(-1), cofm(NULL), simBody(NULL), canThrottle(true), link(NULL),
+	  moment(Matrix3::identity()), mass(0.0f), stateIndex(getNextStateIndex())
+{
+	root = this;
+	simBody = new SimBody(this);
+}
+
+// FUNCTION: WEBSERVICE 0x101055a0
+Body::~Body()
+{
+	if (parent != NULL) {
+		setParent(NULL);
+	}
+
+	delete simBody;
+	simBody = NULL;
+}
+
+// FUNCTION: WEBSERVICE 0x10105620
+Body* Body::getWorldBody()
+{
+	static Body b;
+
+	return &b;
+}
+
+} // namespace RBX

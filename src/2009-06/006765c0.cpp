@@ -1,83 +1,371 @@
-// roc 2009-06 006765c0  unit: RBX::Assembly  size: 175 bytes
-// Make this compile to the exact bytes below, then: roc check 2009-06 006765c0
-//
-// 006765c0  51                   push ecx
-// 006765c1  8b44240c             mov eax, dword ptr [esp + 0xc]
-// 006765c5  56                   push esi
-// 006765c6  8b74240c             mov esi, dword ptr [esp + 0xc]
-// 006765ca  3bf0                 cmp esi, eax
-// 006765cc  0f849a000000         je 0x67666c
-// 006765d2  53                   push ebx
-// 006765d3  8d5e04               lea ebx, [esi + 4]
-// 006765d6  3bd8                 cmp ebx, eax
-// 006765d8  0f848d000000         je 0x67666b
-// 006765de  b804000000           mov eax, 4
-// 006765e3  2bc6                 sub eax, esi
-// 006765e5  55                   push ebp
-// 006765e6  8944240c             mov dword ptr [esp + 0xc], eax
-// 006765ea  57                   push edi
-// 006765eb  eb03                 jmp 0x6765f0
-// 006765ed  8d4900               lea ecx, [ecx]
-// 006765f0  8b06                 mov eax, dword ptr [esi]
-// 006765f2  8b2b                 mov ebp, dword ptr [ebx]
-// 006765f4  50                   push eax
-// 006765f5  55                   push ebp
-// 006765f6  8bfb                 mov edi, ebx
-// 006765f8  ff542428             call dword ptr [esp + 0x28]
-// 006765fc  83c408               add esp, 8
-// 006765ff  84c0                 test al, al
-// 00676601  742b                 je 0x67662e
-// 00676603  8b4c2410             mov ecx, dword ptr [esp + 0x10]
-// 00676607  8d4419fc             lea eax, [ecx + ebx - 4]
-// 0067660b  c1f802               sar eax, 2
-// 0067660e  85c0                 test eax, eax
-// 00676610  7e18                 jle 0x67662a
-// 00676612  03c0                 add eax, eax
-// 00676614  03c0                 add eax, eax
-// 00676616  50                   push eax
-// 00676617  8bd3                 mov edx, ebx
-// 00676619  56                   push esi
-// 0067661a  2bd0                 sub edx, eax
-// 0067661c  50                   push eax
-// 0067661d  83c204               add edx, 4
-// 00676620  52                   push edx
-// 00676621  ff155ce98900         call dword ptr [0x89e95c]
-// 00676627  83c410               add esp, 0x10
-// 0067662a  892e                 mov dword ptr [esi], ebp
-// 0067662c  eb32                 jmp 0x676660
-// 0067662e  8b43fc               mov eax, dword ptr [ebx - 4]
-// 00676631  8d73fc               lea esi, [ebx - 4]
-// 00676634  50                   push eax
-// 00676635  55                   push ebp
-// 00676636  ff542428             call dword ptr [esp + 0x28]
-// 0067663a  83c408               add esp, 8
-// 0067663d  84c0                 test al, al
-// 0067663f  7419                 je 0x67665a
-// 00676641  8b0e                 mov ecx, dword ptr [esi]
-// 00676643  890f                 mov dword ptr [edi], ecx
-// 00676645  8b56fc               mov edx, dword ptr [esi - 4]
-// 00676648  8bfe                 mov edi, esi
-// 0067664a  83ee04               sub esi, 4
-// 0067664d  52                   push edx
-// 0067664e  55                   push ebp
-// 0067664f  ff542428             call dword ptr [esp + 0x28]
-// 00676653  83c408               add esp, 8
-// 00676656  84c0                 test al, al
-// 00676658  75e7                 jne 0x676641
-// 0067665a  8b742418             mov esi, dword ptr [esp + 0x18]
-// 0067665e  892f                 mov dword ptr [edi], ebp
-// 00676660  83c304               add ebx, 4
-// 00676663  3b5c241c             cmp ebx, dword ptr [esp + 0x1c]
-// 00676667  7587                 jne 0x6765f0
-// 00676669  5f                   pop edi
-// 0067666a  5d                   pop ebp
-// 0067666b  5b                   pop ebx
-// 0067666c  5e                   pop esi
-// 0067666d  59                   pop ecx
-// 0067666e  c3                   ret 
-// library openrbx-client/App\v8world\Assembly2.cpp (function ??$_Insertion_sort1@PAPAVAssembly@RBX@@P6A_NPBV12@0@ZPAV12@@std@@YAXPAPAVAssembly@RBX@@0P6A_NPBV12@1@Z0@Z)
-
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
 // roc-lib: openrbx-client App/v8world/Assembly2.cpp
+
+// Candidate translation unit (score above; library headers required).
+#include "v8world/Assembly2.h"
+
+#include "decomp.h"
+#include "util/Math.h"
+#include "util/StlExtra.h"
+#include "v8kernel/Body.h"
+#include "v8kernel/Kernel.h"
+#include "v8world/Clump2.h"
+#include "v8world/IMoving.h"
+#include "v8world/Joint.h"
+#include "v8world/MotorJoint.h"
+#include "v8world/Primitive.h"
+#include "v8world/RigidJoint.h"
+
+#include <cstddef>
+
+namespace RBX {
+
+// FUNCTION: WEBSERVICE 0x10102990
+SleepInfo::SleepInfo() : state(Sim::WAKE_PENDING), sleepCount(0)
+{
+}
+
+// FUNCTION: WEBSERVICE 0x1015b610 FOLDED
+SleepInfo::~SleepInfo()
+{
+}
+
+// FUNCTION: WEBSERVICE 0x101029c0
+PrimIterator Assembly::assemblyPrimBegin() const
+{
+	return PrimIterator::begin(rootPrimitive, PrimIterator::IN_ASSEMBLY);
+}
+
+// FUNCTION: WEBSERVICE 0x101029e0
+PrimIterator Assembly::assemblyPrimEnd() const
+{
+	return PrimIterator::end(PrimIterator::IN_ASSEMBLY);
+}
+
+// FUNCTION: WEBSERVICE 0x10102a00
+EdgeIterator Assembly::externalEdgeBegin() const
+{
+	return EdgeIterator::begin(rootPrimitive);
+}
+
+// FUNCTION: WEBSERVICE 0x10102a20
+EdgeIterator Assembly::externalEdgeEnd() const
+{
+	return EdgeIterator::end();
+}
+
+// FUNCTION: WEBSERVICE 0x10102a60
+Sim::AssemblyState Assembly::getSleepStatus() const
+{
+	const Assembly* root = this;
+
+	while (root->parent != NULL) {
+		root = root->parent;
+	}
+
+	return root->sleepInfo != NULL ? root->sleepInfo->state : Sim::ANCHORED;
+}
+
+// FUNCTION: WEBSERVICE 0x10102a80
+bool lessAssembly(const Assembly* a0, const Assembly* a1)
+{
+	if (a0 == a1) {
+		return false;
+	}
+
+	if (a0->getRootPrimitive() == a1->getRootPrimitive()) {
+		return false;
+	}
+
+	return Guid::compare(&a0->getRootPrimitive()->getGuid(), &a1->getRootPrimitive()->getGuid()) == -1;
+}
+
+// FUNCTION: WEBSERVICE 0x10102ac0 FOLDED
+Assembly* Assembly::getRootAssembly()
+{
+	return parent != NULL ? parent->getRootAssembly() : this;
+}
+
+// FUNCTION: WEBSERVICE 0x10102ac0 FOLDED
+const Assembly* Assembly::getRootAssemblyConst() const
+{
+	return parent != NULL ? parent->getRootAssemblyConst() : this;
+}
+
+// FUNCTION: WEBSERVICE 0x10102ad0
+Joint* Assembly::getJointToParent(Primitive* p)
+{
+	Joint* joint = p->getFirstJoint();
+
+	while (joint != NULL) {
+		if (joint->getActive()) {
+			Primitive* other = joint->getPrimitive(0);
+
+			if (p == other) {
+				other = joint->getPrimitive(1);
+			}
+
+			if (other == NULL || p->getBody()->getParent() == other->getBody()) {
+				return joint;
+			}
+		}
+
+		joint = p->getNextJoint(joint);
+	}
+
+	return NULL;
+}
+
+// FUNCTION: WEBSERVICE 0x10102b10
+void Assembly::putInKernel(Kernel* kernel)
+{
+	putInPipeline(kernel);
+	kernel->insertBody(rootPrimitive->getBody());
+}
+
+// FUNCTION: WEBSERVICE 0x10102b40
+void Assembly::removeFromKernel()
+{
+	getKernel()->removeBody(rootPrimitive->getBody());
+	IPipelined::removeFromKernel();
+}
+
+// FUNCTION: WEBSERVICE 0x10102b60 FOLDED
+Primitive* Assembly::getAssemblyPrimitive()
+{
+	return getRootAssembly()->rootPrimitive;
+}
+
+// FUNCTION: WEBSERVICE 0x10102b60 FOLDED
+const Primitive* Assembly::getAssemblyPrimitiveConst() const
+{
+	return getRootAssemblyConst()->rootPrimitive;
+}
+
+// FUNCTION: WEBSERVICE 0x10102b80
+bool Assembly::getAnchored() const
+{
+	return getRootAssemblyConst()->rootPrimitive->getAnchorObject() != NULL;
+}
+
+// FUNCTION: WEBSERVICE 0x10102ba0
+Mechanism* Assembly::getMechanism()
+{
+	return mechanism;
+}
+
+// FUNCTION: WEBSERVICE 0x10102bb0
+bool Assembly::computeCanSleep() const
+{
+	for (PrimIterator it = PrimIterator::begin(rootPrimitive, PrimIterator::IN_ASSEMBLY); *it != NULL; ++it) {
+		if (!(*it)->getCanSleep()) {
+			return false;
+		}
+	}
+
+	return true;
+}
+
+// FUNCTION: WEBSERVICE 0x10102bf0
+void Assembly::notifyMoved()
+{
+	for (PrimIterator it = PrimIterator::begin(rootPrimitive, PrimIterator::IN_ASSEMBLY); *it != NULL; ++it) {
+		(*it)->getOwner()->notifyMoved();
+	}
+}
+
+// FUNCTION: WEBSERVICE 0x10102c20
+Assembly* Assembly::otherAssembly(Edge* edge) const
+{
+	Assembly* assembly0 = edge->getPrimitive(0)->getAssembly();
+	Assembly* assembly1 = edge->getPrimitive(1)->getAssembly();
+
+	return assembly0 != this ? assembly0 : assembly1;
+}
+
+// FUNCTION: WEBSERVICE 0x10102d50
+void Assembly::onPrimitivesChanged()
+{
+	maxRadius.setDirty();
+	canSleep.setDirty();
+
+	if (parent != NULL) {
+		parent->onPrimitivesChanged();
+	}
+}
+
+// FUNCTION: WEBSERVICE 0x10102d70
+void Assembly::addRigidChild(Primitive* parent, RigidJoint* r, Primitive* child)
+{
+	Clump* clump = parent->getClump();
+
+	child->setClump(clump);
+	child->setClumpDepth(parent->getClumpDepth() + 1);
+	child->getBody()->setParent(parent->getBody());
+	child->getBody()->setMeInParent(r->getChildInParent(parent, child));
+
+	clump->onPrimitivesChanged();
+}
+
+// FUNCTION: WEBSERVICE 0x10102de0
+unsigned int Assembly::numMotors() const
+{
+	unsigned int answer = 0;
+
+	if (MotorJoint::isMotorJoint(getJointToParent(rootPrimitive))) {
+		answer = 1;
+	}
+
+	for (unsigned int i = 0; i < children.size(); i++) {
+		answer += children[i]->numMotors();
+	}
+
+	return answer;
+}
+
+// FUNCTION: WEBSERVICE 0x10102e60
+const MotorJoint* Assembly::getMotorImp(unsigned int& motorId) const
+{
+	Joint* joint = getJointToParent(rootPrimitive);
+
+	if (MotorJoint::isMotorJoint(joint)) {
+		if (motorId == 0) {
+			return static_cast<MotorJoint*>(joint);
+		}
+
+		motorId--;
+	}
+
+	for (unsigned int i = 0; i < children.size(); i++) {
+		const MotorJoint* motor = children[i]->getMotorImp(motorId);
+
+		if (motor != NULL) {
+			return motor;
+		}
+	}
+
+	return NULL;
+}
+
+// FUNCTION: WEBSERVICE 0x10102f00
+MotorJoint* Assembly::getMotor(unsigned int index)
+{
+	unsigned int i = index;
+
+	return const_cast<MotorJoint*>(getMotorImp(i));
+}
+
+// FUNCTION: WEBSERVICE 0x10102f20
+void Assembly::stepUi(int uiStepId)
+{
+	unsigned int count = numMotors();
+
+	for (unsigned int i = 0; i < count; i++) {
+		unsigned int index = i;
+		const_cast<MotorJoint*>(getMotorImp(index))->stepUi(uiStepId);
+	}
+}
+
+// FUNCTION: WEBSERVICE 0x10102f60
+float Assembly::computeMaxRadius() const
+{
+	float answer = 0;
+	Vector3 offsetCenter = rootPrimitive->getBody()->getBranchCofmPos();
+
+	for (PrimIterator it = PrimIterator::begin(rootPrimitive, PrimIterator::IN_ASSEMBLY); *it != NULL; ++it) {
+		Primitive* primitive = *it;
+
+		Vector3 offset = primitive->getBody()->getCoordinateFrame().translation - offsetCenter;
+		Vector3 extent = Math::vector3Abs(offset);
+
+		answer = G3D::max(answer, (extent + primitive->getGeometry()->getGridSize() * 0.5f).magnitude());
+	}
+
+	return answer;
+}
+
+// FUNCTION: WEBSERVICE 0x10103060
+void Assembly::onPrimitiveCanSleepChanged(Primitive* p)
+{
+	canSleep.setDirty();
+}
+
+// FUNCTION: WEBSERVICE 0x101034e0
+Assembly::Assembly(Primitive* root)
+	: sleepInfo(NULL), rootPrimitive(root), parent(NULL), mechanism(NULL), maxRadius(this, &Assembly::computeMaxRadius),
+	  canSleep(this, &Assembly::computeCanSleep)
+{
+	root->setClump(static_cast<Clump*>(this));
+}
+
+// FUNCTION: WEBSERVICE 0x10103750
+void Assembly::addChild(Assembly* child)
+{
+	children.push_back(child);
+	std::sort(children.begin(), children.end(), lessAssembly);
+}
+
+// FUNCTION: WEBSERVICE 0x101037b0
+Assembly::~Assembly()
+{
+	for (PrimIterator it = PrimIterator::begin(rootPrimitive, PrimIterator::IN_CLUMP); *it != NULL; ++it) {
+		Primitive* primitive = *it;
+
+		primitive->setClump(NULL);
+		primitive->setClumpDepth(-1);
+	}
+
+	if (parent != NULL) {
+		fastRemoveShort(parent->children, this);
+	}
+
+	parent = NULL;
+
+	for (unsigned int i = 0; i < children.size(); i++) {
+		children[i]->parent = NULL;
+	}
+}
+
+// FUNCTION: WEBSERVICE 0x101038a0
+void Assembly::setParent(Assembly* newParent)
+{
+	if (newParent != parent) {
+		if (parent != NULL) {
+			fastRemoveShort(parent->children, this);
+			parent->onPrimitivesChanged();
+		}
+
+		parent = newParent;
+
+		if (parent != NULL) {
+			parent->addChild(this);
+		}
+
+		onPrimitivesChanged();
+	}
+}
+
+// FUNCTION: WEBSERVICE 0x10103910
+void Assembly::addMotorChild(Primitive* parent, MotorJoint* m, Primitive* child)
+{
+	Clump* clump = parent->getClump();
+
+	child->setClumpDepth(parent->getClumpDepth() + 1);
+	child->getClump()->setParent(clump);
+	child->getBody()->setParent(parent->getBody());
+	child->getBody()->setMeInParent(m->resetLink());
+}
+
+// FUNCTION: WEBSERVICE 0x10103960
+void Assembly::addGroundChild(Primitive* p)
+{
+	Clump* clump = p->getClump();
+
+	p->setClumpDepth(1);
+	p->getBody()->setParent(NULL);
+	clump->setParent(NULL);
+}
+
+} // namespace RBX

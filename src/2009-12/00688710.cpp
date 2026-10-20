@@ -1,51 +1,245 @@
-// roc 2009-12 00688710  unit: RBX::ChangeHistoryService  size: 116 bytes
-// Make this compile to the exact bytes below, then: roc check 2009-12 00688710
-//
-// 00688710  56                   push esi
-// 00688711  57                   push edi
-// 00688712  8bf9                 mov edi, ecx
-// 00688714  807f0400             cmp byte ptr [edi + 4], 0
-// 00688718  7520                 jne 0x68873a
-// 0068871a  8b0f                 mov ecx, dword ptr [edi]
-// 0068871c  85c9                 test ecx, ecx
-// 0068871e  7410                 je 0x688730
-// 00688720  ff15c4b49800         call dword ptr [0x98b4c4]
-// 00688726  83f8ff               cmp eax, -1
-// 00688729  7405                 je 0x688730
-// 0068872b  884705               mov byte ptr [edi + 5], al
-// 0068872e  eb06                 jmp 0x688736
-// 00688730  c70700000000         mov dword ptr [edi], 0
-// 00688736  c6470401             mov byte ptr [edi + 4], 1
-// 0068873a  8b74240c             mov esi, dword ptr [esp + 0xc]
-// 0068873e  807e0400             cmp byte ptr [esi + 4], 0
-// 00688742  7520                 jne 0x688764
-// 00688744  8b0e                 mov ecx, dword ptr [esi]
-// 00688746  85c9                 test ecx, ecx
-// 00688748  7410                 je 0x68875a
-// 0068874a  ff15c4b49800         call dword ptr [0x98b4c4]
-// 00688750  83f8ff               cmp eax, -1
-// 00688753  7405                 je 0x68875a
-// 00688755  884605               mov byte ptr [esi + 5], al
-// 00688758  eb06                 jmp 0x688760
-// 0068875a  c70600000000         mov dword ptr [esi], 0
-// 00688760  c6460401             mov byte ptr [esi + 4], 1
-// 00688764  833f00               cmp dword ptr [edi], 0
-// 00688767  750c                 jne 0x688775
-// 00688769  833e00               cmp dword ptr [esi], 0
-// 0068876c  740c                 je 0x68877a
-// 0068876e  5f                   pop edi
-// 0068876f  33c0                 xor eax, eax
-// 00688771  5e                   pop esi
-// 00688772  c20400               ret 4
-// 00688775  833e00               cmp dword ptr [esi], 0
-// 00688778  74f4                 je 0x68876e
-// 0068877a  5f                   pop edi
-// 0068877b  b801000000           mov eax, 1
-// 00688780  5e                   pop esi
-// 00688781  c20400               ret 4
-// library openrbx-client/App\v8xml\XmlSerializer.cpp (function ?equal@?$istreambuf_iterator@DU?$char_traits@D@std@@@std@@QBE_NABV12@@Z)
-
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
 // roc-lib: openrbx-client-dll App/v8xml/XmlSerializer.cpp
+
+// Candidate translation unit (score above; library headers required).
+#include "v8xml/XmlSerializer.h"
+
+#include "util/ContentProvider.h"
+#include "util/Name.h"
+#include "util/base64.hpp"
+#include "v8xml/XmlElement.h"
+
+#include <cstdio>
+#include <cstring>
+#include <istream>
+#include <iterator>
+#include <memory>
+#include <ostream>
+
+// GLOBAL: WEBSERVICE 0x102d21b0
+// clang-format off
+static bool whitespaces[256] = {
+	0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 1, 1, 0, 0,
+	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+	1
+};
+// clang-format on
+
+// FUNCTION: WEBSERVICE 0x10084c50
+void TextXmlParser::skipWhitespace()
+{
+	while (whitespaces[(char) buffer->sgetc()]) {
+		buffer->sbumpc();
+	}
+}
+
+// FUNCTION: WEBSERVICE 0x10085810
+void TextXmlWriter::writeCloseTag(const XmlElement* element, int depth)
+{
+	for (int i = 0; i < depth; ++i) {
+		stream << '\t';
+	}
+
+	stream << "</" << element->getTag().name << '>';
+}
+
+// FUNCTION: WEBSERVICE 0x10085870
+void TextXmlWriter::serialize(const XmlElement* xmlNode, int depth)
+{
+	if (xmlNode != NULL) {
+		serializeNode(xmlNode, depth);
+
+		const XmlElement* child = xmlNode->firstChild();
+
+		if (child != NULL) {
+			while (child != NULL) {
+				stream << '\n';
+				serialize(child, depth + 1);
+				child = child->nextSibling();
+			}
+
+			stream << '\n';
+
+			writeCloseTag(xmlNode, depth);
+		}
+		else {
+			writeCloseTag(xmlNode, 0);
+		}
+	}
+}
+
+// FUNCTION: WEBSERVICE 0x10086220
+void TextXmlWriter::encodedWrite(std::ostream& stream, const char* text)
+{
+	size_t num = strlen(text);
+
+	for (size_t i = 0; i < num; ++i) {
+		char c = *text++;
+
+		if (c == '<') {
+			stream << "&lt;";
+		}
+		else if (c == '>') {
+			stream << "&gt;";
+		}
+		else if (c == '&') {
+			stream << "&amp;";
+		}
+		else if (c == '"') {
+			stream << "&quot;";
+		}
+		else if (c == '\'') {
+			stream << "&apos;";
+		}
+		else if (c < ' ' || c > '~') {
+			char buffer[8];
+
+			sprintf(buffer, "&#%d;", (unsigned char) c);
+
+			stream << buffer;
+		}
+		else {
+			stream << c;
+		}
+	}
+}
+
+// FUNCTION: WEBSERVICE 0x10086590
+void TextXmlWriter::serialize(const XmlElement* xmlNode)
+{
+	serialize(xmlNode, 0);
+}
+
+// FUNCTION: WEBSERVICE 0x10086af0
+void TextXmlWriter::writeOpenTag(const XmlElement* element, int depth, const XmlAttribute* extraAttribute)
+{
+	for (int i = 0; i < depth; ++i) {
+		stream << '\t';
+	}
+
+	stream << '<' << element->getTag().name;
+
+	for (const XmlAttribute* attribute = element->getFirstAttribute(); attribute != NULL;
+		 attribute = element->getNextAttribute(attribute)) {
+		stream << ' ' << attribute->getTag().name << "=\"";
+
+		encodedWrite(stream, attribute->toString(this));
+
+		stream << '"';
+	}
+
+	if (extraAttribute != NULL) {
+		stream << ' ' << extraAttribute->getTag().name << "=\"";
+
+		encodedWrite(stream, extraAttribute->toString(this));
+
+		stream << '"';
+	}
+
+	stream << '>';
+}
+
+// FUNCTION: WEBSERVICE 0x10086c90
+XmlParser::XmlParser(std::streambuf* buffer) : buffer(buffer)
+{
+}
+
+// FUNCTION: WEBSERVICE 0x10086cb0
+void TextXmlWriter::serializeNode(const XmlElement* xmlNode, int depth)
+{
+	if (xmlNode->isValueType<RBX::ContentId>()) {
+		writeOpenTag(xmlNode, depth, NULL);
+
+		RBX::ContentId contentId;
+
+		xmlNode->getValue(contentId);
+
+		if (contentId.isNull()) {
+			stream << "<null></null>";
+		}
+		else {
+			stream << "<hash>";
+			stream << xmlNode->toString(this);
+			stream << "</hash>";
+		}
+	}
+	else {
+		writeOpenTag(xmlNode, depth, NULL);
+
+		encodedWrite(stream, xmlNode->toString(this));
+	}
+}
+
+// STUB: WEBSERVICE 0x10086e00
+void TextXmlWriterWithEmbeddedContent::serializeNode(const XmlElement* xmlNode, int depth)
+{
+	if (xmlNode->isValueType<RBX::ContentId>()) {
+		RBX::ContentId contentId;
+
+		xmlNode->getValue(contentId);
+
+		if (&contentId.mimeType() == &RBX::Name::getNullName()) {
+			writeOpenTag(xmlNode, depth, NULL);
+		}
+		else {
+			XmlAttribute mimeType(tag_mimeType, contentId.mimeType().name.c_str());
+
+			writeOpenTag(xmlNode, depth, &mimeType);
+		}
+
+		if (xmlNode->findAttribute(name_xsinil) == NULL) {
+			if (contentId.isNull()) {
+				stream << "<null></null>";
+			}
+			else if (contentId.isAsset() || contentId.isHttp()) {
+				stream << "<url>";
+				TextXmlWriter::encodedWrite(stream, contentId.c_str());
+				stream << "</url>";
+			}
+			else if (embeddedContent.find(contentId) == embeddedContent.end()) {
+				embeddedContent.insert(contentId);
+
+				std::auto_ptr<std::istream> contentStream;
+
+				contentStream = RBX::ContentProvider::singleton().getContent(contentId);
+
+				if (&contentId.mimeType() == &RBX::Name::getNullName()) {
+					stream << "<binary>";
+				}
+				else {
+					stream << "<binary xmime:contentType=\"" << contentId.mimeType().name.c_str() << "\">";
+				}
+
+				int state;
+				base64<char> encoder;
+
+				encoder.put(
+					std::istreambuf_iterator<char>(contentStream->rdbuf()),
+					std::istreambuf_iterator<char>(),
+					std::ostreambuf_iterator<char>(stream.rdbuf()),
+					state,
+					base64<char>::crlf()
+				);
+
+				stream << "</binary>";
+			}
+			else {
+				embeddedContent.insert(contentId);
+
+				stream << "<hash>";
+				stream << xmlNode->toString(this);
+				stream << "</hash>";
+			}
+		}
+	}
+	else {
+		TextXmlWriter::serializeNode(xmlNode, depth);
+	}
+}
+
+// FUNCTION: WEBSERVICE 0x10087f40
+XmlWriter::XmlWriter(std::ostream& stream) : stream(stream)
+{
+}

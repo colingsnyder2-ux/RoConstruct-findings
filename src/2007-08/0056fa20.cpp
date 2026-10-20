@@ -1,34 +1,67 @@
 // from server: 100% by auto
-// roc 2007-08 0056fa20  unit: RBX::VContentId::?$TypedPropertyDescriptor  size: 53 bytes
-// Make this compile to the exact bytes below, then: roc check 2007-08 0056fa20
-//
-// 0056fa20  8b4c2408             mov ecx, dword ptr [esp + 8]
-// 0056fa24  8b542404             mov edx, dword ptr [esp + 4]
-// 0056fa28  8bc1                 mov eax, ecx
-// 0056fa2a  2bc2                 sub eax, edx
-// 0056fa2c  c1f802               sar eax, 2
-// 0056fa2f  03c0                 add eax, eax
-// 0056fa31  03c0                 add eax, eax
-// 0056fa33  56                   push esi
-// 0056fa34  8b742410             mov esi, dword ptr [esp + 0x10]
-// 0056fa38  57                   push edi
-// 0056fa39  8bf8                 mov edi, eax
-// 0056fa3b  8bc6                 mov eax, esi
-// 0056fa3d  2bc7                 sub eax, edi
-// 0056fa3f  3bd1                 cmp edx, ecx
-// 0056fa41  740f                 je 0x56fa52
-// 0056fa43  2bf1                 sub esi, ecx
-// 0056fa45  8b79fc               mov edi, dword ptr [ecx - 4]
-// 0056fa48  83e904               sub ecx, 4
-// 0056fa4b  3bca                 cmp ecx, edx
-// 0056fa4d  893c0e               mov dword ptr [esi + ecx], edi
-// 0056fa50  75f3                 jne 0x56fa45
-// 0056fa52  5f                   pop edi
-// 0056fa53  5e                   pop esi
-// 0056fa54  c3                   ret 
-// library boost-1.34.1/libs\regex\src\usinstances.cpp (function ??$_Copy_backward_opt@PAU?$digraph@G@re_detail@boost@@PAU123@@std@@YAPAU?$digraph@G@re_detail@boost@@PAU123@00Urandom_access_iterator_tag@0@U_Nonscalar_ptr_iterator_tag@0@U_Range_checked_iterator_tag@0@@Z)
-
 // roc-lang: cpp
 // roc-cl: 50727
 // roc-flags: /O2 /GS- /EHsc /MD
 // roc-lib: boost-1.34.1 libs/regex/src/usinstances.cpp
+
+// Candidate translation unit (score above; library headers required).
+/*
+ *
+ * Copyright (c) 1998-2002
+ * John Maddock
+ *
+ * Use, modification and distribution are subject to the 
+ * Boost Software License, Version 1.0. (See accompanying file 
+ * LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+ *
+ */
+
+ /*
+  *   LOCATION:    see http://www.boost.org for most recent version.
+  *   FILE:        winstances.cpp
+  *   VERSION:     see <boost/version.hpp>
+  *   DESCRIPTION: regex unsigned short template instances (MSVC only).
+  */
+
+#define BOOST_REGEX_SOURCE
+
+#include <boost/regex/config.hpp>
+
+#if !defined(BOOST_NO_WREGEX) && defined(BOOST_REGEX_HAS_OTHER_WCHAR_T) && !defined(BOOST_REGEX_NO_EXTERNAL_TEMPLATES)
+#define BOOST_REGEX_US_INSTANTIATE
+
+#ifdef _DLL_CPPLIB
+#include <boost/detail/workaround.hpp>
+//
+// This is a horrible workaround, without declaring these symbols extern we get
+// duplicate symbol errors when linking if the application is built without
+// /Zc:wchar_t
+//
+namespace std{
+template _CRTIMP2 bool __cdecl operator==(
+   const basic_string<unsigned short, char_traits<unsigned short>, allocator<unsigned short> >&,
+   const basic_string<unsigned short, char_traits<unsigned short>, allocator<unsigned short> >&);
+template _CRTIMP2 bool __cdecl operator==(
+   const unsigned short *,
+   const basic_string<unsigned short, char_traits<unsigned short>, allocator<unsigned short> >&);
+template _CRTIMP2 bool __cdecl operator==(
+   const basic_string<unsigned short, char_traits<unsigned short>, allocator<unsigned short> >&,
+   const unsigned short *);
+template _CRTIMP2 bool __cdecl operator<(
+   const basic_string<unsigned short, char_traits<unsigned short>, allocator<unsigned short> >&,
+   const basic_string<unsigned short, char_traits<unsigned short>, allocator<unsigned short> >&);
+template _CRTIMP2 bool __cdecl operator>(
+   const basic_string<unsigned short, char_traits<unsigned short>, allocator<unsigned short> >&,
+   const basic_string<unsigned short, char_traits<unsigned short>, allocator<unsigned short> >&);
+#if BOOST_WORKAROUND(BOOST_MSVC, > 1300) && BOOST_WORKAROUND(BOOST_MSVC, BOOST_TESTED_AT(1400))
+template<> _CRTIMP2 std::size_t __cdecl char_traits<unsigned short>::length(unsigned short const*);
+#endif
+}
+#endif
+
+
+#include <boost/regex.hpp>
+
+#endif
+
+

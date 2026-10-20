@@ -1,29 +1,118 @@
-// roc 2008-06 004fa050  unit: RBX::ViewNew::TorsoBuilder  size: 64 bytes
-// Make this compile to the exact bytes below, then: roc check 2008-06 004fa050
-//
-// 004fa050  83ec0c               sub esp, 0xc
-// 004fa053  d94120               fld dword ptr [ecx + 0x20]
-// 004fa056  b801000000           mov eax, 1
-// 004fa05b  8bd0                 mov edx, eax
-// 004fa05d  d95c2404             fstp dword ptr [esp + 4]
-// 004fa061  d94124               fld dword ptr [ecx + 0x24]
-// 004fa064  66890424             mov word ptr [esp], ax
-// 004fa068  8b442410             mov eax, dword ptr [esp + 0x10]
-// 004fa06c  d95c2408             fstp dword ptr [esp + 8]
-// 004fa070  50                   push eax
-// 004fa071  8b44240c             mov eax, dword ptr [esp + 0xc]
-// 004fa075  6689542406           mov word ptr [esp + 6], dx
-// 004fa07a  8b542404             mov edx, dword ptr [esp + 4]
-// 004fa07e  52                   push edx
-// 004fa07f  8b54240c             mov edx, dword ptr [esp + 0xc]
-// 004fa083  50                   push eax
-// 004fa084  52                   push edx
-// 004fa085  e8c6edffff           call 0x4f8e50
-// 004fa08a  83c40c               add esp, 0xc
-// 004fa08d  c20400               ret 4
-// library rbxgs-view/TorsoMesh.cpp (function ?buildRight@TorsoBuilder@@MAEXW4Purpose@LevelBuilder@View@RBX@@@Z)
-
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
 // roc-lib: rbxgs-view TorsoMesh.cpp
+
+// Candidate translation unit (score above; library headers required).
+#include "TorsoMesh.h"
+
+class DeformFrontBack
+{
+	const float inset;
+	const float shoulderInset;
+public:
+	DeformFrontBack(float inset, float shoulderInset)
+		: inset(inset),
+		  shoulderInset(shoulderInset)
+	{
+	}
+	void operator()(G3D::Vector3&, G3D::Vector3&, G3D::Vector2&, const G3D::Vector3&, const G3D::Vector2int16&);
+};
+
+class DeformSide
+{
+	const float inset;
+	const float shoulderInset;
+public:
+	DeformSide(float inset, float shoulderInset)
+		: inset(inset),
+		  shoulderInset(shoulderInset)
+	{
+	}
+	void operator()(G3D::Vector3&, G3D::Vector3&, G3D::Vector2&, const G3D::Vector3&, const G3D::Vector2int16&);
+};
+
+class DeformTop
+{
+	const float inset;
+	const float shoulderInset;
+public:
+	DeformTop(float inset, float shoulderInset)
+		: inset(inset),
+		  shoulderInset(shoulderInset)
+	{
+	}
+	void operator()(G3D::Vector3&, G3D::Vector3&, G3D::Vector2&, const G3D::Vector3&, const G3D::Vector2int16&);
+};
+
+void TorsoBuilder::buildRight(RBX::View::LevelBuilder::Purpose purpose)
+{
+	buildFace<RBX::NORM_X>(DeformSide(bevel, shoulderInset), G3D::Vector2int16(1, 1), purpose);
+}
+
+void TorsoBuilder::buildTop(RBX::View::LevelBuilder::Purpose purpose)
+{
+	buildFace<RBX::NORM_Y>(DeformTop(bevel, shoulderInset), G3D::Vector2int16(1, 1), purpose);
+}
+
+void TorsoBuilder::buildBack(RBX::View::LevelBuilder::Purpose purpose)
+{
+	buildFace<RBX::NORM_Z>(DeformFrontBack(bevel, shoulderInset), G3D::Vector2int16(1, 1), purpose);
+}
+
+void TorsoBuilder::buildLeft(RBX::View::LevelBuilder::Purpose purpose)
+{
+	buildFace<RBX::NORM_X_NEG>(DeformSide(bevel, shoulderInset), G3D::Vector2int16(1, 1), purpose);
+}
+
+void TorsoBuilder::buildBottom(RBX::View::LevelBuilder::Purpose purpose)
+{
+	buildFace<RBX::NORM_Y_NEG>(*this, 1, 1, purpose);
+}
+
+void TorsoBuilder::buildFront(RBX::View::LevelBuilder::Purpose purpose)
+{
+	buildFace<RBX::NORM_Z_NEG>(DeformFrontBack(bevel, shoulderInset), G3D::Vector2int16(1, 1), purpose);
+}
+
+static const float bevel = 0.065f;
+
+namespace RBX
+{
+	namespace View
+	{
+		TorsoMesh::TorsoMesh(const G3D::Vector3& size, RenderSurfaceTypes surfaceTypes)
+		{
+			float shoulderInset = size.z * 0.3;
+
+			levels.push_back(new Render::Mesh::Level(G3D::RenderDevice::QUADS));
+
+			TorsoBuilder builder(levels.last(), size, surfaceTypes, 0.0f, shoulderInset);
+			builder.build(LevelBuilder::Surface);
+		}
+
+		TorsoMesh::TorsoMesh(const G3D::Vector3& size, NormalId decalFace)
+		{
+			float shoulderInset = size.z * 0.3;
+
+			G3D::ReferenceCountedPointer<Render::Mesh::Level> level = new Render::Mesh::Level(G3D::RenderDevice::QUADS);
+			levels.push_back(level);
+
+			TorsoBuilder builder(level, size, RenderSurfaceTypes(), bevel, shoulderInset);
+			builder.buildFace(decalFace, LevelBuilder::Decal);
+		}
+
+		TorsoMesh::TorsoMesh(const G3D::Vector3& size, NormalId textureFace, const G3D::Vector2& studsPerTile)
+		{
+			float shoulderInset = size.z * 0.3;
+
+			G3D::ReferenceCountedPointer<Render::Mesh::Level> level = new Render::Mesh::Level(G3D::RenderDevice::QUADS);
+			levels.push_back(level);
+
+			TorsoBuilder builder(level, size, RenderSurfaceTypes(), bevel, shoulderInset);
+			builder.textureScale = mapToUvw_Legacy(size, textureFace).xy() * 2.0f / studsPerTile;
+
+			builder.buildFace(textureFace, LevelBuilder::Decal);
+		}
+	}
+}

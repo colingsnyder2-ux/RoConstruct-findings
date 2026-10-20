@@ -1,76 +1,279 @@
-// roc 2008-06 0057dee0  unit: RBX::WatchCameraCommand  size: 152 bytes
-// Make this compile to the exact bytes below, then: roc check 2008-06 0057dee0
-//
-// 0057dee0  8b542404             mov edx, dword ptr [esp + 4]
-// 0057dee4  d94208               fld dword ptr [edx + 8]
-// 0057dee7  53                   push ebx
-// 0057dee8  d85908               fcomp dword ptr [ecx + 8]
-// 0057deeb  56                   push esi
-// 0057deec  8d7208               lea esi, [edx + 8]
-// 0057deef  8d5908               lea ebx, [ecx + 8]
-// 0057def2  57                   push edi
-// 0057def3  dfe0                 fnstsw ax
-// 0057def5  f6c441               test ah, 0x41
-// 0057def8  7502                 jne 0x57defc
-// 0057defa  8bf3                 mov esi, ebx
-// 0057defc  d906                 fld dword ptr [esi]
-// 0057defe  8d7a04               lea edi, [edx + 4]
-// 0057df01  d907                 fld dword ptr [edi]
-// 0057df03  8d7104               lea esi, [ecx + 4]
-// 0057df06  d81e                 fcomp dword ptr [esi]
-// 0057df08  dfe0                 fnstsw ax
-// 0057df0a  f6c441               test ah, 0x41
-// 0057df0d  7502                 jne 0x57df11
-// 0057df0f  8bfe                 mov edi, esi
-// 0057df11  d907                 fld dword ptr [edi]
-// 0057df13  d902                 fld dword ptr [edx]
-// 0057df15  d819                 fcomp dword ptr [ecx]
-// 0057df17  dfe0                 fnstsw ax
-// 0057df19  f6c441               test ah, 0x41
-// 0057df1c  8bc1                 mov eax, ecx
-// 0057df1e  7402                 je 0x57df22
-// 0057df20  8bc2                 mov eax, edx
-// 0057df22  d900                 fld dword ptr [eax]
-// 0057df24  83c10c               add ecx, 0xc
-// 0057df27  d959f4               fstp dword ptr [ecx - 0xc]
-// 0057df2a  83c20c               add edx, 0xc
-// 0057df2d  8d7a08               lea edi, [edx + 8]
-// 0057df30  d91e                 fstp dword ptr [esi]
-// 0057df32  8d7108               lea esi, [ecx + 8]
-// 0057df35  d91b                 fstp dword ptr [ebx]
-// 0057df37  d906                 fld dword ptr [esi]
-// 0057df39  d81f                 fcomp dword ptr [edi]
-// 0057df3b  dfe0                 fnstsw ax
-// 0057df3d  f6c441               test ah, 0x41
-// 0057df40  7402                 je 0x57df44
-// 0057df42  8bf7                 mov esi, edi
-// 0057df44  d906                 fld dword ptr [esi]
-// 0057df46  8d7104               lea esi, [ecx + 4]
-// 0057df49  d906                 fld dword ptr [esi]
-// 0057df4b  8d7a04               lea edi, [edx + 4]
-// 0057df4e  d81f                 fcomp dword ptr [edi]
-// 0057df50  dfe0                 fnstsw ax
-// 0057df52  f6c441               test ah, 0x41
-// 0057df55  7402                 je 0x57df59
-// 0057df57  8bf7                 mov esi, edi
-// 0057df59  d906                 fld dword ptr [esi]
-// 0057df5b  5f                   pop edi
-// 0057df5c  d901                 fld dword ptr [ecx]
-// 0057df5e  5e                   pop esi
-// 0057df5f  d81a                 fcomp dword ptr [edx]
-// 0057df61  5b                   pop ebx
-// 0057df62  dfe0                 fnstsw ax
-// 0057df64  f6c441               test ah, 0x41
-// 0057df67  7502                 jne 0x57df6b
-// 0057df69  8bd1                 mov edx, ecx
-// 0057df6b  d902                 fld dword ptr [edx]
-// 0057df6d  d919                 fstp dword ptr [ecx]
-// 0057df6f  d95904               fstp dword ptr [ecx + 4]
-// 0057df72  d95908               fstp dword ptr [ecx + 8]
-// 0057df75  c20400               ret 4
-// library rbxgs-dll/util\Extents.cpp (function ?unionWith@Extents@RBX@@QAEXABV12@@Z)
-
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast
 // roc-lib: rbxgs-dll util/Extents.cpp
+
+// Candidate translation unit (score above; library headers required).
+#include "util/Extents.h"
+#include "util/Math.h"
+#include "util/Debug.h"
+#include "util/NormalId.h"
+
+namespace RBX
+{
+	float Extents::areaXZ() const
+	{
+		G3D::Vector3 delta = this->high - this->low;
+		return delta.x * delta.z;
+	}
+
+	NormalId Extents::closestFace(const G3D::Vector3& point)
+	{
+		NormalId faceId = NORM_X;
+
+		// bruh
+		float hy = fabs(point.y - this->high.y);
+		float hz = fabs(point.z - this->high.z);
+		float lx = fabs(point.x - this->low.x);
+		float ly = fabs(point.y - this->low.y);
+		float lz = fabs(point.z - this->low.z);
+
+		float hx = fabs(point.x - this->high.x); 
+		if (hx > hy)
+		{
+			faceId = NORM_Y;
+		}
+		else
+		{
+			hy = hx;
+		}
+
+		if (hz < hy)
+		{
+			hy = hz;
+			faceId = NORM_Z;
+		}
+
+		if (lx < hy)
+		{
+			hy = lx;
+			faceId = NORM_X_NEG;
+		}
+
+		if (ly < hy)
+		{
+			hy = ly;
+			faceId = NORM_Y_NEG;
+		}
+
+		if (lz < hy)
+		{
+			faceId = NORM_Z_NEG;
+		}
+
+		return faceId;
+	}
+
+	G3D::Vector3 Extents::getCorner(int i) const
+	{
+		RBXASSERT(i >= 0);
+		RBXASSERT(i <= 7);
+
+		return G3D::Vector3(
+			this->low[0 + 3 * (i / 4)],
+			this->low[1 + 3 * (i / 2 % 2)],
+			this->low[2 + 3 * (i % 2)]
+		);
+	}
+
+	void Extents::getFaceCorners(NormalId faceId, G3D::Vector3& v0, G3D::Vector3& v1, G3D::Vector3& v2, G3D::Vector3& v3) const
+	{
+		switch (faceId)
+		{
+		case NORM_X:
+			v0 = G3D::Vector3(this->high.x, this->low.y, this->low.z);
+			v1 = G3D::Vector3(this->high.x, this->high.y, this->low.z);
+			v2 = G3D::Vector3(this->high.x, this->high.y, this->high.z);
+			v3 = G3D::Vector3(this->high.x, this->low.y, this->high.z);
+			break;
+		case NORM_Y:
+			v0 = G3D::Vector3(this->low.x, this->high.y, this->low.z);
+			v1 = G3D::Vector3(this->low.x, this->high.y, this->high.z);
+			v2 = G3D::Vector3(this->high.x, this->high.y, this->high.z);
+			v3 = G3D::Vector3(this->high.x, this->high.y, this->low.z);
+			break;
+		case NORM_Z:
+			v0 = G3D::Vector3(this->low.x, this->low.y, this->high.z);
+			v1 = G3D::Vector3(this->high.x, this->low.y, this->high.z);
+			v2 = G3D::Vector3(this->high.x, this->high.y, this->high.z);
+			v3 = G3D::Vector3(this->low.x, this->high.y, this->high.z);
+			break;
+		case NORM_X_NEG:
+			v0 = G3D::Vector3(this->low.x, this->low.y, this->low.z);
+			v1 = G3D::Vector3(this->low.x, this->low.y, this->high.z);
+			v2 = G3D::Vector3(this->low.x, this->high.y, this->high.z);
+			v3 = G3D::Vector3(this->low.x, this->high.y, this->low.z);
+			break;
+		case NORM_Y_NEG:
+			v0 = G3D::Vector3(this->low.x, this->low.y, this->low.z);
+			v1 = G3D::Vector3(this->high.x, this->low.y, this->low.z);
+			v2 = G3D::Vector3(this->high.x, this->low.y, this->high.z);
+			v3 = G3D::Vector3(this->low.x, this->low.y, this->high.z);
+			break;
+		case NORM_Z_NEG:
+			v0 = G3D::Vector3(this->low.x, this->low.y, this->low.z);
+			v1 = G3D::Vector3(this->low.x, this->high.y, this->low.z);
+			v2 = G3D::Vector3(this->high.x, this->high.y, this->low.z);
+			v3 = G3D::Vector3(this->high.x, this->low.y, this->low.z);
+			break;
+		default:
+			RBXASSERT(0);
+		}
+	}
+
+	G3D::Vector3 Extents::faceCenter(NormalId faceId) const
+	{
+		G3D::Vector3 v = this->center();
+
+		int i = faceId % 3;
+		if (faceId < NORM_X_NEG)
+		{
+			v[i] = this->high[i];
+		}
+		else
+		{
+			v[i] = this->low[i];
+		}
+
+		return v;
+	}
+
+	bool Extents::containedByFrustum(const G3D::GCamera::Frustum& frustum) const
+	{
+		if (frustum.faceArray.size() > 0)
+		{
+			for (int i = 0; i < frustum.faceArray.size(); i++)
+			{
+				const G3D::Plane* plane = &frustum.faceArray[i].plane;
+				for (int j = 0; j < 8; j++)
+				{
+					G3D::Vector3 corner = getCorner(j);
+					if (!plane->halfSpaceContains(corner))
+					{
+						return false;
+					}
+				}
+			}
+		}
+
+		return true;
+	}
+
+	bool Extents::contains(const G3D::Vector3& point) const
+	{
+		return
+			point.x >= this->low.x &&
+			point.y >= this->low.y &&
+			point.z >= this->low.z &&
+			point.x <= this->high.x &&
+			point.y <= this->high.y &&
+			point.z <= this->high.z;
+	}
+
+	bool Extents::fuzzyContains(const G3D::Vector3& point, float slop) const
+	{
+		return
+			point.x >= this->low.x - slop &&
+			point.y >= this->low.y - slop &&
+			point.z >= this->low.z - slop &&
+			point.x <= this->high.x + slop &&
+			point.y <= this->high.y + slop &&
+			point.z <= this->high.z + slop;
+	}
+
+	bool Extents::overlapsOrTouches(const Extents& other) const
+	{
+		return
+			!(this->low.x > other.high.x) &&
+			!(this->low.y > other.high.y) &&
+			!(this->low.z > other.high.z) &&
+			!(this->high.y < other.low.y) &&
+			!(this->high.x < other.low.x) &&
+			!(this->high.z < other.low.z);
+	}
+
+	bool Extents::separatedByMoreThan(const Extents& other, float distance) const
+	{
+		RBXASSERT(distance > 0.0);
+
+		G3D::Vector3 dv(distance, distance, distance);
+
+		Extents thisExpanded(*this);
+		thisExpanded.low -= dv;
+		thisExpanded.high += dv;
+
+		return !thisExpanded.overlapsOrTouches(other);
+	}
+
+	G3D::Plane Extents::getPlane(NormalId normalId) const
+	{
+		G3D::Vector3 point = faceCenter(normalId);
+		G3D::Vector3 normal = normalIdToVector3(normalId);
+
+		return G3D::Plane(normal, point);
+	}
+
+	void Extents::unionWith(const Extents& other)
+	{
+		this->low = this->low.min(other.low);
+		this->high = this->high.max(other.high);
+	}
+
+	Extents Extents::toWorldSpace(const G3D::CoordinateFrame& localCoord)
+	{
+		G3D::Vector3 minC(Math::inf(), Math::inf(), Math::inf());
+		G3D::Vector3 maxC(-Math::inf(), -Math::inf(), -Math::inf());
+
+		for (int i = 0; i < 8; i++)
+		{
+			G3D::Vector3 corner = getCorner(i);
+			G3D::Vector3 world = localCoord.pointToWorldSpace(corner);
+
+			minC = minC.min(world);
+			maxC = maxC.max(world);
+		}
+
+		return vv(minC, maxC);
+	}
+
+	Extents Extents::express(const G3D::CoordinateFrame& myFrame, const G3D::CoordinateFrame& expressInFrame)
+	{
+		G3D::Vector3 minC(Math::inf(), Math::inf(), Math::inf());
+		G3D::Vector3 maxC(-Math::inf(), -Math::inf(), -Math::inf());
+
+		for (int i = 0; i < 8; i++)
+		{
+			G3D::Vector3 corner = getCorner(i);
+			G3D::Vector3 v1 = myFrame.pointToWorldSpace(corner) - expressInFrame.translation;
+			G3D::Vector3 inOther = v1 * expressInFrame.rotation;
+
+			minC = minC.min(inOther);
+			maxC = maxC.max(inOther);
+		}
+
+		return vv(minC, maxC);
+	}
+
+	Extents Extents::vv(const G3D::Vector3& v0, const G3D::Vector3& v1)
+	{
+		Extents result;
+
+		result.low = v0.min(v1);
+		result.high = v0.max(v1);
+
+		return result;
+	}
+
+	const Extents& Extents::zero()
+	{
+		static Extents e(G3D::Vector3::zero(), G3D::Vector3::zero());
+		return e;
+	}
+
+	const Extents& Extents::negativeInfiniteExtents()
+	{
+		// Extents default constructor sets high and low to inf
+		static Extents e;
+		return e;
+	}
+}

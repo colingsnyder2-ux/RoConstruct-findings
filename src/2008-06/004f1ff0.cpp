@@ -1,31 +1,133 @@
-// roc 2008-06 004f1ff0  unit: RBX::RenderBase::VMaterialBase::?$WeakReferenceCountedPointer  size: 56 bytes
-// Make this compile to the exact bytes below, then: roc check 2008-06 004f1ff0
-//
-// 004f1ff0  8b442404             mov eax, dword ptr [esp + 4]
-// 004f1ff4  48                   dec eax
-// 004f1ff5  83f803               cmp eax, 3
-// 004f1ff8  7718                 ja 0x4f2012
-// 004f1ffa  ff248518204f00       jmp dword ptr [eax*4 + 0x4f2018]
-// 004f2001  d905ac9b8100         fld dword ptr [0x819bac]
-// 004f2007  c3                   ret 
-// 004f2008  d9e8                 fld1 
-// 004f200a  c3                   ret 
-// 004f200b  d9057ce38100         fld dword ptr [0x81e37c]
-// 004f2011  c3                   ret 
-// 004f2012  d9ee                 fldz 
-// 004f2014  c3                   ret 
-// 004f2015  8d4900               lea ecx, [ecx]
-// 004f2018  1220                 adc ah, byte ptr [eax]
-// 004f201a  4f                   dec edi
-// 004f201b  0001                 add byte ptr [ecx], al
-// 004f201d  204f00               and byte ptr [edi], cl
-// 004f2020  0820                 or byte ptr [eax], ah
-// 004f2022  4f                   dec edi
-// 004f2023  000b                 add byte ptr [ebx], cl
-// 004f2025  204f00               and byte ptr [edi], cl
-// library rbxgs-view/QuadVolume.cpp (function ?offset@LevelBuilder@View@RBX@@KAMW4RenderSurfaceType@23@@Z)
-
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
 // roc-lib: rbxgs-view QuadVolume.cpp
+
+// Candidate translation unit (score above; library headers required).
+#include "QuadVolume.h"
+
+namespace RBX
+{
+	namespace View
+	{
+		LevelBuilder::LevelBuilder(G3D::ReferenceCountedPointer<Render::Mesh::Level>& level, G3D::Vector3 size, RenderSurfaceTypes surfaceTypes)
+			: halfSize(size * 0.5f),
+			  surfaceTypes(surfaceTypes),
+			  level(level),
+			  textureScale(2.0f, 2.0f)
+		{
+		}
+
+		float LevelBuilder::offset(RenderSurfaceType surfaceType)
+		{
+			switch (surfaceType)
+			{
+			case STUDS:
+				return 0.0f;
+			case INLET:
+				return 0.5f;
+			case WELD:
+				return 1.0f;
+			case GLUE:
+				return 1.5f;
+
+			default:
+				return 0.0f;
+			}
+		}
+
+		void LevelBuilder::build(Purpose purpose)
+		{
+			buildTop(purpose);
+			buildBottom(purpose);
+			buildLeft(purpose);
+			buildRight(purpose);
+			buildFront(purpose);
+			buildBack(purpose);
+		}
+
+		void LevelBuilder::buildFace(NormalId normalId, Purpose purpose)
+		{
+			switch (normalId)
+			{
+			case NORM_X:
+				buildRight(purpose);
+				break;
+			case NORM_Y:
+				buildTop(purpose);
+				break;
+			case NORM_Z:
+				buildBack(purpose);
+				break;
+			case NORM_X_NEG:
+				buildLeft(purpose);
+				break;
+			case NORM_Y_NEG:
+				buildBottom(purpose);
+				break;
+			case NORM_Z_NEG:
+				buildFront(purpose);
+				break;
+			}
+		}
+
+		void LevelBuilder::appendQuadFromIndexArray(int a, int b, int c)
+		{
+			appendQuadFromVertexIndices(level->indexArray[a], level->indexArray[b], level->indexArray[c]);
+		}
+
+		void LevelBuilder::appendQuadFromIndexArray(int a, int b, int c, int d)
+		{
+			appendQuadFromVertexIndices(level->indexArray[a], level->indexArray[b], level->indexArray[c], level->indexArray[d]);
+		}
+
+		void LevelBuilder::appendQuadFromVertexIndices(unsigned a, unsigned b, unsigned c)
+		{
+			switch (level->primitive)
+			{
+			case G3D::RenderDevice::TRIANGLES:
+				level->indexArray.append(
+					Render::Mesh::allocVertex(a, 1),
+					Render::Mesh::allocVertex(b, 1),
+					Render::Mesh::allocVertex(c, 1)
+				);
+				break;
+			case G3D::RenderDevice::QUADS:
+				level->indexArray.append(
+					Render::Mesh::allocVertex(a, 1),
+					Render::Mesh::allocVertex(a, 1),
+					Render::Mesh::allocVertex(b, 1),
+					Render::Mesh::allocVertex(c, 1)
+				);
+				break;
+			}
+		}
+
+		void LevelBuilder::appendQuadFromVertexIndices(unsigned a, unsigned b, unsigned c, unsigned d)
+		{
+			switch (level->primitive)
+			{
+			case G3D::RenderDevice::TRIANGLES:
+				level->indexArray.append(
+					Render::Mesh::allocVertex(a, 1),
+					Render::Mesh::allocVertex(b, 1),
+					Render::Mesh::allocVertex(c, 1)
+				);
+				level->indexArray.append(
+					Render::Mesh::allocVertex(c, 1),
+					Render::Mesh::allocVertex(d, 1),
+					Render::Mesh::allocVertex(a, 1)
+				);
+				break;
+			case G3D::RenderDevice::QUADS:
+				level->indexArray.append(
+					Render::Mesh::allocVertex(a, 1),
+					Render::Mesh::allocVertex(b, 1),
+					Render::Mesh::allocVertex(c, 1),
+					Render::Mesh::allocVertex(d, 1)
+				);
+				break;
+			}
+		}
+	}
+}

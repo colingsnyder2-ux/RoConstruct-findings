@@ -1,155 +1,529 @@
 // from server: 100% by auto
-// roc 2007-08 0050c8f0  unit: G3D::BinaryInput  size: 449 bytes
-// Make this compile to the exact bytes below, then: roc check 2007-08 0050c8f0
-//
-// 0050c8f0  53                   push ebx
-// 0050c8f1  8b5c2424             mov ebx, dword ptr [esp + 0x24]
-// 0050c8f5  55                   push ebp
-// 0050c8f6  8b6c2430             mov ebp, dword ptr [esp + 0x30]
-// 0050c8fa  56                   push esi
-// 0050c8fb  57                   push edi
-// 0050c8fc  8b7c2434             mov edi, dword ptr [esp + 0x34]
-// 0050c900  8b44241c             mov eax, dword ptr [esp + 0x1c]
-// 0050c904  3b442428             cmp eax, dword ptr [esp + 0x28]
-// 0050c908  750e                 jne 0x50c918
-// 0050c90a  8b4c242c             mov ecx, dword ptr [esp + 0x2c]
-// 0050c90e  394c2420             cmp dword ptr [esp + 0x20], ecx
-// 0050c912  0f8476010000         je 0x50ca8e
-// 0050c918  8b742418             mov esi, dword ptr [esp + 0x18]
-// 0050c91c  85f6                 test esi, esi
-// 0050c91e  7506                 jne 0x50c926
-// 0050c920  ff15d8e67700         call dword ptr [0x77e6d8]
-// 0050c926  85db                 test ebx, ebx
-// 0050c928  7506                 jne 0x50c930
-// 0050c92a  ff15d8e67700         call dword ptr [0x77e6d8]
-// 0050c930  85f6                 test esi, esi
-// 0050c932  7407                 je 0x50c93b
-// 0050c934  837c241c00           cmp dword ptr [esp + 0x1c], 0
-// 0050c939  7506                 jne 0x50c941
-// 0050c93b  ff15d8e67700         call dword ptr [0x77e6d8]
-// 0050c941  8b7608               mov esi, dword ptr [esi + 8]
-// 0050c944  8b542418             mov edx, dword ptr [esp + 0x18]
-// 0050c948  3b720c               cmp esi, dword ptr [edx + 0xc]
-// 0050c94b  7606                 jbe 0x50c953
-// 0050c94d  ff15d8e67700         call dword ptr [0x77e6d8]
-// 0050c953  8b44241c             mov eax, dword ptr [esp + 0x1c]
-// 0050c957  8b4c2418             mov ecx, dword ptr [esp + 0x18]
-// 0050c95b  2bc6                 sub eax, esi
-// 0050c95d  8b742420             mov esi, dword ptr [esp + 0x20]
-// 0050c961  c1f802               sar eax, 2
-// 0050c964  c1e005               shl eax, 5
-// 0050c967  03c6                 add eax, esi
-// 0050c969  3b01                 cmp eax, dword ptr [ecx]
-// 0050c96b  7206                 jb 0x50c973
-// 0050c96d  ff15d8e67700         call dword ptr [0x77e6d8]
-// 0050c973  8b44241c             mov eax, dword ptr [esp + 0x1c]
-// 0050c977  ba01000000           mov edx, 1
-// 0050c97c  8bce                 mov ecx, esi
-// 0050c97e  d3e2                 shl edx, cl
-// 0050c980  8510                 test dword ptr [eax], edx
-// 0050c982  743f                 je 0x50c9c3
-// 0050c984  85db                 test ebx, ebx
-// 0050c986  7404                 je 0x50c98c
-// 0050c988  85ff                 test edi, edi
-// 0050c98a  7506                 jne 0x50c992
-// 0050c98c  ff15d8e67700         call dword ptr [0x77e6d8]
-// 0050c992  8b7308               mov esi, dword ptr [ebx + 8]
-// 0050c995  3b730c               cmp esi, dword ptr [ebx + 0xc]
-// 0050c998  7606                 jbe 0x50c9a0
-// 0050c99a  ff15d8e67700         call dword ptr [0x77e6d8]
-// 0050c9a0  8bcf                 mov ecx, edi
-// 0050c9a2  2bce                 sub ecx, esi
-// 0050c9a4  c1f902               sar ecx, 2
-// 0050c9a7  c1e105               shl ecx, 5
-// 0050c9aa  03cd                 add ecx, ebp
-// 0050c9ac  3b0b                 cmp ecx, dword ptr [ebx]
-// 0050c9ae  7206                 jb 0x50c9b6
-// 0050c9b0  ff15d8e67700         call dword ptr [0x77e6d8]
-// 0050c9b6  ba01000000           mov edx, 1
-// 0050c9bb  8bcd                 mov ecx, ebp
-// 0050c9bd  d3e2                 shl edx, cl
-// 0050c9bf  0917                 or dword ptr [edi], edx
-// 0050c9c1  eb3f                 jmp 0x50ca02
-// 0050c9c3  85db                 test ebx, ebx
-// 0050c9c5  7404                 je 0x50c9cb
-// 0050c9c7  85ff                 test edi, edi
-// 0050c9c9  7506                 jne 0x50c9d1
-// 0050c9cb  ff15d8e67700         call dword ptr [0x77e6d8]
-// 0050c9d1  8b7308               mov esi, dword ptr [ebx + 8]
-// 0050c9d4  3b730c               cmp esi, dword ptr [ebx + 0xc]
-// 0050c9d7  7606                 jbe 0x50c9df
-// 0050c9d9  ff15d8e67700         call dword ptr [0x77e6d8]
-// 0050c9df  8bc7                 mov eax, edi
-// 0050c9e1  2bc6                 sub eax, esi
-// 0050c9e3  c1f802               sar eax, 2
-// 0050c9e6  c1e005               shl eax, 5
-// 0050c9e9  03c5                 add eax, ebp
-// 0050c9eb  3b03                 cmp eax, dword ptr [ebx]
-// 0050c9ed  7206                 jb 0x50c9f5
-// 0050c9ef  ff15d8e67700         call dword ptr [0x77e6d8]
-// 0050c9f5  ba01000000           mov edx, 1
-// 0050c9fa  8bcd                 mov ecx, ebp
-// 0050c9fc  d3e2                 shl edx, cl
-// 0050c9fe  f7d2                 not edx
-// 0050ca00  2117                 and dword ptr [edi], edx
-// 0050ca02  8b7308               mov esi, dword ptr [ebx + 8]
-// 0050ca05  3b730c               cmp esi, dword ptr [ebx + 0xc]
-// 0050ca08  7606                 jbe 0x50ca10
-// 0050ca0a  ff15d8e67700         call dword ptr [0x77e6d8]
-// 0050ca10  8bc7                 mov eax, edi
-// 0050ca12  2bc6                 sub eax, esi
-// 0050ca14  c1f802               sar eax, 2
-// 0050ca17  c1e005               shl eax, 5
-// 0050ca1a  8d4c2801             lea ecx, [eax + ebp + 1]
-// 0050ca1e  3b0b                 cmp ecx, dword ptr [ebx]
-// 0050ca20  7606                 jbe 0x50ca28
-// 0050ca22  ff15d8e67700         call dword ptr [0x77e6d8]
-// 0050ca28  83fd1f               cmp ebp, 0x1f
-// 0050ca2b  7305                 jae 0x50ca32
-// 0050ca2d  83c501               add ebp, 1
-// 0050ca30  eb05                 jmp 0x50ca37
-// 0050ca32  33ed                 xor ebp, ebp
-// 0050ca34  83c704               add edi, 4
-// 0050ca37  8b442418             mov eax, dword ptr [esp + 0x18]
-// 0050ca3b  8b7008               mov esi, dword ptr [eax + 8]
-// 0050ca3e  3b700c               cmp esi, dword ptr [eax + 0xc]
-// 0050ca41  7606                 jbe 0x50ca49
-// 0050ca43  ff15d8e67700         call dword ptr [0x77e6d8]
-// 0050ca49  8b54241c             mov edx, dword ptr [esp + 0x1c]
-// 0050ca4d  8b4c2418             mov ecx, dword ptr [esp + 0x18]
-// 0050ca51  2bd6                 sub edx, esi
-// 0050ca53  8b742420             mov esi, dword ptr [esp + 0x20]
-// 0050ca57  c1fa02               sar edx, 2
-// 0050ca5a  c1e205               shl edx, 5
-// 0050ca5d  8d443201             lea eax, [edx + esi + 1]
-// 0050ca61  3b01                 cmp eax, dword ptr [ecx]
-// 0050ca63  7606                 jbe 0x50ca6b
-// 0050ca65  ff15d8e67700         call dword ptr [0x77e6d8]
-// 0050ca6b  83fe1f               cmp esi, 0x1f
-// 0050ca6e  730c                 jae 0x50ca7c
-// 0050ca70  83c601               add esi, 1
-// 0050ca73  89742420             mov dword ptr [esp + 0x20], esi
-// 0050ca77  e984feffff           jmp 0x50c900
-// 0050ca7c  8344241c04           add dword ptr [esp + 0x1c], 4
-// 0050ca81  c744242000000000     mov dword ptr [esp + 0x20], 0
-// 0050ca89  e972feffff           jmp 0x50c900
-// 0050ca8e  85db                 test ebx, ebx
-// 0050ca90  8b742414             mov esi, dword ptr [esp + 0x14]
-// 0050ca94  c70600000000         mov dword ptr [esi], 0
-// 0050ca9a  897e04               mov dword ptr [esi + 4], edi
-// 0050ca9d  896e08               mov dword ptr [esi + 8], ebp
-// 0050caa0  7506                 jne 0x50caa8
-// 0050caa2  ff15d8e67700         call dword ptr [0x77e6d8]
-// 0050caa8  5f                   pop edi
-// 0050caa9  891e                 mov dword ptr [esi], ebx
-// 0050caab  8bc6                 mov eax, esi
-// 0050caad  5e                   pop esi
-// 0050caae  5d                   pop ebp
-// 0050caaf  5b                   pop ebx
-// 0050cab0  c3                   ret 
-// library g3d-6.09/G3Dcpp\BinaryInput.cpp (function ??$_Copy_opt@V?$_Vb_iterator@V?$vector@_NV?$allocator@_N@std@@@std@@@std@@V12@Uforward_iterator_tag@2@@std@@YA?AV?$_Vb_iterator@V?$vector@_NV?$allocator@_N@std@@@std@@@0@V10@00Uforward_iterator_tag@0@U_Nonscalar_ptr_iterator_tag@0@U_Range_checked_iterator_tag@0@@Z)
-
 // roc-lang: cpp
 // roc-cl: 50727
 // roc-flags: /O2 /GS- /EHsc /MD
 // roc-lib: g3d-6.09 G3Dcpp/BinaryInput.cpp
+
+// Candidate translation unit (score above; library headers required).
+/**
+ @file BinaryInput.cpp
+ 
+ @author Morgan McGuire, graphics3d.com
+ 
+ @created 2001-08-09
+ @edited  2005-02-24
+
+
+  <PRE>
+    {    
+    BinaryOutput b("c:/tmp/test.b", BinaryOutput::LITTLE_ENDIAN);
+
+    float f = 3.1415926;
+    int i = 1027221;
+    std::string s = "Hello World!";
+
+    b.writeFloat32(f);
+    b.writeInt32(i);
+    b.writeString(s);
+    b.commit();
+    
+
+    BinaryInput in("c:/tmp/test.b", BinaryInput::LITTLE_ENDIAN);
+
+    debugAssert(f == in.readFloat32());
+    int ii = in.readInt32();
+    debugAssert(i == ii);
+    debugAssert(s == in.readString());
+    }
+  </PRE>
+ */
+
+#include "G3D/platform.h"
+#include "G3D/BinaryInput.h"
+#include "G3D/Array.h"
+#include "G3D/fileutils.h"
+#ifdef G3D_WIN32
+  #include "../zlib/zlib.h"
+#else
+  #include <zlib.h>
+#endif
+
+namespace G3D {
+
+void BinaryInput::readBool8(std::vector<bool>& out, int n) {
+    out.resize(n);
+    // std::vector optimizes bool in a way that prevents fast reading
+    for (int i = 0; i < n ; ++i) {
+        out[i] = readBool8();
+    }
+}
+
+
+void BinaryInput::readBool8(Array<bool>& out, int n) {
+    out.resize(n);
+    readBool8(out.begin(), n);
+}
+
+
+#define IMPLEMENT_READER(ucase, lcase)\
+void BinaryInput::read##ucase(std::vector<lcase>& out, int n) {\
+    out.resize(n);\
+    read##ucase(&out[0], n);\
+}\
+\
+\
+void BinaryInput::read##ucase(Array<lcase>& out, int n) {\
+    out.resize(n);\
+    read##ucase(out.begin(), n);\
+}
+
+
+IMPLEMENT_READER(UInt8,   uint8)
+IMPLEMENT_READER(Int8,    int8)
+IMPLEMENT_READER(UInt16,  uint16)
+IMPLEMENT_READER(Int16,   int16)
+IMPLEMENT_READER(UInt32,  uint32)
+IMPLEMENT_READER(Int32,   int32)
+IMPLEMENT_READER(UInt64,  uint64)
+IMPLEMENT_READER(Int64,   int64)
+IMPLEMENT_READER(Float32, float32)
+IMPLEMENT_READER(Float64, float64)    
+
+#undef IMPLEMENT_READER
+
+// Data structures that are one byte per element can be 
+// directly copied, regardles of endian-ness.
+#define IMPLEMENT_READER(ucase, lcase)\
+void BinaryInput::read##ucase(lcase* out, int n) {\
+    if (sizeof(lcase) == 1) {\
+        readBytes(out, n);\
+    } else {\
+        for (int i = 0; i < n ; ++i) {\
+            out[i] = read##ucase();\
+        }\
+    }\
+}
+
+IMPLEMENT_READER(Bool8,   bool)
+IMPLEMENT_READER(UInt8,   uint8)
+IMPLEMENT_READER(Int8,    int8)
+
+#undef IMPLEMENT_READER
+
+
+#define IMPLEMENT_READER(ucase, lcase)\
+void BinaryInput::read##ucase(lcase* out, int n) {\
+    if (swapBytes) {\
+        for (int i = 0; i < n; ++i) {\
+            out[i] = read##ucase();\
+        }\
+    } else {\
+        readBytes(out, sizeof(lcase) * n);\
+    }\
+}
+
+
+IMPLEMENT_READER(UInt16,  uint16)
+IMPLEMENT_READER(Int16,   int16)
+IMPLEMENT_READER(UInt32,  uint32)
+IMPLEMENT_READER(Int32,   int32)
+IMPLEMENT_READER(UInt64,  uint64)
+IMPLEMENT_READER(Int64,   int64)
+IMPLEMENT_READER(Float32, float32)
+IMPLEMENT_READER(Float64, float64)    
+
+#undef IMPLEMENT_READER
+
+void BinaryInput::loadIntoMemory(int startPosition, int minLength) {
+    // Load the next section of the file
+    debugAssertM(filename != "<memory>", "Read past end of file.");
+
+    int absPos = alreadyRead + pos;
+
+    if (bufferLength < minLength) {
+        // The current buffer isn't big enough to hold the chunk we want to read.
+        // This happens if there was little memory available during the initial constructor
+        // read but more memory has since been freed.
+        bufferLength = minLength;
+		debugAssert(freeBuffer);
+        buffer = (uint8*)System::realloc(buffer, bufferLength);
+        if (buffer == NULL) {
+            throw "Tried to read a larger memory chunk than could fit in memory. (2)";
+        }
+    }
+
+    alreadyRead = startPosition;
+
+    FILE* file = fopen(filename.c_str(), "rb");
+    debugAssert(file);
+
+    int ret = fseek(file, alreadyRead, SEEK_SET);
+    debugAssert(ret == 0);
+
+    int toRead = iMin(bufferLength, length - alreadyRead);
+    ret = fread(buffer, 1, toRead, file);
+    debugAssert(ret == toRead);
+    fclose(file);
+    file = NULL;
+
+    pos = absPos - alreadyRead;
+    debugAssert(pos >= 0);
+}
+
+
+
+const bool BinaryInput::NO_COPY = false;
+    
+static bool needSwapBytes(G3DEndian fileEndian) {
+    return (fileEndian != System::machineEndian());
+}
+
+
+/** Helper used by the constructors for decompression */
+static uint32 readUInt32(const uint8* data, bool swapBytes) {
+    if (swapBytes) {
+        uint8 out[4];
+        out[0] = data[3];
+        out[1] = data[2];
+        out[2] = data[1];
+        out[3] = data[0];
+        return *((uint32*)out);
+    } else {
+        return *((uint32*)data);
+    }
+}
+
+BinaryInput::BinaryInput(
+    const uint8*        data,
+    int                 dataLen,
+    G3DEndian           dataEndian,
+    bool                compressed,
+    bool                copyMemory) {
+
+    debugAssert(! (compressed && !copyMemory));
+    beginEndBits = 0;
+    bitPos = 0;
+    alreadyRead = 0;
+    bufferLength = 0;
+
+    freeBuffer = copyMemory || compressed;
+
+    this->fileEndian = dataEndian;
+    this->filename = "<memory>";
+	pos = 0;
+    swapBytes = needSwapBytes(fileEndian);
+
+    if (compressed) {
+        // Read the decompressed size from the first 4 bytes
+        length = G3D::readUInt32(data, swapBytes);
+
+		debugAssert(freeBuffer);
+        buffer = (uint8*)System::malloc(length);
+
+        uint32 L = length;
+        // Decompress with zlib
+        int result = uncompress(buffer, (unsigned long*)&L, data + 4, dataLen - 4);
+        length = L;
+        bufferLength = L;
+        debugAssert(result == Z_OK); (void)result;
+
+    } else {
+	    length = dataLen;
+        bufferLength = length;
+        if (! copyMemory) {
+ 			debugAssert(!freeBuffer);
+            buffer = const_cast<uint8*>(data);
+        } else {
+			debugAssert(freeBuffer);
+            buffer = (uint8*)System::malloc(length);
+            memcpy(buffer, data, dataLen);
+        }
+    }
+}
+
+
+BinaryInput::BinaryInput(
+    const std::string&  filename,
+    G3DEndian           fileEndian,
+    bool                compressed) {
+
+    alreadyRead = 0;
+    freeBuffer = true;
+    this->fileEndian = fileEndian;
+    this->filename = filename;
+	buffer = NULL;
+    bufferLength = 0;
+	length = 0;
+	pos = 0;
+    beginEndBits = 0;
+    bitPos = 0;
+
+    // Update global file tracker
+    _internal::currentFilesUsed.append(filename);
+    
+    swapBytes = needSwapBytes(fileEndian);
+
+    // Figure out how big the file is and verify that it exists.
+    length = fileLength(filename);
+
+    // Read the file into memory
+    FILE* file = fopen(filename.c_str(), "rb");
+
+	if (! file || (length == -1)) {
+        throw format("File not found: \"%s\"", filename.c_str());
+		return;
+	}
+
+    if (! compressed && (length > INITIAL_BUFFER_LENGTH)) {
+        // Read only a subset of the file so we don't consume
+        // all available memory.
+        bufferLength = INITIAL_BUFFER_LENGTH;
+    } else {
+        // Either the length is fine or the file is compressed
+        // and requires us to read the whole thing for zlib.
+        bufferLength = length;
+    }
+
+	debugAssert(freeBuffer);
+    buffer = (uint8*)System::malloc(bufferLength);
+    if (buffer == NULL) {
+        if (compressed) {
+            throw "Not enough memory to load compressed file. (1)";
+        }
+
+        // Try to allocate a small array; not much memory is available.
+        // Give up if we can't allocate even 1k.
+        while ((buffer == NULL) && (bufferLength > 1024)) {
+            bufferLength /= 2;
+            buffer = (uint8*)System::malloc(bufferLength);
+        }
+    }
+    debugAssert(buffer);
+    
+    fread(buffer, bufferLength, sizeof(int8), file);
+    fclose(file);
+    file = NULL;
+
+    pos = 0;
+
+    if (compressed) {
+        if (bufferLength != length) {
+            throw "Not enough memory to load compressed file. (2)";
+        }
+
+        // Decompress
+        // Use the existing buffer as the source, allocate
+        // a new buffer to use as the destination.
+
+        int tempLength = length;
+        length = G3D::readUInt32(buffer, swapBytes);
+
+        uint8* tempBuffer = buffer;
+        buffer = (uint8*)System::malloc(length);
+
+        debugAssert(buffer);
+        debugAssert(isValidHeapPointer(tempBuffer));
+        debugAssert(isValidHeapPointer(buffer));
+
+        unsigned long L = length;
+        int result = uncompress(buffer, &L, tempBuffer + 4, tempLength - 4);
+        length = L;
+        bufferLength = length;
+
+        debugAssert(result == Z_OK); (void)result;
+
+        System::free(tempBuffer);
+    }
+}
+
+
+BinaryInput::~BinaryInput() {
+
+    if (freeBuffer) {
+        System::free(buffer);
+    }
+    buffer = NULL;
+}
+
+
+void BinaryInput::readBytes(int n, void* bytes) {
+    prepareToRead(n);
+    debugAssert(isValidPointer(bytes));
+
+    memcpy(bytes, buffer + pos, n);
+    pos += n;
+}
+
+
+uint64 BinaryInput::readUInt64() {
+    prepareToRead(8);
+    uint8 out[8];
+
+    if (swapBytes) {
+        out[0] = buffer[pos + 7];
+        out[1] = buffer[pos + 6];
+        out[2] = buffer[pos + 5];
+        out[3] = buffer[pos + 4];
+        out[4] = buffer[pos + 3];
+        out[5] = buffer[pos + 2];
+        out[6] = buffer[pos + 1];
+        out[7] = buffer[pos + 0];
+    } else {
+        *(uint64*)out = *(uint64*)(buffer + pos);
+    }
+
+    pos += 8;
+    return *(uint64*)out;
+}
+
+
+std::string BinaryInput::readString(int n) {
+    prepareToRead(n);
+    debugAssertM((pos + n) <= length, "Read past end of file");
+    
+    char *s = (char*)System::malloc(n + 1);
+    assert(s != NULL);
+
+    memcpy(s, buffer + pos, n);
+    // There may not be a null, so make sure
+    // we add one.
+    s[n] = '\0';
+
+    std::string out = s;
+    System::free(s);
+    s = NULL;
+
+    pos += n;
+
+    return out;
+
+}
+
+
+std::string BinaryInput::readString() {
+    int n = 0;
+
+    if ((int)pos + (int)alreadyRead + n < (int)length - 1) {
+        prepareToRead(1);
+    }
+
+    if (((int)pos + (int)alreadyRead + (int)n < length - 1) && (buffer[pos + n] != '\0')) {
+        ++n;
+        while (((int)pos + (int)alreadyRead + n < (int)length - 1) && (buffer[pos + n] != '\0')) {
+            prepareToRead(1);
+            ++n;
+        }
+    }
+
+    // Consume NULL
+    ++n;
+
+    return readString(n);
+}
+
+
+std::string BinaryInput::readStringEven() {
+    std::string x = readString();
+    if (hasMore() && (G3D::isOdd(x.length() + 1))) {
+        skip(1);
+    }
+    return x;
+}
+
+
+std::string BinaryInput::readString32() {
+    int len = readUInt32();
+    return readString(len);
+}
+
+
+Vector4 BinaryInput::readVector4() {
+    double x = readFloat32();
+    double y = readFloat32();
+    double z = readFloat32();
+    double w = readFloat32();
+    return Vector4(x, y, z, w);
+}
+
+
+Vector3 BinaryInput::readVector3() {
+    double x = readFloat32();
+    double y = readFloat32();
+    double z = readFloat32();
+    return Vector3(x, y, z);
+}
+
+
+Vector2 BinaryInput::readVector2() {
+    double x = readFloat32();
+    double y = readFloat32();
+    return Vector2(x, y);
+}
+
+
+Color4 BinaryInput::readColor4() {
+    double r = readFloat32();
+    double g = readFloat32();
+    double b = readFloat32();
+    double a = readFloat32();
+    return Color4(r, g, b, a);
+}
+
+
+Color3 BinaryInput::readColor3() {
+    double r = readFloat32();
+    double g = readFloat32();
+    double b = readFloat32();
+    return Color3(r, g, b);
+}
+
+
+void BinaryInput::beginBits() {
+    debugAssert(beginEndBits == 0);
+    beginEndBits = 1;
+    bitPos = 0;
+
+    debugAssertM(hasMore(), "Can't call beginBits when at the end of a file");
+    bitString = readUInt8();
+}
+
+
+uint32 BinaryInput::readBits(int numBits) {
+    debugAssert(beginEndBits == 1);
+
+    uint32 out = 0;
+
+    const int total = numBits;
+    while (numBits > 0) {
+        if (bitPos > 7) {
+            // Consume a new byte for reading.  We do this at the beginning
+            // of the loop so that we don't try to read past the end of the file.
+            bitPos = 0;
+            bitString = readUInt8();
+        }
+
+        // Slide the lowest bit of the bitString into
+        // the correct position.
+        out |= (bitString & 1) << (total - numBits);
+
+        // Shift over to the next bit
+        bitString = bitString >> 1;
+        ++bitPos;
+        --numBits;
+    }
+
+    return out;
+}
+
+
+void BinaryInput::endBits() {
+    debugAssert(beginEndBits == 1);
+    if (bitPos == 0) {
+        // Put back the last byte we read
+        --pos;
+    }
+    beginEndBits = 0;
+    bitPos = 0;
+}
+
+}

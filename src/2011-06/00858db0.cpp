@@ -1,407 +1,1739 @@
-// roc 2011-06 00858db0  unit: CXTPControls  size: 1229 bytes
-// Make this compile to the exact bytes below, then: roc check 2011-06 00858db0
-//
-// 00858db0  83ec3c               sub esp, 0x3c
-// 00858db3  8b442450             mov eax, dword ptr [esp + 0x50]
-// 00858db7  8b00                 mov eax, dword ptr [eax]
-// 00858db9  53                   push ebx
-// 00858dba  8b5c244c             mov ebx, dword ptr [esp + 0x4c]
-// 00858dbe  55                   push ebp
-// 00858dbf  56                   push esi
-// 00858dc0  8be9                 mov ebp, ecx
-// 00858dc2  83e010               and eax, 0x10
-// 00858dc5  57                   push edi
-// 00858dc6  896c2410             mov dword ptr [esp + 0x10], ebp
-// 00858dca  8944241c             mov dword ptr [esp + 0x1c], eax
-// 00858dce  8bff                 mov edi, edi
-// 00858dd0  8b4d2c               mov ecx, dword ptr [ebp + 0x2c]
-// 00858dd3  8d41ff               lea eax, [ecx - 1]
-// 00858dd6  33d2                 xor edx, edx
-// 00858dd8  8bf8                 mov edi, eax
-// 00858dda  83ff02               cmp edi, 2
-// 00858ddd  89542418             mov dword ptr [esp + 0x18], edx
-// 00858de1  894c2414             mov dword ptr [esp + 0x14], ecx
-// 00858de5  0f8c8c000000         jl 0x858e77
-// 00858deb  8bcf                 mov ecx, edi
-// 00858ded  c1e106               shl ecx, 6
-// 00858df0  8d5c1934             lea ebx, [ecx + ebx + 0x34]
-// 00858df4  eb02                 jmp 0x858df8
-// 00858df6  33d2                 xor edx, edx
-// 00858df8  3953f4               cmp dword ptr [ebx - 0xc], edx
-// 00858dfb  746d                 je 0x858e6a
-// 00858dfd  3913                 cmp dword ptr [ebx], edx
-// 00858dff  7569                 jne 0x858e6a
-// 00858e01  3bfa                 cmp edi, edx
-// 00858e03  89542428             mov dword ptr [esp + 0x28], edx
-// 00858e07  8954242c             mov dword ptr [esp + 0x2c], edx
-// 00858e0b  89542430             mov dword ptr [esp + 0x30], edx
-// 00858e0f  8bc7                 mov eax, edi
-// 00858e11  7c57                 jl 0x858e6a
-// 00858e13  8bf3                 mov esi, ebx
-// 00858e15  837ef400             cmp dword ptr [esi - 0xc], 0
-// 00858e19  743e                 je 0x858e59
-// 00858e1b  83fa02               cmp edx, 2
-// 00858e1e  7405                 je 0x858e25
-// 00858e20  833e00               cmp dword ptr [esi], 0
-// 00858e23  753c                 jne 0x858e61
-// 00858e25  85c0                 test eax, eax
-// 00858e27  7c17                 jl 0x858e40
-// 00858e29  3b442414             cmp eax, dword ptr [esp + 0x14]
-// 00858e2d  7d11                 jge 0x858e40
-// 00858e2f  3b452c               cmp eax, dword ptr [ebp + 0x2c]
-// 00858e32  0f8dcb030000         jge 0x859203
-// 00858e38  8b4d28               mov ecx, dword ptr [ebp + 0x28]
-// 00858e3b  8b0c81               mov ecx, dword ptr [ecx + eax*4]
-// 00858e3e  eb02                 jmp 0x858e42
-// 00858e40  33c9                 xor ecx, ecx
-// 00858e42  83b94801000004       cmp dword ptr [ecx + 0x148], 4
-// 00858e49  7516                 jne 0x858e61
-// 00858e4b  89449428             mov dword ptr [esp + edx*4 + 0x28], eax
-// 00858e4f  42                   inc edx
-// 00858e50  83fa03               cmp edx, 3
-// 00858e53  0f84bd000000         je 0x858f16
-// 00858e59  48                   dec eax
-// 00858e5a  83ee40               sub esi, 0x40
-// 00858e5d  85c0                 test eax, eax
-// 00858e5f  7db4                 jge 0x858e15
-// 00858e61  83fa03               cmp edx, 3
-// 00858e64  0f84ac000000         je 0x858f16
-// 00858e6a  4f                   dec edi
-// 00858e6b  83eb40               sub ebx, 0x40
-// 00858e6e  83ff02               cmp edi, 2
-// 00858e71  7d83                 jge 0x858df6
-// 00858e73  8b4c2414             mov ecx, dword ptr [esp + 0x14]
-// 00858e77  8d41ff               lea eax, [ecx - 1]
-// 00858e7a  83f802               cmp eax, 2
-// 00858e7d  0f8c52010000         jl 0x858fd5
-// 00858e83  8b542458             mov edx, dword ptr [esp + 0x58]
-// 00858e87  8bc8                 mov ecx, eax
-// 00858e89  c1e106               shl ecx, 6
-// 00858e8c  837c112800           cmp dword ptr [ecx + edx + 0x28], 0
-// 00858e91  8d3c11               lea edi, [ecx + edx]
-// 00858e94  0f8429010000         je 0x858fc3
-// 00858e9a  837f3400             cmp dword ptr [edi + 0x34], 0
-// 00858e9e  0f851f010000         jne 0x858fc3
-// 00858ea4  33f6                 xor esi, esi
-// 00858ea6  33db                 xor ebx, ebx
-// 00858ea8  33ed                 xor ebp, ebp
-// 00858eaa  33d2                 xor edx, edx
-// 00858eac  33c9                 xor ecx, ecx
-// 00858eae  89742434             mov dword ptr [esp + 0x34], esi
-// 00858eb2  895c2438             mov dword ptr [esp + 0x38], ebx
-// 00858eb6  896c243c             mov dword ptr [esp + 0x3c], ebp
-// 00858eba  85c0                 test eax, eax
-// 00858ebc  0f8cf8000000         jl 0x858fba
-// 00858ec2  8b5c2414             mov ebx, dword ptr [esp + 0x14]
-// 00858ec6  8d7734               lea esi, [edi + 0x34]
-// 00858ec9  8b7c2410             mov edi, dword ptr [esp + 0x10]
-// 00858ecd  8d6a04               lea ebp, [edx + 4]
-// 00858ed0  837ef400             cmp dword ptr [esi - 0xc], 0
-// 00858ed4  0f84c8000000         je 0x858fa2
-// 00858eda  83fa02               cmp edx, 2
-// 00858edd  7409                 je 0x858ee8
-// 00858edf  833e00               cmp dword ptr [esi], 0
-// 00858ee2  0f85c6000000         jne 0x858fae
-// 00858ee8  89449434             mov dword ptr [esp + edx*4 + 0x34], eax
-// 00858eec  42                   inc edx
-// 00858eed  85c9                 test ecx, ecx
-// 00858eef  0f85a3000000         jne 0x858f98
-// 00858ef5  85c0                 test eax, eax
-// 00858ef7  0f8c8d000000         jl 0x858f8a
-// 00858efd  3bc3                 cmp eax, ebx
-// 00858eff  0f8d85000000         jge 0x858f8a
-// 00858f05  3b472c               cmp eax, dword ptr [edi + 0x2c]
-// 00858f08  0f8df5020000         jge 0x859203
-// 00858f0e  8b4f28               mov ecx, dword ptr [edi + 0x28]
-// 00858f11  8b0c81               mov ecx, dword ptr [ecx + eax*4]
-// 00858f14  eb76                 jmp 0x858f8c
-// 00858f16  8b442428             mov eax, dword ptr [esp + 0x28]
-// 00858f1a  85c0                 test eax, eax
-// 00858f1c  7c17                 jl 0x858f35
-// 00858f1e  3b442414             cmp eax, dword ptr [esp + 0x14]
-// 00858f22  7d11                 jge 0x858f35
-// 00858f24  3b452c               cmp eax, dword ptr [ebp + 0x2c]
-// 00858f27  0f8dd6020000         jge 0x859203
-// 00858f2d  8b5528               mov edx, dword ptr [ebp + 0x28]
-// 00858f30  8b0482               mov eax, dword ptr [edx + eax*4]
-// 00858f33  eb02                 jmp 0x858f37
-// 00858f35  33c0                 xor eax, eax
-// 00858f37  b903000000           mov ecx, 3
-// 00858f3c  898848010000         mov dword ptr [eax + 0x148], ecx
-// 00858f42  8b44242c             mov eax, dword ptr [esp + 0x2c]
-// 00858f46  85c0                 test eax, eax
-// 00858f48  7c0d                 jl 0x858f57
-// 00858f4a  3b452c               cmp eax, dword ptr [ebp + 0x2c]
-// 00858f4d  7d08                 jge 0x858f57
-// 00858f4f  8b5528               mov edx, dword ptr [ebp + 0x28]
-// 00858f52  8b0482               mov eax, dword ptr [edx + eax*4]
-// 00858f55  eb02                 jmp 0x858f59
-// 00858f57  33c0                 xor eax, eax
-// 00858f59  898848010000         mov dword ptr [eax + 0x148], ecx
-// 00858f5f  8b442430             mov eax, dword ptr [esp + 0x30]
-// 00858f63  85c0                 test eax, eax
-// 00858f65  7c16                 jl 0x858f7d
-// 00858f67  3b452c               cmp eax, dword ptr [ebp + 0x2c]
-// 00858f6a  7d11                 jge 0x858f7d
-// 00858f6c  8b5528               mov edx, dword ptr [ebp + 0x28]
-// 00858f6f  8b0482               mov eax, dword ptr [edx + eax*4]
-// 00858f72  898848010000         mov dword ptr [eax + 0x148], ecx
-// 00858f78  e90a020000           jmp 0x859187
-// 00858f7d  33c0                 xor eax, eax
-// 00858f7f  898848010000         mov dword ptr [eax + 0x148], ecx
-// 00858f85  e9fd010000           jmp 0x859187
-// 00858f8a  33c9                 xor ecx, ecx
-// 00858f8c  39a948010000         cmp dword ptr [ecx + 0x148], ebp
-// 00858f92  7404                 je 0x858f98
-// 00858f94  33c9                 xor ecx, ecx
-// 00858f96  eb05                 jmp 0x858f9d
-// 00858f98  b901000000           mov ecx, 1
-// 00858f9d  83fa03               cmp edx, 3
-// 00858fa0  740c                 je 0x858fae
-// 00858fa2  48                   dec eax
-// 00858fa3  83ee40               sub esi, 0x40
-// 00858fa6  85c0                 test eax, eax
-// 00858fa8  0f8d22ffffff         jge 0x858ed0
-// 00858fae  8b6c243c             mov ebp, dword ptr [esp + 0x3c]
-// 00858fb2  8b5c2438             mov ebx, dword ptr [esp + 0x38]
-// 00858fb6  8b742434             mov esi, dword ptr [esp + 0x34]
-// 00858fba  83fa03               cmp edx, 3
-// 00858fbd  7504                 jne 0x858fc3
-// 00858fbf  85c9                 test ecx, ecx
-// 00858fc1  7572                 jne 0x859035
-// 00858fc3  48                   dec eax
-// 00858fc4  83f802               cmp eax, 2
-// 00858fc7  0f8db6feffff         jge 0x858e83
-// 00858fcd  8b6c2410             mov ebp, dword ptr [esp + 0x10]
-// 00858fd1  8b4c2414             mov ecx, dword ptr [esp + 0x14]
-// 00858fd5  8d41ff               lea eax, [ecx - 1]
-// 00858fd8  8bd8                 mov ebx, eax
-// 00858fda  83fb02               cmp ebx, 2
-// 00858fdd  0f8cac010000         jl 0x85918f
-// 00858fe3  8b542458             mov edx, dword ptr [esp + 0x58]
-// 00858fe7  8bcb                 mov ecx, ebx
-// 00858fe9  c1e106               shl ecx, 6
-// 00858fec  8d6c1134             lea ebp, [ecx + edx + 0x34]
-// 00858ff0  33c9                 xor ecx, ecx
-// 00858ff2  394df4               cmp dword ptr [ebp - 0xc], ecx
-// 00858ff5  0f8407010000         je 0x859102
-// 00858ffb  394d00               cmp dword ptr [ebp], ecx
-// 00858ffe  0f85fe000000         jne 0x859102
-// 00859004  33d2                 xor edx, edx
-// 00859006  3bd9                 cmp ebx, ecx
-// 00859008  894c2440             mov dword ptr [esp + 0x40], ecx
-// 0085900c  894c2444             mov dword ptr [esp + 0x44], ecx
-// 00859010  894c2448             mov dword ptr [esp + 0x48], ecx
-// 00859014  8bc3                 mov eax, ebx
-// 00859016  0f8ce6000000         jl 0x859102
-// 0085901c  8d7dd0               lea edi, [ebp - 0x30]
-// 0085901f  90                   nop 
-// 00859020  837f2400             cmp dword ptr [edi + 0x24], 0
-// 00859024  0f84c7000000         je 0x8590f1
-// 0085902a  837c241c00           cmp dword ptr [esp + 0x1c], 0
-// 0085902f  7474                 je 0x8590a5
-// 00859031  8b37                 mov esi, dword ptr [edi]
-// 00859033  eb73                 jmp 0x8590a8
-// 00859035  85f6                 test esi, esi
-// 00859037  7c1b                 jl 0x859054
-// 00859039  3b742414             cmp esi, dword ptr [esp + 0x14]
-// 0085903d  7d15                 jge 0x859054
-// 0085903f  8b442410             mov eax, dword ptr [esp + 0x10]
-// 00859043  3b702c               cmp esi, dword ptr [eax + 0x2c]
-// 00859046  0f8db7010000         jge 0x859203
-// 0085904c  8b5028               mov edx, dword ptr [eax + 0x28]
-// 0085904f  8b34b2               mov esi, dword ptr [edx + esi*4]
-// 00859052  eb06                 jmp 0x85905a
-// 00859054  8b442410             mov eax, dword ptr [esp + 0x10]
-// 00859058  33f6                 xor esi, esi
-// 0085905a  b903000000           mov ecx, 3
-// 0085905f  898e48010000         mov dword ptr [esi + 0x148], ecx
-// 00859065  85db                 test ebx, ebx
-// 00859067  7c0d                 jl 0x859076
-// 00859069  3b582c               cmp ebx, dword ptr [eax + 0x2c]
-// 0085906c  7d08                 jge 0x859076
-// 0085906e  8b5028               mov edx, dword ptr [eax + 0x28]
-// 00859071  8b1c9a               mov ebx, dword ptr [edx + ebx*4]
-// 00859074  eb02                 jmp 0x859078
-// 00859076  33db                 xor ebx, ebx
-// 00859078  898b48010000         mov dword ptr [ebx + 0x148], ecx
-// 0085907e  85ed                 test ebp, ebp
-// 00859080  7c16                 jl 0x859098
-// 00859082  3b682c               cmp ebp, dword ptr [eax + 0x2c]
-// 00859085  7d11                 jge 0x859098
-// 00859087  8b4028               mov eax, dword ptr [eax + 0x28]
-// 0085908a  8b04a8               mov eax, dword ptr [eax + ebp*4]
-// 0085908d  898848010000         mov dword ptr [eax + 0x148], ecx
-// 00859093  e9eb000000           jmp 0x859183
-// 00859098  33c0                 xor eax, eax
-// 0085909a  898848010000         mov dword ptr [eax + 0x148], ecx
-// 008590a0  e9de000000           jmp 0x859183
-// 008590a5  8b77fc               mov esi, dword ptr [edi - 4]
-// 008590a8  85c9                 test ecx, ecx
-// 008590aa  7404                 je 0x8590b0
-// 008590ac  3bf2                 cmp esi, edx
-// 008590ae  754d                 jne 0x8590fd
-// 008590b0  83f902               cmp ecx, 2
-// 008590b3  7406                 je 0x8590bb
-// 008590b5  837f3000             cmp dword ptr [edi + 0x30], 0
-// 008590b9  7542                 jne 0x8590fd
-// 008590bb  85c0                 test eax, eax
-// 008590bd  7c1b                 jl 0x8590da
-// 008590bf  3b442414             cmp eax, dword ptr [esp + 0x14]
-// 008590c3  7d15                 jge 0x8590da
-// 008590c5  8b542410             mov edx, dword ptr [esp + 0x10]
-// 008590c9  3b422c               cmp eax, dword ptr [edx + 0x2c]
-// 008590cc  0f8d31010000         jge 0x859203
-// 008590d2  8b5228               mov edx, dword ptr [edx + 0x28]
-// 008590d5  8b1482               mov edx, dword ptr [edx + eax*4]
-// 008590d8  eb02                 jmp 0x8590dc
-// 008590da  33d2                 xor edx, edx
-// 008590dc  83ba4801000003       cmp dword ptr [edx + 0x148], 3
-// 008590e3  7518                 jne 0x8590fd
-// 008590e5  89448c40             mov dword ptr [esp + ecx*4 + 0x40], eax
-// 008590e9  41                   inc ecx
-// 008590ea  8bd6                 mov edx, esi
-// 008590ec  83f903               cmp ecx, 3
-// 008590ef  7424                 je 0x859115
-// 008590f1  48                   dec eax
-// 008590f2  83ef40               sub edi, 0x40
-// 008590f5  85c0                 test eax, eax
-// 008590f7  0f8d23ffffff         jge 0x859020
-// 008590fd  83f903               cmp ecx, 3
-// 00859100  7413                 je 0x859115
-// 00859102  4b                   dec ebx
-// 00859103  83ed40               sub ebp, 0x40
-// 00859106  83fb02               cmp ebx, 2
-// 00859109  0f8de1feffff         jge 0x858ff0
-// 0085910f  8b6c2410             mov ebp, dword ptr [esp + 0x10]
-// 00859113  eb7a                 jmp 0x85918f
-// 00859115  8b442440             mov eax, dword ptr [esp + 0x40]
-// 00859119  85c0                 test eax, eax
-// 0085911b  7c1b                 jl 0x859138
-// 0085911d  3b442414             cmp eax, dword ptr [esp + 0x14]
-// 00859121  7d15                 jge 0x859138
-// 00859123  8b4c2410             mov ecx, dword ptr [esp + 0x10]
-// 00859127  3b412c               cmp eax, dword ptr [ecx + 0x2c]
-// 0085912a  0f8dd3000000         jge 0x859203
-// 00859130  8b5128               mov edx, dword ptr [ecx + 0x28]
-// 00859133  8b0482               mov eax, dword ptr [edx + eax*4]
-// 00859136  eb06                 jmp 0x85913e
-// 00859138  8b4c2410             mov ecx, dword ptr [esp + 0x10]
-// 0085913c  33c0                 xor eax, eax
-// 0085913e  ba02000000           mov edx, 2
-// 00859143  899048010000         mov dword ptr [eax + 0x148], edx
-// 00859149  8b442444             mov eax, dword ptr [esp + 0x44]
-// 0085914d  85c0                 test eax, eax
-// 0085914f  7c0d                 jl 0x85915e
-// 00859151  3b412c               cmp eax, dword ptr [ecx + 0x2c]
-// 00859154  7d08                 jge 0x85915e
-// 00859156  8b7128               mov esi, dword ptr [ecx + 0x28]
-// 00859159  8b0486               mov eax, dword ptr [esi + eax*4]
-// 0085915c  eb02                 jmp 0x859160
-// 0085915e  33c0                 xor eax, eax
-// 00859160  899048010000         mov dword ptr [eax + 0x148], edx
-// 00859166  8b442448             mov eax, dword ptr [esp + 0x48]
-// 0085916a  85c0                 test eax, eax
-// 0085916c  7c0d                 jl 0x85917b
-// 0085916e  3b412c               cmp eax, dword ptr [ecx + 0x2c]
-// 00859171  7d08                 jge 0x85917b
-// 00859173  8b4928               mov ecx, dword ptr [ecx + 0x28]
-// 00859176  8b0481               mov eax, dword ptr [ecx + eax*4]
-// 00859179  eb02                 jmp 0x85917d
-// 0085917b  33c0                 xor eax, eax
-// 0085917d  899048010000         mov dword ptr [eax + 0x148], edx
-// 00859183  8b6c2410             mov ebp, dword ptr [esp + 0x10]
-// 00859187  c744241801000000     mov dword ptr [esp + 0x18], 1
-// 0085918f  8b742460             mov esi, dword ptr [esp + 0x60]
-// 00859193  8b5c2458             mov ebx, dword ptr [esp + 0x58]
-// 00859197  8b542454             mov edx, dword ptr [esp + 0x54]
-// 0085919b  56                   push esi
-// 0085919c  53                   push ebx
-// 0085919d  52                   push edx
-// 0085919e  8d44242c             lea eax, [esp + 0x2c]
-// 008591a2  50                   push eax
-// 008591a3  8bcd                 mov ecx, ebp
-// 008591a5  e8e6ebffff           call 0x857d90
-// 008591aa  837c241c00           cmp dword ptr [esp + 0x1c], 0
-// 008591af  8b5004               mov edx, dword ptr [eax + 4]
-// 008591b2  8b08                 mov ecx, dword ptr [eax]
-// 008591b4  8bc2                 mov eax, edx
-// 008591b6  7502                 jne 0x8591ba
-// 008591b8  8bc1                 mov eax, ecx
-// 008591ba  3b44245c             cmp eax, dword ptr [esp + 0x5c]
-// 008591be  0f8ca6000000         jl 0x85926a
-// 008591c4  837c241800           cmp dword ptr [esp + 0x18], 0
-// 008591c9  0f8501fcffff         jne 0x858dd0
-// 008591cf  f60680               test byte ptr [esi], 0x80
-// 008591d2  0f8492000000         je 0x85926a
-// 008591d8  8b4d2c               mov ecx, dword ptr [ebp + 0x2c]
-// 008591db  bf01000000           mov edi, 1
-// 008591e0  33c0                 xor eax, eax
-// 008591e2  8bf7                 mov esi, edi
-// 008591e4  85c9                 test ecx, ecx
-// 008591e6  7e5b                 jle 0x859243
-// 008591e8  8bd3                 mov edx, ebx
-// 008591ea  8b5c241c             mov ebx, dword ptr [esp + 0x1c]
-// 008591ee  83c20c               add edx, 0xc
-// 008591f1  837a1c00             cmp dword ptr [edx + 0x1c], 0
-// 008591f5  7440                 je 0x859237
-// 008591f7  85f6                 test esi, esi
-// 008591f9  753a                 jne 0x859235
-// 008591fb  85db                 test ebx, ebx
-// 008591fd  7409                 je 0x859208
-// 008591ff  8b32                 mov esi, dword ptr [edx]
-// 00859201  eb08                 jmp 0x85920b
-// 00859203  e80211fbff           call 0x80a30a
-// 00859208  8b72fc               mov esi, dword ptr [edx - 4]
-// 0085920b  3b74245c             cmp esi, dword ptr [esp + 0x5c]
-// 0085920f  7e24                 jle 0x859235
-// 00859211  85c0                 test eax, eax
-// 00859213  7c11                 jl 0x859226
-// 00859215  3bc1                 cmp eax, ecx
-// 00859217  7d0d                 jge 0x859226
-// 00859219  3b452c               cmp eax, dword ptr [ebp + 0x2c]
-// 0085921c  7de5                 jge 0x859203
-// 0085921e  8b4d28               mov ecx, dword ptr [ebp + 0x28]
-// 00859221  8b0c81               mov ecx, dword ptr [ecx + eax*4]
-// 00859224  eb02                 jmp 0x859228
-// 00859226  33c9                 xor ecx, ecx
-// 00859228  c7814801000002000000 mov dword ptr [ecx + 0x148], 2
-// 00859232  897a24               mov dword ptr [edx + 0x24], edi
-// 00859235  33f6                 xor esi, esi
-// 00859237  8b4d2c               mov ecx, dword ptr [ebp + 0x2c]
-// 0085923a  03c7                 add eax, edi
-// 0085923c  83c240               add edx, 0x40
-// 0085923f  3bc1                 cmp eax, ecx
-// 00859241  7cae                 jl 0x8591f1
-// 00859243  8b542460             mov edx, dword ptr [esp + 0x60]
-// 00859247  8b442458             mov eax, dword ptr [esp + 0x58]
-// 0085924b  8b4c2454             mov ecx, dword ptr [esp + 0x54]
-// 0085924f  8b742450             mov esi, dword ptr [esp + 0x50]
-// 00859253  52                   push edx
-// 00859254  50                   push eax
-// 00859255  51                   push ecx
-// 00859256  56                   push esi
-// 00859257  8bcd                 mov ecx, ebp
-// 00859259  e832ebffff           call 0x857d90
-// 0085925e  5f                   pop edi
-// 0085925f  8bc6                 mov eax, esi
-// 00859261  5e                   pop esi
-// 00859262  5d                   pop ebp
-// 00859263  5b                   pop ebx
-// 00859264  83c43c               add esp, 0x3c
-// 00859267  c21400               ret 0x14
-// 0085926a  8b442450             mov eax, dword ptr [esp + 0x50]
-// 0085926e  5f                   pop edi
-// 0085926f  5e                   pop esi
-// 00859270  5d                   pop ebp
-// 00859271  895004               mov dword ptr [eax + 4], edx
-// 00859274  8908                 mov dword ptr [eax], ecx
-// 00859276  5b                   pop ebx
-// 00859277  83c43c               add esp, 0x3c
-// 0085927a  c21400               ret 0x14
-// library xtp-11.2.2/Source\CommandBars\XTPControls.cpp (function ?_ReduceSmartLayoutToolBar@CXTPControls@@IAE?AVCSize@@PAVCDC@@PAUXTPBUTTONINFO@1@HAAK@Z)
-
 // roc-lang: cpp
 // roc-cl: 30729
 // roc-flags: /O2 /GS- /MD
 // roc-lib: xtp-11.2.2 Source/CommandBars/XTPControls.cpp
+
+// Candidate translation unit (score above; library headers required).
+// XTPControls.cpp : implementation of the CXTPControls class.
+//
+// This file is a part of the XTREME COMMANDBARS MFC class library.
+// (c)1998-2007 Codejock Software, All Rights Reserved.
+//
+// THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
+// RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
+// CONSENT OF CODEJOCK SOFTWARE.
+//
+// THIS SOURCE CODE CAN ONLY BE USED UNDER THE TERMS AND CONDITIONS OUTLINED
+// IN THE XTREME TOOLKIT PRO LICENSE AGREEMENT. CODEJOCK SOFTWARE GRANTS TO
+// YOU (ONE SOFTWARE DEVELOPER) THE LIMITED RIGHT TO USE THIS SOFTWARE ON A
+// SINGLE COMPUTER.
+//
+// CONTACT INFORMATION:
+// support@codejock.com
+// http://www.codejock.com
+//
+/////////////////////////////////////////////////////////////////////////////
+
+#include "stdafx.h"
+#include "Resource.h"
+
+#include "Common/XTPImageManager.h"
+#include "Common/XTPResourceManager.h"
+
+#include "XTPControls.h"
+#include "XTPCommandBar.h"
+#include "XTPPopupBar.h"
+#include "XTPControl.h"
+#include "XTPControlButton.h"
+#include "XTPControlPopup.h"
+#include "XTPControlComboBox.h"
+#include "XTPControlEdit.h"
+#include "XTPControlCustom.h"
+#include "XTPControlGallery.h"
+#include "XTPControlExt.h"
+#include "XTPToolBar.h"
+#include "XTPCommandBars.h"
+#include "XTPPaintManager.h"
+
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#undef THIS_FILE
+static char THIS_FILE[] = __FILE__;
+#endif
+
+/////////////////////////////////////////////////////////////////////////////
+// CCommandBarControls
+
+IMPLEMENT_DYNCREATE(CXTPControls, CCmdTarget)
+IMPLEMENT_DYNCREATE(CXTPOriginalControls, CXTPControls)
+
+CXTPControls::CXTPControls()
+{
+	EnableAutomation();
+
+
+	m_pParent = 0;
+	m_pCommandBars = 0;
+
+	m_pOriginalControls = 0;
+	m_bOriginalControls = FALSE;
+}
+
+CXTPControls::~CXTPControls()
+{
+	RemoveAll();
+
+	CMDTARGET_RELEASE(m_pOriginalControls);
+}
+
+CXTPOriginalControls::CXTPOriginalControls()
+{
+	m_bOriginalControls = TRUE;
+}
+
+CXTPCommandBars* CXTPControls::GetCommandBars() const
+{
+	return m_pParent ? m_pParent->GetCommandBars() : m_pCommandBars;
+}
+void CXTPControls::SetCommandBars(CXTPCommandBars* pCommandBars)
+{
+	m_pCommandBars = pCommandBars;
+}
+
+void CXTPControls::RefreshIndexes()
+{
+	for (int nIndex = 0; nIndex < GetCount(); nIndex++)
+	{
+		CXTPControl* pControl = GetAt(nIndex);
+		pControl->m_nIndex = nIndex;
+		pControl->m_pControls = this;
+		pControl->SetParent(m_pParent);
+	}
+	if (m_pParent)
+	{
+		m_pParent->OnControlsChanged();
+	}
+}
+
+void CXTPControls::SetParent(CXTPCommandBar* pParent)
+{
+	m_pParent = pParent;
+	if (GetCount() > 0) RefreshIndexes();
+}
+
+
+CXTPControl* CXTPControls::AddMenuItem(CMenu* pMenu, int nIndex)
+{
+	CMenu* pPopupMenu = pMenu->GetSubMenu(nIndex);
+
+	CXTPControl* pControl = NULL;
+	UINT nID = pMenu->GetMenuItemID(nIndex);
+
+	BOOL bDefaultItem = (int)::GetMenuDefaultItem(pMenu->m_hMenu, TRUE, GMDI_USEDISABLED) == nIndex;
+
+	if (nID == AFX_IDM_FIRST_MDICHILD)
+		return NULL;
+
+	CString strCaption;
+	XTPResourceManager()->GetMenuLocaleString(pMenu, nIndex, strCaption, MF_BYPOSITION);
+
+	if (pPopupMenu)
+	{
+		int iPos = strCaption.Find(_T('\t'));
+		if (pPopupMenu &&  iPos > 0)
+		{
+			nID = _ttoi(strCaption.Mid(iPos + 1));
+			if (nID > 0) strCaption.ReleaseBuffer(iPos);
+		}
+	}
+
+
+	CWnd* pSite = m_pCommandBars ? m_pCommandBars->GetSite() :
+		m_pParent ? m_pParent->GetOwnerSite() : NULL;
+
+	CXTPCommandBars* pCommandBars = GetCommandBars();
+
+	XTPControlType controlType = pPopupMenu ? xtpControlPopup : xtpControlButton;
+
+	XTPButtonStyle buttonStyle = xtpButtonAutomatic;
+
+	XTP_COMMANDBARS_CREATECONTROL cs;
+
+	if (pSite)
+	{
+		cs.nID = nID;
+		cs.pControl = NULL;
+		cs.bToolBar = FALSE;
+		cs.pCommandBar = m_pParent;
+		cs.pMenu = pMenu;
+		cs.nIndex = nIndex;
+		cs.strCaption = strCaption;
+		cs.controlType = controlType;
+		cs.buttonStyle = buttonStyle;
+
+		if (pSite->SendMessage(WM_XTP_BEFORECREATECONTROL, 0, (LPARAM)&cs) != 0)
+		{
+			pControl = cs.pControl;
+			controlType = cs.controlType;
+			strCaption = cs.strCaption;
+			nID = cs.nID;
+			buttonStyle = cs.buttonStyle;
+		}
+	}
+
+	if (pControl == NULL)
+	{
+		switch (controlType)
+		{
+			case xtpControlButton:
+				if (nID == XTP_ID_WINDOWLIST) pControl = (CXTPControl*)CXTPControlWindowList::CreateObject();
+				else if (nID == XTP_ID_WORKSPACE_ACTIONS) pControl = (CXTPControl*)CXTPControlWorkspaceActions::CreateObject();
+				else if (nID == ID_VIEW_TOOLBAR) pControl = (CXTPControl*)CXTPControlToolbars::CreateObject();
+				else if (nID == ID_OLE_VERB_FIRST && strCaption == _T("<<OLE VERBS GO HERE>>")) pControl = (CXTPControl*)CXTPControlOleItems::CreateObject();
+				else if (nID == ID_FILE_MRU_FILE1) pControl = (CXTPControl*)CXTPControlRecentFileList::CreateObject();
+				else pControl = (CXTPControl*)CXTPControlButton::CreateObject();
+				break;
+
+			case xtpControlComboBox:
+				pControl = (CXTPControl*)CXTPControlComboBox::CreateObject();
+				break;
+
+			case xtpControlEdit:
+				pControl = (CXTPControl*)CXTPControlEdit::CreateObject();
+				break;
+			case xtpControlLabel:
+				pControl = (CXTPControl*)CXTPControlLabel::CreateObject();
+				break;
+
+			case xtpControlCheckBox:
+				pControl = (CXTPControl*)CXTPControlCheckBox::CreateObject();
+				break;
+
+			case xtpControlRadioButton:
+				pControl = (CXTPControl*)CXTPControlRadioButton::CreateObject();
+				break;
+
+			case xtpControlGallery:
+				pControl = (CXTPControl*)CXTPControlGallery::CreateObject();
+				break;
+
+			case xtpControlPopup:
+			case xtpControlSplitButtonPopup:
+			case xtpControlButtonPopup:
+				pControl = CXTPControlPopup::CreateControlPopup(controlType);
+				CXTPPopupBar* pPopupBar = 0;
+				CString strCaptionPopup(strCaption);
+				CXTPPaintManager::StripMnemonics(strCaptionPopup);
+
+				if (pSite)
+				{
+					XTP_COMMANDBARS_CREATEBAR cb;
+					ZeroMemory(&cb, sizeof(cb));
+					cb.bPopup = TRUE;
+					cb.lpcstrCaption = strCaptionPopup;
+					cb.nID = nID;
+
+					if (pSite->SendMessage(WM_XTP_CREATECOMMANDBAR, 0, (LPARAM)&cb) != 0)
+					{
+						pPopupBar = DYNAMIC_DOWNCAST(CXTPPopupBar, cb.pCommandBar);
+						strCaptionPopup = cb.lpcstrCaption;
+					}
+				}
+
+				if (pPopupBar == NULL) pPopupBar = CXTPPopupBar::CreatePopupBar(pCommandBars);
+				pPopupBar->SetTitle(strCaptionPopup);
+
+
+
+				CMenu menu;
+				if (!pPopupMenu && nID > 0 && menu.LoadMenu(nID))
+				{
+					pPopupMenu = menu.GetSubMenu(0);
+				}
+				if (pPopupMenu) pPopupBar->LoadMenu(pPopupMenu, FALSE);
+
+				((CXTPControlPopup*)pControl)->m_pCommandBar = pPopupBar;
+
+				break;
+		}
+
+		ASSERT(pControl);
+		if (!pControl)
+			return NULL;
+		pControl->m_controlType = controlType;
+		pControl->SetStyle(buttonStyle);
+	}
+
+	CXTPControlAction* pAction = pCommandBars->FindAction(nID);
+
+	if (pControl->GetAction() != NULL)
+	{
+
+	}
+	else if (pAction || (pCommandBars->IsActionsEnabled() && nID > 0 && nID < 0xFFFFFFF))
+	{
+		if (pAction == NULL) pAction = pCommandBars->CreateAction(nID);
+		pControl->SetAction(pAction);
+
+		if (pAction->m_strCaption.IsEmpty())
+			pAction->SetCaption(strCaption);
+	}
+	else
+	{
+		pControl->SetID(nID);
+		pControl->SetCaption(strCaption);
+	}
+
+	if (bDefaultItem) pControl->SetItemDefault(bDefaultItem);
+
+	m_arrControls.InsertAt(GetCount(), pControl);
+	OnControlAdded(pControl);
+
+	if (pSite)
+	{
+		cs.pControl = pControl;
+		pSite->SendMessage(WM_XTP_AFTERCREATECONTROL, 0, (LPARAM)&cs);
+	}
+
+
+	return pControl;
+}
+
+void CXTPControls::OnControlAdded(CXTPControl* /*pControl*/)
+{
+	RefreshIndexes();
+}
+
+void CXTPControls::OnControlRemoved(CXTPControl* pControl)
+{
+	pControl->m_pControls = NULL;
+	pControl->OnRemoved();
+
+	pControl->m_pParent = NULL;
+
+	RefreshIndexes();
+}
+
+
+CXTPControl* CXTPControls::Add(XTPControlType controlType, int nId, LPCTSTR strParameter, int nBefore, BOOL bTemporary)
+{
+	CXTPControl* pControl = NULL;
+	CXTPCommandBars* pCommandBars = GetCommandBars();
+
+	switch (controlType)
+	{
+		case xtpControlCustom:
+			return Add(new CXTPControlCustom(), nId, strParameter, nBefore, bTemporary);
+
+		case xtpControlButton:
+			if (nId == XTP_ID_WINDOWLIST) pControl = (CXTPControl*)CXTPControlWindowList::CreateObject();
+			else if (nId == XTP_ID_WORKSPACE_ACTIONS) pControl = (CXTPControl*)CXTPControlWorkspaceActions::CreateObject();
+			else if (nId == ID_VIEW_TOOLBAR) pControl = (CXTPControl*)CXTPControlToolbars::CreateObject();
+			else if (nId == XTP_ID_FILE_MRU) pControl = (CXTPControl*)CXTPControlRecentFileList::CreateObject();
+			else
+			pControl = (CXTPControl*)CXTPControlButton::CreateObject();
+			break;
+
+		case xtpControlComboBox:
+			pControl = (CXTPControl*)CXTPControlComboBox::CreateObject();
+			break;
+
+		case xtpControlLabel:
+			pControl = (CXTPControl*)CXTPControlLabel::CreateObject();
+			break;
+
+		case xtpControlCheckBox:
+			pControl = (CXTPControl*)CXTPControlCheckBox::CreateObject();
+			break;
+
+		case xtpControlRadioButton:
+			pControl = (CXTPControl*)CXTPControlRadioButton::CreateObject();
+			break;
+
+		case xtpControlGallery:
+			pControl = (CXTPControl*)CXTPControlGallery::CreateObject();
+			break;
+
+		case xtpControlEdit:
+			pControl = (CXTPControl*)CXTPControlEdit::CreateObject();
+			break;
+
+		case xtpControlPopup:
+		case xtpControlSplitButtonPopup:
+		case xtpControlButtonPopup:
+			CXTPControlPopup* pControlPopup = (CXTPControlPopup*)CXTPControlPopup::CreateObject();
+			CXTPPopupBar* pPopupBar = 0;
+
+			CMenu menu;
+			if (nId > 0)
+			{
+				CString strCaption;
+				CMenu* pPopupMenu = NULL;
+
+				if (menu.LoadMenu(nId))
+				{
+					pPopupMenu = menu.GetSubMenu(0);
+					XTPResourceManager()->GetMenuLocaleString(&menu, 0, strCaption, MF_BYPOSITION);
+				}
+
+				CWnd* pSite = m_pCommandBars ? m_pCommandBars->GetSite() :
+					m_pParent ? m_pParent->GetOwnerSite() : NULL;
+
+				if (pSite)
+				{
+					XTP_COMMANDBARS_CREATEBAR cs;
+					ZeroMemory(&cs, sizeof(cs));
+					cs.bPopup = TRUE;
+					cs.lpcstrCaption = strCaption;
+					cs.nID = nId;
+
+					if (pSite->SendMessage(WM_XTP_CREATECOMMANDBAR, 0, (LPARAM)&cs) != 0)
+					{
+						pPopupBar = DYNAMIC_DOWNCAST(CXTPPopupBar, cs.pCommandBar);
+					}
+				}
+				if (pPopupBar == NULL) pPopupBar = CXTPPopupBar::CreatePopupBar(GetCommandBars());
+				pControlPopup->m_strCaption = strCaption;
+				if (pPopupMenu)
+				{
+					pPopupBar->LoadMenu(pPopupMenu);
+				}
+
+			}
+
+			if (pPopupBar == NULL) pPopupBar = CXTPPopupBar::CreatePopupBar(pCommandBars);
+			pControlPopup->m_pCommandBar = pPopupBar;
+
+			pControl = pControlPopup;
+			break;
+	}
+
+	ASSERT(pControl);
+	if (!pControl)
+		return NULL;
+	pControl->m_controlType = controlType;
+
+	return Add(pControl, nId, strParameter, nBefore, bTemporary);
+}
+
+CXTPControl* CXTPControls::Add(CXTPControl* pControl, int nId, LPCTSTR strParameter, int nBefore, BOOL bTemporary)
+{
+	ASSERT(pControl);
+	if (!pControl)
+		return NULL;
+
+	pControl->m_strParameter = strParameter;
+	pControl->m_bTemporary = bTemporary;
+
+	CXTPCommandBars* pCommandBars = GetCommandBars();
+
+	CXTPControlAction* pAction = pCommandBars->FindAction(nId);
+
+	if (pControl->GetAction() != NULL)
+	{
+
+	}
+	else if (pAction != NULL)
+	{
+		pControl->SetAction(pAction);
+	}
+	else if (pCommandBars->IsActionsEnabled() && nId > 0 && nId < 0xFFFFFFF)
+	{
+		if ((nId >= XTP_COMMANDBARS_RESOURCE_FIRST && nId <= XTP_COMMANDBARS_RESOURCE_LAST)
+			|| (nId >= 35000 && nId <= 35003))
+		{
+			if (!pAction)
+			{
+				pControl->SetID(nId);
+			}
+		}
+		else
+		{
+			pAction = pCommandBars->CreateAction(nId);
+			pControl->SetAction(pAction);
+		}
+	}
+	else
+	{
+		pControl->SetID(nId);
+	}
+
+	return InsertAt(pControl, nBefore);
+}
+
+CXTPControl* CXTPControls::InsertAt(CXTPControl* pControl, int nBefore)
+{
+	if (nBefore < 0 || nBefore >= GetCount())
+		nBefore = GetCount();
+
+	ASSERT(pControl);
+
+	m_arrControls.InsertAt(nBefore, pControl);
+	OnControlAdded(pControl);
+
+	return pControl;
+}
+
+CXTPControl* CXTPControls::Add(CXTPControl* pControl)
+{
+	return InsertAt(pControl, -1);
+}
+
+CXTPControl* CXTPControls::AddClone(CXTPControl* pControl, int nBefore, BOOL bRecursive)
+{
+	CXTPControl* pClone = (CXTPControl*)pControl->GetRuntimeClass()->CreateObject();
+	ASSERT(pClone);
+	if (!pClone)
+		return NULL;
+
+	InsertAt(pClone, nBefore);
+	pClone->Copy(pControl, bRecursive);
+
+	return pClone;
+}
+
+
+
+void CXTPControls::RemoveAll()
+{
+	for (int nIndex = GetCount() - 1; nIndex >= 0; nIndex--)
+	{
+		CXTPControl* pControl = GetAt(nIndex);
+
+		if (OnControlRemoving(pControl))
+			continue;
+
+		m_arrControls.RemoveAt(nIndex);
+
+		OnControlRemoved(pControl);
+
+		pControl->InternalRelease();
+	}
+}
+
+CXTPControl* CXTPControls::GetFirst() const
+{
+	return GetCount() > 0 ? GetAt(0) : NULL;
+}
+
+void CXTPControls::GetNext(CXTPControl*& pControl) const
+{
+	pControl = (!pControl || pControl->m_nIndex >= GetCount() - 1) ? 0 : GetAt(pControl->m_nIndex + 1);
+}
+
+CXTPControl* CXTPControls::FindControl(int nId) const
+{
+	return FindControl(xtpControlError, nId, FALSE, FALSE);
+}
+
+CXTPControl* CXTPControls::FindControl(XTPControlType type, int nId, BOOL bVisible, BOOL bRecursive) const
+{
+	for (int nIndex = 0; nIndex < GetCount(); nIndex++)
+	{
+		CXTPControl* pControl = GetAt(nIndex);
+		if ((type == xtpControlError || pControl->GetType() == type) &&
+			(!bVisible || pControl->IsVisible()) &&
+			(nId == -1 || nId == pControl->GetID()))
+			return pControl;
+
+		if (bRecursive)
+		{
+			CXTPCommandBar* pBar = pControl->GetCommandBar();
+			if (pBar)
+			{
+				pControl = pBar->GetControls()->FindControl(type, nId, bVisible, bRecursive);
+				if (pControl != NULL) return pControl;
+			}
+		}
+	}
+	return NULL;
+}
+
+BOOL CXTPControls::OnControlRemoving(CXTPControl* /*pControl*/)
+{
+	return FALSE;
+}
+
+void CXTPControls::Remove(CXTPControl* pControl)
+{
+	if (pControl && pControl->m_pControls == this)
+	{
+		if (pControl->GetSelected())
+			m_pParent->SetSelected(-1);
+
+		ASSERT(pControl->m_pControls == this);
+
+		//Ensure the index falls within the correct range.
+		if ((pControl->m_nIndex >= 0) && (pControl->m_nIndex < GetCount()))
+		{
+			ASSERT(m_arrControls[pControl->m_nIndex] == pControl);
+
+			if (OnControlRemoving(pControl))
+				return;
+
+			m_arrControls.RemoveAt(pControl->m_nIndex);
+
+			OnControlRemoved(pControl);
+
+			pControl->SetParent(NULL);
+			pControl->InternalRelease();
+		}
+	}
+}
+
+void CXTPControls::Remove(int nIndex)
+{
+	CXTPControl* pControl = GetAt(nIndex);
+	Remove(pControl);
+}
+
+CXTPControl* CXTPControls::SetControlType(int nIndex, XTPControlType type)
+{
+	return SetControlType(GetAt(nIndex), type);
+}
+
+
+CXTPControl* CXTPControls::SetControlType(CXTPControl* pControl, XTPControlType type)
+{
+	ASSERT(pControl->m_pControls == this);
+	ASSERT(pControl);
+
+	if (IsPopupControlType(pControl->GetType()) && IsPopupControlType(type))
+	{
+		pControl->m_controlType = type;
+		return pControl;
+	}
+
+	CXTPControl* pNew = Add(type, 0, _T(""), pControl->GetIndex() + 1, FALSE);
+	pNew->CXTPControl::Copy(pControl, FALSE);
+	pNew->m_controlType = type;
+
+	Remove(pControl);
+
+	return pNew;
+
+}
+
+
+long CXTPControls::GetNext(long nIndex, int nDirection, BOOL bKeyboard, BOOL bSkipTemporary, BOOL bSkipCollapsed) const
+{
+	ASSERT(nDirection == +1 || nDirection == -1);
+	if (GetCount() == 0) return -1;
+
+	long nNext = nIndex + nDirection;
+
+	if (nDirection == -1 && nIndex == -1)
+	{
+		nNext = GetCount() - 1;
+	}
+
+	DWORD nSkipVisible = xtpHideScroll | (!bSkipCollapsed ? xtpHideExpand : 0);
+
+	BOOL bCircle = FALSE;
+
+	while (nNext != nIndex)
+	{
+		if (nNext >= GetCount())
+		{
+			if ((nIndex == -1 && nDirection == +1) || bCircle) return -1;
+			nNext = 0;
+			bCircle = TRUE;
+		}
+		if (nNext < 0)
+		{
+			if ((nIndex == -1 && nDirection == -1) || bCircle) return -1;
+			nNext = GetCount() - 1;
+			bCircle = TRUE;
+		}
+
+		if ((GetAt(nNext)->IsVisible(nSkipVisible)) && (!bKeyboard || !(GetAt(nNext)->m_dwFlags & xtpFlagSkipFocus)))
+		{
+			if (!bSkipTemporary || !GetAt(nNext)->m_bTemporary)
+				return nNext;
+		}
+		nNext += nDirection;
+	}
+	return nNext;
+}
+
+CXTPControl* CXTPControls::HitTest(CPoint point) const
+{
+	for (int i = 0; i < GetCount(); i++)
+	{
+		CXTPControl* pControl = GetAt(i);
+
+		if (pControl->IsVisible())
+		{
+			if (pControl->m_rcControl.PtInRect(point))
+				return pControl;
+		}
+
+	}
+	return NULL;
+}
+
+
+struct CXTPControls::XTPBUTTONINFO  // struct for CalcDynamicSize ;
+{
+	CRect rcControl;
+	CRect rcRow;
+	CSize szControl;
+	BOOL bVisible;
+	BOOL bWrap;
+	BOOL bHide;
+	BOOL bBeginGroup;
+	XTPButtonStyle buttonStyle;
+	CXTPControl* pControl;
+
+	void EnsureButtonSize(CDC* pDC)
+	{
+		if (buttonStyle != pControl->GetStyle())
+		{
+			buttonStyle = pControl->GetStyle();
+			szControl = pControl->GetSize(pDC);
+		}
+	}
+	void Attach(CDC* pDC, CXTPControl* p)
+	{
+		pControl = p;
+		bHide = bWrap = FALSE;
+		rcRow.SetRectEmpty();
+
+		szControl = pControl->GetSize(pDC);
+		rcControl = pControl->GetRect();
+		bBeginGroup = pControl->GetBeginGroup();
+		bVisible = pControl->IsVisible(xtpHideWrap);
+		buttonStyle = pControl->GetStyle();
+	}
+
+	void Detach()
+	{
+		pControl->SetHideWrap(bHide);
+		pControl->SetRowRect(rcRow);
+		if (!bHide)
+		pControl->SetRect(rcControl);
+		pControl->SetWrap(bWrap);
+	}
+
+};
+
+CSize CXTPControls::_CalcSize(XTPBUTTONINFO* pData, const CSize& szSeparators, BOOL bVert)
+{
+
+	CPoint cur(0, 0);
+	CSize sizeResult(0, 0);
+	int nRow = 0;
+	BOOL bFirst = TRUE;
+	for (int i = 0; i < GetCount(); i++)
+	{
+		XTPBUTTONINFO* pControl = &pData[i];
+
+		if (!pControl->bVisible || pControl->bHide)
+			continue;
+
+		CSize szControl = pControl->szControl;
+
+		if (bVert)
+		{
+			if (pControl->bBeginGroup && !pControl->bWrap && !bFirst)
+				cur.y += szSeparators.cx;
+
+
+			if (pControl->bWrap)
+			{
+				cur.x -= nRow + (pControl->bBeginGroup ? szSeparators.cy : 0);
+				nRow = cur.y = 0;
+			}
+			nRow = max(nRow, szControl.cx);
+
+			pControl->rcControl.SetRect(cur.x - szControl.cx, cur.y, cur.x , cur.y + szControl.cy);
+
+			sizeResult.cx = max(szControl.cx - cur.x, sizeResult.cx);
+			sizeResult.cy = max(cur.y + szControl.cy, sizeResult.cy);
+
+			cur.y += szControl.cy;
+
+		}
+		else
+		{
+
+			if (pControl->bBeginGroup && !pControl->bWrap && !bFirst)
+				cur.x += szSeparators.cx;
+
+			if (pControl->bWrap)
+			{
+				cur.y += nRow + (pControl->bBeginGroup ? szSeparators.cy : 0);
+				nRow = cur.x = 0;
+			}
+			nRow = max(nRow, szControl.cy);
+
+			pControl->rcControl.SetRect(cur.x, cur.y, cur.x + szControl.cx, cur.y + szControl.cy);
+
+			sizeResult.cx = max(cur.x + szControl.cx, sizeResult.cx);
+			sizeResult.cy = max(cur.y + szControl.cy, sizeResult.cy);
+
+			cur.x += szControl.cx;
+		}
+		bFirst = FALSE;
+	}
+	return sizeResult;
+}
+
+int CXTPControls::_WrapToolBar(XTPBUTTONINFO* pData, int nWidth, DWORD& dwMode, const CSize& szSeparators)
+{
+	int nResult = 0, x = 0;
+	BOOL bVert = dwMode & LM_VERTDOCK;
+	BOOL bFirst = TRUE;
+	int nSeparator = bVert ? szSeparators.cy : szSeparators.cx;
+
+	for (int i = 0; i < GetCount(); i++)
+	{
+		XTPBUTTONINFO* pControl = &pData[i];
+		pControl->bHide = FALSE;
+		pControl->bWrap = FALSE;
+
+		if (!pControl->bVisible)
+			continue;
+
+		int dx = bVert ? pControl->szControl.cy : pControl->szControl.cx;
+
+		if (pControl->bBeginGroup && !bFirst)
+			dx += nSeparator;
+
+		BOOL bWrap = (x + dx > nWidth) || ((dwMode & LM_POPUP) && pControl->bBeginGroup && !bFirst);
+
+		BOOL bRowWrap = FALSE;
+		if (pControl->pControl->GetFlags() & xtpFlagWrapRow)
+			bRowWrap = TRUE;
+
+		if (bRowWrap)
+		{
+			x = bVert ? pData[i].szControl.cy : pData[i].szControl.cx;
+			pControl->bWrap = TRUE;
+			nResult++;
+		}
+		else if (bWrap)
+		{
+			if (dwMode & LM_HIDEWRAP && !bFirst)
+			{
+				BOOL bWrapRowFound = FALSE;
+				for (int j = i; j < GetCount(); j++)
+				{
+					if (pData[j].pControl->GetFlags() & xtpFlagWrapRow)
+					{
+						bWrapRowFound = TRUE;
+						i = j - 1;
+						break;
+					}
+					pData[j].bHide = TRUE;
+				}
+				dwMode |= LM_STRETCH;
+
+				if (bWrapRowFound)
+					continue;
+
+				return nResult;
+			}
+
+			for (int j = i; j >= 0 && pData[j].bWrap == FALSE; j--)
+			{
+				// Find last separator
+				if (pData[j].bBeginGroup && pData[j].bVisible)
+				{
+					i = j;
+					break;
+				}
+			}
+			x = bVert ? pData[i].szControl.cy : pData[i].szControl.cx;
+
+			pData[i].bWrap = TRUE;
+			if (!(dwMode & LM_HIDEWRAP)) dwMode |= LM_STRETCH;
+			nResult++;
+		}
+		else
+			x += dx;
+
+		bFirst = FALSE;
+
+	}
+	return nResult + 1;
+}
+
+void  CXTPControls::_SizePopupToolBar(XTPBUTTONINFO* pData, DWORD dwMode, const CSize& szSeparators)
+{
+	CSize sizeMax, sizeMin, sizeMid;
+
+	// Wrap ToolBar vertically
+	_WrapToolBar(pData, 0, dwMode, szSeparators);
+	sizeMin = _CalcSize(pData, szSeparators);
+
+	// Wrap ToolBar horizontally
+	_WrapToolBar(pData, 32767, dwMode, szSeparators);
+	sizeMax = _CalcSize(pData, szSeparators);
+
+	while (sizeMin.cx < sizeMax.cx)
+	{
+		sizeMid.cx = (sizeMin.cx + sizeMax.cx) / 2;
+
+		_WrapToolBar(pData, sizeMid.cx, dwMode, szSeparators);
+		sizeMid = _CalcSize(pData, szSeparators);
+
+		if (sizeMid.cy > sizeMid.cx)
+		{
+			if (sizeMin == sizeMid)
+				return;
+
+			sizeMin = sizeMid;
+		}
+		else if (sizeMid.cy < sizeMid.cx)
+			sizeMax = sizeMid;
+		else
+			return;
+	}
+}
+
+void  CXTPControls::_SizeFloatableBar(XTPBUTTONINFO* pData, int nLength, DWORD dwMode, const CSize& szSeparators)
+{
+	if (! (dwMode & LM_LENGTHY))
+	{
+		int nMin, nMax, nTarget, nCurrent, nMid;
+
+		// Wrap ToolBar as specified
+		nMax = nLength;
+		nTarget = _WrapToolBar(pData, nMax, dwMode, szSeparators);
+
+		// Wrap ToolBar vertically
+		nMin = 0;
+		nCurrent = _WrapToolBar(pData, nMin, dwMode, szSeparators);
+
+		if (nCurrent != nTarget)
+		{
+			while (nMin < nMax)
+			{
+				nMid = (nMin + nMax) / 2;
+				nCurrent = _WrapToolBar(pData, nMid, dwMode, szSeparators);
+
+				if (nCurrent == nTarget)
+					nMax = nMid;
+				else
+				{
+					if (nMin == nMid)
+					{
+						_WrapToolBar(pData, nMax, dwMode, szSeparators);
+						break;
+					}
+					nMin = nMid;
+				}
+			}
+		}
+		CSize size = _CalcSize(pData, szSeparators);
+		_WrapToolBar(pData, size.cx, dwMode, szSeparators);
+	}
+	else
+	{
+		CSize sizeMax, sizeMin, sizeMid;
+
+		// Wrap ToolBar vertically
+		_WrapToolBar(pData, 0, dwMode, szSeparators);
+		sizeMin = _CalcSize(pData, szSeparators);
+
+		// Wrap ToolBar horizontally
+		_WrapToolBar(pData, 32767, dwMode, szSeparators);
+		sizeMax = _CalcSize(pData, szSeparators);
+
+		while (sizeMin.cx < sizeMax.cx)
+		{
+			sizeMid.cx = (sizeMin.cx + sizeMax.cx) / 2;
+			_WrapToolBar(pData, sizeMid.cx, dwMode, szSeparators);
+			sizeMid = _CalcSize(pData, szSeparators);
+
+			if (nLength < sizeMid.cy)
+			{
+				if (sizeMin == sizeMid)
+				{
+					_WrapToolBar(pData, sizeMax.cx, dwMode, szSeparators);
+					return;
+				}
+				sizeMin = sizeMid;
+			}
+			else if (nLength > sizeMid.cy)
+				sizeMax = sizeMid;
+			else
+				return;
+		}
+	}
+}
+void CXTPControls::_CenterControlsInRow(XTPBUTTONINFO* pData, int nFirst, int nLast, int nHeight, BOOL bVert, CSize sizeResult, CRect rcBorder)
+{
+	for (int i = nFirst; i < nLast; i++)
+	{
+		XTPBUTTONINFO* pControl = &pData[i];
+		CRect rc = pControl->rcControl;
+
+		if (bVert)
+		{
+			pControl->rcRow.SetRect(rc.right - nHeight, rcBorder.top, rc.right, sizeResult.cy + rcBorder.top);
+			if (!(m_pParent->GetFlags() & xtpFlagSmartLayout)) pControl->rcControl.OffsetRect(-(nHeight - rc.Width())/2, 0);
+		}
+		else
+		{
+			pControl->rcRow.SetRect(rcBorder.left, rc.top, sizeResult.cx + rcBorder.left, rc.top + nHeight);
+
+			if (!(m_pParent->GetFlags() & xtpFlagSmartLayout)) pControl->rcControl.OffsetRect(0, (nHeight - rc.Height())/2);
+		}
+	}
+
+}
+
+void CXTPControls::_AdjustBorders(XTPBUTTONINFO* pData, CSize& sizeResult, DWORD dwMode, CRect rcBorder)
+{
+	if (dwMode & LM_COMMIT)
+	{
+		BOOL bVert = dwMode & LM_VERTDOCK;
+		int nFirstInRow = 0;
+		int nHeight = 0;
+		int nBarHeight = 0;
+
+		for (int i = 0; i < GetCount(); i++)
+		{
+			XTPBUTTONINFO* pControl = &pData[i];
+
+			if (!pControl->bVisible || pControl->bHide)
+				continue;
+
+			pControl->rcControl.OffsetRect(rcBorder.left, rcBorder.top);
+			if (bVert) pControl->rcControl.OffsetRect(sizeResult.cx, 0);
+
+			if (pControl->bWrap)
+			{
+				_CenterControlsInRow(pData, nFirstInRow, i, nHeight, bVert, sizeResult, rcBorder);
+				nFirstInRow = i;
+				nHeight = 0;
+			}
+
+			nBarHeight = bVert ? sizeResult.cx : sizeResult.cy;
+			nHeight = max(nHeight, bVert ? pControl->rcControl.Width() : pControl->rcControl.Height());
+		}
+		_CenterControlsInRow(pData, nFirstInRow, GetCount(), nFirstInRow == 0 ? nBarHeight : nHeight, bVert, sizeResult, rcBorder);
+	}
+
+	sizeResult += CSize(rcBorder.left + rcBorder.right, rcBorder.top + rcBorder.bottom);
+}
+
+void CXTPControls::_MoveRightAlligned(XTPBUTTONINFO* pData, CSize sizeResult, CRect rcBorder, DWORD dwMode)
+{
+	BOOL bVert = dwMode & LM_VERTDOCK;
+	int nRight = bVert ? sizeResult.cy - rcBorder.bottom : sizeResult.cx - rcBorder.right;
+
+	int i;
+	for (i = GetCount() - 1; i >= 0; i--)
+	{
+		XTPBUTTONINFO* pControl = &pData[i];
+
+		if (!pControl->bVisible || pControl->bHide)
+			continue;
+
+		if (!(GetAt(i)->m_dwFlags & xtpFlagRightAlign))
+			break;
+
+		CRect rc = pControl->rcControl;
+		if (!bVert)
+		{
+			if (nRight - rc.Width() < rcBorder.right)
+				break;
+
+			pControl->rcControl.SetRect(nRight - rc.Width(), rc.top, nRight, rc.bottom);
+			nRight -= rc.Width();
+		}
+		else
+		{
+			if (nRight - rc.Height() < rcBorder.top)
+				break;
+
+			pControl->rcControl.SetRect(rc.left, nRight - rc.Height(), rc.right, nRight);
+			nRight -= rc.Height();
+		}
+		if (pControl->bWrap)
+			break;
+	}
+
+	int nStretchAvail = -1;
+	int nStretchedCount = 0;
+	BOOL bSkipRightAligned = FALSE;
+
+	nRight = bVert ? sizeResult.cy - rcBorder.bottom : sizeResult.cx - rcBorder.right;
+	int nLastInRow = GetCount() - 1;
+
+	for (i = GetCount() - 1; i >= 0; i--)
+	{
+		XTPBUTTONINFO* pControl = &pData[i];
+
+		if (pControl->bVisible && !pControl->bHide)
+		{
+			if (!bSkipRightAligned && (GetAt(i)->m_dwFlags & xtpFlagRightAlign))
+			{
+				nRight = pControl->rcControl.left;
+				nLastInRow = i - 1;
+			}
+			else if (GetAt(i)->m_dwFlags & xtpFlagControlStretched)
+			{
+				nStretchedCount++;
+				bSkipRightAligned = TRUE;
+			}
+
+			if ((nStretchAvail == -1) && (nLastInRow >= i))
+			{
+				nStretchAvail = nRight - (!bVert ? pControl->rcControl.right : pControl->rcControl.bottom);
+			}
+		}
+
+		if ((pControl->bVisible && !pControl->bHide && pControl->bWrap) || (i == 0))
+		{
+			if (nStretchedCount > 0 && nStretchAvail > 0)
+			{
+				int nOffset = 0;
+				for (int j = i; j <= nLastInRow; j++)
+				{
+					pControl = &pData[j];
+
+					if (!pControl->bVisible || pControl->bHide)
+						continue;
+
+					CRect rc = pControl->rcControl;
+					if (!bVert)
+						pControl->rcControl.SetRect(nOffset + rc.left, rc.top, nOffset + rc.right, rc.bottom);
+					else
+						pControl->rcControl.SetRect(rc.left, nOffset + rc.top, rc.right, nOffset + rc.bottom);
+
+					if ((GetAt(j)->m_dwFlags & xtpFlagControlStretched) && (nStretchedCount > 0))
+					{
+						int nStretchedOffset = nStretchAvail / nStretchedCount;
+						if (!bVert)
+							pControl->rcControl.right += nStretchedOffset;
+						else
+							pControl->rcControl.bottom += nStretchedOffset;
+
+						nStretchAvail -= nStretchedOffset;
+						nStretchedCount--;
+						nOffset += nStretchedOffset;
+					}
+				}
+
+			}
+
+			nRight = bVert ? sizeResult.cy - rcBorder.bottom : sizeResult.cx - rcBorder.right;
+			bSkipRightAligned = TRUE;
+			nLastInRow = i - 1;
+			nStretchAvail = -1;
+			nStretchedCount = 0;
+		}
+	}
+}
+
+int CXTPControls::GetVisibleCount(BOOL bIgnoreWraps) const
+{
+	DWORD nFlags = bIgnoreWraps ? 0 : xtpHideWrap;
+	int nCount = 0;
+	for (int i = 0; i < GetCount(); i++)
+	{
+		if (GetAt(i)->IsVisible(nFlags)) nCount++;
+	}
+	return nCount;
+}
+
+CXTPControl* CXTPControls::GetVisibleAt(int nIndex, BOOL bIgnoreWraps) const
+{
+	DWORD nFlags = bIgnoreWraps ? 0 : xtpHideWrap;
+
+	for (int i = 0; i < GetCount(); i++)
+	{
+		if (GetAt(i)->IsVisible(nFlags))
+		{
+			if (nIndex == 0)
+				return GetAt(i);
+			nIndex--;
+		}
+	}
+	return NULL;
+}
+
+CSize CXTPControls::_ReduceSmartLayoutToolBar(CDC* pDC, XTPBUTTONINFO* pData, int nWidth, DWORD& dwMode)
+{
+	CSize sizeResult(0, 0);
+	BOOL bReduced = FALSE;
+	BOOL bVert = dwMode & LM_VERTDOCK;
+
+	do
+	{
+		bReduced = FALSE;
+
+		if (!bReduced)
+		{
+			for (int i = GetCount() - 1; i >= 2; i--)
+			{
+				XTPBUTTONINFO* pControl = &pData[i];
+				if (!pControl->bVisible || pControl->bBeginGroup)
+					continue;
+
+				int nItems = 0;
+				int nButtons[3] = {0, 0, 0};
+
+				for (int j = i; j  >= 0; j--)
+				{
+					pControl = &pData[j];
+					if (!pControl->bVisible)
+						continue;
+
+					if ((nItems == 2 || !pControl->bBeginGroup) && GetAt(j)->m_buttonStyle == xtpButtonIconAndCaptionBelow)
+					{
+						nButtons[nItems] = j;
+						nItems += 1;
+					}
+					else
+					{
+						break;
+					}
+					if (nItems == 3)
+						break;
+				}
+
+				if (nItems == 3)
+				{
+					GetAt(nButtons[0])->m_buttonStyle = xtpButtonIconAndCaption;
+					GetAt(nButtons[1])->m_buttonStyle = xtpButtonIconAndCaption;
+					GetAt(nButtons[2])->m_buttonStyle = xtpButtonIconAndCaption;
+					bReduced = TRUE;
+					break;
+				}
+			}
+		}
+
+		if (!bReduced)
+		{
+			for (int i = GetCount() - 1; i >= 2; i--)
+			{
+				XTPBUTTONINFO* pControl = &pData[i];
+				if (!pControl->bVisible || pControl->bBeginGroup)
+					continue;
+
+				int nItems = 0;
+				int nButtons[3] = {0, 0, 0};
+				BOOL bFound = FALSE;
+				int j;
+
+				for (j = i; j  >= 0; j--)
+				{
+					pControl = &pData[j];
+					if (!pControl->bVisible)
+						continue;
+
+					if ((nItems == 2 || !pControl->bBeginGroup))
+					{
+						nButtons[nItems] = j;
+						nItems += 1;
+						bFound = bFound || GetAt(j)->m_buttonStyle == xtpButtonIconAndCaptionBelow;
+					}
+					else
+					{
+						break;
+					}
+					if (nItems == 3)
+						break;
+				}
+				i = j;
+				if (nItems == 3 && bFound)
+				{
+					GetAt(nButtons[0])->m_buttonStyle = xtpButtonIconAndCaption;
+					GetAt(nButtons[1])->m_buttonStyle = xtpButtonIconAndCaption;
+					GetAt(nButtons[2])->m_buttonStyle = xtpButtonIconAndCaption;
+					bReduced = TRUE;
+					break;
+				}
+			}
+		}
+
+		if (!bReduced)
+		{
+			for (int i = GetCount() - 1; i >= 2; i--)
+			{
+				XTPBUTTONINFO* pControl = &pData[i];
+				if (!pControl->bVisible || pControl->bBeginGroup)
+					continue;
+
+				int nItems = 0;
+				int nButtons[3] = {0, 0, 0};
+				int nLeft = 0;
+
+				for (int j = i; j  >= 0; j--)
+				{
+					pControl = &pData[j];
+					if (!pControl->bVisible)
+						continue;
+
+					int nOffset = (bVert ? pControl->rcControl.top : pControl->rcControl.left);
+					if (nItems != 0 && (nOffset != nLeft))
+						break;
+
+					if ((nItems == 2 || !pControl->bBeginGroup) && GetAt(j)->m_buttonStyle == xtpButtonIconAndCaption)
+					{
+						nButtons[nItems] = j;
+						nItems += 1;
+						nLeft = nOffset;
+					}
+					else
+					{
+						break;
+					}
+					if (nItems == 3)
+						break;
+				}
+
+				if (nItems == 3)
+				{
+					GetAt(nButtons[0])->m_buttonStyle = xtpButtonIcon;
+					GetAt(nButtons[1])->m_buttonStyle = xtpButtonIcon;
+					GetAt(nButtons[2])->m_buttonStyle = xtpButtonIcon;
+					bReduced = TRUE;
+					break;
+				}
+			}
+		}
+
+		sizeResult = _CalcSmartLayoutToolBar(pDC, pData, dwMode);
+		if ((bVert ? sizeResult.cy : sizeResult.cx) < nWidth)
+			return sizeResult;
+	}
+	while (bReduced);
+
+	if (dwMode & LM_HIDEWRAP)
+	{
+		BOOL bFirst = TRUE;
+
+		for (int i = 0; i < GetCount(); i++)
+		{
+			XTPBUTTONINFO* pControl = &pData[i];
+			if (!pControl->bVisible)
+				continue;
+
+			if (!bFirst && ((bVert ? pControl->rcControl.bottom : pControl->rcControl.right) > nWidth))
+			{
+				GetAt(i)->m_buttonStyle = xtpButtonIcon;
+				pControl->bHide = TRUE;
+			}
+			bFirst = FALSE;
+		}
+		return _CalcSmartLayoutToolBar(pDC, pData, dwMode);
+	}
+
+	return sizeResult;
+
+}
+
+CSize CXTPControls::_CalcSmartLayoutToolBar(CDC* pDC, XTPBUTTONINFO* pData, DWORD& dwMode)
+{
+	BOOL bFirst = TRUE;
+	BOOL bVert = dwMode & LM_VERTDOCK;
+
+	CSize szLargeIcon = m_pParent->GetLargeIconSize(TRUE);
+	int nResultHeight = szLargeIcon.cy + 7 + m_pParent->GetPaintManager()->GetSplitDropDownHeight();
+	CSize sizeResult(0, nResultHeight);
+
+
+	int dyPrev = 0, dxPrev = 0, x = 0;
+
+	for (int i = 0; i < GetCount(); i++)
+	{
+		XTPBUTTONINFO* pControl = &pData[i];
+		if (!pControl->bVisible || pControl->bHide)
+			continue;
+
+		BOOL bFullRow = GetAt(i)->m_buttonStyle == xtpButtonIconAndCaptionBelow;
+		pControl->EnsureButtonSize(pDC);
+		CSize szControl = pControl->szControl;
+
+		int dx = bVert ? szControl.cy : szControl.cx;
+		int dy = !bVert ? szControl.cy : szControl.cx;
+
+		BOOL bBeginGroup = pControl->bBeginGroup && !bFirst;
+		if (bBeginGroup)
+			x += 6;
+
+		if (!bFirst && !bBeginGroup && !bFullRow && dyPrev + dy <= nResultHeight)
+		{
+			if (bVert)
+				pControl->rcControl.SetRect(-dyPrev - dy, x, -dyPrev,  x + dx);
+			else
+				pControl->rcControl.SetRect(x, dyPrev, x + dx, dyPrev + dy);
+
+			dxPrev = max(dxPrev, dx);
+		}
+		else
+		{
+			x += dxPrev;
+			if (bVert)
+				pControl->rcControl.SetRect(-dy, x, 0, x + dx);
+			else
+				pControl->rcControl.SetRect(x, 0, x + dx, dy);
+
+			sizeResult.cy = max(dy, sizeResult.cy);
+			dxPrev = dx;
+		}
+		sizeResult.cx = max(x + dx, sizeResult.cx);
+
+		bFirst = FALSE;
+		dyPrev = bVert ? -pControl->rcControl.left : pControl->rcControl.bottom;
+	}
+
+	return bVert ? CSize(sizeResult.cy, sizeResult.cx) : sizeResult;
+
+}
+
+CSize CXTPControls::_WrapSmartLayoutToolBar(CDC* pDC, XTPBUTTONINFO* pData, int nWidth, DWORD& dwMode)
+{
+	BOOL bVert = dwMode & LM_VERTDOCK;
+	CSize szLargeIcon = m_pParent->GetLargeIconSize(FALSE);
+
+	for (int i = 0; i < GetCount(); i++)
+	{
+		XTPBUTTONINFO* pControl = &pData[i];
+		if (!pControl->bVisible)
+			continue;
+
+		BOOL bDrawImage = GetAt(i)->GetIconId() > 0 ?
+			GetAt(i)->GetImageManager()->IsPrimaryImageExists(GetAt(i)->GetIconId(), szLargeIcon.cx) != NULL: FALSE;
+
+		pControl->bHide = FALSE;
+		pControl->bWrap = FALSE;
+		GetAt(i)->m_buttonStyle = bDrawImage? xtpButtonIconAndCaptionBelow : xtpButtonIconAndCaption;
+	}
+	CSize sizeResult = _CalcSmartLayoutToolBar(pDC, pData, dwMode);
+
+	if ((bVert ? sizeResult.cy : sizeResult.cx) > nWidth)
+	{
+		sizeResult = _ReduceSmartLayoutToolBar(pDC, pData, nWidth, dwMode);
+		dwMode |= LM_STRETCH;
+	}
+
+	return sizeResult;
+}
+
+CSize CXTPControls::CalcDynamicSize(CDC* pDC, int nLength, DWORD dwMode, const CRect& rcBorder, int nWidth)
+{
+	CSize sizeResult(0, 0);
+	CSize szSeparators(m_pParent->GetPaintManager()->DrawCommandBarSeparator(pDC, m_pParent, NULL, FALSE));
+	int i;
+
+	for (i = GetCount() - 1; i >= 0; i--)
+	{
+		GetAt(i)->OnCalcDynamicSize(dwMode);
+	}
+
+	if (GetVisibleCount() > 0)
+	{
+
+		XTPBUTTONINFO* pData = new XTPBUTTONINFO[GetCount()];
+		for (int j = 0; j < GetCount(); j++)
+			pData[j].Attach(pDC, GetAt(j));
+
+		if (dwMode & LM_MRUWIDTH)
+		{
+			nLength = m_pParent->m_nMRUWidth;
+		}
+
+		if ((m_pParent->GetFlags() & xtpFlagSmartLayout))
+		{
+			if (dwMode & LM_VERTDOCK)
+			{
+				sizeResult = _WrapSmartLayoutToolBar(pDC, pData, nLength - rcBorder.top - rcBorder.bottom, dwMode);
+			}
+			else
+			{
+				sizeResult = _WrapSmartLayoutToolBar(pDC, pData, nLength - rcBorder.right - rcBorder.left, dwMode);
+			}
+
+		}
+		else
+		{
+
+			if (dwMode & LM_POPUP)
+			{
+				_WrapToolBar(pData, m_pParent->m_nMRUWidth, dwMode, szSeparators);
+				CSize sz = _CalcSize(pData, szSeparators);
+
+				if ((sz.cy > sz.cx * 3) && (m_pParent->m_nMRUWidth <= 0))
+				{
+					_SizePopupToolBar(pData, dwMode, szSeparators);
+				}
+				else
+				{
+					_WrapToolBar(pData, sz.cx , dwMode, szSeparators);
+				}
+
+			}
+			else if (dwMode & LM_HORZDOCK)
+			{
+				_WrapToolBar(pData, nLength - rcBorder.right - rcBorder.left, dwMode, szSeparators);
+			}
+			else if (dwMode & LM_VERTDOCK)
+			{
+				_WrapToolBar(pData, nLength - rcBorder.top - rcBorder.bottom, dwMode, szSeparators);
+			}
+			else
+			{
+				_SizeFloatableBar(pData, nLength - ((dwMode & LM_LENGTHY) ? rcBorder.top + rcBorder.bottom : rcBorder.right + rcBorder.left), dwMode, szSeparators);
+			}
+
+
+			sizeResult = _CalcSize(pData, szSeparators, dwMode & LM_VERTDOCK);
+		}
+
+		if (nWidth > 0)
+		{
+			if (dwMode & LM_HORZDOCK)
+				sizeResult.cy = max(nWidth - rcBorder.top - rcBorder.bottom, sizeResult.cy);
+			else
+				sizeResult.cx = max(nWidth - rcBorder.right - rcBorder.left, sizeResult.cx);
+		}
+
+		if (dwMode & LM_STRETCH)
+		{
+			if (dwMode & LM_VERTDOCK)
+				sizeResult.cy = max(nLength - rcBorder.top - rcBorder.bottom, sizeResult.cy);
+			else
+				sizeResult.cx = max(nLength - rcBorder.right - rcBorder.left, sizeResult.cx);
+
+		}
+		_AdjustBorders(pData, sizeResult, dwMode, rcBorder);
+
+		if (dwMode & LM_COMMIT)
+		{
+			if (!(m_pParent->GetFlags() & xtpFlagSmartLayout))
+				_MoveRightAlligned(pData, sizeResult, rcBorder, dwMode);
+			for (i = 0; i < GetCount(); i++) pData[i].Detach();
+		}
+		delete[] pData;
+	}
+	else
+	{
+		sizeResult = CSize (23, 22) + CSize(rcBorder.left + rcBorder.right, rcBorder.top + rcBorder.bottom);
+		if (dwMode & LM_HORZDOCK) sizeResult.cy = max(nWidth, sizeResult.cy);
+		else sizeResult.cx = max(nWidth, sizeResult.cx);
+	}
+
+	return sizeResult;
+
+
+}
+
+void CXTPControls::_MakeSameWidth(int nStart, int nLast, int nWidth)
+{
+	for (int i = nStart; i < nLast; i++)
+	{
+		CXTPControl* pControl = GetAt(i);
+		if (!pControl || pControl->GetParent() != m_pParent || !pControl->IsVisible())
+			continue;
+
+		CRect rc = pControl->GetRect();
+		pControl->SetRect(CRect(rc.left, rc.top, rc.left + nWidth, rc.bottom));
+	}
+}
+
+CSize CXTPControls::CalcPopupSize(CDC* pDC, int nLength, const CRect& rcBorder)
+{
+	RECT rcWork;
+	SystemParametersInfo(SPI_GETWORKAREA, NULL, &rcWork, 0);
+
+	int i;
+
+	CSize szSeparators(m_pParent->GetPaintManager()->DrawCommandBarSeparator(NULL, m_pParent, NULL, FALSE));
+
+
+	CRect rcControl;
+	int yPos = rcBorder.top, nWidthColumn = 0, xPos = rcBorder.left, nFirstInColumn = 0, nHeight = 0;
+
+	m_pParent->m_bMultiLine = FALSE;
+	int nCount = GetCount();
+
+	BOOL bFirst = TRUE;
+	for (i = 0; i < nCount; i++)
+	{
+		CXTPControl* pControl = GetAt(i);
+		if (!pControl || pControl->GetParent() != m_pParent)
+			continue;
+
+		pControl->SetHideFlag(xtpHideScroll, FALSE);
+		if (!pControl->IsVisible())
+			continue;
+
+		CXTPFontDC fontControl(pDC, m_pParent->GetPaintManager()->GetCommandBarFont(m_pParent, pControl->IsItemDefault()));
+		CSize szControl = pControl->GetSize(pDC);
+
+		pControl->SetWrap(FALSE);
+
+		if ((pControl->GetFlags() & xtpFlagWrapRow && !bFirst) || (nLength > 0 && szControl.cy + yPos > nLength - rcBorder.bottom))
+		{
+			_MakeSameWidth(nFirstInColumn, i, nWidthColumn);
+
+			nHeight = max(yPos - rcBorder.top, nHeight);
+			yPos = rcBorder.top;
+			xPos += nWidthColumn + (pControl->GetBeginGroup() ? szSeparators.cx : 0);
+			pControl->SetWrap(TRUE);
+			nFirstInColumn = i;
+			nWidthColumn = 0;
+			m_pParent->m_bMultiLine = TRUE;
+		}
+		else if (pControl->GetBeginGroup() && !bFirst)
+		{
+			yPos += szSeparators.cy;
+		}
+
+		bFirst = FALSE;
+
+
+		if (!GetParent()->IsResizable() && CXTPPopupBar::m_dMaxWidthDivisor > 0 && szControl.cx > (CXTPPopupBar::m_dMaxWidthDivisor * rcWork.right))
+			szControl.cx = int(CXTPPopupBar::m_dMaxWidthDivisor * rcWork.right);
+
+		pControl->SetRect(CRect(xPos, yPos, xPos + szControl.cx, yPos + szControl.cy));
+		yPos += szControl.cy;
+
+		if (nWidthColumn < szControl.cx) nWidthColumn = szControl.cx;
+	}
+	_MakeSameWidth(nFirstInColumn, GetCount(), nWidthColumn);
+
+
+	int nWidth = xPos - rcBorder.left + nWidthColumn;
+	nHeight = max(yPos - rcBorder.top, nHeight);
+
+	for (i = 0; i < nCount; i++)
+	{
+		CXTPControl* pControl = GetAt(i);
+		pControl->SetRowRect(CRect(pControl->GetRect().left, rcBorder.top, pControl->GetRect().right, rcBorder.top + nHeight));
+	}
+
+	nWidth = max(24, nWidth);
+	nHeight = (nHeight == 0 ? 22 : nHeight);
+
+	return CSize(nWidth + rcBorder.left + rcBorder.right, nHeight + rcBorder.bottom + rcBorder.top);
+}
+
+void CXTPControls::Copy(CXTPControls* pControls, BOOL bRecursive)
+{
+	RemoveAll();
+
+	for (int i = 0; i < pControls->GetCount(); i++)
+	{
+		if (!pControls->GetAt(i)->m_bTemporary)
+			AddClone(pControls->GetAt(i), -1, bRecursive);
+	}
+
+	if (pControls->m_pOriginalControls)
+	{
+		SetOriginalControls((CXTPOriginalControls*)pControls->m_pOriginalControls->Duplicate(bRecursive));
+	}
+	else
+	{
+		SetOriginalControls(NULL);
+	}
+
+}
+
+CXTPControls* CXTPControls::Duplicate(BOOL bRecursive)
+{
+	CXTPControls* pControls = (CXTPControls*)GetRuntimeClass()->CreateObject();
+	for (int i = 0; i < GetCount(); i++)
+	{
+		if (!GetAt(i)->m_bTemporary)
+			pControls->AddClone(GetAt(i), -1, bRecursive);
+	}
+
+	if (m_pOriginalControls)
+	{
+		pControls->SetOriginalControls((CXTPOriginalControls*)m_pOriginalControls->Duplicate(bRecursive));
+	}
+
+	return pControls;
+}
+
+
+void CXTPControls::ClearOriginalControls()
+{
+	CMDTARGET_RELEASE(m_pOriginalControls);
+}
+
+
+void CXTPControls::CreateOriginalControls()
+{
+	ClearOriginalControls();
+
+	CXTPOriginalControls* pControls = new CXTPOriginalControls();
+	for (int i = 0; i < GetCount(); i++)
+	{
+		if (!GetAt(i)->m_bTemporary)
+			pControls->AddClone(GetAt(i), -1, TRUE);
+	}
+
+	SetOriginalControls(pControls);
+}
+
+void CXTPControls::SetOriginalControls(CXTPOriginalControls* pControls)
+{
+	ClearOriginalControls();
+	m_pOriginalControls = pControls;
+}
+
+void CXTPControls::MoveBefore(CXTPControl* pControl, int nBefore)
+{
+	ASSERT(pControl);
+	if (!pControl)
+		return;
+	ASSERT(pControl->GetControls() == this);
+
+	if (pControl->GetIndex() < nBefore) nBefore--;
+
+	m_arrControls.RemoveAt(pControl->GetIndex());
+	m_arrControls.InsertAt(nBefore, pControl);
+	RefreshIndexes();
+}
+
+BOOL CXTPControls::Compare(const CXTPControls* pOther)
+{
+	int j = 0, i = 0;
+	while (i < GetCount() || j < pOther->GetCount())
+	{
+		while (i < GetCount() && GetAt(i)->m_bTemporary)
+		{
+			i++;
+		}
+		while (j < pOther->GetCount() && pOther->GetAt(j)->m_bTemporary)
+		{
+			j++;
+		}
+
+		if (i < GetCount() && j < pOther->GetCount())
+		{
+			if (!GetAt(i)->Compare(pOther->GetAt(j)))
+				return FALSE;
+		}
+		else
+		{
+			if (i < GetCount() || j < pOther->GetCount())
+				return FALSE;
+		}
+
+		i++;
+		j++;
+	}
+
+	return TRUE;
+}
+
+BOOL CXTPControls::IsChanged() const
+{
+	if (!m_pOriginalControls)
+		return TRUE;
+
+	return !m_pOriginalControls->Compare(this);
+}
+
+int CXTPControls::CommandToIndex(int nIDFind) const
+{
+	for (int iIndex = 0; iIndex < m_arrControls.GetSize(); ++iIndex)
+	{
+		CXTPControl* pControl = m_arrControls.GetAt(iIndex);
+
+		if (pControl && pControl->GetID() == nIDFind)
+			return iIndex;
+	}
+	return -1;
+}
+

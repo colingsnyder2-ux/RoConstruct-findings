@@ -1,424 +1,598 @@
 // from server: 100% by auto
-// roc 2008-06 00514f10  unit: seg_00510000  size: 1376 bytes
-// Make this compile to the exact bytes below, then: roc check 2008-06 00514f10
-//
-// 00514f10  6aff                 push -1
-// 00514f12  68bec57c00           push 0x7cc5be
-// 00514f17  64a100000000         mov eax, dword ptr fs:[0]
-// 00514f1d  50                   push eax
-// 00514f1e  64892500000000       mov dword ptr fs:[0], esp
-// 00514f25  83ec40               sub esp, 0x40
-// 00514f28  8b442450             mov eax, dword ptr [esp + 0x50]
-// 00514f2c  56                   push esi
-// 00514f2d  50                   push eax
-// 00514f2e  8d4c2410             lea ecx, [esp + 0x10]
-// 00514f32  ff155c248000         call dword ptr [0x80245c]
-// 00514f38  8b742458             mov esi, dword ptr [esp + 0x58]
-// 00514f3c  6816b78000           push 0x80b716
-// 00514f41  8bce                 mov ecx, esi
-// 00514f43  c744245000000000     mov dword ptr [esp + 0x50], 0
-// 00514f4b  ff154c248000         call dword ptr [0x80244c]
-// 00514f51  8b4c245c             mov ecx, dword ptr [esp + 0x5c]
-// 00514f55  6a01                 push 1
-// 00514f57  6a00                 push 0
-// 00514f59  e85247ffff           call 0x5096b0
-// 00514f5e  8b4c2460             mov ecx, dword ptr [esp + 0x60]
-// 00514f62  6816b78000           push 0x80b716
-// 00514f67  ff154c248000         call dword ptr [0x80244c]
-// 00514f6d  8b4c2464             mov ecx, dword ptr [esp + 0x64]
-// 00514f71  6816b78000           push 0x80b716
-// 00514f76  ff154c248000         call dword ptr [0x80244c]
-// 00514f7c  8d4c240c             lea ecx, [esp + 0xc]
-// 00514f80  6816b78000           push 0x80b716
-// 00514f85  51                   push ecx
-// 00514f86  ff156c238000         call dword ptr [0x80236c]
-// 00514f8c  83c408               add esp, 8
-// 00514f8f  84c0                 test al, al
-// 00514f91  7422                 je 0x514fb5
-// 00514f93  8d4c240c             lea ecx, [esp + 0xc]
-// 00514f97  c744244cffffffff     mov dword ptr [esp + 0x4c], 0xffffffff
-// 00514f9f  ff1568248000         call dword ptr [0x802468]
-// 00514fa5  5e                   pop esi
-// 00514fa6  8b4c2440             mov ecx, dword ptr [esp + 0x40]
-// 00514faa  64890d00000000       mov dword ptr fs:[0], ecx
-// 00514fb1  83c44c               add esp, 0x4c
-// 00514fb4  c3                   ret 
-// 00514fb5  8b4c2420             mov ecx, dword ptr [esp + 0x20]
-// 00514fb9  53                   push ebx
-// 00514fba  8b1d90288000         mov ebx, dword ptr [0x802890]
-// 00514fc0  55                   push ebp
-// 00514fc1  57                   push edi
-// 00514fc2  83f902               cmp ecx, 2
-// 00514fc5  0f82fc000000         jb 0x5150c7
-// 00514fcb  83f901               cmp ecx, 1
-// 00514fce  7306                 jae 0x514fd6
-// 00514fd0  ffd3                 call ebx
-// 00514fd2  8b4c242c             mov ecx, dword ptr [esp + 0x2c]
-// 00514fd6  8b7c2430             mov edi, dword ptr [esp + 0x30]
-// 00514fda  8b6c241c             mov ebp, dword ptr [esp + 0x1c]
-// 00514fde  8bc5                 mov eax, ebp
-// 00514fe0  83ff10               cmp edi, 0x10
-// 00514fe3  7304                 jae 0x514fe9
-// 00514fe5  8d44241c             lea eax, [esp + 0x1c]
-// 00514fe9  8078013a             cmp byte ptr [eax + 1], 0x3a
-// 00514fed  0f85dc000000         jne 0x5150cf
-// 00514ff3  83f902               cmp ecx, 2
-// 00514ff6  7675                 jbe 0x51506d
-// 00514ff8  730a                 jae 0x515004
-// 00514ffa  ffd3                 call ebx
-// 00514ffc  8b7c2430             mov edi, dword ptr [esp + 0x30]
-// 00515000  8b6c241c             mov ebp, dword ptr [esp + 0x1c]
-// 00515004  8bc5                 mov eax, ebp
-// 00515006  83ff10               cmp edi, 0x10
-// 00515009  7304                 jae 0x51500f
-// 0051500b  8d44241c             lea eax, [esp + 0x1c]
-// 0051500f  8a4002               mov al, byte ptr [eax + 2]
-// 00515012  3c5c                 cmp al, 0x5c
-// 00515014  7404                 je 0x51501a
-// 00515016  3c2f                 cmp al, 0x2f
-// 00515018  7553                 jne 0x51506d
-// 0051501a  6a03                 push 3
-// 0051501c  6a00                 push 0
-// 0051501e  8d54243c             lea edx, [esp + 0x3c]
-// 00515022  52                   push edx
-// 00515023  8d4c2424             lea ecx, [esp + 0x24]
-// 00515027  ff15e0238000         call dword ptr [0x8023e0]
-// 0051502d  50                   push eax
-// 0051502e  8bce                 mov ecx, esi
-// 00515030  c644245c01           mov byte ptr [esp + 0x5c], 1
-// 00515035  ff150c248000         call dword ptr [0x80240c]
-// 0051503b  8d4c2434             lea ecx, [esp + 0x34]
-// 0051503f  c644245800           mov byte ptr [esp + 0x58], 0
-// 00515044  ff1568248000         call dword ptr [0x802468]
-// 0051504a  8b44242c             mov eax, dword ptr [esp + 0x2c]
-// 0051504e  83c0fd               add eax, -3
-// 00515051  50                   push eax
-// 00515052  6a03                 push 3
-// 00515054  8d4c243c             lea ecx, [esp + 0x3c]
-// 00515058  51                   push ecx
-// 00515059  8d4c2424             lea ecx, [esp + 0x24]
-// 0051505d  ff15e0238000         call dword ptr [0x8023e0]
-// 00515063  c644245802           mov byte ptr [esp + 0x58], 2
-// 00515068  e960010000           jmp 0x5151cd
-// 0051506d  8b15e8238000         mov edx, dword ptr [0x8023e8]
-// 00515073  8b02                 mov eax, dword ptr [edx]
-// 00515075  50                   push eax
-// 00515076  6a02                 push 2
-// 00515078  8d4c243c             lea ecx, [esp + 0x3c]
-// 0051507c  51                   push ecx
-// 0051507d  8d4c2424             lea ecx, [esp + 0x24]
-// 00515081  ff15e0238000         call dword ptr [0x8023e0]
-// 00515087  50                   push eax
-// 00515088  8bce                 mov ecx, esi
-// 0051508a  c644245c03           mov byte ptr [esp + 0x5c], 3
-// 0051508f  ff150c248000         call dword ptr [0x80240c]
-// 00515095  8d4c2434             lea ecx, [esp + 0x34]
-// 00515099  c644245800           mov byte ptr [esp + 0x58], 0
-// 0051509e  ff1568248000         call dword ptr [0x802468]
-// 005150a4  8b54242c             mov edx, dword ptr [esp + 0x2c]
-// 005150a8  83c2fe               add edx, -2
-// 005150ab  52                   push edx
-// 005150ac  6a02                 push 2
-// 005150ae  8d44243c             lea eax, [esp + 0x3c]
-// 005150b2  50                   push eax
-// 005150b3  8d4c2424             lea ecx, [esp + 0x24]
-// 005150b7  ff15e0238000         call dword ptr [0x8023e0]
-// 005150bd  c644245804           mov byte ptr [esp + 0x58], 4
-// 005150c2  e906010000           jmp 0x5151cd
-// 005150c7  8b7c2430             mov edi, dword ptr [esp + 0x30]
-// 005150cb  8b6c241c             mov ebp, dword ptr [esp + 0x1c]
-// 005150cf  8bc5                 mov eax, ebp
-// 005150d1  83ff10               cmp edi, 0x10
-// 005150d4  7304                 jae 0x5150da
-// 005150d6  8d44241c             lea eax, [esp + 0x1c]
-// 005150da  8a00                 mov al, byte ptr [eax]
-// 005150dc  3c5c                 cmp al, 0x5c
-// 005150de  7408                 je 0x5150e8
-// 005150e0  3c2f                 cmp al, 0x2f
-// 005150e2  7404                 je 0x5150e8
-// 005150e4  33c0                 xor eax, eax
-// 005150e6  eb05                 jmp 0x5150ed
-// 005150e8  b801000000           mov eax, 1
-// 005150ed  83f902               cmp ecx, 2
-// 005150f0  1bd2                 sbb edx, edx
-// 005150f2  42                   inc edx
-// 005150f3  84d0                 test al, dl
-// 005150f5  7475                 je 0x51516c
-// 005150f7  83f901               cmp ecx, 1
-// 005150fa  730a                 jae 0x515106
-// 005150fc  ffd3                 call ebx
-// 005150fe  8b7c2430             mov edi, dword ptr [esp + 0x30]
-// 00515102  8b6c241c             mov ebp, dword ptr [esp + 0x1c]
-// 00515106  8bc5                 mov eax, ebp
-// 00515108  83ff10               cmp edi, 0x10
-// 0051510b  7304                 jae 0x515111
-// 0051510d  8d44241c             lea eax, [esp + 0x1c]
-// 00515111  8a4001               mov al, byte ptr [eax + 1]
-// 00515114  3c5c                 cmp al, 0x5c
-// 00515116  7404                 je 0x51511c
-// 00515118  3c2f                 cmp al, 0x2f
-// 0051511a  7550                 jne 0x51516c
-// 0051511c  6a02                 push 2
-// 0051511e  6a00                 push 0
-// 00515120  8d44243c             lea eax, [esp + 0x3c]
-// 00515124  50                   push eax
-// 00515125  8d4c2424             lea ecx, [esp + 0x24]
-// 00515129  ff15e0238000         call dword ptr [0x8023e0]
-// 0051512f  50                   push eax
-// 00515130  8bce                 mov ecx, esi
-// 00515132  c644245c05           mov byte ptr [esp + 0x5c], 5
-// 00515137  ff150c248000         call dword ptr [0x80240c]
-// 0051513d  8d4c2434             lea ecx, [esp + 0x34]
-// 00515141  c644245800           mov byte ptr [esp + 0x58], 0
-// 00515146  ff1568248000         call dword ptr [0x802468]
-// 0051514c  8b4c242c             mov ecx, dword ptr [esp + 0x2c]
-// 00515150  83c1fe               add ecx, -2
-// 00515153  51                   push ecx
-// 00515154  6a02                 push 2
-// 00515156  8d54243c             lea edx, [esp + 0x3c]
-// 0051515a  52                   push edx
-// 0051515b  8d4c2424             lea ecx, [esp + 0x24]
-// 0051515f  ff15e0238000         call dword ptr [0x8023e0]
-// 00515165  c644245806           mov byte ptr [esp + 0x58], 6
-// 0051516a  eb61                 jmp 0x5151cd
-// 0051516c  8bc5                 mov eax, ebp
-// 0051516e  83ff10               cmp edi, 0x10
-// 00515171  7304                 jae 0x515177
-// 00515173  8d44241c             lea eax, [esp + 0x1c]
-// 00515177  8a00                 mov al, byte ptr [eax]
-// 00515179  3c5c                 cmp al, 0x5c
-// 0051517b  7404                 je 0x515181
-// 0051517d  3c2f                 cmp al, 0x2f
-// 0051517f  7566                 jne 0x5151e7
-// 00515181  6a01                 push 1
-// 00515183  6a00                 push 0
-// 00515185  8d44243c             lea eax, [esp + 0x3c]
-// 00515189  50                   push eax
-// 0051518a  8d4c2424             lea ecx, [esp + 0x24]
-// 0051518e  ff15e0238000         call dword ptr [0x8023e0]
-// 00515194  50                   push eax
-// 00515195  8bce                 mov ecx, esi
-// 00515197  c644245c07           mov byte ptr [esp + 0x5c], 7
-// 0051519c  ff150c248000         call dword ptr [0x80240c]
-// 005151a2  8d4c2434             lea ecx, [esp + 0x34]
-// 005151a6  c644245800           mov byte ptr [esp + 0x58], 0
-// 005151ab  ff1568248000         call dword ptr [0x802468]
-// 005151b1  8b4c242c             mov ecx, dword ptr [esp + 0x2c]
-// 005151b5  49                   dec ecx
-// 005151b6  51                   push ecx
-// 005151b7  6a01                 push 1
-// 005151b9  8d54243c             lea edx, [esp + 0x3c]
-// 005151bd  52                   push edx
-// 005151be  8d4c2424             lea ecx, [esp + 0x24]
-// 005151c2  ff15e0238000         call dword ptr [0x8023e0]
-// 005151c8  c644245808           mov byte ptr [esp + 0x58], 8
-// 005151cd  50                   push eax
-// 005151ce  8d4c241c             lea ecx, [esp + 0x1c]
-// 005151d2  ff150c248000         call dword ptr [0x80240c]
-// 005151d8  8d4c2434             lea ecx, [esp + 0x34]
-// 005151dc  c644245800           mov byte ptr [esp + 0x58], 0
-// 005151e1  ff1568248000         call dword ptr [0x802468]
-// 005151e7  a1e8238000           mov eax, dword ptr [0x8023e8]
-// 005151ec  8b00                 mov eax, dword ptr [eax]
-// 005151ee  6a01                 push 1
-// 005151f0  50                   push eax
-// 005151f1  8d4c2418             lea ecx, [esp + 0x18]
-// 005151f5  51                   push ecx
-// 005151f6  8d4c2424             lea ecx, [esp + 0x24]
-// 005151fa  c644241c2e           mov byte ptr [esp + 0x1c], 0x2e
-// 005151ff  ff159c248000         call dword ptr [0x80249c]
-// 00515205  8b15e8238000         mov edx, dword ptr [0x8023e8]
-// 0051520b  8bf0                 mov esi, eax
-// 0051520d  8b02                 mov eax, dword ptr [edx]
-// 0051520f  6a01                 push 1
-// 00515211  50                   push eax
-// 00515212  8d442418             lea eax, [esp + 0x18]
-// 00515216  50                   push eax
-// 00515217  8d4c2424             lea ecx, [esp + 0x24]
-// 0051521b  c644241c5c           mov byte ptr [esp + 0x1c], 0x5c
-// 00515220  ff159c248000         call dword ptr [0x80249c]
-// 00515226  8b0de8238000         mov ecx, dword ptr [0x8023e8]
-// 0051522c  8bf8                 mov edi, eax
-// 0051522e  8b01                 mov eax, dword ptr [ecx]
-// 00515230  6a01                 push 1
-// 00515232  50                   push eax
-// 00515233  8d54241c             lea edx, [esp + 0x1c]
-// 00515237  52                   push edx
-// 00515238  8d4c2424             lea ecx, [esp + 0x24]
-// 0051523c  c64424202f           mov byte ptr [esp + 0x20], 0x2f
-// 00515241  ff159c248000         call dword ptr [0x80249c]
-// 00515247  3bc7                 cmp eax, edi
-// 00515249  7d02                 jge 0x51524d
-// 0051524b  8bc7                 mov eax, edi
-// 0051524d  8b0de8238000         mov ecx, dword ptr [0x8023e8]
-// 00515253  3b31                 cmp esi, dword ptr [ecx]
-// 00515255  746f                 je 0x5152c6
-// 00515257  3bf0                 cmp esi, eax
-// 00515259  766b                 jbe 0x5152c6
-// 0051525b  8b54242c             mov edx, dword ptr [esp + 0x2c]
-// 0051525f  2bd6                 sub edx, esi
-// 00515261  4a                   dec edx
-// 00515262  52                   push edx
-// 00515263  8d4601               lea eax, [esi + 1]
-// 00515266  50                   push eax
-// 00515267  8d4c243c             lea ecx, [esp + 0x3c]
-// 0051526b  51                   push ecx
-// 0051526c  8d4c2424             lea ecx, [esp + 0x24]
-// 00515270  ff15e0238000         call dword ptr [0x8023e0]
-// 00515276  8b4c2470             mov ecx, dword ptr [esp + 0x70]
-// 0051527a  50                   push eax
-// 0051527b  c644245c09           mov byte ptr [esp + 0x5c], 9
-// 00515280  ff150c248000         call dword ptr [0x80240c]
-// 00515286  8d4c2434             lea ecx, [esp + 0x34]
-// 0051528a  c644245800           mov byte ptr [esp + 0x58], 0
-// 0051528f  ff1568248000         call dword ptr [0x802468]
-// 00515295  56                   push esi
-// 00515296  6a00                 push 0
-// 00515298  8d54243c             lea edx, [esp + 0x3c]
-// 0051529c  52                   push edx
-// 0051529d  8d4c2424             lea ecx, [esp + 0x24]
-// 005152a1  ff15e0238000         call dword ptr [0x8023e0]
-// 005152a7  50                   push eax
-// 005152a8  8d4c241c             lea ecx, [esp + 0x1c]
-// 005152ac  c644245c0a           mov byte ptr [esp + 0x5c], 0xa
-// 005152b1  ff150c248000         call dword ptr [0x80240c]
-// 005152b7  8d4c2434             lea ecx, [esp + 0x34]
-// 005152bb  c644245800           mov byte ptr [esp + 0x58], 0
-// 005152c0  ff1568248000         call dword ptr [0x802468]
-// 005152c6  a1e8238000           mov eax, dword ptr [0x8023e8]
-// 005152cb  8b00                 mov eax, dword ptr [eax]
-// 005152cd  6a01                 push 1
-// 005152cf  50                   push eax
-// 005152d0  8d4c241c             lea ecx, [esp + 0x1c]
-// 005152d4  51                   push ecx
-// 005152d5  8d4c2424             lea ecx, [esp + 0x24]
-// 005152d9  c64424205c           mov byte ptr [esp + 0x20], 0x5c
-// 005152de  ff159c248000         call dword ptr [0x80249c]
-// 005152e4  8b15e8238000         mov edx, dword ptr [0x8023e8]
-// 005152ea  8bf0                 mov esi, eax
-// 005152ec  8b02                 mov eax, dword ptr [edx]
-// 005152ee  6a01                 push 1
-// 005152f0  50                   push eax
-// 005152f1  8d442418             lea eax, [esp + 0x18]
-// 005152f5  50                   push eax
-// 005152f6  8d4c2424             lea ecx, [esp + 0x24]
-// 005152fa  c644241c2f           mov byte ptr [esp + 0x1c], 0x2f
-// 005152ff  ff159c248000         call dword ptr [0x80249c]
-// 00515305  3bc6                 cmp eax, esi
-// 00515307  7c02                 jl 0x51530b
-// 00515309  8bf0                 mov esi, eax
-// 0051530b  8b0de8238000         mov ecx, dword ptr [0x8023e8]
-// 00515311  3b31                 cmp esi, dword ptr [ecx]
-// 00515313  7520                 jne 0x515335
-// 00515315  8b4c246c             mov ecx, dword ptr [esp + 0x6c]
-// 00515319  8d542418             lea edx, [esp + 0x18]
-// 0051531d  52                   push edx
-// 0051531e  ff150c248000         call dword ptr [0x80240c]
-// 00515324  6816b78000           push 0x80b716
-// 00515329  8d4c241c             lea ecx, [esp + 0x1c]
-// 0051532d  ff154c248000         call dword ptr [0x80244c]
-// 00515333  eb72                 jmp 0x5153a7
-// 00515335  8b44242c             mov eax, dword ptr [esp + 0x2c]
-// 00515339  8d48ff               lea ecx, [eax - 1]
-// 0051533c  3bf1                 cmp esi, ecx
-// 0051533e  7367                 jae 0x5153a7
-// 00515340  2bc6                 sub eax, esi
-// 00515342  48                   dec eax
-// 00515343  50                   push eax
-// 00515344  8d5601               lea edx, [esi + 1]
-// 00515347  52                   push edx
-// 00515348  8d44243c             lea eax, [esp + 0x3c]
-// 0051534c  50                   push eax
-// 0051534d  8d4c2424             lea ecx, [esp + 0x24]
-// 00515351  ff15e0238000         call dword ptr [0x8023e0]
-// 00515357  8b4c246c             mov ecx, dword ptr [esp + 0x6c]
-// 0051535b  50                   push eax
-// 0051535c  c644245c0b           mov byte ptr [esp + 0x5c], 0xb
-// 00515361  ff150c248000         call dword ptr [0x80240c]
-// 00515367  8d4c2434             lea ecx, [esp + 0x34]
-// 0051536b  c644245800           mov byte ptr [esp + 0x58], 0
-// 00515370  ff1568248000         call dword ptr [0x802468]
-// 00515376  56                   push esi
-// 00515377  6a00                 push 0
-// 00515379  8d4c243c             lea ecx, [esp + 0x3c]
-// 0051537d  51                   push ecx
-// 0051537e  8d4c2424             lea ecx, [esp + 0x24]
-// 00515382  ff15e0238000         call dword ptr [0x8023e0]
-// 00515388  50                   push eax
-// 00515389  8d4c241c             lea ecx, [esp + 0x1c]
-// 0051538d  c644245c0c           mov byte ptr [esp + 0x5c], 0xc
-// 00515392  ff150c248000         call dword ptr [0x80240c]
-// 00515398  8d4c2434             lea ecx, [esp + 0x34]
-// 0051539c  c644245800           mov byte ptr [esp + 0x58], 0
-// 005153a1  ff1568248000         call dword ptr [0x802468]
-// 005153a7  33f6                 xor esi, esi
-// 005153a9  3974242c             cmp dword ptr [esp + 0x2c], esi
-// 005153ad  0f8698000000         jbe 0x51544b
-// 005153b3  b30d                 mov bl, 0xd
-// 005153b5  6a01                 push 1
-// 005153b7  8d7e01               lea edi, [esi + 1]
-// 005153ba  57                   push edi
-// 005153bb  8d54241c             lea edx, [esp + 0x1c]
-// 005153bf  52                   push edx
-// 005153c0  8d4c2424             lea ecx, [esp + 0x24]
-// 005153c4  8bee                 mov ebp, esi
-// 005153c6  c64424202f           mov byte ptr [esp + 0x20], 0x2f
-// 005153cb  ff1598248000         call dword ptr [0x802498]
-// 005153d1  6a01                 push 1
-// 005153d3  8bf0                 mov esi, eax
-// 005153d5  57                   push edi
-// 005153d6  8d44241c             lea eax, [esp + 0x1c]
-// 005153da  50                   push eax
-// 005153db  8d4c2424             lea ecx, [esp + 0x24]
-// 005153df  c64424205c           mov byte ptr [esp + 0x20], 0x5c
-// 005153e4  ff1598248000         call dword ptr [0x802498]
-// 005153ea  8b0de8238000         mov ecx, dword ptr [0x8023e8]
-// 005153f0  8b09                 mov ecx, dword ptr [ecx]
-// 005153f2  8b54242c             mov edx, dword ptr [esp + 0x2c]
-// 005153f6  3bf1                 cmp esi, ecx
-// 005153f8  7502                 jne 0x5153fc
-// 005153fa  8bf2                 mov esi, edx
-// 005153fc  3bc1                 cmp eax, ecx
-// 005153fe  7502                 jne 0x515402
-// 00515400  8bc2                 mov eax, edx
-// 00515402  3bf0                 cmp esi, eax
-// 00515404  7c02                 jl 0x515408
-// 00515406  8bf0                 mov esi, eax
-// 00515408  3bf1                 cmp esi, ecx
-// 0051540a  7502                 jne 0x51540e
-// 0051540c  8bf2                 mov esi, edx
-// 0051540e  8bd6                 mov edx, esi
-// 00515410  2bd5                 sub edx, ebp
-// 00515412  52                   push edx
-// 00515413  55                   push ebp
-// 00515414  8d44243c             lea eax, [esp + 0x3c]
-// 00515418  50                   push eax
-// 00515419  8d4c2424             lea ecx, [esp + 0x24]
-// 0051541d  ff15e0238000         call dword ptr [0x8023e0]
-// 00515423  8b4c2468             mov ecx, dword ptr [esp + 0x68]
-// 00515427  50                   push eax
-// 00515428  885c245c             mov byte ptr [esp + 0x5c], bl
-// 0051542c  e8bf44ffff           call 0x5098f0
-// 00515431  8d4c2434             lea ecx, [esp + 0x34]
-// 00515435  c644245800           mov byte ptr [esp + 0x58], 0
-// 0051543a  ff1568248000         call dword ptr [0x802468]
-// 00515440  46                   inc esi
-// 00515441  3b74242c             cmp esi, dword ptr [esp + 0x2c]
-// 00515445  0f826affffff         jb 0x5153b5
-// 0051544b  8d4c2418             lea ecx, [esp + 0x18]
-// 0051544f  c7442458ffffffff     mov dword ptr [esp + 0x58], 0xffffffff
-// 00515457  ff1568248000         call dword ptr [0x802468]
-// 0051545d  8b4c2450             mov ecx, dword ptr [esp + 0x50]
-// 00515461  5f                   pop edi
-// 00515462  5d                   pop ebp
-// 00515463  5b                   pop ebx
-// 00515464  5e                   pop esi
-// 00515465  64890d00000000       mov dword ptr fs:[0], ecx
-// 0051546c  83c44c               add esp, 0x4c
-// 0051546f  c3                   ret 
-// library g3d-6.09/G3Dcpp\fileutils.cpp (function ?parseFilename@G3D@@YAXABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@AAV23@AAV?$Array@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@1@11@Z)
-
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD
 // roc-lib: g3d-6.09 G3Dcpp/fileutils.cpp
+
+// Candidate translation unit (score above; library headers required).
+/**
+ @file fileutils.cpp
+ 
+ @author Morgan McGuire, graphics3d.com
+ 
+ @author  2002-06-06
+ @edited  2005-02-24
+ */
+
+#include "G3D/platform.h"
+#include "G3D/fileutils.h"
+#include "G3D/BinaryInput.h"
+#include "G3D/g3dmath.h"
+#include <sys/stat.h>
+#include <sys/types.h>
+#include "G3D/stringutils.h"
+
+#ifdef G3D_WIN32
+   // Needed for _getcwd
+   #include <direct.h>
+   #include <io.h>
+#else
+   #include <dirent.h>
+   #include <fnmatch.h>
+   #include <unistd.h>
+   #define _getcwd getcwd
+#endif
+#include <stdio.h>
+#include "G3D/BinaryOutput.h"
+
+/**
+ Pick up libjpeg headers locally on Windows, but from the system on all other platforms.
+*/
+extern "C" {
+#if (defined(_MSC_VER) || defined(__MINGW32__))
+	#include "../IJG/jpeglib.h"
+#else
+	#include <jpeglib.h>
+#endif
+}
+
+#ifdef G3D_WIN32
+    //for _mkdir and _stat
+    #include <direct.h>
+#else
+    #define _stat stat
+#endif
+
+
+namespace G3D {
+    
+    namespace _internal {
+        Array<std::string> currentFilesUsed(0);
+    }
+
+
+std::string resolveFilename(const std::string& filename) {
+    if (filename.size() >= 1) {
+        if ((filename[0] == '/') || (filename[0] == '\\')) {
+            // Already resolved
+            return filename;
+        } else {
+
+            #ifdef G3D_WIN32
+                if ((filename.size() >= 2) && (filename[1] == ':')) {
+                    // There is a drive spec on the front.
+                    if ((filename.size() >= 3) && ((filename[2] == '\\') || 
+                                                   (filename[2] == '/'))) {
+                        // Already fully qualified
+                        return filename;
+                    } else {
+                        // The drive spec is relative to the
+                        // working directory on that drive.
+                        debugAssertM(false, "Files of the form d:path are"
+                                     " not supported (use a fully qualified"
+                                     " name).");
+                        return filename;
+                    }
+                }
+            #endif
+        }
+    }
+
+    char buffer[1024];
+
+    // Prepend the working directory.
+    _getcwd(buffer, 1024);
+
+    return format("%s/%s", buffer, filename.c_str());
+}
+
+
+std::string readFileAsString(
+    const std::string& filename) {
+
+    _internal::currentFilesUsed.append(filename);
+
+    int64 length = fileLength(filename);
+
+    if (length == -1) {
+        return "";
+    }
+
+    char* buffer = (char*)malloc(length + 1);
+    debugAssert(buffer);
+    FILE* f = fopen(filename.c_str(), "rb");
+    debugAssert(f);
+    int ret = fread(buffer, 1, length, f);
+	debugAssert(ret == length);(void)ret;
+    fclose(f);
+
+    buffer[length] = '\0';
+    std::string s = std::string(buffer);
+    free(buffer);
+
+    return s;
+}
+
+
+int64 fileLength(const std::string& filename) {
+    struct _stat st;
+    int result = _stat(filename.c_str(), &st);
+    
+    if (result == -1) {
+        return -1;
+    }
+
+    return st.st_size;
+}
+
+
+FILE* createTempFile() {
+    // Added to the G3D version of jpeglib
+#ifdef _MSC_VER
+    return _robustTmpfile();
+#else
+    return tmpfile();
+#endif
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+void writeStringToFile(
+    const std::string&          str,
+    const std::string&          filename,
+    bool                        flush) {
+
+    // Make sure the directory exists.
+    std::string root, base, ext, path;
+    Array<std::string> pathArray;
+    parseFilename(filename, root, pathArray, base, ext); 
+
+    path = root + stringJoin(pathArray, '/');
+    if (! fileExists(path)) {
+        createDirectory(path);
+    }
+
+    FILE* file = fopen(filename.c_str(), "wb");
+
+    debugAssert(file);
+
+    fwrite(str.c_str(), str.size(), 1, file);
+
+    if (flush) {
+        fflush(file);
+    }
+    fclose(file);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+/**
+ Creates the directory (which may optionally end in a /)
+ and any parents needed to reach it.
+ */
+void createDirectory(
+    const std::string&  dir) {
+    
+	if (dir == "") {
+		return;
+	}
+
+    std::string d;
+
+    // Add a trailing / if there isn't one.
+    switch (dir[dir.size() - 1]) {
+    case '/':
+    case '\\':
+        d = dir;
+        break;
+
+    default:
+        d = dir + "/";
+    }
+
+    // If it already exists, do nothing
+    if (fileExists(d.substr(0, d.size() - 1))) {
+        return;
+    }
+
+    // Parse the name apart
+    std::string root, base, ext;
+    Array<std::string> path;
+
+    std::string lead;
+    parseFilename(d, root, path, base, ext);
+    debugAssert(base == "");
+    debugAssert(ext == "");
+
+    // Begin with an extra period so "c:\" becomes "c:\.\" after
+    // appending a path and "c:" becomes "c:.\", not root: "c:\"
+    std::string p = root + ".";
+
+    // Create any intermediate that doesn't exist
+    for (int i = 0; i < path.size(); ++i) {
+        p += "/" + path[i];
+        if (! fileExists(p)) {
+	    // Windows only requires one argument to mkdir,
+	    // where as unix also requires the permissions.
+	    #ifndef G3D_WIN32
+	 	 mkdir(p.c_str(),0777);
+ 	    #else
+                 _mkdir(p.c_str());
+	    #endif
+        }
+    }
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+bool fileExists(
+    const std::string& filename) {
+
+	if (filename == "") {
+		return true;
+	}
+
+    struct _stat st;
+    return _stat(filename.c_str(), &st) != -1;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+void copyFile(
+    const std::string&          source,
+    const std::string&          dest) {
+
+    #ifdef G3D_WIN32
+        CopyFile(source.c_str(), dest.c_str(), FALSE);
+    #else
+        // TODO: don't use BinaryInput and BinaryOutput
+        // Read it all in, then dump it out
+        BinaryInput  in(source, G3D_LITTLE_ENDIAN);
+        BinaryOutput out(dest, G3D_LITTLE_ENDIAN);
+        out.writeBytes(in.getCArray(), in.size());
+        out.commit(false);
+    #endif
+}
+
+//////////////////////////////////////////////////////////////////////////////
+
+void parseFilename(
+    const std::string&  filename,
+    std::string&        root,
+    Array<std::string>& path,
+    std::string&        base,
+    std::string&        ext) {
+
+    std::string f = filename;
+
+    root = "";
+    path.clear();
+    base = "";
+    ext = "";
+
+    if (f == "") {
+        // Empty filename
+        return;
+    }
+
+    // See if there is a root/drive spec.
+    if ((f.size() >= 2) && (f[1] == ':')) {
+        
+        if ((f.size() > 2) && isSlash(f[2])) {
+        
+            // e.g.  c:\foo
+            root = f.substr(0, 3);
+            f = f.substr(3, f.size() - 3);
+        
+        } else {
+        
+            // e.g.  c:foo
+            root = f.substr(2);
+            f = f.substr(2, f.size() - 2);
+
+        }
+
+    } else if ((f.size() >= 2) & isSlash(f[0]) && isSlash(f[1])) {
+        
+        // e.g. //foo
+        root = f.substr(0, 2);
+        f = f.substr(2, f.size() - 2);
+
+    } else if (isSlash(f[0])) {
+        
+        root = f.substr(0, 1);
+        f = f.substr(1, f.size() - 1);
+
+    }
+
+    // Pull the extension off
+    {
+        // Find the period
+        size_t i = f.rfind('.');
+
+        // Make sure it is before a slash!
+        size_t j = iMax(f.rfind('/'), f.rfind('\\'));
+        if ((i != std::string::npos) && (i > j)) {
+            ext = f.substr(i + 1, f.size() - i - 1);
+            f = f.substr(0, i);
+        }
+    }
+
+    // Pull the basename off
+    {
+        // Find the last slash
+        size_t i = iMax(f.rfind('/'), f.rfind('\\'));
+        
+        if (i == std::string::npos) {
+            
+            // There is no slash; the basename is the whole thing
+            base = f;
+            f    = "";
+
+        } else if ((i != std::string::npos) && (i < f.size() - 1)) {
+            
+            base = f.substr(i + 1, f.size() - i - 1);
+            f    = f.substr(0, i);
+
+        }
+    }
+
+    // Parse what remains into path.
+    size_t prev, cur = 0;
+
+    while (cur < f.size()) {
+        prev = cur;
+        
+        // Allow either slash
+        size_t i = f.find('/', prev + 1);
+        size_t j = f.find('\\', prev + 1);
+        if (i == std::string::npos) {
+            i = f.size();
+        }
+
+        if (j == std::string::npos) {
+            j = f.size();
+        }
+
+        cur = iMin(i, j);
+
+        if (cur == std::string::npos) {
+            cur = f.size();
+        }
+
+        path.append(f.substr(prev, cur - prev));
+        ++cur;
+    }
+}
+
+
+
+/**
+ Helper for getFileList and getDirectoryList.
+
+ @param wantFiles       If false, returns the directories, otherwise
+                        returns the files.
+ @param includePath     If true, the names include paths
+ */
+static void getFileOrDirList(
+	const std::string&		filespec,
+	Array<std::string>&		files,
+	bool					wantFiles,
+	bool					includePath) {
+
+	bool test = wantFiles ? true : false;
+
+	std::string path = "";
+
+    // Find the place where the path ends and the file-spec begins
+    size_t i = filespec.rfind('/');
+    size_t j = filespec.rfind('\\');
+    
+    // Drive letters on Windows can separate a path
+    size_t k = filespec.rfind(':');
+    
+    if ((j != std::string::npos) && (j > i) ||
+        (i == std::string::npos)) {
+        i = j;
+    }
+    
+    if ((k != std::string::npos) && (k > i) ||
+        (i == std::string::npos)) {
+        i = k;
+    }
+    
+    // If there is a path, pull it off
+    if (i != std::string::npos) {
+        path = filespec.substr(0, i + 1);
+    }
+   
+    std::string prefix = path;
+
+    if (path.size() > 0) {
+        // Strip the trailing character
+        path = path.substr(0, path.size() - 1);
+    }
+
+    #ifdef G3D_WIN32
+	    struct _finddata_t fileinfo;
+
+        long handle = _findfirst(filespec.c_str(), &fileinfo);
+        int result = handle;
+
+        while (result != -1) {
+            if ((((fileinfo.attrib & _A_SUBDIR) == 0) == test) && 
+                strcmp(fileinfo.name, ".") &&
+                strcmp(fileinfo.name, "..")) {
+                
+                if (includePath) {
+                    files.append(prefix + fileinfo.name);
+                } else {
+                    files.append(fileinfo.name);
+                }
+            }
+            
+            result = _findnext(handle, &fileinfo);
+        }
+    #else
+        // Linux implementation
+        DIR* dir = opendir(path.c_str());
+
+        if (dir != NULL) {
+            struct dirent* entry = readdir(dir);
+
+            while (entry != NULL) {
+
+                // Exclude '.' and '..'
+                if (strcmp(entry->d_name, ".") &&
+                    strcmp(entry->d_name, "..")) {
+                    
+                    // Form a name with a path
+                    std::string filename = prefix + entry->d_name;
+                    
+                    // See if this is a file or a directory
+                    struct _stat st;
+                    bool exists = _stat(filename.c_str(), &st) != -1;
+
+                    if (exists &&
+
+                        // Make sure it has the correct type
+                        (((st.st_mode & S_IFDIR) == 0) == test) &&
+
+                        // Make sure it matches the wildcard
+                        (fnmatch(filespec.c_str(),
+                                 filename.c_str(),
+                                 FNM_PATHNAME) == 0)) {
+                        
+                        if (includePath) {
+                            files.append(filename);
+                        } else {
+                            files.append(entry->d_name);
+                        }
+                    }
+                }
+
+                entry = readdir(dir);
+            }
+        }
+        closedir(dir);
+
+    #endif
+}
+
+
+void getFiles(
+	const std::string&			filespec,
+	Array<std::string>&			files,
+	bool						includePath) {
+
+	getFileOrDirList(filespec, files, true, includePath);
+}
+
+
+void getDirs(
+	const std::string&			filespec,
+	Array<std::string>&			files,
+	bool						includePath) {
+
+	getFileOrDirList(filespec, files, false, includePath);
+}
+
+
+std::string filenameBaseExt(const std::string& filename) {
+    int i = filename.rfind("/");
+    int j = filename.rfind("\\");
+
+    if ((j > i) && (j >= 0)) {
+        i = j;
+    }
+
+#   ifdef G3D_WIN32
+        j = filename.rfind(":");
+        if ((i == -1) && (j >= 0)) {
+            i = j;
+        }
+#   endif
+
+    if (i == -1) {
+        return filename;
+    } else {
+        return filename.substr(i + 1, filename.length() - i);
+    }
+}
+
+
+std::string filenameExt(const std::string& filename) {
+    int i = filename.rfind(".");
+    if (i >= 0) {
+        return filename.substr(i + 1, filename.length() - i);
+    } else {
+        return "";
+    }
+}
+
+
+std::string filenamePath(const std::string& filename) {
+    int i = filename.rfind("/");
+    int j = filename.rfind("\\");
+
+    if ((j > i) && (j >= 0)) {
+        i = j;
+    }
+
+#   ifdef G3D_WIN32
+        j = filename.rfind(":");
+        if ((i == -1) && (j >= 0)) {
+            i = j;
+        }
+#   endif
+
+    if (i == -1) {
+        return "";
+    } else {
+        return filename.substr(0, i+1);
+    }
+}
+
+
+bool isDirectory(const std::string& filename) {
+    struct _stat st;
+    bool exists = _stat(filename.c_str(), &st) != -1;
+    return exists && ((st.st_mode & S_IFDIR) != 0);
+}
+
+
+bool filenameContainsWildcards(const std::string& filename) {
+    return (filename.find('*') != std::string::npos) || (filename.find('?') != std::string::npos);
+}
+
+
+bool fileIsNewer(const std::string& src, const std::string& dst) {
+    struct _stat sts;
+    bool sexists = _stat(src.c_str(), &sts) != -1;
+
+    struct _stat dts;
+    bool dexists = _stat(dst.c_str(), &dts) != -1;
+
+    return sexists && ((! dexists) || (sts.st_mtime > dts.st_mtime));
+}
+
+
+Array<std::string> filesUsed() {
+    return _internal::currentFilesUsed;
+}
+
+}
+
+#ifndef G3D_WIN32
+  #undef _stat
+#endif

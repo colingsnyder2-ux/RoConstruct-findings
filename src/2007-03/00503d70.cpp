@@ -1,34 +1,80 @@
-// roc 2007-03 00503d70  unit: seg_00500000  size: 77 bytes
-// Make this compile to the exact bytes below, then: roc check 2007-03 00503d70
-//
-// 00503d70  51                   push ecx
-// 00503d71  56                   push esi
-// 00503d72  ff1518e97700         call dword ptr [0x77e918]
-// 00503d78  8b742410             mov esi, dword ptr [esp + 0x10]
-// 00503d7c  89442404             mov dword ptr [esp + 4], eax
-// 00503d80  db442404             fild dword ptr [esp + 4]
-// 00503d84  8bc6                 mov eax, esi
-// 00503d86  2b44240c             sub eax, dword ptr [esp + 0xc]
-// 00503d8a  83ec08               sub esp, 8
-// 00503d8d  83c001               add eax, 1
-// 00503d90  89442418             mov dword ptr [esp + 0x18], eax
-// 00503d94  db442418             fild dword ptr [esp + 0x18]
-// 00503d98  dec9                 fmulp st(1)
-// 00503d9a  dc3508e97900         fdiv qword ptr [0x79e908]
-// 00503da0  da442414             fiadd dword ptr [esp + 0x14]
-// 00503da4  dd1c24               fstp qword ptr [esp]
-// 00503da7  e81cb81100           call 0x61f5c8
-// 00503dac  83c408               add esp, 8
-// 00503daf  e84cb41100           call 0x61f200
-// 00503db4  3bc6                 cmp eax, esi
-// 00503db6  7e02                 jle 0x503dba
-// 00503db8  8bc6                 mov eax, esi
-// 00503dba  5e                   pop esi
-// 00503dbb  59                   pop ecx
-// 00503dbc  c3                   ret 
-// library rbxgs-g3d/G3Dcpp\g3dmath.cpp (function ?iRandom@G3D@@YAHHH@Z)
-
 // roc-lang: cpp
 // roc-cl: 50727
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
 // roc-lib: rbxgs-g3d G3Dcpp/g3dmath.cpp
+
+// Candidate translation unit (score above; library headers required).
+/**
+ @file g3dmath.cpp
+ 
+ @author Morgan McGuire, graphics3d.com
+  
+ @created 2001-06-02
+ @edited  2004-02-24
+ */
+
+#include "G3D/g3dmath.h"
+#include <stdlib.h>
+
+namespace G3D {
+
+float gaussRandom(float mean, float stdev) {
+
+    // Using Box-Mueller method from http://www.taygeta.com/random/gaussian.html
+    // Modified to specify standard deviation and mean of distribution
+    float w, x1, x2;
+
+    // Loop until w is less than 1 so that log(w) is negative
+    do {
+        x1 = uniformRandom(-1.0, 1.0);
+        x2 = uniformRandom(-1.0, 1.0);
+
+        w = float(square(x1) + square(x2));
+    } while (w > 1.0f);
+
+    // Transform to gassian distribution
+    // Multiply by sigma (stdev ^ 2) and add mean.
+    return x2 * (float)square(stdev) * sqrtf((-2.0f * logf(w) ) / w) + mean; 
+}
+
+
+int highestBit(uint32 x) {
+    // Binary search.
+    int base = 0;
+
+	if (x & 0xffff0000)	{
+		base = 16;
+		x >>= 16;
+	}
+    if (x & 0x0000ff00) {
+		base += 8;
+		x >>= 8;
+	}
+    if (x & 0x000000f0) {
+		base += 4;
+		x >>= 4;
+	}
+
+	static const int lut[] = {-1,0,1,1,2,2,2,2,3,3,3,3,3,3,3,3};
+	return base + lut[x];
+}
+
+
+int iRandom(int low, int high) {
+	int r = iFloor(low + (high - low + 1) * (double)rand() / RAND_MAX);
+
+	// There is a *very small* chance of generating
+	// a number larger than high.
+	if (r > high) {
+		return high;
+	} else {
+		return r;
+	}
+}
+
+
+double G3D_DEPRECATED random(double low, double high) {
+	return low + (high - low) * rand() / (double)RAND_MAX;
+}
+
+}

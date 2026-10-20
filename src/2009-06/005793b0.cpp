@@ -1,46 +1,90 @@
 // from server: 100% by auto
-// roc 2009-06 005793b0  unit: G3D::LineSegment  size: 102 bytes
-// Make this compile to the exact bytes below, then: roc check 2009-06 005793b0
-//
-// 005793b0  d9ee                 fldz 
-// 005793b2  56                   push esi
-// 005793b3  8bf1                 mov esi, ecx
-// 005793b5  d95610               fst dword ptr [esi + 0x10]
-// 005793b8  d95614               fst dword ptr [esi + 0x14]
-// 005793bb  d95618               fst dword ptr [esi + 0x18]
-// 005793be  d916                 fst dword ptr [esi]
-// 005793c0  d95604               fst dword ptr [esi + 4]
-// 005793c3  d95608               fst dword ptr [esi + 8]
-// 005793c6  d95e0c               fstp dword ptr [esi + 0xc]
-// 005793c9  e8b2d1ffff           call 0x576580
-// 005793ce  d900                 fld dword ptr [eax]
-// 005793d0  d95e40               fstp dword ptr [esi + 0x40]
-// 005793d3  d94004               fld dword ptr [eax + 4]
-// 005793d6  d95e44               fstp dword ptr [esi + 0x44]
-// 005793d9  d94008               fld dword ptr [eax + 8]
-// 005793dc  d95e48               fstp dword ptr [esi + 0x48]
-// 005793df  b001                 mov al, 1
-// 005793e1  d9ee                 fldz 
-// 005793e3  d95610               fst dword ptr [esi + 0x10]
-// 005793e6  d95e14               fstp dword ptr [esi + 0x14]
-// 005793e9  d90594758b00         fld dword ptr [0x8b7594]
-// 005793ef  d95e18               fstp dword ptr [esi + 0x18]
-// 005793f2  dd0560ba8c00         fld qword ptr [0x8cba60]
-// 005793f8  dd5e20               fstp qword ptr [esi + 0x20]
-// 005793fb  88464d               mov byte ptr [esi + 0x4d], al
-// 005793fe  d9e8                 fld1 
-// 00579400  88464e               mov byte ptr [esi + 0x4e], al
-// 00579403  c6464c00             mov byte ptr [esi + 0x4c], 0
-// 00579407  dd5e28               fstp qword ptr [esi + 0x28]
-// 0057940a  8bc6                 mov eax, esi
-// 0057940c  d9ee                 fldz 
-// 0057940e  dd5630               fst qword ptr [esi + 0x30]
-// 00579411  dd5e38               fstp qword ptr [esi + 0x38]
-// 00579414  5e                   pop esi
-// 00579415  c3                   ret 
-// library g3d-6.09/G3Dcpp\GLight.cpp (function ??0GLight@G3D@@QAE@XZ)
-
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD
 // roc-lib: g3d-6.09 G3Dcpp/GLight.cpp
+
+// Candidate translation unit (score above; library headers required).
+/**
+  @file GLight.cpp
+
+  @maintainer Morgan McGuire, matrix@graphics3d.com
+
+  @created 2003-11-12
+  @edited  2005-01-10
+*/
+
+#include "G3D/GLight.h"
+
+namespace G3D {
+
+GLight::GLight() {
+    position        = Vector4(0, 0, 0, 0);
+    color           = Color3::white();
+    spotDirection   = Vector3(0, 0, -1);
+    spotCutoff      = 180;
+    enabled         = false;
+    attenuation[0]  = 1.0;
+    attenuation[1]  = 0.0;
+    attenuation[2]  = 0.0;
+    specular        = true;
+    diffuse         = true;
+}
+
+
+GLight GLight::directional(const Vector3& toLight, const Color3& color, bool s, bool d) {
+    GLight L;
+    L.position = Vector4(toLight.direction(), 0);
+    L.color    = color;
+    L.specular = s;
+    L.diffuse  = d;
+    return L;
+}
+
+
+GLight GLight::point(const Vector3& pos, const Color3& color, double constAtt, double linAtt, double quadAtt, bool s, bool d) {
+    GLight L;
+    L.position = Vector4(pos, 1);
+    L.color    = color;
+    L.attenuation[0] = constAtt;
+    L.attenuation[1] = linAtt;
+    L.attenuation[2] = quadAtt;
+    L.specular       = s;
+    L.diffuse        = d;
+    return L;
+}
+
+
+GLight GLight::spot(const Vector3& pos, const Vector3& pointDirection, double cutOffAngleDegrees, const Color3& color, double constAtt, double linAtt, double quadAtt, bool s, bool d) {
+    GLight L;
+    L.position = Vector4(pos, 1);
+    L.spotDirection = pointDirection;
+    L.spotCutoff = cutOffAngleDegrees;
+    L.color    = color;
+    L.attenuation[0] = constAtt;
+    L.attenuation[1] = linAtt;
+    L.attenuation[2] = quadAtt;
+    L.specular       = s;
+    L.diffuse        = d;
+    return L;
+}
+
+
+bool GLight::operator==(const GLight& other) const {
+    return (position == other.position) && 
+        (spotDirection == other.spotDirection) &&
+        (spotCutoff == other.spotCutoff) &&
+        (attenuation[0] == other.attenuation[0]) &&
+        (attenuation[1] == other.attenuation[1]) &&
+        (attenuation[2] == other.attenuation[2]) &&
+        (color == other.color) &&
+        (enabled == other.enabled) &&
+        (specular == other.specular) &&
+        (diffuse == other.diffuse);
+}
+
+bool GLight::operator!=(const GLight& other) const {
+    return !(*this == other);
+}
+
+}

@@ -1,49 +1,101 @@
-// roc 2007-03 004c3560  unit: seg_004c0000  size: 100 bytes
-// Make this compile to the exact bytes below, then: roc check 2007-03 004c3560
-//
-// 004c3560  53                   push ebx
-// 004c3561  55                   push ebp
-// 004c3562  8bd9                 mov ebx, ecx
-// 004c3564  33ed                 xor ebp, ebp
-// 004c3566  396b0c               cmp dword ptr [ebx + 0xc], ebp
-// 004c3569  7e3f                 jle 0x4c35aa
-// 004c356b  56                   push esi
-// 004c356c  57                   push edi
-// 004c356d  8d4900               lea ecx, [ecx]
-// 004c3570  8b4308               mov eax, dword ptr [ebx + 8]
-// 004c3573  8b34a8               mov esi, dword ptr [eax + ebp*4]
-// 004c3576  85f6                 test esi, esi
-// 004c3578  7426                 je 0x4c35a0
-// 004c357a  8d9b00000000         lea ebx, [ebx]
-// 004c3580  8b7e18               mov edi, dword ptr [esi + 0x18]
-// 004c3583  8d4e08               lea ecx, [esi + 8]
-// 004c3586  c701f0e57900         mov dword ptr [ecx], 0x79e5f0
-// 004c358c  e89ff5ffff           call 0x4c2b30
-// 004c3591  56                   push esi
-// 004c3592  e8c9fd0200           call 0x4f3360
-// 004c3597  83c404               add esp, 4
-// 004c359a  85ff                 test edi, edi
-// 004c359c  8bf7                 mov esi, edi
-// 004c359e  75e0                 jne 0x4c3580
-// 004c35a0  83c501               add ebp, 1
-// 004c35a3  3b6b0c               cmp ebp, dword ptr [ebx + 0xc]
-// 004c35a6  7cc8                 jl 0x4c3570
-// 004c35a8  5f                   pop edi
-// 004c35a9  5e                   pop esi
-// 004c35aa  8b4b08               mov ecx, dword ptr [ebx + 8]
-// 004c35ad  51                   push ecx
-// 004c35ae  e8cdfd0200           call 0x4f3380
-// 004c35b3  83c404               add esp, 4
-// 004c35b6  33c0                 xor eax, eax
-// 004c35b8  5d                   pop ebp
-// 004c35b9  894308               mov dword ptr [ebx + 8], eax
-// 004c35bc  89430c               mov dword ptr [ebx + 0xc], eax
-// 004c35bf  894304               mov dword ptr [ebx + 4], eax
-// 004c35c2  5b                   pop ebx
-// 004c35c3  c3                   ret 
-// library rbxgs-view/View.cpp (function ?freeMemory@?$Table@VRenderSurfaceTypes@View@RBX@@V?$Table@VVector3@G3D@@UVariations@?$MeshFactory@VCylinderAlongXMesh@View@RBX@@$00@View@RBX@@@G3D@@@G3D@@AAEXXZ)
-
 // roc-lang: cpp
 // roc-cl: 50727
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
 // roc-lib: rbxgs-view View.cpp
+
+// Candidate translation unit (score above; library headers required).
+#include "RbxView/View.h"
+#include "BrickMesh.h"
+#include "CylinderMesh.h"
+#include "SphereMesh.h"
+#include "PBBMesh.h"
+#include "Part.h"
+#include "RenderLib/AggregatingSceneManager.h"
+#include "v8datamodel/Lighting.h"
+#include "v8datamodel/DataModel.h"
+#include "v8datamodel/Workspace.h"
+#include "v8datamodel/Decal.h"
+
+namespace RBX
+{
+	namespace View
+	{
+		View::View(boost::shared_ptr<DataModel> dataModel)
+			: dataModel(dataModel),
+			  renderLibScene(new Render::RenderScene),
+			  textureManager(new G3D::TextureManager),
+			  lightingValid(false)
+		{
+			sceneManager.reset(new Render::AggregatingSceneManager(renderLibScene.get()));
+			materialFactory.reset(new MaterialFactory(textureManager.get()));
+
+			renderLibScene->setThrottle(0.0f, 0.0f, false, 0.0f);
+
+			Lighting* lighting = ServiceProvider::find<Lighting>(dataModel.get());
+			lightingChangedConnection = Lighting::event_LightingChanged.connect(lighting, boost::bind(&View::invalidateLighting, this, _1));
+
+			dataModel->getWorkspace()->visitDescendents(boost::bind(&View::onWorkspaceDescendentAdded, this, _1));
+			workspaceDescendentAddedConnection = Instance::event_descendentAdded.connect(dataModel->getWorkspace(), boost::bind(&View::onWorkspaceDescendentAdded, this, _1));
+		}
+
+		View::~View()
+		{
+			sceneManager->clear();
+
+			Lighting* unused = ServiceProvider::create<Lighting>(dataModel.get());
+
+			MeshFactory<CylinderAlongXMesh, 1>::flushCache();
+			MeshFactory<SphereMesh, 1>::flushCache();
+			MeshFactory<PBBMesh, 4>::flushCache();
+			BrickMesh::flushCache();
+		}
+
+		void View::suppressSkybox()
+		{
+			Lighting* lighting = ServiceProvider::create<Lighting>(dataModel.get());
+
+			renderLibScene->presetLighting(NULL, lighting->getSkyParameters(), lighting->getAmbientTop(), lighting->getAmbientBottom());
+			sky = NULL;
+			renderLibScene->colorClearValue = lighting->getClearColor();
+		}
+
+		Instance* View::getWorkspace()
+		{
+			return dataModel->getWorkspace();
+		}
+
+		float View::getMeshDetail() const
+		{
+			return renderLibScene->getMeshDetail();
+		}
+
+		float View::getShadingQuality() const
+		{
+			return renderLibScene->getShadingQuality();
+		}
+
+		RenderStats& View::getRenderStats()
+		{
+			return renderLibScene->renderStats;
+		}
+
+		void View::invalidateLighting(bool updateSkybox)
+		{
+			lightingValid = false;
+			if (updateSkybox)
+				sky = NULL;
+		}
+
+		void View::render(void* rd)
+		{
+			updateLighting();
+			sceneManager->prerender(0.1f); // intentional type mismatch! causes value of constant to be different
+			renderLibScene->render((G3D::RenderDevice*)rd, dataModel->getWorkspace()->getGCamera());
+		}
+
+		void View::updateSettings(float shadingQuality, float meshDetail, bool shadows, float cameraDistance)
+		{
+			renderLibScene->setThrottle(shadingQuality, meshDetail, shadows, cameraDistance);
+		}
+	}
+}

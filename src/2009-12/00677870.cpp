@@ -1,216 +1,419 @@
-// roc 2009-12 00677870  unit: RBX::GlobalSettings  size: 536 bytes
-// Make this compile to the exact bytes below, then: roc check 2009-12 00677870
-//
-// 00677870  83ec14               sub esp, 0x14
-// 00677873  56                   push esi
-// 00677874  8bf1                 mov esi, ecx
-// 00677876  837e1c00             cmp dword ptr [esi + 0x1c], 0
-// 0067787a  57                   push edi
-// 0067787b  7521                 jne 0x67789e
-// 0067787d  8b44242c             mov eax, dword ptr [esp + 0x2c]
-// 00677881  8b4e18               mov ecx, dword ptr [esi + 0x18]
-// 00677884  8b7c2420             mov edi, dword ptr [esp + 0x20]
-// 00677888  50                   push eax
-// 00677889  51                   push ecx
-// 0067788a  6a01                 push 1
-// 0067788c  57                   push edi
-// 0067788d  8bce                 mov ecx, esi
-// 0067788f  e8ecfcffff           call 0x677580
-// 00677894  8bc7                 mov eax, edi
-// 00677896  5f                   pop edi
-// 00677897  5e                   pop esi
-// 00677898  83c414               add esp, 0x14
-// 0067789b  c21000               ret 0x10
-// 0067789e  8b442424             mov eax, dword ptr [esp + 0x24]
-// 006778a2  8b5618               mov edx, dword ptr [esi + 0x18]
-// 006778a5  8b3a                 mov edi, dword ptr [edx]
-// 006778a7  8b0e                 mov ecx, dword ptr [esi]
-// 006778a9  53                   push ebx
-// 006778aa  8b1d60b79800         mov ebx, dword ptr [0x98b760]
-// 006778b0  85c0                 test eax, eax
-// 006778b2  7404                 je 0x6778b8
-// 006778b4  3bc1                 cmp eax, ecx
-// 006778b6  7406                 je 0x6778be
-// 006778b8  ffd3                 call ebx
-// 006778ba  8b442428             mov eax, dword ptr [esp + 0x28]
-// 006778be  8b54242c             mov edx, dword ptr [esp + 0x2c]
-// 006778c2  3bd7                 cmp edx, edi
-// 006778c4  7536                 jne 0x6778fc
-// 006778c6  8b7c2430             mov edi, dword ptr [esp + 0x30]
-// 006778ca  83c20c               add edx, 0xc
-// 006778cd  52                   push edx
-// 006778ce  8bcf                 mov ecx, edi
-// 006778d0  e82be30400           call 0x6c5c00
-// 006778d5  84c0                 test al, al
-// 006778d7  0f8485010000         je 0x677a62
-// 006778dd  8b44242c             mov eax, dword ptr [esp + 0x2c]
-// 006778e1  57                   push edi
-// 006778e2  8b7c2428             mov edi, dword ptr [esp + 0x28]
-// 006778e6  50                   push eax
-// 006778e7  6a01                 push 1
-// 006778e9  57                   push edi
-// 006778ea  8bce                 mov ecx, esi
-// 006778ec  e88ffcffff           call 0x677580
-// 006778f1  5b                   pop ebx
-// 006778f2  8bc7                 mov eax, edi
-// 006778f4  5f                   pop edi
-// 006778f5  5e                   pop esi
-// 006778f6  83c414               add esp, 0x14
-// 006778f9  c21000               ret 0x10
-// 006778fc  8b7e18               mov edi, dword ptr [esi + 0x18]
-// 006778ff  8b0e                 mov ecx, dword ptr [esi]
-// 00677901  85c0                 test eax, eax
-// 00677903  7404                 je 0x677909
-// 00677905  3bc1                 cmp eax, ecx
-// 00677907  7406                 je 0x67790f
-// 00677909  ffd3                 call ebx
-// 0067790b  8b54242c             mov edx, dword ptr [esp + 0x2c]
-// 0067790f  3bd7                 cmp edx, edi
-// 00677911  8b7c2430             mov edi, dword ptr [esp + 0x30]
-// 00677915  7538                 jne 0x67794f
-// 00677917  8b4e18               mov ecx, dword ptr [esi + 0x18]
-// 0067791a  8b4908               mov ecx, dword ptr [ecx + 8]
-// 0067791d  83c10c               add ecx, 0xc
-// 00677920  57                   push edi
-// 00677921  e8dae20400           call 0x6c5c00
-// 00677926  84c0                 test al, al
-// 00677928  0f8434010000         je 0x677a62
-// 0067792e  8b5618               mov edx, dword ptr [esi + 0x18]
-// 00677931  8b4208               mov eax, dword ptr [edx + 8]
-// 00677934  57                   push edi
-// 00677935  8b7c2428             mov edi, dword ptr [esp + 0x28]
-// 00677939  50                   push eax
-// 0067793a  6a00                 push 0
-// 0067793c  57                   push edi
-// 0067793d  8bce                 mov ecx, esi
-// 0067793f  e83cfcffff           call 0x677580
-// 00677944  5b                   pop ebx
-// 00677945  8bc7                 mov eax, edi
-// 00677947  5f                   pop edi
-// 00677948  5e                   pop esi
-// 00677949  83c414               add esp, 0x14
-// 0067794c  c21000               ret 0x10
-// 0067794f  83c20c               add edx, 0xc
-// 00677952  52                   push edx
-// 00677953  8bcf                 mov ecx, edi
-// 00677955  e8a6e20400           call 0x6c5c00
-// 0067795a  84c0                 test al, al
-// 0067795c  7468                 je 0x6779c6
-// 0067795e  8b4c2428             mov ecx, dword ptr [esp + 0x28]
-// 00677962  8b54242c             mov edx, dword ptr [esp + 0x2c]
-// 00677966  894c240c             mov dword ptr [esp + 0xc], ecx
-// 0067796a  8d4c240c             lea ecx, [esp + 0xc]
-// 0067796e  89542410             mov dword ptr [esp + 0x10], edx
-// 00677972  e839f5ffff           call 0x676eb0
-// 00677977  8b5c2410             mov ebx, dword ptr [esp + 0x10]
-// 0067797b  57                   push edi
-// 0067797c  8d4b0c               lea ecx, [ebx + 0xc]
-// 0067797f  e87ce20400           call 0x6c5c00
-// 00677984  84c0                 test al, al
-// 00677986  743e                 je 0x6779c6
-// 00677988  8b4308               mov eax, dword ptr [ebx + 8]
-// 0067798b  80781900             cmp byte ptr [eax + 0x19], 0
-// 0067798f  57                   push edi
-// 00677990  8b7c2428             mov edi, dword ptr [esp + 0x28]
-// 00677994  7416                 je 0x6779ac
-// 00677996  53                   push ebx
-// 00677997  6a00                 push 0
-// 00677999  57                   push edi
-// 0067799a  8bce                 mov ecx, esi
-// 0067799c  e8dffbffff           call 0x677580
-// 006779a1  5b                   pop ebx
-// 006779a2  8bc7                 mov eax, edi
-// 006779a4  5f                   pop edi
-// 006779a5  5e                   pop esi
-// 006779a6  83c414               add esp, 0x14
-// 006779a9  c21000               ret 0x10
-// 006779ac  8b4c2430             mov ecx, dword ptr [esp + 0x30]
-// 006779b0  51                   push ecx
-// 006779b1  6a01                 push 1
-// 006779b3  57                   push edi
-// 006779b4  8bce                 mov ecx, esi
-// 006779b6  e8c5fbffff           call 0x677580
-// 006779bb  5b                   pop ebx
-// 006779bc  8bc7                 mov eax, edi
-// 006779be  5f                   pop edi
-// 006779bf  5e                   pop esi
-// 006779c0  83c414               add esp, 0x14
-// 006779c3  c21000               ret 0x10
-// 006779c6  8b4c242c             mov ecx, dword ptr [esp + 0x2c]
-// 006779ca  57                   push edi
-// 006779cb  83c10c               add ecx, 0xc
-// 006779ce  e82de20400           call 0x6c5c00
-// 006779d3  84c0                 test al, al
-// 006779d5  0f8487000000         je 0x677a62
-// 006779db  8b542428             mov edx, dword ptr [esp + 0x28]
-// 006779df  8b4e18               mov ecx, dword ptr [esi + 0x18]
-// 006779e2  8b44242c             mov eax, dword ptr [esp + 0x2c]
-// 006779e6  8954240c             mov dword ptr [esp + 0xc], edx
-// 006779ea  8b16                 mov edx, dword ptr [esi]
-// 006779ec  894c2418             mov dword ptr [esp + 0x18], ecx
-// 006779f0  8d4c240c             lea ecx, [esp + 0xc]
-// 006779f4  89442410             mov dword ptr [esp + 0x10], eax
-// 006779f8  89542414             mov dword ptr [esp + 0x14], edx
-// 006779fc  e87f0becff           call 0x538580
-// 00677a01  8d442414             lea eax, [esp + 0x14]
-// 00677a05  50                   push eax
-// 00677a06  8d4c2410             lea ecx, [esp + 0x10]
-// 00677a0a  e85149f5ff           call 0x5cc360
-// 00677a0f  8b5c2410             mov ebx, dword ptr [esp + 0x10]
-// 00677a13  84c0                 test al, al
-// 00677a15  750f                 jne 0x677a26
-// 00677a17  8d4b0c               lea ecx, [ebx + 0xc]
-// 00677a1a  51                   push ecx
-// 00677a1b  8bcf                 mov ecx, edi
-// 00677a1d  e8dee10400           call 0x6c5c00
-// 00677a22  84c0                 test al, al
-// 00677a24  743c                 je 0x677a62
-// 00677a26  8b44242c             mov eax, dword ptr [esp + 0x2c]
-// 00677a2a  8b5008               mov edx, dword ptr [eax + 8]
-// 00677a2d  807a1900             cmp byte ptr [edx + 0x19], 0
-// 00677a31  57                   push edi
-// 00677a32  8b7c2428             mov edi, dword ptr [esp + 0x28]
-// 00677a36  8bce                 mov ecx, esi
-// 00677a38  7414                 je 0x677a4e
-// 00677a3a  50                   push eax
-// 00677a3b  6a00                 push 0
-// 00677a3d  57                   push edi
-// 00677a3e  e83dfbffff           call 0x677580
-// 00677a43  5b                   pop ebx
-// 00677a44  8bc7                 mov eax, edi
-// 00677a46  5f                   pop edi
-// 00677a47  5e                   pop esi
-// 00677a48  83c414               add esp, 0x14
-// 00677a4b  c21000               ret 0x10
-// 00677a4e  53                   push ebx
-// 00677a4f  6a01                 push 1
-// 00677a51  57                   push edi
-// 00677a52  e829fbffff           call 0x677580
-// 00677a57  5b                   pop ebx
-// 00677a58  8bc7                 mov eax, edi
-// 00677a5a  5f                   pop edi
-// 00677a5b  5e                   pop esi
-// 00677a5c  83c414               add esp, 0x14
-// 00677a5f  c21000               ret 0x10
-// 00677a62  57                   push edi
-// 00677a63  8d442418             lea eax, [esp + 0x18]
-// 00677a67  50                   push eax
-// 00677a68  8bce                 mov ecx, esi
-// 00677a6a  e811fdffff           call 0x677780
-// 00677a6f  8b10                 mov edx, dword ptr [eax]
-// 00677a71  8b4c2424             mov ecx, dword ptr [esp + 0x24]
-// 00677a75  5b                   pop ebx
-// 00677a76  8911                 mov dword ptr [ecx], edx
-// 00677a78  8b4004               mov eax, dword ptr [eax + 4]
-// 00677a7b  5f                   pop edi
-// 00677a7c  894104               mov dword ptr [ecx + 4], eax
-// 00677a7f  8bc1                 mov eax, ecx
-// 00677a81  5e                   pop esi
-// 00677a82  83c414               add esp, 0x14
-// 00677a85  c21000               ret 0x10
-// library openrbx-client/App\v8xml\XmlElement.cpp (function ?insert@?$_Tree@V?$_Tmap_traits@VInstanceHandle@RBX@@HU?$less@VInstanceHandle@RBX@@@std@@V?$allocator@U?$pair@$$CBVInstanceHandle@RBX@@H@std@@@4@$0A@@std@@@std@@QAE?AViterator@12@Vconst_iterator@12@ABU?$pair@$$CBVInstanceHandle@RBX@@H@2@@Z)
-
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
 // roc-lib: openrbx-client-dll App/v8xml/XmlElement.cpp
+
+// Candidate translation unit (score above; library headers required).
+#include "v8xml/XmlElement.h"
+
+#include "util/ContentProvider.h"
+#include "util/Handle.h"
+#include "util/Name.h"
+#include "util/Utilities.h"
+#include "v8xml/XmlSerializer.h"
+
+#include <cstdio>
+
+const RBX::Name& value_IDREF_null = RBX::Name::declare("null", 1);
+const RBX::Name& value_IDREF_nil = RBX::Name::declare("nil", 2);
+const RBX::Name& name_xsinil = RBX::Name::declare("xsi:nil", 3);
+const RBX::Name& name_xsitype = RBX::Name::declare("xsi:type", 4);
+const RBX::Name& tag_xmlnsxsi = RBX::Name::declare("xmlns:xsi", 5);
+const RBX::Name& name_root = RBX::Name::declare("root", 6);
+const RBX::Name& name_referent = RBX::Name::declare("referent", 7);
+const RBX::Name& name_DeleteItem = RBX::Name::declare("DeleteItem", 8);
+const RBX::Name& tag_roblox = RBX::Name::declare("roblox", 9);
+const RBX::Name& tag_version = RBX::Name::declare("version", 10);
+const RBX::Name& tag_External = RBX::Name::declare("External", 11);
+const RBX::Name& name_Ref = RBX::Name::declare("Ref", 12);
+const RBX::Name& name_token = RBX::Name::declare("token", 13);
+const RBX::Name& name_name = RBX::Name::declare("name", 14);
+const RBX::Name& tag_Refs = RBX::Name::declare("Refs", 21);
+const RBX::Name& tag_X = RBX::Name::declare("X", 23);
+const RBX::Name& tag_Y = RBX::Name::declare("Y", 24);
+const RBX::Name& tag_Z = RBX::Name::declare("Z", 25);
+const RBX::Name& tag_R00 = RBX::Name::declare("R00", 26);
+const RBX::Name& tag_R01 = RBX::Name::declare("R01", 27);
+const RBX::Name& tag_R02 = RBX::Name::declare("R02", 28);
+const RBX::Name& tag_R10 = RBX::Name::declare("R10", 29);
+const RBX::Name& tag_R11 = RBX::Name::declare("R11", 30);
+const RBX::Name& tag_R12 = RBX::Name::declare("R12", 31);
+const RBX::Name& tag_R20 = RBX::Name::declare("R20", 32);
+const RBX::Name& tag_R21 = RBX::Name::declare("R21", 33);
+const RBX::Name& tag_R22 = RBX::Name::declare("R22", 34);
+const RBX::Name& tag_R = RBX::Name::declare("R", 35);
+const RBX::Name& tag_G = RBX::Name::declare("G", 36);
+const RBX::Name& tag_B = RBX::Name::declare("B", 37);
+const RBX::Name& tag_class = RBX::Name::declare("class", 38);
+const RBX::Name& tag_Item = RBX::Name::declare("Item", 39);
+const RBX::Name& tag_Properties = RBX::Name::declare("Properties", 40);
+const RBX::Name& tag_Feature = RBX::Name::declare("Feature", 41);
+const RBX::Name& tag_hash = RBX::Name::declare("hash", 45);
+const RBX::Name& tag_null = RBX::Name::lookup("null");
+const RBX::Name& tag_mimeType = RBX::Name::declare("mimeType", 48);
+const RBX::Name& tag_xsinoNamespaceSchemaLocation = RBX::Name::declare("xsi:noNamespaceSchemaLocation", 49);
+
+// FUNCTION: WEBSERVICE 0x10084ac0
+XmlNameValuePair::XmlNameValuePair(const RBX::Name& tag, const char* text) : tag(tag), valueType(STRING)
+{
+	stringValue = new std::string(text);
+}
+
+// FUNCTION: WEBSERVICE 0x1008efe0
+bool XmlNameValuePair::isValueEqual(const RBX::Name* value) const
+{
+	switch (valueType) {
+	case STRING: {
+		const std::string& text = *stringValue;
+
+		return value->name.compare(text) == 0;
+	}
+	case NAME:
+		return value == nameValue;
+	default:
+		return false;
+	}
+}
+
+// FUNCTION: WEBSERVICE 0x1008f020
+template <>
+bool XmlNameValuePair::isValueType<RBX::ContentId>() const
+{
+	return valueType == CONTENTID;
+}
+
+// FUNCTION: WEBSERVICE 0x1008f030
+template <>
+bool XmlNameValuePair::isValueType<std::string>() const
+{
+	return valueType == STRING;
+}
+
+// FUNCTION: WEBSERVICE 0x1008f040
+bool XmlNameValuePair::getValue(std::string& value) const
+{
+	if (valueType == STRING) {
+		value = *stringValue;
+		return true;
+	}
+
+	return false;
+}
+
+// FUNCTION: WEBSERVICE 0x1008f060
+const XmlElement* XmlElement::findFirstChildByTag(const RBX::Name& _tag) const
+{
+	for (const XmlElement* child = firstChild(); child != NULL; child = child->nextSibling()) {
+		if (&child->getTag() == &_tag) {
+			return child;
+		}
+	}
+
+	return NULL;
+}
+
+// FUNCTION: WEBSERVICE 0x1008f080
+const XmlElement* XmlElement::findNextChildWithSameTag(const XmlElement* node) const
+{
+	for (const XmlElement* next = node->nextSibling(); next != NULL; next = next->nextSibling()) {
+		if (&next->getTag() == &node->getTag()) {
+			return next;
+		}
+	}
+
+	return NULL;
+}
+
+// FUNCTION: WEBSERVICE 0x1008f0e0
+const XmlAttribute* XmlElement::findAttribute(const RBX::Name& name) const
+{
+	for (const XmlAttribute* attribute = attributes.firstChild(); attribute != NULL;
+		 attribute = attribute->nextSibling()) {
+		if (&attribute->getTag() == &name) {
+			return attribute;
+		}
+	}
+
+	return NULL;
+}
+
+XmlAttribute* XmlElement::findAttribute(const RBX::Name& name)
+{
+	for (XmlAttribute* attribute = attributes.firstChild(); attribute != NULL; attribute = attribute->nextSibling()) {
+		if (&attribute->getTag() == &name) {
+			return attribute;
+		}
+	}
+
+	return NULL;
+}
+
+// FUNCTION: WEBSERVICE 0x1008f100
+void XmlNameValuePair::clearValue() const
+{
+	switch (valueType) {
+	case STRING:
+		delete stringValue;
+		break;
+	case CONTENTID:
+		delete contentIdValue;
+		break;
+	case HANDLE:
+		delete handleValue;
+		break;
+	}
+
+	valueType = NONE;
+}
+
+// FUNCTION: WEBSERVICE 0x1008f190
+bool XmlNameValuePair::getValue(const RBX::Name*& value) const
+{
+	if (valueType == NAME) {
+		value = nameValue;
+		return true;
+	}
+
+	if (valueType == STRING) {
+		value = &RBX::Name::declare(stringValue->c_str(), -1);
+
+		XmlNameValuePair* self = const_cast<XmlNameValuePair*>(this);
+
+		self->clearValue();
+
+		self->nameValue = value;
+		self->valueType = NAME;
+
+		return true;
+	}
+
+	return false;
+}
+
+// FUNCTION: WEBSERVICE 0x1008f200
+bool XmlNameValuePair::getValue(RBX::ContentId& value) const
+{
+	if (valueType == CONTENTID) {
+		value = *contentIdValue;
+		return true;
+	}
+
+	if (valueType == STRING) {
+		value = RBX::ContentId(*stringValue);
+
+		XmlNameValuePair* self = const_cast<XmlNameValuePair*>(this);
+
+		self->clearValue();
+
+		self->contentIdValue = new RBX::ContentId(value);
+		self->valueType = CONTENTID;
+
+		return true;
+	}
+
+	return false;
+}
+
+// FUNCTION: WEBSERVICE 0x1008f320
+bool XmlNameValuePair::getValue(int& value) const
+{
+	if (valueType == INT) {
+		value = intValue;
+		return true;
+	}
+
+	if (valueType == STRING && RBX::StringConverter<int>::convertToValue(*stringValue, value)) {
+		XmlNameValuePair* self = const_cast<XmlNameValuePair*>(this);
+
+		self->clearValue();
+
+		self->intValue = value;
+		self->valueType = INT;
+
+		return true;
+	}
+
+	return false;
+}
+
+// FUNCTION: WEBSERVICE 0x1008f380
+bool XmlNameValuePair::getValue(unsigned int& value) const
+{
+	if (valueType == UINT) {
+		value = uintValue;
+		return true;
+	}
+
+	if (valueType == STRING && RBX::StringConverter<unsigned int>::convertToValue(*stringValue, value)) {
+		XmlNameValuePair* self = const_cast<XmlNameValuePair*>(this);
+
+		self->clearValue();
+
+		self->uintValue = value;
+		self->valueType = UINT;
+
+		return true;
+	}
+
+	return false;
+}
+
+// FUNCTION: WEBSERVICE 0x1008f3e0
+bool XmlNameValuePair::getValue(bool& value) const
+{
+	if (valueType == BOOL) {
+		value = boolValue;
+		return true;
+	}
+
+	if (valueType == STRING && RBX::StringConverter<bool>::convertToValue(*stringValue, value)) {
+		XmlNameValuePair* self = const_cast<XmlNameValuePair*>(this);
+
+		self->clearValue();
+
+		self->boolValue = value;
+		self->valueType = BOOL;
+
+		return true;
+	}
+
+	return false;
+}
+
+// FUNCTION: WEBSERVICE 0x1008f440
+bool XmlNameValuePair::getValue(float& value) const
+{
+	if (valueType == FLOAT) {
+		value = floatValue;
+		return true;
+	}
+
+	if (valueType == STRING && RBX::StringConverter<float>::convertToValue(*stringValue, value)) {
+		XmlNameValuePair* self = const_cast<XmlNameValuePair*>(this);
+
+		self->clearValue();
+
+		self->floatValue = value;
+		self->valueType = FLOAT;
+
+		return true;
+	}
+
+	return false;
+}
+
+// STUB: WEBSERVICE 0x1008f4a0
+bool XmlNameValuePair::getValue(double& value) const
+{
+	if (valueType == DOUBLE) {
+		value = doubleValue;
+		return true;
+	}
+
+	if (valueType == FLOAT) {
+		value = floatValue;
+	}
+	else if (valueType != STRING || !RBX::StringConverter<double>::convertToValue(*stringValue, value)) {
+		return false;
+	}
+
+	XmlNameValuePair* self = const_cast<XmlNameValuePair*>(this);
+
+	self->clearValue();
+
+	self->doubleValue = value;
+	self->valueType = DOUBLE;
+
+	return true;
+}
+
+// STUB: WEBSERVICE 0x1008f510
+bool XmlNameValuePair::getValue(RBX::InstanceHandle& value) const
+{
+	XmlNameValuePair* self = const_cast<XmlNameValuePair*>(this);
+
+	if (valueType == NAME && nameValue == &value_IDREF_null) {
+		self->clearValue();
+
+		self->handleValue = new RBX::InstanceHandle(NULL);
+		self->valueType = HANDLE;
+	}
+	else if (valueType == STRING && value_IDREF_null.name.compare(*stringValue) == 0) {
+		self->clearValue();
+
+		self->handleValue = new RBX::InstanceHandle(NULL);
+		self->valueType = HANDLE;
+	}
+	else if (valueType == STRING && *stringValue == "") {
+		self->clearValue();
+
+		self->handleValue = new RBX::InstanceHandle(NULL);
+		self->valueType = HANDLE;
+	}
+
+	if (valueType == HANDLE) {
+		value = *handleValue;
+		return true;
+	}
+
+	return false;
+}
+
+// FUNCTION: WEBSERVICE 0x1008f640
+bool XmlElement::isXsiNil() const
+{
+	const XmlAttribute* attribute = findAttribute(name_xsinil);
+
+	bool isNil;
+
+	return attribute != NULL && attribute->getValue(isNil) && isNil;
+}
+
+// STUB: WEBSERVICE 0x1008fe70
+std::string XmlNameValuePair::toString(XmlWriter* writer) const
+{
+	switch (valueType) {
+
+	case BOOL:
+		return RBX::StringConverter<bool>::convertToString(boolValue);
+
+	case INT:
+		return RBX::StringConverter<int>::convertToString(intValue);
+
+	case UINT:
+		return RBX::StringConverter<unsigned int>::convertToString(uintValue);
+
+	case FLOAT:
+		return RBX::StringConverter<float>::convertToString(floatValue);
+
+	case DOUBLE:
+		return RBX::StringConverter<double>::convertToString(doubleValue);
+
+	case NAME:
+		return nameValue->name;
+
+	case HANDLE:
+		if (!handleValue->getTarget()) {
+			return value_IDREF_null.name;
+		}
+		else {
+			char buffer[32];
+
+			sprintf(buffer, "RBX%d", writer->getHandleIndex(*handleValue));
+
+			return buffer;
+		}
+
+	case STRING:
+		return *stringValue;
+
+	case CONTENTID:
+		return contentIdValue->toString();
+
+	case NONE:
+		return "";
+
+	default:
+		return "";
+	}
+}

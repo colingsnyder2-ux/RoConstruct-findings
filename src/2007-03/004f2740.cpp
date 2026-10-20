@@ -1,40 +1,77 @@
-// roc 2007-03 004f2740  unit: seg_004f0000  size: 75 bytes
-// Make this compile to the exact bytes below, then: roc check 2007-03 004f2740
-//
-// 004f2740  51                   push ecx
-// 004f2741  8b442420             mov eax, dword ptr [esp + 0x20]
-// 004f2745  d9400c               fld dword ptr [eax + 0xc]
-// 004f2748  8b54241c             mov edx, dword ptr [esp + 0x1c]
-// 004f274c  56                   push esi
-// 004f274d  8b74240c             mov esi, dword ptr [esp + 0xc]
-// 004f2751  51                   push ecx
-// 004f2752  8b4808               mov ecx, dword ptr [eax + 8]
-// 004f2755  d91c24               fstp dword ptr [esp]
-// 004f2758  51                   push ecx
-// 004f2759  8b08                 mov ecx, dword ptr [eax]
-// 004f275b  52                   push edx
-// 004f275c  8b5004               mov edx, dword ptr [eax + 4]
-// 004f275f  8b442428             mov eax, dword ptr [esp + 0x28]
-// 004f2763  51                   push ecx
-// 004f2764  8b4c2420             mov ecx, dword ptr [esp + 0x20]
-// 004f2768  52                   push edx
-// 004f2769  8b54242c             mov edx, dword ptr [esp + 0x2c]
-// 004f276d  50                   push eax
-// 004f276e  8b44242c             mov eax, dword ptr [esp + 0x2c]
-// 004f2772  51                   push ecx
-// 004f2773  52                   push edx
-// 004f2774  50                   push eax
-// 004f2775  56                   push esi
-// 004f2776  c744242c00000000     mov dword ptr [esp + 0x2c], 0
-// 004f277e  e80deef7ff           call 0x471590
-// 004f2783  83c428               add esp, 0x28
-// 004f2786  8bc6                 mov eax, esi
-// 004f2788  5e                   pop esi
-// 004f2789  59                   pop ecx
-// 004f278a  c3                   ret 
-// library rbxgs-render/DepthBlur.cpp (function ?createEmpty@Texture@G3D@@SA?AV?$ReferenceCountedPointer@VTexture@G3D@@@2@ABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@HHPBVTextureFormat@2@W4Dimension@12@ABVSettings@12@@Z)
-
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
 // roc-lib: rbxgs-render DepthBlur.cpp
+
+// Candidate translation unit (score above; library headers required).
+#include "RenderLib/DepthBlur.h"
+#include <GLG3D/Draw.h>
+#include <GLG3D/GLCaps.h>
+
+namespace RBX
+{
+	namespace Render
+	{
+		DepthBlur::DepthBlur()
+		{
+			if (G3D::GLCaps::supports_GL_ARB_shader_objects() &&
+				G3D::GLCaps::supports_GL_ARB_shading_language_100() &&
+				G3D::GLCaps::supports_GL_EXT_texture_rectangle())
+			{
+				shader = G3D::Shader::fromStrings(
+					"", 
+					STR(
+					uniform sampler2D depth; 
+					uniform sampler2D color; 
+					void main(void) { 
+						float d = texture2D(depth, gl_TexCoord[0].xy).r; 
+						float b = max(0.0, d - 0.99) * 100.0; 
+						vec2 s = g3d_sampler2DInvSize(color) * b * 2.0; 
+						vec3 c0 = texture2D(color, gl_TexCoord[0].xy + vec2( s.x, s.y)).rgb; 
+						vec3 c1 = texture2D(color, gl_TexCoord[0].xy + vec2(-s.x, s.y)).rgb; 
+						vec3 c2 = texture2D(color, gl_TexCoord[0].xy + vec2( s.x, -s.y)).rgb; 
+						vec3 c3 = texture2D(color, gl_TexCoord[0].xy + vec2(-s.x, -s.y)).rgb; 
+						vec3 c4 = texture2D(color, gl_TexCoord[0].xy + vec2( 0, s.y)).rgb; 
+						vec3 c5 = texture2D(color, gl_TexCoord[0].xy + vec2(-s.x, 0)).rgb; 
+						vec3 c6 = texture2D(color, gl_TexCoord[0].xy + vec2( 0, -s.y)).rgb; 
+						vec3 c7 = texture2D(color, gl_TexCoord[0].xy + vec2( s.x, 0)).rgb; 
+						vec3 c8 = texture2D(color, gl_TexCoord[0].xy).rgb; 
+						gl_FragColor.rgb = (c0 + c1 + c2 + c3 + c4 + c5 + c6 + c7 + c8) / 9.0; 
+						gl_FragColor.a = 1.0; 
+					}
+					)
+				);
+
+				shader->setPreserveState(false);
+			}
+		}
+
+		void DepthBlur::apply(G3D::RenderDevice* rd)
+		{
+			if (shader.notNull())
+			{
+				rd->push2D();
+				G3D::Rect2D screenRect = rd->getViewport();
+
+				allocateTextures(screenRect);
+				depth->copyFromScreen(screenRect);
+				color->copyFromScreen(screenRect);
+				rd->setShader(shader);
+			
+				G3D::Draw::fastRect2D(screenRect, rd);
+				rd->pop2D();
+			}
+		}
+
+		void DepthBlur::allocateTextures(const G3D::Rect2D& screenRect)
+		{
+			if (depth.isNull() || depth->vector2Bounds() != screenRect.wh())
+			{
+				depth = G3D::Texture::createEmpty("Depth Buffer", screenRect.width(), screenRect.height(), G3D::TextureFormat::depth(0), G3D::Texture::DIM_2D_NPOT, G3D::Texture::Parameters::video());
+				color = G3D::Texture::createEmpty("Color Buffer", screenRect.width(), screenRect.height(), G3D::TextureFormat::RGB8, G3D::Texture::DIM_2D_NPOT, G3D::Texture::Parameters::video());
+				shader->args.set("depth", depth);
+				shader->args.set("color", color);
+			}
+		}
+	}
+}

@@ -1,31 +1,152 @@
-// roc 2008-06 0056cd80  unit: G3D::VColor3::?$holder  size: 100 bytes
-// Make this compile to the exact bytes below, then: roc check 2008-06 0056cd80
-//
-// 0056cd80  64a100000000         mov eax, dword ptr fs:[0]
-// 0056cd86  6aff                 push -1
-// 0056cd88  68befd7c00           push 0x7cfdbe
-// 0056cd8d  50                   push eax
-// 0056cd8e  b801000000           mov eax, 1
-// 0056cd93  64892500000000       mov dword ptr fs:[0], esp
-// 0056cd9a  8405f44b9700         test byte ptr [0x974bf4], al
-// 0056cda0  752f                 jne 0x56cdd1
-// 0056cda2  0905f44b9700         or dword ptr [0x974bf4], eax
-// 0056cda8  6844bf9200           push 0x92bf44
-// 0056cdad  68b0f68200           push 0x82f6b0
-// 0056cdb2  b9e44b9700           mov ecx, 0x974be4
-// 0056cdb7  c744241000000000     mov dword ptr [esp + 0x10], 0
-// 0056cdbf  e8ccefffff           call 0x56bd90
-// 0056cdc4  6880d27f00           push 0x7fd280
-// 0056cdc9  e8e1491300           call 0x6a17af
-// 0056cdce  83c404               add esp, 4
-// 0056cdd1  8b0c24               mov ecx, dword ptr [esp]
-// 0056cdd4  b8e44b9700           mov eax, 0x974be4
-// 0056cdd9  64890d00000000       mov dword ptr fs:[0], ecx
-// 0056cde0  83c40c               add esp, 0xc
-// 0056cde3  c3                   ret 
-// library openrbx-client/App\v8tree\enumproperty.cpp (function ??$singleton@VContentId@RBX@@@Type@Reflection@RBX@@SAABV012@XZ)
-
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
 // roc-lib: openrbx-client App/v8tree/enumproperty.cpp
+
+// Candidate translation unit (score above; library headers required).
+#include "reflection/enumconverter.h"
+#include "reflection/property.h"
+#include "util/ContentProvider.h"
+#include "util/NormalId.h"
+#include "v8datamodel/BrickColor.h"
+#include "v8tree/Instance.h"
+
+#include <G3D/Color3.h>
+#include <G3D/Vector3.h>
+#include <string>
+#include <vector>
+
+namespace RBX {
+namespace Reflection {
+
+// FUNCTION: WEBSERVICE 0x1003ef60
+template <>
+const Type& Type::singleton<boost::shared_ptr<DescribedBase> >()
+{
+	static Type type("Object", typeid(boost::shared_ptr<DescribedBase>));
+
+	return type;
+}
+
+// FUNCTION: WEBSERVICE 0x1003efd0
+template <>
+const Type& Type::singleton<boost::shared_ptr<Instance> >()
+{
+	static Type type("Instance", typeid(boost::shared_ptr<Instance>));
+
+	return type;
+}
+
+// FUNCTION: WEBSERVICE 0x1003f040
+template <>
+const Type& Type::singleton<boost::shared_ptr<const std::vector<boost::shared_ptr<Instance> > > >()
+{
+	static Type type("Objects", typeid(boost::shared_ptr<const std::vector<boost::shared_ptr<Instance> > >));
+
+	return type;
+}
+
+// FUNCTION: WEBSERVICE 0x1003f0b0
+template <>
+const Type& Type::singleton<int>()
+{
+	static Type type("int", typeid(int));
+
+	return type;
+}
+
+// FUNCTION: WEBSERVICE 0x1003f120
+template <>
+const Type& Type::singleton<bool>()
+{
+	static Type type("bool", typeid(bool));
+
+	return type;
+}
+
+// FUNCTION: WEBSERVICE 0x1003f190
+template <>
+const Type& Type::singleton<float>()
+{
+	static Type type("float", typeid(float));
+
+	return type;
+}
+
+// FUNCTION: WEBSERVICE 0x1003f200
+template <>
+const Type& Type::singleton<double>()
+{
+	static Type type("double", typeid(double));
+
+	return type;
+}
+
+// FUNCTION: WEBSERVICE 0x1003f270
+template <>
+const Type& Type::singleton<ContentId>()
+{
+	static Type type("Content", typeid(ContentId));
+
+	return type;
+}
+
+// FUNCTION: WEBSERVICE 0x1003f2e0
+template <>
+const Type& Type::singleton<std::string>()
+{
+	static Type type("string", typeid(std::string));
+
+	return type;
+}
+
+// FUNCTION: WEBSERVICE 0x1003f350
+template <>
+const Type& Type::singleton<G3D::Vector3>()
+{
+	static Type type("Vector3", typeid(G3D::Vector3));
+
+	return type;
+}
+
+// FUNCTION: WEBSERVICE 0x1003f3c0
+template <>
+const Type& Type::singleton<G3D::Color3>()
+{
+	static Type type("Color3", typeid(G3D::Color3));
+
+	return type;
+}
+
+// FUNCTION: WEBSERVICE 0x1003f430
+template <>
+const Type& Type::singleton<std::vector<Value> >()
+{
+	static Type type("Table", typeid(std::vector<Value>));
+
+	return type;
+}
+
+// FUNCTION: WEBSERVICE 0x1003f5c0
+template <>
+const Type& Type::singleton<BrickColor>()
+{
+	static Type type("BrickColor", typeid(BrickColor), "int");
+
+	return type;
+}
+
+// FUNCTION: WEBSERVICE 0x100421f0
+template <>
+EnumDesc<NormalId>::EnumDesc() : EnumDescriptor("NormalId", typeid(NormalId))
+{
+	addPair(NORM_Y, "Top");
+	addPair(NORM_Y_NEG, "Bottom");
+	addPair(NORM_Z, "Back");
+	addPair(NORM_Z_NEG, "Front");
+	addPair(NORM_X, "Right");
+	addPair(NORM_X_NEG, "Left");
+}
+
+} // namespace Reflection
+} // namespace RBX

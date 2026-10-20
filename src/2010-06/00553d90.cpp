@@ -1,102 +1,723 @@
 // from server: 100% by auto
-// roc 2010-06 00553d90  unit: seg_00550000  size: 257 bytes
-// Make this compile to the exact bytes below, then: roc check 2010-06 00553d90
-//
-// 00553d90  8b442404             mov eax, dword ptr [esp + 4]
-// 00553d94  53                   push ebx
-// 00553d95  55                   push ebp
-// 00553d96  56                   push esi
-// 00553d97  8bf1                 mov esi, ecx
-// 00553d99  8b6e04               mov ebp, dword ptr [esi + 4]
-// 00553d9c  894604               mov dword ptr [esi + 4], eax
-// 00553d9f  f605489fc00001       test byte ptr [0xc09f48], 1
-// 00553da6  57                   push edi
-// 00553da7  7514                 jne 0x553dbd
-// 00553da9  830d489fc00001       or dword ptr [0xc09f48], 1
-// 00553db0  bf0a000000           mov edi, 0xa
-// 00553db5  893d449fc000         mov dword ptr [0xc09f44], edi
-// 00553dbb  eb06                 jmp 0x553dc3
-// 00553dbd  8b3d449fc000         mov edi, dword ptr [0xc09f44]
-// 00553dc3  8b4e04               mov ecx, dword ptr [esi + 4]
-// 00553dc6  8b5608               mov edx, dword ptr [esi + 8]
-// 00553dc9  33db                 xor ebx, ebx
-// 00553dcb  3bca                 cmp ecx, edx
-// 00553dcd  7e6b                 jle 0x553e3a
-// 00553dcf  3bd3                 cmp edx, ebx
-// 00553dd1  7509                 jne 0x553ddc
-// 00553dd3  894608               mov dword ptr [esi + 8], eax
-// 00553dd6  55                   push ebp
-// 00553dd7  e981000000           jmp 0x553e5d
-// 00553ddc  3bcf                 cmp ecx, edi
-// 00553dde  7d06                 jge 0x553de6
-// 00553de0  897e08               mov dword ptr [esi + 8], edi
-// 00553de3  55                   push ebp
-// 00553de4  eb77                 jmp 0x553e5d
-// 00553de6  f30f10050834a100     movss xmm0, dword ptr [0xa13408]
-// 00553dee  8bc2                 mov eax, edx
-// 00553df0  03c0                 add eax, eax
-// 00553df2  03c0                 add eax, eax
-// 00553df4  3d801a0600           cmp eax, 0x61a80
-// 00553df9  760a                 jbe 0x553e05
-// 00553dfb  f30f10050434a100     movss xmm0, dword ptr [0xa13404]
-// 00553e03  eb0f                 jmp 0x553e14
-// 00553e05  3d00fa0000           cmp eax, 0xfa00
-// 00553e0a  7608                 jbe 0x553e14
-// 00553e0c  f30f1005d427a100     movss xmm0, dword ptr [0xa127d4]
-// 00553e14  8bc2                 mov eax, edx
-// 00553e16  f30f2ac8             cvtsi2ss xmm1, eax
-// 00553e1a  f30f59c8             mulss xmm1, xmm0
-// 00553e1e  f30f2cd1             cvttss2si edx, xmm1
-// 00553e22  2bd0                 sub edx, eax
-// 00553e24  8d040a               lea eax, [edx + ecx]
-// 00553e27  894608               mov dword ptr [esi + 8], eax
-// 00553e2a  8b0d449fc000         mov ecx, dword ptr [0xc09f44]
-// 00553e30  3bc1                 cmp eax, ecx
-// 00553e32  7d03                 jge 0x553e37
-// 00553e34  894e08               mov dword ptr [esi + 8], ecx
-// 00553e37  55                   push ebp
-// 00553e38  eb23                 jmp 0x553e5d
-// 00553e3a  b856555555           mov eax, 0x55555556
-// 00553e3f  f7ea                 imul edx
-// 00553e41  8bc2                 mov eax, edx
-// 00553e43  c1e81f               shr eax, 0x1f
-// 00553e46  03c2                 add eax, edx
-// 00553e48  3bc8                 cmp ecx, eax
-// 00553e4a  7f18                 jg 0x553e64
-// 00553e4c  385c2418             cmp byte ptr [esp + 0x18], bl
-// 00553e50  7412                 je 0x553e64
-// 00553e52  3bcf                 cmp ecx, edi
-// 00553e54  7e0e                 jle 0x553e64
-// 00553e56  3bcd                 cmp ecx, ebp
-// 00553e58  7c02                 jl 0x553e5c
-// 00553e5a  8bcd                 mov ecx, ebp
-// 00553e5c  51                   push ecx
-// 00553e5d  8bce                 mov ecx, esi
-// 00553e5f  e8bc45f3ff           call 0x488420
-// 00553e64  3b6e04               cmp ebp, dword ptr [esi + 4]
-// 00553e67  8bcd                 mov ecx, ebp
-// 00553e69  7d1f                 jge 0x553e8a
-// 00553e6b  eb03                 jmp 0x553e70
-// 00553e6d  8d4900               lea ecx, [ecx]
-// 00553e70  8b16                 mov edx, dword ptr [esi]
-// 00553e72  8d048a               lea eax, [edx + ecx*4]
-// 00553e75  3bc3                 cmp eax, ebx
-// 00553e77  740b                 je 0x553e84
-// 00553e79  8818                 mov byte ptr [eax], bl
-// 00553e7b  885801               mov byte ptr [eax + 1], bl
-// 00553e7e  885802               mov byte ptr [eax + 2], bl
-// 00553e81  885803               mov byte ptr [eax + 3], bl
-// 00553e84  41                   inc ecx
-// 00553e85  3b4e04               cmp ecx, dword ptr [esi + 4]
-// 00553e88  7ce6                 jl 0x553e70
-// 00553e8a  5f                   pop edi
-// 00553e8b  5e                   pop esi
-// 00553e8c  5d                   pop ebp
-// 00553e8d  5b                   pop ebx
-// 00553e8e  c20800               ret 8
-// library g3d-6.09/G3Dcpp\GImage_bmp.cpp (function ?resize@?$Array@VColor4uint8@G3D@@@G3D@@QAEXH_N@Z)
-
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD /arch:SSE2 /fp:fast
 // roc-lib: g3d-6.09 G3Dcpp/GImage_bmp.cpp
+
+// Candidate translation unit (score above; library headers required).
+/**
+  @file GImage_bmp.cpp
+  @author Morgan McGuire, morgan@graphics3d.com
+  @created 2002-05-27
+  @edited  2006-05-10
+ */
+#include "G3D/platform.h"
+#include "G3D/GImage.h"
+#include "G3D/BinaryInput.h"
+#include "G3D/BinaryOutput.h"
+#include "G3D/Log.h"
+
+namespace G3D {
+
+#ifndef G3D_WIN32
+/**
+ This is used by the Windows bitmap I/O.
+ */
+static const int BI_RGB = 0;
+#endif
+
+void GImage::encodeBMP(
+    BinaryOutput&       out) const {
+
+    debugAssert(channels == 1 || channels == 3);
+    out.setEndian(G3D_LITTLE_ENDIAN);
+
+    uint8 red;
+    uint8 green;
+    uint8 blue;
+    int pixelBufferSize = width * height * 3;
+    int fileHeaderSize = 14;
+    int infoHeaderSize = 40;
+    int BMScanWidth;
+    int BMPadding;
+
+    // First write the BITMAPFILEHEADER
+    //
+    //  WORD    bfType; 
+    //  DWORD   bfSize; 
+    //  WORD    bfReserved1; 
+    //  WORD    bfReserved2; 
+    //  DWORD   bfOffBits; 
+
+    // Type
+    out.writeUInt8('B');
+    out.writeUInt8('M');
+
+    // File size
+    out.writeUInt32(fileHeaderSize + infoHeaderSize + pixelBufferSize);
+
+    // Two reserved fields set to zero
+    out.writeUInt16(0);
+    out.writeUInt16(0);
+
+	// The offset, in bytes, from the BITMAPFILEHEADER structure
+    // to the bitmap bits.
+    out.writeUInt32(infoHeaderSize + fileHeaderSize);
+
+    // Now the BITMAPINFOHEADER
+    //
+    //  DWORD  biSize; 
+    //  LONG   biWidth; 
+    //  LONG   biHeight; 
+    //  WORD   biPlanes; 
+    //  WORD   biBitCount 
+    //  DWORD  biCompression; 
+    //  DWORD  biSizeImage; 
+    //  LONG   biXPelsPerMeter; 
+    //  LONG   biYPelsPerMeter; 
+    //  DWORD  biClrUsed; 
+    //  DWORD  biClrImportant; 
+
+    // Size of the info header
+    out.writeUInt32(infoHeaderSize);
+ 
+    // Width and height of the image
+	out.writeUInt32(width);
+    out.writeUInt32(height);
+
+    // Planes ("must be set to 1")
+    out.writeUInt16(1);
+
+    // BitCount and CompressionType
+    out.writeUInt16(24);
+    out.writeUInt32(BI_RGB);
+
+    // Image size ("may be zero for BI_RGB bitmaps")
+    out.writeUInt32(0);
+
+    // biXPelsPerMeter
+    out.writeUInt32(0);
+    // biYPelsPerMeter
+    out.writeUInt32(0);
+
+    // biClrUsed
+    out.writeUInt32(0); 
+
+    // biClrImportant
+    out.writeUInt32(0); 
+    
+    BMScanWidth = width * 3;
+
+    if (BMScanWidth & 3) {
+        BMPadding = 4 - (BMScanWidth & 3);
+    } else {
+        BMPadding = 0;
+    }
+
+    int hStart = height - 1;
+    int hEnd   = -1;
+    int hDir   = -1;
+    int dest;
+
+    // Write the pixel data
+    for (int h = hStart; h != hEnd; h += hDir) {
+        dest = channels * h * width;
+        for (int w = 0; w < width; ++w) {
+
+            if (channels == 3) {
+                red   = _byte[dest];
+                green = _byte[dest + 1];
+                blue  = _byte[dest + 2];
+            } else {
+                red   = _byte[dest];
+                green = _byte[dest];
+                blue  = _byte[dest];
+            }
+
+            out.writeUInt8(blue);
+            out.writeUInt8(green);
+            out.writeUInt8(red);
+
+            dest += channels;
+        }
+
+        if (BMPadding) {
+            out.skip(2);
+        }
+    }
+}
+
+
+void GImage::decodeBMP(
+    BinaryInput&            input) {
+
+    // The BMP decoding uses these flags.
+    static const uint16 PICTURE_NONE               = 0x0000;
+    static const uint16 PICTURE_BITMAP             = 0x1000;
+
+    // Compression Flags
+    static const uint16 PICTURE_UNCOMPRESSED       = 0x0100;
+    static const uint16 PICTURE_MONOCHROME         = 0x0001;
+    static const uint16 PICTURE_4BIT               = 0x0002;
+    static const uint16 PICTURE_8BIT               = 0x0004;
+    static const uint16 PICTURE_16BIT              = 0x0008;
+    static const uint16 PICTURE_24BIT              = 0x0010;
+    static const uint16 PICTURE_32BIT              = 0x0020;
+
+    (void)PICTURE_16BIT;
+    (void)PICTURE_32BIT;
+
+    // This is a simple BMP loader that can handle uncompressed BMP files.
+    // Verify this is a BMP file by looking for the BM tag.
+    input.reset();
+    std::string tag = input.readString(2);
+    if (tag != "BM") {
+        throw Error("Not a BMP file", input.getFilename());
+    }
+
+    channels = 3;
+	// Skip to the BITMAPINFOHEADER's width and height
+	input.skip(16);
+
+    width  = input.readUInt32();
+    height = input.readUInt32();
+
+	// Skip to the bit count and compression type
+	input.skip(2);
+
+    uint16 bitCount        = input.readUInt16();
+    uint32 compressionType = input.readUInt32();
+
+    uint8 red;
+    uint8 green;
+    uint8 blue;
+    uint8 blank;
+
+	// Only uncompressed bitmaps are supported by this code
+    if ((int32)compressionType != BI_RGB) {
+        throw Error("BMP images must be uncompressed", input.getFilename());
+    }
+
+    uint8* palette = NULL;
+
+	// Create the palette if needed
+    if (bitCount <= 8) {
+
+        // Skip to the palette color count in the header
+        input.skip(12);
+
+        int numColors = input.readUInt32();
+
+        palette = (uint8*)System::malloc(numColors * 3);
+        debugAssert(palette);
+
+        // Skip past the end of the header to the palette info
+        input.skip(4);
+
+        int c;
+        for(c = 0; c < numColors * 3; c += 3) {
+            // Palette information in bitmaps is stored in BGR_ format.
+            // That means it's blue-green-red-blank, for each entry.
+            blue  = input.readUInt8();
+            green = input.readUInt8();
+            red   = input.readUInt8();
+            blank = input.readUInt8();
+
+            palette[c]     = red;
+            palette[c + 1] = green;
+            palette[c + 2] = blue;
+        }
+	}
+
+    int hStart = 0;
+    int hEnd   = 0;
+    int hDir   = 0;
+
+    if (height < 0) {
+        height = -height;
+        hStart = 0;
+        hEnd   = height;
+        hDir   = 1;
+    } else {
+        //height = height;
+        hStart = height - 1;
+        hEnd   = -1;
+        hDir   = -1;
+    }
+
+    _byte = (uint8*)System::malloc(width * height * 3);
+    debugAssert(_byte);
+
+    int BMScanWidth;
+    int BMPadding;
+    uint8 BMGroup;
+    uint8 BMPixel8;
+    int currPixel;
+    int dest;
+    int flags = PICTURE_NONE;
+
+    if (bitCount == 1) {
+        // Note that this file is not necessarily grayscale, since it's possible
+        // the palette is blue-and-white, or whatever. But of course most image
+        // programs only write 1-bit images if they're black-and-white.
+        flags = PICTURE_BITMAP | PICTURE_UNCOMPRESSED | PICTURE_MONOCHROME;
+
+        // For bitmaps, each scanline is dword-aligned.
+        BMScanWidth = (width + 7) >> 3;
+        if (BMScanWidth & 3) {
+            BMScanWidth += 4 - (BMScanWidth & 3);
+        }
+
+        // Powers of 2
+        int pow2[8] = {0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80};
+
+        for (int h = hStart; h != hEnd; h += hDir) {
+
+            currPixel = 0;
+            dest = 3 * h * width;
+
+            for (int w = 0; w < BMScanWidth; ++w) {
+
+                BMGroup = input.readUInt8();
+
+                // Now we read the pixels. Usually there are eight pixels per byte,
+                // since each pixel is represented by one bit, but if the width
+                // is not a multiple of eight, the last byte will have some bits
+                // set, with the others just being extra. Plus there's the
+                // dword-alignment padding. So we keep checking to see if we've
+                // already read "width" number of pixels.
+                for (int i = 7; i >= 0; --i) {
+                    if (currPixel < width) {
+                        int src  = 3 * ((BMGroup & pow2[i]) >> i);
+                    
+                        _byte[dest]     = palette[src];
+                        _byte[dest + 1] = palette[src + 1];
+                        _byte[dest + 2] = palette[src + 2];
+                    
+                        ++currPixel;
+                        dest += 3;
+                    }
+                }
+            }
+        }
+
+	} else if (bitCount == 4) {
+
+        flags = PICTURE_BITMAP | PICTURE_UNCOMPRESSED | PICTURE_4BIT;
+
+        // For bitmaps, each scanline is dword-aligned.
+        int BMScanWidth = (width+1) >> 1;
+        if (BMScanWidth & 3) {
+            BMScanWidth += 4 - (BMScanWidth & 3);
+        }
+
+        for (int h = hStart; h != hEnd; h += hDir) {
+
+            currPixel = 0;
+            dest = 3 * h * width;
+
+            for (int w = 0; w < BMScanWidth; w++) {
+
+                BMGroup = input.readUInt8();
+                int src[2];
+                src[0] = 3 * ((BMGroup & 0xF0) >> 4);
+                src[1] = 3 * (BMGroup & 0x0F);
+
+                // Now we read the pixels. Usually there are two pixels per byte,
+                // since each pixel is represented by four bits, but if the width
+                // is not a multiple of two, the last byte will have only four bits
+                // set, with the others just being extra. Plus there's the
+                // dword-alignment padding. So we keep checking to see if we've
+                // already read "Width" number of pixels.
+
+                for (int i = 0; i < 2; ++i) {
+                    if (currPixel < width) {
+                        int tsrc  = src[i];
+                    
+                        _byte[dest]     = palette[tsrc];
+                        _byte[dest + 1] = palette[tsrc + 1];
+                        _byte[dest + 2] = palette[tsrc + 2];
+
+                        ++currPixel;
+                        dest += 3;
+                    }
+                }
+            }
+        }
+
+	} else if (bitCount == 8) {
+        
+        flags = PICTURE_BITMAP | PICTURE_UNCOMPRESSED | PICTURE_8BIT;
+
+        // For bitmaps, each scanline is dword-aligned.
+        BMScanWidth = width;
+        if (BMScanWidth & 3) {
+            BMScanWidth += 4 - (BMScanWidth & 3);
+        }
+
+        for (int h = hStart; h != hEnd; h += hDir) {
+
+            currPixel = 0;
+
+            for (int w = 0; w < BMScanWidth; ++w) {
+
+                BMPixel8 = input.readUInt8();
+
+                if (currPixel < width) {
+                    dest = 3 * ((h * width) + currPixel);
+                    int src  = 3 * BMPixel8;
+                    
+                    _byte[dest]     = palette[src];
+                    _byte[dest + 1] = palette[src + 1];
+                    _byte[dest + 2] = palette[src + 2];
+                    
+                    ++currPixel;
+                }
+            }
+        }
+
+    } else if (bitCount == 16) {
+
+        System::free(_byte);
+        _byte = NULL;
+        System::free(palette); 
+        palette = NULL;
+    	throw Error("16-bit bitmaps not supported", input.getFilename());
+
+	} else if (bitCount == 24) {
+        input.skip(20);
+
+        flags = PICTURE_BITMAP | PICTURE_UNCOMPRESSED | PICTURE_24BIT;
+
+        // For bitmaps, each scanline is dword-aligned.
+        BMScanWidth = width * 3;
+
+        if (BMScanWidth & 3) {
+            BMPadding = 4 - (BMScanWidth & 3);
+        } else {
+            BMPadding = 0;
+        }
+
+        for (int h = hStart; h != hEnd; h += hDir) {
+            dest = 3 * h * width;
+            for (int w = 0; w < width; ++w) {
+
+                blue  = input.readUInt8();
+                green = input.readUInt8();
+                red   = input.readUInt8();
+
+                _byte[dest]     = red;
+                _byte[dest + 1] = green;
+                _byte[dest + 2] = blue;
+
+                dest += 3;
+            }
+
+            if (BMPadding) {
+                input.skip(2);
+            }
+        }
+
+	} else if (bitCount == 32) {
+
+        System::free(_byte);
+        _byte = NULL;
+        System::free(palette); 
+        palette = NULL;
+    	throw Error("32 bit bitmaps not supported", input.getFilename());
+    
+    } else {
+        // We support all possible bit depths, so if the
+        //     code gets here, it's not even a real bitmap.
+        System::free(_byte);
+        _byte = NULL;
+        throw Error("Not a bitmap!", input.getFilename());
+	}
+
+    System::free(palette); 
+    palette = NULL;
+}
+
+
+void GImage::decodeICO(
+    BinaryInput&            input) {
+
+	// Header
+	uint16 r = input.readUInt16();
+	debugAssert(r == 0);
+	r = input.readUInt16();
+	debugAssert(r == 1);
+
+	// Read the number of icons, although we'll only load the
+	// first one.
+	int count = input.readUInt16();
+
+	channels = 4;
+
+	debugAssert(count > 0);
+
+    const uint8* headerBuffer = input.getCArray() + input.getPosition();
+    int maxWidth = 0, maxHeight = 0;
+    int maxHeaderNum = 0;
+    for (int currentHeader = 0; currentHeader < count; ++currentHeader) {
+        
+        const uint8* curHeaderBuffer = headerBuffer + (currentHeader * 16);
+        int tmpWidth = curHeaderBuffer[0];
+        int tmpHeight = curHeaderBuffer[1];
+        // Just in case there is a non-square icon, checking area
+        if ((tmpWidth * tmpHeight) > (maxWidth * maxHeight)) {
+            maxWidth = tmpWidth;
+            maxHeight = tmpHeight;
+            maxHeaderNum = currentHeader;
+        }
+    }
+
+    input.skip(maxHeaderNum * 16);
+
+	width = input.readUInt8();
+	height = input.readUInt8();
+	int numColors = input.readUInt8();
+	
+    _byte = (uint8*)System::malloc(width * height * channels);
+    debugAssert(_byte);
+
+	// Bit mask for packed bits
+	int mask = 0;
+
+	int bitsPerPixel = 8;
+
+	switch (numColors) {
+	case 2:
+		mask      = 0x01;
+		bitsPerPixel = 1;
+		break;
+
+	case 16:
+		mask      = 0x0F;
+		bitsPerPixel = 4;
+		break;
+
+	case 0:
+		numColors = 256;
+		mask      = 0xFF;
+		bitsPerPixel = 8;
+		break;
+    default:
+    	throw Error("Unsupported ICO color count.", input.getFilename());
+	}
+
+	input.skip(5);
+	// Skip 'size' unused
+        input.skip(4);
+
+	int offset = input.readUInt32();
+
+	// Skip over any other icon descriptions
+    input.setPosition(offset);
+
+	// Skip over bitmap header; it is redundant
+	input.skip(40);
+
+	Array<Color4uint8> palette;
+    palette.resize(numColors, true);
+	for (int c = 0; c < numColors; ++c) {
+		palette[c].b = input.readUInt8();
+		palette[c].g = input.readUInt8();
+		palette[c].r = input.readUInt8();
+		palette[c].a = input.readUInt8();
+	}
+
+	// The actual image and mask follow
+
+	// The XOR Bitmap is stored as 1-bit, 4-bit or 8-bit uncompressed Bitmap 
+	// using the same encoding as BMP files. The AND Bitmap is stored in as 
+	// 1-bit uncompressed Bitmap.
+	// 
+	// Pixels are stored bottom-up, left-to-right. Pixel lines are padded 
+	// with zeros to end on a 32bit (4byte) boundary. Every line will have the 
+	// same number of bytes. Color indices are zero based, meaning a pixel color 
+	// of 0 represents the first color table entry, a pixel color of 255 (if there
+	// are that many) represents the 256th entry.
+/*
+	int bitsPerRow  = width * bitsPerPixel;
+	int bytesPerRow = iCeil((double)bitsPerRow / 8);
+	// Rows are padded to 32-bit boundaries
+	bytesPerRow += bytesPerRow % 4;
+
+	// Read the XOR values into the color channel
+	for (int y = height - 1; y >= 0; --y) {
+		int x = 0;
+		// Read the row
+		for (int i = 0; i < bytesPerRow; ++i) {
+			uint8 byte = input.readUInt8();
+			for (int j = 0; (j < 8) && (x < width); ++x, j += bitsPerPixel) {
+				int bit = ((byte << j) >> (8 - bitsPerPixel)) & mask;
+				pixel4(x, y) = colorTable[bit];
+			}
+		}
+	}
+*/
+    int hStart = 0;
+    int hEnd   = 0;
+    int hDir   = 0;
+
+    if (height < 0) {
+        height = -height;
+        hStart = 0;
+        hEnd   = height;
+        hDir   = 1;
+    } else {
+        //height = height;
+        hStart = height - 1;
+        hEnd   = -1;
+        hDir   = -1;
+    }
+
+    int BMScanWidth;
+    uint8 BMGroup;
+    uint8 BMPixel8;
+    int currPixel;
+    int dest;
+
+    if (bitsPerPixel == 1) {
+        // Note that this file is not necessarily grayscale, since it's possible
+        // the palette is blue-and-white, or whatever. But of course most image
+        // programs only write 1-bit images if they're black-and-white.
+
+        // For bitmaps, each scanline is dword-aligned.
+        BMScanWidth = (width + 7) >> 3;
+        if (BMScanWidth & 3) {
+            BMScanWidth += 4 - (BMScanWidth & 3);
+        }
+
+        // Powers of 2
+        int pow2[8] = {0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80};
+
+        for (int h = hStart; h != hEnd; h += hDir) {
+
+            currPixel = 0;
+            dest = 3 * h * width;
+
+            for (int w = 0; w < BMScanWidth; ++w) {
+
+                BMGroup = input.readUInt8();
+
+                // Now we read the pixels. Usually there are eight pixels per byte,
+                // since each pixel is represented by one bit, but if the width
+                // is not a multiple of eight, the last byte will have some bits
+                // set, with the others just being extra. Plus there's the
+                // dword-alignment padding. So we keep checking to see if we've
+                // already read "width" number of pixels.
+                for (int i = 7; i >= 0; --i) {
+                    if (currPixel < width) {
+                        int src  = ((BMGroup & pow2[i]) >> i);
+                    
+                        _byte[dest]     = palette[src].r;
+                        _byte[dest + 1] = palette[src].g;
+                        _byte[dest + 2] = palette[src].b;
+                    
+                        ++currPixel;
+                        dest += 4;
+                    }
+                }
+            }
+        }
+
+	} else if (bitsPerPixel == 4) {
+
+        // For bitmaps, each scanline is dword-aligned.
+        int BMScanWidth = (width+1) >> 1;
+        if (BMScanWidth & 3) {
+            BMScanWidth += 4 - (BMScanWidth & 3);
+        }
+
+        for (int h = hStart; h != hEnd; h += hDir) {
+
+            currPixel = 0;
+            dest = 4 * h * width;
+
+            for (int w = 0; w < BMScanWidth; w++) {
+
+                BMGroup = input.readUInt8();
+                int src[2];
+                src[0] = ((BMGroup & 0xF0) >> 4);
+                src[1] = (BMGroup & 0x0F);
+
+                // Now we read the pixels. Usually there are two pixels per byte,
+                // since each pixel is represented by four bits, but if the width
+                // is not a multiple of two, the last byte will have only four bits
+                // set, with the others just being extra. Plus there's the
+                // dword-alignment padding. So we keep checking to see if we've
+                // already read "Width" number of pixels.
+
+                for (int i = 0; i < 2; ++i) {
+                    if (currPixel < width) {
+                        int tsrc  = src[i];
+                    
+                        _byte[dest]     = palette[tsrc].r;
+                        _byte[dest + 1] = palette[tsrc].g;
+                        _byte[dest + 2] = palette[tsrc].b;
+
+                        ++currPixel;
+                        dest += 4;
+                    }
+                }
+            }
+        }
+
+	} else if (bitsPerPixel == 8) {
+        
+        // For bitmaps, each scanline is dword-aligned.
+        BMScanWidth = width;
+        if (BMScanWidth & 3) {
+            BMScanWidth += 4 - (BMScanWidth & 3);
+        }
+
+        for (int h = hStart; h != hEnd; h += hDir) {
+
+            currPixel = 0;
+
+            for (int w = 0; w < BMScanWidth; ++w) {
+
+                BMPixel8 = input.readUInt8();
+
+                if (currPixel < width) {
+                    dest = 4 * ((h * width) + currPixel);
+                    int src  = BMPixel8;
+                    
+                    _byte[dest]     = palette[src].r;
+                    _byte[dest + 1] = palette[src].g;
+                    _byte[dest + 2] = palette[src].b;
+                    
+                    ++currPixel;
+                }
+            }
+        }
+    }
+
+	// Read the mask into the alpha channel
+	int bitsPerRow  = width;
+	int bytesPerRow = iCeil((double)bitsPerRow / 8);
+
+    // For bitmaps, each scanline is dword-aligned.
+    //BMScanWidth = (width + 1) >> 1;
+    if (bytesPerRow & 3) {
+        bytesPerRow += 4 - (bytesPerRow & 3);
+    }
+    
+    for (int y = height - 1; y >= 0; --y) {
+		int x = 0;
+		// Read the row
+		for (int i = 0; i < bytesPerRow; ++i) {
+			uint8 byte = input.readUInt8();
+			for (int j = 0; (j < 8) && (x < width); ++x, ++j) {
+				int bit = (byte >> (7 - j)) & 0x01;
+				pixel4(x, y).a = (1 - bit) * 0xFF;
+			}
+		}
+	}
+
+}
+
+
+}

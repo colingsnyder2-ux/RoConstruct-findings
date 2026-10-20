@@ -1,106 +1,598 @@
 // from server: 100% by auto
-// roc 2010-06 0055a240  unit: G3D::BinaryInput  size: 290 bytes
-// Make this compile to the exact bytes below, then: roc check 2010-06 0055a240
-//
-// 0055a240  6aff                 push -1
-// 0055a242  68c3139900           push 0x9913c3
-// 0055a247  64a100000000         mov eax, dword ptr fs:[0]
-// 0055a24d  50                   push eax
-// 0055a24e  64892500000000       mov dword ptr fs:[0], esp
-// 0055a255  83ec50               sub esp, 0x50
-// 0055a258  53                   push ebx
-// 0055a259  55                   push ebp
-// 0055a25a  8b6c246c             mov ebp, dword ptr [esp + 0x6c]
-// 0055a25e  56                   push esi
-// 0055a25f  57                   push edi
-// 0055a260  55                   push ebp
-// 0055a261  b908a1c000           mov ecx, 0xc0a108
-// 0055a266  c744241400000000     mov dword ptr [esp + 0x14], 0
-// 0055a26e  e81d4effff           call 0x54f090
-// 0055a273  837d1810             cmp dword ptr [ebp + 0x18], 0x10
-// 0055a277  8d5d04               lea ebx, [ebp + 4]
-// 0055a27a  7204                 jb 0x55a280
-// 0055a27c  8b03                 mov eax, dword ptr [ebx]
-// 0055a27e  eb02                 jmp 0x55a282
-// 0055a280  8bc3                 mov eax, ebx
-// 0055a282  8d4c2430             lea ecx, [esp + 0x30]
-// 0055a286  51                   push ecx
-// 0055a287  50                   push eax
-// 0055a288  ff15b8a79e00         call dword ptr [0x9ea7b8]
-// 0055a28e  83c408               add esp, 8
-// 0055a291  83f8ff               cmp eax, -1
-// 0055a294  740e                 je 0x55a2a4
-// 0055a296  8b442444             mov eax, dword ptr [esp + 0x44]
-// 0055a29a  99                   cdq 
-// 0055a29b  8bf8                 mov edi, eax
-// 0055a29d  23c2                 and eax, edx
-// 0055a29f  83f8ff               cmp eax, -1
-// 0055a2a2  7526                 jne 0x55a2ca
-// 0055a2a4  8b742470             mov esi, dword ptr [esp + 0x70]
-// 0055a2a8  68fe08a000           push 0xa008fe
-// 0055a2ad  8bce                 mov ecx, esi
-// 0055a2af  ff1510a49e00         call dword ptr [0x9ea410]
-// 0055a2b5  5f                   pop edi
-// 0055a2b6  8bc6                 mov eax, esi
-// 0055a2b8  5e                   pop esi
-// 0055a2b9  5d                   pop ebp
-// 0055a2ba  5b                   pop ebx
-// 0055a2bb  8b4c2450             mov ecx, dword ptr [esp + 0x50]
-// 0055a2bf  64890d00000000       mov dword ptr fs:[0], ecx
-// 0055a2c6  83c45c               add esp, 0x5c
-// 0055a2c9  c3                   ret 
-// 0055a2ca  8d4f01               lea ecx, [edi + 1]
-// 0055a2cd  51                   push ecx
-// 0055a2ce  ff15c8a89e00         call dword ptr [0x9ea8c8]
-// 0055a2d4  83c404               add esp, 4
-// 0055a2d7  837d1810             cmp dword ptr [ebp + 0x18], 0x10
-// 0055a2db  8bf0                 mov esi, eax
-// 0055a2dd  7204                 jb 0x55a2e3
-// 0055a2df  8b03                 mov eax, dword ptr [ebx]
-// 0055a2e1  eb02                 jmp 0x55a2e5
-// 0055a2e3  8bc3                 mov eax, ebx
-// 0055a2e5  68c0c8a100           push 0xa1c8c0
-// 0055a2ea  50                   push eax
-// 0055a2eb  ff1520a79e00         call dword ptr [0x9ea720]
-// 0055a2f1  8be8                 mov ebp, eax
-// 0055a2f3  55                   push ebp
-// 0055a2f4  57                   push edi
-// 0055a2f5  bb01000000           mov ebx, 1
-// 0055a2fa  53                   push ebx
-// 0055a2fb  56                   push esi
-// 0055a2fc  ff15a8a79e00         call dword ptr [0x9ea7a8]
-// 0055a302  55                   push ebp
-// 0055a303  ff1580a79e00         call dword ptr [0x9ea780]
-// 0055a309  83c41c               add esp, 0x1c
-// 0055a30c  56                   push esi
-// 0055a30d  8d4c2418             lea ecx, [esp + 0x18]
-// 0055a311  c6043700             mov byte ptr [edi + esi], 0
-// 0055a315  ff1510a49e00         call dword ptr [0x9ea410]
-// 0055a31b  56                   push esi
-// 0055a31c  895c246c             mov dword ptr [esp + 0x6c], ebx
-// 0055a320  ff1508aa9e00         call dword ptr [0x9eaa08]
-// 0055a326  8b742474             mov esi, dword ptr [esp + 0x74]
-// 0055a32a  83c404               add esp, 4
-// 0055a32d  8d542414             lea edx, [esp + 0x14]
-// 0055a331  52                   push edx
-// 0055a332  8bce                 mov ecx, esi
-// 0055a334  ff150ca49e00         call dword ptr [0x9ea40c]
-// 0055a33a  8d4c2414             lea ecx, [esp + 0x14]
-// 0055a33e  895c2410             mov dword ptr [esp + 0x10], ebx
-// 0055a342  c644246800           mov byte ptr [esp + 0x68], 0
-// 0055a347  ff1500a49e00         call dword ptr [0x9ea400]
-// 0055a34d  8b4c2460             mov ecx, dword ptr [esp + 0x60]
-// 0055a351  5f                   pop edi
-// 0055a352  8bc6                 mov eax, esi
-// 0055a354  5e                   pop esi
-// 0055a355  5d                   pop ebp
-// 0055a356  5b                   pop ebx
-// 0055a357  64890d00000000       mov dword ptr fs:[0], ecx
-// 0055a35e  83c45c               add esp, 0x5c
-// 0055a361  c3                   ret 
-// library g3d-6.09/G3Dcpp\fileutils.cpp (function ?readFileAsString@G3D@@YA?AV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@ABV23@@Z)
-
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD
 // roc-lib: g3d-6.09 G3Dcpp/fileutils.cpp
+
+// Candidate translation unit (score above; library headers required).
+/**
+ @file fileutils.cpp
+ 
+ @author Morgan McGuire, graphics3d.com
+ 
+ @author  2002-06-06
+ @edited  2005-02-24
+ */
+
+#include "G3D/platform.h"
+#include "G3D/fileutils.h"
+#include "G3D/BinaryInput.h"
+#include "G3D/g3dmath.h"
+#include <sys/stat.h>
+#include <sys/types.h>
+#include "G3D/stringutils.h"
+
+#ifdef G3D_WIN32
+   // Needed for _getcwd
+   #include <direct.h>
+   #include <io.h>
+#else
+   #include <dirent.h>
+   #include <fnmatch.h>
+   #include <unistd.h>
+   #define _getcwd getcwd
+#endif
+#include <stdio.h>
+#include "G3D/BinaryOutput.h"
+
+/**
+ Pick up libjpeg headers locally on Windows, but from the system on all other platforms.
+*/
+extern "C" {
+#if (defined(_MSC_VER) || defined(__MINGW32__))
+	#include "../IJG/jpeglib.h"
+#else
+	#include <jpeglib.h>
+#endif
+}
+
+#ifdef G3D_WIN32
+    //for _mkdir and _stat
+    #include <direct.h>
+#else
+    #define _stat stat
+#endif
+
+
+namespace G3D {
+    
+    namespace _internal {
+        Array<std::string> currentFilesUsed(0);
+    }
+
+
+std::string resolveFilename(const std::string& filename) {
+    if (filename.size() >= 1) {
+        if ((filename[0] == '/') || (filename[0] == '\\')) {
+            // Already resolved
+            return filename;
+        } else {
+
+            #ifdef G3D_WIN32
+                if ((filename.size() >= 2) && (filename[1] == ':')) {
+                    // There is a drive spec on the front.
+                    if ((filename.size() >= 3) && ((filename[2] == '\\') || 
+                                                   (filename[2] == '/'))) {
+                        // Already fully qualified
+                        return filename;
+                    } else {
+                        // The drive spec is relative to the
+                        // working directory on that drive.
+                        debugAssertM(false, "Files of the form d:path are"
+                                     " not supported (use a fully qualified"
+                                     " name).");
+                        return filename;
+                    }
+                }
+            #endif
+        }
+    }
+
+    char buffer[1024];
+
+    // Prepend the working directory.
+    _getcwd(buffer, 1024);
+
+    return format("%s/%s", buffer, filename.c_str());
+}
+
+
+std::string readFileAsString(
+    const std::string& filename) {
+
+    _internal::currentFilesUsed.append(filename);
+
+    int64 length = fileLength(filename);
+
+    if (length == -1) {
+        return "";
+    }
+
+    char* buffer = (char*)malloc(length + 1);
+    debugAssert(buffer);
+    FILE* f = fopen(filename.c_str(), "rb");
+    debugAssert(f);
+    int ret = fread(buffer, 1, length, f);
+	debugAssert(ret == length);(void)ret;
+    fclose(f);
+
+    buffer[length] = '\0';
+    std::string s = std::string(buffer);
+    free(buffer);
+
+    return s;
+}
+
+
+int64 fileLength(const std::string& filename) {
+    struct _stat st;
+    int result = _stat(filename.c_str(), &st);
+    
+    if (result == -1) {
+        return -1;
+    }
+
+    return st.st_size;
+}
+
+
+FILE* createTempFile() {
+    // Added to the G3D version of jpeglib
+#ifdef _MSC_VER
+    return _robustTmpfile();
+#else
+    return tmpfile();
+#endif
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+void writeStringToFile(
+    const std::string&          str,
+    const std::string&          filename,
+    bool                        flush) {
+
+    // Make sure the directory exists.
+    std::string root, base, ext, path;
+    Array<std::string> pathArray;
+    parseFilename(filename, root, pathArray, base, ext); 
+
+    path = root + stringJoin(pathArray, '/');
+    if (! fileExists(path)) {
+        createDirectory(path);
+    }
+
+    FILE* file = fopen(filename.c_str(), "wb");
+
+    debugAssert(file);
+
+    fwrite(str.c_str(), str.size(), 1, file);
+
+    if (flush) {
+        fflush(file);
+    }
+    fclose(file);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+/**
+ Creates the directory (which may optionally end in a /)
+ and any parents needed to reach it.
+ */
+void createDirectory(
+    const std::string&  dir) {
+    
+	if (dir == "") {
+		return;
+	}
+
+    std::string d;
+
+    // Add a trailing / if there isn't one.
+    switch (dir[dir.size() - 1]) {
+    case '/':
+    case '\\':
+        d = dir;
+        break;
+
+    default:
+        d = dir + "/";
+    }
+
+    // If it already exists, do nothing
+    if (fileExists(d.substr(0, d.size() - 1))) {
+        return;
+    }
+
+    // Parse the name apart
+    std::string root, base, ext;
+    Array<std::string> path;
+
+    std::string lead;
+    parseFilename(d, root, path, base, ext);
+    debugAssert(base == "");
+    debugAssert(ext == "");
+
+    // Begin with an extra period so "c:\" becomes "c:\.\" after
+    // appending a path and "c:" becomes "c:.\", not root: "c:\"
+    std::string p = root + ".";
+
+    // Create any intermediate that doesn't exist
+    for (int i = 0; i < path.size(); ++i) {
+        p += "/" + path[i];
+        if (! fileExists(p)) {
+	    // Windows only requires one argument to mkdir,
+	    // where as unix also requires the permissions.
+	    #ifndef G3D_WIN32
+	 	 mkdir(p.c_str(),0777);
+ 	    #else
+                 _mkdir(p.c_str());
+	    #endif
+        }
+    }
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+bool fileExists(
+    const std::string& filename) {
+
+	if (filename == "") {
+		return true;
+	}
+
+    struct _stat st;
+    return _stat(filename.c_str(), &st) != -1;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+void copyFile(
+    const std::string&          source,
+    const std::string&          dest) {
+
+    #ifdef G3D_WIN32
+        CopyFile(source.c_str(), dest.c_str(), FALSE);
+    #else
+        // TODO: don't use BinaryInput and BinaryOutput
+        // Read it all in, then dump it out
+        BinaryInput  in(source, G3D_LITTLE_ENDIAN);
+        BinaryOutput out(dest, G3D_LITTLE_ENDIAN);
+        out.writeBytes(in.getCArray(), in.size());
+        out.commit(false);
+    #endif
+}
+
+//////////////////////////////////////////////////////////////////////////////
+
+void parseFilename(
+    const std::string&  filename,
+    std::string&        root,
+    Array<std::string>& path,
+    std::string&        base,
+    std::string&        ext) {
+
+    std::string f = filename;
+
+    root = "";
+    path.clear();
+    base = "";
+    ext = "";
+
+    if (f == "") {
+        // Empty filename
+        return;
+    }
+
+    // See if there is a root/drive spec.
+    if ((f.size() >= 2) && (f[1] == ':')) {
+        
+        if ((f.size() > 2) && isSlash(f[2])) {
+        
+            // e.g.  c:\foo
+            root = f.substr(0, 3);
+            f = f.substr(3, f.size() - 3);
+        
+        } else {
+        
+            // e.g.  c:foo
+            root = f.substr(2);
+            f = f.substr(2, f.size() - 2);
+
+        }
+
+    } else if ((f.size() >= 2) & isSlash(f[0]) && isSlash(f[1])) {
+        
+        // e.g. //foo
+        root = f.substr(0, 2);
+        f = f.substr(2, f.size() - 2);
+
+    } else if (isSlash(f[0])) {
+        
+        root = f.substr(0, 1);
+        f = f.substr(1, f.size() - 1);
+
+    }
+
+    // Pull the extension off
+    {
+        // Find the period
+        size_t i = f.rfind('.');
+
+        // Make sure it is before a slash!
+        size_t j = iMax(f.rfind('/'), f.rfind('\\'));
+        if ((i != std::string::npos) && (i > j)) {
+            ext = f.substr(i + 1, f.size() - i - 1);
+            f = f.substr(0, i);
+        }
+    }
+
+    // Pull the basename off
+    {
+        // Find the last slash
+        size_t i = iMax(f.rfind('/'), f.rfind('\\'));
+        
+        if (i == std::string::npos) {
+            
+            // There is no slash; the basename is the whole thing
+            base = f;
+            f    = "";
+
+        } else if ((i != std::string::npos) && (i < f.size() - 1)) {
+            
+            base = f.substr(i + 1, f.size() - i - 1);
+            f    = f.substr(0, i);
+
+        }
+    }
+
+    // Parse what remains into path.
+    size_t prev, cur = 0;
+
+    while (cur < f.size()) {
+        prev = cur;
+        
+        // Allow either slash
+        size_t i = f.find('/', prev + 1);
+        size_t j = f.find('\\', prev + 1);
+        if (i == std::string::npos) {
+            i = f.size();
+        }
+
+        if (j == std::string::npos) {
+            j = f.size();
+        }
+
+        cur = iMin(i, j);
+
+        if (cur == std::string::npos) {
+            cur = f.size();
+        }
+
+        path.append(f.substr(prev, cur - prev));
+        ++cur;
+    }
+}
+
+
+
+/**
+ Helper for getFileList and getDirectoryList.
+
+ @param wantFiles       If false, returns the directories, otherwise
+                        returns the files.
+ @param includePath     If true, the names include paths
+ */
+static void getFileOrDirList(
+	const std::string&		filespec,
+	Array<std::string>&		files,
+	bool					wantFiles,
+	bool					includePath) {
+
+	bool test = wantFiles ? true : false;
+
+	std::string path = "";
+
+    // Find the place where the path ends and the file-spec begins
+    size_t i = filespec.rfind('/');
+    size_t j = filespec.rfind('\\');
+    
+    // Drive letters on Windows can separate a path
+    size_t k = filespec.rfind(':');
+    
+    if ((j != std::string::npos) && (j > i) ||
+        (i == std::string::npos)) {
+        i = j;
+    }
+    
+    if ((k != std::string::npos) && (k > i) ||
+        (i == std::string::npos)) {
+        i = k;
+    }
+    
+    // If there is a path, pull it off
+    if (i != std::string::npos) {
+        path = filespec.substr(0, i + 1);
+    }
+   
+    std::string prefix = path;
+
+    if (path.size() > 0) {
+        // Strip the trailing character
+        path = path.substr(0, path.size() - 1);
+    }
+
+    #ifdef G3D_WIN32
+	    struct _finddata_t fileinfo;
+
+        long handle = _findfirst(filespec.c_str(), &fileinfo);
+        int result = handle;
+
+        while (result != -1) {
+            if ((((fileinfo.attrib & _A_SUBDIR) == 0) == test) && 
+                strcmp(fileinfo.name, ".") &&
+                strcmp(fileinfo.name, "..")) {
+                
+                if (includePath) {
+                    files.append(prefix + fileinfo.name);
+                } else {
+                    files.append(fileinfo.name);
+                }
+            }
+            
+            result = _findnext(handle, &fileinfo);
+        }
+    #else
+        // Linux implementation
+        DIR* dir = opendir(path.c_str());
+
+        if (dir != NULL) {
+            struct dirent* entry = readdir(dir);
+
+            while (entry != NULL) {
+
+                // Exclude '.' and '..'
+                if (strcmp(entry->d_name, ".") &&
+                    strcmp(entry->d_name, "..")) {
+                    
+                    // Form a name with a path
+                    std::string filename = prefix + entry->d_name;
+                    
+                    // See if this is a file or a directory
+                    struct _stat st;
+                    bool exists = _stat(filename.c_str(), &st) != -1;
+
+                    if (exists &&
+
+                        // Make sure it has the correct type
+                        (((st.st_mode & S_IFDIR) == 0) == test) &&
+
+                        // Make sure it matches the wildcard
+                        (fnmatch(filespec.c_str(),
+                                 filename.c_str(),
+                                 FNM_PATHNAME) == 0)) {
+                        
+                        if (includePath) {
+                            files.append(filename);
+                        } else {
+                            files.append(entry->d_name);
+                        }
+                    }
+                }
+
+                entry = readdir(dir);
+            }
+        }
+        closedir(dir);
+
+    #endif
+}
+
+
+void getFiles(
+	const std::string&			filespec,
+	Array<std::string>&			files,
+	bool						includePath) {
+
+	getFileOrDirList(filespec, files, true, includePath);
+}
+
+
+void getDirs(
+	const std::string&			filespec,
+	Array<std::string>&			files,
+	bool						includePath) {
+
+	getFileOrDirList(filespec, files, false, includePath);
+}
+
+
+std::string filenameBaseExt(const std::string& filename) {
+    int i = filename.rfind("/");
+    int j = filename.rfind("\\");
+
+    if ((j > i) && (j >= 0)) {
+        i = j;
+    }
+
+#   ifdef G3D_WIN32
+        j = filename.rfind(":");
+        if ((i == -1) && (j >= 0)) {
+            i = j;
+        }
+#   endif
+
+    if (i == -1) {
+        return filename;
+    } else {
+        return filename.substr(i + 1, filename.length() - i);
+    }
+}
+
+
+std::string filenameExt(const std::string& filename) {
+    int i = filename.rfind(".");
+    if (i >= 0) {
+        return filename.substr(i + 1, filename.length() - i);
+    } else {
+        return "";
+    }
+}
+
+
+std::string filenamePath(const std::string& filename) {
+    int i = filename.rfind("/");
+    int j = filename.rfind("\\");
+
+    if ((j > i) && (j >= 0)) {
+        i = j;
+    }
+
+#   ifdef G3D_WIN32
+        j = filename.rfind(":");
+        if ((i == -1) && (j >= 0)) {
+            i = j;
+        }
+#   endif
+
+    if (i == -1) {
+        return "";
+    } else {
+        return filename.substr(0, i+1);
+    }
+}
+
+
+bool isDirectory(const std::string& filename) {
+    struct _stat st;
+    bool exists = _stat(filename.c_str(), &st) != -1;
+    return exists && ((st.st_mode & S_IFDIR) != 0);
+}
+
+
+bool filenameContainsWildcards(const std::string& filename) {
+    return (filename.find('*') != std::string::npos) || (filename.find('?') != std::string::npos);
+}
+
+
+bool fileIsNewer(const std::string& src, const std::string& dst) {
+    struct _stat sts;
+    bool sexists = _stat(src.c_str(), &sts) != -1;
+
+    struct _stat dts;
+    bool dexists = _stat(dst.c_str(), &dts) != -1;
+
+    return sexists && ((! dexists) || (sts.st_mtime > dts.st_mtime));
+}
+
+
+Array<std::string> filesUsed() {
+    return _internal::currentFilesUsed;
+}
+
+}
+
+#ifndef G3D_WIN32
+  #undef _stat
+#endif

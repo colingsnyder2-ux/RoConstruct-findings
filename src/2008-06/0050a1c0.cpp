@@ -1,51 +1,332 @@
 // from server: 100% by auto
-// roc 2008-06 0050a1c0  unit: G3D::Log  size: 104 bytes
-// Make this compile to the exact bytes below, then: roc check 2008-06 0050a1c0
-//
-// 0050a1c0  56                   push esi
-// 0050a1c1  6a00                 push 0
-// 0050a1c3  8bf0                 mov esi, eax
-// 0050a1c5  ff15f42d8000         call dword ptr [0x802df4]
-// 0050a1cb  85c0                 test eax, eax
-// 0050a1cd  7457                 je 0x50a226
-// 0050a1cf  8bc6                 mov eax, esi
-// 0050a1d1  8d5001               lea edx, [eax + 1]
-// 0050a1d4  8a08                 mov cl, byte ptr [eax]
-// 0050a1d6  40                   inc eax
-// 0050a1d7  84c9                 test cl, cl
-// 0050a1d9  75f9                 jne 0x50a1d4
-// 0050a1db  2bc2                 sub eax, edx
-// 0050a1dd  57                   push edi
-// 0050a1de  40                   inc eax
-// 0050a1df  50                   push eax
-// 0050a1e0  6842200000           push 0x2042
-// 0050a1e5  ff15dc218000         call dword ptr [0x8021dc]
-// 0050a1eb  8bf8                 mov edi, eax
-// 0050a1ed  85ff                 test edi, edi
-// 0050a1ef  7427                 je 0x50a218
-// 0050a1f1  57                   push edi
-// 0050a1f2  ff15d8218000         call dword ptr [0x8021d8]
-// 0050a1f8  8a0e                 mov cl, byte ptr [esi]
-// 0050a1fa  8808                 mov byte ptr [eax], cl
-// 0050a1fc  46                   inc esi
-// 0050a1fd  40                   inc eax
-// 0050a1fe  84c9                 test cl, cl
-// 0050a200  75f6                 jne 0x50a1f8
-// 0050a202  57                   push edi
-// 0050a203  ff15d4218000         call dword ptr [0x8021d4]
-// 0050a209  ff15dc2d8000         call dword ptr [0x802ddc]
-// 0050a20f  57                   push edi
-// 0050a210  6a01                 push 1
-// 0050a212  ff15e02d8000         call dword ptr [0x802de0]
-// 0050a218  ff15e82d8000         call dword ptr [0x802de8]
-// 0050a21e  57                   push edi
-// 0050a21f  ff1570228000         call dword ptr [0x802270]
-// 0050a225  5f                   pop edi
-// 0050a226  5e                   pop esi
-// 0050a227  c3                   ret 
-// library g3d-6.09/G3Dcpp\debugAssert.cpp (function ?postToClipboard@_internal@G3D@@YAXPBD@Z)
-
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD
 // roc-lib: g3d-6.09 G3Dcpp/debugAssert.cpp
+
+// Candidate translation unit (score above; library headers required).
+/**
+ @file debugAssert.cpp
+
+ Windows implementation of assertion routines.
+
+ @maintainer Morgan McGuire, graphics3d.com
+ 
+ @created 2001-08-26
+ @edited  2006-02-02
+ */
+
+#include "G3D/debugAssert.h"
+#include "G3D/platform.h"
+#ifdef G3D_WIN32
+    #include <tchar.h>
+#endif
+#include "G3D/format.h"
+#include "G3D/prompt.h"
+#include <string>
+#include "G3D/debugPrintf.h"
+#include "G3D/Log.h"
+
+#ifdef G3D_WIN32
+    // disable: "C++ exception handler used"
+#   pragma warning (push)
+#   pragma warning (disable : 4530)
+#endif
+
+using namespace std;
+
+namespace G3D { namespace _internal {
+
+AssertionHook _debugHook = _handleDebugAssert_;
+AssertionHook _failureHook = _handleErrorCheck_;
+
+#ifdef G3D_LINUX
+    Display*      x11Display = NULL;
+    Window        x11Window  = 0;
+#endif
+
+
+#ifdef G3D_WIN32
+static void postToClipboard(const char *text) {
+    if (OpenClipboard(NULL)) {
+        HGLOBAL hMem = GlobalAlloc(GHND | GMEM_DDESHARE, strlen(text) + 1);
+        if (hMem) {
+            char *pMem = (char*)GlobalLock(hMem);
+            strcpy(pMem, text);
+            GlobalUnlock(hMem);
+
+            EmptyClipboard();
+            SetClipboardData(CF_TEXT, hMem);
+        }
+
+        CloseClipboard();
+        GlobalFree(hMem);
+    }
+}
+#endif
+
+/**
+ outTitle should be set before the call
+ */
+static void createErrorMessage(
+    const char*         expression,
+    const std::string&  message,
+    const char*         filename,
+    int                 lineNumber,
+    std::string&        outTitle,
+    std::string&        outMessage) {
+
+    std::string le = "";
+    char* newline = "\n";
+
+    #ifdef G3D_WIN32
+        newline = "\r\n";
+
+        // The last error value.  (Which is preserved across the call).
+        DWORD lastErr = GetLastError();
+    
+        // The decoded message from FormatMessage
+        LPTSTR formatMsg = NULL;
+
+        if (NULL == formatMsg) {
+            FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER |
+                          FORMAT_MESSAGE_IGNORE_INSERTS |
+                          FORMAT_MESSAGE_FROM_SYSTEM,
+                            NULL,
+                            lastErr,
+                            0,
+                            (LPTSTR)&formatMsg,
+                            0,
+                            NULL);
+        }
+
+        // Make sure the message got translated into something.
+        LPTSTR realLastErr;
+        if (NULL != formatMsg) {
+            realLastErr = formatMsg;
+        } else {
+            realLastErr = _T("Last error code does not exist.");
+        }
+
+		if (lastErr != 0) {
+	        le = G3D::format("Last Error (0x%08X): %s\r\n\r\n", lastErr, (LPCSTR)realLastErr);
+		}
+
+        // Get rid of the allocated memory from FormatMessage.
+        if (NULL != formatMsg) {
+            LocalFree((LPVOID)formatMsg);
+        }
+
+        char modulePath[MAX_PATH];
+        GetModuleFileName(NULL, modulePath, MAX_PATH);
+
+        const char* moduleName = strrchr(modulePath, '\\');
+        outTitle = outTitle + string(" - ") + string(moduleName ? (moduleName + 1) : modulePath);
+
+    #endif
+
+    // Build the message.
+    outMessage =
+        G3D::format("%s%s%sExpression: %s%s%s:%d%s%s%s", 
+                 message.c_str(), newline, newline, expression, newline, 
+                 filename, lineNumber, newline, newline, le.c_str());
+}
+
+
+bool _handleDebugAssert_(
+    const char*         expression,
+    const std::string&  message,
+    const char*         filename,
+    int                 lineNumber,
+    bool&               ignoreAlways,
+    bool                useGuiPrompt) {
+
+    std::string dialogTitle = "Assertion Failure";
+    std::string dialogText = "";
+
+    createErrorMessage(expression, message, filename, lineNumber, dialogTitle, dialogText);
+
+    #ifdef G3D_WIN32
+        DWORD lastErr = GetLastError();
+        postToClipboard(dialogText.c_str());
+    #endif
+
+    const int cBreak = 0;
+    const int cIgnore = 1;
+    const int cIgnoreAlways = 2;
+    const int cAbort = 3;
+
+    static char* choices[] = {"Debug", "Ignore", "Ignore Always", "Exit"};
+
+    // Log the error
+    Log::common()->print(std::string("\n**************************\n\n") + dialogTitle + "\n" + dialogText);
+
+    int result = G3D::prompt(dialogTitle.c_str(), dialogText.c_str(), (const char**)choices, 4, useGuiPrompt);
+
+    #ifdef G3D_WIN32
+        // Put the incoming last error back.
+        SetLastError(lastErr);
+    #endif
+
+    switch (result) {
+    // -1 shouldn't actually occur because it means 
+    // that we're in release mode.
+    case -1:
+    case cBreak:
+        return true;
+        break;
+
+    case cIgnore:
+        return false;
+        break;
+   
+    case cIgnoreAlways:
+        ignoreAlways = true;
+        return false;
+        break;
+
+    case cAbort:
+        exit(-1);
+        break;
+
+    default:
+        // Shouldn't get here
+        return false;
+        break;
+    }
+
+}
+
+
+bool _handleErrorCheck_(
+    const char*         expression,
+    const std::string&  message,
+    const char*         filename,
+    int                 lineNumber,
+    bool&               ignoreAlways,
+    bool                useGuiPrompt) {
+
+    (void)ignoreAlways;
+
+    std::string dialogTitle = "Critical Error";
+    std::string dialogText = "";
+
+    createErrorMessage(expression, message, filename, lineNumber, dialogTitle, dialogText);
+
+    // Log the error
+    Log::common()->print(std::string("\n**************************\n\n") + dialogTitle + "\n" + dialogText);
+
+    static char* choices[] = {"Ok"};
+
+    std::string m = 
+        std::string("An internal error has occured in your program and it will now close.  Details about the error have been reported in \"") +
+            Log::getCommonLogFilename() + "\".";
+
+    int result = G3D::prompt("Error", m.c_str(), (const char**)choices, 1, useGuiPrompt);
+    (void)result;
+
+    return true;
+}
+
+
+#ifdef G3D_WIN32
+static HCURSOR oldCursor;
+static RECT    oldCursorRect;
+static POINT   oldCursorPos;
+static int     oldShowCursorCount;
+#endif
+
+void _releaseInputGrab_() {
+    #ifdef G3D_WIN32
+
+        GetCursorPos(&oldCursorPos);
+
+        // Stop hiding the cursor if the application hid it.
+        oldShowCursorCount = ShowCursor(true) - 1;
+
+        if (oldShowCursorCount < -1) {
+            for (int c = oldShowCursorCount; c < -1; ++c) {
+                ShowCursor(true);
+            }
+        }
+
+        // Set the default cursor in case the application
+        // set the cursor to NULL.
+        oldCursor = GetCursor();
+        SetCursor(LoadCursor(NULL, IDC_ARROW));
+
+        // Allow the cursor full access to the screen
+        GetClipCursor(&oldCursorRect);
+        ClipCursor(NULL);
+        
+    #elif defined(G3D_LINUX)
+        if (x11Display != NULL) {
+            XUngrabPointer(x11Display, CurrentTime);
+            XUngrabKeyboard(x11Display, CurrentTime);
+            if (x11Window != 0) {
+                //XUndefineCursor(x11Display, x11Window);
+                // TODO: Note that we leak this cursor; it should be
+                // freed in the restore code.
+                Cursor c = XCreateFontCursor(x11Display, 68);
+                XDefineCursor(x11Display, x11Window, c);
+            }
+            XSync(x11Display, false);           
+            XAllowEvents(x11Display, AsyncPointer, CurrentTime);
+            XFlush(x11Display);
+        }
+    #elif defined(G3D_OSX)
+        // TODO: OS X
+    #endif
+}
+
+
+void _restoreInputGrab_() {
+    #ifdef G3D_WIN32
+
+        // Restore the old clipping region
+        ClipCursor(&oldCursorRect);
+
+        SetCursorPos(oldCursorPos.x, oldCursorPos.y);
+
+        // Restore the old cursor
+        SetCursor(oldCursor);
+
+        // Restore old visibility count
+        if (oldShowCursorCount < 0) {
+            for (int c = 0; c > oldShowCursorCount; --c) {
+                ShowCursor(false);
+            }
+        }
+        
+    #elif defined(G3D_LINUX)
+        // TODO: Linux
+    #elif defined(G3D_OSX)
+        // TODO: OS X
+    #endif
+}
+
+
+}; // internal namespace
+ 
+void setAssertionHook(AssertionHook hook) {
+	G3D::_internal::_debugHook = hook;
+}
+
+AssertionHook assertionHook() {
+	return 	G3D::_internal::_debugHook;
+}
+
+void setFailureHook(AssertionHook hook) {
+	G3D::_internal::_failureHook = hook;
+}
+
+AssertionHook failureHook() {
+	return G3D::_internal::_failureHook;
+}
+
+
+} // namespace
+
+#ifdef G3D_WIN32
+#   pragma warning (pop)
+#endif

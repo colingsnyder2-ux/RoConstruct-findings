@@ -1,78 +1,130 @@
-// roc 2008-06 005dd6d0  unit: RBX::Message  size: 173 bytes
-// Make this compile to the exact bytes below, then: roc check 2008-06 005dd6d0
-//
-// 005dd6d0  83ec0c               sub esp, 0xc
-// 005dd6d3  d901                 fld dword ptr [ecx]
-// 005dd6d5  8b442410             mov eax, dword ptr [esp + 0x10]
-// 005dd6d9  d90534c48100         fld dword ptr [0x81c434]
-// 005dd6df  dcc9                 fmul st(1), st(0)
-// 005dd6e1  d94104               fld dword ptr [ecx + 4]
-// 005dd6e4  d8c9                 fmul st(1)
-// 005dd6e6  d94108               fld dword ptr [ecx + 8]
-// 005dd6e9  deca                 fmulp st(2)
-// 005dd6eb  d901                 fld dword ptr [ecx]
-// 005dd6ed  d8cb                 fmul st(3)
-// 005dd6ef  d901                 fld dword ptr [ecx]
-// 005dd6f1  d8ca                 fmul st(2)
-// 005dd6f3  d901                 fld dword ptr [ecx]
-// 005dd6f5  d8cc                 fmul st(4)
-// 005dd6f7  d9410c               fld dword ptr [ecx + 0xc]
-// 005dd6fa  dece                 fmulp st(6)
-// 005dd6fc  d9410c               fld dword ptr [ecx + 0xc]
-// 005dd6ff  d8cc                 fmul st(4)
-// 005dd701  d9410c               fld dword ptr [ecx + 0xc]
-// 005dd704  d8ce                 fmul st(6)
-// 005dd706  d91c24               fstp dword ptr [esp]
-// 005dd709  d94104               fld dword ptr [ecx + 4]
-// 005dd70c  decd                 fmulp st(5)
-// 005dd70e  d94104               fld dword ptr [ecx + 4]
-// 005dd711  d8ce                 fmul st(6)
-// 005dd713  d95c2408             fstp dword ptr [esp + 8]
-// 005dd717  d94108               fld dword ptr [ecx + 8]
-// 005dd71a  dece                 fmulp st(6)
-// 005dd71c  d9cd                 fxch st(5)
-// 005dd71e  d9542404             fst dword ptr [esp + 4]
-// 005dd722  d8c4                 fadd st(4)
-// 005dd724  d9e8                 fld1 
-// 005dd726  dee1                 fsubrp st(1)
-// 005dd728  d918                 fstp dword ptr [eax]
-// 005dd72a  d9c1                 fld st(1)
-// 005dd72c  d90424               fld dword ptr [esp]
-// 005dd72f  dce9                 fsub st(1), st(0)
-// 005dd731  d9c9                 fxch st(1)
-// 005dd733  d95804               fstp dword ptr [eax + 4]
-// 005dd736  d9c5                 fld st(5)
-// 005dd738  d8c2                 fadd st(2)
-// 005dd73a  d95808               fstp dword ptr [eax + 8]
-// 005dd73d  dec2                 faddp st(2)
-// 005dd73f  d9c9                 fxch st(1)
-// 005dd741  d9580c               fstp dword ptr [eax + 0xc]
-// 005dd744  d9442404             fld dword ptr [esp + 4]
-// 005dd748  d8c2                 fadd st(2)
-// 005dd74a  d9e8                 fld1 
-// 005dd74c  d9c0                 fld st(0)
-// 005dd74e  dee2                 fsubrp st(2)
-// 005dd750  d9c9                 fxch st(1)
-// 005dd752  d95810               fstp dword ptr [eax + 0x10]
-// 005dd755  d9442408             fld dword ptr [esp + 8]
-// 005dd759  d9c0                 fld st(0)
-// 005dd75b  d8e7                 fsub st(7)
-// 005dd75d  d95814               fstp dword ptr [eax + 0x14]
-// 005dd760  d9ca                 fxch st(2)
-// 005dd762  dee5                 fsubrp st(5)
-// 005dd764  d9cc                 fxch st(4)
-// 005dd766  d95818               fstp dword ptr [eax + 0x18]
-// 005dd769  dec4                 faddp st(4)
-// 005dd76b  d9cb                 fxch st(3)
-// 005dd76d  d9581c               fstp dword ptr [eax + 0x1c]
-// 005dd770  dec2                 faddp st(2)
-// 005dd772  dee1                 fsubrp st(1)
-// 005dd774  d95820               fstp dword ptr [eax + 0x20]
-// 005dd777  83c40c               add esp, 0xc
-// 005dd77a  c20400               ret 4
-// library rbxgs-dll/util\Quaternion.cpp (function ?toRotationMatrix@Quaternion@RBX@@QBEXAAVMatrix3@G3D@@@Z)
-
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast
 // roc-lib: rbxgs-dll util/Quaternion.cpp
+
+// Candidate translation unit (score above; library headers required).
+#include "util/Quaternion.h"
+
+namespace RBX
+{
+	// see: https://web.archive.org/web/20041019044742/http://www.wild-magic.com:80/Source/Math/WmlQuaternion.inl
+
+	Quaternion::Quaternion(const G3D::Matrix3& rot)
+	{
+		float fTrace = rot[0][0] + rot[1][1] + rot[2][2];
+		float fRoot;
+
+		if (fTrace > 0.0f)
+		{
+			fRoot = sqrt(fTrace + 1);
+			this->w = 0.5f * fRoot;
+			fRoot = 0.5f / fRoot;
+			this->x = (rot[2][1] - rot[1][2]) * fRoot;
+			this->y = (rot[0][2] - rot[2][0]) * fRoot;
+			this->z = (rot[1][0] - rot[0][1]) * fRoot;
+		}
+		else
+		{
+			if (rot[0][0] > rot[1][1] && rot[0][0] > rot[2][2])
+			{
+				fRoot = -sqrt(1.0f + rot[0][0] - rot[1][1] - rot[2][2]);
+				this->x = 0.5f * fRoot;
+				fRoot = 0.5f / fRoot;
+				this->y = (rot[1][0] + rot[0][1]) * fRoot;
+				this->z = (rot[2][0] + rot[0][2]) * fRoot;
+				this->w = (rot[2][1] - rot[1][2]) * fRoot;
+			}
+			else
+			{
+				if (rot[1][1] > rot[2][2])
+				{
+					fRoot = -sqrt(1.0f + rot[1][1] - rot[0][0] - rot[2][2]);
+					this->y = 0.5f * fRoot;
+					fRoot = 0.5f / fRoot;
+					this->x = (rot[1][0] + rot[0][1]) * fRoot;
+					this->z = (rot[2][1] + rot[1][2]) * fRoot;
+					this->w = (rot[0][2] - rot[2][0]) * fRoot;
+				}
+				else
+				{
+					fRoot = -sqrt(1.0f + rot[2][2] - rot[0][0] - rot[1][1]);
+					this->z = 0.5f * fRoot;
+					fRoot = 0.5f / fRoot;
+					this->x = (rot[2][0] + rot[0][2]) * fRoot;
+					this->y = (rot[2][1] + rot[1][2]) * fRoot;
+					this->w = (rot[1][0] - rot[0][1]) * fRoot;
+				}
+			}
+		}
+	}
+
+	Quaternion& Quaternion::operator=(const Quaternion& other)
+	{
+		this->w = other.w;
+		this->x = other.x;
+		this->y = other.y;
+		this->z = other.z;
+		return *this;
+	}
+
+	//needs to be moved to the header
+	Quaternion Quaternion::operator*(const Quaternion& other) const
+	{
+		G3D::Vector3& thisConvert = *(G3D::Vector3*)this;
+		G3D::Vector3& otherConvert = *(G3D::Vector3*)&other;
+		float thisW = this->w;
+		float otherW = other.w;
+
+		return Quaternion(otherConvert * thisW + thisConvert * otherW + thisConvert.cross(otherConvert), thisW * otherW - thisConvert.dot(otherConvert));
+	}
+
+	float& Quaternion::operator[](int i) const
+	{
+		return ((float*)this)[i];
+	}
+
+	void Quaternion::normalize()
+	{
+		float sqY = G3D::square(this->y);
+		float v1 = sqY + G3D::square(this->x) + G3D::square(this->z) + G3D::square(this->w);
+		float v3 = G3D::rsqrt(v1);
+		this->x = this->x * v3;
+		this->y = this->y * v3;
+		this->z = this->z * v3;
+		this->w = this->w * v3;
+	}
+
+	void Quaternion::toRotationMatrix(G3D::Matrix3& rot) const
+	{
+		float fTx  = 2.0f * this->x;
+		float fTy  = 2.0f * this->y;
+		float fTz  = 2.0f * this->z;
+		float fTxx = fTx * this->x;
+		float fTxy = fTy * this->x;
+		float fTxz = fTz * this->x;
+		float fTwx = fTx * this->w;
+		float fTwy = fTy * this->w;
+		float fTwz = fTz * this->w;
+		float fTyy = fTy * this->y;
+		float fTyz = fTz * this->y;
+		float fTzz = fTz * this->z;
+
+		rot[0][0] = 1.0 - (fTyy + fTzz);
+		rot[0][1] = fTxy - fTwz;
+		rot[0][2] = fTxz + fTwy;
+		rot[1][0] = fTxy + fTwz;
+		rot[1][1] = 1.0 - (fTxx + fTzz);
+		rot[1][2] = fTyz - fTwx;
+		rot[2][0] = fTxz - fTwy;
+		rot[2][1] = fTyz + fTwx;
+		rot[2][2] = 1.0 - (fTxx + fTyy);
+	}
+
+	//needs to be moved to the header
+	float Quaternion::maxComponent() const
+	{
+		Quaternion qAbs = Quaternion(fabs(w), fabs(z), fabs(y), fabs(x));
+		return std::max(std::max(qAbs.w, qAbs.z), std::max(qAbs.y, qAbs.x));
+	}
+}

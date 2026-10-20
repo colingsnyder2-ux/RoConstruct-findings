@@ -1,205 +1,606 @@
 // from server: 100% by auto
-// roc 2007-08 00736100  unit: G3D::Sky  size: 638 bytes
-// Make this compile to the exact bytes below, then: roc check 2007-08 00736100
-//
-// 00736100  83ec18               sub esp, 0x18
-// 00736103  53                   push ebx
-// 00736104  55                   push ebp
-// 00736105  57                   push edi
-// 00736106  8bf9                 mov edi, ecx
-// 00736108  db870c020000         fild dword ptr [edi + 0x20c]
-// 0073610e  8b6c242c             mov ebp, dword ptr [esp + 0x2c]
-// 00736112  8b4514               mov eax, dword ptr [ebp + 0x14]
-// 00736115  33db                 xor ebx, ebx
-// 00736117  85c0                 test eax, eax
-// 00736119  dc7c2440             fdivr qword ptr [esp + 0x40]
-// 0073611d  89442418             mov dword ptr [esp + 0x18], eax
-// 00736121  895c240c             mov dword ptr [esp + 0xc], ebx
-// 00736125  dd54241c             fst qword ptr [esp + 0x1c]
-// 00736129  db8710020000         fild dword ptr [edi + 0x210]
-// 0073612f  dd442448             fld qword ptr [esp + 0x48]
-// 00736133  d9c0                 fld st(0)
-// 00736135  def2                 fdivrp st(2)
-// 00736137  d9c9                 fxch st(1)
-// 00736139  d95c2410             fstp dword ptr [esp + 0x10]
-// 0073613d  db8740010000         fild dword ptr [edi + 0x140]
-// 00736143  dc0d908d7e00         fmul qword ptr [0x7e8d90]
-// 00736149  d8ca                 fmul st(2)
-// 0073614b  d95c2414             fstp dword ptr [esp + 0x14]
-// 0073614f  0f8e07020000         jle 0x73635c
-// 00736155  dd442438             fld qword ptr [esp + 0x38]
-// 00736159  56                   push esi
-// 0073615a  8b742458             mov esi, dword ptr [esp + 0x58]
-// 0073615e  d9442414             fld dword ptr [esp + 0x14]
-// 00736162  dd442434             fld qword ptr [esp + 0x34]
-// 00736166  83c6f8               add esi, -8
-// 00736169  eb04                 jmp 0x73616f
-// 0073616b  8b5c2410             mov ebx, dword ptr [esp + 0x10]
-// 0073616f  3b5d14               cmp ebx, dword ptr [ebp + 0x14]
-// 00736172  762c                 jbe 0x7361a0
-// 00736174  dddc                 fstp st(4)
-// 00736176  ddd9                 fstp st(1)
-// 00736178  ddd8                 fstp st(0)
-// 0073617a  ddd9                 fstp st(1)
-// 0073617c  ddd8                 fstp st(0)
-// 0073617e  ff15d8e67700         call dword ptr [0x77e6d8]
-// 00736184  dd442434             fld qword ptr [esp + 0x34]
-// 00736188  dd44243c             fld qword ptr [esp + 0x3c]
-// 0073618c  dd44244c             fld qword ptr [esp + 0x4c]
-// 00736190  d9442414             fld dword ptr [esp + 0x14]
-// 00736194  dd442420             fld qword ptr [esp + 0x20]
-// 00736198  d9cc                 fxch st(4)
-// 0073619a  d9ca                 fxch st(2)
-// 0073619c  d9cb                 fxch st(3)
-// 0073619e  d9ca                 fxch st(2)
-// 007361a0  837d1810             cmp dword ptr [ebp + 0x18], 0x10
-// 007361a4  7205                 jb 0x7361ab
-// 007361a6  8b4504               mov eax, dword ptr [ebp + 4]
-// 007361a9  eb03                 jmp 0x7361ae
-// 007361ab  8d4504               lea eax, [ebp + 4]
-// 007361ae  8a1c18               mov bl, byte ptr [eax + ebx]
-// 007361b1  80e37f               and bl, 0x7f
-// 007361b4  80fb20               cmp bl, 0x20
-// 007361b7  0f8465010000         je 0x736322
-// 007361bd  0fbed3               movsx edx, bl
-// 007361c0  8bc2                 mov eax, edx
-// 007361c2  8bca                 mov ecx, edx
-// 007361c4  c1f804               sar eax, 4
-// 007361c7  83e10f               and ecx, 0xf
-// 007361ca  837c245400           cmp dword ptr [esp + 0x54], 0
-// 007361cf  751e                 jne 0x7361ef
-// 007361d1  8baf0c020000         mov ebp, dword ptr [edi + 0x20c]
-// 007361d7  2b6c970c             sub ebp, dword ptr [edi + edx*4 + 0xc]
-// 007361db  896c2458             mov dword ptr [esp + 0x58], ebp
-// 007361df  db442458             fild dword ptr [esp + 0x58]
-// 007361e3  decd                 fmulp st(5)
-// 007361e5  d9cc                 fxch st(4)
-// 007361e7  dc0d485b7900         fmul qword ptr [0x795b48]
-// 007361ed  eb04                 jmp 0x7361f3
-// 007361ef  dddc                 fstp st(4)
-// 007361f1  d9ee                 fldz 
-// 007361f3  8b970c020000         mov edx, dword ptr [edi + 0x20c]
-// 007361f9  d95c2458             fstp dword ptr [esp + 0x58]
-// 007361fd  d9442458             fld dword ptr [esp + 0x58]
-// 00736201  0fafd1               imul edx, ecx
-// 00736204  d8ec                 fsubr st(4)
-// 00736206  d95c2458             fstp dword ptr [esp + 0x58]
-// 0073620a  89542434             mov dword ptr [esp + 0x34], edx
-// 0073620e  83c608               add esi, 8
-// 00736211  83c608               add esi, 8
-// 00736214  db442434             fild dword ptr [esp + 0x34]
-// 00736218  83c608               add esi, 8
-// 0073621b  83c608               add esi, 8
-// 0073621e  83c608               add esi, 8
-// 00736221  d95ee0               fstp dword ptr [esi - 0x20]
-// 00736224  8b9710020000         mov edx, dword ptr [edi + 0x210]
-// 0073622a  0fafd0               imul edx, eax
-// 0073622d  83c201               add edx, 1
-// 00736230  89542434             mov dword ptr [esp + 0x34], edx
-// 00736234  83c608               add esi, 8
-// 00736237  83c608               add esi, 8
-// 0073623a  db442434             fild dword ptr [esp + 0x34]
-// 0073623e  d95ed4               fstp dword ptr [esi - 0x2c]
-// 00736241  d9442458             fld dword ptr [esp + 0x58]
-// 00736245  d956d8               fst dword ptr [esi - 0x28]
-// 00736248  d9c1                 fld st(1)
-// 0073624a  d8c3                 fadd st(3)
-// 0073624c  d95c2458             fstp dword ptr [esp + 0x58]
-// 00736250  d9442458             fld dword ptr [esp + 0x58]
-// 00736254  d956dc               fst dword ptr [esi - 0x24]
-// 00736257  8b970c020000         mov edx, dword ptr [edi + 0x20c]
-// 0073625d  0fafd1               imul edx, ecx
-// 00736260  89542458             mov dword ptr [esp + 0x58], edx
-// 00736264  8d5001               lea edx, [eax + 1]
-// 00736267  83c101               add ecx, 1
-// 0073626a  db442458             fild dword ptr [esp + 0x58]
-// 0073626e  d95ee0               fstp dword ptr [esi - 0x20]
-// 00736271  8baf10020000         mov ebp, dword ptr [edi + 0x210]
-// 00736277  0fafea               imul ebp, edx
-// 0073627a  83ed02               sub ebp, 2
-// 0073627d  896c2458             mov dword ptr [esp + 0x58], ebp
-// 00736281  db442458             fild dword ptr [esp + 0x58]
-// 00736285  d95ee4               fstp dword ptr [esi - 0x1c]
-// 00736288  d9c9                 fxch st(1)
-// 0073628a  d956e8               fst dword ptr [esi - 0x18]
-// 0073628d  d9c3                 fld st(3)
-// 0073628f  d8c5                 fadd st(5)
-// 00736291  d8e3                 fsub st(3)
-// 00736293  d95c2458             fstp dword ptr [esp + 0x58]
-// 00736297  d9442458             fld dword ptr [esp + 0x58]
-// 0073629b  d956ec               fst dword ptr [esi - 0x14]
-// 0073629e  8baf0c020000         mov ebp, dword ptr [edi + 0x20c]
-// 007362a4  0fafe9               imul ebp, ecx
-// 007362a7  d9c9                 fxch st(1)
-// 007362a9  dc442444             fadd qword ptr [esp + 0x44]
-// 007362ad  d95c2458             fstp dword ptr [esp + 0x58]
-// 007362b1  83ed01               sub ebp, 1
-// 007362b4  896c2434             mov dword ptr [esp + 0x34], ebp
-// 007362b8  db442434             fild dword ptr [esp + 0x34]
-// 007362bc  d95ef0               fstp dword ptr [esi - 0x10]
-// 007362bf  8baf10020000         mov ebp, dword ptr [edi + 0x210]
-// 007362c5  0fafea               imul ebp, edx
-// 007362c8  83ed02               sub ebp, 2
-// 007362cb  896c2434             mov dword ptr [esp + 0x34], ebp
-// 007362cf  db442434             fild dword ptr [esp + 0x34]
-// 007362d3  d95ef4               fstp dword ptr [esi - 0xc]
-// 007362d6  d9442458             fld dword ptr [esp + 0x58]
-// 007362da  d956f8               fst dword ptr [esi - 8]
-// 007362dd  d9c9                 fxch st(1)
-// 007362df  d95efc               fstp dword ptr [esi - 4]
-// 007362e2  8b970c020000         mov edx, dword ptr [edi + 0x20c]
-// 007362e8  0fafd1               imul edx, ecx
-// 007362eb  83ea01               sub edx, 1
-// 007362ee  89542458             mov dword ptr [esp + 0x58], edx
-// 007362f2  db442458             fild dword ptr [esp + 0x58]
-// 007362f6  d91e                 fstp dword ptr [esi]
-// 007362f8  8b8f10020000         mov ecx, dword ptr [edi + 0x210]
-// 007362fe  0fafc8               imul ecx, eax
-// 00736301  83c101               add ecx, 1
-// 00736304  894c2458             mov dword ptr [esp + 0x58], ecx
-// 00736308  db442458             fild dword ptr [esp + 0x58]
-// 0073630c  d95e04               fstp dword ptr [esi + 4]
-// 0073630f  8b6c2430             mov ebp, dword ptr [esp + 0x30]
-// 00736313  d95e08               fstp dword ptr [esi + 8]
-// 00736316  83c608               add esi, 8
-// 00736319  d95e04               fstp dword ptr [esi + 4]
-// 0073631c  dd442420             fld qword ptr [esp + 0x20]
-// 00736320  d9cc                 fxch st(4)
-// 00736322  837c245400           cmp dword ptr [esp + 0x54], 0
-// 00736327  750b                 jne 0x736334
-// 00736329  0fbed3               movsx edx, bl
-// 0073632c  db44970c             fild dword ptr [edi + edx*4 + 0xc]
-// 00736330  d8cd                 fmul st(5)
-// 00736332  eb04                 jmp 0x736338
-// 00736334  d9442418             fld dword ptr [esp + 0x18]
-// 00736338  8b442410             mov eax, dword ptr [esp + 0x10]
-// 0073633c  dec1                 faddp st(1)
-// 0073633e  83c001               add eax, 1
-// 00736341  3b44241c             cmp eax, dword ptr [esp + 0x1c]
-// 00736345  dd542434             fst qword ptr [esp + 0x34]
-// 00736349  89442410             mov dword ptr [esp + 0x10], eax
-// 0073634d  0f8c18feffff         jl 0x73616b
-// 00736353  dddc                 fstp st(4)
-// 00736355  5e                   pop esi
-// 00736356  ddd9                 fstp st(1)
-// 00736358  ddd8                 fstp st(0)
-// 0073635a  eb08                 jmp 0x736364
-// 0073635c  ddd9                 fstp st(1)
-// 0073635e  dd442430             fld qword ptr [esp + 0x30]
-// 00736362  d9c9                 fxch st(1)
-// 00736364  8b442428             mov eax, dword ptr [esp + 0x28]
-// 00736368  d9c9                 fxch st(1)
-// 0073636a  dc25e0fe7800         fsub qword ptr [0x78fee0]
-// 00736370  5f                   pop edi
-// 00736371  5d                   pop ebp
-// 00736372  5b                   pop ebx
-// 00736373  d918                 fstp dword ptr [eax]
-// 00736375  d95804               fstp dword ptr [eax + 4]
-// 00736378  83c418               add esp, 0x18
-// 0073637b  c23000               ret 0x30
-// library g3d-6.09/GLG3Dcpp\GFont.cpp (function ?computePackedArray@GFont@G3D@@ABE?AVVector2@2@ABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@NNNNW4Spacing@12@PAV32@@Z)
-
 // roc-lang: cpp
 // roc-cl: 50727
 // roc-flags: /O2 /GS- /EHsc /MD
 // roc-lib: g3d-6.09 GLG3Dcpp/GFont.cpp
+
+// Candidate translation unit (score above; library headers required).
+/**
+ @file GFont.cpp
+ 
+ @maintainer Morgan McGuire, morgan@graphics3d.com
+
+ @created 2002-11-02
+ @edited  2006-02-10
+ */
+
+#include "GLG3D/GFont.h"
+#include "GLG3D/RenderDevice.h"
+#include "GLG3D/TextureFormat.h"
+#include "G3D/Vector2.h"
+#include "G3D/System.h"
+#include "G3D/fileutils.h"
+#include "G3D/BinaryInput.h"
+#include "G3D/BinaryOutput.h"
+
+namespace G3D {
+
+GFontRef GFont::fromFile(const std::string& filename) {
+    if (! fileExists(filename)) {
+        debugAssertM(false, format("Could not load font: %s", filename.c_str()));
+        return NULL;
+    }
+
+    BinaryInput b(filename, G3D_LITTLE_ENDIAN, true);
+    return new GFont(NULL, filename, b);
+}
+
+GFontRef GFont::fromFile(RenderDevice* _rd, const std::string& filename) {
+    if (! fileExists(filename)) {
+        debugAssertM(false, format("Could not load font: %s", filename.c_str()));
+        return NULL;
+    }
+
+    BinaryInput b(filename, G3D_LITTLE_ENDIAN, true);
+    return new GFont(_rd, filename, b);
+}
+
+GFontRef GFont::fromMemory(const std::string& name, const uint8* bytes, const int size) {
+    BinaryInput b(bytes, size, G3D_LITTLE_ENDIAN, true, false); 
+    return new GFont(NULL, name, b);
+} 
+
+GFont::GFont(RenderDevice* _rd, const std::string& filename, BinaryInput& b) : renderDevice(_rd) {
+
+    debugAssertM(GLCaps::supports(TextureFormat::A8),
+        "This graphics card does not support the GL_ALPHA8 texture format used by GFont.");
+    debugAssertGLOk();
+
+    int ver = b.readInt32();
+    debugAssertM(ver == 1, "Can't read font files other than version 1");
+    (void)ver;
+
+    // Read the widths
+    for (int c = 0; c < 128; ++c) {
+        subWidth[c] = b.readUInt16();
+    }
+
+    baseline = b.readUInt16();
+    int texWidth = b.readUInt16();
+    charWidth  = texWidth / 16;
+    charHeight = texWidth / 16;
+
+    // The input may not be a power of 2
+    int width  = ceilPow2(charWidth * 16);
+    int height = ceilPow2(charHeight * 8);
+  
+    // Create a texture
+    const uint8* ptr = ((uint8*)b.getCArray()) + b.getPosition();
+
+    texture = 
+        Texture::fromMemory(filename, &ptr,
+            TextureFormat::A8, width, height, 1, TextureFormat::A8, 
+            Texture::CLAMP, Texture::TRILINEAR_MIPMAP, Texture::DIM_2D,
+            Texture::DEPTH_NORMAL, 1.0);
+}
+
+
+Vector2 GFont::texelSize() const {
+    return Vector2(charWidth, charHeight);
+}
+
+
+Vector2 GFont::drawString(
+    RenderDevice*       renderDevice,
+    const std::string&  s,
+    double              x,
+    double              y,
+    double              w,
+    double              h,
+    Spacing             spacing) const {
+
+    debugAssert(renderDevice != NULL);
+    const double propW = w / charWidth;
+    const int n = s.length();
+
+    // Shrink the vertical texture coordinates by 1 texel to avoid
+    // bilinear interpolation interactions with mipmapping.
+    float sy = h / charHeight;
+
+    float x0 = 0;
+    for (int i = 0; i < n; ++i) {
+        char c = s[i] & 127; // s[i] % 128; avoid using illegal chars
+
+        if (c != ' ') {
+            int row   = c / 16;
+            int col   = c & 15; // c % 16
+
+            // Fixed width
+            float sx = 0;
+            
+            if (spacing == PROPORTIONAL_SPACING) {
+                sx = (charWidth - subWidth[(int)c]) * propW * 0.5f;
+            }
+
+            float xx = x - sx;
+            //renderDevice->setTexCoord(0, Vector2(col * charWidth, row * charHeight + 1));
+            //renderDevice->sendVertex(Vector2(x - sx,     y + sy));
+            glTexCoord2f(col * charWidth, row * charHeight + 1);
+            glVertex2f(xx,     y + sy);
+
+            //renderDevice->setTexCoord(0, Vector2(col * charWidth, (row + 1) * charHeight - 2));
+            //renderDevice->sendVertex(Vector2(x- sx,      y + h - sy)); 
+            glTexCoord2f(col * charWidth, (row + 1) * charHeight - 2);
+            glVertex2f(xx,     y + h - sy); 
+
+            xx += w;
+            //renderDevice->setTexCoord(0, Vector2((col + 1) * charWidth - 1, (row + 1) * charHeight - 2));
+            //renderDevice->sendVertex(Vector2(x + w - sx, y + h - sy)); 
+            glTexCoord2f((col + 1) * charWidth - 1, (row + 1) * charHeight - 2);
+            glVertex2f(xx, y + h - sy); 
+
+            //renderDevice->setTexCoord(0, Vector2((col + 1) * charWidth - 1, row * charHeight + 1));
+            //renderDevice->sendVertex(Vector2(x + w - sx, y + sy));            
+            glTexCoord2f((col + 1) * charWidth - 1, row * charHeight + 1);
+            glVertex2f(xx, y + sy);
+                        
+        }
+
+        if (spacing == PROPORTIONAL_SPACING) {
+            x += propW * subWidth[(int)c];
+        } else {
+            x += propW * subWidth[(int)'M'] * 0.85f;
+        }
+    }
+
+    renderDevice->minGLStateChange(8 * n);
+    renderDevice->minGLStateChange(8 * n);
+
+    // TODO: update the RenderDevice state count
+    return Vector2(x - x0, h);
+}
+
+
+Vector2 GFont::computePackedArray(
+    const std::string&  s,
+    double              x,
+    double              y,
+    double              w,
+    double              h,
+    Spacing             spacing,
+    Vector2*            array) const {
+
+    const double propW = w / charWidth;
+    const int n = s.length();
+
+    // Shrink the vertical texture coordinates by 1 texel to avoid
+    // bilinear interpolation interactions with mipmapping.
+    float sy = h / charHeight;
+
+    float x0 = 0;
+
+    const float mwidth = subWidth[(int)'M'] * 0.85f * propW;
+
+    int count = -1;
+    for (int i = 0; i < n; ++i) {
+        char c = s[i] & 127; // s[i] % 128; avoid using illegal chars
+
+        if (c != ' ') {
+            int row   = c >> 4; // fast version of c / 16
+            int col   = c & 15; // fast version of c % 16
+
+            // Fixed width
+            float sx = (spacing == PROPORTIONAL_SPACING) ?
+                (charWidth - subWidth[(int)c]) * propW * 0.5f : 0.0f;
+
+            float xx = x - sx;
+            // Tex, Vert
+            ++count;
+            array[count].x = col * charWidth;
+            array[count].y = row * charHeight + 1;
+
+            ++count;
+            array[count].x = xx;
+            array[count].y = y + sy;
+
+            
+            ++count;
+            array[count].x = col * charWidth;
+            array[count].y = (row + 1) * charHeight - 2;
+            
+            ++count;
+            array[count].x = xx;
+            array[count].y = y + h - sy;
+
+
+            xx += w;
+            ++count;
+            array[count].x = (col + 1) * charWidth - 1;
+            array[count].y = (row + 1) * charHeight - 2;
+            
+            ++count;
+            array[count].x = xx;
+            array[count].y = y + h - sy;
+    
+
+            ++count;
+            array[count].x = (col + 1) * charWidth - 1;
+            array[count].y = row * charHeight + 1;
+
+            ++count;
+            array[count].x = xx;
+            array[count].y = y + sy;
+        }
+
+        x += (spacing == PROPORTIONAL_SPACING) ?
+            propW * subWidth[(int)c] : mwidth;
+    }
+
+    return Vector2(x - x0, h);
+}
+
+
+Vector2 GFont::draw2D(
+    RenderDevice*               renderDevice,
+    const std::string&          s,
+    const Vector2&              pos2D,
+    double                      size,
+    const Color4&               color,
+    const Color4&               border,
+    XAlign                      xalign,
+    YAlign                      yalign,
+    Spacing                     spacing) const {
+
+	debugAssert(renderDevice != NULL);
+
+    float x = pos2D.x;
+    float y = pos2D.y;
+
+    float h = size * 1.5f;
+    float w = h * charWidth / charHeight;
+
+    switch (xalign) {
+    case XALIGN_RIGHT:
+        x -= get2DStringBounds(s, size, spacing).x;
+        break;
+
+    case XALIGN_CENTER:
+        x -= get2DStringBounds(s, size, spacing).x / 2;
+        break;
+    
+    default:
+        break;
+    }
+
+    switch (yalign) {
+    case YALIGN_CENTER:
+        y -= h / 2.0;
+        break;
+
+    case YALIGN_BASELINE:
+        y -= baseline * h / (double)charHeight;
+        break;
+
+    case YALIGN_BOTTOM:
+        y -= h;
+        break;
+
+    default:
+        break;
+    }
+
+    float m[] = 
+       {1.0f / texture->getTexelWidth(), 0, 0, 0,
+        0, 1.0f / texture->getTexelHeight(), 0, 0,
+        0, 0, 1, 0,
+        0, 0, 0, 1};
+
+    renderDevice->pushState();
+        renderDevice->disableLighting();
+        renderDevice->setTextureMatrix(0, m);
+        renderDevice->setTexture(0, texture);
+
+        renderDevice->setTextureCombineMode(0, RenderDevice::TEX_MODULATE);
+
+        // This is BLEND_SRC_ALPHA because the texture has no luminance, only alpha
+        renderDevice->setBlendFunc(RenderDevice::BLEND_SRC_ALPHA,
+				   RenderDevice::BLEND_ONE_MINUS_SRC_ALPHA);
+
+        renderDevice->setAlphaTest(RenderDevice::ALPHA_GEQUAL, 1/255.0);
+
+        const float b = renderDevice->getBrightScale();
+
+        if (GLCaps::supports_GL_ARB_multitexture()) {
+            glActiveTextureARB(GL_TEXTURE0_ARB);
+        }
+
+
+        int numChars = 0;
+        for (unsigned int i = 0; i < s.length(); ++i) {
+            numChars += ((s[i] % 128) != ' ') ? 1 : 0;
+        }
+        if (numChars == 0) {
+            renderDevice->popState();
+            return Vector2(0, h);
+        }
+
+        // Packed vertex array; tex coord and vertex are interlaced
+        // For each character we need 4 vertices.
+
+        // MSVC 6 cannot use static allocation with a variable size argument
+        // so we revert to the more compiler specific alloca call. Gcc does not
+        // implement array[variable] well, so we use this everywhere.
+        Vector2* array = (Vector2*)System::malloc(numChars * 4 * 2 * sizeof(Vector2));
+
+        const Vector2 bounds = computePackedArray(s, x, y, w, h, spacing, array);
+
+        int N = numChars * 4;
+
+        renderDevice->beforePrimitive();
+
+        glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+        glEnableClientState(GL_VERTEX_ARRAY);
+
+        // 2 coordinates per element, float elements, stride (for interlacing), count, pointer
+        glTexCoordPointer(2, GL_FLOAT, sizeof(Vector2) * 2, &array[0]);
+        glVertexPointer(2, GL_FLOAT, sizeof(Vector2) * 2, &array[1]);
+
+        if (border.a > 0.05f) {
+            renderDevice->setColor(Color4(border.r * b, border.g * b, border.b * b, border.a));
+            glMatrixMode(GL_MODELVIEW);
+            float lastDx = 0, lastDy = 0;
+            for (int dy = -1; dy <= 1; dy += 2) {
+                for (int dx = -1; dx <= 1; dx += 2) {
+                    if ((dx != 0) || (dy != 0)) {
+                        // Shift modelview matrix by dx, dy, but also undo the 
+                        // shift from the previous outline
+                        glTranslatef(dx - lastDx, dy - lastDy, 0);
+                        glDrawArrays(GL_QUADS, 0, N);
+                        lastDx = dx; lastDy = dy;
+                    }
+                }
+            }
+            glTranslatef(-lastDx, -lastDy, 0);
+        }
+
+        // Draw foreground
+        renderDevice->setColor(Color4(color.r * b, color.g * b, color.b * b, color.a));
+        glDrawArrays(GL_QUADS, 0, N);
+
+        glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+        glDisableClientState(GL_VERTEX_ARRAY);
+
+        renderDevice->afterPrimitive();
+    renderDevice->popState();
+
+    System::free(array);
+    debugAssertGLOk();
+
+    return bounds;
+}
+
+
+Vector2 GFont::draw3D(
+    RenderDevice*               renderDevice,
+    const std::string&          s,
+    const CoordinateFrame&      pos3D,
+    double                      size,
+    const Color4&               color,
+    const Color4&               border,
+    XAlign                      xalign,
+    YAlign                      yalign,
+    Spacing                     spacing) const {
+    
+	debugAssert(renderDevice != NULL);
+
+    double x = 0;
+    double y = 0;
+
+    double h = size * 1.5;
+    double w = h * charWidth / charHeight;
+
+    switch (xalign) {
+    case XALIGN_RIGHT:
+        x -= get2DStringBounds(s, size, spacing).x;
+        break;
+
+    case XALIGN_CENTER:
+        x -= get2DStringBounds(s, size, spacing).x / 2;
+        break;
+    
+    default:
+        break;
+    }
+
+    switch (yalign) {
+    case YALIGN_CENTER:
+        y -= h / 2.0;
+        break;
+
+    case YALIGN_BASELINE:
+        y -= baseline * h / (double)charHeight;
+        break;
+
+    case YALIGN_BOTTOM:
+        y -= h;
+        break;
+
+    default:
+        break;
+    }
+
+
+    double m[] = 
+       {1.0 / texture->getTexelWidth(), 0, 0, 0,
+        0, 1.0 / texture->getTexelHeight(), 0, 0,
+        0, 0, 1, 0,
+        0, 0, 0, 1};
+
+    renderDevice->pushState();
+        // We need to get out of Y=up coordinates.
+        CoordinateFrame flipY;
+        flipY.rotation[1][1] = -1;
+        renderDevice->setObjectToWorldMatrix(pos3D * flipY);
+
+        renderDevice->setCullFace(RenderDevice::CULL_NONE);
+        renderDevice->setTextureMatrix(0, m);
+        renderDevice->setTexture(0, texture);
+
+        renderDevice->setTextureCombineMode(0, RenderDevice::TEX_MODULATE);
+        renderDevice->setBlendFunc(RenderDevice::BLEND_SRC_ALPHA, 
+				   RenderDevice::BLEND_ONE_MINUS_SRC_ALPHA);
+        renderDevice->setAlphaTest(RenderDevice::ALPHA_GEQUAL, 0.05);
+
+        renderDevice->disableLighting();
+        renderDevice->beginPrimitive(RenderDevice::QUADS);
+
+            if (border.a > 0.05f) {
+
+	        // Make the equivalent of a 3D "1 pixel" offset (the
+	        // default 2D text size is 12-pt with a 1pix border)
+
+ 	        const double borderOffset = size / 12.0;
+                renderDevice->setColor(border);
+                for (int dy = -1; dy <= 1; dy += 2) {
+                    for (int dx = -1; dx <= 1; dx += 2) {
+                        if ((dx != 0) || (dy != 0)) {
+                            drawString(renderDevice, s,
+				               x + dx * borderOffset, 
+				               y + dy * borderOffset,
+				               w, h, spacing);
+                        }
+                    }
+                }
+            }
+
+            renderDevice->setColor(
+		        Color4(color.r * renderDevice->getBrightScale(),
+			       color.g * renderDevice->getBrightScale(), 
+			       color.b * renderDevice->getBrightScale(), 
+			       color.a));
+            Vector2 bounds = drawString(renderDevice, s, x, y, w, h, spacing);
+
+        renderDevice->endPrimitive();
+
+    renderDevice->popState();
+
+    return bounds;
+}
+
+
+Vector2 GFont::get2DStringBounds(
+    const std::string&  s,
+    double              size,
+    Spacing             spacing) const {
+
+    int n = s.length();
+
+    double h = size * 1.5;
+    double w = h * charWidth / charHeight;
+    double propW = w / charWidth;
+    double x = 0;
+    double y = h;
+
+    if (spacing == PROPORTIONAL_SPACING) {
+        for (int i = 0; i < n; ++i) {
+            char c   = s[i] & 127;
+            x += propW * subWidth[(int)c];
+        }
+    } else {
+        x = subWidth[(int)'M'] * n * 0.85 * propW;
+    }
+
+    return Vector2(x, y);
+}
+
+
+void GFont::convertRAWINItoPWF(const std::string& infileBase, std::string outfile) {
+    debugAssert(fileExists(infileBase + ".raw"));
+    debugAssert(fileExists(infileBase + ".ini"));
+
+    if (outfile == "") {
+        outfile = infileBase + ".fnt";
+    }
+
+    BinaryInput  pixel(infileBase + ".raw", G3D_LITTLE_ENDIAN);
+    TextInput    ini(infileBase + ".ini");
+    BinaryOutput out(outfile, G3D_LITTLE_ENDIAN);
+
+    ini.readSymbol("[");
+    ini.readSymbol("Char");
+    ini.readSymbol("Widths");
+    ini.readSymbol("]");
+
+    // Version
+    out.writeInt32(1);
+
+    // Character widths
+    for (int i = 0; i < 128; ++i) {
+        int n = (int)ini.readNumber();
+        (void)n;
+        debugAssert(n == i);
+        ini.readSymbol("=");
+        int cw = (int)ini.readNumber();
+        out.writeInt16(cw);
+    }
+
+    int width = (int)sqrt((double)pixel.size());
+    
+    // Autodetect baseline from capital E
+    {
+        // Size of a character, in texels
+        int          w        = width / 16;
+
+        int          x0       = ('E' % 16) * w;
+        int          y0       = ('E' / 16) * w;
+        
+        const uint8* p        = pixel.getCArray();
+        bool         done     = false;
+        int          baseline = w * 2 / 3;
+    
+        // Search up from the bottom for the first pixel
+        for (int y = y0 + w - 1; (y >= y0) && ! done; --y) {
+            for (int x = x0; (x < x0 + w) && ! done; ++x) {
+                if (p[x + y * w * 16] != 0) {
+                    baseline = y - y0 + 1;
+                    done = true;
+                }
+            }
+        }
+        out.writeUInt16(baseline);
+    }
+
+    // Texture width
+    out.writeUInt16(width);
+
+    // The input may not be a power of 2, so size it up
+    int width2  = ceilPow2(width);
+    int height2 = ceilPow2(width / 2);
+
+    if ((width2 == width) && (height2 == (width/2))) {
+        // Texture
+        int num = width * (width / 2);
+        out.writeBytes(pixel.getCArray(), num);
+    } else {
+        // Pad
+        const uint8* ptr = pixel.getCArray();
+    
+//        int num = width * (width / 2);
+        for (int y = 0; y < height2; ++y) {
+            // Write the row
+            out.writeBytes(ptr, width);
+            ptr += width;
+
+            // Write the horizontal padding
+            out.skip(width2 - width);
+        }
+
+        // Write the vertical padding
+        out.skip((height2 - (width / 2)) * width2);
+    }
+ 
+    out.compress();
+    out.commit(false);
+}
+
+}

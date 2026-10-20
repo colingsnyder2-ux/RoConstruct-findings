@@ -1,23 +1,87 @@
-// roc 2008-06 007fd350  unit: seg_007f0000  size: 61 bytes
-// Make this compile to the exact bytes below, then: roc check 2008-06 007fd350
-//
-// 007fd350  a1c44c9700           mov eax, dword ptr [0x974cc4]
-// 007fd355  85c0                 test eax, eax
-// 007fd357  7409                 je 0x7fd362
-// 007fd359  50                   push eax
-// 007fd35a  e81b33eaff           call 0x6a067a
-// 007fd35f  83c404               add esp, 4
-// 007fd362  a1b84c9700           mov eax, dword ptr [0x974cb8]
-// 007fd367  50                   push eax
-// 007fd368  c705c44c970000000000 mov dword ptr [0x974cc4], 0
-// 007fd372  c705c84c970000000000 mov dword ptr [0x974cc8], 0
-// 007fd37c  c705cc4c970000000000 mov dword ptr [0x974ccc], 0
-// 007fd386  e8ef32eaff           call 0x6a067a
-// 007fd38b  59                   pop ecx
-// 007fd38c  c3                   ret 
-// library openrbx-client/App\reflection\reflection_property.cpp (function ??__Fs@?1??allEnums@EnumDescriptor@Reflection@RBX@@CAAAV?$vector@PBVEnumDescriptor@Reflection@RBX@@V?$allocator@PBVEnumDescriptor@Reflection@RBX@@@std@@@std@@XZ@YAXXZ)
-
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
 // roc-lib: openrbx-client App/reflection/reflection_property.cpp
+
+// Candidate translation unit (score above; library headers required).
+#include "reflection/enumconverter.h"
+#include "reflection/object.h"
+#include "reflection/property.h"
+#include "v8xml/XmlElement.h"
+
+namespace RBX {
+namespace Reflection {
+
+// FUNCTION: WEBSERVICE 0x10094120
+void PropertyDescriptor::read(DescribedBase* instance, const XmlElement* element, IReferenceBinder& binder) const
+{
+	readValue(instance, element, binder);
+}
+
+// FUNCTION: WEBSERVICE 0x10094130
+template <>
+const Type& Type::singleton<const PropertyDescriptor*>()
+{
+	static Type type("Property", typeid(const PropertyDescriptor*));
+
+	return type;
+}
+
+// FUNCTION: WEBSERVICE 0x100941a0
+XmlElement* PropertyDescriptor::write(const DescribedBase* instance, bool ignoreWriteProtection) const
+{
+	if (!ignoreWriteProtection) {
+		if (isReadOnly()) {
+			return NULL;
+		}
+
+		if (!canStreamWrite()) {
+			return NULL;
+		}
+	}
+
+	XmlElement* element = new XmlElement(type.tag);
+
+	element->addAttribute<const RBX::Name*>(name_name, &name);
+
+	writeValue(instance, element);
+
+	return element;
+}
+
+// FUNCTION: WEBSERVICE 0x10094250
+std::vector<const EnumDescriptor*>& EnumDescriptor::allEnums()
+{
+	static std::vector<const EnumDescriptor*> s;
+
+	return s;
+}
+
+// FUNCTION: WEBSERVICE 0x100942b0
+EnumDescriptor::~EnumDescriptor()
+{
+	allEnums().erase(std::find(allEnums().begin(), allEnums().end(), this));
+}
+
+// FUNCTION: WEBSERVICE 0x10094390
+EnumDescriptor::EnumDescriptor(const char* typeName, const std::type_info& type)
+	: Type(typeName, type, "token"), enumCount(0), enumCountMSB(0)
+{
+	allEnums().push_back(this);
+}
+
+// FUNCTION: WEBSERVICE 0x10094410
+PropertyDescriptor::PropertyDescriptor(
+	ClassDescriptor& classDescriptor,
+	const Type& type,
+	const char* name,
+	const char* category,
+	Functionality flags
+)
+	: MemberDescriptor(classDescriptor, name, category), type(type), bIsPublic(flags), bCanStreamWrite(flags >> 2)
+{
+	classDescriptor.MemberDescriptorContainer<PropertyDescriptor>::declare(this);
+}
+
+} // namespace Reflection
+} // namespace RBX

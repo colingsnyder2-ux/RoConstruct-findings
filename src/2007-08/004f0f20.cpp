@@ -1,34 +1,161 @@
-// roc 2007-08 004f0f20  unit: RBX::Render::AggregatingSceneManager  size: 61 bytes
-// Make this compile to the exact bytes below, then: roc check 2007-08 004f0f20
-//
-// 004f0f20  53                   push ebx
-// 004f0f21  56                   push esi
-// 004f0f22  57                   push edi
-// 004f0f23  8b7c2410             mov edi, dword ptr [esp + 0x10]
-// 004f0f27  807f1d00             cmp byte ptr [edi + 0x1d], 0
-// 004f0f2b  8bd9                 mov ebx, ecx
-// 004f0f2d  8bf7                 mov esi, edi
-// 004f0f2f  7526                 jne 0x4f0f57
-// 004f0f31  8b4608               mov eax, dword ptr [esi + 8]
-// 004f0f34  50                   push eax
-// 004f0f35  8bcb                 mov ecx, ebx
-// 004f0f37  e8e4ffffff           call 0x4f0f20
-// 004f0f3c  8b36                 mov esi, dword ptr [esi]
-// 004f0f3e  8d4f0c               lea ecx, [edi + 0xc]
-// 004f0f41  e84ae8ffff           call 0x4ef790
-// 004f0f46  57                   push edi
-// 004f0f47  e816ed1300           call 0x62fc62
-// 004f0f4c  83c404               add esp, 4
-// 004f0f4f  807e1d00             cmp byte ptr [esi + 0x1d], 0
-// 004f0f53  8bfe                 mov edi, esi
-// 004f0f55  74da                 je 0x4f0f31
-// 004f0f57  5f                   pop edi
-// 004f0f58  5e                   pop esi
-// 004f0f59  5b                   pop ebx
-// 004f0f5a  c20400               ret 4
-// library rbxgs-render/AggregatingSceneManager.cpp (function ?_Erase@?$_Tree@V?$_Tmap_traits@UBucketKey@AggregatingSceneManager@Render@RBX@@V?$ReferenceCountedPointer@VBucket@AggregatingSceneManager@Render@RBX@@@G3D@@U?$less@UBucketKey@AggregatingSceneManager@Render@RBX@@@std@@V?$allocator@U?$pair@$$CBUBucketKey@AggregatingSceneManager@Render@RBX@@V?$ReferenceCountedPointer@VBucket@AggregatingSceneManager@Render@RBX@@@G3D@@@std@@@8@$0A@@std@@@std@@IAEXPAU_Node@?$_Tree_nod@V?$_Tmap_traits@UBucketKey@AggregatingSceneManager@Render@RBX@@V?$ReferenceCountedPointer@VBucket@AggregatingSceneManager@Render@RBX@@@G3D@@U?$less@UBucketKey@AggregatingSceneManager@Render@RBX@@@std@@V?$allocator@U?$pair@$$CBUBucketKey@AggregatingSceneManager@Render@RBX@@V?$ReferenceCountedPointer@VBucket@AggregatingSceneManager@Render@RBX@@@G3D@@@std@@@8@$0A@@std@@@2@@Z)
-
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
 // roc-lib: rbxgs-render AggregatingSceneManager.cpp
+
+// Candidate translation unit (score above; library headers required).
+#include "RenderLib/AggregatingSceneManager.h"
+
+namespace RBX
+{
+	namespace Render
+	{
+		AggregatingSceneManager::AggregatingSceneManager(RenderScene* renderScene)
+			: SceneManager(renderScene)
+		{
+		}
+
+		AggregatingSceneManager::~AggregatingSceneManager() {}
+
+		void AggregatingSceneManager::addModel(const G3D::ReferenceCountedPointer<Chunk>& chunk)
+		{
+			addToScene(chunk);
+		}
+
+		void AggregatingSceneManager::removeModel(const G3D::ReferenceCountedPointer<Chunk>& chunk)
+		{
+			invalidSleepingModels.erase(chunk);
+			invalidMovingModels.erase(chunk);
+
+			G3D::ReferenceCountedPointer<AggregateChunk> aggregate = chunk->aggregate.createStrongPtr();
+			if (aggregate.notNull())
+				deconstructAggregate(aggregate);
+
+			removeFromScene(chunk);
+			dequeueSleepingChunk(chunk);
+		}
+
+		void AggregatingSceneManager::setSleeping(const G3D::ReferenceCountedPointer<Chunk>& chunk, bool sleeping)
+		{
+			if (sleeping)
+			{
+				bool erased = invalidMovingModels.erase(chunk) == 1;
+
+				if (erased)
+					invalidSleepingModels.insert(chunk);
+
+				queueSleepingChunk(chunk);
+			}
+			else
+			{
+				bool erased = invalidSleepingModels.erase(chunk) == 1;
+
+				if (erased)
+					invalidMovingModels.insert(chunk);
+
+				G3D::ReferenceCountedPointer<AggregateChunk> aggregate = chunk->aggregate.createStrongPtr();
+				if (aggregate.notNull())
+					deconstructAggregate(aggregate);
+
+				dequeueSleepingChunk(chunk);
+			}
+		}
+
+		void AggregatingSceneManager::invalidateModel(const G3D::ReferenceCountedPointer<Chunk>& chunk, bool isSleeping)
+		{
+			if (isSleeping)
+				invalidSleepingModels.insert(chunk);
+			else
+				invalidMovingModels.insert(chunk);
+		}
+
+		void AggregatingSceneManager::dequeueSleepingChunk(const G3D::ReferenceCountedPointer<Chunk>& chunk)
+		{
+			std::map<BucketKey, G3D::ReferenceCountedPointer<Bucket>>::iterator iter = buckets.begin();
+			std::map<BucketKey, G3D::ReferenceCountedPointer<Bucket>>::iterator end = buckets.end();
+
+			for (; iter != end; iter++)
+			{
+				if (iter->second->dequeueSleepingChunk(chunk))
+					break;
+			}
+		}
+
+		void AggregatingSceneManager::clear()
+		{
+			invalidSleepingModels.clear();
+			invalidMovingModels.clear();
+
+			std::map<BucketKey, G3D::ReferenceCountedPointer<Bucket>>::iterator iter = buckets.begin();
+			std::map<BucketKey, G3D::ReferenceCountedPointer<Bucket>>::iterator end = buckets.end();
+
+			for (; iter != end; iter++)
+			{
+				iter->second->clear();
+			}
+
+			clearScene();
+		}
+
+		bool AggregatingSceneManager::Bucket::dequeueSleepingChunk(const G3D::ReferenceCountedPointer<Chunk>& chunk)
+		{
+			std::vector<G3D::ReferenceCountedPointer<Chunk>>::iterator found = std::find(queue.begin(), queue.end(), chunk);
+
+			if (found != queue.end())
+			{
+				queue.erase(found);
+				return true;
+			}
+			else
+			{
+				return false;
+			}
+		}
+
+		void AggregatingSceneManager::queueSleepingChunk(const G3D::ReferenceCountedPointer<Chunk>& chunk)
+		{
+			G3D::ReferenceCountedPointer<Bucket> queue;
+
+			{
+				BucketKey key(chunk);
+
+				std::map<BucketKey, G3D::ReferenceCountedPointer<Bucket>>::iterator iter = buckets.find(key);
+
+				if (iter == buckets.end())
+				{
+					queue = new Bucket;
+					buckets[key] = queue;
+				}
+				else
+				{
+					queue = iter->second;
+				}
+			}
+
+			queue->addToQueue(chunk);
+		}
+
+		bool AggregatingSceneManager::BucketKey::operator<(const AggregatingSceneManager::BucketKey& that) const
+		{
+			if (this->material < that.material)
+				return true;
+			if (this->material > that.material)
+				return false;
+
+			if (this->castsShadows < that.castsShadows)
+				return true;
+			if (this->castsShadows > that.castsShadows)
+				return false;
+
+			if (this->polygonOffset < that.polygonOffset)
+				return true;
+			if (this->polygonOffset > that.polygonOffset)
+				return false;
+
+			if (this->cullable < that.cullable)
+				return true;
+			else
+				return false;
+		}
+	}
+}

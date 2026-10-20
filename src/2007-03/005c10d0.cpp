@@ -1,17 +1,112 @@
-// roc 2007-03 005c10d0  unit: seg_005c0000  size: 22 bytes
-// Make this compile to the exact bytes below, then: roc check 2007-03 005c10d0
-//
-// 005c10d0  8bc1                 mov eax, ecx
-// 005c10d2  8b4c2404             mov ecx, dword ptr [esp + 4]
-// 005c10d6  8908                 mov dword ptr [eax], ecx
-// 005c10d8  33c9                 xor ecx, ecx
-// 005c10da  894808               mov dword ptr [eax + 8], ecx
-// 005c10dd  89480c               mov dword ptr [eax + 0xc], ecx
-// 005c10e0  894810               mov dword ptr [eax + 0x10], ecx
-// 005c10e3  c20400               ret 4
-// library rbxgs/util\Log.cpp (function ??0?$fpos@H@std@@QAE@J@Z)
-
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
 // roc-lib: rbxgs util/Log.cpp
+
+// Candidate translation unit (score above; library headers required).
+#define _CRT_SECURE_NO_DEPRECATE
+#include "util/Log.h"
+#include <windows.h>
+
+static void timeStamp(std::ofstream& stream, bool includeDate)
+{
+	char buffer[256];
+
+	SYSTEMTIME systemTime;
+	GetLocalTime(&systemTime);
+
+	if (includeDate)
+	{
+		sprintf(buffer, "%02u.%02u.%u ", systemTime.wDay, systemTime.wMonth, systemTime.wYear);
+		stream << buffer;
+	}
+
+	sprintf(buffer, "%02u:%02u.%03u ", systemTime.wHour, systemTime.wMinute, systemTime.wMilliseconds);
+	stream << buffer;
+
+	stream.flush();
+}
+
+namespace RBX
+{
+	void Log::setLogProvider(ILogProvider* provider)
+	{
+		Log::provider = provider;
+	}
+
+	std::string Log::formatMem(unsigned bytes)
+	{
+		char buffer[64];
+		if (bytes < 1000)
+			sprintf(buffer, "%dB", bytes);
+		else if (bytes < 1000*1000)
+			sprintf(buffer, "%dKB", bytes / 1000);
+		else if (bytes < 1000*1000*1000)
+			sprintf(buffer, "%dMB", bytes / (1000*1000));
+		else
+			sprintf(buffer, "%dGB", bytes / (1000*1000*1000));
+
+		return buffer;
+	}
+
+	std::string Log::formatTime(double time)
+	{
+		char buffer[64];
+		if (time == 0.0)
+			sprintf(buffer, "0s");
+
+		if (time < 0.0)
+			sprintf(buffer, "%.3gs", time);
+		else if (time >= 0.1)
+			sprintf(buffer, "%.3gs", time);
+		else
+			sprintf(buffer, "%.3gms", time * 1000.0);
+
+		return buffer;
+	}
+
+	void Log::timeStamp(bool includeDate)
+	{
+		::timeStamp(stream, includeDate);
+	}
+
+	static const char* information = "          ";
+	static const char* warning     = " Warning: ";
+	static const char* error       = " Error:   ";
+
+	void Log::writeEntry(Severity severity, const char* message)
+	{
+		//current()->timeStamp(false);
+		::timeStamp(currentStream(), false);
+
+		switch (severity)
+		{
+		case Error:
+			currentStream() << error;
+		case Warning:
+			currentStream() << warning;
+		case Information:
+			currentStream() << information;
+		}
+
+		currentStream() << message;
+		stream << '\n';
+		currentStream().flush();
+	}
+
+	Log::Log(const char* logFile, const char* name)
+		: worstSeverity(Information),
+		  logFile(logFile),
+		  stream(logFile, 2, 64)
+	{
+		timeStamp(true);
+		stream << "Log \"" << name << "\"\n";
+		stream.flush();
+	}
+
+	Log::~Log()
+	{
+		timeStamp(true);
+		stream << "End Log\n";
+	}
+}

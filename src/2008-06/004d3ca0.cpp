@@ -1,46 +1,173 @@
-// roc 2008-06 004d3ca0  unit: seg_004d0000  size: 97 bytes
-// Make this compile to the exact bytes below, then: roc check 2008-06 004d3ca0
-//
-// 004d3ca0  56                   push esi
-// 004d3ca1  57                   push edi
-// 004d3ca2  8bf1                 mov esi, ecx
-// 004d3ca4  33ff                 xor edi, edi
-// 004d3ca6  397e04               cmp dword ptr [esi + 4], edi
-// 004d3ca9  7626                 jbe 0x4d3cd1
-// 004d3cab  53                   push ebx
-// 004d3cac  8d642400             lea esp, [esp]
-// 004d3cb0  8b06                 mov eax, dword ptr [esi]
-// 004d3cb2  8b1cb8               mov ebx, dword ptr [eax + edi*4]
-// 004d3cb5  85db                 test ebx, ebx
-// 004d3cb7  7411                 je 0x4d3cca
-// 004d3cb9  8b0b                 mov ecx, dword ptr [ebx]
-// 004d3cbb  51                   push ecx
-// 004d3cbc  e8b9c91c00           call 0x6a067a
-// 004d3cc1  53                   push ebx
-// 004d3cc2  e8b3c91c00           call 0x6a067a
-// 004d3cc7  83c408               add esp, 8
-// 004d3cca  47                   inc edi
-// 004d3ccb  3b7e04               cmp edi, dword ptr [esi + 4]
-// 004d3cce  72e0                 jb 0x4d3cb0
-// 004d3cd0  5b                   pop ebx
-// 004d3cd1  8b4608               mov eax, dword ptr [esi + 8]
-// 004d3cd4  85c0                 test eax, eax
-// 004d3cd6  7426                 je 0x4d3cfe
-// 004d3cd8  3d00020000           cmp eax, 0x200
-// 004d3cdd  7618                 jbe 0x4d3cf7
-// 004d3cdf  8b16                 mov edx, dword ptr [esi]
-// 004d3ce1  52                   push edx
-// 004d3ce2  e893c91c00           call 0x6a067a
-// 004d3ce7  83c404               add esp, 4
-// 004d3cea  c7460800000000       mov dword ptr [esi + 8], 0
-// 004d3cf1  c70600000000         mov dword ptr [esi], 0
-// 004d3cf7  c7460400000000       mov dword ptr [esi + 4], 0
-// 004d3cfe  5f                   pop edi
-// 004d3cff  5e                   pop esi
-// 004d3d00  c3                   ret 
-// library rbxgs-raknet/RPCMap.cpp (function ?Clear@RPCMap@@QAEXXZ)
-
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
 // roc-lib: rbxgs-raknet RPCMap.cpp
+
+// Candidate translation unit (score above; library headers required).
+/// \file
+///
+/// This file is part of RakNet Copyright 2003 Kevin Jenkins.
+///
+/// Usage of RakNet is subject to the appropriate license agreement.
+/// Creative Commons Licensees are subject to the
+/// license found at
+/// http://creativecommons.org/licenses/by-nc/2.5/
+/// Single application licensees are subject to the license found at
+/// http://www.rakkarsoft.com/SingleApplicationLicense.html
+/// Custom license users are subject to the terms therein.
+/// GPL license users are subject to the GNU General Public
+/// License as published by the Free
+/// Software Foundation; either version 2 of the License, or (at your
+/// option) any later version.
+
+#include "RPCMap.h"
+#include <string.h>
+
+RPCMap::RPCMap()
+{
+}
+RPCMap::~RPCMap()
+{
+	Clear();
+}
+void RPCMap::Clear(void)
+{
+	unsigned i;
+	RPCNode *node;
+	for (i=0; i < rpcSet.Size(); i++)
+	{
+		node=rpcSet[i];
+		if (node)
+		{
+			delete [] node->uniqueIdentifier;
+			delete node;
+		}
+	}
+	rpcSet.Clear();
+}
+RPCNode *RPCMap::GetNodeFromIndex(RPCIndex index)
+{
+	if ((unsigned)index < rpcSet.Size())
+		return rpcSet[(unsigned)index];
+	return 0;
+}
+RPCNode *RPCMap::GetNodeFromFunctionName(const char *uniqueIdentifier)
+{
+	unsigned index;
+	index=(unsigned)GetIndexFromFunctionName(uniqueIdentifier);
+	if ((RPCIndex)index!=UNDEFINED_RPC_INDEX)
+		return rpcSet[index];
+	return 0;
+}
+RPCIndex RPCMap::GetIndexFromFunctionName(const char *uniqueIdentifier)
+{
+	unsigned index;
+	for (index=0; index < rpcSet.Size(); index++)
+		if (rpcSet[index] && strcmp(rpcSet[index]->uniqueIdentifier, uniqueIdentifier)==0)
+			return (RPCIndex) index;
+	return UNDEFINED_RPC_INDEX;
+}
+
+// Called from the user thread for the local system
+void RPCMap::AddIdentifierWithFunction(const char *uniqueIdentifier, void *functionPointer, bool isPointerToMember)
+{
+#ifdef _DEBUG
+	assert(rpcSet.Size()+1 < MAX_RPC_MAP_SIZE); // If this hits change the typedef of RPCIndex to use an unsigned short
+	assert(uniqueIdentifier && uniqueIdentifier[0]);
+	assert(functionPointer);
+#endif
+
+	unsigned index, existingNodeIndex;
+	RPCNode *node;
+
+	existingNodeIndex=GetIndexFromFunctionName(uniqueIdentifier);
+	if ((RPCIndex)existingNodeIndex!=UNDEFINED_RPC_INDEX) // Insert at any free spot.
+	{
+		// Trying to insert an identifier at any free slot and that identifier already exists
+		// The user should not insert nodes that already exist in the list
+#ifdef _DEBUG
+//		assert(0);
+#endif
+		return;
+	}
+
+	node = new RPCNode;
+	node->uniqueIdentifier = new char [strlen(uniqueIdentifier)+1];
+	strcpy(node->uniqueIdentifier, uniqueIdentifier);
+	node->functionPointer=functionPointer;
+	node->isPointerToMember=isPointerToMember;
+
+	// Insert into an empty spot if possible
+	for (index=0; index < rpcSet.Size(); index++)
+	{
+		if (rpcSet[index]==0)
+		{
+			rpcSet.Replace(node, 0, index);
+			return;
+		}
+	}
+
+	rpcSet.Insert(node); // No empty spots available so just add to the end of the list
+
+}
+void RPCMap::AddIdentifierAtIndex(const char *uniqueIdentifier, RPCIndex insertionIndex)
+{
+#ifdef _DEBUG
+	assert(uniqueIdentifier && uniqueIdentifier[0]);
+#endif
+
+	unsigned existingNodeIndex;
+	RPCNode *node, *oldNode;
+
+	existingNodeIndex=GetIndexFromFunctionName(uniqueIdentifier);
+
+	if (existingNodeIndex==insertionIndex)
+		return; // Already there
+
+	if ((RPCIndex)existingNodeIndex!=UNDEFINED_RPC_INDEX)
+	{
+		// Delete the existing one
+		oldNode=rpcSet[existingNodeIndex];
+		rpcSet[existingNodeIndex]=0;
+		delete [] oldNode->uniqueIdentifier;
+		delete oldNode;
+	}
+
+	node = new RPCNode;
+	node->uniqueIdentifier = new char [strlen(uniqueIdentifier)+1];
+	strcpy(node->uniqueIdentifier, uniqueIdentifier);
+	node->functionPointer=0;
+
+	// Insert at a user specified spot
+	if (insertionIndex < rpcSet.Size())
+	{
+		// Overwrite what is there already
+		oldNode=rpcSet[insertionIndex];
+		if (oldNode)
+		{
+			delete [] oldNode->uniqueIdentifier;
+			delete oldNode;
+		}
+		rpcSet[insertionIndex]=node;
+	}
+	else
+	{
+		// Insert after the end of the list and use 0 as a filler for the empty spots
+		rpcSet.Replace(node, 0, insertionIndex);
+	}
+}
+
+void RPCMap::RemoveNode(const char *uniqueIdentifier)
+{
+	unsigned index;
+	index=GetIndexFromFunctionName(uniqueIdentifier);
+    #ifdef _DEBUG
+	assert(index!=UNDEFINED_RPC_INDEX); // If this hits then the user was removing an RPC call that wasn't currently registered
+	#endif
+	RPCNode *node;
+	node = rpcSet[index];
+	delete [] node->uniqueIdentifier;
+	delete node;
+	rpcSet[index]=0;
+}
+

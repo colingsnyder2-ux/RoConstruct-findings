@@ -1,46 +1,196 @@
-// roc 2007-03 0056c400  unit: seg_00560000  size: 101 bytes
-// Make this compile to the exact bytes below, then: roc check 2007-03 0056c400
-//
-// 0056c400  51                   push ecx
-// 0056c401  56                   push esi
-// 0056c402  8b742410             mov esi, dword ptr [esp + 0x10]
-// 0056c406  57                   push edi
-// 0056c407  6a4e                 push 0x4e
-// 0056c409  56                   push esi
-// 0056c40a  c744241000000000     mov dword ptr [esp + 0x10], 0
-// 0056c412  e839ce0400           call 0x5b9250
-// 0056c417  68eed8ffff           push 0xffffd8ee
-// 0056c41c  56                   push esi
-// 0056c41d  e87ece0400           call 0x5b92a0
-// 0056c422  56                   push esi
-// 0056c423  e828c60400           call 0x5b8a50
-// 0056c428  8b0d08e48900         mov ecx, dword ptr [0x89e408]
-// 0056c42e  51                   push ecx
-// 0056c42f  50                   push eax
-// 0056c430  56                   push esi
-// 0056c431  e87ae00400           call 0x5ba4b0
-// 0056c436  6afe                 push -2
-// 0056c438  56                   push esi
-// 0056c439  8bf8                 mov edi, eax
-// 0056c43b  e820c60400           call 0x5b8a60
-// 0056c440  8b17                 mov edx, dword ptr [edi]
-// 0056c442  8b442438             mov eax, dword ptr [esp + 0x38]
-// 0056c446  83c428               add esp, 0x28
-// 0056c449  8910                 mov dword ptr [eax], edx
-// 0056c44b  8b4f04               mov ecx, dword ptr [edi + 4]
-// 0056c44e  85c9                 test ecx, ecx
-// 0056c450  5f                   pop edi
-// 0056c451  894804               mov dword ptr [eax + 4], ecx
-// 0056c454  5e                   pop esi
-// 0056c455  740c                 je 0x56c463
-// 0056c457  83c104               add ecx, 4
-// 0056c45a  ba01000000           mov edx, 1
-// 0056c45f  f00fc111             lock xadd dword ptr [ecx], edx
-// 0056c463  59                   pop ecx
-// 0056c464  c3                   ret 
-// library rbxgs/script\ThreadRef.cpp (function ?get@Node@ThreadRef@Lua@RBX@@SA?AV?$shared_ptr@VNode@ThreadRef@Lua@RBX@@@boost@@PAUlua_State@@@Z)
-
 // roc-lang: cpp
 // roc-cl: 50727
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
 // roc-lib: rbxgs script/ThreadRef.cpp
+
+// Candidate translation unit (score above; library headers required).
+#include "script/ThreadRef.h"
+#include "script/ScriptContext.h"
+#include "lua.h"
+#include "lauxlib.h"
+
+namespace RBX
+{
+    namespace Lua
+    {
+        ThreadRef::ThreadRef(lua_State* thread)
+            : sync(syncSingleton),
+              node(NULL),
+              previous(NULL),
+              next(NULL),
+              L(thread),
+              threadId(0)
+        {
+            boost::mutex::scoped_lock lock(*sync);
+
+            node = Node::get(thread).get();
+            addToNode();
+            addRef();
+        }
+
+        ThreadRef::ThreadRef(const ThreadRef& other)
+            : sync(syncSingleton),
+              node(other.node),
+              L(other.L)
+        {
+            boost::mutex::scoped_lock lock(*sync);
+
+            addRef();
+            addToNode();
+        }
+
+        ThreadRef::~ThreadRef()
+        {
+            reset();
+        }
+
+        void ThreadRef::reset()
+        {
+            boost::mutex::scoped_lock lock(*sync);
+
+            removeFromNode();
+            removeRef();
+        }
+
+        ThreadRef& ThreadRef::operator=(const ThreadRef& other)
+        {
+            if (L != other.L)
+            {
+                boost::mutex::scoped_lock lock(*sync);
+
+                removeRef();
+                L = other.L;
+
+                if (L)
+                {
+                    lua_pushthread(L);
+                    threadId = luaL_ref(L, LUA_REGISTRYINDEX);
+                }
+            }
+
+            if (node != other.node)
+            {
+                boost::mutex::scoped_lock lock(*sync);
+
+                removeFromNode();
+
+                node = other.node;
+                addToNode();
+            }
+
+            return *this;
+        }
+
+        void ThreadRef::removeRef()
+        {
+            if (L)
+            {
+                lua_unref(L, threadId);
+                threadId = 0;
+                L = NULL;
+            }
+        }
+
+        void ThreadRef::Node::eraseAllRefs()
+        {
+            boost::mutex::scoped_lock lock(*sync);
+
+            for (ThreadRef* ref = first; ref; ref = ref->next)
+            {
+                ref->removeRef();
+                ref->node = NULL;
+            }
+
+            first = NULL;
+        }
+
+        ThreadRef::Node::~Node()
+        {
+            eraseAllRefs();
+        }
+
+        ThreadRef::NodePtr ThreadRef::Node::create(lua_State* thread)
+        {
+            lua_pushlightuserdata(thread, RBX_LUA_GLOBAL_THREADREFNODE);
+            ThreadRef::NodePtr* newPtr = NodeBridge::pushNewObject(thread);
+            lua_settable(thread, LUA_GLOBALSINDEX);
+
+            *newPtr = ThreadRef::NodePtr(new Node());
+            return *newPtr;
+        }
+
+        ThreadRef::NodePtr ThreadRef::Node::get(lua_State* thread)
+        {
+            lua_pushlightuserdata(thread, RBX_LUA_GLOBAL_THREADREFNODE);
+            lua_gettable(thread, LUA_GLOBALSINDEX);
+            ThreadRef::NodePtr& node = NodeBridge::getObject(thread, lua_gettop(thread));
+            lua_pop(thread, 1);
+            return node;
+        }
+
+        // TODO: this might also be the base definition of Bridge::on_index, not currently clear
+        template<>
+        int ThreadRef::NodeBridge::on_index(const ThreadRef::NodePtr& object, const char* name, lua_State* L)
+        {
+            throw std::runtime_error(G3D::format("%s is not a valid member", name));
+        }
+
+        FunctionRef::FunctionRef(lua_State* thread, int functionIndex)
+            : ThreadRef(thread)
+        {
+            lua_pushvalue(thread, functionIndex);
+            functionId = luaL_ref(thread, LUA_REGISTRYINDEX);
+        }
+
+        FunctionRef lua_tofunction(lua_State* L, int index)
+        {
+            return FunctionRef(L, index);
+        }
+
+        void lua_pushfunction(lua_State* L, const FunctionRef& function)
+        {
+            lua_getref(L, function.functionId);
+        }
+
+        FunctionRef::~FunctionRef()
+        {
+            if (functionId && !empty())
+                lua_unref(thread(), functionId);  
+        }
+
+        void FunctionRef::removeRef()
+        {
+            if (functionId && !empty())
+            {
+                lua_unref(thread(), functionId);  
+                functionId = 0;
+            }
+
+            ThreadRef::removeRef();
+        }
+
+        FunctionRef::FunctionRef(const FunctionRef& other)
+            : ThreadRef(other)
+        {
+            if (empty())
+            {
+                functionId = 0;
+            }
+            else
+            {
+                lua_getref(thread(), other.functionId);
+                functionId = luaL_ref(thread(), LUA_REGISTRYINDEX);
+            }
+        }
+    }
+
+    namespace Reflection
+    {
+		template<>
+		const Type& Type::singleton<Lua::FunctionRef>()
+		{
+			static Type type("Function", typeid(Lua::FunctionRef));
+			return type;
+		}
+    }
+}

@@ -1,30 +1,86 @@
-// roc 2007-03 00402a10  unit: seg_00400000  size: 50 bytes
-// Make this compile to the exact bytes below, then: roc check 2007-03 00402a10
-//
-// 00402a10  57                   push edi
-// 00402a11  8b7c2410             mov edi, dword ptr [esp + 0x10]
-// 00402a15  83ef01               sub edi, 1
-// 00402a18  7824                 js 0x402a3e
-// 00402a1a  53                   push ebx
-// 00402a1b  8b5c2418             mov ebx, dword ptr [esp + 0x18]
-// 00402a1f  55                   push ebp
-// 00402a20  8b6c2414             mov ebp, dword ptr [esp + 0x14]
-// 00402a24  56                   push esi
-// 00402a25  8b742414             mov esi, dword ptr [esp + 0x14]
-// 00402a29  8da42400000000       lea esp, [esp]
-// 00402a30  8bce                 mov ecx, esi
-// 00402a32  ffd3                 call ebx
-// 00402a34  03f5                 add esi, ebp
-// 00402a36  83ef01               sub edi, 1
-// 00402a39  79f5                 jns 0x402a30
-// 00402a3b  5e                   pop esi
-// 00402a3c  5d                   pop ebp
-// 00402a3d  5b                   pop ebx
-// 00402a3e  5f                   pop edi
-// 00402a3f  c21000               ret 0x10
-// library rbxgs/gui\GuiDraw.cpp (function ??_H@YGXPAXIHP6EPAX0@Z@Z)
-
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
 // roc-lib: rbxgs gui/GuiDraw.cpp
+
+// Candidate translation unit (score above; library headers required).
+#include "gui/GuiDraw.h"
+#include "AppDraw/Textures.h"
+
+namespace RBX
+{
+	static G3D::ReferenceCountedPointer<TextureProxyBase> silentGetTextureProxyBase(Adorn* adorn, const ContentId& id)
+	{
+		if (ContentProvider::singleton().hasContent(id))
+			return Textures::getTextureProxy(adorn, id);
+		else
+			return NULL;
+	}
+
+	void GuiDrawImage::render2d(Adorn* adorn, bool enabled, Rect& rect, Widget::WidgetState state)
+	{
+		if (!enabled)
+		{
+			draw(adorn, disable, rect, G3D::Color4::clear(), G3D::Color4(1.0f, 1.0f, 1.0f, 0.5f));
+		}
+		else if (state == Widget::NOTHING)
+		{
+			draw(adorn, normal, rect, G3D::Color4::clear(), G3D::Color4::clear());
+		}
+		else if (state != Widget::HOVER && state != Widget::DOWN_AWAY)
+		{
+			draw(adorn, down, rect, G3D::Color3::blue(), G3D::Color4::clear());
+		}
+		else
+		{
+			draw(adorn, hover, rect, G3D::Color3::yellow(), G3D::Color4::clear());
+		}
+	}
+
+	void GuiDrawImage::draw(Adorn* adorn, G3D::ReferenceCountedPointer<TextureProxyBase> texture, const Rect& rect, const G3D::Color4& behind, const G3D::Color4& inFront)
+	{
+		G3D::Rect2D rect2D = rect.toRect2D();
+
+		if (texture.notNull())
+		{
+			adorn->setTexture(0, texture);
+			adorn->rect2d(rect2D, G3D::Color4(1.0f, 1.0f, 1.0f, 1.0f));
+			adorn->setTexture(0, NULL);
+		}
+		else if (normal.notNull())
+		{
+			adorn->rect2d(rect2D, behind);
+			draw(adorn, normal, rect, G3D::Color4::clear(), G3D::Color4::clear());
+			adorn->rect2d(rect2D, inFront);
+		}
+	}
+
+	bool GuiDrawImage::setImage(Adorn* adorn, const TextureId& textureId)
+	{
+		if (textureId != currentTexture)
+		{
+			currentTexture = textureId;
+
+			normal = NULL;
+			hover = NULL;
+			down = NULL;
+			disable = NULL;
+
+			size = G3D::Vector2(0.0f, 0.0f);
+
+			normal = silentGetTextureProxyBase(adorn, currentTexture);
+
+			if (normal.notNull())
+			{
+				std::string id = textureId.toString();
+				std::string base = id.substr(0, id.size() - 4);
+
+				hover = silentGetTextureProxyBase(adorn, ContentId(base + "_ovr.png"));
+				down = silentGetTextureProxyBase(adorn, ContentId(base + "_dn.png"));
+				disable = silentGetTextureProxyBase(adorn, ContentId(base + "_ds.png"));
+			}
+		}
+
+		return normal.notNull();
+	}
+}

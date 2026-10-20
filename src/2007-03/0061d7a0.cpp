@@ -1,56 +1,144 @@
-// roc 2007-03 0061d7a0  unit: seg_00610000  size: 130 bytes
-// Make this compile to the exact bytes below, then: roc check 2007-03 0061d7a0
-//
-// 0061d7a0  83ec30               sub esp, 0x30
-// 0061d7a3  56                   push esi
-// 0061d7a4  8b74243c             mov esi, dword ptr [esp + 0x3c]
-// 0061d7a8  6a02                 push 2
-// 0061d7aa  6a01                 push 1
-// 0061d7ac  6a00                 push 0
-// 0061d7ae  8bce                 mov ecx, esi
-// 0061d7b0  e8bb6ae5ff           call 0x474270
-// 0061d7b5  d9e8                 fld1 
-// 0061d7b7  8d442404             lea eax, [esp + 4]
-// 0061d7bb  d9542404             fst dword ptr [esp + 4]
-// 0061d7bf  50                   push eax
-// 0061d7c0  d954240c             fst dword ptr [esp + 0xc]
-// 0061d7c4  8d4c2410             lea ecx, [esp + 0x10]
-// 0061d7c8  d9542410             fst dword ptr [esp + 0x10]
-// 0061d7cc  51                   push ecx
-// 0061d7cd  d9542418             fst dword ptr [esp + 0x18]
-// 0061d7d1  8b4c2448             mov ecx, dword ptr [esp + 0x48]
-// 0061d7d5  d954241c             fst dword ptr [esp + 0x1c]
-// 0061d7d9  8d54241c             lea edx, [esp + 0x1c]
-// 0061d7dd  d9542420             fst dword ptr [esp + 0x20]
-// 0061d7e1  52                   push edx
-// 0061d7e2  d9542428             fst dword ptr [esp + 0x28]
-// 0061d7e6  8d442428             lea eax, [esp + 0x28]
-// 0061d7ea  d95c242c             fstp dword ptr [esp + 0x2c]
-// 0061d7ee  50                   push eax
-// 0061d7ef  8b442448             mov eax, dword ptr [esp + 0x48]
-// 0061d7f3  51                   push ecx
-// 0061d7f4  56                   push esi
-// 0061d7f5  8d5008               lea edx, [eax + 8]
-// 0061d7f8  52                   push edx
-// 0061d7f9  50                   push eax
-// 0061d7fa  8d442444             lea eax, [esp + 0x44]
-// 0061d7fe  50                   push eax
-// 0061d7ff  e82c63ebff           call 0x4d3b30
-// 0061d804  83c40c               add esp, 0xc
-// 0061d807  50                   push eax
-// 0061d808  e893401100           call 0x7318a0
-// 0061d80d  83c41c               add esp, 0x1c
-// 0061d810  6a02                 push 2
-// 0061d812  6a03                 push 3
-// 0061d814  6a02                 push 2
-// 0061d816  8bce                 mov ecx, esi
-// 0061d818  e8536ae5ff           call 0x474270
-// 0061d81d  5e                   pop esi
-// 0061d81e  83c430               add esp, 0x30
-// 0061d821  c3                   ret 
-// library rbxgs-appdraw/DrawPrimitives.cpp (function ?rect2d@DrawPrimitives@RBX@@SAXABVRect@2@PAVRenderDevice@G3D@@ABVColor4@5@@Z)
-
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
 // roc-lib: rbxgs-appdraw DrawPrimitives.cpp
+
+// Candidate translation unit (score above; library headers required).
+#include "AppDraw/DrawPrimitives.h"
+#include "util/IndexBox.h"
+#include "GLG3D/Draw.h"
+#include <GL/GLU.h>
+
+namespace RBX
+{
+    void DrawPrimitives::rawSphere(float radius, G3D::RenderDevice* rd)
+    {
+        glPushMatrix();
+
+        GLUquadric* quadric = gluNewQuadric();
+        gluQuadricDrawStyle(quadric, GLU_FILL);
+        gluSphere(quadric, radius, 15, 15);
+        gluDeleteQuadric(quadric);
+
+        glPopMatrix();
+    }
+
+    void DrawPrimitives::rawCylinderAlongX(float radius, float axis, G3D::RenderDevice *rd)
+    {
+        GLUquadric* quadric;
+
+        glPushMatrix();
+
+        glRotatef(90.0, 0.0, 1.0, 0.0);
+        glTranslatef(0.0, 0.0, -axis*0.5);
+
+        quadric = gluNewQuadric();
+        gluQuadricDrawStyle(quadric, GLU_FILL);
+        gluCylinder(quadric, radius, radius, axis, 12, 1);
+        gluDeleteQuadric(quadric);
+
+        glTranslatef(0.0, 0.0, axis);
+
+        quadric = gluNewQuadric();
+        gluQuadricDrawStyle(quadric, GLU_FILL);
+        gluDisk(quadric, 0.0, radius, 12, 1);
+        gluDeleteQuadric(quadric);
+        glRotatef(180.0, 0.0, 1.0, 0.0);
+
+        glTranslatef(0.0, 0.0, axis);
+
+        quadric = gluNewQuadric();
+        gluQuadricDrawStyle(quadric, GLU_FILL);
+        gluDisk(quadric, 0.0, radius, 12, 1);
+        gluDeleteQuadric(quadric);
+
+        glPopMatrix();
+    }
+
+    // TODO: 85.62% match
+    // this is a tough one because there's an extra stack variable that's semi-optimised out
+    // otherwise this is a logical match
+    // TODO: check what cmp value gets changed to after linking
+    void DrawPrimitives::rawBox(const G3D::AABox& box, G3D::RenderDevice* rd)
+    {
+        int f = 0;
+
+        IndexBox indexBox(box.low(), box.high());
+
+        G3D::Vector3 v0, v1, v2, v3;
+
+        rd->beginPrimitive(G3D::RenderDevice::QUADS);
+
+        do
+        {
+            indexBox.getFaceCorners(f, v0, v1, v2, v3);
+
+            rd->setNormal(indexBox.getFaceNormal(f));
+            rd->sendVertex(v0);
+            rd->sendVertex(v1);
+            rd->sendVertex(v2);
+            rd->sendVertex(v3);
+
+            f++;
+        }
+        while (f < 6);
+
+        rd->endPrimitive();
+    }
+
+    void DrawPrimitives::outlineRect2d(const Rect& rect, float thick, G3D::RenderDevice* rd, const G3D::Color4& color)
+    {
+        float t = rect.low.x;
+        float b = rect.low.y;
+
+        float r = rect.high.x;
+        float l = rect.high.y;
+
+        rd->setColor(color);
+        rd->setLineWidth(thick);
+        rd->setNormal(G3D::Vector3(0.0f, 0.0f, 1.0f));
+
+        rd->beginPrimitive(G3D::RenderDevice::LINES);
+        rd->sendVertex(G3D::Vector2(t, b));
+
+        rd->sendVertex(G3D::Vector2(r, b));
+        rd->sendVertex(G3D::Vector2(r, b));
+
+        rd->sendVertex(G3D::Vector2(r, l));
+        rd->sendVertex(G3D::Vector2(r, l));
+
+        rd->sendVertex(G3D::Vector2(t, l));
+        rd->sendVertex(G3D::Vector2(t, l));
+
+        rd->sendVertex(G3D::Vector2(t, b));
+        rd->endPrimitive();
+    }
+
+    void DrawPrimitives::rect2d(const Rect& rect, G3D::RenderDevice* rd, const G3D::Color4& color)
+    {
+        rd->setBlendFunc(G3D::RenderDevice::BLEND_SRC_ALPHA, G3D::RenderDevice::BLEND_ONE_MINUS_SRC_ALPHA, G3D::RenderDevice::BLENDEQ_ADD);
+
+        G3D::Draw::rect2D(
+            G3D::Rect2D::xyxy(rect.low, rect.high),
+            rd,
+            color,
+            G3D::Vector2(1.0f, 1.0f),
+            G3D::Vector2(1.0f, 1.0f),
+            G3D::Vector2(1.0f, 1.0f),
+            G3D::Vector2(1.0f, 1.0f)
+        );
+
+        rd->setBlendFunc(G3D::RenderDevice::BLEND_ONE, G3D::RenderDevice::BLEND_ZERO, G3D::RenderDevice::BLENDEQ_ADD);
+    }
+
+    void DrawPrimitives::line2d(const G3D::Vector2& p0, const G3D::Vector2& p1, G3D::RenderDevice* rd, const G3D::Color4& color)
+    {
+        rd->setColor(color);
+        rd->setLineWidth(1.0);
+        rd->beginPrimitive(G3D::RenderDevice::LINES);
+        rd->setNormal(G3D::Vector3(0.0f, 0.0f, 1.0f));
+        rd->sendVertex(p0);
+        rd->sendVertex(p1);
+        rd->endPrimitive();
+    }
+}

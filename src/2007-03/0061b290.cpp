@@ -1,62 +1,347 @@
-// roc 2007-03 0061b290  unit: seg_00610000  size: 162 bytes
-// Make this compile to the exact bytes below, then: roc check 2007-03 0061b290
-//
-// 0061b290  6aff                 push -1
-// 0061b292  6868dc7500           push 0x75dc68
-// 0061b297  64a100000000         mov eax, dword ptr fs:[0]
-// 0061b29d  50                   push eax
-// 0061b29e  64892500000000       mov dword ptr fs:[0], esp
-// 0061b2a5  83ec08               sub esp, 8
-// 0061b2a8  56                   push esi
-// 0061b2a9  57                   push edi
-// 0061b2aa  8b442434             mov eax, dword ptr [esp + 0x34]
-// 0061b2ae  83ec10               sub esp, 0x10
-// 0061b2b1  8bf4                 mov esi, esp
-// 0061b2b3  89642418             mov dword ptr [esp + 0x18], esp
-// 0061b2b7  50                   push eax
-// 0061b2b8  83ec0c               sub esp, 0xc
-// 0061b2bb  8d542448             lea edx, [esp + 0x48]
-// 0061b2bf  89642454             mov dword ptr [esp + 0x54], esp
-// 0061b2c3  8bcc                 mov ecx, esp
-// 0061b2c5  52                   push edx
-// 0061b2c6  c744243c00000000     mov dword ptr [esp + 0x3c], 0
-// 0061b2ce  e8dde8ffff           call 0x619bb0
-// 0061b2d3  56                   push esi
-// 0061b2d4  e877efffff           call 0x61a250
-// 0061b2d9  8b442448             mov eax, dword ptr [esp + 0x48]
-// 0061b2dd  8b4c2444             mov ecx, dword ptr [esp + 0x44]
-// 0061b2e1  83c414               add esp, 0x14
-// 0061b2e4  50                   push eax
-// 0061b2e5  51                   push ecx
-// 0061b2e6  e825fdffff           call 0x61b010
-// 0061b2eb  83c418               add esp, 0x18
-// 0061b2ee  8bf0                 mov esi, eax
-// 0061b2f0  8b44242c             mov eax, dword ptr [esp + 0x2c]
-// 0061b2f4  8b10                 mov edx, dword ptr [eax]
-// 0061b2f6  50                   push eax
-// 0061b2f7  8d4c242c             lea ecx, [esp + 0x2c]
-// 0061b2fb  51                   push ecx
-// 0061b2fc  52                   push edx
-// 0061b2fd  8bf9                 mov edi, ecx
-// 0061b2ff  57                   push edi
-// 0061b300  8d542418             lea edx, [esp + 0x18]
-// 0061b304  52                   push edx
-// 0061b305  c744242cffffffff     mov dword ptr [esp + 0x2c], 0xffffffff
-// 0061b30d  e8aee2ffff           call 0x6195c0
-// 0061b312  8b44242c             mov eax, dword ptr [esp + 0x2c]
-// 0061b316  50                   push eax
-// 0061b317  e8d42d0000           call 0x61e0f0
-// 0061b31c  8b4c2414             mov ecx, dword ptr [esp + 0x14]
-// 0061b320  83c404               add esp, 4
-// 0061b323  5f                   pop edi
-// 0061b324  8bc6                 mov eax, esi
-// 0061b326  64890d00000000       mov dword ptr fs:[0], ecx
-// 0061b32d  5e                   pop esi
-// 0061b32e  83c414               add esp, 0x14
-// 0061b331  c3                   ret 
-// library rbxgs-net/Player.cpp (function ??$split@V?$vector@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@@std@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@2@U?$is_any_ofF@D@detail@algorithm@boost@@@algorithm@boost@@YAAAV?$vector@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@V?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@@std@@AAV23@AAV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@3@U?$is_any_ofF@D@detail@01@W4token_compress_mode_type@01@@Z)
-
 // roc-lang: cpp
 // roc-cl: 50727
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
 // roc-lib: rbxgs-net Player.cpp
+
+// Candidate translation unit (score above; library headers required).
+#include "Client.h"
+#include "Player.h"
+#include "security/SecurityContext.h"
+#include "v8datamodel/TimerService.h"
+#include "v8datamodel/CharacterAppearance.h"
+#include "v8datamodel/Accoutrement.h"
+#include "v8datamodel/Hopper.h"
+#include "v8datamodel/SpawnLocation.h"
+#include "v8world/World.h"
+#include <boost/algorithm/string/classification.hpp>
+#include <boost/algorithm/string/split.hpp>
+
+static RBX::Reflection::BoundFuncDesc<RBX::Network::Player, void(void), 0> loadCharacterFunction(&RBX::Network::Player::loadCharacter, "LoadCharacter", RBX::Reflection::FunctionDescriptor::NeedTrustedCaller);
+static RBX::Reflection::BoundFuncDesc<RBX::Network::Player, void(void), 0> removeCharacterFunction(&RBX::Network::Player::removeCharacter, "RemoveCharacter", RBX::Reflection::FunctionDescriptor::NeedTrustedCaller);
+static RBX::Reflection::BoundFuncDesc<RBX::Network::Player, void(bool), 1> func_SetUnder13(&RBX::Network::Player::setUnder13, "SetUnder13", "value", RBX::Reflection::FunctionDescriptor::NeedTrustedCaller);
+static RBX::Reflection::BoundFuncDesc<RBX::Network::Player, void(bool), 1> func_SetSuperSafeChat(&RBX::Network::Player::setSuperSafeChat, "SetSuperSafeChat", "value", RBX::Reflection::FunctionDescriptor::NeedTrustedCaller);
+
+static RBX::Reflection::PropDescriptor<RBX::Network::Player, RBX::BrickColor> prop_teamColor("TeamColor", "Team", &RBX::Network::Player::getTeamColor, &RBX::Network::Player::setTeamColor, RBX::Reflection::PropertyDescriptor::STANDARD);
+static RBX::Reflection::PropDescriptor<RBX::Network::Player, bool> prop_neutral("Neutral", "Team", &RBX::Network::Player::getNeutral, &RBX::Network::Player::setNeutral, RBX::Reflection::PropertyDescriptor::STANDARD);
+static RBX::Reflection::PropDescriptor<RBX::Network::Player, std::string> prop_characterAppearance("CharacterAppearance", "Data", &RBX::Network::Player::getCharacterAppearance, &RBX::Network::Player::setCharacterAppearance, RBX::Reflection::PropertyDescriptor::STANDARD);
+
+static RBX::Reflection::RefPropDescriptor<RBX::Network::Player, RBX::ModelInstance> prop_Character("Character", "Data", &RBX::Network::Player::getCharacter, &RBX::Network::Player::setCharacter, RBX::Reflection::PropertyDescriptor::STANDARD);
+
+static RBX::Reflection::SignalDesc<RBX::Network::Player, void(float)> event_Idled("Idled", "time");
+
+static void addChild(const boost::shared_ptr<RBX::ModelInstance>& parent, const boost::shared_ptr<RBX::Instance>& child)
+{
+	child->setParent(parent.get());
+}
+
+static void setAppearanceParent(boost::shared_ptr<RBX::Instance> parent, boost::shared_ptr<RBX::Instance> instance)
+{
+	if (dynamic_cast<RBX::CharacterAppearance*>(instance.get()))
+	{
+		instance->setParent(parent.get());
+	}
+	else if (dynamic_cast<RBX::Accoutrement*>(instance.get()))
+	{
+		instance->setParent(parent.get());
+	}
+	else
+	{
+		throw std::runtime_error("Attempt to add a non-CharacterAppearance/Accoutrement object to a character");
+	}
+}
+
+static void setAppearanceParentNull(RBX::Instance* instance)
+{
+	if (dynamic_cast<RBX::CharacterAppearance*>(instance))
+		instance->setParent(NULL);
+}
+
+namespace RBX
+{
+	namespace Network
+	{
+		Player::Player()
+			: teamColor(BrickColor::lego_1),
+			  neutral(true),
+			  under13(false),
+			  superSafeChat(false),
+			  userId(0),
+			  lastActivityTime(0.0)
+		{
+			Security::Context::current().requirePermission(Security::Administrator, "create a Player");
+			setName("Player");
+		}
+
+		Player::~Player()
+		{
+			setCharacter(NULL);
+		}
+
+		Backpack* Player::getPlayerBackpack() const
+		{
+			Backpack* backpack = findFirstChildOfType<Backpack>();
+
+			RBXASSERT(backpack != NULL);
+			return backpack;
+		}
+
+		void Player::onCharacterChangedFrontend()
+		{
+			RBXASSERT(Players::frontendProcessing(this, true));
+
+			Player* localPlayer = Players::findLocalPlayer(this);
+			if (this == localPlayer)
+			{
+				Workspace* workspace = ServiceProvider::find<Workspace>(this);
+				RBXASSERT(workspace != NULL);
+
+				if (!character)
+				{
+					workspace->getCamera()->setCameraType(Camera::FIXED_CAMERA);
+					workspace->getCamera()->setDistanceFromTarget(0.0f);
+					workspace->getCamera()->zoom(-1.0f);
+				}
+				else
+				{
+					workspace->getCamera()->setCameraSubject(Humanoid::modelIsCharacter(character.get()));
+					workspace->getCamera()->setCameraType(Camera::CUSTOM_CAMERA);
+					workspace->getCamera()->setDistanceFromTarget(13.0f);
+					workspace->getCamera()->zoom(-1.0f);
+					workspace->setDefaultMouseCommand();
+				}
+			}
+		}
+
+		void Player::setTeamColor(BrickColor value)
+		{
+			if (value != teamColor)
+			{
+				teamColor = value;
+				raisePropertyChanged(prop_teamColor);
+			}
+		}
+
+		void Player::setNeutral(bool value)
+		{
+			if (value != neutral)
+			{
+				neutral = value;
+				raisePropertyChanged(prop_neutral);
+			}
+		}
+
+		void Player::removeCharacter()
+		{
+			if (!Players::backendProcessing(this, true))
+				throw std::runtime_error("RemoveCharacter can only be called by the backend server");
+
+			setCharacter(NULL);
+		}
+
+		void Player::setName(const std::string& value)
+		{
+			Security::Context::current().requirePermission(Security::Administrator, "set a Player's name");
+			Instance::setName(value);
+		}
+
+		void Player::setCharacterAppearance(const std::string& value)
+		{
+			if (value != characterAppearance)
+			{
+				characterAppearance = value;
+				if (Players::backendProcessing(this, false))
+					loadCharacterAppearance();
+
+				raisePropertyChanged(prop_characterAppearance);
+			}
+		}
+
+		void Player::onServiceProvider(const ServiceProvider* oldProvider, const ServiceProvider* newProvider)
+		{
+			if (oldProvider && Players::backendProcessing(oldProvider, true))
+				setCharacter(NULL);
+
+			Instance::onServiceProvider(oldProvider, newProvider);
+
+			if (newProvider && Players::frontendProcessing(newProvider, true))
+				onCharacterChangedFrontend();
+
+			if (!oldProvider && Players::frontendProcessing(newProvider, true))
+			{
+				RBXASSERT(Players::frontendProcessing(this, true));
+				lastActivityTime = G3D::System::getLocalTime();
+				doPeriodicIdleCheck();
+			}
+		}
+
+		void Player::doPeriodicIdleCheck()
+		{
+			if (ServiceProvider::findServiceProvider(this))
+			{
+				RBXASSERT(Players::frontendProcessing(this, true));
+				if (lastActivityTime != 0.0)
+				{
+					G3D::RealTime idleTime = G3D::System::getLocalTime() - lastActivityTime;
+					if (idleTime > 120.0)
+					{
+						Players* players = ServiceProvider::find<Players>(this);
+						if (players && players->getLocalPlayer() && Players::clientIsPresent(this, true))
+						{
+							event_Idled.fire(this, idleTime);
+						}
+					}
+				}
+
+				TimerService* timerService = ServiceProvider::create<TimerService>(this);
+
+				if (timerService)
+					timerService->delay(boost::bind(&Player::doPeriodicIdleCheck, shared_from(this)), 30.0);
+			}
+		}
+
+		void Player::setCharacter(ModelInstance* value)
+		{
+			if (value != character.get())
+			{
+				if (character.get())
+				{
+					characterDiedConnection.disconnect();
+
+					Notifier<Player, CharacterRemoving>::raise(character.get());
+
+					if (Players::backendProcessing(this, false))
+						character->setParent(NULL);
+
+					character.reset();
+				}
+
+				if (value)
+				{
+					character = shared_from(value);
+
+					Notifier<Player, CharacterAdded>::raise(character.get());
+
+					if (Players::frontendProcessing(this, false))
+						onCharacterChangedFrontend();
+				}
+
+				raisePropertyChanged(prop_Character);
+			}
+		}
+
+		void Player::loadCharacterAppearance()
+		{
+			if (!Players::backendProcessing(this, true))
+				throw std::runtime_error("LoadCharacterAppearance can only be called by the backend server");
+
+			removeCharacterAppearance();
+
+			if (character && !characterAppearance.empty())
+			{
+				std::vector<boost::shared_ptr<Instance>> characterApperance; // yes, the name's correct
+
+				{
+					std::vector<std::string> strings;
+					boost::algorithm::split(strings, this->characterAppearance, boost::algorithm::is_any_of(";"));
+
+					for (size_t i = 0; i < strings.size(); i++)
+					{
+						ContentProvider::singleton().load(ContentId(strings[i]), characterApperance);
+					}
+				}
+
+				std::for_each(characterApperance.begin(), characterApperance.end(), boost::bind(&setAppearanceParent, character, _1));
+
+				if (Workspace* workspace = ServiceProvider::find<Workspace>(this))
+					workspace->getWorld()->update();
+			}
+		}
+
+		void Player::removeCharacterAppearance()
+		{
+			if (!Players::backendProcessing(this, true))
+				throw std::runtime_error("RemoveCharacterAppearance can only be called by the backend server");
+
+			if (character)
+				character->for_eachChild(&setAppearanceParentNull);
+		}
+
+		void Player::rebuildBackpack()
+		{
+			if (!Players::backendProcessing(this, true))
+				throw std::runtime_error("rebuildBackpack can only be called by the backend server");
+
+			while (Backpack* r = findFirstChildOfType<Backpack>())
+			{
+				r->setParent(NULL);
+			}
+
+			boost::shared_ptr<Instance> backpack = Creatable::create<Backpack>();
+			backpack->setParent(this);
+
+			StarterPackService* starterPack = ServiceProvider::find<StarterPackService>(this);
+			if (starterPack)
+			{
+				for (size_t i = 0; i < starterPack->numChildren(); i++)
+				{
+					boost::shared_ptr<Instance> copy = starterPack->getChild(i)->clone();
+					copy->setParent(backpack.get());
+				}
+			}
+		}
+
+		void Player::loadCharacter()
+		{
+			Workspace* workspace = ServiceProvider::find<Workspace>(this);
+			if (!workspace)
+				throw std::runtime_error("LoadCharacter can only be called when Player is in the world");
+
+			if (!Players::backendProcessing(this, true))
+				throw std::runtime_error("LoadCharacter can only be called by the backend server");
+
+			std::vector<boost::shared_ptr<Instance>> instances;
+			ContentProvider::singleton().load(ContentId::fromAssets("fonts\\character.rbxm"), instances);
+
+			if (instances.size() != 1)
+				throw std::runtime_error("character.rbxm should contain a Character model");
+
+			boost::shared_ptr<ModelInstance> model = boost::shared_dynamic_cast<ModelInstance>(instances.front());
+			if (!model)
+				throw std::runtime_error("character.rbxm should contain a Character model");
+
+			Humanoid* humanoid = Humanoid::modelIsCharacter(model.get());
+			if (!humanoid)
+				throw std::runtime_error("character.rbxm should contain a humanoid");
+
+			{
+				std::vector<boost::shared_ptr<Instance>> extraSound;
+				ContentProvider::singleton().load(ContentId::fromAssets("fonts\\humanoidSound.rbxm"), extraSound);
+				std::for_each(extraSound.begin(), extraSound.end(), boost::bind(&addChild, model, _1));
+			}
+
+			{
+				std::vector<boost::shared_ptr<Instance>> extraHealth;
+				ContentProvider::singleton().load(ContentId::fromAssets("fonts\\humanoidHealth.rbxm"), extraHealth);
+				std::for_each(extraHealth.begin(), extraHealth.end(), boost::bind(&addChild, model, _1));
+			}
+
+			{
+				std::vector<boost::shared_ptr<Instance>> extraAnimate;
+				ContentProvider::singleton().load(ContentId::fromAssets("fonts\\humanoidAnimate.rbxm"), extraAnimate);
+				std::for_each(extraAnimate.begin(), extraAnimate.end(), boost::bind(&addChild, model, _1));
+			}
+
+			model->setName(getName());
+			humanoid->buildJoints();
+			Instance::propArchivable.setValue(model.get(), false);
+			setCharacter(model.get());
+			
+			model->setParent(workspace);
+			loadCharacterAppearance();
+			
+			SpawnerService* spawnerService = ServiceProvider::find<SpawnerService>(this);
+			G3D::Vector3 dropPoint = spawnerService ? spawnerService->FindSpawnPositionForPlayer(this) : G3D::Vector3(0.0f, 20.0f, 25.0f);
+			workspace->moveToPoint(model.get(), dropPoint);
+		}
+	}
+}

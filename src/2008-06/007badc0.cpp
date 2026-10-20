@@ -1,44 +1,219 @@
 // from server: 100% by auto
-// roc 2008-06 007badc0  unit: G3D::H::PAV?$Array::?$Set  size: 158 bytes
-// Make this compile to the exact bytes below, then: roc check 2008-06 007badc0
-//
-// 007badc0  64a100000000         mov eax, dword ptr fs:[0]
-// 007badc6  6aff                 push -1
-// 007badc8  68ebe67e00           push 0x7ee6eb
-// 007badcd  50                   push eax
-// 007badce  b830000600           mov eax, 0x60030
-// 007badd3  64892500000000       mov dword ptr fs:[0], esp
-// 007badda  e84167eeff           call 0x6a1520
-// 007baddf  dd842450000600       fld qword ptr [esp + 0x60050]
-// 007bade6  8b84244c000600       mov eax, dword ptr [esp + 0x6004c]
-// 007baded  8b8c2448000600       mov ecx, dword ptr [esp + 0x60048]
-// 007badf4  8b942444000600       mov edx, dword ptr [esp + 0x60044]
-// 007badfb  83ec08               sub esp, 8
-// 007badfe  dd1c24               fstp qword ptr [esp]
-// 007bae01  50                   push eax
-// 007bae02  8b84244c000600       mov eax, dword ptr [esp + 0x6004c]
-// 007bae09  51                   push ecx
-// 007bae0a  52                   push edx
-// 007bae0b  50                   push eax
-// 007bae0c  8d4c2418             lea ecx, [esp + 0x18]
-// 007bae10  e8cbf7ffff           call 0x7ba5e0
-// 007bae15  8d0c24               lea ecx, [esp]
-// 007bae18  c784243800060000000000 mov dword ptr [esp + 0x60038], 0
-// 007bae23  e8c8feffff           call 0x7bacf0
-// 007bae28  68e0336400           push 0x6433e0
-// 007bae2d  6800800000           push 0x8000
-// 007bae32  6a0c                 push 0xc
-// 007bae34  8d4c240c             lea ecx, [esp + 0xc]
-// 007bae38  51                   push ecx
-// 007bae39  c7842448000600ffffffff mov dword ptr [esp + 0x60048], 0xffffffff
-// 007bae44  e81268eeff           call 0x6a165b
-// 007bae49  8b8c2430000600       mov ecx, dword ptr [esp + 0x60030]
-// 007bae50  64890d00000000       mov dword ptr fs:[0], ecx
-// 007bae57  81c43c000600         add esp, 0x6003c
-// 007bae5d  c3                   ret 
-// library g3d-6.09/G3Dcpp\MeshAlgWeld.cpp (function ?computeWeld@MeshAlg@G3D@@SAXABV?$Array@VVector3@G3D@@@2@AAV32@AAV?$Array@H@2@2N@Z)
-
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD
 // roc-lib: g3d-6.09 G3Dcpp/MeshAlgWeld.cpp
+
+// Candidate translation unit (score above; library headers required).
+/**
+  @file MeshAlgWeld.cpp
+
+  The MeshAlg::computeWeld method.
+
+  @maintainer Morgan McGuire, matrix@graphics3d.com
+  @created 2003-10-22
+  @edited  2005-02-24
+
+  Copyright 2000-2003, Morgan McGuire.
+  All rights reserved.
+
+ */
+
+#include "G3D/MeshAlg.h"
+#include "G3D/Table.h"
+#include "G3D/Set.h"
+
+namespace G3D {
+
+namespace _internal {
+
+class Welder {
+private:
+
+    // Intentionally illegal
+    Welder& operator=(const Welder& w);
+
+public:
+    /** Indices of newVertexArray elements in <B>or near</B> a grid cell. */
+    typedef Array<int> List;
+
+    enum {GRID_RES = 32};
+
+    List grid[GRID_RES][GRID_RES][GRID_RES];
+
+    const Array<Vector3>& oldVertexArray;
+    Array<Vector3>&       newVertexArray;
+    Array<int>&           toNew;
+    Array<int>&           toOld;
+
+    /** Must be less than one grid cell, not checked */
+    const double          radius;
+
+    /** (oldVertexArray[i] - offset) * scale is on the range [0, 1] */
+    Vector3               offset;
+    Vector3               scale;
+
+    Welder(    
+        const Array<Vector3>& _oldVertexArray,
+        Array<Vector3>&       _newVertexArray,
+        Array<int>&           _toNew,
+        Array<int>&           _toOld,
+        double                _radius);
+        
+    /**
+     Computes the grid index from an ordinate.
+     */
+    void toGridCoords(Vector3 v, int& x, int& y, int& z) const;
+
+    /** Gets the index of a vertex, adding it to 
+        newVertexArray if necessary. */
+    int getIndex(const Vector3& vertex);
+    
+    void weld();
+};
+
+}}
+
+
+G3D::uint32 hashCode(const G3D::_internal::Welder::List* x) {
+    return (G3D::uint32)x;
+}
+
+namespace G3D {
+namespace _internal {
+
+Welder::Welder(    
+    const Array<Vector3>& _oldVertexArray,
+    Array<Vector3>&       _newVertexArray,
+    Array<int>&           _toNew,
+    Array<int>&           _toOld,
+    double                _radius) :
+    oldVertexArray(_oldVertexArray),
+    newVertexArray(_newVertexArray),
+    toNew(_toNew),
+    toOld(_toOld),
+    radius(_radius) {
+
+    // Compute a scale factor that moves the range
+    // of all ordinates to [0, 1]
+    Vector3 minBound = Vector3::inf();
+    Vector3 maxBound = -minBound;
+
+    for (int i = 0; i < oldVertexArray.size(); ++i) {
+        minBound = minBound.min(oldVertexArray[i]);
+        maxBound = maxBound.max(oldVertexArray[i]);
+    }
+
+    offset = minBound;
+    scale  = maxBound - minBound;
+    for (int i = 0; i < 3; ++i) {
+        // The model might have zero extent along some axis
+        if (fuzzyEq(scale[i], 0.0)) {
+            scale[i] = 1.0;
+        } else {
+            scale[i] = 1.0 / scale[i];
+        }
+    }
+}
+
+
+void Welder::toGridCoords(Vector3 v, int& x, int& y, int& z) const {
+    v = (v - offset) * scale;
+    x = iClamp(iFloor(v.x * GRID_RES), 0, GRID_RES - 1);
+    y = iClamp(iFloor(v.y * GRID_RES), 0, GRID_RES - 1);
+    z = iClamp(iFloor(v.z * GRID_RES), 0, GRID_RES - 1);
+}
+
+
+int Welder::getIndex(const Vector3& vertex) {
+
+    int closestIndex = -1;
+    double distanceSquared = inf();
+
+    int ix, iy, iz;
+    toGridCoords(vertex, ix, iy, iz);
+
+    // Check against all vertices within radius of this grid cube
+    const List& list = grid[ix][iy][iz];
+
+    for (int i = 0; i < list.size(); ++i) {
+        double d = (newVertexArray[list[i]] - vertex).squaredMagnitude();
+
+        if (d < distanceSquared) {
+            distanceSquared = d;
+            closestIndex = list[i];
+        }
+    }
+
+    if (distanceSquared <= radius * radius) {
+
+        return closestIndex;
+
+    } else {
+
+        // This is a new vertex
+        int newIndex = newVertexArray.size();
+        newVertexArray.append(vertex);
+
+        // Create a new vertex and store its index in the
+        // neighboring grid cells (usually, only 1 neighbor)
+
+        Set<List*> neighbors;
+
+        for (float dx = -1; dx <= +1; ++dx) {
+            for (float dy = -1; dy <= +1; ++dy) {
+                for (float dz = -1; dz <= +1; ++dz) {
+                    int ix, iy, iz;
+                    toGridCoords(vertex + Vector3(dx, dy, dz) * radius, ix, iy, iz);
+                    neighbors.insert(&(grid[ix][iy][iz]));
+                }
+            }
+        }
+
+        Set<List*>::Iterator neighbor(neighbors.begin());
+        Set<List*>::Iterator none(neighbors.end());
+
+        while (neighbor != none) {
+            (*neighbor)->append(newIndex);
+            ++neighbor;
+        }
+
+        return newIndex;
+    }
+}
+
+
+void Welder::weld() {
+    newVertexArray.resize(0);
+
+    // Prime the vertex positions
+    for (int i = 0; i < oldVertexArray.size(); ++i) {
+        getIndex(oldVertexArray[i]);
+    }
+
+    // Now create the official remapping by snapping to 
+    // nearby vertices.
+    toNew.resize(oldVertexArray.size());
+    toOld.resize(newVertexArray.size());
+
+    for (int oi = 0; oi < oldVertexArray.size(); ++oi) {
+        toNew[oi] = getIndex(oldVertexArray[oi]);
+        toOld[toNew[oi]] = oi;
+    }
+}
+
+} // internal namespace
+
+
+void MeshAlg::computeWeld(
+    const Array<Vector3>& oldVertexArray,
+    Array<Vector3>&       newVertexArray,
+    Array<int>&           toNew,
+    Array<int>&           toOld,
+    double                radius) {
+
+    _internal::Welder welder(oldVertexArray, newVertexArray, toNew, toOld, radius);
+    welder.weld();
+}
+
+} // G3D namespace

@@ -1,29 +1,97 @@
-// roc 2009-12 00754980  unit: RBX::VPartInstance::?$SeatImpl  size: 59 bytes
-// Make this compile to the exact bytes below, then: roc check 2009-12 00754980
-//
-// 00754980  8bc1                 mov eax, ecx
-// 00754982  8d4c24f8             lea ecx, [esp - 8]
-// 00754986  83ec08               sub esp, 8
-// 00754989  3bc8                 cmp ecx, eax
-// 0075498b  7406                 je 0x754993
-// 0075498d  c70000000000         mov dword ptr [eax], 0
-// 00754993  8b4804               mov ecx, dword ptr [eax + 4]
-// 00754996  c7400400000000       mov dword ptr [eax + 4], 0
-// 0075499d  85c9                 test ecx, ecx
-// 0075499f  7416                 je 0x7549b7
-// 007549a1  8d5108               lea edx, [ecx + 8]
-// 007549a4  83c8ff               or eax, 0xffffffff
-// 007549a7  f00fc102             lock xadd dword ptr [edx], eax
-// 007549ab  750a                 jne 0x7549b7
-// 007549ad  8b11                 mov edx, dword ptr [ecx]
-// 007549af  8b4208               mov eax, dword ptr [edx + 8]
-// 007549b2  83c408               add esp, 8
-// 007549b5  ffe0                 jmp eax
-// 007549b7  83c408               add esp, 8
-// 007549ba  c3                   ret 
-// library rbxgs-net/ClientPhysics.cpp (function ?reset@?$weak_ptr@VRunService@RBX@@@boost@@QAEXXZ)
-
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
 // roc-lib: rbxgs-net ClientPhysics.cpp
+
+// Candidate translation unit (score above; library headers required).
+#include "ClientPhysics.h"
+#include "NetworkSettings.h"
+#include "v8datamodel/PartInstance.h"
+
+//99.98% match
+bool areClose(const G3D::CoordinateFrame& c1, const G3D::CoordinateFrame& c2)
+{
+	if (fabs(c1.translation.x - c2.translation.x) > 0.2f)
+		return false;
+
+	if (fabs(c1.translation.y - c2.translation.y) > 0.2f)
+		return false;
+
+	if (fabs(c1.translation.z - c2.translation.z) > 0.2f)
+		return false;
+
+	for (int i = 0; i < 3; i++)
+	{
+		G3D::Vector3 v1, v2;
+
+		v1.x = c1.rotation[0][i];
+		v1.y = c1.rotation[1][i];
+		v1.z = c1.rotation[2][i];
+		v2.x = c2.rotation[0][i];
+		v2.y = c2.rotation[1][i];
+		v2.z = c2.rotation[2][i];
+
+		if ((v1 - v2).squaredMagnitude() > 0.010000001f)
+			return false;
+	}
+
+	return true;
+}
+
+namespace RBX
+{
+	namespace Network
+	{
+		ClientPhysics::ClientPhysics(PartInstance* part)
+			: part(part)
+		{
+		}
+
+		ClientPhysics::~ClientPhysics()
+		{
+			Notifier<RunService, Heartbeat>::disconnect(runService.lock(), this);
+		}
+
+		void ClientPhysics::sleep()
+		{
+			Notifier<RunService, Heartbeat>::disconnect(runService.lock(), this);
+			runService.reset();
+
+			lastPos = part->getCoordinateFrame();
+		}
+
+		void ClientPhysics::onEvent(const RunService* source, Heartbeat event)
+		{
+			G3D::RealTime currentTime = G3D::System::getLocalTime();
+
+			if (NetworkSettings::singleton().clientPhysicsLifetime + lastUpdateTime < currentTime)
+				sleep();
+			else
+				RBXASSERT(0);
+		}
+
+		void ClientPhysics::update(const boost::shared_ptr<RunService>& runService)
+		{
+			lastUpdateTime = G3D::System::getLocalTime();
+
+			const G3D::CoordinateFrame& cframe = part->getCoordinateFrame();
+
+			if (areClose(lastPos, cframe))
+			{
+				sleep();
+				return;
+			}
+
+			lastPos = cframe;
+
+			if (this->runService.lock() != runService)
+			{
+				Notifier<RunService, Heartbeat>::disconnect(this->runService.lock(), this);
+
+				this->runService = runService;
+
+				Notifier<RunService, Heartbeat>::connect(this->runService.lock(), this);
+			}
+		}
+	}
+}

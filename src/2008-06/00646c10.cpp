@@ -1,48 +1,112 @@
-// roc 2008-06 00646c10  unit: RBX::MultiJoint  size: 138 bytes
-// Make this compile to the exact bytes below, then: roc check 2008-06 00646c10
-//
-// 00646c10  d981e4000000         fld dword ptr [ecx + 0xe4]
-// 00646c16  83ec08               sub esp, 8
-// 00646c19  d8a1c0000000         fsub dword ptr [ecx + 0xc0]
-// 00646c1f  d981e8000000         fld dword ptr [ecx + 0xe8]
-// 00646c25  d8a1c4000000         fsub dword ptr [ecx + 0xc4]
-// 00646c2b  d981ec000000         fld dword ptr [ecx + 0xec]
-// 00646c31  d8a1c8000000         fsub dword ptr [ecx + 0xc8]
-// 00646c37  d981cc000000         fld dword ptr [ecx + 0xcc]
-// 00646c3d  d8a1c0000000         fsub dword ptr [ecx + 0xc0]
-// 00646c43  d981d0000000         fld dword ptr [ecx + 0xd0]
-// 00646c49  d8a1c4000000         fsub dword ptr [ecx + 0xc4]
-// 00646c4f  d981d4000000         fld dword ptr [ecx + 0xd4]
-// 00646c55  d8a1c8000000         fsub dword ptr [ecx + 0xc8]
-// 00646c5b  dcc8                 fmul st(0), st(0)
-// 00646c5d  d9c2                 fld st(2)
-// 00646c5f  decb                 fmulp st(3)
-// 00646c61  dec2                 faddp st(2)
-// 00646c63  dcc8                 fmul st(0), st(0)
-// 00646c65  dec1                 faddp st(1)
-// 00646c67  d9fa                 fsqrt 
-// 00646c69  d9c1                 fld st(1)
-// 00646c6b  deca                 fmulp st(2)
-// 00646c6d  d9c3                 fld st(3)
-// 00646c6f  decc                 fmulp st(4)
-// 00646c71  d9c9                 fxch st(1)
-// 00646c73  dec3                 faddp st(3)
-// 00646c75  d9c1                 fld st(1)
-// 00646c77  deca                 fmulp st(2)
-// 00646c79  d9ca                 fxch st(2)
-// 00646c7b  dec1                 faddp st(1)
-// 00646c7d  d9fa                 fsqrt 
-// 00646c7f  d95c2404             fstp dword ptr [esp + 4]
-// 00646c83  d91c24               fstp dword ptr [esp]
-// 00646c86  e8e5290000           call 0x649670
-// 00646c8b  83c404               add esp, 4
-// 00646c8e  d91c24               fstp dword ptr [esp]
-// 00646c91  e81a950100           call 0x6601b0
-// 00646c96  83c404               add esp, 4
-// 00646c99  c3                   ret 
-// library rbxgs-dll/v8world\GlueJoint.cpp (function ?getMaxForce@GlueJoint@RBX@@AAEMXZ)
-
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast
 // roc-lib: rbxgs-dll v8world/GlueJoint.cpp
+
+// Candidate translation unit (score above; library headers required).
+#include "v8world/GlueJoint.h"
+#include "v8world/Primitive.h"
+#include "v8kernel/Kernel.h"
+#include "v8kernel/Body.h"
+#include "v8kernel/Connector.h"
+#include "v8kernel/Constants.h"
+#include "util/Units.h"
+
+namespace RBX
+{
+	// TODO: check what needs to go into the header file
+
+	GlueJoint::GlueJoint()
+		: MultiJoint(4),
+		  overlapInP0(),
+		  overlapInP1()
+	{
+	}
+
+	GlueJoint::GlueJoint(Primitive* p0, Primitive* p1, const G3D::CoordinateFrame& jointCoord0, const G3D::CoordinateFrame& jointCoord1)
+		: MultiJoint(p0, p1, jointCoord0, jointCoord1, 4),
+		  overlapInP0(),
+		  overlapInP1()
+	{
+		NormalId nId0 = Matrix3ToNormalId(this->jointCoord0.rotation);
+		Face face0inP0 = p0->getFaceInObject(nId0);
+
+		NormalId nId1 = normalIdOpposite(Matrix3ToNormalId(this->jointCoord1.rotation));
+		Face face1inP1 = p1->getFaceInObject(nId1);
+
+		Face face0inJoint0 = face0inP0.toObjectSpace(jointCoord0);
+		Face face1inJoint1 = face1inP1.toObjectSpace(jointCoord1);
+
+		Face overlapInJoint0 = face0inJoint0.projectOverlapOnMe(face1inJoint1);
+		overlapInJoint0.snapToGrid(0.1f);
+
+		this->overlapInP0 = overlapInJoint0.toWorldSpace(jointCoord0);
+		this->overlapInP1 = overlapInJoint0.toWorldSpace(jointCoord1);
+	}
+
+	float GlueJoint::getMaxForce()
+	{
+		G3D::Vector2 size = overlapInP0.size();
+		return Units::kmsForceToRbx(Constants::getKmsMaxJointForce(size.x, size.y));
+	}
+
+	void GlueJoint::putInKernel(Kernel* _kernel)
+	{
+		MultiJoint::putInKernel(_kernel);
+
+		Body* b0 = getPrimitive(0)->getBody();
+		Body* b1 = getPrimitive(1)->getBody();
+
+		NormalId nId0 = Matrix3ToNormalId(jointCoord0.rotation);
+
+		for (int i = 0; i < 4; ++i)
+		{
+			G3D::Vector3 p0World = b0->getPV().position.pointToWorldSpace(overlapInP0[i]);
+			G3D::Vector3 p1World = b1->getPV().position.pointToWorldSpace(overlapInP1[i]);
+
+			Point* p0 = getKernel()->newPoint(b0, p0World);
+			Point* p1 = getKernel()->newPoint(b1, p1World);
+
+			NormalBreakConnector* connector = new NormalBreakConnector(p0, p1, getJointK(), getMaxForce(), nId0);
+			addToMultiJoint(p0, p1, connector);
+		}
+	}
+
+	bool GlueJoint::compatibleSurfaces(Primitive* p0, Primitive* p1, NormalId nId0, NormalId nId1)
+	{
+		SurfaceType s0 = p0->getSurfaceType(nId0);
+		SurfaceType s1 = p1->getSurfaceType(nId1);
+		return s0 == GLUE || s1 == GLUE;
+	}
+
+	GlueJoint* GlueJoint::canBuildJoint(Primitive* p0, Primitive* p1, NormalId nId0, NormalId nId1)
+	{
+		if (!compatibleSurfaces(p0, p1, nId0, nId1) || !canBuildJointLoose(p0, p1, nId0, nId1))
+			return NULL;
+
+		Face f0 = p0->getFaceInWorld(nId0);
+		Face f1 = p1->getFaceInWorld(nId1);
+
+		Face overlapOn0 = f0.projectOverlapOnMe(f1);
+		Face overlapOn1 = f1.projectOverlapOnMe(f0);
+
+		Face offsetInP0 = overlapOn0.toObjectSpace(p0->getCoordinateFrame());
+		Face offsetInP1 = overlapOn1.toObjectSpace(p1->getCoordinateFrame());
+
+		offsetInP0.snapToGrid(0.1f);
+		offsetInP1.snapToGrid(0.1f);
+
+		Face offset0World = offsetInP0.toWorldSpace(p0->getCoordinateFrame());
+		Face offset1World = offsetInP1.toWorldSpace(p1->getCoordinateFrame());
+
+		if (!Face::cornersAligned(offset0World, offset1World, 0.05f))
+			return NULL;
+
+		G3D::CoordinateFrame jointCoord0 = p0->getFaceCoordInObject(nId0);
+		G3D::CoordinateFrame jointCoord0InWorld = p0->getCoordinateFrame() * jointCoord0;
+		G3D::CoordinateFrame jc0InP1 = p1->getCoordinateFrame().toObjectSpace(jointCoord0InWorld);
+		G3D::CoordinateFrame jointCoord1 = Math::snapToGrid(jc0InP1, 0.1f);
+
+		return new GlueJoint(p0, p1, jointCoord0, jointCoord1);
+	}
+}

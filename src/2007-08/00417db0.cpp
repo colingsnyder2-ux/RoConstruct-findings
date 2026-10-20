@@ -1,29 +1,166 @@
-// roc 2007-08 00417db0  unit: std::D::DU?$char_traits::$$A6AXV?$basic_string::V?$function::?$holder  size: 42 bytes
-// Make this compile to the exact bytes below, then: roc check 2007-08 00417db0
-//
-// 00417db0  56                   push esi
-// 00417db1  8b742408             mov esi, dword ptr [esp + 8]
-// 00417db5  57                   push edi
-// 00417db6  8b7c2410             mov edi, dword ptr [esp + 0x10]
-// 00417dba  3bf7                 cmp esi, edi
-// 00417dbc  7417                 je 0x417dd5
-// 00417dbe  8bff                 mov edi, edi
-// 00417dc0  8b0e                 mov ecx, dword ptr [esi]
-// 00417dc2  85c9                 test ecx, ecx
-// 00417dc4  7408                 je 0x417dce
-// 00417dc6  8b01                 mov eax, dword ptr [ecx]
-// 00417dc8  8b10                 mov edx, dword ptr [eax]
-// 00417dca  6a01                 push 1
-// 00417dcc  ffd2                 call edx
-// 00417dce  83c604               add esi, 4
-// 00417dd1  3bf7                 cmp esi, edi
-// 00417dd3  75eb                 jne 0x417dc0
-// 00417dd5  5f                   pop edi
-// 00417dd6  5e                   pop esi
-// 00417dd7  c20800               ret 8
-// library openrbx-client/App\util\RunStateOwner.cpp (function ?_Destroy@?$vector@Vany@boost@@V?$allocator@Vany@boost@@@std@@@std@@IAEXPAVany@boost@@0@Z)
-
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
 // roc-lib: openrbx-client App/util/RunStateOwner.cpp
+
+// Candidate translation unit (score above; library headers required).
+#include "util/RunStateOwner.h"
+
+#include "util/Timer.h"
+#include "v8datamodel/DataModel.h"
+
+#include <algorithm>
+#include <boost/thread/thread.hpp>
+#include <boost/thread/xtime.hpp>
+
+namespace RBX {
+
+const char sRunService[] = "RunService";
+
+Reflection::SignalDesc<RunService, void(float, float)> RunService::event_Stepped("Stepped", "time", "step");
+
+static Reflection::SignalDesc<RunService, void(float)> event_Heartbeat("Heartbeat", "step");
+
+// FUNCTION: WEBSERVICE 0x10054320
+void RunService::endRunThread(bool join)
+{
+	stopRequested = true;
+	stateChangedCondition.notify_all();
+
+	if (join) {
+		runThread->join();
+	}
+}
+
+// FUNCTION: WEBSERVICE 0x100543b0
+void RunService::onAncestorChanged(const AncestorChanged& event)
+{
+	if (getParent() == NULL) {
+		endRunThread(false);
+	}
+}
+
+// FUNCTION: WEBSERVICE 0x10054cb0
+void RunService::runProc(boost::shared_ptr<DataModel> dataModel)
+{
+	double desiredTime = getRealTime();
+
+	while (true) {
+		const double timeLeft = desiredTime - getRealTime();
+
+		{
+			boost::mutex::scoped_lock lock(viewMutex);
+
+			for (Views::iterator iter = views.begin(); iter != views.end(); ++iter) {
+				iter->first->AdjustThrottle(timeLeft);
+			}
+		}
+
+		const double waitTime = std::max(0.0, timeLeft);
+
+		boost::xtime xt;
+
+		boost::xtime_get(&xt, boost::TIME_UTC);
+		xt.nsec += (int) (waitTime * 1000000000.0);
+
+		bool signalled;
+
+		{
+			boost::mutex::scoped_lock lock(runMutex);
+
+			signalled = stateChangedCondition.timed_wait(lock, xt);
+		}
+
+		if (!signalled) {
+			boost::xtime xt;
+
+			boost::xtime_get(&xt, boost::TIME_UTC);
+			xt.sec += 1;
+
+			boost::mutex::scoped_lock lock(runMutex);
+
+			if (invalidRunViewCount != 0) {
+				runViewsDoneCondition.timed_wait(lock, xt);
+			}
+		}
+
+		if (timeLeft <= 0.0) {
+			desiredTime = getRealTime();
+		}
+
+		{
+			DataModel::Lock lock(dataModel);
+
+			if (stopRequested) {
+				break;
+			}
+
+			dataModel->step(framePeriod);
+		}
+
+		desiredTime += framePeriod;
+	}
+}
+
+// FUNCTION: WEBSERVICE 0x10054fd0
+void RunService::invalidateRunViews()
+{
+	boost::mutex::scoped_lock lock(viewMutex);
+
+	if (invalidRunViewCount != 0) {
+		return;
+	}
+
+	invalidRunViewCount = views.size();
+
+	if (invalidRunViewCount > 0) {
+		for (Views::iterator iter = views.begin(); iter != views.end(); ++iter) {
+			iter->first->InvalidateRunView();
+			iter->second = false;
+		}
+
+		runViewsDoneCondition.notify_all();
+	}
+}
+
+// FUNCTION: WEBSERVICE 0x10055380
+RunService::~RunService()
+{
+}
+
+// FUNCTION: WEBSERVICE 0x10056950
+RunService::RunService()
+	: runState(RS_NORMAL), stopRequested(false), framePeriod(1.0f / 30.0f), runThread(NULL), invalidRunViewCount(0),
+	  runDisabled(false)
+{
+	setName("Run Service");
+}
+
+// STUB: WEBSERVICE 0x100573e0
+void RunService::start()
+{
+	STUB(0x100573e0);
+}
+
+// FUNCTION: WEBSERVICE 0x100577f0
+void RunService::raiseHeartbeat(float time, float step)
+{
+	Notifier<RunService, Heartbeat>::raise(Heartbeat(time, step));
+	event_Heartbeat.fire(this, step);
+}
+
+// FUNCTION: WEBSERVICE 0x10057860
+void RunService::raiseStepped(float time, float step)
+{
+	Notifier<RunService, Stepped>::raise(Stepped(time, step));
+	event_Stepped.fire(this, time, step);
+}
+
+} // namespace RBX
+
+template class RBX::FactoryProduct<RBX::RunService, RBX::Instance, RBX::sRunService>;
+template class RBX::Reflection::Described<
+	RBX::RunService,
+	RBX::sRunService,
+	RBX::FactoryProduct<RBX::RunService, RBX::Instance, RBX::sRunService> >;
+template class RBX::DescribedCreatable<RBX::RunService, RBX::Instance, RBX::sRunService>;

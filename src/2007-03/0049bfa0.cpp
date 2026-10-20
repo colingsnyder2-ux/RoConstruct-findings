@@ -1,19 +1,68 @@
-// roc 2007-03 0049bfa0  unit: seg_00490000  size: 27 bytes
-// Make this compile to the exact bytes below, then: roc check 2007-03 0049bfa0
-//
-// 0049bfa0  8b442404             mov eax, dword ptr [esp + 4]
-// 0049bfa4  8b08                 mov ecx, dword ptr [eax]
-// 0049bfa6  80791900             cmp byte ptr [ecx + 0x19], 0
-// 0049bfaa  750e                 jne 0x49bfba
-// 0049bfac  8d642400             lea esp, [esp]
-// 0049bfb0  8bc1                 mov eax, ecx
-// 0049bfb2  8b08                 mov ecx, dword ptr [eax]
-// 0049bfb4  80791900             cmp byte ptr [ecx + 0x19], 0
-// 0049bfb8  74f6                 je 0x49bfb0
-// 0049bfba  c3                   ret 
-// library rbxgs/reflection\signal.cpp (function ?_Min@?$_Tree@V?$_Tmap_traits@PBVSignalDescriptor@Reflection@RBX@@V?$shared_ptr@VSignalInstance@Reflection@RBX@@@boost@@U?$less@PBVSignalDescriptor@Reflection@RBX@@@std@@V?$allocator@U?$pair@QBVSignalDescriptor@Reflection@RBX@@V?$shared_ptr@VSignalInstance@Reflection@RBX@@@boost@@@std@@@7@$0A@@std@@@std@@KAPAU_Node@?$_Tree_nod@V?$_Tmap_traits@PBVSignalDescriptor@Reflection@RBX@@V?$shared_ptr@VSignalInstance@Reflection@RBX@@@boost@@U?$less@PBVSignalDescriptor@Reflection@RBX@@@std@@V?$allocator@U?$pair@QBVSignalDescriptor@Reflection@RBX@@V?$shared_ptr@VSignalInstance@Reflection@RBX@@@boost@@@std@@@7@$0A@@std@@@2@PAU342@@Z)
-
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
 // roc-lib: rbxgs reflection/signal.cpp
+
+// Candidate translation unit (score above; library headers required).
+#include "reflection/signal.h"
+#include "reflection/object.h"
+
+namespace RBX
+{
+	namespace Reflection
+	{
+		SignalDescriptor::SignalDescriptor(ClassDescriptor& classDescriptor, const char* name)
+			: MemberDescriptor(classDescriptor, name, "Signals"),
+			  signalCreatedHook(NULL),
+			  signature()
+		{
+			classDescriptor.SignalContainer::declare(this);
+		}
+
+		SignalInstance* SignalDescriptor::findSignalInstance(const SignalSource* source) const
+		{
+			if (!source)
+				return NULL;
+
+			if (!source->signals)
+				return NULL;
+
+			std::map<const SignalDescriptor*, boost::shared_ptr<SignalInstance>>::const_iterator iter = source->signals->find(this);
+			if (iter == source->signals->end())
+				return NULL;
+
+			return iter->second.get();
+		}
+
+		boost::shared_ptr<SignalInstance> SignalDescriptor::getSignalInstance(SignalSource& source) const
+		{
+			if (!source.signals)
+			{
+				source.signals.reset(new std::map<const SignalDescriptor*, boost::shared_ptr<SignalInstance>>);
+			}
+			else
+			{
+				std::map<const SignalDescriptor*, boost::shared_ptr<SignalInstance>>::iterator iter = source.signals->find(this);
+				if (iter != source.signals->end())
+					return iter->second;
+			}
+
+			boost::shared_ptr<SignalInstance> signalInstance(newSignalInstance(source));
+			(*source.signals)[this] = signalInstance;
+
+			if (signalCreatedHook)
+				signalCreatedHook(&source);
+
+			return signalInstance;
+		}
+
+		SignalInstance::~SignalInstance() {}
+
+		SignalSource::~SignalSource() {}
+
+		void SignalSource::disconnect_all_slots()
+		{
+			signals.reset();
+		}
+	}
+}

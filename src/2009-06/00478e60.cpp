@@ -1,60 +1,199 @@
 // from server: 100% by auto
-// roc 2009-06 00478e60  unit: Ogre::RbxMeshLoader  size: 141 bytes
-// Make this compile to the exact bytes below, then: roc check 2009-06 00478e60
-//
-// 00478e60  55                   push ebp
-// 00478e61  8bec                 mov ebp, esp
-// 00478e63  6aff                 push -1
-// 00478e65  6858468500           push 0x854658
-// 00478e6a  64a100000000         mov eax, dword ptr fs:[0]
-// 00478e70  50                   push eax
-// 00478e71  64892500000000       mov dword ptr fs:[0], esp
-// 00478e78  83ec08               sub esp, 8
-// 00478e7b  53                   push ebx
-// 00478e7c  56                   push esi
-// 00478e7d  57                   push edi
-// 00478e7e  8965f0               mov dword ptr [ebp - 0x10], esp
-// 00478e81  8bf1                 mov esi, ecx
-// 00478e83  6a04                 push 4
-// 00478e85  8975ec               mov dword ptr [ebp - 0x14], esi
-// 00478e88  e8abfb2900           call 0x718a38
-// 00478e8d  83c404               add esp, 4
-// 00478e90  85c0                 test eax, eax
-// 00478e92  7404                 je 0x478e98
-// 00478e94  8930                 mov dword ptr [eax], esi
-// 00478e96  eb02                 jmp 0x478e9a
-// 00478e98  33c0                 xor eax, eax
-// 00478e9a  8906                 mov dword ptr [esi], eax
-// 00478e9c  8bce                 mov ecx, esi
-// 00478e9e  c745fc00000000       mov dword ptr [ebp - 4], 0
-// 00478ea5  e836fc0900           call 0x518ae0
-// 00478eaa  894618               mov dword ptr [esi + 0x18], eax
-// 00478ead  b101                 mov cl, 1
-// 00478eaf  884829               mov byte ptr [eax + 0x29], cl
-// 00478eb2  8b4618               mov eax, dword ptr [esi + 0x18]
-// 00478eb5  894004               mov dword ptr [eax + 4], eax
-// 00478eb8  8b4618               mov eax, dword ptr [esi + 0x18]
-// 00478ebb  8900                 mov dword ptr [eax], eax
-// 00478ebd  8b4618               mov eax, dword ptr [esi + 0x18]
-// 00478ec0  894008               mov dword ptr [eax + 8], eax
-// 00478ec3  8b4508               mov eax, dword ptr [ebp + 8]
-// 00478ec6  884dfc               mov byte ptr [ebp - 4], cl
-// 00478ec9  50                   push eax
-// 00478eca  8bce                 mov ecx, esi
-// 00478ecc  c7461c00000000       mov dword ptr [esi + 0x1c], 0
-// 00478ed3  e878f3ffff           call 0x478250
-// 00478ed8  8b4df4               mov ecx, dword ptr [ebp - 0xc]
-// 00478edb  5f                   pop edi
-// 00478edc  8bc6                 mov eax, esi
-// 00478ede  5e                   pop esi
-// 00478edf  64890d00000000       mov dword ptr fs:[0], ecx
-// 00478ee6  5b                   pop ebx
-// 00478ee7  8be5                 mov esp, ebp
-// 00478ee9  5d                   pop ebp
-// 00478eea  c20400               ret 4
-// library boost-1.34.1/libs\program_options\src\config_file.cpp (function ??0?$_Tree@V?$_Tset_traits@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@$0A@@std@@@std@@QAE@ABV01@@Z)
-
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD
 // roc-lib: boost-1.34.1 libs/program_options/src/config_file.cpp
+
+// Candidate translation unit (score above; library headers required).
+// Copyright Vladimir Prus 2002-2004.
+// Distributed under the Boost Software License, Version 1.0.
+// (See accompanying file LICENSE_1_0.txt
+// or copy at http://www.boost.org/LICENSE_1_0.txt)
+
+
+#define BOOST_PROGRAM_OPTIONS_SOURCE
+#include <boost/program_options/config.hpp>
+
+#include <boost/program_options/detail/config_file.hpp>
+#include <boost/program_options/errors.hpp>
+#include <boost/program_options/detail/convert.hpp>
+#include <boost/throw_exception.hpp>
+
+#include <iostream>
+#include <fstream>
+#include <cassert>
+
+namespace boost { namespace program_options { namespace detail {
+
+    using namespace std;
+
+    common_config_file_iterator::common_config_file_iterator(
+        const std::set<std::string>& allowed_options)
+    : allowed_options(allowed_options)
+    {
+        for(std::set<std::string>::const_iterator i = allowed_options.begin();
+            i != allowed_options.end(); 
+            ++i)
+        {
+            add_option(i->c_str());
+        }
+    }
+
+    void
+    common_config_file_iterator::add_option(const char* name)
+    {
+        string s(name);
+        assert(!s.empty());
+        if (*s.rbegin() == '*') {
+            s.resize(s.size()-1);
+            bool bad_prefixes(false);
+            // If 's' is a prefix of one of allowed suffix, then
+            // lower_bound will return that element.
+            // If some element is prefix of 's', then lower_bound will
+            // return the next element.
+            set<string>::iterator i = allowed_prefixes.lower_bound(s);
+            if (i != allowed_prefixes.end()) {
+                if (i->find(s) == 0)
+                    bad_prefixes = true;                    
+            }
+            if (i != allowed_prefixes.begin()) {
+                --i;
+                if (s.find(*i) == 0)
+                    bad_prefixes = true;
+            }
+            if (bad_prefixes)
+                boost::throw_exception(error("bad prefixes"));
+            allowed_prefixes.insert(s);
+        }
+    }
+
+    namespace {
+        string trim_ws(const string& s)
+        {
+            string::size_type n, n2;
+            n = s.find_first_not_of(" \t\r\n");
+            if (n == string::npos)
+                return string();
+            else {
+                n2 = s.find_last_not_of(" \t\r\n");
+                return s.substr(n, n2-n+1);
+            }
+        }
+    }
+
+
+    void common_config_file_iterator::get()
+    {
+        string s;
+        string::size_type n;
+        bool found = false;
+
+        while(this->getline(s)) {
+
+            // strip '#' comments and whitespace
+            if ((n = s.find('#')) != string::npos)
+                s = s.substr(0, n);
+            s = trim_ws(s);
+
+            if (!s.empty()) {
+                // Handle section name
+                if (*s.begin() == '[' && *s.rbegin() == ']') {
+                    m_prefix = s.substr(1, s.size()-2);
+                    if (*m_prefix.rbegin() != '.')
+                        m_prefix += '.';
+                }
+                else if ((n = s.find('=')) != string::npos) {
+
+                    string name = m_prefix + trim_ws(s.substr(0, n));
+                    string value = trim_ws(s.substr(n+1));
+
+                    if (!allowed_option(name))
+                        boost::throw_exception(unknown_option(name));
+                                        
+                    if (value.empty())
+                        boost::throw_exception(invalid_syntax(s, "no value given"));
+                    
+                    found = true;
+                    this->value().string_key = name;
+                    this->value().value.clear();
+                    this->value().value.push_back(value);
+                    break;
+
+                } else {
+                    boost::throw_exception(invalid_syntax(s, "unrecognized line"));
+                }
+            }
+        }
+        if (!found)
+            found_eof();
+    }
+
+
+    bool 
+    common_config_file_iterator::allowed_option(const std::string& s) const
+    {
+        set<string>::const_iterator i = allowed_options.find(s);
+        if (i != allowed_options.end())
+            return true;        
+        // If s is "pa" where "p" is allowed prefix then
+        // lower_bound should find the element after "p". 
+        // This depends on 'allowed_prefixes' invariant.
+        i = allowed_prefixes.lower_bound(s);
+        if (i != allowed_prefixes.begin() && s.find(*--i) == 0)
+            return true;
+        return false;
+    }
+
+#if BOOST_WORKAROUND(__COMO_VERSION__, BOOST_TESTED_AT(4303)) || \
+        (defined(__sgi) && BOOST_WORKAROUND(_COMPILER_VERSION, BOOST_TESTED_AT(741)))
+    template<>
+    bool
+    basic_config_file_iterator<wchar_t>::getline(std::string& s)
+    {
+        std::wstring ws;
+        // On Comeau, using two-argument version causes
+        // call to some internal function with std::wstring, and '\n'
+        // (not L'\n') and compile can't resolve that call.
+
+        if (std::getline(*is, ws, L'\n')) {
+            s = to_utf8(ws);
+            return true;
+        } else {
+            return false;
+        }            
+    }
+#endif    
+
+}}}
+
+#if 0
+using boost::program_options::config_file;
+
+#include <sstream>
+#include <cassert>
+
+int main()
+{
+    try {
+        stringstream s(
+            "a = 1\n"
+            "b = 2\n");
+
+        config_file cf(s);
+        cf.add_option("a");
+        cf.add_option("b");
+
+        assert(++cf);
+        assert(cf.name() == "a");
+        assert(cf.value() == "1");
+        assert(++cf);
+        assert(cf.name() == "b");
+        assert(cf.value() == "2");
+        assert(!++cf);
+    }
+    catch(exception& e)
+    {
+        cout << e.what() << "\n";
+    }
+}
+#endif

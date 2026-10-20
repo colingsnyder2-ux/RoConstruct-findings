@@ -1,28 +1,245 @@
-// roc 2007-03 00566e40  unit: seg_00560000  size: 52 bytes
-// Make this compile to the exact bytes below, then: roc check 2007-03 00566e40
-//
-// 00566e40  56                   push esi
-// 00566e41  8bf1                 mov esi, ecx
-// 00566e43  807e0800             cmp byte ptr [esi + 8], 0
-// 00566e47  7526                 jne 0x566e6f
-// 00566e49  8b4e04               mov ecx, dword ptr [esi + 4]
-// 00566e4c  85c9                 test ecx, ecx
-// 00566e4e  7414                 je 0x566e64
-// 00566e50  ff15b0e57700         call dword ptr [0x77e5b0]
-// 00566e56  83f8ff               cmp eax, -1
-// 00566e59  7409                 je 0x566e64
-// 00566e5b  884609               mov byte ptr [esi + 9], al
-// 00566e5e  c6460801             mov byte ptr [esi + 8], 1
-// 00566e62  5e                   pop esi
-// 00566e63  c3                   ret 
-// 00566e64  c7460400000000       mov dword ptr [esi + 4], 0
-// 00566e6b  c6460801             mov byte ptr [esi + 8], 1
-// 00566e6f  8a4609               mov al, byte ptr [esi + 9]
-// 00566e72  5e                   pop esi
-// 00566e73  c3                   ret 
-// library openrbx-client/App\v8xml\XmlSerializer.cpp (function ??D?$istreambuf_iterator@DU?$char_traits@D@std@@@std@@QBEDXZ)
-
 // roc-lang: cpp
 // roc-cl: 50727
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
 // roc-lib: openrbx-client-dll App/v8xml/XmlSerializer.cpp
+
+// Candidate translation unit (score above; library headers required).
+#include "v8xml/XmlSerializer.h"
+
+#include "util/ContentProvider.h"
+#include "util/Name.h"
+#include "util/base64.hpp"
+#include "v8xml/XmlElement.h"
+
+#include <cstdio>
+#include <cstring>
+#include <istream>
+#include <iterator>
+#include <memory>
+#include <ostream>
+
+// GLOBAL: WEBSERVICE 0x102d21b0
+// clang-format off
+static bool whitespaces[256] = {
+	0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 1, 1, 0, 0,
+	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+	1
+};
+// clang-format on
+
+// FUNCTION: WEBSERVICE 0x10084c50
+void TextXmlParser::skipWhitespace()
+{
+	while (whitespaces[(char) buffer->sgetc()]) {
+		buffer->sbumpc();
+	}
+}
+
+// FUNCTION: WEBSERVICE 0x10085810
+void TextXmlWriter::writeCloseTag(const XmlElement* element, int depth)
+{
+	for (int i = 0; i < depth; ++i) {
+		stream << '\t';
+	}
+
+	stream << "</" << element->getTag().name << '>';
+}
+
+// FUNCTION: WEBSERVICE 0x10085870
+void TextXmlWriter::serialize(const XmlElement* xmlNode, int depth)
+{
+	if (xmlNode != NULL) {
+		serializeNode(xmlNode, depth);
+
+		const XmlElement* child = xmlNode->firstChild();
+
+		if (child != NULL) {
+			while (child != NULL) {
+				stream << '\n';
+				serialize(child, depth + 1);
+				child = child->nextSibling();
+			}
+
+			stream << '\n';
+
+			writeCloseTag(xmlNode, depth);
+		}
+		else {
+			writeCloseTag(xmlNode, 0);
+		}
+	}
+}
+
+// FUNCTION: WEBSERVICE 0x10086220
+void TextXmlWriter::encodedWrite(std::ostream& stream, const char* text)
+{
+	size_t num = strlen(text);
+
+	for (size_t i = 0; i < num; ++i) {
+		char c = *text++;
+
+		if (c == '<') {
+			stream << "&lt;";
+		}
+		else if (c == '>') {
+			stream << "&gt;";
+		}
+		else if (c == '&') {
+			stream << "&amp;";
+		}
+		else if (c == '"') {
+			stream << "&quot;";
+		}
+		else if (c == '\'') {
+			stream << "&apos;";
+		}
+		else if (c < ' ' || c > '~') {
+			char buffer[8];
+
+			sprintf(buffer, "&#%d;", (unsigned char) c);
+
+			stream << buffer;
+		}
+		else {
+			stream << c;
+		}
+	}
+}
+
+// FUNCTION: WEBSERVICE 0x10086590
+void TextXmlWriter::serialize(const XmlElement* xmlNode)
+{
+	serialize(xmlNode, 0);
+}
+
+// FUNCTION: WEBSERVICE 0x10086af0
+void TextXmlWriter::writeOpenTag(const XmlElement* element, int depth, const XmlAttribute* extraAttribute)
+{
+	for (int i = 0; i < depth; ++i) {
+		stream << '\t';
+	}
+
+	stream << '<' << element->getTag().name;
+
+	for (const XmlAttribute* attribute = element->getFirstAttribute(); attribute != NULL;
+		 attribute = element->getNextAttribute(attribute)) {
+		stream << ' ' << attribute->getTag().name << "=\"";
+
+		encodedWrite(stream, attribute->toString(this));
+
+		stream << '"';
+	}
+
+	if (extraAttribute != NULL) {
+		stream << ' ' << extraAttribute->getTag().name << "=\"";
+
+		encodedWrite(stream, extraAttribute->toString(this));
+
+		stream << '"';
+	}
+
+	stream << '>';
+}
+
+// FUNCTION: WEBSERVICE 0x10086c90
+XmlParser::XmlParser(std::streambuf* buffer) : buffer(buffer)
+{
+}
+
+// FUNCTION: WEBSERVICE 0x10086cb0
+void TextXmlWriter::serializeNode(const XmlElement* xmlNode, int depth)
+{
+	if (xmlNode->isValueType<RBX::ContentId>()) {
+		writeOpenTag(xmlNode, depth, NULL);
+
+		RBX::ContentId contentId;
+
+		xmlNode->getValue(contentId);
+
+		if (contentId.isNull()) {
+			stream << "<null></null>";
+		}
+		else {
+			stream << "<hash>";
+			stream << xmlNode->toString(this);
+			stream << "</hash>";
+		}
+	}
+	else {
+		writeOpenTag(xmlNode, depth, NULL);
+
+		encodedWrite(stream, xmlNode->toString(this));
+	}
+}
+
+// STUB: WEBSERVICE 0x10086e00
+void TextXmlWriterWithEmbeddedContent::serializeNode(const XmlElement* xmlNode, int depth)
+{
+	if (xmlNode->isValueType<RBX::ContentId>()) {
+		RBX::ContentId contentId;
+
+		xmlNode->getValue(contentId);
+
+		if (&contentId.mimeType() == &RBX::Name::getNullName()) {
+			writeOpenTag(xmlNode, depth, NULL);
+		}
+		else {
+			XmlAttribute mimeType(tag_mimeType, contentId.mimeType().name.c_str());
+
+			writeOpenTag(xmlNode, depth, &mimeType);
+		}
+
+		if (xmlNode->findAttribute(name_xsinil) == NULL) {
+			if (contentId.isNull()) {
+				stream << "<null></null>";
+			}
+			else if (contentId.isAsset() || contentId.isHttp()) {
+				stream << "<url>";
+				TextXmlWriter::encodedWrite(stream, contentId.c_str());
+				stream << "</url>";
+			}
+			else if (embeddedContent.find(contentId) == embeddedContent.end()) {
+				embeddedContent.insert(contentId);
+
+				std::auto_ptr<std::istream> contentStream;
+
+				contentStream = RBX::ContentProvider::singleton().getContent(contentId);
+
+				if (&contentId.mimeType() == &RBX::Name::getNullName()) {
+					stream << "<binary>";
+				}
+				else {
+					stream << "<binary xmime:contentType=\"" << contentId.mimeType().name.c_str() << "\">";
+				}
+
+				int state;
+				base64<char> encoder;
+
+				encoder.put(
+					std::istreambuf_iterator<char>(contentStream->rdbuf()),
+					std::istreambuf_iterator<char>(),
+					std::ostreambuf_iterator<char>(stream.rdbuf()),
+					state,
+					base64<char>::crlf()
+				);
+
+				stream << "</binary>";
+			}
+			else {
+				embeddedContent.insert(contentId);
+
+				stream << "<hash>";
+				stream << xmlNode->toString(this);
+				stream << "</hash>";
+			}
+		}
+	}
+	else {
+		TextXmlWriter::serializeNode(xmlNode, depth);
+	}
+}
+
+// FUNCTION: WEBSERVICE 0x10087f40
+XmlWriter::XmlWriter(std::ostream& stream) : stream(stream)
+{
+}

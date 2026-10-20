@@ -1,66 +1,297 @@
-// roc 2008-06 005841e0  unit: RBX::ModelInstance  size: 151 bytes
-// Make this compile to the exact bytes below, then: roc check 2008-06 005841e0
-//
-// 005841e0  83ec30               sub esp, 0x30
-// 005841e3  55                   push ebp
-// 005841e4  8be9                 mov ebp, ecx
-// 005841e6  8b8508010000         mov eax, dword ptr [ebp + 0x108]
-// 005841ec  85c0                 test eax, eax
-// 005841ee  0f847c000000         je 0x584270
-// 005841f4  53                   push ebx
-// 005841f5  8b5810               mov ebx, dword ptr [eax + 0x10]
-// 005841f8  2b580c               sub ebx, dword ptr [eax + 0xc]
-// 005841fb  c1fb03               sar ebx, 3
-// 005841fe  85db                 test ebx, ebx
-// 00584200  7e6d                 jle 0x58426f
-// 00584202  8b859c010000         mov eax, dword ptr [ebp + 0x19c]
-// 00584208  56                   push esi
-// 00584209  50                   push eax
-// 0058420a  8d4c2410             lea ecx, [esp + 0x10]
-// 0058420e  51                   push ecx
-// 0058420f  8b4c2448             mov ecx, dword ptr [esp + 0x48]
-// 00584213  e8e824efff           call 0x476700
-// 00584218  33f6                 xor esi, esi
-// 0058421a  85db                 test ebx, ebx
-// 0058421c  7e50                 jle 0x58426e
-// 0058421e  57                   push edi
-// 0058421f  90                   nop 
-// 00584220  8bbd08010000         mov edi, dword ptr [ebp + 0x108]
-// 00584226  8b5710               mov edx, dword ptr [edi + 0x10]
-// 00584229  2b570c               sub edx, dword ptr [edi + 0xc]
-// 0058422c  c1fa03               sar edx, 3
-// 0058422f  3bf2                 cmp esi, edx
-// 00584231  7206                 jb 0x584239
-// 00584233  ff1590288000         call dword ptr [0x802890]
-// 00584239  8b470c               mov eax, dword ptr [edi + 0xc]
-// 0058423c  8b04f0               mov eax, dword ptr [eax + esi*8]
-// 0058423f  6a00                 push 0
-// 00584241  681c7f9400           push 0x947f1c
-// 00584246  687c909200           push 0x92907c
-// 0058424b  6a00                 push 0
-// 0058424d  50                   push eax
-// 0058424e  e873d51100           call 0x6a17c6
-// 00584253  83c414               add esp, 0x14
-// 00584256  85c0                 test eax, eax
-// 00584258  740e                 je 0x584268
-// 0058425a  8b10                 mov edx, dword ptr [eax]
-// 0058425c  8b5264               mov edx, dword ptr [edx + 0x64]
-// 0058425f  8d4c2410             lea ecx, [esp + 0x10]
-// 00584263  51                   push ecx
-// 00584264  8bc8                 mov ecx, eax
-// 00584266  ffd2                 call edx
-// 00584268  46                   inc esi
-// 00584269  3bf3                 cmp esi, ebx
-// 0058426b  7cb3                 jl 0x584220
-// 0058426d  5f                   pop edi
-// 0058426e  5e                   pop esi
-// 0058426f  5b                   pop ebx
-// 00584270  5d                   pop ebp
-// 00584271  83c430               add esp, 0x30
-// 00584274  c20400               ret 4
-// library openrbx-client/App\v8datamodel\ModelInstance.cpp (function ?legacyTraverseState@ModelInstance@RBX@@MAEXABVCoordinateFrame@G3D@@@Z)
-
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
 // roc-lib: openrbx-client App/v8datamodel/ModelInstance.cpp
+
+// Candidate translation unit (score above; library headers required).
+#include "v8datamodel/ModelInstance.h"
+
+#include "humanoid/Humanoid.h"
+#include "util/Name.h"
+#include "v8datamodel/PartInstance.h"
+
+namespace RBX {
+
+char sModel[] = "Model";
+
+bool ModelInstance::showModelCoord;
+
+bool ModelInstance::askSetParent(const Instance* instance) const
+{
+	STUB(0x10059c10);
+	return false;
+}
+
+// FUNCTION: WEBSERVICE 0x10059c40
+float ModelInstance::computeFlagHeight() const
+{
+	float height = 6.0f;
+
+	if (primaryPart != NULL) {
+		float partTop = primaryPart->getExtentsWorld().max().y;
+
+		height = getExtentsWorld().max().y - partTop + 6.0f;
+	}
+
+	return height;
+}
+
+// FUNCTION: WEBSERVICE 0x1005a1a0
+void ModelInstance::onExtentsChanged() const
+{
+	LocalGridExtents.setDirty();
+	WorldGridExtents.setDirty();
+	FlagHeight.setDirty();
+
+	PVInstance::onExtentsChanged();
+}
+
+// FUNCTION: WEBSERVICE 0x1005a1c0
+const Primitive* ModelInstance::getBiggestPrimitive() const
+{
+	const PartInstance* part = getPrimaryPartConst();
+
+	if (part != NULL) {
+		return part->getPrimitive();
+	}
+
+	return NULL;
+}
+
+// STUB: WEBSERVICE 0x1005a1f0
+void ModelInstance::updatePrimaryPart(PartInstance* part) const
+{
+	if (primaryPart == part) {
+		return;
+	}
+
+	if (part != NULL && primaryPart != NULL) {
+		Matrix3 rotation = getLocation().rotation;
+
+		modelInPrimary =
+			CoordinateFrame(primaryPart->getCoordinateFrame().rotation.transpose() * rotation, Vector3::zero());
+	}
+	else {
+		modelInPrimary = CoordinateFrame();
+	}
+
+	primaryPart = part;
+}
+
+// FUNCTION: WEBSERVICE 0x1005a350
+Extents ModelInstance::computeWorldGridExtents() const
+{
+	return LocalGridExtents.getValue().express(getLocation(), CoordinateFrame());
+}
+
+// STUB: WEBSERVICE 0x1005a3b0
+const CoordinateFrame ModelInstance::getLocation() const
+{
+	STUB(0x1005a3b0);
+	return CoordinateFrame();
+}
+
+// STUB: WEBSERVICE 0x1005a460
+void ModelInstance::render3dSelect(Adorn* adorn, SelectState selectState)
+{
+	STUB(0x1005a460);
+}
+
+// STUB: WEBSERVICE 0x1005a890
+ModelInstance::~ModelInstance()
+{
+}
+
+// STUB: WEBSERVICE 0x1005ab00
+Extents ModelInstance::getExtentsWorld() const
+{
+	return WorldGridExtents.getValue();
+}
+
+// STUB: WEBSERVICE 0x1005ab50
+Extents ModelInstance::getExtentsLocal() const
+{
+	return LocalGridExtents.getValue();
+}
+
+// FUNCTION: WEBSERVICE 0x1005abb0
+PartInstance* ModelInstance::getPrimaryPartInternal() const
+{
+	if (primaryPart != NULL) {
+		return primaryPart;
+	}
+
+	float bestArea = -1.0f;
+	PartInstance* best = NULL;
+
+	for (unsigned int i = 0; i < numChildren(); i++) {
+		const PVInstance* pv = dynamic_cast<const PVInstance*>(getChild(i));
+
+		if (pv != NULL) {
+			const Primitive* primitive = pv->getBiggestPrimitive();
+
+			if (primitive != NULL) {
+				PartInstance* part = PartInstance::fromPrimitive(const_cast<Primitive*>(primitive));
+
+				float area = part->getExtentsWorld().areaXZ();
+
+				if (area > bestArea) {
+					bestArea = area;
+					best = part;
+				}
+			}
+		}
+	}
+
+	updatePrimaryPart(best);
+
+	return best;
+}
+
+// FUNCTION: WEBSERVICE 0x1005ac90
+void ModelInstance::legacyTraverseState(const CoordinateFrame& parentState)
+{
+	int count = numChildren();
+
+	if (count > 0) {
+		CoordinateFrame state = parentState * *legacyOffset;
+
+		for (int i = 0; i < count; i++) {
+			PVInstance* pv = dynamic_cast<PVInstance*>(getChild(i));
+
+			if (pv != NULL) {
+				pv->legacyTraverseState(state);
+			}
+		}
+	}
+}
+
+// FUNCTION: WEBSERVICE 0x1005ad40
+bool ModelInstance::hitTest(const G3D::Ray& worldRay, G3D::Vector3& worldHitPoint)
+{
+	for (unsigned int i = 0; i < numChildren(); i++) {
+		PVInstance* pv = dynamic_cast<PVInstance*>(getChild(i));
+
+		if (pv != NULL && pv->hitTest(worldRay, worldHitPoint)) {
+			return true;
+		}
+	}
+
+	return false;
+}
+
+// STUB: WEBSERVICE 0x1005add0
+bool ModelInstance::shouldRender3dAdorn() const
+{
+	const PVInstance* pv = dynamic_cast<const PVInstance*>(getParent());
+
+	if (pv == NULL || getTypedRoot<PVInstance>() == getParent()) {
+		return showModelCoord;
+	}
+
+	return false;
+}
+
+// STUB: WEBSERVICE 0x1005ae20
+void ModelInstance::render3dAdorn(Adorn* adorn)
+{
+	if (ModelInstance::shouldRender3dAdorn()) {
+		renderCoordinateFrame(adorn);
+	}
+}
+
+// FUNCTION: WEBSERVICE 0x1005ae80
+void ModelInstance::onCameraNear(float distance)
+{
+	for (unsigned int i = 0; i < numChildren(); i++) {
+		ICameraSubject* subject = dynamic_cast<ICameraSubject*>(getChild(i));
+
+		if (subject != NULL) {
+			subject->onCameraNear(distance);
+		}
+	}
+}
+
+// FUNCTION: WEBSERVICE 0x1005b220
+PartInstance* ModelInstance::getPrimaryPart()
+{
+	return getPrimaryPartInternal();
+}
+
+const PartInstance* ModelInstance::getPrimaryPartConst() const
+{
+	STUB(0x1005b221);
+	return NULL;
+}
+
+// FUNCTION: WEBSERVICE 0x1005b230
+void ModelInstance::onDescendentAdded(Instance* instance)
+{
+	PVInstance::onDescendentAdded(instance);
+
+	LocalGridExtents.setDirty();
+	WorldGridExtents.setDirty();
+	FlagHeight.setDirty();
+
+	if (instance == candidatePrimaryPart.get()) {
+		candidatePrimaryPart.reset();
+
+		updatePrimaryPart(static_cast<PartInstance*>(instance));
+	}
+
+	shouldRenderSetDirty();
+}
+
+// FUNCTION: WEBSERVICE 0x1005b2c0
+void ModelInstance::onDescendentRemoving(const shared_ptr<Instance>& instance)
+{
+	if (primaryPart == instance.get()) {
+		primaryPart = NULL;
+	}
+
+	if (candidatePrimaryPart.get() == instance.get()) {
+		candidatePrimaryPart.reset();
+	}
+
+	LocalGridExtents.setDirty();
+	WorldGridExtents.setDirty();
+	FlagHeight.setDirty();
+
+	shouldRenderSetDirty();
+
+	PVInstance::onDescendentRemoving(instance);
+}
+
+// STUB: WEBSERVICE 0x1005b440
+void ModelInstance::getCameraIgnorePrimitives(std::vector<const Primitive*>& primitives)
+{
+	STUB(0x1005b440);
+}
+
+// STUB: WEBSERVICE 0x1005b560
+Extents ModelInstance::computeLocalGridExtents() const
+{
+	STUB(0x1005b560);
+	return Extents();
+}
+
+// STUB: WEBSERVICE 0x1005c000
+ModelInstance::ModelInstance()
+	: PVInstance(sModel), primaryPart(NULL), FlagHeight(this, &ModelInstance::computeFlagHeight),
+	  LocalGridExtents(this, &ModelInstance::computeLocalGridExtents),
+	  WorldGridExtents(this, &ModelInstance::computeWorldGridExtents)
+{
+	STUB(0x1005c000);
+}
+
+void ModelInstance::onLastChildRemoved()
+{
+	STUB(0x1015b611);
+}
+
+} // namespace RBX
+
+template const RBX::Name& RBX::Name::doDeclare<RBX::sPart>();
+template const RBX::Name& RBX::Name::doDeclare<RBX::sHumanoid>();
+template void RBX::Name::callDoDeclare<RBX::sPart>();
+template void RBX::Name::callDoDeclare<RBX::sHumanoid>();

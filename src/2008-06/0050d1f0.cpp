@@ -1,154 +1,192 @@
 // from server: 100% by auto
-// roc 2008-06 0050d1f0  unit: G3D::Log  size: 422 bytes
-// Make this compile to the exact bytes below, then: roc check 2008-06 0050d1f0
-//
-// 0050d1f0  64a100000000         mov eax, dword ptr fs:[0]
-// 0050d1f6  6aff                 push -1
-// 0050d1f8  6809e77c00           push 0x7ce709
-// 0050d1fd  50                   push eax
-// 0050d1fe  64892500000000       mov dword ptr fs:[0], esp
-// 0050d205  83ec24               sub esp, 0x24
-// 0050d208  56                   push esi
-// 0050d209  8bf1                 mov esi, ecx
-// 0050d20b  8b4644               mov eax, dword ptr [esi + 0x44]
-// 0050d20e  8d4801               lea ecx, [eax + 1]
-// 0050d211  3b4e3c               cmp ecx, dword ptr [esi + 0x3c]
-// 0050d214  7e0f                 jle 0x50d225
-// 0050d216  8b5634               mov edx, dword ptr [esi + 0x34]
-// 0050d219  6a01                 push 1
-// 0050d21b  03d0                 add edx, eax
-// 0050d21d  52                   push edx
-// 0050d21e  8bce                 mov ecx, esi
-// 0050d220  e8ab850000           call 0x5157d0
-// 0050d225  8b4644               mov eax, dword ptr [esi + 0x44]
-// 0050d228  8b4e40               mov ecx, dword ptr [esi + 0x40]
-// 0050d22b  8a0c08               mov cl, byte ptr [eax + ecx]
-// 0050d22e  0fbed1               movsx edx, cl
-// 0050d231  57                   push edi
-// 0050d232  8b3d84278000         mov edi, dword ptr [0x802784]
-// 0050d238  40                   inc eax
-// 0050d239  52                   push edx
-// 0050d23a  884c240c             mov byte ptr [esp + 0xc], cl
-// 0050d23e  894644               mov dword ptr [esi + 0x44], eax
-// 0050d241  ffd7                 call edi
-// 0050d243  83c404               add esp, 4
-// 0050d246  85c0                 test eax, eax
-// 0050d248  743e                 je 0x50d288
-// 0050d24a  8d9b00000000         lea ebx, [ebx]
-// 0050d250  8b4644               mov eax, dword ptr [esi + 0x44]
-// 0050d253  8d4801               lea ecx, [eax + 1]
-// 0050d256  3b4e3c               cmp ecx, dword ptr [esi + 0x3c]
-// 0050d259  7e0f                 jle 0x50d26a
-// 0050d25b  8b5634               mov edx, dword ptr [esi + 0x34]
-// 0050d25e  6a01                 push 1
-// 0050d260  03d0                 add edx, eax
-// 0050d262  52                   push edx
-// 0050d263  8bce                 mov ecx, esi
-// 0050d265  e866850000           call 0x5157d0
-// 0050d26a  8b4644               mov eax, dword ptr [esi + 0x44]
-// 0050d26d  8b4e40               mov ecx, dword ptr [esi + 0x40]
-// 0050d270  8a0c08               mov cl, byte ptr [eax + ecx]
-// 0050d273  0fbed1               movsx edx, cl
-// 0050d276  40                   inc eax
-// 0050d277  52                   push edx
-// 0050d278  884c240c             mov byte ptr [esp + 0xc], cl
-// 0050d27c  894644               mov dword ptr [esi + 0x44], eax
-// 0050d27f  ffd7                 call edi
-// 0050d281  83c404               add esp, 4
-// 0050d284  85c0                 test eax, eax
-// 0050d286  75c8                 jne 0x50d250
-// 0050d288  8d4c2410             lea ecx, [esp + 0x10]
-// 0050d28c  ff1560248000         call dword ptr [0x802460]
-// 0050d292  8b442408             mov eax, dword ptr [esp + 8]
-// 0050d296  50                   push eax
-// 0050d297  8d4c2414             lea ecx, [esp + 0x14]
-// 0050d29b  c744243800000000     mov dword ptr [esp + 0x38], 0
-// 0050d2a3  ff15b4248000         call dword ptr [0x8024b4]
-// 0050d2a9  8b4644               mov eax, dword ptr [esi + 0x44]
-// 0050d2ac  8d4801               lea ecx, [eax + 1]
-// 0050d2af  3b4e3c               cmp ecx, dword ptr [esi + 0x3c]
-// 0050d2b2  7e0f                 jle 0x50d2c3
-// 0050d2b4  8b5634               mov edx, dword ptr [esi + 0x34]
-// 0050d2b7  6a01                 push 1
-// 0050d2b9  03d0                 add edx, eax
-// 0050d2bb  52                   push edx
-// 0050d2bc  8bce                 mov ecx, esi
-// 0050d2be  e80d850000           call 0x5157d0
-// 0050d2c3  8b4644               mov eax, dword ptr [esi + 0x44]
-// 0050d2c6  8b4e40               mov ecx, dword ptr [esi + 0x40]
-// 0050d2c9  8a0c08               mov cl, byte ptr [eax + ecx]
-// 0050d2cc  0fbed1               movsx edx, cl
-// 0050d2cf  40                   inc eax
-// 0050d2d0  52                   push edx
-// 0050d2d1  884c240c             mov byte ptr [esp + 0xc], cl
-// 0050d2d5  894644               mov dword ptr [esi + 0x44], eax
-// 0050d2d8  ffd7                 call edi
-// 0050d2da  83c404               add esp, 4
-// 0050d2dd  85c0                 test eax, eax
-// 0050d2df  7547                 jne 0x50d328
-// 0050d2e1  8b442408             mov eax, dword ptr [esp + 8]
-// 0050d2e5  50                   push eax
-// 0050d2e6  8d4c2414             lea ecx, [esp + 0x14]
-// 0050d2ea  ff15b4248000         call dword ptr [0x8024b4]
-// 0050d2f0  8b4644               mov eax, dword ptr [esi + 0x44]
-// 0050d2f3  8d4801               lea ecx, [eax + 1]
-// 0050d2f6  3b4e3c               cmp ecx, dword ptr [esi + 0x3c]
-// 0050d2f9  7e0f                 jle 0x50d30a
-// 0050d2fb  8b5634               mov edx, dword ptr [esi + 0x34]
-// 0050d2fe  6a01                 push 1
-// 0050d300  03d0                 add edx, eax
-// 0050d302  52                   push edx
-// 0050d303  8bce                 mov ecx, esi
-// 0050d305  e8c6840000           call 0x5157d0
-// 0050d30a  8b4644               mov eax, dword ptr [esi + 0x44]
-// 0050d30d  8b4e40               mov ecx, dword ptr [esi + 0x40]
-// 0050d310  8a0c08               mov cl, byte ptr [eax + ecx]
-// 0050d313  0fbed1               movsx edx, cl
-// 0050d316  40                   inc eax
-// 0050d317  52                   push edx
-// 0050d318  884c240c             mov byte ptr [esp + 0xc], cl
-// 0050d31c  894644               mov dword ptr [esi + 0x44], eax
-// 0050d31f  ffd7                 call edi
-// 0050d321  83c404               add esp, 4
-// 0050d324  85c0                 test eax, eax
-// 0050d326  74b9                 je 0x50d2e1
-// 0050d328  8b4e34               mov ecx, dword ptr [esi + 0x34]
-// 0050d32b  8b4644               mov eax, dword ptr [esi + 0x44]
-// 0050d32e  8d4401ff             lea eax, [ecx + eax - 1]
-// 0050d332  2bc1                 sub eax, ecx
-// 0050d334  894644               mov dword ptr [esi + 0x44], eax
-// 0050d337  5f                   pop edi
-// 0050d338  7805                 js 0x50d33f
-// 0050d33a  3b463c               cmp eax, dword ptr [esi + 0x3c]
-// 0050d33d  7e0c                 jle 0x50d34b
-// 0050d33f  03c1                 add eax, ecx
-// 0050d341  6a00                 push 0
-// 0050d343  50                   push eax
-// 0050d344  8bce                 mov ecx, esi
-// 0050d346  e885840000           call 0x5157d0
-// 0050d34b  837c242410           cmp dword ptr [esp + 0x24], 0x10
-// 0050d350  8b442410             mov eax, dword ptr [esp + 0x10]
-// 0050d354  7304                 jae 0x50d35a
-// 0050d356  8d442410             lea eax, [esp + 0x10]
-// 0050d35a  8d4c2408             lea ecx, [esp + 8]
-// 0050d35e  51                   push ecx
-// 0050d35f  68d0358100           push 0x8135d0
-// 0050d364  50                   push eax
-// 0050d365  ff1580278000         call dword ptr [0x802780]
-// 0050d36b  8b742414             mov esi, dword ptr [esp + 0x14]
-// 0050d36f  83c40c               add esp, 0xc
-// 0050d372  8d4c240c             lea ecx, [esp + 0xc]
-// 0050d376  c7442430ffffffff     mov dword ptr [esp + 0x30], 0xffffffff
-// 0050d37e  ff1568248000         call dword ptr [0x802468]
-// 0050d384  8b4c2428             mov ecx, dword ptr [esp + 0x28]
-// 0050d388  8bc6                 mov eax, esi
-// 0050d38a  5e                   pop esi
-// 0050d38b  64890d00000000       mov dword ptr fs:[0], ecx
-// 0050d392  83c430               add esp, 0x30
-// 0050d395  c3                   ret 
-// library g3d-6.09/G3Dcpp\GImage_ppm.cpp (function ?scanUInt@G3D@@YAHAAVBinaryInput@1@@Z)
-
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD
 // roc-lib: g3d-6.09 G3Dcpp/GImage_ppm.cpp
+
+// Candidate translation unit (score above; library headers required).
+/**
+  @file GImage_ppm.cpp
+  @author Morgan McGuire, morgan@graphics3d.com
+  @created 2002-05-27
+  @edited  2006-05-10
+ */
+#include "G3D/platform.h"
+#include "G3D/GImage.h"
+#include "G3D/BinaryInput.h"
+#include "G3D/BinaryOutput.h"
+#include "G3D/TextInput.h"
+#include "G3D/TextOutput.h"
+#include "G3D/Log.h"
+
+namespace G3D {
+
+void GImage::encodePPMASCII(
+    BinaryOutput&       out) const {
+
+    debugAssert(channels == 3);
+
+    TextOutput::Options ppmOptions;
+    ppmOptions.convertNewlines = false;
+    ppmOptions.numColumns = 70;
+    ppmOptions.wordWrap = TextOutput::Options::WRAP_WITHOUT_BREAKING;
+    TextOutput ppm(ppmOptions);
+    // Always write out a full-color ppm
+    ppm.printf("P3\n%d %d\n255\n", width, height);
+    
+    const Color3uint8* c = this->pixel3();
+    for (uint32 i = 0; i < (uint32)(width * height); ++i) {
+        ppm.printf("%d %d %d%c", c[i].r, c[i].g, c[i].b, 
+            ((i % ((width * 3) - 1)) == 0) ?
+            '\n' : ' '); 
+    }
+
+    out.writeString(ppm.commitString());
+}
+
+
+void GImage::encodePPM(
+    BinaryOutput&       out) const {
+
+    // http://netpbm.sourceforge.net/doc/ppm.html
+    debugAssert(channels == 3);
+
+    std::string header = format("P6 %d %d 255 ", width, height);
+
+    out.writeBytes(header.c_str(), header.size());
+
+    out.writeBytes(this->pixel3(), width * height * 3);
+}
+
+void GImage::decodePPMASCII(
+    BinaryInput&        input) {
+
+    int ppmWidth;
+    int ppmHeight;
+
+    double maxColor;
+
+    // Create a TextInput object to parse ascii format
+    // Mixed binary/ascii formats will require more 
+
+    const std::string inputStr = input.readString();
+
+    TextInput::Options ppmOptions;
+    ppmOptions.cppComments = false;
+    ppmOptions.otherCommentCharacter = '#';
+    ppmOptions.signedNumbers = true;
+    ppmOptions.singleQuotedStrings = false;
+
+    TextInput ppmInput(TextInput::FROM_STRING, inputStr, ppmOptions);
+
+    //Skip first line in header P#
+    std::string ppmType = ppmInput.readSymbol();
+
+    ppmWidth = (int)ppmInput.readNumber();
+    ppmHeight = (int)ppmInput.readNumber();
+
+    // Everything but a PBM will have a max color value
+    if (ppmType != "P2") {
+        maxColor = ppmInput.readNumber();
+    } else {
+        maxColor = 255;
+    }
+
+    if ((ppmWidth < 0) ||
+        (ppmHeight < 0) ||
+        (maxColor <= 0)) {
+        throw GImage::Error("Invalid PPM Header.", input.getFilename());
+    }
+
+    // I don't think it's proper to scale values less than 255
+    if (maxColor <= 255.0) {
+        maxColor = 255.0;
+    }
+
+    this->width = ppmWidth;
+    this->height = ppmHeight;
+    this->channels = 3;
+    // always scale down to 1 byte per channel
+    this->_byte = (uint8*)System::malloc(width * height * 3);
+
+    // Read in the image data.  I am not validating if the values match the maxColor
+    // requirements.  I only scale if needed to fit within the byte available.
+    for (uint32 i = 0; i < (uint32)(width * height); ++i) {
+        // read in color and scale to max pixel defined in header
+        // A max color less than 255 might need to be left alone and not scaled.
+        Color3uint8& curPixel = *(this->pixel3() + i);
+
+        if (ppmType == "P3") {
+            curPixel.r = (uint8)(ppmInput.readNumber() * (255.0 / maxColor));
+            curPixel.g = (uint8)(ppmInput.readNumber() * (255.0 / maxColor));
+            curPixel.b = (uint8)(ppmInput.readNumber() * (255.0 / maxColor));
+        } else if (ppmType == "P2") {
+            uint8 pixel = (uint8)(ppmInput.readNumber() * (255.0 / maxColor));
+            curPixel.r = pixel;
+            curPixel.g = pixel;
+            curPixel.b = pixel;
+        } else if (ppmType == "P1") {
+            int pixel = (uint8)(ppmInput.readNumber() * maxColor);
+            curPixel.r = pixel;
+            curPixel.g = pixel;
+            curPixel.b = pixel;
+        }
+    }
+}
+
+/** Consumes whitespace up to and including a number, but not the following character */
+static int scanUInt(BinaryInput& input) {
+    char c = input.readUInt8();
+    while (isWhiteSpace(c)) {
+        c = input.readUInt8();
+    }
+
+    std::string s;
+    s += c;
+    c = input.readUInt8();
+    while (!isWhiteSpace(c)) {
+        s += c;
+        c = input.readUInt8();
+    }
+
+    // Back up one to avoid consuming the last character
+    input.setPosition(input.getPosition() - 1);
+
+    int x;
+    sscanf(s.c_str(), "%d", &x);
+    return x;
+}
+
+void GImage::decodePPM(
+    BinaryInput&        input) {
+
+    char head[2];
+    int w, h;
+
+    input.readBytes(head, 2);
+    if (head[0] != 'P' || head[1] != '6') {
+        throw GImage::Error("Invalid PPM Header.", input.getFilename());
+    }
+
+    w = scanUInt(input);
+    h = scanUInt(input);
+
+    // Skip the max color specifier
+    scanUInt(input);
+
+    if ((w < 0) ||
+        (h < 0) ||
+        (w > 100000) ||
+        (h > 100000)) {
+        throw GImage::Error("Invalid PPM size in header.", input.getFilename());
+    }
+
+    // Trailing whitespace
+    input.readUInt8();
+
+    resize(w, h, 3);
+
+    input.readBytes(_byte, width * height * 3);
+}
+
+}

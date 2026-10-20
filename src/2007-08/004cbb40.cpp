@@ -1,102 +1,334 @@
 // from server: 100% by auto
-// roc 2007-08 004cbb40  unit: seg_004c0000  size: 270 bytes
-// Make this compile to the exact bytes below, then: roc check 2007-08 004cbb40
-//
-// 004cbb40  83ec0c               sub esp, 0xc
-// 004cbb43  a188518b00           mov eax, dword ptr [0x8b5188]
-// 004cbb48  33c4                 xor eax, esp
-// 004cbb4a  89442408             mov dword ptr [esp + 8], eax
-// 004cbb4e  56                   push esi
-// 004cbb4f  8bf1                 mov esi, ecx
-// 004cbb51  8b461c               mov eax, dword ptr [esi + 0x1c]
-// 004cbb54  8bc8                 mov ecx, eax
-// 004cbb56  c1e918               shr ecx, 0x18
-// 004cbb59  884c2404             mov byte ptr [esp + 4], cl
-// 004cbb5d  8bd0                 mov edx, eax
-// 004cbb5f  c1ea10               shr edx, 0x10
-// 004cbb62  88542405             mov byte ptr [esp + 5], dl
-// 004cbb66  8bc8                 mov ecx, eax
-// 004cbb68  c1e908               shr ecx, 8
-// 004cbb6b  88442407             mov byte ptr [esp + 7], al
-// 004cbb6f  8b4618               mov eax, dword ptr [esi + 0x18]
-// 004cbb72  884c2406             mov byte ptr [esp + 6], cl
-// 004cbb76  8bd0                 mov edx, eax
-// 004cbb78  c1ea18               shr edx, 0x18
-// 004cbb7b  57                   push edi
-// 004cbb7c  8854240c             mov byte ptr [esp + 0xc], dl
-// 004cbb80  8bc8                 mov ecx, eax
-// 004cbb82  c1e910               shr ecx, 0x10
-// 004cbb85  8bd0                 mov edx, eax
-// 004cbb87  6a01                 push 1
-// 004cbb89  884c2411             mov byte ptr [esp + 0x11], cl
-// 004cbb8d  c1ea08               shr edx, 8
-// 004cbb90  68c0ef7900           push 0x79efc0
-// 004cbb95  8bce                 mov ecx, esi
-// 004cbb97  88542416             mov byte ptr [esp + 0x16], dl
-// 004cbb9b  88442417             mov byte ptr [esp + 0x17], al
-// 004cbb9f  e8dcfeffff           call 0x4cba80
-// 004cbba4  8b4618               mov eax, dword ptr [esi + 0x18]
-// 004cbba7  25f8010000           and eax, 0x1f8
-// 004cbbac  3dc0010000           cmp eax, 0x1c0
-// 004cbbb1  741f                 je 0x4cbbd2
-// 004cbbb3  6a01                 push 1
-// 004cbbb5  68bcef7900           push 0x79efbc
-// 004cbbba  8bce                 mov ecx, esi
-// 004cbbbc  e8bffeffff           call 0x4cba80
-// 004cbbc1  8b4e18               mov ecx, dword ptr [esi + 0x18]
-// 004cbbc4  81e1f8010000         and ecx, 0x1f8
-// 004cbbca  81f9c0010000         cmp ecx, 0x1c0
-// 004cbbd0  75e1                 jne 0x4cbbb3
-// 004cbbd2  6a08                 push 8
-// 004cbbd4  8d54240c             lea edx, [esp + 0xc]
-// 004cbbd8  52                   push edx
-// 004cbbd9  8bce                 mov ecx, esi
-// 004cbbdb  e8a0feffff           call 0x4cba80
-// 004cbbe0  33c0                 xor eax, eax
-// 004cbbe2  8bd0                 mov edx, eax
-// 004cbbe4  83e203               and edx, 3
-// 004cbbe7  b903000000           mov ecx, 3
-// 004cbbec  2bca                 sub ecx, edx
-// 004cbbee  03c9                 add ecx, ecx
-// 004cbbf0  8bd0                 mov edx, eax
-// 004cbbf2  c1ea02               shr edx, 2
-// 004cbbf5  8b549604             mov edx, dword ptr [esi + edx*4 + 4]
-// 004cbbf9  03c9                 add ecx, ecx
-// 004cbbfb  03c9                 add ecx, ecx
-// 004cbbfd  d3ea                 shr edx, cl
-// 004cbbff  83c001               add eax, 1
-// 004cbc02  83f814               cmp eax, 0x14
-// 004cbc05  8854065f             mov byte ptr [esi + eax + 0x5f], dl
-// 004cbc09  72d7                 jb 0x4cbbe2
-// 004cbc0b  6a40                 push 0x40
-// 004cbc0d  8d7e20               lea edi, [esi + 0x20]
-// 004cbc10  6a00                 push 0
-// 004cbc12  57                   push edi
-// 004cbc13  e8744f1600           call 0x630b8c
-// 004cbc18  33c9                 xor ecx, ecx
-// 004cbc1a  8d4604               lea eax, [esi + 4]
-// 004cbc1d  8908                 mov dword ptr [eax], ecx
-// 004cbc1f  894804               mov dword ptr [eax + 4], ecx
-// 004cbc22  894808               mov dword ptr [eax + 8], ecx
-// 004cbc25  89480c               mov dword ptr [eax + 0xc], ecx
-// 004cbc28  83c40c               add esp, 0xc
-// 004cbc2b  894810               mov dword ptr [eax + 0x10], ecx
-// 004cbc2e  894e18               mov dword ptr [esi + 0x18], ecx
-// 004cbc31  57                   push edi
-// 004cbc32  894e1c               mov dword ptr [esi + 0x1c], ecx
-// 004cbc35  50                   push eax
-// 004cbc36  8bce                 mov ecx, esi
-// 004cbc38  e873eaffff           call 0x4ca6b0
-// 004cbc3d  8b4c2410             mov ecx, dword ptr [esp + 0x10]
-// 004cbc41  5f                   pop edi
-// 004cbc42  5e                   pop esi
-// 004cbc43  33cc                 xor ecx, esp
-// 004cbc45  e8d44d1600           call 0x630a1e
-// 004cbc4a  83c40c               add esp, 0xc
-// 004cbc4d  c3                   ret 
-
 // from server: 79% by colin
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
 // roc-lib: rbxgs-raknet SHA1.cpp
+
+// Candidate translation unit (score above; library headers required).
+/**
+* @brief SHA-1 Hash key computation
+*
+* 100% free public domain implementation of the SHA-1
+* algorithm by Dominik Reichl <Dominik.Reichl@tiscali.de>
+*
+*
+* === Test Vectors (from FIPS PUB 180-1) ===
+*
+* "abc"
+*  A9993E36 4706816A BA3E2571 7850C26C 9CD0D89D
+*
+* "abcdbcdecdefdefgefghfghighijhijkijkljklmklmnlmnomnopnopq"
+*  84983E44 1C3BD26E BAAE4AA1 F95129E5 E54670F1
+*
+* A million repetitions of "a"
+*  34AA973C D4C4DAA4 F61EEB2B DBAD2731 6534016F
+*/
+
+
+#include "SHA1.h"
+#include <stdlib.h>
+
+
+CSHA1::CSHA1()
+{
+	Reset();
+}
+
+CSHA1::~CSHA1()
+{
+	Reset();
+}
+
+
+void CSHA1::Reset()
+{
+	// SHA1 initialization constants
+	m_state[ 0 ] = 0x67452301;
+	m_state[ 1 ] = 0xEFCDAB89;
+	m_state[ 2 ] = 0x98BADCFE;
+	m_state[ 3 ] = 0x10325476;
+	m_state[ 4 ] = 0xC3D2E1F0;
+
+	m_count[ 0 ] = 0;
+	m_count[ 1 ] = 0;
+}
+
+void CSHA1::Transform( unsigned int state[ 5 ], unsigned char buffer[ 64 ] )
+{
+	unsigned int a = 0, b = 0, c = 0, d = 0, e = 0;
+
+	SHA1_WORKSPACE_BLOCK* block;
+	// static unsigned char workspace[64];
+	block = ( SHA1_WORKSPACE_BLOCK * ) workspace;
+	memcpy( block, buffer, 64 );
+
+	// Copy state[] to working vars
+	a = state[ 0 ];
+	b = state[ 1 ];
+	c = state[ 2 ];
+	d = state[ 3 ];
+	e = state[ 4 ];
+
+	// 4 rounds of 20 operations each. Loop unrolled.
+	R0( a, b, c, d, e, 0 );
+	R0( e, a, b, c, d, 1 );
+	R0( d, e, a, b, c, 2 );
+	R0( c, d, e, a, b, 3 );
+	R0( b, c, d, e, a, 4 );
+	R0( a, b, c, d, e, 5 );
+	R0( e, a, b, c, d, 6 );
+	R0( d, e, a, b, c, 7 );
+	R0( c, d, e, a, b, 8 );
+	R0( b, c, d, e, a, 9 );
+	R0( a, b, c, d, e, 10 );
+	R0( e, a, b, c, d, 11 );
+	R0( d, e, a, b, c, 12 );
+	R0( c, d, e, a, b, 13 );
+	R0( b, c, d, e, a, 14 );
+	R0( a, b, c, d, e, 15 );
+	R1( e, a, b, c, d, 16 );
+	R1( d, e, a, b, c, 17 );
+	R1( c, d, e, a, b, 18 );
+	R1( b, c, d, e, a, 19 );
+	R2( a, b, c, d, e, 20 );
+	R2( e, a, b, c, d, 21 );
+	R2( d, e, a, b, c, 22 );
+	R2( c, d, e, a, b, 23 );
+	R2( b, c, d, e, a, 24 );
+	R2( a, b, c, d, e, 25 );
+	R2( e, a, b, c, d, 26 );
+	R2( d, e, a, b, c, 27 );
+	R2( c, d, e, a, b, 28 );
+	R2( b, c, d, e, a, 29 );
+	R2( a, b, c, d, e, 30 );
+	R2( e, a, b, c, d, 31 );
+	R2( d, e, a, b, c, 32 );
+	R2( c, d, e, a, b, 33 );
+	R2( b, c, d, e, a, 34 );
+	R2( a, b, c, d, e, 35 );
+	R2( e, a, b, c, d, 36 );
+	R2( d, e, a, b, c, 37 );
+	R2( c, d, e, a, b, 38 );
+	R2( b, c, d, e, a, 39 );
+	R3( a, b, c, d, e, 40 );
+	R3( e, a, b, c, d, 41 );
+	R3( d, e, a, b, c, 42 );
+	R3( c, d, e, a, b, 43 );
+	R3( b, c, d, e, a, 44 );
+	R3( a, b, c, d, e, 45 );
+	R3( e, a, b, c, d, 46 );
+	R3( d, e, a, b, c, 47 );
+	R3( c, d, e, a, b, 48 );
+	R3( b, c, d, e, a, 49 );
+	R3( a, b, c, d, e, 50 );
+	R3( e, a, b, c, d, 51 );
+	R3( d, e, a, b, c, 52 );
+	R3( c, d, e, a, b, 53 );
+	R3( b, c, d, e, a, 54 );
+	R3( a, b, c, d, e, 55 );
+	R3( e, a, b, c, d, 56 );
+	R3( d, e, a, b, c, 57 );
+	R3( c, d, e, a, b, 58 );
+	R3( b, c, d, e, a, 59 );
+	R4( a, b, c, d, e, 60 );
+	R4( e, a, b, c, d, 61 );
+	R4( d, e, a, b, c, 62 );
+	R4( c, d, e, a, b, 63 );
+	R4( b, c, d, e, a, 64 );
+	R4( a, b, c, d, e, 65 );
+	R4( e, a, b, c, d, 66 );
+	R4( d, e, a, b, c, 67 );
+	R4( c, d, e, a, b, 68 );
+	R4( b, c, d, e, a, 69 );
+	R4( a, b, c, d, e, 70 );
+	R4( e, a, b, c, d, 71 );
+	R4( d, e, a, b, c, 72 );
+	R4( c, d, e, a, b, 73 );
+	R4( b, c, d, e, a, 74 );
+	R4( a, b, c, d, e, 75 );
+	R4( e, a, b, c, d, 76 );
+	R4( d, e, a, b, c, 77 );
+	R4( c, d, e, a, b, 78 );
+	R4( b, c, d, e, a, 79 );
+
+	// Add the working vars back into state[]
+	state[ 0 ] += a;
+	state[ 1 ] += b;
+	state[ 2 ] += c;
+	state[ 3 ] += d;
+	state[ 4 ] += e;
+
+	// Wipe variables
+	a = 0;
+	b = 0;
+	c = 0;
+	d = 0;
+	e = 0;
+}
+
+// Use this function to hash in binary data and strings
+void CSHA1::Update( unsigned char* data, unsigned int len )
+{
+	unsigned int i = 0, j = 0;
+
+	j = ( m_count[ 0 ] >> 3 ) & 63;
+
+	if ( ( m_count[ 0 ] += len << 3 ) < ( len << 3 ) )
+		m_count[ 1 ] ++;
+
+	m_count[ 1 ] += ( len >> 29 );
+
+	if ( ( j + len ) > 63 )
+	{
+		memcpy( &m_buffer[ j ], data, ( i = 64 - j ) );
+		Transform( m_state, m_buffer );
+
+		for ( ; i + 63 < len; i += 64 )
+		{
+			Transform( m_state, &data[ i ] );
+		}
+
+		j = 0;
+	}
+
+	else
+		i = 0;
+
+	memcpy( &m_buffer[ j ], &data[ i ], len - i );
+}
+
+// Hash in file contents
+bool CSHA1::HashFile( char *szFileName )
+{
+	unsigned long ulFileSize = 0, ulRest = 0, ulBlocks = 0;
+	unsigned long i = 0;
+	unsigned char uData[ MAX_FILE_READ_BUFFER ];
+	FILE *fIn = NULL;
+
+	if ( ( fIn = fopen( szFileName, "rb" ) ) == NULL )
+		return ( false );
+
+	fseek( fIn, 0, SEEK_END );
+
+	ulFileSize = ftell( fIn );
+
+	fseek( fIn, 0, SEEK_SET );
+
+	// This is faster
+	div_t temp;
+
+	temp = div( ulFileSize, MAX_FILE_READ_BUFFER );
+
+	ulRest = temp.rem;
+
+	ulBlocks = temp.quot;
+
+	// ulRest = ulFileSize % MAX_FILE_READ_BUFFER;
+	// ulBlocks = ulFileSize / MAX_FILE_READ_BUFFER;
+
+	for ( i = 0; i < ulBlocks; i++ )
+	{
+		fread( uData, 1, MAX_FILE_READ_BUFFER, fIn );
+		Update( uData, MAX_FILE_READ_BUFFER );
+	}
+
+	if ( ulRest != 0 )
+	{
+		fread( uData, 1, ulRest, fIn );
+		Update( uData, ulRest );
+	}
+
+	fclose( fIn );
+	fIn = NULL;
+
+	return ( true );
+}
+
+void CSHA1::Final()
+{
+	unsigned int i = 0, j = 0;
+	unsigned char finalcount[ 8 ] =
+	{
+		0, 0, 0, 0, 0, 0, 0, 0
+	};
+
+	for ( i = 0; i < 8; i++ )
+		finalcount[ i ] = (unsigned char) ( ( m_count[ ( i >= 4 ? 0 : 1 ) ]
+		>> ( ( 3 - ( i & 3 ) ) * 8 ) ) & 255 ); // Endian independent
+
+		Update( ( unsigned char * ) "\200", 1 );
+
+		while ( ( m_count[ 0 ] & 504 ) != 448 )
+			Update( ( unsigned char * ) "\0", 1 );
+
+		Update( finalcount, 8 ); // Cause a SHA1Transform()
+
+		for ( i = 0; i < 20; i++ )
+		{
+			m_digest[ i ] = (unsigned char) ( ( m_state[ i >> 2 ] >> ( ( 3 - ( i & 3 ) ) * 8 ) ) & 255 );
+		}
+
+		// Wipe variables for security reasons
+		i = 0;
+
+		j = 0;
+
+		memset( m_buffer, 0, 64 );
+
+		memset( m_state, 0, 20 );
+
+		memset( m_count, 0, 8 );
+
+		memset( finalcount, 0, 8 );
+
+		Transform( m_state, m_buffer );
+}
+
+// Get the final hash as a pre-formatted string
+void CSHA1::ReportHash( char *szReport, unsigned char uReportType )
+{
+	unsigned char i = 0;
+	char szTemp[ 4 ];
+
+	if ( uReportType == REPORT_HEX )
+	{
+		sprintf( szTemp, "%02X", m_digest[ 0 ] );
+		strcat( szReport, szTemp );
+
+		for ( i = 1; i < 20; i++ )
+		{
+			sprintf( szTemp, " %02X", m_digest[ i ] );
+			strcat( szReport, szTemp );
+		}
+	}
+
+	else
+		if ( uReportType == REPORT_DIGIT )
+		{
+			sprintf( szTemp, "%u", m_digest[ 0 ] );
+			strcat( szReport, szTemp );
+
+			for ( i = 1; i < 20; i++ )
+			{
+				sprintf( szTemp, " %u", m_digest[ i ] );
+				strcat( szReport, szTemp );
+			}
+		}
+
+		else
+			strcpy( szReport, "Error: Unknown report type!" );
+}
+
+// Get the raw message digest
+void CSHA1::GetHash( unsigned char *uDest )
+{
+	memcpy( uDest, m_digest, 20 );
+}
+
+// Get the raw message digest
+// Added by Kevin to be quicker
+unsigned char * CSHA1::GetHash( void ) const
+{
+	return ( unsigned char * ) m_digest;
+}

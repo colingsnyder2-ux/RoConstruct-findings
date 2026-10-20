@@ -1,161 +1,733 @@
 // from server: 100% by auto
-// roc 2008-06 007b96e0  unit: G3D::VMeshDirectedEdgeKey::?$Table  size: 428 bytes
-// Make this compile to the exact bytes below, then: roc check 2008-06 007b96e0
-//
-// 007b96e0  6aff                 push -1
-// 007b96e2  64a100000000         mov eax, dword ptr fs:[0]
-// 007b96e8  68b6a77c00           push 0x7ca7b6
-// 007b96ed  50                   push eax
-// 007b96ee  64892500000000       mov dword ptr fs:[0], esp
-// 007b96f5  83ec0c               sub esp, 0xc
-// 007b96f8  53                   push ebx
-// 007b96f9  55                   push ebp
-// 007b96fa  8b6c2424             mov ebp, dword ptr [esp + 0x24]
-// 007b96fe  56                   push esi
-// 007b96ff  8b7504               mov esi, dword ptr [ebp + 4]
-// 007b9702  c1e610               shl esi, 0x10
-// 007b9705  037500               add esi, dword ptr [ebp]
-// 007b9708  8bd9                 mov ebx, ecx
-// 007b970a  8b4b0c               mov ecx, dword ptr [ebx + 0xc]
-// 007b970d  33d2                 xor edx, edx
-// 007b970f  8bc6                 mov eax, esi
-// 007b9711  f7f1                 div ecx
-// 007b9713  8b4308               mov eax, dword ptr [ebx + 8]
-// 007b9716  57                   push edi
-// 007b9717  8bfa                 mov edi, edx
-// 007b9719  8b14b8               mov edx, dword ptr [eax + edi*4]
-// 007b971c  85d2                 test edx, edx
-// 007b971e  7559                 jne 0x7b9779
-// 007b9720  6a1c                 push 0x1c
-// 007b9722  e809eed4ff           call 0x508530
-// 007b9727  83c404               add esp, 4
-// 007b972a  8944242c             mov dword ptr [esp + 0x2c], eax
-// 007b972e  c744242400000000     mov dword ptr [esp + 0x24], 0
-// 007b9736  85c0                 test eax, eax
-// 007b9738  7432                 je 0x7b976c
-// 007b973a  8b542430             mov edx, dword ptr [esp + 0x30]
-// 007b973e  6a00                 push 0
-// 007b9740  56                   push esi
-// 007b9741  83ec0c               sub esp, 0xc
-// 007b9744  89642428             mov dword ptr [esp + 0x28], esp
-// 007b9748  8bcc                 mov ecx, esp
-// 007b974a  52                   push edx
-// 007b974b  e86078d9ff           call 0x550fb0
-// 007b9750  8b4504               mov eax, dword ptr [ebp + 4]
-// 007b9753  8b4d00               mov ecx, dword ptr [ebp]
-// 007b9756  50                   push eax
-// 007b9757  51                   push ecx
-// 007b9758  8b4c2448             mov ecx, dword ptr [esp + 0x48]
-// 007b975c  e8cffeffff           call 0x7b9630
-// 007b9761  8b5308               mov edx, dword ptr [ebx + 8]
-// 007b9764  8904ba               mov dword ptr [edx + edi*4], eax
-// 007b9767  e908010000           jmp 0x7b9874
-// 007b976c  8b5308               mov edx, dword ptr [ebx + 8]
-// 007b976f  33c0                 xor eax, eax
-// 007b9771  8904ba               mov dword ptr [edx + edi*4], eax
-// 007b9774  e9fb000000           jmp 0x7b9874
-// 007b9779  c744241401000000     mov dword ptr [esp + 0x14], 1
-// 007b9781  b001                 mov al, 1
-// 007b9783  84c0                 test al, al
-// 007b9785  7409                 je 0x7b9790
-// 007b9787  c644241301           mov byte ptr [esp + 0x13], 1
-// 007b978c  3b32                 cmp esi, dword ptr [edx]
-// 007b978e  7409                 je 0x7b9799
-// 007b9790  c644241300           mov byte ptr [esp + 0x13], 0
-// 007b9795  3b32                 cmp esi, dword ptr [edx]
-// 007b9797  753a                 jne 0x7b97d3
-// 007b9799  33c0                 xor eax, eax
-// 007b979b  8d4a04               lea ecx, [edx + 4]
-// 007b979e  8bff                 mov edi, edi
-// 007b97a0  8b39                 mov edi, dword ptr [ecx]
-// 007b97a2  3b7c8500             cmp edi, dword ptr [ebp + eax*4]
-// 007b97a6  752b                 jne 0x7b97d3
-// 007b97a8  40                   inc eax
-// 007b97a9  83c104               add ecx, 4
-// 007b97ac  83f802               cmp eax, 2
-// 007b97af  7cef                 jl 0x7b97a0
-// 007b97b1  8b442430             mov eax, dword ptr [esp + 0x30]
-// 007b97b5  50                   push eax
-// 007b97b6  8d4a0c               lea ecx, [edx + 0xc]
-// 007b97b9  e802feffff           call 0x7b95c0
-// 007b97be  8b4c241c             mov ecx, dword ptr [esp + 0x1c]
-// 007b97c2  64890d00000000       mov dword ptr fs:[0], ecx
-// 007b97c9  5f                   pop edi
-// 007b97ca  5e                   pop esi
-// 007b97cb  5d                   pop ebp
-// 007b97cc  5b                   pop ebx
-// 007b97cd  83c418               add esp, 0x18
-// 007b97d0  c20800               ret 8
-// 007b97d3  8b5218               mov edx, dword ptr [edx + 0x18]
-// 007b97d6  ff442414             inc dword ptr [esp + 0x14]
-// 007b97da  85d2                 test edx, edx
-// 007b97dc  7406                 je 0x7b97e4
-// 007b97de  8a442413             mov al, byte ptr [esp + 0x13]
-// 007b97e2  eb9f                 jmp 0x7b9783
-// 007b97e4  33c9                 xor ecx, ecx
-// 007b97e6  384c2413             cmp byte ptr [esp + 0x13], cl
-// 007b97ea  0f94c1               sete cl
-// 007b97ed  33d2                 xor edx, edx
-// 007b97ef  837c241405           cmp dword ptr [esp + 0x14], 5
-// 007b97f4  0f9fc2               setg dl
-// 007b97f7  85ca                 test edx, ecx
-// 007b97f9  741d                 je 0x7b9818
-// 007b97fb  8b4304               mov eax, dword ptr [ebx + 4]
-// 007b97fe  8d0c80               lea ecx, [eax + eax*4]
-// 007b9801  8b430c               mov eax, dword ptr [ebx + 0xc]
-// 007b9804  03c9                 add ecx, ecx
-// 007b9806  03c9                 add ecx, ecx
-// 007b9808  3bc1                 cmp eax, ecx
-// 007b980a  7d0c                 jge 0x7b9818
-// 007b980c  8d540001             lea edx, [eax + eax + 1]
-// 007b9810  52                   push edx
-// 007b9811  8bcb                 mov ecx, ebx
-// 007b9813  e8f8c5d2ff           call 0x4e5e10
-// 007b9818  33d2                 xor edx, edx
-// 007b981a  8bc6                 mov eax, esi
-// 007b981c  f7730c               div dword ptr [ebx + 0xc]
-// 007b981f  6a1c                 push 0x1c
-// 007b9821  8bea                 mov ebp, edx
-// 007b9823  e808edd4ff           call 0x508530
-// 007b9828  8bf8                 mov edi, eax
-// 007b982a  83c404               add esp, 4
-// 007b982d  897c2414             mov dword ptr [esp + 0x14], edi
-// 007b9831  c744242401000000     mov dword ptr [esp + 0x24], 1
-// 007b9839  85ff                 test edi, edi
-// 007b983b  742f                 je 0x7b986c
-// 007b983d  8b4308               mov eax, dword ptr [ebx + 8]
-// 007b9840  8b0ca8               mov ecx, dword ptr [eax + ebp*4]
-// 007b9843  8b542430             mov edx, dword ptr [esp + 0x30]
-// 007b9847  51                   push ecx
-// 007b9848  56                   push esi
-// 007b9849  83ec0c               sub esp, 0xc
-// 007b984c  8964242c             mov dword ptr [esp + 0x2c], esp
-// 007b9850  8bcc                 mov ecx, esp
-// 007b9852  52                   push edx
-// 007b9853  e85877d9ff           call 0x550fb0
-// 007b9858  8b442440             mov eax, dword ptr [esp + 0x40]
-// 007b985c  8b4804               mov ecx, dword ptr [eax + 4]
-// 007b985f  8b10                 mov edx, dword ptr [eax]
-// 007b9861  51                   push ecx
-// 007b9862  52                   push edx
-// 007b9863  8bcf                 mov ecx, edi
-// 007b9865  e8c6fdffff           call 0x7b9630
-// 007b986a  eb02                 jmp 0x7b986e
-// 007b986c  33c0                 xor eax, eax
-// 007b986e  8b4b08               mov ecx, dword ptr [ebx + 8]
-// 007b9871  8904a9               mov dword ptr [ecx + ebp*4], eax
-// 007b9874  ff4304               inc dword ptr [ebx + 4]
-// 007b9877  8b4c241c             mov ecx, dword ptr [esp + 0x1c]
-// 007b987b  5f                   pop edi
-// 007b987c  5e                   pop esi
-// 007b987d  5d                   pop ebp
-// 007b987e  64890d00000000       mov dword ptr fs:[0], ecx
-// 007b9885  5b                   pop ebx
-// 007b9886  83c418               add esp, 0x18
-// 007b9889  c20800               ret 8
-// library g3d-6.09/G3Dcpp\MeshAlgAdjacency.cpp (function ?set@?$Table@VMeshDirectedEdgeKey@G3D@@V?$Array@H@2@@G3D@@QAEXABVMeshDirectedEdgeKey@2@ABV?$Array@H@2@@Z)
-
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD
 // roc-lib: g3d-6.09 G3Dcpp/MeshAlgAdjacency.cpp
+
+// Candidate translation unit (score above; library headers required).
+/**
+  @file MeshAlgAdjacency.cpp
+
+  @maintainer Morgan McGuire, matrix@graphics3d.com
+  @created 2003-09-14
+  @edited  2005-02-24
+
+  Copyright 2000-2003, Morgan McGuire.
+  All rights reserved.
+
+ */
+
+namespace G3D {
+
+/**
+ A half [i.e. directed] edge.
+ */
+class MeshDirectedEdgeKey {
+public:
+
+    /** vertexIndex[0] <= vertexIndex[1] */
+    int     vertexIndex[2];
+
+    MeshDirectedEdgeKey() {}
+    
+    MeshDirectedEdgeKey(
+        const int        i0,
+        const int        i1) {
+
+        if (i0 <= i1) {
+            vertexIndex[0] = i0;
+            vertexIndex[1] = i1;
+        } else {
+            vertexIndex[0] = i1;
+            vertexIndex[1] = i0;
+        }
+    }
+
+
+    bool operator==(const MeshDirectedEdgeKey& e2) const {
+        for (int i = 0; i < 2; ++i) {
+            if (vertexIndex[i] != e2.vertexIndex[i]) {
+                return false;
+            }
+        }
+        return true;
+    }
+};
+
+}
+
+unsigned int hashCode(const G3D::MeshDirectedEdgeKey& e) {
+    return e.vertexIndex[0] + (e.vertexIndex[1] << 16);
+}
+
+#include "G3D/Table.h"
+#include "G3D/MeshAlg.h"
+#include "G3D/Set.h"
+
+namespace G3D {
+
+/**
+ A hashtable mapping edges to lists of indices for
+ faces.  This is used instead of Table because of the
+ special logic in insert.
+
+ Used only for MeshAlg::computeAdjacency.
+
+ In the face lists, index <I>f</I> >= 0 indicates that
+ <I>f</I> contains the edge as a forward edge.  Index <I>f</I> < 0 
+ indicates that ~<I>f</I> contains the edge as a backward edge.
+ */
+class MeshEdgeTable {
+public:
+    typedef Table<MeshDirectedEdgeKey, Array<int> > ET;
+
+private:
+    
+    ET                   table;
+
+public:
+    
+    /**
+     Clears the table.
+     */
+    void clear() {
+        table.clear();
+    }
+    
+    /**
+     Inserts the faceIndex into the edge's face list.
+     The index may be a negative number indicating a backface.
+     */
+    void insert(const MeshDirectedEdgeKey& edge, int faceIndex) {
+        
+        // debugAssertM((table.size() > 20) && (table.debugGetLoad() < 0.5 || table.debugGetNumBuckets() < 20),
+        //    "MeshEdgeTable is using a poor hash function.");
+
+        if (! table.containsKey(edge)) {
+            // First time
+            Array<int> x(1);
+            x[0] = faceIndex;
+            table.set(edge, x);
+        } else {
+            table[edge].append(faceIndex);
+        }
+    }
+
+    /**
+     Returns the face list for a given edge
+     */
+    const Array<int>& get(const MeshDirectedEdgeKey& edge) {
+        return table[edge];
+    }
+
+    ET::Iterator begin() {
+        return table.begin();
+    }
+
+    const ET::Iterator end() const {
+        return table.end();
+    }
+
+};
+
+
+/**
+ edgeTable[edgeKey] is a list of faces containing
+ 
+ Used and cleared by MeshModel::computeAdjacency()
+ */
+static MeshEdgeTable            edgeTable;
+
+/**
+ Assigns the edge index into the next unassigned edge
+ index.  The edge index may be negative, indicating
+ a reverse edge.
+ */
+static void assignEdgeIndex(MeshAlg::Face& face, int e) {
+    for (int i = 0; i < 3; ++i) {
+        if (face.edgeIndex[i] == MeshAlg::Face::NONE) {
+            face.edgeIndex[i] = e;
+            return;
+        }
+    }
+
+    debugAssertM(false, "Face has already been assigned 3 edges");
+}
+
+
+void MeshAlg::computeAdjacency(
+    const Array<Vector3>&   vertexGeometry,
+    const Array<int>&       indexArray,
+    Array<Face>&            faceArray,
+    Array<Edge>&            edgeArray,
+    Array< Array<int> >&    adjacentFaceArray) {
+
+    Array<Vertex> vertexArray;
+
+    computeAdjacency(vertexGeometry, indexArray, faceArray, edgeArray, vertexArray);
+
+    // Convert the vertexArray into adjacentFaceArray
+    adjacentFaceArray.clear();
+    adjacentFaceArray.resize(vertexArray.size());
+    for (int v = 0; v < adjacentFaceArray.size(); ++v) {
+        adjacentFaceArray[v] = vertexArray[v].faceIndex;
+    }
+}
+
+
+void MeshAlg::computeAdjacency(
+    const Array<Vector3>&   vertexGeometry,
+    const Array<int>&       indexArray,
+    Array<Face>&            faceArray,
+    Array<Edge>&            edgeArray,
+    Array<Vertex>&          vertexArray) {
+    
+    edgeArray.clear();
+    vertexArray.clear();
+    faceArray.clear();
+    edgeTable.clear();
+    
+    // Face normals
+    Array<Vector3> faceNormal;
+
+    // This array has the same size as the vertex array
+    vertexArray.resize(vertexGeometry.size());
+
+    // Iterate through the triangle list
+    for (int q = 0; q < indexArray.size(); q += 3) {
+
+        Vector3 vertex[3];
+        int f = faceArray.size();
+        MeshAlg::Face& face = faceArray.next();
+
+        // Construct the face
+        for (int j = 0; j < 3; ++j) {
+            int v = indexArray[q + j];
+            face.vertexIndex[j] = v;
+            face.edgeIndex[j]   = Face::NONE;
+
+            // Store back pointers in the vertices
+            vertexArray[v].faceIndex.append(f);
+
+            // We'll need these vertices to find the face normal
+            vertex[j]           = vertexGeometry[v];
+        }
+
+        // Compute the face normal
+        Vector3 N = (vertex[1] - vertex[0]).cross(vertex[2] - vertex[0]);
+        faceNormal.append(N.directionOrZero());
+
+        static const int nextIndex[] = {1, 2, 0};
+
+        // Add each edge to the edge table.
+        for (int j = 0; j < 3; ++j) {
+            const int      i0 = indexArray[q + j];
+            const int      i1 = indexArray[q + nextIndex[j]];
+
+            const MeshDirectedEdgeKey edge(i0, i1);
+
+            if (i0 == edge.vertexIndex[0]) {
+                // The edge was directed in the same manner as in the face
+                edgeTable.insert(edge, f);
+            } else {
+                // The edge was directed in the opposite manner as in the face
+                edgeTable.insert(edge, ~f);
+            }
+        }
+    }
+    
+    // For each edge in the edge table, create an edge in the edge array.
+    // Collapse every 2 edges from adjacent faces.
+
+    MeshEdgeTable::ET::Iterator cur = edgeTable.begin();
+    MeshEdgeTable::ET::Iterator end = edgeTable.end();
+
+    Array<Edge> tempEdgeArray;
+    while (cur != end) {
+        MeshDirectedEdgeKey&  edgeKey        = cur->key; 
+        Array<int>&           faceIndexArray = cur->value;
+
+        // Process this edge
+        while (faceIndexArray.size() > 0) {
+
+            // Remove the last index
+            int f0 = faceIndexArray.pop();
+
+            // Find the normal to that face
+            const Vector3& n0 = faceNormal[(f0 >= 0) ? f0 : ~f0];
+
+            bool found = false;
+
+            // We try to find the matching face with the closest
+            // normal.  This ensures that we don't introduce a lot
+            // of artificial ridges into flat parts of a mesh.
+            double ndotn = -2;
+            int f1 = -1, i1 = -1;
+            
+            // Try to Find the face with the matching edge
+            for (int i = faceIndexArray.size() - 1; i >= 0; --i) {
+                int f = faceIndexArray[i];
+
+                if ((f >= 0) != (f0 >= 0)) {
+                    // This face contains the oppositely oriented edge
+                    // and has not been assigned too many edges
+
+                    const Vector3& n1 = faceNormal[(f >= 0) ? f : ~f];
+                    double d = n1.dot(n0);
+
+                    if (found) {
+                        // We previously found a good face; see if this
+                        // one is better.
+                        if (d > ndotn) {
+                            // This face is better.
+                            ndotn = d;
+                            f1    = f;
+                            i1    = i;
+                        }
+                    } else {
+                        // This is the first face we've found
+                        found = true;
+                        ndotn = d;
+                        f1    = f;
+                        i1    = i;
+                    }
+                }
+            }
+
+            // Create the new edge
+            int e = tempEdgeArray.size();
+            Edge& edge = tempEdgeArray.next();
+            
+            edge.vertexIndex[0] = edgeKey.vertexIndex[0];
+            edge.vertexIndex[1] = edgeKey.vertexIndex[1];
+
+            if (f0 >= 0) {
+                edge.faceIndex[0] = f0;
+                edge.faceIndex[1] = Face::NONE;
+                assignEdgeIndex(faceArray[f0], e); 
+            } else {
+                // The face indices above are two's complemented.
+                // this code restores them to regular indices.
+                debugAssert((~f0) >= 0);
+                edge.faceIndex[1] = ~f0;
+                edge.faceIndex[0] = Face::NONE;
+
+                // The edge index *does* need to be inverted, however.
+                assignEdgeIndex(faceArray[~f0], ~e); 
+            }
+
+            if (found) {
+                // We found a matching face; remove both
+                // faces from the active list.
+                faceIndexArray.fastRemove(i1);
+
+                if (f1 >= 0) {
+                    edge.faceIndex[0] = f1;
+                    assignEdgeIndex(faceArray[f1], e); 
+                } else {
+                    edge.faceIndex[1] = ~f1;
+                    assignEdgeIndex(faceArray[~f1], ~e); 
+                }
+            }
+        }
+
+        ++cur;
+    }
+
+    edgeTable.clear();
+
+    // Move boundary edges to the end of the list and then
+    // clean up the face references into them
+    {
+        // Map old edge indices to new edge indices
+        Array<int> newIndex(tempEdgeArray.size());
+
+
+        // Index of the start and end of the edge array
+        int i = 0;
+        int j = tempEdgeArray.size() - 1;
+
+        edgeArray.resize(tempEdgeArray.size());
+        for (int e = 0; e < tempEdgeArray.size(); ++e) {
+            if (tempEdgeArray[e].boundary()) {
+                newIndex[e] = j;
+                --j;
+            } else {
+                newIndex[e] = i;
+                ++i;
+            }
+            edgeArray[newIndex[e]] = tempEdgeArray[e];
+        }
+
+        debugAssertM(i == j + 1, "Counting from front and back of array did not match");
+
+        // Fix the faces
+        for (int f = 0; f < faceArray.size(); ++f) {
+            Face& face = faceArray[f];
+            for (int q = 0; q < 3; ++q) {
+                int e = face.edgeIndex[q];
+                if (e < 0) {
+                    // Backwards edge; twiddle before and after conversion
+                    face.edgeIndex[q] = ~newIndex[~e];
+                } else {
+                    // Regular edge; remap the index
+                    face.edgeIndex[q] = newIndex[e];
+                }
+            }
+        }
+    }
+
+    // Now order the edge indices inside the faces correctly.
+    for (int f = 0; f < faceArray.size(); ++f) {
+        Face& face = faceArray[f];
+        int e0 = face.edgeIndex[0];
+        int e1 = face.edgeIndex[1];
+        int e2 = face.edgeIndex[2];
+
+        // e0 will always remain first.  The only 
+        // question is whether e1 and e2 should be swapped.
+    
+        // See if e1 begins at the vertex where e1 ends.
+        const int e0End = (e0 < 0) ? 
+            edgeArray[~e0].vertexIndex[0] :
+            edgeArray[e0].vertexIndex[1];
+
+        const int e1Begin = (e1 < 0) ? 
+            edgeArray[~e1].vertexIndex[1] :
+            edgeArray[e1].vertexIndex[0];
+
+        if (e0End != e1Begin) {
+            // We must swap e1 and e2
+            face.edgeIndex[1] = e2;
+            face.edgeIndex[2] = e1;
+        }
+    }
+
+    // Fill out the edge adjacency information in the vertex array
+    for (int e = 0; e < edgeArray.size(); ++e) {
+        const Edge& edge = edgeArray[e];
+        vertexArray[edge.vertexIndex[0]].edgeIndex.append(e);
+        vertexArray[edge.vertexIndex[1]].edgeIndex.append(~e);
+    }
+}
+
+
+void MeshAlg::weldBoundaryEdges(
+    Array<Face>&       faceArray,
+    Array<Edge>&       edgeArray,
+    Array<Vertex>&     vertexArray) {
+
+    // Copy over the original edge array
+    Array<Edge> oldEdgeArray = edgeArray;
+
+    // newEdgeIndex[e] is the new index of the old edge with index e
+    // Note that newEdgeIndex[e] might be negative, indicating that
+    // the edge switched direction between the arrays.
+    Array<int> newEdgeIndex(edgeArray.size());
+    edgeArray.resize(0);
+
+    // boundaryEdgeIndices[v_low] is an array of the indices of 
+    // all boundary edges whose lower vertex is v_low.
+    Table<int, Array<int> > boundaryEdgeIndices;
+
+    // Copy over non-boundary edges to the new array
+    for (int e = 0; e < oldEdgeArray.size(); ++e) {
+        if (oldEdgeArray[e].boundary()) {
+
+            // Add to the boundary table
+            const int v_low = iMin(oldEdgeArray[e].vertexIndex[0], oldEdgeArray[e].vertexIndex[1]);
+            if (! boundaryEdgeIndices.containsKey(v_low)) {
+                boundaryEdgeIndices.set(v_low, Array<int>());
+            }
+            boundaryEdgeIndices[v_low].append(e);
+
+            // We'll fill out newEdgeIndex[e] later, when we find pairs
+
+        } else {
+
+            // Copy the edge to the new array
+            newEdgeIndex[e] = edgeArray.size();
+            edgeArray.append(oldEdgeArray[e]);
+
+        }
+    }
+
+
+    // Remove all edges from the table that have pairs.
+    Table<int, Array<int> >::Iterator cur = boundaryEdgeIndices.begin();
+    Table<int, Array<int> >::Iterator end = boundaryEdgeIndices.end();
+    while (cur != end) {
+        Array<int>&     boundaryEdge = cur->value;
+
+        for (int i = 0; i < boundaryEdge.size(); ++i) {
+            int ei = boundaryEdge[i];
+            const Edge& edgei = oldEdgeArray[ei];
+
+            for (int j = i + 1; j < boundaryEdge.size(); ++j) {
+                int ej = boundaryEdge[j];
+                const Edge& edgej = oldEdgeArray[ej];
+
+                // See if edge ei is the reverse (match) of edge ej.
+
+                // True if the edges match
+                bool match = false;
+
+                // True if edgej's vertex indices are reversed from
+                // edgei's (usually true).
+                bool reversej = false;
+                
+                int u = edgei.vertexIndex[0];
+                int v = edgei.vertexIndex[1];
+
+                if (edgei.faceIndex[0] != Face::NONE) {
+                    //        verts|faces
+                    // edgei = [u v A /]
+
+                    if (edgej.faceIndex[0] != Face::NONE) {
+                        if ((edgej.vertexIndex[0] == v) && (edgej.vertexIndex[1] == u)) {
+                            // This is the most common of the four cases
+
+                            // edgej = [v u B /]
+                            match = true;
+                            reversej = true;
+                        }
+                    } else {
+                        if ((edgej.vertexIndex[0] == u) && (edgej.vertexIndex[1] == v)) {
+                            // edgej = [u v / B]
+                            match = true;
+                        }
+                    }
+                } else {
+                    // edgei = [u v / A]
+                    if (edgej.faceIndex[0] != Face::NONE) {
+                        if ((edgej.vertexIndex[0] == u) && (edgej.vertexIndex[1] == v)) {
+                            // edgej = [u v B /]
+                            match = true;
+                        }
+                    } else {
+                        if ((edgej.vertexIndex[0] == v) && (edgej.vertexIndex[1] == u)) {
+                            // edgej = [v u / B]
+                            match = true;
+                            reversej = true;
+                        }
+                    }
+                }
+
+                if (match) {
+                    // ei and ej can be paired as a single edge
+                    int e = edgeArray.size();
+                    Edge& edge = edgeArray.next();
+
+                    // Follow the direction of edgei.
+                    edge = edgei;
+                    newEdgeIndex[ei] = e;
+
+                    // Insert the face index for edgej.
+                    int fj = edgej.faceIndex[0];
+                    if (fj == Face::NONE) {
+                        fj = edgej.faceIndex[1];
+                    }
+                    
+                    if (edge.faceIndex[0] == Face::NONE) {
+                        edge.faceIndex[0] = fj;
+                    } else {
+                        edge.faceIndex[1] = fj;
+                    }
+                    
+                    if (reversej) {
+                        // The new edge is backwards of the old edge for ej
+                        newEdgeIndex[ej] = ~e;
+                    } else {
+                        newEdgeIndex[ej] = e;
+                    }
+
+                    // Remove both ei and ej from being candidates for future pairing.
+                    // Remove ej first since it comes later in the list (removing
+                    // ei would decrease the index of ej to j - 1).
+                    boundaryEdge.fastRemove(j);
+                    boundaryEdge.fastRemove(i);
+
+                    // Re-process element i, which is now a new edge index
+                    --i;
+
+                    // Jump out of the j for-loop
+                    break;
+                }
+            }
+        }
+        ++cur;
+    }
+
+    // Anything remaining in the table is a real boundary edge; just copy it to
+    // the end of the array.
+    cur = boundaryEdgeIndices.begin();
+    end = boundaryEdgeIndices.end();
+    while (cur != end) {
+        Array<int>&     boundaryEdge = cur->value;
+
+        for (int b = 0; b < boundaryEdge.size(); ++b) {
+            const int e = boundaryEdge[b];
+
+            newEdgeIndex[e] = edgeArray.size();
+            edgeArray.append(oldEdgeArray[e]);
+        }
+
+        ++cur;
+    }
+
+    // Finally, fix up edge indices in the face and vertex arrays
+    for (int f = 0; f < faceArray.size(); ++f) {
+        Face& face = faceArray[f];
+        for (int i = 0; i < 3; ++i) {
+            int e = face.edgeIndex[i];
+
+            if (e < 0) {
+                face.edgeIndex[i] = ~newEdgeIndex[~e];
+            } else {
+                face.edgeIndex[i] = newEdgeIndex[e];
+            }
+        }
+    }
+
+    for (int v = 0; v < vertexArray.size(); ++v) {
+        Vertex& vertex = vertexArray[v];
+        for (int i = 0; i < vertex.edgeIndex.size(); ++i) {
+            int e = vertex.edgeIndex[i];
+
+            if (e < 0) {
+                vertex.edgeIndex[i] = ~newEdgeIndex[~e];
+            } else {
+                vertex.edgeIndex[i] = newEdgeIndex[e];
+            }
+        }
+    }
+}
+
+
+void MeshAlg::weldAdjacency(
+    const Array<Vector3>& originalGeometry,
+    Array<Face>&          faceArray,
+    Array<Edge>&          edgeArray,
+    Array<Vertex>&        vertexArray,
+    double                radius) {
+
+    // Num vertices
+    const int n = originalGeometry.size();
+
+    // canonical[v] = first occurance of any vertex near oldVertexArray[v]
+    Array<int> canonical(n);
+
+    Array<int> toNew, toOld;
+    // Throw away the new vertex array
+    Array<Vector3> dummy;
+    computeWeld(originalGeometry, dummy, toNew, toOld, radius);
+
+    for (int v = 0; v < canonical.size(); ++v) {
+        // Round-trip through the toNew/toOld process.  This will give
+        // us the original vertex.
+        canonical[v] = toOld[toNew[v]];
+    }
+
+    // Destroy vertexArray (we reconstruct it below)
+    vertexArray.clear();
+    vertexArray.resize(n);
+
+    bool hasBoundaryEdges = false;
+
+    // Fix edge vertex indices
+    for (int e = 0; e < edgeArray.size(); ++e) {
+        Edge& edge = edgeArray[e];
+
+        const int v0 = canonical[edge.vertexIndex[0]];
+        const int v1 = canonical[edge.vertexIndex[1]];
+
+        edge.vertexIndex[0] = v0;
+        edge.vertexIndex[1] = v1;
+
+        vertexArray[v0].edgeIndex.append(e);
+        vertexArray[v1].edgeIndex.append(~e);
+
+        hasBoundaryEdges = hasBoundaryEdges || edge.boundary();
+    }
+
+    // Fix face vertex indices
+    for (int f = 0; f < faceArray.size(); ++f) {
+        Face& face = faceArray[f];
+        for (int i = 0; i < 3; ++i) {
+            const int v = canonical[face.vertexIndex[i]];
+
+            face.vertexIndex[i] = v;
+
+            // Add the back pointer
+            vertexArray[v].faceIndex.append(f);
+        }
+    }
+
+    if (hasBoundaryEdges) {
+        // As a result of the welding, some of the boundary edges at
+        // the end of the array may now have mates and no longer be
+        // boundaries.  Try to pair these up.
+
+        weldBoundaryEdges(faceArray, edgeArray, vertexArray);
+    }
+}
+
+
+void MeshAlg::debugCheckConsistency(
+    const Array<Face>&      faceArray,
+    const Array<Edge>&      edgeArray,
+    const Array<Vertex>&    vertexArray) {
+
+#ifdef _DEBUG
+    for (int v = 0; v < vertexArray.size(); ++v) {
+        const MeshAlg::Vertex& vertex = vertexArray[v];
+
+        for (int i = 0; i < vertex.edgeIndex.size(); ++i) {
+            const int e = vertex.edgeIndex[i];
+            debugAssert(edgeArray[(e >= 0) ? e : ~e].containsVertex(v));
+        }
+
+        for (int i = 0; i < vertex.faceIndex.size(); ++i) {
+            const int f = vertex.faceIndex[i];
+            debugAssert(faceArray[f].containsVertex(v));
+        }
+
+    }
+
+    for (int e = 0; e < edgeArray.size(); ++e) {
+        const MeshAlg::Edge& edge = edgeArray[e];
+
+        for (int i = 0; i < 2; ++i) {
+            debugAssert((edge.faceIndex[i] == MeshAlg::Face::NONE) ||
+                faceArray[edge.faceIndex[i]].containsEdge(e));
+
+            debugAssert(vertexArray[edge.vertexIndex[i]].inEdge(e));
+        }        
+    }
+
+    // Every face's edge must be on that face
+    for (int f = 0; f < faceArray.size(); ++f) {
+        const MeshAlg::Face& face = faceArray[f];
+        for (int i = 0; i < 3; ++i) {
+            int e = face.edgeIndex[i];
+            int ei = (e >= 0) ? e : ~e;
+            debugAssert(edgeArray[ei].inFace(f));
+
+            // Make sure the edge is oriented appropriately 
+            if (e >= 0) {
+                debugAssert(edgeArray[ei].faceIndex[0] == (int)f);
+            } else {
+                debugAssert(edgeArray[ei].faceIndex[1] == (int)f);
+            }
+
+            debugAssert(vertexArray[face.vertexIndex[i]].inFace(f));
+        }
+    }
+#else
+    (void)faceArray;
+    (void)edgeArray;
+    (void)vertexArray;
+#endif // _DEBUG
+}
+
+} // G3D namespace

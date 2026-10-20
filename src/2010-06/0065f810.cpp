@@ -1,37 +1,129 @@
-// roc 2010-06 0065f810  unit: RBX::VPlayerMouse::?$FactoryProduct  size: 83 bytes
-// Make this compile to the exact bytes below, then: roc check 2010-06 0065f810
-//
-// 0065f810  51                   push ecx
-// 0065f811  6a18                 push 0x18
-// 0065f813  c744240400000000     mov dword ptr [esp + 4], 0
-// 0065f81b  e880811400           call 0x7a79a0
-// 0065f820  83c404               add esp, 4
-// 0065f823  85c0                 test eax, eax
-// 0065f825  7424                 je 0x65f84b
-// 0065f827  c700c4a6a300         mov dword ptr [eax], 0xa3a6c4
-// 0065f82d  8b4c240c             mov ecx, dword ptr [esp + 0xc]
-// 0065f831  894808               mov dword ptr [eax + 8], ecx
-// 0065f834  8b542410             mov edx, dword ptr [esp + 0x10]
-// 0065f838  89500c               mov dword ptr [eax + 0xc], edx
-// 0065f83b  8b4c2414             mov ecx, dword ptr [esp + 0x14]
-// 0065f83f  894810               mov dword ptr [eax + 0x10], ecx
-// 0065f842  8b542418             mov edx, dword ptr [esp + 0x18]
-// 0065f846  895014               mov dword ptr [eax + 0x14], edx
-// 0065f849  eb02                 jmp 0x65f84d
-// 0065f84b  33c0                 xor eax, eax
-// 0065f84d  56                   push esi
-// 0065f84e  8b74240c             mov esi, dword ptr [esp + 0xc]
-// 0065f852  6a00                 push 0
-// 0065f854  8906                 mov dword ptr [esi], eax
-// 0065f856  e83f811400           call 0x7a799a
-// 0065f85b  83c404               add esp, 4
-// 0065f85e  8bc6                 mov eax, esi
-// 0065f860  5e                   pop esi
-// 0065f861  59                   pop ecx
-// 0065f862  c3                   ret 
-// library rbxgs/script\Script.cpp (function ??$getset@P8Script@RBX@@BEABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@XZP812@AEXABV34@@Z@?$PropDescriptor@VScript@RBX@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@Reflection@RBX@@SA?AV?$auto_ptr@VGetSet@?$TypedPropertyDescriptor@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@Reflection@RBX@@@std@@P8Script@2@BEABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@4@XZP852@AEXABV64@@Z@Z)
-
 // roc-lang: cpp
 // roc-cl: 30729
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
 // roc-lib: rbxgs script/Script.cpp
+
+// Candidate translation unit (score above; library headers required).
+#include "script/Script.h"
+#include "script/ScriptContext.h"
+#include "v8tree/Service.h"
+#include "boost/thread/once.hpp"
+
+using namespace RBX;
+
+const Reflection::PropDescriptor<Script, std::string> Script::prop_EmbeddedSourceCode("Source", "Data", &Script::getEmbeddedCode, &Script::setEmbeddedCode, Reflection::PropertyDescriptor::LEGACY);
+const Reflection::PropDescriptor<Script, ContentId> Script::prop_SourceCodeId("LinkedSource", "Data", &Script::getScriptId, &Script::setScriptId, Reflection::PropertyDescriptor::LEGACY);
+Reflection::BoundProp<bool, true> Script::prop_Disabled("Disabled", "Behavior", &Script::disabled, Reflection::PropertyDescriptor::STANDARD);
+
+static boost::shared_ptr<const std::string> helloWorld;
+static boost::once_flag flagInitScriptCpp = BOOST_ONCE_INIT;
+
+void initScriptCpp()
+{
+    helloWorld.reset(new std::string("print(\"Hello world!\")\r\n"));
+}
+
+const char* RBX::sScript = "Script";
+
+Script::Script()
+    : DescribedCreatable("Script"),
+      disabled(false),
+      owner(NULL)
+{
+    boost::call_once(&initScriptCpp, flagInitScriptCpp);
+    embeddedSource = helloWorld;
+}
+
+const char* RBX::sLocalScript = "LocalScript";
+
+LocalScript::LocalScript()
+{
+    setName("LocalScript");
+}
+
+Script::~Script()
+{
+    RBXASSERT(owner == NULL);
+}
+
+void Script::setEmbeddedCode(const std::string& value)
+{
+    if (getEmbeddedCode() != value)
+    {
+        embeddedSource.reset(new std::string(value));
+        raisePropertyChanged(prop_EmbeddedSourceCode);
+    }
+}
+
+void Script::setScriptId(const ContentId& value)
+{
+    if (getScriptId() != value)
+    {
+        scriptId = value;
+        requestCode();
+        raisePropertyChanged(prop_SourceCodeId);
+    }
+}
+
+void Script::onAncestorChanged(const AncestorChanged& event)
+{
+    Instance::onAncestorChanged(event);
+
+    IScriptOwner* newOwner = NULL;
+    Instance* parent = this->getParent();
+
+    while (parent)
+    {
+        IScriptOwner* parentOwner = dynamic_cast<IScriptOwner*>(parent);
+
+        if (parentOwner)
+        {
+            newOwner = parentOwner->scriptShouldRun(this);
+
+            if (newOwner)
+                break;
+        }
+
+        parent = parent->getParent();
+    }
+
+    if (newOwner != owner)
+    {
+        if (owner)
+            owner->releaseScript(this);
+
+        owner = newOwner;
+
+        ScriptContext* sc = ServiceProvider::find<ScriptContext>(this);
+
+        if (sc)
+        {
+            sc->removeScript(this);
+
+            if (owner)
+                owner->runScript(this, sc);
+        }
+    }
+}
+
+void Script::onServiceProvider(const ServiceProvider* oldProvider, const ServiceProvider* newProvider)
+{
+	if (ScriptContext* sc = ServiceProvider::find<ScriptContext>(oldProvider))
+	{
+		sc->removeScript(this);
+	}
+
+	Instance::onServiceProvider(oldProvider, newProvider);
+}
+
+boost::shared_ptr<const std::string> Script::requestCode()
+{
+    if (scriptId.isNull())
+    {
+        return embeddedSource;
+    }
+    else 
+    {
+        return ContentProvider::singleton().requestContentString(scriptId);
+    }
+}

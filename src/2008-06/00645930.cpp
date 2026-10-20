@@ -1,35 +1,46 @@
-// roc 2008-06 00645930  unit: RBX::RigidJoint  size: 67 bytes
-// Make this compile to the exact bytes below, then: roc check 2008-06 00645930
-//
-// 00645930  8b410c               mov eax, dword ptr [ecx + 0xc]
-// 00645933  83ec30               sub esp, 0x30
-// 00645936  56                   push esi
-// 00645937  57                   push edi
-// 00645938  8d7928               lea edi, [ecx + 0x28]
-// 0064593b  39442440             cmp dword ptr [esp + 0x40], eax
-// 0064593f  7403                 je 0x645944
-// 00645941  8d7958               lea edi, [ecx + 0x58]
-// 00645944  39442444             cmp dword ptr [esp + 0x44], eax
-// 00645948  7505                 jne 0x64594f
-// 0064594a  83c128               add ecx, 0x28
-// 0064594d  eb03                 jmp 0x645952
-// 0064594f  83c158               add ecx, 0x58
-// 00645952  8d442408             lea eax, [esp + 8]
-// 00645956  50                   push eax
-// 00645957  e8d429e3ff           call 0x478330
-// 0064595c  8b74243c             mov esi, dword ptr [esp + 0x3c]
-// 00645960  50                   push eax
-// 00645961  56                   push esi
-// 00645962  8bcf                 mov ecx, edi
-// 00645964  e8970de3ff           call 0x476700
-// 00645969  5f                   pop edi
-// 0064596a  8bc6                 mov eax, esi
-// 0064596c  5e                   pop esi
-// 0064596d  83c430               add esp, 0x30
-// 00645970  c20c00               ret 0xc
-// library rbxgs/v8world\RigidJoint.cpp (function ?getChildInParent@RigidJoint@RBX@@QAE?AVCoordinateFrame@G3D@@PAVPrimitive@2@0@Z)
-
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
 // roc-lib: rbxgs v8world/RigidJoint.cpp
+
+// Candidate translation unit (score above; library headers required).
+#include "v8world/RigidJoint.h"
+#include "v8world/Primitive.h"
+#include "util/Math.h"
+
+namespace RBX
+{
+	// TODO: check which of these belong to the header
+
+	bool RigidJoint::isAligned()
+	{
+		G3D::CoordinateFrame c0World = getPrimitive(0)->getCoordinateFrame() * jointCoord0;
+		G3D::CoordinateFrame c1World = getPrimitive(1)->getCoordinateFrame() * jointCoord1;
+		return Math::fuzzyEq(c0World, c1World, 0.00001f, 0.00001f);
+	}
+
+	G3D::CoordinateFrame RigidJoint::align(Primitive* pMove, Primitive* pStay)
+	{
+		const G3D::CoordinateFrame& c0 = getJointCoord(pMove == getPrimitive(0) ? 0 : 1);
+		const G3D::CoordinateFrame& c1 = getJointCoord(pStay == getPrimitive(0) ? 0 : 1);
+
+		G3D::CoordinateFrame jointWorld = pStay->getCoordinateFrame() * c1;
+		return jointWorld * c0.inverse();
+	}
+
+	G3D::CoordinateFrame RigidJoint::getChildInParent(Primitive* parent, Primitive* child)
+	{
+		const G3D::CoordinateFrame& c0 = getJointCoord(parent == getPrimitive(0) ? 0 : 1);
+		const G3D::CoordinateFrame& c1 = getJointCoord(child == getPrimitive(0) ? 0 : 1);
+
+		return c0 * c1.inverse();
+	}
+
+	void RigidJoint::faceIdToCoords(Primitive* p0, Primitive* p1, NormalId nId0, NormalId nId1, G3D::CoordinateFrame& c0, G3D::CoordinateFrame& c1)
+	{
+		c0 = p0->getFaceCoordInObject(nId0);
+
+		G3D::CoordinateFrame worldC = p0->getCoordinateFrame() * c0;
+		c1 = p1->getCoordinateFrame().toObjectSpace(worldC);
+	}
+}

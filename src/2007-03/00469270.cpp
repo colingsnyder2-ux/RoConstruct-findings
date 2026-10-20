@@ -1,38 +1,236 @@
-// roc 2007-03 00469270  unit: seg_00460000  size: 59 bytes
-// Make this compile to the exact bytes below, then: roc check 2007-03 00469270
-//
-// 00469270  53                   push ebx
-// 00469271  8b5c240c             mov ebx, dword ptr [esp + 0xc]
-// 00469275  56                   push esi
-// 00469276  8b74240c             mov esi, dword ptr [esp + 0xc]
-// 0046927a  3bf3                 cmp esi, ebx
-// 0046927c  7426                 je 0x4692a4
-// 0046927e  55                   push ebp
-// 0046927f  8b6c241c             mov ebp, dword ptr [esp + 0x1c]
-// 00469283  57                   push edi
-// 00469284  8b7c241c             mov edi, dword ptr [esp + 0x1c]
-// 00469288  0fbe06               movsx eax, byte ptr [esi]
-// 0046928b  50                   push eax
-// 0046928c  ffd5                 call ebp
-// 0046928e  8807                 mov byte ptr [edi], al
-// 00469290  83c601               add esi, 1
-// 00469293  83c404               add esp, 4
-// 00469296  83c701               add edi, 1
-// 00469299  3bf3                 cmp esi, ebx
-// 0046929b  75eb                 jne 0x469288
-// 0046929d  8bc7                 mov eax, edi
-// 0046929f  5f                   pop edi
-// 004692a0  5d                   pop ebp
-// 004692a1  5e                   pop esi
-// 004692a2  5b                   pop ebx
-// 004692a3  c3                   ret 
-// 004692a4  8b442414             mov eax, dword ptr [esp + 0x14]
-// 004692a8  5e                   pop esi
-// 004692a9  5b                   pop ebx
-// 004692aa  c3                   ret 
-// library rbxgs-g3d/G3Dcpp\stringutils.cpp (function ??$_Transform@PADPADP6AHH@ZUforward_iterator_tag@std@@@std@@YAPADPAD00P6AHH@ZUforward_iterator_tag@0@U_Range_checked_iterator_tag@0@@Z)
-
 // roc-lang: cpp
 // roc-cl: 50727
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD /arch:SSE2 /fp:fast
 // roc-lib: rbxgs-g3d G3Dcpp/stringutils.cpp
+
+// Candidate translation unit (score above; library headers required).
+/**
+ @file stringutils.cpp
+
+ @maintainer Morgan McGuire, matrix@graphics3d.com
+
+ @created 2000-09-09
+ @edited  2005-09-10
+*/
+
+#include "G3D/platform.h"
+#include "G3D/stringutils.h"
+#include "G3D/BinaryInput.h"
+#include <algorithm>
+
+namespace G3D {
+
+#ifdef G3D_WIN32
+    // disable: "C++ exception handler used"
+#   pragma warning (push)
+#   pragma warning (disable : 4530)
+    const char* NEWLINE = "\r\n";
+#else
+    const char* NEWLINE = "\n";
+    static bool iswspace(int ch) { return (ch==' ' || ch=='\t' || ch=='\n'); }
+#endif
+
+bool beginsWith(
+    const std::string& test,
+    const std::string& pattern) {
+
+    if (test.size() >= pattern.size()) {
+        for (int i = 0; i < (int)pattern.size(); ++i) {
+            if (pattern[i] != test[i]) {
+                return false;
+            }
+        }
+        return true;
+    } else {
+        return false;
+    }
+}
+
+
+bool endsWith(
+    const std::string& test,
+    const std::string& pattern) {
+
+    if (test.size() >= pattern.size()) {
+        int te = test.size() - 1;
+        int pe = pattern.size() - 1;
+        for (int i = pattern.size() - 1; i >= 0; --i) {
+            if (pattern[pe - i] != test[te - i]) {
+                return false;
+            }
+        }
+        return true;
+    } else {
+        return false;
+    }
+}
+
+
+std::string wordWrap(
+    const std::string&      input,
+    int                     numCols) {
+
+    std::string output;
+    size_t      c = 0;
+    int         len;
+
+    // Don't make lines less than this length
+    int         minLength = numCols / 4;
+    size_t      inLen = input.size();
+
+    bool first = true;
+    while (c < inLen) {
+        if (first) {
+            first = false;
+        } else {
+            output += NEWLINE;
+        }
+
+        if ((int)inLen - (int)c - 1 < numCols) {
+            // The end
+            output += input.substr(c, inLen - c);
+            break;
+        }
+
+        len = numCols;
+
+        // Look at character c + numCols, see if it is a space.
+        while ((len > minLength) &&
+               (input[c + len] != ' ')) {
+            len--;
+        }
+
+        if (len == minLength) {
+            // Just crop
+            len = numCols;
+
+        }
+
+        output += input.substr(c, len);
+        c += len;
+        if (c < input.size()) {
+            // Collapse multiple spaces.
+            while ((input[c] == ' ') && (c < input.size())) {
+                c++;
+            }
+        }
+    }
+
+    return output;
+}
+
+
+int stringCompare(
+    const std::string&      s1,
+    const std::string&      s2) {
+
+    return stringPtrCompare(&s1, &s2);
+}
+
+
+int stringPtrCompare(
+    const std::string*      s1,
+    const std::string*      s2) {
+
+    return s1->compare(*s2);
+}
+
+
+std::string toUpper(const std::string& x) {
+    std::string result = x;
+    std::transform(result.begin(), result.end(), result.begin(), toupper);
+    return result;
+}
+
+
+std::string toLower(const std::string& x) {
+    std::string result = x;
+    std::transform(result.begin(), result.end(), result.begin(), tolower);
+    return result;
+}
+
+
+Array<std::string> stringSplit(
+    const std::string&          x,
+    char                        splitChar) {
+
+    size_t prev, cur = 0;
+    Array<std::string> out;
+
+    while (cur < x.size()) {
+        prev = cur;
+        cur = x.find(splitChar, prev + 1);
+
+        if (cur == std::string::npos) {
+            cur = x.size();
+        }
+
+        out.append(x.substr(prev, cur - prev));
+        ++cur;
+    }
+
+    return out;
+}
+
+
+std::string stringJoin(
+    const Array<std::string>&   a,
+    char                        joinChar) {
+
+    std::string out;
+
+    for (int i = 0; i < (int)a.size() - 1; ++i) {
+        out += a[i] + joinChar;
+    }
+
+    if (a.size() > 0) {
+        return out + a.last();
+    } else {
+        return out;
+    }
+}
+
+
+std::string stringJoin(
+    const Array<std::string>&   a,
+    const std::string&          joinStr) {
+
+    std::string out;
+
+    for (int i = 0; i < (int)a.size() - 1; ++i) {
+        out += a[i] + joinStr;
+    }
+
+    if (a.size() > 0) {
+        return out + a.last();
+    } else {
+        return out;
+    }
+}
+
+
+std::string trimWhitespace(
+    const std::string&              s) {
+
+    size_t left = 0;
+    
+    // Trim from left
+    while ((left < s.length()) && iswspace(s[left])) {
+        ++left;
+    }
+
+    int right = s.length() - 1;
+    // Trim from right
+    while ((right > (int)left) && iswspace(s[right])) {
+        --right;
+    }
+    
+    return s.substr(left, right - left + 1);
+}
+
+}; // namespace
+
+#undef NEWLINE
+#ifdef G3D_WIN32
+#   pragma warning (pop)
+#endif

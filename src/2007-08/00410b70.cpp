@@ -1,33 +1,67 @@
 // from server: 100% by auto
-// roc 2007-08 00410b70  unit: CopyVerb  size: 53 bytes
-// Make this compile to the exact bytes below, then: roc check 2007-08 00410b70
-//
-// 00410b70  8b4108               mov eax, dword ptr [ecx + 8]
-// 00410b73  83ec08               sub esp, 8
-// 00410b76  56                   push esi
-// 00410b77  8d7104               lea esi, [ecx + 4]
-// 00410b7a  8b08                 mov ecx, dword ptr [eax]
-// 00410b7c  50                   push eax
-// 00410b7d  56                   push esi
-// 00410b7e  51                   push ecx
-// 00410b7f  56                   push esi
-// 00410b80  8d442414             lea eax, [esp + 0x14]
-// 00410b84  50                   push eax
-// 00410b85  8bce                 mov ecx, esi
-// 00410b87  e8c4f6ffff           call 0x410250
-// 00410b8c  8b4e04               mov ecx, dword ptr [esi + 4]
-// 00410b8f  51                   push ecx
-// 00410b90  e8cdf02100           call 0x62fc62
-// 00410b95  83c404               add esp, 4
-// 00410b98  33c0                 xor eax, eax
-// 00410b9a  894604               mov dword ptr [esi + 4], eax
-// 00410b9d  894608               mov dword ptr [esi + 8], eax
-// 00410ba0  5e                   pop esi
-// 00410ba1  83c408               add esp, 8
-// 00410ba4  c3                   ret 
-// library boost-1.34.1/libs\regex\src\usinstances.cpp (function ??1?$w32_regex_traits_char_layer@G@re_detail@boost@@QAE@XZ)
-
 // roc-lang: cpp
 // roc-cl: 50727
 // roc-flags: /O2 /GS- /EHsc /MD
 // roc-lib: boost-1.34.1 libs/regex/src/usinstances.cpp
+
+// Candidate translation unit (score above; library headers required).
+/*
+ *
+ * Copyright (c) 1998-2002
+ * John Maddock
+ *
+ * Use, modification and distribution are subject to the 
+ * Boost Software License, Version 1.0. (See accompanying file 
+ * LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+ *
+ */
+
+ /*
+  *   LOCATION:    see http://www.boost.org for most recent version.
+  *   FILE:        winstances.cpp
+  *   VERSION:     see <boost/version.hpp>
+  *   DESCRIPTION: regex unsigned short template instances (MSVC only).
+  */
+
+#define BOOST_REGEX_SOURCE
+
+#include <boost/regex/config.hpp>
+
+#if !defined(BOOST_NO_WREGEX) && defined(BOOST_REGEX_HAS_OTHER_WCHAR_T) && !defined(BOOST_REGEX_NO_EXTERNAL_TEMPLATES)
+#define BOOST_REGEX_US_INSTANTIATE
+
+#ifdef _DLL_CPPLIB
+#include <boost/detail/workaround.hpp>
+//
+// This is a horrible workaround, without declaring these symbols extern we get
+// duplicate symbol errors when linking if the application is built without
+// /Zc:wchar_t
+//
+namespace std{
+template _CRTIMP2 bool __cdecl operator==(
+   const basic_string<unsigned short, char_traits<unsigned short>, allocator<unsigned short> >&,
+   const basic_string<unsigned short, char_traits<unsigned short>, allocator<unsigned short> >&);
+template _CRTIMP2 bool __cdecl operator==(
+   const unsigned short *,
+   const basic_string<unsigned short, char_traits<unsigned short>, allocator<unsigned short> >&);
+template _CRTIMP2 bool __cdecl operator==(
+   const basic_string<unsigned short, char_traits<unsigned short>, allocator<unsigned short> >&,
+   const unsigned short *);
+template _CRTIMP2 bool __cdecl operator<(
+   const basic_string<unsigned short, char_traits<unsigned short>, allocator<unsigned short> >&,
+   const basic_string<unsigned short, char_traits<unsigned short>, allocator<unsigned short> >&);
+template _CRTIMP2 bool __cdecl operator>(
+   const basic_string<unsigned short, char_traits<unsigned short>, allocator<unsigned short> >&,
+   const basic_string<unsigned short, char_traits<unsigned short>, allocator<unsigned short> >&);
+#if BOOST_WORKAROUND(BOOST_MSVC, > 1300) && BOOST_WORKAROUND(BOOST_MSVC, BOOST_TESTED_AT(1400))
+template<> _CRTIMP2 std::size_t __cdecl char_traits<unsigned short>::length(unsigned short const*);
+#endif
+}
+#endif
+
+
+#include <boost/regex.hpp>
+
+#endif
+
+

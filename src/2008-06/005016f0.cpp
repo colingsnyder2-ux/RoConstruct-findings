@@ -1,95 +1,213 @@
-// roc 2008-06 005016f0  unit: boost::bad_lexical_cast  size: 266 bytes
-// Make this compile to the exact bytes below, then: roc check 2008-06 005016f0
-//
-// 005016f0  6aff                 push -1
-// 005016f2  6809e77c00           push 0x7ce709
-// 005016f7  64a100000000         mov eax, dword ptr fs:[0]
-// 005016fd  50                   push eax
-// 005016fe  64892500000000       mov dword ptr fs:[0], esp
-// 00501705  83ec28               sub esp, 0x28
-// 00501708  53                   push ebx
-// 00501709  55                   push ebp
-// 0050170a  68a0738200           push 0x8273a0
-// 0050170f  8d4c2418             lea ecx, [esp + 0x18]
-// 00501713  ff1558248000         call dword ptr [0x802458]
-// 00501719  8d44240c             lea eax, [esp + 0xc]
-// 0050171d  50                   push eax
-// 0050171e  8d4c2418             lea ecx, [esp + 0x18]
-// 00501722  33ed                 xor ebp, ebp
-// 00501724  51                   push ecx
-// 00501725  896c2440             mov dword ptr [esp + 0x40], ebp
-// 00501729  e8b2280100           call 0x513fe0
-// 0050172e  83c408               add esp, 8
-// 00501731  8d4c2414             lea ecx, [esp + 0x14]
-// 00501735  8ad8                 mov bl, al
-// 00501737  c7442438ffffffff     mov dword ptr [esp + 0x38], 0xffffffff
-// 0050173f  ff1568248000         call dword ptr [0x802468]
-// 00501745  84db                 test bl, bl
-// 00501747  740f                 je 0x501758
-// 00501749  8b44240c             mov eax, dword ptr [esp + 0xc]
-// 0050174d  3d2c010000           cmp eax, 0x12c
-// 00501752  0f8f91000000         jg 0x5017e9
-// 00501758  56                   push esi
-// 00501759  57                   push edi
-// 0050175a  33f6                 xor esi, esi
-// 0050175c  33ff                 xor edi, edi
-// 0050175e  33db                 xor ebx, ebx
-// 00501760  c744241002000000     mov dword ptr [esp + 0x10], 2
-// 00501768  eb06                 jmp 0x501770
-// 0050176a  8d9b00000000         lea ebx, [ebx]
-// 00501770  6a32                 push 0x32
-// 00501772  68b0145000           push 0x5014b0
-// 00501777  e884fcffff           call 0x501400
-// 0050177c  03f0                 add esi, eax
-// 0050177e  6a32                 push 0x32
-// 00501780  6820155000           push 0x501520
-// 00501785  13fa                 adc edi, edx
-// 00501787  e874fcffff           call 0x501400
-// 0050178c  83c410               add esp, 0x10
-// 0050178f  03e8                 add ebp, eax
-// 00501791  13da                 adc ebx, edx
-// 00501793  836c241001           sub dword ptr [esp + 0x10], 1
-// 00501798  75d6                 jne 0x501770
-// 0050179a  6a00                 push 0
-// 0050179c  2bf5                 sub esi, ebp
-// 0050179e  6a02                 push 2
-// 005017a0  1bfb                 sbb edi, ebx
-// 005017a2  57                   push edi
-// 005017a3  56                   push esi
-// 005017a4  e887041a00           call 0x6a1c30
-// 005017a9  6a00                 push 0
-// 005017ab  6a32                 push 0x32
-// 005017ad  52                   push edx
-// 005017ae  50                   push eax
-// 005017af  e87c041a00           call 0x6a1c30
-// 005017b4  6a00                 push 0
-// 005017b6  68e8030000           push 0x3e8
-// 005017bb  52                   push edx
-// 005017bc  50                   push eax
-// 005017bd  e86e041a00           call 0x6a1c30
-// 005017c2  5f                   pop edi
-// 005017c3  5e                   pop esi
-// 005017c4  85d2                 test edx, edx
-// 005017c6  7c14                 jl 0x5017dc
-// 005017c8  7f05                 jg 0x5017cf
-// 005017ca  83f864               cmp eax, 0x64
-// 005017cd  720d                 jb 0x5017dc
-// 005017cf  85d2                 test edx, edx
-// 005017d1  7c16                 jl 0x5017e9
-// 005017d3  7f07                 jg 0x5017dc
-// 005017d5  3d50c30000           cmp eax, 0xc350
-// 005017da  760d                 jbe 0x5017e9
-// 005017dc  b878050000           mov eax, 0x578
-// 005017e1  c744241000000000     mov dword ptr [esp + 0x10], 0
-// 005017e9  8b4c2430             mov ecx, dword ptr [esp + 0x30]
-// 005017ed  5d                   pop ebp
-// 005017ee  5b                   pop ebx
-// 005017ef  64890d00000000       mov dword ptr fs:[0], ecx
-// 005017f6  83c434               add esp, 0x34
-// 005017f9  c3                   ret 
-// library openrbx-client/Rendering\RenderLib\Profiler.cpp (function ?getCPUSpeed@Render@RBX@@YAHXZ)
-
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
 // roc-lib: openrbx-client Rendering/RenderLib/Profiler.cpp
+
+// Candidate translation unit (score above; library headers required).
+#include "decomp.h"
+
+#include <G3D/RegistryUtil.h>
+#include <GLG3D/DXCaps.h>
+#include <GLG3D/GLCaps.h>
+#include <boost/lexical_cast.hpp>
+#include <string>
+#include <windows.h>
+
+namespace RBX {
+namespace Render {
+
+typedef void (*DelayFunction)(unsigned int uiParameter);
+
+static float getShaderModel();
+static int getCPUSpeed();
+static std::string getCPUMake();
+static std::string getMaxRes();
+static int getRam();
+
+// SIZE 0x80
+struct SpecData
+{
+	static bool glLoaded;
+
+	float shaderModel;      // 0x00
+	int videoMemory;        // 0x04
+	int CPUSpeed;           // 0x08
+	std::string glVendor;   // 0x0c
+	std::string gfxcard;    // 0x28
+	std::string cpu;        // 0x44
+	int ram;                // 0x60
+	std::string resolution; // 0x64
+
+	SpecData();
+};
+
+DECOMP_SIZE_ASSERT(SpecData, 0x80)
+
+bool SpecData::glLoaded;
+
+// FUNCTION: WEBSERVICE 0x10169a30
+static float getShaderModel()
+{
+	if ((G3D::GLCaps::supports_GL_ARB_fragment_shader() && G3D::GLCaps::supports_GL_ARB_vertex_shader()) ||
+		(G3D::GLCaps::supports_GL_ARB_shader_objects() && G3D::GLCaps::supports_GL_ARB_shading_language_100())) {
+		return 2.0f;
+	}
+
+	if (G3D::GLCaps::supports("GL_ATI_fragment_shader") || G3D::GLCaps::supports("GL_NV_fragement_program")) {
+		return 2.0f;
+	}
+
+	if (G3D::GLCaps::supports("GL_ATI_texture_env_combine3") || G3D::GLCaps::supports("GL_NV_texture_shader3")) {
+		return 1.4f;
+	}
+
+	if (G3D::GLCaps::supports("GL_NV_register_combiners")) {
+		return 1.2f;
+	}
+
+	return 1.0f;
+}
+
+// FUNCTION: WEBSERVICE 0x10169c60
+static __int64 GetCyclesDifference(DelayFunction DelayFunction, unsigned int uiParameter)
+{
+	unsigned int t0Lo, t0Hi;
+	unsigned int t1Lo, t1Hi;
+
+	__try {
+		__asm {
+			rdtsc
+			mov esi, eax
+			mov edi, edx
+
+			push uiParameter
+			call DelayFunction
+			pop ebx
+
+			rdtsc
+			mov t1Hi, edx
+			mov t1Lo, eax
+
+			mov t0Hi, edi
+			mov t0Lo, esi
+		}
+	}
+	__except (1) {
+		return 0;
+	}
+
+	return (__int64) t1Hi * 0x100000000 - ((__int64) t0Hi << 32) - t0Lo + t1Lo;
+}
+
+// FUNCTION: WEBSERVICE 0x10169d20
+static void Delay(unsigned int time)
+{
+	LARGE_INTEGER Frequency, StartCounter, EndCounter;
+
+	if (QueryPerformanceFrequency(&Frequency)) {
+		__int64 ticks = (Frequency.QuadPart / 1000) * time;
+
+		QueryPerformanceCounter(&StartCounter);
+
+		do {
+			QueryPerformanceCounter(&EndCounter);
+		} while ((EndCounter.QuadPart - StartCounter.QuadPart) < ticks);
+	}
+}
+
+// FUNCTION: WEBSERVICE 0x10169d90
+static void DelayOverhead(unsigned int time)
+{
+	LARGE_INTEGER Frequency, StartCounter, EndCounter;
+
+	if (QueryPerformanceFrequency(&Frequency)) {
+		__int64 ticks = (Frequency.QuadPart / 1000) * time;
+
+		QueryPerformanceCounter(&StartCounter);
+
+		do {
+			QueryPerformanceCounter(&EndCounter);
+		} while ((EndCounter.QuadPart - StartCounter.QuadPart) == ticks);
+	}
+}
+
+// FUNCTION: WEBSERVICE 0x10169e00
+static std::string getCPUMake()
+{
+	std::string cpu_name;
+
+	if (G3D::RegistryUtil::readString(
+			"HKEY_LOCAL_MACHINE\\HARDWARE\\DESCRIPTION\\System\\CentralProcessor\\0\\ProcessorNameString",
+			cpu_name
+		)) {
+		return cpu_name;
+	}
+
+	return "Could not determine CPU name";
+}
+
+// FUNCTION: WEBSERVICE 0x10169ee0
+static int getCPUSpeed()
+{
+	int speed;
+
+	if (G3D::RegistryUtil::read32bitNumber(
+			"HKEY_LOCAL_MACHINE\\HARDWARE\\DESCRIPTION\\System\\CentralProcessor\\0\\~MHz",
+			speed
+		)) {
+		if (speed > 300) {
+			return speed;
+		}
+	}
+
+	__int64 total = 0;
+	__int64 overhead = 0;
+
+	for (int i = 0; i < 2; i++) {
+		total += GetCyclesDifference(Delay, 50);
+		overhead += GetCyclesDifference(DelayOverhead, 50);
+	}
+
+	total = (total - overhead) / 2;
+	total = total / 50;
+	total = total / 1000;
+
+	if (total < 100 || total > 50000) {
+		total = 1400;
+	}
+
+	return (int) total;
+}
+
+// FUNCTION: WEBSERVICE 0x10169ff0
+static std::string getMaxRes()
+{
+	int width = GetSystemMetrics(SM_CXSCREEN);
+	int height = GetSystemMetrics(SM_CYSCREEN);
+
+	std::string w = boost::lexical_cast<std::string>(width);
+	std::string h = boost::lexical_cast<std::string>(height);
+
+	return w + "x" + h;
+}
+
+static int getRam()
+{
+	MEMORYSTATUS memoryStatus;
+
+	GlobalMemoryStatus(&memoryStatus);
+
+	return (int) memoryStatus.dwTotalPhys / (1024 * 1024);
+}
+
+// FUNCTION: WEBSERVICE 0x1016a100
+SpecData::SpecData()
+	: shaderModel(glLoaded ? getShaderModel() : 0.0f),
+	  videoMemory((int) (G3D::DXCaps::videoMemorySize() / (1024 * 1024))), CPUSpeed(getCPUSpeed()),
+	  glVendor(glLoaded ? G3D::GLCaps::vendor() : "?"), gfxcard(glLoaded ? G3D::GLCaps::renderer() : "?"),
+	  cpu(getCPUMake()), ram(getRam()), resolution(getMaxRes())
+{
+}
+
+} // namespace Render
+} // namespace RBX

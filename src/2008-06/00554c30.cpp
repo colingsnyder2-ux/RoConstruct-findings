@@ -1,48 +1,166 @@
-// roc 2008-06 00554c30  unit: RBX::RunService  size: 106 bytes
-// Make this compile to the exact bytes below, then: roc check 2008-06 00554c30
-//
-// 00554c30  8b442404             mov eax, dword ptr [esp + 4]
-// 00554c34  83ec10               sub esp, 0x10
-// 00554c37  57                   push edi
-// 00554c38  8bf9                 mov edi, ecx
-// 00554c3a  0fb64804             movzx ecx, byte ptr [eax + 4]
-// 00554c3e  f7d9                 neg ecx
-// 00554c40  1bc9                 sbb ecx, ecx
-// 00554c42  85c8                 test eax, ecx
-// 00554c44  7518                 jne 0x554c5e
-// 00554c46  8d4c2404             lea ecx, [esp + 4]
-// 00554c4a  e8a1370100           call 0x5683f0
-// 00554c4f  681c0f8d00           push 0x8d0f1c
-// 00554c54  8d542408             lea edx, [esp + 8]
-// 00554c58  52                   push edx
-// 00554c59  e82ec91400           call 0x6a158c
-// 00554c5e  53                   push ebx
-// 00554c5f  56                   push esi
-// 00554c60  8b30                 mov esi, dword ptr [eax]
-// 00554c62  8bcf                 mov ecx, edi
-// 00554c64  e867d10900           call 0x5f1dd0
-// 00554c69  8d442420             lea eax, [esp + 0x20]
-// 00554c6d  50                   push eax
-// 00554c6e  8bce                 mov ecx, esi
-// 00554c70  e8cb000400           call 0x594d40
-// 00554c75  8b4c2424             mov ecx, dword ptr [esp + 0x24]
-// 00554c79  51                   push ecx
-// 00554c7a  8bcf                 mov ecx, edi
-// 00554c7c  e81fd20900           call 0x5f1ea0
-// 00554c81  8d542420             lea edx, [esp + 0x20]
-// 00554c85  52                   push edx
-// 00554c86  8bce                 mov ecx, esi
-// 00554c88  8ad8                 mov bl, al
-// 00554c8a  e891000400           call 0x594d20
-// 00554c8f  5e                   pop esi
-// 00554c90  8ac3                 mov al, bl
-// 00554c92  5b                   pop ebx
-// 00554c93  5f                   pop edi
-// 00554c94  83c410               add esp, 0x10
-// 00554c97  c20800               ret 8
-// library openrbx-client/App\util\RunStateOwner.cpp (function ??$timed_wait@V?$scoped_lock@Vmutex@boost@@@thread@detail@boost@@@condition@boost@@QAE_NAAV?$scoped_lock@Vmutex@boost@@@thread@detail@1@ABUxtime@1@@Z)
-
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
 // roc-lib: openrbx-client App/util/RunStateOwner.cpp
+
+// Candidate translation unit (score above; library headers required).
+#include "util/RunStateOwner.h"
+
+#include "util/Timer.h"
+#include "v8datamodel/DataModel.h"
+
+#include <algorithm>
+#include <boost/thread/thread.hpp>
+#include <boost/thread/xtime.hpp>
+
+namespace RBX {
+
+const char sRunService[] = "RunService";
+
+Reflection::SignalDesc<RunService, void(float, float)> RunService::event_Stepped("Stepped", "time", "step");
+
+static Reflection::SignalDesc<RunService, void(float)> event_Heartbeat("Heartbeat", "step");
+
+// FUNCTION: WEBSERVICE 0x10054320
+void RunService::endRunThread(bool join)
+{
+	stopRequested = true;
+	stateChangedCondition.notify_all();
+
+	if (join) {
+		runThread->join();
+	}
+}
+
+// FUNCTION: WEBSERVICE 0x100543b0
+void RunService::onAncestorChanged(const AncestorChanged& event)
+{
+	if (getParent() == NULL) {
+		endRunThread(false);
+	}
+}
+
+// FUNCTION: WEBSERVICE 0x10054cb0
+void RunService::runProc(boost::shared_ptr<DataModel> dataModel)
+{
+	double desiredTime = getRealTime();
+
+	while (true) {
+		const double timeLeft = desiredTime - getRealTime();
+
+		{
+			boost::mutex::scoped_lock lock(viewMutex);
+
+			for (Views::iterator iter = views.begin(); iter != views.end(); ++iter) {
+				iter->first->AdjustThrottle(timeLeft);
+			}
+		}
+
+		const double waitTime = std::max(0.0, timeLeft);
+
+		boost::xtime xt;
+
+		boost::xtime_get(&xt, boost::TIME_UTC);
+		xt.nsec += (int) (waitTime * 1000000000.0);
+
+		bool signalled;
+
+		{
+			boost::mutex::scoped_lock lock(runMutex);
+
+			signalled = stateChangedCondition.timed_wait(lock, xt);
+		}
+
+		if (!signalled) {
+			boost::xtime xt;
+
+			boost::xtime_get(&xt, boost::TIME_UTC);
+			xt.sec += 1;
+
+			boost::mutex::scoped_lock lock(runMutex);
+
+			if (invalidRunViewCount != 0) {
+				runViewsDoneCondition.timed_wait(lock, xt);
+			}
+		}
+
+		if (timeLeft <= 0.0) {
+			desiredTime = getRealTime();
+		}
+
+		{
+			DataModel::Lock lock(dataModel);
+
+			if (stopRequested) {
+				break;
+			}
+
+			dataModel->step(framePeriod);
+		}
+
+		desiredTime += framePeriod;
+	}
+}
+
+// FUNCTION: WEBSERVICE 0x10054fd0
+void RunService::invalidateRunViews()
+{
+	boost::mutex::scoped_lock lock(viewMutex);
+
+	if (invalidRunViewCount != 0) {
+		return;
+	}
+
+	invalidRunViewCount = views.size();
+
+	if (invalidRunViewCount > 0) {
+		for (Views::iterator iter = views.begin(); iter != views.end(); ++iter) {
+			iter->first->InvalidateRunView();
+			iter->second = false;
+		}
+
+		runViewsDoneCondition.notify_all();
+	}
+}
+
+// FUNCTION: WEBSERVICE 0x10055380
+RunService::~RunService()
+{
+}
+
+// FUNCTION: WEBSERVICE 0x10056950
+RunService::RunService()
+	: runState(RS_NORMAL), stopRequested(false), framePeriod(1.0f / 30.0f), runThread(NULL), invalidRunViewCount(0),
+	  runDisabled(false)
+{
+	setName("Run Service");
+}
+
+// STUB: WEBSERVICE 0x100573e0
+void RunService::start()
+{
+	STUB(0x100573e0);
+}
+
+// FUNCTION: WEBSERVICE 0x100577f0
+void RunService::raiseHeartbeat(float time, float step)
+{
+	Notifier<RunService, Heartbeat>::raise(Heartbeat(time, step));
+	event_Heartbeat.fire(this, step);
+}
+
+// FUNCTION: WEBSERVICE 0x10057860
+void RunService::raiseStepped(float time, float step)
+{
+	Notifier<RunService, Stepped>::raise(Stepped(time, step));
+	event_Stepped.fire(this, time, step);
+}
+
+} // namespace RBX
+
+template class RBX::FactoryProduct<RBX::RunService, RBX::Instance, RBX::sRunService>;
+template class RBX::Reflection::Described<
+	RBX::RunService,
+	RBX::sRunService,
+	RBX::FactoryProduct<RBX::RunService, RBX::Instance, RBX::sRunService> >;
+template class RBX::DescribedCreatable<RBX::RunService, RBX::Instance, RBX::sRunService>;

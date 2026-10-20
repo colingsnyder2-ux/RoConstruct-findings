@@ -1,133 +1,510 @@
 // from server: 100% by auto
-// roc 2010-06 00560b80  unit: G3D::_internal::DialogTemplate  size: 497 bytes
-// Make this compile to the exact bytes below, then: roc check 2010-06 00560b80
-//
-// 00560b80  6aff                 push -1
-// 00560b82  68d7179900           push 0x9917d7
-// 00560b87  64a100000000         mov eax, dword ptr fs:[0]
-// 00560b8d  50                   push eax
-// 00560b8e  64892500000000       mov dword ptr fs:[0], esp
-// 00560b95  81ecb4000000         sub esp, 0xb4
-// 00560b9b  53                   push ebx
-// 00560b9c  56                   push esi
-// 00560b9d  8bf1                 mov esi, ecx
-// 00560b9f  57                   push edi
-// 00560ba0  8d4c2434             lea ecx, [esp + 0x34]
-// 00560ba4  c6461c01             mov byte ptr [esi + 0x1c], 1
-// 00560ba8  ff1504a49e00         call dword ptr [0x9ea404]
-// 00560bae  33db                 xor ebx, ebx
-// 00560bb0  8d4c246c             lea ecx, [esp + 0x6c]
-// 00560bb4  899c24c8000000       mov dword ptr [esp + 0xc8], ebx
-// 00560bbb  ff1504a49e00         call dword ptr [0x9ea404]
-// 00560bc1  8d4c2450             lea ecx, [esp + 0x50]
-// 00560bc5  c68424c800000001     mov byte ptr [esp + 0xc8], 1
-// 00560bcd  ff1504a49e00         call dword ptr [0x9ea404]
-// 00560bd3  8d4c2418             lea ecx, [esp + 0x18]
-// 00560bd7  c68424c800000002     mov byte ptr [esp + 0xc8], 2
-// 00560bdf  ff1504a49e00         call dword ptr [0x9ea404]
-// 00560be5  895c2410             mov dword ptr [esp + 0x10], ebx
-// 00560be9  895c2414             mov dword ptr [esp + 0x14], ebx
-// 00560bed  895c240c             mov dword ptr [esp + 0xc], ebx
-// 00560bf1  8d442450             lea eax, [esp + 0x50]
-// 00560bf5  50                   push eax
-// 00560bf6  8d4c2470             lea ecx, [esp + 0x70]
-// 00560bfa  51                   push ecx
-// 00560bfb  8d542414             lea edx, [esp + 0x14]
-// 00560bff  52                   push edx
-// 00560c00  8d442440             lea eax, [esp + 0x40]
-// 00560c04  50                   push eax
-// 00560c05  56                   push esi
-// 00560c06  c68424dc00000004     mov byte ptr [esp + 0xdc], 4
-// 00560c0e  e85d97ffff           call 0x55a370
-// 00560c13  6a2f                 push 0x2f
-// 00560c15  8d4c2424             lea ecx, [esp + 0x24]
-// 00560c19  51                   push ecx
-// 00560c1a  8d9424c0000000       lea edx, [esp + 0xc0]
-// 00560c21  52                   push edx
-// 00560c22  e82969ffff           call 0x557550
-// 00560c27  50                   push eax
-// 00560c28  8d442458             lea eax, [esp + 0x58]
-// 00560c2c  50                   push eax
-// 00560c2d  8d8c24b0000000       lea ecx, [esp + 0xb0]
-// 00560c34  51                   push ecx
-// 00560c35  c68424f400000005     mov byte ptr [esp + 0xf4], 5
-// 00560c3d  ff1504a79e00         call dword ptr [0x9ea704]
-// 00560c43  83c42c               add esp, 0x2c
-// 00560c46  50                   push eax
-// 00560c47  8d4c241c             lea ecx, [esp + 0x1c]
-// 00560c4b  c68424cc00000006     mov byte ptr [esp + 0xcc], 6
-// 00560c53  ff1568a49e00         call dword ptr [0x9ea468]
-// 00560c59  8d8c2488000000       lea ecx, [esp + 0x88]
-// 00560c60  c68424c800000005     mov byte ptr [esp + 0xc8], 5
-// 00560c68  ff1500a49e00         call dword ptr [0x9ea400]
-// 00560c6e  8d8c24a4000000       lea ecx, [esp + 0xa4]
-// 00560c75  c68424c800000004     mov byte ptr [esp + 0xc8], 4
-// 00560c7d  ff1500a49e00         call dword ptr [0x9ea400]
-// 00560c83  8d542418             lea edx, [esp + 0x18]
-// 00560c87  52                   push edx
-// 00560c88  e86395ffff           call 0x55a1f0
-// 00560c8d  83c404               add esp, 4
-// 00560c90  84c0                 test al, al
-// 00560c92  750d                 jne 0x560ca1
-// 00560c94  8d442418             lea eax, [esp + 0x18]
-// 00560c98  50                   push eax
-// 00560c99  e8329cffff           call 0x55a8d0
-// 00560c9e  83c404               add esp, 4
-// 00560ca1  b9600da200           mov ecx, 0xa20d60
-// 00560ca6  395e44               cmp dword ptr [esi + 0x44], ebx
-// 00560ca9  7705                 ja 0x560cb0
-// 00560cab  b9bcc8a100           mov ecx, 0xa1c8bc
-// 00560cb0  837e1810             cmp dword ptr [esi + 0x18], 0x10
-// 00560cb4  7205                 jb 0x560cbb
-// 00560cb6  8b4604               mov eax, dword ptr [esi + 4]
-// 00560cb9  eb03                 jmp 0x560cbe
-// 00560cbb  8d4604               lea eax, [esi + 4]
-// 00560cbe  51                   push ecx
-// 00560cbf  50                   push eax
-// 00560cc0  ff1520a79e00         call dword ptr [0x9ea720]
-// 00560cc6  8b4e30               mov ecx, dword ptr [esi + 0x30]
-// 00560cc9  8bf8                 mov edi, eax
-// 00560ccb  8b4634               mov eax, dword ptr [esi + 0x34]
-// 00560cce  014644               add dword ptr [esi + 0x44], eax
-// 00560cd1  57                   push edi
-// 00560cd2  6a01                 push 1
-// 00560cd4  50                   push eax
-// 00560cd5  51                   push ecx
-// 00560cd6  ff1588a79e00         call dword ptr [0x9ea788]
-// 00560cdc  83c418               add esp, 0x18
-// 00560cdf  389c24d0000000       cmp byte ptr [esp + 0xd0], bl
-// 00560ce6  740a                 je 0x560cf2
-// 00560ce8  57                   push edi
-// 00560ce9  ff1558a89e00         call dword ptr [0x9ea858]
-// 00560cef  83c404               add esp, 4
-// 00560cf2  57                   push edi
-// 00560cf3  ff1580a79e00         call dword ptr [0x9ea780]
-// 00560cf9  83c404               add esp, 4
-// 00560cfc  8d4c240c             lea ecx, [esp + 0xc]
-// 00560d00  c68424c800000003     mov byte ptr [esp + 0xc8], 3
-// 00560d08  e893d4feff           call 0x54e1a0
-// 00560d0d  8d4c2418             lea ecx, [esp + 0x18]
-// 00560d11  c68424c800000002     mov byte ptr [esp + 0xc8], 2
-// 00560d19  ff1500a49e00         call dword ptr [0x9ea400]
-// 00560d1f  8d4c2450             lea ecx, [esp + 0x50]
-// 00560d23  c68424c800000001     mov byte ptr [esp + 0xc8], 1
-// 00560d2b  ff1500a49e00         call dword ptr [0x9ea400]
-// 00560d31  8d4c246c             lea ecx, [esp + 0x6c]
-// 00560d35  889c24c8000000       mov byte ptr [esp + 0xc8], bl
-// 00560d3c  ff1500a49e00         call dword ptr [0x9ea400]
-// 00560d42  8d4c2434             lea ecx, [esp + 0x34]
-// 00560d46  c78424c8000000ffffffff mov dword ptr [esp + 0xc8], 0xffffffff
-// 00560d51  ff1500a49e00         call dword ptr [0x9ea400]
-// 00560d57  8b8c24c0000000       mov ecx, dword ptr [esp + 0xc0]
-// 00560d5e  5f                   pop edi
-// 00560d5f  5e                   pop esi
-// 00560d60  5b                   pop ebx
-// 00560d61  64890d00000000       mov dword ptr fs:[0], ecx
-// 00560d68  81c4c0000000         add esp, 0xc0
-// 00560d6e  c20400               ret 4
-// library g3d-6.09/G3Dcpp\BinaryOutput.cpp (function ?commit@BinaryOutput@G3D@@QAEX_N@Z)
-
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD
 // roc-lib: g3d-6.09 G3Dcpp/BinaryOutput.cpp
+
+// Candidate translation unit (score above; library headers required).
+/**
+ @file BinaryOutput.cpp
+ 
+ @author Morgan McGuire, graphics3d.com
+ 
+ @created 2002-02-20
+ @edited  2005-06-07
+ */
+
+#include "G3D/platform.h"
+#include "G3D/BinaryOutput.h"
+#include "G3D/fileutils.h"
+#include "G3D/stringutils.h"
+#include "G3D/Array.h"
+#ifdef G3D_WIN32
+  #include "../zlib/zlib.h"
+#else
+  #include <zlib.h>
+#endif
+
+// Largest memory buffer that the system will use for writing to
+// disk.  After this (or if the system runs out of memory)
+// chunks of the file will be dumped to disk.
+//
+// Currently 400 MB
+#define MAX_BINARYOUTPUT_BUFFER_SIZE 400000000
+
+namespace G3D {
+
+void BinaryOutput::writeBool8(const std::vector<bool>& out, int n) {
+    for (int i = 0; i < n; ++i) {
+        writeBool8(out[i]);
+    }
+}
+
+
+void BinaryOutput::writeBool8(const Array<bool>& out, int n) {
+    writeBool8(out.getCArray(), n);
+}
+
+#define IMPLEMENT_WRITER(ucase, lcase)\
+void BinaryOutput::write##ucase(const std::vector<lcase>& out, int n) {\
+    write##ucase(&out[0], n);\
+}\
+\
+\
+void BinaryOutput::write##ucase(const Array<lcase>& out, int n) {\
+    write##ucase(out.getCArray(), n);\
+}
+
+
+IMPLEMENT_WRITER(UInt8,   uint8)
+IMPLEMENT_WRITER(Int8,    int8)
+IMPLEMENT_WRITER(UInt16,  uint16)
+IMPLEMENT_WRITER(Int16,   int16)
+IMPLEMENT_WRITER(UInt32,  uint32)
+IMPLEMENT_WRITER(Int32,   int32)
+IMPLEMENT_WRITER(UInt64,  uint64)
+IMPLEMENT_WRITER(Int64,   int64)
+IMPLEMENT_WRITER(Float32, float32)
+IMPLEMENT_WRITER(Float64, float64)    
+
+#undef IMPLEMENT_WRITER
+
+// Data structures that are one byte per element can be 
+// directly copied, regardles of endian-ness.
+#define IMPLEMENT_WRITER(ucase, lcase)\
+void BinaryOutput::write##ucase(const lcase* out, int n) {\
+    if (sizeof(lcase) == 1) {\
+        writeBytes((void*)out, n);\
+    } else {\
+        for (int i = 0; i < n ; ++i) {\
+            write##ucase(out[i]);\
+        }\
+    }\
+}
+
+IMPLEMENT_WRITER(Bool8,   bool)
+IMPLEMENT_WRITER(UInt8,   uint8)
+IMPLEMENT_WRITER(Int8,    int8)
+
+#undef IMPLEMENT_WRITER
+
+
+#define IMPLEMENT_WRITER(ucase, lcase)\
+void BinaryOutput::write##ucase(const lcase* out, int n) {\
+    if (swapBytes) {\
+        for (int i = 0; i < n; ++i) {\
+            write##ucase(out[i]);\
+        }\
+    } else {\
+        writeBytes((const void*)out, sizeof(lcase) * n);\
+    }\
+}
+
+
+IMPLEMENT_WRITER(UInt16,  uint16)
+IMPLEMENT_WRITER(Int16,   int16)
+IMPLEMENT_WRITER(UInt32,  uint32)
+IMPLEMENT_WRITER(Int32,   int32)
+IMPLEMENT_WRITER(UInt64,  uint64)
+IMPLEMENT_WRITER(Int64,   int64)
+IMPLEMENT_WRITER(Float32, float32)
+IMPLEMENT_WRITER(Float64, float64)    
+
+#undef IMPLEMENT_WRITER
+
+
+void BinaryOutput::reallocBuffer(size_t bytes, size_t oldBufferLen) {
+    //debugPrintf("reallocBuffer(%d, %d)\n", bytes, oldBufferLen);
+
+    size_t newBufferLen = (int)(bufferLen * 1.5) + 100;
+    uint8* newBuffer = NULL;
+
+    if ((filename == "<memory>") || (newBufferLen < MAX_BINARYOUTPUT_BUFFER_SIZE)) {
+        // We're either writing to memory (in which case we *have* to try and allocate)
+        // or we've been asked to allocate a reasonable size buffer.
+
+        //debugPrintf("  realloc(%d)\n", newBufferLen); 
+        newBuffer = (uint8*)System::realloc(buffer, newBufferLen);
+        if (newBuffer != NULL) {
+            maxBufferLen = newBufferLen;
+        }
+    }
+
+    if ((newBuffer == NULL) && (bytes > 0)) {
+        // Realloc failed; we're probably out of memory.  Back out
+        // the entire call and try to dump some data to disk.
+        bufferLen = oldBufferLen;
+        reserveBytesWhenOutOfMemory(bytes);
+    } else {
+        buffer = newBuffer;
+        debugAssert(isValidHeapPointer(buffer));
+    }
+}
+
+
+void BinaryOutput::reserveBytesWhenOutOfMemory(size_t bytes) {
+    if (filename == "<memory>") {
+        throw "Out of memory while writing to memory in BinaryOutput (no RAM left).";
+    } else if ((int)bytes > (int)maxBufferLen) {
+        throw "Out of memory while writing to disk in BinaryOutput (could not create a large enough buffer).";
+    } else {
+
+        // Dump the contents to disk.  In order to enable seeking backwards, 
+        // we keep the last 10 MB in memory.
+        int writeBytes = bufferLen - 10 * 1024 * 1024;
+
+        if (writeBytes < bufferLen / 3) {
+            // We're going to write less than 1/3 of the file;
+            // give up and just write the whole thing.
+            writeBytes = bufferLen;
+        }
+        debugAssert(writeBytes > 0);
+
+        //debugPrintf("Writing %d bytes to disk\n", writeBytes);
+
+        const char* mode = (alreadyWritten > 0) ? "ab" : "wb";
+        FILE* file = fopen(filename.c_str(), mode);
+        debugAssert(file);
+
+        size_t count = fwrite(buffer, 1, writeBytes, file);
+        debugAssert((int)count == writeBytes); (void)count;
+
+        fclose(file);
+        file = NULL;
+
+        // Record that we saved this data.
+        alreadyWritten += writeBytes;
+        bufferLen -= writeBytes;
+        pos -= writeBytes;
+
+        debugAssert(bufferLen < maxBufferLen);
+        debugAssert(bufferLen >= 0);
+        debugAssert(pos >= 0);
+        debugAssert(pos <= bufferLen);
+
+        // Shift the unwritten data back appropriately in the buffer.
+        debugAssert(isValidHeapPointer(buffer));
+        System::memcpy(buffer, buffer + writeBytes, bufferLen);
+        debugAssert(isValidHeapPointer(buffer));
+
+        // *now* we allocate bytes (there should presumably be enough 
+        // space in the buffer; if not, we'll come back through this 
+        // code and dump the last 10MB to disk as well.  Note that the 
+        // bytes > maxBufferLen case above would already have triggered
+        // if this call couldn't succeed. 
+        reserveBytes(bytes);
+    }
+}
+
+
+BinaryOutput::BinaryOutput() {
+    alreadyWritten = 0;
+    swapBytes = false;
+    pos       = 0;
+    filename  = "<memory>";
+    buffer = NULL;
+    bufferLen = 0;
+    maxBufferLen = 0;
+    beginEndBits = 0;
+    bitString = 0;
+    bitPos = 0;
+    committed = false;
+}
+
+
+BinaryOutput::BinaryOutput(
+    const std::string&  filename,
+    G3DEndian           fileEndian) {
+
+    pos = 0;
+    alreadyWritten = 0;
+    setEndian(fileEndian);
+    this->filename = filename;
+    buffer = NULL;
+    bufferLen = 0;
+    maxBufferLen = 0;
+    beginEndBits = 0;
+    bitString = 0;
+    bitPos = 0;
+    committed = false;
+}
+
+
+void BinaryOutput::reset() {
+    debugAssert(beginEndBits == 0);
+    alwaysAssertM(filename == "<memory>", 
+        "Can only reset a BinaryOutput that writes to memory.");
+
+    // Do not reallocate, just clear the size of the buffer.
+    pos = 0;
+    alreadyWritten = 0;
+    bufferLen = 0;
+    beginEndBits = 0;
+    bitString = 0;
+    bitPos = 0;
+    committed = false;
+}
+
+
+BinaryOutput::~BinaryOutput() {
+    debugAssert((buffer == NULL) || isValidHeapPointer(buffer));
+    System::free(buffer);
+    buffer = NULL;
+    bufferLen = 0;
+    maxBufferLen = 0;
+}
+
+
+void BinaryOutput::setEndian(G3DEndian fileEndian) {
+    swapBytes = (fileEndian != System::machineEndian());
+}
+
+
+void BinaryOutput::compress() {
+    if (alreadyWritten > 0) {
+        throw "Cannot compress huge files (part of this file has already been written to disk).";
+    }
+
+    // Old buffer size
+    int L = bufferLen;
+    uint8* convert = (uint8*)&L;
+
+    // Zlib requires the output buffer to be this big
+    int newSize = iCeil(bufferLen * 1.01) + 12;
+    uint8* temp = (uint8*)System::malloc(newSize);
+    int result = compress2(temp, (unsigned long*)&newSize, buffer, bufferLen, 9); 
+
+    debugAssert(result == Z_OK); (void)result;
+
+    // Write the header
+    if (swapBytes) {
+        buffer[0] = convert[3];
+        buffer[1] = convert[2];
+        buffer[2] = convert[1];
+        buffer[3] = convert[0];
+    } else {
+        buffer[0] = convert[0];
+        buffer[1] = convert[1];
+        buffer[2] = convert[2];
+        buffer[3] = convert[3];
+    }
+
+    // Write the data
+    if (newSize + 4 > maxBufferLen) {
+        maxBufferLen = newSize + 4;
+        buffer = (uint8*)System::realloc(buffer, maxBufferLen);
+    }
+    bufferLen = newSize + 4;
+    System::memcpy(buffer + 4, temp, newSize);
+    pos = bufferLen;
+
+    System::free(temp);
+}
+
+
+void BinaryOutput::commit(bool flush) {
+    debugAssertM(! committed, "Cannot commit twice");
+    committed = true;
+    debugAssertM(beginEndBits == 0, "Missing endBits before commit");
+
+    // Make sure the directory exists.
+    std::string root, base, ext, path;
+    Array<std::string> pathArray;
+    parseFilename(filename, root, pathArray, base, ext); 
+
+    path = root + stringJoin(pathArray, '/');
+    if (! fileExists(path)) {
+        createDirectory(path);
+    }
+
+    const char* mode = (alreadyWritten > 0) ? "ab" : "wb";
+
+    FILE* file = fopen(filename.c_str(), mode);
+    debugAssertM(file, 
+                 std::string("Could not open '") + filename + "'");
+
+    alreadyWritten += bufferLen;
+
+    fwrite(buffer, bufferLen, 1, file);
+    if (flush) {
+        fflush(file);
+    }
+    fclose(file);
+    file = NULL;
+}
+
+
+void BinaryOutput::commit(
+    uint8*                  out) {
+    debugAssertM(! committed, "Cannot commit twice");
+    committed = true;
+
+    System::memcpy(out, buffer, bufferLen);
+}
+
+
+void BinaryOutput::writeUInt16(uint16 u) {
+    reserveBytes(2);
+
+    uint8* convert = (uint8*)&u;
+
+    if (swapBytes) {
+        buffer[pos]     = convert[1];
+        buffer[pos + 1] = convert[0];
+    } else {
+        *(uint16*)(buffer + pos) = u;
+    }
+
+    pos += 2;
+}
+
+
+void BinaryOutput::writeUInt32(uint32 u) {
+    reserveBytes(4);
+
+    uint8* convert = (uint8*)&u;
+
+    debugAssert(beginEndBits == 0);
+
+    if (swapBytes) {
+        buffer[pos]     = convert[3];
+        buffer[pos + 1] = convert[2];
+        buffer[pos + 2] = convert[1];
+        buffer[pos + 3] = convert[0];
+    } else {
+        *(uint32*)(buffer + pos) = u;
+    }
+
+    pos += 4;
+}
+
+
+void BinaryOutput::writeUInt64(uint64 u) {
+    reserveBytes(8);
+
+    uint8* convert = (uint8*)&u;
+
+    if (swapBytes) {
+        buffer[pos]     = convert[7];
+        buffer[pos + 1] = convert[6];
+        buffer[pos + 2] = convert[5];
+        buffer[pos + 3] = convert[4];
+        buffer[pos + 4] = convert[3];
+        buffer[pos + 5] = convert[2];
+        buffer[pos + 6] = convert[1];
+        buffer[pos + 7] = convert[0];
+    } else {
+        *(uint64*)(buffer + pos) = u;
+    }
+
+    pos += 8;
+}
+
+
+void BinaryOutput::writeString(const char* s) {
+    // +1 is because strlen doesn't count the null
+    int len = strlen(s) + 1;
+
+    debugAssert(beginEndBits == 0);
+    reserveBytes(len);
+    System::memcpy(buffer + pos, s, len);
+    pos += len;
+}
+
+
+void BinaryOutput::writeStringEven(const char* s) {
+    // +1 is because strlen doesn't count the null
+    int len = strlen(s) + 1;
+
+    reserveBytes(len);
+    System::memcpy(buffer + pos, s, len);
+    pos += len;
+
+    // Pad with another NULL
+    if ((len % 2) == 1) {
+        writeUInt8(0);
+    }
+}
+
+
+void BinaryOutput::writeString32(const char* s) {
+    writeUInt32(strlen(s) + 1);
+    writeString(s);
+}
+
+
+void BinaryOutput::writeVector4(const Vector4& v) {
+    writeFloat32(v.x);
+    writeFloat32(v.y);
+    writeFloat32(v.z);
+    writeFloat32(v.w);
+}
+
+
+void BinaryOutput::writeVector3(const Vector3& v) {
+    writeFloat32(v.x);
+    writeFloat32(v.y);
+    writeFloat32(v.z);
+}
+
+
+void BinaryOutput::writeVector2(const Vector2& v) {
+    writeFloat32(v.x);
+    writeFloat32(v.y);
+}
+
+
+void BinaryOutput::writeColor4(const Color4& v) {
+    writeFloat32(v.r);
+    writeFloat32(v.g);
+    writeFloat32(v.b);
+    writeFloat32(v.a);
+}
+
+
+void BinaryOutput::writeColor3(const Color3& v) {
+    writeFloat32(v.r);
+    writeFloat32(v.g);
+    writeFloat32(v.b);
+}
+
+
+void BinaryOutput::beginBits() {
+    debugAssertM(beginEndBits == 0, "Already in beginBits...endBits");
+    bitString = 0x00;
+    bitPos = 0;
+    beginEndBits = 1;
+}
+
+
+void BinaryOutput::writeBits(uint32 value, int numBits) {
+
+    while (numBits > 0) {
+        // Extract the current bit of value and
+        // insert it into the current byte
+        bitString |= (value & 1) << bitPos;
+        ++bitPos;
+        value = value >> 1;
+        --numBits;
+
+        if (bitPos > 7) {
+            // We've reached the end of this byte
+            writeUInt8(bitString);
+            bitString = 0x00;
+            bitPos = 0;
+        }
+    }
+}
+
+
+void BinaryOutput::endBits() {
+    debugAssertM(beginEndBits == 1, "Not in beginBits...endBits");
+    if (bitPos > 0) {
+        writeUInt8(bitString);
+    }
+    bitString = 0;
+    bitPos = 0;
+    beginEndBits = 0;
+}
+
+}

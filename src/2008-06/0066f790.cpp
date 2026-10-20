@@ -1,38 +1,277 @@
-// roc 2008-06 0066f790  unit: RBX::AssemblyStage  size: 103 bytes
-// Make this compile to the exact bytes below, then: roc check 2008-06 0066f790
-//
-// 0066f790  6aff                 push -1
-// 0066f792  6843c77d00           push 0x7dc743
-// 0066f797  64a100000000         mov eax, dword ptr fs:[0]
-// 0066f79d  50                   push eax
-// 0066f79e  64892500000000       mov dword ptr fs:[0], esp
-// 0066f7a5  51                   push ecx
-// 0066f7a6  56                   push esi
-// 0066f7a7  8bf1                 mov esi, ecx
-// 0066f7a9  89742404             mov dword ptr [esp + 4], esi
-// 0066f7ad  c706a4d18400         mov dword ptr [esi], 0x84d1a4
-// 0066f7b3  8d4e30               lea ecx, [esi + 0x30]
-// 0066f7b6  c744241001000000     mov dword ptr [esp + 0x10], 1
-// 0066f7be  e86dbafdff           call 0x64b230
-// 0066f7c3  8d4e10               lea ecx, [esi + 0x10]
-// 0066f7c6  c644241000           mov byte ptr [esp + 0x10], 0
-// 0066f7cb  e860bafdff           call 0x64b230
-// 0066f7d0  8b4e08               mov ecx, dword ptr [esi + 8]
-// 0066f7d3  c7442410ffffffff     mov dword ptr [esp + 0x10], 0xffffffff
-// 0066f7db  5e                   pop esi
-// 0066f7dc  85c9                 test ecx, ecx
-// 0066f7de  7408                 je 0x66f7e8
-// 0066f7e0  8b01                 mov eax, dword ptr [ecx]
-// 0066f7e2  8b10                 mov edx, dword ptr [eax]
-// 0066f7e4  6a01                 push 1
-// 0066f7e6  ffd2                 call edx
-// 0066f7e8  8b4c2404             mov ecx, dword ptr [esp + 4]
-// 0066f7ec  64890d00000000       mov dword ptr fs:[0], ecx
-// 0066f7f3  83c410               add esp, 0x10
-// 0066f7f6  c3                   ret 
-// library rbxgs/v8world\JointStage.cpp (function ??1JointStage@RBX@@UAE@XZ)
-
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
 // roc-lib: rbxgs v8world/JointStage.cpp
+
+// Candidate translation unit (score above; library headers required).
+#include "v8world/JointStage.h"
+#include "v8world/Edge.h"
+#include "v8world/ClumpStage.h"
+#include "v8world/Primitive.h"
+#include "v8world/Joint.h"
+
+namespace RBX
+{
+	// TODO: determine which of these functions need to go into the header
+#pragma warning (push)
+#pragma warning (disable : 4355) // warning C4355: 'this' : used in base member initializer list
+	JointStage::JointStage(IStage* upstream, World* world)
+		: IWorldStage(upstream, new ClumpStage(this, world), world)
+	{
+	}
+#pragma warning (pop)
+
+	JointStage::~JointStage()
+	{
+	}
+
+	// TODO: move to header
+	__forceinline bool JointStage::edgeHasPrimitivesDownstream(Edge* e)
+	{
+		Primitive* p0 = e->getPrimitive(0);
+		Primitive* p1 = e->getPrimitive(1);
+		return
+			p0 &&
+			p1 &&
+			p0->inPipeline() &&
+			p1->inPipeline() &&
+			p0->downstreamOfStage(this) &&
+			p1->downstreamOfStage(this);
+	}
+
+	ClumpStage* JointStage::getClumpStage()
+	{
+		IStage* downstream = getDownstream();
+		return rbx_static_cast<ClumpStage*>(downstream);
+	}
+
+	void JointStage::moveEdgeToDownstream(Edge* e)
+	{
+		RBXASSERT(edgeHasPrimitivesDownstream(e));
+		getClumpStage()->onEdgeAdded(e);
+	}
+
+	void JointStage::removeEdgeFromDownstream(Edge* e)
+	{
+		RBXASSERT(edgeHasPrimitivesDownstream(e));
+		getClumpStage()->onEdgeRemoving(e);
+	}
+
+	bool JointStage::pairInMap(Joint* j, Primitive* p)
+	{
+		typedef std::multimap<Primitive*, Joint*>::const_iterator Iterator;
+
+		for (Iterator it = jointMap.lower_bound(p); it != jointMap.upper_bound(p); it++)
+		{
+			if (it->second == j)
+				return true;
+		}
+
+		return false;
+	}
+
+	void JointStage::insertToMap(Joint* j, Primitive* p)
+	{
+		if (!p)
+			return;
+
+		RBXASSERT(!pairInMap(j, p));
+		jointMap.insert(std::pair<Primitive*, Joint*>(p, j));
+	}
+
+	void JointStage::removeFromMap(Joint* j, Primitive* p)
+	{
+		typedef std::multimap<Primitive*, Joint*>::iterator Iterator;
+
+		if (!p)
+			return;
+
+		RBXASSERT(pairInMap(j, p));
+
+		for (Iterator it = jointMap.lower_bound(p); it != jointMap.upper_bound(p); it++)
+		{
+			if (it->second == j) 
+			{
+				jointMap.erase(it);
+				RBXASSERT(!pairInMap(j, p));
+				return;
+			}
+		}
+
+		RBXASSERT(0);
+	}
+
+	// NOTE: might be in headers
+	bool JointStage::jointInList(Joint* j)
+	{
+		return incompleteJoints.find(j) != incompleteJoints.end();
+	}
+
+	void JointStage::removeFromList(Joint* j)
+	{
+		size_t count = incompleteJoints.erase(j);
+		RBXASSERT(count == 1);
+	}
+
+	void JointStage::insertToList(Joint* j)
+	{
+		bool result = incompleteJoints.insert(j).second;
+		RBXASSERT(result);
+	}
+
+	void JointStage::moveJointToDownstream(Joint* j)
+	{
+		RBXASSERT(!jointInList(j));
+		RBXASSERT(!pairInMap(j, j->getPrimitive(0)));
+		RBXASSERT(!pairInMap(j, j->getPrimitive(1)));
+
+		moveEdgeToDownstream(j);
+	}
+
+	void JointStage::removeJointFromDownstream(Joint* j)
+	{
+		RBXASSERT(!jointInList(j));
+		RBXASSERT(!pairInMap(j, j->getPrimitive(0)));
+		RBXASSERT(!pairInMap(j, j->getPrimitive(1)));
+
+		removeEdgeFromDownstream(j);
+	}
+
+	void JointStage::onJointPrimitiveNulling(Joint* j, Primitive* nulling)
+	{
+		RBXASSERT(nulling);
+		RBXASSERT(j->links(nulling));
+		RBXASSERT(j->downstreamOfStage(this) == edgeHasPrimitivesDownstream(j));
+		RBXASSERT(j->downstreamOfStage(this) != jointInList(j));
+
+		if (j->downstreamOfStage(this))
+		{
+			RBXASSERT(!pairInMap(j, nulling));
+			removeJointFromDownstream(j);
+			insertToList(j);
+			insertToMap(j, j->otherPrimitive(nulling));
+		}
+		else
+		{
+			RBXASSERT(j->inStage(this));
+			removeFromMap(j, nulling);
+		}
+
+		RBXASSERT(!pairInMap(j, nulling));
+	}
+
+	void JointStage::onJointPrimitiveSet(Joint* j, Primitive* p)
+	{
+		RBXASSERT(p);
+		RBXASSERT(j->links(p));
+		RBXASSERT(!pairInMap(j, p));
+		RBXASSERT(j->inStage(this));
+		RBXASSERT(jointInList(j));
+
+		if (edgeHasPrimitivesDownstream(j))
+		{
+			RBXASSERT(!pairInMap(j, p));
+			RBXASSERT(pairInMap(j, j->otherPrimitive(p)));
+
+			removeFromList(j);
+			removeFromMap(j, j->otherPrimitive(p));
+			moveJointToDownstream(j);
+		}
+		else
+		{
+			insertToMap(j, p);
+		}
+	}
+
+	void JointStage::onEdgeAdded(Edge* e)
+	{
+		e->putInPipeline(this);
+
+		if (edgeHasPrimitivesDownstream(e))
+		{
+			moveEdgeToDownstream(e);
+		}
+		else
+		{
+			RBXASSERT(e->getEdgeType() == Edge::JOINT);
+			Joint* j = rbx_static_cast<Joint*>(e);
+			insertToList(j);
+			insertToMap(j, j->getPrimitive(0));
+			insertToMap(j, j->getPrimitive(1));
+		}
+	}
+
+	void JointStage::onEdgeRemoving(Edge* e)
+	{
+		if (e->downstreamOfStage(this))
+		{
+			RBXASSERT(edgeHasPrimitivesDownstream(e));
+			removeEdgeFromDownstream(e);
+			e->removeFromPipeline(this);
+		}
+		else
+		{
+			RBXASSERT(e->getEdgeType() == Edge::JOINT);
+			Joint* j = rbx_static_cast<Joint*>(e);
+			removeFromList(j);
+			removeFromMap(j, j->getPrimitive(0));
+			removeFromMap(j, j->getPrimitive(1));
+			e->removeFromPipeline(this);
+		}
+	}
+
+	void JointStage::onPrimitiveAdded(Primitive* p)
+	{
+		typedef std::multimap<Primitive*, Joint*>::const_iterator Iterator;
+
+		p->putInPipeline(this);
+		getClumpStage()->onPrimitiveAdded(p);
+
+		std::vector<Joint*> jointsToPush;
+
+		for (Iterator it = jointMap.lower_bound(p); it != jointMap.upper_bound(p); it++)
+		{
+			if (edgeHasPrimitivesDownstream(it->second))
+				jointsToPush.push_back(it->second);
+		}
+
+		for (size_t i = 0; i < jointsToPush.size(); i++)
+		{
+			Joint* current = jointsToPush[i];
+
+			removeFromList(current);
+			removeFromMap(current, p);
+			removeFromMap(current, current->otherPrimitive(p));
+
+			moveJointToDownstream(current);
+		}
+	}
+
+	void JointStage::onPrimitiveRemoving(Primitive* p)
+	{
+		std::vector<Joint*> tempJointList;
+
+		Joint* j;
+		for (j = p->getFirstJoint(); j != NULL; j = p->getNextJoint(j))
+		{
+			if (j->getJointType() != Joint::ANCHOR_JOINT && j->getJointType() != Joint::FREE_JOINT)
+			{
+				RBXASSERT(edgeHasPrimitivesDownstream(j));
+				tempJointList.push_back(j);
+			}
+		}
+
+		for (size_t i = 0; i < tempJointList.size(); ++i) // why loop here???
+		{
+			removeJointFromDownstream(j);
+			insertToList(j);
+			insertToMap(j, p);
+
+			Primitive* otherP = j->otherPrimitive(p);
+			insertToMap(j, otherP);
+		}
+
+		getClumpStage()->onPrimitiveRemoving(p);
+		p->removeFromPipeline(this);
+	}
+}

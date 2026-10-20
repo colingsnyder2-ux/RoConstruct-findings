@@ -1,48 +1,192 @@
 // from server: 100% by auto
-// roc 2009-06 0045b1b0  unit: CRobloxWnd::PartDropTarget  size: 133 bytes
-// Make this compile to the exact bytes below, then: roc check 2009-06 0045b1b0
-//
-// 0045b1b0  6aff                 push -1
-// 0045b1b2  6880248500           push 0x852480
-// 0045b1b7  64a100000000         mov eax, dword ptr fs:[0]
-// 0045b1bd  50                   push eax
-// 0045b1be  64892500000000       mov dword ptr fs:[0], esp
-// 0045b1c5  51                   push ecx
-// 0045b1c6  56                   push esi
-// 0045b1c7  8bf1                 mov esi, ecx
-// 0045b1c9  89742404             mov dword ptr [esp + 4], esi
-// 0045b1cd  8b4638               mov eax, dword ptr [esi + 0x38]
-// 0045b1d0  c744241000000000     mov dword ptr [esp + 0x10], 0
-// 0045b1d8  85c0                 test eax, eax
-// 0045b1da  742c                 je 0x45b208
-// 0045b1dc  83c004               add eax, 4
-// 0045b1df  50                   push eax
-// 0045b1e0  ff15a4e18900         call dword ptr [0x89e1a4]
-// 0045b1e6  85c0                 test eax, eax
-// 0045b1e8  7517                 jne 0x45b201
-// 0045b1ea  8b4e38               mov ecx, dword ptr [esi + 0x38]
-// 0045b1ed  e88e9bfeff           call 0x444d80
-// 0045b1f2  8b4e38               mov ecx, dword ptr [esi + 0x38]
-// 0045b1f5  85c9                 test ecx, ecx
-// 0045b1f7  7408                 je 0x45b201
-// 0045b1f9  8b01                 mov eax, dword ptr [ecx]
-// 0045b1fb  8b10                 mov edx, dword ptr [eax]
-// 0045b1fd  6a01                 push 1
-// 0045b1ff  ffd2                 call edx
-// 0045b201  c7463800000000       mov dword ptr [esi + 0x38], 0
-// 0045b208  c70628a18b00         mov dword ptr [esi], 0x8ba128
-// 0045b20e  8d4e04               lea ecx, [esi + 4]
-// 0045b211  c744241001000000     mov dword ptr [esp + 0x10], 1
-// 0045b219  ff15c4e48900         call dword ptr [0x89e4c4]
-// 0045b21f  8b4c2408             mov ecx, dword ptr [esp + 8]
-// 0045b223  c70610a18b00         mov dword ptr [esi], 0x8ba110
-// 0045b229  5e                   pop esi
-// 0045b22a  64890d00000000       mov dword ptr fs:[0], ecx
-// 0045b231  83c410               add esp, 0x10
-// 0045b234  c3                   ret 
-// library g3d-6.09/GLG3Dcpp\TextureManager.cpp (function ??1Entry@?$Table@VTextureArgs@TextureManager@G3D@@V?$ReferenceCountedPointer@VTexture@G3D@@@3@@G3D@@QAE@XZ)
-
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD
 // roc-lib: g3d-6.09 GLG3Dcpp/TextureManager.cpp
+
+// Candidate translation unit (score above; library headers required).
+/**
+  @file TextureManager.cpp
+
+  @maintainer Morgan McGuire, matrix@graphics3d.com
+  @cite by Morgan McGuire & Peter Sibley
+
+  @created 2003-11-25
+  @edited  2005-02-24
+*/
+
+#include "GLG3D/TextureManager.h"
+
+namespace G3D {
+
+TextureManager::TextureManager(size_t _sizeHint) : size(0), sizeHint(_sizeHint) {}
+
+unsigned int TextureManager::TextureArgs::hashCode() const {
+    return 
+        (int)format +
+        (int)wrap + 
+        (int)interpolate * 1027 +
+        (int)dimension +
+        ::hashCode(filename) +
+        (int)brighten;
+}
+
+
+bool TextureManager::TextureArgs::operator==(const TextureArgs& other) const {
+    return 
+        (format         == other.format)        &&
+        (wrap           == other.wrap)          &&
+        (interpolate    == other.interpolate)   &&
+        (filename       == other.filename)      &&
+        (dimension      == other.dimension )    && 
+        (brighten       == other.brighten);
+}
+
+
+void TextureManager::setMemorySizeHint(size_t _sizeHint){
+    debugAssert(_sizeHint > 0 && _sizeHint < 1000*1024*1024);
+    sizeHint = _sizeHint;
+}
+
+    
+size_t TextureManager::memorySizeHint() const {
+    return sizeHint;
+}
+    
+
+size_t TextureManager::sizeInMemory() const {
+    return size;
+}
+
+TextureRef TextureManager::findTexture(
+									   const std::string&          filename, 
+									   const TextureFormat*        desiredFormat,    
+									   Texture::WrapMode           wrap,  
+									   Texture::InterpolateMode    interpolate ,  
+									   Texture::Dimension          dimension,  
+									   double                      brighten)
+{
+	TextureArgs args(desiredFormat);
+
+	args.filename       = filename;
+	args.wrap           = wrap;
+	args.interpolate    = interpolate;
+	args.dimension      = dimension;
+	args.brighten       = brighten;
+
+	TextureRef texture;
+	cache.get(args, texture);
+	return texture;
+}
+
+
+bool TextureManager::cacheTexture(
+					 TextureRef					texture,
+					 const std::string&          filename, 
+					 const TextureFormat*        desiredFormat,    
+					 Texture::WrapMode           wrap,  
+					 Texture::InterpolateMode    interpolate ,  
+					 Texture::Dimension          dimension,  
+					 double                      brighten)
+{
+	TextureArgs args(desiredFormat);
+
+	args.filename       = filename;
+	args.wrap           = wrap;
+	args.interpolate    = interpolate;
+	args.dimension      = dimension;
+	args.brighten       = brighten;
+
+	if (cache.containsKey(args))
+		return false;
+	cache.set(args, texture);
+	size += texture->sizeInMemory();
+	checkCacheSize();
+	return true;
+}
+
+TextureRef TextureManager::loadTexture(
+    const std::string&          filename, 
+    const TextureFormat*        desiredFormat,    
+    Texture::WrapMode           wrap,  
+    Texture::InterpolateMode    interpolate ,  
+    Texture::Dimension          dimension,  
+    double                      brighten) {
+
+    TextureArgs args(desiredFormat);
+
+    args.filename       = filename;
+    args.wrap           = wrap;
+    args.interpolate    = interpolate;
+    args.dimension      = dimension;
+    args.brighten       = brighten;
+
+    if (! cache.containsKey(args)) {
+        // Not in the cache, so we must load it        
+        TextureRef texture = NULL;
+
+        texture = Texture::fromFile(
+            filename,
+            desiredFormat,  
+            wrap,
+            interpolate,
+            dimension,
+            brighten);
+
+        alwaysAssertM(texture != NULL, std::string("Texture not found ") + filename); 
+        cache.set(args, texture);
+        size += texture->sizeInMemory();
+        checkCacheSize();
+    }
+    return cache[args];
+}
+
+void TextureManager::checkCacheSize() {
+    if (size <= sizeHint) {
+        return;
+    }
+
+    Array <TextureArgs> staleEntry;
+    getStaleEntries(staleEntry);
+    
+    //To avoid thrashing we we remove entries in a random order
+    staleEntry.randomize();
+
+    while ((size > sizeHint) && (staleEntry.size() > 0)) {
+        size -= cache[staleEntry.last()]->sizeInMemory();
+        debugPrintf(" CheckCacheSize is removing %s   \n" , staleEntry.last().filename.c_str());
+        cache.remove(staleEntry.pop());
+    }
+}
+
+void TextureManager::emptyCache() {
+    cache.clear();
+    size = 0;
+}
+
+
+void TextureManager::trimCache() {
+    Array <TextureArgs> staleEntry;
+    getStaleEntries(staleEntry);
+    for (int i = 0; i < staleEntry.length(); ++i) {
+        size -= cache[staleEntry[i]]->sizeInMemory();
+            debugPrintf("TrimCache is removing %s   \n" , staleEntry.last().filename.c_str());
+        cache.remove(staleEntry[i]);
+    }
+}
+
+
+void TextureManager::getStaleEntries(Array <TextureArgs>& staleEntry) {
+    Table <TextureArgs, TextureRef>::Iterator current   = cache.begin();
+    Table <TextureArgs, TextureRef>::Iterator end       = cache.end();
+    // We cannot modify the hash table while we iterate over it. 
+    // So we create a list of entries to be removed.
+    while (current != end) {
+        if (current->value.isLastReference()) {
+            staleEntry.append(current->key);
+        }
+        ++current;
+    }
+}
+
+}

@@ -1,65 +1,246 @@
-// roc 2007-03 005d87a0  unit: seg_005d0000  size: 161 bytes
-// Make this compile to the exact bytes below, then: roc check 2007-03 005d87a0
-//
-// 005d87a0  6aff                 push -1
-// 005d87a2  683bb87500           push 0x75b83b
-// 005d87a7  64a100000000         mov eax, dword ptr fs:[0]
-// 005d87ad  50                   push eax
-// 005d87ae  64892500000000       mov dword ptr fs:[0], esp
-// 005d87b5  51                   push ecx
-// 005d87b6  56                   push esi
-// 005d87b7  57                   push edi
-// 005d87b8  8bf9                 mov edi, ecx
-// 005d87ba  897c2408             mov dword ptr [esp + 8], edi
-// 005d87be  8b7710               mov esi, dword ptr [edi + 0x10]
-// 005d87c1  85f6                 test esi, esi
-// 005d87c3  c744241400000000     mov dword ptr [esp + 0x14], 0
-// 005d87cb  742a                 je 0x5d87f7
-// 005d87cd  8d4604               lea eax, [esi + 4]
-// 005d87d0  83c9ff               or ecx, 0xffffffff
-// 005d87d3  f00fc108             lock xadd dword ptr [eax], ecx
-// 005d87d7  751e                 jne 0x5d87f7
-// 005d87d9  8b16                 mov edx, dword ptr [esi]
-// 005d87db  8b4204               mov eax, dword ptr [edx + 4]
-// 005d87de  8bce                 mov ecx, esi
-// 005d87e0  ffd0                 call eax
-// 005d87e2  8d4e08               lea ecx, [esi + 8]
-// 005d87e5  83caff               or edx, 0xffffffff
-// 005d87e8  f00fc111             lock xadd dword ptr [ecx], edx
-// 005d87ec  7509                 jne 0x5d87f7
-// 005d87ee  8b06                 mov eax, dword ptr [esi]
-// 005d87f0  8b5008               mov edx, dword ptr [eax + 8]
-// 005d87f3  8bce                 mov ecx, esi
-// 005d87f5  ffd2                 call edx
-// 005d87f7  8b7708               mov esi, dword ptr [edi + 8]
-// 005d87fa  85f6                 test esi, esi
-// 005d87fc  c7442414ffffffff     mov dword ptr [esp + 0x14], 0xffffffff
-// 005d8804  742a                 je 0x5d8830
-// 005d8806  8d4604               lea eax, [esi + 4]
-// 005d8809  83c9ff               or ecx, 0xffffffff
-// 005d880c  f00fc108             lock xadd dword ptr [eax], ecx
-// 005d8810  751e                 jne 0x5d8830
-// 005d8812  8b16                 mov edx, dword ptr [esi]
-// 005d8814  8b4204               mov eax, dword ptr [edx + 4]
-// 005d8817  8bce                 mov ecx, esi
-// 005d8819  ffd0                 call eax
-// 005d881b  8d4e08               lea ecx, [esi + 8]
-// 005d881e  83caff               or edx, 0xffffffff
-// 005d8821  f00fc111             lock xadd dword ptr [ecx], edx
-// 005d8825  7509                 jne 0x5d8830
-// 005d8827  8b06                 mov eax, dword ptr [esi]
-// 005d8829  8b5008               mov edx, dword ptr [eax + 8]
-// 005d882c  8bce                 mov ecx, esi
-// 005d882e  ffd2                 call edx
-// 005d8830  8b4c240c             mov ecx, dword ptr [esp + 0xc]
-// 005d8834  5f                   pop edi
-// 005d8835  5e                   pop esi
-// 005d8836  64890d00000000       mov dword ptr fs:[0], ecx
-// 005d883d  83c410               add esp, 0x10
-// 005d8840  c3                   ret 
-// library rbxgs/tool\RunDragger.cpp (function ??1PartByLocalCharacter@RBX@@QAE@XZ)
-
 // roc-lang: cpp
 // roc-cl: 50727
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
 // roc-lib: rbxgs tool/RunDragger.cpp
+
+// Candidate translation unit (score above; library headers required).
+#include "tool/RunDragger.h"
+#include "tool/Dragger.h"
+#include "v8datamodel/PartInstance.h"
+#include "v8datamodel/Filters.h"
+#include "v8datamodel/Surfaces.h"
+#include "v8datamodel/MouseCommand.h"
+#include "v8datamodel/Workspace.h"
+#include "v8world/Primitive.h"
+#include "v8world/Contact.h"
+#include "v8world/ContactManager.h"
+
+namespace RBX
+{
+	void RunDragger::SnapInfo::updateSurfaceFromHit()
+	{
+		G3D::Vector3 hitInSnap = snap->getCoordinateFrame().pointToObjectSpace(hitWorld);
+		Extents snapExtents = snap->getExtentsLocal();
+
+		surface = snapExtents.closestFace(hitInSnap);
+	}
+
+	void RunDragger::SnapInfo::updateHitFromSurface(const G3D::Ray& mouseRay)
+	{
+		Extents snapExtents = snap->getExtentsLocal();
+		const G3D::CoordinateFrame& cframe = snap->getCoordinateFrame();
+
+		G3D::Ray rayInSnap = cframe.toObjectSpace(mouseRay);
+		G3D::Plane plane = snapExtents.getPlane(surface);
+		G3D::Vector3 hitInSnap;
+
+		if (Math::intersectRayPlane(rayInSnap, plane, hitInSnap))
+		{
+			hitWorld = cframe.pointToWorldSpace(hitInSnap);
+		}
+		else
+		{
+			RBXASSERT(0);
+			Math::intersectRayPlane(rayInSnap, plane, hitInSnap);
+		}
+	}
+
+	float RunDragger::SnapInfo::hitOutsideExtents()
+	{
+		Extents snapExtents = snap->getExtentsLocal();
+		G3D::Vector3 hitInSnap = snap->getCoordinateFrame().pointToObjectSpace(hitWorld);
+		G3D::Vector3 clipInSnap = hitInSnap.clamp(snapExtents.min(), snapExtents.max());
+
+		return (hitInSnap - clipInSnap).magnitude();
+	}
+
+	RunDragger::RunDragger()
+		: workspace(NULL),
+		  drag(NULL)
+	{
+	}
+
+	RunDragger::~RunDragger() {}
+
+	bool RunDragger::adjacent(Primitive* p0, Primitive* p1)
+	{
+		for (Contact* current = p0->getFirstContact(); current != NULL; current = p0->getNextContact(current))
+		{
+			if (current->otherPrimitive(p0) == p1)
+				return current->computeIsAdjacent(0.01f);
+		}
+
+		return false;
+	}
+
+	bool RunDragger::tooCloseToCamera()
+	{
+		return (drag->getCoordinateFrame().pointToWorldSpace(dragPointLocal) - mouseRay.origin).magnitude() < 6.0f;
+	}
+
+	void RunDragger::rotatePart(PartInstance* part)
+	{
+		RBXASSERT(part);
+
+		G3D::CoordinateFrame rotated = part->getCoordinateFrame();
+		Math::rotateMatrixAboutY90(rotated.rotation, 1);
+
+		part->setCoordinateFrame(rotated);
+	}
+
+	RunDragger::SnapInfo RunDragger::createSnapSurface(Primitive* snap, G3D::Array<NormalId>* ignore)
+	{
+		RBXASSERT(snap);
+
+		SnapInfo answer;
+		answer.snap = snap;
+
+		Extents snapExtents = snap->getExtentsLocal();
+		const G3D::CoordinateFrame& cframe = snap->getCoordinateFrame();
+		G3D::Ray rayInSnap = cframe.toObjectSpace(mouseRay);
+
+		float bestDistance = 0.0f;
+		bool found = false;
+
+		for (int i = 0; i < 6; i++)
+		{
+			NormalId id = (NormalId)i;
+
+			if (!ignore || ignore->find(id) == ignore->end())
+			{
+				G3D::Plane plane = snapExtents.getPlane(id);
+				if (plane.halfSpaceContainsFinite(rayInSnap.origin))
+				{
+					G3D::Vector3 hitInSnap;
+					if (Math::intersectRayPlane(rayInSnap, plane, hitInSnap))
+					{
+						G3D::Vector3 hitWorld = cframe.pointToWorldSpace(hitInSnap);
+						float distance = (mouseRay.origin - hitWorld).magnitude();
+						if (distance > bestDistance)
+						{
+							bestDistance = distance;
+							answer.surface = id;
+							found = true;
+							answer.hitWorld = hitWorld;
+						}
+					}
+				}
+			}
+		}
+		
+		return found ? answer : SnapInfo();
+	}
+
+	bool RunDragger::notTried(Primitive* check, const G3D::Array<Primitive*>& tried)
+	{
+		RBXASSERT(check != drag);
+		return check && tried.find(check) == tried.end();
+	}
+
+	RunDragger::SnapInfo RunDragger::bestProximatePart(const G3D::Array<Primitive*>& triedSnap, bool (Contact::* proximityTest)(float))
+	{
+		SnapInfo answer;
+
+		for (Contact* current = drag->getFirstContact(); current != NULL; current = drag->getNextContact(current))
+		{
+			if ((current->*proximityTest)(0.01f))
+			{
+				Primitive* otherPrimitive = current->otherPrimitive(drag);
+				if (notTried(otherPrimitive, triedSnap))
+				{
+					SnapInfo testInfo = createSnapSurface(otherPrimitive, NULL);
+					if (testInfo.snap && testInfo.hitOutsideExtents() < 1e+10)
+						answer = testInfo;
+				}
+			}
+		}
+
+		return answer;
+	}
+
+	void RunDragger::turnUpright(PartInstance* part)
+	{
+		RBXASSERT(part);
+
+		if (part->getSurfaces().isStandardPart())
+		{
+			G3D::CoordinateFrame dragCoord = part->getCoordinateFrame();
+			if (Math::getClosestObjectNormalId(G3D::Vector3::unitY(), dragCoord.rotation) != NORM_Y)
+			{
+				dragCoord.rotation = G3D::Matrix3::identity();
+				part->setCoordinateFrame(dragCoord);
+			}
+		}
+	}
+
+	void RunDragger::tiltPart(PartInstance* part, const G3D::CoordinateFrame& camera)
+	{
+		RBXASSERT(part);
+
+		G3D::CoordinateFrame dragCoord = part->getCoordinateFrame();
+		G3D::Vector3 axis = Math::getWorldNormal(Math::getClosestObjectNormalId(camera.rightVector(), dragCoord.rotation), dragCoord);
+		G3D::Matrix3 tiltM = G3D::Matrix3::fromAxisAngle(axis, G3D::halfPi());
+
+		dragCoord.rotation = tiltM * dragCoord.rotation;
+		part->setCoordinateFrame(dragCoord);
+	}
+
+	RunDragger::SnapInfo RunDragger::rayHitsPart(const G3D::Array<Primitive*>& triedSnap, bool forceAdjacent)
+	{
+		SnapInfo answer;
+		PartByLocalCharacter filter((Instance*)workspace);
+
+		if (PartInstance* mousePart = MouseCommand::getMousePart(mouseRay, workspace->getWorld()->getContactManager(), drag, &filter, answer.hitWorld, 2048.0f))
+		{
+			answer.snap = mousePart->getPrimitive();
+			if (notTried(answer.snap, triedSnap) && (!forceAdjacent || adjacent(answer.snap, drag)))
+			{
+				answer.updateSurfaceFromHit();
+				return answer;
+			}
+		}
+
+		return SnapInfo();
+	}
+
+	bool RunDragger::rayHitsCloserPart()
+	{
+		G3D::Array<Primitive*> ignoreNone;
+		SnapInfo answer = rayHitsPart(ignoreNone, false);
+
+		if (answer.snap && answer.snap != snapInfo.snap)
+		{
+			if ((answer.hitWorld - mouseRay.origin).magnitude() < (snapInfo.hitWorld - mouseRay.origin).magnitude())
+				return true;
+		}
+
+		return false;
+	}
+
+	void RunDragger::findSafeY()
+	{
+		if (workspace->getWorld()->getContactManager().intersectingOthers(drag, 0.01f))
+		{
+			PartInstance* part = PartInstance::fromPrimitive(drag);
+			G3D::Array<Primitive*> temp;
+			temp.push_back(part->getPrimitive());
+
+			G3D::Vector3 moved = Dragger::safeMoveNoDrop(temp, G3D::Vector3::zero(), workspace->getWorld()->getContactManager());
+			RBXASSERT(moved.x == 0.0f);
+			RBXASSERT(moved.y != 0.0f);
+
+			G3D::CoordinateFrame newC = drag->getCoordinateFrame();
+			newC.translation += moved;
+
+			dragPart.lock()->setCoordinateFrame(newC);
+		}
+	}
+
+	void RunDragger::findNoSnapPosition(const G3D::CoordinateFrame& original)
+	{
+		dragPart.lock()->setCoordinateFrame(original);
+		findSafeY();
+
+		RBXASSERT(!workspace->getWorld()->getContactManager().intersectingOthers(drag, 0.01f));
+	}
+}

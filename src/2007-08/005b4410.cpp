@@ -1,31 +1,126 @@
-// roc 2007-08 005b4410  unit: RBX::MotorJoint  size: 57 bytes
-// Make this compile to the exact bytes below, then: roc check 2007-08 005b4410
-//
-// 005b4410  56                   push esi
-// 005b4411  57                   push edi
-// 005b4412  8bf9                 mov edi, ecx
-// 005b4414  8d474c               lea eax, [edi + 0x4c]
-// 005b4417  50                   push eax
-// 005b4418  e83381ffff           call 0x5ac550
-// 005b441d  8bf0                 mov esi, eax
-// 005b441f  83c77c               add edi, 0x7c
-// 005b4422  57                   push edi
-// 005b4423  81ee4786c861         sub esi, 0x61c88647
-// 005b4429  e82281ffff           call 0x5ac550
-// 005b442e  8bce                 mov ecx, esi
-// 005b4430  8bd6                 mov edx, esi
-// 005b4432  c1e106               shl ecx, 6
-// 005b4435  c1ea02               shr edx, 2
-// 005b4438  83c408               add esp, 8
-// 005b443b  03ca                 add ecx, edx
-// 005b443d  8d8408b979379e       lea eax, [eax + ecx - 0x61c88647]
-// 005b4444  5f                   pop edi
-// 005b4445  33c6                 xor eax, esi
-// 005b4447  5e                   pop esi
-// 005b4448  c3                   ret 
-// library rbxgs/v8world\MotorJoint.cpp (function ?hashCode@MotorJoint@RBX@@QBEIXZ)
-
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
 // roc-lib: rbxgs v8world/MotorJoint.cpp
+
+// Candidate translation unit (score above; library headers required).
+#include "v8world/MotorJoint.h"
+#include "v8world/World.h"
+#include "v8world/Primitive.h"
+#include "v8world/Assembly.h"
+#include "util/Math.h"
+
+namespace RBX
+{
+	// TODO: check which of these belong in the header file
+
+	MotorJoint::MotorJoint()
+		: currentAngle(0.0f),
+		  link(new RevoluteLink()),
+		  maxVelocity(0.0f),
+		  desiredAngle(0.0f),
+		  polarity(1.0f)
+	{
+	}
+
+	MotorJoint::~MotorJoint()
+	{
+		delete link;
+	}
+
+	G3D::CoordinateFrame MotorJoint::getMeInOther(Primitive* me)
+	{
+		G3D::CoordinateFrame rotatedCoord0 = G3D::CoordinateFrame(
+			Math::rotateAboutZ(jointCoord0.rotation, currentAngle),
+			jointCoord0.translation);
+
+		G3D::CoordinateFrame p1InP0 = rotatedCoord0 * jointCoord1.inverse();
+		if (me == getPrimitive(1))
+		{
+			return p1InP0;
+		}
+		else
+		{
+			RBXASSERT(me == getPrimitive(0));
+			return p1InP0.inverse();
+		}
+	}
+
+	size_t MotorJoint::hashCode() const
+	{
+		const int magic = 1640531527;
+		size_t h;
+
+		h = (Math::hash(jointCoord0.translation) - magic);
+		h = (Math::hash(jointCoord1.translation) - magic + (h >> 2) + (h << 6)) ^ h;
+		return h;
+	}
+
+	void MotorJoint::setCurrentAngle(float value)
+	{
+		if (currentAngle != value)
+		{
+			currentAngle = value;
+			World* world = getWorld();
+			if (world)
+				world->onMotorAngleChanged(this);
+			setJointAngle(value);
+		}
+	}
+
+	void MotorJoint::setJointAngle(float value)
+	{
+		RBXASSERT(link);
+		if (polarity == -1)
+		{
+			RBXASSERT(0);
+
+			Primitive* p0 = getPrimitive(0);
+
+			G3D::CoordinateFrame oldParentCoord = p0->getCoordinateFrame();
+			link->setJointAngle(-value);
+			Assembly* assembly = getPrimitive(1)->getAssembly();
+			if (!assembly->getAnchored())
+			{
+				Primitive* mainPrim = assembly->getMainPrimitive();
+				G3D::CoordinateFrame newParentCoord = p0->getCoordinateFrame();
+				G3D::CoordinateFrame parentInRoot = mainPrim->getCoordinateFrame().toObjectSpace(newParentCoord);
+				G3D::CoordinateFrame newRoot = oldParentCoord * parentInRoot.inverse();
+				mainPrim->getBody()->setCoordinateFrame(newRoot);
+			}
+		}
+		else
+		{
+			link->setJointAngle(value);
+		}
+	}
+
+	bool MotorJoint::isAligned()
+	{
+		G3D::CoordinateFrame baseWorld = getPrimitive(0)->getCoordinateFrame() * jointCoord0;
+		G3D::CoordinateFrame otherBaseWorld = getPrimitive(1)->getCoordinateFrame() * jointCoord1;
+
+		if (Math::fuzzyEq(baseWorld.translation, otherBaseWorld.translation, 0.00001f))
+		{
+			if (Math::fuzzyEq(baseWorld.rotation.getColumn(2), otherBaseWorld.rotation.getColumn(2), 0.00001f))
+				return true;
+		}
+
+		return false;
+	}
+
+	void MotorJoint::stepUi(int uiStepId)
+	{
+		if (fabs(desiredAngle - currentAngle) < fabs(maxVelocity))
+		{
+			setCurrentAngle(desiredAngle);
+		}
+		else
+		{
+			if (fabs(maxVelocity) > 0.0f)
+				setCurrentAngle(currentAngle + fabs(maxVelocity));
+			else
+				setCurrentAngle(currentAngle - fabs(maxVelocity));
+		}
+	}
+}

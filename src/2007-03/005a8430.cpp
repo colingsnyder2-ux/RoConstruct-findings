@@ -1,26 +1,114 @@
-// roc 2007-03 005a8430  unit: seg_005a0000  size: 40 bytes
-// Make this compile to the exact bytes below, then: roc check 2007-03 005a8430
-//
-// 005a8430  51                   push ecx
-// 005a8431  56                   push esi
-// 005a8432  8bf1                 mov esi, ecx
-// 005a8434  8b06                 mov eax, dword ptr [esi]
-// 005a8436  85c0                 test eax, eax
-// 005a8438  741b                 je 0x5a8455
-// 005a843a  8d4c2404             lea ecx, [esp + 4]
-// 005a843e  51                   push ecx
-// 005a843f  83c00c               add eax, 0xc
-// 005a8442  50                   push eax
-// 005a8443  8974240c             mov dword ptr [esp + 0xc], esi
-// 005a8447  e824ffffff           call 0x5a8370
-// 005a844c  83c408               add esp, 8
-// 005a844f  c70600000000         mov dword ptr [esi], 0
-// 005a8455  5e                   pop esi
-// 005a8456  59                   pop ecx
-// 005a8457  c3                   ret 
-// library openrbx-client/App\v8world\Mechanism.cpp (function ?stopTracking@MechanismTracker@RBX@@AAEXXZ)
-
 // roc-lang: cpp
 // roc-cl: 50727
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
 // roc-lib: openrbx-client App/v8world/Mechanism.cpp
+
+// Candidate translation unit (score above; library headers required).
+#include "v8world/Mechanism.h"
+
+#include "decomp.h"
+#include "util/StlExtra.h"
+#include "v8world/Assembly2.h"
+#include "v8world/Primitive.h"
+
+#include <cstddef>
+
+namespace RBX {
+
+// FUNCTION: WEBSERVICE 0x1005ecd0
+Mechanism* MechanismTracker::getMechanism()
+{
+	return mechanism;
+}
+
+// FUNCTION: WEBSERVICE 0x10127280
+Mechanism* Mechanism::getMechanismFromPrimitive(const Primitive* primitive)
+{
+	if (primitive != NULL) {
+		Assembly* assembly = primitive->getAssembly();
+
+		if (assembly != NULL) {
+			return assembly->getMechanism();
+		}
+	}
+
+	return NULL;
+}
+
+// FUNCTION: WEBSERVICE 0x101272a0
+bool MechanismTracker::tracking()
+{
+	return mechanism ? true : false;
+}
+
+// FUNCTION: WEBSERVICE 0x101272b0
+void Mechanism::notifyMovingPrimitives()
+{
+	AssemblySet::iterator it;
+
+	for (it = assemblies.begin(); it != assemblies.end(); ++it) {
+		(*it)->notifyMoved();
+	}
+}
+
+// FUNCTION: WEBSERVICE 0x10127320
+void Mechanism::insertAssembly(Assembly* a)
+{
+	assemblies.insert(a);
+
+	a->setMechanism(this);
+}
+
+// FUNCTION: WEBSERVICE 0x10127350
+void Mechanism::removeAssembly(Assembly* a)
+{
+	assemblies.erase(a);
+
+	a->setMechanism(NULL);
+}
+
+// FUNCTION: WEBSERVICE 0x10127370
+void Mechanism::absorb(Mechanism* smaller)
+{
+	while (smaller->assemblies.size() != 0) {
+		Assembly* assembly = *smaller->assemblies.begin();
+
+		smaller->removeAssembly(assembly);
+
+		insertAssembly(assembly);
+	}
+}
+
+// FUNCTION: WEBSERVICE 0x101274c0
+void MechanismTracker::stopTracking()
+{
+	if (mechanism != NULL) {
+		fastRemoveShort(mechanism->trackers, this);
+
+		mechanism = NULL;
+	}
+}
+
+// FUNCTION: WEBSERVICE 0x101274f0
+void MechanismTracker::setMechanism(Mechanism* m)
+{
+	stopTracking();
+
+	if (m != NULL) {
+		m->trackers.push_back(this);
+
+		mechanism = m;
+	}
+}
+
+// FUNCTION: WEBSERVICE 0x10127540
+void MechanismTracker::transferTrackers(Mechanism* from, Mechanism* to)
+{
+	while (from->trackers.size() != 0) {
+		MechanismTracker* tracker = from->trackers.back();
+
+		tracker->setMechanism(to);
+	}
+}
+
+} // namespace RBX

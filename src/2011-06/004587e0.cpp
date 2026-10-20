@@ -1,17 +1,71 @@
-// roc 2011-06 004587e0  unit: RBX::Stats::H::?$TypedStatsItem  size: 19 bytes
-// Make this compile to the exact bytes below, then: roc check 2011-06 004587e0
-//
-// 004587e0  8b0d8061cd00         mov ecx, dword ptr [0xcd6180]
-// 004587e6  85c9                 test ecx, ecx
-// 004587e8  7406                 je 0x4587f0
-// 004587ea  8b01                 mov eax, dword ptr [ecx]
-// 004587ec  8b10                 mov edx, dword ptr [eax]
-// 004587ee  ffe2                 jmp edx
-// 004587f0  33c0                 xor eax, eax
-// 004587f2  c3                   ret 
-// library rbxgs/util\standardout.cpp (function ?current@Log@RBX@@SAPAV12@XZ)
-
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
 // roc-lib: rbxgs util/standardout.cpp
+
+// Candidate translation unit (score above; library headers required).
+#include "util/standardout.h"
+#include "util/Log.h"
+#include <G3D/format.h>
+
+namespace RBX
+{
+	void StandardOut::print(MessageType type, const char* format, ...)
+	{
+		va_list argsList;
+		va_start(argsList, format);
+		std::string message = G3D::vformat(format, argsList);
+		va_end(argsList);
+
+		if (Log::current())
+		{
+			if (type == MESSAGE_ERROR)
+				Log::current()->writeEntry(Log::Error, message.c_str());
+			else if (type == MESSAGE_WARNING)
+				Log::current()->writeEntry(Log::Warning, message.c_str());
+			else if (type == MESSAGE_INFO)
+				Log::current()->writeEntry(Log::Information, message.c_str());
+		}
+
+		if (Notifier<StandardOut, StandardOutMessage>::hasListeners())
+		{
+			boost::mutex::scoped_lock lock(sync);
+			if (Notifier<StandardOut, StandardOutMessage>::hasListeners())
+				Notifier<StandardOut, StandardOutMessage>::raise(StandardOutMessage(type, message.c_str()));
+		}
+	}
+
+	void StandardOut::print(MessageType type, const std::exception& exp)
+	{
+		print(type, exp.what());
+	}
+
+	void StandardOut::print_exception(const boost::function0<void>& f, MessageType type, bool rethrow)
+	{
+		try
+		{
+			f();
+		}
+		catch (std::exception& ex)
+		{
+			singleton()->print(type, ex);
+
+			if (rethrow)
+				throw;
+		}
+	}
+
+	boost::shared_ptr<StandardOut> StandardOut::singleton()
+	{
+		static boost::shared_ptr<StandardOut> standardOut(new StandardOut());
+		return standardOut;
+	}
+
+	StandardOut::StandardOut()
+	{
+	}
+
+	StandardOut::~StandardOut()
+	{
+	}
+}

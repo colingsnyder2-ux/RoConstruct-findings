@@ -1,62 +1,214 @@
-// roc 2007-03 004381a0  unit: seg_00430000  size: 133 bytes
-// Make this compile to the exact bytes below, then: roc check 2007-03 004381a0
-//
-// 004381a0  83ec10               sub esp, 0x10
-// 004381a3  8b410c               mov eax, dword ptr [ecx + 0xc]
-// 004381a6  394108               cmp dword ptr [ecx + 8], eax
-// 004381a9  55                   push ebp
-// 004381aa  8b2d44e97700         mov ebp, dword ptr [0x77e944]
-// 004381b0  56                   push esi
-// 004381b1  8d7104               lea esi, [ecx + 4]
-// 004381b4  894c240c             mov dword ptr [esp + 0xc], ecx
-// 004381b8  89442408             mov dword ptr [esp + 8], eax
-// 004381bc  7602                 jbe 0x4381c0
-// 004381be  ffd5                 call ebp
-// 004381c0  53                   push ebx
-// 004381c1  8b5e08               mov ebx, dword ptr [esi + 8]
-// 004381c4  395e04               cmp dword ptr [esi + 4], ebx
-// 004381c7  57                   push edi
-// 004381c8  7602                 jbe 0x4381cc
-// 004381ca  ffd5                 call ebp
-// 004381cc  8b7e04               mov edi, dword ptr [esi + 4]
-// 004381cf  3b7e08               cmp edi, dword ptr [esi + 8]
-// 004381d2  7602                 jbe 0x4381d6
-// 004381d4  ffd5                 call ebp
-// 004381d6  3bfb                 cmp edi, ebx
-// 004381d8  8b6c2424             mov ebp, dword ptr [esp + 0x24]
-// 004381dc  8bc6                 mov eax, esi
-// 004381de  897c241c             mov dword ptr [esp + 0x1c], edi
-// 004381e2  740b                 je 0x4381ef
-// 004381e4  392f                 cmp dword ptr [edi], ebp
-// 004381e6  7407                 je 0x4381ef
-// 004381e8  83c704               add edi, 4
-// 004381eb  3bfb                 cmp edi, ebx
-// 004381ed  75f5                 jne 0x4381e4
-// 004381ef  85c0                 test eax, eax
-// 004381f1  7404                 je 0x4381f7
-// 004381f3  3bc6                 cmp eax, esi
-// 004381f5  7406                 je 0x4381fd
-// 004381f7  ff1544e97700         call dword ptr [0x77e944]
-// 004381fd  3b7c2410             cmp edi, dword ptr [esp + 0x10]
-// 00438201  5f                   pop edi
-// 00438202  5b                   pop ebx
-// 00438203  7518                 jne 0x43821d
-// 00438205  8d44241c             lea eax, [esp + 0x1c]
-// 00438209  50                   push eax
-// 0043820a  8bce                 mov ecx, esi
-// 0043820c  e81ff21c00           call 0x607430
-// 00438211  8b4c240c             mov ecx, dword ptr [esp + 0xc]
-// 00438215  8b11                 mov edx, dword ptr [ecx]
-// 00438217  8b4204               mov eax, dword ptr [edx + 4]
-// 0043821a  55                   push ebp
-// 0043821b  ffd0                 call eax
-// 0043821d  5e                   pop esi
-// 0043821e  5d                   pop ebp
-// 0043821f  83c410               add esp, 0x10
-// 00438222  c20400               ret 4
-// library rbxgs/v8datamodel\UserController.cpp (function ?addListener@?$Notifier@VRunService@RBX@@VHeartbeat@2@@RBX@@QBEXPAV?$Listener@VRunService@RBX@@VHeartbeat@2@@2@@Z)
-
 // roc-lang: cpp
 // roc-cl: 50727
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
 // roc-lib: rbxgs v8datamodel/UserController.cpp
+
+// Candidate translation unit (score above; library headers required).
+#include "v8datamodel/PVInstance.h"
+#include "v8datamodel/UserController.h"
+#include "util/Math.h"
+#include <G3D/Vector3.h>
+
+namespace RBX
+{
+
+#pragma warning (push)
+#pragma warning (disable : 4355) // warning C4355: 'this' : used in base member initializer list
+
+	ControllerService::ControllerService()
+		: playerController(NULL),
+		  hardwareDevice(NULL),
+		  keyboardPrimaryController(new KeyboardPrimaryController(this)),
+		  keyboardSecondaryController(new KeyboardSecondaryController(this)),
+		  nullController(new NullController)
+	{
+	}
+
+#pragma warning (pop)
+
+	G3D::ReferenceCountedPointer<Controller> ControllerService::getController(Controller::ControllerType type, const PVInstance* controlledInstance)
+	{
+		switch (type)
+		{
+		case Controller::PLAYER_CONTROLLER:
+			return new PlayerController(this, controlledInstance);
+
+		case Controller::PRIMARY_CONTROLLER:
+			return keyboardPrimaryController;
+
+		case Controller::SECONDARY_CONTROLLER:
+			return keyboardSecondaryController;
+
+		case Controller::AI_CHASE_CONTROLLER:
+			return new AIChaseController(controlledInstance);
+
+		case Controller::AI_FLEE_CONTROLLER:
+			return new AIFleeController(controlledInstance);
+
+		default:
+			return nullController;
+		}
+	}
+
+	AIController::AIController(const PVInstance* controlledInstance)
+		: SteppingController(controlledInstance),
+		  retargetTime(0.0f)
+	{
+		for (int i = 0; i < Controller::NUM_INPUT_TYPES; i++)
+		{
+			buffer[i] = 0.0f;
+		}
+
+		buffer[Controller::CONSTANT_INPUT] = 1.0f;
+	}
+
+	AIController::~AIController() {}
+
+	float AIController::getValue(Controller::InputType inputType) const
+	{
+		return buffer[inputType];
+	}
+
+	void AIController::chaseTarget(const G3D::Vector3& localChasePoint)
+	{
+		float chaseAngle = atan2f(-localChasePoint.x, -localChasePoint.z);
+		float leftInput, rightInput;
+
+		if (chaseAngle > Math::pi() * 144.0f/360.0f)
+		{
+			leftInput = -0.9f;
+			rightInput = 0.9f;
+		}
+		else if (chaseAngle < Math::pi() * -144.0f/360.0f)
+		{
+			leftInput = 0.9f;
+			rightInput = -0.9f;
+		}
+		else if (chaseAngle > Math::pi() * 54.0/360.0)
+		{
+			leftInput = 0.0f;
+			rightInput = 0.9f;
+		}
+		else if (chaseAngle < Math::pi() * -54.0/360.0)
+		{
+			leftInput = 0.9f;
+			rightInput = 0.0f;
+		}
+		else
+		{
+			leftInput = 0.9f;
+			rightInput = 0.9f;
+		}
+
+		buffer[Controller::LEFT_TRACK_INPUT] = leftInput;
+		buffer[Controller::RIGHT_TRACK_INPUT] = rightInput;
+		buffer[Controller::RIGHT_LEFT_INPUT] = chaseAngle * (1.0f/Math::pi());
+		buffer[Controller::BACK_FORWARD_INPUT] = localChasePoint.z < 0.0f ? 0.9f : 0.0f;
+	}
+
+	G3D::Vector3 AIController::getLocalTargetPosition() const
+	{
+		G3D::Vector3 result;
+
+		boost::shared_ptr<const PVInstance> lockPV = controlledInstance.lock();
+		boost::shared_ptr<const PVInstance> lockTarget = target.lock();
+
+		RBXASSERT(lockPV);
+
+		if (lockPV && lockTarget)
+		{
+			G3D::CoordinateFrame controlledCoord = lockPV->getLocation();
+			G3D::Vector3 targetLoc = lockTarget->getLocation().translation;
+
+			result = controlledCoord.pointToObjectSpace(targetLoc);
+		}
+		
+		return result;
+	}
+
+	void AIController::updateTarget(Controller::ControllerType excludeType, float time)
+	{
+		if (time < retargetTime)
+			return;
+
+		retargetTime = time + G3D::uniformRandom(1.0f, 3.0f);
+
+		boost::shared_ptr<const PVInstance> pvLock = controlledInstance.lock();
+		if (!pvLock)
+			return;
+
+		const PVInstance* pvRoot = pvLock->getTypedRoot<PVInstance>();
+		if (!pvRoot)
+			return;
+
+		float bestDistance = 1e+20f;
+		G3D::CoordinateFrame controlledCoord = pvLock->getLocation();
+
+		for (size_t i = 0; i < pvRoot->numChildren(); i++)
+		{
+			const PVInstance* current = pvRoot->queryTypedChild<PVInstance>((int)i);
+
+			if (current && current != pvLock.get() && current->isChaseable() &&
+				current->getTopPVController()->getControllerType() != excludeType)
+			{
+				float distance = (current->getLocation().translation - controlledCoord.translation).magnitude();
+				if (distance < bestDistance)
+				{
+					bestDistance = distance;
+					target = shared_from(current);
+				}
+			}
+		}
+	}
+
+	void AIChaseController::updateBuffer(float time)
+	{
+		updateTarget(Controller::AI_CHASE_CONTROLLER, time);
+
+		if (!target.expired())
+		{
+			chaseTarget(getLocalTargetPosition());
+		}
+		else
+		{
+			buffer[Controller::LEFT_TRACK_INPUT] = -1.0f;
+			buffer[Controller::RIGHT_TRACK_INPUT] = 1.0f;
+			buffer[Controller::RIGHT_LEFT_INPUT] = 1.0f;
+		}
+	}
+
+	void AIFleeController::updateBuffer(float time)
+	{
+		updateTarget(Controller::AI_FLEE_CONTROLLER, time);
+
+		if (!target.expired())
+		{
+			chaseTarget(-getLocalTargetPosition());
+		}
+	}
+
+	SteppingController::SteppingController(const PVInstance* _controlledInstance)
+		: runService(shared_from(ServiceProvider::create<RunService>(_controlledInstance))),
+		  controlledInstance(shared_from(_controlledInstance))
+	{
+		Notifier<RunService, Heartbeat>::connect(runService, this);
+	}
+
+	SteppingController::~SteppingController()
+	{
+		Notifier<RunService, Heartbeat>::disconnect(runService, this);
+	}
+
+	PlayerController::PlayerController(ControllerService* _controllerService, const PVInstance* _controlledInstance)
+		: SteppingController(_controlledInstance),
+		  controllerService(shared_from(_controllerService)),
+		  stepsRotating(0)
+	{
+	}
+
+	const UserInputBase* PlayerController::getHardwareDevice() const
+	{
+		RBXASSERT(!controllerService.expired());
+		return controllerService.expired() ? NULL : controllerService.lock()->getHardwareDevice();
+	}
+}

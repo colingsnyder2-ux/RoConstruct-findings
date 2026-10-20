@@ -1,308 +1,650 @@
-// roc 2007-08 00732be0  unit: seg_00730000  size: 956 bytes
-// Make this compile to the exact bytes below, then: roc check 2007-08 00732be0
-//
-// 00732be0  83ec54               sub esp, 0x54
-// 00732be3  53                   push ebx
-// 00732be4  55                   push ebp
-// 00732be5  56                   push esi
-// 00732be6  57                   push edi
-// 00732be7  8b7c246c             mov edi, dword ptr [esp + 0x6c]
-// 00732beb  807f4c00             cmp byte ptr [edi + 0x4c], 0
-// 00732bef  8be9                 mov ebp, ecx
-// 00732bf1  8d4768               lea eax, [edi + 0x68]
-// 00732bf4  7503                 jne 0x732bf9
-// 00732bf6  8d4774               lea eax, [edi + 0x74]
-// 00732bf9  f6058cd08b0001       test byte ptr [0x8bd08c], 1
-// 00732c00  d900                 fld dword ptr [eax]
-// 00732c02  d95c241c             fstp dword ptr [esp + 0x1c]
-// 00732c06  d94004               fld dword ptr [eax + 4]
-// 00732c09  d95c2420             fstp dword ptr [esp + 0x20]
-// 00732c0d  d94008               fld dword ptr [eax + 8]
-// 00732c10  d95c2424             fstp dword ptr [esp + 0x24]
-// 00732c14  d944241c             fld dword ptr [esp + 0x1c]
-// 00732c18  d9542444             fst dword ptr [esp + 0x44]
-// 00732c1c  d9442420             fld dword ptr [esp + 0x20]
-// 00732c20  d9542448             fst dword ptr [esp + 0x48]
-// 00732c24  d9442424             fld dword ptr [esp + 0x24]
-// 00732c28  d954244c             fst dword ptr [esp + 0x4c]
-// 00732c2c  d9ee                 fldz 
-// 00732c2e  d9542450             fst dword ptr [esp + 0x50]
-// 00732c32  751d                 jne 0x732c51
-// 00732c34  830d8cd08b0001       or dword ptr [0x8bd08c], 1
-// 00732c3b  d91580d08b00         fst dword ptr [0x8bd080]
-// 00732c41  d91d84d08b00         fstp dword ptr [0x8bd084]
-// 00732c47  d9e8                 fld1 
-// 00732c49  d91d88d08b00         fstp dword ptr [0x8bd088]
-// 00732c4f  eb02                 jmp 0x732c53
-// 00732c51  ddd8                 fstp st(0)
-// 00732c53  d90588d08b00         fld dword ptr [0x8bd088]
-// 00732c59  d9c0                 fld st(0)
-// 00732c5b  d8cb                 fmul st(3)
-// 00732c5d  d9c2                 fld st(2)
-// 00732c5f  d90584d08b00         fld dword ptr [0x8bd084]
-// 00732c65  d9c0                 fld st(0)
-// 00732c67  deca                 fmulp st(2)
-// 00732c69  d9ca                 fxch st(2)
-// 00732c6b  dee1                 fsubrp st(1)
-// 00732c6d  d95c2428             fstp dword ptr [esp + 0x28]
-// 00732c71  d90580d08b00         fld dword ptr [0x8bd080]
-// 00732c77  d9c0                 fld st(0)
-// 00732c79  decc                 fmulp st(4)
-// 00732c7b  d9c5                 fld st(5)
-// 00732c7d  decb                 fmulp st(3)
-// 00732c7f  d9cb                 fxch st(3)
-// 00732c81  dee2                 fsubrp st(2)
-// 00732c83  d9c9                 fxch st(1)
-// 00732c85  d95c242c             fstp dword ptr [esp + 0x2c]
-// 00732c89  decb                 fmulp st(3)
-// 00732c8b  dec9                 fmulp st(1)
-// 00732c8d  dee9                 fsubp st(1)
-// 00732c8f  d95c2430             fstp dword ptr [esp + 0x30]
-// 00732c93  d944242c             fld dword ptr [esp + 0x2c]
-// 00732c97  d9442428             fld dword ptr [esp + 0x28]
-// 00732c9b  d9442430             fld dword ptr [esp + 0x30]
-// 00732c9f  d9c1                 fld st(1)
-// 00732ca1  deca                 fmulp st(2)
-// 00732ca3  d9c2                 fld st(2)
-// 00732ca5  decb                 fmulp st(3)
-// 00732ca7  d9c9                 fxch st(1)
-// 00732ca9  dec2                 faddp st(2)
-// 00732cab  dcc8                 fmul st(0), st(0)
-// 00732cad  dec1                 faddp st(1)
-// 00732caf  d95c246c             fstp dword ptr [esp + 0x6c]
-// 00732cb3  d944246c             fld dword ptr [esp + 0x6c]
-// 00732cb7  e850e1efff           call 0x630e0c
-// 00732cbc  d95c246c             fstp dword ptr [esp + 0x6c]
-// 00732cc0  d944246c             fld dword ptr [esp + 0x6c]
-// 00732cc4  d9e8                 fld1 
-// 00732cc6  def1                 fdivrp st(1)
-// 00732cc8  d95c246c             fstp dword ptr [esp + 0x6c]
-// 00732ccc  d9442428             fld dword ptr [esp + 0x28]
-// 00732cd0  d944246c             fld dword ptr [esp + 0x6c]
-// 00732cd4  d9c0                 fld st(0)
-// 00732cd6  deca                 fmulp st(2)
-// 00732cd8  d9c9                 fxch st(1)
-// 00732cda  d95c2438             fstp dword ptr [esp + 0x38]
-// 00732cde  d944242c             fld dword ptr [esp + 0x2c]
-// 00732ce2  d8c9                 fmul st(1)
-// 00732ce4  d95c243c             fstp dword ptr [esp + 0x3c]
-// 00732ce8  d84c2430             fmul dword ptr [esp + 0x30]
-// 00732cec  d95c2440             fstp dword ptr [esp + 0x40]
-// 00732cf0  d9442438             fld dword ptr [esp + 0x38]
-// 00732cf4  d9542454             fst dword ptr [esp + 0x54]
-// 00732cf8  d944243c             fld dword ptr [esp + 0x3c]
-// 00732cfc  d9542458             fst dword ptr [esp + 0x58]
-// 00732d00  d9442440             fld dword ptr [esp + 0x40]
-// 00732d04  d954245c             fst dword ptr [esp + 0x5c]
-// 00732d08  d9ee                 fldz 
-// 00732d0a  d95c2460             fstp dword ptr [esp + 0x60]
-// 00732d0e  d9c0                 fld st(0)
-// 00732d10  d9442420             fld dword ptr [esp + 0x20]
-// 00732d14  d9c0                 fld st(0)
-// 00732d16  deca                 fmulp st(2)
-// 00732d18  d9c3                 fld st(3)
-// 00732d1a  d9442424             fld dword ptr [esp + 0x24]
-// 00732d1e  d9c0                 fld st(0)
-// 00732d20  deca                 fmulp st(2)
-// 00732d22  d9cb                 fxch st(3)
-// 00732d24  dee1                 fsubrp st(1)
-// 00732d26  d95c2438             fstp dword ptr [esp + 0x38]
-// 00732d2a  d9c4                 fld st(4)
-// 00732d2c  deca                 fmulp st(2)
-// 00732d2e  d944241c             fld dword ptr [esp + 0x1c]
-// 00732d32  d9c0                 fld st(0)
-// 00732d34  decc                 fmulp st(4)
-// 00732d36  d9ca                 fxch st(2)
-// 00732d38  dee3                 fsubrp st(3)
-// 00732d3a  d9ca                 fxch st(2)
-// 00732d3c  d95c243c             fstp dword ptr [esp + 0x3c]
-// 00732d40  deca                 fmulp st(2)
-// 00732d42  deca                 fmulp st(2)
-// 00732d44  dee1                 fsubrp st(1)
-// 00732d46  d95c2440             fstp dword ptr [esp + 0x40]
-// 00732d4a  d9442438             fld dword ptr [esp + 0x38]
-// 00732d4e  d95c2428             fstp dword ptr [esp + 0x28]
-// 00732d52  d944243c             fld dword ptr [esp + 0x3c]
-// 00732d56  d95c242c             fstp dword ptr [esp + 0x2c]
-// 00732d5a  d9442440             fld dword ptr [esp + 0x40]
-// 00732d5e  d95c2430             fstp dword ptr [esp + 0x30]
-// 00732d62  d9ee                 fldz 
-// 00732d64  d95c2434             fstp dword ptr [esp + 0x34]
-// 00732d68  d905688b7e00         fld dword ptr [0x7e8b68]
-// 00732d6e  d85f78               fcomp dword ptr [edi + 0x78]
-// 00732d71  dfe0                 fnstsw ax
-// 00732d73  f6c405               test ah, 5
-// 00732d76  0f8a3b010000         jp 0x732eb7
-// 00732d7c  d94710               fld dword ptr [edi + 0x10]
-// 00732d7f  d9470c               fld dword ptr [edi + 0xc]
-// 00732d82  d94714               fld dword ptr [edi + 0x14]
-// 00732d85  d9c1                 fld st(1)
-// 00732d87  deca                 fmulp st(2)
-// 00732d89  d9c2                 fld st(2)
-// 00732d8b  decb                 fmulp st(3)
-// 00732d8d  d9c9                 fxch st(1)
-// 00732d8f  dec2                 faddp st(2)
-// 00732d91  dcc8                 fmul st(0), st(0)
-// 00732d93  dec1                 faddp st(1)
-// 00732d95  d95c246c             fstp dword ptr [esp + 0x6c]
-// 00732d99  d944246c             fld dword ptr [esp + 0x6c]
-// 00732d9d  e86ae0efff           call 0x630e0c
-// 00732da2  d95c246c             fstp dword ptr [esp + 0x6c]
-// 00732da6  d944246c             fld dword ptr [esp + 0x6c]
-// 00732daa  8b5c2468             mov ebx, dword ptr [esp + 0x68]
-// 00732dae  dcc8                 fmul st(0), st(0)
-// 00732db0  8bcb                 mov ecx, ebx
-// 00732db2  dc2d608b7e00         fsubr qword ptr [0x7e8b60]
-// 00732db8  d95c246c             fstp dword ptr [esp + 0x6c]
-// 00732dbc  d944246c             fld dword ptr [esp + 0x6c]
-// 00732dc0  d9542410             fst dword ptr [esp + 0x10]
-// 00732dc4  dc8b90080000         fmul qword ptr [ebx + 0x890]
-// 00732dca  d95c246c             fstp dword ptr [esp + 0x6c]
-// 00732dce  e8bd68d4ff           call 0x479690
-// 00732dd3  807f4c00             cmp byte ptr [edi + 0x4c], 0
-// 00732dd7  8d87b8000000         lea eax, [edi + 0xb8]
-// 00732ddd  7506                 jne 0x732de5
-// 00732ddf  8d8788000000         lea eax, [edi + 0x88]
-// 00732de5  50                   push eax
-// 00732de6  8bcb                 mov ecx, ebx
-// 00732de8  e8f316d4ff           call 0x4744e0
-// 00732ded  6a02                 push 2
-// 00732def  6a02                 push 2
-// 00732df1  6a00                 push 0
-// 00732df3  8bcb                 mov ecx, ebx
-// 00732df5  e87613d4ff           call 0x474170
-// 00732dfa  6a03                 push 3
-// 00732dfc  ff1540eb7700         call dword ptr [0x77eb40]
-// 00732e02  8b753c               mov esi, dword ptr [ebp + 0x3c]
-// 00732e05  83ee01               sub esi, 1
-// 00732e08  0f889a000000         js 0x732ea8
-// 00732e0e  8bde                 mov ebx, esi
-// 00732e10  c1e304               shl ebx, 4
-// 00732e13  8b4544               mov eax, dword ptr [ebp + 0x44]
-// 00732e16  d904b0               fld dword ptr [eax + esi*4]
-// 00732e19  8d04b0               lea eax, [eax + esi*4]
-// 00732e1c  d84c246c             fmul dword ptr [esp + 0x6c]
-// 00732e20  51                   push ecx
-// 00732e21  d95c241c             fstp dword ptr [esp + 0x1c]
-// 00732e25  d900                 fld dword ptr [eax]
-// 00732e27  d84c2414             fmul dword ptr [esp + 0x14]
-// 00732e2b  d95c2418             fstp dword ptr [esp + 0x18]
-// 00732e2f  d9442418             fld dword ptr [esp + 0x18]
-// 00732e33  d91c24               fstp dword ptr [esp]
-// 00732e36  ff15c4ea7700         call dword ptr [0x77eac4]
-// 00732e3c  6a00                 push 0
-// 00732e3e  ff157ceb7700         call dword ptr [0x77eb7c]
-// 00732e44  d94708               fld dword ptr [edi + 8]
-// 00732e47  d9442418             fld dword ptr [esp + 0x18]
-// 00732e4b  83ec0c               sub esp, 0xc
-// 00732e4e  d9c0                 fld st(0)
-// 00732e50  deca                 fmulp st(2)
-// 00732e52  d9c9                 fxch st(1)
-// 00732e54  d95c2424             fstp dword ptr [esp + 0x24]
-// 00732e58  d9442424             fld dword ptr [esp + 0x24]
-// 00732e5c  d95c2408             fstp dword ptr [esp + 8]
-// 00732e60  d94704               fld dword ptr [edi + 4]
-// 00732e63  d8c9                 fmul st(1)
-// 00732e65  d95c2424             fstp dword ptr [esp + 0x24]
-// 00732e69  d9442424             fld dword ptr [esp + 0x24]
-// 00732e6d  d95c2404             fstp dword ptr [esp + 4]
-// 00732e71  d80f                 fmul dword ptr [edi]
-// 00732e73  d95c2424             fstp dword ptr [esp + 0x24]
-// 00732e77  d9442424             fld dword ptr [esp + 0x24]
-// 00732e7b  d91c24               fstp dword ptr [esp]
-// 00732e7e  ff1570eb7700         call dword ptr [0x77eb70]
-// 00732e84  8b4d38               mov ecx, dword ptr [ebp + 0x38]
-// 00732e87  03cb                 add ecx, ebx
-// 00732e89  51                   push ecx
-// 00732e8a  ff15acea7700         call dword ptr [0x77eaac]
-// 00732e90  ff1584eb7700         call dword ptr [0x77eb84]
-// 00732e96  83ee01               sub esi, 1
-// 00732e99  83eb10               sub ebx, 0x10
-// 00732e9c  85f6                 test esi, esi
-// 00732e9e  0f8d6fffffff         jge 0x732e13
-// 00732ea4  8b5c2468             mov ebx, dword ptr [esp + 0x68]
-// 00732ea8  ff158ceb7700         call dword ptr [0x77eb8c]
-// 00732eae  8bcb                 mov ecx, ebx
-// 00732eb0  e81b68d4ff           call 0x4796d0
-// 00732eb5  eb04                 jmp 0x732ebb
-// 00732eb7  8b5c2468             mov ebx, dword ptr [esp + 0x68]
-// 00732ebb  51                   push ecx
-// 00732ebc  8bc4                 mov eax, esp
-// 00732ebe  c70000000000         mov dword ptr [eax], 0
-// 00732ec4  8b6d2c               mov ebp, dword ptr [ebp + 0x2c]
-// 00732ec7  85ed                 test ebp, ebp
-// 00732ec9  8964246c             mov dword ptr [esp + 0x6c], esp
-// 00732ecd  740c                 je 0x732edb
-// 00732ecf  8928                 mov dword ptr [eax], ebp
-// 00732ed1  83c504               add ebp, 4
-// 00732ed4  55                   push ebp
-// 00732ed5  ff15ecd27700         call dword ptr [0x77d2ec]
-// 00732edb  6a00                 push 0
-// 00732edd  8bcb                 mov ecx, ebx
-// 00732edf  e86c33d4ff           call 0x476250
-// 00732ee4  6a02                 push 2
-// 00732ee6  6a01                 push 1
-// 00732ee8  6a00                 push 0
-// 00732eea  8bcb                 mov ecx, ebx
-// 00732eec  e87f12d4ff           call 0x474170
-// 00732ef1  dd05d8067a00         fld qword ptr [0x7a06d8]
-// 00732ef7  83ec08               sub esp, 8
-// 00732efa  dd1c24               fstp qword ptr [esp]
-// 00732efd  6a02                 push 2
-// 00732eff  8bcb                 mov ecx, ebx
-// 00732f01  e8ca0dd4ff           call 0x473cd0
-// 00732f06  d9442420             fld dword ptr [esp + 0x20]
-// 00732f0a  dc0d40f37900         fmul qword ptr [0x79f340]
-// 00732f10  d95c2468             fstp dword ptr [esp + 0x68]
-// 00732f14  d9ee                 fldz 
-// 00732f16  d95c246c             fstp dword ptr [esp + 0x6c]
-// 00732f1a  d9442468             fld dword ptr [esp + 0x68]
-// 00732f1e  dc1de0fe7800         fcomp qword ptr [0x78fee0]
-// 00732f24  dfe0                 fnstsw ax
-// 00732f26  f6c441               test ah, 0x41
-// 00732f29  8d442468             lea eax, [esp + 0x68]
-// 00732f2d  7404                 je 0x732f33
-// 00732f2f  8d44246c             lea eax, [esp + 0x6c]
-// 00732f33  d900                 fld dword ptr [eax]
-// 00732f35  8d4c2468             lea ecx, [esp + 0x68]
-// 00732f39  d95c2468             fstp dword ptr [esp + 0x68]
-// 00732f3d  d9e8                 fld1 
-// 00732f3f  d954246c             fst dword ptr [esp + 0x6c]
-// 00732f43  d85c2468             fcomp dword ptr [esp + 0x68]
-// 00732f47  dfe0                 fnstsw ax
-// 00732f49  f6c441               test ah, 0x41
-// 00732f4c  7404                 je 0x732f52
-// 00732f4e  8d4c246c             lea ecx, [esp + 0x6c]
-// 00732f52  d907                 fld dword ptr [edi]
-// 00732f54  83ec10               sub esp, 0x10
-// 00732f57  8bc4                 mov eax, esp
-// 00732f59  d918                 fstp dword ptr [eax]
-// 00732f5b  89642428             mov dword ptr [esp + 0x28], esp
-// 00732f5f  d94704               fld dword ptr [edi + 4]
-// 00732f62  83ec08               sub esp, 8
-// 00732f65  d95804               fstp dword ptr [eax + 4]
-// 00732f68  8d54245c             lea edx, [esp + 0x5c]
-// 00732f6c  d94708               fld dword ptr [edi + 8]
-// 00732f6f  8d742440             lea esi, [esp + 0x40]
-// 00732f73  d95808               fstp dword ptr [eax + 8]
-// 00732f76  8d7c246c             lea edi, [esp + 0x6c]
-// 00732f7a  d901                 fld dword ptr [ecx]
-// 00732f7c  d9580c               fstp dword ptr [eax + 0xc]
-// 00732f7f  dd05588b7e00         fld qword ptr [0x7e8b58]
-// 00732f85  dd1c24               fstp qword ptr [esp]
-// 00732f88  52                   push edx
-// 00732f89  53                   push ebx
-// 00732f8a  e841efffff           call 0x731ed0
-// 00732f8f  83c420               add esp, 0x20
-// 00732f92  5f                   pop edi
-// 00732f93  5e                   pop esi
-// 00732f94  5d                   pop ebp
-// 00732f95  5b                   pop ebx
-// 00732f96  83c454               add esp, 0x54
-// 00732f99  c20800               ret 8
-// library rbxgs-g3d/GLG3Dcpp\Sky.cpp (function ?drawMoonAndStars@Sky@G3D@@AAEXPAVRenderDevice@2@ABVLightingParameters@2@@Z)
-
 // roc-lang: cpp
 // roc-cl: 50727
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
 // roc-lib: rbxgs-g3d GLG3Dcpp/Sky.cpp
+
+// Candidate translation unit (score above; library headers required).
+/** 
+  @file Sky.cpp
+
+  @author Morgan McGuire, matrix@graphics3d.com
+
+  @created 2002-10-04
+  @edited  2006-02-11
+  */
+
+#include "G3D/fileutils.h"
+#include "GLG3D/glcalls.h"
+#include "GLG3D/Sky.h"
+#include "GLG3D/LightingParameters.h"
+#include "G3D/BinaryInput.h"
+#include "G3D/g3dmath.h"
+#include "GLG3D/TextureFormat.h"
+#include "GLG3D/getOpenGLState.h"
+
+namespace G3D {
+
+#define SHORT_TO_FLOAT(x) ((2.0f*x+1.0f)*(1.0f/65535.0f))
+
+
+SkyRef Sky::fromCubeMap(
+    RenderDevice*                       rd,
+    TextureRef                          _cubeMap,
+    const std::string&                  directory,
+    bool                                _drawCelestialBodies,
+    double                              quality) {
+
+    debugAssertM(
+        (directory == "") || 
+        (directory[directory.size() - 1] == '/') || 
+        (directory[directory.size() - 1] == '\\'), 
+        "Directory must end in a slash");
+
+    debugAssert( _cubeMap.notNull() );
+    debugAssert( _cubeMap->getDimension() == Texture::DIM_CUBE_MAP );
+
+    TextureRef t[6];
+    t[0] = _cubeMap;
+    for (int i = 1; i < 6; ++i) {
+        t[i] = NULL;
+    }    
+
+    return new Sky(rd, t, directory, true, _drawCelestialBodies, quality);
+}
+    
+
+SkyRef Sky::fromFile(
+    RenderDevice*                       rd,
+    const std::string&                  directory,
+    const std::string&                  filename,
+    bool                                _drawCelestialBodies,
+    double                              quality,
+    int                                 scaleDownFactor) {
+
+    std::string f[6];
+    f[0] = filename;
+    for (int i = 1; i < 6; ++i) {
+        f[i] = "";
+    }
+    return Sky::fromFile(rd, directory, f, _drawCelestialBodies, quality, scaleDownFactor);
+}
+
+
+SkyRef Sky::fromFile(
+    RenderDevice*                       rd,
+    const std::string&                  directory,
+    const std::string                   _filename[6],
+    bool                                _drawCelestialBodies,
+    double                              quality,
+    int                                 scaleDownFactor) {
+
+    debugAssertM(
+        (directory == "") || 
+        (directory[directory.size() - 1] == '/') || 
+        (directory[directory.size() - 1] == '\\'), 
+        "Directory must end in a slash");
+
+    const TextureFormat* format;
+    const TextureFormat* alphaFormat;
+    std::string filename = _filename[0];
+
+    if (quality > .66) {
+        format      = TextureFormat::RGB8;
+        alphaFormat = TextureFormat::RGBA8;
+    } else if (quality > .33) {
+        format      = TextureFormat::RGB_DXT1;
+        alphaFormat = TextureFormat::RGBA_DXT1;
+    } else {
+        format      = TextureFormat::RGBA_DXT5;
+        alphaFormat = TextureFormat::RGBA_DXT5;
+    }
+
+    // Look for the filename
+    // Parse the filename into a base name and extension
+    std::string filenameBase;
+    std::string filenameExt;
+    std::string fullFilename = filename;
+
+    if (_filename[1] == "") {
+        // First look relative to the current directory
+        Texture::splitFilenameAtWildCard(fullFilename, filenameBase, filenameExt);
+
+        if (! fileExists(filenameBase + "up" + filenameExt)) {
+            // Look relative to the specified directory
+            filenameBase = directory + filenameBase;
+        }
+    }
+
+    TextureRef faceTextures[6];
+    bool useCubeMap;
+
+    if (GLCaps::supports_GL_ARB_texture_cube_map() && ! GLCaps::hasBug_normalMapTexGen()) {
+   
+        if (_filename[1] == "") {
+            // Specified one cube map
+            faceTextures[0] = Texture::fromFile(filenameBase + "*" + filenameExt, format, Texture::CLAMP, Texture::BILINEAR_NO_MIPMAP, Texture::DIM_CUBE_MAP, 1.0, Texture::DEPTH_NORMAL, 1.0, 1.0f / scaleDownFactor);
+        } else {
+            // Specified six filenames
+            faceTextures[0] = Texture::fromFile(_filename, format, Texture::CLAMP, Texture::BILINEAR_NO_MIPMAP, Texture::DIM_CUBE_MAP, 1.0, Texture::DEPTH_NORMAL, 1.0, 1.0f / scaleDownFactor);
+        }
+
+        // For the cube map case, we don't need the other five texture slots
+        for (int t = 1; t < 6; ++t) {
+            faceTextures[t] = NULL;
+        }
+
+        useCubeMap = true;
+
+    } else {
+
+        // This card doesn't support cube maps; it probably has low memory as well, so we
+        // switch to bilinear instead of trilinear to save space on the mipmaps.
+
+        static const char* ext[] = {"up", "lf", "rt", "bk", "ft", "dn"};
+
+        if (_filename[1] == "") {
+            // Specified one cube map
+            for (int t = 0; t < 6; ++t) {
+                faceTextures[t] = Texture::fromFile(filenameBase + ext[t] + filenameExt, 
+                    format, Texture::CLAMP, Texture::BILINEAR_NO_MIPMAP, Texture::DIM_2D,
+                    1.0, Texture::DEPTH_NORMAL, 1.0, 1.0f / scaleDownFactor);
+            }
+        } else {
+            // Specified six textures
+            for (int t = 0; t < 6; ++t) {
+                faceTextures[t] = Texture::fromFile(_filename[t], 
+                    format, Texture::CLAMP, Texture::BILINEAR_NO_MIPMAP, Texture::DIM_2D,
+                    1.0, Texture::DEPTH_NORMAL, 1.0, 1.0f / scaleDownFactor);
+            }
+        }
+
+        useCubeMap = false;
+    }
+    
+    return new Sky(rd, faceTextures, directory, useCubeMap, _drawCelestialBodies, quality);
+}
+
+
+Sky::Sky(
+    RenderDevice*                       rd,
+    TextureRef                          textures[6],
+    const std::string&                   directory,
+    bool                                useCubeMap,
+    bool                                _drawCelestialBodies,
+    double                              quality) :
+    drawCelestialBodies(_drawCelestialBodies),
+    renderDevice(rd) {
+
+    if (useCubeMap) {
+        cubeMap = textures[0];
+    } else {
+        for (int i = 0; i < 6; ++i) {
+            texture[i] = textures[i];
+        }
+    }
+
+    const TextureFormat* format;
+    const TextureFormat* alphaFormat;
+
+    if (quality > .66) {
+        format      = TextureFormat::RGB8;
+        alphaFormat = TextureFormat::RGBA8;
+    } else if (quality > .33) {
+        format      = TextureFormat::RGB_DXT1;
+        alphaFormat = TextureFormat::RGBA_DXT1;
+    } else {
+        format      = TextureFormat::RGBA_DXT5;
+        alphaFormat = TextureFormat::RGBA_DXT5;
+    }
+
+    if (drawCelestialBodies) {
+        moon     = Texture::fromTwoFiles(directory + "moon.jpg", directory + "moon-alpha.jpg",
+            alphaFormat, Texture::TRANSPARENT_BORDER, Texture::BILINEAR_NO_MIPMAP, Texture::DIM_2D, 
+            Texture::DEPTH_NORMAL, 1.0);
+
+        sun      = Texture::fromFile(directory + "sun.jpg", format, Texture::TRANSPARENT_BORDER, Texture::BILINEAR_NO_MIPMAP, Texture::DIM_2D, 1.0, Texture::DEPTH_NORMAL, 1.0);
+        disk     = Texture::fromFile(directory + "lensflare.jpg", format, Texture::TRANSPARENT_BORDER, Texture::BILINEAR_NO_MIPMAP, Texture::DIM_2D, 1.0, Texture::DEPTH_NORMAL, 1.0);
+        sunRays  = Texture::fromFile(directory + "sun-rays.jpg", format, Texture::TRANSPARENT_BORDER, Texture::BILINEAR_NO_MIPMAP, Texture::DIM_2D, 1.0, Texture::DEPTH_NORMAL, 1.0);
+    
+        int i = 0;
+
+	    // If file exists, load the real starfield
+        if (fileExists(directory + "real.str")) {
+            BinaryInput in(directory + "real.str", G3D_LITTLE_ENDIAN, true);
+            int16 numStars;
+		    float32 x, y, z;
+
+	        std::string header = in.readString(5);
+	        debugAssert(header == "STARS"); (void)header;
+
+	        numStars = in.readInt16();
+	        star.resize(numStars);
+	        starIntensity.resize(numStars);
+
+		    // Read X, Y, Z, and intensity
+		    for(i = 0; i < numStars; i++) {
+			    x = SHORT_TO_FLOAT(in.readInt16());
+			    y = SHORT_TO_FLOAT(in.readInt16());
+			    z = SHORT_TO_FLOAT(in.readInt16());
+
+			    star[i] = Vector4(x, y, z, 0);
+
+			    starIntensity[i] = square(SHORT_TO_FLOAT(in.readInt16())) + .3f;
+	        }
+        } else {
+		    // Create a random starfield
+   		    star.resize(3000);
+    	    starIntensity.resize(star.size());
+   		    for (i = star.size() - 1; i >= 0; --i) {
+   			    star[i] = Vector4(Vector3::random(), 0);
+   			    starIntensity[i] = square(uniformRandom()) + .3f;
+   		    }
+ 	    }
+    }
+}
+
+
+Sky::~Sky() {
+}
+
+
+/**
+ Used to draw the sky, moon, and lens flare
+
+ @param C center
+ @param X a unit axis
+ @param Y a unit axis perpendicular to X
+ @param r radius of the sphere
+ */
+static void drawCelestialSphere(
+    RenderDevice*                       renderDevice,
+    const Vector4&                      C,
+    const Vector4&                      X,
+    const Vector4&                      Y,
+    const double                        r,
+    const Color4                        color) {
+
+    renderDevice->setColor(color);
+    renderDevice->beginPrimitive(RenderDevice::QUADS);
+		renderDevice->setTexCoord(0, Vector2(0, 0));
+        renderDevice->sendVertex(C + ( X + Y) * r);
+        renderDevice->setTexCoord(0, Vector2(0, 1));
+        renderDevice->sendVertex(C + ( X - Y) * r);
+        renderDevice->setTexCoord(0, Vector2(1, 1));
+		renderDevice->sendVertex(C + (-X - Y) * r);
+        renderDevice->setTexCoord(0, Vector2(1, 0));
+		renderDevice->sendVertex(C + (-X + Y) * r);
+	renderDevice->endPrimitive();
+}
+
+
+static void hackProjectionMatrix(RenderDevice* renderDevice) {
+	
+    Matrix4 P = renderDevice->getProjectionMatrix();
+
+    // Set the 3rd row (2nd index) so the depth always is in the middle of the depth range.
+
+    P[2][0] = 0;
+    P[2][1] = 0;
+    P[2][2] = -0.5;
+    P[2][3] = 0;
+
+    renderDevice->setProjectionMatrix(P);
+}
+
+
+void Sky::vertex(RenderDevice* renderDevice, 
+                 float x, float y, float z, float s, float t) const {
+    const double w = 0;
+    const bool cube = (cubeMap.notNull());
+
+    if (cube) {
+        // Texcoord generation will move this normal to tex coord 0
+        renderDevice->setNormal(Vector3(x,y,z));
+    } else {
+        if (!GLCaps::supports_GL_EXT_texture_edge_clamp()) {
+            // Move the edge coordinates towards the center just
+            // enough that the black clamped border isn't sampled.
+            if (s == 0) {
+                s += (0.6f / (float)texture[0]->texelWidth());
+            } else if (s == 1) {
+                s -= (0.6f / (float)texture[0]->texelWidth());
+            }
+            if (t == 0) {
+                t += (0.6f / (float)texture[0]->texelHeight());
+            } else if (t == 1) {
+                t -= (0.6f / (float)texture[0]->texelHeight());
+            }
+        }
+        renderDevice->setTexCoord(0, Vector2(s, t));
+    }
+    
+    renderDevice->sendVertex(Vector4(x,y,z,w));
+}
+
+
+void Sky::renderBox(RenderDevice* renderDevice) const {
+    renderDevice->pushState();
+
+    bool cube = (cubeMap.notNull());
+
+    if (cube) {
+        renderDevice->setTexture(0, cubeMap);
+
+        // On Radeon Mobility, explicit cube map coordinates don't work right.
+        // We instead put cube map coords in the normals and use texgen to copy
+        // them over
+        glActiveTextureARB(GL_TEXTURE0_ARB + 0);
+        glTexGeni(GL_S, GL_TEXTURE_GEN_MODE, GL_NORMAL_MAP_ARB);
+        glTexGeni(GL_T, GL_TEXTURE_GEN_MODE, GL_NORMAL_MAP_ARB);
+        glTexGeni(GL_R, GL_TEXTURE_GEN_MODE, GL_NORMAL_MAP_ARB);
+        glEnable(GL_TEXTURE_GEN_S);
+        glEnable(GL_TEXTURE_GEN_T);
+        glEnable(GL_TEXTURE_GEN_R);
+
+        CoordinateFrame cframe = renderDevice->getCameraToWorldMatrix();
+        cframe.translation = Vector3::zero();
+        renderDevice->setTextureMatrix(0, cframe);
+
+    } else {
+        // In the 6-texture case, the sky box is rotated 90 degrees
+        // (this is because the textures are loaded incorrectly)
+        CoordinateFrame cframe;
+        cframe.rotation = Matrix3::fromAxisAngle(Vector3::unitY(), toRadians(-90));
+        renderDevice->setObjectToWorldMatrix(cframe);
+        renderDevice->setTexture(0, texture[BK]);
+    }
+
+    float s = 1;
+    renderDevice->beginPrimitive(RenderDevice::QUADS);
+        vertex(renderDevice, -s, +s, -s, 0, 0);
+        vertex(renderDevice, -s, -s, -s, 0, 1);
+        vertex(renderDevice, +s, -s, -s, 1, 1);
+        vertex(renderDevice, +s, +s, -s, 1, 0);
+	renderDevice->endPrimitive();
+        
+    if (! cube) {
+        renderDevice->setTexture(0, texture[LT]);
+    }
+
+    renderDevice->beginPrimitive(RenderDevice::QUADS);
+        vertex(renderDevice, -s, +s, +s, 0, 0);
+        vertex(renderDevice, -s, -s, +s, 0, 1);
+        vertex(renderDevice, -s, -s, -s, 1, 1);
+        vertex(renderDevice, -s, +s, -s, 1, 0);
+	renderDevice->endPrimitive();
+
+    
+    if (! cube) {
+        renderDevice->setTexture(0, texture[FT]);
+    }
+
+    renderDevice->beginPrimitive(RenderDevice::QUADS);
+        vertex(renderDevice, +s, +s, +s, 0, 0);
+        vertex(renderDevice, +s, -s, +s, 0, 1);
+        vertex(renderDevice, -s, -s, +s, 1, 1);
+        vertex(renderDevice, -s, +s, +s, 1, 0);
+	renderDevice->endPrimitive();
+
+    if (! cube) {
+        renderDevice->setTexture(0, texture[RT]);
+    }
+
+    renderDevice->beginPrimitive(RenderDevice::QUADS);
+        vertex(renderDevice, +s, +s, +s, 1, 0);
+        vertex(renderDevice, +s, +s, -s, 0, 0);
+        vertex(renderDevice, +s, -s, -s, 0, 1);
+        vertex(renderDevice, +s, -s, +s, 1, 1);
+	renderDevice->endPrimitive();
+
+    if (! cube) {
+        renderDevice->setTexture(0, texture[UP]);
+    }
+
+    renderDevice->beginPrimitive(RenderDevice::QUADS);
+        vertex(renderDevice, +s, +s, +s, 1, 1);
+        vertex(renderDevice, -s, +s, +s, 1, 0);
+        vertex(renderDevice, -s, +s, -s, 0, 0);
+        vertex(renderDevice, +s, +s, -s, 0, 1);
+	renderDevice->endPrimitive();
+
+    if (! cube) {
+        renderDevice->setTexture(0, texture[DN]);
+    }
+
+    renderDevice->beginPrimitive(RenderDevice::QUADS);
+        vertex(renderDevice, +s, -s, -s, 0, 0);
+        vertex(renderDevice, -s, -s, -s, 0, 1);
+        vertex(renderDevice, -s, -s, +s, 1, 1);
+        vertex(renderDevice, +s, -s, +s, 1, 0);
+	renderDevice->endPrimitive();
+
+    if (cube) {
+        glDisable(GL_TEXTURE_GEN_S);
+        glDisable(GL_TEXTURE_GEN_T);
+        glDisable(GL_TEXTURE_GEN_R);
+    }
+    renderDevice->popState();
+
+}
+
+
+void Sky::render(
+    RenderDevice* renderDevice,
+    const LightingParameters&           lighting) {
+    debugAssertGLOk();
+    debugAssert(renderDevice != NULL);
+
+    renderDevice->pushState();
+        // Ignore depth, make sure we're not clipped by the far plane
+        hackProjectionMatrix(renderDevice);
+
+        // Eliminate the translation of the camera
+        CoordinateFrame matrix(Vector3::zero());
+	    matrix.rotation = renderDevice->getCameraToWorldMatrix().rotation;
+        renderDevice->setCameraToWorldMatrix(matrix);
+        renderDevice->setObjectToWorldMatrix(CoordinateFrame());
+
+        renderDevice->setColor(lighting.skyAmbient * renderDevice->getBrightScale());
+        renderDevice->setCullFace(RenderDevice::CULL_BACK);
+        renderDevice->disableDepthWrite();
+        renderDevice->setDepthTest(RenderDevice::DEPTH_ALWAYS_PASS);
+
+
+	    // Draw the sky box
+        renderDevice->resetTextureUnit(0);
+        debugAssertGLOk();
+        renderBox(renderDevice);
+        debugAssertGLOk();
+
+        if (drawCelestialBodies) {   
+            drawMoonAndStars(renderDevice, lighting);
+
+            drawSun(renderDevice, lighting);
+        }
+
+    renderDevice->popState();
+}
+
+
+void Sky::drawMoonAndStars(
+    RenderDevice*               renderDevice, 
+    const LightingParameters&   lighting) {
+
+    Vector3 moonPosition = lighting.physicallyCorrect ? lighting.trueMoonPosition : lighting.moonPosition;
+
+    Vector4 L(moonPosition,0);
+    Vector3 LcrossZ = moonPosition.cross(Vector3::unitZ()).direction();
+	Vector4 X(LcrossZ, 0);
+    Vector4 Y(moonPosition.cross(LcrossZ), 0);
+
+    // Draw stars
+    if (lighting.moonPosition.y > -0.3f) {
+
+        float k = (3.001 - square(lighting.skyAmbient.length()));// * renderDevice->getBrightScale();
+		float s = k;
+		k *= renderDevice->getBrightScale();
+		renderDevice->pushState();
+            // Rotate stars
+			renderDevice->setObjectToWorldMatrix((lighting.physicallyCorrect ? lighting.trueStarFrame : lighting.starFrame));
+			renderDevice->setBlendFunc(RenderDevice::BLEND_SRC_ALPHA, RenderDevice::BLEND_ONE);
+
+            // We use raw GL calls here for performance since the changing point size
+            // precludes the use of a vertex array.
+            glPushAttrib(GL_POINT_BIT|GL_CURRENT_BIT);
+
+                for (int i = star.size() - 1; i >= 0; --i) {
+                    const float b = starIntensity[i] * k;
+					glPointSize(starIntensity[i] * s);
+					glBegin(GL_POINTS);
+						glColor3f(b * lighting.emissiveScale.r, b * lighting.emissiveScale.g, b * lighting.emissiveScale.b);
+						glVertex3fv(star[i]);
+                    glEnd();
+                }
+
+            glPopAttrib();
+
+        renderDevice->popState();
+    }
+
+    renderDevice->setTexture(0, moon);
+    renderDevice->setBlendFunc(RenderDevice::BLEND_SRC_ALPHA, RenderDevice::BLEND_ONE_MINUS_SRC_ALPHA);
+    renderDevice->setAlphaTest(RenderDevice::ALPHA_GEQUAL, 0.05);
+    drawCelestialSphere(renderDevice, L, X, Y, .06, Color4(lighting.emissiveScale, min(1.0f, max(0.0f, moonPosition.y * 4.0f))));
+}
+
+
+void Sky::drawSun(
+    RenderDevice*               renderDevice, 
+    const LightingParameters&   lighting) {
+
+    Vector3 sunPosition = lighting.physicallyCorrect ? lighting.trueSunPosition : lighting.sunPosition;
+	
+    // Sun vector
+    Vector4 L(sunPosition,0);
+    Vector3 LcrossZ = sunPosition.cross(Vector3::unitZ()).direction();
+    Vector4 X(LcrossZ, 0);
+    Vector4 Y(sunPosition.cross(LcrossZ), 0);
+    
+    renderDevice->setTexture(0, sun);
+    renderDevice->setBlendFunc(RenderDevice::BLEND_ONE, RenderDevice::BLEND_ONE);
+    Color3 c(lighting.emissiveScale * .8f);
+
+    if (sunPosition.y < 0) {
+        // Fade out the sun as it goes below the horizon
+        c *= max(0.0f, (sunPosition.y + 0.1f) * 10.0f);
+    }
+
+    drawCelestialSphere(renderDevice, L, X, Y, 0.12f, c);
+}
+
+
+void Sky::renderLensFlare(
+    RenderDevice* renderDevice, 
+    const LightingParameters&           lighting) {
+	
+    debugAssert(renderDevice != NULL);
+
+    if (! drawCelestialBodies) {
+        return;
+    }
+
+    Vector3 sunPosition = lighting.physicallyCorrect ? lighting.trueSunPosition : lighting.sunPosition;
+
+    if (sunPosition.y < -.1) {
+        return;
+    }
+
+    renderDevice->pushState();
+
+        CoordinateFrame camera = renderDevice->getCameraToWorldMatrix();
+	    CoordinateFrame matrix;
+    	matrix.rotation = camera.rotation;
+        renderDevice->setCameraToWorldMatrix(matrix);
+	    renderDevice->setObjectToWorldMatrix(CoordinateFrame());
+
+        renderDevice->setColor(lighting.skyAmbient);
+        renderDevice->setCullFace(RenderDevice::CULL_BACK);
+        renderDevice->disableDepthWrite();
+        renderDevice->setDepthTest(RenderDevice::DEPTH_ALWAYS_PASS);
+        renderDevice->resetTextureUnit(0);
+
+        // Compute the sun's position using the 3D transformation
+        Vector4 pos = renderDevice->project(Vector4(sunPosition, 0));
+
+        if (sunPosition.dot(camera.getLookVector()) > 0) {
+
+            // Number of visible points on the sun
+            int visible = 0;
+            for (int dx = -1; dx <= 1; ++dx) {
+                for (int dy = -1; dy <= 1; ++dy) {
+                    double distanceToSun = 
+                        renderDevice->getDepthBufferValue(
+                         iRound(pos.x + dx * 15.0),
+                         iRound(pos.y + dy * 15.0));
+                    visible += (distanceToSun >= .99999) ? 1 : 0;
+                }
+            }
+
+            double fractionOfSunVisible = visible / 9.0;
+
+            if (fractionOfSunVisible > 0.0) {
+
+                // We need to switch to an infinite projection matrix
+                // to draw the flares.  Note that we must make this
+                // change *after* the depth buffer values have been
+                // read back.
+                hackProjectionMatrix(renderDevice);
+
+                renderDevice->setBlendFunc(RenderDevice::BLEND_ONE,
+                                           RenderDevice::BLEND_ONE);
+
+                // Make flares fade out near sunset and sunrise
+                float flareBrightness = sqrtf(max(sunPosition.y * 4.0f, 0.0f));
+
+                // Sun position
+                Vector4 L(sunPosition,0);
+                Vector3 LcrossZ = sunPosition.cross(Vector3::unitZ()).direction();
+                Vector4 X(LcrossZ, 0);
+				Vector4 Y(sunPosition.cross(LcrossZ), 0);
+
+                // Sun rays at dawn
+                if ((sunPosition.x > 0) && 
+                    (sunPosition.y >= -.1)) {
+
+                    renderDevice->setTexture(0, sunRays);
+                    double occlusionAttenuation = 
+                        (1 - square(2*fractionOfSunVisible - 1));
+
+                    Color4 col =
+                        Color4(1,1,1,1) * (occlusionAttenuation *
+                            0.4f * max(0.0f, min(1.0f, 1.0f - sunPosition.y * 2.0f / sqrtf(2.0f))));
+                    drawCelestialSphere(renderDevice, L, X , Y, 0.6, col);
+                }
+
+                renderDevice->setTexture(0, sun);
+                drawCelestialSphere(renderDevice, L, X, Y, .13f,
+                                    lighting.emissiveScale * fractionOfSunVisible * .5f);
+
+                // Lens flare
+                Vector4 C(camera.getLookVector(), 0);
+                static const double position[] = { .5,                    .5,                    -.25,                     -.75,                .45,                      .6,                    -.5,                   -.1,                   .55,                     -1.5,                       -2,                         1};
+                static const double size[]     = { .12,                   .05,                    .02,                      .02,                .02,                      .02,                    .01,                  .01,                   .01,                     .01,                        .01,                        0.05}; 
+                static const Color3 color[]    = {Color3(6, 4, 0) / 255, Color3(6, 4, 0) / 255, Color3(0, 12, 0) / 255, Color3(0, 12, 0) / 255, Color3(0, 12, 0) / 255, Color3(0, 12, 0) / 255, Color3(10, 0, 0) /255,  Color3(0, 12, 0) / 255, Color3(10,0,0) / 255, Color3::fromARGB(0x192125)/10,   Color3::fromARGB(0x1F2B1D)/10, Color3::fromARGB(0x1F2B1D)/10};
+                int numFlares     = 12;
+
+                renderDevice->setTexture(0, disk);
+                for (int i = 0; i < numFlares; ++i) {
+                    drawCelestialSphere(renderDevice, 
+                         C + (C - L) * (float)position[i], X, Y, (float)size[i], 
+                         Color4(color[i] * lighting.emissiveScale * flareBrightness, 1));
+                }
+            }
+        }
+
+    renderDevice->popState();
+}
+
+} // namespace
+
+

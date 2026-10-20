@@ -1,14 +1,47 @@
-// roc 2008-06 00666280  unit: RBX::PartDragTool  size: 12 bytes
-// Make this compile to the exact bytes below, then: roc check 2008-06 00666280
-//
-// 00666280  d9ee                 fldz 
-// 00666282  d9510c               fst dword ptr [ecx + 0xc]
-// 00666285  d95108               fst dword ptr [ecx + 8]
-// 00666288  d95904               fstp dword ptr [ecx + 4]
-// 0066628b  c3                   ret 
-// library rbxgs/util\ExponentialRunningAverage.cpp (function ?reset@Vector3ERA@RBX@@QAEXXZ)
-
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
 // roc-lib: rbxgs util/ExponentialRunningAverage.cpp
+
+// Candidate translation unit (score above; library headers required).
+#include "util/ExponentialRunningAverage.h"
+
+namespace RBX
+{
+	void floatERA::reset()
+	{
+		avg = 0.0f;
+	}
+
+	float floatERA::pushAndGetAverage(float value)
+	{
+		avg = (value - avg) * weight + avg;
+		return avg;
+	}
+
+	float floatERA::getAverage()
+	{
+		return avg;
+	}
+
+	void Vector3ERA::reset()
+	{
+		z = 0.0f;
+		y = 0.0f;
+		x = 0.0f;
+	}
+
+	G3D::Vector3 Vector3ERA::pushAndGetAverage(G3D::Vector3 value)
+	{
+		x = (value.x - x) * weight + x;
+		y = (value.y - y) * weight + y;
+		z = (value.z - z) * weight + z;
+
+		return G3D::Vector3(x, y, z);
+	}
+
+	G3D::Vector3 Vector3ERA::getAverage()
+	{
+		return G3D::Vector3(x, y, z);
+	}
+}

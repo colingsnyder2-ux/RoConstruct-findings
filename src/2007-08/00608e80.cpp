@@ -1,36 +1,153 @@
-// roc 2007-08 00608e80  unit: RBX::SimJobStage  size: 63 bytes
-// Make this compile to the exact bytes below, then: roc check 2007-08 00608e80
-//
-// 00608e80  53                   push ebx
-// 00608e81  56                   push esi
-// 00608e82  8b74240c             mov esi, dword ptr [esp + 0xc]
-// 00608e86  8b06                 mov eax, dword ptr [esi]
-// 00608e88  8b5008               mov edx, dword ptr [eax + 8]
-// 00608e8b  8bd9                 mov ebx, ecx
-// 00608e8d  57                   push edi
-// 00608e8e  8bce                 mov ecx, esi
-// 00608e90  ffd2                 call edx
-// 00608e92  8bce                 mov ecx, esi
-// 00608e94  e887930800           call 0x692220
-// 00608e99  8bf8                 mov edi, eax
-// 00608e9b  56                   push esi
-// 00608e9c  8bcf                 mov ecx, edi
-// 00608e9e  e82d38faff           call 0x5ac6d0
-// 00608ea3  837f0800             cmp dword ptr [edi + 8], 0
-// 00608ea7  7508                 jne 0x608eb1
-// 00608ea9  57                   push edi
-// 00608eaa  8bcb                 mov ecx, ebx
-// 00608eac  e88ffeffff           call 0x608d40
-// 00608eb1  53                   push ebx
-// 00608eb2  8bce                 mov ecx, esi
-// 00608eb4  e887020000           call 0x609140
-// 00608eb9  5f                   pop edi
-// 00608eba  5e                   pop esi
-// 00608ebb  5b                   pop ebx
-// 00608ebc  c20400               ret 4
-// library rbxgs/v8world\SimJobStage.cpp (function ?onAssemblyRemoving@SimJobStage@RBX@@QAEXPAVAssembly@2@@Z)
-
 // roc-lang: cpp
 // roc-cl: 50727
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
 // roc-lib: rbxgs v8world/SimJobStage.cpp
+
+// Candidate translation unit (score above; library headers required).
+#include "v8world/SimJobStage.h"
+#include "v8world/Mechanism.h"
+#include "v8world/Primitive.h"
+#include "v8world/Edge.h"
+#include "v8world/Assembly.h"
+#include "v8world/RigidJoint.h"
+#include "v8world/MotorJoint.h"
+
+namespace RBX
+{
+	bool SimJobStage::validateEdge(Edge* e)
+	{
+		Assembly* a0 = e->getPrimitive(0)->getAssembly();
+		Assembly* a1 = e->getPrimitive(1)->getAssembly();
+		RBXASSERT(a0 && a1);
+
+		return true;
+	}
+
+	Mechanism* SimJobStage::nextMechanism(std::list<Mechanism*>& list, const Mechanism* current)
+	{
+		RBXASSERT(!list.empty());
+		std::list<Mechanism*>::iterator myIt = current->myIt;
+		myIt++;
+		if (myIt == list.end())
+		{
+			return *list.begin();
+		}
+		else
+		{
+			return *myIt;
+		}
+	}
+
+	void SimJobStage::onEdgeRemoving(Edge* e)
+	{
+		RBXASSERT(validateEdge(e));
+
+		e->removeFromKernel();
+		e->removeFromStage(this);
+	}
+
+#pragma warning (push)
+#pragma warning (disable : 4355) // warning C4355: 'this' : used in base member initializer list
+	SimJobStage::SimJobStage(IStage* upstream, World* world)
+		: IWorldStage(upstream, new Kernel(this), world)
+	{}
+#pragma warning (pop)
+
+	SimJobStage::~SimJobStage()
+	{}
+
+	void SimJobStage::insertMechanism(Mechanism* m)
+	{
+		this->mechanisms.push_back(m);
+		std::list<Mechanism*>::iterator mechEnd = this->mechanisms.end();
+		mechEnd--;
+		RBXASSERT(*mechEnd == m);
+		m->myIt = mechEnd;
+	}
+
+	void call_notifyMovingPrimitives(Mechanism* m)
+	{
+		m->notifyMovingPrimitives();
+	}
+
+	void SimJobStage::notifyMovingPrimitives()
+	{
+		std::for_each(this->mechanisms.begin(), this->mechanisms.end(), call_notifyMovingPrimitives);
+	}
+
+	void SimJobStage::destroyMechanism(Mechanism* m)
+	{
+		RBXASSERT(std::find(this->mechanisms.begin(), this->mechanisms.end(), m) == m->myIt);
+		Mechanism* next = this->mechanisms.size() > 1 ? this->nextMechanism(this->mechanisms, m) : NULL;
+		MechanismTracker::transferTrackers(m, next);
+		this->mechanisms.erase(m->myIt);
+		delete m;
+	}
+
+	void SimJobStage::onAssemblyAdded(Assembly* a)
+	{
+		a->putInStage(this);
+		RBXASSERT(!a->getMechanism());
+		Mechanism* newMech = new Mechanism;
+		newMech->insertAssembly(a);
+		this->insertMechanism(newMech);
+		a->putInKernel(this->getKernel());
+	}
+
+	void SimJobStage::onAssemblyRemoving(Assembly* a)
+	{
+		a->removeFromKernel();
+		Mechanism* mech = a->getMechanism();
+		mech->removeAssembly(a);
+		if (mech->getAssemblies().empty())
+			this->destroyMechanism(mech);
+		a->removeFromStage(this);
+	}
+
+	void SimJobStage::combineMechanisms(Edge* e)
+	{
+		RBXASSERT(e->getEdgeType() == Edge::JOINT);
+		RBXASSERT(!RigidJoint::isRigidJoint(e));
+		RBXASSERT(!MotorJoint::isMotorJoint(e));
+
+		Joint* j = rbx_static_cast<Joint*>(e);
+		Assembly* a0 = e->getPrimitive(0)->getAssembly();
+		Assembly* a1 = e->getPrimitive(1)->getAssembly();
+		RBXASSERT(a0->inOrDownstreamOfStage(this));
+		RBXASSERT(a1->inOrDownstreamOfStage(this));
+
+		Mechanism* m0 = a0->getMechanism();
+		Mechanism* m1 = a1->getMechanism();
+		if (m0 != m1)
+		{
+			Mechanism* m = (m0->getAssemblies().size() > m1->getAssemblies().size()) ? m0 : m1;
+			Mechanism* other = (m == m1) ? m0 : m1;
+
+			m->absorb(other);
+			destroyMechanism(other);
+		}
+	}
+
+	void SimJobStage::onEdgeAdded(Edge* e)
+	{
+		RBXASSERT(validateEdge(e));
+
+		e->putInStage(this);
+
+		if (e->getEdgeType() == Edge::JOINT)
+		{
+			Assembly* a0 = e->getPrimitive(0)->getAssembly();
+			Assembly* a1 = e->getPrimitive(1)->getAssembly();
+
+			if (a0->inOrDownstreamOfStage(this) && a1->inOrDownstreamOfStage(this))
+			{
+				RBXASSERT(a0->getDof() > 0);
+				RBXASSERT(a1->getDof() > 0);
+
+				combineMechanisms(e);
+			}
+		}
+
+		e->putInKernel(getKernel());
+	}
+}

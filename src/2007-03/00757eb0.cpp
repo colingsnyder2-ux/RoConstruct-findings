@@ -1,11 +1,36 @@
-// roc 2007-03 00757eb0  unit: seg_00750000  size: 10 bytes
-// Make this compile to the exact bytes below, then: roc check 2007-03 00757eb0
-//
-// 00757eb0  b8f8eb8500           mov eax, 0x85ebf8
-// 00757eb5  e9e66fecff           jmp 0x61eea0
-// library rbxgs/reflection\type.cpp (function __ehhandler$?_Buynode@?$list@UItem@SignatureDescriptor@Reflection@RBX@@V?$allocator@UItem@SignatureDescriptor@Reflection@RBX@@@std@@@std@@IAEPAU_Node@?$_List_nod@UItem@SignatureDescriptor@Reflection@RBX@@V?$allocator@UItem@SignatureDescriptor@Reflection@RBX@@@std@@@2@PAU342@0ABUItem@SignatureDescriptor@Reflection@RBX@@@Z)
-
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
 // roc-lib: rbxgs reflection/type.cpp
+
+// Candidate translation unit (score above; library headers required).
+#include "reflection/type.h"
+
+namespace RBX
+{
+	namespace Reflection
+	{
+		template<>
+		const Type& Type::singleton<void>()
+		{
+			static Type type("void", typeid(void));
+			return type;
+		}
+
+		Value::Value()
+			: _type(&Type::singleton<void>())
+		{
+		}
+
+		SignatureDescriptor::SignatureDescriptor()
+			: resultType(&Type::singleton<void>())
+		{
+		}
+
+		void SignatureDescriptor::addArgument(const Name& name, const Type& type, const Value& defaultValue)
+		{
+			Item i = {&name, &type, defaultValue};
+			arguments.push_back(i);
+		}
+	}
+}

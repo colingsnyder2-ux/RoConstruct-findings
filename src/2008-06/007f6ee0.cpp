@@ -1,19 +1,53 @@
-// roc 2008-06 007f6ee0  unit: seg_007f0000  size: 39 bytes
-// Make this compile to the exact bytes below, then: roc check 2008-06 007f6ee0
-//
-// 007f6ee0  6a05                 push 5
-// 007f6ee2  6870010000           push 0x170
-// 007f6ee7  68ac298300           push 0x8329ac
-// 007f6eec  687cfc8300           push 0x83fc7c
-// 007f6ef1  b9c8ad9700           mov ecx, 0x97adc8
-// 007f6ef6  e80544dfff           call 0x5eb300
-// 007f6efb  6870fa7f00           push 0x7ffa70
-// 007f6f00  e8aaa8eaff           call 0x6a17af
-// 007f6f05  59                   pop ecx
-// 007f6f06  c3                   ret 
-// library openrbx-client/App\v8datamodel\Sky.cpp (function ??__E?prop_SkyRt@Sky@RBX@@2V?$BoundProp@VTextureId@RBX@@$00@Reflection@2@A@@YAXXZ)
-
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
 // roc-lib: openrbx-client App/v8datamodel/Sky.cpp
+
+// Candidate translation unit (score above; library headers required).
+#include "v8datamodel/Sky.h"
+
+#include "util/ContentProvider.h"
+
+namespace RBX {
+
+char sSky[] = "Sky";
+
+using namespace Reflection;
+
+BoundProp<TextureId, 1> Sky::prop_SkyUp("SkyboxUp", "Appearance", &RBX::Sky::skyUp);
+
+BoundProp<TextureId, 1> Sky::prop_SkyLf("SkyboxLf", "Appearance", &RBX::Sky::skyLf);
+
+BoundProp<TextureId, 1> Sky::prop_SkyRt("SkyboxRt", "Appearance", &RBX::Sky::skyRt);
+
+BoundProp<TextureId, 1> Sky::prop_SkyBk("SkyboxBk", "Appearance", &RBX::Sky::skyBk);
+
+BoundProp<TextureId, 1> Sky::prop_SkyFt("SkyboxFt", "Appearance", &RBX::Sky::skyFt);
+
+BoundProp<TextureId, 1> Sky::prop_SkyDn("SkyboxDn", "Appearance", &RBX::Sky::skyDn);
+
+BoundProp<bool, 1> Sky::prop_CelestialBodiesShown("CelestialBodiesShown", "Appearance", &RBX::Sky::drawCelestialBodies);
+
+BoundProp<int, 1> Sky::prop_StarCount("StarCount", "Appearance", &RBX::Sky::numStars);
+
+// STUB: WEBSERVICE 0x10094700
+G3D::SkyRef Sky::getG3DSky(Sky* sky)
+{
+	STUB(0x10094700);
+	return G3D::SkyRef();
+}
+
+// FUNCTION: WEBSERVICE 0x10095110
+Sky::Sky() : drawCelestialBodies(true), numStars(3000)
+{
+	setName("Sky");
+
+	skyUp = ContentId::fromAssets("Sky\\null_plainsky512_up.jpg");
+	skyLf = ContentId::fromAssets("Sky\\null_plainsky512_lf.jpg");
+	skyRt = ContentId::fromAssets("Sky\\null_plainsky512_rt.jpg");
+	skyBk = ContentId::fromAssets("Sky\\null_plainsky512_bk.jpg");
+	skyFt = ContentId::fromAssets("Sky\\null_plainsky512_ft.jpg");
+	skyDn = ContentId::fromAssets("Sky\\null_plainsky512_dn.jpg");
+}
+
+} // namespace RBX

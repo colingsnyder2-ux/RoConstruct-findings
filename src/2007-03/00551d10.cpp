@@ -1,11 +1,45 @@
-// roc 2007-03 00551d10  unit: seg_00550000  size: 11 bytes
-// Make this compile to the exact bytes below, then: roc check 2007-03 00551d10
-//
-// 00551d10  c7810401000000000000 mov dword ptr [ecx + 0x104], 0
-// 00551d1a  c3                   ret 
-// library rbxgs/gui\Widget.cpp (function ?onLoseFocus@Widget@RBX@@MAEXXZ)
-
 // roc-lang: cpp
 // roc-cl: 50727
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
 // roc-lib: rbxgs gui/Widget.cpp
+
+// Candidate translation unit (score above; library headers required).
+#include "gui/Widget.h"
+
+namespace RBX
+{
+	Widget::Widget()
+		: widgetState(Widget::NOTHING)
+	{
+		setGuiSize(G3D::Vector2(100.0f, 25.0f));
+	}
+
+	void Widget::render2d(Adorn* adorn)
+	{
+		if (isVisible())
+		{
+			if (widgetState == Widget::HOVER || widgetState == Widget::DOWN_AWAY)
+			{
+				adorn->rect2d(getMyRect2D(), G3D::Color3::gray());
+			}
+			else if (widgetState == Widget::DOWN_OVER)
+			{
+				adorn->rect2d(getMyRect2D(), G3D::Color3::yellow());
+			}
+
+			label2d(adorn, getTitle(), isEnabled() ? getFontColor() : disabledFill(), G3D::Color4(0.5f, 0.5f, 0.5f, 0.25f), Adorn::XALIGN_LEFT);
+		}
+	}
+
+	GuiResponse Widget::process(const GuiEvent& event)
+	{
+		if (isEnabled() && event.isMouseEvent())
+		{
+			return processMouse(event);
+		}
+		else
+		{
+			return GuiResponse::notUsed();
+		}
+	}
+}

@@ -1,24 +1,116 @@
-// roc 2008-06 00645590  unit: RBX::HUMAN::Climbing  size: 45 bytes
-// Make this compile to the exact bytes below, then: roc check 2008-06 00645590
-//
-// 00645590  d90530c48100         fld dword ptr [0x81c430]
-// 00645596  8b442410             mov eax, dword ptr [esp + 0x10]
-// 0064559a  8b4c240c             mov ecx, dword ptr [esp + 0xc]
-// 0064559e  8b542408             mov edx, dword ptr [esp + 8]
-// 006455a2  83ec08               sub esp, 8
-// 006455a5  d9542404             fst dword ptr [esp + 4]
-// 006455a9  d91c24               fstp dword ptr [esp]
-// 006455ac  50                   push eax
-// 006455ad  8b442410             mov eax, dword ptr [esp + 0x10]
-// 006455b1  51                   push ecx
-// 006455b2  52                   push edx
-// 006455b3  50                   push eax
-// 006455b4  e8f7feffff           call 0x6454b0
-// 006455b9  83c418               add esp, 0x18
-// 006455bc  c3                   ret 
-// library rbxgs/v8world\Joint.cpp (function ?canBuildJointLoose@Joint@RBX@@KA_NPAVPrimitive@2@0W4NormalId@2@1@Z)
-
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
 // roc-lib: rbxgs v8world/Joint.cpp
+
+// Candidate translation unit (score above; library headers required).
+#include "v8world/Joint.h"
+#include "v8world/Primitive.h"
+#include "v8world/World.h"
+#include "util/Face.h"
+#include "util/Math.h"
+
+namespace RBX
+{
+	Joint::Joint(
+		Primitive* prim0,
+		Primitive* prim1,
+		const G3D::CoordinateFrame& _jointCoord0,
+		const G3D::CoordinateFrame& _jointCoord1)
+		: Edge(prim0, prim1),
+		  jointOwner(NULL),
+		  active(false)
+	{
+		jointCoord0 = Math::snapToGrid(_jointCoord0, 0.1f);
+		jointCoord1 = Math::snapToGrid(_jointCoord1, 0.1f);
+	}
+
+	Joint::Joint()
+		: Edge(NULL, NULL),
+		  jointOwner(NULL),
+		  active(false),
+		  jointCoord0(),
+		  jointCoord1()
+	{
+		RBXASSERT(jointCoord0 == G3D::CoordinateFrame());
+		RBXASSERT(jointCoord1 == G3D::CoordinateFrame());
+	}
+
+	Joint::~Joint()
+	{
+		RBXASSERT(!jointOwner);
+	}
+
+	void Joint::setPrimitive(int i, Primitive* p)
+	{
+		if (p != getPrimitive(i))
+		{
+			World* world = getWorld();
+			if (world && getPrimitive(i))
+				world->onJointPrimitiveNulling(this, getPrimitive(i));
+			Edge::setPrimitive(i, p);
+			if (world && p)
+				world->onJointPrimitiveSet(this, p);
+		}
+	}
+
+	void Joint::setJointOwner(IJointOwner* value)
+	{
+		RBXASSERT((value == NULL) != (jointOwner == NULL));
+		jointOwner = value;
+	}
+
+	IJointOwner* Joint::getJointOwner() const
+	{
+		return jointOwner;
+	}
+
+	void Joint::setJointCoord(int i, const G3D::CoordinateFrame& c)
+	{
+		if (c != getJointCoord(i))
+		{
+			if (i == 0)
+				jointCoord0 = c;
+			else
+				jointCoord1 = c;
+
+			World* world = getWorld();
+			if (world)
+			{
+				world->removeJoint(this);
+				world->insertJoint(this);
+			}
+		}
+	}
+
+	bool Joint::canBuildJoint(Primitive* p0, Primitive* p1, NormalId nId0, NormalId nId1, float angleMax, float planarMax)
+	{
+		if (!Math::fuzzyAxisAligned(p0->getCoordinateFrame().rotation, p1->getCoordinateFrame().rotation, angleMax))
+			return false;
+
+		Face f0 = p0->getFaceInWorld(nId0);
+		Face f1 = p1->getFaceInWorld(nId1);
+		if (!Face::hasOverlap(f0, f1, 0.35f))
+			return false;
+
+		if (!Face::overlapWithinPlanes(f0, f1, planarMax))
+			return false;
+
+		return true;
+	}
+
+	bool Joint::canBuildJointLoose(Primitive* p0, Primitive* p1, NormalId nId0, NormalId nId1)
+	{
+		return canBuildJoint(p0, p1, nId0, nId1, 0.05f, 0.05f);
+	}
+
+	bool Joint::canBuildJointTight(Primitive* p0, Primitive* p1, NormalId nId0, NormalId nId1)
+	{
+		return canBuildJoint(p0, p1, nId0, nId1, 0.01f, 0.01f);
+	}
+
+	bool Joint::isAssemblyJoint(Edge* e)
+	{
+		return getJointType(e) >= ANCHOR_JOINT;
+	}
+}

@@ -1,49 +1,165 @@
 // from server: 100% by auto
-// roc 2007-08 00726780  unit: boost::thread_resource_error  size: 109 bytes
-// Make this compile to the exact bytes below, then: roc check 2007-08 00726780
-//
-// 00726780  83ec08               sub esp, 8
-// 00726783  837c241001           cmp dword ptr [esp + 0x10], 1
-// 00726788  755d                 jne 0x7267e7
-// 0072678a  53                   push ebx
-// 0072678b  56                   push esi
-// 0072678c  8d442408             lea eax, [esp + 8]
-// 00726790  50                   push eax
-// 00726791  ff15e0d17700         call dword ptr [0x77d1e0]
-// 00726797  8b4c240c             mov ecx, dword ptr [esp + 0xc]
-// 0072679b  6a01                 push 1
-// 0072679d  6a00                 push 0
-// 0072679f  6a00                 push 0
-// 007267a1  51                   push ecx
-// 007267a2  e8a9a4f0ff           call 0x630c50
-// 007267a7  8b4c2408             mov ecx, dword ptr [esp + 8]
-// 007267ab  33f6                 xor esi, esi
-// 007267ad  03c1                 add eax, ecx
-// 007267af  13d6                 adc edx, esi
-// 007267b1  56                   push esi
-// 007267b2  050080c12a           add eax, 0x2ac18000
-// 007267b7  6880969800           push 0x989680
-// 007267bc  81d2214e62fe         adc edx, 0xfe624e21
-// 007267c2  52                   push edx
-// 007267c3  50                   push eax
-// 007267c4  e817260100           call 0x738de0
-// 007267c9  6bc964               imul ecx, ecx, 0x64
-// 007267cc  8b742414             mov esi, dword ptr [esp + 0x14]
-// 007267d0  8906                 mov dword ptr [esi], eax
-// 007267d2  895604               mov dword ptr [esi + 4], edx
-// 007267d5  894e08               mov dword ptr [esi + 8], ecx
-// 007267d8  5e                   pop esi
-// 007267d9  895c2408             mov dword ptr [esp + 8], ebx
-// 007267dd  b801000000           mov eax, 1
-// 007267e2  5b                   pop ebx
-// 007267e3  83c408               add esp, 8
-// 007267e6  c3                   ret 
-// 007267e7  33c0                 xor eax, eax
-// 007267e9  83c408               add esp, 8
-// 007267ec  c3                   ret 
-// library boost-1.34.1/libs\thread\src\xtime.cpp (function ?xtime_get@boost@@YAHPAUxtime@1@H@Z)
-
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD
 // roc-lib: boost-1.34.1 libs/thread/src/xtime.cpp
+
+// Candidate translation unit (score above; library headers required).
+// Copyright (C) 2001-2003
+// William E. Kempf
+//
+//  Distributed under the Boost Software License, Version 1.0. (See accompanying 
+//  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
+#include <boost/thread/detail/config.hpp>
+
+#if defined(BOOST_HAS_FTIME)
+#   define __STDC_CONSTANT_MACROS
+#endif
+
+#include <boost/thread/xtime.hpp>
+
+#if defined(BOOST_HAS_FTIME)
+#   include <windows.h>
+#   include <boost/cstdint.hpp>
+#elif defined(BOOST_HAS_GETTIMEOFDAY)
+#   include <sys/time.h>
+#elif defined(BOOST_HAS_MPTASKS)
+#   include <DriverServices.h>
+#   include <boost/thread/detail/force_cast.hpp>
+#endif
+
+#include <cassert>
+
+namespace boost {
+
+#ifdef BOOST_HAS_MPTASKS
+
+namespace detail
+{
+
+using thread::force_cast;
+
+struct startup_time_info
+{
+    startup_time_info()
+    {
+        // 1970 Jan 1 at 00:00:00
+        static const DateTimeRec k_sUNIXBase = {1970, 1, 1, 0, 0, 0, 0};
+        static unsigned long s_ulUNIXBaseSeconds = 0UL;
+
+        if(s_ulUNIXBaseSeconds == 0UL)
+        {
+            // calculate the number of seconds between the Mac OS base and the
+            // UNIX base the first time we enter this constructor.
+            DateToSeconds(&k_sUNIXBase, &s_ulUNIXBaseSeconds);
+        }
+
+        unsigned long ulSeconds;
+
+        // get the time in UpTime units twice, with the time in seconds in the
+        // middle.
+        uint64_t ullFirstUpTime = force_cast<uint64_t>(UpTime());
+        GetDateTime(&ulSeconds);
+        uint64_t ullSecondUpTime = force_cast<uint64_t>(UpTime());
+
+        // calculate the midpoint of the two UpTimes, and save that.
+        uint64_t ullAverageUpTime = (ullFirstUpTime + ullSecondUpTime) / 2ULL;
+        m_sStartupAbsoluteTime = force_cast<AbsoluteTime>(ullAverageUpTime);
+
+        // save the number of seconds, recentered at the UNIX base.
+        m_ulStartupSeconds = ulSeconds - s_ulUNIXBaseSeconds;
+    }
+
+    AbsoluteTime m_sStartupAbsoluteTime;
+    UInt32 m_ulStartupSeconds;
+};
+
+static startup_time_info g_sStartupTimeInfo;
+
+} // namespace detail
+
+#endif
+
+
+int xtime_get(struct xtime* xtp, int clock_type)
+{
+    if (clock_type == TIME_UTC)
+    {
+#if defined(BOOST_HAS_FTIME)
+        FILETIME ft;
+#   if defined(BOOST_NO_GETSYSTEMTIMEASFILETIME)
+        {
+            SYSTEMTIME st;
+            GetSystemTime(&st);
+            SystemTimeToFileTime(&st,&ft);
+        }
+#   else
+        GetSystemTimeAsFileTime(&ft);
+#   endif
+        static const boost::uint64_t TIMESPEC_TO_FILETIME_OFFSET =
+            UINT64_C(116444736000000000);
+        
+        const boost::uint64_t ft64 =
+            (static_cast<boost::uint64_t>(ft.dwHighDateTime) << 32)
+            + ft.dwLowDateTime;
+
+        xtp->sec = static_cast<xtime::xtime_sec_t>(
+            (ft64 - TIMESPEC_TO_FILETIME_OFFSET) / 10000000
+        );
+
+        xtp->nsec = static_cast<xtime::xtime_nsec_t>(
+            ((ft64 - TIMESPEC_TO_FILETIME_OFFSET) % 10000000) * 100
+        );
+
+        return clock_type;
+#elif defined(BOOST_HAS_GETTIMEOFDAY)
+        struct timeval tv;
+#       ifndef NDEBUG
+        int res =
+#endif            
+        gettimeofday(&tv, 0);
+        assert(0 == res);
+        assert(tv.tv_sec >= 0);
+        assert(tv.tv_usec >= 0);
+        xtp->sec = tv.tv_sec;
+        xtp->nsec = tv.tv_usec * 1000;
+        return clock_type;
+#elif defined(BOOST_HAS_CLOCK_GETTIME)
+        timespec ts;
+#       ifndef NDEBUG
+        int res =
+#       endif            
+        clock_gettime(CLOCK_REALTIME, &ts);
+        assert(0 == res);
+        xtp->sec = ts.tv_sec;
+        xtp->nsec = ts.tv_nsec;
+        return clock_type;
+#elif defined(BOOST_HAS_MPTASKS)
+        using detail::thread::force_cast;
+        // the Mac OS does not have an MP-safe way of getting the date/time,
+        // so we use a delta from the startup time.  We _could_ defer this
+        // and use something that is interrupt-safe, but this would be _SLOW_,
+        // and we need speed here.
+        const uint64_t k_ullNanosecondsPerSecond(1000ULL * 1000ULL * 1000ULL);
+        AbsoluteTime sUpTime(UpTime());
+        uint64_t ullNanoseconds(
+            force_cast<uint64_t>(
+                AbsoluteDeltaToNanoseconds(sUpTime,
+                    detail::g_sStartupTimeInfo.m_sStartupAbsoluteTime)));
+        uint64_t ullSeconds = (ullNanoseconds / k_ullNanosecondsPerSecond);
+        ullNanoseconds -= (ullSeconds * k_ullNanosecondsPerSecond);
+        xtp->sec = detail::g_sStartupTimeInfo.m_ulStartupSeconds + ullSeconds;
+        xtp->nsec = ullNanoseconds;
+        return clock_type;
+#else
+#   error "xtime_get implementation undefined"
+#endif
+    }
+    return 0;
+}
+
+} // namespace boost
+
+// Change Log:
+//   8 Feb 01  WEKEMPF Initial version.

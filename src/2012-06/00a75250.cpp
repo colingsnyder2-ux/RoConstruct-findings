@@ -1,41 +1,231 @@
-// roc 2012-06 00a75250  unit: CXTPRibbonControls  size: 95 bytes
-// Make this compile to the exact bytes below, then: roc check 2012-06 00a75250
-//
-// 00a75250  56                   push esi
-// 00a75251  8b742408             mov esi, dword ptr [esp + 8]
-// 00a75255  83beac00000000       cmp dword ptr [esi + 0xac], 0
-// 00a7525c  7406                 je 0xa75264
-// 00a7525e  33c0                 xor eax, eax
-// 00a75260  5e                   pop esi
-// 00a75261  c20400               ret 4
-// 00a75264  83be5801000000       cmp dword ptr [esi + 0x158], 0
-// 00a7526b  75f1                 jne 0xa7525e
-// 00a7526d  57                   push edi
-// 00a7526e  8bbe00010000         mov edi, dword ptr [esi + 0x100]
-// 00a75274  3bb774020000         cmp esi, dword ptr [edi + 0x274]
-// 00a7527a  7414                 je 0xa75290
-// 00a7527c  56                   push esi
-// 00a7527d  8bcf                 mov ecx, edi
-// 00a7527f  e83ca6faff           call 0xa1f8c0
-// 00a75284  85c0                 test eax, eax
-// 00a75286  7508                 jne 0xa75290
-// 00a75288  3bb768020000         cmp esi, dword ptr [edi + 0x268]
-// 00a7528e  7507                 jne 0xa75297
-// 00a75290  5f                   pop edi
-// 00a75291  33c0                 xor eax, eax
-// 00a75293  5e                   pop esi
-// 00a75294  c20400               ret 4
-// 00a75297  33c0                 xor eax, eax
-// 00a75299  3bb7d0010000         cmp esi, dword ptr [edi + 0x1d0]
-// 00a7529f  7409                 je 0xa752aa
-// 00a752a1  3bb7d4010000         cmp esi, dword ptr [edi + 0x1d4]
-// 00a752a7  0f95c0               setne al
-// 00a752aa  5f                   pop edi
-// 00a752ab  5e                   pop esi
-// 00a752ac  c20400               ret 4
-// library xtp-11.2.2/Source\Ribbon\XTPRibbonQuickAccessControls.cpp (function ?ShouldSerializeControl@CXTPRibbonControls@@MAEHPAVCXTPControl@@@Z)
-
 // roc-lang: cpp
 // roc-cl: 30729
 // roc-flags: /O2 /GS- /MD
 // roc-lib: xtp-11.2.2 Source/Ribbon/XTPRibbonQuickAccessControls.cpp
+
+// Candidate translation unit (score above; library headers required).
+// XTPRibbonQuickAccessControls.cpp: implementation of the CXTPRibbonQuickAccessControls class.
+//
+// This file is a part of the XTREME RIBBON MFC class library.
+// (c)1998-2007 Codejock Software, All Rights Reserved.
+//
+// THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
+// RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
+// CONSENT OF CODEJOCK SOFTWARE.
+//
+// THIS SOURCE CODE CAN ONLY BE USED UNDER THE TERMS AND CONDITIONS OUTLINED
+// IN THE XTREME TOOLKIT PRO LICENSE AGREEMENT. CODEJOCK SOFTWARE GRANTS TO
+// YOU (ONE SOFTWARE DEVELOPER) THE LIMITED RIGHT TO USE THIS SOFTWARE ON A
+// SINGLE COMPUTER.
+//
+// CONTACT INFORMATION:
+// support@codejock.com
+// http://www.codejock.com
+//
+/////////////////////////////////////////////////////////////////////////////
+
+#include "stdafx.h"
+
+#include "CommandBars/XTPCommandBar.h"
+
+#include "XTPRibbonBar.h"
+#include "XTPRibbonGroup.h"
+#include "XTPRibbonQuickAccessControls.h"
+
+#ifdef _DEBUG
+#undef THIS_FILE
+static char THIS_FILE[]=__FILE__;
+#define new DEBUG_NEW
+#endif
+
+//////////////////////////////////////////////////////////////////////////
+// CXTPRibbonControls
+
+IMPLEMENT_DYNCREATE(CXTPRibbonControls, CXTPControls)
+
+CXTPRibbonControls::CXTPRibbonControls()
+{
+
+}
+
+BOOL CXTPRibbonControls::OnControlRemoving(CXTPControl* pControl)
+{
+	if (pControl->GetRibbonGroup())
+	{
+		if (pControl->GetRibbonGroup()->GetControlGroupOption() == pControl)
+			return TRUE;
+
+		if ((CXTPControl*)pControl->GetRibbonGroup()->GetControlGroupPopup() == pControl)
+			return TRUE;
+	}
+
+	CXTPRibbonBar* pRibbonBar = (CXTPRibbonBar*)m_pParent;
+
+	if (pControl == (CXTPControl*)pRibbonBar->GetControlTab())
+		return TRUE;
+
+	if (pControl == pRibbonBar->m_pControlQuickAccess)
+		return TRUE;
+
+	if (pControl == pRibbonBar->m_pControlQuickAccessMore)
+		return TRUE;
+
+	if (pControl == pRibbonBar->m_pControlScrollGroupsLeft)
+		return TRUE;
+
+	if (pControl == pRibbonBar->m_pControlScrollGroupsRight)
+		return TRUE;
+
+	return FALSE;
+}
+
+void CXTPRibbonControls::OnControlRemoved(CXTPControl* pControl)
+{
+	pControl->m_pControls = NULL;
+
+	if (pControl->GetRibbonGroup())
+	{
+		pControl->GetRibbonGroup()->Remove(pControl);
+	}
+	CXTPRibbonBar* pRibbonBar = (CXTPRibbonBar*)m_pParent;
+
+	if (pControl == (CXTPControl*)pRibbonBar->m_pControlSystemButton)
+	{
+		pRibbonBar->m_pControlSystemButton = NULL;
+	}
+
+	if (pRibbonBar->IsQuickAccessControl(pControl))
+	{
+		pRibbonBar->GetQuickAccessControls()->Remove(pControl);
+	}
+
+	CXTPControls::OnControlRemoved(pControl);
+}
+
+BOOL CXTPRibbonControls::ShouldSerializeControl(CXTPControl* pControl)
+{
+	if (pControl->m_bTemporary)
+		return FALSE;
+
+	if (pControl->GetRibbonGroup() != NULL)
+		return FALSE;
+
+	CXTPRibbonBar* pRibbonBar = (CXTPRibbonBar*)pControl->GetParent();
+
+	if (pControl == (CXTPControl*)pRibbonBar->m_pControlSystemButton)
+		return FALSE;
+
+	if (pRibbonBar->IsQuickAccessControl(pControl))
+		return FALSE;
+
+	if (pControl == (CXTPControl*)pRibbonBar->GetControlTab())
+		return FALSE;
+
+	if (pControl == pRibbonBar->m_pControlScrollGroupsLeft)
+		return FALSE;
+
+	if (pControl == pRibbonBar->m_pControlScrollGroupsRight)
+		return FALSE;
+
+
+	return TRUE;
+}
+
+void CXTPRibbonControls::Copy(CXTPControls* pControls, BOOL bRecursive)
+{
+	RemoveAll();
+
+	for (int i = 0; i < pControls->GetCount(); i++)
+	{
+		CXTPControl* pControl = pControls->GetAt(i);
+		if (ShouldSerializeControl(pControl))
+		{
+			AddClone(pControl, -1, bRecursive);
+		}
+	}
+}
+
+//////////////////////////////////////////////////////////////////////////
+// CXTPRibbonQuickAccessControls
+
+CXTPRibbonQuickAccessControls::CXTPRibbonQuickAccessControls()
+{
+
+}
+
+CXTPRibbonQuickAccessControls::~CXTPRibbonQuickAccessControls()
+{
+
+}
+
+void CXTPRibbonQuickAccessControls::OnControlAdded(CXTPControl* pControl)
+{
+	int nIndex = ((CXTPRibbonBar*)m_pParent)->GetSystemButton() ? GetCount() : GetCount() - 1;
+
+	m_pParent->GetControls()->InsertAt(pControl, nIndex);
+	pControl->InternalAddRef();
+}
+
+void CXTPRibbonQuickAccessControls::OnControlRemoved(CXTPControl* pControl)
+{
+	m_pParent->GetControls()->Remove(pControl);
+}
+
+
+void CXTPRibbonQuickAccessControls::Remove(CXTPControl* pControl)
+{
+	for (int nIndex = 0; nIndex < m_arrControls.GetSize(); nIndex++)
+	{
+		if (GetAt(nIndex) == pControl)
+		{
+			m_arrControls.RemoveAt(nIndex);
+			OnControlRemoved(pControl);
+			pControl->InternalRelease();
+			return;
+		}
+	}
+}
+
+CXTPControl* CXTPRibbonQuickAccessControls::FindDuplicate(CXTPControl* pControl)
+{
+	for (int i = 0; i < GetCount(); i++)
+	{
+		CXTPControl* pQuickAccessControl = GetAt(i);
+		if (pQuickAccessControl->GetID() == pControl->GetID() && pQuickAccessControl->IsVisible() &&
+			pQuickAccessControl->GetType() == pControl->GetType())
+		{
+			return pQuickAccessControl;
+		}
+	}
+	return NULL;
+}
+
+void CXTPRibbonQuickAccessControls::RefreshIndexes()
+{
+	for (int nIndex = 0; nIndex < GetCount(); nIndex++)
+	{
+		CXTPControl* pControl = GetAt(nIndex);
+		pControl->SetParent(m_pParent);
+	}
+}
+
+void CXTPRibbonQuickAccessControls::Reset()
+{
+	RemoveAll();
+
+	if (m_pOriginalControls)
+	{
+		CXTPControls* pControls = m_pOriginalControls;
+		for (int i = 0; i < pControls->GetCount(); i++)
+		{
+			CXTPControl* pControl = pControls->GetAt(i);
+			if (!pControl->IsTemporary())
+				AddClone(pControl, -1, TRUE);
+		}
+	}
+
+	if (m_pParent)
+	{
+		m_pParent->OnRecalcLayout();
+	}
+}

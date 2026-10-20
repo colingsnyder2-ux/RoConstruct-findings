@@ -1,22 +1,90 @@
-// roc 2007-03 004c2370  unit: seg_004c0000  size: 38 bytes
-// Make this compile to the exact bytes below, then: roc check 2007-03 004c2370
-//
-// 004c2370  51                   push ecx
-// 004c2371  8b4904               mov ecx, dword ptr [ecx + 4]
-// 004c2374  56                   push esi
-// 004c2375  8b74240c             mov esi, dword ptr [esp + 0xc]
-// 004c2379  51                   push ecx
-// 004c237a  8bce                 mov ecx, esi
-// 004c237c  c744240800000000     mov dword ptr [esp + 8], 0
-// 004c2384  c70600000000         mov dword ptr [esi], 0
-// 004c238a  e8012dfbff           call 0x475090
-// 004c238f  8bc6                 mov eax, esi
-// 004c2391  5e                   pop esi
-// 004c2392  59                   pop ecx
-// 004c2393  c20400               ret 4
-// library rbxgs-view/MaterialFactory.cpp (function ?createStrongPtr@?$WeakReferenceCountedPointer@VMaterial@Render@RBX@@@G3D@@QBE?AV?$ReferenceCountedPointer@VMaterial@Render@RBX@@@2@XZ)
-
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
 // roc-lib: rbxgs-view MaterialFactory.cpp
+
+// Candidate translation unit (score above; library headers required).
+#include "MaterialFactory.h"
+#include "util/ContentProvider.h"
+
+static const float specular = 0.9f;
+static const float shiny = 50.0f;
+
+namespace RBX
+{
+	namespace View
+	{
+		MaterialFactory::MaterialFactory(G3D::TextureManager* textureManager)
+		{
+			surfacesTexture = new Render::TextureProxy(*textureManager, ContentProvider::singleton().getAssetFile("textures\\surfaces.png"), true);
+			fileMeshTexture = new Render::TextureProxy(*textureManager, ContentProvider::singleton().getAssetFile("textures\\JohnTex.png"), false);
+			megaTexture = new MegaTextureProxy(*textureManager, ContentProvider::singleton().getAssetFile("textures\\SurfacesStrip.png"));
+		}
+
+		G3D::ReferenceCountedPointer<Render::Material> MaterialFactory::getMaterial(Attributes attributes)
+		{
+			G3D::ReferenceCountedPointer<Render::Material> material;
+
+			std::map<Attributes, G3D::WeakReferenceCountedPointer<Render::Material>>::iterator iter = database.find(attributes);
+			if (iter != database.end())
+			{
+				material = iter->second.createStrongPtr();
+			}
+
+			if (material.isNull())
+			{
+				G3D::Color3 color3 = attributes.color.color3();
+				G3D::ReferenceCountedPointer<Render::TextureProxy> surfacesTexture = getSurfacesTexture(color3);
+
+				material = new Render::Material;
+				if (attributes.transparency == 1.0f)
+				{
+					material->appendEmptyLevel();
+				}
+				else
+				{
+					material->appendLevel(surfacesTexture, G3D::Color3::WHITE, specular, shiny, attributes.reflectance, attributes.transparency);
+				}
+
+				database[attributes] = material;
+			}
+
+			return material;
+		}
+
+		G3D::ReferenceCountedPointer<Render::Material> MaterialFactory::getMegaMaterial(Attributes attributes)
+		{
+			Attributes filteredAttributes = {BrickColor::defaultColor(), attributes.transparency, attributes.reflectance};
+
+			G3D::ReferenceCountedPointer<Render::Material> material;
+
+			std::map<Attributes, G3D::WeakReferenceCountedPointer<Render::Material>>::iterator iter = megaDatabase.find(filteredAttributes);
+			if (iter != megaDatabase.end())
+			{
+				material = iter->second.createStrongPtr();
+			}
+
+			if (material.isNull())
+			{
+				material = new Render::Material;
+				if (attributes.transparency == 1.0f)
+				{
+					material->appendEmptyLevel();
+				}
+				else
+				{
+					material->appendLevel(megaTexture, G3D::Color3::white(), specular, shiny, attributes.reflectance, attributes.transparency);
+				}
+
+				megaDatabase[filteredAttributes] = material;
+			}
+
+			return material;
+		}
+
+		G3D::ReferenceCountedPointer<Render::TextureProxy> MaterialFactory::getSurfacesTexture(G3D::Color3 tint)
+		{
+			return surfacesTexture->shade(tint, NULL);
+		}
+	}
+}

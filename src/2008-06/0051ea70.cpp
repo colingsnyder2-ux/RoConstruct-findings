@@ -1,84 +1,259 @@
 // from server: 100% by colin
-// roc 2008-06 0051ea70  unit: seg_00510000  size: 167 bytes
-// Make this compile to the exact bytes below, then: roc check 2008-06 0051ea70
-//
-// 0051ea70  8b442404             mov eax, dword ptr [esp + 4]
-// 0051ea74  8b00                 mov eax, dword ptr [eax]
-// 0051ea76  8b4814               mov ecx, dword ptr [eax + 0x14]
-// 0051ea79  56                   push esi
-// 0051ea7a  85c9                 test ecx, ecx
-// 0051ea7c  7e0d                 jle 0x51ea8b
-// 0051ea7e  3b4874               cmp ecx, dword ptr [eax + 0x74]
-// 0051ea81  7f08                 jg 0x51ea8b
-// 0051ea83  8b5070               mov edx, dword ptr [eax + 0x70]
-// 0051ea86  8b348a               mov esi, dword ptr [edx + ecx*4]
-// 0051ea89  eb1f                 jmp 0x51eaaa
-// 0051ea8b  8b7078               mov esi, dword ptr [eax + 0x78]
-// 0051ea8e  85f6                 test esi, esi
-// 0051ea90  741c                 je 0x51eaae
-// 0051ea92  8b507c               mov edx, dword ptr [eax + 0x7c]
-// 0051ea95  3bca                 cmp ecx, edx
-// 0051ea97  7c15                 jl 0x51eaae
-// 0051ea99  3b8880000000         cmp ecx, dword ptr [eax + 0x80]
-// 0051ea9f  7f0d                 jg 0x51eaae
-// 0051eaa1  57                   push edi
-// 0051eaa2  8bf9                 mov edi, ecx
-// 0051eaa4  2bfa                 sub edi, edx
-// 0051eaa6  8b34be               mov esi, dword ptr [esi + edi*4]
-// 0051eaa9  5f                   pop edi
-// 0051eaaa  85f6                 test esi, esi
-// 0051eaac  7508                 jne 0x51eab6
-// 0051eaae  894818               mov dword ptr [eax + 0x18], ecx
-// 0051eab1  8b4870               mov ecx, dword ptr [eax + 0x70]
-// 0051eab4  8b31                 mov esi, dword ptr [ecx]
-// 0051eab6  8a0e                 mov cl, byte ptr [esi]
-// 0051eab8  8bd6                 mov edx, esi
-// 0051eaba  84c9                 test cl, cl
-// 0051eabc  740e                 je 0x51eacc
-// 0051eabe  8bff                 mov edi, edi
-// 0051eac0  42                   inc edx
-// 0051eac1  80f925               cmp cl, 0x25
-// 0051eac4  7437                 je 0x51eafd
-// 0051eac6  8a0a                 mov cl, byte ptr [edx]
-// 0051eac8  84c9                 test cl, cl
-// 0051eaca  75f4                 jne 0x51eac0
-// 0051eacc  8b4834               mov ecx, dword ptr [eax + 0x34]
-// 0051eacf  8b5030               mov edx, dword ptr [eax + 0x30]
-// 0051ead2  51                   push ecx
-// 0051ead3  8b482c               mov ecx, dword ptr [eax + 0x2c]
-// 0051ead6  52                   push edx
-// 0051ead7  8b5028               mov edx, dword ptr [eax + 0x28]
-// 0051eada  51                   push ecx
-// 0051eadb  8b4824               mov ecx, dword ptr [eax + 0x24]
-// 0051eade  52                   push edx
-// 0051eadf  8b5020               mov edx, dword ptr [eax + 0x20]
-// 0051eae2  51                   push ecx
-// 0051eae3  8b481c               mov ecx, dword ptr [eax + 0x1c]
-// 0051eae6  52                   push edx
-// 0051eae7  8b5018               mov edx, dword ptr [eax + 0x18]
-// 0051eaea  8b442424             mov eax, dword ptr [esp + 0x24]
-// 0051eaee  51                   push ecx
-// 0051eaef  52                   push edx
-// 0051eaf0  56                   push esi
-// 0051eaf1  50                   push eax
-// 0051eaf2  ff1530288000         call dword ptr [0x802830]
-// 0051eaf8  83c428               add esp, 0x28
-// 0051eafb  5e                   pop esi
-// 0051eafc  c3                   ret 
-// 0051eafd  803a73               cmp byte ptr [edx], 0x73
-// 0051eb00  75ca                 jne 0x51eacc
-// 0051eb02  8b54240c             mov edx, dword ptr [esp + 0xc]
-// 0051eb06  83c018               add eax, 0x18
-// 0051eb09  50                   push eax
-// 0051eb0a  56                   push esi
-// 0051eb0b  52                   push edx
-// 0051eb0c  ff1530288000         call dword ptr [0x802830]
-// 0051eb12  83c40c               add esp, 0xc
-// 0051eb15  5e                   pop esi
-// 0051eb16  c3                   ret 
-// library g3d-6.09-ijg-dll/jerror.c (function _format_message)
-
 // roc-lang: c
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /MD
 // roc-lib: g3d-6.09-ijg-dll jerror.c
+
+// Candidate translation unit (score above; library headers required).
+/*
+ * jerror.c
+ *
+ * Copyright (C) 1991-1998, Thomas G. Lane.
+ * This file is part of the Independent JPEG Group's software.
+ * For conditions of distribution and use, see the accompanying README file.
+ *
+ * This file contains simple error-reporting and trace-message routines.
+ * These are suitable for Unix-like systems and others where writing to
+ * stderr is the right thing to do.  Many applications will want to replace
+ * some or all of these routines.
+ *
+ * If you define USE_WINDOWS_MESSAGEBOX in jconfig.h or in the makefile,
+ * you get a Windows-specific hack to display error messages in a dialog box.
+ * It ain't much, but it beats dropping error messages into the bit bucket,
+ * which is what happens to output to stderr under most Windows C compilers.
+ *
+ * These routines are used by both the compression and decompression code.
+ */
+
+/* this is not a core library module, so it doesn't define JPEG_INTERNALS */
+#include "jinclude.h"
+#include "jpeglib.h"
+#include "jversion.h"
+#include "jerror.h"
+
+#ifdef USE_WINDOWS_MESSAGEBOX
+#include <windows.h>
+#endif
+
+#ifndef EXIT_FAILURE		/* define exit() codes if not provided */
+#define EXIT_FAILURE  1
+#endif
+
+
+/*
+ * Create the message string table.
+ * We do this from the master message list in jerror.h by re-reading
+ * jerror.h with a suitable definition for macro JMESSAGE.
+ * The message table is made an external symbol just in case any applications
+ * want to refer to it directly.
+ */
+
+#ifdef NEED_SHORT_EXTERNAL_NAMES
+#define jpeg_std_message_table	jMsgTable
+#endif
+
+#define JMESSAGE(code,string)	string ,
+
+const char * const jpeg_std_message_table[] = {
+#include "jerror.h"
+  NULL
+};
+
+
+/*
+ * Error exit handler: must not return to caller.
+ *
+ * Applications may override this if they want to get control back after
+ * an error.  Typically one would longjmp somewhere instead of exiting.
+ * The setjmp buffer can be made a private field within an expanded error
+ * handler object.  Note that the info needed to generate an error message
+ * is stored in the error object, so you can generate the message now or
+ * later, at your convenience.
+ * You should make sure that the JPEG object is cleaned up (with jpeg_abort
+ * or jpeg_destroy) at some point.
+ */
+
+METHODDEF(void)
+error_exit (j_common_ptr cinfo)
+{
+  /* Always display the message */
+  (*cinfo->err->output_message) (cinfo);
+
+  /* Let the memory manager delete any temp files before we die */
+  jpeg_destroy(cinfo);
+
+  exit(EXIT_FAILURE);
+}
+
+
+/*
+ * Actual output of an error or trace message.
+ * Applications may override this method to send JPEG messages somewhere
+ * other than stderr.
+ *
+ * On Windows, printing to stderr is generally completely useless,
+ * so we provide optional code to produce an error-dialog popup.
+ * Most Windows applications will still prefer to override this routine,
+ * but if they don't, it'll do something at least marginally useful.
+ *
+ * NOTE: to use the library in an environment that doesn't support the
+ * C stdio library, you may have to delete the call to fprintf() entirely,
+ * not just not use this routine.
+ */
+
+METHODDEF(void)
+output_message (j_common_ptr cinfo)
+{
+  char buffer[JMSG_LENGTH_MAX];
+
+  /* Create the message */
+  (*cinfo->err->format_message) (cinfo, buffer);
+
+#ifdef USE_WINDOWS_MESSAGEBOX
+  /* Display it in a message dialog box */
+  MessageBox(GetActiveWindow(), buffer, "JPEG Library Error",
+	     MB_OK | MB_ICONERROR);
+#else
+  /* Send it to stderr, adding a newline */
+  fprintf(stderr, "%s\n", buffer);
+#endif
+}
+
+
+/*
+ * Decide whether to emit a trace or warning message.
+ * msg_level is one of:
+ *   -1: recoverable corrupt-data warning, may want to abort.
+ *    0: important advisory messages (always display to user).
+ *    1: first level of tracing detail.
+ *    2,3,...: successively more detailed tracing messages.
+ * An application might override this method if it wanted to abort on warnings
+ * or change the policy about which messages to display.
+ */
+
+METHODDEF(void)
+emit_message (j_common_ptr cinfo, int msg_level)
+{
+  struct jpeg_error_mgr * err = cinfo->err;
+
+  if (msg_level < 0) {
+    /* It's a warning message.  Since corrupt files may generate many warnings,
+     * the policy implemented here is to show only the first warning,
+     * unless trace_level >= 3.
+     */
+    if (err->num_warnings == 0 || err->trace_level >= 3)
+      (*err->output_message) (cinfo);
+    /* Always count warnings in num_warnings. */
+    err->num_warnings++;
+  } else {
+    /* It's a trace message.  Show it if trace_level >= msg_level. */
+    if (err->trace_level >= msg_level)
+      (*err->output_message) (cinfo);
+  }
+}
+
+
+/*
+ * Format a message string for the most recent JPEG error or message.
+ * The message is stored into buffer, which should be at least JMSG_LENGTH_MAX
+ * characters.  Note that no '\n' character is added to the string.
+ * Few applications should need to override this method.
+ */
+
+METHODDEF(void)
+format_message (j_common_ptr cinfo, char * buffer)
+{
+  struct jpeg_error_mgr * err = cinfo->err;
+  int msg_code = err->msg_code;
+  const char * msgtext = NULL;
+  const char * msgptr;
+  char ch;
+  boolean isstring;
+
+  /* Look up message string in proper table */
+  if (msg_code > 0 && msg_code <= err->last_jpeg_message) {
+    msgtext = err->jpeg_message_table[msg_code];
+  } else if (err->addon_message_table != NULL &&
+	     msg_code >= err->first_addon_message &&
+	     msg_code <= err->last_addon_message) {
+    msgtext = err->addon_message_table[msg_code - err->first_addon_message];
+  }
+
+  /* Defend against bogus message number */
+  if (msgtext == NULL) {
+    err->msg_parm.i[0] = msg_code;
+    msgtext = err->jpeg_message_table[0];
+  }
+
+  /* Check for string parameter, as indicated by %s in the message text */
+  isstring = FALSE;
+  msgptr = msgtext;
+  while ((ch = *msgptr++) != '\0') {
+    if (ch == '%') {
+      if (*msgptr == 's') isstring = TRUE;
+      break;
+    }
+  }
+
+  /* Format the message into the passed buffer */
+  if (isstring)
+    sprintf(buffer, msgtext, err->msg_parm.s);
+  else
+    sprintf(buffer, msgtext,
+	    err->msg_parm.i[0], err->msg_parm.i[1],
+	    err->msg_parm.i[2], err->msg_parm.i[3],
+	    err->msg_parm.i[4], err->msg_parm.i[5],
+	    err->msg_parm.i[6], err->msg_parm.i[7]);
+}
+
+
+/*
+ * Reset error state variables at start of a new image.
+ * This is called during compression startup to reset trace/error
+ * processing to default state, without losing any application-specific
+ * method pointers.  An application might possibly want to override
+ * this method if it has additional error processing state.
+ */
+
+METHODDEF(void)
+reset_error_mgr (j_common_ptr cinfo)
+{
+  cinfo->err->num_warnings = 0;
+  /* trace_level is not reset since it is an application-supplied parameter */
+  cinfo->err->msg_code = 0;	/* may be useful as a flag for "no error" */
+}
+
+
+/*
+ * Fill in the standard error-handling methods in a jpeg_error_mgr object.
+ * Typical call is:
+ *	struct jpeg_compress_struct cinfo;
+ *	struct jpeg_error_mgr err;
+ *
+ *	cinfo.err = jpeg_std_error(&err);
+ * after which the application may override some of the methods.
+ */
+
+GLOBAL(struct jpeg_error_mgr *)
+jpeg_std_error (struct jpeg_error_mgr * err)
+{
+  err->error_exit = error_exit;
+  err->emit_message = emit_message;
+  err->output_message = output_message;
+  err->format_message = format_message;
+  err->reset_error_mgr = reset_error_mgr;
+
+  err->trace_level = 0;		/* default = no tracing */
+  err->num_warnings = 0;	/* no warnings emitted yet */
+  err->msg_code = 0;		/* may be useful as a flag for "no error" */
+
+  /* Initialize message table pointers */
+  err->jpeg_message_table = jpeg_std_message_table;
+  err->last_jpeg_message = (int) JMSG_LASTMSGCODE - 1;
+
+  err->addon_message_table = NULL;
+  err->first_addon_message = 0;	/* for safety */
+  err->last_addon_message = 0;
+
+  return err;
+}

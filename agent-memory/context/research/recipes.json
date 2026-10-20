@@ -22140,5 +22140,61 @@
       ]
     },
     "output": "work\\big-mining-2008-20261020\\atlas-sum-permutation-fanout"
+  },
+  "native-xml-double-legacy-family-2008": {
+    "op": "fanout",
+    "client": "2008-06",
+    "library": "Native XML DOUBLE and legacy hash family",
+    "hypothesis": "Native DOUBLE union, static registration, legacy hash map and named key lifetime restore parser frame1f4 and improve51-to63. Propagate actual generated TU to every unresolved code+data target; no edited matcher or extents.",
+    "sources": [
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_xml_native_named_legacy_hashd2091f8f25ff78d5.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+        ]
+      }
+    ],
+    "output": "work\\big-mining-2008-20261020\\xml-native-family-fanout",
+    "next": "Accept only server reverified code and referenced-data exacts; keep current better partials."
+  },
+  "native-mesh-plain-level-cache-gates-2008": {
+    "op": "grid",
+    "client": "2008-06",
+    "library": "Native plain mesh Level pointer lifetime",
+    "hypothesis": "New ESI raw-Level capture verified49-to58. Native float half uses one dword0.5 and no intermediate coordinate reloads, normal source uses qword and spills; bounded four native compiler/fp gates on changed source.",
+    "targets": {
+      "addresses": [
+        "004e2c80"
+      ],
+      "scores": [
+        0,
+        99
+      ]
+    },
+    "seed_sources": {
+      "2008-06": {
+        "004e2c80": "work\\big-mining-2008-20261020\\mesh-plain-native-level-cache.cpp"
+      }
+    },
+    "keep_partials": true,
+    "builds": [
+      21022,
+      50727
+    ],
+    "profiles": [
+      "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD"
+    ],
+    "append": [
+      "",
+      " /fp:fast"
+    ],
+    "output": "work\\big-mining-2008-20261020\\mesh-plain-cache-gates",
+    "next": "Keep only strict server-verified improvements. Do not rerun unchanged grids."
   }
 }

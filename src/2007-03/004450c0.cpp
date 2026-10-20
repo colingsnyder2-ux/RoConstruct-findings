@@ -1,107 +1,526 @@
-// roc 2007-03 004450c0  unit: seg_00440000  size: 243 bytes
-// Make this compile to the exact bytes below, then: roc check 2007-03 004450c0
-//
-// 004450c0  83ec0c               sub esp, 0xc
-// 004450c3  53                   push ebx
-// 004450c4  8b5c2418             mov ebx, dword ptr [esp + 0x18]
-// 004450c8  55                   push ebp
-// 004450c9  56                   push esi
-// 004450ca  8be9                 mov ebp, ecx
-// 004450cc  57                   push edi
-// 004450cd  8b7d04               mov edi, dword ptr [ebp + 4]
-// 004450d0  8b7704               mov esi, dword ptr [edi + 4]
-// 004450d3  807e2d00             cmp byte ptr [esi + 0x2d], 0
-// 004450d7  b001                 mov al, 1
-// 004450d9  88442410             mov byte ptr [esp + 0x10], al
-// 004450dd  7526                 jne 0x445105
-// 004450df  90                   nop 
-// 004450e0  8d460c               lea eax, [esi + 0xc]
-// 004450e3  50                   push eax
-// 004450e4  53                   push ebx
-// 004450e5  8bfe                 mov edi, esi
-// 004450e7  ff15e0e67700         call dword ptr [0x77e6e0]
-// 004450ed  83c408               add esp, 8
-// 004450f0  84c0                 test al, al
-// 004450f2  88442410             mov byte ptr [esp + 0x10], al
-// 004450f6  7404                 je 0x4450fc
-// 004450f8  8b36                 mov esi, dword ptr [esi]
-// 004450fa  eb03                 jmp 0x4450ff
-// 004450fc  8b7608               mov esi, dword ptr [esi + 8]
-// 004450ff  807e2d00             cmp byte ptr [esi + 0x2d], 0
-// 00445103  74db                 je 0x4450e0
-// 00445105  84c0                 test al, al
-// 00445107  8bf7                 mov esi, edi
-// 00445109  89742418             mov dword ptr [esp + 0x18], esi
-// 0044510d  896c2414             mov dword ptr [esp + 0x14], ebp
-// 00445111  7442                 je 0x445155
-// 00445113  8b4d04               mov ecx, dword ptr [ebp + 4]
-// 00445116  3b39                 cmp edi, dword ptr [ecx]
-// 00445118  752e                 jne 0x445148
-// 0044511a  53                   push ebx
-// 0044511b  57                   push edi
-// 0044511c  6a01                 push 1
-// 0044511e  8d542420             lea edx, [esp + 0x20]
-// 00445122  52                   push edx
-// 00445123  8bcd                 mov ecx, ebp
-// 00445125  e826fdffff           call 0x444e50
-// 0044512a  5f                   pop edi
-// 0044512b  8bc8                 mov ecx, eax
-// 0044512d  8b11                 mov edx, dword ptr [ecx]
-// 0044512f  8b44241c             mov eax, dword ptr [esp + 0x1c]
-// 00445133  8b4904               mov ecx, dword ptr [ecx + 4]
-// 00445136  5e                   pop esi
-// 00445137  5d                   pop ebp
-// 00445138  894804               mov dword ptr [eax + 4], ecx
-// 0044513b  c6400801             mov byte ptr [eax + 8], 1
-// 0044513f  8910                 mov dword ptr [eax], edx
-// 00445141  5b                   pop ebx
-// 00445142  83c40c               add esp, 0xc
-// 00445145  c20800               ret 8
-// 00445148  8d4c2414             lea ecx, [esp + 0x14]
-// 0044514c  e8af2f1b00           call 0x5f8100
-// 00445151  8b742418             mov esi, dword ptr [esp + 0x18]
-// 00445155  8d560c               lea edx, [esi + 0xc]
-// 00445158  53                   push ebx
-// 00445159  52                   push edx
-// 0044515a  ff15e0e67700         call dword ptr [0x77e6e0]
-// 00445160  83c408               add esp, 8
-// 00445163  84c0                 test al, al
-// 00445165  7431                 je 0x445198
-// 00445167  8b442410             mov eax, dword ptr [esp + 0x10]
-// 0044516b  53                   push ebx
-// 0044516c  57                   push edi
-// 0044516d  50                   push eax
-// 0044516e  8d4c2420             lea ecx, [esp + 0x20]
-// 00445172  51                   push ecx
-// 00445173  8bcd                 mov ecx, ebp
-// 00445175  e8d6fcffff           call 0x444e50
-// 0044517a  5f                   pop edi
-// 0044517b  8bc8                 mov ecx, eax
-// 0044517d  8b11                 mov edx, dword ptr [ecx]
-// 0044517f  8b44241c             mov eax, dword ptr [esp + 0x1c]
-// 00445183  8b4904               mov ecx, dword ptr [ecx + 4]
-// 00445186  5e                   pop esi
-// 00445187  5d                   pop ebp
-// 00445188  894804               mov dword ptr [eax + 4], ecx
-// 0044518b  c6400801             mov byte ptr [eax + 8], 1
-// 0044518f  8910                 mov dword ptr [eax], edx
-// 00445191  5b                   pop ebx
-// 00445192  83c40c               add esp, 0xc
-// 00445195  c20800               ret 8
-// 00445198  8b442420             mov eax, dword ptr [esp + 0x20]
-// 0044519c  8b542414             mov edx, dword ptr [esp + 0x14]
-// 004451a0  5f                   pop edi
-// 004451a1  897004               mov dword ptr [eax + 4], esi
-// 004451a4  5e                   pop esi
-// 004451a5  5d                   pop ebp
-// 004451a6  c6400800             mov byte ptr [eax + 8], 0
-// 004451aa  8910                 mov dword ptr [eax], edx
-// 004451ac  5b                   pop ebx
-// 004451ad  83c40c               add esp, 0xc
-// 004451b0  c20800               ret 8
-// library rbxgs/v8datamodel\Camera.cpp (function ?insert@?$_Tree@V?$_Tmap_traits@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@W4CameraType@Camera@RBX@@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@W4CameraType@Camera@RBX@@@std@@@2@$0A@@std@@@std@@QAE?AU?$pair@Viterator@?$_Tree@V?$_Tmap_traits@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@W4CameraType@Camera@RBX@@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@W4CameraType@Camera@RBX@@@std@@@2@$0A@@std@@@std@@_N@2@ABU?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@W4CameraType@Camera@RBX@@@2@@Z)
-
 // roc-lang: cpp
 // roc-cl: 50727
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
 // roc-lib: rbxgs v8datamodel/Camera.cpp
+
+// Candidate translation unit (score above; library headers required).
+#include "v8datamodel/Camera.h"
+#include "v8datamodel/Workspace.h"
+#include "v8datamodel/ICharacterSubject.h"
+#include "util/Math.h"
+
+namespace RBX
+{
+	const char* sCamera = "Camera";
+
+	static Reflection::EnumPropDescriptor<Camera, Camera::CameraType> desc_cameraType("CameraType", "Camera", &Camera::getCameraType, &Camera::setCameraType, Reflection::PropertyDescriptor::STANDARD); 
+	static Reflection::PropDescriptor<Camera, G3D::CoordinateFrame> desc_CoordFrame("CoordinateFrame", "Data", &Camera::getCameraCoordinateFrame, &Camera::setCameraCoordinateFrameNoLerp, Reflection::PropertyDescriptor::STREAMING);
+	static Reflection::PropDescriptor<Camera, G3D::CoordinateFrame> desc_Focus("Focus", "Data", &Camera::getCameraFocus, &Camera::setCameraFocus, Reflection::PropertyDescriptor::STREAMING);
+	static Reflection::RefPropDescriptor<Camera, Instance> cameraSubjectProp("CameraSubject", "Camera", &Camera::getCameraSubjectInstance, &Camera::setCameraSubject, Reflection::PropertyDescriptor::STANDARD);
+	
+	Reflection::EnumDesc<Camera::CameraType>::EnumDesc()
+		: EnumDescriptor("CameraType", typeid(Camera::CameraType))
+	{
+		addPair(Camera::FIXED_CAMERA, "Fixed");
+		addPair(Camera::WATCH_CAMERA, "Watch");
+		addPair(Camera::ATTACH_CAMERA, "Attach");
+		addPair(Camera::TRACK_CAMERA, "Track");
+		addPair(Camera::FOLLOW_CAMERA, "Follow");
+		addPair(Camera::CUSTOM_CAMERA, "Custom");
+	}
+
+	Camera::Camera()
+		: Base(),
+		  cameraFocus(G3D::Vector3(0, 0, -5)),
+		  cameraType(FIXED_CAMERA),
+		  animationType(AUTO),
+		  cameraExternallyAdjusted(false)
+	{
+		setName("Camera");
+		gCamera.setNearPlaneZ(1.25);
+		gCamera.setFarPlaneZ(5000);
+		gCamera.setFieldOfView(G3D::toRadians(60));
+
+		G3D::CoordinateFrame cameraCoord(G3D::Vector3(0, 5, 5));
+		cameraCoord.lookAt(G3D::Vector3::zero());
+
+		setGCameraCoordinateFrame(cameraCoord);
+	}
+
+	Camera::~Camera()
+	{
+	}
+
+	void Camera::tellCameraMoved()
+	{
+		if (ICameraOwner* owner = getCameraOwner())
+		{
+			owner->cameraMoved();
+		}
+	}
+
+	void Camera::setGCameraCoordinateFrame(const G3D::CoordinateFrame& coord)
+	{
+		if (Math::legalCameraCoord(coord))
+		{
+			gCamera.setCoordinateFrame(coord);
+		}
+		else
+		{
+			RBXASSERT(false);
+		}
+	}
+
+	bool Camera::askSetParent(const Instance* instance) const
+	{
+		return dynamic_cast<const Workspace*>(instance) != NULL;
+	}
+
+	ICameraOwner* Camera::getCameraOwner()
+	{
+		for (Instance* instance = getParent(); instance != NULL; instance = instance->getParent())
+		{
+			ICameraOwner* cameraOwner = dynamic_cast<ICameraOwner*>(instance);
+			if (cameraOwner)
+				return cameraOwner;
+		}
+
+		return NULL;
+	}
+
+	void Camera::lookAt(const G3D::Vector3& point)
+	{
+		cameraFocus.translation = point;
+		cameraGoal.lookAt(point);
+	}
+
+	void Camera::getHeadingElevationDistance(float& heading, float& elevation, float& distance)
+	{
+		Math::getHeadingElevation(cameraGoal, heading, elevation);
+		distance = goalToFocusDistance();
+	}
+
+	bool Camera::setDistanceFromTarget(float newDistance)
+	{
+		G3D::Vector3 lookVector = cameraFocus.translation - cameraGoal.translation;
+		float currentDistance = lookVector.magnitude();
+
+		const float min = distanceMin();
+		const float max = distanceMax();
+
+		if (newDistance < min && currentDistance == min)
+			return false;
+		
+		if (newDistance > max && currentDistance == max)
+			return false;
+
+		newDistance = G3D::min(max, G3D::max(min, newDistance));
+		
+		lookVector *= newDistance;
+		cameraGoal.translation = cameraFocus.translation - (lookVector / currentDistance);
+
+		tellCameraMoved();
+
+		return true;
+	}
+
+	void Camera::alwaysMode()
+	{
+		animationType = ALWAYS;
+	}
+
+	bool Camera::nonCharacterZoom(float in)
+	{
+		G3D::Vector3 lookVector = cameraFocus.translation - cameraGoal.translation;
+
+		float currentDistance = lookVector.magnitude();
+		float newZoomDistance = getNewZoomDistance(currentDistance, in);
+
+		if (newZoomDistance == currentDistance)
+			return false;
+
+		cameraGoal.translation -= lookVector * (newZoomDistance / currentDistance - 1.0f);
+
+		tellCameraMoved();
+
+		return true;
+	}
+
+	bool Camera::characterZoom(float in)
+	{
+		G3D::Vector3 focusToGoal = cameraGoal.translation - cameraFocus.translation;
+
+		float currentDistance = focusToGoal.magnitude();
+
+		float maxDistance = distanceMaxCharacter();
+		float newDistance = getNewZoomDistance(currentDistance, in);
+		newDistance = G3D::min(newDistance, maxDistance);
+
+		if (newDistance == currentDistance)
+			return false;
+
+		focusToGoal.y = 0.0;
+		focusToGoal.unitize();
+		focusToGoal.y = newDistance * 0.03f;
+
+		cameraGoal.translation = focusToGoal.direction() * newDistance + cameraFocus.translation;
+
+		return true;
+	}
+
+	void Camera::setHeadingElevationDistance(float heading, float elevation, float distance)
+	{
+		Math::setHeadingElevation(cameraGoal, heading, elevation);
+		cameraFocus.rotation = cameraGoal.rotation;
+
+		cameraGoal.translation = cameraFocus.translation - cameraGoal.lookVector() * distance;
+		cameraExternallyAdjusted = true;
+	}
+
+	void Camera::panRadians(float angle)
+	{
+		RBXASSERT(angle > -100);
+		RBXASSERT(angle < 100);
+
+		if (angle != 0)
+		{
+			float heading, elevation, distance;
+
+			getHeadingElevationDistance(heading, elevation, distance);
+			heading = Math::radWrap(heading + angle);
+			setHeadingElevationDistance(heading, elevation, distance);
+
+			tellCameraMoved();
+		}
+	}
+
+	bool Camera::tiltRadians(float angle)
+	{
+		if (angle != 0)
+		{
+			float heading, elevation, distance;
+			getHeadingElevationDistance(heading, elevation, distance);
+
+			static float rad = G3D::toRadians(81);
+			float newElevation = G3D::clamp(elevation + angle, -rad, rad);
+
+			if (elevation != newElevation)
+			{
+				setHeadingElevationDistance(heading, newElevation, distance);
+				tellCameraMoved();
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	void Camera::updateFocus()
+	{
+		Instance* instance = getCameraSubjectInstance();
+		if (instance)
+		{
+			ICameraSubject* subject = dynamic_cast<ICameraSubject*>(instance);
+			RBXASSERT(subject);
+			cameraFocus = subject->getLocation();
+		}
+	}
+
+	//96.11% matching.
+	void Camera::updateGoal()
+	{
+		switch (cameraType)
+		{
+			case WATCH_CAMERA:
+			{
+				updateFocus();
+				break;
+			}
+			case ATTACH_CAMERA: 
+			{
+				G3D::Vector3 delta = cameraGoal.translation - cameraFocus.translation;
+				float distance = delta.xz().length();
+
+				updateFocus();
+
+				G3D::Vector2 direction = -cameraFocus.lookVector().xz().direction();
+				cameraGoal.translation = cameraFocus.translation + G3D::Vector3(direction.x * distance, delta.y, direction.y * distance);
+
+				break;
+			}
+			case TRACK_CAMERA:
+			{
+				G3D::Vector3 oldFocusPt = cameraFocus.translation;
+				updateFocus();
+
+				cameraGoal.translation += cameraFocus.translation - oldFocusPt;
+				break;
+			}
+			case FOLLOW_CAMERA:
+			{
+				G3D::Vector3 delta = cameraFocus.translation - cameraGoal.translation;
+				float distance = delta.xz().length();
+
+				updateFocus();
+			
+				G3D::Vector2 direction = (cameraFocus.translation.xz() - cameraGoal.translation.xz()).direction();
+				cameraGoal.translation = cameraFocus.translation - G3D::Vector3(direction.x * distance, delta.y, direction.y * distance);
+
+				break;
+			}
+			case CUSTOM_CAMERA:
+			{
+				if (ICameraSubject* cameraSubject = getCameraSubject())
+					cameraSubject->stepGoalAndFocus(cameraGoal, cameraFocus, cameraExternallyAdjusted);
+
+				cameraExternallyAdjusted = false;
+				break;
+			}
+		}
+
+		cameraGoal.lookAt(cameraFocus.translation);
+	}
+
+	bool Camera::zoom(float in)
+	{
+		if (cameraType == CUSTOM_CAMERA)
+		{
+			ICameraSubject* cameraSubject = getCameraSubject();
+			if (cameraSubject)
+				return cameraSubject->zoom(in, cameraGoal, cameraFocus);
+		}
+		else if (getCameraSubjectInstance() && 
+				 (cameraType == FOLLOW_CAMERA || 
+				  cameraType == ATTACH_CAMERA || 
+				  cameraType == TRACK_CAMERA))
+		{
+			return characterZoom(in);
+		}
+		else
+		{
+			return nonCharacterZoom(in);
+		}
+
+		return false;
+	}
+
+	void Camera::onHeartbeat()
+	{
+		updateGoal();
+		G3D::CoordinateFrame adjustedGoal = cameraGoal;
+		ICameraSubject* cameraSubject = getCameraSubject();
+		ICharacterSubject* characterSubject = dynamic_cast<ICharacterSubject*>(cameraSubject);
+
+		if (characterSubject)
+			characterSubject->onHeartBeat(cameraGoal, cameraFocus);
+
+		G3D::CoordinateFrame cameraCoord = gCamera.getCoordinateFrame();
+		G3D::CoordinateFrame LerpFrame = cameraCoord.lerp(adjustedGoal, 0.9f);
+
+		setGCameraCoordinateFrame(LerpFrame);
+
+		if (animationType == ALWAYS || !Math::fuzzyEq(LerpFrame, cameraCoord, 0.01f, 0.01f))
+		{
+			tellCameraMoved();
+		}
+	}
+
+	Instance* Camera::getCameraSubjectInstance() const
+	{
+		return cameraSubject.get();
+	}
+
+	ICameraSubject* Camera::getCameraSubject() const
+	{
+		Instance* instance = getCameraSubjectInstance();
+		if (instance)
+		{
+			ICameraSubject* subject = dynamic_cast<ICameraSubject*>(instance);
+			RBXASSERT(subject);
+			return subject;
+		}
+		return NULL;
+	}
+
+	void Camera::autoMode()
+	{
+		if (animationType != AUTO)
+		{
+			animationType = AUTO;
+
+			tellCameraMoved();
+		}
+	}
+
+	void Camera::setCameraType(CameraType type)
+	{
+		if (cameraType != type)
+		{
+			cameraType = type;
+			raisePropertyChanged(desc_cameraType);
+
+			tellCameraMoved();
+		}
+	}
+
+	void Camera::setCameraSubject(Instance* newSubject)
+	{
+		if (newSubject != getCameraSubjectInstance())
+		{
+			if (dynamic_cast<ICameraSubject*>(newSubject))
+			{
+				cameraSubject = shared_from((ModelInstance*) newSubject);
+				raisePropertyChanged(cameraSubjectProp);
+
+				tellCameraMoved();
+			}
+		}
+	}
+
+	void Camera::setCameraFocus(const G3D::CoordinateFrame& value)
+	{
+		if (value != cameraFocus)
+		{
+			cameraFocus = value;
+			raisePropertyChanged(desc_Focus);
+
+			tellCameraMoved();
+		}
+	}
+
+	void Camera::goalToCamera()
+	{
+		if (gCamera.getCoordinateFrame() != cameraGoal)
+		{
+			cameraExternallyAdjusted = true;
+			setGCameraCoordinateFrame(cameraGoal);
+			raisePropertyChanged(desc_CoordFrame);
+
+			tellCameraMoved();
+		}
+	}
+
+	void Camera::tryZoomExtents(float low, float current, float high, const Extents& extents, const G3D::Rect2D& viewPort)
+	{
+		RBXASSERT(current >= low);
+		RBXASSERT(current <= high);
+
+		if (high - low < 0.1)
+			return;
+
+		setDistanceFromTarget(current);
+		updateGoal();
+		goalToCamera();
+
+		if (extents.containedByFrustum(gCamera.frustum(viewPort)))
+		{
+			tryZoomExtents(low, (low + current) * 0.5, current, extents, viewPort);
+		}
+		else
+		{
+			tryZoomExtents(current, (current + high) * 0.5, high, extents, viewPort);
+		}
+	}
+
+	void Camera::zoomExtents(Extents extents, const G3D::Rect2D& viewPort, Camera::ZoomType zoomType)
+	{
+		G3D::CoordinateFrame currentCoord = gCamera.getCoordinateFrame();
+		extents.expand(0.1f);
+
+		if (zoomType != ZOOM_CHAR_PART_DRAG || cameraType == CUSTOM_CAMERA)
+		{
+			if (cameraType == FIXED_CAMERA)
+			{
+				G3D::Vector3 scaler = extents.center() - cameraFocus.translation;
+
+				cameraFocus.translation += scaler;
+				cameraGoal.translation += scaler;
+			}
+
+			float low;
+
+			if (zoomType == ZOOM_OUT_ONLY || zoomType == ZOOM_CHAR_PART_DRAG)
+				low = goalToFocusDistance();
+			else
+				low = distanceMin();
+
+			float current = goalToFocusDistance();
+
+			RBXASSERT(G3D::isFinite(current));
+
+			if (zoomType == ZOOM_CHAR_PART_DRAG)
+				extents.scale(1.1f);
+
+			if (G3D::isFinite(low) && G3D::isFinite(current) && G3D::isFinite(distanceMax()))
+				tryZoomExtents(low, current, distanceMax(), extents, viewPort);
+
+			cameraGoal = gCamera.getCoordinateFrame();
+			setGCameraCoordinateFrame(currentCoord);
+			tellCameraMoved();
+		}
+	}
+
+	bool Camera::zoomExtents(const G3D::Rect2D& viewPort)
+	{
+		if (ICameraOwner* owner = getCameraOwner())
+		{
+			zoomExtents(owner->computeCameraOwnerExtents(), viewPort, ZOOM_IN_OR_OUT);
+			return true;
+		}
+		return false;
+	}
+
+	void Camera::setCameraCoordinateFrameNoLerp(const G3D::CoordinateFrame& value)
+	{
+		cameraGoal = value;
+		goalToCamera();
+	}
+
+	void Camera::setImageServerViewNoLerp(const G3D::CoordinateFrame& modelCoord, const G3D::Rect2D& viewPort)
+	{
+		G3D::Vector3 look = modelCoord.lookVector();
+
+		bool noTilt = (fabs(look.y) > 0.95);
+		if (noTilt)
+		{
+			look = -G3D::Vector3::unitZ();
+		}
+		else
+		{
+			look.y = 0;
+			look = look.direction();
+		}
+
+		G3D::CoordinateFrame lookCoord;
+
+		lookCoord.lookAt(look);
+		lookCoord.rotation *= G3D::Matrix3::fromEulerAnglesZXY(G3D::toRadians(45), G3D::toRadians(35), 0.0f);
+
+		look = lookCoord.lookVector();
+		lookCoord.translation = (look * 10.0f) + modelCoord.translation;
+
+		lookCoord.lookAt(modelCoord.translation);
+
+		setCameraType(FIXED_CAMERA);
+		setCameraFocus(modelCoord.translation);
+		setCameraCoordinateFrameNoLerp(lookCoord);
+		zoomExtents(viewPort);
+		goalToCamera();
+	}
+
+	float Camera::getNewZoomDistance(float currentDistance, float in)
+	{
+		float const ZOOM_FACTOR = 0.25f;
+
+		if (in > 0.0f)
+		{
+			currentDistance = G3D::max<float>(currentDistance / (1.0 + in * ZOOM_FACTOR), distanceMin());
+		} 	
+		else if (in < 0.0f)
+		{
+			return G3D::min<float>(currentDistance * (1.0 - in * ZOOM_FACTOR), distanceMax());
+		}
+
+		return currentDistance;
+	}
+}

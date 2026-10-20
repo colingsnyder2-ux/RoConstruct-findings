@@ -1,95 +1,479 @@
-// roc 2007-03 004eb630  unit: seg_004e0000  size: 271 bytes
-// Make this compile to the exact bytes below, then: roc check 2007-03 004eb630
-//
-// 004eb630  55                   push ebp
-// 004eb631  8bec                 mov ebp, esp
-// 004eb633  83e4c0               and esp, 0xffffffc0
-// 004eb636  83ec34               sub esp, 0x34
-// 004eb639  53                   push ebx
-// 004eb63a  56                   push esi
-// 004eb63b  57                   push edi
-// 004eb63c  8b7d08               mov edi, dword ptr [ebp + 8]
-// 004eb63f  8bf1                 mov esi, ecx
-// 004eb641  6a03                 push 3
-// 004eb643  8bcf                 mov ecx, edi
-// 004eb645  8974242c             mov dword ptr [esp + 0x2c], esi
-// 004eb649  e88284f8ff           call 0x473ad0
-// 004eb64e  6a02                 push 2
-// 004eb650  bb01000000           mov ebx, 1
-// 004eb655  53                   push ebx
-// 004eb656  6a00                 push 0
-// 004eb658  8bcf                 mov ecx, edi
-// 004eb65a  e8118cf8ff           call 0x474270
-// 004eb65f  015f78               add dword ptr [edi + 0x78], ebx
-// 004eb662  80bfe103000000       cmp byte ptr [edi + 0x3e1], 0
-// 004eb669  7412                 je 0x4eb67d
-// 004eb66b  015f70               add dword ptr [edi + 0x70], ebx
-// 004eb66e  6a00                 push 0
-// 004eb670  ff15b4eb7700         call dword ptr [0x77ebb4]
-// 004eb676  c687e103000000       mov byte ptr [edi + 0x3e1], 0
-// 004eb67d  837e2800             cmp dword ptr [esi + 0x28], 0
-// 004eb681  c744242400000000     mov dword ptr [esp + 0x24], 0
-// 004eb689  0f8ea7000000         jle 0x4eb736
-// 004eb68f  8d9fa8040000         lea ebx, [edi + 0x4a8]
-// 004eb695  eb02                 jmp 0x4eb699
-// 004eb697  8bf1                 mov esi, ecx
-// 004eb699  8b4624               mov eax, dword ptr [esi + 0x24]
-// 004eb69c  8b4c2424             mov ecx, dword ptr [esp + 0x24]
-// 004eb6a0  8b3488               mov esi, dword ptr [eax + ecx*4]
-// 004eb6a3  8b5634               mov edx, dword ptr [esi + 0x34]
-// 004eb6a6  56                   push esi
-// 004eb6a7  8bcf                 mov ecx, edi
-// 004eb6a9  89542430             mov dword ptr [esp + 0x30], edx
-// 004eb6ad  e82e8ff8ff           call 0x4745e0
-// 004eb6b2  d94638               fld dword ptr [esi + 0x38]
-// 004eb6b5  83ec08               sub esp, 8
-// 004eb6b8  8bcf                 mov ecx, edi
-// 004eb6ba  dd1c24               fstp qword ptr [esp]
-// 004eb6bd  e83e94f8ff           call 0x474b00
-// 004eb6c2  8b4e34               mov ecx, dword ptr [esi + 0x34]
-// 004eb6c5  57                   push edi
-// 004eb6c6  e855380000           call 0x4eef20
-// 004eb6cb  8b44242c             mov eax, dword ptr [esp + 0x2c]
-// 004eb6cf  d9400c               fld dword ptr [eax + 0xc]
-// 004eb6d2  53                   push ebx
-// 004eb6d3  d95c2434             fstp dword ptr [esp + 0x34]
-// 004eb6d7  d94010               fld dword ptr [eax + 0x10]
-// 004eb6da  d95c2438             fstp dword ptr [esp + 0x38]
-// 004eb6de  d94014               fld dword ptr [eax + 0x14]
-// 004eb6e1  d95c243c             fstp dword ptr [esp + 0x3c]
-// 004eb6e5  d94024               fld dword ptr [eax + 0x24]
-// 004eb6e8  d9e8                 fld1 
-// 004eb6ea  dee1                 fsubrp st(1)
-// 004eb6ec  d95c2440             fstp dword ptr [esp + 0x40]
-// 004eb6f0  d9442434             fld dword ptr [esp + 0x34]
-// 004eb6f4  d91b                 fstp dword ptr [ebx]
-// 004eb6f6  d9442438             fld dword ptr [esp + 0x38]
-// 004eb6fa  d95b04               fstp dword ptr [ebx + 4]
-// 004eb6fd  d944243c             fld dword ptr [esp + 0x3c]
-// 004eb701  d95b08               fstp dword ptr [ebx + 8]
-// 004eb704  d9442440             fld dword ptr [esp + 0x40]
-// 004eb708  d95b0c               fstp dword ptr [ebx + 0xc]
-// 004eb70b  ff15b0eb7700         call dword ptr [0x77ebb0]
-// 004eb711  8b463c               mov eax, dword ptr [esi + 0x3c]
-// 004eb714  57                   push edi
-// 004eb715  50                   push eax
-// 004eb716  e8b5cbffff           call 0x4e82d0
-// 004eb71b  8b44242c             mov eax, dword ptr [esp + 0x2c]
-// 004eb71f  8b4c2430             mov ecx, dword ptr [esp + 0x30]
-// 004eb723  83c001               add eax, 1
-// 004eb726  83c408               add esp, 8
-// 004eb729  3b4128               cmp eax, dword ptr [ecx + 0x28]
-// 004eb72c  89442424             mov dword ptr [esp + 0x24], eax
-// 004eb730  0f8c61ffffff         jl 0x4eb697
-// 004eb736  5f                   pop edi
-// 004eb737  5e                   pop esi
-// 004eb738  5b                   pop ebx
-// 004eb739  8be5                 mov esp, ebp
-// 004eb73b  5d                   pop ebp
-// 004eb73c  c20400               ret 4
-// library rbxgs-render/RenderScene.cpp (function ?transparentPass@RenderScene@Render@RBX@@AAEXPAVRenderDevice@G3D@@@Z)
-
 // roc-lang: cpp
 // roc-cl: 50727
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
 // roc-lib: rbxgs-render RenderScene.cpp
+
+// Candidate translation unit (score above; library headers required).
+#include "RenderLib/RenderScene.h"
+
+namespace RBX
+{
+	namespace Render
+	{
+		RenderScene::RenderScene()
+			: shadingQuality(-1.0f),
+			  shadows(false),
+			  debugShadowVolumes(false),
+			  meshDetail(-1.0f),
+			  cameraDistance(G3D::inf()),
+			  colorClearValue(G3D::Color3(0.5f, 0.5f, 1.0f))
+		{
+			desiredLighting = lighting = G3D::Lighting::create();
+		}
+
+		RenderScene::~RenderScene() {}
+
+		void RenderScene::turnOnLights(G3D::RenderDevice* rd, bool allLights) const
+		{
+			rd->enableLighting();
+
+			for (int i = 0; i < lighting->lightArray.size(); i++)
+			{
+				rd->setLight(i, lighting->lightArray[i]);
+			}
+
+			if (allLights)
+			{
+				for (int i = 0; i < lighting->shadowedLightArray.size(); i++)
+				{
+					rd->setLight(lighting->lightArray.size() + i, lighting->shadowedLightArray[i]);
+				}
+			}
+
+			G3D::Color3 average = (lighting->ambientTop + lighting->ambientBottom) / 2.0f;
+			rd->setAmbientLightColor(average);
+
+			int runningTotal = lighting->shadowedLightArray.size() * 2;
+
+			G3D::Vector3 direction = G3D::Vector3(-0.4f, -1.0f, 0.1f);
+			if (lighting->shadowedLightArray.size() > 0)
+			{
+				direction = -lighting->shadowedLightArray.front().position.xyz();
+			}
+
+			if (effectSettings.hemisphereLighting())
+			{
+				if (lighting->ambientBottom != average)
+				{
+					rd->setLight(runningTotal, G3D::GLight::directional(direction, lighting->ambientBottom - average, false, true));
+					runningTotal++;
+				}
+
+				if (lighting->ambientTop != average)
+				{
+					rd->setLight(runningTotal + 1, G3D::GLight::directional(G3D::Vector3::unitY(), lighting->ambientTop - average, false, true));
+				}
+			}
+		}
+
+		void RenderScene::sendDiffuseProxyMeshGeometry(G3D::RenderDevice* rd) const
+		{
+			for (int i = diffuseProxyArray.size() - 1; i >= 0; i--)
+			{
+				RenderSurface* current = diffuseProxyArray[i];
+				rd->setObjectToWorldMatrix(current->cframe);
+				rd->setPolygonOffset(current->polygonOffset);
+				current->material->configureRenderDevice(rd);
+				Mesh::sendGeometry(current->mesh, rd);
+			}
+		}
+
+		void RenderScene::transparentPass(G3D::RenderDevice* rd)
+		{
+			rd->setDepthTest(G3D::RenderDevice::DEPTH_LEQUAL);
+			rd->setBlendFunc(G3D::RenderDevice::BLEND_SRC_ALPHA, G3D::RenderDevice::BLEND_ONE_MINUS_SRC_ALPHA, G3D::RenderDevice::BLENDEQ_ADD);
+			rd->disableDepthWrite();
+
+			for (int i = 0; i < transparentProxyArray.size(); i++)
+			{
+				RenderSurface* current = transparentProxyArray[i];
+				const Material::Level* level = current->material;
+
+				rd->setObjectToWorldMatrix(current->cframe);
+				rd->setPolygonOffset(current->polygonOffset);
+				current->material->configureRenderDevice(rd);
+				rd->setColor(G3D::Color4(level->color(), 1.0f - level->transparent()));
+				Mesh::sendGeometry(current->mesh, rd);
+			}
+		}
+
+		void RenderScene::renderShadowVolumeGeometry(G3D::RenderDevice* rd, const G3D::GLight& light, bool caps, float shadowVertexDistance)
+		{
+			rd->beginIndexedPrimitives();
+			rd->setVertexArray(shadowVAR);
+			rd->sendIndices(G3D::RenderDevice::TRIANGLES, shadowIndexArray.size(), shadowIndexArray.begin());
+			rd->endIndexedPrimitives();
+
+			for (int i = 0; i < shadowCachingChunkArray.size(); i++)
+			{
+				shadowCachingChunkArray[i]->renderShadows(rd, light, caps, shadowVertexDistance);
+			}
+		}
+
+		void RenderScene::reflectionPass(G3D::RenderDevice* rd)
+		{
+			if (G3D::GLCaps::supports_GL_EXT_texture_cube_map() && lighting->environmentMap.notNull() && 
+				(lighting->environmentMap->getDimension() == G3D::Texture::DIM_CUBE_MAP || 
+				lighting->environmentMap->getDimension() == G3D::Texture::DIM_CUBE_MAP_NPOT))
+			{
+				rd->pushState();
+				rd->setDepthTest(G3D::RenderDevice::DEPTH_LEQUAL);
+				rd->setPolygonOffset(-0.2f);
+				rd->setBlendFunc(G3D::RenderDevice::BLEND_ONE, G3D::RenderDevice::BLEND_ONE, G3D::RenderDevice::BLENDEQ_ADD);
+				rd->disableLighting();
+				rd->configureReflectionMap(1, lighting->environmentMap);
+				rd->disableDepthWrite();
+
+				for (int i = 0; i < reflectProxyArray.size(); i++)
+				{
+					RenderSurface* current = reflectProxyArray[i];
+					const Material::Level* level = current->material;
+
+					rd->setPolygonOffset(current->polygonOffset);
+					rd->setObjectToWorldMatrix(current->cframe);
+					rd->setTexture(0, level->matte(rd));
+					rd->setColor(G3D::Color4(G3D::Color3::white() * level->reflect()));
+					Mesh::sendGeometry(current->mesh, rd);
+				}
+
+				rd->popState();
+			}
+		}
+
+		void RenderScene::setThrottle(float t, float m, bool s, float c)
+		{
+			t = G3D::clamp(t, 0.0f, 100.0f);
+			if (t != shadingQuality || m != meshDetail || s != shadows || c != cameraDistance)
+			{
+				shadingQuality = t;
+				meshDetail = m;
+				cameraDistance = c;
+				shadows = s;
+
+				lighting = effectSettings.update(t, m, s, c, desiredLighting, desiredSkyParameters, skyParameters);
+			}
+		}
+
+		void RenderScene::setLighting(const G3D::ReferenceCountedPointer<G3D::Lighting>& L)
+		{
+			desiredLighting = L;
+			lighting = effectSettings.update(shadingQuality, meshDetail, shadows, cameraDistance, desiredLighting, desiredSkyParameters, skyParameters);
+		}
+
+		void RenderScene::computeShadowVolumeGeometry(G3D::Array<unsigned>& indexArray, G3D::Array<G3D::Vector3>& shadowVertex, const G3D::GLight& light, bool generateLightCap, float shadowVertexDistance) const
+		{
+			renderStats.cpuShadow.tick();
+			shadowVertex.fastClear();
+			indexArray.fastClear();
+
+			shadowVertex.append(-light.position.xyz().direction() * shadowVertexDistance);
+
+			G3D::Vector3 worldLight = light.position.xyz().direction();
+
+			for (int i = 0; i < shadowProxyArray.size(); i++)
+			{
+				const RenderSurface& current = shadowProxyArray[i];
+				current.fullMesh->computeDirectionalShadowVolume(current.cframe, worldLight, indexArray, shadowVertex, generateLightCap);
+			}
+
+			renderStats.cpuShadow.tock();
+		}
+
+		void RenderScene::updateShadowVAR(const G3D::Array<G3D::Vector3>& shadowVertex)
+		{
+			size_t size = shadowVertex.size() * 12 + 16;
+			if (shadowVARArea.isNull() || shadowVARArea->totalSize() < size)
+			{
+				shadowVARArea = G3D::VARArea::create(size);
+			}
+			else
+			{
+				shadowVARArea->reset();
+			}
+
+			shadowVAR = G3D::VAR(shadowVertex, shadowVARArea);
+		}
+
+		void RenderScene::computeProxyArrays(G3D::RenderDevice* rd, const G3D::GCamera& camera)
+		{
+			renderStats.computeProxyArrays.tick();
+
+			diffuseProxyArray.fastClear();
+			shadowProxyArray.fastClear();
+			reflectProxyArray.fastClear();
+			transparentProxyArray.fastClear();
+			proxyArray.fastClear();
+			shadowCachingChunkArray.fastClear();
+
+			allocateProxies(rd, camera);
+			classifyProxies();
+
+			renderStats.sort.tick();
+
+			sortByMaterialAndDepth(diffuseProxyArray);
+			sortByMaterial(reflectProxyArray);
+			sortByDepth(transparentProxyArray);
+
+			renderStats.sort.tock();
+			renderStats.computeProxyArrays.tock();
+
+			renderStats.diffuseProxyCount = diffuseProxyArray.size();
+		}
+
+		void RenderScene::presetLighting(G3D::ReferenceCountedPointer<G3D::Sky> sky, G3D::LightingParameters skyParameters, G3D::Color3 ambientTop, G3D::Color3 ambientBottom)
+		{
+			this->sky = sky;
+			desiredSkyParameters = skyParameters;
+
+			G3D::ReferenceCountedPointer<G3D::Lighting> lighting = G3D::Lighting::create();
+			lighting->ambientTop = ambientTop;
+			lighting->ambientBottom = ambientBottom;
+
+			G3D::GLight sun = G3D::GLight::directional(skyParameters.lightDirection, skyParameters.lightColor * 0.9f);
+			lighting->shadowedLightArray.append(sun);
+
+			if (sky.notNull())
+			{
+				lighting->environmentMap = sky->getEnvironmentMap();
+			}
+
+			setLighting(lighting);
+		}
+
+		void RenderScene::classifyProxies()
+		{
+			for (int i = 0; i < proxyArray.size(); i++)
+			{
+				RenderSurface* ptr = &proxyArray[i];
+				if (ptr->material)
+				{
+					if (ptr->material->transparent() > 0.0f)
+					{
+						transparentProxyArray.push_back(ptr);
+					}
+					else
+					{
+						diffuseProxyArray.push_back(ptr);
+
+						if (ptr->material->reflect() > 0.0f)
+							reflectProxyArray.push_back(ptr);
+					}
+				}
+			}
+		}
+
+		void RenderScene::render(G3D::RenderDevice* rd, const G3D::GCamera& camera)
+		{
+			int startTriangleCount = rd->getTriangleCount();
+			int markShadowsTriCount = 0;
+			int unshadowedTriCount = 0;
+			int shadowedTriCount = 0;
+
+			renderStats.cpuRenderTotal.tick();
+
+			rd->setStencilConstant(0);
+			rd->setStencilClearValue(0);
+			rd->setProjectionAndCameraMatrix(camera);
+
+			if (effectSettings.applyToneMap())
+			{
+				effectSettings.getToneMap()->beginFrame(rd);
+			}
+
+			rd->setColorClearValue(colorClearValue);
+			rd->clear(sky.isNull() || !effectSettings.skyBox(), true, true);
+
+			if (sky.notNull() && effectSettings.skyBox())
+			{
+				sky->render(rd, skyParameters);
+			}
+
+			computeProxyArrays(rd, camera);
+
+			rd->setShadeMode(G3D::RenderDevice::SHADE_SMOOTH);
+			rd->setDepthTest(G3D::RenderDevice::DEPTH_LEQUAL);
+			rd->setAlphaTest(G3D::RenderDevice::ALPHA_GREATER, 0.1);
+			rd->pushState();
+
+			turnOnLights(rd, effectSettings.useAllLightsInUnshadowedPass());
+
+			Mesh::beginRender(rd, true, false);
+
+			if (!debugShadowVolumes)
+			{
+				int prevTriangleCount = rd->getTriangleCount();
+				sendDiffuseProxyMeshGeometry(rd);
+				unshadowedTriCount = rd->getTriangleCount() - prevTriangleCount;
+			}
+
+			Mesh::endRender(rd);
+
+			rd->popState();
+
+			if (effectSettings.stencilShadows())
+			{
+				rd->pushState();
+				rd->disableDepthWrite();
+				rd->setDepthTest(G3D::RenderDevice::DEPTH_LEQUAL);
+
+				for (int i = 0; i < lighting->shadowedLightArray.size(); i++)
+				{
+					if (i > 0)
+					{
+						rd->clear(false, false, true);
+					}
+
+					const G3D::GLight& current = lighting->shadowedLightArray[i];
+
+					if (effectSettings.alphaBlendShadowLights())
+					{
+						rd->setBlendFunc(G3D::RenderDevice::BLEND_ONE, G3D::RenderDevice::BLEND_ONE, G3D::RenderDevice::BLENDEQ_ADD);
+						rd->enableLighting();
+						rd->setLight(0, current); 
+					}
+					else
+					{
+						turnOnLights(rd, true);
+					}
+
+					int prevTriangleCount = rd->getTriangleCount();
+					markStencilShadows(rd, camera, current);
+					markShadowsTriCount += rd->getTriangleCount() - prevTriangleCount;
+
+					if (!debugShadowVolumes)
+					{
+						rd->setStencilConstant(0);
+						rd->setDepthTest(G3D::RenderDevice::DEPTH_LEQUAL);
+
+						int prevTriCount = rd->getTriangleCount();
+
+						rd->setPolygonOffset(0.0);
+						rd->setStencilTest(G3D::RenderDevice::STENCIL_EQUAL);
+						
+						Mesh::beginRender(rd, true, false);
+						sendDiffuseProxyMeshGeometry(rd);
+						Mesh::endRender(rd);
+
+						shadowedTriCount += rd->getTriangleCount() - prevTriCount;
+					}
+				}
+				
+				rd->popState();
+			}
+			else
+			{
+				renderStats.cpuShadow.tick();
+				renderStats.cpuShadow.tock();
+			}
+
+			rd->pushState();
+
+			Mesh::beginRender(rd, true, false);
+			reflectionPass(rd);
+			Mesh::endRender(rd);
+
+			rd->popState();
+
+			rd->pushState();
+
+			turnOnLights(rd, true);
+			Mesh::beginRender(rd, true, false);
+			transparentPass(rd);
+			Mesh::endRender(rd);
+
+			rd->popState();
+
+			if (sky.notNull() && effectSettings.skyBox())
+			{
+				sky->renderLensFlare(rd, skyParameters);
+			}
+
+			if (effectSettings.applyDepthBlur())
+			{
+				effectSettings.getDepthBlur()->apply(rd);
+			}
+
+			if (effectSettings.applyToneMap())
+			{
+				effectSettings.getToneMap()->endFrame(rd);
+			}
+
+			renderStats.cpuRenderTotal.tock();
+			renderStats.pushPopCount = rd->debugNumPushStateCalls();
+
+			int endTriangleCount = rd->getTriangleCount();
+
+			renderStats.markShadowsTriangles = markShadowsTriCount;
+			renderStats.totalTriangles = endTriangleCount - startTriangleCount;
+			renderStats.shadowedLightTriangles = shadowedTriCount;
+			renderStats.unshadowedTriangles = unshadowedTriCount;
+			renderStats.majorGLStateChanges = rd->debugNumMajorOpenGLStateChanges();
+			renderStats.minorGLStateChanges = rd->debugNumMinorOpenGLStateChanges();
+			renderStats.majorStateChanges = rd->debugNumMajorStateChanges();
+			renderStats.minorStateChanges = rd->debugNumMinorStateChanges();
+		}
+
+		void RenderScene::markStencilShadows(G3D::RenderDevice* rd, const G3D::GCamera& camera, const G3D::GLight& light)
+		{
+			static G3D::Array<G3D::Vector3> shadowVertex;
+
+			float farPlane = G3D::min(10000.0f, -camera.getFarPlaneZ() * 0.2f);
+
+			shadowIndexArray.fastClear();
+			computeShadowVolumeGeometry(shadowIndexArray, shadowVertex, light, true, farPlane);
+
+			updateShadowVAR(shadowVertex);
+
+			rd->pushState();
+			rd->setDepthTest(G3D::RenderDevice::DEPTH_LEQUAL);
+
+			if (debugShadowVolumes)
+			{
+				rd->setColor(G3D::Color3::white() * 0.25);
+				rd->setCullFace(G3D::RenderDevice::CULL_NONE);
+				rd->setBlendFunc(G3D::RenderDevice::BLEND_ONE, G3D::RenderDevice::BLEND_ONE, G3D::RenderDevice::BLENDEQ_ADD);
+				rd->disableDepthWrite();
+			}
+			else
+			{
+				rd->disableDepthWrite();
+				rd->disableColorWrite();
+				rd->setDepthTest(G3D::RenderDevice::DEPTH_LESS);
+				rd->setPolygonOffset(0.2);
+
+				if (G3D::GLCaps::supports_two_sided_stencil())
+				{
+					rd->setCullFace(G3D::RenderDevice::CULL_NONE);
+					rd->setStencilOp(
+						G3D::RenderDevice::STENCIL_KEEP, G3D::RenderDevice::STENCIL_DECR_WRAP, G3D::RenderDevice::STENCIL_KEEP,
+						G3D::RenderDevice::STENCIL_KEEP, G3D::RenderDevice::STENCIL_INCR_WRAP, G3D::RenderDevice::STENCIL_KEEP
+					);
+				}
+				else
+				{
+					rd->setCullFace(G3D::RenderDevice::CULL_BACK);
+					rd->setStencilOp(G3D::RenderDevice::STENCIL_KEEP, G3D::RenderDevice::STENCIL_DECR_WRAP, G3D::RenderDevice::STENCIL_KEEP);
+				}
+
+				rd->disableLighting();
+			}
+
+			rd->setShadeMode(G3D::RenderDevice::SHADE_FLAT);
+			rd->setObjectToWorldMatrix(G3D::CoordinateFrame());
+			renderShadowVolumeGeometry(rd, light, true, farPlane);
+
+			if (!G3D::GLCaps::supports_two_sided_stencil() && !debugShadowVolumes)
+			{
+				rd->setCullFace(G3D::RenderDevice::CULL_FRONT);
+				rd->setStencilOp(G3D::RenderDevice::STENCIL_KEEP, G3D::RenderDevice::STENCIL_INCR_WRAP, G3D::RenderDevice::STENCIL_KEEP);
+
+				renderShadowVolumeGeometry(rd, light, true, farPlane);
+
+				rd->setCullFace(G3D::RenderDevice::CULL_BACK);
+				rd->setStencilOp(G3D::RenderDevice::STENCIL_KEEP, G3D::RenderDevice::STENCIL_DECR_WRAP, G3D::RenderDevice::STENCIL_KEEP);
+			}
+
+			rd->popState();
+		}
+	}
+}

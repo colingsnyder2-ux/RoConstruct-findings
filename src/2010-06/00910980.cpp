@@ -1,168 +1,547 @@
-// roc 2010-06 00910980  unit: G3D::GFont  size: 574 bytes
-// Make this compile to the exact bytes below, then: roc check 2010-06 00910980
-//
-// 00910980  64a100000000         mov eax, dword ptr fs:[0]
-// 00910986  6aff                 push -1
-// 00910988  6852149c00           push 0x9c1452
-// 0091098d  50                   push eax
-// 0091098e  64892500000000       mov dword ptr fs:[0], esp
-// 00910995  83ec4c               sub esp, 0x4c
-// 00910998  56                   push esi
-// 00910999  8d442408             lea eax, [esp + 8]
-// 0091099d  8bf1                 mov esi, ecx
-// 0091099f  8b4c2460             mov ecx, dword ptr [esp + 0x60]
-// 009109a3  50                   push eax
-// 009109a4  e8f708b8ff           call 0x4912a0
-// 009109a9  8b06                 mov eax, dword ptr [esi]
-// 009109ab  85c0                 test eax, eax
-// 009109ad  7438                 je 0x9109e7
-// 009109af  f30f2a5064           cvtsi2ss xmm2, dword ptr [eax + 0x64]
-// 009109b4  f30f10442410         movss xmm0, dword ptr [esp + 0x10]
-// 009109ba  f30f5c442408         subss xmm0, dword ptr [esp + 8]
-// 009109c0  f30f2a5868           cvtsi2ss xmm3, dword ptr [eax + 0x68]
-// 009109c5  f30f104c2414         movss xmm1, dword ptr [esp + 0x14]
-// 009109cb  f30f5c4c240c         subss xmm1, dword ptr [esp + 0xc]
-// 009109d1  0f2ec2               ucomiss xmm0, xmm2
-// 009109d4  9f                   lahf 
-// 009109d5  f6c444               test ah, 0x44
-// 009109d8  7a0d                 jp 0x9109e7
-// 009109da  0f2ecb               ucomiss xmm1, xmm3
-// 009109dd  9f                   lahf 
-// 009109de  f6c444               test ah, 0x44
-// 009109e1  0f8bc5010000         jnp 0x910bac
-// 009109e7  55                   push ebp
-// 009109e8  68fcb3a800           push 0xa8b3fc
-// 009109ed  8d4c2420             lea ecx, [esp + 0x20]
-// 009109f1  ff1510a49e00         call dword ptr [0x9ea410]
-// 009109f7  d9e8                 fld1 
-// 009109f9  f30f10442418         movss xmm0, dword ptr [esp + 0x18]
-// 009109ff  f30f5c442410         subss xmm0, dword ptr [esp + 0x10]
-// 00910a05  f30f104c2414         movss xmm1, dword ptr [esp + 0x14]
-// 00910a0b  f30f5c4c240c         subss xmm1, dword ptr [esp + 0xc]
-// 00910a11  51                   push ecx
-// 00910a12  8b0d503cc000         mov ecx, dword ptr [0xc03c50]
-// 00910a18  d91c24               fstp dword ptr [esp]
-// 00910a1b  6a00                 push 0
-// 00910a1d  6a06                 push 6
-// 00910a1f  6a02                 push 2
-// 00910a21  6a00                 push 0
-// 00910a23  51                   push ecx
-// 00910a24  8d542434             lea edx, [esp + 0x34]
-// 00910a28  52                   push edx
-// 00910a29  f30f2cc0             cvttss2si eax, xmm0
-// 00910a2d  50                   push eax
-// 00910a2e  f30f2cc9             cvttss2si ecx, xmm1
-// 00910a32  51                   push ecx
-// 00910a33  8d942488000000       lea edx, [esp + 0x88]
-// 00910a3a  52                   push edx
-// 00910a3b  c784248400000000000000 mov dword ptr [esp + 0x84], 0
-// 00910a46  e8e551b7ff           call 0x485c30
-// 00910a4b  83c428               add esp, 0x28
-// 00910a4e  8b00                 mov eax, dword ptr [eax]
-// 00910a50  50                   push eax
-// 00910a51  8bce                 mov ecx, esi
-// 00910a53  c644246001           mov byte ptr [esp + 0x60], 1
-// 00910a58  e8c362b7ff           call 0x486d20
-// 00910a5d  8b442464             mov eax, dword ptr [esp + 0x64]
-// 00910a61  8b2d7ca39e00         mov ebp, dword ptr [0x9ea37c]
-// 00910a67  c644245c00           mov byte ptr [esp + 0x5c], 0
-// 00910a6c  85c0                 test eax, eax
-// 00910a6e  742b                 je 0x910a9b
-// 00910a70  83c004               add eax, 4
-// 00910a73  50                   push eax
-// 00910a74  ffd5                 call ebp
-// 00910a76  85c0                 test eax, eax
-// 00910a78  7519                 jne 0x910a93
-// 00910a7a  8b4c2464             mov ecx, dword ptr [esp + 0x64]
-// 00910a7e  e89d30b7ff           call 0x483b20
-// 00910a83  8b4c2464             mov ecx, dword ptr [esp + 0x64]
-// 00910a87  85c9                 test ecx, ecx
-// 00910a89  7408                 je 0x910a93
-// 00910a8b  8b11                 mov edx, dword ptr [ecx]
-// 00910a8d  8b02                 mov eax, dword ptr [edx]
-// 00910a8f  6a01                 push 1
-// 00910a91  ffd0                 call eax
-// 00910a93  c744246400000000     mov dword ptr [esp + 0x64], 0
-// 00910a9b  8d4c241c             lea ecx, [esp + 0x1c]
-// 00910a9f  c744245cffffffff     mov dword ptr [esp + 0x5c], 0xffffffff
-// 00910aa7  ff1500a49e00         call dword ptr [0x9ea400]
-// 00910aad  68e4b3a800           push 0xa8b3e4
-// 00910ab2  8d4c243c             lea ecx, [esp + 0x3c]
-// 00910ab6  ff1510a49e00         call dword ptr [0x9ea410]
-// 00910abc  d9e8                 fld1 
-// 00910abe  f30f104c2418         movss xmm1, dword ptr [esp + 0x18]
-// 00910ac4  f30f5c4c2410         subss xmm1, dword ptr [esp + 0x10]
-// 00910aca  f30f10442414         movss xmm0, dword ptr [esp + 0x14]
-// 00910ad0  f30f5c44240c         subss xmm0, dword ptr [esp + 0xc]
-// 00910ad6  f30f59057c6aa100     mulss xmm0, dword ptr [0xa16a7c]
-// 00910ade  51                   push ecx
-// 00910adf  8b0d503cc000         mov ecx, dword ptr [0xc03c50]
-// 00910ae5  d91c24               fstp dword ptr [esp]
-// 00910ae8  6a00                 push 0
-// 00910aea  6a06                 push 6
-// 00910aec  6a02                 push 2
-// 00910aee  6a00                 push 0
-// 00910af0  51                   push ecx
-// 00910af1  8d542450             lea edx, [esp + 0x50]
-// 00910af5  52                   push edx
-// 00910af6  f30f2cc1             cvttss2si eax, xmm1
-// 00910afa  50                   push eax
-// 00910afb  f30f2cc8             cvttss2si ecx, xmm0
-// 00910aff  51                   push ecx
-// 00910b00  8d54242c             lea edx, [esp + 0x2c]
-// 00910b04  52                   push edx
-// 00910b05  c784248400000002000000 mov dword ptr [esp + 0x84], 2
-// 00910b10  e81b51b7ff           call 0x485c30
-// 00910b15  83c428               add esp, 0x28
-// 00910b18  8b00                 mov eax, dword ptr [eax]
-// 00910b1a  8d4e10               lea ecx, [esi + 0x10]
-// 00910b1d  50                   push eax
-// 00910b1e  c644246003           mov byte ptr [esp + 0x60], 3
-// 00910b23  e8f861b7ff           call 0x486d20
-// 00910b28  8b442408             mov eax, dword ptr [esp + 8]
-// 00910b2c  c644245c02           mov byte ptr [esp + 0x5c], 2
-// 00910b31  85c0                 test eax, eax
-// 00910b33  742b                 je 0x910b60
-// 00910b35  83c004               add eax, 4
-// 00910b38  50                   push eax
-// 00910b39  ffd5                 call ebp
-// 00910b3b  85c0                 test eax, eax
-// 00910b3d  7519                 jne 0x910b58
-// 00910b3f  8b4c2408             mov ecx, dword ptr [esp + 8]
-// 00910b43  e8d82fb7ff           call 0x483b20
-// 00910b48  8b4c2408             mov ecx, dword ptr [esp + 8]
-// 00910b4c  85c9                 test ecx, ecx
-// 00910b4e  7408                 je 0x910b58
-// 00910b50  8b11                 mov edx, dword ptr [ecx]
-// 00910b52  8b02                 mov eax, dword ptr [edx]
-// 00910b54  6a01                 push 1
-// 00910b56  ffd0                 call eax
-// 00910b58  c744240800000000     mov dword ptr [esp + 8], 0
-// 00910b60  8d4c2438             lea ecx, [esp + 0x38]
-// 00910b64  c744245cffffffff     mov dword ptr [esp + 0x5c], 0xffffffff
-// 00910b6c  ff1500a49e00         call dword ptr [0x9ea400]
-// 00910b72  f30f104c2418         movss xmm1, dword ptr [esp + 0x18]
-// 00910b78  f30f5c4c2410         subss xmm1, dword ptr [esp + 0x10]
-// 00910b7e  f30f10057c6aa100     movss xmm0, dword ptr [0xa16a7c]
-// 00910b86  f30f59c8             mulss xmm1, xmm0
-// 00910b8a  f30f2cc9             cvttss2si ecx, xmm1
-// 00910b8e  f30f104c2414         movss xmm1, dword ptr [esp + 0x14]
-// 00910b94  f30f5c4c240c         subss xmm1, dword ptr [esp + 0xc]
-// 00910b9a  51                   push ecx
-// 00910b9b  f30f59c8             mulss xmm1, xmm0
-// 00910b9f  f30f2cd1             cvttss2si edx, xmm1
-// 00910ba3  52                   push edx
-// 00910ba4  8bce                 mov ecx, esi
-// 00910ba6  e835fcffff           call 0x9107e0
-// 00910bab  5d                   pop ebp
-// 00910bac  8b4c2450             mov ecx, dword ptr [esp + 0x50]
-// 00910bb0  5e                   pop esi
-// 00910bb1  64890d00000000       mov dword ptr fs:[0], ecx
-// 00910bb8  83c458               add esp, 0x58
-// 00910bbb  c20400               ret 4
-// library rbxgs-g3d/GLG3Dcpp\ToneMap.cpp (function ?resizeImages@ToneMap@G3D@@AAEXPAVRenderDevice@2@@Z)
-
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD /arch:SSE2 /fp:fast
 // roc-lib: rbxgs-g3d GLG3Dcpp/ToneMap.cpp
+
+// Candidate translation unit (score above; library headers required).
+#include "GLG3D/ToneMap.h"
+#include <GLG3D/Draw.h>
+#include <G3D/Rect2D.h>
+
+namespace G3D {
+
+ToneMap::Profile ToneMap::profile = ToneMap::UNINITIALIZED;
+
+ShaderRef  ToneMap::bloomShader[3];
+GLuint     ToneMap::gammaShaderPS14ATI;
+TextureRef ToneMap::RG;
+TextureRef ToneMap::B;
+
+void ToneMap::beginFrame(RenderDevice* rd) {
+    // Intentionally empty.  Future implementations might
+    // use this opportunity to switch from the back buffer to a 
+    // render buffer.
+}
+
+
+void ToneMap::endFrame(RenderDevice* rd) {
+    if (! mEnabled) {
+        return;
+    }
+
+    switch (profile) {
+    case PS20:
+        applyPS20(rd);
+        break;
+        
+    case PS14ATI:
+        applyPS14ATI(rd);
+        break;
+        
+    default:
+        // No tone mapping
+        ;
+    }
+}
+
+
+TextureRef ToneMap::getBloomMap(RenderDevice* rd) const {
+    if (stereo && 
+        (rd->drawBuffer() == RenderDevice::BUFFER_FRONT_RIGHT) ||
+        (rd->drawBuffer() == RenderDevice::BUFFER_BACK_RIGHT)) {
+        return stereoBloomMap[1];
+    } else {
+        return stereoBloomMap[0];
+    }
+}
+
+
+void ToneMap::applyPS14ATI(RenderDevice* rd) {
+
+    // TODO: obey viewport
+
+    // TODO: gamma correct
+    // TODO: bloom
+    resizeImages(rd);
+    TextureRef bloomMap = getBloomMap(rd);
+
+    // We're going to use combiners, which G3D does not preserve
+    glPushAttrib(GL_TEXTURE_BIT);
+    rd->push2D();
+        rd->disableLighting();
+
+        // Undo renderdevice's 0.35 translation
+        rd->setCameraToWorldMatrix(CoordinateFrame(Matrix3::identity(), Vector3(0, 0, 0.0)));
+        
+        Rect2D rect = Rect2D::xywh(0, 0, rd->width(), rd->height());
+        Rect2D smallRect = bloomMap->rect2DBounds();
+        screenImage->copyFromScreen(rect);
+        
+        glBindFragmentShaderATI(gammaShaderPS14ATI);
+        glEnable(GL_FRAGMENT_SHADER_ATI);
+
+            rd->setTexture(0, screenImage);
+            rd->setTexture(1, RG);
+            rd->setTexture(2, B);
+
+            Draw::rect2D(rect, rd, Color3::white());
+    
+        glDisable(GL_FRAGMENT_SHADER_ATI);
+    rd->pop2D();
+    glPopAttrib();
+}
+
+/*
+        // On NVIDIA, use GL_NV_texture_shader OFFSET_TEXTURE_2D_NV
+
+        // Combiner setup
+        //
+        // Unit 0:
+        // Mode = replace
+        // arg0 = texture (screen) 
+        // 
+        // Unit 1:
+        // Mode = dependent read off 0
+        // arg0 = texture (RG gamma) 
+        //
+        // Unit 2:
+        // Mode = dependent read off 0
+        // arg0 = texture (B gamma) 
+        //
+        // Unit 3:
+        // Mode = add
+        // arg0 = unit 1
+        // arg1 = unit 2 
+
+        // Apply gamma correction
+        rd->setTexture(0, screenImage);
+        glActiveTextureARB(GL_TEXTURE0_ARB + 0);
+        glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE,  GL_COMBINE_ARB);
+        glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_RGB_ARB,   GL_MODULATE);
+        glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE0_RGB_ARB,   GL_PRIMARY_COLOR_ARB);
+        glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND0_RGB_ARB,  GL_SRC_COLOR);
+        glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE1_RGB_ARB,   GL_TEXTURE);
+        glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND1_RGB_ARB,  GL_SRC_COLOR);
+
+        rd->setTexture(1, RG);
+        glActiveTextureARB(GL_TEXTURE0_ARB + 1);
+        glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE,  GL_COMBINE_ARB);
+        glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_RGB_ARB,   BUMP_TARGET_ATI);
+        glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE0_RGB_ARB,   GL_PRIMARY_COLOR_ARB);
+        glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND0_RGB_ARB,  GL_SRC_COLOR);
+        glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE1_RGB_ARB,   GL_TEXTURE);
+        glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND1_RGB_ARB,  GL_SRC_COLOR);
+        
+        rd->setTexture(2, B);
+        glActiveTextureARB(GL_TEXTURE0_ARB + 2);
+        glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE,  GL_COMBINE_ARB);
+        glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_RGB_ARB,   GL_MODULATE);
+        glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE0_RGB_ARB,   GL_PRIMARY_COLOR_ARB);
+        glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND0_RGB_ARB,  GL_SRC_COLOR);
+        glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE1_RGB_ARB,   GL_TEXTURE);
+        glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND1_RGB_ARB,  GL_SRC_COLOR);
+
+        rd->setTexture(3, B); // Bind B as a dummy texture
+        glActiveTextureARB(GL_TEXTURE0_ARB + 3);
+        glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE,  GL_COMBINE_ARB);
+        glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_RGB_ARB,   GL_ADD);
+        glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE0_RGB_ARB,   GL_TEXTURE1_ARB);
+        glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND0_RGB_ARB,  GL_SRC_COLOR);
+        glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE1_RGB_ARB,   GL_TEXTURE2_ARB);
+        glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND1_RGB_ARB,  GL_SRC_COLOR);
+        */
+
+
+void ToneMap::applyPS20(RenderDevice* rd) {
+    // TODO: obey viewport
+
+    resizeImages(rd);
+    TextureRef bloomMap = getBloomMap(rd);
+
+    rd->push2D();
+        rd->setAlphaTest(RenderDevice::ALPHA_ALWAYS_PASS, 0);    
+        rd->setColor(Color3::white());
+        // Undo renderdevice's 0.35 translation
+        rd->setCameraToWorldMatrix(CoordinateFrame());
+        rd->setObjectToWorldMatrix(CoordinateFrame());
+
+        // Grab the image of the screen that was just rendered
+        Rect2D rect = Rect2D::xywh(0, 0, rd->width(), rd->height());
+        screenImage->copyFromScreen(rect);
+        // Threshold, gaussian blur horizontally, and subsample so that we have an image 1/4 as wide.
+        bloomShader[0]->args.set("screenImage", screenImage);
+        rd->setShader(bloomShader[0]);
+        Draw::fastRect2D(bloomMapIntermediate->rect2DBounds(), rd);
+        bloomMapIntermediate->copyFromScreen(bloomMapIntermediate->rect2DBounds());
+
+        // Gaussian filter vertically and subsample so that we have an image 1/4 as high and 
+        // blend this result in with the previous frame's bloom map to produce motion blur in
+        // bright areas.
+        bloomShader[1]->args.set("bloomImage",  bloomMapIntermediate);
+        bloomShader[1]->args.set("oldBloom",    bloomMap);
+        rd->setShader(bloomShader[1]);
+        Draw::fastRect2D(bloomMap->rect2DBounds(), rd);
+        bloomMap->copyFromScreen(bloomMap->rect2DBounds());
+
+        bool showBloomMap = false; // Set to true for debugging
+        if (! showBloomMap) {
+            // Now combine
+            bloomShader[2]->args.set("screenImage", screenImage);
+            bloomShader[2]->args.set("bloomImage",  bloomMap);
+            bloomShader[2]->args.set("gamma",       RG);
+            rd->setShader(bloomShader[2]);
+            Draw::fastRect2D(rect, rd);
+        }                
+    rd->pop2D();
+}
+
+
+void ToneMap::makeGammaCorrectionTextures() {
+    if (RG.notNull() || (profile == NO_TONE)) {
+        return;
+    }
+    
+    // The inverse gamma ramp function
+    G3D::uint8 ramp[256];
+    
+    for (int i = 0; i < 256; ++i) {
+        // Linear
+        //ramp[i] = i;
+
+        // Inverse power
+        const double A = 1.9;
+        // Brighten the screen image by 1.0 / 0.75 = 1.34, since we darkened the 
+        // scene when rendering to avoid saturation.
+        ramp[i] = iClamp(iRound((1.0 - pow(1.0 - i/255.0, A)) * 255.0 / 0.75), 0, 255);
+
+        // Log
+        // const double A = 10, B = 1; 
+        // ramp[i] = iRound(((log(A*i/255.0 + B) - log(B)) /
+        //                  (log(A+B) - log(B))) * 255.0);
+    }
+    
+    GImage data(256, 256, 3);
+    
+    for (int g = 0; g < 256; ++g) {
+        for (int r = 0; r < 256; ++r) {
+            Color3uint8& p = data.pixel3(r, g);
+            p.r = ramp[r];
+            p.g = ramp[g];
+            p.b = 0;
+        }
+    }
+    
+    // MIP-mapping causes bad interpolation for some reason
+    RG = Texture::fromGImage("RG Gamma", data, TextureFormat::RGB8, 
+        Texture::CLAMP, Texture::BILINEAR_NO_MIPMAP, Texture::DIM_2D, 
+        Texture::DEPTH_NORMAL, 1.0);
+    
+    if (profile != PS20) {
+        // On PS20 we can re-use the original RG texture
+        data.resize(256, 1, 3);
+        for (int b = 0; b < 256; ++b) {
+            Color3uint8& p = data.pixel3(b, 0);
+            p.r = 0;
+            p.g = 0;
+            p.b = ramp[b];
+        }
+    
+        B = Texture::fromGImage("B Gamma", data, TextureFormat::RGB8, 
+            Texture::CLAMP, Texture::BILINEAR_NO_MIPMAP, Texture::DIM_2D, 
+            Texture::DEPTH_NORMAL, 1.0);
+    }
+}
+
+
+void ToneMap::makeShadersPS14ATI() {
+
+    // Really slow--appears to be implemented in software!
+    gammaShaderPS14ATI = glGenFragmentShadersATI(1);
+    glBindFragmentShaderATI(gammaShaderPS14ATI);
+    glBeginFragmentShaderATI();
+
+        // Pass 1
+
+        // R0 = texture0[texcoord0]
+        glSampleMapATI(GL_REG_0_ATI, GL_TEXTURE0_ARB, GL_SWIZZLE_STR_ATI);  
+
+        // Move the blue component of R0 into the red component of R3
+        glColorFragmentOp1ATI(GL_MOV_ATI, GL_REG_3_ATI, GL_RED_BIT_ATI, GL_NONE, 
+                              GL_REG_0_ATI, GL_BLUE, GL_NONE);
+        // R1 = texture1[R0]
+        // R2 = texture2[R3]
+        glSampleMapATI(GL_REG_1_ATI, GL_REG_0_ATI, GL_SWIZZLE_STR_ATI);  
+        glSampleMapATI(GL_REG_2_ATI, GL_REG_3_ATI, GL_SWIZZLE_STR_ATI);
+
+        // At this point, R1 contains the gamma corrected red and green channels
+        // and R2 contains the corrected blue channel.  Combine them:
+
+        // R0 = R1 + R2
+        glColorFragmentOp2ATI(GL_ADD_ATI, GL_REG_0_ATI, GL_NONE, GL_NONE, 
+                              GL_REG_1_ATI, GL_NONE, GL_NONE,
+                              GL_REG_2_ATI, GL_NONE, GL_NONE);
+        
+        // R0 = texcoord 0
+        //glPassTexCoordATI(GL_REG_0_ATI, GL_TEXTURE0_ARB, GL_SWIZZLE_STR_ATI);
+        // 
+        //glPassTexCoordATI(GL_REG_1_ATI, GL_TEXTURE0_ARB, GL_SWIZZLE_STR_ATI);
+
+    glEndFragmentShaderATI();
+}
+
+
+void ToneMap::makeShadersPS20() {
+    // Bloom filter pass 1 (horizontal).
+    // Threshold and horizontal gaussian blur.
+    bloomShader[0] = Shader::fromStrings("",
+        std::string(
+        "/* Amount to brighten the bloom*/ \
+         const float scale = 3.0;\
+         const int kernelSize = 17;\
+         const float gaussCoef[kernelSize] = {\
+             0.013960189 * scale, 0.022308318 * scale, 0.033488752 * scale, 0.047226710 * scale,\
+             0.062565226 * scale, 0.077863682 * scale, 0.091031867 * scale, 0.099978946 * scale,\
+             0.103152619 * scale, 0.099978946 * scale, 0.091031867 * scale, 0.077863682 * scale,\
+             0.062565226 * scale, 0.047226710 * scale, 0.033488752 * scale, 0.022308318 * scale,\
+             0.013960189 * scale};") +
+        STR(
+        uniform sampler2D screenImage;
+
+        vec3 threshold(vec3 v) {
+            const float T = 0.88;
+            return vec3((v.r > T) ? v.r : 0.0,
+                        (v.g > T) ? v.g : 0.0,
+                        (v.b > T) ? v.b : 0.0);
+        }
+
+        vec3 sample(vec2 p, int tap, vec2 stride) {
+            return texture2D(screenImage, p + stride * float(tap)).rgb;
+        }
+        
+        void main() {
+
+            vec2 direction = vec2(1.0, 0.0);
+            vec2 pixelSize = g3d_sampler2DInvSize(screenImage);
+            vec2 stride    = pixelSize * 2.0 * direction;
+            
+            vec2 p = gl_TexCoord[0].xy + direction * pixelSize * (0.5 - float(kernelSize));
+            
+            vec3 color = threshold(sample(p, 0, stride)) * gaussCoef[0];
+            for (int tap = 1; tap < kernelSize; ++tap) {
+                color += threshold(sample(p, tap, stride)) * gaussCoef[tap];
+            }
+            
+            gl_FragColor.rgb = color;
+        }));
+
+    // Bloom filter pass 2 (vertical).
+    // Vertical gaussian blur and blend with the old bloom map.
+    bloomShader[1] = Shader::fromStrings("", 
+        std::string("const int kernelSize = 17;\
+         const float gaussCoef[kernelSize] = \
+            {0.013960189, 0.022308318, 0.033488752, 0.047226710, 0.062565226,\
+             0.077863682, 0.091031867, 0.099978946, 0.103152619, 0.099978946,\
+             0.091031867, 0.077863682, 0.062565226, 0.047226710, 0.033488752,\
+             0.022308318, 0.013960189};")+
+        STR(
+        uniform sampler2D bloomImage;
+        uniform sampler2D oldBloom;
+
+        vec3 sample(vec2 p, int tap, vec2 stride) {
+            return texture2D(bloomImage, p + stride * vec2(0.0, tap)).rgb;
+        }
+        
+        void main() {
+        
+            vec2 direction = vec2(0.0, 1.0);
+            vec2 pixelSize = g3d_sampler2DInvSize(bloomImage);
+            vec2 stride    = 2.0 * pixelSize * direction;
+            
+            vec2 p = gl_TexCoord[0].xy + direction * (0.5 - float(kernelSize)) * pixelSize;
+            
+            vec3 bloom = sample(p, 0, stride) * gaussCoef[0];
+            for (int tap = 1; tap < kernelSize; ++tap) {
+                bloom += sample(p, tap, stride) * gaussCoef[tap];
+            }
+            
+            vec3 old = texture2D(oldBloom, gl_TexCoord[0].xy).rgb;
+            
+            gl_FragColor.rgb = (bloom + old) * 0.7;
+        }));
+
+    // Bloom pass 3:
+    // Gamma correct the screen image and
+    // add it to a 2D blur of the bloom image.
+    bloomShader[2] = Shader::fromStrings("", 
+        STR(
+        uniform sampler2D screenImage;
+        uniform sampler2D bloomImage;
+        uniform sampler2D gamma; 
+
+        void main() {
+                
+            // Use a 3-vector so that swizzles give us the 4-neighbors
+            vec3 s = vec3(g3d_sampler2DInvSize(bloomImage) * 2.0, 0.0);
+            
+            // Offset by half a texel to get bilinear
+            vec2 p = gl_TexCoord[0].xy - s.xy * 0.5;
+            
+            vec3 bloom = 
+                (texture2D(bloomImage, p) +
+                 texture2D(bloomImage, p - s.xz) +
+                 texture2D(bloomImage, p + s.xz) +
+                 texture2D(bloomImage, p + s.zy) +
+                 texture2D(bloomImage, p - s.zy)).rgb * 0.2;
+            
+            vec3 screen = texture2D(screenImage, gl_TexCoord[0].xy).rgb;
+
+            // Apply gamma correction.  Use gamma lookup table.
+            // Process red and green simultaneously to reduce 
+            // the number of texture reads.
+            screen.rg = texture2D(gamma, screen.rg).rg;
+            screen.b  = texture2D(gamma, screen.rb).g; 
+            
+            gl_FragColor.rgb = screen + bloom;
+        }
+        ));
+  
+    // Shaders don't need to preserve state since tonemap is wrapped in
+    // push2D
+    for (int i = 0; i < 3; ++i) {
+        bloomShader[i]->setPreserveState(false);
+    }
+}
+
+
+ToneMap::ToneMap() : mEnabled(true) {
+
+    // Determine shading language profile
+
+    if (profile == UNINITIALIZED) {
+        profile = NO_TONE;
+        
+        if (GLCaps::supports_GL_ARB_texture_non_power_of_two()) {
+            if (Shader::supportsPixelShaders()) {
+                profile = PS20;
+            } else if (GLCaps::supports("GL_ARB_texture_env_crossbar") &&
+                GLCaps::supports("GL_ARB_texture_env_combine") &&
+                GLCaps::supports("GL_EXT_texture_env_add") &&
+                GLCaps::supports("GL_NV_texture_shader") &&
+                (GLCaps::numTextureUnits() >= 4)) {
+
+                profile = PS14NVIDIA;
+
+                // TODO: remove (not currently supporting PS14NIVIDA)
+                profile = NO_TONE;
+            } else if (GLCaps::supports("GL_ATI_fragment_shader") &&
+                (GLCaps::numTextureUnits() >= 4)) {
+
+                // profile = PS14ATI;
+                profile = NO_TONE;
+            }
+        }
+    }
+
+    if (profile != NO_TONE) {
+        makeGammaCorrectionTextures();
+        
+        if (profile == PS20) {
+            makeShadersPS20();
+        } else if (profile == PS14ATI) {
+            makeShadersPS14ATI();
+        }
+    }
+}
+
+
+void ToneMap::resizeImages(RenderDevice* rd) {
+    
+    const Rect2D viewport = rd->getViewport();
+    
+    if (screenImage.isNull() ||
+        (viewport.wh() != screenImage->vector2Bounds())) {
+
+        screenImage = Texture::createEmpty(viewport.width(), viewport.height(), 
+            "Copied Screen Image", TextureFormat::RGB8,
+            Texture::CLAMP, Texture::BILINEAR_NO_MIPMAP, Texture::DIM_2D_NPOT,
+            Texture::DEPTH_NORMAL, 1.0);
+
+        bloomMapIntermediate = Texture::createEmpty(viewport.width() / 4, viewport.height(), 
+            "Bloom map intermediate", TextureFormat::RGB8,
+            Texture::CLAMP, Texture::BILINEAR_NO_MIPMAP, Texture::DIM_2D_NPOT, 
+            Texture::DEPTH_NORMAL, 1.0);
+
+        resizeBloomMap(viewport.width() / 4, viewport.height() / 4);
+    }
+}
+
+
+void ToneMap::resizeBloomMap(int w, int h) {
+    stereo = glGetBoolean(GL_STEREO) != 0;
+    
+    for (int i = 0; i < (stereo ? 2 : 1); ++i) {
+        stereoBloomMap[i] = Texture::createEmpty(w, h, 
+            "Bloom map", TextureFormat::RGB8,
+            Texture::CLAMP, Texture::BILINEAR_NO_MIPMAP, Texture::DIM_2D_NPOT, 
+            Texture::DEPTH_NORMAL, 1.0);
+    }
+}
+
+
+LightingParameters ToneMap::prepareLightingParameters(const LightingParameters& L) const {
+
+    bool on = mEnabled && (profile != NO_TONE);
+
+    double lightScale = on ? 0.75 : 1.0;
+    LightingParameters params = L;
+
+    params.emissiveScale *= lightScale;
+    params.skyAmbient   *= on ? 0.5 : 1.0;
+    params.diffuseAmbient *= lightScale;
+    params.lightColor   *= lightScale;
+    params.ambient      *= lightScale;
+    
+    return params;
+}
+
+
+LightingRef ToneMap::prepareLighting(const LightingRef& L) const {
+
+    double lightScale = (mEnabled && (profile != NO_TONE)) ? 0.75 : 1.0;
+
+    LightingRef lighting = Lighting::create();
+    *lighting = *L;
+
+    lighting->environmentMapColor *= lightScale;
+    lighting->emissiveScale *= lightScale;
+
+    lighting->ambientTop *= lightScale;
+    lighting->ambientBottom *= lightScale;
+
+    for (int i = 0; i < lighting->lightArray.size(); ++i) {
+        lighting->lightArray[i].color *= lightScale;
+    }
+
+    for (int i = 0; i < lighting->shadowedLightArray.size(); ++i) {
+        lighting->shadowedLightArray[i].color *= lightScale;
+    }
+ 
+    return lighting;
+}
+
+
+void ToneMap::setEnabled(bool e) {
+    if (e == mEnabled) {
+        return;
+    }
+
+    if (! mEnabled && stereoBloomMap[0].notNull()) {
+        // Wipe old bloomMap out on re-enable
+        // (this implementation leaves noise; we should really color them black)
+        //resizeBloomMap(stereoBloomMap[0]->getTexelWidth(), stereoBloomMap[0]->getTexelHeight());
+    }
+
+    mEnabled = e;
+}
+
+} // namespace G3D

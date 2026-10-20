@@ -1,51 +1,126 @@
-// roc 2007-08 004a5e70  unit: RBX::VInstance::?$NonFactoryProduct  size: 103 bytes
-// Make this compile to the exact bytes below, then: roc check 2007-08 004a5e70
-//
-// 004a5e70  51                   push ecx
-// 004a5e71  56                   push esi
-// 004a5e72  8bf1                 mov esi, ecx
-// 004a5e74  d94604               fld dword ptr [esi + 4]
-// 004a5e77  d906                 fld dword ptr [esi]
-// 004a5e79  d94608               fld dword ptr [esi + 8]
-// 004a5e7c  d9460c               fld dword ptr [esi + 0xc]
-// 004a5e7f  d9c2                 fld st(2)
-// 004a5e81  decb                 fmulp st(3)
-// 004a5e83  d9c3                 fld st(3)
-// 004a5e85  decc                 fmulp st(4)
-// 004a5e87  d9ca                 fxch st(2)
-// 004a5e89  dec3                 faddp st(3)
-// 004a5e8b  dcc8                 fmul st(0), st(0)
-// 004a5e8d  dec2                 faddp st(2)
-// 004a5e8f  dcc8                 fmul st(0), st(0)
-// 004a5e91  dec1                 faddp st(1)
-// 004a5e93  d95c2404             fstp dword ptr [esp + 4]
-// 004a5e97  d9442404             fld dword ptr [esp + 4]
-// 004a5e9b  e86caf1800           call 0x630e0c
-// 004a5ea0  d95c2404             fstp dword ptr [esp + 4]
-// 004a5ea4  d9442404             fld dword ptr [esp + 4]
-// 004a5ea8  d9e8                 fld1 
-// 004a5eaa  def1                 fdivrp st(1)
-// 004a5eac  d95c2404             fstp dword ptr [esp + 4]
-// 004a5eb0  d906                 fld dword ptr [esi]
-// 004a5eb2  d9442404             fld dword ptr [esp + 4]
-// 004a5eb6  d9c0                 fld st(0)
-// 004a5eb8  deca                 fmulp st(2)
-// 004a5eba  d9c9                 fxch st(1)
-// 004a5ebc  d91e                 fstp dword ptr [esi]
-// 004a5ebe  d9c0                 fld st(0)
-// 004a5ec0  d84e04               fmul dword ptr [esi + 4]
-// 004a5ec3  d95e04               fstp dword ptr [esi + 4]
-// 004a5ec6  d94608               fld dword ptr [esi + 8]
-// 004a5ec9  d8c9                 fmul st(1)
-// 004a5ecb  d95e08               fstp dword ptr [esi + 8]
-// 004a5ece  d84e0c               fmul dword ptr [esi + 0xc]
-// 004a5ed1  d95e0c               fstp dword ptr [esi + 0xc]
-// 004a5ed4  5e                   pop esi
-// 004a5ed5  59                   pop ecx
-// 004a5ed6  c3                   ret 
-// library openrbx-client/App\v8kernel\SimBody.cpp (function ?normalize@Quaternion@RBX@@QAEXXZ)
-
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
 // roc-lib: openrbx-client App/v8kernel/SimBody.cpp
+
+// Candidate translation unit (score above; library headers required).
+#include "v8kernel/SimBody.h"
+
+#include "decomp.h"
+#include "util/Math.h"
+#include "util/Units.h"
+#include "v8kernel/Body.h"
+#include "v8kernel/Cofm.h"
+#include "v8kernel/Constants.h"
+
+#include <cstddef>
+
+namespace RBX {
+
+// FUNCTION: WEBSERVICE 0x10120e00
+inline void mulMatrixMatrixTranspose(const Matrix3& _mat0, const Matrix3& _mat1, Matrix3& _answer)
+{
+	const Matrix3& mat0 = _mat0;
+	const Matrix3& mat1 = _mat1;
+	Matrix3& answer = _answer;
+
+	for (int i = 0; i < 3; ++i) {
+		for (int j = 0; j < 3; ++j) {
+			answer[i][j] = mat0[i][0] * mat1[j][0] + mat0[i][1] * mat1[j][1] + mat0[i][2] * mat1[j][2];
+		}
+	}
+}
+
+// FUNCTION: WEBSERVICE 0x10120e80
+inline Vector3 computeRotVel(const Matrix3& rot, const Vector3& momentRecip, const Vector3& angMomentum)
+{
+	Matrix3 iWorldInv;
+	Matrix3 temp;
+
+	temp[0][0] = rot[0][0] * momentRecip.x;
+	temp[0][1] = rot[0][1] * momentRecip.y;
+	temp[0][2] = rot[0][2] * momentRecip.z;
+	temp[1][0] = rot[1][0] * momentRecip.x;
+	temp[1][1] = rot[1][1] * momentRecip.y;
+	temp[1][2] = rot[1][2] * momentRecip.z;
+	temp[2][0] = rot[2][0] * momentRecip.x;
+	temp[2][1] = rot[2][1] * momentRecip.y;
+	temp[2][2] = rot[2][2] * momentRecip.z;
+
+	mulMatrixMatrixTranspose(temp, rot, iWorldInv);
+
+	Vector3 rotVel;
+
+	for (int r = 0; r < 3; ++r) {
+		float sum = iWorldInv[r][0] * angMomentum[0] + iWorldInv[r][1] * angMomentum[1];
+
+		rotVel[r] = sum + iWorldInv[r][2] * angMomentum[2];
+	}
+
+	return rotVel;
+}
+
+// FUNCTION: WEBSERVICE 0x101210b0
+SimBody::SimBody(Body* body)
+	: body(body), dirty(true), qOrientation(0.0f, 0.0f, 0.0f, 1.0f), angMomentum(0.0f, 0.0f, 0.0f),
+	  momentRecip(0.0f, 0.0f, 0.0f), constantForceY(0.0f), force(Vector3::zero()), torque(Vector3::zero())
+{
+}
+
+// FUNCTION: WEBSERVICE 0x10121190
+PV SimBody::getOwnerPV()
+{
+	Vector3 cofmInBody = body->getCofmOffset();
+
+	return pv.pvAtLocalOffset(-cofmInBody);
+}
+
+// FUNCTION: WEBSERVICE 0x10121210
+void SimBody::update()
+{
+	Vector3 cofmInBody = body->getCofmOffset();
+	pv = body->getPV().pvAtLocalOffset(cofmInBody);
+
+	qOrientation = Quaternion(pv.position.rotation);
+	qOrientation.normalize();
+
+	angMomentum = pv.velocity.rotational * body->getBranchIWorld();
+
+	massRecip = 1.0f / body->getBranchMass();
+	momentRecip = Vector3(1.0f, 1.0f, 1.0f) / Math::toDiagonal(body->getBranchIBody());
+	constantForceY = body->getBranchMass() * Units::kmsAccelerationToRbx(Constants::getKmsGravity()).y;
+
+	dirty = false;
+}
+
+// FUNCTION: WEBSERVICE 0x10121490
+void SimBody::step(float dt)
+{
+	static Vector3 denormFix(1e-20f, 1e-20f, 1e-20f);
+
+	updateIfDirty();
+
+	angMomentum *= 0.9998f;
+	angMomentum += torque * dt;
+
+	pv.velocity.rotational = computeRotVel(pv.position.rotation, momentRecip, angMomentum) + denormFix;
+
+	qOrientation += Quaternion(pv.velocity.rotational, 0.0f) * qOrientation * 0.5f * dt;
+	qOrientation.normalize();
+	qOrientation.toRotationMatrix(pv.position.rotation);
+
+	pv.velocity.linear += force * massRecip * dt;
+	pv.position.translation += pv.velocity.linear * dt;
+
+	clearAccumulators();
+
+	angMomentum += denormFix;
+	pv.velocity.linear += denormFix;
+}
+
+// FUNCTION: WEBSERVICE 0x1015b610 FOLDED
+SimBody::~SimBody()
+{
+}
+
+} // namespace RBX

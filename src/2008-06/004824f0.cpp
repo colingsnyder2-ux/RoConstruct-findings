@@ -1,308 +1,1424 @@
-// roc 2008-06 004824f0  unit: G3D::Win32Window  size: 1034 bytes
-// Make this compile to the exact bytes below, then: roc check 2008-06 004824f0
-//
-// 004824f0  55                   push ebp
-// 004824f1  8bec                 mov ebp, esp
-// 004824f3  6aff                 push -1
-// 004824f5  68b3537c00           push 0x7c53b3
-// 004824fa  64a100000000         mov eax, dword ptr fs:[0]
-// 00482500  50                   push eax
-// 00482501  64892500000000       mov dword ptr fs:[0], esp
-// 00482508  83ec70               sub esp, 0x70
-// 0048250b  53                   push ebx
-// 0048250c  33db                 xor ebx, ebx
-// 0048250e  895de8               mov dword ptr [ebp - 0x18], ebx
-// 00482511  56                   push esi
-// 00482512  8bf1                 mov esi, ecx
-// 00482514  895e08               mov dword ptr [esi + 8], ebx
-// 00482517  895e0c               mov dword ptr [esi + 0xc], ebx
-// 0048251a  895e04               mov dword ptr [esi + 4], ebx
-// 0048251d  57                   push edi
-// 0048251e  8965f0               mov dword ptr [ebp - 0x10], esp
-// 00482521  8975d0               mov dword ptr [ebp - 0x30], esi
-// 00482524  895e10               mov dword ptr [esi + 0x10], ebx
-// 00482527  895e14               mov dword ptr [esi + 0x14], ebx
-// 0048252a  895e18               mov dword ptr [esi + 0x18], ebx
-// 0048252d  d9ee                 fldz 
-// 0048252f  c7062cf58100         mov dword ptr [esi], 0x81f52c
-// 00482535  d9561c               fst dword ptr [esi + 0x1c]
-// 00482538  8d7e28               lea edi, [esi + 0x28]
-// 0048253b  d95e20               fstp dword ptr [esi + 0x20]
-// 0048253e  8bcf                 mov ecx, edi
-// 00482540  895dfc               mov dword ptr [ebp - 4], ebx
-// 00482543  e89887fdff           call 0x45ace0
-// 00482548  8d8e88000000         lea ecx, [esi + 0x88]
-// 0048254e  c645fc01             mov byte ptr [ebp - 4], 1
-// 00482552  ff1560248000         call dword ptr [0x802460]
-// 00482558  899eb4010000         mov dword ptr [esi + 0x1b4], ebx
-// 0048255e  c786b801000014f38100 mov dword ptr [esi + 0x1b8], 0x81f314
-// 00482568  6a10                 push 0x10
-// 0048256a  6a28                 push 0x28
-// 0048256c  c645fc02             mov byte ptr [ebp - 4], 2
-// 00482570  c786bc010000f8f08100 mov dword ptr [esi + 0x1bc], 0x81f0f8
-// 0048257a  c786c80100000a000000 mov dword ptr [esi + 0x1c8], 0xa
-// 00482584  899ec0010000         mov dword ptr [esi + 0x1c0], ebx
-// 0048258a  e8f15f0800           call 0x508580
-// 0048258f  8b8ec8010000         mov ecx, dword ptr [esi + 0x1c8]
-// 00482595  03c9                 add ecx, ecx
-// 00482597  03c9                 add ecx, ecx
-// 00482599  51                   push ecx
-// 0048259a  53                   push ebx
-// 0048259b  50                   push eax
-// 0048259c  8986c4010000         mov dword ptr [esi + 0x1c4], eax
-// 004825a2  e889640800           call 0x508a30
-// 004825a7  83c414               add esp, 0x14
-// 004825aa  899edc010000         mov dword ptr [esi + 0x1dc], ebx
-// 004825b0  899ee0010000         mov dword ptr [esi + 0x1e0], ebx
-// 004825b6  899ed8010000         mov dword ptr [esi + 0x1d8], ebx
-// 004825bc  c645fc04             mov byte ptr [ebp - 4], 4
-// 004825c0  c686ec01000001       mov byte ptr [esi + 0x1ec], 1
-// 004825c7  889eaf000000         mov byte ptr [esi + 0xaf], bl
-// 004825cd  e86ef9ffff           call 0x481f40
-// 004825d2  899ea4000000         mov dword ptr [esi + 0xa4], ebx
-// 004825d8  c686ac00000001       mov byte ptr [esi + 0xac], 1
-// 004825df  889ead000000         mov byte ptr [esi + 0xad], bl
-// 004825e5  889eae000000         mov byte ptr [esi + 0xae], bl
-// 004825eb  ff1530228000         call dword ptr [0x802230]
-// 004825f1  8986d4010000         mov dword ptr [esi + 0x1d4], eax
-// 004825f7  381d85f59600         cmp byte ptr [0x96f585], bl
-// 004825fd  7505                 jne 0x482604
-// 004825ff  e89cccffff           call 0x47f2a0
-// 00482604  8b5508               mov edx, dword ptr [ebp + 8]
-// 00482607  52                   push edx
-// 00482608  8bcf                 mov ecx, edi
-// 0048260a  e811c4ffff           call 0x47ea20
-// 0048260f  6816b78000           push 0x80b716
-// 00482614  8d4d84               lea ecx, [ebp - 0x7c]
-// 00482617  ff1558248000         call dword ptr [0x802458]
-// 0048261d  8b07                 mov eax, dword ptr [edi]
-// 0048261f  8b4e2c               mov ecx, dword ptr [esi + 0x2c]
-// 00482622  8945c4               mov dword ptr [ebp - 0x3c], eax
-// 00482625  8b4508               mov eax, dword ptr [ebp + 8]
-// 00482628  c645fc05             mov byte ptr [ebp - 4], 5
-// 0048262c  895dbc               mov dword ptr [ebp - 0x44], ebx
-// 0048262f  895dc0               mov dword ptr [ebp - 0x40], ebx
-// 00482632  894dc8               mov dword ptr [ebp - 0x38], ecx
-// 00482635  38583d               cmp byte ptr [eax + 0x3d], bl
-// 00482638  7415                 je 0x48264f
-// 0048263a  c745e00000ca00       mov dword ptr [ebp - 0x20], 0xca0000
-// 00482641  38583c               cmp byte ptr [eax + 0x3c], bl
-// 00482644  7410                 je 0x482656
-// 00482646  c745e00000ce00       mov dword ptr [ebp - 0x20], 0xce0000
-// 0048264d  eb07                 jmp 0x482656
-// 0048264f  c745e000000080       mov dword ptr [ebp - 0x20], 0x80000000
-// 00482656  8b55e0               mov edx, dword ptr [ebp - 0x20]
-// 00482659  53                   push ebx
-// 0048265a  52                   push edx
-// 0048265b  8d45bc               lea eax, [ebp - 0x44]
-// 0048265e  50                   push eax
-// 0048265f  ff15b82c8000         call dword ptr [0x802cb8]
-// 00482665  8b4dbc               mov ecx, dword ptr [ebp - 0x44]
-// 00482668  8bd1                 mov edx, ecx
-// 0048266a  f7da                 neg edx
-// 0048266c  8955d4               mov dword ptr [ebp - 0x2c], edx
-// 0048266f  8b55c0               mov edx, dword ptr [ebp - 0x40]
-// 00482672  db45d4               fild dword ptr [ebp - 0x2c]
-// 00482675  8bc2                 mov eax, edx
-// 00482677  f7d8                 neg eax
-// 00482679  8945d4               mov dword ptr [ebp - 0x2c], eax
-// 0048267c  d95e1c               fstp dword ptr [esi + 0x1c]
-// 0048267f  8b45c4               mov eax, dword ptr [ebp - 0x3c]
-// 00482682  db45d4               fild dword ptr [ebp - 0x2c]
-// 00482685  2bc1                 sub eax, ecx
-// 00482687  8945d8               mov dword ptr [ebp - 0x28], eax
-// 0048268a  8b45c8               mov eax, dword ptr [ebp - 0x38]
-// 0048268d  d95e20               fstp dword ptr [esi + 0x20]
-// 00482690  2bc2                 sub eax, edx
-// 00482692  8945dc               mov dword ptr [ebp - 0x24], eax
-// 00482695  8b4508               mov eax, dword ptr [ebp + 8]
-// 00482698  33ff                 xor edi, edi
-// 0048269a  895de4               mov dword ptr [ebp - 0x1c], ebx
-// 0048269d  385829               cmp byte ptr [eax + 0x29], bl
-// 004826a0  7534                 jne 0x4826d6
-// 004826a2  385810               cmp byte ptr [eax + 0x10], bl
-// 004826a5  7426                 je 0x4826cd
-// 004826a7  53                   push ebx
-// 004826a8  ff154c2d8000         call dword ptr [0x802d4c]
-// 004826ae  2b45d8               sub eax, dword ptr [ebp - 0x28]
-// 004826b1  6a01                 push 1
-// 004826b3  99                   cdq 
-// 004826b4  2bc2                 sub eax, edx
-// 004826b6  8bf8                 mov edi, eax
-// 004826b8  d1ff                 sar edi, 1
-// 004826ba  ff154c2d8000         call dword ptr [0x802d4c]
-// 004826c0  2b45dc               sub eax, dword ptr [ebp - 0x24]
-// 004826c3  99                   cdq 
-// 004826c4  2bc2                 sub eax, edx
-// 004826c6  d1f8                 sar eax, 1
-// 004826c8  8945e4               mov dword ptr [ebp - 0x1c], eax
-// 004826cb  eb09                 jmp 0x4826d6
-// 004826cd  8b480c               mov ecx, dword ptr [eax + 0xc]
-// 004826d0  8b7808               mov edi, dword ptr [eax + 8]
-// 004826d3  894de4               mov dword ptr [ebp - 0x1c], ecx
-// 004826d6  837d9c10             cmp dword ptr [ebp - 0x64], 0x10
-// 004826da  8b45e4               mov eax, dword ptr [ebp - 0x1c]
-// 004826dd  897e30               mov dword ptr [esi + 0x30], edi
-// 004826e0  89becc010000         mov dword ptr [esi + 0x1cc], edi
-// 004826e6  894634               mov dword ptr [esi + 0x34], eax
-// 004826e9  8986d0010000         mov dword ptr [esi + 0x1d0], eax
-// 004826ef  7208                 jb 0x4826f9
-// 004826f1  8b5588               mov edx, dword ptr [ebp - 0x78]
-// 004826f4  8955d4               mov dword ptr [ebp - 0x2c], edx
-// 004826f7  eb06                 jmp 0x4826ff
-// 004826f9  8d4588               lea eax, [ebp - 0x78]
-// 004826fc  8945d4               mov dword ptr [ebp - 0x2c], eax
-// 004826ff  53                   push ebx
-// 00482700  53                   push ebx
-// 00482701  ff15bc218000         call dword ptr [0x8021bc]
-// 00482707  8b4ddc               mov ecx, dword ptr [ebp - 0x24]
-// 0048270a  8b55d8               mov edx, dword ptr [ebp - 0x28]
-// 0048270d  50                   push eax
-// 0048270e  8b45e4               mov eax, dword ptr [ebp - 0x1c]
-// 00482711  53                   push ebx
-// 00482712  53                   push ebx
-// 00482713  51                   push ecx
-// 00482714  8b4de0               mov ecx, dword ptr [ebp - 0x20]
-// 00482717  52                   push edx
-// 00482718  8b55d4               mov edx, dword ptr [ebp - 0x2c]
-// 0048271b  50                   push eax
-// 0048271c  57                   push edi
-// 0048271d  51                   push ecx
-// 0048271e  52                   push edx
-// 0048271f  e83cedffff           call 0x481460
-// 00482724  50                   push eax
-// 00482725  53                   push ebx
-// 00482726  ff15c02d8000         call dword ptr [0x802dc0]
-// 0048272c  8bf8                 mov edi, eax
-// 0048272e  381dd3f79600         cmp byte ptr [0x96f7d3], bl
-// 00482734  0f8588000000         jne 0x4827c2
-// 0048273a  3bfb                 cmp edi, ebx
-// 0048273c  0f8580000000         jne 0x4827c2
-// 00482742  e8f9810800           call 0x50a940
-// 00482747  391d8c279400         cmp dword ptr [0x94278c], ebx
-// 0048274d  7444                 je 0x482793
-// 0048274f  6816b78000           push 0x80b716
-// 00482754  8d4da0               lea ecx, [ebp - 0x60]
-// 00482757  ff1558248000         call dword ptr [0x802458]
-// 0048275d  6a01                 push 1
-// 0048275f  68d3f79600           push 0x96f7d3
-// 00482764  68ab000000           push 0xab
-// 00482769  68c0f28100           push 0x81f2c0
-// 0048276e  8d45a0               lea eax, [ebp - 0x60]
-// 00482771  50                   push eax
-// 00482772  6818f58100           push 0x81f518
-// 00482777  c645fc06             mov byte ptr [ebp - 4], 6
-// 0048277b  c745e801000000       mov dword ptr [ebp - 0x18], 1
-// 00482782  ff158c279400         call dword ptr [0x94278c]
-// 00482788  83c418               add esp, 0x18
-// 0048278b  c645ef01             mov byte ptr [ebp - 0x11], 1
-// 0048278f  84c0                 test al, al
-// 00482791  7503                 jne 0x482796
-// 00482793  885def               mov byte ptr [ebp - 0x11], bl
-// 00482796  f645e801             test byte ptr [ebp - 0x18], 1
-// 0048279a  c745fc05000000       mov dword ptr [ebp - 4], 5
-// 004827a1  740d                 je 0x4827b0
-// 004827a3  8365e8fe             and dword ptr [ebp - 0x18], 0xfffffffe
-// 004827a7  8d4da0               lea ecx, [ebp - 0x60]
-// 004827aa  ff1568248000         call dword ptr [0x802468]
-// 004827b0  385def               cmp byte ptr [ebp - 0x11], bl
-// 004827b3  7408                 je 0x4827bd
-// 004827b5  6aff                 push -1
-// 004827b7  ff15f4278000         call dword ptr [0x8027f4]
-// 004827bd  e8ee810800           call 0x50a9b0
-// 004827c2  56                   push esi
-// 004827c3  6aeb                 push -0x15
-// 004827c5  57                   push edi
-// 004827c6  89bee8010000         mov dword ptr [esi + 0x1e8], edi
-// 004827cc  ff15d82d8000         call dword ptr [0x802dd8]
-// 004827d2  8b4d08               mov ecx, dword ptr [ebp + 8]
-// 004827d5  38593e               cmp byte ptr [ecx + 0x3e], bl
-// 004827d8  7409                 je 0x4827e3
-// 004827da  6a05                 push 5
-// 004827dc  57                   push edi
-// 004827dd  ff15bc2c8000         call dword ptr [0x802cbc]
-// 004827e3  385e51               cmp byte ptr [esi + 0x51], bl
-// 004827e6  0f84a6000000         je 0x482892
-// 004827ec  8b463c               mov eax, dword ptr [esi + 0x3c]
-// 004827ef  8b4e28               mov ecx, dword ptr [esi + 0x28]
-// 004827f2  8d1440               lea edx, [eax + eax*2]
-// 004827f5  035640               add edx, dword ptr [esi + 0x40]
-// 004827f8  8b462c               mov eax, dword ptr [esi + 0x2c]
-// 004827fb  52                   push edx
-// 004827fc  50                   push eax
-// 004827fd  8b4660               mov eax, dword ptr [esi + 0x60]
-// 00482800  51                   push ecx
-// 00482801  e82ac8ffff           call 0x47f030
-// 00482806  83c40c               add esp, 0xc
-// 00482809  84c0                 test al, al
-// 0048280b  0f8581000000         jne 0x482892
-// 00482811  381dd2f79600         cmp byte ptr [0x96f7d2], bl
-// 00482817  7579                 jne 0x482892
-// 00482819  e822810800           call 0x50a940
-// 0048281e  391d8c279400         cmp dword ptr [0x94278c], ebx
-// 00482824  7441                 je 0x482867
-// 00482826  68fcf48100           push 0x81f4fc
-// 0048282b  8d4da0               lea ecx, [ebp - 0x60]
-// 0048282e  ff1558248000         call dword ptr [0x802458]
-// 00482834  834de802             or dword ptr [ebp - 0x18], 2
-// 00482838  6a01                 push 1
-// 0048283a  68d2f79600           push 0x96f7d2
-// 0048283f  68b9000000           push 0xb9
-// 00482844  68c0f28100           push 0x81f2c0
-// 00482849  8d55a0               lea edx, [ebp - 0x60]
-// 0048284c  52                   push edx
-// 0048284d  681ce28100           push 0x81e21c
-// 00482852  c645fc07             mov byte ptr [ebp - 4], 7
-// 00482856  ff158c279400         call dword ptr [0x94278c]
-// 0048285c  83c418               add esp, 0x18
-// 0048285f  c6450b01             mov byte ptr [ebp + 0xb], 1
-// 00482863  84c0                 test al, al
-// 00482865  7503                 jne 0x48286a
-// 00482867  885d0b               mov byte ptr [ebp + 0xb], bl
-// 0048286a  f645e802             test byte ptr [ebp - 0x18], 2
-// 0048286e  c745fc05000000       mov dword ptr [ebp - 4], 5
-// 00482875  7409                 je 0x482880
-// 00482877  8d4da0               lea ecx, [ebp - 0x60]
-// 0048287a  ff1568248000         call dword ptr [0x802468]
-// 00482880  385d0b               cmp byte ptr [ebp + 0xb], bl
-// 00482883  7408                 je 0x48288d
-// 00482885  6aff                 push -1
-// 00482887  ff15f4278000         call dword ptr [0x8027f4]
-// 0048288d  e81e810800           call 0x50a9b0
-// 00482892  8b450c               mov eax, dword ptr [ebp + 0xc]
-// 00482895  50                   push eax
-// 00482896  57                   push edi
-// 00482897  8bce                 mov ecx, esi
-// 00482899  e832edffff           call 0x4815d0
-// 0048289e  8d7e68               lea edi, [esi + 0x68]
-// 004828a1  6860978100           push 0x819760
-// 004828a6  57                   push edi
-// 004828a7  ff15cc238000         call dword ptr [0x8023cc]
-// 004828ad  83c408               add esp, 8
-// 004828b0  84c0                 test al, al
-// 004828b2  0f84b2000000         je 0x48296a
-// 004828b8  c745a85c978100       mov dword ptr [ebp - 0x58], 0x81975c
-// 004828bf  895db8               mov dword ptr [ebp - 0x48], ebx
-// 004828c2  895db4               mov dword ptr [ebp - 0x4c], ebx
-// 004828c5  895db0               mov dword ptr [ebp - 0x50], ebx
-// 004828c8  895dac               mov dword ptr [ebp - 0x54], ebx
-// 004828cb  6a08                 push 8
-// 004828cd  57                   push edi
-// 004828ce  8d4da8               lea ecx, [ebp - 0x58]
-// 004828d1  c645fc09             mov byte ptr [ebp - 4], 9
-// 004828d5  e8b6db0800           call 0x510490
-// 004828da  8d4da8               lea ecx, [ebp - 0x58]
-// 004828dd  51                   push ecx
-// 004828de  8bce                 mov ecx, esi
-// 004828e0  e8ebe4ffff           call 0x480dd0
-// 004828e5  8d4da8               lea ecx, [ebp - 0x58]
-// 004828e8  c645fc08             mov byte ptr [ebp - 4], 8
-// 004828ec  e83fb90800           call 0x50e230
-// 004828f1  c745fc05000000       mov dword ptr [ebp - 4], 5
-// 004828f8  eb70                 jmp 0x48296a
-// library g3d-6.09-rbx2008/GLG3Dcpp\Win32Window.cpp (function ??0Win32Window@G3D@@AAE@ABVSettings@GWindow@1@_N@Z)
-
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD
 // roc-lib: g3d-6.09-rbx2008 GLG3Dcpp/Win32Window.cpp
+
+// Candidate translation unit (score above; library headers required).
+/**
+  @file Win32Window.cpp
+
+  @maintainer Corey Taylor, vejita@users.sf.net 
+  @cite       Written by Corey Taylor & Morgan McGuire
+  @cite       Special thanks to Max McGuire of Ironlore
+  @created 	  2004-05-21
+  @edited  	  2006-01-15
+    
+  Copyright 2000-2006, Morgan McGuire.
+  All rights reserved.
+*/
+
+#include "G3D/platform.h"
+#include "GLG3D/GLCaps.h"
+
+// This file is ignored on other platforms
+#ifdef G3D_WIN32
+
+#include <windows.h>
+#include "graphics3d.h"
+#include "GLG3D/Win32Window.h"
+#include "GLG3D/glcalls.h"
+#include "GLG3D/UserInput.h"
+#include "directinput8.h"
+
+#include <time.h>
+#include <sstream>
+#if !defined(G3D_MINGW32)
+#include <crtdbg.h>
+#endif
+
+using G3D::_internal::_DirectInput;
+
+/*
+    DirectInput8 support is added by loading dinupt8.dll if found.
+
+    COM calls are not used to limit the style of code and includes needed.
+    DirectInput8 has a special creation function that lets us do this properly.
+
+    The joystick state structure used simulates the exports found in dinput8.lib
+
+    The joystick axis order returned to users is: X, Y, Z, Slider1, Slider2, rX, rY, rZ.
+
+    Important:  The cooperation level of Win32Window joysticks is Foreground:Non-Exclusive.
+    This means that other programs can get access to the joystick(preferably non-exclusive) and the joystick
+     is only aquired when Win32Window is in the foreground.
+*/
+
+namespace G3D {
+
+static const UINT BLIT_BUFFER = 0xC001;
+
+#define WGL_SAMPLE_BUFFERS_ARB	0x2041
+#define WGL_SAMPLES_ARB		    0x2042
+
+static bool hasWGLMultiSampleSupport = false;
+
+static PFNWGLCHOOSEPIXELFORMATARBPROC wglChoosePixelFormatARB = NULL;
+
+static unsigned int _sdlKeys[SDLK_LAST];
+static bool sdlKeysInitialized = false;
+
+// Prototype static helper functions at end of file
+static bool ChangeResolution(int, int, int, int);
+static void makeKeyEvent(int, int, GEvent&);
+static void mouseButton(bool, int, DWORD, GEvent&);
+static void initWin32KeyMap();
+//static LRESULT WINAPI _internal::window_proc(HWND window, UINT message, WPARAM wparam, LPARAM lparam);
+
+#if 0
+// For use when debugging format negotiation
+static void printPixelFormatDescription(int, HDC, TextOutput&);
+#endif
+
+/** Return the G3D window class, which owns a private DC. 
+    See http://www.starstonesoftware.com/OpenGL/whyyou.htm
+    for a discussion of why this is necessary. */
+static const char* G3DWndClass();
+
+std::auto_ptr<Win32Window> Win32Window::_shareWindow(NULL);
+
+
+Win32Window::Win32Window(const GWindow::Settings& s, bool creatingShareWindow)
+:createdWindow(true)
+,_diDevices(NULL)
+
+{
+    _receivedCloseEvent = false;
+
+    initWGL();
+
+	_hDC = NULL;
+	_mouseVisible = true;
+	_inputCapture = false;
+    _windowActive = false;
+	_thread = ::GetCurrentThread();
+
+    if (!sdlKeysInitialized) {
+        initWin32KeyMap();
+    }
+
+	settings = s;
+    
+	std::string name = "";
+    
+    // Add the non-client area
+	RECT rect;
+	rect.left = 0;
+	rect.top = 0;
+	rect.right = settings.width;
+	rect.bottom = settings.height;
+
+	DWORD style = 0;
+	
+	if (s.framed) {
+
+        // http://msdn.microsoft.com/library/default.asp?url=/library/en-us/winui/WinUI/WindowsUserInterface/Windowing/Windows/WindowReference/WindowStyles.asp
+		style |= WS_BORDER | WS_CAPTION | WS_MINIMIZEBOX | WS_SYSMENU;
+
+		if (s.resizable) {
+			style |= WS_SIZEBOX;
+		}
+
+    } else {
+
+        // Show nothing but the client area (cannot move window with mouse)
+        style |= WS_POPUP;
+    }
+
+    int oldTop = rect.top;
+    int oldLeft = rect.left;
+	AdjustWindowRect(&rect, style, false);
+
+    clientRectOffset.x = oldLeft - rect.left;
+    clientRectOffset.y = oldTop - rect.top;
+
+	int total_width  = rect.right - rect.left;
+	int total_height = rect.bottom - rect.top;
+
+    int startX = 0;
+    int startY = 0;
+
+    if (! s.fullScreen) {
+        if (s.center) {
+            
+            startX = (GetSystemMetrics(SM_CXSCREEN) - total_width) / 2;
+            startY = (GetSystemMetrics(SM_CYSCREEN) - total_height) / 2;
+        } else {
+
+            startX = s.x;
+            startY = s.y;
+        }
+    }
+
+    clientX = settings.x = startX;
+    clientY = settings.y = startY;
+    
+    HWND window = CreateWindow(G3DWndClass(), 
+        name.c_str(),
+        style,
+        startX,
+        startY,
+        total_width,
+        total_height,
+        NULL,
+        NULL,
+        GetModuleHandle(NULL),
+        NULL);
+
+    alwaysAssertM(window != NULL, "");
+
+    // Set early so windows messages have value
+    this->window = window;
+
+    SetWindowLong(window, GWL_USERDATA, (LONG)this);
+
+    if (s.visible) {
+        ShowWindow(window, SW_SHOW);
+    }         
+
+    if (settings.fullScreen) {
+	    // Change the desktop resolution if we are running in fullscreen mode
+        if (!ChangeResolution(settings.width, settings.height, (settings.rgbBits * 3) + settings.alphaBits, settings.refreshRate)) {
+			alwaysAssertM(false, "Failed to change resolution");
+        }
+    }
+
+	init(window, creatingShareWindow);
+
+    // Set default icon if available
+    if (settings.defaultIconFilename != "nodefault") {
+
+        try {
+
+            GImage defaultIcon;
+            defaultIcon.load(settings.defaultIconFilename);
+
+            setIcon(defaultIcon);
+        } catch (const GImage::Error& e) {
+            // Throw away default icon
+		    debugPrintf("GWindow's default icon failed to load: %s (%s)", e.filename.c_str(), e.reason.c_str());
+            Log::common()->printf("GWindow's default icon failed to load: %s (%s)", e.filename.c_str(), e.reason.c_str());            
+        }
+    }
+}
+
+
+
+Win32Window::Win32Window(const GWindow::Settings& s, HWND hwnd) : createdWindow(false), _diDevices(NULL) {
+    initWGL();
+
+	_thread = ::GetCurrentThread();
+	settings = s;
+	init(hwnd);
+
+    _windowActive = hasFocus();
+}
+
+
+Win32Window::Win32Window(const GWindow::Settings& s, HDC hdc) : createdWindow(false), _diDevices(NULL)  {
+    initWGL();
+
+	_thread = ::GetCurrentThread();
+	settings = s;
+
+    HWND hwnd = ::WindowFromDC(hdc);
+
+    debugAssert(hwnd != NULL);
+
+	init(hwnd);
+
+    _windowActive = hasFocus();
+}
+
+
+Win32Window* Win32Window::create(const GWindow::Settings& settings) {
+
+    // Create Win32Window which uses DI8 joysticks but WM_ keyboard messages
+    return new Win32Window(settings);    
+    
+}
+
+
+Win32Window* Win32Window::create(const GWindow::Settings& settings, HWND hwnd) {
+
+    // Create Win32Window which uses DI8 joysticks but WM_ keyboard messages
+    return new Win32Window(settings, hwnd);    
+    
+}
+
+Win32Window* Win32Window::create(const GWindow::Settings& settings, HDC hdc) {
+
+    // Create Win32Window which uses DI8 joysticks but WM_ keyboard messages
+    return new Win32Window(settings, hdc);    
+    
+}
+
+
+void Win32Window::init(HWND hwnd, bool creatingShareWindow) {
+
+	if (! creatingShareWindow) {
+		createShareWindow(settings);
+	}
+
+	window = hwnd;
+
+    // Initialize mouse buttons to up
+    _mouseButtons[0] = _mouseButtons[1] = _mouseButtons[2] = false;
+
+    // Clear all keyboard buttons to up (not down)
+    memset(_keyboardButtons, 0, sizeof(_keyboardButtons));
+ 
+    // Setup the pixel format properties for the output device
+    _hDC = GetDC(window);
+
+    bool foundARBFormat = false;
+    int pixelFormat = 0;
+
+    if (wglChoosePixelFormatARB != NULL) {
+        // Use wglChoosePixelFormatARB to override the pixel format choice for antialiasing.
+        // Based on http://nehe.gamedev.net/data/lessons/lesson.asp?lesson=46
+        // and http://oss.sgi.com/projects/ogl-sample/registry/ARB/wgl_pixel_format.txt
+
+        Array<float> fAttributes;
+        fAttributes.append(0.0, 0.0);
+
+        Array<int> iAttributes;
+
+        iAttributes.append(WGL_DRAW_TO_WINDOW_ARB, GL_TRUE);
+		iAttributes.append(WGL_SUPPORT_OPENGL_ARB, GL_TRUE);
+        if (settings.hardware) {
+		    iAttributes.append(WGL_ACCELERATION_ARB,   WGL_FULL_ACCELERATION_ARB);
+        }
+        iAttributes.append(WGL_DOUBLE_BUFFER_ARB,  GL_TRUE);
+        iAttributes.append(WGL_COLOR_BITS_ARB,     settings.rgbBits * 3);
+        iAttributes.append(WGL_RED_BITS_ARB,       settings.rgbBits);
+        iAttributes.append(WGL_GREEN_BITS_ARB,     settings.rgbBits);
+        iAttributes.append(WGL_BLUE_BITS_ARB,      settings.rgbBits);
+        iAttributes.append(WGL_ALPHA_BITS_ARB,     settings.alphaBits);
+        iAttributes.append(WGL_DEPTH_BITS_ARB,     settings.depthBits);
+        iAttributes.append(WGL_STENCIL_BITS_ARB,   settings.stencilBits);
+        iAttributes.append(WGL_STEREO_ARB,         settings.stereo);
+        if (hasWGLMultiSampleSupport && (settings.fsaaSamples > 1)) {
+            // On some ATI cards, even setting the samples to false will turn it on,
+            // so we only take this branch when FSAA is explicitly requested.
+            iAttributes.append(WGL_SAMPLE_BUFFERS_ARB, settings.fsaaSamples > 1);
+		    iAttributes.append(WGL_SAMPLES_ARB,        settings.fsaaSamples);
+        } else {
+            // Report actual settings
+            settings.fsaaSamples = 0;
+        }
+        iAttributes.append(0, 0); // end sentinel
+        
+        // http://www.nvidia.com/dev_content/nvopenglspecs/WGL_ARB_pixel_format.txt
+        uint32 numFormats;
+        int valid = wglChoosePixelFormatARB(
+            _hDC,
+            iAttributes.getCArray(), 
+            fAttributes.getCArray(),
+            1,
+            &pixelFormat,
+            &numFormats);
+
+        // "If the function succeeds, the return value is TRUE. If the function
+        // fails the return value is FALSE. To get extended error information,
+        // call GetLastError. If no matching formats are found then nNumFormats
+        // is set to zero and the function returns TRUE."  -- I think this means
+        // that when numFormats == 0 some reasonable format is still selected.
+        
+        // Corey - I don't think it does, but now I check for valid pixelFormat + valid return only.
+
+        if ( valid && (pixelFormat > 0)) {
+            // Found a valid format
+            foundARBFormat = true;
+        }
+
+    }
+
+    PIXELFORMATDESCRIPTOR pixelFormatDesc;
+
+    if ( !foundARBFormat ) {
+
+        ZeroMemory(&pixelFormatDesc, sizeof(PIXELFORMATDESCRIPTOR));
+
+        pixelFormatDesc.nSize        = sizeof(PIXELFORMATDESCRIPTOR);
+        pixelFormatDesc.nVersion     = 1; 
+        pixelFormatDesc.dwFlags      = PFD_DRAW_TO_WINDOW | PFD_SUPPORT_OPENGL | PFD_DOUBLEBUFFER;
+        pixelFormatDesc.iPixelType   = PFD_TYPE_RGBA; 
+        pixelFormatDesc.cColorBits   = settings.rgbBits * 3;
+        pixelFormatDesc.cDepthBits   = settings.depthBits;
+        pixelFormatDesc.cStencilBits = settings.stencilBits;
+        pixelFormatDesc.iLayerType   = PFD_MAIN_PLANE; 
+        pixelFormatDesc.cRedBits     = settings.rgbBits;
+        pixelFormatDesc.cGreenBits   = settings.rgbBits;
+        pixelFormatDesc.cBlueBits    = settings.rgbBits;
+        pixelFormatDesc.cAlphaBits   = settings.alphaBits;
+
+        // Reset for completeness
+        pixelFormat = 0;
+
+        // Get the initial pixel format.  We'll override this below in a moment.
+        pixelFormat = ChoosePixelFormat(_hDC, &pixelFormatDesc);
+    } else {
+        DescribePixelFormat(_hDC, pixelFormat, sizeof(PIXELFORMATDESCRIPTOR), &pixelFormatDesc);
+    }
+
+    alwaysAssertM(pixelFormat != 0, "[0] Unsupported video mode");
+
+    if (SetPixelFormat(_hDC, pixelFormat, &pixelFormatDesc) == FALSE) {
+		alwaysAssertM(false, "[1] Unsupported video mode");
+    }
+
+    // Create the OpenGL context
+    _glContext = wglCreateContext(_hDC);
+
+	alwaysAssertM(_glContext != NULL, "Failed to create OpenGL context.");
+
+	if (! creatingShareWindow) {
+		// Now share resources with the global window
+		wglShareLists(_shareWindow->_glContext, _glContext);
+	}
+
+	this->makeCurrent();
+
+	if (! creatingShareWindow) {
+        GLCaps::init();
+    }
+}
+
+/* TODO
+const Array<GWindow::Settings>& Win32Window::SupportedWindowSettings() {
+    return _supportedSettings;
+}
+
+bool Win32Window::ClosestSupportedWindowSettings(const GWindow::Settings& desired, GWindow::Settings& closest) {
+    return false;
+}
+*/
+
+int Win32Window::width() const {
+	return settings.width;
+}
+
+
+int Win32Window::height() const {
+	return settings.height;
+}
+
+
+void Win32Window::setDimensions(const Rect2D& dims) {
+
+    int W = ::GetSystemMetrics(SM_CXSCREEN);
+    int H = ::GetSystemMetrics(SM_CYSCREEN);
+
+    int x = iClamp((int)dims.x0(), 0, W);
+    int y = iClamp((int)dims.y0(), 0, H);
+    int w = iClamp((int)dims.width(), 1, W);
+    int h = iClamp((int)dims.height(), 1, H);
+
+    // Set dimensions and repaint.
+    ::MoveWindow(window, x, y, w, h, true);
+}
+
+
+Rect2D Win32Window::dimensions() const {
+	return Rect2D::xywh((float)clientX, (float)clientY, (float)width(), (float)height());
+}
+
+
+bool Win32Window::hasFocus() const {
+    // Double check state with foreground and visibility just to be sure.
+    return ( (window == ::GetForegroundWindow()) && (::IsWindowVisible(window)) );
+}
+
+
+std::string Win32Window::getAPIVersion() const {
+	return "1.1";
+}
+
+
+std::string Win32Window::getAPIName() const {
+	return "Win32";
+}
+
+
+bool Win32Window::requiresMainLoop() const {
+    return false;
+}
+
+
+void Win32Window::setIcon(const GImage& image) {
+    alwaysAssertM((image.channels == 3) ||
+                  (image.channels == 4), 
+                  "Icon image must have at least 3 channels.");
+
+    alwaysAssertM((image.width == 32) && (image.height == 32),
+        "Icons must be 32x32 on windows.");
+
+    uint8 bwMaskData[128];
+    uint8 colorMaskData[1024*4];
+
+
+    GImage icon;
+    if (image.channels == 3) {
+        
+        GImage alpha(image.width, image.height, 1);
+        System::memset(alpha.byte(), 255, (image.width * image.height));
+        icon = image.insertRedAsAlpha(alpha);
+    } else {
+        icon = image;
+    }
+
+    int colorMaskIdx = 0;
+    System::memset(bwMaskData, 0x00, 128);
+    for (int y = 0; y < 32; ++y) {
+        for (int x = 0; x < 32; ++x) {
+            bwMaskData[ (y * 4) + (x / 8) ] |= ((icon.pixel4(x, y).a > 127) ? 1 : 0) << (x % 8);
+
+            // Windows icon images are BGRA like a lot of windows image data
+            colorMaskData[colorMaskIdx] = icon.pixel4()[y * 32 + x].b;
+            colorMaskData[colorMaskIdx + 1] = icon.pixel4()[y * 32 + x].g;
+            colorMaskData[colorMaskIdx + 2] = icon.pixel4()[y * 32 + x].r;
+            colorMaskData[colorMaskIdx + 3] = icon.pixel4()[y * 32 + x].a;
+            colorMaskIdx += 4;
+        }
+    }
+
+    HBITMAP bwMask = ::CreateBitmap(32, 32, 1, 1, bwMaskData);  
+    HBITMAP colorMask = ::CreateBitmap(32, 32, 1, 32, colorMaskData);
+
+    ICONINFO iconInfo;
+    iconInfo.xHotspot = 0;
+    iconInfo.yHotspot = 0;
+    iconInfo.hbmColor = colorMask;
+    iconInfo.hbmMask = bwMask;
+    iconInfo.fIcon = true;
+
+    HICON hicon = ::CreateIconIndirect(&iconInfo);
+    _usedIcons.insert((int)hicon);
+
+    // Purposely leak any icon created indirectly like hicon becase we don't know.
+    HICON hsmall = (HICON)::SendMessage(this->window, WM_SETICON, (WPARAM)ICON_SMALL, (LPARAM)hicon);
+    HICON hlarge = (HICON)::SendMessage(this->window, WM_SETICON, (WPARAM)ICON_BIG, (LPARAM)hicon);
+
+    if (_usedIcons.contains((int)hsmall)) {
+        ::DestroyIcon(hsmall);
+        _usedIcons.remove((int)hsmall);
+    }
+    
+    if (_usedIcons.contains((int)hlarge)) {
+        ::DestroyIcon(hlarge);
+        _usedIcons.remove((int)hlarge);
+    }
+
+    ::DeleteObject(bwMask);
+    ::DeleteObject(colorMask);
+}
+
+
+void Win32Window::swapGLBuffers() {
+	SwapBuffers(hdc());
+}
+
+
+void Win32Window::close() {
+    PostMessage(window, WM_CLOSE, 0, 0);
+}
+
+
+Win32Window::~Win32Window() {
+	if (GWindow::current() == this) {
+		if (wglMakeCurrent(NULL, NULL) == FALSE)	{
+			debugAssertM(false, "Failed to set context");
+		}
+
+        if (createdWindow) {
+            // Release the mouse
+            setMouseVisible(true);
+            setInputCapture(false);
+        }
+	}
+
+	if (createdWindow) {
+        SetWindowLong(window, GWL_USERDATA, (LONG)NULL);
+		close();
+	}
+
+    // Do not need to release private HDC's
+
+    delete _diDevices;
+}
+
+
+void Win32Window::getSettings(GWindow::Settings& s) const {
+	s = settings;
+}
+
+
+void Win32Window::setCaption(const std::string& caption) {
+	if (_title != caption) {
+		_title = caption;
+		SetWindowText(window, _title.c_str());
+	}
+}
+
+
+std::string Win32Window::caption() {
+	return _title;
+}
+
+
+bool Win32Window::pollEvent(GEvent& e) {
+    MSG message;
+
+    while (PeekMessage(&message, window, 0, 0, PM_REMOVE)) {
+        TranslateMessage(&message);
+		DispatchMessage(&message);
+
+        if (message.hwnd == window) {
+            switch (message.message) {
+            case WM_KEYDOWN:
+            case WM_SYSKEYDOWN:
+
+				e.key.type = SDL_KEYDOWN;
+				e.key.state = SDL_PRESSED;
+
+                // Fix invalid repeat key flag
+                if (justReceivedFocus) {
+                    justReceivedFocus = false;
+                    message.lParam &= ~(0x40000000);
+                }
+
+                // Need the repeat messages to find LSHIFT and RSHIFT
+				if (!((message.lParam >> 30) & 0x01)) {
+					// This is not an autorepeat message
+					makeKeyEvent(message.wParam, message.lParam, e);
+                    _keyboardButtons[message.wParam] = true;
+					return true;
+				}
+				break;
+
+
+			case WM_KEYUP:
+            case WM_SYSKEYUP:
+				e.key.type = SDL_KEYUP;
+				e.key.state = SDL_RELEASED;
+
+				makeKeyEvent(message.wParam, message.lParam, e);
+                _keyboardButtons[message.wParam] = false;
+				return true;
+				break;
+
+
+            case WM_LBUTTONDOWN:
+				mouseButton(true, SDL_LEFT_MOUSE_KEY, message.wParam, e); 
+                _mouseButtons[0] = true;
+				return true;
+
+            case WM_MBUTTONDOWN:
+				mouseButton(true, SDL_MIDDLE_MOUSE_KEY, message.wParam, e); 
+                _mouseButtons[1] = true;
+				return true;
+
+            case WM_RBUTTONDOWN:
+				mouseButton(true, SDL_RIGHT_MOUSE_KEY, message.wParam, e); 
+                _mouseButtons[2] = true;
+				return true;
+
+            case WM_LBUTTONUP:
+				mouseButton(false, SDL_LEFT_MOUSE_KEY, message.wParam, e); 
+                _mouseButtons[0] = false;
+				return true;
+
+            case WM_MBUTTONUP:
+				mouseButton(false, SDL_MIDDLE_MOUSE_KEY, message.wParam, e); 
+                _mouseButtons[1] = false;
+				return true;
+
+            case WM_RBUTTONUP:
+				mouseButton(false, SDL_RIGHT_MOUSE_KEY, message.wParam, e); 
+                _mouseButtons[2] = false;
+				return true;
+            } // switch
+        } // if
+    } // while
+
+    // We never seem to "receive" the WM_QUIT message 
+    // so test for WM_CLOSE in the window_proc
+    if (_receivedCloseEvent) {
+
+        // Reset so SDL_QUIT is only sent once
+        _receivedCloseEvent = false;
+
+        e.type = SDL_QUIT;
+        return true;
+    }
+
+    RECT rect;
+    GetWindowRect(window, &rect);
+    settings.x = rect.left;
+    settings.y = rect.top;
+
+    GetClientRect(window, &rect);
+    settings.width = rect.right - rect.left;
+    settings.height = rect.bottom - rect.top;
+
+    clientX = settings.x;
+    clientY = settings.y;
+
+    if (settings.framed) {
+        // Add the border offset
+        clientX	+= GetSystemMetrics(settings.resizable ? SM_CXSIZEFRAME : SM_CXFIXEDFRAME);
+        clientY += GetSystemMetrics(settings.resizable ? SM_CYSIZEFRAME : SM_CYFIXEDFRAME) + GetSystemMetrics(SM_CYCAPTION);
+    }
+
+    // Check for a resize event and use only most recent
+    // Just use an array instead of used flag and variable
+    // This will be clearer in the 7.0 event system
+    if (sizeEventInjects.size() > 0) {
+        e = sizeEventInjects.last();
+        sizeEventInjects.clear();
+        return true;
+    }
+
+    return false;
+}
+
+
+void Win32Window::setMouseVisible(bool b) {
+    m_mouseHideCount = b ? 0 : 1;
+
+    if (_mouseVisible == b) {
+        return;
+    }
+
+    if (b) {
+        while (ShowCursor(true) < 0);
+    } else {
+        while (ShowCursor(false) >= 0); 
+    }
+
+    _mouseVisible = b;
+}
+
+
+bool Win32Window::mouseVisible() const {
+    return _mouseVisible;
+}
+
+
+void Win32Window::notifyResize(int w, int h) {
+    settings.width = w;
+    settings.height = h;
+}
+
+
+bool Win32Window::inputCapture() const {
+    return _inputCapture;
+}
+
+
+void Win32Window::setGammaRamp(const Array<uint16>& gammaRamp) {
+    alwaysAssertM(gammaRamp.size() >= 256, "Gamma ramp must have at least 256 entries");
+
+    Log* debugLog = Log::common();
+
+    uint16* ptr = const_cast<uint16*>(gammaRamp.getCArray());
+    uint16 wptr[3 * 256];
+    for (int i = 0; i < 256; ++i) {
+        wptr[i] = wptr[i + 256] = wptr[i + 512] = ptr[i]; 
+    }
+    BOOL success = SetDeviceGammaRamp(hdc(), wptr);
+
+    if (! success) {
+        if (debugLog) {debugLog->println("Error setting gamma ramp! (Possibly LCD monitor)");}
+    }
+}
+
+
+void Win32Window::setRelativeMousePosition(double x, double y) {
+	SetCursorPos(iRound(x + clientX), iRound(y + clientY));
+}
+
+
+void Win32Window::setRelativeMousePosition(const Vector2& p) {
+    setRelativeMousePosition(p.x, p.y);
+}
+
+
+void Win32Window::getRelativeMouseState(Vector2& p, uint8& mouseButtons) const {
+    int x, y;
+    getRelativeMouseState(x, y, mouseButtons);
+    p.x = (float)x;
+    p.y = (float)y;
+}
+
+
+void Win32Window::getRelativeMouseState(int& x, int& y, uint8& mouseButtons) const {
+	POINT point;
+	GetCursorPos(&point);
+	x = point.x - clientX;
+	y = point.y - clientY;
+
+    // Clear mouseButtons and set each button bit.
+	mouseButtons ^= mouseButtons;
+    mouseButtons |= (_mouseButtons[0] ? 1 : 0) << 0;
+    mouseButtons |= (_mouseButtons[1] ? 1 : 0) << 1;
+    mouseButtons |= (_mouseButtons[2] ? 1 : 0) << 2;
+}
+
+
+void Win32Window::getRelativeMouseState(double& x, double& y, uint8& mouseButtons) const {
+    int ix, iy;
+    getRelativeMouseState(ix, iy, mouseButtons);
+    x = ix;
+    y = iy;
+}
+
+inline void Win32Window::enableDirectInput() const {
+    if (_diDevices==NULL)
+		_diDevices = new _DirectInput(window);
+}
+
+int Win32Window::numJoysticks() const {
+	enableDirectInput();
+    return _diDevices->getNumJoysticks();
+}
+
+
+std::string Win32Window::joystickName(unsigned int sticknum)
+{
+	enableDirectInput();
+    return _diDevices->getJoystickName(sticknum);
+}
+
+
+void Win32Window::getJoystickState(unsigned int stickNum, Array<float>& axis, Array<bool>& button) {
+
+	enableDirectInput();
+    if (!_diDevices->joystickExists(stickNum)) {
+        return;
+    }
+
+    _diDevices->getJoystickState(stickNum, axis, button);
+}
+
+
+void Win32Window::setInputCapture(bool c) {
+    m_inputCaptureCount = c ? 1 : 0;
+
+	if (c != _inputCapture) {
+		_inputCapture = c;
+
+		if (_inputCapture) {
+            RECT wrect;
+            GetWindowRect(window, &wrect);
+            clientX = wrect.left;
+            clientY = wrect.top;
+
+            RECT rect = 
+            {clientX + clientRectOffset.x, 
+             clientY + clientRectOffset.y, 
+             clientX + settings.width + clientRectOffset.x, 
+             clientY + settings.height + clientRectOffset.y};
+			ClipCursor(&rect);
+		} else {
+			ClipCursor(NULL);
+		}
+	}
+}
+
+
+void Win32Window::initWGL() {
+    
+    // This function need only be called once
+    static bool wglInitialized = false;
+    if (wglInitialized) {
+        return;
+    }
+    wglInitialized = true;
+
+    std::string name = "G3D";
+    WNDCLASS window_class;
+    
+    window_class.style         = CS_HREDRAW | CS_VREDRAW;
+    window_class.lpfnWndProc   = _internal::window_proc;
+    window_class.cbClsExtra    = 0; 
+    window_class.cbWndExtra    = 0;
+    window_class.hInstance     = GetModuleHandle(NULL);
+    window_class.hIcon         = LoadIcon(NULL, IDI_APPLICATION); 
+    window_class.hCursor       = LoadCursor(NULL, IDC_ARROW);
+    window_class.hbrBackground = (HBRUSH)GetStockObject(BLACK_BRUSH);
+    window_class.lpszMenuName  = name.c_str();
+    window_class.lpszClassName = "window"; 
+    
+    int ret = RegisterClass(&window_class);
+	alwaysAssertM(ret, "Registration Failed");
+
+    // Create some dummy pixel format.
+	PIXELFORMATDESCRIPTOR pfd =	
+    {
+		sizeof (PIXELFORMATDESCRIPTOR),									// Size Of This Pixel Format Descriptor
+		1,																// Version Number
+		PFD_DRAW_TO_WINDOW |											// Format Must Support Window
+		PFD_SUPPORT_OPENGL |											// Format Must Support OpenGL
+		PFD_DOUBLEBUFFER,												// Must Support Double Buffering
+		PFD_TYPE_RGBA,													// Request An RGBA Format
+		24,		                        								// Select Our Color Depth
+		0, 0, 0, 0, 0, 0,												// Color Bits Ignored
+		1,																// Alpha Buffer
+		0,																// Shift Bit Ignored
+		0,																// No Accumulation Buffer
+		0, 0, 0, 0,														// Accumulation Bits Ignored
+		16,																// 16Bit Z-Buffer (Depth Buffer)  
+		0,																// No Stencil Buffer
+		0,																// No Auxiliary Buffer
+		PFD_MAIN_PLANE,													// Main Drawing Layer
+		0,																// Reserved
+		0, 0, 0															// Layer Masks Ignored
+	};
+
+    HWND hWnd = CreateWindow("window", "", 0, 0, 0, 100, 100, NULL, NULL, GetModuleHandle(NULL), NULL);
+    debugAssert(hWnd);
+
+    HDC  hDC  = GetDC(hWnd);
+    debugAssert(hDC);
+    
+	int pixelFormat = ChoosePixelFormat(hDC, &pfd);
+    debugAssert(pixelFormat);
+
+    if (SetPixelFormat(hDC, pixelFormat, &pfd) == FALSE) {
+        debugAssertM(false, "Failed to set pixel format");
+	}
+
+	HGLRC hRC = wglCreateContext(hDC);
+    debugAssert(hRC);
+
+	if (wglMakeCurrent(hDC, hRC) == FALSE)	{
+        debugAssertM(false, "Failed to set context");
+	}
+
+    // We've now brought OpenGL online.  Grab the pointers we need and 
+    // destroy everything.
+
+    wglChoosePixelFormatARB =
+        (PFNWGLCHOOSEPIXELFORMATARBPROC)wglGetProcAddress("wglChoosePixelFormatARB");
+
+    PFNWGLGETEXTENSIONSSTRINGARBPROC wglGetExtensionsStringARB =
+        (PFNWGLGETEXTENSIONSSTRINGARBPROC)wglGetProcAddress("wglGetExtensionsStringARB");
+
+    if (wglGetExtensionsStringARB != NULL) {
+        
+        std::string wglExtensions = wglGetExtensionsStringARB(hDC);
+
+        std::istringstream extensionsStream;
+        extensionsStream.str(wglExtensions.c_str());
+        
+        std::string extension;
+        while ( extensionsStream >> extension ) {
+            if (extension == "WGL_ARB_multisample") {
+                hasWGLMultiSampleSupport = true;
+                break;
+            }
+        }
+
+    } else {
+        hasWGLMultiSampleSupport = false;
+    }
+
+    // Now destroy the dummy windows
+    wglDeleteContext(hRC);					
+    hRC = 0;	
+	ReleaseDC(hWnd, hDC);	
+	hWnd = 0;				
+	DestroyWindow(hWnd);			
+	hWnd = 0;
+}
+
+
+void Win32Window::createShareWindow(GWindow::Settings settings) {
+	static bool init = false;
+	if (init) {
+		return;
+	}
+	
+	init = true;	
+
+	// We want a small (low memory), invisible window
+	settings.visible = false;
+	settings.width = 16;
+	settings.height = 16;
+	settings.framed = false;
+
+	// This call will force us to re-enter createShareWindow, however
+	// the second time through init will be true, so we'll skip the 
+	// recursion.
+#	if defined(_MSC_VER) && (_MSC_VER <= 1200)
+		// VC6 doesn't have a "reset" method on auto_ptr.  This statement 
+		// accomplishes the same purpose for that implementation, however.
+		// Morgan verified that the source correctly passes ownership from the
+		// newly created auto_ptr to the old one.
+		_shareWindow = std::auto_ptr<Win32Window>(new Win32Window(settings, true));
+#	else
+		_shareWindow.reset(new Win32Window(settings, true));
+#	endif
+}
+
+
+void Win32Window::reallyMakeCurrent() const {
+	debugAssertM(_thread == ::GetCurrentThread(), 
+		"Cannot call GWindow::makeCurrent on different threads.");
+
+	if (wglMakeCurrent(_hDC, _glContext) == FALSE)	{
+        debugAssertM(false, "Failed to set context");
+	}
+}
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/*
+    Static helper functions for Win32Window
+*/
+
+
+/** Changes the screen resolution */
+static bool ChangeResolution(int width, int height, int bpp, int refreshRate) {
+
+	if (refreshRate == 0) {
+		refreshRate = 85;
+	}
+
+    DEVMODE deviceMode;
+
+    ZeroMemory(&deviceMode, sizeof(DEVMODE));
+
+    int bppTries[3];
+    bppTries[0] = bpp;
+    bppTries[1] = 32;
+    bppTries[2] = 16;
+
+    deviceMode.dmSize       = sizeof(DEVMODE);
+	deviceMode.dmPelsWidth  = width;
+	deviceMode.dmPelsHeight = height;
+	deviceMode.dmFields     = DM_BITSPERPEL | DM_PELSWIDTH | DM_PELSHEIGHT | DM_DISPLAYFREQUENCY;
+    deviceMode.dmDisplayFrequency = refreshRate;
+
+    LONG result = -1;
+
+    for (int i = 0; (i < 3) && (result != DISP_CHANGE_SUCCESSFUL); ++i) {
+    	deviceMode.dmBitsPerPel = bppTries[i];
+        result = ChangeDisplaySettings(&deviceMode, CDS_FULLSCREEN);
+    }
+
+    if (result != DISP_CHANGE_SUCCESSFUL) {
+        // If it didn't work, try just changing the resolution and not the
+        // refresh rate.
+        deviceMode.dmFields = DM_BITSPERPEL | DM_PELSWIDTH | DM_PELSHEIGHT;
+        for (int i = 0; (i < 3) && (result != DISP_CHANGE_SUCCESSFUL); ++i) {
+    	    deviceMode.dmBitsPerPel = bppTries[i];
+            result = ChangeDisplaySettings(&deviceMode, CDS_FULLSCREEN);
+        }
+    }
+
+    return result == DISP_CHANGE_SUCCESSFUL;
+}
+
+
+static void makeKeyEvent(int vkCode, int lParam, GEvent& e) {
+
+    // If true, we're looking at the right hand version of
+    // Fix VK_SHIFT, VK_CONTROL, VK_MENU
+    bool extended = (lParam >> 24) & 0x01;
+
+    // Check for normal letter event
+    if ((vkCode >= 'A') && (vkCode <= 'Z')) {
+
+        // Make key codes lower case canonically
+        e.key.keysym.sym = (SDLKey)(vkCode - 'A' + 'a');
+
+    } else if (vkCode == VK_SHIFT) {
+
+        e.key.keysym.sym = (SDLKey)(extended ? SDLK_RSHIFT : SDLK_LSHIFT);
+
+    } else if (vkCode == VK_CONTROL) {
+
+        e.key.keysym.sym = (SDLKey)(extended ? SDLK_RCTRL : SDLK_LCTRL);
+
+    } else if (vkCode == VK_MENU) {
+
+        e.key.keysym.sym = (SDLKey)(extended ? SDLK_RALT : SDLK_LALT);
+
+    } else {
+
+        e.key.keysym.sym = (SDLKey)_sdlKeys[iClamp(vkCode, 0, SDLK_LAST)];
+
+    }
+
+    e.key.keysym.scancode = MapVirtualKey(vkCode, 0); 
+        //(lParam >> 16) & 0x7F;
+
+    static BYTE lpKeyState[256];
+    GetKeyboardState(lpKeyState);
+
+    int mod = 0;
+    if (lpKeyState[VK_LSHIFT] & 0x80) {
+        mod = mod | KMOD_LSHIFT;
+    }
+
+    if (lpKeyState[VK_RSHIFT] & 0x80) {
+        mod = mod | KMOD_RSHIFT;
+    }
+
+    if (lpKeyState[VK_LCONTROL] & 0x80) {
+        mod = mod | KMOD_LCTRL;
+    }
+
+    if (lpKeyState[VK_RCONTROL] & 0x80) {
+        mod = mod | KMOD_RCTRL;
+    }
+
+    if (lpKeyState[VK_LMENU] & 0x80) {
+        mod = mod | KMOD_LALT;
+    }
+
+    if (lpKeyState[VK_RMENU] & 0x80) {
+        mod = mod | KMOD_RALT;
+    }
+    e.key.keysym.mod = (SDLMod)mod;
+
+    ToUnicode(vkCode, e.key.keysym.scancode, lpKeyState, (LPWSTR)&e.key.keysym.unicode, 1, 0);
+}
+
+
+/** 
+ Configures a mouse up/down event
+ */
+static void mouseButton(bool down, int keyEvent, DWORD flags, GEvent& e) {
+    (void)flags;
+    // TODO: process flags
+	if (down) {
+		e.key.type  = SDL_KEYDOWN;
+		e.key.state = SDL_PRESSED;
+	} else {
+		e.key.type  = SDL_KEYUP;
+		e.key.state = SDL_RELEASED;
+	}
+
+    e.key.keysym.unicode = ' ';
+	e.key.keysym.sym = (SDLKey)keyEvent;
+
+
+    e.key.keysym.scancode = 0;
+
+    static BYTE lpKeyState[256];
+    GetKeyboardState(lpKeyState);
+
+    int mod = 0;
+    if (lpKeyState[VK_LSHIFT] & 0x80) {
+        mod = mod | KMOD_LSHIFT;
+    }
+
+    if (lpKeyState[VK_RSHIFT] & 0x80) {
+        mod = mod | KMOD_RSHIFT;
+    }
+
+    if (lpKeyState[VK_LCONTROL] & 0x80) {
+        mod = mod | KMOD_LCTRL;
+    }
+
+    if (lpKeyState[VK_RCONTROL] & 0x80) {
+        mod = mod | KMOD_RCTRL;
+    }
+
+    if (lpKeyState[VK_LMENU] & 0x80) {
+        mod = mod | KMOD_LALT;
+    }
+
+    if (lpKeyState[VK_RMENU] & 0x80) {
+        mod = mod | KMOD_RALT;
+    }
+    e.key.keysym.mod = (SDLMod)mod;
+}
+
+
+/**
+ Initializes SDL to Win32 key map
+ */
+static void initWin32KeyMap() {
+    memset(_sdlKeys, 0, sizeof(_sdlKeys));
+
+	_sdlKeys[VK_BACK] = SDLK_BACKSPACE;
+	_sdlKeys[VK_TAB] = SDLK_TAB;
+	_sdlKeys[VK_CLEAR] = SDLK_CLEAR;
+	_sdlKeys[VK_RETURN] = SDLK_RETURN;
+	_sdlKeys[VK_PAUSE] = SDLK_PAUSE;
+	_sdlKeys[VK_ESCAPE] = SDLK_ESCAPE;
+	_sdlKeys[VK_SPACE] = SDLK_SPACE;
+	_sdlKeys[VK_APOSTROPHE] = SDLK_QUOTE;
+	_sdlKeys[VK_COMMA] = SDLK_COMMA;
+	_sdlKeys[VK_MINUS] = SDLK_MINUS;
+	_sdlKeys[VK_PERIOD] = SDLK_PERIOD;
+	_sdlKeys[VK_SLASH] = SDLK_SLASH;
+	_sdlKeys['0'] = SDLK_0;
+	_sdlKeys['1'] = SDLK_1;
+	_sdlKeys['2'] = SDLK_2;
+	_sdlKeys['3'] = SDLK_3;
+	_sdlKeys['4'] = SDLK_4;
+	_sdlKeys['5'] = SDLK_5;
+	_sdlKeys['6'] = SDLK_6;
+	_sdlKeys['7'] = SDLK_7;
+	_sdlKeys['8'] = SDLK_8;
+	_sdlKeys['9'] = SDLK_9;
+	_sdlKeys[VK_SEMICOLON] = SDLK_SEMICOLON;
+	_sdlKeys[VK_EQUALS] = SDLK_EQUALS;
+	_sdlKeys[VK_LBRACKET] = SDLK_LEFTBRACKET;
+	_sdlKeys[VK_BACKSLASH] = SDLK_BACKSLASH;
+	_sdlKeys[VK_RBRACKET] = SDLK_RIGHTBRACKET;
+	_sdlKeys[VK_GRAVE] = SDLK_BACKQUOTE;
+	_sdlKeys[VK_BACKTICK] = SDLK_BACKQUOTE;
+	_sdlKeys[VK_DELETE] = SDLK_DELETE;
+
+	_sdlKeys[VK_NUMPAD0] = SDLK_KP0;
+	_sdlKeys[VK_NUMPAD1] = SDLK_KP1;
+	_sdlKeys[VK_NUMPAD2] = SDLK_KP2;
+	_sdlKeys[VK_NUMPAD3] = SDLK_KP3;
+	_sdlKeys[VK_NUMPAD4] = SDLK_KP4;
+	_sdlKeys[VK_NUMPAD5] = SDLK_KP5;
+	_sdlKeys[VK_NUMPAD6] = SDLK_KP6;
+	_sdlKeys[VK_NUMPAD7] = SDLK_KP7;
+	_sdlKeys[VK_NUMPAD8] = SDLK_KP8;
+	_sdlKeys[VK_NUMPAD9] = SDLK_KP9;
+	_sdlKeys[VK_DECIMAL] = SDLK_KP_PERIOD;
+	_sdlKeys[VK_DIVIDE] = SDLK_KP_DIVIDE;
+	_sdlKeys[VK_MULTIPLY] = SDLK_KP_MULTIPLY;
+	_sdlKeys[VK_SUBTRACT] = SDLK_KP_MINUS;
+	_sdlKeys[VK_ADD] = SDLK_KP_PLUS;
+
+	_sdlKeys[VK_UP] = SDLK_UP;
+	_sdlKeys[VK_DOWN] = SDLK_DOWN;
+	_sdlKeys[VK_RIGHT] = SDLK_RIGHT;
+	_sdlKeys[VK_LEFT] = SDLK_LEFT;
+	_sdlKeys[VK_INSERT] = SDLK_INSERT;
+	_sdlKeys[VK_HOME] = SDLK_HOME;
+	_sdlKeys[VK_END] = SDLK_END;
+	_sdlKeys[VK_PRIOR] = SDLK_PAGEUP;
+	_sdlKeys[VK_NEXT] = SDLK_PAGEDOWN;
+
+	_sdlKeys[VK_F1] = SDLK_F1;
+	_sdlKeys[VK_F2] = SDLK_F2;
+	_sdlKeys[VK_F3] = SDLK_F3;
+	_sdlKeys[VK_F4] = SDLK_F4;
+	_sdlKeys[VK_F5] = SDLK_F5;
+	_sdlKeys[VK_F6] = SDLK_F6;
+	_sdlKeys[VK_F7] = SDLK_F7;
+	_sdlKeys[VK_F8] = SDLK_F8;
+	_sdlKeys[VK_F9] = SDLK_F9;
+	_sdlKeys[VK_F10] = SDLK_F10;
+	_sdlKeys[VK_F11] = SDLK_F11;
+	_sdlKeys[VK_F12] = SDLK_F12;
+	_sdlKeys[VK_F13] = SDLK_F13;
+	_sdlKeys[VK_F14] = SDLK_F14;
+	_sdlKeys[VK_F15] = SDLK_F15;
+
+	_sdlKeys[VK_NUMLOCK] = SDLK_NUMLOCK;
+	_sdlKeys[VK_CAPITAL] = SDLK_CAPSLOCK;
+	_sdlKeys[VK_SCROLL] = SDLK_SCROLLOCK;
+	_sdlKeys[VK_RSHIFT] = SDLK_RSHIFT;
+	_sdlKeys[VK_LSHIFT] = SDLK_LSHIFT;
+	_sdlKeys[VK_RCONTROL] = SDLK_RCTRL;
+	_sdlKeys[VK_LCONTROL] = SDLK_LCTRL;
+	_sdlKeys[VK_RMENU] = SDLK_RALT;
+	_sdlKeys[VK_LMENU] = SDLK_LALT;
+	_sdlKeys[VK_RWIN] = SDLK_RSUPER;
+	_sdlKeys[VK_LWIN] = SDLK_LSUPER;
+
+	_sdlKeys[VK_HELP] = SDLK_HELP;
+	_sdlKeys[VK_PRINT] = SDLK_PRINT;
+	_sdlKeys[VK_SNAPSHOT] = SDLK_PRINT;
+	_sdlKeys[VK_CANCEL] = SDLK_BREAK;
+	_sdlKeys[VK_APPS] = SDLK_MENU;
+
+    sdlKeysInitialized = true;
+}
+
+
+#if 0
+static void printPixelFormatDescription(int format, HDC hdc, TextOutput& out) {
+
+    PIXELFORMATDESCRIPTOR pixelFormat;
+    DescribePixelFormat(hdc, format, sizeof(PIXELFORMATDESCRIPTOR), &pixelFormat);
+
+    /*
+    typedef struct tagPIXELFORMATDESCRIPTOR { // pfd   
+      WORD  nSize; 
+      WORD  nVersion; 
+      DWORD dwFlags; 
+      BYTE  iPixelType; 
+      BYTE  cColorBits; 
+      BYTE  cRedBits; 
+      BYTE  cRedShift; 
+      BYTE  cGreenBits; 
+      BYTE  cGreenShift; 
+      BYTE  cBlueBits; 
+      BYTE  cBlueShift; 
+      BYTE  cAlphaBits; 
+      BYTE  cAlphaShift; 
+      BYTE  cAccumBits; 
+      BYTE  cAccumRedBits; 
+      BYTE  cAccumGreenBits; 
+      BYTE  cAccumBlueBits; 
+      BYTE  cAccumAlphaBits; 
+      BYTE  cDepthBits; 
+      BYTE  cStencilBits; 
+      BYTE  cAuxBuffers; 
+      BYTE  iLayerType; 
+      BYTE  bReserved; 
+      DWORD dwLayerMask; 
+      DWORD dwVisibleMask; 
+      DWORD dwDamageMask; 
+    } PIXELFORMATDESCRIPTOR; 
+    */
+
+    out.printf("#%d Format Description\n", format);
+    out.printf("nSize:\t\t\t\t%d\n", pixelFormat.nSize);
+    out.printf("nVersion:\t\t\t%d\n", pixelFormat.nVersion);
+    std::string s = (std::string((pixelFormat.dwFlags&PFD_DRAW_TO_WINDOW) ? "PFD_DRAW_TO_WINDOW|" : "") + 
+                                     std::string((pixelFormat.dwFlags&PFD_DRAW_TO_BITMAP) ? "PFD_DRAW_TO_BITMAP|" : "") + 
+                                     std::string((pixelFormat.dwFlags&PFD_SUPPORT_GDI) ? "PFD_SUPPORT_GDI|" : "") + 
+                                     std::string((pixelFormat.dwFlags&PFD_SUPPORT_OPENGL) ? "PFD_SUPPORT_OPENGL|" : "") + 
+                                     std::string((pixelFormat.dwFlags&PFD_GENERIC_ACCELERATED) ? "PFD_GENERIC_ACCELERATED|" : "") + 
+                                     std::string((pixelFormat.dwFlags&PFD_GENERIC_FORMAT) ? "PFD_GENERIC_FORMAT|" : "") + 
+                                     std::string((pixelFormat.dwFlags&PFD_NEED_PALETTE) ? "PFD_NEED_PALETTE|" : "") + 
+                                     std::string((pixelFormat.dwFlags&PFD_NEED_SYSTEM_PALETTE) ? "PFD_NEED_SYSTEM_PALETTE|" : "") + 
+                                     std::string((pixelFormat.dwFlags&PFD_DOUBLEBUFFER) ? "PFD_DOUBLEBUFFER|" : "") + 
+                                     std::string((pixelFormat.dwFlags&PFD_STEREO) ? "PFD_STEREO|" : "") +
+                                     std::string((pixelFormat.dwFlags&PFD_SWAP_LAYER_BUFFERS) ? "PFD_SWAP_LAYER_BUFFERS" : ""));
+
+    out.printf("dwFlags:\t\t\t%s\n", s.c_str());
+    out.printf("iPixelType:\t\t\t%d\n", pixelFormat.iPixelType);
+    out.printf("cColorBits:\t\t\t%d\n", pixelFormat.cColorBits);
+    out.printf("cRedBits:\t\t\t%d\n", pixelFormat.cRedBits);
+    out.printf("cRedShift:\t\t\t%d\n", pixelFormat.cRedShift);
+    out.printf("cGreenBits:\t\t\t%d\n", pixelFormat.cGreenBits);
+    out.printf("cGreenShift:\t\t\t%d\n", pixelFormat.cGreenShift);
+    out.printf("cBlueBits:\t\t\t%d\n", pixelFormat.cBlueBits);
+    out.printf("cBlueShift:\t\t\t%d\n", pixelFormat.cBlueShift);
+    out.printf("cAlphaBits:\t\t\t%d\n", pixelFormat.cAlphaBits);
+    out.printf("cAlphaShift:\t\t\t%d\n", pixelFormat.cAlphaShift);
+    out.printf("cAccumBits:\t\t\t%d\n", pixelFormat.cAccumBits);
+    out.printf("cAccumRedBits:\t\t\t%d\n", pixelFormat.cAccumRedBits);
+    out.printf("cAccumGreenBits:\t\t%d\n", pixelFormat.cAccumGreenBits);
+    out.printf("cAccumBlueBits:\t\t\t%d\n", pixelFormat.cAccumBlueBits);
+    out.printf("cAccumAlphaBits:\t\t%d\n", pixelFormat.cAccumAlphaBits);
+    out.printf("cDepthBits:\t\t\t%d\n", pixelFormat.cDepthBits);
+    out.printf("cStencilBits:\t\t\t%d\n", pixelFormat.cStencilBits);
+    out.printf("cAuxBuffers:\t\t\t%d\n", pixelFormat.cAuxBuffers);
+    out.printf("iLayerType:\t\t\t%d\n", pixelFormat.iLayerType);
+    out.printf("bReserved:\t\t\t%d\n", pixelFormat.bReserved);
+    out.printf("dwLayerMask:\t\t\t%d\n", pixelFormat.dwLayerMask);
+    out.printf("dwDamageMask:\t\t\t%d\n", pixelFormat.dwDamageMask);
+
+    out.printf("\n");
+}
+#endif
+
+namespace _internal{
+static LRESULT WINAPI window_proc(
+    HWND                window,
+    UINT                message,
+    WPARAM              wparam,
+    LPARAM              lparam) {
+    
+    Win32Window* this_window = (Win32Window*)GetWindowLong(window, GWL_USERDATA);
+    
+    if (this_window != NULL) {
+        switch (message) {
+        case WM_ACTIVATE:
+            if ((LOWORD(wparam) != WA_INACTIVE) &&
+                (HIWORD(wparam) == 0) &&
+                ((HWND)lparam != this_window->hwnd())) { // non-zero is minimized 
+                this_window->_windowActive = true;
+            } else if ((HWND)lparam != this_window->hwnd()) {
+                this_window->_windowActive = false;
+            }
+            break;
+
+        case WM_CLOSE:
+            this_window->_receivedCloseEvent = true;
+			break;
+
+        case WM_SIZE:
+            if ((wparam == SIZE_MAXIMIZED) ||
+                (wparam == SIZE_RESTORED)) {
+                this_window->injectSizeEvent(LOWORD(lparam), HIWORD(lparam));
+            }
+            break;
+
+        case WM_SETFOCUS:
+            this_window->justReceivedFocus = true;
+            break;
+
+        case WM_KILLFOCUS:
+            for (int i = 0; i < sizeof(this_window->_keyboardButtons); ++i) {
+                if (this_window->_keyboardButtons[i]) {
+                    ::PostMessage(window, WM_KEYUP, i, 0);
+                }
+            }
+            memset(this_window->_keyboardButtons, 0, sizeof(this_window->_keyboardButtons));
+            break;
+
+        case WM_SYSCOMMAND:
+            // Only upper 12-bits are public
+            if ((wparam & 0xFFF0) == SC_KEYMENU) {
+                // Ignore Alt button that opens system menu, freezes render
+                return 0;
+            }
+            break;
+        }
+    }
+    
+    return DefWindowProc(window, message, wparam, lparam);
+}
+}
+
+static const char* G3DWndClass() {
+
+    static char const* g3dWindowClassName = NULL;
+
+    if (g3dWindowClassName == NULL) {
+        
+        WNDCLASS wndcls;
+        
+        wndcls.style = CS_HREDRAW | CS_VREDRAW | CS_DBLCLKS | CS_OWNDC;
+        wndcls.lpfnWndProc = _internal::window_proc;
+        wndcls.cbClsExtra = wndcls.cbWndExtra = 0;
+        wndcls.hInstance = ::GetModuleHandle(NULL);
+        wndcls.hIcon = NULL;
+        wndcls.hCursor = ::LoadCursor(NULL, IDC_ARROW);
+        wndcls.hbrBackground = NULL;
+        wndcls.lpszMenuName = NULL;
+        wndcls.lpszClassName = "G3DWindow";
+        
+        if (!RegisterClass(&wndcls)) {
+            Log::common()->printf("\n**** WARNING: could not create G3DWindow class ****\n");
+            // error!  Return the default window class.
+            return "window";
+        }
+        
+        g3dWindowClassName = wndcls.lpszClassName;        
+    }
+    
+    return g3dWindowClassName;
+}
+
+} // G3D namespace
+
+#endif // G3D_WIN32

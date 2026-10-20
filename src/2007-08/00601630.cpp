@@ -1,31 +1,159 @@
-// roc 2007-08 00601630  unit: RBX::ScriptMouseCommand  size: 58 bytes
-// Make this compile to the exact bytes below, then: roc check 2007-08 00601630
-//
-// 00601630  56                   push esi
-// 00601631  8b742408             mov esi, dword ptr [esp + 8]
-// 00601635  57                   push edi
-// 00601636  8b7c2410             mov edi, dword ptr [esp + 0x10]
-// 0060163a  57                   push edi
-// 0060163b  8bce                 mov ecx, esi
-// 0060163d  e88e7ff0ff           call 0x5095d0
-// 00601642  d94724               fld dword ptr [edi + 0x24]
-// 00601645  8b442414             mov eax, dword ptr [esp + 0x14]
-// 00601649  d95e24               fstp dword ptr [esi + 0x24]
-// 0060164c  d94728               fld dword ptr [edi + 0x28]
-// 0060164f  83c024               add eax, 0x24
-// 00601652  d95e28               fstp dword ptr [esi + 0x28]
-// 00601655  50                   push eax
-// 00601656  d9472c               fld dword ptr [edi + 0x2c]
-// 00601659  8bce                 mov ecx, esi
-// 0060165b  d95e2c               fstp dword ptr [esi + 0x2c]
-// 0060165e  e8fdc8f1ff           call 0x51df60
-// 00601663  5f                   pop edi
-// 00601664  8bc6                 mov eax, esi
-// 00601666  5e                   pop esi
-// 00601667  c20c00               ret 0xc
-// library rbxgs/v8datamodel\ICharacterSubject.cpp (function ?getFocusLookingAtGoal@ICharacterSubject@RBX@@AAE?AVCoordinateFrame@G3D@@ABV34@0@Z)
-
 // roc-lang: cpp
 // roc-cl: 50727
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
 // roc-lib: rbxgs v8datamodel/ICharacterSubject.cpp
+
+// Candidate translation unit (score above; library headers required).
+#include "v8datamodel/ICharacterSubject.h"
+#include "v8datamodel/Camera.h"
+#include "v8datamodel/UserController.h"
+#include "v8datamodel/Workspace.h"
+#include "v8world/ContactManager.h"
+#include "v8world/Primitive.h"
+
+namespace RBX
+{
+	ICharacterSubject::ICharacterSubject()
+		: lastOffset(G3D::Vector3::ZERO),
+		  cursorLocked(false),
+		  wasOccluded(false),
+		  hasGoalInFocus(false)
+	{
+	}
+
+	G3D::CoordinateFrame ICharacterSubject::getFocusLookingAtGoal(const G3D::CoordinateFrame& cameraFocus, const G3D::CoordinateFrame& cameraGoal)
+	{
+		G3D::CoordinateFrame temp = cameraFocus;
+		temp.lookAt(cameraGoal.translation);
+
+		return temp;
+	}
+
+	G3D::CoordinateFrame ICharacterSubject::goalFromDistance(const G3D::CoordinateFrame& cameraFocus, const G3D::CoordinateFrame& cameraGoal, const float distance)
+	{
+		G3D::CoordinateFrame manLookCamera = getFocusLookingAtGoal(cameraFocus, cameraGoal);
+		G3D::Vector3 newCameraPt = manLookCamera.lookVector() * distance + manLookCamera.translation;
+
+		return G3D::CoordinateFrame(G3D::Matrix3::identity(), newCameraPt);
+	}
+
+	bool ICharacterSubject::zoom(const float in, G3D::CoordinateFrame& cameraGoal, G3D::CoordinateFrame& cameraFocus)
+	{
+		G3D::Vector3 focusToGoal = cameraGoal.translation - cameraFocus.translation;
+
+		float currentDistance = focusToGoal.magnitude();
+		float newDistance = Camera::getNewZoomDistance(currentDistance, in);
+
+		newDistance = G3D::min(400.0f, newDistance);
+
+		if (newDistance == currentDistance)
+			return false;
+
+		focusToGoal.y = 0.0f;
+		focusToGoal.unitize();
+		focusToGoal.y = newDistance * 0.03f;
+
+		cameraGoal.translation = focusToGoal.direction() * newDistance + cameraFocus.translation;
+
+		return true;
+	}
+
+	//98.58% match
+	bool ICharacterSubject::testOcclusion(const G3D::CoordinateFrame& cameraFocus, const G3D::CoordinateFrame& cameraGoal, float& distance)
+	{
+		ContactManager* contactManager = getContactManager();
+		if (contactManager)
+		{
+			std::vector<const Primitive*> ignorePrims;
+			getIgnorePrims(ignorePrims);
+
+			G3D::CoordinateFrame manLookCamera = getFocusLookingAtGoal(cameraFocus, cameraGoal);
+			G3D::Vector3 pointOnMan = manLookCamera.leftVector();
+
+			int hits = 0;
+			float originalDistance = (cameraGoal.translation - cameraFocus.translation).magnitude();
+			distance = originalDistance;
+
+			for (int x = -2; x <= 2; x += 2)
+			{
+				G3D::Vector3 r = manLookCamera.translation + pointOnMan * (float)x;
+				G3D::Ray manToCamera = G3D::Ray::fromOriginAndDirection(r, cameraGoal.translation - r);
+
+				G3D::Vector3 hitPoint;
+				if (contactManager->getHit(manToCamera, &ignorePrims, NULL, hitPoint))
+				{
+					hits++;
+					float thisDistance = (hitPoint - r).magnitude();
+					distance = G3D::min(distance, thisDistance);
+				}
+			}
+
+			if (hits > 1)
+			{
+				distance -= 1.0f;
+				distance = G3D::max(distance, 0.5f);
+				distance = G3D::min(distance, 1000.0f);
+				return true;
+			}
+			else
+			{
+				distance = originalDistance;
+				return false;
+			}
+		}
+
+		return false;
+	}
+
+	void ICharacterSubject::onHeartBeat(G3D::CoordinateFrame& cameraGoal, G3D::CoordinateFrame& cameraFocus)
+	{
+		if ((cameraGoal.translation - cameraFocus.translation).magnitude() < 2.75f)
+		{
+			Instance* thisInstance = dynamic_cast<Instance*>(this);
+			if (ControllerService* controllerService = ServiceProvider::find<ControllerService>(thisInstance))
+			{
+				if (Workspace* workspace = ServiceProvider::find<Workspace>(thisInstance))
+				{
+					UserInputBase* device = controllerService->getHardwareDevice();
+					if (device)
+					{
+						device->centerCursor();
+						device->setWrapMode(UserInputBase::WRAP_CENTER);
+						cursorLocked = true;
+					}
+				}
+			}
+		}
+		else
+		{
+			Instance* thisInstance = dynamic_cast<Instance*>(this);
+			if (ControllerService* controllerService = ServiceProvider::find<ControllerService>(thisInstance))
+			{
+				if (Workspace* workspace = ServiceProvider::find<Workspace>(thisInstance))
+				{
+					UserInputBase* device = controllerService->getHardwareDevice();
+					if (device && cursorLocked)
+					{
+						if (!workspace->getInMouselookMode())
+							device->setWrapMode(UserInputBase::WRAP_AUTO);
+
+						cursorLocked = false;
+					}
+				}
+			}
+		}
+
+		float angle = 0.0f;
+
+		if (cursorLocked)
+		{
+			G3D::Vector3 v = cameraFocus.translation - cameraGoal.translation;
+			v.y = 0.0f;
+			v = v.direction();
+
+			angle = Math::angleToE0(G3D::Vector2(v.z, v.x));
+		}
+
+		cameraSetWalkOrientation(angle, !cursorLocked);
+	}
+}

@@ -1,26 +1,166 @@
 // from server: 100% by tester
-// roc 2010-06 00435240  unit: CPropGrid::UpdateItemsJob  size: 43 bytes
-// Make this compile to the exact bytes below, then: roc check 2010-06 00435240
-//
-// 00435240  8b4c240c             mov ecx, dword ptr [esp + 0xc]
-// 00435244  8b442414             mov eax, dword ptr [esp + 0x14]
-// 00435248  3bc8                 cmp ecx, eax
-// 0043524a  7411                 je 0x43525d
-// 0043524c  8b542418             mov edx, dword ptr [esp + 0x18]
-// 00435250  8b12                 mov edx, dword ptr [edx]
-// 00435252  3911                 cmp dword ptr [ecx], edx
-// 00435254  7407                 je 0x43525d
-// 00435256  83c108               add ecx, 8
-// 00435259  3bc8                 cmp ecx, eax
-// 0043525b  75f5                 jne 0x435252
-// 0043525d  8b442404             mov eax, dword ptr [esp + 4]
-// 00435261  8b542408             mov edx, dword ptr [esp + 8]
-// 00435265  8910                 mov dword ptr [eax], edx
-// 00435267  894804               mov dword ptr [eax + 4], ecx
-// 0043526a  c3                   ret 
-// library rbxgs/v8datamodel\Selection.cpp (function ??$find@V?$_Vector_iterator@V?$shared_ptr@VInstance@RBX@@@boost@@V?$allocator@V?$shared_ptr@VInstance@RBX@@@boost@@@std@@@std@@V?$shared_ptr@VInstance@RBX@@@boost@@@std@@YA?AV?$_Vector_iterator@V?$shared_ptr@VInstance@RBX@@@boost@@V?$allocator@V?$shared_ptr@VInstance@RBX@@@boost@@@std@@@0@V10@0ABV?$shared_ptr@VInstance@RBX@@@boost@@@Z)
-
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
 // roc-lib: rbxgs v8datamodel/Selection.cpp
+
+// Candidate translation unit (score above; library headers required).
+#include "v8datamodel/Selection.h"
+
+static RBX::Reflection::BoundFuncDesc<RBX::Selection, boost::shared_ptr<const std::vector<boost::shared_ptr<RBX::Instance>>>(void), 0> func_getSelection(&RBX::Selection::getSelection2, "Get", RBX::Reflection::FunctionDescriptor::NeedTrustedCaller);
+static RBX::Reflection::BoundFuncDesc<RBX::Selection, void(boost::shared_ptr<const std::vector<boost::shared_ptr<RBX::Instance>>>), 1> func_setSelection(&RBX::Selection::setSelection, "Set", "selection", RBX::Reflection::FunctionDescriptor::NeedTrustedCaller);
+
+namespace RBX
+{
+	Selection::Selection()
+		: selection(std::vector<boost::shared_ptr<Instance>>())
+	{
+		setName("Selection");
+	}
+
+	Selection::~Selection()
+	{
+		RBXASSERT(size() == 0);
+	}
+
+	void Selection::addFilteredSelection(ISelectionBase* fs)
+	{
+		filteredSelections.push_back(fs);
+	}
+
+	void Selection::removeFilteredSelection(ISelectionBase* fs)
+	{
+		filteredSelections.erase(std::find(filteredSelections.begin(), filteredSelections.end(), fs));
+	}
+
+	void Selection::raiseAdded(boost::shared_ptr<Instance> instance)
+	{
+		SelectionChanged event(instance, boost::shared_ptr<Instance>());
+
+		for (std::vector<ISelectionBase*>::iterator iter = filteredSelections.begin(); iter != filteredSelections.end(); iter++)
+		{
+			(*iter)->onSelectionChanged(event);
+		}
+
+		Notifier<Selection, SelectionChanged>::raise(event);
+	}
+
+	void Selection::raiseRemoved(boost::shared_ptr<Instance> source)
+	{
+		SelectionChanged event(boost::shared_ptr<Instance>(), source);
+
+		for (std::vector<ISelectionBase*>::iterator iter = filteredSelections.begin(); iter != filteredSelections.end(); iter++)
+		{
+			(*iter)->onSelectionChanged(event);
+		}
+
+		Notifier<Selection, SelectionChanged>::raise(event);
+	}
+
+	void Selection::toggleSelection(Instance* instance)
+	{
+		boost::shared_ptr<Instance> shared = shared_from(instance);
+		boost::shared_ptr<std::vector<boost::shared_ptr<Instance>>> sel = selection.write();
+
+		std::vector<boost::shared_ptr<Instance>>::iterator found = std::find(sel->begin(), sel->end(), shared);
+
+		if (found == sel->end())
+		{
+			sel->push_back(shared);
+			instance->Notifier<Instance, AncestorChanged>::addListener(this);
+			raiseAdded(shared);
+		}
+		else
+		{
+			sel->erase(found);
+			instance->Notifier<Instance, AncestorChanged>::removeListener(this);
+			raiseRemoved(shared);
+		}
+	}
+
+	void Selection::addToSelection(Instance* instance)
+	{
+		boost::shared_ptr<Instance> shared = shared_from(instance);
+		RBXASSERT(instance);
+
+		boost::shared_ptr<std::vector<boost::shared_ptr<Instance>>> sel = selection.write();
+
+		std::vector<boost::shared_ptr<Instance>>::iterator found = std::find(sel->begin(), sel->end(), shared);
+
+		if (found == sel->end())
+		{
+			sel->push_back(shared);
+			instance->Notifier<Instance, AncestorChanged>::addListener(this);
+			raiseAdded(shared);
+		}
+	}
+	
+	void Selection::removeFromSelection(const Instance* instance)
+	{
+		RBXASSERT(instance);
+
+		boost::shared_ptr<std::vector<boost::shared_ptr<Instance>>> sel = selection.write();
+
+		std::vector<boost::shared_ptr<Instance>>::iterator found = std::find(sel->begin(), sel->end(), shared_from(instance));
+
+		if (found != sel->end())
+		{
+			boost::shared_ptr<Instance> nonConst = *found;
+
+			sel->erase(found);
+			instance->Notifier<Instance, AncestorChanged>::removeListener(this);
+			raiseRemoved(nonConst);
+		}
+	}
+
+	void Selection::clearSelection()
+	{
+		while (!selection->empty())
+		{
+			boost::shared_ptr<Instance> instance = selection->back();
+			selection.write()->pop_back();
+
+			instance->Notifier<Instance, AncestorChanged>::removeListener(this);
+			raiseRemoved(instance);
+		}
+	}
+
+	void Selection::setSelection(Instance* instance)
+	{
+		boost::shared_ptr<Instance> inst = shared_from(instance);
+		
+		while (!selection->empty())
+		{
+			boost::shared_ptr<Instance> item = selection->back();
+
+			if (item == inst)
+			{
+				if (selection->size() == 1)
+					return;
+
+				boost::shared_ptr<std::vector<boost::shared_ptr<Instance>>> sel = selection.write();
+				sel->back() = sel->front();
+				sel->front() = item;
+			}
+			else
+			{
+				selection.write()->pop_back();
+				item->Notifier<Instance, AncestorChanged>::removeListener(this);
+				raiseRemoved(item);
+			}
+		}
+
+		if (inst)
+		{
+			selection.write()->push_back(inst);
+			instance->Notifier<Instance, AncestorChanged>::addListener(this);
+			raiseAdded(inst);
+		}
+	}
+
+	void Selection::onEvent(const Instance* source, AncestorChanged event)
+	{
+		if (source->getRootAncestor() != this->getRootAncestor())
+			removeFromSelection(source);
+	}
+}

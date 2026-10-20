@@ -1,93 +1,279 @@
-// roc 2007-03 004982f0  unit: seg_00490000  size: 235 bytes
-// Make this compile to the exact bytes below, then: roc check 2007-03 004982f0
-//
-// 004982f0  83ec0c               sub esp, 0xc
-// 004982f3  d94108               fld dword ptr [ecx + 8]
-// 004982f6  8b542414             mov edx, dword ptr [esp + 0x14]
-// 004982fa  d91c24               fstp dword ptr [esp]
-// 004982fd  56                   push esi
-// 004982fe  d94208               fld dword ptr [edx + 8]
-// 00498301  8b74241c             mov esi, dword ptr [esp + 0x1c]
-// 00498305  d95c2418             fstp dword ptr [esp + 0x18]
-// 00498309  d94608               fld dword ptr [esi + 8]
-// 0049830c  d95c241c             fstp dword ptr [esp + 0x1c]
-// 00498310  d9442404             fld dword ptr [esp + 4]
-// 00498314  d9442418             fld dword ptr [esp + 0x18]
-// 00498318  d8d1                 fcom st(1)
-// 0049831a  dfe0                 fnstsw ax
-// 0049831c  f6c401               test ah, 1
-// 0049831f  7504                 jne 0x498325
-// 00498321  ddd9                 fstp st(1)
-// 00498323  eb15                 jmp 0x49833a
-// 00498325  ddd8                 fstp st(0)
-// 00498327  d944241c             fld dword ptr [esp + 0x1c]
-// 0049832b  d8d1                 fcom st(1)
-// 0049832d  dfe0                 fnstsw ax
-// 0049832f  f6c441               test ah, 0x41
-// 00498332  7a04                 jp 0x498338
-// 00498334  ddd9                 fstp st(1)
-// 00498336  eb02                 jmp 0x49833a
-// 00498338  ddd8                 fstp st(0)
-// 0049833a  d95c2404             fstp dword ptr [esp + 4]
-// 0049833e  d94104               fld dword ptr [ecx + 4]
-// 00498341  d95c2418             fstp dword ptr [esp + 0x18]
-// 00498345  d94204               fld dword ptr [edx + 4]
-// 00498348  d95c241c             fstp dword ptr [esp + 0x1c]
-// 0049834c  d94604               fld dword ptr [esi + 4]
-// 0049834f  d95c2408             fstp dword ptr [esp + 8]
-// 00498353  d9442418             fld dword ptr [esp + 0x18]
-// 00498357  d944241c             fld dword ptr [esp + 0x1c]
-// 0049835b  d8d1                 fcom st(1)
-// 0049835d  dfe0                 fnstsw ax
-// 0049835f  f6c401               test ah, 1
-// 00498362  7504                 jne 0x498368
-// 00498364  ddd9                 fstp st(1)
-// 00498366  eb15                 jmp 0x49837d
-// 00498368  ddd8                 fstp st(0)
-// 0049836a  d9442408             fld dword ptr [esp + 8]
-// 0049836e  d8d1                 fcom st(1)
-// 00498370  dfe0                 fnstsw ax
-// 00498372  f6c441               test ah, 0x41
-// 00498375  7a04                 jp 0x49837b
-// 00498377  ddd9                 fstp st(1)
-// 00498379  eb02                 jmp 0x49837d
-// 0049837b  ddd8                 fstp st(0)
-// 0049837d  d95c241c             fstp dword ptr [esp + 0x1c]
-// 00498381  d901                 fld dword ptr [ecx]
-// 00498383  d95c2418             fstp dword ptr [esp + 0x18]
-// 00498387  d902                 fld dword ptr [edx]
-// 00498389  d95c2408             fstp dword ptr [esp + 8]
-// 0049838d  d906                 fld dword ptr [esi]
-// 0049838f  5e                   pop esi
-// 00498390  d95c2408             fstp dword ptr [esp + 8]
-// 00498394  d9442414             fld dword ptr [esp + 0x14]
-// 00498398  d9442404             fld dword ptr [esp + 4]
-// 0049839c  d8d1                 fcom st(1)
-// 0049839e  dfe0                 fnstsw ax
-// 004983a0  f6c401               test ah, 1
-// 004983a3  7504                 jne 0x4983a9
-// 004983a5  ddd9                 fstp st(1)
-// 004983a7  eb11                 jmp 0x4983ba
-// 004983a9  ddd8                 fstp st(0)
-// 004983ab  d9442408             fld dword ptr [esp + 8]
-// 004983af  d8d1                 fcom st(1)
-// 004983b1  dfe0                 fnstsw ax
-// 004983b3  f6c441               test ah, 0x41
-// 004983b6  7bed                 jnp 0x4983a5
-// 004983b8  ddd8                 fstp st(0)
-// 004983ba  8b442410             mov eax, dword ptr [esp + 0x10]
-// 004983be  d95c2414             fstp dword ptr [esp + 0x14]
-// 004983c2  d9442414             fld dword ptr [esp + 0x14]
-// 004983c6  d918                 fstp dword ptr [eax]
-// 004983c8  d9442418             fld dword ptr [esp + 0x18]
-// 004983cc  d95804               fstp dword ptr [eax + 4]
-// 004983cf  d90424               fld dword ptr [esp]
-// 004983d2  d95808               fstp dword ptr [eax + 8]
-// 004983d5  83c40c               add esp, 0xc
-// 004983d8  c20c00               ret 0xc
-// library rbxgs/util\Extents.cpp (function ?clamp@Vector3@G3D@@QBE?AV12@ABV12@0@Z)
-
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
 // roc-lib: rbxgs util/Extents.cpp
+
+// Candidate translation unit (score above; library headers required).
+#include "util/Extents.h"
+#include "util/Math.h"
+#include "util/Debug.h"
+#include "util/NormalId.h"
+
+namespace RBX
+{
+	float Extents::areaXZ() const
+	{
+		G3D::Vector3 delta = this->high - this->low;
+		return delta.x * delta.z;
+	}
+
+	NormalId Extents::closestFace(const G3D::Vector3& point)
+	{
+		NormalId faceId = NORM_X;
+
+		// bruh
+		float hy = fabs(point.y - this->high.y);
+		float hz = fabs(point.z - this->high.z);
+		float lx = fabs(point.x - this->low.x);
+		float ly = fabs(point.y - this->low.y);
+		float lz = fabs(point.z - this->low.z);
+
+		float hx = fabs(point.x - this->high.x); 
+		if (hx > hy)
+		{
+			faceId = NORM_Y;
+		}
+		else
+		{
+			hy = hx;
+		}
+
+		if (hz < hy)
+		{
+			hy = hz;
+			faceId = NORM_Z;
+		}
+
+		if (lx < hy)
+		{
+			hy = lx;
+			faceId = NORM_X_NEG;
+		}
+
+		if (ly < hy)
+		{
+			hy = ly;
+			faceId = NORM_Y_NEG;
+		}
+
+		if (lz < hy)
+		{
+			faceId = NORM_Z_NEG;
+		}
+
+		return faceId;
+	}
+
+	G3D::Vector3 Extents::getCorner(int i) const
+	{
+		RBXASSERT(i >= 0);
+		RBXASSERT(i <= 7);
+
+		return G3D::Vector3(
+			this->low[0 + 3 * (i / 4)],
+			this->low[1 + 3 * (i / 2 % 2)],
+			this->low[2 + 3 * (i % 2)]
+		);
+	}
+
+	void Extents::getFaceCorners(NormalId faceId, G3D::Vector3& v0, G3D::Vector3& v1, G3D::Vector3& v2, G3D::Vector3& v3) const
+	{
+		switch (faceId)
+		{
+		case NORM_X:
+			v0 = G3D::Vector3(this->high.x, this->low.y, this->low.z);
+			v1 = G3D::Vector3(this->high.x, this->high.y, this->low.z);
+			v2 = G3D::Vector3(this->high.x, this->high.y, this->high.z);
+			v3 = G3D::Vector3(this->high.x, this->low.y, this->high.z);
+			break;
+		case NORM_Y:
+			v0 = G3D::Vector3(this->low.x, this->high.y, this->low.z);
+			v1 = G3D::Vector3(this->low.x, this->high.y, this->high.z);
+			v2 = G3D::Vector3(this->high.x, this->high.y, this->high.z);
+			v3 = G3D::Vector3(this->high.x, this->high.y, this->low.z);
+			break;
+		case NORM_Z:
+			v0 = G3D::Vector3(this->low.x, this->low.y, this->high.z);
+			v1 = G3D::Vector3(this->high.x, this->low.y, this->high.z);
+			v2 = G3D::Vector3(this->high.x, this->high.y, this->high.z);
+			v3 = G3D::Vector3(this->low.x, this->high.y, this->high.z);
+			break;
+		case NORM_X_NEG:
+			v0 = G3D::Vector3(this->low.x, this->low.y, this->low.z);
+			v1 = G3D::Vector3(this->low.x, this->low.y, this->high.z);
+			v2 = G3D::Vector3(this->low.x, this->high.y, this->high.z);
+			v3 = G3D::Vector3(this->low.x, this->high.y, this->low.z);
+			break;
+		case NORM_Y_NEG:
+			v0 = G3D::Vector3(this->low.x, this->low.y, this->low.z);
+			v1 = G3D::Vector3(this->high.x, this->low.y, this->low.z);
+			v2 = G3D::Vector3(this->high.x, this->low.y, this->high.z);
+			v3 = G3D::Vector3(this->low.x, this->low.y, this->high.z);
+			break;
+		case NORM_Z_NEG:
+			v0 = G3D::Vector3(this->low.x, this->low.y, this->low.z);
+			v1 = G3D::Vector3(this->low.x, this->high.y, this->low.z);
+			v2 = G3D::Vector3(this->high.x, this->high.y, this->low.z);
+			v3 = G3D::Vector3(this->high.x, this->low.y, this->low.z);
+			break;
+		default:
+			RBXASSERT(0);
+		}
+	}
+
+	G3D::Vector3 Extents::faceCenter(NormalId faceId) const
+	{
+		G3D::Vector3 v = this->center();
+
+		int i = faceId % 3;
+		if (faceId < NORM_X_NEG)
+		{
+			v[i] = this->high[i];
+		}
+		else
+		{
+			v[i] = this->low[i];
+		}
+
+		return v;
+	}
+
+	bool Extents::containedByFrustum(const G3D::GCamera::Frustum& frustum) const
+	{
+		if (frustum.faceArray.size() > 0)
+		{
+			for (int i = 0; i < frustum.faceArray.size(); i++)
+			{
+				const G3D::Plane* plane = &frustum.faceArray[i].plane;
+				for (int j = 0; j < 8; j++)
+				{
+					G3D::Vector3 corner = getCorner(j);
+					if (!plane->halfSpaceContains(corner))
+					{
+						return false;
+					}
+				}
+			}
+		}
+
+		return true;
+	}
+
+	bool Extents::contains(const G3D::Vector3& point) const
+	{
+		return
+			point.x >= this->low.x &&
+			point.y >= this->low.y &&
+			point.z >= this->low.z &&
+			point.x <= this->high.x &&
+			point.y <= this->high.y &&
+			point.z <= this->high.z;
+	}
+
+	bool Extents::fuzzyContains(const G3D::Vector3& point, float slop) const
+	{
+		return
+			point.x >= this->low.x - slop &&
+			point.y >= this->low.y - slop &&
+			point.z >= this->low.z - slop &&
+			point.x <= this->high.x + slop &&
+			point.y <= this->high.y + slop &&
+			point.z <= this->high.z + slop;
+	}
+
+	bool Extents::overlapsOrTouches(const Extents& other) const
+	{
+		return
+			!(this->low.x > other.high.x) &&
+			!(this->low.y > other.high.y) &&
+			!(this->low.z > other.high.z) &&
+			!(this->high.y < other.low.y) &&
+			!(this->high.x < other.low.x) &&
+			!(this->high.z < other.low.z);
+	}
+
+	bool Extents::separatedByMoreThan(const Extents& other, float distance) const
+	{
+		RBXASSERT(distance > 0.0);
+
+		G3D::Vector3 dv(distance, distance, distance);
+
+		Extents thisExpanded(*this);
+		thisExpanded.low -= dv;
+		thisExpanded.high += dv;
+
+		return !thisExpanded.overlapsOrTouches(other);
+	}
+
+	G3D::Plane Extents::getPlane(NormalId normalId) const
+	{
+		G3D::Vector3 point = faceCenter(normalId);
+		G3D::Vector3 normal = normalIdToVector3(normalId);
+
+		return G3D::Plane(normal, point);
+	}
+
+	void Extents::unionWith(const Extents& other)
+	{
+		this->low = this->low.min(other.low);
+		this->high = this->high.max(other.high);
+	}
+
+	Extents Extents::toWorldSpace(const G3D::CoordinateFrame& localCoord)
+	{
+		G3D::Vector3 minC(Math::inf(), Math::inf(), Math::inf());
+		G3D::Vector3 maxC(-Math::inf(), -Math::inf(), -Math::inf());
+
+		for (int i = 0; i < 8; i++)
+		{
+			G3D::Vector3 corner = getCorner(i);
+			G3D::Vector3 world = localCoord.pointToWorldSpace(corner);
+
+			minC = minC.min(world);
+			maxC = maxC.max(world);
+		}
+
+		return vv(minC, maxC);
+	}
+
+	Extents Extents::express(const G3D::CoordinateFrame& myFrame, const G3D::CoordinateFrame& expressInFrame)
+	{
+		G3D::Vector3 minC(Math::inf(), Math::inf(), Math::inf());
+		G3D::Vector3 maxC(-Math::inf(), -Math::inf(), -Math::inf());
+
+		for (int i = 0; i < 8; i++)
+		{
+			G3D::Vector3 corner = getCorner(i);
+			G3D::Vector3 v1 = myFrame.pointToWorldSpace(corner) - expressInFrame.translation;
+			G3D::Vector3 inOther = v1 * expressInFrame.rotation;
+
+			minC = minC.min(inOther);
+			maxC = maxC.max(inOther);
+		}
+
+		return vv(minC, maxC);
+	}
+
+	Extents Extents::vv(const G3D::Vector3& v0, const G3D::Vector3& v1)
+	{
+		Extents result;
+
+		result.low = v0.min(v1);
+		result.high = v0.max(v1);
+
+		return result;
+	}
+
+	const Extents& Extents::zero()
+	{
+		static Extents e(G3D::Vector3::zero(), G3D::Vector3::zero());
+		return e;
+	}
+
+	const Extents& Extents::negativeInfiniteExtents()
+	{
+		// Extents default constructor sets high and low to inf
+		static Extents e;
+		return e;
+	}
+}

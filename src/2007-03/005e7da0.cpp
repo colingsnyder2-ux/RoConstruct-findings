@@ -1,71 +1,293 @@
-// roc 2007-03 005e7da0  unit: seg_005e0000  size: 191 bytes
-// Make this compile to the exact bytes below, then: roc check 2007-03 005e7da0
-//
-// 005e7da0  6aff                 push -1
-// 005e7da2  68d8997500           push 0x7599d8
-// 005e7da7  64a100000000         mov eax, dword ptr fs:[0]
-// 005e7dad  50                   push eax
-// 005e7dae  64892500000000       mov dword ptr fs:[0], esp
-// 005e7db5  83ec18               sub esp, 0x18
-// 005e7db8  53                   push ebx
-// 005e7db9  56                   push esi
-// 005e7dba  8bf1                 mov esi, ecx
-// 005e7dbc  8d4c2414             lea ecx, [esp + 0x14]
-// 005e7dc0  e86b56fcff           call 0x5ad430
-// 005e7dc5  89442418             mov dword ptr [esp + 0x18], eax
-// 005e7dc9  c6401101             mov byte ptr [eax + 0x11], 1
-// 005e7dcd  8b442418             mov eax, dword ptr [esp + 0x18]
-// 005e7dd1  894004               mov dword ptr [eax + 4], eax
-// 005e7dd4  8b442418             mov eax, dword ptr [esp + 0x18]
-// 005e7dd8  8900                 mov dword ptr [eax], eax
-// 005e7dda  8b442418             mov eax, dword ptr [esp + 0x18]
-// 005e7dde  894008               mov dword ptr [eax + 8], eax
-// 005e7de1  33c0                 xor eax, eax
-// 005e7de3  8944241c             mov dword ptr [esp + 0x1c], eax
-// 005e7de7  89442428             mov dword ptr [esp + 0x28], eax
-// 005e7deb  8d442430             lea eax, [esp + 0x30]
-// 005e7def  50                   push eax
-// 005e7df0  8d4c240c             lea ecx, [esp + 0xc]
-// 005e7df4  51                   push ecx
-// 005e7df5  8d4c241c             lea ecx, [esp + 0x1c]
-// 005e7df9  e872b60200           call 0x613470
-// 005e7dfe  d9442434             fld dword ptr [esp + 0x34]
-// 005e7e02  8b442430             mov eax, dword ptr [esp + 0x30]
-// 005e7e06  51                   push ecx
-// 005e7e07  d91c24               fstp dword ptr [esp]
-// 005e7e0a  8d542418             lea edx, [esp + 0x18]
-// 005e7e0e  52                   push edx
-// 005e7e0f  50                   push eax
-// 005e7e10  8bce                 mov ecx, esi
-// 005e7e12  e8e9f8ffff           call 0x5e7700
-// 005e7e17  8ad8                 mov bl, al
-// 005e7e19  8b442418             mov eax, dword ptr [esp + 0x18]
-// 005e7e1d  8b10                 mov edx, dword ptr [eax]
-// 005e7e1f  50                   push eax
-// 005e7e20  8d4c2418             lea ecx, [esp + 0x18]
-// 005e7e24  51                   push ecx
-// 005e7e25  8bf1                 mov esi, ecx
-// 005e7e27  52                   push edx
-// 005e7e28  56                   push esi
-// 005e7e29  8d4c2418             lea ecx, [esp + 0x18]
-// 005e7e2d  51                   push ecx
-// 005e7e2e  8bce                 mov ecx, esi
-// 005e7e30  c744243cffffffff     mov dword ptr [esp + 0x3c], 0xffffffff
-// 005e7e38  e8835afcff           call 0x5ad8c0
-// 005e7e3d  8b542418             mov edx, dword ptr [esp + 0x18]
-// 005e7e41  52                   push edx
-// 005e7e42  e8a9620300           call 0x61e0f0
-// 005e7e47  8b4c2424             mov ecx, dword ptr [esp + 0x24]
-// 005e7e4b  83c404               add esp, 4
-// 005e7e4e  5e                   pop esi
-// 005e7e4f  8ac3                 mov al, bl
-// 005e7e51  5b                   pop ebx
-// 005e7e52  64890d00000000       mov dword ptr fs:[0], ecx
-// 005e7e59  83c424               add esp, 0x24
-// 005e7e5c  c20800               ret 8
-// library rbxgs/v8world\ContactManager.cpp (function ?intersectingOthers@ContactManager@RBX@@QAE_NPAVPrimitive@2@M@Z)
-
 // roc-lang: cpp
 // roc-cl: 50727
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
 // roc-lib: rbxgs v8world/ContactManager.cpp
+
+// Candidate translation unit (score above; library headers required).
+#include "v8world/ContactManager.h"
+#include "v8world/spatialHash.h" // TODO: move these out maybe?
+#include "v8world/World.h"
+
+namespace RBX
+{
+	bool ContactManager::ignoreBool = false;
+
+	ContactManager::ContactManager(World* world)
+	{
+		SpatialHash* hash = new SpatialHash(world, this);
+		this->spatialHash = hash;
+
+		this->world = world;
+	}
+
+	ContactManager::~ContactManager()
+	{
+		delete this->spatialHash;
+	}
+
+	void ContactManager::getPrimitivesTouchingExtents(const Extents& extents, const Primitive* ignore, G3D::Array<Primitive*>& found)
+	{
+		this->spatialHash->getPrimitivesTouchingExtents(extents, ignore, found);
+	}
+
+	void ContactManager::onNewPair(Primitive* p0, Primitive* p1)
+	{
+		Contact* contact = this->createContact(p0, p1);
+		this->world->insertContact(contact);
+	}
+
+	void ContactManager::onReleasePair(Primitive* p0, Primitive* p1)
+	{
+		this->world->destroyContact(Primitive::getContact(p0, p1));
+	}
+
+	void ContactManager::onPrimitiveAdded(Primitive* p)
+	{
+		this->spatialHash->onPrimitiveAdded(p);
+	}
+
+	void ContactManager::onPrimitiveRemoved(Primitive* p)
+	{
+		this->spatialHash->onPrimitiveRemoved(p);
+	}
+
+	void ContactManager::onPrimitiveExtentsChanged(Primitive* p)
+	{
+		this->spatialHash->onPrimitiveExtentsChanged(p);
+	}
+
+	void ContactManager::stepWorld()
+	{
+		this->spatialHash->onAllPrimitivesMoved();
+	}
+
+	bool ContactManager::intersectingOthers(Primitive* check, float overlapIgnored)
+	{
+		std::set<Primitive*> checkSet;
+		checkSet.insert(check);
+		return intersectingOthers(check, checkSet, overlapIgnored);
+	}
+
+	bool ContactManager::intersectingOthers(const G3D::Array<Primitive*>& check, float overlapIgnored)
+	{
+		std::set<Primitive*> checkSet(check.begin(), check.end());
+
+		for (int i = 0; i < check.size(); i++)
+		{
+			if (intersectingOthers(check[i], checkSet, overlapIgnored))
+				return true;
+		}
+		return false;
+	}
+
+	bool ContactManager::intersectingOthers(Primitive* check, const std::set<Primitive*>& checkSet, float overlapIgnored)
+	{
+		for (Contact* cur = check->getFirstContact(); cur != NULL; cur = check->getNextContact(cur))
+		{
+			if (checkSet.find(cur->otherPrimitive(check)) == checkSet.end() && cur->computeIsColliding(overlapIgnored))
+				return true;
+		}
+		return false;
+	}
+
+	void ContactManager::onPrimitiveGeometryTypeChanged(Primitive* p)
+	{
+		G3D::Array<Contact*> newContacts;
+
+		for (Contact* cur = p->getFirstContact(); cur != NULL; cur = p->getFirstContact())
+		{
+			newContacts.push_back(createContact(cur->getPrimitive(0), cur->getPrimitive(1)));
+			world->destroyContact(cur);
+		}
+
+		for (int i = 0; i < newContacts.size(); i++)
+		{
+			world->insertContact(newContacts[i]);
+		}
+	}
+
+	Primitive* ContactManager::getHit(const G3D::Ray& worldRay, const std::vector<Primitive const*>* ignorePrim, const HitTestFilter* filter, G3D::Vector3& hitPoint, bool& inside) const
+	{
+		G3D::Array<Primitive const*> tempIgnore;
+		tempIgnore = *ignorePrim;
+		return getHit(worldRay, &tempIgnore, filter, hitPoint, inside);
+	}
+
+	Primitive* ContactManager::getHit(const G3D::Ray& worldRay, const G3D::Array<Primitive const*>* ignorePrim, const HitTestFilter* filter, G3D::Vector3& hitPoint, bool& inside) const
+	{
+		RBXASSERT(worldRay.direction.magnitude() < 5000.0f);
+		world->update();
+
+		bool stopped;
+
+		Primitive* fastHit = getFastHit(worldRay, ignorePrim, filter, hitPoint, inside, stopped);
+
+		if (stopped) 
+			fastHit = NULL;
+
+		if (!fastHit) 
+		{
+			hitPoint = G3D::Vector3::zero();
+			inside = false;
+		}
+
+		return fastHit;
+	}
+
+	Primitive* ContactManager::getFastHit(const G3D::Ray& worldRay, const G3D::Array<Primitive const*>* ignorePrim, const HitTestFilter* filter, G3D::Vector3& hitPointWorld, bool& inside, bool& stopped) const
+	{
+		G3D::Array<Primitive*> primitives;
+		Vector3int32 grid = SpatialHash::realToHashGrid(worldRay.origin);
+		float magnitude = worldRay.direction.magnitude();
+
+		RBXASSERT(magnitude < 5000.0f);
+
+		magnitude = G3D::min(5000.0f, magnitude);
+
+		G3D::Ray unitRay = worldRay.unit();
+
+		do
+		{
+			primitives.fastClear();
+			spatialHash->getPrimitivesInGrid(grid, primitives);
+			Primitive* slowHit = getSlowHit(primitives, unitRay, ignorePrim, filter, hitPointWorld, magnitude, inside, stopped);
+
+			if (slowHit)
+			{
+				Extents hashGrid = SpatialHash::hashGridToRealExtents(grid.toVector3());
+				if (hashGrid.fuzzyContains(hitPointWorld, 0.001f))
+					return slowHit;
+			}
+		}
+		while (spatialHash->getNextGrid(grid, unitRay, magnitude));
+
+		return NULL;
+	}
+
+	Primitive* ContactManager::getHitLegacy(const G3D::Ray& originDirection, const Primitive* ignorePrim, const HitTestFilter* filter, G3D::Vector3& hitPointWorld, float& distanceToHit, const float& maxSearchDepth) const
+	{
+		RBXASSERT(originDirection.direction.isUnit());
+
+		G3D::Vector3 maxSearchVec = originDirection.direction * maxSearchDepth;
+		G3D::Ray worldRay = G3D::Ray::fromOriginAndDirection(originDirection.origin, maxSearchVec);
+		G3D::Array<Primitive const*> ignorePrims;
+
+		if (ignorePrim)
+			ignorePrims.push_back(ignorePrim);
+
+		Primitive* hit = getHit(worldRay, &ignorePrims, filter, hitPointWorld, ContactManager::ignoreBool);
+
+		float tempDist;
+
+		if (hit)
+		{
+			G3D::Vector3 temp = hitPointWorld - worldRay.origin;
+			tempDist = temp.magnitude();
+		}
+		else 
+			tempDist = 0.0f;
+
+		distanceToHit = tempDist;
+
+		return hit;
+	}
+
+	Primitive* ContactManager::getSlowHit(const G3D::Array<Primitive*>& primitives, const G3D::Ray& unitRay, const G3D::Array<Primitive const*>* ignorePrim, const HitTestFilter* filter, G3D::Vector3& hitPoint, float maxDistance, bool& inside, bool& stopped) const
+	{
+		RBXASSERT(unitRay.direction.isUnit());
+
+		Primitive* bestPrimitive = NULL;
+		float bestOffset = maxDistance;
+		float stopOffset = maxDistance;
+
+		stopped = false;
+		inside = false;
+
+		for (int i = 0; i < primitives.size(); i++)
+		{
+			Primitive* currentPrimitive = primitives[i];
+
+			bool isNotFound = ignorePrim ? ignorePrim->find(currentPrimitive) == ignorePrim->end() : true;
+			HitTestFilter::Result hitResult = filter ? filter->filterResult(currentPrimitive) : HitTestFilter::INCLUDE_PRIM;
+
+			if (isNotFound && hitResult != HitTestFilter::IGNORE_PRIM)
+			{
+				G3D::Vector3 trans = currentPrimitive->getCoordinateFrame().translation;
+				float radius = currentPrimitive->getRadius();
+				float math1 = unitRay.direction.dot(trans - unitRay.origin);
+				G3D::Vector3 math2 = trans - (unitRay.origin + unitRay.direction * math1);
+				float dist = math2.magnitude();
+
+				if (dist <= radius)
+				{
+					G3D::Vector3 thisHitPoint;
+					bool insideTemp;
+					if (currentPrimitive->hitTest(unitRay, thisHitPoint, insideTemp))
+					{
+						float thisOffset = unitRay.direction.dot(thisHitPoint - unitRay.origin);
+						if (thisOffset > 0.0f)
+						{
+							switch (hitResult)
+							{
+							case HitTestFilter::STOP_TEST:
+								if (thisOffset < stopOffset)
+								{
+									stopOffset = thisOffset;
+									stopped = true;
+								}
+								break;
+							case HitTestFilter::INCLUDE_PRIM:
+								if (thisOffset < bestOffset)
+								{
+									inside = insideTemp;
+									bestOffset = thisOffset;
+									hitPoint = thisHitPoint;
+									bestPrimitive = currentPrimitive;
+								}
+								break;
+							default: 
+								RBXASSERT(0);
+							}
+						}
+					}
+				}
+			}
+		}
+
+		if ((stopped && bestPrimitive) && bestOffset < stopOffset)
+			stopped = false;
+
+		return bestPrimitive;
+	}
+
+	Contact* ContactManager::createContact(Primitive* p0, Primitive* p1)
+	{
+		Geometry::GeometryType type0 = p0->getGeometry()->getGeometryType();
+		Geometry::GeometryType type1 = p1->getGeometry()->getGeometryType();
+
+		if (type0 > type1)
+			std::swap(p0, p1);
+
+		type0 = p0->getGeometry()->getGeometryType();
+		type1 = p1->getGeometry()->getGeometryType();
+
+		switch (type0)
+		{
+		case Geometry::GEOMETRY_BALL:
+
+			switch (type1)
+			{
+			case Geometry::GEOMETRY_BALL:
+				return new BallBallContact(p0, p1);
+			case Geometry::GEOMETRY_BLOCK:
+				return new BallBlockContact(p0, p1);
+			}
+
+		case Geometry::GEOMETRY_BLOCK:
+			return new BlockBlockContact(p0, p1);
+		default:
+			RBXASSERT(0);
+			return NULL;
+		}
+	}
+}

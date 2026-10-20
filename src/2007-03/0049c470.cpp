@@ -1,17 +1,68 @@
-// roc 2007-03 0049c470  unit: seg_00490000  size: 17 bytes
-// Make this compile to the exact bytes below, then: roc check 2007-03 0049c470
-//
-// 0049c470  8b4c2404             mov ecx, dword ptr [esp + 4]
-// 0049c474  85c9                 test ecx, ecx
-// 0049c476  7408                 je 0x49c480
-// 0049c478  8b01                 mov eax, dword ptr [ecx]
-// 0049c47a  8b10                 mov edx, dword ptr [eax]
-// 0049c47c  6a01                 push 1
-// 0049c47e  ffd2                 call edx
-// 0049c480  c3                   ret 
-// library rbxgs/reflection\signal.cpp (function ??$checked_delete@VSignalInstance@Reflection@RBX@@@boost@@YAXPAVSignalInstance@Reflection@RBX@@@Z)
-
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
 // roc-lib: rbxgs reflection/signal.cpp
+
+// Candidate translation unit (score above; library headers required).
+#include "reflection/signal.h"
+#include "reflection/object.h"
+
+namespace RBX
+{
+	namespace Reflection
+	{
+		SignalDescriptor::SignalDescriptor(ClassDescriptor& classDescriptor, const char* name)
+			: MemberDescriptor(classDescriptor, name, "Signals"),
+			  signalCreatedHook(NULL),
+			  signature()
+		{
+			classDescriptor.SignalContainer::declare(this);
+		}
+
+		SignalInstance* SignalDescriptor::findSignalInstance(const SignalSource* source) const
+		{
+			if (!source)
+				return NULL;
+
+			if (!source->signals)
+				return NULL;
+
+			std::map<const SignalDescriptor*, boost::shared_ptr<SignalInstance>>::const_iterator iter = source->signals->find(this);
+			if (iter == source->signals->end())
+				return NULL;
+
+			return iter->second.get();
+		}
+
+		boost::shared_ptr<SignalInstance> SignalDescriptor::getSignalInstance(SignalSource& source) const
+		{
+			if (!source.signals)
+			{
+				source.signals.reset(new std::map<const SignalDescriptor*, boost::shared_ptr<SignalInstance>>);
+			}
+			else
+			{
+				std::map<const SignalDescriptor*, boost::shared_ptr<SignalInstance>>::iterator iter = source.signals->find(this);
+				if (iter != source.signals->end())
+					return iter->second;
+			}
+
+			boost::shared_ptr<SignalInstance> signalInstance(newSignalInstance(source));
+			(*source.signals)[this] = signalInstance;
+
+			if (signalCreatedHook)
+				signalCreatedHook(&source);
+
+			return signalInstance;
+		}
+
+		SignalInstance::~SignalInstance() {}
+
+		SignalSource::~SignalSource() {}
+
+		void SignalSource::disconnect_all_slots()
+		{
+			signals.reset();
+		}
+	}
+}

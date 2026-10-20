@@ -1,42 +1,86 @@
-// roc 2007-03 00475090  unit: seg_00470000  size: 80 bytes
-// Make this compile to the exact bytes below, then: roc check 2007-03 00475090
-//
-// 00475090  56                   push esi
-// 00475091  8bf1                 mov esi, ecx
-// 00475093  8b06                 mov eax, dword ptr [esi]
-// 00475095  57                   push edi
-// 00475096  8b7c240c             mov edi, dword ptr [esp + 0xc]
-// 0047509a  3bf8                 cmp edi, eax
-// 0047509c  743d                 je 0x4750db
-// 0047509e  85c0                 test eax, eax
-// 004750a0  7429                 je 0x4750cb
-// 004750a2  83c004               add eax, 4
-// 004750a5  50                   push eax
-// 004750a6  ff15a8d27700         call dword ptr [0x77d2a8]
-// 004750ac  85c0                 test eax, eax
-// 004750ae  7515                 jne 0x4750c5
-// 004750b0  8b0e                 mov ecx, dword ptr [esi]
-// 004750b2  e809e3feff           call 0x4633c0
-// 004750b7  8b0e                 mov ecx, dword ptr [esi]
-// 004750b9  85c9                 test ecx, ecx
-// 004750bb  7408                 je 0x4750c5
-// 004750bd  8b01                 mov eax, dword ptr [ecx]
-// 004750bf  8b10                 mov edx, dword ptr [eax]
-// 004750c1  6a01                 push 1
-// 004750c3  ffd2                 call edx
-// 004750c5  c70600000000         mov dword ptr [esi], 0
-// 004750cb  85ff                 test edi, edi
-// 004750cd  740c                 je 0x4750db
-// 004750cf  893e                 mov dword ptr [esi], edi
-// 004750d1  83c704               add edi, 4
-// 004750d4  57                   push edi
-// 004750d5  ff15acd27700         call dword ptr [0x77d2ac]
-// 004750db  5f                   pop edi
-// 004750dc  5e                   pop esi
-// 004750dd  c20400               ret 4
-// library rbxgs/gui\GuiDraw.cpp (function ?setPointer@?$ReferenceCountedPointer@VTextureProxyBase@RBX@@@G3D@@AAEXPAVTextureProxyBase@RBX@@@Z)
-
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
 // roc-lib: rbxgs gui/GuiDraw.cpp
+
+// Candidate translation unit (score above; library headers required).
+#include "gui/GuiDraw.h"
+#include "AppDraw/Textures.h"
+
+namespace RBX
+{
+	static G3D::ReferenceCountedPointer<TextureProxyBase> silentGetTextureProxyBase(Adorn* adorn, const ContentId& id)
+	{
+		if (ContentProvider::singleton().hasContent(id))
+			return Textures::getTextureProxy(adorn, id);
+		else
+			return NULL;
+	}
+
+	void GuiDrawImage::render2d(Adorn* adorn, bool enabled, Rect& rect, Widget::WidgetState state)
+	{
+		if (!enabled)
+		{
+			draw(adorn, disable, rect, G3D::Color4::clear(), G3D::Color4(1.0f, 1.0f, 1.0f, 0.5f));
+		}
+		else if (state == Widget::NOTHING)
+		{
+			draw(adorn, normal, rect, G3D::Color4::clear(), G3D::Color4::clear());
+		}
+		else if (state != Widget::HOVER && state != Widget::DOWN_AWAY)
+		{
+			draw(adorn, down, rect, G3D::Color3::blue(), G3D::Color4::clear());
+		}
+		else
+		{
+			draw(adorn, hover, rect, G3D::Color3::yellow(), G3D::Color4::clear());
+		}
+	}
+
+	void GuiDrawImage::draw(Adorn* adorn, G3D::ReferenceCountedPointer<TextureProxyBase> texture, const Rect& rect, const G3D::Color4& behind, const G3D::Color4& inFront)
+	{
+		G3D::Rect2D rect2D = rect.toRect2D();
+
+		if (texture.notNull())
+		{
+			adorn->setTexture(0, texture);
+			adorn->rect2d(rect2D, G3D::Color4(1.0f, 1.0f, 1.0f, 1.0f));
+			adorn->setTexture(0, NULL);
+		}
+		else if (normal.notNull())
+		{
+			adorn->rect2d(rect2D, behind);
+			draw(adorn, normal, rect, G3D::Color4::clear(), G3D::Color4::clear());
+			adorn->rect2d(rect2D, inFront);
+		}
+	}
+
+	bool GuiDrawImage::setImage(Adorn* adorn, const TextureId& textureId)
+	{
+		if (textureId != currentTexture)
+		{
+			currentTexture = textureId;
+
+			normal = NULL;
+			hover = NULL;
+			down = NULL;
+			disable = NULL;
+
+			size = G3D::Vector2(0.0f, 0.0f);
+
+			normal = silentGetTextureProxyBase(adorn, currentTexture);
+
+			if (normal.notNull())
+			{
+				std::string id = textureId.toString();
+				std::string base = id.substr(0, id.size() - 4);
+
+				hover = silentGetTextureProxyBase(adorn, ContentId(base + "_ovr.png"));
+				down = silentGetTextureProxyBase(adorn, ContentId(base + "_dn.png"));
+				disable = silentGetTextureProxyBase(adorn, ContentId(base + "_ds.png"));
+			}
+		}
+
+		return normal.notNull();
+	}
+}

@@ -1,177 +1,450 @@
-// roc 2007-03 00609e00  unit: seg_00600000  size: 508 bytes
-// Make this compile to the exact bytes below, then: roc check 2007-03 00609e00
-//
-// 00609e00  64a100000000         mov eax, dword ptr fs:[0]
-// 00609e06  6aff                 push -1
-// 00609e08  68926f7500           push 0x756f92
-// 00609e0d  50                   push eax
-// 00609e0e  64892500000000       mov dword ptr fs:[0], esp
-// 00609e15  83ec44               sub esp, 0x44
-// 00609e18  57                   push edi
-// 00609e19  8bf9                 mov edi, ecx
-// 00609e1b  817f08feffff0f       cmp dword ptr [edi + 8], 0xffffffe
-// 00609e22  7259                 jb 0x609e7d
-// 00609e24  68903f7800           push 0x783f90
-// 00609e29  8d4c2408             lea ecx, [esp + 8]
-// 00609e2d  ff1578e77700         call dword ptr [0x77e778]
-// 00609e33  8d4c2420             lea ecx, [esp + 0x20]
-// 00609e37  c744245000000000     mov dword ptr [esp + 0x50], 0
-// 00609e3f  ff1560e97700         call dword ptr [0x77e960]
-// 00609e45  8d442404             lea eax, [esp + 4]
-// 00609e49  50                   push eax
-// 00609e4a  8d4c2430             lea ecx, [esp + 0x30]
-// 00609e4e  c644245401           mov byte ptr [esp + 0x54], 1
-// 00609e53  c7442424383e7800     mov dword ptr [esp + 0x24], 0x783e38
-// 00609e5b  ff157ce77700         call dword ptr [0x77e77c]
-// 00609e61  6870f78300           push 0x83f770
-// 00609e66  8d4c2424             lea ecx, [esp + 0x24]
-// 00609e6a  51                   push ecx
-// 00609e6b  c644245800           mov byte ptr [esp + 0x58], 0
-// 00609e70  c7442428443e7800     mov dword ptr [esp + 0x28], 0x783e44
-// 00609e78  e8b1510100           call 0x61f02e
-// 00609e7d  8b542464             mov edx, dword ptr [esp + 0x64]
-// 00609e81  8b4704               mov eax, dword ptr [edi + 4]
-// 00609e84  53                   push ebx
-// 00609e85  55                   push ebp
-// 00609e86  56                   push esi
-// 00609e87  8b74246c             mov esi, dword ptr [esp + 0x6c]
-// 00609e8b  6a00                 push 0
-// 00609e8d  52                   push edx
-// 00609e8e  50                   push eax
-// 00609e8f  56                   push esi
-// 00609e90  50                   push eax
-// 00609e91  e89af8ffff           call 0x609730
-// 00609e96  8be8                 mov ebp, eax
-// 00609e98  8b4704               mov eax, dword ptr [edi + 4]
-// 00609e9b  bb01000000           mov ebx, 1
-// 00609ea0  015f08               add dword ptr [edi + 8], ebx
-// 00609ea3  3bf0                 cmp esi, eax
-// 00609ea5  7510                 jne 0x609eb7
-// 00609ea7  896804               mov dword ptr [eax + 4], ebp
-// 00609eaa  8b4704               mov eax, dword ptr [edi + 4]
-// 00609ead  8928                 mov dword ptr [eax], ebp
-// 00609eaf  8b4f04               mov ecx, dword ptr [edi + 4]
-// 00609eb2  896908               mov dword ptr [ecx + 8], ebp
-// 00609eb5  eb22                 jmp 0x609ed9
-// 00609eb7  807c246800           cmp byte ptr [esp + 0x68], 0
-// 00609ebc  740d                 je 0x609ecb
-// 00609ebe  892e                 mov dword ptr [esi], ebp
-// 00609ec0  8b4704               mov eax, dword ptr [edi + 4]
-// 00609ec3  3b30                 cmp esi, dword ptr [eax]
-// 00609ec5  7512                 jne 0x609ed9
-// 00609ec7  8928                 mov dword ptr [eax], ebp
-// 00609ec9  eb0e                 jmp 0x609ed9
-// 00609ecb  896e08               mov dword ptr [esi + 8], ebp
-// 00609ece  8b4704               mov eax, dword ptr [edi + 4]
-// 00609ed1  3b7008               cmp esi, dword ptr [eax + 8]
-// 00609ed4  7503                 jne 0x609ed9
-// 00609ed6  896808               mov dword ptr [eax + 8], ebp
-// 00609ed9  8b5504               mov edx, dword ptr [ebp + 4]
-// 00609edc  807a1c00             cmp byte ptr [edx + 0x1c], 0
-// 00609ee0  8d4504               lea eax, [ebp + 4]
-// 00609ee3  8bf5                 mov esi, ebp
-// 00609ee5  0f85ea000000         jne 0x609fd5
-// 00609eeb  eb03                 jmp 0x609ef0
-// 00609eed  8d4900               lea ecx, [ecx]
-// 00609ef0  8b08                 mov ecx, dword ptr [eax]
-// 00609ef2  8b5104               mov edx, dword ptr [ecx + 4]
-// 00609ef5  3b0a                 cmp ecx, dword ptr [edx]
-// 00609ef7  7551                 jne 0x609f4a
-// 00609ef9  8b5208               mov edx, dword ptr [edx + 8]
-// 00609efc  807a1c00             cmp byte ptr [edx + 0x1c], 0
-// 00609f00  7519                 jne 0x609f1b
-// 00609f02  88591c               mov byte ptr [ecx + 0x1c], bl
-// 00609f05  885a1c               mov byte ptr [edx + 0x1c], bl
-// 00609f08  8b10                 mov edx, dword ptr [eax]
-// 00609f0a  8b4a04               mov ecx, dword ptr [edx + 4]
-// 00609f0d  c6411c00             mov byte ptr [ecx + 0x1c], 0
-// 00609f11  8b10                 mov edx, dword ptr [eax]
-// 00609f13  8b7204               mov esi, dword ptr [edx + 4]
-// 00609f16  e9aa000000           jmp 0x609fc5
-// 00609f1b  3b7108               cmp esi, dword ptr [ecx + 8]
-// 00609f1e  750a                 jne 0x609f2a
-// 00609f20  8bf1                 mov esi, ecx
-// 00609f22  56                   push esi
-// 00609f23  8bcf                 mov ecx, edi
-// 00609f25  e8a690edff           call 0x4e2fd0
-// 00609f2a  8b4604               mov eax, dword ptr [esi + 4]
-// 00609f2d  88581c               mov byte ptr [eax + 0x1c], bl
-// 00609f30  8b4e04               mov ecx, dword ptr [esi + 4]
-// 00609f33  8b5104               mov edx, dword ptr [ecx + 4]
-// 00609f36  c6421c00             mov byte ptr [edx + 0x1c], 0
-// 00609f3a  8b4604               mov eax, dword ptr [esi + 4]
-// 00609f3d  8b4804               mov ecx, dword ptr [eax + 4]
-// 00609f40  51                   push ecx
-// 00609f41  8bcf                 mov ecx, edi
-// 00609f43  e8288dedff           call 0x4e2c70
-// 00609f48  eb7b                 jmp 0x609fc5
-// 00609f4a  8b12                 mov edx, dword ptr [edx]
-// 00609f4c  807a1c00             cmp byte ptr [edx + 0x1c], 0
-// 00609f50  7516                 jne 0x609f68
-// 00609f52  88591c               mov byte ptr [ecx + 0x1c], bl
-// 00609f55  885a1c               mov byte ptr [edx + 0x1c], bl
-// 00609f58  8b10                 mov edx, dword ptr [eax]
-// 00609f5a  8b4a04               mov ecx, dword ptr [edx + 4]
-// 00609f5d  c6411c00             mov byte ptr [ecx + 0x1c], 0
-// 00609f61  8b10                 mov edx, dword ptr [eax]
-// 00609f63  8b7204               mov esi, dword ptr [edx + 4]
-// 00609f66  eb5d                 jmp 0x609fc5
-// 00609f68  3b31                 cmp esi, dword ptr [ecx]
-// 00609f6a  750a                 jne 0x609f76
-// 00609f6c  8bf1                 mov esi, ecx
-// 00609f6e  56                   push esi
-// 00609f6f  8bcf                 mov ecx, edi
-// 00609f71  e8fa8cedff           call 0x4e2c70
-// 00609f76  8b4604               mov eax, dword ptr [esi + 4]
-// 00609f79  88581c               mov byte ptr [eax + 0x1c], bl
-// 00609f7c  8b4e04               mov ecx, dword ptr [esi + 4]
-// 00609f7f  8b5104               mov edx, dword ptr [ecx + 4]
-// 00609f82  c6421c00             mov byte ptr [edx + 0x1c], 0
-// 00609f86  8b4604               mov eax, dword ptr [esi + 4]
-// 00609f89  8b4004               mov eax, dword ptr [eax + 4]
-// 00609f8c  8b4808               mov ecx, dword ptr [eax + 8]
-// 00609f8f  8b11                 mov edx, dword ptr [ecx]
-// 00609f91  895008               mov dword ptr [eax + 8], edx
-// 00609f94  8b11                 mov edx, dword ptr [ecx]
-// 00609f96  807a1d00             cmp byte ptr [edx + 0x1d], 0
-// 00609f9a  7503                 jne 0x609f9f
-// 00609f9c  894204               mov dword ptr [edx + 4], eax
-// 00609f9f  8b5004               mov edx, dword ptr [eax + 4]
-// 00609fa2  895104               mov dword ptr [ecx + 4], edx
-// 00609fa5  8b5704               mov edx, dword ptr [edi + 4]
-// 00609fa8  3b4204               cmp eax, dword ptr [edx + 4]
-// 00609fab  7505                 jne 0x609fb2
-// 00609fad  894a04               mov dword ptr [edx + 4], ecx
-// 00609fb0  eb0e                 jmp 0x609fc0
-// 00609fb2  8b5004               mov edx, dword ptr [eax + 4]
-// 00609fb5  3b02                 cmp eax, dword ptr [edx]
-// 00609fb7  7504                 jne 0x609fbd
-// 00609fb9  890a                 mov dword ptr [edx], ecx
-// 00609fbb  eb03                 jmp 0x609fc0
-// 00609fbd  894a08               mov dword ptr [edx + 8], ecx
-// 00609fc0  8901                 mov dword ptr [ecx], eax
-// 00609fc2  894804               mov dword ptr [eax + 4], ecx
-// 00609fc5  8b4e04               mov ecx, dword ptr [esi + 4]
-// 00609fc8  80791c00             cmp byte ptr [ecx + 0x1c], 0
-// 00609fcc  8d4604               lea eax, [esi + 4]
-// 00609fcf  0f841bffffff         je 0x609ef0
-// 00609fd5  8b5704               mov edx, dword ptr [edi + 4]
-// 00609fd8  8b4204               mov eax, dword ptr [edx + 4]
-// 00609fdb  8b4c2454             mov ecx, dword ptr [esp + 0x54]
-// 00609fdf  88581c               mov byte ptr [eax + 0x1c], bl
-// 00609fe2  8b442464             mov eax, dword ptr [esp + 0x64]
-// 00609fe6  5e                   pop esi
-// 00609fe7  896804               mov dword ptr [eax + 4], ebp
-// 00609fea  5d                   pop ebp
-// 00609feb  8938                 mov dword ptr [eax], edi
-// 00609fed  5b                   pop ebx
-// 00609fee  5f                   pop edi
-// 00609fef  64890d00000000       mov dword ptr fs:[0], ecx
-// 00609ff6  83c450               add esp, 0x50
-// 00609ff9  c21000               ret 0x10
-// library rbxgs/v8world\Block.cpp (function ?_Insert@?$_Tree@V?$_Tmap_traits@VVector3@G3D@@PAVBlockTemplate@RBX@@UmyLess@4@V?$allocator@U?$pair@$$CBVVector3@G3D@@PAVBlockTemplate@RBX@@@std@@@std@@$0A@@std@@@std@@IAE?AViterator@12@_NPAU_Node@?$_Tree_nod@V?$_Tmap_traits@VVector3@G3D@@PAVBlockTemplate@RBX@@UmyLess@4@V?$allocator@U?$pair@$$CBVVector3@G3D@@PAVBlockTemplate@RBX@@@std@@@std@@$0A@@std@@@2@ABU?$pair@$$CBVVector3@G3D@@PAVBlockTemplate@RBX@@@2@@Z)
-
 // roc-lang: cpp
 // roc-cl: 50727
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
 // roc-lib: rbxgs v8world/Block.cpp
+
+// Candidate translation unit (score above; library headers required).
+#include "v8world/Block.h"
+#include "util/NormalId.h"
+#include "util/Debug.h"
+#include <map>
+#include <G3D/AABox.h>
+#include <G3D/CollisionDetection.h>
+#include <G3D/vectorMath.h>
+
+namespace RBX
+{
+	struct myLess : public std::binary_function<G3D::Vector3, G3D::Vector3, bool>
+	{
+		bool operator()(const G3D::Vector3& a, const G3D::Vector3& b) const
+		{
+			if (a.x < b.x)
+				return true;
+			if (a.x > b.x)
+				return false;
+			if (a.y < b.y)
+				return true;
+			if (a.y > b.y)
+				return false;
+			if (a.z < b.z)
+				return true;
+			return false;
+		}
+	};
+
+	class BlockTemplate
+	{
+	private:
+		typedef std::map<G3D::Vector3, BlockTemplate*, myLess> BlockTemplates;
+	private:
+		G3D::Vector3 vertices[8];
+		static BlockTemplates blockTemplates;
+	public:
+		//BlockTemplate(const BlockTemplate& other);
+	private:
+		BlockTemplate(const G3D::Vector3& _corner) 
+		{
+			G3D::Vector3 fabsCorner;
+			fabsCorner.x = -fabs(_corner.x);
+			fabsCorner.y = -fabs(_corner.y);
+			fabsCorner.z = -fabs(_corner.z);
+
+			for (int i = 0; i < 2; i++)
+			{
+				fabsCorner.x *= -1.0f;
+				for (int j = 0; j < 2; j++)
+				{
+					fabsCorner.y *= -1.0f;
+					for (int k = 0; k < 2; k++)
+					{
+						fabsCorner.z *= -1.0f;
+						vertices[i*4+j*2+k] = fabsCorner;
+					}
+				}
+			}
+		}
+	public:
+		BlockTemplate& operator=(const BlockTemplate& other);
+	
+	public:
+		static const G3D::Vector3* getVertices(const G3D::Vector3& corner)
+		{
+			BlockTemplates::iterator iter = blockTemplates.find(corner);
+
+			if (iter != blockTemplates.end())
+			{
+				return iter->second->vertices;
+			}
+			else
+			{
+				BlockTemplate* t = new BlockTemplate(corner);
+				blockTemplates[corner] = t;
+				return t->vertices;
+			}
+		}
+	};
+
+	BlockTemplate::BlockTemplates BlockTemplate::blockTemplates; // TODO: check if correct
+
+	const int Block::BLOCK_FACE_TO_VERTEX[6][4] = {
+		{0, 2, 3, 1},
+		{0, 1, 5, 4},
+		{0, 4, 6, 2},
+		{4, 5, 7, 6},
+		{2, 6, 7, 3},
+		{1, 3, 7, 5}
+	};
+
+	const int Block::BLOCK_FACE_VERTEX_TO_EDGE[6][4] = {
+		{4, 11, 5, 8},
+		{8, 3, 9, 0},
+		{0, 7, 1, 4},
+		{9, 6, 10, 7},
+		{1, 10, 2, 11},
+		{5, 2, 6, 3}
+	};
+
+	// TODO: move to header
+	float Block::getRadius() const
+	{
+		return this->cornerRadius;
+	}
+
+	// TODO: move to header
+	G3D::Matrix3 Block::getMoment(float mass) const
+	{
+		return this->getMomentHollow(mass);
+	}
+
+	// 93.90% match
+	// TODO: remove noinline after Block::getMoment is moved into the header file
+	__declspec(noinline) G3D::Matrix3 Block::getMomentHollow(float mass) const
+	{
+		G3D::Vector3 grid = gridSize;
+		G3D::Vector3 I;
+
+		float area = ((grid.x * grid.z + grid.y * grid.z) + grid.x * grid.y) * 2;
+
+		for (int i = 0; i < 3; i++)
+		{
+			float X = grid[(i    ) % 3];
+			float Y = grid[(i + 1) % 3];
+			float Z = grid[(i + 2) % 3];
+
+			float scaling = mass / (2 * area);
+
+			float temp = (Z*Z*Y)*X + (Y*Y*Y*Z)/3 + (Z*Z*Z*Y)/3 + (Y*Y*Z)*X + (X*Y*Y*Y)/3 + (X*Z*Z*Z)/3;
+
+			I[i] = temp * scaling;
+		}
+
+		return Math::fromDiagonal(I);
+	}
+
+	// NOTE: not the original function name
+	// TODO: should this be in another file
+	inline NormalId getFaceId(int edgeId)
+	{
+		return (NormalId)((edgeId - 12) / 4);
+	}
+
+	// TODO: move to header
+	const G3D::Vector3* Block::getEdgeVertex(int edgeId) const
+	{
+		if (edgeId < 12)
+			return &this->vertices[Block::BLOCK_FACE_TO_VERTEX[edgeId / 4][edgeId % 4]];
+
+		NormalId faceId = getFaceId(edgeId);
+		RBXASSERT(validNormalId(faceId));
+		return &this->vertices[Block::BLOCK_FACE_TO_VERTEX[faceId][edgeId + 1]];
+	}
+
+	float Block::getGridVolume() const
+	{
+		return this->gridSize.x * this->gridSize.y * this->gridSize.z;
+	}
+
+	const G3D::Vector3* Block::getEdgePoint(const G3D::Vector3int16& clip, NormalId& normalID) const
+	{
+		if (clip.x == 0)
+		{
+			normalID = NORM_X;
+			return &this->vertices[2 * (clip.y <= 0) + 4 + (clip.z <= 0)];
+		}
+		else if (clip.y == 0)
+		{
+			normalID = NORM_Y;
+			return &this->vertices[4 * (clip.x <= 0) + 2 + (clip.z <= 0)];
+		}
+		else
+		{
+			RBXASSERT(clip.z == 0);
+			normalID = NORM_Z;
+			return &this->vertices[4 * (clip.x <= 0) + 1 + 2 * (clip.y <= 0)];
+		}
+	}
+
+	const G3D::Vector3* Block::getPlanePoint(const G3D::Vector3int16& clip, NormalId& normalID) const
+	{
+		if (clip.x != 0)
+		{
+			normalID = clip.x > 0 ? NORM_X : NORM_X_NEG;
+			return &this->vertices[4 * (clip.x <= 0)];
+		}
+		else if (clip.y != 0)
+		{
+			normalID = clip.y > 0 ? NORM_Y : NORM_Y_NEG;
+			return &this->vertices[2 * (clip.y <= 0)];
+		}
+		else
+		{
+			RBXASSERT(clip.z != 0);
+			normalID = clip.z > 0 ? NORM_Z : NORM_Z_NEG;
+			return &this->vertices[(clip.z <= 0)];
+		}
+	}
+
+	const G3D::Vector3* Block::getCornerPoint(const G3D::Vector3int16& clip) const
+	{
+		return &this->vertices[4 * (clip.x <= 0) + 2 * (clip.y <= 0) + (clip.z <= 0)];
+	}
+
+	GeoPairType Block::getBallBlockInfo(int onBorder, const G3D::Vector3int16 clip, const G3D::Vector3*& offset, NormalId& normalID)
+	{
+		if (onBorder == 1)
+		{
+			offset = this->getPlanePoint(clip, normalID);
+			return BALL_PLANE_PAIR;
+		}
+		else if (onBorder == 2)
+		{
+			offset = this->getEdgePoint(clip, normalID);
+			return BALL_EDGE_PAIR;
+		}
+		else
+		{
+			offset = this->getCornerPoint(clip);
+			return BALL_POINT_PAIR;
+		}
+	}
+
+	GeoPairType Block::getBallInsideInfo(const G3D::Vector3& ray, const G3D::Vector3*& offset, NormalId& normalID)
+	{
+		const G3D::Vector3* vertices = this->vertices;
+		float best = 1.0e30;
+
+		// TODO: there seems to be a macro here
+		float x1 = vertices->x - ray.x;
+		if (x1 < best)
+		{
+			best = x1;
+			normalID = NORM_X;
+		}
+
+		float x2 = ray.x - vertices->x;
+		if (x2 < best)
+		{
+			best = x2;
+			normalID = NORM_X_NEG;
+		}
+
+		float y1 = vertices->y - ray.y;
+		if (y1 < best)
+		{
+			best = y1;
+			normalID = NORM_Y;
+		}
+
+		float y2 = ray.y - vertices->y;
+		if (y2 < best)
+		{
+			best = y2;
+			normalID = NORM_Y_NEG;
+		}
+
+		float z1 = vertices->z - ray.z;
+		if (z1 < best)
+		{
+			best = z1;
+			normalID = NORM_Z;
+		}
+
+		float z2 = ray.z - vertices->z;
+		if (z2 < best)
+		{
+			best = z2;
+			normalID = NORM_Z_NEG;
+		}
+
+		RBXASSERT(best != 1.0e30);
+
+		offset = (normalID > NORM_Z) ? this->vertices + 7 /*wtf?*/ : this->vertices;
+
+		return BALL_PLANE_PAIR;
+	}
+
+	void Block::projectToFace(G3D::Vector3& ray, G3D::Vector3int16& clip, int& onBorder)
+	{
+		onBorder = 0;
+		const G3D::Vector3* vertices = this->vertices;
+
+		if (ray.x > vertices->x)
+		{
+			ray.x = vertices->x;
+			++onBorder;
+			clip.x = 1;
+		}
+		if (-vertices->x > ray.x)
+		{
+			ray.x = -vertices->x;
+			++onBorder;
+			clip.x = -1;
+		}
+
+		if (ray.y > vertices->y)
+		{
+			ray.y = vertices->y;
+			++onBorder;
+			clip.y = 1;
+		}
+		if (-vertices->y > ray.y)
+		{
+			ray.y = -vertices->y;
+			++onBorder;
+			clip.y = -1;
+		}
+
+		if (ray.z > vertices->z)
+		{
+			ray.z = vertices->z;
+			++onBorder;
+			clip.z = 1;
+		}
+		if (-vertices->z > ray.z)
+		{
+			ray.z = -vertices->z;
+			++onBorder;
+			clip.z = -1;
+		}
+	}
+
+	// NOTE: switch cases were each on 1 line originally, according to the line info
+	G3D::Vector2 Block::getProjectedVertex(const G3D::Vector3& vertex, NormalId normalID)
+	{
+		G3D::Vector2 result;
+		switch (normalID)
+		{
+		case NORM_X:
+			result.x = vertex.y;
+			result.y = vertex.z;
+			break;
+		case NORM_Y:
+			result.x = vertex.z;
+			result.y = vertex.x;
+			break;
+		case NORM_Z:
+			result.x = vertex.x;
+			result.y = vertex.y;
+			break;
+		case NORM_X_NEG:
+			result.x = vertex.z;
+			result.y = vertex.y;
+			break;
+		case NORM_Y_NEG:
+			result.x = vertex.x;
+			result.y = vertex.z;
+			break;
+		case NORM_Z_NEG:
+			result.x = vertex.y;
+			result.y = vertex.x;
+			break;
+		}
+		return result;
+	}
+
+	int Block::getClosestEdge(const G3D::Matrix3& rotation, NormalId normalID, G3D::Vector3& crossAxis)
+	{
+		G3D::Vector3 axisInBody = Math::vectorToObjectSpace(crossAxis, rotation);
+		G3D::Vector2 projected = this->getProjectedVertex(axisInBody, normalID);
+
+		if (projected.y > 0.0f)
+		{
+			if (projected.x > 0.0f)
+				return 4 * normalID;
+			return 4 * normalID + 1;
+		}
+		else if (projected.x > 0.0f)
+		{
+			return 4 * normalID + 3;
+		}
+		else
+		{
+			return 4 * normalID + 2;
+		}
+	}
+
+	void Block::onSetSize()
+	{
+		G3D::Vector3 corner = this->gridSize * -0.5f;
+		const G3D::Vector3* vertices = BlockTemplate::getVertices(corner);
+		this->vertices = vertices;
+		this->cornerRadius = vertices->magnitude();
+	}
+
+	bool Block::hitTest(const G3D::Ray& rayInMe, G3D::Vector3& localHitPoint, bool& inside)
+	{
+		G3D::Vector3 gridSizeMul = gridSize * 0.5f;
+		inside = false;
+
+		bool result = G3D::CollisionDetection::collisionLocationForMovingPointFixedAABox(
+			rayInMe.origin,
+			rayInMe.direction,
+			G3D::AABox(-gridSizeMul, gridSizeMul),
+			localHitPoint,
+			inside);
+
+		if (inside)
+		{
+			inside = false;
+			G3D::Vector3 originMul = rayInMe.origin - (rayInMe.direction * 1000.0f);
+			G3D::Ray rayResult = G3D::Ray::fromOriginAndDirection(originMul, rayInMe.direction);
+
+			G3D::CollisionDetection::collisionLocationForMovingPointFixedAABox(
+				rayResult.origin,
+				rayResult.direction,
+				G3D::AABox(-gridSizeMul, gridSizeMul),
+				localHitPoint,
+				inside);
+
+			RBXASSERT(!inside);
+			return true;
+		}
+		return result;
+	}
+
+	G3D::Vector3 Block::getCenterToCorner(const G3D::Matrix3& rotation) const
+	{
+		if (cornerRadius < 5.0f)
+		{
+			return G3D::Vector3(cornerRadius, cornerRadius, cornerRadius);
+		}
+		else
+		{
+			G3D::Vector3 maxValue = G3D::abs(rotation * vertices[0]);
+			for (int i = 1; i <= 3; i++)
+			{
+				maxValue = maxValue.max(G3D::abs(rotation * vertices[i]));
+			}
+			return maxValue;
+		}
+	}
+
+	// TODO: remove from both here and in the header
+	void Block::matchDummy()
+	{
+		myLess l;
+		l(G3D::Vector3(), G3D::Vector3());
+
+		BlockTemplate::getVertices(G3D::Vector3());
+	}
+}

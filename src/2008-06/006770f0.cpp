@@ -1,40 +1,148 @@
-// roc 2008-06 006770f0  unit: RBX::AdornG3D  size: 79 bytes
-// Make this compile to the exact bytes below, then: roc check 2008-06 006770f0
-//
-// 006770f0  8b44240c             mov eax, dword ptr [esp + 0xc]
-// 006770f4  56                   push esi
-// 006770f5  8b742408             mov esi, dword ptr [esp + 8]
-// 006770f9  57                   push edi
-// 006770fa  8b7c2410             mov edi, dword ptr [esp + 0x10]
-// 006770fe  50                   push eax
-// 006770ff  57                   push edi
-// 00677100  56                   push esi
-// 00677101  e8aaffffff           call 0x6770b0
-// 00677106  83c40c               add esp, 0xc
-// 00677109  833e02               cmp dword ptr [esi], 2
-// 0067710c  752e                 jne 0x67713c
-// 0067710e  8b17                 mov edx, dword ptr [edi]
-// 00677110  8b5238               mov edx, dword ptr [edx + 0x38]
-// 00677113  8d4638               lea eax, [esi + 0x38]
-// 00677116  50                   push eax
-// 00677117  8bcf                 mov ecx, edi
-// 00677119  ffd2                 call edx
-// 0067711b  d94604               fld dword ptr [esi + 4]
-// 0067711e  d9460c               fld dword ptr [esi + 0xc]
-// 00677121  57                   push edi
-// 00677122  83ec08               sub esp, 8
-// 00677125  d9c9                 fxch st(1)
-// 00677127  d95c2404             fstp dword ptr [esp + 4]
-// 0067712b  d80dac9b8100         fmul dword ptr [0x819bac]
-// 00677131  d91c24               fstp dword ptr [esp]
-// 00677134  e8e7f9ffff           call 0x676b20
-// 00677139  83c40c               add esp, 0xc
-// 0067713c  5f                   pop edi
-// 0067713d  5e                   pop esi
-// 0067713e  c3                   ret 
-// library openrbx-client/Rendering\AppDraw\Draw.cpp (function ?partAdorn@Draw@RBX@@SAXABVPart@2@PAVAdorn@2@ABVColor3@G3D@@@Z)
-
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast
 // roc-lib: openrbx-client Rendering/AppDraw/Draw.cpp
+
+// Candidate translation unit (score above; library headers required).
+#include "appdraw/Draw.h"
+
+#include "appdraw/Part.h"
+#include "decomp.h"
+#include "rbxgraphics/Adorn.h"
+#include "util/Math.h"
+
+namespace RBX {
+
+// FUNCTION: WEBSERVICE 0x101ec600
+void Draw::spokes(float radius, float axis, Adorn* adorn)
+{
+	float halfAxis = axis * 0.51f;
+	float subRadius = radius * 0.7f;
+
+	for (int i = 0; i < 2; i++) {
+		float x = i == 0 ? halfAxis : -halfAxis;
+		float ccw = i == 0 ? 1.0f : -1.0f;
+
+		for (int j = 0; j < 2; j++) {
+			float y = j == 0 ? subRadius : 0.1f;
+			float z = j == 0 ? 0.1f : subRadius;
+
+			adorn->quad(
+				G3D::Vector3(x, y * ccw, z),
+				G3D::Vector3(x, -y * ccw, z),
+				G3D::Vector3(x, -y * ccw, -z),
+				G3D::Vector3(x, y * ccw, -z),
+				G3D::Color4(0.5f, 0.5f, 0.5f, 1.0f)
+			);
+		}
+	}
+}
+
+// FUNCTION: WEBSERVICE 0x101ec780
+const G3D::Color3& Draw::selectColor()
+{
+	static const G3D::Color3 c(0.1f, 0.6f, 1);
+
+	return c;
+}
+
+// STUB: WEBSERVICE 0x101ec7c0
+void Draw::constraint(const Part& part, Adorn* adorn, int face, const G3D::Color3& controllerColor)
+{
+	SurfaceType surfaceType = part.surfaceType[face];
+
+	G3D::Vector3 halfSize = part.gridSize * 0.5f;
+
+	const G3D::Matrix3& rotation = Math::getAxisRotationMatrix(face);
+	G3D::Vector3 relativeTranslation(0, 0, 0);
+
+	int index = face % 3;
+	float posNeg = face > 2 ? -1.0f : 1.0f;
+
+	relativeTranslation[index] = halfSize[index] * posNeg;
+	G3D::CoordinateFrame translation(rotation, relativeTranslation);
+
+	G3D::CoordinateFrame newObject = part.coordinateFrame * translation;
+
+	adorn->setObjectToWorldMatrix(newObject);
+
+	adorn->cylinderAlongX(0.2f, 1.0f, G3D::Color4(G3D::Color3::yellow(), 1.0f), G3D::Color4::clear());
+
+	if (surfaceType == ROTATE_V || surfaceType == ROTATE_P) {
+		adorn->cylinderAlongX(0.4f, 0.25f, G3D::Color4(controllerColor, 1.0f), G3D::Color4::clear());
+	}
+}
+
+// STUB: WEBSERVICE 0x101ec940
+void Draw::selectionBox(const Part& part, Adorn* adorn, const G3D::Color4& selectColor)
+{
+	adorn->setObjectToWorldMatrix(part.coordinateFrame);
+
+	G3D::Vector3 halfSize = part.gridSize * 0.5f;
+
+	for (int axis = 0; axis < 3; axis++) {
+		int c2 = (axis + 1) % 3;
+		int c3 = (axis + 2) % 3;
+
+		for (int d2 = -1; d2 <= 1; d2 += 2) {
+			for (int d3 = -1; d3 <= 1; d3 += 2) {
+				G3D::Vector3 p0;
+				G3D::Vector3 p1;
+
+				p0[axis] = -halfSize[axis] - 0.15f;
+				p0[c2] = d2 * halfSize[c2] - 0.15f;
+				p0[c3] = d3 * halfSize[c3] - 0.15f;
+
+				p1[axis] = halfSize[axis] + 0.15f;
+				p1[c2] = d2 * halfSize[c2] + 0.15f;
+				p1[c3] = d3 * halfSize[c3] + 0.15f;
+
+				adorn->box(G3D::AABox(p0, p1), selectColor, G3D::Color4::clear());
+			}
+		}
+	}
+}
+
+// FUNCTION: WEBSERVICE 0x101ecb70
+void Draw::selectionBox(const Part& part, Adorn* adorn, SelectState selectState)
+{
+	selectionBox(
+		part,
+		adorn,
+		G3D::Color4(selectState == SELECT_NORMAL ? selectColor() : G3D::Color3(0.2f, 0.7f, 1.0f), 1.0f)
+	);
+}
+
+// FUNCTION: WEBSERVICE 0x101ecc00
+void Draw::adornSurfaces(const Part& part, Adorn* adorn, const G3D::Color3& controllerColor)
+{
+	for (int f = 0; f < 6; f++) {
+		switch (part.surfaceType[f]) {
+		case ROTATE:
+		case ROTATE_V:
+		case ROTATE_P:
+
+			constraint(part, adorn, f, controllerColor);
+			break;
+
+		default:
+			break;
+		}
+	}
+}
+
+// FUNCTION: WEBSERVICE 0x101ecc40
+void Draw::partAdorn(const Part& part, Adorn* adorn, const G3D::Color3& controllerColor)
+{
+	adornSurfaces(part, adorn, controllerColor);
+
+	if (part.type == Part::CYLINDER_PART) {
+		adorn->setObjectToWorldMatrix(part.coordinateFrame);
+
+		G3D::Vector3 gridSize = part.gridSize;
+
+		spokes(gridSize.z * 0.5, gridSize.x, adorn);
+	}
+}
+
+} // namespace RBX

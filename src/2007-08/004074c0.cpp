@@ -1,23 +1,47 @@
-// roc 2007-08 004074c0  unit: boost::detail::sp_counted_base  size: 32 bytes
-// Make this compile to the exact bytes below, then: roc check 2007-08 004074c0
-//
-// 004074c0  56                   push esi
-// 004074c1  8b742408             mov esi, dword ptr [esp + 8]
-// 004074c5  56                   push esi
-// 004074c6  e865ad1300           call 0x542230
-// 004074cb  83c404               add esp, 4
-// 004074ce  85f6                 test esi, esi
-// 004074d0  740a                 je 0x4074dc
-// 004074d2  8b06                 mov eax, dword ptr [esi]
-// 004074d4  8b10                 mov edx, dword ptr [eax]
-// 004074d6  6a01                 push 1
-// 004074d8  8bce                 mov ecx, esi
-// 004074da  ffd2                 call edx
-// 004074dc  5e                   pop esi
-// 004074dd  c20400               ret 4
-// library openrbx-client/App\script\Script.cpp (function ??RDeleter@?$Creatable@VInstance@RBX@@@RBX@@QAEXPAVInstance@2@@Z)
-
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
 // roc-lib: openrbx-client App/script/Script.cpp
+
+// Candidate translation unit (score above; library headers required).
+#include "script/Script.h"
+
+#include "network/Player.h"
+#include "util/ContentProvider.h"
+#include "util/Name.h"
+#include "v8datamodel/Team.h"
+
+namespace RBX {
+
+char sScript[] = "Script";
+
+char sLocalScript[] = "LocalScript";
+
+// FUNCTION: WEBSERVICE 0x10068d50
+boost::shared_ptr<const std::string> Script::requestCode()
+{
+	if (scriptId.isNull()) {
+		return embeddedSource;
+	}
+
+	return ContentProvider::singleton().requestContentString(scriptId);
+}
+
+} // namespace RBX
+
+template const RBX::Name& RBX::Name::doDeclare<RBX::sTeam>();
+template const RBX::Name& RBX::Name::doDeclare<RBX::Network::sPlayer>();
+template void RBX::Name::callDoDeclare<RBX::sTeam>();
+template void RBX::Name::callDoDeclare<RBX::Network::sPlayer>();
+
+template class RBX::FactoryProduct<RBX::Script, RBX::Instance, RBX::sScript>;
+template class RBX::Reflection::
+	Described<RBX::Script, RBX::sScript, RBX::FactoryProduct<RBX::Script, RBX::Instance, RBX::sScript> >;
+template class RBX::DescribedCreatable<RBX::Script, RBX::Instance, RBX::sScript>;
+
+template class RBX::FactoryProduct<RBX::LocalScript, RBX::Script, RBX::sLocalScript>;
+template class RBX::Reflection::Described<
+	RBX::LocalScript,
+	RBX::sLocalScript,
+	RBX::FactoryProduct<RBX::LocalScript, RBX::Script, RBX::sLocalScript> >;
+template class RBX::DescribedCreatable<RBX::LocalScript, RBX::Script, RBX::sLocalScript>;

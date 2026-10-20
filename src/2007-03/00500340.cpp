@@ -1,47 +1,407 @@
-// roc 2007-03 00500340  unit: seg_00500000  size: 96 bytes
-// Make this compile to the exact bytes below, then: roc check 2007-03 00500340
-//
-// 00500340  53                   push ebx
-// 00500341  55                   push ebp
-// 00500342  8bc1                 mov eax, ecx
-// 00500344  8b4c240c             mov ecx, dword ptr [esp + 0xc]
-// 00500348  56                   push esi
-// 00500349  57                   push edi
-// 0050034a  8d580c               lea ebx, [eax + 0xc]
-// 0050034d  8d7924               lea edi, [ecx + 0x24]
-// 00500350  8d7008               lea esi, [eax + 8]
-// 00500353  8d5108               lea edx, [ecx + 8]
-// 00500356  bd03000000           mov ebp, 3
-// 0050035b  eb03                 jmp 0x500360
-// 0050035d  8d4900               lea ecx, [ecx]
-// 00500360  d942f8               fld dword ptr [edx - 8]
-// 00500363  83c20c               add edx, 0xc
-// 00500366  d95ef8               fstp dword ptr [esi - 8]
-// 00500369  83c610               add esi, 0x10
-// 0050036c  d942f0               fld dword ptr [edx - 0x10]
-// 0050036f  83c704               add edi, 4
-// 00500372  d95eec               fstp dword ptr [esi - 0x14]
-// 00500375  83c310               add ebx, 0x10
-// 00500378  83ed01               sub ebp, 1
-// 0050037b  d942f4               fld dword ptr [edx - 0xc]
-// 0050037e  d95ef0               fstp dword ptr [esi - 0x10]
-// 00500381  d947fc               fld dword ptr [edi - 4]
-// 00500384  d95bf0               fstp dword ptr [ebx - 0x10]
-// 00500387  75d7                 jne 0x500360
-// 00500389  d9ee                 fldz 
-// 0050038b  5f                   pop edi
-// 0050038c  d95030               fst dword ptr [eax + 0x30]
-// 0050038f  5e                   pop esi
-// 00500390  d95034               fst dword ptr [eax + 0x34]
-// 00500393  5d                   pop ebp
-// 00500394  d95838               fstp dword ptr [eax + 0x38]
-// 00500397  5b                   pop ebx
-// 00500398  d9e8                 fld1 
-// 0050039a  d9583c               fstp dword ptr [eax + 0x3c]
-// 0050039d  c20400               ret 4
-// library rbxgs-g3d/G3Dcpp\Matrix4.cpp (function ??0Matrix4@G3D@@QAE@ABVCoordinateFrame@1@@Z)
-
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
 // roc-lib: rbxgs-g3d G3Dcpp/Matrix4.cpp
+
+// Candidate translation unit (score above; library headers required).
+/**
+  @file Matrix4.cpp
+ 
+ 
+  @maintainer Morgan McGuire, matrix@graphics3d.com
+
+  @created 2003-10-02
+  @edited  2006-01-05
+ */
+
+#include "G3D/platform.h"
+#include "G3D/Matrix4.h"
+#include "G3D/Vector4.h"
+#include "G3D/BinaryInput.h"
+#include "G3D/BinaryOutput.h"
+#include "G3D/CoordinateFrame.h"
+
+namespace G3D {
+
+const Matrix4& Matrix4::identity() {
+    static Matrix4 m(
+        1, 0, 0, 0,
+        0, 1, 0, 0,
+        0, 0, 1, 0,
+        0, 0, 0, 1);
+    return m;
+}
+
+const Matrix4& Matrix4::zero() {
+    static Matrix4 m(
+        0, 0, 0, 0,
+        0, 0, 0, 0,
+        0, 0, 0, 0,
+        0, 0, 0, 0);
+    return m;
+}
+
+// Deprecated.
+const Matrix4 Matrix4::IDENTITY
+  = Matrix4(1, 0, 0, 0,
+            0, 1, 0, 0,
+            0, 0, 1, 0,
+            0, 0, 0, 1);
+
+const Matrix4 Matrix4::ZERO
+  = Matrix4(0, 0, 0, 0,
+            0, 0, 0, 0,
+            0, 0, 0, 0,
+            0, 0, 0, 0);
+
+Matrix4::Matrix4(const class CoordinateFrame& cframe) {
+    for (int r = 0; r < 3; ++r) {
+        for (int c = 0; c < 3; ++c) {
+            elt[r][c] = cframe.rotation[r][c];
+        }
+        elt[r][3] = cframe.translation[r];
+    }
+    elt[3][0] = 0.0f;
+    elt[3][1] = 0.0f;
+    elt[3][2] = 0.0f;
+    elt[3][3] = 1.0f;
+}
+
+
+Matrix4 Matrix4::orthogonalProjection(
+    float            left,
+    float            right,
+    float            bottom,
+    float            top,
+    float            nearval,
+    float            farval) {
+
+    // Adapted from Mesa
+    float x, y, z;
+    float tx,  ty, tz;
+
+    x = 2.0f / (right-left);
+    y = 2.0f / (top-bottom);
+    z = -2.0f / (farval-nearval);
+    tx = -(right+left) / (right-left);
+    ty = -(top+bottom) / (top-bottom);
+    tz = -(farval+nearval) / (farval-nearval);
+
+    return 
+        Matrix4( x , 0.0f, 0.0f,  tx,
+                0.0f,  y , 0.0f,  ty,
+                0.0f, 0.0f,  z ,  tz,
+                0.0f, 0.0f, 0.0f, 1.0f);
+}
+
+
+Matrix4 Matrix4::perspectiveProjection(
+    float left,    
+    float right,
+    float bottom,  
+    float top,
+    float nearval, 
+    float farval) {
+
+    float x, y, a, b, c, d;
+
+    x = (2.0f*nearval) / (right-left);
+    y = (2.0f*nearval) / (top-bottom);
+    a = (right+left) / (right-left);
+    b = (top+bottom) / (top-bottom);
+
+    if ((float)farval >= (float)inf()) {
+       // Infinite view frustum
+       c = -1.0f;
+       d = -2.0f * nearval;
+    } else {
+       c = -(farval+nearval) / (farval-nearval);
+       d = -(2.0f*farval*nearval) / (farval-nearval);
+    }
+
+    return Matrix4(
+        x,  0,  a,  0,
+        0,  y,  b,  0,
+        0,  0,  c,  d,
+        0,  0, -1,  0);
+}
+
+
+Matrix4::Matrix4(
+    float r1c1, float r1c2, float r1c3, float r1c4,
+    float r2c1, float r2c2, float r2c3, float r2c4,
+    float r3c1, float r3c2, float r3c3, float r3c4,
+    float r4c1, float r4c2, float r4c3, float r4c4) {
+    elt[0][0] = r1c1;  elt[0][1] = r1c2;  elt[0][2] = r1c3;  elt[0][3] = r1c4;
+    elt[1][0] = r2c1;  elt[1][1] = r2c2;  elt[1][2] = r2c3;  elt[1][3] = r2c4;
+    elt[2][0] = r3c1;  elt[2][1] = r3c2;  elt[2][2] = r3c3;  elt[2][3] = r3c4;
+    elt[3][0] = r4c1;  elt[3][1] = r4c2;  elt[3][2] = r4c3;  elt[3][3] = r4c4;
+}
+
+/**
+ init should be <B>row major</B>.
+ */
+Matrix4::Matrix4(const float* init) {
+    for (int r = 0; r < 4; ++r) {
+        for (int c = 0; c < 4; ++c) {
+            elt[r][c] = init[r * 4 + c];
+        }
+    }
+}
+
+
+Matrix4::Matrix4(const double* init) {
+    for (int r = 0; r < 4; ++r) {
+        for (int c = 0; c < 4; ++c) {
+            elt[r][c] = (float)init[r * 4 + c];
+        }
+    }
+}
+
+
+Matrix4::Matrix4() {
+    for (int r = 0; r < 4; ++r) {
+        for (int c = 0; c < 4; ++c) {
+            elt[r][c] = 0;
+        }
+    }
+}
+
+
+void Matrix4::setRow(int r, const Vector4& v) {
+    for (int c = 0; c < 4; ++c) {
+        elt[r][c] = v[c];
+    }
+}
+
+
+void Matrix4::setColumn(int c, const Vector4& v) {
+    for (int r = 0; r < 4; ++r) {
+        elt[r][c] = v[r];
+    }
+}
+
+
+Vector4 Matrix4::getRow(int r) const {
+    Vector4 v;
+    for (int c = 0; c < 4; ++c) {
+        v[c] = elt[r][c];
+    }
+    return v;
+}
+
+
+
+Vector4 Matrix4::getColumn(int c) const {
+    Vector4 v;
+    for (int r = 0; r < 4; ++r) {
+        v[r] = elt[r][c];
+    }
+    return v;
+}
+
+
+Matrix4 Matrix4::operator*(const Matrix4& other) const {
+    Matrix4 result;
+    for (int r = 0; r < 4; ++r) {
+        for (int c = 0; c < 4; ++c) {
+            for (int i = 0; i < 4; ++i) {
+                result.elt[r][c] += elt[r][i] * other.elt[i][c];
+            }
+        }
+    }
+
+    return result;
+}
+
+
+Matrix4 Matrix4::operator*(const float s) const {
+    Matrix4 result;
+    for (int r = 0; r < 4; ++r) {
+        for (int c = 0; c < 4; ++c) {
+            result.elt[r][c] = elt[r][c] * s;
+        }
+    }
+
+    return result;
+}
+
+
+Vector4 Matrix4::operator*(const Vector4& vector) const {
+    Vector4 result(0,0,0,0);
+    for (int r = 0; r < 4; ++r) {
+        for (int c = 0; c < 4; ++c) {
+            result[r] += elt[r][c] * vector[c];
+        }
+    }
+
+    return result;
+}
+
+
+Matrix4 Matrix4::transpose() const {
+    Matrix4 result;
+    for (int r = 0; r < 4; ++r) {
+        for (int c = 0; c < 4; ++c) {
+            result.elt[c][r] = elt[r][c];
+        }
+    }
+
+    return result;
+}
+
+
+bool Matrix4::operator!=(const Matrix4& other) const {
+    return ! (*this == other);
+}
+
+
+bool Matrix4::operator==(const Matrix4& other) const {
+
+    // If the bit patterns are identical, they must be
+    // the same matrix.  If not, they *might* still have
+    // equal elements due to floating point weirdness.
+    if (memcmp(this, &other, sizeof(Matrix4) == 0)) {
+        return true;
+    } 
+
+    for (int r = 0; r < 4; ++r) {
+        for (int c = 0; c < 4; ++c) {
+            if (elt[r][c] != other.elt[r][c]) {
+                return false;
+            }
+        }
+    }
+
+    return true;
+}
+
+
+float Matrix4::determinant() const {
+    // Determinant is the dot product of the first row and the first row
+    // of cofactors (i.e. the first col of the adjoint matrix)
+	return cofactor().getRow(0).dot(getRow(0));
+}
+
+
+Matrix4 Matrix4::adjoint() const {
+    return cofactor().transpose();
+}
+
+
+Matrix4 Matrix4::inverse() const {
+    // Inverse = adjoint / determinant
+
+    Matrix4 A = adjoint();
+
+    // Determinant is the dot product of the first row and the first row
+    // of cofactors (i.e. the first col of the adjoint matrix)
+	float det = A.getColumn(0).dot(getRow(0));
+
+	return A * (1.0f / det);
+}
+
+
+Matrix4 Matrix4::cofactor() const {
+	Matrix4 out;
+
+    // We'll use i to incrementally compute -1 ^ (r+c)
+    int i = 1;
+
+    for (int r = 0; r < 4; ++r) {
+        for (int c = 0; c < 4; ++c) {
+            // Compute the determinant of the 3x3 submatrix
+            float det = subDeterminant(r, c);
+            out.elt[r][c] = i * det;
+            i = -i;
+        }
+        i = -i;
+    }
+
+    return out;
+}
+
+
+float Matrix4::subDeterminant(int excludeRow, int excludeCol) const {
+    // Compute non-excluded row and column indices
+    int row[3];
+    int col[3];
+
+    for (int i = 0; i < 3; ++i) {
+        row[i] = i;
+        col[i] = i;
+
+        if (i >= excludeRow) {
+            ++row[i];
+        }
+        if (i >= excludeCol) {
+            ++col[i];
+        }
+    }
+
+    // Compute the first row of cofactors 
+    float cofactor00 = 
+      elt[row[1]][col[1]] * elt[row[2]][col[2]] -
+      elt[row[1]][col[2]] * elt[row[2]][col[1]];
+
+    float cofactor10 = 
+      elt[row[1]][col[2]] * elt[row[2]][col[0]] -
+      elt[row[1]][col[0]] * elt[row[2]][col[2]];
+
+    float cofactor20 = 
+      elt[row[1]][col[0]] * elt[row[2]][col[1]] -
+      elt[row[1]][col[1]] * elt[row[2]][col[0]];
+
+    // Product of the first row and the cofactors along the first row
+    return
+      elt[row[0]][col[0]] * cofactor00 +
+      elt[row[0]][col[1]] * cofactor10 +
+      elt[row[0]][col[2]] * cofactor20;
+}
+
+
+CoordinateFrame Matrix4::approxCoordinateFrame() const {
+	CoordinateFrame cframe;
+
+	for (int r = 0; r < 3; ++r) {
+		for (int c = 0; c < 3; ++c) {
+			cframe.rotation[r][c] = elt[r][c];
+		}
+		cframe.translation[r] = elt[r][3];
+	}
+
+	// Ensure that the rotation matrix is orthonormal
+	cframe.rotation.orthonormalize();
+
+	return cframe;
+}
+
+
+void Matrix4::serialize(class BinaryOutput& b) const {
+    for (int r = 0; r < 4; ++r) {
+        for (int c = 0; c < 4; ++c) {
+            b.writeFloat32(elt[r][c]);
+        }
+    }
+}
+
+
+void Matrix4::deserialize(class BinaryInput& b) {
+    for (int r = 0; r < 4; ++r) {
+        for (int c = 0; c < 4; ++c) {
+            elt[r][c] = b.readFloat32();
+        }
+    }
+}
+
+std::string Matrix4::toString() const {
+    return G3D::format("[%g, %g, %g, %g; %g, %g, %g, %g; %g, %g, %g, %g; %g, %g, %g, %g]", 
+			elt[0][0], elt[0][1], elt[0][2], elt[0][3],
+			elt[1][0], elt[1][1], elt[1][2], elt[1][3],
+			elt[2][0], elt[2][1], elt[2][2], elt[2][3],
+			elt[3][0], elt[3][1], elt[3][2], elt[3][3]);
+}
+
+} // namespace
+
+

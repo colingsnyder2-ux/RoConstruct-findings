@@ -1,32 +1,139 @@
-// roc 2007-03 0043bf60  unit: seg_00430000  size: 60 bytes
-// Make this compile to the exact bytes below, then: roc check 2007-03 0043bf60
-//
-// 0043bf60  d901                 fld dword ptr [ecx]
-// 0043bf62  8b542404             mov edx, dword ptr [esp + 4]
-// 0043bf66  d902                 fld dword ptr [edx]
-// 0043bf68  dae9                 fucompp 
-// 0043bf6a  dfe0                 fnstsw ax
-// 0043bf6c  f6c444               test ah, 0x44
-// 0043bf6f  7a26                 jp 0x43bf97
-// 0043bf71  d94104               fld dword ptr [ecx + 4]
-// 0043bf74  d94204               fld dword ptr [edx + 4]
-// 0043bf77  dae9                 fucompp 
-// 0043bf79  dfe0                 fnstsw ax
-// 0043bf7b  f6c444               test ah, 0x44
-// 0043bf7e  7a17                 jp 0x43bf97
-// 0043bf80  d94108               fld dword ptr [ecx + 8]
-// 0043bf83  d94208               fld dword ptr [edx + 8]
-// 0043bf86  dae9                 fucompp 
-// 0043bf88  dfe0                 fnstsw ax
-// 0043bf8a  f6c444               test ah, 0x44
-// 0043bf8d  7a08                 jp 0x43bf97
-// 0043bf8f  b801000000           mov eax, 1
-// 0043bf94  c20400               ret 4
-// 0043bf97  33c0                 xor eax, eax
-// 0043bf99  c20400               ret 4
-// library rbxgs/tool\Dragger.cpp (function ??8Vector3@G3D@@QBE_NABV01@@Z)
-
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
 // roc-lib: rbxgs tool/Dragger.cpp
+
+// Candidate translation unit (score above; library headers required).
+#include "tool/Dragger.h"
+#include "tool/DragUtilities.h"
+#include "v8datamodel/PartInstance.h"
+#include "v8world/ContactManager.h"
+#include "util/Math.h"
+
+namespace RBX
+{
+	G3D::Vector3 Dragger::toGrid(const G3D::Vector3& v)
+	{
+		return Math::toGrid(v, dragSnap());
+	}
+
+	void Dragger::movePrimitives(const G3D::Array<Primitive*>& primitives, const G3D::Vector3& delta)
+	{
+		RBXASSERT(primitives.size() > 0);
+
+		if (delta != G3D::Vector3::zero())
+		{
+			for (int i = 0; i < primitives.size(); i++)
+			{
+				Primitive* prim = primitives[i];
+				PartInstance* part = PartInstance::fromPrimitive(prim);
+
+				DragUtilities::moveAndClean(part, delta);
+			}
+		}
+	}
+
+	Extents Dragger::computeExtents(const G3D::Array<Primitive*>& primitives)
+	{
+		RBXASSERT(primitives.size() > 0);
+
+		Extents e = Extents::negativeInfiniteExtents();
+
+		for (int i = 0; i < primitives.size(); i++)
+		{
+			Primitive* prim = primitives[i];
+
+			Extents worldExtents = prim->getExtentsLocal().toWorldSpace(prim->getCoordinateFrame());
+			e.unionWith(worldExtents);
+		}
+
+		return e;
+	}
+
+	bool Dragger::intersectingWorldOrOthers(const G3D::Array<Primitive*>& primitives, ContactManager& contactManager)
+	{
+		RBXASSERT(primitives.size() > 0);
+
+		Extents group = computeExtents(primitives);
+		return group.min().y < -0.01f || contactManager.intersectingOthers(primitives, 0.01f);
+	}
+
+	void Dragger::movePrimitivesDelta(const G3D::Array<Primitive*>& primitives, const G3D::Vector3& delta, G3D::Vector3& movedSoFar)
+	{
+		RBXASSERT(delta == toGrid(delta));
+		RBXASSERT(delta != G3D::Vector3::zero());
+
+		movePrimitives(primitives, delta);
+		movedSoFar = toGrid(movedSoFar + delta);
+	}
+
+	G3D::Vector3 Dragger::safeMoveYDrop(const G3D::Array<Primitive*>& primitives, const G3D::Vector3& tryMove, ContactManager& contactManager)
+	{
+		if (primitives.size() == 0)
+		{
+			RBXASSERT(0);
+			return G3D::Vector3::zero();
+		}
+
+		G3D::Vector3 moved = tryMove - G3D::Vector3(0.0f, 1.2f, 0.0f);
+		moved = Math::toGrid(moved, 0.1f);
+
+		movePrimitives(primitives, moved);
+
+		if (intersectingWorldOrOthers(primitives, contactManager))
+			searchUpGross(primitives, moved, contactManager);
+		else
+			searchDownGross(primitives, moved, contactManager);
+
+		RBXASSERT(moved == Math::toGrid(moved, 0.1f));
+
+		return moved;
+	}
+
+	G3D::Vector3 Dragger::safeMoveNoDrop(const G3D::Array<Primitive*>& primitives, const G3D::Vector3& tryMove, ContactManager& contactManager)
+	{
+		G3D::Vector3 movedSoFar(0.0f, 0.0f, 0.0f);
+
+		if (primitives.size() == 0)
+		{
+			RBXASSERT(0);
+			return G3D::Vector3::zero();
+		}
+
+		if (tryMove != G3D::Vector3::zero())
+		{
+			movePrimitives(primitives, tryMove);
+			movedSoFar += tryMove;
+		}
+
+		if (intersectingWorldOrOthers(primitives, contactManager))
+			searchUpGross(primitives, movedSoFar, contactManager);
+
+		return movedSoFar;
+	}
+
+	void Dragger::safeRotate(const G3D::Array<Primitive*>& primitives, const G3D::Matrix3& rotate, ContactManager& contactManager)
+	{
+		if (primitives.size() == 0)
+		{
+			RBXASSERT(0);
+			return;
+		}
+
+		G3D::Vector3 center = toGrid(computeExtents(primitives).center());
+		G3D::CoordinateFrame centerCoord(center);
+		G3D::CoordinateFrame rotationCoord(rotate, G3D::Vector3::zero());
+
+		for (int i = 0; i < primitives.size(); i++)
+		{
+			Primitive* prim = primitives[i];
+
+			G3D::CoordinateFrame primInCenter = centerCoord.toObjectSpace(prim->getCoordinateFrame());
+			G3D::CoordinateFrame newPrimInCenter = rotationCoord * primInCenter;
+			G3D::CoordinateFrame primInWorld = centerCoord * newPrimInCenter;
+
+			PartInstance* part = PartInstance::fromPrimitive(prim);
+			part->setCoordinateFrame(primInWorld);
+		}
+	}
+}

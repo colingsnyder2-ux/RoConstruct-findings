@@ -1,53 +1,400 @@
-// roc 2007-03 005f1200  unit: seg_005f0000  size: 108 bytes
-// Make this compile to the exact bytes below, then: roc check 2007-03 005f1200
-//
-// 005f1200  56                   push esi
-// 005f1201  8bf1                 mov esi, ecx
-// 005f1203  833e00               cmp dword ptr [esi], 0
-// 005f1206  57                   push edi
-// 005f1207  8b3d44e97700         mov edi, dword ptr [0x77e944]
-// 005f120d  7502                 jne 0x5f1211
-// 005f120f  ffd7                 call edi
-// 005f1211  8b4604               mov eax, dword ptr [esi + 4]
-// 005f1214  80781900             cmp byte ptr [eax + 0x19], 0
-// 005f1218  7405                 je 0x5f121f
-// 005f121a  ffd7                 call edi
-// 005f121c  5f                   pop edi
-// 005f121d  5e                   pop esi
-// 005f121e  c3                   ret 
-// 005f121f  8b4808               mov ecx, dword ptr [eax + 8]
-// 005f1222  80791900             cmp byte ptr [ecx + 0x19], 0
-// 005f1226  7518                 jne 0x5f1240
-// 005f1228  8b01                 mov eax, dword ptr [ecx]
-// 005f122a  80781900             cmp byte ptr [eax + 0x19], 0
-// 005f122e  750a                 jne 0x5f123a
-// 005f1230  8bc8                 mov ecx, eax
-// 005f1232  8b01                 mov eax, dword ptr [ecx]
-// 005f1234  80781900             cmp byte ptr [eax + 0x19], 0
-// 005f1238  74f6                 je 0x5f1230
-// 005f123a  5f                   pop edi
-// 005f123b  894e04               mov dword ptr [esi + 4], ecx
-// 005f123e  5e                   pop esi
-// 005f123f  c3                   ret 
-// 005f1240  8b4004               mov eax, dword ptr [eax + 4]
-// 005f1243  80781900             cmp byte ptr [eax + 0x19], 0
-// 005f1247  751d                 jne 0x5f1266
-// 005f1249  8da42400000000       lea esp, [esp]
-// 005f1250  8b4e04               mov ecx, dword ptr [esi + 4]
-// 005f1253  3b4808               cmp ecx, dword ptr [eax + 8]
-// 005f1256  750e                 jne 0x5f1266
-// 005f1258  894604               mov dword ptr [esi + 4], eax
-// 005f125b  8bd0                 mov edx, eax
-// 005f125d  8b4204               mov eax, dword ptr [edx + 4]
-// 005f1260  80781900             cmp byte ptr [eax + 0x19], 0
-// 005f1264  74ea                 je 0x5f1250
-// 005f1266  5f                   pop edi
-// 005f1267  894604               mov dword ptr [esi + 4], eax
-// 005f126a  5e                   pop esi
-// 005f126b  c3                   ret 
-// library rbxgs/v8datamodel\DataModel.cpp (function ?_Inc@const_iterator@?$_Tree@V?$_Tmap_traits@VInstanceHandle@RBX@@HU?$less@VInstanceHandle@RBX@@@std@@V?$allocator@U?$pair@$$CBVInstanceHandle@RBX@@H@std@@@4@$0A@@std@@@std@@QAEXXZ)
-
 // roc-lang: cpp
 // roc-cl: 50727
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
 // roc-lib: rbxgs v8datamodel/DataModel.cpp
+
+// Candidate translation unit (score above; library headers required).
+#include "v8datamodel/Lighting.h"
+#include "v8datamodel/DataModel.h"
+#include "v8datamodel/TimeState.h"
+#include "v8datamodel/Workspace.h"
+#include "v8datamodel/Hopper.h"
+#include "v8datamodel/Teams.h"
+#include "v8datamodel/JointsService.h"
+#include "v8datamodel/LocalBackpack.h"
+#include "script/ScriptContext.h"
+#include "gui/GUI.h"
+#include "util/Log.h"
+#include "util/IMetric.h"
+#include "util/standardout.h"
+#include "util/Http.h"
+#include "util/Sound.h"
+
+namespace RBX
+{
+	static Reflection::BoundFuncDesc<DataModel, boost::shared_ptr<const std::vector<boost::shared_ptr<Instance>>>(ContentId), 1> getContentFunctionOld(&DataModel::get, "get", "url", Reflection::FunctionDescriptor::AnyCaller);
+	static Reflection::BoundFuncDesc<DataModel, boost::shared_ptr<const std::vector<boost::shared_ptr<Instance>>>(ContentId), 1> getContentFunction(&DataModel::get, "GetObjects", "url", Reflection::FunctionDescriptor::AnyCaller);
+	static Reflection::BoundFuncDesc<DataModel, void(ContentId), 1> loadFunction(&DataModel::loadContent, "Load", "url", Reflection::FunctionDescriptor::NeedTrustedCaller);
+	static Reflection::BoundFuncDesc<DataModel, void(ContentId), 1> saveFunction(&DataModel::save, "Save", "url", Reflection::FunctionDescriptor::NeedTrustedCaller);
+	static Reflection::BoundFuncDesc<DataModel, std::string(std::string, bool), 2> httpGetFunction(&DataModel::httpGet, "HttpGet", "url", "synchronous", Reflection::FunctionDescriptor::AnyCaller);
+	static Reflection::BoundFuncDesc<DataModel, std::string(std::string, std::string, bool), 3> httpPostFunction(&DataModel::httpPost, "HttpPost", "url", "data", "synchronous", Reflection::FunctionDescriptor::NeedTrustedCaller);
+	static Reflection::BoundFuncDesc<DataModel, void(void), 0> sanitizeFunction(&DataModel::clearContents, "ClearContent", Reflection::FunctionDescriptor::NeedTrustedCaller);
+	static Reflection::BoundFuncDesc<DataModel, void(void), 0> closeFunction(&DataModel::close, "Close", Reflection::FunctionDescriptor::NeedTrustedCaller);
+
+	static Reflection::BoundFuncDesc<DataModel, void(std::string), 1> func_SetUIMessage(&DataModel::setUiMessage, "SetMessage", "message", Reflection::FunctionDescriptor::NeedTrustedCaller);
+	static Reflection::BoundFuncDesc<DataModel, void(void), 0> func_ClearUIMessage(&DataModel::clearUiMessage, "ClearMessage", Reflection::FunctionDescriptor::NeedTrustedCaller);
+	static Reflection::BoundFuncDesc<DataModel, void(void), 0> func_SetUIMessageBrickCount(&DataModel::setUiMessageBrickCount, "SetMessageBrickCount", Reflection::FunctionDescriptor::NeedTrustedCaller);
+	
+	static Reflection::SignalDesc<DataModel, void(void)> event_Closing("Close");
+
+#pragma warning (push)
+#pragma warning (disable : 4355) // warning C4355: 'this' : used in base member initializer list
+
+	DataModel::DataModel()
+		: VerbContainer(NULL),
+		  workspace(Creatable::create<Workspace>(this)),
+		  guiRoot(Creatable::create<GuiRoot>()),
+		  guiHooks(Creatable::create<GuiRoot>()),
+		  timeState(new TimeState),
+		  mutex(new boost::recursive_mutex),
+		  guiTarget(NULL),
+		  forceArrowCursor(true),
+		  dirty(false),
+		  drawId(0)
+	{
+		setName("Level");
+	}
+
+#pragma warning (pop)
+
+	DataModel::~DataModel()
+	{
+		Notifier<RunService, RunTransition>::disconnect(runService, this);
+		StandardOut::singleton()->print(MESSAGE_INFO, "~DataModel");
+	}
+
+	bool DataModel::askAddChild(const Instance* instance) const
+	{
+		return dynamic_cast<const Service*>(instance) != NULL;
+	}
+
+	boost::shared_ptr<DataModel> DataModel::createDataModel()
+	{
+		ContentProvider::singleton().clearContentCache();
+		
+		boost::shared_ptr<DataModel> dataModel = Creatable::create<DataModel>();
+
+		{
+			Lock lock(dataModel);
+			dataModel->initializeContents();
+		}
+
+		return dataModel;
+	}
+	
+	void DataModel::onChildAdded(Instance* child)
+	{
+		ServiceProvider::onChildAdded(child);
+
+		if (child->getClassName() == "NetworkClient")
+		{
+			Verb* lockPlayMode = getVerb("LockPlayMode");
+			if (lockPlayMode)
+				lockPlayMode->doIt(NULL);
+
+			workspace->setNullMouseCommand();
+		}
+	}
+
+	void DataModel::onEvent(const RunService* source, RunTransition event)
+	{
+		switch (event.newState)
+		{
+		case RS_NORMAL:
+			if (event.oldState == RS_RUNNING)
+				workspace->reset();
+
+			timeState->clear();
+			break;
+		case RS_RUNNING:
+			workspace->start();
+			break;
+		case RS_PAUSED:
+			workspace->stop();
+			break;
+		}
+	}
+
+	std::string DataModel::doHttpGet(std::string url)
+	{
+		std::string result;
+		Http(url.c_str()).get(result);
+
+		return result;
+	}
+
+	std::string DataModel::doHttpPost(std::string url, std::string data)
+	{
+		std::string result;
+		Http(url).post(std::istringstream(data), true, result);
+
+		return result;
+	}
+
+	void DataModel::close()
+	{
+		Verb* exitVerb = getVerb("Exit");
+		if (!exitVerb)
+			throw std::runtime_error("Couldn\'t find Exit Verb");
+
+		exitVerb->doIt(NULL);
+	}
+
+	std::string DataModel::httpGet(std::string url, bool synchronous)
+	{
+		if (synchronous)
+		{
+			return doHttpGet(url);
+		}
+		else
+		{
+			if (url.size() > 0)
+			{
+				boost::function0<void> f = boost::bind(&DataModel::doHttpGet, url);
+				boost::function0<void> g = boost::bind(&StandardOut::print_exception, f, MESSAGE_ERROR, false);
+
+				boost::thread(background_function(g, "rbx_httpGet"));
+			}
+
+			return "";
+		}
+	}
+
+	std::string DataModel::httpPost(std::string url, std::string data, bool synchronous)
+	{
+		if (synchronous)
+		{
+			return doHttpPost(url, data);
+		}
+		else
+		{
+			boost::function0<void> f = boost::bind(&DataModel::doHttpPost, url, data);
+			boost::function0<void> g = boost::bind(&StandardOut::print_exception, f, MESSAGE_ERROR, false);
+
+			boost::thread(background_function(g, "rbx_httpPost"));
+
+			return "";
+		}
+	}
+
+	void DataModel::clearContents()
+	{
+		workspace->setMouseCommand(NULL);
+		workspace->removeAllChildren();
+		workspace->setCamera(NULL);
+		
+		starterPackService->removeAllChildren();
+
+		Teams* teams = ServiceProvider::find<Teams>(this);
+		if (teams)
+			teams->removeAllChildren();
+
+		Lighting* lighting = ServiceProvider::find<Lighting>(this);
+		if (lighting)
+			lighting->removeAllChildren();
+
+		ScriptContext* script = ServiceProvider::find<ScriptContext>(this);
+		if (script)
+		{
+			script->closeState();
+			ScriptContext::propScriptsDisabled.setValue(script, false);
+		}
+	}
+
+	void DataModel::loadContent(ContentId contentId)
+	{
+		std::auto_ptr<std::istream> stream = ContentProvider::singleton().getContent(contentId);
+		StandardOut::singleton()->print(MESSAGE_INFO, "DataModel Loading %s", contentId.c_str());
+
+		SerializerV2 serializer;
+		serializer.load(*stream, this);
+
+		workspace->joinAllHack();
+	}
+
+	void DataModel::save(ContentId contentId)
+	{
+		std::stringstream stream;
+
+		{
+			boost::scoped_ptr<XmlElement> root(SerializerV2::newRootElement());
+			writeChildren(root.get());
+
+			TextXmlWriterWithEmbeddedContent machine(stream);
+			machine.serialize(root.get());
+
+			stream.flush();
+		}
+		
+		std::string response;
+		Http(contentId.toString()).post(stream, true, response);
+	}
+
+	boost::shared_ptr<const std::vector<boost::shared_ptr<Instance>>> DataModel::get(ContentId contentId)
+	{
+		std::auto_ptr<std::istream> stream = ContentProvider::singleton().getContent(contentId);
+
+		TextXmlParser machine(stream->rdbuf());
+		std::auto_ptr<XmlElement> root = machine.parse();
+
+		boost::shared_ptr<std::vector<boost::shared_ptr<Instance>>> result(new std::vector<boost::shared_ptr<Instance>>);
+
+		SerializerV2 serializer;
+		serializer.loadInstances(root.get(), *result);
+
+		return result;
+	}
+
+	static std::string report(const G3D::Stopwatch& timer)
+	{
+		if (timer.smoothElapsedTime() > 0.0f)
+		{
+			std::string t = Log::formatTime(timer.smoothElapsedTime());
+			char buffer[256];
+			sprintf(buffer, "%s (%.3gfps)", t.c_str(), 1.0f / timer.smoothElapsedTime());
+
+			return std::string(buffer);
+		}
+		else
+		{
+			return Log::formatTime(timer.smoothElapsedTime());
+		}
+	}
+
+	std::string DataModel::evaluate(const std::string& valueName) const
+	{
+		World* world = workspace->getWorld();
+
+		if (valueName == "timer")
+		{
+			float time = timeState->totalVirtualTime;
+			return StringConverter<float>::convertToString(time);
+		}
+		else if (valueName == "FPS")
+		{
+			return G3D::format("%.3g", timeState->fpsStopwatch.smoothFPS());
+		}
+		else if (valueName == "simDC")
+		{
+			return report(timeState->simulationStopwatch);
+		}
+		else if (valueName == "drawId")
+		{
+			return StringConverter<int>::convertToString(drawId);
+		}
+		else if (valueName == "graphicsMode")
+		{
+			return tempMetric->getMetric(valueName);
+		}
+		else if (valueName == "culling")
+		{
+			return tempMetric->getMetric(valueName);
+		}
+		else if (valueName == "cullingPercent")
+		{
+			return tempMetric->getMetric(valueName);
+		}
+		else if (valueName == "antiAliasing")
+		{
+			return tempMetric->getMetric(valueName);
+		}
+		else if (valueName == "bevels")
+		{
+			return tempMetric->getMetric(valueName);
+		}
+		else if (valueName == "videoMemory")
+		{
+			return tempMetric->getMetric(valueName);
+		}
+		else if (valueName == "GfxTime")
+		{
+			return tempMetric->getMetric(valueName);
+		}
+		else if (valueName == "numPrimitives")
+		{
+			return StringConverter<int>::convertToString(world->getPrimitives().size());
+		}
+		else if (valueName == "numJoints")
+		{
+			return StringConverter<int>::convertToString(world->getNumJoints());
+		}
+		else if (valueName == "numContacts")
+		{
+			return StringConverter<int>::convertToString(world->getNumContacts());
+		}
+		else if (valueName == "numContactsInCollisionStage")
+		{
+			return StringConverter<int>::convertToString(world->getMetric(IWorldStage::NUM_CONTACTSTAGE_CONTACTS));
+		}
+		else if (valueName == "numSteppingContacts")
+		{
+			return StringConverter<int>::convertToString(world->getMetric(IWorldStage::NUM_STEPPING_CONTACTS));
+		}
+		else if (valueName == "numTouchingContacts")
+		{
+			return StringConverter<int>::convertToString(world->getMetric(IWorldStage::NUM_TOUCHING_CONTACTS));
+		}
+		else if (valueName == "maxTreeDepth")
+		{
+			return StringConverter<int>::convertToString(world->getMetric(IWorldStage::MAX_TREE_DEPTH));
+		}
+		else if (valueName == "contactPairHitRatio")
+		{
+			return StringConverter<float>::convertToString(BlockBlockContact::contactPairHitRatio());
+		}
+		else if (valueName == "numLinkCalls")
+		{
+			return StringConverter<int>::convertToString(world->getNumLinkCalls());
+		}
+		else if (valueName == "numHashNodes")
+		{
+			return StringConverter<int>::convertToString(world->getNumHashNodes());
+		}
+		else if (valueName == "maxBucketSize")
+		{
+			return StringConverter<int>::convertToString(world->getMaxBucketSize());
+		}
+		else if (valueName == "numBodies")
+		{
+			return StringConverter<int>::convertToString(world->getNumBodies());
+		}
+		else if (valueName == "numConstraints")
+		{
+			return StringConverter<int>::convertToString(world->getNumConstraints());
+		}
+		else if (valueName == "numPoints")
+		{
+			return StringConverter<int>::convertToString(world->getNumPoints());
+		}
+		else if (valueName == "energyBody")
+		{
+			return StringConverter<float>::convertToString(world->getKernel().bodyKineticEnergy());
+		}
+		else if (valueName == "energyConnector")
+		{
+			return StringConverter<float>::convertToString(world->getKernel().connectorSpringEnergy());
+		}
+		else if (valueName == "energyTotal")
+		{
+			return StringConverter<float>::convertToString(world->getKernel().totalKineticEnergy());
+		}
+		else
+		{
+			return "?";
+		}
+	}
+
+	void DataModel::Lock::doLock(const DataModel* dataModel)
+	{
+		if (dataModel)
+		{
+			mutex = dataModel->mutex;
+			lock = new boost::recursive_mutex::scoped_lock(*mutex);
+		}
+	}
+
+	DataModel::Lock::~Lock()
+	{
+		delete lock;
+	}
+}

@@ -1,65 +1,235 @@
-// roc 2007-03 0049a970  unit: seg_00490000  size: 141 bytes
-// Make this compile to the exact bytes below, then: roc check 2007-03 0049a970
-//
-// 0049a970  51                   push ecx
-// 0049a971  53                   push ebx
-// 0049a972  55                   push ebp
-// 0049a973  8b6c2414             mov ebp, dword ptr [esp + 0x14]
-// 0049a977  56                   push esi
-// 0049a978  8bf1                 mov esi, ecx
-// 0049a97a  57                   push edi
-// 0049a97b  8b7e04               mov edi, dword ptr [esi + 4]
-// 0049a97e  85ff                 test edi, edi
-// 0049a980  740c                 je 0x49a98e
-// 0049a982  8b4608               mov eax, dword ptr [esi + 8]
-// 0049a985  8bc8                 mov ecx, eax
-// 0049a987  2bcf                 sub ecx, edi
-// 0049a989  c1f902               sar ecx, 2
-// 0049a98c  7504                 jne 0x49a992
-// 0049a98e  33db                 xor ebx, ebx
-// 0049a990  eb21                 jmp 0x49a9b3
-// 0049a992  3bf8                 cmp edi, eax
-// 0049a994  7606                 jbe 0x49a99c
-// 0049a996  ff1544e97700         call dword ptr [0x77e944]
-// 0049a99c  85ed                 test ebp, ebp
-// 0049a99e  7404                 je 0x49a9a4
-// 0049a9a0  3bee                 cmp ebp, esi
-// 0049a9a2  7406                 je 0x49a9aa
-// 0049a9a4  ff1544e97700         call dword ptr [0x77e944]
-// 0049a9aa  8b5c2420             mov ebx, dword ptr [esp + 0x20]
-// 0049a9ae  2bdf                 sub ebx, edi
-// 0049a9b0  c1fb02               sar ebx, 2
-// 0049a9b3  8b542424             mov edx, dword ptr [esp + 0x24]
-// 0049a9b7  8b442420             mov eax, dword ptr [esp + 0x20]
-// 0049a9bb  52                   push edx
-// 0049a9bc  6a01                 push 1
-// 0049a9be  50                   push eax
-// 0049a9bf  55                   push ebp
-// 0049a9c0  8bce                 mov ecx, esi
-// 0049a9c2  e8c9fdffff           call 0x49a790
-// 0049a9c7  8b7e04               mov edi, dword ptr [esi + 4]
-// 0049a9ca  3b7e08               cmp edi, dword ptr [esi + 8]
-// 0049a9cd  7606                 jbe 0x49a9d5
-// 0049a9cf  ff1544e97700         call dword ptr [0x77e944]
-// 0049a9d5  897c2420             mov dword ptr [esp + 0x20], edi
-// 0049a9d9  8d3c9f               lea edi, [edi + ebx*4]
-// 0049a9dc  3b7e08               cmp edi, dword ptr [esi + 8]
-// 0049a9df  7705                 ja 0x49a9e6
-// 0049a9e1  3b7e04               cmp edi, dword ptr [esi + 4]
-// 0049a9e4  7306                 jae 0x49a9ec
-// 0049a9e6  ff1544e97700         call dword ptr [0x77e944]
-// 0049a9ec  8b442418             mov eax, dword ptr [esp + 0x18]
-// 0049a9f0  897804               mov dword ptr [eax + 4], edi
-// 0049a9f3  5f                   pop edi
-// 0049a9f4  8930                 mov dword ptr [eax], esi
-// 0049a9f6  5e                   pop esi
-// 0049a9f7  5d                   pop ebp
-// 0049a9f8  5b                   pop ebx
-// 0049a9f9  59                   pop ecx
-// 0049a9fa  c21000               ret 0x10
-// library rbxgs/tool\DragUtilities.cpp (function ?insert@?$vector@PBVPrimitive@RBX@@V?$allocator@PBVPrimitive@RBX@@@std@@@std@@QAE?AV?$_Vector_iterator@PBVPrimitive@RBX@@V?$allocator@PBVPrimitive@RBX@@@std@@@2@V32@ABQBVPrimitive@RBX@@@Z)
-
 // roc-lang: cpp
 // roc-cl: 50727
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
 // roc-lib: rbxgs tool/DragUtilities.cpp
+
+// Candidate translation unit (score above; library headers required).
+#include "tool/DragUtilities.h"
+#include "tool/Dragger.h"
+#include "v8datamodel/Workspace.h"
+#include "v8datamodel/PartInstance.h"
+#include "v8datamodel/MouseCommand.h"
+#include "v8world/ContactManager.h"
+
+namespace RBX
+{
+	bool DragUtilities::anyPartAlive(const std::vector<boost::weak_ptr<PartInstance>>& parts)
+	{
+		for (size_t i = 0; i < parts.size(); i++)
+		{
+			if (PartInstance::nonNullInWorkspace(parts[i].lock()))
+				return true;
+		}
+
+		return false;
+	}
+
+	void DragUtilities::clean(PartInstance* part)
+	{
+		if (part->aligned())
+			alignToGrid(part);
+	}
+
+	void DragUtilities::alignToGrid(PartInstance* part)
+	{
+		const G3D::CoordinateFrame& partCoord = part->getCoordinateFrame();
+		G3D::CoordinateFrame snapToGrid = Math::snapToGrid(partCoord, 0.1f);
+
+		if (snapToGrid != partCoord)
+			part->setCoordinateFrame(snapToGrid);
+	}
+
+	void DragUtilities::clean(const std::vector<boost::weak_ptr<PartInstance>>& parts)
+	{
+		for (size_t i = 0; i < parts.size(); i++)
+		{
+			boost::shared_ptr<PartInstance> part = parts[i].lock();
+			if (part)
+				clean(part.get());
+		}
+	}
+
+	void DragUtilities::move(const std::vector<boost::weak_ptr<PartInstance>>& parts, G3D::CoordinateFrame from, G3D::CoordinateFrame to)
+	{
+		for (size_t i = 0; i < parts.size(); i++)
+		{
+			boost::shared_ptr<PartInstance> part = parts[i].lock();
+
+			if (part)
+			{
+				G3D::CoordinateFrame coord = from.toObjectSpace(part->getCoordinateFrame());
+				Math::orthonormalizeIfNecessary(coord.rotation);
+
+				part->setCoordinateFrame(to * coord);
+			}
+		}
+	}
+
+	Extents DragUtilities::computeExtents(const std::vector<boost::weak_ptr<PartInstance>>& parts)
+	{
+		G3D::Array<Primitive*> primitives;
+
+		partsToPrimitives(parts, primitives);
+		return Dragger::computeExtents(primitives);
+	}
+
+	void DragUtilities::getPrimitivesConst(const Instance* instance, std::vector<const Primitive*>& primitives)
+	{
+		const PartInstance* partInstance = dynamic_cast<const PartInstance*>(instance);
+
+		if (partInstance)
+			primitives.push_back(partInstance->getPrimitive());
+
+		for (size_t i = 0; i < instance->numChildren(); i++)
+		{
+			getPrimitivesConst(instance->getChild(i), primitives);
+		}
+	}
+
+	void DragUtilities::instancesToParts(const std::vector<Instance*>& instances, std::vector<boost::weak_ptr<PartInstance>>& parts)
+	{
+		for (size_t i = 0; i < instances.size(); i++)
+		{
+			PartInstance::findParts(instances[i], parts);
+		}
+	}
+
+	void DragUtilities::join(const std::vector<boost::weak_ptr<PartInstance>>& parts)
+	{
+		RBXASSERT(notJoined(parts));
+		
+		for (size_t i = 0; i < parts.size(); i++)
+		{
+			boost::shared_ptr<PartInstance> part = parts[i].lock();
+			if (PartInstance::nonNullInWorkspace(part))
+				part->join();
+		}
+	}
+
+	void DragUtilities::joinAndStopDragging(const std::vector<boost::weak_ptr<PartInstance>>& parts)
+	{
+		joinToOutsiders(parts);
+
+		for (size_t i = 0; i < parts.size(); i++)
+		{
+			boost::shared_ptr<PartInstance> part = parts[i].lock();
+			if (PartInstance::nonNullInWorkspace(part))
+			{
+				part->setDragging(false);
+				if (parts.size() == 1)
+				{
+					part->setLinearVelocity(G3D::Vector3::zero());
+					part->setRotationalVelocity(G3D::Vector3::zero());
+				}
+			}
+		}
+	}
+
+	void DragUtilities::joinToOutsiders(const std::vector<boost::weak_ptr<PartInstance>>& parts)
+	{
+		G3D::Array<Primitive*> primitives;
+
+		World* world = partsToPrimitives(parts, primitives);
+		if (world)
+			world->createJointsToWorld(primitives);
+	}
+
+	void DragUtilities::moveAndClean(PartInstance* part, const G3D::Vector3& pos)
+	{
+		RBXASSERT(pos == Math::toGrid(pos, 0.1f));
+
+		G3D::CoordinateFrame partCoord = part->getCoordinateFrame();
+		partCoord.translation += pos;
+
+		if (part->aligned())
+			partCoord = Math::snapToGrid(partCoord, 0.1f);
+
+		part->setCoordinateFrame(partCoord);
+	}
+
+	bool DragUtilities::notJoined(const std::vector<boost::weak_ptr<PartInstance>>& parts)
+	{
+		for (size_t i = 0; i < parts.size(); i++)
+		{
+			boost::shared_ptr<PartInstance> part = parts[i].lock();
+			if (PartInstance::nonNullInWorkspace(part))
+			{
+				if (part->getPrimitive()->countNumJoints() != 0)
+					return false;
+			}
+		}
+
+		return true;
+	}
+
+	World* DragUtilities::partsToPrimitives(const std::vector<boost::weak_ptr<PartInstance>>& parts, G3D::Array<Primitive*>& primitives)
+	{
+		RBXASSERT(primitives.size() == 0);
+
+		World* world = NULL;
+
+		for (size_t i = 0; i < parts.size(); i++)
+		{
+			boost::shared_ptr<PartInstance> part = parts[i].lock();
+			if (PartInstance::nonNullInWorkspace(part))
+			{
+				primitives.push_back(part->getPrimitive());
+
+				if (!world)
+					world = Workspace::getMyWorldFast(part.get());
+
+				RBXASSERT(world);
+			}
+		}
+
+		return world;
+	}
+
+	void DragUtilities::pvsToParts(const std::vector<PVInstance*>& pvInstances, std::vector<boost::weak_ptr<PartInstance>>& parts)
+	{
+		for (size_t i = 0; i < pvInstances.size(); i++)
+		{
+			PartInstance::findParts(pvInstances[i], parts);
+		}
+	}
+
+	void DragUtilities::unJoinAndSetDragging(const std::vector<boost::weak_ptr<PartInstance>>& parts)
+	{
+		unJoinFromOutsiders(parts);
+
+		for (size_t i = 0; i < parts.size(); i++)
+		{
+			boost::shared_ptr<PartInstance> part = parts[i].lock();
+			if (PartInstance::nonNullInWorkspace(part))
+				part->setDragging(true);
+		}
+	}
+
+	void DragUtilities::unJoinFromOutsiders(const std::vector<boost::weak_ptr<PartInstance>>& parts)
+	{
+		G3D::Array<Primitive*> primitives;
+		World* world = partsToPrimitives(parts, primitives);
+
+		if (world)
+			world->destroyJointsToWorld(primitives);
+	}
+
+	bool DragUtilities::hitObjectOrPlane(const ContactManager& contactManager, const G3D::Ray& unitSearchRay, const G3D::Array<Primitive*>* ignorePrims, G3D::Vector3& hit)
+	{
+		RBXASSERT(unitSearchRay.direction.isUnit());
+		G3D::Ray ray = MouseCommand::getSearchRay(unitSearchRay);
+
+		if (!contactManager.getHit(ray, toConstPrimitives(ignorePrims), NULL, hit))
+		{
+			if (!Math::intersectRayPlane(ray, G3D::Plane(G3D::Vector3::unitY(), G3D::Vector3::zero()), hit))
+			{
+				hit = G3D::Vector3::zero();
+				return false;
+			}
+		}
+
+		hit = Dragger::toGrid(hit);
+
+		return true;
+	}
+}

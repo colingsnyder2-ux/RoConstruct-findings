@@ -1,35 +1,165 @@
 // from server: 100% by auto
-// roc 2011-06 0053ff20  unit: G3D::MemoryManager  size: 99 bytes
-// Make this compile to the exact bytes below, then: roc check 2011-06 0053ff20
-//
-// 0053ff20  f30f106908           movss xmm5, dword ptr [ecx + 8]
-// 0053ff25  f30f105904           movss xmm3, dword ptr [ecx + 4]
-// 0053ff2a  8bc2                 mov eax, edx
-// 0053ff2c  8b542404             mov edx, dword ptr [esp + 4]
-// 0053ff30  f30f105208           movss xmm2, dword ptr [edx + 8]
-// 0053ff35  f30f106204           movss xmm4, dword ptr [edx + 4]
-// 0053ff3a  0f28cd               movaps xmm1, xmm5
-// 0053ff3d  f30f59cc             mulss xmm1, xmm4
-// 0053ff41  0f28c3               movaps xmm0, xmm3
-// 0053ff44  f30f59c2             mulss xmm0, xmm2
-// 0053ff48  f30f5cc1             subss xmm0, xmm1
-// 0053ff4c  f30f100a             movss xmm1, dword ptr [edx]
-// 0053ff50  f30f1100             movss dword ptr [eax], xmm0
-// 0053ff54  f30f1001             movss xmm0, dword ptr [ecx]
-// 0053ff58  0f28f1               movaps xmm6, xmm1
-// 0053ff5b  f30f59f5             mulss xmm6, xmm5
-// 0053ff5f  0f28e8               movaps xmm5, xmm0
-// 0053ff62  f30f59ea             mulss xmm5, xmm2
-// 0053ff66  f30f59c4             mulss xmm0, xmm4
-// 0053ff6a  f30f59cb             mulss xmm1, xmm3
-// 0053ff6e  f30f5cf5             subss xmm6, xmm5
-// 0053ff72  f30f5cc1             subss xmm0, xmm1
-// 0053ff76  f30f117004           movss dword ptr [eax + 4], xmm6
-// 0053ff7b  f30f114008           movss dword ptr [eax + 8], xmm0
-// 0053ff80  c20400               ret 4
-// library rbx2016-g3d/Capsule.cpp (function ?cross@Vector3@G3D@@QBI?AV12@ABV12@@Z)
-
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD /arch:SSE2 /fp:fast
 // roc-lib: rbx2016-g3d Capsule.cpp
+
+// Candidate translation unit (score above; library headers required).
+/**
+ @file Capsule.cpp
+  
+ @maintainer Morgan McGuire, http://graphics.cs.williams.edu
+
+ @created 2003-02-07
+ @edited  2005-08-18
+
+ Copyright 2000-2009, Morgan McGuire.
+ All rights reserved.
+ */
+
+#include "G3D/Capsule.h"
+#include "G3D/LineSegment.h"
+#include "G3D/Sphere.h"
+#include "G3D/CoordinateFrame.h"
+#include "G3D/Line.h"
+#include "G3D/AABox.h"
+
+namespace G3D {
+
+Capsule::Capsule() {
+}
+
+
+Capsule::Capsule(const Vector3& _p1, const Vector3& _p2, float _r) 
+	: p1(_p1), p2(_p2), _radius(_r) {
+}
+
+
+Line Capsule::axis() const {
+	return Line::fromTwoPoints(p1, p2);
+}
+
+
+float Capsule::volume() const {
+	return 
+		// Sphere volume
+		pow(_radius, 3) * pi() * 4 / 3 +
+
+		// Cylinder volume
+		pow(_radius, 2) * (p1 - p2).magnitude();
+}
+
+
+float Capsule::area() const {
+
+	return
+		// Sphere area
+		pow(_radius, 2) * 4 * pi() +
+
+		// Cylinder area
+		twoPi() * _radius * (p1 - p2).magnitude();
+}
+
+
+void Capsule::getBounds(AABox& out) const {
+    Vector3 min = p1.min(p2) - (Vector3(1, 1, 1) * _radius);
+    Vector3 max = p1.max(p2) + (Vector3(1, 1, 1) * _radius);
+
+    out = AABox(min, max);
+}
+
+
+bool Capsule::contains(const Vector3& p) const { 
+    return LineSegment::fromTwoPoints(p1, p2).distanceSquared(p) <= square(radius());
+}
+
+
+void Capsule::getRandomSurfacePoint(Vector3& p, Vector3& N) const {
+    float h = height();
+    float r = radius();
+
+    // Create a random point on a standard capsule and then rotate to the global frame.
+
+    // Relative areas
+    float capRelArea  = sqrt(r) / 2.0f;
+    float sideRelArea = r * h;
+
+    float r1 = uniformRandom(0, capRelArea * 2 + sideRelArea);
+
+    if (r1 < capRelArea * 2) {
+
+        // Select a point uniformly at random on a sphere
+        N = Sphere(Vector3::zero(), 1).randomSurfacePoint();
+        p = N * r;
+        p.y += sign(p.y) * h / 2.0f;
+    } else {
+        // Side
+        float a = uniformRandom(0, (float)twoPi());
+        N.x = cos(a);
+        N.y = 0;
+        N.z = sin(a);
+        p.x = N.x * r;
+        p.z = N.y * r;
+        p.y = uniformRandom(-h / 2.0f, h / 2.0f);
+    }
+
+    // Transform to world space
+    CoordinateFrame cframe;
+    getReferenceFrame(cframe);
+    
+    p = cframe.pointToWorldSpace(p);
+    N = cframe.normalToWorldSpace(N);
+}
+
+
+void Capsule::getReferenceFrame(CoordinateFrame& cframe) const {
+    cframe.translation = center();
+
+    Vector3 Y = (p1 - p2).direction();
+    Vector3 X = (abs(Y.dot(Vector3::unitX())) > 0.9) ? Vector3::unitY() : Vector3::unitX();
+    Vector3 Z = X.cross(Y).direction();
+    X = Y.cross(Z);        
+    cframe.rotation.setColumn(0, X);
+    cframe.rotation.setColumn(1, Y);
+    cframe.rotation.setColumn(2, Z);
+}
+
+
+Vector3 Capsule::randomInteriorPoint() const {
+    float h = height();
+    float r = radius();
+
+    // Create a random point in a standard capsule and then rotate to the global frame.
+
+    Vector3 p;
+
+    float hemiVolume = pi() * (r*r*r) * 4 / 6.0;
+    float cylVolume = pi() * square(r) * h;
+    
+    float r1 = uniformRandom(0, 2.0 * hemiVolume + cylVolume);
+
+    if (r1 < 2.0 * hemiVolume) {
+
+        p = Sphere(Vector3::zero(), r).randomInteriorPoint();
+
+        p.y += sign(p.y) * h / 2.0f;
+
+    } else {
+
+        // Select a point uniformly at random on a disk
+        float a = uniformRandom(0, (float)twoPi());
+        float r2 = sqrt(uniformRandom(0, 1)) * r;
+
+        p = Vector3(cos(a) * r2,
+                    uniformRandom(-h / 2.0f, h / 2.0f),
+                    sin(a) * r2);
+    }
+
+    // Transform to world space
+    CoordinateFrame cframe;
+    getReferenceFrame(cframe);
+    
+    return cframe.pointToWorldSpace(p);
+}
+
+} // namespace

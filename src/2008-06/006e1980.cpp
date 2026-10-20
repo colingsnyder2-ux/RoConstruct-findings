@@ -1,18 +1,46 @@
 // from server: 100% by auto
-// roc 2008-06 006e1980  unit: CXTPMDIFrameWnd  size: 28 bytes
-// Make this compile to the exact bytes below, then: roc check 2008-06 006e1980
-//
-// 006e1980  56                   push esi
-// 006e1981  8bf1                 mov esi, ecx
-// 006e1983  e8dca90d00           call 0x7bc364
-// 006e1988  c786ec00000000000000 mov dword ptr [esi + 0xec], 0
-// 006e1992  c706dc618500         mov dword ptr [esi], 0x8561dc
-// 006e1998  8bc6                 mov eax, esi
-// 006e199a  5e                   pop esi
-// 006e199b  c3                   ret 
-// library xtp-11.2.2/Source\CommandBars\XTPFrameWnd.cpp (function ??0?$CXTPFrameWndBase@VCMDIFrameWnd@@@@QAE@XZ)
-
 // roc-lang: cpp
 // roc-cl: 30729
 // roc-flags: /O2 /GS- /MD
 // roc-lib: xtp-11.2.2 Source/CommandBars/XTPFrameWnd.cpp
+
+// Candidate translation unit (score above; library headers required).
+// XTPFrameWnd.cpp : implementation for the CXTPFrameWnd and CXTPMDIFrameWnd classes.
+//
+// This file is a part of the XTREME COMMANDBARS MFC class library.
+// (c)1998-2007 Codejock Software, All Rights Reserved.
+//
+// THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
+// RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
+// CONSENT OF CODEJOCK SOFTWARE.
+//
+// THIS SOURCE CODE CAN ONLY BE USED UNDER THE TERMS AND CONDITIONS OUTLINED
+// IN THE XTREME TOOLKIT PRO LICENSE AGREEMENT. CODEJOCK SOFTWARE GRANTS TO
+// YOU (ONE SOFTWARE DEVELOPER) THE LIMITED RIGHT TO USE THIS SOFTWARE ON A
+// SINGLE COMPUTER.
+//
+// CONTACT INFORMATION:
+// support@codejock.com
+// http://www.codejock.com
+//
+/////////////////////////////////////////////////////////////////////////////
+
+#include "stdafx.h"
+
+#include "XTPFrameWnd.h"
+
+
+IMPLEMENT_DYNAMIC(CXTPFrameWnd, CFrameWnd)
+
+CXTPFrameWnd::CXTPFrameWnd()
+{
+
+}
+
+
+IMPLEMENT_DYNAMIC(CXTPMDIFrameWnd, CMDIFrameWnd)
+
+CXTPMDIFrameWnd::CXTPMDIFrameWnd()
+{
+
+}

@@ -1,60 +1,206 @@
 // from server: 100% by auto
-// roc 2011-06 00563640  unit: G3D::Random  size: 157 bytes
-// Make this compile to the exact bytes below, then: roc check 2011-06 00563640
-//
-// 00563640  83ec0c               sub esp, 0xc
-// 00563643  56                   push esi
-// 00563644  8bf1                 mov esi, ecx
-// 00563646  eb02                 jmp 0x56364a
-// 00563648  ddd8                 fstp st(0)
-// 0056364a  d9e8                 fld1 
-// 0056364c  8b06                 mov eax, dword ptr [esi]
-// 0056364e  8b5014               mov edx, dword ptr [eax + 0x14]
-// 00563651  83ec08               sub esp, 8
-// 00563654  d95c2404             fstp dword ptr [esp + 4]
-// 00563658  8bce                 mov ecx, esi
-// 0056365a  d90530eca600         fld dword ptr [0xa6ec30]
-// 00563660  d91c24               fstp dword ptr [esp]
-// 00563663  ffd2                 call edx
-// 00563665  8b06                 mov eax, dword ptr [esi]
-// 00563667  d95c2408             fstp dword ptr [esp + 8]
-// 0056366b  d9e8                 fld1 
-// 0056366d  8b5014               mov edx, dword ptr [eax + 0x14]
-// 00563670  83ec08               sub esp, 8
-// 00563673  d95c2404             fstp dword ptr [esp + 4]
-// 00563677  d90530eca600         fld dword ptr [0xa6ec30]
-// 0056367d  8bce                 mov ecx, esi
-// 0056367f  d91c24               fstp dword ptr [esp]
-// 00563682  ffd2                 call edx
-// 00563684  d9542404             fst dword ptr [esp + 4]
-// 00563688  f30f104c2408         movss xmm1, dword ptr [esp + 8]
-// 0056368e  f30f10442404         movss xmm0, dword ptr [esp + 4]
-// 00563694  0f28d1               movaps xmm2, xmm1
-// 00563697  f30f59c0             mulss xmm0, xmm0
-// 0056369b  f30f59d1             mulss xmm2, xmm1
-// 0056369f  f30f58c2             addss xmm0, xmm2
-// 005636a3  0f2f05143ba600       comiss xmm0, dword ptr [0xa63b14]
-// 005636aa  f30f1144240c         movss dword ptr [esp + 0xc], xmm0
-// 005636b0  7796                 ja 0x563648
-// 005636b2  d944240c             fld dword ptr [esp + 0xc]
-// 005636b6  5e                   pop esi
-// 005636b7  d9c0                 fld st(0)
-// 005636b9  d9ed                 fldln2 
-// 005636bb  d9c9                 fxch st(1)
-// 005636bd  d9f1                 fyl2x 
-// 005636bf  d80da0fba700         fmul dword ptr [0xa7fba0]
-// 005636c5  def1                 fdivrp st(1)
-// 005636c7  d9fa                 fsqrt 
-// 005636c9  dec9                 fmulp st(1)
-// 005636cb  d9442414             fld dword ptr [esp + 0x14]
-// 005636cf  dcc9                 fmul st(1), st(0)
-// 005636d1  dec9                 fmulp st(1)
-// 005636d3  d8442410             fadd dword ptr [esp + 0x10]
-// 005636d7  83c40c               add esp, 0xc
-// 005636da  c20800               ret 8
-// library rbx2016-g3d/Random.cpp (function ?gaussian@Random@G3D@@UAEMMM@Z)
-
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD /arch:SSE2 /fp:fast
 // roc-lib: rbx2016-g3d Random.cpp
+
+// Candidate translation unit (score above; library headers required).
+/**
+ @file Random.cpp
+ 
+ @maintainer Morgan McGuire, http://graphics.cs.williams.edu
+ 
+ @created 2009-01-02
+ @edited  2009-03-29
+
+ Copyright 2000-2009, Morgan McGuire.
+ All rights reserved.
+ */
+#include "G3D/Random.h"
+
+namespace G3D {
+
+Random& Random::common() {
+    static Random r;
+    return r;
+}
+
+Random::Random(void* x) : state(NULL){
+    (void)x;
+}
+
+
+Random::Random(uint32 seed){
+    const uint32 X = 1812433253UL;
+
+    state = new uint32[N];
+    state[0] = seed;
+    for (index = 1; index < (int)N; ++index) {
+        state[index] = X * (state[index - 1] ^ (state[index - 1] >> 30)) + index;
+    }
+}
+
+
+Random::~Random() {
+    delete[] state;
+    state = NULL;
+}
+
+
+uint32 Random::bits() {
+    // See http://en.wikipedia.org/wiki/Mersenne_twister
+
+    // Make a local copy of the index variable to ensure that it
+    // is not out of bounds
+    int localIndex = index;
+
+    // Automatically checks for index < 0 if corrupted
+    // by unsynchronized threads.
+    if ((unsigned int)localIndex >= (unsigned int)N) {
+        generate();
+        localIndex = 0;
+    }
+    // Increment the global index.  It may go out of bounds on
+    // multiple threads, but the above check ensures that the
+    // array index actually used never goes out of bounds.
+    // It doesn't matter if we grab the same array index twice
+    // on two threads, since the distribution of random numbers
+    // will still be uniform.
+    ++index;
+    // Return the next random in the sequence
+    uint32 r = state[localIndex];
+
+    // Temper the result
+    r ^=  r >> U;
+    r ^= (r << S) & B;
+    r ^= (r << T) & C;
+    r ^=  r >> L;
+    
+    return r;    
+}
+
+
+/** Generate the next N ints, and store them for readback later */
+void Random::generate() {
+    // Lower R bits
+    static const uint32 LOWER_MASK = (1LU << R) - 1;
+
+    // Upper (32 - R) bits
+    static const uint32 UPPER_MASK = 0xFFFFFFFF << R;
+    static const uint32 mag01[2] = {0UL, (uint32)A};
+
+    // First N - M
+    for (unsigned int i = 0; i < N - M; ++i) {    
+        uint32 x = (state[i] & UPPER_MASK) | (state[i + 1] & LOWER_MASK);
+        state[i] = state[i + M] ^ (x >> 1) ^ mag01[x & 1];
+    }
+
+    // Rest
+    for (unsigned int i = N - M + 1; i < N - 1; ++i) {    
+        uint32 x = (state[i] & UPPER_MASK) | (state[i + 1] & LOWER_MASK);
+        state[i] = state[i + (M - N)] ^ (x >> 1) ^ mag01[x & 1];
+    }
+        
+    uint32 y = (state[N - 1] & UPPER_MASK) | (state[0] & LOWER_MASK);
+    state[N - 1] = state[M - 1] ^ (y >> 1) ^ mag01[y & 1];
+    index = 0;
+
+}
+
+    
+int Random::integer(int low, int high) {
+    int r = iFloor(low + (high - low + 1) * (double)bits() / 0xFFFFFFFFUL);
+
+    // There is a *very small* chance of generating
+    // a number larger than high.
+    if (r > high) {
+        return high;
+    } else {
+        return r;
+    }
+}
+
+    
+float Random::gaussian(float mean, float stdev) {
+
+    // Using Box-Mueller method from http://www.taygeta.com/random/gaussian.html
+    // Modified to specify standard deviation and mean of distribution
+    float w, x1, x2;
+
+    // Loop until w is less than 1 so that log(w) is negative
+    do {
+        x1 = uniform(-1.0, 1.0);
+        x2 = uniform(-1.0, 1.0);
+
+        w = float(square(x1) + square(x2));
+    } while (w > 1.0f);
+
+    // Transform to gassian distribution
+    // Multiply by sigma (stdev ^ 2) and add mean.
+    return x2 * (float)square(stdev) * sqrtf((-2.0f * logf(w) ) / w) + mean; 
+}
+
+
+void Random::cosHemi(float& x, float& y, float& z) {
+    const float e1 = uniform();
+    const float e2 = uniform();
+
+    // Jensen's method 
+    const float sin_theta = sqrtf(1.0f - e1);
+    const float cos_theta = sqrtf(e1);
+    const float phi = 6.28318531f * e2;
+
+    x = cos(phi) * sin_theta;
+    y = sin(phi) * sin_theta;
+    z = cos_theta;
+
+    // We could also use Malley's method (pbrt p.657), since they are the same cost:
+    //
+    //  r = sqrt(e1);
+    //  t = 2*pi*e2;
+    //  x = cos(t)*r;
+    //  y = sin(t)*r;
+    //  z = sqrt(1.0 - x*x + y*y);
+}
+
+
+void Random::cosPowHemi(const float k, float& x, float& y, float& z) {
+    const float e1 = uniform();
+    const float e2 = uniform();
+
+    const float cos_theta = pow(e1, 1.0f / (k + 1.0f));
+    const float sin_theta = sqrtf(1.0f - square(cos_theta));
+    const float phi = 6.28318531f * e2;
+
+    x = cos(phi) * sin_theta;
+    y = sin(phi) * sin_theta;
+    z = cos_theta;
+}
+
+
+void Random::hemi(float& x, float& y, float& z) {
+    sphere(x, y, z);
+    z = fabsf(z);
+}
+
+
+void Random::sphere(float& x, float& y, float& z) {
+    // Squared magnitude
+    float m2;
+
+    // Rejection sample
+    do {
+        x = uniform() * 2.0f - 1.0f, 
+        y = uniform() * 2.0f - 1.0f,
+        z = uniform() * 2.0f - 1.0f;
+        m2 = x*x + y*y + z*z;
+    } while (m2 >= 1.0f);
+
+    // Divide by magnitude to produce a unit vector
+    float s = rsqrt(m2);
+    x *= s;
+    y *= s;
+    z *= s;
+}
+
+} // G3D

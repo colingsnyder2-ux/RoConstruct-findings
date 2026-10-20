@@ -1,92 +1,407 @@
-// roc 2009-06 005779e0  unit: G3D::LineSegment  size: 233 bytes
-// Make this compile to the exact bytes below, then: roc check 2009-06 005779e0
-//
-// 005779e0  d9442418             fld dword ptr [esp + 0x18]
-// 005779e4  b801000000           mov eax, 1
-// 005779e9  d9c0                 fld st(0)
-// 005779eb  d8c1                 fadd st(1)
-// 005779ed  d944240c             fld dword ptr [esp + 0xc]
-// 005779f1  d9c0                 fld st(0)
-// 005779f3  d9442408             fld dword ptr [esp + 8]
-// 005779f7  dce9                 fsub st(1), st(0)
-// 005779f9  d9c3                 fld st(3)
-// 005779fb  d8f2                 fdiv st(2)
-// 005779fd  d95c2418             fstp dword ptr [esp + 0x18]
-// 00577a01  d9442414             fld dword ptr [esp + 0x14]
-// 00577a05  d9c0                 fld st(0)
-// 00577a07  d9442410             fld dword ptr [esp + 0x10]
-// 00577a0b  dce9                 fsub st(1), st(0)
-// 00577a0d  d9ce                 fxch st(6)
-// 00577a0f  d8f1                 fdiv st(1)
-// 00577a11  d95c240c             fstp dword ptr [esp + 0xc]
-// 00577a15  d9ca                 fxch st(2)
-// 00577a17  dec4                 faddp st(4)
-// 00577a19  d9cb                 fxch st(3)
-// 00577a1b  def2                 fdivrp st(2)
-// 00577a1d  d9cb                 fxch st(3)
-// 00577a1f  dec2                 faddp st(2)
-// 00577a21  d9c9                 fxch st(1)
-// 00577a23  def2                 fdivrp st(2)
-// 00577a25  8405b8c8a300         test byte ptr [0xa3c8b8], al
-// 00577a2b  7513                 jne 0x577a40
-// 00577a2d  0905b8c8a300         or dword ptr [0xa3c8b8], eax
-// 00577a33  a144e58900           mov eax, dword ptr [0x89e544]
-// 00577a38  dd00                 fld qword ptr [eax]
-// 00577a3a  dd1db0c8a300         fstp qword ptr [0xa3c8b0]
-// 00577a40  dd05b0c8a300         fld qword ptr [0xa3c8b0]
-// 00577a46  d944241c             fld dword ptr [esp + 0x1c]
-// 00577a4a  d8d1                 fcom st(1)
-// 00577a4c  dfe0                 fnstsw ax
-// 00577a4e  ddd9                 fstp st(1)
-// 00577a50  d90594758b00         fld dword ptr [0x8b7594]
-// 00577a56  f6c401               test ah, 1
-// 00577a59  750e                 jne 0x577a69
-// 00577a5b  ddd9                 fstp st(1)
-// 00577a5d  d9c0                 fld st(0)
-// 00577a5f  d9cc                 fxch st(4)
-// 00577a61  d80dd0018c00         fmul dword ptr [0x8c01d0]
-// 00577a67  eb1a                 jmp 0x577a83
-// 00577a69  d9c1                 fld st(1)
-// 00577a6b  d8e5                 fsub st(5)
-// 00577a6d  d9c5                 fld st(5)
-// 00577a6f  d8c3                 fadd st(3)
-// 00577a71  d8f1                 fdiv st(1)
-// 00577a73  d9e0                 fchs 
-// 00577a75  d9ce                 fxch st(6)
-// 00577a77  decb                 fmulp st(3)
-// 00577a79  d9ca                 fxch st(2)
-// 00577a7b  dcc0                 fadd st(0), st(0)
-// 00577a7d  def2                 fdivrp st(2)
-// 00577a7f  d9c9                 fxch st(1)
-// 00577a81  d9e0                 fchs 
-// 00577a83  8b442404             mov eax, dword ptr [esp + 4]
-// 00577a87  d9442418             fld dword ptr [esp + 0x18]
-// 00577a8b  d918                 fstp dword ptr [eax]
-// 00577a8d  d9ee                 fldz 
-// 00577a8f  d95004               fst dword ptr [eax + 4]
-// 00577a92  d9500c               fst dword ptr [eax + 0xc]
-// 00577a95  d95010               fst dword ptr [eax + 0x10]
-// 00577a98  d9cb                 fxch st(3)
-// 00577a9a  d95808               fstp dword ptr [eax + 8]
-// 00577a9d  d944240c             fld dword ptr [esp + 0xc]
-// 00577aa1  d95814               fstp dword ptr [eax + 0x14]
-// 00577aa4  d9cb                 fxch st(3)
-// 00577aa6  d95818               fstp dword ptr [eax + 0x18]
-// 00577aa9  d9c9                 fxch st(1)
-// 00577aab  d9501c               fst dword ptr [eax + 0x1c]
-// 00577aae  d95020               fst dword ptr [eax + 0x20]
-// 00577ab1  d95024               fst dword ptr [eax + 0x24]
-// 00577ab4  d95030               fst dword ptr [eax + 0x30]
-// 00577ab7  d95034               fst dword ptr [eax + 0x34]
-// 00577aba  d9583c               fstp dword ptr [eax + 0x3c]
-// 00577abd  d9ca                 fxch st(2)
-// 00577abf  d95828               fstp dword ptr [eax + 0x28]
-// 00577ac2  d9582c               fstp dword ptr [eax + 0x2c]
-// 00577ac5  d95838               fstp dword ptr [eax + 0x38]
-// 00577ac8  c3                   ret 
-// library g3d-6.09-rbx2008/G3Dcpp\Matrix4.cpp (function ?perspectiveProjection@Matrix4@G3D@@SA?AV12@MMMMMM@Z)
-
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD /fp:fast
 // roc-lib: g3d-6.09-rbx2008 G3Dcpp/Matrix4.cpp
+
+// Candidate translation unit (score above; library headers required).
+/**
+  @file Matrix4.cpp
+ 
+ 
+  @maintainer Morgan McGuire, matrix@graphics3d.com
+
+  @created 2003-10-02
+  @edited  2006-01-05
+ */
+
+#include "G3D/platform.h"
+#include "G3D/Matrix4.h"
+#include "G3D/Vector4.h"
+#include "G3D/BinaryInput.h"
+#include "G3D/BinaryOutput.h"
+#include "G3D/CoordinateFrame.h"
+
+namespace G3D {
+
+const Matrix4& Matrix4::identity() {
+    static Matrix4 m(
+        1, 0, 0, 0,
+        0, 1, 0, 0,
+        0, 0, 1, 0,
+        0, 0, 0, 1);
+    return m;
+}
+
+const Matrix4& Matrix4::zero() {
+    static Matrix4 m(
+        0, 0, 0, 0,
+        0, 0, 0, 0,
+        0, 0, 0, 0,
+        0, 0, 0, 0);
+    return m;
+}
+
+// Deprecated.
+const Matrix4 Matrix4::IDENTITY
+  = Matrix4(1, 0, 0, 0,
+            0, 1, 0, 0,
+            0, 0, 1, 0,
+            0, 0, 0, 1);
+
+const Matrix4 Matrix4::ZERO
+  = Matrix4(0, 0, 0, 0,
+            0, 0, 0, 0,
+            0, 0, 0, 0,
+            0, 0, 0, 0);
+
+Matrix4::Matrix4(const class CoordinateFrame& cframe) {
+    for (int r = 0; r < 3; ++r) {
+        for (int c = 0; c < 3; ++c) {
+            elt[r][c] = cframe.rotation[r][c];
+        }
+        elt[r][3] = cframe.translation[r];
+    }
+    elt[3][0] = 0.0f;
+    elt[3][1] = 0.0f;
+    elt[3][2] = 0.0f;
+    elt[3][3] = 1.0f;
+}
+
+
+Matrix4 Matrix4::orthogonalProjection(
+    float            left,
+    float            right,
+    float            bottom,
+    float            top,
+    float            nearval,
+    float            farval) {
+
+    // Adapted from Mesa
+    float x, y, z;
+    float tx,  ty, tz;
+
+    x = 2.0f / (right-left);
+    y = 2.0f / (top-bottom);
+    z = -2.0f / (farval-nearval);
+    tx = -(right+left) / (right-left);
+    ty = -(top+bottom) / (top-bottom);
+    tz = -(farval+nearval) / (farval-nearval);
+
+    return 
+        Matrix4( x , 0.0f, 0.0f,  tx,
+                0.0f,  y , 0.0f,  ty,
+                0.0f, 0.0f,  z ,  tz,
+                0.0f, 0.0f, 0.0f, 1.0f);
+}
+
+
+Matrix4 Matrix4::perspectiveProjection(
+    float left,    
+    float right,
+    float bottom,  
+    float top,
+    float nearval, 
+    float farval) {
+
+    float x, y, a, b, c, d;
+
+    x = (2.0f*nearval) / (right-left);
+    y = (2.0f*nearval) / (top-bottom);
+    a = (right+left) / (right-left);
+    b = (top+bottom) / (top-bottom);
+
+    if ((float)farval >= (float)inf()) {
+       // Infinite view frustum
+       c = -1.0f;
+       d = -2.0f * nearval;
+    } else {
+       c = -(farval+nearval) / (farval-nearval);
+       d = -(2.0f*farval*nearval) / (farval-nearval);
+    }
+
+    return Matrix4(
+        x,  0,  a,  0,
+        0,  y,  b,  0,
+        0,  0,  c,  d,
+        0,  0, -1,  0);
+}
+
+
+Matrix4::Matrix4(
+    float r1c1, float r1c2, float r1c3, float r1c4,
+    float r2c1, float r2c2, float r2c3, float r2c4,
+    float r3c1, float r3c2, float r3c3, float r3c4,
+    float r4c1, float r4c2, float r4c3, float r4c4) {
+    elt[0][0] = r1c1;  elt[0][1] = r1c2;  elt[0][2] = r1c3;  elt[0][3] = r1c4;
+    elt[1][0] = r2c1;  elt[1][1] = r2c2;  elt[1][2] = r2c3;  elt[1][3] = r2c4;
+    elt[2][0] = r3c1;  elt[2][1] = r3c2;  elt[2][2] = r3c3;  elt[2][3] = r3c4;
+    elt[3][0] = r4c1;  elt[3][1] = r4c2;  elt[3][2] = r4c3;  elt[3][3] = r4c4;
+}
+
+/**
+ init should be <B>row major</B>.
+ */
+Matrix4::Matrix4(const float* init) {
+    for (int r = 0; r < 4; ++r) {
+        for (int c = 0; c < 4; ++c) {
+            elt[r][c] = init[r * 4 + c];
+        }
+    }
+}
+
+
+Matrix4::Matrix4(const double* init) {
+    for (int r = 0; r < 4; ++r) {
+        for (int c = 0; c < 4; ++c) {
+            elt[r][c] = (float)init[r * 4 + c];
+        }
+    }
+}
+
+
+Matrix4::Matrix4() {
+    for (int r = 0; r < 4; ++r) {
+        for (int c = 0; c < 4; ++c) {
+            elt[r][c] = 0;
+        }
+    }
+}
+
+
+void Matrix4::setRow(int r, const Vector4& v) {
+    for (int c = 0; c < 4; ++c) {
+        elt[r][c] = v[c];
+    }
+}
+
+
+void Matrix4::setColumn(int c, const Vector4& v) {
+    for (int r = 0; r < 4; ++r) {
+        elt[r][c] = v[r];
+    }
+}
+
+
+Vector4 Matrix4::getRow(int r) const {
+    Vector4 v;
+    for (int c = 0; c < 4; ++c) {
+        v[c] = elt[r][c];
+    }
+    return v;
+}
+
+
+
+Vector4 Matrix4::getColumn(int c) const {
+    Vector4 v;
+    for (int r = 0; r < 4; ++r) {
+        v[r] = elt[r][c];
+    }
+    return v;
+}
+
+
+Matrix4 Matrix4::operator*(const Matrix4& other) const {
+    Matrix4 result;
+    for (int r = 0; r < 4; ++r) {
+        for (int c = 0; c < 4; ++c) {
+            for (int i = 0; i < 4; ++i) {
+                result.elt[r][c] += elt[r][i] * other.elt[i][c];
+            }
+        }
+    }
+
+    return result;
+}
+
+
+Matrix4 Matrix4::operator*(const float s) const {
+    Matrix4 result;
+    for (int r = 0; r < 4; ++r) {
+        for (int c = 0; c < 4; ++c) {
+            result.elt[r][c] = elt[r][c] * s;
+        }
+    }
+
+    return result;
+}
+
+
+Vector4 Matrix4::operator*(const Vector4& vector) const {
+    Vector4 result(0,0,0,0);
+    for (int r = 0; r < 4; ++r) {
+        for (int c = 0; c < 4; ++c) {
+            result[r] += elt[r][c] * vector[c];
+        }
+    }
+
+    return result;
+}
+
+
+Matrix4 Matrix4::transpose() const {
+    Matrix4 result;
+    for (int r = 0; r < 4; ++r) {
+        for (int c = 0; c < 4; ++c) {
+            result.elt[c][r] = elt[r][c];
+        }
+    }
+
+    return result;
+}
+
+
+bool Matrix4::operator!=(const Matrix4& other) const {
+    return ! (*this == other);
+}
+
+
+bool Matrix4::operator==(const Matrix4& other) const {
+
+    // If the bit patterns are identical, they must be
+    // the same matrix.  If not, they *might* still have
+    // equal elements due to floating point weirdness.
+    if (memcmp(this, &other, sizeof(Matrix4) == 0)) {
+        return true;
+    } 
+
+    for (int r = 0; r < 4; ++r) {
+        for (int c = 0; c < 4; ++c) {
+            if (elt[r][c] != other.elt[r][c]) {
+                return false;
+            }
+        }
+    }
+
+    return true;
+}
+
+
+float Matrix4::determinant() const {
+    // Determinant is the dot product of the first row and the first row
+    // of cofactors (i.e. the first col of the adjoint matrix)
+	return cofactor().getRow(0).dot(getRow(0));
+}
+
+
+Matrix4 Matrix4::adjoint() const {
+    return cofactor().transpose();
+}
+
+
+Matrix4 Matrix4::inverse() const {
+    // Inverse = adjoint / determinant
+
+    Matrix4 A = adjoint();
+
+    // Determinant is the dot product of the first row and the first row
+    // of cofactors (i.e. the first col of the adjoint matrix)
+	float det = A.getColumn(0).dot(getRow(0));
+
+	return A * (1.0f / det);
+}
+
+
+Matrix4 Matrix4::cofactor() const {
+	Matrix4 out;
+
+    // We'll use i to incrementally compute -1 ^ (r+c)
+    int i = 1;
+
+    for (int r = 0; r < 4; ++r) {
+        for (int c = 0; c < 4; ++c) {
+            // Compute the determinant of the 3x3 submatrix
+            float det = subDeterminant(r, c);
+            out.elt[r][c] = i * det;
+            i = -i;
+        }
+        i = -i;
+    }
+
+    return out;
+}
+
+
+float Matrix4::subDeterminant(int excludeRow, int excludeCol) const {
+    // Compute non-excluded row and column indices
+    int row[3];
+    int col[3];
+
+    for (int i = 0; i < 3; ++i) {
+        row[i] = i;
+        col[i] = i;
+
+        if (i >= excludeRow) {
+            ++row[i];
+        }
+        if (i >= excludeCol) {
+            ++col[i];
+        }
+    }
+
+    // Compute the first row of cofactors 
+    float cofactor00 = 
+      elt[row[1]][col[1]] * elt[row[2]][col[2]] -
+      elt[row[1]][col[2]] * elt[row[2]][col[1]];
+
+    float cofactor10 = 
+      elt[row[1]][col[2]] * elt[row[2]][col[0]] -
+      elt[row[1]][col[0]] * elt[row[2]][col[2]];
+
+    float cofactor20 = 
+      elt[row[1]][col[0]] * elt[row[2]][col[1]] -
+      elt[row[1]][col[1]] * elt[row[2]][col[0]];
+
+    // Product of the first row and the cofactors along the first row
+    return
+      elt[row[0]][col[0]] * cofactor00 +
+      elt[row[0]][col[1]] * cofactor10 +
+      elt[row[0]][col[2]] * cofactor20;
+}
+
+
+CoordinateFrame Matrix4::approxCoordinateFrame() const {
+	CoordinateFrame cframe;
+
+	for (int r = 0; r < 3; ++r) {
+		for (int c = 0; c < 3; ++c) {
+			cframe.rotation[r][c] = elt[r][c];
+		}
+		cframe.translation[r] = elt[r][3];
+	}
+
+	// Ensure that the rotation matrix is orthonormal
+	cframe.rotation.orthonormalize();
+
+	return cframe;
+}
+
+
+void Matrix4::serialize(class BinaryOutput& b) const {
+    for (int r = 0; r < 4; ++r) {
+        for (int c = 0; c < 4; ++c) {
+            b.writeFloat32(elt[r][c]);
+        }
+    }
+}
+
+
+void Matrix4::deserialize(class BinaryInput& b) {
+    for (int r = 0; r < 4; ++r) {
+        for (int c = 0; c < 4; ++c) {
+            elt[r][c] = b.readFloat32();
+        }
+    }
+}
+
+std::string Matrix4::toString() const {
+    return G3D::format("[%g, %g, %g, %g; %g, %g, %g, %g; %g, %g, %g, %g; %g, %g, %g, %g]", 
+			elt[0][0], elt[0][1], elt[0][2], elt[0][3],
+			elt[1][0], elt[1][1], elt[1][2], elt[1][3],
+			elt[2][0], elt[2][1], elt[2][2], elt[2][3],
+			elt[3][0], elt[3][1], elt[3][2], elt[3][3]);
+}
+
+} // namespace
+
+

@@ -1,116 +1,368 @@
-// roc 2007-03 0047e9d0  unit: seg_00470000  size: 413 bytes
-// Make this compile to the exact bytes below, then: roc check 2007-03 0047e9d0
-//
-// 0047e9d0  a128828b00           mov eax, dword ptr [0x8b8228]
-// 0047e9d5  50                   push eax
-// 0047e9d6  c605d6b1880000       mov byte ptr [0x88b1d6], 0
-// 0047e9dd  e80ef71900           call 0x61e0f0
-// 0047e9e2  8b0d64828b00         mov ecx, dword ptr [0x8b8264]
-// 0047e9e8  51                   push ecx
-// 0047e9e9  e802f71900           call 0x61e0f0
-// 0047e9ee  8b1558828b00         mov edx, dword ptr [0x8b8258]
-// 0047e9f4  52                   push edx
-// 0047e9f5  e8f6f61900           call 0x61e0f0
-// 0047e9fa  a140828b00           mov eax, dword ptr [0x8b8240]
-// 0047e9ff  50                   push eax
-// 0047ea00  e8ebf61900           call 0x61e0f0
-// 0047ea05  8b0d5c828b00         mov ecx, dword ptr [0x8b825c]
-// 0047ea0b  51                   push ecx
-// 0047ea0c  e8dff61900           call 0x61e0f0
-// 0047ea11  8b15f0818b00         mov edx, dword ptr [0x8b81f0]
-// 0047ea17  52                   push edx
-// 0047ea18  e8d3f61900           call 0x61e0f0
-// 0047ea1d  a1ec818b00           mov eax, dword ptr [0x8b81ec]
-// 0047ea22  50                   push eax
-// 0047ea23  e8c8f61900           call 0x61e0f0
-// 0047ea28  8b0df4818b00         mov ecx, dword ptr [0x8b81f4]
-// 0047ea2e  51                   push ecx
-// 0047ea2f  e8bcf61900           call 0x61e0f0
-// 0047ea34  8b150c828b00         mov edx, dword ptr [0x8b820c]
-// 0047ea3a  52                   push edx
-// 0047ea3b  e8b0f61900           call 0x61e0f0
-// 0047ea40  a134828b00           mov eax, dword ptr [0x8b8234]
-// 0047ea45  50                   push eax
-// 0047ea46  e8a5f61900           call 0x61e0f0
-// 0047ea4b  8b0d20828b00         mov ecx, dword ptr [0x8b8220]
-// 0047ea51  51                   push ecx
-// 0047ea52  e899f61900           call 0x61e0f0
-// 0047ea57  8b1514828b00         mov edx, dword ptr [0x8b8214]
-// 0047ea5d  52                   push edx
-// 0047ea5e  e88df61900           call 0x61e0f0
-// 0047ea63  a1f8818b00           mov eax, dword ptr [0x8b81f8]
-// 0047ea68  50                   push eax
-// 0047ea69  e882f61900           call 0x61e0f0
-// 0047ea6e  8b0d30828b00         mov ecx, dword ptr [0x8b8230]
-// 0047ea74  51                   push ecx
-// 0047ea75  e876f61900           call 0x61e0f0
-// 0047ea7a  8b1550828b00         mov edx, dword ptr [0x8b8250]
-// 0047ea80  52                   push edx
-// 0047ea81  e86af61900           call 0x61e0f0
-// 0047ea86  a154828b00           mov eax, dword ptr [0x8b8254]
-// 0047ea8b  50                   push eax
-// 0047ea8c  e85ff61900           call 0x61e0f0
-// 0047ea91  8b0de0818b00         mov ecx, dword ptr [0x8b81e0]
-// 0047ea97  83c440               add esp, 0x40
-// 0047ea9a  51                   push ecx
-// 0047ea9b  e850f61900           call 0x61e0f0
-// 0047eaa0  8b1508828b00         mov edx, dword ptr [0x8b8208]
-// 0047eaa6  52                   push edx
-// 0047eaa7  e844f61900           call 0x61e0f0
-// 0047eaac  a1e8818b00           mov eax, dword ptr [0x8b81e8]
-// 0047eab1  50                   push eax
-// 0047eab2  e839f61900           call 0x61e0f0
-// 0047eab7  8b0d4c828b00         mov ecx, dword ptr [0x8b824c]
-// 0047eabd  51                   push ecx
-// 0047eabe  e82df61900           call 0x61e0f0
-// 0047eac3  8b1548828b00         mov edx, dword ptr [0x8b8248]
-// 0047eac9  52                   push edx
-// 0047eaca  e821f61900           call 0x61e0f0
-// 0047eacf  a1e4818b00           mov eax, dword ptr [0x8b81e4]
-// 0047ead4  50                   push eax
-// 0047ead5  e816f61900           call 0x61e0f0
-// 0047eada  8b0d00828b00         mov ecx, dword ptr [0x8b8200]
-// 0047eae0  51                   push ecx
-// 0047eae1  e80af61900           call 0x61e0f0
-// 0047eae6  8b15fc818b00         mov edx, dword ptr [0x8b81fc]
-// 0047eaec  52                   push edx
-// 0047eaed  e8fef51900           call 0x61e0f0
-// 0047eaf2  a11c828b00           mov eax, dword ptr [0x8b821c]
-// 0047eaf7  50                   push eax
-// 0047eaf8  e8f3f51900           call 0x61e0f0
-// 0047eafd  8b0d04828b00         mov ecx, dword ptr [0x8b8204]
-// 0047eb03  51                   push ecx
-// 0047eb04  e8e7f51900           call 0x61e0f0
-// 0047eb09  8b1560828b00         mov edx, dword ptr [0x8b8260]
-// 0047eb0f  52                   push edx
-// 0047eb10  e8dbf51900           call 0x61e0f0
-// 0047eb15  a124828b00           mov eax, dword ptr [0x8b8224]
-// 0047eb1a  50                   push eax
-// 0047eb1b  e8d0f51900           call 0x61e0f0
-// 0047eb20  8b0d10828b00         mov ecx, dword ptr [0x8b8210]
-// 0047eb26  51                   push ecx
-// 0047eb27  e8c4f51900           call 0x61e0f0
-// 0047eb2c  8b1568828b00         mov edx, dword ptr [0x8b8268]
-// 0047eb32  52                   push edx
-// 0047eb33  e8b8f51900           call 0x61e0f0
-// 0047eb38  a144828b00           mov eax, dword ptr [0x8b8244]
-// 0047eb3d  50                   push eax
-// 0047eb3e  e8adf51900           call 0x61e0f0
-// 0047eb43  8b0d38828b00         mov ecx, dword ptr [0x8b8238]
-// 0047eb49  51                   push ecx
-// 0047eb4a  e8a1f51900           call 0x61e0f0
-// 0047eb4f  8b152c828b00         mov edx, dword ptr [0x8b822c]
-// 0047eb55  83c440               add esp, 0x40
-// 0047eb58  52                   push edx
-// 0047eb59  e892f51900           call 0x61e0f0
-// 0047eb5e  a118828b00           mov eax, dword ptr [0x8b8218]
-// 0047eb63  50                   push eax
-// 0047eb64  e887f51900           call 0x61e0f0
-// 0047eb69  83c408               add esp, 8
-// 0047eb6c  c3                   ret 
-// library rbxgs-g3d/GLG3Dcpp\TextureFormat.cpp (function ??1TextureFormatCleanup@G3D@@QAE@XZ)
-
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD /arch:SSE2 /fp:fast
 // roc-lib: rbxgs-g3d GLG3Dcpp/TextureFormat.cpp
+
+// Candidate translation unit (score above; library headers required).
+/**
+ @file TextureFormat.cpp
+ 
+ @maintainer Morgan McGuire, morgan@graphics3d.com
+ 
+ @created 2003-05-23
+ @edited  2006-01-11
+ */
+
+#include "GLG3D/TextureFormat.h"
+#include "GLG3D/glheaders.h"
+#include "GLG3D/glcalls.h"
+
+namespace G3D {
+static bool INT = false;
+static bool FLOAT = true;
+static bool OPAQUEx = true;
+ 
+const TextureFormat* TextureFormat::L8        = new TextureFormat(1, false, GL_LUMINANCE8, GL_LUMINANCE, 8, 0, 0, 0, 0, 0, 0, 8, 8, OPAQUEx, INT, TextureFormat::CODE_L8, TextureFormat::COLOR_SPACE_NONE);
+
+const TextureFormat* TextureFormat::L16       = new TextureFormat(1, false, GL_LUMINANCE16, GL_LUMINANCE, 16, 0, 0, 0, 0, 0, 0, 16, 16, OPAQUEx, INT, TextureFormat::CODE_L16, TextureFormat::COLOR_SPACE_NONE);
+
+const TextureFormat* TextureFormat::L16F      = new TextureFormat(1, false, GL_LUMINANCE16F_ARB, GL_LUMINANCE, 16, 0, 0, 0, 0, 0, 0, 16, 16, OPAQUEx, FLOAT, TextureFormat::CODE_L16F, TextureFormat::COLOR_SPACE_NONE);
+
+const TextureFormat* TextureFormat::L32F      = new TextureFormat(1, false, GL_LUMINANCE32F_ARB, GL_LUMINANCE, 32, 0, 0, 0, 0, 0, 0, 32, 32, OPAQUEx, FLOAT, TextureFormat::CODE_L32F, TextureFormat::COLOR_SPACE_NONE);
+
+const TextureFormat* TextureFormat::A8        = new TextureFormat(1, false, GL_ALPHA8, GL_ALPHA, 0, 8, 0, 0, 0, 0, 0, 8, 8, !OPAQUEx, INT, TextureFormat::CODE_A8, TextureFormat::COLOR_SPACE_NONE);
+
+const TextureFormat* TextureFormat::A16       = new TextureFormat(1, false, GL_ALPHA16, GL_ALPHA, 0, 16, 0, 0, 0, 0, 0, 16, 16, !OPAQUEx, INT, TextureFormat::CODE_A16, TextureFormat::COLOR_SPACE_NONE);
+
+const TextureFormat* TextureFormat::A16F      = new TextureFormat(1, false, GL_ALPHA16F_ARB, GL_ALPHA, 0, 16, 0, 0, 0, 0, 0, 16, 16, !OPAQUEx, FLOAT, TextureFormat::CODE_A16F, TextureFormat::COLOR_SPACE_NONE);
+
+const TextureFormat* TextureFormat::A32F      = new TextureFormat(1, false, GL_ALPHA32F_ARB, GL_ALPHA, 0, 32, 0, 0, 0, 0, 0, 32, 32, !OPAQUEx, FLOAT, TextureFormat::CODE_A32F, TextureFormat::COLOR_SPACE_NONE);
+
+const TextureFormat* TextureFormat::LA4       = new TextureFormat(2, false, GL_LUMINANCE4_ALPHA4, GL_LUMINANCE_ALPHA, 4, 4, 0, 0, 0, 0, 0, 8, 8, !OPAQUEx, INT, TextureFormat::CODE_LA4, TextureFormat::COLOR_SPACE_NONE);
+ 
+const TextureFormat* TextureFormat::LA8       = new TextureFormat(2, false, GL_LUMINANCE8_ALPHA8, GL_LUMINANCE_ALPHA, 8, 8, 0, 0, 0, 0, 0, 16, 16, !OPAQUEx, INT, TextureFormat::CODE_LA8, TextureFormat::COLOR_SPACE_NONE);
+
+const TextureFormat* TextureFormat::LA16      = new TextureFormat(2, false, GL_LUMINANCE16_ALPHA16, GL_LUMINANCE_ALPHA, 16, 16, 0, 0, 0, 0, 0, 16*2, 16*2, !OPAQUEx, INT, TextureFormat::CODE_LA16, TextureFormat::COLOR_SPACE_NONE);
+
+const TextureFormat* TextureFormat::LA16F     = new TextureFormat(2, false, GL_LUMINANCE_ALPHA16F_ARB, GL_LUMINANCE_ALPHA, 16, 16, 0, 0, 0, 0, 0, 16*2, 16*2, !OPAQUEx, FLOAT, TextureFormat::CODE_LA16F, TextureFormat::COLOR_SPACE_NONE);
+
+const TextureFormat* TextureFormat::LA32F     = new TextureFormat(2, false, GL_LUMINANCE_ALPHA32F_ARB, GL_LUMINANCE_ALPHA, 32, 32, 0, 0, 0, 0, 0, 32*2, 32*2, !OPAQUEx, FLOAT, TextureFormat::CODE_LA32F, TextureFormat::COLOR_SPACE_NONE);
+
+const TextureFormat* TextureFormat::RGB5      = new TextureFormat(3, false, GL_RGB5, GL_RGBA, 0, 0, 5, 5, 5, 0, 0, 16, 16, OPAQUEx, INT, TextureFormat::CODE_RGB5, TextureFormat::COLOR_SPACE_RGB);
+
+const TextureFormat* TextureFormat::RGB5A1    = new TextureFormat(4, false, GL_RGB5_A1, GL_RGBA, 0, 1, 5, 5, 5, 0, 0, 16, 16, OPAQUEx, INT, TextureFormat::CODE_RGB5A1, TextureFormat::COLOR_SPACE_RGB);
+
+const TextureFormat* TextureFormat::RGB8      = new TextureFormat(3, false, GL_RGB8, GL_RGB, 0, 0, 8, 8, 8, 0, 0, 24, 32, OPAQUEx, INT, TextureFormat::CODE_RGB8, TextureFormat::COLOR_SPACE_RGB);
+
+const TextureFormat* TextureFormat::RGB16     = new TextureFormat(3, false, GL_RGB16, GL_RGB, 0, 0, 16, 16, 16, 0, 0, 16*3, 16*3, OPAQUEx, INT, TextureFormat::CODE_RGB16, TextureFormat::COLOR_SPACE_RGB);
+
+const TextureFormat* TextureFormat::RGB16F    = new TextureFormat(3, false, GL_RGB16F_ARB, GL_RGB, 0, 0, 16, 16, 16, 0, 0, 16*3, 16*3, OPAQUEx, FLOAT, TextureFormat::CODE_RGB16F, TextureFormat::COLOR_SPACE_RGB);
+
+const TextureFormat* TextureFormat::RGB32F    = new TextureFormat(3, false, GL_RGB32F_ARB, GL_RGB, 0, 0, 32, 32, 32, 0, 0, 32*3, 32*3, OPAQUEx, FLOAT, TextureFormat::CODE_RGB32F, TextureFormat::COLOR_SPACE_RGB);
+
+const TextureFormat* TextureFormat::RGBA8     = new TextureFormat(4, false, GL_RGBA8, GL_RGBA, 0, 8, 8, 8, 8, 0, 0, 32, 32, false, INT, TextureFormat::CODE_RGBA8, TextureFormat::COLOR_SPACE_RGB);
+
+const TextureFormat* TextureFormat::RGBA16    = new TextureFormat(4, false, GL_RGBA16, GL_RGBA, 0, 16, 16, 16, 16, 0, 0, 16*4, 16*4, false, INT, TextureFormat::CODE_RGBA16, TextureFormat::COLOR_SPACE_RGB);
+
+const TextureFormat* TextureFormat::RGBA16F   = new TextureFormat(4, false, GL_RGBA16F_ARB, GL_RGBA, 0, 16, 16, 16, 16, 0, 0, 16*4, 16*4, false, FLOAT, TextureFormat::CODE_RGB16F, TextureFormat::COLOR_SPACE_RGB);
+
+const TextureFormat* TextureFormat::RGBA32F   = new TextureFormat(4, false, GL_RGBA32F_ARB, GL_RGBA, 0, 32, 32, 32, 32, 0, 0, 32*4, 32*4, false, FLOAT, TextureFormat::CODE_RGBA32F, TextureFormat::COLOR_SPACE_RGB);
+
+const TextureFormat* TextureFormat::RGB_DXT1  = new TextureFormat(3, true, GL_COMPRESSED_RGB_S3TC_DXT1_EXT, GL_RGB, 0, 0, 0, 0, 0, 0, 0, 64, 64, OPAQUEx, INT, TextureFormat::CODE_RGB_DXT1, TextureFormat::COLOR_SPACE_RGB);
+
+const TextureFormat* TextureFormat::RGBA_DXT1 = new TextureFormat(4, true, GL_COMPRESSED_RGBA_S3TC_DXT1_EXT, GL_RGBA, 0, 0, 0, 0, 0, 0, 0, 64, 64, !OPAQUEx, INT, TextureFormat::CODE_RGBA_DXT1, TextureFormat::COLOR_SPACE_RGB);
+
+const TextureFormat* TextureFormat::RGBA_DXT3 = new TextureFormat(4, true, GL_COMPRESSED_RGBA_S3TC_DXT3_EXT, GL_RGBA, 0, 0, 0, 0, 0, 0, 0, 128, 128, !OPAQUEx, INT, TextureFormat::CODE_RGBA_DXT3, TextureFormat::COLOR_SPACE_RGB);
+
+const TextureFormat* TextureFormat::RGBA_DXT5 = new TextureFormat(4, true, GL_COMPRESSED_RGBA_S3TC_DXT5_EXT, GL_RGBA, 0, 0, 0, 0, 0, 0, 0, 128, 128, !OPAQUEx, INT, TextureFormat::CODE_RGBA_DXT5, TextureFormat::COLOR_SPACE_RGB);
+
+const TextureFormat* TextureFormat::DEPTH16   = new TextureFormat(1, false, GL_DEPTH_COMPONENT16_ARB, GL_DEPTH_COMPONENT, 0, 0, 0, 0, 0, 0, 16, 16, 16, !OPAQUEx, INT, TextureFormat::CODE_DEPTH16, TextureFormat::COLOR_SPACE_NONE);
+
+const TextureFormat* TextureFormat::DEPTH24   = new TextureFormat(1, false, GL_DEPTH_COMPONENT24_ARB, GL_DEPTH_COMPONENT, 0, 0, 0, 0, 0, 0, 24, 32, 24, !OPAQUEx, INT, TextureFormat::CODE_DEPTH24, TextureFormat::COLOR_SPACE_NONE);
+
+const TextureFormat* TextureFormat::DEPTH32   = new TextureFormat(1, false, GL_DEPTH_COMPONENT32_ARB, GL_DEPTH_COMPONENT, 0, 0, 0, 0, 0, 0, 32, 32, 32, !OPAQUEx, INT, TextureFormat::CODE_DEPTH32, TextureFormat::COLOR_SPACE_NONE);
+
+// These formats are for use with Renderbuffers only!
+const TextureFormat* TextureFormat::STENCIL1 = new TextureFormat(1, false, GL_STENCIL_INDEX1_EXT, GL_STENCIL_INDEX_EXT, 0, 0, 0, 0, 0, 0, 1, 1, 1, !OPAQUEx, INT, TextureFormat::CODE_STENCIL1, TextureFormat::COLOR_SPACE_NONE);
+	
+const TextureFormat* TextureFormat::STENCIL4 = new TextureFormat(1, false, GL_STENCIL_INDEX4_EXT, GL_STENCIL_INDEX_EXT, 0, 0, 0, 0, 0, 0, 4, 4, 4, !OPAQUEx, INT, TextureFormat::CODE_STENCIL4, TextureFormat::COLOR_SPACE_NONE);
+	
+const TextureFormat* TextureFormat::STENCIL8 = new TextureFormat(1, false, GL_STENCIL_INDEX8_EXT, GL_STENCIL_INDEX_EXT, 0, 0, 0, 0, 0, 0, 8, 8, 8, !OPAQUEx, INT, TextureFormat::CODE_STENCIL8, TextureFormat::COLOR_SPACE_NONE);
+	
+const TextureFormat* TextureFormat::STENCIL16 = new TextureFormat(1, false, GL_STENCIL_INDEX16_EXT, GL_STENCIL_INDEX_EXT, 0, 0, 0, 0, 0, 0, 16, 16, 16, !OPAQUEx, INT, TextureFormat::CODE_STENCIL16, TextureFormat::COLOR_SPACE_NONE);
+
+const TextureFormat* TextureFormat::AUTO      = NULL;
+
+bool TextureFormat::valid = true;
+
+const TextureFormat* TextureFormat::depth(int depthBits) {
+
+    if (depthBits == SAME_AS_SCREEN) {
+        // Detect screen depth
+        depthBits = glGetInteger(GL_DEPTH_BITS);
+    }
+
+    switch (depthBits) {
+    case 16:
+        return DEPTH16;
+
+    case 24:
+        return DEPTH24;
+
+    case 32:
+        return DEPTH32;
+
+    default:
+        debugAssertM(false, "Depth must be 16, 24, or 32.");
+        return DEPTH32;
+    }
+}
+
+const TextureFormat* TextureFormat::stencil(int bits) {
+
+    if (bits == SAME_AS_SCREEN) {
+        // Detect screen depth
+        bits = glGetInteger(GL_STENCIL_BITS);
+    }
+
+    switch (bits) {
+    case 1:
+        return STENCIL1;
+
+    case 4:
+        return STENCIL4;
+
+    case 8:
+        return STENCIL8;
+
+    case 16:
+        return STENCIL16;
+
+    default:
+        debugAssertM(false, "Stencil must be 1, 4, 8 or 16.");
+        return STENCIL16;
+    }
+}
+
+const TextureFormat* fromCode(TextureFormat::Code code) {
+    switch (code) {
+    case TextureFormat::CODE_L8:
+        return TextureFormat::L8;
+        break;
+    case TextureFormat::CODE_L16:
+        return TextureFormat::L16;
+        break;
+    case TextureFormat::CODE_L16F:
+        return TextureFormat::L16F;
+        break;
+    case TextureFormat::CODE_L32F:
+        return TextureFormat::L32F;
+        break;
+
+    case TextureFormat::CODE_A8:
+        return TextureFormat::A8;
+        break;
+    case TextureFormat::CODE_A16:
+        return TextureFormat::A16;
+        break;
+    case TextureFormat::CODE_A16F:
+        return TextureFormat::A16F;
+        break;
+    case TextureFormat::CODE_A32F:
+        return TextureFormat::A32F;
+        break;
+
+    case TextureFormat::CODE_LA4:
+        return TextureFormat::LA4;
+        break;
+    case TextureFormat::CODE_LA8:
+        return TextureFormat::LA8;
+        break;
+    case TextureFormat::CODE_LA16:
+        return TextureFormat::LA16;
+        break;
+    case TextureFormat::CODE_LA16F:
+        return TextureFormat::LA16F;
+        break;
+    case TextureFormat::CODE_LA32F:
+        return TextureFormat::LA32F;
+        break;
+
+    case TextureFormat::CODE_RGB5:
+        return TextureFormat::RGB5;
+        break;
+    case TextureFormat::CODE_RGB5A1:
+        return TextureFormat::RGB5A1;
+        break;
+    case TextureFormat::CODE_RGB8:
+        return TextureFormat::RGB8;
+        break;
+    case TextureFormat::CODE_RGB16:
+        return TextureFormat::RGB16;
+        break;
+    case TextureFormat::CODE_RGB16F:
+        return TextureFormat::RGB16F;
+        break;
+    case TextureFormat::CODE_RGB32F:
+        return TextureFormat::RGB32F;
+        break;
+
+    case TextureFormat::CODE_ARGB8:
+        debugAssertM(TextureFormat::AUTO, "Unsupported TextureFormat at decoding.");
+        return TextureFormat::AUTO;
+        break;
+    case TextureFormat::CODE_BGR8:
+        debugAssertM(TextureFormat::AUTO, "Unsupported TextureFormat at decoding.");
+        return TextureFormat::AUTO;
+        break;
+
+    case TextureFormat::CODE_RGBA8:
+        return TextureFormat::RGBA8;
+        break;
+    case TextureFormat::CODE_RGBA16:
+        return TextureFormat::RGBA16;
+        break;
+    case TextureFormat::CODE_RGBA16F:
+        return TextureFormat::RGBA16F;
+        break;
+    case TextureFormat::CODE_RGBA32F:
+        return TextureFormat::RGBA32F;
+        break;
+
+    case TextureFormat::CODE_BAYER_RGGB8:
+    case TextureFormat::CODE_BAYER_GRBG8:
+    case TextureFormat::CODE_BAYER_GBRG8:
+    case TextureFormat::CODE_BAYER_BGGR8:
+    case TextureFormat::CODE_BAYER_RGGB32F:
+    case TextureFormat::CODE_BAYER_GRBG32F:
+    case TextureFormat::CODE_BAYER_GBRG32F:
+    case TextureFormat::CODE_BAYER_BGGR32F:
+
+    case TextureFormat::CODE_HSV8:
+    case TextureFormat::CODE_HSV32F:
+
+    case TextureFormat::CODE_YUV8:
+    case TextureFormat::CODE_YUV32F:
+        debugAssertM(TextureFormat::AUTO, "Unsupported TextureFormat at decoding.");
+        return TextureFormat::AUTO;
+        break;
+
+    case TextureFormat::CODE_RGB_DXT1:
+        return TextureFormat::RGB_DXT1;
+        break;
+    case TextureFormat::CODE_RGBA_DXT1:
+        return TextureFormat::RGBA_DXT1;
+        break;
+    case TextureFormat::CODE_RGBA_DXT3:
+        return TextureFormat::RGBA_DXT3;
+        break;
+    case TextureFormat::CODE_RGBA_DXT5:
+        return TextureFormat::RGBA_DXT5;
+        break;
+
+    case TextureFormat::CODE_DEPTH16:
+        return TextureFormat::DEPTH16;
+        break;
+    case TextureFormat::CODE_DEPTH24:
+        return TextureFormat::DEPTH24;
+        break;
+    case TextureFormat::CODE_DEPTH32:
+        return TextureFormat::DEPTH32;
+        break;
+
+    case TextureFormat::CODE_STENCIL1:
+        return TextureFormat::STENCIL1;
+        break;
+    case TextureFormat::CODE_STENCIL4:
+        return TextureFormat::STENCIL4;
+        break;
+    case TextureFormat::CODE_STENCIL8:
+        return TextureFormat::STENCIL8;
+        break;
+    case TextureFormat::CODE_STENCIL16:
+        return TextureFormat::STENCIL16;
+        break;
+
+    default:
+        return NULL;
+    }
+}
+
+
+static class TextureFormatCleanup {
+public:
+
+	~TextureFormatCleanup() {
+		TextureFormat::valid = false;
+
+        delete const_cast<TextureFormat*>(TextureFormat::L8);
+
+        delete const_cast<TextureFormat*>(TextureFormat::L16);
+
+        delete const_cast<TextureFormat*>(TextureFormat::L16F);
+    
+        delete const_cast<TextureFormat*>(TextureFormat::L32F);
+
+        delete const_cast<TextureFormat*>(TextureFormat::A8);
+
+        delete const_cast<TextureFormat*>(TextureFormat::A16);
+
+        delete const_cast<TextureFormat*>(TextureFormat::A16F);
+    
+        delete const_cast<TextureFormat*>(TextureFormat::A32F);
+
+        delete const_cast<TextureFormat*>(TextureFormat::LA4);
+
+        delete const_cast<TextureFormat*>(TextureFormat::LA8);
+
+        delete const_cast<TextureFormat*>(TextureFormat::LA16);
+
+        delete const_cast<TextureFormat*>(TextureFormat::LA16F);
+    
+        delete const_cast<TextureFormat*>(TextureFormat::LA32F);
+
+        delete const_cast<TextureFormat*>(TextureFormat::RGB5);
+
+        delete const_cast<TextureFormat*>(TextureFormat::RGB5A1);
+
+        delete const_cast<TextureFormat*>(TextureFormat::RGB8);
+
+        delete const_cast<TextureFormat*>(TextureFormat::RGB16);
+
+        delete const_cast<TextureFormat*>(TextureFormat::RGB16F);
+
+        delete const_cast<TextureFormat*>(TextureFormat::RGB32F);
+
+        delete const_cast<TextureFormat*>(TextureFormat::RGBA8);
+
+        delete const_cast<TextureFormat*>(TextureFormat::RGBA16);
+
+        delete const_cast<TextureFormat*>(TextureFormat::RGBA16F);
+    
+        delete const_cast<TextureFormat*>(TextureFormat::RGBA32F);
+    
+        delete const_cast<TextureFormat*>(TextureFormat::RGB_DXT1);
+
+        delete const_cast<TextureFormat*>(TextureFormat::RGBA_DXT1);
+
+        delete const_cast<TextureFormat*>(TextureFormat::RGBA_DXT3);
+
+        delete const_cast<TextureFormat*>(TextureFormat::RGBA_DXT5);
+
+        delete const_cast<TextureFormat*>(TextureFormat::DEPTH16);
+
+        delete const_cast<TextureFormat*>(TextureFormat::DEPTH24);
+
+        delete const_cast<TextureFormat*>(TextureFormat::DEPTH32);
+
+        delete const_cast<TextureFormat*>(TextureFormat::STENCIL1);
+
+        delete const_cast<TextureFormat*>(TextureFormat::STENCIL4);
+
+        delete const_cast<TextureFormat*>(TextureFormat::STENCIL8);
+
+        delete const_cast<TextureFormat*>(TextureFormat::STENCIL16);
+	}
+} _textureFormatCleanup;
+
+}

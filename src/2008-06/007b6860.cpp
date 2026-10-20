@@ -1,47 +1,189 @@
 // from server: 100% by auto
-// roc 2008-06 007b6860  unit: G3D::Sky  size: 127 bytes
-// Make this compile to the exact bytes below, then: roc check 2008-06 007b6860
-//
-// 007b6860  d9ee                 fldz 
-// 007b6862  56                   push esi
-// 007b6863  8bf1                 mov esi, ecx
-// 007b6865  d9563c               fst dword ptr [esi + 0x3c]
-// 007b6868  d95640               fst dword ptr [esi + 0x40]
-// 007b686b  8d8e88000000         lea ecx, [esi + 0x88]
-// 007b6871  d95644               fst dword ptr [esi + 0x44]
-// 007b6874  d95650               fst dword ptr [esi + 0x50]
-// 007b6877  d95654               fst dword ptr [esi + 0x54]
-// 007b687a  d95658               fst dword ptr [esi + 0x58]
-// 007b687d  d9565c               fst dword ptr [esi + 0x5c]
-// 007b6880  d95660               fst dword ptr [esi + 0x60]
-// 007b6883  d95664               fst dword ptr [esi + 0x64]
-// 007b6886  d95668               fst dword ptr [esi + 0x68]
-// 007b6889  d9566c               fst dword ptr [esi + 0x6c]
-// 007b688c  d95670               fst dword ptr [esi + 0x70]
-// 007b688f  d95674               fst dword ptr [esi + 0x74]
-// 007b6892  d95678               fst dword ptr [esi + 0x78]
-// 007b6895  d95e7c               fstp dword ptr [esi + 0x7c]
-// 007b6898  e8331accff           call 0x4782d0
-// 007b689d  8d8eb8000000         lea ecx, [esi + 0xb8]
-// 007b68a3  e8281accff           call 0x4782d0
-// 007b68a8  d9ee                 fldz 
-// 007b68aa  d996e8000000         fst dword ptr [esi + 0xe8]
-// 007b68b0  83ec08               sub esp, 8
-// 007b68b3  d996ec000000         fst dword ptr [esi + 0xec]
-// 007b68b9  8bce                 mov ecx, esi
-// 007b68bb  d99ef0000000         fstp dword ptr [esi + 0xf0]
-// 007b68c1  d905a05b8700         fld dword ptr [0x875ba0]
-// 007b68c7  c6464c01             mov byte ptr [esi + 0x4c], 1
-// 007b68cb  d99ef4000000         fstp dword ptr [esi + 0xf4]
-// 007b68d1  d9ee                 fldz 
-// 007b68d3  dd1c24               fstp qword ptr [esp]
-// 007b68d6  e8d5f0ffff           call 0x7b59b0
-// 007b68db  8bc6                 mov eax, esi
-// 007b68dd  5e                   pop esi
-// 007b68de  c3                   ret 
-// library g3d-6.09/GLG3Dcpp\LightingParameters.cpp (function ??0LightingParameters@G3D@@QAE@XZ)
-
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD
 // roc-lib: g3d-6.09 GLG3Dcpp/LightingParameters.cpp
+
+// Candidate translation unit (score above; library headers required).
+/*
+ @file LightingParameters.cpp
+
+ @maintainer Morgan McGuire, matrix@graphics3d.com
+ @created 2002-10-05
+ @edited  2006-06-28
+ */
+
+#include "GLG3D/LightingParameters.h"
+#include "G3D/Matrix3.h"
+#include "G3D/spline.h"
+#include "G3D/GLight.h"
+#include <sys/timeb.h>
+#include <sys/types.h> 
+
+#ifndef _MSC_VER
+   #define _timeb timeb
+   #define _ftime ftime
+#endif
+#ifdef _MSC_VER
+#   pragma warning(push)
+#   pragma warning(disable : 4305)
+#endif
+
+namespace G3D {
+
+static const double sunRiseAndSetTime = HOUR / 2;
+static const double solarYear = 365.2564*DAY;
+static const double halfSolarYear = 182.6282;
+static const double moonPhaseInterval = DAY*29.53;
+
+// Tilt amount from the ecliptic
+static const double earthTilt = toRadians(23.5);
+static const double moonTilt = toRadians(5);
+
+// (very rough) Initial star offset on Jan 1 1970 midnight
+static const double initialStarRot = 1;
+
+// Initial moon phase on Jan 1 1970 midnight
+static const double initialMoonPhase = 0.75;
+
+LightingParameters::LightingParameters() {
+	physicallyCorrect = true;
+	setLatitude(BROWN_UNIVERSITY_LATITUDE);
+	setTime(0);
+}
+
+
+LightingParameters::LightingParameters(
+    const GameTime              _time,
+    bool 						_physicallyCorrect,
+	float                       _latitude) {
+	physicallyCorrect = _physicallyCorrect;
+	setLatitude(_latitude);
+	setTime(_time);
+}
+
+void LightingParameters::setLatitude(float _latitude) {
+	geoLatitude = _latitude;
+}
+
+void LightingParameters::setTime(const GameTime _time) {
+    // wrap to a 1 day interval
+    double time = _time - floor(_time / DAY) * DAY;
+
+    // Calculate starfield coordinate frame
+    double starRot = initialStarRot - (2*G3D_PI*(_time - (_time*floor(_time / SIDEREAL_DAY)))/SIDEREAL_DAY);
+    float aX, aY, aZ;
+    starVec.x = cos(starRot);
+    starVec.y = 0;
+    starVec.z = sin(starRot);
+    
+    starFrame.lookAt(starVec, Vector3::unitY());
+    trueStarFrame.lookAt(starVec, Vector3::unitY());
+	trueStarFrame.rotation.toEulerAnglesXYZ(aX, aY, aZ);
+    aX -= geoLatitude;
+    trueStarFrame.rotation = Matrix3::fromEulerAnglesXYZ(aX, aY, aZ);
+    
+    // sunAngle = 0 at midnight
+    float sourceAngle = 2 * (float)G3D_PI * time / DAY;
+    
+    // Calculate fake solar and lunar positions
+    sunPosition.x = sin(sourceAngle);
+    sunPosition.y = -cos(sourceAngle);
+    sunPosition.z = 0;
+
+    moonPosition.x = sin(sourceAngle + (float)G3D_PI);
+    moonPosition.y = -cos(sourceAngle + (float)G3D_PI);
+    moonPosition.z = 0;
+
+    // Calculate "true" solar and lunar positions
+    // These positions will always be somewhat wrong 
+	// unless _time is equal to real world GMT time,
+    // and the current longitude is equal to zero. Also, 
+    // I'm assuming that the equinox-solstice interval 
+	// occurs exactly every 90 days, which isn't exactly
+	// correct.
+	// In addition, the precession of the moon's orbit is
+	// not taken into account, but this should only account
+	// for a 5 degree margin of error at most.
+    
+	float dayOfYearOffset = (_time - (_time*floor(_time / solarYear)))/DAY;
+    moonPhase = floor(_time / moonPhaseInterval) + initialMoonPhase;
+
+	float latRad = toRadians(geoLatitude);
+	float sunOffset = -earthTilt*cos(G3D_PI*(dayOfYearOffset-halfSolarYear)/halfSolarYear) - latRad;
+	float moonOffset = ((-earthTilt+moonTilt)*sin(moonPhase*4)) - latRad;
+	float curMoonPhase = (moonPhase*G3D_PI*2);
+
+    Matrix3 rotMat = Matrix3::fromAxisAngle(Vector3::unitZ().cross(sunPosition), sunOffset);
+    trueSunPosition = rotMat * sunPosition;
+    
+	Vector3 trueMoon = Vector3(sin(curMoonPhase + sourceAngle), 
+			                   -cos(curMoonPhase + sourceAngle), 
+							   0);
+    rotMat = Matrix3::fromAxisAngle(Vector3::unitZ().cross(trueMoon), moonOffset);
+	trueMoonPosition = rotMat * trueMoon;
+
+    // Determine which light source we observe.
+    if (!physicallyCorrect) {
+        if ((sourceAngle < (G3D_PI / 2)) || (sourceAngle > (3 * G3D_PI / 2))) {
+            source = MOON;
+            sourceAngle += (float)G3D_PI;
+        } else {
+            source = SUN;
+        }
+ 
+        lightDirection.x = sin(sourceAngle);
+        lightDirection.y = -cos(sourceAngle);
+        lightDirection.z = 0;
+    } else if (trueSunPosition.y > -.3f) {
+	    // The sun is always the stronger light source. When using
+	    // physically correct parameters, the sun and moon will
+	    // occasionally be in the visible sky at the same time.
+		source = SUN;
+		lightDirection = trueSunPosition;
+	} else {
+		source = MOON;
+		lightDirection = trueMoonPosition;
+	}
+    
+    const Color3 dayAmbient = Color3::white() * .40f;
+    const Color3 dayDiffuse = Color3::white() * .75f;
+
+    {
+        static const double times[] = {MIDNIGHT,               SUNRISE - HOUR,         SUNRISE,              SUNRISE + sunRiseAndSetTime / 4,  SUNRISE + sunRiseAndSetTime,    SUNSET - sunRiseAndSetTime,     SUNSET - sunRiseAndSetTime / 2, SUNSET,                SUNSET + HOUR/2,       DAY};
+        static const Color3 color[] = {Color3(.2f, .2f, .2f),  Color3(.1f, .1, .1),    Color3(0,0,0),        Color3(.6, .6, 0),                dayDiffuse,                     dayDiffuse,                   Color3(.1, .1, .075),           Color3(.1, .05, .05),  Color3(.1, .1, .1), Color3(.2, .2, .2)};
+        lightColor = linearSpline(time, times, color, 10);
+    }
+
+    {
+        static const double times[] = {MIDNIGHT,               SUNRISE - HOUR,         SUNRISE,              SUNRISE + sunRiseAndSetTime / 4, SUNRISE + sunRiseAndSetTime, SUNSET - sunRiseAndSetTime,   SUNSET - sunRiseAndSetTime / 2, SUNSET,   SUNSET + HOUR/2,     DAY};
+        static const Color3 color[] = {Color3(0, .1, .3),      Color3(0, .0, .1),      Color3(0,0,0),        Color3(0,0,0),                   dayAmbient,  dayAmbient,   Color3(.5, .2, .2),             Color3(.05, .05, .1),                     Color3(0, .0, .1),   Color3(0, .1, .3)};
+        ambient = linearSpline(time, times, color, 10);
+    }
+
+    {
+        static const double times[] = {MIDNIGHT,               SUNRISE - HOUR,         SUNRISE,              SUNRISE + sunRiseAndSetTime / 2, SUNRISE + sunRiseAndSetTime, SUNSET - sunRiseAndSetTime, SUNSET - sunRiseAndSetTime / 2, SUNSET,               SUNSET + HOUR/2, DAY};
+        static const Color3 color[] = {Color3(.2, .2, .3),    Color3(.05, .06, .07),  Color3(.08, .08, .01),  Color3(1,1,1) *.75,              Color3(1,1,1) * .75,         Color3(1,1,1) * .35,        Color3(.5, .2, .2),             Color3(.05, .05, .1),   Color3(.06, .06, .07), Color3(.1, .1, .17)};
+        diffuseAmbient = linearSpline(time, times, color, 10);
+    }
+
+    {
+        static const double times[] = {MIDNIGHT,               SUNRISE - HOUR,         SUNRISE - HOUR/2,      SUNRISE,                       SUNRISE + sunRiseAndSetTime,  SUNSET - sunRiseAndSetTime, SUNSET,                  SUNSET + HOUR/3,     DAY};
+        static const Color3 color[] = {Color3(0,0,0),          Color3(0,0,0),          Color3(.2, .15, .01),   Color3(.2, .15, .01),           Color3(1,1,1),                Color3(1,1,1),              Color3(.4, .2, .05),     Color3(0,0,0),       Color3(0,0,0)};
+        skyAmbient = linearSpline(time, times, color, 8);
+    }
+
+    emissiveScale = Color3::white();
+}
+
+
+GLight LightingParameters::directionalLight() const {
+    return GLight::directional(lightDirection, lightColor);
+}
+
+}
+
+#ifdef _MSC_VER
+#   pragma warning(pop)
+#endif
+

@@ -1,54 +1,129 @@
-// roc 2009-12 006bee30  unit: RBX::VInstance::?$NonFactoryProduct  size: 118 bytes
-// Make this compile to the exact bytes below, then: roc check 2009-12 006bee30
-//
-// 006bee30  83ec08               sub esp, 8
-// 006bee33  56                   push esi
-// 006bee34  8b742410             mov esi, dword ptr [esp + 0x10]
-// 006bee38  57                   push edi
-// 006bee39  8bf9                 mov edi, ecx
-// 006bee3b  56                   push esi
-// 006bee3c  8d4c2410             lea ecx, [esp + 0x10]
-// 006bee40  8974240c             mov dword ptr [esp + 0xc], esi
-// 006bee44  e887f1ffff           call 0x6bdfd0
-// 006bee49  56                   push esi
-// 006bee4a  8d442410             lea eax, [esp + 0x10]
-// 006bee4e  56                   push esi
-// 006bee4f  50                   push eax
-// 006bee50  e83b5c1900           call 0x854a90
-// 006bee55  8d4c2414             lea ecx, [esp + 0x14]
-// 006bee59  83c40c               add esp, 0xc
-// 006bee5c  3bcf                 cmp ecx, edi
-// 006bee5e  7406                 je 0x6bee66
-// 006bee60  8b542408             mov edx, dword ptr [esp + 8]
-// 006bee64  8917                 mov dword ptr [edi], edx
-// 006bee66  8b7704               mov esi, dword ptr [edi + 4]
-// 006bee69  8b44240c             mov eax, dword ptr [esp + 0xc]
-// 006bee6d  894704               mov dword ptr [edi + 4], eax
-// 006bee70  85f6                 test esi, esi
-// 006bee72  742a                 je 0x6bee9e
-// 006bee74  8d4e04               lea ecx, [esi + 4]
-// 006bee77  83caff               or edx, 0xffffffff
-// 006bee7a  f00fc111             lock xadd dword ptr [ecx], edx
-// 006bee7e  751e                 jne 0x6bee9e
-// 006bee80  8b06                 mov eax, dword ptr [esi]
-// 006bee82  8b5004               mov edx, dword ptr [eax + 4]
-// 006bee85  8bce                 mov ecx, esi
-// 006bee87  ffd2                 call edx
-// 006bee89  8d4608               lea eax, [esi + 8]
-// 006bee8c  83c9ff               or ecx, 0xffffffff
-// 006bee8f  f00fc108             lock xadd dword ptr [eax], ecx
-// 006bee93  7509                 jne 0x6bee9e
-// 006bee95  8b16                 mov edx, dword ptr [esi]
-// 006bee97  8b4208               mov eax, dword ptr [edx + 8]
-// 006bee9a  8bce                 mov ecx, esi
-// 006bee9c  ffd0                 call eax
-// 006bee9e  5f                   pop edi
-// 006bee9f  5e                   pop esi
-// 006beea0  83c408               add esp, 8
-// 006beea3  c20400               ret 4
-// library rbxgs/script\Script.cpp (function ??$reset@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@?$shared_ptr@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@boost@@QAEXPAV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@Z)
-
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
 // roc-lib: rbxgs script/Script.cpp
+
+// Candidate translation unit (score above; library headers required).
+#include "script/Script.h"
+#include "script/ScriptContext.h"
+#include "v8tree/Service.h"
+#include "boost/thread/once.hpp"
+
+using namespace RBX;
+
+const Reflection::PropDescriptor<Script, std::string> Script::prop_EmbeddedSourceCode("Source", "Data", &Script::getEmbeddedCode, &Script::setEmbeddedCode, Reflection::PropertyDescriptor::LEGACY);
+const Reflection::PropDescriptor<Script, ContentId> Script::prop_SourceCodeId("LinkedSource", "Data", &Script::getScriptId, &Script::setScriptId, Reflection::PropertyDescriptor::LEGACY);
+Reflection::BoundProp<bool, true> Script::prop_Disabled("Disabled", "Behavior", &Script::disabled, Reflection::PropertyDescriptor::STANDARD);
+
+static boost::shared_ptr<const std::string> helloWorld;
+static boost::once_flag flagInitScriptCpp = BOOST_ONCE_INIT;
+
+void initScriptCpp()
+{
+    helloWorld.reset(new std::string("print(\"Hello world!\")\r\n"));
+}
+
+const char* RBX::sScript = "Script";
+
+Script::Script()
+    : DescribedCreatable("Script"),
+      disabled(false),
+      owner(NULL)
+{
+    boost::call_once(&initScriptCpp, flagInitScriptCpp);
+    embeddedSource = helloWorld;
+}
+
+const char* RBX::sLocalScript = "LocalScript";
+
+LocalScript::LocalScript()
+{
+    setName("LocalScript");
+}
+
+Script::~Script()
+{
+    RBXASSERT(owner == NULL);
+}
+
+void Script::setEmbeddedCode(const std::string& value)
+{
+    if (getEmbeddedCode() != value)
+    {
+        embeddedSource.reset(new std::string(value));
+        raisePropertyChanged(prop_EmbeddedSourceCode);
+    }
+}
+
+void Script::setScriptId(const ContentId& value)
+{
+    if (getScriptId() != value)
+    {
+        scriptId = value;
+        requestCode();
+        raisePropertyChanged(prop_SourceCodeId);
+    }
+}
+
+void Script::onAncestorChanged(const AncestorChanged& event)
+{
+    Instance::onAncestorChanged(event);
+
+    IScriptOwner* newOwner = NULL;
+    Instance* parent = this->getParent();
+
+    while (parent)
+    {
+        IScriptOwner* parentOwner = dynamic_cast<IScriptOwner*>(parent);
+
+        if (parentOwner)
+        {
+            newOwner = parentOwner->scriptShouldRun(this);
+
+            if (newOwner)
+                break;
+        }
+
+        parent = parent->getParent();
+    }
+
+    if (newOwner != owner)
+    {
+        if (owner)
+            owner->releaseScript(this);
+
+        owner = newOwner;
+
+        ScriptContext* sc = ServiceProvider::find<ScriptContext>(this);
+
+        if (sc)
+        {
+            sc->removeScript(this);
+
+            if (owner)
+                owner->runScript(this, sc);
+        }
+    }
+}
+
+void Script::onServiceProvider(const ServiceProvider* oldProvider, const ServiceProvider* newProvider)
+{
+	if (ScriptContext* sc = ServiceProvider::find<ScriptContext>(oldProvider))
+	{
+		sc->removeScript(this);
+	}
+
+	Instance::onServiceProvider(oldProvider, newProvider);
+}
+
+boost::shared_ptr<const std::string> Script::requestCode()
+{
+    if (scriptId.isNull())
+    {
+        return embeddedSource;
+    }
+    else 
+    {
+        return ContentProvider::singleton().requestContentString(scriptId);
+    }
+}

@@ -1,47 +1,246 @@
-// roc 2007-03 00616850  unit: seg_00610000  size: 110 bytes
-// Make this compile to the exact bytes below, then: roc check 2007-03 00616850
-//
-// 00616850  d9ee                 fldz 
-// 00616852  33c0                 xor eax, eax
-// 00616854  56                   push esi
-// 00616855  8bf1                 mov esi, ecx
-// 00616857  8906                 mov dword ptr [esi], eax
-// 00616859  d95618               fst dword ptr [esi + 0x18]
-// 0061685c  894604               mov dword ptr [esi + 4], eax
-// 0061685f  d9561c               fst dword ptr [esi + 0x1c]
-// 00616862  894608               mov dword ptr [esi + 8], eax
-// 00616865  d95e20               fstp dword ptr [esi + 0x20]
-// 00616868  89460c               mov dword ptr [esi + 0xc], eax
-// 0061686b  894610               mov dword ptr [esi + 0x10], eax
-// 0061686e  894614               mov dword ptr [esi + 0x14], eax
-// 00616871  894624               mov dword ptr [esi + 0x24], eax
-// 00616874  c7462806000000       mov dword ptr [esi + 0x28], 6
-// 0061687b  e85011edff           call 0x4e79d0
-// 00616880  d900                 fld dword ptr [eax]
-// 00616882  d95e2c               fstp dword ptr [esi + 0x2c]
-// 00616885  d94004               fld dword ptr [eax + 4]
-// 00616888  d95e30               fstp dword ptr [esi + 0x30]
-// 0061688b  d94008               fld dword ptr [eax + 8]
-// 0061688e  d95e34               fstp dword ptr [esi + 0x34]
-// 00616891  e83a11edff           call 0x4e79d0
-// 00616896  d900                 fld dword ptr [eax]
-// 00616898  8d4e44               lea ecx, [esi + 0x44]
-// 0061689b  d95e38               fstp dword ptr [esi + 0x38]
-// 0061689e  d94004               fld dword ptr [eax + 4]
-// 006168a1  d95e3c               fstp dword ptr [esi + 0x3c]
-// 006168a4  d94008               fld dword ptr [eax + 8]
-// 006168a7  d95e40               fstp dword ptr [esi + 0x40]
-// 006168aa  e84154eeff           call 0x4fbcf0
-// 006168af  d9ee                 fldz 
-// 006168b1  8bc6                 mov eax, esi
-// 006168b3  d95664               fst dword ptr [esi + 0x64]
-// 006168b6  d95668               fst dword ptr [esi + 0x68]
-// 006168b9  d95e6c               fstp dword ptr [esi + 0x6c]
-// 006168bc  5e                   pop esi
-// 006168bd  c3                   ret 
-// library rbxgs/tool\RunDragger.cpp (function ??0RunDragger@RBX@@QAE@XZ)
-
 // roc-lang: cpp
 // roc-cl: 50727
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
 // roc-lib: rbxgs tool/RunDragger.cpp
+
+// Candidate translation unit (score above; library headers required).
+#include "tool/RunDragger.h"
+#include "tool/Dragger.h"
+#include "v8datamodel/PartInstance.h"
+#include "v8datamodel/Filters.h"
+#include "v8datamodel/Surfaces.h"
+#include "v8datamodel/MouseCommand.h"
+#include "v8datamodel/Workspace.h"
+#include "v8world/Primitive.h"
+#include "v8world/Contact.h"
+#include "v8world/ContactManager.h"
+
+namespace RBX
+{
+	void RunDragger::SnapInfo::updateSurfaceFromHit()
+	{
+		G3D::Vector3 hitInSnap = snap->getCoordinateFrame().pointToObjectSpace(hitWorld);
+		Extents snapExtents = snap->getExtentsLocal();
+
+		surface = snapExtents.closestFace(hitInSnap);
+	}
+
+	void RunDragger::SnapInfo::updateHitFromSurface(const G3D::Ray& mouseRay)
+	{
+		Extents snapExtents = snap->getExtentsLocal();
+		const G3D::CoordinateFrame& cframe = snap->getCoordinateFrame();
+
+		G3D::Ray rayInSnap = cframe.toObjectSpace(mouseRay);
+		G3D::Plane plane = snapExtents.getPlane(surface);
+		G3D::Vector3 hitInSnap;
+
+		if (Math::intersectRayPlane(rayInSnap, plane, hitInSnap))
+		{
+			hitWorld = cframe.pointToWorldSpace(hitInSnap);
+		}
+		else
+		{
+			RBXASSERT(0);
+			Math::intersectRayPlane(rayInSnap, plane, hitInSnap);
+		}
+	}
+
+	float RunDragger::SnapInfo::hitOutsideExtents()
+	{
+		Extents snapExtents = snap->getExtentsLocal();
+		G3D::Vector3 hitInSnap = snap->getCoordinateFrame().pointToObjectSpace(hitWorld);
+		G3D::Vector3 clipInSnap = hitInSnap.clamp(snapExtents.min(), snapExtents.max());
+
+		return (hitInSnap - clipInSnap).magnitude();
+	}
+
+	RunDragger::RunDragger()
+		: workspace(NULL),
+		  drag(NULL)
+	{
+	}
+
+	RunDragger::~RunDragger() {}
+
+	bool RunDragger::adjacent(Primitive* p0, Primitive* p1)
+	{
+		for (Contact* current = p0->getFirstContact(); current != NULL; current = p0->getNextContact(current))
+		{
+			if (current->otherPrimitive(p0) == p1)
+				return current->computeIsAdjacent(0.01f);
+		}
+
+		return false;
+	}
+
+	bool RunDragger::tooCloseToCamera()
+	{
+		return (drag->getCoordinateFrame().pointToWorldSpace(dragPointLocal) - mouseRay.origin).magnitude() < 6.0f;
+	}
+
+	void RunDragger::rotatePart(PartInstance* part)
+	{
+		RBXASSERT(part);
+
+		G3D::CoordinateFrame rotated = part->getCoordinateFrame();
+		Math::rotateMatrixAboutY90(rotated.rotation, 1);
+
+		part->setCoordinateFrame(rotated);
+	}
+
+	RunDragger::SnapInfo RunDragger::createSnapSurface(Primitive* snap, G3D::Array<NormalId>* ignore)
+	{
+		RBXASSERT(snap);
+
+		SnapInfo answer;
+		answer.snap = snap;
+
+		Extents snapExtents = snap->getExtentsLocal();
+		const G3D::CoordinateFrame& cframe = snap->getCoordinateFrame();
+		G3D::Ray rayInSnap = cframe.toObjectSpace(mouseRay);
+
+		float bestDistance = 0.0f;
+		bool found = false;
+
+		for (int i = 0; i < 6; i++)
+		{
+			NormalId id = (NormalId)i;
+
+			if (!ignore || ignore->find(id) == ignore->end())
+			{
+				G3D::Plane plane = snapExtents.getPlane(id);
+				if (plane.halfSpaceContainsFinite(rayInSnap.origin))
+				{
+					G3D::Vector3 hitInSnap;
+					if (Math::intersectRayPlane(rayInSnap, plane, hitInSnap))
+					{
+						G3D::Vector3 hitWorld = cframe.pointToWorldSpace(hitInSnap);
+						float distance = (mouseRay.origin - hitWorld).magnitude();
+						if (distance > bestDistance)
+						{
+							bestDistance = distance;
+							answer.surface = id;
+							found = true;
+							answer.hitWorld = hitWorld;
+						}
+					}
+				}
+			}
+		}
+		
+		return found ? answer : SnapInfo();
+	}
+
+	bool RunDragger::notTried(Primitive* check, const G3D::Array<Primitive*>& tried)
+	{
+		RBXASSERT(check != drag);
+		return check && tried.find(check) == tried.end();
+	}
+
+	RunDragger::SnapInfo RunDragger::bestProximatePart(const G3D::Array<Primitive*>& triedSnap, bool (Contact::* proximityTest)(float))
+	{
+		SnapInfo answer;
+
+		for (Contact* current = drag->getFirstContact(); current != NULL; current = drag->getNextContact(current))
+		{
+			if ((current->*proximityTest)(0.01f))
+			{
+				Primitive* otherPrimitive = current->otherPrimitive(drag);
+				if (notTried(otherPrimitive, triedSnap))
+				{
+					SnapInfo testInfo = createSnapSurface(otherPrimitive, NULL);
+					if (testInfo.snap && testInfo.hitOutsideExtents() < 1e+10)
+						answer = testInfo;
+				}
+			}
+		}
+
+		return answer;
+	}
+
+	void RunDragger::turnUpright(PartInstance* part)
+	{
+		RBXASSERT(part);
+
+		if (part->getSurfaces().isStandardPart())
+		{
+			G3D::CoordinateFrame dragCoord = part->getCoordinateFrame();
+			if (Math::getClosestObjectNormalId(G3D::Vector3::unitY(), dragCoord.rotation) != NORM_Y)
+			{
+				dragCoord.rotation = G3D::Matrix3::identity();
+				part->setCoordinateFrame(dragCoord);
+			}
+		}
+	}
+
+	void RunDragger::tiltPart(PartInstance* part, const G3D::CoordinateFrame& camera)
+	{
+		RBXASSERT(part);
+
+		G3D::CoordinateFrame dragCoord = part->getCoordinateFrame();
+		G3D::Vector3 axis = Math::getWorldNormal(Math::getClosestObjectNormalId(camera.rightVector(), dragCoord.rotation), dragCoord);
+		G3D::Matrix3 tiltM = G3D::Matrix3::fromAxisAngle(axis, G3D::halfPi());
+
+		dragCoord.rotation = tiltM * dragCoord.rotation;
+		part->setCoordinateFrame(dragCoord);
+	}
+
+	RunDragger::SnapInfo RunDragger::rayHitsPart(const G3D::Array<Primitive*>& triedSnap, bool forceAdjacent)
+	{
+		SnapInfo answer;
+		PartByLocalCharacter filter((Instance*)workspace);
+
+		if (PartInstance* mousePart = MouseCommand::getMousePart(mouseRay, workspace->getWorld()->getContactManager(), drag, &filter, answer.hitWorld, 2048.0f))
+		{
+			answer.snap = mousePart->getPrimitive();
+			if (notTried(answer.snap, triedSnap) && (!forceAdjacent || adjacent(answer.snap, drag)))
+			{
+				answer.updateSurfaceFromHit();
+				return answer;
+			}
+		}
+
+		return SnapInfo();
+	}
+
+	bool RunDragger::rayHitsCloserPart()
+	{
+		G3D::Array<Primitive*> ignoreNone;
+		SnapInfo answer = rayHitsPart(ignoreNone, false);
+
+		if (answer.snap && answer.snap != snapInfo.snap)
+		{
+			if ((answer.hitWorld - mouseRay.origin).magnitude() < (snapInfo.hitWorld - mouseRay.origin).magnitude())
+				return true;
+		}
+
+		return false;
+	}
+
+	void RunDragger::findSafeY()
+	{
+		if (workspace->getWorld()->getContactManager().intersectingOthers(drag, 0.01f))
+		{
+			PartInstance* part = PartInstance::fromPrimitive(drag);
+			G3D::Array<Primitive*> temp;
+			temp.push_back(part->getPrimitive());
+
+			G3D::Vector3 moved = Dragger::safeMoveNoDrop(temp, G3D::Vector3::zero(), workspace->getWorld()->getContactManager());
+			RBXASSERT(moved.x == 0.0f);
+			RBXASSERT(moved.y != 0.0f);
+
+			G3D::CoordinateFrame newC = drag->getCoordinateFrame();
+			newC.translation += moved;
+
+			dragPart.lock()->setCoordinateFrame(newC);
+		}
+	}
+
+	void RunDragger::findNoSnapPosition(const G3D::CoordinateFrame& original)
+	{
+		dragPart.lock()->setCoordinateFrame(original);
+		findSafeY();
+
+		RBXASSERT(!workspace->getWorld()->getContactManager().intersectingOthers(drag, 0.01f));
+	}
+}

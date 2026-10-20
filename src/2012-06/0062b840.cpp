@@ -1,46 +1,192 @@
 // from server: 100% by auto
-// roc 2012-06 0062b840  unit: G3D::Sphere  size: 144 bytes
-// Make this compile to the exact bytes below, then: roc check 2012-06 0062b840
-//
-// 0062b840  0f57c0               xorps xmm0, xmm0
-// 0062b843  56                   push esi
-// 0062b844  8bf1                 mov esi, ecx
-// 0062b846  f30f1106             movss dword ptr [esi], xmm0
-// 0062b84a  f30f114604           movss dword ptr [esi + 4], xmm0
-// 0062b84f  f30f114608           movss dword ptr [esi + 8], xmm0
-// 0062b854  f30f11460c           movss dword ptr [esi + 0xc], xmm0
-// 0062b859  f30f114610           movss dword ptr [esi + 0x10], xmm0
-// 0062b85e  f30f114614           movss dword ptr [esi + 0x14], xmm0
-// 0062b863  f30f114618           movss dword ptr [esi + 0x18], xmm0
-// 0062b868  f30f11461c           movss dword ptr [esi + 0x1c], xmm0
-// 0062b86d  f30f114620           movss dword ptr [esi + 0x20], xmm0
-// 0062b872  f30f1005b8abb500     movss xmm0, dword ptr [0xb5abb8]
-// 0062b87a  f30f114624           movss dword ptr [esi + 0x24], xmm0
-// 0062b87f  f30f10052039b800     movss xmm0, dword ptr [0xb83920]
-// 0062b887  f30f114628           movss dword ptr [esi + 0x28], xmm0
-// 0062b88c  c6462c00             mov byte ptr [esi + 0x2c], 0
-// 0062b890  e80b040000           call 0x62bca0
-// 0062b895  d900                 fld dword ptr [eax]
-// 0062b897  f30f100540c4b400     movss xmm0, dword ptr [0xb4c440]
-// 0062b89f  d95e3c               fstp dword ptr [esi + 0x3c]
-// 0062b8a2  d94004               fld dword ptr [eax + 4]
-// 0062b8a5  d95e40               fstp dword ptr [esi + 0x40]
-// 0062b8a8  d94008               fld dword ptr [eax + 8]
-// 0062b8ab  b001                 mov al, 1
-// 0062b8ad  d95e44               fstp dword ptr [esi + 0x44]
-// 0062b8b0  f30f114630           movss dword ptr [esi + 0x30], xmm0
-// 0062b8b5  0f57c0               xorps xmm0, xmm0
-// 0062b8b8  884649               mov byte ptr [esi + 0x49], al
-// 0062b8bb  88464a               mov byte ptr [esi + 0x4a], al
-// 0062b8be  c6464800             mov byte ptr [esi + 0x48], 0
-// 0062b8c2  f30f114634           movss dword ptr [esi + 0x34], xmm0
-// 0062b8c7  f30f114638           movss dword ptr [esi + 0x38], xmm0
-// 0062b8cc  8bc6                 mov eax, esi
-// 0062b8ce  5e                   pop esi
-// 0062b8cf  c3                   ret 
-// library rbx2016-g3d/GLight.cpp (function ??0GLight@G3D@@QAE@XZ)
-
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD /arch:SSE2 /fp:fast
 // roc-lib: rbx2016-g3d GLight.cpp
+
+// Candidate translation unit (score above; library headers required).
+/**
+  @file GLight.cpp
+
+  @maintainer Morgan McGuire, http://graphics.cs.williams.edu
+
+  @created 2003-11-12
+  @edited  2009-11-16
+*/
+#include "G3D/GLight.h"
+#include "G3D/Sphere.h"
+#include "G3D/CoordinateFrame.h"
+#include "G3D/stringutils.h"
+
+namespace G3D {
+
+GLight::GLight() :
+    position(0, 0, 0, 0),
+    rightDirection(0,0,0),
+    spotDirection(0, 0, -1),
+    spotCutoff(180),
+    spotSquare(false),
+    color(Color3::white()),
+    enabled(false),
+    specular(true),
+    diffuse(true) {
+
+    attenuation[0]  = 1.0;
+    attenuation[1]  = 0.0;
+    attenuation[2]  = 0.0;
+}
+
+
+GLight GLight::directional(const Vector3& toLight, const Color3& color, bool s, bool d) {
+    GLight L;
+    L.position = Vector4(toLight.direction(), 0);
+    L.color    = color;
+    L.specular = s;
+    L.diffuse  = d;
+    return L;
+}
+
+
+GLight GLight::point(const Vector3& pos, const Color3& color, float constAtt, float linAtt, float quadAtt, bool s, bool d) {
+    GLight L;
+    L.position = Vector4(pos, 1);
+    L.color    = color;
+    L.attenuation[0] = constAtt;
+    L.attenuation[1] = linAtt;
+    L.attenuation[2] = quadAtt;
+    L.specular       = s;
+    L.diffuse        = d;
+    return L;
+}
+
+
+GLight GLight::spot(const Vector3& pos, const Vector3& pointDirection, float cutOffAngleDegrees, const Color3& color, float constAtt, float linAtt, float quadAtt, bool s, bool d) {
+    GLight L;
+    L.position       = Vector4(pos, 1.0f);
+    L.spotDirection  = pointDirection.direction();
+    debugAssert(cutOffAngleDegrees <= 90);
+    L.spotCutoff     = cutOffAngleDegrees;
+    L.color          = color;
+    L.attenuation[0] = constAtt;
+    L.attenuation[1] = linAtt;
+    L.attenuation[2] = quadAtt;
+    L.specular       = s;
+    L.diffuse        = d;
+    return L;
+}
+
+
+bool GLight::operator==(const GLight& other) const {
+    return (position == other.position) && 
+        (rightDirection == other.rightDirection) &&
+        (spotDirection == other.spotDirection) &&
+        (spotCutoff == other.spotCutoff) &&
+        (spotSquare == other.spotSquare) &&
+        (attenuation[0] == other.attenuation[0]) &&
+        (attenuation[1] == other.attenuation[1]) &&
+        (attenuation[2] == other.attenuation[2]) &&
+        (color == other.color) &&
+        (enabled == other.enabled) &&
+        (specular == other.specular) &&
+        (diffuse == other.diffuse);
+}
+
+
+bool GLight::operator!=(const GLight& other) const {
+    return !(*this == other);
+}
+
+
+Sphere GLight::effectSphere(float cutoff) const {
+    if (position.w == 0) {
+        // Directional light
+        return Sphere(Vector3::zero(), finf());
+    } else {
+        // Avoid divide by zero
+        cutoff = max(cutoff, 0.00001f);
+        float maxIntensity = max(color.r, max(color.g, color.b));
+
+        float radius = finf();
+            
+        if (attenuation[2] != 0) {
+
+            // Solve I / attenuation.dot(1, r, r^2) < cutoff for r
+            //
+            //  a[0] + a[1] r + a[2] r^2 > I/cutoff
+            //
+            
+            float a = attenuation[2];
+            float b = attenuation[1];
+            float c = attenuation[0] - maxIntensity / cutoff;
+            
+            float discrim = square(b) - 4 * a * c;
+            
+            if (discrim >= 0) {
+                discrim = sqrt(discrim);
+                
+                float r1 = (-b + discrim) / (2 * a);
+                float r2 = (-b - discrim) / (2 * a);
+
+                if (r1 < 0) {
+                    if (r2 > 0) {
+                        radius = r2;
+                    }
+                } else if (r2 > 0) {
+                    radius = min(r1, r2);
+                } else {
+                    radius = r1;
+                }
+            }
+                
+        } else if (attenuation[1] != 0) {
+            
+            // Solve I / attenuation.dot(1, r) < cutoff for r
+            //
+            // r * a[1] + a[0] = I / cutoff
+            // r = (I / cutoff - a[0]) / a[1]
+
+            float radius = (maxIntensity / cutoff - attenuation[0]) / attenuation[1];
+            radius = max(radius, 0.0f);
+        }
+
+        return Sphere(position.xyz(), radius);
+
+    }
+}
+
+
+CoordinateFrame GLight::frame() const {
+    CoordinateFrame f;
+    if (rightDirection == Vector3::zero()) {
+        // No specified right direction; choose one automatically
+        if (position.w == 0) {
+            // Directional light
+            f.lookAt(-position.xyz());
+        } else {
+            // Spot light
+            f.lookAt(spotDirection);
+        }
+    } else {
+        const Vector3& Z = -spotDirection.direction();
+        Vector3 X = rightDirection.direction();
+
+        // Ensure the vectors are not too close together
+        while (abs(X.dot(Z)) > 0.9f) {
+            X = Vector3::random();
+        }
+
+        // Ensure perpendicular
+        X -= Z * Z.dot(X);
+        const Vector3& Y = Z.cross(X);
+
+        f.rotation.setColumn(Vector3::X_AXIS, X);
+        f.rotation.setColumn(Vector3::Y_AXIS, Y);
+        f.rotation.setColumn(Vector3::Z_AXIS, Z);
+    }
+    f.translation = position.xyz();
+
+    return f;
+}
+
+
+} // G3D

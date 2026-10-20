@@ -1,125 +1,525 @@
-// roc 2009-12 00627160  unit: seg_00620000  size: 377 bytes
-// Make this compile to the exact bytes below, then: roc check 2009-12 00627160
-//
-// 00627160  83ec08               sub esp, 8
-// 00627163  53                   push ebx
-// 00627164  56                   push esi
-// 00627165  8b742414             mov esi, dword ptr [esp + 0x14]
-// 00627169  8b4604               mov eax, dword ptr [esi + 4]
-// 0062716c  8b08                 mov ecx, dword ptr [eax]
-// 0062716e  6a34                 push 0x34
-// 00627170  6a01                 push 1
-// 00627172  56                   push esi
-// 00627173  c644241701           mov byte ptr [esp + 0x17], 1
-// 00627178  ffd1                 call ecx
-// 0062717a  8bd8                 mov ebx, eax
-// 0062717c  899e54010000         mov dword ptr [esi + 0x154], ebx
-// 00627182  83c40c               add esp, 0xc
-// 00627185  c703904a8500         mov dword ptr [ebx], 0x854a90
-// 0062718b  c74304a0696200       mov dword ptr [ebx + 4], 0x6269a0
-// 00627192  c6430800             mov byte ptr [ebx + 8], 0
-// 00627196  80beb300000000       cmp byte ptr [esi + 0xb3], 0
-// 0062719d  895c2414             mov dword ptr [esp + 0x14], ebx
-// 006271a1  7413                 je 0x6271b6
-// 006271a3  8b16                 mov edx, dword ptr [esi]
-// 006271a5  c7421419000000       mov dword ptr [edx + 0x14], 0x19
-// 006271ac  8b06                 mov eax, dword ptr [esi]
-// 006271ae  8b08                 mov ecx, dword ptr [eax]
-// 006271b0  56                   push esi
-// 006271b1  ffd1                 call ecx
-// 006271b3  83c404               add esp, 4
-// 006271b6  837e3c00             cmp dword ptr [esi + 0x3c], 0
-// 006271ba  8b4644               mov eax, dword ptr [esi + 0x44]
-// 006271bd  c744240c00000000     mov dword ptr [esp + 0xc], 0
-// 006271c5  0f8ee2000000         jle 0x6272ad
-// 006271cb  55                   push ebp
-// 006271cc  57                   push edi
-// 006271cd  8d680c               lea ebp, [eax + 0xc]
-// 006271d0  8d7b0c               lea edi, [ebx + 0xc]
-// 006271d3  8b4dfc               mov ecx, dword ptr [ebp - 4]
-// 006271d6  8b86d8000000         mov eax, dword ptr [esi + 0xd8]
-// 006271dc  3bc8                 cmp ecx, eax
-// 006271de  752e                 jne 0x62720e
-// 006271e0  8b5500               mov edx, dword ptr [ebp]
-// 006271e3  3b96dc000000         cmp edx, dword ptr [esi + 0xdc]
-// 006271e9  7523                 jne 0x62720e
-// 006271eb  83beb400000000       cmp dword ptr [esi + 0xb4], 0
-// 006271f2  740f                 je 0x627203
-// 006271f4  c707e06f6200         mov dword ptr [edi], 0x626fe0
-// 006271fa  c6430801             mov byte ptr [ebx + 8], 1
-// 006271fe  e990000000           jmp 0x627293
-// 00627203  c707a06b6200         mov dword ptr [edi], 0x626ba0
-// 00627209  e985000000           jmp 0x627293
-// 0062720e  8d1409               lea edx, [ecx + ecx]
-// 00627211  3bd0                 cmp edx, eax
-// 00627213  754a                 jne 0x62725f
-// 00627215  8b5d00               mov ebx, dword ptr [ebp]
-// 00627218  3b9edc000000         cmp ebx, dword ptr [esi + 0xdc]
-// 0062721e  8b5c241c             mov ebx, dword ptr [esp + 0x1c]
-// 00627222  750d                 jne 0x627231
-// 00627224  c644241300           mov byte ptr [esp + 0x13], 0
-// 00627229  c707f06b6200         mov dword ptr [edi], 0x626bf0
-// 0062722f  eb62                 jmp 0x627293
-// 00627231  3bd0                 cmp edx, eax
-// 00627233  752a                 jne 0x62725f
-// 00627235  8b5500               mov edx, dword ptr [ebp]
-// 00627238  03d2                 add edx, edx
-// 0062723a  3b96dc000000         cmp edx, dword ptr [esi + 0xdc]
-// 00627240  751d                 jne 0x62725f
-// 00627242  83beb400000000       cmp dword ptr [esi + 0xb4], 0
-// 00627249  740c                 je 0x627257
-// 0062724b  c707606d6200         mov dword ptr [edi], 0x626d60
-// 00627251  c6430801             mov byte ptr [ebx + 8], 1
-// 00627255  eb3c                 jmp 0x627293
-// 00627257  c707906c6200         mov dword ptr [edi], 0x626c90
-// 0062725d  eb34                 jmp 0x627293
-// 0062725f  99                   cdq 
-// 00627260  f7f9                 idiv ecx
-// 00627262  85d2                 test edx, edx
-// 00627264  751a                 jne 0x627280
-// 00627266  8b86dc000000         mov eax, dword ptr [esi + 0xdc]
-// 0062726c  99                   cdq 
-// 0062726d  f77d00               idiv dword ptr [ebp]
-// 00627270  85d2                 test edx, edx
-// 00627272  750c                 jne 0x627280
-// 00627274  88542413             mov byte ptr [esp + 0x13], dl
-// 00627278  c707306a6200         mov dword ptr [edi], 0x626a30
-// 0062727e  eb13                 jmp 0x627293
-// 00627280  8b06                 mov eax, dword ptr [esi]
-// 00627282  c7401426000000       mov dword ptr [eax + 0x14], 0x26
-// 00627289  8b0e                 mov ecx, dword ptr [esi]
-// 0062728b  8b11                 mov edx, dword ptr [ecx]
-// 0062728d  56                   push esi
-// 0062728e  ffd2                 call edx
-// 00627290  83c404               add esp, 4
-// 00627293  8b442414             mov eax, dword ptr [esp + 0x14]
-// 00627297  40                   inc eax
-// 00627298  83c704               add edi, 4
-// 0062729b  83c554               add ebp, 0x54
-// 0062729e  3b463c               cmp eax, dword ptr [esi + 0x3c]
-// 006272a1  89442414             mov dword ptr [esp + 0x14], eax
-// 006272a5  0f8c28ffffff         jl 0x6271d3
-// 006272ab  5f                   pop edi
-// 006272ac  5d                   pop ebp
-// 006272ad  83beb400000000       cmp dword ptr [esi + 0xb4], 0
-// 006272b4  741d                 je 0x6272d3
-// 006272b6  807c240b00           cmp byte ptr [esp + 0xb], 0
-// 006272bb  7516                 jne 0x6272d3
-// 006272bd  8b06                 mov eax, dword ptr [esi]
-// 006272bf  c7401463000000       mov dword ptr [eax + 0x14], 0x63
-// 006272c6  8b0e                 mov ecx, dword ptr [esi]
-// 006272c8  8b5104               mov edx, dword ptr [ecx + 4]
-// 006272cb  6a00                 push 0
-// 006272cd  56                   push esi
-// 006272ce  ffd2                 call edx
-// 006272d0  83c408               add esp, 8
-// 006272d3  5e                   pop esi
-// 006272d4  5b                   pop ebx
-// 006272d5  83c408               add esp, 8
-// 006272d8  c3                   ret 
-// library jpeg-6b/jcsample.c (function _jinit_downsampler)
-
 // roc-lang: c
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /MD
 // roc-lib: jpeg-6b jcsample.c
+
+// Candidate translation unit (score above; library headers required).
+/*
+ * jcsample.c
+ *
+ * Copyright (C) 1991-1996, Thomas G. Lane.
+ * This file is part of the Independent JPEG Group's software.
+ * For conditions of distribution and use, see the accompanying README file.
+ *
+ * This file contains downsampling routines.
+ *
+ * Downsampling input data is counted in "row groups".  A row group
+ * is defined to be max_v_samp_factor pixel rows of each component,
+ * from which the downsampler produces v_samp_factor sample rows.
+ * A single row group is processed in each call to the downsampler module.
+ *
+ * The downsampler is responsible for edge-expansion of its output data
+ * to fill an integral number of DCT blocks horizontally.  The source buffer
+ * may be modified if it is helpful for this purpose (the source buffer is
+ * allocated wide enough to correspond to the desired output width).
+ * The caller (the prep controller) is responsible for vertical padding.
+ *
+ * The downsampler may request "context rows" by setting need_context_rows
+ * during startup.  In this case, the input arrays will contain at least
+ * one row group's worth of pixels above and below the passed-in data;
+ * the caller will create dummy rows at image top and bottom by replicating
+ * the first or last real pixel row.
+ *
+ * An excellent reference for image resampling is
+ *   Digital Image Warping, George Wolberg, 1990.
+ *   Pub. by IEEE Computer Society Press, Los Alamitos, CA. ISBN 0-8186-8944-7.
+ *
+ * The downsampling algorithm used here is a simple average of the source
+ * pixels covered by the output pixel.  The hi-falutin sampling literature
+ * refers to this as a "box filter".  In general the characteristics of a box
+ * filter are not very good, but for the specific cases we normally use (1:1
+ * and 2:1 ratios) the box is equivalent to a "triangle filter" which is not
+ * nearly so bad.  If you intend to use other sampling ratios, you'd be well
+ * advised to improve this code.
+ *
+ * A simple input-smoothing capability is provided.  This is mainly intended
+ * for cleaning up color-dithered GIF input files (if you find it inadequate,
+ * we suggest using an external filtering program such as pnmconvol).  When
+ * enabled, each input pixel P is replaced by a weighted sum of itself and its
+ * eight neighbors.  P's weight is 1-8*SF and each neighbor's weight is SF,
+ * where SF = (smoothing_factor / 1024).
+ * Currently, smoothing is only supported for 2h2v sampling factors.
+ */
+
+#define JPEG_INTERNALS
+#include "jinclude.h"
+#include "jpeglib.h"
+
+
+/* Pointer to routine to downsample a single component */
+typedef JMETHOD(void, downsample1_ptr,
+		(j_compress_ptr cinfo, jpeg_component_info * compptr,
+		 JSAMPARRAY input_data, JSAMPARRAY output_data));
+
+/* Private subobject */
+
+typedef struct {
+  struct jpeg_downsampler pub;	/* public fields */
+
+  /* Downsampling method pointers, one per component */
+  downsample1_ptr methods[MAX_COMPONENTS];
+} my_downsampler;
+
+typedef my_downsampler * my_downsample_ptr;
+
+
+/*
+ * Initialize for a downsampling pass.
+ */
+
+METHODDEF(void)
+start_pass_downsample (j_compress_ptr cinfo)
+{
+  /* no work for now */
+}
+
+
+/*
+ * Expand a component horizontally from width input_cols to width output_cols,
+ * by duplicating the rightmost samples.
+ */
+
+LOCAL(void)
+expand_right_edge (JSAMPARRAY image_data, int num_rows,
+		   JDIMENSION input_cols, JDIMENSION output_cols)
+{
+  register JSAMPROW ptr;
+  register JSAMPLE pixval;
+  register int count;
+  int row;
+  int numcols = (int) (output_cols - input_cols);
+
+  if (numcols > 0) {
+    for (row = 0; row < num_rows; row++) {
+      ptr = image_data[row] + input_cols;
+      pixval = ptr[-1];		/* don't need GETJSAMPLE() here */
+      for (count = numcols; count > 0; count--)
+	*ptr++ = pixval;
+    }
+  }
+}
+
+
+/*
+ * Do downsampling for a whole row group (all components).
+ *
+ * In this version we simply downsample each component independently.
+ */
+
+METHODDEF(void)
+sep_downsample (j_compress_ptr cinfo,
+		JSAMPIMAGE input_buf, JDIMENSION in_row_index,
+		JSAMPIMAGE output_buf, JDIMENSION out_row_group_index)
+{
+  my_downsample_ptr downsample = (my_downsample_ptr) cinfo->downsample;
+  int ci;
+  jpeg_component_info * compptr;
+  JSAMPARRAY in_ptr, out_ptr;
+
+  for (ci = 0, compptr = cinfo->comp_info; ci < cinfo->num_components;
+       ci++, compptr++) {
+    in_ptr = input_buf[ci] + in_row_index;
+    out_ptr = output_buf[ci] + (out_row_group_index * compptr->v_samp_factor);
+    (*downsample->methods[ci]) (cinfo, compptr, in_ptr, out_ptr);
+  }
+}
+
+
+/*
+ * Downsample pixel values of a single component.
+ * One row group is processed per call.
+ * This version handles arbitrary integral sampling ratios, without smoothing.
+ * Note that this version is not actually used for customary sampling ratios.
+ */
+
+METHODDEF(void)
+int_downsample (j_compress_ptr cinfo, jpeg_component_info * compptr,
+		JSAMPARRAY input_data, JSAMPARRAY output_data)
+{
+  int inrow, outrow, h_expand, v_expand, numpix, numpix2, h, v;
+  JDIMENSION outcol, outcol_h;	/* outcol_h == outcol*h_expand */
+  JDIMENSION output_cols = compptr->width_in_blocks * DCTSIZE;
+  JSAMPROW inptr, outptr;
+  INT32 outvalue;
+
+  h_expand = cinfo->max_h_samp_factor / compptr->h_samp_factor;
+  v_expand = cinfo->max_v_samp_factor / compptr->v_samp_factor;
+  numpix = h_expand * v_expand;
+  numpix2 = numpix/2;
+
+  /* Expand input data enough to let all the output samples be generated
+   * by the standard loop.  Special-casing padded output would be more
+   * efficient.
+   */
+  expand_right_edge(input_data, cinfo->max_v_samp_factor,
+		    cinfo->image_width, output_cols * h_expand);
+
+  inrow = 0;
+  for (outrow = 0; outrow < compptr->v_samp_factor; outrow++) {
+    outptr = output_data[outrow];
+    for (outcol = 0, outcol_h = 0; outcol < output_cols;
+	 outcol++, outcol_h += h_expand) {
+      outvalue = 0;
+      for (v = 0; v < v_expand; v++) {
+	inptr = input_data[inrow+v] + outcol_h;
+	for (h = 0; h < h_expand; h++) {
+	  outvalue += (INT32) GETJSAMPLE(*inptr++);
+	}
+      }
+      *outptr++ = (JSAMPLE) ((outvalue + numpix2) / numpix);
+    }
+    inrow += v_expand;
+  }
+}
+
+
+/*
+ * Downsample pixel values of a single component.
+ * This version handles the special case of a full-size component,
+ * without smoothing.
+ */
+
+METHODDEF(void)
+fullsize_downsample (j_compress_ptr cinfo, jpeg_component_info * compptr,
+		     JSAMPARRAY input_data, JSAMPARRAY output_data)
+{
+  /* Copy the data */
+  jcopy_sample_rows(input_data, 0, output_data, 0,
+		    cinfo->max_v_samp_factor, cinfo->image_width);
+  /* Edge-expand */
+  expand_right_edge(output_data, cinfo->max_v_samp_factor,
+		    cinfo->image_width, compptr->width_in_blocks * DCTSIZE);
+}
+
+
+/*
+ * Downsample pixel values of a single component.
+ * This version handles the common case of 2:1 horizontal and 1:1 vertical,
+ * without smoothing.
+ *
+ * A note about the "bias" calculations: when rounding fractional values to
+ * integer, we do not want to always round 0.5 up to the next integer.
+ * If we did that, we'd introduce a noticeable bias towards larger values.
+ * Instead, this code is arranged so that 0.5 will be rounded up or down at
+ * alternate pixel locations (a simple ordered dither pattern).
+ */
+
+METHODDEF(void)
+h2v1_downsample (j_compress_ptr cinfo, jpeg_component_info * compptr,
+		 JSAMPARRAY input_data, JSAMPARRAY output_data)
+{
+  int outrow;
+  JDIMENSION outcol;
+  JDIMENSION output_cols = compptr->width_in_blocks * DCTSIZE;
+  register JSAMPROW inptr, outptr;
+  register int bias;
+
+  /* Expand input data enough to let all the output samples be generated
+   * by the standard loop.  Special-casing padded output would be more
+   * efficient.
+   */
+  expand_right_edge(input_data, cinfo->max_v_samp_factor,
+		    cinfo->image_width, output_cols * 2);
+
+  for (outrow = 0; outrow < compptr->v_samp_factor; outrow++) {
+    outptr = output_data[outrow];
+    inptr = input_data[outrow];
+    bias = 0;			/* bias = 0,1,0,1,... for successive samples */
+    for (outcol = 0; outcol < output_cols; outcol++) {
+      *outptr++ = (JSAMPLE) ((GETJSAMPLE(*inptr) + GETJSAMPLE(inptr[1])
+			      + bias) >> 1);
+      bias ^= 1;		/* 0=>1, 1=>0 */
+      inptr += 2;
+    }
+  }
+}
+
+
+/*
+ * Downsample pixel values of a single component.
+ * This version handles the standard case of 2:1 horizontal and 2:1 vertical,
+ * without smoothing.
+ */
+
+METHODDEF(void)
+h2v2_downsample (j_compress_ptr cinfo, jpeg_component_info * compptr,
+		 JSAMPARRAY input_data, JSAMPARRAY output_data)
+{
+  int inrow, outrow;
+  JDIMENSION outcol;
+  JDIMENSION output_cols = compptr->width_in_blocks * DCTSIZE;
+  register JSAMPROW inptr0, inptr1, outptr;
+  register int bias;
+
+  /* Expand input data enough to let all the output samples be generated
+   * by the standard loop.  Special-casing padded output would be more
+   * efficient.
+   */
+  expand_right_edge(input_data, cinfo->max_v_samp_factor,
+		    cinfo->image_width, output_cols * 2);
+
+  inrow = 0;
+  for (outrow = 0; outrow < compptr->v_samp_factor; outrow++) {
+    outptr = output_data[outrow];
+    inptr0 = input_data[inrow];
+    inptr1 = input_data[inrow+1];
+    bias = 1;			/* bias = 1,2,1,2,... for successive samples */
+    for (outcol = 0; outcol < output_cols; outcol++) {
+      *outptr++ = (JSAMPLE) ((GETJSAMPLE(*inptr0) + GETJSAMPLE(inptr0[1]) +
+			      GETJSAMPLE(*inptr1) + GETJSAMPLE(inptr1[1])
+			      + bias) >> 2);
+      bias ^= 3;		/* 1=>2, 2=>1 */
+      inptr0 += 2; inptr1 += 2;
+    }
+    inrow += 2;
+  }
+}
+
+
+#ifdef INPUT_SMOOTHING_SUPPORTED
+
+/*
+ * Downsample pixel values of a single component.
+ * This version handles the standard case of 2:1 horizontal and 2:1 vertical,
+ * with smoothing.  One row of context is required.
+ */
+
+METHODDEF(void)
+h2v2_smooth_downsample (j_compress_ptr cinfo, jpeg_component_info * compptr,
+			JSAMPARRAY input_data, JSAMPARRAY output_data)
+{
+  int inrow, outrow;
+  JDIMENSION colctr;
+  JDIMENSION output_cols = compptr->width_in_blocks * DCTSIZE;
+  register JSAMPROW inptr0, inptr1, above_ptr, below_ptr, outptr;
+  INT32 membersum, neighsum, memberscale, neighscale;
+
+  /* Expand input data enough to let all the output samples be generated
+   * by the standard loop.  Special-casing padded output would be more
+   * efficient.
+   */
+  expand_right_edge(input_data - 1, cinfo->max_v_samp_factor + 2,
+		    cinfo->image_width, output_cols * 2);
+
+  /* We don't bother to form the individual "smoothed" input pixel values;
+   * we can directly compute the output which is the average of the four
+   * smoothed values.  Each of the four member pixels contributes a fraction
+   * (1-8*SF) to its own smoothed image and a fraction SF to each of the three
+   * other smoothed pixels, therefore a total fraction (1-5*SF)/4 to the final
+   * output.  The four corner-adjacent neighbor pixels contribute a fraction
+   * SF to just one smoothed pixel, or SF/4 to the final output; while the
+   * eight edge-adjacent neighbors contribute SF to each of two smoothed
+   * pixels, or SF/2 overall.  In order to use integer arithmetic, these
+   * factors are scaled by 2^16 = 65536.
+   * Also recall that SF = smoothing_factor / 1024.
+   */
+
+  memberscale = 16384 - cinfo->smoothing_factor * 80; /* scaled (1-5*SF)/4 */
+  neighscale = cinfo->smoothing_factor * 16; /* scaled SF/4 */
+
+  inrow = 0;
+  for (outrow = 0; outrow < compptr->v_samp_factor; outrow++) {
+    outptr = output_data[outrow];
+    inptr0 = input_data[inrow];
+    inptr1 = input_data[inrow+1];
+    above_ptr = input_data[inrow-1];
+    below_ptr = input_data[inrow+2];
+
+    /* Special case for first column: pretend column -1 is same as column 0 */
+    membersum = GETJSAMPLE(*inptr0) + GETJSAMPLE(inptr0[1]) +
+		GETJSAMPLE(*inptr1) + GETJSAMPLE(inptr1[1]);
+    neighsum = GETJSAMPLE(*above_ptr) + GETJSAMPLE(above_ptr[1]) +
+	       GETJSAMPLE(*below_ptr) + GETJSAMPLE(below_ptr[1]) +
+	       GETJSAMPLE(*inptr0) + GETJSAMPLE(inptr0[2]) +
+	       GETJSAMPLE(*inptr1) + GETJSAMPLE(inptr1[2]);
+    neighsum += neighsum;
+    neighsum += GETJSAMPLE(*above_ptr) + GETJSAMPLE(above_ptr[2]) +
+		GETJSAMPLE(*below_ptr) + GETJSAMPLE(below_ptr[2]);
+    membersum = membersum * memberscale + neighsum * neighscale;
+    *outptr++ = (JSAMPLE) ((membersum + 32768) >> 16);
+    inptr0 += 2; inptr1 += 2; above_ptr += 2; below_ptr += 2;
+
+    for (colctr = output_cols - 2; colctr > 0; colctr--) {
+      /* sum of pixels directly mapped to this output element */
+      membersum = GETJSAMPLE(*inptr0) + GETJSAMPLE(inptr0[1]) +
+		  GETJSAMPLE(*inptr1) + GETJSAMPLE(inptr1[1]);
+      /* sum of edge-neighbor pixels */
+      neighsum = GETJSAMPLE(*above_ptr) + GETJSAMPLE(above_ptr[1]) +
+		 GETJSAMPLE(*below_ptr) + GETJSAMPLE(below_ptr[1]) +
+		 GETJSAMPLE(inptr0[-1]) + GETJSAMPLE(inptr0[2]) +
+		 GETJSAMPLE(inptr1[-1]) + GETJSAMPLE(inptr1[2]);
+      /* The edge-neighbors count twice as much as corner-neighbors */
+      neighsum += neighsum;
+      /* Add in the corner-neighbors */
+      neighsum += GETJSAMPLE(above_ptr[-1]) + GETJSAMPLE(above_ptr[2]) +
+		  GETJSAMPLE(below_ptr[-1]) + GETJSAMPLE(below_ptr[2]);
+      /* form final output scaled up by 2^16 */
+      membersum = membersum * memberscale + neighsum * neighscale;
+      /* round, descale and output it */
+      *outptr++ = (JSAMPLE) ((membersum + 32768) >> 16);
+      inptr0 += 2; inptr1 += 2; above_ptr += 2; below_ptr += 2;
+    }
+
+    /* Special case for last column */
+    membersum = GETJSAMPLE(*inptr0) + GETJSAMPLE(inptr0[1]) +
+		GETJSAMPLE(*inptr1) + GETJSAMPLE(inptr1[1]);
+    neighsum = GETJSAMPLE(*above_ptr) + GETJSAMPLE(above_ptr[1]) +
+	       GETJSAMPLE(*below_ptr) + GETJSAMPLE(below_ptr[1]) +
+	       GETJSAMPLE(inptr0[-1]) + GETJSAMPLE(inptr0[1]) +
+	       GETJSAMPLE(inptr1[-1]) + GETJSAMPLE(inptr1[1]);
+    neighsum += neighsum;
+    neighsum += GETJSAMPLE(above_ptr[-1]) + GETJSAMPLE(above_ptr[1]) +
+		GETJSAMPLE(below_ptr[-1]) + GETJSAMPLE(below_ptr[1]);
+    membersum = membersum * memberscale + neighsum * neighscale;
+    *outptr = (JSAMPLE) ((membersum + 32768) >> 16);
+
+    inrow += 2;
+  }
+}
+
+
+/*
+ * Downsample pixel values of a single component.
+ * This version handles the special case of a full-size component,
+ * with smoothing.  One row of context is required.
+ */
+
+METHODDEF(void)
+fullsize_smooth_downsample (j_compress_ptr cinfo, jpeg_component_info *compptr,
+			    JSAMPARRAY input_data, JSAMPARRAY output_data)
+{
+  int outrow;
+  JDIMENSION colctr;
+  JDIMENSION output_cols = compptr->width_in_blocks * DCTSIZE;
+  register JSAMPROW inptr, above_ptr, below_ptr, outptr;
+  INT32 membersum, neighsum, memberscale, neighscale;
+  int colsum, lastcolsum, nextcolsum;
+
+  /* Expand input data enough to let all the output samples be generated
+   * by the standard loop.  Special-casing padded output would be more
+   * efficient.
+   */
+  expand_right_edge(input_data - 1, cinfo->max_v_samp_factor + 2,
+		    cinfo->image_width, output_cols);
+
+  /* Each of the eight neighbor pixels contributes a fraction SF to the
+   * smoothed pixel, while the main pixel contributes (1-8*SF).  In order
+   * to use integer arithmetic, these factors are multiplied by 2^16 = 65536.
+   * Also recall that SF = smoothing_factor / 1024.
+   */
+
+  memberscale = 65536L - cinfo->smoothing_factor * 512L; /* scaled 1-8*SF */
+  neighscale = cinfo->smoothing_factor * 64; /* scaled SF */
+
+  for (outrow = 0; outrow < compptr->v_samp_factor; outrow++) {
+    outptr = output_data[outrow];
+    inptr = input_data[outrow];
+    above_ptr = input_data[outrow-1];
+    below_ptr = input_data[outrow+1];
+
+    /* Special case for first column */
+    colsum = GETJSAMPLE(*above_ptr++) + GETJSAMPLE(*below_ptr++) +
+	     GETJSAMPLE(*inptr);
+    membersum = GETJSAMPLE(*inptr++);
+    nextcolsum = GETJSAMPLE(*above_ptr) + GETJSAMPLE(*below_ptr) +
+		 GETJSAMPLE(*inptr);
+    neighsum = colsum + (colsum - membersum) + nextcolsum;
+    membersum = membersum * memberscale + neighsum * neighscale;
+    *outptr++ = (JSAMPLE) ((membersum + 32768) >> 16);
+    lastcolsum = colsum; colsum = nextcolsum;
+
+    for (colctr = output_cols - 2; colctr > 0; colctr--) {
+      membersum = GETJSAMPLE(*inptr++);
+      above_ptr++; below_ptr++;
+      nextcolsum = GETJSAMPLE(*above_ptr) + GETJSAMPLE(*below_ptr) +
+		   GETJSAMPLE(*inptr);
+      neighsum = lastcolsum + (colsum - membersum) + nextcolsum;
+      membersum = membersum * memberscale + neighsum * neighscale;
+      *outptr++ = (JSAMPLE) ((membersum + 32768) >> 16);
+      lastcolsum = colsum; colsum = nextcolsum;
+    }
+
+    /* Special case for last column */
+    membersum = GETJSAMPLE(*inptr);
+    neighsum = lastcolsum + (colsum - membersum) + colsum;
+    membersum = membersum * memberscale + neighsum * neighscale;
+    *outptr = (JSAMPLE) ((membersum + 32768) >> 16);
+
+  }
+}
+
+#endif /* INPUT_SMOOTHING_SUPPORTED */
+
+
+/*
+ * Module initialization routine for downsampling.
+ * Note that we must select a routine for each component.
+ */
+
+GLOBAL(void)
+jinit_downsampler (j_compress_ptr cinfo)
+{
+  my_downsample_ptr downsample;
+  int ci;
+  jpeg_component_info * compptr;
+  boolean smoothok = TRUE;
+
+  downsample = (my_downsample_ptr)
+    (*cinfo->mem->alloc_small) ((j_common_ptr) cinfo, JPOOL_IMAGE,
+				SIZEOF(my_downsampler));
+  cinfo->downsample = (struct jpeg_downsampler *) downsample;
+  downsample->pub.start_pass = start_pass_downsample;
+  downsample->pub.downsample = sep_downsample;
+  downsample->pub.need_context_rows = FALSE;
+
+  if (cinfo->CCIR601_sampling)
+    ERREXIT(cinfo, JERR_CCIR601_NOTIMPL);
+
+  /* Verify we can handle the sampling factors, and set up method pointers */
+  for (ci = 0, compptr = cinfo->comp_info; ci < cinfo->num_components;
+       ci++, compptr++) {
+    if (compptr->h_samp_factor == cinfo->max_h_samp_factor &&
+	compptr->v_samp_factor == cinfo->max_v_samp_factor) {
+#ifdef INPUT_SMOOTHING_SUPPORTED
+      if (cinfo->smoothing_factor) {
+	downsample->methods[ci] = fullsize_smooth_downsample;
+	downsample->pub.need_context_rows = TRUE;
+      } else
+#endif
+	downsample->methods[ci] = fullsize_downsample;
+    } else if (compptr->h_samp_factor * 2 == cinfo->max_h_samp_factor &&
+	       compptr->v_samp_factor == cinfo->max_v_samp_factor) {
+      smoothok = FALSE;
+      downsample->methods[ci] = h2v1_downsample;
+    } else if (compptr->h_samp_factor * 2 == cinfo->max_h_samp_factor &&
+	       compptr->v_samp_factor * 2 == cinfo->max_v_samp_factor) {
+#ifdef INPUT_SMOOTHING_SUPPORTED
+      if (cinfo->smoothing_factor) {
+	downsample->methods[ci] = h2v2_smooth_downsample;
+	downsample->pub.need_context_rows = TRUE;
+      } else
+#endif
+	downsample->methods[ci] = h2v2_downsample;
+    } else if ((cinfo->max_h_samp_factor % compptr->h_samp_factor) == 0 &&
+	       (cinfo->max_v_samp_factor % compptr->v_samp_factor) == 0) {
+      smoothok = FALSE;
+      downsample->methods[ci] = int_downsample;
+    } else
+      ERREXIT(cinfo, JERR_FRACT_SAMPLE_NOTIMPL);
+  }
+
+#ifdef INPUT_SMOOTHING_SUPPORTED
+  if (cinfo->smoothing_factor && !smoothok)
+    TRACEMS(cinfo, 0, JTRC_SMOOTH_NOTIMPL);
+#endif
+}

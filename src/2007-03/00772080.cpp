@@ -1,22 +1,135 @@
-// roc 2007-03 00772080  unit: seg_00770000  size: 43 bytes
-// Make this compile to the exact bytes below, then: roc check 2007-03 00772080
-//
-// 00772080  6a01                 push 1
-// 00772082  6820557900           push 0x795520
-// 00772087  33c9                 xor ecx, ecx
-// 00772089  68b8827a00           push 0x7a82b8
-// 0077208e  51                   push ecx
-// 0077208f  b830125500           mov eax, 0x551230
-// 00772094  50                   push eax
-// 00772095  b9d0bf8b00           mov ecx, 0x8bbfd0
-// 0077209a  e851f6ddff           call 0x5516f0
-// 0077209f  68109a7700           push 0x779a10
-// 007720a4  e80ad1eaff           call 0x61f1b3
-// 007720a9  59                   pop ecx
-// 007720aa  c3                   ret 
-// library rbxgs/v8tree\Service.cpp (function ??__E?func_service@ServiceProvider@RBX@@0V?$BoundFuncDesc@VServiceProvider@RBX@@$$A6A?AV?$shared_ptr@VInstance@RBX@@@boost@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@Z$00@Reflection@2@A@@YAXXZ)
-
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
 // roc-lib: rbxgs v8tree/Service.cpp
+
+// Candidate translation unit (score above; library headers required).
+#include "v8tree/Service.h"
+#include <G3D/format.h>
+
+namespace RBX
+{
+	const char* sServiceProvider = "ServiceProvider";
+
+	Reflection::BoundFuncDesc<ServiceProvider, boost::shared_ptr<Instance>(std::string), 1> ServiceProvider::func_service(&ServiceProvider::findServiceByClassNameString, "service", "name", Reflection::FunctionDescriptor::AnyCaller);
+	Reflection::BoundFuncDesc<ServiceProvider, boost::shared_ptr<Instance>(std::string), 1> ServiceProvider::func_GetService(&ServiceProvider::findServiceByClassNameString, "GetService", "name", Reflection::FunctionDescriptor::AnyCaller);
+
+	size_t ServiceProvider::newIndex()
+	{
+		static size_t index = 0xFFFFFFFF; // max unsigned integer
+		return InterlockedIncrement((LONG*)&index);
+	}
+
+	void ServiceProvider::onChildAdded(Instance* instance)
+	{
+		RBXASSERT(dynamic_cast<ServiceProvider*>(instance)==NULL);
+
+		if (dynamic_cast<Service*>(instance))
+		{
+			if (instance->getClassName() != Name::getNullName())
+			{
+				RBXASSERT(!findServiceByClassName(instance->getClassName()));
+				serviceMap[&instance->getClassName()] = shared_from(instance);
+			}
+			Notifier<ServiceProvider, ServiceAdded>::raise(ServiceAdded(instance));
+		}
+	}
+
+	void ServiceProvider::onChildRemoving(Instance* instance)
+	{
+		std::map<const Name*, boost::shared_ptr<Instance>>::iterator it = serviceMap.find(&instance->getClassName());
+		if (it != serviceMap.end())
+			Notifier<ServiceProvider, ServiceRemoving>::raise(ServiceRemoving(instance));
+	}
+
+	void ServiceProvider::onDescendentAdded(Instance* instance)
+	{
+		Instance::onDescendentAdded(instance);
+		instance->onServiceProvider(NULL, this);
+	}
+
+	void ServiceProvider::onDescendentRemoving(const boost::shared_ptr<Instance>& instance)
+	{
+		instance->onServiceProvider(this, NULL);
+		Instance::onDescendentRemoving(instance);
+	}
+
+	void ServiceProvider::onAddListener(Listener<ServiceProvider, ServiceAdded>* listener) const
+	{
+		if (getChildren())
+		{
+			std::vector<boost::shared_ptr<Instance>>::const_iterator end = getChildren()->end();
+			std::vector<boost::shared_ptr<Instance>>::const_iterator iter = getChildren()->begin();
+
+			for (; iter != end; iter++)
+			{
+				if (dynamic_cast<Service*>(iter->get()))
+				{
+					Notifier<ServiceProvider, ServiceAdded>::raise(ServiceAdded(iter->get()), listener);
+				}
+			}
+		}
+	}
+
+	void ServiceProvider::clearServices()
+	{
+		RBXASSERT(numChildren()==0);
+		serviceArray.clear();
+		serviceMap.clear();
+	}
+
+	boost::shared_ptr<Instance> ServiceProvider::createChild(const Name& className)
+	{
+		RBXASSERT(className!=RBX::Name::getNullName());
+
+		boost::shared_ptr<Instance> instance = findServiceByClassName(className);
+		if (instance)
+		{
+			return instance;
+		}
+
+		return AbstractFactoryProduct<Instance>::create(className);
+	}
+
+	boost::shared_ptr<Instance> ServiceProvider::findServiceByClassName(const Name& className) const
+	{
+		RBXASSERT(className!=RBX::Name::getNullName());
+
+		std::map<const Name*, boost::shared_ptr<Instance>>::const_iterator it = serviceMap.find(&className);
+		if (it != serviceMap.end())
+			return (*it).second;
+
+		return boost::shared_ptr<Instance>();
+	}
+
+	boost::shared_ptr<Instance> ServiceProvider::findServiceByClassNameString(std::string sName)
+	{
+		const Name& name = Name::lookup(sName);
+		if (name.empty())
+			throw std::runtime_error(G3D::format("'%s' is not a valid Service name", sName.c_str()));
+
+		return RBX::shared_from(create(this, name));
+	}
+
+	Instance* ServiceProvider::create(Instance* context, const Name& name)
+	{
+		ServiceProvider* provider = Instance::findFirstAncestorOfClass<ServiceProvider>(context);
+		if (!provider)
+			return NULL;
+
+		boost::shared_ptr<Instance> child = provider->createChild(name);
+		if (child)
+			child->setParent(provider);
+
+		return child.get();
+	}
+
+	// See: DataModel::askAddChild
+	// ServiceProvider likely has an implementation similar to this, but DataModel just reimplemented it in exactly the same way
+	// Many other ServiceProviders have implementations like this
+	// TODO: check match
+	bool ServiceProvider::askAddChild(const Instance* instance) const
+	{
+		return dynamic_cast<const Service*>(instance) != NULL;
+	}
+}

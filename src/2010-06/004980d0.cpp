@@ -1,25 +1,81 @@
 // from server: 100% by auto
-// roc 2010-06 004980d0  unit: G3D::GWindow  size: 36 bytes
-// Make this compile to the exact bytes below, then: roc check 2010-06 004980d0
-//
-// 004980d0  a1e039c000           mov eax, dword ptr [0xc039e0]
-// 004980d5  56                   push esi
-// 004980d6  8bf1                 mov esi, ecx
-// 004980d8  85c0                 test eax, eax
-// 004980da  740c                 je 0x4980e8
-// 004980dc  8b4e0c               mov ecx, dword ptr [esi + 0xc]
-// 004980df  51                   push ecx
-// 004980e0  ffd0                 call eax
-// 004980e2  c6462c00             mov byte ptr [esi + 0x2c], 0
-// 004980e6  5e                   pop esi
-// 004980e7  c3                   ret 
-// 004980e8  ff15f8ab9e00         call dword ptr [0x9eabf8]
-// 004980ee  c6462c00             mov byte ptr [esi + 0x2c], 0
-// 004980f2  5e                   pop esi
-// 004980f3  c3                   ret 
-// library g3d-6.09/GLG3Dcpp\Milestone.cpp (function ?wait@Milestone@G3D@@AAEXXZ)
-
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD
 // roc-lib: g3d-6.09 GLG3Dcpp/Milestone.cpp
+
+// Candidate translation unit (score above; library headers required).
+/**
+  @file Milestone.cpp
+
+  @maintainer Morgan McGuire, matrix@graphics3d.com
+
+  @created 2003-08-09
+  @edited  2003-08-12
+*/
+
+#include "GLG3D/Milestone.h"
+#include "GLG3D/RenderDevice.h"
+
+namespace G3D {
+
+Array<Milestone::GLFence> Milestone::factory;
+
+Milestone::Milestone(const std::string& n) : _name(n), isSet(false) {
+
+    if (glGenFencesNV) {
+        if (factory.size() == 0) {
+            int num = 10;
+            factory.resize(num, DONT_SHRINK_UNDERLYING_ARRAY);
+            glGenFencesNV(num, factory.getCArray());
+        }
+        
+        // Grab a preallocated fence
+        glfence = factory.pop();
+    }
+}
+
+
+Milestone::~Milestone() {
+    if (glDeleteFencesNV) {
+        // The global factory might have been deallocated already on shutdown
+        if (factory.getCArray() != NULL) {
+            // Save it for later
+            factory.push(glfence);
+
+            if (factory.size() > 20) {
+                // We've deallocated an awful lot, so free some
+                glDeleteFencesNV(factory.size() - 5, &(factory.last()) - 5);
+                factory.resize(20);
+            }
+
+        } else {
+            glDeleteFencesNV(1, &glfence);
+        }
+    }
+}
+
+
+void Milestone::set() {
+    if (glSetFenceNV) {
+        glSetFenceNV(glfence, GL_ALL_COMPLETED_NV);
+    }
+
+    isSet = true;
+}
+
+
+void Milestone::wait() {
+    debugAssertM(isSet, std::string("Waiting for a milestone (\"") + _name + "\") that was not set!");
+
+    if (glFinishFenceNV) {
+        glFinishFenceNV(glfence);
+    } else {
+        // With no way of waiting for a specific fence, we must wait for everything.
+        glFinish();
+    }
+
+    isSet = false;
+}
+
+}

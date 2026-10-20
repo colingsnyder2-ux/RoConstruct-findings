@@ -1,67 +1,432 @@
-// roc 2007-08 0056eda0  unit: G3D::VVector3::?$TypedPropertyDescriptor  size: 162 bytes
-// Make this compile to the exact bytes below, then: roc check 2007-08 0056eda0
-//
-// 0056eda0  83ec0c               sub esp, 0xc
-// 0056eda3  55                   push ebp
-// 0056eda4  56                   push esi
-// 0056eda5  8b74241c             mov esi, dword ptr [esp + 0x1c]
-// 0056eda9  8be9                 mov ebp, ecx
-// 0056edab  8bce                 mov ecx, esi
-// 0056edad  e8eeeafeff           call 0x55d8a0
-// 0056edb2  84c0                 test al, al
-// 0056edb4  0f8580000000         jne 0x56ee3a
-// 0056edba  a194228c00           mov eax, dword ptr [0x8c2294]
-// 0056edbf  53                   push ebx
-// 0056edc0  50                   push eax
-// 0056edc1  8bce                 mov ecx, esi
-// 0056edc3  e868e5feff           call 0x55d330
-// 0056edc8  8bd8                 mov ebx, eax
-// 0056edca  85db                 test ebx, ebx
-// 0056edcc  746b                 je 0x56ee39
-// 0056edce  8b0de4228c00         mov ecx, dword ptr [0x8c22e4]
-// 0056edd4  57                   push edi
-// 0056edd5  51                   push ecx
-// 0056edd6  8bce                 mov ecx, esi
-// 0056edd8  e853e5feff           call 0x55d330
-// 0056eddd  8b1574228c00         mov edx, dword ptr [0x8c2274]
-// 0056ede3  52                   push edx
-// 0056ede4  8bce                 mov ecx, esi
-// 0056ede6  8bf8                 mov edi, eax
-// 0056ede8  e843e5feff           call 0x55d330
-// 0056eded  d9ee                 fldz 
-// 0056edef  8bf0                 mov esi, eax
-// 0056edf1  d9542410             fst dword ptr [esp + 0x10]
-// 0056edf5  8d442410             lea eax, [esp + 0x10]
-// 0056edf9  d9542414             fst dword ptr [esp + 0x14]
-// 0056edfd  50                   push eax
-// 0056edfe  d95c241c             fstp dword ptr [esp + 0x1c]
-// 0056ee02  8d4b0c               lea ecx, [ebx + 0xc]
-// 0056ee05  e806e9feff           call 0x55d710
-// 0056ee0a  8d4c2414             lea ecx, [esp + 0x14]
-// 0056ee0e  51                   push ecx
-// 0056ee0f  8d4f0c               lea ecx, [edi + 0xc]
-// 0056ee12  e8f9e8feff           call 0x55d710
-// 0056ee17  8d542418             lea edx, [esp + 0x18]
-// 0056ee1b  52                   push edx
-// 0056ee1c  8d4e0c               lea ecx, [esi + 0xc]
-// 0056ee1f  e8ece8feff           call 0x55d710
-// 0056ee24  8b4d18               mov ecx, dword ptr [ebp + 0x18]
-// 0056ee27  8b01                 mov eax, dword ptr [ecx]
-// 0056ee29  8b4008               mov eax, dword ptr [eax + 8]
-// 0056ee2c  8d542410             lea edx, [esp + 0x10]
-// 0056ee30  52                   push edx
-// 0056ee31  8b542424             mov edx, dword ptr [esp + 0x24]
-// 0056ee35  52                   push edx
-// 0056ee36  ffd0                 call eax
-// 0056ee38  5f                   pop edi
-// 0056ee39  5b                   pop ebx
-// 0056ee3a  5e                   pop esi
-// 0056ee3b  5d                   pop ebp
-// 0056ee3c  83c40c               add esp, 0xc
-// 0056ee3f  c20c00               ret 0xc
-// library rbxgs/v8tree\EnumProperty.cpp (function ?readValue@?$TypedPropertyDescriptor@VVector3@G3D@@@Reflection@RBX@@EBEXPAVDescribedBase@23@PBVXmlElement@@AAVIReferenceBinder@3@@Z)
-
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
 // roc-lib: rbxgs v8tree/EnumProperty.cpp
+
+// Candidate translation unit (score above; library headers required).
+#include "reflection/type.h"
+#include <g3d/color3.h>
+#include <g3d/vector3.h>
+#include <boost/shared_ptr.hpp>
+#include "v8tree/Instance.h"
+#include "v8datamodel/BrickColor.h"
+
+namespace RBX
+{
+	namespace Reflection
+	{
+		// TODO: check if type singletons are matching
+		template<>
+		const Type& Type::singleton<boost::shared_ptr<RBX::Reflection::DescribedBase>>()
+		{
+			static Type type("Object", typeid(boost::shared_ptr<RBX::Reflection::DescribedBase>));
+			return type;
+		}
+
+		template<>
+		const Type& Type::singleton<boost::shared_ptr<Instance>>()
+		{
+			static Type type("Instance", typeid(boost::shared_ptr<Instance>));
+			return type;
+		}
+
+		template<>
+		const Type& Type::singleton<boost::shared_ptr<Instances>>()
+		{
+			static Type type("Objects", typeid(boost::shared_ptr<Instances>));
+			return type;
+		}
+
+		template<>
+		const Type& Type::singleton<int>()
+		{
+			static Type type("int", typeid(int));
+			return type;
+		}
+
+		template<>
+		const Type& Type::singleton<bool>()
+		{
+			static Type type("bool", typeid(bool));
+			return type;
+		}
+
+		template<>
+		const Type& Type::singleton<float>()
+		{
+			static Type type("float", typeid(float));
+			return type;
+		}
+
+		template<>
+		const Type& Type::singleton<double>()
+		{
+			static Type type("double", typeid(double));
+			return type;
+		}
+
+		template<>
+		const Type& Type::singleton<ContentId>()
+		{
+			static Type type("ContentId", typeid(ContentId));
+			return type;
+		}
+
+		template<>
+		const Type& Type::singleton<std::string>()
+		{
+			static Type type("string", typeid(std::string));
+			return type;
+		}
+
+		template<>
+		const Type& Type::singleton<G3D::Vector3>()
+		{
+			static Type type("Vector3", typeid(G3D::Vector3));
+			return type;
+		}
+
+		template<>
+		const Type& Type::singleton<G3D::Color3>()
+		{
+			static Type type("Color3", typeid(G3D::Color3));
+			return type;
+		}
+
+		template<>
+		const Type& Type::singleton<std::vector<Value>>()
+		{
+			static Type type("Table", typeid(std::vector<Value>));
+			return type;
+		}
+
+		template<>
+		const Type& Type::singleton<BrickColor>()
+		{
+			static Type type("BrickColor", typeid(BrickColor));
+			return type;
+		}
+
+		template<>
+		std::string TypedPropertyDescriptor<std::string>::getStringValue(const DescribedBase* instance) const
+		{
+			return getValue(instance);
+		}
+
+		template<>
+		std::string TypedPropertyDescriptor<bool>::getStringValue(const DescribedBase* instance) const
+		{
+			return StringConverter<bool>::convertToString(getValue(instance));
+		}
+
+		template<>
+		std::string TypedPropertyDescriptor<float>::getStringValue(const DescribedBase* instance) const
+		{
+			return StringConverter<float>::convertToString(getValue(instance));
+		}
+
+		template<>
+		std::string TypedPropertyDescriptor<int>::getStringValue(const DescribedBase* instance) const
+		{
+			return StringConverter<int>::convertToString(getValue(instance));
+		}
+
+		template<>
+		std::string TypedPropertyDescriptor<G3D::Vector3>::getStringValue(const DescribedBase* instance) const
+		{
+			return StringConverter<G3D::Vector3>::convertToString(getValue(instance));
+		}
+
+		template<>
+		std::string TypedPropertyDescriptor<G3D::Color3>::getStringValue(const DescribedBase* instance) const
+		{
+			return StringConverter<G3D::Color3>::convertToString(getValue(instance));
+		}
+
+		template<>
+		std::string TypedPropertyDescriptor<ContentId>::getStringValue(const DescribedBase* instance) const
+		{
+			return StringConverter<ContentId>::convertToString(getValue(instance));
+		}
+
+		template<>
+		bool TypedPropertyDescriptor<std::string>::setStringValue(DescribedBase* instance, const std::string& text) const
+		{
+			setValue(instance, text);
+			return true;
+		}
+
+		template<>
+		bool TypedPropertyDescriptor<bool>::setStringValue(DescribedBase* instance, const std::string& text) const
+		{
+			bool value;
+			if (StringConverter<bool>::convertToValue(text, value))
+			{
+				setValue(instance, value);
+				return true;
+			}
+
+			return false;
+		}
+
+		template<>
+		bool TypedPropertyDescriptor<float>::setStringValue(DescribedBase* instance, const std::string& text) const
+		{
+			float value;
+			if (StringConverter<float>::convertToValue(text, value))
+			{
+				setValue(instance, value);
+				return true;
+			}
+
+			return false;
+		}
+
+		template<>
+		bool TypedPropertyDescriptor<int>::setStringValue(DescribedBase* instance, const std::string& text) const
+		{
+			int value;
+			if (StringConverter<int>::convertToValue(text, value))
+			{
+				setValue(instance, value);
+				return true;
+			}
+
+			return false;
+		}
+
+		template<>
+		bool TypedPropertyDescriptor<G3D::Vector3>::setStringValue(DescribedBase* instance, const std::string& text) const
+		{
+			G3D::Vector3 value;
+			if (StringConverter<G3D::Vector3>::convertToValue(text, value))
+			{
+				setValue(instance, value);
+				return true;
+			}
+
+			return false;
+		}
+
+		template<>
+		bool TypedPropertyDescriptor<G3D::Color3>::setStringValue(DescribedBase* instance, const std::string& text) const
+		{
+			G3D::Color3 value;
+			if (StringConverter<G3D::Color3>::convertToValue(text, value))
+			{
+				setValue(instance, value);
+				return true;
+			}
+
+			return false;
+		}
+
+		template<>
+		bool TypedPropertyDescriptor<ContentId>::setStringValue(DescribedBase* instance, const std::string& text) const
+		{
+			ContentId value;
+			if (StringConverter<ContentId>::convertToValue(text, value))
+			{
+				setValue(instance, value);
+				return true;
+			}
+
+			return false;
+		}
+
+		template<>
+		void TypedPropertyDescriptor<float>::readValue(DescribedBase* instance, const XmlElement* element, IReferenceBinder& binder) const
+		{
+			if (!element->isXsiNil())
+			{
+				float value;
+				if (element->getValue(value))
+				{
+					setValue(instance, value);
+				}
+			}
+		}
+
+		template<>
+		void TypedPropertyDescriptor<float>::writeValue(const DescribedBase* instance, XmlElement* element) const
+		{
+			float value = getValue(instance);
+			element->setValue(value);
+		}
+
+		template<>
+		void TypedPropertyDescriptor<bool>::readValue(DescribedBase* instance, const XmlElement* element, IReferenceBinder& binder) const
+		{
+			if (!element->isXsiNil())
+			{
+				bool value;
+				if (element->getValue(value))
+				{
+					setValue(instance, value);
+				}
+			}
+		}
+
+		template<>
+		void TypedPropertyDescriptor<bool>::writeValue(const DescribedBase* instance, XmlElement* element) const
+		{
+			bool value = getValue(instance);
+			element->setValue(value);
+		}
+
+		template<>
+		void TypedPropertyDescriptor<BrickColor>::readValue(DescribedBase* instance, const XmlElement* element, IReferenceBinder& binder) const
+		{
+			if (!element->isXsiNil())
+			{
+				int value;
+				if (element->getValue(value))
+				{
+					setValue(instance, BrickColor(value));
+				}
+			}
+		}
+
+		template<>
+		void TypedPropertyDescriptor<BrickColor>::writeValue(const DescribedBase* instance, XmlElement* element) const
+		{
+			element->setValue(getValue(instance).asInt());
+		}
+
+		template<>
+		void TypedPropertyDescriptor<int>::readValue(DescribedBase* instance, const XmlElement* element, IReferenceBinder& binder) const
+		{
+			if (!element->isXsiNil())
+			{
+				int value;
+				if (element->getValue(value))
+				{
+					setValue(instance, value);
+				}
+			}
+		}
+		
+		template<>
+		void TypedPropertyDescriptor<int>::writeValue(const DescribedBase* instance, XmlElement* element) const
+		{
+			int value = getValue(instance);
+			element->setValue(value);
+		}
+
+		template<>
+		void TypedPropertyDescriptor<ContentId>::readValue(DescribedBase* instance, const XmlElement* element, IReferenceBinder& binder) const
+		{
+			if (!element->isXsiNil())
+			{
+				ContentId value;
+				if (element->getValue(value))
+				{
+					setValue(instance, value);
+				}
+			}
+		}
+
+		template<>
+		void TypedPropertyDescriptor<ContentId>::writeValue(const DescribedBase* instance, XmlElement* element) const
+		{
+			element->setValue(ContentId(getValue(instance)));
+		}
+
+		template<>
+		void TypedPropertyDescriptor<std::string>::readValue(DescribedBase* instance, const XmlElement* element, IReferenceBinder& binder) const
+		{
+			if (!element->isXsiNil())
+			{
+				std::string value;
+				if (element->getValue(value))
+				{
+					setValue(instance, value);
+				}
+			}
+		}
+
+		template<>
+		void TypedPropertyDescriptor<std::string>::writeValue(const DescribedBase* instance, XmlElement* element) const
+		{
+			element->setValue(getValue(instance));
+		}
+
+		template<>
+		void TypedPropertyDescriptor<G3D::Vector3>::readValue(DescribedBase* instance, const XmlElement* element, IReferenceBinder& binder) const
+		{
+			if (!element->isXsiNil())
+			{
+				if (const XmlElement* X = element->findFirstChildByTag(tag_X))
+				{
+					const XmlElement* Y = element->findFirstChildByTag(tag_Y);
+					const XmlElement* Z = element->findFirstChildByTag(tag_Z);
+
+					G3D::Vector3 value;
+
+					X->getValue(value.x);
+					Y->getValue(value.y);
+					Z->getValue(value.z);
+
+					setValue(instance, value);
+				}
+			}
+		}
+
+		template<>
+		void TypedPropertyDescriptor<G3D::Vector3>::writeValue(const DescribedBase* instance, XmlElement* element) const
+		{
+			const Name* xName = &tag_X;
+			XmlElement* xElement = new XmlElement(*xName);
+			element->pushBackChild(xElement);
+
+			const Name* yName = &tag_Y;
+			XmlElement* yElement = new XmlElement(*yName);
+			element->pushBackChild(yElement);
+
+			const Name* zName = &tag_Z;
+			XmlElement* zElement = new XmlElement(*zName);
+			element->pushBackChild(zElement);
+
+			G3D::Vector3 value = getValue(instance);
+
+			xElement->setValue(value.x);
+			yElement->setValue(value.y);
+			zElement->setValue(value.z);
+		}
+
+		template<>
+		void TypedPropertyDescriptor<G3D::Color3>::readValue(DescribedBase* instance, const XmlElement* element, IReferenceBinder& binder) const
+		{
+			if (!element->isXsiNil())
+			{
+				unsigned int colorValue;
+				if (element->getValue(colorValue))
+				{
+					G3D::Color3 color = G3D::Color3(G3D::Color3uint8::fromARGB(colorValue));
+					setValue(instance, color);	
+				}
+				else
+				{
+					const XmlElement* R = element->findFirstChildByTag(tag_R);
+					const XmlElement* G = element->findFirstChildByTag(tag_G);
+					const XmlElement* B = element->findFirstChildByTag(tag_B);
+
+					G3D::Color3 value;
+
+					R->getValue(value.r);
+					G->getValue(value.g);
+					B->getValue(value.b);
+
+					setValue(instance, value);
+				}
+			}
+		}
+
+		template<>
+		void TypedPropertyDescriptor<G3D::Color3>::writeValue(const DescribedBase* instance, XmlElement* element) const
+		{
+			G3D::Color3uint8 value = G3D::Color3uint8(getValue(instance));
+			element->setValue(value.asUInt32());
+		}
+	}
+}

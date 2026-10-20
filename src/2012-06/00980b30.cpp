@@ -1,38 +1,137 @@
-// roc 2012-06 00980b30  unit: RBX::CircleRadialNormal  size: 61 bytes
-// Make this compile to the exact bytes below, then: roc check 2012-06 00980b30
-//
-// 00980b30  53                   push ebx
-// 00980b31  8b5c2410             mov ebx, dword ptr [esp + 0x10]
-// 00980b35  55                   push ebp
-// 00980b36  8b6c2410             mov ebp, dword ptr [esp + 0x10]
-// 00980b3a  56                   push esi
-// 00980b3b  57                   push edi
-// 00980b3c  8b7c2414             mov edi, dword ptr [esp + 0x14]
-// 00980b40  33f6                 xor esi, esi
-// 00980b42  83c720               add edi, 0x20
-// 00980b45  8b07                 mov eax, dword ptr [edi]
-// 00980b47  83c0fa               add eax, -6
-// 00980b4a  83f802               cmp eax, 2
-// 00980b4d  7710                 ja 0x980b5f
-// 00980b4f  8b442414             mov eax, dword ptr [esp + 0x14]
-// 00980b53  53                   push ebx
-// 00980b54  56                   push esi
-// 00980b55  55                   push ebp
-// 00980b56  50                   push eax
-// 00980b57  e814fbffff           call 0x980670
-// 00980b5c  83c410               add esp, 0x10
-// 00980b5f  46                   inc esi
-// 00980b60  83c704               add edi, 4
-// 00980b63  83fe06               cmp esi, 6
-// 00980b66  7cdd                 jl 0x980b45
-// 00980b68  5f                   pop edi
-// 00980b69  5e                   pop esi
-// 00980b6a  5d                   pop ebp
-// 00980b6b  5b                   pop ebx
-// 00980b6c  c3                   ret 
-// library rbxgs-appdraw/Draw.cpp (function ?adornSurfaces@Draw@RBX@@CAXABVPart@2@PAVAdorn@2@ABVColor3@G3D@@@Z)
-
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
 // roc-lib: rbxgs-appdraw Draw.cpp
+
+// Candidate translation unit (score above; library headers required).
+#include "AppDraw/Draw.h"
+#include "util/Math.h"
+
+namespace RBX
+{
+	void Draw::spokes(float radius, float axis, Adorn* adorn)
+    {
+        // no idea where the 0.51 comes from lol
+        float halfAxis = axis*0.51f;
+        float subRadius = radius*0.7f;
+
+        for (int i = 0; i < 2; i++)
+        {
+            float x = (i == 0) ? halfAxis : -halfAxis;
+            float ccw = i ? -1.0f : 1.0f;
+
+            for (int j = 0; j < 2; j++)
+            {
+                float y = (j == 0) ? subRadius : 0.1f;
+                float z = (j == 0) ? 0.1f : subRadius;
+
+                adorn->quad(
+                    G3D::Vector3(x, y * ccw, z),
+                    G3D::Vector3(x, -y * ccw, z),
+                    G3D::Vector3(x, -y * ccw, -z),
+                    G3D::Vector3(x, y * ccw, -z),
+                    G3D::Color4(0.5f, 0.5f, 0.5f, 1.0f)
+                );
+            }
+        }
+    }
+
+	void Draw::partAdorn(const Part& part, Adorn* adorn, const G3D::Color3& controllerColor)
+    {
+        adornSurfaces(part, adorn, controllerColor);
+
+        if (part.type == Part::CYLINDER_PART)
+        {
+            adorn->setObjectToWorldMatrix(part.coordinateFrame);
+
+            G3D::Vector3 bleh = part.gridSize;
+            spokes(bleh.z * 0.5, bleh.x, adorn);
+        }
+    }
+
+    const G3D::Color3& Draw::selectColor()
+    {
+        static G3D::Color3 c(0.1f, 0.6f, 1.0f);
+        return c;
+    }
+
+	void Draw::selectionBox(const Part& part, Adorn* adorn, SelectState selectState)
+    {
+        Draw::selectionBox(part, adorn, (selectState == SELECT_NORMAL) ? Draw::selectColor() : G3D::Color3(0.2f, 0.7f, 1.0f));
+    }
+
+	void Draw::adornSurfaces(const Part& part, Adorn* adorn, const G3D::Color3& controllerColor)
+    {
+        for (int i = 0; i < 6; i++)
+        {
+			SurfaceType type = part.surfaceType[i];
+            if (type >= ROTATE && type <= ROTATE_P) // ROTATE, ROTATE_V, ROTATE_P
+            {
+                Draw::constraint(part, adorn, i, controllerColor);
+            }
+        }
+    }
+
+    // TODO: 94.56% match
+	// classic case of MSVC optimizer being really inconsistent
+	void Draw::constraint(const Part& part, Adorn* adorn, int face, const G3D::Color3& controllerColor)
+    {
+		SurfaceType surfaceType = part.surfaceType[face];
+
+        G3D::Vector3 halfSize = part.gridSize * 0.5f;
+
+        const G3D::Matrix3& rot = Math::getAxisRotationMatrix(face);
+
+        G3D::Vector3 relativeTranslation;
+
+        int axis = face % 3;
+        float posNeg = (face > 2) ? -1.0f : 1.0f;
+
+        relativeTranslation[axis] = halfSize[axis]*posNeg;
+
+        G3D::CoordinateFrame translation(rot, relativeTranslation);
+        G3D::CoordinateFrame newObject = part.coordinateFrame*translation;
+
+        adorn->setObjectToWorldMatrix(newObject);
+        adorn->cylinderAlongX(0.2f, 1.0f, G3D::Color3::yellow(), G3D::Color4::clear());
+
+        if (surfaceType == ROTATE_V || surfaceType == ROTATE_P)
+        {
+            adorn->cylinderAlongX(0.4f, 0.25f, controllerColor, G3D::Color4::clear());
+        }
+    }
+
+	void Draw::selectionBox(const Part& part, Adorn* adorn, const G3D::Color4& selectColor)
+    {
+        adorn->setObjectToWorldMatrix(part.coordinateFrame);
+
+        G3D::Vector3 halfSize = part.gridSize*0.5;
+
+        const float offset = 0.15f;
+
+        for (int ix = 0; ix < 3; ix++)
+        {
+            int iy = (ix+1) % 3;
+            int iz = (ix+2) % 3;
+
+            for (int d2 = -1; d2 < 2; d2+=2)
+            {
+                for (int d3 = -1; d3 < 2; d3+=2)
+                {
+                    G3D::Vector3 p0;
+                    G3D::Vector3 p1;
+
+                    p0[ix] = -halfSize[ix] - offset;
+                    p0[iy] = d2 * halfSize[iy] - offset;
+                    p0[iz] = d3 * halfSize[iz] - offset;
+
+                    p1[ix] = halfSize[ix] + offset;
+                    p1[iy] = d2 * halfSize[iy] + offset;
+                    p1[iz] = d3 * halfSize[iz] + offset;
+
+                    adorn->box(G3D::AABox(p0, p1), selectColor, G3D::Color4::clear());
+                }
+            }
+        }
+    }
+}

@@ -1,20 +1,109 @@
-// roc 2007-03 004f0770  unit: seg_004f0000  size: 31 bytes
-// Make this compile to the exact bytes below, then: roc check 2007-03 004f0770
-//
-// 004f0770  8b442404             mov eax, dword ptr [esp + 4]
-// 004f0774  56                   push esi
-// 004f0775  8bf1                 mov esi, ecx
-// 004f0777  50                   push eax
-// 004f0778  8d4e08               lea ecx, [esi + 8]
-// 004f077b  c70600000000         mov dword ptr [esi], 0
-// 004f0781  894604               mov dword ptr [esi + 4], eax
-// 004f0784  e867ffffff           call 0x4f06f0
-// 004f0789  8bc6                 mov eax, esi
-// 004f078b  5e                   pop esi
-// 004f078c  c20400               ret 4
-// library rbxgs-render/Clusterer.cpp (function ??0Clusterer@Render@RBX@@QAE@I@Z)
-
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
 // roc-lib: rbxgs-render Clusterer.cpp
+
+// Candidate translation unit (score above; library headers required).
+#include "Clusterer.h"
+
+namespace RBX
+{
+	namespace Render
+	{
+		Clusterer::Clusterer(size_t clusterCount)
+			: sampleSize(0),
+			  clusterCount(clusterCount),
+			  clusters(clusterCount)
+		{
+		}
+
+		void Clusterer::Cluster::computeCentroid()
+		{
+			G3D::Vector3 c(0.0f, 0.0f, 0.0f);
+
+			std::vector<Chunk*>::iterator iter = samples.begin();
+			std::vector<Chunk*>::iterator end = samples.end();
+
+			for (; iter != end; iter++)
+			{
+				c += (*iter)->cframe().translation;
+			}
+
+			centroid = c / samples.size();
+		}
+
+		float Clusterer::Cluster::getDistanceFromCentroid(Chunk* sample)
+		{
+			return (sample->cframe().translation - centroid).magnitude();
+		}
+
+		Clusterer::Cluster& Clusterer::findClosestCluster(Chunk* sample)
+		{
+			Cluster* bestCluster = NULL;
+			float bestDistance = G3D::inf();
+
+			std::vector<Cluster>::iterator end = clusters.end();
+
+			for (std::vector<Cluster>::iterator iter = clusters.begin(); iter != end; iter++)
+			{
+				float distance = iter->getDistanceFromCentroid(sample);
+				if (distance < bestDistance)
+				{
+					bestCluster = &(*iter);
+					bestDistance = distance;
+				}
+			}
+
+			return *bestCluster;
+		}
+
+		size_t Clusterer::moveSamples()
+		{
+			size_t moveCount = 0;
+
+			for (std::vector<Cluster>::iterator it = clusters.begin(); it != clusters.end(); it++)
+			{
+				it->visitIndex = 0;
+			}
+
+			for (std::vector<Cluster>::iterator it = clusters.begin(); it != clusters.end(); it++)
+			{
+				Cluster& cluster = *it;
+
+				while (cluster.visitIndex < cluster.samples.size())
+				{
+					Chunk* sample = cluster.samples[cluster.visitIndex];
+					Cluster& bestCluster = findClosestCluster(sample);
+
+					if (&bestCluster != &cluster)
+					{
+						cluster.samples[cluster.visitIndex] = cluster.samples.back();
+						cluster.samples.pop_back();
+
+						moveCount += moveSample(sample, bestCluster);
+					}
+					else
+					{
+						cluster.visitIndex++;
+					}
+				}
+			}
+
+			return moveCount;
+		}
+
+		template<class Iterator>
+		void Clusterer::addSamples(Iterator _Iter, Iterator _End)
+		{
+			size_t currentCluster = 0;
+
+			for (; _Iter != _End; _Iter++)
+			{
+				clusters[currentCluster].samples.push_back(_Iter->pointer()); // NOTE: this function may have been specialized, although only one template parameter for this function exists in RBXGS
+
+				currentCluster = (currentCluster + 1) % clusterCount;
+				sampleSize++;
+			}
+		}
+	}
+}

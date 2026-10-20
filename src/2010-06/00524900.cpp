@@ -1,36 +1,155 @@
-// roc 2010-06 00524900  unit: RBX::MeshGen  size: 96 bytes
-// Make this compile to the exact bytes below, then: roc check 2010-06 00524900
-//
-// 00524900  6a01                 push 1
-// 00524902  6a01                 push 1
-// 00524904  b93c88c000           mov ecx, 0xc0883c
-// 00524909  e852e5ffff           call 0x522e60
-// 0052490e  6a01                 push 1
-// 00524910  6a01                 push 1
-// 00524912  b94888c000           mov ecx, 0xc08848
-// 00524917  e844e5ffff           call 0x522e60
-// 0052491c  6a01                 push 1
-// 0052491e  6a01                 push 1
-// 00524920  b9e087c000           mov ecx, 0xc087e0
-// 00524925  e846e6ffff           call 0x522f70
-// 0052492a  6a01                 push 1
-// 0052492c  6a01                 push 1
-// 0052492e  b9a488c000           mov ecx, 0xc088a4
-// 00524933  e828e5ffff           call 0x522e60
-// 00524938  6a01                 push 1
-// 0052493a  6a01                 push 1
-// 0052493c  b99888c000           mov ecx, 0xc08898
-// 00524941  e8da42f6ff           call 0x488c20
-// 00524946  a19888c000           mov eax, dword ptr [0xc08898]
-// 0052494b  6a01                 push 1
-// 0052494d  6a00                 push 0
-// 0052494f  b9ec87c000           mov ecx, 0xc087ec
-// 00524954  c70001000000         mov dword ptr [eax], 1
-// 0052495a  e8c142f6ff           call 0x488c20
-// 0052495f  c3                   ret 
-// library rbxgs-render/Mesh.cpp (function ?initStatics@Mesh@Render@RBX@@KAXXZ)
-
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
 // roc-lib: rbxgs-render Mesh.cpp
+
+// Candidate translation unit (score above; library headers required).
+#include "RenderLib/Mesh.h"
+#include <GLG3D/VARArea.h>
+
+namespace RBX
+{
+	namespace Render
+	{
+		static int vertexRefCount = 0;
+		static bool init;
+
+		Mesh::Level::~Level()
+		{
+			for (int i = 0; i < indexArray.size(); i++)
+				freeVertex(indexArray[i]);
+		}
+
+		Mesh::Mesh()
+		{
+			if (!init)
+			{
+				initStatics();
+				init = true;
+			}
+
+			debugBoundingRadius = 0.0f;
+		}
+
+		Mesh::~Mesh() {}
+
+		void Mesh::endRender(G3D::RenderDevice* rd)
+		{
+			rd->endIndexedPrimitives();
+		}
+
+		unsigned Mesh::allocVertex(unsigned i, unsigned count)
+		{
+			vertexRefCounts[i] += count;
+			vertexRefCount += count;
+			return i;
+		}
+
+		void Mesh::sendGeometry(const Level* lvl, G3D::RenderDevice* rd)
+		{
+			if (lvl && lvl->indexArray.size() > 0)
+			{
+				G3D::RenderDevice::Primitive primitive = lvl->primitive;
+				rd->sendIndices(primitive, lvl->indexArray.size(), lvl->indexArray.begin());
+			}
+		}
+
+		void Mesh::initStatics()
+		{
+			visibleGeometry.vertexArray.resize(1);
+			visibleGeometry.normalArray.resize(1);
+			texCoordArray.resize(1);
+			tangentArray.resize(1);
+			vertexRefCounts.resize(1);
+			vertexRefCounts.front() = 1;
+			freeList.clear();
+		}
+
+		void Mesh::beginRender(G3D::RenderDevice* rd, bool usetexCoords, bool useTangent)
+		{
+			makeVAR();
+			rd->beginIndexedPrimitives();
+
+			if (vertexVAR.valid())
+				rd->setVertexArray(vertexVAR);
+
+			if (normalVAR.valid())
+				rd->setVertexArray(normalVAR);
+
+			if (usetexCoords && texCoordVAR.valid())
+				rd->setTexCoordArray(0, texCoordVAR);
+
+			if (useTangent && tangentVAR.valid())
+				rd->setTexCoordArray(2, tangentVAR);
+		}
+
+		void Mesh::freeVertex(unsigned index)
+		{
+			if (vertexRefCounts.begin())
+			{
+				vertexRefCount--;
+				int& refIndex = vertexRefCounts[index];
+
+				if (refIndex == 1)
+				{
+					refIndex = 0;
+					freeList.push_back(index);
+				}
+				else
+				{
+					refIndex--;
+				}
+			}
+		}
+
+		void Mesh::makeVAR()
+		{
+			if (varDirty)
+			{
+				G3D::ReferenceCountedPointer<G3D::VARArea> area = G3D::VARArea::create(visibleGeometry.vertexArray.size() * 44 + 1024, G3D::VARArea::WRITE_ONCE);
+
+				vertexVAR = G3D::VAR(visibleGeometry.vertexArray, area);
+				normalVAR = G3D::VAR(visibleGeometry.normalArray, area);
+				texCoordVAR = G3D::VAR(texCoordArray, area);
+				tangentVAR = G3D::VAR(tangentArray, area);
+
+				varDirty = false;
+			}
+		}
+
+		unsigned Mesh::allocVertex(const G3D::Vector3& vertex, const G3D::Vector3& normal, const G3D::Vector2& tex, bool share)
+		{
+			if (!varDirty)
+				varDirty = true;
+
+			if (freeList.size() == 0)
+			{
+				int index = visibleGeometry.vertexArray.size();
+
+				visibleGeometry.vertexArray.push_back(vertex);
+				visibleGeometry.normalArray.push_back(normal);
+				texCoordArray.push_back(tex);
+				tangentArray.push_back(G3D::Vector3::zero());
+
+				vertexRefCounts.push_back(1);
+				vertexRefCount++;
+
+				return index;
+			}
+			else
+			{
+				int index = freeList.pop();
+
+				visibleGeometry.vertexArray[index] = vertex;
+				visibleGeometry.normalArray[index] = normal;
+				texCoordArray[index] = tex;
+				tangentArray[index] = G3D::Vector3::zero();
+
+				vertexRefCount++;
+				vertexRefCounts[index] = 1;
+
+				return index;
+			}
+		}
+	}
+}

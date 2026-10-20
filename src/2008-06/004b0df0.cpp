@@ -1,42 +1,206 @@
-// roc 2008-06 004b0df0  unit: RBX::Network::Replicator::NewInstanceItem  size: 120 bytes
-// Make this compile to the exact bytes below, then: roc check 2008-06 004b0df0
-//
-// 004b0df0  6aff                 push -1
-// 004b0df2  683b467d00           push 0x7d463b
-// 004b0df7  64a100000000         mov eax, dword ptr fs:[0]
-// 004b0dfd  50                   push eax
-// 004b0dfe  64892500000000       mov dword ptr fs:[0], esp
-// 004b0e05  83ec08               sub esp, 8
-// 004b0e08  c7042400000000       mov dword ptr [esp], 0
-// 004b0e0f  6854010000           push 0x154
-// 004b0e14  c644240400           mov byte ptr [esp + 4], 0
-// 004b0e19  ff15b0288000         call dword ptr [0x8028b0]
-// 004b0e1f  83c404               add esp, 4
-// 004b0e22  89442404             mov dword ptr [esp + 4], eax
-// 004b0e26  c744241000000000     mov dword ptr [esp + 0x10], 0
-// 004b0e2e  85c0                 test eax, eax
-// 004b0e30  7409                 je 0x4b0e3b
-// 004b0e32  8bc8                 mov ecx, eax
-// 004b0e34  e8f7ebffff           call 0x4afa30
-// 004b0e39  eb02                 jmp 0x4b0e3d
-// 004b0e3b  33c0                 xor eax, eax
-// 004b0e3d  8b0c24               mov ecx, dword ptr [esp]
-// 004b0e40  56                   push esi
-// 004b0e41  8b74241c             mov esi, dword ptr [esp + 0x1c]
-// 004b0e45  51                   push ecx
-// 004b0e46  50                   push eax
-// 004b0e47  8bce                 mov ecx, esi
-// 004b0e49  c744241cffffffff     mov dword ptr [esp + 0x1c], 0xffffffff
-// 004b0e51  e8bac7ffff           call 0x4ad610
-// 004b0e56  8b4c240c             mov ecx, dword ptr [esp + 0xc]
-// 004b0e5a  8bc6                 mov eax, esi
-// 004b0e5c  5e                   pop esi
-// 004b0e5d  64890d00000000       mov dword ptr fs:[0], ecx
-// 004b0e64  83c414               add esp, 0x14
-// 004b0e67  c3                   ret 
-// library openrbx-client/App\v8datamodel\JointInstance.cpp (function ??$create@VGlue@RBX@@@?$Creatable@VInstance@RBX@@@RBX@@SA?AV?$shared_ptr@VGlue@RBX@@@boost@@XZ)
-
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
 // roc-lib: openrbx-client App/v8datamodel/JointInstance.cpp
+
+// Candidate translation unit (score above; library headers required).
+#include "v8datamodel/JointInstance.h"
+
+#include "reflection/property.h"
+#include "util/Name.h"
+#include "v8datamodel/PartInstance.h"
+
+namespace RBX {
+
+const char sAutoJoint[] = "AutoJoint";
+
+const char sJointInstance[] = "JointInstance";
+
+const char sMotor[] = "Motor";
+
+const char sRotateV[] = "RotateV";
+
+const char sRotateP[] = "RotateP";
+
+const char sRotate[] = "Rotate";
+
+const char sGlue[] = "Glue";
+
+const char sWeld[] = "Weld";
+
+const char sSnap[] = "Snap";
+
+static Reflection::PropDescriptor<Motor, float> prop_MaxVelocity(
+	"MaxVelocity",
+	"Data",
+	&RBX::Motor::getMaxVelocity,
+	&RBX::Motor::setMaxVelocity
+);
+
+static Reflection::PropDescriptor<Motor, float> prop_CurrentAngle(
+	"CurrentAngle",
+	"Data",
+	&RBX::Motor::getCurrentAngle,
+	&RBX::Motor::setCurrentAngle
+);
+
+float Motor::getMaxVelocity() const
+{
+	return static_cast<MotorJoint*>(joint)->getMaxVelocity();
+}
+
+float Motor::getCurrentAngle() const
+{
+	return static_cast<MotorJoint*>(joint)->getCurrentAngle();
+}
+
+// FUNCTION: WEBSERVICE 0x100d7df0
+JointInstance::~JointInstance()
+{
+	joint->setJointOwner(NULL);
+	delete joint;
+	joint = NULL;
+}
+
+// STUB: WEBSERVICE 0x100d8030
+void AutoJoint::setPart(int index, PartInstance* value)
+{
+	if (part[index].get() == value) {
+		return;
+	}
+
+	part[index] = shared_from(value);
+	joint->setPrimitive(index, value ? value->getPrimitive() : NULL);
+}
+
+// STUB: WEBSERVICE 0x100d8110
+AutoJoint::~AutoJoint()
+{
+	setPart(0, NULL);
+	setPart(1, NULL);
+}
+
+// FUNCTION: WEBSERVICE 0x100d9020
+void Motor::setMaxVelocity(float value)
+{
+	if (value != static_cast<MotorJoint*>(joint)->getMaxVelocity()) {
+		static_cast<MotorJoint*>(joint)->setMaxVelocity(value);
+		raisePropertyChanged(prop_MaxVelocity);
+	}
+}
+
+// FUNCTION: WEBSERVICE 0x100d90c0
+void Motor::setCurrentAngle(float value)
+{
+	if (value != static_cast<MotorJoint*>(joint)->getCurrentAngle()) {
+		static_cast<MotorJoint*>(joint)->setCurrentAngle(value);
+		raisePropertyChanged(prop_CurrentAngle);
+	}
+}
+
+Snap::Snap(Joint* joint) : DescribedCreatable<Snap, AutoJoint, sSnap>(joint)
+{
+}
+
+// STUB: WEBSERVICE 0x100d9b20
+Snap::Snap() : DescribedCreatable<Snap, AutoJoint, sSnap>(new SnapJoint())
+{
+	setName("Snap");
+}
+
+// STUB: WEBSERVICE 0x100d9c20
+Weld::Weld(Joint* joint) : DescribedCreatable<Weld, AutoJoint, sWeld>(joint)
+{
+}
+
+// STUB: WEBSERVICE 0x100d9cb0
+Weld::Weld() : DescribedCreatable<Weld, AutoJoint, sWeld>(new WeldJoint())
+{
+}
+
+// FUNCTION: WEBSERVICE 0x100d9d80
+Glue::Glue(Joint* joint) : DescribedCreatable<Glue, AutoJoint, sGlue>(joint)
+{
+}
+
+// FUNCTION: WEBSERVICE 0x100d9e00
+Glue::Glue() : DescribedCreatable<Glue, AutoJoint, sGlue>(new GlueJoint())
+{
+}
+
+// STUB: WEBSERVICE 0x100d9ec0
+Rotate::Rotate(Joint* joint) : DescribedCreatable<Rotate, AutoJoint, sRotate>(joint)
+{
+}
+
+// STUB: WEBSERVICE 0x100d9f90
+Rotate::Rotate() : DescribedCreatable<Rotate, AutoJoint, sRotate>(new RotateJoint())
+{
+}
+
+// STUB: WEBSERVICE 0x100da050
+RotateP::RotateP(Joint* joint) : DescribedCreatable<RotateP, AutoJoint, sRotateP>(joint)
+{
+}
+
+// STUB: WEBSERVICE 0x100da100
+RotateP::RotateP() : DescribedCreatable<RotateP, AutoJoint, sRotateP>(new RotatePJoint())
+{
+}
+
+// STUB: WEBSERVICE 0x100da1d0
+RotateV::RotateV(Joint* joint) : DescribedCreatable<RotateV, AutoJoint, sRotateV>(joint)
+{
+}
+
+// STUB: WEBSERVICE 0x100da280
+RotateV::RotateV() : DescribedCreatable<RotateV, AutoJoint, sRotateV>(new RotateVJoint())
+{
+}
+
+Motor::Motor(Joint* joint) : DescribedCreatable<Motor, AutoJoint, sMotor>(joint)
+{
+}
+
+// FUNCTION: WEBSERVICE 0x100da370
+Motor::Motor() : DescribedCreatable<Motor, AutoJoint, sMotor>(new MotorJoint())
+{
+	setName("Motor");
+}
+
+} // namespace RBX
+
+template const RBX::Name& RBX::Name::doDeclare<RBX::sJointInstance>();
+template void RBX::Name::callDoDeclare<RBX::sJointInstance>();
+template const RBX::Name& RBX::Name::doDeclare<RBX::sAutoJoint>();
+template void RBX::Name::callDoDeclare<RBX::sAutoJoint>();
+
+template class RBX::FactoryProduct<RBX::Glue, RBX::AutoJoint, RBX::sGlue>;
+template class RBX::Reflection::
+	Described<RBX::Glue, RBX::sGlue, RBX::FactoryProduct<RBX::Glue, RBX::AutoJoint, RBX::sGlue> >;
+template class RBX::DescribedCreatable<RBX::Glue, RBX::AutoJoint, RBX::sGlue>;
+
+template class RBX::FactoryProduct<RBX::Rotate, RBX::AutoJoint, RBX::sRotate>;
+template class RBX::Reflection::
+	Described<RBX::Rotate, RBX::sRotate, RBX::FactoryProduct<RBX::Rotate, RBX::AutoJoint, RBX::sRotate> >;
+template class RBX::DescribedCreatable<RBX::Rotate, RBX::AutoJoint, RBX::sRotate>;
+
+template class RBX::FactoryProduct<RBX::RotateP, RBX::AutoJoint, RBX::sRotateP>;
+template class RBX::Reflection::
+	Described<RBX::RotateP, RBX::sRotateP, RBX::FactoryProduct<RBX::RotateP, RBX::AutoJoint, RBX::sRotateP> >;
+template class RBX::DescribedCreatable<RBX::RotateP, RBX::AutoJoint, RBX::sRotateP>;
+
+template class RBX::FactoryProduct<RBX::RotateV, RBX::AutoJoint, RBX::sRotateV>;
+template class RBX::Reflection::
+	Described<RBX::RotateV, RBX::sRotateV, RBX::FactoryProduct<RBX::RotateV, RBX::AutoJoint, RBX::sRotateV> >;
+template class RBX::DescribedCreatable<RBX::RotateV, RBX::AutoJoint, RBX::sRotateV>;
+
+template class RBX::FactoryProduct<RBX::Snap, RBX::AutoJoint, RBX::sSnap>;
+template class RBX::Reflection::
+	Described<RBX::Snap, RBX::sSnap, RBX::FactoryProduct<RBX::Snap, RBX::AutoJoint, RBX::sSnap> >;
+template class RBX::DescribedCreatable<RBX::Snap, RBX::AutoJoint, RBX::sSnap>;
+
+template class RBX::FactoryProduct<RBX::Weld, RBX::AutoJoint, RBX::sWeld>;
+template class RBX::Reflection::
+	Described<RBX::Weld, RBX::sWeld, RBX::FactoryProduct<RBX::Weld, RBX::AutoJoint, RBX::sWeld> >;
+template class RBX::DescribedCreatable<RBX::Weld, RBX::AutoJoint, RBX::sWeld>;

@@ -1,55 +1,165 @@
-// roc 2007-03 00539120  unit: seg_00530000  size: 113 bytes
-// Make this compile to the exact bytes below, then: roc check 2007-03 00539120
-//
-// 00539120  57                   push edi
-// 00539121  8b7c2408             mov edi, dword ptr [esp + 8]
-// 00539125  3b7c240c             cmp edi, dword ptr [esp + 0xc]
-// 00539129  7464                 je 0x53918f
-// 0053912b  53                   push ebx
-// 0053912c  55                   push ebp
-// 0053912d  8b6c2418             mov ebp, dword ptr [esp + 0x18]
-// 00539131  56                   push esi
-// 00539132  8b4500               mov eax, dword ptr [ebp]
-// 00539135  8907                 mov dword ptr [edi], eax
-// 00539137  8b5d04               mov ebx, dword ptr [ebp + 4]
-// 0053913a  3b5f04               cmp ebx, dword ptr [edi + 4]
-// 0053913d  7444                 je 0x539183
-// 0053913f  85db                 test ebx, ebx
-// 00539141  740c                 je 0x53914f
-// 00539143  8d4b04               lea ecx, [ebx + 4]
-// 00539146  ba01000000           mov edx, 1
-// 0053914b  f00fc111             lock xadd dword ptr [ecx], edx
-// 0053914f  8b7704               mov esi, dword ptr [edi + 4]
-// 00539152  85f6                 test esi, esi
-// 00539154  742a                 je 0x539180
-// 00539156  8d4604               lea eax, [esi + 4]
-// 00539159  83c9ff               or ecx, 0xffffffff
-// 0053915c  f00fc108             lock xadd dword ptr [eax], ecx
-// 00539160  751e                 jne 0x539180
-// 00539162  8b16                 mov edx, dword ptr [esi]
-// 00539164  8b4204               mov eax, dword ptr [edx + 4]
-// 00539167  8bce                 mov ecx, esi
-// 00539169  ffd0                 call eax
-// 0053916b  8d4e08               lea ecx, [esi + 8]
-// 0053916e  83caff               or edx, 0xffffffff
-// 00539171  f00fc111             lock xadd dword ptr [ecx], edx
-// 00539175  7509                 jne 0x539180
-// 00539177  8b06                 mov eax, dword ptr [esi]
-// 00539179  8b5008               mov edx, dword ptr [eax + 8]
-// 0053917c  8bce                 mov ecx, esi
-// 0053917e  ffd2                 call edx
-// 00539180  895f04               mov dword ptr [edi + 4], ebx
-// 00539183  83c708               add edi, 8
-// 00539186  3b7c2418             cmp edi, dword ptr [esp + 0x18]
-// 0053918a  75a6                 jne 0x539132
-// 0053918c  5e                   pop esi
-// 0053918d  5d                   pop ebp
-// 0053918e  5b                   pop ebx
-// 0053918f  5f                   pop edi
-// 00539190  c3                   ret 
-// library rbxgs/v8datamodel\Selection.cpp (function ??$_Fill@PAV?$shared_ptr@VInstance@RBX@@@boost@@V12@@std@@YAXPAV?$shared_ptr@VInstance@RBX@@@boost@@0ABV12@@Z)
-
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
 // roc-lib: rbxgs v8datamodel/Selection.cpp
+
+// Candidate translation unit (score above; library headers required).
+#include "v8datamodel/Selection.h"
+
+static RBX::Reflection::BoundFuncDesc<RBX::Selection, boost::shared_ptr<const std::vector<boost::shared_ptr<RBX::Instance>>>(void), 0> func_getSelection(&RBX::Selection::getSelection2, "Get", RBX::Reflection::FunctionDescriptor::NeedTrustedCaller);
+static RBX::Reflection::BoundFuncDesc<RBX::Selection, void(boost::shared_ptr<const std::vector<boost::shared_ptr<RBX::Instance>>>), 1> func_setSelection(&RBX::Selection::setSelection, "Set", "selection", RBX::Reflection::FunctionDescriptor::NeedTrustedCaller);
+
+namespace RBX
+{
+	Selection::Selection()
+		: selection(std::vector<boost::shared_ptr<Instance>>())
+	{
+		setName("Selection");
+	}
+
+	Selection::~Selection()
+	{
+		RBXASSERT(size() == 0);
+	}
+
+	void Selection::addFilteredSelection(ISelectionBase* fs)
+	{
+		filteredSelections.push_back(fs);
+	}
+
+	void Selection::removeFilteredSelection(ISelectionBase* fs)
+	{
+		filteredSelections.erase(std::find(filteredSelections.begin(), filteredSelections.end(), fs));
+	}
+
+	void Selection::raiseAdded(boost::shared_ptr<Instance> instance)
+	{
+		SelectionChanged event(instance, boost::shared_ptr<Instance>());
+
+		for (std::vector<ISelectionBase*>::iterator iter = filteredSelections.begin(); iter != filteredSelections.end(); iter++)
+		{
+			(*iter)->onSelectionChanged(event);
+		}
+
+		Notifier<Selection, SelectionChanged>::raise(event);
+	}
+
+	void Selection::raiseRemoved(boost::shared_ptr<Instance> source)
+	{
+		SelectionChanged event(boost::shared_ptr<Instance>(), source);
+
+		for (std::vector<ISelectionBase*>::iterator iter = filteredSelections.begin(); iter != filteredSelections.end(); iter++)
+		{
+			(*iter)->onSelectionChanged(event);
+		}
+
+		Notifier<Selection, SelectionChanged>::raise(event);
+	}
+
+	void Selection::toggleSelection(Instance* instance)
+	{
+		boost::shared_ptr<Instance> shared = shared_from(instance);
+		boost::shared_ptr<std::vector<boost::shared_ptr<Instance>>> sel = selection.write();
+
+		std::vector<boost::shared_ptr<Instance>>::iterator found = std::find(sel->begin(), sel->end(), shared);
+
+		if (found == sel->end())
+		{
+			sel->push_back(shared);
+			instance->Notifier<Instance, AncestorChanged>::addListener(this);
+			raiseAdded(shared);
+		}
+		else
+		{
+			sel->erase(found);
+			instance->Notifier<Instance, AncestorChanged>::removeListener(this);
+			raiseRemoved(shared);
+		}
+	}
+
+	void Selection::addToSelection(Instance* instance)
+	{
+		boost::shared_ptr<Instance> shared = shared_from(instance);
+		RBXASSERT(instance);
+
+		boost::shared_ptr<std::vector<boost::shared_ptr<Instance>>> sel = selection.write();
+
+		std::vector<boost::shared_ptr<Instance>>::iterator found = std::find(sel->begin(), sel->end(), shared);
+
+		if (found == sel->end())
+		{
+			sel->push_back(shared);
+			instance->Notifier<Instance, AncestorChanged>::addListener(this);
+			raiseAdded(shared);
+		}
+	}
+	
+	void Selection::removeFromSelection(const Instance* instance)
+	{
+		RBXASSERT(instance);
+
+		boost::shared_ptr<std::vector<boost::shared_ptr<Instance>>> sel = selection.write();
+
+		std::vector<boost::shared_ptr<Instance>>::iterator found = std::find(sel->begin(), sel->end(), shared_from(instance));
+
+		if (found != sel->end())
+		{
+			boost::shared_ptr<Instance> nonConst = *found;
+
+			sel->erase(found);
+			instance->Notifier<Instance, AncestorChanged>::removeListener(this);
+			raiseRemoved(nonConst);
+		}
+	}
+
+	void Selection::clearSelection()
+	{
+		while (!selection->empty())
+		{
+			boost::shared_ptr<Instance> instance = selection->back();
+			selection.write()->pop_back();
+
+			instance->Notifier<Instance, AncestorChanged>::removeListener(this);
+			raiseRemoved(instance);
+		}
+	}
+
+	void Selection::setSelection(Instance* instance)
+	{
+		boost::shared_ptr<Instance> inst = shared_from(instance);
+		
+		while (!selection->empty())
+		{
+			boost::shared_ptr<Instance> item = selection->back();
+
+			if (item == inst)
+			{
+				if (selection->size() == 1)
+					return;
+
+				boost::shared_ptr<std::vector<boost::shared_ptr<Instance>>> sel = selection.write();
+				sel->back() = sel->front();
+				sel->front() = item;
+			}
+			else
+			{
+				selection.write()->pop_back();
+				item->Notifier<Instance, AncestorChanged>::removeListener(this);
+				raiseRemoved(item);
+			}
+		}
+
+		if (inst)
+		{
+			selection.write()->push_back(inst);
+			instance->Notifier<Instance, AncestorChanged>::addListener(this);
+			raiseAdded(inst);
+		}
+	}
+
+	void Selection::onEvent(const Instance* source, AncestorChanged event)
+	{
+		if (source->getRootAncestor() != this->getRootAncestor())
+			removeFromSelection(source);
+	}
+}

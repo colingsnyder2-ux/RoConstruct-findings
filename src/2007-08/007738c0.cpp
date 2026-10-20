@@ -1,21 +1,140 @@
-// roc 2007-08 007738c0  unit: seg_00770000  size: 38 bytes
-// Make this compile to the exact bytes below, then: roc check 2007-08 007738c0
-//
-// 007738c0  6a01                 push 1
-// 007738c2  33c9                 xor ecx, ecx
-// 007738c4  68184f7b00           push 0x7b4f18
-// 007738c9  51                   push ecx
-// 007738ca  b8f0315a00           mov eax, 0x5a31f0
-// 007738cf  50                   push eax
-// 007738d0  b910578c00           mov ecx, 0x8c5710
-// 007738d5  e8b600e3ff           call 0x5a3990
-// 007738da  68f0b27700           push 0x77b2f0
-// 007738df  e83fd4ebff           call 0x630d23
-// 007738e4  59                   pop ecx
-// 007738e5  c3                   ret 
-// library rbxgs/v8datamodel\Teams.cpp (function ??__Efunc_teams@RBX@@YAXXZ)
-
 // roc-lang: cpp
 // roc-cl: 50727
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
 // roc-lib: rbxgs v8datamodel/Teams.cpp
+
+// Candidate translation unit (score above; library headers required).
+#include "v8datamodel/Teams.h"
+#include "v8datamodel/ModelInstance.h"
+#include "Network/Players.h"
+
+namespace RBX
+{
+	const char* sTeams = "Teams";
+
+	static Reflection::BoundFuncDesc<Teams, void(void), 0> teams_rebalanceTeamsFunction(&Teams::rebalanceTeams, "RebalanceTeams", Reflection::FunctionDescriptor::AnyCaller);
+	static Reflection::BoundFuncDesc<Teams, boost::shared_ptr<const std::vector<boost::shared_ptr<Instance>>>(void), 0> func_teams(&Teams::getTeams, "GetTeams", Reflection::FunctionDescriptor::AnyCaller);
+
+	Teams::Teams()
+		: teams(std::vector<boost::shared_ptr<Instance>>())
+	{
+		setName("Teams");
+	}
+
+	Teams::~Teams()
+	{
+	}
+
+	int Teams::getNumPlayersInTeam(BrickColor brickColor)
+	{
+		int numOfPlayers = 0;
+
+		Network::Players* players = ServiceProvider::find<Network::Players>(this);
+		RBXASSERT(players);
+
+		for (size_t i = 0; i < players->numChildren(); i++)
+		{
+			Network::Player* player = dynamic_cast<Network::Player*>(players->getChild(i));
+			if (player)
+			{
+				if (!player->getNeutral() && player->getTeamColor() == brickColor)
+					numOfPlayers++;
+			}
+		}
+		
+		return numOfPlayers;
+	}
+	
+	bool Teams::teamExists(BrickColor brickColor)
+	{
+		return getTeamFromTeamColor(brickColor) != NULL;
+	}
+
+	Team* Teams::getTeamFromTeamColor(BrickColor brickColor)
+	{
+		for (size_t i = 0; i < numChildren(); i++)
+		{
+			Team* team = dynamic_cast<Team*>(getChild(i));
+			if (team && team->getTeamColor() == brickColor)
+				return team;
+		}
+		
+		return NULL;
+	}
+
+	G3D::Color3 Teams::getTeamColorForHumanoid(Humanoid* humanoid)
+	{
+		Network::Players* players = ServiceProvider::find<Network::Players>(this);
+		RBXASSERT(players);
+
+		for (size_t i = 0; i < players->numChildren(); i++)
+		{
+			Network::Player* player = dynamic_cast<Network::Player*>(players->getChild(i));
+			if (player)
+			{
+				if (!player->getNeutral() && player->getCharacter())
+				{
+					ModelInstance* character = player->getCharacter();
+					if (character->findFirstChildOfType<Humanoid>() == humanoid)
+					{
+						return player->getTeamColor().color3();
+					}
+				}
+			}
+		}
+
+		return G3D::Color3::white();
+	}
+
+	void Teams::assignNewPlayerToTeam(Network::Player* player)
+	{
+		BrickColor best = BrickColor::lego_28;
+		int best_count = 10000;
+		bool found = false;
+
+		for (size_t i = 0; i < numChildren(); i++)
+		{
+			Team* team = dynamic_cast<Team*>(getChild(i));
+			if (team && team->getAutoAssignable() == true)
+			{
+				int count = getNumPlayersInTeam(team->getTeamColor());
+
+				if (count < best_count)
+				{
+					best = team->getTeamColor();
+					best_count = count;
+					found = true;
+				}
+			}
+		}
+		
+		if (found)
+		{
+			player->setTeamColor(best);
+			player->setNeutral(false);
+		}
+	}
+
+	void Teams::onChildAdded(Instance* child)
+	{
+		if (dynamic_cast<Team*>(child))
+		{
+			boost::shared_ptr<std::vector<boost::shared_ptr<Instance>>>& myTeams = teams.write();
+			myTeams->push_back(shared_from(child));
+		}
+	}
+
+	void Teams::onChildRemoving(Instance* child)
+	{
+		if (dynamic_cast<Team*>(child))
+		{
+			boost::shared_ptr<std::vector<boost::shared_ptr<Instance>>>& myTeams = teams.write();
+			myTeams->erase(std::find(myTeams->begin(), myTeams->end(), shared_from(child)));
+		}
+	}
+
+	void Teams::rebalanceTeams()
+	{
+		return;
+	}
+}

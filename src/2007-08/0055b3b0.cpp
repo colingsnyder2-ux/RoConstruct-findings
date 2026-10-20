@@ -1,166 +1,400 @@
-// roc 2007-08 0055b3b0  unit: RBX::VTool::?$FactoryProduct::Creator  size: 494 bytes
-// Make this compile to the exact bytes below, then: roc check 2007-08 0055b3b0
-//
-// 0055b3b0  6aff                 push -1
-// 0055b3b2  68a4377500           push 0x7537a4
-// 0055b3b7  64a100000000         mov eax, dword ptr fs:[0]
-// 0055b3bd  50                   push eax
-// 0055b3be  64892500000000       mov dword ptr fs:[0], esp
-// 0055b3c5  83ec3c               sub esp, 0x3c
-// 0055b3c8  53                   push ebx
-// 0055b3c9  55                   push ebp
-// 0055b3ca  56                   push esi
-// 0055b3cb  33db                 xor ebx, ebx
-// 0055b3cd  57                   push edi
-// 0055b3ce  895c2418             mov dword ptr [esp + 0x18], ebx
-// 0055b3d2  83ec20               sub esp, 0x20
-// 0055b3d5  8bf4                 mov esi, esp
-// 0055b3d7  8d842480000000       lea eax, [esp + 0x80]
-// 0055b3de  8964243c             mov dword ptr [esp + 0x3c], esp
-// 0055b3e2  50                   push eax
-// 0055b3e3  8bce                 mov ecx, esi
-// 0055b3e5  c744247801000000     mov dword ptr [esp + 0x78], 1
-// 0055b3ed  ff159ce67700         call dword ptr [0x77e69c]
-// 0055b3f3  8b8c249c000000       mov ecx, dword ptr [esp + 0x9c]
-// 0055b3fa  894e1c               mov dword ptr [esi + 0x1c], ecx
-// 0055b3fd  8d542434             lea edx, [esp + 0x34]
-// 0055b401  52                   push edx
-// 0055b402  c644247802           mov byte ptr [esp + 0x78], 2
-// 0055b407  e834d3eaff           call 0x408740
-// 0055b40c  8bc8                 mov ecx, eax
-// 0055b40e  c644247801           mov byte ptr [esp + 0x78], 1
-// 0055b413  e878dafeff           call 0x548e90
-// 0055b418  8b08                 mov ecx, dword ptr [eax]
-// 0055b41a  8bf9                 mov edi, ecx
-// 0055b41c  8918                 mov dword ptr [eax], ebx
-// 0055b41e  897c241c             mov dword ptr [esp + 0x1c], edi
-// 0055b422  8b442414             mov eax, dword ptr [esp + 0x14]
-// 0055b426  3bc3                 cmp eax, ebx
-// 0055b428  c644245403           mov byte ptr [esp + 0x54], 3
-// 0055b42d  7412                 je 0x55b441
-// 0055b42f  8b10                 mov edx, dword ptr [eax]
-// 0055b431  8b4a04               mov ecx, dword ptr [edx + 4]
-// 0055b434  8b1408               mov edx, dword ptr [eax + ecx]
-// 0055b437  03c1                 add eax, ecx
-// 0055b439  8bc8                 mov ecx, eax
-// 0055b43b  8b02                 mov eax, dword ptr [edx]
-// 0055b43d  6a01                 push 1
-// 0055b43f  ffd0                 call eax
-// 0055b441  8b0f                 mov ecx, dword ptr [edi]
-// 0055b443  8b5104               mov edx, dword ptr [ecx + 4]
-// 0055b446  8b443a28             mov eax, dword ptr [edx + edi + 0x28]
-// 0055b44a  50                   push eax
-// 0055b44b  8d4c2434             lea ecx, [esp + 0x34]
-// 0055b44f  e8acb70000           call 0x566c00
-// 0055b454  c7442430cc6d7800     mov dword ptr [esp + 0x30], 0x786dcc
-// 0055b45c  8d442414             lea eax, [esp + 0x14]
-// 0055b460  50                   push eax
-// 0055b461  8d4c2434             lea ecx, [esp + 0x34]
-// 0055b465  c644245804           mov byte ptr [esp + 0x58], 4
-// 0055b46a  e891bc0000           call 0x567100
-// 0055b46f  8b08                 mov ecx, dword ptr [eax]
-// 0055b471  8be9                 mov ebp, ecx
-// 0055b473  8918                 mov dword ptr [eax], ebx
-// 0055b475  896c2420             mov dword ptr [esp + 0x20], ebp
-// 0055b479  8b4c2414             mov ecx, dword ptr [esp + 0x14]
-// 0055b47d  3bcb                 cmp ecx, ebx
-// 0055b47f  c644245405           mov byte ptr [esp + 0x54], 5
-// 0055b484  8bf1                 mov esi, ecx
-// 0055b486  740e                 je 0x55b496
-// 0055b488  e87343ebff           call 0x40f800
-// 0055b48d  56                   push esi
-// 0055b48e  e8cf470d00           call 0x62fc62
-// 0055b493  83c404               add esp, 4
-// 0055b496  6a10                 push 0x10
-// 0055b498  e8594a0d00           call 0x62fef6
-// 0055b49d  83c404               add esp, 4
-// 0055b4a0  3bc3                 cmp eax, ebx
-// 0055b4a2  740d                 je 0x55b4b1
-// 0055b4a4  895804               mov dword ptr [eax + 4], ebx
-// 0055b4a7  895808               mov dword ptr [eax + 8], ebx
-// 0055b4aa  89580c               mov dword ptr [eax + 0xc], ebx
-// 0055b4ad  8bf0                 mov esi, eax
-// 0055b4af  eb02                 jmp 0x55b4b3
-// 0055b4b1  33f6                 xor esi, esi
-// 0055b4b3  56                   push esi
-// 0055b4b4  8d4c2430             lea ecx, [esp + 0x30]
-// 0055b4b8  c644245805           mov byte ptr [esp + 0x58], 5
-// 0055b4bd  8974242c             mov dword ptr [esp + 0x2c], esi
-// 0055b4c1  e89a96f3ff           call 0x494b60
-// 0055b4c6  56                   push esi
-// 0055b4c7  8d542430             lea edx, [esp + 0x30]
-// 0055b4cb  56                   push esi
-// 0055b4cc  52                   push edx
-// 0055b4cd  e84e17ebff           call 0x40cc20
-// 0055b4d2  83c40c               add esp, 0xc
-// 0055b4d5  8b742428             mov esi, dword ptr [esp + 0x28]
-// 0055b4d9  56                   push esi
-// 0055b4da  55                   push ebp
-// 0055b4db  8d4c242c             lea ecx, [esp + 0x2c]
-// 0055b4df  c644245c07           mov byte ptr [esp + 0x5c], 7
-// 0055b4e4  e877000100           call 0x56b560
-// 0055b4e9  8b5c245c             mov ebx, dword ptr [esp + 0x5c]
-// 0055b4ed  8933                 mov dword ptr [ebx], esi
-// 0055b4ef  8b74242c             mov esi, dword ptr [esp + 0x2c]
-// 0055b4f3  85f6                 test esi, esi
-// 0055b4f5  897304               mov dword ptr [ebx + 4], esi
-// 0055b4f8  740c                 je 0x55b506
-// 0055b4fa  8d4604               lea eax, [esi + 4]
-// 0055b4fd  b901000000           mov ecx, 1
-// 0055b502  f00fc108             lock xadd dword ptr [eax], ecx
-// 0055b506  85f6                 test esi, esi
-// 0055b508  c744241801000000     mov dword ptr [esp + 0x18], 1
-// 0055b510  c644245405           mov byte ptr [esp + 0x54], 5
-// 0055b515  742a                 je 0x55b541
-// 0055b517  8d5604               lea edx, [esi + 4]
-// 0055b51a  83c8ff               or eax, 0xffffffff
-// 0055b51d  f00fc102             lock xadd dword ptr [edx], eax
-// 0055b521  751e                 jne 0x55b541
-// 0055b523  8b16                 mov edx, dword ptr [esi]
-// 0055b525  8b4204               mov eax, dword ptr [edx + 4]
-// 0055b528  8bce                 mov ecx, esi
-// 0055b52a  ffd0                 call eax
-// 0055b52c  8d4e08               lea ecx, [esi + 8]
-// 0055b52f  83caff               or edx, 0xffffffff
-// 0055b532  f00fc111             lock xadd dword ptr [ecx], edx
-// 0055b536  7509                 jne 0x55b541
-// 0055b538  8b06                 mov eax, dword ptr [esi]
-// 0055b53a  8b5008               mov edx, dword ptr [eax + 8]
-// 0055b53d  8bce                 mov ecx, esi
-// 0055b53f  ffd2                 call edx
-// 0055b541  85ed                 test ebp, ebp
-// 0055b543  c644245404           mov byte ptr [esp + 0x54], 4
-// 0055b548  7410                 je 0x55b55a
-// 0055b54a  8bcd                 mov ecx, ebp
-// 0055b54c  e8af42ebff           call 0x40f800
-// 0055b551  55                   push ebp
-// 0055b552  e80b470d00           call 0x62fc62
-// 0055b557  83c404               add esp, 4
-// 0055b55a  8d4c2438             lea ecx, [esp + 0x38]
-// 0055b55e  e8dd45ebff           call 0x40fb40
-// 0055b563  8b07                 mov eax, dword ptr [edi]
-// 0055b565  8b4804               mov ecx, dword ptr [eax + 4]
-// 0055b568  8b1439               mov edx, dword ptr [ecx + edi]
-// 0055b56b  8b02                 mov eax, dword ptr [edx]
-// 0055b56d  03cf                 add ecx, edi
-// 0055b56f  6a01                 push 1
-// 0055b571  c644245801           mov byte ptr [esp + 0x58], 1
-// 0055b576  ffd0                 call eax
-// 0055b578  8d4c2460             lea ecx, [esp + 0x60]
-// 0055b57c  c644245400           mov byte ptr [esp + 0x54], 0
-// 0055b581  ff15ace67700         call dword ptr [0x77e6ac]
-// 0055b587  8b4c244c             mov ecx, dword ptr [esp + 0x4c]
-// 0055b58b  5f                   pop edi
-// 0055b58c  5e                   pop esi
-// 0055b58d  5d                   pop ebp
-// 0055b58e  8bc3                 mov eax, ebx
-// 0055b590  64890d00000000       mov dword ptr fs:[0], ecx
-// 0055b597  5b                   pop ebx
-// 0055b598  83c448               add esp, 0x48
-// 0055b59b  c22400               ret 0x24
-// library rbxgs/v8datamodel\DataModel.cpp (function ?get@DataModel@RBX@@QAE?AV?$shared_ptr@$$CBV?$vector@V?$shared_ptr@VInstance@RBX@@@boost@@V?$allocator@V?$shared_ptr@VInstance@RBX@@@boost@@@std@@@std@@@boost@@VContentId@2@@Z)
-
 // roc-lang: cpp
 // roc-cl: 50727
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
 // roc-lib: rbxgs v8datamodel/DataModel.cpp
+
+// Candidate translation unit (score above; library headers required).
+#include "v8datamodel/Lighting.h"
+#include "v8datamodel/DataModel.h"
+#include "v8datamodel/TimeState.h"
+#include "v8datamodel/Workspace.h"
+#include "v8datamodel/Hopper.h"
+#include "v8datamodel/Teams.h"
+#include "v8datamodel/JointsService.h"
+#include "v8datamodel/LocalBackpack.h"
+#include "script/ScriptContext.h"
+#include "gui/GUI.h"
+#include "util/Log.h"
+#include "util/IMetric.h"
+#include "util/standardout.h"
+#include "util/Http.h"
+#include "util/Sound.h"
+
+namespace RBX
+{
+	static Reflection::BoundFuncDesc<DataModel, boost::shared_ptr<const std::vector<boost::shared_ptr<Instance>>>(ContentId), 1> getContentFunctionOld(&DataModel::get, "get", "url", Reflection::FunctionDescriptor::AnyCaller);
+	static Reflection::BoundFuncDesc<DataModel, boost::shared_ptr<const std::vector<boost::shared_ptr<Instance>>>(ContentId), 1> getContentFunction(&DataModel::get, "GetObjects", "url", Reflection::FunctionDescriptor::AnyCaller);
+	static Reflection::BoundFuncDesc<DataModel, void(ContentId), 1> loadFunction(&DataModel::loadContent, "Load", "url", Reflection::FunctionDescriptor::NeedTrustedCaller);
+	static Reflection::BoundFuncDesc<DataModel, void(ContentId), 1> saveFunction(&DataModel::save, "Save", "url", Reflection::FunctionDescriptor::NeedTrustedCaller);
+	static Reflection::BoundFuncDesc<DataModel, std::string(std::string, bool), 2> httpGetFunction(&DataModel::httpGet, "HttpGet", "url", "synchronous", Reflection::FunctionDescriptor::AnyCaller);
+	static Reflection::BoundFuncDesc<DataModel, std::string(std::string, std::string, bool), 3> httpPostFunction(&DataModel::httpPost, "HttpPost", "url", "data", "synchronous", Reflection::FunctionDescriptor::NeedTrustedCaller);
+	static Reflection::BoundFuncDesc<DataModel, void(void), 0> sanitizeFunction(&DataModel::clearContents, "ClearContent", Reflection::FunctionDescriptor::NeedTrustedCaller);
+	static Reflection::BoundFuncDesc<DataModel, void(void), 0> closeFunction(&DataModel::close, "Close", Reflection::FunctionDescriptor::NeedTrustedCaller);
+
+	static Reflection::BoundFuncDesc<DataModel, void(std::string), 1> func_SetUIMessage(&DataModel::setUiMessage, "SetMessage", "message", Reflection::FunctionDescriptor::NeedTrustedCaller);
+	static Reflection::BoundFuncDesc<DataModel, void(void), 0> func_ClearUIMessage(&DataModel::clearUiMessage, "ClearMessage", Reflection::FunctionDescriptor::NeedTrustedCaller);
+	static Reflection::BoundFuncDesc<DataModel, void(void), 0> func_SetUIMessageBrickCount(&DataModel::setUiMessageBrickCount, "SetMessageBrickCount", Reflection::FunctionDescriptor::NeedTrustedCaller);
+	
+	static Reflection::SignalDesc<DataModel, void(void)> event_Closing("Close");
+
+#pragma warning (push)
+#pragma warning (disable : 4355) // warning C4355: 'this' : used in base member initializer list
+
+	DataModel::DataModel()
+		: VerbContainer(NULL),
+		  workspace(Creatable::create<Workspace>(this)),
+		  guiRoot(Creatable::create<GuiRoot>()),
+		  guiHooks(Creatable::create<GuiRoot>()),
+		  timeState(new TimeState),
+		  mutex(new boost::recursive_mutex),
+		  guiTarget(NULL),
+		  forceArrowCursor(true),
+		  dirty(false),
+		  drawId(0)
+	{
+		setName("Level");
+	}
+
+#pragma warning (pop)
+
+	DataModel::~DataModel()
+	{
+		Notifier<RunService, RunTransition>::disconnect(runService, this);
+		StandardOut::singleton()->print(MESSAGE_INFO, "~DataModel");
+	}
+
+	bool DataModel::askAddChild(const Instance* instance) const
+	{
+		return dynamic_cast<const Service*>(instance) != NULL;
+	}
+
+	boost::shared_ptr<DataModel> DataModel::createDataModel()
+	{
+		ContentProvider::singleton().clearContentCache();
+		
+		boost::shared_ptr<DataModel> dataModel = Creatable::create<DataModel>();
+
+		{
+			Lock lock(dataModel);
+			dataModel->initializeContents();
+		}
+
+		return dataModel;
+	}
+	
+	void DataModel::onChildAdded(Instance* child)
+	{
+		ServiceProvider::onChildAdded(child);
+
+		if (child->getClassName() == "NetworkClient")
+		{
+			Verb* lockPlayMode = getVerb("LockPlayMode");
+			if (lockPlayMode)
+				lockPlayMode->doIt(NULL);
+
+			workspace->setNullMouseCommand();
+		}
+	}
+
+	void DataModel::onEvent(const RunService* source, RunTransition event)
+	{
+		switch (event.newState)
+		{
+		case RS_NORMAL:
+			if (event.oldState == RS_RUNNING)
+				workspace->reset();
+
+			timeState->clear();
+			break;
+		case RS_RUNNING:
+			workspace->start();
+			break;
+		case RS_PAUSED:
+			workspace->stop();
+			break;
+		}
+	}
+
+	std::string DataModel::doHttpGet(std::string url)
+	{
+		std::string result;
+		Http(url.c_str()).get(result);
+
+		return result;
+	}
+
+	std::string DataModel::doHttpPost(std::string url, std::string data)
+	{
+		std::string result;
+		Http(url).post(std::istringstream(data), true, result);
+
+		return result;
+	}
+
+	void DataModel::close()
+	{
+		Verb* exitVerb = getVerb("Exit");
+		if (!exitVerb)
+			throw std::runtime_error("Couldn\'t find Exit Verb");
+
+		exitVerb->doIt(NULL);
+	}
+
+	std::string DataModel::httpGet(std::string url, bool synchronous)
+	{
+		if (synchronous)
+		{
+			return doHttpGet(url);
+		}
+		else
+		{
+			if (url.size() > 0)
+			{
+				boost::function0<void> f = boost::bind(&DataModel::doHttpGet, url);
+				boost::function0<void> g = boost::bind(&StandardOut::print_exception, f, MESSAGE_ERROR, false);
+
+				boost::thread(background_function(g, "rbx_httpGet"));
+			}
+
+			return "";
+		}
+	}
+
+	std::string DataModel::httpPost(std::string url, std::string data, bool synchronous)
+	{
+		if (synchronous)
+		{
+			return doHttpPost(url, data);
+		}
+		else
+		{
+			boost::function0<void> f = boost::bind(&DataModel::doHttpPost, url, data);
+			boost::function0<void> g = boost::bind(&StandardOut::print_exception, f, MESSAGE_ERROR, false);
+
+			boost::thread(background_function(g, "rbx_httpPost"));
+
+			return "";
+		}
+	}
+
+	void DataModel::clearContents()
+	{
+		workspace->setMouseCommand(NULL);
+		workspace->removeAllChildren();
+		workspace->setCamera(NULL);
+		
+		starterPackService->removeAllChildren();
+
+		Teams* teams = ServiceProvider::find<Teams>(this);
+		if (teams)
+			teams->removeAllChildren();
+
+		Lighting* lighting = ServiceProvider::find<Lighting>(this);
+		if (lighting)
+			lighting->removeAllChildren();
+
+		ScriptContext* script = ServiceProvider::find<ScriptContext>(this);
+		if (script)
+		{
+			script->closeState();
+			ScriptContext::propScriptsDisabled.setValue(script, false);
+		}
+	}
+
+	void DataModel::loadContent(ContentId contentId)
+	{
+		std::auto_ptr<std::istream> stream = ContentProvider::singleton().getContent(contentId);
+		StandardOut::singleton()->print(MESSAGE_INFO, "DataModel Loading %s", contentId.c_str());
+
+		SerializerV2 serializer;
+		serializer.load(*stream, this);
+
+		workspace->joinAllHack();
+	}
+
+	void DataModel::save(ContentId contentId)
+	{
+		std::stringstream stream;
+
+		{
+			boost::scoped_ptr<XmlElement> root(SerializerV2::newRootElement());
+			writeChildren(root.get());
+
+			TextXmlWriterWithEmbeddedContent machine(stream);
+			machine.serialize(root.get());
+
+			stream.flush();
+		}
+		
+		std::string response;
+		Http(contentId.toString()).post(stream, true, response);
+	}
+
+	boost::shared_ptr<const std::vector<boost::shared_ptr<Instance>>> DataModel::get(ContentId contentId)
+	{
+		std::auto_ptr<std::istream> stream = ContentProvider::singleton().getContent(contentId);
+
+		TextXmlParser machine(stream->rdbuf());
+		std::auto_ptr<XmlElement> root = machine.parse();
+
+		boost::shared_ptr<std::vector<boost::shared_ptr<Instance>>> result(new std::vector<boost::shared_ptr<Instance>>);
+
+		SerializerV2 serializer;
+		serializer.loadInstances(root.get(), *result);
+
+		return result;
+	}
+
+	static std::string report(const G3D::Stopwatch& timer)
+	{
+		if (timer.smoothElapsedTime() > 0.0f)
+		{
+			std::string t = Log::formatTime(timer.smoothElapsedTime());
+			char buffer[256];
+			sprintf(buffer, "%s (%.3gfps)", t.c_str(), 1.0f / timer.smoothElapsedTime());
+
+			return std::string(buffer);
+		}
+		else
+		{
+			return Log::formatTime(timer.smoothElapsedTime());
+		}
+	}
+
+	std::string DataModel::evaluate(const std::string& valueName) const
+	{
+		World* world = workspace->getWorld();
+
+		if (valueName == "timer")
+		{
+			float time = timeState->totalVirtualTime;
+			return StringConverter<float>::convertToString(time);
+		}
+		else if (valueName == "FPS")
+		{
+			return G3D::format("%.3g", timeState->fpsStopwatch.smoothFPS());
+		}
+		else if (valueName == "simDC")
+		{
+			return report(timeState->simulationStopwatch);
+		}
+		else if (valueName == "drawId")
+		{
+			return StringConverter<int>::convertToString(drawId);
+		}
+		else if (valueName == "graphicsMode")
+		{
+			return tempMetric->getMetric(valueName);
+		}
+		else if (valueName == "culling")
+		{
+			return tempMetric->getMetric(valueName);
+		}
+		else if (valueName == "cullingPercent")
+		{
+			return tempMetric->getMetric(valueName);
+		}
+		else if (valueName == "antiAliasing")
+		{
+			return tempMetric->getMetric(valueName);
+		}
+		else if (valueName == "bevels")
+		{
+			return tempMetric->getMetric(valueName);
+		}
+		else if (valueName == "videoMemory")
+		{
+			return tempMetric->getMetric(valueName);
+		}
+		else if (valueName == "GfxTime")
+		{
+			return tempMetric->getMetric(valueName);
+		}
+		else if (valueName == "numPrimitives")
+		{
+			return StringConverter<int>::convertToString(world->getPrimitives().size());
+		}
+		else if (valueName == "numJoints")
+		{
+			return StringConverter<int>::convertToString(world->getNumJoints());
+		}
+		else if (valueName == "numContacts")
+		{
+			return StringConverter<int>::convertToString(world->getNumContacts());
+		}
+		else if (valueName == "numContactsInCollisionStage")
+		{
+			return StringConverter<int>::convertToString(world->getMetric(IWorldStage::NUM_CONTACTSTAGE_CONTACTS));
+		}
+		else if (valueName == "numSteppingContacts")
+		{
+			return StringConverter<int>::convertToString(world->getMetric(IWorldStage::NUM_STEPPING_CONTACTS));
+		}
+		else if (valueName == "numTouchingContacts")
+		{
+			return StringConverter<int>::convertToString(world->getMetric(IWorldStage::NUM_TOUCHING_CONTACTS));
+		}
+		else if (valueName == "maxTreeDepth")
+		{
+			return StringConverter<int>::convertToString(world->getMetric(IWorldStage::MAX_TREE_DEPTH));
+		}
+		else if (valueName == "contactPairHitRatio")
+		{
+			return StringConverter<float>::convertToString(BlockBlockContact::contactPairHitRatio());
+		}
+		else if (valueName == "numLinkCalls")
+		{
+			return StringConverter<int>::convertToString(world->getNumLinkCalls());
+		}
+		else if (valueName == "numHashNodes")
+		{
+			return StringConverter<int>::convertToString(world->getNumHashNodes());
+		}
+		else if (valueName == "maxBucketSize")
+		{
+			return StringConverter<int>::convertToString(world->getMaxBucketSize());
+		}
+		else if (valueName == "numBodies")
+		{
+			return StringConverter<int>::convertToString(world->getNumBodies());
+		}
+		else if (valueName == "numConstraints")
+		{
+			return StringConverter<int>::convertToString(world->getNumConstraints());
+		}
+		else if (valueName == "numPoints")
+		{
+			return StringConverter<int>::convertToString(world->getNumPoints());
+		}
+		else if (valueName == "energyBody")
+		{
+			return StringConverter<float>::convertToString(world->getKernel().bodyKineticEnergy());
+		}
+		else if (valueName == "energyConnector")
+		{
+			return StringConverter<float>::convertToString(world->getKernel().connectorSpringEnergy());
+		}
+		else if (valueName == "energyTotal")
+		{
+			return StringConverter<float>::convertToString(world->getKernel().totalKineticEnergy());
+		}
+		else
+		{
+			return "?";
+		}
+	}
+
+	void DataModel::Lock::doLock(const DataModel* dataModel)
+	{
+		if (dataModel)
+		{
+			mutex = dataModel->mutex;
+			lock = new boost::recursive_mutex::scoped_lock(*mutex);
+		}
+	}
+
+	DataModel::Lock::~Lock()
+	{
+		delete lock;
+	}
+}

@@ -1,55 +1,191 @@
 // from server: 100% by auto
-// roc 2009-06 0049db50  unit: G3D::VARArea  size: 148 bytes
-// Make this compile to the exact bytes below, then: roc check 2009-06 0049db50
-//
-// 0049db50  6aff                 push -1
-// 0049db52  68446f8500           push 0x856f44
-// 0049db57  64a100000000         mov eax, dword ptr fs:[0]
-// 0049db5d  50                   push eax
-// 0049db5e  64892500000000       mov dword ptr fs:[0], esp
-// 0049db65  83ec08               sub esp, 8
-// 0049db68  53                   push ebx
-// 0049db69  33db                 xor ebx, ebx
-// 0049db6b  56                   push esi
-// 0049db6c  895c2418             mov dword ptr [esp + 0x18], ebx
-// 0049db70  895c2408             mov dword ptr [esp + 8], ebx
-// 0049db74  e877feffff           call 0x49d9f0
-// 0049db79  6a38                 push 0x38
-// 0049db7b  e8b8ae2700           call 0x718a38
-// 0049db80  83c404               add esp, 4
-// 0049db83  8944240c             mov dword ptr [esp + 0xc], eax
-// 0049db87  c744241801000000     mov dword ptr [esp + 0x18], 1
-// 0049db8f  3bc3                 cmp eax, ebx
-// 0049db91  7413                 je 0x49dba6
-// 0049db93  8b4c2428             mov ecx, dword ptr [esp + 0x28]
-// 0049db97  8b542424             mov edx, dword ptr [esp + 0x24]
-// 0049db9b  51                   push ecx
-// 0049db9c  52                   push edx
-// 0049db9d  8bc8                 mov ecx, eax
-// 0049db9f  e82cf7ffff           call 0x49d2d0
-// 0049dba4  eb02                 jmp 0x49dba8
-// 0049dba6  33c0                 xor eax, eax
-// 0049dba8  8b742420             mov esi, dword ptr [esp + 0x20]
-// 0049dbac  50                   push eax
-// 0049dbad  8bce                 mov ecx, esi
-// 0049dbaf  885c241c             mov byte ptr [esp + 0x1c], bl
-// 0049dbb3  891e                 mov dword ptr [esi], ebx
-// 0049dbb5  e8a61c0000           call 0x49f860
-// 0049dbba  56                   push esi
-// 0049dbbb  b970c8a300           mov ecx, 0xa3c870
-// 0049dbc0  895c241c             mov dword ptr [esp + 0x1c], ebx
-// 0049dbc4  c744240c01000000     mov dword ptr [esp + 0xc], 1
-// 0049dbcc  e8fffcffff           call 0x49d8d0
-// 0049dbd1  8b4c2410             mov ecx, dword ptr [esp + 0x10]
-// 0049dbd5  8bc6                 mov eax, esi
-// 0049dbd7  5e                   pop esi
-// 0049dbd8  5b                   pop ebx
-// 0049dbd9  64890d00000000       mov dword ptr fs:[0], ecx
-// 0049dbe0  83c414               add esp, 0x14
-// 0049dbe3  c3                   ret 
-// library g3d-6.09/GLG3Dcpp\VARArea.cpp (function ?create@VARArea@G3D@@SA?AV?$ReferenceCountedPointer@VVARArea@G3D@@@2@IW4UsageHint@12@@Z)
-
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD
 // roc-lib: g3d-6.09 GLG3Dcpp/VARArea.cpp
+
+// Candidate translation unit (score above; library headers required).
+/**
+ @file VARArea.cpp
+ 
+ Implementation of the vertex array system used by RenderDevice.
+
+ @maintainer Morgan McGuire, morgan@graphics3d.com
+ 
+ @created 2003-01-08
+ @edited  2006-01-06
+ */
+
+#include "G3D/Log.h"
+#include "GLG3D/RenderDevice.h"
+#include "GLG3D/glheaders.h"
+#include "GLG3D/getOpenGLState.h"
+#include "GLG3D/VAR.h"
+#include "GLG3D/VARArea.h"
+#include "GLG3D/GLCaps.h"
+
+namespace G3D {
+
+Array<VARAreaRef>    VARArea::allVARAreas;
+
+VARArea::Mode VARArea::mode = VARArea::UNINITIALIZED;
+
+size_t VARArea::_sizeOfAllVARAreasInMemory = 0;
+
+VARAreaRef VARArea::create(size_t s, UsageHint h) {
+    cleanCache();
+    VARAreaRef x = new VARArea(s, h);
+    allVARAreas.push(x);
+    return x;
+}
+
+
+VARArea::VARArea(size_t _size, UsageHint hint) : size(_size) {
+    renderDevice = NULL;
+
+    // See if we've determined the mode yet.
+    if (mode == UNINITIALIZED) {
+        if (GLCaps::supports_GL_ARB_vertex_buffer_object() &&
+            (glGenBuffersARB != NULL) && 
+            (glBufferDataARB != NULL) &&
+            (glDeleteBuffersARB != NULL) &&			
+			! GLCaps::hasBug_slowVBO()) {
+			mode = VBO_MEMORY;
+        } else {
+            mode = MAIN_MEMORY;
+        }
+    }
+
+    _sizeOfAllVARAreasInMemory += size;
+
+    switch (mode) {
+    case VBO_MEMORY:
+        {
+            //glPushClientAttrib(GL_CLIENT_VERTEX_ARRAY_BIT);
+                glGenBuffersARB(1, &glbuffer);
+                glBindBufferARB(GL_ARRAY_BUFFER_ARB, glbuffer);
+
+                GLenum usage;
+
+                switch (hint) {
+                case WRITE_EVERY_FRAME:
+                    usage = GL_STREAM_DRAW_ARB;
+                    break;
+
+                case WRITE_ONCE:
+                    usage = GL_STATIC_DRAW_ARB;
+                    break;
+
+                case WRITE_EVERY_FEW_FRAMES:
+                    usage = GL_DYNAMIC_DRAW_ARB;
+                    break;
+
+                default:
+                    usage = GL_STREAM_DRAW_ARB;
+                    debugAssertM(false, "Fell through switch");
+                }
+
+                // Load some (undefined) data to initialize the buffer
+                glBufferDataARB(GL_ARRAY_BUFFER_ARB, size, NULL, usage);
+                debugAssertGLOk();    
+
+                // The basePointer is always NULL for a VBO
+                basePointer = NULL;
+
+                glBindBufferARB(GL_ARRAY_BUFFER_ARB, 0);
+            //glPopClientAttrib();
+            debugAssertGLOk();
+        }
+        break;
+
+    case MAIN_MEMORY:
+        // Use the base pointer
+        glbuffer = 0;
+        basePointer = malloc(size);
+        debugAssert(basePointer);
+        break;
+
+    default:
+        alwaysAssertM(false, "Fell through switch.");
+        glbuffer = 0;
+        basePointer = NULL;
+    }
+
+    milestone     = NULL;
+    allocated     = 0;
+	generation    = 1;
+	peakAllocated = 0;
+}
+
+
+VARArea::~VARArea() {
+    _sizeOfAllVARAreasInMemory -= size;
+
+    if (size == 0) {
+        // Already freed
+        return;
+    }
+
+    switch (mode) {
+    case VBO_MEMORY:
+        // Delete the vertex buffer
+        glDeleteBuffersARB(1, &glbuffer);
+        glbuffer = 0;
+        break;
+
+    case MAIN_MEMORY:
+        // Free the buffer
+        free(basePointer);
+        basePointer = NULL;
+        break;
+
+    default:
+        alwaysAssertM(false, "Fell through switch.");
+    }
+
+    size = 0;
+}
+
+
+void VARArea::finish() {
+    if (milestone.notNull()) {
+        renderDevice->waitForMilestone(milestone);
+        milestone = NULL;
+    }
+}
+
+
+void VARArea::reset() {
+    finish();
+	++generation;
+	allocated = 0;
+}
+
+
+void VARArea::cleanCache() {
+    int i = 0;
+    while (i < allVARAreas.size()) {
+        if (allVARAreas[i].isLastReference()) {
+            allVARAreas.fastRemove(i);
+        } else {
+            ++i;
+        }
+    }
+}
+
+
+void VARArea::cleanupAllVARAreas() {
+    // Intentionally empty
+    for (int i = 0; i < allVARAreas.size(); ++i) {
+        debugAssert((void*)allVARAreas[i]->renderDevice != (void*)0xcdcdcdcd);
+
+        allVARAreas[i]->reset();
+
+        // Invoke the destructor, freeing the resources even if there are
+        // more pointers (but not actually deleting the object)
+        allVARAreas[i]->~VARArea();
+    }
+    allVARAreas.clear();
+}
+
+} // namespace

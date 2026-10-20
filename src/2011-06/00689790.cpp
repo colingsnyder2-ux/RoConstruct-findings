@@ -1,37 +1,137 @@
-// roc 2011-06 00689790  unit: RBX::KeyframeSequence  size: 91 bytes
-// Make this compile to the exact bytes below, then: roc check 2011-06 00689790
-//
-// 00689790  8b4c2404             mov ecx, dword ptr [esp + 4]
-// 00689794  83ec0c               sub esp, 0xc
-// 00689797  85c9                 test ecx, ecx
-// 00689799  7716                 ja 0x6897b1
-// 0068979b  33c9                 xor ecx, ecx
-// 0068979d  8d1489               lea edx, [ecx + ecx*4]
-// 006897a0  03d2                 add edx, edx
-// 006897a2  03d2                 add edx, edx
-// 006897a4  52                   push edx
-// 006897a5  e8b4081800           call 0x80a05e
-// 006897aa  83c404               add esp, 4
-// 006897ad  83c40c               add esp, 0xc
-// 006897b0  c3                   ret 
-// 006897b1  83c8ff               or eax, 0xffffffff
-// 006897b4  33d2                 xor edx, edx
-// 006897b6  f7f1                 div ecx
-// 006897b8  83f814               cmp eax, 0x14
-// 006897bb  73e0                 jae 0x68979d
-// 006897bd  8d442410             lea eax, [esp + 0x10]
-// 006897c1  50                   push eax
-// 006897c2  8d4c2404             lea ecx, [esp + 4]
-// 006897c6  c744241400000000     mov dword ptr [esp + 0x14], 0
-// 006897ce  ff156c0aa400         call dword ptr [0xa40a6c]
-// 006897d4  68c472b800           push 0xb872c4
-// 006897d9  8d4c2404             lea ecx, [esp + 4]
-// 006897dd  51                   push ecx
-// 006897de  c7442408b4b5a500     mov dword ptr [esp + 8], 0xa5b5b4
-// 006897e6  e8c1181800           call 0x80b0ac
-// library openrbx-client/App\v8world\AssemblyStage2.cpp (function ??$_Allocate@U_Node@?$_Tree_nod@V?$_Tset_traits@PAVAssembly@RBX@@U?$less@PAVAssembly@RBX@@@std@@V?$allocator@PAVAssembly@RBX@@@4@$0A@@std@@@std@@@std@@YAPAU_Node@?$_Tree_nod@V?$_Tset_traits@PAVAssembly@RBX@@U?$less@PAVAssembly@RBX@@@std@@V?$allocator@PAVAssembly@RBX@@@4@$0A@@std@@@0@IPAU120@@Z)
-
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
 // roc-lib: openrbx-client-dll App/v8world/AssemblyStage2.cpp
+
+// Candidate translation unit (score above; library headers required).
+#include "v8world/AssemblyStage2.h"
+
+#include "decomp.h"
+#include "v8world/Assembly2.h"
+#include "v8world/Contact.h"
+#include "v8world/Joint.h"
+#include "v8world/Primitive.h"
+#include "v8world/SleepStage2.h"
+
+#include <cstddef>
+
+namespace RBX {
+
+// FUNCTION: WEBSERVICE 0x100d7a70 FOLDED
+IStage::StageType AssemblyStage::getStageType()
+{
+	return ASSEMBLY_STAGE;
+}
+
+// FUNCTION: WEBSERVICE 0x10126de0
+void AssemblyStage::wakeAssembly(Assembly* a)
+{
+	static_cast<SleepStage*>(getDownstream())->onWakeUpRequest(a, false);
+}
+
+// FUNCTION: WEBSERVICE 0x10126e00
+void AssemblyStage::stepUi(int uiStepId)
+{
+	for (std::set<Assembly*>::iterator it = assemblies.begin(); it != assemblies.end(); ++it) {
+		(*it)->stepUi(uiStepId);
+	}
+
+	for (std::set<Joint*>::iterator it = joints.begin(); it != joints.end(); ++it) {
+		(*it)->stepUi(uiStepId);
+	}
+}
+
+// FUNCTION: WEBSERVICE 0x10126ee0
+void AssemblyStage::onAssemblyAdded(Assembly* assembly)
+{
+	assembly->putInPipeline(this);
+
+	assemblies.insert(assembly);
+
+	static_cast<SleepStage*>(getDownstream())->onAssemblyAdded(assembly);
+}
+
+void AssemblyStage::onJointAdded(Joint* joint)
+{
+	if (joint->canStepUi()) {
+		joints.insert(joint);
+	}
+}
+
+void AssemblyStage::onJointRemoving(Joint* joint)
+{
+	joints.erase(joint);
+
+	joint->canStepUi();
+}
+
+// FUNCTION: WEBSERVICE 0x10126f20
+void AssemblyStage::onEdgeAdded(Edge* e)
+{
+	e->putInPipeline(this);
+
+	if (e->getEdgeType() == Edge::CONTACT) {
+		Joint* joint = Primitive::getJoint(e->getPrimitive(0), e->getPrimitive(1));
+
+		if (joint != NULL && joint->downstreamOfStage(this)) {
+			return;
+		}
+
+		getDownstreamWS()->onEdgeAdded(e);
+	}
+	else {
+		Contact* contact = Primitive::getContact(e->getPrimitive(0), e->getPrimitive(1));
+
+		if (contact != NULL && contact->downstreamOfStage(this)) {
+			getDownstreamWS()->onEdgeRemoving(contact);
+		}
+
+		getDownstreamWS()->onEdgeAdded(e);
+
+		onJointAdded(static_cast<Joint*>(e));
+	}
+}
+
+// FUNCTION: WEBSERVICE 0x10127000
+AssemblyStage::~AssemblyStage()
+{
+}
+
+// FUNCTION: WEBSERVICE 0x101270c0
+void AssemblyStage::onAssemblyRemoving(Assembly* assembly)
+{
+	static_cast<SleepStage*>(getDownstream())->onAssemblyRemoving(assembly);
+
+	assemblies.erase(assembly);
+
+	assembly->removeFromStage(this);
+}
+
+// FUNCTION: WEBSERVICE 0x101270f0
+void AssemblyStage::onEdgeRemoving(Edge* e)
+{
+	if (e->downstreamOfStage(this)) {
+		getDownstreamWS()->onEdgeRemoving(e);
+	}
+
+	if (e->getEdgeType() != Edge::CONTACT) {
+		Joint* joint = static_cast<Joint*>(e);
+
+		onJointRemoving(joint);
+
+		Contact* contact = Primitive::getContact(e->getPrimitive(0), e->getPrimitive(1));
+
+		if (contact != NULL && contact->inStage(this)) {
+			getDownstreamWS()->onEdgeAdded(contact);
+		}
+	}
+
+	e->removeFromStage(this);
+}
+
+// FUNCTION: WEBSERVICE 0x10127180
+AssemblyStage::AssemblyStage(IStage* upstream, World* world) : IWorldStage(upstream, new SleepStage(this, world), world)
+{
+}
+
+} // namespace RBX

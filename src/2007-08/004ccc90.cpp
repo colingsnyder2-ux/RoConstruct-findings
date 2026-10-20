@@ -1,295 +1,809 @@
 // from server: 100% by auto
-// roc 2007-08 004ccc90  unit: CSHA1  size: 890 bytes
-// Make this compile to the exact bytes below, then: roc check 2007-08 004ccc90
-//
-// 004ccc90  83ec30               sub esp, 0x30
-// 004ccc93  a188518b00           mov eax, dword ptr [0x8b5188]
-// 004ccc98  33c4                 xor eax, esp
-// 004ccc9a  8944242c             mov dword ptr [esp + 0x2c], eax
-// 004ccc9e  8b4c2434             mov ecx, dword ptr [esp + 0x34]
-// 004ccca2  85c9                 test ecx, ecx
-// 004ccca4  53                   push ebx
-// 004ccca5  8b5c243c             mov ebx, dword ptr [esp + 0x3c]
-// 004ccca9  55                   push ebp
-// 004cccaa  8b6c244c             mov ebp, dword ptr [esp + 0x4c]
-// 004cccae  56                   push esi
-// 004cccaf  8b742448             mov esi, dword ptr [esp + 0x48]
-// 004cccb3  895c2410             mov dword ptr [esp + 0x10], ebx
-// 004cccb7  0f8436030000         je 0x4ccff3
-// 004cccbd  85db                 test ebx, ebx
-// 004cccbf  0f842e030000         je 0x4ccff3
-// 004cccc5  803b01               cmp byte ptr [ebx], 1
-// 004cccc8  0f8425030000         je 0x4ccff3
-// 004cccce  8b44244c             mov eax, dword ptr [esp + 0x4c]
-// 004cccd2  03c0                 add eax, eax
-// 004cccd4  03c0                 add eax, eax
-// 004cccd6  03c0                 add eax, eax
-// 004cccd8  99                   cdq 
-// 004cccd9  83e27f               and edx, 0x7f
-// 004cccdc  03c2                 add eax, edx
-// 004cccde  0fb611               movzx edx, byte ptr [ecx]
-// 004ccce1  c1f807               sar eax, 7
-// 004ccce4  83ea01               sub edx, 1
-// 004ccce7  57                   push edi
-// 004ccce8  89442418             mov dword ptr [esp + 0x18], eax
-// 004cccec  0f84c6020000         je 0x4ccfb8
-// 004cccf2  83ea01               sub edx, 1
-// 004cccf5  0f8433020000         je 0x4ccf2e
-// 004cccfb  83ea01               sub edx, 1
-// 004cccfe  7418                 je 0x4ccd18
-// 004ccd00  5f                   pop edi
-// 004ccd01  5e                   pop esi
-// 004ccd02  5d                   pop ebp
-// 004ccd03  b8fbffffff           mov eax, 0xfffffffb
-// 004ccd08  5b                   pop ebx
-// 004ccd09  8b4c242c             mov ecx, dword ptr [esp + 0x2c]
-// 004ccd0d  33cc                 xor ecx, esp
-// 004ccd0f  e80a3d1600           call 0x630a1e
-// 004ccd14  83c430               add esp, 0x30
-// 004ccd17  c3                   ret 
-// 004ccd18  85c0                 test eax, eax
-// 004ccd1a  8b5101               mov edx, dword ptr [ecx + 1]
-// 004ccd1d  8954241c             mov dword ptr [esp + 0x1c], edx
-// 004ccd21  8b5105               mov edx, dword ptr [ecx + 5]
-// 004ccd24  89542420             mov dword ptr [esp + 0x20], edx
-// 004ccd28  8b5109               mov edx, dword ptr [ecx + 9]
-// 004ccd2b  8b490d               mov ecx, dword ptr [ecx + 0xd]
-// 004ccd2e  89542424             mov dword ptr [esp + 0x24], edx
-// 004ccd32  894c2428             mov dword ptr [esp + 0x28], ecx
-// 004ccd36  89442410             mov dword ptr [esp + 0x10], eax
-// 004ccd3a  0f8e9d020000         jle 0x4ccfdd
-// 004ccd40  83c330               add ebx, 0x30
-// 004ccd43  895c2414             mov dword ptr [esp + 0x14], ebx
-// 004ccd47  eb07                 jmp 0x4ccd50
-// 004ccd49  8da42400000000       lea esp, [esp]
-// 004ccd50  33ff                 xor edi, edi
-// 004ccd52  8b442420             mov eax, dword ptr [esp + 0x20]
-// 004ccd56  8b54241c             mov edx, dword ptr [esp + 0x1c]
-// 004ccd5a  8b4c2424             mov ecx, dword ptr [esp + 0x24]
-// 004ccd5e  8954242c             mov dword ptr [esp + 0x2c], edx
-// 004ccd62  8b542428             mov edx, dword ptr [esp + 0x28]
-// 004ccd66  89442430             mov dword ptr [esp + 0x30], eax
-// 004ccd6a  8b442414             mov eax, dword ptr [esp + 0x14]
-// 004ccd6e  894c2434             mov dword ptr [esp + 0x34], ecx
-// 004ccd72  50                   push eax
-// 004ccd73  8d4c2430             lea ecx, [esp + 0x30]
-// 004ccd77  8954243c             mov dword ptr [esp + 0x3c], edx
-// 004ccd7b  51                   push ecx
-// 004ccd7c  8bd1                 mov edx, ecx
-// 004ccd7e  52                   push edx
-// 004ccd7f  e8acf5ffff           call 0x4cc330
-// 004ccd84  0fb65c2428           movzx ebx, byte ptr [esp + 0x28]
-// 004ccd89  02db                 add bl, bl
-// 004ccd8b  8bc7                 mov eax, edi
-// 004ccd8d  c1e803               shr eax, 3
-// 004ccd90  8d3428               lea esi, [eax + ebp]
-// 004ccd93  0fb6442438           movzx eax, byte ptr [esp + 0x38]
-// 004ccd98  8bd7                 mov edx, edi
-// 004ccd9a  83e207               and edx, 7
-// 004ccd9d  2480                 and al, 0x80
-// 004ccd9f  8aca                 mov cl, dl
-// 004ccda1  d2e8                 shr al, cl
-// 004ccda3  0fb64c2429           movzx ecx, byte ptr [esp + 0x29]
-// 004ccda8  c0e907               shr cl, 7
-// 004ccdab  0acb                 or cl, bl
-// 004ccdad  0fb65c2429           movzx ebx, byte ptr [esp + 0x29]
-// 004ccdb2  884c2428             mov byte ptr [esp + 0x28], cl
-// 004ccdb6  0fb64c242a           movzx ecx, byte ptr [esp + 0x2a]
-// 004ccdbb  c0e907               shr cl, 7
-// 004ccdbe  02db                 add bl, bl
-// 004ccdc0  0acb                 or cl, bl
-// 004ccdc2  0fb65c242a           movzx ebx, byte ptr [esp + 0x2a]
-// 004ccdc7  884c2429             mov byte ptr [esp + 0x29], cl
-// 004ccdcb  0fb64c242b           movzx ecx, byte ptr [esp + 0x2b]
-// 004ccdd0  c0e907               shr cl, 7
-// 004ccdd3  02db                 add bl, bl
-// 004ccdd5  0acb                 or cl, bl
-// 004ccdd7  0fb65c242b           movzx ebx, byte ptr [esp + 0x2b]
-// 004ccddc  884c242a             mov byte ptr [esp + 0x2a], cl
-// 004ccde0  0fb64c242c           movzx ecx, byte ptr [esp + 0x2c]
-// 004ccde5  c0e907               shr cl, 7
-// 004ccde8  02db                 add bl, bl
-// 004ccdea  0acb                 or cl, bl
-// 004ccdec  0fb65c242c           movzx ebx, byte ptr [esp + 0x2c]
-// 004ccdf1  884c242b             mov byte ptr [esp + 0x2b], cl
-// 004ccdf5  0fb64c242d           movzx ecx, byte ptr [esp + 0x2d]
-// 004ccdfa  c0e907               shr cl, 7
-// 004ccdfd  02db                 add bl, bl
-// 004ccdff  0acb                 or cl, bl
-// 004cce01  0fb65c242d           movzx ebx, byte ptr [esp + 0x2d]
-// 004cce06  884c242c             mov byte ptr [esp + 0x2c], cl
-// 004cce0a  0fb64c242e           movzx ecx, byte ptr [esp + 0x2e]
-// 004cce0f  c0e907               shr cl, 7
-// 004cce12  02db                 add bl, bl
-// 004cce14  0acb                 or cl, bl
-// 004cce16  0fb65c242e           movzx ebx, byte ptr [esp + 0x2e]
-// 004cce1b  3006                 xor byte ptr [esi], al
-// 004cce1d  884c242d             mov byte ptr [esp + 0x2d], cl
-// 004cce21  0fb64c242f           movzx ecx, byte ptr [esp + 0x2f]
-// 004cce26  8a06                 mov al, byte ptr [esi]
-// 004cce28  c0e907               shr cl, 7
-// 004cce2b  02db                 add bl, bl
-// 004cce2d  0acb                 or cl, bl
-// 004cce2f  0fb65c242f           movzx ebx, byte ptr [esp + 0x2f]
-// 004cce34  884c242e             mov byte ptr [esp + 0x2e], cl
-// 004cce38  0fb64c2430           movzx ecx, byte ptr [esp + 0x30]
-// 004cce3d  c0e907               shr cl, 7
-// 004cce40  02db                 add bl, bl
-// 004cce42  0acb                 or cl, bl
-// 004cce44  0fb65c2430           movzx ebx, byte ptr [esp + 0x30]
-// 004cce49  884c242f             mov byte ptr [esp + 0x2f], cl
-// 004cce4d  0fb64c2431           movzx ecx, byte ptr [esp + 0x31]
-// 004cce52  c0e907               shr cl, 7
-// 004cce55  02db                 add bl, bl
-// 004cce57  83c40c               add esp, 0xc
-// 004cce5a  0acb                 or cl, bl
-// 004cce5c  884c2424             mov byte ptr [esp + 0x24], cl
-// 004cce60  0fb64c2426           movzx ecx, byte ptr [esp + 0x26]
-// 004cce65  0fb65c2425           movzx ebx, byte ptr [esp + 0x25]
-// 004cce6a  c0e907               shr cl, 7
-// 004cce6d  02db                 add bl, bl
-// 004cce6f  0acb                 or cl, bl
-// 004cce71  0fb65c2426           movzx ebx, byte ptr [esp + 0x26]
-// 004cce76  884c2425             mov byte ptr [esp + 0x25], cl
-// 004cce7a  0fb64c2427           movzx ecx, byte ptr [esp + 0x27]
-// 004cce7f  c0e907               shr cl, 7
-// 004cce82  02db                 add bl, bl
-// 004cce84  0acb                 or cl, bl
-// 004cce86  0fb65c2427           movzx ebx, byte ptr [esp + 0x27]
-// 004cce8b  884c2426             mov byte ptr [esp + 0x26], cl
-// 004cce8f  0fb64c2428           movzx ecx, byte ptr [esp + 0x28]
-// 004cce94  c0e907               shr cl, 7
-// 004cce97  02db                 add bl, bl
-// 004cce99  0acb                 or cl, bl
-// 004cce9b  0fb65c2428           movzx ebx, byte ptr [esp + 0x28]
-// 004ccea0  884c2427             mov byte ptr [esp + 0x27], cl
-// 004ccea4  0fb64c2429           movzx ecx, byte ptr [esp + 0x29]
-// 004ccea9  c0e907               shr cl, 7
-// 004cceac  02db                 add bl, bl
-// 004cceae  0acb                 or cl, bl
-// 004cceb0  0fb65c2429           movzx ebx, byte ptr [esp + 0x29]
-// 004cceb5  884c2428             mov byte ptr [esp + 0x28], cl
-// 004cceb9  0fb64c242a           movzx ecx, byte ptr [esp + 0x2a]
-// 004ccebe  c0e907               shr cl, 7
-// 004ccec1  02db                 add bl, bl
-// 004ccec3  0acb                 or cl, bl
-// 004ccec5  0fb65c242a           movzx ebx, byte ptr [esp + 0x2a]
-// 004cceca  884c2429             mov byte ptr [esp + 0x29], cl
-// 004ccece  0fb64c242b           movzx ecx, byte ptr [esp + 0x2b]
-// 004cced3  c0e907               shr cl, 7
-// 004cced6  02db                 add bl, bl
-// 004cced8  0acb                 or cl, bl
-// 004cceda  884c242a             mov byte ptr [esp + 0x2a], cl
-// 004ccede  b107                 mov cl, 7
-// 004ccee0  2aca                 sub cl, dl
-// 004ccee2  8a54242b             mov dl, byte ptr [esp + 0x2b]
-// 004ccee6  d2e8                 shr al, cl
-// 004ccee8  02d2                 add dl, dl
-// 004cceea  83c701               add edi, 1
-// 004cceed  2401                 and al, 1
-// 004cceef  0ac2                 or al, dl
-// 004ccef1  81ff80000000         cmp edi, 0x80
-// 004ccef7  8844242b             mov byte ptr [esp + 0x2b], al
-// 004ccefb  0f8c51feffff         jl 0x4ccd52
-// 004ccf01  8b442410             mov eax, dword ptr [esp + 0x10]
-// 004ccf05  83e801               sub eax, 1
-// 004ccf08  85c0                 test eax, eax
-// 004ccf0a  89442410             mov dword ptr [esp + 0x10], eax
-// 004ccf0e  0f8f3cfeffff         jg 0x4ccd50
-// 004ccf14  8b442418             mov eax, dword ptr [esp + 0x18]
-// 004ccf18  5f                   pop edi
-// 004ccf19  5e                   pop esi
-// 004ccf1a  5d                   pop ebp
-// 004ccf1b  c1e007               shl eax, 7
-// 004ccf1e  5b                   pop ebx
-// 004ccf1f  8b4c242c             mov ecx, dword ptr [esp + 0x2c]
-// 004ccf23  33cc                 xor ecx, esp
-// 004ccf25  e8f43a1600           call 0x630a1e
-// 004ccf2a  83c430               add esp, 0x30
-// 004ccf2d  c3                   ret 
-// 004ccf2e  85c0                 test eax, eax
-// 004ccf30  8b7901               mov edi, dword ptr [ecx + 1]
-// 004ccf33  8b5905               mov ebx, dword ptr [ecx + 5]
-// 004ccf36  8b5109               mov edx, dword ptr [ecx + 9]
-// 004ccf39  8b490d               mov ecx, dword ptr [ecx + 0xd]
-// 004ccf3c  89442410             mov dword ptr [esp + 0x10], eax
-// 004ccf40  0f8e97000000         jle 0x4ccfdd
-// 004ccf46  8b442414             mov eax, dword ptr [esp + 0x14]
-// 004ccf4a  83c030               add eax, 0x30
-// 004ccf4d  89442414             mov dword ptr [esp + 0x14], eax
-// 004ccf51  eb08                 jmp 0x4ccf5b
-// 004ccf53  8b4c2438             mov ecx, dword ptr [esp + 0x38]
-// 004ccf57  8b542434             mov edx, dword ptr [esp + 0x34]
-// 004ccf5b  334e0c               xor ecx, dword ptr [esi + 0xc]
-// 004ccf5e  335608               xor edx, dword ptr [esi + 8]
-// 004ccf61  333e                 xor edi, dword ptr [esi]
-// 004ccf63  335e04               xor ebx, dword ptr [esi + 4]
-// 004ccf66  894c2438             mov dword ptr [esp + 0x38], ecx
-// 004ccf6a  8b4c2414             mov ecx, dword ptr [esp + 0x14]
-// 004ccf6e  51                   push ecx
-// 004ccf6f  89542438             mov dword ptr [esp + 0x38], edx
-// 004ccf73  8d542430             lea edx, [esp + 0x30]
-// 004ccf77  55                   push ebp
-// 004ccf78  52                   push edx
-// 004ccf79  897c2438             mov dword ptr [esp + 0x38], edi
-// 004ccf7d  895c243c             mov dword ptr [esp + 0x3c], ebx
-// 004ccf81  e8aaf3ffff           call 0x4cc330
-// 004ccf86  8b44241c             mov eax, dword ptr [esp + 0x1c]
-// 004ccf8a  83e801               sub eax, 1
-// 004ccf8d  83c40c               add esp, 0xc
-// 004ccf90  83c610               add esi, 0x10
-// 004ccf93  83c510               add ebp, 0x10
-// 004ccf96  85c0                 test eax, eax
-// 004ccf98  89442410             mov dword ptr [esp + 0x10], eax
-// 004ccf9c  7fb5                 jg 0x4ccf53
-// 004ccf9e  8b442418             mov eax, dword ptr [esp + 0x18]
-// 004ccfa2  5f                   pop edi
-// 004ccfa3  5e                   pop esi
-// 004ccfa4  5d                   pop ebp
-// 004ccfa5  c1e007               shl eax, 7
-// 004ccfa8  5b                   pop ebx
-// 004ccfa9  8b4c242c             mov ecx, dword ptr [esp + 0x2c]
-// 004ccfad  33cc                 xor ecx, esp
-// 004ccfaf  e86a3a1600           call 0x630a1e
-// 004ccfb4  83c430               add esp, 0x30
-// 004ccfb7  c3                   ret 
-// 004ccfb8  85c0                 test eax, eax
-// 004ccfba  8bf8                 mov edi, eax
-// 004ccfbc  7e1f                 jle 0x4ccfdd
-// 004ccfbe  83c330               add ebx, 0x30
-// 004ccfc1  53                   push ebx
-// 004ccfc2  55                   push ebp
-// 004ccfc3  56                   push esi
-// 004ccfc4  e867f3ffff           call 0x4cc330
-// 004ccfc9  83ef01               sub edi, 1
-// 004ccfcc  83c40c               add esp, 0xc
-// 004ccfcf  83c610               add esi, 0x10
-// 004ccfd2  83c510               add ebp, 0x10
-// 004ccfd5  85ff                 test edi, edi
-// 004ccfd7  7fe8                 jg 0x4ccfc1
-// 004ccfd9  8b442418             mov eax, dword ptr [esp + 0x18]
-// 004ccfdd  5f                   pop edi
-// 004ccfde  5e                   pop esi
-// 004ccfdf  5d                   pop ebp
-// 004ccfe0  c1e007               shl eax, 7
-// 004ccfe3  5b                   pop ebx
-// 004ccfe4  8b4c242c             mov ecx, dword ptr [esp + 0x2c]
-// 004ccfe8  33cc                 xor ecx, esp
-// 004ccfea  e82f3a1600           call 0x630a1e
-// 004ccfef  83c430               add esp, 0x30
-// 004ccff2  c3                   ret 
-// 004ccff3  8b4c2438             mov ecx, dword ptr [esp + 0x38]
-// 004ccff7  5e                   pop esi
-// 004ccff8  5d                   pop ebp
-// 004ccff9  5b                   pop ebx
-// 004ccffa  33cc                 xor ecx, esp
-// 004ccffc  b8fbffffff           mov eax, 0xfffffffb
-// 004cd001  e8183a1600           call 0x630a1e
-// 004cd006  83c430               add esp, 0x30
-// 004cd009  c3                   ret 
-
 // from server: 27% by colin
 // roc-lang: cpp
 // roc-cl: 50727
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
 // roc-lib: rbxgs-raknet rijndael.cpp
+
+// Candidate translation unit (score above; library headers required).
+// rijndael-alg-fst.c   v2.0   August '99
+// Optimised ANSI C code
+// authors: v1.0: Antoon Bosselaers
+//          v2.0: Vincent Rijmen
+
+
+/*
+ *  taken from the 'aescrypt' project: www.sf.net/projects/aescrypt
+ *  See LICENSE-EST for the license applicable to this file
+ */
+
+
+// 14.Dec.2005 Cirilo:  Removed silly hex keys; keys are now effectively unsigned char.
+
+// KevinJ - TODO - What the hell is __UNUS?  It causes DevCPP not to compile.   I don't know what this is for so I'm taking it out entirely
+/*
+#if (defined(__GNUC__)  || defined(__GCCXML__))
+#define __UNUS	__attribute__((unused))
+#else
+*/
+#define __UNUS
+//#endif
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include "Rijndael.h"
+
+// KevinJ - Added this to just generate a random initialization vector
+#include "Rand.h"
+
+#define SC	((BC - 4) >> 1)
+
+#include "Rijndael-Boxes.h"
+
+int ROUNDS;
+
+static word8 shifts[3][4][2] = {
+  {
+    {0, 0},
+    {1, 3},
+    {2, 2},
+    {3, 1}
+  },
+   
+  {
+    {0, 0},
+    {1, 5},
+    {2, 4},
+    {3, 3}
+  },
+   
+  {
+    {0, 0},
+    {1, 7},
+    {3, 5},
+    {4, 4}
+  }
+}; 
+
+word8 mul(word8 a, word8 b) {
+   // multiply two elements of GF(2^m)
+   // needed for MixColumn and InvMixColumn
+   
+	if (a && b)
+		return Alogtable[(Logtable[a] + Logtable[b])%255];
+	else
+		return 0;
+}
+
+void KeyAddition(word8 a[4][4], word8 rk[4][4], word8 BC) {
+	// XOR corresponding text input and round key input bytes
+	int i, j;
+	
+	for(i = 0; i < BC; i++)
+   	for(j = 0; j < 4; j++)
+			a[i][j] ^= rk[i][j];
+}
+
+void ShiftRow(word8 a[4][4], word8 d, word8 BC) {
+	// Row 0 remains unchanged
+	// The other three rows are shifted a variable amount
+	
+	word8 tmp[4];
+	int i, j;
+	
+	for(i = 1; i < 4; i++) {
+		for(j = 0; j < BC; j++)
+			tmp[j] = a[(j + shifts[SC][i][d]) % BC][i];
+		for(j = 0; j < BC; j++)
+			a[j][i] = tmp[j];
+	}
+}
+
+void Substitution(word8 a[4][4], word8 box[256], word8 BC) {
+	// Replace every byte of the input by the byte at that place
+	// in the nonlinear S-box
+	
+	int i, j;
+	
+	for(i = 0; i < BC; i++)
+		for(j = 0; j < 4; j++)
+			a[i][j] = box[a[i][j]] ;
+}
+   
+void MixColumn(word8 a[4][4], word8 BC) {
+      // Mix the four bytes of every column in a linear way
+	
+	word8 b[4][4];
+	int i, j;
+		
+	for(j = 0; j < BC; j++)
+		for(i = 0; i < 4; i++)
+			b[j][i] = mul(2,a[j][i])
+				^ mul(3,a[j][(i + 1) % 4])
+				^ a[j][(i + 2) % 4]
+				^ a[j][(i + 3) % 4];
+	for(i = 0; i < 4; i++)
+		for(j = 0; j < BC; j++)
+			a[j][i] = b[j][i];
+}
+
+void InvMixColumn(word8 a[4][4], word8 BC) {
+  // Mix the four bytes of every column in a linear way
+	// This is the opposite operation of Mixcolumn
+	
+	int j;
+
+	for(j = 0; j < BC; j++)
+		*((word32*)a[j]) = *((word32*)U1[a[j][0]])
+								^ *((word32*)U2[a[j][1]])
+								^ *((word32*)U3[a[j][2]])
+								^ *((word32*)U4[a[j][3]]);
+
+
+}
+
+int rijndaelKeySched (word8 k[MAXKC][4], int keyBits __UNUS, word8 W[MAXROUNDS+1][4][4])
+{
+#ifdef _MSC_VER
+	#pragma warning( disable : 4100 ) // warning C4100: <variable name> : unreferenced formal parameter
+#endif
+
+	// Calculate the necessary round keys
+	// The number of calculations depends on keyBits and blockBits
+	 
+	int j, r, t, rconpointer = 0;
+	word8 tk[MAXKC][4];
+	int KC = ROUNDS - 6;
+
+	for(j = KC-1; j >= 0; j--)
+		*((word32*)tk[j]) = *((word32*)k[j]);
+	r = 0;
+	t = 0;
+	// copy values into round key array
+	for(j = 0; (j < KC) && (r < (ROUNDS+1)); ) {
+		for (; (j < KC) && (t < 4); j++, t++)
+			*((word32*)W[r][t]) = *((word32*)tk[j]);
+		if (t == 4) {
+			r++;
+			t = 0;
+		}
+	}
+		
+	while (r < (ROUNDS+1)) { // while not enough round key material calculated
+		// calculate new values
+		tk[0][0] ^= S[tk[KC-1][1]];
+		tk[0][1] ^= S[tk[KC-1][2]];
+		tk[0][2] ^= S[tk[KC-1][3]];
+		tk[0][3] ^= S[tk[KC-1][0]];
+		tk[0][0] ^= rcon[rconpointer++];
+
+		if (KC != 8)
+			for(j = 1; j < KC; j++)
+				*((word32*)tk[j]) ^= *((word32*)tk[j-1]);
+		else {
+			for(j = 1; j < KC/2; j++)
+				*((word32*)tk[j]) ^= *((word32*)tk[j-1]);
+			tk[KC/2][0] ^= S[tk[KC/2 - 1][0]];
+			tk[KC/2][1] ^= S[tk[KC/2 - 1][1]];
+			tk[KC/2][2] ^= S[tk[KC/2 - 1][2]];
+			tk[KC/2][3] ^= S[tk[KC/2 - 1][3]];
+			for(j = KC/2 + 1; j < KC; j++)
+				*((word32*)tk[j]) ^= *((word32*)tk[j-1]);
+		}
+		// copy values into round key array
+		for(j = 0; (j < KC) && (r < (ROUNDS+1)); ) {
+			for (; (j < KC) && (t < 4); j++, t++)
+				*((word32*)W[r][t]) = *((word32*)tk[j]);
+			if (t == 4) {
+				r++;
+				t = 0;
+			}
+		}
+	}		
+
+	return 0;
+}
+
+int rijndaelKeyEnctoDec (int keyBits __UNUS, word8 W[MAXROUNDS+1][4][4])
+{
+#ifdef _MSC_VER
+	#pragma warning( disable : 4100 ) // warning C4100: <variable name> : unreferenced formal parameter
+#endif
+	int r;
+
+	for (r = 1; r < ROUNDS; r++) {
+		InvMixColumn(W[r], 4);
+	}
+	return 0;
+}	
+
+int rijndaelEncrypt (word8 a[16], word8 b[16], word8 rk[MAXROUNDS+1][4][4])
+{
+	// Encryption of one block. 
+	
+	int r;
+   word8 temp[4][4];
+
+    *((word32*)temp[0]) = *((word32*)a) ^ *((word32*)rk[0][0]);
+    *((word32*)temp[1]) = *((word32*)(a+4)) ^ *((word32*)rk[0][1]);
+    *((word32*)temp[2]) = *((word32*)(a+8)) ^ *((word32*)rk[0][2]);
+    *((word32*)temp[3]) = *((word32*)(a+12)) ^ *((word32*)rk[0][3]);
+    *((word32*)b) = *((word32*)T1[temp[0][0]])
+           ^ *((word32*)T2[temp[1][1]])
+           ^ *((word32*)T3[temp[2][2]]) 
+           ^ *((word32*)T4[temp[3][3]]);
+    *((word32*)(b+4)) = *((word32*)T1[temp[1][0]])
+           ^ *((word32*)T2[temp[2][1]])
+           ^ *((word32*)T3[temp[3][2]]) 
+           ^ *((word32*)T4[temp[0][3]]);
+    *((word32*)(b+8)) = *((word32*)T1[temp[2][0]])
+           ^ *((word32*)T2[temp[3][1]])
+           ^ *((word32*)T3[temp[0][2]]) 
+           ^ *((word32*)T4[temp[1][3]]);
+    *((word32*)(b+12)) = *((word32*)T1[temp[3][0]])
+           ^ *((word32*)T2[temp[0][1]])
+           ^ *((word32*)T3[temp[1][2]]) 
+           ^ *((word32*)T4[temp[2][3]]);
+   for(r = 1; r < ROUNDS-1; r++) {
+		*((word32*)temp[0]) = *((word32*)b) ^ *((word32*)rk[r][0]);
+		*((word32*)temp[1]) = *((word32*)(b+4)) ^ *((word32*)rk[r][1]);
+		*((word32*)temp[2]) = *((word32*)(b+8)) ^ *((word32*)rk[r][2]);
+		*((word32*)temp[3]) = *((word32*)(b+12)) ^ *((word32*)rk[r][3]);
+   *((word32*)b) = *((word32*)T1[temp[0][0]])
+           ^ *((word32*)T2[temp[1][1]])
+           ^ *((word32*)T3[temp[2][2]]) 
+           ^ *((word32*)T4[temp[3][3]]);
+   *((word32*)(b+4)) = *((word32*)T1[temp[1][0]])
+           ^ *((word32*)T2[temp[2][1]])
+           ^ *((word32*)T3[temp[3][2]]) 
+           ^ *((word32*)T4[temp[0][3]]);
+   *((word32*)(b+8)) = *((word32*)T1[temp[2][0]])
+           ^ *((word32*)T2[temp[3][1]])
+           ^ *((word32*)T3[temp[0][2]]) 
+           ^ *((word32*)T4[temp[1][3]]);
+   *((word32*)(b+12)) = *((word32*)T1[temp[3][0]])
+           ^ *((word32*)T2[temp[0][1]])
+           ^ *((word32*)T3[temp[1][2]]) 
+           ^ *((word32*)T4[temp[2][3]]);
+   }
+   // last round is special   
+	*((word32*)temp[0]) = *((word32*)b) ^ *((word32*)rk[ROUNDS-1][0]);
+	*((word32*)temp[1]) = *((word32*)(b+4)) ^ *((word32*)rk[ROUNDS-1][1]);
+	*((word32*)temp[2]) = *((word32*)(b+8)) ^ *((word32*)rk[ROUNDS-1][2]);
+	*((word32*)temp[3]) = *((word32*)(b+12)) ^ *((word32*)rk[ROUNDS-1][3]);
+   b[0] = T1[temp[0][0]][1];
+   b[1] = T1[temp[1][1]][1];
+   b[2] = T1[temp[2][2]][1]; 
+   b[3] = T1[temp[3][3]][1];
+   b[4] = T1[temp[1][0]][1];
+   b[5] = T1[temp[2][1]][1];
+   b[6] = T1[temp[3][2]][1]; 
+   b[7] = T1[temp[0][3]][1];
+   b[8] = T1[temp[2][0]][1];
+   b[9] = T1[temp[3][1]][1];
+   b[10] = T1[temp[0][2]][1]; 
+   b[11] = T1[temp[1][3]][1];
+   b[12] = T1[temp[3][0]][1];
+   b[13] = T1[temp[0][1]][1];
+   b[14] = T1[temp[1][2]][1]; 
+   b[15] = T1[temp[2][3]][1];
+	*((word32*)b) ^= *((word32*)rk[ROUNDS][0]);
+	*((word32*)(b+4)) ^= *((word32*)rk[ROUNDS][1]);
+	*((word32*)(b+8)) ^= *((word32*)rk[ROUNDS][2]);
+	*((word32*)(b+12)) ^= *((word32*)rk[ROUNDS][3]);
+
+	return 0;
+}
+
+int rijndaelEncryptRound (word8 a[4][4], 
+		word8 rk[MAXROUNDS+1][4][4], int rounds)
+// Encrypt only a certain number of rounds.
+// Only used in the Intermediate Value Known Answer Test.
+
+{
+	int r;
+   word8 temp[4][4];
+
+
+	// make number of rounds sane
+	if (rounds > ROUNDS) rounds = ROUNDS;
+
+	*((word32*)a[0]) = *((word32*)a[0]) ^ *((word32*)rk[0][0]);
+	*((word32*)a[1]) = *((word32*)a[1]) ^ *((word32*)rk[0][1]);
+	*((word32*)a[2]) = *((word32*)a[2]) ^ *((word32*)rk[0][2]);
+	*((word32*)a[3]) = *((word32*)a[3]) ^ *((word32*)rk[0][3]);
+
+	for(r = 1; (r <= rounds) && (r < ROUNDS); r++) {
+		*((word32*)temp[0]) = *((word32*)T1[a[0][0]])
+           ^ *((word32*)T2[a[1][1]])
+           ^ *((word32*)T3[a[2][2]]) 
+           ^ *((word32*)T4[a[3][3]]);
+		*((word32*)temp[1]) = *((word32*)T1[a[1][0]])
+           ^ *((word32*)T2[a[2][1]])
+           ^ *((word32*)T3[a[3][2]]) 
+           ^ *((word32*)T4[a[0][3]]);
+		*((word32*)temp[2]) = *((word32*)T1[a[2][0]])
+           ^ *((word32*)T2[a[3][1]])
+           ^ *((word32*)T3[a[0][2]]) 
+           ^ *((word32*)T4[a[1][3]]);
+		*((word32*)temp[3]) = *((word32*)T1[a[3][0]])
+           ^ *((word32*)T2[a[0][1]])
+           ^ *((word32*)T3[a[1][2]]) 
+           ^ *((word32*)T4[a[2][3]]);
+		*((word32*)a[0]) = *((word32*)temp[0]) ^ *((word32*)rk[r][0]);
+		*((word32*)a[1]) = *((word32*)temp[1]) ^ *((word32*)rk[r][1]);
+		*((word32*)a[2]) = *((word32*)temp[2]) ^ *((word32*)rk[r][2]);
+		*((word32*)a[3]) = *((word32*)temp[3]) ^ *((word32*)rk[r][3]);
+   }
+	if (rounds == ROUNDS) {
+   	// last round is special   
+   	temp[0][0] = T1[a[0][0]][1];
+   	temp[0][1] = T1[a[1][1]][1];
+   	temp[0][2] = T1[a[2][2]][1]; 
+   	temp[0][3] = T1[a[3][3]][1];
+   	temp[1][0] = T1[a[1][0]][1];
+   	temp[1][1] = T1[a[2][1]][1];
+   	temp[1][2] = T1[a[3][2]][1]; 
+   	temp[1][3] = T1[a[0][3]][1];
+   	temp[2][0] = T1[a[2][0]][1];
+   	temp[2][1] = T1[a[3][1]][1];
+   	temp[2][2] = T1[a[0][2]][1]; 
+   	temp[2][3] = T1[a[1][3]][1];
+   	temp[3][0] = T1[a[3][0]][1];
+   	temp[3][1] = T1[a[0][1]][1];
+   	temp[3][2] = T1[a[1][2]][1]; 
+   	temp[3][3] = T1[a[2][3]][1];
+		*((word32*)a[0]) = *((word32*)temp[0]) ^ *((word32*)rk[ROUNDS][0]);
+		*((word32*)a[1]) = *((word32*)temp[1]) ^ *((word32*)rk[ROUNDS][1]);
+		*((word32*)a[2]) = *((word32*)temp[2]) ^ *((word32*)rk[ROUNDS][2]);
+		*((word32*)a[3]) = *((word32*)temp[3]) ^ *((word32*)rk[ROUNDS][3]);
+	}
+
+	return 0;
+}   
+
+
+int rijndaelDecrypt (word8 a[16], word8 b[16], word8 rk[MAXROUNDS+1][4][4])
+{
+	int r;
+   word8 temp[4][4];
+	
+
+    *((word32*)temp[0]) = *((word32*)a) ^ *((word32*)rk[ROUNDS][0]);
+    *((word32*)temp[1]) = *((word32*)(a+4)) ^ *((word32*)rk[ROUNDS][1]);
+    *((word32*)temp[2]) = *((word32*)(a+8)) ^ *((word32*)rk[ROUNDS][2]);
+    *((word32*)temp[3]) = *((word32*)(a+12)) ^ *((word32*)rk[ROUNDS][3]);
+    *((word32*)b) = *((word32*)T5[temp[0][0]])
+           ^ *((word32*)T6[temp[3][1]])
+           ^ *((word32*)T7[temp[2][2]]) 
+           ^ *((word32*)T8[temp[1][3]]);
+   *((word32*)(b+4)) = *((word32*)T5[temp[1][0]])
+           ^ *((word32*)T6[temp[0][1]])
+           ^ *((word32*)T7[temp[3][2]]) 
+           ^ *((word32*)T8[temp[2][3]]);
+   *((word32*)(b+8)) = *((word32*)T5[temp[2][0]])
+           ^ *((word32*)T6[temp[1][1]])
+           ^ *((word32*)T7[temp[0][2]]) 
+           ^ *((word32*)T8[temp[3][3]]);
+   *((word32*)(b+12)) = *((word32*)T5[temp[3][0]])
+           ^ *((word32*)T6[temp[2][1]])
+           ^ *((word32*)T7[temp[1][2]]) 
+           ^ *((word32*)T8[temp[0][3]]);
+   for(r = ROUNDS-1; r > 1; r--) {
+		*((word32*)temp[0]) = *((word32*)b) ^ *((word32*)rk[r][0]);
+		*((word32*)temp[1]) = *((word32*)(b+4)) ^ *((word32*)rk[r][1]);
+		*((word32*)temp[2]) = *((word32*)(b+8)) ^ *((word32*)rk[r][2]);
+		*((word32*)temp[3]) = *((word32*)(b+12)) ^ *((word32*)rk[r][3]);
+		*((word32*)b) = *((word32*)T5[temp[0][0]])
+           ^ *((word32*)T6[temp[3][1]])
+           ^ *((word32*)T7[temp[2][2]]) 
+           ^ *((word32*)T8[temp[1][3]]);
+		*((word32*)(b+4)) = *((word32*)T5[temp[1][0]])
+           ^ *((word32*)T6[temp[0][1]])
+           ^ *((word32*)T7[temp[3][2]]) 
+           ^ *((word32*)T8[temp[2][3]]);
+		*((word32*)(b+8)) = *((word32*)T5[temp[2][0]])
+           ^ *((word32*)T6[temp[1][1]])
+           ^ *((word32*)T7[temp[0][2]]) 
+           ^ *((word32*)T8[temp[3][3]]);
+		*((word32*)(b+12)) = *((word32*)T5[temp[3][0]])
+           ^ *((word32*)T6[temp[2][1]])
+           ^ *((word32*)T7[temp[1][2]]) 
+           ^ *((word32*)T8[temp[0][3]]);
+   }
+   // last round is special   
+	*((word32*)temp[0]) = *((word32*)b) ^ *((word32*)rk[1][0]);
+	*((word32*)temp[1]) = *((word32*)(b+4)) ^ *((word32*)rk[1][1]);
+	*((word32*)temp[2]) = *((word32*)(b+8)) ^ *((word32*)rk[1][2]);
+	*((word32*)temp[3]) = *((word32*)(b+12)) ^ *((word32*)rk[1][3]);
+   b[0] = S5[temp[0][0]];
+   b[1] = S5[temp[3][1]];
+   b[2] = S5[temp[2][2]]; 
+   b[3] = S5[temp[1][3]];
+   b[4] = S5[temp[1][0]];
+   b[5] = S5[temp[0][1]];
+   b[6] = S5[temp[3][2]]; 
+   b[7] = S5[temp[2][3]];
+   b[8] = S5[temp[2][0]];
+   b[9] = S5[temp[1][1]];
+   b[10] = S5[temp[0][2]]; 
+   b[11] = S5[temp[3][3]];
+   b[12] = S5[temp[3][0]];
+   b[13] = S5[temp[2][1]];
+   b[14] = S5[temp[1][2]]; 
+   b[15] = S5[temp[0][3]];
+	*((word32*)b) ^= *((word32*)rk[0][0]);
+	*((word32*)(b+4)) ^= *((word32*)rk[0][1]);
+	*((word32*)(b+8)) ^= *((word32*)rk[0][2]);
+	*((word32*)(b+12)) ^= *((word32*)rk[0][3]);
+
+	return 0;
+}
+
+
+int rijndaelDecryptRound (word8 a[4][4],  
+	word8 rk[MAXROUNDS+1][4][4], int rounds)
+// Decrypt only a certain number of rounds.
+// Only used in the Intermediate Value Known Answer Test.
+// Operations rearranged such that the intermediate values
+// of decryption correspond with the intermediate values
+// of encryption.
+
+{
+	int r;
+	
+
+	// make number of rounds sane
+	if (rounds > ROUNDS) rounds = ROUNDS;
+
+        // First the special round:
+	//   without InvMixColumn
+	//   with extra KeyAddition
+	
+	KeyAddition(a,rk[ROUNDS],4);
+	Substitution(a,Si,4);
+	ShiftRow(a,1,4);              
+	
+	// ROUNDS-1 ordinary rounds
+	
+	for(r = ROUNDS-1; r > rounds; r--) {
+		KeyAddition(a,rk[r],4);
+		InvMixColumn(a,4);      
+		Substitution(a,Si,4);
+		ShiftRow(a,1,4);                
+	}
+	
+	if (rounds == 0) {
+		// End with the extra key addition
+			
+		KeyAddition(a,rk[0],4);
+	}    
+
+	return 0;
+}
+
+/*** End Rijndael algorithm,  Begin the AES Interface ***/
+
+
+int makeKey(keyInstance *key, BYTE direction, int keyByteLen, char *keyMaterial)
+{
+	word8 k[MAXKC][4];
+	int i;
+	int keyLen = keyByteLen*8;
+	
+	if (key == NULL) {
+		return BAD_KEY_INSTANCE;
+	}
+
+	if ((direction == DIR_ENCRYPT) || (direction == DIR_DECRYPT)) {
+		key->direction = direction;
+	} else {
+		return BAD_KEY_DIR;
+	}
+
+	if ((keyLen == 128) || (keyLen == 192) || (keyLen == 256)) { 
+		key->keyLen = keyLen;
+	} else {
+		return BAD_KEY_MAT;
+	}
+
+	if ( keyMaterial ) {
+		strncpy(key->keyMaterial, keyMaterial, keyByteLen);
+	} else {
+		return BAD_KEY_MAT;
+	}
+
+	ROUNDS = keyLen/32 + 6;
+
+	// initialize key schedule:
+	for(i = 0; i < key->keyLen/8; i++) {
+		k[i / 4][i % 4] = (word8) key->keyMaterial[i]; 
+	}
+	rijndaelKeySched (k, key->keyLen, key->keySched);
+	if (direction == DIR_DECRYPT)
+		rijndaelKeyEnctoDec (key->keyLen, key->keySched);
+
+	return TRUE;
+}
+
+int cipherInit(cipherInstance *cipher, BYTE mode, char *IV)
+{
+	int i;
+	
+	if ((mode == MODE_ECB) || (mode == MODE_CBC) || (mode == MODE_CFB1)) {
+		cipher->mode = mode;
+	} else {
+		return BAD_CIPHER_MODE;
+	}
+	
+
+	if (IV != NULL) {
+ 		for(i = 0; i < 16; i++) cipher->IV[i] = IV[i];
+	}
+	else
+	{
+		// KevinJ - Added this to just generate a random initialization vector
+		for(i = 0; i < 16; i++)
+			cipher->IV[i]=(BYTE)randomMT();
+	}
+
+	return TRUE;
+}
+
+
+int blockEncrypt(cipherInstance *cipher,
+	keyInstance *key, BYTE *input, int inputByteLen, BYTE *outBuffer)
+{
+	int i, k, numBlocks;
+	word8 block[16], iv[4][4];
+	int inputLen = inputByteLen*8;
+
+	if (cipher == NULL ||
+		key == NULL ||
+		key->direction == DIR_DECRYPT) {
+		return BAD_CIPHER_STATE;
+	}
+	
+
+	numBlocks = inputLen/128;
+	
+	switch (cipher->mode) {
+	case MODE_ECB: 
+		for (i = numBlocks; i > 0; i--) {
+			
+			rijndaelEncrypt (input, outBuffer, key->keySched);
+			
+			input += 16;
+			outBuffer += 16;
+		}
+		break;
+		
+	case MODE_CBC:
+#if STRICT_ALIGN 
+		memcpy(block,cipher->IV,16); 
+#else
+		*((word32*)block) =  *((word32*)(cipher->IV));
+		*((word32*)(block+4)) =  *((word32*)(cipher->IV+4));
+		*((word32*)(block+8)) =  *((word32*)(cipher->IV+8));
+		*((word32*)(block+12)) =  *((word32*)(cipher->IV+12));
+#endif
+		
+		for (i = numBlocks; i > 0; i--) {
+			*((word32*)block) ^= *((word32*)(input));
+			*((word32*)(block+4)) ^= *((word32*)(input+4));
+			*((word32*)(block+8)) ^= *((word32*)(input+8));
+			*((word32*)(block+12)) ^= *((word32*)(input+12));
+
+			rijndaelEncrypt (block, outBuffer, key->keySched);
+			
+			input += 16;
+			outBuffer += 16;
+		}
+		break;
+	
+	case MODE_CFB1:
+#if STRICT_ALIGN 
+		memcpy(iv,cipher->IV,16); 
+#else
+		*((word32*)iv[0]) = *((word32*)(cipher->IV));
+		*((word32*)iv[1]) = *((word32*)(cipher->IV+4));
+		*((word32*)iv[2]) = *((word32*)(cipher->IV+8));
+		*((word32*)iv[3]) = *((word32*)(cipher->IV+12));
+#endif
+		for (i = numBlocks; i > 0; i--) {
+			for (k = 0; k < 128; k++) {
+				*((word32*)block) = *((word32*)iv[0]);
+				*((word32*)(block+4)) = *((word32*)iv[1]);
+				*((word32*)(block+8)) = *((word32*)iv[2]);
+				*((word32*)(block+12)) = *((word32*)iv[3]);
+
+				rijndaelEncrypt (block, block, key->keySched);
+				outBuffer[k/8] ^= (block[0] & 0x80) >> (k & 7);
+				iv[0][0] = (iv[0][0] << 1) | (iv[0][1] >> 7);
+				iv[0][1] = (iv[0][1] << 1) | (iv[0][2] >> 7);
+				iv[0][2] = (iv[0][2] << 1) | (iv[0][3] >> 7);
+				iv[0][3] = (iv[0][3] << 1) | (iv[1][0] >> 7);
+				iv[1][0] = (iv[1][0] << 1) | (iv[1][1] >> 7);
+				iv[1][1] = (iv[1][1] << 1) | (iv[1][2] >> 7);
+				iv[1][2] = (iv[1][2] << 1) | (iv[1][3] >> 7);
+				iv[1][3] = (iv[1][3] << 1) | (iv[2][0] >> 7);
+				iv[2][0] = (iv[2][0] << 1) | (iv[2][1] >> 7);
+				iv[2][1] = (iv[2][1] << 1) | (iv[2][2] >> 7);
+				iv[2][2] = (iv[2][2] << 1) | (iv[2][3] >> 7);
+				iv[2][3] = (iv[2][3] << 1) | (iv[3][0] >> 7);
+				iv[3][0] = (iv[3][0] << 1) | (iv[3][1] >> 7);
+				iv[3][1] = (iv[3][1] << 1) | (iv[3][2] >> 7);
+				iv[3][2] = (iv[3][2] << 1) | (iv[3][3] >> 7);
+				iv[3][3] = (word8)((iv[3][3] << 1) | (outBuffer[k/8] >> (7-(k&7))) & 1);
+			}
+		}
+		break;
+	
+	default:
+		return BAD_CIPHER_STATE;
+	}
+	
+	return numBlocks*128;
+}
+
+int blockDecrypt(cipherInstance *cipher,
+	keyInstance *key, BYTE *input, int inputByteLen, BYTE *outBuffer)
+{
+	int i, k, numBlocks;
+	word8 block[16], iv[4][4];
+	int inputLen = inputByteLen*8;
+
+	if (cipher == NULL ||
+		key == NULL ||
+		cipher->mode != MODE_CFB1 && key->direction == DIR_ENCRYPT) {
+		return BAD_CIPHER_STATE;
+	}
+	
+
+	numBlocks = inputLen/128;
+	
+	switch (cipher->mode) {
+	case MODE_ECB: 
+		for (i = numBlocks; i > 0; i--) { 
+
+			rijndaelDecrypt (input, outBuffer, key->keySched);
+
+			input += 16;
+			outBuffer += 16;
+
+		}
+		break;
+		
+	case MODE_CBC:
+		// first block 
+
+		rijndaelDecrypt (input, block, key->keySched);
+#if STRICT_ALIGN
+		memcpy(outBuffer,cipher->IV,16); 
+  		*((word32*)(outBuffer)) ^= *((word32*)block);
+  		*((word32*)(outBuffer+4)) ^= *((word32*)(block+4));
+  		*((word32*)(outBuffer+8)) ^= *((word32*)(block+8));
+  		*((word32*)(outBuffer+12)) ^= *((word32*)(block+12));
+#else
+  		*((word32*)(outBuffer)) = *((word32*)block) ^ *((word32*)(cipher->IV));
+  		*((word32*)(outBuffer+4)) = *((word32*)(block+4)) ^ *((word32*)(cipher->IV+4));
+  		*((word32*)(outBuffer+8)) = *((word32*)(block+8)) ^ *((word32*)(cipher->IV+8));
+  		*((word32*)(outBuffer+12)) = *((word32*)(block+12)) ^ *((word32*)(cipher->IV+12));
+#endif
+		
+		// next blocks
+		for (i = numBlocks-1; i > 0; i--) { 
+		
+			rijndaelDecrypt (input, block, key->keySched);
+			
+			*((word32*)(outBuffer+16)) = *((word32*)block) ^
+					*((word32*)(input-16));
+			*((word32*)(outBuffer+20)) = *((word32*)(block+4)) ^
+					*((word32*)(input-12));
+			*((word32*)(outBuffer+24)) = *((word32*)(block+8)) ^
+					*((word32*)(input-8));
+			*((word32*)(outBuffer+28)) = *((word32*)(block+12)) ^
+					*((word32*)(input-4));
+			
+			input += 16;
+			outBuffer += 16;
+		}
+		break;
+	
+	case MODE_CFB1:
+#if STRICT_ALIGN 
+		memcpy(iv,cipher->IV,16); 
+#else
+		*((word32*)iv[0]) = *((word32*)(cipher->IV));
+		*((word32*)iv[1]) = *((word32*)(cipher->IV+4));
+		*((word32*)iv[2]) = *((word32*)(cipher->IV+8));
+		*((word32*)iv[3]) = *((word32*)(cipher->IV+12));
+#endif
+		for (i = numBlocks; i > 0; i--) {
+			for (k = 0; k < 128; k++) {
+				*((word32*)block) = *((word32*)iv[0]);
+				*((word32*)(block+4)) = *((word32*)iv[1]);
+				*((word32*)(block+8)) = *((word32*)iv[2]);
+				*((word32*)(block+12)) = *((word32*)iv[3]);
+
+				rijndaelEncrypt (block, block, key->keySched);
+				iv[0][0] = (iv[0][0] << 1) | (iv[0][1] >> 7);
+				iv[0][1] = (iv[0][1] << 1) | (iv[0][2] >> 7);
+				iv[0][2] = (iv[0][2] << 1) | (iv[0][3] >> 7);
+				iv[0][3] = (iv[0][3] << 1) | (iv[1][0] >> 7);
+				iv[1][0] = (iv[1][0] << 1) | (iv[1][1] >> 7);
+				iv[1][1] = (iv[1][1] << 1) | (iv[1][2] >> 7);
+				iv[1][2] = (iv[1][2] << 1) | (iv[1][3] >> 7);
+				iv[1][3] = (iv[1][3] << 1) | (iv[2][0] >> 7);
+				iv[2][0] = (iv[2][0] << 1) | (iv[2][1] >> 7);
+				iv[2][1] = (iv[2][1] << 1) | (iv[2][2] >> 7);
+				iv[2][2] = (iv[2][2] << 1) | (iv[2][3] >> 7);
+				iv[2][3] = (iv[2][3] << 1) | (iv[3][0] >> 7);
+				iv[3][0] = (iv[3][0] << 1) | (iv[3][1] >> 7);
+				iv[3][1] = (iv[3][1] << 1) | (iv[3][2] >> 7);
+				iv[3][2] = (iv[3][2] << 1) | (iv[3][3] >> 7);
+				iv[3][3] = (word8)((iv[3][3] << 1) | (input[k/8] >> (7-(k&7))) & 1);
+				outBuffer[k/8] ^= (block[0] & 0x80) >> (k & 7);
+			}
+		}
+		break;
+
+	default:
+		return BAD_CIPHER_STATE;
+	}
+	
+	return numBlocks*128;
+}
+
+
+/**
+ *	cipherUpdateRounds:
+ *
+ *	Encrypts/Decrypts exactly one full block a specified number of rounds.
+ *	Only used in the Intermediate Value Known Answer Test.	
+ *
+ *	Returns:
+ *		TRUE - on success
+ *		BAD_CIPHER_STATE - cipher in bad state (e.g., not initialized)
+ */
+
+int cipherUpdateRounds(cipherInstance *cipher,
+	keyInstance *key, BYTE *input, int inputLen __UNUS, BYTE *outBuffer, int rounds)
+{
+#ifdef _MSC_VER
+	#pragma warning( disable : 4100 ) // warning C4100: <variable name> : unreferenced formal parameter
+#endif
+
+	int j;
+	word8 block[4][4];
+
+	if (cipher == NULL ||
+		key == NULL) {
+		return BAD_CIPHER_STATE;
+	}
+
+	for (j = 3; j >= 0; j--) {
+		// parse input stream into rectangular array
+  		*((word32*)block[j]) = *((word32*)(input+4*j));
+	}
+
+	switch (key->direction) {
+	case DIR_ENCRYPT:
+		rijndaelEncryptRound (block, key->keySched, rounds);
+	break;
+		
+	case DIR_DECRYPT:
+		rijndaelDecryptRound (block, key->keySched, rounds);
+	break;
+		
+	default: return BAD_KEY_DIR;
+	} 
+
+	for (j = 3; j >= 0; j--) {
+		// parse rectangular array into output ciphertext bytes
+		*((word32*)(outBuffer+4*j)) = *((word32*)block[j]);
+	}
+	
+	return TRUE;
+}

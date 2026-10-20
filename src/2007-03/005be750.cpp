@@ -1,53 +1,232 @@
-// roc 2007-03 005be750  unit: seg_005b0000  size: 150 bytes
-// Make this compile to the exact bytes below, then: roc check 2007-03 005be750
-//
-// 005be750  6aff                 push -1
-// 005be752  6879a37500           push 0x75a379
-// 005be757  64a100000000         mov eax, dword ptr fs:[0]
-// 005be75d  50                   push eax
-// 005be75e  64892500000000       mov dword ptr fs:[0], esp
-// 005be765  83ec08               sub esp, 8
-// 005be768  56                   push esi
-// 005be769  57                   push edi
-// 005be76a  8b7c2420             mov edi, dword ptr [esp + 0x20]
-// 005be76e  6a10                 push 0x10
-// 005be770  57                   push edi
-// 005be771  c744242000000000     mov dword ptr [esp + 0x20], 0
-// 005be779  e802b3ffff           call 0x5b9a80
-// 005be77e  8bf0                 mov esi, eax
-// 005be780  83c408               add esp, 8
-// 005be783  89742408             mov dword ptr [esp + 8], esi
-// 005be787  8974240c             mov dword ptr [esp + 0xc], esi
-// 005be78b  85f6                 test esi, esi
-// 005be78d  c644241801           mov byte ptr [esp + 0x18], 1
-// 005be792  740c                 je 0x5be7a0
-// 005be794  8d442424             lea eax, [esp + 0x24]
-// 005be798  50                   push eax
-// 005be799  8bce                 mov ecx, esi
-// 005be79b  e8d0a01600           call 0x728870
-// 005be7a0  8b0d5c828a00         mov ecx, dword ptr [0x8a825c]
-// 005be7a6  51                   push ecx
-// 005be7a7  68f0d8ffff           push 0xffffd8f0
-// 005be7ac  57                   push edi
-// 005be7ad  c644242400           mov byte ptr [esp + 0x24], 0
-// 005be7b2  e819abffff           call 0x5b92d0
-// 005be7b7  6afe                 push -2
-// 005be7b9  57                   push edi
-// 005be7ba  e871aeffff           call 0x5b9630
-// 005be7bf  83c414               add esp, 0x14
-// 005be7c2  8d4c2424             lea ecx, [esp + 0x24]
-// 005be7c6  c7442418ffffffff     mov dword ptr [esp + 0x18], 0xffffffff
-// 005be7ce  e88da21600           call 0x728a60
-// 005be7d3  8b4c2410             mov ecx, dword ptr [esp + 0x10]
-// 005be7d7  5f                   pop edi
-// 005be7d8  8bc6                 mov eax, esi
-// 005be7da  5e                   pop esi
-// 005be7db  64890d00000000       mov dword ptr fs:[0], ecx
-// 005be7e2  83c414               add esp, 0x14
-// 005be7e5  c3                   ret 
-// library rbxgs/script\LuaSignalBridge.cpp (function ??$pushNewObject@Vconnection@signals@boost@@@?$Bridge@Vconnection@signals@boost@@$00@Lua@RBX@@SAPAVconnection@signals@boost@@PAUlua_State@@V345@@Z)
-
 // roc-lang: cpp
 // roc-cl: 50727
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
 // roc-lib: rbxgs script/LuaSignalBridge.cpp
+
+// Candidate translation unit (score above; library headers required).
+#include "script/LuaSignalBridge.h"
+#include "script/LuaInstanceBridge.h"
+#include "G3D/format.h"
+
+using namespace RBX;
+using namespace RBX::Lua;
+using namespace RBX::Reflection;
+
+template<>
+int SignalBridge::on_index(const boost::shared_ptr<Reflection::SignalInstance>& object, const char* name, lua_State* L)
+{
+    if (!object.get())
+        throw std::runtime_error(G3D::format("The %s event has been deleted", name));
+
+    if (strcmp(name, "connect") == 0)
+    {
+        lua_pushcfunction(L, SignalBridge::connect);
+        return 1;
+    }
+
+    if (strcmp(name, "wait") == 0)
+    {
+        lua_pushcfunction(L, SignalBridge::wait);
+        return 1;
+    }
+
+    if (strcmp(name, "disconnect") == 0)
+        throw std::runtime_error(G3D::format("Event:disconnect() has been deprecated. Use connection object returned by connect()"));
+
+    throw std::runtime_error(G3D::format("%s is not a valid member", name));
+}
+
+template<>
+void SignalBridge::on_newindex(boost::shared_ptr<Reflection::SignalInstance>& object, const char* name, lua_State* L)
+{
+    if (!object.get())
+        throw std::runtime_error(G3D::format("The %s event has been deleted", name));
+
+    throw std::runtime_error(G3D::format("%s cannot be assigned to", name));
+}
+
+static size_t pushArgs(lua_State* L, const Arguments& arguments)
+{
+    Arguments::const_iterator iter = arguments.begin();
+    Arguments::const_iterator end = arguments.end();
+
+    for (; iter != end; iter++)
+    {
+        const type_info& argType = iter->type();
+
+        if (argType == typeid(std::string))
+        {
+            lua_pushstring(L, boost::any_cast<std::string>(*iter).c_str());
+        }
+        else if (argType == typeid(int))
+        {
+            lua_pushinteger(L, boost::any_cast<int>(*iter));
+        }
+        else if (argType == typeid(size_t))
+        {
+            lua_pushinteger(L, boost::any_cast<size_t>(*iter));
+        }
+        else if (argType == typeid(float))
+        {
+            lua_pushnumber(L, boost::any_cast<float>(*iter));
+        }
+        else if (argType == typeid(double))
+        {
+            lua_pushnumber(L, boost::any_cast<double>(*iter));
+        }
+        else if (argType == typeid(bool))
+        {
+            lua_pushboolean(L,boost::any_cast<bool>(*iter));
+        }
+        else if (argType == typeid(boost::shared_ptr<Instance>))
+        {
+            ObjectBridge::push(L, boost::any_cast<boost::shared_ptr<Instance>>(*iter));
+        }
+        else if (argType == typeid(const Reflection::PropertyDescriptor*))
+        {
+            lua_pushstring(L, boost::any_cast<const Reflection::PropertyDescriptor*>(*iter)->name.c_str());
+        }
+        else if (argType == typeid(const char*))
+        {
+            lua_pushstring(L, boost::any_cast<const char*>(*iter));
+        }
+        else
+        {
+            // Â¯\_(ãƒ„)_/Â¯
+            // maybe they meant to print it? lol
+            argType.name();
+        }
+    }
+
+    return arguments.size();
+}
+
+FunctionScriptSlot::FunctionScriptSlot(lua_State* thread, int functionIndex)
+    : context(ScriptContext::getContext(thread)),
+      function(FunctionRef(thread, functionIndex)),
+      cachedSlotThread(ThreadRef())
+{
+}
+
+// TODO: 99.09% (functional match - registers swapped in codegen)
+void FunctionScriptSlot::operator()(const Arguments& arguments)
+{
+    lua_State* mainThread = function.thread();
+
+    if (!mainThread)
+    {
+        cnction->disconnect();
+        return;
+    }
+
+    lua_State* newThread = cachedSlotThread.thread();
+    bool createdThread = false;
+
+    if (!newThread)
+    {
+        newThread = lua_newthread(mainThread);
+
+        if (!newThread)
+            throw std::runtime_error("lua_newthread failed");
+
+        createdThread = true;
+    }
+
+    lua_pushfunction(mainThread, function);
+    lua_xmove(mainThread, newThread, 1);
+    int narg = static_cast<int>(pushArgs(newThread, arguments));
+    ScriptContext::Result resumeResult = context.resume(newThread, narg);
+
+    switch (resumeResult)
+    {
+    case ScriptContext::Yield:
+        cachedSlotThread.reset();
+        break;
+
+    case ScriptContext::Error:
+        cachedSlotThread.reset();
+        cnction->disconnect();
+        break;
+    }
+
+    if (!function.thread())
+        cnction->disconnect();
+
+    if (createdThread)
+    {
+        if (resumeResult == ScriptContext::Success && function.thread())
+            cachedSlotThread = ThreadRef(newThread);
+
+        lua_pop(mainThread, 1);
+    }
+
+    lua_settop(newThread, 0);
+}
+
+WaitScriptSlot::WaitScriptSlot(lua_State* thread)
+    : waitThread(ThreadRef(thread))
+{
+}
+
+void WaitScriptSlot::operator()(const Arguments& arguments)
+{
+	Slot::cnction->disconnect();
+	
+	if (lua_State* state = waitThread.thread())
+	{
+		int top = lua_gettop(state);
+		ScriptContext::getContext(state).resume(state, pushArgs(state, arguments));
+		lua_settop(state, top);
+	}
+}
+
+int SignalBridge::connect(lua_State* L)
+{
+    boost::shared_ptr<Reflection::SignalInstance> si = getObject(L, 1);
+
+    FunctionScriptSlot slot(L, 2);
+    *(slot.cnction) = si->connectGeneric(slot, boost::signals::at_front);
+
+    SignalConnectionBridge::pushNewObject(L, *(slot.cnction));
+
+    return 1;
+}
+
+int SignalBridge::wait(lua_State* L)
+{
+    // what's with the scope? connect probably does the same thing
+    {
+        boost::shared_ptr<Reflection::SignalInstance> si = getObject(L, 1);
+
+        WaitScriptSlot slot(L);
+        *(slot.cnction) = si->connectGeneric(slot, boost::signals::at_front);
+
+        RobloxExtraSpace::get(L)->yieldCaptured = true;
+    }
+
+    return lua_yield(L, 0);
+}
+
+template<>
+int SignalConnectionBridge::on_index(const boost::signals::connection& object, const char* name, lua_State* L)
+{
+    if (strcmp(name, "disconnect") == 0)
+    {
+        lua_pushcfunction(L, SignalConnectionBridge::disconnect);
+        return 1;
+    }
+    else if (strcmp(name, "connected") == 0)
+    {
+        lua_pushboolean(L, object.connected());
+        return 1;
+    }
+
+    throw std::runtime_error(G3D::format("%s is not a valid member", name));
+}
+
+int SignalConnectionBridge::disconnect(lua_State* L)
+{
+    boost::signals::connection& cnction = getObject(L, 1);
+    cnction.disconnect();
+    return 0;
+}

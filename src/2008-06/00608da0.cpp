@@ -1,62 +1,257 @@
-// roc 2008-06 00608da0  unit: RBX::VModelInstance::?$FactoryProduct  size: 125 bytes
-// Make this compile to the exact bytes below, then: roc check 2008-06 00608da0
-//
-// 00608da0  53                   push ebx
-// 00608da1  55                   push ebp
-// 00608da2  56                   push esi
-// 00608da3  57                   push edi
-// 00608da4  8bd9                 mov ebx, ecx
-// 00608da6  33f6                 xor esi, esi
-// 00608da8  e87320e8ff           call 0x48ae20
-// 00608dad  85c0                 test eax, eax
-// 00608daf  765e                 jbe 0x608e0f
-// 00608db1  8b2d90288000         mov ebp, dword ptr [0x802890]
-// 00608db7  eb07                 jmp 0x608dc0
-// 00608db9  8da42400000000       lea esp, [esp]
-// 00608dc0  8bbb08010000         mov edi, dword ptr [ebx + 0x108]
-// 00608dc6  8b4710               mov eax, dword ptr [edi + 0x10]
-// 00608dc9  2b470c               sub eax, dword ptr [edi + 0xc]
-// 00608dcc  c1f803               sar eax, 3
-// 00608dcf  3bf0                 cmp esi, eax
-// 00608dd1  7202                 jb 0x608dd5
-// 00608dd3  ffd5                 call ebp
-// 00608dd5  8b4f0c               mov ecx, dword ptr [edi + 0xc]
-// 00608dd8  8b04f1               mov eax, dword ptr [ecx + esi*8]
-// 00608ddb  6a00                 push 0
-// 00608ddd  68a8829400           push 0x9482a8
-// 00608de2  687c909200           push 0x92907c
-// 00608de7  6a00                 push 0
-// 00608de9  50                   push eax
-// 00608dea  e8d7890900           call 0x6a17c6
-// 00608def  83c414               add esp, 0x14
-// 00608df2  85c0                 test eax, eax
-// 00608df4  740d                 je 0x608e03
-// 00608df6  8b10                 mov edx, dword ptr [eax]
-// 00608df8  8bc8                 mov ecx, eax
-// 00608dfa  8b4204               mov eax, dword ptr [edx + 4]
-// 00608dfd  ffd0                 call eax
-// 00608dff  84c0                 test al, al
-// 00608e01  7513                 jne 0x608e16
-// 00608e03  8bcb                 mov ecx, ebx
-// 00608e05  46                   inc esi
-// 00608e06  e81520e8ff           call 0x48ae20
-// 00608e0b  3bf0                 cmp esi, eax
-// 00608e0d  72b1                 jb 0x608dc0
-// 00608e0f  5f                   pop edi
-// 00608e10  5e                   pop esi
-// 00608e11  5d                   pop ebp
-// 00608e12  32c0                 xor al, al
-// 00608e14  5b                   pop ebx
-// 00608e15  c3                   ret 
-// 00608e16  5f                   pop edi
-// 00608e17  5e                   pop esi
-// 00608e18  5d                   pop ebp
-// 00608e19  b001                 mov al, 1
-// 00608e1b  5b                   pop ebx
-// 00608e1c  c3                   ret 
-// library openrbx-client/App\v8datamodel\PVInstance.cpp (function ?computeIsControllable@PVInstance@RBX@@ABE_NXZ)
-
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
 // roc-lib: openrbx-client App/v8datamodel/PVInstance.cpp
+
+// Candidate translation unit (score above; library headers required).
+#include "v8datamodel/PVInstance.h"
+
+#include "rbxgraphics/Adorn.h"
+#include "reflection/property.h"
+#include "v8xml/XmlElement.h"
+
+namespace RBX {
+
+static Reflection::PropDescriptor<PVInstance, bool> prop_ControllerFlagShown(
+	"ControllerFlagShown",
+	"Appearance",
+	&RBX::PVInstance::getShowControllerFlag,
+	&RBX::PVInstance::setShowControllerFlag
+);
+
+const char sPVInstance[] = "PVInstance";
+
+const Reflection::EnumPropDescriptor<PVInstance, Controller::ControllerType> PVInstance::prop_ControllerType(
+	"Controller",
+	"Behavior",
+	&RBX::PVInstance::getControllerType,
+	&RBX::PVInstance::setControllerType
+);
+
+unsigned int PVInstance::topHashCode() const
+{
+	STUB(0x10059d20);
+	return 0;
+}
+
+unsigned int PVInstance::childHashCode() const
+{
+	STUB(0x10059d21);
+	return 0;
+}
+
+// FUNCTION: WEBSERVICE 0x1005a7f0
+bool PVInstance::isControllable() const
+{
+	return IsControllable;
+}
+
+// FUNCTION: WEBSERVICE 0x1005a830
+bool PVInstance::isTopLevelPVInstance() const
+{
+	return dynamic_cast<const PVInstance*>(getParent()) == NULL || getTypedRoot<PVInstance>() == getParent();
+}
+
+// FUNCTION: WEBSERVICE 0x10099100
+void PVInstance::readProperty(const XmlElement* propertyElement, IReferenceBinder& binder)
+{
+	if (propertyElement->getTag().name.compare("Feature") == 0) {
+		const RBX::Name* name = NULL;
+
+		const XmlAttribute* attribute = propertyElement->findAttribute(name_name);
+
+		if (attribute != NULL) {
+			attribute->getValue(name);
+		}
+
+		if (name->name.compare("Part") == 0) {
+			readProperties(propertyElement, binder);
+			return;
+		}
+
+		if (name->name.compare("Item") == 0) {
+			readProperties(propertyElement, binder);
+			return;
+		}
+	}
+
+	Instance::readProperty(propertyElement, binder);
+}
+
+// FUNCTION: WEBSERVICE 0x100991c0
+void PVInstance::onChildAdded(Instance* instance)
+{
+	PVInstance* pvInstance = dynamic_cast<PVInstance*>(instance);
+
+	if (pvInstance != NULL) {
+		pvInstance->onChildControllerChanged();
+		pvInstance->onParentControllerChanged();
+	}
+}
+
+void PVInstance::onChildRemoving(Instance* child)
+{
+	STUB(0x100991c1);
+}
+
+// FUNCTION: WEBSERVICE 0x10099200
+void PVInstance::renderCoordinateFrame(Adorn* adorn)
+{
+	adorn->setObjectToWorldMatrix(getLocation());
+
+	adorn->axes(
+		G3D::Color4(G3D::Color3::red(), 1.0f),
+		G3D::Color4(G3D::Color3::green(), 1.0f),
+		G3D::Color4(G3D::Color3::blue(), 1.0f),
+		10.0f
+	);
+}
+
+// FUNCTION: WEBSERVICE 0x100992c0
+void PVInstance::onChildControllerChanged()
+{
+	TopPVController.setDirty();
+	IsControllable.setDirty();
+	IsTopFlag.setDirty();
+
+	PVInstance* pvInstance = dynamic_cast<PVInstance*>(getParent());
+
+	if (pvInstance != NULL) {
+		pvInstance->onChildControllerChanged();
+	}
+}
+
+// FUNCTION: WEBSERVICE 0x10099300
+void PVInstance::onDescendentAdded(Instance* instance)
+{
+	Instance::onDescendentAdded(instance);
+
+	TopPVController.setDirty();
+	IsControllable.setDirty();
+	IsTopFlag.setDirty();
+}
+
+// FUNCTION: WEBSERVICE 0x10099330
+void PVInstance::onDescendentRemoving(const shared_ptr<Instance>& instance)
+{
+	TopPVController.setDirty();
+	IsControllable.setDirty();
+	IsTopFlag.setDirty();
+
+	Instance::onDescendentRemoving(instance);
+}
+
+// FUNCTION: WEBSERVICE 0x10099350
+void PVInstance::onExtentsChanged() const
+{
+	const PVInstance* pvInstance = dynamic_cast<const PVInstance*>(getParent());
+
+	if (pvInstance != NULL) {
+		pvInstance->onExtentsChanged();
+	}
+}
+
+// FUNCTION: WEBSERVICE 0x10099450
+void PVInstance::onParentControllerChanged()
+{
+	TopPVController.setDirty();
+	IsControllable.setDirty();
+	IsTopFlag.setDirty();
+
+	for (unsigned int i = 0; i < numChildren(); ++i) {
+		Instance* child = (*getChildren())[i].get();
+		PVInstance* pvInstance = dynamic_cast<PVInstance*>(child);
+
+		if (pvInstance != NULL) {
+			pvInstance->onParentControllerChanged();
+		}
+	}
+}
+
+// FUNCTION: WEBSERVICE 0x100994d0
+bool PVInstance::computeIsControllable() const
+{
+	for (unsigned int i = 0; i < numChildren(); ++i) {
+		Instance* child = (*getChildren())[i].get();
+		IControllable* controllable = dynamic_cast<IControllable*>(child);
+
+		if (controllable != NULL && controllable->isControllable()) {
+			return true;
+		}
+	}
+
+	return false;
+}
+
+// FUNCTION: WEBSERVICE 0x10099780
+Controller* PVInstance::getTopPVController() const
+{
+	Controller* controller = TopPVController.getValue().getPointer();
+
+	if (controller != NULL) {
+		return controller;
+	}
+
+	return NullController::getStaticNullController();
+}
+
+// FUNCTION: WEBSERVICE 0x10099870
+PVInstance::~PVInstance()
+{
+}
+
+// FUNCTION: WEBSERVICE 0x10099910
+bool PVInstance::computeIsTopFlag() const
+{
+	if (IsControllable && controllerType != Controller::NO_CONTROLLER) {
+		if (isTopLevelPVInstance()) {
+			return true;
+		}
+
+		const PVInstance* parentPV = static_cast<const PVInstance*>(getParent());
+
+		return parentPV->getTopPVController()->getControllerType() == Controller::NO_CONTROLLER;
+	}
+
+	return false;
+}
+
+// STUB: WEBSERVICE 0x10099ea0
+G3D::ReferenceCountedPointer<Controller> PVInstance::computeTopPVController() const
+{
+	STUB(0x10099ea0);
+	return G3D::ReferenceCountedPointer<Controller>();
+}
+
+// FUNCTION: WEBSERVICE 0x1009a3b0
+PVInstance::PVInstance(const char* name)
+	: Reflection::Described<PVInstance, sPVInstance, Instance>(name),
+	  IsControllable(this, &PVInstance::computeIsControllable), IsTopFlag(this, &PVInstance::computeIsTopFlag),
+	  TopPVController(this, &PVInstance::computeTopPVController), controllerType(Controller::NO_CONTROLLER),
+	  showControllerFlag(true)
+{
+}
+
+// FUNCTION: WEBSERVICE 0x1009a4a0
+void PVInstance::setControllerType(Controller::ControllerType _control)
+{
+	if (controllerType != _control) {
+		controllerType = _control;
+
+		onChildControllerChanged();
+		onParentControllerChanged();
+
+		raisePropertyChanged(prop_ControllerType);
+	}
+}
+
+// FUNCTION: WEBSERVICE 0x1009a4e0
+void PVInstance::setShowControllerFlag(bool _showControllerFlag)
+{
+	if (showControllerFlag != _showControllerFlag) {
+		showControllerFlag = _showControllerFlag;
+		raisePropertyChanged(prop_ControllerFlagShown);
+	}
+}
+
+} // namespace RBX

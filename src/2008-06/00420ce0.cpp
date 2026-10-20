@@ -1,32 +1,136 @@
-// roc 2008-06 00420ce0  unit: CInstanceExplorer  size: 49 bytes
-// Make this compile to the exact bytes below, then: roc check 2008-06 00420ce0
-//
-// 00420ce0  56                   push esi
-// 00420ce1  8bf1                 mov esi, ecx
-// 00420ce3  8b06                 mov eax, dword ptr [esi]
-// 00420ce5  57                   push edi
-// 00420ce6  8b3d90288000         mov edi, dword ptr [0x802890]
-// 00420cec  85c0                 test eax, eax
-// 00420cee  7508                 jne 0x420cf8
-// 00420cf0  ffd7                 call edi
-// 00420cf2  8b06                 mov eax, dword ptr [esi]
-// 00420cf4  85c0                 test eax, eax
-// 00420cf6  7404                 je 0x420cfc
-// 00420cf8  8b00                 mov eax, dword ptr [eax]
-// 00420cfa  eb02                 jmp 0x420cfe
-// 00420cfc  33c0                 xor eax, eax
-// 00420cfe  8b4e04               mov ecx, dword ptr [esi + 4]
-// 00420d01  3b4810               cmp ecx, dword ptr [eax + 0x10]
-// 00420d04  7202                 jb 0x420d08
-// 00420d06  ffd7                 call edi
-// 00420d08  83460404             add dword ptr [esi + 4], 4
-// 00420d0c  5f                   pop edi
-// 00420d0d  8bc6                 mov eax, esi
-// 00420d0f  5e                   pop esi
-// 00420d10  c3                   ret 
-// library openrbx-client/Rendering\RenderLib\Clusterer.cpp (function ??E?$_Vector_const_iterator@PAVChunk@Render@RBX@@V?$allocator@PAVChunk@Render@RBX@@@std@@@std@@QAEAAV01@XZ)
-
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
 // roc-lib: openrbx-client Rendering/RenderLib/Clusterer.cpp
+
+// Candidate translation unit (score above; library headers required).
+#include "Clusterer.h"
+
+#include <algorithm>
+#include <cstdlib>
+
+namespace RBX {
+namespace Render {
+
+// FUNCTION: WEBSERVICE 0x101f9fa0
+Clusterer::Cluster* Clusterer::findClosestCluster(Sample* sample)
+{
+	Cluster* bestCluster = NULL;
+	float bestDistance = G3D::inf();
+
+	Clusters::iterator end = clusters.end();
+
+	for (Clusters::iterator it = clusters.begin(); it != end; ++it) {
+		float distance = it->getDistanceFromCentroid(sample);
+
+		if (distance < bestDistance) {
+			bestCluster = &(*it);
+			bestDistance = distance;
+		}
+	}
+
+	return bestCluster;
+}
+
+// FUNCTION: WEBSERVICE 0x101fa0c0
+void Clusterer::Cluster::computeCentroid()
+{
+	G3D::Vector3 c(0, 0, 0);
+
+	Samples::iterator it = samples.begin();
+	Samples::iterator end = samples.end();
+
+	for (; it != end; ++it) {
+		c += (*it)->cframe().translation;
+	}
+
+	centroid = c / (float) samples.size();
+}
+
+// STUB: WEBSERVICE 0x101fa2c0
+unsigned int Clusterer::moveSample(Sample* sample, Cluster* cluster)
+{
+	while (cluster->visitIndex != cluster->samples.size()) {
+		Sample* visited = cluster->samples[cluster->visitIndex];
+		Cluster* bestCluster = findClosestCluster(visited);
+
+		if (bestCluster != cluster) {
+			cluster->samples[cluster->visitIndex] = sample;
+			return moveSample(visited, bestCluster) + 1;
+		}
+
+		cluster->visitIndex++;
+	}
+
+	cluster->samples.push_back(sample);
+	cluster->visitIndex++;
+
+	return 1;
+}
+
+// FUNCTION: WEBSERVICE 0x101fa380
+unsigned int Clusterer::moveSamples()
+{
+	unsigned int moveCount = 0;
+
+	for (Clusters::iterator it = clusters.begin(); it != clusters.end(); ++it) {
+		it->visitIndex = 0;
+	}
+
+	for (Clusters::iterator it = clusters.begin(); it != clusters.end(); ++it) {
+		Cluster& cluster = *it;
+
+		while (cluster.visitIndex < cluster.samples.size()) {
+			Sample* sample = cluster.samples[cluster.visitIndex];
+			Cluster* bestCluster = findClosestCluster(sample);
+
+			if (bestCluster != &cluster) {
+				cluster.samples[cluster.visitIndex] = cluster.samples.back();
+				cluster.samples.pop_back();
+				moveCount += moveSample(sample, bestCluster);
+			}
+			else {
+				cluster.visitIndex++;
+			}
+		}
+	}
+
+	return moveCount;
+}
+
+// STUB: WEBSERVICE 0x101fa520
+Clusterer::Clusters* Clusterer::go(unsigned int maxSteps)
+{
+	if (clusterCount <= 1) {
+		return &clusters;
+	}
+
+	Clusters::iterator end = clusters.end();
+
+	for (Clusters::iterator it = clusters.begin(); it != end; ++it) {
+		if (it->samples.size() != 0) {
+			it->centroid = it->samples[rand() % it->samples.size()]->cframe().translation;
+		}
+	}
+
+	unsigned int threshold = std::max(sampleSize / 20, 1u);
+	unsigned int step = 1;
+
+	while (moveSamples() > threshold && step != maxSteps) {
+		for (Clusters::iterator it = clusters.begin(); it != clusters.end(); ++it) {
+			it->computeCentroid();
+		}
+
+		step++;
+	}
+
+	return &clusters;
+}
+
+// FUNCTION: WEBSERVICE 0x101fa8a0
+Clusterer::Clusterer(unsigned int clusterCount) : sampleSize(0), clusterCount(clusterCount), clusters(clusterCount)
+{
+}
+
+} // namespace Render
+} // namespace RBX

@@ -1,76 +1,397 @@
-// roc 2007-03 00514dc0  unit: seg_00510000  size: 201 bytes
-// Make this compile to the exact bytes below, then: roc check 2007-03 00514dc0
-//
-// 00514dc0  d9ee                 fldz 
-// 00514dc2  83ec18               sub esp, 0x18
-// 00514dc5  53                   push ebx
-// 00514dc6  56                   push esi
-// 00514dc7  8bf1                 mov esi, ecx
-// 00514dc9  d916                 fst dword ptr [esi]
-// 00514dcb  8b5c2424             mov ebx, dword ptr [esp + 0x24]
-// 00514dcf  d95604               fst dword ptr [esi + 4]
-// 00514dd2  57                   push edi
-// 00514dd3  d95608               fst dword ptr [esi + 8]
-// 00514dd6  8b7c242c             mov edi, dword ptr [esp + 0x2c]
-// 00514dda  d9560c               fst dword ptr [esi + 0xc]
-// 00514ddd  57                   push edi
-// 00514dde  d95610               fst dword ptr [esi + 0x10]
-// 00514de1  8d442410             lea eax, [esp + 0x10]
-// 00514de5  d95614               fst dword ptr [esi + 0x14]
-// 00514de8  50                   push eax
-// 00514de9  d95618               fst dword ptr [esi + 0x18]
-// 00514dec  8bcb                 mov ecx, ebx
-// 00514dee  d9561c               fst dword ptr [esi + 0x1c]
-// 00514df1  d95620               fst dword ptr [esi + 0x20]
-// 00514df4  d95624               fst dword ptr [esi + 0x24]
-// 00514df7  d95628               fst dword ptr [esi + 0x28]
-// 00514dfa  d9562c               fst dword ptr [esi + 0x2c]
-// 00514dfd  d95630               fst dword ptr [esi + 0x30]
-// 00514e00  d95634               fst dword ptr [esi + 0x34]
-// 00514e03  d95638               fst dword ptr [esi + 0x38]
-// 00514e06  d9563c               fst dword ptr [esi + 0x3c]
-// 00514e09  d95640               fst dword ptr [esi + 0x40]
-// 00514e0c  d95644               fst dword ptr [esi + 0x44]
-// 00514e0f  d95648               fst dword ptr [esi + 0x48]
-// 00514e12  d9564c               fst dword ptr [esi + 0x4c]
-// 00514e15  d95650               fst dword ptr [esi + 0x50]
-// 00514e18  d95654               fst dword ptr [esi + 0x54]
-// 00514e1b  d95658               fst dword ptr [esi + 0x58]
-// 00514e1e  d9565c               fst dword ptr [esi + 0x5c]
-// 00514e21  d95660               fst dword ptr [esi + 0x60]
-// 00514e24  d95664               fst dword ptr [esi + 0x64]
-// 00514e27  d95668               fst dword ptr [esi + 0x68]
-// 00514e2a  d9566c               fst dword ptr [esi + 0x6c]
-// 00514e2d  d95670               fst dword ptr [esi + 0x70]
-// 00514e30  d95674               fst dword ptr [esi + 0x74]
-// 00514e33  d95678               fst dword ptr [esi + 0x78]
-// 00514e36  d9567c               fst dword ptr [esi + 0x7c]
-// 00514e39  d99680000000         fst dword ptr [esi + 0x80]
-// 00514e3f  d99684000000         fst dword ptr [esi + 0x84]
-// 00514e45  d99688000000         fst dword ptr [esi + 0x88]
-// 00514e4b  d9968c000000         fst dword ptr [esi + 0x8c]
-// 00514e51  d99690000000         fst dword ptr [esi + 0x90]
-// 00514e57  d99694000000         fst dword ptr [esi + 0x94]
-// 00514e5d  d99e98000000         fstp dword ptr [esi + 0x98]
-// 00514e63  e8b832fdff           call 0x4e8120
-// 00514e68  50                   push eax
-// 00514e69  57                   push edi
-// 00514e6a  8d4c2420             lea ecx, [esp + 0x20]
-// 00514e6e  51                   push ecx
-// 00514e6f  8bcb                 mov ecx, ebx
-// 00514e71  e83a32fdff           call 0x4e80b0
-// 00514e76  50                   push eax
-// 00514e77  8bce                 mov ecx, esi
-// 00514e79  e812fdffff           call 0x514b90
-// 00514e7e  5f                   pop edi
-// 00514e7f  8bc6                 mov eax, esi
-// 00514e81  5e                   pop esi
-// 00514e82  5b                   pop ebx
-// 00514e83  83c418               add esp, 0x18
-// 00514e86  c20800               ret 8
-// library rbxgs-g3d/G3Dcpp\Box.cpp (function ??0Box@G3D@@QAE@ABVVector3@1@0@Z)
-
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
 // roc-lib: rbxgs-g3d G3Dcpp/Box.cpp
+
+// Candidate translation unit (score above; library headers required).
+/**
+  @file Box.cpp
+  Box class
+
+  @maintainer Morgan McGuire, matrix@graphics3d.com
+
+  @created 2001-06-02
+  @edited  2006-02-05
+*/
+
+#include "G3D/Box.h"
+#include "G3D/debug.h"
+#include "G3D/Plane.h"
+#include "G3D/AABox.h"
+#include "G3D/CoordinateFrame.h"
+
+namespace G3D {
+
+/**
+ Sets a field on four vertices.  Used by the constructor.
+ */
+#define setMany(i0, i1, i2, i3, field, extreme) \
+    _corner[i0].field = _corner[i1].field = \
+    _corner[i2].field = _corner[i3].field = \
+    (extreme).field
+
+Box::Box() {
+}
+
+
+Box::Box(const AABox& b) {
+    init(b.low(), b.high());
+}
+
+Box::Box(class BinaryInput& b) {
+	deserialize(b);	
+}
+
+
+void Box::serialize(class BinaryOutput& b) const {
+	int i;
+	for (i = 0; i < 8; ++i) {
+		_corner[i].serialize(b);
+	}
+
+    // Other state can be reconstructed
+}
+
+
+void Box::deserialize(class BinaryInput& b) {
+	int i;
+
+    _center = Vector3::zero();
+    for (i = 0; i < 8; ++i) {
+		_corner[i].deserialize(b);
+        _center += _corner[i];
+	}
+
+    _center = _center / 8;
+    
+    // Reconstruct other state from the corners
+    _axis[0] = _corner[5] - _corner[4];
+    _axis[1] = _corner[7] - _corner[4];
+    _axis[2] = _corner[0] - _corner[4];
+
+    for (i = 0; i < 3; ++i) {
+        _extent[i] = _axis[i].magnitude();
+        _axis[i] /= _extent[i];
+    }
+
+    _volume = _extent.x * _extent.y * _extent.z;
+
+    _area = 2 * 
+        (_extent.x * _extent.y +
+         _extent.y * _extent.z +
+         _extent.z * _extent.x);
+}
+
+
+Box::Box(
+    const Vector3& min,
+    const Vector3& max) {
+
+    init(min.min(max), min.max(max));
+
+}
+
+void Box::init(
+    const Vector3& min,
+    const Vector3& max) {
+
+    setMany(0, 1, 2, 3, z, max);
+    setMany(4, 5, 6, 7, z, min);
+
+    setMany(1, 2, 5, 6, x, max);
+    setMany(0, 3, 4, 7, x, min);
+
+    setMany(3, 2, 6, 7, y, max);
+    setMany(0, 1, 5, 4, y, min);
+
+    _extent = max - min;
+
+    _axis[0] = Vector3::unitX();
+    _axis[1] = Vector3::unitY();
+    _axis[2] = Vector3::unitZ();
+
+    _volume = _extent.x * _extent.y * _extent.z;
+    _area = 2 * 
+        (_extent.x * _extent.y +
+         _extent.y * _extent.z +
+         _extent.z * _extent.x);
+
+    _center = (max + min) / 2;
+}
+
+
+float Box::volume() const {
+    return _volume;
+}
+
+
+float Box::surfaceArea() const {
+    return _area;
+}
+
+
+void Box::getLocalFrame(CoordinateFrame& frame) const {
+
+    frame.rotation = Matrix3(
+        _axis[0][0], _axis[1][0], _axis[2][0],
+        _axis[0][1], _axis[1][1], _axis[2][1],
+        _axis[0][2], _axis[1][2], _axis[2][2]);
+
+    frame.translation = _center;
+}
+
+
+CoordinateFrame Box::localFrame() const {
+    CoordinateFrame out;
+    getLocalFrame(out);
+    return out;
+}
+
+
+void Box::getFaceCorners(int f, Vector3& v0, Vector3& v1, Vector3& v2, Vector3& v3) const {
+    switch (f) {
+    case 0:
+        v0 = _corner[0]; v1 = _corner[1]; v2 = _corner[2]; v3 = _corner[3];
+        break;
+
+    case 1:
+        v0 = _corner[1]; v1 = _corner[5]; v2 = _corner[6]; v3 = _corner[2];
+        break;
+
+    case 2:
+        v0 = _corner[7]; v1 = _corner[6]; v2 = _corner[5]; v3 = _corner[4];
+        break;
+
+    case 3:
+        v0 = _corner[2]; v1 = _corner[6]; v2 = _corner[7]; v3 = _corner[3];
+        break;
+
+    case 4:
+        v0 = _corner[3]; v1 = _corner[7]; v2 = _corner[4]; v3 = _corner[0];
+        break;
+
+    case 5:
+        v0 = _corner[1]; v1 = _corner[0]; v2 = _corner[4]; v3 = _corner[5];
+        break;
+
+    default:
+        debugAssert((f >= 0) && (f < 6));
+    }
+}
+
+
+bool Box::culledBy(
+    const Array<Plane>&		plane,
+	int&				    cullingPlaneIndex,
+	const uint32			inMask,
+	uint32&					outMask) const {
+
+	return culledBy(plane.getCArray(), plane.size(), cullingPlaneIndex, inMask, outMask);
+}
+
+
+bool Box::culledBy(
+    const Array<Plane>&		plane,
+	int&				    cullingPlaneIndex,
+	const uint32			inMask) const {
+
+	return culledBy(plane.getCArray(), plane.size(), cullingPlaneIndex, inMask);
+}
+
+
+int Box::dummy = 0;
+
+bool Box::culledBy(
+    const class Plane*  plane,
+    int                 numPlanes,
+	int&				cullingPlane,
+	const uint32		_inMask,
+    uint32&             childMask) const {
+
+	uint32 inMask = _inMask;
+	assert(numPlanes < 31);
+
+    childMask = 0;
+
+    // See if there is one plane for which all of the
+	// vertices are in the negative half space.
+    for (int p = 0; p < numPlanes; p++) {
+
+		// Only test planes that are not masked
+		if ((inMask & 1) != 0) {
+		
+			Vector3 corner;
+
+            int numContained = 0;
+            int v = 0;
+
+            // We can early-out only if we have found one point on each
+            // side of the plane (i.e. if we are straddling).  That
+            // occurs when (numContained < v) && (numContained > 0)
+			for (v = 0; (v < 8) && ((numContained == v) || (numContained == 0)); ++v) {
+                if (plane[p].halfSpaceContains(getCorner(v))) {
+                    ++numContained;
+                }
+			}
+
+			if (numContained == 0) {
+				// Plane p culled the box
+				cullingPlane = p;
+
+                // The caller should not recurse into the children,
+                // since the parent is culled.  If they do recurse,
+                // make them only test against this one plane, which
+                // will immediately cull the volume.
+                childMask = 1 << p;
+				return true;
+
+            } else if (numContained < v) {
+                // The bounding volume straddled the plane; we have
+                // to keep testing against this plane
+                childMask |= (1 << p);
+            }
+		}
+
+        // Move on to the next bit.
+		inMask = inMask >> 1;
+    }
+
+    // None of the planes could cull this box
+	cullingPlane = -1;
+    return false;
+}
+
+
+bool Box::culledBy(
+    const class Plane*  plane,
+    int                 numPlanes,
+	int&				cullingPlane,
+	const uint32		_inMask) const {
+
+	uint32 inMask = _inMask;
+	assert(numPlanes < 31);
+
+    // See if there is one plane for which all of the
+	// vertices are in the negative half space.
+    for (int p = 0; p < numPlanes; p++) {
+
+		// Only test planes that are not masked
+		if ((inMask & 1) != 0) {
+		
+			bool culled = true;
+
+            int v;
+
+			// Assume this plane culls all points.  See if there is a point
+			// not culled by the plane... early out when at least one point
+            // is in the positive half space.
+			for (v = 0; (v < 8) && culled; ++v) {
+                culled = ! plane[p].halfSpaceContains(getCorner(v));
+			}
+
+			if (culled) {
+				// Plane p culled the box
+				cullingPlane = p;
+
+				return true;
+            }
+		}
+
+        // Move on to the next bit.
+		inMask = inMask >> 1;
+    }
+
+    // None of the planes could cull this box
+	cullingPlane = -1;
+    return false;
+}
+
+
+bool Box::contains(
+    const Vector3&      point) const {
+
+    // Form axes from three edges, transform the point into that
+    // space, and perform 3 interval tests
+
+    Vector3 u = _corner[4] - _corner[0];
+    Vector3 v = _corner[3] - _corner[0];
+    Vector3 w = _corner[1] - _corner[0];
+
+    Matrix3 M = Matrix3(u.x, v.x, w.x,
+                        u.y, v.y, w.y,
+                        u.z, v.z, w.z);
+
+    // M^-1 * (point - _corner[0]) = point in unit cube's object space
+    // compute the inverse of M
+    Vector3 osPoint = M.inverse() * (point - _corner[0]);
+
+    return
+        (osPoint.x >= 0) && 
+        (osPoint.y >= 0) &&
+        (osPoint.z >= 0) &&
+        (osPoint.x <= 1) &&
+        (osPoint.y <= 1) &&
+        (osPoint.z <= 1);
+}
+
+#undef setMany
+
+
+void Box::getRandomSurfacePoint(Vector3& P, Vector3& N) const {
+    float aXY = _extent.x * _extent.y;
+    float aYZ = _extent.y * _extent.z;
+    float aZX = _extent.z * _extent.x;
+
+    float r = (float)random(0, aXY + aYZ + aZX);
+
+    // Choose evenly between positive and negative face planes
+    float d = (random(0, 1) < 0.5f) ? -1.0f : 1.0f;
+
+    // The probability of choosing a given face is proportional to
+    // its area.
+    if (r < aXY) {
+        P = _axis[0] * (float)random(-0.5, 0.5) * _extent.x +
+            _axis[1] * (float)random(-0.5, 0.5) * _extent.y +
+            _center + _axis[2] * d * _extent.z * 0.5f;
+        N = _axis[2] * d;
+    } else if (r < aYZ) {
+        P = _axis[1] * (float)random(-0.5, 0.5) * _extent.y +
+            _axis[2] * (float)random(-0.5, 0.5) * _extent.z +
+            _center + _axis[0] * d * _extent.x * 0.5f;
+        N = _axis[0] * d;
+    } else {
+        P = _axis[2] * (float)random(-0.5, 0.5) * _extent.z +
+            _axis[0] *(float) random(-0.5, 0.5) * _extent.x +
+            _center + _axis[1] * d * _extent.y * 0.5f;
+        N = _axis[1] * d;
+    }
+}
+
+
+Vector3 Box::randomInteriorPoint() const {
+    Vector3 sum = _center;
+
+    for (int a = 0; a < 3; ++a) {
+        sum += _axis[a] * (float)random(-0.5, 0.5) * _extent[a];
+    }
+
+    return sum;
+}
+
+
+void Box::getBounds(class AABox& aabb) const {
+
+    Vector3 lo = _corner[0];
+    Vector3 hi = lo;
+
+    for (int v = 1; v < 8; ++v) {
+        const Vector3& C = _corner[v];
+        lo = lo.min(C);
+        hi = hi.max(C);
+    }
+
+    aabb = AABox(lo, hi);
+}
+
+
+} // namespace

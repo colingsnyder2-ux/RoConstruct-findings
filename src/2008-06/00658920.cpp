@@ -1,80 +1,157 @@
-// roc 2008-06 00658920  unit: RBX::ArrowButton  size: 213 bytes
-// Make this compile to the exact bytes below, then: roc check 2008-06 00658920
-//
-// 00658920  83ec48               sub esp, 0x48
-// 00658923  8b442450             mov eax, dword ptr [esp + 0x50]
-// 00658927  8b4c2454             mov ecx, dword ptr [esp + 0x54]
-// 0065892b  d900                 fld dword ptr [eax]
-// 0065892d  d809                 fmul dword ptr [ecx]
-// 0065892f  8d1424               lea edx, [esp]
-// 00658932  d91c24               fstp dword ptr [esp]
-// 00658935  d94004               fld dword ptr [eax + 4]
-// 00658938  d84904               fmul dword ptr [ecx + 4]
-// 0065893b  d95c2404             fstp dword ptr [esp + 4]
-// 0065893f  d94008               fld dword ptr [eax + 8]
-// 00658942  d84908               fmul dword ptr [ecx + 8]
-// 00658945  d95c2408             fstp dword ptr [esp + 8]
-// 00658949  d9400c               fld dword ptr [eax + 0xc]
-// 0065894c  d809                 fmul dword ptr [ecx]
-// 0065894e  d95c240c             fstp dword ptr [esp + 0xc]
-// 00658952  d94010               fld dword ptr [eax + 0x10]
-// 00658955  d84904               fmul dword ptr [ecx + 4]
-// 00658958  d95c2410             fstp dword ptr [esp + 0x10]
-// 0065895c  d94014               fld dword ptr [eax + 0x14]
-// 0065895f  d84908               fmul dword ptr [ecx + 8]
-// 00658962  d95c2414             fstp dword ptr [esp + 0x14]
-// 00658966  d94018               fld dword ptr [eax + 0x18]
-// 00658969  d809                 fmul dword ptr [ecx]
-// 0065896b  d95c2418             fstp dword ptr [esp + 0x18]
-// 0065896f  d9401c               fld dword ptr [eax + 0x1c]
-// 00658972  d84904               fmul dword ptr [ecx + 4]
-// 00658975  d95c241c             fstp dword ptr [esp + 0x1c]
-// 00658979  d94020               fld dword ptr [eax + 0x20]
-// 0065897c  d84908               fmul dword ptr [ecx + 8]
-// 0065897f  8d4c2424             lea ecx, [esp + 0x24]
-// 00658983  51                   push ecx
-// 00658984  50                   push eax
-// 00658985  52                   push edx
-// 00658986  d95c242c             fstp dword ptr [esp + 0x2c]
-// 0065898a  e811ffffff           call 0x6588a0
-// 0065898f  d9ee                 fldz 
-// 00658991  8b442458             mov eax, dword ptr [esp + 0x58]
-// 00658995  d910                 fst dword ptr [eax]
-// 00658997  8b4c2464             mov ecx, dword ptr [esp + 0x64]
-// 0065899b  d95004               fst dword ptr [eax + 4]
-// 0065899e  d95808               fstp dword ptr [eax + 8]
-// 006589a1  d9442434             fld dword ptr [esp + 0x34]
-// 006589a5  d84904               fmul dword ptr [ecx + 4]
-// 006589a8  d9442430             fld dword ptr [esp + 0x30]
-// 006589ac  d809                 fmul dword ptr [ecx]
-// 006589ae  dec1                 faddp st(1)
-// 006589b0  d94108               fld dword ptr [ecx + 8]
-// 006589b3  d84c2438             fmul dword ptr [esp + 0x38]
-// 006589b7  dec1                 faddp st(1)
-// 006589b9  d918                 fstp dword ptr [eax]
-// 006589bb  d9442440             fld dword ptr [esp + 0x40]
-// 006589bf  d84904               fmul dword ptr [ecx + 4]
-// 006589c2  d944243c             fld dword ptr [esp + 0x3c]
-// 006589c6  d809                 fmul dword ptr [ecx]
-// 006589c8  dec1                 faddp st(1)
-// 006589ca  d94108               fld dword ptr [ecx + 8]
-// 006589cd  d84c2444             fmul dword ptr [esp + 0x44]
-// 006589d1  dec1                 faddp st(1)
-// 006589d3  d95804               fstp dword ptr [eax + 4]
-// 006589d6  d944244c             fld dword ptr [esp + 0x4c]
-// 006589da  d84904               fmul dword ptr [ecx + 4]
-// 006589dd  d9442448             fld dword ptr [esp + 0x48]
-// 006589e1  d809                 fmul dword ptr [ecx]
-// 006589e3  dec1                 faddp st(1)
-// 006589e5  d94108               fld dword ptr [ecx + 8]
-// 006589e8  d84c2450             fmul dword ptr [esp + 0x50]
-// 006589ec  dec1                 faddp st(1)
-// 006589ee  d95808               fstp dword ptr [eax + 8]
-// 006589f1  83c454               add esp, 0x54
-// 006589f4  c3                   ret 
-// library rbxgs-dll/v8kernel\SimBody.cpp (function ?computeRotVel@RBX@@YA?AVVector3@G3D@@ABVMatrix3@3@ABV23@1@Z)
-
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast
 // roc-lib: rbxgs-dll v8kernel/SimBody.cpp
+
+// Candidate translation unit (score above; library headers required).
+#include "v8kernel/SimBody.h"
+#include "v8kernel/Constants.h"
+#include "v8kernel/Body.h"
+#include "util/Units.h"
+namespace RBX
+{
+
+SimBody::SimBody(RBX::Body* _body)
+			:body(_body),
+			dirty(1),
+			force(G3D::Vector3::zero()),
+			torque(G3D::Vector3::zero()),
+			constantForceY(0.0f)
+{}
+
+SimBody::~SimBody() {}
+
+G3D::Vector3 vecUnkPercent(G3D::Vector3& input)
+{
+	return G3D::Vector3(1.0f / input.x, 1.0f / input.y, 1.0f / input.z);
+}
+
+float precentInline(float fNum)
+{
+	return 1.0f / fNum;
+}
+
+__forceinline void SimBody::unkSimInline(float fNum)
+{
+	massRecip = 1.0f / fNum;
+	momentRecip = vecUnkPercent(Math::toDiagonal(body->getBranchIBody()));
+}
+
+void SimBody::update()
+{
+	RBXASSERT(dirty);
+	{
+		const G3D::Vector3 cofmOffset = body->getCofmOffset();
+		pv = body->getPV().pvAtLocalOffset(cofmOffset);
+	}
+	qOrientation = Quaternion::Quaternion(pv.position.rotation);
+	qOrientation *= precentInline(qOrientation.magnitude());
+	angMomentum = pv.velocity.rotational * body->getBranchIWorld();
+	float _mass = body->getBranchMass();
+	unkSimInline(_mass);
+	constantForceY = body->getBranchMass() * Units::kmsAccelerationToRbx(Constants::getKmsGravity()).y;
+	dirty = false;
+}
+
+void mulMatrixMatrixTranspose(const G3D::Matrix3& _mat0, const G3D::Matrix3& _mat1, G3D::Matrix3& _answer)
+{
+	//just like matrixMulInline, these pointers are required for matching
+	const float* matrix0 = &_mat0[0][0];
+	const float* matrix1 = &_mat1[0][0];
+	float *answer = &_answer[0][0];
+
+	//this part is mostly copied from operator* from matrix3 and transpose function as reference
+	for (int iRow = 0; iRow < 3; iRow++)
+	{
+		for (int iCol = 0; iCol < 3; iCol++)
+		{
+            answer[iRow*3+iCol] =
+                matrix0[iRow*3+0] * matrix1[iCol*3+0] +
+                matrix0[iRow*3+1] * matrix1[iCol*3+1] +
+                matrix0[iRow*3+2] * matrix1[iCol*3+2];
+		}
+	}
+}
+
+//this is cursed but its the only way i got it to match
+//this might be actually how roblox wrote it because pointers are used in mulMatrixMatrixTranspose too
+void matrixMulInline(const G3D::Matrix3& _mat, const G3D::Vector3& _vec, G3D::Matrix3& _answer)
+{
+	const float* matrix = &_mat[0][0];
+	float* answer = _answer[0];
+	answer[0] = matrix[0]*_vec.x;
+	answer[1] = matrix[1]*_vec.y;
+	answer[2] = matrix[2]*_vec.z;
+	answer[3] = matrix[3]*_vec.x;
+	answer[4] = matrix[4]*_vec.y;
+	answer[5] = matrix[5]*_vec.z;
+	answer[6] = matrix[6]*_vec.x;
+	answer[7] = matrix[7]*_vec.y;
+	answer[8] = matrix[8]*_vec.z;
+}
+
+
+G3D::Vector3 computeRotVel(const G3D::Matrix3& rot, const G3D::Vector3& momentRecip, const G3D::Vector3& angMomentum)
+{
+	G3D::Matrix3 temp;
+	G3D::Matrix3 iWorldInv;
+	matrixMulInline(rot, momentRecip, temp);
+	mulMatrixMatrixTranspose(temp, rot, iWorldInv);
+	return iWorldInv * angMomentum;
+}
+
+//temporary for now?
+G3D::Vector3& denormFixFunc()
+{
+	static G3D::Vector3 denormFix = G3D::Vector3(9.9999997e-21f, 9.9999997e-21f, 9.9999997e-21f);
+	return denormFix;
+}
+
+void SimBody::step(float dt)
+{
+	//line 103
+	//static G3D::Vector3 denormFix = Vector3(9.9999997e-21f, 9.9999997e-21f, 9.9999997e-21f);
+	G3D::Vector3& denormFix = denormFixFunc();
+	//line 109
+	updateIfDirty();
+	//line 115?
+	float someConstant = 0.99980003f;
+	//line 117
+	angMomentum = torque * dt + angMomentum * someConstant;
+	pv.velocity.rotational = computeRotVel(getPV().position.rotation, momentRecip, angMomentum) + denormFix;
+	//line 118
+	Quaternion& rotateQuat = Quaternion::Quaternion(getPV().velocity.rotational, 0) * qOrientation * 0.5 * dt;
+	//line 119
+	qOrientation += rotateQuat;
+	// line 121
+	qOrientation *= precentInline(qOrientation.magnitude());
+	qOrientation.toRotationMatrix(pv.position.rotation);
+	//line 123
+	pv.velocity.linear += force * massRecip * dt;
+	pv.position.translation += getPV().velocity.linear * dt;
+	//line 129
+	force = G3D::Vector3(0, constantForceY, 0);
+	torque = G3D::Vector3(0, 0, 0);
+	//line 131
+	angMomentum += denormFix;
+	//line 132
+	pv.velocity.linear += denormFix;
+
+	
+}
+
+PV SimBody::getOwnerPV()
+{
+	RBXASSERT(!dirty);
+	G3D::Vector3 cofmOffset = body->getCofmOffset();
+	return pv.pvAtLocalOffset(G3D::Vector3(-cofmOffset.x, -cofmOffset.y, -cofmOffset.z));
+}
+
+//compiler optimizes out unused functions in header
+void SimBody::matchDummy()
+{
+	resetAccumulators();
+	accumulateForce(G3D::Vector3(0.1f, 0.5f, 0.2f), G3D::Vector3(0.6f, 0.10f, 0.8f));
+}
+
+}

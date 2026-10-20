@@ -1,87 +1,452 @@
-// roc 2007-08 005a6fe0  unit: RBX::Humanoid  size: 237 bytes
-// Make this compile to the exact bytes below, then: roc check 2007-08 005a6fe0
-//
-// 005a6fe0  6aff                 push -1
-// 005a6fe2  6830057500           push 0x750530
-// 005a6fe7  64a100000000         mov eax, dword ptr fs:[0]
-// 005a6fed  50                   push eax
-// 005a6fee  64892500000000       mov dword ptr fs:[0], esp
-// 005a6ff5  83ec14               sub esp, 0x14
-// 005a6ff8  56                   push esi
-// 005a6ff9  57                   push edi
-// 005a6ffa  8bf9                 mov edi, ecx
-// 005a6ffc  c744240800000000     mov dword ptr [esp + 8], 0
-// 005a7004  8d442408             lea eax, [esp + 8]
-// 005a7008  50                   push eax
-// 005a7009  6a01                 push 1
-// 005a700b  8d4c2414             lea ecx, [esp + 0x14]
-// 005a700f  c744242c00000000     mov dword ptr [esp + 0x2c], 0
-// 005a7017  e8f40ee7ff           call 0x417f10
-// 005a701c  8b742410             mov esi, dword ptr [esp + 0x10]
-// 005a7020  85f6                 test esi, esi
-// 005a7022  c744242401000000     mov dword ptr [esp + 0x24], 1
-// 005a702a  740b                 je 0x5a7037
-// 005a702c  8b4c2414             mov ecx, dword ptr [esp + 0x14]
-// 005a7030  2bce                 sub ecx, esi
-// 005a7032  c1f902               sar ecx, 2
-// 005a7035  750a                 jne 0x5a7041
-// 005a7037  ff15d8e67700         call dword ptr [0x77e6d8]
-// 005a703d  8b742410             mov esi, dword ptr [esp + 0x10]
-// 005a7041  6a08                 push 8
-// 005a7043  e8ae8e0800           call 0x62fef6
-// 005a7048  83c404               add esp, 4
-// 005a704b  85c0                 test eax, eax
-// 005a704d  740f                 je 0x5a705e
-// 005a704f  8a54242c             mov dl, byte ptr [esp + 0x2c]
-// 005a7053  c700fca57800         mov dword ptr [eax], 0x78a5fc
-// 005a7059  885004               mov byte ptr [eax + 4], dl
-// 005a705c  eb02                 jmp 0x5a7060
-// 005a705e  33c0                 xor eax, eax
-// 005a7060  8b0e                 mov ecx, dword ptr [esi]
-// 005a7062  85c9                 test ecx, ecx
-// 005a7064  8906                 mov dword ptr [esi], eax
-// 005a7066  7408                 je 0x5a7070
-// 005a7068  8b01                 mov eax, dword ptr [ecx]
-// 005a706a  8b10                 mov edx, dword ptr [eax]
-// 005a706c  6a01                 push 1
-// 005a706e  ffd2                 call edx
-// 005a7070  8b0f                 mov ecx, dword ptr [edi]
-// 005a7072  8b01                 mov eax, dword ptr [ecx]
-// 005a7074  8b4004               mov eax, dword ptr [eax + 4]
-// 005a7077  8d54240c             lea edx, [esp + 0xc]
-// 005a707b  52                   push edx
-// 005a707c  ffd0                 call eax
-// 005a707e  8b742410             mov esi, dword ptr [esp + 0x10]
-// 005a7082  85f6                 test esi, esi
-// 005a7084  c7442424ffffffff     mov dword ptr [esp + 0x24], 0xffffffff
-// 005a708c  742c                 je 0x5a70ba
-// 005a708e  8b442414             mov eax, dword ptr [esp + 0x14]
-// 005a7092  3bf0                 cmp esi, eax
-// 005a7094  8bf8                 mov edi, eax
-// 005a7096  7419                 je 0x5a70b1
-// 005a7098  8b0e                 mov ecx, dword ptr [esi]
-// 005a709a  85c9                 test ecx, ecx
-// 005a709c  7408                 je 0x5a70a6
-// 005a709e  8b11                 mov edx, dword ptr [ecx]
-// 005a70a0  8b02                 mov eax, dword ptr [edx]
-// 005a70a2  6a01                 push 1
-// 005a70a4  ffd0                 call eax
-// 005a70a6  83c604               add esi, 4
-// 005a70a9  3bf7                 cmp esi, edi
-// 005a70ab  75eb                 jne 0x5a7098
-// 005a70ad  8b742410             mov esi, dword ptr [esp + 0x10]
-// 005a70b1  56                   push esi
-// 005a70b2  e8ab8b0800           call 0x62fc62
-// 005a70b7  83c404               add esp, 4
-// 005a70ba  8b4c241c             mov ecx, dword ptr [esp + 0x1c]
-// 005a70be  5f                   pop edi
-// 005a70bf  5e                   pop esi
-// 005a70c0  64890d00000000       mov dword ptr fs:[0], ecx
-// 005a70c7  83c420               add esp, 0x20
-// 005a70ca  c20400               ret 4
-// library openrbx-client/App\humanoid\Humanoid.cpp (function ??RGenericSlotAdapter@?$SignalDescImpl@$00$$A6AX_N@Z@Reflection@RBX@@QBEX_N@Z)
-
 // roc-lang: cpp
 // roc-cl: 50727
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
 // roc-lib: openrbx-client-dll App/humanoid/Humanoid.cpp
+
+// Candidate translation unit (score above; library headers required).
+#include "humanoid/Humanoid.h"
+
+#include "network/Players.h"
+#include "rbxgraphics/Adorn.h"
+#include "reflection/property.h"
+#include "util/Color.h"
+#include "v8datamodel/ModelInstance.h"
+#include "v8datamodel/Teams.h"
+#include "v8datamodel/Workspace.h"
+#include "v8kernel/Body.h"
+#include "v8tree/Service.h"
+#include "v8world/World.h"
+
+namespace RBX {
+
+char sHumanoid[] = "Humanoid";
+
+using namespace Reflection;
+
+static PropDescriptor<Humanoid, float> propMaxHealth(
+	"MaxHealth",
+	"Game",
+	&RBX::Humanoid::getMaxHealth,
+	&RBX::Humanoid::setMaxHealth
+);
+
+static PropDescriptor<Humanoid, float> propWalkRotationalVelocity(
+	"WalkRotationalVelocity",
+	"Control",
+	&RBX::Humanoid::getWalkRotationalVelocity,
+	&RBX::Humanoid::setWalkRotationalVelocity,
+	Reflection::PropertyDescriptor::STREAMING
+);
+
+static PropDescriptor<Humanoid, bool> propJump(
+	"Jump",
+	"Control",
+	&RBX::Humanoid::getJump,
+	&RBX::Humanoid::setJump,
+	Reflection::PropertyDescriptor::STREAMING
+);
+
+static PropDescriptor<Humanoid, bool> propSit(
+	"Sit",
+	"Control",
+	&RBX::Humanoid::getSit,
+	&RBX::Humanoid::setSit,
+	Reflection::PropertyDescriptor::STREAMING
+);
+
+SignalDesc<Humanoid, void()> Humanoid::event_Died("Died");
+SignalDesc<Humanoid, void(float)> Humanoid::event_Running("Running", "speed");
+SignalDesc<Humanoid, void(float)> Humanoid::event_Climbing("Climbing", "speed");
+SignalDesc<Humanoid, void(bool)> Humanoid::event_Jumping("Jumping", "active");
+SignalDesc<Humanoid, void(bool)> Humanoid::event_FreeFalling("FreeFalling", "active");
+SignalDesc<Humanoid, void(bool)> Humanoid::event_GettingUp("GettingUp", "active");
+SignalDesc<Humanoid, void(bool)> Humanoid::event_FallingDown("FallingDown", "active");
+SignalDesc<Humanoid, void(bool)> Humanoid::event_Seated("Seated", "active");
+
+// FUNCTION: WEBSERVICE 0x100a0990
+ContactManager* Humanoid::getContactManager()
+{
+	World* world = Workspace::getWorldIfInWorkspace(this);
+
+	if (world != NULL) {
+		return world->getContactManager();
+	}
+
+	return NULL;
+}
+
+// FUNCTION: WEBSERVICE 0x100a0bd0
+bool Humanoid::hasWalkToPoint(G3D::Vector3& worldPosition) const
+{
+	if (walkToPart != NULL && Workspace::findWorkspace(this) != NULL &&
+		Workspace::contextInWorkspace(walkToPart.get())) {
+		worldPosition = walkToPart->getCoordinateFrame().pointToWorldSpace(walkToPoint);
+
+		return true;
+	}
+
+	return false;
+}
+
+// FUNCTION: WEBSERVICE 0x100a0d40
+void Humanoid::computeForce(float dt, bool throttling)
+{
+	if (currentState.get() != NULL) {
+		currentState->onComputeForce(dt);
+	}
+}
+
+// FUNCTION: WEBSERVICE 0x100a1100
+Humanoid::~Humanoid()
+{
+}
+
+// FUNCTION: WEBSERVICE 0x100a1480
+float Humanoid::getIntendedRotationAboutYAxis()
+{
+	if (currentState.get() != NULL) {
+		return currentState->getIntendedRotationAboutYAxis();
+	}
+
+	return 0;
+}
+
+// STUB: WEBSERVICE 0x100a1b00
+void Humanoid::render3dAdorn(Adorn* adorn)
+{
+	STUB(0x100a1b00);
+}
+
+// FUNCTION: WEBSERVICE 0x100a2010
+PartInstance* Humanoid::getHead() const
+{
+	if (head == NULL && getParent() != NULL) {
+		head = shared_from_dynamic_cast<PartInstance>(getParent()->findFirstChildByName("Head"));
+	}
+
+	return head.get();
+}
+
+// FUNCTION: WEBSERVICE 0x100a2110
+PartInstance* Humanoid::getTorso() const
+{
+	if (torso == NULL && getParent() != NULL) {
+		torso = shared_from_dynamic_cast<PartInstance>(getParent()->findFirstChildByName("Torso"));
+	}
+
+	return torso.get();
+}
+
+// FUNCTION: WEBSERVICE 0x100a2210
+PartInstance* Humanoid::getLeftLeg() const
+{
+	if (leftLeg == NULL && getParent() != NULL) {
+		leftLeg = shared_from_dynamic_cast<PartInstance>(getParent()->findFirstChildByName("Left Leg"));
+	}
+
+	return leftLeg.get();
+}
+
+// FUNCTION: WEBSERVICE 0x100a2310
+PartInstance* Humanoid::getRightLeg() const
+{
+	if (rightLeg == NULL && getParent() != NULL) {
+		rightLeg = shared_from_dynamic_cast<PartInstance>(getParent()->findFirstChildByName("Right Leg"));
+	}
+
+	return rightLeg.get();
+}
+
+// FUNCTION: WEBSERVICE 0x100a2410
+PartInstance* Humanoid::getLeftArm() const
+{
+	if (leftArm == NULL && getParent() != NULL) {
+		leftArm = shared_from_dynamic_cast<PartInstance>(getParent()->findFirstChildByName("Left Arm"));
+	}
+
+	return leftArm.get();
+}
+
+// FUNCTION: WEBSERVICE 0x100a2510
+PartInstance* Humanoid::getRightArm() const
+{
+	if (rightArm == NULL && getParent() != NULL) {
+		rightArm = shared_from_dynamic_cast<PartInstance>(getParent()->findFirstChildByName("Right Arm"));
+	}
+
+	return rightArm.get();
+}
+
+// FUNCTION: WEBSERVICE 0x100a26a0
+Primitive* Humanoid::getTorsoPrimitive() const
+{
+	PartInstance* part = getTorso();
+
+	return part != NULL ? part->getPrimitive() : NULL;
+}
+
+// FUNCTION: WEBSERVICE 0x100a26c0
+Primitive* Humanoid::getLeftLegPrimitive()
+{
+	PartInstance* part = getLeftLeg();
+
+	return part != NULL ? part->getPrimitive() : NULL;
+}
+
+// FUNCTION: WEBSERVICE 0x100a26e0
+Primitive* Humanoid::getRightLegPrimitive()
+{
+	PartInstance* part = getRightLeg();
+
+	return part != NULL ? part->getPrimitive() : NULL;
+}
+
+// FUNCTION: WEBSERVICE 0x100a2700
+Body* Humanoid::getTorsoBody()
+{
+	PartInstance* part = getTorso();
+
+	return part != NULL ? part->getPrimitive()->getBody() : NULL;
+}
+
+// FUNCTION: WEBSERVICE 0x100a2720
+Body* Humanoid::getRootBody()
+{
+	Body* body = getTorsoBody();
+
+	return body != NULL ? body->getRoot() : NULL;
+}
+
+// FUNCTION: WEBSERVICE 0x100a27c0
+const CoordinateFrame Humanoid::getLocation() const
+{
+	return getHead() != NULL ? getHead()->getCoordinateFrame() : CoordinateFrame();
+}
+
+// FUNCTION: WEBSERVICE 0x100a2f70
+G3D::Vector3 Humanoid::getIntendedMovementVector(bool setWalkMode)
+{
+	G3D::Vector3 result = G3D::Vector3::zero();
+
+	if (walkMode == DIRECTION_MOVE) {
+		result = walkDirection;
+	}
+	else if (walkMode == CLICK_TO_MOVE) {
+		PartInstance* torso = getTorso();
+		G3D::Vector3 worldPosition;
+
+		if (torso != NULL && hasWalkToPoint(worldPosition)) {
+			const G3D::Vector3& translation = torso->getCoordinateFrame().translation;
+
+			G3D::Vector3 delta = worldPosition - translation;
+
+			worldPosition.x = delta.x;
+			worldPosition.y = delta.y + 3.0f;
+			worldPosition.z = delta.z;
+
+			float distance = (worldPosition.z * worldPosition.z + worldPosition.x * worldPosition.x) +
+							 worldPosition.y * worldPosition.y;
+
+			worldPosition.y = 0;
+
+			if (sqrtf(distance) < 2.0f) {
+				if (setWalkMode) {
+					walkMode = DIRECTION_MOVE;
+				}
+
+				result = G3D::Vector3::zero();
+			}
+			else {
+				result = worldPosition.unit();
+			}
+		}
+	}
+
+	return result;
+}
+
+// FUNCTION: WEBSERVICE 0x100a30d0
+G3D::Vector3 Humanoid::getIntendedMovementVector()
+{
+	return getIntendedMovementVector(false);
+}
+
+// STUB: WEBSERVICE 0x100a30f0
+G3D::Vector3 Humanoid::updateWalkDirection()
+{
+	STUB(0x100a30f0);
+	return G3D::Vector3::zero();
+}
+
+// STUB: WEBSERVICE 0x100a31b0
+void Humanoid::tellCameraNear(float distance)
+{
+	STUB(0x100a31b0);
+}
+
+// FUNCTION: WEBSERVICE 0x100a4290
+Humanoid::Humanoid()
+	: health(100), maxHealth(100), walkRotationalVelocity(0), walkTimer(0), walkMode(DIRECTION_MOVE), jump(false),
+	  imDead(false), hadHeadJoint(false), sit(false), world(NULL)
+{
+	setName("Humanoid");
+}
+
+// STUB: WEBSERVICE 0x100a4690
+void Humanoid::renderMultiplayer(Adorn* adorn, const G3D::GCamera& camera)
+{
+	if (getHead() != NULL) {
+		const CoordinateFrame& headCoord = head->getCoordinateFrame();
+
+		Vector3 headPosition(headCoord.translation.x, headCoord.translation.y + 1.5f, headCoord.translation.z);
+
+		Vector3 projected = camera.project(headPosition, adorn->getViewport());
+
+		float distance = (camera.getCoordinateFrame().translation - headPosition).magnitude();
+
+		if (distance < 100.0f) {
+			int fontSize = 8;
+
+			if (20.0f <= distance) {
+				if (distance < 50.0f) {
+					fontSize = 10;
+				}
+			}
+			else {
+				fontSize = 12;
+			}
+
+			Teams* teams = ServiceProvider::find<Teams>(this);
+
+			G3D::Color3 nameColor = teams == NULL ? G3D::Color3::white() : teams->getTeamColorForHumanoid(this);
+
+			adorn->drawFont2D(
+				getName(),
+				projected.xy(),
+				fontSize,
+				G3D::Color4(nameColor, 1.0f),
+				G3D::Color4(G3D::Color3::black(), 1.0f),
+				Adorn::XALIGN_CENTER,
+				Adorn::YALIGN_CENTER,
+				Adorn::PROPORTIONAL_SPACING
+			);
+
+			float width = (float) (fontSize * 4);
+
+			headPosition.x -= 0.5f * width;
+
+			Vector2 barLow(headPosition.x, headPosition.y);
+			Vector2 barHigh(headPosition.x + width, headPosition.y + (float) (fontSize / 2));
+
+			Vector2 healthHigh(headPosition.x + (health / maxHealth) * width, headPosition.y);
+
+			adorn->rect2d(G3D::Rect2D::xyxy(barLow, healthHigh), G3D::Color4(Color::lightGreen(), 1.0f));
+			adorn->rect2d(G3D::Rect2D::xyxy(healthHigh, barHigh), G3D::Color4(G3D::Color3::red(), 1.0f));
+		}
+	}
+}
+
+// FUNCTION: WEBSERVICE 0x100a4960
+void Humanoid::render2d(Adorn* adorn)
+{
+	Humanoid* self = this;
+	ModelInstance* character = Network::Players::findLocalCharacter(self);
+	Humanoid* localHumanoid = character != NULL ? character->findFirstChildOfType<Humanoid>() : NULL;
+
+	if (this == localHumanoid) {
+		return;
+	}
+
+	Workspace* workspace = Workspace::findWorkspace(self);
+
+	if (workspace != NULL) {
+		renderMultiplayer(adorn, workspace->getGCamera());
+	}
+}
+
+// STUB: WEBSERVICE 0x100a4bf0
+void Humanoid::getIgnorePrims(std::vector<const Primitive*>& ignore)
+{
+	STUB(0x100a4bf0);
+}
+
+// FUNCTION: WEBSERVICE 0x100a4e80
+void Humanoid::setMaxHealth(float value)
+{
+	if (maxHealth != value) {
+		maxHealth = value;
+		raisePropertyChanged(propMaxHealth);
+	}
+}
+
+// FUNCTION: WEBSERVICE 0x100a5000
+void Humanoid::setWalkRotationalVelocity(const float& value)
+{
+	if (walkRotationalVelocity != value) {
+		walkRotationalVelocity = value;
+		raisePropertyChanged(propWalkRotationalVelocity);
+	}
+}
+
+// FUNCTION: WEBSERVICE 0x100a51b0
+void Humanoid::setJump(bool value)
+{
+	if (jump != value) {
+		jump = value;
+		raisePropertyChanged(propJump);
+	}
+}
+
+// FUNCTION: WEBSERVICE 0x100a51f0
+void Humanoid::setSit(bool value)
+{
+	if (sit != value) {
+		sit = value;
+		raisePropertyChanged(propSit);
+	}
+}
+
+// STUB: WEBSERVICE 0x100a56c0
+void Humanoid::onEvent(const RunService* source, Stepped event)
+{
+	State* state = currentState.get();
+
+	if (state != NULL && getParent() != NULL) {
+		State* next = state->onStep(event.step, *static_cast<PVInstance*>(getParent())->getTopPVController());
+
+		if (next != state) {
+			currentState.reset(next);
+		}
+	}
+}
+
+// STUB: WEBSERVICE 0x100a5770
+void Humanoid::cameraSetWalkOrientation(float rad, bool noAdjust)
+{
+	STUB(0x100a5770);
+}
+
+bool Humanoid::isControllable() const
+{
+	STUB(0x100e6150);
+	return false;
+}
+
+bool Humanoid::shouldRender2d() const
+{
+	STUB(0x100e6151);
+	return false;
+}
+
+bool Humanoid::shouldRender3dAdorn() const
+{
+	STUB(0x100e6152);
+	return false;
+}
+
+} // namespace RBX
+
+template class RBX::FactoryProduct<RBX::Humanoid, RBX::Instance, RBX::sHumanoid>;
+template class RBX::Reflection::
+	Described<RBX::Humanoid, RBX::sHumanoid, RBX::FactoryProduct<RBX::Humanoid, RBX::Instance, RBX::sHumanoid> >;
+template class RBX::DescribedCreatable<RBX::Humanoid, RBX::Instance, RBX::sHumanoid>;

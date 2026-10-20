@@ -1,46 +1,192 @@
 // from server: 100% by tester
-// roc 2007-03 00482eb0  unit: seg_00480000  size: 118 bytes
-// Make this compile to the exact bytes below, then: roc check 2007-03 00482eb0
-//
-// 00482eb0  6aff                 push -1
-// 00482eb2  6883847400           push 0x748483
-// 00482eb7  64a100000000         mov eax, dword ptr fs:[0]
-// 00482ebd  50                   push eax
-// 00482ebe  51                   push ecx
-// 00482ebf  53                   push ebx
-// 00482ec0  56                   push esi
-// 00482ec1  a1b4f58a00           mov eax, dword ptr [0x8af5b4]
-// 00482ec6  33c4                 xor eax, esp
-// 00482ec8  50                   push eax
-// 00482ec9  8d442410             lea eax, [esp + 0x10]
-// 00482ecd  64a300000000         mov dword ptr fs:[0], eax
-// 00482ed3  8bf1                 mov esi, ecx
-// 00482ed5  8974240c             mov dword ptr [esp + 0xc], esi
-// 00482ed9  8d4e34               lea ecx, [esi + 0x34]
-// 00482edc  c744241801000000     mov dword ptr [esp + 0x18], 1
-// 00482ee4  ff158ce77700         call dword ptr [0x77e78c]
-// 00482eea  8b4614               mov eax, dword ptr [esi + 0x14]
-// 00482eed  33db                 xor ebx, ebx
-// 00482eef  50                   push eax
-// 00482ef0  885c241c             mov byte ptr [esp + 0x1c], bl
-// 00482ef4  e887040700           call 0x4f3380
-// 00482ef9  83c404               add esp, 4
-// 00482efc  8bce                 mov ecx, esi
-// 00482efe  895e14               mov dword ptr [esi + 0x14], ebx
-// 00482f01  895e18               mov dword ptr [esi + 0x18], ebx
-// 00482f04  895e1c               mov dword ptr [esi + 0x1c], ebx
-// 00482f07  c7442418ffffffff     mov dword ptr [esp + 0x18], 0xffffffff
-// 00482f0f  e87c67f8ff           call 0x409690
-// 00482f14  8b4c2410             mov ecx, dword ptr [esp + 0x10]
-// 00482f18  64890d00000000       mov dword ptr fs:[0], ecx
-// 00482f1f  59                   pop ecx
-// 00482f20  5e                   pop esi
-// 00482f21  5b                   pop ebx
-// 00482f22  83c410               add esp, 0x10
-// 00482f25  c3                   ret 
-// library g3d-6.09/G3Dcpp\GImage_ppm.cpp (function ??1TextInput@G3D@@QAE@XZ)
-
 // roc-lang: cpp
 // roc-cl: 50727
 // roc-flags: /O2 /GS /EHsc /MD
 // roc-lib: g3d-6.09 G3Dcpp/GImage_ppm.cpp
+
+// Candidate translation unit (score above; library headers required).
+/**
+  @file GImage_ppm.cpp
+  @author Morgan McGuire, morgan@graphics3d.com
+  @created 2002-05-27
+  @edited  2006-05-10
+ */
+#include "G3D/platform.h"
+#include "G3D/GImage.h"
+#include "G3D/BinaryInput.h"
+#include "G3D/BinaryOutput.h"
+#include "G3D/TextInput.h"
+#include "G3D/TextOutput.h"
+#include "G3D/Log.h"
+
+namespace G3D {
+
+void GImage::encodePPMASCII(
+    BinaryOutput&       out) const {
+
+    debugAssert(channels == 3);
+
+    TextOutput::Options ppmOptions;
+    ppmOptions.convertNewlines = false;
+    ppmOptions.numColumns = 70;
+    ppmOptions.wordWrap = TextOutput::Options::WRAP_WITHOUT_BREAKING;
+    TextOutput ppm(ppmOptions);
+    // Always write out a full-color ppm
+    ppm.printf("P3\n%d %d\n255\n", width, height);
+    
+    const Color3uint8* c = this->pixel3();
+    for (uint32 i = 0; i < (uint32)(width * height); ++i) {
+        ppm.printf("%d %d %d%c", c[i].r, c[i].g, c[i].b, 
+            ((i % ((width * 3) - 1)) == 0) ?
+            '\n' : ' '); 
+    }
+
+    out.writeString(ppm.commitString());
+}
+
+
+void GImage::encodePPM(
+    BinaryOutput&       out) const {
+
+    // http://netpbm.sourceforge.net/doc/ppm.html
+    debugAssert(channels == 3);
+
+    std::string header = format("P6 %d %d 255 ", width, height);
+
+    out.writeBytes(header.c_str(), header.size());
+
+    out.writeBytes(this->pixel3(), width * height * 3);
+}
+
+void GImage::decodePPMASCII(
+    BinaryInput&        input) {
+
+    int ppmWidth;
+    int ppmHeight;
+
+    double maxColor;
+
+    // Create a TextInput object to parse ascii format
+    // Mixed binary/ascii formats will require more 
+
+    const std::string inputStr = input.readString();
+
+    TextInput::Options ppmOptions;
+    ppmOptions.cppComments = false;
+    ppmOptions.otherCommentCharacter = '#';
+    ppmOptions.signedNumbers = true;
+    ppmOptions.singleQuotedStrings = false;
+
+    TextInput ppmInput(TextInput::FROM_STRING, inputStr, ppmOptions);
+
+    //Skip first line in header P#
+    std::string ppmType = ppmInput.readSymbol();
+
+    ppmWidth = (int)ppmInput.readNumber();
+    ppmHeight = (int)ppmInput.readNumber();
+
+    // Everything but a PBM will have a max color value
+    if (ppmType != "P2") {
+        maxColor = ppmInput.readNumber();
+    } else {
+        maxColor = 255;
+    }
+
+    if ((ppmWidth < 0) ||
+        (ppmHeight < 0) ||
+        (maxColor <= 0)) {
+        throw GImage::Error("Invalid PPM Header.", input.getFilename());
+    }
+
+    // I don't think it's proper to scale values less than 255
+    if (maxColor <= 255.0) {
+        maxColor = 255.0;
+    }
+
+    this->width = ppmWidth;
+    this->height = ppmHeight;
+    this->channels = 3;
+    // always scale down to 1 byte per channel
+    this->_byte = (uint8*)System::malloc(width * height * 3);
+
+    // Read in the image data.  I am not validating if the values match the maxColor
+    // requirements.  I only scale if needed to fit within the byte available.
+    for (uint32 i = 0; i < (uint32)(width * height); ++i) {
+        // read in color and scale to max pixel defined in header
+        // A max color less than 255 might need to be left alone and not scaled.
+        Color3uint8& curPixel = *(this->pixel3() + i);
+
+        if (ppmType == "P3") {
+            curPixel.r = (uint8)(ppmInput.readNumber() * (255.0 / maxColor));
+            curPixel.g = (uint8)(ppmInput.readNumber() * (255.0 / maxColor));
+            curPixel.b = (uint8)(ppmInput.readNumber() * (255.0 / maxColor));
+        } else if (ppmType == "P2") {
+            uint8 pixel = (uint8)(ppmInput.readNumber() * (255.0 / maxColor));
+            curPixel.r = pixel;
+            curPixel.g = pixel;
+            curPixel.b = pixel;
+        } else if (ppmType == "P1") {
+            int pixel = (uint8)(ppmInput.readNumber() * maxColor);
+            curPixel.r = pixel;
+            curPixel.g = pixel;
+            curPixel.b = pixel;
+        }
+    }
+}
+
+/** Consumes whitespace up to and including a number, but not the following character */
+static int scanUInt(BinaryInput& input) {
+    char c = input.readUInt8();
+    while (isWhiteSpace(c)) {
+        c = input.readUInt8();
+    }
+
+    std::string s;
+    s += c;
+    c = input.readUInt8();
+    while (!isWhiteSpace(c)) {
+        s += c;
+        c = input.readUInt8();
+    }
+
+    // Back up one to avoid consuming the last character
+    input.setPosition(input.getPosition() - 1);
+
+    int x;
+    sscanf(s.c_str(), "%d", &x);
+    return x;
+}
+
+void GImage::decodePPM(
+    BinaryInput&        input) {
+
+    char head[2];
+    int w, h;
+
+    input.readBytes(head, 2);
+    if (head[0] != 'P' || head[1] != '6') {
+        throw GImage::Error("Invalid PPM Header.", input.getFilename());
+    }
+
+    w = scanUInt(input);
+    h = scanUInt(input);
+
+    // Skip the max color specifier
+    scanUInt(input);
+
+    if ((w < 0) ||
+        (h < 0) ||
+        (w > 100000) ||
+        (h > 100000)) {
+        throw GImage::Error("Invalid PPM size in header.", input.getFilename());
+    }
+
+    // Trailing whitespace
+    input.readUInt8();
+
+    resize(w, h, 3);
+
+    input.readBytes(_byte, width * height * 3);
+}
+
+}

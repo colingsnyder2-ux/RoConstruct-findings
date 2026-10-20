@@ -1,54 +1,195 @@
 // from server: 100% by auto
-// roc 2012-06 004c3db0  unit: RBX::AdornRbxGfx  size: 126 bytes
-// Make this compile to the exact bytes below, then: roc check 2012-06 004c3db0
-//
-// 004c3db0  55                   push ebp
-// 004c3db1  8bec                 mov ebp, esp
-// 004c3db3  6aff                 push -1
-// 004c3db5  68315caa00           push 0xaa5c31
-// 004c3dba  64a100000000         mov eax, dword ptr fs:[0]
-// 004c3dc0  50                   push eax
-// 004c3dc1  64892500000000       mov dword ptr fs:[0], esp
-// 004c3dc8  83ec0c               sub esp, 0xc
-// 004c3dcb  53                   push ebx
-// 004c3dcc  56                   push esi
-// 004c3dcd  57                   push edi
-// 004c3dce  8965f0               mov dword ptr [ebp - 0x10], esp
-// 004c3dd1  6a3c                 push 0x3c
-// 004c3dd3  e842e34b00           call 0x98211a
-// 004c3dd8  8bf0                 mov esi, eax
-// 004c3dda  83c404               add esp, 4
-// 004c3ddd  8975ec               mov dword ptr [ebp - 0x14], esi
-// 004c3de0  c745fc00000000       mov dword ptr [ebp - 4], 0
-// 004c3de7  8975e8               mov dword ptr [ebp - 0x18], esi
-// 004c3dea  c645fc01             mov byte ptr [ebp - 4], 1
-// 004c3dee  85f6                 test esi, esi
-// 004c3df0  7427                 je 0x4c3e19
-// 004c3df2  8b4508               mov eax, dword ptr [ebp + 8]
-// 004c3df5  8b4d0c               mov ecx, dword ptr [ebp + 0xc]
-// 004c3df8  8b5510               mov edx, dword ptr [ebp + 0x10]
-// 004c3dfb  8906                 mov dword ptr [esi], eax
-// 004c3dfd  8b4514               mov eax, dword ptr [ebp + 0x14]
-// 004c3e00  894e04               mov dword ptr [esi + 4], ecx
-// 004c3e03  50                   push eax
-// 004c3e04  8d4e0c               lea ecx, [esi + 0xc]
-// 004c3e07  895608               mov dword ptr [esi + 8], edx
-// 004c3e0a  e821e7ffff           call 0x4c2530
-// 004c3e0f  8a4d18               mov cl, byte ptr [ebp + 0x18]
-// 004c3e12  884e38               mov byte ptr [esi + 0x38], cl
-// 004c3e15  c6463900             mov byte ptr [esi + 0x39], 0
-// 004c3e19  8b4df4               mov ecx, dword ptr [ebp - 0xc]
-// 004c3e1c  5f                   pop edi
-// 004c3e1d  8bc6                 mov eax, esi
-// 004c3e1f  5e                   pop esi
-// 004c3e20  64890d00000000       mov dword ptr fs:[0], ecx
-// 004c3e27  5b                   pop ebx
-// 004c3e28  8be5                 mov esp, ebp
-// 004c3e2a  5d                   pop ebp
-// 004c3e2b  c21400               ret 0x14
-// library boost-1.34.1/libs\program_options\src\variables_map.cpp (function ?_Buynode@?$_Tree@V?$_Tmap_traits@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@Vvariable_value@program_options@boost@@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@Vvariable_value@program_options@boost@@@std@@@2@$0A@@std@@@std@@IAEPAU_Node@?$_Tree_nod@V?$_Tmap_traits@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@Vvariable_value@program_options@boost@@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@Vvariable_value@program_options@boost@@@std@@@2@$0A@@std@@@2@PAU342@00ABU?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@Vvariable_value@program_options@boost@@@2@D@Z)
-
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD
 // roc-lib: boost-1.34.1 libs/program_options/src/variables_map.cpp
+
+// Candidate translation unit (score above; library headers required).
+// Copyright Vladimir Prus 2002-2004.
+// Distributed under the Boost Software License, Version 1.0.
+// (See accompanying file LICENSE_1_0.txt
+// or copy at http://www.boost.org/LICENSE_1_0.txt)
+
+
+#define BOOST_PROGRAM_OPTIONS_SOURCE
+#include <boost/program_options/config.hpp>
+#include <boost/program_options/parsers.hpp>
+#include <boost/program_options/options_description.hpp>
+#include <boost/program_options/value_semantic.hpp>
+#include <boost/program_options/variables_map.hpp>
+
+#include <cassert>
+
+namespace boost { namespace program_options {
+
+    using namespace std;
+
+    // First, performs semantic actions for 'oa'. 
+    // Then, stores in 'm' all options that are defined in 'desc'. 
+    BOOST_PROGRAM_OPTIONS_DECL 
+    void store(const parsed_options& options, variables_map& xm,
+               bool utf8)
+    {       
+        // TODO: what if we have different definition
+        // for the same option name during different calls
+        // 'store'.
+        assert(options.description);
+        const options_description& desc = *options.description;
+
+        // We need to access map's operator[], not the overriden version
+        // variables_map. Ehmm.. messy.
+        std::map<std::string, variable_value>& m = xm;
+
+        std::set<std::string> new_final;
+
+        // Declared once, to please Intel in VC++ mode;
+        unsigned i;
+
+        // First, convert/store all given options
+        for (i = 0; i < options.options.size(); ++i) {
+
+            const string& name = options.options[i].string_key;
+            // Skip positional options without name
+            if (name.empty())
+                continue;
+
+            // Ignore unregistered option. The 'unregistered'
+            // field can be true only if user has explicitly asked
+            // to allow unregistered options. We can't store them
+            // to variables map (lacking any information about paring), 
+            // so just ignore them.
+            if (options.options[i].unregistered)
+                continue;
+
+            // If option has final value, skip this assignment
+            if (xm.m_final.count(name))
+                continue;
+
+            // Ignore options which are not described
+            //TODO: consider this.
+            //if (desc.count(name) == 0)
+            //    continue;
+
+            const option_description& d = desc.find(name, false);
+
+            variable_value& v = m[name];            
+            if (v.defaulted()) {
+                // Explicit assignment here erases defaulted value
+                v = variable_value();
+            }
+            
+            try {
+                d.semantic()->parse(v.value(), options.options[i].value, utf8);
+            }
+            catch(validation_error& e)
+            {
+                e.set_option_name(name);
+                throw;
+            }
+            v.m_value_semantic = d.semantic();
+            
+            // The option is not composing, and the value is explicitly
+            // provided. Ignore values of this option for subsequent
+            // calls to 'store'. We store this to a temporary set,
+            // so that several assignment inside *this* 'store' call
+            // are allowed.
+            if (!d.semantic()->is_composing())
+                new_final.insert(name);
+        }
+        xm.m_final.insert(new_final.begin(), new_final.end());
+
+        
+        
+        // Second, apply default values.
+        const vector<shared_ptr<option_description> >& all = desc.options();
+        for(i = 0; i < all.size(); ++i)
+        {
+            const option_description& d = *all[i];
+            string key = d.key("");
+            // FIXME: this logic relies on knowledge of option_description
+            // internals.
+            // The 'key' is empty if options description contains '*'. 
+            // In that 
+            // case, default value makes no sense at all.
+            if (key.empty())
+            {
+                continue;
+            }
+            if (m.count(key) == 0) {
+            
+                boost::any def;
+                if (d.semantic()->apply_default(def)) {
+                    m[key] = variable_value(def, true);
+                    m[key].m_value_semantic = d.semantic();
+                }
+            }        
+        }
+    }
+
+    BOOST_PROGRAM_OPTIONS_DECL 
+    void store(const wparsed_options& options, variables_map& m)
+    {
+        store(options.utf8_encoded_options, m, true);
+    }
+
+    BOOST_PROGRAM_OPTIONS_DECL 
+    void notify(variables_map& vm)
+    {        
+        // Lastly, run notify actions.
+        for (map<string, variable_value>::iterator k = vm.begin(); 
+             k != vm.end(); 
+             ++k) 
+        {
+            k->second.m_value_semantic->notify(k->second.value());
+        }               
+    }
+
+    abstract_variables_map::abstract_variables_map()
+    : m_next(0)
+    {}
+
+    abstract_variables_map::
+    abstract_variables_map(const abstract_variables_map* next)
+    : m_next(next)
+    {}
+
+    const variable_value& 
+    abstract_variables_map::operator[](const std::string& name) const
+    {
+        const variable_value& v = get(name);
+        if (v.empty() && m_next)
+            return (*m_next)[name];
+        else if (v.defaulted() && m_next) {
+            const variable_value& v2 = (*m_next)[name];
+            if (!v2.empty() && !v2.defaulted())
+                return v2;
+            else return v;
+        } else {
+            return v;
+        }
+    }
+
+    void 
+    abstract_variables_map::next(abstract_variables_map* next)
+    {
+        m_next = next;
+    }
+
+    variables_map::variables_map()
+    {}
+
+    variables_map::variables_map(const abstract_variables_map* next)
+    : abstract_variables_map(next)
+    {}
+
+    const variable_value&
+    variables_map::get(const std::string& name) const
+    {
+        static variable_value empty;
+        const_iterator i = this->find(name);
+        if (i == this->end())
+            return empty;
+        else
+            return i->second;
+    }
+}}

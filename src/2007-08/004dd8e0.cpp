@@ -1,30 +1,86 @@
-// roc 2007-08 004dd8e0  unit: seg_004d0000  size: 77 bytes
-// Make this compile to the exact bytes below, then: roc check 2007-08 004dd8e0
-//
-// 004dd8e0  6aff                 push -1
-// 004dd8e2  68e8c27400           push 0x74c2e8
-// 004dd8e7  64a100000000         mov eax, dword ptr fs:[0]
-// 004dd8ed  50                   push eax
-// 004dd8ee  64892500000000       mov dword ptr fs:[0], esp
-// 004dd8f5  51                   push ecx
-// 004dd8f6  8bc1                 mov eax, ecx
-// 004dd8f8  33c9                 xor ecx, ecx
-// 004dd8fa  c70084797900         mov dword ptr [eax], 0x797984
-// 004dd900  894804               mov dword ptr [eax + 4], ecx
-// 004dd903  894808               mov dword ptr [eax + 8], ecx
-// 004dd906  c70004f37900         mov dword ptr [eax], 0x79f304
-// 004dd90c  894810               mov dword ptr [eax + 0x10], ecx
-// 004dd90f  894814               mov dword ptr [eax + 0x14], ecx
-// 004dd912  89480c               mov dword ptr [eax + 0xc], ecx
-// 004dd915  8b4c2414             mov ecx, dword ptr [esp + 0x14]
-// 004dd919  894818               mov dword ptr [eax + 0x18], ecx
-// 004dd91c  8b4c2404             mov ecx, dword ptr [esp + 4]
-// 004dd920  64890d00000000       mov dword ptr fs:[0], ecx
-// 004dd927  83c410               add esp, 0x10
-// 004dd92a  c20400               ret 4
-// library rbxgs-view/CylinderMesh.cpp (function ??0Level@Mesh@Render@RBX@@QAE@W4Primitive@RenderDevice@G3D@@@Z)
-
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
 // roc-lib: rbxgs-view CylinderMesh.cpp
+
+// Candidate translation unit (score above; library headers required).
+#include "CylinderMesh.h"
+
+// TODO: these functions are static. make them static once they're defined
+void CylinderTransform(G3D::Vector3& vertex, G3D::Vector3& normal, G3D::Vector2& tex, const G3D::Vector3& radius, const G3D::Vector2int16& ivertex);
+
+void EndcapTransform(G3D::Vector3& vertex, G3D::Vector3& normal, G3D::Vector2& tex, const G3D::Vector3& radius, const G3D::Vector2int16& ivertex);
+
+CylinderBuilder::CylinderBuilder(G3D::ReferenceCountedPointer<RBX::Render::Mesh::Level>& level, G3D::Vector3 size, RBX::View::RenderSurfaceTypes surfaceTypes, size_t slices)
+	: LevelBuilder(level, size, surfaceTypes),
+	  elements(G3D::max<size_t>(slices / 4, 1))
+{
+}
+
+void CylinderBuilder::buildRight(RBX::View::LevelBuilder::Purpose purpose)
+{
+	int e = elements;
+	buildFace<RBX::NORM_X>(&EndcapTransform, G3D::Vector2int16(e, e), purpose);
+}
+
+void CylinderBuilder::buildTop(RBX::View::LevelBuilder::Purpose purpose)
+{
+	buildFace<RBX::NORM_Y>(&CylinderTransform, G3D::Vector2int16(elements, 1), purpose);
+}
+
+void CylinderBuilder::buildBack(RBX::View::LevelBuilder::Purpose purpose)
+{
+	buildFace<RBX::NORM_Z>(&CylinderTransform, G3D::Vector2int16(elements, 1), purpose);
+}
+
+void CylinderBuilder::buildLeft(RBX::View::LevelBuilder::Purpose purpose)
+{
+	int e = elements;
+	buildFace<RBX::NORM_X_NEG>(&EndcapTransform, G3D::Vector2int16(e, e), purpose);
+}
+
+void CylinderBuilder::buildBottom(RBX::View::LevelBuilder::Purpose purpose)
+{
+	buildFace<RBX::NORM_Y_NEG>(&CylinderTransform, G3D::Vector2int16(elements, 1), purpose);
+}
+
+void CylinderBuilder::buildFront(RBX::View::LevelBuilder::Purpose purpose)
+{
+	buildFace<RBX::NORM_Z_NEG>(&CylinderTransform, G3D::Vector2int16(elements, 1), purpose);
+}
+
+namespace RBX
+{
+	namespace View
+	{
+		CylinderAlongXMesh::CylinderAlongXMesh(const G3D::Vector3& size, RenderSurfaceTypes surfaceTypes)
+		{
+			levels.push_back(new Render::Mesh::Level(G3D::RenderDevice::QUADS));
+
+			G3D::ReferenceCountedPointer<Render::Mesh::Level>& lastLevel = levels.last();
+
+			CylinderBuilder builder(lastLevel, size, surfaceTypes, 12);
+			builder.build(LevelBuilder::Surface);
+		}
+
+		CylinderAlongXMesh::CylinderAlongXMesh(const G3D::Vector3& size, NormalId decalFace)
+		{
+			G3D::ReferenceCountedPointer<Render::Mesh::Level> level = new Render::Mesh::Level(G3D::RenderDevice::QUADS);
+			levels.push_back(level);
+
+			CylinderBuilder builder(level, size, RenderSurfaceTypes(), 12);
+			builder.buildFace(decalFace, LevelBuilder::Decal);
+		}
+
+		CylinderAlongXMesh::CylinderAlongXMesh(const G3D::Vector3& size, NormalId textureFace, const G3D::Vector2& studsPerTile)
+		{
+			G3D::ReferenceCountedPointer<Render::Mesh::Level> level = new Render::Mesh::Level(G3D::RenderDevice::QUADS);
+			levels.push_back(level);
+
+			CylinderBuilder builder(level, size, RenderSurfaceTypes(), 12);
+			builder.textureScale = mapToUvw_Legacy(size, textureFace).xy() * 2.0f / studsPerTile;
+
+			builder.buildFace(textureFace, LevelBuilder::Decal);
+		}
+	}
+}

@@ -1,45 +1,236 @@
-// roc 2007-03 006c95b0  unit: seg_006c0000  size: 93 bytes
-// Make this compile to the exact bytes below, then: roc check 2007-03 006c95b0
-//
-// 006c95b0  57                   push edi
-// 006c95b1  8bf9                 mov edi, ecx
-// 006c95b3  8b472c               mov eax, dword ptr [edi + 0x2c]
-// 006c95b6  85c0                 test eax, eax
-// 006c95b8  c70714687d00         mov dword ptr [edi], 0x7d6814
-// 006c95be  7446                 je 0x6c9606
-// 006c95c0  56                   push esi
-// 006c95c1  33f6                 xor esi, esi
-// 006c95c3  397008               cmp dword ptr [eax + 8], esi
-// 006c95c6  7e26                 jle 0x6c95ee
-// 006c95c8  85f6                 test esi, esi
-// 006c95ca  8b472c               mov eax, dword ptr [edi + 0x2c]
-// 006c95cd  7c39                 jl 0x6c9608
-// 006c95cf  3b7008               cmp esi, dword ptr [eax + 8]
-// 006c95d2  7d34                 jge 0x6c9608
-// 006c95d4  8b4004               mov eax, dword ptr [eax + 4]
-// 006c95d7  8b0cb0               mov ecx, dword ptr [eax + esi*4]
-// 006c95da  51                   push ecx
-// 006c95db  e8104bf5ff           call 0x61e0f0
-// 006c95e0  8b572c               mov edx, dword ptr [edi + 0x2c]
-// 006c95e3  83c601               add esi, 1
-// 006c95e6  83c404               add esp, 4
-// 006c95e9  3b7208               cmp esi, dword ptr [edx + 8]
-// 006c95ec  7cda                 jl 0x6c95c8
-// 006c95ee  8b4f2c               mov ecx, dword ptr [edi + 0x2c]
-// 006c95f1  85c9                 test ecx, ecx
-// 006c95f3  7409                 je 0x6c95fe
-// 006c95f5  8b01                 mov eax, dword ptr [ecx]
-// 006c95f7  8b5004               mov edx, dword ptr [eax + 4]
-// 006c95fa  6a01                 push 1
-// 006c95fc  ffd2                 call edx
-// 006c95fe  c7472c00000000       mov dword ptr [edi + 0x2c], 0
-// 006c9605  5e                   pop esi
-// 006c9606  5f                   pop edi
-// 006c9607  c3                   ret 
-// 006c9608  e9a14df5ff           jmp 0x61e3ae
-// library xtp-11.2.2-vc8/Source\DockingPane\XTPDockingPaneBase.cpp (function ??1CXTPDockingPaneBase@@MAE@XZ)
-
 // roc-lang: cpp
 // roc-cl: 50727
 // roc-flags: /O2 /GS- /MD
 // roc-lib: xtp-11.2.2-vc8 Source/DockingPane/XTPDockingPaneBase.cpp
+
+// Candidate translation unit (score above; library headers required).
+// XTPDockingPaneBase.cpp : implementation of the CXTPDockingPaneBase class.
+//
+// This file is a part of the XTREME DOCKINGPANE MFC class library.
+// (c)1998-2007 Codejock Software, All Rights Reserved.
+//
+// THIS SOURCE FILE IS THE PROPERTY OF CODEJOCK SOFTWARE AND IS NOT TO BE
+// RE-DISTRIBUTED BY ANY MEANS WHATSOEVER WITHOUT THE EXPRESSED WRITTEN
+// CONSENT OF CODEJOCK SOFTWARE.
+//
+// THIS SOURCE CODE CAN ONLY BE USED UNDER THE TERMS AND CONDITIONS OUTLINED
+// IN THE XTREME TOOLKIT PRO LICENSE AGREEMENT. CODEJOCK SOFTWARE GRANTS TO
+// YOU (ONE SOFTWARE DEVELOPER) THE LIMITED RIGHT TO USE THIS SOFTWARE ON A
+// SINGLE COMPUTER.
+//
+// CONTACT INFORMATION:
+// support@codejock.com
+// http://www.codejock.com
+//
+/////////////////////////////////////////////////////////////////////////////
+
+#include "stdafx.h"
+
+#include "XTPDockingPaneBase.h"
+#include "XTPDockingPaneManager.h"
+#include "XTPDockingPaneLayout.h"
+#include "XTPDockingPanePaintManager.h"
+
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#undef THIS_FILE
+static char THIS_FILE[] = __FILE__;
+#endif
+
+
+//////////////////////////////////////////////////////////////////////////
+// CXTPDockingPaneCaptionButtons
+
+BOOL CXTPDockingPaneCaptionButtons::CheckForMouseOver(CPoint pt)
+{
+	BOOL bResult = FALSE;
+	for (int i = 0; i < GetSize(); i++)
+	{
+		if (GetAt(i)->CheckForMouseOver(pt))
+			bResult = TRUE;
+	}
+	return bResult;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+// CXTPDockingPaneBase
+
+
+CXTPDockingPaneBase::CXTPDockingPaneBase(XTPDockingPaneType type, CXTPDockingPaneLayout* pLayout)
+	: m_type(type), m_pLayout(pLayout)
+{
+	m_pParentContainer = 0;
+	m_pDockingSite = GetDockingPaneManager()->GetSite();
+	m_szDocking = 0;
+	m_rcWindow.SetRectEmpty();
+
+	m_nIndex = 0;
+	m_nLength = 0;
+
+	pLayout->Push(this);
+
+	m_pCaptionButtons = NULL;
+
+}
+
+CXTPDockingPaneBase::~CXTPDockingPaneBase()
+{
+	if (m_pCaptionButtons)
+	{
+		for (int i = 0; i < m_pCaptionButtons->GetSize(); i++)
+			delete m_pCaptionButtons->GetAt(i);
+
+		delete m_pCaptionButtons;
+		m_pCaptionButtons = NULL;
+	}
+}
+
+CXTPDockingPaneCaptionButton* CXTPDockingPaneBase::FindCaptionButton(int nID) const
+{
+	if (!m_pCaptionButtons)
+		return NULL;
+
+	for (int i = 0; i < m_pCaptionButtons->GetSize(); i++)
+	{
+		if (m_pCaptionButtons->GetAt(i)->GetID() == nID)
+			return m_pCaptionButtons->GetAt(i);
+	}
+
+	ASSERT(FALSE);
+	return NULL;
+}
+
+void CXTPDockingPaneBase::OnSizeParent(CWnd* /*pParent*/, CRect rect, LPVOID lParam)
+{
+	AFX_SIZEPARENTPARAMS* lpLayout = (AFX_SIZEPARENTPARAMS*)lParam;
+	lpLayout->rect = m_rcWindow = rect;
+}
+
+void CXTPDockingPaneBase::RedrawPane()
+{
+	if (GetPaneHwnd())
+		::InvalidateRect(GetPaneHwnd(), 0, FALSE);
+}
+
+void CXTPDockingPaneBase::OnFocusChanged()
+{
+}
+
+BOOL CXTPDockingPaneBase::IsHidden() const
+{
+	return FALSE;
+}
+
+void CXTPDockingPaneBase::GetMinMaxInfo(LPMINMAXINFO pMinMaxInfo) const
+{
+	ZeroMemory(pMinMaxInfo, sizeof(MINMAXINFO));
+
+	if (m_type == xtpPaneTypeClient && !GetDockingPaneManager()->IsClientHidden())
+	{
+		pMinMaxInfo->ptMinTrackSize = GetDockingPaneManager()->m_ptMinClientSize;
+	}
+
+	pMinMaxInfo->ptMaxTrackSize = CPoint(32000, 32000);
+}
+
+POSITION CXTPDockingPaneBase::ContainPane(CXTPDockingPaneBase* pPane) const
+{
+	return pPane == this ? (POSITION)TRUE : NULL;
+}
+
+CRect CXTPDockingPaneBase::GetPaneWindowRect() const
+{
+	ASSERT(m_pDockingSite);
+
+	if (!m_pDockingSite)
+		return m_rcWindow;
+
+	CRect rc(m_rcWindow);
+	m_pDockingSite->ClientToScreen(&rc);
+	return rc;
+}
+
+void CXTPDockingPaneBase::OnChildContainerChanged(CXTPDockingPaneBase* /*pContainer*/)
+{
+}
+
+void CXTPDockingPaneBase::OnParentContainerChanged(CXTPDockingPaneBase* /*pContainer*/)
+{
+}
+
+void CXTPDockingPaneBase::InvalidatePane(BOOL bSelectionChanged)
+{
+	if (m_pParentContainer)
+	{
+		m_pParentContainer->InvalidatePane(bSelectionChanged);
+	}
+}
+
+
+void CXTPDockingPaneBase::RemovePane(CXTPDockingPaneBase* /*pPane*/)
+{
+}
+
+void CXTPDockingPaneBase::FindPane(XTPDockingPaneType type, CXTPDockingPaneBaseList* pList) const
+{
+	if (GetType() == type)
+	{
+		pList->AddTail((CXTPDockingPaneBase*)this);
+	}
+}
+
+BOOL CXTPDockingPaneBase::IsEmpty() const
+{
+	return GetType() == xtpPaneTypeClient && GetDockingPaneManager()->m_bHideClient;
+}
+
+CXTPDockingPaneBase* CXTPDockingPaneBase::Clone(CXTPDockingPaneLayout* pLayout, CXTPPaneToPaneMap* pMap, DWORD /*dwIgnoredOptions*/)
+{
+	ASSERT(pMap);
+
+	CXTPDockingPaneBase* pPane = (CXTPDockingPaneBase*)GetDockingPaneManager()->OnCreatePane(GetType(), pLayout);
+
+	SAFE_CALLPTR(pMap, SetAt(this, pPane));
+
+	return pPane;
+}
+
+CXTPDockingPaneManager* CXTPDockingPaneBase::GetDockingPaneManager() const
+{
+	ASSERT(m_pLayout);
+	if (!m_pLayout)
+		return NULL;
+
+	ASSERT(m_pLayout->m_pManager);
+	return m_pLayout->m_pManager;
+}
+
+CXTPDockingPanePaintManager* CXTPDockingPaneBase::GetPaintManager() const
+{
+	CXTPDockingPaneManager* pManager = GetDockingPaneManager();
+	ASSERT(pManager);
+	if (!pManager)
+		return NULL;
+
+	ASSERT(pManager->m_pPaintManager);
+	return pManager->m_pPaintManager;
+}
+
+void CXTPDockingPaneBase::CreateContainer()
+{
+	SAFE_CALLPTR(m_pParentContainer, CreateContainer());
+}
+
+//////////////////////////////////////////////////////////////////////////
+
+CXTPDockingPaneClientContainer::CXTPDockingPaneClientContainer(CXTPDockingPaneLayout* pLayout)
+	: CXTPDockingPaneBase(xtpPaneTypeClient, pLayout)
+{
+}
+
+void CXTPDockingPaneClientContainer::DeletePane()
+{
+	InternalRelease();
+}
+

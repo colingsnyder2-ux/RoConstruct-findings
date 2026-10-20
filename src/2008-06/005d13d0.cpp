@@ -1,65 +1,250 @@
-// roc 2008-06 005d13d0  unit: RBX::HopperBin  size: 242 bytes
-// Make this compile to the exact bytes below, then: roc check 2008-06 005d13d0
-//
-// 005d13d0  6aff                 push -1
-// 005d13d2  6885577d00           push 0x7d5785
-// 005d13d7  64a100000000         mov eax, dword ptr fs:[0]
-// 005d13dd  50                   push eax
-// 005d13de  64892500000000       mov dword ptr fs:[0], esp
-// 005d13e5  83ec78               sub esp, 0x78
-// 005d13e8  8b842488000000       mov eax, dword ptr [esp + 0x88]
-// 005d13ef  56                   push esi
-// 005d13f0  57                   push edi
-// 005d13f1  50                   push eax
-// 005d13f2  8bf9                 mov edi, ecx
-// 005d13f4  8d4c2428             lea ecx, [esp + 0x28]
-// 005d13f8  68c0b48300           push 0x83b4c0
-// 005d13fd  51                   push ecx
-// 005d13fe  ff1568238000         call dword ptr [0x802368]
-// 005d1404  68b8b48300           push 0x83b4b8
-// 005d1409  50                   push eax
-// 005d140a  8d54241c             lea edx, [esp + 0x1c]
-// 005d140e  52                   push edx
-// 005d140f  c78424a000000000000000 mov dword ptr [esp + 0xa0], 0
-// 005d141a  ff15e4238000         call dword ptr [0x8023e4]
-// 005d1420  50                   push eax
-// 005d1421  8d44247c             lea eax, [esp + 0x7c]
-// 005d1425  50                   push eax
-// 005d1426  c68424a800000001     mov byte ptr [esp + 0xa8], 1
-// 005d142e  e8cdb0f8ff           call 0x55c500
-// 005d1433  83c420               add esp, 0x20
-// 005d1436  8bf0                 mov esi, eax
-// 005d1438  56                   push esi
-// 005d1439  8d4c2444             lea ecx, [esp + 0x44]
-// 005d143d  c684248c00000002     mov byte ptr [esp + 0x8c], 2
-// 005d1445  ff155c248000         call dword ptr [0x80245c]
-// 005d144b  8b4e1c               mov ecx, dword ptr [esi + 0x1c]
-// 005d144e  894c245c             mov dword ptr [esp + 0x5c], ecx
-// 005d1452  8d4c2460             lea ecx, [esp + 0x60]
-// 005d1456  c684248800000004     mov byte ptr [esp + 0x88], 4
-// 005d145e  ff1568248000         call dword ptr [0x802468]
-// 005d1464  8d4c2408             lea ecx, [esp + 8]
-// 005d1468  c684248800000005     mov byte ptr [esp + 0x88], 5
-// 005d1470  ff1568248000         call dword ptr [0x802468]
-// 005d1476  8d4c2424             lea ecx, [esp + 0x24]
-// 005d147a  c684248800000006     mov byte ptr [esp + 0x88], 6
-// 005d1482  ff1568248000         call dword ptr [0x802468]
-// 005d1488  8d542440             lea edx, [esp + 0x40]
-// 005d148c  52                   push edx
-// 005d148d  8bcf                 mov ecx, edi
-// 005d148f  e84cfdffff           call 0x5d11e0
-// 005d1494  8d4c2440             lea ecx, [esp + 0x40]
-// 005d1498  c7842488000000ffffffff mov dword ptr [esp + 0x88], 0xffffffff
-// 005d14a3  ff1568248000         call dword ptr [0x802468]
-// 005d14a9  8b8c2480000000       mov ecx, dword ptr [esp + 0x80]
-// 005d14b0  5f                   pop edi
-// 005d14b1  5e                   pop esi
-// 005d14b2  64890d00000000       mov dword ptr fs:[0], ecx
-// 005d14b9  81c484000000         add esp, 0x84
-// 005d14bf  c20400               ret 4
-// library rbxgs-dll/v8datamodel\Hopper.cpp (function ?setLegacyTextureName@HopperBin@RBX@@QAEXABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@Z)
-
 // roc-lang: cpp
 // roc-cl: 50727
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
 // roc-lib: rbxgs-dll v8datamodel/Hopper.cpp
+
+// Candidate translation unit (score above; library headers required).
+#include "v8datamodel/Hopper.h"
+#include "v8datamodel/Backpack.h"
+#include "v8datamodel/Workspace.h"
+#include "v8datamodel/Mouse.h"
+#include "v8datamodel/DataModel.h"
+#include "v8datamodel/ScriptMouseCommand.h"
+
+namespace RBX
+{
+	static Reflection::PropDescriptor<BackpackItem, TextureId> desc_TextureId("TextureId", "Data", &BackpackItem::getTextureId, &BackpackItem::setTextureId, Reflection::PropertyDescriptor::STANDARD);
+
+	static Reflection::PropDescriptor<HopperBin, std::string> desc_legacyCommand("Command", "Data", NULL, &HopperBin::setLegacyCommand, Reflection::PropertyDescriptor::LEGACY);
+	static Reflection::PropDescriptor<HopperBin, std::string> desc_legacyTextureName("TextureName", "Data", NULL, &HopperBin::setLegacyTextureName, Reflection::PropertyDescriptor::LEGACY);
+	static Reflection::EnumPropDescriptor<HopperBin, HopperBin::BinType> desc_BinType("BinType", "Data", &HopperBin::getBinType, &HopperBin::setBinType, Reflection::PropertyDescriptor::STANDARD);
+
+	static Reflection::SignalDesc<HopperBin, void(void)> desc_Deselected("Deselected");
+	static Reflection::SignalDesc<HopperBin, void(boost::shared_ptr<Instance>)> desc_Selected("Selected", "mouse");
+
+	Hopper::Hopper()
+	{
+		yLocation = Rect::BOTTOM;
+	}
+
+	bool Hopper::askAddChild(const Instance* instance) const
+	{
+		return dynamic_cast<const BackpackItem*>(instance) != NULL;
+	}
+
+	bool Hopper::askSetParent(const Instance* instance) const
+	{
+		return true;
+	}
+
+	bool BackpackItem::askSetParent(const Instance* instance) const
+	{
+		return true;
+	}
+
+	bool BackpackItem::askAddChild(const Instance* instance) const
+	{
+		return true;
+	}
+
+	const TextureId BackpackItem::getTextureId() const
+	{
+		return textureId;
+	}
+
+	bool BackpackItem::isEnabled()
+	{
+		return getParent() && dynamic_cast<Backpack*>(getParent()) != NULL;
+	}
+
+	void BackpackItem::setTextureId(const TextureId& value)
+	{
+		if (value != textureId)
+		{
+			textureId = value;
+
+			std::string filename;
+			ContentProvider::singleton().requestContentFile(value, filename);
+
+			Workspace* workspace = ServiceProvider::find<Workspace>(this);
+			if (workspace)
+				workspace->raiseDrawChanged();
+
+			raisePropertyChanged(desc_TextureId);
+		}
+	}
+
+	G3D::Vector2 BackpackItem::getSize() const
+	{
+		float width = GuiRoot::toPixelSize(G3D::Vector2(10.0f, 10.0f)).x;
+		return G3D::Vector2(width, width);
+	}
+
+	HopperBin::HopperBin()
+		: binType(SCRIPT_BIN),
+		  active(false)
+	{
+		setName("HopperBin");
+	}
+
+	void HopperBin::setBinType(const HopperBin::BinType value)
+	{
+		if (value != binType)
+		{
+			binType = value;
+			raisePropertyChanged(desc_BinType);
+
+			if (binType != SCRIPT_BIN)
+			{
+				std::string textureName = Reflection::EnumDesc<BinType>::singleton().convertToString(binType);
+				setLegacyTextureName(textureName);
+			}
+		}
+	}
+
+	void HopperBin::setLegacyTextureName(const std::string& value)
+	{
+		TextureId textureId = ContentId::fromAssets("Textures\\" + value + ".png");
+		setTextureId(textureId);
+	}
+
+	void HopperBin::setLegacyCommand(const std::string& text)
+	{
+		BinType newBinType;
+		
+		if (!Reflection::EnumDesc<BinType>::singleton().convertToValue(text, newBinType))
+		{
+			newBinType = SCRIPT_BIN;
+		}
+		
+		setBinType(newBinType);
+	}
+
+	void HopperBin::onLocalClicked()
+	{
+		RBXASSERT(isEnabled());
+
+		if (!active)
+		{
+			active = true;
+
+			if (binType == SCRIPT_BIN)
+			{
+				onSelectScript();
+			}
+			else
+			{
+				onSelectCommand();
+			}
+		}
+		else
+		{
+			onLocalOtherClicked();
+		}
+	}
+
+	void HopperBin::onLocalOtherClicked()
+	{
+		if (active)
+		{
+			if (binType == SCRIPT_BIN)
+				desc_Deselected.fire(this);
+
+			active = false;
+
+			Workspace* workspace = ServiceProvider::find<Workspace>(this);
+			if (workspace)
+				workspace->setDefaultMouseCommand();
+		}
+	}
+
+	void HopperBin::onSelectScript()
+	{
+		Workspace* workspace = ServiceProvider::find<Workspace>(this);
+		if (workspace)
+		{
+			ScriptMouseCommand* command = new ScriptMouseCommand(workspace);
+			workspace->setMouseCommand(command);
+			desc_Selected.fire(this, command->getMouse());
+		}
+	}
+
+	void HopperBin::onSelectCommand()
+	{
+		RBXASSERT(binType != SCRIPT_BIN);
+
+		DataModel* root = rbx_static_cast<DataModel*>(getRootAncestor());
+
+		std::string command = Reflection::EnumDesc<BinType>::singleton().convertToString(binType) + "Tool";
+
+		Verb* verb = root->getVerb(command);
+		RBXASSERT(verb);
+
+		if (verb->isEnabled())
+		{
+			Workspace* workspace = ServiceProvider::find<Workspace>(this);
+			if (workspace)
+				verb->doIt(&workspace->getDataState());
+			else
+				RBXASSERT(0);
+		}
+	}
+
+	StarterPackService::StarterPackService()
+	{
+		setName("StarterPack");
+	}
+
+	//97.87% match
+	//le EPIC TROLL
+	void StarterPackService::render2d(Adorn* adorn)
+	{
+		TopMenuBar::render2d(adorn);
+
+		if (findFirstChildOfType<BackpackItem>())
+		{
+			G3D::Rect2D viewPort = adorn->getViewport();
+			int fontSize = GuiRoot::normalizedFontSize(12);
+			G3D::Vector2 pos2d = viewPort.x0y1() + G3D::Vector2(4.0f, -4.0f);
+
+			adorn->drawFont2D(
+				"StarterPack - these items will be given to each new player", 
+				pos2d, 
+				fontSize, 
+				G3D::Color3::white(), 
+				G3D::Color4::clear(), 
+				Adorn::XALIGN_LEFT, 
+				Adorn::YALIGN_BOTTOM,
+				Adorn::PROPORTIONAL_SPACING
+			);
+		}
+	}
+
+	LegacyHopperService::LegacyHopperService()
+	{
+		setName("Hopper");
+	}
+
+	LegacyHopperService::~LegacyHopperService()
+	{
+		RBXASSERT(numChildren() == 0);
+	}
+
+	void LegacyHopperService::onServiceProvider(const ServiceProvider* oldProvider, const ServiceProvider* newProvider)
+	{
+		Instance::onServiceProvider(oldProvider, newProvider);
+
+		if (newProvider)
+		{
+			StarterPackService* starterPack = newProvider->find<StarterPackService>();
+			RBXASSERT(starterPack);
+
+			while (numChildren() > 0)
+			{
+				getChild(0)->setParent(starterPack);
+			}
+
+			setParent(NULL);
+		}
+	}
+}

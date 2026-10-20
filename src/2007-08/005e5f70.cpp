@@ -1,39 +1,102 @@
-// roc 2007-08 005e5f70  unit: RBX::NewNullTool  size: 96 bytes
-// Make this compile to the exact bytes below, then: roc check 2007-08 005e5f70
-//
-// 005e5f70  6aff                 push -1
-// 005e5f72  681bb67500           push 0x75b61b
-// 005e5f77  64a100000000         mov eax, dword ptr fs:[0]
-// 005e5f7d  50                   push eax
-// 005e5f7e  64892500000000       mov dword ptr fs:[0], esp
-// 005e5f85  51                   push ecx
-// 005e5f86  56                   push esi
-// 005e5f87  6a4c                 push 0x4c
-// 005e5f89  8bf1                 mov esi, ecx
-// 005e5f8b  e8669f0400           call 0x62fef6
-// 005e5f90  83c404               add esp, 4
-// 005e5f93  89442404             mov dword ptr [esp + 4], eax
-// 005e5f97  85c0                 test eax, eax
-// 005e5f99  c744241000000000     mov dword ptr [esp + 0x10], 0
-// 005e5fa1  741b                 je 0x5e5fbe
-// 005e5fa3  8b4e18               mov ecx, dword ptr [esi + 0x18]
-// 005e5fa6  51                   push ecx
-// 005e5fa7  8bc8                 mov ecx, eax
-// 005e5fa9  e8c2feffff           call 0x5e5e70
-// 005e5fae  5e                   pop esi
-// 005e5faf  8b4c2404             mov ecx, dword ptr [esp + 4]
-// 005e5fb3  64890d00000000       mov dword ptr fs:[0], ecx
-// 005e5fba  83c410               add esp, 0x10
-// 005e5fbd  c3                   ret 
-// 005e5fbe  8b4c2408             mov ecx, dword ptr [esp + 8]
-// 005e5fc2  33c0                 xor eax, eax
-// 005e5fc4  5e                   pop esi
-// 005e5fc5  64890d00000000       mov dword ptr fs:[0], ecx
-// 005e5fcc  83c410               add esp, 0x10
-// 005e5fcf  c3                   ret 
-// library rbxgs/tool\NullTool.cpp (function ?isSticky@NewNullTool@RBX@@EBEPAVMouseCommand@2@XZ)
-
 // roc-lang: cpp
 // roc-cl: 50727
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
 // roc-lib: rbxgs tool/NullTool.cpp
+
+// Candidate translation unit (score above; library headers required).
+#include "tool/NullTool.h"
+#include "v8datamodel/PartInstance.h"
+#include "v8datamodel/UserController.h"
+#include "Network/Players.h"
+
+namespace RBX
+{
+	NewNullTool::NewNullTool(Workspace* workspace)
+		: Base(workspace),
+		  cursor("ArrowCursor"),
+		  hasWaypoint(false)
+	{
+	}
+
+	NewNullTool::~NewNullTool() {}
+
+	void NewNullTool::onMouseIdle(const UIEvent& uiEvent)
+	{
+		RBXASSERT(uiEvent.eventType == UIEvent::MOUSE_IDLE);
+
+		if (getPartByLocalCharacter(uiEvent, waypoint) && characterCanReach(waypoint))
+		{
+			cursor = "ArrowCursor";
+		}
+		else
+		{
+			cursor = "ArrowFarCursor";
+		}
+	}
+
+	void NewNullTool::onMouseHover(const UIEvent& uiEvent)
+	{
+		RBXASSERT(uiEvent.eventType == UIEvent::MOUSE_MOVE);
+
+		if (getPartByLocalCharacter(uiEvent, waypoint) && characterCanReach(waypoint))
+		{
+			cursor = "ArrowCursor";
+			hasWaypoint = true;
+		}
+		else
+		{
+			cursor = "ArrowFarCursor";
+			hasWaypoint = false;
+		}
+	}
+
+	MouseCommand* NewNullTool::onMouseDown(const UIEvent& uiEvent)
+	{
+		G3D::Vector3 hitPoint;
+
+		PartInstance* part = getPartByLocalCharacter(uiEvent, hitPoint);
+		if (part && characterCanReach(hitPoint))
+		{
+			ModelInstance* character = Network::Players::findLocalCharacter(workspace);
+			if (character && !character->contains(part))
+			{
+				if (Humanoid* humanoid = Humanoid::modelIsCharacter(character))
+					humanoid->moveTo(hitPoint, part);
+			}
+		}
+
+		return this;
+	}
+
+	MouseCommand* NewNullTool::onMouseUp(const UIEvent& uiEvent)
+	{
+		releaseCapture();
+		return this;
+	}
+
+	void NewNullTool::render3dAdorn(Adorn* adorn)
+	{
+		if (hasWaypoint)
+		{
+			if (ControllerService* controllerService = ServiceProvider::find<ControllerService>(workspace))
+			{
+				const UserInputBase* device = controllerService->getHardwareDevice();
+
+				bool F = device->keyDown(SDLK_UP);
+				bool B = device->keyDown(SDLK_DOWN);
+				bool L = device->keyDown(SDLK_LEFT);
+				bool R = device->keyDown(SDLK_RIGHT);
+
+				bool Ffp = device->keyDown(SDLK_w);
+				bool Bfp = device->keyDown(SDLK_s);
+				bool Rfp = device->keyDown(SDLK_d);
+				bool Lfp = device->keyDown(SDLK_a);
+
+				bool space = device->keyDown(SDLK_SPACE);
+
+				if (!F && !B && !L && !R && !Ffp && !Bfp && !Rfp && !Lfp && !space)
+					Humanoid::renderWaypoint(adorn, waypoint);
+			}
+		}
+	}
+}

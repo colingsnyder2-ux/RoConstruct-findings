@@ -1,75 +1,282 @@
-// roc 2010-06 00515e70  unit: RakPeer  size: 172 bytes
-// Make this compile to the exact bytes below, then: roc check 2010-06 00515e70
-//
-// 00515e70  56                   push esi
-// 00515e71  8bf1                 mov esi, ecx
-// 00515e73  8b4608               mov eax, dword ptr [esi + 8]
-// 00515e76  394604               cmp dword ptr [esi + 4], eax
-// 00515e79  7579                 jne 0x515ef4
-// 00515e7b  85c0                 test eax, eax
-// 00515e7d  7509                 jne 0x515e88
-// 00515e7f  c7460810000000       mov dword ptr [esi + 8], 0x10
-// 00515e86  eb05                 jmp 0x515e8d
-// 00515e88  03c0                 add eax, eax
-// 00515e8a  894608               mov dword ptr [esi + 8], eax
-// 00515e8d  8b4608               mov eax, dword ptr [esi + 8]
-// 00515e90  33c9                 xor ecx, ecx
-// 00515e92  ba0c000000           mov edx, 0xc
-// 00515e97  f7e2                 mul edx
-// 00515e99  0f90c1               seto cl
-// 00515e9c  53                   push ebx
-// 00515e9d  f7d9                 neg ecx
-// 00515e9f  0bc8                 or ecx, eax
-// 00515ea1  51                   push ecx
-// 00515ea2  e8db1d2900           call 0x7a7c82
-// 00515ea7  83c404               add esp, 4
-// 00515eaa  833e00               cmp dword ptr [esi], 0
-// 00515ead  8bd8                 mov ebx, eax
-// 00515eaf  7440                 je 0x515ef1
-// 00515eb1  33d2                 xor edx, edx
-// 00515eb3  395604               cmp dword ptr [esi + 4], edx
-// 00515eb6  762e                 jbe 0x515ee6
-// 00515eb8  55                   push ebp
-// 00515eb9  57                   push edi
-// 00515eba  bff8ffffff           mov edi, 0xfffffff8
-// 00515ebf  8d4b08               lea ecx, [ebx + 8]
-// 00515ec2  2bfb                 sub edi, ebx
-// 00515ec4  8d040f               lea eax, [edi + ecx]
-// 00515ec7  0306                 add eax, dword ptr [esi]
-// 00515ec9  42                   inc edx
-// 00515eca  8b28                 mov ebp, dword ptr [eax]
-// 00515ecc  8969f8               mov dword ptr [ecx - 8], ebp
-// 00515ecf  668b6804             mov bp, word ptr [eax + 4]
-// 00515ed3  668969fc             mov word ptr [ecx - 4], bp
-// 00515ed7  8b4008               mov eax, dword ptr [eax + 8]
-// 00515eda  8901                 mov dword ptr [ecx], eax
-// 00515edc  83c10c               add ecx, 0xc
-// 00515edf  3b5604               cmp edx, dword ptr [esi + 4]
-// 00515ee2  72e0                 jb 0x515ec4
-// 00515ee4  5f                   pop edi
-// 00515ee5  5d                   pop ebp
-// 00515ee6  8b0e                 mov ecx, dword ptr [esi]
-// 00515ee8  51                   push ecx
-// 00515ee9  e8581d2900           call 0x7a7c46
-// 00515eee  83c404               add esp, 4
-// 00515ef1  891e                 mov dword ptr [esi], ebx
-// 00515ef3  5b                   pop ebx
-// 00515ef4  8b4604               mov eax, dword ptr [esi + 4]
-// 00515ef7  8b4c2408             mov ecx, dword ptr [esp + 8]
-// 00515efb  8d1440               lea edx, [eax + eax*2]
-// 00515efe  8b06                 mov eax, dword ptr [esi]
-// 00515f00  8d0490               lea eax, [eax + edx*4]
-// 00515f03  8908                 mov dword ptr [eax], ecx
-// 00515f05  668b54240c           mov dx, word ptr [esp + 0xc]
-// 00515f0a  66895004             mov word ptr [eax + 4], dx
-// 00515f0e  8b4c2410             mov ecx, dword ptr [esp + 0x10]
-// 00515f12  894808               mov dword ptr [eax + 8], ecx
-// 00515f15  ff4604               inc dword ptr [esi + 4]
-// 00515f18  5e                   pop esi
-// 00515f19  c20c00               ret 0xc
-// library rbxgs-raknet/LogCommandParser.cpp (function ?Insert@?$List@USystemAddressAndChannel@LogCommandParser@@@DataStructures@@QAEXUSystemAddressAndChannel@LogCommandParser@@@Z)
-
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
 // roc-lib: rbxgs-raknet LogCommandParser.cpp
+
+// Candidate translation unit (score above; library headers required).
+#include "LogCommandParser.h"
+#include "TransportInterface.h"
+#include <memory.h>
+#include <stdio.h>
+#include <string.h>
+#include <stdarg.h>
+
+#if (defined(__GNUC__)  || defined(__GCCXML__))
+#define _vsnprintf vsnprintf
+#define _stricmp strcasecmp
+#endif
+
+
+#ifdef _MSC_VER
+#pragma warning( push )
+#endif
+
+LogCommandParser::LogCommandParser()
+{
+	RegisterCommand(CommandParserInterface::VARIABLE_NUMBER_OF_PARAMETERS,"Subscribe","[<ChannelName>] - Subscribes to a named channel, or all channels");
+	RegisterCommand(CommandParserInterface::VARIABLE_NUMBER_OF_PARAMETERS,"Unsubscribe","[<ChannelName>] - Unsubscribes from a named channel, or all channels");
+	memset(channelNames,0,sizeof(channelNames));
+}
+LogCommandParser::~LogCommandParser()
+{
+}
+#ifdef _MSC_VER
+#pragma warning( disable : 4100 ) // warning C4100: <variable name> : unreferenced formal parameter
+#endif
+bool LogCommandParser::OnCommand(const char *command, unsigned numParameters, char **parameterList, TransportInterface *transport, SystemAddress systemAddress, const char *originalString)
+{
+	if (strcmp(command, "Subscribe")==0)
+	{
+		unsigned channelIndex;
+		if (numParameters==0)
+		{
+			Subscribe(systemAddress, 0);
+			transport->Send(systemAddress, "Subscribed to all channels.\r\n");
+		}
+		else if (numParameters==1)
+		{
+			if ((channelIndex=Subscribe(systemAddress, parameterList[0]))!=(unsigned)-1)
+			{
+				transport->Send(systemAddress, "You are now subscribed to channel %s.\r\n", channelNames[channelIndex]);
+			}
+			else
+			{
+				transport->Send(systemAddress, "Cannot find channel %s.\r\n", parameterList[0]);
+				PrintChannels(systemAddress, transport);
+			}
+		}
+		else
+		{
+			transport->Send(systemAddress, "Subscribe takes either 0 or 1 parameters.\r\n");
+		}
+	}
+	else if (strcmp(command, "Unsubscribe")==0)
+	{
+		unsigned channelIndex;
+		if (numParameters==0)
+		{
+			Unsubscribe(systemAddress, 0);
+			transport->Send(systemAddress, "Unsubscribed from all channels.\r\n");
+		}
+		else if (numParameters==1)
+		{
+			if ((channelIndex=Unsubscribe(systemAddress, parameterList[0]))!=(unsigned)-1)
+			{
+				transport->Send(systemAddress, "You are now unsubscribed from channel %s.\r\n", channelNames[channelIndex]);
+			}
+			else
+			{
+				transport->Send(systemAddress, "Cannot find channel %s.\r\n", parameterList[0]);
+				PrintChannels(systemAddress, transport);
+			}
+		}
+		else
+		{
+			transport->Send(systemAddress, "Unsubscribe takes either 0 or 1 parameters.\r\n");
+		}
+	}
+
+	return true;
+}
+char *LogCommandParser::GetName(void) const
+{
+	return "Logger";
+}
+void LogCommandParser::SendHelp(TransportInterface *transport, SystemAddress systemAddress)
+{
+	transport->Send(systemAddress, "The logger will accept user log data via the Log(...) function.\r\n");
+	transport->Send(systemAddress, "Each log is associated with a named channel.\r\n");
+	transport->Send(systemAddress, "You can subscribe to or unsubscribe from named channels.\r\n");
+	PrintChannels(systemAddress, transport);
+}
+void LogCommandParser::AddChannel(const char *channelName)
+{
+	unsigned channelIndex;
+	channelIndex = GetChannelIndexFromName(channelName);
+	// Each channel can only be added once.
+	assert(channelIndex==(unsigned)-1);
+
+	unsigned i;
+	for (i=0; i < 32; i++)
+	{
+		if (channelNames[i]==0)
+		{
+			// Assuming a persistent static string.
+			channelNames[i]=channelName;
+			return;
+		}
+	}
+
+	// No more available channels - max 32 with this implementation where I save subscribed channels with bit operations
+	assert(0);
+}
+void LogCommandParser::WriteLog(const char *channelName, const char *format, ...)
+{
+	if (channelName==0 || format==0)
+		return;
+
+	unsigned channelIndex;
+	channelIndex = GetChannelIndexFromName(channelName);
+	if (channelIndex==(unsigned)-1)
+	{
+		AddChannel(channelName);
+	}
+
+	char text[REMOTE_MAX_TEXT_INPUT];
+	va_list ap;
+	va_start(ap, format);
+	_vsnprintf(text, REMOTE_MAX_TEXT_INPUT, format, ap);
+	va_end(ap);
+	text[REMOTE_MAX_TEXT_INPUT-1]=0;
+
+	// Make sure that text ends in \r\n
+	int textLen;
+	textLen=(int)strlen(text);
+	if (textLen==0)
+		return;
+	if (text[textLen-1]=='\n')
+	{
+		text[textLen-1]=0;
+	}
+	if (textLen < REMOTE_MAX_TEXT_INPUT-4)
+		strcat(text, "\r\n");
+	else
+	{
+		text[textLen-3]='\r';
+		text[textLen-2]='\n';
+		text[textLen-1]=0;
+	}
+
+	// For each user that subscribes to this channel, send to them.
+	unsigned i;
+	for (i=0; i < remoteUsers.Size(); i++)
+	{
+		if (remoteUsers[i].channels & (1 << channelIndex))
+		{
+			trans->Send(remoteUsers[i].systemAddress, text);
+		}
+	}
+}
+void LogCommandParser::PrintChannels(SystemAddress systemAddress, TransportInterface *transport) const
+{
+	unsigned i;
+	bool anyChannels=false;
+	transport->Send(systemAddress, "CHANNELS:\r\n");
+	for (i=0; i < 32; i++)
+	{
+		if (channelNames[i])
+		{
+			transport->Send(systemAddress, "%i. %s\r\n", i+1,channelNames[i]);
+			anyChannels=true;
+		}
+	}
+	if (anyChannels==false)
+		transport->Send(systemAddress, "None.\r\n");
+}
+#ifdef _MSC_VER
+#pragma warning( disable : 4100 ) // warning C4100: <variable name> : unreferenced formal parameter
+#endif
+void LogCommandParser::OnNewIncomingConnection(SystemAddress systemAddress, TransportInterface *transport)
+{
+}
+#ifdef _MSC_VER
+#pragma warning( disable : 4100 ) // warning C4100: <variable name> : unreferenced formal parameter
+#endif
+void LogCommandParser::OnConnectionLost(SystemAddress systemAddress, TransportInterface *transport)
+{
+	Unsubscribe(systemAddress, 0);
+}
+unsigned LogCommandParser::Unsubscribe(SystemAddress systemAddress, const char *channelName)
+{
+	unsigned i;
+	for (i=0; i < remoteUsers.Size(); i++)
+	{
+		if (remoteUsers[i].systemAddress==systemAddress)
+		{
+			if (channelName==0)
+			{
+				// Unsubscribe from all and delete this user.
+				remoteUsers[i]=remoteUsers[remoteUsers.Size()-1];
+				remoteUsers.RemoveFromEnd();
+				return 0;
+			}
+			else
+			{
+				unsigned channelIndex;
+				channelIndex = GetChannelIndexFromName(channelName);
+				if (channelIndex!=(unsigned)-1)
+				{
+					remoteUsers[i].channels&=0xFFFF ^ (1<<channelIndex); // Unset this bit
+				}
+				return channelIndex;
+			}
+		}
+	}
+	return (unsigned)-1;
+}
+unsigned LogCommandParser::Subscribe(SystemAddress systemAddress, const char *channelName)
+{
+	unsigned i;
+	unsigned channelIndex=(unsigned)-1;
+	if (channelName)
+	{
+		channelIndex = GetChannelIndexFromName(channelName);
+		if (channelIndex==(unsigned)-1)
+			return channelIndex;
+	}
+
+	for (i=0; i < remoteUsers.Size(); i++)
+	{
+		if (remoteUsers[i].systemAddress==systemAddress)
+		{
+			if (channelName)
+				remoteUsers[i].channels|=1<<channelIndex; // Set this bit for an existing user
+			else
+				remoteUsers[i].channels=0xFFFF;
+			return channelIndex;
+		}
+	}
+
+	// Make a new user
+	SystemAddressAndChannel newUser;
+	newUser.systemAddress = systemAddress;
+	if (channelName)
+		newUser.channels=1<<channelIndex;
+	else
+		newUser.channels=0xFFFF;
+	remoteUsers.Insert(newUser);
+	return channelIndex;
+}
+unsigned LogCommandParser::GetChannelIndexFromName(const char *channelName)
+{
+	unsigned i;
+	for (i=0; i < 32; i++)
+	{
+		if (channelNames[i]==0)
+			return (unsigned) -1;
+
+		if (_stricmp(channelNames[i], channelName)==0)
+			return i;
+	}
+	return (unsigned)-1;
+}
+
+void LogCommandParser::OnTransportChange(TransportInterface *transport)
+{
+	// I don't want users to have to pass TransportInterface *transport to Log.
+	trans=transport;
+}
+
+#ifdef _MSC_VER
+#pragma warning( pop )
+#endif

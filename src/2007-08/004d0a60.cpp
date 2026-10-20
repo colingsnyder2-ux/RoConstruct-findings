@@ -1,91 +1,198 @@
-// roc 2007-08 004d0a60  unit: RBX::View::PartChunk  size: 232 bytes
-// Make this compile to the exact bytes below, then: roc check 2007-08 004d0a60
-//
-// 004d0a60  6aff                 push -1
-// 004d0a62  6866c37400           push 0x74c366
-// 004d0a67  64a100000000         mov eax, dword ptr fs:[0]
-// 004d0a6d  50                   push eax
-// 004d0a6e  64892500000000       mov dword ptr fs:[0], esp
-// 004d0a75  51                   push ecx
-// 004d0a76  53                   push ebx
-// 004d0a77  56                   push esi
-// 004d0a78  8bf1                 mov esi, ecx
-// 004d0a7a  57                   push edi
-// 004d0a7b  8974240c             mov dword ptr [esp + 0xc], esi
-// 004d0a7f  8b463c               mov eax, dword ptr [esi + 0x3c]
-// 004d0a82  8b3de8d27700         mov edi, dword ptr [0x77d2e8]
-// 004d0a88  33db                 xor ebx, ebx
-// 004d0a8a  3bc3                 cmp eax, ebx
-// 004d0a8c  c744241802000000     mov dword ptr [esp + 0x18], 2
-// 004d0a94  7424                 je 0x4d0aba
-// 004d0a96  83c004               add eax, 4
-// 004d0a99  50                   push eax
-// 004d0a9a  ffd7                 call edi
-// 004d0a9c  85c0                 test eax, eax
-// 004d0a9e  7517                 jne 0x4d0ab7
-// 004d0aa0  8b4e3c               mov ecx, dword ptr [esi + 0x3c]
-// 004d0aa3  e82873f8ff           call 0x457dd0
-// 004d0aa8  8b4e3c               mov ecx, dword ptr [esi + 0x3c]
-// 004d0aab  3bcb                 cmp ecx, ebx
-// 004d0aad  7408                 je 0x4d0ab7
-// 004d0aaf  8b01                 mov eax, dword ptr [ecx]
-// 004d0ab1  8b10                 mov edx, dword ptr [eax]
-// 004d0ab3  6a01                 push 1
-// 004d0ab5  ffd2                 call edx
-// 004d0ab7  895e3c               mov dword ptr [esi + 0x3c], ebx
-// 004d0aba  8b4638               mov eax, dword ptr [esi + 0x38]
-// 004d0abd  3bc3                 cmp eax, ebx
-// 004d0abf  c644241801           mov byte ptr [esp + 0x18], 1
-// 004d0ac4  7424                 je 0x4d0aea
-// 004d0ac6  83c004               add eax, 4
-// 004d0ac9  50                   push eax
-// 004d0aca  ffd7                 call edi
-// 004d0acc  85c0                 test eax, eax
-// 004d0ace  7517                 jne 0x4d0ae7
-// 004d0ad0  8b4e38               mov ecx, dword ptr [esi + 0x38]
-// 004d0ad3  e8f872f8ff           call 0x457dd0
-// 004d0ad8  8b4e38               mov ecx, dword ptr [esi + 0x38]
-// 004d0adb  3bcb                 cmp ecx, ebx
-// 004d0add  7408                 je 0x4d0ae7
-// 004d0adf  8b01                 mov eax, dword ptr [ecx]
-// 004d0ae1  8b10                 mov edx, dword ptr [eax]
-// 004d0ae3  6a01                 push 1
-// 004d0ae5  ffd2                 call edx
-// 004d0ae7  895e38               mov dword ptr [esi + 0x38], ebx
-// 004d0aea  8b4628               mov eax, dword ptr [esi + 0x28]
-// 004d0aed  3bc3                 cmp eax, ebx
-// 004d0aef  885c2418             mov byte ptr [esp + 0x18], bl
-// 004d0af3  7424                 je 0x4d0b19
-// 004d0af5  83c004               add eax, 4
-// 004d0af8  50                   push eax
-// 004d0af9  ffd7                 call edi
-// 004d0afb  85c0                 test eax, eax
-// 004d0afd  7517                 jne 0x4d0b16
-// 004d0aff  8b4e28               mov ecx, dword ptr [esi + 0x28]
-// 004d0b02  e8c972f8ff           call 0x457dd0
-// 004d0b07  8b4e28               mov ecx, dword ptr [esi + 0x28]
-// 004d0b0a  3bcb                 cmp ecx, ebx
-// 004d0b0c  7408                 je 0x4d0b16
-// 004d0b0e  8b01                 mov eax, dword ptr [ecx]
-// 004d0b10  8b10                 mov edx, dword ptr [eax]
-// 004d0b12  6a01                 push 1
-// 004d0b14  ffd2                 call edx
-// 004d0b16  895e28               mov dword ptr [esi + 0x28], ebx
-// 004d0b19  c706f4f07900         mov dword ptr [esi], 0x79f0f4
-// 004d0b1f  8d4e0c               lea ecx, [esi + 0xc]
-// 004d0b22  c744241803000000     mov dword ptr [esp + 0x18], 3
-// 004d0b2a  ff15ace67700         call dword ptr [0x77e6ac]
-// 004d0b30  8b4c2410             mov ecx, dword ptr [esp + 0x10]
-// 004d0b34  5f                   pop edi
-// 004d0b35  c70684797900         mov dword ptr [esi], 0x797984
-// 004d0b3b  5e                   pop esi
-// 004d0b3c  5b                   pop ebx
-// 004d0b3d  64890d00000000       mov dword ptr fs:[0], ecx
-// 004d0b44  83c410               add esp, 0x10
-// 004d0b47  c3                   ret 
-// library openrbx-client/Rendering\AppDraw\AdornG3D.cpp (function ??1TextureProxy@Render@RBX@@UAE@XZ)
-
 // roc-lang: cpp
 // roc-cl: 50727
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
 // roc-lib: openrbx-client Rendering/AppDraw/AdornG3D.cpp
+
+// Candidate translation unit (score above; library headers required).
+#include "appdraw/AdornG3D.h"
+
+#include "appdraw/DrawPrimitives.h"
+#include "appdraw/Fonts.h"
+#include "decomp.h"
+#include "renderlib/TextureProxy.h"
+#include "util/Rect.h"
+
+#include <GLG3D/Draw.h>
+
+namespace RBX {
+
+// FUNCTION: WEBSERVICE 0x10030c90
+G3D::Rect2D AdornG3D::getViewport() const
+{
+	return renderDevice->getViewport();
+}
+
+// FUNCTION: WEBSERVICE 0x10030cb0
+int AdornG3D::getWidth() const
+{
+	return renderDevice->getWidth();
+}
+
+// FUNCTION: WEBSERVICE 0x10030cc0
+int AdornG3D::getHeight() const
+{
+	return renderDevice->getHeight();
+}
+
+// FUNCTION: WEBSERVICE 0x10030cd0
+void AdornG3D::rect2d(const G3D::Rect2D& rect, const G3D::Color4& color) const
+{
+	DrawPrimitives::rect2d(Rect(rect), renderDevice, color);
+}
+
+// FUNCTION: WEBSERVICE 0x10030d30
+void AdornG3D::outlineRect2d(const G3D::Rect2D& rect, float thick, const G3D::Color4& color) const
+{
+	DrawPrimitives::outlineRect2d(Rect(rect), thick, renderDevice, color);
+}
+
+// FUNCTION: WEBSERVICE 0x10030da0
+void AdornG3D::line2d(const G3D::Vector2& p0, const G3D::Vector2& p1, const G3D::Color4& color) const
+{
+	DrawPrimitives::line2d(p0, p1, renderDevice, color);
+}
+
+// FUNCTION: WEBSERVICE 0x10030dc0
+void AdornG3D::setObjectToWorldMatrix(const G3D::CoordinateFrame& c)
+{
+	renderDevice->setObjectToWorldMatrix(c);
+}
+
+// FUNCTION: WEBSERVICE 0x10030dd0
+void AdornG3D::box(const G3D::AABox& box, const G3D::Color4& solidColor, const G3D::Color4& wireColor)
+{
+	setColor(solidColor);
+	DrawPrimitives::rawBox(box, renderDevice);
+}
+
+// FUNCTION: WEBSERVICE 0x10030e00
+void AdornG3D::sphere(const G3D::Sphere& sphere, const G3D::Color4& solidColor, const G3D::Color4& wireColor)
+{
+	setColor(solidColor);
+	DrawPrimitives::rawSphere(sphere.radius, renderDevice);
+}
+
+// FUNCTION: WEBSERVICE 0x10030e30
+void AdornG3D::explosion(const G3D::Sphere& sph, const G3D::Color4& solidColor, const G3D::Color4& wireColor)
+{
+	sphere(sph, solidColor, wireColor);
+}
+
+// FUNCTION: WEBSERVICE 0x10030e40
+void AdornG3D::cylinderAlongX(float radius, float length, const G3D::Color4& solidColor, const G3D::Color4& wireColor)
+{
+	setColor(solidColor);
+	DrawPrimitives::rawCylinderAlongX(radius, length, renderDevice);
+}
+
+// FUNCTION: WEBSERVICE 0x10030e80
+void AdornG3D::ray(const G3D::Ray& ray, const G3D::Color4& color, float scale)
+{
+	G3D::Draw::ray(ray, renderDevice, color, scale);
+}
+
+// FUNCTION: WEBSERVICE 0x10030eb0
+void AdornG3D::lineSegment(const G3D::LineSegment& lineSegment, const G3D::Color4& color, float scale)
+{
+	G3D::Draw::lineSegment(lineSegment, renderDevice, color, scale);
+}
+
+// FUNCTION: WEBSERVICE 0x10030ee0
+void AdornG3D::axes(const G3D::Color4& xColor, const G3D::Color4& yColor, const G3D::Color4& zColor, float scale)
+{
+	G3D::Draw::axes(renderDevice, xColor, yColor, zColor, scale);
+}
+
+// FUNCTION: WEBSERVICE 0x10030f10
+void AdornG3D::quad(
+	const G3D::Vector3& v0,
+	const G3D::Vector3& v1,
+	const G3D::Vector3& v2,
+	const G3D::Vector3& v3,
+	const G3D::Color4& color
+)
+{
+	setColor(color);
+	renderDevice->beginPrimitive(G3D::RenderDevice::QUADS);
+
+	renderDevice->sendVertex(v0);
+	renderDevice->sendVertex(v1);
+	renderDevice->sendVertex(v2);
+	renderDevice->sendVertex(v3);
+
+	renderDevice->endPrimitive();
+}
+
+// FUNCTION: WEBSERVICE 0x10030f70
+void AdornG3D::setColor(const G3D::Color4& color)
+{
+	renderDevice->setColor(color);
+}
+
+// FUNCTION: WEBSERVICE 0x10031130
+G3D::Rect2D AdornG3D::getTextureSize(G3D::ReferenceCountedPointer<TextureProxyBase> _texture) const
+{
+	if (!_texture.isNull()) {
+		G3D::TextureRef g3dTexture = static_cast<Render::TextureProxy*>(_texture.getPointer())->resolve(renderDevice);
+
+		if (!g3dTexture.isNull()) {
+			return g3dTexture->rect2DBounds();
+		}
+	}
+
+	return G3D::Rect2D();
+}
+
+// FUNCTION: WEBSERVICE 0x10031260
+void AdornG3D::setTexture(int id, G3D::ReferenceCountedPointer<TextureProxyBase> _texture)
+{
+	if (!_texture.isNull()) {
+		renderDevice->setTexture(id, static_cast<Render::TextureProxy*>(_texture.getPointer())->resolve(renderDevice));
+	}
+	else {
+		renderDevice->setTexture(id, G3D::TextureRef());
+	}
+}
+
+// FUNCTION: WEBSERVICE 0x10031300
+G3D::Vector2 AdornG3D::get2DStringBounds(const std::string& s, double size, Spacing spacing) const
+{
+	G3D::ReferenceCountedPointer<G3D::GFont> font = Fonts::getFont();
+
+	return font->get2DStringBounds(s, size, (G3D::GFont::Spacing) spacing);
+}
+
+// FUNCTION: WEBSERVICE 0x100313a0
+G3D::Vector2 AdornG3D::drawFont2D(
+	const std::string& s,
+	const G3D::Vector2& pos2d,
+	double size,
+	const G3D::Color4& color,
+	const G3D::Color4& outline,
+	XAlign xalign,
+	YAlign yalign,
+	Spacing spacing
+) const
+{
+	G3D::ReferenceCountedPointer<G3D::GFont> font = Fonts::getFont();
+
+	return font->draw2D(
+		renderDevice,
+		s,
+		pos2d,
+		size,
+		color,
+		outline,
+		(G3D::GFont::XAlign) xalign,
+		(G3D::GFont::YAlign) yalign,
+		(G3D::GFont::Spacing) spacing
+	);
+}
+
+// FUNCTION: WEBSERVICE 0x10031460
+G3D::ReferenceCountedPointer<TextureProxyBase> AdornG3D::createTextureProxy(const std::string& filename)
+{
+	return new Render::TextureProxy(textureManager, filename, false);
+}
+
+} // namespace RBX

@@ -1,28 +1,100 @@
-// roc 2007-08 00772620  unit: seg_00770000  size: 56 bytes
-// Make this compile to the exact bytes below, then: roc check 2007-08 00772620
-//
-// 00772620  56                   push esi
-// 00772621  6a05                 push 5
-// 00772623  33c9                 xor ecx, ecx
-// 00772625  51                   push ecx
-// 00772626  b890a55700           mov eax, 0x57a590
-// 0077262b  50                   push eax
-// 0077262c  33f6                 xor esi, esi
-// 0077262e  56                   push esi
-// 0077262f  ba70fe4c00           mov edx, 0x4cfe70
-// 00772634  52                   push edx
-// 00772635  6898b67900           push 0x79b698
-// 0077263a  6828b57a00           push 0x7ab528
-// 0077263f  b9702e8c00           mov ecx, 0x8c2e70
-// 00772644  e8a779e0ff           call 0x579ff0
-// 00772649  6840a47700           push 0x77a440
-// 0077264e  e8d0e6ebff           call 0x630d23
-// 00772653  83c404               add esp, 4
-// 00772656  5e                   pop esi
-// 00772657  c3                   ret 
-// library rbxgs/v8datamodel\custommesh.cpp (function ??__Edesc_scale@@YAXXZ)
-
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
 // roc-lib: rbxgs v8datamodel/custommesh.cpp
+
+// Candidate translation unit (score above; library headers required).
+#include "v8datamodel/custommesh.h"
+#include "v8datamodel/PartInstance.h"
+
+static RBX::Reflection::PropDescriptor<RBX::SpecialShape, G3D::Vector3> desc_scale("Scale", "Data", &RBX::SpecialShape::getScale, &RBX::SpecialShape::setScale, RBX::Reflection::PropertyDescriptor::STANDARD);
+static RBX::Reflection::PropDescriptor<RBX::SpecialShape, RBX::MeshId> desc_meshId("MeshId", "Data", &RBX::SpecialShape::getMeshId, &RBX::SpecialShape::setMeshId, RBX::Reflection::PropertyDescriptor::STANDARD);
+static RBX::Reflection::PropDescriptor<RBX::SpecialShape, RBX::TextureId> desc_textureId("TextureId", "Data", &RBX::SpecialShape::getTextureId, &RBX::SpecialShape::setTextureId, RBX::Reflection::PropertyDescriptor::STANDARD);
+static RBX::Reflection::PropDescriptor<RBX::SpecialShape, G3D::Vector3> desc_vertColor("VertexColor", "Data", &RBX::SpecialShape::getVertColor, &RBX::SpecialShape::setVertColor, RBX::Reflection::PropertyDescriptor::STANDARD);
+
+static RBX::Reflection::EnumPropDescriptor<RBX::SpecialShape, RBX::SpecialShape::MeshType> desc_meshType("MeshType", "Data", &RBX::SpecialShape::getMeshType, &RBX::SpecialShape::setMeshType, RBX::Reflection::PropertyDescriptor::STANDARD);
+
+namespace RBX
+{
+	SpecialShape::SpecialShape()
+		: scale(1.0f, 1.0f, 1.0f),
+		  vertColor(1.0f, 1.0f, 1.0f),
+		  meshType(HEAD_MESH)
+	{
+		setName("Mesh");
+	}
+
+	bool SpecialShape::askSetParent(const Instance* instance) const
+	{
+		return dynamic_cast<const PartInstance*>(instance) != NULL;
+	}
+
+	const TextureId SpecialShape::getTextureId() const
+	{
+		return textureId;
+	}
+
+	const MeshId SpecialShape::getMeshId() const
+	{
+		return meshId;
+	}
+
+	const float SpecialShape::getAlpha() const
+	{
+		Instance* parent = getParent();
+		if (!parent)
+			return 0.0f;
+
+		if (PartInstance* part = dynamic_cast<PartInstance*>(parent))
+			return part->alpha();
+
+		return 0.0f;
+	}
+
+	void SpecialShape::setMeshType(MeshType value)
+	{
+		if (meshType != value)
+		{
+			meshType = value;
+			raisePropertyChanged(desc_meshType);
+		}
+	}
+
+	void SpecialShape::setScale(const G3D::Vector3& value)
+	{
+		if (scale != value)
+		{
+			scale = value;
+			raisePropertyChanged(desc_scale);
+		}
+	}
+
+	void SpecialShape::setVertColor(const G3D::Vector3& value)
+	{
+		if (vertColor != value)
+		{
+			vertColor = value;
+			raisePropertyChanged(desc_vertColor);
+		}
+	}
+
+	void SpecialShape::setMeshId(const MeshId& value)
+	{
+		if (meshId != value)
+		{
+			meshId = value;
+			raisePropertyChanged(desc_meshId);
+			setMeshType(FILE_MESH);
+		}
+	}
+
+	void SpecialShape::setTextureId(const TextureId& value)
+	{
+		if (textureId != value)
+		{
+			textureId = value;
+			raisePropertyChanged(desc_textureId);
+			setMeshType(FILE_MESH);
+		}
+	}
+}

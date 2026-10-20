@@ -1,58 +1,358 @@
-// roc 2011-06 004cdfd0  unit: RBX::VInstance::?$NonFactoryProduct  size: 173 bytes
-// Make this compile to the exact bytes below, then: roc check 2011-06 004cdfd0
-//
-// 004cdfd0  6aff                 push -1
-// 004cdfd2  68e8b39f00           push 0x9fb3e8
-// 004cdfd7  64a100000000         mov eax, dword ptr fs:[0]
-// 004cdfdd  50                   push eax
-// 004cdfde  64892500000000       mov dword ptr fs:[0], esp
-// 004cdfe5  51                   push ecx
-// 004cdfe6  56                   push esi
-// 004cdfe7  8bf1                 mov esi, ecx
-// 004cdfe9  8d442418             lea eax, [esp + 0x18]
-// 004cdfed  50                   push eax
-// 004cdfee  c744241400000000     mov dword ptr [esp + 0x14], 0
-// 004cdff6  e885672300           call 0x704780
-// 004cdffb  83c404               add esp, 4
-// 004cdffe  84c0                 test al, al
-// 004ce000  7556                 jne 0x4ce058
-// 004ce002  8b542440             mov edx, dword ptr [esp + 0x40]
-// 004ce006  88442404             mov byte ptr [esp + 4], al
-// 004ce00a  8b4c2404             mov ecx, dword ptr [esp + 4]
-// 004ce00e  51                   push ecx
-// 004ce00f  8b4c241c             mov ecx, dword ptr [esp + 0x1c]
-// 004ce013  52                   push edx
-// 004ce014  83ec28               sub esp, 0x28
-// 004ce017  8bc4                 mov eax, esp
-// 004ce019  8d54244c             lea edx, [esp + 0x4c]
-// 004ce01d  89642470             mov dword ptr [esp + 0x70], esp
-// 004ce021  8908                 mov dword ptr [eax], ecx
-// 004ce023  8d4804               lea ecx, [eax + 4]
-// 004ce026  52                   push edx
-// 004ce027  e824682a00           call 0x774850
-// 004ce02c  8bce                 mov ecx, esi
-// 004ce02e  e80d802a00           call 0x776040
-// 004ce033  8d4c241c             lea ecx, [esp + 0x1c]
-// 004ce037  c7442410ffffffff     mov dword ptr [esp + 0x10], 0xffffffff
-// 004ce03f  e8ac612a00           call 0x7741f0
-// 004ce044  b001                 mov al, 1
-// 004ce046  8b4c2408             mov ecx, dword ptr [esp + 8]
-// 004ce04a  64890d00000000       mov dword ptr fs:[0], ecx
-// 004ce051  5e                   pop esi
-// 004ce052  83c410               add esp, 0x10
-// 004ce055  c23000               ret 0x30
-// 004ce058  8d4c241c             lea ecx, [esp + 0x1c]
-// 004ce05c  c7442410ffffffff     mov dword ptr [esp + 0x10], 0xffffffff
-// 004ce064  e887612a00           call 0x7741f0
-// 004ce069  8b4c2408             mov ecx, dword ptr [esp + 8]
-// 004ce06d  32c0                 xor al, al
-// 004ce06f  64890d00000000       mov dword ptr fs:[0], ecx
-// 004ce076  5e                   pop esi
-// 004ce077  83c410               add esp, 0x10
-// 004ce07a  c23000               ret 0x30
-// library rbxgs-net/Players.cpp (function ??$assign_to@V?$bind_t@W4work_result@worker_thread@RBX@@P6A?AW4123@V?$shared_ptr@Udata@AbuseReporter@Network@RBX@@@boost@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@ZV?$list2@V?$value@V?$shared_ptr@Udata@AbuseReporter@Network@RBX@@@boost@@@_bi@boost@@V?$value@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@23@@_bi@5@@_bi@boost@@@?$basic_vtable0@W4work_result@worker_thread@RBX@@V?$allocator@Vfunction_base@boost@@@std@@@function@detail@boost@@AAE_NV?$bind_t@W4work_result@worker_thread@RBX@@P6A?AW4123@V?$shared_ptr@Udata@AbuseReporter@Network@RBX@@@boost@@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@ZV?$list2@V?$value@V?$shared_ptr@Udata@AbuseReporter@Network@RBX@@@boost@@@_bi@boost@@V?$value@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@23@@_bi@5@@_bi@3@AATfunction_buffer@123@Ufunction_obj_tag@123@@Z)
-
 // roc-lang: cpp
 // roc-cl: 50727
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
 // roc-lib: rbxgs-net Players.cpp
+
+// Candidate translation unit (score above; library headers required).
+#include <RakPeer.h>
+#include <BitStream.h>
+#include "Client.h"
+#include "Server.h"
+#include "Players.h"
+#include "Streaming.h"
+#include "PacketIds.h"
+#include "v8datamodel/GameSettings.h"
+#include "v8datamodel/Teams.h"
+#include "util/standardout.h"
+
+template<class Class>
+class PluginInterfaceAdapter : public PluginInterface
+{
+private:
+	Class* c;
+protected:
+	PluginInterfaceAdapter(Class* c)
+		: PluginInterface(),
+		  c(c)
+	{
+	}
+public:
+	virtual PluginReceiveResult OnReceive(RakPeerInterface* peer, Packet* packet);
+};
+
+static RBX::Reflection::BoundFuncDesc<RBX::Network::Players, void(boost::shared_ptr<RBX::Instance>, std::string), 2> funcReportAbuse(&RBX::Network::Players::reportAbuse, "ReportAbuse", "player", "message", RBX::Reflection::FunctionDescriptor::NeedTrustedCaller);
+static RBX::Reflection::BoundFuncDesc<RBX::Network::Players, boost::shared_ptr<const std::vector<boost::shared_ptr<RBX::Instance>>>(void), 0> func_players(&RBX::Network::Players::getPlayers, "players", RBX::Reflection::FunctionDescriptor::AnyCaller);
+static RBX::Reflection::BoundFuncDesc<RBX::Network::Players, boost::shared_ptr<const std::vector<boost::shared_ptr<RBX::Instance>>>(void), 0> func_GetPlayers(&RBX::Network::Players::getPlayers, "GetPlayers", RBX::Reflection::FunctionDescriptor::AnyCaller);
+static RBX::Reflection::BoundFuncDesc<RBX::Network::Players, boost::shared_ptr<RBX::Instance>(int), 1> func_createLocalPlayer(&RBX::Network::Players::createLocalPlayer, "CreateLocalPlayer", "userId", RBX::Reflection::FunctionDescriptor::NeedTrustedCaller);
+static RBX::Reflection::BoundFuncDesc<RBX::Network::Players, void(std::string), 1> func_setAbuseReportUrl(&RBX::Network::Players::setAbuseReportUrl, "SetAbuseReportUrl", "url", RBX::Reflection::FunctionDescriptor::NeedTrustedCaller);
+static RBX::Reflection::BoundFuncDesc<RBX::Network::Players, boost::shared_ptr<RBX::Instance>(boost::shared_ptr<RBX::Instance>), 1> func_playerFromCharacterOld(&RBX::Network::Players::playerFromCharacter, "playerFromCharacter", "character", RBX::Reflection::FunctionDescriptor::AnyCaller);
+static RBX::Reflection::BoundFuncDesc<RBX::Network::Players, boost::shared_ptr<RBX::Instance>(boost::shared_ptr<RBX::Instance>), 1> func_playerFromCharacter(&RBX::Network::Players::playerFromCharacter, "GetPlayerFromCharacter", "character", RBX::Reflection::FunctionDescriptor::AnyCaller);
+
+static RBX::Reflection::SignalDesc<RBX::Network::Players, void(boost::shared_ptr<RBX::Instance>)> event_PlayerAdded("PlayerAdded", "player");
+static RBX::Reflection::SignalDesc<RBX::Network::Players, void(boost::shared_ptr<RBX::Instance>)> event_PlayerRemoving("PlayerRemoving", "player");
+
+static RBX::Reflection::PropDescriptor<RBX::Network::Players, int> propPlayerCount("NumPlayers", "Data", &RBX::Network::Players::numPlayers, NULL, RBX::Reflection::PropertyDescriptor::UI);
+static RBX::Reflection::PropDescriptor<RBX::Network::Players, int> propPlayerMaxCount("MaxPlayers", "Data", &RBX::Network::Players::getMaxPlayers, &RBX::Network::Players::setMaxPlayers, RBX::Reflection::PropertyDescriptor::STANDARD);
+
+static RBX::Reflection::BoundFuncDesc<RBX::Network::Players, boost::shared_ptr<RBX::Instance>(int), 1> func_GetPlayerByID(&RBX::Network::Players::getPlayerByID, "GetPlayerByID", "userID", RBX::Reflection::FunctionDescriptor::NeedTrustedCaller);
+static RBX::Reflection::BoundFuncDesc<RBX::Network::Players, void(std::string), 1> funcChat(&RBX::Network::Players::chat, "Chat", "message", RBX::Reflection::FunctionDescriptor::NeedTrustedCaller);
+
+namespace RBX
+{
+	namespace Network
+	{
+		class Players::Plugin : public PluginInterfaceAdapter<Players>
+		{
+		public:
+			Plugin(Players* players)
+				: PluginInterfaceAdapter<Players>(players)
+			{
+			}
+		};
+		
+		Players::Players()
+			: players(std::vector<boost::shared_ptr<Instance>>()),
+			  peer(NULL),
+			  maxPlayers(12)
+		{
+			setName("Players");
+			plugin.reset(new Plugin(this));
+		}
+
+		Players::~Players()
+		{
+			if (peer)
+				peer->DetachPlugin(plugin.get());
+
+			peer = NULL;
+		}
+
+		bool Players::clientIsPresent(const Instance* context, bool testInDatamodel)
+		{
+			return Client::clientIsPresent(context, testInDatamodel);
+		}
+
+		bool Players::askAddChild(const Instance* instance) const
+		{
+			return dynamic_cast<const Player*>(instance) != NULL;
+		}
+
+		void Players::setConnection(RakPeerInterface* peer)
+		{
+			if (this->peer)
+				this->peer->DetachPlugin(plugin.get());
+
+			this->peer = peer;
+
+			if (peer)
+				peer->AttachPlugin(plugin.get());
+		}
+
+		Player* Players::findLocalPlayer(const Instance* context)
+		{
+			Players* players = ServiceProvider::find<Players>(context);
+			return players ? players->getLocalPlayer() : NULL;
+		}
+
+		ModelInstance* Players::findLocalCharacter(const Instance* context)
+		{
+			Player* player = Players::findLocalPlayer(context);
+			return player ? player->getCharacter() : NULL;
+		}
+
+		void Players::setAbuseReportUrl(std::string value)
+		{
+			if (value.empty())
+				abuseReporter.reset(NULL);
+			else
+				abuseReporter.reset(new AbuseReporter(value));
+		}
+
+		void Players::setMaxPlayers(int value)
+		{
+			if (value != maxPlayers)
+			{
+				maxPlayers = value;
+				raisePropertyChanged(propPlayerMaxCount);
+			}
+		}
+
+		void Players::reportAbuse(boost::shared_ptr<Instance> player, std::string comment)
+		{
+			reportAbuse(dynamic_cast<Player*>(player.get()), comment);
+		}
+
+		void Players::reportAbuse(Player* player, std::string comment)
+		{
+			if (abuseReporter)
+			{
+				StandardOut::singleton()->print(MESSAGE_INFO, "Submitting abuse report from %s", player ? player->getName().c_str() : "[[[anonymous]]]");
+				
+				AbuseReport r;
+				r.submitterID = localPlayer ? localPlayer->getUserID() : 0;
+				r.allegedAbuserID = player ? player->getUserID() : 0;
+				r.comment = comment;
+
+				abuseReporter->add(r, chatHistory);
+			}
+			else
+			{
+				StandardOut::singleton()->print(MESSAGE_INFO, "Sending abuse report to game server via Raknet");
+				if (!peer)
+					throw std::runtime_error("Can\'t report abuse: Not in a networked game");
+
+				RakNet::BitStream bitStream;
+				bitStream << (unsigned char)ID_REPORT_ABUSE;
+				bitStream << (localPlayer ? localPlayer->getUserID() : 0);
+				bitStream << (player ? player->getUserID() : 0);
+				bitStream << comment;
+
+				peer->Send(&bitStream, HIGH_PRIORITY, RELIABLE, 2, UNASSIGNED_SYSTEM_ADDRESS, true);
+			}
+		}
+
+		Player* Players::getPlayerFromCharacter(Instance* character)
+		{
+			Players* players = ServiceProvider::find<Players>(character);
+			if (players)
+			{
+				boost::shared_ptr<Instance> found = players->playerFromCharacter(shared_from(character));
+				return static_cast<Player*>(found.get());
+			}
+			else
+			{
+				return NULL;
+			}
+		}
+
+		void Players::chat(std::string message)
+		{
+			if (!localPlayer)
+				throw std::runtime_error("No local Player to chat from");
+
+			RakNet::BitStream bitStream;
+			bitStream << (unsigned char)ID_CHAT_ALL;
+
+			Guid::Data data;
+			localPlayer->getGuid().extract(data);
+
+			bitStream << data.scope->name;
+			bitStream << data.index;
+			bitStream << message;
+
+			peer->Send(&bitStream, MEDIUM_PRIORITY, RELIABLE, 2, UNASSIGNED_SYSTEM_ADDRESS, true);
+
+			ChatMessage event = {message, localPlayer, boost::shared_ptr<Player>()};
+			Notifier<Players, ChatMessage>::raise(event);
+		}
+
+		bool Players::backendProcessing(const Instance* context, bool testInDatamodel)
+		{
+			const ServiceProvider* sp = ServiceProvider::findServiceProvider(context);
+			RBXASSERT(!testInDatamodel || sp);
+
+			return sp && !Client::clientIsPresent(context, testInDatamodel);
+		}
+
+		bool Players::frontendProcessing(const Instance* context, bool testInDatamodel)
+		{
+			const ServiceProvider* sp = ServiceProvider::findServiceProvider(context);
+			RBXASSERT(!testInDatamodel || sp);
+
+			return sp && !Server::serverIsPresent(context, testInDatamodel);
+		}
+
+		boost::shared_ptr<Instance> Players::playerFromCharacter(boost::shared_ptr<Instance> character)
+		{
+			boost::shared_ptr<const std::vector<boost::shared_ptr<Instance>>> myPlayers = getPlayers();
+
+			std::vector<boost::shared_ptr<Instance>>::const_iterator iter = myPlayers->begin();
+			std::vector<boost::shared_ptr<Instance>>::const_iterator end = myPlayers->end();
+
+			for (; iter != end; iter++)
+			{
+				if (static_cast<Player*>(iter->get())->getCharacter() == static_cast<ModelInstance*>(character.get()))
+					return *iter;
+			}
+
+			return boost::shared_ptr<Instance>();
+		}
+
+		boost::shared_ptr<Instance> Players::getPlayerByID(int userID)
+		{
+			std::vector<boost::shared_ptr<Instance>>::const_iterator iter = players->begin();
+			std::vector<boost::shared_ptr<Instance>>::const_iterator end = players->end();
+
+			for (; iter != end; iter++)
+			{
+				if (static_cast<Player*>(iter->get())->getUserID() == userID)
+					return *iter;
+			}
+
+			return boost::shared_ptr<Instance>();
+		}
+
+		void Players::onEvent(const Player* source, CharacterAdded event)
+		{
+			RBXASSERT(backendProcessing(this, true));
+			const_cast<Player*>(source)->rebuildBackpack();
+		}
+
+		void Players::addChatMessage(const ChatMessage& message)
+		{
+			chatHistory.push_front(message);
+
+			while (chatHistory.size() > (size_t)GameSettings::singleton().chatHistory)
+			{
+				chatHistory.pop_back();
+			}
+
+			Notifier<Players, ChatMessage>::raise(message);
+			Player::event_Chatted.fire(message.source.get(), message.message, message.destination);
+		}
+
+		void Players::onChildAdded(Instance* child)
+		{
+			Player* player = dynamic_cast<Player*>(child);
+			if (!player)
+				return;
+
+			if (player->getUserID() > 0)
+			{
+				boost::shared_ptr<Instance> otherPlayer = getPlayerByID(player->getUserID());
+				if (otherPlayer)
+					otherPlayer->setParent(NULL);
+			}
+
+			boost::shared_ptr<std::vector<boost::shared_ptr<Instance>>>& myPlayers = players.write();
+			myPlayers->push_back(shared_from(child));
+
+			if (backendProcessing(this, true))
+			{
+				player->Notifier<Player, CharacterAdded>::addListener(this);
+				player->rebuildBackpack();
+
+				if (Teams* teams = ServiceProvider::find<Teams>(this))
+					teams->assignNewPlayerToTeam(player);
+
+				event_PlayerAdded.fire(this, shared_from(player));
+			}
+		}
+		
+		void Players::onChildRemoving(Instance* child)
+		{
+			Player* player = dynamic_cast<Player*>(child);
+			if (!player)
+				return;
+
+			boost::shared_ptr<std::vector<boost::shared_ptr<Instance>>>& myPlayers = players.write();
+			myPlayers->erase(std::find(myPlayers->begin(), myPlayers->end(), shared_from(child)));
+
+			if (backendProcessing(this, false))
+				event_PlayerRemoving.fire(this, shared_from(player));
+
+			Notifier<Player, CharacterAdded>::disconnect(player, this);
+		}
+
+		void Players::onChildChanged(Instance* instance, const PropertyChanged& event)
+		{
+			if (instance == localPlayer.get() && &event.getProperty().getDescriptor() == &Player::prop_SuperSafeChat)
+			{
+				bool s = localPlayer ? Player::prop_SuperSafeChat.getValue(localPlayer.get()) : false;
+				Notifier<Players, SuperSafeChanged>::raise(SuperSafeChanged(s));
+			}
+		}
+
+		// 98% match
+		boost::shared_ptr<Instance> Players::createLocalPlayer(int userId)
+		{
+			if (localPlayer)
+				throw std::runtime_error("Local player already exists");
+
+			localPlayer = Creatable::create<Player>();
+			Player::prop_userId.setValue(localPlayer.get(), userId);
+			localPlayer->setParent(this);
+			raisePropertyChanged(propLocalPlayer);
+
+			bool s = localPlayer ? Player::prop_SuperSafeChat.getValue(localPlayer.get()) : false;
+			Notifier<Players, SuperSafeChanged>::raise(SuperSafeChanged(s));
+
+			return localPlayer;
+		}
+
+		void AbuseReport::addMessage(const ChatMessage& cm)
+		{
+			int userId = cm.source ? Player::prop_userId.getValue(cm.source.get()) : 0;
+			AbuseReport::Message m = {userId, cm.message};
+			messages.push_back(m);
+		}
+
+		AbuseReporter::AbuseReporter(std::string abuseUrl)
+			: _data(new AbuseReporter::data)
+		{
+			requestProcessor.reset(new worker_thread(boost::bind(&AbuseReporter::processRequests, _data, abuseUrl), "rbx_abusereporter"));
+		}
+
+		void AbuseReporter::add(AbuseReport& r, const std::list<ChatMessage>& chatHistory)
+		{
+			std::for_each(chatHistory.begin(), chatHistory.end(), boost::bind(&AbuseReport::addMessage, boost::ref(r), _1));
+
+			{
+				boost::mutex::scoped_lock lock(_data->requestSync);
+				_data->queue.push(r);
+			}
+
+			requestProcessor->wake();
+		}
+	}
+}

@@ -1,79 +1,218 @@
-// roc 2009-12 005fe4a0  unit: G3D::H::PAV?$Array::?$Set  size: 206 bytes
-// Make this compile to the exact bytes below, then: roc check 2009-12 005fe4a0
-//
-// 005fe4a0  51                   push ecx
-// 005fe4a1  53                   push ebx
-// 005fe4a2  56                   push esi
-// 005fe4a3  57                   push edi
-// 005fe4a4  8bf1                 mov esi, ecx
-// 005fe4a6  8b8e04000600         mov ecx, dword ptr [esi + 0x60004]
-// 005fe4ac  6a01                 push 1
-// 005fe4ae  6a00                 push 0
-// 005fe4b0  e84b6ceeff           call 0x4e5100
-// 005fe4b5  8b8600000600         mov eax, dword ptr [esi + 0x60000]
-// 005fe4bb  33ff                 xor edi, edi
-// 005fe4bd  397804               cmp dword ptr [eax + 4], edi
-// 005fe4c0  7e1d                 jle 0x5fe4df
-// 005fe4c2  33db                 xor ebx, ebx
-// 005fe4c4  8b00                 mov eax, dword ptr [eax]
-// 005fe4c6  03c3                 add eax, ebx
-// 005fe4c8  50                   push eax
-// 005fe4c9  8bce                 mov ecx, esi
-// 005fe4cb  e890fbffff           call 0x5fe060
-// 005fe4d0  8b8600000600         mov eax, dword ptr [esi + 0x60000]
-// 005fe4d6  47                   inc edi
-// 005fe4d7  83c30c               add ebx, 0xc
-// 005fe4da  3b7804               cmp edi, dword ptr [eax + 4]
-// 005fe4dd  7ce5                 jl 0x5fe4c4
-// 005fe4df  8b8e00000600         mov ecx, dword ptr [esi + 0x60000]
-// 005fe4e5  8b5104               mov edx, dword ptr [ecx + 4]
-// 005fe4e8  8b8e08000600         mov ecx, dword ptr [esi + 0x60008]
-// 005fe4ee  6a01                 push 1
-// 005fe4f0  52                   push edx
-// 005fe4f1  e8ea86edff           call 0x4d6be0
-// 005fe4f6  8b8604000600         mov eax, dword ptr [esi + 0x60004]
-// 005fe4fc  8b4804               mov ecx, dword ptr [eax + 4]
-// 005fe4ff  6a01                 push 1
-// 005fe501  51                   push ecx
-// 005fe502  8b8e0c000600         mov ecx, dword ptr [esi + 0x6000c]
-// 005fe508  e8d386edff           call 0x4d6be0
-// 005fe50d  8b8600000600         mov eax, dword ptr [esi + 0x60000]
-// 005fe513  33ff                 xor edi, edi
-// 005fe515  397804               cmp dword ptr [eax + 4], edi
-// 005fe518  7e4f                 jle 0x5fe569
-// 005fe51a  897c240c             mov dword ptr [esp + 0xc], edi
-// 005fe51e  55                   push ebp
-// 005fe51f  90                   nop 
-// 005fe520  8b00                 mov eax, dword ptr [eax]
-// 005fe522  03442410             add eax, dword ptr [esp + 0x10]
-// 005fe526  8b9608000600         mov edx, dword ptr [esi + 0x60008]
-// 005fe52c  8b1a                 mov ebx, dword ptr [edx]
-// 005fe52e  8d2cbd00000000       lea ebp, [edi*4]
-// 005fe535  50                   push eax
-// 005fe536  8bce                 mov ecx, esi
-// 005fe538  03dd                 add ebx, ebp
-// 005fe53a  e821fbffff           call 0x5fe060
-// 005fe53f  834424100c           add dword ptr [esp + 0x10], 0xc
-// 005fe544  8903                 mov dword ptr [ebx], eax
-// 005fe546  8b8608000600         mov eax, dword ptr [esi + 0x60008]
-// 005fe54c  8b08                 mov ecx, dword ptr [eax]
-// 005fe54e  8b860c000600         mov eax, dword ptr [esi + 0x6000c]
-// 005fe554  8b1429               mov edx, dword ptr [ecx + ebp]
-// 005fe557  8b08                 mov ecx, dword ptr [eax]
-// 005fe559  893c91               mov dword ptr [ecx + edx*4], edi
-// 005fe55c  8b8600000600         mov eax, dword ptr [esi + 0x60000]
-// 005fe562  47                   inc edi
-// 005fe563  3b7804               cmp edi, dword ptr [eax + 4]
-// 005fe566  7cb8                 jl 0x5fe520
-// 005fe568  5d                   pop ebp
-// 005fe569  5f                   pop edi
-// 005fe56a  5e                   pop esi
-// 005fe56b  5b                   pop ebx
-// 005fe56c  59                   pop ecx
-// 005fe56d  c3                   ret 
-// library g3d-6.09/G3Dcpp\MeshAlgWeld.cpp (function ?weld@Welder@_internal@G3D@@QAEXXZ)
-
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /GS /EHsc /MD
 // roc-lib: g3d-6.09 G3Dcpp/MeshAlgWeld.cpp
+
+// Candidate translation unit (score above; library headers required).
+/**
+  @file MeshAlgWeld.cpp
+
+  The MeshAlg::computeWeld method.
+
+  @maintainer Morgan McGuire, matrix@graphics3d.com
+  @created 2003-10-22
+  @edited  2005-02-24
+
+  Copyright 2000-2003, Morgan McGuire.
+  All rights reserved.
+
+ */
+
+#include "G3D/MeshAlg.h"
+#include "G3D/Table.h"
+#include "G3D/Set.h"
+
+namespace G3D {
+
+namespace _internal {
+
+class Welder {
+private:
+
+    // Intentionally illegal
+    Welder& operator=(const Welder& w);
+
+public:
+    /** Indices of newVertexArray elements in <B>or near</B> a grid cell. */
+    typedef Array<int> List;
+
+    enum {GRID_RES = 32};
+
+    List grid[GRID_RES][GRID_RES][GRID_RES];
+
+    const Array<Vector3>& oldVertexArray;
+    Array<Vector3>&       newVertexArray;
+    Array<int>&           toNew;
+    Array<int>&           toOld;
+
+    /** Must be less than one grid cell, not checked */
+    const double          radius;
+
+    /** (oldVertexArray[i] - offset) * scale is on the range [0, 1] */
+    Vector3               offset;
+    Vector3               scale;
+
+    Welder(    
+        const Array<Vector3>& _oldVertexArray,
+        Array<Vector3>&       _newVertexArray,
+        Array<int>&           _toNew,
+        Array<int>&           _toOld,
+        double                _radius);
+        
+    /**
+     Computes the grid index from an ordinate.
+     */
+    void toGridCoords(Vector3 v, int& x, int& y, int& z) const;
+
+    /** Gets the index of a vertex, adding it to 
+        newVertexArray if necessary. */
+    int getIndex(const Vector3& vertex);
+    
+    void weld();
+};
+
+}}
+
+
+G3D::uint32 hashCode(const G3D::_internal::Welder::List* x) {
+    return (G3D::uint32)x;
+}
+
+namespace G3D {
+namespace _internal {
+
+Welder::Welder(    
+    const Array<Vector3>& _oldVertexArray,
+    Array<Vector3>&       _newVertexArray,
+    Array<int>&           _toNew,
+    Array<int>&           _toOld,
+    double                _radius) :
+    oldVertexArray(_oldVertexArray),
+    newVertexArray(_newVertexArray),
+    toNew(_toNew),
+    toOld(_toOld),
+    radius(_radius) {
+
+    // Compute a scale factor that moves the range
+    // of all ordinates to [0, 1]
+    Vector3 minBound = Vector3::inf();
+    Vector3 maxBound = -minBound;
+
+    for (int i = 0; i < oldVertexArray.size(); ++i) {
+        minBound = minBound.min(oldVertexArray[i]);
+        maxBound = maxBound.max(oldVertexArray[i]);
+    }
+
+    offset = minBound;
+    scale  = maxBound - minBound;
+    for (int i = 0; i < 3; ++i) {
+        // The model might have zero extent along some axis
+        if (fuzzyEq(scale[i], 0.0)) {
+            scale[i] = 1.0;
+        } else {
+            scale[i] = 1.0 / scale[i];
+        }
+    }
+}
+
+
+void Welder::toGridCoords(Vector3 v, int& x, int& y, int& z) const {
+    v = (v - offset) * scale;
+    x = iClamp(iFloor(v.x * GRID_RES), 0, GRID_RES - 1);
+    y = iClamp(iFloor(v.y * GRID_RES), 0, GRID_RES - 1);
+    z = iClamp(iFloor(v.z * GRID_RES), 0, GRID_RES - 1);
+}
+
+
+int Welder::getIndex(const Vector3& vertex) {
+
+    int closestIndex = -1;
+    double distanceSquared = inf();
+
+    int ix, iy, iz;
+    toGridCoords(vertex, ix, iy, iz);
+
+    // Check against all vertices within radius of this grid cube
+    const List& list = grid[ix][iy][iz];
+
+    for (int i = 0; i < list.size(); ++i) {
+        double d = (newVertexArray[list[i]] - vertex).squaredMagnitude();
+
+        if (d < distanceSquared) {
+            distanceSquared = d;
+            closestIndex = list[i];
+        }
+    }
+
+    if (distanceSquared <= radius * radius) {
+
+        return closestIndex;
+
+    } else {
+
+        // This is a new vertex
+        int newIndex = newVertexArray.size();
+        newVertexArray.append(vertex);
+
+        // Create a new vertex and store its index in the
+        // neighboring grid cells (usually, only 1 neighbor)
+
+        Set<List*> neighbors;
+
+        for (float dx = -1; dx <= +1; ++dx) {
+            for (float dy = -1; dy <= +1; ++dy) {
+                for (float dz = -1; dz <= +1; ++dz) {
+                    int ix, iy, iz;
+                    toGridCoords(vertex + Vector3(dx, dy, dz) * radius, ix, iy, iz);
+                    neighbors.insert(&(grid[ix][iy][iz]));
+                }
+            }
+        }
+
+        Set<List*>::Iterator neighbor(neighbors.begin());
+        Set<List*>::Iterator none(neighbors.end());
+
+        while (neighbor != none) {
+            (*neighbor)->append(newIndex);
+            ++neighbor;
+        }
+
+        return newIndex;
+    }
+}
+
+
+void Welder::weld() {
+    newVertexArray.resize(0);
+
+    // Prime the vertex positions
+    for (int i = 0; i < oldVertexArray.size(); ++i) {
+        getIndex(oldVertexArray[i]);
+    }
+
+    // Now create the official remapping by snapping to 
+    // nearby vertices.
+    toNew.resize(oldVertexArray.size());
+    toOld.resize(newVertexArray.size());
+
+    for (int oi = 0; oi < oldVertexArray.size(); ++oi) {
+        toNew[oi] = getIndex(oldVertexArray[oi]);
+        toOld[toNew[oi]] = oi;
+    }
+}
+
+} // internal namespace
+
+
+void MeshAlg::computeWeld(
+    const Array<Vector3>& oldVertexArray,
+    Array<Vector3>&       newVertexArray,
+    Array<int>&           toNew,
+    Array<int>&           toOld,
+    double                radius) {
+
+    _internal::Welder welder(oldVertexArray, newVertexArray, toNew, toOld, radius);
+    welder.weld();
+}
+
+} // G3D namespace

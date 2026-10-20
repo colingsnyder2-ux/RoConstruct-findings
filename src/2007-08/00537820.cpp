@@ -1,72 +1,767 @@
-// roc 2007-08 00537820  unit: RBX::Lua::ThreadRef::VNode::V?$shared_ptr::?$TItem  size: 178 bytes
-// Make this compile to the exact bytes below, then: roc check 2007-08 00537820
-//
-// 00537820  8b442408             mov eax, dword ptr [esp + 8]
-// 00537824  8b08                 mov ecx, dword ptr [eax]
-// 00537826  8b5004               mov edx, dword ptr [eax + 4]
-// 00537829  83ec18               sub esp, 0x18
-// 0053782c  85c9                 test ecx, ecx
-// 0053782e  56                   push esi
-// 0053782f  8b74242c             mov esi, dword ptr [esp + 0x2c]
-// 00537833  57                   push edi
-// 00537834  8b7c242c             mov edi, dword ptr [esp + 0x2c]
-// 00537838  7508                 jne 0x537842
-// 0053783a  81fa00000080         cmp edx, 0x80000000
-// 00537840  7457                 je 0x537899
-// 00537842  83f9ff               cmp ecx, -1
-// 00537845  7508                 jne 0x53784f
-// 00537847  81faffffff7f         cmp edx, 0x7fffffff
-// 0053784d  744a                 je 0x537899
-// 0053784f  83f9fe               cmp ecx, -2
-// 00537852  7508                 jne 0x53785c
-// 00537854  81faffffff7f         cmp edx, 0x7fffffff
-// 0053785a  743d                 je 0x537899
-// 0053785c  85ff                 test edi, edi
-// 0053785e  7508                 jne 0x537868
-// 00537860  81fe00000080         cmp esi, 0x80000000
-// 00537866  7431                 je 0x537899
-// 00537868  83ffff               cmp edi, -1
-// 0053786b  7508                 jne 0x537875
-// 0053786d  81feffffff7f         cmp esi, 0x7fffffff
-// 00537873  7424                 je 0x537899
-// 00537875  83fffe               cmp edi, -2
-// 00537878  7508                 jne 0x537882
-// 0053787a  81feffffff7f         cmp esi, 0x7fffffff
-// 00537880  7417                 je 0x537899
-// 00537882  03cf                 add ecx, edi
-// 00537884  8bc2                 mov eax, edx
-// 00537886  8b542424             mov edx, dword ptr [esp + 0x24]
-// 0053788a  13c6                 adc eax, esi
-// 0053788c  5f                   pop edi
-// 0053788d  894204               mov dword ptr [edx + 4], eax
-// 00537890  890a                 mov dword ptr [edx], ecx
-// 00537892  8bc2                 mov eax, edx
-// 00537894  5e                   pop esi
-// 00537895  83c418               add esp, 0x18
-// 00537898  c3                   ret 
-// 00537899  894c2410             mov dword ptr [esp + 0x10], ecx
-// 0053789d  8d442408             lea eax, [esp + 8]
-// 005378a1  50                   push eax
-// 005378a2  8d4c241c             lea ecx, [esp + 0x1c]
-// 005378a6  51                   push ecx
-// 005378a7  8d4c2418             lea ecx, [esp + 0x18]
-// 005378ab  897c2410             mov dword ptr [esp + 0x10], edi
-// 005378af  89742414             mov dword ptr [esp + 0x14], esi
-// 005378b3  8954241c             mov dword ptr [esp + 0x1c], edx
-// 005378b7  e834e2ffff           call 0x535af0
-// 005378bc  8b10                 mov edx, dword ptr [eax]
-// 005378be  8b4c2424             mov ecx, dword ptr [esp + 0x24]
-// 005378c2  8b4004               mov eax, dword ptr [eax + 4]
-// 005378c5  5f                   pop edi
-// 005378c6  894104               mov dword ptr [ecx + 4], eax
-// 005378c9  8911                 mov dword ptr [ecx], edx
-// 005378cb  8bc1                 mov eax, ecx
-// 005378cd  5e                   pop esi
-// 005378ce  83c418               add esp, 0x18
-// 005378d1  c3                   ret 
-// library rbxgs/script\ScriptContext.cpp (function ?add_time_duration@?$counted_time_system@U?$counted_time_rep@Vmillisec_posix_time_system_config@posix_time@boost@@@date_time@boost@@@date_time@boost@@SA?AU?$counted_time_rep@Vmillisec_posix_time_system_config@posix_time@boost@@@23@ABU423@Vtime_duration@posix_time@3@@Z)
-
 // roc-lang: cpp
 // roc-cl: 50727
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
 // roc-lib: rbxgs script/ScriptContext.cpp
+
+// Candidate translation unit (score above; library headers required).
+#include "script/ScriptContext.h"
+#include "script/Script.h"
+#include "script/ScriptEvent.h"
+#include "script/LuaMemory.h"
+#include "script/LuaAtomicClasses.h"
+#include "script/LuaInstanceBridge.h"
+#include "script/LuaSignalBridge.h"
+#include "script/LuaArguments.h"
+#include "lua/lua.hpp"
+#include "lua/LuaBridge.h"
+#include "v8datamodel/Workspace.h"
+#include "v8datamodel/DebugSettings.h"
+#include "v8datamodel/Stats.h"
+#include "util/standardout.h"
+#include "util/Debug.h"
+#include "boost/date_time/posix_time/posix_time.hpp"
+#include "lua.h"
+#include "lualib.h"
+#include "lstate.h"
+
+static int contextCount = 0;
+bool vvvvv;
+
+using namespace RBX;
+using namespace boost::posix_time;
+
+// unidentified inlines
+
+static inline void _openLibInline(lua_State* L, lua_CFunction f, const char* name)
+{
+    lua_pushcfunction(L, f);
+    lua_pushstring(L, name);
+    lua_call(L, 1, 0);
+}
+
+// end unidentified inlines
+
+Reflection::BoundProp<bool, true> ScriptContext::propScriptsDisabled("ScriptsDisabled", "State", &ScriptContext::scriptsDisabled, &ScriptContext::onChangedScriptEnabled, Reflection::PropertyDescriptor::LEGACY); 
+
+static int panic(lua_State* L)
+{
+    std::string message = lua_tostring(L, -1);
+    StandardOut::singleton()->print(MESSAGE_ERROR, "Unprotected error in call to Lua API (%s)\n", message.c_str());
+    RBXCRASH();
+    return 0;
+}
+
+const char* RBX::sScriptContext = "ScriptContext";
+
+void ScriptContext::openState()
+{
+    if (!globalState)
+    {
+        // ???
+        if (vvvvv)
+        {
+            lua_getstack(NULL, NULL, NULL);
+            lua_getinfo(NULL, NULL, NULL);
+            lua_getlocal(NULL, NULL, NULL);
+            lua_setlocal(NULL, NULL, NULL);
+            lua_getupvalue(NULL, NULL, NULL);
+            lua_setupvalue(NULL, NULL, NULL);
+            lua_sethook(NULL, NULL, NULL, NULL);
+            lua_gethook(NULL);
+            lua_gethookmask(NULL);
+            lua_gethookcount(NULL);
+        }
+
+        allocator.reset(new LuaAllocator());
+        lua_State* L = lua_newstate(LuaAllocator::alloc, allocator.get());
+        globalState = L;
+
+        if (!globalState)
+            throw std::runtime_error("Failed to create Lua state");
+
+        contextCount++;
+
+        lua_atpanic(L, panic);
+
+        lua_pushlightuserdata(globalState, RBX_LUA_GLOBAL_SCRIPTCONTEXT);
+        lua_pushlightuserdata(globalState, this);
+        lua_settable(globalState, LUA_GLOBALSINDEX);
+
+        lua_pop(globalState, luaopen_base(globalState));
+
+        _openLibInline(globalState, luaopen_string, LUA_STRLIBNAME);
+        _openLibInline(globalState, luaopen_math, LUA_MATHLIBNAME);
+        _openLibInline(globalState, luaopen_table, LUA_TABLIBNAME);
+
+        Lua::ObjectBridge::registerClass(globalState);
+        Lua::SignalBridge::registerClass(globalState);
+        Lua::SignalConnectionBridge::registerClass(globalState);
+        Lua::CoordinateFrameBridge::registerClass(globalState);
+        Lua::Vector3Bridge::registerClass(globalState);
+        Lua::Color3Bridge::registerClass(globalState);
+        Lua::BrickColorBridge::registerClass(globalState);
+        Lua::ThreadRef::NodeBridge::registerClass(globalState);
+
+        Lua::CoordinateFrameBridge::registerClassLibrary(globalState);
+        Lua::Vector3Bridge::registerClassLibrary(globalState);
+        Lua::Color3Bridge::registerClassLibrary(globalState);
+        Lua::BrickColorBridge::registerClassLibrary(globalState);
+        Lua::ObjectBridge::registerClassLibrary(globalState);
+        Lua::ObjectBridge::registerInstanceClassLibrary(globalState);
+        Lua::SignalBridge::registerClassLibrary(globalState);
+
+        Lua::ThreadRef::Node::create(globalState);
+
+        lua_pushstring(globalState, "game");
+        Lua::ObjectBridge::push(globalState, getRootAncestor()->shared_from_this());
+        lua_settable(globalState, LUA_GLOBALSINDEX);
+
+        lua_pushstring(globalState, "workspace");
+        Lua::ObjectBridge::push(globalState, ServiceProvider::find<Workspace>(this)->shared_from_this());
+        lua_settable(globalState, LUA_GLOBALSINDEX);
+
+        lua_pushstring(globalState, "shared");
+        lua_newtable(globalState);
+        lua_settable(globalState, LUA_GLOBALSINDEX);
+
+        lua_pushstring(globalState, "print");
+        lua_pushcfunction(globalState, ScriptContext::print);
+        lua_settable(globalState, LUA_GLOBALSINDEX);
+
+        lua_pushstring(globalState, "tick");
+        lua_pushcfunction(globalState, ScriptContext::tick);
+        lua_settable(globalState, LUA_GLOBALSINDEX);
+
+        lua_pushstring(globalState, "wait");
+        lua_pushcfunction(globalState, ScriptContext::wait);
+        lua_settable(globalState, LUA_GLOBALSINDEX);
+
+        lua_pushstring(globalState, "delay");
+        lua_pushcfunction(globalState, ScriptContext::delay);
+        lua_settable(globalState, LUA_GLOBALSINDEX);
+
+        lua_pushstring(globalState, "trustedThread");
+        lua_pushcfunction(globalState, ScriptContext::trustedThread);
+        lua_settable(globalState, LUA_GLOBALSINDEX);
+
+        lua_pushstring(globalState, "dofile");
+        lua_pushcfunction(globalState, ScriptContext::dofile);
+        lua_settable(globalState, LUA_GLOBALSINDEX);
+
+        lua_pushstring(globalState, "loadfile");
+        lua_pushcfunction(globalState, ScriptContext::loadfile);
+        lua_settable(globalState, LUA_GLOBALSINDEX);
+
+        lua_pushstring(globalState, "stats");
+        lua_pushcfunction(globalState, ScriptContext::stats);
+        lua_settable(globalState, LUA_GLOBALSINDEX);
+
+        yieldEvent.reset(new Lua::YieldingThreads(this));
+    }
+}
+
+// TODO: 99.79% (functional match)
+// stack offsets not the same
+void ScriptContext::closeState()
+{
+    if (globalState)
+    {
+        commandLineSandbox.reset();
+
+        try
+        {
+            Lua::ThreadRef::Node::get(globalState)->eraseAllRefs();
+
+            std::set<Script*> copy = scripts;
+            std::for_each(copy.begin(), copy.end(), boost::bind(&ScriptContext::disassociateState, this, _1));
+
+            yieldEvent.reset(NULL);
+        }
+        catch (std::exception& e)
+        {
+            StandardOut::singleton()->print(MESSAGE_ERROR, "Exception thrown while cleaning up Lua: %s", e.what()); 
+        }
+
+        lua_close(globalState);
+        contextCount--;
+
+        size_t heapSize, heapCount, maxHeapSize, maxHeapCount;
+        allocator->getHeapStats(heapSize, heapCount, maxHeapSize, maxHeapCount);
+        StandardOut::singleton()->print(MESSAGE_INFO, "Script Heap Stats: Max Size = %d bytes, Max Count = %d blocks", maxHeapSize, maxHeapCount);
+
+        allocator->clearHeapMax();
+
+        if (contextCount == 0 && (heapSize > 0 || heapCount > 0))
+            StandardOut::singleton()->print(MESSAGE_ERROR, "Script memory leaks: %d bytes, %d blocks", heapSize, heapCount);
+
+        globalState = NULL;
+    }
+}
+
+ScriptContext::ScriptContext()
+    : globalState(NULL),
+      nextPendingScripts(second_clock::local_time()),
+      scriptsDisabled(false)
+{
+    setName("Script Context");
+}
+
+ScriptContext::~ScriptContext()
+{
+    RBXASSERT(globalState == NULL);
+}
+
+void ScriptContext::sandboxThread(lua_State* thread)
+{
+    lua_newtable(thread);
+    lua_newtable(thread);
+    lua_pushliteral(thread, "__index");
+    lua_pushvalue(thread, LUA_GLOBALSINDEX);
+    lua_settable(thread, -3);
+    lua_setmetatable(thread, -2);
+    lua_replace(thread, LUA_GLOBALSINDEX);
+}
+
+void ScriptContext::setThreadIdentity(lua_State* thread, Security::Identities identity)
+{
+    lua_pushlightuserdata(thread, RBX_LUA_GLOBAL_IDENTITY);
+    lua_pushinteger(thread, identity);
+    lua_settable(thread, LUA_GLOBALSINDEX);
+
+    if (DebugSettings::singleton().getioEnabled())
+        _openLibInline(thread, luaopen_io, LUA_IOLIBNAME);
+
+    lua_pushstring(thread, "settings");
+    lua_pushcfunction(thread, ScriptContext::settings);
+    lua_settable(thread, LUA_GLOBALSINDEX);
+}
+
+size_t ScriptContext::getThreadCount() const
+{
+    if (globalState)
+        return RobloxExtraSpace::get(globalState)->getThreadCount();
+    else
+        return 0;
+}
+
+ScriptContext& ScriptContext::getContext(lua_State* thread)
+{
+    lua_pushlightuserdata(thread, RBX_LUA_GLOBAL_SCRIPTCONTEXT);
+    lua_gettable(thread, LUA_GLOBALSINDEX);
+
+    RBXASSERT(lua_type(thread, -1) == LUA_TLIGHTUSERDATA);
+    ScriptContext* sc = static_cast<ScriptContext*>(lua_touserdata(thread, -1));
+    lua_pop(thread, 1);
+
+    return *sc;
+}
+
+static size_t pushArguments(const Reflection::ValueCollection& arguments, lua_State* thread)
+{
+    size_t result = 0;
+
+    Reflection::ValueCollection::const_iterator it = arguments.begin();
+    Reflection::ValueCollection::const_iterator end = arguments.end();
+
+    for (; it != end; it++)
+        result += Lua::LuaArguments::push(*it, thread);
+
+    return result;
+}
+
+static void readResults(std::auto_ptr<Reflection::ValueCollection>& result, lua_State *thread, size_t returnCount)
+{
+    result.reset(new Reflection::ValueCollection(returnCount));
+
+    if (returnCount)
+    {
+        for (size_t i = 0; i < returnCount; i++)
+            Lua::LuaArguments::get(thread, static_cast<int>(i+1), result.get()->at(i));
+    }
+}
+
+std::auto_ptr<Reflection::ValueCollection> ScriptContext::executeInNewThread(Security::Identities identity, const char* script, const char* name, const Reflection::ValueCollection& arguments)
+{
+    std::auto_ptr<Reflection::ValueCollection> result;
+    executeInNewThread(
+        identity,
+        script,
+        name,
+        boost::bind(&pushArguments, boost::cref(arguments), _1),
+        boost::bind(&readResults, boost::ref(result), _1, _2)
+    );
+    return result;
+}
+
+void ScriptContext::executeInNewThread(Security::Identities identity, const char* script, const char* name, PushArgumentsClosure pushArguments, ReadResultsClosure readResults)
+{
+    openState();
+
+    lua_State* L;
+    lua_State* newThread;
+
+    if (identity == Security::CmdLine)
+    {
+        if (commandLineSandbox.empty())
+        {
+            {
+                Lua::ThreadRef threadRef(lua_newthread(globalState));
+                commandLineSandbox = threadRef;
+            }
+
+            if (commandLineSandbox.empty())
+                throw std::runtime_error("Unable to create trusted sandbox thread");
+
+            sandboxThread(commandLineSandbox.thread());
+            setThreadIdentity(commandLineSandbox.thread(), Security::CmdLine);
+            lua_pop(globalState, 1);
+        }
+
+        L = commandLineSandbox.thread();
+        newThread = lua_newthread(L);
+    }
+    else
+    {
+        L = globalState;
+        newThread = lua_newthread(L);
+        sandboxThread(newThread);
+        setThreadIdentity(newThread, identity);
+    }
+
+    if (!newThread)
+    {
+        StandardOut::singleton()->print(MESSAGE_ERROR, "ScriptContext::execute: Unable to create a new thread");
+        throw std::runtime_error("Unable to create a new thread");
+    }
+
+    Lua::ScopedPopper popper(L, 1);
+
+    std::string sName("=");
+
+    if (name)
+        sName += name;
+    else
+        sName += "Script";
+
+    if (luaL_loadbuffer(newThread, script, strlen(script), sName.c_str()))
+    {
+        std::string err = lua_tostring(newThread, -1);
+        lua_pop(newThread, 1);
+
+        StandardOut::singleton()->print(MESSAGE_ERROR, err.c_str());
+        throw std::runtime_error(err);
+    }
+
+    resume(newThread, pushArguments, readResults);
+}
+
+void ScriptContext::resume(lua_State* thread, PushArgumentsClosure pushArguments, ReadResultsClosure readResults)
+{
+    int nStack = lua_gettop(thread);
+    size_t nArgs = pushArguments(thread);
+
+    if (resume(thread, static_cast<int>(nArgs)) != Error)
+    {
+        int returnCount = lua_gettop(thread) - nStack + 1;
+
+        try
+        {
+            readResults(thread, returnCount);
+        }
+        catch (std::exception)
+        {
+            lua_pop(thread, returnCount);
+            throw;
+        }
+
+        lua_pop(thread, returnCount);
+    }
+    else
+    {
+        std::string err = lua_tostring(thread, -1);
+        lua_settop(thread, 0);
+        throw std::runtime_error(err);
+    }
+}
+
+int ScriptContext::delay(lua_State* thread)
+{
+    // yes that's spelled correctly
+    float timout = static_cast<float>(lua_tonumber(thread, 1));
+
+    lua_State* newThread = lua_newthread(thread);
+    Lua::ThreadRef functor(newThread);
+
+    lua_pushvalue(thread, 2);
+    lua_xmove(thread, functor.thread(), 1);
+
+    getContext(thread).yieldEvent->queueWaiter(functor.thread(), timout);
+
+    lua_pop(thread, 1);
+    return 0;
+}
+
+int ScriptContext::wait(lua_State* thread)
+{
+    // this too
+    float timout = static_cast<float>(lua_tonumber(thread, 1));
+    getContext(thread).yieldEvent->queueWaiter(thread, timout);
+    return lua_yield(thread, 0);
+}
+
+int ScriptContext::settings(lua_State* thread)
+{
+    Security::Context::current().requirePermission(Security::Administrator, NULL);
+    Lua::ObjectBridge::push(thread, GlobalSettings::singleton());
+    return 1;
+}
+
+int ScriptContext::trustedThread(lua_State* thread)
+{
+    bool trusted = Security::Context::current().hasPermission(Security::Administrator);
+    lua_pushboolean(thread, trusted != false);
+    return 1;
+}
+
+int ScriptContext::loadfile(lua_State* L)
+{
+    Security::Context::current().requirePermission(Security::Administrator, "loadfile");
+
+    RBX::ContentId contentId = lua_tostring(L, -1);
+    const std::string& file = ContentProvider::singleton().getFile(contentId);
+
+    int n;
+
+    if (luaL_loadfile(L, file.c_str()) == 0)
+    {
+        n = 1;
+    }
+    else
+    {
+        lua_pushnil(L);
+        lua_insert(L, -2);
+        n = 2;
+    }
+
+    return n;
+}
+
+int ScriptContext::stats(lua_State* L)
+{
+    Security::Context::current().requirePermission(Security::Administrator, "Stats");
+    Lua::ObjectBridge::push(L, shared_from(ServiceProvider::create<Stats::StatsService>(&getContext(L))));
+    return 1;
+}
+
+int ScriptContext::dofile(lua_State* L)
+{
+    Security::Context::current().requirePermission(Security::Administrator, "dofile");
+
+    const char* path = luaL_optstring(L, 1, 0);
+    int n = lua_gettop(L);
+
+    RBX::ContentId contentId = path;
+    const std::string& file = ContentProvider::singleton().getFile(contentId);
+
+    if (luaL_loadfile(L, file.c_str()) != 0)
+        lua_error(L);
+
+    lua_call(L, 0, -1);
+    return lua_gettop(L) - n;
+}
+
+int ScriptContext::tick(lua_State* L)
+{
+    lua_pushnumber(L, G3D::System::getTick());
+    return 1;
+}
+
+int ScriptContext::print(lua_State* L)
+{
+    std::string msg;
+    int top = lua_gettop(L);
+
+    lua_getglobal(L, "tostring");
+
+    for (int i = 1; i <= top; i++)
+    {
+        if (i > 1)
+            msg += ' ';
+
+        lua_pushvalue(L, -1);
+        lua_pushvalue(L, i);
+        lua_call(L, 1, 1);
+
+        const char* str = lua_tostring(L, -1);
+
+        if (!str)
+            throw std::runtime_error("'tostring' must return a string to 'print'");
+
+        msg += str;
+
+        if (i > 1)
+            fputs("\t", stdout);
+
+        lua_pop(L, 1);
+    }
+
+    StandardOut::singleton()->print(MESSAGE_OUTPUT, msg.c_str());
+
+    return 0;
+}
+
+void ScriptContext::onEvent(const RunService* source, Heartbeat event)
+{
+    ptime t(second_clock::local_time());
+
+    if (t >= nextPendingScripts)
+    {
+        startPendingScripts();
+        nextPendingScripts = second_clock::local_time() + seconds(1);
+    }
+
+    if (yieldEvent)
+        yieldEvent->resume(event);
+
+    if (globalState)
+        lua_gc(globalState, LUA_GCSTEP, 1);
+}
+
+void ScriptContext::startPendingScripts()
+{
+    if (!scriptsDisabled)
+    {
+        std::vector<boost::shared_ptr<Script>> copy(pendingScripts);
+        pendingScripts.erase(pendingScripts.begin(), pendingScripts.end());
+        std::for_each(copy.begin(), copy.end(), boost::bind(&ScriptContext::startScript, this, _1));
+    }
+}
+
+void ScriptContext::onEvent(const RunService* source, RunTransition event)
+{
+    gc();
+}
+
+void ScriptContext::onServiceProvider(const ServiceProvider* oldProvider, const ServiceProvider* newProvider)
+{
+	Notifier<RunService, RunTransition>::disconnect(runService, this);
+    Notifier<RunService, Heartbeat>::disconnect(runService, this);
+
+    if (oldProvider && !newProvider)
+        closeState();
+
+    if (statsItem)
+    {
+        statsItem->setParent(NULL);
+        statsItem.reset();
+    }
+
+    Instance::onServiceProvider(oldProvider, newProvider);
+
+    RunService* newRunService;
+
+    if (newProvider)
+    {
+        Stats::StatsService* statsService = newProvider->create<Stats::StatsService>();
+        if (statsService)
+        {
+            statsItem = Creatable<Instance>::create<Stats::Item>("Lua");
+            statsItem->setParent(statsService);
+            statsItem->createBoundChildItem("disabled", scriptsDisabled);
+            statsItem->createChildItem<int>("threads", boost::bind(&ScriptContext::getThreadCount, this));
+        }
+
+        newRunService = newProvider->create<RunService>();
+    }
+    else
+    {
+        newRunService = NULL;
+    }
+
+    runService = shared_from(newRunService);
+    Notifier<RunService, RunTransition>::connect(runService, this);
+    Notifier<RunService, Heartbeat>::connect(runService, this);
+}
+
+void ScriptContext::onChangedScriptEnabled(const Reflection::PropertyDescriptor&)
+{
+    if (scriptsDisabled)
+        startPendingScripts();
+}
+
+void ScriptContext::addScript(Script* script)
+{
+    if (scripts.insert(script).second == true)
+    {
+        if (!script->isDisabled())
+            startScript(shared_from(script));
+    }
+}
+
+void ScriptContext::disassociateState(Script* script)
+{
+    Association<Instance>& assoc = script->association();
+
+    if (assoc.contains<Lua::ThreadRef::NodePtr>())
+    {
+        assoc.get<Lua::ThreadRef::NodePtr>()->eraseAllRefs();
+        assoc.remove<Lua::ThreadRef::NodePtr>();
+    }
+}
+
+void ScriptContext::removeScript(Script* script)
+{
+    if (scripts.erase(script))
+    {
+        disassociateState(script);
+
+        std::vector<boost::shared_ptr<Script>>::iterator it = std::find(pendingScripts.begin(), pendingScripts.end(), shared_from(script));
+        if (it != pendingScripts.end())
+            pendingScripts.erase(it);
+    }
+}
+
+void ScriptContext::reportError(lua_State* thread)
+{
+    lua_Debug ar;
+    int level = 0;
+
+    if (lua_getstack(thread, level++, &ar))
+    {
+        StandardOut::singleton()->print(MESSAGE_ERROR, lua_tostring(thread, -1));
+
+        if (!DebugSettings::singleton().getStackTracingEnabled())
+            return;
+
+        bool hasStack = false;
+        while (lua_getstack(thread, level++, &ar))
+        {
+            hasStack = true;
+            lua_getinfo(thread, "nSlu", &ar);
+
+            StandardOut::singleton()->print(
+                MESSAGE_INFO,
+                "   stack %s, line %d: %s %s",
+                ar.source,
+                ar.currentline,
+                ar.namewhat,
+                ar.name);
+        }
+
+        if (hasStack)
+            StandardOut::singleton()->print(MESSAGE_INFO, "   stack end");
+    }
+    else
+    {
+        StandardOut::singleton()->print(MESSAGE_ERROR, lua_tostring(thread, -1));
+    }
+}
+
+ScriptContext::ScriptImpersonator::ScriptImpersonator(lua_State* thread)
+    : Security::Impersonator(getThreadIdentity(thread))
+{
+}
+
+ScriptContext::Result ScriptContext::resume(lua_State* thread, int narg)
+{
+    int n;
+    {
+        ScriptImpersonator impersonate(thread);
+        n = lua_resume(thread, narg);
+    }
+    
+    switch (n)
+    {
+        case 0:
+            return Success;
+
+        case 1:
+            if (!RobloxExtraSpace::get(thread)->yieldCaptured)
+                yieldEvent->queueWaiter(thread);
+
+            return Yield;
+
+        default:
+            reportError(thread);
+            return Error;
+    }
+}
+
+static std::string getFullName(Instance* instance)
+{
+    Instance* parent = instance->getParent();
+
+    if (parent)
+    {
+        if (parent->getParent())
+            return getFullName(parent) + "." + instance->getName();
+        else
+            return instance->getName();
+    }
+    else 
+    {
+        return NULL; 
+    }
+}
+
+// TODO: 99.78% (functional match)
+// use of registers swapped in codegen
+void ScriptContext::startScript(boost::shared_ptr<Script> script)
+{
+    if (scriptsDisabled)
+    {
+        pendingScripts.push_back(script);
+        return;
+    }
+
+    boost::shared_ptr<const std::string> code = script->requestCode();
+
+    if (!code)
+    {
+        pendingScripts.push_back(script);
+        return;
+    }
+
+    openState();
+    lua_State* thread = lua_newthread(globalState);
+
+    if (!thread)
+    {
+        StandardOut::singleton()->print(MESSAGE_ERROR, "Unable to create a new thread for %s. It did not execute", script->getName().c_str());
+        return;
+    }
+
+    Lua::ScopedPopper popper(globalState, 1);
+
+    // interestingly this is just ScriptContext::sandboxThread
+    lua_newtable(thread);
+    lua_newtable(thread);
+    lua_pushliteral(thread, "__index");
+    lua_pushvalue(thread, LUA_GLOBALSINDEX);
+    lua_settable(thread, -3);
+    lua_setmetatable(thread, -2);
+    lua_replace(thread, LUA_GLOBALSINDEX);
+
+    setThreadIdentity(thread, Security::GameScript);
+
+    RBXASSERT(!script->association().contains<Lua::ThreadRef::NodePtr>());
+    script->association().get<Lua::ThreadRef::NodePtr>() = Lua::ThreadRef::Node::create(thread);
+
+    RBXASSERT(lua_gettop(thread) == 0);
+    Lua::ObjectBridge::push(thread, script);
+    lua_setfield(thread, LUA_GLOBALSINDEX, "script");
+
+    std::string name = std::string("=") + getFullName(script.get());
+
+    if (luaL_loadbuffer(thread, code->c_str(), code->length(), name.c_str()))
+    {
+        StandardOut::singleton()->print(MESSAGE_ERROR, lua_tostring(thread, -1));
+        lua_pop(thread, 1);
+    }
+    else
+    {
+        resume(thread, 0);
+    }
+
+    lua_settop(thread, 0);
+}

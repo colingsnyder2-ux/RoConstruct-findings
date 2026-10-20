@@ -1,534 +1,1209 @@
-// roc 2007-03 00730d00  unit: seg_00730000  size: 1724 bytes
-// Make this compile to the exact bytes below, then: roc check 2007-03 00730d00
-//
-// 00730d00  83ec60               sub esp, 0x60
-// 00730d03  53                   push ebx
-// 00730d04  55                   push ebp
-// 00730d05  56                   push esi
-// 00730d06  8b742474             mov esi, dword ptr [esp + 0x74]
-// 00730d0a  57                   push edi
-// 00730d0b  8bce                 mov ecx, esi
-// 00730d0d  e8ce8ad4ff           call 0x4797e0
-// 00730d12  bd01000000           mov ebp, 1
-// 00730d17  016e78               add dword ptr [esi + 0x78], ebp
-// 00730d1a  39ae4c040000         cmp dword ptr [esi + 0x44c], ebp
-// 00730d20  7414                 je 0x730d36
-// 00730d22  68011d0000           push 0x1d01
-// 00730d27  89ae4c040000         mov dword ptr [esi + 0x44c], ebp
-// 00730d2d  ff15b8eb7700         call dword ptr [0x77ebb8]
-// 00730d33  016e70               add dword ptr [esi + 0x70], ebp
-// 00730d36  d9ee                 fldz 
-// 00730d38  8b7c247c             mov edi, dword ptr [esp + 0x7c]
-// 00730d3c  d85f0c               fcomp dword ptr [edi + 0xc]
-// 00730d3f  8b5c2474             mov ebx, dword ptr [esp + 0x74]
-// 00730d43  dfe0                 fnstsw ax
-// 00730d45  f6c405               test ah, 5
-// 00730d48  0f8a3d020000         jp 0x730f8b
-// 00730d4e  d9e8                 fld1 
-// 00730d50  8bce                 mov ecx, esi
-// 00730d52  d85f0c               fcomp dword ptr [edi + 0xc]
-// 00730d55  dfe0                 fnstsw ax
-// 00730d57  f6c441               test ah, 0x41
-// 00730d5a  753e                 jne 0x730d9a
-// 00730d5c  6a02                 push 2
-// 00730d5e  6a01                 push 1
-// 00730d60  6a00                 push 0
-// 00730d62  e80935d4ff           call 0x474270
-// 00730d67  6a00                 push 0
-// 00730d69  8bce                 mov ecx, esi
-// 00730d6b  bd02000000           mov ebp, 2
-// 00730d70  e8fb2ad4ff           call 0x473870
-// 00730d75  b801000000           mov eax, 1
-// 00730d7a  014678               add dword ptr [esi + 0x78], eax
-// 00730d7d  80bee103000000       cmp byte ptr [esi + 0x3e1], 0
-// 00730d84  741b                 je 0x730da1
-// 00730d86  014670               add dword ptr [esi + 0x70], eax
-// 00730d89  6a00                 push 0
-// 00730d8b  ff15b4eb7700         call dword ptr [0x77ebb4]
-// 00730d91  c686e103000000       mov byte ptr [esi + 0x3e1], 0
-// 00730d98  eb07                 jmp 0x730da1
-// 00730d9a  6a01                 push 1
-// 00730d9c  e8cf2ad4ff           call 0x473870
-// 00730da1  d907                 fld dword ptr [edi]
-// 00730da3  8d86a8040000         lea eax, [esi + 0x4a8]
-// 00730da9  d918                 fstp dword ptr [eax]
-// 00730dab  50                   push eax
-// 00730dac  d94704               fld dword ptr [edi + 4]
-// 00730daf  d95804               fstp dword ptr [eax + 4]
-// 00730db2  d94708               fld dword ptr [edi + 8]
-// 00730db5  d95808               fstp dword ptr [eax + 8]
-// 00730db8  d9470c               fld dword ptr [edi + 0xc]
-// 00730dbb  d9580c               fstp dword ptr [eax + 0xc]
-// 00730dbe  ff15b0eb7700         call dword ptr [0x77ebb0]
-// 00730dc4  85ed                 test ebp, ebp
-// 00730dc6  0f8eba010000         jle 0x730f86
-// 00730dcc  8d642400             lea esp, [esp]
-// 00730dd0  6a05                 push 5
-// 00730dd2  8bce                 mov ecx, esi
-// 00730dd4  e8c771d4ff           call 0x477fa0
-// 00730dd9  33ff                 xor edi, edi
-// 00730ddb  eb03                 jmp 0x730de0
-// 00730ddd  8d4900               lea ecx, [ecx]
-// 00730de0  d9ee                 fldz 
-// 00730de2  8d442410             lea eax, [esp + 0x10]
-// 00730de6  50                   push eax
-// 00730de7  d9542438             fst dword ptr [esp + 0x38]
-// 00730deb  d954243c             fst dword ptr [esp + 0x3c]
-// 00730def  8d4c245c             lea ecx, [esp + 0x5c]
-// 00730df3  d9542440             fst dword ptr [esp + 0x40]
-// 00730df7  51                   push ecx
-// 00730df8  d9542430             fst dword ptr [esp + 0x30]
-// 00730dfc  8d542430             lea edx, [esp + 0x30]
-// 00730e00  d9542434             fst dword ptr [esp + 0x34]
-// 00730e04  52                   push edx
-// 00730e05  d954243c             fst dword ptr [esp + 0x3c]
-// 00730e09  8d442440             lea eax, [esp + 0x40]
-// 00730e0d  d9542464             fst dword ptr [esp + 0x64]
-// 00730e11  50                   push eax
-// 00730e12  d954246c             fst dword ptr [esp + 0x6c]
-// 00730e16  57                   push edi
-// 00730e17  d9542474             fst dword ptr [esp + 0x74]
-// 00730e1b  8bcb                 mov ecx, ebx
-// 00730e1d  d9542424             fst dword ptr [esp + 0x24]
-// 00730e21  d9542428             fst dword ptr [esp + 0x28]
-// 00730e25  d95c242c             fstp dword ptr [esp + 0x2c]
-// 00730e29  e8223bdeff           call 0x514950
-// 00730e2e  d9442410             fld dword ptr [esp + 0x10]
-// 00730e32  d9442434             fld dword ptr [esp + 0x34]
-// 00730e36  d9c0                 fld st(0)
-// 00730e38  deea                 fsubp st(2)
-// 00730e3a  d9c9                 fxch st(1)
-// 00730e3c  d95c2440             fstp dword ptr [esp + 0x40]
-// 00730e40  d9442414             fld dword ptr [esp + 0x14]
-// 00730e44  d9442438             fld dword ptr [esp + 0x38]
-// 00730e48  d9c0                 fld st(0)
-// 00730e4a  deea                 fsubp st(2)
-// 00730e4c  d9c9                 fxch st(1)
-// 00730e4e  d95c2444             fstp dword ptr [esp + 0x44]
-// 00730e52  d9442418             fld dword ptr [esp + 0x18]
-// 00730e56  d944243c             fld dword ptr [esp + 0x3c]
-// 00730e5a  d9c0                 fld st(0)
-// 00730e5c  deea                 fsubp st(2)
-// 00730e5e  d9c9                 fxch st(1)
-// 00730e60  d95c2448             fstp dword ptr [esp + 0x48]
-// 00730e64  d9442428             fld dword ptr [esp + 0x28]
-// 00730e68  dee3                 fsubrp st(3)
-// 00730e6a  d9ca                 fxch st(2)
-// 00730e6c  d95c244c             fstp dword ptr [esp + 0x4c]
-// 00730e70  d86c242c             fsubr dword ptr [esp + 0x2c]
-// 00730e74  d95c2450             fstp dword ptr [esp + 0x50]
-// 00730e78  d86c2430             fsubr dword ptr [esp + 0x30]
-// 00730e7c  d95c2454             fstp dword ptr [esp + 0x54]
-// 00730e80  d9442450             fld dword ptr [esp + 0x50]
-// 00730e84  d9c0                 fld st(0)
-// 00730e86  d9442448             fld dword ptr [esp + 0x48]
-// 00730e8a  d9c0                 fld st(0)
-// 00730e8c  deca                 fmulp st(2)
-// 00730e8e  d9442454             fld dword ptr [esp + 0x54]
-// 00730e92  d9c0                 fld st(0)
-// 00730e94  d9442444             fld dword ptr [esp + 0x44]
-// 00730e98  d9c0                 fld st(0)
-// 00730e9a  deca                 fmulp st(2)
-// 00730e9c  d9cc                 fxch st(4)
-// 00730e9e  dee1                 fsubrp st(1)
-// 00730ea0  d95c241c             fstp dword ptr [esp + 0x1c]
-// 00730ea4  d9442440             fld dword ptr [esp + 0x40]
-// 00730ea8  d9c0                 fld st(0)
-// 00730eaa  deca                 fmulp st(2)
-// 00730eac  d944244c             fld dword ptr [esp + 0x4c]
-// 00730eb0  d9c0                 fld st(0)
-// 00730eb2  decc                 fmulp st(4)
-// 00730eb4  d9ca                 fxch st(2)
-// 00730eb6  dee3                 fsubrp st(3)
-// 00730eb8  d9ca                 fxch st(2)
-// 00730eba  d95c2420             fstp dword ptr [esp + 0x20]
-// 00730ebe  deca                 fmulp st(2)
-// 00730ec0  deca                 fmulp st(2)
-// 00730ec2  dee1                 fsubrp st(1)
-// 00730ec4  d95c2424             fstp dword ptr [esp + 0x24]
-// 00730ec8  d944241c             fld dword ptr [esp + 0x1c]
-// 00730ecc  d9442420             fld dword ptr [esp + 0x20]
-// 00730ed0  d9442424             fld dword ptr [esp + 0x24]
-// 00730ed4  d9c1                 fld st(1)
-// 00730ed6  deca                 fmulp st(2)
-// 00730ed8  d9c2                 fld st(2)
-// 00730eda  decb                 fmulp st(3)
-// 00730edc  d9c9                 fxch st(1)
-// 00730ede  dec2                 faddp st(2)
-// 00730ee0  dcc8                 fmul st(0), st(0)
-// 00730ee2  dec1                 faddp st(1)
-// 00730ee4  d95c2478             fstp dword ptr [esp + 0x78]
-// 00730ee8  d9442478             fld dword ptr [esp + 0x78]
-// 00730eec  e8bbe3eeff           call 0x61f2ac
-// 00730ef1  d95c2478             fstp dword ptr [esp + 0x78]
-// 00730ef5  d9442478             fld dword ptr [esp + 0x78]
-// 00730ef9  8d4c2464             lea ecx, [esp + 0x64]
-// 00730efd  d9e8                 fld1 
-// 00730eff  51                   push ecx
-// 00730f00  def1                 fdivrp st(1)
-// 00730f02  8bce                 mov ecx, esi
-// 00730f04  d95c247c             fstp dword ptr [esp + 0x7c]
-// 00730f08  d9442420             fld dword ptr [esp + 0x20]
-// 00730f0c  d944247c             fld dword ptr [esp + 0x7c]
-// 00730f10  d9c0                 fld st(0)
-// 00730f12  deca                 fmulp st(2)
-// 00730f14  d9c9                 fxch st(1)
-// 00730f16  d95c2468             fstp dword ptr [esp + 0x68]
-// 00730f1a  d9442424             fld dword ptr [esp + 0x24]
-// 00730f1e  d8c9                 fmul st(1)
-// 00730f20  d95c246c             fstp dword ptr [esp + 0x6c]
-// 00730f24  d84c2428             fmul dword ptr [esp + 0x28]
-// 00730f28  d95c2470             fstp dword ptr [esp + 0x70]
-// 00730f2c  e8af3cd4ff           call 0x474be0
-// 00730f31  8d542434             lea edx, [esp + 0x34]
-// 00730f35  52                   push edx
-// 00730f36  8bce                 mov ecx, esi
-// 00730f38  e8b33dd4ff           call 0x474cf0
-// 00730f3d  8d442428             lea eax, [esp + 0x28]
-// 00730f41  50                   push eax
-// 00730f42  8bce                 mov ecx, esi
-// 00730f44  e8a73dd4ff           call 0x474cf0
-// 00730f49  8d4c2458             lea ecx, [esp + 0x58]
-// 00730f4d  51                   push ecx
-// 00730f4e  8bce                 mov ecx, esi
-// 00730f50  e89b3dd4ff           call 0x474cf0
-// 00730f55  8d542410             lea edx, [esp + 0x10]
-// 00730f59  52                   push edx
-// 00730f5a  8bce                 mov ecx, esi
-// 00730f5c  e88f3dd4ff           call 0x474cf0
-// 00730f61  83c701               add edi, 1
-// 00730f64  83ff06               cmp edi, 6
-// 00730f67  0f8c73feffff         jl 0x730de0
-// 00730f6d  8bce                 mov ecx, esi
-// 00730f6f  e89c49d4ff           call 0x475910
-// 00730f74  6a01                 push 1
-// 00730f76  8bce                 mov ecx, esi
-// 00730f78  e8f328d4ff           call 0x473870
-// 00730f7d  83ed01               sub ebp, 1
-// 00730f80  0f854afeffff         jne 0x730dd0
-// 00730f86  bd01000000           mov ebp, 1
-// 00730f8b  d9ee                 fldz 
-// 00730f8d  8bbc2480000000       mov edi, dword ptr [esp + 0x80]
-// 00730f94  d85f0c               fcomp dword ptr [edi + 0xc]
-// 00730f97  dfe0                 fnstsw ax
-// 00730f99  f6c405               test ah, 5
-// 00730f9c  0f8a0c040000         jp 0x7313ae
-// 00730fa2  016e78               add dword ptr [esi + 0x78], ebp
-// 00730fa5  80bee103000000       cmp byte ptr [esi + 0x3e1], 0
-// 00730fac  7511                 jne 0x730fbf
-// 00730fae  016e70               add dword ptr [esi + 0x70], ebp
-// 00730fb1  55                   push ebp
-// 00730fb2  ff15b4eb7700         call dword ptr [0x77ebb4]
-// 00730fb8  c686e103000001       mov byte ptr [esi + 0x3e1], 1
-// 00730fbf  6a02                 push 2
-// 00730fc1  55                   push ebp
-// 00730fc2  6a00                 push 0
-// 00730fc4  8bce                 mov ecx, esi
-// 00730fc6  e8a532d4ff           call 0x474270
-// 00730fcb  d907                 fld dword ptr [edi]
-// 00730fcd  8d86a8040000         lea eax, [esi + 0x4a8]
-// 00730fd3  d918                 fstp dword ptr [eax]
-// 00730fd5  50                   push eax
-// 00730fd6  d94704               fld dword ptr [edi + 4]
-// 00730fd9  d95804               fstp dword ptr [eax + 4]
-// 00730fdc  d94708               fld dword ptr [edi + 8]
-// 00730fdf  d95808               fstp dword ptr [eax + 8]
-// 00730fe2  d9470c               fld dword ptr [edi + 0xc]
-// 00730fe5  d9580c               fstp dword ptr [eax + 0xc]
-// 00730fe8  ff15b0eb7700         call dword ptr [0x77ebb0]
-// 00730fee  dd0518507900         fld qword ptr [0x795018]
-// 00730ff4  83ec08               sub esp, 8
-// 00730ff7  8bce                 mov ecx, esi
-// 00730ff9  dd1c24               fstp qword ptr [esp]
-// 00730ffc  e8cf33d4ff           call 0x4743d0
-// 00731001  d98384000000         fld dword ptr [ebx + 0x84]
-// 00731007  d95c241c             fstp dword ptr [esp + 0x1c]
-// 0073100b  6a03                 push 3
-// 0073100d  d98388000000         fld dword ptr [ebx + 0x88]
-// 00731013  8bce                 mov ecx, esi
-// 00731015  d95c2424             fstp dword ptr [esp + 0x24]
-// 00731019  d9838c000000         fld dword ptr [ebx + 0x8c]
-// 0073101f  d95c2428             fstp dword ptr [esp + 0x28]
-// 00731023  d9ee                 fldz 
-// 00731025  d9542414             fst dword ptr [esp + 0x14]
-// 00731029  d9542418             fst dword ptr [esp + 0x18]
-// 0073102d  d95c241c             fstp dword ptr [esp + 0x1c]
-// 00731031  e89a2ad4ff           call 0x473ad0
-// 00731036  6a00                 push 0
-// 00731038  8bce                 mov ecx, esi
-// 0073103a  e8616fd4ff           call 0x477fa0
-// 0073103f  c744247800000000     mov dword ptr [esp + 0x78], 0
-// 00731047  8d7b08               lea edi, [ebx + 8]
-// 0073104a  8d9b00000000         lea ebx, [ebx]
-// 00731050  33ed                 xor ebp, ebp
-// 00731052  d947f8               fld dword ptr [edi - 8]
-// 00731055  d95c244c             fstp dword ptr [esp + 0x4c]
-// 00731059  d947fc               fld dword ptr [edi - 4]
-// 0073105c  d95c2450             fstp dword ptr [esp + 0x50]
-// 00731060  d907                 fld dword ptr [edi]
-// 00731062  d95c2454             fstp dword ptr [esp + 0x54]
-// 00731066  d944244c             fld dword ptr [esp + 0x4c]
-// 0073106a  d9542410             fst dword ptr [esp + 0x10]
-// 0073106e  d9442450             fld dword ptr [esp + 0x50]
-// 00731072  d9542414             fst dword ptr [esp + 0x14]
-// 00731076  d9442454             fld dword ptr [esp + 0x54]
-// 0073107a  d9542418             fst dword ptr [esp + 0x18]
-// 0073107e  d944241c             fld dword ptr [esp + 0x1c]
-// 00731082  deeb                 fsubp st(3)
-// 00731084  d9ca                 fxch st(2)
-// 00731086  d95c2428             fstp dword ptr [esp + 0x28]
-// 0073108a  d8642420             fsub dword ptr [esp + 0x20]
-// 0073108e  d95c242c             fstp dword ptr [esp + 0x2c]
-// 00731092  d8642424             fsub dword ptr [esp + 0x24]
-// 00731096  d95c2430             fstp dword ptr [esp + 0x30]
-// 0073109a  d9442428             fld dword ptr [esp + 0x28]
-// 0073109e  d944242c             fld dword ptr [esp + 0x2c]
-// 007310a2  d9442430             fld dword ptr [esp + 0x30]
-// 007310a6  d9c1                 fld st(1)
-// 007310a8  deca                 fmulp st(2)
-// 007310aa  d9c2                 fld st(2)
-// 007310ac  decb                 fmulp st(3)
-// 007310ae  d9c9                 fxch st(1)
-// 007310b0  dec2                 faddp st(2)
-// 007310b2  dcc8                 fmul st(0), st(0)
-// 007310b4  dec1                 faddp st(1)
-// 007310b6  d95c247c             fstp dword ptr [esp + 0x7c]
-// 007310ba  d944247c             fld dword ptr [esp + 0x7c]
-// 007310be  e8e9e1eeff           call 0x61f2ac
-// 007310c3  d95c247c             fstp dword ptr [esp + 0x7c]
-// 007310c7  d944247c             fld dword ptr [esp + 0x7c]
-// 007310cb  8d442464             lea eax, [esp + 0x64]
-// 007310cf  d9e8                 fld1 
-// 007310d1  50                   push eax
-// 007310d2  def1                 fdivrp st(1)
-// 007310d4  8bce                 mov ecx, esi
-// 007310d6  d99c2480000000       fstp dword ptr [esp + 0x80]
-// 007310dd  d944242c             fld dword ptr [esp + 0x2c]
-// 007310e1  d9842480000000       fld dword ptr [esp + 0x80]
-// 007310e8  d9c0                 fld st(0)
-// 007310ea  deca                 fmulp st(2)
-// 007310ec  d9c9                 fxch st(1)
-// 007310ee  d95c2468             fstp dword ptr [esp + 0x68]
-// 007310f2  d9442430             fld dword ptr [esp + 0x30]
-// 007310f6  d8c9                 fmul st(1)
-// 007310f8  d95c246c             fstp dword ptr [esp + 0x6c]
-// 007310fc  d84c2434             fmul dword ptr [esp + 0x34]
-// 00731100  d95c2470             fstp dword ptr [esp + 0x70]
-// 00731104  e8d73ad4ff           call 0x474be0
-// 00731109  8d4c2410             lea ecx, [esp + 0x10]
-// 0073110d  51                   push ecx
-// 0073110e  8bce                 mov ecx, esi
-// 00731110  e8db3bd4ff           call 0x474cf0
-// 00731115  83c501               add ebp, 1
-// 00731118  8bc5                 mov eax, ebp
-// 0073111a  2503000080           and eax, 0x80000003
-// 0073111f  7905                 jns 0x731126
-// 00731121  48                   dec eax
-// 00731122  83c8fc               or eax, 0xfffffffc
-// 00731125  40                   inc eax
-// 00731126  03442478             add eax, dword ptr [esp + 0x78]
-// 0073112a  8d1440               lea edx, [eax + eax*2]
-// 0073112d  d90493               fld dword ptr [ebx + edx*4]
-// 00731130  8d0493               lea eax, [ebx + edx*4]
-// 00731133  d95c2440             fstp dword ptr [esp + 0x40]
-// 00731137  d94004               fld dword ptr [eax + 4]
-// 0073113a  d95c2444             fstp dword ptr [esp + 0x44]
-// 0073113e  d94008               fld dword ptr [eax + 8]
-// 00731141  d95c2448             fstp dword ptr [esp + 0x48]
-// 00731145  d9442440             fld dword ptr [esp + 0x40]
-// 00731149  d9542410             fst dword ptr [esp + 0x10]
-// 0073114d  d9442444             fld dword ptr [esp + 0x44]
-// 00731151  d9542414             fst dword ptr [esp + 0x14]
-// 00731155  d9442448             fld dword ptr [esp + 0x48]
-// 00731159  d9542418             fst dword ptr [esp + 0x18]
-// 0073115d  d944241c             fld dword ptr [esp + 0x1c]
-// 00731161  deeb                 fsubp st(3)
-// 00731163  d9ca                 fxch st(2)
-// 00731165  d95c2434             fstp dword ptr [esp + 0x34]
-// 00731169  d8642420             fsub dword ptr [esp + 0x20]
-// 0073116d  d95c2438             fstp dword ptr [esp + 0x38]
-// 00731171  d8642424             fsub dword ptr [esp + 0x24]
-// 00731175  d95c243c             fstp dword ptr [esp + 0x3c]
-// 00731179  d9442434             fld dword ptr [esp + 0x34]
-// 0073117d  d9442438             fld dword ptr [esp + 0x38]
-// 00731181  d944243c             fld dword ptr [esp + 0x3c]
-// 00731185  d9c1                 fld st(1)
-// 00731187  deca                 fmulp st(2)
-// 00731189  d9c2                 fld st(2)
-// 0073118b  decb                 fmulp st(3)
-// 0073118d  d9c9                 fxch st(1)
-// 0073118f  dec2                 faddp st(2)
-// 00731191  dcc8                 fmul st(0), st(0)
-// 00731193  dec1                 faddp st(1)
-// 00731195  d95c247c             fstp dword ptr [esp + 0x7c]
-// 00731199  d944247c             fld dword ptr [esp + 0x7c]
-// 0073119d  e80ae1eeff           call 0x61f2ac
-// 007311a2  d95c247c             fstp dword ptr [esp + 0x7c]
-// 007311a6  d944247c             fld dword ptr [esp + 0x7c]
-// 007311aa  8d442458             lea eax, [esp + 0x58]
-// 007311ae  d9e8                 fld1 
-// 007311b0  50                   push eax
-// 007311b1  def1                 fdivrp st(1)
-// 007311b3  8bce                 mov ecx, esi
-// 007311b5  d99c2480000000       fstp dword ptr [esp + 0x80]
-// 007311bc  d9442438             fld dword ptr [esp + 0x38]
-// 007311c0  d9842480000000       fld dword ptr [esp + 0x80]
-// 007311c7  d9c0                 fld st(0)
-// 007311c9  deca                 fmulp st(2)
-// 007311cb  d9c9                 fxch st(1)
-// 007311cd  d95c245c             fstp dword ptr [esp + 0x5c]
-// 007311d1  d944243c             fld dword ptr [esp + 0x3c]
-// 007311d5  d8c9                 fmul st(1)
-// 007311d7  d95c2460             fstp dword ptr [esp + 0x60]
-// 007311db  d84c2440             fmul dword ptr [esp + 0x40]
-// 007311df  d95c2464             fstp dword ptr [esp + 0x64]
-// 007311e3  e8f839d4ff           call 0x474be0
-// 007311e8  8d4c2410             lea ecx, [esp + 0x10]
-// 007311ec  51                   push ecx
-// 007311ed  8bce                 mov ecx, esi
-// 007311ef  e8fc3ad4ff           call 0x474cf0
-// 007311f4  83c70c               add edi, 0xc
-// 007311f7  83fd04               cmp ebp, 4
-// 007311fa  0f8c52feffff         jl 0x731052
-// 00731200  8b442478             mov eax, dword ptr [esp + 0x78]
-// 00731204  83c004               add eax, 4
-// 00731207  83f808               cmp eax, 8
-// 0073120a  89442478             mov dword ptr [esp + 0x78], eax
-// 0073120e  0f8c3cfeffff         jl 0x731050
-// 00731214  8d7b38               lea edi, [ebx + 0x38]
-// 00731217  bb04000000           mov ebx, 4
-// 0073121c  8d642400             lea esp, [esp]
-// 00731220  d947c8               fld dword ptr [edi - 0x38]
-// 00731223  d95c244c             fstp dword ptr [esp + 0x4c]
-// 00731227  d947cc               fld dword ptr [edi - 0x34]
-// 0073122a  d95c2450             fstp dword ptr [esp + 0x50]
-// 0073122e  d947d0               fld dword ptr [edi - 0x30]
-// 00731231  d95c2454             fstp dword ptr [esp + 0x54]
-// 00731235  d944244c             fld dword ptr [esp + 0x4c]
-// 00731239  d9542410             fst dword ptr [esp + 0x10]
-// 0073123d  d9442450             fld dword ptr [esp + 0x50]
-// 00731241  d9542414             fst dword ptr [esp + 0x14]
-// 00731245  d9442454             fld dword ptr [esp + 0x54]
-// 00731249  d9542418             fst dword ptr [esp + 0x18]
-// 0073124d  d944241c             fld dword ptr [esp + 0x1c]
-// 00731251  deeb                 fsubp st(3)
-// 00731253  d9ca                 fxch st(2)
-// 00731255  d95c2434             fstp dword ptr [esp + 0x34]
-// 00731259  d8642420             fsub dword ptr [esp + 0x20]
-// 0073125d  d95c2438             fstp dword ptr [esp + 0x38]
-// 00731261  d8642424             fsub dword ptr [esp + 0x24]
-// 00731265  d95c243c             fstp dword ptr [esp + 0x3c]
-// 00731269  d9442434             fld dword ptr [esp + 0x34]
-// 0073126d  d9442438             fld dword ptr [esp + 0x38]
-// 00731271  d944243c             fld dword ptr [esp + 0x3c]
-// 00731275  d9c1                 fld st(1)
-// 00731277  deca                 fmulp st(2)
-// 00731279  d9c2                 fld st(2)
-// 0073127b  decb                 fmulp st(3)
-// 0073127d  d9c9                 fxch st(1)
-// 0073127f  dec2                 faddp st(2)
-// 00731281  dcc8                 fmul st(0), st(0)
-// 00731283  dec1                 faddp st(1)
-// 00731285  d95c2478             fstp dword ptr [esp + 0x78]
-// 00731289  d9442478             fld dword ptr [esp + 0x78]
-// 0073128d  e81ae0eeff           call 0x61f2ac
-// 00731292  d95c2478             fstp dword ptr [esp + 0x78]
-// 00731296  d9442478             fld dword ptr [esp + 0x78]
-// 0073129a  8d542464             lea edx, [esp + 0x64]
-// 0073129e  d9e8                 fld1 
-// 007312a0  52                   push edx
-// 007312a1  def1                 fdivrp st(1)
-// 007312a3  8bce                 mov ecx, esi
-// 007312a5  d95c247c             fstp dword ptr [esp + 0x7c]
-// 007312a9  d9442438             fld dword ptr [esp + 0x38]
-// 007312ad  d944247c             fld dword ptr [esp + 0x7c]
-// 007312b1  d9c0                 fld st(0)
-// 007312b3  deca                 fmulp st(2)
-// 007312b5  d9c9                 fxch st(1)
-// 007312b7  d95c2468             fstp dword ptr [esp + 0x68]
-// 007312bb  d944243c             fld dword ptr [esp + 0x3c]
-// 007312bf  d8c9                 fmul st(1)
-// 007312c1  d95c246c             fstp dword ptr [esp + 0x6c]
-// 007312c5  d84c2440             fmul dword ptr [esp + 0x40]
-// 007312c9  d95c2470             fstp dword ptr [esp + 0x70]
-// 007312cd  e80e39d4ff           call 0x474be0
-// 007312d2  8d442410             lea eax, [esp + 0x10]
-// 007312d6  50                   push eax
-// 007312d7  8bce                 mov ecx, esi
-// 007312d9  e8123ad4ff           call 0x474cf0
-// 007312de  d947f8               fld dword ptr [edi - 8]
-// 007312e1  d95c2440             fstp dword ptr [esp + 0x40]
-// 007312e5  d947fc               fld dword ptr [edi - 4]
-// 007312e8  d95c2444             fstp dword ptr [esp + 0x44]
-// 007312ec  d907                 fld dword ptr [edi]
-// 007312ee  d95c2448             fstp dword ptr [esp + 0x48]
-// 007312f2  d9442440             fld dword ptr [esp + 0x40]
-// 007312f6  d9542410             fst dword ptr [esp + 0x10]
-// 007312fa  d9442444             fld dword ptr [esp + 0x44]
-// 007312fe  d9542414             fst dword ptr [esp + 0x14]
-// 00731302  d9442448             fld dword ptr [esp + 0x48]
-// 00731306  d9542418             fst dword ptr [esp + 0x18]
-// 0073130a  d944241c             fld dword ptr [esp + 0x1c]
-// 0073130e  deeb                 fsubp st(3)
-// 00731310  d9ca                 fxch st(2)
-// 00731312  d95c2428             fstp dword ptr [esp + 0x28]
-// 00731316  d8642420             fsub dword ptr [esp + 0x20]
-// 0073131a  d95c242c             fstp dword ptr [esp + 0x2c]
-// 0073131e  d8642424             fsub dword ptr [esp + 0x24]
-// 00731322  d95c2430             fstp dword ptr [esp + 0x30]
-// 00731326  d944242c             fld dword ptr [esp + 0x2c]
-// 0073132a  d9442428             fld dword ptr [esp + 0x28]
-// 0073132e  d9442430             fld dword ptr [esp + 0x30]
-// 00731332  d9c1                 fld st(1)
-// 00731334  deca                 fmulp st(2)
-// 00731336  d9c2                 fld st(2)
-// 00731338  decb                 fmulp st(3)
-// 0073133a  d9c9                 fxch st(1)
-// 0073133c  dec2                 faddp st(2)
-// 0073133e  dcc8                 fmul st(0), st(0)
-// 00731340  dec1                 faddp st(1)
-// 00731342  d95c2478             fstp dword ptr [esp + 0x78]
-// 00731346  d9442478             fld dword ptr [esp + 0x78]
-// 0073134a  e85ddfeeff           call 0x61f2ac
-// 0073134f  d95c2478             fstp dword ptr [esp + 0x78]
-// 00731353  d9442478             fld dword ptr [esp + 0x78]
-// 00731357  8d4c2458             lea ecx, [esp + 0x58]
-// 0073135b  d9e8                 fld1 
-// 0073135d  51                   push ecx
-// 0073135e  def1                 fdivrp st(1)
-// 00731360  8bce                 mov ecx, esi
-// 00731362  d95c247c             fstp dword ptr [esp + 0x7c]
-// 00731366  d944242c             fld dword ptr [esp + 0x2c]
-// 0073136a  d944247c             fld dword ptr [esp + 0x7c]
-// 0073136e  d9c0                 fld st(0)
-// 00731370  deca                 fmulp st(2)
-// 00731372  d9c9                 fxch st(1)
-// 00731374  d95c245c             fstp dword ptr [esp + 0x5c]
-// 00731378  d9442430             fld dword ptr [esp + 0x30]
-// 0073137c  d8c9                 fmul st(1)
-// 0073137e  d95c2460             fstp dword ptr [esp + 0x60]
-// 00731382  d84c2434             fmul dword ptr [esp + 0x34]
-// 00731386  d95c2464             fstp dword ptr [esp + 0x64]
-// 0073138a  e85138d4ff           call 0x474be0
-// 0073138f  8d542410             lea edx, [esp + 0x10]
-// 00731393  52                   push edx
-// 00731394  8bce                 mov ecx, esi
-// 00731396  e85539d4ff           call 0x474cf0
-// 0073139b  83c70c               add edi, 0xc
-// 0073139e  83eb01               sub ebx, 1
-// 007313a1  0f8579feffff         jne 0x731220
-// 007313a7  8bce                 mov ecx, esi
-// 007313a9  e86245d4ff           call 0x475910
-// 007313ae  5f                   pop edi
-// 007313af  8bce                 mov ecx, esi
-// 007313b1  5e                   pop esi
-// 007313b2  5d                   pop ebp
-// 007313b3  5b                   pop ebx
-// 007313b4  83c460               add esp, 0x60
-// 007313b7  e96484d4ff           jmp 0x479820
-// library rbxgs-g3d/GLG3Dcpp\Draw.cpp (function ?box@Draw@G3D@@SAXABVBox@2@PAVRenderDevice@2@ABVColor4@2@2@Z)
-
 // roc-lang: cpp
 // roc-cl: 50727
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
 // roc-lib: rbxgs-g3d GLG3Dcpp/Draw.cpp
+
+// Candidate translation unit (score above; library headers required).
+/**
+ @file Draw.cpp
+  
+ @maintainer Morgan McGuire, matrix@graphics3d.com
+ 
+ @created 2003-10-29
+ @edited  2006-02-18
+ */
+
+#include "G3D/platform.h"
+#include "G3D/Rect2D.h"
+#include "G3D/AABox.h"
+#include "G3D/Box.h"
+#include "G3D/Ray.h"
+#include "G3D/Sphere.h"
+#include "G3D/Line.h"
+#include "G3D/LineSegment.h"
+#include "G3D/Capsule.h"
+#include "G3D/Cylinder.h"
+#include "GLG3D/Draw.h"
+#include "GLG3D/RenderDevice.h"
+#include "GLG3D/GLCaps.h"
+#include "G3D/MeshAlg.h"
+
+namespace G3D {
+
+const int Draw::WIRE_SPHERE_SECTIONS = 26;
+const int Draw::SPHERE_SECTIONS = 40;
+
+const int Draw::SPHERE_PITCH_SECTIONS = 20;
+const int Draw::SPHERE_YAW_SECTIONS = 40;
+
+void Draw::poly2DOutline(const Array<Vector2>& polygon, RenderDevice* renderDevice, const Color4& color) {
+    if (polygon.length() == 0) {
+        return;
+    }
+    
+    renderDevice->beginPrimitive(RenderDevice::LINE_STRIP);
+        renderDevice->setColor(color);
+        for (int i = 0; i < polygon.length(); ++i) {
+            renderDevice->sendVertex(polygon[i]);
+        }
+        renderDevice->sendVertex(polygon[0]);
+    renderDevice->endPrimitive();
+}
+
+
+void Draw::poly2D(const Array<Vector2>& polygon, RenderDevice* renderDevice, const Color4& color) {
+    if (polygon.length() == 0) {
+        return;
+    }
+    
+    renderDevice->beginPrimitive(RenderDevice::TRIANGLE_FAN);
+        renderDevice->setColor(color);
+        for (int i = 0; i < polygon.length(); ++i) {
+            renderDevice->sendVertex(polygon[i]);
+        }
+    renderDevice->endPrimitive();
+}
+
+
+void Draw::axes(
+    RenderDevice*       renderDevice,
+    const Color4&       xColor,
+    const Color4&       yColor,
+    const Color4&       zColor,
+    float               scale) {
+
+    axes(CoordinateFrame(), renderDevice, xColor, yColor, zColor, scale);
+}
+
+
+void Draw::arrow(
+    const Vector3&      start,
+    const Vector3&      direction,
+    RenderDevice*       renderDevice,
+    const Color4&       color,
+    float               scale) {
+    ray(Ray::fromOriginAndDirection(start, direction), renderDevice, color, scale);
+}
+
+
+void Draw::axes(
+    const CoordinateFrame& cframe,
+    RenderDevice*       renderDevice,
+    const Color4&       xColor,
+    const Color4&       yColor,
+    const Color4&       zColor,
+    float               scale) {
+
+    Vector3 c = cframe.translation;
+    Vector3 x = cframe.rotation.getColumn(0).direction() * 2 * scale;
+    Vector3 y = cframe.rotation.getColumn(1).direction() * 2 * scale;
+    Vector3 z = cframe.rotation.getColumn(2).direction() * 2 * scale;
+
+    Draw::arrow(c, x, renderDevice, xColor, scale);
+    Draw::arrow(c, y, renderDevice, yColor, scale);
+    Draw::arrow(c, z, renderDevice, zColor, scale);
+  
+    // Text label scale
+    const float xx = -3;
+    const float yy = xx * 1.4f;
+
+    // Project the 3D locations of the labels
+    Vector4 xc2D = renderDevice->project(c + x * 1.1f);
+    Vector4 yc2D = renderDevice->project(c + y * 1.1f);
+    Vector4 zc2D = renderDevice->project(c + z * 1.1f);
+
+    // If coordinates are behind the viewer, transform off screen
+    Vector2 x2D = (xc2D.w > 0) ? xc2D.xy() : Vector2(-2000, -2000);
+    Vector2 y2D = (yc2D.w > 0) ? yc2D.xy() : Vector2(-2000, -2000);
+    Vector2 z2D = (zc2D.w > 0) ? zc2D.xy() : Vector2(-2000, -2000);
+
+    // Compute the size of the labels
+    float xS = (xc2D.w > 0) ? clamp(10 * xc2D.w * scale, .1f, 5) : 0;
+    float yS = (yc2D.w > 0) ? clamp(10 * yc2D.w * scale, .1f, 5) : 0;
+    float zS = (zc2D.w > 0) ? clamp(10 * zc2D.w * scale, .1f, 5) : 0;
+
+    renderDevice->push2D();
+        renderDevice->setBlendFunc(RenderDevice::BLEND_SRC_ALPHA, RenderDevice::BLEND_ONE_MINUS_SRC_ALPHA);
+        renderDevice->setLineWidth(2);
+
+        renderDevice->beginPrimitive(RenderDevice::LINES);
+            // X
+            renderDevice->setColor(xColor * 0.8f);
+            renderDevice->sendVertex(Vector2(-xx,  yy) * xS + x2D);
+            renderDevice->sendVertex(Vector2( xx, -yy) * xS + x2D);
+            renderDevice->sendVertex(Vector2( xx,  yy) * xS + x2D);
+            renderDevice->sendVertex(Vector2(-xx, -yy) * xS + x2D);
+
+            // Y
+            renderDevice->setColor(yColor * 0.8f);
+            renderDevice->sendVertex(Vector2(-xx,  yy) * yS + y2D);
+            renderDevice->sendVertex(Vector2(  0,  0)  * yS + y2D);
+            renderDevice->sendVertex(Vector2(  0,  0)  * yS + y2D);
+            renderDevice->sendVertex(Vector2(  0, -yy) * yS + y2D);
+            renderDevice->sendVertex(Vector2( xx,  yy) * yS + y2D);
+            renderDevice->sendVertex(Vector2(  0,  0)  * yS + y2D);
+        renderDevice->endPrimitive();
+
+        renderDevice->beginPrimitive(RenderDevice::LINE_STRIP);
+            // Z
+            renderDevice->setColor(zColor * 0.8f);    
+            renderDevice->sendVertex(Vector2( xx,  yy) * zS + z2D);
+            renderDevice->sendVertex(Vector2(-xx,  yy) * zS + z2D);
+            renderDevice->sendVertex(Vector2( xx, -yy) * zS + z2D);
+            renderDevice->sendVertex(Vector2(-xx, -yy) * zS + z2D);
+        renderDevice->endPrimitive();
+    renderDevice->pop2D();
+}
+
+
+void Draw::ray(
+    const Ray&          ray,
+    RenderDevice*       renderDevice,
+    const Color4&       color,
+    float               scale) {
+
+    Vector3 tip = ray.origin + ray.direction;
+    // Create a coordinate frame at the tip
+    Vector3 u = ray.direction.direction();
+    Vector3 v;
+    if (u.x == 0) {
+        v = Vector3::unitX();
+    } else {
+        v = Vector3::unitY();
+    }
+    Vector3 w = u.cross(v).direction();
+    v = w.cross(u).direction();
+    Vector3 back = tip - u * 0.3f * scale;
+
+    RenderDevice::ShadeMode oldShadeMode = renderDevice->shadeMode();
+    Color4 oldColor = renderDevice->color();
+
+    renderDevice->setShadeMode(RenderDevice::SHADE_SMOOTH);
+    renderDevice->setColor(color);
+
+    float r = scale * .1f;
+    // Arrow head.  Need this beginprimitive call to sync up G3D and OpenGL
+    renderDevice->beginPrimitive(RenderDevice::TRIANGLES);
+        renderDevice->setNormal(u);
+        for (int a = 0; a < SPHERE_SECTIONS; ++a) {
+            float angle0 = a * (float)G3D_PI * 2.0f / SPHERE_SECTIONS;
+            float angle1 = (a + 1) * (float)G3D_PI * 2.0f / SPHERE_SECTIONS;
+            Vector3 dir0(cos(angle0) * v + sin(angle0) * w);
+            Vector3 dir1(cos(angle1) * v + sin(angle1) * w);
+            glNormal3fv(dir0);
+            glVertex3fv(tip);
+
+            glVertex3fv(back + dir0 * r);
+
+            glNormal3fv(dir1);
+            glVertex3fv(back + dir1 * r);                
+        }
+    renderDevice->endPrimitive();
+    renderDevice->minGLStateChange(SPHERE_SECTIONS * 5);
+
+    // Back of arrow head
+    renderDevice->beforePrimitive();
+    glBegin(GL_TRIANGLE_FAN);
+        glNormal3fv(-u);
+        for (int a = 0; a <= SPHERE_SECTIONS; ++a) {
+            float angle = a * (float)G3D_PI * 2.0f / SPHERE_SECTIONS;
+            Vector3 dir = sin(angle) * v + cos(angle) * w;
+            glVertex3fv(back + dir * r);
+        }
+    glEnd();
+    renderDevice->afterPrimitive();
+    renderDevice->minGLStateChange(SPHERE_SECTIONS);
+
+    renderDevice->setColor(oldColor);
+    renderDevice->setShadeMode(oldShadeMode);
+    lineSegment(LineSegment::fromTwoPoints(ray.origin, back), renderDevice, color, scale);
+}
+
+
+void Draw::plane(
+    const Plane&         plane, 
+    RenderDevice*        renderDevice,
+    const Color4&        solidColor,
+    const Color4&        wireColor) {
+
+    renderDevice->pushState();
+    CoordinateFrame cframe0 = renderDevice->getObjectToWorldMatrix();
+
+    Vector3 N, P;
+    
+    {
+        double d;
+        plane.getEquation(N, d);
+        P = N * (float)d;
+    }
+
+    CoordinateFrame cframe1(P);
+    cframe1.lookAt(P + N);
+
+    renderDevice->setObjectToWorldMatrix(cframe0 * cframe1);
+
+    renderDevice->setShadeMode(RenderDevice::SHADE_SMOOTH);
+    renderDevice->enableTwoSidedLighting();
+
+    if (solidColor.a > 0.0f) {
+        // Draw concentric circles around the origin.  We break them up to get good depth
+        // interpolation and reasonable shading.
+
+        renderDevice->setPolygonOffset(0.7);
+
+        if (solidColor.a < 1.0f) {
+            renderDevice->setBlendFunc(RenderDevice::BLEND_SRC_ALPHA, RenderDevice::BLEND_ONE_MINUS_SRC_ALPHA);
+        }
+
+        renderDevice->setNormal(Vector3::unitZ());
+        renderDevice->setColor(solidColor);
+
+        renderDevice->setCullFace(RenderDevice::CULL_NONE);
+        // Infinite strip
+        const int N = 12;
+        float r1 = 100;
+        renderDevice->beginPrimitive(RenderDevice::QUAD_STRIP);
+            for (int i = 0; i <= N; ++i) {
+                float a = i * (float)G3D_TWO_PI / N;
+                float c = cosf(a);
+                float s = sinf(a);
+
+                renderDevice->sendVertex(Vector3(c * r1, s * r1, 0));
+                renderDevice->sendVertex(Vector4(c, s, 0, 0));
+            }
+        renderDevice->endPrimitive();
+
+        // Finite strips.  
+        float r2 = 0;
+        const int M = 4;
+        for (int j = 0; j < M; ++j) {
+            r2 = r1;
+            r1 = r1 / 3;
+            if (j == M - 1) {
+                // last pass
+                r1 = 0;
+            }
+
+            renderDevice->beginPrimitive(RenderDevice::QUAD_STRIP);
+                for (int i = 0; i <= N; ++i) {
+                    float a = i * (float)G3D_TWO_PI / N;
+                    float c = cosf(a);
+                    float s = sinf(a);
+
+                    renderDevice->sendVertex(Vector3(c * r1, s * r1, 0));
+                    renderDevice->sendVertex(Vector3(c * r2, s * r2, 0));
+                }
+            renderDevice->endPrimitive();
+        }
+
+
+    }
+
+    if (wireColor.a > 0) {
+        renderDevice->setBlendFunc(RenderDevice::BLEND_SRC_ALPHA, RenderDevice::BLEND_ONE_MINUS_SRC_ALPHA);
+
+        renderDevice->setLineWidth(1.5);
+
+        renderDevice->beginPrimitive(RenderDevice::LINES);
+            renderDevice->setColor(wireColor);
+            renderDevice->setNormal(Vector3::unitZ());
+
+            // Lines to infinity
+            renderDevice->sendVertex(Vector4( 1, 0, 0, 0));
+            renderDevice->sendVertex(Vector4( 0, 0, 0, 1));
+
+            renderDevice->sendVertex(Vector4(-1, 0, 0, 0));
+            renderDevice->sendVertex(Vector4( 0, 0, 0, 1));
+
+            renderDevice->sendVertex(Vector4(0, -1, 0, 0));
+            renderDevice->sendVertex(Vector4(0,  0, 0, 1));
+
+            renderDevice->sendVertex(Vector4(0,  1, 0, 0));
+            renderDevice->sendVertex(Vector4(0,  0, 0, 1));
+        renderDevice->endPrimitive();
+
+        renderDevice->setLineWidth(0.5);
+
+        renderDevice->beginPrimitive(RenderDevice::LINES);
+
+            // Horizontal and vertical lines
+            const int N = 10;
+            const float space = 1;
+            const float Ns = N * space;
+            for (int x = -N; x <= N; ++x) {
+                float sx = x * space;
+                renderDevice->sendVertex(Vector3( Ns, sx, 0));
+                renderDevice->sendVertex(Vector3(-Ns, sx, 0));
+
+                renderDevice->sendVertex(Vector3(sx,  Ns, 0));
+                renderDevice->sendVertex(Vector3(sx, -Ns, 0));
+            }
+
+        renderDevice->endPrimitive();
+    }
+
+    renderDevice->popState();
+}
+ 
+
+
+void Draw::capsule(
+    const Capsule&       capsule, 
+    RenderDevice*        renderDevice,
+    const Color4&        solidColor,
+    const Color4&        wireColor) {
+
+    CoordinateFrame cframe(capsule.getPoint1());
+
+    Vector3 Y = (capsule.getPoint2() - capsule.getPoint1()).direction();
+    Vector3 X = (abs(Y.dot(Vector3::unitX())) > 0.9) ? Vector3::unitY() : Vector3::unitX();
+    Vector3 Z = X.cross(Y).direction();
+    X = Y.cross(Z);        
+    cframe.rotation.setColumn(0, X);
+    cframe.rotation.setColumn(1, Y);
+    cframe.rotation.setColumn(2, Z);
+
+    float radius = capsule.getRadius();
+    float height = (capsule.getPoint2() - capsule.getPoint1()).magnitude();
+
+    // Always render upright in object space
+    Sphere sphere1(Vector3::zero(), radius);
+    Sphere sphere2(Vector3(0, height, 0), radius);
+
+    Vector3 top(0, height, 0);
+
+    renderDevice->pushState();
+
+        renderDevice->setObjectToWorldMatrix(renderDevice->getObjectToWorldMatrix() * cframe);
+        renderDevice->setShadeMode(RenderDevice::SHADE_SMOOTH);
+
+        if (solidColor.a > 0) {
+            int numPasses = 1;
+
+            if (solidColor.a < 1) {
+                // Multiple rendering passes to get front/back blending correct
+                renderDevice->setBlendFunc(RenderDevice::BLEND_SRC_ALPHA, RenderDevice::BLEND_ONE_MINUS_SRC_ALPHA);
+                numPasses = 2;
+                renderDevice->setCullFace(RenderDevice::CULL_FRONT);
+                renderDevice->disableDepthWrite();
+            }
+
+            renderDevice->setColor(solidColor);
+            for (int k = 0; k < numPasses; ++k) {
+                sphereSection(sphere1, renderDevice, solidColor, false, true);
+                sphereSection(sphere2, renderDevice, solidColor, true, false);
+
+                // Cylinder faces
+                renderDevice->beginPrimitive(RenderDevice::QUAD_STRIP);
+                    for (int y = 0; y <= SPHERE_SECTIONS; ++y) {
+                        const float yaw0 = y * (float)G3D_PI * 2.0f / SPHERE_SECTIONS;
+                        Vector3 v0 = Vector3(cosf(yaw0), 0, sinf(yaw0));
+
+                        renderDevice->setNormal(v0);
+                        renderDevice->sendVertex(v0 * radius);
+                        renderDevice->sendVertex(v0 * radius + top);
+                    }
+                renderDevice->endPrimitive();
+
+                renderDevice->setCullFace(RenderDevice::CULL_BACK);
+            }
+
+        }
+
+        if (wireColor.a > 0) {
+            renderDevice->enableDepthWrite();
+            renderDevice->setBlendFunc(RenderDevice::BLEND_SRC_ALPHA, RenderDevice::BLEND_ONE_MINUS_SRC_ALPHA);
+
+            wireSphereSection(sphere1, renderDevice, wireColor, false, true);
+            wireSphereSection(sphere2, renderDevice, wireColor, true, false);
+
+            // Line around center
+            renderDevice->setColor(wireColor);
+            Vector3 center(0, height / 2, 0);
+            renderDevice->setLineWidth(2);
+            renderDevice->beginPrimitive(RenderDevice::LINES);
+                for (int y = 0; y < WIRE_SPHERE_SECTIONS; ++y) {
+                    const float yaw0 = y * (float)G3D_PI * 2.0f / WIRE_SPHERE_SECTIONS;
+                    const float yaw1 = (y + 1) * (float)G3D_PI * 2.0f / WIRE_SPHERE_SECTIONS;
+
+                    Vector3 v0(cosf(yaw0), 0, sinf(yaw0));
+                    Vector3 v1(cosf(yaw1), 0, sinf(yaw1));
+
+                    renderDevice->setNormal(v0);
+                    renderDevice->sendVertex(v0 * radius + center);
+                    renderDevice->setNormal(v1);
+                    renderDevice->sendVertex(v1 * radius + center);
+                }
+
+                // Edge lines
+                for (int y = 0; y < 8; ++y) {
+                    const float yaw = y * (float)G3D_PI / 4;
+                    const Vector3 x(cosf(yaw), 0, sinf(yaw));
+        
+                    renderDevice->setNormal(x);
+                    renderDevice->sendVertex(x * radius);
+                    renderDevice->sendVertex(x * radius + top);
+                }
+            renderDevice->endPrimitive();
+        }
+
+    renderDevice->popState();
+}
+
+
+void Draw::cylinder(
+    const Cylinder&      cylinder, 
+    RenderDevice*        renderDevice,
+    const Color4&        solidColor,
+    const Color4&        wireColor) {
+
+    CoordinateFrame cframe;
+    
+    cylinder.getReferenceFrame(cframe);
+
+    float radius = cylinder.radius();
+    float height = cylinder.height();
+
+    // Always render upright in object space
+    Vector3 bot(0, -height / 2, 0);
+    Vector3 top(0, height / 2, 0);
+
+    renderDevice->pushState();
+
+        renderDevice->setObjectToWorldMatrix(renderDevice->getObjectToWorldMatrix() * cframe);
+        renderDevice->setShadeMode(RenderDevice::SHADE_SMOOTH);
+
+        if (solidColor.a > 0) {
+            int numPasses = 1;
+
+            if (solidColor.a < 1) {
+                // Multiple rendering passes to get front/back blending correct
+                renderDevice->setBlendFunc(RenderDevice::BLEND_SRC_ALPHA, RenderDevice::BLEND_ONE_MINUS_SRC_ALPHA);
+                numPasses = 2;
+                renderDevice->setCullFace(RenderDevice::CULL_FRONT);
+                renderDevice->disableDepthWrite();
+            }
+
+            renderDevice->setColor(solidColor);
+            for (int k = 0; k < numPasses; ++k) {
+
+                // Top
+                renderDevice->beginPrimitive(RenderDevice::TRIANGLE_FAN);
+                    renderDevice->setNormal(Vector3::unitY());
+                    renderDevice->sendVertex(top);
+                    for (int y = 0; y <= SPHERE_SECTIONS; ++y) {
+                        const float yaw0 = -y * (float)G3D_PI * 2.0f / SPHERE_SECTIONS;
+                        Vector3 v0 = Vector3(cosf(yaw0), 0, sinf(yaw0));
+
+                        renderDevice->sendVertex(v0 * radius + top);
+                    }
+                renderDevice->endPrimitive();
+
+                // Bottom
+                renderDevice->beginPrimitive(RenderDevice::TRIANGLE_FAN);
+                    renderDevice->setNormal(-Vector3::unitY());
+                    renderDevice->sendVertex(bot);
+                    for (int y = 0; y <= SPHERE_SECTIONS; ++y) {
+                        const float yaw0 = y * (float)G3D_PI * 2.0f / SPHERE_SECTIONS;
+                        Vector3 v0 = Vector3(cosf(yaw0), 0, sinf(yaw0));
+
+                        renderDevice->sendVertex(v0 * radius + bot);
+                    }
+                renderDevice->endPrimitive();
+
+                // Cylinder faces
+                renderDevice->beginPrimitive(RenderDevice::QUAD_STRIP);
+                    for (int y = 0; y <= SPHERE_SECTIONS; ++y) {
+                        const float yaw0 = y * (float)G3D_PI * 2.0f / SPHERE_SECTIONS;
+                        Vector3 v0 = Vector3(cosf(yaw0), 0, sinf(yaw0));
+
+                        renderDevice->setNormal(v0);
+                        renderDevice->sendVertex(v0 * radius + bot);
+                        renderDevice->sendVertex(v0 * radius + top);
+                    }
+                renderDevice->endPrimitive();
+
+                renderDevice->setCullFace(RenderDevice::CULL_BACK);
+            }
+
+        }
+
+        if (wireColor.a > 0) {
+            renderDevice->enableDepthWrite();
+            renderDevice->setBlendFunc(RenderDevice::BLEND_SRC_ALPHA, RenderDevice::BLEND_ONE_MINUS_SRC_ALPHA);
+
+            // Line around center
+            renderDevice->setColor(wireColor);
+            renderDevice->setLineWidth(2);
+            renderDevice->beginPrimitive(RenderDevice::LINES);
+                for (int z = 0; z < 3; ++z) {
+                    Vector3 center(0, 0.0, 0);
+                    for (int y = 0; y < WIRE_SPHERE_SECTIONS; ++y) {
+                        const float yaw0 = y * (float)G3D_PI * 2.0f / WIRE_SPHERE_SECTIONS;
+                        const float yaw1 = (y + 1) * (float)G3D_PI * 2.0f / WIRE_SPHERE_SECTIONS;
+
+                        Vector3 v0(cos(yaw0), 0, sin(yaw0));
+                        Vector3 v1(cos(yaw1), 0, sin(yaw1));
+
+                        renderDevice->setNormal(v0);
+                        renderDevice->sendVertex(v0 * radius + center);
+                        renderDevice->setNormal(v1);
+                        renderDevice->sendVertex(v1 * radius + center);
+                    }
+                }
+
+                // Edge lines
+                for (int y = 0; y < 8; ++y) {
+                    const float yaw = y * (float)G3D_PI / 4;
+                    const Vector3 x(cos(yaw), 0, sin(yaw));
+                    const Vector3 xr = x * radius;
+    
+                    // Side
+                    renderDevice->setNormal(x);
+                    renderDevice->sendVertex(xr + bot);
+                    renderDevice->sendVertex(xr + top);
+
+                    // Top
+                    renderDevice->setNormal(Vector3::unitY());
+                    renderDevice->sendVertex(top);
+                    renderDevice->sendVertex(xr + top);
+
+                    // Bottom
+                    renderDevice->setNormal(Vector3::unitY());
+                    renderDevice->sendVertex(bot);
+                    renderDevice->sendVertex(xr + bot);
+                }
+            renderDevice->endPrimitive();
+        }
+
+    renderDevice->popState();
+}
+
+    
+void Draw::vertexNormals(
+    const MeshAlg::Geometry&    geometry,
+    RenderDevice*               renderDevice,
+    const Color4&               color,
+    float                       scale) {
+
+    renderDevice->pushState();
+        renderDevice->setColor(color);
+        renderDevice->setBlendFunc(RenderDevice::BLEND_SRC_ALPHA, RenderDevice::BLEND_ONE_MINUS_SRC_ALPHA);
+
+        const Array<Vector3>& vertexArray = geometry.vertexArray;
+        const Array<Vector3>& normalArray = geometry.normalArray;
+
+        const float D = clamp(5.0f / ::powf((float)vertexArray.size(), 0.25f), 0.1f, .8f) * scale;
+        
+        renderDevice->setLineWidth(1);
+        renderDevice->beginPrimitive(RenderDevice::LINES);
+            for (int v = 0; v < vertexArray.size(); ++v) {
+                renderDevice->sendVertex(vertexArray[v] + normalArray[v] * D);
+                renderDevice->sendVertex(vertexArray[v]);
+            }
+        renderDevice->endPrimitive();
+        
+        renderDevice->setLineWidth(2);
+        renderDevice->beginPrimitive(RenderDevice::LINES);
+            for (int v = 0; v < vertexArray.size(); ++v) {
+                renderDevice->sendVertex(vertexArray[v] + normalArray[v] * D * .96f);
+                renderDevice->sendVertex(vertexArray[v] + normalArray[v] * D * .84f);
+            }
+        renderDevice->endPrimitive();
+
+        renderDevice->setLineWidth(3);
+        renderDevice->beginPrimitive(RenderDevice::LINES);
+            for (int v = 0; v < vertexArray.size(); ++v) {
+                renderDevice->sendVertex(vertexArray[v] + normalArray[v] * D * .92f);
+                renderDevice->sendVertex(vertexArray[v] + normalArray[v] * D * .84f);
+            }
+        renderDevice->endPrimitive();
+    renderDevice->popState();
+}
+
+
+void Draw::vertexVectors(
+    const Array<Vector3>&       vertexArray,
+    const Array<Vector3>&       directionArray,
+    RenderDevice*               renderDevice,
+    const Color4&               color,
+    float                       scale) {
+
+    renderDevice->pushState();
+        renderDevice->setColor(color);
+        renderDevice->setBlendFunc(RenderDevice::BLEND_SRC_ALPHA, RenderDevice::BLEND_ONE_MINUS_SRC_ALPHA);
+
+        const float D = clamp(5.0f / ::powf((float)vertexArray.size(), 0.25f), 0.1f, 0.8f) * scale;
+        
+        renderDevice->setLineWidth(1);
+        renderDevice->beginPrimitive(RenderDevice::LINES);
+            for (int v = 0; v < vertexArray.size(); ++v) {
+                renderDevice->sendVertex(vertexArray[v] + directionArray[v] * D);
+                renderDevice->sendVertex(vertexArray[v]);
+            }
+        renderDevice->endPrimitive();
+        
+        renderDevice->setLineWidth(2);
+        renderDevice->beginPrimitive(RenderDevice::LINES);
+            for (int v = 0; v < vertexArray.size(); ++v) {
+                renderDevice->sendVertex(vertexArray[v] + directionArray[v] * D * .96f);
+                renderDevice->sendVertex(vertexArray[v] + directionArray[v] * D * .84f);
+            }
+        renderDevice->endPrimitive();
+
+        renderDevice->setLineWidth(3);
+        renderDevice->beginPrimitive(RenderDevice::LINES);
+            for (int v = 0; v < vertexArray.size(); ++v) {
+                renderDevice->sendVertex(vertexArray[v] + directionArray[v] * D * .92f);
+                renderDevice->sendVertex(vertexArray[v] + directionArray[v] * D * .84f);
+            }
+        renderDevice->endPrimitive();
+    renderDevice->popState();
+}
+
+
+void Draw::line(
+    const Line&         line,
+    RenderDevice*       renderDevice,
+    const Color4&       color) {
+
+    renderDevice->pushState();
+        renderDevice->setShadeMode(RenderDevice::SHADE_SMOOTH);
+        renderDevice->setColor(color);
+        renderDevice->setLineWidth(2);
+        renderDevice->setDepthTest(RenderDevice::DEPTH_LEQUAL);
+        renderDevice->setBlendFunc(RenderDevice::BLEND_SRC_ALPHA, RenderDevice::BLEND_ONE_MINUS_SRC_ALPHA);
+
+        Vector3 v0 = line.point();
+        Vector3 d  = line.direction();
+        renderDevice->beginPrimitive(RenderDevice::LINE_STRIP);
+            // Off to infinity
+            renderDevice->sendVertex(Vector4(-d, 0));
+
+            for (int i = -10; i <= 10; i += 2) {
+                renderDevice->sendVertex(v0 + d * (float)i * 100.0f);
+            }
+
+            // Off to infinity
+            renderDevice->sendVertex(Vector4(d, 0));
+        renderDevice->endPrimitive();
+    renderDevice->popState();
+}
+
+
+void Draw::lineSegment(
+    const LineSegment&  lineSegment,
+    RenderDevice*       renderDevice,
+    const Color4&       color,
+    float               scale) {
+
+    renderDevice->pushState();
+
+        renderDevice->setShadeMode(RenderDevice::SHADE_SMOOTH);
+        renderDevice->setColor(color);
+        
+        // Compute perspective line width
+        Vector3 v0 = lineSegment.endPoint(0);
+        Vector3 v1 = lineSegment.endPoint(1);
+
+        Vector4 s0 = renderDevice->project(v0);
+        Vector4 s1 = renderDevice->project(v1);
+
+        float L = 2 * scale;
+        if ((s0.w > 0) && (s1.w > 0)) {
+            L = 15.0f * (s0.w + s1.w) / 2.0f;
+        } else if (s0.w > 0) {
+            L = max(15 * s0.w, 10.0f);
+        } else if (s1.w > 0) {
+            L = max(15.0f * s1.w, 10.0f);
+        }
+
+        renderDevice->setLineWidth(L);
+
+        // Find the object space vector perpendicular to the line
+        // that points closest to the eye.
+        Vector3 eye = renderDevice->getObjectToWorldMatrix().pointToObjectSpace(renderDevice->getCameraToWorldMatrix().translation);
+        Vector3 E = eye - v0;
+        Vector3 V = v1 - v0;
+        Vector3 U = E.cross(V);
+        Vector3 N = V.cross(U).direction();
+
+        renderDevice->setDepthTest(RenderDevice::DEPTH_LEQUAL);
+        renderDevice->setBlendFunc(RenderDevice::BLEND_SRC_ALPHA, RenderDevice::BLEND_ONE_MINUS_SRC_ALPHA);
+
+        renderDevice->beginPrimitive(RenderDevice::LINES);        
+            renderDevice->setNormal(N);
+            renderDevice->sendVertex(v0);
+            renderDevice->sendVertex(v1);
+        renderDevice->endPrimitive();
+    renderDevice->popState();
+}
+
+
+void Draw::box(
+    const AABox&        _box,
+    RenderDevice*       renderDevice,
+    const Color4&       solidColor,
+    const Color4&       wireColor) {
+
+    box(_box.toBox(), renderDevice, solidColor, wireColor);
+}
+
+
+void Draw::box(
+    const Box&          box,
+    RenderDevice*       renderDevice,
+    const Color4&       solidColor,
+    const Color4&       wireColor) {
+
+    renderDevice->pushState();
+        renderDevice->setShadeMode(RenderDevice::SHADE_SMOOTH);
+
+        if (solidColor.a > 0) {
+            int numPasses = 1;
+
+            if (solidColor.a < 1) {
+                // Multiple rendering passes to get front/back blending correct
+                renderDevice->setBlendFunc(RenderDevice::BLEND_SRC_ALPHA, RenderDevice::BLEND_ONE_MINUS_SRC_ALPHA);
+                numPasses = 2;
+                renderDevice->setCullFace(RenderDevice::CULL_FRONT);
+                renderDevice->disableDepthWrite();
+            } else {
+                renderDevice->setCullFace(RenderDevice::CULL_BACK);
+            }
+
+            renderDevice->setColor(solidColor);
+            for (int k = 0; k < numPasses; ++k) {
+                renderDevice->beginPrimitive(RenderDevice::QUADS);
+                    for (int i = 0; i < 6; ++i) {
+                        Vector3 v0, v1, v2, v3;
+                        box.getFaceCorners(i, v0, v1, v2, v3);
+
+                        Vector3 n = (v1 - v0).cross(v3 - v0);
+                        renderDevice->setNormal(n.direction());
+                        renderDevice->sendVertex(v0);
+                        renderDevice->sendVertex(v1);
+                        renderDevice->sendVertex(v2);
+                        renderDevice->sendVertex(v3);
+                    }
+                renderDevice->endPrimitive();
+                renderDevice->setCullFace(RenderDevice::CULL_BACK);
+            }
+        }
+
+        if (wireColor.a > 0) {
+            renderDevice->enableDepthWrite();
+            renderDevice->setBlendFunc(RenderDevice::BLEND_SRC_ALPHA, RenderDevice::BLEND_ONE_MINUS_SRC_ALPHA);
+            renderDevice->setColor(wireColor);
+            renderDevice->setLineWidth(2);
+
+            Vector3 c = box.getCenter();
+            Vector3 v;
+
+            // Wire frame
+            renderDevice->setDepthTest(RenderDevice::DEPTH_LEQUAL);
+            renderDevice->beginPrimitive(RenderDevice::LINES);
+
+                // Front and back
+                for (int i = 0; i < 8; i += 4) {
+                    for (int j = 0; j < 4; ++j) {
+                        v = box.getCorner(i + j);
+                        renderDevice->setNormal((v - c).direction());
+                        renderDevice->sendVertex(v);
+
+                        v = box.getCorner(i + ((j + 1) % 4));
+                        renderDevice->setNormal((v - c).direction());
+                        renderDevice->sendVertex(v);
+                    }
+                }
+
+                // Sides
+                for (int i = 0; i < 4; ++i) {
+                    v = box.getCorner(i);
+                    renderDevice->setNormal((v - c).direction());
+                    renderDevice->sendVertex(v);
+
+                    v = box.getCorner(i + 4);
+                    renderDevice->setNormal((v - c).direction());
+                    renderDevice->sendVertex(v);
+                }
+
+
+            renderDevice->endPrimitive();
+        }
+    renderDevice->popState();
+}
+
+
+void Draw::wireSphereSection(
+    const Sphere&       sphere,
+    RenderDevice*       renderDevice,
+    const Color4&       color,
+    bool                top,
+    bool                bottom) {
+    
+    int sections = WIRE_SPHERE_SECTIONS;
+    int start = top ? 0 : (sections / 2);
+    int stop = bottom ? sections : (sections / 2);
+
+    renderDevice->pushState();
+        renderDevice->setShadeMode(RenderDevice::SHADE_SMOOTH);
+        renderDevice->setColor(color);
+        renderDevice->setLineWidth(2);
+        renderDevice->setDepthTest(RenderDevice::DEPTH_LEQUAL);
+        renderDevice->setCullFace(RenderDevice::CULL_BACK);
+        renderDevice->setBlendFunc(RenderDevice::BLEND_SRC_ALPHA, RenderDevice::BLEND_ONE_MINUS_SRC_ALPHA);
+
+        float radius = sphere.radius;
+        const Vector3& center = sphere.center;
+
+        // Wire frame
+        for (int y = 0; y < 8; ++y) {
+            const float yaw = y * (float)G3D_PI / 4;
+            const Vector3 x(cos(yaw) * radius, 0, sin(yaw) * radius);
+            //const Vector3 z(-sin(yaw) * radius, 0, cos(yaw) * radius);
+
+            renderDevice->beginPrimitive(RenderDevice::LINE_STRIP);
+                for (int p = start; p <= stop; ++p) {
+                    const float pitch0 = p * (float)G3D_PI / (sections * 0.5f);
+
+                    Vector3 v0 = cosf(pitch0) * x + Vector3::unitY() * radius * sinf(pitch0);
+                    renderDevice->setNormal(v0.direction());
+                    renderDevice->sendVertex(v0 + center);
+                }
+            renderDevice->endPrimitive();
+        }
+
+
+        int a = bottom ? -1 : 0;
+        int b = top ? 1 : 0; 
+        for (int p = a; p <= b; ++p) {
+            const float pitch = p * (float)G3D_PI / 6;
+
+            renderDevice->beginPrimitive(RenderDevice::LINE_STRIP);
+                for (int y = 0; y <= sections; ++y) {
+                    const float yaw0 = y * (float)G3D_PI / 13;
+                    Vector3 v0 = Vector3(cos(yaw0) * cos(pitch), sin(pitch), sin(yaw0) * cos(pitch)) * radius;
+                    renderDevice->setNormal(v0.direction());
+                    renderDevice->sendVertex(v0 + center);
+                }
+            renderDevice->endPrimitive();
+        }
+
+    renderDevice->popState();
+}
+
+
+void Draw::sphereSection(
+    const Sphere&       sphere,
+    RenderDevice*       renderDevice,
+    const Color4&       color,
+    bool                top,
+    bool                bottom) {
+
+    // The first time this is invoked we create a series of quad strips in a vertex array.
+    // Future calls then render from the array. 
+
+    CoordinateFrame cframe = renderDevice->getObjectToWorldMatrix();
+
+    // Auto-normalization will take care of normal length
+    cframe.translation += cframe.rotation * sphere.center;
+    cframe.rotation = cframe.rotation * sphere.radius;
+
+
+    // Track enable bits individually instead of using slow glPush
+    bool resetNormalize = false;
+    bool usedRescaleNormal = false;
+    if (GLCaps::supports("GL_EXT_rescale_normal")) {
+        // Switch to using GL_RESCALE_NORMAL, which should be slightly faster.
+        resetNormalize = (glIsEnabled(GL_NORMALIZE) == GL_TRUE);
+        usedRescaleNormal = true;
+        glDisable(GL_NORMALIZE);
+        glEnable(GL_RESCALE_NORMAL);
+    }
+
+    renderDevice->pushState();
+        renderDevice->setObjectToWorldMatrix(cframe);
+
+        renderDevice->setColor(color);
+        renderDevice->setShadeMode(RenderDevice::SHADE_SMOOTH);
+
+        static bool initialized = false;
+        static VAR vbuffer;
+        static Array< uint16 > stripIndexArray;
+
+        if (! initialized) {
+            // The normals are the same as the vertices for a sphere
+            Array<Vector3> vertex;
+
+            stripIndexArray.resize(iFloor((G3D_PI / (float)SPHERE_PITCH_SECTIONS) + 2 * 
+                                   (G3D_PI * 2.0 / SPHERE_YAW_SECTIONS)));
+
+            int i = 0;
+
+            for (int p = 0; p < SPHERE_PITCH_SECTIONS; ++p) {
+                const float pitch0 = p * (float)G3D_PI / SPHERE_PITCH_SECTIONS;
+                const float pitch1 = (p + 1) * (float)G3D_PI / SPHERE_PITCH_SECTIONS;
+
+                const float sp0 = sin(pitch0);
+                const float sp1 = sin(pitch1);
+                const float cp0 = cos(pitch0);
+                const float cp1 = cos(pitch1);
+
+                for (int y = 0; y <= SPHERE_YAW_SECTIONS; ++y) {
+                    const float yaw = -y * (float)G3D_PI * 2.0f / SPHERE_YAW_SECTIONS;
+
+                    const float cy = cos(yaw);
+                    const float sy = sin(yaw);
+
+                    const Vector3 v0(cy * sp0, cp0, sy * sp0);
+                    const Vector3 v1(cy * sp1, cp1, sy * sp1);
+
+                    vertex.append(v0, v1);
+                    stripIndexArray.append(i, i + 1);
+                    i += 2;
+                }
+
+                const Vector3& degen = Vector3(1.0f * sp1, cp1, 0.0f * sp1);
+
+                vertex.append(degen, degen);
+                stripIndexArray.append(i, i + 1);
+                i += 2;    
+            }
+
+            VARAreaRef area = VARArea::create(vertex.size() * sizeof(Vector3), VARArea::WRITE_ONCE);
+            vbuffer = VAR(vertex, area);
+            initialized = true;
+        }
+
+        renderDevice->beginIndexedPrimitives();
+            renderDevice->setNormalArray(vbuffer);
+            renderDevice->setVertexArray(vbuffer);
+            if (top) {
+                renderDevice->sendIndices(RenderDevice::QUAD_STRIP, (stripIndexArray.length() / 2),
+                    stripIndexArray.getCArray());
+            }
+            if (bottom) {
+                renderDevice->sendIndices(RenderDevice::QUAD_STRIP, (stripIndexArray.length() / 2), 
+                    stripIndexArray.getCArray() + (stripIndexArray.length() / 2));
+            }
+        renderDevice->endIndexedPrimitives();
+
+    renderDevice->popState();
+
+    if (usedRescaleNormal) {
+        glDisable(GL_RESCALE_NORMAL);
+        if (resetNormalize) {
+            glEnable(GL_NORMALIZE);
+        }
+    }
+}
+
+
+void Draw::sphere(
+    const Sphere&       sphere,
+    RenderDevice*       renderDevice,
+    const Color4&       solidColor,
+    const Color4&       wireColor) {
+
+    if (solidColor.a > 0) {
+        renderDevice->pushState();
+
+            int numPasses = 1;
+
+            if (solidColor.a < 1) {
+                numPasses = 2;
+                renderDevice->setCullFace(RenderDevice::CULL_FRONT);
+                renderDevice->setBlendFunc(RenderDevice::BLEND_SRC_ALPHA, RenderDevice::BLEND_ONE_MINUS_SRC_ALPHA);
+                renderDevice->disableDepthWrite();
+            } else {
+                renderDevice->setCullFace(RenderDevice::CULL_BACK);
+            }
+
+            if (wireColor.a > 0) {
+                renderDevice->setPolygonOffset(3);
+            }
+
+            for (int k = 0; k < numPasses; ++k) {
+                sphereSection(sphere, renderDevice, solidColor, true, true);
+                renderDevice->setCullFace(RenderDevice::CULL_BACK);
+            }
+        renderDevice->popState();
+    }
+
+    if (wireColor.a > 0) {
+        wireSphereSection(sphere, renderDevice, wireColor, true, true);
+    }
+}
+
+
+void Draw::fullScreenImage(const GImage& im, RenderDevice* renderDevice) {
+    debugAssert( im.channels == 3 || im.channels == 4 );
+    renderDevice->push2D();
+        glPixelZoom((float)renderDevice->getWidth() / (float)im.width, 
+                   -(float)renderDevice->getHeight() / (float)im.height);
+        glRasterPos4d(0.0, 0.0, 0.0, 1.0);
+
+        glPushClientAttrib(GL_CLIENT_PIXEL_STORE_BIT);
+
+        glPixelStorei(GL_PACK_ALIGNMENT, 1);
+        glDrawPixels(im.width, im.height, (im.channels == 3) ? GL_RGB : GL_RGBA, GL_UNSIGNED_BYTE, (const GLvoid*)im.byte());
+
+        glPopClientAttrib();
+    renderDevice->pop2D();
+}
+
+
+void Draw::rect2D(
+    const Rect2D& rect,
+    RenderDevice* rd,
+    const Color4& color,
+    const Vector2& texCoord0,
+    const Vector2& texCoord1,
+    const Vector2& texCoord2,
+    const Vector2& texCoord3) {
+
+    Draw::rect2D(rect, rd, color,
+        Rect2D::xywh(0,0,texCoord0.x, texCoord0.y),
+        Rect2D::xywh(0,0,texCoord1.x, texCoord1.y),
+        Rect2D::xywh(0,0,texCoord2.x, texCoord2.y),
+        Rect2D::xywh(0,0,texCoord3.x, texCoord3.y));
+}
+
+
+void Draw::rect2D(
+    const Rect2D& rect,
+    RenderDevice* rd,
+    const Color4& color,
+    const Rect2D& texCoord0,
+    const Rect2D& texCoord1,
+    const Rect2D& texCoord2,
+    const Rect2D& texCoord3) {
+
+    const Rect2D* tx[4];
+    tx[0] = &texCoord0;
+    tx[1] = &texCoord1;
+    tx[2] = &texCoord2;
+    tx[3] = &texCoord3;
+
+    int N = iMin(4, GLCaps::numTextureCoords());
+
+    rd->pushState();
+    rd->setColor(color);
+    rd->beginPrimitive(RenderDevice::QUADS);
+        for (int i = 0; i < 4; ++i) {
+            for (int t = 0; t < N; ++t) {
+                rd->setTexCoord(t, tx[t]->corner(i));
+            }
+            rd->sendVertex(rect.corner(i));
+        }
+    rd->endPrimitive();
+    rd->popState();
+}
+
+
+void Draw::fastRect2D(
+    const Rect2D&       rect,
+    RenderDevice*       rd,
+    const Color4&       color) {
+
+    rd->setColor(color);
+    // Use begin primitive in case there are any 
+    // lazy state changes pending.
+    rd->beginPrimitive(RenderDevice::QUADS);
+        
+        glTexCoord2f(0, 0);
+        glVertex2f(rect.x0(), rect.y0());
+
+        glTexCoord2f(0, 1);
+        glVertex2f(rect.x0(), rect.y1());
+
+        glTexCoord2f(1, 1);
+        glVertex2f(rect.x1(), rect.y1());
+
+        glTexCoord2f(1, 0);
+        glVertex2f(rect.x1(), rect.y0());
+
+    rd->endPrimitive();
+
+    // Record the cost of the raw OpenGL calls
+    rd->minGLStateChange(8);
+}
+
+
+
+void Draw::rect2DBorder(
+    const class Rect2D& rect,
+    RenderDevice* rd,
+    const Color4& color,
+    float outerBorder,
+    float innerBorder) {
+
+
+    //
+    //
+    //   **************************************
+    //   **                                  **
+    //   * **                              ** *
+    //   *   ******************************   *
+    //   *   *                            *   *
+    //
+    //
+    const Rect2D outer = rect.border(outerBorder);
+    const Rect2D inner = rect.border(-innerBorder); 
+
+    rd->pushState();
+    rd->setColor(color);
+    rd->beginPrimitive(RenderDevice::QUAD_STRIP);
+
+    for (int i = 0; i < 5; ++i) {
+        int j = i % 4;
+        rd->sendVertex(outer.corner(j));
+        rd->sendVertex(inner.corner(j));
+    }
+
+    rd->endPrimitive();
+    rd->popState();
+}
+
+
+void Draw::frustum(
+    const class GCamera::Frustum& frustum,
+    RenderDevice* rd,
+    const Color4& color,
+    const Color4& wire) {
+
+    // Draw edges
+    rd->pushState();
+
+    if (wire.a > 0) {
+        rd->setColor(wire);
+        for (int f = 0; f < frustum.faceArray.size(); ++f) {
+            rd->beginPrimitive(RenderDevice::LINE_STRIP);
+            for (int v = 0; v < 5; ++v) {
+                rd->sendVertex(frustum.vertexPos[frustum.faceArray[f].vertexIndex[v % 4]]);
+            }
+            rd->endPrimitive();
+        }
+    }
+
+    rd->setDepthWrite(false);
+        rd->setCullFace(RenderDevice::CULL_NONE);
+        rd->enableTwoSidedLighting();
+        rd->setBlendFunc(RenderDevice::BLEND_SRC_ALPHA, RenderDevice::BLEND_ONE_MINUS_SRC_ALPHA);
+        rd->setColor(color);
+        rd->beginPrimitive(RenderDevice::QUADS);
+        for (int f = 0; f < frustum.faceArray.size(); ++f) {
+            rd->setNormal(frustum.faceArray[f].plane.normal());
+            for (int v = 0; v < 4; ++v) {
+                rd->sendVertex(frustum.vertexPos[frustum.faceArray[f].vertexIndex[v]]);
+            }
+        }
+        rd->endPrimitive();
+
+    rd->popState();
+    // TODO:face colors
+}
+
+}
+

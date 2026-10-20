@@ -1,30 +1,175 @@
-// roc 2007-08 005eb2e0  unit: RBX::FlagStand  size: 76 bytes
-// Make this compile to the exact bytes below, then: roc check 2007-08 005eb2e0
-//
-// 005eb2e0  8b4104               mov eax, dword ptr [ecx + 4]
-// 005eb2e3  56                   push esi
-// 005eb2e4  8b7020               mov esi, dword ptr [eax + 0x20]
-// 005eb2e7  85f6                 test esi, esi
-// 005eb2e9  743d                 je 0x5eb328
-// 005eb2eb  807e0400             cmp byte ptr [esi + 4], 0
-// 005eb2ef  7407                 je 0x5eb2f8
-// 005eb2f1  8bce                 mov ecx, esi
-// 005eb2f3  e818f20200           call 0x61a510
-// 005eb2f8  8b442408             mov eax, dword ptr [esp + 8]
-// 005eb2fc  d98680000000         fld dword ptr [esi + 0x80]
-// 005eb302  d800                 fadd dword ptr [eax]
-// 005eb304  d99e80000000         fstp dword ptr [esi + 0x80]
-// 005eb30a  d94004               fld dword ptr [eax + 4]
-// 005eb30d  d88684000000         fadd dword ptr [esi + 0x84]
-// 005eb313  d99e84000000         fstp dword ptr [esi + 0x84]
-// 005eb319  d94008               fld dword ptr [eax + 8]
-// 005eb31c  d88688000000         fadd dword ptr [esi + 0x88]
-// 005eb322  d99e88000000         fstp dword ptr [esi + 0x88]
-// 005eb328  5e                   pop esi
-// 005eb329  c20400               ret 4
-// library openrbx-client/App\v8datamodel\Gyro.cpp (function ?accumulateForceAtBranchCofm@Body@RBX@@QAEXABVVector3@G3D@@@Z)
-
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
 // roc-lib: openrbx-client App/v8datamodel/Gyro.cpp
+
+// Candidate translation unit (score above; library headers required).
+#include "v8datamodel/Gyro.h"
+
+#include "v8datamodel/PartInstance.h"
+#include "v8kernel/Body.h"
+#include "v8kernel/SimBody.h"
+#include "v8world/Primitive.h"
+#include "v8world/World.h"
+
+namespace RBX {
+
+char sRocket[] = "RocketPropulsion";
+
+char sBodyVelocity[] = "BodyVelocity";
+
+char sBodyPosition[] = "BodyPosition";
+
+char sBodyThrust[] = "BodyThrust";
+
+char sBodyForce[] = "BodyForce";
+
+char sBodyGyro[] = "BodyGyro";
+
+// FUNCTION: WEBSERVICE 0x100ea340
+BodyMover::~BodyMover()
+{
+}
+
+// FUNCTION: WEBSERVICE 0x100ea3b0
+void BodyMover::onEvent(const RunService* source, Stepped event)
+{
+	if (preventBodySleep()) {
+		world->ticklePrimitive(part->getPrimitive(), true);
+	}
+}
+
+// STUB: WEBSERVICE 0x100ea7c0
+void BodyGyro::computeOrientation(Body* body)
+{
+	STUB(0x100ea7c0);
+}
+
+// STUB: WEBSERVICE 0x100eaaf0
+void BodyGyro::computeBalance(Body* body)
+{
+	STUB(0x100eaaf0);
+}
+
+// STUB: WEBSERVICE 0x100eaf60
+void BodyPosition::computeForce(float dt, bool throttling)
+{
+	Body* body = part->getPrimitive()->getBody();
+
+	Vector3 positionForce = (position - body->getPV().position.translation) * kP;
+
+	Vector3 goalForce = positionForce + body->getPV().velocity.linear * -kD;
+
+	lastForce = goalForce * body->getRoot()->getBranchMass();
+
+	lastForce = lastForce.clamp(-maxForce, maxForce);
+
+	body->getRoot()->accumulateForceAtBranchCofm(lastForce);
+}
+
+// FUNCTION: WEBSERVICE 0x100eb0c0
+void BodyVelocity::computeForce(float dt, bool throttling)
+{
+	Body* body = part->getPrimitive()->getBody();
+
+	Vector3 goalForce = (velocity - body->getPV().velocity.linear) * kP;
+
+	lastForce = goalForce * body->getRoot()->getBranchMass();
+
+	lastForce = lastForce.clamp(-maxForce, maxForce);
+
+	body->getRoot()->accumulateForceAtBranchCofm(lastForce);
+}
+
+// FUNCTION: WEBSERVICE 0x100eb1e0
+void BodyForce::computeForce(float dt, bool throttling)
+{
+	part->getPrimitive()->getBody()->getRoot()->accumulateForceAtBranchCofm(force);
+}
+
+// FUNCTION: WEBSERVICE 0x100eb240
+void BodyThrust::computeForce(float dt, bool throttling)
+{
+	Body* body = part->getPrimitive()->getBody();
+
+	Vector3 worldForce = body->getPV().position.vectorToWorldSpace(force);
+	Vector3 worldPos = body->getPV().position.pointToWorldSpace(location);
+
+	body->accumulateForce(worldForce, worldPos);
+}
+
+// STUB: WEBSERVICE 0x100ebb10
+void Rocket::computeForce(float dt, bool throttling)
+{
+	STUB(0x100ebb10);
+}
+
+// STUB: WEBSERVICE 0x100ebfb0
+void BodyGyro::computeForce(float dt, bool throttling)
+{
+	Body* body = part->getPrimitive()->getBody();
+
+	computeBalance(body);
+	computeOrientation(body);
+}
+
+// FUNCTION: WEBSERVICE 0x100ed7b0
+bool BodyVelocity::preventBodySleep()
+{
+	return velocity != G3D::Vector3::zero();
+}
+
+// STUB: WEBSERVICE 0x100ed840
+BodyForce::BodyForce() : force(G3D::Vector3::unitY())
+{
+}
+
+// FUNCTION: WEBSERVICE 0x100ed950 FOLDED
+bool BodyForce::preventBodySleep()
+{
+	return force != G3D::Vector3::zero();
+}
+
+// FUNCTION: WEBSERVICE 0x100ed950 FOLDED
+bool BodyThrust::preventBodySleep()
+{
+	return force != G3D::Vector3::zero();
+}
+
+} // namespace RBX
+
+template class RBX::FactoryProduct<RBX::BodyForce, RBX::BodyMover, RBX::sBodyForce>;
+template class RBX::Reflection::
+	Described<RBX::BodyForce, RBX::sBodyForce, RBX::FactoryProduct<RBX::BodyForce, RBX::BodyMover, RBX::sBodyForce> >;
+template class RBX::DescribedCreatable<RBX::BodyForce, RBX::BodyMover, RBX::sBodyForce>;
+
+template class RBX::FactoryProduct<RBX::BodyGyro, RBX::BodyMover, RBX::sBodyGyro>;
+template class RBX::Reflection::
+	Described<RBX::BodyGyro, RBX::sBodyGyro, RBX::FactoryProduct<RBX::BodyGyro, RBX::BodyMover, RBX::sBodyGyro> >;
+template class RBX::DescribedCreatable<RBX::BodyGyro, RBX::BodyMover, RBX::sBodyGyro>;
+
+template class RBX::FactoryProduct<RBX::BodyPosition, RBX::BodyMover, RBX::sBodyPosition>;
+template class RBX::Reflection::Described<
+	RBX::BodyPosition,
+	RBX::sBodyPosition,
+	RBX::FactoryProduct<RBX::BodyPosition, RBX::BodyMover, RBX::sBodyPosition> >;
+template class RBX::DescribedCreatable<RBX::BodyPosition, RBX::BodyMover, RBX::sBodyPosition>;
+
+template class RBX::FactoryProduct<RBX::BodyThrust, RBX::BodyMover, RBX::sBodyThrust>;
+template class RBX::Reflection::Described<
+	RBX::BodyThrust,
+	RBX::sBodyThrust,
+	RBX::FactoryProduct<RBX::BodyThrust, RBX::BodyMover, RBX::sBodyThrust> >;
+template class RBX::DescribedCreatable<RBX::BodyThrust, RBX::BodyMover, RBX::sBodyThrust>;
+
+template class RBX::FactoryProduct<RBX::BodyVelocity, RBX::BodyMover, RBX::sBodyVelocity>;
+template class RBX::Reflection::Described<
+	RBX::BodyVelocity,
+	RBX::sBodyVelocity,
+	RBX::FactoryProduct<RBX::BodyVelocity, RBX::BodyMover, RBX::sBodyVelocity> >;
+template class RBX::DescribedCreatable<RBX::BodyVelocity, RBX::BodyMover, RBX::sBodyVelocity>;
+
+template class RBX::FactoryProduct<RBX::Rocket, RBX::BodyMover, RBX::sRocket>;
+template class RBX::Reflection::
+	Described<RBX::Rocket, RBX::sRocket, RBX::FactoryProduct<RBX::Rocket, RBX::BodyMover, RBX::sRocket> >;
+template class RBX::DescribedCreatable<RBX::Rocket, RBX::BodyMover, RBX::sRocket>;

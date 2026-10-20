@@ -1,219 +1,526 @@
-// roc 2007-03 0056adf0  unit: seg_00560000  size: 518 bytes
-// Make this compile to the exact bytes below, then: roc check 2007-03 0056adf0
-//
-// 0056adf0  83ec0c               sub esp, 0xc
-// 0056adf3  56                   push esi
-// 0056adf4  8bf1                 mov esi, ecx
-// 0056adf6  837e0800             cmp dword ptr [esi + 8], 0
-// 0056adfa  57                   push edi
-// 0056adfb  7521                 jne 0x56ae1e
-// 0056adfd  8b442424             mov eax, dword ptr [esp + 0x24]
-// 0056ae01  8b4e04               mov ecx, dword ptr [esi + 4]
-// 0056ae04  8b7c2418             mov edi, dword ptr [esp + 0x18]
-// 0056ae08  50                   push eax
-// 0056ae09  51                   push ecx
-// 0056ae0a  6a01                 push 1
-// 0056ae0c  57                   push edi
-// 0056ae0d  8bce                 mov ecx, esi
-// 0056ae0f  e8dcfcffff           call 0x56aaf0
-// 0056ae14  8bc7                 mov eax, edi
-// 0056ae16  5f                   pop edi
-// 0056ae17  5e                   pop esi
-// 0056ae18  83c40c               add esp, 0xc
-// 0056ae1b  c21000               ret 0x10
-// 0056ae1e  8b5604               mov edx, dword ptr [esi + 4]
-// 0056ae21  8b3a                 mov edi, dword ptr [edx]
-// 0056ae23  55                   push ebp
-// 0056ae24  8b6c2420             mov ebp, dword ptr [esp + 0x20]
-// 0056ae28  85ed                 test ebp, ebp
-// 0056ae2a  7404                 je 0x56ae30
-// 0056ae2c  3bee                 cmp ebp, esi
-// 0056ae2e  7406                 je 0x56ae36
-// 0056ae30  ff1544e97700         call dword ptr [0x77e944]
-// 0056ae36  53                   push ebx
-// 0056ae37  8b5c2428             mov ebx, dword ptr [esp + 0x28]
-// 0056ae3b  3bdf                 cmp ebx, edi
-// 0056ae3d  7536                 jne 0x56ae75
-// 0056ae3f  8b7c242c             mov edi, dword ptr [esp + 0x2c]
-// 0056ae43  8d430c               lea eax, [ebx + 0xc]
-// 0056ae46  50                   push eax
-// 0056ae47  57                   push edi
-// 0056ae48  ff15e0e67700         call dword ptr [0x77e6e0]
-// 0056ae4e  83c408               add esp, 8
-// 0056ae51  84c0                 test al, al
-// 0056ae53  0f8476010000         je 0x56afcf
-// 0056ae59  57                   push edi
-// 0056ae5a  8b7c2424             mov edi, dword ptr [esp + 0x24]
-// 0056ae5e  53                   push ebx
-// 0056ae5f  6a01                 push 1
-// 0056ae61  57                   push edi
-// 0056ae62  8bce                 mov ecx, esi
-// 0056ae64  e887fcffff           call 0x56aaf0
-// 0056ae69  5b                   pop ebx
-// 0056ae6a  5d                   pop ebp
-// 0056ae6b  8bc7                 mov eax, edi
-// 0056ae6d  5f                   pop edi
-// 0056ae6e  5e                   pop esi
-// 0056ae6f  83c40c               add esp, 0xc
-// 0056ae72  c21000               ret 0x10
-// 0056ae75  85ed                 test ebp, ebp
-// 0056ae77  8b7e04               mov edi, dword ptr [esi + 4]
-// 0056ae7a  7404                 je 0x56ae80
-// 0056ae7c  3bee                 cmp ebp, esi
-// 0056ae7e  7406                 je 0x56ae86
-// 0056ae80  ff1544e97700         call dword ptr [0x77e944]
-// 0056ae86  3bdf                 cmp ebx, edi
-// 0056ae88  8b7c242c             mov edi, dword ptr [esp + 0x2c]
-// 0056ae8c  753e                 jne 0x56aecc
-// 0056ae8e  8b4e04               mov ecx, dword ptr [esi + 4]
-// 0056ae91  8b4108               mov eax, dword ptr [ecx + 8]
-// 0056ae94  83c00c               add eax, 0xc
-// 0056ae97  57                   push edi
-// 0056ae98  50                   push eax
-// 0056ae99  ff15e0e67700         call dword ptr [0x77e6e0]
-// 0056ae9f  83c408               add esp, 8
-// 0056aea2  84c0                 test al, al
-// 0056aea4  0f8425010000         je 0x56afcf
-// 0056aeaa  8b5604               mov edx, dword ptr [esi + 4]
-// 0056aead  8b4208               mov eax, dword ptr [edx + 8]
-// 0056aeb0  57                   push edi
-// 0056aeb1  8b7c2424             mov edi, dword ptr [esp + 0x24]
-// 0056aeb5  50                   push eax
-// 0056aeb6  6a00                 push 0
-// 0056aeb8  57                   push edi
-// 0056aeb9  8bce                 mov ecx, esi
-// 0056aebb  e830fcffff           call 0x56aaf0
-// 0056aec0  5b                   pop ebx
-// 0056aec1  5d                   pop ebp
-// 0056aec2  8bc7                 mov eax, edi
-// 0056aec4  5f                   pop edi
-// 0056aec5  5e                   pop esi
-// 0056aec6  83c40c               add esp, 0xc
-// 0056aec9  c21000               ret 0x10
-// 0056aecc  8d430c               lea eax, [ebx + 0xc]
-// 0056aecf  50                   push eax
-// 0056aed0  57                   push edi
-// 0056aed1  ff15e0e67700         call dword ptr [0x77e6e0]
-// 0056aed7  83c408               add esp, 8
-// 0056aeda  84c0                 test al, al
-// 0056aedc  7463                 je 0x56af41
-// 0056aede  8d4c2424             lea ecx, [esp + 0x24]
-// 0056aee2  896c2424             mov dword ptr [esp + 0x24], ebp
-// 0056aee6  895c2428             mov dword ptr [esp + 0x28], ebx
-// 0056aeea  e811d20800           call 0x5f8100
-// 0056aeef  8b4c2428             mov ecx, dword ptr [esp + 0x28]
-// 0056aef3  83c10c               add ecx, 0xc
-// 0056aef6  57                   push edi
-// 0056aef7  51                   push ecx
-// 0056aef8  8bce                 mov ecx, esi
-// 0056aefa  e8b195edff           call 0x4444b0
-// 0056aeff  84c0                 test al, al
-// 0056af01  743e                 je 0x56af41
-// 0056af03  8b442428             mov eax, dword ptr [esp + 0x28]
-// 0056af07  8b5008               mov edx, dword ptr [eax + 8]
-// 0056af0a  807a2d00             cmp byte ptr [edx + 0x2d], 0
-// 0056af0e  57                   push edi
-// 0056af0f  8b7c2424             mov edi, dword ptr [esp + 0x24]
-// 0056af13  8bce                 mov ecx, esi
-// 0056af15  7415                 je 0x56af2c
-// 0056af17  50                   push eax
-// 0056af18  6a00                 push 0
-// 0056af1a  57                   push edi
-// 0056af1b  e8d0fbffff           call 0x56aaf0
-// 0056af20  5b                   pop ebx
-// 0056af21  5d                   pop ebp
-// 0056af22  8bc7                 mov eax, edi
-// 0056af24  5f                   pop edi
-// 0056af25  5e                   pop esi
-// 0056af26  83c40c               add esp, 0xc
-// 0056af29  c21000               ret 0x10
-// 0056af2c  53                   push ebx
-// 0056af2d  6a01                 push 1
-// 0056af2f  57                   push edi
-// 0056af30  e8bbfbffff           call 0x56aaf0
-// 0056af35  5b                   pop ebx
-// 0056af36  5d                   pop ebp
-// 0056af37  8bc7                 mov eax, edi
-// 0056af39  5f                   pop edi
-// 0056af3a  5e                   pop esi
-// 0056af3b  83c40c               add esp, 0xc
-// 0056af3e  c21000               ret 0x10
-// 0056af41  8d430c               lea eax, [ebx + 0xc]
-// 0056af44  57                   push edi
-// 0056af45  50                   push eax
-// 0056af46  ff15e0e67700         call dword ptr [0x77e6e0]
-// 0056af4c  83c408               add esp, 8
-// 0056af4f  84c0                 test al, al
-// 0056af51  747c                 je 0x56afcf
-// 0056af53  8b4604               mov eax, dword ptr [esi + 4]
-// 0056af56  8d4c2424             lea ecx, [esp + 0x24]
-// 0056af5a  896c2424             mov dword ptr [esp + 0x24], ebp
-// 0056af5e  895c2428             mov dword ptr [esp + 0x28], ebx
-// 0056af62  89442414             mov dword ptr [esp + 0x14], eax
-// 0056af66  89742410             mov dword ptr [esp + 0x10], esi
-// 0056af6a  e80127fcff           call 0x52d670
-// 0056af6f  8d4c2410             lea ecx, [esp + 0x10]
-// 0056af73  51                   push ecx
-// 0056af74  8d4c2428             lea ecx, [esp + 0x28]
-// 0056af78  e8e30ceeff           call 0x44bc60
-// 0056af7d  84c0                 test al, al
-// 0056af7f  8b6c2428             mov ebp, dword ptr [esp + 0x28]
-// 0056af83  7510                 jne 0x56af95
-// 0056af85  8d550c               lea edx, [ebp + 0xc]
-// 0056af88  52                   push edx
-// 0056af89  57                   push edi
-// 0056af8a  8bce                 mov ecx, esi
-// 0056af8c  e81f95edff           call 0x4444b0
-// 0056af91  84c0                 test al, al
-// 0056af93  743a                 je 0x56afcf
-// 0056af95  8b4308               mov eax, dword ptr [ebx + 8]
-// 0056af98  80782d00             cmp byte ptr [eax + 0x2d], 0
-// 0056af9c  57                   push edi
-// 0056af9d  8b7c2424             mov edi, dword ptr [esp + 0x24]
-// 0056afa1  8bce                 mov ecx, esi
-// 0056afa3  7415                 je 0x56afba
-// 0056afa5  53                   push ebx
-// 0056afa6  6a00                 push 0
-// 0056afa8  57                   push edi
-// 0056afa9  e842fbffff           call 0x56aaf0
-// 0056afae  5b                   pop ebx
-// 0056afaf  5d                   pop ebp
-// 0056afb0  8bc7                 mov eax, edi
-// 0056afb2  5f                   pop edi
-// 0056afb3  5e                   pop esi
-// 0056afb4  83c40c               add esp, 0xc
-// 0056afb7  c21000               ret 0x10
-// 0056afba  55                   push ebp
-// 0056afbb  6a01                 push 1
-// 0056afbd  57                   push edi
-// 0056afbe  e82dfbffff           call 0x56aaf0
-// 0056afc3  5b                   pop ebx
-// 0056afc4  5d                   pop ebp
-// 0056afc5  8bc7                 mov eax, edi
-// 0056afc7  5f                   pop edi
-// 0056afc8  5e                   pop esi
-// 0056afc9  83c40c               add esp, 0xc
-// 0056afcc  c21000               ret 0x10
-// 0056afcf  57                   push edi
-// 0056afd0  8d4c2414             lea ecx, [esp + 0x14]
-// 0056afd4  51                   push ecx
-// 0056afd5  8bce                 mov ecx, esi
-// 0056afd7  e814fdffff           call 0x56acf0
-// 0056afdc  8b10                 mov edx, dword ptr [eax]
-// 0056afde  8b4c2420             mov ecx, dword ptr [esp + 0x20]
-// 0056afe2  5b                   pop ebx
-// 0056afe3  5d                   pop ebp
-// 0056afe4  8911                 mov dword ptr [ecx], edx
-// 0056afe6  8b4004               mov eax, dword ptr [eax + 4]
-// 0056afe9  5f                   pop edi
-// 0056afea  894104               mov dword ptr [ecx + 4], eax
-// 0056afed  8bc1                 mov eax, ecx
-// 0056afef  5e                   pop esi
-// 0056aff0  83c40c               add esp, 0xc
-// 0056aff3  c21000               ret 0x10
-// library rbxgs/v8datamodel\Camera.cpp (function ?insert@?$_Tree@V?$_Tmap_traits@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@W4CameraType@Camera@RBX@@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@W4CameraType@Camera@RBX@@@std@@@2@$0A@@std@@@std@@QAE?AViterator@12@V312@ABU?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@W4CameraType@Camera@RBX@@@2@@Z)
-
 // roc-lang: cpp
 // roc-cl: 50727
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
 // roc-lib: rbxgs v8datamodel/Camera.cpp
+
+// Candidate translation unit (score above; library headers required).
+#include "v8datamodel/Camera.h"
+#include "v8datamodel/Workspace.h"
+#include "v8datamodel/ICharacterSubject.h"
+#include "util/Math.h"
+
+namespace RBX
+{
+	const char* sCamera = "Camera";
+
+	static Reflection::EnumPropDescriptor<Camera, Camera::CameraType> desc_cameraType("CameraType", "Camera", &Camera::getCameraType, &Camera::setCameraType, Reflection::PropertyDescriptor::STANDARD); 
+	static Reflection::PropDescriptor<Camera, G3D::CoordinateFrame> desc_CoordFrame("CoordinateFrame", "Data", &Camera::getCameraCoordinateFrame, &Camera::setCameraCoordinateFrameNoLerp, Reflection::PropertyDescriptor::STREAMING);
+	static Reflection::PropDescriptor<Camera, G3D::CoordinateFrame> desc_Focus("Focus", "Data", &Camera::getCameraFocus, &Camera::setCameraFocus, Reflection::PropertyDescriptor::STREAMING);
+	static Reflection::RefPropDescriptor<Camera, Instance> cameraSubjectProp("CameraSubject", "Camera", &Camera::getCameraSubjectInstance, &Camera::setCameraSubject, Reflection::PropertyDescriptor::STANDARD);
+	
+	Reflection::EnumDesc<Camera::CameraType>::EnumDesc()
+		: EnumDescriptor("CameraType", typeid(Camera::CameraType))
+	{
+		addPair(Camera::FIXED_CAMERA, "Fixed");
+		addPair(Camera::WATCH_CAMERA, "Watch");
+		addPair(Camera::ATTACH_CAMERA, "Attach");
+		addPair(Camera::TRACK_CAMERA, "Track");
+		addPair(Camera::FOLLOW_CAMERA, "Follow");
+		addPair(Camera::CUSTOM_CAMERA, "Custom");
+	}
+
+	Camera::Camera()
+		: Base(),
+		  cameraFocus(G3D::Vector3(0, 0, -5)),
+		  cameraType(FIXED_CAMERA),
+		  animationType(AUTO),
+		  cameraExternallyAdjusted(false)
+	{
+		setName("Camera");
+		gCamera.setNearPlaneZ(1.25);
+		gCamera.setFarPlaneZ(5000);
+		gCamera.setFieldOfView(G3D::toRadians(60));
+
+		G3D::CoordinateFrame cameraCoord(G3D::Vector3(0, 5, 5));
+		cameraCoord.lookAt(G3D::Vector3::zero());
+
+		setGCameraCoordinateFrame(cameraCoord);
+	}
+
+	Camera::~Camera()
+	{
+	}
+
+	void Camera::tellCameraMoved()
+	{
+		if (ICameraOwner* owner = getCameraOwner())
+		{
+			owner->cameraMoved();
+		}
+	}
+
+	void Camera::setGCameraCoordinateFrame(const G3D::CoordinateFrame& coord)
+	{
+		if (Math::legalCameraCoord(coord))
+		{
+			gCamera.setCoordinateFrame(coord);
+		}
+		else
+		{
+			RBXASSERT(false);
+		}
+	}
+
+	bool Camera::askSetParent(const Instance* instance) const
+	{
+		return dynamic_cast<const Workspace*>(instance) != NULL;
+	}
+
+	ICameraOwner* Camera::getCameraOwner()
+	{
+		for (Instance* instance = getParent(); instance != NULL; instance = instance->getParent())
+		{
+			ICameraOwner* cameraOwner = dynamic_cast<ICameraOwner*>(instance);
+			if (cameraOwner)
+				return cameraOwner;
+		}
+
+		return NULL;
+	}
+
+	void Camera::lookAt(const G3D::Vector3& point)
+	{
+		cameraFocus.translation = point;
+		cameraGoal.lookAt(point);
+	}
+
+	void Camera::getHeadingElevationDistance(float& heading, float& elevation, float& distance)
+	{
+		Math::getHeadingElevation(cameraGoal, heading, elevation);
+		distance = goalToFocusDistance();
+	}
+
+	bool Camera::setDistanceFromTarget(float newDistance)
+	{
+		G3D::Vector3 lookVector = cameraFocus.translation - cameraGoal.translation;
+		float currentDistance = lookVector.magnitude();
+
+		const float min = distanceMin();
+		const float max = distanceMax();
+
+		if (newDistance < min && currentDistance == min)
+			return false;
+		
+		if (newDistance > max && currentDistance == max)
+			return false;
+
+		newDistance = G3D::min(max, G3D::max(min, newDistance));
+		
+		lookVector *= newDistance;
+		cameraGoal.translation = cameraFocus.translation - (lookVector / currentDistance);
+
+		tellCameraMoved();
+
+		return true;
+	}
+
+	void Camera::alwaysMode()
+	{
+		animationType = ALWAYS;
+	}
+
+	bool Camera::nonCharacterZoom(float in)
+	{
+		G3D::Vector3 lookVector = cameraFocus.translation - cameraGoal.translation;
+
+		float currentDistance = lookVector.magnitude();
+		float newZoomDistance = getNewZoomDistance(currentDistance, in);
+
+		if (newZoomDistance == currentDistance)
+			return false;
+
+		cameraGoal.translation -= lookVector * (newZoomDistance / currentDistance - 1.0f);
+
+		tellCameraMoved();
+
+		return true;
+	}
+
+	bool Camera::characterZoom(float in)
+	{
+		G3D::Vector3 focusToGoal = cameraGoal.translation - cameraFocus.translation;
+
+		float currentDistance = focusToGoal.magnitude();
+
+		float maxDistance = distanceMaxCharacter();
+		float newDistance = getNewZoomDistance(currentDistance, in);
+		newDistance = G3D::min(newDistance, maxDistance);
+
+		if (newDistance == currentDistance)
+			return false;
+
+		focusToGoal.y = 0.0;
+		focusToGoal.unitize();
+		focusToGoal.y = newDistance * 0.03f;
+
+		cameraGoal.translation = focusToGoal.direction() * newDistance + cameraFocus.translation;
+
+		return true;
+	}
+
+	void Camera::setHeadingElevationDistance(float heading, float elevation, float distance)
+	{
+		Math::setHeadingElevation(cameraGoal, heading, elevation);
+		cameraFocus.rotation = cameraGoal.rotation;
+
+		cameraGoal.translation = cameraFocus.translation - cameraGoal.lookVector() * distance;
+		cameraExternallyAdjusted = true;
+	}
+
+	void Camera::panRadians(float angle)
+	{
+		RBXASSERT(angle > -100);
+		RBXASSERT(angle < 100);
+
+		if (angle != 0)
+		{
+			float heading, elevation, distance;
+
+			getHeadingElevationDistance(heading, elevation, distance);
+			heading = Math::radWrap(heading + angle);
+			setHeadingElevationDistance(heading, elevation, distance);
+
+			tellCameraMoved();
+		}
+	}
+
+	bool Camera::tiltRadians(float angle)
+	{
+		if (angle != 0)
+		{
+			float heading, elevation, distance;
+			getHeadingElevationDistance(heading, elevation, distance);
+
+			static float rad = G3D::toRadians(81);
+			float newElevation = G3D::clamp(elevation + angle, -rad, rad);
+
+			if (elevation != newElevation)
+			{
+				setHeadingElevationDistance(heading, newElevation, distance);
+				tellCameraMoved();
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	void Camera::updateFocus()
+	{
+		Instance* instance = getCameraSubjectInstance();
+		if (instance)
+		{
+			ICameraSubject* subject = dynamic_cast<ICameraSubject*>(instance);
+			RBXASSERT(subject);
+			cameraFocus = subject->getLocation();
+		}
+	}
+
+	//96.11% matching.
+	void Camera::updateGoal()
+	{
+		switch (cameraType)
+		{
+			case WATCH_CAMERA:
+			{
+				updateFocus();
+				break;
+			}
+			case ATTACH_CAMERA: 
+			{
+				G3D::Vector3 delta = cameraGoal.translation - cameraFocus.translation;
+				float distance = delta.xz().length();
+
+				updateFocus();
+
+				G3D::Vector2 direction = -cameraFocus.lookVector().xz().direction();
+				cameraGoal.translation = cameraFocus.translation + G3D::Vector3(direction.x * distance, delta.y, direction.y * distance);
+
+				break;
+			}
+			case TRACK_CAMERA:
+			{
+				G3D::Vector3 oldFocusPt = cameraFocus.translation;
+				updateFocus();
+
+				cameraGoal.translation += cameraFocus.translation - oldFocusPt;
+				break;
+			}
+			case FOLLOW_CAMERA:
+			{
+				G3D::Vector3 delta = cameraFocus.translation - cameraGoal.translation;
+				float distance = delta.xz().length();
+
+				updateFocus();
+			
+				G3D::Vector2 direction = (cameraFocus.translation.xz() - cameraGoal.translation.xz()).direction();
+				cameraGoal.translation = cameraFocus.translation - G3D::Vector3(direction.x * distance, delta.y, direction.y * distance);
+
+				break;
+			}
+			case CUSTOM_CAMERA:
+			{
+				if (ICameraSubject* cameraSubject = getCameraSubject())
+					cameraSubject->stepGoalAndFocus(cameraGoal, cameraFocus, cameraExternallyAdjusted);
+
+				cameraExternallyAdjusted = false;
+				break;
+			}
+		}
+
+		cameraGoal.lookAt(cameraFocus.translation);
+	}
+
+	bool Camera::zoom(float in)
+	{
+		if (cameraType == CUSTOM_CAMERA)
+		{
+			ICameraSubject* cameraSubject = getCameraSubject();
+			if (cameraSubject)
+				return cameraSubject->zoom(in, cameraGoal, cameraFocus);
+		}
+		else if (getCameraSubjectInstance() && 
+				 (cameraType == FOLLOW_CAMERA || 
+				  cameraType == ATTACH_CAMERA || 
+				  cameraType == TRACK_CAMERA))
+		{
+			return characterZoom(in);
+		}
+		else
+		{
+			return nonCharacterZoom(in);
+		}
+
+		return false;
+	}
+
+	void Camera::onHeartbeat()
+	{
+		updateGoal();
+		G3D::CoordinateFrame adjustedGoal = cameraGoal;
+		ICameraSubject* cameraSubject = getCameraSubject();
+		ICharacterSubject* characterSubject = dynamic_cast<ICharacterSubject*>(cameraSubject);
+
+		if (characterSubject)
+			characterSubject->onHeartBeat(cameraGoal, cameraFocus);
+
+		G3D::CoordinateFrame cameraCoord = gCamera.getCoordinateFrame();
+		G3D::CoordinateFrame LerpFrame = cameraCoord.lerp(adjustedGoal, 0.9f);
+
+		setGCameraCoordinateFrame(LerpFrame);
+
+		if (animationType == ALWAYS || !Math::fuzzyEq(LerpFrame, cameraCoord, 0.01f, 0.01f))
+		{
+			tellCameraMoved();
+		}
+	}
+
+	Instance* Camera::getCameraSubjectInstance() const
+	{
+		return cameraSubject.get();
+	}
+
+	ICameraSubject* Camera::getCameraSubject() const
+	{
+		Instance* instance = getCameraSubjectInstance();
+		if (instance)
+		{
+			ICameraSubject* subject = dynamic_cast<ICameraSubject*>(instance);
+			RBXASSERT(subject);
+			return subject;
+		}
+		return NULL;
+	}
+
+	void Camera::autoMode()
+	{
+		if (animationType != AUTO)
+		{
+			animationType = AUTO;
+
+			tellCameraMoved();
+		}
+	}
+
+	void Camera::setCameraType(CameraType type)
+	{
+		if (cameraType != type)
+		{
+			cameraType = type;
+			raisePropertyChanged(desc_cameraType);
+
+			tellCameraMoved();
+		}
+	}
+
+	void Camera::setCameraSubject(Instance* newSubject)
+	{
+		if (newSubject != getCameraSubjectInstance())
+		{
+			if (dynamic_cast<ICameraSubject*>(newSubject))
+			{
+				cameraSubject = shared_from((ModelInstance*) newSubject);
+				raisePropertyChanged(cameraSubjectProp);
+
+				tellCameraMoved();
+			}
+		}
+	}
+
+	void Camera::setCameraFocus(const G3D::CoordinateFrame& value)
+	{
+		if (value != cameraFocus)
+		{
+			cameraFocus = value;
+			raisePropertyChanged(desc_Focus);
+
+			tellCameraMoved();
+		}
+	}
+
+	void Camera::goalToCamera()
+	{
+		if (gCamera.getCoordinateFrame() != cameraGoal)
+		{
+			cameraExternallyAdjusted = true;
+			setGCameraCoordinateFrame(cameraGoal);
+			raisePropertyChanged(desc_CoordFrame);
+
+			tellCameraMoved();
+		}
+	}
+
+	void Camera::tryZoomExtents(float low, float current, float high, const Extents& extents, const G3D::Rect2D& viewPort)
+	{
+		RBXASSERT(current >= low);
+		RBXASSERT(current <= high);
+
+		if (high - low < 0.1)
+			return;
+
+		setDistanceFromTarget(current);
+		updateGoal();
+		goalToCamera();
+
+		if (extents.containedByFrustum(gCamera.frustum(viewPort)))
+		{
+			tryZoomExtents(low, (low + current) * 0.5, current, extents, viewPort);
+		}
+		else
+		{
+			tryZoomExtents(current, (current + high) * 0.5, high, extents, viewPort);
+		}
+	}
+
+	void Camera::zoomExtents(Extents extents, const G3D::Rect2D& viewPort, Camera::ZoomType zoomType)
+	{
+		G3D::CoordinateFrame currentCoord = gCamera.getCoordinateFrame();
+		extents.expand(0.1f);
+
+		if (zoomType != ZOOM_CHAR_PART_DRAG || cameraType == CUSTOM_CAMERA)
+		{
+			if (cameraType == FIXED_CAMERA)
+			{
+				G3D::Vector3 scaler = extents.center() - cameraFocus.translation;
+
+				cameraFocus.translation += scaler;
+				cameraGoal.translation += scaler;
+			}
+
+			float low;
+
+			if (zoomType == ZOOM_OUT_ONLY || zoomType == ZOOM_CHAR_PART_DRAG)
+				low = goalToFocusDistance();
+			else
+				low = distanceMin();
+
+			float current = goalToFocusDistance();
+
+			RBXASSERT(G3D::isFinite(current));
+
+			if (zoomType == ZOOM_CHAR_PART_DRAG)
+				extents.scale(1.1f);
+
+			if (G3D::isFinite(low) && G3D::isFinite(current) && G3D::isFinite(distanceMax()))
+				tryZoomExtents(low, current, distanceMax(), extents, viewPort);
+
+			cameraGoal = gCamera.getCoordinateFrame();
+			setGCameraCoordinateFrame(currentCoord);
+			tellCameraMoved();
+		}
+	}
+
+	bool Camera::zoomExtents(const G3D::Rect2D& viewPort)
+	{
+		if (ICameraOwner* owner = getCameraOwner())
+		{
+			zoomExtents(owner->computeCameraOwnerExtents(), viewPort, ZOOM_IN_OR_OUT);
+			return true;
+		}
+		return false;
+	}
+
+	void Camera::setCameraCoordinateFrameNoLerp(const G3D::CoordinateFrame& value)
+	{
+		cameraGoal = value;
+		goalToCamera();
+	}
+
+	void Camera::setImageServerViewNoLerp(const G3D::CoordinateFrame& modelCoord, const G3D::Rect2D& viewPort)
+	{
+		G3D::Vector3 look = modelCoord.lookVector();
+
+		bool noTilt = (fabs(look.y) > 0.95);
+		if (noTilt)
+		{
+			look = -G3D::Vector3::unitZ();
+		}
+		else
+		{
+			look.y = 0;
+			look = look.direction();
+		}
+
+		G3D::CoordinateFrame lookCoord;
+
+		lookCoord.lookAt(look);
+		lookCoord.rotation *= G3D::Matrix3::fromEulerAnglesZXY(G3D::toRadians(45), G3D::toRadians(35), 0.0f);
+
+		look = lookCoord.lookVector();
+		lookCoord.translation = (look * 10.0f) + modelCoord.translation;
+
+		lookCoord.lookAt(modelCoord.translation);
+
+		setCameraType(FIXED_CAMERA);
+		setCameraFocus(modelCoord.translation);
+		setCameraCoordinateFrameNoLerp(lookCoord);
+		zoomExtents(viewPort);
+		goalToCamera();
+	}
+
+	float Camera::getNewZoomDistance(float currentDistance, float in)
+	{
+		float const ZOOM_FACTOR = 0.25f;
+
+		if (in > 0.0f)
+		{
+			currentDistance = G3D::max<float>(currentDistance / (1.0 + in * ZOOM_FACTOR), distanceMin());
+		} 	
+		else if (in < 0.0f)
+		{
+			return G3D::min<float>(currentDistance * (1.0 - in * ZOOM_FACTOR), distanceMax());
+		}
+
+		return currentDistance;
+	}
+}

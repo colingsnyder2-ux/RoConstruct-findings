@@ -1,330 +1,394 @@
 // from server: 100% by auto
-// roc 2008-06 00539640  unit: seg_00530000  size: 883 bytes
-// Make this compile to the exact bytes below, then: roc check 2008-06 00539640
-//
-// 00539640  81ec18010000         sub esp, 0x118
-// 00539646  8b84241c010000       mov eax, dword ptr [esp + 0x11c]
-// 0053964d  8b8058010000         mov eax, dword ptr [eax + 0x158]
-// 00539653  8b4808               mov ecx, dword ptr [eax + 8]
-// 00539656  8b942420010000       mov edx, dword ptr [esp + 0x120]
-// 0053965d  894c240c             mov dword ptr [esp + 0xc], ecx
-// 00539661  8b4a10               mov ecx, dword ptr [edx + 0x10]
-// 00539664  8b44880c             mov eax, dword ptr [eax + ecx*4 + 0xc]
-// 00539668  8b8c2434010000       mov ecx, dword ptr [esp + 0x134]
-// 0053966f  85c9                 test ecx, ecx
-// 00539671  0f8635030000         jbe 0x5399ac
-// 00539677  8b94242c010000       mov edx, dword ptr [esp + 0x12c]
-// 0053967e  53                   push ebx
-// 0053967f  8b9c2434010000       mov ebx, dword ptr [esp + 0x134]
-// 00539686  55                   push ebp
-// 00539687  56                   push esi
-// 00539688  8bb42430010000       mov esi, dword ptr [esp + 0x130]
-// 0053968f  8d549608             lea edx, [esi + edx*4 + 8]
-// 00539693  89542420             mov dword ptr [esp + 0x20], edx
-// 00539697  8d5008               lea edx, [eax + 8]
-// 0053969a  89542410             mov dword ptr [esp + 0x10], edx
-// 0053969e  8d542424             lea edx, [esp + 0x24]
-// 005396a2  2bd0                 sub edx, eax
-// 005396a4  89542414             mov dword ptr [esp + 0x14], edx
-// 005396a8  57                   push edi
-// 005396a9  8bbc2438010000       mov edi, dword ptr [esp + 0x138]
-// 005396b0  8d54242c             lea edx, [esp + 0x2c]
-// 005396b4  2bd0                 sub edx, eax
-// 005396b6  89542420             mov dword ptr [esp + 0x20], edx
-// 005396ba  83c704               add edi, 4
-// 005396bd  894c2410             mov dword ptr [esp + 0x10], ecx
-// 005396c1  8b542424             mov edx, dword ptr [esp + 0x24]
-// 005396c5  8d442428             lea eax, [esp + 0x28]
-// 005396c9  be02000000           mov esi, 2
-// 005396ce  8bff                 mov edi, edi
-// 005396d0  8b4af8               mov ecx, dword ptr [edx - 8]
-// 005396d3  0fb62c19             movzx ebp, byte ptr [ecx + ebx]
-// 005396d7  83c580               add ebp, -0x80
-// 005396da  8928                 mov dword ptr [eax], ebp
-// 005396dc  03cb                 add ecx, ebx
-// 005396de  0fb66901             movzx ebp, byte ptr [ecx + 1]
-// 005396e2  41                   inc ecx
-// 005396e3  83c580               add ebp, -0x80
-// 005396e6  896804               mov dword ptr [eax + 4], ebp
-// 005396e9  0fb66901             movzx ebp, byte ptr [ecx + 1]
-// 005396ed  41                   inc ecx
-// 005396ee  83c580               add ebp, -0x80
-// 005396f1  83c004               add eax, 4
-// 005396f4  896804               mov dword ptr [eax + 4], ebp
-// 005396f7  0fb66901             movzx ebp, byte ptr [ecx + 1]
-// 005396fb  41                   inc ecx
-// 005396fc  83c004               add eax, 4
-// 005396ff  83c580               add ebp, -0x80
-// 00539702  896804               mov dword ptr [eax + 4], ebp
-// 00539705  0fb66901             movzx ebp, byte ptr [ecx + 1]
-// 00539709  41                   inc ecx
-// 0053970a  83c004               add eax, 4
-// 0053970d  83c580               add ebp, -0x80
-// 00539710  896804               mov dword ptr [eax + 4], ebp
-// 00539713  0fb66901             movzx ebp, byte ptr [ecx + 1]
-// 00539717  41                   inc ecx
-// 00539718  83c004               add eax, 4
-// 0053971b  83c580               add ebp, -0x80
-// 0053971e  896804               mov dword ptr [eax + 4], ebp
-// 00539721  0fb66901             movzx ebp, byte ptr [ecx + 1]
-// 00539725  41                   inc ecx
-// 00539726  83c004               add eax, 4
-// 00539729  83c580               add ebp, -0x80
-// 0053972c  896804               mov dword ptr [eax + 4], ebp
-// 0053972f  0fb64901             movzx ecx, byte ptr [ecx + 1]
-// 00539733  83c004               add eax, 4
-// 00539736  83c180               add ecx, -0x80
-// 00539739  894804               mov dword ptr [eax + 4], ecx
-// 0053973c  8b4afc               mov ecx, dword ptr [edx - 4]
-// 0053973f  0fb62c19             movzx ebp, byte ptr [ecx + ebx]
-// 00539743  83c004               add eax, 4
-// 00539746  03cb                 add ecx, ebx
-// 00539748  83c580               add ebp, -0x80
-// 0053974b  896804               mov dword ptr [eax + 4], ebp
-// 0053974e  0fb66901             movzx ebp, byte ptr [ecx + 1]
-// 00539752  83c004               add eax, 4
-// 00539755  41                   inc ecx
-// 00539756  83c580               add ebp, -0x80
-// 00539759  896804               mov dword ptr [eax + 4], ebp
-// 0053975c  0fb66901             movzx ebp, byte ptr [ecx + 1]
-// 00539760  83c004               add eax, 4
-// 00539763  41                   inc ecx
-// 00539764  83c580               add ebp, -0x80
-// 00539767  896804               mov dword ptr [eax + 4], ebp
-// 0053976a  0fb66901             movzx ebp, byte ptr [ecx + 1]
-// 0053976e  83c004               add eax, 4
-// 00539771  41                   inc ecx
-// 00539772  83c580               add ebp, -0x80
-// 00539775  896804               mov dword ptr [eax + 4], ebp
-// 00539778  0fb66901             movzx ebp, byte ptr [ecx + 1]
-// 0053977c  83c004               add eax, 4
-// 0053977f  41                   inc ecx
-// 00539780  83c580               add ebp, -0x80
-// 00539783  896804               mov dword ptr [eax + 4], ebp
-// 00539786  0fb66901             movzx ebp, byte ptr [ecx + 1]
-// 0053978a  83c004               add eax, 4
-// 0053978d  41                   inc ecx
-// 0053978e  83c004               add eax, 4
-// 00539791  83c580               add ebp, -0x80
-// 00539794  8928                 mov dword ptr [eax], ebp
-// 00539796  0fb66901             movzx ebp, byte ptr [ecx + 1]
-// 0053979a  41                   inc ecx
-// 0053979b  83c004               add eax, 4
-// 0053979e  83c580               add ebp, -0x80
-// 005397a1  8928                 mov dword ptr [eax], ebp
-// 005397a3  0fb64901             movzx ecx, byte ptr [ecx + 1]
-// 005397a7  83c180               add ecx, -0x80
-// 005397aa  83c004               add eax, 4
-// 005397ad  8908                 mov dword ptr [eax], ecx
-// 005397af  8b0a                 mov ecx, dword ptr [edx]
-// 005397b1  83c004               add eax, 4
-// 005397b4  0fb62c19             movzx ebp, byte ptr [ecx + ebx]
-// 005397b8  83c580               add ebp, -0x80
-// 005397bb  8928                 mov dword ptr [eax], ebp
-// 005397bd  03cb                 add ecx, ebx
-// 005397bf  0fb66901             movzx ebp, byte ptr [ecx + 1]
-// 005397c3  83c580               add ebp, -0x80
-// 005397c6  896804               mov dword ptr [eax + 4], ebp
-// 005397c9  41                   inc ecx
-// 005397ca  0fb66901             movzx ebp, byte ptr [ecx + 1]
-// 005397ce  83c004               add eax, 4
-// 005397d1  41                   inc ecx
-// 005397d2  83c580               add ebp, -0x80
-// 005397d5  896804               mov dword ptr [eax + 4], ebp
-// 005397d8  0fb66901             movzx ebp, byte ptr [ecx + 1]
-// 005397dc  83c004               add eax, 4
-// 005397df  41                   inc ecx
-// 005397e0  83c580               add ebp, -0x80
-// 005397e3  896804               mov dword ptr [eax + 4], ebp
-// 005397e6  0fb66901             movzx ebp, byte ptr [ecx + 1]
-// 005397ea  83c004               add eax, 4
-// 005397ed  41                   inc ecx
-// 005397ee  83c580               add ebp, -0x80
-// 005397f1  896804               mov dword ptr [eax + 4], ebp
-// 005397f4  0fb66901             movzx ebp, byte ptr [ecx + 1]
-// 005397f8  83c004               add eax, 4
-// 005397fb  41                   inc ecx
-// 005397fc  83c580               add ebp, -0x80
-// 005397ff  896804               mov dword ptr [eax + 4], ebp
-// 00539802  0fb66901             movzx ebp, byte ptr [ecx + 1]
-// 00539806  83c004               add eax, 4
-// 00539809  41                   inc ecx
-// 0053980a  83c580               add ebp, -0x80
-// 0053980d  896804               mov dword ptr [eax + 4], ebp
-// 00539810  0fb64901             movzx ecx, byte ptr [ecx + 1]
-// 00539814  83c004               add eax, 4
-// 00539817  83c180               add ecx, -0x80
-// 0053981a  894804               mov dword ptr [eax + 4], ecx
-// 0053981d  8b4a04               mov ecx, dword ptr [edx + 4]
-// 00539820  0fb62c19             movzx ebp, byte ptr [ecx + ebx]
-// 00539824  83c004               add eax, 4
-// 00539827  03cb                 add ecx, ebx
-// 00539829  83c580               add ebp, -0x80
-// 0053982c  896804               mov dword ptr [eax + 4], ebp
-// 0053982f  0fb66901             movzx ebp, byte ptr [ecx + 1]
-// 00539833  83c004               add eax, 4
-// 00539836  41                   inc ecx
-// 00539837  83c580               add ebp, -0x80
-// 0053983a  896804               mov dword ptr [eax + 4], ebp
-// 0053983d  0fb66901             movzx ebp, byte ptr [ecx + 1]
-// 00539841  83c004               add eax, 4
-// 00539844  41                   inc ecx
-// 00539845  83c580               add ebp, -0x80
-// 00539848  896804               mov dword ptr [eax + 4], ebp
-// 0053984b  0fb66901             movzx ebp, byte ptr [ecx + 1]
-// 0053984f  83c004               add eax, 4
-// 00539852  41                   inc ecx
-// 00539853  83c580               add ebp, -0x80
-// 00539856  896804               mov dword ptr [eax + 4], ebp
-// 00539859  0fb66901             movzx ebp, byte ptr [ecx + 1]
-// 0053985d  83c004               add eax, 4
-// 00539860  41                   inc ecx
-// 00539861  83c004               add eax, 4
-// 00539864  83c580               add ebp, -0x80
-// 00539867  8928                 mov dword ptr [eax], ebp
-// 00539869  0fb66901             movzx ebp, byte ptr [ecx + 1]
-// 0053986d  41                   inc ecx
-// 0053986e  83c004               add eax, 4
-// 00539871  83c580               add ebp, -0x80
-// 00539874  8928                 mov dword ptr [eax], ebp
-// 00539876  0fb66901             movzx ebp, byte ptr [ecx + 1]
-// 0053987a  41                   inc ecx
-// 0053987b  83c004               add eax, 4
-// 0053987e  83c580               add ebp, -0x80
-// 00539881  8928                 mov dword ptr [eax], ebp
-// 00539883  0fb64901             movzx ecx, byte ptr [ecx + 1]
-// 00539887  83c004               add eax, 4
-// 0053988a  83c180               add ecx, -0x80
-// 0053988d  8908                 mov dword ptr [eax], ecx
-// 0053988f  83c004               add eax, 4
-// 00539892  83c210               add edx, 0x10
-// 00539895  83ee01               sub esi, 1
-// 00539898  0f8532feffff         jne 0x5396d0
-// 0053989e  8d542428             lea edx, [esp + 0x28]
-// 005398a2  52                   push edx
-// 005398a3  ff542420             call dword ptr [esp + 0x20]
-// 005398a7  8b742418             mov esi, dword ptr [esp + 0x18]
-// 005398ab  83c404               add esp, 4
-// 005398ae  33ed                 xor ebp, ebp
-// 005398b0  8b4ef8               mov ecx, dword ptr [esi - 8]
-// 005398b3  8b44ac28             mov eax, dword ptr [esp + ebp*4 + 0x28]
-// 005398b7  8bd1                 mov edx, ecx
-// 005398b9  d1fa                 sar edx, 1
-// 005398bb  85c0                 test eax, eax
-// 005398bd  7d15                 jge 0x5398d4
-// 005398bf  2bd0                 sub edx, eax
-// 005398c1  3bd1                 cmp edx, ecx
-// 005398c3  7c09                 jl 0x5398ce
-// 005398c5  8bc2                 mov eax, edx
-// 005398c7  99                   cdq 
-// 005398c8  f7f9                 idiv ecx
-// 005398ca  f7d8                 neg eax
-// 005398cc  eb13                 jmp 0x5398e1
-// 005398ce  33c0                 xor eax, eax
-// 005398d0  f7d8                 neg eax
-// 005398d2  eb0d                 jmp 0x5398e1
-// 005398d4  03c2                 add eax, edx
-// 005398d6  3bc1                 cmp eax, ecx
-// 005398d8  7c05                 jl 0x5398df
-// 005398da  99                   cdq 
-// 005398db  f7f9                 idiv ecx
-// 005398dd  eb02                 jmp 0x5398e1
-// 005398df  33c0                 xor eax, eax
-// 005398e1  668947fc             mov word ptr [edi - 4], ax
-// 005398e5  8b4efc               mov ecx, dword ptr [esi - 4]
-// 005398e8  8b44ac2c             mov eax, dword ptr [esp + ebp*4 + 0x2c]
-// 005398ec  8bd1                 mov edx, ecx
-// 005398ee  d1fa                 sar edx, 1
-// 005398f0  85c0                 test eax, eax
-// 005398f2  7d15                 jge 0x539909
-// 005398f4  2bd0                 sub edx, eax
-// 005398f6  3bd1                 cmp edx, ecx
-// 005398f8  7c09                 jl 0x539903
-// 005398fa  8bc2                 mov eax, edx
-// 005398fc  99                   cdq 
-// 005398fd  f7f9                 idiv ecx
-// 005398ff  f7d8                 neg eax
-// 00539901  eb13                 jmp 0x539916
-// 00539903  33c0                 xor eax, eax
-// 00539905  f7d8                 neg eax
-// 00539907  eb0d                 jmp 0x539916
-// 00539909  03c2                 add eax, edx
-// 0053990b  3bc1                 cmp eax, ecx
-// 0053990d  7c05                 jl 0x539914
-// 0053990f  99                   cdq 
-// 00539910  f7f9                 idiv ecx
-// 00539912  eb02                 jmp 0x539916
-// 00539914  33c0                 xor eax, eax
-// 00539916  668947fe             mov word ptr [edi - 2], ax
-// 0053991a  8b0e                 mov ecx, dword ptr [esi]
-// 0053991c  8b442418             mov eax, dword ptr [esp + 0x18]
-// 00539920  8b0406               mov eax, dword ptr [esi + eax]
-// 00539923  8bd1                 mov edx, ecx
-// 00539925  d1fa                 sar edx, 1
-// 00539927  85c0                 test eax, eax
-// 00539929  7d15                 jge 0x539940
-// 0053992b  2bd0                 sub edx, eax
-// 0053992d  3bd1                 cmp edx, ecx
-// 0053992f  7c09                 jl 0x53993a
-// 00539931  8bc2                 mov eax, edx
-// 00539933  99                   cdq 
-// 00539934  f7f9                 idiv ecx
-// 00539936  f7d8                 neg eax
-// 00539938  eb13                 jmp 0x53994d
-// 0053993a  33c0                 xor eax, eax
-// 0053993c  f7d8                 neg eax
-// 0053993e  eb0d                 jmp 0x53994d
-// 00539940  03c2                 add eax, edx
-// 00539942  3bc1                 cmp eax, ecx
-// 00539944  7c05                 jl 0x53994b
-// 00539946  99                   cdq 
-// 00539947  f7f9                 idiv ecx
-// 00539949  eb02                 jmp 0x53994d
-// 0053994b  33c0                 xor eax, eax
-// 0053994d  668907               mov word ptr [edi], ax
-// 00539950  8b4e04               mov ecx, dword ptr [esi + 4]
-// 00539953  8b442420             mov eax, dword ptr [esp + 0x20]
-// 00539957  8b0406               mov eax, dword ptr [esi + eax]
-// 0053995a  8bd1                 mov edx, ecx
-// 0053995c  d1fa                 sar edx, 1
-// 0053995e  85c0                 test eax, eax
-// 00539960  7d15                 jge 0x539977
-// 00539962  2bd0                 sub edx, eax
-// 00539964  3bd1                 cmp edx, ecx
-// 00539966  7c09                 jl 0x539971
-// 00539968  8bc2                 mov eax, edx
-// 0053996a  99                   cdq 
-// 0053996b  f7f9                 idiv ecx
-// 0053996d  f7d8                 neg eax
-// 0053996f  eb13                 jmp 0x539984
-// 00539971  33c0                 xor eax, eax
-// 00539973  f7d8                 neg eax
-// 00539975  eb0d                 jmp 0x539984
-// 00539977  03c2                 add eax, edx
-// 00539979  3bc1                 cmp eax, ecx
-// 0053997b  7c05                 jl 0x539982
-// 0053997d  99                   cdq 
-// 0053997e  f7f9                 idiv ecx
-// 00539980  eb02                 jmp 0x539984
-// 00539982  33c0                 xor eax, eax
-// 00539984  66894702             mov word ptr [edi + 2], ax
-// 00539988  83c504               add ebp, 4
-// 0053998b  83c708               add edi, 8
-// 0053998e  83c610               add esi, 0x10
-// 00539991  83fd40               cmp ebp, 0x40
-// 00539994  0f8c16ffffff         jl 0x5398b0
-// 0053999a  83c308               add ebx, 8
-// 0053999d  836c241001           sub dword ptr [esp + 0x10], 1
-// 005399a2  0f8519fdffff         jne 0x5396c1
-// 005399a8  5f                   pop edi
-// 005399a9  5e                   pop esi
-// 005399aa  5d                   pop ebp
-// 005399ab  5b                   pop ebx
-// 005399ac  81c418010000         add esp, 0x118
-// 005399b2  c3                   ret 
-// library jpeg-6b/jcdctmgr.c (function _forward_DCT)
-
 // roc-lang: c
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /MD
 // roc-lib: jpeg-6b jcdctmgr.c
+
+// Candidate translation unit (score above; library headers required).
+/*
+ * jcdctmgr.c
+ *
+ * Copyright (C) 1994-1996, Thomas G. Lane.
+ * This file is part of the Independent JPEG Group's software.
+ * For conditions of distribution and use, see the accompanying README file.
+ *
+ * This file contains the forward-DCT management logic.
+ * This code selects a particular DCT implementation to be used,
+ * and it performs related housekeeping chores including coefficient
+ * quantization.
+ */
+
+#define JPEG_INTERNALS
+#include "jinclude.h"
+#include "jpeglib.h"
+#include "jdct.h"		/* Private declarations for DCT subsystem */
+
+
+/* Private subobject for this module */
+
+typedef struct {
+  struct jpeg_forward_dct pub;	/* public fields */
+
+  /* Pointer to the DCT routine actually in use */
+  forward_DCT_method_ptr do_dct;
+
+  /* The actual post-DCT divisors --- not identical to the quant table
+   * entries, because of scaling (especially for an unnormalized DCT).
+   * Each table is given in normal array order.
+   */
+  DCTELEM * divisors[NUM_QUANT_TBLS];
+
+#ifdef DCT_FLOAT_SUPPORTED
+  /* Same as above for the floating-point case. */
+  float_DCT_method_ptr do_float_dct;
+  FAST_FLOAT * float_divisors[NUM_QUANT_TBLS];
+#endif
+} my_fdct_controller;
+
+typedef my_fdct_controller * my_fdct_ptr;
+
+
+/*
+ * Initialize for a processing pass.
+ * Verify that all referenced Q-tables are present, and set up
+ * the divisor table for each one.
+ * In the current implementation, DCT of all components is done during
+ * the first pass, even if only some components will be output in the
+ * first scan.  Hence all components should be examined here.
+ */
+
+METHODDEF(void)
+start_pass_fdctmgr (j_compress_ptr cinfo)
+{
+  my_fdct_ptr fdct = (my_fdct_ptr) cinfo->fdct;
+  int ci, qtblno, i;
+  jpeg_component_info *compptr;
+  JQUANT_TBL * qtbl;
+  DCTELEM * dtbl;
+
+  for (ci = 0, compptr = cinfo->comp_info; ci < cinfo->num_components;
+       ci++, compptr++) {
+    qtblno = compptr->quant_tbl_no;
+    /* Make sure specified quantization table is present */
+    if (qtblno < 0 || qtblno >= NUM_QUANT_TBLS ||
+	cinfo->quant_tbl_ptrs[qtblno] == NULL)
+      ERREXIT1(cinfo, JERR_NO_QUANT_TABLE, qtblno);
+    qtbl = cinfo->quant_tbl_ptrs[qtblno];
+    /* Compute divisors for this quant table */
+    /* We may do this more than once for same table, but it's not a big deal */
+    switch (cinfo->dct_method) {
+#ifdef DCT_ISLOW_SUPPORTED
+    case JDCT_ISLOW:
+      /* For LL&M IDCT method, divisors are equal to raw quantization
+       * coefficients multiplied by 8 (to counteract scaling).
+       */
+      if (fdct->divisors[qtblno] == NULL) {
+	fdct->divisors[qtblno] = (DCTELEM *)
+	  (*cinfo->mem->alloc_small) ((j_common_ptr) cinfo, JPOOL_IMAGE,
+				      DCTSIZE2 * SIZEOF(DCTELEM));
+      }
+      dtbl = fdct->divisors[qtblno];
+      for (i = 0; i < DCTSIZE2; i++) {
+	dtbl[i] = ((DCTELEM) qtbl->quantval[i]) << 3;
+      }
+      break;
+#endif
+#ifdef DCT_IFAST_SUPPORTED
+    case JDCT_IFAST:
+      {
+	/* For AA&N IDCT method, divisors are equal to quantization
+	 * coefficients scaled by scalefactor[row]*scalefactor[col], where
+	 *   scalefactor[0] = 1
+	 *   scalefactor[k] = cos(k*PI/16) * sqrt(2)    for k=1..7
+	 * We apply a further scale factor of 8.
+	 */
+#define CONST_BITS 14
+	static const INT16 aanscales[DCTSIZE2] = {
+	  /* precomputed values scaled up by 14 bits */
+	  16384, 22725, 21407, 19266, 16384, 12873,  8867,  4520,
+	  22725, 31521, 29692, 26722, 22725, 17855, 12299,  6270,
+	  21407, 29692, 27969, 25172, 21407, 16819, 11585,  5906,
+	  19266, 26722, 25172, 22654, 19266, 15137, 10426,  5315,
+	  16384, 22725, 21407, 19266, 16384, 12873,  8867,  4520,
+	  12873, 17855, 16819, 15137, 12873, 10114,  6967,  3552,
+	   8867, 12299, 11585, 10426,  8867,  6967,  4799,  2446,
+	   4520,  6270,  5906,  5315,  4520,  3552,  2446,  1247
+	};
+	SHIFT_TEMPS
+
+	if (fdct->divisors[qtblno] == NULL) {
+	  fdct->divisors[qtblno] = (DCTELEM *)
+	    (*cinfo->mem->alloc_small) ((j_common_ptr) cinfo, JPOOL_IMAGE,
+					DCTSIZE2 * SIZEOF(DCTELEM));
+	}
+	dtbl = fdct->divisors[qtblno];
+	for (i = 0; i < DCTSIZE2; i++) {
+	  dtbl[i] = (DCTELEM)
+	    DESCALE(MULTIPLY16V16((INT32) qtbl->quantval[i],
+				  (INT32) aanscales[i]),
+		    CONST_BITS-3);
+	}
+      }
+      break;
+#endif
+#ifdef DCT_FLOAT_SUPPORTED
+    case JDCT_FLOAT:
+      {
+	/* For float AA&N IDCT method, divisors are equal to quantization
+	 * coefficients scaled by scalefactor[row]*scalefactor[col], where
+	 *   scalefactor[0] = 1
+	 *   scalefactor[k] = cos(k*PI/16) * sqrt(2)    for k=1..7
+	 * We apply a further scale factor of 8.
+	 * What's actually stored is 1/divisor so that the inner loop can
+	 * use a multiplication rather than a division.
+	 */
+	FAST_FLOAT * fdtbl;
+	int row, col;
+	static const double aanscalefactor[DCTSIZE] = {
+	  1.0, 1.387039845, 1.306562965, 1.175875602,
+	  1.0, 0.785694958, 0.541196100, 0.275899379
+	};
+
+	if (fdct->float_divisors[qtblno] == NULL) {
+	  fdct->float_divisors[qtblno] = (FAST_FLOAT *)
+	    (*cinfo->mem->alloc_small) ((j_common_ptr) cinfo, JPOOL_IMAGE,
+					DCTSIZE2 * SIZEOF(FAST_FLOAT));
+	}
+	fdtbl = fdct->float_divisors[qtblno];
+	i = 0;
+	for (row = 0; row < DCTSIZE; row++) {
+	  for (col = 0; col < DCTSIZE; col++) {
+	    fdtbl[i] = (FAST_FLOAT)
+	      (1.0 / (((double) qtbl->quantval[i] *
+		       aanscalefactor[row] * aanscalefactor[col] * 8.0)));
+	    i++;
+	  }
+	}
+      }
+      break;
+#endif
+    default:
+      ERREXIT(cinfo, JERR_NOT_COMPILED);
+      break;
+    }
+  }
+}
+
+
+/*
+ * Perform forward DCT on one or more blocks of a component.
+ *
+ * The input samples are taken from the sample_data[] array starting at
+ * position start_row/start_col, and moving to the right for any additional
+ * blocks. The quantized coefficients are returned in coef_blocks[].
+ */
+
+METHODDEF(void)
+forward_DCT (j_compress_ptr cinfo, jpeg_component_info * compptr,
+	     JSAMPARRAY sample_data, JBLOCKROW coef_blocks,
+	     JDIMENSION start_row, JDIMENSION start_col,
+	     JDIMENSION num_blocks)
+/* This version is used for integer DCT implementations. */
+{
+  /* This routine is heavily used, so it's worth coding it tightly. */
+  my_fdct_ptr fdct = (my_fdct_ptr) cinfo->fdct;
+  forward_DCT_method_ptr do_dct = fdct->do_dct;
+  DCTELEM * divisors = fdct->divisors[compptr->quant_tbl_no];
+  DCTELEM workspace[DCTSIZE2];	/* work area for FDCT subroutine */
+  JDIMENSION bi;
+
+  sample_data += start_row;	/* fold in the vertical offset once */
+
+  for (bi = 0; bi < num_blocks; bi++, start_col += DCTSIZE) {
+    /* Load data into workspace, applying unsigned->signed conversion */
+    { register DCTELEM *workspaceptr;
+      register JSAMPROW elemptr;
+      register int elemr;
+
+      workspaceptr = workspace;
+      for (elemr = 0; elemr < DCTSIZE; elemr++) {
+	elemptr = sample_data[elemr] + start_col;
+#if DCTSIZE == 8		/* unroll the inner loop */
+	*workspaceptr++ = GETJSAMPLE(*elemptr++) - CENTERJSAMPLE;
+	*workspaceptr++ = GETJSAMPLE(*elemptr++) - CENTERJSAMPLE;
+	*workspaceptr++ = GETJSAMPLE(*elemptr++) - CENTERJSAMPLE;
+	*workspaceptr++ = GETJSAMPLE(*elemptr++) - CENTERJSAMPLE;
+	*workspaceptr++ = GETJSAMPLE(*elemptr++) - CENTERJSAMPLE;
+	*workspaceptr++ = GETJSAMPLE(*elemptr++) - CENTERJSAMPLE;
+	*workspaceptr++ = GETJSAMPLE(*elemptr++) - CENTERJSAMPLE;
+	*workspaceptr++ = GETJSAMPLE(*elemptr++) - CENTERJSAMPLE;
+#else
+	{ register int elemc;
+	  for (elemc = DCTSIZE; elemc > 0; elemc--) {
+	    *workspaceptr++ = GETJSAMPLE(*elemptr++) - CENTERJSAMPLE;
+	  }
+	}
+#endif
+      }
+    }
+
+    /* Perform the DCT */
+    (*do_dct) (workspace);
+
+    /* Quantize/descale the coefficients, and store into coef_blocks[] */
+    { register DCTELEM temp, qval;
+      register int i;
+      register JCOEFPTR output_ptr = coef_blocks[bi];
+
+      for (i = 0; i < DCTSIZE2; i++) {
+	qval = divisors[i];
+	temp = workspace[i];
+	/* Divide the coefficient value by qval, ensuring proper rounding.
+	 * Since C does not specify the direction of rounding for negative
+	 * quotients, we have to force the dividend positive for portability.
+	 *
+	 * In most files, at least half of the output values will be zero
+	 * (at default quantization settings, more like three-quarters...)
+	 * so we should ensure that this case is fast.  On many machines,
+	 * a comparison is enough cheaper than a divide to make a special test
+	 * a win.  Since both inputs will be nonnegative, we need only test
+	 * for a < b to discover whether a/b is 0.
+	 * If your machine's division is fast enough, define FAST_DIVIDE.
+	 */
+#ifdef FAST_DIVIDE
+#define DIVIDE_BY(a,b)	a /= b
+#else
+#define DIVIDE_BY(a,b)	if (a >= b) a /= b; else a = 0
+#endif
+	if (temp < 0) {
+	  temp = -temp;
+	  temp += qval>>1;	/* for rounding */
+	  DIVIDE_BY(temp, qval);
+	  temp = -temp;
+	} else {
+	  temp += qval>>1;	/* for rounding */
+	  DIVIDE_BY(temp, qval);
+	}
+	output_ptr[i] = (JCOEF) temp;
+      }
+    }
+  }
+}
+
+
+#ifdef DCT_FLOAT_SUPPORTED
+
+METHODDEF(void)
+forward_DCT_float (j_compress_ptr cinfo, jpeg_component_info * compptr,
+		   JSAMPARRAY sample_data, JBLOCKROW coef_blocks,
+		   JDIMENSION start_row, JDIMENSION start_col,
+		   JDIMENSION num_blocks)
+/* This version is used for floating-point DCT implementations. */
+{
+  /* This routine is heavily used, so it's worth coding it tightly. */
+  my_fdct_ptr fdct = (my_fdct_ptr) cinfo->fdct;
+  float_DCT_method_ptr do_dct = fdct->do_float_dct;
+  FAST_FLOAT * divisors = fdct->float_divisors[compptr->quant_tbl_no];
+  FAST_FLOAT workspace[DCTSIZE2]; /* work area for FDCT subroutine */
+  JDIMENSION bi;
+
+  sample_data += start_row;	/* fold in the vertical offset once */
+
+  for (bi = 0; bi < num_blocks; bi++, start_col += DCTSIZE) {
+    /* Load data into workspace, applying unsigned->signed conversion */
+    { register FAST_FLOAT *workspaceptr;
+      register JSAMPROW elemptr;
+      register int elemr;
+
+      workspaceptr = workspace;
+      for (elemr = 0; elemr < DCTSIZE; elemr++) {
+	elemptr = sample_data[elemr] + start_col;
+#if DCTSIZE == 8		/* unroll the inner loop */
+	*workspaceptr++ = (FAST_FLOAT)(GETJSAMPLE(*elemptr++) - CENTERJSAMPLE);
+	*workspaceptr++ = (FAST_FLOAT)(GETJSAMPLE(*elemptr++) - CENTERJSAMPLE);
+	*workspaceptr++ = (FAST_FLOAT)(GETJSAMPLE(*elemptr++) - CENTERJSAMPLE);
+	*workspaceptr++ = (FAST_FLOAT)(GETJSAMPLE(*elemptr++) - CENTERJSAMPLE);
+	*workspaceptr++ = (FAST_FLOAT)(GETJSAMPLE(*elemptr++) - CENTERJSAMPLE);
+	*workspaceptr++ = (FAST_FLOAT)(GETJSAMPLE(*elemptr++) - CENTERJSAMPLE);
+	*workspaceptr++ = (FAST_FLOAT)(GETJSAMPLE(*elemptr++) - CENTERJSAMPLE);
+	*workspaceptr++ = (FAST_FLOAT)(GETJSAMPLE(*elemptr++) - CENTERJSAMPLE);
+#else
+	{ register int elemc;
+	  for (elemc = DCTSIZE; elemc > 0; elemc--) {
+	    *workspaceptr++ = (FAST_FLOAT)
+	      (GETJSAMPLE(*elemptr++) - CENTERJSAMPLE);
+	  }
+	}
+#endif
+      }
+    }
+
+    /* Perform the DCT */
+    (*do_dct) (workspace);
+
+    /* Quantize/descale the coefficients, and store into coef_blocks[] */
+    { register FAST_FLOAT temp;
+      register int i;
+      register JCOEFPTR output_ptr = coef_blocks[bi];
+
+      for (i = 0; i < DCTSIZE2; i++) {
+	/* Apply the quantization and scaling factor */
+	temp = workspace[i] * divisors[i];
+	/* Round to nearest integer.
+	 * Since C does not specify the direction of rounding for negative
+	 * quotients, we have to force the dividend positive for portability.
+	 * The maximum coefficient size is +-16K (for 12-bit data), so this
+	 * code should work for either 16-bit or 32-bit ints.
+	 */
+	output_ptr[i] = (JCOEF) ((int) (temp + (FAST_FLOAT) 16384.5) - 16384);
+      }
+    }
+  }
+}
+
+#endif /* DCT_FLOAT_SUPPORTED */
+
+
+/*
+ * Initialize FDCT manager.
+ */
+
+GLOBAL(void)
+jinit_forward_dct (j_compress_ptr cinfo)
+{
+  my_fdct_ptr fdct;
+  int i;
+
+  fdct = (my_fdct_ptr)
+    (*cinfo->mem->alloc_small) ((j_common_ptr) cinfo, JPOOL_IMAGE,
+				SIZEOF(my_fdct_controller));
+  cinfo->fdct = (struct jpeg_forward_dct *) fdct;
+  fdct->pub.start_pass = start_pass_fdctmgr;
+
+  switch (cinfo->dct_method) {
+#ifdef DCT_ISLOW_SUPPORTED
+  case JDCT_ISLOW:
+    fdct->pub.forward_DCT = forward_DCT;
+    fdct->do_dct = jpeg_fdct_islow;
+    break;
+#endif
+#ifdef DCT_IFAST_SUPPORTED
+  case JDCT_IFAST:
+    fdct->pub.forward_DCT = forward_DCT;
+    fdct->do_dct = jpeg_fdct_ifast;
+    break;
+#endif
+#ifdef DCT_FLOAT_SUPPORTED
+  case JDCT_FLOAT:
+    fdct->pub.forward_DCT = forward_DCT_float;
+    fdct->do_float_dct = jpeg_fdct_float;
+    break;
+#endif
+  default:
+    ERREXIT(cinfo, JERR_NOT_COMPILED);
+    break;
+  }
+
+  /* Mark divisor tables unallocated */
+  for (i = 0; i < NUM_QUANT_TBLS; i++) {
+    fdct->divisors[i] = NULL;
+#ifdef DCT_FLOAT_SUPPORTED
+    fdct->float_divisors[i] = NULL;
+#endif
+  }
+}

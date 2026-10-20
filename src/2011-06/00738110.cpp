@@ -1,14 +1,107 @@
-// roc 2011-06 00738110  unit: RBX::VInstance::?$NonFactoryProduct  size: 23 bytes
-// Make this compile to the exact bytes below, then: roc check 2011-06 00738110
-//
-// 00738110  68607f5e00           push 0x5e7f60
-// 00738115  6890b5cc00           push 0xccb590
-// 0073811a  e8f194ccff           call 0x401610
-// 0073811f  83c408               add esp, 8
-// 00738122  e9f9f1eaff           jmp 0x5e7320
-// library rbxgs/util\Name.cpp (function ?mutex@Name@RBX@@CAAAV0boost@@XZ)
-
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
 // roc-lib: rbxgs util/Name.cpp
+
+// Candidate translation unit (score above; library headers required).
+#include "util/Name.h"
+#include "util/Debug.h"
+#include <boost/thread/once.hpp>
+
+// intentionally outside of the RBX namespace
+boost::once_flag flag = BOOST_ONCE_INIT;
+
+boost::mutex& moo2()
+{
+	static boost::mutex mutex2;
+	return mutex2;
+}
+
+void initMoo()
+{
+	moo2();
+}
+
+namespace RBX
+{
+	// seems to be inlined
+	boost::mutex& Name::mutex()
+	{
+		boost::call_once(initMoo, flag);
+		return moo2();
+	}
+
+	std::map<int, Name*>& Name::dictionary()
+	{
+		static std::map<int, Name*> d;
+		return d;
+	}
+
+	Name::NamMap& Name::namMap()
+	{
+		static NamMap n;
+		return n;
+	}
+
+	const Name& Name::getNullName()
+	{
+		boost::mutex::scoped_lock scoped_lock(mutex());
+		static const Name& nullName = declare("", 0);
+		return nullName;
+	}
+
+	const Name& Name::declare(const char* sName, int dictionaryIndex)
+	{
+		if (!sName)
+		{
+			RBXASSERT(dictionaryIndex == -1 || !dictionaryIndex);
+			return getNullName();
+		}
+
+		boost::mutex::scoped_lock scoped_lock(mutex());
+
+		NamMap::iterator iter = namMap().find(sName);
+		if (iter != namMap().end())
+		{
+			if (dictionaryIndex != -1)
+			{
+				RBXASSERT(iter->second->dictionaryIndex == dictionaryIndex || iter->second->dictionaryIndex == -1);
+				dictionary()[dictionaryIndex] = iter->second;
+			}
+			return *iter->second;
+		}
+		else
+		{
+			Name* name = new Name(sName, dictionaryIndex);
+			namMap()[sName] = name;
+			dictionary()[dictionaryIndex] = name;
+			return *name;
+		}
+	}
+
+	const Name& Name::lookup(const std::string& sName)
+	{
+		RBXASSERT(sName.size() < 50);
+		boost::mutex::scoped_lock scoped_lock(mutex());
+
+		NamMap::iterator iter = namMap().find(sName);
+		if (iter != namMap().end())
+		{
+			return *iter->second;
+		}
+		else
+		{
+			return getNullName();
+		}
+	}
+
+	const Name& Name::lookup(const char* sName)
+	{
+		if (!sName)
+		{
+			return getNullName();
+		}
+
+		return lookup(std::string(sName));
+	}
+}

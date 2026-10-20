@@ -1,121 +1,867 @@
 // from server: 100% by auto
-// roc 2007-08 004c5e60  unit: RakPeer  size: 323 bytes
-// Make this compile to the exact bytes below, then: roc check 2007-08 004c5e60
-//
-// 004c5e60  6aff                 push -1
-// 004c5e62  68ebbc7400           push 0x74bceb
-// 004c5e67  64a100000000         mov eax, dword ptr fs:[0]
-// 004c5e6d  50                   push eax
-// 004c5e6e  51                   push ecx
-// 004c5e6f  53                   push ebx
-// 004c5e70  55                   push ebp
-// 004c5e71  56                   push esi
-// 004c5e72  57                   push edi
-// 004c5e73  a188518b00           mov eax, dword ptr [0x8b5188]
-// 004c5e78  33c4                 xor eax, esp
-// 004c5e7a  50                   push eax
-// 004c5e7b  8d442418             lea eax, [esp + 0x18]
-// 004c5e7f  64a300000000         mov dword ptr fs:[0], eax
-// 004c5e85  8bf1                 mov esi, ecx
-// 004c5e87  8b4608               mov eax, dword ptr [esi + 8]
-// 004c5e8a  394604               cmp dword ptr [esi + 4], eax
-// 004c5e8d  0f85ba000000         jne 0x4c5f4d
-// 004c5e93  85c0                 test eax, eax
-// 004c5e95  7509                 jne 0x4c5ea0
-// 004c5e97  c7460810000000       mov dword ptr [esi + 8], 0x10
-// 004c5e9e  eb05                 jmp 0x4c5ea5
-// 004c5ea0  03c0                 add eax, eax
-// 004c5ea2  894608               mov dword ptr [esi + 8], eax
-// 004c5ea5  8b6e08               mov ebp, dword ptr [esi + 8]
-// 004c5ea8  33c9                 xor ecx, ecx
-// 004c5eaa  8bc5                 mov eax, ebp
-// 004c5eac  ba08000000           mov edx, 8
-// 004c5eb1  f7e2                 mul edx
-// 004c5eb3  0f90c1               seto cl
-// 004c5eb6  f7d9                 neg ecx
-// 004c5eb8  0bc8                 or ecx, eax
-// 004c5eba  33c0                 xor eax, eax
-// 004c5ebc  83c104               add ecx, 4
-// 004c5ebf  0f92c0               setb al
-// 004c5ec2  f7d8                 neg eax
-// 004c5ec4  0bc1                 or eax, ecx
-// 004c5ec6  50                   push eax
-// 004c5ec7  e82aa01600           call 0x62fef6
-// 004c5ecc  83c404               add esp, 4
-// 004c5ecf  89442414             mov dword ptr [esp + 0x14], eax
-// 004c5ed3  85c0                 test eax, eax
-// 004c5ed5  c744242000000000     mov dword ptr [esp + 0x20], 0
-// 004c5edd  741a                 je 0x4c5ef9
-// 004c5edf  6820cc4000           push 0x40cc20
-// 004c5ee4  6890f06900           push 0x69f090
-// 004c5ee9  55                   push ebp
-// 004c5eea  8d7804               lea edi, [eax + 4]
-// 004c5eed  6a08                 push 8
-// 004c5eef  57                   push edi
-// 004c5ef0  8928                 mov dword ptr [eax], ebp
-// 004c5ef2  e8e5ac1600           call 0x630bdc
-// 004c5ef7  eb02                 jmp 0x4c5efb
-// 004c5ef9  33ff                 xor edi, edi
-// 004c5efb  33c0                 xor eax, eax
-// 004c5efd  394604               cmp dword ptr [esi + 4], eax
-// 004c5f00  c7442420ffffffff     mov dword ptr [esp + 0x20], 0xffffffff
-// 004c5f08  761e                 jbe 0x4c5f28
-// 004c5f0a  8d9b00000000         lea ebx, [ebx]
-// 004c5f10  8b0e                 mov ecx, dword ptr [esi]
-// 004c5f12  8b14c1               mov edx, dword ptr [ecx + eax*8]
-// 004c5f15  8914c7               mov dword ptr [edi + eax*8], edx
-// 004c5f18  8b4cc104             mov ecx, dword ptr [ecx + eax*8 + 4]
-// 004c5f1c  894cc704             mov dword ptr [edi + eax*8 + 4], ecx
-// 004c5f20  83c001               add eax, 1
-// 004c5f23  3b4604               cmp eax, dword ptr [esi + 4]
-// 004c5f26  72e8                 jb 0x4c5f10
-// 004c5f28  8b06                 mov eax, dword ptr [esi]
-// 004c5f2a  85c0                 test eax, eax
-// 004c5f2c  741d                 je 0x4c5f4b
-// 004c5f2e  8b50fc               mov edx, dword ptr [eax - 4]
-// 004c5f31  8d58fc               lea ebx, [eax - 4]
-// 004c5f34  6820cc4000           push 0x40cc20
-// 004c5f39  52                   push edx
-// 004c5f3a  6a08                 push 8
-// 004c5f3c  50                   push eax
-// 004c5f3d  e8b5ab1600           call 0x630af7
-// 004c5f42  53                   push ebx
-// 004c5f43  e81a9d1600           call 0x62fc62
-// 004c5f48  83c404               add esp, 4
-// 004c5f4b  893e                 mov dword ptr [esi], edi
-// 004c5f4d  8b4e04               mov ecx, dword ptr [esi + 4]
-// 004c5f50  8b542430             mov edx, dword ptr [esp + 0x30]
-// 004c5f54  3bca                 cmp ecx, edx
-// 004c5f56  7420                 je 0x4c5f78
-// 004c5f58  eb06                 jmp 0x4c5f60
-// 004c5f5a  8d9b00000000         lea ebx, [ebx]
-// 004c5f60  8b06                 mov eax, dword ptr [esi]
-// 004c5f62  8b7cc8f8             mov edi, dword ptr [eax + ecx*8 - 8]
-// 004c5f66  8d04c8               lea eax, [eax + ecx*8]
-// 004c5f69  8938                 mov dword ptr [eax], edi
-// 004c5f6b  8b78fc               mov edi, dword ptr [eax - 4]
-// 004c5f6e  83e901               sub ecx, 1
-// 004c5f71  3bca                 cmp ecx, edx
-// 004c5f73  897804               mov dword ptr [eax + 4], edi
-// 004c5f76  75e8                 jne 0x4c5f60
-// 004c5f78  8b06                 mov eax, dword ptr [esi]
-// 004c5f7a  8b4c2428             mov ecx, dword ptr [esp + 0x28]
-// 004c5f7e  890cd0               mov dword ptr [eax + edx*8], ecx
-// 004c5f81  8b4c242c             mov ecx, dword ptr [esp + 0x2c]
-// 004c5f85  894cd004             mov dword ptr [eax + edx*8 + 4], ecx
-// 004c5f89  83460401             add dword ptr [esi + 4], 1
-// 004c5f8d  8b4c2418             mov ecx, dword ptr [esp + 0x18]
-// 004c5f91  64890d00000000       mov dword ptr fs:[0], ecx
-// 004c5f98  59                   pop ecx
-// 004c5f99  5f                   pop edi
-// 004c5f9a  5e                   pop esi
-// 004c5f9b  5d                   pop ebp
-// 004c5f9c  5b                   pop ebx
-// 004c5f9d  83c410               add esp, 0x10
-// 004c5fa0  c20c00               ret 0xc
-
 // from server: 51% by colin
 // roc-lang: cpp
 // roc-cl: 50727
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
 // roc-lib: rbxgs-raknet DS_Table.cpp
+
+// Candidate translation unit (score above; library headers required).
+#include "DS_Table.h"
+#include "DS_OrderedList.h"
+#include <string.h>
+#include <assert.h>
+#include "RakAssert.h"
+
+using namespace DataStructures;
+
+#ifdef _MSC_VER
+#pragma warning( push )
+#endif
+
+#ifdef _MSC_VER
+#pragma warning( disable : 4100 ) // warning C4100: <variable name> : unreferenced formal parameter
+#endif
+void ExtendRows(Table::Row* input, int index)
+{
+	input->cells.Insert(new Table::Cell );
+}
+
+#ifdef _MSC_VER
+#pragma warning( disable : 4100 ) // warning C4100: <variable name> : unreferenced formal parameter
+#endif
+void FreeRow(Table::Row* input, int index)
+{
+	unsigned i;
+	for (i=0; i < input->cells.Size(); i++)
+	{
+		delete input->cells[i];
+	}
+	delete input;
+}
+Table::Cell::Cell()
+{
+	isEmpty=true;
+}
+Table::Cell::~Cell()
+{
+	Clear();
+}
+Table::Cell& Table::Cell::operator = ( const Table::Cell& input )
+{
+	isEmpty=input.isEmpty;
+	i=input.i;
+	if (input.c)
+	{
+		if (c)
+			delete [] c;
+		c = new char [i];
+		memcpy(c, input.c, i);
+	}
+	return *this;
+}
+Table::Cell::Cell( const Table::Cell & input)
+{
+	isEmpty=input.isEmpty;
+	i=input.i;
+	if (input.c)
+	{
+		if (c)
+			delete [] c;
+		c = new char [i];
+		memcpy(c, input.c, i);
+	}
+}
+void Table::Cell::Set(int input)
+{
+	assert(isEmpty);
+	i=input;
+	c=0;
+	isEmpty=false;
+}
+void Table::Cell::Set(const char *input)
+{
+	assert(isEmpty);
+	if (input && input[0])
+	{
+		i=(int)strlen(input)+1;
+		c = new char [i];
+		strcpy(c, input);
+	}
+	else
+	{
+		c=0;
+		i=0;
+	}
+	isEmpty=false;
+}
+void Table::Cell::Set(const char *input, int inputLength)
+{
+	assert(isEmpty);
+	if (input)
+	{
+		c = new char [inputLength];
+		i=inputLength;
+		memcpy(c, input, inputLength);
+	}
+	else
+	{
+		c=0;
+		i=0;
+	}
+	isEmpty=false;
+}
+void Table::Cell::Get(int *output)
+{
+	assert(isEmpty==false);
+	*output=i;
+}
+void Table::Cell::Get(char *output)
+{
+	assert(isEmpty==false);
+	strcpy(output, c);
+}
+void Table::Cell::Get(char *output, int *outputLength)
+{
+	assert(isEmpty==false);
+	memcpy(output, c, i);
+	if (outputLength)
+		*outputLength=i;
+}
+Table::Cell::Cell(int intValue, char *charValue, ColumnType type)
+{
+
+	isEmpty=true;
+	if (type==NUMERIC)
+	{
+		Set(intValue);
+	}
+	else if (type==STRING)
+	{
+		Set(charValue);
+	}
+	else
+	{
+		Set(charValue, intValue);
+	}
+}
+void Table::Cell::Clear(void)
+{
+	if (isEmpty==false)
+		delete [] c;
+	isEmpty=true;
+}
+Table::ColumnDescriptor::ColumnDescriptor()
+{
+
+}
+Table::ColumnDescriptor::~ColumnDescriptor()
+{
+
+}
+Table::ColumnDescriptor::ColumnDescriptor(const char cn[_TABLE_MAX_COLUMN_NAME_LENGTH], ColumnType ct)
+{
+	columnType=ct;
+	strcpy(columnName, cn);
+}
+void Table::Row::UpdateCell(unsigned columnIndex, int value)
+{
+	cells[columnIndex]->Clear();
+	cells[columnIndex]->Set(value);
+
+//	cells[columnIndex]->i=value;
+//	cells[columnIndex]->c=0;
+//	cells[columnIndex]->isEmpty=false;
+}
+void Table::Row::UpdateCell(unsigned columnIndex, char *str)
+{
+	cells[columnIndex]->Clear();
+	cells[columnIndex]->Set(str);
+}
+void Table::Row::UpdateCell(unsigned columnIndex, int byteLength, char *data)
+{
+	cells[columnIndex]->Clear();
+	cells[columnIndex]->Set(data,byteLength);
+}
+Table::Table()
+{
+}
+Table::~Table()
+{
+	Clear();
+}
+unsigned Table::AddColumn(const char columnName[_TABLE_MAX_COLUMN_NAME_LENGTH], ColumnType columnType)
+{
+	if (columnName[0]==0)
+		return (unsigned) -1;
+
+	// Add this column.
+	columns.Insert(Table::ColumnDescriptor(columnName, columnType));
+
+	// Extend the rows by one
+	rows.ForEachData(ExtendRows);
+
+	return columns.Size()-1;
+}
+void Table::RemoveColumn(unsigned columnIndex)
+{
+	if (columnIndex >= columns.Size())
+		return;
+
+	columns.RemoveAtIndex(columnIndex);
+
+	// Remove this index from each row.
+	int i;
+	DataStructures::Page<unsigned, Row*, _TABLE_BPLUS_TREE_ORDER> *cur = rows.GetListHead();
+	while (cur)
+	{
+		for (i=0; i < cur->size; i++)
+		{
+			delete cur->data[i]->cells[columnIndex];
+			cur->data[i]->cells.RemoveAtIndex(columnIndex);
+		}
+
+		cur=cur->next;
+	}
+}
+unsigned Table::ColumnIndex(const char *columnName)
+{
+	unsigned columnIndex;
+	for (columnIndex=0; columnIndex<columns.Size(); columnIndex++)
+		if (strcmp(columnName, columns[columnIndex].columnName)==0)
+			return columnIndex;
+	return (unsigned)-1;
+}
+unsigned Table::ColumnIndex(char columnName[_TABLE_MAX_COLUMN_NAME_LENGTH])
+{
+	return ColumnIndex((const char *) columnName);
+}
+char* Table::ColumnName(unsigned index)
+{
+	if (index >= columns.Size())
+		return 0;
+	else
+		return (char*)columns[index].columnName;
+}
+Table::ColumnType Table::GetColumnType(unsigned index)
+{
+	if (index >= columns.Size())
+		return (Table::ColumnType) 0;
+	else
+		return columns[index].columnType;
+}
+unsigned Table::GetColumnCount(void) const
+{
+	return columns.Size();
+}
+unsigned Table::GetRowCount(void) const
+{
+	return rows.Size();
+}
+Table::Row* Table::AddRow(unsigned rowId)
+{
+	Row *newRow;
+	newRow = new Row;
+	if (rows.Insert(rowId, newRow)==false)
+	{
+		delete newRow;
+		return 0; // Already exists
+	}
+	unsigned rowIndex;
+	for (rowIndex=0; rowIndex < columns.Size(); rowIndex++)
+		newRow->cells.Insert( new Table::Cell() );
+	return newRow;
+}
+Table::Row* Table::AddRow(unsigned rowId, DataStructures::List<Cell> &initialCellValues)
+{
+	Row *newRow = new Row;
+	unsigned rowIndex;
+	for (rowIndex=0; rowIndex < columns.Size(); rowIndex++)
+	{
+		if (rowIndex < initialCellValues.Size() && initialCellValues[rowIndex].isEmpty==false)
+			newRow->cells.Insert(new Table::Cell(initialCellValues[rowIndex].i, initialCellValues[rowIndex].c, columns[rowIndex].columnType));
+		else
+			newRow->cells.Insert(new Table::Cell());
+	}
+	rows.Insert(rowId, newRow);
+	return newRow;
+}
+Table::Row* Table::AddRowColumns(unsigned rowId, Row *row, DataStructures::List<unsigned> columnIndices)
+{
+	Row *newRow = new Row;
+	unsigned columnIndex;
+	for (columnIndex=0; columnIndex < columnIndices.Size(); columnIndex++)
+	{
+		if (row->cells[columnIndices[columnIndex]]->isEmpty==false)
+		{
+			newRow->cells.Insert(new Table::Cell(
+				row->cells[columnIndices[columnIndex]]->i,
+				row->cells[columnIndices[columnIndex]]->c,
+				columns[columnIndex].columnType
+				));
+		}
+		else
+		{
+			newRow->cells.Insert(new Cell());
+		}
+	}
+	rows.Insert(rowId, newRow);
+	return newRow;
+}
+void Table::RemoveRow(unsigned rowId)
+{
+	Row *out;
+	if (rows.Delete(rowId, out))
+		DeleteRow(out);
+}
+void Table::RemoveRows(Table *tableContainingRowIDs)
+{
+	unsigned i;
+	DataStructures::Page<unsigned, Row*, _TABLE_BPLUS_TREE_ORDER> *cur = tableContainingRowIDs->GetRows().GetListHead();
+	while (cur)
+	{
+		for (i=0; i < (unsigned)cur->size; i++)
+		{
+			rows.Delete(cur->keys[i]);
+		}
+		cur=cur->next;
+	}
+	return;
+}
+bool Table::UpdateCell(unsigned rowId, unsigned columnIndex, int value)
+{
+	assert(columns[columnIndex].columnType==NUMERIC);
+
+	Row *row = GetRowByID(rowId);
+	if (row)
+	{
+		row->UpdateCell(columnIndex, value);
+		return true;
+	}
+	return false;
+}
+bool Table::UpdateCell(unsigned rowId, unsigned columnIndex, char *str)
+{
+	assert(columns[columnIndex].columnType==STRING);
+
+	Row *row = GetRowByID(rowId);
+	if (row)
+	{
+		row->UpdateCell(columnIndex, str);
+		return true;
+	}
+	return false;
+}
+bool Table::UpdateCell(unsigned rowId, unsigned columnIndex, int byteLength, char *data)
+{
+	assert(columns[columnIndex].columnType==BINARY);
+
+	Row *row = GetRowByID(rowId);
+	if (row)
+	{
+		row->UpdateCell(columnIndex, byteLength, data);
+		return true;
+	}
+	return false;
+}
+bool Table::UpdateCellByIndex(unsigned rowIndex, unsigned columnIndex, int value)
+{
+	assert(columns[columnIndex].columnType==NUMERIC);
+
+	Row *row = GetRowByIndex(rowIndex,0);
+	if (row)
+	{
+		row->UpdateCell(columnIndex, value);
+		return true;
+	}
+	return false;
+}
+bool Table::UpdateCellByIndex(unsigned rowIndex, unsigned columnIndex, char *str)
+{
+	assert(columns[columnIndex].columnType==STRING);
+
+	Row *row = GetRowByIndex(rowIndex,0);
+	if (row)
+	{
+		row->UpdateCell(columnIndex, str);
+		return true;
+	}
+	return false;
+}
+bool Table::UpdateCellByIndex(unsigned rowIndex, unsigned columnIndex, int byteLength, char *data)
+{
+	assert(columns[columnIndex].columnType==BINARY);
+
+	Row *row = GetRowByIndex(rowIndex,0);
+	if (row)
+	{
+		row->UpdateCell(columnIndex, byteLength, data);
+		return true;
+	}
+	return false;
+}
+void Table::GetCellValueByIndex(unsigned rowIndex, unsigned columnIndex, int *output)
+{
+	assert(columns[columnIndex].columnType==NUMERIC);
+
+	Row *row = GetRowByIndex(rowIndex,0);
+	if (row)
+	{
+		row->cells[columnIndex]->Get(output);
+	}
+}
+void Table::GetCellValueByIndex(unsigned rowIndex, unsigned columnIndex, char *output)
+{
+	assert(columns[columnIndex].columnType==STRING);
+
+	Row *row = GetRowByIndex(rowIndex,0);
+	if (row)
+	{
+		row->cells[columnIndex]->Get(output);
+	}
+}
+void Table::GetCellValueByIndex(unsigned rowIndex, unsigned columnIndex, char *output, int *outputLength)
+{
+	assert(columns[columnIndex].columnType==BINARY);
+
+	Row *row = GetRowByIndex(rowIndex,0);
+	if (row)
+	{
+		row->cells[columnIndex]->Get(output, outputLength);
+	}
+}
+Table::FilterQuery::FilterQuery()
+{
+
+}
+Table::FilterQuery::~FilterQuery()
+{
+
+}
+Table::FilterQuery::FilterQuery(unsigned column, Cell *cell, FilterQueryType op)
+{
+	columnIndex=column;
+	cellValue=cell;
+	operation=op;
+}
+Table::Row* Table::GetRowByID(unsigned rowId)
+{
+	Row *row;
+	if (rows.Get(rowId, row))
+		return row;
+	return 0;
+}
+
+Table::Row* Table::GetRowByIndex(unsigned rowIndex, unsigned *key)
+{
+	DataStructures::Page<unsigned, Row*, _TABLE_BPLUS_TREE_ORDER> *cur = rows.GetListHead();
+	while (cur)
+	{
+		if (rowIndex < (unsigned)cur->size)
+		{
+			if (key)
+				*key=cur->keys[rowIndex];
+			return cur->data[rowIndex];
+		}
+		if (rowIndex <= (unsigned)cur->size)
+			rowIndex-=cur->size;
+		else
+			return 0;
+		cur=cur->next;
+	}
+	return 0;
+}
+
+void Table::QueryTable(unsigned *columnIndicesSubset, unsigned numColumnSubset, FilterQuery *inclusionFilters, unsigned numInclusionFilters, unsigned *rowIds, unsigned numRowIDs, Table *result)
+{
+	unsigned i;
+	DataStructures::List<unsigned> columnIndicesToReturn;
+
+	// Clear the result table.
+	result->Clear();
+
+	if (columnIndicesSubset && numColumnSubset>0)
+	{
+		for (i=0; i < numColumnSubset; i++)
+		{
+			if (columnIndicesSubset[i]>=0 && columnIndicesSubset[i]<columns.Size())
+				columnIndicesToReturn.Insert(columnIndicesSubset[i]);
+		}
+	}
+	else
+	{
+		for (i=0; i < columns.Size(); i++)
+			columnIndicesToReturn.Insert(i);
+	}
+
+	if (columnIndicesToReturn.Size()==0)
+		return; // No valid columns specified
+
+	for (i=0; i < columnIndicesToReturn.Size(); i++)
+	{
+		result->AddColumn(columns[columnIndicesToReturn[i]].columnName,columns[columnIndicesToReturn[i]].columnType);
+	}
+
+	// Get the column indices of the filter queries.
+	DataStructures::List<unsigned> inclusionFilterColumnIndices;
+	if (inclusionFilters && numInclusionFilters>0)
+	{
+		for (i=0; i < numInclusionFilters; i++)
+		{
+			if (inclusionFilters[i].columnIndex>=0 && inclusionFilters[i].columnIndex<columns.Size())
+				inclusionFilterColumnIndices.Insert(inclusionFilters[i].columnIndex);
+			else
+				inclusionFilterColumnIndices.Insert((unsigned)-1);
+		}
+	}
+
+	if (rowIds==0 || numRowIDs==0)
+	{
+		// All rows
+		DataStructures::Page<unsigned, Row*, _TABLE_BPLUS_TREE_ORDER> *cur = rows.GetListHead();
+		while (cur)
+		{
+			for (i=0; i < (unsigned)cur->size; i++)
+			{
+				QueryRow(inclusionFilterColumnIndices, columnIndicesToReturn, cur->keys[i], cur->data[i], inclusionFilters, result);
+			}
+			cur=cur->next;
+		}
+	}
+	else
+	{
+		// Specific rows
+		Row *row;
+		for (i=0; i < numRowIDs; i++)
+		{
+			if (rows.Get(rowIds[i], row))
+			{
+				QueryRow(inclusionFilterColumnIndices, columnIndicesToReturn, rowIds[i], row, inclusionFilters, result);
+			}
+		}
+	}
+}
+
+void Table::QueryRow(DataStructures::List<unsigned> &inclusionFilterColumnIndices, DataStructures::List<unsigned> &columnIndicesToReturn, unsigned key, Table::Row* row, FilterQuery *inclusionFilters, Table *result)
+{
+	bool pass;
+	unsigned columnIndex;
+	unsigned j;
+
+	// If no inclusion filters, just add the row
+	if (inclusionFilterColumnIndices.Size()==0)
+	{
+		result->AddRowColumns(key, row, columnIndicesToReturn);
+	}
+	else
+	{
+		// Go through all inclusion filters.  Only add this row if all filters pass.
+		for (j=0; j<inclusionFilterColumnIndices.Size(); j++)
+		{
+			columnIndex=inclusionFilterColumnIndices[j];
+			if (row->cells[columnIndex]->isEmpty==false && columnIndex!=(unsigned)-1)
+			{
+				switch (inclusionFilters[j].operation)
+				{
+				case QF_EQUAL:
+					switch(columns[inclusionFilterColumnIndices[j]].columnType)
+					{
+					case NUMERIC:
+						pass=row->cells[columnIndex]->i==inclusionFilters[j].cellValue->i;
+						break;
+					case STRING:
+						pass=row->cells[columnIndex]->c &&
+							inclusionFilters[j].cellValue->c &&
+							strcmp(row->cells[columnIndex]->c,inclusionFilters[j].cellValue->c)==0;
+						break;
+					case BINARY:
+						pass=row->cells[columnIndex]->i==inclusionFilters[j].cellValue->i &&
+							memcmp(row->cells[columnIndex]->c,inclusionFilters[j].cellValue->c, row->cells[columnIndex]->i)==0;
+						break;
+					}
+					break;
+				case QF_NOT_EQUAL:
+					switch(columns[inclusionFilterColumnIndices[j]].columnType)
+					{
+					case NUMERIC:
+						pass=row->cells[columnIndex]->i!=inclusionFilters[j].cellValue->i;
+						break;
+					case STRING:
+						pass=strcmp(row->cells[columnIndex]->c,inclusionFilters[j].cellValue->c)!=0;
+						break;
+					case BINARY:
+						pass=row->cells[columnIndex]->i==inclusionFilters[j].cellValue->i &&
+							memcmp(row->cells[columnIndex]->c,inclusionFilters[j].cellValue->c, row->cells[columnIndex]->i)==0;
+						break;
+					}
+					break;
+				case QF_GREATER_THAN:
+					switch(columns[inclusionFilterColumnIndices[j]].columnType)
+					{
+					case NUMERIC:
+						pass=row->cells[columnIndex]->i>inclusionFilters[j].cellValue->i;
+						break;
+					case STRING:
+						pass=strcmp(row->cells[columnIndex]->c,inclusionFilters[j].cellValue->c)>0;
+						break;
+                    case BINARY:
+                        break;
+					}
+					break;
+				case QF_LESS_THAN:
+					switch(columns[inclusionFilterColumnIndices[j]].columnType)
+					{
+					case NUMERIC:
+						pass=row->cells[columnIndex]->i<inclusionFilters[j].cellValue->i;
+						break;
+					case STRING:
+						pass=strcmp(row->cells[columnIndex]->c,inclusionFilters[j].cellValue->c)<0;
+						break;
+                    case BINARY:
+                        break;
+					}
+					break;
+				case QF_IS_EMPTY:
+					pass=false;
+					break;
+				case QF_NOT_EMPTY:
+					pass=true;
+					break;
+				default:
+					pass=false;
+					RakAssert(0);
+					break;
+				}
+			}
+			else
+			{
+				if (inclusionFilters[j].operation==QF_IS_EMPTY)
+					pass=true;
+				else
+					pass=false; // No value for this cell
+			}
+
+			if (pass==false)
+				break;
+		}
+
+		if (pass)
+		{
+			result->AddRowColumns(key, row, columnIndicesToReturn);
+		}
+	}
+}
+
+static Table::SortQuery *_sortQueries;
+static unsigned _numSortQueries;
+static DataStructures::List<unsigned> *_columnIndices;
+static DataStructures::List<Table::ColumnDescriptor> *_columns;
+int RowSort(Table::Row* const &first, Table::Row* const &second) // first is the one inserting, second is the one already there.
+{
+	unsigned i, columnIndex;
+	for (i=0; i<_numSortQueries; i++)
+	{
+		columnIndex=(*_columnIndices)[i];
+		if (columnIndex==(unsigned)-1)
+			continue;
+
+		if (first->cells[columnIndex]->isEmpty==true && second->cells[columnIndex]->isEmpty==false)
+			return 1; // Empty cells always go at the end
+
+		if (first->cells[columnIndex]->isEmpty==false && second->cells[columnIndex]->isEmpty==true)
+			return -1; // Empty cells always go at the end
+
+		if (_sortQueries[i].operation==Table::QS_INCREASING_ORDER)
+		{
+			if ((*_columns)[columnIndex].columnType==Table::NUMERIC)
+			{
+				if (first->cells[columnIndex]->i>second->cells[columnIndex]->i)
+					return 1;
+				if (first->cells[columnIndex]->i<second->cells[columnIndex]->i)
+					return -1;
+			}
+			else
+			{
+				// String
+				if (strcmp(first->cells[columnIndex]->c,second->cells[columnIndex]->c)>0)
+					return 1;
+				if (strcmp(first->cells[columnIndex]->c,second->cells[columnIndex]->c)<0)
+					return -1;
+			}
+		}
+		else
+		{
+			if ((*_columns)[columnIndex].columnType==Table::NUMERIC)
+			{
+				if (first->cells[columnIndex]->i<second->cells[columnIndex]->i)
+					return 1;
+				if (first->cells[columnIndex]->i>second->cells[columnIndex]->i)
+					return -1;
+			}
+			else
+			{
+				// String
+				if (strcmp(first->cells[columnIndex]->c,second->cells[columnIndex]->c)<0)
+					return 1;
+				if (strcmp(first->cells[columnIndex]->c,second->cells[columnIndex]->c)>0)
+					return -1;
+			}
+		}
+	}
+
+	return 0;
+}
+void Table::SortTable(Table::SortQuery *sortQueries, unsigned numSortQueries, Table::Row** out)
+{
+	unsigned i;
+	unsigned outLength;
+	DataStructures::List<unsigned> columnIndices;
+	_sortQueries=sortQueries;
+	_numSortQueries=numSortQueries;
+	_columnIndices=&columnIndices;
+	_columns=&columns;
+	bool anyValid=false;
+
+	for (i=0; i < numSortQueries; i++)
+	{
+		if (sortQueries[i].columnIndex>=0 && sortQueries[i].columnIndex<columns.Size() && columns[sortQueries[i].columnIndex].columnType!=BINARY)
+		{
+			columnIndices.Insert(sortQueries[i].columnIndex);
+			anyValid=true;
+		}
+		else
+			columnIndices.Insert((unsigned)-1); // Means don't check this column
+	}
+
+	DataStructures::Page<unsigned, Row*, _TABLE_BPLUS_TREE_ORDER> *cur;
+	cur = rows.GetListHead();
+	if (anyValid==false)
+	{
+		outLength=0;
+		while (cur)
+		{
+			for (i=0; i < (unsigned)cur->size; i++)
+			{
+				out[(outLength)++]=cur->data[i];
+			}
+			cur=cur->next;
+		}
+		return;
+	}
+
+	// Start adding to ordered list.
+	DataStructures::OrderedList<Row*, Row*, RowSort> orderedList;
+	while (cur)
+	{
+		for (i=0; i < (unsigned)cur->size; i++)
+		{
+			orderedList.Insert(cur->data[i],cur->data[i], true);
+		}
+		cur=cur->next;
+	}
+
+	outLength=0;
+	for (i=0; i < orderedList.Size(); i++)
+		out[(outLength)++]=orderedList[i];
+}
+void Table::PrintRow(char *out, int outLength, char columnDelineator, bool printDelineatorForBinary, Table::Row* inputRow)
+{
+	if (outLength<=0)
+		return;
+	if (outLength==1)
+	{
+		*out=0;
+		return;
+	}
+
+	if (inputRow->cells.Size()!=columns.Size())
+	{
+		strncpy(out, "Cell width does not match column width.\n", outLength);
+		out[outLength-1]=0;
+		return;
+	}
+
+	char buff[512];
+	unsigned i;
+	int len;
+	out[0]=0;
+	for (i=0; i < columns.Size(); i++)
+	{
+        if (columns[i].columnType==NUMERIC)
+		{
+			if (inputRow->cells[i]->isEmpty==false)
+			{
+				sprintf(buff, "%i", inputRow->cells[i]->i);
+				len=(int)strlen(buff);
+			}
+			else
+				len=0;
+			if (i+1!=columns.Size())
+				buff[len++]=columnDelineator;
+			buff[len]=0;
+		}
+		else if (columns[i].columnType==STRING)
+		{
+			if (inputRow->cells[i]->isEmpty==false && inputRow->cells[i]->c)
+			{
+				strncpy(buff, inputRow->cells[i]->c, 512-2);
+				buff[512-2]=0;
+				len=(int)strlen(buff);
+			}
+			else
+				len=0;
+			if (i+1!=columns.Size())
+				buff[len++]=columnDelineator;
+			buff[len]=0;
+		}
+		else
+		{
+			if (printDelineatorForBinary)
+			{
+				if (i+1!=columns.Size())
+					buff[0]=columnDelineator;
+				buff[1]=0;
+			}
+			else
+				buff[0]=0;
+
+		}
+
+		len=(int)strlen(out);
+		if (outLength==len+1)
+			break;
+		strncpy(out+len, buff, outLength-len);
+		out[outLength-1]=0;
+	}
+}
+
+void Table::Clear(void)
+{
+	rows.ForEachData(FreeRow);
+	rows.Clear();
+	columns.Clear(true);
+}
+List<Table::ColumnDescriptor>& Table::GetColumns(void)
+{
+	return columns;
+}
+DataStructures::BPlusTree<unsigned, Table::Row*, _TABLE_BPLUS_TREE_ORDER>& Table::GetRows(void)
+{
+	return rows;
+}
+DataStructures::Page<unsigned, DataStructures::Table::Row*, _TABLE_BPLUS_TREE_ORDER> * Table::GetListHead(void)
+{
+	return rows.GetListHead();
+}
+void Table::DeleteRow(Table::Row *row)
+{
+	unsigned rowIndex;
+	for (rowIndex=0; rowIndex < row->cells.Size(); rowIndex++)
+	{
+		delete row->cells[rowIndex];
+	}
+	delete row;
+}
+
+#ifdef _MSC_VER
+#pragma warning( pop )
+#endif

@@ -1,15 +1,50 @@
 // from server: 100% by auto
-// roc 2007-08 004010f0  unit: CAboutRobloxDialog  size: 14 bytes
-// Make this compile to the exact bytes below, then: roc check 2007-08 004010f0
-//
-// 004010f0  8b442404             mov eax, dword ptr [esp + 4]
-// 004010f4  50                   push eax
-// 004010f5  e868eb2200           call 0x62fc62
-// 004010fa  59                   pop ecx
-// 004010fb  c20400               ret 4
-// library rbx2016-g3d/MemoryManager.cpp (function ?free@MemoryManager@G3D@@UAEXPAX@Z)
-
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD
 // roc-lib: rbx2016-g3d MemoryManager.cpp
+
+// Candidate translation unit (score above; library headers required).
+/**
+  @file MemoryManager.cpp
+
+  @maintainer Morgan McGuire, http://graphics.cs.williams.edu
+  @created 2009-04-20
+  @edited  2009-05-29
+
+  Copyright 2000-2009, Morgan McGuire.
+  All rights reserved.
+ */
+
+#include "G3D/MemoryManager.h"
+#include "G3D/System.h"
+
+namespace G3D {
+
+MemoryManager::MemoryManager() {}
+
+
+void* MemoryManager::alloc(size_t s) {
+    return System::malloc(s);
+}
+
+
+void MemoryManager::free(void* ptr) {
+    System::free(ptr);
+}
+
+
+bool MemoryManager::isThreadsafe() const {
+    return true;
+}
+
+
+MemoryManager* MemoryManager::create() {
+    static MemoryManager m;
+    return &m;
+}
+
+
+///////////////////////////////////////////////////
+
+}

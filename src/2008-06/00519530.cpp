@@ -1,136 +1,605 @@
 // from server: 100% by auto
-// roc 2008-06 00519530  unit: G3D::_internal::DialogTemplate  size: 328 bytes
-// Make this compile to the exact bytes below, then: roc check 2008-06 00519530
-//
-// 00519530  83ec18               sub esp, 0x18
-// 00519533  53                   push ebx
-// 00519534  55                   push ebp
-// 00519535  56                   push esi
-// 00519536  57                   push edi
-// 00519537  8bf8                 mov edi, eax
-// 00519539  b88b000000           mov eax, 0x8b
-// 0051953e  2bc7                 sub eax, edi
-// 00519540  03c0                 add eax, eax
-// 00519542  99                   cdq 
-// 00519543  f7ff                 idiv edi
-// 00519545  6a08                 push 8
-// 00519547  68708c8200           push 0x828c70
-// 0051954c  6880000000           push 0x80
-// 00519551  6818010000           push 0x118
-// 00519556  6a0a                 push 0xa
-// 00519558  6a0a                 push 0xa
-// 0051955a  680008c800           push 0xc80800
-// 0051955f  8d4c2434             lea ecx, [esp + 0x34]
-// 00519563  8bd8                 mov ebx, eax
-// 00519565  8b442448             mov eax, dword ptr [esp + 0x48]
-// 00519569  50                   push eax
-// 0051956a  e861fdffff           call 0x5192d0
-// 0051956f  68e8030000           push 0x3e8
-// 00519574  6a6c                 push 0x6c
-// 00519576  6814010000           push 0x114
-// 0051957b  6a02                 push 2
-// 0051957d  6a02                 push 2
-// 0051957f  6800000200           push 0x20000
-// 00519584  68040c0110           push 0x10010c04
-// 00519589  68688c8200           push 0x828c68
-// 0051958e  8d4c2438             lea ecx, [esp + 0x38]
-// 00519592  e8c9feffff           call 0x519460
-// 00519597  33f6                 xor esi, esi
-// 00519599  85ff                 test edi, edi
-// 0051959b  7e32                 jle 0x5195cf
-// 0051959d  8d6e02               lea ebp, [esi + 2]
-// 005195a0  8b542434             mov edx, dword ptr [esp + 0x34]
-// 005195a4  8b04b2               mov eax, dword ptr [edx + esi*4]
-// 005195a7  8d8ed0070000         lea ecx, [esi + 0x7d0]
-// 005195ad  51                   push ecx
-// 005195ae  6a0d                 push 0xd
-// 005195b0  53                   push ebx
-// 005195b1  6a71                 push 0x71
-// 005195b3  55                   push ebp
-// 005195b4  6a00                 push 0
-// 005195b6  6800000110           push 0x10010000
-// 005195bb  50                   push eax
-// 005195bc  8d4c2438             lea ecx, [esp + 0x38]
-// 005195c0  e8cbfdffff           call 0x519390
-// 005195c5  8d4302               lea eax, [ebx + 2]
-// 005195c8  46                   inc esi
-// 005195c9  03e8                 add ebp, eax
-// 005195cb  3bf7                 cmp esi, edi
-// 005195cd  7cd1                 jl 0x5195a0
-// 005195cf  8b742430             mov esi, dword ptr [esp + 0x30]
-// 005195d3  8a0e                 mov cl, byte ptr [esi]
-// 005195d5  33d2                 xor edx, edx
-// 005195d7  8bc6                 mov eax, esi
-// 005195d9  84c9                 test cl, cl
-// 005195db  741c                 je 0x5195f9
-// 005195dd  8d4900               lea ecx, [ecx]
-// 005195e0  80f90a               cmp cl, 0xa
-// 005195e3  750b                 jne 0x5195f0
-// 005195e5  3bc6                 cmp eax, esi
-// 005195e7  7407                 je 0x5195f0
-// 005195e9  8078ff0d             cmp byte ptr [eax - 1], 0xd
-// 005195ed  7401                 je 0x5195f0
-// 005195ef  42                   inc edx
-// 005195f0  8a4801               mov cl, byte ptr [eax + 1]
-// 005195f3  40                   inc eax
-// 005195f4  42                   inc edx
-// 005195f5  84c9                 test cl, cl
-// 005195f7  75e7                 jne 0x5195e0
-// 005195f9  42                   inc edx
-// 005195fa  52                   push edx
-// 005195fb  ff15b0288000         call dword ptr [0x8028b0]
-// 00519601  8be8                 mov ebp, eax
-// 00519603  83c404               add esp, 4
-// 00519606  803e00               cmp byte ptr [esi], 0
-// 00519609  8bc6                 mov eax, esi
-// 0051960b  8bcd                 mov ecx, ebp
-// 0051960d  741f                 je 0x51962e
-// 0051960f  90                   nop 
-// 00519610  80380a               cmp byte ptr [eax], 0xa
-// 00519613  750e                 jne 0x519623
-// 00519615  3bc6                 cmp eax, esi
-// 00519617  740a                 je 0x519623
-// 00519619  8078ff0d             cmp byte ptr [eax - 1], 0xd
-// 0051961d  7404                 je 0x519623
-// 0051961f  c6010d               mov byte ptr [ecx], 0xd
-// 00519622  41                   inc ecx
-// 00519623  8a10                 mov dl, byte ptr [eax]
-// 00519625  8811                 mov byte ptr [ecx], dl
-// 00519627  40                   inc eax
-// 00519628  41                   inc ecx
-// 00519629  803800               cmp byte ptr [eax], 0
-// 0051962c  75e2                 jne 0x519610
-// 0051962e  8b44242c             mov eax, dword ptr [esp + 0x2c]
-// 00519632  c60100               mov byte ptr [ecx], 0
-// 00519635  6a00                 push 0
-// 00519637  896c2414             mov dword ptr [esp + 0x14], ebp
-// 0051963b  89442418             mov dword ptr [esp + 0x18], eax
-// 0051963f  ff15bc218000         call dword ptr [0x8021bc]
-// 00519645  8b74241c             mov esi, dword ptr [esp + 0x1c]
-// 00519649  8d4c2410             lea ecx, [esp + 0x10]
-// 0051964d  51                   push ecx
-// 0051964e  6850905100           push 0x519050
-// 00519653  6a00                 push 0
-// 00519655  56                   push esi
-// 00519656  50                   push eax
-// 00519657  ff159c2c8000         call dword ptr [0x802c9c]
-// 0051965d  8b1dc0288000         mov ebx, dword ptr [0x8028c0]
-// 00519663  55                   push ebp
-// 00519664  8bf8                 mov edi, eax
-// 00519666  ffd3                 call ebx
-// 00519668  56                   push esi
-// 00519669  ffd3                 call ebx
-// 0051966b  83c408               add esp, 8
-// 0051966e  8bc7                 mov eax, edi
-// 00519670  5f                   pop edi
-// 00519671  5e                   pop esi
-// 00519672  5d                   pop ebp
-// 00519673  5b                   pop ebx
-// 00519674  83c418               add esp, 0x18
-// 00519677  c3                   ret 
-// library g3d-6.09/G3Dcpp\prompt.cpp (function ?guiPrompt@G3D@@YAHPBD0PAPBDH@Z)
-
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD
 // roc-lib: g3d-6.09 G3Dcpp/prompt.cpp
+
+// Candidate translation unit (score above; library headers required).
+/**
+ @file prompt.cpp
+ 
+ @author Morgan McGuire, morgan@graphics3d.com 
+ @cite Windows dialog interface by Max McGuire, mmcguire@ironlore.com
+ @cite Font setting code by Kurt Miller, kurt@flipcode.com
+
+ @created 2000-08-26
+ @edited  2005-01-14
+ */
+
+#include "G3D/prompt.h"
+#include "G3D/platform.h"
+
+#include <stdio.h>
+
+#ifdef G3D_WIN32
+    #if (defined(G3D_MINGW32) || (_MSC_VER > 1200))
+        #include <sstream>
+    #else
+        #include <strstream>
+    #endif
+    #include <conio.h>
+#else
+    #define _getch getchar
+#endif
+
+#ifdef G3D_OSX
+    #import <AppKit/AppKit.h>
+#endif
+
+namespace G3D {
+
+#ifdef G3D_WIN32
+
+namespace _internal {
+/**
+ Generic Win32 dialog facility.
+ @author Max McGuire
+ */
+class DialogTemplate {
+public:
+
+  DialogTemplate(LPCSTR caption, DWORD style, 
+                 int x, int y, int w, int h,
+                 LPCSTR font = NULL, WORD fontSize = 8) {
+    
+      usedBufferLength = sizeof(DLGTEMPLATE);
+      totalBufferLength = usedBufferLength;
+
+      dialogTemplate = (DLGTEMPLATE*)malloc(totalBufferLength);
+
+      dialogTemplate->style = style;
+        
+      if (font != NULL) {
+        dialogTemplate->style |= DS_SETFONT;
+      }
+        
+      dialogTemplate->x     = (short)x;
+      dialogTemplate->y     = (short)y;
+      dialogTemplate->cx    = (short)w;
+      dialogTemplate->cy    = (short)h;
+      dialogTemplate->cdit  = 0;
+        
+      dialogTemplate->dwExtendedStyle = 0;
+
+      // The dialog box doesn't have a menu or a special class
+      AppendData("\0", 2);
+      AppendData("\0", 2);
+
+      // Add the dialog's caption to the template
+
+      AppendString(caption);
+
+      if (font != NULL) {
+          AppendData(&fontSize, sizeof(WORD));
+          AppendString(font);
+      }
+    }
+
+  void AddComponent(LPCSTR type, LPCSTR caption, DWORD style, DWORD exStyle, int x, int y, int w, int h, WORD id) {
+
+      DLGITEMTEMPLATE item;
+
+      item.style = style;
+      item.x     = (short)x;
+      item.y     = (short)y;
+      item.cx    = (short)w;
+      item.cy    = (short)h;
+      item.id    = id;
+
+      item.dwExtendedStyle = exStyle;
+
+      AppendData(&item, sizeof(DLGITEMTEMPLATE));
+        
+      AppendString(type);
+      AppendString(caption);
+
+      WORD creationDataLength = 0;
+      AppendData(&creationDataLength, sizeof(WORD));
+
+      // Increment the component count
+      dialogTemplate->cdit++;
+
+    }
+
+
+  void AddButton(LPCSTR caption, DWORD style, DWORD exStyle, int x, int y, int w, int h, WORD id) {
+
+      AddStandardComponent(0x0080, caption, style, exStyle, x, y, w, h, id);
+
+      WORD creationDataLength = 0;
+      AppendData(&creationDataLength, sizeof(WORD));
+
+    }
+
+
+  void AddEditBox(LPCSTR caption, DWORD style, DWORD exStyle, int x, int y, int w, int h, WORD id) {
+
+      AddStandardComponent(0x0081, caption, style, exStyle, x, y, w, h, id);
+    
+      WORD creationDataLength = 0;
+      AppendData(&creationDataLength, sizeof(WORD));
+    
+    }
+
+
+  void AddStatic(LPCSTR caption, DWORD style, DWORD exStyle, int x, int y, int w, int h, WORD id) {
+
+      AddStandardComponent(0x0082, caption, style, exStyle, x, y, w, h, id);
+    
+      WORD creationDataLength = 0;
+      AppendData(&creationDataLength, sizeof(WORD));
+    
+    }
+
+
+  void AddListBox(LPCSTR caption, DWORD style, DWORD exStyle, int x, int y, int w, int h, WORD id) {
+
+      AddStandardComponent(0x0083, caption, style, exStyle, x, y, w, h, id);
+    
+      WORD creationDataLength = sizeof(WORD) + 5 * sizeof(WCHAR);
+      AppendData(&creationDataLength, sizeof(WORD));
+
+      AppendString("TEST");
+    
+    }
+    
+
+  void AddScrollBar(LPCSTR caption, DWORD style, DWORD exStyle, int x, int y, int w, int h, WORD id) {
+
+      AddStandardComponent(0x0084, caption, style, exStyle, x, y, w, h, id);
+    
+      WORD creationDataLength = 0;
+      AppendData(&creationDataLength, sizeof(WORD));
+    
+    }
+
+
+  void AddComboBox(LPCSTR caption, DWORD style, DWORD exStyle, int x, int y, int w, int h, WORD id) {
+
+      AddStandardComponent(0x0085, caption, style, exStyle, x, y, w, h, id);
+    
+      WORD creationDataLength = 0;
+      AppendData(&creationDataLength, sizeof(WORD));
+
+    }
+
+
+  /**
+   *
+   * Returns a pointer to the Win32 dialog template which the object
+   * represents. This pointer may become invalid if additional components
+   * are added to the template.
+   *
+   */
+  operator const DLGTEMPLATE*() const {
+      return dialogTemplate;
+  }
+
+  virtual ~DialogTemplate() {
+      free(dialogTemplate);
+  }
+
+protected:
+
+  void AddStandardComponent(WORD type, LPCSTR caption, DWORD style, DWORD exStyle, 
+                            int x, int y, int w, int h, WORD id, LPSTR font = NULL, WORD fontSize = 8) {
+
+      DLGITEMTEMPLATE item;
+
+      // DWORD align the beginning of the component data
+        
+      AlignData(sizeof(DWORD));
+
+      item.style = style;
+      if (font != NULL) {
+          item.style |= DS_SETFONT;
+      }
+      item.x     = (short)x;
+      item.y     = (short)y;
+      item.cx    = (short)w;
+      item.cy    = (short)h;
+      item.id    = id;
+
+      item.dwExtendedStyle = exStyle;
+
+      AppendData(&item, sizeof(DLGITEMTEMPLATE));
+        
+      WORD preType = 0xFFFF;
+        
+      AppendData(&preType, sizeof(WORD));
+      AppendData(&type, sizeof(WORD));
+
+      AppendString(caption);
+
+      if (font != NULL) {
+          AppendData(&fontSize, sizeof(WORD));
+          AppendString(font);
+      }
+
+      // Increment the component count
+      dialogTemplate->cdit++;
+  }
+
+    
+  void AlignData(int size) {
+
+      int paddingSize = usedBufferLength % size;
+        
+      if (paddingSize != 0) {
+          EnsureSpace(paddingSize);
+          usedBufferLength += paddingSize;
+      }
+
+  }
+
+  void AppendString(LPCSTR string) {
+
+      int length = MultiByteToWideChar(CP_ACP, 0, string, -1, NULL, 0);
+
+      WCHAR* wideString = (WCHAR*)malloc(sizeof(WCHAR) * length);
+      MultiByteToWideChar(CP_ACP, 0, string, -1, wideString, length);
+
+      AppendData(wideString, length * sizeof(WCHAR));
+      free(wideString);
+
+  }
+
+  void AppendData(const void* data, int dataLength) {
+
+      EnsureSpace(dataLength);
+
+      memcpy((char*)dialogTemplate + usedBufferLength, data, dataLength);
+      usedBufferLength += dataLength;
+
+  }
+
+  void EnsureSpace(int length) {
+      if (length + usedBufferLength > totalBufferLength) {
+          totalBufferLength += length * 2;
+
+          void* newBuffer = malloc(totalBufferLength);
+          memcpy(newBuffer, dialogTemplate, usedBufferLength);
+            
+          free(dialogTemplate);
+          dialogTemplate = (DLGTEMPLATE*)newBuffer;
+      }
+  }
+
+private:
+
+  DLGTEMPLATE*      dialogTemplate;
+
+  int               totalBufferLength;
+  int               usedBufferLength;
+
+};
+
+
+struct PromptParams {
+    const char* message;
+    const char* title;
+};
+
+/**
+ * Constants for controls.
+ */
+#define IDC_MESSAGE     1000
+#define IDC_BUTTON0     2000
+
+INT_PTR CALLBACK PromptDlgProc(HWND hDlg, UINT msg,
+                               WPARAM wParam, LPARAM lParam) {
+  switch(msg) {
+    case WM_INITDIALOG:
+      {
+        PromptParams *params = (PromptParams*)lParam;
+        ::SetWindowText(::GetDlgItem(hDlg, IDC_MESSAGE), params->message);
+
+        ::SetFocus(::GetDlgItem(hDlg, IDC_BUTTON0));
+
+        SetWindowText(hDlg, params->title);
+
+        HFONT hfont =
+            CreateFont(16, 0, 0, 0, FW_NORMAL,
+                       FALSE, FALSE, FALSE, 
+                       ANSI_CHARSET,OUT_DEFAULT_PRECIS,CLIP_DEFAULT_PRECIS,
+                        PROOF_QUALITY, FIXED_PITCH | FF_MODERN, "Courier New");
+                        
+        SendDlgItemMessage(hDlg, IDC_MESSAGE, WM_SETFONT, (WPARAM)hfont, MAKELPARAM(TRUE,0));
+
+
+        break;
+      }
+    case WM_COMMAND:
+      {
+          int choiceNumber = LOWORD(wParam) - IDC_BUTTON0;
+          if ((choiceNumber >= 0) && (choiceNumber < 10)) {
+              EndDialog(hDlg, choiceNumber);
+              return TRUE;
+          }
+      }
+
+      break;
+
+    case WM_NCDESTROY:
+        // Under SDL 1.2.6 we get a NCDESTROY message for no reason and the
+        // window is immediately closed.  This is here to debug the problem.
+        (void)0;
+        break;
+
+    }
+
+    return FALSE;
+}
+
+}; // namespace _internal
+
+
+using namespace _internal;
+
+/**
+ * Show a dialog prompt.
+ */
+static int guiPrompt(
+    const char*         windowTitle,
+    const char*         prompt,
+    const char**        choice,
+    int                 numChoices) {
+
+    int width = 280;
+    int height = 128;
+
+    const int buttonSpacing = 2;
+    const int buttonWidth = 
+        (width - buttonSpacing * 2 - 
+          buttonSpacing * (numChoices - 1)) / numChoices;
+    const int buttonHeight = 13;
+
+
+    DialogTemplate dialogTemplate(
+        windowTitle,
+        WS_CAPTION | DS_CENTER | WS_SYSMENU,
+        10, 10, width, height,
+        "Tahoma");
+
+    dialogTemplate.AddEditBox(
+        "Edit", WS_VISIBLE | ES_READONLY | ES_OEMCONVERT | ES_MULTILINE | WS_TABSTOP, WS_EX_STATICEDGE,
+        2, 2, width - 4, height - buttonHeight - 7, IDC_MESSAGE);
+
+    int i;
+    for (i = 0; i < numChoices; i++) {
+
+        int x = buttonSpacing + i * (buttonWidth + buttonSpacing);
+        int y = height - buttonHeight - buttonSpacing;
+
+        dialogTemplate.AddButton(choice[i], WS_VISIBLE | WS_TABSTOP, 0,
+                           x, y, buttonWidth, buttonHeight, IDC_BUTTON0 + (WORD)i);
+        
+    }
+
+    // Convert all single \n characters to \r\n for proper printing
+    int strLen = 0;
+    const char* pStr = prompt;
+
+    while (*pStr != '\0') {
+        if ((*pStr == '\n') && (pStr != prompt)) {
+            if (*(pStr - 1) != '\r') {
+                ++strLen;
+            }
+        }
+        ++strLen;
+        ++pStr;
+    }
+
+    char* newStr = (char*)malloc(strLen + 1);
+    
+    const char* pStr2 = prompt;
+    char* pNew = newStr;
+
+    while (*pStr2 != '\0') {
+        if ((*pStr2 == '\n') && (pStr2 != prompt)) {
+            if (*(pStr2 - 1) != '\r') {
+                *pNew = '\r';
+                ++pNew;
+            }
+        }
+        *pNew = *pStr2;
+        ++pNew;
+        ++pStr2;
+    }
+
+    *pNew = '\0';
+
+    PromptParams params;
+    params.message  = newStr;;
+    params.title    = windowTitle;
+
+    HMODULE module = GetModuleHandle(0);
+    int ret = DialogBoxIndirectParam(module, dialogTemplate, NULL, (DLGPROC) PromptDlgProc, (DWORD)&params);
+
+    free(newStr);
+
+    /*
+     For debugging when DialogBoxIndirectParam fails:
+
+        // The last error value.  (Which is preserved across the call).
+        DWORD lastErr = GetLastError();
+    
+        // The decoded message from FormatMessage
+        LPTSTR formatMsg = NULL;
+
+        if (NULL == formatMsg) {
+            FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER |
+                          FORMAT_MESSAGE_IGNORE_INSERTS |
+                          FORMAT_MESSAGE_FROM_SYSTEM,
+                            NULL,
+                            lastErr,
+                            0,
+                            (LPTSTR)&formatMsg,
+                            0,
+                            NULL);
+        }
+
+        // Make sure the message got translated into something.
+        LPTSTR realLastErr;
+        if (NULL != formatMsg) {
+            realLastErr = formatMsg;
+        } else {
+            realLastErr = "Last error code does not exist.";
+        }
+
+        // Get rid of the allocated memory from FormatMessage.
+        if (NULL != formatMsg) {
+            LocalFree((LPVOID)formatMsg);
+        }
+        */
+
+    return ret;
+}
+
+#endif
+
+
+/**
+ * Show a prompt on stdout 
+ */
+static int textPrompt(
+    const char*         windowTitle,
+    const char*         prompt,
+    const char**        choice,
+    int                 numChoices) {
+
+    printf("\n___________________________________________________\n");
+    printf("%s\n", windowTitle);
+    printf("%s", prompt);
+
+    if (numChoices > 10) {
+        numChoices = 10;
+    }
+
+    int c = -1;
+    if (numChoices > 1) {
+        printf("\n");
+        printf("Choose an option by number:");
+
+        while ((c < 0) || (c >= numChoices)) { 
+            printf("\n");
+
+            for (int i = 0; i < numChoices; i++) {
+                if (numChoices <= 3) {
+                    printf("  (%d) %s ", i, choice[i]);
+                } else {
+                    printf("  (%d) %s\n", i, choice[i]);
+                }
+            }
+
+            printf("\n> ");
+            c = _getch() - '0';
+
+            if ((c < 0) || (c >= numChoices)) {
+                printf("'%d' is not a valid choice.", c);
+            } else {
+                printf("%d", c);
+            }
+        }
+    
+    } else if (numChoices == 1) {
+        
+        printf("\nPress any key for '%s'...", choice[0]);
+        _getch();
+        c = 0;
+
+    } else {
+
+        printf("\nPress any key...");
+        _getch();
+        c = 0;
+    }
+
+    printf("\n___________________________________________________\n");
+    return c;
+}
+
+#ifdef G3D_OSX
+static int guiPrompt(const char*         windowTitle,
+                     const char*         prompt,
+                     const char**        choice,
+                     int                 numChoices) 
+{
+        NSAlert* alert;
+        alert = [[NSAlert alloc] init];
+        
+        if (numChoices > 4){
+                //If the # of choices is > 4, use standard text mode for now b/c of OS X bug:
+                [alert setInformativeText: @"Prompt with more than 4 options, see the console..."];
+                [alert addButtonWithTitle:@"Ok"];
+                [alert runModal];
+                [alert release];
+                return textPrompt(windowTitle, prompt, choice, numChoices);
+        }
+
+        //Set Title:
+        [alert setInformativeText: [NSString stringWithUTF8String:windowTitle]];
+        
+        //Set prompt:
+        [alert setMessageText: [NSString stringWithUTF8String:prompt]];
+        
+        //Set the buttons:
+        for (int i = 0; i < numChoices; i++){
+                NSLog(@"About to add button number %d which is called %@", i, [NSString stringWithUTF8String:choice[i]]); 
+                [[alert addButtonWithTitle:[NSString stringWithUTF8String:choice[i]]] setTag: i];
+        }
+        int toReturn = [alert runModal];
+        NSLog(@"Returning : %d", toReturn);
+        [alert release];
+        return toReturn;
+}
+#endif
+
+int prompt(
+    const char*      windowTitle,
+    const char*      prompt, 
+    const char**     choice,
+    int              numChoices,
+    bool             useGui) {
+
+    #ifdef G3D_WIN32
+        if (useGui) {
+            // Build the message box
+            return guiPrompt(windowTitle, prompt, choice, numChoices);
+        }
+    #endif
+    
+        #ifdef G3D_OSX
+                if (useGui){
+                        //Will default to text prompt if numChoices > 4
+                        return guiPrompt(windowTitle, prompt, choice, numChoices);
+                }
+        #endif
+    return textPrompt(windowTitle, prompt, choice, numChoices);
+}
+
+
+void msgBox(
+    const std::string& message,
+    const std::string& title) {
+
+    const char *choice[] = {"Ok"};
+    prompt(title.c_str(), message.c_str(), choice, 1, true); 
+}
+
+#ifndef G3D_WIN32
+    #undef _getch
+#endif
+
+};// namespace
+

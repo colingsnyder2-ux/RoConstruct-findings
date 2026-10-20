@@ -1,23 +1,60 @@
-// roc 2007-08 00773220  unit: seg_00770000  size: 47 bytes
-// Make this compile to the exact bytes below, then: roc check 2007-08 00773220
-//
-// 00773220  33c9                 xor ecx, ecx
-// 00773222  51                   push ecx
-// 00773223  68604c7a00           push 0x7a4c60
-// 00773228  6810cc7900           push 0x79cc10
-// 0077322d  6894027b00           push 0x7b0294
-// 00773232  51                   push ecx
-// 00773233  b820275900           mov eax, 0x592720
-// 00773238  50                   push eax
-// 00773239  b9784c8c00           mov ecx, 0x8c4c78
-// 0077323e  e84dfae1ff           call 0x592c90
-// 00773243  6890ae7700           push 0x77ae90
-// 00773248  e8d6daebff           call 0x630d23
-// 0077324d  59                   pop ecx
-// 0077324e  c3                   ret 
-// library rbxgs/v8datamodel\Visit.cpp (function ??__Edesc_setPing@@YAXXZ)
-
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
 // roc-lib: rbxgs v8datamodel/Visit.cpp
+
+// Candidate translation unit (score above; library headers required).
+#include "v8datamodel/Visit.h"
+#include "util/Http.h"
+#include "util/standardout.h"
+#include <G3D/format.h>
+#include <boost/thread.hpp>
+
+static RBX::Reflection::BoundFuncDesc<RBX::Visit, void(std::string), 1> UploadUrlFunction(&RBX::Visit::setUploadUrl, "SetUploadUrl", "url", RBX::Reflection::FunctionDescriptor::NeedTrustedCaller);
+static RBX::Reflection::BoundFuncDesc<RBX::Visit, std::string(void), 0> getUploadUrl(&RBX::Visit::getUploadUrl, "GetUploadUrl", RBX::Reflection::FunctionDescriptor::NeedTrustedCaller);
+static RBX::Reflection::BoundFuncDesc<RBX::Visit, void(std::string, int), 2> desc_setPing(&RBX::Visit::setPing, "SetPing", "pingUrl", "interval", RBX::Reflection::FunctionDescriptor::NeedTrustedCaller);
+
+namespace RBX
+{
+	Visit::Visit()
+		: uploadUrl("NoVisit")
+	{
+	}
+
+	Visit::~Visit() {}
+
+	void Visit::setPing(std::string url, int interval)
+	{
+		if (url != "")
+		{
+			pingThread.reset(new worker_thread(boost::bind(&Visit::ping, url, interval), "rbx_visit"));
+		}
+		else
+		{
+			pingThread.reset();
+		}
+	}
+
+	worker_thread::work_result Visit::ping(std::string url, int interval)
+	{
+		try
+		{
+			std::string message;
+			Http(url).get(message);
+		}
+		catch (std::exception& exp)
+		{
+			std::string failMessage = G3D::format("ping %s failed: %s", url.c_str(), exp.what());
+			StandardOut::singleton()->print(MESSAGE_WARNING, failMessage.c_str());
+		}
+
+		boost::xtime xt;
+		boost::xtime_get(&xt, boost::TIME_UTC);
+
+		xt.sec += interval;
+
+		boost::thread::sleep(xt);
+
+		return worker_thread::more;
+	}
+}

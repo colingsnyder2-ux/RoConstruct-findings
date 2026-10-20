@@ -1,106 +1,361 @@
-// roc 2010-06 004362e0  unit: IIHAAH::?$CMap  size: 239 bytes
-// Make this compile to the exact bytes below, then: roc check 2010-06 004362e0
-//
-// 004362e0  83ec0c               sub esp, 0xc
-// 004362e3  53                   push ebx
-// 004362e4  8b5c2418             mov ebx, dword ptr [esp + 0x18]
-// 004362e8  55                   push ebp
-// 004362e9  56                   push esi
-// 004362ea  57                   push edi
-// 004362eb  8bf9                 mov edi, ecx
-// 004362ed  8b7718               mov esi, dword ptr [edi + 0x18]
-// 004362f0  8b4604               mov eax, dword ptr [esi + 4]
-// 004362f3  80781100             cmp byte ptr [eax + 0x11], 0
-// 004362f7  b101                 mov cl, 1
-// 004362f9  884c2410             mov byte ptr [esp + 0x10], cl
-// 004362fd  751f                 jne 0x43631e
-// 004362ff  8b13                 mov edx, dword ptr [ebx]
-// 00436301  3b500c               cmp edx, dword ptr [eax + 0xc]
-// 00436304  8bf0                 mov esi, eax
-// 00436306  0f92c1               setb cl
-// 00436309  884c2410             mov byte ptr [esp + 0x10], cl
-// 0043630d  84c9                 test cl, cl
-// 0043630f  7404                 je 0x436315
-// 00436311  8b00                 mov eax, dword ptr [eax]
-// 00436313  eb03                 jmp 0x436318
-// 00436315  8b4008               mov eax, dword ptr [eax + 8]
-// 00436318  80781100             cmp byte ptr [eax + 0x11], 0
-// 0043631c  74e3                 je 0x436301
-// 0043631e  8b17                 mov edx, dword ptr [edi]
-// 00436320  8bee                 mov ebp, esi
-// 00436322  896c2418             mov dword ptr [esp + 0x18], ebp
-// 00436326  89542414             mov dword ptr [esp + 0x14], edx
-// 0043632a  84c9                 test cl, cl
-// 0043632c  7452                 je 0x436380
-// 0043632e  8b4718               mov eax, dword ptr [edi + 0x18]
-// 00436331  8b28                 mov ebp, dword ptr [eax]
-// 00436333  85d2                 test edx, edx
-// 00436335  7404                 je 0x43633b
-// 00436337  3bd2                 cmp edx, edx
-// 00436339  7406                 je 0x436341
-// 0043633b  ff150ca99e00         call dword ptr [0x9ea90c]
-// 00436341  8d4c2414             lea ecx, [esp + 0x14]
-// 00436345  3bf5                 cmp esi, ebp
-// 00436347  752a                 jne 0x436373
-// 00436349  53                   push ebx
-// 0043634a  56                   push esi
-// 0043634b  6a01                 push 1
-// 0043634d  51                   push ecx
-// 0043634e  8bcf                 mov ecx, edi
-// 00436350  e85be32b00           call 0x6f46b0
-// 00436355  5f                   pop edi
-// 00436356  8bc8                 mov ecx, eax
-// 00436358  8b11                 mov edx, dword ptr [ecx]
-// 0043635a  8b44241c             mov eax, dword ptr [esp + 0x1c]
-// 0043635e  8b4904               mov ecx, dword ptr [ecx + 4]
-// 00436361  5e                   pop esi
-// 00436362  5d                   pop ebp
-// 00436363  894804               mov dword ptr [eax + 4], ecx
-// 00436366  c6400801             mov byte ptr [eax + 8], 1
-// 0043636a  8910                 mov dword ptr [eax], edx
-// 0043636c  5b                   pop ebx
-// 0043636d  83c40c               add esp, 0xc
-// 00436370  c20800               ret 8
-// 00436373  e878bdfcff           call 0x4020f0
-// 00436378  8b6c2418             mov ebp, dword ptr [esp + 0x18]
-// 0043637c  8b542414             mov edx, dword ptr [esp + 0x14]
-// 00436380  8b450c               mov eax, dword ptr [ebp + 0xc]
-// 00436383  3b03                 cmp eax, dword ptr [ebx]
-// 00436385  7331                 jae 0x4363b8
-// 00436387  8b4c2410             mov ecx, dword ptr [esp + 0x10]
-// 0043638b  53                   push ebx
-// 0043638c  56                   push esi
-// 0043638d  51                   push ecx
-// 0043638e  8d542420             lea edx, [esp + 0x20]
-// 00436392  52                   push edx
-// 00436393  8bcf                 mov ecx, edi
-// 00436395  e816e32b00           call 0x6f46b0
-// 0043639a  5f                   pop edi
-// 0043639b  8bc8                 mov ecx, eax
-// 0043639d  8b11                 mov edx, dword ptr [ecx]
-// 0043639f  8b44241c             mov eax, dword ptr [esp + 0x1c]
-// 004363a3  8b4904               mov ecx, dword ptr [ecx + 4]
-// 004363a6  5e                   pop esi
-// 004363a7  5d                   pop ebp
-// 004363a8  894804               mov dword ptr [eax + 4], ecx
-// 004363ab  c6400801             mov byte ptr [eax + 8], 1
-// 004363af  8910                 mov dword ptr [eax], edx
-// 004363b1  5b                   pop ebx
-// 004363b2  83c40c               add esp, 0xc
-// 004363b5  c20800               ret 8
-// 004363b8  8b442420             mov eax, dword ptr [esp + 0x20]
-// 004363bc  5f                   pop edi
-// 004363bd  5e                   pop esi
-// 004363be  896804               mov dword ptr [eax + 4], ebp
-// 004363c1  5d                   pop ebp
-// 004363c2  c6400800             mov byte ptr [eax + 8], 0
-// 004363c6  8910                 mov dword ptr [eax], edx
-// 004363c8  5b                   pop ebx
-// 004363c9  83c40c               add esp, 0xc
-// 004363cc  c20800               ret 8
-// library openrbx-client/App\v8world\ContactManager.cpp (function ?insert@?$_Tree@V?$_Tset_traits@PAVPrimitive@RBX@@U?$less@PAVPrimitive@RBX@@@std@@V?$allocator@PAVPrimitive@RBX@@@4@$0A@@std@@@std@@QAE?AU?$pair@Viterator@?$_Tree@V?$_Tset_traits@PAVPrimitive@RBX@@U?$less@PAVPrimitive@RBX@@@std@@V?$allocator@PAVPrimitive@RBX@@@4@$0A@@std@@@std@@_N@2@ABQAVPrimitive@RBX@@@Z)
-
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
 // roc-lib: openrbx-client App/v8world/ContactManager.cpp
+
+// Candidate translation unit (score above; library headers required).
+#include "decomp.h"
+#include "util/HitTestFilter.h"
+#include "v8world/Contact.h"
+#include "v8world/SpatialHash.h"
+#include "v8world/World.h"
+
+#include <algorithm>
+#include <set>
+
+namespace RBX {
+
+bool ContactManager::ignoreBool;
+
+// FUNCTION: WEBSERVICE 0x101080d0
+ContactManager::ContactManager(World* world) : spatialHash(new SpatialHash(world, this)), world(world)
+{
+}
+
+// FUNCTION: WEBSERVICE 0x10108130
+void ContactManager::getPrimitivesTouchingExtents(
+	const Extents& extents,
+	const Primitive* ignore,
+	G3D::Array<Primitive*>& found
+)
+{
+	spatialHash->getPrimitivesTouchingExtents(extents, ignore, found);
+}
+
+// FUNCTION: WEBSERVICE 0x10108140
+void ContactManager::onReleasePair(Primitive* p0, Primitive* p1)
+{
+	Contact* contact = Primitive::getContact(p0, p1);
+
+	world->destroyContact(contact);
+}
+
+// FUNCTION: WEBSERVICE 0x10108170
+void ContactManager::onPrimitiveAdded(Primitive* p)
+{
+	spatialHash->onPrimitiveAdded(p);
+}
+
+// FUNCTION: WEBSERVICE 0x10108180
+void ContactManager::onPrimitiveRemoved(Primitive* p)
+{
+	spatialHash->onPrimitiveRemoved(p);
+}
+
+// FUNCTION: WEBSERVICE 0x10108190
+void ContactManager::onPrimitiveExtentsChanged(Primitive* p)
+{
+	spatialHash->onPrimitiveExtentsChanged(p);
+}
+
+// FUNCTION: WEBSERVICE 0x101081a0
+void ContactManager::stepWorld()
+{
+	spatialHash->onAllPrimitivesMoved();
+}
+
+// FUNCTION: WEBSERVICE 0x101081b0
+ContactManager::~ContactManager()
+{
+	delete spatialHash;
+}
+
+// FUNCTION: WEBSERVICE 0x101081d0
+Primitive* ContactManager::getSlowHit(
+	const G3D::Array<Primitive*>& primitives,
+	const G3D::Ray& unitRay,
+	const G3D::Array<const Primitive*>* ignore,
+	const HitTestFilter* filter,
+	Vector3& hitPoint,
+	float maxDistance,
+	bool& hitSurface,
+	bool& blocked
+) const
+{
+	float closestHit = maxDistance;
+	float closestBlock = maxDistance;
+	Primitive* answer = NULL;
+
+	blocked = false;
+	hitSurface = false;
+
+	for (int i = 0; i < primitives.size(); ++i) {
+		Primitive* primitive = primitives[i];
+
+		bool notIgnored;
+
+		if (ignore != NULL) {
+			notIgnored = ignore->find(primitive) == ignore->end();
+		}
+		else {
+			notIgnored = true;
+		}
+
+		HitTestFilter::Result result;
+
+		if (filter != NULL) {
+			result = filter->filterResult(primitive);
+		}
+		else {
+			result = HitTestFilter::INCLUDE_PRIM;
+		}
+
+		if (notIgnored && result != HitTestFilter::IGNORE_PRIM) {
+			Vector3 center = primitive->getCoordinateFrame().translation;
+			float radius = primitive->getRadius();
+
+			float along = (center - unitRay.origin).dot(unitRay.direction);
+
+			if ((center - (unitRay.origin + unitRay.direction * along)).magnitude() <= radius) {
+				Vector3 surface(0.0f, 0.0f, 0.0f);
+				bool inside;
+
+				if (primitive->hitTest(unitRay, surface, inside)) {
+					float distance = (surface - unitRay.origin).dot(unitRay.direction);
+
+					if (distance > 0.0f) {
+						switch (result) {
+						case HitTestFilter::STOP_TEST:
+							if (distance < closestBlock) {
+								blocked = true;
+								closestBlock = distance;
+							}
+							break;
+
+						case HitTestFilter::INCLUDE_PRIM:
+							if (distance < closestHit) {
+								hitSurface = inside;
+								closestHit = distance;
+								hitPoint = surface;
+								answer = primitive;
+							}
+							break;
+						}
+					}
+				}
+			}
+		}
+	}
+
+	if (blocked && answer != NULL && closestHit < closestBlock) {
+		blocked = false;
+	}
+
+	return answer;
+}
+
+// FUNCTION: WEBSERVICE 0x10108620
+bool ContactManager::intersectingOthers(Primitive* check, const std::set<Primitive*>& checkSet, float overlapIgnored)
+{
+	Contact* c = check->getFirstContact();
+
+	while (c != NULL) {
+		Primitive* other = c->otherPrimitive(check);
+
+		if (checkSet.find(other) == checkSet.end() && c->computeIsColliding(overlapIgnored)) {
+			return true;
+		}
+
+		c = check->getNextContact(c);
+	}
+
+	return false;
+}
+
+// FUNCTION: WEBSERVICE 0x101086c0
+Primitive* ContactManager::getFastHit(
+	const G3D::Ray& ray,
+	const G3D::Array<const Primitive*>* ignore,
+	const HitTestFilter* filter,
+	Vector3& hitPoint,
+	bool& hitSurface,
+	bool& blocked
+) const
+{
+	G3D::Array<Primitive*> found;
+
+	Vector3int32 grid = SpatialHash::realToHashGrid(ray.origin);
+
+	float length = ray.direction.magnitude();
+	float maxDistance = std::min(5000.0f, length);
+
+	G3D::Ray unitRay = ray.unit();
+
+	do {
+		found.resize(0, false);
+		spatialHash->getPrimitivesInGrid(grid, found);
+
+		Primitive* hit = getSlowHit(found, unitRay, ignore, filter, hitPoint, maxDistance, hitSurface, blocked);
+
+		if (hit != NULL) {
+			Vector3 gridCenter((float) grid.x, (float) grid.y, (float) grid.z);
+			Extents extents = SpatialHash::hashGridToRealExtents(gridCenter);
+
+			if (extents.fuzzyContains(hitPoint, 0.001f)) {
+				return hit;
+			}
+		}
+	} while (spatialHash->getNextGrid(grid, unitRay, maxDistance));
+
+	return NULL;
+}
+
+// FUNCTION: WEBSERVICE 0x10108890
+Primitive* ContactManager::getHit(
+	const G3D::Ray& ray,
+	const G3D::Array<const Primitive*>* ignore,
+	const HitTestFilter* filter,
+	Vector3& hitPoint,
+	bool& hitSurface
+) const
+{
+	world->update();
+
+	bool blocked;
+	Primitive* hit = getFastHit(ray, ignore, filter, hitPoint, hitSurface, blocked);
+
+	if (blocked) {
+		hit = NULL;
+	}
+	else if (hit != NULL) {
+		return hit;
+	}
+
+	hitPoint = Vector3::zero();
+	hitSurface = false;
+
+	return hit;
+}
+
+// FUNCTION: WEBSERVICE 0x10108920
+Primitive* ContactManager::getHitLegacy(
+	const G3D::Ray& ray,
+	const Primitive* ignore,
+	const HitTestFilter* filter,
+	Vector3& hitPoint,
+	float& distance,
+	const float& maxDistance
+) const
+{
+	G3D::Ray scaled = G3D::Ray::fromOriginAndDirection(ray.origin, ray.direction * maxDistance);
+
+	G3D::Array<const Primitive*> ignored;
+
+	if (ignore != NULL) {
+		ignored.append(ignore);
+	}
+
+	Primitive* hit = getHit(scaled, &ignored, filter, hitPoint, ignoreBool);
+
+	distance = hit != NULL ? (hitPoint - scaled.origin).magnitude() : 0.0f;
+
+	return hit;
+}
+
+// FUNCTION: WEBSERVICE 0x10108aa0
+Primitive* ContactManager::getHit(
+	const G3D::Ray& ray,
+	const std::vector<const Primitive*>* ignore,
+	const HitTestFilter* filter,
+	Vector3& hitPoint,
+	bool& hitSurface
+) const
+{
+	G3D::Array<const Primitive*> ignored;
+
+	ignored = *ignore;
+
+	return getHit(ray, &ignored, filter, hitPoint, hitSurface);
+}
+
+// FUNCTION: WEBSERVICE 0x10108b30
+Contact* ContactManager::createContact(Primitive* p0, Primitive* p1)
+{
+	if (p0->getPrimitiveType() > p1->getPrimitiveType()) {
+		std::swap(p0, p1);
+	}
+
+	Geometry::GeometryType type0 = p0->getPrimitiveType();
+	Geometry::GeometryType type1 = p1->getPrimitiveType();
+
+	switch (type0) {
+
+	case Geometry::GEOMETRY_BALL:
+
+		switch (type1) {
+
+		case Geometry::GEOMETRY_BALL:
+			return new BallBallContact(p0, p1);
+
+		case Geometry::GEOMETRY_BLOCK:
+			return new BallBlockContact(p0, p1);
+		}
+
+	case Geometry::GEOMETRY_BLOCK:
+		return new BlockBlockContact(p0, p1);
+	}
+
+	return NULL;
+}
+
+// FUNCTION: WEBSERVICE 0x10108c60
+void ContactManager::onNewPair(Primitive* p0, Primitive* p1)
+{
+	Contact* contact = createContact(p0, p1);
+
+	world->insertContact(contact);
+}
+
+// FUNCTION: WEBSERVICE 0x10108c90
+void ContactManager::onPrimitiveGeometryTypeChanged(Primitive* p)
+{
+	G3D::Array<Contact*> newContacts;
+
+	Contact* c;
+
+	while ((c = p->getFirstContact()) != NULL) {
+		newContacts.append(createContact(c->getPrimitive(0), c->getPrimitive(1)));
+
+		world->destroyContact(c);
+	}
+
+	for (int i = 0; i < newContacts.size(); i++) {
+		world->insertContact(newContacts[i]);
+	}
+}
+
+// FUNCTION: WEBSERVICE 0x10108ea0
+bool ContactManager::intersectingOthers(const G3D::Array<Primitive*>& check, float overlapIgnored)
+{
+	std::set<Primitive*> checkSet(check.begin(), check.end());
+
+	for (int i = 0; i < check.size(); i++) {
+		if (intersectingOthers(check[i], checkSet, overlapIgnored)) {
+			return true;
+		}
+	}
+
+	return false;
+}
+
+// FUNCTION: WEBSERVICE 0x10108fa0
+bool ContactManager::intersectingOthers(Primitive* check, float overlapIgnored)
+{
+	std::set<Primitive*> checkSet;
+
+	checkSet.insert(check);
+
+	return intersectingOthers(check, checkSet, overlapIgnored);
+}
+
+} // namespace RBX

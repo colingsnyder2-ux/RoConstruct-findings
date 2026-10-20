@@ -1,67 +1,164 @@
 // from server: 100% by auto
-// roc 2008-06 00476470  unit: G3D::VARArea  size: 176 bytes
-// Make this compile to the exact bytes below, then: roc check 2008-06 00476470
-//
-// 00476470  83ec0c               sub esp, 0xc
-// 00476473  53                   push ebx
-// 00476474  33db                 xor ebx, ebx
-// 00476476  381df0ef9600         cmp byte ptr [0x96eff0], bl
-// 0047647c  0f8592000000         jne 0x476514
-// 00476482  53                   push ebx
-// 00476483  ff1530418000         call dword ptr [0x804130]
-// 00476489  8d442404             lea eax, [esp + 4]
-// 0047648d  50                   push eax
-// 0047648e  6858e48100           push 0x81e458
-// 00476493  6a01                 push 1
-// 00476495  53                   push ebx
-// 00476496  6848e48100           push 0x81e448
-// 0047649b  895c2418             mov dword ptr [esp + 0x18], ebx
-// 0047649f  895c2420             mov dword ptr [esp + 0x20], ebx
-// 004764a3  ff1518418000         call dword ptr [0x804118]
-// 004764a9  85c0                 test eax, eax
-// 004764ab  7c5a                 jl 0x476507
-// 004764ad  8b442404             mov eax, dword ptr [esp + 4]
-// 004764b1  8b08                 mov ecx, dword ptr [eax]
-// 004764b3  8b5148               mov edx, dword ptr [ecx + 0x48]
-// 004764b6  53                   push ebx
-// 004764b7  50                   push eax
-// 004764b8  ffd2                 call edx
-// 004764ba  6a04                 push 4
-// 004764bc  8d44240c             lea eax, [esp + 0xc]
-// 004764c0  53                   push ebx
-// 004764c1  50                   push eax
-// 004764c2  e869250900           call 0x508a30
-// 004764c7  8b442410             mov eax, dword ptr [esp + 0x10]
-// 004764cb  83c40c               add esp, 0xc
-// 004764ce  8d54240c             lea edx, [esp + 0xc]
-// 004764d2  52                   push edx
-// 004764d3  68ecef9600           push 0x96efec
-// 004764d8  8d542410             lea edx, [esp + 0x10]
-// 004764dc  c744241000400010     mov dword ptr [esp + 0x10], 0x10004000
-// 004764e4  8b08                 mov ecx, dword ptr [eax]
-// 004764e6  52                   push edx
-// 004764e7  50                   push eax
-// 004764e8  8b415c               mov eax, dword ptr [ecx + 0x5c]
-// 004764eb  ffd0                 call eax
-// 004764ed  85c0                 test eax, eax
-// 004764ef  7d0a                 jge 0x4764fb
-// 004764f1  891decef9600         mov dword ptr [0x96efec], ebx
-// 004764f7  895c240c             mov dword ptr [esp + 0xc], ebx
-// 004764fb  8b442404             mov eax, dword ptr [esp + 4]
-// 004764ff  8b08                 mov ecx, dword ptr [eax]
-// 00476501  8b5108               mov edx, dword ptr [ecx + 8]
-// 00476504  50                   push eax
-// 00476505  ffd2                 call edx
-// 00476507  ff152c418000         call dword ptr [0x80412c]
-// 0047650d  c605f0ef960001       mov byte ptr [0x96eff0], 1
-// 00476514  a1ecef9600           mov eax, dword ptr [0x96efec]
-// 00476519  33d2                 xor edx, edx
-// 0047651b  5b                   pop ebx
-// 0047651c  83c40c               add esp, 0xc
-// 0047651f  c3                   ret 
-// library g3d-6.09/GLG3Dcpp\DXCaps.cpp (function ?videoMemorySize@DXCaps@G3D@@SA_KXZ)
-
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD
 // roc-lib: g3d-6.09 GLG3Dcpp/DXCaps.cpp
+
+// Candidate translation unit (score above; library headers required).
+/**
+ @file DXCaps.cpp
+
+ @created 2006-04-06
+ @edited  2006-05-06
+
+ @maintainer Corey Taylor
+
+ Copyright 2000-2006, Morgan McGuire.
+ All rights reserved.
+*/
+
+#include "GLG3D/DXCaps.h"
+#include "G3D/platform.h"
+#include "G3D/RegistryUtil.h"
+#include "G3D/System.h"
+
+// This file is only used on Windows
+#ifdef G3D_WIN32
+#include <objbase.h>
+#include <initguid.h>
+
+namespace G3D {
+
+
+uint32 DXCaps::version() {
+    static uint32 dxVersion = 0;
+    static bool init = false;
+
+    if (init) {
+        return dxVersion;
+    }
+
+    if ( RegistryUtil::keyExists("HKEY_LOCAL_MACHINE\\Software\\Microsoft\\DirectX") ) {
+        std::string versionString;
+        if ( RegistryUtil::readString("HKEY_LOCAL_MACHINE\\Software\\Microsoft\\DirectX\\Version", versionString) ) {
+            char major[3], minor[3];
+            if ( versionString.size() >= 7 ) {
+                major[0] = versionString[2];
+                major[1] = versionString[3];
+                major[2] = '\0';
+
+                minor[0] = versionString[5];
+                minor[1] = versionString[6];
+                minor[2] = '\0';
+
+                dxVersion = (atoi(major) * 100) + atoi(minor);
+            }
+        }
+    }
+
+    init = true;
+
+    return dxVersion;
+}
+
+// IDirectDraw2 interface pieces required for getVideoMemorySize()
+DEFINE_GUID( CLSID_DirectDraw,                  0xD7B70EE0,0x4340,0x11CF,0xB0,0x63,0x00,0x20,0xAF,0xC2,0xCD,0x35 );
+DEFINE_GUID( IID_IDirectDraw2,                  0xB3A6F3E0,0x2B43,0x11CF,0xA2,0xDE,0x00,0xAA,0x00,0xB9,0x33,0x56 );
+
+/*
+ * DDSCAPS
+ */
+typedef struct _DDSCAPS
+{
+    DWORD       dwCaps;         // capabilities of surface wanted
+} DDSCAPS;
+
+typedef DDSCAPS FAR* LPDDSCAPS;
+
+#undef INTERFACE
+#define INTERFACE IDirectDraw2
+DECLARE_INTERFACE_( IDirectDraw2, IUnknown )
+{
+    /*** IUnknown methods ***/
+    STDMETHOD(QueryInterface) (THIS_ REFIID riid, LPVOID FAR * ppvObj) PURE;
+    STDMETHOD_(ULONG,AddRef) (THIS)  PURE;
+    STDMETHOD_(ULONG,Release) (THIS) PURE;
+    /*** IDirectDraw methods ***/
+    STDMETHOD(Compact)(THIS) PURE;
+    STDMETHOD(CreateClipper)(THIS_ DWORD, LPVOID FAR*, IUnknown FAR * ) PURE;
+    STDMETHOD(CreatePalette)(THIS_ DWORD, LPVOID, LPVOID FAR*, IUnknown FAR * ) PURE;
+    STDMETHOD(CreateSurface)(THIS_  LPVOID, LPVOID FAR *, IUnknown FAR *) PURE;
+    STDMETHOD(DuplicateSurface)( THIS_ LPVOID, LPVOID FAR * ) PURE;
+    STDMETHOD(EnumDisplayModes)( THIS_ DWORD, LPVOID, LPVOID, LPVOID ) PURE;
+    STDMETHOD(EnumSurfaces)(THIS_ DWORD, LPVOID, LPVOID,LPVOID ) PURE;
+    STDMETHOD(FlipToGDISurface)(THIS) PURE;
+    STDMETHOD(GetCaps)( THIS_ LPVOID, LPVOID) PURE;
+    STDMETHOD(GetDisplayMode)( THIS_ LPVOID) PURE;
+    STDMETHOD(GetFourCCCodes)(THIS_  LPDWORD, LPDWORD ) PURE;
+    STDMETHOD(GetGDISurface)(THIS_ LPVOID FAR *) PURE;
+    STDMETHOD(GetMonitorFrequency)(THIS_ LPDWORD) PURE;
+    STDMETHOD(GetScanLine)(THIS_ LPDWORD) PURE;
+    STDMETHOD(GetVerticalBlankStatus)(THIS_ LPBOOL ) PURE;
+    STDMETHOD(Initialize)(THIS_ GUID FAR *) PURE;
+    STDMETHOD(RestoreDisplayMode)(THIS) PURE;
+    STDMETHOD(SetCooperativeLevel)(THIS_ HWND, DWORD) PURE;
+    STDMETHOD(SetDisplayMode)(THIS_ DWORD, DWORD,DWORD, DWORD, DWORD) PURE;
+    STDMETHOD(WaitForVerticalBlank)(THIS_ DWORD, HANDLE ) PURE;
+    /*** Added in the v2 interface ***/
+    STDMETHOD(GetAvailableVidMem)(THIS_ LPDDSCAPS, LPDWORD, LPDWORD) PURE;
+};
+
+/*
+ * Indicates that this surface exists in video memory.
+ */
+#define DDSCAPS_VIDEOMEMORY                     0x00004000l
+
+/*
+ * Indicates that a video memory surface is resident in true, local video
+ * memory rather than non-local video memory. If this flag is specified then
+ * so must DDSCAPS_VIDEOMEMORY. This flag is mutually exclusive with
+ * DDSCAPS_NONLOCALVIDMEM.
+ */
+#define DDSCAPS_LOCALVIDMEM                     0x10000000l
+
+
+uint64 DXCaps::videoMemorySize() {
+    static DWORD totalVidSize = 0;
+    static bool init = false;
+
+    if (init) {
+        return totalVidSize;
+    }
+
+    CoInitialize(NULL);
+    IDirectDraw2* ddraw = NULL;
+
+    DWORD freeVidSize  = 0;
+
+    if ( !FAILED(CoCreateInstance( CLSID_DirectDraw, NULL, CLSCTX_INPROC_SERVER, IID_IDirectDraw2, reinterpret_cast<LPVOID*>(&ddraw))) ) {
+
+        ddraw->Initialize(0);
+
+        DDSCAPS ddsCaps;
+        System::memset(&ddsCaps, 0, sizeof(DDSCAPS));
+
+        ddsCaps.dwCaps = DDSCAPS_VIDEOMEMORY | DDSCAPS_LOCALVIDMEM;
+
+        if ( FAILED(ddraw->GetAvailableVidMem(&ddsCaps, &totalVidSize, &freeVidSize)) ) {
+            totalVidSize = 0;
+            freeVidSize  = 0;
+        }
+
+        ddraw->Release();
+    }
+
+    CoUninitialize();
+    init = true;
+
+    return totalVidSize;
+}
+
+
+} // namespace G3D
+
+#endif // G3D_WIN32

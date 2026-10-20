@@ -1,42 +1,175 @@
-// roc 2010-06 005bbe50  unit: RBX::VBodyForce::?$FactoryProduct::Creator  size: 119 bytes
-// Make this compile to the exact bytes below, then: roc check 2010-06 005bbe50
-//
-// 005bbe50  6aff                 push -1
-// 005bbe52  689bbf9800           push 0x98bf9b
-// 005bbe57  64a100000000         mov eax, dword ptr fs:[0]
-// 005bbe5d  50                   push eax
-// 005bbe5e  64892500000000       mov dword ptr fs:[0], esp
-// 005bbe65  83ec08               sub esp, 8
-// 005bbe68  c7042400000000       mov dword ptr [esp], 0
-// 005bbe6f  6870010000           push 0x170
-// 005bbe74  c644240400           mov byte ptr [esp + 4], 0
-// 005bbe79  e822bb1e00           call 0x7a79a0
-// 005bbe7e  83c404               add esp, 4
-// 005bbe81  89442404             mov dword ptr [esp + 4], eax
-// 005bbe85  c744241000000000     mov dword ptr [esp + 0x10], 0
-// 005bbe8d  85c0                 test eax, eax
-// 005bbe8f  7409                 je 0x5bbe9a
-// 005bbe91  8bc8                 mov ecx, eax
-// 005bbe93  e838cb0f00           call 0x6b89d0
-// 005bbe98  eb02                 jmp 0x5bbe9c
-// 005bbe9a  33c0                 xor eax, eax
-// 005bbe9c  8b0c24               mov ecx, dword ptr [esp]
-// 005bbe9f  56                   push esi
-// 005bbea0  8b74241c             mov esi, dword ptr [esp + 0x1c]
-// 005bbea4  51                   push ecx
-// 005bbea5  50                   push eax
-// 005bbea6  8bce                 mov ecx, esi
-// 005bbea8  c744241cffffffff     mov dword ptr [esp + 0x1c], 0xffffffff
-// 005bbeb0  e8ebfeffff           call 0x5bbda0
-// 005bbeb5  8b4c240c             mov ecx, dword ptr [esp + 0xc]
-// 005bbeb9  8bc6                 mov eax, esi
-// 005bbebb  5e                   pop esi
-// 005bbebc  64890d00000000       mov dword ptr fs:[0], ecx
-// 005bbec3  83c414               add esp, 0x14
-// 005bbec6  c3                   ret 
-// library openrbx-client/App\v8datamodel\Gyro.cpp (function ??$create@VBodyPosition@RBX@@@?$Creatable@VInstance@RBX@@@RBX@@SA?AV?$shared_ptr@VBodyPosition@RBX@@@boost@@XZ)
-
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
 // roc-lib: openrbx-client App/v8datamodel/Gyro.cpp
+
+// Candidate translation unit (score above; library headers required).
+#include "v8datamodel/Gyro.h"
+
+#include "v8datamodel/PartInstance.h"
+#include "v8kernel/Body.h"
+#include "v8kernel/SimBody.h"
+#include "v8world/Primitive.h"
+#include "v8world/World.h"
+
+namespace RBX {
+
+char sRocket[] = "RocketPropulsion";
+
+char sBodyVelocity[] = "BodyVelocity";
+
+char sBodyPosition[] = "BodyPosition";
+
+char sBodyThrust[] = "BodyThrust";
+
+char sBodyForce[] = "BodyForce";
+
+char sBodyGyro[] = "BodyGyro";
+
+// FUNCTION: WEBSERVICE 0x100ea340
+BodyMover::~BodyMover()
+{
+}
+
+// FUNCTION: WEBSERVICE 0x100ea3b0
+void BodyMover::onEvent(const RunService* source, Stepped event)
+{
+	if (preventBodySleep()) {
+		world->ticklePrimitive(part->getPrimitive(), true);
+	}
+}
+
+// STUB: WEBSERVICE 0x100ea7c0
+void BodyGyro::computeOrientation(Body* body)
+{
+	STUB(0x100ea7c0);
+}
+
+// STUB: WEBSERVICE 0x100eaaf0
+void BodyGyro::computeBalance(Body* body)
+{
+	STUB(0x100eaaf0);
+}
+
+// STUB: WEBSERVICE 0x100eaf60
+void BodyPosition::computeForce(float dt, bool throttling)
+{
+	Body* body = part->getPrimitive()->getBody();
+
+	Vector3 positionForce = (position - body->getPV().position.translation) * kP;
+
+	Vector3 goalForce = positionForce + body->getPV().velocity.linear * -kD;
+
+	lastForce = goalForce * body->getRoot()->getBranchMass();
+
+	lastForce = lastForce.clamp(-maxForce, maxForce);
+
+	body->getRoot()->accumulateForceAtBranchCofm(lastForce);
+}
+
+// FUNCTION: WEBSERVICE 0x100eb0c0
+void BodyVelocity::computeForce(float dt, bool throttling)
+{
+	Body* body = part->getPrimitive()->getBody();
+
+	Vector3 goalForce = (velocity - body->getPV().velocity.linear) * kP;
+
+	lastForce = goalForce * body->getRoot()->getBranchMass();
+
+	lastForce = lastForce.clamp(-maxForce, maxForce);
+
+	body->getRoot()->accumulateForceAtBranchCofm(lastForce);
+}
+
+// FUNCTION: WEBSERVICE 0x100eb1e0
+void BodyForce::computeForce(float dt, bool throttling)
+{
+	part->getPrimitive()->getBody()->getRoot()->accumulateForceAtBranchCofm(force);
+}
+
+// FUNCTION: WEBSERVICE 0x100eb240
+void BodyThrust::computeForce(float dt, bool throttling)
+{
+	Body* body = part->getPrimitive()->getBody();
+
+	Vector3 worldForce = body->getPV().position.vectorToWorldSpace(force);
+	Vector3 worldPos = body->getPV().position.pointToWorldSpace(location);
+
+	body->accumulateForce(worldForce, worldPos);
+}
+
+// STUB: WEBSERVICE 0x100ebb10
+void Rocket::computeForce(float dt, bool throttling)
+{
+	STUB(0x100ebb10);
+}
+
+// STUB: WEBSERVICE 0x100ebfb0
+void BodyGyro::computeForce(float dt, bool throttling)
+{
+	Body* body = part->getPrimitive()->getBody();
+
+	computeBalance(body);
+	computeOrientation(body);
+}
+
+// FUNCTION: WEBSERVICE 0x100ed7b0
+bool BodyVelocity::preventBodySleep()
+{
+	return velocity != G3D::Vector3::zero();
+}
+
+// STUB: WEBSERVICE 0x100ed840
+BodyForce::BodyForce() : force(G3D::Vector3::unitY())
+{
+}
+
+// FUNCTION: WEBSERVICE 0x100ed950 FOLDED
+bool BodyForce::preventBodySleep()
+{
+	return force != G3D::Vector3::zero();
+}
+
+// FUNCTION: WEBSERVICE 0x100ed950 FOLDED
+bool BodyThrust::preventBodySleep()
+{
+	return force != G3D::Vector3::zero();
+}
+
+} // namespace RBX
+
+template class RBX::FactoryProduct<RBX::BodyForce, RBX::BodyMover, RBX::sBodyForce>;
+template class RBX::Reflection::
+	Described<RBX::BodyForce, RBX::sBodyForce, RBX::FactoryProduct<RBX::BodyForce, RBX::BodyMover, RBX::sBodyForce> >;
+template class RBX::DescribedCreatable<RBX::BodyForce, RBX::BodyMover, RBX::sBodyForce>;
+
+template class RBX::FactoryProduct<RBX::BodyGyro, RBX::BodyMover, RBX::sBodyGyro>;
+template class RBX::Reflection::
+	Described<RBX::BodyGyro, RBX::sBodyGyro, RBX::FactoryProduct<RBX::BodyGyro, RBX::BodyMover, RBX::sBodyGyro> >;
+template class RBX::DescribedCreatable<RBX::BodyGyro, RBX::BodyMover, RBX::sBodyGyro>;
+
+template class RBX::FactoryProduct<RBX::BodyPosition, RBX::BodyMover, RBX::sBodyPosition>;
+template class RBX::Reflection::Described<
+	RBX::BodyPosition,
+	RBX::sBodyPosition,
+	RBX::FactoryProduct<RBX::BodyPosition, RBX::BodyMover, RBX::sBodyPosition> >;
+template class RBX::DescribedCreatable<RBX::BodyPosition, RBX::BodyMover, RBX::sBodyPosition>;
+
+template class RBX::FactoryProduct<RBX::BodyThrust, RBX::BodyMover, RBX::sBodyThrust>;
+template class RBX::Reflection::Described<
+	RBX::BodyThrust,
+	RBX::sBodyThrust,
+	RBX::FactoryProduct<RBX::BodyThrust, RBX::BodyMover, RBX::sBodyThrust> >;
+template class RBX::DescribedCreatable<RBX::BodyThrust, RBX::BodyMover, RBX::sBodyThrust>;
+
+template class RBX::FactoryProduct<RBX::BodyVelocity, RBX::BodyMover, RBX::sBodyVelocity>;
+template class RBX::Reflection::Described<
+	RBX::BodyVelocity,
+	RBX::sBodyVelocity,
+	RBX::FactoryProduct<RBX::BodyVelocity, RBX::BodyMover, RBX::sBodyVelocity> >;
+template class RBX::DescribedCreatable<RBX::BodyVelocity, RBX::BodyMover, RBX::sBodyVelocity>;
+
+template class RBX::FactoryProduct<RBX::Rocket, RBX::BodyMover, RBX::sRocket>;
+template class RBX::Reflection::
+	Described<RBX::Rocket, RBX::sRocket, RBX::FactoryProduct<RBX::Rocket, RBX::BodyMover, RBX::sRocket> >;
+template class RBX::DescribedCreatable<RBX::Rocket, RBX::BodyMover, RBX::sRocket>;

@@ -1,3 +1,4 @@
+// from server: 92% by colin
 // from server: 89% by king_originala
 extern const unsigned char primaryTable[];
 extern const unsigned char firstInterfaceTable[];
@@ -28,7 +29,7 @@ __forceinline Stream::~Stream() {
 }
 
 struct Base {
-    const void *table;
+    const void * volatile table;
     long references;
     const void *firstInterface;
     const void *secondInterface;

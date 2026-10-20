@@ -1,34 +1,126 @@
-// roc 2007-08 004e16c0  unit: PBBBuilder  size: 81 bytes
-// Make this compile to the exact bytes below, then: roc check 2007-08 004e16c0
-//
-// 004e16c0  83ec10               sub esp, 0x10
-// 004e16c3  56                   push esi
-// 004e16c4  8bf1                 mov esi, ecx
-// 004e16c6  8d4c2408             lea ecx, [esp + 8]
-// 004e16ca  e8f1d2ffff           call 0x4de9c0
-// 004e16cf  d9442408             fld dword ptr [esp + 8]
-// 004e16d3  668b542410           mov dx, word ptr [esp + 0x10]
-// 004e16d8  b801000000           mov eax, 1
-// 004e16dd  6689442404           mov word ptr [esp + 4], ax
-// 004e16e2  6689442406           mov word ptr [esp + 6], ax
-// 004e16e7  8b442418             mov eax, dword ptr [esp + 0x18]
-// 004e16eb  8b4c2404             mov ecx, dword ptr [esp + 4]
-// 004e16ef  50                   push eax
-// 004e16f0  51                   push ecx
-// 004e16f1  83ec0c               sub esp, 0xc
-// 004e16f4  8bc4                 mov eax, esp
-// 004e16f6  d918                 fstp dword ptr [eax]
-// 004e16f8  8bce                 mov ecx, esi
-// 004e16fa  d9442420             fld dword ptr [esp + 0x20]
-// 004e16fe  66895008             mov word ptr [eax + 8], dx
-// 004e1702  d95804               fstp dword ptr [eax + 4]
-// 004e1705  e8d6f7ffff           call 0x4e0ee0
-// 004e170a  5e                   pop esi
-// 004e170b  83c410               add esp, 0x10
-// 004e170e  c20400               ret 4
-// library rbxgs-view/PBBMesh.cpp (function ?buildTop@PBBBuilder@@MAEXW4Purpose@LevelBuilder@View@RBX@@@Z)
-
 // roc-lang: cpp
 // roc-cl: 50727
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
 // roc-lib: rbxgs-view PBBMesh.cpp
+
+// Candidate translation unit (score above; library headers required).
+#include "PBBMesh.h"
+#include "BrickMesh.h"
+#include "ViewBase.h"
+#include <cstdlib>
+
+class Face
+{
+	G3D::Vector2 perturbation;
+	bool bulge[2];
+public:
+	Face()
+	{
+		perturbation.x = G3D::uniformRandom(-RBX::View::BrickMesh::normalPerturbation, RBX::View::BrickMesh::normalPerturbation);
+		perturbation.y = G3D::uniformRandom(-RBX::View::BrickMesh::normalPerturbation, RBX::View::BrickMesh::normalPerturbation);
+		bulge[0] = G3D::uniformRandom() > 0.5f;
+		bulge[1] = G3D::uniformRandom() > 0.5f;
+	}
+	void operator()(G3D::Vector3&, G3D::Vector3&, G3D::Vector2&, const G3D::Vector3&, const G3D::Vector2int16&);
+};
+
+class Side : public Face
+{
+public:
+	void operator()(G3D::Vector3&, G3D::Vector3&, G3D::Vector2&, const G3D::Vector3&, const G3D::Vector2int16&);
+};
+
+PBBBuilder::PBBBuilder(G3D::ReferenceCountedPointer<RBX::Render::Mesh::Level>& level, G3D::Vector3 size, RBX::View::RenderSurfaceTypes surfaceTypes)
+	: LevelBuilder(level, size, surfaceTypes)
+{
+	strips.x = G3D::max<int>(1, size.x / 6.0f);
+	strips.y = G3D::max<int>(1, size.y / 6.0f);
+	strips.z = G3D::max<int>(1, size.z / 6.0f);
+
+	strips.x = G3D::min<int>(4, strips.x);
+	strips.y = G3D::min<int>(4, strips.y);
+	strips.z = G3D::min<int>(4, strips.z);
+}
+
+void PBBBuilder::buildRight(RBX::View::LevelBuilder::Purpose purpose)
+{
+	Side deform;
+	buildFace<RBX::NORM_X>(deform, G3D::Vector2int16(1, 1), purpose);
+}
+
+void PBBBuilder::buildTop(RBX::View::LevelBuilder::Purpose purpose)
+{
+	Face deform;
+	buildFace<RBX::NORM_Y>(deform, G3D::Vector2int16(1, 1), purpose);
+}
+
+void PBBBuilder::buildBack(RBX::View::LevelBuilder::Purpose purpose)
+{
+	Side deform;
+	buildFace<RBX::NORM_Z>(deform, G3D::Vector2int16(1, 1), purpose);
+}
+
+void PBBBuilder::buildLeft(RBX::View::LevelBuilder::Purpose purpose)
+{
+	Side deform;
+	buildFace<RBX::NORM_X_NEG>(deform, G3D::Vector2int16(1, 1), purpose);
+}
+
+void PBBBuilder::buildBottom(RBX::View::LevelBuilder::Purpose purpose)
+{
+	Face deform;
+	buildFace<RBX::NORM_Y_NEG>(deform, G3D::Vector2int16(1, 1), purpose);
+}
+
+void PBBBuilder::buildFront(RBX::View::LevelBuilder::Purpose purpose)
+{
+	Side deform;
+	buildFace<RBX::NORM_Z_NEG>(deform, G3D::Vector2int16(1, 1), purpose);
+}
+
+namespace RBX
+{
+	namespace View
+	{
+		PBBMesh::PBBMesh(const G3D::Vector3& size, RenderSurfaceTypes surfaceTypes)
+		{
+			{
+				G3D::ReferenceCountedPointer<Render::Mesh::Level> level = new Render::Mesh::Level(G3D::RenderDevice::QUADS);
+				levels.push_back(level);
+
+				PBBBuilder builder(level, size, surfaceTypes);
+				builder.build(LevelBuilder::Surface);
+			}
+
+			if (ViewBase::getShadowsEnabled())
+			{
+				G3D::ReferenceCountedPointer<Render::Mesh::Level> tempShadowLevel = new Render::Mesh::Level(G3D::RenderDevice::TRIANGLES);
+
+				PBBBuilder builder(tempShadowLevel, size, surfaceTypes);
+				builder.build(LevelBuilder::Shadow);
+
+				computeShadowSurface(tempShadowLevel);
+			}
+		}
+
+		PBBMesh::PBBMesh(const G3D::Vector3& size, NormalId decalFace)
+		{
+			G3D::ReferenceCountedPointer<Render::Mesh::Level> level = new Render::Mesh::Level(G3D::RenderDevice::QUADS);
+			levels.push_back(level);
+
+			PBBBuilder builder(level, size, RenderSurfaceTypes());
+			builder.buildFace(decalFace, LevelBuilder::Decal);
+		}
+
+		PBBMesh::PBBMesh(const G3D::Vector3& size, NormalId textureFace, const G3D::Vector2& studsPerTile)
+		{
+			G3D::ReferenceCountedPointer<Render::Mesh::Level> level = new Render::Mesh::Level(G3D::RenderDevice::QUADS);
+			levels.push_back(level);
+
+			PBBBuilder builder(level, size, RenderSurfaceTypes());
+			builder.textureScale = mapToUvw_Legacy(size, textureFace).xy() * 2.0f / studsPerTile;
+
+			builder.buildFace(textureFace, LevelBuilder::Decal);
+		}
+	}
+}

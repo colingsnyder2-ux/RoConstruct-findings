@@ -3,3 +3,28 @@
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD
 // roc-lib: openrbx-client-dll roc_espeon_selectionkeylocal_9d3a3b31cf152d7e.cpp
+
+// Candidate translation unit (score above; library headers required).
+#include <map>
+#include <set>
+#include <boost/thread/recursive_mutex.hpp>
+extern "C" __declspec(dllimport) int __stdcall PostMessageA(void*,unsigned int,unsigned int,long);
+struct S {
+ int reserved;boost::recursive_mutex mutex;char lockTail[28];std::map<unsigned int,int> tree;char padding[32];bool pending,disabled;char alignment[2];std::set<int> collection;
+ void f(int,int,int);
+};
+void S::f(int,int key,int) {
+ boost::recursive_mutex::scoped_lock guard(mutex);
+ if(!disabled) {
+  unsigned int lookup=key;
+  std::map<unsigned int,int>::const_iterator found=tree.find(lookup);
+  if(found!=tree.end())collection.insert(found->second);
+  boost::detail::thread::lock_ops<boost::recursive_mutex>::lock(mutex);
+  if(!pending) {
+   void* window=*reinterpret_cast<void**>(reinterpret_cast<char*>(this)-360);
+   if(window)PostMessageA(window,0x465,0,0);
+   pending=true;
+  }
+  boost::detail::thread::lock_ops<boost::recursive_mutex>::unlock(mutex);
+ }
+}

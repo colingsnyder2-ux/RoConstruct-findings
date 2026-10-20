@@ -1,30 +1,142 @@
-// roc 2011-06 006500b0  unit: RBX::DropperTool  size: 64 bytes
-// Make this compile to the exact bytes below, then: roc check 2011-06 006500b0
-//
-// 006500b0  83ec14               sub esp, 0x14
-// 006500b3  8b44241c             mov eax, dword ptr [esp + 0x1c]
-// 006500b7  8b08                 mov ecx, dword ptr [eax]
-// 006500b9  56                   push esi
-// 006500ba  51                   push ecx
-// 006500bb  681c91a600           push 0xa6911c
-// 006500c0  8d542410             lea edx, [esp + 0x10]
-// 006500c4  6a10                 push 0x10
-// 006500c6  52                   push edx
-// 006500c7  c744241400000000     mov dword ptr [esp + 0x14], 0
-// 006500cf  ff15b809a400         call dword ptr [0xa409b8]
-// 006500d5  8b74242c             mov esi, dword ptr [esp + 0x2c]
-// 006500d9  83c410               add esp, 0x10
-// 006500dc  8d442408             lea eax, [esp + 8]
-// 006500e0  50                   push eax
-// 006500e1  8bce                 mov ecx, esi
-// 006500e3  ff15c404a400         call dword ptr [0xa404c4]
-// 006500e9  8bc6                 mov eax, esi
-// 006500eb  5e                   pop esi
-// 006500ec  83c414               add esp, 0x14
-// 006500ef  c3                   ret 
-// library openrbx-client/App\util\Utilities.cpp (function ?convertToString@?$StringConverter@H@RBX@@SA?AV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@ABH@Z)
-
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
 // roc-lib: openrbx-client-dll App/util/Utilities.cpp
+
+// Candidate translation unit (score above; library headers required).
+#include "util/Utilities.h"
+
+#include "decomp.h"
+
+#include <G3D/Vector3.h>
+#include <cstdio>
+#include <limits>
+
+namespace RBX {
+
+// FUNCTION: WEBSERVICE 0x10090030
+template <>
+std::string StringConverter<bool>::convertToString(const bool& value)
+{
+	return value ? "true" : "false";
+}
+
+// STUB: WEBSERVICE 0x10090060
+template <>
+bool StringConverter<bool>::convertToValue(const std::string& text, bool& value)
+{
+	STUB(0x10090060);
+	return false;
+}
+
+// FUNCTION: WEBSERVICE 0x100900f0
+template <>
+std::string StringConverter<int>::convertToString(const int& value)
+{
+	char szText[16];
+
+	_snprintf(szText, sizeof(szText), "%d", value);
+
+	return szText;
+}
+
+// FUNCTION: WEBSERVICE 0x10090130
+template <>
+std::string StringConverter<unsigned int>::convertToString(const unsigned int& value)
+{
+	char szText[16];
+
+	_snprintf(szText, sizeof(szText), "%u", value);
+
+	return szText;
+}
+
+// FUNCTION: WEBSERVICE 0x10090170
+template <>
+std::string StringConverter<double>::convertToString(const double& value)
+{
+	char szText[32];
+
+	if (value == std::numeric_limits<double>::infinity()) {
+		return "INF";
+	}
+	else if (value == -std::numeric_limits<double>::infinity()) {
+		return "-INF";
+	}
+	else if (!(value < 0.0 || value >= 0.0)) {
+		return "NAN";
+	}
+
+	_snprintf(szText, sizeof(szText), "%.9g", value);
+
+	return szText;
+}
+
+// FUNCTION: WEBSERVICE 0x10090240
+template <>
+std::string StringConverter<float>::convertToString(const float& value)
+{
+	char szText[32];
+
+	if (value == std::numeric_limits<float>::infinity()) {
+		return "INF";
+	}
+	else if (value == -std::numeric_limits<float>::infinity()) {
+		return "-INF";
+	}
+	else if (!(value < 0.0 || value >= 0.0)) {
+		return "NAN";
+	}
+
+	_snprintf(szText, sizeof(szText), "%.9g", value);
+
+	return szText;
+}
+
+// STUB: WEBSERVICE 0x10090670
+template <>
+bool StringConverter<int>::convertToValue(const std::string& text, int& value)
+{
+	STUB(0x10090670);
+	return false;
+}
+
+// STUB: WEBSERVICE 0x100906e0
+template <>
+bool StringConverter<unsigned int>::convertToValue(const std::string& text, unsigned int& value)
+{
+	STUB(0x100906e0);
+	return false;
+}
+
+// STUB: WEBSERVICE 0x10090750
+template <>
+bool StringConverter<double>::convertToValue(const std::string& text, double& value)
+{
+	STUB(0x10090750);
+	return false;
+}
+
+// STUB: WEBSERVICE 0x10090860
+template <>
+bool StringConverter<float>::convertToValue(const std::string& text, float& value)
+{
+	STUB(0x10090860);
+	return false;
+}
+
+// FUNCTION: WEBSERVICE 0x10090970
+template <>
+std::string StringConverter<G3D::Vector3>::convertToString(const G3D::Vector3& value)
+{
+	std::string result = StringConverter<float>::convertToString(value.x);
+
+	result += ", ";
+	result += StringConverter<float>::convertToString(value.y);
+	result += ", ";
+	result += StringConverter<float>::convertToString(value.z);
+
+	return result;
+}
+
+} // namespace RBX

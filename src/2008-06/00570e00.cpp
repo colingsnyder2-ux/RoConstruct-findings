@@ -1,63 +1,141 @@
 // from server: 100% by auto
-// roc 2008-06 00570e00  unit: RBX::Reflection::ClassDescriptor  size: 157 bytes
-// Make this compile to the exact bytes below, then: roc check 2008-06 00570e00
-//
-// 00570e00  6aff                 push -1
-// 00570e02  68a0017d00           push 0x7d01a0
-// 00570e07  64a100000000         mov eax, dword ptr fs:[0]
-// 00570e0d  50                   push eax
-// 00570e0e  64892500000000       mov dword ptr fs:[0], esp
-// 00570e15  51                   push ecx
-// 00570e16  56                   push esi
-// 00570e17  8bf1                 mov esi, ecx
-// 00570e19  89742404             mov dword ptr [esp + 4], esi
-// 00570e1d  6a04                 push 4
-// 00570e1f  c744241400000000     mov dword ptr [esp + 0x14], 0
-// 00570e27  e8f4fa1200           call 0x6a0920
-// 00570e2c  83c404               add esp, 4
-// 00570e2f  85c0                 test eax, eax
-// 00570e31  7404                 je 0x570e37
-// 00570e33  8930                 mov dword ptr [eax], esi
-// 00570e35  eb02                 jmp 0x570e39
-// 00570e37  33c0                 xor eax, eax
-// 00570e39  8906                 mov dword ptr [esi], eax
-// 00570e3b  8b442418             mov eax, dword ptr [esp + 0x18]
-// 00570e3f  c644241001           mov byte ptr [esp + 0x10], 1
-// 00570e44  c7460800000000       mov dword ptr [esi + 8], 0
-// 00570e4b  85c0                 test eax, eax
-// 00570e4d  7419                 je 0x570e68
-// 00570e4f  6a00                 push 0
-// 00570e51  8d4e10               lea ecx, [esi + 0x10]
-// 00570e54  51                   push ecx
-// 00570e55  8d542428             lea edx, [esp + 0x28]
-// 00570e59  894608               mov dword ptr [esi + 8], eax
-// 00570e5c  8b00                 mov eax, dword ptr [eax]
-// 00570e5e  52                   push edx
-// 00570e5f  ffd0                 call eax
-// 00570e61  8b442424             mov eax, dword ptr [esp + 0x24]
-// 00570e65  83c40c               add esp, 0xc
-// 00570e68  c7442410ffffffff     mov dword ptr [esp + 0x10], 0xffffffff
-// 00570e70  85c0                 test eax, eax
-// 00570e72  7415                 je 0x570e89
-// 00570e74  8b00                 mov eax, dword ptr [eax]
-// 00570e76  85c0                 test eax, eax
-// 00570e78  740f                 je 0x570e89
-// 00570e7a  8d4c2420             lea ecx, [esp + 0x20]
-// 00570e7e  6a01                 push 1
-// 00570e80  51                   push ecx
-// 00570e81  8bd1                 mov edx, ecx
-// 00570e83  52                   push edx
-// 00570e84  ffd0                 call eax
-// 00570e86  83c40c               add esp, 0xc
-// 00570e89  8b4c2408             mov ecx, dword ptr [esp + 8]
-// 00570e8d  8bc6                 mov eax, esi
-// 00570e8f  5e                   pop esi
-// 00570e90  64890d00000000       mov dword ptr fs:[0], ecx
-// 00570e97  83c410               add esp, 0x10
-// 00570e9a  c22400               ret 0x24
-// library boost-1.34.1/libs\signals\src\named_slot_map.cpp (function ??0?$_Tmap_traits@Vstored_group@detail@signals@boost@@V?$list@Uconnection_slot_pair@detail@signals@boost@@V?$allocator@Uconnection_slot_pair@detail@signals@boost@@@std@@@std@@V?$function2@_NVstored_group@detail@signals@boost@@V1234@V?$allocator@Vfunction_base@boost@@@std@@@4@V?$allocator@U?$pair@$$CBVstored_group@detail@signals@boost@@V?$list@Uconnection_slot_pair@detail@signals@boost@@V?$allocator@Uconnection_slot_pair@detail@signals@boost@@@std@@@std@@@std@@@6@$0A@@std@@QAE@V?$function2@_NVstored_group@detail@signals@boost@@V1234@V?$allocator@Vfunction_base@boost@@@std@@@boost@@V?$allocator@U?$pair@$$CBVstored_group@detail@signals@boost@@V?$list@Uconnection_slot_pair@detail@signals@boost@@V?$allocator@Uconnection_slot_pair@detail@signals@boost@@@std@@@std@@@std@@@1@@Z)
-
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD
 // roc-lib: boost-1.34.1 libs/signals/src/named_slot_map.cpp
+
+// Candidate translation unit (score above; library headers required).
+// Boost.Signals library
+
+// Copyright Douglas Gregor 2001-2004. Use, modification and
+// distribution is subject to the Boost Software License, Version
+// 1.0. (See accompanying file LICENSE_1_0.txt or copy at
+// http://www.boost.org/LICENSE_1_0.txt)
+
+// For more information, see http://www.boost.org
+
+#define BOOST_SIGNALS_SOURCE
+
+#include <boost/signals/detail/named_slot_map.hpp>
+#include <cassert>
+#include <map>
+#include <list>
+#include <typeinfo>
+
+namespace boost { namespace BOOST_SIGNALS_NAMESPACE { namespace detail {
+
+typedef std::list<connection_slot_pair> group_list;
+typedef group_list::iterator slot_pair_iterator;
+typedef std::map<stored_group, group_list, compare_type> slot_container_type;
+typedef slot_container_type::iterator group_iterator;
+typedef slot_container_type::const_iterator const_group_iterator;
+
+
+#if BOOST_WORKAROUND(_MSC_VER, <= 1400)
+void named_slot_map_iterator::decrement() { assert(false); }
+void named_slot_map_iterator::advance(difference_type) { assert(false); }
+#endif
+
+named_slot_map::named_slot_map(const compare_type& compare) : groups(compare)
+{
+  clear();
+}
+
+void named_slot_map::clear()
+{
+  groups.clear();
+  groups[stored_group(stored_group::sk_front)];
+  groups[stored_group(stored_group::sk_back)];
+  back = groups.end();
+  --back;
+}
+
+named_slot_map::iterator named_slot_map::begin()
+{
+  return named_slot_map::iterator(groups.begin(), groups.end());
+}
+
+named_slot_map::iterator named_slot_map::end()
+{
+  return named_slot_map::iterator(groups.end(), groups.end());
+}
+
+named_slot_map::iterator
+named_slot_map::insert(const stored_group& name, const connection& con,
+                       const any& slot, connect_position at)
+{
+  group_iterator group;
+  if (name.empty()) {
+    switch (at) {
+    case at_front: group = groups.begin(); break;
+    case at_back: group = back; break;
+    }
+  } else {
+    group = groups.find(name);
+    if (group == groups.end()) {
+      slot_container_type::value_type v(name, group_list());
+      group = groups.insert(v).first;
+    }
+  }
+  iterator it;
+  it.group = group;
+  it.last_group = groups.end();
+
+  switch (at) {
+  case at_back:
+    group->second.push_back(connection_slot_pair(con, slot));
+    it.slot_ = group->second.end();
+    it.slot_assigned = true;
+    --(it.slot_);
+    break;
+
+  case at_front:
+    group->second.push_front(connection_slot_pair(con, slot));
+    it.slot_ = group->second.begin();
+    it.slot_assigned = true;
+    break;
+  }
+  return it;
+}
+
+void named_slot_map::disconnect(const stored_group& name)
+{
+  group_iterator group = groups.find(name);
+  if (group != groups.end()) {
+    slot_pair_iterator i = group->second.begin();
+    while (i != group->second.end()) {
+      slot_pair_iterator next = i;
+      ++next;
+      i->first.disconnect();
+      i = next;
+    }
+    groups.erase(group);
+  }
+}
+
+void named_slot_map::erase(iterator pos)
+{
+  // Erase the slot
+  pos.slot_->first.disconnect();
+  pos.group->second.erase(pos.slot_);
+}
+
+void named_slot_map::remove_disconnected_slots()
+{
+  // Remove any disconnected slots
+  group_iterator g = groups.begin();
+  while (g != groups.end()) {
+    slot_pair_iterator s = g->second.begin();
+    while (s != g->second.end()) {
+      if (s->first.connected()) ++s;
+      else g->second.erase(s++);
+    }
+
+    // Clear out empty groups
+    if (empty(g)) groups.erase(g++);
+    else ++g;
+  }
+}
+
+
+} } }

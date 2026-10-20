@@ -1,21 +1,41 @@
-// roc 2008-06 0062e190  unit: RBX::VDecal::?$FactoryProduct  size: 36 bytes
-// Make this compile to the exact bytes below, then: roc check 2008-06 0062e190
-//
-// 0062e190  8b442404             mov eax, dword ptr [esp + 4]
-// 0062e194  6a00                 push 0
-// 0062e196  6850dd9200           push 0x92dd50
-// 0062e19b  687c909200           push 0x92907c
-// 0062e1a0  6a00                 push 0
-// 0062e1a2  50                   push eax
-// 0062e1a3  e81e360700           call 0x6a17c6
-// 0062e1a8  83c414               add esp, 0x14
-// 0062e1ab  f7d8                 neg eax
-// 0062e1ad  1bc0                 sbb eax, eax
-// 0062e1af  f7d8                 neg eax
-// 0062e1b1  c20400               ret 4
-// library rbxgs/v8datamodel\FaceInstance.cpp (function ?askSetParent@FaceInstance@RBX@@MBE_NPBVInstance@2@@Z)
-
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
 // roc-lib: rbxgs v8datamodel/FaceInstance.cpp
+
+// Candidate translation unit (score above; library headers required).
+#include "v8datamodel/FaceInstance.h"
+#include "v8datamodel/PartInstance.h"
+#include "util/NormalId.h"
+#include "v8tree/Instance.h"
+#include "reflection/reflection.h"
+namespace RBX 
+{
+	const char* sFaceInstance = "FaceInstance";
+	const Reflection::EnumPropDescriptor<FaceInstance,NormalId> FaceInstance::prop_Face("Face", "Data", &FaceInstance::getFace, &FaceInstance::setFace, Reflection::PropertyDescriptor::STANDARD);
+
+	FaceInstance::FaceInstance()
+		:face(NORM_Z_NEG)
+	{
+	}
+
+	void FaceInstance::setFace(NormalId value) 
+	{
+		if (face != value) 
+		{
+			face = value;
+			raisePropertyChanged(prop_Face);
+		}
+	}
+
+
+	NormalId FaceInstance::getFace() const 
+	{
+		return face;
+	}
+
+	bool FaceInstance::askSetParent(const Instance* instance) const 
+	{
+		return dynamic_cast<const PartInstance*>(instance) != NULL;
+	}
+}

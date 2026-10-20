@@ -1,129 +1,341 @@
-// roc 2008-06 00618a40  unit: RBX::VFlag::?$FactoryProduct  size: 364 bytes
-// Make this compile to the exact bytes below, then: roc check 2008-06 00618a40
-//
-// 00618a40  6aff                 push -1
-// 00618a42  68fb7b7c00           push 0x7c7bfb
-// 00618a47  64a100000000         mov eax, dword ptr fs:[0]
-// 00618a4d  50                   push eax
-// 00618a4e  64892500000000       mov dword ptr fs:[0], esp
-// 00618a55  83ec18               sub esp, 0x18
-// 00618a58  8b44242c             mov eax, dword ptr [esp + 0x2c]
-// 00618a5c  53                   push ebx
-// 00618a5d  56                   push esi
-// 00618a5e  57                   push edi
-// 00618a5f  c744240c00000000     mov dword ptr [esp + 0xc], 0
-// 00618a67  85c0                 test eax, eax
-// 00618a69  7431                 je 0x618a9c
-// 00618a6b  8d4c241c             lea ecx, [esp + 0x1c]
-// 00618a6f  51                   push ecx
-// 00618a70  8d88e4000000         lea ecx, [eax + 0xe4]
-// 00618a76  e81525e1ff           call 0x42af90
-// 00618a7b  50                   push eax
-// 00618a7c  8d542418             lea edx, [esp + 0x18]
-// 00618a80  52                   push edx
-// 00618a81  e8ea95e8ff           call 0x4a2070
-// 00618a86  83c408               add esp, 8
-// 00618a89  8b742410             mov esi, dword ptr [esp + 0x10]
-// 00618a8d  c744242c02000000     mov dword ptr [esp + 0x2c], 2
-// 00618a95  bb03000000           mov ebx, 3
-// 00618a9a  eb15                 jmp 0x618ab1
-// 00618a9c  33f6                 xor esi, esi
-// 00618a9e  c744240c00000000     mov dword ptr [esp + 0xc], 0
-// 00618aa6  89742410             mov dword ptr [esp + 0x10], esi
-// 00618aaa  8d44240c             lea eax, [esp + 0xc]
-// 00618aae  8d5e04               lea ebx, [esi + 4]
-// 00618ab1  8b08                 mov ecx, dword ptr [eax]
-// 00618ab3  8b7c2434             mov edi, dword ptr [esp + 0x34]
-// 00618ab7  890f                 mov dword ptr [edi], ecx
-// 00618ab9  8b4004               mov eax, dword ptr [eax + 4]
-// 00618abc  894704               mov dword ptr [edi + 4], eax
-// 00618abf  85c0                 test eax, eax
-// 00618ac1  740c                 je 0x618acf
-// 00618ac3  83c004               add eax, 4
-// 00618ac6  ba01000000           mov edx, 1
-// 00618acb  f00fc110             lock xadd dword ptr [eax], edx
-// 00618acf  83cb08               or ebx, 8
-// 00618ad2  f6c304               test bl, 4
-// 00618ad5  7435                 je 0x618b0c
-// 00618ad7  83e3fb               and ebx, 0xfffffffb
-// 00618ada  895c240c             mov dword ptr [esp + 0xc], ebx
-// 00618ade  85f6                 test esi, esi
-// 00618ae0  742a                 je 0x618b0c
-// 00618ae2  8d4604               lea eax, [esi + 4]
-// 00618ae5  83c9ff               or ecx, 0xffffffff
-// 00618ae8  f00fc108             lock xadd dword ptr [eax], ecx
-// 00618aec  751e                 jne 0x618b0c
-// 00618aee  8b16                 mov edx, dword ptr [esi]
-// 00618af0  8b4204               mov eax, dword ptr [edx + 4]
-// 00618af3  8bce                 mov ecx, esi
-// 00618af5  ffd0                 call eax
-// 00618af7  8d4e08               lea ecx, [esi + 8]
-// 00618afa  83caff               or edx, 0xffffffff
-// 00618afd  f00fc111             lock xadd dword ptr [ecx], edx
-// 00618b01  7509                 jne 0x618b0c
-// 00618b03  8b06                 mov eax, dword ptr [esi]
-// 00618b05  8b5008               mov edx, dword ptr [eax + 8]
-// 00618b08  8bce                 mov ecx, esi
-// 00618b0a  ffd2                 call edx
-// 00618b0c  c744242c01000000     mov dword ptr [esp + 0x2c], 1
-// 00618b14  f6c302               test bl, 2
-// 00618b17  7439                 je 0x618b52
-// 00618b19  8b742418             mov esi, dword ptr [esp + 0x18]
-// 00618b1d  83e3fd               and ebx, 0xfffffffd
-// 00618b20  895c240c             mov dword ptr [esp + 0xc], ebx
-// 00618b24  85f6                 test esi, esi
-// 00618b26  742a                 je 0x618b52
-// 00618b28  8d4604               lea eax, [esi + 4]
-// 00618b2b  83c9ff               or ecx, 0xffffffff
-// 00618b2e  f00fc108             lock xadd dword ptr [eax], ecx
-// 00618b32  751e                 jne 0x618b52
-// 00618b34  8b16                 mov edx, dword ptr [esi]
-// 00618b36  8b4204               mov eax, dword ptr [edx + 4]
-// 00618b39  8bce                 mov ecx, esi
-// 00618b3b  ffd0                 call eax
-// 00618b3d  8d4e08               lea ecx, [esi + 8]
-// 00618b40  83caff               or edx, 0xffffffff
-// 00618b43  f00fc111             lock xadd dword ptr [ecx], edx
-// 00618b47  7509                 jne 0x618b52
-// 00618b49  8b06                 mov eax, dword ptr [esi]
-// 00618b4b  8b5008               mov edx, dword ptr [eax + 8]
-// 00618b4e  8bce                 mov ecx, esi
-// 00618b50  ffd2                 call edx
-// 00618b52  c744242c00000000     mov dword ptr [esp + 0x2c], 0
-// 00618b5a  f6c301               test bl, 1
-// 00618b5d  7439                 je 0x618b98
-// 00618b5f  8b742420             mov esi, dword ptr [esp + 0x20]
-// 00618b63  83e3fe               and ebx, 0xfffffffe
-// 00618b66  895c240c             mov dword ptr [esp + 0xc], ebx
-// 00618b6a  85f6                 test esi, esi
-// 00618b6c  742a                 je 0x618b98
-// 00618b6e  8d4604               lea eax, [esi + 4]
-// 00618b71  83c9ff               or ecx, 0xffffffff
-// 00618b74  f00fc108             lock xadd dword ptr [eax], ecx
-// 00618b78  751e                 jne 0x618b98
-// 00618b7a  8b16                 mov edx, dword ptr [esi]
-// 00618b7c  8b4204               mov eax, dword ptr [edx + 4]
-// 00618b7f  8bce                 mov ecx, esi
-// 00618b81  ffd0                 call eax
-// 00618b83  8d4e08               lea ecx, [esi + 8]
-// 00618b86  83caff               or edx, 0xffffffff
-// 00618b89  f00fc111             lock xadd dword ptr [ecx], edx
-// 00618b8d  7509                 jne 0x618b98
-// 00618b8f  8b06                 mov eax, dword ptr [esi]
-// 00618b91  8b5008               mov edx, dword ptr [eax + 8]
-// 00618b94  8bce                 mov ecx, esi
-// 00618b96  ffd2                 call edx
-// 00618b98  8b4c2424             mov ecx, dword ptr [esp + 0x24]
-// 00618b9c  8bc7                 mov eax, edi
-// 00618b9e  5f                   pop edi
-// 00618b9f  5e                   pop esi
-// 00618ba0  5b                   pop ebx
-// 00618ba1  64890d00000000       mov dword ptr fs:[0], ecx
-// 00618ba8  83c424               add esp, 0x24
-// 00618bab  c3                   ret 
-// library openrbx-client/App\gui\GUI.cpp (function ??$shared_from@VGuiItem@RBX@@@RBX@@YA?AV?$shared_ptr@VGuiItem@RBX@@@boost@@PAVGuiItem@0@@Z)
-
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
 // roc-lib: openrbx-client App/gui/GUI.cpp
+
+// Candidate translation unit (score above; library headers required).
+#include "gui/GUI.h"
+
+#include "util/object.h"
+
+#include <G3D/g3dmath.h>
+#include <algorithm>
+#include <math.h>
+
+namespace RBX {
+
+G3D::Vector2 GuiRoot::canvasSize;
+G3D::Matrix4 GuiRoot::oldProjectionMatrix;
+G3D::CoordinateFrame GuiRoot::oldCameraWorld;
+
+// FUNCTION: WEBSERVICE 0x100d0fc0
+const G3D::Color4& GuiItem::disabledFill()
+{
+	static G3D::Color4 c(0.7f, 0.7f, 0.7f, 0.5f);
+	return c;
+}
+
+// FUNCTION: WEBSERVICE 0x100d1000
+const G3D::Color4& GuiItem::translucentBackdrop()
+{
+	static G3D::Color4 c(0.6f, 0.6f, 0.6f, 0.6f);
+	return c;
+}
+
+// FUNCTION: WEBSERVICE 0x100d1040 FOLDED
+GuiItem* GuiItem::getGuiParent()
+{
+	return dynamic_cast<GuiItem*>(getParent());
+}
+
+// FUNCTION: WEBSERVICE 0x100d1040 FOLDED
+const GuiItem* GuiItem::getGuiParent() const
+{
+	return dynamic_cast<const GuiItem*>(getParent());
+}
+
+// FUNCTION: WEBSERVICE 0x100d1060
+Rect GuiItem::getMyRect() const
+{
+	Vector2 pos = getPosition();
+
+	return Rect(pos, pos + getSize());
+}
+
+// STUB: WEBSERVICE 0x100d10b0
+void GuiItem::label2d(
+	Adorn* adorn,
+	const std::string& label,
+	const G3D::Color4& fill,
+	const G3D::Color4& border,
+	Adorn::XAlign align
+) const
+{
+	if (label.size() == 0) {
+		return;
+	}
+
+	Rect myRect = getMyRect();
+
+	G3D::Vector2 size = myRect.size();
+	G3D::Vector2 pos = myRect.center();
+
+	switch (align) {
+	case Adorn::XALIGN_RIGHT:
+		pos.x = myRect.high.x - size.x * 0.1f;
+		break;
+
+	case Adorn::XALIGN_CENTER:
+		break;
+
+	default:
+		pos.x = myRect.low.x + size.x * 0.1f;
+		break;
+	}
+
+	adorn
+		->drawFont2D(label, pos, getFontSize(), fill, border, align, Adorn::YALIGN_CENTER, Adorn::PROPORTIONAL_SPACING);
+}
+
+// FUNCTION: WEBSERVICE 0x100d1180
+void RelativePanel::init(const Layout& layout)
+{
+	setName("RelativePanel");
+	layoutStyle = layout.layoutStyle;
+	backdropColor = layout.backdropColor;
+	xLocation = layout.xLocation;
+	yLocation = layout.yLocation;
+	offset = layout.offset;
+}
+
+// FUNCTION: WEBSERVICE 0x100d1230
+void TopMenuBar::init()
+{
+	layoutStyle = Layout::HORIZONTAL;
+	backdropColor = G3D::Color4::clear();
+	visible = true;
+}
+
+// FUNCTION: WEBSERVICE 0x100d1270
+G3D::Vector2 GuiRoot::toPixelSize(const G3D::Vector2& percent)
+{
+	G3D::Vector2 pixelSize(0, 0);
+
+	if (canvasSize.y > 0.75f * canvasSize.x) {
+		pixelSize = (0.01f * percent) * G3D::Vector2(canvasSize.x, 0.75f * canvasSize.x);
+	}
+	else {
+		pixelSize = (0.01f * percent) * G3D::Vector2(1.33f * canvasSize.y, canvasSize.y);
+	}
+
+	return pixelSize;
+}
+
+// FUNCTION: WEBSERVICE 0x100d12f0
+int GuiRoot::normalizedFontSize(int fontSize)
+{
+	static G3D::Vector2 percentSize(100.0f, 75.0f);
+
+	return G3D::iRound(floorf(fontSize * toPixelSize(percentSize).x * 0.001f));
+}
+
+// FUNCTION: WEBSERVICE 0x100d1360
+G3D::Vector2 RelativePanel::getPosition() const
+{
+	Rect canvas(G3D::Vector2::zero(), GuiRoot::getCanvasSize());
+	Rect me(G3D::Vector2::zero(), getSize());
+
+	canvas = canvas.inset(offset);
+
+	return canvas.positionChild(me, xLocation, yLocation).low;
+}
+
+// FUNCTION: WEBSERVICE 0x100d14d0
+GuiItem::GuiItem() : guiSize(0, 0)
+{
+	setName("Unnamed GuiItem");
+}
+
+// FUNCTION: WEBSERVICE 0x100d15f0
+GuiRoot::GuiRoot()
+{
+	setName("GuiRoot");
+}
+
+// FUNCTION: WEBSERVICE 0x100d1700
+void GuiRoot::render2d(Adorn* adorn)
+{
+	setCanvasSize(G3D::Vector2(G3D::Vector2int16(adorn->getWidth(), adorn->getHeight())));
+
+	for (unsigned int i = 0; i < numChildren(); ++i) {
+		Instance* instance = (*getChildren())[i].get();
+		GuiItem* item = dynamic_cast<GuiItem*>(instance);
+
+		if (item != NULL) {
+			item->render2d(adorn);
+		}
+	}
+}
+
+// FUNCTION: WEBSERVICE 0x100d17c0
+G3D::Vector2 TopMenuBar::getSize() const
+{
+	G3D::Vector2 size(0, 0);
+
+	for (unsigned int i = 0; i < numChildren(); ++i) {
+		Instance* child = (*getChildren())[i].get();
+		GuiItem* item = dynamic_cast<GuiItem*>(child);
+
+		if (item != NULL) {
+			G3D::Vector2 childSize = item->getSize();
+
+			switch (layoutStyle) {
+			case Layout::HORIZONTAL:
+				size.x += childSize.x;
+				size.y = std::max(size.y, childSize.y);
+				break;
+			case Layout::VERTICAL:
+				size.x = std::max(size.x, childSize.x);
+				size.y += childSize.y;
+				break;
+			}
+		}
+	}
+
+	return size;
+}
+
+// FUNCTION: WEBSERVICE 0x100d18d0
+G3D::Vector2 TopMenuBar::getChildPosition(const GuiItem* child) const
+{
+	G3D::Vector2 position = getPosition();
+	G3D::Vector2 mySize = getSize();
+
+	for (unsigned int i = 0; i < numChildren(); ++i) {
+		Instance* instance = (*getChildren())[i].get();
+		GuiItem* item = dynamic_cast<GuiItem*>(instance);
+
+		if (item != NULL) {
+			G3D::Vector2 myChildSize = item->getSize();
+
+			if (item == child) {
+				int other = (layoutStyle + 1) % 2;
+
+				position[other] += (mySize[other] - myChildSize[other]) * 0.5f;
+
+				return position;
+			}
+
+			switch (layoutStyle) {
+			case Layout::HORIZONTAL:
+			case Layout::VERTICAL:
+				position[layoutStyle] += item->getSize()[layoutStyle];
+				break;
+			}
+		}
+	}
+
+	return position;
+}
+
+// FUNCTION: WEBSERVICE 0x100d19f0
+void TopMenuBar::render2d(Adorn* adorn)
+{
+	if (!isVisible()) {
+		return;
+	}
+
+	if (backdropColor != G3D::Color4::clear()) {
+		adorn->rect2d(getMyRect2D(), backdropColor);
+	}
+
+	for (unsigned int i = 0; i < numChildren(); ++i) {
+		Instance* instance = (*getChildren())[i].get();
+		GuiItem* item = dynamic_cast<GuiItem*>(instance);
+
+		if (item != NULL) {
+			item->render2d(adorn);
+		}
+	}
+}
+
+// FUNCTION: WEBSERVICE 0x100d1ae0
+void GuiItem::loseFocus()
+{
+	if (focus != NULL) {
+		focus->onLoseFocus();
+	}
+
+	focus.reset();
+}
+
+// FUNCTION: WEBSERVICE 0x100d1b50
+void GuiItem::onDescendentRemoving(const shared_ptr<Instance>& instance)
+{
+	if (instance.get() == focus.get()) {
+		loseFocus();
+	}
+
+	Instance::onDescendentRemoving(instance);
+}
+
+// STUB: WEBSERVICE 0x100d1b80
+GuiResponse GuiItem::processNonFocus(const GuiEvent& event)
+{
+	for (unsigned int i = 0; i < numChildren(); ++i) {
+		Instance* child = (*getChildren())[i].get();
+		GuiItem* item = dynamic_cast<GuiItem*>(child);
+
+		if (item != NULL && item != focus.get()) {
+			GuiResponse itemResponse = item->process(event);
+
+			if (itemResponse.wasUsed()) {
+				loseFocus();
+				focus = shared_from(item);
+				focus->loseFocus();
+
+				return itemResponse;
+			}
+		}
+	}
+
+	return GuiResponse::notUsed();
+}
+
+// FUNCTION: WEBSERVICE 0x100d1cf0
+GuiResponse GuiItem::process(const GuiEvent& event)
+{
+	if (event.isMouseEvent() && event.eventType == UIEvent::MOUSE_IDLE) {
+		return GuiResponse::notUsed();
+	}
+
+	if (focus != NULL) {
+		if (focus->canLoseFocus()) {
+			GuiResponse nonFocus = processNonFocus(event);
+
+			if (nonFocus.wasUsed()) {
+				return nonFocus;
+			}
+		}
+
+		GuiResponse focusResponse = focus->process(event);
+
+		if (focusResponse.wasUsed()) {
+			return focusResponse;
+		}
+
+		loseFocus();
+	}
+
+	return processNonFocus(event);
+}
+
+// FUNCTION: WEBSERVICE 0x100d1de0
+GuiResponse TopMenuBar::process(const GuiEvent& event)
+{
+	if (isVisible()) {
+		GuiResponse childResponse = GuiItem::process(event);
+
+		if (childResponse.wasUsed()) {
+			return childResponse;
+		}
+
+		if (backdropColor.a > 0 && event.isMouseEvent() && getMyRect().pointInRect(event.mousePosition)) {
+			return GuiResponse::used();
+		}
+	}
+
+	return GuiResponse::notUsed();
+}
+
+} // namespace RBX

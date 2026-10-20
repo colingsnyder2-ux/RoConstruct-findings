@@ -1,143 +1,402 @@
 // from server: 100% by auto
-// roc 2008-06 0051e390  unit: seg_00510000  size: 449 bytes
-// Make this compile to the exact bytes below, then: roc check 2008-06 0051e390
-//
-// 0051e390  8b4624               mov eax, dword ptr [esi + 0x24]
-// 0051e393  53                   push ebx
-// 0051e394  55                   push ebp
-// 0051e395  bd01000000           mov ebp, 1
-// 0051e39a  2bc5                 sub eax, ebp
-// 0051e39c  57                   push edi
-// 0051e39d  8d5dff               lea ebx, [ebp - 1]
-// 0051e3a0  0f8464010000         je 0x51e50a
-// 0051e3a6  83e802               sub eax, 2
-// 0051e3a9  7468                 je 0x51e413
-// 0051e3ab  2bc5                 sub eax, ebp
-// 0051e3ad  740b                 je 0x51e3ba
-// 0051e3af  895e28               mov dword ptr [esi + 0x28], ebx
-// 0051e3b2  895e2c               mov dword ptr [esi + 0x2c], ebx
-// 0051e3b5  e956010000           jmp 0x51e510
-// 0051e3ba  bf04000000           mov edi, 4
-// 0051e3bf  389e08010000         cmp byte ptr [esi + 0x108], bl
-// 0051e3c5  7441                 je 0x51e408
-// 0051e3c7  0fb68609010000       movzx eax, byte ptr [esi + 0x109]
-// 0051e3ce  2bc3                 sub eax, ebx
-// 0051e3d0  7436                 je 0x51e408
-// 0051e3d2  83e802               sub eax, 2
-// 0051e3d5  7422                 je 0x51e3f9
-// 0051e3d7  8b06                 mov eax, dword ptr [esi]
-// 0051e3d9  c7401472000000       mov dword ptr [eax + 0x14], 0x72
-// 0051e3e0  0fb68e09010000       movzx ecx, byte ptr [esi + 0x109]
-// 0051e3e7  8b16                 mov edx, dword ptr [esi]
-// 0051e3e9  894a18               mov dword ptr [edx + 0x18], ecx
-// 0051e3ec  8b06                 mov eax, dword ptr [esi]
-// 0051e3ee  8b4804               mov ecx, dword ptr [eax + 4]
-// 0051e3f1  6aff                 push -1
-// 0051e3f3  56                   push esi
-// 0051e3f4  ffd1                 call ecx
-// 0051e3f6  83c408               add esp, 8
-// 0051e3f9  c7462805000000       mov dword ptr [esi + 0x28], 5
-// 0051e400  897e2c               mov dword ptr [esi + 0x2c], edi
-// 0051e403  e908010000           jmp 0x51e510
-// 0051e408  897e28               mov dword ptr [esi + 0x28], edi
-// 0051e40b  897e2c               mov dword ptr [esi + 0x2c], edi
-// 0051e40e  e9fd000000           jmp 0x51e510
-// 0051e413  389e00010000         cmp byte ptr [esi + 0x100], bl
-// 0051e419  7418                 je 0x51e433
-// 0051e41b  c7462803000000       mov dword ptr [esi + 0x28], 3
-// 0051e422  c7462c02000000       mov dword ptr [esi + 0x2c], 2
-// 0051e429  bd01000000           mov ebp, 1
-// 0051e42e  e9dd000000           jmp 0x51e510
-// 0051e433  389e08010000         cmp byte ptr [esi + 0x108], bl
-// 0051e439  7449                 je 0x51e484
-// 0051e43b  0fb68609010000       movzx eax, byte ptr [esi + 0x109]
-// 0051e442  2bc3                 sub eax, ebx
-// 0051e444  747b                 je 0x51e4c1
-// 0051e446  2bc5                 sub eax, ebp
-// 0051e448  74d1                 je 0x51e41b
-// 0051e44a  8b16                 mov edx, dword ptr [esi]
-// 0051e44c  c7421472000000       mov dword ptr [edx + 0x14], 0x72
-// 0051e453  0fb68609010000       movzx eax, byte ptr [esi + 0x109]
-// 0051e45a  8b0e                 mov ecx, dword ptr [esi]
-// 0051e45c  894118               mov dword ptr [ecx + 0x18], eax
-// 0051e45f  8b16                 mov edx, dword ptr [esi]
-// 0051e461  8b4204               mov eax, dword ptr [edx + 4]
-// 0051e464  6aff                 push -1
-// 0051e466  56                   push esi
-// 0051e467  ffd0                 call eax
-// 0051e469  c7462803000000       mov dword ptr [esi + 0x28], 3
-// 0051e470  83c408               add esp, 8
-// 0051e473  c7462c02000000       mov dword ptr [esi + 0x2c], 2
-// 0051e47a  bd01000000           mov ebp, 1
-// 0051e47f  e98c000000           jmp 0x51e510
-// 0051e484  8b86c4000000         mov eax, dword ptr [esi + 0xc4]
-// 0051e48a  8b08                 mov ecx, dword ptr [eax]
-// 0051e48c  8b5054               mov edx, dword ptr [eax + 0x54]
-// 0051e48f  8bb8a8000000         mov edi, dword ptr [eax + 0xa8]
-// 0051e495  bd03000000           mov ebp, 3
-// 0051e49a  83f901               cmp ecx, 1
-// 0051e49d  7513                 jne 0x51e4b2
-// 0051e49f  83fa02               cmp edx, 2
-// 0051e4a2  7532                 jne 0x51e4d6
-// 0051e4a4  3bfd                 cmp edi, ebp
-// 0051e4a6  752e                 jne 0x51e4d6
-// 0051e4a8  896e28               mov dword ptr [esi + 0x28], ebp
-// 0051e4ab  89562c               mov dword ptr [esi + 0x2c], edx
-// 0051e4ae  8be9                 mov ebp, ecx
-// 0051e4b0  eb5e                 jmp 0x51e510
-// 0051e4b2  83f952               cmp ecx, 0x52
-// 0051e4b5  751f                 jne 0x51e4d6
-// 0051e4b7  83fa47               cmp edx, 0x47
-// 0051e4ba  751a                 jne 0x51e4d6
-// 0051e4bc  83ff42               cmp edi, 0x42
-// 0051e4bf  7515                 jne 0x51e4d6
-// 0051e4c1  c7462802000000       mov dword ptr [esi + 0x28], 2
-// 0051e4c8  c7462c02000000       mov dword ptr [esi + 0x2c], 2
-// 0051e4cf  bd01000000           mov ebp, 1
-// 0051e4d4  eb3a                 jmp 0x51e510
-// 0051e4d6  8b06                 mov eax, dword ptr [esi]
-// 0051e4d8  83c018               add eax, 0x18
-// 0051e4db  8908                 mov dword ptr [eax], ecx
-// 0051e4dd  895004               mov dword ptr [eax + 4], edx
-// 0051e4e0  897808               mov dword ptr [eax + 8], edi
-// 0051e4e3  8b0e                 mov ecx, dword ptr [esi]
-// 0051e4e5  c741146f000000       mov dword ptr [ecx + 0x14], 0x6f
-// 0051e4ec  8b16                 mov edx, dword ptr [esi]
-// 0051e4ee  8b4204               mov eax, dword ptr [edx + 4]
-// 0051e4f1  6a01                 push 1
-// 0051e4f3  56                   push esi
-// 0051e4f4  ffd0                 call eax
-// 0051e4f6  896e28               mov dword ptr [esi + 0x28], ebp
-// 0051e4f9  83c408               add esp, 8
-// 0051e4fc  c7462c02000000       mov dword ptr [esi + 0x2c], 2
-// 0051e503  bd01000000           mov ebp, 1
-// 0051e508  eb06                 jmp 0x51e510
-// 0051e50a  896e28               mov dword ptr [esi + 0x28], ebp
-// 0051e50d  896e2c               mov dword ptr [esi + 0x2c], ebp
-// 0051e510  d9e8                 fld1 
-// 0051e512  5f                   pop edi
-// 0051e513  896e30               mov dword ptr [esi + 0x30], ebp
-// 0051e516  dd5e38               fstp qword ptr [esi + 0x38]
-// 0051e519  896e34               mov dword ptr [esi + 0x34], ebp
-// 0051e51c  5d                   pop ebp
-// 0051e51d  885e40               mov byte ptr [esi + 0x40], bl
-// 0051e520  885e41               mov byte ptr [esi + 0x41], bl
-// 0051e523  895e44               mov dword ptr [esi + 0x44], ebx
-// 0051e526  885e4a               mov byte ptr [esi + 0x4a], bl
-// 0051e529  895e74               mov dword ptr [esi + 0x74], ebx
-// 0051e52c  885e58               mov byte ptr [esi + 0x58], bl
-// 0051e52f  885e59               mov byte ptr [esi + 0x59], bl
-// 0051e532  885e5a               mov byte ptr [esi + 0x5a], bl
-// 0051e535  c6464801             mov byte ptr [esi + 0x48], 1
-// 0051e539  c6464901             mov byte ptr [esi + 0x49], 1
-// 0051e53d  c7464c02000000       mov dword ptr [esi + 0x4c], 2
-// 0051e544  c6465001             mov byte ptr [esi + 0x50], 1
-// 0051e548  c7465400010000       mov dword ptr [esi + 0x54], 0x100
-// 0051e54f  5b                   pop ebx
-// 0051e550  c3                   ret 
-// library jpeg-6b/jdapimin.c (function _default_decompress_parms)
-
 // roc-lang: c
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /MD
 // roc-lib: jpeg-6b jdapimin.c
+
+// Candidate translation unit (score above; library headers required).
+/*
+ * jdapimin.c
+ *
+ * Copyright (C) 1994-1998, Thomas G. Lane.
+ * This file is part of the Independent JPEG Group's software.
+ * For conditions of distribution and use, see the accompanying README file.
+ *
+ * This file contains application interface code for the decompression half
+ * of the JPEG library.  These are the "minimum" API routines that may be
+ * needed in either the normal full-decompression case or the
+ * transcoding-only case.
+ *
+ * Most of the routines intended to be called directly by an application
+ * are in this file or in jdapistd.c.  But also see jcomapi.c for routines
+ * shared by compression and decompression, and jdtrans.c for the transcoding
+ * case.
+ */
+
+#define JPEG_INTERNALS
+#include "jinclude.h"
+#include "jpeglib.h"
+
+
+/*
+ * Initialization of a JPEG decompression object.
+ * The error manager must already be set up (in case memory manager fails).
+ */
+
+GLOBAL(void)
+jpeg_CreateDecompress (j_decompress_ptr cinfo, int version, size_t structsize)
+{
+  int i;
+
+  /* Guard against version mismatches between library and caller. */
+  cinfo->mem = NULL;		/* so jpeg_destroy knows mem mgr not called */
+  if (version != JPEG_LIB_VERSION)
+    ERREXIT2(cinfo, JERR_BAD_LIB_VERSION, JPEG_LIB_VERSION, version);
+  if (structsize != SIZEOF(struct jpeg_decompress_struct))
+    ERREXIT2(cinfo, JERR_BAD_STRUCT_SIZE, 
+	     (int) SIZEOF(struct jpeg_decompress_struct), (int) structsize);
+
+  /* For debugging purposes, we zero the whole master structure.
+   * But the application has already set the err pointer, and may have set
+   * client_data, so we have to save and restore those fields.
+   * Note: if application hasn't set client_data, tools like Purify may
+   * complain here.
+   */
+  {
+    struct jpeg_error_mgr * err = cinfo->err;
+    void * client_data = cinfo->client_data; /* ignore Purify complaint here */
+    MEMZERO(cinfo, SIZEOF(struct jpeg_decompress_struct));
+    cinfo->err = err;
+    cinfo->client_data = client_data;
+  }
+  cinfo->is_decompressor = TRUE;
+
+  /* Initialize a memory manager instance for this object */
+  jinit_memory_mgr((j_common_ptr) cinfo);
+
+  /* Zero out pointers to permanent structures. */
+  cinfo->progress = NULL;
+  cinfo->src = NULL;
+
+  for (i = 0; i < NUM_QUANT_TBLS; i++)
+    cinfo->quant_tbl_ptrs[i] = NULL;
+
+  for (i = 0; i < NUM_HUFF_TBLS; i++) {
+    cinfo->dc_huff_tbl_ptrs[i] = NULL;
+    cinfo->ac_huff_tbl_ptrs[i] = NULL;
+  }
+
+  /* Initialize marker processor so application can override methods
+   * for COM, APPn markers before calling jpeg_read_header.
+   */
+  cinfo->marker_list = NULL;
+  jinit_marker_reader(cinfo);
+
+  /* And initialize the overall input controller. */
+  jinit_input_controller(cinfo);
+
+  /* OK, I'm ready */
+  cinfo->global_state = DSTATE_START;
+}
+
+
+/*
+ * Destruction of a JPEG decompression object
+ */
+
+GLOBAL(void)
+jpeg_destroy_decompress (j_decompress_ptr cinfo)
+{
+  jpeg_destroy((j_common_ptr) cinfo); /* use common routine */
+}
+
+
+/*
+ * Abort processing of a JPEG decompression operation,
+ * but don't destroy the object itself.
+ */
+
+GLOBAL(void)
+jpeg_abort_decompress (j_decompress_ptr cinfo)
+{
+  jpeg_abort((j_common_ptr) cinfo); /* use common routine */
+}
+
+
+/*
+ * Set default decompression parameters.
+ */
+
+LOCAL(void)
+default_decompress_parms (j_decompress_ptr cinfo)
+{
+  /* Guess the input colorspace, and set output colorspace accordingly. */
+  /* (Wish JPEG committee had provided a real way to specify this...) */
+  /* Note application may override our guesses. */
+  switch (cinfo->num_components) {
+  case 1:
+    cinfo->jpeg_color_space = JCS_GRAYSCALE;
+    cinfo->out_color_space = JCS_GRAYSCALE;
+    break;
+    
+  case 3:
+    if (cinfo->saw_JFIF_marker) {
+      cinfo->jpeg_color_space = JCS_YCbCr; /* JFIF implies YCbCr */
+    } else if (cinfo->saw_Adobe_marker) {
+      switch (cinfo->Adobe_transform) {
+      case 0:
+	cinfo->jpeg_color_space = JCS_RGB;
+	break;
+      case 1:
+	cinfo->jpeg_color_space = JCS_YCbCr;
+	break;
+      default:
+	WARNMS1(cinfo, JWRN_ADOBE_XFORM, cinfo->Adobe_transform);
+	cinfo->jpeg_color_space = JCS_YCbCr; /* assume it's YCbCr */
+	break;
+      }
+    } else {
+      /* Saw no special markers, try to guess from the component IDs */
+      int cid0 = cinfo->comp_info[0].component_id;
+      int cid1 = cinfo->comp_info[1].component_id;
+      int cid2 = cinfo->comp_info[2].component_id;
+
+      if (cid0 == 1 && cid1 == 2 && cid2 == 3)
+	cinfo->jpeg_color_space = JCS_YCbCr; /* assume JFIF w/out marker */
+      else if (cid0 == 82 && cid1 == 71 && cid2 == 66)
+	cinfo->jpeg_color_space = JCS_RGB; /* ASCII 'R', 'G', 'B' */
+      else {
+	TRACEMS3(cinfo, 1, JTRC_UNKNOWN_IDS, cid0, cid1, cid2);
+	cinfo->jpeg_color_space = JCS_YCbCr; /* assume it's YCbCr */
+      }
+    }
+    /* Always guess RGB is proper output colorspace. */
+    cinfo->out_color_space = JCS_RGB;
+    break;
+    
+  case 4:
+    if (cinfo->saw_Adobe_marker) {
+      switch (cinfo->Adobe_transform) {
+      case 0:
+	cinfo->jpeg_color_space = JCS_CMYK;
+	break;
+      case 2:
+	cinfo->jpeg_color_space = JCS_YCCK;
+	break;
+      default:
+	WARNMS1(cinfo, JWRN_ADOBE_XFORM, cinfo->Adobe_transform);
+	cinfo->jpeg_color_space = JCS_YCCK; /* assume it's YCCK */
+	break;
+      }
+    } else {
+      /* No special markers, assume straight CMYK. */
+      cinfo->jpeg_color_space = JCS_CMYK;
+    }
+    cinfo->out_color_space = JCS_CMYK;
+    break;
+    
+  default:
+    cinfo->jpeg_color_space = JCS_UNKNOWN;
+    cinfo->out_color_space = JCS_UNKNOWN;
+    break;
+  }
+
+  /* Set defaults for other decompression parameters. */
+  cinfo->scale_num = 1;		/* 1:1 scaling */
+  cinfo->scale_denom = 1;
+  cinfo->output_gamma = 1.0;
+  cinfo->buffered_image = FALSE;
+  cinfo->raw_data_out = FALSE;
+  cinfo->dct_method = JDCT_DEFAULT;
+  cinfo->do_fancy_upsampling = TRUE;
+  cinfo->do_block_smoothing = TRUE;
+  cinfo->quantize_colors = FALSE;
+  /* We set these in case application only sets quantize_colors. */
+  cinfo->dither_mode = JDITHER_FS;
+#ifdef QUANT_2PASS_SUPPORTED
+  cinfo->two_pass_quantize = TRUE;
+#else
+  cinfo->two_pass_quantize = FALSE;
+#endif
+  cinfo->desired_number_of_colors = 256;
+  cinfo->colormap = NULL;
+  /* Initialize for no mode change in buffered-image mode. */
+  cinfo->enable_1pass_quant = FALSE;
+  cinfo->enable_external_quant = FALSE;
+  cinfo->enable_2pass_quant = FALSE;
+}
+
+
+/*
+ * Decompression startup: read start of JPEG datastream to see what's there.
+ * Need only initialize JPEG object and supply a data source before calling.
+ *
+ * This routine will read as far as the first SOS marker (ie, actual start of
+ * compressed data), and will save all tables and parameters in the JPEG
+ * object.  It will also initialize the decompression parameters to default
+ * values, and finally return JPEG_HEADER_OK.  On return, the application may
+ * adjust the decompression parameters and then call jpeg_start_decompress.
+ * (Or, if the application only wanted to determine the image parameters,
+ * the data need not be decompressed.  In that case, call jpeg_abort or
+ * jpeg_destroy to release any temporary space.)
+ * If an abbreviated (tables only) datastream is presented, the routine will
+ * return JPEG_HEADER_TABLES_ONLY upon reaching EOI.  The application may then
+ * re-use the JPEG object to read the abbreviated image datastream(s).
+ * It is unnecessary (but OK) to call jpeg_abort in this case.
+ * The JPEG_SUSPENDED return code only occurs if the data source module
+ * requests suspension of the decompressor.  In this case the application
+ * should load more source data and then re-call jpeg_read_header to resume
+ * processing.
+ * If a non-suspending data source is used and require_image is TRUE, then the
+ * return code need not be inspected since only JPEG_HEADER_OK is possible.
+ *
+ * This routine is now just a front end to jpeg_consume_input, with some
+ * extra error checking.
+ */
+
+GLOBAL(int)
+jpeg_read_header (j_decompress_ptr cinfo, boolean require_image)
+{
+  int retcode;
+
+  if (cinfo->global_state != DSTATE_START &&
+      cinfo->global_state != DSTATE_INHEADER)
+    ERREXIT1(cinfo, JERR_BAD_STATE, cinfo->global_state);
+
+  retcode = jpeg_consume_input(cinfo);
+
+  switch (retcode) {
+  case JPEG_REACHED_SOS:
+    retcode = JPEG_HEADER_OK;
+    break;
+  case JPEG_REACHED_EOI:
+    if (require_image)		/* Complain if application wanted an image */
+      ERREXIT(cinfo, JERR_NO_IMAGE);
+    /* Reset to start state; it would be safer to require the application to
+     * call jpeg_abort, but we can't change it now for compatibility reasons.
+     * A side effect is to free any temporary memory (there shouldn't be any).
+     */
+    jpeg_abort((j_common_ptr) cinfo); /* sets state = DSTATE_START */
+    retcode = JPEG_HEADER_TABLES_ONLY;
+    break;
+  case JPEG_SUSPENDED:
+    /* no work */
+    break;
+  }
+
+  return retcode;
+}
+
+
+/*
+ * Consume data in advance of what the decompressor requires.
+ * This can be called at any time once the decompressor object has
+ * been created and a data source has been set up.
+ *
+ * This routine is essentially a state machine that handles a couple
+ * of critical state-transition actions, namely initial setup and
+ * transition from header scanning to ready-for-start_decompress.
+ * All the actual input is done via the input controller's consume_input
+ * method.
+ */
+
+GLOBAL(int)
+jpeg_consume_input (j_decompress_ptr cinfo)
+{
+  int retcode = JPEG_SUSPENDED;
+
+  /* NB: every possible DSTATE value should be listed in this switch */
+  switch (cinfo->global_state) {
+  case DSTATE_START:
+    /* Start-of-datastream actions: reset appropriate modules */
+    (*cinfo->inputctl->reset_input_controller) (cinfo);
+    /* Initialize application's data source module */
+    (*cinfo->src->init_source) (cinfo);
+    cinfo->global_state = DSTATE_INHEADER;
+    /*FALLTHROUGH*/
+  case DSTATE_INHEADER:
+    retcode = (*cinfo->inputctl->consume_input) (cinfo);
+    if (retcode == JPEG_REACHED_SOS) { /* Found SOS, prepare to decompress */
+      /* Set up default parameters based on header data */
+      default_decompress_parms(cinfo);
+      /* Set global state: ready for start_decompress */
+      cinfo->global_state = DSTATE_READY;
+    }
+    break;
+  case DSTATE_READY:
+    /* Can't advance past first SOS until start_decompress is called */
+    retcode = JPEG_REACHED_SOS;
+    break;
+  case DSTATE_PRELOAD:
+  case DSTATE_PRESCAN:
+  case DSTATE_SCANNING:
+  case DSTATE_RAW_OK:
+  case DSTATE_BUFIMAGE:
+  case DSTATE_BUFPOST:
+  case DSTATE_STOPPING:
+    retcode = (*cinfo->inputctl->consume_input) (cinfo);
+    break;
+  default:
+    ERREXIT1(cinfo, JERR_BAD_STATE, cinfo->global_state);
+  }
+  return retcode;
+}
+
+
+/*
+ * Have we finished reading the input file?
+ */
+
+GLOBAL(boolean)
+jpeg_input_complete (j_decompress_ptr cinfo)
+{
+  /* Check for valid jpeg object */
+  if (cinfo->global_state < DSTATE_START ||
+      cinfo->global_state > DSTATE_STOPPING)
+    ERREXIT1(cinfo, JERR_BAD_STATE, cinfo->global_state);
+  return cinfo->inputctl->eoi_reached;
+}
+
+
+/*
+ * Is there more than one scan?
+ */
+
+GLOBAL(boolean)
+jpeg_has_multiple_scans (j_decompress_ptr cinfo)
+{
+  /* Only valid after jpeg_read_header completes */
+  if (cinfo->global_state < DSTATE_READY ||
+      cinfo->global_state > DSTATE_STOPPING)
+    ERREXIT1(cinfo, JERR_BAD_STATE, cinfo->global_state);
+  return cinfo->inputctl->has_multiple_scans;
+}
+
+
+/*
+ * Finish JPEG decompression.
+ *
+ * This will normally just verify the file trailer and release temp storage.
+ *
+ * Returns FALSE if suspended.  The return value need be inspected only if
+ * a suspending data source is used.
+ */
+
+GLOBAL(boolean)
+jpeg_finish_decompress (j_decompress_ptr cinfo)
+{
+  if ((cinfo->global_state == DSTATE_SCANNING ||
+       cinfo->global_state == DSTATE_RAW_OK) && ! cinfo->buffered_image) {
+    /* Terminate final pass of non-buffered mode */
+    if (cinfo->output_scanline < cinfo->output_height)
+      ERREXIT(cinfo, JERR_TOO_LITTLE_DATA);
+    (*cinfo->master->finish_output_pass) (cinfo);
+    cinfo->global_state = DSTATE_STOPPING;
+  } else if (cinfo->global_state == DSTATE_BUFIMAGE) {
+    /* Finishing after a buffered-image operation */
+    cinfo->global_state = DSTATE_STOPPING;
+  } else if (cinfo->global_state != DSTATE_STOPPING) {
+    /* STOPPING = repeat call after a suspension, anything else is error */
+    ERREXIT1(cinfo, JERR_BAD_STATE, cinfo->global_state);
+  }
+  /* Read until EOI */
+  while (! cinfo->inputctl->eoi_reached) {
+    if ((*cinfo->inputctl->consume_input) (cinfo) == JPEG_SUSPENDED)
+      return FALSE;		/* Suspend, come back later */
+  }
+  /* Do final cleanup */
+  (*cinfo->src->term_source) (cinfo);
+  /* We can use jpeg_abort to release memory and reset global_state */
+  jpeg_abort((j_common_ptr) cinfo);
+  return TRUE;
+}

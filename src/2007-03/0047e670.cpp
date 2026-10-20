@@ -1,171 +1,454 @@
-// roc 2007-03 0047e670  unit: seg_00470000  size: 502 bytes
-// Make this compile to the exact bytes below, then: roc check 2007-03 0047e670
-//
-// 0047e670  55                   push ebp
-// 0047e671  8bec                 mov ebp, esp
-// 0047e673  83e4f8               and esp, 0xfffffff8
-// 0047e676  81ec88010000         sub esp, 0x188
-// 0047e67c  56                   push esi
-// 0047e67d  8b35a0eb7700         mov esi, dword ptr [0x77eba0]
-// 0047e683  57                   push edi
-// 0047e684  8d842410010000       lea eax, [esp + 0x110]
-// 0047e68b  50                   push eax
-// 0047e68c  68a60b0000           push 0xba6
-// 0047e691  ffd6                 call esi
-// 0047e693  8d8c2490000000       lea ecx, [esp + 0x90]
-// 0047e69a  51                   push ecx
-// 0047e69b  68a70b0000           push 0xba7
-// 0047e6a0  ffd6                 call esi
-// 0047e6a2  8d542470             lea edx, [esp + 0x70]
-// 0047e6a6  52                   push edx
-// 0047e6a7  68a20b0000           push 0xba2
-// 0047e6ac  ffd6                 call esi
-// 0047e6ae  8d442460             lea eax, [esp + 0x60]
-// 0047e6b2  50                   push eax
-// 0047e6b3  68700b0000           push 0xb70
-// 0047e6b8  ffd6                 call esi
-// 0047e6ba  d9ee                 fldz 
-// 0047e6bc  d954241c             fst dword ptr [esp + 0x1c]
-// 0047e6c0  8d4c2410             lea ecx, [esp + 0x10]
-// 0047e6c4  d9542418             fst dword ptr [esp + 0x18]
-// 0047e6c8  8d9424b0000000       lea edx, [esp + 0xb0]
-// 0047e6cf  d9542414             fst dword ptr [esp + 0x14]
-// 0047e6d3  bf04000000           mov edi, 4
-// 0047e6d8  d9542410             fst dword ptr [esp + 0x10]
-// 0047e6dc  d954242c             fst dword ptr [esp + 0x2c]
-// 0047e6e0  d9542428             fst dword ptr [esp + 0x28]
-// 0047e6e4  d9542424             fst dword ptr [esp + 0x24]
-// 0047e6e8  d9542420             fst dword ptr [esp + 0x20]
-// 0047e6ec  d954243c             fst dword ptr [esp + 0x3c]
-// 0047e6f0  d9542438             fst dword ptr [esp + 0x38]
-// 0047e6f4  d9542434             fst dword ptr [esp + 0x34]
-// 0047e6f8  d9542430             fst dword ptr [esp + 0x30]
-// 0047e6fc  d954244c             fst dword ptr [esp + 0x4c]
-// 0047e700  d9542448             fst dword ptr [esp + 0x48]
-// 0047e704  d9542444             fst dword ptr [esp + 0x44]
-// 0047e708  d9542440             fst dword ptr [esp + 0x40]
-// 0047e70c  8d842418010000       lea eax, [esp + 0x118]
-// 0047e713  be04000000           mov esi, 4
-// 0047e718  d911                 fst dword ptr [ecx]
-// 0047e71a  83c104               add ecx, 4
-// 0047e71d  dd40f8               fld qword ptr [eax - 8]
-// 0047e720  83c020               add eax, 0x20
-// 0047e723  83ee01               sub esi, 1
-// 0047e726  dc4ae0               fmul qword ptr [edx - 0x20]
-// 0047e729  d841fc               fadd dword ptr [ecx - 4]
-// 0047e72c  d95c240c             fstp dword ptr [esp + 0xc]
-// 0047e730  d944240c             fld dword ptr [esp + 0xc]
-// 0047e734  dd40e0               fld qword ptr [eax - 0x20]
-// 0047e737  dc0a                 fmul qword ptr [edx]
-// 0047e739  dec1                 faddp st(1)
-// 0047e73b  d95c240c             fstp dword ptr [esp + 0xc]
-// 0047e73f  d944240c             fld dword ptr [esp + 0xc]
-// 0047e743  dd40e8               fld qword ptr [eax - 0x18]
-// 0047e746  dc4a20               fmul qword ptr [edx + 0x20]
-// 0047e749  dec1                 faddp st(1)
-// 0047e74b  d95c240c             fstp dword ptr [esp + 0xc]
-// 0047e74f  d944240c             fld dword ptr [esp + 0xc]
-// 0047e753  dd40f0               fld qword ptr [eax - 0x10]
-// 0047e756  dc4a40               fmul qword ptr [edx + 0x40]
-// 0047e759  dec1                 faddp st(1)
-// 0047e75b  d959fc               fstp dword ptr [ecx - 4]
-// 0047e75e  75b8                 jne 0x47e718
-// 0047e760  83c208               add edx, 8
-// 0047e763  83ef01               sub edi, 1
-// 0047e766  75a4                 jne 0x47e70c
-// 0047e768  ddd8                 fstp st(0)
-// 0047e76a  8b450c               mov eax, dword ptr [ebp + 0xc]
-// 0047e76d  d94004               fld dword ptr [eax + 4]
-// 0047e770  d900                 fld dword ptr [eax]
-// 0047e772  d94008               fld dword ptr [eax + 8]
-// 0047e775  d9400c               fld dword ptr [eax + 0xc]
-// 0047e778  8b4508               mov eax, dword ptr [ebp + 8]
-// 0047e77b  d9442410             fld dword ptr [esp + 0x10]
-// 0047e77f  d8cb                 fmul st(3)
-// 0047e781  d9442414             fld dword ptr [esp + 0x14]
-// 0047e785  d8cd                 fmul st(5)
-// 0047e787  dec1                 faddp st(1)
-// 0047e789  d9442418             fld dword ptr [esp + 0x18]
-// 0047e78d  d8cb                 fmul st(3)
-// 0047e78f  dec1                 faddp st(1)
-// 0047e791  d944241c             fld dword ptr [esp + 0x1c]
-// 0047e795  d8ca                 fmul st(2)
-// 0047e797  dec1                 faddp st(1)
-// 0047e799  d95c2450             fstp dword ptr [esp + 0x50]
-// 0047e79d  d9442420             fld dword ptr [esp + 0x20]
-// 0047e7a1  d8cb                 fmul st(3)
-// 0047e7a3  d9442424             fld dword ptr [esp + 0x24]
-// 0047e7a7  d8cd                 fmul st(5)
-// 0047e7a9  dec1                 faddp st(1)
-// 0047e7ab  d9442428             fld dword ptr [esp + 0x28]
-// 0047e7af  d8cb                 fmul st(3)
-// 0047e7b1  dec1                 faddp st(1)
-// 0047e7b3  d944242c             fld dword ptr [esp + 0x2c]
-// 0047e7b7  d8ca                 fmul st(2)
-// 0047e7b9  dec1                 faddp st(1)
-// 0047e7bb  d95c2454             fstp dword ptr [esp + 0x54]
-// 0047e7bf  d9442430             fld dword ptr [esp + 0x30]
-// 0047e7c3  d8cb                 fmul st(3)
-// 0047e7c5  d9442434             fld dword ptr [esp + 0x34]
-// 0047e7c9  d8cd                 fmul st(5)
-// 0047e7cb  dec1                 faddp st(1)
-// 0047e7cd  d9442438             fld dword ptr [esp + 0x38]
-// 0047e7d1  d8cb                 fmul st(3)
-// 0047e7d3  dec1                 faddp st(1)
-// 0047e7d5  d944243c             fld dword ptr [esp + 0x3c]
-// 0047e7d9  d8ca                 fmul st(2)
-// 0047e7db  dec1                 faddp st(1)
-// 0047e7dd  d95c2458             fstp dword ptr [esp + 0x58]
-// 0047e7e1  d9442440             fld dword ptr [esp + 0x40]
-// 0047e7e5  decb                 fmulp st(3)
-// 0047e7e7  d9442444             fld dword ptr [esp + 0x44]
-// 0047e7eb  decc                 fmulp st(4)
-// 0047e7ed  d9ca                 fxch st(2)
-// 0047e7ef  dec3                 faddp st(3)
-// 0047e7f1  d84c2448             fmul dword ptr [esp + 0x48]
-// 0047e7f5  dec2                 faddp st(2)
-// 0047e7f7  d84c244c             fmul dword ptr [esp + 0x4c]
-// 0047e7fb  dec1                 faddp st(1)
-// 0047e7fd  d95c245c             fstp dword ptr [esp + 0x5c]
-// 0047e801  d944245c             fld dword ptr [esp + 0x5c]
-// 0047e805  d9e8                 fld1 
-// 0047e807  d9c0                 fld st(0)
-// 0047e809  def2                 fdivrp st(2)
-// 0047e80b  d9442450             fld dword ptr [esp + 0x50]
-// 0047e80f  d8ca                 fmul st(2)
-// 0047e811  d8c1                 fadd st(1)
-// 0047e813  dc8c2480000000       fmul qword ptr [esp + 0x80]
-// 0047e81a  dd05584f7900         fld qword ptr [0x794f58]
-// 0047e820  dcc9                 fmul st(1), st(0)
-// 0047e822  d9c9                 fxch st(1)
-// 0047e824  dc442470             fadd qword ptr [esp + 0x70]
-// 0047e828  d918                 fstp dword ptr [eax]
-// 0047e82a  d9442454             fld dword ptr [esp + 0x54]
-// 0047e82e  d8cb                 fmul st(3)
-// 0047e830  deea                 fsubp st(2)
-// 0047e832  d9c9                 fxch st(1)
-// 0047e834  dc8c2488000000       fmul qword ptr [esp + 0x88]
-// 0047e83b  dec9                 fmulp st(1)
-// 0047e83d  dc442478             fadd qword ptr [esp + 0x78]
-// 0047e841  d95804               fstp dword ptr [eax + 4]
-// 0047e844  d9442458             fld dword ptr [esp + 0x58]
-// 0047e848  d8c9                 fmul st(1)
-// 0047e84a  dd442468             fld qword ptr [esp + 0x68]
-// 0047e84e  dd442460             fld qword ptr [esp + 0x60]
-// 0047e852  dce9                 fsub st(1), st(0)
-// 0047e854  d9ca                 fxch st(2)
-// 0047e856  dec9                 fmulp st(1)
-// 0047e858  5f                   pop edi
-// 0047e859  5e                   pop esi
-// 0047e85a  dec1                 faddp st(1)
-// 0047e85c  d95808               fstp dword ptr [eax + 8]
-// 0047e85f  d9580c               fstp dword ptr [eax + 0xc]
-// 0047e862  8be5                 mov esp, ebp
-// 0047e864  5d                   pop ebp
-// 0047e865  c3                   ret 
-// library rbxgs-g3d/GLG3Dcpp\glcalls.cpp (function ?glToScreen@G3D@@YA?AVVector4@1@ABV21@@Z)
-
 // roc-lang: cpp
 // roc-cl: 50727
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
 // roc-lib: rbxgs-g3d GLG3Dcpp/glcalls.cpp
+
+// Candidate translation unit (score above; library headers required).
+/**
+  @file glcalls.cpp
+
+  @maintainer Morgan McGuire, matrix@graphics3d.com
+  @created 2002-08-07
+  @edited  2006-02-01
+*/
+
+#include "G3D/Matrix3.h"
+#include "G3D/Matrix4.h"
+#include "G3D/CoordinateFrame.h"
+#include "GLG3D/glcalls.h"
+#include "GLG3D/getOpenGLState.h"
+#include "GLG3D/GLCaps.h"
+
+
+#if defined(G3D_OSX)
+#include <mach-o/dyld.h>
+#endif
+
+
+#ifndef G3D_GL_ARB_multitexture_static
+PFNGLMULTITEXCOORD1FARBPROC                 glMultiTexCoord1fARB		    = NULL;
+PFNGLMULTITEXCOORD1DARBPROC                 glMultiTexCoord1dARB		    = NULL;
+
+PFNGLMULTITEXCOORD2FARBPROC                 glMultiTexCoord2fARB		    = NULL;
+PFNGLMULTITEXCOORD2FVARBPROC                glMultiTexCoord2fvARB		    = NULL;
+PFNGLMULTITEXCOORD2DVARBPROC                glMultiTexCoord2dvARB		    = NULL;
+
+PFNGLMULTITEXCOORD3FVARBPROC                glMultiTexCoord3fvARB		    = NULL;
+PFNGLMULTITEXCOORD3DVARBPROC                glMultiTexCoord3dvARB		    = NULL;
+
+PFNGLMULTITEXCOORD4FVARBPROC                glMultiTexCoord4fvARB		    = NULL;
+PFNGLMULTITEXCOORD4DVARBPROC                glMultiTexCoord4dvARB		    = NULL;
+
+PFNGLACTIVETEXTUREARBPROC                   glActiveTextureARB 			    = NULL;
+PFNGLCLIENTACTIVETEXTUREARBPROC             glClientActiveTextureARB	    = NULL;
+#endif
+
+
+PFNGLBLENDEQUATIONEXTPROC                   glBlendEquationEXT              = NULL;
+PFNGLTEXIMAGE3DEXTPROC                      glTexImage3DEXT                 = NULL;
+
+#ifdef G3D_WIN32
+
+PFNWGLSWAPINTERVALEXTPROC                   wglSwapIntervalEXT 			    = NULL;
+PFNWGLCHOOSEPIXELFORMATARBPROC              wglChoosePixelFormatARB		    = NULL;
+PFNWGLALLOCATEMEMORYNVPROC                  wglAllocateMemoryNV 		    = NULL;
+PFNWGLFREEMEMORYNVPROC                      wglFreeMemoryNV 			    = NULL;
+#endif
+
+PFNGLVERTEXARRAYRANGENVPROC                 glVertexArrayRangeNV 		    = NULL;
+PFNGLFLUSHVERTEXARRAYRANGENVPROC            glFlushVertexArrayRangeNV       = NULL;
+
+PFNGLCOMPRESSEDTEXIMAGE2DARBPROC            glCompressedTexImage2DARB 	    = NULL;
+PFNGLGETCOMPRESSEDTEXIMAGEARBPROC           glGetCompressedTexImageARB 	    = NULL;
+
+PFNGLGENFENCESNVPROC				        glGenFencesNV				    = NULL;
+PFNGLDELETEFENCESNVPROC				        glDeleteFencesNV			    = NULL;
+PFNGLSETFENCENVPROC					        glSetFenceNV				    = NULL;
+PFNGLFINISHFENCENVPROC	  			        glFinishFenceNV				    = NULL;
+
+PFNGLGENPROGRAMSARBPROC                     glGenProgramsARB                = NULL;
+PFNGLBINDPROGRAMARBPROC                     glBindProgramARB                = NULL;
+PFNGLDELETEPROGRAMSARBPROC                  glDeleteProgramsARB             = NULL;
+PFNGLPROGRAMSTRINGARBPROC                   glProgramStringARB              = NULL;
+PFNGLPROGRAMENVPARAMETER4FARBPROC           glProgramEnvParameter4fARB      = NULL;
+PFNGLPROGRAMLOCALPARAMETER4FARBPROC         glProgramLocalParameter4fARB    = NULL;
+PFNGLPROGRAMLOCALPARAMETER4FVARBPROC        glProgramLocalParameter4fvARB   = NULL;
+PFNGLPROGRAMENVPARAMETER4DVARBPROC          glProgramEnvParameter4dvARB     = NULL;
+PFNGLPROGRAMLOCALPARAMETER4DVARBPROC        glProgramLocalParameter4dvARB   = NULL;
+
+PFNGLGENPROGRAMSNVPROC                      glGenProgramsNV                 = NULL;
+PFNGLDELETEPROGRAMSNVPROC                   glDeleteProgramsNV              = NULL;
+PFNGLBINDPROGRAMNVPROC                      glBindProgramNV                 = NULL;
+PFNGLLOADPROGRAMNVPROC                      glLoadProgramNV                 = NULL;
+PFNGLTRACKMATRIXNVPROC                      glTrackMatrixNV                 = NULL;
+PFNGLPROGRAMPARAMETER4FVNVPROC              glProgramParameter4fvNV         = NULL;
+PFNGLGETPROGRAMPARAMETERFVNVPROC            glGetProgramParameterfvNV       = NULL;
+PFNGLGETPROGRAMPARAMETERDVNVPROC            glGetProgramParameterdvNV       = NULL;
+
+PFNGLVERTEXATTRIBPOINTERARBPROC             glVertexAttribPointerARB        = NULL;
+PFNGLENABLEVERTEXATTRIBARRAYARBPROC         glEnableVertexAttribArrayARB    = NULL;
+PFNGLDISABLEVERTEXATTRIBARRAYARBPROC        glDisableVertexAttribArrayARB   = NULL;
+
+PFNGLPOINTPARAMETERFARBPROC                 glPointParameterfARB            = NULL;
+PFNGLPOINTPARAMETERFVARBPROC                glPointParameterfvARB           = NULL;
+
+PFNGLMULTIDRAWARRAYSEXTPROC                 glMultiDrawArraysEXT            = NULL;
+PFNGLMULTIDRAWELEMENTSEXTPROC               glMultiDrawElementsEXT          = NULL;
+
+PFNGLCOMBINERPARAMETERFVNVPROC              glCombinerParameterfvNV         = NULL;
+PFNGLCOMBINERPARAMETERFNVPROC               glCombinerParameterfNV          = NULL;
+PFNGLCOMBINERPARAMETERIVNVPROC              glCombinerParameterivNV         = NULL;
+PFNGLCOMBINERPARAMETERINVPROC               glCombinerParameteriNV          = NULL;
+PFNGLCOMBINERINPUTNVPROC                    glCombinerInputNV               = NULL;
+PFNGLCOMBINEROUTPUTNVPROC                   glCombinerOutputNV              = NULL;
+PFNGLFINALCOMBINERINPUTNVPROC               glFinalCombinerInputNV          = NULL;
+PFNGLGETCOMBINERINPUTPARAMETERFVNVPROC      glGetCombinerInputParameterfvNV        = NULL;
+PFNGLGETCOMBINERINPUTPARAMETERIVNVPROC      glGetCombinerInputParameterivNV        = NULL;
+PFNGLGETCOMBINEROUTPUTPARAMETERFVNVPROC     glGetCombinerOutputParameterfvNV       = NULL;
+PFNGLGETCOMBINEROUTPUTPARAMETERIVNVPROC     glGetCombinerOutputParameterivNV       = NULL;
+PFNGLGETFINALCOMBINERINPUTPARAMETERFVNVPROC glGetFinalCombinerInputParameterfvNV   = NULL;
+PFNGLGETFINALCOMBINERINPUTPARAMETERIVNVPROC glGetFinalCombinerInputParameterivNV   = NULL;
+PFNGLCOMBINERSTAGEPARAMETERFVNVPROC         glCombinerStageParameterfvNV           = NULL;
+PFNGLGETCOMBINERSTAGEPARAMETERFVNVPROC      glGetCombinerStageParameterfvNV        = NULL;
+
+PFNGLACTIVESTENCILFACEEXTPROC               glActiveStencilFaceEXT          = NULL;
+
+PFNGLBINDBUFFERARBPROC glBindBufferARB = NULL;
+PFNGLDELETEBUFFERSARBPROC glDeleteBuffersARB = NULL;
+PFNGLGENBUFFERSARBPROC glGenBuffersARB = NULL;
+PFNGLISBUFFERARBPROC glIsBufferARB = NULL;
+PFNGLBUFFERDATAARBPROC glBufferDataARB = NULL;
+PFNGLBUFFERSUBDATAARBPROC glBufferSubDataARB = NULL;
+PFNGLGETBUFFERSUBDATAARBPROC glGetBufferSubDataARB = NULL;
+PFNGLMAPBUFFERARBPROC glMapBufferARB = NULL;
+PFNGLUNMAPBUFFERARBPROC glUnmapBufferARB = NULL;
+PFNGLGETBUFFERPARAMETERIVARBPROC glGetBufferParameterivARB = NULL;
+PFNGLGETBUFFERPOINTERVARBPROC glGetBufferPointervARB = NULL;
+PFNGLDRAWRANGEELEMENTSPROC glDrawRangeElements = NULL;
+
+PFNGLDELETEOBJECTARBPROC glDeleteObjectARB = NULL;
+PFNGLGETHANDLEARBPROC glGetHandleARB = NULL;
+PFNGLDETACHOBJECTARBPROC glDetachObjectARB = NULL;
+PFNGLCREATESHADEROBJECTARBPROC glCreateShaderObjectARB = NULL;
+PFNGLSHADERSOURCEARBPROC glShaderSourceARB = NULL;
+PFNGLCOMPILESHADERARBPROC glCompileShaderARB = NULL;
+PFNGLCREATEPROGRAMOBJECTARBPROC glCreateProgramObjectARB = NULL;
+PFNGLATTACHOBJECTARBPROC glAttachObjectARB = NULL;
+PFNGLLINKPROGRAMARBPROC glLinkProgramARB = NULL;
+PFNGLUSEPROGRAMOBJECTARBPROC glUseProgramObjectARB = NULL;
+PFNGLVALIDATEPROGRAMARBPROC glValidateProgramARB = NULL;
+PFNGLUNIFORM1FVARBPROC glUniform1fvARB = NULL;
+PFNGLUNIFORM2FVARBPROC glUniform2fvARB = NULL;
+PFNGLUNIFORM3FVARBPROC glUniform3fvARB = NULL;
+PFNGLUNIFORM4FVARBPROC glUniform4fvARB = NULL;
+PFNGLUNIFORM1IARBPROC glUniform1iARB = NULL;
+PFNGLUNIFORM2IARBPROC glUniform2iARB = NULL;
+PFNGLUNIFORM3IARBPROC glUniform3iARB = NULL;
+PFNGLUNIFORM4IARBPROC glUniform4iARB = NULL;
+PFNGLUNIFORMMATRIX2FVARBPROC glUniformMatrix2fvARB = NULL;
+PFNGLUNIFORMMATRIX3FVARBPROC glUniformMatrix3fvARB = NULL;
+PFNGLUNIFORMMATRIX4FVARBPROC glUniformMatrix4fvARB = NULL;
+PFNGLGETINFOLOGARBPROC glGetInfoLogARB = NULL;
+PFNGLGETUNIFORMLOCATIONARBPROC glGetUniformLocationARB = NULL;
+PFNGLGETATTRIBLOCATIONARB glGetAttribLocationARB = NULL;
+PFNGLGETOBJECTPARAMETERIVARBPROC glGetObjectParameterivARB = NULL;
+PFNGLGETACTIVEUNIFORMARBPROC glGetActiveUniformARB = NULL;
+
+PFNGLGENFRAGMENTSHADERSATIPROC glGenFragmentShadersATI = NULL;
+PFNGLDELETEFRAGMENTSHADERATIPROC glDeleteFragmentShaderATI = NULL;
+PFNGLBINDFRAGMENTSHADERATIPROC glBindFragmentShaderATI = NULL;
+PFNGLBEGINFRAGMENTSHADERATIPROC glBeginFragmentShaderATI = NULL;
+PFNGLENDFRAGMENTSHADERATIPROC glEndFragmentShaderATI = NULL;
+PFNGLPASSTEXCOORDATIPROC         glPassTexCoordATI = NULL;
+PFNGLSAMPLEMAPATIPROC            glSampleMapATI = NULL;
+PFNGLSETFRAGMENTSHADERCONSTANTATIPROC glSetFragmentShaderConstantATI = NULL;
+PFNGLCOLORFRAGMENTOP1ATIPROC glColorFragmentOp1ATI = NULL;
+PPFNGLCOLORFRAGMENTOP2ATIPROC glColorFragmentOp2ATI = NULL;
+PFNGLCOLORFRAGMENTOP3ATIPROC glColorFragmentOp3ATI = NULL;
+PFNGLALPHAFRAGMENTOP1ATIPROC glAlphaFragmentOp1ATI = NULL;
+PFNGLALPHAFRAGMENTOP2ATIPROC glAlphaFragmentOp2ATI = NULL;
+PFNGLALPHAFRAGMENTOP3ATIPROC glAlphaFragmentOp3ATI = NULL;
+
+#ifdef G3D_WIN32
+PFNWGLENABLEGENLOCKI3D wglEnableGenlockI3D = NULL;
+#elif defined(G3D_LINUX) 
+PFNGLXJOINSWAPGROUPNV glXJoinSwapGroupNV = NULL;
+PFNGLXBINDSWAPBARRIERNV glXBindSwapBarrierNV = NULL;
+PFNGLXQUERYSWAPGROUPNV glXQuerySwapGroupNV = NULL;
+PFNGLXQUERYMAXSWAPGROUPSNV glXQueryMaxSwapGroupsNV = NULL;
+PFNGLXQUERYFRAMECOUNTNV glXQueryFrameCountNV = NULL;
+PFNGLXRESETFRAMECOUNTNV glXResetFrameCountNV = NULL;
+
+PFNGLXCREATEGLXPBUFFERSGIX glXCreateGLXPbufferSGIX = NULL;
+PFNGLXDESTROYGLXPBUFFERSGIX glXDestroyGLXPbufferSGIX = NULL;
+PFNGLXQUERYGLXPBUFFERSGIX glXQueryGLXPbufferSGIX = NULL;
+PFNGLXCHOOSEFBCONFIGSGIX glXChooseFBConfigSGIX = NULL;
+PFNGLXCREATECONTEXTWITHCONFIGSGIX glXCreateContextWithConfigSGIX = NULL;
+
+#endif
+
+#ifdef G3D_WIN32
+PFNWGLCREATEPBUFFEREXTPROC wglCreatePbufferEXT = NULL;
+PFNWGLDESTROYPBUFFEREXTPROC wglDestroyPbufferEXT = NULL;
+#endif
+
+// Frame buffer object
+PFNGLISRENDERBUFFEREXTPROC glIsRenderBufferEXT = NULL;
+PFNGLBINDRENDERBUFFEREXTPROC glBindRenderbufferEXT = NULL;
+PFNGLDELETERENDERBUFFERSEXTPROC glDeleteRenderbuffersEXT = NULL;
+PFNGLGENRENDERBUFFERSEXTPROC glGenRenderbuffersEXT = NULL;
+PFNGLRENDERBUFFERSTORAGEEXTPROC glRenderbufferStorageEXT = NULL;
+PFNGLGETRENDERBUFFERPARAMETERIVEXTPROC glGetRenderbufferParameterivEXT = NULL;
+PFNGLISFRAMEBUFFEREXTPROC glIsFramebufferEXT = NULL;
+PFNGLBINDFRAMEBUFFEREXTPROC glBindFramebufferEXT = NULL;
+PFNGLDELETEFRAMEBUFFERSEXTPROC glDeleteFramebuffersEXT = NULL;
+PFNGLGENFRAMEBUFFERSEXTPROC glGenFramebuffersEXT = NULL;
+PFNGLCHECKFRAMEBUFFERSTATUSEXTPROC glCheckFramebufferStatusEXT = NULL;
+PFNGLFRAMEBUFFERTEXTURE1DEXTPROC glFramebufferTexture1DEXT = NULL;
+PFNGLFRAMEBUFFERTEXTURE2DEXTPROC glFramebufferTexture2DEXT = NULL;
+PFNGLFRAMEBUFFERTEXTURE3DEXTPROC glFramebufferTexture3DEXT = NULL;
+PFNGLFRAMEBUFFERRENDERBUFFEREXTPROC glFramebufferRenderbufferEXT = NULL;
+PFNGLGETFRAMEBUFFERATTACHMENTPARAMETERIVEXTPROC glGetFramebufferAttachmentParameterivEXT = NULL;
+PFNGLGENERATEMIPMAPEXTPROC glGenerateMipmapEXT = NULL;
+
+PFNGLDRAWBUFFERSARBPROC glDrawBuffersARB = NULL;
+
+
+// Query
+PFNGLBEGINQUERYARBPROC glBeginQueryARB = NULL;
+PFNGLDELETEQUERIESARBPROC glDeleteQueriesARB = NULL;
+PFNGLENDQUERYARB glEndQueryARB = NULL;
+PFNGLGENQUERIESARBPROC glGenQueriesARB = NULL;
+PFNGLGETQUERYIVARBPROC glGetQueryivARB = NULL;
+PFNGLGETQUERYOBJECTIVARBPROC glGetQueryObjectivARB = NULL;
+PFNGLGETQUERYOBJECTUIVARBPROC glGetQueryObjectuivARB = NULL;
+PFNGLISQUERYARBPROC glIsQueryARB = NULL;
+
+// ATI separate stencil
+PFNGLSTENCILFUNCSEPARATEATIPROC glStencilFuncSeparateATI = NULL;
+PFNGLSTENCILOPSEPARATEATIPROC glStencilOpSeparateATI = NULL;
+
+
+// Depth bounds
+PFNGLDEPTHBOUNDSEXTPROC glDepthBoundsEXT = NULL;
+
+
+namespace G3D {
+
+/**
+ Sets up matrix m from rot and trans
+ */
+static void _getGLMatrix(GLfloat* m, const Matrix3& rot, const Vector3& trans) {
+    // GL wants a column major matrix
+    m[0] = rot[0][0];
+    m[1] = rot[1][0];
+    m[2] = rot[2][0];
+    m[3] = 0.0f;
+
+    m[4] = rot[0][1];
+    m[5] = rot[1][1];
+    m[6] = rot[2][1];
+    m[7] = 0.0f;
+
+    m[8] = rot[0][2];
+    m[9] = rot[1][2];
+    m[10] = rot[2][2];
+    m[11] = 0.0f;
+
+    m[12] = trans[0];
+    m[13] = trans[1];
+    m[14] = trans[2];
+    m[15] = 1.0f;
+}
+
+
+void glGetMatrix(GLenum name, Matrix4& m) {
+    float f[16];
+    glGetFloatv(name, f);
+    debugAssertGLOk();
+    m = Matrix4(f).transpose();
+}
+
+
+Matrix4 glGetMatrix(GLenum name) {
+    Matrix4 m;
+    glGetMatrix(name, m);
+    return m;
+}
+
+
+void glLoadMatrix(const CoordinateFrame &cf) {
+    GLfloat matrix[16];
+    _getGLMatrix(matrix, cf.rotation, cf.translation);
+    glLoadMatrixf(matrix);
+}
+
+
+void glLoadMatrix(const Matrix4& m) {
+    GLfloat matrix[16];
+    for (int r = 0; r < 4; ++r) {
+        for (int c = 0; c < 4; ++c) {
+            // Transpose
+            matrix[c * 4 + r] = m[r][c];
+        }
+    }
+
+    glLoadMatrixf(matrix);
+}
+
+
+void glLoadInvMatrix(const CoordinateFrame &cf) {
+    Matrix3 rotInv = cf.rotation.transpose();
+
+    GLfloat matrix[16];
+    _getGLMatrix(matrix, rotInv, rotInv * -cf.translation);
+    glLoadMatrixf(matrix);
+}
+
+void glMultInvMatrix(const CoordinateFrame &cf) {
+    Matrix3 rotInv = cf.rotation.transpose();
+
+    GLfloat matrix[16];
+    _getGLMatrix(matrix, rotInv, rotInv * -cf.translation);
+    glMultMatrixf(matrix);
+}
+
+void glMultMatrix(const CoordinateFrame &cf) {
+    GLfloat matrix[16];
+    _getGLMatrix(matrix, cf.rotation, cf.translation);
+    glMultMatrixf(matrix);
+}
+
+
+Vector2 glGetVector2(GLenum which) {
+    float v[4];
+    glGetFloatv(which, v);
+    return Vector2(v[0], v[1]);
+}
+
+
+Vector3 glGetVector3(GLenum which) {
+    float v[4];
+    glGetFloatv(which, v);
+    return Vector3(v[0], v[1], v[2]);
+}
+
+
+Vector4 glGetVector4(GLenum which) {
+    float v[4];
+    glGetFloatv(which, v);
+    return Vector4(v[0], v[1], v[2], v[3]);
+}
+
+
+/**
+ Takes an object space point to screen space using the current MODELVIEW and
+ PROJECTION matrices. The resulting xy values are in <B>pixels</B> and
+ are relative to the viewport origin, the z 
+ value is on the glDepthRange scale, and the w value contains rhw (-1/z for
+ camera space z), which is useful for scaling line and point size.
+ */
+Vector4 glToScreen(const Vector4& v) {
+    
+    // Get the matrices and viewport
+    double modelView[16];
+    double projection[16];
+    double viewport[4];
+    double depthRange[2];
+
+    glGetDoublev(GL_MODELVIEW_MATRIX, modelView);
+    glGetDoublev(GL_PROJECTION_MATRIX, projection);
+    glGetDoublev(GL_VIEWPORT, viewport);
+    glGetDoublev(GL_DEPTH_RANGE, depthRange);
+
+    // Compose the matrices into a single row-major transformation
+    Vector4 T[4];
+    int r, c, i;
+    for (r = 0; r < 4; ++r) {
+        for (c = 0; c < 4; ++c) {
+            T[r][c] = 0;
+            for (i = 0; i < 4; ++i) {
+                // OpenGL matrices are column major
+                T[r][c] += projection[r + i * 4] * modelView[i + c * 4];
+            }
+        }
+    }
+
+    // Transform the vertex
+    Vector4 result;
+    for (r = 0; r < 4; ++r) {
+        result[r] = T[r].dot(v);
+    }
+
+    // Homogeneous divide
+    const double rhw = 1 / result.w;
+
+    return Vector4(
+        (1 + result.x * rhw) * viewport[2] / 2 + viewport[0],
+        (1 - result.y * rhw) * viewport[3] / 2 + viewport[1],
+        (result.z * rhw) * (depthRange[1] - depthRange[0]) + depthRange[0],
+        rhw);
+}
+
+void glDisableAllTextures() {
+  glDisable(GL_TEXTURE_2D);
+  if (GLCaps::supports_GL_EXT_texture_3D()) {
+    glDisable(GL_TEXTURE_3D);
+  }
+  if (GLCaps::supports_GL_EXT_texture_cube_map()) {
+    glDisable(GL_TEXTURE_CUBE_MAP_ARB);
+  }
+  glDisable(GL_TEXTURE_1D);
+  
+  if (GLCaps::supports_GL_EXT_texture_rectangle()) {
+    glDisable(GL_TEXTURE_RECTANGLE_EXT);
+  }
+}
+  
+
+#if defined(G3D_OSX)
+void* NSGLGetProcAddress(const char *name)
+{
+	/* This code is from Apple's tech note QA1188.
+	    Apple states that this can be called from Cocoa
+	    or Carbon applications, as long as they use Mach-O
+	    executable rather than CFM.  G3D certainly used
+	    Mach-O.
+	 */
+
+	    NSSymbol symbol;
+	    char *symbolName;
+
+	    // Prepend a '_' for the Unix C symbol mangling convention
+	    symbolName = (char*)malloc(strlen (name) + 2);
+	    strcpy(symbolName + 1, name);
+	    symbolName[0] = '_';
+	    symbol = NULL;
+
+		const mach_header* mh = 
+			NSAddImage("/System/Library/Frameworks/OpenGL.Framework/Libraries/libGL.dylib",
+					   NSADDIMAGE_OPTION_RETURN_ON_ERROR);
+		  
+		bool rc = NSIsSymbolNameDefinedInImage(mh, symbolName);
+		
+		if (rc)
+		{
+			symbol = NSLookupSymbolInImage(mh, symbolName,
+										NSLOOKUPSYMBOLINIMAGE_OPTION_RETURN_ON_ERROR);
+		
+		}
+	    
+		free (symbolName);
+	    
+		if (!symbol)
+			return NULL;
+		
+		void* addr = NSAddressOfSymbol(symbol);
+		 
+		return addr; 
+}
+#endif
+
+} // namespace
+
+

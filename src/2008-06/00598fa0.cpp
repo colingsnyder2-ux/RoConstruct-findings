@@ -1,43 +1,100 @@
 // from server: 100% by auto
-// roc 2008-06 00598fa0  unit: RBX::PartInstance  size: 80 bytes
-// Make this compile to the exact bytes below, then: roc check 2008-06 00598fa0
-//
-// 00598fa0  56                   push esi
-// 00598fa1  8bf1                 mov esi, ecx
-// 00598fa3  8b06                 mov eax, dword ptr [esi]
-// 00598fa5  57                   push edi
-// 00598fa6  8b7c240c             mov edi, dword ptr [esp + 0xc]
-// 00598faa  3bf8                 cmp edi, eax
-// 00598fac  743d                 je 0x598feb
-// 00598fae  85c0                 test eax, eax
-// 00598fb0  7429                 je 0x598fdb
-// 00598fb2  83c004               add eax, 4
-// 00598fb5  50                   push eax
-// 00598fb6  ff15ac218000         call dword ptr [0x8021ac]
-// 00598fbc  85c0                 test eax, eax
-// 00598fbe  7515                 jne 0x598fd5
-// 00598fc0  8b0e                 mov ecx, dword ptr [esi]
-// 00598fc2  e8c91decff           call 0x45ad90
-// 00598fc7  8b0e                 mov ecx, dword ptr [esi]
-// 00598fc9  85c9                 test ecx, ecx
-// 00598fcb  7408                 je 0x598fd5
-// 00598fcd  8b01                 mov eax, dword ptr [ecx]
-// 00598fcf  8b10                 mov edx, dword ptr [eax]
-// 00598fd1  6a01                 push 1
-// 00598fd3  ffd2                 call edx
-// 00598fd5  c70600000000         mov dword ptr [esi], 0
-// 00598fdb  85ff                 test edi, edi
-// 00598fdd  740c                 je 0x598feb
-// 00598fdf  893e                 mov dword ptr [esi], edi
-// 00598fe1  83c704               add edi, 4
-// 00598fe4  57                   push edi
-// 00598fe5  ff15b0218000         call dword ptr [0x8021b0]
-// 00598feb  5f                   pop edi
-// 00598fec  5e                   pop esi
-// 00598fed  c20400               ret 4
-// library g3d-6.09/GLG3Dcpp\Renderbuffer.cpp (function ?setPointer@?$ReferenceCountedPointer@VRenderbuffer@G3D@@@G3D@@AAEXPAVRenderbuffer@2@@Z)
-
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD
 // roc-lib: g3d-6.09 GLG3Dcpp/Renderbuffer.cpp
+
+// Candidate translation unit (score above; library headers required).
+/**
+@file Renderbuffer.cpp
+
+@maintainer Daniel Hilferty, djhilferty@users.sourceforge.net
+
+@cite http://oss.sgi.com/projects/ogl-sample/registry/EXT/framebuffer_object.txt
+
+@created 2006-01-07
+@edited  2006-02-14
+*/
+
+#include "GLG3D/Renderbuffer.h"
+#include "GLG3D/glcalls.h"
+#include "GLG3D/TextureFormat.h"
+
+namespace G3D {
+
+
+/////////////////////////////////////////////////////////////////////////////
+
+Renderbuffer::Renderbuffer (	
+    const std::string&			_name, 
+    const GLuint				_imageID,
+    const G3D::TextureFormat*	_format, 
+    const int					_width, 
+    const int					_height) : 
+    mName(_name),
+    mImageID(_imageID),
+    mFormat(_format),
+    mWidth(_width),
+    mHeight(_height) {
+
+    // Intentionally empty
+}
+
+
+Renderbuffer::~Renderbuffer () {
+    glDeleteRenderbuffersEXT(1, &mImageID);
+}
+
+
+RenderbufferRef Renderbuffer::fromGLRenderbuffer(
+    const std::string&			_name, 
+    const GLuint				_imageID,
+    const G3D::TextureFormat	*_format) {
+
+    GLint w, h;
+
+    // Extract the width and height
+    glGetRenderbufferParameterivEXT (GL_RENDERBUFFER_EXT, GL_RENDERBUFFER_WIDTH_EXT, &w);
+    glGetRenderbufferParameterivEXT (GL_RENDERBUFFER_EXT, GL_RENDERBUFFER_WIDTH_EXT, &h);
+    debugAssertGLOk();
+
+    // Create new renderbuffer
+    return new Renderbuffer(_name, _imageID, _format, w, h);
+}
+
+
+RenderbufferRef Renderbuffer::createEmpty(
+    const std::string&			_name, 
+    const G3D::TextureFormat*   _format, 
+    const int					_width, 
+    const int					_height) {
+    // New Renderbuffer ID
+    GLuint _imageID;
+
+    // Save old renderbuffer state
+    GLint origBuffer;
+    glGetIntegerv(GL_RENDERBUFFER_BINDING_EXT, &origBuffer);
+
+    // Generate buffer
+    glGenRenderbuffersEXT (1, &_imageID);
+    debugAssertGLOk();
+
+    // Bind the buffer
+    glBindRenderbufferEXT (GL_RENDERBUFFER_EXT, _imageID);
+    debugAssertGLOk();
+
+    // Allocate storage for it
+    glRenderbufferStorageEXT(GL_RENDERBUFFER_EXT, _format->OpenGLFormat, _width, _height);
+
+    // Check for successful generation (ie, no INVALID_OPERATION)
+    debugAssertGLOk();
+
+    // Restore renderbuffer state
+    glBindRenderbufferEXT (GL_RENDERBUFFER_EXT, origBuffer);
+    debugAssertGLOk();
+
+    // Create new renderbuffer
+    return new Renderbuffer(_name, _imageID, _format, _width, _height);
+}
+
+} // End Namespace G3D

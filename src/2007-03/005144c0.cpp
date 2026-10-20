@@ -1,41 +1,155 @@
-// roc 2007-03 005144c0  unit: seg_00510000  size: 91 bytes
-// Make this compile to the exact bytes below, then: roc check 2007-03 005144c0
-//
-// 005144c0  d9ee                 fldz 
-// 005144c2  83ec0c               sub esp, 0xc
-// 005144c5  56                   push esi
-// 005144c6  8bf1                 mov esi, ecx
-// 005144c8  8b4c2414             mov ecx, dword ptr [esp + 0x14]
-// 005144cc  c7063cfd7900         mov dword ptr [esi], 0x79fd3c
-// 005144d2  d95604               fst dword ptr [esi + 4]
-// 005144d5  8d442404             lea eax, [esp + 4]
-// 005144d9  d95608               fst dword ptr [esi + 8]
-// 005144dc  50                   push eax
-// 005144dd  d95e0c               fstp dword ptr [esi + 0xc]
-// 005144e0  e8ab73fcff           call 0x4db890
-// 005144e5  d900                 fld dword ptr [eax]
-// 005144e7  d95e04               fstp dword ptr [esi + 4]
-// 005144ea  d94004               fld dword ptr [eax + 4]
-// 005144ed  d95e08               fstp dword ptr [esi + 8]
-// 005144f0  d94008               fld dword ptr [eax + 8]
-// 005144f3  8b442418             mov eax, dword ptr [esp + 0x18]
-// 005144f7  d95e0c               fstp dword ptr [esi + 0xc]
-// 005144fa  d94608               fld dword ptr [esi + 8]
-// 005144fd  d84804               fmul dword ptr [eax + 4]
-// 00514500  d900                 fld dword ptr [eax]
-// 00514502  d84e04               fmul dword ptr [esi + 4]
-// 00514505  dec1                 faddp st(1)
-// 00514507  d9460c               fld dword ptr [esi + 0xc]
-// 0051450a  d84808               fmul dword ptr [eax + 8]
-// 0051450d  8bc6                 mov eax, esi
-// 0051450f  dec1                 faddp st(1)
-// 00514511  d95e10               fstp dword ptr [esi + 0x10]
-// 00514514  5e                   pop esi
-// 00514515  83c40c               add esp, 0xc
-// 00514518  c20800               ret 8
-// library rbxgs-g3d/G3Dcpp\Plane.cpp (function ??0Plane@G3D@@QAE@ABVVector3@1@0@Z)
-
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
 // roc-lib: rbxgs-g3d G3Dcpp/Plane.cpp
+
+// Candidate translation unit (score above; library headers required).
+/**
+ @file Plane.cpp
+ 
+ @maintainer Morgan McGuire, matrix@graphics3d.com
+ 
+ @created 2003-02-06
+ @edited  2006-01-29
+ */
+
+#include "G3D/platform.h"
+#include "G3D/Plane.h"
+#include "G3D/BinaryOutput.h"
+#include "G3D/BinaryInput.h"
+#include "G3D/stringutils.h"
+
+namespace G3D {
+
+Plane::Plane(class BinaryInput& b) {
+	deserialize(b);
+}
+
+
+void Plane::serialize(class BinaryOutput& b) const {
+	_normal.serialize(b);
+	b.writeFloat64(_distance);
+}
+
+
+void Plane::deserialize(class BinaryInput& b) {
+	_normal.deserialize(b);
+	_distance = (float)b.readFloat64();
+}
+
+
+Plane::Plane(
+    Vector4      point0,
+    Vector4      point1,
+    Vector4      point2) {
+
+    debugAssertM(
+        point0.w != 0 || 
+        point1.w != 0 || 
+        point2.w != 0,
+        "At least one point must be finite.");
+
+    // Rotate the points around so that the finite points come first.
+
+    while ((point0.w == 0) && 
+           ((point1.w == 0) || (point2.w != 0))) {
+        Vector4 temp = point0;
+        point0 = point1;
+        point1 = point2;
+        point2 = temp;
+    }
+
+    Vector3 dir1;
+    Vector3 dir2;
+
+    if (point1.w == 0) {
+        // 1 finite, 2 infinite points; the plane must contain
+        // the direction of the two direcitons
+        dir1 = point1.xyz();
+        dir2 = point2.xyz();
+    } else if (point2.w != 0) {
+        // 3 finite points, the plane must contain the directions
+        // betwseen the points.
+        dir1 = point1.xyz() - point0.xyz();
+        dir2 = point2.xyz() - point0.xyz();
+    } else {
+        // 2 finite, 1 infinite point; the plane must contain
+        // the direction between the first two points and the
+        // direction of the third point.
+        dir1 = point1.xyz() - point0.xyz();
+        dir2 = point2.xyz();
+    }
+
+    _normal   = dir1.cross(dir2).direction();
+    _distance = _normal.dot(point0.xyz());
+}
+
+
+Plane::Plane(
+    const Vector3&      point0,
+    const Vector3&      point1,
+    const Vector3&      point2) {
+
+    _normal   = (point1 - point0).cross(point2 - point0).direction();
+    _distance = _normal.dot(point0);
+}
+
+
+Plane::Plane(
+    const Vector3&      __normal,
+    const Vector3&      point) {
+
+    _normal   = __normal.direction();
+    _distance  = _normal.dot(point);
+}
+
+
+Plane Plane::fromEquation(float a, float b, float c, float d) {
+    Vector3 n(a, b, c);
+    float magnitude = n.magnitude();
+    d /= magnitude;
+    n /= magnitude;
+    return Plane(n, -d);
+}
+
+
+void Plane::flip() {
+    _normal   = -_normal;
+    _distance  = -_distance;
+}
+
+
+void Plane::getEquation(Vector3& n, float& d) const {
+    double _d;
+    getEquation(n, _d);
+    d = (float)_d;
+}
+
+void Plane::getEquation(Vector3& n, double& d) const {
+    n = _normal;
+    d = -_distance;
+}
+
+
+void Plane::getEquation(float& a, float& b, float& c, float& d) const {
+    double _a, _b, _c, _d;
+    getEquation(_a, _b, _c, _d);
+    a = (float)_a;
+    b = (float)_b;
+    c = (float)_c;
+    d = (float)_d;
+}
+
+void Plane::getEquation(double& a, double& b, double& c, double& d) const {
+    a = _normal.x;
+    b = _normal.y;
+    c = _normal.z;
+    d = -_distance;
+}
+
+
+std::string Plane::toString() const {
+    return format("Plane(%g, %g, %g, %g)", _normal.x, _normal.y, _normal.z, _distance);
+}
+
+}

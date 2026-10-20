@@ -1,33 +1,53 @@
-// roc 2008-06 00667430  unit: RBX::HUMAN::StrafingNoPhysics  size: 101 bytes
-// Make this compile to the exact bytes below, then: roc check 2008-06 00667430
-//
-// 00667430  64a100000000         mov eax, dword ptr fs:[0]
-// 00667436  6aff                 push -1
-// 00667438  687ec27d00           push 0x7dc27e
-// 0066743d  50                   push eax
-// 0066743e  b801000000           mov eax, 1
-// 00667443  64892500000000       mov dword ptr fs:[0], esp
-// 0066744a  8405d4d99700         test byte ptr [0x97d9d4], al
-// 00667450  7530                 jne 0x667482
-// 00667452  0905d4d99700         or dword ptr [0x97d9d4], eax
-// 00667458  6aff                 push -1
-// 0066745a  6840ce8400           push 0x84ce40
-// 0066745f  c744241000000000     mov dword ptr [esp + 0x10], 0
-// 00667467  e824cbeeff           call 0x553f90
-// 0066746c  83c408               add esp, 8
-// 0066746f  a3d0d99700           mov dword ptr [0x97d9d0], eax
-// 00667474  8b0c24               mov ecx, dword ptr [esp]
-// 00667477  64890d00000000       mov dword ptr fs:[0], ecx
-// 0066747e  83c40c               add esp, 0xc
-// 00667481  c3                   ret 
-// 00667482  8b0c24               mov ecx, dword ptr [esp]
-// 00667485  a1d0d99700           mov eax, dword ptr [0x97d9d0]
-// 0066748a  64890d00000000       mov dword ptr fs:[0], ecx
-// 00667491  83c40c               add esp, 0xc
-// 00667494  c3                   ret 
-// library openrbx-client/App\humanoid\Flying.cpp (function ??$doDeclare@$1?sFlying@RBX@@3QBDB@Name@RBX@@CAABV01@XZ)
-
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
 // roc-lib: openrbx-client App/humanoid/Flying.cpp
+
+// Candidate translation unit (score above; library headers required).
+#include "humanoid/Flying.h"
+
+#include "util/Name.h"
+#include "v8kernel/Body.h"
+
+namespace RBX {
+
+const char sFlying[] = "Flying";
+
+const float Flying::kTurnP = 7500.0f;
+const float Flying::kTurnAccelMax = 120000.0f;
+
+// STUB: WEBSERVICE 0x1012a200
+Humanoid::State* Flying::onStep(const float stepDt, Controller& controller)
+{
+	STUB(0x1012a200);
+	return NULL;
+}
+
+// STUB: WEBSERVICE 0x1012a2e0
+void Flying::onComputeForce(const float dt)
+{
+	Balancing::onComputeForce(dt);
+
+	Body* body = humanoid->getRootBody();
+
+	float momentY = body->getBranchIBodyV3().y;
+	float desiredTorqueY = desiredYRotationalVelocity - body->getVelocity().rotational.y;
+
+	desiredTorqueY = desiredTorqueY * momentY * kTurnP - body->getBranchTorque().y;
+
+	float maxTorqueY = body->getBranchIBodyV3().y * kTurnAccelMax;
+
+	desiredTorqueY = G3D::clamp(desiredTorqueY, -maxTorqueY, maxTorqueY);
+
+	body->accumulateTorque(Vector3(0, desiredTorqueY, 0));
+}
+
+// FUNCTION: WEBSERVICE 0x1012a4d0
+Flying::Flying(Humanoid* humanoid) : Named<Balancing, sFlying>(humanoid, 300.0f, 50.0f), desiredYRotationalVelocity(0)
+{
+}
+
+} // namespace RBX
+
+template const RBX::Name& RBX::Name::doDeclare<RBX::sFlying>();
+template void RBX::Name::callDoDeclare<RBX::sFlying>();

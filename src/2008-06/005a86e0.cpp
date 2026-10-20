@@ -1,30 +1,100 @@
-// roc 2008-06 005a86e0  unit: RBX::Log  size: 51 bytes
-// Make this compile to the exact bytes below, then: roc check 2008-06 005a86e0
-//
-// 005a86e0  56                   push esi
-// 005a86e1  8b742408             mov esi, dword ptr [esp + 8]
-// 005a86e5  57                   push edi
-// 005a86e6  6a43                 push 0x43
-// 005a86e8  56                   push esi
-// 005a86e9  e8229d0600           call 0x612410
-// 005a86ee  68eed8ffff           push 0xffffd8ee
-// 005a86f3  56                   push esi
-// 005a86f4  e8679d0600           call 0x612460
-// 005a86f9  6aff                 push -1
-// 005a86fb  56                   push esi
-// 005a86fc  e81f9a0600           call 0x612120
-// 005a8701  6afe                 push -2
-// 005a8703  56                   push esi
-// 005a8704  8bf8                 mov edi, eax
-// 005a8706  e815950600           call 0x611c20
-// 005a870b  83c420               add esp, 0x20
-// 005a870e  8bc7                 mov eax, edi
-// 005a8710  5f                   pop edi
-// 005a8711  5e                   pop esi
-// 005a8712  c3                   ret 
-// library openrbx-client/App\script\ScriptContext.cpp (function ?getContext@ScriptContext@RBX@@SAAAV12@PAUlua_State@@@Z)
-
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
 // roc-lib: openrbx-client App/script/ScriptContext.cpp
+
+// Candidate translation unit (score above; library headers required).
+#include "script/ScriptContext.h"
+
+#include "reflection/signal.h"
+#include "script/LuaAtomicClasses.h"
+#include "util/Name.h"
+#include "v8datamodel/DebugSettings.h"
+#include "v8datamodel/Stats.h"
+
+namespace RBX {
+
+char sScriptContext[] = "ScriptContext";
+
+namespace Lua {
+
+template <>
+const char* Bridge<boost::shared_ptr<Reflection::DescribedBase>, 0>::className = "Object";
+
+} // namespace Lua
+
+// FUNCTION: WEBSERVICE 0x1005eb00
+ScriptContext& ScriptContext::getContext(lua_State* L)
+{
+	lua_pushlightuserdata(L, (void*) 0x43);
+	lua_gettable(L, LUA_GLOBALSINDEX);
+
+	ScriptContext* context = static_cast<ScriptContext*>(lua_touserdata(L, -1));
+
+	lua_settop(L, -2);
+
+	return *context;
+}
+
+// STUB: WEBSERVICE 0x1005eb60
+void ScriptContext::onEvent(const RunService* source, RunTransition event)
+{
+	STUB(0x1005eb60);
+}
+
+// FUNCTION: WEBSERVICE 0x1005f880
+void Lua::CoordinateFrameBridge::pushCoordinateFrame(lua_State* L, G3D::CoordinateFrame value)
+{
+	pushNewObject(L, value);
+}
+
+// FUNCTION: WEBSERVICE 0x1005f8c0
+void Lua::Vector3Bridge::pushVector3(lua_State* L, G3D::Vector3 value)
+{
+	pushNewObject(L, value);
+}
+
+// FUNCTION: WEBSERVICE 0x1005f910
+void Lua::Color3Bridge::pushColor3(lua_State* L, G3D::Color3 value)
+{
+	pushNewObject(L, value);
+}
+
+// STUB: WEBSERVICE 0x100673d0
+ScriptContext::Result ScriptContext::resume(lua_State* L, int nargs)
+{
+	STUB(0x100673d0);
+	return Success;
+}
+
+// STUB: WEBSERVICE 0x10068880
+void ScriptContext::onEvent(const RunService* source, Heartbeat event)
+{
+	STUB(0x10068880);
+}
+
+} // namespace RBX
+
+template void RBX::Lua::SharedPtrBridge<RBX::Reflection::DescribedBase>::push(
+	lua_State* L,
+	boost::shared_ptr<RBX::Reflection::DescribedBase> instance
+);
+
+template void RBX::Lua::SharedPtrBridge<RBX::Reflection::SignalInstance>::push(
+	lua_State* L,
+	boost::shared_ptr<RBX::Reflection::SignalInstance> instance
+);
+
+template const RBX::Name& RBX::Name::doDeclare<RBX::Stats::sStatsItem>();
+template const RBX::Name& RBX::Name::doDeclare<RBX::Stats::sStats>();
+template const RBX::Name& RBX::Name::doDeclare<RBX::sDebugSettings>();
+template void RBX::Name::callDoDeclare<RBX::Stats::sStatsItem>();
+template void RBX::Name::callDoDeclare<RBX::Stats::sStats>();
+template void RBX::Name::callDoDeclare<RBX::sDebugSettings>();
+
+template class RBX::FactoryProduct<RBX::ScriptContext, RBX::Instance, RBX::sScriptContext>;
+template class RBX::Reflection::Described<
+	RBX::ScriptContext,
+	RBX::sScriptContext,
+	RBX::FactoryProduct<RBX::ScriptContext, RBX::Instance, RBX::sScriptContext> >;
+template class RBX::DescribedCreatable<RBX::ScriptContext, RBX::Instance, RBX::sScriptContext>;

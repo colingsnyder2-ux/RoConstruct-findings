@@ -1,124 +1,396 @@
-// roc 2008-06 00647f40  unit: RBX::Block  size: 364 bytes
-// Make this compile to the exact bytes below, then: roc check 2008-06 00647f40
-//
-// 00647f40  6aff                 push -1
-// 00647f42  6828ae7d00           push 0x7dae28
-// 00647f47  64a100000000         mov eax, dword ptr fs:[0]
-// 00647f4d  50                   push eax
-// 00647f4e  64892500000000       mov dword ptr fs:[0], esp
-// 00647f55  83ec60               sub esp, 0x60
-// 00647f58  d94104               fld dword ptr [ecx + 4]
-// 00647f5b  53                   push ebx
-// 00647f5c  d905ac9b8100         fld dword ptr [0x819bac]
-// 00647f62  8b442474             mov eax, dword ptr [esp + 0x74]
-// 00647f66  dcc9                 fmul st(1), st(0)
-// 00647f68  55                   push ebp
-// 00647f69  d9c9                 fxch st(1)
-// 00647f6b  8b6c247c             mov ebp, dword ptr [esp + 0x7c]
-// 00647f6f  56                   push esi
-// 00647f70  d9542414             fst dword ptr [esp + 0x14]
-// 00647f74  57                   push edi
-// 00647f75  d94108               fld dword ptr [ecx + 8]
-// 00647f78  8bbc2488000000       mov edi, dword ptr [esp + 0x88]
-// 00647f7f  d8ca                 fmul st(2)
-// 00647f81  68d8f69700           push 0x97f6d8
-// 00647f86  57                   push edi
-// 00647f87  8d7010               lea esi, [eax + 0x10]
-// 00647f8a  d9542424             fst dword ptr [esp + 0x24]
-// 00647f8e  8d5804               lea ebx, [eax + 4]
-// 00647f91  d9410c               fld dword ptr [ecx + 0xc]
-// 00647f94  55                   push ebp
-// 00647f95  decb                 fmulp st(3)
-// 00647f97  8d442430             lea eax, [esp + 0x30]
-// 00647f9b  d9ca                 fxch st(2)
-// 00647f9d  50                   push eax
-// 00647f9e  56                   push esi
-// 00647f9f  d9542434             fst dword ptr [esp + 0x34]
-// 00647fa3  53                   push ebx
-// 00647fa4  d9c1                 fld st(1)
-// 00647fa6  c60700               mov byte ptr [edi], 0
-// 00647fa9  d9e0                 fchs 
-// 00647fab  d99424a0000000       fst dword ptr [esp + 0xa0]
-// 00647fb2  d9c3                 fld st(3)
-// 00647fb4  d9e0                 fchs 
-// 00647fb6  d9542428             fst dword ptr [esp + 0x28]
-// 00647fba  d9c2                 fld st(2)
-// 00647fbc  d9e0                 fchs 
-// 00647fbe  d954242c             fst dword ptr [esp + 0x2c]
-// 00647fc2  d9ca                 fxch st(2)
-// 00647fc4  d95c243c             fstp dword ptr [esp + 0x3c]
-// 00647fc8  d95c2440             fstp dword ptr [esp + 0x40]
-// 00647fcc  d95c2444             fstp dword ptr [esp + 0x44]
-// 00647fd0  d9c9                 fxch st(1)
-// 00647fd2  d95c2448             fstp dword ptr [esp + 0x48]
-// 00647fd6  d9c9                 fxch st(1)
-// 00647fd8  d95c244c             fstp dword ptr [esp + 0x4c]
-// 00647fdc  d95c2450             fstp dword ptr [esp + 0x50]
-// 00647fe0  e88b371700           call 0x7bb770
-// 00647fe5  83c418               add esp, 0x18
-// 00647fe8  803f00               cmp byte ptr [edi], 0
-// 00647feb  0f84a6000000         je 0x648097
-// 00647ff1  c60700               mov byte ptr [edi], 0
-// 00647ff4  d906                 fld dword ptr [esi]
-// 00647ff6  d905cc9d8100         fld dword ptr [0x819dcc]
-// 00647ffc  56                   push esi
-// 00647ffd  dcc9                 fmul st(1), st(0)
-// 00647fff  8d4c2428             lea ecx, [esp + 0x28]
-// 00648003  d94604               fld dword ptr [esi + 4]
-// 00648006  51                   push ecx
-// 00648007  8d54245c             lea edx, [esp + 0x5c]
-// 0064800b  d8c9                 fmul st(1)
-// 0064800d  52                   push edx
-// 0064800e  d94608               fld dword ptr [esi + 8]
-// 00648011  deca                 fmulp st(2)
-// 00648013  d903                 fld dword ptr [ebx]
-// 00648015  dee3                 fsubrp st(3)
-// 00648017  d86b04               fsubr dword ptr [ebx + 4]
-// 0064801a  d94308               fld dword ptr [ebx + 8]
-// 0064801d  dee2                 fsubrp st(2)
-// 0064801f  d9ca                 fxch st(2)
-// 00648021  d95c2430             fstp dword ptr [esp + 0x30]
-// 00648025  d9c9                 fxch st(1)
-// 00648027  d95c2434             fstp dword ptr [esp + 0x34]
-// 0064802b  d95c2438             fstp dword ptr [esp + 0x38]
-// 0064802f  e8fc07edff           call 0x518830
-// 00648034  d9842494000000       fld dword ptr [esp + 0x94]
-// 0064803b  d944241c             fld dword ptr [esp + 0x1c]
-// 0064803f  68d8f69700           push 0x97f6d8
-// 00648044  d9442424             fld dword ptr [esp + 0x24]
-// 00648048  57                   push edi
-// 00648049  d9ca                 fxch st(2)
-// 0064804b  55                   push ebp
-// 0064804c  d95c2454             fstp dword ptr [esp + 0x54]
-// 00648050  8d442454             lea eax, [esp + 0x54]
-// 00648054  50                   push eax
-// 00648055  d95c245c             fstp dword ptr [esp + 0x5c]
-// 00648059  8d8c2480000000       lea ecx, [esp + 0x80]
-// 00648060  51                   push ecx
-// 00648061  d95c2464             fstp dword ptr [esp + 0x64]
-// 00648065  8d542478             lea edx, [esp + 0x78]
-// 00648069  d9442438             fld dword ptr [esp + 0x38]
-// 0064806d  52                   push edx
-// 0064806e  d95c246c             fstp dword ptr [esp + 0x6c]
-// 00648072  c784249c00000000000000 mov dword ptr [esp + 0x9c], 0
-// 0064807d  d9442440             fld dword ptr [esp + 0x40]
-// 00648081  d95c2470             fstp dword ptr [esp + 0x70]
-// 00648085  d9442444             fld dword ptr [esp + 0x44]
-// 00648089  d95c2474             fstp dword ptr [esp + 0x74]
-// 0064808d  e8de361700           call 0x7bb770
-// 00648092  83c424               add esp, 0x24
-// 00648095  b001                 mov al, 1
-// 00648097  8b4c2470             mov ecx, dword ptr [esp + 0x70]
-// 0064809b  5f                   pop edi
-// 0064809c  5e                   pop esi
-// 0064809d  5d                   pop ebp
-// 0064809e  5b                   pop ebx
-// 0064809f  64890d00000000       mov dword ptr fs:[0], ecx
-// 006480a6  83c46c               add esp, 0x6c
-// 006480a9  c20c00               ret 0xc
-// library openrbx-client/App\v8world\Block.cpp (function ?hitTest@Block@RBX@@UAE_NABVRay@G3D@@AAVVector3@4@AA_N@Z)
-
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast
 // roc-lib: openrbx-client App/v8world/Block.cpp
+
+// Candidate translation unit (score above; library headers required).
+#include "v8world/Block.h"
+
+#include "decomp.h"
+#include "util/Math.h"
+
+#include <G3D/AABox.h>
+#include <G3D/CollisionDetection.h>
+#include <cstddef>
+#include <functional>
+#include <map>
+
+namespace RBX {
+
+using G3D::AABox;
+using G3D::CollisionDetection;
+
+static Vector3 vector3Abs(const Vector3& value)
+{
+	return Vector3(fabsf(value.x), fabsf(value.y), fabsf(value.z));
+}
+
+struct myLess : public std::binary_function<Vector3, Vector3, bool>
+{
+	// FUNCTION: WEBSERVICE 0x10109060
+	bool operator()(const Vector3& a, const Vector3& b) const
+	{
+		if (a.x < b.x) {
+			return true;
+		}
+		if (a.x > b.x) {
+			return false;
+		}
+		if (a.y < b.y) {
+			return true;
+		}
+		if (a.y > b.y) {
+			return false;
+		}
+		if (a.z < b.z) {
+			return true;
+		}
+		return false;
+	}
+};
+
+// SIZE 0x60
+class BlockTemplate
+{
+public:
+	static const Vector3* getVertices(const Vector3& corner);
+
+private:
+	BlockTemplate(const Vector3& _corner);
+
+	class BlockTemplates : public std::map<Vector3, BlockTemplate*, myLess>
+	{
+	public:
+		~BlockTemplates();
+	};
+
+	static BlockTemplates blockTemplates;
+
+	Vector3 vertices[8]; // 0x00
+};
+
+DECOMP_SIZE_ASSERT(BlockTemplate, 0x60)
+
+// GLOBAL: WEBSERVICE 0x102fce48
+BlockTemplate::BlockTemplates BlockTemplate::blockTemplates;
+
+// STUB: WEBSERVICE 0x101090b0
+Matrix3 Block::getMomentHollow(float mass) const
+{
+	float x = gridSize.x, y = gridSize.y, z = gridSize.z;
+
+	float area = 2.0f * ((y + x) * z + y * x);
+
+	Vector3 I(
+		mass / (2 * area) *
+			(z * z * y * x + z * y * y * y / 3 + z * z * z * x / 3 + z * y * y * x + y * y * y * x / 3 +
+			 z * z * z * y / 3),
+		mass / (2 * area) *
+			(x * x * x * y / 3 + z * z * x * z / 3 + x * x * z * y + z * z * x * y + x * x * x * z / 3 +
+			 z * z * z * y / 3),
+		mass / (2 * area) *
+			(y * y * y * z / 3 + y * x * x * z + y * x * x * x / 3 + y * y * z * x + x * x * x * z / 3 +
+			 y * y * y * x / 3)
+	);
+
+	return Math::fromDiagonal(I);
+}
+
+// FUNCTION: WEBSERVICE 0x101091f0
+float Block::getGridVolume() const
+{
+	return gridSize.z * gridSize.y * gridSize.x;
+}
+
+// FUNCTION: WEBSERVICE 0x10109200
+const Vector3* Block::getEdgePoint(const Vector3int16& clip, NormalId& normalID) const
+{
+	if (clip.x == 0) {
+		normalID = NORM_X;
+
+		return &vertices[4 + 2 * (clip.y <= 0) + (clip.z <= 0)];
+	}
+
+	if (clip.y == 0) {
+		normalID = NORM_Y;
+
+		return &vertices[2 + 4 * (clip.x <= 0) + (clip.z <= 0)];
+	}
+
+	normalID = NORM_Z;
+
+	return &vertices[2 * (2 * (clip.x <= 0) + (clip.y <= 0)) + 1];
+}
+
+// FUNCTION: WEBSERVICE 0x10109290
+const Vector3* Block::getPlanePoint(const Vector3int16& clip, NormalId& normalID) const
+{
+	if (clip.x != 0) {
+		normalID = clip.x > 0 ? NORM_X : NORM_X_NEG;
+
+		return &vertices[4 * (clip.x <= 0)];
+	}
+
+	if (clip.y != 0) {
+		normalID = clip.y > 0 ? NORM_Y : NORM_Y_NEG;
+
+		return &vertices[2 * (clip.y <= 0)];
+	}
+
+	normalID = clip.z > 0 ? NORM_Z : NORM_Z_NEG;
+
+	return &vertices[clip.z <= 0];
+}
+
+// FUNCTION: WEBSERVICE 0x10109330
+GeoPairType Block::getBallBlockInfo(int onBorder, Vector3int16 clip, const Vector3*& offset, NormalId& normalID)
+{
+	if (onBorder == 1) {
+		offset = getPlanePoint(clip, normalID);
+
+		return BALL_PLANE_PAIR;
+	}
+
+	if (onBorder == 2) {
+		offset = getEdgePoint(clip, normalID);
+
+		return BALL_EDGE_PAIR;
+	}
+
+	offset = getCornerPoint(clip);
+
+	return BALL_POINT_PAIR;
+}
+
+// FUNCTION: WEBSERVICE 0x101093c0
+GeoPairType Block::getBallInsideInfo(const Vector3& ray, const Vector3*& offset, NormalId& normalID)
+{
+	float smallest = 1e30f;
+	const Vector3& corner = *vertices;
+
+	for (int i = 0; i < 3; i++) {
+		float d = corner[i] - ray[i];
+
+		if (smallest > d) {
+			smallest = d;
+			normalID = (NormalId) i;
+		}
+
+		d = ray[i] - corner[i];
+
+		if (smallest > d) {
+			smallest = d;
+			normalID = (NormalId) (i + 3);
+		}
+	}
+
+	offset = normalID > 2 ? &vertices[7] : vertices;
+
+	return BALL_PLANE_PAIR;
+}
+
+// FUNCTION: WEBSERVICE 0x101094c0
+void Block::projectToFace(Vector3& ray, Vector3int16& clip, int& onBorder)
+{
+	onBorder = 0;
+
+	const Vector3& corner = *vertices;
+
+	if (ray.x > corner.x) {
+		ray.x = corner.x;
+		onBorder++;
+		clip.x = 1;
+	}
+
+	if (ray.x < -corner.x) {
+		ray.x = -corner.x;
+		onBorder++;
+		clip.x = -1;
+	}
+
+	if (ray.y > corner.y) {
+		ray.y = corner.y;
+		onBorder++;
+		clip.y = 1;
+	}
+
+	if (ray.y < -corner.y) {
+		ray.y = -corner.y;
+		onBorder++;
+		clip.y = -1;
+	}
+
+	if (ray.z > corner.z) {
+		ray.z = corner.z;
+		onBorder++;
+		clip.z = 1;
+	}
+
+	if (ray.z < -corner.z) {
+		ray.z = -corner.z;
+		onBorder++;
+		clip.z = -1;
+	}
+}
+
+// FUNCTION: WEBSERVICE 0x10109590
+Vector2 Block::getProjectedVertex(const Vector3& vertex, NormalId normalID)
+{
+	Vector2 answer(0, 0);
+
+	switch (normalID) {
+	case NORM_X:
+		answer.x = vertex.y;
+		answer.y = vertex.z;
+		break;
+	case NORM_Y:
+		answer.x = vertex.z;
+		answer.y = vertex.x;
+		break;
+	case NORM_Z:
+		answer.x = vertex.x;
+		answer.y = vertex.y;
+		break;
+	case NORM_X_NEG:
+		answer.x = vertex.z;
+		answer.y = vertex.y;
+		break;
+	case NORM_Y_NEG:
+		answer.x = vertex.x;
+		answer.y = vertex.z;
+		break;
+	case NORM_Z_NEG:
+		answer.x = vertex.y;
+		answer.y = vertex.x;
+		break;
+	}
+
+	return answer;
+}
+
+// STUB: WEBSERVICE 0x10109630
+int Block::getClosestEdge(const Matrix3& rotation, NormalId normalID, Vector3& crossAxis)
+{
+	Vector3 axisInBody = crossAxis * rotation;
+
+	Vector2 projected = getProjectedVertex(axisInBody, normalID);
+
+	if (projected.y > 0) {
+		if (projected.x > 0) {
+			return normalID * 4;
+		}
+
+		return normalID * 4 + 1;
+	}
+
+	if (projected.x > 0) {
+		return normalID * 4 + 3;
+	}
+
+	return normalID * 4 + 2;
+}
+
+// FUNCTION: WEBSERVICE 0x10109770
+BlockTemplate::BlockTemplate(const Vector3& _corner)
+{
+	float x = -fabsf(_corner.x);
+	float y = -fabsf(_corner.y);
+	float z = -fabsf(_corner.z);
+
+	for (int i = 0; i < 2; i++) {
+		x = x * -1.0f;
+		for (int j = 0; j < 2; j++) {
+			y = y * -1.0f;
+			for (int k = 0; k < 2; k++) {
+				z = z * -1.0f;
+				vertices[4 * i + 2 * j + k] = Vector3(x, y, z);
+			}
+		}
+	}
+}
+
+// FUNCTION: WEBSERVICE 0x10109840
+bool Block::hitTest(const Ray& rayInMe, Vector3& localHitPoint, bool& inside)
+{
+	Vector3 halfSize = gridSize * 0.5f;
+
+	inside = false;
+
+	bool hit = CollisionDetection::collisionLocationForMovingPointFixedAABox(
+		rayInMe.origin,
+		rayInMe.direction,
+		AABox(-halfSize, halfSize),
+		localHitPoint,
+		inside
+	);
+
+	if (!inside) {
+		return hit;
+	}
+
+	inside = false;
+
+	Ray outsideRay = Ray::fromOriginAndDirection(rayInMe.origin - rayInMe.direction * 1000.0f, rayInMe.direction);
+
+	CollisionDetection::collisionLocationForMovingPointFixedAABox(
+		outsideRay.origin,
+		outsideRay.direction,
+		AABox(-halfSize, halfSize),
+		localHitPoint,
+		inside
+	);
+
+	return true;
+}
+
+// FUNCTION: WEBSERVICE 0x10109a70
+Vector3 Block::getCenterToCorner(const Matrix3& rotation) const
+{
+	if (cornerRadius < 5.0f) {
+		return Vector3(cornerRadius, cornerRadius, cornerRadius);
+	}
+
+	Vector3 maxValue = vector3Abs(rotation * vertices[0]);
+
+	for (int i = 1; i < 4; i++) {
+		maxValue = maxValue.max(vector3Abs(rotation * vertices[i]));
+	}
+
+	return maxValue;
+}
+
+// FUNCTION: WEBSERVICE 0x1010a5e0
+const Vector3* BlockTemplate::getVertices(const Vector3& corner)
+{
+	BlockTemplates::iterator iter = blockTemplates.find(corner);
+
+	if (iter != blockTemplates.end()) {
+		return iter->second->vertices;
+	}
+
+	BlockTemplate* answer = new BlockTemplate(corner);
+	blockTemplates[corner] = answer;
+
+	return answer->vertices;
+}
+
+// FUNCTION: WEBSERVICE 0x1010a680
+void Block::onSetSize()
+{
+	vertices = BlockTemplate::getVertices(gridSize * -0.5f);
+	cornerRadius = vertices[0].magnitude();
+}
+
+// FUNCTION: WEBSERVICE 0x1010a6e0
+BlockTemplate::BlockTemplates::~BlockTemplates()
+{
+	iterator iter = begin();
+
+	while (iter != end()) {
+
+		delete iter->second;
+		iter++;
+	}
+}
+
+} // namespace RBX

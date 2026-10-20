@@ -1,16 +1,60 @@
-// roc 2007-03 005c1450  unit: seg_005c0000  size: 19 bytes
-// Make this compile to the exact bytes below, then: roc check 2007-03 005c1450
-//
-// 005c1450  d9ee                 fldz 
-// 005c1452  8b442404             mov eax, dword ptr [esp + 4]
-// 005c1456  51                   push ecx
-// 005c1457  d91c24               fstp dword ptr [esp]
-// 005c145a  50                   push eax
-// 005c145b  e8b0fdffff           call 0x5c1210
-// 005c1460  c20400               ret 4
-// library rbxgs/script\ScriptEvent.cpp (function ?queueWaiter@YieldingThreads@Lua@RBX@@QAEXPAUlua_State@@@Z)
-
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
 // roc-lib: rbxgs script/ScriptEvent.cpp
+
+// Candidate translation unit (score above; library headers required).
+#include "script/ScriptEvent.h"
+
+namespace RBX
+{
+    namespace Lua
+    {
+        YieldingThreads::YieldingThreads(ScriptContext* context)
+            : context(context)
+        {
+        }
+
+        void YieldingThreads::queueWaiter(lua_State* L)
+        {
+            queueWaiter(L, 0.0f);
+        }
+
+        void YieldingThreads::queueWaiter(lua_State* L, float delay)
+        {
+            RobloxExtraSpace::get(L)->yieldCaptured = true;
+            waitingThreads.push_back(WaitingThread(L, delay));
+        }
+
+        void YieldingThreads::resume(Heartbeat heartbeat)
+        {
+            if (waitingThreads.empty())
+                return;
+
+            std::vector<WaitingThread> copy = waitingThreads;
+            waitingThreads.erase(waitingThreads.begin(), waitingThreads.end());
+
+            std::vector<WaitingThread>::iterator it = copy.begin();
+            for (; it != copy.end(); it++)
+            {
+                if (it->thread->empty())
+                    continue;
+
+                // TODO: LHS and RHS swapped in codegen
+                it->elapsedTime += heartbeat.step;
+
+                if (it->elapsedTime < it->requestedDelay)
+                {
+                    waitingThreads.push_back(*it);
+                    continue;
+                }
+
+                lua_State* L = it->thread->thread();
+                const int oldTop = lua_gettop(L);
+                lua_pushnumber(L, it->elapsedTime);
+                context->resume(L, 1);
+                lua_settop(L, oldTop);
+            }
+        }
+    }
+}

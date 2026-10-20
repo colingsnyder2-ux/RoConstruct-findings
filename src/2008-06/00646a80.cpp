@@ -1,37 +1,124 @@
-// roc 2008-06 00646a80  unit: RBX::RotatePJoint  size: 58 bytes
-// Make this compile to the exact bytes below, then: roc check 2008-06 00646a80
-//
-// 00646a80  53                   push ebx
-// 00646a81  56                   push esi
-// 00646a82  8bd9                 mov ebx, ecx
-// 00646a84  33f6                 xor esi, esi
-// 00646a86  39b3bc000000         cmp dword ptr [ebx + 0xbc], esi
-// 00646a8c  57                   push edi
-// 00646a8d  7e1f                 jle 0x646aae
-// 00646a8f  8dbbac000000         lea edi, [ebx + 0xac]
-// 00646a95  8b0f                 mov ecx, dword ptr [edi]
-// 00646a97  8b01                 mov eax, dword ptr [ecx]
-// 00646a99  8b500c               mov edx, dword ptr [eax + 0xc]
-// 00646a9c  ffd2                 call edx
-// 00646a9e  84c0                 test al, al
-// 00646aa0  7512                 jne 0x646ab4
-// 00646aa2  46                   inc esi
-// 00646aa3  83c704               add edi, 4
-// 00646aa6  3bb3bc000000         cmp esi, dword ptr [ebx + 0xbc]
-// 00646aac  7ce7                 jl 0x646a95
-// 00646aae  5f                   pop edi
-// 00646aaf  5e                   pop esi
-// 00646ab0  32c0                 xor al, al
-// 00646ab2  5b                   pop ebx
-// 00646ab3  c3                   ret 
-// 00646ab4  5f                   pop edi
-// 00646ab5  5e                   pop esi
-// 00646ab6  b001                 mov al, 1
-// 00646ab8  5b                   pop ebx
-// 00646ab9  c3                   ret 
-// library openrbx-client/App\v8world\MultiJoint.cpp (function ?isBroken@MultiJoint@RBX@@MBE_NXZ)
-
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
 // roc-lib: openrbx-client App/v8world/MultiJoint.cpp
+
+// Candidate translation unit (score above; library headers required).
+#include "v8world/MultiJoint.h"
+
+#include "decomp.h"
+#include "v8kernel/Connector.h"
+#include "v8kernel/Kernel.h"
+#include "v8world/Primitive.h"
+
+#include <algorithm>
+#include <cstddef>
+
+namespace RBX {
+
+// FUNCTION: WEBSERVICE 0x1011fc10
+void MultiJoint::init(int numBreaking)
+{
+	this->numBreakingConnectors = numBreaking;
+	numConnector = 0;
+
+	for (int i = 0; i < 4; ++i) {
+		point[i * 2] = NULL;
+		point[i * 2 + 1] = NULL;
+		connector[i] = NULL;
+	}
+}
+
+// FUNCTION: WEBSERVICE 0x1011fc70
+MultiJoint::MultiJoint(int numBreaking)
+{
+	init(numBreaking);
+}
+
+// FUNCTION: WEBSERVICE 0x1011fc90
+MultiJoint::MultiJoint(
+	Primitive* p0,
+	Primitive* p1,
+	const CoordinateFrame& jointCoord0,
+	const CoordinateFrame& jointCoord1,
+	int numBreaking
+)
+	: Joint(p0, p1, jointCoord0, jointCoord1)
+{
+	init(numBreaking);
+}
+
+// FUNCTION: WEBSERVICE 0x1011fcd0
+MultiJoint::~MultiJoint()
+{
+}
+
+// FUNCTION: WEBSERVICE 0x1011fce0
+void MultiJoint::putInKernel(Kernel* _kernel)
+{
+	IPipelined::putInKernel(_kernel);
+}
+
+// FUNCTION: WEBSERVICE 0x1011fcf0
+void MultiJoint::addToMultiJoint(Point* point0, Point* point1, Connector* _connector)
+{
+	point[numConnector * 2] = point0;
+	point[numConnector * 2 + 1] = point1;
+
+	this->connector[numConnector] = _connector;
+
+	getKernel()->insertConnector(_connector);
+
+	++numConnector;
+}
+
+// FUNCTION: WEBSERVICE 0x1011fd40
+Point* MultiJoint::getPoint(int id)
+{
+	return point[id];
+}
+
+// FUNCTION: WEBSERVICE 0x1011fd50
+void MultiJoint::removeFromKernel()
+{
+	for (int i = 0; i < numConnector; ++i) {
+		getKernel()->deletePoint(point[i * 2]);
+		getKernel()->deletePoint(point[i * 2 + 1]);
+
+		point[i * 2] = NULL;
+		point[i * 2 + 1] = NULL;
+
+		getKernel()->removeConnector(connector[i]);
+
+		delete connector[i];
+
+		connector[i] = NULL;
+	}
+
+	numConnector = 0;
+
+	IPipelined::removeFromKernel();
+}
+
+// FUNCTION: WEBSERVICE 0x1011fdf0
+bool MultiJoint::isBroken() const
+{
+	for (int i = 0; i < numBreakingConnectors; ++i) {
+		if (connector[i]->getBroken()) {
+			return true;
+		}
+	}
+
+	return false;
+}
+
+// FUNCTION: WEBSERVICE 0x1011fe60
+float MultiJoint::getJointK()
+{
+	float k1 = getPrimitive(1)->getJointK();
+	float k0 = getPrimitive(0)->getJointK();
+
+	return std::min(k0, k1);
+}
+
+} // namespace RBX

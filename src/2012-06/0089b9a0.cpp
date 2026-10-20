@@ -1,18 +1,151 @@
-// roc 2012-06 0089b9a0  unit: RBX::VHole::?$FactoryProduct  size: 25 bytes
-// Make this compile to the exact bytes below, then: roc check 2012-06 0089b9a0
-//
-// 0089b9a0  51                   push ecx
-// 0089b9a1  83ec08               sub esp, 8
-// 0089b9a4  8bc4                 mov eax, esp
-// 0089b9a6  89642408             mov dword ptr [esp + 8], esp
-// 0089b9aa  50                   push eax
-// 0089b9ab  e880d9b9ff           call 0x439330
-// 0089b9b0  e86b58ebff           call 0x751220
-// 0089b9b5  83c40c               add esp, 0xc
-// 0089b9b8  c3                   ret 
-// library rbxgs/tool\MegaDragger.cpp (function ?mousePartAlive@MegaDragger@RBX@@QAE_NXZ)
-
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
 // roc-lib: rbxgs tool/MegaDragger.cpp
+
+// Candidate translation unit (score above; library headers required).
+#include "tool/MegaDragger.h"
+#include "tool/DragUtilities.h"
+#include "tool/Dragger.h"
+#include "v8world/ContactManager.h"
+#include "v8datamodel/PartInstance.h"
+#include "v8datamodel/RootInstance.h"
+#include "v8datamodel/MouseCommand.h"
+
+namespace RBX
+{
+	MegaDragger::MegaDragger(PartInstance* mousePartPtr, const std::vector<PVInstance*>& pvInstances, RootInstance* rootInstance)
+		: mousePart(shared_from(mousePartPtr)),
+		  dragParts(),
+		  joined(true),
+		  rootInstance(rootInstance),
+          contactManager(rootInstance->getWorld()->getContactManager())
+	{
+		DragUtilities::pvsToParts(pvInstances, dragParts);
+	}
+
+	MegaDragger::MegaDragger(PartInstance* mousePartPtr, const std::vector<boost::weak_ptr<PartInstance>>& partArray, RootInstance* rootInstance)
+		: mousePart(shared_from(mousePartPtr)),
+		  dragParts(partArray),
+		  rootInstance(rootInstance),
+		  joined(true),
+		  contactManager(rootInstance->getWorld()->getContactManager())
+	{
+	}
+
+
+	MegaDragger::~MegaDragger()
+	{
+		if (!joined)
+		{
+			RBXASSERT(0);
+			DragUtilities::joinAndStopDragging(dragParts);
+		}
+	}
+
+	void MegaDragger::startDragging()
+	{
+		DragUtilities::unJoinAndSetDragging(dragParts);
+
+		if (PartInstance::nonNullInWorkspace(mousePart.lock()))
+		{
+			rootInstance->setCameraIgnoreParts(mousePart.lock().get());
+		}
+		joined = false;
+	}
+
+	void MegaDragger::continueDragging()
+	{
+		RBXASSERT(!joined);
+		DragUtilities::unJoinAndSetDragging(dragParts);
+	}
+
+	void MegaDragger::finishDragging()
+	{
+		RBXASSERT(!joined);
+		rootInstance->clearCameraIgnoreParts();
+		DragUtilities::joinAndStopDragging(dragParts);
+		if (DragUtilities::anyPartAlive(dragParts))
+		{
+			rootInstance->setInsertPoint(DragUtilities::computeExtents(dragParts).topCenter());
+		}
+		joined = true;
+	}
+
+	G3D::Vector3 MegaDragger::hitObjectOrPlane(const UIEvent& uiEvent)
+	{
+		G3D::Vector3 result;
+		G3D::Array<Primitive*> primitives;
+		DragUtilities::partsToPrimitives(dragParts, primitives);
+		DragUtilities::hitObjectOrPlane(contactManager, MouseCommand::getUnitMouseRay(uiEvent, rootInstance), &primitives, result);
+		return result;
+	}
+
+	void MegaDragger::alignAndCleanParts()
+	{
+		RBXASSERT(!joined);
+		if (PartInstance::nonNullInWorkspace(mousePart.lock()))
+		{
+			PartInstance* part = mousePart.lock().get();
+
+			if (!part->aligned())
+			{
+				G3D::CoordinateFrame snap = part->worldSnapLocation();
+				G3D::CoordinateFrame snapToGrid = Math::snapToGrid(snap, Dragger::dragSnap());
+				DragUtilities::move(dragParts, snap, snapToGrid);
+			}
+		}
+		DragUtilities::clean(dragParts);
+	}
+
+	G3D::Vector3 MegaDragger::safeMoveYDrop(const G3D::Vector3& tryDrag)
+	{
+		RBXASSERT(!joined);
+		RBXASSERT(tryDrag == Math::toGrid(tryDrag, 0.1f));
+
+		G3D::Array<Primitive*> primitives;
+		DragUtilities::partsToPrimitives(dragParts, primitives);
+
+		RBXASSERT(primitives.size() > 0);
+
+		G3D::Vector3 result = Dragger::safeMoveYDrop(primitives, tryDrag, contactManager);
+
+		RBXASSERT(!contactManager.intersectingOthers(primitives, 0.01f));
+		return result;
+	}
+
+	G3D::Vector3 MegaDragger::safeMoveNoDrop(const G3D::Vector3& tryDrag)
+	{
+		RBXASSERT(!joined);
+		RBXASSERT(tryDrag == Math::toGrid(tryDrag, 0.1f));
+
+		G3D::Array<Primitive*> primitives;
+		DragUtilities::partsToPrimitives(dragParts, primitives);
+
+		RBXASSERT(primitives.size() > 0);
+
+		G3D::Vector3 result = Dragger::safeMoveNoDrop(primitives, tryDrag, contactManager);
+
+		RBXASSERT(!contactManager.intersectingOthers(primitives, 0.01f));
+		return result;
+	}
+
+	void MegaDragger::safeRotate(const G3D::Matrix3& rotMatrix)
+	{
+		RBXASSERT(!joined);
+
+		G3D::Array<Primitive*> primitives;
+		DragUtilities::partsToPrimitives(dragParts, primitives);
+
+		RBXASSERT(primitives.size() > 0);
+
+		Dragger::safeRotate(primitives, rotMatrix, contactManager);
+
+		RBXASSERT(!contactManager.intersectingOthers(primitives, 0.01f));
+	}
+
+	bool MegaDragger::mousePartAlive()
+	{
+		return PartInstance::nonNullInWorkspace(mousePart.lock());
+	}
+}

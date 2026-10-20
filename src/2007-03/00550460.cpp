@@ -1,13 +1,58 @@
-// roc 2007-03 00550460  unit: seg_00550000  size: 15 bytes
-// Make this compile to the exact bytes below, then: roc check 2007-03 00550460
-//
-// 00550460  8b89f4000000         mov ecx, dword ptr [ecx + 0xf4]
-// 00550466  8b442404             mov eax, dword ptr [esp + 4]
-// 0055046a  8908                 mov dword ptr [eax], ecx
-// 0055046c  c20400               ret 4
-// library rbxgs/v8datamodel\Team.cpp (function ?getTeamColor@Team@RBX@@QBE?AVBrickColor@2@XZ)
-
 // roc-lang: cpp
 // roc-cl: 50727
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
 // roc-lib: rbxgs v8datamodel/Team.cpp
+
+// Candidate translation unit (score above; library headers required).
+#include "v8datamodel/Team.h"
+
+namespace RBX
+{
+	const char* sTeam = "Team";
+
+	static Reflection::PropDescriptor<Team, int> prop_Score("Score", "Data", &Team::getScore, &Team::setScore, Reflection::PropertyDescriptor::STANDARD);
+	static Reflection::PropDescriptor<Team, BrickColor> prop_Color("TeamColor", "Data", &Team::getTeamColor, &Team::setTeamColor, Reflection::PropertyDescriptor::STANDARD);
+	static Reflection::PropDescriptor<Team, bool> prop_AutoAssignable("AutoAssignable", "Data", &Team::getAutoAssignable, &Team::setAutoAssignable, Reflection::PropertyDescriptor::STANDARD);
+
+	Team::Team()
+		: score(0),
+		  autoAssignable(true),
+		  autoColorCharacters(true)
+	{
+		setName("Team");
+		color = BrickColor::lego_1;
+	}
+
+	int Team::getScore() const
+	{
+		return score;
+	}
+
+	void Team::setScore(int newScore)
+	{
+		score = newScore;
+		raisePropertyChanged(prop_Score);
+	}
+
+	BrickColor Team::getTeamColor() const
+	{
+		return color;
+	}
+
+	void Team::setTeamColor(BrickColor newColor)
+	{
+		color = newColor;
+		raisePropertyChanged(prop_Color);
+	}
+
+	bool Team::getAutoAssignable() const
+	{
+		return autoAssignable;
+	}
+
+	void Team::setAutoAssignable(bool value)
+	{
+		autoAssignable = value;
+		raisePropertyChanged(prop_AutoAssignable);
+	}
+}

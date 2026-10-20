@@ -1,21 +1,88 @@
-// roc 2008-06 0056bd60  unit: boost::signals::detail::Vsignal_base_impl::?$sp_counted_impl_p  size: 33 bytes
-// Make this compile to the exact bytes below, then: roc check 2008-06 0056bd60
-//
-// 0056bd60  56                   push esi
-// 0056bd61  8b7104               mov esi, dword ptr [ecx + 4]
-// 0056bd64  c7410400000000       mov dword ptr [ecx + 4], 0
-// 0056bd6b  85f6                 test esi, esi
-// 0056bd6d  7410                 je 0x56bd7f
-// 0056bd6f  8bce                 mov ecx, esi
-// 0056bd71  e82a59f4ff           call 0x4b16a0
-// 0056bd76  56                   push esi
-// 0056bd77  e8fe481300           call 0x6a067a
-// 0056bd7c  83c404               add esp, 4
-// 0056bd7f  5e                   pop esi
-// 0056bd80  c3                   ret 
-// library openrbx-client/App\reflection\signal.cpp (function ?disconnect_all_slots@SignalSource@Reflection@RBX@@QAEXXZ)
-
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
 // roc-lib: openrbx-client App/reflection/signal.cpp
+
+// Candidate translation unit (score above; library headers required).
+#include "reflection/signal.h"
+
+#include "reflection/object.h"
+
+#include <cstddef>
+
+namespace RBX {
+namespace Reflection {
+
+GenericSlotWrapper::~GenericSlotWrapper()
+{
+}
+
+// FUNCTION: WEBSERVICE 0x10095790
+SignalInstance::~SignalInstance()
+{
+}
+
+// FUNCTION: WEBSERVICE 0x10095a50
+SignalInstance* SignalDescriptor::findSignalInstance(const SignalSource* source) const
+{
+	if (source == NULL) {
+		return NULL;
+	}
+
+	if (source->signals.get() == NULL) {
+		return NULL;
+	}
+
+	SignalSource::SignalMap::const_iterator it = source->signals->find(this);
+
+	if (it == source->signals->end()) {
+		return NULL;
+	}
+
+	return it->second.get();
+}
+
+// FUNCTION: WEBSERVICE 0x10095b90
+SignalDescriptor::SignalDescriptor(ClassDescriptor& classDescriptor, const char* name)
+	: MemberDescriptor(classDescriptor, name, "Signals"), signalCreatedHook(NULL)
+{
+	classDescriptor.MemberDescriptorContainer<SignalDescriptor>::declare(this);
+}
+
+// STUB: WEBSERVICE 0x10095c50
+boost::shared_ptr<SignalInstance> SignalDescriptor::getSignalInstance(SignalSource& source) const
+{
+	if (source.signals.get() == NULL) {
+		source.signals.reset(new SignalSource::SignalMap());
+	}
+
+	SignalSource::SignalMap::iterator iter = source.signals->find(this);
+
+	if (iter != source.signals->end()) {
+		return iter->second;
+	}
+
+	boost::shared_ptr<SignalInstance> si(newSignalInstance(source));
+
+	(*source.signals)[this] = si;
+
+	if (signalCreatedHook != NULL) {
+		signalCreatedHook(&source);
+	}
+
+	return si;
+}
+
+// STUB: WEBSERVICE 0x10095e80
+SignalSource::~SignalSource()
+{
+}
+
+// STUB: WEBSERVICE 0x10095ed0
+void SignalSource::disconnect_all_slots()
+{
+	signals.reset();
+}
+
+} // namespace Reflection
+} // namespace RBX

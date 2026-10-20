@@ -1,150 +1,569 @@
 // from server: 100% by auto
-// roc 2009-06 0070e820  unit: RBX::TaskScheduler::VThread::?$sp_counted_impl_p  size: 380 bytes
-// Make this compile to the exact bytes below, then: roc check 2009-06 0070e820
-//
-// 0070e820  55                   push ebp
-// 0070e821  8bec                 mov ebp, esp
-// 0070e823  6aff                 push -1
-// 0070e825  68203e8700           push 0x873e20
-// 0070e82a  64a100000000         mov eax, dword ptr fs:[0]
-// 0070e830  50                   push eax
-// 0070e831  64892500000000       mov dword ptr fs:[0], esp
-// 0070e838  83ec1c               sub esp, 0x1c
-// 0070e83b  53                   push ebx
-// 0070e83c  56                   push esi
-// 0070e83d  8bf1                 mov esi, ecx
-// 0070e83f  8b5e0c               mov ebx, dword ptr [esi + 0xc]
-// 0070e842  57                   push edi
-// 0070e843  8965f0               mov dword ptr [ebp - 0x10], esp
-// 0070e846  8975e0               mov dword ptr [ebp - 0x20], esi
-// 0070e849  85db                 test ebx, ebx
-// 0070e84b  7504                 jne 0x70e851
-// 0070e84d  33c9                 xor ecx, ecx
-// 0070e84f  eb0a                 jmp 0x70e85b
-// 0070e851  8b4614               mov eax, dword ptr [esi + 0x14]
-// 0070e854  2bc3                 sub eax, ebx
-// 0070e856  c1f803               sar eax, 3
-// 0070e859  8bc8                 mov ecx, eax
-// 0070e85b  8b7d10               mov edi, dword ptr [ebp + 0x10]
-// 0070e85e  85ff                 test edi, edi
-// 0070e860  0f8480020000         je 0x70eae6
-// 0070e866  8b5610               mov edx, dword ptr [esi + 0x10]
-// 0070e869  8bc2                 mov eax, edx
-// 0070e86b  2bc3                 sub eax, ebx
-// 0070e86d  c1f803               sar eax, 3
-// 0070e870  bbffffff1f           mov ebx, 0x1fffffff
-// 0070e875  2bd8                 sub ebx, eax
-// 0070e877  3bdf                 cmp ebx, edi
-// 0070e879  7305                 jae 0x70e880
-// 0070e87b  e8e01ad8ff           call 0x490360
-// 0070e880  8d1c38               lea ebx, [eax + edi]
-// 0070e883  3bcb                 cmp ecx, ebx
-// 0070e885  0f8358010000         jae 0x70e9e3
-// 0070e88b  8bc1                 mov eax, ecx
-// 0070e88d  d1e8                 shr eax, 1
-// 0070e88f  baffffff1f           mov edx, 0x1fffffff
-// 0070e894  2bd0                 sub edx, eax
-// 0070e896  3bd1                 cmp edx, ecx
-// 0070e898  730c                 jae 0x70e8a6
-// 0070e89a  c745ec00000000       mov dword ptr [ebp - 0x14], 0
-// 0070e8a1  8b4dec               mov ecx, dword ptr [ebp - 0x14]
-// 0070e8a4  eb05                 jmp 0x70e8ab
-// 0070e8a6  03c8                 add ecx, eax
-// 0070e8a8  894dec               mov dword ptr [ebp - 0x14], ecx
-// 0070e8ab  3bcb                 cmp ecx, ebx
-// 0070e8ad  7305                 jae 0x70e8b4
-// 0070e8af  895dec               mov dword ptr [ebp - 0x14], ebx
-// 0070e8b2  8bcb                 mov ecx, ebx
-// 0070e8b4  6a00                 push 0
-// 0070e8b6  51                   push ecx
-// 0070e8b7  e83466d7ff           call 0x484ef0
-// 0070e8bc  8b5d0c               mov ebx, dword ptr [ebp + 0xc]
-// 0070e8bf  2b5e0c               sub ebx, dword ptr [esi + 0xc]
-// 0070e8c2  33c9                 xor ecx, ecx
-// 0070e8c4  83c408               add esp, 8
-// 0070e8c7  894de4               mov dword ptr [ebp - 0x1c], ecx
-// 0070e8ca  894dfc               mov dword ptr [ebp - 4], ecx
-// 0070e8cd  8b4d14               mov ecx, dword ptr [ebp + 0x14]
-// 0070e8d0  51                   push ecx
-// 0070e8d1  c1fb03               sar ebx, 3
-// 0070e8d4  57                   push edi
-// 0070e8d5  8d14d8               lea edx, [eax + ebx*8]
-// 0070e8d8  52                   push edx
-// 0070e8d9  8bce                 mov ecx, esi
-// 0070e8db  8945e8               mov dword ptr [ebp - 0x18], eax
-// 0070e8de  895ddc               mov dword ptr [ebp - 0x24], ebx
-// 0070e8e1  e87afeffff           call 0x70e760
-// 0070e8e6  8b460c               mov eax, dword ptr [esi + 0xc]
-// 0070e8e9  c6451400             mov byte ptr [ebp + 0x14], 0
-// 0070e8ed  8b5514               mov edx, dword ptr [ebp + 0x14]
-// 0070e8f0  52                   push edx
-// 0070e8f1  8b5510               mov edx, dword ptr [ebp + 0x10]
-// 0070e8f4  52                   push edx
-// 0070e8f5  8b550c               mov edx, dword ptr [ebp + 0xc]
-// 0070e8f8  8d4e08               lea ecx, [esi + 8]
-// 0070e8fb  51                   push ecx
-// 0070e8fc  8b4de8               mov ecx, dword ptr [ebp - 0x18]
-// 0070e8ff  51                   push ecx
-// 0070e900  52                   push edx
-// 0070e901  50                   push eax
-// 0070e902  c745e401000000       mov dword ptr [ebp - 0x1c], 1
-// 0070e909  e8f23ed2ff           call 0x432800
-// 0070e90e  8b4de8               mov ecx, dword ptr [ebp - 0x18]
-// 0070e911  8b4610               mov eax, dword ptr [esi + 0x10]
-// 0070e914  83c418               add esp, 0x18
-// 0070e917  c6451400             mov byte ptr [ebp + 0x14], 0
-// 0070e91b  8b5514               mov edx, dword ptr [ebp + 0x14]
-// 0070e91e  52                   push edx
-// 0070e91f  8b5510               mov edx, dword ptr [ebp + 0x10]
-// 0070e922  03df                 add ebx, edi
-// 0070e924  52                   push edx
-// 0070e925  8d0cd9               lea ecx, [ecx + ebx*8]
-// 0070e928  8d5e08               lea ebx, [esi + 8]
-// 0070e92b  53                   push ebx
-// 0070e92c  51                   push ecx
-// 0070e92d  50                   push eax
-// 0070e92e  8b450c               mov eax, dword ptr [ebp + 0xc]
-// 0070e931  50                   push eax
-// 0070e932  c745e402000000       mov dword ptr [ebp - 0x1c], 2
-// 0070e939  e8c23ed2ff           call 0x432800
-// 0070e93e  8b460c               mov eax, dword ptr [esi + 0xc]
-// 0070e941  8b4e10               mov ecx, dword ptr [esi + 0x10]
-// 0070e944  2bc8                 sub ecx, eax
-// 0070e946  c1f903               sar ecx, 3
-// 0070e949  83c418               add esp, 0x18
-// 0070e94c  03f9                 add edi, ecx
-// 0070e94e  c745fcffffffff       mov dword ptr [ebp - 4], 0xffffffff
-// 0070e955  85c0                 test eax, eax
-// 0070e957  741b                 je 0x70e974
-// 0070e959  8b5510               mov edx, dword ptr [ebp + 0x10]
-// 0070e95c  8b4e10               mov ecx, dword ptr [esi + 0x10]
-// 0070e95f  52                   push edx
-// 0070e960  53                   push ebx
-// 0070e961  51                   push ecx
-// 0070e962  50                   push eax
-// 0070e963  e83883f2ff           call 0x636ca0
-// 0070e968  8b560c               mov edx, dword ptr [esi + 0xc]
-// 0070e96b  52                   push edx
-// 0070e96c  e8c1a00000           call 0x718a32
-// 0070e971  83c414               add esp, 0x14
-// 0070e974  8b45e8               mov eax, dword ptr [ebp - 0x18]
-// 0070e977  8b4dec               mov ecx, dword ptr [ebp - 0x14]
-// 0070e97a  8d14c8               lea edx, [eax + ecx*8]
-// 0070e97d  8d0cf8               lea ecx, [eax + edi*8]
-// 0070e980  895614               mov dword ptr [esi + 0x14], edx
-// 0070e983  894e10               mov dword ptr [esi + 0x10], ecx
-// 0070e986  89460c               mov dword ptr [esi + 0xc], eax
-// 0070e989  8b4df4               mov ecx, dword ptr [ebp - 0xc]
-// 0070e98c  64890d00000000       mov dword ptr fs:[0], ecx
-// 0070e993  5f                   pop edi
-// 0070e994  5e                   pop esi
-// 0070e995  5b                   pop ebx
-// 0070e996  8be5                 mov esp, ebp
-// 0070e998  5d                   pop ebp
-// 0070e999  c21000               ret 0x10
-// library boost-1.34.1/libs\program_options\src\options_description.cpp (function ?_Insert_n@?$vector@V?$shared_ptr@Voption_description@program_options@boost@@@boost@@V?$allocator@V?$shared_ptr@Voption_description@program_options@boost@@@boost@@@std@@@std@@IAEXV?$_Vector_const_iterator@V?$shared_ptr@Voption_description@program_options@boost@@@boost@@V?$allocator@V?$shared_ptr@Voption_description@program_options@boost@@@boost@@@std@@@2@IABV?$shared_ptr@Voption_description@program_options@boost@@@boost@@@Z)
-
 // roc-lang: cpp
 // roc-cl: 30729
 // roc-flags: /O2 /GS- /EHsc /MD
 // roc-lib: boost-1.34.1 libs/program_options/src/options_description.cpp
+
+// Candidate translation unit (score above; library headers required).
+// Copyright Vladimir Prus 2002-2004.
+// Copyright Bertolt Mildner 2004.
+// Distributed under the Boost Software License, Version 1.0.
+// (See accompanying file LICENSE_1_0.txt
+// or copy at http://www.boost.org/LICENSE_1_0.txt)
+
+
+#define BOOST_PROGRAM_OPTIONS_SOURCE
+#include <boost/program_options/config.hpp>
+#include <boost/program_options/options_description.hpp>
+// FIXME: this is only to get multiple_occureces class
+// should move that to a separate headers.
+#include <boost/program_options/parsers.hpp>
+
+
+#include <boost/lexical_cast.hpp>
+#include <boost/tokenizer.hpp>
+#include <boost/detail/workaround.hpp>
+#include <boost/throw_exception.hpp>
+
+#include <cassert>
+#include <climits>
+#include <cstring>
+#include <cstdarg>
+#include <sstream>
+#include <iterator>
+using namespace std;
+
+namespace boost { namespace program_options {
+
+    option_description::option_description()
+    {
+    }
+    
+    option_description::
+    option_description(const char* name,
+                       const value_semantic* s)
+    : m_value_semantic(s)
+    {
+        this->set_name(name);
+    }
+                                           
+
+    option_description::
+    option_description(const char* name,
+                       const value_semantic* s,
+                       const char* description)
+    : m_description(description), m_value_semantic(s)
+    {
+        this->set_name(name);
+    }
+
+    option_description::~option_description()
+    {
+    }
+
+    option_description::match_result
+    option_description::match(const std::string& option, bool approx) const
+    {
+        match_result result = no_match;
+        if (!m_long_name.empty()) {
+
+            if (*m_long_name.rbegin() == '*')
+            {
+                // The name ends with '*'. Any specified name with the given
+                // prefix is OK.
+                if (option.find(m_long_name.substr(0, m_long_name.length()-1))
+                    == 0)
+                    result = approximate_match;
+            }
+
+            if (approx)
+            {
+                if (m_long_name.find(option) == 0)
+                    if (m_long_name == option)
+                        result = full_match;
+                    else
+                        result = approximate_match;
+            }
+            else
+            {
+                if (m_long_name == option)
+                    result = full_match;
+            }
+        }
+         
+        if (m_short_name == option)
+            result = full_match;
+
+        return result;        
+    }
+
+    const std::string& 
+    option_description::key(const std::string& option) const
+    {        
+        if (!m_long_name.empty()) 
+            if (m_long_name.find('*') != string::npos)
+                // The '*' character means we're long_name
+                // matches only part of the input. So, returning
+                // long name will remove some of the information,
+                // and we have to return the option as specified
+                // in the source.
+                return option;
+            else
+                return m_long_name;
+        else
+            return m_short_name;
+    }
+
+    const std::string&
+    option_description::long_name() const
+    {
+        return m_long_name;
+    }
+
+    option_description&
+    option_description::set_name(const char* _name)
+    {
+        std::string name(_name);
+        string::size_type n = name.find(',');
+        if (n != string::npos) {
+            assert(n == name.size()-2);
+            m_long_name = name.substr(0, n);
+            m_short_name = '-' + name.substr(n+1,1);
+        } else {
+            m_long_name = name;
+        }
+        return *this;
+    }
+
+    const std::string&
+    option_description::description() const
+    {
+        return m_description;
+    }
+
+    shared_ptr<const value_semantic>
+    option_description::semantic() const
+    {
+        return m_value_semantic;
+    }
+    
+    std::string 
+    option_description::format_name() const
+    {
+        if (!m_short_name.empty())
+            return string(m_short_name).append(" [ --").
+            append(m_long_name).append(" ]");
+        else
+            return string("--").append(m_long_name);
+    }
+
+    std::string 
+    option_description::format_parameter() const
+    {
+        if (m_value_semantic->max_tokens() != 0)
+            return m_value_semantic->name();
+        else
+            return "";
+    }
+
+    options_description_easy_init::
+    options_description_easy_init(options_description* owner)
+    : owner(owner)
+    {}
+
+    options_description_easy_init&
+    options_description_easy_init::
+    operator()(const char* name,
+               const char* description)
+    {
+        // Create untypes semantic which accepts zero tokens: i.e. 
+        // no value can be specified on command line.
+        // FIXME: does not look exception-safe
+        shared_ptr<option_description> d(
+            new option_description(name, new untyped_value(true), description));
+
+        owner->add(d);
+        return *this;
+    }
+
+    options_description_easy_init&
+    options_description_easy_init::
+    operator()(const char* name,
+               const value_semantic* s)
+    {
+        shared_ptr<option_description> d(new option_description(name, s));
+        owner->add(d);
+        return *this;
+    }
+
+    options_description_easy_init&
+    options_description_easy_init::
+    operator()(const char* name,
+               const value_semantic* s,
+               const char* description)
+    {
+        shared_ptr<option_description> d(new option_description(name, s, description));
+
+        owner->add(d);
+        return *this;
+    }
+
+    options_description::options_description(unsigned line_length)
+    : m_line_length(line_length)
+    {}
+
+    options_description::options_description(const string& caption,
+                                             unsigned line_length)
+    : m_caption(caption), m_line_length(line_length)
+    {}
+
+    void
+    options_description::add(shared_ptr<option_description> desc)
+    {
+        m_options.push_back(desc);
+        belong_to_group.push_back(false);
+    }
+
+    options_description&
+    options_description::add(const options_description& desc)
+    {
+        shared_ptr<options_description> d(new options_description(desc));
+        groups.push_back(d);
+
+        for (size_t i = 0; i < desc.m_options.size(); ++i) {
+            add(desc.m_options[i]);
+            belong_to_group.back() = true;
+        }
+
+        return *this;
+    }
+
+    options_description_easy_init
+    options_description::add_options()
+    {       
+        return options_description_easy_init(this);
+    }
+
+    const option_description&
+    options_description::find(const std::string& name, bool approx) const
+    {
+        const option_description* d = find_nothrow(name, approx);
+        if (!d)
+            boost::throw_exception(unknown_option(name));
+        return *d;
+    }
+
+    const std::vector< shared_ptr<option_description> >& 
+    options_description::options() const
+    {
+        return m_options;
+    }
+
+    const option_description* 
+    options_description::find_nothrow(const std::string& name, 
+                                      bool approx) const
+    {
+        int found = -1;
+        // We use linear search because matching specified option
+        // name with the declared option name need to take care about
+        // case sensitivity and trailing '*' and so we can't use simple map.
+        for(unsigned i = 0; i < m_options.size(); ++i)
+        {
+            option_description::match_result r = 
+                m_options[i]->match(name, approx);
+
+            if (r == option_description::no_match)
+                continue;
+
+            // If we have a full patch, and an approximate match,
+            // ignore approximate match instead of reporting error.
+            // Say, if we have options "all" and "all-chroots", then
+            // "--all" on the command line should select the first one,
+            // without ambiguity.
+            //
+            // For now, we don't check the situation when there are 
+            // two full matches. 
+                            
+            if (r == option_description::full_match)
+            {
+                return m_options[i].get();                
+            }
+
+            if (found != -1)
+            {
+                vector<string> alts;
+                // FIXME: the use of 'key' here might not
+                // be the best approach.
+                alts.push_back(m_options[found]->key(name));
+                alts.push_back(m_options[i]->key(name));
+                boost::throw_exception(ambiguous_option(name, alts));
+            }
+            else
+            {
+                found = i;
+            }
+        }
+        if (found != -1) {
+            return m_options[found].get();
+        } else {
+            return 0;
+        }
+    }
+
+    BOOST_PROGRAM_OPTIONS_DECL
+    std::ostream& operator<<(std::ostream& os, const options_description& desc)
+    {
+        desc.print(os);
+        return os;
+    }
+
+    namespace {
+
+        /* Given a string 'par', that contains no newline characters
+           outputs it to 'os' with wordwrapping, that is, as several
+           line.
+
+           Each output line starts with 'indent' space characters, 
+           following by characters from 'par'. The total length of
+           line is no longer than 'line_length'.
+                                      
+        */
+        void format_paragraph(std::ostream& os,
+                              std::string par,
+                              unsigned indent,
+                              unsigned line_length)
+        {                    
+            // Through reminder of this function, 'line_length' will
+            // be the length available for characters, not including
+            // indent.
+            assert(indent < line_length);
+            line_length -= indent;
+
+            // index of tab (if present) is used as additional indent relative
+            // to first_column_width if paragrapth is spanned over multiple
+            // lines if tab is not on first line it is ignored
+            string::size_type par_indent = par.find('\t');
+
+            if (par_indent == string::npos)
+            {
+                par_indent = 0;
+            }
+            else
+            {
+                // only one tab per paragraph allowed
+                if (count(par.begin(), par.end(), '\t') > 1)
+                {
+                    boost::throw_exception(program_options::error(
+                        "Only one tab per paragraph is allowed"));
+                }
+          
+                // erase tab from string
+                par.erase(par_indent, 1);
+
+                // this assert may fail due to user error or 
+                // environment conditions!
+                assert(par_indent < line_length);
+
+                // ignore tab if not on first line
+                if (par_indent >= line_length)
+                {
+                    par_indent = 0;
+                }            
+            }
+          
+            if (par.size() < line_length)
+            {
+                os << par;
+            }
+            else
+            {
+                string::const_iterator       line_begin = par.begin();
+                const string::const_iterator par_end = par.end();
+
+                bool first_line = true; // of current paragraph!        
+            
+                while (line_begin < par_end)  // paragraph lines
+                {
+                    if (!first_line)
+                    {
+                        // If line starts with space, but second character
+                        // is not space, remove the leading space.
+                        // We don't remove double spaces because those
+                        // might be intentianal.
+                        if ((*line_begin == ' ') &&
+                            ((line_begin + 1 < par_end) &&
+                             (*(line_begin + 1) != ' ')))
+                        {
+                            line_begin += 1;  // line_begin != line_end
+                        }
+                    }
+
+                    // Take care to never increment the iterator past
+                    // the end, since MSVC 8.0 (brokenly), assumes that
+                    // doing that, even if no access happens, is a bug.
+                    unsigned remaining = distance(line_begin, par_end);
+                    string::const_iterator line_end = line_begin + 
+                        ((remaining < line_length) ? remaining : line_length);
+            
+                    // prevent chopped words
+                    // Is line_end between two non-space characters?
+                    if ((*(line_end - 1) != ' ') &&
+                        ((line_end < par_end) && (*line_end != ' ')))
+                    {
+                        // find last ' ' in the second half of the current paragraph line
+                        string::const_iterator last_space =
+                            find(reverse_iterator<string::const_iterator>(line_end),
+                                 reverse_iterator<string::const_iterator>(line_begin),
+                                 ' ')
+                            .base();
+                
+                        if (last_space != line_begin)
+                        {                 
+                            // is last_space within the second half of the 
+                            // current line
+                            if ((unsigned)std::distance(last_space, line_end) < 
+                                (line_length - indent) / 2)
+                            {
+                                line_end = last_space;
+                            }
+                        }                                                
+                    } // prevent chopped words
+             
+                    // write line to stream
+                    copy(line_begin, line_end, ostream_iterator<char>(os));
+              
+                    if (first_line)
+                    {
+                        indent += par_indent;
+                        first_line = false;
+                    }
+
+                    // more lines to follow?
+                    if (line_end != par_end)
+                    {
+                        os << '\n';
+                
+                        for(unsigned pad = indent; pad > 0; --pad)
+                        {
+                            os.put(' ');
+                        }                                                        
+                    }
+              
+                    // next line starts after of this line
+                    line_begin = line_end;              
+                } // paragraph lines
+            }          
+        }                              
+        
+        void format_description(std::ostream& os,
+                                const std::string& desc, 
+                                unsigned first_column_width,
+                                unsigned line_length)
+        {
+            // we need to use one char less per line to work correctly if actual
+            // console has longer lines
+            assert(line_length > 1);
+            if (line_length > 1)
+            {
+                --line_length;
+            }
+
+            // line_length must be larger than first_column_width
+            // this assert may fail due to user error or environment conditions!
+            assert(line_length > first_column_width);
+
+            // Note: can't use 'tokenizer' as name of typedef -- borland
+            // will consider uses of 'tokenizer' below as uses of
+            // boost::tokenizer, not typedef.
+            typedef boost::tokenizer<boost::char_separator<char> > tok;
+          
+            tok paragraphs(
+                desc,
+                char_separator<char>("\n", "", boost::keep_empty_tokens));
+          
+            tok::const_iterator       par_iter = paragraphs.begin();                
+            const tok::const_iterator par_end = paragraphs.end();
+
+            while (par_iter != par_end)  // paragraphs
+            {
+                format_paragraph(os, *par_iter, first_column_width, 
+                                 line_length);
+            
+                ++par_iter;
+            
+                // prepair next line if any
+                if (par_iter != par_end)
+                {
+                    os << '\n';
+              
+                    for(unsigned pad = first_column_width; pad > 0; --pad)
+                    {
+                        os.put(' ');
+                    }                    
+                }            
+            }  // paragraphs
+        }
+    
+        void format_one(std::ostream& os, const option_description& opt, 
+                        unsigned first_column_width, unsigned line_length)
+        {
+            stringstream ss;
+            ss << "  " << opt.format_name() << ' ' << opt.format_parameter();
+            
+            // Don't use ss.rdbuf() since g++ 2.96 is buggy on it.
+            os << ss.str();
+
+            if (!opt.description().empty())
+            {
+                for(unsigned pad = first_column_width - ss.str().size(); 
+                    pad > 0; 
+                    --pad)
+                {
+                    os.put(' ');
+                }
+            
+                format_description(os, opt.description(),
+                                   first_column_width, line_length);
+            }
+        }
+    }
+
+    void 
+    options_description::print(std::ostream& os) const
+    {
+        if (!m_caption.empty())
+            os << m_caption << ":\n";
+
+        /* Find the maximum width of the option column */
+        unsigned width(23);
+        unsigned i; // vc6 has broken for loop scoping
+        for (i = 0; i < m_options.size(); ++i)
+        {
+            const option_description& opt = *m_options[i];
+            stringstream ss;
+            ss << "  " << opt.format_name() << ' ' << opt.format_parameter();
+            width = (max)(width, static_cast<unsigned>(ss.str().size()));            
+        }
+        
+        /* add an additional space to improve readability */
+        ++width;
+            
+        /* The options formatting style is stolen from Subversion. */
+        for (i = 0; i < m_options.size(); ++i)
+        {
+            if (belong_to_group[i])
+                continue;
+
+            const option_description& opt = *m_options[i];
+
+            format_one(os, opt, width, m_line_length);
+
+            os << "\n";
+        }
+
+        for (unsigned j = 0; j < groups.size(); ++j) {            
+            os << "\n" << *groups[j];
+        }
+    }
+
+}}

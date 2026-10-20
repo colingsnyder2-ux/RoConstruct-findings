@@ -1,42 +1,228 @@
-// roc 2007-08 00774ae0  unit: seg_00770000  size: 88 bytes
-// Make this compile to the exact bytes below, then: roc check 2007-08 00774ae0
-//
-// 00774ae0  53                   push ebx
-// 00774ae1  55                   push ebp
-// 00774ae2  56                   push esi
-// 00774ae3  57                   push edi
-// 00774ae4  6a05                 push 5
-// 00774ae6  83ec0c               sub esp, 0xc
-// 00774ae9  8bc4                 mov eax, esp
-// 00774aeb  b9e0bb5b00           mov ecx, 0x5bbbe0
-// 00774af0  8908                 mov dword ptr [eax], ecx
-// 00774af2  33d2                 xor edx, edx
-// 00774af4  895004               mov dword ptr [eax + 4], edx
-// 00774af7  83ec0c               sub esp, 0xc
-// 00774afa  33f6                 xor esi, esi
-// 00774afc  897008               mov dword ptr [eax + 8], esi
-// 00774aff  8bc4                 mov eax, esp
-// 00774b01  bf70e25500           mov edi, 0x55e270
-// 00774b06  8938                 mov dword ptr [eax], edi
-// 00774b08  6848647a00           push 0x7a6448
-// 00774b0d  33db                 xor ebx, ebx
-// 00774b0f  33ed                 xor ebp, ebp
-// 00774b11  895804               mov dword ptr [eax + 4], ebx
-// 00774b14  682c907b00           push 0x7b902c
-// 00774b19  b9a0678c00           mov ecx, 0x8c67a0
-// 00774b1e  896808               mov dword ptr [eax + 8], ebp
-// 00774b21  e88a71e4ff           call 0x5bbcb0
-// 00774b26  68f0bb7700           push 0x77bbf0
-// 00774b2b  e8f3c1ebff           call 0x630d23
-// 00774b30  83c404               add esp, 4
-// 00774b33  5f                   pop edi
-// 00774b34  5e                   pop esi
-// 00774b35  5d                   pop ebp
-// 00774b36  5b                   pop ebx
-// 00774b37  c3                   ret 
-// library rbxgs/v8datamodel\PVInstance.cpp (function ??__E?prop_ControllerType@PVInstance@RBX@@2V?$EnumPropDescriptor@VPVInstance@RBX@@W4ControllerType@Controller@2@@Reflection@2@B@@YAXXZ)
-
 // roc-lang: cpp
 // roc-cl: 50727
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
 // roc-lib: rbxgs v8datamodel/PVInstance.cpp
+
+// Candidate translation unit (score above; library headers required).
+#include "v8datamodel/PVInstance.h"
+#include "v8datamodel/UserController.h"
+#include "v8datamodel/Workspace.h"
+
+namespace RBX
+{
+	const char* sPVInstance = "PVInstance";
+
+	static Reflection::PropDescriptor<PVInstance, G3D::CoordinateFrame> desc_CoordFrame("CoordinateFrame", "Data", NULL, &PVInstance::setPVGridOffsetLegacy, Reflection::PropertyDescriptor::LEGACY); // L23
+	static Reflection::PropDescriptor<PVInstance, bool> prop_ControllerFlagShown("ControllerFlagShown", "Appearance", &PVInstance::getShowControllerFlag, &PVInstance::setShowControllerFlag, Reflection::PropertyDescriptor::STANDARD); // L32
+	const Reflection::EnumPropDescriptor<PVInstance, Controller::ControllerType> PVInstance::prop_ControllerType("Controller", "Behavior", &PVInstance::getControllerType, &PVInstance::setControllerType, Reflection::PropertyDescriptor::STANDARD); // L34
+
+#pragma warning (push)
+#pragma warning (disable : 4355) // warning C4355: 'this' : used in base member initializer list
+	PVInstance::PVInstance(const char* name)
+		: Base(name),
+		  IsControllable(this, &PVInstance::computeIsControllable),
+		  IsTopFlag(this, &PVInstance::computeIsTopFlag),
+		  TopPVController(this, &PVInstance::computeTopPVController),
+		  controllerType(Controller::NO_CONTROLLER),
+		  showControllerFlag(true),
+		  legacyOffset(NULL)
+	{
+	}
+#pragma warning (pop)
+
+	void PVInstance::moveToPoint(G3D::Vector3 point)
+	{
+		Workspace* workspace = Workspace::findWorkspace(this);
+		if (workspace)
+			workspace->moveToPoint(this, point);
+	}
+
+	void PVInstance::clearLegacyOffset()
+	{
+		legacyOffset.reset();
+
+		for (size_t i = 0; i < numChildren(); ++i)
+		{
+			PVInstance* pvChild = queryTypedChild<PVInstance>((int)i);
+			if (pvChild)
+				pvChild->clearLegacyOffset();
+		}
+	}
+
+	void PVInstance::readProperty(const XmlElement* propertyElement, IReferenceBinder& binder)
+	{
+		if (propertyElement->getTag() == "Feature")
+		{
+			const Name* name = NULL;
+
+			bool foundNameAttribute = propertyElement->findAttributeValue(name_name, name);
+			RBXASSERT(foundNameAttribute);
+
+			if (*name == "Part")
+			{
+				readProperties(propertyElement, binder);
+				return;
+			}
+			if (*name == "Item")
+			{
+				readProperties(propertyElement, binder);
+				return;
+			}
+		}
+
+		return Instance::readProperty(propertyElement, binder);
+	}
+
+	PVInstance::~PVInstance()
+	{
+	}
+
+	void PVInstance::onChildControllerChanged()
+	{
+		dirtyAll();
+
+		PVInstance* pvParent = queryTypedParent<PVInstance>();
+		if (pvParent)
+			pvParent->onChildControllerChanged();
+	}
+
+	void PVInstance::onParentControllerChanged()
+	{
+		dirtyAll();
+
+		for (size_t i = 0; i < numChildren(); ++i)
+		{
+			PVInstance* pvChild = queryTypedChild<PVInstance>((int)i);
+			if (pvChild)
+				pvChild->onParentControllerChanged();
+		}
+	}
+
+	void PVInstance::dirtyAll()
+	{
+		TopPVController.setDirty();
+		IsControllable.setDirty();
+		IsTopFlag.setDirty();
+	}
+
+	void PVInstance::onDescendentAdded(Instance* instance)
+	{
+		Instance::onDescendentAdded(instance);
+
+		dirtyAll();
+	}
+
+	void PVInstance::onDescendentRemoving(const boost::shared_ptr<Instance>& instance)
+	{
+		dirtyAll();
+
+		Instance::onDescendentRemoving(instance);
+	}
+
+	bool PVInstance::computeIsControllable() const
+	{
+		for (size_t i = 0; i < numChildren(); ++i)
+		{
+			const IControllable* controllableChild = queryTypedChild<IControllable>((int)i);
+			if (controllableChild)
+			{
+				if (controllableChild->isControllable())
+					return true;
+			}
+		}
+
+		return false;
+	}
+
+	G3D::ReferenceCountedPointer<Controller> PVInstance::computeTopPVController() const
+	{
+		if (!isTopLevelPVInstance())
+		{
+			G3D::ReferenceCountedPointer<RBX::Controller> controller = getTypedParent<PVInstance>()->TopPVController;
+
+			if (controller.notNull())
+			{
+				if (controller->getControllerType() != Controller::NO_CONTROLLER && !controller->isUserController())
+					return controller;
+			}
+		}
+
+		ControllerService* controllerService = ServiceProvider::create<ControllerService>(this);
+		return controllerService ? controllerService->getController(controllerType, this) : NULL;
+	}
+
+	void PVInstance::onChildAdded(Instance* instance)
+	{
+		PVInstance* pvInstance = dynamic_cast<PVInstance*>(instance);
+		if (pvInstance)
+		{
+			pvInstance->onChildControllerChanged();
+			pvInstance->onParentControllerChanged();
+		}
+	}
+
+	void PVInstance::onChildRemoving(Instance* instance)
+	{
+		PVInstance* pvInstance = dynamic_cast<PVInstance*>(instance);
+		if (pvInstance)
+		{
+			pvInstance->onChildControllerChanged();
+			pvInstance->onParentControllerChanged();
+		}
+	}
+
+	void PVInstance::renderCoordinateFrame(Adorn* adorn)
+	{
+		adorn->setObjectToWorldMatrix(getLocation());
+		adorn->axes(G3D::Color3::red(), G3D::Color3::green(), G3D::Color3::blue(), 10.0f);
+	}
+
+	bool PVInstance::computeIsTopFlag() const
+	{
+		if (!IsControllable.getValue() || controllerType == Controller::NO_CONTROLLER)
+			return false;
+
+		if (isTopLevelPVInstance())
+			return true;
+
+		return getTypedParent<PVInstance>()->getTopPVController()->getControllerType() == Controller::NO_CONTROLLER;
+	}
+
+	void PVInstance::setPVGridOffsetLegacy(const G3D::CoordinateFrame& _offset)
+	{
+		RBXASSERT(this->isTopLevelPVInstance());
+
+		if (!legacyOffset)
+		{
+			legacyOffset.reset(new G3D::CoordinateFrame());
+			*legacyOffset = _offset;
+		}
+	}
+
+	void PVInstance::onExtentsChanged() const
+	{
+		const PVInstance* pvParent = queryTypedParent<PVInstance>();
+		if (pvParent)
+			pvParent->onExtentsChanged();
+	}
+
+	void PVInstance::setControllerType(Controller::ControllerType _control)
+	{
+		if (controllerType != _control)
+		{
+			controllerType = _control;
+			onChildControllerChanged();
+			onParentControllerChanged();
+			raisePropertyChanged(prop_ControllerType);
+		}
+	}
+
+	void PVInstance::setShowControllerFlag(bool _showControllerFlag)
+	{
+		if (showControllerFlag != _showControllerFlag)
+		{
+			showControllerFlag = _showControllerFlag;
+			raisePropertyChanged(prop_ControllerFlagShown);
+		}
+	}
+}

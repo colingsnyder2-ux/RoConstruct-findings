@@ -1,67 +1,515 @@
-// roc 2007-08 005a9b10  unit: RBX::VHumanoid::?$SignalDesc  size: 152 bytes
-// Make this compile to the exact bytes below, then: roc check 2007-08 005a9b10
-//
-// 005a9b10  83ec08               sub esp, 8
-// 005a9b13  53                   push ebx
-// 005a9b14  55                   push ebp
-// 005a9b15  56                   push esi
-// 005a9b16  57                   push edi
-// 005a9b17  8bf9                 mov edi, ecx
-// 005a9b19  8b4768               mov eax, dword ptr [edi + 0x68]
-// 005a9b1c  8b18                 mov ebx, dword ptr [eax]
-// 005a9b1e  8d7764               lea esi, [edi + 0x64]
-// 005a9b21  895c2414             mov dword ptr [esp + 0x14], ebx
-// 005a9b25  89742410             mov dword ptr [esp + 0x10], esi
-// 005a9b29  eb0d                 jmp 0x5a9b38
-// 005a9b2b  eb03                 jmp 0x5a9b30
-// 005a9b2d  8d4900               lea ecx, [ecx]
-// 005a9b30  8b742410             mov esi, dword ptr [esp + 0x10]
-// 005a9b34  8b5c2414             mov ebx, dword ptr [esp + 0x14]
-// 005a9b38  85f6                 test esi, esi
-// 005a9b3a  8b6f68               mov ebp, dword ptr [edi + 0x68]
-// 005a9b3d  8d4764               lea eax, [edi + 0x64]
-// 005a9b40  7404                 je 0x5a9b46
-// 005a9b42  3bf0                 cmp esi, eax
-// 005a9b44  7406                 je 0x5a9b4c
-// 005a9b46  ff15d8e67700         call dword ptr [0x77e6d8]
-// 005a9b4c  3bdd                 cmp ebx, ebp
-// 005a9b4e  7450                 je 0x5a9ba0
-// 005a9b50  85f6                 test esi, esi
-// 005a9b52  7506                 jne 0x5a9b5a
-// 005a9b54  ff15d8e67700         call dword ptr [0x77e6d8]
-// 005a9b5a  3b5e04               cmp ebx, dword ptr [esi + 4]
-// 005a9b5d  7506                 jne 0x5a9b65
-// 005a9b5f  ff15d8e67700         call dword ptr [0x77e6d8]
-// 005a9b65  8b730c               mov esi, dword ptr [ebx + 0xc]
-// 005a9b68  8d4c2410             lea ecx, [esp + 0x10]
-// 005a9b6c  e8cfd60700           call 0x627240
-// 005a9b71  8b4e04               mov ecx, dword ptr [esi + 4]
-// 005a9b74  8b11                 mov edx, dword ptr [ecx]
-// 005a9b76  8b4204               mov eax, dword ptr [edx + 4]
-// 005a9b79  ffd0                 call eax
-// 005a9b7b  83f808               cmp eax, 8
-// 005a9b7e  75b0                 jne 0x5a9b30
-// 005a9b80  8b16                 mov edx, dword ptr [esi]
-// 005a9b82  8b421c               mov eax, dword ptr [edx + 0x1c]
-// 005a9b85  8bce                 mov ecx, esi
-// 005a9b87  ffd0                 call eax
-// 005a9b89  84c0                 test al, al
-// 005a9b8b  74a3                 je 0x5a9b30
-// 005a9b8d  56                   push esi
-// 005a9b8e  8d4f18               lea ecx, [edi + 0x18]
-// 005a9b91  c6475201             mov byte ptr [edi + 0x52], 1
-// 005a9b95  e826feffff           call 0x5a99c0
-// 005a9b9a  c6475200             mov byte ptr [edi + 0x52], 0
-// 005a9b9e  eb90                 jmp 0x5a9b30
-// 005a9ba0  5f                   pop edi
-// 005a9ba1  5e                   pop esi
-// 005a9ba2  5d                   pop ebp
-// 005a9ba3  5b                   pop ebx
-// 005a9ba4  83c408               add esp, 8
-// 005a9ba7  c3                   ret 
-// library openrbx-client/App\v8world\World.cpp (function ?doBreakJoints@World@RBX@@AAEXXZ)
-
 // roc-lang: cpp
 // roc-cl: 50727
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
 // roc-lib: openrbx-client-dll App/v8world/World.cpp
+
+// Candidate translation unit (score above; library headers required).
+#include "v8world/World.h"
+
+#include "decomp.h"
+#include "util/standardout.h"
+#include "v8kernel/Constants.h"
+#include "v8kernel/Kernel.h"
+#include "v8world/Assembly2.h"
+#include "v8world/Clump2.h"
+#include "v8world/ClumpStage2.h"
+#include "v8world/Contact.h"
+#include "v8world/Joint.h"
+#include "v8world/JointBuilder.h"
+#include "v8world/JointStage.h"
+#include "v8world/SimJobStage.h"
+#include "v8world/SleepStage2.h"
+#include "v8world/SpatialHash.h"
+
+#include <G3D/System.h>
+#include <G3D/g3dmath.h>
+#include <algorithm>
+#include <cmath>
+
+namespace RBX {
+
+bool World::disableEnvironmentalThrottle;
+
+// FUNCTION: WEBSERVICE 0x100cef80
+Kernel* World::getKernel() const
+{
+	return jointStage->getKernel();
+}
+
+// FUNCTION: WEBSERVICE 0x100cef90
+int World::getNumBodies() const
+{
+	return getKernel()->numBodies();
+}
+
+// FUNCTION: WEBSERVICE 0x100cefb0
+int World::getNumPoints() const
+{
+	return getKernel()->numPoints();
+}
+
+// FUNCTION: WEBSERVICE 0x100cefd0
+int World::getNumConstraints() const
+{
+	return getKernel()->numConnectors();
+}
+
+// FUNCTION: WEBSERVICE 0x100ceff0
+int World::getMetric(IWorldStage::MetricType metricType) const
+{
+	return jointStage->getMetric(metricType);
+}
+
+// FUNCTION: WEBSERVICE 0x100cf000
+int World::getNumHashNodes() const
+{
+	return contactManager->getSpatialHash()->getNodesOut();
+}
+
+// FUNCTION: WEBSERVICE 0x100cf010
+int World::getMaxBucketSize() const
+{
+	return contactManager->getSpatialHash()->getMaxBucket();
+}
+
+// FUNCTION: WEBSERVICE 0x100cf020
+void World::onPrimitiveContactParametersChanged(Primitive* p)
+{
+	Contact* c = p->getFirstContact();
+
+	while (c != NULL) {
+		c->onPrimitiveContactParametersChanged();
+		c = p->getNextContact(c);
+	}
+}
+
+// FUNCTION: WEBSERVICE 0x100cf050
+void World::onPrimitiveExtentsChanged(Primitive* p)
+{
+	contactManager->onPrimitiveExtentsChanged(p);
+}
+
+// FUNCTION: WEBSERVICE 0x100cf060
+void World::onAssemblyExtentsChanged(Assembly* a)
+{
+	PrimIterator pEnd = a->assemblyPrimEnd();
+
+	for (PrimIterator it = a->assemblyPrimBegin(); it != pEnd; ++it) {
+		contactManager->onPrimitiveExtentsChanged(*it);
+	}
+}
+
+// FUNCTION: WEBSERVICE 0x100cf0c0
+void World::onPrimitiveGeometryTypeChanged(Primitive* p)
+{
+	contactManager->onPrimitiveGeometryTypeChanged(p);
+}
+
+// FUNCTION: WEBSERVICE 0x100cf0d0
+void World::onJointPrimitiveNulling(Joint* j, Primitive* p)
+{
+	jointStage->onJointPrimitiveNulling(j, p);
+}
+
+// FUNCTION: WEBSERVICE 0x100cf0e0
+void World::onJointPrimitiveSet(Joint* j, Primitive* p)
+{
+	jointStage->onJointPrimitiveSet(j, p);
+}
+
+// FUNCTION: WEBSERVICE 0x100cf0f0
+void World::insertContact(Contact* c)
+{
+	jointStage->onEdgeAdded(c);
+	numContacts++;
+}
+
+// FUNCTION: WEBSERVICE 0x100cf110
+void World::destroyContact(Contact* c)
+{
+	jointStage->onEdgeRemoving(c);
+	delete c;
+	numContacts--;
+}
+
+ClumpStage* World::getClumpStage()
+{
+	return static_cast<ClumpStage*>(jointStage->findStage(IStage::CLUMP_STAGE));
+}
+
+SleepStage* World::getSleepStage()
+{
+	return static_cast<SleepStage*>(jointStage->findStage(IStage::SLEEP_STAGE));
+}
+
+// FUNCTION: WEBSERVICE 0x100cf140
+SimJobStage& World::getSimJobStage()
+{
+	return *static_cast<SimJobStage*>(jointStage->findStage(IStage::SIMJOB_STAGE));
+}
+
+// FUNCTION: WEBSERVICE 0x100cf170
+const SleepStage* World::getSleepStage() const
+{
+	return static_cast<const SleepStage*>(jointStage->findStage(IStage::SLEEP_STAGE));
+}
+
+// FUNCTION: WEBSERVICE 0x100cf1a0
+void World::ticklePrimitive(Primitive* p, bool recursive)
+{
+	Assembly* assembly = p->getAssembly();
+
+	if (assembly != NULL) {
+		getSleepStage()->onWakeUpRequest(assembly, recursive);
+	}
+}
+
+// FUNCTION: WEBSERVICE 0x100cf1f0
+void World::onPrimitiveCanSleepChanged(Primitive* p)
+{
+	getClumpStage()->onPrimitiveCanSleepChanged(p);
+}
+
+// FUNCTION: WEBSERVICE 0x100cf230
+void World::onPrimitiveAddedAnchor(Primitive* p)
+{
+	getClumpStage()->onPrimitiveAddedAnchor(p);
+}
+
+// FUNCTION: WEBSERVICE 0x100cf270
+void World::onPrimitiveRemovedAnchor(Primitive* p)
+{
+	getClumpStage()->onPrimitiveRemovedAnchor(p);
+}
+
+// FUNCTION: WEBSERVICE 0x100cf2b0 FOLDED
+void World::onPrimitiveCanCollideChanged(Primitive* p)
+{
+	getClumpStage()->onPrimitiveCanCollideChanged(p);
+}
+
+// FUNCTION: WEBSERVICE 0x100cf2b0 FOLDED
+void World::onMotorAngleChanged(MotorJoint* motorJoint)
+{
+	getClumpStage()->onMotorAngleChanged(motorJoint);
+}
+
+// FUNCTION: WEBSERVICE 0x100cf2f0
+void World::update()
+{
+	getClumpStage()->process();
+}
+
+// FUNCTION: WEBSERVICE 0x100cf320
+void World::addedBodyForce()
+{
+	getSleepStage()->addedBodyForce();
+}
+
+// FUNCTION: WEBSERVICE 0x100cf510
+void World::onPrimitiveTouched(Primitive* touchP, Primitive* touchOtherP)
+{
+	touch.append(touchP);
+	touchOther.append(touchOtherP);
+}
+
+// FUNCTION: WEBSERVICE 0x100cf540
+void World::computeFallen(G3D::Array<Primitive*>& fallen) const
+{
+	const SleepStage::AssemblySet& awake = getSleepStage()->getAwakeAssemblies();
+
+	for (SleepStage::CAssemblySetIt cIt = awake.begin(); cIt != awake.end(); cIt++) {
+
+		Assembly* assembly = *cIt;
+
+		if (assembly->getAssemblyPrimitive()->getCoordinateFrame().translation.y < -500.0f) {
+
+			PrimIterator pEnd = assembly->assemblyPrimEnd();
+
+			for (PrimIterator it = assembly->assemblyPrimBegin(); it != pEnd; ++it) {
+
+				Primitive* p = *it;
+
+				if (p->getCoordinateFrame().translation.y < -500.0f) {
+					fallen.append(p);
+				}
+			}
+		}
+	}
+}
+
+// FUNCTION: WEBSERVICE 0x100cf6b0
+void World::insertPrimitive(Primitive* p)
+{
+	primitives.fastAppend(p);
+	p->world = this;
+
+	jointStage->onPrimitiveAdded(p);
+	contactManager->onPrimitiveAdded(p);
+}
+
+static bool inIgnoreGroup(std::set<Primitive*>* ignoreGroup, Primitive* p)
+{
+	return ignoreGroup != NULL && ignoreGroup->find(p) != ignoreGroup->end();
+}
+
+inline void World::destroyJoint(Joint* joint)
+{
+	inJointNotification = true;
+	Notifier<World, AutoDestroy>::raise(AutoDestroy(joint));
+	inJointNotification = false;
+}
+
+inline void World::removeFromBreakable(Joint* j)
+{
+	if (j->isBreakable()) {
+		breakableJoints.erase(j);
+	}
+}
+
+// FUNCTION: WEBSERVICE 0x100cfaf0
+void World::doBreakJoints()
+{
+	std::set<Joint*>::iterator it = breakableJoints.begin();
+
+	while (it != breakableJoints.end()) {
+
+		Joint* joint = *it;
+		++it;
+
+		if (joint->inKernel() && joint->isBroken()) {
+			destroyJoint(joint);
+		}
+	}
+}
+
+// FUNCTION: WEBSERVICE 0x100cfcd0
+float World::step(float desiredInterval)
+{
+	Profiling::Mark mark(*profilingWorldStep, true);
+
+	update();
+
+	double startTime = G3D::System::getTick();
+
+	bool throttling = false;
+
+	int steps = std::max(1, G3D::iRound((float) floor(Constants::worldStepsPerSec() * desiredInterval)));
+
+	for (int j = 0; j < steps; j++) {
+
+		int uiStepId = worldStepId / Constants::worldStepsPerUiStep();
+
+		if (worldStepId % Constants::worldStepsPerUiStep() == 0) {
+
+			Profiling::Mark mark(*profilingUiStep, false);
+
+			doBreakJoints();
+
+			touch.resize(0, false);
+			touchOther.resize(0, false);
+
+			inStepCode = true;
+
+			getClumpStage()->stepUi(uiStepId);
+
+			getSimJobStage().notifyMovingPrimitives();
+
+			inStepCode = false;
+		}
+
+		{
+			inStepCode = true;
+
+			Profiling::Mark mark(*profilingBroadphase, false);
+
+			contactManager->stepWorld();
+
+			inStepCode = false;
+		}
+
+		inStepCode = true;
+
+		jointStage->stepWorld(worldStepId, uiStepId, throttling);
+
+		inStepCode = false;
+
+		throttling = !disableEnvironmentalThrottle && canThrottle &&
+					 G3D::System::getTick() > startTime + Constants::worldDt() * (j + 1);
+
+		worldStepId++;
+	}
+
+	return Constants::worldDt() * steps;
+}
+
+// FUNCTION: WEBSERVICE 0x100d0020
+void World::insertJoint(Joint* j)
+{
+	Primitive* p0 = j->getPrimitive(0);
+	Primitive* p1 = j->getPrimitive(1);
+
+	if (p0 != NULL && p1 != NULL) {
+		Joint* existing = Primitive::getJoint(p0, p1);
+
+		if (existing != NULL) {
+			destroyJoint(existing);
+		}
+	}
+
+	jointStage->onEdgeAdded(j);
+
+	numJoints++;
+
+	if (j->isBreakable()) {
+		breakableJoints.insert(j);
+	}
+}
+
+// FUNCTION: WEBSERVICE 0x100d0090
+void World::destroyJoints(Primitive* p, std::set<Primitive*>* ignoreGroup)
+{
+	Joint* j = p->getFirstJoint();
+
+	while (j != NULL) {
+		Joint* joint = j;
+		j = p->getNextJoint(j);
+
+		if (Joint::isAutoJoinJoint(joint)) {
+			Primitive* other = joint->otherPrimitive(p);
+
+			if (!inIgnoreGroup(ignoreGroup, other)) {
+				destroyJoint(joint);
+			}
+		}
+	}
+}
+
+// FUNCTION: WEBSERVICE 0x100d0140
+void World::destroyJoints(Primitive* p)
+{
+	destroyJoints(p, NULL);
+}
+
+// FUNCTION: WEBSERVICE 0x100d0150
+void World::createJoints(Primitive* p, std::set<Primitive*>* ignoreGroup)
+{
+	numLinkCalls++;
+
+	tempPrimitives.resize(0, false);
+
+	contactManager->getPrimitivesTouchingExtents(p->getFastFuzzyExtents(), p, tempPrimitives);
+
+	for (int i = 0; i < tempPrimitives.size(); i++) {
+
+		Primitive* other = tempPrimitives[i];
+
+		if (!inIgnoreGroup(ignoreGroup, other) && Primitive::getJoint(p, other) == NULL) {
+
+			Joint* joint = JointBuilder::canJoin(p, other);
+
+			if (joint != NULL) {
+
+				insertJoint(joint);
+
+				inJointNotification = true;
+				Notifier<World, AutoJoin>::raise(AutoJoin(joint));
+				inJointNotification = false;
+			}
+		}
+	}
+}
+
+// FUNCTION: WEBSERVICE 0x100d0250
+void World::createJoints(Primitive* p)
+{
+	createJoints(p, NULL);
+}
+
+// FUNCTION: WEBSERVICE 0x100d0260
+World::~World()
+{
+	delete jointStage;
+
+	delete contactManager;
+}
+
+// FUNCTION: WEBSERVICE 0x100d0420
+void World::removeJoint(Joint* j)
+{
+	removeFromBreakable(j);
+
+	jointStage->onEdgeRemoving(j);
+
+	numJoints--;
+}
+
+// FUNCTION: WEBSERVICE 0x100d0460
+void World::joinAll()
+{
+	for (int i = 0; i < getNumPrimitives(); i++) {
+		createJoints(primitives[i]);
+	}
+}
+
+// FUNCTION: WEBSERVICE 0x100d0490
+void World::removePrimitive(Primitive* p)
+{
+	destroyJoints(p);
+
+	contactManager->onPrimitiveRemoved(p);
+
+	jointStage->onPrimitiveRemoving(p);
+
+	primitives.fastRemove(p);
+
+	p->world = NULL;
+}
+
+// FUNCTION: WEBSERVICE 0x100d04f0
+World::World()
+	: contactManager(new ContactManager(this)), jointStage(new JointStage(NULL, this)), canThrottle(true),
+	  inStepCode(false), inJointNotification(false), worldStepId(0), numJoints(0), numContacts(0), numLinkCalls(0),
+	  profilingWorldStep(new Profiling::CodeProfiler("World Step")),
+	  profilingUiStep(new Profiling::CodeProfiler("UI Step")),
+	  profilingBroadphase(new Profiling::CodeProfiler("Broadphase"))
+{
+	profilingBroadphase->parent = profilingWorldStep.get();
+	profilingUiStep->parent = profilingWorldStep.get();
+
+	getSleepStage()->profilingCollision->parent = profilingWorldStep.get();
+	getSleepStage()->profilingWake->parent = profilingWorldStep.get();
+	getSleepStage()->profilingSleep->parent = profilingWorldStep.get();
+
+	getKernel()->profilingKernel->parent = profilingWorldStep.get();
+}
+
+// FUNCTION: WEBSERVICE 0x100d07f0
+void World::destroyJointsToWorld(const G3D::Array<Primitive*>& primitives)
+{
+	std::set<Primitive*> ignore;
+
+	for (int i = 0; i < primitives.size(); i++) {
+		ignore.insert(primitives[i]);
+	}
+
+	for (int i = 0; i < primitives.size(); i++) {
+		destroyJoints(primitives[i], &ignore);
+	}
+}
+
+// FUNCTION: WEBSERVICE 0x100d08d0
+void World::createJointsToWorld(const G3D::Array<Primitive*>& primitives)
+{
+	std::set<Primitive*> ignore;
+
+	for (int i = 0; i < primitives.size(); i++) {
+		ignore.insert(primitives[i]);
+	}
+
+	for (int i = 0; i < primitives.size(); i++) {
+		createJoints(primitives[i], &ignore);
+	}
+}
+
+} // namespace RBX

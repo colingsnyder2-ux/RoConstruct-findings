@@ -1,116 +1,453 @@
-// roc 2007-08 005dfac0  unit: RBX::VMotorFeature::?$FactoryProduct  size: 294 bytes
-// Make this compile to the exact bytes below, then: roc check 2007-08 005dfac0
-//
-// 005dfac0  51                   push ecx
-// 005dfac1  53                   push ebx
-// 005dfac2  55                   push ebp
-// 005dfac3  56                   push esi
-// 005dfac4  57                   push edi
-// 005dfac5  8bf1                 mov esi, ecx
-// 005dfac7  33ed                 xor ebp, ebp
-// 005dfac9  8da42400000000       lea esp, [esp]
-// 005dfad0  8b4e0c               mov ecx, dword ptr [esi + 0xc]
-// 005dfad3  85c9                 test ecx, ecx
-// 005dfad5  740c                 je 0x5dfae3
-// 005dfad7  8b4610               mov eax, dword ptr [esi + 0x10]
-// 005dfada  2bc1                 sub eax, ecx
-// 005dfadc  c1f802               sar eax, 2
-// 005dfadf  3be8                 cmp ebp, eax
-// 005dfae1  720a                 jb 0x5dfaed
-// 005dfae3  8b3dd8e67700         mov edi, dword ptr [0x77e6d8]
-// 005dfae9  ffd7                 call edi
-// 005dfaeb  eb06                 jmp 0x5dfaf3
-// 005dfaed  8b3dd8e67700         mov edi, dword ptr [0x77e6d8]
-// 005dfaf3  8b460c               mov eax, dword ptr [esi + 0xc]
-// 005dfaf6  8d1cad00000000       lea ebx, [ebp*4]
-// 005dfafd  833c0300             cmp dword ptr [ebx + eax], 0
-// 005dfb01  0f8493000000         je 0x5dfb9a
-// 005dfb07  8b4e0c               mov ecx, dword ptr [esi + 0xc]
-// 005dfb0a  85c9                 test ecx, ecx
-// 005dfb0c  740c                 je 0x5dfb1a
-// 005dfb0e  8b4610               mov eax, dword ptr [esi + 0x10]
-// 005dfb11  2bc1                 sub eax, ecx
-// 005dfb13  c1f802               sar eax, 2
-// 005dfb16  3be8                 cmp ebp, eax
-// 005dfb18  7202                 jb 0x5dfb1c
-// 005dfb1a  ffd7                 call edi
-// 005dfb1c  8b4e0c               mov ecx, dword ptr [esi + 0xc]
-// 005dfb1f  833c0b00             cmp dword ptr [ebx + ecx], 0
-// 005dfb23  7475                 je 0x5dfb9a
-// 005dfb25  85c9                 test ecx, ecx
-// 005dfb27  740c                 je 0x5dfb35
-// 005dfb29  8b4610               mov eax, dword ptr [esi + 0x10]
-// 005dfb2c  2bc1                 sub eax, ecx
-// 005dfb2e  c1f802               sar eax, 2
-// 005dfb31  3be8                 cmp ebp, eax
-// 005dfb33  7202                 jb 0x5dfb37
-// 005dfb35  ffd7                 call edi
-// 005dfb37  8b560c               mov edx, dword ptr [esi + 0xc]
-// 005dfb3a  8b0413               mov eax, dword ptr [ebx + edx]
-// 005dfb3d  8bca                 mov ecx, edx
-// 005dfb3f  85c9                 test ecx, ecx
-// 005dfb41  89442410             mov dword ptr [esp + 0x10], eax
-// 005dfb45  740c                 je 0x5dfb53
-// 005dfb47  8b4610               mov eax, dword ptr [esi + 0x10]
-// 005dfb4a  2bc1                 sub eax, ecx
-// 005dfb4c  c1f802               sar eax, 2
-// 005dfb4f  3be8                 cmp ebp, eax
-// 005dfb51  7202                 jb 0x5dfb55
-// 005dfb53  ffd7                 call edi
-// 005dfb55  8b7e0c               mov edi, dword ptr [esi + 0xc]
-// 005dfb58  8b4e0c               mov ecx, dword ptr [esi + 0xc]
-// 005dfb5b  03fb                 add edi, ebx
-// 005dfb5d  85c9                 test ecx, ecx
-// 005dfb5f  740c                 je 0x5dfb6d
-// 005dfb61  8b4610               mov eax, dword ptr [esi + 0x10]
-// 005dfb64  2bc1                 sub eax, ecx
-// 005dfb66  c1f802               sar eax, 2
-// 005dfb69  3be8                 cmp ebp, eax
-// 005dfb6b  7206                 jb 0x5dfb73
-// 005dfb6d  ff15d8e67700         call dword ptr [0x77e6d8]
-// 005dfb73  8b0f                 mov ecx, dword ptr [edi]
-// 005dfb75  8b4104               mov eax, dword ptr [ecx + 4]
-// 005dfb78  8b4c2410             mov ecx, dword ptr [esp + 0x10]
-// 005dfb7c  8b560c               mov edx, dword ptr [esi + 0xc]
-// 005dfb7f  51                   push ecx
-// 005dfb80  890413               mov dword ptr [ebx + edx], eax
-// 005dfb83  e8da000500           call 0x62fc62
-// 005dfb88  8b3dd8e67700         mov edi, dword ptr [0x77e6d8]
-// 005dfb8e  83c404               add esp, 4
-// 005dfb91  83461cff             add dword ptr [esi + 0x1c], -1
-// 005dfb95  e96dffffff           jmp 0x5dfb07
-// 005dfb9a  83c501               add ebp, 1
-// 005dfb9d  81fd00000100         cmp ebp, 0x10000
-// 005dfba3  0f8c27ffffff         jl 0x5dfad0
-// 005dfba9  33ff                 xor edi, edi
-// 005dfbab  397e18               cmp dword ptr [esi + 0x18], edi
-// 005dfbae  7417                 je 0x5dfbc7
-// 005dfbb0  8b4618               mov eax, dword ptr [esi + 0x18]
-// 005dfbb3  8b5004               mov edx, dword ptr [eax + 4]
-// 005dfbb6  50                   push eax
-// 005dfbb7  895618               mov dword ptr [esi + 0x18], edx
-// 005dfbba  e8a3000500           call 0x62fc62
-// 005dfbbf  83c404               add esp, 4
-// 005dfbc2  397e18               cmp dword ptr [esi + 0x18], edi
-// 005dfbc5  75e9                 jne 0x5dfbb0
-// 005dfbc7  8b460c               mov eax, dword ptr [esi + 0xc]
-// 005dfbca  3bc7                 cmp eax, edi
-// 005dfbcc  7409                 je 0x5dfbd7
-// 005dfbce  50                   push eax
-// 005dfbcf  e88e000500           call 0x62fc62
-// 005dfbd4  83c404               add esp, 4
-// 005dfbd7  897e0c               mov dword ptr [esi + 0xc], edi
-// 005dfbda  897e10               mov dword ptr [esi + 0x10], edi
-// 005dfbdd  897e14               mov dword ptr [esi + 0x14], edi
-// 005dfbe0  5f                   pop edi
-// 005dfbe1  5e                   pop esi
-// 005dfbe2  5d                   pop ebp
-// 005dfbe3  5b                   pop ebx
-// 005dfbe4  59                   pop ecx
-// 005dfbe5  c3                   ret 
-// library openrbx-client/App\v8world\SpatialHash.cpp (function ??1SpatialHash@RBX@@QAE@XZ)
-
 // roc-lang: cpp
 // roc-cl: 50727
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
 // roc-lib: openrbx-client App/v8world/SpatialHash.cpp
+
+// Candidate translation unit (score above; library headers required).
+#include "v8world/SpatialHash.h"
+
+#include "decomp.h"
+#include "v8world/Assembly2.h"
+#include "v8world/Primitive.h"
+#include "v8world/World.h"
+
+#include <G3D/AABox.h>
+#include <G3D/CollisionDetection.h>
+#include <G3D/Ray.h>
+#include <algorithm>
+#include <cstdlib>
+
+namespace RBX {
+
+// FUNCTION: WEBSERVICE 0x101233c0
+Vector3int32 SpatialHash::realToHashGrid(const Vector3& realPoint)
+{
+	Vector3 gridPoint = realPoint * hashGridRecip();
+
+	return Vector3int32::floor(gridPoint);
+}
+
+// FUNCTION: WEBSERVICE 0x10123410
+Extents SpatialHash::hashGridToRealExtents(const Vector3& hashGrid)
+{
+	return Extents(
+		hashGrid * hashGridSize(),
+		Vector3(hashGrid.x + 1.0f, hashGrid.y + 1.0f, hashGrid.z + 1.0f) * hashGridSize()
+	);
+}
+
+// FUNCTION: WEBSERVICE 0x10123460
+void SpatialHash::computeMinMax(const Extents& extents, Vector3int32& min, Vector3int32& max)
+{
+	min = realToHashGrid(extents.min());
+	max = realToHashGrid(extents.max());
+}
+
+void SpatialHash::removeNodeFromPrimitive(SpatialNode* remove)
+{
+	SpatialNode* next = remove->nextPrimitiveLink;
+	SpatialNode* prev = remove->prevPrimitiveLink;
+
+	if (next != NULL) {
+		next->prevPrimitiveLink = prev;
+	}
+
+	if (prev != NULL) {
+		prev->nextPrimitiveLink = next;
+	}
+	else {
+		remove->primitive->spatialNodes = next;
+	}
+}
+
+// FUNCTION: WEBSERVICE 0x10123500
+bool SpatialHash::getNextGrid(Vector3int32& grid, const G3D::Ray& unitRay, float maxDistance)
+{
+	Vector3int32 low;
+	Vector3int32 high;
+
+	for (int a = 0; a < 3; a++) {
+		low[a] = unitRay.direction[a] < 0.0f ? -1 : 0;
+		high[a] = unitRay.direction[a] > 0.0f ? 1 : 0;
+	}
+
+	Vector3 gridF = grid.toVector3();
+
+	float maxCheck = maxDistance + 2.0f * hashGridSize();
+
+	float maxDistanceSquared = maxCheck * maxCheck;
+
+	for (int nz = 1; nz <= 3; nz++) {
+		for (int i = low.x; i <= high.x; i++) {
+			for (int j = low.y; j <= high.y; j++) {
+				for (int k = low.z; k <= high.z; k++) {
+					if (abs(i) + abs(j) + abs(k) == nz) {
+						Vector3 offset((float) i, (float) j, (float) k);
+
+						Extents box = hashGridToRealExtents(gridF + offset);
+
+						G3D::AABox aaBox(box.min(), box.max());
+
+						Vector3 location;
+
+						if (G3D::CollisionDetection::collisionLocationForMovingPointFixedAABox(
+								unitRay.origin,
+								unitRay.direction,
+								aaBox,
+								location
+							)) {
+							if ((location - unitRay.origin).squaredLength() < maxDistanceSquared) {
+								grid = Vector3int32::floor(gridF + offset);
+
+								return true;
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+
+	return false;
+}
+
+// FUNCTION: WEBSERVICE 0x10123840
+void SpatialHash::removeNodeFromHash(SpatialNode* remove)
+{
+	SpatialNode** link = &nodes[remove->hashId];
+
+	while (*link != remove) {
+		link = &(*link)->nextHashLink;
+	}
+	*link = remove->nextHashLink;
+}
+
+int SpatialHash::getHash(const Vector3int32& grid)
+{
+	return (grid.x * -2979 ^ grid.y * 16543 ^ grid.z * -73) & (numBuckets() - 1);
+}
+
+// FUNCTION: WEBSERVICE 0x10123890
+SpatialNode* SpatialHash::findNode(Primitive* p, const Vector3int32& grid)
+{
+	int hash = getHash(grid);
+
+	SpatialNode* node = nodes[hash];
+
+	while (node->primitive != p || node->gridId != grid) {
+		node = node->nextHashLink;
+	}
+
+	return node;
+}
+
+// FUNCTION: WEBSERVICE 0x10123910
+bool SpatialHash::shareCommonGrid(Primitive* me, Primitive* other)
+{
+	for (SpatialNode* node = me->spatialNodes; node != NULL; node = node->nextPrimitiveLink) {
+		for (SpatialNode* hashNode = nodes[node->hashId]; hashNode != NULL; hashNode = hashNode->nextHashLink) {
+			if (hashNode->primitive == other && hashNode->gridId == node->gridId) {
+				return true;
+			}
+		}
+	}
+
+	return false;
+}
+
+void SpatialHash::returnNode(SpatialNode* node)
+{
+	node->nextHashLink = extraNodes;
+	nodesOut--;
+	extraNodes = node;
+}
+
+// FUNCTION: WEBSERVICE 0x10123990
+void SpatialHash::destroyNode(SpatialNode* destroy)
+{
+	removeNodeFromPrimitive(destroy);
+
+	removeNodeFromHash(destroy);
+
+	Vector3int32 destroyGrid = destroy->gridId;
+
+	SpatialNode* node = nodes[destroy->hashId];
+
+	while (node != NULL) {
+		if (node->gridId == destroyGrid) {
+			Primitive* me = destroy->primitive;
+			Primitive* other = node->primitive;
+
+			if (Primitive::getContact(me, other) != NULL) {
+				if (!shareCommonGrid(me, other)) {
+					contactManager->onReleasePair(me, other);
+				}
+			}
+		}
+
+		node = node->nextHashLink;
+	}
+
+	returnNode(destroy);
+}
+
+SpatialNode* SpatialHash::newNode()
+{
+	nodesOut++;
+
+	if (extraNodes != NULL) {
+		SpatialNode* node = extraNodes;
+
+		extraNodes = node->nextHashLink;
+
+		return node;
+	}
+
+	return new SpatialNode();
+}
+
+void SpatialHash::insertNodeToPrimitive(SpatialNode* node, Primitive* p, const Vector3int32& grid, int hash)
+{
+	node->primitive = p;
+	node->gridId = grid;
+	node->hashId = hash;
+
+	SpatialNode* first = p->spatialNodes;
+
+	p->spatialNodes = node;
+
+	node->nextPrimitiveLink = first;
+	node->prevPrimitiveLink = NULL;
+
+	if (first != NULL) {
+		first->prevPrimitiveLink = node;
+	}
+}
+
+// FUNCTION: WEBSERVICE 0x10123a70
+void SpatialHash::addNode(Primitive* p, const Vector3int32& grid)
+{
+	int hash = getHash(grid);
+
+	SpatialNode* node = newNode();
+
+	insertNodeToPrimitive(node, p, grid, hash);
+
+	SpatialNode* other = nodes[hash];
+
+	node->nextHashLink = other;
+	nodes[hash] = node;
+
+	int numNodes = 1;
+
+	while (other != NULL) {
+		Primitive* otherPrimitive = other->primitive;
+
+		numNodes++;
+
+		if (otherPrimitive != p && other->gridId == grid) {
+			if (Primitive::getContact(p, otherPrimitive) == NULL) {
+				contactManager->onNewPair(p, otherPrimitive);
+			}
+		}
+
+		other = other->nextHashLink;
+	}
+
+	maxBucket = std::max(maxBucket, numNodes);
+}
+
+// FUNCTION: WEBSERVICE 0x10123bd0
+void SpatialHash::onPrimitiveAdded(Primitive* p)
+{
+	Vector3int32 newMin;
+	Vector3int32 newMax;
+
+	const Extents& extents = p->getFastFuzzyExtents();
+
+	computeMinMax(extents, newMin, newMax);
+
+	p->oldSpatialMin = newMin;
+	p->oldSpatialMax = newMax;
+
+	for (int i = newMin.x; i <= newMax.x; i++) {
+		for (int j = newMin.y; j <= newMax.y; j++) {
+			for (int k = newMin.z; k <= newMax.z; k++) {
+				addNode(p, Vector3int32(i, j, k));
+			}
+		}
+	}
+}
+
+// FUNCTION: WEBSERVICE 0x10123cc0
+void SpatialHash::changeMinMax(Primitive* p, const Extents& change, const Extents& oldBox, const Extents& newBox)
+{
+	Vector3int32 min = Vector3int32::floor(change.min());
+	Vector3int32 max = Vector3int32::floor(change.max());
+
+	for (int i = min.x; i <= max.x; i++) {
+		for (int j = min.y; j <= max.y; j++) {
+			for (int k = min.z; k <= max.z; k++) {
+				bool inNew = newBox.contains(Vector3((float) i, (float) j, (float) k));
+				bool inOld = oldBox.contains(Vector3((float) i, (float) j, (float) k));
+
+				if (inNew) {
+					if (!inOld) {
+						addNode(p, Vector3int32(i, j, k));
+					}
+				}
+				else if (inOld) {
+					SpatialNode* node = findNode(p, Vector3int32(i, j, k));
+
+					destroyNode(node);
+				}
+			}
+		}
+	}
+}
+
+// FUNCTION: WEBSERVICE 0x10123e20
+void SpatialHash::primitiveExtentsChanged(Primitive* p)
+{
+	Vector3int32 newMin;
+	Vector3int32 newMax;
+
+	const Extents& extents = p->getFastFuzzyExtents();
+
+	computeMinMax(extents, newMin, newMax);
+
+	if (newMin != p->oldSpatialMin || newMax != p->oldSpatialMax) {
+		Extents newBox(newMin, newMax);
+		Extents oldBox(p->oldSpatialMin, p->oldSpatialMax);
+
+		if (newBox.overlapsOrTouches(oldBox)) {
+			Extents unionBox = newBox;
+			unionBox.unionWith(oldBox);
+
+			changeMinMax(p, unionBox, oldBox, newBox);
+		}
+		else {
+			changeMinMax(p, oldBox, oldBox, newBox);
+			changeMinMax(p, newBox, oldBox, newBox);
+		}
+
+		p->oldSpatialMin = newMin;
+		p->oldSpatialMax = newMax;
+	}
+}
+
+// FUNCTION: WEBSERVICE 0x10123fb0
+void SpatialHash::onPrimitiveRemoved(Primitive* p)
+{
+	while (p->spatialNodes != NULL) {
+		destroyNode(p->spatialNodes);
+	}
+}
+
+// FUNCTION: WEBSERVICE 0x10123fe0
+void SpatialHash::onPrimitiveExtentsChanged(Primitive* p)
+{
+	primitiveExtentsChanged(p);
+}
+
+// FUNCTION: WEBSERVICE 0x10123ff0
+void SpatialHash::onAllPrimitivesMoved()
+{
+	const G3D::Array<Primitive*>& primitives = world->getPrimitives();
+
+	for (int i = 0; i < primitives.size(); i++) {
+		Primitive* p = primitives[i];
+
+		Assembly* a = p->getAssembly();
+
+		if (a->getSleepStatus() == Sim::AWAKE) {
+			primitiveExtentsChanged(p);
+		}
+	}
+}
+
+// FUNCTION: WEBSERVICE 0x10124030
+void SpatialHash::getPrimitivesInGrid(const Vector3int32& grid, G3D::Array<Primitive*>& found)
+{
+	int hash = getHash(grid);
+
+	SpatialNode* node = nodes[hash];
+
+	while (node != NULL) {
+		if (node->gridId == grid) {
+			found.append(node->primitive);
+		}
+
+		node = node->nextHashLink;
+	}
+}
+
+// FUNCTION: WEBSERVICE 0x10124100
+void SpatialHash::getPrimitivesTouchingExtents(
+	const Extents& extents,
+	const Primitive* ignore,
+	G3D::Array<Primitive*>& answer
+)
+{
+	Vector3int32 min;
+	Vector3int32 max;
+
+	computeMinMax(extents, min, max);
+
+	G3D::Array<Primitive*> foundThisGrid;
+
+	for (int i = min.x; i <= max.x; i++) {
+		for (int j = min.y; j <= max.y; j++) {
+			for (int k = min.z; k <= max.z; k++) {
+				foundThisGrid.resize(0, false);
+
+				getPrimitivesInGrid(Vector3int32(i, j, k), foundThisGrid);
+
+				for (int index = 0; index < foundThisGrid.size(); index++) {
+					Primitive* p = foundThisGrid[index];
+
+					if (p != ignore && !answer.contains(p) && extents.overlapsOrTouches(p->getFastFuzzyExtents())) {
+						answer.append(p);
+					}
+				}
+			}
+		}
+	}
+}
+
+// FUNCTION: WEBSERVICE 0x101242e0
+SpatialHash::~SpatialHash()
+{
+	for (unsigned int i = 0; i < numBuckets(); i++) {
+		if (nodes[i] != NULL) {
+			while (nodes[i] != NULL) {
+				SpatialNode* temp = nodes[i];
+
+				nodes[i] = nodes[i]->nextHashLink;
+
+				delete temp;
+
+				nodesOut--;
+			}
+		}
+	}
+
+	while (extraNodes != NULL) {
+		SpatialNode* temp = extraNodes;
+
+		extraNodes = temp->nextHashLink;
+
+		delete temp;
+	}
+}
+
+// FUNCTION: WEBSERVICE 0x10124480
+SpatialHash::SpatialHash(World* world, ContactManager* contactManager)
+	: world(world), contactManager(contactManager), extraNodes(NULL), nodesOut(0), maxBucket(0)
+{
+	std::vector<SpatialNode*> temp(numBuckets(), NULL);
+
+	nodes.swap(temp);
+}
+
+} // namespace RBX

@@ -1,51 +1,196 @@
-// roc 2009-12 007deb20  unit: RBX::ContactStage  size: 98 bytes
-// Make this compile to the exact bytes below, then: roc check 2009-12 007deb20
-//
-// 007deb20  53                   push ebx
-// 007deb21  55                   push ebp
-// 007deb22  56                   push esi
-// 007deb23  8bf1                 mov esi, ecx
-// 007deb25  807e0400             cmp byte ptr [esi + 4], 0
-// 007deb29  57                   push edi
-// 007deb2a  8b3e                 mov edi, dword ptr [esi]
-// 007deb2c  8b1f                 mov ebx, dword ptr [edi]
-// 007deb2e  8b6f0c               mov ebp, dword ptr [edi + 0xc]
-// 007deb31  7430                 je 0x7deb63
-// 007deb33  807c241c00           cmp byte ptr [esp + 0x1c], 0
-// 007deb38  740a                 je 0x7deb44
-// 007deb3a  8b442414             mov eax, dword ptr [esp + 0x14]
-// 007deb3e  8b08                 mov ecx, dword ptr [eax]
-// 007deb40  8bc3                 mov eax, ebx
-// 007deb42  eb08                 jmp 0x7deb4c
-// 007deb44  8b4c2418             mov ecx, dword ptr [esp + 0x18]
-// 007deb48  8b09                 mov ecx, dword ptr [ecx]
-// 007deb4a  8bc5                 mov eax, ebp
-// 007deb4c  2bc1                 sub eax, ecx
-// 007deb4e  85c0                 test eax, eax
-// 007deb50  7611                 jbe 0x7deb63
-// 007deb52  8b5608               mov edx, dword ptr [esi + 8]
-// 007deb55  50                   push eax
-// 007deb56  51                   push ecx
-// 007deb57  52                   push edx
-// 007deb58  e8433ee3ff           call 0x6129a0
-// 007deb5d  83c40c               add esp, 0xc
-// 007deb60  894608               mov dword ptr [esi + 8], eax
-// 007deb63  8b4708               mov eax, dword ptr [edi + 8]
-// 007deb66  8b542414             mov edx, dword ptr [esp + 0x14]
-// 007deb6a  89460c               mov dword ptr [esi + 0xc], eax
-// 007deb6d  8b4f14               mov ecx, dword ptr [edi + 0x14]
-// 007deb70  8b442418             mov eax, dword ptr [esp + 0x18]
-// 007deb74  5f                   pop edi
-// 007deb75  894e10               mov dword ptr [esi + 0x10], ecx
-// 007deb78  891a                 mov dword ptr [edx], ebx
-// 007deb7a  5e                   pop esi
-// 007deb7b  8928                 mov dword ptr [eax], ebp
-// 007deb7d  5d                   pop ebp
-// 007deb7e  5b                   pop ebx
-// 007deb7f  c20c00               ret 0xc
-// library boost-1.34.1/libs\iostreams\src\zlib.cpp (function ?after@zlib_base@detail@iostreams@boost@@IAEXAAPBDAAPAD_N@Z)
-
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD
 // roc-lib: boost-1.34.1 libs/iostreams/src/zlib.cpp
+
+// Candidate translation unit (score above; library headers required).
+// (C) Copyright Jonathan Turkanis 2003.
+// Distributed under the Boost Software License, Version 1.0. (See accompanying
+// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt.)
+
+// See http://www.boost.org/libs/iostreams for documentation.
+
+// To configure Boost to work with zlib, see the 
+// installation instructions here:
+// http://boost.org/libs/iostreams/doc/index.html?path=7
+
+// Define BOOST_IOSTREAMS_SOURCE so that <boost/iostreams/detail/config.hpp> 
+// knows that we are building the library (possibly exporting code), rather 
+// than using it (possibly importing code).
+#define BOOST_IOSTREAMS_SOURCE 
+
+#include <boost/iostreams/detail/config/dyn_link.hpp>
+#include <boost/iostreams/filter/zlib.hpp> 
+#include "zlib.h"   // Jean-loup Gailly's and Mark Adler's "zlib.h" header.
+                    // To configure Boost to work with zlib, see the 
+                    // installation instructions here:
+                    // http://boost.org/libs/iostreams/doc/index.html?path=7
+
+namespace boost { namespace iostreams {
+
+namespace zlib {
+
+                    // Compression levels
+
+const int no_compression       = Z_NO_COMPRESSION;
+const int best_speed           = Z_BEST_SPEED;
+const int best_compression     = Z_BEST_COMPRESSION;
+const int default_compression  = Z_DEFAULT_COMPRESSION;
+
+                    // Compression methods
+
+const int deflated             = Z_DEFLATED;
+
+                    // Compression strategies
+
+const int default_strategy     = Z_DEFAULT_STRATEGY;
+const int filtered             = Z_FILTERED;
+const int huffman_only         = Z_HUFFMAN_ONLY;
+
+                    // Status codes
+
+const int okay                 = Z_OK;
+const int stream_end           = Z_STREAM_END;
+const int stream_error         = Z_STREAM_ERROR;
+const int version_error        = Z_VERSION_ERROR;
+const int data_error           = Z_DATA_ERROR;
+const int mem_error            = Z_MEM_ERROR;
+const int buf_error            = Z_BUF_ERROR;
+
+                    // Flush codes
+
+const int finish               = Z_FINISH;
+const int no_flush             = Z_NO_FLUSH;
+const int sync_flush           = Z_SYNC_FLUSH;
+
+                    // Code for current OS
+
+//const int os_code              = OS_CODE;
+
+} // End namespace zlib. 
+
+//------------------Implementation of zlib_error------------------------------//
+                    
+zlib_error::zlib_error(int error) 
+    : BOOST_IOSTREAMS_FAILURE("zlib error"), error_(error) 
+    { }
+
+void zlib_error::check(int error)
+{
+    switch (error) {
+    case Z_OK: 
+    case Z_STREAM_END: 
+    //case Z_BUF_ERROR: 
+        return;
+    case Z_MEM_ERROR: 
+        throw std::bad_alloc();
+    default:
+        throw zlib_error(error);
+        ;
+    }
+}
+
+//------------------Implementation of zlib_base-------------------------------//
+
+namespace detail {
+
+zlib_base::zlib_base()
+    : stream_(new z_stream), calculate_crc_(false), crc_(0)
+    { }
+
+zlib_base::~zlib_base() { delete static_cast<z_stream*>(stream_); }
+
+void zlib_base::before( const char*& src_begin, const char* src_end,
+                        char*& dest_begin, char* dest_end )
+{
+    z_stream* s = static_cast<z_stream*>(stream_);
+    s->next_in = reinterpret_cast<zlib::byte*>(const_cast<char*>(src_begin));
+    s->avail_in = static_cast<zlib::uint>(src_end - src_begin);
+    s->next_out = reinterpret_cast<zlib::byte*>(dest_begin);
+    s->avail_out= static_cast<zlib::uint>(dest_end - dest_begin);
+}
+
+void zlib_base::after(const char*& src_begin, char*& dest_begin, bool compress)
+{
+    z_stream* s = static_cast<z_stream*>(stream_);
+    char* next_in = reinterpret_cast<char*>(s->next_in);
+    char* next_out = reinterpret_cast<char*>(s->next_out);
+    if (calculate_crc_) {
+        const zlib::byte* buf = compress ?
+            reinterpret_cast<const zlib::byte*>(src_begin) :
+            reinterpret_cast<const zlib::byte*>(
+                const_cast<const char*>(dest_begin)
+            );
+        zlib::uint length = compress ?
+            static_cast<zlib::uint>(next_in - src_begin) :
+            static_cast<zlib::uint>(next_out - dest_begin);
+        if (length > 0)
+            crc_ = crc32(crc_, buf, length);
+    }
+    total_in_ = s->total_in;
+    total_out_ = s->total_out;
+    src_begin = const_cast<const char*>(next_in);
+    dest_begin = next_out;
+}
+
+int zlib_base::deflate(int flush)
+{ 
+    return ::deflate(static_cast<z_stream*>(stream_), flush);
+}
+
+int zlib_base::inflate(int flush)
+{ 
+    return ::inflate(static_cast<z_stream*>(stream_), flush);
+}
+
+void zlib_base::reset(bool compress, bool realloc)
+{
+    z_stream* s = static_cast<z_stream*>(stream_);
+    // Undiagnosed bug:
+    // deflateReset(), etc., return Z_DATA_ERROR
+    //zlib_error::check(
+        realloc ?
+            (compress ? deflateReset(s) : inflateReset(s)) :
+            (compress ? deflateEnd(s) : inflateEnd(s))
+                ;
+    //);
+}
+
+void zlib_base::do_init
+    ( const zlib_params& p, bool compress, 
+      #if !BOOST_WORKAROUND(BOOST_MSVC, < 1300)
+          zlib::alloc_func alloc, zlib::free_func free, 
+      #endif
+      void* derived )
+{
+    calculate_crc_ = p.calculate_crc;
+    z_stream* s = static_cast<z_stream*>(stream_);
+
+    // Current interface for customizing memory management 
+    // is non-conforming and has been disabled:
+    //#if !BOOST_WORKAROUND(BOOST_MSVC, < 1300)
+    //    s->zalloc = alloc;
+    //    s->zfree = free;
+    //#else
+        s->zalloc = 0;
+        s->zfree = 0;
+    //#endif
+    s->opaque = derived;
+    int window_bits = p.noheader? -p.window_bits : p.window_bits;
+    zlib_error::check(
+        compress ?
+            deflateInit2( s, 
+                          p.level,
+                          p.method,
+                          window_bits,
+                          p.mem_level,
+                          p.strategy ) :
+            inflateInit2(s, window_bits)
+    );
+}
+
+} // End namespace detail.
+
+//----------------------------------------------------------------------------//
+
+} } // End namespaces iostreams, boost.

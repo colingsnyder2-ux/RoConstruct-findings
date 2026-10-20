@@ -1,73 +1,204 @@
-// roc 2007-03 004427a0  unit: seg_00440000  size: 162 bytes
-// Make this compile to the exact bytes below, then: roc check 2007-03 004427a0
-//
-// 004427a0  83ec0c               sub esp, 0xc
-// 004427a3  53                   push ebx
-// 004427a4  55                   push ebp
-// 004427a5  56                   push esi
-// 004427a6  8bf1                 mov esi, ecx
-// 004427a8  8b5608               mov edx, dword ptr [esi + 8]
-// 004427ab  33c0                 xor eax, eax
-// 004427ad  85d2                 test edx, edx
-// 004427af  57                   push edi
-// 004427b0  89442410             mov dword ptr [esp + 0x10], eax
-// 004427b4  7504                 jne 0x4427ba
-// 004427b6  33c9                 xor ecx, ecx
-// 004427b8  eb08                 jmp 0x4427c2
-// 004427ba  8b4e0c               mov ecx, dword ptr [esi + 0xc]
-// 004427bd  2bca                 sub ecx, edx
-// 004427bf  c1f902               sar ecx, 2
-// 004427c2  85c9                 test ecx, ecx
-// 004427c4  8b5614               mov edx, dword ptr [esi + 0x14]
-// 004427c7  8d7c2410             lea edi, [esp + 0x10]
-// 004427cb  894c2414             mov dword ptr [esp + 0x14], ecx
-// 004427cf  89542418             mov dword ptr [esp + 0x18], edx
-// 004427d3  897e14               mov dword ptr [esi + 0x14], edi
-// 004427d6  765d                 jbe 0x442835
-// 004427d8  8b5c2424             mov ebx, dword ptr [esp + 0x24]
-// 004427dc  8b6c2420             mov ebp, dword ptr [esp + 0x20]
-// 004427e0  8b5608               mov edx, dword ptr [esi + 8]
-// 004427e3  85d2                 test edx, edx
-// 004427e5  8bf8                 mov edi, eax
-// 004427e7  740c                 je 0x4427f5
-// 004427e9  8b4e0c               mov ecx, dword ptr [esi + 0xc]
-// 004427ec  2bca                 sub ecx, edx
-// 004427ee  c1f902               sar ecx, 2
-// 004427f1  3bc1                 cmp eax, ecx
-// 004427f3  7206                 jb 0x4427fb
-// 004427f5  ff1544e97700         call dword ptr [0x77e944]
-// 004427fb  8b4608               mov eax, dword ptr [esi + 8]
-// 004427fe  8b04b8               mov eax, dword ptr [eax + edi*4]
-// 00442801  50                   push eax
-// 00442802  83ec08               sub esp, 8
-// 00442805  8bc4                 mov eax, esp
-// 00442807  8bce                 mov ecx, esi
-// 00442809  8928                 mov dword ptr [eax], ebp
-// 0044280b  895804               mov dword ptr [eax + 4], ebx
-// 0044280e  e8bdfeffff           call 0x4426d0
-// 00442813  8b442410             mov eax, dword ptr [esp + 0x10]
-// 00442817  83c001               add eax, 1
-// 0044281a  3b442414             cmp eax, dword ptr [esp + 0x14]
-// 0044281e  89442410             mov dword ptr [esp + 0x10], eax
-// 00442822  72bc                 jb 0x4427e0
-// 00442824  8b4c2418             mov ecx, dword ptr [esp + 0x18]
-// 00442828  894e14               mov dword ptr [esi + 0x14], ecx
-// 0044282b  5f                   pop edi
-// 0044282c  5e                   pop esi
-// 0044282d  5d                   pop ebp
-// 0044282e  5b                   pop ebx
-// 0044282f  83c40c               add esp, 0xc
-// 00442832  c20800               ret 8
-// 00442835  5f                   pop edi
-// 00442836  895614               mov dword ptr [esi + 0x14], edx
-// 00442839  5e                   pop esi
-// 0044283a  5d                   pop ebp
-// 0044283b  5b                   pop ebx
-// 0044283c  83c40c               add esp, 0xc
-// 0044283f  c20800               ret 8
-// library openrbx-client/App\v8datamodel\Feature.cpp (function ?raise@?$Notifier@VInstance@RBX@@VPropertyChanged@2@@RBX@@IBEXVPropertyChanged@2@@Z)
-
 // roc-lang: cpp
 // roc-cl: 50727
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
 // roc-lib: openrbx-client App/v8datamodel/Feature.cpp
+
+// Candidate translation unit (score above; library headers required).
+#include "v8datamodel/Feature.h"
+
+#include "reflection/property.h"
+#include "util/Name.h"
+
+namespace RBX {
+
+const char sVelocityMotor[] = "VelocityMotor";
+
+const char sHole[] = "Hole";
+
+const char sMotorFeature[] = "MotorFeature";
+
+const char sFeature[] = "Feature";
+
+using namespace Reflection;
+
+static EnumPropDescriptor<Feature, NormalId> prop_FaceId(
+	"FaceId",
+	"Data",
+	&RBX::Feature::getFaceId,
+	&RBX::Feature::setFaceId
+);
+
+static EnumPropDescriptor<Feature, Feature::TopBottom> prop_TopBottom(
+	"TopBottom",
+	"Data",
+	&RBX::Feature::getTopBottom,
+	&RBX::Feature::setTopBottom
+);
+
+static EnumPropDescriptor<Feature, Feature::LeftRight> prop_LeftRight(
+	"LeftRight",
+	"Data",
+	&RBX::Feature::getLeftRight,
+	&RBX::Feature::setLeftRight
+);
+
+static EnumPropDescriptor<Feature, Feature::InOut> prop_InOut(
+	"InOut",
+	"Data",
+	&RBX::Feature::getInOut,
+	&RBX::Feature::setInOut
+);
+
+static PropDescriptor<VelocityMotor, float> prop_MaxVelocity(
+	"MaxVelocity",
+	"Data",
+	&RBX::VelocityMotor::getMaxVelocity,
+	&RBX::VelocityMotor::setMaxVelocity
+);
+
+static PropDescriptor<VelocityMotor, float> prop_DesiredAngle(
+	"DesiredAngle",
+	"Data",
+	&RBX::VelocityMotor::getDesiredAngle,
+	&RBX::VelocityMotor::setDesiredAngle
+);
+
+static PropDescriptor<VelocityMotor, float> prop_CurrentAngle(
+	"CurrentAngle",
+	"Data",
+	&RBX::VelocityMotor::getCurrentAngle,
+	&RBX::VelocityMotor::setCurrentAngle
+);
+
+// FUNCTION: WEBSERVICE 0x100d7d70
+float VelocityMotor::getMaxVelocity() const
+{
+	return static_cast<MotorJoint*>(joint)->getMaxVelocity();
+}
+
+// FUNCTION: WEBSERVICE 0x100d7d80
+float VelocityMotor::getDesiredAngle() const
+{
+	return static_cast<MotorJoint*>(joint)->getDesiredAngle();
+}
+
+// FUNCTION: WEBSERVICE 0x100e42d0
+float VelocityMotor::getCurrentAngle() const
+{
+	return static_cast<MotorJoint*>(joint)->getCurrentAngle();
+}
+
+namespace Reflection {
+
+// FUNCTION: WEBSERVICE 0x100e5950
+template <>
+EnumDesc<Feature::TopBottom>::EnumDesc() : EnumDescriptor("TopBottom", typeid(Feature::TopBottom))
+{
+	addPair(Feature::TOP, "Top");
+	addPair(Feature::CENTER_TB, "Center");
+	addPair(Feature::BOTTOM, "Bottom");
+}
+
+// FUNCTION: WEBSERVICE 0x100e5ad0
+template <>
+EnumDesc<Feature::LeftRight>::EnumDesc() : EnumDescriptor("LeftRight", typeid(Feature::LeftRight))
+{
+	addPair(Feature::LEFT, "Left");
+	addPair(Feature::CENTER_LR, "Center");
+	addPair(Feature::RIGHT, "Right");
+}
+
+// FUNCTION: WEBSERVICE 0x100e5c50
+template <>
+EnumDesc<Feature::InOut>::EnumDesc() : EnumDescriptor("InOut", typeid(Feature::InOut))
+{
+	addPair(Feature::EDGE, "Edge");
+	addPair(Feature::INSET, "Inset");
+	addPair(Feature::CENTER_IO, "Center");
+}
+
+} // namespace Reflection
+
+// FUNCTION: WEBSERVICE 0x100e7430
+void Feature::setFaceId(NormalId value)
+{
+	if (faceId != value) {
+		faceId = value;
+		raisePropertyChanged(prop_FaceId);
+	}
+}
+
+// FUNCTION: WEBSERVICE 0x100e7460
+void Feature::setTopBottom(TopBottom value)
+{
+	if (topBottom != value) {
+		topBottom = value;
+		raisePropertyChanged(prop_TopBottom);
+	}
+}
+
+// FUNCTION: WEBSERVICE 0x100e7490
+void Feature::setLeftRight(LeftRight value)
+{
+	if (leftRight != value) {
+		leftRight = value;
+		raisePropertyChanged(prop_LeftRight);
+	}
+}
+
+// FUNCTION: WEBSERVICE 0x100e74c0
+void Feature::setInOut(InOut value)
+{
+	if (inOut != value) {
+		inOut = value;
+		raisePropertyChanged(prop_InOut);
+	}
+}
+
+// FUNCTION: WEBSERVICE 0x100e7670
+void VelocityMotor::setMaxVelocity(float value)
+{
+	if (value != static_cast<MotorJoint*>(joint)->getMaxVelocity()) {
+		static_cast<MotorJoint*>(joint)->setMaxVelocity(value);
+		raisePropertyChanged(prop_MaxVelocity);
+	}
+}
+
+// FUNCTION: WEBSERVICE 0x100e76b0
+void VelocityMotor::setDesiredAngle(float value)
+{
+	if (value != static_cast<MotorJoint*>(joint)->getDesiredAngle()) {
+		static_cast<MotorJoint*>(joint)->setDesiredAngle(value);
+		raisePropertyChanged(prop_DesiredAngle);
+	}
+}
+
+// FUNCTION: WEBSERVICE 0x100e76f0
+void VelocityMotor::setCurrentAngle(float value)
+{
+	if (value != static_cast<MotorJoint*>(joint)->getCurrentAngle()) {
+		static_cast<MotorJoint*>(joint)->setCurrentAngle(value);
+		raisePropertyChanged(prop_CurrentAngle);
+	}
+}
+} // namespace RBX
+
+template const RBX::Name& RBX::Name::doDeclare<RBX::sFeature>();
+template void RBX::Name::callDoDeclare<RBX::sFeature>();
+
+template class RBX::FactoryProduct<RBX::Hole, RBX::Feature, RBX::sHole>;
+template class RBX::Reflection::
+	Described<RBX::Hole, RBX::sHole, RBX::FactoryProduct<RBX::Hole, RBX::Feature, RBX::sHole> >;
+template class RBX::DescribedCreatable<RBX::Hole, RBX::Feature, RBX::sHole>;
+
+template class RBX::FactoryProduct<RBX::MotorFeature, RBX::Feature, RBX::sMotorFeature>;
+template class RBX::Reflection::Described<
+	RBX::MotorFeature,
+	RBX::sMotorFeature,
+	RBX::FactoryProduct<RBX::MotorFeature, RBX::Feature, RBX::sMotorFeature> >;
+template class RBX::DescribedCreatable<RBX::MotorFeature, RBX::Feature, RBX::sMotorFeature>;
+
+template class RBX::NonFactoryProduct<RBX::Instance, RBX::sFeature>;
+template class RBX::Reflection::
+	Described<RBX::Feature, RBX::sFeature, RBX::NonFactoryProduct<RBX::Instance, RBX::sFeature> >;
+template class RBX::DescribedNonCreatable<RBX::Feature, RBX::Instance, RBX::sFeature>;

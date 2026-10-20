@@ -1,28 +1,206 @@
-// roc 2008-06 00609cd0  unit: RBX::Controller::W4ControllerType::?$EnumDesc  size: 107 bytes
-// Make this compile to the exact bytes below, then: roc check 2008-06 00609cd0
-//
-// 00609cd0  8b442404             mov eax, dword ptr [esp + 4]
-// 00609cd4  56                   push esi
-// 00609cd5  50                   push eax
-// 00609cd6  8bf1                 mov esi, ecx
-// 00609cd8  e8939bfdff           call 0x5e3870
-// 00609cdd  c706642a8400         mov dword ptr [esi], 0x842a64
-// 00609ce3  c74610542a8400       mov dword ptr [esi + 0x10], 0x842a54
-// 00609cea  c746144c2a8400       mov dword ptr [esi + 0x14], 0x842a4c
-// 00609cf1  c74620442a8400       mov dword ptr [esi + 0x20], 0x842a44
-// 00609cf8  c74624342a8400       mov dword ptr [esi + 0x24], 0x842a34
-// 00609cff  c74644242a8400       mov dword ptr [esi + 0x44], 0x842a24
-// 00609d06  c74664142a8400       mov dword ptr [esi + 0x64], 0x842a14
-// 00609d0d  c78684000000042a8400 mov dword ptr [esi + 0x84], 0x842a04
-// 00609d17  c786a4000000f4298400 mov dword ptr [esi + 0xa4], 0x8429f4
-// 00609d21  c786c4000000e4298400 mov dword ptr [esi + 0xc4], 0x8429e4
-// 00609d2b  c78630010000cc298400 mov dword ptr [esi + 0x130], 0x8429cc
-// 00609d35  8bc6                 mov eax, esi
-// 00609d37  5e                   pop esi
-// 00609d38  c20400               ret 4
-// library openrbx-client/App\v8datamodel\JointInstance.cpp (function ??$?0PAVJoint@RBX@@@?$NonFactoryProduct@VJointInstance@RBX@@$1?sAutoJoint@2@3QBDB@RBX@@QAE@PAVJoint@1@@Z)
-
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
 // roc-lib: openrbx-client App/v8datamodel/JointInstance.cpp
+
+// Candidate translation unit (score above; library headers required).
+#include "v8datamodel/JointInstance.h"
+
+#include "reflection/property.h"
+#include "util/Name.h"
+#include "v8datamodel/PartInstance.h"
+
+namespace RBX {
+
+const char sAutoJoint[] = "AutoJoint";
+
+const char sJointInstance[] = "JointInstance";
+
+const char sMotor[] = "Motor";
+
+const char sRotateV[] = "RotateV";
+
+const char sRotateP[] = "RotateP";
+
+const char sRotate[] = "Rotate";
+
+const char sGlue[] = "Glue";
+
+const char sWeld[] = "Weld";
+
+const char sSnap[] = "Snap";
+
+static Reflection::PropDescriptor<Motor, float> prop_MaxVelocity(
+	"MaxVelocity",
+	"Data",
+	&RBX::Motor::getMaxVelocity,
+	&RBX::Motor::setMaxVelocity
+);
+
+static Reflection::PropDescriptor<Motor, float> prop_CurrentAngle(
+	"CurrentAngle",
+	"Data",
+	&RBX::Motor::getCurrentAngle,
+	&RBX::Motor::setCurrentAngle
+);
+
+float Motor::getMaxVelocity() const
+{
+	return static_cast<MotorJoint*>(joint)->getMaxVelocity();
+}
+
+float Motor::getCurrentAngle() const
+{
+	return static_cast<MotorJoint*>(joint)->getCurrentAngle();
+}
+
+// FUNCTION: WEBSERVICE 0x100d7df0
+JointInstance::~JointInstance()
+{
+	joint->setJointOwner(NULL);
+	delete joint;
+	joint = NULL;
+}
+
+// STUB: WEBSERVICE 0x100d8030
+void AutoJoint::setPart(int index, PartInstance* value)
+{
+	if (part[index].get() == value) {
+		return;
+	}
+
+	part[index] = shared_from(value);
+	joint->setPrimitive(index, value ? value->getPrimitive() : NULL);
+}
+
+// STUB: WEBSERVICE 0x100d8110
+AutoJoint::~AutoJoint()
+{
+	setPart(0, NULL);
+	setPart(1, NULL);
+}
+
+// FUNCTION: WEBSERVICE 0x100d9020
+void Motor::setMaxVelocity(float value)
+{
+	if (value != static_cast<MotorJoint*>(joint)->getMaxVelocity()) {
+		static_cast<MotorJoint*>(joint)->setMaxVelocity(value);
+		raisePropertyChanged(prop_MaxVelocity);
+	}
+}
+
+// FUNCTION: WEBSERVICE 0x100d90c0
+void Motor::setCurrentAngle(float value)
+{
+	if (value != static_cast<MotorJoint*>(joint)->getCurrentAngle()) {
+		static_cast<MotorJoint*>(joint)->setCurrentAngle(value);
+		raisePropertyChanged(prop_CurrentAngle);
+	}
+}
+
+Snap::Snap(Joint* joint) : DescribedCreatable<Snap, AutoJoint, sSnap>(joint)
+{
+}
+
+// STUB: WEBSERVICE 0x100d9b20
+Snap::Snap() : DescribedCreatable<Snap, AutoJoint, sSnap>(new SnapJoint())
+{
+	setName("Snap");
+}
+
+// STUB: WEBSERVICE 0x100d9c20
+Weld::Weld(Joint* joint) : DescribedCreatable<Weld, AutoJoint, sWeld>(joint)
+{
+}
+
+// STUB: WEBSERVICE 0x100d9cb0
+Weld::Weld() : DescribedCreatable<Weld, AutoJoint, sWeld>(new WeldJoint())
+{
+}
+
+// FUNCTION: WEBSERVICE 0x100d9d80
+Glue::Glue(Joint* joint) : DescribedCreatable<Glue, AutoJoint, sGlue>(joint)
+{
+}
+
+// FUNCTION: WEBSERVICE 0x100d9e00
+Glue::Glue() : DescribedCreatable<Glue, AutoJoint, sGlue>(new GlueJoint())
+{
+}
+
+// STUB: WEBSERVICE 0x100d9ec0
+Rotate::Rotate(Joint* joint) : DescribedCreatable<Rotate, AutoJoint, sRotate>(joint)
+{
+}
+
+// STUB: WEBSERVICE 0x100d9f90
+Rotate::Rotate() : DescribedCreatable<Rotate, AutoJoint, sRotate>(new RotateJoint())
+{
+}
+
+// STUB: WEBSERVICE 0x100da050
+RotateP::RotateP(Joint* joint) : DescribedCreatable<RotateP, AutoJoint, sRotateP>(joint)
+{
+}
+
+// STUB: WEBSERVICE 0x100da100
+RotateP::RotateP() : DescribedCreatable<RotateP, AutoJoint, sRotateP>(new RotatePJoint())
+{
+}
+
+// STUB: WEBSERVICE 0x100da1d0
+RotateV::RotateV(Joint* joint) : DescribedCreatable<RotateV, AutoJoint, sRotateV>(joint)
+{
+}
+
+// STUB: WEBSERVICE 0x100da280
+RotateV::RotateV() : DescribedCreatable<RotateV, AutoJoint, sRotateV>(new RotateVJoint())
+{
+}
+
+Motor::Motor(Joint* joint) : DescribedCreatable<Motor, AutoJoint, sMotor>(joint)
+{
+}
+
+// FUNCTION: WEBSERVICE 0x100da370
+Motor::Motor() : DescribedCreatable<Motor, AutoJoint, sMotor>(new MotorJoint())
+{
+	setName("Motor");
+}
+
+} // namespace RBX
+
+template const RBX::Name& RBX::Name::doDeclare<RBX::sJointInstance>();
+template void RBX::Name::callDoDeclare<RBX::sJointInstance>();
+template const RBX::Name& RBX::Name::doDeclare<RBX::sAutoJoint>();
+template void RBX::Name::callDoDeclare<RBX::sAutoJoint>();
+
+template class RBX::FactoryProduct<RBX::Glue, RBX::AutoJoint, RBX::sGlue>;
+template class RBX::Reflection::
+	Described<RBX::Glue, RBX::sGlue, RBX::FactoryProduct<RBX::Glue, RBX::AutoJoint, RBX::sGlue> >;
+template class RBX::DescribedCreatable<RBX::Glue, RBX::AutoJoint, RBX::sGlue>;
+
+template class RBX::FactoryProduct<RBX::Rotate, RBX::AutoJoint, RBX::sRotate>;
+template class RBX::Reflection::
+	Described<RBX::Rotate, RBX::sRotate, RBX::FactoryProduct<RBX::Rotate, RBX::AutoJoint, RBX::sRotate> >;
+template class RBX::DescribedCreatable<RBX::Rotate, RBX::AutoJoint, RBX::sRotate>;
+
+template class RBX::FactoryProduct<RBX::RotateP, RBX::AutoJoint, RBX::sRotateP>;
+template class RBX::Reflection::
+	Described<RBX::RotateP, RBX::sRotateP, RBX::FactoryProduct<RBX::RotateP, RBX::AutoJoint, RBX::sRotateP> >;
+template class RBX::DescribedCreatable<RBX::RotateP, RBX::AutoJoint, RBX::sRotateP>;
+
+template class RBX::FactoryProduct<RBX::RotateV, RBX::AutoJoint, RBX::sRotateV>;
+template class RBX::Reflection::
+	Described<RBX::RotateV, RBX::sRotateV, RBX::FactoryProduct<RBX::RotateV, RBX::AutoJoint, RBX::sRotateV> >;
+template class RBX::DescribedCreatable<RBX::RotateV, RBX::AutoJoint, RBX::sRotateV>;
+
+template class RBX::FactoryProduct<RBX::Snap, RBX::AutoJoint, RBX::sSnap>;
+template class RBX::Reflection::
+	Described<RBX::Snap, RBX::sSnap, RBX::FactoryProduct<RBX::Snap, RBX::AutoJoint, RBX::sSnap> >;
+template class RBX::DescribedCreatable<RBX::Snap, RBX::AutoJoint, RBX::sSnap>;
+
+template class RBX::FactoryProduct<RBX::Weld, RBX::AutoJoint, RBX::sWeld>;
+template class RBX::Reflection::
+	Described<RBX::Weld, RBX::sWeld, RBX::FactoryProduct<RBX::Weld, RBX::AutoJoint, RBX::sWeld> >;
+template class RBX::DescribedCreatable<RBX::Weld, RBX::AutoJoint, RBX::sWeld>;

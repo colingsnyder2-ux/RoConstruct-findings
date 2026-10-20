@@ -1,13 +1,71 @@
-// roc 2007-03 00570f80  unit: seg_00570000  size: 16 bytes
-// Make this compile to the exact bytes below, then: roc check 2007-03 00570f80
-//
-// 00570f80  8b442404             mov eax, dword ptr [esp + 4]
-// 00570f84  8b4008               mov eax, dword ptr [eax + 8]
-// 00570f87  89442404             mov dword ptr [esp + 4], eax
-// 00570f8b  e950ffffff           jmp 0x570ee0
-// library rbxgs/reflection\reflection_object.cpp (function ?isMemberOf@MemberDescriptor@Reflection@RBX@@QBE_NPBVDescribedBase@23@@Z)
-
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
 // roc-lib: rbxgs reflection/reflection_object.cpp
+
+// Candidate translation unit (score above; library headers required).
+#include "reflection/member.h"
+#include "reflection/object.h"
+
+namespace RBX
+{
+	namespace Reflection
+	{
+		bool ClassDescriptor::lockedDown = false;
+
+		ClassDescriptor::ClassDescriptor(ClassDescriptor& base, const char* name)
+			: Descriptor(name),
+			  PropertyContainer(&base),
+			  SignalContainer(&base),
+			  FunctionContainer(&base),
+			  derivedClasses(),
+			  base(&base)
+		{
+			RBXASSERT(!lockedDown);
+
+			{
+				boost::recursive_mutex::scoped_lock lock(sync());
+				base.derivedClasses.push_back(this);
+			}
+		}
+
+		ClassDescriptor::ClassDescriptor()
+			: Descriptor("<<<ROOT>>>"),
+			  PropertyContainer(NULL),
+			  SignalContainer(NULL),
+			  FunctionContainer(NULL),
+			  derivedClasses(),
+			  base(NULL)
+		{
+		}
+
+		bool ClassDescriptor::operator==(const ClassDescriptor& other) const
+		{
+			return this == &other;
+		}
+
+		bool ClassDescriptor::operator!=(const ClassDescriptor& other) const
+		{
+			return this != &other;
+		}
+
+		bool MemberDescriptor::isMemberOf(const ClassDescriptor& classDescriptor) const
+		{
+			const ClassDescriptor* p = &classDescriptor;
+			do
+			{
+				if (p == &owner)
+					return true;
+				p = p->getBase();
+			}
+			while (p != &ClassDescriptor::rootDescriptor());
+
+			return false;
+		}
+
+		bool MemberDescriptor::isMemberOf(const DescribedBase* instance) const
+		{
+			return isMemberOf(instance->getDescriptor());
+		}
+	}
+}

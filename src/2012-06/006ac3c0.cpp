@@ -1,21 +1,162 @@
 // from server: 100% by auto
-// roc 2012-06 006ac3c0  unit: std::D::DU?$char_traits::V?$basic_string::V?$unordered_map::?$sp_counted_impl_p  size: 27 bytes
-// Make this compile to the exact bytes below, then: roc check 2012-06 006ac3c0
-//
-// 006ac3c0  56                   push esi
-// 006ac3c1  8b710c               mov esi, dword ptr [ecx + 0xc]
-// 006ac3c4  85f6                 test esi, esi
-// 006ac3c6  7411                 je 0x6ac3d9
-// 006ac3c8  8d4e10               lea ecx, [esi + 0x10]
-// 006ac3cb  e870bdffff           call 0x6a8140
-// 006ac3d0  56                   push esi
-// 006ac3d1  e83e5d2d00           call 0x982114
-// 006ac3d6  83c404               add esp, 4
-// 006ac3d9  5e                   pop esi
-// 006ac3da  c3                   ret 
-// library boost-1.34.1/libs\signals\src\connection.cpp (function ?dispose@?$sp_counted_impl_p@Ubasic_connection@detail@signals@boost@@@detail@boost@@UAEXXZ)
-
 // roc-lang: cpp
 // roc-cl: 50727
 // roc-flags: /O2 /GS- /EHsc /MD
 // roc-lib: boost-1.34.1 libs/signals/src/connection.cpp
+
+// Candidate translation unit (score above; library headers required).
+// Boost.Signals library
+
+// Copyright Douglas Gregor 2001-2004. Use, modification and
+// distribution is subject to the Boost Software License, Version
+// 1.0. (See accompanying file LICENSE_1_0.txt or copy at
+// http://www.boost.org/LICENSE_1_0.txt)
+
+// For more information, see http://www.boost.org
+
+#define BOOST_SIGNALS_SOURCE
+
+#include <boost/signals/connection.hpp>
+#include <cassert>
+
+namespace boost {
+  namespace BOOST_SIGNALS_NAMESPACE {
+
+    connection::connection(const connection& other) :
+      con(other.con), controlling_connection(other.controlling_connection)
+    {
+    }
+
+    connection::~connection()
+    {
+      if (controlling_connection) {
+        disconnect();
+      }
+    }
+
+    void
+    connection::reset(BOOST_SIGNALS_NAMESPACE::detail::basic_connection* new_con)
+    {
+      con.reset(new_con);
+    }
+
+    bool connection::operator==(const connection& other) const
+    {
+      return con.get() == other.con.get();
+    }
+
+    bool connection::operator<(const connection& other) const
+    {
+      return con.get() < other.con.get();
+    }
+
+    connection& connection::operator=(const connection& other)
+    {
+      connection(other).swap(*this);
+      return *this;
+    }
+
+    void connection::swap(connection& other)
+    {
+      this->con.swap(other.con);
+      std::swap(this->controlling_connection, other.controlling_connection);
+    }
+
+    void swap(connection& c1, connection& c2)
+    {
+      c1.swap(c2);
+    }
+
+    scoped_connection::scoped_connection(const connection& other) :
+      connection(other),
+      released(false)
+    {
+    }
+
+    scoped_connection::scoped_connection(const scoped_connection& other) :
+      connection(other),
+      released(other.released)
+    {
+    }
+
+    scoped_connection::~scoped_connection()
+    {
+      if (!released) {
+        this->disconnect();
+      }
+    }
+
+    connection scoped_connection::release()
+    {
+      released = true;
+      return *this;
+    }
+
+    void scoped_connection::swap(scoped_connection& other)
+    {
+      this->connection::swap(other);
+      bool other_released = other.released;
+      other.released = this->released;
+      this->released = other_released;
+    }
+
+    void swap(scoped_connection& c1, scoped_connection& c2)
+    {
+      c1.swap(c2);
+    }
+
+    scoped_connection&
+    scoped_connection::operator=(const connection& other)
+    {
+      scoped_connection(other).swap(*this);
+      return *this;
+    }
+
+    scoped_connection&
+    scoped_connection::operator=(const scoped_connection& other)
+    {
+      scoped_connection(other).swap(*this);
+      return *this;
+    }
+
+    void
+    connection::add_bound_object(const BOOST_SIGNALS_NAMESPACE::detail::bound_object& b)
+    {
+      assert(con.get() != 0);
+      con->bound_objects.push_back(b);
+    }
+
+
+    void connection::disconnect() const
+    {
+      if (this->connected()) {
+        // Make sure we have a reference to the basic_connection object,
+        // because 'this' may disappear
+        shared_ptr<detail::basic_connection> local_con = con;
+
+        void (*signal_disconnect)(void*, void*) = local_con->signal_disconnect;
+
+        // Note that this connection no longer exists
+        // Order is important here: we could get into an infinite loop if this
+        // isn't cleared before we try the disconnect.
+        local_con->signal_disconnect = 0;
+
+        // Disconnect signal
+        signal_disconnect(local_con->signal, local_con->signal_data);
+
+        // Disconnect all bound objects
+        typedef std::list<BOOST_SIGNALS_NAMESPACE::detail::bound_object>::iterator iterator;
+        for (iterator i = local_con->bound_objects.begin();
+             i != local_con->bound_objects.end(); ++i) {
+          assert(i->disconnect != 0);
+          i->disconnect(i->obj, i->data);
+        }
+      }
+    }
+  } // end namespace boost
+} // end namespace boost
+
+#ifndef BOOST_MSVC
+// Explicit instantiations to keep everything in the library
+template class std::list<boost::BOOST_SIGNALS_NAMESPACE::detail::bound_object>;
+#endif

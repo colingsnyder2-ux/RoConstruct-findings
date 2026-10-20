@@ -1,22 +1,98 @@
-// roc 2007-08 004fc070  unit: RBX::Render::AggregateChunk  size: 38 bytes
-// Make this compile to the exact bytes below, then: roc check 2007-08 004fc070
-//
-// 004fc070  51                   push ecx
-// 004fc071  56                   push esi
-// 004fc072  8b74240c             mov esi, dword ptr [esp + 0xc]
-// 004fc076  c70600000000         mov dword ptr [esi], 0
-// 004fc07c  8b411c               mov eax, dword ptr [ecx + 0x1c]
-// 004fc07f  50                   push eax
-// 004fc080  8bce                 mov ecx, esi
-// 004fc082  c744240800000000     mov dword ptr [esp + 8], 0
-// 004fc08a  e8e18ef7ff           call 0x474f70
-// 004fc08f  8bc6                 mov eax, esi
-// 004fc091  5e                   pop esi
-// 004fc092  59                   pop ecx
-// 004fc093  c20400               ret 4
-// library rbxgs-render/Chunk.cpp (function ?getMaterial@AggregateChunk@Render@RBX@@UAE?AV?$ReferenceCountedPointer@VMaterial@Render@RBX@@@G3D@@XZ)
-
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
 // roc-lib: rbxgs-render Chunk.cpp
+
+// Candidate translation unit (score above; library headers required).
+#include "RenderLib/Chunk.h"
+
+namespace RBX
+{
+	namespace Render
+	{
+		const float Chunk::DECAL_OFFSET = -0.2f;
+		const float Chunk::TEXTURE_OFFSET = -0.1f;
+
+		const G3D::CoordinateFrame AggregateChunk::identity;
+
+		AggregateChunk::AggregateChunk(const G3D::ReferenceCountedPointer<Chunk>& firstChunk)
+			: Chunk(firstChunk->polygonOffset),
+			  _castsShadows(firstChunk->castsShadows()),
+			  _cullable(firstChunk->cullable())
+		{
+			if (!randomColors)
+				material = firstChunk->getMaterial();
+
+			RenderStats::aggregateChunkCount++;
+			RenderStats::chunkCount--;
+
+			if (randomColors)
+			{
+				material = new Material;
+				material->appendLevel(NULL, (G3D::Color3::wheelRandom() + G3D::Color3::white()) / 2.0f, 0.0f, 50.0f, 0.0f, 0.0f);
+			}
+		}
+
+		AggregateChunk::~AggregateChunk()
+		{
+			RenderStats::chunkCount++;
+			RenderStats::aggregateChunkCount--;
+			RenderStats::aggregatedChunkCount -= components.size();
+		}
+
+		void AggregateChunk::makeMesh()
+		{
+			mesh = Mesh::aggregate(components, _cframe, radius);
+		}
+
+		void AggregateChunk::renderShadows(G3D::RenderDevice* rd, const G3D::GLight& light, bool caps, float shadowVertexDistance)
+		{
+			if (light != shadowSource)
+			{
+				shadowSource = light;
+				shadowIndexArray.clear();
+				shadowIndexArray16.clear();
+
+				if (material->veryTransparent())
+					return;
+
+				static G3D::Array<G3D::Vector3> shadowVertex;
+
+				shadowVertex.clear();
+				shadowVertex.push_back(-light.position.xyz().direction() * shadowVertexDistance);
+
+				G3D::Vector3 worldLight = light.position.xyz().direction();
+				mesh->computeDirectionalShadowVolume(cframe(), worldLight, shadowIndexArray, shadowVertex, caps);
+
+				if (shadowVertex.size() < 65536)
+				{
+					int size = shadowIndexArray.size();
+
+					shadowIndexArray16.resize(size);
+					for (int i = 0; i < size; i++)
+						shadowIndexArray16[i] = shadowIndexArray[i];
+
+					shadowIndexArray.clear();
+				}
+
+				G3D::ReferenceCountedPointer<G3D::VARArea> area = G3D::VARArea::create(shadowVertex.size() * 12, G3D::VARArea::WRITE_EVERY_FEW_FRAMES);
+				shadowVAR = G3D::VAR(shadowVertex, area);
+			}
+
+			if (shadowIndexArray.size() > 0)
+			{
+				rd->beginIndexedPrimitives();
+				rd->setVertexArray(shadowVAR);
+				rd->sendIndices(G3D::RenderDevice::TRIANGLES, shadowIndexArray.size(), shadowIndexArray.begin());
+				rd->endIndexedPrimitives();
+			}
+			else if (shadowIndexArray16.size() > 0)
+			{
+				rd->beginIndexedPrimitives();
+				rd->setVertexArray(shadowVAR);
+				rd->sendIndices(G3D::RenderDevice::TRIANGLES, shadowIndexArray16.size(), shadowIndexArray16.begin());
+				rd->endIndexedPrimitives();
+			}
+		}
+	}
+}

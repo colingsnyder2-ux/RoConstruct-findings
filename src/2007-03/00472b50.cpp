@@ -1,36 +1,190 @@
-// roc 2007-03 00472b50  unit: seg_00470000  size: 68 bytes
-// Make this compile to the exact bytes below, then: roc check 2007-03 00472b50
-//
-// 00472b50  83790c00             cmp dword ptr [ecx + 0xc], 0
-// 00472b54  56                   push esi
-// 00472b55  8d710c               lea esi, [ecx + 0xc]
-// 00472b58  7438                 je 0x472b92
-// 00472b5a  8b4924               mov ecx, dword ptr [ecx + 0x24]
-// 00472b5d  56                   push esi
-// 00472b5e  e8fd2d0000           call 0x475960
-// 00472b63  8b06                 mov eax, dword ptr [esi]
-// 00472b65  85c0                 test eax, eax
-// 00472b67  7429                 je 0x472b92
-// 00472b69  83c004               add eax, 4
-// 00472b6c  50                   push eax
-// 00472b6d  ff15a8d27700         call dword ptr [0x77d2a8]
-// 00472b73  85c0                 test eax, eax
-// 00472b75  7515                 jne 0x472b8c
-// 00472b77  8b0e                 mov ecx, dword ptr [esi]
-// 00472b79  e84208ffff           call 0x4633c0
-// 00472b7e  8b0e                 mov ecx, dword ptr [esi]
-// 00472b80  85c9                 test ecx, ecx
-// 00472b82  7408                 je 0x472b8c
-// 00472b84  8b01                 mov eax, dword ptr [ecx]
-// 00472b86  8b10                 mov edx, dword ptr [eax]
-// 00472b88  6a01                 push 1
-// 00472b8a  ffd2                 call edx
-// 00472b8c  c70600000000         mov dword ptr [esi], 0
-// 00472b92  5e                   pop esi
-// 00472b93  c3                   ret 
-// library rbxgs-g3d/GLG3Dcpp\VARArea.cpp (function ?finish@VARArea@G3D@@QAEXXZ)
-
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD /arch:SSE2 /fp:fast
 // roc-lib: rbxgs-g3d GLG3Dcpp/VARArea.cpp
+
+// Candidate translation unit (score above; library headers required).
+/**
+ @file VARArea.cpp
+ 
+ Implementation of the vertex array system used by RenderDevice.
+
+ @maintainer Morgan McGuire, morgan@graphics3d.com
+ 
+ @created 2003-01-08
+ @edited  2006-01-06
+ */
+
+#include "G3D/Log.h"
+#include "GLG3D/RenderDevice.h"
+#include "GLG3D/glheaders.h"
+#include "GLG3D/getOpenGLState.h"
+#include "GLG3D/VAR.h"
+#include "GLG3D/VARArea.h"
+#include "GLG3D/GLCaps.h"
+
+namespace G3D {
+
+Array<VARAreaRef>    VARArea::allVARAreas;
+
+VARArea::Mode VARArea::mode = VARArea::UNINITIALIZED;
+
+size_t VARArea::_sizeOfAllVARAreasInMemory = 0;
+
+VARAreaRef VARArea::create(size_t s, UsageHint h) {
+    cleanCache();
+    VARAreaRef x = new VARArea(s, h);
+    allVARAreas.push(x);
+    return x;
+}
+
+
+VARArea::VARArea(size_t _size, UsageHint hint) : size(_size) {
+    renderDevice = NULL;
+
+    // See if we've determined the mode yet.
+    if (mode == UNINITIALIZED) {
+        if (GLCaps::supports_GL_ARB_vertex_buffer_object() &&
+            (glGenBuffersARB != NULL) && 
+            (glBufferDataARB != NULL) &&
+            (glDeleteBuffersARB != NULL) &&			
+			! GLCaps::hasBug_slowVBO()) {
+			mode = VBO_MEMORY;
+        } else {
+            mode = MAIN_MEMORY;
+        }
+    }
+
+    _sizeOfAllVARAreasInMemory += size;
+
+    switch (mode) {
+    case VBO_MEMORY:
+        {
+            //glPushClientAttrib(GL_CLIENT_VERTEX_ARRAY_BIT);
+                glGenBuffersARB(1, &glbuffer);
+                glBindBufferARB(GL_ARRAY_BUFFER_ARB, glbuffer);
+
+                GLenum usage;
+
+                switch (hint) {
+                case WRITE_EVERY_FRAME:
+                    usage = GL_STREAM_DRAW_ARB;
+                    break;
+
+                case WRITE_ONCE:
+                    usage = GL_STATIC_DRAW_ARB;
+                    break;
+
+                case WRITE_EVERY_FEW_FRAMES:
+                    usage = GL_DYNAMIC_DRAW_ARB;
+                    break;
+
+                default:
+                    usage = GL_STREAM_DRAW_ARB;
+                    debugAssertM(false, "Fell through switch");
+                }
+
+                // Load some (undefined) data to initialize the buffer
+                glBufferDataARB(GL_ARRAY_BUFFER_ARB, size, NULL, usage);
+                debugAssertGLOk();    
+
+                // The basePointer is always NULL for a VBO
+                basePointer = NULL;
+
+                glBindBufferARB(GL_ARRAY_BUFFER_ARB, 0);
+            //glPopClientAttrib();
+            debugAssertGLOk();
+        }
+        break;
+
+    case MAIN_MEMORY:
+        // Use the base pointer
+        glbuffer = 0;
+        basePointer = malloc(size);
+        debugAssert(basePointer);
+        break;
+
+    default:
+        alwaysAssertM(false, "Fell through switch.");
+        glbuffer = 0;
+        basePointer = NULL;
+    }
+
+    milestone     = NULL;
+    allocated     = 0;
+	generation    = 1;
+	peakAllocated = 0;
+}
+
+
+VARArea::~VARArea() {
+    _sizeOfAllVARAreasInMemory -= size;
+
+    if (size == 0) {
+        // Already freed
+        return;
+    }
+
+    switch (mode) {
+    case VBO_MEMORY:
+        // Delete the vertex buffer
+        glDeleteBuffersARB(1, &glbuffer);
+        glbuffer = 0;
+        break;
+
+    case MAIN_MEMORY:
+        // Free the buffer
+        free(basePointer);
+        basePointer = NULL;
+        break;
+
+    default:
+        alwaysAssertM(false, "Fell through switch.");
+    }
+
+    size = 0;
+}
+
+
+void VARArea::finish() {
+    if (milestone.notNull()) {
+        renderDevice->waitForMilestone(milestone);
+        milestone = NULL;
+    }
+}
+
+
+void VARArea::reset() {
+    finish();
+	++generation;
+	allocated = 0;
+}
+
+
+void VARArea::cleanCache() {
+    int i = 0;
+    while (i < allVARAreas.size()) {
+        if (allVARAreas[i].isLastReference()) {
+            allVARAreas.fastRemove(i);
+        } else {
+            ++i;
+        }
+    }
+}
+
+
+void VARArea::cleanupAllVARAreas() {
+    // Intentionally empty
+    for (int i = 0; i < allVARAreas.size(); ++i) {
+        debugAssert((void*)allVARAreas[i]->renderDevice != (void*)0xcdcdcdcd);
+
+        allVARAreas[i]->reset();
+
+        // Invoke the destructor, freeing the resources even if there are
+        // more pointers (but not actually deleting the object)
+        allVARAreas[i]->~VARArea();
+    }
+    allVARAreas.clear();
+}
+
+} // namespace

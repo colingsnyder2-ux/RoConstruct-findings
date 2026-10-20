@@ -1,36 +1,331 @@
-// roc 2007-03 004f6460  unit: seg_004f0000  size: 84 bytes
-// Make this compile to the exact bytes below, then: roc check 2007-03 004f6460
-//
-// 004f6460  6844ae8b00           push 0x8bae44
-// 004f6465  ff15e8ed7700         call dword ptr [0x77ede8]
-// 004f646b  a15cae8b00           mov eax, dword ptr [0x8bae5c]
-// 004f6470  8b0d58ae8b00         mov ecx, dword ptr [0x8bae58]
-// 004f6476  50                   push eax
-// 004f6477  51                   push ecx
-// 004f6478  ff15d4ed7700         call dword ptr [0x77edd4]
-// 004f647e  8b1540ae8b00         mov edx, dword ptr [0x8bae40]
-// 004f6484  52                   push edx
-// 004f6485  ff15d0ed7700         call dword ptr [0x77edd0]
-// 004f648b  a154ae8b00           mov eax, dword ptr [0x8bae54]
-// 004f6490  85c0                 test eax, eax
-// 004f6492  7d1f                 jge 0x4f64b3
-// 004f6494  56                   push esi
-// 004f6495  33f6                 xor esi, esi
-// 004f6497  85c0                 test eax, eax
-// 004f6499  7d17                 jge 0x4f64b2
-// 004f649b  57                   push edi
-// 004f649c  8b3de4ed7700         mov edi, dword ptr [0x77ede4]
-// 004f64a2  6a00                 push 0
-// 004f64a4  ffd7                 call edi
-// 004f64a6  83ee01               sub esi, 1
-// 004f64a9  3b3554ae8b00         cmp esi, dword ptr [0x8bae54]
-// 004f64af  7ff1                 jg 0x4f64a2
-// 004f64b1  5f                   pop edi
-// 004f64b2  5e                   pop esi
-// 004f64b3  c3                   ret 
-// library rbxgs-g3d/G3Dcpp\debugAssert.cpp (function ?_restoreInputGrab_@_internal@G3D@@YAXXZ)
-
 // roc-lang: cpp
 // roc-cl: 50727
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD /arch:SSE2 /fp:fast
 // roc-lib: rbxgs-g3d G3Dcpp/debugAssert.cpp
+
+// Candidate translation unit (score above; library headers required).
+/**
+ @file debugAssert.cpp
+
+ Windows implementation of assertion routines.
+
+ @maintainer Morgan McGuire, graphics3d.com
+ 
+ @created 2001-08-26
+ @edited  2006-02-02
+ */
+
+#include "G3D/debugAssert.h"
+#include "G3D/platform.h"
+#ifdef G3D_WIN32
+    #include <tchar.h>
+#endif
+#include "G3D/format.h"
+#include "G3D/prompt.h"
+#include <string>
+#include "G3D/debugPrintf.h"
+#include "G3D/Log.h"
+
+#ifdef G3D_WIN32
+    // disable: "C++ exception handler used"
+#   pragma warning (push)
+#   pragma warning (disable : 4530)
+#endif
+
+using namespace std;
+
+namespace G3D { namespace _internal {
+
+AssertionHook _debugHook = _handleDebugAssert_;
+AssertionHook _failureHook = _handleErrorCheck_;
+
+#ifdef G3D_LINUX
+    Display*      x11Display = NULL;
+    Window        x11Window  = 0;
+#endif
+
+
+#ifdef G3D_WIN32
+static void postToClipboard(const char *text) {
+    if (OpenClipboard(NULL)) {
+        HGLOBAL hMem = GlobalAlloc(GHND | GMEM_DDESHARE, strlen(text) + 1);
+        if (hMem) {
+            char *pMem = (char*)GlobalLock(hMem);
+            strcpy(pMem, text);
+            GlobalUnlock(hMem);
+
+            EmptyClipboard();
+            SetClipboardData(CF_TEXT, hMem);
+        }
+
+        CloseClipboard();
+        GlobalFree(hMem);
+    }
+}
+#endif
+
+/**
+ outTitle should be set before the call
+ */
+static void createErrorMessage(
+    const char*         expression,
+    const std::string&  message,
+    const char*         filename,
+    int                 lineNumber,
+    std::string&        outTitle,
+    std::string&        outMessage) {
+
+    std::string le = "";
+    char* newline = "\n";
+
+    #ifdef G3D_WIN32
+        newline = "\r\n";
+
+        // The last error value.  (Which is preserved across the call).
+        DWORD lastErr = GetLastError();
+    
+        // The decoded message from FormatMessage
+        LPTSTR formatMsg = NULL;
+
+        if (NULL == formatMsg) {
+            FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER |
+                          FORMAT_MESSAGE_IGNORE_INSERTS |
+                          FORMAT_MESSAGE_FROM_SYSTEM,
+                            NULL,
+                            lastErr,
+                            0,
+                            (LPTSTR)&formatMsg,
+                            0,
+                            NULL);
+        }
+
+        // Make sure the message got translated into something.
+        LPTSTR realLastErr;
+        if (NULL != formatMsg) {
+            realLastErr = formatMsg;
+        } else {
+            realLastErr = _T("Last error code does not exist.");
+        }
+
+		if (lastErr != 0) {
+	        le = G3D::format("Last Error (0x%08X): %s\r\n\r\n", lastErr, (LPCSTR)realLastErr);
+		}
+
+        // Get rid of the allocated memory from FormatMessage.
+        if (NULL != formatMsg) {
+            LocalFree((LPVOID)formatMsg);
+        }
+
+        char modulePath[MAX_PATH];
+        GetModuleFileName(NULL, modulePath, MAX_PATH);
+
+        const char* moduleName = strrchr(modulePath, '\\');
+        outTitle = outTitle + string(" - ") + string(moduleName ? (moduleName + 1) : modulePath);
+
+    #endif
+
+    // Build the message.
+    outMessage =
+        G3D::format("%s%s%sExpression: %s%s%s:%d%s%s%s", 
+                 message.c_str(), newline, newline, expression, newline, 
+                 filename, lineNumber, newline, newline, le.c_str());
+}
+
+
+bool _handleDebugAssert_(
+    const char*         expression,
+    const std::string&  message,
+    const char*         filename,
+    int                 lineNumber,
+    bool&               ignoreAlways,
+    bool                useGuiPrompt) {
+
+    std::string dialogTitle = "Assertion Failure";
+    std::string dialogText = "";
+
+    createErrorMessage(expression, message, filename, lineNumber, dialogTitle, dialogText);
+
+    #ifdef G3D_WIN32
+        DWORD lastErr = GetLastError();
+        postToClipboard(dialogText.c_str());
+    #endif
+
+    const int cBreak = 0;
+    const int cIgnore = 1;
+    const int cIgnoreAlways = 2;
+    const int cAbort = 3;
+
+    static char* choices[] = {"Debug", "Ignore", "Ignore Always", "Exit"};
+
+    // Log the error
+    Log::common()->print(std::string("\n**************************\n\n") + dialogTitle + "\n" + dialogText);
+
+    int result = G3D::prompt(dialogTitle.c_str(), dialogText.c_str(), (const char**)choices, 4, useGuiPrompt);
+
+    #ifdef G3D_WIN32
+        // Put the incoming last error back.
+        SetLastError(lastErr);
+    #endif
+
+    switch (result) {
+    // -1 shouldn't actually occur because it means 
+    // that we're in release mode.
+    case -1:
+    case cBreak:
+        return true;
+        break;
+
+    case cIgnore:
+        return false;
+        break;
+   
+    case cIgnoreAlways:
+        ignoreAlways = true;
+        return false;
+        break;
+
+    case cAbort:
+        exit(-1);
+        break;
+
+    default:
+        // Shouldn't get here
+        return false;
+        break;
+    }
+
+}
+
+
+bool _handleErrorCheck_(
+    const char*         expression,
+    const std::string&  message,
+    const char*         filename,
+    int                 lineNumber,
+    bool&               ignoreAlways,
+    bool                useGuiPrompt) {
+
+    (void)ignoreAlways;
+
+    std::string dialogTitle = "Critical Error";
+    std::string dialogText = "";
+
+    createErrorMessage(expression, message, filename, lineNumber, dialogTitle, dialogText);
+
+    // Log the error
+    Log::common()->print(std::string("\n**************************\n\n") + dialogTitle + "\n" + dialogText);
+
+    static char* choices[] = {"Ok"};
+
+    std::string m = 
+        std::string("An internal error has occured in your program and it will now close.  Details about the error have been reported in \"") +
+            Log::getCommonLogFilename() + "\".";
+
+    int result = G3D::prompt("Error", m.c_str(), (const char**)choices, 1, useGuiPrompt);
+    (void)result;
+
+    return true;
+}
+
+
+#ifdef G3D_WIN32
+static HCURSOR oldCursor;
+static RECT    oldCursorRect;
+static POINT   oldCursorPos;
+static int     oldShowCursorCount;
+#endif
+
+void _releaseInputGrab_() {
+    #ifdef G3D_WIN32
+
+        GetCursorPos(&oldCursorPos);
+
+        // Stop hiding the cursor if the application hid it.
+        oldShowCursorCount = ShowCursor(true) - 1;
+
+        if (oldShowCursorCount < -1) {
+            for (int c = oldShowCursorCount; c < -1; ++c) {
+                ShowCursor(true);
+            }
+        }
+
+        // Set the default cursor in case the application
+        // set the cursor to NULL.
+        oldCursor = GetCursor();
+        SetCursor(LoadCursor(NULL, IDC_ARROW));
+
+        // Allow the cursor full access to the screen
+        GetClipCursor(&oldCursorRect);
+        ClipCursor(NULL);
+        
+    #elif defined(G3D_LINUX)
+        if (x11Display != NULL) {
+            XUngrabPointer(x11Display, CurrentTime);
+            XUngrabKeyboard(x11Display, CurrentTime);
+            if (x11Window != 0) {
+                //XUndefineCursor(x11Display, x11Window);
+                // TODO: Note that we leak this cursor; it should be
+                // freed in the restore code.
+                Cursor c = XCreateFontCursor(x11Display, 68);
+                XDefineCursor(x11Display, x11Window, c);
+            }
+            XSync(x11Display, false);           
+            XAllowEvents(x11Display, AsyncPointer, CurrentTime);
+            XFlush(x11Display);
+        }
+    #elif defined(G3D_OSX)
+        // TODO: OS X
+    #endif
+}
+
+
+void _restoreInputGrab_() {
+    #ifdef G3D_WIN32
+
+        // Restore the old clipping region
+        ClipCursor(&oldCursorRect);
+
+        SetCursorPos(oldCursorPos.x, oldCursorPos.y);
+
+        // Restore the old cursor
+        SetCursor(oldCursor);
+
+        // Restore old visibility count
+        if (oldShowCursorCount < 0) {
+            for (int c = 0; c > oldShowCursorCount; --c) {
+                ShowCursor(false);
+            }
+        }
+        
+    #elif defined(G3D_LINUX)
+        // TODO: Linux
+    #elif defined(G3D_OSX)
+        // TODO: OS X
+    #endif
+}
+
+
+}; // internal namespace
+ 
+void setAssertionHook(AssertionHook hook) {
+	G3D::_internal::_debugHook = hook;
+}
+
+AssertionHook assertionHook() {
+	return 	G3D::_internal::_debugHook;
+}
+
+void setFailureHook(AssertionHook hook) {
+	G3D::_internal::_failureHook = hook;
+}
+
+AssertionHook failureHook() {
+	return G3D::_internal::_failureHook;
+}
+
+
+} // namespace
+
+#ifdef G3D_WIN32
+#   pragma warning (pop)
+#endif

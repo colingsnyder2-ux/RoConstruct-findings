@@ -1,37 +1,123 @@
-// roc 2008-06 0068d4b0  unit: Ogre::VShadowCameraSetup::?$SharedPtr  size: 91 bytes
-// Make this compile to the exact bytes below, then: roc check 2008-06 0068d4b0
-//
-// 0068d4b0  8b4c2404             mov ecx, dword ptr [esp + 4]
-// 0068d4b4  83ec0c               sub esp, 0xc
-// 0068d4b7  85c9                 test ecx, ecx
-// 0068d4b9  7716                 ja 0x68d4d1
-// 0068d4bb  33c9                 xor ecx, ecx
-// 0068d4bd  8d1449               lea edx, [ecx + ecx*2]
-// 0068d4c0  03d2                 add edx, edx
-// 0068d4c2  03d2                 add edx, edx
-// 0068d4c4  52                   push edx
-// 0068d4c5  e856340100           call 0x6a0920
-// 0068d4ca  83c404               add esp, 4
-// 0068d4cd  83c40c               add esp, 0xc
-// 0068d4d0  c3                   ret 
-// 0068d4d1  83c8ff               or eax, 0xffffffff
-// 0068d4d4  33d2                 xor edx, edx
-// 0068d4d6  f7f1                 div ecx
-// 0068d4d8  83f80c               cmp eax, 0xc
-// 0068d4db  73e0                 jae 0x68d4bd
-// 0068d4dd  8d442410             lea eax, [esp + 0x10]
-// 0068d4e1  50                   push eax
-// 0068d4e2  8d4c2404             lea ecx, [esp + 4]
-// 0068d4e6  c744241400000000     mov dword ptr [esp + 0x14], 0
-// 0068d4ee  ff15a4288000         call dword ptr [0x8028a4]
-// 0068d4f4  68d8078d00           push 0x8d07d8
-// 0068d4f9  8d4c2404             lea ecx, [esp + 4]
-// 0068d4fd  51                   push ecx
-// 0068d4fe  c744240804b18000     mov dword ptr [esp + 8], 0x80b104
-// 0068d506  e881400100           call 0x6a158c
-// library openrbx-client/App\v8world\SimJobStage.cpp (function ??$_Allocate@U_Node@?$_List_nod@PAVMechanism@RBX@@V?$allocator@PAVMechanism@RBX@@@std@@@std@@@std@@YAPAU_Node@?$_List_nod@PAVMechanism@RBX@@V?$allocator@PAVMechanism@RBX@@@std@@@0@IPAU120@@Z)
-
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
 // roc-lib: openrbx-client-dll App/v8world/SimJobStage.cpp
+
+// Candidate translation unit (score above; library headers required).
+#include "v8world/SimJobStage.h"
+
+#include "decomp.h"
+#include "v8kernel/Kernel.h"
+#include "v8world/Assembly2.h"
+#include "v8world/Primitive.h"
+
+#include <algorithm>
+#include <cstddef>
+#include <functional>
+
+namespace RBX {
+
+// FUNCTION: WEBSERVICE 0x1011c900
+void SimJobStage::onEdgeRemoving(Edge* e)
+{
+	e->removeFromKernel();
+
+	e->removeFromStage(this);
+}
+
+// FUNCTION: WEBSERVICE 0x1011c990
+SimJobStage::SimJobStage(IStage* upstream, World* world) : IWorldStage(upstream, new Kernel(this), world)
+{
+}
+
+// FUNCTION: WEBSERVICE 0x1011ca60
+void SimJobStage::notifyMovingPrimitives()
+{
+	std::for_each(mechanisms.begin(), mechanisms.end(), std::mem_fun(&Mechanism::notifyMovingPrimitives));
+}
+
+// FUNCTION: WEBSERVICE 0x1011cb40
+void SimJobStage::destroyMechanism(Mechanism* m)
+{
+	Mechanism* next = mechanisms.size() > 1 ? nextMechanism(mechanisms, m) : NULL;
+
+	MechanismTracker::transferTrackers(m, next);
+
+	mechanisms.erase(m->myIt);
+
+	delete m;
+}
+
+void SimJobStage::insertMechanism(Mechanism* mechanism)
+{
+	mechanisms.push_back(mechanism);
+
+	mechanism->myIt = --mechanisms.end();
+}
+
+// FUNCTION: WEBSERVICE 0x1011cba0
+void SimJobStage::onAssemblyAdded(Assembly* a)
+{
+	a->putInPipeline(this);
+
+	Mechanism* mechanism = new Mechanism();
+	mechanism->insertAssembly(a);
+
+	insertMechanism(mechanism);
+
+	a->putInKernel(getKernel());
+}
+
+// FUNCTION: WEBSERVICE 0x1011cc80
+void SimJobStage::onAssemblyRemoving(Assembly* a)
+{
+	a->removeFromKernel();
+
+	Mechanism* mechanism = a->getMechanism();
+
+	mechanism->removeAssembly(a);
+
+	if (mechanism->getAssemblies().size() == 0) {
+		destroyMechanism(mechanism);
+	}
+
+	a->removeFromStage(this);
+}
+
+// FUNCTION: WEBSERVICE 0x1011ccc0
+void SimJobStage::combineMechanisms(Edge* e)
+{
+	Assembly* a0 = e->getPrimitive(0)->getAssembly();
+	Assembly* a1 = e->getPrimitive(1)->getAssembly();
+
+	Mechanism* m0 = a0->getMechanism();
+	Mechanism* m1 = a1->getMechanism();
+
+	if (m0 != m1) {
+		Mechanism* bigger = m0->getAssemblies().size() > m1->getAssemblies().size() ? m0 : m1;
+		Mechanism* smaller = bigger == m0 ? m1 : m0;
+
+		bigger->absorb(smaller);
+
+		destroyMechanism(smaller);
+	}
+}
+
+// FUNCTION: WEBSERVICE 0x1011cd20
+void SimJobStage::onEdgeAdded(Edge* e)
+{
+	e->putInPipeline(this);
+
+	if (e->getEdgeType() == Edge::JOINT) {
+		Assembly* a0 = e->getPrimitive(0)->getAssembly();
+		Assembly* a1 = e->getPrimitive(1)->getAssembly();
+
+		if (a0->inOrDownstreamOfStage(this) && a1->inOrDownstreamOfStage(this)) {
+			combineMechanisms(e);
+		}
+	}
+
+	e->putInKernel(getKernel());
+}
+
+} // namespace RBX

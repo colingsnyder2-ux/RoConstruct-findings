@@ -1,126 +1,279 @@
-// roc 2008-06 004aa2c0  unit: RBX::NetworkSettings::W4PhysicsReceiveMethod::?$EnumDesc  size: 360 bytes
-// Make this compile to the exact bytes below, then: roc check 2008-06 004aa2c0
-//
-// 004aa2c0  6aff                 push -1
-// 004aa2c2  68c98e7d00           push 0x7d8ec9
-// 004aa2c7  64a100000000         mov eax, dword ptr fs:[0]
-// 004aa2cd  50                   push eax
-// 004aa2ce  64892500000000       mov dword ptr fs:[0], esp
-// 004aa2d5  83ec1c               sub esp, 0x1c
-// 004aa2d8  53                   push ebx
-// 004aa2d9  56                   push esi
-// 004aa2da  57                   push edi
-// 004aa2db  6818a99300           push 0x93a918
-// 004aa2e0  8bf1                 mov esi, ecx
-// 004aa2e2  6818418200           push 0x824118
-// 004aa2e7  8974242c             mov dword ptr [esp + 0x2c], esi
-// 004aa2eb  e8a0220c00           call 0x56c590
-// 004aa2f0  8d442423             lea eax, [esp + 0x23]
-// 004aa2f4  50                   push eax
-// 004aa2f5  8d542427             lea edx, [esp + 0x27]
-// 004aa2f9  33ff                 xor edi, edi
-// 004aa2fb  8d4e30               lea ecx, [esi + 0x30]
-// 004aa2fe  52                   push edx
-// 004aa2ff  897c2438             mov dword ptr [esp + 0x38], edi
-// 004aa303  c706c4408200         mov dword ptr [esi], 0x8240c4
-// 004aa309  e802bef9ff           call 0x446110
-// 004aa30e  8d442423             lea eax, [esp + 0x23]
-// 004aa312  50                   push eax
-// 004aa313  8d542427             lea edx, [esp + 0x27]
-// 004aa317  8d4e50               lea ecx, [esi + 0x50]
-// 004aa31a  52                   push edx
-// 004aa31b  c644243801           mov byte ptr [esp + 0x38], 1
-// 004aa320  e8ebbdf9ff           call 0x446110
-// 004aa325  6a04                 push 4
-// 004aa327  c644243402           mov byte ptr [esp + 0x34], 2
-// 004aa32c  8d5e70               lea ebx, [esi + 0x70]
-// 004aa32f  e8ec651f00           call 0x6a0920
-// 004aa334  83c404               add esp, 4
-// 004aa337  3bc7                 cmp eax, edi
-// 004aa339  7404                 je 0x4aa33f
-// 004aa33b  8918                 mov dword ptr [eax], ebx
-// 004aa33d  eb02                 jmp 0x4aa341
-// 004aa33f  33c0                 xor eax, eax
-// 004aa341  8903                 mov dword ptr [ebx], eax
-// 004aa343  897b0c               mov dword ptr [ebx + 0xc], edi
-// 004aa346  897b10               mov dword ptr [ebx + 0x10], edi
-// 004aa349  897b14               mov dword ptr [ebx + 0x14], edi
-// 004aa34c  6a04                 push 4
-// 004aa34e  c644243404           mov byte ptr [esp + 0x34], 4
-// 004aa353  8d9e88000000         lea ebx, [esi + 0x88]
-// 004aa359  e8c2651f00           call 0x6a0920
-// 004aa35e  83c404               add esp, 4
-// 004aa361  3bc7                 cmp eax, edi
-// 004aa363  7404                 je 0x4aa369
-// 004aa365  8918                 mov dword ptr [eax], ebx
-// 004aa367  eb02                 jmp 0x4aa36b
-// 004aa369  33c0                 xor eax, eax
-// 004aa36b  8903                 mov dword ptr [ebx], eax
-// 004aa36d  897b0c               mov dword ptr [ebx + 0xc], edi
-// 004aa370  897b10               mov dword ptr [ebx + 0x10], edi
-// 004aa373  897b14               mov dword ptr [ebx + 0x14], edi
-// 004aa376  6a04                 push 4
-// 004aa378  c644243406           mov byte ptr [esp + 0x34], 6
-// 004aa37d  8d9ea0000000         lea ebx, [esi + 0xa0]
-// 004aa383  e898651f00           call 0x6a0920
-// 004aa388  83c404               add esp, 4
-// 004aa38b  3bc7                 cmp eax, edi
-// 004aa38d  7404                 je 0x4aa393
-// 004aa38f  8918                 mov dword ptr [eax], ebx
-// 004aa391  eb02                 jmp 0x4aa395
-// 004aa393  33c0                 xor eax, eax
-// 004aa395  8903                 mov dword ptr [ebx], eax
-// 004aa397  897b0c               mov dword ptr [ebx + 0xc], edi
-// 004aa39a  897b10               mov dword ptr [ebx + 0x10], edi
-// 004aa39d  897b14               mov dword ptr [ebx + 0x14], edi
-// 004aa3a0  6a04                 push 4
-// 004aa3a2  c644243408           mov byte ptr [esp + 0x34], 8
-// 004aa3a7  8d9eb8000000         lea ebx, [esi + 0xb8]
-// 004aa3ad  e86e651f00           call 0x6a0920
-// 004aa3b2  83c404               add esp, 4
-// 004aa3b5  3bc7                 cmp eax, edi
-// 004aa3b7  7404                 je 0x4aa3bd
-// 004aa3b9  8918                 mov dword ptr [eax], ebx
-// 004aa3bb  eb02                 jmp 0x4aa3bf
-// 004aa3bd  33c0                 xor eax, eax
-// 004aa3bf  8903                 mov dword ptr [ebx], eax
-// 004aa3c1  897b0c               mov dword ptr [ebx + 0xc], edi
-// 004aa3c4  897b10               mov dword ptr [ebx + 0x10], edi
-// 004aa3c7  897b14               mov dword ptr [ebx + 0x14], edi
-// 004aa3ca  6a04                 push 4
-// 004aa3cc  c64424340a           mov byte ptr [esp + 0x34], 0xa
-// 004aa3d1  8d9ed0000000         lea ebx, [esi + 0xd0]
-// 004aa3d7  e844651f00           call 0x6a0920
-// 004aa3dc  83c404               add esp, 4
-// 004aa3df  3bc7                 cmp eax, edi
-// 004aa3e1  7404                 je 0x4aa3e7
-// 004aa3e3  8918                 mov dword ptr [eax], ebx
-// 004aa3e5  eb02                 jmp 0x4aa3e9
-// 004aa3e7  33c0                 xor eax, eax
-// 004aa3e9  8903                 mov dword ptr [ebx], eax
-// 004aa3eb  897b0c               mov dword ptr [ebx + 0xc], edi
-// 004aa3ee  897b10               mov dword ptr [ebx + 0x10], edi
-// 004aa3f1  897b14               mov dword ptr [ebx + 0x14], edi
-// 004aa3f4  6810418200           push 0x824110
-// 004aa3f9  57                   push edi
-// 004aa3fa  8bce                 mov ecx, esi
-// 004aa3fc  c64424380c           mov byte ptr [esp + 0x38], 0xc
-// 004aa401  e82a311a00           call 0x64d530
-// 004aa406  6800418200           push 0x824100
-// 004aa40b  6a01                 push 1
-// 004aa40d  8bce                 mov ecx, esi
-// 004aa40f  e81c311a00           call 0x64d530
-// 004aa414  8b4c2428             mov ecx, dword ptr [esp + 0x28]
-// 004aa418  5f                   pop edi
-// 004aa419  8bc6                 mov eax, esi
-// 004aa41b  5e                   pop esi
-// 004aa41c  5b                   pop ebx
-// 004aa41d  64890d00000000       mov dword ptr fs:[0], ecx
-// 004aa424  83c428               add esp, 0x28
-// 004aa427  c3                   ret 
-// library rbxgs/roc_unit_1819d05611c25ca5.cpp (function ??0?$EnumDesc@W4PhysicsReceiveMethod@NetworkSettings@RBX@@@Reflection@RBX@@AAE@XZ)
-
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
 // roc-lib: rbxgs roc_unit_1819d05611c25ca5.cpp
+
+// Candidate translation unit (score above; library headers required).
+#pragma include_alias("reflection/enumconverter.h", "../roc_enum_native_owner_header_b9f24b80cd6bff22.cpp")
+#pragma include_alias("v8tree/Instance.h", "roc_unit_b34763c2f3d3f398.cpp")
+#pragma include_alias("util/IRenderable.h", "roc_unit_b8671ae8d3010f90.cpp")
+#pragma include_alias("NetworkSettings.h", "roc_unit_dbcedf8528d38107.cpp")
+#undef _RELEASEASSERT
+#include "util/Sound.h"
+#include "reflection/enumconverter.h"
+#include "v8datamodel/Camera.h"
+#include "v8datamodel/Feature.h"
+#include "util/SurfaceType.h"
+#include "v8world/Controller.h"
+#include "util/NormalId.h"
+#include "v8datamodel/custommesh.h"
+#include "v8datamodel/PartInstance.h"
+#include "appdraw/Part.h"
+#include "v8datamodel/DebugSettings.h"
+#include "NetworkSettings.h"
+#include "v8datamodel/Hopper.h"
+#include "roc_unit_5975d468e86a7a95.cpp"
+namespace RBX { namespace Reflection {
+using namespace Soundscape;
+template<>
+EnumDesc<Soundscape::ReverbType>::EnumDesc()
+	:EnumDescriptor("ReverbType", typeid(Soundscape::ReverbType))
+{
+	addPair(NoReverb, "NoReverb");
+	addPair(GenericReverb, "GenericReverb");
+	addPair(PaddedCell, "PaddedCell");
+	addPair(Room, "Room");
+	addPair(Bathroom, "Bathroom");
+	addPair(LivingRoom, "LivingRoom");
+	addPair(StoneRoom, "StoneRoom");
+	addPair(Auditorium, "Auditorium");
+	addPair(ConcertHall, "ConcertHall");
+	addPair(Cave, "Cave");
+	addPair(Arena, "Arena");
+	addPair(Hangar, "Hangar");
+	addPair(CarpettedHallway, "CarpettedHallway");
+	addPair(Hallway, "Hallway");
+	addPair(StoneCorridor, "StoneCorridor");
+	addPair(Alley, "Alley");
+	addPair(Forest, "Forest");
+	addPair(City, "City");
+	addPair(Mountains, "Mountains");
+	addPair(Quarry, "Quarry");
+	addPair(Plain, "Plain");
+	addPair(ParkingLot, "ParkingLot");
+	addPair(SewerPipe, "SewerPipe");
+	addPair(UnderWater, "UnderWater");
+}
+} }
+
+
+namespace RBX {
+template<>
+	
+	Reflection::EnumDesc<Camera::CameraType>::EnumDesc()
+		: EnumDescriptor("CameraType", typeid(Camera::CameraType))
+	{
+		addPair(Camera::FIXED_CAMERA, "Fixed");
+		addPair(Camera::WATCH_CAMERA, "Watch");
+		addPair(Camera::ATTACH_CAMERA, "Attach");
+		addPair(Camera::TRACK_CAMERA, "Track");
+		addPair(Camera::FOLLOW_CAMERA, "Follow");
+		addPair(Camera::CUSTOM_CAMERA, "Custom");
+	}
+}
+
+namespace RBX {
+template<>
+
+	Reflection::EnumDesc<Feature::TopBottom>::EnumDesc()
+		: EnumDescriptor("TopBottom", typeid(Feature::TopBottom))
+	{
+		addPair(Feature::TOP, "Top");
+		addPair(Feature::CENTER_TB, "Center");
+		addPair(Feature::BOTTOM, "Bottom");
+	}
+}
+
+namespace RBX {
+template<>
+
+	Reflection::EnumDesc<Feature::LeftRight>::EnumDesc()
+		: EnumDescriptor("LeftRight", typeid(Feature::LeftRight))
+	{
+		addPair(Feature::LEFT, "Left");
+		addPair(Feature::CENTER_LR, "Center");
+		addPair(Feature::RIGHT, "Right");
+	}
+}
+
+namespace RBX {
+template<>
+
+	Reflection::EnumDesc<Feature::InOut>::EnumDesc()
+		: EnumDescriptor("InOut", typeid(Feature::InOut))
+	{
+		addPair(Feature::EDGE, "Edge");
+		addPair(Feature::INSET, "Inset");
+		addPair(Feature::CENTER_IO, "Center");
+	}
+}
+
+namespace RBX {
+namespace Reflection {
+template<>
+		EnumDesc<SurfaceType>::EnumDesc()
+			: EnumDescriptor("SurfaceType", typeid(SurfaceType))
+		{
+			addPair(NO_SURFACE, "Smooth");
+			addPair(GLUE, "Glue");
+			addPair(WELD, "Weld");
+			addPair(STUDS, "Studs");
+			addPair(INLET, "Inlet");
+			addLegacyName("Spawn", NO_SURFACE);
+			addPair(ROTATE, "Hinge");
+			addPair(ROTATE_V, "Motor");
+			addPair(ROTATE_P, "SteppingMotor");
+			addLegacyName("Bumps", GLUE);
+		}
+} }
+namespace RBX { namespace Reflection {
+template<>
+EnumDesc<Controller::InputType>::EnumDesc() : EnumDescriptor("InputType", typeid(Controller::InputType))
+{
+	addPair(Controller::NO_INPUT, "NoInput");
+	addPair(Controller::LEFT_TRACK_INPUT, "LeftTread");
+	addPair(Controller::RIGHT_TRACK_INPUT, "RightTread");
+	addPair(Controller::RIGHT_LEFT_INPUT, "Steer");
+	addPair(Controller::BACK_FORWARD_INPUT, "Throtle");
+	addPair(Controller::UP_DOWN_INPUT, "UpDown");
+	addPair(Controller::BUTTON_1_INPUT, "Action1");
+	addPair(Controller::BUTTON_2_INPUT, "Action2");
+	addPair(Controller::BUTTON_3_INPUT, "Action3");
+	addPair(Controller::BUTTON_4_INPUT, "Action4");
+	addPair(Controller::BUTTON_3_4_INPUT, "Action5");
+	addPair(Controller::CONSTANT_INPUT, "Constant");
+	addPair(Controller::SIN_INPUT, "Sin");
+}
+template<>
+EnumDesc<Controller::ControllerType>::EnumDesc() : EnumDescriptor("ControllerType", typeid(Controller::ControllerType))
+{
+	addPair(Controller::PLAYER_CONTROLLER, "Player");
+	addPair(Controller::PRIMARY_CONTROLLER, "KeyboardRight");
+	addPair(Controller::SECONDARY_CONTROLLER, "KeyboardLeft");
+	addPair(Controller::PAD_ONE_CONTROLLER, "Joypad1");
+	addPair(Controller::PAD_TWO_CONTROLLER, "Joypad2");
+	addPair(Controller::AI_CHASE_CONTROLLER, "Chase");
+	addPair(Controller::AI_FLEE_CONTROLLER, "Flee");
+	addPair(Controller::NO_CONTROLLER, "None");
+}
+template<>
+EnumDesc<NormalId>::EnumDesc() : EnumDescriptor("NormalId", typeid(NormalId))
+{
+	addPair(NORM_Y, "Top");
+	addPair(NORM_Y_NEG, "Bottom");
+	addPair(NORM_Z, "Back");
+	addPair(NORM_Z_NEG, "Front");
+	addPair(NORM_X, "Right");
+	addPair(NORM_X_NEG, "Left");
+}
+} }
+
+namespace RBX { namespace Reflection {
+template<>
+EnumDesc<SpecialShape::MeshType>::EnumDesc() : EnumDescriptor("MeshType", typeid(SpecialShape::MeshType))
+{
+	addPair(SpecialShape::HEAD_MESH, "Head");
+	addPair(SpecialShape::TORSO_MESH, "Torso");
+	addPair(SpecialShape::WEDGE_MESH, "Wedge");
+	addPair(SpecialShape::BRICK_MESH, "Brick");
+	addPair(SpecialShape::SPHERE_MESH, "Sphere");
+	addPair(SpecialShape::CYLINDER_MESH, "Cylinder");
+	addPair(SpecialShape::FILE_MESH, "FileMesh");
+}
+template<>
+EnumDesc<PartInstance::FormFactor>::EnumDesc() : EnumDescriptor("FormFactor", typeid(PartInstance::FormFactor))
+{
+	addPair(PartInstance::SYMETRIC, "Symmetric");
+	addPair(PartInstance::BRICK, "Brick");
+	addPair(PartInstance::PLATE, "Plate");
+
+	addLegacyName("Block", PartInstance::BRICK);
+}
+template<>
+EnumDesc<Part::PartType>::EnumDesc() : EnumDescriptor("PartType", typeid(Part::PartType))
+{
+	addPair(Part::BALL_PART, "Ball");
+	addPair(Part::BLOCK_PART, "Block");
+	addPair(Part::CYLINDER_PART, "Cylinder");
+}
+} }
+
+namespace RBX { namespace Reflection {
+template<>
+EnumDesc<DebugSettings::ErrorReporting>::EnumDesc()
+	: EnumDescriptor("ErrorReporting", typeid(DebugSettings::ErrorReporting))
+{
+	addPair(DebugSettings::DontReport, "DontReport");
+	addPair(DebugSettings::Prompt, "Prompt");
+	addPair(DebugSettings::Report, "Report");
+}
+template<>
+EnumDesc<Debugable::AssertAction>::EnumDesc() : EnumDescriptor("AssertAction", typeid(Debugable::AssertAction))
+{
+	addPair(Debugable::CrashOnAssert, "CrashOnAssert");
+	addPair(Debugable::IgnoreAssert, "IgnoreAssert");
+}
+template<>
+EnumDesc<SoundType>::EnumDesc() : EnumDescriptor("SoundType", typeid(SoundType))
+{
+	addPair(NO_SOUND, "NoSound");
+	addPair(BOING_SOUND, "Boing");
+	addPair(BOMB_SOUND, "Bomb");
+	addPair(BREAK_SOUND, "Break");
+	addPair(CLICK_SOUND, "Click");
+	addPair(CLOCK_SOUND, "Clock");
+	addPair(RUBBERBAND_SOUND, "Slingshot");
+	addPair(PAGE_SOUND, "Page");
+	addPair(PING_SOUND, "Ping");
+	addPair(SNAP_SOUND, "Snap");
+	addPair(SPLAT_SOUND, "Splat");
+	addPair(STEP_SOUND, "Step");
+	addPair(STEP_ON_SOUND, "StepOn");
+	addPair(SWOOSH_SOUND, "Swoosh");
+	addPair(VICTORY_SOUND, "Victory");
+}
+} }
+
+namespace RBX { namespace Reflection {
+template<> EnumDesc<NetworkSettings::PhysicsSendMethod>::EnumDesc():EnumDescriptor("PhysicsSendMethod",typeid(NetworkSettings::PhysicsSendMethod)){
+addPair(NetworkSettings::ErrorComputation,"ErrorComputation");
+addPair(NetworkSettings::RoundRobin,"RoundRobin");
+}
+template<> EnumDesc<NetworkSettings::PhysicsReceiveMethod>::EnumDesc():EnumDescriptor("PhysicsReceiveMethod",typeid(NetworkSettings::PhysicsReceiveMethod)){
+addPair(NetworkSettings::Direct,"Direct");
+addPair(NetworkSettings::Interpolation,"Interpolation");
+}
+template<> EnumDesc<HopperBin::BinType>::EnumDesc():EnumDescriptor("BinType",typeid(HopperBin::BinType)){
+addPair(HopperBin::SCRIPT_BIN,"Script");
+addPair(HopperBin::GAME_TOOL,"GameTool");
+addPair(HopperBin::GRAB_TOOL,"Grab");
+addPair(HopperBin::CLONE_TOOL,"Clone");
+addPair(HopperBin::HAMMER_TOOL,"Hammer");
+addPair(HopperBin::SLINGSHOT_TOOL,"Slingshot");
+addPair(HopperBin::ROCKET_TOOL,"Rocket");
+addPair(HopperBin::LASER_TOOL,"Laser");
+}
+} }
+namespace RBX { namespace Reflection {
+template<> EnumDesc<CRenderSettings::AASamples>::EnumDesc()
+			:EnumDescriptor("AASamples",typeid(::CRenderSettings::AASamples))
+		{
+			addPair(CRenderSettings::NONE, "None");
+			addPair(CRenderSettings::AA4, "4");
+			addPair(CRenderSettings::AA8, "8");
+		}
+template<> EnumDesc<CRenderSettings::FrameRateManagerMode>::EnumDesc()
+			:EnumDescriptor("Framerate Manager",typeid(::CRenderSettings::FrameRateManagerMode))
+		{
+			addPair(CRenderSettings::FrameRateManagerAuto,"Automatic");
+			addPair(CRenderSettings::FrameRateManagerOn,"On");
+			addPair(CRenderSettings::FrameRateManagerOff,"Off");
+		}
+template<> EnumDesc<CRenderSettings::AntialiasingMode>::EnumDesc()
+			:EnumDescriptor("Antialiasing",typeid(::CRenderSettings::AntialiasingMode))
+		{
+			addPair(CRenderSettings::AntialiasingAuto,"Automatic");
+			addPair(CRenderSettings::AntialiasingOff,"Off");
+			addPair(CRenderSettings::AntialiasingOn,"On");
+		}
+} }

@@ -1,17 +1,38 @@
-// roc 2007-03 00686990  unit: seg_00680000  size: 20 bytes
-// Make this compile to the exact bytes below, then: roc check 2007-03 00686990
-//
-// 00686990  8b442404             mov eax, dword ptr [esp + 4]
-// 00686994  56                   push esi
-// 00686995  8bf1                 mov esi, ecx
-// 00686997  8906                 mov dword ptr [esi], eax
-// 00686999  e8e2f5ffff           call 0x685f80
-// 0068699e  8bc6                 mov eax, esi
-// 006869a0  5e                   pop esi
-// 006869a1  c20400               ret 4
-// library boost-1.34.1/libs\regex\src\instances.cpp (function ??0?$w32_regex_traits_char_layer@D@re_detail@boost@@QAE@K@Z)
-
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD
 // roc-lib: boost-1.34.1 libs/regex/src/instances.cpp
+
+// Candidate translation unit (score above; library headers required).
+/*
+ *
+ * Copyright (c) 1998-2002
+ * John Maddock
+ *
+ * Use, modification and distribution are subject to the 
+ * Boost Software License, Version 1.0. (See accompanying file 
+ * LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+ *
+ */
+
+ /*
+  *   LOCATION:    see http://www.boost.org for most recent version.
+  *   FILE:        instances.cpp
+  *   VERSION:     see <boost/version.hpp>
+  *   DESCRIPTION: regex narrow character template instances.
+  */
+
+#define BOOST_REGEX_SOURCE
+
+#include <boost/regex/config.hpp>
+
+#if !defined(BOOST_REGEX_NO_EXTERNAL_TEMPLATES)
+#define BOOST_REGEX_NARROW_INSTANTIATE
+
+#ifdef __BORLANDC__
+#pragma hrdstop
+#endif
+
+#include <boost/regex.hpp>
+
+#endif

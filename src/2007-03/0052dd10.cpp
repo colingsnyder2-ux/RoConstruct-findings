@@ -1,41 +1,138 @@
-// roc 2007-03 0052dd10  unit: seg_00520000  size: 119 bytes
-// Make this compile to the exact bytes below, then: roc check 2007-03 0052dd10
-//
-// 0052dd10  64a100000000         mov eax, dword ptr fs:[0]
-// 0052dd16  6aff                 push -1
-// 0052dd18  6809807500           push 0x758009
-// 0052dd1d  50                   push eax
-// 0052dd1e  8b442410             mov eax, dword ptr [esp + 0x10]
-// 0052dd22  64892500000000       mov dword ptr fs:[0], esp
-// 0052dd29  83ec1c               sub esp, 0x1c
-// 0052dd2c  85c0                 test eax, eax
-// 0052dd2e  7514                 jne 0x52dd44
-// 0052dd30  e89bfdffff           call 0x52dad0
-// 0052dd35  8b4c241c             mov ecx, dword ptr [esp + 0x1c]
-// 0052dd39  64890d00000000       mov dword ptr fs:[0], ecx
-// 0052dd40  83c428               add esp, 0x28
-// 0052dd43  c3                   ret 
-// 0052dd44  56                   push esi
-// 0052dd45  50                   push eax
-// 0052dd46  8d4c2408             lea ecx, [esp + 8]
-// 0052dd4a  ff1578e77700         call dword ptr [0x77e778]
-// 0052dd50  50                   push eax
-// 0052dd51  c744242c00000000     mov dword ptr [esp + 0x2c], 0
-// 0052dd59  e812feffff           call 0x52db70
-// 0052dd5e  83c404               add esp, 4
-// 0052dd61  8d4c2404             lea ecx, [esp + 4]
-// 0052dd65  8bf0                 mov esi, eax
-// 0052dd67  c7442428ffffffff     mov dword ptr [esp + 0x28], 0xffffffff
-// 0052dd6f  ff158ce77700         call dword ptr [0x77e78c]
-// 0052dd75  8b4c2420             mov ecx, dword ptr [esp + 0x20]
-// 0052dd79  8bc6                 mov eax, esi
-// 0052dd7b  5e                   pop esi
-// 0052dd7c  64890d00000000       mov dword ptr fs:[0], ecx
-// 0052dd83  83c428               add esp, 0x28
-// 0052dd86  c3                   ret 
-// library openrbx-client/App\util\Name.cpp (function ?lookup@Name@RBX@@SAABV12@PBD@Z)
-
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
 // roc-lib: openrbx-client-dll App/util/Name.cpp
+
+// Candidate translation unit (score above; library headers required).
+#include "util/Name.h"
+
+#include "decomp.h"
+
+#include <boost/thread/mutex.hpp>
+#include <boost/thread/once.hpp>
+
+namespace RBX {
+
+DECOMP_SIZE_ASSERT(Name, 0x20)
+
+class Name::NamMap : public std::map<std::string, Name*>
+{
+public:
+	~NamMap();
+};
+
+static boost::once_flag flag = BOOST_ONCE_INIT;
+
+// FUNCTION: WEBSERVICE 0x10057ed0
+boost::mutex& moo2()
+{
+	static boost::mutex mutex2;
+
+	return mutex2;
+}
+
+// FUNCTION: WEBSERVICE 0x10057f30
+void initMoo()
+{
+	moo2();
+}
+
+// FUNCTION: WEBSERVICE 0x10058640
+std::map<int, Name*>& Name::dictionary()
+{
+	static std::map<int, Name*> d;
+
+	return d;
+}
+
+// FUNCTION: WEBSERVICE 0x100586d0
+Name::NamMap::~NamMap()
+{
+	for (iterator iter = begin(); iter != end(); ++iter) {
+		delete iter->second;
+	}
+}
+
+// FUNCTION: WEBSERVICE 0x100587b0
+Name::NamMap& Name::namMap()
+{
+	static NamMap n;
+
+	return n;
+}
+
+// FUNCTION: WEBSERVICE 0x10058840
+const Name& Name::declare(const char* sName, int dictionaryIndex)
+{
+	if (sName == NULL) {
+		return getNullName();
+	}
+
+	boost::call_once(initMoo, flag);
+
+	boost::mutex::scoped_lock lock(moo2());
+	NamMap::iterator iter = namMap().find(std::string(sName));
+
+	if (iter != namMap().end()) {
+		if (dictionaryIndex != -1) {
+			iter->second->dictionaryIndex = dictionaryIndex;
+			dictionary()[dictionaryIndex] = iter->second;
+		}
+
+		return *iter->second;
+	}
+
+	Name* declared = new Name(sName, dictionaryIndex);
+	namMap()[sName] = declared;
+	dictionary()[dictionaryIndex] = declared;
+
+	return *declared;
+}
+
+// FUNCTION: WEBSERVICE 0x10058a30
+const Name& Name::getNullName()
+{
+	boost::call_once(initMoo, flag);
+
+	boost::mutex::scoped_lock lock(moo2());
+	static const Name* nullName = &declare("", 0);
+
+	return *nullName;
+}
+
+// FUNCTION: WEBSERVICE 0x10058ad0
+const Name& Name::lookup(const std::string& sName)
+{
+	boost::call_once(initMoo, flag);
+
+	boost::mutex::scoped_lock lock(moo2());
+	NamMap::iterator iter = namMap().find(sName);
+
+	if (iter != namMap().end()) {
+		return *iter->second;
+	}
+
+	return getNullName();
+}
+
+// FUNCTION: WEBSERVICE 0x10058ba0
+const Name& Name::lookup(const char* sName)
+{
+	if (sName == NULL) {
+		return getNullName();
+	}
+
+	return lookup(std::string(sName));
+}
+
+// FUNCTION: WEBSERVICE 0x10058c70
+bool Name::empty() const
+{
+	return this == &getNullName();
+}
+
+Name::Name(const char* name, int dictionaryIndex) : dictionaryIndex(dictionaryIndex), name(name)
+{
+}
+
+} // namespace RBX

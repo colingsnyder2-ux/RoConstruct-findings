@@ -1,88 +1,17 @@
-// from server: 59% by colin
-struct Node {
-    Node* next;
-};
+// from server: 100% by Espeon
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: rbxgs-dll roc_espeon_boxselect2008layout1dfd3854114f125f.cpp
 
-struct Iterator {
-    Node* owner;
-    Node* position;
-};
+// Candidate translation unit (score above; library headers required).
+#include <set>
+#include "v8datamodel/Selection.h"
+#include <algorithm>
+namespace RBX {
+class BoxSelectCommand {char prefix[28];ServiceClient<Selection> selection;char gap[12];std::set<Instance*> previousItemsInBox;public:void selectAnd(const std::set<Instance*>&);void selectReverse(const std::set<Instance*>&);};
+template<int Action> class SelectionOutput:public std::_Outit {Selection* selection;public:SelectionOutput(Selection* s):selection(s){}SelectionOutput& operator*(){return *this;}SelectionOutput operator++(int){return *this;}SelectionOutput& operator++(){return *this;}SelectionOutput& operator=(Instance* i){if(Action==0)selection->addToSelection(i);else if(Action==1)selection->removeFromSelection(i);else selection->toggleSelection(i);return *this;}};
 
-struct Result {
-    void* value;
-    Result();
-};
-
-struct Empty {
-    unsigned char value;
-    Empty() : value(0) {}
-};
-
-struct Range {
-    Node* owner;
-    unsigned char padding[20];
-    Node* endNode;
-
-    Iterator begin();
-    Iterator end();
-    Result erase(Iterator first, Iterator last);
-    void assign(const Range* other);
-};
-
-inline Iterator Range::begin()
-{
-    Iterator result;
-    result.position = endNode->next;
-    result.owner = owner;
-    return result;
-}
-
-inline Iterator Range::end()
-{
-    Iterator result;
-    result.position = endNode;
-    result.owner = owner;
-    return result;
-}
-
-struct Helper {
-    void* get(int mode);
-};
-
-Result difference(Iterator first1, Iterator last1,
-                  Iterator first2, Iterator last2,
-                  void* output, Empty predicate);
-
-struct S {
-    unsigned char padding[28];
-    Helper helper;
-    unsigned char gap[20];
-    Range range;
-
-    void f(Range* other);
-};
-
-void S::f(Range* other)
-{
-    void* output = helper.get(1);
-    Range* r = &range;
-    {
-        Iterator first1 = other->begin();
-        Iterator first2 = r->begin();
-        difference(first1, other->end(), first2, r->end(),
-                   output, Empty());
-    }
-
-    output = helper.get(1);
-    {
-        Iterator first1 = r->begin();
-        Iterator first2 = other->begin();
-        difference(first1, r->end(), first2, other->end(),
-                   output, Empty());
-    }
-
-    if (r != other) {
-        r->erase(r->begin(), r->end());
-        r->assign(other);
-    }
+void BoxSelectCommand::selectAnd(const std::set<Instance*>& n){std::set_difference(n.begin(),n.end(),previousItemsInBox.begin(),previousItemsInBox.end(),SelectionOutput<0>(selection));std::set_difference(previousItemsInBox.begin(),previousItemsInBox.end(),n.begin(),n.end(),SelectionOutput<1>(selection));previousItemsInBox=n;}
+void BoxSelectCommand::selectReverse(const std::set<Instance*>& n){std::set_difference(n.begin(),n.end(),previousItemsInBox.begin(),previousItemsInBox.end(),SelectionOutput<2>(selection));std::set_difference(previousItemsInBox.begin(),previousItemsInBox.end(),n.begin(),n.end(),SelectionOutput<2>(selection));previousItemsInBox=n;}
 }

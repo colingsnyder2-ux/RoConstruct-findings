@@ -1,18 +1,77 @@
 // from server: 100% by auto
-// roc 2012-06 0063f710  unit: G3D::Sphere  size: 24 bytes
-// Make this compile to the exact bytes below, then: roc check 2012-06 0063f710
-//
-// 0063f710  8b5104               mov edx, dword ptr [ecx + 4]
-// 0063f713  8b442404             mov eax, dword ptr [esp + 4]
-// 0063f717  8910                 mov dword ptr [eax], edx
-// 0063f719  8b5108               mov edx, dword ptr [ecx + 8]
-// 0063f71c  8b490c               mov ecx, dword ptr [ecx + 0xc]
-// 0063f71f  895004               mov dword ptr [eax + 4], edx
-// 0063f722  894808               mov dword ptr [eax + 8], ecx
-// 0063f725  c20400               ret 4
-// library rbx2016-g3d/Line.cpp (function ?point@Line@G3D@@QBE?AVVector3@2@XZ)
-
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD
 // roc-lib: rbx2016-g3d Line.cpp
+
+// Candidate translation unit (score above; library headers required).
+/**
+  @file Line.cpp
+ 
+  Line class
+ 
+  @maintainer Morgan McGuire, graphics3d.com
+ 
+  @created 2001-06-02
+  @edited  2006-01-28
+ */
+
+#include "G3D/Line.h"
+#include "G3D/Plane.h"
+
+namespace G3D {
+
+Vector3 Line::intersection(const Plane& plane) const {
+    float d;
+    Vector3 normal = plane.normal();
+    plane.getEquation(normal, d);
+    float rate = _direction.dot(normal);
+
+    if (rate == 0) {
+
+        return Vector3::inf();
+
+    } else {
+        float t = -(d + _point.dot(normal)) / rate;
+
+        return _point + _direction * t;
+    }
+}
+
+
+Vector3 Line::closestPoint(const Vector3& pt) const {
+    float t = _direction.dot(pt - _point);
+    return _point + _direction * t;
+}
+
+Vector3 Line::point() const {
+    return _point;
+}
+
+
+Vector3 Line::direction() const {
+    return _direction;
+}
+
+Vector3 Line::closestPoint(const Line& B, float& minDist) const {
+    const Vector3& P1 = _point;
+    const Vector3& U1 = _direction;
+
+    Vector3 P2 = B.point();
+    Vector3 U2 = B.direction();
+    
+    const Vector3& P21 = P2 - P1;
+    const Vector3& M = U2.cross(U1);
+    float m2 = M.length();
+
+    Vector3 R = P21.cross(M) / m2;
+    
+    float t1 = R.dot(U2);
+    
+    minDist = abs(P21.dot(M)) / sqrt(m2);
+
+    return P1 + t1 * U1;
+}
+
+}
+

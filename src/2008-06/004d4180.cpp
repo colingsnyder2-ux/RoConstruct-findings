@@ -1,43 +1,198 @@
-// roc 2008-06 004d4180  unit: seg_004d0000  size: 91 bytes
-// Make this compile to the exact bytes below, then: roc check 2008-06 004d4180
-//
-// 004d4180  668b44240c           mov ax, word ptr [esp + 0xc]
-// 004d4185  56                   push esi
-// 004d4186  8bf1                 mov esi, ecx
-// 004d4188  b9ffff0000           mov ecx, 0xffff
-// 004d418d  663bc1               cmp ax, cx
-// 004d4190  7443                 je 0x4d41d5
-// 004d4192  0fb7d0               movzx edx, ax
-// 004d4195  8b4610               mov eax, dword ptr [esi + 0x10]
-// 004d4198  833c9000             cmp dword ptr [eax + edx*4], 0
-// 004d419c  8d0490               lea eax, [eax + edx*4]
-// 004d419f  7434                 je 0x4d41d5
-// 004d41a1  8b00                 mov eax, dword ptr [eax]
-// 004d41a3  8b10                 mov edx, dword ptr [eax]
-// 004d41a5  8bc8                 mov ecx, eax
-// 004d41a7  8b4218               mov eax, dword ptr [edx + 0x18]
-// 004d41aa  ffd0                 call eax
-// 004d41ac  85c0                 test eax, eax
-// 004d41ae  7416                 je 0x4d41c6
-// 004d41b0  0fb74c2410           movzx ecx, word ptr [esp + 0x10]
-// 004d41b5  8b5610               mov edx, dword ptr [esi + 0x10]
-// 004d41b8  8b0c8a               mov ecx, dword ptr [edx + ecx*4]
-// 004d41bb  8b01                 mov eax, dword ptr [ecx]
-// 004d41bd  8b5018               mov edx, dword ptr [eax + 0x18]
-// 004d41c0  ffd2                 call edx
-// 004d41c2  5e                   pop esi
-// 004d41c3  c20c00               ret 0xc
-// 004d41c6  0fb7442410           movzx eax, word ptr [esp + 0x10]
-// 004d41cb  8b4e10               mov ecx, dword ptr [esi + 0x10]
-// 004d41ce  8b0481               mov eax, dword ptr [ecx + eax*4]
-// 004d41d1  5e                   pop esi
-// 004d41d2  c20c00               ret 0xc
-// 004d41d5  33c0                 xor eax, eax
-// 004d41d7  5e                   pop esi
-// 004d41d8  c20c00               ret 0xc
-// library rbxgs-raknet/NetworkIDManager.cpp (function ?GET_OBJECT_FROM_ID@NetworkIDManager@@QAEPAXUNetworkID@@@Z)
-
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
 // roc-lib: rbxgs-raknet NetworkIDManager.cpp
+
+// Candidate translation unit (score above; library headers required).
+/// \file
+///
+/// This file is part of RakNet Copyright 2003 Kevin Jenkins.
+///
+/// Usage of RakNet is subject to the appropriate license agreement.
+/// Creative Commons Licensees are subject to the
+/// license found at
+/// http://creativecommons.org/licenses/by-nc/2.5/
+/// Single application licensees are subject to the license found at
+/// http://www.rakkarsoft.com/SingleApplicationLicense.html
+/// Custom license users are subject to the terms therein.
+/// GPL license users are subject to the GNU General Public
+/// License as published by the Free
+/// Software Foundation; either version 2 of the License, or (at your
+/// option) any later version.
+
+#include "NetworkIDManager.h"
+#include "NetworkIDObject.h"
+#include "RakAssert.h"
+#include <string.h> // For memset
+
+bool NetworkIDNode::operator==( const NetworkIDNode& right ) const
+{
+	if ( networkID == right.networkID )
+		return !0;
+
+	return 0;
+}
+
+bool NetworkIDNode::operator > ( const NetworkIDNode& right ) const
+{
+	if ( networkID > right.networkID )
+		return !0;
+
+	return 0;
+}
+
+bool NetworkIDNode::operator < ( const NetworkIDNode& right ) const
+{
+	if ( networkID < right.networkID )
+		return !0;
+
+	return 0;
+}
+
+NetworkIDNode::NetworkIDNode()
+{
+	object = 0;
+}
+
+NetworkIDNode::NetworkIDNode( NetworkID _networkID, NetworkIDObject *_object )
+{
+	networkID = _networkID;
+	object = _object;
+}
+
+
+//-------------------------------------------------------------------------------------
+void* NetworkIDManager::GET_BASE_OBJECT_FROM_ID( NetworkID x )
+{
+	if ( x == UNASSIGNED_NETWORK_ID )
+		return 0;
+
+#ifdef NETWORK_ID_USE_HASH
+	// You can't use this technique in peer to peer mode.  Undefine NETWORK_ID_USE_HASH in NetworkIDManager.h
+	assert(NetworkID::peerToPeerMode==false);
+	return IDArray[x.localSystemAddress];
+#else
+
+	NetworkIDNode *n = IDTree.GetPointerToNode( NetworkIDNode( ( x ), 0 ) );
+
+	if ( n )
+	{
+		return n->object;
+	}
+
+	return 0;
+
+#endif
+
+}
+//-------------------------------------------------------------------------------------
+void* NetworkIDManager::GET_OBJECT_FROM_ID( NetworkID x )
+{
+#ifdef NETWORK_ID_USE_HASH
+	if (x.localSystemAddress==65535)
+		return 0;
+
+	// You can't use this technique in peer to peer mode.  Undefine NETWORK_ID_USE_HASH in NetworkIDManager.h
+	assert(NetworkID::peerToPeerMode==false);
+	if (IDArray[x.localSystemAddress])
+	{
+		if (IDArray[x.localSystemAddress]->GetParent())
+		{
+			return IDArray[x.localSystemAddress]->GetParent();
+		}
+		else
+		{
+#ifdef _DEBUG
+			// If this assert hit then this object requires a call to SetParent and it never got one.
+			assert(IDArray[x.localSystemAddress]->RequiresSetParent()==false);
+#endif
+			return IDArray[x.localSystemAddress];
+		}
+	}
+#else
+	NetworkIDObject *object = (NetworkIDObject *) GET_BASE_OBJECT_FROM_ID( x );
+	if (object)
+	{
+		if (object->GetParent())
+		{
+			return object->GetParent();
+		}
+		else
+		{
+#ifdef _DEBUG
+			// If this assert hit then this object requires a call to SetParent and it never got one.
+			assert(object->RequiresSetParent()==false);
+#endif
+			return object;
+		}
+	}
+#endif
+
+	return 0;
+}
+//-------------------------------------------------------------------------------------
+NetworkIDManager::NetworkIDManager(void)
+{
+	calledSetIsNetworkIDAuthority=false;
+	sharedNetworkID=0;
+
+#ifdef NETWORK_ID_USE_HASH
+	// Last element is reserved for UNASSIGNED_NETWORK_ID
+	IDArray = new NetworkIDObject*[65534];
+	memset(IDArray,0,sizeof(NetworkIDObject*)*65534);
+	// You can't use this technique in peer to peer mode.  Undefine NETWORK_ID_USE_HASH in NetworkIDManager.h
+	assert(NetworkID::peerToPeerMode==false);
+#endif
+}
+//-------------------------------------------------------------------------------------
+NetworkIDManager::~NetworkIDManager(void)
+{
+#ifndef NETWORK_ID_USE_HASH
+	delete [] IDArray;
+#endif
+}
+//-------------------------------------------------------------------------------------
+
+void NetworkIDManager::SetIsNetworkIDAuthority(bool isAuthority)
+{
+	isNetworkIDAuthority=isAuthority;
+	calledSetIsNetworkIDAuthority=true;
+}
+
+//-------------------------------------------------------------------------------------
+
+bool NetworkIDManager::IsNetworkIDAuthority(void) const
+{
+	RakAssert(calledSetIsNetworkIDAuthority);
+	return isNetworkIDAuthority;
+}
+
+//-------------------------------------------------------------------------------------
+
+unsigned short NetworkIDManager::GetSharedNetworkID( void )
+{
+	RakAssert(calledSetIsNetworkIDAuthority);
+	return sharedNetworkID;
+}
+
+//-------------------------------------------------------------------------------------
+
+void NetworkIDManager::SetSharedNetworkID( unsigned short i )
+{
+	RakAssert(calledSetIsNetworkIDAuthority);
+	sharedNetworkID = i;
+}
+
+//-------------------------------------------------------------------------------------
+void NetworkIDManager::SetExternalSystemAddress(SystemAddress systemAddress)
+{
+	RakAssert(calledSetIsNetworkIDAuthority);
+	RakAssert(systemAddress!=UNASSIGNED_SYSTEM_ADDRESS);
+	externalSystemAddress=systemAddress;
+}
+//-------------------------------------------------------------------------------------
+SystemAddress NetworkIDManager::GetExternalSystemAddress(void)
+{
+	RakAssert(calledSetIsNetworkIDAuthority);
+	return externalSystemAddress;
+}

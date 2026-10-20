@@ -1,54 +1,245 @@
-// roc 2007-03 00566c10  unit: seg_00560000  size: 127 bytes
-// Make this compile to the exact bytes below, then: roc check 2007-03 00566c10
-//
-// 00566c10  56                   push esi
-// 00566c11  8bf1                 mov esi, ecx
-// 00566c13  807e0800             cmp byte ptr [esi + 8], 0
-// 00566c17  57                   push edi
-// 00566c18  7522                 jne 0x566c3c
-// 00566c1a  8b4e04               mov ecx, dword ptr [esi + 4]
-// 00566c1d  85c9                 test ecx, ecx
-// 00566c1f  7410                 je 0x566c31
-// 00566c21  ff15b0e57700         call dword ptr [0x77e5b0]
-// 00566c27  83f8ff               cmp eax, -1
-// 00566c2a  7405                 je 0x566c31
-// 00566c2c  884609               mov byte ptr [esi + 9], al
-// 00566c2f  eb07                 jmp 0x566c38
-// 00566c31  c7460400000000       mov dword ptr [esi + 4], 0
-// 00566c38  c6460801             mov byte ptr [esi + 8], 1
-// 00566c3c  8b7c240c             mov edi, dword ptr [esp + 0xc]
-// 00566c40  807f0800             cmp byte ptr [edi + 8], 0
-// 00566c44  7522                 jne 0x566c68
-// 00566c46  8b4f04               mov ecx, dword ptr [edi + 4]
-// 00566c49  85c9                 test ecx, ecx
-// 00566c4b  7410                 je 0x566c5d
-// 00566c4d  ff15b0e57700         call dword ptr [0x77e5b0]
-// 00566c53  83f8ff               cmp eax, -1
-// 00566c56  7405                 je 0x566c5d
-// 00566c58  884709               mov byte ptr [edi + 9], al
-// 00566c5b  eb07                 jmp 0x566c64
-// 00566c5d  c7470400000000       mov dword ptr [edi + 4], 0
-// 00566c64  c6470801             mov byte ptr [edi + 8], 1
-// 00566c68  8b7604               mov esi, dword ptr [esi + 4]
-// 00566c6b  85f6                 test esi, esi
-// 00566c6d  7509                 jne 0x566c78
-// 00566c6f  397704               cmp dword ptr [edi + 4], esi
-// 00566c72  740a                 je 0x566c7e
-// 00566c74  85f6                 test esi, esi
-// 00566c76  7410                 je 0x566c88
-// 00566c78  837f0400             cmp dword ptr [edi + 4], 0
-// 00566c7c  740a                 je 0x566c88
-// 00566c7e  5f                   pop edi
-// 00566c7f  b801000000           mov eax, 1
-// 00566c84  5e                   pop esi
-// 00566c85  c20400               ret 4
-// 00566c88  5f                   pop edi
-// 00566c89  33c0                 xor eax, eax
-// 00566c8b  5e                   pop esi
-// 00566c8c  c20400               ret 4
-// library openrbx-client/App\v8xml\XmlSerializer.cpp (function ?equal@?$istreambuf_iterator@DU?$char_traits@D@std@@@std@@QBE_NABV12@@Z)
-
 // roc-lang: cpp
 // roc-cl: 50727
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
 // roc-lib: openrbx-client-dll App/v8xml/XmlSerializer.cpp
+
+// Candidate translation unit (score above; library headers required).
+#include "v8xml/XmlSerializer.h"
+
+#include "util/ContentProvider.h"
+#include "util/Name.h"
+#include "util/base64.hpp"
+#include "v8xml/XmlElement.h"
+
+#include <cstdio>
+#include <cstring>
+#include <istream>
+#include <iterator>
+#include <memory>
+#include <ostream>
+
+// GLOBAL: WEBSERVICE 0x102d21b0
+// clang-format off
+static bool whitespaces[256] = {
+	0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 1, 1, 0, 0,
+	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+	1
+};
+// clang-format on
+
+// FUNCTION: WEBSERVICE 0x10084c50
+void TextXmlParser::skipWhitespace()
+{
+	while (whitespaces[(char) buffer->sgetc()]) {
+		buffer->sbumpc();
+	}
+}
+
+// FUNCTION: WEBSERVICE 0x10085810
+void TextXmlWriter::writeCloseTag(const XmlElement* element, int depth)
+{
+	for (int i = 0; i < depth; ++i) {
+		stream << '\t';
+	}
+
+	stream << "</" << element->getTag().name << '>';
+}
+
+// FUNCTION: WEBSERVICE 0x10085870
+void TextXmlWriter::serialize(const XmlElement* xmlNode, int depth)
+{
+	if (xmlNode != NULL) {
+		serializeNode(xmlNode, depth);
+
+		const XmlElement* child = xmlNode->firstChild();
+
+		if (child != NULL) {
+			while (child != NULL) {
+				stream << '\n';
+				serialize(child, depth + 1);
+				child = child->nextSibling();
+			}
+
+			stream << '\n';
+
+			writeCloseTag(xmlNode, depth);
+		}
+		else {
+			writeCloseTag(xmlNode, 0);
+		}
+	}
+}
+
+// FUNCTION: WEBSERVICE 0x10086220
+void TextXmlWriter::encodedWrite(std::ostream& stream, const char* text)
+{
+	size_t num = strlen(text);
+
+	for (size_t i = 0; i < num; ++i) {
+		char c = *text++;
+
+		if (c == '<') {
+			stream << "&lt;";
+		}
+		else if (c == '>') {
+			stream << "&gt;";
+		}
+		else if (c == '&') {
+			stream << "&amp;";
+		}
+		else if (c == '"') {
+			stream << "&quot;";
+		}
+		else if (c == '\'') {
+			stream << "&apos;";
+		}
+		else if (c < ' ' || c > '~') {
+			char buffer[8];
+
+			sprintf(buffer, "&#%d;", (unsigned char) c);
+
+			stream << buffer;
+		}
+		else {
+			stream << c;
+		}
+	}
+}
+
+// FUNCTION: WEBSERVICE 0x10086590
+void TextXmlWriter::serialize(const XmlElement* xmlNode)
+{
+	serialize(xmlNode, 0);
+}
+
+// FUNCTION: WEBSERVICE 0x10086af0
+void TextXmlWriter::writeOpenTag(const XmlElement* element, int depth, const XmlAttribute* extraAttribute)
+{
+	for (int i = 0; i < depth; ++i) {
+		stream << '\t';
+	}
+
+	stream << '<' << element->getTag().name;
+
+	for (const XmlAttribute* attribute = element->getFirstAttribute(); attribute != NULL;
+		 attribute = element->getNextAttribute(attribute)) {
+		stream << ' ' << attribute->getTag().name << "=\"";
+
+		encodedWrite(stream, attribute->toString(this));
+
+		stream << '"';
+	}
+
+	if (extraAttribute != NULL) {
+		stream << ' ' << extraAttribute->getTag().name << "=\"";
+
+		encodedWrite(stream, extraAttribute->toString(this));
+
+		stream << '"';
+	}
+
+	stream << '>';
+}
+
+// FUNCTION: WEBSERVICE 0x10086c90
+XmlParser::XmlParser(std::streambuf* buffer) : buffer(buffer)
+{
+}
+
+// FUNCTION: WEBSERVICE 0x10086cb0
+void TextXmlWriter::serializeNode(const XmlElement* xmlNode, int depth)
+{
+	if (xmlNode->isValueType<RBX::ContentId>()) {
+		writeOpenTag(xmlNode, depth, NULL);
+
+		RBX::ContentId contentId;
+
+		xmlNode->getValue(contentId);
+
+		if (contentId.isNull()) {
+			stream << "<null></null>";
+		}
+		else {
+			stream << "<hash>";
+			stream << xmlNode->toString(this);
+			stream << "</hash>";
+		}
+	}
+	else {
+		writeOpenTag(xmlNode, depth, NULL);
+
+		encodedWrite(stream, xmlNode->toString(this));
+	}
+}
+
+// STUB: WEBSERVICE 0x10086e00
+void TextXmlWriterWithEmbeddedContent::serializeNode(const XmlElement* xmlNode, int depth)
+{
+	if (xmlNode->isValueType<RBX::ContentId>()) {
+		RBX::ContentId contentId;
+
+		xmlNode->getValue(contentId);
+
+		if (&contentId.mimeType() == &RBX::Name::getNullName()) {
+			writeOpenTag(xmlNode, depth, NULL);
+		}
+		else {
+			XmlAttribute mimeType(tag_mimeType, contentId.mimeType().name.c_str());
+
+			writeOpenTag(xmlNode, depth, &mimeType);
+		}
+
+		if (xmlNode->findAttribute(name_xsinil) == NULL) {
+			if (contentId.isNull()) {
+				stream << "<null></null>";
+			}
+			else if (contentId.isAsset() || contentId.isHttp()) {
+				stream << "<url>";
+				TextXmlWriter::encodedWrite(stream, contentId.c_str());
+				stream << "</url>";
+			}
+			else if (embeddedContent.find(contentId) == embeddedContent.end()) {
+				embeddedContent.insert(contentId);
+
+				std::auto_ptr<std::istream> contentStream;
+
+				contentStream = RBX::ContentProvider::singleton().getContent(contentId);
+
+				if (&contentId.mimeType() == &RBX::Name::getNullName()) {
+					stream << "<binary>";
+				}
+				else {
+					stream << "<binary xmime:contentType=\"" << contentId.mimeType().name.c_str() << "\">";
+				}
+
+				int state;
+				base64<char> encoder;
+
+				encoder.put(
+					std::istreambuf_iterator<char>(contentStream->rdbuf()),
+					std::istreambuf_iterator<char>(),
+					std::ostreambuf_iterator<char>(stream.rdbuf()),
+					state,
+					base64<char>::crlf()
+				);
+
+				stream << "</binary>";
+			}
+			else {
+				embeddedContent.insert(contentId);
+
+				stream << "<hash>";
+				stream << xmlNode->toString(this);
+				stream << "</hash>";
+			}
+		}
+	}
+	else {
+		TextXmlWriter::serializeNode(xmlNode, depth);
+	}
+}
+
+// FUNCTION: WEBSERVICE 0x10087f40
+XmlWriter::XmlWriter(std::ostream& stream) : stream(stream)
+{
+}

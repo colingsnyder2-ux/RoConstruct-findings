@@ -1,61 +1,142 @@
-// roc 2009-12 00719ef0  unit: RBX::VPhysicsService::?$EventDesc  size: 132 bytes
-// Make this compile to the exact bytes below, then: roc check 2009-12 00719ef0
-//
-// 00719ef0  56                   push esi
-// 00719ef1  8bf1                 mov esi, ecx
-// 00719ef3  833e00               cmp dword ptr [esi], 0
-// 00719ef6  57                   push edi
-// 00719ef7  8b3d60b79800         mov edi, dword ptr [0x98b760]
-// 00719efd  7502                 jne 0x719f01
-// 00719eff  ffd7                 call edi
-// 00719f01  8b4604               mov eax, dword ptr [esi + 4]
-// 00719f04  80781100             cmp byte ptr [eax + 0x11], 0
-// 00719f08  7411                 je 0x719f1b
-// 00719f0a  8b4008               mov eax, dword ptr [eax + 8]
-// 00719f0d  894604               mov dword ptr [esi + 4], eax
-// 00719f10  80781100             cmp byte ptr [eax + 0x11], 0
-// 00719f14  745b                 je 0x719f71
-// 00719f16  ffd7                 call edi
-// 00719f18  5f                   pop edi
-// 00719f19  5e                   pop esi
-// 00719f1a  c3                   ret 
-// 00719f1b  8b08                 mov ecx, dword ptr [eax]
-// 00719f1d  80791100             cmp byte ptr [ecx + 0x11], 0
-// 00719f21  751e                 jne 0x719f41
-// 00719f23  8b4108               mov eax, dword ptr [ecx + 8]
-// 00719f26  80781100             cmp byte ptr [eax + 0x11], 0
-// 00719f2a  750f                 jne 0x719f3b
-// 00719f2c  8d642400             lea esp, [esp]
-// 00719f30  8bc8                 mov ecx, eax
-// 00719f32  8b4108               mov eax, dword ptr [ecx + 8]
-// 00719f35  80781100             cmp byte ptr [eax + 0x11], 0
-// 00719f39  74f5                 je 0x719f30
-// 00719f3b  5f                   pop edi
-// 00719f3c  894e04               mov dword ptr [esi + 4], ecx
-// 00719f3f  5e                   pop esi
-// 00719f40  c3                   ret 
-// 00719f41  8b4004               mov eax, dword ptr [eax + 4]
-// 00719f44  80781100             cmp byte ptr [eax + 0x11], 0
-// 00719f48  751b                 jne 0x719f65
-// 00719f4a  8d9b00000000         lea ebx, [ebx]
-// 00719f50  8b4e04               mov ecx, dword ptr [esi + 4]
-// 00719f53  3b08                 cmp ecx, dword ptr [eax]
-// 00719f55  750e                 jne 0x719f65
-// 00719f57  894604               mov dword ptr [esi + 4], eax
-// 00719f5a  8bd0                 mov edx, eax
-// 00719f5c  8b4204               mov eax, dword ptr [edx + 4]
-// 00719f5f  80781100             cmp byte ptr [eax + 0x11], 0
-// 00719f63  74eb                 je 0x719f50
-// 00719f65  8b4e04               mov ecx, dword ptr [esi + 4]
-// 00719f68  80791100             cmp byte ptr [ecx + 0x11], 0
-// 00719f6c  75a8                 jne 0x719f16
-// 00719f6e  894604               mov dword ptr [esi + 4], eax
-// 00719f71  5f                   pop edi
-// 00719f72  5e                   pop esi
-// 00719f73  c3                   ret 
-// library rbxgs/tool\ToolsArrow.cpp (function ?_Dec@const_iterator@?$_Tree@V?$_Tset_traits@PAVInstance@RBX@@U?$less@PAVInstance@RBX@@@std@@V?$allocator@PAVInstance@RBX@@@4@$0A@@std@@@std@@QAEXXZ)
-
 // roc-lang: cpp
 // roc-cl: 50727
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
 // roc-lib: rbxgs tool/ToolsArrow.cpp
+
+// Candidate translation unit (score above; library headers required).
+#include "tool/ToolsArrow.h"
+#include "tool/DragTool.h"
+#include "v8datamodel/Camera.h"
+#include "v8datamodel/PartInstance.h"
+#include "v8datamodel/Selection.h"
+#include "v8datamodel/Workspace.h"
+#include <G3D/Rect2D.h>
+
+namespace RBX
+{
+	const std::string ArrowToolBase::getCursorName() const
+	{
+		return overInstance ? "DragCursor" : "ArrowCursor";
+	}
+
+	void ArrowToolBase::onMouseIdle(const UIEvent& uiEvent)
+	{
+		overInstance = getUnlockedPart(uiEvent) != NULL;
+	}
+
+	void ArrowToolBase::onMouseHover(const UIEvent& uiEvent)
+	{
+		onMouseIdle(uiEvent);
+	}
+
+	MouseCommand* ArrowToolBase::onMouseDown(const UIEvent& uiEvent)
+	{
+		RBXASSERT(uiEvent.eventType == UIEvent::MOUSE_LEFT_BUTTON_DOWN);
+
+		G3D::Vector3 hitWorld;
+
+		PartInstance* part = getUnlockedPart(uiEvent, hitWorld);
+		if (part)
+		{
+			Instance* top = getTopSelectable3d(part);
+			UserInputBase* input = uiEvent.userInput;
+
+			ServiceClient<Selection> selection(workspace);
+
+			if (!input->keyDown(SDLK_RSHIFT) && !input->keyDown(SDLK_LSHIFT) &&
+				!input->keyDown(SDLK_RCTRL) && !input->keyDown(SDLK_LCTRL))
+			{
+				if (!selection->isSelected(top))
+				{
+					selection->setSelection(top);
+				}
+
+				if (uiEvent.eventType == UIEvent::MOUSE_LEFT_BUTTON_DOWN)
+				{
+					ServiceClient<FilteredSelection<Instance>> instanceSelection(workspace);
+					return DragTool::onMouseDown(part, hitWorld, instanceSelection->items(), uiEvent, workspace);
+				}
+			}
+			else
+			{
+				if (selection->isSelected(top))
+					selection->removeFromSelection(top);
+				else
+					selection->addToSelection(top);
+			}
+
+			return NULL;
+		}
+		else
+		{
+			MouseCommand* newCommand = new BoxSelectCommand(workspace);
+			return newCommand->onMouseDown(uiEvent);
+		}
+	}
+
+	BoxSelectCommand::BoxSelectCommand(Workspace* workspace)
+		: Base(workspace),
+		  selection((Instance*)workspace)
+	{
+	}
+
+	MouseCommand* BoxSelectCommand::onMouseDown(const UIEvent& uiEvent)
+	{
+		previousItemsInBox.clear();
+		capture();
+
+		UserInputBase* input = uiEvent.userInput;
+		reverseSelecting = input->keyDown(SDLK_RSHIFT) || input->keyDown(SDLK_LSHIFT);
+
+		if (!reverseSelecting)
+			selection->clearSelection();
+
+		mouseDownView = uiEvent.mousePosition;
+		mouseCurrentView = uiEvent.mousePosition;
+		return this;
+	}
+
+	void BoxSelectCommand::onMouseMove(const UIEvent& uiEvent)
+	{
+		mouseCurrentView = uiEvent.mousePosition;
+
+		std::set<Instance*> instances;
+		getMouseInstances(instances, uiEvent, G3D::Rect2D::xyxy(mouseDownView.x, mouseDownView.y, mouseCurrentView.x, mouseCurrentView.y));
+
+		if (reverseSelecting)
+			selectReverse(instances);
+		else
+			selectAnd(instances);
+	}
+
+	void BoxSelectCommand::render2d(Adorn* adorn)
+	{
+		G3D::Rect2D temp = G3D::Rect2D::xyxy(mouseDownView.x, mouseDownView.y, mouseCurrentView.x, mouseCurrentView.y);
+		adorn->outlineRect2d(temp, 0.5f, G3D::Color3::gray());
+	}
+
+	void BoxSelectCommand::getMouseInstances(std::set<Instance*>& instances, const UIEvent& uiEvent, G3D::Rect2D& selectBox)
+	{
+		Camera* camera = workspace->getCamera();
+		G3D::Rect2D viewport = G3D::Rect2D::xyxy(0.0f, 0.0f, uiEvent.windowSize.x, uiEvent.windowSize.y);
+
+		for (size_t i = 0; i < workspace->numChildren(); i++)
+		{
+			ILocation* location = workspace->queryTypedChild<ILocation>((int)i);
+			ISelectable3d* selectable3d = workspace->queryTypedChild<ISelectable3d>((int)i);
+
+			if (location && selectable3d)
+			{
+				Instance* instance = workspace->getChild(i);
+				if (!PartInstance::getLocked(instance))
+				{
+					G3D::Vector3 gridPos = location->getLocation().translation;
+					G3D::Vector3 projection = camera->getGCamera().project(gridPos, viewport);
+
+					if (selectBox.contains(projection.xy()))
+						instances.insert(instance);
+				}
+			}
+		}
+	}
+}

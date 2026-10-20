@@ -1,30 +1,137 @@
-// roc 2007-08 004d1350  unit: RBX::View::PartChunk  size: 61 bytes
-// Make this compile to the exact bytes below, then: roc check 2007-08 004d1350
-//
-// 004d1350  8b442404             mov eax, dword ptr [esp + 4]
-// 004d1354  3d58298c00           cmp eax, 0x8c2958
-// 004d1359  56                   push esi
-// 004d135a  8bf1                 mov esi, ecx
-// 004d135c  7510                 jne 0x4d136e
-// 004d135e  e8fdfdffff           call 0x4d1160
-// 004d1363  8bce                 mov ecx, esi
-// 004d1365  e8e6feffff           call 0x4d1250
-// 004d136a  5e                   pop esi
-// 004d136b  c20400               ret 4
-// 004d136e  3dc0288c00           cmp eax, 0x8c28c0
-// 004d1373  740f                 je 0x4d1384
-// 004d1375  50                   push eax
-// 004d1376  e825570e00           call 0x5b6aa0
-// 004d137b  83c404               add esp, 4
-// 004d137e  84c0                 test al, al
-// 004d1380  7407                 je 0x4d1389
-// 004d1382  8bce                 mov ecx, esi
-// 004d1384  e8d7fdffff           call 0x4d1160
-// 004d1389  5e                   pop esi
-// 004d138a  c20400               ret 4
-// library rbxgs-view/Part.cpp (function ?onPropertyChanged@PartChunk@View@RBX@@MAEXPBVPropertyDescriptor@Reflection@3@@Z)
-
 // roc-lang: cpp
 // roc-cl: 50727
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
 // roc-lib: rbxgs-view Part.cpp
+
+// Candidate translation unit (score above; library headers required).
+#include "Part.h"
+#include "RbxView/View.h"
+#include "v8datamodel/custommesh.h"
+#include "v8datamodel/Workspace.h"
+#include "v8datamodel/Surfaces.h"
+
+namespace RBX
+{
+	namespace View
+	{
+		PartChunk::PartChunk(float polygonOffset, const boost::shared_ptr<PartInstance>& partInstance, View* view)
+			: Render::Chunk(polygonOffset),
+			  partInstance(partInstance),
+			  view(view),
+			  materialInvalid(true),
+			  specialShape(NULL)
+		{
+			view->sceneManager->addModel(this);
+
+			childAddedConnection = Instance::event_childAdded.connect(partInstance.get(), boost::bind(&PartChunk::onChildAdded, this, _1));
+			childRemovedConnection = Instance::event_childRemoved.connect(partInstance.get(), boost::bind(&PartChunk::onChildRemoved, this, _1));
+			ancestorChangedConnection = Instance::event_ancestryChanged.connect(partInstance.get(), boost::bind(&PartChunk::onAncestorChanged, this, _1));
+			propertyChangedConnection = Instance::event_propertyChanged.connect(partInstance.get(), boost::bind(&PartChunk::onPropertyChanged, this, _1));
+
+			partInstance->visitChildren(boost::bind(&PartChunk::onChildAdded, this, _1));
+		}
+
+		PartChunk::~PartChunk() {}
+
+		G3D::ReferenceCountedPointer<Render::Mesh> PartChunk::getMesh()
+		{
+			if (mesh.isNull())
+				updateMesh();
+
+			return mesh;
+		}
+
+		const G3D::CoordinateFrame& PartChunk::cframe()
+		{
+			coordinateFrame = partInstance->getCoordinateFrame();
+			return coordinateFrame;
+		}
+
+		void PartChunk::invalidateMaterial()
+		{
+			material = NULL;
+			materialInvalid = true;
+			view->sceneManager->invalidateModel(this, partInstance->getCanAggregate());
+		}
+
+		void PartChunk::invalidateMesh()
+		{
+			mesh = NULL;
+			view->sceneManager->invalidateModel(this, partInstance->getCanAggregate());
+		}
+
+		void PartChunk::onChildAdded(boost::shared_ptr<Instance> child)
+		{
+			SpecialShape* mesh = dynamic_cast<SpecialShape*>(child.get());
+			if (mesh)
+			{
+				specialShape = mesh;
+				shapePropertyChangedConnection = Instance::event_propertyChanged.connect(mesh, boost::bind(&PartChunk::onSpecialShapeChanged, this));
+				invalidateMesh();
+			}
+		}
+
+		void PartChunk::onChildRemoved(boost::shared_ptr<Instance> child)
+		{
+			if (child.get() == specialShape)
+			{
+				shapePropertyChangedConnection.disconnect();
+				specialShape = NULL;
+				invalidateMesh();
+			}
+		}
+
+		void PartChunk::onAncestorChanged(boost::shared_ptr<Instance> ancestor)
+		{
+			Workspace* workspace = Workspace::findWorkspace(partInstance.get());
+			if (!workspace || !partInstance->isDescendentOf(workspace))
+			{
+				view->sceneManager->removeModel(this);
+			}
+		}
+
+		void PartChunk::onPropertyChanged(const Reflection::PropertyDescriptor* descriptor)
+		{
+			if (*descriptor == PartInstance::prop_Size)
+			{
+				invalidateMesh();
+				invalidateMaterial();
+			}
+			else if (*descriptor == PartInstance::prop_shapeXml)
+			{
+				invalidateMesh();
+			}
+			else if (Surfaces::isSurfaceDescriptor(*descriptor))
+			{
+				invalidateMesh();
+			}
+		}
+
+		void PartChunk::onSpecialShapeChanged()
+		{
+			invalidateMesh();
+			invalidateMaterial();
+		}
+
+		Part::Part(const boost::shared_ptr<PartInstance>& partInstance, View* view)
+			: PartChunk(0.0f, partInstance, view)
+		{
+			if (partInstance->getCanAggregate())
+				view->sceneManager->setSleeping(this, true);
+
+			Notifier<PartInstance, CanAggregateChanged>::connect(partInstance, this);
+			invalidateMesh();
+			invalidateMaterial();
+		}
+
+		Part::~Part()
+		{
+			Notifier<PartInstance, CanAggregateChanged>::disconnect(partInstance, this);
+		}
+
+		void Part::onEvent(const PartInstance* source, CanAggregateChanged event)
+		{
+			view->sceneManager->setSleeping(this, event.canClump);
+		}
+	}
+}

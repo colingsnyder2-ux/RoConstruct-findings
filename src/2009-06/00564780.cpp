@@ -1,54 +1,200 @@
-// roc 2009-06 00564780  unit: boost::bad_lexical_cast  size: 112 bytes
-// Make this compile to the exact bytes below, then: roc check 2009-06 00564780
-//
-// 00564780  83ec18               sub esp, 0x18
-// 00564783  8d0424               lea eax, [esp]
-// 00564786  50                   push eax
-// 00564787  ff15b0e28900         call dword ptr [0x89e2b0]
-// 0056478d  85c0                 test eax, eax
-// 0056478f  745b                 je 0x5647ec
-// 00564791  8b4c2404             mov ecx, dword ptr [esp + 4]
-// 00564795  8b1424               mov edx, dword ptr [esp]
-// 00564798  53                   push ebx
-// 00564799  56                   push esi
-// 0056479a  57                   push edi
-// 0056479b  6a00                 push 0
-// 0056479d  68e8030000           push 0x3e8
-// 005647a2  51                   push ecx
-// 005647a3  52                   push edx
-// 005647a4  e8c7551b00           call 0x719d70
-// 005647a9  8b4c2428             mov ecx, dword ptr [esp + 0x28]
-// 005647ad  6a00                 push 0
-// 005647af  51                   push ecx
-// 005647b0  52                   push edx
-// 005647b1  50                   push eax
-// 005647b2  e889541b00           call 0x719c40
-// 005647b7  8b3da8e28900         mov edi, dword ptr [0x89e2a8]
-// 005647bd  8bf2                 mov esi, edx
-// 005647bf  8d54241c             lea edx, [esp + 0x1c]
-// 005647c3  52                   push edx
-// 005647c4  8bd8                 mov ebx, eax
-// 005647c6  ffd7                 call edi
-// 005647c8  8d442414             lea eax, [esp + 0x14]
-// 005647cc  50                   push eax
-// 005647cd  ffd7                 call edi
-// 005647cf  8b4c2414             mov ecx, dword ptr [esp + 0x14]
-// 005647d3  2b4c241c             sub ecx, dword ptr [esp + 0x1c]
-// 005647d7  8b442418             mov eax, dword ptr [esp + 0x18]
-// 005647db  1b442420             sbb eax, dword ptr [esp + 0x20]
-// 005647df  3bc6                 cmp eax, esi
-// 005647e1  7ce5                 jl 0x5647c8
-// 005647e3  7f04                 jg 0x5647e9
-// 005647e5  3bcb                 cmp ecx, ebx
-// 005647e7  72df                 jb 0x5647c8
-// 005647e9  5f                   pop edi
-// 005647ea  5e                   pop esi
-// 005647eb  5b                   pop ebx
-// 005647ec  83c418               add esp, 0x18
-// 005647ef  c3                   ret 
-// library rbxgs-render/Profiler.cpp (function ?Delay@Render@RBX@@YAXI@Z)
-
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
 // roc-lib: rbxgs-render Profiler.cpp
+
+// Candidate translation unit (score above; library headers required).
+#include "RenderLib/Profiler.h"
+#include <GLG3D/GLCaps.h>
+#include <GLG3D/DXCaps.h>
+#include <G3D/RegistryUtil.h>
+#include <boost/lexical_cast.hpp>
+
+namespace RBX
+{
+	namespace Render
+	{
+		/* 
+			Part of the following code found here was not originally written by Roblox. Functions nearly identical to the ones seen here 
+			have been found in the Kitware Standard Library (KWSys) and were decompiled using code from this library as a reference.
+
+			KWSys (Copyright 2000-2016 Kitware, Inc. and contributors, all rights reserved) is released under the 
+			BSD 3-clause license here: https://gitlab.kitware.com/utils/kwsys
+
+			For license details, see the following link: https://gitlab.kitware.com/utils/kwsys/-/blob/master/Copyright.txt
+		*/
+
+		static float getShaderModel()
+		{
+			if ((G3D::GLCaps::supports_GL_ARB_fragment_shader() && G3D::GLCaps::supports_GL_ARB_vertex_shader()) ||
+				(G3D::GLCaps::supports_GL_ARB_shader_objects() && G3D::GLCaps::supports_GL_ARB_shading_language_100()))
+				return 2.0f;
+
+			if (G3D::GLCaps::supports("GL_ATI_fragment_shader") || G3D::GLCaps::supports("GL_NV_fragement_program")) // yes, this is a typo. crazy, right?
+				return 2.0f;
+
+			if (G3D::GLCaps::supports("GL_ATI_texture_env_combine3") || G3D::GLCaps::supports("GL_NV_texture_shader3"))
+				return 1.4f;
+
+			if (G3D::GLCaps::supports("GL_NV_register_combiners"))
+				return 1.2f;
+
+			return 1.0f;
+		}
+
+		typedef void (*DELAY_FUNC)(unsigned uiMS);
+
+		static G3D::int64 GetCyclesDifference(DELAY_FUNC DelayFunction, unsigned uiParameter)
+		{
+			unsigned t0Hi, t0Lo;
+			unsigned t1Hi, t1Lo;
+
+			// Calculate the frequency of the CPU instructions.
+			__try
+			{
+				__asm
+				{
+					rdtsc
+					mov esi, eax
+					mov edi, edx
+
+					push uiParameter
+					call DelayFunction
+					
+					pop ebx
+
+					rdtsc
+					mov t1Hi, edx
+					mov t1Lo, eax
+					mov t0Hi, edi
+					mov t0Lo, esi
+				}
+			}
+			__except (1)
+			{
+				return 0;
+			}
+
+			return (((G3D::int64)t1Hi << 32) + t1Lo) - (((G3D::int64)t0Hi << 32) + t0Lo);
+		}
+
+		static void Delay(unsigned time)
+		{
+			LARGE_INTEGER Frequency, StartCounter, EndCounter;
+			G3D::int64 x;
+
+			// Get the frequency of the high performance counter.
+			if (!QueryPerformanceFrequency(&Frequency)) 
+				return;
+
+			x = Frequency.QuadPart / 1000 * time;
+
+			// Get the starting position of the counter.
+			QueryPerformanceCounter(&StartCounter);
+
+			do 
+			{
+				// Get the ending position of the counter.  
+				QueryPerformanceCounter(&EndCounter);
+			} 
+			while (EndCounter.QuadPart - StartCounter.QuadPart < x);
+		}
+
+		static void DelayOverhead(unsigned time)
+		{
+			LARGE_INTEGER Frequency, StartCounter, EndCounter;
+			G3D::int64 x;
+
+			// Get the frequency of the high performance counter.
+			if (!QueryPerformanceFrequency(&Frequency)) 
+				return;
+
+			x = Frequency.QuadPart / 1000 * time;
+
+			// Get the starting position of the counter.
+			QueryPerformanceCounter(&StartCounter);
+		  
+			do 
+			{
+				// Get the ending position of the counter.  
+				QueryPerformanceCounter(&EndCounter);
+			} 
+			while (EndCounter.QuadPart - StartCounter.QuadPart == x);
+		}
+
+		static int getCPUSpeed()
+		{
+			G3D::int32 speed;
+
+			// TODO: wrong version of RegistryUtil
+			// this is actually RegistryUtil::read32bitNumber, the function was renamed to readInt32 in a later G3D commit
+			if (G3D::RegistryUtil::readInt32("HKEY_LOCAL_MACHINE\\HARDWARE\\DESCRIPTION\\System\\CentralProcessor\\0\\~MHz", speed))
+			{
+				if (speed > 300)
+					return speed;
+			}
+
+			unsigned repetitions = 2;
+			unsigned mSecPerRepetition = 50;
+			G3D::int64 total = 0;
+			G3D::int64 overhead = 0;
+
+			for (unsigned i = 0; i < repetitions; i++)
+			{
+				total += GetCyclesDifference(&Delay, mSecPerRepetition);
+				overhead += GetCyclesDifference(&DelayOverhead, mSecPerRepetition);
+			}
+
+			// Calculate the MHz speed.
+			total -= overhead;
+			total /= repetitions;
+			total /= mSecPerRepetition;
+			total /= 1000;
+
+			if (total < 100 || total > 50000)
+				total = 1400;
+
+			return total;
+		}
+
+		static std::string getCPUMake()
+		{
+			std::string cpu_name;
+			if (G3D::RegistryUtil::readString("HKEY_LOCAL_MACHINE\\HARDWARE\\DESCRIPTION\\System\\CentralProcessor\\0\\ProcessorNameString", cpu_name))
+				return cpu_name;
+			else
+				return "Could not determine CPU name";
+		}
+
+		static std::string getMaxRes()
+		{
+			int width = GetSystemMetrics(SM_CXSCREEN);
+			int height = GetSystemMetrics(SM_CYSCREEN);
+
+			std::string w = boost::lexical_cast<std::string>(width);
+			std::string h = boost::lexical_cast<std::string>(height);
+
+			return w + "x" + h;
+		}
+
+		static int inline_getTotalRAM()
+		{
+			MEMORYSTATUS memoryStatus;
+			GlobalMemoryStatus(&memoryStatus);
+
+			return memoryStatus.dwTotalPhys;
+		}
+
+		SpecData::SpecData()
+			: shaderModel(glLoaded ? getShaderModel() : 0.0f),
+			  videoMemory(G3D::DXCaps::videoMemorySize() / (1 << 20)),
+			  glVendor(glLoaded ? G3D::GLCaps::vendor() : "?"),
+			  gfxcard(glLoaded ? G3D::GLCaps::renderer() : "?"),
+			  CPUSpeed(getCPUSpeed()),
+			  cpu(getCPUMake()),
+			  ram(inline_getTotalRAM() / (1 << 20)),
+			  resolution(getMaxRes())
+		{
+		}
+	}
+}

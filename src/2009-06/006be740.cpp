@@ -1,176 +1,777 @@
-// roc 2009-06 006be740  unit: RBX::Lua::LuaArguments  size: 447 bytes
-// Make this compile to the exact bytes below, then: roc check 2009-06 006be740
-//
-// 006be740  83ec18               sub esp, 0x18
-// 006be743  53                   push ebx
-// 006be744  55                   push ebp
-// 006be745  56                   push esi
-// 006be746  8b742428             mov esi, dword ptr [esp + 0x28]
-// 006be74a  57                   push edi
-// 006be74b  56                   push esi
-// 006be74c  e82fa6ffff           call 0x6b8d80
-// 006be751  83c404               add esp, 4
-// 006be754  89442410             mov dword ptr [esp + 0x10], eax
-// 006be758  83f804               cmp eax, 4
-// 006be75b  c744241404000000     mov dword ptr [esp + 0x14], 4
-// 006be763  8d442410             lea eax, [esp + 0x10]
-// 006be767  7c04                 jl 0x6be76d
-// 006be769  8d442414             lea eax, [esp + 0x14]
-// 006be76d  8b28                 mov ebp, dword ptr [eax]
-// 006be76f  85ed                 test ebp, ebp
-// 006be771  0f85c9000000         jne 0x6be840
-// 006be777  6a04                 push 4
-// 006be779  56                   push esi
-// 006be77a  e851b6ffff           call 0x6b9dd0
-// 006be77f  83c408               add esp, 8
-// 006be782  85c0                 test eax, eax
-// 006be784  7406                 je 0x6be78c
-// 006be786  c700c2000000         mov dword ptr [eax], 0xc2
-// 006be78c  a1f82aa200           mov eax, dword ptr [0xa22af8]
-// 006be791  50                   push eax
-// 006be792  68f0d8ffff           push 0xffffd8f0
-// 006be797  56                   push esi
-// 006be798  e833aeffff           call 0x6b95d0
-// 006be79d  6afe                 push -2
-// 006be79f  56                   push esi
-// 006be7a0  e8bbb1ffff           call 0x6b9960
-// 006be7a5  83c414               add esp, 0x14
-// 006be7a8  d9ee                 fldz 
-// 006be7aa  33ff                 xor edi, edi
-// 006be7ac  d9542418             fst dword ptr [esp + 0x18]
-// 006be7b0  d954241c             fst dword ptr [esp + 0x1c]
-// 006be7b4  d95c2420             fstp dword ptr [esp + 0x20]
-// 006be7b8  d9e8                 fld1 
-// 006be7ba  d95c2424             fstp dword ptr [esp + 0x24]
-// 006be7be  85ed                 test ebp, ebp
-// 006be7c0  7e17                 jle 0x6be7d9
-// 006be7c2  8d5f01               lea ebx, [edi + 1]
-// 006be7c5  53                   push ebx
-// 006be7c6  56                   push esi
-// 006be7c7  e8e4edffff           call 0x6bd5b0
-// 006be7cc  d95cbc20             fstp dword ptr [esp + edi*4 + 0x20]
-// 006be7d0  8bfb                 mov edi, ebx
-// 006be7d2  83c408               add esp, 8
-// 006be7d5  3bfd                 cmp edi, ebp
-// 006be7d7  7ce9                 jl 0x6be7c2
-// 006be7d9  d9442418             fld dword ptr [esp + 0x18]
-// 006be7dd  83ec10               sub esp, 0x10
-// 006be7e0  8bc4                 mov eax, esp
-// 006be7e2  d918                 fstp dword ptr [eax]
-// 006be7e4  8d4c2424             lea ecx, [esp + 0x24]
-// 006be7e8  d944242c             fld dword ptr [esp + 0x2c]
-// 006be7ec  51                   push ecx
-// 006be7ed  d95804               fstp dword ptr [eax + 4]
-// 006be7f0  d9442434             fld dword ptr [esp + 0x34]
-// 006be7f4  d95808               fstp dword ptr [eax + 8]
-// 006be7f7  d9442438             fld dword ptr [esp + 0x38]
-// 006be7fb  d9580c               fstp dword ptr [eax + 0xc]
-// 006be7fe  e8cd40f8ff           call 0x6428d0
-// 006be803  8b38                 mov edi, dword ptr [eax]
-// 006be805  6a04                 push 4
-// 006be807  56                   push esi
-// 006be808  e8c3b5ffff           call 0x6b9dd0
-// 006be80d  83c41c               add esp, 0x1c
-// 006be810  85c0                 test eax, eax
-// 006be812  7402                 je 0x6be816
-// 006be814  8938                 mov dword ptr [eax], edi
-// 006be816  8b15f82aa200         mov edx, dword ptr [0xa22af8]
-// 006be81c  52                   push edx
-// 006be81d  68f0d8ffff           push 0xffffd8f0
-// 006be822  56                   push esi
-// 006be823  e8a8adffff           call 0x6b95d0
-// 006be828  6afe                 push -2
-// 006be82a  56                   push esi
-// 006be82b  e830b1ffff           call 0x6b9960
-// 006be830  83c414               add esp, 0x14
-// 006be833  b801000000           mov eax, 1
-// 006be838  5f                   pop edi
-// 006be839  5e                   pop esi
-// 006be83a  5d                   pop ebp
-// 006be83b  5b                   pop ebx
-// 006be83c  83c418               add esp, 0x18
-// 006be83f  c3                   ret 
-// 006be840  83fd01               cmp ebp, 1
-// 006be843  0f855fffffff         jne 0x6be7a8
-// 006be849  55                   push ebp
-// 006be84a  56                   push esi
-// 006be84b  e890a7ffff           call 0x6b8fe0
-// 006be850  83c408               add esp, 8
-// 006be853  55                   push ebp
-// 006be854  56                   push esi
-// 006be855  85c0                 test eax, eax
-// 006be857  7428                 je 0x6be881
-// 006be859  e8b2a8ffff           call 0x6b9110
-// 006be85e  83c408               add esp, 8
-// 006be861  50                   push eax
-// 006be862  8d4c2418             lea ecx, [esp + 0x18]
-// 006be866  e8c541f8ff           call 0x642a30
-// 006be86b  8b08                 mov ecx, dword ptr [eax]
-// 006be86d  51                   push ecx
-// 006be86e  56                   push esi
-// 006be86f  e8ac4ff7ff           call 0x633820
-// 006be874  83c408               add esp, 8
-// 006be877  8bc5                 mov eax, ebp
-// 006be879  5f                   pop edi
-// 006be87a  5e                   pop esi
-// 006be87b  5d                   pop ebp
-// 006be87c  5b                   pop ebx
-// 006be87d  83c418               add esp, 0x18
-// 006be880  c3                   ret 
-// 006be881  e89aa7ffff           call 0x6b9020
-// 006be886  83c408               add esp, 8
-// 006be889  85c0                 test eax, eax
-// 006be88b  742e                 je 0x6be8bb
-// 006be88d  6a00                 push 0
-// 006be88f  6a01                 push 1
-// 006be891  56                   push esi
-// 006be892  e8e9a8ffff           call 0x6b9180
-// 006be897  50                   push eax
-// 006be898  8d542424             lea edx, [esp + 0x24]
-// 006be89c  52                   push edx
-// 006be89d  e89e3df8ff           call 0x642640
-// 006be8a2  8b00                 mov eax, dword ptr [eax]
-// 006be8a4  50                   push eax
-// 006be8a5  56                   push esi
-// 006be8a6  e8754ff7ff           call 0x633820
-// 006be8ab  83c41c               add esp, 0x1c
-// 006be8ae  b801000000           mov eax, 1
-// 006be8b3  5f                   pop edi
-// 006be8b4  5e                   pop esi
-// 006be8b5  5d                   pop ebp
-// 006be8b6  5b                   pop ebx
-// 006be8b7  83c418               add esp, 0x18
-// 006be8ba  c3                   ret 
-// 006be8bb  8b0dec2aa200         mov ecx, dword ptr [0xa22aec]
-// 006be8c1  51                   push ecx
-// 006be8c2  6a01                 push 1
-// 006be8c4  56                   push esi
-// 006be8c5  e8e6c2ffff           call 0x6babb0
-// 006be8ca  d900                 fld dword ptr [eax]
-// 006be8cc  8bcc                 mov ecx, esp
-// 006be8ce  d919                 fstp dword ptr [ecx]
-// 006be8d0  8d542420             lea edx, [esp + 0x20]
-// 006be8d4  d94004               fld dword ptr [eax + 4]
-// 006be8d7  52                   push edx
-// 006be8d8  d95904               fstp dword ptr [ecx + 4]
-// 006be8db  d94008               fld dword ptr [eax + 8]
-// 006be8de  d95908               fstp dword ptr [ecx + 8]
-// 006be8e1  e8ba43f8ff           call 0x642ca0
-// 006be8e6  8b00                 mov eax, dword ptr [eax]
-// 006be8e8  50                   push eax
-// 006be8e9  56                   push esi
-// 006be8ea  e8314ff7ff           call 0x633820
-// 006be8ef  83c418               add esp, 0x18
-// 006be8f2  5f                   pop edi
-// 006be8f3  5e                   pop esi
-// 006be8f4  5d                   pop ebp
-// 006be8f5  b801000000           mov eax, 1
-// 006be8fa  5b                   pop ebx
-// 006be8fb  83c418               add esp, 0x18
-// 006be8fe  c3                   ret 
-// library openrbx-client/App\script\LuaAtomicClasses.cpp (function ?newBrickColor@BrickColorBridge@Lua@RBX@@CAHPAUlua_State@@@Z)
-
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
 // roc-lib: openrbx-client App/script/LuaAtomicClasses.cpp
+
+// Candidate translation unit (score above; library headers required).
+#include "script/LuaAtomicClasses.h"
+
+#include "decomp.h"
+#include "lua/LuaBridge.h"
+#include "lua/lua.h"
+#include "v8datamodel/BrickColor.h"
+
+#include <G3D/Color3.h>
+#include <G3D/CoordinateFrame.h>
+#include <G3D/Quat.h>
+#include <G3D/Vector3.h>
+#include <G3D/Vector4.h>
+#include <G3D/g3dmath.h>
+#include <algorithm>
+#include <float.h>
+#include <limits>
+#include <lua.h>
+#include <string.h>
+
+namespace RBX {
+namespace Lua {
+
+// FUNCTION: WEBSERVICE 0x100ada30
+float lua_tofloat(lua_State* L, int index)
+{
+	double value = lua_tonumber(L, index);
+
+	if (value == std::numeric_limits<double>::infinity()) {
+		return std::numeric_limits<float>::infinity();
+	}
+
+	if (value == -std::numeric_limits<double>::infinity()) {
+		return -std::numeric_limits<float>::infinity();
+	}
+
+	if (!(value < 0.0 || value >= 0.0)) {
+		return static_cast<float>(value);
+	}
+
+	if (value > FLT_MAX) {
+		return FLT_MAX;
+	}
+
+	if (value < -FLT_MAX) {
+		return -FLT_MAX;
+	}
+
+	return static_cast<float>(value);
+}
+
+template <>
+const char* Bridge<G3D::Color3, 1>::className = "Color3";
+
+// FUNCTION: WEBSERVICE 0x100adac0
+template <>
+int Bridge<G3D::Color3, 1>::on_index(const G3D::Color3& value, const char* name, lua_State* L)
+{
+	if (strcmp(name, "r") == 0) {
+		lua_pushnumber(L, value.r);
+		return 1;
+	}
+
+	if (strcmp(name, "g") == 0) {
+		lua_pushnumber(L, value.g);
+		return 1;
+	}
+
+	if (strcmp(name, "b") == 0) {
+		lua_pushnumber(L, value.b);
+		return 1;
+	}
+
+	throw std::runtime_error(G3D::format("%s is not a valid member", name));
+}
+
+// FUNCTION: WEBSERVICE 0x100adc80
+int Color3Bridge::newColor3(lua_State* L)
+{
+	float color[3];
+
+	int count = std::min(3, lua_gettop(L));
+
+	for (int i = 0; i < count; i++) {
+		color[i] = lua_tofloat(L, i + 1);
+	}
+
+	for (int i = count; i < 3; i++) {
+		color[i] = 0.0f;
+	}
+
+	pushNewObject(L, G3D::Color3(color[0], color[1], color[2]));
+	return 1;
+}
+
+// FUNCTION: WEBSERVICE 0x100add30
+int Vector3Bridge::on_add(lua_State* L)
+{
+	pushNewObject(L, getObject(L, 2) + getObject(L, 1));
+	return 1;
+}
+
+// FUNCTION: WEBSERVICE 0x100addc0
+int Vector3Bridge::on_sub(lua_State* L)
+{
+	const G3D::Vector3& left = getObject(L, 1);
+	const G3D::Vector3& right = getObject(L, 2);
+
+	pushNewObject(L, left - right);
+	return 1;
+}
+
+// FUNCTION: WEBSERVICE 0x100ade50
+int Vector3Bridge::on_mul(lua_State* L)
+{
+	G3D::Vector3 vector;
+
+	if (getValue(L, 1, vector)) {
+		G3D::Vector3 other;
+
+		if (getValue(L, 2, other)) {
+			pushVector3(L, vector * other);
+			return 1;
+		}
+
+		pushVector3(L, vector * lua_tofloat(L, 2));
+		return 1;
+	}
+
+	vector = getObject(L, 2);
+
+	pushVector3(L, vector * lua_tofloat(L, 1));
+	return 1;
+}
+
+// FUNCTION: WEBSERVICE 0x100adf30
+int Vector3Bridge::on_div(lua_State* L)
+{
+	G3D::Vector3 vector;
+
+	if (getValue(L, 1, vector)) {
+		G3D::Vector3 other;
+
+		if (getValue(L, 2, other)) {
+			pushVector3(L, vector / other);
+			return 1;
+		}
+
+		pushVector3(L, vector / lua_tofloat(L, 2));
+		return 1;
+	}
+
+	vector = getObject(L, 2);
+
+	float scalar = lua_tofloat(L, 1);
+
+	pushVector3(L, G3D::Vector3(scalar, scalar, scalar) / vector);
+	return 1;
+}
+
+// FUNCTION: WEBSERVICE 0x100ae030
+int Vector3Bridge::on_unm(lua_State* L)
+{
+	pushNewObject(L, -getObject(L, 1));
+	return 1;
+}
+
+// FUNCTION: WEBSERVICE 0x100ae0b0
+int Vector3Bridge::newVector3(lua_State* L)
+{
+	float vector[3];
+
+	int count = std::min(3, lua_gettop(L));
+
+	for (int i = 0; i < count; i++) {
+		vector[i] = lua_tofloat(L, i + 1);
+	}
+
+	for (int i = count; i < 3; i++) {
+		vector[i] = 0.0f;
+	}
+
+	pushNewObject(L, G3D::Vector3(vector[0], vector[1], vector[2]));
+	return 1;
+}
+
+// FUNCTION: WEBSERVICE 0x100ae160
+static int lerp(lua_State* L)
+{
+	const G3D::Vector3& value = Vector3Bridge::getObject(L, 1);
+	const G3D::Vector3& other = Vector3Bridge::getObject(L, 2);
+	float alpha = lua_tofloat(L, 3);
+
+	Vector3Bridge::pushNewObject(L, value.lerp(other, alpha));
+	return 1;
+}
+
+// FUNCTION: WEBSERVICE 0x100ae210
+template <>
+int Bridge<G3D::Vector3, 1>::on_index(const G3D::Vector3& value, const char* name, lua_State* L)
+{
+	if (strcmp(name, "x") == 0) {
+		lua_pushnumber(L, value.x);
+		return 1;
+	}
+
+	if (strcmp(name, "y") == 0) {
+		lua_pushnumber(L, value.y);
+		return 1;
+	}
+
+	if (strcmp(name, "z") == 0) {
+		lua_pushnumber(L, value.z);
+		return 1;
+	}
+
+	if (strcmp(name, "unit") == 0) {
+		pushNewObject(L, value.unit());
+		return 1;
+	}
+
+	if (strcmp(name, "magnitude") == 0) {
+		lua_pushnumber(L, value.magnitude());
+		return 1;
+	}
+
+	if (strcmp(name, "lerp") == 0) {
+		lua_pushcclosure(L, lerp, 0);
+		return 1;
+	}
+
+	throw std::runtime_error(G3D::format("%s is not a valid member", name));
+}
+
+template <>
+const char* Bridge<G3D::Vector3, 1>::className = "Vector3";
+
+template bool Bridge<G3D::Vector3, 1>::getValue<G3D::Vector3>(lua_State* L, unsigned int index, G3D::Vector3& value);
+
+template G3D::Vector3* Bridge<G3D::Vector3, 1>::pushNewObject<G3D::Vector3>(lua_State* L, G3D::Vector3 value);
+
+template G3D::Color3* Bridge<G3D::Color3, 1>::pushNewObject<G3D::Color3>(lua_State* L, G3D::Color3 value);
+
+template RBX::BrickColor* Bridge<RBX::BrickColor, 1>::pushNewObject<RBX::BrickColor>(
+	lua_State* L,
+	RBX::BrickColor value
+);
+
+// FUNCTION: WEBSERVICE 0x100ae580
+int BrickColorBridge::newBrickColor(lua_State* L)
+{
+	int count = std::min(4, lua_gettop(L));
+
+	if (count == 0) {
+		pushNewObject(L, RBX::BrickColor(RBX::BrickColor::lego_194));
+	}
+	else if (count == 1) {
+		if (lua_isnumber(L, 1)) {
+			pushNewObject(L, RBX::BrickColor(lua_tointeger(L, 1)));
+			return count;
+		}
+
+		if (lua_isstring(L, 1)) {
+			pushNewObject(L, RBX::BrickColor::parse(lua_tolstring(L, 1, 0)));
+			return 1;
+		}
+
+		pushNewObject(L, RBX::BrickColor::closest(Color3Bridge::getObject(L, 1)));
+		return 1;
+	}
+
+	float color[4] = {0.0f, 0.0f, 0.0f, 1.0f};
+
+	for (int i = 0; i < count; i++) {
+		color[i] = lua_tofloat(L, i + 1);
+	}
+
+	pushNewObject(L, RBX::BrickColor::closest(G3D::Color4(color[0], color[1], color[2], color[3])));
+	return 1;
+}
+
+// FUNCTION: WEBSERVICE 0x100ae740
+int BrickColorBridge::randomBrickColor(lua_State* L)
+{
+	pushNewObject(L, RBX::BrickColor::random());
+	return 1;
+}
+
+// FUNCTION: WEBSERVICE 0x100ae790
+template <>
+int Bridge<RBX::BrickColor, 1>::on_index(const RBX::BrickColor& value, const char* name, lua_State* L)
+{
+	if (strcmp(name, "number") == 0) {
+		lua_pushinteger(L, value.number);
+		return 1;
+	}
+
+	if (strcmp(name, "Number") == 0) {
+		lua_pushinteger(L, value.number);
+		return 1;
+	}
+
+	if (strcmp(name, "Color") == 0) {
+		Bridge<G3D::Color3, 1>::pushNewObject(L, value.color3());
+		return 1;
+	}
+
+	if (strcmp(name, "r") == 0) {
+		lua_pushnumber(L, value.color3().r);
+		return 1;
+	}
+
+	if (strcmp(name, "g") == 0) {
+		lua_pushnumber(L, value.color3().g);
+		return 1;
+	}
+
+	if (strcmp(name, "b") == 0) {
+		lua_pushnumber(L, value.color3().b);
+		return 1;
+	}
+
+	if (strcmp(name, "name") == 0) {
+		lua_pushstring(L, value.name().c_str());
+		return 1;
+	}
+
+	if (strcmp(name, "Name") == 0) {
+		lua_pushstring(L, value.name().c_str());
+		return 1;
+	}
+
+	throw std::runtime_error(G3D::format("%s is not a valid member", name));
+}
+
+template <>
+const char* Bridge<RBX::BrickColor, 1>::className = "BrickColor";
+
+// FUNCTION: WEBSERVICE 0x100ae950
+int CoordinateFrameBridge::newCoordinateFrame(lua_State* L)
+{
+	G3D::CoordinateFrame result;
+
+	int count = lua_gettop(L);
+
+	switch (count) {
+	case 0:
+		break;
+
+	case 1:
+		result.translation = Vector3Bridge::getObject(L, 1);
+		break;
+
+	case 2:
+		result.translation = Vector3Bridge::getObject(L, 1);
+		result.lookAt(Vector3Bridge::getObject(L, 2));
+		break;
+
+	case 3:
+		for (int i = 0; i < 3; i++) {
+			result.translation[i] = lua_tofloat(L, i + 1);
+		}
+		break;
+
+	case 7: {
+		for (int i = 0; i < 3; i++) {
+			result.translation[i] = lua_tofloat(L, i + 1);
+		}
+
+		G3D::Quat quaternion;
+
+		quaternion.x = lua_tofloat(L, 4);
+		quaternion.y = lua_tofloat(L, 5);
+		quaternion.z = lua_tofloat(L, 6);
+		quaternion.w = lua_tofloat(L, 7);
+
+		G3D::Matrix3 rotation(quaternion);
+
+		result.rotation = rotation;
+		break;
+	}
+
+	case 12: {
+		for (int i = 0; i < 3; i++) {
+			result.translation[i] = lua_tofloat(L, i + 1);
+		}
+
+		int index = 4;
+
+		float* element = result.rotation[0];
+
+		while (index < 13) {
+			for (int c = 0; c < 3; c++) {
+				*element++ = lua_tofloat(L, c + index);
+			}
+
+			index += 3;
+		}
+		break;
+	}
+
+	default:
+		throw std::runtime_error(G3D::format("Invalid number of arguments: %d", count));
+	}
+
+	pushNewObject(L, result);
+	return 1;
+}
+
+// FUNCTION: WEBSERVICE 0x100aebc0
+int CoordinateFrameBridge::on_add(lua_State* L)
+{
+	const G3D::CoordinateFrame& value = getObject(L, 1);
+	const G3D::Vector3& other = Vector3Bridge::getObject(L, 2);
+
+	G3D::CoordinateFrame result = value + other;
+
+	pushNewObject(L, result);
+	return 1;
+}
+
+// FUNCTION: WEBSERVICE 0x100aec40
+int CoordinateFrameBridge::on_sub(lua_State* L)
+{
+	const G3D::CoordinateFrame& value = getObject(L, 1);
+	const G3D::Vector3& other = Vector3Bridge::getObject(L, 2);
+
+	G3D::CoordinateFrame result = value - other;
+
+	pushNewObject(L, result);
+	return 1;
+}
+
+// FUNCTION: WEBSERVICE 0x100aecc0
+int CoordinateFrameBridge::on_inverse(lua_State* L)
+{
+	const G3D::CoordinateFrame& value = getObject(L, 1);
+
+	G3D::CoordinateFrame result = value.inverse();
+
+	pushNewObject(L, result);
+	return 1;
+}
+
+// FUNCTION: WEBSERVICE 0x100aed30
+int CoordinateFrameBridge::on_toWorldSpace(lua_State* L)
+{
+	const G3D::CoordinateFrame& value = getObject(L, 1);
+
+	int count = lua_gettop(L) - 1;
+
+	if (count == 0) {
+		G3D::CoordinateFrame result = value;
+
+		pushNewObject(L, result);
+		return 1;
+	}
+
+	for (int i = 0; i < count; i++) {
+		G3D::CoordinateFrame result = value * getObject(L, i + 2);
+
+		pushNewObject(L, result);
+	}
+
+	return count;
+}
+
+// FUNCTION: WEBSERVICE 0x100aee30
+int CoordinateFrameBridge::on_toObjectSpace(lua_State* L)
+{
+	const G3D::CoordinateFrame& value = getObject(L, 1);
+
+	int count = lua_gettop(L) - 1;
+
+	if (count == 0) {
+		G3D::CoordinateFrame result = value.inverse();
+
+		pushNewObject(L, result);
+		return 1;
+	}
+
+	for (int i = 0; i < count; i++) {
+		G3D::CoordinateFrame result = value.toObjectSpace(getObject(L, i + 2));
+
+		pushNewObject(L, result);
+	}
+
+	return count;
+}
+
+// FUNCTION: WEBSERVICE 0x100aef20
+int CoordinateFrameBridge::on_pointToWorldSpace(lua_State* L)
+{
+	const G3D::CoordinateFrame& value = getObject(L, 1);
+
+	int count = lua_gettop(L) - 1;
+
+	if (count == 0) {
+		Vector3Bridge::pushVector3(L, value.pointToWorldSpace(G3D::Vector3::zero()));
+		return 1;
+	}
+
+	for (int i = 0; i < count; i++) {
+		Vector3Bridge::pushNewObject(L, value.pointToWorldSpace(Vector3Bridge::getObject(L, i + 2)));
+	}
+
+	return count;
+}
+
+// FUNCTION: WEBSERVICE 0x100af060
+int CoordinateFrameBridge::on_pointToObjectSpace(lua_State* L)
+{
+	const G3D::CoordinateFrame& value = getObject(L, 1);
+
+	int count = lua_gettop(L) - 1;
+
+	if (count == 0) {
+		Vector3Bridge::pushVector3(L, value.pointToObjectSpace(G3D::Vector3::zero()));
+		return 1;
+	}
+
+	for (int i = 0; i < count; i++) {
+		Vector3Bridge::pushNewObject(L, value.pointToObjectSpace(Vector3Bridge::getObject(L, i + 2)));
+	}
+
+	return count;
+}
+
+// STUB: WEBSERVICE 0x100af1a0
+int CoordinateFrameBridge::on_vectorToWorldSpace(lua_State* L)
+{
+	const G3D::CoordinateFrame& value = getObject(L, 1);
+
+	int count = lua_gettop(L) - 1;
+
+	if (count == 0) {
+		Vector3Bridge::pushVector3(L, value.vectorToWorldSpace(G3D::Vector3::zero()));
+		return 1;
+	}
+
+	for (int i = 0; i < count; i++) {
+		Vector3Bridge::pushNewObject(L, value.vectorToWorldSpace(Vector3Bridge::getObject(L, i + 2)));
+	}
+
+	return count;
+}
+
+// FUNCTION: WEBSERVICE 0x100af340
+int CoordinateFrameBridge::on_components(lua_State* L)
+{
+	const G3D::CoordinateFrame& value = getObject(L, 1);
+
+	lua_pushnumber(L, value.translation.x);
+	lua_pushnumber(L, value.translation.y);
+	lua_pushnumber(L, value.translation.z);
+
+	for (int r = 0; r < 3; r++) {
+		for (int c = 0; c < 3; c++) {
+			lua_pushnumber(L, value.rotation[r][c]);
+		}
+	}
+
+	return 12;
+}
+
+// FUNCTION: WEBSERVICE 0x100af3d0
+int CoordinateFrameBridge::on_toEulerAnglesXYZ(lua_State* L)
+{
+	float x;
+	float y;
+	float z;
+
+	const G3D::CoordinateFrame& value = getObject(L, 1);
+
+	value.rotation.toEulerAnglesXYZ(x, y, z);
+
+	lua_pushnumber(L, x);
+	lua_pushnumber(L, y);
+	lua_pushnumber(L, z);
+	return 3;
+}
+
+// FUNCTION: WEBSERVICE 0x100af440
+int CoordinateFrameBridge::on_vectorToObjectSpace(lua_State* L)
+{
+	const G3D::CoordinateFrame& value = getObject(L, 1);
+
+	int count = lua_gettop(L) - 1;
+
+	if (count == 0) {
+		Vector3Bridge::pushVector3(L, value.vectorToObjectSpace(G3D::Vector3::zero()));
+		return 1;
+	}
+
+	for (int i = 0; i < count; i++) {
+		Vector3Bridge::pushNewObject(L, value.vectorToObjectSpace(Vector3Bridge::getObject(L, i + 2)));
+	}
+
+	return count;
+}
+
+// FUNCTION: WEBSERVICE 0x100af610
+int CoordinateFrameBridge::fromEulerAnglesXYZ(lua_State* L)
+{
+	G3D::CoordinateFrame result;
+
+	result.rotation =
+		G3D::Matrix3::fromEulerAnglesXYZ(luaL_checknumber(L, 1), luaL_checknumber(L, 2), luaL_checknumber(L, 3));
+
+	pushNewObject(L, result);
+	return 1;
+}
+
+// FUNCTION: WEBSERVICE 0x100af6b0
+int CoordinateFrameBridge::fromAxisAngle(lua_State* L)
+{
+	G3D::CoordinateFrame result;
+
+	const G3D::Vector3& axis = Vector3Bridge::getObject(L, 1);
+	float angle = luaL_checknumber(L, 2);
+
+	result.rotation = G3D::Matrix3::fromAxisAngle(axis, angle);
+
+	pushNewObject(L, result);
+	return 1;
+}
+
+template <>
+const char* Bridge<G3D::CoordinateFrame, 1>::className = "CFrame";
+
+// FUNCTION: WEBSERVICE 0x100af750
+template <>
+int Bridge<G3D::CoordinateFrame, 1>::on_index(const G3D::CoordinateFrame& value, const char* name, lua_State* L)
+{
+	if (strcmp(name, "p") == 0) {
+		Vector3Bridge::pushVector3(L, value.translation);
+		return 1;
+	}
+
+	if (strcmp(name, "lookVector") == 0) {
+		Vector3Bridge::pushVector3(L, value.getLookVector());
+		return 1;
+	}
+
+	if (strcmp(name, "inverse") == 0) {
+		lua_pushvalue(L, -1);
+		lua_pushcclosure(L, CoordinateFrameBridge::on_inverse, 1);
+		return 1;
+	}
+
+	if (strcmp(name, "toWorldSpace") == 0) {
+		lua_pushvalue(L, -1);
+		lua_pushcclosure(L, CoordinateFrameBridge::on_toWorldSpace, 1);
+		return 1;
+	}
+
+	if (strcmp(name, "toObjectSpace") == 0) {
+		lua_pushvalue(L, -1);
+		lua_pushcclosure(L, CoordinateFrameBridge::on_toObjectSpace, 1);
+		return 1;
+	}
+
+	if (strcmp(name, "pointToWorldSpace") == 0) {
+		lua_pushvalue(L, -1);
+		lua_pushcclosure(L, CoordinateFrameBridge::on_pointToWorldSpace, 1);
+		return 1;
+	}
+
+	if (strcmp(name, "pointToObjectSpace") == 0) {
+		lua_pushvalue(L, -1);
+		lua_pushcclosure(L, CoordinateFrameBridge::on_pointToObjectSpace, 1);
+		return 1;
+	}
+
+	if (strcmp(name, "vectorToWorldSpace") == 0) {
+		lua_pushvalue(L, -1);
+		lua_pushcclosure(L, CoordinateFrameBridge::on_vectorToWorldSpace, 1);
+		return 1;
+	}
+
+	if (strcmp(name, "vectorToObjectSpace") == 0) {
+		lua_pushvalue(L, -1);
+		lua_pushcclosure(L, CoordinateFrameBridge::on_vectorToObjectSpace, 1);
+		return 1;
+	}
+
+	if (strcmp(name, "toEulerAnglesXYZ") == 0) {
+		lua_pushvalue(L, -1);
+		lua_pushcclosure(L, CoordinateFrameBridge::on_toEulerAnglesXYZ, 1);
+		return 1;
+	}
+
+	if (strcmp(name, "components") == 0) {
+		lua_pushvalue(L, -1);
+		lua_pushcclosure(L, CoordinateFrameBridge::on_components, 1);
+		return 1;
+	}
+
+	if (strcmp(name, "x") == 0) {
+		lua_pushnumber(L, value.translation.x);
+		return 1;
+	}
+
+	if (strcmp(name, "y") == 0) {
+		lua_pushnumber(L, value.translation.y);
+		return 1;
+	}
+
+	if (strcmp(name, "z") == 0) {
+		lua_pushnumber(L, value.translation.z);
+		return 1;
+	}
+
+	throw std::runtime_error(G3D::format("%s is not a valid member", name));
+}
+
+// FUNCTION: WEBSERVICE 0x100afaf0
+int CoordinateFrameBridge::on_mul(lua_State* L)
+{
+	const G3D::CoordinateFrame& value = getObject(L, 1);
+
+	G3D::CoordinateFrame other;
+
+	if (getValue(L, 2, other)) {
+		G3D::CoordinateFrame result = value * other;
+
+		pushNewObject(L, result);
+		return 1;
+	}
+
+	Vector3Bridge::pushVector3(L, value.toWorldSpace(G3D::Vector4(Vector3Bridge::getObject(L, 2), 1.0f)).xyz());
+	return 1;
+}
+
+template bool Bridge<G3D::CoordinateFrame, 1>::getValue<G3D::CoordinateFrame>(
+	lua_State* L,
+	unsigned int index,
+	G3D::CoordinateFrame& value
+);
+
+template void Bridge<G3D::Color3, 1>::on_newindex(G3D::Color3& value, const char* name, lua_State* L);
+
+template int Bridge<G3D::CoordinateFrame, 1>::on_gc(lua_State* L);
+
+template int Bridge<G3D::Vector3, 1>::on_gc(lua_State* L);
+
+template int Bridge<G3D::Color3, 1>::on_gc(lua_State* L);
+
+template int Bridge<RBX::BrickColor, 1>::on_gc(lua_State* L);
+
+template int Bridge<G3D::CoordinateFrame, 1>::on_index(lua_State* L);
+
+template int Bridge<G3D::Vector3, 1>::on_index(lua_State* L);
+
+template int Bridge<G3D::Color3, 1>::on_index(lua_State* L);
+
+template int Bridge<RBX::BrickColor, 1>::on_index(lua_State* L);
+
+template int Bridge<G3D::CoordinateFrame, 1>::on_eq(lua_State* L);
+
+template int Bridge<G3D::Vector3, 1>::on_eq(lua_State* L);
+
+template int Bridge<G3D::Color3, 1>::on_eq(lua_State* L);
+
+template int Bridge<RBX::BrickColor, 1>::on_eq(lua_State* L);
+
+template int Bridge<G3D::Vector3, 1>::on_tostring(const G3D::Vector3& value, lua_State* L);
+
+template int Bridge<G3D::Vector3, 1>::on_tostring(lua_State* L);
+
+} // namespace Lua
+} // namespace RBX

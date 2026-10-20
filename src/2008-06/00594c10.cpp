@@ -1,46 +1,568 @@
 // from server: 100% by auto
-// roc 2008-06 00594c10  unit: RBX::Lua::ThreadRef::VNode::?$sp_counted_impl_p  size: 104 bytes
-// Make this compile to the exact bytes below, then: roc check 2008-06 00594c10
-//
-// 00594c10  55                   push ebp
-// 00594c11  8bec                 mov ebp, esp
-// 00594c13  6aff                 push -1
-// 00594c15  68e01f7d00           push 0x7d1fe0
-// 00594c1a  64a100000000         mov eax, dword ptr fs:[0]
-// 00594c20  50                   push eax
-// 00594c21  64892500000000       mov dword ptr fs:[0], esp
-// 00594c28  83ec24               sub esp, 0x24
-// 00594c2b  53                   push ebx
-// 00594c2c  56                   push esi
-// 00594c2d  57                   push edi
-// 00594c2e  8965f0               mov dword ptr [ebp - 0x10], esp
-// 00594c31  6a18                 push 0x18
-// 00594c33  c745fc00000000       mov dword ptr [ebp - 4], 0
-// 00594c3a  e8e1bc1000           call 0x6a0920
-// 00594c3f  8bf0                 mov esi, eax
-// 00594c41  83c404               add esp, 4
-// 00594c44  85f6                 test esi, esi
-// 00594c46  7516                 jne 0x594c5e
-// 00594c48  8d4de0               lea ecx, [ebp - 0x20]
-// 00594c4b  e8e037fdff           call 0x568430
-// 00594c50  68304f8d00           push 0x8d4f30
-// 00594c55  8d45e0               lea eax, [ebp - 0x20]
-// 00594c58  50                   push eax
-// 00594c59  e82ec91000           call 0x6a158c
-// 00594c5e  56                   push esi
-// 00594c5f  ff15e0228000         call dword ptr [0x8022e0]
-// 00594c65  8b4df4               mov ecx, dword ptr [ebp - 0xc]
-// 00594c68  5f                   pop edi
-// 00594c69  8bc6                 mov eax, esi
-// 00594c6b  5e                   pop esi
-// 00594c6c  64890d00000000       mov dword ptr fs:[0], ecx
-// 00594c73  5b                   pop ebx
-// 00594c74  8be5                 mov esp, ebp
-// 00594c76  5d                   pop ebp
-// 00594c77  c3                   ret 
-// library boost-1.34.1/libs\thread\src\mutex.cpp (function ?new_critical_section@?A0x6a936049@@YAPAXXZ)
-
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD
 // roc-lib: boost-1.34.1 libs/thread/src/mutex.cpp
+
+// Candidate translation unit (score above; library headers required).
+// Copyright (C) 2001-2003
+// William E. Kempf
+//
+//  Distributed under the Boost Software License, Version 1.0. (See accompanying 
+//  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
+#include <boost/thread/detail/config.hpp>
+
+#include <boost/thread/mutex.hpp>
+#include <boost/thread/xtime.hpp>
+#include <boost/thread/thread.hpp>
+#include <boost/thread/exceptions.hpp>
+#include <boost/limits.hpp>
+#include <string>
+#include <stdexcept>
+#include <cassert>
+#include "timeconv.inl"
+
+#if defined(BOOST_HAS_WINTHREADS)
+#   include <new>
+#   include <boost/thread/once.hpp>
+#   include <windows.h>
+#   include <time.h>
+#   include "mutex.inl"
+#elif defined(BOOST_HAS_PTHREADS)
+#   include <errno.h>
+#elif defined(BOOST_HAS_MPTASKS)
+#    include <MacErrors.h>
+#    include "mac/init.hpp"
+#    include "mac/safe.hpp"
+#endif
+
+namespace boost {
+
+#if defined(BOOST_HAS_WINTHREADS)
+
+mutex::mutex()
+    : m_mutex(0)
+    , m_critical_section(false)
+{
+    m_critical_section = true;
+    if (m_critical_section)
+        m_mutex = new_critical_section();
+    else
+        m_mutex = new_mutex(0);
+}
+
+mutex::~mutex()
+{
+    if (m_critical_section)
+        delete_critical_section(m_mutex);
+    else
+        delete_mutex(m_mutex);
+}
+
+void mutex::do_lock()
+{
+    if (m_critical_section)
+        wait_critical_section_infinite(m_mutex);
+    else
+        wait_mutex(m_mutex, INFINITE);
+}
+
+void mutex::do_unlock()
+{
+    if (m_critical_section)
+        release_critical_section(m_mutex);
+    else
+        release_mutex(m_mutex);
+}
+
+void mutex::do_lock(cv_state&)
+{
+    do_lock();
+}
+
+void mutex::do_unlock(cv_state&)
+{
+    do_unlock();
+}
+
+try_mutex::try_mutex()
+    : m_mutex(0)
+    , m_critical_section(false)
+{
+    m_critical_section = has_TryEnterCriticalSection();
+    if (m_critical_section)
+        m_mutex = new_critical_section();
+    else
+        m_mutex = new_mutex(0);
+}
+
+try_mutex::~try_mutex()
+{
+    if (m_critical_section)
+        delete_critical_section(m_mutex);
+    else
+        delete_mutex(m_mutex);
+}
+
+void try_mutex::do_lock()
+{
+    if (m_critical_section)
+        wait_critical_section_infinite(m_mutex);
+    else
+        wait_mutex(m_mutex, INFINITE);
+}
+
+bool try_mutex::do_trylock()
+{
+    if (m_critical_section)
+        return wait_critical_section_try(m_mutex);
+    else
+        return wait_mutex(m_mutex, 0) == WAIT_OBJECT_0;
+}
+
+void try_mutex::do_unlock()
+{
+    if (m_critical_section)
+        release_critical_section(m_mutex);
+    else
+        release_mutex(m_mutex);
+}
+
+void try_mutex::do_lock(cv_state&)
+{
+    do_lock();
+}
+
+void try_mutex::do_unlock(cv_state&)
+{
+    do_unlock();
+}
+
+timed_mutex::timed_mutex()
+    : m_mutex(0)
+{
+    m_mutex = new_mutex(0);
+}
+
+timed_mutex::~timed_mutex()
+{
+    delete_mutex(m_mutex);
+}
+
+void timed_mutex::do_lock()
+{
+    wait_mutex(m_mutex, INFINITE);
+}
+
+bool timed_mutex::do_trylock()
+{
+    return wait_mutex(m_mutex, 0) == WAIT_OBJECT_0;
+}
+
+bool timed_mutex::do_timedlock(const xtime& xt)
+{
+    for (;;)
+    {
+        int milliseconds;
+        to_duration(xt, milliseconds);
+
+        int res = wait_mutex(m_mutex, milliseconds);
+
+        if (res == WAIT_TIMEOUT)
+        {
+            boost::xtime cur;
+            boost::xtime_get(&cur, boost::TIME_UTC);
+            if (boost::xtime_cmp(xt, cur) > 0)
+                continue;
+        }
+
+        return res == WAIT_OBJECT_0;
+    }
+}
+
+void timed_mutex::do_unlock()
+{
+    release_mutex(m_mutex);
+}
+
+void timed_mutex::do_lock(cv_state&)
+{
+    do_lock();
+}
+
+void timed_mutex::do_unlock(cv_state&)
+{
+    do_unlock();
+}
+
+#elif defined(BOOST_HAS_PTHREADS)
+
+mutex::mutex()
+{
+    int res = 0;
+    res = pthread_mutex_init(&m_mutex, 0);
+    if (res != 0)
+        throw thread_resource_error();
+}
+
+mutex::~mutex()
+{
+    int res = 0;
+    res = pthread_mutex_destroy(&m_mutex);
+    assert(res == 0);
+}
+
+void mutex::do_lock()
+{
+    int res = 0;
+    res = pthread_mutex_lock(&m_mutex);
+    if (res == EDEADLK) throw lock_error();
+    assert(res == 0);
+}
+
+void mutex::do_unlock()
+{
+    int res = 0;
+    res = pthread_mutex_unlock(&m_mutex);
+    if (res == EPERM) throw lock_error();
+    assert(res == 0);
+}
+
+void mutex::do_lock(cv_state&)
+{
+}
+
+void mutex::do_unlock(cv_state& state)
+{
+    state.pmutex = &m_mutex;
+}
+
+try_mutex::try_mutex()
+{
+    int res = 0;
+    res = pthread_mutex_init(&m_mutex, 0);
+    if (res != 0)
+        throw thread_resource_error();
+}
+
+try_mutex::~try_mutex()
+{
+    int res = 0;
+    res = pthread_mutex_destroy(&m_mutex);
+    assert(res == 0);
+}
+
+void try_mutex::do_lock()
+{
+    int res = 0;
+    res = pthread_mutex_lock(&m_mutex);
+    if (res == EDEADLK) throw lock_error();
+    assert(res == 0);
+}
+
+bool try_mutex::do_trylock()
+{
+    int res = 0;
+    res = pthread_mutex_trylock(&m_mutex);
+    if (res == EDEADLK) throw lock_error();
+    assert(res == 0 || res == EBUSY);
+    return res == 0;
+}
+
+void try_mutex::do_unlock()
+{
+    int res = 0;
+    res = pthread_mutex_unlock(&m_mutex);
+    if (res == EPERM) throw lock_error();
+    assert(res == 0);
+}
+
+void try_mutex::do_lock(cv_state&)
+{
+}
+
+void try_mutex::do_unlock(cv_state& state)
+{
+    state.pmutex = &m_mutex;
+}
+
+timed_mutex::timed_mutex()
+    : m_locked(false)
+{
+    int res = 0;
+    res = pthread_mutex_init(&m_mutex, 0);
+    if (res != 0)
+        throw thread_resource_error();
+
+    res = pthread_cond_init(&m_condition, 0);
+    if (res != 0)
+    {
+        pthread_mutex_destroy(&m_mutex);
+        throw thread_resource_error();
+    }
+}
+
+timed_mutex::~timed_mutex()
+{
+    assert(!m_locked);
+    int res = 0;
+    res = pthread_mutex_destroy(&m_mutex);
+    assert(res == 0);
+
+    res = pthread_cond_destroy(&m_condition);
+    assert(res == 0);
+}
+
+void timed_mutex::do_lock()
+{
+    int res = 0;
+    res = pthread_mutex_lock(&m_mutex);
+    assert(res == 0);
+
+    while (m_locked)
+    {
+        res = pthread_cond_wait(&m_condition, &m_mutex);
+        assert(res == 0);
+    }
+
+    assert(!m_locked);
+    m_locked = true;
+
+    res = pthread_mutex_unlock(&m_mutex);
+    assert(res == 0);
+}
+
+bool timed_mutex::do_trylock()
+{
+    int res = 0;
+    res = pthread_mutex_lock(&m_mutex);
+    assert(res == 0);
+
+    bool ret = false;
+    if (!m_locked)
+    {
+        m_locked = true;
+        ret = true;
+    }
+
+    res = pthread_mutex_unlock(&m_mutex);
+    assert(res == 0);
+    return ret;
+}
+
+bool timed_mutex::do_timedlock(const xtime& xt)
+{
+    int res = 0;
+    res = pthread_mutex_lock(&m_mutex);
+    assert(res == 0);
+
+    timespec ts;
+    to_timespec(xt, ts);
+
+    while (m_locked)
+    {
+        res = pthread_cond_timedwait(&m_condition, &m_mutex, &ts);
+        assert(res == 0 || res == ETIMEDOUT);
+
+        if (res == ETIMEDOUT)
+            break;
+    }
+
+    bool ret = false;
+    if (!m_locked)
+    {
+        m_locked = true;
+        ret = true;
+    }
+
+    res = pthread_mutex_unlock(&m_mutex);
+    assert(res == 0);
+    return ret;
+}
+
+void timed_mutex::do_unlock()
+{
+    int res = 0;
+    res = pthread_mutex_lock(&m_mutex);
+    assert(res == 0);
+
+    assert(m_locked);
+    m_locked = false;
+
+    res = pthread_cond_signal(&m_condition);
+    assert(res == 0);
+
+    res = pthread_mutex_unlock(&m_mutex);
+    assert(res == 0);
+}
+
+void timed_mutex::do_lock(cv_state&)
+{
+    int res = 0;
+    while (m_locked)
+    {
+        res = pthread_cond_wait(&m_condition, &m_mutex);
+        assert(res == 0);
+    }
+
+    assert(!m_locked);
+    m_locked = true;
+
+    res = pthread_mutex_unlock(&m_mutex);
+    assert(res == 0);
+}
+
+void timed_mutex::do_unlock(cv_state& state)
+{
+    int res = 0;
+    res = pthread_mutex_lock(&m_mutex);
+    assert(res == 0);
+
+    assert(m_locked);
+    m_locked = false;
+
+    res = pthread_cond_signal(&m_condition);
+    assert(res == 0);
+
+    state.pmutex = &m_mutex;
+}
+
+#elif defined(BOOST_HAS_MPTASKS)
+
+using threads::mac::detail::safe_enter_critical_region;
+
+mutex::mutex()
+{
+}
+
+mutex::~mutex()
+{
+}
+
+void mutex::do_lock()
+{
+    OSStatus lStatus = noErr;
+    lStatus = safe_enter_critical_region(m_mutex, kDurationForever,
+        m_mutex_mutex);
+    assert(lStatus == noErr);
+}
+
+void mutex::do_unlock()
+{
+    OSStatus lStatus = noErr;
+    lStatus = MPExitCriticalRegion(m_mutex);
+    assert(lStatus == noErr);
+}
+
+void mutex::do_lock(cv_state& /*state*/)
+{
+    do_lock();
+}
+
+void mutex::do_unlock(cv_state& /*state*/)
+{
+    do_unlock();
+}
+
+try_mutex::try_mutex()
+{
+}
+
+try_mutex::~try_mutex()
+{
+}
+
+void try_mutex::do_lock()
+{
+    OSStatus lStatus = noErr;
+    lStatus = safe_enter_critical_region(m_mutex, kDurationForever,
+        m_mutex_mutex);
+    assert(lStatus == noErr);
+}
+
+bool try_mutex::do_trylock()
+{
+    OSStatus lStatus = noErr;
+    lStatus = MPEnterCriticalRegion(m_mutex, kDurationImmediate);
+    assert(lStatus == noErr || lStatus == kMPTimeoutErr);
+    return lStatus == noErr;
+}
+
+void try_mutex::do_unlock()
+{
+    OSStatus lStatus = noErr;
+    lStatus = MPExitCriticalRegion(m_mutex);
+    assert(lStatus == noErr);
+}
+
+void try_mutex::do_lock(cv_state& /*state*/)
+{
+    do_lock();
+}
+
+void try_mutex::do_unlock(cv_state& /*state*/)
+{
+    do_unlock();
+}
+
+timed_mutex::timed_mutex()
+{
+}
+
+timed_mutex::~timed_mutex()
+{
+}
+
+void timed_mutex::do_lock()
+{
+    OSStatus lStatus = noErr;
+    lStatus = safe_enter_critical_region(m_mutex, kDurationForever,
+        m_mutex_mutex);
+    assert(lStatus == noErr);
+}
+
+bool timed_mutex::do_trylock()
+{
+    OSStatus lStatus = noErr;
+    lStatus = MPEnterCriticalRegion(m_mutex, kDurationImmediate);
+    assert(lStatus == noErr || lStatus == kMPTimeoutErr);
+    return(lStatus == noErr);
+}
+
+bool timed_mutex::do_timedlock(const xtime& xt)
+{
+    int microseconds;
+    to_microduration(xt, microseconds);
+    Duration lDuration = kDurationMicrosecond * microseconds;
+
+    OSStatus lStatus = noErr;
+    lStatus = safe_enter_critical_region(m_mutex, lDuration, m_mutex_mutex);
+    assert(lStatus == noErr || lStatus == kMPTimeoutErr);
+
+    return(lStatus == noErr);
+}
+
+void timed_mutex::do_unlock()
+{
+    OSStatus lStatus = noErr;
+    lStatus = MPExitCriticalRegion(m_mutex);
+    assert(lStatus == noErr);
+}
+
+void timed_mutex::do_lock(cv_state& /*state*/)
+{
+    do_lock();
+}
+
+void timed_mutex::do_unlock(cv_state& /*state*/)
+{
+    do_unlock();
+}
+
+#endif
+
+} // namespace boost
+
+// Change Log:
+//   8 Feb 01  WEKEMPF Initial version.

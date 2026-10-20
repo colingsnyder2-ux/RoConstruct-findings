@@ -1,36 +1,249 @@
-// roc 2008-06 005ec240  unit: RBX::Sky  size: 68 bytes
-// Make this compile to the exact bytes below, then: roc check 2008-06 005ec240
-//
-// 005ec240  d9ee                 fldz 
-// 005ec242  8b4c2404             mov ecx, dword ptr [esp + 4]
-// 005ec246  56                   push esi
-// 005ec247  d911                 fst dword ptr [ecx]
-// 005ec249  8b74240c             mov esi, dword ptr [esp + 0xc]
-// 005ec24d  d95104               fst dword ptr [ecx + 4]
-// 005ec250  b856555555           mov eax, 0x55555556
-// 005ec255  d95908               fstp dword ptr [ecx + 8]
-// 005ec258  f7ee                 imul esi
-// 005ec25a  8bc2                 mov eax, edx
-// 005ec25c  c1e81f               shr eax, 0x1f
-// 005ec25f  03c2                 add eax, edx
-// 005ec261  8d0440               lea eax, [eax + eax*2]
-// 005ec264  8bd0                 mov edx, eax
-// 005ec266  8bc6                 mov eax, esi
-// 005ec268  2bc2                 sub eax, edx
-// 005ec26a  83fe03               cmp esi, 3
-// 005ec26d  5e                   pop esi
-// 005ec26e  7d08                 jge 0x5ec278
-// 005ec270  d9e8                 fld1 
-// 005ec272  d91c81               fstp dword ptr [ecx + eax*4]
-// 005ec275  8bc1                 mov eax, ecx
-// 005ec277  c3                   ret 
-// 005ec278  d905b8c38100         fld dword ptr [0x81c3b8]
-// 005ec27e  d91c81               fstp dword ptr [ecx + eax*4]
-// 005ec281  8bc1                 mov eax, ecx
-// 005ec283  c3                   ret 
-// library openrbx-client/App\util\NormalId.cpp (function ?normalIdToVector3Internal@RBX@@YA?AVVector3@G3D@@W4NormalId@1@@Z)
-
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
 // roc-lib: openrbx-client App/util/NormalId.cpp
+
+// Candidate translation unit (score above; library headers required).
+#include "util/NormalId.h"
+
+#include "decomp.h"
+
+namespace RBX {
+
+// FUNCTION: WEBSERVICE 0x1007cf30
+NormalId intToNormalId(int value)
+{
+	return (NormalId) value;
+}
+
+// FUNCTION: WEBSERVICE 0x101039d0
+NormalId normalIdOpposite(NormalId normalId)
+{
+	return (NormalId) ((normalId + NORM_X_NEG) % 6);
+}
+
+// FUNCTION: WEBSERVICE 0x101039f0
+template <>
+Vector3 uvwToObject<NORM_X>(const Vector3& v)
+{
+	return Vector3(v.z, v.y, -v.x);
+}
+
+// FUNCTION: WEBSERVICE 0x10103a10
+template <>
+Vector3 uvwToObject<NORM_Y>(const Vector3& v)
+{
+	return Vector3(-v.x, v.z, v.y);
+}
+
+// FUNCTION: WEBSERVICE 0x10103a30
+template <>
+Vector3 uvwToObject<NORM_Z>(const Vector3& v)
+{
+	return Vector3(v.x, v.y, v.z);
+}
+
+// FUNCTION: WEBSERVICE 0x10103a50
+template <>
+Vector3 uvwToObject<NORM_X_NEG>(const Vector3& v)
+{
+	return Vector3(-v.z, v.y, v.x);
+}
+
+// FUNCTION: WEBSERVICE 0x10103a70
+template <>
+Vector3 uvwToObject<NORM_Y_NEG>(const Vector3& v)
+{
+	return Vector3(v.x, -v.z, v.y);
+}
+
+// FUNCTION: WEBSERVICE 0x10103a90
+template <>
+Vector3 uvwToObject<NORM_Z_NEG>(const Vector3& v)
+{
+	return Vector3(-v.x, v.y, -v.z);
+}
+
+// FUNCTION: WEBSERVICE 0x10103ab0
+Vector3 normalIdToVector3Internal(NormalId normalId)
+{
+	Vector3 answer;
+	answer.x = 0.0f;
+	answer.y = 0.0f;
+	answer.z = 0.0f;
+
+	int axis = normalId % 3;
+
+	if (normalId < 3) {
+		(&answer.x)[axis] = 1.0f;
+	}
+	else {
+		(&answer.x)[axis] = -1.0f;
+	}
+
+	return answer;
+}
+
+// FUNCTION: WEBSERVICE 0x10103b00
+NormalId Vector3ToNormalId(const Vector3& v)
+{
+	if (v.x == 1.0f) {
+		return NORM_X;
+	}
+	if (v.y == 1.0f) {
+		return NORM_Y;
+	}
+	if (v.z == 1.0f) {
+		return NORM_Z;
+	}
+	if (v.x == -1.0f) {
+		return NORM_X_NEG;
+	}
+	if (v.y == -1.0f) {
+		return NORM_Y_NEG;
+	}
+
+	return v.z == -1.0f ? NORM_Z_NEG : NORM_UNDEFINED;
+}
+
+// FUNCTION: WEBSERVICE 0x10103b80
+NormalId Matrix3ToNormalId(const Matrix3& m)
+{
+	return Vector3ToNormalId(m.getColumn(2));
+}
+
+// FUNCTION: WEBSERVICE 0x10103ba0
+Vector3 uvwToObject(const Vector3& uvwPt, NormalId faceId)
+{
+	switch (faceId) {
+	case NORM_X:
+		return uvwToObject<NORM_X>(uvwPt);
+	case NORM_Y:
+		return uvwToObject<NORM_Y>(uvwPt);
+	case NORM_Z:
+		return uvwToObject<NORM_Z>(uvwPt);
+	case NORM_X_NEG:
+		return uvwToObject<NORM_X_NEG>(uvwPt);
+	case NORM_Y_NEG:
+		return uvwToObject<NORM_Y_NEG>(uvwPt);
+	case NORM_Z_NEG:
+		return uvwToObject<NORM_Z_NEG>(uvwPt);
+	}
+
+	return Vector3::unitX();
+}
+
+// FUNCTION: WEBSERVICE 0x10103cc0
+Vector3 objectToUvw(const Vector3& objectPt, NormalId faceId)
+{
+	switch (faceId) {
+	case NORM_X:
+		return Vector3(-objectPt.z, objectPt.y, objectPt.x);
+	case NORM_Y:
+		return Vector3(-objectPt.x, objectPt.z, objectPt.y);
+	case NORM_Z:
+		return Vector3(objectPt.x, objectPt.y, objectPt.z);
+	case NORM_X_NEG:
+		return Vector3(objectPt.z, objectPt.y, -objectPt.x);
+	case NORM_Y_NEG:
+		return Vector3(objectPt.x, objectPt.z, -objectPt.y);
+	case NORM_Z_NEG:
+		return Vector3(-objectPt.x, objectPt.y, -objectPt.z);
+	}
+
+	return Vector3::unitX();
+}
+
+// FUNCTION: WEBSERVICE 0x10103de0
+const Vector3& normalIdToVector3(NormalId normalId)
+{
+	switch (normalId) {
+	case NORM_X: {
+		static const Vector3 x = normalIdToVector3Internal(NORM_X);
+		return x;
+	}
+	case NORM_Y: {
+		static const Vector3 y = normalIdToVector3Internal(NORM_Y);
+		return y;
+	}
+	case NORM_Z: {
+		static const Vector3 z = normalIdToVector3Internal(NORM_Z);
+		return z;
+	}
+	case NORM_X_NEG: {
+		static const Vector3 xn = normalIdToVector3Internal(NORM_X_NEG);
+		return xn;
+	}
+	case NORM_Y_NEG: {
+		static const Vector3 yn = normalIdToVector3Internal(NORM_Y_NEG);
+		return yn;
+	}
+	case NORM_Z_NEG: {
+		static const Vector3 zn = normalIdToVector3Internal(NORM_Z_NEG);
+		return zn;
+	}
+	}
+
+	return Vector3::zero();
+}
+
+// FUNCTION: WEBSERVICE 0x10103f50
+Matrix3 normalIdToMatrix3Internal(NormalId normalId)
+{
+	const Vector3 uInObject = uvwToObject(Vector3::unitX(), normalId);
+	const Vector3 vInObject = uvwToObject(Vector3::unitY(), normalId);
+	const Vector3 wInObject = uvwToObject(Vector3::unitZ(), normalId);
+
+	return Matrix3(
+		uInObject.x,
+		vInObject.x,
+		wInObject.x,
+		uInObject.y,
+		vInObject.y,
+		wInObject.y,
+		uInObject.z,
+		vInObject.z,
+		wInObject.z
+	);
+}
+
+// FUNCTION: WEBSERVICE 0x10104070
+const Matrix3& normalIdToMatrix3(NormalId normalId)
+{
+	switch (normalId) {
+	case NORM_X: {
+		static const Matrix3 x = normalIdToMatrix3Internal(NORM_X);
+		return x;
+	}
+	case NORM_Y: {
+		static const Matrix3 y = normalIdToMatrix3Internal(NORM_Y);
+		return y;
+	}
+	case NORM_Z: {
+		static const Matrix3 z = normalIdToMatrix3Internal(NORM_Z);
+		return z;
+	}
+	case NORM_X_NEG: {
+		static const Matrix3 xn = normalIdToMatrix3Internal(NORM_X_NEG);
+		return xn;
+	}
+	case NORM_Y_NEG: {
+		static const Matrix3 yn = normalIdToMatrix3Internal(NORM_Y_NEG);
+		return yn;
+	}
+	case NORM_Z_NEG: {
+		static const Matrix3 zn = normalIdToMatrix3Internal(NORM_Z_NEG);
+		return zn;
+	}
+	}
+
+	return Matrix3::identity();
+}
+
+// FUNCTION: WEBSERVICE 0x10104240
+Vector3 mapToUvw_Legacy(const Vector3& ptInObject, NormalId faceId)
+{
+	return uvwToObject(ptInObject, faceId);
+}
+
+} // namespace RBX

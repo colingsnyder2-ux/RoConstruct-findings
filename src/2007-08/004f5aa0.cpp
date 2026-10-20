@@ -1,50 +1,155 @@
-// roc 2007-08 004f5aa0  unit: boost::bad_lexical_cast  size: 141 bytes
-// Make this compile to the exact bytes below, then: roc check 2007-08 004f5aa0
-//
-// 004f5aa0  56                   push esi
-// 004f5aa1  e8bafbffff           call 0x4f5660
-// 004f5aa6  8b742408             mov esi, dword ptr [esp + 8]
-// 004f5aaa  8bce                 mov ecx, esi
-// 004f5aac  e82ff2f7ff           call 0x474ce0
-// 004f5ab1  b9e0fa8b00           mov ecx, 0x8bfae0
-// 004f5ab6  e80508f9ff           call 0x4862c0
-// 004f5abb  84c0                 test al, al
-// 004f5abd  740c                 je 0x4f5acb
-// 004f5abf  68e0fa8b00           push 0x8bfae0
-// 004f5ac4  8bce                 mov ecx, esi
-// 004f5ac6  e8450bf8ff           call 0x476610
-// 004f5acb  b900fb8b00           mov ecx, 0x8bfb00
-// 004f5ad0  e8eb07f9ff           call 0x4862c0
-// 004f5ad5  84c0                 test al, al
-// 004f5ad7  740c                 je 0x4f5ae5
-// 004f5ad9  6800fb8b00           push 0x8bfb00
-// 004f5ade  8bce                 mov ecx, esi
-// 004f5ae0  e84b0bf8ff           call 0x476630
-// 004f5ae5  807c240c00           cmp byte ptr [esp + 0xc], 0
-// 004f5aea  741c                 je 0x4f5b08
-// 004f5aec  b950fb8b00           mov ecx, 0x8bfb50
-// 004f5af1  e8ca07f9ff           call 0x4862c0
-// 004f5af6  84c0                 test al, al
-// 004f5af8  740e                 je 0x4f5b08
-// 004f5afa  6850fb8b00           push 0x8bfb50
-// 004f5aff  6a00                 push 0
-// 004f5b01  8bce                 mov ecx, esi
-// 004f5b03  e8480bf8ff           call 0x476650
-// 004f5b08  807c241000           cmp byte ptr [esp + 0x10], 0
-// 004f5b0d  741c                 je 0x4f5b2b
-// 004f5b0f  b970fb8b00           mov ecx, 0x8bfb70
-// 004f5b14  e8a707f9ff           call 0x4862c0
-// 004f5b19  84c0                 test al, al
-// 004f5b1b  740e                 je 0x4f5b2b
-// 004f5b1d  6870fb8b00           push 0x8bfb70
-// 004f5b22  6a02                 push 2
-// 004f5b24  8bce                 mov ecx, esi
-// 004f5b26  e8250bf8ff           call 0x476650
-// 004f5b2b  5e                   pop esi
-// 004f5b2c  c3                   ret 
-// library rbxgs-render/Mesh.cpp (function ?beginRender@Mesh@Render@RBX@@SAXPAVRenderDevice@G3D@@_N1@Z)
-
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
 // roc-lib: rbxgs-render Mesh.cpp
+
+// Candidate translation unit (score above; library headers required).
+#include "RenderLib/Mesh.h"
+#include <GLG3D/VARArea.h>
+
+namespace RBX
+{
+	namespace Render
+	{
+		static int vertexRefCount = 0;
+		static bool init;
+
+		Mesh::Level::~Level()
+		{
+			for (int i = 0; i < indexArray.size(); i++)
+				freeVertex(indexArray[i]);
+		}
+
+		Mesh::Mesh()
+		{
+			if (!init)
+			{
+				initStatics();
+				init = true;
+			}
+
+			debugBoundingRadius = 0.0f;
+		}
+
+		Mesh::~Mesh() {}
+
+		void Mesh::endRender(G3D::RenderDevice* rd)
+		{
+			rd->endIndexedPrimitives();
+		}
+
+		unsigned Mesh::allocVertex(unsigned i, unsigned count)
+		{
+			vertexRefCounts[i] += count;
+			vertexRefCount += count;
+			return i;
+		}
+
+		void Mesh::sendGeometry(const Level* lvl, G3D::RenderDevice* rd)
+		{
+			if (lvl && lvl->indexArray.size() > 0)
+			{
+				G3D::RenderDevice::Primitive primitive = lvl->primitive;
+				rd->sendIndices(primitive, lvl->indexArray.size(), lvl->indexArray.begin());
+			}
+		}
+
+		void Mesh::initStatics()
+		{
+			visibleGeometry.vertexArray.resize(1);
+			visibleGeometry.normalArray.resize(1);
+			texCoordArray.resize(1);
+			tangentArray.resize(1);
+			vertexRefCounts.resize(1);
+			vertexRefCounts.front() = 1;
+			freeList.clear();
+		}
+
+		void Mesh::beginRender(G3D::RenderDevice* rd, bool usetexCoords, bool useTangent)
+		{
+			makeVAR();
+			rd->beginIndexedPrimitives();
+
+			if (vertexVAR.valid())
+				rd->setVertexArray(vertexVAR);
+
+			if (normalVAR.valid())
+				rd->setVertexArray(normalVAR);
+
+			if (usetexCoords && texCoordVAR.valid())
+				rd->setTexCoordArray(0, texCoordVAR);
+
+			if (useTangent && tangentVAR.valid())
+				rd->setTexCoordArray(2, tangentVAR);
+		}
+
+		void Mesh::freeVertex(unsigned index)
+		{
+			if (vertexRefCounts.begin())
+			{
+				vertexRefCount--;
+				int& refIndex = vertexRefCounts[index];
+
+				if (refIndex == 1)
+				{
+					refIndex = 0;
+					freeList.push_back(index);
+				}
+				else
+				{
+					refIndex--;
+				}
+			}
+		}
+
+		void Mesh::makeVAR()
+		{
+			if (varDirty)
+			{
+				G3D::ReferenceCountedPointer<G3D::VARArea> area = G3D::VARArea::create(visibleGeometry.vertexArray.size() * 44 + 1024, G3D::VARArea::WRITE_ONCE);
+
+				vertexVAR = G3D::VAR(visibleGeometry.vertexArray, area);
+				normalVAR = G3D::VAR(visibleGeometry.normalArray, area);
+				texCoordVAR = G3D::VAR(texCoordArray, area);
+				tangentVAR = G3D::VAR(tangentArray, area);
+
+				varDirty = false;
+			}
+		}
+
+		unsigned Mesh::allocVertex(const G3D::Vector3& vertex, const G3D::Vector3& normal, const G3D::Vector2& tex, bool share)
+		{
+			if (!varDirty)
+				varDirty = true;
+
+			if (freeList.size() == 0)
+			{
+				int index = visibleGeometry.vertexArray.size();
+
+				visibleGeometry.vertexArray.push_back(vertex);
+				visibleGeometry.normalArray.push_back(normal);
+				texCoordArray.push_back(tex);
+				tangentArray.push_back(G3D::Vector3::zero());
+
+				vertexRefCounts.push_back(1);
+				vertexRefCount++;
+
+				return index;
+			}
+			else
+			{
+				int index = freeList.pop();
+
+				visibleGeometry.vertexArray[index] = vertex;
+				visibleGeometry.normalArray[index] = normal;
+				texCoordArray[index] = tex;
+				tangentArray[index] = G3D::Vector3::zero();
+
+				vertexRefCount++;
+				vertexRefCounts[index] = 1;
+
+				return index;
+			}
+		}
+	}
+}

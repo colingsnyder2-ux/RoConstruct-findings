@@ -1,57 +1,297 @@
 // from server: 100% by colin
-// roc 2008-06 00525bc0  unit: seg_00520000  size: 109 bytes
-// Make this compile to the exact bytes below, then: roc check 2008-06 00525bc0
-//
-// 00525bc0  51                   push ecx
-// 00525bc1  85f6                 test esi, esi
-// 00525bc3  7504                 jne 0x525bc9
-// 00525bc5  33c0                 xor eax, eax
-// 00525bc7  59                   pop ecx
-// 00525bc8  c3                   ret 
-// 00525bc9  56                   push esi
-// 00525bca  6a01                 push 1
-// 00525bcc  8d442408             lea eax, [esp + 8]
-// 00525bd0  6a04                 push 4
-// 00525bd2  50                   push eax
-// 00525bd3  c7442410d2040000     mov dword ptr [esp + 0x10], 0x4d2
-// 00525bdb  ff15d0278000         call dword ptr [0x8027d0]
-// 00525be1  83c410               add esp, 0x10
-// 00525be4  83f801               cmp eax, 1
-// 00525be7  75dc                 jne 0x525bc5
-// 00525be9  57                   push edi
-// 00525bea  8b3db8278000         mov edi, dword ptr [0x8027b8]
-// 00525bf0  6a00                 push 0
-// 00525bf2  6a00                 push 0
-// 00525bf4  56                   push esi
-// 00525bf5  ffd7                 call edi
-// 00525bf7  83c40c               add esp, 0xc
-// 00525bfa  85c0                 test eax, eax
-// 00525bfc  7518                 jne 0x525c16
-// 00525bfe  56                   push esi
-// 00525bff  6a01                 push 1
-// 00525c01  8d4c240c             lea ecx, [esp + 0xc]
-// 00525c05  6a04                 push 4
-// 00525c07  51                   push ecx
-// 00525c08  ff15c0278000         call dword ptr [0x8027c0]
-// 00525c0e  83c410               add esp, 0x10
-// 00525c11  83f801               cmp eax, 1
-// 00525c14  7405                 je 0x525c1b
-// 00525c16  33c0                 xor eax, eax
-// 00525c18  5f                   pop edi
-// 00525c19  59                   pop ecx
-// 00525c1a  c3                   ret 
-// 00525c1b  6a00                 push 0
-// 00525c1d  6a00                 push 0
-// 00525c1f  56                   push esi
-// 00525c20  ffd7                 call edi
-// 00525c22  83c40c               add esp, 0xc
-// 00525c25  b801000000           mov eax, 1
-// 00525c2a  5f                   pop edi
-// 00525c2b  59                   pop ecx
-// 00525c2c  c3                   ret 
-// library g3d-6.09-ijg-dll/jutils.c (function _isFileGood)
-
 // roc-lang: c
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /MD
 // roc-lib: g3d-6.09-ijg-dll jutils.c
+
+// Candidate translation unit (score above; library headers required).
+/*
+ * jutils.c
+ *
+ * Copyright (C) 1991-1996, Thomas G. Lane.
+ * This file is part of the Independent JPEG Group's software.
+ * For conditions of distribution and use, see the accompanying README file.
+ *
+ * This file contains tables and miscellaneous utility routines needed
+ * for both compression and decompression.
+ * Note we prefix all global names with "j" to minimize conflicts with
+ * a surrounding application.
+ */
+
+#define JPEG_INTERNALS
+#include "jinclude.h"
+#include "jpeglib.h"
+
+
+/*
+ * jpeg_zigzag_order[i] is the zigzag-order position of the i'th element
+ * of a DCT block read in natural order (left to right, top to bottom).
+ */
+
+#if 0				/* This table is not actually needed in v6a */
+
+const int jpeg_zigzag_order[DCTSIZE2] = {
+   0,  1,  5,  6, 14, 15, 27, 28,
+   2,  4,  7, 13, 16, 26, 29, 42,
+   3,  8, 12, 17, 25, 30, 41, 43,
+   9, 11, 18, 24, 31, 40, 44, 53,
+  10, 19, 23, 32, 39, 45, 52, 54,
+  20, 22, 33, 38, 46, 51, 55, 60,
+  21, 34, 37, 47, 50, 56, 59, 61,
+  35, 36, 48, 49, 57, 58, 62, 63
+};
+
+#endif
+
+/*
+ * jpeg_natural_order[i] is the natural-order position of the i'th element
+ * of zigzag order.
+ *
+ * When reading corrupted data, the Huffman decoders could attempt
+ * to reference an entry beyond the end of this array (if the decoded
+ * zero run length reaches past the end of the block).  To prevent
+ * wild stores without adding an inner-loop test, we put some extra
+ * "63"s after the real entries.  This will cause the extra coefficient
+ * to be stored in location 63 of the block, not somewhere random.
+ * The worst case would be a run-length of 15, which means we need 16
+ * fake entries.
+ */
+
+const int jpeg_natural_order[DCTSIZE2+16] = {
+  0,  1,  8, 16,  9,  2,  3, 10,
+ 17, 24, 32, 25, 18, 11,  4,  5,
+ 12, 19, 26, 33, 40, 48, 41, 34,
+ 27, 20, 13,  6,  7, 14, 21, 28,
+ 35, 42, 49, 56, 57, 50, 43, 36,
+ 29, 22, 15, 23, 30, 37, 44, 51,
+ 58, 59, 52, 45, 38, 31, 39, 46,
+ 53, 60, 61, 54, 47, 55, 62, 63,
+ 63, 63, 63, 63, 63, 63, 63, 63, /* extra entries for safety in decoder */
+ 63, 63, 63, 63, 63, 63, 63, 63
+};
+
+
+/*
+ * Arithmetic utilities
+ */
+
+GLOBAL(long)
+jdiv_round_up (long a, long b)
+/* Compute a/b rounded up to next integer, ie, ceil(a/b) */
+/* Assumes a >= 0, b > 0 */
+{
+  return (a + b - 1L) / b;
+}
+
+
+GLOBAL(long)
+jround_up (long a, long b)
+/* Compute a rounded up to next multiple of b, ie, ceil(a/b)*b */
+/* Assumes a >= 0, b > 0 */
+{
+  a += b - 1L;
+  return a - (a % b);
+}
+
+
+/* On normal machines we can apply MEMCOPY() and MEMZERO() to sample arrays
+ * and coefficient-block arrays.  This won't work on 80x86 because the arrays
+ * are FAR and we're assuming a small-pointer memory model.  However, some
+ * DOS compilers provide far-pointer versions of memcpy() and memset() even
+ * in the small-model libraries.  These will be used if USE_FMEM is defined.
+ * Otherwise, the routines below do it the hard way.  (The performance cost
+ * is not all that great, because these routines aren't very heavily used.)
+ */
+
+#ifndef NEED_FAR_POINTERS	/* normal case, same as regular macros */
+#define FMEMCOPY(dest,src,size)	MEMCOPY(dest,src,size)
+#define FMEMZERO(target,size)	MEMZERO(target,size)
+#else				/* 80x86 case, define if we can */
+#ifdef USE_FMEM
+#define FMEMCOPY(dest,src,size)	_fmemcpy((void FAR *)(dest), (const void FAR *)(src), (size_t)(size))
+#define FMEMZERO(target,size)	_fmemset((void FAR *)(target), 0, (size_t)(size))
+#endif
+#endif
+
+
+GLOBAL(void)
+jcopy_sample_rows (JSAMPARRAY input_array, int source_row,
+		   JSAMPARRAY output_array, int dest_row,
+		   int num_rows, JDIMENSION num_cols)
+/* Copy some rows of samples from one place to another.
+ * num_rows rows are copied from input_array[source_row++]
+ * to output_array[dest_row++]; these areas may overlap for duplication.
+ * The source and destination arrays must be at least as wide as num_cols.
+ */
+{
+  register JSAMPROW inptr, outptr;
+#ifdef FMEMCOPY
+  register size_t count = (size_t) (num_cols * SIZEOF(JSAMPLE));
+#else
+  register JDIMENSION count;
+#endif
+  register int row;
+
+  input_array += source_row;
+  output_array += dest_row;
+
+  for (row = num_rows; row > 0; row--) {
+    inptr = *input_array++;
+    outptr = *output_array++;
+#ifdef FMEMCOPY
+    FMEMCOPY(outptr, inptr, count);
+#else
+    for (count = num_cols; count > 0; count--)
+      *outptr++ = *inptr++;	/* needn't bother with GETJSAMPLE() here */
+#endif
+  }
+}
+
+
+GLOBAL(void)
+jcopy_block_row (JBLOCKROW input_row, JBLOCKROW output_row,
+		 JDIMENSION num_blocks)
+/* Copy a row of coefficient blocks from one place to another. */
+{
+#ifdef FMEMCOPY
+  FMEMCOPY(output_row, input_row, num_blocks * (DCTSIZE2 * SIZEOF(JCOEF)));
+#else
+  register JCOEFPTR inptr, outptr;
+  register long count;
+
+  inptr = (JCOEFPTR) input_row;
+  outptr = (JCOEFPTR) output_row;
+  for (count = (long) num_blocks * DCTSIZE2; count > 0; count--) {
+    *outptr++ = *inptr++;
+  }
+#endif
+}
+
+
+GLOBAL(void)
+jzero_far (void FAR * target, size_t bytestozero)
+/* Zero out a chunk of FAR memory. */
+/* This might be sample-array data, block-array data, or alloc_large data. */
+{
+#ifdef FMEMZERO
+  FMEMZERO(target, bytestozero);
+#else
+  register char FAR * ptr = (char FAR *) target;
+  register size_t count;
+
+  for (count = bytestozero; count > 0; count--) {
+    *ptr++ = 0;
+  }
+#endif
+}
+
+
+/** Used by robustTmpfile.  Returns nonzero if fread, fwrite, and fseek all
+succeed on the file.
+  @author Morgan McGuire, morgan@graphics3d.com  */
+static int isFileGood(FILE* f) {
+
+	int x, n, result;
+
+	/* Must be a valid file handle */
+	if (f == NULL) {
+		return 0;
+	}
+
+	/* Try to write */
+	x = 1234;
+	n = fwrite(&x, sizeof(int), 1, f);
+
+	if (n != 1) {
+		return 0;
+	}
+
+	/* Seek back to the beginning */
+	result = fseek(f, 0, SEEK_SET);
+	if (result != 0) {
+		return 0;
+	}
+
+	/* Read */
+	n =	fread(&x, sizeof(int), 1, f);
+	if (n != 1) {
+		return 0;
+	}
+
+	/* Seek back to the beginning again */
+	fseek(f, 0, SEEK_SET);
+
+	return 1;
+}
+
+
+FILE* _robustTmpfile() {
+    FILE* t = tmpfile();
+#ifdef _WIN32
+	char* n = NULL;
+#endif
+	char name[256];
+
+    if (isFileGood(t)) {
+		return t;
+	}
+
+    /* tmpfile failed; try the tmpnam routine */
+    t = fopen(tmpnam(NULL), "w+");
+    if (isFileGood(t)) {
+		return t;
+	}
+
+    #ifdef _WIN32
+		n = _tempnam("c:/tmp/", "t");
+        /* Try to create something in C:\tmp */
+        t = fopen(n, "w+");
+		if (isFileGood(t)) {
+			return t;
+		}
+
+        /* Try c:\temp */
+		n = _tempnam("c:/temp/", "t");
+        t = fopen(n, "w+");
+	    if (isFileGood(t)) {
+			return t;
+		}
+
+        /* try the current directory */
+		n = _tempnam("./", "t");
+        t = fopen(n, "w+");
+		if (isFileGood(t)) {
+			return t;
+		}
+    #endif
+
+    /* Try some hardcoded paths */
+    sprintf(name, "%s/tmp%d", "c:/tmp", rand());
+    t = fopen(name, "w+");
+    if (isFileGood(t)) {
+		return t;
+	}
+
+    sprintf(name, "%s/tmp%d", "/tmp", rand());
+    t = fopen(name, "w+");
+    if (isFileGood(t)) {
+		return t;
+	}
+
+    sprintf(name, "%s/tmp%d", "c:/temp", rand());
+    t = fopen(name, "w+");
+    if (isFileGood(t)) {
+		return t;
+	}
+
+    sprintf(name, "tmp%d", rand());
+    t = fopen(name, "w+");
+    if (isFileGood(t)) {
+		return t;
+	}
+
+    fprintf(stderr, "Unable to create a temporary file; robustTmpfile returning NULL\n");
+
+    return NULL;
+}
+

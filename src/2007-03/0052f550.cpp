@@ -1,57 +1,165 @@
-// roc 2007-03 0052f550  unit: seg_00520000  size: 152 bytes
-// Make this compile to the exact bytes below, then: roc check 2007-03 0052f550
-//
-// 0052f550  6aff                 push -1
-// 0052f552  68e8397500           push 0x7539e8
-// 0052f557  64a100000000         mov eax, dword ptr fs:[0]
-// 0052f55d  50                   push eax
-// 0052f55e  64892500000000       mov dword ptr fs:[0], esp
-// 0052f565  83ec08               sub esp, 8
-// 0052f568  8bc1                 mov eax, ecx
-// 0052f56a  8b5028               mov edx, dword ptr [eax + 0x28]
-// 0052f56d  56                   push esi
-// 0052f56e  8d4c2404             lea ecx, [esp + 4]
-// 0052f572  51                   push ecx
-// 0052f573  8b482c               mov ecx, dword ptr [eax + 0x2c]
-// 0052f576  034c2420             add ecx, dword ptr [esp + 0x20]
-// 0052f57a  ffd2                 call edx
-// 0052f57c  8bf0                 mov esi, eax
-// 0052f57e  c744241400000000     mov dword ptr [esp + 0x14], 0
-// 0052f586  e8d5db0300           call 0x56d160
-// 0052f58b  8b4c2420             mov ecx, dword ptr [esp + 0x20]
-// 0052f58f  8901                 mov dword ptr [ecx], eax
-// 0052f591  56                   push esi
-// 0052f592  83c104               add ecx, 4
-// 0052f595  e8b60df6ff           call 0x490350
-// 0052f59a  8b442408             mov eax, dword ptr [esp + 8]
-// 0052f59e  85c0                 test eax, eax
-// 0052f5a0  c7442414ffffffff     mov dword ptr [esp + 0x14], 0xffffffff
-// 0052f5a8  742c                 je 0x52f5d6
-// 0052f5aa  8bf0                 mov esi, eax
-// 0052f5ac  83c004               add eax, 4
-// 0052f5af  83c9ff               or ecx, 0xffffffff
-// 0052f5b2  f00fc108             lock xadd dword ptr [eax], ecx
-// 0052f5b6  751e                 jne 0x52f5d6
-// 0052f5b8  8b16                 mov edx, dword ptr [esi]
-// 0052f5ba  8b4204               mov eax, dword ptr [edx + 4]
-// 0052f5bd  8bce                 mov ecx, esi
-// 0052f5bf  ffd0                 call eax
-// 0052f5c1  8d4e08               lea ecx, [esi + 8]
-// 0052f5c4  83caff               or edx, 0xffffffff
-// 0052f5c7  f00fc111             lock xadd dword ptr [ecx], edx
-// 0052f5cb  7509                 jne 0x52f5d6
-// 0052f5cd  8b06                 mov eax, dword ptr [esi]
-// 0052f5cf  8b5008               mov edx, dword ptr [eax + 8]
-// 0052f5d2  8bce                 mov ecx, esi
-// 0052f5d4  ffd2                 call edx
-// 0052f5d6  8b4c240c             mov ecx, dword ptr [esp + 0xc]
-// 0052f5da  5e                   pop esi
-// 0052f5db  64890d00000000       mov dword ptr fs:[0], ecx
-// 0052f5e2  83c414               add esp, 0x14
-// 0052f5e5  c20800               ret 8
-// library rbxgs/v8datamodel\Selection.cpp (function ??$call@V?$shared_ptr@$$CBV?$vector@V?$shared_ptr@VInstance@RBX@@@boost@@V?$allocator@V?$shared_ptr@VInstance@RBX@@@boost@@@std@@@std@@@boost@@@?$BoundFuncDesc@VSelection@RBX@@$$A6A?AV?$shared_ptr@$$CBV?$vector@V?$shared_ptr@VInstance@RBX@@@boost@@V?$allocator@V?$shared_ptr@VInstance@RBX@@@boost@@@std@@@std@@@boost@@XZ$0A@@Reflection@RBX@@ABEXPAVSelection@2@AAVValue@12@@Z)
-
 // roc-lang: cpp
 // roc-cl: 50727
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
 // roc-lib: rbxgs v8datamodel/Selection.cpp
+
+// Candidate translation unit (score above; library headers required).
+#include "v8datamodel/Selection.h"
+
+static RBX::Reflection::BoundFuncDesc<RBX::Selection, boost::shared_ptr<const std::vector<boost::shared_ptr<RBX::Instance>>>(void), 0> func_getSelection(&RBX::Selection::getSelection2, "Get", RBX::Reflection::FunctionDescriptor::NeedTrustedCaller);
+static RBX::Reflection::BoundFuncDesc<RBX::Selection, void(boost::shared_ptr<const std::vector<boost::shared_ptr<RBX::Instance>>>), 1> func_setSelection(&RBX::Selection::setSelection, "Set", "selection", RBX::Reflection::FunctionDescriptor::NeedTrustedCaller);
+
+namespace RBX
+{
+	Selection::Selection()
+		: selection(std::vector<boost::shared_ptr<Instance>>())
+	{
+		setName("Selection");
+	}
+
+	Selection::~Selection()
+	{
+		RBXASSERT(size() == 0);
+	}
+
+	void Selection::addFilteredSelection(ISelectionBase* fs)
+	{
+		filteredSelections.push_back(fs);
+	}
+
+	void Selection::removeFilteredSelection(ISelectionBase* fs)
+	{
+		filteredSelections.erase(std::find(filteredSelections.begin(), filteredSelections.end(), fs));
+	}
+
+	void Selection::raiseAdded(boost::shared_ptr<Instance> instance)
+	{
+		SelectionChanged event(instance, boost::shared_ptr<Instance>());
+
+		for (std::vector<ISelectionBase*>::iterator iter = filteredSelections.begin(); iter != filteredSelections.end(); iter++)
+		{
+			(*iter)->onSelectionChanged(event);
+		}
+
+		Notifier<Selection, SelectionChanged>::raise(event);
+	}
+
+	void Selection::raiseRemoved(boost::shared_ptr<Instance> source)
+	{
+		SelectionChanged event(boost::shared_ptr<Instance>(), source);
+
+		for (std::vector<ISelectionBase*>::iterator iter = filteredSelections.begin(); iter != filteredSelections.end(); iter++)
+		{
+			(*iter)->onSelectionChanged(event);
+		}
+
+		Notifier<Selection, SelectionChanged>::raise(event);
+	}
+
+	void Selection::toggleSelection(Instance* instance)
+	{
+		boost::shared_ptr<Instance> shared = shared_from(instance);
+		boost::shared_ptr<std::vector<boost::shared_ptr<Instance>>> sel = selection.write();
+
+		std::vector<boost::shared_ptr<Instance>>::iterator found = std::find(sel->begin(), sel->end(), shared);
+
+		if (found == sel->end())
+		{
+			sel->push_back(shared);
+			instance->Notifier<Instance, AncestorChanged>::addListener(this);
+			raiseAdded(shared);
+		}
+		else
+		{
+			sel->erase(found);
+			instance->Notifier<Instance, AncestorChanged>::removeListener(this);
+			raiseRemoved(shared);
+		}
+	}
+
+	void Selection::addToSelection(Instance* instance)
+	{
+		boost::shared_ptr<Instance> shared = shared_from(instance);
+		RBXASSERT(instance);
+
+		boost::shared_ptr<std::vector<boost::shared_ptr<Instance>>> sel = selection.write();
+
+		std::vector<boost::shared_ptr<Instance>>::iterator found = std::find(sel->begin(), sel->end(), shared);
+
+		if (found == sel->end())
+		{
+			sel->push_back(shared);
+			instance->Notifier<Instance, AncestorChanged>::addListener(this);
+			raiseAdded(shared);
+		}
+	}
+	
+	void Selection::removeFromSelection(const Instance* instance)
+	{
+		RBXASSERT(instance);
+
+		boost::shared_ptr<std::vector<boost::shared_ptr<Instance>>> sel = selection.write();
+
+		std::vector<boost::shared_ptr<Instance>>::iterator found = std::find(sel->begin(), sel->end(), shared_from(instance));
+
+		if (found != sel->end())
+		{
+			boost::shared_ptr<Instance> nonConst = *found;
+
+			sel->erase(found);
+			instance->Notifier<Instance, AncestorChanged>::removeListener(this);
+			raiseRemoved(nonConst);
+		}
+	}
+
+	void Selection::clearSelection()
+	{
+		while (!selection->empty())
+		{
+			boost::shared_ptr<Instance> instance = selection->back();
+			selection.write()->pop_back();
+
+			instance->Notifier<Instance, AncestorChanged>::removeListener(this);
+			raiseRemoved(instance);
+		}
+	}
+
+	void Selection::setSelection(Instance* instance)
+	{
+		boost::shared_ptr<Instance> inst = shared_from(instance);
+		
+		while (!selection->empty())
+		{
+			boost::shared_ptr<Instance> item = selection->back();
+
+			if (item == inst)
+			{
+				if (selection->size() == 1)
+					return;
+
+				boost::shared_ptr<std::vector<boost::shared_ptr<Instance>>> sel = selection.write();
+				sel->back() = sel->front();
+				sel->front() = item;
+			}
+			else
+			{
+				selection.write()->pop_back();
+				item->Notifier<Instance, AncestorChanged>::removeListener(this);
+				raiseRemoved(item);
+			}
+		}
+
+		if (inst)
+		{
+			selection.write()->push_back(inst);
+			instance->Notifier<Instance, AncestorChanged>::addListener(this);
+			raiseAdded(inst);
+		}
+	}
+
+	void Selection::onEvent(const Instance* source, AncestorChanged event)
+	{
+		if (source->getRootAncestor() != this->getRootAncestor())
+			removeFromSelection(source);
+	}
+}

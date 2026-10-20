@@ -1,152 +1,683 @@
-// roc 2008-06 006699a0  unit: RBX::TreeStage  size: 446 bytes
-// Make this compile to the exact bytes below, then: roc check 2008-06 006699a0
-//
-// 006699a0  55                   push ebp
-// 006699a1  8bec                 mov ebp, esp
-// 006699a3  83e4f8               and esp, 0xfffffff8
-// 006699a6  6aff                 push -1
-// 006699a8  68a8c37d00           push 0x7dc3a8
-// 006699ad  64a100000000         mov eax, dword ptr fs:[0]
-// 006699b3  50                   push eax
-// 006699b4  64892500000000       mov dword ptr fs:[0], esp
-// 006699bb  83ec50               sub esp, 0x50
-// 006699be  53                   push ebx
-// 006699bf  56                   push esi
-// 006699c0  57                   push edi
-// 006699c1  8bf1                 mov esi, ecx
-// 006699c3  8d44240f             lea eax, [esp + 0xf]
-// 006699c7  50                   push eax
-// 006699c8  8d4c2413             lea ecx, [esp + 0x13]
-// 006699cc  51                   push ecx
-// 006699cd  8d4c2440             lea ecx, [esp + 0x40]
-// 006699d1  e8ca18feff           call 0x64b2a0
-// 006699d6  8d5508               lea edx, [ebp + 8]
-// 006699d9  52                   push edx
-// 006699da  8d442430             lea eax, [esp + 0x30]
-// 006699de  33ff                 xor edi, edi
-// 006699e0  50                   push eax
-// 006699e1  8d4c2440             lea ecx, [esp + 0x40]
-// 006699e5  897c246c             mov dword ptr [esp + 0x6c], edi
-// 006699e9  e852f2f7ff           call 0x5e8c40
-// 006699ee  8b5508               mov edx, dword ptr [ebp + 8]
-// 006699f1  8d4c2438             lea ecx, [esp + 0x38]
-// 006699f5  51                   push ecx
-// 006699f6  52                   push edx
-// 006699f7  8bce                 mov ecx, esi
-// 006699f9  e852f7ffff           call 0x669150
-// 006699fe  8b442450             mov eax, dword ptr [esp + 0x50]
-// 00669a02  8b00                 mov eax, dword ptr [eax]
-// 00669a04  8b742438             mov esi, dword ptr [esp + 0x38]
-// 00669a08  8bd8                 mov ebx, eax
-// 00669a0a  897c2414             mov dword ptr [esp + 0x14], edi
-// 00669a0e  8974241c             mov dword ptr [esp + 0x1c], esi
-// 00669a12  895c2420             mov dword ptr [esp + 0x20], ebx
-// 00669a16  8b7c2450             mov edi, dword ptr [esp + 0x50]
-// 00669a1a  85f6                 test esi, esi
-// 00669a1c  7406                 je 0x669a24
-// 00669a1e  3b742438             cmp esi, dword ptr [esp + 0x38]
-// 00669a22  7406                 je 0x669a2a
-// 00669a24  ff1590288000         call dword ptr [0x802890]
-// 00669a2a  3bdf                 cmp ebx, edi
-// 00669a2c  0f8403010000         je 0x669b35
-// 00669a32  85f6                 test esi, esi
-// 00669a34  7567                 jne 0x669a9d
-// 00669a36  ff1590288000         call dword ptr [0x802890]
-// 00669a3c  3b5e18               cmp ebx, dword ptr [esi + 0x18]
-// 00669a3f  7506                 jne 0x669a47
-// 00669a41  ff1590288000         call dword ptr [0x802890]
-// 00669a47  8b5b0c               mov ebx, dword ptr [ebx + 0xc]
-// 00669a4a  8bcb                 mov ecx, ebx
-// 00669a4c  895c2418             mov dword ptr [esp + 0x18], ebx
-// 00669a50  e83be1f7ff           call 0x5e7b90
-// 00669a55  8bf0                 mov esi, eax
-// 00669a57  85f6                 test esi, esi
-// 00669a59  0f84c0000000         je 0x669b1f
-// 00669a5f  90                   nop 
-// 00669a60  807e2400             cmp byte ptr [esi + 0x24], 0
-// 00669a64  0f85a3000000         jne 0x669b0d
-// 00669a6a  8b16                 mov edx, dword ptr [esi]
-// 00669a6c  8b420c               mov eax, dword ptr [edx + 0xc]
-// 00669a6f  8bce                 mov ecx, esi
-// 00669a71  ffd0                 call eax
-// 00669a73  85c0                 test eax, eax
-// 00669a75  0f8592000000         jne 0x669b0d
-// 00669a7b  8b16                 mov edx, dword ptr [esi]
-// 00669a7d  8b4214               mov eax, dword ptr [edx + 0x14]
-// 00669a80  8bce                 mov ecx, esi
-// 00669a82  ffd0                 call eax
-// 00669a84  83f805               cmp eax, 5
-// 00669a87  0f8c80000000         jl 0x669b0d
-// 00669a8d  8b460c               mov eax, dword ptr [esi + 0xc]
-// 00669a90  3bd8                 cmp ebx, eax
-// 00669a92  750d                 jne 0x669aa1
-// 00669a94  8b4e10               mov ecx, dword ptr [esi + 0x10]
-// 00669a97  894c2410             mov dword ptr [esp + 0x10], ecx
-// 00669a9b  eb08                 jmp 0x669aa5
-// 00669a9d  8b36                 mov esi, dword ptr [esi]
-// 00669a9f  eb9b                 jmp 0x669a3c
-// 00669aa1  89442410             mov dword ptr [esp + 0x10], eax
-// 00669aa5  837c241000           cmp dword ptr [esp + 0x10], 0
-// 00669aaa  743e                 je 0x669aea
-// 00669aac  8b542450             mov edx, dword ptr [esp + 0x50]
-// 00669ab0  8b5c2438             mov ebx, dword ptr [esp + 0x38]
-// 00669ab4  8d442410             lea eax, [esp + 0x10]
-// 00669ab8  50                   push eax
-// 00669ab9  8d4c2430             lea ecx, [esp + 0x30]
-// 00669abd  51                   push ecx
-// 00669abe  8d4c2440             lea ecx, [esp + 0x40]
-// 00669ac2  89542430             mov dword ptr [esp + 0x30], edx
-// 00669ac6  e89545e4ff           call 0x4ae060
-// 00669acb  8bf8                 mov edi, eax
-// 00669acd  8b07                 mov eax, dword ptr [edi]
-// 00669acf  85c0                 test eax, eax
-// 00669ad1  7404                 je 0x669ad7
-// 00669ad3  3bc3                 cmp eax, ebx
-// 00669ad5  7406                 je 0x669add
-// 00669ad7  ff1590288000         call dword ptr [0x802890]
-// 00669add  8b542428             mov edx, dword ptr [esp + 0x28]
-// 00669ae1  8b5c2418             mov ebx, dword ptr [esp + 0x18]
-// 00669ae5  395704               cmp dword ptr [edi + 4], edx
-// 00669ae8  7523                 jne 0x669b0d
-// 00669aea  8b442414             mov eax, dword ptr [esp + 0x14]
-// 00669aee  85c0                 test eax, eax
-// 00669af0  740e                 je 0x669b00
-// 00669af2  50                   push eax
-// 00669af3  56                   push esi
-// 00669af4  e827f3ffff           call 0x668e20
-// 00669af9  83c408               add esp, 8
-// 00669afc  84c0                 test al, al
-// 00669afe  740d                 je 0x669b0d
-// 00669b00  8b450c               mov eax, dword ptr [ebp + 0xc]
-// 00669b03  8b4c2410             mov ecx, dword ptr [esp + 0x10]
-// 00669b07  89742414             mov dword ptr [esp + 0x14], esi
-// 00669b0b  8908                 mov dword ptr [eax], ecx
-// 00669b0d  56                   push esi
-// 00669b0e  8bcb                 mov ecx, ebx
-// 00669b10  e88be0f7ff           call 0x5e7ba0
-// 00669b15  8bf0                 mov esi, eax
-// 00669b17  85f6                 test esi, esi
-// 00669b19  0f8541ffffff         jne 0x669a60
-// 00669b1f  8d4c241c             lea ecx, [esp + 0x1c]
-// 00669b23  e818f8f7ff           call 0x5e9340
-// 00669b28  8b5c2420             mov ebx, dword ptr [esp + 0x20]
-// 00669b2c  8b74241c             mov esi, dword ptr [esp + 0x1c]
-// 00669b30  e9e1feffff           jmp 0x669a16
-// 00669b35  8d4c2438             lea ecx, [esp + 0x38]
-// 00669b39  c7442464ffffffff     mov dword ptr [esp + 0x64], 0xffffffff
-// 00669b41  e8ea16feff           call 0x64b230
-// 00669b46  8b4c245c             mov ecx, dword ptr [esp + 0x5c]
-// 00669b4a  8b442414             mov eax, dword ptr [esp + 0x14]
-// 00669b4e  5f                   pop edi
-// 00669b4f  5e                   pop esi
-// 00669b50  64890d00000000       mov dword ptr fs:[0], ecx
-// 00669b57  5b                   pop ebx
-// 00669b58  8be5                 mov esp, ebp
-// 00669b5a  5d                   pop ebp
-// 00669b5b  c20800               ret 8
-// library openrbx-client/App\v8world\ClumpStage2.cpp (function ?findLightestDownstream@TreeStage@RBX@@AAEPAVJoint@2@PAVPrimitive@2@AAPAV42@@Z)
-
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
 // roc-lib: openrbx-client-dll App/v8world/ClumpStage2.cpp
+
+// Candidate translation unit (score above; library headers required).
+#include "v8world/ClumpStage2.h"
+
+#include "decomp.h"
+#include "util/Guid.h"
+#include "v8world/Assembly2.h"
+#include "v8world/AssemblyStage2.h"
+#include "v8world/MotorJoint.h"
+#include "v8world/Primitive.h"
+#include "v8world/RigidJoint.h"
+#include "v8world/SleepStage2.h"
+
+#include <algorithm>
+#include <cmath>
+#include <cstddef>
+
+namespace RBX {
+
+// FUNCTION: WEBSERVICE 0x1011b330
+float getPrimitiveSize(const Primitive* p)
+{
+	const Vector3& size = p->getGeometry()->getGridSize();
+
+	float area;
+	float other;
+
+	if (size.x < size.y) {
+		if (size.x < size.z) {
+			area = size.z * size.y;
+			goto haveArea;
+		}
+
+		other = size.y;
+	}
+	else {
+		other = size.y < size.z ? size.z : size.y;
+	}
+
+	area = other * size.x;
+
+haveArea:;
+
+	float gridArea = floor(area);
+
+	return (float) (G3D::iRound(gridArea) * (unsigned __int64) p->getSizeMultiplier());
+}
+
+// FUNCTION: WEBSERVICE 0x1011b3d0
+int biggerJointGuid(const Joint* j0, const Joint* j1)
+{
+	const Guid* guid0 = &j0->getPrimitive(0)->getGuid();
+	const Guid* other0 = &j1->getPrimitive(0)->getGuid();
+	const Guid* guid1 = j0->getPrimitive(1) != NULL ? &j0->getPrimitive(1)->getGuid() : NULL;
+	const Guid* other1 = j1->getPrimitive(1) != NULL ? &j1->getPrimitive(1)->getGuid() : NULL;
+
+	return Guid::compare(guid0, guid1, other0, other1);
+}
+
+// FUNCTION: WEBSERVICE 0x1011b440
+Joint* getJoint(Primitive* p, Joint::JointType jointType)
+{
+	Joint* joint = p->getFirstJoint();
+
+	while (joint != NULL) {
+		if (joint->getJointType() == jointType) {
+			return joint;
+		}
+
+		joint = p->getNextJoint(joint);
+	}
+
+	return NULL;
+}
+
+// FUNCTION: WEBSERVICE 0x1011b5e0
+int biggerJointSize(const Joint* j0, const Joint* j1)
+{
+	float size0 = getPrimitiveSize(j0->getPrimitive(0));
+
+	if (j0->getPrimitive(1) != NULL) {
+		size0 = G3D::max(size0, getPrimitiveSize(j0->getPrimitive(1)));
+	}
+
+	float size1 = getPrimitiveSize(j1->getPrimitive(0));
+
+	if (j1->getPrimitive(1) != NULL) {
+		size1 = G3D::max(size1, getPrimitiveSize(j1->getPrimitive(1)));
+	}
+
+	if (size1 < size0) {
+		return 1;
+	}
+
+	if (size0 < size1) {
+		return -1;
+	}
+
+	return 0;
+}
+
+// FUNCTION: WEBSERVICE 0x1011b690
+bool JointSort::lighterJoint(const Joint* j0, const Joint* j1)
+{
+	if (j0 == j1) {
+		return false;
+	}
+
+	Joint::JointType type0 = j0->getJointType();
+	Joint::JointType type1 = j1->getJointType();
+
+	if (type0 != type1) {
+		return type0 < type1;
+	}
+
+	int bigger = biggerJointSize(j0, j1);
+
+	if (bigger == 1) {
+		return true;
+	}
+
+	if (bigger == -1) {
+		return false;
+	}
+
+	bigger = biggerJointGuid(j0, j1);
+
+	if (bigger == 1) {
+		return true;
+	}
+
+	if (bigger == -1) {
+		return false;
+	}
+
+	return j0 < j1;
+}
+
+// FUNCTION: WEBSERVICE 0x1011b740
+void ClumpStage::onPrimitiveAdded(Primitive* p)
+{
+	p->putInPipeline(this);
+	p->putInPipeline(getDownstream());
+
+	p->setClumpDepth(1);
+
+	Joint* joint;
+
+	if (p->getAnchor()) {
+		joint = new AnchorJoint(p);
+	}
+	else {
+		joint = new FreeJoint(p);
+	}
+
+	joint->putInPipeline(this);
+
+	getDownstreamWS()->onEdgeAdded(joint);
+}
+
+// FUNCTION: WEBSERVICE 0x1011b840
+void ClumpStage::onPrimitiveRemoving(Primitive* p)
+{
+	Joint* joint = p->getFirstJoint();
+
+	getDownstreamWS()->onEdgeRemoving(joint);
+
+	IStage* downstream = getDownstream();
+
+	p->setClumpDepth(-1);
+	p->removeFromStage(downstream);
+
+	joint->removeFromPipeline(this);
+	delete joint;
+
+	p->removeFromStage(this);
+}
+
+// FUNCTION: WEBSERVICE 0x1011b8a0
+void ClumpStage::onPrimitiveAddedAnchor(Primitive* p)
+{
+	Joint* freeJoint = getJoint(p, Joint::FREE_JOINT);
+
+	Joint* anchorJoint = new AnchorJoint(p);
+
+	anchorJoint->putInPipeline(this);
+
+	getDownstreamWS()->onEdgeAdded(anchorJoint);
+
+	onEdgeRemoving(freeJoint);
+}
+
+// FUNCTION: WEBSERVICE 0x1011b950
+void ClumpStage::onPrimitiveRemovedAnchor(Primitive* p)
+{
+	Joint* anchorJoint = getJoint(p, Joint::ANCHOR_JOINT);
+
+	Joint* freeJoint = new FreeJoint(p);
+
+	freeJoint->putInPipeline(this);
+
+	getDownstreamWS()->onEdgeAdded(freeJoint);
+
+	onEdgeRemoving(anchorJoint);
+}
+
+int TreeStage::getClumpDepth(Primitive* p)
+{
+	return p != NULL ? p->getClumpDepth() : 0;
+}
+
+void TreeStage::dirtyAssembly(Assembly* a)
+{
+	assemblies.insert(a);
+	dirty = true;
+}
+
+void TreeStage::insertEdge(Edge* e)
+{
+	if (!e->getInEdgeList()) {
+		edges.insert(e);
+		dirty = true;
+		e->setInEdgeList(true);
+	}
+}
+
+void TreeStage::eraseEdge(Edge* e)
+{
+	if (e->getInEdgeList()) {
+		edges.erase(e);
+		e->setInEdgeList(false);
+	}
+}
+
+// FUNCTION: WEBSERVICE 0x1011ba00
+Primitive* TreeStage::heavyParent(int testSide, Primitive* p, Joint*& answer, int& heavySide)
+{
+	Joint* joint = p->getFirstJoint();
+
+	while (joint != NULL) {
+		if (joint->getActive()) {
+			Primitive* other = p == joint->getPrimitive(0) ? joint->getPrimitive(1) : joint->getPrimitive(0);
+
+			int depth = other != NULL ? other->getClumpDepth() : 0;
+
+			if (depth == p->getClumpDepth() - 1) {
+				if (answer == NULL || JointSort::lighterJoint(answer, joint)) {
+					answer = joint;
+					heavySide = testSide;
+				}
+
+				return other;
+			}
+		}
+
+		joint = p->getNextJoint(joint);
+	}
+
+	return NULL;
+}
+
+// FUNCTION: WEBSERVICE 0x1011ba80
+void TreeStage::cleanAssembly(Assembly* a)
+{
+	if (!a->inPipeline()) {
+		a->putInPipeline(this);
+	}
+
+	bool inKernel = a->downstreamOfStage(this);
+	bool wanted = !a->getAnchored();
+
+	if (inKernel != wanted) {
+		if (wanted) {
+			static_cast<AssemblyStage*>(getDownstream())->onAssemblyAdded(a);
+		}
+		else {
+			static_cast<AssemblyStage*>(getDownstream())->onAssemblyRemoving(a);
+		}
+	}
+	else if (inKernel) {
+		static_cast<AssemblyStage*>(getDownstream())->wakeAssembly(a);
+	}
+}
+
+// FUNCTION: WEBSERVICE 0x1011bb00
+void TreeStage::cleanEdge(Edge* e)
+{
+	Assembly* assembly0 = e->getPrimitive(0)->getAssembly();
+	Assembly* a1 = e->getPrimitive(1)->getAssembly();
+
+	bool inKernel = e->downstreamOfStage(this);
+	bool wanted = assembly0 != a1 && !(assembly0->getAnchored() && a1->getAnchored());
+
+	if (inKernel != wanted) {
+		if (inKernel) {
+			static_cast<IWorldStage*>(getDownstream())->onEdgeRemoving(e);
+		}
+		else {
+			static_cast<IWorldStage*>(getDownstream())->onEdgeAdded(e);
+		}
+	}
+}
+
+// FUNCTION: WEBSERVICE 0x1011bb90
+int TreeStage::getMetric(MetricType metricType)
+{
+	switch (metricType) {
+	case MAX_TREE_DEPTH:
+		return maxTreeDepth;
+	default:
+		return static_cast<IWorldStage*>(getDownstream())->getMetric(metricType);
+	}
+}
+
+// FUNCTION: WEBSERVICE 0x1011bbb0
+void ClumpStage::stepUi(int uiStepId)
+{
+	static_cast<AssemblyStage*>(static_cast<TreeStage*>(getDownstream())->getDownstream())->stepUi(uiStepId);
+}
+
+// FUNCTION: WEBSERVICE 0x1011bbc0
+void TreeStage::findHeaviestUpstream(Primitive* p0, Primitive* p1, Joint*& answer, int& heavySide)
+{
+	int depth0 = getClumpDepth(p0);
+	int depth1 = getClumpDepth(p1);
+
+	if (depth0 != depth1) {
+		if (depth0 > depth1) {
+			findHeaviestUpstream(heavyParent(0, p0, answer, heavySide), p1, answer, heavySide);
+		}
+		else {
+			findHeaviestUpstream(p0, heavyParent(1, p1, answer, heavySide), answer, heavySide);
+		}
+
+		return;
+	}
+
+	if (p0 == p1) {
+		return;
+	}
+
+	Primitive* next0 = p0 != NULL ? heavyParent(0, p0, answer, heavySide) : NULL;
+	Primitive* next1 = p1 != NULL ? heavyParent(1, p1, answer, heavySide) : NULL;
+
+	findHeaviestUpstream(next0, next1, answer, heavySide);
+}
+
+// FUNCTION: WEBSERVICE 0x1011bcc0
+void TreeStage::process()
+{
+	if (dirty) {
+		std::set<Assembly*>::iterator aIt;
+
+		for (aIt = assemblies.begin(); aIt != assemblies.end(); ++aIt) {
+			cleanAssembly(*aIt);
+		}
+
+		assemblies.clear();
+
+		while (edges.size() != 0) {
+			std::set<Edge*>::iterator eIt = edges.begin();
+
+			cleanEdge(*eIt);
+
+			(*eIt)->setInEdgeList(false);
+			edges.erase(eIt);
+		}
+
+		dirty = false;
+	}
+}
+
+// FUNCTION: WEBSERVICE 0x1011bde0
+void TreeStage::buildDownstreamTree(Primitive* p, std::set<Primitive*>& tree)
+{
+	Joint* j = p->getFirstJoint();
+
+	while (j != NULL) {
+		if (j->getActive() && Joint::isJoint(j) && j->getJointType() >= Joint::ANCHOR_JOINT) {
+			Primitive* other = j->otherPrimitive(p);
+
+			if (other != NULL && other->getClumpDepth() == p->getClumpDepth() + 1) {
+				tree.insert(other);
+				buildDownstreamTree(other, tree);
+			}
+		}
+
+		j = p->getNextJoint(j);
+	}
+}
+
+// FUNCTION: WEBSERVICE 0x1011be80
+void ClumpStage::process()
+{
+	static_cast<TreeStage*>(getDownstream())->process();
+}
+
+// FUNCTION: WEBSERVICE 0x100d15c0 FOLDED
+void ClumpStage::onPrimitiveCanCollideChanged(Primitive* p)
+{
+}
+
+// FUNCTION: WEBSERVICE 0x100d15c0 FOLDED
+void ClumpStage::onMotorAngleChanged(MotorJoint* motorJoint)
+{
+}
+
+// FUNCTION: WEBSERVICE 0x1011be90
+void ClumpStage::onPrimitiveCanSleepChanged(Primitive* p)
+{
+	static_cast<TreeStage*>(getDownstream())->process();
+
+	Assembly* a = p->getAssembly();
+
+	bool wasCanSleep = a->getCanSleep();
+
+	a->onPrimitiveCanSleepChanged(p);
+
+	if (wasCanSleep != a->getCanSleep()) {
+		IStage* stage = this;
+
+		while (stage->getStageType() != SLEEP_STAGE) {
+			stage = stage->getDownstream();
+		}
+
+		static_cast<SleepStage*>(stage)->onWakeUpRequest(a, false);
+	}
+}
+
+// FUNCTION: WEBSERVICE 0x1011bf30
+TreeStage::~TreeStage()
+{
+}
+
+// FUNCTION: WEBSERVICE 0x1011bff0
+void TreeStage::stepWorld(int worldStepId, int uiStepId, bool throttling)
+{
+	process();
+
+	getDownstream()->stepWorld(worldStepId, uiStepId, throttling);
+}
+
+// FUNCTION: WEBSERVICE 0x1011c010
+void TreeStage::dirtyAssemblies(Joint* j)
+{
+	for (int i = 0; i < 2; i++) {
+		Primitive* p = j->getPrimitive(i);
+
+		if (p != NULL) {
+			Assembly* a = p->getAssembly();
+
+			if (a != NULL) {
+				dirtyAssembly(a);
+			}
+		}
+	}
+}
+
+// FUNCTION: WEBSERVICE 0x1011c060
+void TreeStage::undirtyAssembly(Assembly* a)
+{
+	assemblies.erase(a);
+
+	if (a->inPipeline()) {
+		if (a->downstreamOfStage(this)) {
+			static_cast<AssemblyStage*>(getDownstream())->onAssemblyRemoving(a);
+		}
+
+		a->removeFromPipeline(this);
+	}
+}
+
+// FUNCTION: WEBSERVICE 0x1011c0b0
+void TreeStage::destroyAssembly(Assembly* a)
+{
+	undirtyAssembly(a);
+
+	delete a;
+}
+
+// FUNCTION: WEBSERVICE 0x1011c110
+TreeStage::TreeStage(IStage* upstream, World* world)
+	: IWorldStage(upstream, new AssemblyStage(this, world), world), maxTreeDepth(0), dirty(false)
+{
+}
+
+// FUNCTION: WEBSERVICE 0x10108040 FOLDED
+IStage::StageType ClumpStage::getStageType()
+{
+	return CLUMP_STAGE;
+}
+
+// FUNCTION: WEBSERVICE 0x1011c200
+void TreeStage::rebuildClump(Joint* joint, Primitive* parent)
+{
+	maxTreeDepth = std::max(maxTreeDepth, getClumpDepth(parent) + 1);
+
+	Primitive* child = joint->otherPrimitive(parent);
+
+	Clump* clump = child->getClump();
+	bool isRoot = clump != NULL && clump->getRootPrimitive() == child;
+
+	if (RigidJoint::isRigidJoint(joint)) {
+		if (isRoot) {
+			destroyAssembly(clump);
+		}
+
+		Assembly::addRigidChild(parent, static_cast<RigidJoint*>(joint), child);
+		return;
+	}
+
+	if (MotorJoint::isMotorJoint(joint)) {
+		Assembly* assembly = isRoot ? clump : new Clump(child);
+
+		undirtyAssembly(assembly);
+
+		Assembly::addMotorChild(parent, static_cast<MotorJoint*>(joint), child);
+		return;
+	}
+
+	Joint::JointType jointType = joint->getJointType();
+
+	if (jointType == Joint::FREE_JOINT || jointType == Joint::ANCHOR_JOINT) {
+		Clump* assembly = isRoot ? clump : new Clump(child);
+
+		Assembly::addGroundChild(child);
+
+		assemblies.insert(assembly);
+		dirty = true;
+	}
+}
+
+// FUNCTION: WEBSERVICE 0x1011c3d0
+ClumpStage::ClumpStage(IStage* upstream, World* world) : IWorldStage(upstream, new TreeStage(this, world), world)
+{
+}
+
+// FUNCTION: WEBSERVICE 0x1011c440
+Joint* TreeStage::findLightestDownstream(Primitive* p, Primitive*& newParent)
+{
+	std::set<Primitive*> downstreamTree;
+
+	downstreamTree.insert(p);
+
+	buildDownstreamTree(p, downstreamTree);
+
+	Joint* answer = NULL;
+
+	std::set<Primitive*>::iterator it;
+
+	for (it = downstreamTree.begin(); it != downstreamTree.end(); ++it) {
+		Primitive* p = *it;
+
+		Joint* j = p->getFirstJoint();
+
+		while (j != NULL) {
+			if (!j->getActive() && Joint::isJoint(j) && j->getJointType() >= Joint::ANCHOR_JOINT) {
+				Primitive* other = j->otherPrimitive(p);
+
+				if (other == NULL || downstreamTree.find(other) == downstreamTree.end()) {
+					if (answer == NULL || JointSort::lighterJoint(j, answer)) {
+						answer = j;
+						newParent = other;
+					}
+				}
+			}
+
+			j = p->getNextJoint(j);
+		}
+	}
+
+	return answer;
+}
+
+// FUNCTION: WEBSERVICE 0x1011c630
+void TreeStage::traverse(Joint* joint, Primitive* parent)
+{
+	rebuildClump(joint, parent);
+
+	Primitive* child = joint->otherPrimitive(parent);
+
+	Edge* e = child->getFirstEdge();
+
+	while (e != NULL) {
+		if (Joint::isJoint(e) && static_cast<Joint*>(e)->getJointType() >= Joint::ANCHOR_JOINT) {
+			if (static_cast<Joint*>(e)->getActive()) {
+				Primitive* other = e->otherPrimitive(child);
+
+				if (other != NULL && other != parent) {
+					traverse(static_cast<Joint*>(e), child);
+				}
+			}
+		}
+		else {
+			insertEdge(e);
+		}
+
+		e = child->getNextEdge(e);
+	}
+}
+
+// FUNCTION: WEBSERVICE 0x1011c6e0
+void TreeStage::swap(Joint* deactivate, Joint* activate, Primitive* newParent)
+{
+	if (deactivate != NULL) {
+		dirtyAssemblies(deactivate);
+		deactivate->setActive(false);
+
+		if (activate == NULL) {
+			destroyAssembly(deactivate->getPrimitive(0)->getClump());
+			return;
+		}
+	}
+	else if (activate == NULL) {
+		return;
+	}
+
+	dirtyAssemblies(activate);
+	activate->setActive(true);
+	traverse(activate, newParent);
+}
+
+// FUNCTION: WEBSERVICE 0x1011c740
+void TreeStage::insertJoint(Joint* j)
+{
+	int heavySide = 0;
+	Joint* deActivate = NULL;
+
+	findHeaviestUpstream(j->getPrimitive(0), j->getPrimitive(1), deActivate, heavySide);
+
+	if (deActivate == NULL || JointSort::lighterJoint(j, deActivate)) {
+		swap(deActivate, j, j->getPrimitive((heavySide + 1) % 2));
+		dirty = true;
+	}
+}
+
+// FUNCTION: WEBSERVICE 0x1011c7c0
+void TreeStage::onEdgeAdded(Edge* e)
+{
+	Primitive::insertEdge(e);
+	e->putInPipeline(this);
+
+	if (Joint::isJoint(e) && static_cast<Joint*>(e)->getJointType() >= Joint::ANCHOR_JOINT) {
+		insertJoint(static_cast<Joint*>(e));
+		return;
+	}
+
+	insertEdge(e);
+}
+
+// FUNCTION: WEBSERVICE 0x1011c840
+void TreeStage::onEdgeRemoving(Edge* e)
+{
+	if (Joint::isJoint(e) && static_cast<Joint*>(e)->getJointType() >= Joint::ANCHOR_JOINT) {
+		Joint* joint = static_cast<Joint*>(e);
+
+		if (joint->getActive()) {
+			Primitive* downstream = Primitive::downstreamPrimitive(joint);
+
+			Primitive* newParent = NULL;
+			Joint* lightest = findLightestDownstream(downstream, newParent);
+
+			swap(joint, lightest, newParent);
+			dirty = true;
+		}
+	}
+	else {
+		if (e->downstreamOfStage(this)) {
+			static_cast<IWorldStage*>(getDownstream())->onEdgeRemoving(e);
+		}
+
+		eraseEdge(e);
+	}
+
+	e->removeFromStage(this);
+	Primitive::removeEdge(e);
+}
+
+} // namespace RBX

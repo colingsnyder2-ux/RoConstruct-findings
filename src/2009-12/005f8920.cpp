@@ -1,94 +1,319 @@
-// roc 2009-12 005f8920  unit: G3D::LineSegment  size: 351 bytes
-// Make this compile to the exact bytes below, then: roc check 2009-12 005f8920
-//
-// 005f8920  83ec40               sub esp, 0x40
-// 005f8923  56                   push esi
-// 005f8924  57                   push edi
-// 005f8925  8b7c2450             mov edi, dword ptr [esp + 0x50]
-// 005f8929  8d442424             lea eax, [esp + 0x24]
-// 005f892d  50                   push eax
-// 005f892e  8bf1                 mov esi, ecx
-// 005f8930  c744240c00000000     mov dword ptr [esp + 0xc], 0
-// 005f8938  e873b4ffff           call 0x5f3db0
-// 005f893d  f30f104718           movss xmm0, dword ptr [edi + 0x18]
-// 005f8942  f30f104f14           movss xmm1, dword ptr [edi + 0x14]
-// 005f8947  f30f105710           movss xmm2, dword ptr [edi + 0x10]
-// 005f894c  f30f105804           movss xmm3, dword ptr [eax + 4]
-// 005f8951  f30f106008           movss xmm4, dword ptr [eax + 8]
-// 005f8956  f30f59d9             mulss xmm3, xmm1
-// 005f895a  f30f59e0             mulss xmm4, xmm0
-// 005f895e  f30f58dc             addss xmm3, xmm4
-// 005f8962  f30f1020             movss xmm4, dword ptr [eax]
-// 005f8966  f30f59e2             mulss xmm4, xmm2
-// 005f896a  f30f58dc             addss xmm3, xmm4
-// 005f896e  f30f106010           movss xmm4, dword ptr [eax + 0x10]
-// 005f8973  f30f115c240c         movss dword ptr [esp + 0xc], xmm3
-// 005f8979  f30f10580c           movss xmm3, dword ptr [eax + 0xc]
-// 005f897e  f30f59da             mulss xmm3, xmm2
-// 005f8982  f30f59e1             mulss xmm4, xmm1
-// 005f8986  f30f58dc             addss xmm3, xmm4
-// 005f898a  f30f106014           movss xmm4, dword ptr [eax + 0x14]
-// 005f898f  f30f59e0             mulss xmm4, xmm0
-// 005f8993  f30f58dc             addss xmm3, xmm4
-// 005f8997  f30f10660c           movss xmm4, dword ptr [esi + 0xc]
-// 005f899c  f30f115c2410         movss dword ptr [esp + 0x10], xmm3
-// 005f89a2  f30f105818           movss xmm3, dword ptr [eax + 0x18]
-// 005f89a7  f30f59da             mulss xmm3, xmm2
-// 005f89ab  f30f10501c           movss xmm2, dword ptr [eax + 0x1c]
-// 005f89b0  f30f59d1             mulss xmm2, xmm1
-// 005f89b4  f30f104820           movss xmm1, dword ptr [eax + 0x20]
-// 005f89b9  f30f58da             addss xmm3, xmm2
-// 005f89bd  f30f10570c           movss xmm2, dword ptr [edi + 0xc]
-// 005f89c2  f30f5c562c           subss xmm2, dword ptr [esi + 0x2c]
-// 005f89c7  f30f59c8             mulss xmm1, xmm0
-// 005f89cb  f30f104704           movss xmm0, dword ptr [edi + 4]
-// 005f89d0  f30f5c4624           subss xmm0, dword ptr [esi + 0x24]
-// 005f89d5  f30f58d9             addss xmm3, xmm1
-// 005f89d9  f30f104f08           movss xmm1, dword ptr [edi + 8]
-// 005f89de  f30f5c4e28           subss xmm1, dword ptr [esi + 0x28]
-// 005f89e3  f30f115c2414         movss dword ptr [esp + 0x14], xmm3
-// 005f89e9  f30f105e18           movss xmm3, dword ptr [esi + 0x18]
-// 005f89ee  f30f59da             mulss xmm3, xmm2
-// 005f89f2  f30f59e1             mulss xmm4, xmm1
-// 005f89f6  f30f58dc             addss xmm3, xmm4
-// 005f89fa  f30f1026             movss xmm4, dword ptr [esi]
-// 005f89fe  f30f59e0             mulss xmm4, xmm0
-// 005f8a02  f30f58dc             addss xmm3, xmm4
-// 005f8a06  f30f106610           movss xmm4, dword ptr [esi + 0x10]
-// 005f8a0b  f30f115c2418         movss dword ptr [esp + 0x18], xmm3
-// 005f8a11  f30f105e1c           movss xmm3, dword ptr [esi + 0x1c]
-// 005f8a16  f30f59da             mulss xmm3, xmm2
-// 005f8a1a  f30f59e1             mulss xmm4, xmm1
-// 005f8a1e  f30f58dc             addss xmm3, xmm4
-// 005f8a22  f30f106604           movss xmm4, dword ptr [esi + 4]
-// 005f8a27  f30f59e0             mulss xmm4, xmm0
-// 005f8a2b  f30f58dc             addss xmm3, xmm4
-// 005f8a2f  f30f115c241c         movss dword ptr [esp + 0x1c], xmm3
-// 005f8a35  f30f105e20           movss xmm3, dword ptr [esi + 0x20]
-// 005f8a3a  f30f59da             mulss xmm3, xmm2
-// 005f8a3e  f30f105614           movss xmm2, dword ptr [esi + 0x14]
-// 005f8a43  f30f59d1             mulss xmm2, xmm1
-// 005f8a47  f30f104e08           movss xmm1, dword ptr [esi + 8]
-// 005f8a4c  8b74244c             mov esi, dword ptr [esp + 0x4c]
-// 005f8a50  8d4c240c             lea ecx, [esp + 0xc]
-// 005f8a54  51                   push ecx
-// 005f8a55  8d54241c             lea edx, [esp + 0x1c]
-// 005f8a59  52                   push edx
-// 005f8a5a  f30f58da             addss xmm3, xmm2
-// 005f8a5e  f30f59c8             mulss xmm1, xmm0
-// 005f8a62  f30f58d9             addss xmm3, xmm1
-// 005f8a66  56                   push esi
-// 005f8a67  f30f115c242c         movss dword ptr [esp + 0x2c], xmm3
-// 005f8a6d  e8bee8ffff           call 0x5f7330
-// 005f8a72  83c40c               add esp, 0xc
-// 005f8a75  8bc6                 mov eax, esi
-// 005f8a77  5f                   pop edi
-// 005f8a78  5e                   pop esi
-// 005f8a79  83c440               add esp, 0x40
-// 005f8a7c  c20800               ret 8
-// library g3d-6.09/G3Dcpp\CoordinateFrame.cpp (function ?toObjectSpace@CoordinateFrame@G3D@@QBE?AVRay@2@ABV32@@Z)
-
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD /arch:SSE2 /fp:fast
 // roc-lib: g3d-6.09 G3Dcpp/CoordinateFrame.cpp
+
+// Candidate translation unit (score above; library headers required).
+/**
+ @file CoordinateFrame.cpp
+
+ Coordinate frame class
+
+ @maintainer Morgan McGuire, matrix@graphics3d.com
+
+ @created 2001-06-02
+ @edited  2006-03-25
+*/
+
+#include "G3D/platform.h"
+#include "G3D/CoordinateFrame.h"
+#include "G3D/Quat.h"
+#include "G3D/Matrix4.h"
+#include "G3D/Box.h"
+#include "G3D/AABox.h"
+#include "G3D/Sphere.h"
+#include "G3D/Triangle.h"
+#include "G3D/Ray.h"
+#include "G3D/Capsule.h"
+#include "G3D/Cylinder.h"
+
+namespace G3D {
+
+const float CoordinateFrame::zLookDirection = -1;
+
+Ray CoordinateFrame::lookRay() const {
+    return Ray::fromOriginAndDirection(translation, lookVector());
+}
+
+
+bool CoordinateFrame::fuzzyEq(const CoordinateFrame& other) const {
+
+    for (int c = 0; c < 3; ++c) {
+        for (int r = 0; r < 3; ++r) {
+            if (! G3D::fuzzyEq(other.rotation[r][c], rotation[r][c])) {
+                return false;
+            }
+        }
+        if (! G3D::fuzzyEq(translation[c], other.translation[c])) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+
+bool CoordinateFrame::fuzzyIsIdentity() const {
+    const Matrix3& I = Matrix3::identity();
+
+    for (int c = 0; c < 3; ++c) {
+        for (int r = 0; r < 3; ++r) {
+            if (fuzzyNe(I[r][c], rotation[r][c])) {
+                return false;
+            }
+        }
+        if (fuzzyNe(translation[c], 0)) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+
+bool CoordinateFrame::isIdentity() const {
+    return 
+        (translation == Vector3::zero()) &&
+        (rotation == Matrix3::identity());
+}
+
+
+Matrix4 CoordinateFrame::toMatrix4() const {
+    return Matrix4(*this);
+}
+
+
+std::string CoordinateFrame::toXML() const {
+    return G3D::format(
+        "<COORDINATEFRAME>\n  %lf,%lf,%lf,%lf,\n  %lf,%lf,%lf,%lf,\n  %lf,%lf,%lf,%lf,\n  %lf,%lf,%lf,%lf\n</COORDINATEFRAME>\n",
+        rotation[0][0], rotation[0][1], rotation[0][2], translation.x,
+        rotation[1][0], rotation[1][1], rotation[1][2], translation.y,
+        rotation[2][0], rotation[2][1], rotation[2][2], translation.z,
+        0.0, 0.0, 0.0, 1.0);
+}
+
+
+Plane CoordinateFrame::toObjectSpace(const Plane& p) const {
+    Vector3 N, P;
+    double d;
+    p.getEquation(N, d);
+    P = N * (float)d;
+    P = pointToObjectSpace(P);
+    N = normalToObjectSpace(N);
+    return Plane(N, P);
+}
+
+
+Plane CoordinateFrame::toWorldSpace(const Plane& p) const {
+    Vector3 N, P;
+    double d;
+    p.getEquation(N, d);
+    P = N * (float)d;
+    P = pointToWorldSpace(P);
+    N = normalToWorldSpace(N);
+    return Plane(N, P);
+}
+
+
+Triangle CoordinateFrame::toObjectSpace(const Triangle& t) const {
+    return Triangle(pointToObjectSpace(t.vertex(0)),
+        pointToObjectSpace(t.vertex(1)),
+        pointToObjectSpace(t.vertex(2)));
+}
+
+
+Triangle CoordinateFrame::toWorldSpace(const Triangle& t) const {
+    return Triangle(pointToWorldSpace(t.vertex(0)),
+        pointToWorldSpace(t.vertex(1)),
+        pointToWorldSpace(t.vertex(2)));
+}
+
+Cylinder CoordinateFrame::toWorldSpace(const Cylinder& c) const {
+    return Cylinder(
+        pointToWorldSpace(c.getPoint1()), 
+        pointToWorldSpace(c.getPoint2()), 
+        c.radius());
+}
+
+Capsule CoordinateFrame::toWorldSpace(const Capsule& c) const {
+    return Capsule(
+        pointToWorldSpace(c.getPoint1()), 
+        pointToWorldSpace(c.getPoint2()), 
+        c.getRadius());
+}
+
+Box CoordinateFrame::toWorldSpace(const AABox& b) const {
+    return toWorldSpace(b.toBox());
+}
+
+Box CoordinateFrame::toWorldSpace(const Box& b) const {
+    Box out(b);
+
+    for (int i = 0; i < 8; i++) {
+        out._corner[i] = pointToWorldSpace(out._corner[i]);
+    }
+
+    for (int i = 0; i < 3; i++) {
+        out._axis[i] = vectorToWorldSpace(out._axis[i]);
+    }
+
+    out._center = pointToWorldSpace(out._center);
+
+    return out;
+}
+
+
+Box CoordinateFrame::toObjectSpace(const Box &b) const {
+    return inverse().toWorldSpace(b);
+}
+
+
+Box CoordinateFrame::toObjectSpace(const AABox& b) const {
+    return toObjectSpace(b.toBox());
+}
+
+
+CoordinateFrame::CoordinateFrame(class BinaryInput& b) : rotation(Matrix3::zero()) {
+    deserialize(b);
+}
+
+
+void CoordinateFrame::deserialize(class BinaryInput& b) {
+    rotation.deserialize(b);
+    translation.deserialize(b);
+}
+
+
+void CoordinateFrame::serialize(class BinaryOutput& b) const {
+    rotation.serialize(b);
+    translation.serialize(b);
+}
+
+
+Sphere CoordinateFrame::toWorldSpace(const Sphere &b) const {
+    return Sphere(pointToWorldSpace(b.center), b.radius);
+}
+
+
+Sphere CoordinateFrame::toObjectSpace(const Sphere &b) const {
+    return Sphere(pointToObjectSpace(b.center), b.radius);
+}
+
+
+Ray CoordinateFrame::toWorldSpace(const Ray& r) const {
+    return Ray::fromOriginAndDirection(pointToWorldSpace(r.origin), vectorToWorldSpace(r.direction));
+}
+
+
+Ray CoordinateFrame::toObjectSpace(const Ray& r) const {
+    return Ray::fromOriginAndDirection(pointToObjectSpace(r.origin), vectorToObjectSpace(r.direction));
+}
+
+
+void CoordinateFrame::lookAt(const Vector3 &target) {
+    lookAt(target, Vector3::unitY());
+}
+
+
+void CoordinateFrame::lookAt(
+    const Vector3&  target,
+    Vector3         up) {
+
+    up = up.direction();
+
+    Vector3 look = (target - translation).direction();
+    if (look.dot(up) > .99) {
+        up = Vector3::unitX();
+        if (look.dot(up) > .99) {
+            up = Vector3::unitY();
+        }
+    }
+
+    up -= look * look.dot(up);
+    up.unitize();
+
+    Vector3 z = -look;
+    Vector3 x = -z.cross(up);
+    x.unitize();
+
+    Vector3 y = z.cross(x);
+
+    rotation.setColumn(0, x);
+    rotation.setColumn(1, y);
+    rotation.setColumn(2, z);
+}
+
+
+CoordinateFrame CoordinateFrame::lerp(
+    const CoordinateFrame&  other,
+    float                   alpha) const {
+
+    if (alpha == 1.0f) {
+        return other;
+    } else if (alpha == 0.0f) {
+        return *this;
+    } else {
+        Quat q1 = Quat(this->rotation);
+        Quat q2 = Quat(other.rotation);
+
+        return CoordinateFrame(
+            q1.slerp(q2, alpha).toRotationMatrix(),
+            this->translation * (1 - alpha) + other.translation * alpha);
+    }
+} 
+
+
+void CoordinateFrame::pointToWorldSpace(const Array<Vector3>& v, Array<Vector3>& vout) const {
+    vout.resize(v.size());
+
+    for (int i = v.size() - 1; i >= 0; --i) {
+        vout[i] = pointToWorldSpace(v[i]);
+    }
+}
+
+
+void CoordinateFrame::normalToWorldSpace(const Array<Vector3>& v, Array<Vector3>& vout) const  {
+    vout.resize(v.size());
+
+    for (int i = v.size() - 1; i >= 0; --i) {
+        vout[i] = normalToWorldSpace(v[i]);
+    }
+}
+
+
+void CoordinateFrame::vectorToWorldSpace(const Array<Vector3>& v, Array<Vector3>& vout) const {
+    vout.resize(v.size());
+
+    for (int i = v.size() - 1; i >= 0; --i) {
+        vout[i] = vectorToWorldSpace(v[i]);
+    }
+}
+
+
+void CoordinateFrame::pointToObjectSpace(const Array<Vector3>& v, Array<Vector3>& vout) const {
+    vout.resize(v.size());
+
+    for (int i = v.size() - 1; i >= 0; --i) {
+        vout[i] = pointToObjectSpace(v[i]);
+    }
+}
+
+
+void CoordinateFrame::normalToObjectSpace(const Array<Vector3>& v, Array<Vector3>& vout) const {
+    vout.resize(v.size());
+
+    for (int i = v.size() - 1; i >= 0; --i) {
+        vout[i] = normalToObjectSpace(v[i]);
+    }
+}
+
+
+void CoordinateFrame::vectorToObjectSpace(const Array<Vector3>& v, Array<Vector3>& vout) const {
+    vout.resize(v.size());
+
+    for (int i = v.size() - 1; i >= 0; --i) {
+        vout[i] = vectorToObjectSpace(v[i]);
+    }
+}
+
+} // namespace

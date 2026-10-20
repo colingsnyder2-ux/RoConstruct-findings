@@ -1,66 +1,198 @@
-// roc 2008-06 006065d0  unit: RBX::PointToPointBreakConnector  size: 150 bytes
-// Make this compile to the exact bytes below, then: roc check 2008-06 006065d0
-//
-// 006065d0  80791800             cmp byte ptr [ecx + 0x18], 0
-// 006065d4  0f8589000000         jne 0x606663
-// 006065da  8b410c               mov eax, dword ptr [ecx + 0xc]
-// 006065dd  8b5108               mov edx, dword ptr [ecx + 8]
-// 006065e0  d9401c               fld dword ptr [eax + 0x1c]
-// 006065e3  d8621c               fsub dword ptr [edx + 0x1c]
-// 006065e6  83c01c               add eax, 0x1c
-// 006065e9  d94004               fld dword ptr [eax + 4]
-// 006065ec  d86220               fsub dword ptr [edx + 0x20]
-// 006065ef  d94008               fld dword ptr [eax + 8]
-// 006065f2  d86224               fsub dword ptr [edx + 0x24]
-// 006065f5  d94110               fld dword ptr [ecx + 0x10]
-// 006065f8  d9e0                 fchs 
-// 006065fa  dccb                 fmul st(3), st(0)
-// 006065fc  dcca                 fmul st(2), st(0)
-// 006065fe  dec9                 fmulp st(1)
-// 00606600  d9c1                 fld st(1)
-// 00606602  d9e1                 fabs 
-// 00606604  d9c3                 fld st(3)
-// 00606606  d9e1                 fabs 
-// 00606608  dec1                 faddp st(1)
-// 0060660a  d9c1                 fld st(1)
-// 0060660c  d9e1                 fabs 
-// 0060660e  dec1                 faddp st(1)
-// 00606610  d85914               fcomp dword ptr [ecx + 0x14]
-// 00606613  dfe0                 fnstsw ax
-// 00606615  f6c441               test ah, 0x41
-// 00606618  7507                 jne 0x606621
-// 0060661a  b801000000           mov eax, 1
-// 0060661f  eb02                 jmp 0x606623
-// 00606621  33c0                 xor eax, eax
-// 00606623  884118               mov byte ptr [ecx + 0x18], al
-// 00606626  d9c2                 fld st(2)
-// 00606628  d9e0                 fchs 
-// 0060662a  d9c2                 fld st(2)
-// 0060662c  d9e0                 fchs 
-// 0060662e  d9c2                 fld st(2)
-// 00606630  d9e0                 fchs 
-// 00606632  d94228               fld dword ptr [edx + 0x28]
-// 00606635  dec3                 faddp st(3)
-// 00606637  d9ca                 fxch st(2)
-// 00606639  d95a28               fstp dword ptr [edx + 0x28]
-// 0060663c  d8422c               fadd dword ptr [edx + 0x2c]
-// 0060663f  d95a2c               fstp dword ptr [edx + 0x2c]
-// 00606642  d84230               fadd dword ptr [edx + 0x30]
-// 00606645  d95a30               fstp dword ptr [edx + 0x30]
-// 00606648  8b410c               mov eax, dword ptr [ecx + 0xc]
-// 0060664b  d94028               fld dword ptr [eax + 0x28]
-// 0060664e  83c028               add eax, 0x28
-// 00606651  dec3                 faddp st(3)
-// 00606653  d9ca                 fxch st(2)
-// 00606655  d918                 fstp dword ptr [eax]
-// 00606657  d84004               fadd dword ptr [eax + 4]
-// 0060665a  d95804               fstp dword ptr [eax + 4]
-// 0060665d  d84008               fadd dword ptr [eax + 8]
-// 00606660  d95808               fstp dword ptr [eax + 8]
-// 00606663  c20800               ret 8
-// library openrbx-client/App\v8kernel\Connector.cpp (function ?computeForce@PointToPointBreakConnector@RBX@@UAEXM_N@Z)
-
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast
 // roc-lib: openrbx-client App/v8kernel/Connector.cpp
+
+// Candidate translation unit (score above; library headers required).
+#include "v8kernel/Connector.h"
+
+#include "decomp.h"
+#include "util/Math.h"
+#include "v8kernel/Body.h"
+#include "v8kernel/SimBody.h"
+
+#include <G3D/g3dmath.h>
+#include <cmath>
+#include <cstddef>
+
+namespace RBX {
+
+// FUNCTION: WEBSERVICE 0x100a0710 FOLDED
+float Connector::potentialEnergy()
+{
+	return 0.0f;
+}
+
+// FUNCTION: WEBSERVICE 0x100eb790 FOLDED
+bool Connector::canThrottle() const
+{
+	return false;
+}
+
+// FUNCTION: WEBSERVICE 0x100eb790 FOLDED
+bool Connector::getBroken()
+{
+	return false;
+}
+
+// FUNCTION: WEBSERVICE 0x1011de40
+RotateConnector::RotateConnector(Point* base0, Point* ray0, Point* ref0, Point* ref1, float kValue, float armLength)
+	: k(kValue * armLength * armLength), base0(base0), ray0(ray0), ref0(ref0), ref1(ref1), lastRotation(0.0f),
+	  windings(0)
+{
+}
+
+// FUNCTION: WEBSERVICE 0x1011dea0
+float PointToPointBreakConnector::potentialEnergy()
+{
+	Vector3 delta = point1->getWorldPos() - point0->getWorldPos();
+
+	float length = delta.magnitude();
+
+	return k * length * length * 0.5f;
+}
+
+// FUNCTION: WEBSERVICE 0x1011dee0
+bool ContactConnector::canThrottle() const
+{
+	return geoPair.getBody(0)->getCanThrottle() && geoPair.getBody(1)->getCanThrottle();
+}
+
+// FUNCTION: WEBSERVICE 0x1011df00
+void RotateConnector::computeParams(Vector3& normal, float& rotation, float& rotVel)
+{
+	normal = ray0->getWorldPos() - base0->getWorldPos();
+	normal.unitize();
+
+	Vector3 rayRef0 = ref0->getWorldPos() - base0->getWorldPos();
+	Vector3 rayRef1 = ref1->getWorldPos() - base0->getWorldPos();
+
+	float d0 = rayRef0.dot(normal);
+	float d1 = rayRef1.dot(normal);
+
+	Vector3 rayP0plane = rayRef0 - normal * d0;
+	Vector3 rayP1plane = rayRef1 - normal * d1;
+
+	Vector3 cross = rayP0plane.cross(rayP1plane);
+
+	float angle = atan2f(cross.dot(normal), rayP1plane.dot(rayP0plane));
+
+	int lastWindings = windings;
+
+	if (lastRotation > 1.5707963267949) {
+		if (angle < -1.5707963267949) {
+			windings = lastWindings + 1;
+		}
+	}
+	else if (lastRotation < -1.5707963267949 && angle > 1.5707963267949) {
+		windings = lastWindings - 1;
+	}
+
+	rotation = windings * 6.283185f + angle;
+	rotVel = rotation - (lastWindings * 6.283185f + lastRotation);
+
+	lastRotation = angle;
+}
+
+// FUNCTION: WEBSERVICE 0x1011e0c0
+void RotateConnector::computeForce(float dt, bool throttling)
+{
+	Vector3 normal(0.0f, 0.0f, 0.0f);
+	float rotation;
+	float rotVel;
+
+	computeParams(normal, rotation, rotVel);
+
+	KernelInput& input = getKernelInput();
+
+	if (input.latchToZero) {
+		input.latchToZero = false;
+		input.currentGoal = (input.currentGoal + rotation) * 0.5f;
+	}
+
+	float torqueMag = (input.get() - rotation) * k;
+
+	Vector3 torque = normal * torqueMag;
+
+	ref0->getBody()->accumulateTorque(-torque);
+	ref1->getBody()->accumulateTorque(torque);
+}
+
+// FUNCTION: WEBSERVICE 0x1011e1f0
+void PointToPointBreakConnector::computeForce(float dt, bool throttling)
+{
+	if (!broken) {
+		Vector3 force = (point1->getWorldPos() - point0->getWorldPos()) * -k;
+
+		broken = breakForce < Math::taxiCabMagnitude(force);
+
+		forceToPoints(force);
+	}
+}
+
+// FUNCTION: WEBSERVICE 0x1011e290
+void NormalBreakConnector::computeForce(float dt, bool throttling)
+{
+	if (!broken) {
+		const CoordinateFrame& coord0 = point0->getBody()->getCoordinateFrame();
+
+		Vector3 normal = Math::getWorldNormal(normalIdBody0, coord0);
+
+		Vector3 force = (point1->getWorldPos() - point0->getWorldPos()) * -k;
+
+		broken = breakForce < -force.dot(normal);
+
+		forceToPoints(force);
+	}
+}
+
+// FUNCTION: WEBSERVICE 0x1011e390
+void ContactConnector::computeForce(const float dt, bool throttling)
+{
+	PairParams params;
+
+	params.position = params.normal = Vector3(0.0f, 0.0f, 0.0f);
+	geoPair.computeLengthNormalPosition(params);
+
+	if (params.length < 0.0f) {
+		float normalVel;
+		Vector3 perpVel(0.0f, 0.0f, 0.0f);
+
+		geoPair.computeNormalPerpVel(normalVel, perpVel, params);
+
+		frictionOffset += dt * perpVel;
+
+		float kApplied = k * 0.2f;
+		float magnitude = frictionOffset.magnitude(), frictionForce = magnitude * kApplied;
+		float maxFriction = kFriction * forceMagLast;
+
+		if (frictionForce > maxFriction && frictionForce > 1e-08) {
+			frictionOffset *= maxFriction / frictionForce;
+		}
+
+		frictionOffset -= params.normal * frictionOffset.dot(params.normal);
+
+		threshold =
+			threshold != 0.0f ? (threshold + 0.01f) * 0.999f - 0.01f : (firstApproach == 0.0f ? 0.0f : params.length);
+
+		firstApproach = firstApproach != 0.0f ? (firstApproach + 0.01f) * 0.999f - 0.01f : params.length;
+
+		forceMagLast = (firstApproach - params.length) * (normalVel < 0.0f ? k : kNeg);
+		forceMagLast = params.length <= threshold ? forceMagLast : 0.0f;
+
+		Vector3 force = forceMagLast * params.normal - frictionOffset * kApplied;
+
+		geoPair.forceToBodies(force, params.position);
+	}
+	else {
+		forceMagLast = threshold = firstApproach = 0.0f;
+	}
+}
+
+// FUNCTION: WEBSERVICE 0x1011edb0
+bool PointToPointBreakConnector::getBroken()
+{
+	return broken;
+}
+
+} // namespace RBX

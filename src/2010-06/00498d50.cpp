@@ -1,312 +1,990 @@
 // from server: 100% by auto
-// roc 2010-06 00498d50  unit: G3D::Shader  size: 1110 bytes
-// Make this compile to the exact bytes below, then: roc check 2010-06 00498d50
-//
-// 00498d50  6aff                 push -1
-// 00498d52  68416e9800           push 0x986e41
-// 00498d57  64a100000000         mov eax, dword ptr fs:[0]
-// 00498d5d  50                   push eax
-// 00498d5e  64892500000000       mov dword ptr fs:[0], esp
-// 00498d65  81ecf0000000         sub esp, 0xf0
-// 00498d6b  8b8194010000         mov eax, dword ptr [ecx + 0x194]
-// 00498d71  53                   push ebx
-// 00498d72  55                   push ebp
-// 00498d73  8bac2408010000       mov ebp, dword ptr [esp + 0x108]
-// 00498d7a  33d2                 xor edx, edx
-// 00498d7c  3bc2                 cmp eax, edx
-// 00498d7e  56                   push esi
-// 00498d7f  57                   push edi
-// 00498d80  894c2414             mov dword ptr [esp + 0x14], ecx
-// 00498d84  89542410             mov dword ptr [esp + 0x10], edx
-// 00498d88  89542418             mov dword ptr [esp + 0x18], edx
-// 00498d8c  0f8e20010000         jle 0x498eb2
-// 00498d92  8954241c             mov dword ptr [esp + 0x1c], edx
-// 00498d96  eb08                 jmp 0x498da0
-// 00498d98  8da42400000000       lea esp, [esp]
-// 00498d9f  90                   nop 
-// 00498da0  8bb190010000         mov esi, dword ptr [ecx + 0x190]
-// 00498da6  0374241c             add esi, dword ptr [esp + 0x1c]
-// 00498daa  803e00               cmp byte ptr [esi], 0
-// 00498dad  7504                 jne 0x498db3
-// 00498daf  ff442410             inc dword ptr [esp + 0x10]
-// 00498db3  689474a100           push 0xa17494
-// 00498db8  8d4c2440             lea ecx, [esp + 0x40]
-// 00498dbc  ff1510a49e00         call dword ptr [0x9ea410]
-// 00498dc2  8d44243c             lea eax, [esp + 0x3c]
-// 00498dc6  50                   push eax
-// 00498dc7  8d7e08               lea edi, [esi + 8]
-// 00498dca  57                   push edi
-// 00498dcb  c784241001000000000000 mov dword ptr [esp + 0x110], 0
-// 00498dd6  e805e70b00           call 0x5574e0
-// 00498ddb  83c408               add esp, 8
-// 00498dde  8d4c243c             lea ecx, [esp + 0x3c]
-// 00498de2  8ad8                 mov bl, al
-// 00498de4  c7842408010000ffffffff mov dword ptr [esp + 0x108], 0xffffffff
-// 00498def  ff1500a49e00         call dword ptr [0x9ea400]
-// 00498df5  84db                 test bl, bl
-// 00498df7  7450                 je 0x498e49
-// 00498df9  8b461c               mov eax, dword ptr [esi + 0x1c]
-// 00498dfc  83c0f7               add eax, -9
-// 00498dff  50                   push eax
-// 00498e00  6a09                 push 9
-// 00498e02  8d4c2428             lea ecx, [esp + 0x28]
-// 00498e06  51                   push ecx
-// 00498e07  8bcf                 mov ecx, edi
-// 00498e09  ff155ca49e00         call dword ptr [0x9ea45c]
-// 00498e0f  8d542420             lea edx, [esp + 0x20]
-// 00498e13  52                   push edx
-// 00498e14  8bcd                 mov ecx, ebp
-// 00498e16  c784240c01000001000000 mov dword ptr [esp + 0x10c], 1
-// 00498e21  e85af9ffff           call 0x498780
-// 00498e26  84c0                 test al, al
-// 00498e28  7508                 jne 0x498e32
-// 00498e2a  3806                 cmp byte ptr [esi], al
-// 00498e2c  0f8474010000         je 0x498fa6
-// 00498e32  8d4c2420             lea ecx, [esp + 0x20]
-// 00498e36  c7842408010000ffffffff mov dword ptr [esp + 0x108], 0xffffffff
-// 00498e41  ff1500a49e00         call dword ptr [0x9ea400]
-// 00498e47  eb4b                 jmp 0x498e94
-// 00498e49  57                   push edi
-// 00498e4a  8bcd                 mov ecx, ebp
-// 00498e4c  e82ff9ffff           call 0x498780
-// 00498e51  84c0                 test al, al
-// 00498e53  7516                 jne 0x498e6b
-// 00498e55  3806                 cmp byte ptr [esi], al
-// 00498e57  753b                 jne 0x498e94
-// 00498e59  837e2010             cmp dword ptr [esi + 0x20], 0x10
-// 00498e5d  0f8287010000         jb 0x498fea
-// 00498e63  8b7e0c               mov edi, dword ptr [esi + 0xc]
-// 00498e66  e982010000           jmp 0x498fed
-// 00498e6b  57                   push edi
-// 00498e6c  8bcd                 mov ecx, ebp
-// 00498e6e  e89df8ffff           call 0x498710
-// 00498e73  8bf8                 mov edi, eax
-// 00498e75  8b4744               mov eax, dword ptr [edi + 0x44]
-// 00498e78  50                   push eax
-// 00498e79  e802f8ffff           call 0x498680
-// 00498e7e  8bd0                 mov edx, eax
-// 00498e80  8b4624               mov eax, dword ptr [esi + 0x24]
-// 00498e83  50                   push eax
-// 00498e84  e8f7f7ffff           call 0x498680
-// 00498e89  83c408               add esp, 8
-// 00498e8c  3bd0                 cmp edx, eax
-// 00498e8e  0f859b010000         jne 0x49902f
-// 00498e94  8b442418             mov eax, dword ptr [esp + 0x18]
-// 00498e98  8b4c2414             mov ecx, dword ptr [esp + 0x14]
-// 00498e9c  8344241c30           add dword ptr [esp + 0x1c], 0x30
-// 00498ea1  40                   inc eax
-// 00498ea2  3b8194010000         cmp eax, dword ptr [ecx + 0x194]
-// 00498ea8  89442418             mov dword ptr [esp + 0x18], eax
-// 00498eac  0f8ceefeffff         jl 0x498da0
-// 00498eb2  8b4c2410             mov ecx, dword ptr [esp + 0x10]
-// 00498eb6  3b4d04               cmp ecx, dword ptr [ebp + 4]
-// 00498eb9  0f8dcc020000         jge 0x49918b
-// 00498ebf  8b4508               mov eax, dword ptr [ebp + 8]
-// 00498ec2  8b6d0c               mov ebp, dword ptr [ebp + 0xc]
-// 00498ec5  89442410             mov dword ptr [esp + 0x10], eax
-// 00498ec9  896c2418             mov dword ptr [esp + 0x18], ebp
-// 00498ecd  85ed                 test ebp, ebp
-// 00498ecf  0f8566020000         jne 0x49913b
-// 00498ed5  8b7c2424             mov edi, dword ptr [esp + 0x24]
-// 00498ed9  8b5c2420             mov ebx, dword ptr [esp + 0x20]
-// 00498edd  c644243401           mov byte ptr [esp + 0x34], 1
-// 00498ee2  807c243401           cmp byte ptr [esp + 0x34], 1
-// 00498ee7  0f849e020000         je 0x49918b
-// 00498eed  8b542414             mov edx, dword ptr [esp + 0x14]
-// 00498ef1  33ed                 xor ebp, ebp
-// 00498ef3  39aa94010000         cmp dword ptr [edx + 0x194], ebp
-// 00498ef9  7e3a                 jle 0x498f35
-// 00498efb  33f6                 xor esi, esi
-// 00498efd  8d4900               lea ecx, [ecx]
-// 00498f00  8b442414             mov eax, dword ptr [esp + 0x14]
-// 00498f04  8b8090010000         mov eax, dword ptr [eax + 0x190]
-// 00498f0a  03c6                 add eax, esi
-// 00498f0c  8d4f04               lea ecx, [edi + 4]
-// 00498f0f  51                   push ecx
-// 00498f10  83c008               add eax, 8
-// 00498f13  50                   push eax
-// 00498f14  ff158ca49e00         call dword ptr [0x9ea48c]
-// 00498f1a  83c408               add esp, 8
-// 00498f1d  84c0                 test al, al
-// 00498f1f  0f8540020000         jne 0x499165
-// 00498f25  8b4c2414             mov ecx, dword ptr [esp + 0x14]
-// 00498f29  45                   inc ebp
-// 00498f2a  83c630               add esi, 0x30
-// 00498f2d  3ba994010000         cmp ebp, dword ptr [ecx + 0x194]
-// 00498f33  7ccb                 jl 0x498f00
-// 00498f35  685074a100           push 0xa17450
-// 00498f3a  8d8c2494000000       lea ecx, [esp + 0x94]
-// 00498f41  ff1510a49e00         call dword ptr [0x9ea410]
-// 00498f47  8d4f04               lea ecx, [edi + 4]
-// 00498f4a  51                   push ecx
-// 00498f4b  50                   push eax
-// 00498f4c  8d8424b4000000       lea eax, [esp + 0xb4]
-// 00498f53  50                   push eax
-// 00498f54  c784241401000009000000 mov dword ptr [esp + 0x114], 9
-// 00498f5f  ff1504a79e00         call dword ptr [0x9ea704]
-// 00498f65  683428a100           push 0xa12834
-// 00498f6a  50                   push eax
-// 00498f6b  8d8c24f8000000       lea ecx, [esp + 0xf8]
-// 00498f72  51                   push ecx
-// 00498f73  c68424200100000a     mov byte ptr [esp + 0x120], 0xa
-// 00498f7b  ff1588a49e00         call dword ptr [0x9ea488]
-// 00498f81  83c418               add esp, 0x18
-// 00498f84  50                   push eax
-// 00498f85  8d4c2478             lea ecx, [esp + 0x78]
-// 00498f89  c684240c0100000b     mov byte ptr [esp + 0x10c], 0xb
-// 00498f91  ff150ca49e00         call dword ptr [0x9ea40c]
-// 00498f97  68b4ffb000           push 0xb0ffb4
-// 00498f9c  8d542478             lea edx, [esp + 0x78]
-// 00498fa0  52                   push edx
-// 00498fa1  e80cfa3000           call 0x7a89b2
-// 00498fa6  837c243810           cmp dword ptr [esp + 0x38], 0x10
-// 00498fab  8b442424             mov eax, dword ptr [esp + 0x24]
-// 00498faf  7304                 jae 0x498fb5
-// 00498fb1  8d442424             lea eax, [esp + 0x24]
-// 00498fb5  50                   push eax
-// 00498fb6  8d542478             lea edx, [esp + 0x78]
-// 00498fba  681074a100           push 0xa17410
-// 00498fbf  52                   push edx
-// 00498fc0  e8ebe40b00           call 0x5574b0
-// 00498fc5  83c40c               add esp, 0xc
-// 00498fc8  50                   push eax
-// 00498fc9  8d4c2440             lea ecx, [esp + 0x40]
-// 00498fcd  c684240c01000002     mov byte ptr [esp + 0x10c], 2
-// 00498fd5  ff150ca49e00         call dword ptr [0x9ea40c]
-// 00498fdb  68b4ffb000           push 0xb0ffb4
-// 00498fe0  8d442440             lea eax, [esp + 0x40]
-// 00498fe4  50                   push eax
-// 00498fe5  e8c8f93000           call 0x7a89b2
-// 00498fea  8d7e0c               lea edi, [esi + 0xc]
-// 00498fed  8b4e24               mov ecx, dword ptr [esi + 0x24]
-// 00498ff0  51                   push ecx
-// 00498ff1  e8ea62ffff           call 0x48f2e0
-// 00498ff6  50                   push eax
-// 00498ff7  57                   push edi
-// 00498ff8  8d542464             lea edx, [esp + 0x64]
-// 00498ffc  68c073a100           push 0xa173c0
-// 00499001  52                   push edx
-// 00499002  e8a9e40b00           call 0x5574b0
-// 00499007  83c414               add esp, 0x14
-// 0049900a  50                   push eax
-// 0049900b  8d4c2440             lea ecx, [esp + 0x40]
-// 0049900f  c784240c01000003000000 mov dword ptr [esp + 0x10c], 3
-// 0049901a  ff150ca49e00         call dword ptr [0x9ea40c]
-// 00499020  68b4ffb000           push 0xb0ffb4
-// 00499025  8d442440             lea eax, [esp + 0x40]
-// 00499029  50                   push eax
-// 0049902a  e883f93000           call 0x7a89b2
-// 0049902f  8b4e24               mov ecx, dword ptr [esi + 0x24]
-// 00499032  51                   push ecx
-// 00499033  e8a862ffff           call 0x48f2e0
-// 00499038  83c404               add esp, 4
-// 0049903b  50                   push eax
-// 0049903c  8d4c2440             lea ecx, [esp + 0x40]
-// 00499040  ff1510a49e00         call dword ptr [0x9ea410]
-// 00499046  8b5744               mov edx, dword ptr [edi + 0x44]
-// 00499049  52                   push edx
-// 0049904a  c784240c01000004000000 mov dword ptr [esp + 0x10c], 4
-// 00499055  e88662ffff           call 0x48f2e0
-// 0049905a  83c404               add esp, 4
-// 0049905d  50                   push eax
-// 0049905e  8d4c2424             lea ecx, [esp + 0x24]
-// 00499062  ff1510a49e00         call dword ptr [0x9ea410]
-// 00499068  8b4624               mov eax, dword ptr [esi + 0x24]
-// 0049906b  50                   push eax
-// 0049906c  c684240c01000005     mov byte ptr [esp + 0x10c], 5
-// 00499074  e807f6ffff           call 0x498680
-// 00499079  50                   push eax
-// 0049907a  e86162ffff           call 0x48f2e0
-// 0049907f  83c408               add esp, 8
-// 00499082  50                   push eax
-// 00499083  8d4c245c             lea ecx, [esp + 0x5c]
-// 00499087  ff1510a49e00         call dword ptr [0x9ea410]
-// 0049908d  8b4f44               mov ecx, dword ptr [edi + 0x44]
-// 00499090  51                   push ecx
-// 00499091  c684240c01000006     mov byte ptr [esp + 0x10c], 6
-// 00499099  e8e2f5ffff           call 0x498680
-// 0049909e  50                   push eax
-// 0049909f  e83c62ffff           call 0x48f2e0
-// 004990a4  83c408               add esp, 8
-// 004990a7  50                   push eax
-// 004990a8  8d8c24cc000000       lea ecx, [esp + 0xcc]
-// 004990af  ff1510a49e00         call dword ptr [0x9ea410]
-// 004990b5  8b442438             mov eax, dword ptr [esp + 0x38]
-// 004990b9  8b542424             mov edx, dword ptr [esp + 0x24]
-// 004990bd  bb10000000           mov ebx, 0x10
-// 004990c2  c684240801000007     mov byte ptr [esp + 0x108], 7
-// 004990ca  8bfa                 mov edi, edx
-// 004990cc  3bc3                 cmp eax, ebx
-// 004990ce  7306                 jae 0x4990d6
-// 004990d0  8d7c2424             lea edi, [esp + 0x24]
-// 004990d4  8bd7                 mov edx, edi
-// 004990d6  8b4c245c             mov ecx, dword ptr [esp + 0x5c]
-// 004990da  395c2470             cmp dword ptr [esp + 0x70], ebx
-// 004990de  7304                 jae 0x4990e4
-// 004990e0  8d4c245c             lea ecx, [esp + 0x5c]
-// 004990e4  8b442440             mov eax, dword ptr [esp + 0x40]
-// 004990e8  395c2454             cmp dword ptr [esp + 0x54], ebx
-// 004990ec  7304                 jae 0x4990f2
-// 004990ee  8d442440             lea eax, [esp + 0x40]
-// 004990f2  395e20               cmp dword ptr [esi + 0x20], ebx
-// 004990f5  7205                 jb 0x4990fc
-// 004990f7  8b760c               mov esi, dword ptr [esi + 0xc]
-// 004990fa  eb03                 jmp 0x4990ff
-// 004990fc  83c60c               add esi, 0xc
-// 004990ff  57                   push edi
-// 00499100  52                   push edx
-// 00499101  51                   push ecx
-// 00499102  50                   push eax
-// 00499103  56                   push esi
-// 00499104  8d9424a4000000       lea edx, [esp + 0xa4]
-// 0049910b  686073a100           push 0xa17360
-// 00499110  52                   push edx
-// 00499111  e89ae30b00           call 0x5574b0
-// 00499116  83c41c               add esp, 0x1c
-// 00499119  50                   push eax
-// 0049911a  8d4c2478             lea ecx, [esp + 0x78]
-// 0049911e  c684240c01000008     mov byte ptr [esp + 0x10c], 8
-// 00499126  ff150ca49e00         call dword ptr [0x9ea40c]
-// 0049912c  68b4ffb000           push 0xb0ffb4
-// 00499131  8d442478             lea eax, [esp + 0x78]
-// 00499135  50                   push eax
-// 00499136  e877f83000           call 0x7a89b2
-// 0049913b  8b38                 mov edi, dword ptr [eax]
-// 0049913d  33db                 xor ebx, ebx
-// 0049913f  885c2434             mov byte ptr [esp + 0x34], bl
-// 00499143  85ff                 test edi, edi
-// 00499145  0f8597fdffff         jne 0x498ee2
-// 0049914b  eb03                 jmp 0x499150
-// 0049914d  8d4900               lea ecx, [ecx]
-// 00499150  43                   inc ebx
-// 00499151  3bdd                 cmp ebx, ebp
-// 00499153  0f8d84fdffff         jge 0x498edd
-// 00499159  8b3c98               mov edi, dword ptr [eax + ebx*4]
-// 0049915c  85ff                 test edi, edi
-// 0049915e  74f0                 je 0x499150
-// 00499160  e97dfdffff           jmp 0x498ee2
-// 00499165  8b7f68               mov edi, dword ptr [edi + 0x68]
-// 00499168  85ff                 test edi, edi
-// 0049916a  0f8572fdffff         jne 0x498ee2
-// 00499170  43                   inc ebx
-// 00499171  3b5c2418             cmp ebx, dword ptr [esp + 0x18]
-// 00499175  0f8d62fdffff         jge 0x498edd
-// 0049917b  8b542410             mov edx, dword ptr [esp + 0x10]
-// 0049917f  8b3c9a               mov edi, dword ptr [edx + ebx*4]
-// 00499182  85ff                 test edi, edi
-// 00499184  74ea                 je 0x499170
-// 00499186  e957fdffff           jmp 0x498ee2
-// 0049918b  8b8c2400010000       mov ecx, dword ptr [esp + 0x100]
-// 00499192  5f                   pop edi
-// 00499193  5e                   pop esi
-// 00499194  5d                   pop ebp
-// 00499195  5b                   pop ebx
-// 00499196  64890d00000000       mov dword ptr fs:[0], ecx
-// 0049919d  81c4fc000000         add esp, 0xfc
-// 004991a3  c20400               ret 4
-// library g3d-6.09/GLG3Dcpp\Shader.cpp (function ?validateArgList@VertexAndPixelShader@G3D@@QBEXABVArgList@12@@Z)
-
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD
 // roc-lib: g3d-6.09 GLG3Dcpp/Shader.cpp
+
+// Candidate translation unit (score above; library headers required).
+/**
+ @file Shader.cpp
+ 
+ @maintainer Morgan McGuire, morgan@graphics3d.com
+ 
+ @created 2004-04-24
+ @edited  2006-02-15
+ */
+
+#include "G3D/fileutils.h"
+#include "GLG3D/Shader.h"
+#include "GLG3D/GLCaps.h"
+#include "GLG3D/getOpenGLState.h"
+#include "GLG3D/RenderDevice.h"
+
+namespace G3D {
+
+bool Shader::hasArgument(const std::string& argname) const {
+    const Set<std::string>& uniformNames = _vertexAndPixelShader->uniformNames;
+    return uniformNames.contains(argname);
+}
+
+
+bool Shader::ok() const {
+    return _vertexAndPixelShader->ok();
+}
+
+
+bool Shader::supportsPixelShaders() {
+    return
+        GLCaps::supports_GL_ARB_shader_objects() && 
+        GLCaps::supports_GL_ARB_shading_language_100() &&
+        GLCaps::supports_GL_ARB_fragment_shader();
+}
+
+
+bool Shader::supportsVertexShaders() {
+    return
+        GLCaps::supports_GL_ARB_shader_objects() && 
+        GLCaps::supports_GL_ARB_shading_language_100() &&
+        GLCaps::supports_GL_ARB_vertex_shader();
+}
+
+
+void Shader::beforePrimitive(class RenderDevice* renderDevice) {
+    if (_preserveState) {
+        renderDevice->pushState();
+    }
+
+    if (_useUniforms == DEFINE_G3D_UNIFORMS) {
+        const CoordinateFrame& o2w = renderDevice->getObjectToWorldMatrix();
+        const CoordinateFrame& c2w = renderDevice->getCameraToWorldMatrix();
+
+        const Set<std::string>& uniformNames = _vertexAndPixelShader->uniformNames;
+
+        // Bind matrices
+        if (uniformNames.contains("g3d_ObjectToWorldMatrix")) {
+            args.set("g3d_ObjectToWorldMatrix", o2w);
+        }
+
+        if (uniformNames.contains("g3d_CameraToWorldMatrix")) {
+            args.set("g3d_CameraToWorldMatrix", c2w);
+        }
+
+        if (uniformNames.contains("g3d_WorldToObjectMatrix")) {
+            args.set("g3d_WorldToObjectMatrix", o2w.inverse());
+        }
+
+        if (uniformNames.contains("g3d_WorldToCameraMatrix")) {
+            args.set("g3d_WorldToCameraMatrix", c2w.inverse());
+        }
+
+        if (uniformNames.contains("g3d_NumLights")) {
+            if (glGetBoolean(GL_LIGHTING)) {
+                // Search for the highest light number
+                int i = 7;
+                while (i >= 0 && ! glGetBoolean(GL_LIGHT0 + i)) {
+                    --i;
+                }
+                args.set("g3d_NumLights", i + 1);
+            } else {
+                args.set("g3d_NumLights", 0);
+            }
+        }
+
+        if (uniformNames.contains("g3d_ObjectLight0")) {
+            Vector4 cL;
+            // OpenGL lights are already in camera space, so take them
+            // from camera to world to object space.
+            glGetLightfv(GL_LIGHT0, GL_POSITION, cL);
+            args.set("g3d_ObjectLight0", o2w.toObjectSpace(c2w.toWorldSpace(cL)));
+        }
+
+        if (uniformNames.contains("g3d_NumTextures")) {
+            // Search for the highest texture number
+            int i = 7;
+            while (i >= 0 && ! glGetBoolean(GL_TEXTURE0_ARB + i)) {
+                --i;
+            }
+            args.set("g3d_NumTextures", i + 1);
+        }
+    }
+
+    renderDevice->setVertexAndPixelShader(_vertexAndPixelShader, args);
+}
+
+
+void Shader::afterPrimitive(class RenderDevice* renderDevice) {
+    if (_preserveState) {
+        renderDevice->popState();
+    }
+}
+
+
+const std::string& Shader::messages() const {
+    return _vertexAndPixelShader->messages();
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+void VertexAndPixelShader::GPUShader::replaceG3DSize(std::string& code, std::string& uniformString) {
+
+    // Ensure that uniforms are only declared once
+    Set<std::string> newUniforms;
+
+    std::string funcName = "g3d_sampler2DSize(";
+    std::string prefix   = "     (";
+    std::string postfix  = ".xy)";
+
+    for (int count = 0; count < 2; ++count) {
+
+        size_t last = 0;
+        while (true) {
+            int next = code.find(funcName, last);
+            if (next == std::string::npos) {
+                break;
+            }
+
+            size_t nameStart = next + funcName.length();
+            size_t nameEnd   = code.find(')', nameStart);
+
+            alwaysAssertM(nameEnd != std::string::npos,
+                "Could not find the end of " + funcName + ") expression");
+
+            std::string name = code.substr(nameStart, nameEnd - nameStart);
+
+            std::string decoratedName = "g3d_sz2D_" + name;
+
+            std::string replacement = prefix + decoratedName + postfix;
+            for (size_t i = 0; i < replacement.size(); ++i) {
+                code[i + next] = replacement[i];
+            }
+
+            newUniforms.insert(decoratedName);
+
+            last = nameEnd;
+
+        } // Iterating through all instances
+
+        // On the second iteration, replace g3d_invSize.
+        funcName = "g3d_sampler2DInvSize(";
+        prefix   = "        (";
+        postfix  = ".zw)";
+    }
+
+    // Add the unique uniforms to the header for the code.
+    Set<std::string>::Iterator current = newUniforms.begin();
+    const Set<std::string>::Iterator end = newUniforms.end();
+    while (current != end) {
+        uniformString += "uniform vec4 " + *current + "; "; 
+        ++current;
+    }
+}
+
+
+void VertexAndPixelShader::GPUShader::init(
+	const std::string&	name,
+	const std::string&	code,
+	bool				_fromFile,
+	bool				debug,	
+	GLenum				glType,
+	const std::string&	type,
+    UseG3DUniforms      uniforms) {
+
+    std::string uniformString = 
+        STR(
+        uniform mat4 g3d_WorldToObjectMatrix;
+        uniform mat4 g3d_ObjectToWorldMatrix;
+        uniform mat4 g3d_WorldToCameraMatrix;
+        uniform mat4 g3d_CameraToWorldMatrix;
+        uniform int  g3d_NumLights;
+        uniform int  g3d_NumTextures;
+        uniform vec4 g3d_ObjectLight0;);
+
+	_name			= name;
+	_shaderType		= type;
+	_glShaderType	= glType;
+	_ok				= true;
+	fromFile		= _fromFile;
+	_fixedFunction	= (name == "") && (code == "");
+
+	if (! _fixedFunction) {
+
+        switch (glType) {
+        case GL_VERTEX_SHADER_ARB:
+            if (! Shader::supportsVertexShaders()) {
+                _ok = false;
+                _messages = "This graphics card does not support vertex shaders.";
+            }
+            break;
+
+        case GL_FRAGMENT_SHADER_ARB:
+            if (! Shader::supportsPixelShaders()) {
+                _ok = false;
+                _messages = "This graphics card does not support pixel shaders.";
+            }
+            break;
+        }
+
+		if (fromFile) {
+			if (fileExists(_name)) {
+				_code = readFileAsString(_name);
+			} else {
+				_ok = false;
+				_messages = format("Could not load shader file \"%s\".", 
+					_name.c_str());
+			}
+        } else {
+            _code = code;
+        }
+
+        bool shifted = false;
+
+        if ((uniforms == DEFINE_G3D_UNIFORMS) && (_code.size() > 0)) {
+            // Replace g3d_size and g3d_invSize with corresponding magic names
+
+            replaceG3DSize(_code, uniformString);
+
+	        _code		= uniformString + "\n" + _code + "\n";
+            shifted = true;
+        } else {
+            // Just add a newline to the end
+            _code += "\n";
+        }
+
+		if (_ok) {
+			compile();
+		}
+
+		if (debug) {
+            // Check for compilation errors
+            if (! ok()) {
+                if (shifted) {
+                    debugPrintf("\n[Line numbers in the following shader errors are shifted by one.]\n");
+                }
+                debugPrintf("%s", messages().c_str());
+    			alwaysAssertM(ok(), messages());
+            }
+		}
+	}
+
+}
+
+
+void VertexAndPixelShader::GPUShader::compile() {
+
+    GLint compiled = GL_FALSE;
+	_glShaderObject = glCreateShaderObjectARB(glShaderType());
+
+    // Compile the shader
+	GLint length = _code.length();
+    const GLcharARB* codePtr = static_cast<const GLcharARB*>(_code.c_str());
+
+	glShaderSourceARB(_glShaderObject, 1, &codePtr, &length);
+	glCompileShaderARB(_glShaderObject);
+	glGetObjectParameterivARB(_glShaderObject, GL_OBJECT_COMPILE_STATUS_ARB, &compiled);
+
+    // Read the result of compilation
+	GLint	  maxLength;
+	glGetObjectParameterivARB(_glShaderObject, GL_OBJECT_INFO_LOG_LENGTH_ARB, &maxLength);
+    GLcharARB* pInfoLog = (GLcharARB *)malloc(maxLength * sizeof(GLcharARB));
+	glGetInfoLogARB(_glShaderObject, maxLength, &length, pInfoLog);
+
+	int c = 0;
+    // Copy the result to the output string, prepending the filename
+	while (pInfoLog[c] != '\0') {
+		_messages += _name;
+		while (pInfoLog[c] != '\n' && pInfoLog[c] != '\r' && pInfoLog[c] != '\0') {
+			_messages += pInfoLog[c];
+			++c;
+		}
+
+		if (pInfoLog[c] == '\r' && pInfoLog[c + 1] == '\n') {
+			// Windows newline
+			#ifdef G3D_WIN32
+				_messages += "\r\n";
+			#else
+				_messages += "\n";
+			#endif
+			c += 2;
+		} else if (pInfoLog[c] == '\r' && pInfoLog[c + 1] != '\n') {
+			// Dangling \r; treat it as a newline
+			_messages += "\r\n";
+			++c;
+		} else if (pInfoLog[c] == '\n') {
+			// Newline
+			#ifdef G3D_WIN32
+				_messages += "\r\n";
+			#else
+				_messages += "\n";
+			#endif
+			++c;
+		}
+	}
+	free(pInfoLog);
+
+    _ok = (compiled == GL_TRUE);
+}
+
+
+VertexAndPixelShader::GPUShader::~GPUShader() {
+	if (! _fixedFunction) {
+		glDeleteObjectARB(_glShaderObject);
+	}
+}
+
+
+////////////////////////////////////////////////////////////////////////////////////
+
+VertexAndPixelShader::VertexAndPixelShader(
+	const std::string&  vsCode,
+	const std::string&  vsFilename,
+	bool                vsFromFile,
+	const std::string&  psCode,
+	const std::string&  psFilename,
+	bool                psFromFile,
+    bool                debug,
+    UseG3DUniforms      uniforms) :
+        _ok(true) {
+
+    if (! GLCaps::supports_GL_ARB_shader_objects()) {
+        _messages = "This graphics card does not support GL_ARB_shader_objects.";
+        _ok = false;
+        return;
+    }
+
+	vertexShader.init(vsFilename, vsCode, vsFromFile, debug, GL_VERTEX_SHADER_ARB, "Vertex Shader", uniforms);
+	pixelShader.init(psFilename, psCode, psFromFile, debug, GL_FRAGMENT_SHADER_ARB, "Pixel Shader", uniforms);
+    
+    _vertCompileMessages += vertexShader.messages();
+    _messages += 
+		std::string("Compiling ") + vertexShader.shaderType() + " " + vsFilename + NEWLINE +
+		vertexShader.messages() + NEWLINE + NEWLINE;
+    if (! vertexShader.ok()) {
+        _ok = false;
+    }
+
+    if (! pixelShader.ok()) {
+        _ok = false;
+    }    
+    _fragCompileMessages += pixelShader.messages();
+    _messages += 
+		std::string("Compiling ") + pixelShader.shaderType() + " " + psFilename + NEWLINE +
+		pixelShader.messages() + NEWLINE + NEWLINE;
+
+    lastTextureUnit = -1;
+
+    if (_ok) {
+        // Create GL object
+        _glProgramObject = glCreateProgramObjectARB();
+
+        // Attach vertex and pixel shaders
+        if (! vertexShader.fixedFunction()) {
+            glAttachObjectARB(_glProgramObject, vertexShader.glShaderObject());
+        }
+
+        if (! pixelShader.fixedFunction()) {
+            glAttachObjectARB(_glProgramObject, pixelShader.glShaderObject());
+        }
+
+        // Link
+        GLint linked = GL_FALSE;
+        glLinkProgramARB(_glProgramObject);
+
+        // Read back messages
+	    glGetObjectParameterivARB(_glProgramObject, GL_OBJECT_LINK_STATUS_ARB, &linked);
+        GLint maxLength = 0, length = 0;
+	    glGetObjectParameterivARB(_glProgramObject, GL_OBJECT_INFO_LOG_LENGTH_ARB, &maxLength);
+	    GLcharARB* pInfoLog = (GLcharARB *)malloc(maxLength * sizeof(GLcharARB));
+	    glGetInfoLogARB(_glProgramObject, maxLength, &length, pInfoLog);
+
+        _messages += std::string("Linking\n") + std::string(pInfoLog) + "\n";
+        _linkMessages += std::string(pInfoLog);
+	    free(pInfoLog);
+        _ok = _ok && (linked == GL_TRUE);
+
+        if (debug) {
+            alwaysAssertM(_ok, _messages);
+        }
+    }
+
+    if (_ok) {
+        uniformNames.clear();
+        computeUniformArray();
+        // note that the extra uniforms are computed from the original code,
+        // not from the code that has the g3d uniforms prepended.
+        addUniformsFromCode(vsFromFile ? readFileAsString(vsFilename) : vsCode);
+        addUniformsFromCode(psFromFile ? readFileAsString(psFilename) : psCode);
+
+        // Add all uniforms to the name list
+        for (int i = uniformArray.size() - 1; i >= 0; --i) {
+            uniformNames.insert(uniformArray[i].name);
+        }
+    }
+}
+
+
+bool VertexAndPixelShader::isSamplerType(GLenum e) {
+    return
+       (e == GL_SAMPLER_1D_ARB) ||
+       (e == GL_SAMPLER_2D_ARB) ||
+       (e == GL_SAMPLER_2D_RECT_ARB) ||
+       (e == GL_SAMPLER_3D_ARB) ||
+       (e == GL_SAMPLER_CUBE_ARB) ||
+       (e == GL_SAMPLER_1D_SHADOW_ARB) ||
+       (e == GL_SAMPLER_2D_SHADOW_ARB) ||
+       (e == GL_SAMPLER_2D_RECT_SHADOW_ARB);
+}
+
+
+/** Converts a type name to a GL enum */
+static GLenum toGLType(const std::string& s) {
+    if (s == "float") {
+        return GL_FLOAT;
+    } else if (s == "vec2") {
+        return GL_FLOAT_VEC2_ARB;
+    } else if (s == "vec3") {
+        return GL_FLOAT_VEC3_ARB;
+    } else if (s == "vec4") {
+        return GL_FLOAT_VEC4_ARB;
+
+    } else if (s == "int") {
+        return GL_INT;
+
+    } else if (s == "bool") {
+        return GL_BOOL_ARB;
+
+    } else if (s == "mat2") {
+        return GL_FLOAT_MAT2_ARB;
+    } else if (s == "mat3") {
+        return GL_FLOAT_MAT3_ARB;
+    } else if (s == "mat4") {
+        return GL_FLOAT_MAT4_ARB;
+
+    } else if (s == "sampler1D") {
+        return GL_SAMPLER_1D_ARB;
+    } else if (s == "sampler2D") {
+        return GL_SAMPLER_2D_ARB;
+    } else if (s == "sampler3D") {
+        return GL_SAMPLER_3D_ARB;
+    } else if (s == "samplerCube") {
+        return GL_SAMPLER_CUBE_ARB;
+    } else if (s == "sampler2DRect") {
+        return GL_SAMPLER_2D_RECT_ARB;
+    } else if (s == "sampler2DShadow") {
+        return GL_SAMPLER_2D_SHADOW_ARB;
+    } else if (s == "sampler2DRectShadow") {
+        return GL_SAMPLER_2D_RECT_SHADOW_ARB;
+    } else {
+        debugAssertM(false, std::string("Unknown type in shader: ") + s);
+        return 0;
+    }
+}
+
+
+void VertexAndPixelShader::addUniformsFromCode(const std::string& code) {
+    TextInput ti(TextInput::FROM_STRING, code);
+
+    while (ti.hasMore()) {
+        if ((ti.peek().type() == Token::SYMBOL) && (ti.peek().string() == "uniform")) {
+            // Read the definition
+            ti.readSymbol("uniform");
+
+            // Maybe read "const"
+            if ((ti.peek().type() == Token::SYMBOL) && (ti.peek().string() == "const")) {
+                ti.readSymbol("const");
+            }
+
+            // Read the type
+            GLenum type = toGLType(ti.readSymbol());
+
+            // Read the name
+            std::string name = ti.readSymbol();
+
+            if ((ti.peek().type() == Token::SYMBOL) && (ti.peek().string() == "[")) {
+                ti.readSymbol("[");
+                ti.readNumber();
+                ti.readSymbol("]");
+            }
+
+            // Read the semi-colon
+            ti.readSymbol(";");
+
+            // See if this variable is already declared.
+            bool found = false;
+
+            for (int i = 0; i < uniformArray.size(); ++i) {
+                if (uniformArray[i].name == name) {
+                    found = true;
+                    break;
+                }
+            } 
+
+            if (! found) {
+                // Add the definition
+                uniformArray.next();
+
+                uniformArray.last().dummy = true;
+                uniformArray.last().location = -1;
+                uniformArray.last().name = name;
+                uniformArray.last().size = 1;
+                uniformArray.last().type = type;
+
+                // Don't allocate texture units for unused variables
+                uniformArray.last().textureUnit = -1;
+            }
+
+        } else {
+            // Consume the token
+            ti.read();
+        }
+    }
+}
+
+
+void VertexAndPixelShader::computeUniformArray() {
+    uniformArray.clear();
+
+    GLint maxLength;
+    GLint uniformCount;
+
+    // On ATI cards, we are required to call glUseProgramObjectARB before glGetUniformLocationARB.
+    // First, store the old program.
+    GLenum oldProgram = glGetHandleARB(GL_PROGRAM_OBJECT_ARB);
+    glUseProgramObjectARB(glProgramObject());
+
+    // Get the number of uniforms, and the length of the longest name.
+    glGetObjectParameterivARB(glProgramObject(), GL_OBJECT_ACTIVE_UNIFORM_MAX_LENGTH_ARB, &maxLength);
+    glGetObjectParameterivARB(glProgramObject(), GL_OBJECT_ACTIVE_UNIFORMS_ARB, &uniformCount);
+
+    uniformArray.resize(0);
+
+    GLcharARB* name = (GLcharARB *) malloc(maxLength * sizeof(GLcharARB));
+    
+    // Loop over glGetActiveUniformARB and store the results away.
+    for (int i = 0; i < uniformCount; ++i) {
+
+        GLint size;
+        GLenum type;
+
+	    glGetActiveUniformARB(glProgramObject(), 
+            i, maxLength, NULL, &size, &type, name);
+
+        uniformArray.next().name = name;
+
+        uniformArray.last().location = glGetUniformLocationARB(glProgramObject(), name);
+        
+        bool isGLBuiltIn = (uniformArray.last().location == -1) || 
+            ((strlen(name) > 3) && beginsWith(std::string(name), "gl_"));
+
+        uniformArray.last().dummy = isGLBuiltIn;
+
+        if (! isGLBuiltIn) {
+            uniformArray.last().size = size;
+            uniformArray.last().type = type;
+
+            if (isSamplerType(type)) {
+                ++lastTextureUnit;
+                uniformArray.last().textureUnit = lastTextureUnit;
+            } else {
+                uniformArray.last().textureUnit = -1;
+            }
+        }
+    }
+
+    free(name);
+
+    glUseProgramObjectARB(oldProgram);
+}
+
+
+VertexAndPixelShaderRef VertexAndPixelShader::fromStrings(
+	const std::string& vs,
+    const std::string& ps,
+    UseG3DUniforms u,
+    bool debugErrors) {
+
+    return new VertexAndPixelShader(vs, "", false, ps, "", false, debugErrors, u);
+}
+
+
+VertexAndPixelShaderRef VertexAndPixelShader::fromStrings(
+    const std::string& vsName,
+	const std::string& vs,
+    const std::string& psName,
+    const std::string& ps,
+    UseG3DUniforms u,
+    bool debugErrors) {
+
+    return new VertexAndPixelShader(vs, vsName, false, ps, psName, false, debugErrors, u);
+}
+
+
+VertexAndPixelShaderRef VertexAndPixelShader::fromFiles(
+	const std::string& vsFilename,
+    const std::string& psFilename,
+    UseG3DUniforms u,
+    bool debugErrors) {
+
+	std::string vs;
+	std::string ps;
+
+	if (vsFilename != "") {
+		vs = readFileAsString(vs);
+	}
+
+	if (psFilename != "") {
+		ps = readFileAsString(ps);
+	}
+
+    return new VertexAndPixelShader(vs, vsFilename, true, ps, psFilename, true, debugErrors, u);
+}
+
+
+VertexAndPixelShader::~VertexAndPixelShader() {
+    glDeleteObjectARB(_glProgramObject);
+}
+
+
+bool VertexAndPixelShader::fullySupported() {
+    return
+        GLCaps::supports_GL_ARB_shader_objects() && 
+        GLCaps::supports_GL_ARB_shading_language_100() &&
+        GLCaps::supports_GL_ARB_fragment_shader() &&
+        GLCaps::supports_GL_ARB_vertex_shader();
+}
+
+
+GLenum VertexAndPixelShader::canonicalType(GLenum e) {
+
+    switch (e) {
+    case GL_INT:
+    case GL_BOOL_ARB:
+        return GL_FLOAT;
+
+    case GL_INT_VEC2_ARB:
+    case GL_BOOL_VEC2_ARB:
+        return GL_FLOAT_VEC2_ARB;
+
+    case GL_INT_VEC3_ARB:
+    case GL_BOOL_VEC3_ARB:
+        return GL_FLOAT_VEC3_ARB;
+
+    case GL_INT_VEC4_ARB:
+    case GL_BOOL_VEC4_ARB:
+        return GL_FLOAT_VEC4_ARB;
+
+    case GL_SAMPLER_2D_SHADOW_ARB:
+	case GL_SAMPLER_2D_ARB:
+		return GL_TEXTURE_2D;
+
+	case GL_SAMPLER_CUBE_ARB:
+		return GL_TEXTURE_CUBE_MAP_ARB;
+ 
+    case GL_SAMPLER_2D_RECT_SHADOW_ARB:
+	case GL_SAMPLER_2D_RECT_ARB:
+		return GL_TEXTURE_RECTANGLE_EXT;
+
+    default:
+        // Return the input
+        return e;    
+    }
+}
+
+
+void VertexAndPixelShader::validateArgList(const ArgList& args) const {
+    int numVariables = 0;
+
+    // Iterate through formal bindings
+    for (int u = 0; u < uniformArray.size(); ++u) {
+        const UniformDeclaration& decl = uniformArray[u];
+
+        // Only count variables that need to be set in code
+        if (! decl.dummy) {
+            ++numVariables;
+        }
+
+        bool declared = false;
+        bool performTypeCheck = true;
+
+        if (beginsWith(decl.name, "g3d_sz2D_")) {
+            // This is the autogenerated dimensions of a texture.
+            std::string textureName  = decl.name.substr(9, decl.name.length() - 9);
+            declared = args.argTable.containsKey(textureName);
+            performTypeCheck = false;
+
+            if (! declared && ! decl.dummy) {
+                throw ArgumentError(
+                    format("No value provided for VertexAndPixelShader uniform variable %s.",
+                        textureName.c_str()));
+            }
+
+        } else {
+
+            declared = args.argTable.containsKey(decl.name);
+
+            if (! declared && ! decl.dummy) {
+                throw ArgumentError(
+                    format("No value provided for VertexAndPixelShader uniform variable %s of type %s.",
+                        decl.name.c_str(), GLenumToString(decl.type)));
+            }
+        }
+
+        if (declared && performTypeCheck) {
+            const ArgList::Arg& arg = args.argTable[decl.name];
+
+            // check the type
+            if (canonicalType(arg.type) != canonicalType(decl.type)) {
+                std::string v1 = GLenumToString(decl.type);
+                std::string v2 = GLenumToString(arg.type);
+                std::string v1c = GLenumToString(canonicalType(decl.type));
+                std::string v2c = GLenumToString(canonicalType(arg.type));
+                throw ArgumentError(
+                format("Variable %s was declared as type %s (%s) and the value provided at runtime had type %s (%s).",
+                        decl.name.c_str(), v1.c_str(), v1c.c_str(), v2.c_str(), v2.c_str()));
+            }
+        }
+
+    }
+
+    if (numVariables < args.argTable.size()) {
+        // Some variables were unused.  Figure out which they were.
+        Table<std::string, ArgList::Arg>::Iterator arg = args.argTable.begin();
+        Table<std::string, ArgList::Arg>::Iterator end = args.argTable.end();
+
+        while (arg != end) {
+            // See if this arg was in the formal binding list
+
+            bool foundArgument = false;
+            
+            for (int u = 0; u < uniformArray.size(); ++u) {
+                if (uniformArray[u].name == arg->key) {
+                    foundArgument = true;
+                    break;
+                }
+            }
+
+            if (! foundArgument) {
+                throw ArgumentError(
+                std::string("Extra VertexAndPixelShader uniform variable provided at runtime: ") + arg->key + ".");
+            }
+
+            ++arg;
+        }
+    }
+
+}
+
+
+void VertexAndPixelShader::bindArgList(RenderDevice* rd, const ArgList& args) const {
+    rd->forceVertexAndPixelShaderBind();
+
+    validateArgList(args);
+
+    // Iterate through the formal parameter list
+    for (int u = 0; u < uniformArray.size(); ++u) {
+        const UniformDeclaration& decl  = uniformArray[u];
+    
+        if (decl.dummy) {
+            // Don't set this variable; it is unused.
+            continue;
+        }
+
+        int location = uniformArray[u].location;
+
+        if (beginsWith(decl.name, "g3d_sz2D_")) {
+            // This is the autogenerated dimensions of a texture.
+
+            std::string textureName  = decl.name.substr(9, decl.name.length() - 9);
+
+            const ArgList::Arg& value = args.argTable.get(textureName); 
+
+            // Compute the vector of size and inverse size
+            float w = value.texture->getTexelWidth();
+            float h = value.texture->getTexelHeight();
+            Vector4 v(w, h, 1.0f / w, 1.0f / h);
+
+            glUniform4fvARB(location, 1, v);
+
+        } else {
+
+            // Normal user defined variable
+
+            const ArgList::Arg&       value = args.argTable.get(decl.name); 
+
+            // Bind based on the declared type
+            switch (canonicalType(decl.type)) {
+            case GL_TEXTURE_1D:
+                debugAssertM(false, "1D texture binding not implemented");
+                break;
+
+            case GL_TEXTURE_2D:
+            case GL_TEXTURE_CUBE_MAP_ARB:
+            case GL_TEXTURE_RECTANGLE_EXT:
+                // Textures are bound as if they were integers.  The
+                // value of the texture is the texture unit into which
+                // the texture is placed.
+                debugAssert(decl.textureUnit >= 0);
+                glUniform1iARB(location, decl.textureUnit);
+                rd->setTexture(decl.textureUnit, value.texture);
+                break;
+
+            case GL_TEXTURE_3D:
+                debugAssertM(false, "3D texture binding not implemented");
+                break;
+
+            case GL_FLOAT:
+                glUniform1fvARB(location, 1, value.vector[0]);
+                break;
+
+            case GL_FLOAT_VEC2_ARB:
+                glUniform2fvARB(location, 1, value.vector[0]);
+                break;
+
+            case GL_FLOAT_VEC3_ARB:
+                glUniform3fvARB(location, 1, value.vector[0]);
+                break;
+
+            case GL_FLOAT_VEC4_ARB:
+                glUniform4fvARB(location, 1, value.vector[0]);
+                break;
+
+            case GL_INT:
+            case GL_BOOL_ARB:
+                // OpenGL allows us to treat bools as ints, but not ints as floats
+                glUniform1iARB(location, (int)value.vector[0][0]);
+                break;
+
+            case GL_INT_VEC2_ARB:
+            case GL_BOOL_VEC2_ARB:
+                glUniform2iARB(location, (int)value.vector[0].x, (int)value.vector[0].y);
+                break;
+
+            case GL_INT_VEC3_ARB:
+            case GL_BOOL_VEC3_ARB:
+                glUniform3iARB(location, (int)value.vector[0].x, (int)value.vector[0].y,
+                    (int)value.vector[0].z);
+                break;
+
+            case GL_INT_VEC4_ARB:
+            case GL_BOOL_VEC4_ARB:
+                glUniform4iARB(location, (int)value.vector[0].x, (int)value.vector[1].y,
+                    (int)value.vector[2].z, (int)value.vector[3].w);
+                break;
+
+            case GL_FLOAT_MAT2_ARB:
+                debugAssertM(false, "GL_FLOAT_MAT2_ARB binding not implemented");
+                break;
+
+            case GL_FLOAT_MAT3_ARB:
+                {
+                    float m[9];
+                    for (int i = 0, c = 0; c < 3; ++c) {
+                        for (int r = 0; r < 3; ++r, ++i) {
+                            m[i] = value.vector[r][c];
+                        }
+                    }
+                    glUniformMatrix3fvARB(location, 1, GL_FALSE, m);
+                }            
+                break;
+
+            case GL_FLOAT_MAT4_ARB:
+                {
+                    float m[16];
+                    for (int i = 0, c = 0; c < 4; ++c) {
+                        for (int r = 0; r < 4; ++r, ++i) {
+                            m[i] = value.vector[r][c];
+                        }
+                    }
+                    glUniformMatrix4fvARB(location, 1, GL_FALSE, m);
+                }
+                break;
+
+            default:
+                alwaysAssertM(false, format("Unsupported argument type: %s", GLenumToString(decl.type)));
+            } // switch on type
+        } // if g3d_sz2D_ variable
+    }
+}
+
+
+////////////////////////////////////////////////////////////////////////
+
+void VertexAndPixelShader::ArgList::set(const std::string& var, const TextureRef& val) {
+    Arg arg;
+    debugAssert(val.notNull());
+    arg.type    = val->getOpenGLTextureTarget();
+    arg.texture = val;
+    argTable.set(var, arg);
+
+}
+
+
+void VertexAndPixelShader::ArgList::set(const std::string& var, const CoordinateFrame& val) {
+    set(var, Matrix4(val));
+}
+
+
+void VertexAndPixelShader::ArgList::set(const std::string& var, const Matrix4& val) {
+    Arg arg;
+    arg.type = GL_FLOAT_MAT4_ARB;
+    for (int r = 0; r < 4; ++r) {
+        arg.vector[r] = val.getRow(r);
+    }
+
+    argTable.set(var, arg);
+}
+
+
+void VertexAndPixelShader::ArgList::set(const std::string& var, const Vector4& val) {
+    Arg arg;
+    arg.type = GL_FLOAT_VEC4_ARB;
+    arg.vector[0] = val;
+    argTable.set(var, arg);
+}
+
+
+void VertexAndPixelShader::ArgList::set(const std::string& var, const Vector3& val) {
+    Arg arg;
+    arg.type = GL_FLOAT_VEC3_ARB;
+    arg.vector[0] = Vector4(val, 0);
+    argTable.set(var, arg);
+}
+
+
+void VertexAndPixelShader::ArgList::set(const std::string& var, const Color4& val) {
+    Arg arg;
+    arg.type = GL_FLOAT_VEC4_ARB;
+    arg.vector[0] = Vector4(val.r, val.g, val.b, val.a);
+    argTable.set(var, arg);
+}
+
+
+void VertexAndPixelShader::ArgList::set(const std::string& var, const Color3& val) {
+    Arg arg;
+    arg.type = GL_FLOAT_VEC3_ARB;
+    arg.vector[0] = Vector4(val.r, val.g, val.b, 0);
+    argTable.set(var, arg);
+
+}
+
+void VertexAndPixelShader::ArgList::set(const std::string& var, const Vector2& val) {
+    Arg arg;
+    arg.type = GL_FLOAT_VEC2_ARB;
+    arg.vector[0] = Vector4(val, 0, 0);
+    argTable.set(var, arg);
+}
+
+
+void VertexAndPixelShader::ArgList::set(const std::string& var, float          val) {
+    Arg arg;
+    arg.type = GL_FLOAT;
+    arg.vector[0] = Vector4(val, 0, 0, 0);
+    argTable.set(var, arg);
+}
+
+
+void VertexAndPixelShader::ArgList::clear() {
+    argTable.clear();
+}
+
+
+}

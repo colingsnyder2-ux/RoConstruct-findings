@@ -1,92 +1,294 @@
-// roc 2007-03 005cfb20  unit: seg_005c0000  size: 254 bytes
-// Make this compile to the exact bytes below, then: roc check 2007-03 005cfb20
-//
-// 005cfb20  64a100000000         mov eax, dword ptr fs:[0]
-// 005cfb26  6aff                 push -1
-// 005cfb28  68a8d57400           push 0x74d5a8
-// 005cfb2d  50                   push eax
-// 005cfb2e  64892500000000       mov dword ptr fs:[0], esp
-// 005cfb35  53                   push ebx
-// 005cfb36  56                   push esi
-// 005cfb37  57                   push edi
-// 005cfb38  8bd9                 mov ebx, ecx
-// 005cfb3a  8b7c2420             mov edi, dword ptr [esp + 0x20]
-// 005cfb3e  6a00                 push 0
-// 005cfb40  68f0cd8800           push 0x88cdf0
-// 005cfb45  6864108800           push 0x881064
-// 005cfb4a  6a00                 push 0
-// 005cfb4c  57                   push edi
-// 005cfb4d  c744242800000000     mov dword ptr [esp + 0x28], 0
-// 005cfb55  e86cf60400           call 0x61f1c6
-// 005cfb5a  8bf0                 mov esi, eax
-// 005cfb5c  83c414               add esp, 0x14
-// 005cfb5f  85f6                 test esi, esi
-// 005cfb61  741d                 je 0x5cfb80
-// 005cfb63  8dbbd8feffff         lea edi, [ebx - 0x128]
-// 005cfb69  57                   push edi
-// 005cfb6a  e8a1fbebff           call 0x48f710
-// 005cfb6f  83c404               add esp, 4
-// 005cfb72  3bf0                 cmp esi, eax
-// 005cfb74  755a                 jne 0x5cfbd0
-// 005cfb76  56                   push esi
-// 005cfb77  8bcf                 mov ecx, edi
-// 005cfb79  e802f4ffff           call 0x5cef80
-// 005cfb7e  eb50                 jmp 0x5cfbd0
-// 005cfb80  6a00                 push 0
-// 005cfb82  68acb88800           push 0x88b8ac
-// 005cfb87  6864108800           push 0x881064
-// 005cfb8c  6a00                 push 0
-// 005cfb8e  57                   push edi
-// 005cfb8f  e832f60400           call 0x61f1c6
-// 005cfb94  83c414               add esp, 0x14
-// 005cfb97  85c0                 test eax, eax
-// 005cfb99  740e                 je 0x5cfba9
-// 005cfb9b  50                   push eax
-// 005cfb9c  8d8bd8feffff         lea ecx, [ebx - 0x128]
-// 005cfba2  e809f5ffff           call 0x5cf0b0
-// 005cfba7  eb27                 jmp 0x5cfbd0
-// 005cfba9  6a00                 push 0
-// 005cfbab  68b4358a00           push 0x8a35b4
-// 005cfbb0  6864108800           push 0x881064
-// 005cfbb5  6a00                 push 0
-// 005cfbb7  57                   push edi
-// 005cfbb8  e809f60400           call 0x61f1c6
-// 005cfbbd  83c414               add esp, 0x14
-// 005cfbc0  85c0                 test eax, eax
-// 005cfbc2  740c                 je 0x5cfbd0
-// 005cfbc4  50                   push eax
-// 005cfbc5  8d8bd8feffff         lea ecx, [ebx - 0x128]
-// 005cfbcb  e8c0fdffff           call 0x5cf990
-// 005cfbd0  8b742424             mov esi, dword ptr [esp + 0x24]
-// 005cfbd4  85f6                 test esi, esi
-// 005cfbd6  c7442414ffffffff     mov dword ptr [esp + 0x14], 0xffffffff
-// 005cfbde  742a                 je 0x5cfc0a
-// 005cfbe0  8d4604               lea eax, [esi + 4]
-// 005cfbe3  83c9ff               or ecx, 0xffffffff
-// 005cfbe6  f00fc108             lock xadd dword ptr [eax], ecx
-// 005cfbea  751e                 jne 0x5cfc0a
-// 005cfbec  8b16                 mov edx, dword ptr [esi]
-// 005cfbee  8b4204               mov eax, dword ptr [edx + 4]
-// 005cfbf1  8bce                 mov ecx, esi
-// 005cfbf3  ffd0                 call eax
-// 005cfbf5  8d4e08               lea ecx, [esi + 8]
-// 005cfbf8  83caff               or edx, 0xffffffff
-// 005cfbfb  f00fc111             lock xadd dword ptr [ecx], edx
-// 005cfbff  7509                 jne 0x5cfc0a
-// 005cfc01  8b06                 mov eax, dword ptr [esi]
-// 005cfc03  8b5008               mov edx, dword ptr [eax + 8]
-// 005cfc06  8bce                 mov ecx, esi
-// 005cfc08  ffd2                 call edx
-// 005cfc0a  8b4c240c             mov ecx, dword ptr [esp + 0xc]
-// 005cfc0e  5f                   pop edi
-// 005cfc0f  5e                   pop esi
-// 005cfc10  64890d00000000       mov dword ptr fs:[0], ecx
-// 005cfc17  5b                   pop ebx
-// 005cfc18  83c40c               add esp, 0xc
-// 005cfc1b  c20c00               ret 0xc
-// library rbxgs/v8datamodel\LocakBackpack.cpp (function ?onEvent@LocalBackpack@RBX@@EAEXPBVInstance@2@UChildAdded@2@@Z)
-
 // roc-lang: cpp
 // roc-cl: 50727
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
 // roc-lib: rbxgs v8datamodel/LocakBackpack.cpp
+
+// Candidate translation unit (score above; library headers required).
+#include "v8datamodel/LocalBackpack.h"
+
+namespace RBX
+{
+	LocalBackpackItem::LocalBackpackItem() {}
+
+	void LocalBackpackItem::onClick(const GuiEvent& event)
+	{
+		LocalBackpack* parent = rbx_static_cast<LocalBackpack*>(getParent());
+
+		parent->onClick(this);
+	}
+
+	G3D::Vector2 LocalBackpackItem::getSize() const
+	{
+		float width = GuiRoot::toPixelSize(G3D::Vector2(10.0f, 10.0f)).x;
+		return G3D::Vector2(width, width);
+	}
+
+	LocalBackpack::LocalBackpack()
+		: lastRemovedIndex(-1)
+	{
+		yLocation = Rect::BOTTOM;
+	}
+
+	LocalBackpack::~LocalBackpack()
+	{
+		clearAll();
+	}
+
+	void LocalBackpack::onEvent(const Instance* source, ChildAdded event)
+	{
+		Instance* child = event.child.get();
+
+		if (Network::Player* player = dynamic_cast<Network::Player*>(child))
+		{
+			if (player == Network::Players::findLocalPlayer(this))
+			{
+				onLocalPlayerAdded(player);
+			}
+		}
+		else
+		{
+			if (Backpack* backpack = dynamic_cast<Backpack*>(child))
+			{
+				onLocalBackpackAdded(backpack);
+			}
+			else if (BackpackItem* backpackItem = dynamic_cast<BackpackItem*>(child))
+			{
+				insertBackpackItem(backpackItem);
+			}
+		}
+	}
+
+	void LocalBackpack::onEvent(const Instance* source, ChildRemoved event)
+	{
+		Instance* child = event.child.get();
+
+		if (Network::Player* player = dynamic_cast<Network::Player*>(child))
+		{
+			if (player == localPlayer.get())
+			{
+				clearLocalPlayer();
+			}
+		}
+		else
+		{
+			if (Backpack* backpack = dynamic_cast<Backpack*>(child))
+			{
+				RBXASSERT(localBackpack);
+				clearLocalBackpack();
+			}
+			else if (BackpackItem* backpackItem = dynamic_cast<BackpackItem*>(child))
+			{
+				removeBackpackItem(backpackItem);
+			}
+		}
+	}
+
+	void LocalBackpack::onEvent(const Instance* source, DescendentAdded event)
+	{
+		RBXASSERT(source == localCharacter.get());
+
+		BackpackItem* backpackItem = dynamic_cast<BackpackItem*>(event.instance.get());
+		if (backpackItem)
+			insertBackpackItem(backpackItem);
+	}
+
+	void LocalBackpack::onEvent(const Instance* source, DescendentRemoving event)
+	{
+		RBXASSERT(source == localCharacter.get());
+
+		BackpackItem* backpackItem = dynamic_cast<BackpackItem*>(event.instance.get());
+		if (backpackItem)
+			removeBackpackItem(backpackItem);
+	}
+
+	void LocalBackpack::onEvent(const Network::Player* source, Network::CharacterRemoving event)
+	{
+		RBXASSERT(source == localPlayer.get());
+		
+		if (localCharacter)
+		{
+			RBXASSERT(event.character == localCharacter);
+			clearLocalCharacter();
+		}
+	}
+
+	void LocalBackpack::onEvent(const Network::Player* source, Network::CharacterAdded event)
+	{
+		RBXASSERT(source == localPlayer.get());
+		onLocalCharacterAdded(event.character.get());
+	}
+
+	void LocalBackpack::onClick(LocalBackpackItem* clickedItem)
+	{
+		pendingClick = shared_from(clickedItem->getItem());
+	}
+
+	void LocalBackpack::onLocalCharacterAdded(Instance* added)
+	{
+		localCharacter = shared_from(added);
+
+		Notifier<Instance, DescendentAdded>::connect(localCharacter, this);
+		Notifier<Instance, DescendentRemoving>::connect(localCharacter, this);
+	}
+
+	void LocalBackpack::onLocalPlayerAdded(Network::Player* added)
+	{
+		RBXASSERT(numChildren() == 0);
+		RBXASSERT(added);
+
+		localPlayer = shared_from(added);
+
+		Notifier<Instance, ChildAdded>::connect(localPlayer, this);
+		Notifier<Instance, ChildRemoved>::connect(localPlayer, this);
+		Notifier<Network::Player, Network::CharacterAdded>::connect(localPlayer, this);
+		Notifier<Network::Player, Network::CharacterRemoving>::connect(localPlayer, this);
+	}
+
+	void LocalBackpack::onLocalBackpackAdded(Backpack* added)
+	{
+		RBXASSERT(numChildren() <= 1);
+		RBXASSERT(added->getParent() == localPlayer.get());
+
+		localBackpack = shared_from(added);
+
+		Notifier<Instance, ChildAdded>::connect(localBackpack, this);
+		Notifier<Instance, ChildRemoved>::connect(localBackpack, this);
+	}
+
+	void LocalBackpack::clearAll()
+	{
+		clearLocalCharacter();
+		clearLocalPlayer();
+		clearLocalBackpack();
+
+		if (players)
+		{
+			Notifier<Instance, ChildAdded>::disconnect(players.get(), this);
+			Notifier<Instance, ChildRemoved>::disconnect(players.get(), this);
+
+			players.reset();
+		}
+	}
+
+	void LocalBackpack::clearLocalCharacter()
+	{
+		if (localCharacter)
+		{
+			Notifier<Instance, DescendentAdded>::disconnect(localCharacter, this);
+			Notifier<Instance, DescendentRemoving>::disconnect(localCharacter, this);
+
+			localCharacter.reset();
+		}
+	}
+
+	void LocalBackpack::clearLocalPlayer()
+	{
+		removeAllChildren();
+
+		if (localPlayer)
+		{
+			Notifier<Instance, ChildAdded>::disconnect(localPlayer, this);
+			Notifier<Instance, ChildRemoved>::disconnect(localPlayer, this);
+			Notifier<Network::Player, Network::CharacterAdded>::disconnect(localPlayer, this);
+			Notifier<Network::Player, Network::CharacterRemoving>::disconnect(localPlayer, this);
+
+			localPlayer.reset();
+		}
+	}
+
+	void LocalBackpack::clearLocalBackpack()
+	{
+		removeAllChildren();
+
+		if (localBackpack)
+		{
+			Notifier<Instance, ChildAdded>::disconnect(localBackpack, this);
+			Notifier<Instance, ChildRemoved>::disconnect(localBackpack, this);
+
+			localBackpack.reset();
+		}
+
+		lastRemovedIndex = -1;
+	}
+
+	void LocalBackpack::onServiceProvider(const ServiceProvider* oldProvider, const ServiceProvider* newProvider)
+	{
+		if (oldProvider)
+			clearAll();
+
+		Instance::onServiceProvider(oldProvider, newProvider);
+
+		if (newProvider)
+		{
+			players = shared_from(ServiceProvider::create<Network::Players>(this));
+
+			Notifier<Instance, ChildAdded>::connect(players, this);
+			Notifier<Instance, ChildRemoved>::connect(players, this);
+		}
+	}
+
+	void LocalBackpack::insertBackpackItem(BackpackItem* item)
+	{
+		RBXASSERT(localBackpack);
+
+		boost::shared_ptr<LocalBackpackItem> localItem = Creatable::create<LocalBackpackItem>();
+		localItem->setParent(this);
+
+		int maxId = (int)numChildren() - 1;
+		int minId = lastRemovedIndex >= 0 ? G3D::min(lastRemovedIndex, maxId) : maxId;
+
+		for (int i = maxId; i > minId; i--)
+		{
+			LocalBackpackItem* aItem = rbx_static_cast<LocalBackpackItem*>(getChild(i - 1));
+			LocalBackpackItem* bItem = rbx_static_cast<LocalBackpackItem*>(getChild(i));
+
+			bItem->setItem(aItem->getItem());
+		}
+
+		LocalBackpackItem* freeItem = rbx_static_cast<LocalBackpackItem*>(getChild(minId));
+		freeItem->setItem(item);
+		lastRemovedIndex = -1;
+	}
+
+	void LocalBackpack::removeBackpackItem(BackpackItem* item)
+	{
+		for (size_t i = 0; i < numChildren(); i++)
+		{
+			LocalBackpackItem* current = getTypedChild<LocalBackpackItem>((int)i);
+			if (current->getItem() == item)
+			{
+				lastRemovedIndex = (int)i;
+				current->setParent(NULL);
+
+				if (item == pendingClick.get())
+					pendingClick.reset();
+
+				return;
+			}
+		}
+
+		RBXASSERT(lastRemovedIndex == -1);
+	}
+
+	void LocalBackpack::onHeartbeat()
+	{
+		BackpackItem* prevPendingClick = pendingClick.get();
+		if (prevPendingClick)
+		{
+			boost::shared_ptr<const std::vector<boost::shared_ptr<Instance>>> c = getChildren().read();
+			if (c)
+			{
+				for (std::vector<boost::shared_ptr<Instance>>::const_iterator it = c->begin(); it != c->end(); it++)
+				{
+					LocalBackpackItem* current = rbx_static_cast<LocalBackpackItem*>(it->get());
+					if (current->getItem() != pendingClick.get())
+						current->getItem()->onLocalOtherClicked();
+				}
+			}
+
+			RBXASSERT(prevPendingClick == pendingClick.get());
+			pendingClick->onLocalClicked();
+			pendingClick.reset();
+		}
+	}
+}

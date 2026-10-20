@@ -1,98 +1,347 @@
-// roc 2007-03 005bf830  unit: seg_005b0000  size: 329 bytes
-// Make this compile to the exact bytes below, then: roc check 2007-03 005bf830
-//
-// 005bf830  64a100000000         mov eax, dword ptr fs:[0]
-// 005bf836  6aff                 push -1
-// 005bf838  687ba57500           push 0x75a57b
-// 005bf83d  50                   push eax
-// 005bf83e  8b442410             mov eax, dword ptr [esp + 0x10]
-// 005bf842  64892500000000       mov dword ptr fs:[0], esp
-// 005bf849  8b00                 mov eax, dword ptr [eax]
-// 005bf84b  81ec88000000         sub esp, 0x88
-// 005bf851  85c0                 test eax, eax
-// 005bf853  753e                 jne 0x5bf893
-// 005bf855  8b8c249c000000       mov ecx, dword ptr [esp + 0x9c]
-// 005bf85c  51                   push ecx
-// 005bf85d  8d54242c             lea edx, [esp + 0x2c]
-// 005bf861  682c967b00           push 0x7b962c
-// 005bf866  52                   push edx
-// 005bf867  e8c45af3ff           call 0x4f5330
-// 005bf86c  83c40c               add esp, 0xc
-// 005bf86f  50                   push eax
-// 005bf870  8d4c2404             lea ecx, [esp + 4]
-// 005bf874  c784249400000000000000 mov dword ptr [esp + 0x94], 0
-// 005bf87f  e89c44e5ff           call 0x413d20
-// 005bf884  68e0138400           push 0x8413e0
-// 005bf889  8d442404             lea eax, [esp + 4]
-// 005bf88d  50                   push eax
-// 005bf88e  e89bf70500           call 0x61f02e
-// 005bf893  8b84249c000000       mov eax, dword ptr [esp + 0x9c]
-// 005bf89a  56                   push esi
-// 005bf89b  57                   push edi
-// 005bf89c  bf74b47900           mov edi, 0x79b474
-// 005bf8a1  8bf0                 mov esi, eax
-// 005bf8a3  b908000000           mov ecx, 8
-// 005bf8a8  33d2                 xor edx, edx
-// 005bf8aa  f3a6                 repe cmpsb byte ptr [esi], byte ptr es:[edi]
-// 005bf8ac  7508                 jne 0x5bf8b6
-// 005bf8ae  52                   push edx
-// 005bf8af  6810f75b00           push 0x5bf710
-// 005bf8b4  eb18                 jmp 0x5bf8ce
-// 005bf8b6  bf7c5d7a00           mov edi, 0x7a5d7c
-// 005bf8bb  8bf0                 mov esi, eax
-// 005bf8bd  b905000000           mov ecx, 5
-// 005bf8c2  33d2                 xor edx, edx
-// 005bf8c4  f3a6                 repe cmpsb byte ptr [esi], byte ptr es:[edi]
-// 005bf8c6  7532                 jne 0x5bf8fa
-// 005bf8c8  52                   push edx
-// 005bf8c9  6870f55b00           push 0x5bf570
-// 005bf8ce  8b8424b0000000       mov eax, dword ptr [esp + 0xb0]
-// 005bf8d5  50                   push eax
-// 005bf8d6  e8b598ffff           call 0x5b9190
-// 005bf8db  8b8c249c000000       mov ecx, dword ptr [esp + 0x9c]
-// 005bf8e2  83c40c               add esp, 0xc
-// 005bf8e5  5f                   pop edi
-// 005bf8e6  b801000000           mov eax, 1
-// 005bf8eb  5e                   pop esi
-// 005bf8ec  64890d00000000       mov dword ptr fs:[0], ecx
-// 005bf8f3  81c494000000         add esp, 0x94
-// 005bf8f9  c3                   ret 
-// 005bf8fa  bf9cb47900           mov edi, 0x79b49c
-// 005bf8ff  8bf0                 mov esi, eax
-// 005bf901  b90b000000           mov ecx, 0xb
-// 005bf906  33d2                 xor edx, edx
-// 005bf908  f3a6                 repe cmpsb byte ptr [esi], byte ptr es:[edi]
-// 005bf90a  7536                 jne 0x5bf942
-// 005bf90c  8d442430             lea eax, [esp + 0x30]
-// 005bf910  6888967b00           push 0x7b9688
-// 005bf915  50                   push eax
-// 005bf916  e8155af3ff           call 0x4f5330
-// 005bf91b  83c408               add esp, 8
-// 005bf91e  50                   push eax
-// 005bf91f  8d4c240c             lea ecx, [esp + 0xc]
-// 005bf923  c784249c00000001000000 mov dword ptr [esp + 0x9c], 1
-// 005bf92e  e8ed43e5ff           call 0x413d20
-// 005bf933  68e0138400           push 0x8413e0
-// 005bf938  8d4c240c             lea ecx, [esp + 0xc]
-// 005bf93c  51                   push ecx
-// 005bf93d  e8ecf60500           call 0x61f02e
-// 005bf942  50                   push eax
-// 005bf943  8d542478             lea edx, [esp + 0x78]
-// 005bf947  6808b67a00           push 0x7ab608
-// 005bf94c  52                   push edx
-// 005bf94d  e8de59f3ff           call 0x4f5330
-// 005bf952  83c40c               add esp, 0xc
-// 005bf955  50                   push eax
-// 005bf956  8d4c2450             lea ecx, [esp + 0x50]
-// 005bf95a  c784249c00000002000000 mov dword ptr [esp + 0x9c], 2
-// 005bf965  e8b643e5ff           call 0x413d20
-// 005bf96a  68e0138400           push 0x8413e0
-// 005bf96f  8d442450             lea eax, [esp + 0x50]
-// 005bf973  50                   push eax
-// 005bf974  e8b5f60500           call 0x61f02e
-// library openrbx-client/App\script\LuaSignalBridge.cpp (function ?on_index@?$Bridge@V?$shared_ptr@VSignalInstance@Reflection@RBX@@@boost@@$0A@@Lua@RBX@@KAHABV?$shared_ptr@VSignalInstance@Reflection@RBX@@@boost@@PBDPAUlua_State@@@Z)
-
 // roc-lang: cpp
 // roc-cl: 50727
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
 // roc-lib: openrbx-client App/script/LuaSignalBridge.cpp
+
+// Candidate translation unit (score above; library headers required).
+#include "script/LuaSignalBridge.h"
+
+#include "reflection/property.h"
+#include "reflection/signal.h"
+#include "script/Script.h"
+#include "script/ScriptContext.h"
+#include "script/ThreadRef.h"
+#include "util/scopedassign.h"
+#include "util/standardout.h"
+#include "v8tree/Instance.h"
+
+#include <G3D/format.h>
+#include <boost/any.hpp>
+#include <lua.h>
+#include <stdexcept>
+#include <string.h>
+#include <string>
+#include <typeinfo>
+#include <vector>
+
+// SIZE 0x28
+class WaitScriptSlot : public RBX::Script::Slot
+{
+public:
+	WaitScriptSlot(lua_State* L);
+
+	void operator()(const std::vector<boost::any>& arguments);
+
+private:
+	RBX::Lua::ThreadRef waitThread; // 0x08
+};
+
+DECOMP_SIZE_ASSERT(WaitScriptSlot, 0x28)
+
+// SIZE 0x54
+class FunctionScriptSlot : public RBX::Script::Slot
+{
+public:
+	FunctionScriptSlot(lua_State* L, int index);
+
+	void operator()(const std::vector<boost::any>& arguments);
+
+private:
+	RBX::ScriptContext& context;          // 0x08
+	RBX::Lua::FunctionRef function;       // 0x0c
+	RBX::Lua::ThreadRef cachedSlotThread; // 0x30
+	int executionDepth;                   // 0x50
+};
+
+DECOMP_SIZE_ASSERT(FunctionScriptSlot, 0x54)
+
+namespace RBX {
+namespace Lua {
+
+template <>
+const char* Bridge<boost::signals::connection, 1>::className = "RBXScriptConnection";
+
+template <>
+const char* Bridge<boost::shared_ptr<RBX::Reflection::SignalInstance>, 0>::className = "RBXScriptSignal";
+
+template boost::signals::connection* Bridge<boost::signals::connection, 1>::pushNewObject<boost::signals::connection>(
+	lua_State* L,
+	boost::signals::connection value
+);
+
+// FUNCTION: WEBSERVICE 0x100afc80
+template <>
+void Bridge<boost::shared_ptr<RBX::Reflection::SignalInstance>, 0>::on_newindex(
+	boost::shared_ptr<RBX::Reflection::SignalInstance>& value,
+	const char* name,
+	lua_State* L
+)
+{
+	if (value.get() == NULL) {
+		throw std::runtime_error(G3D::format("The %s event has been deleted", name));
+	}
+
+	throw std::runtime_error(G3D::format("%s cannot be assigned to", name));
+}
+
+// FUNCTION: WEBSERVICE 0x100afe30
+int SignalConnectionBridge::disconnect(lua_State* L)
+{
+	getObject(L, 1).disconnect();
+	return 0;
+}
+
+// FUNCTION: WEBSERVICE 0x100afee0
+template <>
+int Bridge<boost::signals::connection, 1>::on_index(
+	const boost::signals::connection& value,
+	const char* name,
+	lua_State* L
+)
+{
+	if (strcmp(name, "disconnect") == 0) {
+		lua_pushcclosure(L, SignalConnectionBridge::disconnect, 0);
+		return 1;
+	}
+
+	if (strcmp(name, "connected") == 0) {
+		lua_pushboolean(L, value.connected());
+		return 1;
+	}
+
+	throw std::runtime_error(G3D::format("%s is not a valid member", name));
+}
+
+} // namespace Lua
+} // namespace RBX
+
+// STUB: WEBSERVICE 0x100b0440
+static unsigned int pushArgs(lua_State* L, const std::vector<boost::any>& arguments)
+{
+	for (std::vector<boost::any>::const_iterator iter = arguments.begin(), end = arguments.end(); iter != end; ++iter) {
+		const std::type_info& type = iter->type();
+
+		if (type == typeid(std::string)) {
+			lua_pushstring(L, boost::any_cast<std::string>(*iter).c_str());
+		}
+		else if (type == typeid(int)) {
+			lua_pushinteger(L, boost::any_cast<int>(*iter));
+		}
+		else if (type == typeid(unsigned int)) {
+			lua_pushinteger(L, boost::any_cast<unsigned int>(*iter));
+		}
+		else if (type == typeid(float)) {
+			lua_pushnumber(L, boost::any_cast<float>(*iter));
+		}
+		else if (type == typeid(double)) {
+			lua_pushnumber(L, boost::any_cast<double>(*iter));
+		}
+		else if (type == typeid(bool)) {
+			lua_pushboolean(L, boost::any_cast<bool>(*iter));
+		}
+		else if (type == typeid(boost::shared_ptr<RBX::Instance>)) {
+			RBX::Lua::SharedPtrBridge<RBX::Reflection::DescribedBase>::push(
+				L,
+				boost::any_cast<boost::shared_ptr<RBX::Instance> >(*iter)
+			);
+		}
+		else if (type == typeid(const RBX::Reflection::PropertyDescriptor*)) {
+			lua_pushstring(L, boost::any_cast<const RBX::Reflection::PropertyDescriptor*>(*iter)->name.name.c_str());
+		}
+		else if (type == typeid(const char*)) {
+			lua_pushstring(L, boost::any_cast<const char*>(*iter));
+		}
+		else {
+			type.name();
+
+			lua_pushnil(L);
+		}
+	}
+
+	return arguments.size();
+}
+
+void WaitScriptSlot::operator()(const std::vector<boost::any>& arguments)
+{
+	cnction->disconnect();
+
+	lua_State* thread = waitThread.thread();
+
+	if (thread != NULL) {
+		int top = lua_gettop(thread);
+
+		RBX::ScriptContext::getContext(thread).resume(thread, pushArgs(thread, arguments));
+
+		lua_settop(thread, top);
+	}
+}
+
+// FUNCTION: WEBSERVICE 0x100b0920
+void FunctionScriptSlot::operator()(const std::vector<boost::any>& arguments)
+{
+	bool reentrant = executionDepth > 0;
+	RBX::ScopedAssign<int> assign(executionDepth, executionDepth + 1);
+
+	if (executionDepth > 6) {
+		RBX::StandardOut::singleton()->print(RBX::MESSAGE_ERROR, "maximum event re-entrancy depth exceeded");
+		return;
+	}
+
+	lua_State* thread = function.thread();
+
+	if (thread == NULL) {
+		cnction->disconnect();
+		return;
+	}
+
+	lua_State* slotThread = reentrant ? NULL : cachedSlotThread.thread();
+	bool createdThread;
+
+	if (slotThread != NULL) {
+		createdThread = false;
+	}
+	else {
+		slotThread = lua_newthread(thread);
+
+		if (slotThread == NULL) {
+			throw std::runtime_error("lua_newthread failed");
+		}
+
+		createdThread = true;
+	}
+
+	RBX::Lua::lua_pushfunction(thread, function);
+
+	lua_xmove(thread, slotThread, 1);
+
+	RBX::ScriptContext::Result result = context.resume(slotThread, pushArgs(slotThread, arguments));
+
+	switch (result) {
+	case RBX::ScriptContext::Yield:
+		if (!reentrant) {
+			cachedSlotThread.reset();
+		}
+
+		break;
+
+	case RBX::ScriptContext::Error:
+		if (!reentrant) {
+			cachedSlotThread.reset();
+		}
+
+		cnction->disconnect();
+		break;
+	}
+
+	if (function.thread() == NULL) {
+		cnction->disconnect();
+	}
+
+	if (createdThread) {
+		if (!reentrant && result == RBX::ScriptContext::Success && function.thread() != NULL) {
+			cachedSlotThread = RBX::Lua::ThreadRef(slotThread);
+		}
+
+		lua_settop(thread, -2);
+	}
+
+	lua_settop(slotThread, 0);
+}
+
+// STUB: WEBSERVICE 0x100b0cb0
+FunctionScriptSlot::FunctionScriptSlot(lua_State* L, int index)
+	: context(RBX::ScriptContext::getContext(L)), function(L, index), executionDepth(0)
+{
+}
+
+// STUB: WEBSERVICE 0x100b0d80
+WaitScriptSlot::WaitScriptSlot(lua_State* L) : waitThread(L)
+{
+}
+
+namespace RBX {
+namespace Lua {
+
+// FUNCTION: WEBSERVICE 0x100b0f00
+int SignalBridge::wait(lua_State* L)
+{
+	{
+		boost::shared_ptr<RBX::Reflection::SignalInstance> si = getObject(L, 1);
+
+		WaitScriptSlot slot(L);
+
+		*slot.cnction = si->connectGeneric(slot, boost::signals::at_front);
+
+		RobloxExtraSpace::get(L)->yieldCaptured = true;
+	}
+
+	return lua_yield(L, 0);
+}
+
+// FUNCTION: WEBSERVICE 0x100b10b0
+int SignalBridge::connect(lua_State* L)
+{
+	boost::shared_ptr<RBX::Reflection::SignalInstance> si = getObject(L, 1);
+
+	FunctionScriptSlot slot(L, 2);
+
+	*slot.cnction = si->connectGeneric(slot, boost::signals::at_front);
+
+	SignalConnectionBridge::pushNewObject(L, *slot.cnction);
+
+	return 1;
+}
+
+// FUNCTION: WEBSERVICE 0x100b11f0
+template <>
+int Bridge<boost::shared_ptr<RBX::Reflection::SignalInstance>, 0>::on_index(
+	const boost::shared_ptr<RBX::Reflection::SignalInstance>& value,
+	const char* name,
+	lua_State* L
+)
+{
+	if (value.get() == NULL) {
+		throw std::runtime_error(G3D::format("The %s event has been deleted", name));
+	}
+
+	if (strcmp(name, "connect") == 0) {
+		lua_pushcclosure(L, SignalBridge::connect, 0);
+		return 1;
+	}
+
+	if (strcmp(name, "wait") == 0) {
+		lua_pushcclosure(L, SignalBridge::wait, 0);
+		return 1;
+	}
+
+	if (strcmp(name, "disconnect") == 0) {
+		throw std::runtime_error(
+			G3D::format("Event:disconnect() has been deprecated. Use connection object returned by connect()")
+		);
+	}
+
+	throw std::runtime_error(G3D::format("%s is not a valid member", name));
+}
+
+} // namespace Lua
+} // namespace RBX
+
+template int RBX::Lua::Bridge<boost::signals::connection, 1>::on_gc(lua_State* L);
+
+template int RBX::Lua::Bridge<boost::signals::connection, 1>::on_eq(lua_State* L);
+
+template int RBX::Lua::Bridge<boost::signals::connection, 1>::on_newindex(lua_State* L);
+
+template int RBX::Lua::Bridge<boost::signals::connection, 1>::on_index(lua_State* L);
+
+template int RBX::Lua::Bridge<boost::shared_ptr<RBX::Reflection::SignalInstance>, 0>::on_newindex(lua_State* L);
+
+template int RBX::Lua::Bridge<boost::shared_ptr<RBX::Reflection::SignalInstance>, 0>::on_index(lua_State* L);
+
+template RBX::Reflection::GenericSlotWrapper* RBX::Reflection::GenericSlotWrapper::create<WaitScriptSlot>(
+	WaitScriptSlot slot
+);
+
+template RBX::Reflection::GenericSlotWrapper* RBX::Reflection::GenericSlotWrapper::create<FunctionScriptSlot>(
+	FunctionScriptSlot slot
+);

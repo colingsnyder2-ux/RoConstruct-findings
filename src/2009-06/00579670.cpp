@@ -1,109 +1,445 @@
-// roc 2009-06 00579670  unit: G3D::LineSegment  size: 361 bytes
-// Make this compile to the exact bytes below, then: roc check 2009-06 00579670
-//
-// 00579670  6aff                 push -1
-// 00579672  68fa088600           push 0x8608fa
-// 00579677  64a100000000         mov eax, dword ptr fs:[0]
-// 0057967d  50                   push eax
-// 0057967e  64892500000000       mov dword ptr fs:[0], esp
-// 00579685  83ec08               sub esp, 8
-// 00579688  56                   push esi
-// 00579689  57                   push edi
-// 0057968a  8b7c2420             mov edi, dword ptr [esp + 0x20]
-// 0057968e  33f6                 xor esi, esi
-// 00579690  6816d28a00           push 0x8ad216
-// 00579695  8bcf                 mov ecx, edi
-// 00579697  8974241c             mov dword ptr [esp + 0x1c], esi
-// 0057969b  8974240c             mov dword ptr [esp + 0xc], esi
-// 0057969f  ff15b4e48900         call dword ptr [0x89e4b4]
-// 005796a5  8b4314               mov eax, dword ptr [ebx + 0x14]
-// 005796a8  89742418             mov dword ptr [esp + 0x18], esi
-// 005796ac  c744240801000000     mov dword ptr [esp + 8], 1
-// 005796b4  3bc6                 cmp eax, esi
-// 005796b6  0f8693000000         jbe 0x57974f
-// 005796bc  55                   push ebp
-// 005796bd  8d6b04               lea ebp, [ebx + 4]
-// 005796c0  837b1810             cmp dword ptr [ebx + 0x18], 0x10
-// 005796c4  7205                 jb 0x5796cb
-// 005796c6  8b4500               mov eax, dword ptr [ebp]
-// 005796c9  eb02                 jmp 0x5796cd
-// 005796cb  8bc5                 mov eax, ebp
-// 005796cd  8a0430               mov al, byte ptr [eax + esi]
-// 005796d0  88442410             mov byte ptr [esp + 0x10], al
-// 005796d4  0fbec0               movsx eax, al
-// 005796d7  83f85c               cmp eax, 0x5c
-// 005796da  7759                 ja 0x579735
-// 005796dc  0fb6807c975700       movzx eax, byte ptr [eax + 0x57977c]
-// 005796e3  ff248564975700       jmp dword ptr [eax*4 + 0x579764]
-// 005796ea  6880ba8c00           push 0x8cba80
-// 005796ef  8bcf                 mov ecx, edi
-// 005796f1  ff15a4e48900         call dword ptr [0x89e4a4]
-// 005796f7  eb49                 jmp 0x579742
-// 005796f9  687cba8c00           push 0x8cba7c
-// 005796fe  8bcf                 mov ecx, edi
-// 00579700  ff15a4e48900         call dword ptr [0x89e4a4]
-// 00579706  eb3a                 jmp 0x579742
-// 00579708  6878ba8c00           push 0x8cba78
-// 0057970d  8bcf                 mov ecx, edi
-// 0057970f  ff15a4e48900         call dword ptr [0x89e4a4]
-// 00579715  eb2b                 jmp 0x579742
-// 00579717  6874ba8c00           push 0x8cba74
-// 0057971c  8bcf                 mov ecx, edi
-// 0057971e  ff15a4e48900         call dword ptr [0x89e4a4]
-// 00579724  eb1c                 jmp 0x579742
-// 00579726  6870ba8c00           push 0x8cba70
-// 0057972b  8bcf                 mov ecx, edi
-// 0057972d  ff15a4e48900         call dword ptr [0x89e4a4]
-// 00579733  eb0d                 jmp 0x579742
-// 00579735  8b4c2410             mov ecx, dword ptr [esp + 0x10]
-// 00579739  51                   push ecx
-// 0057973a  8bcf                 mov ecx, edi
-// 0057973c  ff1558e58900         call dword ptr [0x89e558]
-// 00579742  8b4314               mov eax, dword ptr [ebx + 0x14]
-// 00579745  46                   inc esi
-// 00579746  3bc6                 cmp eax, esi
-// 00579748  0f8772ffffff         ja 0x5796c0
-// 0057974e  5d                   pop ebp
-// 0057974f  8b4c2410             mov ecx, dword ptr [esp + 0x10]
-// 00579753  8bc7                 mov eax, edi
-// 00579755  5f                   pop edi
-// 00579756  5e                   pop esi
-// 00579757  64890d00000000       mov dword ptr fs:[0], ecx
-// 0057975e  83c414               add esp, 0x14
-// 00579761  c3                   ret 
-// 00579762  8bff                 mov edi, edi
-// 00579764  ea965700179757       ljmp 0x5797:0x17005796
-// 0057976b  0008                 add byte ptr [eax], cl
-// 0057976d  97                   xchg edi, eax
-// 0057976e  57                   push edi
-// 0057976f  00f9                 add cl, bh
-// 00579771  96                   xchg esi, eax
-// 00579772  57                   push edi
-// 00579773  0026                 add byte ptr [esi], ah
-// 00579775  97                   xchg edi, eax
-// 00579776  57                   push edi
-// 00579777  003597570000         add byte ptr [0x5797], dh
-// 0057977d  0505050505           add eax, 0x5050505
-// 00579782  0505050102           add eax, 0x2010505
-// 00579787  0505030505           add eax, 0x5050305
-// 0057978c  0505050505           add eax, 0x5050505
-// 00579791  0505050505           add eax, 0x5050505
-// 00579796  0505050505           add eax, 0x5050505
-// 0057979b  0505050505           add eax, 0x5050505
-// 005797a0  0505050505           add eax, 0x5050505
-// 005797a5  0505050505           add eax, 0x5050505
-// 005797aa  0505050505           add eax, 0x5050505
-// 005797af  0505050505           add eax, 0x5050505
-// 005797b4  0505050505           add eax, 0x5050505
-// 005797b9  0505050505           add eax, 0x5050505
-// 005797be  0505050505           add eax, 0x5050505
-// 005797c3  0505050505           add eax, 0x5050505
-// 005797c8  0505050505           add eax, 0x5050505
-// 005797cd  0505050505           add eax, 0x5050505
-// 005797d2  0505050505           add eax, 0x5050505
-// library g3d-6.09-rbx2008/G3Dcpp\TextOutput.cpp (function ?escape@G3D@@YA?AV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@ABV23@@Z)
-
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD
 // roc-lib: g3d-6.09-rbx2008 G3Dcpp/TextOutput.cpp
+
+// Candidate translation unit (score above; library headers required).
+/**
+  @file TextOutput.cpp
+
+  @maintainer Morgan McGuire, morgan@graphics3d.com
+  @created 2004-06-21
+  @edited  2004-10-21
+
+  Copyright 2000-2004, Morgan McGuire.
+  All rights reserved.
+ */
+
+#include "G3D/TextOutput.h"
+#include "G3D/Log.h"
+#include "G3D/fileutils.h"
+
+namespace G3D {
+
+TextOutput::TextOutput(const TextOutput::Options& opt) {
+    setOptions(opt);
+    filename = "";
+    setIndentLevel(0);
+    startingNewLine = true;
+    currentColumn = 0;
+    inDQuote = false;
+}
+
+
+TextOutput::TextOutput(const std::string& fil, const TextOutput::Options& opt) {
+    setOptions(opt);
+    filename = fil;
+    setIndentLevel(0);
+    startingNewLine = true;
+    currentColumn = 0;
+    inDQuote = false;
+}
+
+
+void TextOutput::setIndentLevel(int i) {
+    indentLevel = i;
+
+    // If there were more pops than pushes, don't let that take us below 0 indent.
+    // Don't ever indent more than the number of columns.
+    indentSpaces = 
+        iClamp(option.spacesPerIndent * indentLevel, 
+               0, 
+               option.numColumns - 1);
+}
+
+
+void TextOutput::setOptions(const Options& _opt) {
+    option = _opt;
+
+    debugAssert(option.numColumns > 1);
+
+    setIndentLevel(indentLevel);
+
+    newline = (option.newlineStyle == Options::NEWLINE_WINDOWS) ? "\r\n" : "\n";
+}
+
+
+void TextOutput::pushIndent() {
+    setIndentLevel(indentLevel + 1);
+}
+
+
+void TextOutput::popIndent() {
+    setIndentLevel(indentLevel - 1);
+}
+
+
+static std::string escape(const std::string& string) {
+    std::string result = "";
+
+    for (std::string::size_type i = 0; i < string.length(); ++i) {
+        char c = string.at(i);
+        switch (c) {
+        case '\0':
+            result += "\\0";
+            break;
+
+        case '\r':
+            result += "\\r";
+            break;
+
+        case '\n':
+            result += "\\n";
+            break;
+
+        case '\t':
+            result += "\\t";
+            break;
+
+        case '\\':
+            result += "\\\\";
+            break;
+
+        default:
+            result += c;
+        }
+    }
+
+    return result;
+}
+
+void TextOutput::writeString(const std::string& string) {
+    // Convert special characters to escape sequences
+    this->printf("\"%s\"", escape(string).c_str());
+}
+
+
+void TextOutput::writeNumber(double n) {
+    this->printf("%f ", n);
+}
+
+
+void TextOutput::writeNumber(int n) {
+    this->printf("%d ", n);
+}
+
+
+void TextOutput::writeSymbol(const std::string& string) {
+    if (string.size() > 0) {
+        // TODO: check for legal symbols?
+        this->printf("%s ", string.c_str());
+    }
+}
+
+void TextOutput::writeSymbols(
+    const std::string& a,
+    const std::string& b,
+    const std::string& c,
+    const std::string& d,
+    const std::string& e,
+    const std::string& f) {
+
+    writeSymbol(a);
+    writeSymbol(b);
+    writeSymbol(c);
+    writeSymbol(d);
+    writeSymbol(e);
+    writeSymbol(f);
+}
+
+
+void TextOutput::printf(const std::string formatString, ...) {
+    va_list argList;
+    va_start(argList, formatString);
+    this->vprintf(formatString.c_str(), argList);
+    va_end(argList);
+}
+
+
+void TextOutput::printf(const char* formatString, ...) {
+    va_list argList;
+    va_start(argList, formatString);
+    this->vprintf(formatString, argList);
+    va_end(argList);
+}
+
+
+void TextOutput::convertNewlines(const std::string& in, std::string& out) {
+    // TODO: can be significantly optimized in cases where
+    // single characters are copied in order by walking through
+    // the array and copying substrings as needed.
+
+    if (option.convertNewlines) {
+        out = "";
+        for (uint32 i = 0; i < in.size(); ++i) {
+            if (in[i] == '\n') {
+                // Unix newline
+                out += newline;
+            } else if ((in[i] == '\r') && (i + 1 < in.size()) && (in[i + 1] == '\n')) {
+                // Windows newline
+                out += newline;
+                ++i;
+            } else {
+                out += in[i];
+            }
+        }
+    } else {
+        out = in;
+    }
+}
+
+
+void TextOutput::writeNewline() {
+    for (uint32 i = 0; i < newline.size(); ++i) {
+        indentAppend(newline[i]);
+    }
+}
+
+
+void TextOutput::writeNewlines(int numLines) {
+    for (int i = 0; i < numLines; ++i) {
+        writeNewline();
+    }
+}
+
+
+void TextOutput::wordWrapIndentAppend(const std::string& str) {
+    // TODO: keep track of the last space character we saw so we don't
+    // have to always search.
+
+    if ((option.wordWrap == Options::WRAP_NONE) ||
+        (currentColumn + (int)str.size() <= option.numColumns)) {
+        // No word-wrapping is needed
+
+        // Add one character at a time.
+        // TODO: optimize for strings without newlines to add multiple
+        // characters.
+        for (uint32 i = 0; i < str.size(); ++i) {
+            indentAppend(str[i]);
+        }
+        return;
+    }
+
+    // Number of columns to wrap against
+    int cols = option.numColumns - indentSpaces;
+    
+    // Copy forward until we exceed the column size, 
+    // and then back up and try to insert newlines as needed.
+    for (uint32 i = 0; i < str.size(); ++i) {
+
+        indentAppend(str[i]);
+        if ((str[i] == '\r') && (i + 1 < str.size()) && (str[i + 1] == '\n')) {
+            // \r\n, we need to hit the \n to enter word wrapping.
+            ++i;
+            indentAppend(str[i]);
+        }
+
+        if (currentColumn >= cols) {
+            debugAssertM(str[i] != '\n' && str[i] != '\r',
+                "Should never enter word-wrapping on a newline character");            
+
+            // True when we're allowed to treat a space as a space.
+            bool unquotedSpace = option.allowWordWrapInsideDoubleQuotes || ! inDQuote;
+
+            // Cases:
+            //
+            // 1. Currently in a series of spaces that ends with a newline
+            //     strip all spaces and let the newline
+            //     flow through.
+            //
+            // 2. Currently in a series of spaces that does not end with a newline
+            //     strip all spaces and replace them with single newline
+            //
+            // 3. Not in a series of spaces
+            //     search backwards for a space, then execute case 2.
+
+            // Index of most recent space
+            uint32 lastSpace = data.size() - 1;
+
+            // How far back we had to look for a space
+            uint32 k = 0;
+            uint32 maxLookBackward = currentColumn - indentSpaces;
+
+            // Search backwards (from current character), looking for a space.
+            while ((k < maxLookBackward) &&
+                (lastSpace > 0) &&
+                (! ((data[lastSpace] == ' ') && unquotedSpace))) {
+                --lastSpace;
+                ++k;
+
+                if ((data[lastSpace] == '\"') && !option.allowWordWrapInsideDoubleQuotes) {
+                    unquotedSpace = ! unquotedSpace;
+                }
+            }
+
+            if (k == maxLookBackward) {
+                // We couldn't find a series of spaces
+
+                if (option.wordWrap == Options::WRAP_ALWAYS) {
+                    // Strip the last character we wrote, force a newline,
+                    // and replace the last character;
+                    data.pop();
+                    writeNewline();
+                    indentAppend(str[i]);
+                } else {
+                    // Must be Options::WRAP_WITHOUT_BREAKING
+                    //
+                    // Don't write the newline; we'll come back to
+                    // the word wrap code after writing another character
+                }
+            } else {
+                // We found a series of spaces.  If they continue 
+                // to the new string, strip spaces off both.  Otherwise
+                // strip spaces from data only and insert a newline.                
+
+                // Find the start of the spaces.  firstSpace is the index of the
+                // first non-space, looking backwards from lastSpace.
+                uint32 firstSpace = lastSpace;
+                while ((k < maxLookBackward) &&
+                    (firstSpace > 0) &&
+                    (data[firstSpace] == ' ')) {
+                    --firstSpace;
+                    ++k;
+                }
+
+                if (k == maxLookBackward) {
+                    ++firstSpace;
+                }
+
+                if (lastSpace == (uint32)data.size() - 1) {
+                    // Spaces continued up to the new string
+                    data.resize(firstSpace + 1);
+                    writeNewline();
+
+                    // Delete the spaces from the new string
+                    while ((i < str.size() - 1) && (str[i + 1] == ' ')) {
+                        ++i;
+                    }
+                } else {
+                    // Spaces were somewhere in the middle of the old string.
+                    // replace them with a newline.
+
+                    // Copy over the characters that should be saved
+                    Array<char> temp;
+                    for (uint32 j = lastSpace + 1; j < (uint32)data.size(); ++j) {
+                        char c = data[j];
+
+                        if (c == '\"') {
+                            // Undo changes to quoting (they will be re-done
+                            // when we paste these characters back on).
+                            inDQuote = !inDQuote;
+                        }
+                        temp.append(c);
+                    }
+
+                    // Remove those characters and replace with a newline.
+                    data.resize(firstSpace + 1);
+                    writeNewline();
+
+                    // Write them back
+                    for (uint32 j = 0; j < (uint32)temp.size(); ++j) {
+                        indentAppend(temp[j]);
+                    }
+
+                    // We are now free to continue adding from the
+                    // new string, which may or may not begin with spaces.
+
+                } // if spaces included new string
+            } // if hit indent
+        } // if line exceeded
+    } // iterate over str
+}
+
+
+void TextOutput::indentAppend(char c) {
+
+    if (startingNewLine) {
+        for (int j = 0; j < indentSpaces; ++j) {
+            data.push(' ');
+        }
+        startingNewLine = false;
+        currentColumn = indentSpaces;
+    }
+
+    data.push(c);
+
+    // Don't increment the column count on return character
+    // newline is taken care of below.
+    if (c != '\r') {
+        ++currentColumn;
+    }
+    
+    if (c == '\"') {
+        inDQuote = ! inDQuote;
+    }
+
+    startingNewLine = (c == '\n');
+    if (startingNewLine) {
+        currentColumn = 0;
+    }
+}
+
+
+void TextOutput::vprintf(const char* formatString, va_list argPtr) {
+    std::string str = vformat(formatString, argPtr);
+
+    std::string clean;
+    convertNewlines(str, clean);
+    wordWrapIndentAppend(clean);
+}
+
+
+void TextOutput::commit(bool flush) {
+    FILE* f = fopen(filename.c_str(), "wb");
+    fwrite(data.getCArray(), 1, data.size(), f);
+    if (flush) {
+        fflush(f);
+    }
+    fclose(f);
+}
+
+
+void TextOutput::commitString(std::string& out) {
+    // Null terminate
+    data.push('\0');
+    out = data.getCArray();
+    data.pop();
+}
+
+
+std::string TextOutput::commitString() {
+    std::string str;
+    commitString(str);
+    return str;
+}
+
+
+
+/////////////////////////////////////////////////////////////////////
+
+void serialize(const float& b, TextOutput& to) {
+    to.writeNumber(b);
+}
+
+
+void serialize(const bool& b, TextOutput& to) {
+    to.writeSymbol(b ? "true" : "false");
+}
+
+
+void serialize(const int& b, TextOutput& to) {
+    to.writeNumber(b);
+}
+
+
+void serialize(const uint8& b, TextOutput& to) {
+    to.writeNumber(b);
+}
+
+
+void serialize(const double& b, TextOutput& to) {
+    to.writeNumber(b);
+}
+
+
+}

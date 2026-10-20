@@ -1,15 +1,64 @@
-// roc 2008-06 00660160  unit: seg_00660000  size: 13 bytes
-// Make this compile to the exact bytes below, then: roc check 2008-06 00660160
-//
-// 00660160  56                   push esi
-// 00660161  8bf1                 mov esi, ecx
-// 00660163  e8b8fdffff           call 0x65ff20
-// 00660168  8d4608               lea eax, [esi + 8]
-// 0066016b  5e                   pop esi
-// 0066016c  c3                   ret 
-// library rbxgs/v8kernel\Cofm.cpp (function ?getCofmInBody@Cofm@RBX@@QBEABVVector3@G3D@@XZ)
-
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
 // roc-lib: rbxgs v8kernel/Cofm.cpp
+
+// Candidate translation unit (score above; library headers required).
+#include "v8kernel/Cofm.h"
+#include "v8kernel/Body.h"
+#include "util/PV.h"
+
+namespace RBX {
+
+//haven't checked if it matches yet
+Cofm::Cofm(Body* body):body(body)
+					,dirty(1)
+					,cofmInBody(G3D::Vector3(0.0f,0.0f,0.0f))
+					{}
+
+const float Cofm::getMass() const
+{
+	updateIfDirty();
+	return mass;
+}
+
+const G3D::Matrix3& Cofm::getMoment() const
+{
+	updateIfDirty();
+	return moment;
+}
+
+const G3D::Vector3& Cofm::getCofmInBody() const
+{
+	updateIfDirty();
+	return cofmInBody;
+}
+
+void Cofm::updateIfDirty() const
+{
+	if (dirty)
+	{
+		mass = body->getMass();
+		float bodyMass = body->getMass();
+		G3D::Vector3 point = body->getPV().position.translation * bodyMass;
+		for (int i = 0; i < body->numChildren(); i++)
+		{
+			Body* child = body->getChild(i);
+			mass = mass + child->getBranchMass();
+			point += child->getBranchCofmPos() * child->getBranchMass();
+		}
+		point = point / mass;
+		const PV& bodyPV = body->getPV();
+		cofmInBody = (point - bodyPV.position.translation) * bodyPV.position.rotation;
+		G3D::Matrix3 IWorld = body->getIWorldAtPoint(point);
+		for (int i = 0; i < body->numChildren(); i++)
+		{
+			IWorld = IWorld + body->getChild(i)->getBranchIWorldAtPoint(point);
+		}
+		moment = Math::momentToObjectSpace(IWorld, body->getPV().position.rotation);
+		dirty = false;
+	}
+}
+
+
+}

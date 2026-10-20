@@ -1,71 +1,313 @@
 // from server: 100% by auto
-// roc 2007-08 0050b3f0  unit: seg_00500000  size: 193 bytes
-// Make this compile to the exact bytes below, then: roc check 2007-08 0050b3f0
-//
-// 0050b3f0  d9ee                 fldz 
-// 0050b3f2  83ec0c               sub esp, 0xc
-// 0050b3f5  d9442414             fld dword ptr [esp + 0x14]
-// 0050b3f9  dde1                 fucom st(1)
-// 0050b3fb  dfe0                 fnstsw ax
-// 0050b3fd  ddd9                 fstp st(1)
-// 0050b3ff  f6c444               test ah, 0x44
-// 0050b402  7b44                 jnp 0x50b448
-// 0050b404  d9e8                 fld1 
-// 0050b406  8b442410             mov eax, dword ptr [esp + 0x10]
-// 0050b40a  def1                 fdivrp st(1)
-// 0050b40c  d95c2414             fstp dword ptr [esp + 0x14]
-// 0050b410  d901                 fld dword ptr [ecx]
-// 0050b412  d9442414             fld dword ptr [esp + 0x14]
-// 0050b416  d9c0                 fld st(0)
-// 0050b418  deca                 fmulp st(2)
-// 0050b41a  d9c9                 fxch st(1)
-// 0050b41c  d91c24               fstp dword ptr [esp]
-// 0050b41f  d94104               fld dword ptr [ecx + 4]
-// 0050b422  d8c9                 fmul st(1)
-// 0050b424  d95c2404             fstp dword ptr [esp + 4]
-// 0050b428  d84908               fmul dword ptr [ecx + 8]
-// 0050b42b  d95c2408             fstp dword ptr [esp + 8]
-// 0050b42f  d90424               fld dword ptr [esp]
-// 0050b432  d918                 fstp dword ptr [eax]
-// 0050b434  d9442404             fld dword ptr [esp + 4]
-// 0050b438  d95804               fstp dword ptr [eax + 4]
-// 0050b43b  d9442408             fld dword ptr [esp + 8]
-// 0050b43f  d95808               fstp dword ptr [eax + 8]
-// 0050b442  83c40c               add esp, 0xc
-// 0050b445  c20800               ret 8
-// 0050b448  a108d18b00           mov eax, dword ptr [0x8bd108]
-// 0050b44d  ddd8                 fstp st(0)
-// 0050b44f  a801                 test al, 1
-// 0050b451  8b0d64e57700         mov ecx, dword ptr [0x77e564]
-// 0050b457  7538                 jne 0x50b491
-// 0050b459  83c801               or eax, 1
-// 0050b45c  a801                 test al, 1
-// 0050b45e  a308d18b00           mov dword ptr [0x8bd108], eax
-// 0050b463  dd01                 fld qword ptr [ecx]
-// 0050b465  dd1d00d18b00         fstp qword ptr [0x8bd100]
-// 0050b46b  7524                 jne 0x50b491
-// 0050b46d  83c801               or eax, 1
-// 0050b470  a801                 test al, 1
-// 0050b472  a308d18b00           mov dword ptr [0x8bd108], eax
-// 0050b477  dd01                 fld qword ptr [ecx]
-// 0050b479  dd1d00d18b00         fstp qword ptr [0x8bd100]
-// 0050b47f  7510                 jne 0x50b491
-// 0050b481  83c801               or eax, 1
-// 0050b484  a308d18b00           mov dword ptr [0x8bd108], eax
-// 0050b489  dd01                 fld qword ptr [ecx]
-// 0050b48b  dd1d00d18b00         fstp qword ptr [0x8bd100]
-// 0050b491  dd0500d18b00         fld qword ptr [0x8bd100]
-// 0050b497  8b442410             mov eax, dword ptr [esp + 0x10]
-// 0050b49b  d95c2414             fstp dword ptr [esp + 0x14]
-// 0050b49f  d9442414             fld dword ptr [esp + 0x14]
-// 0050b4a3  d910                 fst dword ptr [eax]
-// 0050b4a5  d95004               fst dword ptr [eax + 4]
-// 0050b4a8  d95808               fstp dword ptr [eax + 8]
-// 0050b4ab  83c40c               add esp, 0xc
-// 0050b4ae  c20800               ret 8
-// library g3d-6.09/G3Dcpp\Color3.cpp (function ??KColor3@G3D@@QBE?AV01@M@Z)
-
 // roc-lang: cpp
 // roc-cl: 50727
 // roc-flags: /O2 /GS- /EHsc /MD
 // roc-lib: g3d-6.09 G3Dcpp/Color3.cpp
+
+// Candidate translation unit (score above; library headers required).
+/**
+ @file Color3.cpp
+
+ Color class.
+
+ @author Morgan McGuire, matrix@graphics3d.com
+ @cite Portions based on Dave Eberly's Magic Software Library at http://www.magic-software.com
+
+
+ @created 2001-06-02
+ @edited  2006-01-13
+ */
+
+#include "G3D/platform.h"
+#include <stdlib.h>
+#include "G3D/Color3.h"
+#include "G3D/Vector3.h"
+#include "G3D/format.h"
+#include "G3D/BinaryInput.h"
+#include "G3D/BinaryOutput.h"
+#include "G3D/Color3uint8.h"
+
+namespace G3D {
+
+const Color3& Color3::red() {
+    static Color3 c(1, 0, 0);
+    return c;
+}
+
+const Color3& Color3::green() {
+    static Color3 c(0, 1, 0);
+    return c;
+}
+
+const Color3& Color3::blue() {
+    static Color3 c(0, 0, 1);
+    return c;
+}
+
+const Color3& Color3::purple() {
+    static Color3 c(0.7f, 0, 1);
+    return c;
+}
+
+const Color3& Color3::cyan() {
+    static Color3 c(0, .7f, 1);
+    return c;
+}
+
+const Color3& Color3::yellow() {
+    static Color3 c(1, 1, 0);
+    return c;
+}
+
+const Color3& Color3::brown() {
+    static Color3 c(.5f, .5f, 0);
+    return c;
+}
+
+const Color3& Color3::orange() {
+    static Color3 c(1, 0.5f, 0);
+    return c;
+}
+
+const Color3& Color3::black() {
+    static Color3 c(0, 0, 0);
+    return c;
+}
+
+const Color3& Color3::gray() {
+    static Color3 c(.7f, .7f, .7f);
+    return c;
+}
+
+const Color3& Color3::white() {
+    static Color3 c(1, 1, 1);
+    return c;
+}
+
+Color3::Color3(BinaryInput& bi) {
+    deserialize(bi);
+}
+
+// Deprecated.
+const Color3 Color3::RED(1, 0, 0);
+const Color3 Color3::GREEN(0, 1, 0);
+const Color3 Color3::BLUE(0, 0, 1);
+const Color3 Color3::PURPLE(0.7f, 0, 1);
+const Color3 Color3::CYAN(0, 0.7f, 1);
+const Color3 Color3::YELLOW(1, 1, 0);
+const Color3 Color3::BROWN(0.5f, 0.5f, 0);
+const Color3 Color3::ORANGE(1, 0.5f, 0);
+const Color3 Color3::BLACK(0, 0, 0);
+const Color3 Color3::GRAY(.7f, .7f, .7f);
+const Color3 Color3::WHITE(1, 1, 1);
+
+
+void Color3::deserialize(BinaryInput& bi) {
+    r = bi.readFloat32();
+    g = bi.readFloat32();
+    b = bi.readFloat32();
+}
+
+
+void Color3::serialize(BinaryOutput& bo) const {
+    bo.writeFloat32(r);
+    bo.writeFloat32(g);
+    bo.writeFloat32(b);
+}
+
+
+const Color3& Color3::wheelRandom() {
+    static const Color3 colorArray[8] =
+    {Color3::BLUE,   Color3::RED,    Color3::GREEN,
+     Color3::ORANGE, Color3::YELLOW, 
+     Color3::CYAN,   Color3::PURPLE, Color3::BROWN};
+
+    return colorArray[iRandom(0, 7)];
+}
+
+
+unsigned int Color3::hashCode() const {
+    unsigned int rhash = (*(int*)(void*)(&r));
+    unsigned int ghash = (*(int*)(void*)(&g));
+    unsigned int bhash = (*(int*)(void*)(&b));
+
+    return rhash + (ghash * 37) + (bhash * 101);
+}
+
+
+Color3::Color3(const Vector3& v) {
+    r = v.x;
+    g = v.y;
+    b = v.z;
+}
+
+
+Color3::Color3(const class Color3uint8& other) {
+    r = other.r / 255.0f;
+    g = other.g / 255.0f;
+    b = other.b / 255.0f;
+}
+
+
+Color3 Color3::fromARGB(uint32 x) {
+    return Color3((float)((x >> 16) & 0xFF), (float)((x >> 8) & 0xFF), (float)(x & 0xFF)) / 255.0f;
+}
+
+//----------------------------------------------------------------------------
+
+
+Color3 Color3::random() {
+    return Color3(uniformRandom(), 
+                  uniformRandom(),
+                  uniformRandom()).direction();
+}
+
+//----------------------------------------------------------------------------
+Color3 Color3::operator/ (float fScalar) const {
+    Color3 kQuot;
+
+    if (fScalar != 0.0f) {
+		float fInvScalar = 1.0f / fScalar;
+        kQuot.r = fInvScalar * r;
+        kQuot.g = fInvScalar * g;
+        kQuot.b = fInvScalar * b;
+        return kQuot;
+
+    } else {
+
+        return Color3((float)G3D::inf(), (float)G3D::inf(), (float)G3D::inf());
+    }
+}
+
+//----------------------------------------------------------------------------
+Color3& Color3::operator/= (float fScalar) {
+    if (fScalar != 0.0f) {
+		float fInvScalar = 1.0f / fScalar;
+        r *= fInvScalar;
+        g *= fInvScalar;
+        b *= fInvScalar;
+    } else {
+        r = (float)G3D::inf();
+        g = (float)G3D::inf();
+        b = (float)G3D::inf();
+    }
+
+    return *this;
+}
+
+//----------------------------------------------------------------------------
+float Color3::unitize (float fTolerance) {
+	float fLength = length();
+
+    if ( fLength > fTolerance ) {
+		float fInvLength = 1.0f / fLength;
+        r *= fInvLength;
+        g *= fInvLength;
+        b *= fInvLength;
+    } else {
+        fLength = 0.0f;
+    }
+
+    return fLength;
+}
+
+//----------------------------------------------------------------------------
+Color3 Color3::fromHSV(const Vector3& _hsv) {
+	debugAssertM((_hsv.x <= 1.0f && _hsv.x >= 0.0f)
+			&& (_hsv.y <= 1.0f && _hsv.y >= 0.0f) 
+			&& ( _hsv.z <= 1.0f && _hsv.z >= 0.0f), "H,S,V must be between [0,1]");
+	const int i = G3D::iFloor(6.0*_hsv.x);
+	const float f = 6.0f * _hsv.x - i;
+	const float m = _hsv.z * (1.0f - (_hsv.y));
+	const float n = _hsv.z * (1.0f - (_hsv.y * f));
+	const float k = _hsv.z * (1.0f - (_hsv.y * (1 - f)));
+	switch(i) {
+	case 0:
+		return Color3(_hsv.z, k, m);
+
+	case 1:
+		return Color3(n, _hsv.z, m);
+
+	case 2:
+		return Color3(m, _hsv.z, k);
+
+	case 3:
+		return Color3(m, n, _hsv.z);
+
+	case 4:
+		return Color3(k, m, _hsv.z);
+
+	case 5:
+		return Color3(_hsv.z, m, n);
+
+    default:
+		debugAssertM(false, "fell through switch..");
+	}
+	return Color3::black();
+}
+
+Vector3 Color3::toHSV(const Color3& _rgb) {
+	debugAssertM((_rgb.r <= 1.0f && _rgb.r >= 0.0f) 
+			&& (_rgb.g <= 1.0f && _rgb.g >= 0.0f)
+			&& (_rgb.b <= 1.0f && _rgb.b >= 0.0f), "R,G,B must be between [0,1]");
+	Vector3 hsv = Vector3::zero();
+	hsv.z = G3D::max(G3D::max(_rgb.r, _rgb.g), _rgb.b);
+	if (G3D::fuzzyEq(hsv.z, 0.0f)) {
+		return hsv;
+	}
+	
+    const float x =  G3D::min(G3D::min(_rgb.r, _rgb.g), _rgb.b);
+	hsv.y = (hsv.z - x) / hsv.z; 
+
+    if (G3D::fuzzyEq(hsv.y, 0.0f)) {
+		return hsv;
+	}
+
+	Vector3 rgbN;
+	rgbN.x = (hsv.z - _rgb.r) / (hsv.z - x);
+	rgbN.y = (hsv.z - _rgb.g) / (hsv.z - x);
+	rgbN.z = (hsv.z - _rgb.b) / (hsv.z - x);
+
+	if (_rgb.r == hsv.z) {  // note from the max we know that it exactly equals one of the three.
+		hsv.x = (_rgb.g == x)? 5.0f + rgbN.z : 1.0f - rgbN.y;
+	} else if (_rgb.g == hsv.z) {
+		hsv.x = (_rgb.b == x)? 1.0f + rgbN.x : 3.0f - rgbN.z;
+	} else {
+		hsv.x = (_rgb.r == x)? 3.0f + rgbN.y : 5.0f - rgbN.x;
+	}
+	
+    hsv.x /= 6.0f;
+
+	return hsv;
+}
+
+Color3 Color3::jetColorMap(const float& val) {
+	debugAssertM(val <= 1.0f && val >= 0.0f , "value should be in [0,1]");
+
+	//truncated triangles where sides have slope 4
+	Color3 jet;
+
+	jet.r = G3D::min(4.0f * val - 1.5f,-4.0f * val + 4.5f) ;
+	jet.g = G3D::min(4.0f * val - 0.5f,-4.0f * val + 3.5f) ;
+	jet.b = G3D::min(4.0f * val + 0.5f,-4.0f * val + 2.5f) ;
+
+
+	jet.r = G3D::clamp(jet.r, 0.0f, 1.0f);
+	jet.g = G3D::clamp(jet.g, 0.0f, 1.0f);
+	jet.b = G3D::clamp(jet.b, 0.0f, 1.0f);
+
+	return jet;
+}
+
+
+
+
+
+std::string Color3::toString() const {
+    return G3D::format("(%g, %g, %g)", r, g, b);
+}
+
+//----------------------------------------------------------------------------
+
+}; // namespace
+

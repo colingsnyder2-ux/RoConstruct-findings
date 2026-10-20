@@ -1,68 +1,195 @@
-// roc 2009-12 004ab340  unit: Ogre::RbxSceneUpdater  size: 141 bytes
-// Make this compile to the exact bytes below, then: roc check 2009-12 004ab340
-//
-// 004ab340  53                   push ebx
-// 004ab341  55                   push ebp
-// 004ab342  8b2d60b79800         mov ebp, dword ptr [0x98b760]
-// 004ab348  56                   push esi
-// 004ab349  57                   push edi
-// 004ab34a  8b7c2414             mov edi, dword ptr [esp + 0x14]
-// 004ab34e  8bf1                 mov esi, ecx
-// 004ab350  c70700000000         mov dword ptr [edi], 0
-// 004ab356  85f6                 test esi, esi
-// 004ab358  740e                 je 0x4ab368
-// 004ab35a  8b44241c             mov eax, dword ptr [esp + 0x1c]
-// 004ab35e  39460c               cmp dword ptr [esi + 0xc], eax
-// 004ab361  7705                 ja 0x4ab368
-// 004ab363  3b4610               cmp eax, dword ptr [esi + 0x10]
-// 004ab366  7606                 jbe 0x4ab36e
-// 004ab368  ffd5                 call ebp
-// 004ab36a  8b44241c             mov eax, dword ptr [esp + 0x1c]
-// 004ab36e  8b5c2424             mov ebx, dword ptr [esp + 0x24]
-// 004ab372  8b0e                 mov ecx, dword ptr [esi]
-// 004ab374  890f                 mov dword ptr [edi], ecx
-// 004ab376  894704               mov dword ptr [edi + 4], eax
-// 004ab379  395e0c               cmp dword ptr [esi + 0xc], ebx
-// 004ab37c  7705                 ja 0x4ab383
-// 004ab37e  3b5e10               cmp ebx, dword ptr [esi + 0x10]
-// 004ab381  7606                 jbe 0x4ab389
-// 004ab383  ffd5                 call ebp
-// 004ab385  8b5c2424             mov ebx, dword ptr [esp + 0x24]
-// 004ab389  8b07                 mov eax, dword ptr [edi]
-// 004ab38b  8b0e                 mov ecx, dword ptr [esi]
-// 004ab38d  85c0                 test eax, eax
-// 004ab38f  7404                 je 0x4ab395
-// 004ab391  3bc1                 cmp eax, ecx
-// 004ab393  7402                 je 0x4ab397
-// 004ab395  ffd5                 call ebp
-// 004ab397  8b4704               mov eax, dword ptr [edi + 4]
-// 004ab39a  3bc3                 cmp eax, ebx
-// 004ab39c  7426                 je 0x4ab3c4
-// 004ab39e  8b5610               mov edx, dword ptr [esi + 0x10]
-// 004ab3a1  50                   push eax
-// 004ab3a2  52                   push edx
-// 004ab3a3  53                   push ebx
-// 004ab3a4  e8e7f9ffff           call 0x4aad90
-// 004ab3a9  8b5610               mov edx, dword ptr [esi + 0x10]
-// 004ab3ac  8bd8                 mov ebx, eax
-// 004ab3ae  8b442420             mov eax, dword ptr [esp + 0x20]
-// 004ab3b2  50                   push eax
-// 004ab3b3  8d4e08               lea ecx, [esi + 8]
-// 004ab3b6  51                   push ecx
-// 004ab3b7  52                   push edx
-// 004ab3b8  53                   push ebx
-// 004ab3b9  e872faffff           call 0x4aae30
-// 004ab3be  83c41c               add esp, 0x1c
-// 004ab3c1  895e10               mov dword ptr [esi + 0x10], ebx
-// 004ab3c4  8bc7                 mov eax, edi
-// 004ab3c6  5f                   pop edi
-// 004ab3c7  5e                   pop esi
-// 004ab3c8  5d                   pop ebp
-// 004ab3c9  5b                   pop ebx
-// 004ab3ca  c21400               ret 0x14
-// library openrbx-client/App\v8xml\SerializerV2.cpp (function ?erase@?$vector@UIDREFItem@MergeBinder@RBX@@V?$allocator@UIDREFItem@MergeBinder@RBX@@@std@@@std@@QAE?AV?$_Vector_iterator@UIDREFItem@MergeBinder@RBX@@V?$allocator@UIDREFItem@MergeBinder@RBX@@@std@@@2@V?$_Vector_const_iterator@UIDREFItem@MergeBinder@RBX@@V?$allocator@UIDREFItem@MergeBinder@RBX@@@std@@@2@0@Z)
-
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
 // roc-lib: openrbx-client-dll App/v8xml/SerializerV2.cpp
+
+// Candidate translation unit (score above; library headers required).
+#include "v8xml/SerializerV2.h"
+
+#include "decomp.h"
+#include "util/Name.h"
+#include "v8xml/XmlElement.h"
+
+#include <algorithm>
+#include <functional>
+#include <list>
+#include <map>
+#include <string>
+
+// SIZE 0x2c
+class ArchiveBinder : public RBX::MergeBinder
+{
+public:
+	// SIZE 0x0c
+	struct IDREFBinding
+	{
+		const XmlNameValuePair* valueIDREF;            // 0x00
+		RBX::Reflection::DescribedBase* propertyOwner; // 0x04
+		const RBX::IIDREF* idref;                      // 0x08
+	};
+
+	virtual bool processID(const XmlNameValuePair* valueID, RBX::Instance* source);
+
+	virtual bool processIDREF(
+		const XmlNameValuePair* valueIDREF,
+		RBX::Reflection::DescribedBase* propertyOwner,
+		const RBX::IIDREF* idref
+	);
+
+	bool resolveIDREF(IDREFBinding binding);
+
+	virtual bool resolveRefs();
+
+private:
+	std::map<std::string, RBX::InstanceHandle> idMap; // 0x14
+	std::list<IDREFBinding> idrefBindings;            // 0x20
+};
+
+DECOMP_SIZE_ASSERT(ArchiveBinder, 0x2c)
+DECOMP_SIZE_ASSERT(ArchiveBinder::IDREFBinding, 0x0c)
+
+// FUNCTION: WEBSERVICE 0x100963c0
+XmlElement* SerializerV2::newRootElement()
+{
+	static const RBX::Name& tag_xmlnsxmime = RBX::Name::declare("xmlns:xmime", -1);
+
+	XmlElement* root = new XmlElement(tag_roblox);
+
+	root->addAttribute(tag_xmlnsxmime, "http://www.w3.org/2005/05/xmlmime");
+	root->addAttribute(tag_xmlnsxsi, "http://www.w3.org/2001/XMLSchema-instance");
+	root->addAttribute(tag_xsinoNamespaceSchemaLocation, "http://www.roblox.com/roblox.xsd");
+	root->addAttribute(tag_version, 4);
+
+	root->addChild(new XmlElement(tag_External, &value_IDREF_null));
+	root->addChild(new XmlElement(tag_External, &value_IDREF_nil));
+
+	return root;
+}
+
+// FUNCTION: WEBSERVICE 0x10096560
+void XmlNameValuePair::replaceHandles(const std::map<RBX::Instance*, RBX::InstanceHandle>& isolationMap)
+{
+	if (valueType == HANDLE) {
+		std::map<RBX::Instance*, RBX::InstanceHandle>::const_iterator found =
+			isolationMap.find(handleValue->getTarget().get());
+
+		if (found != isolationMap.end()) {
+			*handleValue = found->second;
+		}
+	}
+}
+
+// FUNCTION: WEBSERVICE 0x10096620
+static void isolate(XmlElement* element, const std::map<RBX::Instance*, RBX::InstanceHandle>& isolationMap)
+{
+	element->replaceHandles(isolationMap);
+
+	for (XmlAttribute* attribute = element->getFirstAttribute(); attribute != NULL;
+		 attribute = element->getNextAttribute(attribute)) {
+		attribute->replaceHandles(isolationMap);
+	}
+
+	for (XmlElement* child = element->firstChild(); child != NULL; child = child->nextSibling()) {
+		isolate(child, isolationMap);
+	}
+}
+
+// FUNCTION: WEBSERVICE 0x10096730
+bool ArchiveBinder::resolveIDREF(IDREFBinding binding)
+{
+	std::string s;
+	binding.valueIDREF->getValue(s);
+
+	std::map<std::string, RBX::InstanceHandle>::iterator iter = idMap.find(s);
+
+	if (iter != idMap.end()) {
+		const RBX::InstanceHandle& value = iter->second;
+
+		binding.idref->assignIDREF(binding.propertyOwner, value);
+
+		return true;
+	}
+
+	binding.idref->assignIDREF(binding.propertyOwner, RBX::InstanceHandle(NULL));
+
+	return false;
+}
+
+// FUNCTION: WEBSERVICE 0x10096ff0
+bool ArchiveBinder::resolveRefs()
+{
+	size_t resolvedCount = std::count_if(
+		idrefBindings.begin(),
+		idrefBindings.end(),
+		std::bind1st(std::mem_fun(&ArchiveBinder::resolveIDREF), this)
+	);
+
+	return MergeBinder::resolveRefs() && resolvedCount == idrefBindings.size();
+}
+
+// FUNCTION: WEBSERVICE 0x10097740
+static void buildIsolationMap(XmlElement* element, std::map<RBX::Instance*, RBX::InstanceHandle>& isolationMap)
+{
+	const XmlAttribute* referent = element->findAttribute(name_referent);
+
+	if (referent != NULL) {
+		RBX::InstanceHandle h;
+
+		referent->getValue(h);
+
+		isolationMap[h.getTarget().get()] = RBX::InstanceHandle();
+	}
+
+	for (XmlElement* child = element->firstChild(); child != NULL; child = child->nextSibling()) {
+		buildIsolationMap(child, isolationMap);
+	}
+}
+
+// FUNCTION: WEBSERVICE 0x10098450
+bool ArchiveBinder::processID(const XmlNameValuePair* valueID, RBX::Instance* source)
+{
+	if (!MergeBinder::processID(valueID, source)) {
+		std::string s;
+		valueID->getValue(s);
+
+		idMap[s].linkTo(RBX::shared_from(source));
+	}
+
+	return true;
+}
+
+// FUNCTION: WEBSERVICE 0x10098500
+bool ArchiveBinder::processIDREF(
+	const XmlNameValuePair* valueIDREF,
+	RBX::Reflection::DescribedBase* propertyOwner,
+	const RBX::IIDREF* idref
+)
+{
+	if (!MergeBinder::processIDREF(valueIDREF, propertyOwner, idref)) {
+		IDREFBinding binding = {valueIDREF, propertyOwner, idref};
+
+		idrefBindings.push_back(binding);
+	}
+
+	return true;
+}
+
+// STUB: WEBSERVICE 0x10098830
+void SerializerV2::isolateHandles(XmlElement* root)
+{
+	std::map<RBX::Instance*, RBX::InstanceHandle> isolationMap;
+
+	buildIsolationMap(root, isolationMap);
+
+	isolate(root, isolationMap);
+}
+
+// STUB: WEBSERVICE 0x100988e0
+void SerializerV2::load(XmlElement* root, RBX::DataModel* dataModel)
+{
+	STUB(0x100988e0);
+
+	ArchiveBinder binder;
+
+	binder.resolveRefs();
+}

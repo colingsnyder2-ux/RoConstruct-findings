@@ -1,35 +1,65 @@
-// roc 2009-12 00517500  unit: RBX::VInstance::?$NonFactoryProduct  size: 62 bytes
-// Make this compile to the exact bytes below, then: roc check 2009-12 00517500
-//
-// 00517500  56                   push esi
-// 00517501  57                   push edi
-// 00517502  8bf9                 mov edi, ecx
-// 00517504  8b4714               mov eax, dword ptr [edi + 0x14]
-// 00517507  8b30                 mov esi, dword ptr [eax]
-// 00517509  8900                 mov dword ptr [eax], eax
-// 0051750b  8b4714               mov eax, dword ptr [edi + 0x14]
-// 0051750e  894004               mov dword ptr [eax + 4], eax
-// 00517511  c7471800000000       mov dword ptr [edi + 0x18], 0
-// 00517518  3b7714               cmp esi, dword ptr [edi + 0x14]
-// 0051751b  741e                 je 0x51753b
-// 0051751d  53                   push ebx
-// 0051751e  8bff                 mov edi, edi
-// 00517520  8b1e                 mov ebx, dword ptr [esi]
-// 00517522  8d4e08               lea ecx, [esi + 8]
-// 00517525  e866beffff           call 0x513390
-// 0051752a  56                   push esi
-// 0051752b  e82ac32d00           call 0x7f385a
-// 00517530  83c404               add esp, 4
-// 00517533  8bf3                 mov esi, ebx
-// 00517535  3b5f14               cmp ebx, dword ptr [edi + 0x14]
-// 00517538  75e6                 jne 0x517520
-// 0051753a  5b                   pop ebx
-// 0051753b  5f                   pop edi
-// 0051753c  5e                   pop esi
-// 0051753d  c3                   ret 
-// library boost-1.34.1/libs\signals\src\trackable.cpp (function ?clear@?$list@Vconnection@signals@boost@@V?$allocator@Vconnection@signals@boost@@@std@@@std@@QAEXXZ)
-
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD
 // roc-lib: boost-1.34.1 libs/signals/src/trackable.cpp
+
+// Candidate translation unit (score above; library headers required).
+// Boost.Signals library
+
+// Copyright Douglas Gregor 2001-2004. Use, modification and
+// distribution is subject to the Boost Software License, Version
+// 1.0. (See accompanying file LICENSE_1_0.txt or copy at
+// http://www.boost.org/LICENSE_1_0.txt)
+
+// For more information, see http://www.boost.org
+
+#define BOOST_SIGNALS_SOURCE
+
+#include <boost/signals/trackable.hpp>
+#include <algorithm>
+
+namespace boost {
+  namespace BOOST_SIGNALS_NAMESPACE {
+    void trackable::signal_disconnected(void* obj, void* data)
+    {
+      trackable* self = reinterpret_cast<trackable*>(obj);
+      connection_iterator* signal =
+        reinterpret_cast<connection_iterator*>(data);
+
+      // If we're dying, don't bother erasing the connection from the list;
+      // it'll be gone anyway
+      if (!self->dying) {
+        self->connected_signals.erase(*signal);
+      }
+
+      // This iterator pointer won't ever be used again
+      delete signal;
+    }
+
+    void
+    trackable::signal_connected(connection c,
+                                BOOST_SIGNALS_NAMESPACE::detail::bound_object& binding) const
+    {
+      // Insert the connection
+      connection_iterator pos =
+        connected_signals.insert(connected_signals.end(), c);
+
+      // Make this copy of the object disconnect when destroyed
+      pos->set_controlling();
+
+      binding.obj = const_cast<void*>(reinterpret_cast<const void*>(this));
+      binding.data = reinterpret_cast<void*>(new connection_iterator(pos));
+      binding.disconnect = &signal_disconnected;
+    }
+
+    trackable::~trackable()
+    {
+      dying = true;
+    }
+  } // end namespace BOOST_SIGNALS_NAMESPACE
+}
+
+#ifndef BOOST_MSVC
+// Explicit instantiations to keep in the library
+template class std::list<boost::BOOST_SIGNALS_NAMESPACE::connection>;
+#endif

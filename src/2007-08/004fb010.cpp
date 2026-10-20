@@ -1,21 +1,68 @@
-// roc 2007-08 004fb010  unit: RBX::Render::TextureProxy  size: 34 bytes
-// Make this compile to the exact bytes below, then: roc check 2007-08 004fb010
-//
-// 004fb010  83791000             cmp dword ptr [ecx + 0x10], 0
-// 004fb014  7e19                 jle 0x4fb02f
-// 004fb016  8b410c               mov eax, dword ptr [ecx + 0xc]
-// 004fb019  d90550707800         fld dword ptr [0x787050]
-// 004fb01f  d85824               fcomp dword ptr [eax + 0x24]
-// 004fb022  dfe0                 fnstsw ax
-// 004fb024  f6c405               test ah, 5
-// 004fb027  7a06                 jp 0x4fb02f
-// 004fb029  b801000000           mov eax, 1
-// 004fb02e  c3                   ret 
-// 004fb02f  33c0                 xor eax, eax
-// 004fb031  c3                   ret 
-// library rbxgs-render/Material.cpp (function ?veryTransparent@Material@Render@RBX@@QBE_NXZ)
-
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
 // roc-lib: rbxgs-render Material.cpp
+
+// Candidate translation unit (score above; library headers required).
+#include "RenderLib/Material.h"
+
+namespace RBX
+{
+	namespace Render
+	{
+		Material::Level::Level(G3D::ReferenceCountedPointer<TextureProxy> baseTexture, G3D::Color3 color, float specular, float shiny, float reflect, float transparent)
+			: emptyLevel(false),
+			  mBaseTexture(baseTexture),
+			  mColor(color),
+			  mSpecular(specular),
+			  mShiny(shiny),
+			  mReflect(reflect),
+			  mTransparent(transparent)
+		{
+			if (baseTexture.notNull())
+				mMatte = baseTexture->alphaOnlyVersion();
+
+			if (mTransparent > 0.0f)
+				mReflect = 0.0f;
+		}
+
+		Material::Level::Level()
+			: emptyLevel(true),
+			  mColor(G3D::Color3::white()),
+			  mSpecular(0.0f),
+			  mShiny(0.0f),
+			  mReflect(0.0f),
+			  mTransparent(0.0f)
+		{
+		}
+
+		Material::Level::~Level() {}
+
+		void Material::Level::configureRenderDevice(G3D::RenderDevice* renderDevice) const
+		{
+			renderDevice->setColor(mColor);
+			renderDevice->setSpecularCoefficient(mSpecular);
+			renderDevice->setShininess(mShiny);
+			renderDevice->setTexture(0, baseTexture(renderDevice));
+		}
+
+		Material::Material() {}
+		Material::~Material() {}
+
+		const Material::Level& Material::appendEmptyLevel()
+		{
+			return levels.next();
+		}
+
+		const Material::Level& Material::appendLevel(G3D::ReferenceCountedPointer<TextureProxy> baseTexture, G3D::Color3 color, float specular, float shiny, float reflect, float transparent)
+		{
+			levels.push_back(Material::Level(baseTexture, color, specular, shiny, reflect, transparent));
+			return levels.last();
+		}
+
+		bool Material::veryTransparent() const
+		{
+			return levels.size() > 0 && levels.front().mTransparent > 0.25f;
+		}
+	}
+}

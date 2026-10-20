@@ -1,67 +1,255 @@
-// roc 2007-08 00627b50  unit: RBX::CollisionStage  size: 186 bytes
-// Make this compile to the exact bytes below, then: roc check 2007-08 00627b50
-//
-// 00627b50  6aff                 push -1
-// 00627b52  68c9d37500           push 0x75d3c9
-// 00627b57  64a100000000         mov eax, dword ptr fs:[0]
-// 00627b5d  50                   push eax
-// 00627b5e  64892500000000       mov dword ptr fs:[0], esp
-// 00627b65  83ec08               sub esp, 8
-// 00627b68  53                   push ebx
-// 00627b69  56                   push esi
-// 00627b6a  57                   push edi
-// 00627b6b  8bf1                 mov esi, ecx
-// 00627b6d  6a38                 push 0x38
-// 00627b6f  89742410             mov dword ptr [esp + 0x10], esi
-// 00627b73  e87e830000           call 0x62fef6
-// 00627b78  83c404               add esp, 4
-// 00627b7b  89442410             mov dword ptr [esp + 0x10], eax
-// 00627b7f  8b5c2428             mov ebx, dword ptr [esp + 0x28]
-// 00627b83  33ff                 xor edi, edi
-// 00627b85  3bc7                 cmp eax, edi
-// 00627b87  897c241c             mov dword ptr [esp + 0x1c], edi
-// 00627b8b  740b                 je 0x627b98
-// 00627b8d  53                   push ebx
-// 00627b8e  56                   push esi
-// 00627b8f  8bc8                 mov ecx, eax
-// 00627b91  e8cac0fdff           call 0x603c60
-// 00627b96  eb02                 jmp 0x627b9a
-// 00627b98  33c0                 xor eax, eax
-// 00627b9a  8b4c2424             mov ecx, dword ptr [esp + 0x24]
-// 00627b9e  894e04               mov dword ptr [esi + 4], ecx
-// 00627ba1  894608               mov dword ptr [esi + 8], eax
-// 00627ba4  895e0c               mov dword ptr [esi + 0xc], ebx
-// 00627ba7  c706744b7c00         mov dword ptr [esi], 0x7c4b74
-// 00627bad  897e10               mov dword ptr [esi + 0x10], edi
-// 00627bb0  c744241c01000000     mov dword ptr [esp + 0x1c], 1
-// 00627bb8  897e18               mov dword ptr [esi + 0x18], edi
-// 00627bbb  897e1c               mov dword ptr [esi + 0x1c], edi
-// 00627bbe  897e14               mov dword ptr [esi + 0x14], edi
-// 00627bc1  6840000200           push 0x20040
-// 00627bc6  c644242002           mov byte ptr [esp + 0x20], 2
-// 00627bcb  e826830000           call 0x62fef6
-// 00627bd0  83c404               add esp, 4
-// 00627bd3  89442428             mov dword ptr [esp + 0x28], eax
-// 00627bd7  3bc7                 cmp eax, edi
-// 00627bd9  c644241c03           mov byte ptr [esp + 0x1c], 3
-// 00627bde  7411                 je 0x627bf1
-// 00627be0  68904b7c00           push 0x7c4b90
-// 00627be5  8bc8                 mov ecx, eax
-// 00627be7  e874a0f6ff           call 0x591c60
-// 00627bec  894620               mov dword ptr [esi + 0x20], eax
-// 00627bef  eb03                 jmp 0x627bf4
-// 00627bf1  897e20               mov dword ptr [esi + 0x20], edi
-// 00627bf4  8b4c2414             mov ecx, dword ptr [esp + 0x14]
-// 00627bf8  5f                   pop edi
-// 00627bf9  8bc6                 mov eax, esi
-// 00627bfb  5e                   pop esi
-// 00627bfc  5b                   pop ebx
-// 00627bfd  64890d00000000       mov dword ptr fs:[0], ecx
-// 00627c04  83c414               add esp, 0x14
-// 00627c07  c20800               ret 8
-// library rbxgs/v8world\CollisionStage.cpp (function ??0CollisionStage@RBX@@QAE@PAVIStage@1@PAVWorld@1@@Z)
-
 // roc-lang: cpp
 // roc-cl: 50727
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
 // roc-lib: rbxgs v8world/CollisionStage.cpp
+
+// Candidate translation unit (score above; library headers required).
+#include "v8world/CollisionStage.h"
+#include "v8world/SleepStage.h"
+#include "v8world/Assembly.h"
+#include "v8world/Primitive.h"
+#include "v8world/Clump.h"
+#include "v8world/Joint.h"
+
+namespace RBX
+{
+#pragma warning (push)
+#pragma warning (disable : 4355) // warning C4355: 'this' : used in base member initializer list
+	CollisionStage::CollisionStage(IStage* upstream, World* world)
+		: IWorldStage(upstream, new SleepStage(this, world), world),
+		  numContactsInStage(0),
+		  stepping(),
+		  profilingCollision(new Profiling::CodeProfiler("Collision"))
+	{
+	}
+#pragma warning (pop)
+
+	CollisionStage::~CollisionStage()
+	{
+		RBXASSERT(stepping.size() == 0);
+		RBXASSERT(numContactsInStage == 0);
+	}
+
+	void CollisionStage::removeContact(Contact* c)
+	{
+		RBXASSERT(c->inOrDownstreamOfStage(this));
+		if (c->downstreamOfStage(this))
+			removeContactFromDownstreamStage(c);
+
+		if (c->steppingIndexFunc() >= 0)
+			stepping.fastRemove(c);
+	}
+
+	bool CollisionStage::getOkToSim(Contact* c, bool& okToStep)
+	{
+		Primitive* p0 = c->getPrimitive(0);
+		Primitive* p1 = c->getPrimitive(1);
+
+		bool hasJoint = Primitive::getJoint(p0, p1) != NULL;
+		okToStep = 
+			((!p0->getClump()->getAnchored() && p0->getClump()->getSleepStatus() == Sim::AWAKE) ||
+			 (!p1->getClump()->getAnchored() && p1->getClump()->getSleepStatus() == Sim::AWAKE)) &&
+			!hasJoint;
+
+		return okToStep && (!p0->getDragging() && p0->getCanCollide()) && (!p1->getDragging() && p1->getCanCollide());
+	}
+
+	void CollisionStage::stepWorld(int worldStepId, int uiStepId, bool throttling)
+	{
+		{
+			Profiling::Mark mark(*profilingCollision.get(), false);
+
+			std::vector<Contact*> toErase;
+
+			for (int i = 0; i < stepping.size(); ++i)
+			{
+				Contact* c = stepping[i];
+
+				RBXASSERT(c->inStage(this));
+				if (!throttling || !c->getPrimitive(0)->getBody()->getCanThrottle() || !c->getPrimitive(1)->getBody()->getCanThrottle())
+				{
+					bool okToStep;
+					bool okToSim = getOkToSim(c, okToStep);
+					if (!okToStep)
+					{
+						toErase.push_back(c);
+					}
+					else
+					{
+						if (c->step(uiStepId) && okToSim)
+						{
+							toErase.push_back(c);
+							getDownstreamWS()->onEdgeAdded(c);
+							RBXASSERT(c->downstreamOfStage(this));
+						}
+					}
+				}
+			}
+
+			for (size_t i = 0; i < toErase.size(); ++i)
+				stepping.fastRemove(toErase[i]);
+		}
+
+		IWorldStage::stepWorld(worldStepId, uiStepId, throttling);
+	}
+
+	void CollisionStage::onSleepChanged(const Assembly* assembly)
+	{
+		typedef std::set<Edge*>::const_iterator Iterator;
+
+		Iterator it = assembly->externalEdgeBegin();
+		Iterator itEnd = assembly->externalEdgeEnd();
+		for (; it != itEnd; it++)
+		{
+			Edge* e = *it;
+			if (e->getEdgeType() == Edge::CONTACT)
+			{
+				Contact* c = rbx_static_cast<Contact*>(e);
+				if (c->inStage(this))
+					updateContact(c);
+			}
+		}
+	}
+
+	void CollisionStage::onLosingContact(const G3D::Array<Contact*>& separating)
+	{
+		for (int i = 0; i < separating.size(); ++i)
+		{
+			Contact* c = separating[i];
+			RBXASSERT(!c->downstreamOfStage(this));
+			RBXASSERT(c->inStage(this));
+			updateContact(c);
+		}
+	}
+
+	void CollisionStage::removeContactFromDownstreamStage(Contact* c)
+	{
+		RBXASSERT(c->downstreamOfStage(this));
+		RBXASSERT(c->steppingIndexFunc() < 0);
+
+		getDownstreamWS()->onEdgeRemoving(c);
+	}
+
+	void CollisionStage::updateContact(Contact* c)
+	{
+		RBXASSERT(c->inOrDownstreamOfStage(this));
+		if (c->downstreamOfStage(this))
+		{
+			bool temp;
+			if (getOkToSim(c, temp))
+				return;
+
+			removeContactFromDownstreamStage(c);
+		}
+
+		RBXASSERT(c->inStage(this));
+
+		if (c->steppingIndexFunc() < 0)
+			stepping.fastAppend(c);
+	}
+
+	void CollisionStage::onJointAdded(Joint* j)
+	{
+		RBXASSERT(!j->inKernel());
+		getDownstreamWS()->onEdgeAdded(j);
+
+		Contact* c = Primitive::getContact(j->getPrimitive(0), j->getPrimitive(1));
+		if (c && c->inOrDownstreamOfStage(this))
+			updateContact(c);
+	}
+
+	void CollisionStage::onJointRemoved(Joint* j)
+	{
+		Contact* c = Primitive::getContact(j->getPrimitive(0), j->getPrimitive(1));
+		if (c && c->inOrDownstreamOfStage(this))
+			RBXASSERT(c->inStage(this));
+
+		getDownstreamWS()->onEdgeRemoving(j);
+
+		if (c && c->inOrDownstreamOfStage(this))
+			updateContact(c);
+	}
+
+	inline bool isAssemblyInOrDownstreamOfStage(Edge* e, IStage* stage)
+	{
+		Assembly* a0 = e->getPrimitive(0)->getAssembly();
+		Assembly* a1 = e->getPrimitive(1)->getAssembly();
+		return a0->inOrDownstreamOfStage(stage) || a1->inOrDownstreamOfStage(stage);
+	}
+
+	void CollisionStage::onEdgeAdded(Edge* e)
+	{
+		RBXASSERT(!e->inKernel());
+		RBXASSERT(!e->inOrDownstreamOfStage(this));
+		RBXASSERT(isAssemblyInOrDownstreamOfStage(e, this));
+
+		e->putInStage(this);
+		if (e->getEdgeType() == Edge::CONTACT)
+		{
+			++numContactsInStage;
+			Contact* c = rbx_static_cast<Contact*>(e);
+			RBXASSERT(c->steppingIndexFunc() < 0);
+			updateContact(c);
+		}
+		else
+		{
+			Joint* j = rbx_static_cast<Joint*>(e);
+			onJointAdded(j);
+		}
+	}
+
+	void CollisionStage::onEdgeRemoving(Edge* e)
+	{
+		RBXASSERT(isAssemblyInOrDownstreamOfStage(e, this));
+		RBXASSERT(e->inOrDownstreamOfStage(this));
+
+		if (e->getEdgeType() == Edge::CONTACT)
+		{
+			--numContactsInStage;
+			Contact* c = rbx_static_cast<Contact*>(e);
+			removeContact(c);
+		}
+		else
+		{
+			Joint* j = rbx_static_cast<Joint*>(e);
+			onJointRemoved(j);
+		}
+
+		e->removeFromStage(this);
+		RBXASSERT(!e->inOrDownstreamOfStage(this));
+	}
+
+	void CollisionStage::onPrimitiveCanCollideChanged(Primitive* p)
+	{
+		for (Contact* c = p->getFirstContact(); c != NULL; c = p->getNextContact(c))
+		{
+			if (c->inOrDownstreamOfStage(this))
+				updateContact(c);
+		}
+	}
+
+	int CollisionStage::getMetric(MetricType metricType)
+	{
+		switch (metricType)
+		{
+		case NUM_CONTACTSTAGE_CONTACTS:
+			return numContactsInStage;
+		case NUM_STEPPING_CONTACTS:
+			return stepping.size();
+		default:
+			return IWorldStage::getMetric(metricType);
+		}
+	}
+
+	void CollisionStage::onAssemblyAdded(Assembly* assembly)
+	{
+		assembly->putInStage(this);
+		rbx_static_cast<SleepStage*>(getDownstreamWS())->onAssemblyAdded(assembly);
+	}
+
+	void CollisionStage::onAssemblyRemoving(Assembly* assembly)
+	{
+		rbx_static_cast<SleepStage*>(getDownstreamWS())->onAssemblyRemoving(assembly);
+		assembly->removeFromStage(this);
+	}
+}

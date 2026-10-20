@@ -1,399 +1,1007 @@
 // from server: 100% by tester
-// roc 2007-03 004f9830  unit: seg_004f0000  size: 1230 bytes
-// Make this compile to the exact bytes below, then: roc check 2007-03 004f9830
-//
-// 004f9830  6aff                 push -1
-// 004f9832  68ab057500           push 0x7505ab
-// 004f9837  64a100000000         mov eax, dword ptr fs:[0]
-// 004f983d  50                   push eax
-// 004f983e  83ec5c               sub esp, 0x5c
-// 004f9841  a1b4f58a00           mov eax, dword ptr [0x8af5b4]
-// 004f9846  33c4                 xor eax, esp
-// 004f9848  89442458             mov dword ptr [esp + 0x58], eax
-// 004f984c  53                   push ebx
-// 004f984d  55                   push ebp
-// 004f984e  56                   push esi
-// 004f984f  57                   push edi
-// 004f9850  a1b4f58a00           mov eax, dword ptr [0x8af5b4]
-// 004f9855  33c4                 xor eax, esp
-// 004f9857  50                   push eax
-// 004f9858  8d442470             lea eax, [esp + 0x70]
-// 004f985c  64a300000000         mov dword ptr fs:[0], eax
-// 004f9862  8b84248c000000       mov eax, dword ptr [esp + 0x8c]
-// 004f9869  83f808               cmp eax, 8
-// 004f986c  8bbc2484000000       mov edi, dword ptr [esp + 0x84]
-// 004f9873  8bb42480000000       mov esi, dword ptr [esp + 0x80]
-// 004f987a  897c2414             mov dword ptr [esp + 0x14], edi
-// 004f987e  0f855b040000         jne 0x4f9cdf
-// 004f9884  8d4c2450             lea ecx, [esp + 0x50]
-// 004f9888  ff1584e77700         call dword ptr [0x77e784]
-// 004f988e  8b4614               mov eax, dword ptr [esi + 0x14]
-// 004f9891  83f805               cmp eax, 5
-// 004f9894  c744247800000000     mov dword ptr [esp + 0x78], 0
-// 004f989c  0f82b3000000         jb 0x4f9955
-// 004f98a2  83c0ff               add eax, -1
-// 004f98a5  83f805               cmp eax, 5
-// 004f98a8  8bd8                 mov ebx, eax
-// 004f98aa  7d05                 jge 0x4f98b1
-// 004f98ac  bb05000000           mov ebx, 5
-// 004f98b1  bd01000000           mov ebp, 1
-// 004f98b6  3bdd                 cmp ebx, ebp
-// 004f98b8  0f8c97000000         jl 0x4f9955
-// 004f98be  8bff                 mov edi, edi
-// 004f98c0  8b4614               mov eax, dword ptr [esi + 0x14]
-// 004f98c3  8bf8                 mov edi, eax
-// 004f98c5  2bfd                 sub edi, ebp
-// 004f98c7  3bf8                 cmp edi, eax
-// 004f98c9  7606                 jbe 0x4f98d1
-// 004f98cb  ff1544e97700         call dword ptr [0x77e944]
-// 004f98d1  837e1810             cmp dword ptr [esi + 0x18], 0x10
-// 004f98d5  7205                 jb 0x4f98dc
-// 004f98d7  8b4604               mov eax, dword ptr [esi + 4]
-// 004f98da  eb03                 jmp 0x4f98df
-// 004f98dc  8d4604               lea eax, [esi + 4]
-// 004f98df  803c382e             cmp byte ptr [eax + edi], 0x2e
-// 004f98e3  7409                 je 0x4f98ee
-// 004f98e5  83c501               add ebp, 1
-// 004f98e8  3beb                 cmp ebp, ebx
-// 004f98ea  7ed4                 jle 0x4f98c0
-// 004f98ec  eb63                 jmp 0x4f9951
-// 004f98ee  8b0dfce67700         mov ecx, dword ptr [0x77e6fc]
-// 004f98f4  8b4614               mov eax, dword ptr [esi + 0x14]
-// 004f98f7  8b11                 mov edx, dword ptr [ecx]
-// 004f98f9  2bc5                 sub eax, ebp
-// 004f98fb  52                   push edx
-// 004f98fc  83c001               add eax, 1
-// 004f98ff  50                   push eax
-// 004f9900  8d442420             lea eax, [esp + 0x20]
-// 004f9904  50                   push eax
-// 004f9905  8bce                 mov ecx, esi
-// 004f9907  ff15a8e67700         call dword ptr [0x77e6a8]
-// 004f990d  50                   push eax
-// 004f990e  8d4c2438             lea ecx, [esp + 0x38]
-// 004f9912  51                   push ecx
-// 004f9913  c684248000000001     mov byte ptr [esp + 0x80], 1
-// 004f991b  e8b03c0000           call 0x4fd5d0
-// 004f9920  83c408               add esp, 8
-// 004f9923  50                   push eax
-// 004f9924  8d4c2454             lea ecx, [esp + 0x54]
-// 004f9928  c644247c02           mov byte ptr [esp + 0x7c], 2
-// 004f992d  ff154ce77700         call dword ptr [0x77e74c]
-// 004f9933  8d4c2434             lea ecx, [esp + 0x34]
-// 004f9937  c644247801           mov byte ptr [esp + 0x78], 1
-// 004f993c  ff158ce77700         call dword ptr [0x77e78c]
-// 004f9942  8d4c2418             lea ecx, [esp + 0x18]
-// 004f9946  c644247800           mov byte ptr [esp + 0x78], 0
-// 004f994b  ff158ce77700         call dword ptr [0x77e78c]
-// 004f9951  8b7c2414             mov edi, dword ptr [esp + 0x14]
-// 004f9955  8d542450             lea edx, [esp + 0x50]
-// 004f9959  6834fb7900           push 0x79fb34
-// 004f995e  52                   push edx
-// 004f995f  ff15d8e67700         call dword ptr [0x77e6d8]
-// 004f9965  8b9c2490000000       mov ebx, dword ptr [esp + 0x90]
-// 004f996c  83c408               add esp, 8
-// 004f996f  84c0                 test al, al
-// 004f9971  744a                 je 0x4f99bd
-// 004f9973  83fb03               cmp ebx, 3
-// 004f9976  7e45                 jle 0x4f99bd
-// 004f9978  0fb607               movzx eax, byte ptr [edi]
-// 004f997b  83e850               sub eax, 0x50
-// 004f997e  baffffffff           mov edx, 0xffffffff
-// 004f9983  7509                 jne 0x4f998e
-// 004f9985  0fb64701             movzx eax, byte ptr [edi + 1]
-// 004f9989  83e836               sub eax, 0x36
-// 004f998c  740d                 je 0x4f999b
-// 004f998e  85c0                 test eax, eax
-// 004f9990  b901000000           mov ecx, 1
-// 004f9995  7f06                 jg 0x4f999d
-// 004f9997  8bca                 mov ecx, edx
-// 004f9999  eb02                 jmp 0x4f999d
-// 004f999b  33c9                 xor ecx, ecx
-// 004f999d  85c9                 test ecx, ecx
-// 004f999f  89542478             mov dword ptr [esp + 0x78], edx
-// 004f99a3  8d4c2450             lea ecx, [esp + 0x50]
-// 004f99a7  0f85c2000000         jne 0x4f9a6f
-// 004f99ad  ff158ce77700         call dword ptr [0x77e78c]
-// 004f99b3  b807000000           mov eax, 7
-// 004f99b8  e922030000           jmp 0x4f9cdf
-// 004f99bd  8d442450             lea eax, [esp + 0x50]
-// 004f99c1  50                   push eax
-// 004f99c2  e8b9f6ffff           call 0x4f9080
-// 004f99c7  8bf0                 mov esi, eax
-// 004f99c9  83c404               add esp, 4
-// 004f99cc  83fe08               cmp esi, 8
-// 004f99cf  741e                 je 0x4f99ef
-// 004f99d1  83fe09               cmp esi, 9
-// 004f99d4  7419                 je 0x4f99ef
-// 004f99d6  8d4c2450             lea ecx, [esp + 0x50]
-// 004f99da  c7442478ffffffff     mov dword ptr [esp + 0x78], 0xffffffff
-// 004f99e2  ff158ce77700         call dword ptr [0x77e78c]
-// 004f99e8  8bc6                 mov eax, esi
-// 004f99ea  e9f0020000           jmp 0x4f9cdf
-// 004f99ef  83ceff               or esi, 0xffffffff
-// 004f99f2  83fb03               cmp ebx, 3
-// 004f99f5  0f8ec0000000         jle 0x4f9abb
-// 004f99fb  0fb607               movzx eax, byte ptr [edi]
-// 004f99fe  83e850               sub eax, 0x50
-// 004f9a01  7509                 jne 0x4f9a0c
-// 004f9a03  0fb64701             movzx eax, byte ptr [edi + 1]
-// 004f9a07  83e833               sub eax, 0x33
-// 004f9a0a  740d                 je 0x4f9a19
-// 004f9a0c  85c0                 test eax, eax
-// 004f9a0e  b901000000           mov ecx, 1
-// 004f9a13  7f06                 jg 0x4f9a1b
-// 004f9a15  8bce                 mov ecx, esi
-// 004f9a17  eb02                 jmp 0x4f9a1b
-// 004f9a19  33c9                 xor ecx, ecx
-// 004f9a1b  85c9                 test ecx, ecx
-// 004f9a1d  7448                 je 0x4f9a67
-// 004f9a1f  0fb607               movzx eax, byte ptr [edi]
-// 004f9a22  83e850               sub eax, 0x50
-// 004f9a25  7509                 jne 0x4f9a30
-// 004f9a27  0fb64701             movzx eax, byte ptr [edi + 1]
-// 004f9a2b  83e832               sub eax, 0x32
-// 004f9a2e  740d                 je 0x4f9a3d
-// 004f9a30  85c0                 test eax, eax
-// 004f9a32  b901000000           mov ecx, 1
-// 004f9a37  7f06                 jg 0x4f9a3f
-// 004f9a39  8bce                 mov ecx, esi
-// 004f9a3b  eb02                 jmp 0x4f9a3f
-// 004f9a3d  33c9                 xor ecx, ecx
-// 004f9a3f  85c9                 test ecx, ecx
-// 004f9a41  7424                 je 0x4f9a67
-// 004f9a43  0fb607               movzx eax, byte ptr [edi]
-// 004f9a46  83e850               sub eax, 0x50
-// 004f9a49  7509                 jne 0x4f9a54
-// 004f9a4b  0fb64701             movzx eax, byte ptr [edi + 1]
-// 004f9a4f  83e831               sub eax, 0x31
-// 004f9a52  740d                 je 0x4f9a61
-// 004f9a54  85c0                 test eax, eax
-// 004f9a56  b901000000           mov ecx, 1
-// 004f9a5b  7f06                 jg 0x4f9a63
-// 004f9a5d  8bce                 mov ecx, esi
-// 004f9a5f  eb02                 jmp 0x4f9a63
-// 004f9a61  33c9                 xor ecx, ecx
-// 004f9a63  85c9                 test ecx, ecx
-// 004f9a65  7518                 jne 0x4f9a7f
-// 004f9a67  89742478             mov dword ptr [esp + 0x78], esi
-// 004f9a6b  8d4c2450             lea ecx, [esp + 0x50]
-// 004f9a6f  ff158ce77700         call dword ptr [0x77e78c]
-// 004f9a75  b806000000           mov eax, 6
-// 004f9a7a  e960020000           jmp 0x4f9cdf
-// 004f9a7f  0fb607               movzx eax, byte ptr [edi]
-// 004f9a82  83e850               sub eax, 0x50
-// 004f9a85  7509                 jne 0x4f9a90
-// 004f9a87  0fb64701             movzx eax, byte ptr [edi + 1]
-// 004f9a8b  83e836               sub eax, 0x36
-// 004f9a8e  740d                 je 0x4f9a9d
-// 004f9a90  85c0                 test eax, eax
-// 004f9a92  b901000000           mov ecx, 1
-// 004f9a97  7f06                 jg 0x4f9a9f
-// 004f9a99  8bce                 mov ecx, esi
-// 004f9a9b  eb02                 jmp 0x4f9a9f
-// 004f9a9d  33c9                 xor ecx, ecx
-// 004f9a9f  85c9                 test ecx, ecx
-// 004f9aa1  7518                 jne 0x4f9abb
-// 004f9aa3  8d4c2450             lea ecx, [esp + 0x50]
-// 004f9aa7  89742478             mov dword ptr [esp + 0x78], esi
-// 004f9aab  ff158ce77700         call dword ptr [0x77e78c]
-// 004f9ab1  b807000000           mov eax, 7
-// 004f9ab6  e924020000           jmp 0x4f9cdf
-// 004f9abb  83fb08               cmp ebx, 8
-// 004f9abe  7e29                 jle 0x4f9ae9
-// 004f9ac0  6a08                 push 8
-// 004f9ac2  6a00                 push 0
-// 004f9ac4  57                   push edi
-// 004f9ac5  e8560a0100           call 0x50a520
-// 004f9aca  83c40c               add esp, 0xc
-// 004f9acd  85c0                 test eax, eax
-// 004f9acf  7518                 jne 0x4f9ae9
-// 004f9ad1  8d4c2450             lea ecx, [esp + 0x50]
-// 004f9ad5  89742478             mov dword ptr [esp + 0x78], esi
-// 004f9ad9  ff158ce77700         call dword ptr [0x77e78c]
-// 004f9adf  b805000000           mov eax, 5
-// 004f9ae4  e9f6010000           jmp 0x4f9cdf
-// 004f9ae9  85db                 test ebx, ebx
-// 004f9aeb  7e1d                 jle 0x4f9b0a
-// 004f9aed  803f42               cmp byte ptr [edi], 0x42
-// 004f9af0  7518                 jne 0x4f9b0a
-// 004f9af2  8d4c2450             lea ecx, [esp + 0x50]
-// 004f9af6  89742478             mov dword ptr [esp + 0x78], esi
-// 004f9afa  ff158ce77700         call dword ptr [0x77e78c]
-// 004f9b00  b801000000           mov eax, 1
-// 004f9b05  e9d5010000           jmp 0x4f9cdf
-// 004f9b0a  83fb0a               cmp ebx, 0xa
-// 004f9b0d  0f8eb9000000         jle 0x4f9bcc
-// 004f9b13  83fb0b               cmp ebx, 0xb
-// 004f9b16  0f8eb0000000         jle 0x4f9bcc
-// 004f9b1c  803fff               cmp byte ptr [edi], 0xff
-// 004f9b1f  0f85a7000000         jne 0x4f9bcc
-// 004f9b25  b804000000           mov eax, 4
-// 004f9b2a  b93cfc7900           mov ecx, 0x79fc3c
-// 004f9b2f  8d5706               lea edx, [edi + 6]
-// 004f9b32  8b2a                 mov ebp, dword ptr [edx]
-// 004f9b34  3b29                 cmp ebp, dword ptr [ecx]
-// 004f9b36  7512                 jne 0x4f9b4a
-// 004f9b38  83e804               sub eax, 4
-// 004f9b3b  83c104               add ecx, 4
-// 004f9b3e  83c204               add edx, 4
-// 004f9b41  83f804               cmp eax, 4
-// 004f9b44  73ec                 jae 0x4f9b32
-// 004f9b46  85c0                 test eax, eax
-// 004f9b48  7462                 je 0x4f9bac
-// 004f9b4a  0fb629               movzx ebp, byte ptr [ecx]
-// 004f9b4d  0fb632               movzx esi, byte ptr [edx]
-// 004f9b50  2bf5                 sub esi, ebp
-// 004f9b52  7545                 jne 0x4f9b99
-// 004f9b54  83e801               sub eax, 1
-// 004f9b57  83c101               add ecx, 1
-// 004f9b5a  83c201               add edx, 1
-// 004f9b5d  85c0                 test eax, eax
-// 004f9b5f  7448                 je 0x4f9ba9
-// 004f9b61  0fb629               movzx ebp, byte ptr [ecx]
-// 004f9b64  0fb632               movzx esi, byte ptr [edx]
-// 004f9b67  2bf5                 sub esi, ebp
-// 004f9b69  752e                 jne 0x4f9b99
-// 004f9b6b  83e801               sub eax, 1
-// 004f9b6e  83c101               add ecx, 1
-// 004f9b71  83c201               add edx, 1
-// 004f9b74  85c0                 test eax, eax
-// 004f9b76  7431                 je 0x4f9ba9
-// 004f9b78  0fb629               movzx ebp, byte ptr [ecx]
-// 004f9b7b  0fb632               movzx esi, byte ptr [edx]
-// 004f9b7e  2bf5                 sub esi, ebp
-// 004f9b80  7517                 jne 0x4f9b99
-// 004f9b82  83e801               sub eax, 1
-// 004f9b85  83c101               add ecx, 1
-// 004f9b88  83c201               add edx, 1
-// 004f9b8b  85c0                 test eax, eax
-// 004f9b8d  741a                 je 0x4f9ba9
-// 004f9b8f  0fb609               movzx ecx, byte ptr [ecx]
-// 004f9b92  0fb632               movzx esi, byte ptr [edx]
-// 004f9b95  2bf1                 sub esi, ecx
-// 004f9b97  7410                 je 0x4f9ba9
-// 004f9b99  85f6                 test esi, esi
-// 004f9b9b  b801000000           mov eax, 1
-// 004f9ba0  7f0e                 jg 0x4f9bb0
-// 004f9ba2  83ceff               or esi, 0xffffffff
-// 004f9ba5  8bc6                 mov eax, esi
-// 004f9ba7  eb0a                 jmp 0x4f9bb3
-// 004f9ba9  83ceff               or esi, 0xffffffff
-// 004f9bac  33c0                 xor eax, eax
-// 004f9bae  eb03                 jmp 0x4f9bb3
-// 004f9bb0  83ceff               or esi, 0xffffffff
-// 004f9bb3  85c0                 test eax, eax
-// 004f9bb5  7515                 jne 0x4f9bcc
-// 004f9bb7  8d4c2450             lea ecx, [esp + 0x50]
-// 004f9bbb  89742478             mov dword ptr [esp + 0x78], esi
-// 004f9bbf  ff158ce77700         call dword ptr [0x77e78c]
-// 004f9bc5  33c0                 xor eax, eax
-// 004f9bc7  e913010000           jmp 0x4f9cdf
-// 004f9bcc  83fb28               cmp ebx, 0x28
-// 004f9bcf  0f8ea8000000         jle 0x4f9c7d
-// 004f9bd5  b810000000           mov eax, 0x10
-// 004f9bda  b9fcf97900           mov ecx, 0x79f9fc
-// 004f9bdf  8d541fee             lea edx, [edi + ebx - 0x12]
-// 004f9be3  8b2a                 mov ebp, dword ptr [edx]
-// 004f9be5  3b29                 cmp ebp, dword ptr [ecx]
-// 004f9be7  7512                 jne 0x4f9bfb
-// 004f9be9  83e804               sub eax, 4
-// 004f9bec  83c104               add ecx, 4
-// 004f9bef  83c204               add edx, 4
-// 004f9bf2  83f804               cmp eax, 4
-// 004f9bf5  73ec                 jae 0x4f9be3
-// 004f9bf7  85c0                 test eax, eax
-// 004f9bf9  7462                 je 0x4f9c5d
-// 004f9bfb  0fb632               movzx esi, byte ptr [edx]
-// 004f9bfe  0fb629               movzx ebp, byte ptr [ecx]
-// 004f9c01  2bf5                 sub esi, ebp
-// 004f9c03  7545                 jne 0x4f9c4a
-// 004f9c05  83e801               sub eax, 1
-// 004f9c08  83c101               add ecx, 1
-// 004f9c0b  83c201               add edx, 1
-// 004f9c0e  85c0                 test eax, eax
-// 004f9c10  7448                 je 0x4f9c5a
-// 004f9c12  0fb632               movzx esi, byte ptr [edx]
-// 004f9c15  0fb629               movzx ebp, byte ptr [ecx]
-// 004f9c18  2bf5                 sub esi, ebp
-// 004f9c1a  752e                 jne 0x4f9c4a
-// 004f9c1c  83e801               sub eax, 1
-// 004f9c1f  83c101               add ecx, 1
-// 004f9c22  83c201               add edx, 1
-// 004f9c25  85c0                 test eax, eax
-// 004f9c27  7431                 je 0x4f9c5a
-// 004f9c29  0fb632               movzx esi, byte ptr [edx]
-// 004f9c2c  0fb629               movzx ebp, byte ptr [ecx]
-// 004f9c2f  2bf5                 sub esi, ebp
-// 004f9c31  7517                 jne 0x4f9c4a
-// 004f9c33  83e801               sub eax, 1
-// 004f9c36  83c101               add ecx, 1
-// 004f9c39  83c201               add edx, 1
-// 004f9c3c  85c0                 test eax, eax
-// 004f9c3e  741a                 je 0x4f9c5a
-// 004f9c40  0fb632               movzx esi, byte ptr [edx]
-// 004f9c43  0fb611               movzx edx, byte ptr [ecx]
-// 004f9c46  2bf2                 sub esi, edx
-// 004f9c48  7410                 je 0x4f9c5a
-// 004f9c4a  85f6                 test esi, esi
-// 004f9c4c  b801000000           mov eax, 1
-// 004f9c51  7f0e                 jg 0x4f9c61
-// 004f9c53  83ceff               or esi, 0xffffffff
-// 004f9c56  8bc6                 mov eax, esi
-// 004f9c58  eb0a                 jmp 0x4f9c64
-// 004f9c5a  83ceff               or esi, 0xffffffff
-// 004f9c5d  33c0                 xor eax, eax
-// 004f9c5f  eb03                 jmp 0x4f9c64
-// 004f9c61  83ceff               or esi, 0xffffffff
-// 004f9c64  85c0                 test eax, eax
-// 004f9c66  7515                 jne 0x4f9c7d
-// 004f9c68  8d4c2450             lea ecx, [esp + 0x50]
-// 004f9c6c  89742478             mov dword ptr [esp + 0x78], esi
-// 004f9c70  ff158ce77700         call dword ptr [0x77e78c]
-// 004f9c76  b802000000           mov eax, 2
-// 004f9c7b  eb62                 jmp 0x4f9cdf
-// 004f9c7d  83fb04               cmp ebx, 4
-// 004f9c80  7e2c                 jle 0x4f9cae
-// 004f9c82  803f00               cmp byte ptr [edi], 0
-// 004f9c85  7527                 jne 0x4f9cae
-// 004f9c87  807f0100             cmp byte ptr [edi + 1], 0
-// 004f9c8b  7521                 jne 0x4f9cae
-// 004f9c8d  807f0200             cmp byte ptr [edi + 2], 0
-// 004f9c91  751b                 jne 0x4f9cae
-// 004f9c93  807f0301             cmp byte ptr [edi + 3], 1
-// 004f9c97  7515                 jne 0x4f9cae
-// 004f9c99  8d4c2450             lea ecx, [esp + 0x50]
-// 004f9c9d  89742478             mov dword ptr [esp + 0x78], esi
-// 004f9ca1  ff158ce77700         call dword ptr [0x77e78c]
-// 004f9ca7  b804000000           mov eax, 4
-// 004f9cac  eb31                 jmp 0x4f9cdf
-// 004f9cae  85db                 test ebx, ebx
-// 004f9cb0  7e1a                 jle 0x4f9ccc
-// 004f9cb2  803f0a               cmp byte ptr [edi], 0xa
-// 004f9cb5  7515                 jne 0x4f9ccc
-// 004f9cb7  8d4c2450             lea ecx, [esp + 0x50]
-// 004f9cbb  89742478             mov dword ptr [esp + 0x78], esi
-// 004f9cbf  ff158ce77700         call dword ptr [0x77e78c]
-// 004f9cc5  b803000000           mov eax, 3
-// 004f9cca  eb13                 jmp 0x4f9cdf
-// 004f9ccc  8d4c2450             lea ecx, [esp + 0x50]
-// 004f9cd0  89742478             mov dword ptr [esp + 0x78], esi
-// 004f9cd4  ff158ce77700         call dword ptr [0x77e78c]
-// 004f9cda  b809000000           mov eax, 9
-// 004f9cdf  8b4c2470             mov ecx, dword ptr [esp + 0x70]
-// 004f9ce3  64890d00000000       mov dword ptr fs:[0], ecx
-// 004f9cea  59                   pop ecx
-// 004f9ceb  5f                   pop edi
-// 004f9cec  5e                   pop esi
-// 004f9ced  5d                   pop ebp
-// 004f9cee  5b                   pop ebx
-// 004f9cef  8b4c2458             mov ecx, dword ptr [esp + 0x58]
-// 004f9cf3  33cc                 xor ecx, esp
-// 004f9cf5  e8ac511200           call 0x61eea6
-// 004f9cfa  83c468               add esp, 0x68
-// 004f9cfd  c3                   ret 
-// library g3d-6.09/G3Dcpp\GImage.cpp (function ?resolveFormat@GImage@G3D@@CA?AW4Format@12@ABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PBEHW4312@@Z)
-
 // roc-lang: cpp
 // roc-cl: 50727
 // roc-flags: /O2 /GS /EHsc /MD
 // roc-lib: g3d-6.09 G3Dcpp/GImage.cpp
+
+// Candidate translation unit (score above; library headers required).
+/**
+  @file GImage.cpp
+  @author Morgan McGuire, morgan@graphics3d.com
+  @created 2002-05-27
+  @edited  2006-02-10
+ */
+#include "G3D/platform.h"
+#include "G3D/GImage.h"
+#include "G3D/debug.h"
+#include "G3D/stringutils.h"
+#include "G3D/TextInput.h"
+#include "G3D/TextOutput.h"
+#include "G3D/BinaryInput.h"
+#include "G3D/BinaryOutput.h"
+#include "G3D/Log.h"
+
+#include "../png/png.h"
+#include <sys/stat.h>
+#include <assert.h>
+#include <sys/types.h>
+
+//////////////////////////////////////////////////////////////////////////////////////////////
+
+namespace G3D {
+   
+void GImage::RGBtoRGBA(
+    const uint8*    in,
+    uint8*          out,
+    int                     numPixels) {
+
+    for (int i = 0; i < numPixels; ++i) {
+        int i3 = i * 3;
+        int i4 = i3 + i;
+
+        out[i4 + 0] = in[i3 + 0]; 
+        out[i4 + 1] = in[i3 + 1]; 
+        out[i4 + 2] = in[i3 + 2]; 
+        out[i4 + 3] = 255; 
+    }
+}
+
+
+void GImage::RGBtoBGRA(
+    const uint8*    in,
+    uint8*          out,
+    int                     numPixels) {
+
+    for (int i = 0; i < numPixels; ++i) {
+        int i3 = i * 3;
+        int i4 = i3 + i;
+
+        out[i4 + 2] = in[i3 + 0]; 
+        out[i4 + 1] = in[i3 + 1]; 
+        out[i4 + 0] = in[i3 + 2]; 
+        out[i4 + 3] = 255; 
+    }
+}
+
+
+void GImage::RGBtoBGR(
+    const uint8*    in,
+    uint8*          out,
+    int             numPixels) {
+
+    for (int i = 0; i < numPixels; ++i) {
+        int i3 = i * 3;
+
+        int r = in[i3 + 0];
+        int g = in[i3 + 1];
+        int b = in[i3 + 2];
+
+        out[i3 + 2] = r; 
+        out[i3 + 1] = g; 
+        out[i3 + 0] = b;
+    }
+}
+
+
+void GImage::RGBxRGBtoRGBA(
+    const uint8*            colorRGB,
+    const uint8*            alphaRGB,
+    uint8*                  out,
+    int                     numPixels) {
+
+    for (int i = numPixels - 1; i >= 0; --i) {
+        int i3 = i * 3;
+        int i4 = i3 + i;
+
+        out[i4 + 0] = colorRGB[i3 + 0];
+        out[i4 + 1] = colorRGB[i3 + 1];
+        out[i4 + 2] = colorRGB[i3 + 2];
+        out[i4 + 3] = alphaRGB[i3 + 0];
+    }
+}
+
+
+void GImage::RGBtoARGB(
+    const uint8*            in,
+    uint8*                  out,
+    int                     numPixels) {
+
+    for (int i = 0; i < numPixels; ++i) {
+        int i3 = i * 3;
+        int i4 = i3 + i;
+
+        out[i4 + 0] = 255; 
+        out[i4 + 1] = in[i3 + 0]; 
+        out[i4 + 2] = in[i3 + 1]; 
+        out[i4 + 3] = in[i3 + 2];
+    }
+}
+
+
+void GImage::flipRGBVertical(
+    const uint8*            in,
+    uint8*                  out,
+    int                     width,
+    int                     height) {
+
+    
+    // Allocate a temp row so the operation
+    // is still safe if in == out
+    uint8* temp = (uint8*)System::malloc(width * 3);
+    alwaysAssertM(temp != NULL, "Out of memory"); 
+
+    int oneRow = width * 3;
+    int N = height / 2;
+
+    // if height is an odd value, don't swap odd middle row
+    for (int i = 0; i < N; ++i) {
+        int topOff = i * oneRow;
+        int botOff = (height - i - 1) * oneRow;
+        System::memcpy(temp,         in + topOff, oneRow);
+        System::memcpy(out + topOff, in + botOff, oneRow);
+        System::memcpy(out + botOff, temp,        oneRow);
+    }
+
+    System::free(temp);
+}
+
+
+void GImage::flipRGBAVertical(
+    const uint8*            in,
+    uint8*                  out,
+    int                     width,
+    int                     height) {
+
+    
+    // Allocate a temp row so the operation
+    // is still safe if in == out
+    uint8* temp = (uint8*)System::malloc(width * 4);
+    alwaysAssertM(temp != NULL, "Out of memory");
+
+    int oneRow = width * 4;
+
+    // if height is an odd value, don't swap odd middle row
+    for (int i = 0; i < height / 2; ++i) {
+        int topOff = i * oneRow;
+        int botOff = (height - i - 1) * oneRow;
+        System::memcpy(temp,         in + topOff, oneRow);
+        System::memcpy(out + topOff, in + botOff, oneRow);
+        System::memcpy(out + botOff, temp,        oneRow);
+    }
+
+    System::free(temp);
+}
+
+////////////////////////////////////////////////////////////////////////////////////////
+
+void GImage::decode(
+    BinaryInput&        input,
+    Format              format) {
+
+    switch (format) {
+    case PPM_ASCII:
+        decodePPMASCII(input);
+        break;
+
+    case PPM:
+        decodePPM(input);
+        break;
+
+    case PNG:
+        decodePNG(input);
+        break;
+
+    case JPEG:
+        decodeJPEG(input);
+        break;
+
+    case TGA:
+        decodeTGA(input);
+        break;
+
+    case BMP:
+        decodeBMP(input);
+        break;
+
+    case ICO:
+        decodeICO(input);
+        break;
+
+    case PCX:
+        decodePCX(input);
+        break;
+
+    default:
+        debugAssert(false);
+    }
+
+    debugAssert(width >= 0);
+    debugAssert(height >= 0);
+    debugAssert(channels == 1 || channels == 3 || channels == 4);
+    debugAssert(_byte != NULL);
+}
+
+
+void GImage::decodePCX(
+    BinaryInput&                input) {
+
+    uint8  manufacturer = input.readUInt8();
+    uint8  version      = input.readUInt8();
+    uint8  encoding     = input.readUInt8();
+    uint8  bitsPerPixel = input.readUInt8();
+
+    uint16 xmin         = input.readUInt16();
+    uint16 ymin         = input.readUInt16();
+    uint16 xmax         = input.readUInt16();
+    uint16 ymax         = input.readUInt16();
+
+    uint16 horizDPI     = input.readUInt16();
+    uint16 vertDPI      = input.readUInt16();
+
+    Color3uint8 colorMap[16];
+    input.readBytes(48, colorMap);
+
+    input.skip(1);
+
+    uint8  planes       = input.readUInt8();
+    uint16 bytesPerLine = input.readUInt16();
+    uint16 paletteType  = input.readUInt16();
+    input.skip(4 + 54);
+
+    (void)bytesPerLine;
+
+    width  = xmax - xmin + 1;
+    height = ymax - ymin + 1;
+    channels = 3;
+
+    if ((manufacturer != 0x0A) || (encoding != 0x01)) {
+        throw GImage::Error("PCX file is corrupted", input.getFilename());
+    }
+
+    (void)version;
+    (void)vertDPI;
+    (void)horizDPI;
+
+    if ((bitsPerPixel != 8) || ((planes != 1) && (planes != 3))) {
+        throw GImage::Error("Only 8-bit paletted and 24-bit PCX files supported.", input.getFilename());
+    }
+
+	// Prepare the pointer object for the pixel data
+    _byte = (uint8*)System::malloc(width * height * 3);
+
+    if ((paletteType == 1) && (planes == 3)) {
+
+        Color3uint8* pixel = pixel3();
+
+        // Iterate over each scan line
+        for (int row = 0; row < height; ++row) {
+            // Read each scan line once per plane
+            for (int plane = 0; plane < planes; ++plane) {
+                int p = row * width;
+                int p1 = p + width;
+                while (p < p1) {
+                    uint8 value = input.readUInt8();
+                    int length = 1;
+            
+                    if (value >= 192) {
+                        // This is the length, not the value.  Mask off
+                        // the two high bits and read the true index.
+                        length = value & 0x3F;
+                        value = input.readUInt8();
+                    }
+
+                    // Set the whole run
+                    for (int i = length - 1; i >= 0; --i, ++p) {
+                        debugAssert(p < width * height);
+                        pixel[p][plane] = value;
+                    }
+                }
+            }
+        }
+
+    } else if (planes == 1) {
+
+        Color3uint8 palette[256];
+
+        int imageBeginning   = input.getPosition();
+        int paletteBeginning = input.getLength() - 769;
+
+        input.setPosition(paletteBeginning);
+
+        uint8 dummy = input.readUInt8();
+
+        if (dummy != 12) {
+            Log::common()->println("\n*********************");
+            Log::common()->printf("Warning: Corrupted PCX file (palette marker byte was missing) \"%s\"\nLoading anyway\n\n", input.getFilename().c_str());
+        }
+
+        input.readBytes(sizeof(palette), palette);
+        input.setPosition(imageBeginning);
+        
+
+        Color3uint8* pixel = pixel3();
+        
+        // The palette indices are run length encoded.
+        int p = 0;
+        while (p < width * height) {
+            uint8 index  = input.readUInt8();
+            uint8 length = 1;
+
+            if (index >= 192) {
+                // This is the length, not the index.  Mask off
+                // the two high bits and read the true index.
+                length = index & 0x3F;
+                index  = input.readUInt8();
+            }
+
+            Color3uint8 color = palette[index];
+
+            // Set the whole run
+            for (int i = length - 1; i >= 0; --i, ++p) {
+                debugAssert(p < width * height);
+                pixel[p] = color;
+            }
+
+        }
+
+    } else {
+        throw GImage::Error("Unsupported PCX file type.", input.getFilename());
+    }
+}
+
+
+GImage::Format GImage::resolveFormat(const std::string&  filename) {
+    BinaryInput b(filename, G3D_LITTLE_ENDIAN);
+    if (b.size() <= 0) {
+        throw Error("File not found.", filename);
+    }
+
+    return resolveFormat(filename, b.getCArray(), b.size(), AUTODETECT);
+}
+
+
+GImage::Format GImage::resolveFormat(
+    const std::string&  filename,
+    const uint8*        data,
+    int                 dataLen,
+    Format              maybeFormat) {
+
+    // Return the provided format if it is specified.
+    if (maybeFormat != AUTODETECT) {
+        return maybeFormat;
+    }
+
+    std::string extension;
+
+    // Try to detect from the filename's extension
+    if (filename.size() >= 5) {
+        int n = iMax(filename.size() - 1, 5);
+        // Search backwards for the "."
+        for (int i = 1; i <= n; ++i) {
+            if (filename[filename.size() - i] == '.') {
+                // Upper case
+                extension = toUpper(filename.substr(filename.size() - i + 1));
+                break;
+            }
+        }
+    }
+
+    if (extension == "PPM") {
+        // There are two PPM formats; we handle them differently
+        if (dataLen > 3) {
+            if (!memcmp(data, "P6", 2)) {
+                return PPM;
+            } else {
+                return PPM_ASCII;
+            }
+        }
+    }
+
+    Format tmp = stringToFormat(extension);
+    if ((tmp != AUTODETECT) && (tmp != UNKNOWN)) {
+        return tmp;
+    }
+
+    // Try and autodetect from the file itself by looking at the first
+    // character.
+
+    // We can't look at the character if it is null.
+    debugAssert(data != NULL);              
+
+    if ((dataLen > 3) && (!memcmp(data, "P3", 2) || !memcmp(data, "P2", 2) || !memcmp(data, "P1", 2))) {
+        return PPM_ASCII;
+    }
+
+    if ((dataLen > 3) && !memcmp(data, "P6", 2)) {
+        return PPM;
+    }
+
+    if (dataLen > 8) {
+        if (!png_sig_cmp((png_bytep)data, 0, 8))
+            return PNG;
+    }
+
+    if ((dataLen > 0) && (data[0] == 'B')) {
+        return BMP;
+    }
+
+    if (dataLen > 10) {
+        if ((dataLen > 11) && (data[0] == 0xFF) &&
+            (memcmp(&data[6], "JFIF", 4) == 0)) {
+            return JPEG;
+        }
+    }
+
+    if (dataLen > 40) {
+        if (memcmp(&data[dataLen - 18], "TRUEVISION-XFILE", 16) == 0) {
+            return TGA;
+        }
+    }
+
+    if ((dataLen > 4) && (data[0] == 0) && (data[1] == 0) && (data[2] == 0) && (data[3] == 1)) {
+        return ICO;
+    }
+
+    if ((dataLen > 0) && (data[0] == 10)) {
+        return PCX;
+    }
+
+    return UNKNOWN;
+}
+
+
+GImage::GImage(
+    const std::string&  filename,
+    Format              format) : 
+    _byte(NULL), 
+    width(0),
+    height(0), 
+    channels(0){
+    
+    load(filename, format);
+}
+
+
+void GImage::load(
+    const std::string&  filename,
+    Format              format) {
+
+    clear();
+
+    try {
+        BinaryInput b(filename, G3D_LITTLE_ENDIAN);
+        if (b.size() <= 0) {
+            throw Error("File not found.", filename);
+        }
+
+        decode(b, resolveFormat(filename, b.getCArray(), b.size(), format));
+    } catch (const std::string& error) {
+        throw Error(error, filename);
+    }
+}
+
+
+GImage::GImage(
+    const uint8*        data,
+    int                 length,
+    Format              format) {
+
+    BinaryInput b(data, length, G3D_LITTLE_ENDIAN);
+    // It is safe to cast away the const because we
+    // know we don't corrupt the data.
+
+    decode(b, resolveFormat("", data, length, format));
+}
+
+
+GImage::GImage(
+    int                 width,
+    int                 height,
+    int                 channels) {
+    
+    _byte = NULL;
+    resize(width, height, channels);
+}
+
+
+void GImage::resize(
+    int                 width,
+    int                 height,
+    int                 channels) {
+    debugAssert(width >= 0);
+    debugAssert(height >= 0);
+    debugAssert(channels >= 1);
+
+    clear();
+
+    this->width = width;
+    this->height = height;
+    this->channels = channels;
+    size_t sz = width * height * channels;
+
+    _byte = (uint8*)System::calloc(sz, sizeof(uint8));
+    debugAssert(isValidHeapPointer(_byte));
+}
+
+
+void GImage::_copy(
+    const GImage&       other) {
+
+    clear();
+
+    width  = other.width;
+    height = other.height;
+    channels = other.channels;
+    int s  = width * height * channels * sizeof(uint8);
+    _byte  = (uint8*)System::malloc(s);
+    debugAssert(isValidHeapPointer(_byte));
+    memcpy(_byte, other._byte, s);
+}
+
+
+GImage::GImage(
+    const GImage&        other) : _byte(NULL) {
+
+    _copy(other);
+}
+
+
+GImage::~GImage() {
+    clear();
+}
+
+
+void GImage::clear() {
+    width = 0;
+    height = 0;
+    System::free(_byte);
+    _byte = NULL;
+}
+
+
+GImage& GImage::operator=(const GImage& other) {
+    _copy(other);
+    return *this;
+}
+
+
+bool GImage::copySubImage(
+    GImage & dest, const GImage & src,
+    int srcX, int srcY, int srcWidth, int srcHeight) {
+    if ((src.width < srcX + srcWidth) ||
+        (src.height < srcY + srcHeight) ||
+        (srcY < 0) ||
+        (srcX < 0)) {
+
+        return false;
+    }
+
+    dest.resize(srcWidth, srcHeight, src.channels);
+    
+    bool ret;
+    ret = pasteSubImage(dest, src, 0, 0, srcX, srcY, srcWidth, srcHeight);
+    debugAssert(ret);
+
+    return true;
+}
+
+
+bool GImage::pasteSubImage(
+    GImage & dest, const GImage & src,
+    int destX, int destY,
+    int srcX, int srcY, int srcWidth, int srcHeight) {
+    if ((src.width < srcX + srcWidth) ||
+        (src.height < srcY + srcHeight) ||
+        (dest.width < destX + srcWidth) ||
+        (dest.height < destY + srcHeight) ||
+        (srcY < 0) ||
+        (srcX < 0) ||
+        (destY < 0) ||
+        (destX < 0) ||
+        (src.channels != dest.channels)) {
+
+        return false;
+    }
+
+    for (int i = 0; i < srcHeight; i++) {
+        const uint8* srcRow = src.byte() +
+            ((i + srcY) * src.width + srcX) * src.channels;
+        uint8* destRow = dest.byte() +
+            ((i + destY) * dest.width + destX) * dest.channels;
+        memcpy(destRow, srcRow, srcWidth * src.channels);
+    }
+
+    return true;
+}
+
+
+bool GImage::supportedFormat(
+    const std::string& format) {
+
+    return (stringToFormat(format) != UNKNOWN);
+}
+
+
+GImage::Format GImage::stringToFormat(
+    const std::string& format) {
+
+    std::string extension = toUpper(format);
+
+    if ((extension == "JPG") || (extension == "JPEG")) {
+        return JPEG;
+    } else if (extension == "TGA") {
+        return TGA;
+    } else if (extension == "BMP") {
+        return BMP;
+    } else if (extension == "PCX") {
+        return PCX;
+    } else if (extension == "ICO") {
+        return ICO;
+    } else if (extension == "PNG") {
+        return PNG;
+    } else if (extension == "PPM") {
+        return PPM;
+    } else {
+        return UNKNOWN;
+    }
+}
+
+
+void GImage::save(
+    const std::string& filename,
+    Format             format) const {
+
+    BinaryOutput b(filename, G3D_LITTLE_ENDIAN);
+    encode(resolveFormat(filename, NULL, 0, format), b);
+    b.commit(false);
+}
+
+
+void GImage::encode(
+    Format              format,
+    uint8*&             outData,
+    int&                outLength) const {
+
+    BinaryOutput out;
+
+    encode(format, out);
+
+    outData = (uint8*)System::malloc(out.size());
+    debugAssert(outData);
+    outLength = out.size();
+
+    out.commit(outData);
+}
+
+
+void GImage::encode(
+    Format              format,
+    BinaryOutput&       out) const {
+
+    switch (format) {
+    case PPM_ASCII:
+        encodePPMASCII(out);
+        break;
+
+    case PPM:
+        encodePPM(out);
+        break;
+
+    case PNG:
+        encodePNG(out);
+        break;
+
+    case JPEG:
+        encodeJPEG(out);
+        break;
+
+    case BMP:
+        encodeBMP(out);
+        break;
+
+    case TGA:
+        encodeTGA(out);
+        break;
+
+    default:
+        debugAssert(false);
+    }
+}
+
+GImage GImage::insertRedAsAlpha(const GImage& alpha) const {
+    debugAssert(alpha.width == width);
+    debugAssert(alpha.height == height);
+
+    GImage out(width, height, 4);
+
+    for (int i = 0; i < width * height; ++i) {
+        out.byte()[i * 4 + 0] = byte()[i * channels + 0];
+        out.byte()[i * 4 + 1] = byte()[i * channels + 1];
+        out.byte()[i * 4 + 2] = byte()[i * channels + 2];
+        out.byte()[i * 4 + 3] = alpha.byte()[i * alpha.channels];
+    }
+
+    return out;
+}
+
+
+GImage GImage::stripAlpha() const {
+    GImage out(width, height, 3);
+
+    for (int i = 0; i < width * height; ++i) {
+        out.byte()[i * 3 + 0] = byte()[i * channels + 0];
+        out.byte()[i * 3 + 1] = byte()[i * channels + 1];
+        out.byte()[i * 3 + 2] = byte()[i * channels + 2];
+    }
+
+    return out;
+}
+
+
+int GImage::sizeInMemory() const {
+	return sizeof(GImage) + width * height * channels;
+}
+
+
+void GImage::computeNormalMap(
+    const GImage&       bump,
+    GImage&             normal,
+    bool                lowPassBump,
+    bool                scaleHeightByNz) {
+
+    const int w = bump.width;
+    const int h = bump.height;
+    const int stride = bump.channels;
+
+    normal.resize(w, h, 4);
+
+    const uint8* const B = bump.byte();
+    Color4uint8* const N = normal.pixel4();
+
+    for (int y = 0; y < h; ++y) {
+        for (int x = 0; x < w; ++x) {
+            // Index into normal map pixel
+            int i = x + y * w;
+
+            // Index into bump map *byte*
+            int j = stride * i;
+
+
+            Vector3 delta;
+
+            // Get a value from B (with wrapping lookup) relative to (x, y)
+            // and divide by 255
+            #define height(DX, DY) ((B[(((DX + x + w) % w) + \
+                                        ((DY + y + h) % h) * w) * stride]) / 255.0)
+
+
+            // Sobel filter to compute the normal.  
+            //
+            // Y Filter (X filter is the transpose)
+            //  [ -1 -2 -1 ]
+            //  [  0  0  0 ]
+            //  [  1  2  1 ]
+
+            // Write the Y value directly into the x-component so we don't have
+            // to explicitly compute a cross product at the end.
+            delta.y = -(height(-1, -1) *  1 + height( 0, -1) *  2 + height( 1, -1) *  1 +
+                        height(-1,  1) * -1 + height( 0,  1) * -2 + height( 1,  1) * -1);
+
+            delta.x = -(height(-1, -1) * -1 + height( 1, -1) * 1 + 
+                        height(-1,  0) * -2 + height( 1,  0) * 2 + 
+                        height(-1,  1) * -1 + height( 1,  1) * 1);
+
+            delta.z = 1.0;
+
+
+            delta = delta.direction();
+
+            // Copy over the bump value into the alpha channel.
+            float H = B[j] / 255.0;
+
+            if (lowPassBump) {
+                H = (height(-1, -1) + height( 0, -1) + height(1, -1) +
+                        height(-1,  0) + height( 0,  0) + height(1,  0) +
+                        height(-1,  1) + height( 0,  1) + height(1,  1)) / 9.0;
+            }
+            #undef height
+
+            if (scaleHeightByNz) {
+                // delta.z can't possibly be negative, so we avoid actually
+                // computing the absolute value.
+                H *= delta.z;
+            }
+
+            N[i].a = iRound(H * 255.0);
+
+            // Pack into byte range
+            delta = delta * 127.5 + Vector3(127.5, 127.5, 127.5);
+            N[i].r = iClamp(iRound(delta.x), 0, 255);
+            N[i].g = iClamp(iRound(delta.y), 0, 255);
+            N[i].b = iClamp(iRound(delta.z), 0, 255);
+        }
+    }
+}
+
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+void GImage::convertToL8() {
+    switch(channels) {
+    case 1:
+        return;
+
+    case 3:
+        {            
+            // Average
+            Color3uint8* src = (Color3uint8*)_byte;
+            _byte = NULL;
+            resize(width, height, 1);
+            for (int i = width * height - 1; i >= 0; --i) {
+                const Color3uint8   s = src[i];
+                uint8&              d = _byte[i]; 
+                d = ((int)s.r + (int)s.g + (int)s.b) / 3;
+            }
+            System::free(src);
+        }
+        break;
+
+    case 4:
+        {            
+            // Average
+            Color4uint8* src = (Color4uint8*)_byte;
+            _byte = NULL;
+            resize(width, height, 1);
+            for (int i = width * height - 1; i >= 0; --i) {
+                const Color4uint8   s = src[i];
+                uint8&              d = _byte[i]; 
+                d = ((int)s.r + (int)s.g + (int)s.b) / 3;
+            }
+            System::free(src);
+        }
+        return;
+
+    default:
+        alwaysAssertM(false, "Bad number of channels in input image");
+    }
+}
+
+
+void GImage::convertToRGBA() {
+    switch(channels) {
+    case 1:
+        {            
+            // Spread
+            uint8* old = _byte;
+            _byte = NULL;
+            resize(width, height, 4);
+            for (int i = width * height - 1; i >= 0; --i) {
+                const uint8  s = old[i];
+                Color4uint8& d = ((Color4uint8*)_byte)[i]; 
+                d.r = d.g = d.b = s;
+                d.a = 255;
+            }
+            System::free(_byte);
+        }
+        break;
+
+    case 3:
+        {            
+            // Add alpha
+            Color3uint8* old = (Color3uint8*)_byte;
+            _byte = NULL;
+            resize(width, height, 4);
+            for (int i = width * height - 1; i >= 0; --i) {
+                const Color3uint8   s = old[i];
+                Color4uint8&        d = ((Color4uint8*)_byte)[i]; 
+                d.r = s.r;
+                d.g = s.g;
+                d.b = s.b;
+                d.a = 255;
+            }
+            System::free(old);
+        }
+        break;
+
+    case 4:
+        // Already RGBA
+        return;
+
+    default:
+        alwaysAssertM(false, "Bad number of channels in input image");
+    }
+}
+
+
+void GImage::convertToRGB() {
+    switch(channels) {
+    case 1:
+        {            
+            // Spread
+            uint8* old = _byte;
+            _byte = NULL;
+            resize(width, height, 3);
+            for (int i = width * height - 1; i >= 0; --i) {
+                const uint8  s = old[i];
+                Color3uint8& d = ((Color3uint8*)_byte)[i]; 
+                d.r = d.g = d.b = s;
+            }
+            System::free(old);
+        }
+        break;
+
+    case 3:
+		return;
+
+    case 4:
+		// Strip alpha
+        {            
+            Color4uint8* old = (Color4uint8*)_byte;
+            _byte = NULL;
+            resize(width, height, 3);
+            for (int i = width * height - 1; i >= 0; --i) {
+                const Color4uint8   s = old[i];
+                Color3uint8&        d = ((Color3uint8*)_byte)[i]; 
+                d.r = s.r;
+                d.g = s.g;
+                d.b = s.b;
+            }
+            System::free(old);
+        }
+        break;
+
+    default:
+        alwaysAssertM(false, "Bad number of channels in input image");
+    }
+}
+
+
+void GImage::R8G8B8_to_Y8U8V8(int width, int height, const uint8* _in, uint8* _out) {
+    const Color3uint8* in = reinterpret_cast<const Color3uint8*>(_in);
+    Color3uint8* out = reinterpret_cast<Color3uint8*>(_out);
+
+    Color3uint8 p;
+    for (int i = width * height - 1; i >= 0; --i) {
+        p.r = iClamp(iRound(in->r *  0.229 + in->g *  0.587 + in->b *  0.114), 0, 255);
+        p.g = iClamp(iRound(in->r * -0.147 + in->g * -0.289 + in->b *  0.436) + 127, 0, 255);
+        p.b = iClamp(iRound(in->r *  0.615 + in->g * -0.515 + in->b * -0.100) + 127, 0, 255);
+        *out = p;
+        ++in;
+        ++out;
+    }
+}
+
+
+
+void GImage::Y8U8V8_to_R8G8B8(int width, int height, const uint8* _in, uint8* _out) {
+    const Color3uint8* in = reinterpret_cast<const Color3uint8*>(_in);
+    Color3uint8* out = reinterpret_cast<Color3uint8*>(_out);
+
+    Color3uint8 p;
+    for (int i = width * height - 1; i >= 0; --i) {
+        p.r = iClamp(iRound(in->r *  1.0753 +                   (in->b - 127) *  1.2256), 0, 255);
+        p.g = iClamp(iRound(in->r *  1.0753 + (in->g - 127) * -0.3946 + (in->b - 127) * -0.4947), 0, 255);
+        p.b = iClamp(iRound(in->r *  1.0753 + (in->g - 127) *  2.0320 + (in->b - 127) *  0.0853), 0, 255);
+        *out = p;
+        ++in;
+        ++out;
+    }
+}
+
+
+void GImage::makeCheckerboard(GImage& im, int checkerSize, const Color4uint8& A, const Color4uint8& B) {
+    for (int y = 0; y < im.height; ++y) {
+        for (int x = 0; x < im.width; ++x) {
+            bool checker = isOdd((x / checkerSize) + (y / checkerSize));
+            const Color4uint8& color = checker ? A : B;
+            for (int c = 0; c < im.channels; ++c) {
+                uint8* v = im.byte() + (x + y * im.width) * im.channels + c;
+                *v = color[c];
+            }
+        }
+    }
+}
+
+}
+

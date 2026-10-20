@@ -1,11 +1,44 @@
-// roc 2007-03 00641930  unit: seg_00640000  size: 7 bytes
-// Make this compile to the exact bytes below, then: roc check 2007-03 00641930
-//
-// 00641930  c701d0547c00         mov dword ptr [ecx], 0x7c54d0
-// 00641936  c3                   ret 
-// library rbxgs/humanoid\Balancing.cpp (function ??1State@Humanoid@RBX@@UAE@XZ)
-
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
 // roc-lib: rbxgs humanoid/Balancing.cpp
+
+// Candidate translation unit (score above; library headers required).
+#include "humanoid/Balancing.h"
+#include "v8datamodel/PartInstance.h"
+#include "v8world/Primitive.h"
+#include "v8world/ContactManager.h"
+
+namespace RBX
+{
+	Balancing::Balancing(Humanoid* humanoid, const float kP, const float kD)
+		: Humanoid::State(humanoid),
+		  kP(kP),
+		  kD(kD)
+	{
+	}
+
+	PartInstance* Balancing::tryFloor(const G3D::Ray& ray, float maxDistance)
+	{
+		float distance;
+
+		Primitive* hit = humanoid->getWorld()->getContactManager().getHitLegacy(ray, NULL, this, floorTouchInWorld, distance, maxDistance);
+		if (hit)
+			return PartInstance::fromPrimitive(hit);
+		else
+			return NULL;
+	}
+
+	Humanoid::State* Balancing::onStep(const float stepDt, Controller& controller)
+	{
+		if (humanoid->getTorsoBody())
+		{
+			floorPart = shared_from(findFloor(floorPart != NULL));
+			return this;
+		}
+		else
+		{
+			return NULL;
+		}
+	}
+}

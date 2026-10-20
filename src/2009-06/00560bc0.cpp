@@ -1,38 +1,198 @@
 // from server: 100% by auto
-// roc 2009-06 00560bc0  unit: RBX::WedgeBuilder  size: 72 bytes
-// Make this compile to the exact bytes below, then: roc check 2009-06 00560bc0
-//
-// 00560bc0  56                   push esi
-// 00560bc1  8bf1                 mov esi, ecx
-// 00560bc3  8b06                 mov eax, dword ptr [esi]
-// 00560bc5  85c0                 test eax, eax
-// 00560bc7  7429                 je 0x560bf2
-// 00560bc9  83c004               add eax, 4
-// 00560bcc  50                   push eax
-// 00560bcd  ff15a4e18900         call dword ptr [0x89e1a4]
-// 00560bd3  85c0                 test eax, eax
-// 00560bd5  7515                 jne 0x560bec
-// 00560bd7  8b0e                 mov ecx, dword ptr [esi]
-// 00560bd9  e8a241eeff           call 0x444d80
-// 00560bde  8b0e                 mov ecx, dword ptr [esi]
-// 00560be0  85c9                 test ecx, ecx
-// 00560be2  7408                 je 0x560bec
-// 00560be4  8b01                 mov eax, dword ptr [ecx]
-// 00560be6  8b10                 mov edx, dword ptr [eax]
-// 00560be8  6a01                 push 1
-// 00560bea  ffd2                 call edx
-// 00560bec  c70600000000         mov dword ptr [esi], 0
-// 00560bf2  f644240801           test byte ptr [esp + 8], 1
-// 00560bf7  7409                 je 0x560c02
-// 00560bf9  56                   push esi
-// 00560bfa  e8337e1b00           call 0x718a32
-// 00560bff  83c404               add esp, 4
-// 00560c02  8bc6                 mov eax, esi
-// 00560c04  5e                   pop esi
-// 00560c05  c20400               ret 4
-// library g3d-6.09/GLG3Dcpp\GModule.cpp (function ??_G?$ReferenceCountedPointer@VGModule@G3D@@@G3D@@QAEPAXI@Z)
-
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD
 // roc-lib: g3d-6.09 GLG3Dcpp/GModule.cpp
+
+// Candidate translation unit (score above; library headers required).
+/**
+ @file GModule.cpp
+
+ @maintainer Morgan McGuire, morgan3d@users.sourceforge.net
+
+ @created 2006-04-22
+ @edited  2006-04-22
+*/
+
+#include "GLG3D/GModule.h"
+#include "GLG3D/RenderDevice.h"
+
+namespace G3D {
+
+
+GModuleManagerRef GModuleManager::create() {
+    return new GModuleManager();
+}
+
+
+GModuleManager::GModuleManager() : m_locked(false), m_size(0), m_removeAll(false) {
+}
+
+
+int GModuleManager::size() const {
+    return m_size;
+}
+
+
+const GModuleRef& GModuleManager::operator[](int i) const {
+    debugAssert(i >= 0 && i < m_size);
+    for (int p = NUM_PRIORITY - 1; p >= 0; --p) {
+        if (i < m_moduleArray[p].size()) {
+            return m_moduleArray[p][i];
+        } else {
+            // Look in the next array.  We are guaranteed
+            // not to underflow by the assertion above.
+            i -= m_moduleArray[p].size();
+        }
+    }
+
+    static GModuleRef tmp;
+    return tmp;
+}
+
+
+void GModuleManager::beginLock() {
+    debugAssert(! m_locked);
+    m_locked = true;
+}
+
+
+void GModuleManager::endLock() {
+    debugAssert(m_locked);
+    m_locked = false;
+
+    // Process add list
+    for (int i = 0; i < m_addList.size(); ++i) {
+        add(m_addList[i].module, m_addList[i].priority);
+    }
+    m_addList.clear();
+
+    // Process remove list
+    for (int i = 0; i < m_removeList.size(); ++i) {
+        remove(m_removeList[i]);
+    }
+    m_removeList.clear();
+
+    if (m_removeAll) {
+        clear();
+        m_removeAll = false;
+    }
+}
+
+
+void GModuleManager::remove(const GModuleRef& m) {
+    if (m_locked) {
+        m_removeList.append(m);
+    } else {
+        for (int p = 0; p < NUM_PRIORITY; ++p) {
+            int j = m_moduleArray[p].findIndex(m);
+            if (j != -1) {
+                m_moduleArray[p].fastRemove(j);
+                --m_size;
+                return;
+            }
+        }
+        debugAssertM(false, "Removed a GModule that was not in the manager.");
+    }
+}
+
+
+void GModuleManager::add(const GModuleRef& m, EventPriority p) {
+    debugAssert(p >= LOW_PRIORITY && p <= HIGH_PRIORITY);
+    if (m_locked) {
+        m_addList.append(Add(m, p));
+    } else {
+        ++m_size;
+        m_moduleArray[p].append(m);
+    }
+}
+
+
+void GModuleManager::clear() {
+    if (m_locked) {
+        m_removeAll = true;
+    } else {
+        for (int p = 0; p < NUM_PRIORITY; ++p) {
+            m_moduleArray[p].clear();
+        }
+    }
+}
+
+// Iterate through all modules in priority order.
+// This same iteration code is used to implement
+// all GModule methods concisely.
+#define ITERATOR(body)\
+    beginLock();\
+    for (int p = NUM_PRIORITY - 1; p >= 0; --p) {\
+        Array<GModuleRef>& array = m_moduleArray[p];\
+        for (int i = array.size() - 1; i >= 0; --i) {\
+            body;\
+        }\
+    }\
+    endLock();
+
+void GModuleManager::getPosedModel(
+    Array<PosedModelRef>& posedArray, 
+    Array<PosedModel2DRef>& posed2DArray) {
+
+    ITERATOR(array[i]->getPosedModel(posedArray, posed2DArray));
+}
+
+
+void GModuleManager::onSimulation(RealTime rdt, SimTime sdt, SimTime idt) {
+    ITERATOR(array[i]->onSimulation(rdt, sdt, idt));
+}
+
+bool GModuleManager::onEvent(const GEvent& event) {
+    // if the event is ever consumed, abort iteration
+    ITERATOR(if (array[i]->onEvent(event)) { endLock(); return true; });
+    return false;
+}
+
+void GModuleManager::onUserInput(UserInput* ui) {
+    ITERATOR(array[i]->onUserInput(ui));
+}
+
+void GModuleManager::onNetwork() {
+    ITERATOR(array[i]->onNetwork());
+}
+
+void GModuleManager::onLogic() {
+    ITERATOR(array[i]->onLogic());
+}
+
+#undef ITERATOR
+
+
+bool GModuleManager::onEvent(const GEvent& event, GModuleManagerRef& a, GModuleManagerRef& b) {
+    a->beginLock();
+    b->beginLock();
+
+    for (int p = NUM_PRIORITY - 1; p >= 0; --p) {
+
+        // Process each, interlaced
+        for (int k = 0; k < 2; ++k) {
+            Array<GModuleRef>& array = 
+                (k == 0) ?
+                    a->m_moduleArray[p] :
+                    b->m_moduleArray[p];
+                
+            for (int i = array.size() - 1; i >= 0; --i) {
+                if (array[i]->onEvent(event)) {
+                    b->endLock();
+                    a->endLock();
+                    return true;
+                }
+            }
+        }
+
+    }
+    
+    b->endLock();
+    a->endLock();
+
+    return false;
+}
+
+
+} // G3D

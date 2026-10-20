@@ -1,14 +1,102 @@
-// roc 2009-12 006fd4f0  unit: RBX::SpawnerService  size: 23 bytes
-// Make this compile to the exact bytes below, then: roc check 2009-12 006fd4f0
-//
-// 006fd4f0  8b442404             mov eax, dword ptr [esp + 4]
-// 006fd4f4  68584cb900           push 0xb94c58
-// 006fd4f9  898188020000         mov dword ptr [ecx + 0x288], eax
-// 006fd4ff  e87cebd0ff           call 0x40c080
-// 006fd504  c20400               ret 4
-// library rbxgs/v8datamodel\SpawnLocation.cpp (function ?setTeamColor@SpawnLocation@RBX@@QAEXVBrickColor@2@@Z)
-
 // roc-lang: cpp
 // roc-cl: 50727
 // roc-flags: /O1 /Ob2 /Oy /GS- /EHsc /MD
 // roc-lib: rbxgs v8datamodel/SpawnLocation.cpp
+
+// Candidate translation unit (score above; library headers required).
+#include "v8datamodel/SpawnLocation.h"
+#include "Network/Players.h"
+
+namespace RBX
+{
+	static Reflection::PropDescriptor<SpawnLocation, BrickColor> prop_TeamColor("TeamColor", "Teams", &SpawnLocation::getTeamColor, &SpawnLocation::setTeamColor, Reflection::PropertyDescriptor::STANDARD);
+
+	SpawnLocation::SpawnLocation()
+		: neutral(true),
+		  allowTeamChangeOnTouch(false)
+	{
+		setName("SpawnLocation");
+	}
+
+	BrickColor SpawnLocation::getTeamColor() const
+	{
+		return teamColor;
+	}
+
+	void SpawnLocation::setTeamColor(BrickColor color)
+	{
+		teamColor = color;
+		raisePropertyChanged(prop_TeamColor);
+	}
+
+	void SpawnLocation::onServiceProvider(const ServiceProvider* oldProvider, const ServiceProvider* newProvider)
+	{
+		Instance::onServiceProvider(oldProvider, newProvider);
+		
+		if (!oldProvider)
+		{
+			spawnerTouched = PartInstance::event_Touched.connect(this, boost::bind(&SpawnLocation::onEvent_spawnerTouched, this, _1));
+
+			SpawnerService* spawnerService = ServiceProvider::create<SpawnerService>(newProvider);
+			RBXASSERT(spawnerService != NULL);
+
+			spawnerService->RegisterSpawner(this);
+		}
+
+		if (!newProvider)
+		{
+			spawnerTouched.disconnect();
+
+			SpawnerService* spawnerService = ServiceProvider::create<SpawnerService>(oldProvider);
+			RBXASSERT(spawnerService != NULL);
+
+			spawnerService->UnregisterSpawner(this);
+		}
+	}
+
+	SpawnerService::SpawnerService()
+	{
+		setName("SpawnerService");
+		Instance::propArchivable.setValue(this, false);
+	}
+
+	SpawnerService::~SpawnerService() {}
+
+	void SpawnerService::RegisterSpawner(SpawnLocation* spawner)
+	{
+		spawners.push_back(spawner);
+	}
+
+	void SpawnerService::UnregisterSpawner(SpawnLocation* spawner)
+	{
+		spawners.remove(spawner);
+	}
+
+	G3D::Vector3 SpawnerService::FindSpawnPositionForPlayer(Network::Player* p)
+	{
+		if (spawners.empty())
+			return G3D::Vector3(0.0f, 100.0f, 0.0f);
+
+		std::vector<SpawnLocation*> possibleLocations;
+
+		for (std::list<SpawnLocation*>::const_iterator iter = spawners.begin(); iter != spawners.end(); iter++)
+		{
+			if ((*iter)->neutral || (!p->getNeutral() && p->getTeamColor() == (*iter)->getTeamColor()))
+			{
+				possibleLocations.push_back(*iter);
+			}
+		}
+
+		if (possibleLocations.empty())
+		{
+			return G3D::Vector3(0.0f, 100.0f, 0.0f);
+		}
+		else
+		{
+			G3D::Vector3 spawnPos = possibleLocations[rand() % possibleLocations.size()]->getCoordinateFrame().translation;
+			spawnPos.y += 7.0f;
+
+			return spawnPos;
+		}
+	}
+}

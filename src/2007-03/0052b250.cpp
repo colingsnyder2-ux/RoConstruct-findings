@@ -1,33 +1,175 @@
-// roc 2007-03 0052b250  unit: seg_00520000  size: 71 bytes
-// Make this compile to the exact bytes below, then: roc check 2007-03 0052b250
-//
-// 0052b250  8b442408             mov eax, dword ptr [esp + 8]
-// 0052b254  83e800               sub eax, 0
-// 0052b257  7426                 je 0x52b27f
-// 0052b259  83e801               sub eax, 1
-// 0052b25c  8b442404             mov eax, dword ptr [esp + 4]
-// 0052b260  7521                 jne 0x52b283
-// 0052b262  d94110               fld dword ptr [ecx + 0x10]
-// 0052b265  d84104               fadd dword ptr [ecx + 4]
-// 0052b268  d918                 fstp dword ptr [eax]
-// 0052b26a  d94114               fld dword ptr [ecx + 0x14]
-// 0052b26d  d84108               fadd dword ptr [ecx + 8]
-// 0052b270  d95804               fstp dword ptr [eax + 4]
-// 0052b273  d94118               fld dword ptr [ecx + 0x18]
-// 0052b276  d8410c               fadd dword ptr [ecx + 0xc]
-// 0052b279  d95808               fstp dword ptr [eax + 8]
-// 0052b27c  c20800               ret 8
-// 0052b27f  8b442404             mov eax, dword ptr [esp + 4]
-// 0052b283  d94104               fld dword ptr [ecx + 4]
-// 0052b286  d918                 fstp dword ptr [eax]
-// 0052b288  d94108               fld dword ptr [ecx + 8]
-// 0052b28b  d95804               fstp dword ptr [eax + 4]
-// 0052b28e  d9410c               fld dword ptr [ecx + 0xc]
-// 0052b291  d95808               fstp dword ptr [eax + 8]
-// 0052b294  c20800               ret 8
-// library rbxgs-g3d/G3Dcpp\LineSegment.cpp (function ?point@LineSegment@G3D@@QBE?AVVector3@2@H@Z)
-
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
 // roc-lib: rbxgs-g3d G3Dcpp/LineSegment.cpp
+
+// Candidate translation unit (score above; library headers required).
+/**
+ @file LineSegment.cpp
+  
+ @maintainer Morgan McGuire, matrix@graphics3d.com
+ 
+ @created 2003-02-08
+ @edited  2006-04-20
+ */
+
+#include "G3D/platform.h"
+#include "G3D/LineSegment.h"
+#include "G3D/Sphere.h"
+#include "G3D/debug.h"
+
+namespace G3D {
+
+
+Vector3 LineSegment::closestPoint(const Vector3& p) const {
+
+    // The vector from the end of the capsule to the point in question.
+    Vector3 v(p - _point);
+
+    // Projection of v onto the line segment scaled by 
+    // the length of direction.
+    float t = direction.dot(v);
+
+    // Avoid some square roots.  Derivation:
+    //    t/direction.length() <= direction.length()
+    //      t <= direction.squaredLength()
+
+    if ((t >= 0) && (t <= direction.squaredMagnitude())) {
+    
+        // The point falls within the segment.  Normalize direction,
+        // divide t by the length of direction.
+        return _point + direction * t / direction.squaredMagnitude();
+    
+    } else {
+
+        // The point does not fall within the segment; see which end is closer.
+
+        // Distance from 0, squared
+        float d0Squared = v.squaredMagnitude();
+
+        // Distance from 1, squared
+        float d1Squared = (v - direction).squaredMagnitude();
+
+        if (d0Squared < d1Squared) {
+
+            // Point 0 is closer
+            return _point;
+
+        } else {
+
+            // Point 1 is closer
+            return _point + direction;
+        
+        }
+    }
+
+}
+
+Vector3 LineSegment::point(int i) const {
+    switch (i) {
+    case 0:
+        return _point;
+
+    case 1:
+        return _point + direction;
+
+    default:
+        debugAssertM(i == 0 || i == 1, "Argument to point must be 0 or 1");
+        return _point;
+    }
+}
+
+
+Vector3 LineSegment::endPoint(int i) const {
+    return point(i);
+}
+
+
+bool LineSegment::intersectsSolidSphere(const class Sphere& s) const {
+    return distanceSquared(s.center) <= square(s.radius);
+}
+
+
+LineSegment::LineSegment(class BinaryInput& b) {
+	deserialize(b);
+}
+
+
+void LineSegment::serialize(class BinaryOutput& b) const {
+	_point.serialize(b);
+	direction.serialize(b);
+}
+
+
+void LineSegment::deserialize(class BinaryInput& b) {
+	_point.deserialize(b);
+	direction.deserialize(b);
+}
+
+Vector3 LineSegment::randomPoint() const {
+    return _point + random(0, 1) * direction;
+}
+
+
+/////////////////////////////////////////////////////////////////////////////////////
+
+LineSegment2D LineSegment2D::fromTwoPoints(const Vector2& p0, const Vector2& p1) {
+    LineSegment2D s;
+    s.m_origin      = p0;
+    s.m_direction   = p1 - p0;
+    s.m_length      = s.m_direction.length();
+    return s;
+}
+
+
+Vector2 LineSegment2D::point(int i) const {
+    debugAssert(i == 0 || i == 1);
+    if (i == 0) {
+        return m_origin;
+    } else {
+        return m_direction + m_origin;
+    }
+}
+
+
+Vector2 LineSegment2D::closestPoint(const Vector2& Q) const {
+    // Two constants that appear in the result
+    const Vector2 k1(m_origin - Q);
+    const Vector2& k2 = m_direction;
+    
+    if (fuzzyEq(m_length, 0)) {
+        // This line segment has no length
+        return m_origin;
+    }
+
+    // Time [0, 1] at which we hit the closest point travelling from p0 to p1.
+    // Derivation can be obtained by minimizing the expression
+    //     ||P0 + (P1 - P0)t - Q||.
+    const float t = -k1.dot(k2) / (m_length * m_length);
+
+    if (t < 0) {
+        // Clipped to low end point
+        return m_origin;
+    } else if (t > 1) {
+        // Clipped to high end point
+        return m_origin + m_direction;
+    } else {
+        // Subsitute into the line equation to find 
+        // the point on the segment.
+        return m_origin + k2 * t;
+    }
+}
+
+
+float LineSegment2D::distance(const Vector2& p) const {
+    Vector2 closest = closestPoint(p);
+    return (closest - p).length();
+}
+
+
+float LineSegment2D::length() const {
+    return m_length;
+}
+
+}
+

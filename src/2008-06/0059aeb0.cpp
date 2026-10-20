@@ -1,319 +1,1113 @@
-// roc 2008-06 0059aeb0  unit: G3D::VCoordinateFrame::?$TypedPropertyDescriptor  size: 867 bytes
-// Make this compile to the exact bytes below, then: roc check 2008-06 0059aeb0
-//
-// 0059aeb0  8b442404             mov eax, dword ptr [esp + 4]
-// 0059aeb4  83ec30               sub esp, 0x30
-// 0059aeb7  53                   push ebx
-// 0059aeb8  56                   push esi
-// 0059aeb9  57                   push edi
-// 0059aeba  50                   push eax
-// 0059aebb  8d542410             lea edx, [esp + 0x10]
-// 0059aebf  52                   push edx
-// 0059aec0  e86b1cf1ff           call 0x4acb30
-// 0059aec5  6a28                 push 0x28
-// 0059aec7  e8545a1000           call 0x6a0920
-// 0059aecc  33f6                 xor esi, esi
-// 0059aece  83c404               add esp, 4
-// 0059aed1  bb07000000           mov ebx, 7
-// 0059aed6  3bc6                 cmp eax, esi
-// 0059aed8  7423                 je 0x59aefd
-// 0059aeda  d9442430             fld dword ptr [esp + 0x30]
-// 0059aede  8b0d34539700         mov ecx, dword ptr [0x975334]
-// 0059aee4  8930                 mov dword ptr [eax], esi
-// 0059aee6  897004               mov dword ptr [eax + 4], esi
-// 0059aee9  897008               mov dword ptr [eax + 8], esi
-// 0059aeec  d95818               fstp dword ptr [eax + 0x18]
-// 0059aeef  894810               mov dword ptr [eax + 0x10], ecx
-// 0059aef2  895814               mov dword ptr [eax + 0x14], ebx
-// 0059aef5  897020               mov dword ptr [eax + 0x20], esi
-// 0059aef8  897024               mov dword ptr [eax + 0x24], esi
-// 0059aefb  eb02                 jmp 0x59aeff
-// 0059aefd  33c0                 xor eax, eax
-// 0059aeff  8b7c2444             mov edi, dword ptr [esp + 0x44]
-// 0059af03  8b4f08               mov ecx, dword ptr [edi + 8]
-// 0059af06  3bce                 cmp ecx, esi
-// 0059af08  7505                 jne 0x59af0f
-// 0059af0a  894704               mov dword ptr [edi + 4], eax
-// 0059af0d  eb02                 jmp 0x59af11
-// 0059af0f  8901                 mov dword ptr [ecx], eax
-// 0059af11  6a28                 push 0x28
-// 0059af13  894708               mov dword ptr [edi + 8], eax
-// 0059af16  e8055a1000           call 0x6a0920
-// 0059af1b  83c404               add esp, 4
-// 0059af1e  3bc6                 cmp eax, esi
-// 0059af20  7423                 je 0x59af45
-// 0059af22  d9442434             fld dword ptr [esp + 0x34]
-// 0059af26  8b0d80539700         mov ecx, dword ptr [0x975380]
-// 0059af2c  8930                 mov dword ptr [eax], esi
-// 0059af2e  897004               mov dword ptr [eax + 4], esi
-// 0059af31  897008               mov dword ptr [eax + 8], esi
-// 0059af34  d95818               fstp dword ptr [eax + 0x18]
-// 0059af37  894810               mov dword ptr [eax + 0x10], ecx
-// 0059af3a  895814               mov dword ptr [eax + 0x14], ebx
-// 0059af3d  897020               mov dword ptr [eax + 0x20], esi
-// 0059af40  897024               mov dword ptr [eax + 0x24], esi
-// 0059af43  eb02                 jmp 0x59af47
-// 0059af45  33c0                 xor eax, eax
-// 0059af47  8b4f08               mov ecx, dword ptr [edi + 8]
-// 0059af4a  3bce                 cmp ecx, esi
-// 0059af4c  7505                 jne 0x59af53
-// 0059af4e  894704               mov dword ptr [edi + 4], eax
-// 0059af51  eb02                 jmp 0x59af55
-// 0059af53  8901                 mov dword ptr [ecx], eax
-// 0059af55  6a28                 push 0x28
-// 0059af57  894708               mov dword ptr [edi + 8], eax
-// 0059af5a  e8c1591000           call 0x6a0920
-// 0059af5f  83c404               add esp, 4
-// 0059af62  3bc6                 cmp eax, esi
-// 0059af64  7423                 je 0x59af89
-// 0059af66  d9442438             fld dword ptr [esp + 0x38]
-// 0059af6a  8b0d18539700         mov ecx, dword ptr [0x975318]
-// 0059af70  8930                 mov dword ptr [eax], esi
-// 0059af72  897004               mov dword ptr [eax + 4], esi
-// 0059af75  897008               mov dword ptr [eax + 8], esi
-// 0059af78  d95818               fstp dword ptr [eax + 0x18]
-// 0059af7b  894810               mov dword ptr [eax + 0x10], ecx
-// 0059af7e  895814               mov dword ptr [eax + 0x14], ebx
-// 0059af81  897020               mov dword ptr [eax + 0x20], esi
-// 0059af84  897024               mov dword ptr [eax + 0x24], esi
-// 0059af87  eb02                 jmp 0x59af8b
-// 0059af89  33c0                 xor eax, eax
-// 0059af8b  8b4f08               mov ecx, dword ptr [edi + 8]
-// 0059af8e  3bce                 cmp ecx, esi
-// 0059af90  7505                 jne 0x59af97
-// 0059af92  894704               mov dword ptr [edi + 4], eax
-// 0059af95  eb02                 jmp 0x59af99
-// 0059af97  8901                 mov dword ptr [ecx], eax
-// 0059af99  6a28                 push 0x28
-// 0059af9b  894708               mov dword ptr [edi + 8], eax
-// 0059af9e  e87d591000           call 0x6a0920
-// 0059afa3  83c404               add esp, 4
-// 0059afa6  3bc6                 cmp eax, esi
-// 0059afa8  7423                 je 0x59afcd
-// 0059afaa  d944240c             fld dword ptr [esp + 0xc]
-// 0059afae  8b0d50539700         mov ecx, dword ptr [0x975350]
-// 0059afb4  8930                 mov dword ptr [eax], esi
-// 0059afb6  897004               mov dword ptr [eax + 4], esi
-// 0059afb9  897008               mov dword ptr [eax + 8], esi
-// 0059afbc  d95818               fstp dword ptr [eax + 0x18]
-// 0059afbf  894810               mov dword ptr [eax + 0x10], ecx
-// 0059afc2  895814               mov dword ptr [eax + 0x14], ebx
-// 0059afc5  897020               mov dword ptr [eax + 0x20], esi
-// 0059afc8  897024               mov dword ptr [eax + 0x24], esi
-// 0059afcb  eb02                 jmp 0x59afcf
-// 0059afcd  33c0                 xor eax, eax
-// 0059afcf  8b4f08               mov ecx, dword ptr [edi + 8]
-// 0059afd2  3bce                 cmp ecx, esi
-// 0059afd4  7505                 jne 0x59afdb
-// 0059afd6  894704               mov dword ptr [edi + 4], eax
-// 0059afd9  eb02                 jmp 0x59afdd
-// 0059afdb  8901                 mov dword ptr [ecx], eax
-// 0059afdd  6a28                 push 0x28
-// 0059afdf  894708               mov dword ptr [edi + 8], eax
-// 0059afe2  e839591000           call 0x6a0920
-// 0059afe7  83c404               add esp, 4
-// 0059afea  3bc6                 cmp eax, esi
-// 0059afec  7423                 je 0x59b011
-// 0059afee  d9442410             fld dword ptr [esp + 0x10]
-// 0059aff2  8b0d68539700         mov ecx, dword ptr [0x975368]
-// 0059aff8  8930                 mov dword ptr [eax], esi
-// 0059affa  897004               mov dword ptr [eax + 4], esi
-// 0059affd  897008               mov dword ptr [eax + 8], esi
-// 0059b000  d95818               fstp dword ptr [eax + 0x18]
-// 0059b003  894810               mov dword ptr [eax + 0x10], ecx
-// 0059b006  895814               mov dword ptr [eax + 0x14], ebx
-// 0059b009  897020               mov dword ptr [eax + 0x20], esi
-// 0059b00c  897024               mov dword ptr [eax + 0x24], esi
-// 0059b00f  eb02                 jmp 0x59b013
-// 0059b011  33c0                 xor eax, eax
-// 0059b013  8b4f08               mov ecx, dword ptr [edi + 8]
-// 0059b016  3bce                 cmp ecx, esi
-// 0059b018  7505                 jne 0x59b01f
-// 0059b01a  894704               mov dword ptr [edi + 4], eax
-// 0059b01d  eb02                 jmp 0x59b021
-// 0059b01f  8901                 mov dword ptr [ecx], eax
-// 0059b021  6a28                 push 0x28
-// 0059b023  894708               mov dword ptr [edi + 8], eax
-// 0059b026  e8f5581000           call 0x6a0920
-// 0059b02b  83c404               add esp, 4
-// 0059b02e  3bc6                 cmp eax, esi
-// 0059b030  7423                 je 0x59b055
-// 0059b032  d9442414             fld dword ptr [esp + 0x14]
-// 0059b036  8b0d04539700         mov ecx, dword ptr [0x975304]
-// 0059b03c  8930                 mov dword ptr [eax], esi
-// 0059b03e  897004               mov dword ptr [eax + 4], esi
-// 0059b041  897008               mov dword ptr [eax + 8], esi
-// 0059b044  d95818               fstp dword ptr [eax + 0x18]
-// 0059b047  894810               mov dword ptr [eax + 0x10], ecx
-// 0059b04a  895814               mov dword ptr [eax + 0x14], ebx
-// 0059b04d  897020               mov dword ptr [eax + 0x20], esi
-// 0059b050  897024               mov dword ptr [eax + 0x24], esi
-// 0059b053  eb02                 jmp 0x59b057
-// 0059b055  33c0                 xor eax, eax
-// 0059b057  8b4f08               mov ecx, dword ptr [edi + 8]
-// 0059b05a  3bce                 cmp ecx, esi
-// 0059b05c  7505                 jne 0x59b063
-// 0059b05e  894704               mov dword ptr [edi + 4], eax
-// 0059b061  eb02                 jmp 0x59b065
-// 0059b063  8901                 mov dword ptr [ecx], eax
-// 0059b065  6a28                 push 0x28
-// 0059b067  894708               mov dword ptr [edi + 8], eax
-// 0059b06a  e8b1581000           call 0x6a0920
-// 0059b06f  83c404               add esp, 4
-// 0059b072  3bc6                 cmp eax, esi
-// 0059b074  7423                 je 0x59b099
-// 0059b076  d9442418             fld dword ptr [esp + 0x18]
-// 0059b07a  8b0d28539700         mov ecx, dword ptr [0x975328]
-// 0059b080  8930                 mov dword ptr [eax], esi
-// 0059b082  897004               mov dword ptr [eax + 4], esi
-// 0059b085  897008               mov dword ptr [eax + 8], esi
-// 0059b088  d95818               fstp dword ptr [eax + 0x18]
-// 0059b08b  894810               mov dword ptr [eax + 0x10], ecx
-// 0059b08e  895814               mov dword ptr [eax + 0x14], ebx
-// 0059b091  897020               mov dword ptr [eax + 0x20], esi
-// 0059b094  897024               mov dword ptr [eax + 0x24], esi
-// 0059b097  eb02                 jmp 0x59b09b
-// 0059b099  33c0                 xor eax, eax
-// 0059b09b  8b4f08               mov ecx, dword ptr [edi + 8]
-// 0059b09e  3bce                 cmp ecx, esi
-// 0059b0a0  7505                 jne 0x59b0a7
-// 0059b0a2  894704               mov dword ptr [edi + 4], eax
-// 0059b0a5  eb02                 jmp 0x59b0a9
-// 0059b0a7  8901                 mov dword ptr [ecx], eax
-// 0059b0a9  6a28                 push 0x28
-// 0059b0ab  894708               mov dword ptr [edi + 8], eax
-// 0059b0ae  e86d581000           call 0x6a0920
-// 0059b0b3  83c404               add esp, 4
-// 0059b0b6  3bc6                 cmp eax, esi
-// 0059b0b8  7423                 je 0x59b0dd
-// 0059b0ba  d944241c             fld dword ptr [esp + 0x1c]
-// 0059b0be  8b0d54539700         mov ecx, dword ptr [0x975354]
-// 0059b0c4  8930                 mov dword ptr [eax], esi
-// 0059b0c6  897004               mov dword ptr [eax + 4], esi
-// 0059b0c9  897008               mov dword ptr [eax + 8], esi
-// 0059b0cc  d95818               fstp dword ptr [eax + 0x18]
-// 0059b0cf  894810               mov dword ptr [eax + 0x10], ecx
-// 0059b0d2  895814               mov dword ptr [eax + 0x14], ebx
-// 0059b0d5  897020               mov dword ptr [eax + 0x20], esi
-// 0059b0d8  897024               mov dword ptr [eax + 0x24], esi
-// 0059b0db  eb02                 jmp 0x59b0df
-// 0059b0dd  33c0                 xor eax, eax
-// 0059b0df  8b4f08               mov ecx, dword ptr [edi + 8]
-// 0059b0e2  3bce                 cmp ecx, esi
-// 0059b0e4  7505                 jne 0x59b0eb
-// 0059b0e6  894704               mov dword ptr [edi + 4], eax
-// 0059b0e9  eb02                 jmp 0x59b0ed
-// 0059b0eb  8901                 mov dword ptr [ecx], eax
-// 0059b0ed  6a28                 push 0x28
-// 0059b0ef  894708               mov dword ptr [edi + 8], eax
-// 0059b0f2  e829581000           call 0x6a0920
-// 0059b0f7  83c404               add esp, 4
-// 0059b0fa  3bc6                 cmp eax, esi
-// 0059b0fc  7423                 je 0x59b121
-// 0059b0fe  d9442420             fld dword ptr [esp + 0x20]
-// 0059b102  8b0d48539700         mov ecx, dword ptr [0x975348]
-// 0059b108  8930                 mov dword ptr [eax], esi
-// 0059b10a  897004               mov dword ptr [eax + 4], esi
-// 0059b10d  897008               mov dword ptr [eax + 8], esi
-// 0059b110  d95818               fstp dword ptr [eax + 0x18]
-// 0059b113  894810               mov dword ptr [eax + 0x10], ecx
-// 0059b116  895814               mov dword ptr [eax + 0x14], ebx
-// 0059b119  897020               mov dword ptr [eax + 0x20], esi
-// 0059b11c  897024               mov dword ptr [eax + 0x24], esi
-// 0059b11f  eb02                 jmp 0x59b123
-// 0059b121  33c0                 xor eax, eax
-// 0059b123  8b4f08               mov ecx, dword ptr [edi + 8]
-// 0059b126  3bce                 cmp ecx, esi
-// 0059b128  7505                 jne 0x59b12f
-// 0059b12a  894704               mov dword ptr [edi + 4], eax
-// 0059b12d  eb02                 jmp 0x59b131
-// 0059b12f  8901                 mov dword ptr [ecx], eax
-// 0059b131  6a28                 push 0x28
-// 0059b133  894708               mov dword ptr [edi + 8], eax
-// 0059b136  e8e5571000           call 0x6a0920
-// 0059b13b  83c404               add esp, 4
-// 0059b13e  3bc6                 cmp eax, esi
-// 0059b140  7423                 je 0x59b165
-// 0059b142  d9442424             fld dword ptr [esp + 0x24]
-// 0059b146  8b0d24539700         mov ecx, dword ptr [0x975324]
-// 0059b14c  8930                 mov dword ptr [eax], esi
-// 0059b14e  897004               mov dword ptr [eax + 4], esi
-// 0059b151  897008               mov dword ptr [eax + 8], esi
-// 0059b154  d95818               fstp dword ptr [eax + 0x18]
-// 0059b157  894810               mov dword ptr [eax + 0x10], ecx
-// 0059b15a  895814               mov dword ptr [eax + 0x14], ebx
-// 0059b15d  897020               mov dword ptr [eax + 0x20], esi
-// 0059b160  897024               mov dword ptr [eax + 0x24], esi
-// 0059b163  eb02                 jmp 0x59b167
-// 0059b165  33c0                 xor eax, eax
-// 0059b167  8b4f08               mov ecx, dword ptr [edi + 8]
-// 0059b16a  3bce                 cmp ecx, esi
-// 0059b16c  7505                 jne 0x59b173
-// 0059b16e  894704               mov dword ptr [edi + 4], eax
-// 0059b171  eb02                 jmp 0x59b175
-// 0059b173  8901                 mov dword ptr [ecx], eax
-// 0059b175  6a28                 push 0x28
-// 0059b177  894708               mov dword ptr [edi + 8], eax
-// 0059b17a  e8a1571000           call 0x6a0920
-// 0059b17f  83c404               add esp, 4
-// 0059b182  3bc6                 cmp eax, esi
-// 0059b184  7423                 je 0x59b1a9
-// 0059b186  d9442428             fld dword ptr [esp + 0x28]
-// 0059b18a  8b0d20539700         mov ecx, dword ptr [0x975320]
-// 0059b190  8930                 mov dword ptr [eax], esi
-// 0059b192  897004               mov dword ptr [eax + 4], esi
-// 0059b195  897008               mov dword ptr [eax + 8], esi
-// 0059b198  d95818               fstp dword ptr [eax + 0x18]
-// 0059b19b  894810               mov dword ptr [eax + 0x10], ecx
-// 0059b19e  895814               mov dword ptr [eax + 0x14], ebx
-// 0059b1a1  897020               mov dword ptr [eax + 0x20], esi
-// 0059b1a4  897024               mov dword ptr [eax + 0x24], esi
-// 0059b1a7  eb02                 jmp 0x59b1ab
-// 0059b1a9  33c0                 xor eax, eax
-// 0059b1ab  8b4f08               mov ecx, dword ptr [edi + 8]
-// 0059b1ae  3bce                 cmp ecx, esi
-// 0059b1b0  7505                 jne 0x59b1b7
-// 0059b1b2  894704               mov dword ptr [edi + 4], eax
-// 0059b1b5  eb02                 jmp 0x59b1b9
-// 0059b1b7  8901                 mov dword ptr [ecx], eax
-// 0059b1b9  6a28                 push 0x28
-// 0059b1bb  894708               mov dword ptr [edi + 8], eax
-// 0059b1be  e85d571000           call 0x6a0920
-// 0059b1c3  83c404               add esp, 4
-// 0059b1c6  3bc6                 cmp eax, esi
-// 0059b1c8  7423                 je 0x59b1ed
-// 0059b1ca  d944242c             fld dword ptr [esp + 0x2c]
-// 0059b1ce  8b0d08539700         mov ecx, dword ptr [0x975308]
-// 0059b1d4  8930                 mov dword ptr [eax], esi
-// 0059b1d6  897004               mov dword ptr [eax + 4], esi
-// 0059b1d9  897008               mov dword ptr [eax + 8], esi
-// 0059b1dc  d95818               fstp dword ptr [eax + 0x18]
-// 0059b1df  894810               mov dword ptr [eax + 0x10], ecx
-// 0059b1e2  895814               mov dword ptr [eax + 0x14], ebx
-// 0059b1e5  897020               mov dword ptr [eax + 0x20], esi
-// 0059b1e8  897024               mov dword ptr [eax + 0x24], esi
-// 0059b1eb  eb02                 jmp 0x59b1ef
-// 0059b1ed  33c0                 xor eax, eax
-// 0059b1ef  8b4f08               mov ecx, dword ptr [edi + 8]
-// 0059b1f2  3bce                 cmp ecx, esi
-// 0059b1f4  750f                 jne 0x59b205
-// 0059b1f6  894704               mov dword ptr [edi + 4], eax
-// 0059b1f9  894708               mov dword ptr [edi + 8], eax
-// 0059b1fc  5f                   pop edi
-// 0059b1fd  5e                   pop esi
-// 0059b1fe  5b                   pop ebx
-// 0059b1ff  83c430               add esp, 0x30
-// 0059b202  c20800               ret 8
-// 0059b205  8901                 mov dword ptr [ecx], eax
-// 0059b207  894708               mov dword ptr [edi + 8], eax
-// 0059b20a  5f                   pop edi
-// 0059b20b  5e                   pop esi
-// 0059b20c  5b                   pop ebx
-// 0059b20d  83c430               add esp, 0x30
-// 0059b210  c20800               ret 8
-// library rbxgs/roc_camera_flight_default_0_5e0bfcd6c544f87f.cpp (function ?writeValue@?$TypedPropertyDescriptor@VCoordinateFrame@G3D@@@Reflection@RBX@@EBEXPBVDescribedBase@23@PAVXmlElement@@@Z)
-
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast
 // roc-lib: rbxgs roc_camera_flight_default_0_5e0bfcd6c544f87f.cpp
+
+// Candidate translation unit (score above; library headers required).
+#pragma include_alias("v8datamodel/Camera.h", "../roc_camera_fly_native_header_f804c210c099df00.cpp")
+#pragma include_alias("v8xml/XmlElement.h", "../roc_xml_native_double_header_414358b35d9237a4.cpp")
+#pragma include_alias("v8datamodel/DebugSettings.h", "../roc_lua_debug_settings_header_c5ae733591533a2b.cpp")
+#pragma include_alias("reflection/object.h", "../roc_class_registry_native_header_a61a6f26f57e648b.cpp")
+#pragma include_alias("util/Name.h", "../roc_member_name_const_header_435e0dbf905df038.cpp")
+#pragma include_alias("reflection/member.h", "../roc_member_registry_native_header_9d65f5dc84cdc322.cpp")
+#undef _RELEASEASSERT
+#include "v8datamodel/Camera.h"
+#include "util/Math.h"
+#include "v8datamodel/ICameraOwner.h"
+namespace RBX {
+void Camera::tellCameraMoved() {
+ if (ICameraOwner* owner = getCameraOwner()) owner->cameraMoved();
+}
+
+
+	void Camera::setGCameraCoordinateFrame(const G3D::CoordinateFrame& coord)
+	{
+		if (Math::legalCameraCoord(coord))
+		{
+			(*(G3D::GCamera*)((char*)this+0x130)).setCoordinateFrame(coord);
+		}
+		else
+		{
+			RBXASSERT(false);
+		}
+	}
+
+	void Camera::lookAt(const G3D::Vector3& point)
+	{
+		(*(G3D::CoordinateFrame*)((char*)this+0x1a4)).translation = point;
+		(*(G3D::CoordinateFrame*)((char*)this+0x174)).lookAt(point);
+	}
+
+	void Camera::getHeadingElevationDistance(float& heading, float& elevation, float& distance)
+	{
+		Math::getHeadingElevation((*(G3D::CoordinateFrame*)((char*)this+0x174)), heading, elevation);
+		distance = goalToFocusDistance();
+	}
+
+	bool Camera::setDistanceFromTarget(float newDistance)
+	{
+		G3D::Vector3 lookVector = (*(G3D::CoordinateFrame*)((char*)this+0x1a4)).translation - (*(G3D::CoordinateFrame*)((char*)this+0x174)).translation;
+		float currentDistance = lookVector.magnitude();
+
+		const float min = distanceMin();
+		const float max = distanceMax();
+
+		if (newDistance < min && currentDistance == min)
+			return false;
+		
+		if (newDistance > max && currentDistance == max)
+			return false;
+
+		newDistance = G3D::min(max, G3D::max(min, newDistance));
+		
+		lookVector *= newDistance;
+		(*(G3D::CoordinateFrame*)((char*)this+0x174)).translation = (*(G3D::CoordinateFrame*)((char*)this+0x1a4)).translation - (lookVector / currentDistance);
+
+		tellCameraMoved();
+
+		return true;
+	}
+
+	bool Camera::nonCharacterZoom(float in)
+	{
+		G3D::Vector3 lookVector = (*(G3D::CoordinateFrame*)((char*)this+0x1a4)).translation - (*(G3D::CoordinateFrame*)((char*)this+0x174)).translation;
+
+		float currentDistance = lookVector.magnitude();
+		float newZoomDistance = getNewZoomDistance(currentDistance, in);
+
+		if (newZoomDistance == currentDistance)
+			return false;
+
+		(*(G3D::CoordinateFrame*)((char*)this+0x174)).translation -= lookVector * (newZoomDistance / currentDistance - 1.0f);
+
+		tellCameraMoved();
+
+		return true;
+	}
+
+	bool Camera::characterZoom(float in)
+	{
+		G3D::Vector3 focusToGoal = (*(G3D::CoordinateFrame*)((char*)this+0x174)).translation - (*(G3D::CoordinateFrame*)((char*)this+0x1a4)).translation;
+
+		float currentDistance = focusToGoal.magnitude();
+
+		float maxDistance = distanceMaxCharacter();
+		float newDistance = getNewZoomDistance(currentDistance, in);
+		newDistance = G3D::min(newDistance, maxDistance);
+
+		if (newDistance == currentDistance)
+			return false;
+
+		focusToGoal.y = 0.0;
+		focusToGoal.unitize();
+		focusToGoal.y = newDistance * 0.03f;
+
+		(*(G3D::CoordinateFrame*)((char*)this+0x174)).translation = focusToGoal.direction() * newDistance + (*(G3D::CoordinateFrame*)((char*)this+0x1a4)).translation;
+
+		return true;
+	}
+
+	void Camera::panRadians(float angle)
+	{
+		RBXASSERT(angle > -100);
+		RBXASSERT(angle < 100);
+
+		if (angle != 0)
+		{
+			float heading, elevation, distance;
+
+			getHeadingElevationDistance(heading, elevation, distance);
+			heading = Math::radWrap(heading + angle);
+			setHeadingElevationDistance(heading, elevation, distance);
+
+			tellCameraMoved();
+		}
+	}
+
+	bool Camera::tiltRadians(float angle)
+	{
+		if (angle != 0)
+		{
+			float heading, elevation, distance;
+			getHeadingElevationDistance(heading, elevation, distance);
+
+			static float rad = G3D::toRadians(81);
+			float newElevation = G3D::clamp(elevation + angle, -rad, rad);
+
+			if (elevation != newElevation)
+			{
+				setHeadingElevationDistance(heading, newElevation, distance);
+				tellCameraMoved();
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	void Camera::tryZoomExtents(float low, float current, float high, const Extents& extents, const G3D::Rect2D& viewPort)
+	{
+		RBXASSERT(current >= low);
+		RBXASSERT(current <= high);
+
+		if (high - low < 0.1)
+			return;
+
+		setDistanceFromTarget(current);
+		updateGoal();
+		goalToCamera();
+
+		if (extents.containedByFrustum((*(G3D::GCamera*)((char*)this+0x130)).frustum(viewPort)))
+		{
+			tryZoomExtents(low, (low + current) * 0.5, current, extents, viewPort);
+		}
+		else
+		{
+			tryZoomExtents(current, (current + high) * 0.5, high, extents, viewPort);
+		}
+	}
+
+	void Camera::zoomExtents(Extents extents, const G3D::Rect2D& viewPort, Camera::ZoomType zoomType)
+	{
+		G3D::CoordinateFrame currentCoord = (*(G3D::GCamera*)((char*)this+0x130)).getCoordinateFrame();
+		extents.expand(0.1f);
+
+		if (zoomType != ZOOM_CHAR_PART_DRAG || (*(CameraType*)((char*)this+0x1d4)) == CUSTOM_CAMERA)
+		{
+			if ((*(CameraType*)((char*)this+0x1d4)) == FIXED_CAMERA)
+			{
+				G3D::Vector3 scaler = extents.center() - (*(G3D::CoordinateFrame*)((char*)this+0x1a4)).translation;
+
+				(*(G3D::CoordinateFrame*)((char*)this+0x1a4)).translation += scaler;
+				(*(G3D::CoordinateFrame*)((char*)this+0x174)).translation += scaler;
+			}
+
+			float low;
+
+			if (zoomType == ZOOM_OUT_ONLY || zoomType == ZOOM_CHAR_PART_DRAG)
+				low = goalToFocusDistance();
+			else
+				low = distanceMin();
+
+			float current = goalToFocusDistance();
+
+			RBXASSERT(G3D::isFinite(current));
+
+			if (zoomType == ZOOM_CHAR_PART_DRAG)
+				extents.scale(1.1f);
+
+			if (G3D::isFinite(low) && G3D::isFinite(current) && G3D::isFinite(distanceMax()))
+				tryZoomExtents(low, current, distanceMax(), extents, viewPort);
+
+			(*(G3D::CoordinateFrame*)((char*)this+0x174)) = (*(G3D::GCamera*)((char*)this+0x130)).getCoordinateFrame();
+			setGCameraCoordinateFrame(currentCoord);
+			tellCameraMoved();
+		}
+	}
+}
+
+namespace RBX {
+
+	void Camera::setCameraCoordinateFrameNoLerp(const G3D::CoordinateFrame& value)
+	{
+		(*(G3D::CoordinateFrame*)((char*)this+0x174)) = value;
+		goalToCamera();
+	}
+
+	void Camera::setImageServerViewNoLerp(const G3D::CoordinateFrame& modelCoord, const G3D::Rect2D& viewPort)
+	{
+		G3D::Vector3 look = modelCoord.lookVector();
+
+		bool noTilt = (fabs(look.y) > 0.95);
+		if (noTilt)
+		{
+			look = -G3D::Vector3::unitZ();
+		}
+		else
+		{
+			look.y = 0;
+			look = look.direction();
+		}
+
+		G3D::CoordinateFrame lookCoord;
+
+		lookCoord.lookAt(look);
+		lookCoord.rotation *= G3D::Matrix3::fromEulerAnglesZXY(G3D::toRadians(45), G3D::toRadians(35), 0.0f);
+
+		look = lookCoord.lookVector();
+		lookCoord.translation = (look * 10.0f) + modelCoord.translation;
+
+		lookCoord.lookAt(modelCoord.translation);
+
+		setCameraType(FIXED_CAMERA);
+		setCameraFocus(modelCoord.translation);
+		setCameraCoordinateFrameNoLerp(lookCoord);
+		zoomExtents(viewPort);
+		goalToCamera();
+	}
+
+	float Camera::getNewZoomDistance(float currentDistance, float in)
+	{
+		float const ZOOM_FACTOR = 0.25f;
+
+		if (in > 0.0f)
+		{
+			currentDistance = G3D::max<float>(currentDistance / (1.0 + in * ZOOM_FACTOR), distanceMin());
+		} 	
+		else if (in < 0.0f)
+		{
+			return G3D::min<float>(currentDistance * (1.0 - in * ZOOM_FACTOR), distanceMax());
+		}
+
+		return currentDistance;
+	}
+	bool Camera::zoomExtents(const G3D::Rect2D& viewPort)
+	{
+		if (ICameraOwner* owner = getCameraOwner())
+		{
+			zoomExtents(owner->computeCameraOwnerExtents(), viewPort, ZOOM_IN_OR_OUT);
+			return true;
+		}
+		return false;
+	}
+}
+
+namespace RBX {
+class NavKeys
+{
+public:
+	bool forward_arrow;  // 0x00
+	bool backward_arrow; // 0x01
+	bool left_arrow;     // 0x02
+	bool right_arrow;    // 0x03
+	bool forward_asdw;   // 0x04
+	bool backward_asdw;  // 0x05
+	bool left_asdw;      // 0x06
+	bool right_asdw;     // 0x07
+	bool space;          // 0x08
+		bool forward() const		{return (forward_arrow || forward_asdw);}
+
+		bool backward() const		{return (backward_arrow || backward_asdw);}
+
+		bool left() const			{return (left_arrow || left_asdw);}
+		
+		bool right() const			{return (right_arrow || right_asdw);}
+
+		bool arrowKeyDown() const	{return (forward_arrow || backward_arrow || left_arrow || right_arrow);}
+
+		bool asdwKeyDown() const	{return (forward_asdw || backward_asdw || left_asdw || right_asdw);}
+
+
+ bool navKeyDown() const {return arrowKeyDown() || asdwKeyDown() || space;}
+};
+
+
+	static Reflection::EnumPropDescriptor<Camera, Camera::CameraType> desc_cameraType("CameraType", "Camera", &Camera::getCameraType, &Camera::setCameraType, Reflection::PropertyDescriptor::STANDARD); 
+
+	void Camera::setCameraType(CameraType type)
+	{
+		if ((*(CameraType*)((char*)this+0x1d4)) != type)
+		{
+			(*(CameraType*)((char*)this+0x1d4)) = type;
+			raisePropertyChanged(desc_cameraType);
+
+			tellCameraMoved();
+		}
+	}
+
+void Camera::doFly(const NavKeys& nav, int steps)
+{
+ if (nav.navKeyDown()) {
+  float accelerationMultiplier = 2.0f;
+  if (steps > 120) accelerationMultiplier = 8.0f;
+  else if (steps > 60) accelerationMultiplier = 4.0f;
+  G3D::CoordinateFrame current = getCameraCoordinateFrame();
+  G3D::Vector3 look = current.lookVector();
+  G3D::Vector3 right = current.rightVector();
+  G3D::Vector3 delta;
+  if (nav.forward()) delta += look * accelerationMultiplier;
+  if (nav.backward()) delta -= look * accelerationMultiplier;
+  if (nav.right()) delta += right * accelerationMultiplier;
+  if (nav.left()) delta -= right * accelerationMultiplier;
+  current.translation += delta;
+  setCameraType(Camera::FIXED_CAMERA);
+  setCameraCoordinateFrameNoLerp(current);
+  setCameraFocus(current.translation + 20.0f * look);
+ }
+}
+
+}
+
+#undef _RELEASEASSERT
+#include "v8tree/Property.cpp"
+bool (*roc_color_parser)(const std::string&, G3D::Color3&) = &RBX::StringConverter<G3D::Color3>::convertToValue;
+bool (*roc_vector_parser)(const std::string&, G3D::Vector3&) = &RBX::StringConverter<G3D::Vector3>::convertToValue;
+
+#undef _RELEASEASSERT
+#include <v8world/Contact.h>
+#include <util/Math.h>
+namespace RBX {
+	Block* BlockBlockContact::block(int i)
+	{
+		return rbx_static_cast<Block*>(this->getPrimitive(i)->getGeometry());
+	}
+
+	int BlockBlockContact::intersectRectQuad(G3D::Vector2& planeRect, G3D::Vector2 (&otherQuad)[4])
+	{
+		bool quadCrossRect[4][4];
+
+		bool quadIn[4] = {true, true, true, true};
+
+		int foundCounter = 0;
+
+		for (int i = 3; i >= 0; i--)
+		{
+			if (otherQuad[i].y <= planeRect.y)
+			{
+				quadCrossRect[0][i] = true;
+			}
+			else
+			{
+				quadCrossRect[0][i] = false;
+				quadIn[i] = false;
+			}
+
+			if (otherQuad[i].x >= -planeRect.x)
+			{
+				quadCrossRect[1][i] = true;
+			}
+			else
+			{
+				quadCrossRect[1][i] = false;
+				quadIn[i] = false;
+			}
+
+			if (otherQuad[i].y >= -planeRect.y)
+			{
+				quadCrossRect[2][i] = true;
+			}
+			else
+			{
+				quadCrossRect[2][i] = false;
+				quadIn[i] = false;
+			}
+
+			if (otherQuad[i].x <= planeRect.x)
+			{
+				quadCrossRect[3][i] = true;
+			}
+			else
+			{
+				quadCrossRect[3][i] = false;
+				quadIn[i] = false;
+			}
+		}
+
+		for (int i = 3; i >= 0; i--)
+		{
+			if (quadIn[i])
+			{
+				loadGeoPairPointPlane((*(int*)((char*)this+0x70)), (*(int*)((char*)this+0x6c)), i, (*(NormalId*)((char*)this+0x78)), (*(NormalId*)((char*)this+0x74)));
+				foundCounter++;
+			}
+		}
+
+		if (foundCounter == 4)
+			return foundCounter;
+		else
+		{
+			bool rectCrossQuad[4][4];
+			G3D::Vector2 rect[4];
+			rect[0] = G3D::Vector2(planeRect.x, planeRect.y);
+			rect[1] = G3D::Vector2(-planeRect.x, planeRect.y);
+			rect[2] = G3D::Vector2(-planeRect.x, -planeRect.y);
+			rect[3] = G3D::Vector2(planeRect.x, -planeRect.y);
+
+			bool rectIn[4] = {true, true, true, true};
+
+			for (int i = 3; i >= 0; i--)
+			{
+				G3D::Vector2& current = otherQuad[i];
+				G3D::Vector2& currentO = otherQuad[(i + 3) % 4];
+				for (int j = 0; j < 4; j++)
+				{
+					G3D::Vector2 math1 = rect[j] - current;
+					G3D::Vector2 math2 = currentO - current;
+
+					if ((math2.x * math1.y) - (math2.y * math1.x) >= 0.0f)
+					{
+						rectCrossQuad[i][j] = true;
+					}
+					else
+					{
+						rectCrossQuad[i][j] = false;
+						rectIn[j] = false;
+					}
+				}
+			}
+
+			int wasZero = foundCounter == 0;
+
+			for (int i = 0; i < 4; i++)
+			{
+				if (rectIn[i])
+				{
+					loadGeoPairPointPlane((*(int*)((char*)this+0x6c)), (*(int*)((char*)this+0x70)), i, (*(NormalId*)((char*)this+0x74)), (*(NormalId*)((char*)this+0x78)));
+					foundCounter++;
+				}
+			}
+
+			if (wasZero && foundCounter == 4)
+				return foundCounter;
+			else
+			{
+				for (int i = 0; i < 4; i++)
+				{
+					for (int j = 3; j >= 0; j--)
+					{
+						if (quadCrossRect[i][j] != quadCrossRect[i][(j + 3) % 4] && rectCrossQuad[j][i] != rectCrossQuad[j][(i + 1) % 4])
+						{
+
+							loadGeoPairEdgeEdgePlane((*(int*)((char*)this+0x70)), (*(int*)((char*)this+0x6c)), block((*(int*)((char*)this+0x70)))->faceVertexToEdge((*(NormalId*)((char*)this+0x78)), (j+3)%4), block((*(int*)((char*)this+0x6c)))->faceVertexToEdge((*(NormalId*)((char*)this+0x74)), i));
+							foundCounter++;
+						}
+					}
+				}
+				RBXASSERT(foundCounter != 1 && foundCounter <= 8);
+				return foundCounter;
+			}
+		}
+	}
+
+
+}
+
+#include <script/ScriptContext.h>
+#include <util/standardout.h>
+#include <lua/lua.hpp>
+#include <lauxlib.h>
+#include <cstring>
+namespace RBX { namespace Lua { const char* safe_lua_tostring(lua_State*, int); } }
+using namespace RBX;
+void ScriptContext::executeInNewThread(Security::Identities identity, const char* script, const char* name, PushArgumentsClosure pushArguments, ReadResultsClosure readResults)
+{
+    openState();
+
+    lua_State* L;
+    lua_State* newThread;
+
+    if (identity == Security::CmdLine)
+    {
+        if ((*(Lua::ThreadRef*)((char*)this+0x13c)).empty())
+        {
+            {
+                Lua::ThreadRef threadRef(lua_newthread((*(lua_State**)((char*)this+0x138))));
+                (*(Lua::ThreadRef*)((char*)this+0x13c)) = threadRef;
+            }
+
+            if ((*(Lua::ThreadRef*)((char*)this+0x13c)).empty())
+                throw std::runtime_error("Unable to create trusted sandbox thread");
+
+            sandboxThread((*(Lua::ThreadRef*)((char*)this+0x13c)).thread());
+            setThreadIdentity((*(Lua::ThreadRef*)((char*)this+0x13c)).thread(), Security::CmdLine);
+            lua_pop((*(lua_State**)((char*)this+0x138)), 1);
+        }
+
+        L = (*(Lua::ThreadRef*)((char*)this+0x13c)).thread();
+        newThread = lua_newthread(L);
+    }
+    else
+    {
+        L = (*(lua_State**)((char*)this+0x138));
+        newThread = lua_newthread(L);
+        sandboxThread(newThread);
+        setThreadIdentity(newThread, identity);
+    }
+
+    if (!newThread)
+    {
+        StandardOut::singleton()->print(MESSAGE_ERROR, "ScriptContext::execute: Unable to create a new thread");
+        throw std::runtime_error("Unable to create a new thread");
+    }
+
+    Lua::ScopedPopper popper(L, 1);
+
+    std::string sName("=");
+
+    if (name)
+        sName += name;
+    else
+        sName += "Script";
+
+    if (luaL_loadbuffer(newThread, script, strlen(script), sName.c_str()))
+    {
+        std::string err = Lua::safe_lua_tostring(newThread, -1);
+        lua_pop(newThread, 1);
+
+        StandardOut::singleton()->print(MESSAGE_ERROR, err.c_str());
+        throw std::runtime_error(err);
+    }
+
+    resume(newThread, pushArguments, readResults);
+}
+
+
+#undef _RELEASEASSERT
+#include <v8world/RotateJoint.h>
+#include <v8world/Primitive.h>
+#include <v8world/World.h>
+#include <v8kernel/Body.h>
+#include <util/Math.h>
+namespace RBX {
+class RotatePrimitiveApi {
+public:
+    Body* getBody() { return *(Body**)((char*)this+0xa0); }
+};
+class RotateBodyApi {
+private:
+    void updatePV() const;
+public:
+    const G3D::CoordinateFrame& getCoordinateFrame() const {
+        updatePV();
+        return *(const G3D::CoordinateFrame*)((const char*)this+0x94);
+    }
+};
+	void RotateJoint::putInKernel(Kernel* _kernel)
+	{
+		MultiJoint::putInKernel(_kernel);
+
+		Body* b0 = ((RotatePrimitiveApi*)getAxlePrim())->getBody();
+		Body* b1 = ((RotatePrimitiveApi*)getHolePrim())->getBody();
+
+		G3D::CoordinateFrame cAxleWorld = ((RotateBodyApi*)b0)->getCoordinateFrame() * jointCoord0;
+		G3D::CoordinateFrame cHoleWorld = ((RotateBodyApi*)b1)->getCoordinateFrame() * jointCoord1;
+
+		G3D::Vector3 vAxleWorld = cAxleWorld.rotation.getColumn(2);
+		G3D::Vector3 vHoleWorld = cHoleWorld.rotation.getColumn(2);
+
+		for (int i = 0; i < 2; i++)
+		{
+			float multiplier = i == 0 ? -1.0f : 1.0f;
+
+			G3D::Vector3 pAxleWorldPos = vAxleWorld * multiplier + cAxleWorld.translation;
+			G3D::Vector3 pHoleWorldPos = vHoleWorld * multiplier + cHoleWorld.translation;
+
+			Point* pAxleWorld = getKernel()->newPoint(b0, pAxleWorldPos);
+			Point* pHoleWorld = getKernel()->newPoint(b1, pHoleWorldPos);
+
+			PointToPointBreakConnector* connector = new PointToPointBreakConnector(pAxleWorld, pHoleWorld, getJointK(), Math::inf());
+			addToMultiJoint(pAxleWorld, pHoleWorld, connector);
+		}
+
+		if (getJointType() == ROTATE_P_JOINT || getJointType() == ROTATE_V_JOINT)
+		{
+			G3D::Vector3 center0 = cAxleWorld.translation;
+			G3D::Vector3 perp = cAxleWorld.rotation.getColumn(0);
+			G3D::Vector3 marker0 = perp * 10.0f + center0;
+
+			Point* pMarker0 = getKernel()->newPoint(b0, marker0);
+			Point* pMarker1 = getKernel()->newPoint(b1, marker0);
+
+			RBXASSERT(!rotateConnector);
+			RotateConnector* connector = new RotateConnector(getPoint(0), getPoint(2), pMarker0, pMarker1, getJointK(), getTorqueArmLength());
+			rotateConnector = connector;
+			addToMultiJoint(pMarker0, pMarker1, connector);
+		}
+	}
+
+
+}
+
+#include <reflection/property.h>
+#include "reflection/object.h"
+#include "v8xml/XmlElement.h"
+#include <G3D/CoordinateFrame.h>
+// Real public getter boundary4acb30; no GetSet slot/layout fabrication.
+template<> G3D::CoordinateFrame RBX::Reflection::TypedPropertyDescriptor<G3D::CoordinateFrame>::getValue(const RBX::Reflection::DescribedBase*) const;
+// Genuine declared float constructor, with native FLOAT7/tag/value stores.
+XmlNameValuePair::XmlNameValuePair(const RBX::Name& name, float value)
+    : tag(name), valueType(FLOAT), floatValue(value) {}
+template<>
+void RBX::Reflection::TypedPropertyDescriptor<G3D::CoordinateFrame>::writeValue(const RBX::Reflection::DescribedBase* instance, XmlElement* element) const
+{
+	// Write the data out in accordance with ROBLOX Schema
+	G3D::CoordinateFrame c = getValue(instance);
+	element->addChild(new XmlElement(tag_X, c.translation.x));
+	element->addChild(new XmlElement(tag_Y, c.translation.y));
+	element->addChild(new XmlElement(tag_Z, c.translation.z));
+	element->addChild(new XmlElement(tag_R00, c.rotation[0][0]));
+	element->addChild(new XmlElement(tag_R01, c.rotation[0][1]));
+	element->addChild(new XmlElement(tag_R02, c.rotation[0][2]));
+	element->addChild(new XmlElement(tag_R10, c.rotation[1][0]));
+	element->addChild(new XmlElement(tag_R11, c.rotation[1][1]));
+	element->addChild(new XmlElement(tag_R12, c.rotation[1][2]));
+	element->addChild(new XmlElement(tag_R20, c.rotation[2][0]));
+	element->addChild(new XmlElement(tag_R21, c.rotation[2][1]));
+	element->addChild(new XmlElement(tag_R22, c.rotation[2][2]));
+}
+
+
+// Genuine public XML member roots; these globals claim no native identity.
+XmlElement* (XmlElement::*roc_xml_add_child)(XmlElement*) = &XmlElement::addChild;
+const RBX::Name& (XmlNameValuePair::*roc_xml_get_tag)() const = &XmlNameValuePair::getTag;
+XmlNameValuePair::ValueType (XmlNameValuePair::*roc_xml_get_type)() const = &XmlNameValuePair::getValueType;
+template XmlElement::XmlElement(const RBX::Name&, float);
+template XmlElement::XmlElement(const RBX::Name&, int);
+template void XmlElement::addAttribute<float>(const RBX::Name&, float);
+
+#undef _RELEASEASSERT
+#include "v8kernel/Pair.h"
+namespace RBX {
+// Real public fast accessor, genuine2016 Body.h: cached PV, assertion only.
+// Native6136a0 loads coordinate frame directly at94; no updatePV call.
+class PairBodyApi {
+public:
+ const PV& getPvFast() const { return *(const PV*)((const char*)this+0x94); }
+};
+}
+#include "v8kernel/Pair.h"
+#include "util/Math.h"
+#include "util/Debug.h"
+
+namespace RBX
+{
+	GeoPair::GeoPair()
+	{
+		this->body0 = NULL;
+		this->body1 = NULL;
+		this->offset0 = NULL;
+		this->offset1 = NULL;
+	}
+
+	void GeoPair::computeNormalPerpVel(float& normalVel, G3D::Vector3& perpVel, const PairParams& _params)
+	{
+		G3D::Vector3 body0Velocity = ((PairBodyApi*)this->body0)->getPvFast().linearVelocityAtPoint(_params.position);
+		G3D::Vector3 body1Velocity = ((PairBodyApi*)this->body1)->getPvFast().linearVelocityAtPoint(_params.position);
+		body1Velocity -= body0Velocity;
+
+		float body1VelDot = _params.normal.dot(body1Velocity);
+		normalVel = body1VelDot;
+		G3D::Vector3 normalVelMul = _params.normal * body1VelDot;
+		perpVel = body1Velocity - normalVelMul;
+	}
+
+	void GeoPair::forceToBodies(const G3D::Vector3& _force, const G3D::Vector3& _position)
+	{
+		this->body0->accumulateForce(-_force, _position);
+		this->body1->accumulateForce(_force, _position);
+		RBXASSERT(fabs(_force.x) < Math::inf());
+	}
+
+	void GeoPair::computeBallBall(PairParams& _params)
+	{
+		const PV& body0PV = ((PairBodyApi*)this->body0)->getPvFast();
+		const PV& body1PV = ((PairBodyApi*)this->body1)->getPvFast();
+
+		const G3D::Vector3& body0Trans = body0PV.position.translation;
+		const G3D::Vector3& body1Trans = body1PV.position.translation;
+
+		_params.normal = body1Trans - body0Trans;
+		_params.length = _params.normal.unitize() - this->pairData.radiusSum;
+		_params.position = _params.normal * this->pairData.radius0 + body0Trans;
+	}
+
+	void GeoPair::computeBallPoint(PairParams& _params)
+	{
+		const G3D::Vector3& body0Trans = ((PairBodyApi*)this->body0)->getPvFast().position.translation;
+		const G3D::CoordinateFrame& body1Pos = ((PairBodyApi*)this->body1)->getPvFast().position;
+
+		const G3D::Vector3& myoffset1 = *this->offset1;
+		_params.position = body1Pos.pointToWorldSpace(myoffset1);
+		_params.normal = _params.position - body0Trans;
+		_params.length = _params.normal.unitize() - this->pairData.radius0;
+	}
+
+	G3D::Vector3 somemaththing(const G3D::Vector3& normal, const G3D::Vector3& trans)
+	{
+		return trans - normal * normal.dot(trans);
+	}
+
+	void GeoPair::computeBallEdge(PairParams& _params)
+	{
+		const G3D::Vector3& body0PV = ((PairBodyApi*)this->body0)->getPvFast().position.translation;
+		const G3D::CoordinateFrame& body1PV = ((PairBodyApi*)this->body1)->getPvFast().position;
+		const G3D::Vector3& myoffset1 = *this->offset1;
+		const G3D::Vector3& worldPoint = body1PV.pointToWorldSpace(myoffset1);
+
+		const G3D::Vector3& normal = Math::getWorldNormal(this->pairData.normalID1, body1PV);
+
+		const G3D::Vector3& temp = worldPoint - body0PV;
+		_params.normal = somemaththing(normal, temp);
+		_params.position = _params.normal + body0PV;
+		_params.length = _params.normal.unitize() - this->pairData.radius0;
+	}
+
+	void GeoPair::computeBallPlane(RBX::PairParams& _params)
+	{
+		const G3D::Vector3& body0PV = ((PairBodyApi*)this->body0)->getPvFast().position.translation;
+		const G3D::CoordinateFrame& body1PV = ((PairBodyApi*)this->body1)->getPvFast().position;
+		const G3D::Vector3& myoffset1 = *this->offset1;
+		const G3D::Vector3& worldPoint = body1PV.pointToWorldSpace(myoffset1);
+
+		const G3D::Vector3& normal = -Math::getWorldNormal(this->pairData.normalID1, body1PV);
+
+		_params.normal = normal;
+
+		const G3D::Vector3& temp = worldPoint - body0PV;
+		G3D::Vector3 someMathThing = normal.dot(temp) * normal;
+		_params.position = body0PV + someMathThing;
+		_params.length = someMathThing.length() - this->pairData.radius0;
+	}
+
+	void GeoPair::computePointPlane(RBX::PairParams& _params)
+	{
+		_params.position = ((PairBodyApi*)this->body0)->getPvFast().position.pointToWorldSpace(*offset0);
+		const G3D::CoordinateFrame& body1PV = ((PairBodyApi*)this->body1)->getPvFast().position;
+		G3D::Vector3 body1worldSpace = body1PV.pointToWorldSpace(*offset1);
+		_params.normal = -Math::getWorldNormal(this->pairData.normalID1, body1PV);
+		_params.length = _params.normal.dot(body1worldSpace - _params.position);
+	}
+
+	// is this actually an inline?
+	__forceinline float unkClampInline(float d, float max)
+	{
+		if (fabs(d) > max)
+			return max * Math::sign(d);
+
+		return d;
+	}
+	
+	void GeoPair::computeEdgeEdgePlane(RBX::PairParams& _params)
+	{
+		const G3D::CoordinateFrame& body0PV = ((PairBodyApi*)this->body0)->getPvFast().position;
+		const G3D::CoordinateFrame& body1PV = ((PairBodyApi*)this->body1)->getPvFast().position;
+
+		//world space defines
+		G3D::Vector3 body0worldSpace = body0PV.pointToWorldSpace(*this->offset0);
+		G3D::Vector3 body1worldSpace = body1PV.pointToWorldSpace(*this->offset1);
+		//normals
+		G3D::Vector3 body0Normal = Math::getWorldNormal(this->pairData.normalID0, body0PV);
+		G3D::Vector3 body1Normal = Math::getWorldNormal(this->pairData.normalID1, body1PV);
+		//calcs
+		G3D::Vector3 bodyWorldSpaceDelta = body1worldSpace - body0worldSpace;
+		float bodyNormalDot = body0Normal.dot(body1Normal);
+		float compareResult = 1.0f - bodyNormalDot * bodyNormalDot;
+		_params.normal = -Math::getWorldNormal(this->pairData.planeID, body1PV.rotation);
+		if ( compareResult > 0.00001 )
+		{
+			float body1Dot = -bodyWorldSpaceDelta.dot(body1Normal);
+			float body0Dot = bodyWorldSpaceDelta.dot(body0Normal);
+			float theSinner = (body0Dot + (bodyNormalDot * body1Dot)) / compareResult;
+			theSinner = unkClampInline(theSinner, 6.0f);
+			_params.position = body0Normal * theSinner + body0worldSpace;
+			_params.length = _params.normal.dot(body1worldSpace - _params.position);
+		}
+		else
+		{
+			_params.position = body0worldSpace;
+			_params.length = 0.0;
+		}
+	}
+
+	void GeoPair::computeEdgeEdge(RBX::PairParams& _params)
+	{
+		const G3D::CoordinateFrame& body0coord = ((PairBodyApi*)this->body0)->getPvFast().position;
+		const G3D::CoordinateFrame& body1coord = ((PairBodyApi*)this->body1)->getPvFast().position;
+
+		//world space defines
+		G3D::Vector3 body0worldSpace = body0coord.pointToWorldSpace(*this->offset0);
+		G3D::Vector3 body1worldSpace = body1coord.pointToWorldSpace(*this->offset1);
+		//normals
+		G3D::Vector3 body0Normal = Math::getWorldNormal(this->pairData.normalID0, body0coord);
+		G3D::Vector3 body1Normal = Math::getWorldNormal(this->pairData.normalID1, body1coord);
+		//calcs
+		G3D::Vector3 bodyWorldSpaceDelta = body1worldSpace - body0worldSpace;
+		float bodyNormalDot = body0Normal.dot(body1Normal);
+		float body0Dot = bodyWorldSpaceDelta.dot(body0Normal);
+		float body1Dot = -bodyWorldSpaceDelta.dot(body1Normal);
+		float compareResult = 1.0f - bodyNormalDot * bodyNormalDot;
+		if ( compareResult > 0.000001f )
+		{
+			float bodyDotCalc1 = (body0Dot + body1Dot * bodyNormalDot) * (1.0f / compareResult);
+			float bodyDotCalc2 = (body1Dot + body0Dot * bodyNormalDot) * (1.0f / compareResult);
+			const G3D::Vector3 body0NormalDotCalc = body0worldSpace + (body0Normal * bodyDotCalc1);
+			const G3D::Vector3 body1NormalDotCalc = body1worldSpace + (body1Normal * bodyDotCalc2);
+			_params.position = (body1NormalDotCalc + body0NormalDotCalc) * 0.5f;
+			_params.normal = body0NormalDotCalc - body1NormalDotCalc;
+			_params.length = -_params.normal.unitize();
+
+			
+		}
+		else
+		{
+			_params.position = body0worldSpace;
+			_params.normal = body0Normal;
+			_params.length = 0.0f;
+		}
+	}
+}
+
+#undef _RELEASEASSERT
+#include "script/ScriptContext.h"
+#include "v8datamodel/DebugSettings.h"
+#include "util/StandardOut.h"
+extern "C" {
+#include "lobject.h"
+#include "lauxlib.h"
+}
+namespace RBX {
+void ScriptContext::reportError(lua_State* thread) {
+ StandardOut::singleton()->print(MESSAGE_ERROR, "%s", lua_tostring(thread, -1));
+ if (DebugSettings::singleton().getStackTracingEnabled()) {
+  lua_Debug ar;
+  if (lua_getstack(thread, 0, &ar)) {
+   bool moreStack = false;
+   int level = 0;
+   while (level < 12 && lua_getstack(thread, level++, &ar)) {
+    if (lua_getinfo(thread, "nSlu", &ar) && ar.currentline >= 0) {
+     moreStack = true;
+     char source[64];
+     luaO_chunkid(source, ar.source, sizeof(source));
+     if (ar.name)
+      StandardOut::singleton()->print(MESSAGE_INFO, "%s, line %d - %s %s", source, ar.currentline, ar.namewhat, ar.name);
+     else
+      StandardOut::singleton()->print(MESSAGE_INFO, "%s, line %d", source, ar.currentline);
+    }
+   }
+   if (moreStack && level < 12) StandardOut::singleton()->print(MESSAGE_INFO, "   stack end");
+  }
+ } else StandardOut::singleton()->print(MESSAGE_ERROR, "%s", lua_tostring(thread, -1));
+}
+}
+
+#undef _RELEASEASSERT
+#include "util/Face.h"
+#include "util/Math.h"
+
+namespace RBX
+{
+	const G3D::Vector3& Face::operator[](int i) const
+	{
+		return ((G3D::Vector3*)this)[i];
+	}
+
+	G3D::Vector3& Face::operator[](int i)
+	{
+		return ((G3D::Vector3*)this)[i];
+	}
+
+	void Face::snapToGrid(float grid)
+	{
+		for (int i = 0; i < 4; ++i)
+		{
+			G3D::Vector3& v = (*this)[i];
+			v = Math::toGrid(v, grid);
+		}
+	}
+
+	bool Face::overlapWithinPlanes(const Face& f0, const Face& f1, float tolerance)
+	{
+		for (int i = 0; i < 2; ++i)
+		{
+			const Face& face = i == 0 ? f0 : f1;
+			const Face& otherFace = i == 0 ? f1 : f0;
+
+			G3D::Plane p0(face.c0, face.c1, face.c3);
+			
+			G3D::Vector3 normal;
+			double distance;
+			p0.getEquation(normal, distance);
+
+			Face overlapOn1 = otherFace.projectOverlapOnMe(face);
+
+			for (int j = 0; j < 4; ++j)
+			{
+				if (overlapOn1[j].dot(normal) > tolerance)
+					return false;
+			}
+		}
+
+		return true;
+	}
+
+	bool Face::fuzzyContainsInExtrusion(const G3D::Vector3& point, float tolerance) const
+	{
+		RBXASSERT(tolerance >= 0.0);
+
+		for (int i = 0; i < 4; ++i)
+		{
+			const G3D::Vector3& v1 = (*this)[i];
+			const G3D::Vector3& v2 = (*this)[(i + 1) % 4];
+
+			if ((v2 - v1).dot(point - v1) < -tolerance)
+				return false;
+		}
+
+		return true;
+	}
+
+	void Face::minMax(const G3D::Vector3& point, const G3D::Vector3& normal, float& min, float& max) const
+	{
+		min = 1.0e10;
+		max = -1.0e10;
+
+		for (int i = 0; i < 4; ++i)
+		{
+			const G3D::Vector3& v = (*this)[i];
+			float temp = (v - point).dot(normal);
+			min = G3D::min(min, temp);
+			max = G3D::max(max, temp);
+		}
+	}
+
+	bool Face::hasOverlap(const Face& f0, const Face& f1, float byAtLeast)
+	{
+		for (int i = 0; i < 2; ++i)
+		{
+			G3D::Vector3 axis = f0.getAxis(i);
+
+			float f0min, f0max;
+			f0.minMax(f0.c0, axis, f0min, f0max);
+
+			float f1min, f1max;
+			f1.minMax(f0.c0, axis, f1min, f1max);
+
+			if ((f0min - byAtLeast) < f1min || (f0max + byAtLeast) > f1max)
+				return false;
+		}
+		
+		return true;
+	}
+
+	bool Face::cornersAligned(const Face& f0, const Face& f1, float tolerance)
+	{
+		RBXASSERT(tolerance > 0.0);
+
+		float toleranceSquared = tolerance*tolerance;
+
+		for (int i = 0; i < 4; ++i)
+		{
+			bool aligned = false;
+
+			for (int j = 0; j < 4; ++j)
+			{
+				const G3D::Vector3& v1 = f0[i];
+				const G3D::Vector3& v2 = f1[j];
+
+				if ((v1 - v2).squaredMagnitude() < toleranceSquared)
+				{
+					aligned = true;
+					break;
+				}
+			}
+
+			if (!aligned)
+				return false;
+		}
+
+		return true;
+	}
+
+	Face Face::projectOverlapOnMe(const Face& other) const
+	{
+		const Face& f0 = (*this);
+		const Face& f1 = other;
+
+		//RBXASSERT(Face::hasOverlap(f0, f1, 1e-6f));
+		G3D::Vector3 normal[2];
+		float minL[2];
+		float maxL[2];
+
+		normal[0] = f0.getU();
+		normal[1] = f0.getV();
+		for (int i = 0; i < 2; ++i) {
+			float f0min, f0max, f1min, f1max;
+			f0.minMax(f0.c0, normal[i], f0min, f0max);
+			f1.minMax(f0.c0, normal[i], f1min, f1max);
+			minL[i] = std::max(f0min, f1min);
+			maxL[i] = std::min(f0max, f1max);
+		}
+		return Face(	f0.c0 + (normal[0] * minL[0] + normal[1] * minL[1]),
+						f0.c0 + (normal[0] * minL[0] + normal[1] * maxL[1]),
+						f0.c0 + (normal[0] * maxL[0] + normal[1] * maxL[1]),
+						f0.c0 + (normal[0] * maxL[0] + normal[1] * minL[1])		);
+	}
+
+	Face Face::fromExtentsSide(const Extents& e, NormalId faceId)
+	{
+		Face face;
+		e.getFaceCorners(faceId, face.c0, face.c1, face.c2, face.c3);
+		return face;
+	}
+
+	Face Face::toWorldSpace(const G3D::CoordinateFrame& objectCoord) const
+	{
+		Face face;
+		for (int i = 0; i < 4; ++i)
+		{
+			face[i] = objectCoord.pointToWorldSpace((*this)[i]);
+		}
+		return face;
+	}
+
+	Face Face::toObjectSpace(const G3D::CoordinateFrame& objectCoord) const
+	{
+		Face face;
+		for (int i = 0; i < 4; ++i)
+		{
+			face[i] = objectCoord.pointToObjectSpace((*this)[i]);
+		}
+		return face;
+	}
+}
+
+#undef _RELEASEASSERT
+#include "reflection/object.h"
+template void RBX::Reflection::MemberDescriptorContainer<RBX::Reflection::PropertyDescriptor>::declare(RBX::Reflection::PropertyDescriptor*);
+template void RBX::Reflection::MemberDescriptorContainer<RBX::Reflection::SignalDescriptor>::declare(RBX::Reflection::SignalDescriptor*);
+template void RBX::Reflection::MemberDescriptorContainer<RBX::Reflection::FunctionDescriptor>::declare(RBX::Reflection::FunctionDescriptor*);
+
+namespace RBX { namespace Reflection {
+static ClassDescriptor::ClassDescriptors& staticData2()
+{
+	static ClassDescriptor::ClassDescriptors result;
+	return result;
+}
+static void initStaticData2()
+{
+	staticData2();
+}
+
+ClassDescriptor::ClassDescriptors& ClassDescriptor::allClasses()
+{
+	static boost::once_flag flag = BOOST_ONCE_INIT;
+	boost::call_once(&initStaticData2, flag);
+	return staticData2();
+}
+
+static bool compare2(const ClassDescriptor* a, const ClassDescriptor* b) { return a->name < b->name; }
+		ClassDescriptor::ClassDescriptor(ClassDescriptor& base, const char* name)
+			: Descriptor(name),
+			  PropertyContainer(&base),
+			  SignalContainer(&base),
+			  FunctionContainer(&base),
+			  derivedClasses(),
+			  base(&base)
+		{
+			RBXASSERT(!lockedDown);
+
+			{
+				boost::recursive_mutex::scoped_lock lock(sync());
+				ClassDescriptors::iterator bound = std::lower_bound(base.derivedClasses.begin(), base.derivedClasses.end(), this, compare2);
+                base.derivedClasses.insert(bound, this);
+                ClassDescriptors::iterator iter = allClasses().begin();
+                while (iter != allClasses().end()) {
+                    ClassDescriptor* desc = *iter;
+                    if (Name::compare(this->name, desc->name) < 0) break;
+                    ++iter;
+                }
+                allClasses().insert(iter, this);
+			}
+		}
+
+} }

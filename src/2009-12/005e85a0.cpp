@@ -1,84 +1,129 @@
-// roc 2009-12 005e85a0  unit: RBX::VBeveledBlockMesh::?$CustomizableMesh  size: 171 bytes
-// Make this compile to the exact bytes below, then: roc check 2009-12 005e85a0
-//
-// 005e85a0  8b4c2404             mov ecx, dword ptr [esp + 4]
-// 005e85a4  57                   push edi
-// 005e85a5  8b7c2410             mov edi, dword ptr [esp + 0x10]
-// 005e85a9  8bd7                 mov edx, edi
-// 005e85ab  2bd1                 sub edx, ecx
-// 005e85ad  b867666666           mov eax, 0x66666667
-// 005e85b2  f7ea                 imul edx
-// 005e85b4  c1fa05               sar edx, 5
-// 005e85b7  8bc2                 mov eax, edx
-// 005e85b9  c1e81f               shr eax, 0x1f
-// 005e85bc  03c2                 add eax, edx
-// 005e85be  83f828               cmp eax, 0x28
-// 005e85c1  7e72                 jle 0x5e8635
-// 005e85c3  40                   inc eax
-// 005e85c4  99                   cdq 
-// 005e85c5  53                   push ebx
-// 005e85c6  83e207               and edx, 7
-// 005e85c9  03c2                 add eax, edx
-// 005e85cb  55                   push ebp
-// 005e85cc  8b6c241c             mov ebp, dword ptr [esp + 0x1c]
-// 005e85d0  c1f803               sar eax, 3
-// 005e85d3  56                   push esi
-// 005e85d4  8d1c80               lea ebx, [eax + eax*4]
-// 005e85d7  8d3480               lea esi, [eax + eax*4]
-// 005e85da  c1e305               shl ebx, 5
-// 005e85dd  55                   push ebp
-// 005e85de  8d140b               lea edx, [ebx + ecx]
-// 005e85e1  c1e604               shl esi, 4
-// 005e85e4  8d040e               lea eax, [esi + ecx]
-// 005e85e7  52                   push edx
-// 005e85e8  50                   push eax
-// 005e85e9  51                   push ecx
-// 005e85ea  89442424             mov dword ptr [esp + 0x24], eax
-// 005e85ee  e8edfdffff           call 0x5e83e0
-// 005e85f3  8b442428             mov eax, dword ptr [esp + 0x28]
-// 005e85f7  55                   push ebp
-// 005e85f8  8d0c06               lea ecx, [esi + eax]
-// 005e85fb  51                   push ecx
-// 005e85fc  50                   push eax
-// 005e85fd  2bc6                 sub eax, esi
-// 005e85ff  50                   push eax
-// 005e8600  e8dbfdffff           call 0x5e83e0
-// 005e8605  55                   push ebp
-// 005e8606  8bc7                 mov eax, edi
-// 005e8608  2bc6                 sub eax, esi
-// 005e860a  57                   push edi
-// 005e860b  50                   push eax
-// 005e860c  2bfb                 sub edi, ebx
-// 005e860e  57                   push edi
-// 005e860f  8944244c             mov dword ptr [esp + 0x4c], eax
-// 005e8613  e8c8fdffff           call 0x5e83e0
-// 005e8618  8b54244c             mov edx, dword ptr [esp + 0x4c]
-// 005e861c  8b442448             mov eax, dword ptr [esp + 0x48]
-// 005e8620  8b4c2444             mov ecx, dword ptr [esp + 0x44]
-// 005e8624  55                   push ebp
-// 005e8625  52                   push edx
-// 005e8626  50                   push eax
-// 005e8627  51                   push ecx
-// 005e8628  e8b3fdffff           call 0x5e83e0
-// 005e862d  83c440               add esp, 0x40
-// 005e8630  5e                   pop esi
-// 005e8631  5d                   pop ebp
-// 005e8632  5b                   pop ebx
-// 005e8633  5f                   pop edi
-// 005e8634  c3                   ret 
-// 005e8635  8b542414             mov edx, dword ptr [esp + 0x14]
-// 005e8639  8b44240c             mov eax, dword ptr [esp + 0xc]
-// 005e863d  52                   push edx
-// 005e863e  57                   push edi
-// 005e863f  50                   push eax
-// 005e8640  51                   push ecx
-// 005e8641  e89afdffff           call 0x5e83e0
-// 005e8646  83c410               add esp, 0x10
-// 005e8649  5f                   pop edi
-// 005e864a  c3                   ret 
-// library openrbx-client/Rendering\RenderLib\EffectSettings.cpp (function ??$_Median@PAVGLight@G3D@@P6A_NABV12@0@Z@std@@YAXPAVGLight@G3D@@00P6A_NABV12@1@Z@Z)
-
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
 // roc-lib: openrbx-client Rendering/RenderLib/EffectSettings.cpp
+
+// Candidate translation unit (score above; library headers required).
+#include "renderlib/EffectSettings.h"
+
+#include <GLG3D/glcalls.h>
+#include <algorithm>
+#include <memory>
+
+namespace RBX {
+namespace Render {
+
+// STUB: WEBSERVICE 0x101f7750
+static bool brighter(const G3D::GLight& A, const G3D::GLight& B)
+{
+	return (A.color.r + A.color.g + A.color.b) / 3.0 * (1.2 - A.position.w) >
+		   (B.color.r + B.color.g + B.color.b) / 3.0 * (1.2 - B.position.w);
+}
+
+// FUNCTION: WEBSERVICE 0x101f8950
+G3D::ToneMap* EffectSettings::getToneMap()
+{
+	static std::auto_ptr<G3D::ToneMap> toneMap(new G3D::ToneMap());
+	return toneMap.get();
+}
+
+// FUNCTION: WEBSERVICE 0x101f89e0
+DepthBlur* EffectSettings::getDepthBlur()
+{
+	static std::auto_ptr<DepthBlur> depthBlur(new DepthBlur());
+	return depthBlur.get();
+}
+
+// STUB: WEBSERVICE 0x101f8bc0
+G3D::ReferenceCountedPointer<G3D::Lighting> EffectSettings::update(
+	float shadingDetail,
+	float meshDetail,
+	bool shadows,
+	float cameraDistanceFromCharacters,
+	const G3D::ReferenceCountedPointer<G3D::Lighting>& desiredLighting,
+	const G3D::LightingParameters& desiredSkyParameters,
+	G3D::LightingParameters& outSkyParameters
+)
+{
+	int numShadowLights =
+		desiredLighting->shadowedLightArray.size() >= 8 ? 8 : desiredLighting->shadowedLightArray.size();
+	int maxLights = G3D::glGetInteger(GL_MAX_LIGHTS) - 3;
+	int numNonShadowLights =
+		desiredLighting->lightArray.size() >= maxLights ? maxLights : desiredLighting->lightArray.size();
+	numNonShadowLights = numNonShadowLights > 0 ? numNonShadowLights : 0;
+
+	_groundLOD = 1.0f;
+	_LODShift = 0.0f;
+	_skyBox = false;
+	_alphaBlendShadowLights = true;
+	_stencilShadows = false;
+	_useAllLightsInUnshadowedPass = false;
+	_toneMap = false;
+	_hemisphereLighting = false;
+	_depthBlur = false;
+	_farCullZ = -G3D::inf();
+
+	G3D::ReferenceCountedPointer<G3D::Lighting> lighting = G3D::Lighting::create();
+	*lighting = *desiredLighting;
+
+	G3D::glGetInteger(GL_STENCIL_BITS);
+
+	if (meshDetail >= 10) {
+		_skyBox = true;
+	}
+
+	_groundLOD = G3D::lerp(0.0f, 1.0f, (float) (meshDetail / 100.0));
+
+	if (meshDetail >= 30.0) {
+		_hemisphereLighting = true;
+	}
+
+	_LODShift = G3D::lerp(-1.0f, 1.0f, (float) (meshDetail / 100.0));
+
+	if (shadows && numShadowLights > 0) {
+		_stencilShadows = true;
+		numShadowLights = 1;
+
+		if (numNonShadowLights == 0) {
+			_alphaBlendShadowLights = false;
+		}
+	}
+
+	std::sort(lighting->shadowedLightArray.begin(), lighting->shadowedLightArray.end(), brighter);
+
+	int excessShadowLights = lighting->shadowedLightArray.size() - numShadowLights;
+
+	if (excessShadowLights > 0) {
+		for (int i = 0; i < excessShadowLights; i++) {
+			lighting->lightArray.append(
+				lighting->shadowedLightArray[lighting->shadowedLightArray.size() - excessShadowLights + i]
+			);
+		}
+
+		lighting->shadowedLightArray.resize(lighting->shadowedLightArray.size() - excessShadowLights, true);
+	}
+
+	std::sort(lighting->lightArray.begin(), lighting->lightArray.end(), brighter);
+
+	int excessLights = lighting->lightArray.size() - numNonShadowLights;
+
+	if (excessLights > 0) {
+		lighting->lightArray.resize(lighting->lightArray.size() - excessLights, true);
+	}
+
+	_useAllLightsInUnshadowedPass = _stencilShadows == false;
+
+	if (_toneMap) {
+		getToneMap()->setEnabled(true);
+		lighting = getToneMap()->prepareLighting(lighting);
+		outSkyParameters = getToneMap()->prepareLightingParameters(desiredSkyParameters);
+	}
+	else {
+		outSkyParameters = desiredSkyParameters;
+	}
+
+	return lighting;
+}
+
+} // namespace Render
+} // namespace RBX

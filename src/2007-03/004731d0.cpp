@@ -1,44 +1,116 @@
-// roc 2007-03 004731d0  unit: seg_00470000  size: 90 bytes
-// Make this compile to the exact bytes below, then: roc check 2007-03 004731d0
-//
-// 004731d0  8b542404             mov edx, dword ptr [esp + 4]
-// 004731d4  d94124               fld dword ptr [ecx + 0x24]
-// 004731d7  d94224               fld dword ptr [edx + 0x24]
-// 004731da  dae9                 fucompp 
-// 004731dc  dfe0                 fnstsw ax
-// 004731de  f6c444               test ah, 0x44
-// 004731e1  7a39                 jp 0x47321c
-// 004731e3  d94128               fld dword ptr [ecx + 0x28]
-// 004731e6  d94228               fld dword ptr [edx + 0x28]
-// 004731e9  dae9                 fucompp 
-// 004731eb  dfe0                 fnstsw ax
-// 004731ed  f6c444               test ah, 0x44
-// 004731f0  7a2a                 jp 0x47321c
-// 004731f2  d9412c               fld dword ptr [ecx + 0x2c]
-// 004731f5  d9422c               fld dword ptr [edx + 0x2c]
-// 004731f8  dae9                 fucompp 
-// 004731fa  dfe0                 fnstsw ax
-// 004731fc  f6c444               test ah, 0x44
-// 004731ff  7a1b                 jp 0x47321c
-// 00473201  52                   push edx
-// 00473202  e829b80800           call 0x4fea30
-// 00473207  84c0                 test al, al
-// 00473209  7411                 je 0x47321c
-// 0047320b  b801000000           mov eax, 1
-// 00473210  33c9                 xor ecx, ecx
-// 00473212  84c0                 test al, al
-// 00473214  0f94c1               sete cl
-// 00473217  8ac1                 mov al, cl
-// 00473219  c20400               ret 4
-// 0047321c  33c0                 xor eax, eax
-// 0047321e  33c9                 xor ecx, ecx
-// 00473220  84c0                 test al, al
-// 00473222  0f94c1               sete cl
-// 00473225  8ac1                 mov al, cl
-// 00473227  c20400               ret 4
-// library rbxgs/v8world\Joint.cpp (function ??9CoordinateFrame@G3D@@QBE_NABV01@@Z)
-
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
 // roc-lib: rbxgs v8world/Joint.cpp
+
+// Candidate translation unit (score above; library headers required).
+#include "v8world/Joint.h"
+#include "v8world/Primitive.h"
+#include "v8world/World.h"
+#include "util/Face.h"
+#include "util/Math.h"
+
+namespace RBX
+{
+	Joint::Joint(
+		Primitive* prim0,
+		Primitive* prim1,
+		const G3D::CoordinateFrame& _jointCoord0,
+		const G3D::CoordinateFrame& _jointCoord1)
+		: Edge(prim0, prim1),
+		  jointOwner(NULL),
+		  active(false)
+	{
+		jointCoord0 = Math::snapToGrid(_jointCoord0, 0.1f);
+		jointCoord1 = Math::snapToGrid(_jointCoord1, 0.1f);
+	}
+
+	Joint::Joint()
+		: Edge(NULL, NULL),
+		  jointOwner(NULL),
+		  active(false),
+		  jointCoord0(),
+		  jointCoord1()
+	{
+		RBXASSERT(jointCoord0 == G3D::CoordinateFrame());
+		RBXASSERT(jointCoord1 == G3D::CoordinateFrame());
+	}
+
+	Joint::~Joint()
+	{
+		RBXASSERT(!jointOwner);
+	}
+
+	void Joint::setPrimitive(int i, Primitive* p)
+	{
+		if (p != getPrimitive(i))
+		{
+			World* world = getWorld();
+			if (world && getPrimitive(i))
+				world->onJointPrimitiveNulling(this, getPrimitive(i));
+			Edge::setPrimitive(i, p);
+			if (world && p)
+				world->onJointPrimitiveSet(this, p);
+		}
+	}
+
+	void Joint::setJointOwner(IJointOwner* value)
+	{
+		RBXASSERT((value == NULL) != (jointOwner == NULL));
+		jointOwner = value;
+	}
+
+	IJointOwner* Joint::getJointOwner() const
+	{
+		return jointOwner;
+	}
+
+	void Joint::setJointCoord(int i, const G3D::CoordinateFrame& c)
+	{
+		if (c != getJointCoord(i))
+		{
+			if (i == 0)
+				jointCoord0 = c;
+			else
+				jointCoord1 = c;
+
+			World* world = getWorld();
+			if (world)
+			{
+				world->removeJoint(this);
+				world->insertJoint(this);
+			}
+		}
+	}
+
+	bool Joint::canBuildJoint(Primitive* p0, Primitive* p1, NormalId nId0, NormalId nId1, float angleMax, float planarMax)
+	{
+		if (!Math::fuzzyAxisAligned(p0->getCoordinateFrame().rotation, p1->getCoordinateFrame().rotation, angleMax))
+			return false;
+
+		Face f0 = p0->getFaceInWorld(nId0);
+		Face f1 = p1->getFaceInWorld(nId1);
+		if (!Face::hasOverlap(f0, f1, 0.35f))
+			return false;
+
+		if (!Face::overlapWithinPlanes(f0, f1, planarMax))
+			return false;
+
+		return true;
+	}
+
+	bool Joint::canBuildJointLoose(Primitive* p0, Primitive* p1, NormalId nId0, NormalId nId1)
+	{
+		return canBuildJoint(p0, p1, nId0, nId1, 0.05f, 0.05f);
+	}
+
+	bool Joint::canBuildJointTight(Primitive* p0, Primitive* p1, NormalId nId0, NormalId nId1)
+	{
+		return canBuildJoint(p0, p1, nId0, nId1, 0.01f, 0.01f);
+	}
+
+	bool Joint::isAssemblyJoint(Edge* e)
+	{
+		return getJointType(e) >= ANCHOR_JOINT;
+	}
+}

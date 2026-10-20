@@ -1,12 +1,117 @@
-// roc 2007-03 0054caf0  unit: seg_00540000  size: 10 bytes
-// Make this compile to the exact bytes below, then: roc check 2007-03 0054caf0
-//
-// 0054caf0  8b442404             mov eax, dword ptr [esp + 4]
-// 0054caf4  89414c               mov dword ptr [ecx + 0x4c], eax
-// 0054caf7  c20400               ret 4
-// library rbxgs/v8world\Mechanism.cpp (function ?setMechanism@Assembly@RBX@@QAEXPAVMechanism@2@@Z)
-
 // roc-lang: cpp
 // roc-cl: 50727
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
 // roc-lib: rbxgs v8world/Mechanism.cpp
+
+// Candidate translation unit (score above; library headers required).
+#include "util/StlExtra.h"
+#include "v8world/Mechanism.h"
+#include "v8world/Primitive.h"
+#include "v8world/Assembly.h"
+namespace RBX
+{
+	Mechanism* Mechanism::getMechanismFromPrimitive(const Primitive* primitive)
+	{
+		Assembly* assembly;
+		if (primitive && (assembly = primitive->getAssembly()))
+		{
+			return assembly->getMechanism();
+		}
+		else
+		{
+			return NULL;
+		}
+	}
+
+	void Mechanism::notifyMovingPrimitives()
+	{
+		std::set<Assembly*>::const_iterator iter;
+		for (iter = this->getAssemblies().begin(); iter != this->getAssemblies().end(); iter++)
+		{
+			(*iter)->notifyMoved();
+		}
+	}
+
+	void Mechanism::insertAssembly(Assembly* a)
+	{
+		RBXASSERT(!a->getMechanism());
+		bool success = this->getAssemblies().insert(a).second;
+		RBXASSERT(success);
+		a->setMechanism(this);
+	}
+
+	void Mechanism::removeAssembly(Assembly* a)
+	{
+		RBXASSERT(a->getMechanism() == this);
+		size_t count = this->getAssemblies().erase(a);
+		RBXASSERT(count == 1);
+		a->setMechanism(NULL);
+	}
+
+	void Mechanism::absorb(Mechanism* smaller)
+	{
+		while (!smaller->getAssemblies().empty())
+		{
+			Assembly* assembly = *smaller->getAssemblies().begin();
+			smaller->removeAssembly(assembly);
+			this->insertAssembly(assembly);
+		}
+	}
+
+	bool MechanismTracker::containedBy(Mechanism* m)
+	{
+		return std::find(m->trackers.begin(), m->trackers.end(), this) != m->trackers.end();
+	}
+
+	bool MechanismTracker::tracking()
+	{
+		if (this->mechanism)
+		{
+			RBXASSERT(this->containedBy(this->mechanism));
+			return true;
+		}
+		return false;
+	}
+
+	void MechanismTracker::stopTracking()
+	{
+		if (this->mechanism)
+		{
+			RBXASSERT(this->containedBy(this->mechanism));
+			fastRemoveShort<MechanismTracker*>(this->mechanism->trackers, this);
+			RBXASSERT(!this->containedBy(this->mechanism));
+			this->mechanism = NULL;
+		}
+	}
+
+	Mechanism* MechanismTracker::getMechanism()
+	{
+		RBXASSERT(this->mechanism);
+		RBXASSERT(this->containedBy(this->mechanism));
+		return this->mechanism;
+	}
+
+	void MechanismTracker::setMechanism(Mechanism* m)
+	{
+		this->stopTracking();
+		if (m)
+		{
+			RBXASSERT(!this->containedBy(m));
+			m->trackers.push_back(this);
+			RBXASSERT(this->containedBy(m));
+			this->mechanism = m;
+		}
+	}
+
+	void MechanismTracker::transferTrackers(Mechanism* from, Mechanism* to)
+	{
+		RBXASSERT(from);
+		RBXASSERT(from != to);
+
+		while (!from->trackers.empty())
+		{
+			from->trackers.back()->setMechanism(to);
+		}
+	}
+
+}

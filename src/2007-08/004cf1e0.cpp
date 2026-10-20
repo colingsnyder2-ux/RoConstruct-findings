@@ -1,37 +1,101 @@
-// roc 2007-08 004cf1e0  unit: RBX::VSky::?$FactoryProduct::Creator  size: 122 bytes
-// Make this compile to the exact bytes below, then: roc check 2007-08 004cf1e0
-//
-// 004cf1e0  b9346c8900           mov ecx, 0x896c34
-// 004cf1e5  e8b6fdffff           call 0x4cefa0
-// 004cf1ea  6a10                 push 0x10
-// 004cf1ec  6a50                 push 0x50
-// 004cf1ee  c705406c890014000000 mov dword ptr [0x896c40], 0x14
-// 004cf1f8  c705386c890000000000 mov dword ptr [0x896c38], 0
-// 004cf202  e8590e0300           call 0x500060
-// 004cf207  8b0d406c8900         mov ecx, dword ptr [0x896c40]
-// 004cf20d  8d148d00000000       lea edx, [ecx*4]
-// 004cf214  52                   push edx
-// 004cf215  6a00                 push 0
-// 004cf217  50                   push eax
-// 004cf218  a33c6c8900           mov dword ptr [0x896c3c], eax
-// 004cf21d  e85e130300           call 0x500580
-// 004cf222  a1ecf98b00           mov eax, dword ptr [0x8bf9ec]
-// 004cf227  8b4804               mov ecx, dword ptr [eax + 4]
-// 004cf22a  83c414               add esp, 0x14
-// 004cf22d  51                   push ecx
-// 004cf22e  b9e8f98b00           mov ecx, 0x8bf9e8
-// 004cf233  e8d8f2ffff           call 0x4ce510
-// 004cf238  a1ecf98b00           mov eax, dword ptr [0x8bf9ec]
-// 004cf23d  894004               mov dword ptr [eax + 4], eax
-// 004cf240  a1ecf98b00           mov eax, dword ptr [0x8bf9ec]
-// 004cf245  c705f0f98b0000000000 mov dword ptr [0x8bf9f0], 0
-// 004cf24f  8900                 mov dword ptr [eax], eax
-// 004cf251  a1ecf98b00           mov eax, dword ptr [0x8bf9ec]
-// 004cf256  894008               mov dword ptr [eax + 8], eax
-// 004cf259  c3                   ret 
-// library rbxgs-view/View.cpp (function ?flushCache@?$MeshFactory@VCylinderAlongXMesh@View@RBX@@$00@View@RBX@@SAXXZ)
-
 // roc-lang: cpp
 // roc-cl: 50727
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
 // roc-lib: rbxgs-view View.cpp
+
+// Candidate translation unit (score above; library headers required).
+#include "RbxView/View.h"
+#include "BrickMesh.h"
+#include "CylinderMesh.h"
+#include "SphereMesh.h"
+#include "PBBMesh.h"
+#include "Part.h"
+#include "RenderLib/AggregatingSceneManager.h"
+#include "v8datamodel/Lighting.h"
+#include "v8datamodel/DataModel.h"
+#include "v8datamodel/Workspace.h"
+#include "v8datamodel/Decal.h"
+
+namespace RBX
+{
+	namespace View
+	{
+		View::View(boost::shared_ptr<DataModel> dataModel)
+			: dataModel(dataModel),
+			  renderLibScene(new Render::RenderScene),
+			  textureManager(new G3D::TextureManager),
+			  lightingValid(false)
+		{
+			sceneManager.reset(new Render::AggregatingSceneManager(renderLibScene.get()));
+			materialFactory.reset(new MaterialFactory(textureManager.get()));
+
+			renderLibScene->setThrottle(0.0f, 0.0f, false, 0.0f);
+
+			Lighting* lighting = ServiceProvider::find<Lighting>(dataModel.get());
+			lightingChangedConnection = Lighting::event_LightingChanged.connect(lighting, boost::bind(&View::invalidateLighting, this, _1));
+
+			dataModel->getWorkspace()->visitDescendents(boost::bind(&View::onWorkspaceDescendentAdded, this, _1));
+			workspaceDescendentAddedConnection = Instance::event_descendentAdded.connect(dataModel->getWorkspace(), boost::bind(&View::onWorkspaceDescendentAdded, this, _1));
+		}
+
+		View::~View()
+		{
+			sceneManager->clear();
+
+			Lighting* unused = ServiceProvider::create<Lighting>(dataModel.get());
+
+			MeshFactory<CylinderAlongXMesh, 1>::flushCache();
+			MeshFactory<SphereMesh, 1>::flushCache();
+			MeshFactory<PBBMesh, 4>::flushCache();
+			BrickMesh::flushCache();
+		}
+
+		void View::suppressSkybox()
+		{
+			Lighting* lighting = ServiceProvider::create<Lighting>(dataModel.get());
+
+			renderLibScene->presetLighting(NULL, lighting->getSkyParameters(), lighting->getAmbientTop(), lighting->getAmbientBottom());
+			sky = NULL;
+			renderLibScene->colorClearValue = lighting->getClearColor();
+		}
+
+		Instance* View::getWorkspace()
+		{
+			return dataModel->getWorkspace();
+		}
+
+		float View::getMeshDetail() const
+		{
+			return renderLibScene->getMeshDetail();
+		}
+
+		float View::getShadingQuality() const
+		{
+			return renderLibScene->getShadingQuality();
+		}
+
+		RenderStats& View::getRenderStats()
+		{
+			return renderLibScene->renderStats;
+		}
+
+		void View::invalidateLighting(bool updateSkybox)
+		{
+			lightingValid = false;
+			if (updateSkybox)
+				sky = NULL;
+		}
+
+		void View::render(void* rd)
+		{
+			updateLighting();
+			sceneManager->prerender(0.1f); // intentional type mismatch! causes value of constant to be different
+			renderLibScene->render((G3D::RenderDevice*)rd, dataModel->getWorkspace()->getGCamera());
+		}
+
+		void View::updateSettings(float shadingQuality, float meshDetail, bool shadows, float cameraDistance)
+		{
+			renderLibScene->setThrottle(shadingQuality, meshDetail, shadows, cameraDistance);
+		}
+	}
+}

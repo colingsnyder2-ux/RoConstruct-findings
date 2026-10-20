@@ -1,123 +1,831 @@
-// roc 2009-12 005fc390  unit: G3D::TextInput::WrongSymbol  size: 421 bytes
-// Make this compile to the exact bytes below, then: roc check 2009-12 005fc390
-//
-// 005fc390  6aff                 push -1
-// 005fc392  6816fa9300           push 0x93fa16
-// 005fc397  64a100000000         mov eax, dword ptr fs:[0]
-// 005fc39d  50                   push eax
-// 005fc39e  64892500000000       mov dword ptr fs:[0], esp
-// 005fc3a5  81ecac000000         sub esp, 0xac
-// 005fc3ab  53                   push ebx
-// 005fc3ac  56                   push esi
-// 005fc3ad  8d442410             lea eax, [esp + 0x10]
-// 005fc3b1  50                   push eax
-// 005fc3b2  8bf1                 mov esi, ecx
-// 005fc3b4  e837fcffff           call 0x5fbff0
-// 005fc3b9  8b442434             mov eax, dword ptr [esp + 0x34]
-// 005fc3bd  33db                 xor ebx, ebx
-// 005fc3bf  899c24bc000000       mov dword ptr [esp + 0xbc], ebx
-// 005fc3c6  83f802               cmp eax, 2
-// 005fc3c9  753d                 jne 0x5fc408
-// 005fc3cb  8d4c2410             lea ecx, [esp + 0x10]
-// 005fc3cf  e86ce5ffff           call 0x5fa940
-// 005fc3d4  dd5c2408             fstp qword ptr [esp + 8]
-// 005fc3d8  8d4c2410             lea ecx, [esp + 0x10]
-// 005fc3dc  c78424bc000000ffffffff mov dword ptr [esp + 0xbc], 0xffffffff
-// 005fc3e7  ff15e4b69800         call dword ptr [0x98b6e4]
-// 005fc3ed  dd442408             fld qword ptr [esp + 8]
-// 005fc3f1  5e                   pop esi
-// 005fc3f2  5b                   pop ebx
-// 005fc3f3  8b8c24ac000000       mov ecx, dword ptr [esp + 0xac]
-// 005fc3fa  64890d00000000       mov dword ptr fs:[0], ecx
-// 005fc401  81c4b8000000         add esp, 0xb8
-// 005fc407  c3                   ret 
-// 005fc408  57                   push edi
-// 005fc409  385e3d               cmp byte ptr [esi + 0x3d], bl
-// 005fc40c  0f85e7000000         jne 0x5fc4f9
-// 005fc412  83f801               cmp eax, 1
-// 005fc415  0f85de000000         jne 0x5fc4f9
-// 005fc41b  8b3dacb69800         mov edi, dword ptr [0x98b6ac]
-// 005fc421  8d4c2414             lea ecx, [esp + 0x14]
-// 005fc425  68942e9c00           push 0x9c2e94
-// 005fc42a  51                   push ecx
-// 005fc42b  ffd7                 call edi
-// 005fc42d  83c408               add esp, 8
-// 005fc430  84c0                 test al, al
-// 005fc432  7517                 jne 0x5fc44b
-// 005fc434  8d542414             lea edx, [esp + 0x14]
-// 005fc438  68a02e9c00           push 0x9c2ea0
-// 005fc43d  52                   push edx
-// 005fc43e  ffd7                 call edi
-// 005fc440  83c408               add esp, 8
-// 005fc443  84c0                 test al, al
-// 005fc445  0f84ae000000         je 0x5fc4f9
-// 005fc44b  8d442440             lea eax, [esp + 0x40]
-// 005fc44f  50                   push eax
-// 005fc450  8bce                 mov ecx, esi
-// 005fc452  e899fbffff           call 0x5fbff0
-// 005fc457  837c246402           cmp dword ptr [esp + 0x64], 2
-// 005fc45c  c68424c000000001     mov byte ptr [esp + 0xc0], 1
-// 005fc464  7576                 jne 0x5fc4dc
-// 005fc466  8b4c2434             mov ecx, dword ptr [esp + 0x34]
-// 005fc46a  41                   inc ecx
-// 005fc46b  394c2460             cmp dword ptr [esp + 0x60], ecx
-// 005fc46f  756b                 jne 0x5fc4dc
-// 005fc471  8d542414             lea edx, [esp + 0x14]
-// 005fc475  68942e9c00           push 0x9c2e94
-// 005fc47a  52                   push edx
-// 005fc47b  ffd7                 call edi
-// 005fc47d  83c408               add esp, 8
-// 005fc480  8d4c2440             lea ecx, [esp + 0x40]
-// 005fc484  84c0                 test al, al
-// 005fc486  7409                 je 0x5fc491
-// 005fc488  e8b3e4ffff           call 0x5fa940
-// 005fc48d  d9e0                 fchs 
-// 005fc48f  eb05                 jmp 0x5fc496
-// 005fc491  e8aae4ffff           call 0x5fa940
-// 005fc496  8d4c2440             lea ecx, [esp + 0x40]
-// 005fc49a  dd5c240c             fstp qword ptr [esp + 0xc]
-// 005fc49e  889c24c0000000       mov byte ptr [esp + 0xc0], bl
-// 005fc4a5  ff15e4b69800         call dword ptr [0x98b6e4]
-// 005fc4ab  8d4c2414             lea ecx, [esp + 0x14]
-// 005fc4af  c78424c0000000ffffffff mov dword ptr [esp + 0xc0], 0xffffffff
-// 005fc4ba  ff15e4b69800         call dword ptr [0x98b6e4]
-// 005fc4c0  dd44240c             fld qword ptr [esp + 0xc]
-// 005fc4c4  8b8c24b8000000       mov ecx, dword ptr [esp + 0xb8]
-// 005fc4cb  5f                   pop edi
-// 005fc4cc  5e                   pop esi
-// 005fc4cd  5b                   pop ebx
-// 005fc4ce  64890d00000000       mov dword ptr fs:[0], ecx
-// 005fc4d5  81c4b8000000         add esp, 0xb8
-// 005fc4db  c3                   ret 
-// 005fc4dc  8d442440             lea eax, [esp + 0x40]
-// 005fc4e0  50                   push eax
-// 005fc4e1  8bce                 mov ecx, esi
-// 005fc4e3  e848feffff           call 0x5fc330
-// 005fc4e8  8d4c2440             lea ecx, [esp + 0x40]
-// 005fc4ec  889c24c0000000       mov byte ptr [esp + 0xc0], bl
-// 005fc4f3  ff15e4b69800         call dword ptr [0x98b6e4]
-// 005fc4f9  8d4c2414             lea ecx, [esp + 0x14]
-// 005fc4fd  51                   push ecx
-// 005fc4fe  8bce                 mov ecx, esi
-// 005fc500  e82bfeffff           call 0x5fc330
-// 005fc505  8b542438             mov edx, dword ptr [esp + 0x38]
-// 005fc509  8b442434             mov eax, dword ptr [esp + 0x34]
-// 005fc50d  8b4c2430             mov ecx, dword ptr [esp + 0x30]
-// 005fc511  52                   push edx
-// 005fc512  6a02                 push 2
-// 005fc514  50                   push eax
-// 005fc515  51                   push ecx
-// 005fc516  83c640               add esi, 0x40
-// 005fc519  56                   push esi
-// 005fc51a  8d8c2480000000       lea ecx, [esp + 0x80]
-// 005fc521  e84ae7ffff           call 0x5fac70
-// 005fc526  685832ab00           push 0xab3258
-// 005fc52b  8d542470             lea edx, [esp + 0x70]
-// 005fc52f  52                   push edx
-// 005fc530  e843831f00           call 0x7f4878
-// library g3d-6.09-rbx2008/G3Dcpp\TextInput.cpp (function ?readNumber@TextInput@G3D@@QAENXZ)
-
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD /arch:SSE2 /fp:fast
 // roc-lib: g3d-6.09-rbx2008 G3Dcpp/TextInput.cpp
+
+// Candidate translation unit (score above; library headers required).
+/**
+ @file TextInput.cpp
+  
+ @author Morgan McGuire, graphics3d.com
+ 
+ @cite Based on a lexer written by Aaron Orenstein. 
+ 
+ @created 2001-11-27
+ @edited  2006-01-10
+ */
+
+#include "G3D/TextInput.h"
+#include "G3D/BinaryInput.h"
+#include "G3D/stringutils.h"
+
+#ifdef _MSC_VER
+#   pragma warning (push)
+// conversion from 'int' to 'char', possible loss of data (TODO: fix underlying problems)
+#   pragma warning (disable: 4244)
+#endif
+
+namespace G3D {
+
+
+Token TextInput::peek() {
+    if (stack.size() == 0) {
+        Token t = nextToken();
+        push(t);
+    }
+
+    return stack.front();
+}
+
+
+int TextInput::peekLineNumber() {
+    return peek().line();
+}
+
+
+int TextInput::peekCharacterNumber() {
+    return peek().character();
+}
+
+
+Token TextInput::read() {
+    if (stack.size() > 0) {
+        Token t = stack.front();
+        stack.pop_front();
+        return t;
+    } else {
+        return nextToken();
+    }
+}
+
+
+void TextInput::push(const Token& t) {
+    stack.push_front(t);
+}
+
+
+bool TextInput::hasMore() {
+    return (peek()._type != Token::END);
+}
+
+
+int TextInput::eatInputChar() {
+    // Don't go off the end
+    if (currentCharOffset >= (unsigned int)buffer.length()) {
+        return EOF;
+    }
+
+    unsigned char c = buffer[currentCharOffset];
+    ++currentCharOffset;
+
+    // update lineNumber and charNumber to reflect the location of the *next*
+    // character which will be read.
+    //
+    // We update even for CR because the user is allowed to do arbitrarily
+    // stupid things, like put a bunch of literal CRs inside a quoted string.
+    //
+    // We eat all whitespace between tokens, so they should never see a
+    // lineNumber that points to a CR.  However, if they have some kind of
+    // syntax error in a token that appears *after* a quoted string
+    // containing CRs, they should get a correct character number.  ("ugh!")
+
+    // TODO: http://sourceforge.net/tracker/index.php?func=detail&aid=1341266&group_id=76879&atid=548565
+
+    if (c == '\n') {
+        ++lineNumber;
+        charNumber = 1;
+    } else {
+        ++charNumber;
+    }
+
+    return c;
+}
+
+int TextInput::peekInputChar(unsigned int distance) {
+    // Don't go off the end
+    if ((currentCharOffset + distance) >= (unsigned int)buffer.length()) {
+        return EOF;
+    }
+
+    unsigned char c = buffer[currentCharOffset + distance];
+    return c;
+}
+
+
+Token TextInput::nextToken() {
+    Token t;
+
+    t._line         = lineNumber;
+    t._character    = charNumber;
+	t._type         = Token::END;
+	t._extendedType = Token::END_TYPE;
+
+    int c = peekInputChar();
+    if (c == EOF) {
+        return t;
+    }
+
+    bool whitespaceDone = false;
+    while (! whitespaceDone) {
+        whitespaceDone = true;
+
+        // Consume whitespace
+        while (isWhiteSpace(c)) {
+            c = eatAndPeekInputChar();
+        }
+
+        int c2 = peekInputChar(1);
+        if ((options.cppComments && c == '/' && c2 == '/')
+            || (options.otherCommentCharacter != '\0'
+                && c == options.otherCommentCharacter)
+            || (options.otherCommentCharacter2 != '\0'
+                && c == options.otherCommentCharacter2)) {
+            
+            // Single line comment, consume to newline or EOF.
+
+            do {
+                c = eatAndPeekInputChar();
+            } while (! isNewline(c) && c != EOF);
+
+            // There is whitespace after the comment (in particular, the
+            // newline that terminates the comment).  There might also be
+            // whitespace at the start of the next line.
+            whitespaceDone = false;
+
+        } else if (options.cComments
+                   && c == '/' && c2 == '*') {
+
+            // consume both start-comment chars, can't let the trailing one
+            // help close the comment.
+            eatInputChar();
+            eatInputChar();
+
+            // Multi-line comment, consume to end-marker or EOF.
+            c = peekInputChar();
+            c2 = peekInputChar(1);
+            while (! (c == '*' && c2 == '/')
+                   && c != EOF) {
+                eatInputChar();
+                c = c2;
+                c2 = peekInputChar(1);
+            }
+            eatInputChar();      // eat closing '*'
+            eatInputChar();      // eat closing '/'
+
+            c = peekInputChar();
+
+            // May be whitespace after comment.
+            whitespaceDone = false;
+        }
+
+    }  // while (! whitespaceDone)
+
+    t._line      = lineNumber;
+    t._character = charNumber;
+
+    // handle EOF
+    if (c == EOF) {
+        return t;
+    }
+
+    // Does appropriate setup for a symbol (including setting up the token
+    // string to start with 'c'), eats the input character, and overwrites
+    // 'c' with the peeked next input character.
+#define SETUP_SYMBOL(c)                                                         \
+    {                                                                        \
+        t._type = Token::SYMBOL;                                                \
+        t._extendedType = Token::SYMBOL_TYPE;                                   \
+        t._string = c;                                                          \
+        c = eatAndPeekInputChar();                                              \
+    }
+
+    switch (c) {
+
+    case '@':                   // Simple symbols -> just themselves.
+    case '(': 
+    case ')':
+    case ',':
+    case ';':
+    case '{':
+    case '}':
+    case '[':
+    case ']':
+    case '#':
+    case '$':
+    case '?':
+        SETUP_SYMBOL(c);
+        return t;
+
+    case '-':                   // negative number, -, --, -=, or ->
+        SETUP_SYMBOL(c);
+
+        switch (c) {
+        case '>':               // ->
+        case '-':               // --
+        case '=':               // -=
+            t._string += c;
+            eatInputChar();
+            return t;
+        }
+
+        if (options.signedNumbers
+            && (isDigit(c) || (c == '.' && isDigit(peekInputChar(1))))) {
+
+            // Negative number.  'c' is still the first digit, and is
+            // the next input char.
+
+            goto numLabel;
+        }
+
+        // plain -
+        return t;
+
+    case '+':                   // positive number, +, ++, or +=
+        SETUP_SYMBOL(c);
+
+        switch (c) {
+        case '+':               // ++
+        case '=':               // +=
+            t._string += c;
+            eatInputChar();
+            return t;
+        }
+
+        if (options.signedNumbers
+            && (isDigit(c) || (c == '.' && isDigit(peekInputChar(1))))) {
+
+            // Positive number.  'c' is still the first digit, and is
+            // the next input char.
+
+            goto numLabel;
+        }
+
+        return t;
+
+    case ':':                   // : or ::
+        SETUP_SYMBOL(c);
+        
+        if (c == ':') {
+            t._string += c;
+            eatInputChar();
+            return t;
+        }
+        return t;
+
+    case '*':                   // * or *=
+    case '/':                   // / or /=
+    case '!':                   // ! or !=
+    case '~':                   // ~ or ~=
+    case '=':                   // = or ==
+    case '^':                   // ^ or ^=
+        SETUP_SYMBOL(c);
+        
+        if (c == '=') {
+            t._string += c;
+            eatInputChar();
+            return t;
+        }
+        return t;
+
+    case '>':                   // >, >>,or >=
+    case '<':                   // <<, <<, or <=
+    case '|':                   // ||, ||, or |=
+    case '&':                   // &, &&, or &=
+        {
+            int orig_c = c;
+            SETUP_SYMBOL(c);
+
+            if ((c == '=') || (orig_c == c)) {
+                t._string += c;
+                eatInputChar();
+                return t;
+            }
+        }
+        return t;
+            
+    case '\\':                // backslash or escaped comment char.
+        SETUP_SYMBOL(c);
+
+        if ((options.otherCommentCharacter != '\0'
+             && c == options.otherCommentCharacter)
+            || (options.otherCommentCharacter2 != '\0'
+                && c == options.otherCommentCharacter2)) {
+            
+            // escaped comment character.  Return the raw comment
+            // char (no backslash).
+
+            t._string = c;
+            eatInputChar();
+            return t;
+        }
+        return t;
+
+    case '.':                   // number, ., .., or ...
+        if (isDigit(peekInputChar(1))) {
+            // We're parsing a float that began without a leading zero
+            goto numLabel;
+        }
+
+        SETUP_SYMBOL(c);
+
+        if (c == '.') {         // .. or ...
+            t._string += c;
+            c = eatAndPeekInputChar();
+
+            if (c == '.') {     // ...
+                t._string += c;
+                eatInputChar();
+            }
+            return t;
+        }
+
+        return t;
+
+    } // switch (c)
+
+#undef SETUP_SYMBOL
+
+numLabel:
+    if (isDigit(c) || (c == '.')) {
+
+        // A number.  Note-- single dots have been
+        // parsed already, so a . indicates a number
+        // less than 1 in floating point form.
+    
+        // [0-9]*(\.[0-9]) or [0-9]+ or 0x[0-9,A-F]+
+
+        if (t._string != "-") {
+            // If we picked up a leading "-" sign above, keep it,
+            // otherwise drop the string parsed thus far
+            t._string = "";
+        }
+        t._type = Token::NUMBER;
+		if (c == '.') {
+			t._extendedType = Token::FLOATING_POINT_TYPE;
+		} else {
+			t._extendedType = Token::INTEGER_TYPE;
+		}
+
+        if ((c == '0') && (peekInputChar(1) == 'x')) {
+            // Hex number
+            t._string += "0x";
+
+            // skip the 0x
+            eatInputChar();
+            eatInputChar();
+
+            c = peekInputChar();
+            while (isDigit(c) || ((c >= 'A') && (c <= 'F')) || ((c >= 'a') && (c <= 'f'))) {
+                t._string += c;
+                c = eatAndPeekInputChar();
+            }
+
+        } else {
+
+            // Read the part before the decimal.
+            while (isDigit(c)) {
+                t._string += c;
+                c = eatAndPeekInputChar();
+            }
+    
+            // True if we are reading a floating-point special type
+            bool isSpecial = false;
+
+            // Read the decimal, if one exists
+            if (c == '.') {
+				t._extendedType = Token::FLOATING_POINT_TYPE;
+
+                // The '.' character was a decimal point, not the start of a
+                // method or range operator
+                t._string += c;
+                c = eatAndPeekInputChar();
+
+                // Floating point specials (msvc format only)
+                if (options.msvcSpecials && (c == '#')) {
+                    isSpecial = true;
+                    // We are reading a floating point special value
+                    // of the form -1.#IND00, -1.#INF00, or 1.#INF00
+                    c = eatAndPeekInputChar();
+                    if (c != 'I') {
+                        throw BadMSVCSpecial
+                            (
+                             "Incorrect floating-point special (inf or nan) "
+                             "format.",
+                            t.line(), charNumber);
+                    }
+                    c = eatAndPeekInputChar();
+                    if (c != 'N') {
+                        throw BadMSVCSpecial
+                            (
+                             "Incorrect floating-point special (inf or nan) "
+                             "format.",
+                            t.line(), charNumber);
+                    }
+                    t._string += "#IN";
+                    c = eatAndPeekInputChar();
+                    if ((c != 'F') && (c != 'D')) {
+                        throw BadMSVCSpecial
+                            (
+                             "Incorrect floating-point special (inf or nan) "
+                             "format.",
+                            t.line(), charNumber);
+                    }
+                    t._string += c;
+                    for (int j = 0; j < 2; ++j) {
+                        c = eatAndPeekInputChar();
+                        if (c != '0') {
+                            throw BadMSVCSpecial
+                                (
+                                 "Incorrect floating-point special (inf or"
+                                 "nan) format.",
+                                 t.line(), charNumber);
+                        }
+                        t._string += (char)c;
+                    }
+
+                } else {
+
+                    // Read the part after the decimal
+                    while (isDigit((char)c)) {
+                        t._string += (char)c;
+                        c = eatAndPeekInputChar();
+                    }
+                }
+            }
+
+            if (! isSpecial && ((c == 'e') || (c == 'E'))) {
+                // Read exponent
+				t._extendedType = Token::FLOATING_POINT_TYPE;
+                t._string += c;
+
+                c = eatAndPeekInputChar();
+                if ((c == '-') || (c == '+')) {
+                    t._string += c;
+                    c = eatAndPeekInputChar();                    
+                }
+
+                while (isDigit(c)) {
+                    t._string += c;
+                    c = eatAndPeekInputChar();
+                }
+            }
+        }
+        return t;
+
+    } else if (isLetter(c) || (c == '_')) {
+        // Identifier or keyword
+        // [A-Za-z_][A-Za-z_0-9]*
+
+        t._type = Token::SYMBOL;
+        t._extendedType = Token::SYMBOL_TYPE;
+        t._string = "";
+        do {
+            t._string += c;
+            c = eatAndPeekInputChar();
+        } while (isLetter(c) || isDigit(c) || (c == '_'));
+
+        return t;
+
+    } else if (c == '\"') {
+
+        // Discard the double-quote.
+        eatInputChar();
+
+        // Double quoted string
+		parseQuotedString('\"', t);
+        return t;
+
+    } else if (c == '\'') {
+
+        // Discard the single-quote.
+        eatInputChar();
+
+		if (options.singleQuotedStrings) {
+			// Single quoted string
+			parseQuotedString('\'', t);
+		} else {
+			t._string = c;
+			t._type = Token::SYMBOL;
+			t._extendedType = Token::SYMBOL_TYPE;
+		}
+        return t;
+
+    } // end of special case tokens
+
+    if (c == EOF) {
+        t._type = Token::END;
+        t._extendedType = Token::END_TYPE;
+        t._string = "";
+        return t;
+    }
+
+    // Some unknown token
+    debugAssert(false);
+    return t;
+}
+
+
+void TextInput::parseQuotedString(unsigned char delimiter, Token& t) {
+
+    t._type = Token::STRING;
+
+	if (delimiter == '\'') {
+		t._extendedType = Token::SINGLE_QUOTED_TYPE;
+	} else {
+		t._extendedType = Token::DOUBLE_QUOTED_TYPE;
+	}
+
+    while (true) {
+        // We're definitely going to consume the next input char, so we get
+        // it right now.  This makes the condition handling below a bit easier.
+        int c = eatInputChar();
+
+        if (c == EOF) {
+            // END inside a quoted string.  (We finish the string.)
+            break;
+        }
+
+        if (options.escapeSequencesInStrings && (c == '\\')) {
+            // An escaped character.  We're definitely going to consume it,
+            // so we get it (and consume it) now.
+
+            c = eatInputChar();
+
+            switch (c) {
+            case 'r':
+                t._string += '\r';
+                break;
+            case 'n':
+                t._string += '\n';
+                break;
+            case 't':
+                t._string += '\t';
+                break;
+            case '0':
+                t._string += '\0';
+                break;
+
+            case '\\':
+            case '\"':
+            case '\'':
+                t._string += (char)c;
+                break;
+
+            default:
+                if (((c == options.otherCommentCharacter) && 
+                     (options.otherCommentCharacter != '\0')) ||
+                    ((c == options.otherCommentCharacter2) && 
+                     (options.otherCommentCharacter2 != '\0'))) {
+                    t._string += c;
+                } 
+                // otherwise, some illegal escape sequence; skip it.
+                break;
+
+            } // switch
+
+        } else if (c == delimiter) {
+            // End of the string.  Already consumed the character.
+            break;
+        } else {
+            // All other chars, go on to the string.  Already consumed the
+            // character.
+            t._string += (char)c;
+        }
+
+    }
+}
+
+
+double TextInput::readNumber() {
+    Token t(read());
+
+    if (t._type == Token::NUMBER) {
+        return t.number();
+    }
+
+    // Even if signedNumbers is disabled, readNumber attempts to
+    // read a signed number, so we handle that case here.
+    if (! options.signedNumbers
+        && (t._type == Token::SYMBOL)
+        && ((t._string == "-") 
+             || (t._string == "+"))) {
+
+        Token t2(read());
+
+        if ((t2._type == Token::NUMBER)
+            && (t2._character == t._character + 1)) {
+
+            if (t._string == "-") {
+                return -t2.number();
+            } else {
+                return t2.number();
+            }
+        }
+
+        // push back the second token.
+        push(t2);
+    }
+
+    // Push initial token back, and throw an error.  We intentionally
+    // indicate that the wrong type is the type of the initial token.
+    // Logically, the number started there.
+    push(t);
+    throw WrongTokenType(options.sourceFileName, t.line(), t.character(),
+                         Token::NUMBER, t._type); 
+}
+
+
+Token TextInput::readStringToken() {
+    Token t(read());
+
+    if (t._type == Token::STRING) {               // fast path
+        return t;
+    }
+
+    push(t);
+    throw WrongTokenType(options.sourceFileName, t.line(), t.character(),
+                         Token::STRING, t._type);
+}
+
+std::string TextInput::readString() {
+    return readStringToken()._string;
+}
+
+void TextInput::readString(const std::string& s) {
+    Token t(readStringToken());
+
+    if (t._string == s) {                         // fast path
+        return;
+    }
+
+    push(t);
+    throw WrongString(options.sourceFileName, t.line(), t.character(),
+                      s, t._string);
+}
+
+
+Token TextInput::readSymbolToken() {
+    Token t(read());
+    
+    if (t._type == Token::SYMBOL) {               // fast path
+        return t;
+    }
+
+    push(t);
+    throw WrongTokenType(options.sourceFileName, t.line(), t.character(),
+                         Token::SYMBOL, t._type);
+}
+
+
+std::string TextInput::readSymbol() {
+    return readSymbolToken()._string;
+}
+
+void TextInput::readSymbol(const std::string& symbol) {
+    Token t(readSymbolToken());
+
+    if (t._string == symbol) {                    // fast path
+        return;
+    }
+
+    push(t);
+    throw WrongSymbol(options.sourceFileName, t.line(), t.character(),
+                      symbol, t._string);
+}
+
+
+TextInput::TextInput(const std::string& filename, const Options& opt) : options(opt) {
+    init();
+    BinaryInput input(filename, G3D_LITTLE_ENDIAN);
+    if (options.sourceFileName.empty()) {
+        options.sourceFileName = filename;
+    }
+    int n = input.size();
+    buffer.resize(n);
+    System::memcpy(buffer.getCArray(), input.getCArray(), n);
+}
+
+
+TextInput::TextInput(FS fs, const std::string& str, const Options& opt) : options(opt) {
+    (void)fs;
+    init();
+    if (options.sourceFileName.empty()) {
+        if (str.length() < 14) {
+            options.sourceFileName = std::string("\"") + str + "\"";
+        } else {
+            options.sourceFileName = std::string("\"") + str.substr(0, 10) + "...\"";
+        }
+    }
+    buffer.resize(str.length()); // we don't bother copying trailing NUL.
+    System::memcpy(buffer.getCArray(), str.c_str(), buffer.size());
+}
+
+
+const std::string& TextInput::filename() const {
+    return options.sourceFileName;
+}
+
+///////////////////////////////////////////////////////////////////////////////////
+
+TextInput::TokenException::TokenException(
+    const std::string&  src,
+    int                 ln,
+    int                 ch) : sourceFile(src), line(ln), character(ch) {
+
+    message = format("%s(%d) : ", sourceFile.c_str(), line);
+}
+
+///////////////////////////////////////////////////////////////////////////////////
+
+static const char* tokenTypeToString(Token::Type t) {
+    switch (t) {
+    case Token::SYMBOL:
+        return "Token::SYMBOL";
+    case Token::STRING:
+        return "Token::STRING";
+    case Token::NUMBER:
+        return "Token::NUMBER";
+    case Token::END:
+        return "Token::END";
+    default:
+        debugAssertM(false, "Fell through switch");
+        return "?";
+    }
+}
+
+TextInput::WrongTokenType::WrongTokenType(
+    const std::string&  src,
+    int                 ln,
+    int                 ch,
+    Token::Type         e,
+    Token::Type         a) :
+    TokenException(src, ln, ch), expected(e), actual(a) {
+         
+    message += format("Expected token of type %s, found type %s.",
+                      tokenTypeToString(e), tokenTypeToString(a));
+}
+
+
+TextInput::BadMSVCSpecial::BadMSVCSpecial(
+    const std::string&  src,
+    int                 ln,
+    int                 ch) :
+    TokenException(src, ln, ch) {
+}
+
+
+TextInput::WrongSymbol::WrongSymbol(
+    const std::string&  src,
+    int                 ln,
+    int                 ch,
+    const std::string&  e,
+    const std::string&  a) : 
+    TokenException(src, ln, ch), expected(e), actual(a) {
+
+    message += format("Expected symbol '%s', found symbol '%s'.",
+                      e.c_str(), a.c_str());
+}
+
+
+TextInput::WrongString::WrongString(
+    const std::string&  src,
+    int                 ln,
+    int                 ch,
+    const std::string&  e,
+    const std::string&  a) : 
+    TokenException(src, ln, ch), expected(e), actual(a) {
+
+    message += format("Expected string '%s', found string '%s'.",
+                      e.c_str(), a.c_str());
+}
+
+
+void deserialize(bool& b, TextInput& ti) {
+    b = ti.readSymbol() == "true";
+}
+
+
+void deserialize(int& b, TextInput& ti) {
+    b = iRound(ti.readNumber());
+}
+
+
+void deserialize(uint8& b, TextInput& ti) {
+    b = (uint8)iRound(ti.readNumber());
+}
+
+
+void deserialize(double& b, TextInput& ti) {
+    b = ti.readNumber();
+}
+
+
+void deserialize(float& b, TextInput& ti) {
+    b = (float)ti.readNumber();
+}
+
+} // namespace
+
+#ifdef _MSC_VER
+#   pragma warning (pop)
+#endif

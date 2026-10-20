@@ -1,62 +1,330 @@
-// roc 2008-06 0060a650  unit: RBX::VelocityMotor  size: 226 bytes
-// Make this compile to the exact bytes below, then: roc check 2008-06 0060a650
-//
-// 0060a650  6aff                 push -1
-// 0060a652  68168a7d00           push 0x7d8a16
-// 0060a657  64a100000000         mov eax, dword ptr fs:[0]
-// 0060a65d  50                   push eax
-// 0060a65e  64892500000000       mov dword ptr fs:[0], esp
-// 0060a665  51                   push ecx
-// 0060a666  56                   push esi
-// 0060a667  8bf1                 mov esi, ecx
-// 0060a669  57                   push edi
-// 0060a66a  89742408             mov dword ptr [esp + 8], esi
-// 0060a66e  c706542d8400         mov dword ptr [esi], 0x842d54
-// 0060a674  c74610442d8400       mov dword ptr [esi + 0x10], 0x842d44
-// 0060a67b  c746143c2d8400       mov dword ptr [esi + 0x14], 0x842d3c
-// 0060a682  c74620342d8400       mov dword ptr [esi + 0x20], 0x842d34
-// 0060a689  c74624242d8400       mov dword ptr [esi + 0x24], 0x842d24
-// 0060a690  c74644142d8400       mov dword ptr [esi + 0x44], 0x842d14
-// 0060a697  c74664042d8400       mov dword ptr [esi + 0x64], 0x842d04
-// 0060a69e  c78684000000f42c8400 mov dword ptr [esi + 0x84], 0x842cf4
-// 0060a6a8  c786a4000000e42c8400 mov dword ptr [esi + 0xa4], 0x842ce4
-// 0060a6b2  c786c4000000d42c8400 mov dword ptr [esi + 0xc4], 0x842cd4
-// 0060a6bc  c78630010000bc2c8400 mov dword ptr [esi + 0x130], 0x842cbc
-// 0060a6c6  8d8e5c010000         lea ecx, [esi + 0x15c]
-// 0060a6cc  c744241401000000     mov dword ptr [esp + 0x14], 1
-// 0060a6d4  e8d7adf8ff           call 0x5954b0
-// 0060a6d9  8bbe58010000         mov edi, dword ptr [esi + 0x158]
-// 0060a6df  c644241400           mov byte ptr [esp + 0x14], 0
-// 0060a6e4  85ff                 test edi, edi
-// 0060a6e6  742a                 je 0x60a712
-// 0060a6e8  8d4704               lea eax, [edi + 4]
-// 0060a6eb  83c9ff               or ecx, 0xffffffff
-// 0060a6ee  f00fc108             lock xadd dword ptr [eax], ecx
-// 0060a6f2  751e                 jne 0x60a712
-// 0060a6f4  8b17                 mov edx, dword ptr [edi]
-// 0060a6f6  8b4204               mov eax, dword ptr [edx + 4]
-// 0060a6f9  8bcf                 mov ecx, edi
-// 0060a6fb  ffd0                 call eax
-// 0060a6fd  8d4f08               lea ecx, [edi + 8]
-// 0060a700  83caff               or edx, 0xffffffff
-// 0060a703  f00fc111             lock xadd dword ptr [ecx], edx
-// 0060a707  7509                 jne 0x60a712
-// 0060a709  8b07                 mov eax, dword ptr [edi]
-// 0060a70b  8b5008               mov edx, dword ptr [eax + 8]
-// 0060a70e  8bcf                 mov ecx, edi
-// 0060a710  ffd2                 call edx
-// 0060a712  8bce                 mov ecx, esi
-// 0060a714  c7442414ffffffff     mov dword ptr [esp + 0x14], 0xffffffff
-// 0060a71c  e8cff3ffff           call 0x609af0
-// 0060a721  8b4c240c             mov ecx, dword ptr [esp + 0xc]
-// 0060a725  5f                   pop edi
-// 0060a726  5e                   pop esi
-// 0060a727  64890d00000000       mov dword ptr fs:[0], ecx
-// 0060a72e  83c410               add esp, 0x10
-// 0060a731  c3                   ret 
-// library rbxgs/roc_unit_04a4f43d7b9f24d1.cpp (function ??1VelocityMotor@RBX@@UAE@XZ)
-
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
 // roc-lib: rbxgs roc_unit_04a4f43d7b9f24d1.cpp
+
+// Candidate translation unit (score above; library headers required).
+#pragma include_alias("v8world/Primitive.h", "roc_unit_3cb14e7bbff2e8e6.cpp")
+#undef _RELEASEASSERT
+#pragma include_alias("util/IRenderable.h", "roc_unit_b8671ae8d3010f90.cpp")
+#pragma include_alias("v8tree/Instance.h", "roc_unit_b34763c2f3d3f398.cpp")
+#pragma include_alias("v8datamodel/JointInstance.h", "roc_unit_ffc89e90dbae649c.cpp")
+#pragma include_alias("v8datamodel/PartInstance.h", "roc_unit_ea83e629b1338927.cpp")
+#include "v8datamodel/Feature.h"
+
+#include "v8world/MotorJoint.h"
+#include "AppDraw/Draw.h"
+#include "AppDraw/DrawAdorn.h"
+
+namespace RBX 
+{
+	static Reflection::RefPropDescriptor<VelocityMotor, Hole> prop_Hole ("Hole", "Data", &VelocityMotor::getHole, &VelocityMotor::setHole, Reflection::PropertyDescriptor::LEGACY);
+	static Reflection::PropDescriptor<VelocityMotor, float> prop_MaxVelocity ("MaxVelocity", "Data", &VelocityMotor::getMaxVelocity, &VelocityMotor::setMaxVelocity, Reflection::PropertyDescriptor::LEGACY);
+	static Reflection::PropDescriptor<VelocityMotor, float> prop_DesiredAngle ("DesiredAngle", "Data", &VelocityMotor::getDesiredAngle, &VelocityMotor::setDesiredAngle, Reflection::PropertyDescriptor::LEGACY);
+	static Reflection::PropDescriptor<VelocityMotor, float> prop_CurrentAngle ("CurrentAngle", "Data", &VelocityMotor::getCurrentAngle, &VelocityMotor::setCurrentAngle, Reflection::PropertyDescriptor::LEGACY);
+
+	Reflection::EnumDesc<Feature::TopBottom>::EnumDesc()
+		: EnumDescriptor("TopBottom", typeid(Feature::TopBottom))
+	{
+		addPair(Feature::TOP, "Top");
+		addPair(Feature::CENTER_TB, "Center");
+		addPair(Feature::BOTTOM, "Bottom");
+	}
+
+	Reflection::EnumDesc<Feature::LeftRight>::EnumDesc()
+		: EnumDescriptor("LeftRight", typeid(Feature::LeftRight))
+	{
+		addPair(Feature::LEFT, "Left");
+		addPair(Feature::CENTER_LR, "Center");
+		addPair(Feature::RIGHT, "Right");
+	}
+
+	Reflection::EnumDesc<Feature::InOut>::EnumDesc()
+		: EnumDescriptor("InOut", typeid(Feature::InOut))
+	{
+		addPair(Feature::EDGE, "Edge");
+		addPair(Feature::INSET, "Inset");
+		addPair(Feature::CENTER_IO, "Center");
+	}
+
+	static Reflection::EnumPropDescriptor<Feature, NormalId> prop_FaceId ("FaceId", "Data", &Feature::getFaceId, &Feature::setFaceId, Reflection::PropertyDescriptor::LEGACY);
+	static Reflection::EnumPropDescriptor<Feature, Feature::TopBottom> prop_TopBottom ("TopBottom", "Data", &Feature::getTopBottom, &Feature::setTopBottom, Reflection::PropertyDescriptor::LEGACY);
+	static Reflection::EnumPropDescriptor<Feature, Feature::LeftRight> prop_LeftRight ("LeftRight", "Data", &Feature::getLeftRight, &Feature::setLeftRight, Reflection::PropertyDescriptor::LEGACY);
+	static Reflection::EnumPropDescriptor<Feature, Feature::InOut> prop_InOut ("InOut", "Data", &Feature::getInOut, &Feature::setInOut, Reflection::PropertyDescriptor::LEGACY);
+
+    const char* sFeature = "Feature";
+
+	Feature::Feature()
+		: faceId(NORM_X),
+		  topBottom(CENTER_TB),
+		  leftRight(CENTER_LR),
+		  inOut(CENTER_IO)
+	{
+		setName("Feature");
+	}
+
+	Feature::~Feature()
+	{
+	}
+
+	// TODO: 98.92% match
+	bool Feature::getRenderCoord(G3D::CoordinateFrame& c) const
+	{
+		PartInstance* part = dynamic_cast<PartInstance*>(getParent());
+
+		if (part)
+		{
+			// for some reason local is being taken as operator*'s LHS
+			// and not part->getCoordinateFrame()
+			G3D::CoordinateFrame local = computeLocalCoordinateFrame();
+			c = part->getCoordinateFrame()*local;
+
+			return true;
+		}
+		else
+		{
+			return false;
+		}
+	}
+
+	void Feature::render3dSelect(Adorn* adorn, SelectState selectState)
+	{
+		G3D::CoordinateFrame worldCoord;
+
+		if (getRenderCoord(worldCoord))
+			DrawAdorn::cylinder(adorn, worldCoord, 2, 0.3, 0.6, Draw::selectColor());
+	}
+
+	// TODO: 98.55% match
+	G3D::CoordinateFrame Feature::computeLocalCoordinateFrame() const
+	{
+		PartInstance* part = dynamic_cast<PartInstance*>(getParent());
+
+		if (!part)
+			return G3D::CoordinateFrame();
+
+		Extents extents = part->getPrimitive()->getExtentsLocal();
+
+		G3D::Vector3 corner = extents.max();
+		G3D::Vector3 uv = Math::vector3Abs(RBX::objectToUvw(corner, faceId));
+
+		uv.z = 0.0f;
+
+		switch (leftRight)
+		{
+			case LEFT:
+				uv.x = -uv.x;
+				break;
+
+			case CENTER_LR:
+				uv.x = 0.0f;
+				break;
+		}
+
+		switch (topBottom)
+		{
+			case CENTER_TB:
+				uv.y = 0.0f;
+				break;
+
+			case BOTTOM:
+				uv.y = -uv.y;
+				break;
+		}
+
+		switch (inOut)
+		{
+		case INSET:
+			uv.x = std::max(0.0f, std::abs(uv.x) - 1.0f) * RBX::Math::sign(uv.x);
+			uv.y = std::max(0.0f, std::abs(uv.y) - 1.0f) * RBX::Math::sign(uv.y);
+			break;
+
+		case CENTER_IO:
+			uv.x = 0.0f;
+			uv.y = 0.0f;
+			break;
+		}
+
+		G3D::Vector3 uvInObject = RBX::uvwToObject(uv, faceId);
+		G3D::Vector3 ptInObject = extents.faceCenter(faceId) + uvInObject;
+
+		RBX::NormalId face = getCoordOrientation() == Z_OUT
+							     ? faceId
+							     : RBX::intToNormalId((faceId + NORM_X_NEG) % NORM_UNDEFINED);
+
+		return G3D::CoordinateFrame(RBX::normalIdToMatrix3(face), ptInObject);
+	}
+
+	void Feature::setFaceId(NormalId value)
+	{
+		if (faceId != value)
+		{
+			faceId = value;
+			raisePropertyChanged(prop_FaceId);
+		}
+	}
+
+	void Feature::setTopBottom(TopBottom value)
+	{
+		if (topBottom != value)
+		{
+			topBottom = value;
+			raisePropertyChanged(prop_TopBottom);
+		}
+	}
+
+	void Feature::setLeftRight(LeftRight value)
+	{
+		if (leftRight != value)
+		{
+			leftRight = value;
+			raisePropertyChanged(prop_LeftRight);
+		}
+	}
+
+	void Feature::setInOut(InOut value)
+	{
+		if (inOut != value)
+		{
+			inOut = value;
+			raisePropertyChanged(prop_InOut);
+		}
+	}
+
+    const char* sHole = "Hole";
+
+	Hole::Hole()
+	{
+		setName("Hole");
+	}
+
+	void Hole::render3dAdorn(Adorn* adorn)
+	{
+		G3D::CoordinateFrame worldCoord;
+
+		if (getRenderCoord(worldCoord))
+			DrawAdorn::cylinder(adorn, worldCoord, 2, 0.2, 0.3, G3D::Color3::black());
+	}
+
+    const char* sMotorFeature = "MotorFeature";
+
+	MotorFeature::MotorFeature()
+	{
+		setName("MotorFeature");
+	}
+
+	void MotorFeature::render3dAdorn(Adorn* adorn)
+	{
+		G3D::CoordinateFrame worldCoord;
+
+		if (getRenderCoord(worldCoord))
+			DrawAdorn::cylinder(adorn, worldCoord, 2, 1.0, 0.3, G3D::Color3::yellow());
+	}
+
+    const char* sVelocityMotor = "VelocityMotor";
+
+	VelocityMotor::VelocityMotor()
+		: DescribedCreatable(new MotorJoint())
+	{
+		setName("VelocityMotor");
+	}
+
+	VelocityMotor::~VelocityMotor()
+	{
+	}
+
+	// TODO: figure out where this can go, maybe it's not an inline? it's the
+	// only way i can make this work sensibly though
+	static inline Primitive* _getParentPrimitive(Instance* instance)
+	{
+		if (instance)
+		{
+			PartInstance* part = dynamic_cast<PartInstance*>(instance->getParent());
+
+			if (part)
+				return part->getPrimitive();
+		}
+
+		return NULL;
+	}
+
+	void VelocityMotor::setPart(int i, Feature* feature)
+	{
+		Primitive* prim = _getParentPrimitive(feature);
+
+		G3D::CoordinateFrame c = feature ? feature->computeLocalCoordinateFrame() : G3D::CoordinateFrame();
+
+		if (motorJoint()->getPrimitive(i) != prim)
+		{
+			motorJoint()->setPrimitive(i, prim);
+
+			if (prim)
+				motorJoint()->setJointCoord(i, c);
+		}
+	}
+
+
+	void VelocityMotor::onEvent_HoleAncestorChanged()
+	{
+		RBXASSERT(hole.get());
+		setPart(1, hole.get());
+	}
+
+	void VelocityMotor::setHole(Hole* value)
+	{
+		if (value != getHole())
+		{
+			hole = RBX::shared_from(value);
+			raisePropertyChanged(prop_Hole);
+
+			setPart(1, getHole());
+
+			if (getHole())
+				holeAncestorChanged = event_ancestryChanged.connect(hole.get(), boost::bind(&VelocityMotor::onEvent_HoleAncestorChanged, this));
+			else
+				holeAncestorChanged.disconnect();
+		}
+	}
+
+	float VelocityMotor::getMaxVelocity() const
+	{
+		return rbx_static_cast<MotorJoint*>(joint)->maxVelocity;
+	}
+
+	void VelocityMotor::setMaxVelocity(float value)
+	{
+		if (value != getMaxVelocity())
+		{
+			rbx_static_cast<MotorJoint*>(joint)->maxVelocity = value;
+			raisePropertyChanged(prop_MaxVelocity);
+		}
+	}
+
+	float VelocityMotor::getDesiredAngle() const
+	{
+		return rbx_static_cast<MotorJoint*>(joint)->desiredAngle;
+	}
+
+	void VelocityMotor::setDesiredAngle(float value)
+	{
+		if (value != getDesiredAngle())
+		{
+			rbx_static_cast<MotorJoint*>(joint)->desiredAngle = value;
+			raisePropertyChanged(prop_DesiredAngle);
+		}
+	}
+
+	float VelocityMotor::getCurrentAngle() const
+	{
+		return rbx_static_cast<MotorJoint*>(joint)->getCurrentAngle();
+	}
+
+	void VelocityMotor::setCurrentAngle(float value)
+	{
+		if (value != getCurrentAngle())
+		{
+			rbx_static_cast<MotorJoint*>(joint)->setCurrentAngle(value);
+			raisePropertyChanged(prop_CurrentAngle);
+		}
+	}
+}

@@ -1,21 +1,101 @@
-// roc 2008-06 004d87c0  unit: G3D::VVector3::?$Table  size: 31 bytes
-// Make this compile to the exact bytes below, then: roc check 2008-06 004d87c0
-//
-// 004d87c0  56                   push esi
-// 004d87c1  8b31                 mov esi, dword ptr [ecx]
-// 004d87c3  85f6                 test esi, esi
-// 004d87c5  7416                 je 0x4d87dd
-// 004d87c7  8bce                 mov ecx, esi
-// 004d87c9  c706d89c8100         mov dword ptr [esi], 0x819cd8
-// 004d87cf  e8ac3ef8ff           call 0x45c680
-// 004d87d4  56                   push esi
-// 004d87d5  e8a07e1c00           call 0x6a067a
-// 004d87da  83c404               add esp, 4
-// 004d87dd  5e                   pop esi
-// 004d87de  c3                   ret 
-// library rbxgs-view/View.cpp (function ??1?$auto_ptr@VTextureManager@G3D@@@std@@QAE@XZ)
-
 // roc-lang: cpp
 // roc-cl: 50727
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
 // roc-lib: rbxgs-view View.cpp
+
+// Candidate translation unit (score above; library headers required).
+#include "RbxView/View.h"
+#include "BrickMesh.h"
+#include "CylinderMesh.h"
+#include "SphereMesh.h"
+#include "PBBMesh.h"
+#include "Part.h"
+#include "RenderLib/AggregatingSceneManager.h"
+#include "v8datamodel/Lighting.h"
+#include "v8datamodel/DataModel.h"
+#include "v8datamodel/Workspace.h"
+#include "v8datamodel/Decal.h"
+
+namespace RBX
+{
+	namespace View
+	{
+		View::View(boost::shared_ptr<DataModel> dataModel)
+			: dataModel(dataModel),
+			  renderLibScene(new Render::RenderScene),
+			  textureManager(new G3D::TextureManager),
+			  lightingValid(false)
+		{
+			sceneManager.reset(new Render::AggregatingSceneManager(renderLibScene.get()));
+			materialFactory.reset(new MaterialFactory(textureManager.get()));
+
+			renderLibScene->setThrottle(0.0f, 0.0f, false, 0.0f);
+
+			Lighting* lighting = ServiceProvider::find<Lighting>(dataModel.get());
+			lightingChangedConnection = Lighting::event_LightingChanged.connect(lighting, boost::bind(&View::invalidateLighting, this, _1));
+
+			dataModel->getWorkspace()->visitDescendents(boost::bind(&View::onWorkspaceDescendentAdded, this, _1));
+			workspaceDescendentAddedConnection = Instance::event_descendentAdded.connect(dataModel->getWorkspace(), boost::bind(&View::onWorkspaceDescendentAdded, this, _1));
+		}
+
+		View::~View()
+		{
+			sceneManager->clear();
+
+			Lighting* unused = ServiceProvider::create<Lighting>(dataModel.get());
+
+			MeshFactory<CylinderAlongXMesh, 1>::flushCache();
+			MeshFactory<SphereMesh, 1>::flushCache();
+			MeshFactory<PBBMesh, 4>::flushCache();
+			BrickMesh::flushCache();
+		}
+
+		void View::suppressSkybox()
+		{
+			Lighting* lighting = ServiceProvider::create<Lighting>(dataModel.get());
+
+			renderLibScene->presetLighting(NULL, lighting->getSkyParameters(), lighting->getAmbientTop(), lighting->getAmbientBottom());
+			sky = NULL;
+			renderLibScene->colorClearValue = lighting->getClearColor();
+		}
+
+		Instance* View::getWorkspace()
+		{
+			return dataModel->getWorkspace();
+		}
+
+		float View::getMeshDetail() const
+		{
+			return renderLibScene->getMeshDetail();
+		}
+
+		float View::getShadingQuality() const
+		{
+			return renderLibScene->getShadingQuality();
+		}
+
+		RenderStats& View::getRenderStats()
+		{
+			return renderLibScene->renderStats;
+		}
+
+		void View::invalidateLighting(bool updateSkybox)
+		{
+			lightingValid = false;
+			if (updateSkybox)
+				sky = NULL;
+		}
+
+		void View::render(void* rd)
+		{
+			updateLighting();
+			sceneManager->prerender(0.1f); // intentional type mismatch! causes value of constant to be different
+			renderLibScene->render((G3D::RenderDevice*)rd, dataModel->getWorkspace()->getGCamera());
+		}
+
+		void View::updateSettings(float shadingQuality, float meshDetail, bool shadows, float cameraDistance)
+		{
+			renderLibScene->setThrottle(shadingQuality, meshDetail, shadows, cameraDistance);
+		}
+	}
+}

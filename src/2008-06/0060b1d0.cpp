@@ -1,130 +1,452 @@
-// roc 2008-06 0060b1d0  unit: RBX::Feature::W4InOut::?$EnumDesc  size: 374 bytes
-// Make this compile to the exact bytes below, then: roc check 2008-06 0060b1d0
-//
-// 0060b1d0  6aff                 push -1
-// 0060b1d2  68c98e7d00           push 0x7d8ec9
-// 0060b1d7  64a100000000         mov eax, dword ptr fs:[0]
-// 0060b1dd  50                   push eax
-// 0060b1de  64892500000000       mov dword ptr fs:[0], esp
-// 0060b1e5  83ec1c               sub esp, 0x1c
-// 0060b1e8  53                   push ebx
-// 0060b1e9  56                   push esi
-// 0060b1ea  57                   push edi
-// 0060b1eb  68cca39500           push 0x95a3cc
-// 0060b1f0  8bf1                 mov esi, ecx
-// 0060b1f2  68842f8400           push 0x842f84
-// 0060b1f7  8974242c             mov dword ptr [esp + 0x2c], esi
-// 0060b1fb  e89013f6ff           call 0x56c590
-// 0060b200  8d442423             lea eax, [esp + 0x23]
-// 0060b204  50                   push eax
-// 0060b205  8d542427             lea edx, [esp + 0x27]
-// 0060b209  33ff                 xor edi, edi
-// 0060b20b  8d4e30               lea ecx, [esi + 0x30]
-// 0060b20e  52                   push edx
-// 0060b20f  897c2438             mov dword ptr [esp + 0x38], edi
-// 0060b213  c7065c2f8400         mov dword ptr [esi], 0x842f5c
-// 0060b219  e8f2aee3ff           call 0x446110
-// 0060b21e  8d442423             lea eax, [esp + 0x23]
-// 0060b222  50                   push eax
-// 0060b223  8d542427             lea edx, [esp + 0x27]
-// 0060b227  8d4e50               lea ecx, [esi + 0x50]
-// 0060b22a  52                   push edx
-// 0060b22b  c644243801           mov byte ptr [esp + 0x38], 1
-// 0060b230  e8dbaee3ff           call 0x446110
-// 0060b235  6a04                 push 4
-// 0060b237  c644243402           mov byte ptr [esp + 0x34], 2
-// 0060b23c  8d5e70               lea ebx, [esi + 0x70]
-// 0060b23f  e8dc560900           call 0x6a0920
-// 0060b244  83c404               add esp, 4
-// 0060b247  3bc7                 cmp eax, edi
-// 0060b249  7404                 je 0x60b24f
-// 0060b24b  8918                 mov dword ptr [eax], ebx
-// 0060b24d  eb02                 jmp 0x60b251
-// 0060b24f  33c0                 xor eax, eax
-// 0060b251  8903                 mov dword ptr [ebx], eax
-// 0060b253  897b0c               mov dword ptr [ebx + 0xc], edi
-// 0060b256  897b10               mov dword ptr [ebx + 0x10], edi
-// 0060b259  897b14               mov dword ptr [ebx + 0x14], edi
-// 0060b25c  6a04                 push 4
-// 0060b25e  c644243404           mov byte ptr [esp + 0x34], 4
-// 0060b263  8d9e88000000         lea ebx, [esi + 0x88]
-// 0060b269  e8b2560900           call 0x6a0920
-// 0060b26e  83c404               add esp, 4
-// 0060b271  3bc7                 cmp eax, edi
-// 0060b273  7404                 je 0x60b279
-// 0060b275  8918                 mov dword ptr [eax], ebx
-// 0060b277  eb02                 jmp 0x60b27b
-// 0060b279  33c0                 xor eax, eax
-// 0060b27b  8903                 mov dword ptr [ebx], eax
-// 0060b27d  897b0c               mov dword ptr [ebx + 0xc], edi
-// 0060b280  897b10               mov dword ptr [ebx + 0x10], edi
-// 0060b283  897b14               mov dword ptr [ebx + 0x14], edi
-// 0060b286  6a04                 push 4
-// 0060b288  c644243406           mov byte ptr [esp + 0x34], 6
-// 0060b28d  8d9ea0000000         lea ebx, [esi + 0xa0]
-// 0060b293  e888560900           call 0x6a0920
-// 0060b298  83c404               add esp, 4
-// 0060b29b  3bc7                 cmp eax, edi
-// 0060b29d  7404                 je 0x60b2a3
-// 0060b29f  8918                 mov dword ptr [eax], ebx
-// 0060b2a1  eb02                 jmp 0x60b2a5
-// 0060b2a3  33c0                 xor eax, eax
-// 0060b2a5  8903                 mov dword ptr [ebx], eax
-// 0060b2a7  897b0c               mov dword ptr [ebx + 0xc], edi
-// 0060b2aa  897b10               mov dword ptr [ebx + 0x10], edi
-// 0060b2ad  897b14               mov dword ptr [ebx + 0x14], edi
-// 0060b2b0  6a04                 push 4
-// 0060b2b2  c644243408           mov byte ptr [esp + 0x34], 8
-// 0060b2b7  8d9eb8000000         lea ebx, [esi + 0xb8]
-// 0060b2bd  e85e560900           call 0x6a0920
-// 0060b2c2  83c404               add esp, 4
-// 0060b2c5  3bc7                 cmp eax, edi
-// 0060b2c7  7404                 je 0x60b2cd
-// 0060b2c9  8918                 mov dword ptr [eax], ebx
-// 0060b2cb  eb02                 jmp 0x60b2cf
-// 0060b2cd  33c0                 xor eax, eax
-// 0060b2cf  8903                 mov dword ptr [ebx], eax
-// 0060b2d1  897b0c               mov dword ptr [ebx + 0xc], edi
-// 0060b2d4  897b10               mov dword ptr [ebx + 0x10], edi
-// 0060b2d7  897b14               mov dword ptr [ebx + 0x14], edi
-// 0060b2da  6a04                 push 4
-// 0060b2dc  c64424340a           mov byte ptr [esp + 0x34], 0xa
-// 0060b2e1  8d9ed0000000         lea ebx, [esi + 0xd0]
-// 0060b2e7  e834560900           call 0x6a0920
-// 0060b2ec  83c404               add esp, 4
-// 0060b2ef  3bc7                 cmp eax, edi
-// 0060b2f1  7404                 je 0x60b2f7
-// 0060b2f3  8918                 mov dword ptr [eax], ebx
-// 0060b2f5  eb02                 jmp 0x60b2f9
-// 0060b2f7  33c0                 xor eax, eax
-// 0060b2f9  8903                 mov dword ptr [ebx], eax
-// 0060b2fb  897b0c               mov dword ptr [ebx + 0xc], edi
-// 0060b2fe  897b10               mov dword ptr [ebx + 0x10], edi
-// 0060b301  897b14               mov dword ptr [ebx + 0x14], edi
-// 0060b304  6804e58100           push 0x81e504
-// 0060b309  57                   push edi
-// 0060b30a  8bce                 mov ecx, esi
-// 0060b30c  c64424380c           mov byte ptr [esp + 0x38], 0xc
-// 0060b311  e81a220400           call 0x64d530
-// 0060b316  687c2f8400           push 0x842f7c
-// 0060b31b  6a01                 push 1
-// 0060b31d  8bce                 mov ecx, esi
-// 0060b31f  e80c220400           call 0x64d530
-// 0060b324  6890f78200           push 0x82f790
-// 0060b329  6a02                 push 2
-// 0060b32b  8bce                 mov ecx, esi
-// 0060b32d  e8fe210400           call 0x64d530
-// 0060b332  8b4c2428             mov ecx, dword ptr [esp + 0x28]
-// 0060b336  5f                   pop edi
-// 0060b337  8bc6                 mov eax, esi
-// 0060b339  5e                   pop esi
-// 0060b33a  5b                   pop ebx
-// 0060b33b  64890d00000000       mov dword ptr fs:[0], ecx
-// 0060b342  83c428               add esp, 0x28
-// 0060b345  c3                   ret 
-// library rbxgs/roc_descriptor_receiver_default_1_80c5431f1ad732bf.cpp (function ??0?$EnumDesc@W4TopBottom@Feature@RBX@@@Reflection@RBX@@AAE@XZ)
-
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
 // roc-lib: rbxgs roc_descriptor_receiver_default_1_80c5431f1ad732bf.cpp
+
+// Candidate translation unit (score above; library headers required).
+#pragma include_alias("v8kernel/Connector.h", "../roc_contact_counter_header_f558e10abf3c82a4.cpp")
+#pragma include_alias("reflection/enumconverter.h", "../roc_enum_native_owner_header_b9f24b80cd6bff22.cpp")
+#pragma include_alias("util/ContentProvider.h", "../roc_wordlist_static_asset_header_179d09ed9a896b44.cpp")
+#pragma include_alias("reflection/object.h", "../roc_descriptor_receiver_class_header_268a149c290eb686.cpp")
+#undef _RELEASEASSERT
+#include "v8kernel/Connector.h"
+#include "util/Debug.h"
+
+namespace RBX
+{
+	void ContactConnector::computeForce(const float dt, bool throttling)
+	{
+		RBXASSERT(!throttling || !this->canThrottle());
+
+		PairParams params;
+		this->geoPair.computeLengthNormalPosition(params);
+
+		if (params.length < 0.f)
+		{
+			++inContactHit;
+			float normalVel;
+			G3D::Vector3 perpVel;
+			this->geoPair.computeNormalPerpVel(normalVel, perpVel, params);
+			this->frictionOffset += dt * perpVel;
+
+			float v8 = this->k * 0.2f;
+			float mag = this->frictionOffset.magnitude() * v8;
+			float v10 = this->kFriction * this->forceMagLast;
+
+			if (v10 < mag && mag > 0.00000001)
+				this->frictionOffset *= (v10 / mag); 
+
+			this->frictionOffset -= params.normal * this->frictionOffset.dot(params.normal);
+
+			float newThreshold;
+			if (this->threshold != 0)
+			{
+				newThreshold = (this->threshold + 0.01f) * 0.999f - 0.01f;
+			}
+			else
+			{
+				if (this->firstApproach == 0)
+					newThreshold = 0;
+				else
+					newThreshold = params.length;
+			}
+			this->threshold = newThreshold;
+
+			float newFirstApproach;
+			if (this->firstApproach != 0)
+			{
+				newFirstApproach = (this->firstApproach + 0.01f) * 0.999f - 0.01f;
+			}
+			else
+			{
+				newFirstApproach = params.length;
+			}
+			this->firstApproach = newFirstApproach;
+
+			float kApplied = normalVel < 0 ? this->k : this->kNeg;
+			float v27 = (this->firstApproach - params.length) * kApplied;
+			this->forceMagLast = v27;
+			this->forceMagLast = params.length <= this->threshold ? this->forceMagLast : 0.f;
+
+			G3D::Vector3 v31 = this->frictionOffset * v8;
+			G3D::Vector3 force = (this->forceMagLast * params.normal) - v31;
+			this->geoPair.forceToBodies(force, params.position); 
+		}
+		else
+		{
+			++outOfContactHit;
+			this->firstApproach = 0;
+			this->threshold = 0;
+			this->forceMagLast = 0;
+		}
+	}
+
+	bool ContactConnector::canThrottle() const
+	{
+		return this->geoPair.getBody(0)->getCanThrottle() && this->geoPair.getBody(1)->getCanThrottle();
+	}
+
+	void PointToPointBreakConnector::forceToPoints(const G3D::Vector3& force)
+	{
+		this->point0->accumulateForce(-force);
+		this->point1->accumulateForce(force);
+		RBXASSERT(force.magnitude() < Math::inf());
+	}
+
+	void PointToPointBreakConnector::computeForce(const float dt, bool throttling)
+	{
+		if (!this->broken)
+		{
+			G3D::Vector3 force = (this->point1->getWorldPos() - this->point0->getWorldPos()) * -this->k;
+
+			float taxi = Math::taxiCabMagnitude(force);
+			this->broken = taxi > this->breakForce;
+			this->forceToPoints(force);
+		}
+	}
+
+	float PointToPointBreakConnector::potentialEnergy()
+	{
+		G3D::Vector3 diff = this->point1->getWorldPos() - this->point0->getWorldPos();
+		float mag = diff.length();
+		return this->k * mag * mag * 0.5f;
+	}
+
+	RotateConnector::RotateConnector(Point* base0, Point* ray0, Point* ref0, Point* ref1, float kValue, float armLength)
+		: base0(base0),
+		  ray0(ray0),
+		  ref0(ref0),
+		  ref1(ref1),
+  		  k(kValue * armLength * armLength),
+		  lastRotation(0),
+		  windings(0),
+		  kernelInput()
+	{}
+
+	void RotateConnector::computeForce(const float dt, bool throttling)
+	{
+		G3D::Vector3 normal;
+		float rotation;
+		float rotVel;
+		this->computeParams(normal, rotation, rotVel);
+
+		this->kernelInput.setGoal(rotation);
+
+		float lastGoal = 0;
+		float currentGoal;
+		float increment;
+		this->kernelInput.get(lastGoal, currentGoal, increment);
+
+		//float v1 = (currentGoal - rotation) * this->k;
+		G3D::Vector3 v2 = normal * ((currentGoal - rotation) * this->k);
+
+		this->ref0->getBody()->accumulateTorque(-v2);
+		this->ref1->getBody()->accumulateTorque(v2);
+	}
+
+	void RotateConnector::computeParams(G3D::Vector3& normal, float& rotation, float& rotVel)
+	{
+		G3D::Vector3 ray0base0_delta = this->ray0->getWorldPos() - this->base0->getWorldPos();
+		normal = ray0base0_delta;
+		normal.unitize();
+		G3D::Vector3 ref0base0_delta = this->ref0->getWorldPos() - this->base0->getWorldPos();
+		G3D::Vector3 ref1base0_delta = this->ref1->getWorldPos() - this->base0->getWorldPos();
+
+		float funnyCalculation1 = normal.dot(ref0base0_delta);
+		float funnyCalculation2 = normal.dot(ref1base0_delta);
+
+		G3D::Vector3 ref0base0_delta_funny = ref0base0_delta - (normal * funnyCalculation1);
+		G3D::Vector3 ref1base0_delta_funny = ref1base0_delta - (normal * funnyCalculation2);
+
+		int oldWindings = this->windings;
+
+		float tripleProdThing = ref0base0_delta_funny.cross(ref1base0_delta_funny).dot(normal);
+		float dotThing = ref1base0_delta_funny.dot(ref0base0_delta_funny);
+
+		float result = atan2(tripleProdThing, dotThing);
+
+		if (this->lastRotation > G3D::halfPi())
+		{
+			if (result < -G3D::halfPi()) //line numbers show that this is an actual line
+				this->windings = oldWindings + 1; // these could be very likely temp values 
+		}									   //that are later written to actual class variable according to original asm
+		else if (this->lastRotation < -G3D::halfPi())
+		{
+			if (result > G3D::halfPi())
+				this->windings = oldWindings - 1;
+		}
+
+		rotation = this->windings * Math::twoPi() + result;// line 69 and line 70
+		rotVel = rotation - (Math::twoPi() * oldWindings + this->lastRotation);
+		this->lastRotation = result; //line 71
+	}
+
+	void NormalBreakConnector::computeForce(const float dt, bool throttling)
+	{
+		if ( !this->broken )
+		{
+			const G3D::Vector3& worldNormal = Math::getWorldNormal(this->normalIdBody0, this->point0->getBody()->getPV().position);
+			const G3D::Vector3& force = -this->k * (this->point1->getWorldPos() - this->point0->getWorldPos());
+			
+			float forceDot = force.dot(worldNormal);
+			this->broken = -forceDot > this->breakForce;
+			this->forceToPoints(force);
+		}
+	}
+}
+
+namespace RBX {
+int ContactConnector::inContactHit = 0;
+int ContactConnector::outOfContactHit = 0;
+float ContactConnector::percentActive() {
+ int denom = inContactHit + outOfContactHit;
+ float answer = denom == 0 ? -1 : (float)inContactHit / (float)denom;
+ inContactHit = 0; outOfContactHit = 0;
+ return answer;
+}
+}
+
+#include "reflection/type.h"
+#include "util/Utilities.h"
+#include <G3D/Vector3.h>
+#include <stdexcept>
+namespace boost { template<> G3D::Vector3 any_cast<G3D::Vector3>(const any&); }
+namespace RBX { namespace Reflection {
+template<> std::string& Value::convert<std::string>() {
+ if (isType<bool>()) {
+  value = StringConverter<bool>::convertToString(cast<bool>());
+  _type = &Type::singleton<bool>();
+ }
+ if (isType<int>()) {
+  value = StringConverter<int>::convertToString(cast<int>());
+  _type = &Type::singleton<int>();
+ }
+ if (isType<float>()) {
+  value = StringConverter<float>::convertToString(cast<float>());
+  _type = &Type::singleton<float>();
+ }
+ if (isType<double>()) {
+  value = StringConverter<double>::convertToString(cast<double>());
+  _type = &Type::singleton<double>();
+ }
+ if (isType<G3D::Vector3>()) {
+  value = StringConverter<G3D::Vector3>::convertToString(boost::any_cast<G3D::Vector3>(static_cast<const boost::any&>(value)));
+  _type = &Type::singleton<G3D::Vector3>();
+ }
+ std::string* result = boost::any_cast<std::string>(&value);
+ if (!result) throw std::runtime_error("Unable to cast value to std::string");
+ return *result;
+}
+} }
+
+#undef _RELEASEASSERT
+#include "util/Sound.h"
+#include "reflection/enumconverter.h"
+namespace RBX { namespace Reflection {
+using namespace Soundscape;
+template<>
+EnumDesc<Soundscape::ReverbType>::EnumDesc()
+	:EnumDescriptor("ReverbType", typeid(Soundscape::ReverbType))
+{
+	addPair(NoReverb, "NoReverb");
+	addPair(GenericReverb, "GenericReverb");
+	addPair(PaddedCell, "PaddedCell");
+	addPair(Room, "Room");
+	addPair(Bathroom, "Bathroom");
+	addPair(LivingRoom, "LivingRoom");
+	addPair(StoneRoom, "StoneRoom");
+	addPair(Auditorium, "Auditorium");
+	addPair(ConcertHall, "ConcertHall");
+	addPair(Cave, "Cave");
+	addPair(Arena, "Arena");
+	addPair(Hangar, "Hangar");
+	addPair(CarpettedHallway, "CarpettedHallway");
+	addPair(Hallway, "Hallway");
+	addPair(StoneCorridor, "StoneCorridor");
+	addPair(Alley, "Alley");
+	addPair(Forest, "Forest");
+	addPair(City, "City");
+	addPair(Mountains, "Mountains");
+	addPair(Quarry, "Quarry");
+	addPair(Plain, "Plain");
+	addPair(ParkingLot, "ParkingLot");
+	addPair(SewerPipe, "SewerPipe");
+	addPair(UnderWater, "UnderWater");
+}
+} }
+
+#include "v8datamodel/Camera.h"
+#include "v8datamodel/Feature.h"
+#include "util/SurfaceType.h"
+
+namespace RBX {
+template<>
+	
+	Reflection::EnumDesc<Camera::CameraType>::EnumDesc()
+		: EnumDescriptor("CameraType", typeid(Camera::CameraType))
+	{
+		addPair(Camera::FIXED_CAMERA, "Fixed");
+		addPair(Camera::WATCH_CAMERA, "Watch");
+		addPair(Camera::ATTACH_CAMERA, "Attach");
+		addPair(Camera::TRACK_CAMERA, "Track");
+		addPair(Camera::FOLLOW_CAMERA, "Follow");
+		addPair(Camera::CUSTOM_CAMERA, "Custom");
+	}
+}
+
+namespace RBX {
+template<>
+
+	Reflection::EnumDesc<Feature::TopBottom>::EnumDesc()
+		: EnumDescriptor("TopBottom", typeid(Feature::TopBottom))
+	{
+		addPair(Feature::TOP, "Top");
+		addPair(Feature::CENTER_TB, "Center");
+		addPair(Feature::BOTTOM, "Bottom");
+	}
+}
+
+namespace RBX {
+template<>
+
+	Reflection::EnumDesc<Feature::LeftRight>::EnumDesc()
+		: EnumDescriptor("LeftRight", typeid(Feature::LeftRight))
+	{
+		addPair(Feature::LEFT, "Left");
+		addPair(Feature::CENTER_LR, "Center");
+		addPair(Feature::RIGHT, "Right");
+	}
+}
+
+namespace RBX {
+template<>
+
+	Reflection::EnumDesc<Feature::InOut>::EnumDesc()
+		: EnumDescriptor("InOut", typeid(Feature::InOut))
+	{
+		addPair(Feature::EDGE, "Edge");
+		addPair(Feature::INSET, "Inset");
+		addPair(Feature::CENTER_IO, "Center");
+	}
+}
+
+namespace RBX {
+namespace Reflection {
+template<>
+		EnumDesc<SurfaceType>::EnumDesc()
+			: EnumDescriptor("SurfaceType", typeid(SurfaceType))
+		{
+			addPair(NO_SURFACE, "Smooth");
+			addPair(GLUE, "Glue");
+			addPair(WELD, "Weld");
+			addPair(STUDS, "Studs");
+			addPair(INLET, "Inlet");
+			addLegacyName("Spawn", NO_SURFACE);
+			addPair(ROTATE, "Hinge");
+			addPair(ROTATE_V, "Motor");
+			addPair(ROTATE_P, "SteppingMotor");
+			addLegacyName("Bumps", GLUE);
+		}
+} }
+
+#include <set>
+#include <fstream>
+#include <boost/algorithm/string.hpp>
+#include "util/ContentProvider.h"
+namespace RBX {
+	class WordList
+	{
+	private:
+		std::set<std::string> blacklist;
+		void decrypt(std::string& str);
+	public:
+		WordList();
+		~WordList();
+
+		bool ContainsProfanity(std::string str);
+
+	};
+
+
+void WordList::decrypt(std::string& str)
+{
+	for(unsigned i = 0; i<str.size(); ++i){
+		str[i] = 0x55 ^ str[i];
+	}
+}
+
+WordList::WordList()
+{
+	/* Load blacklist
+
+	
+	*/
+
+	std::string filename = ContentProvider::getAssetFile("Fonts\\diogenes.fnt");
+	
+	std::ifstream infile(filename.c_str());
+	std::string line;
+	while( std::getline(infile, line, '\n'))
+	{
+		boost::to_lower(line);
+		boost::trim(line);
+		blacklist.insert(line);
+	}
+
+	infile.close();
+}
+WordList::~WordList()
+{
+
+}
+bool WordList::ContainsProfanity(std::string str)
+{
+	/*
+	1. Convert query to lower case
+	2. Check for in black list
+	*/
+
+	boost::to_lower(str);
+
+	return blacklist.find(str) != blacklist.end();
+}
+
+
+}
+
+#undef _RELEASEASSERT
+#include "reflection/object.h"
+#include <boost/algorithm/string.hpp>
+#include <boost/cstdint.hpp>
+
+namespace RakNet { class BitStream; }
+namespace RBX { namespace Network {
+template<class T> class DescriptorReceiver {
+ std::vector<const T*> idToDesc;
+ int idBits;
+ void learnName(std::string s, int i);
+public:
+ void getValue(unsigned int id, const T*& value) const { value = idToDesc.at(id); }
+ void learn(RakNet::BitStream& stream, bool exchangeChecksum, bool useRakString);
+ unsigned int receive(RakNet::BitStream& stream, const T*& value, bool versionCheck) const;
+ bool verifyChecksum(const T* value, boost::uint32_t remoteChecksum);
+};
+using namespace Reflection;
+template<> void DescriptorReceiver<PropertyDescriptor>::learnName(std::string s, int i) {
+ std::vector<std::string> words;
+ boost::split(words,s,boost::is_any_of(":"));
+ const Name& n = Name::lookup(words[0]);
+ ClassDescriptor::ClassDescriptors::const_iterator iter = ClassDescriptor::all_begin();
+ while(iter != ClassDescriptor::all_end()) {
+  const ClassDescriptor* c = *iter;
+  if(c->name == n) {
+   const Name& propertyName = Name::lookup(words[1]);
+   PropertyContainer::CollectionType::const_iterator desc = c->PropertyContainer::findDescriptor(propertyName);
+   if(desc != c->PropertyContainer::descriptors_end()) { idToDesc[i] = *desc; return; }
+   else break;
+  }
+  ++iter;
+ }
+ idToDesc[i] = NULL;
+}
+} }

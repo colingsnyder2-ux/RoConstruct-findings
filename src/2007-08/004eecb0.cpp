@@ -1,45 +1,133 @@
-// roc 2007-08 004eecb0  unit: PBBBuilder  size: 71 bytes
-// Make this compile to the exact bytes below, then: roc check 2007-08 004eecb0
-//
-// 004eecb0  56                   push esi
-// 004eecb1  57                   push edi
-// 004eecb2  8b7c240c             mov edi, dword ptr [esp + 0xc]
-// 004eecb6  8bf1                 mov esi, ecx
-// 004eecb8  8b06                 mov eax, dword ptr [esi]
-// 004eecba  8b5004               mov edx, dword ptr [eax + 4]
-// 004eecbd  57                   push edi
-// 004eecbe  ffd2                 call edx
-// 004eecc0  8b06                 mov eax, dword ptr [esi]
-// 004eecc2  8b5008               mov edx, dword ptr [eax + 8]
-// 004eecc5  57                   push edi
-// 004eecc6  8bce                 mov ecx, esi
-// 004eecc8  ffd2                 call edx
-// 004eecca  8b06                 mov eax, dword ptr [esi]
-// 004eeccc  8b500c               mov edx, dword ptr [eax + 0xc]
-// 004eeccf  57                   push edi
-// 004eecd0  8bce                 mov ecx, esi
-// 004eecd2  ffd2                 call edx
-// 004eecd4  8b06                 mov eax, dword ptr [esi]
-// 004eecd6  8b5010               mov edx, dword ptr [eax + 0x10]
-// 004eecd9  57                   push edi
-// 004eecda  8bce                 mov ecx, esi
-// 004eecdc  ffd2                 call edx
-// 004eecde  8b06                 mov eax, dword ptr [esi]
-// 004eece0  8b5014               mov edx, dword ptr [eax + 0x14]
-// 004eece3  57                   push edi
-// 004eece4  8bce                 mov ecx, esi
-// 004eece6  ffd2                 call edx
-// 004eece8  8b06                 mov eax, dword ptr [esi]
-// 004eecea  8b5018               mov edx, dword ptr [eax + 0x18]
-// 004eeced  57                   push edi
-// 004eecee  8bce                 mov ecx, esi
-// 004eecf0  ffd2                 call edx
-// 004eecf2  5f                   pop edi
-// 004eecf3  5e                   pop esi
-// 004eecf4  c20400               ret 4
-// library rbxgs-view/QuadVolume.cpp (function ?build@LevelBuilder@View@RBX@@UAEXW4Purpose@123@@Z)
-
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
 // roc-lib: rbxgs-view QuadVolume.cpp
+
+// Candidate translation unit (score above; library headers required).
+#include "QuadVolume.h"
+
+namespace RBX
+{
+	namespace View
+	{
+		LevelBuilder::LevelBuilder(G3D::ReferenceCountedPointer<Render::Mesh::Level>& level, G3D::Vector3 size, RenderSurfaceTypes surfaceTypes)
+			: halfSize(size * 0.5f),
+			  surfaceTypes(surfaceTypes),
+			  level(level),
+			  textureScale(2.0f, 2.0f)
+		{
+		}
+
+		float LevelBuilder::offset(RenderSurfaceType surfaceType)
+		{
+			switch (surfaceType)
+			{
+			case STUDS:
+				return 0.0f;
+			case INLET:
+				return 0.5f;
+			case WELD:
+				return 1.0f;
+			case GLUE:
+				return 1.5f;
+
+			default:
+				return 0.0f;
+			}
+		}
+
+		void LevelBuilder::build(Purpose purpose)
+		{
+			buildTop(purpose);
+			buildBottom(purpose);
+			buildLeft(purpose);
+			buildRight(purpose);
+			buildFront(purpose);
+			buildBack(purpose);
+		}
+
+		void LevelBuilder::buildFace(NormalId normalId, Purpose purpose)
+		{
+			switch (normalId)
+			{
+			case NORM_X:
+				buildRight(purpose);
+				break;
+			case NORM_Y:
+				buildTop(purpose);
+				break;
+			case NORM_Z:
+				buildBack(purpose);
+				break;
+			case NORM_X_NEG:
+				buildLeft(purpose);
+				break;
+			case NORM_Y_NEG:
+				buildBottom(purpose);
+				break;
+			case NORM_Z_NEG:
+				buildFront(purpose);
+				break;
+			}
+		}
+
+		void LevelBuilder::appendQuadFromIndexArray(int a, int b, int c)
+		{
+			appendQuadFromVertexIndices(level->indexArray[a], level->indexArray[b], level->indexArray[c]);
+		}
+
+		void LevelBuilder::appendQuadFromIndexArray(int a, int b, int c, int d)
+		{
+			appendQuadFromVertexIndices(level->indexArray[a], level->indexArray[b], level->indexArray[c], level->indexArray[d]);
+		}
+
+		void LevelBuilder::appendQuadFromVertexIndices(unsigned a, unsigned b, unsigned c)
+		{
+			switch (level->primitive)
+			{
+			case G3D::RenderDevice::TRIANGLES:
+				level->indexArray.append(
+					Render::Mesh::allocVertex(a, 1),
+					Render::Mesh::allocVertex(b, 1),
+					Render::Mesh::allocVertex(c, 1)
+				);
+				break;
+			case G3D::RenderDevice::QUADS:
+				level->indexArray.append(
+					Render::Mesh::allocVertex(a, 1),
+					Render::Mesh::allocVertex(a, 1),
+					Render::Mesh::allocVertex(b, 1),
+					Render::Mesh::allocVertex(c, 1)
+				);
+				break;
+			}
+		}
+
+		void LevelBuilder::appendQuadFromVertexIndices(unsigned a, unsigned b, unsigned c, unsigned d)
+		{
+			switch (level->primitive)
+			{
+			case G3D::RenderDevice::TRIANGLES:
+				level->indexArray.append(
+					Render::Mesh::allocVertex(a, 1),
+					Render::Mesh::allocVertex(b, 1),
+					Render::Mesh::allocVertex(c, 1)
+				);
+				level->indexArray.append(
+					Render::Mesh::allocVertex(c, 1),
+					Render::Mesh::allocVertex(d, 1),
+					Render::Mesh::allocVertex(a, 1)
+				);
+				break;
+			case G3D::RenderDevice::QUADS:
+				level->indexArray.append(
+					Render::Mesh::allocVertex(a, 1),
+					Render::Mesh::allocVertex(b, 1),
+					Render::Mesh::allocVertex(c, 1),
+					Render::Mesh::allocVertex(d, 1)
+				);
+				break;
+			}
+		}
+	}
+}

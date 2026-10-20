@@ -1,24 +1,103 @@
 // from server: 100% by auto
-// roc 2007-08 00508550  unit: G3D::GCamera  size: 37 bytes
-// Make this compile to the exact bytes below, then: roc check 2007-08 00508550
-//
-// 00508550  56                   push esi
-// 00508551  8bf1                 mov esi, ecx
-// 00508553  33c0                 xor eax, eax
-// 00508555  894650               mov dword ptr [esi + 0x50], eax
-// 00508558  894654               mov dword ptr [esi + 0x54], eax
-// 0050855b  e860fcffff           call 0x5081c0
-// 00508560  8bce                 mov ecx, esi
-// 00508562  e869fdffff           call 0x5082d0
-// 00508567  8b4628               mov eax, dword ptr [esi + 0x28]
-// 0050856a  8b4e2c               mov ecx, dword ptr [esi + 0x2c]
-// 0050856d  894650               mov dword ptr [esi + 0x50], eax
-// 00508570  894e54               mov dword ptr [esi + 0x54], ecx
-// 00508573  5e                   pop esi
-// 00508574  c3                   ret 
-// library g3d-6.09/G3Dcpp\Stopwatch.cpp (function ?computeOverhead@Stopwatch@G3D@@AAEXXZ)
-
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD
 // roc-lib: g3d-6.09 G3Dcpp/Stopwatch.cpp
+
+// Candidate translation unit (score above; library headers required).
+/**
+ @file Stopwatch.cpp
+ 
+ @maintainer Morgan McGuire, matrix@graphics3d.com
+  
+ @created 2005-10-05
+ @edited  2005-10-05
+
+ Copyright 2000-2003, Morgan McGuire.
+ All rights reserved.
+ */
+
+#include "G3D/Stopwatch.h"
+#include "G3D/System.h"
+
+namespace G3D {
+
+Stopwatch::Stopwatch() : inBetween(false), lastTockTime(-1), 
+    lastDuration(0), lastCycleCount(0), m_fps(0), emwaFPS(0),
+    m_smoothFPS(0), emwaDuration(0) {
+    computeOverhead();
+}
+
+
+void Stopwatch::computeOverhead() {
+    cycleOverhead = 0;
+    tick();
+    tock();
+    cycleOverhead = elapsedCycles();
+}
+
+
+void Stopwatch::tick() {
+    // This is 'alwaysAssert' instead of 'debugAssert'
+    // since people rarely profile in debug mode.
+    alwaysAssertM(! inBetween, "Stopwatch::tick() called twice in a row.");
+    inBetween = true;
+
+    // We read RDTSC twice here, but it is more abstract to implement this
+    // way and at least we're reading the cycle count last.
+    timeStart = System::time();
+    System::beginCycleCount(cycleStart);
+}
+
+
+void Stopwatch::tock() {
+    System::endCycleCount(cycleStart);
+    RealTime now = System::time();
+    lastDuration = now - timeStart;
+    if (abs(emwaDuration - lastDuration) > max(emwaDuration, lastDuration) * 0.50) {
+        // Off by more than 50%
+        emwaDuration = lastDuration;
+    } else {
+        emwaDuration = lastDuration * 0.05 + emwaDuration * 0.95;
+    }
+
+    lastCycleCount = cycleStart - cycleOverhead;
+    if (lastCycleCount < 0) {
+        lastCycleCount = 0;
+    }
+
+    if (lastTockTime != -1.0) {
+        m_fps = 1.0 / (now - lastTockTime);
+
+        // Time smooth the average
+        emwaFPS = m_fps * 0.01 + emwaFPS * 0.99;
+
+        if (abs(emwaFPS - m_fps) > max(emwaFPS, m_fps) * 0.08) {
+            // The difference between emwa and m_fps is way off
+            // update emwa directly.
+            emwaFPS = m_fps;
+        }
+        
+        // Update m_smoothFPS only when the value varies significantly
+        // We round so as to not mislead the user as to the accuracy of 
+        // the number.
+        if (m_smoothFPS == 0) {
+            m_smoothFPS = m_fps;
+        } else if (emwaFPS <= 10) {
+            if (::fabs(m_smoothFPS - emwaFPS) > .75) {
+                m_smoothFPS = floor(emwaFPS * 10.0 + 0.5) / 10.0;
+            }
+        } else {
+            if (::fabs(m_smoothFPS - emwaFPS) > 1.25) {
+                m_smoothFPS = floor(emwaFPS + 0.5);
+            }
+        }
+    }
+    lastTockTime = now;
+
+    alwaysAssertM(inBetween, "Stopwatch::tock() called without matching tick.");
+    inBetween = false;
+}
+
+}
+

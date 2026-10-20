@@ -1,15 +1,50 @@
-// roc 2009-12 005652c0  unit: CXTPRichRender::XTextHost  size: 16 bytes
-// Make this compile to the exact bytes below, then: roc check 2009-12 005652c0
-//
-// 005652c0  56                   push esi
-// 005652c1  8bf1                 mov esi, ecx
-// 005652c3  e8c8fdffff           call 0x565090
-// 005652c8  8bce                 mov ecx, esi
-// 005652ca  5e                   pop esi
-// 005652cb  e9c0fdffff           jmp 0x565090
-// library mfc-8.0/atlmfc\src\mfc\ctlmodul.cpp (function ?ExitInstance@COleControlModule@@UAEHXZ)
-
 // roc-lang: cpp
 // roc-cl: 50727
 // roc-flags: /O2 /GS- /MD
 // roc-lib: mfc-8.0 atlmfc/src/mfc/ctlmodul.cpp
+
+// Candidate translation unit (score above; library headers required).
+// This is a part of the Microsoft Foundation Classes C++ library.
+// Copyright (C) Microsoft Corporation
+// All rights reserved.
+//
+// This source code is only intended as a supplement to the
+// Microsoft Foundation Classes Reference and related
+// electronic documentation provided with the library.
+// See these sources for detailed information regarding the
+// Microsoft Foundation Classes product.
+
+#include "stdafx.h"
+
+#ifndef _AFX_NO_OCX_SUPPORT
+
+
+#define new DEBUG_NEW
+
+
+/////////////////////////////////////////////////////////////////////////////
+// COleControlModule::InitInstance
+
+IMPLEMENT_DYNAMIC(COleControlModule, CWinApp)
+
+BOOL COleControlModule::InitInstance()
+{
+#ifdef _AFXDLL
+	// wire up resources from OLE DLL
+	AfxOleInitModule();
+#endif
+
+	COleObjectFactory::RegisterAll();
+	return TRUE;
+}
+
+/////////////////////////////////////////////////////////////////////////////
+// COleControlModule::ExitInstance
+
+int COleControlModule::ExitInstance()
+{
+	COleObjectFactory::RevokeAll();
+	return CWinApp::ExitInstance();
+}
+
+#endif // !_AFX_NO_OCX_SUPPORT
