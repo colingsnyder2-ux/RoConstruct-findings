@@ -1,48 +1,12 @@
-// from server: 83% by king_originala
-struct String;
-struct Stream;
+// from server: 100% by Espeon
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: rbxgs-dll roc_espeon_contentreadexceptionlog354fc7d4f8d46fad.cpp
 
-extern void (__thiscall *stream_construct)(Stream*, const String&, int, int);
-extern void (__thiscall *stream_destroy)(Stream*);
-
-struct Stream
-{
-    char storage[148];
-    Stream(const String&, int);
-    ~Stream();
-};
-
-inline Stream::Stream(const String& text, int mode)
-{
-    stream_construct(this, text, mode, 1);
-}
-
-inline Stream::~Stream()
-{
-    stream_destroy(this);
-}
-
-struct Value
-{
-    char storage[32];
-    ~Value();
-    void read(void*, Stream&);
-};
-
-void reconstruct(Value value, void* context, const String& text)
-{
-    try
-    {
-        try
-        {
-            Stream input(text, 1);
-            value.read(context, input);
-        }
-        catch (...)
-        {
-        }
-    }
-    catch (...)
-    {
-    }
-}
+// Candidate translation unit (score above; library headers required).
+#include "util/StandardOut.h"
+#include <sstream>
+#include <boost/function.hpp>
+#include <boost/shared_ptr.hpp>
+void readContent(boost::function<void(void*,std::istream&)> callback,void* context,boost::shared_ptr<const std::string> text){try{std::istringstream input(*text);callback(context,input);}catch(std::exception& e){RBX::StandardOut::singleton()->print(RBX::MESSAGE_ERROR,"ContentProvider callback exception: %s",e.what());}}

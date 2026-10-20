@@ -1,12 +1,13 @@
+// from server: 100% by EspClaude
 // from server: 93% by Espeon
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: openrbx-client-dll roc_espeon_stats_574bb0cf216ce655.cpp
+// roc-lib: openrbx-client-dll roc_espclaude_338b4b802b570a5c.cpp
 
 // Candidate translation unit (score above; library headers required).
 #include <boost/shared_ptr.hpp>
-struct Shared { void* volatile object; boost::detail::shared_count control; };
+struct Shared { void* object; boost::detail::shared_count control; };
 struct Records;
 
 struct Record {
@@ -38,3 +39,4 @@ void S::f(int unused, Shared value)
         }
     }
 }
+

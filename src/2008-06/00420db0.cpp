@@ -1,8 +1,9 @@
+// from server: 100% by EspClaude
 // from server: 96% by Espeon
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: openrbx-client-dll roc_espeon_namereference_93043bd1365de6be.cpp
+// roc-lib: openrbx-client-dll roc_espclaude_524751294c2dc6d0.cpp
 
 // Candidate translation unit (score above; library headers required).
 #include <boost/shared_ptr.hpp>
@@ -18,6 +19,7 @@ struct Name
 {
     long reserved;
     String text;
+    String& getText() { return text; }
 };
 
 struct Named
@@ -80,5 +82,6 @@ InstanceRecord::InstanceRecord(Shared p)
     : instance(p)
 {
     addItem(new NameItem(p.get()));
-    addItem(new TextItem(p.get()->named.getName().text.c_str()));
+    addItem(new TextItem(p.get()->named.getName().getText().c_str()));
 }
+

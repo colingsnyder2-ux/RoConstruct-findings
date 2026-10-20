@@ -1,8 +1,9 @@
+// from server: 100% by EspClaude
 // from server: 92% by Espeon
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: openrbx-client-dll roc_espeon_parentowner_b902d97d290bd1a2.cpp
+// roc-lib: openrbx-client-dll roc_espclaude_a8b7d27bee9ba3f6.cpp
 
 // Candidate translation unit (score above; library headers required).
 #include <boost/shared_ptr.hpp>
@@ -33,7 +34,8 @@ extern S* __cdecl lookup(S*);
 
 void __cdecl updateParent(S* parent, Shared node)
 {
-    if (node->parent == parent)
+    S* current = node->parent;
+    if (current == parent)
         return;
 
     S* target = lookup(parent);
@@ -44,3 +46,4 @@ void __cdecl updateParent(S* parent, Shared node)
     }
     node->setParent(parent);
 }
+
