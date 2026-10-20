@@ -1,5 +1,6 @@
-// from server: 88% by colin
+// from server: 100% by Espeon
 // roc-lang: cpp
-// roc-cl: 50727
+// roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs v8datamodel/Accoutrement.cpp
+// roc-lib: rbxgs roc_espeon_touchconnectionbase5b9f5442fd73c7bf.cpp
+

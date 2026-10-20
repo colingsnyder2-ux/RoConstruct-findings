@@ -1,3 +1,4 @@
+// from server: 100% by Espeon
 // from server: 88% by colin
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD
@@ -12,14 +13,16 @@ namespace RBX {
     }
 }
 
-class DHTMLWindow : public RBX::Reflection::DescribedBase {
-};
+namespace RBX { class Visit : public Reflection::DescribedBase {
+}; }
 
 struct Content {
     virtual ~Content();
     virtual void type() const;
     virtual Content* clone() const;
 };
+
+struct String { char bytes[28]; __declspec(dllimport) String(const String&); __declspec(dllimport) ~String(); };
 
 struct Value {
     int value;
@@ -29,6 +32,7 @@ struct Value {
     Value(const Value&);
     ~Value();
     int* get();
+    String* getString();
 };
 
 inline Content* Value::copyContent(Content* source)
@@ -56,7 +60,7 @@ struct Arguments {
 
 struct BoundFuncDesc {
     char padding[56];
-    void (__thiscall* function)(void*, int, int);
+    void (__thiscall* function)(void*, String, int);
     int adjustment;
     Value first;
     Value second;
@@ -73,15 +77,12 @@ void BoundFuncDesc::invoke(RBX::Reflection::DescribedBase* source,
     Value b(second);
     arguments->assign(2, &b);
 
-    DHTMLWindow* server =
-        dynamic_cast<DHTMLWindow*>(source);
+    RBX::Visit* server =
+        dynamic_cast<RBX::Visit*>(source);
 
     if (!server)
         throw std::bad_cast("bad cast");
 
-    int* secondValue = b.get();
-    int* firstValue = a.get();
-
     function(reinterpret_cast<char*>(server) + adjustment,
-             *firstValue, *secondValue);
+             *a.getString(), *b.get());
 }

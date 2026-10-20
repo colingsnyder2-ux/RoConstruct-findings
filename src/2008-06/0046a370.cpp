@@ -1,5 +1,6 @@
+// from server: 100% by Espeon
 // from server: 86% by colin
-struct String
+struct __declspec(dllimport) String
 {
     char* data;
 
@@ -10,7 +11,18 @@ struct String
     String& operator=(const char* text);
 };
 
-extern "C" __declspec(dllimport) int __stdcall VerQueryValueA(
+struct __declspec(dllimport) PathString
+{
+    char* data;
+
+    PathString() throw();
+    ~PathString() throw();
+    void __cdecl Format(const char* format, ...);
+    operator const char*() const throw();
+    PathString& operator=(const char* text);
+};
+
+extern "C" int __stdcall VerQueryValueA(
     const void* block,
     const char* subBlock,
     void** value,
@@ -30,7 +42,7 @@ struct DxUserInput
 String DxUserInput::query(const String& name)
 {
     String result;
-    String path;
+    PathString path;
 
     path.Format("\\StringFileInfo\\%04x%04x\\%s",
                 language, codePage, name.data);
@@ -38,7 +50,7 @@ String DxUserInput::query(const String& name)
     void* value = 0;
     unsigned int length = 0;
 
-    if (sub_7A6368(block, (void*)VerQueryValueA(block, path, &value, &length)))
+    if (VerQueryValueA(block, path, &value, &length))
         result = static_cast<const char*>(value);
 
     return result;

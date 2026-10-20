@@ -1,3 +1,4 @@
+// from server: 93% by Espeon
 // from server: 89% by king_originala
 typedef unsigned long DWORD;
 
@@ -55,30 +56,33 @@ inline Menu::Menu() : tablePointer(menuTable), handle(0)
 {
 }
 
+struct Allocator {Allocator(){}};
+struct EmptyPack : Empty, Allocator {};
+struct RawPointer {void* value;RawPointer():value(0){}};
 struct ContainerA {
     DWORD data[8];
     ContainerA();
-    void initialize(const Empty&, const Empty&);
+    void initialize(const Empty&, const Allocator&);
     ~ContainerA();
 };
 
 inline ContainerA::ContainerA()
 {
-    Empty value;
-    initialize(value, value);
+    EmptyPack value;
+    initialize(value,value);
 }
 
 struct ContainerB {
     DWORD data[8];
     ContainerB();
-    void initialize(const Empty&, const Empty&);
+    void initialize(const Empty&, const Allocator&);
     ~ContainerB();
 };
 
 inline ContainerB::ContainerB()
 {
-    Empty value;
-    initialize(value, value);
+    EmptyPack value;
+    initialize(value,value);
 }
 
 struct PointerMember {
@@ -91,8 +95,7 @@ inline PointerMember::PointerMember() : value(0)
 {
 }
 
-struct CRobloxTreeCtrl : Base {
-    RegisteredMember registered;
+struct CRobloxTreeCtrl : Base, RegisteredMember {
     Interface interfaceMember;
     Menu menu;
     unsigned char flag0;
@@ -102,7 +105,7 @@ struct CRobloxTreeCtrl : Base {
     ContainerB second;
     PointerMember pointer0;
     PointerMember pointer1;
-    PointerMember pointer2;
+    RawPointer pointer2;
 
     virtual void primaryFunction();
     virtual void secondaryFunction();
