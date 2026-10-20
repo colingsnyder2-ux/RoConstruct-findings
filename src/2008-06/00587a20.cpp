@@ -1,54 +1,5 @@
-// from server: 78% by colin
-extern "C" void __stdcall _invalid_parameter_noinfo();
-
-struct Node {
-    Node* parent;
-    char pad[0x14];
-    Node* field18;
-    int field1c;
-};
-
-struct Iter {
-    Node* node;
-    Node* root;
-};
-
-struct S {
-    char pad[0x18];
-    Node* head;
-    bool f();
-};
-
-void __fastcall sub_6510f0(Iter* it);
-
-bool S::f() {
-    Node* head = this->head;
-    Node* root = *(Node**)this;
-    Node* cur = head->parent;
-    Node* it = root;
-    Iter tmp;
-    while (true) {
-        tmp.root = cur;
-        tmp.node = it;
-        if (it != 0 && it != root) {
-            _invalid_parameter_noinfo();
-        }
-        if (cur == head) {
-            return true;
-        }
-        if (it == 0) {
-            _invalid_parameter_noinfo();
-            if (cur == it->field18) {
-                _invalid_parameter_noinfo();
-            }
-            if (cur->field1c != 0) {
-                return false;
-            }
-            sub_6510f0(&tmp);
-            cur = tmp.root;
-            it = tmp.node;
-        } else {
-            it = it->parent;
-        }
-    }
-}
+// from server: 100% by Espeon
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: rbxgs-dll roc_espeon_mapcachedendcd0a419f31517ef1.cpp
