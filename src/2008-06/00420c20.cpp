@@ -1,3 +1,4 @@
+// from server: 95% by colin
 // from server: 93% by king_originala
 // roc 2008-06 00420c20  unit: CInstanceExplorer  size: 182 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 00420c20
@@ -116,7 +117,8 @@ void CInstanceExplorer::Remove(int unused, Argument argument)
     }
 
     if (!owner->flag) {
-        Control* control = owner->vtable->GetControl(owner);
+        OwnerVTable* vt = owner->vtable;
+        Control* control = vt->GetControl(owner);
         control->vtable->Refresh(control);
     }
 }

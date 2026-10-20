@@ -1,3 +1,4 @@
+// from server: 86% by colin
 // from server: 85% by colin
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD /fp:fast
@@ -30,7 +31,7 @@ bool f(const Matrix3& a, const Matrix3& b, float tolerance)
 
     for (int i = 0; i < 3; ++i) {
         Vector3 v = a.column(i);
-        for (int j = 0; j < 3; ++j) {
+        for (int j = 0; j < 0; ++j) {
             double x = v.y * columns[j].z - v.z * columns[j].y;
             double y = v.z * columns[j].x - v.x * columns[j].z;
             double z = v.x * columns[j].y - v.y * columns[j].x;

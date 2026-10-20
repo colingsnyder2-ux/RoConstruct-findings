@@ -1,22 +1,11 @@
-// from server: 92% by king_originala
-struct String {
-    unsigned int proxy;
-    union {
-        char buffer[16];
-        char* pointer;
-    } storage;
-    unsigned int length;
-    unsigned int capacity;
-
-    ~String();
-};
-
-String operator+(const String&, const char*);
-String operator+(const String&, const String&);
+// from server: 98% by colin
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
+#include <string>
 
 struct Text {
     unsigned int padding;
-    String value;
+    std::string value;
 };
 
 struct Link {
@@ -31,8 +20,9 @@ struct Source {
     Link* prefix;
 };
 
-String __stdcall concatenate(const Source* source)
+std::string __stdcall concatenate(const Source* source)
 {
-    return (source->prefix->text->value + "Critical Error")
-         + source->suffix->value;
+    Link* prefix = source->prefix;
+    Text* text = prefix->text;
+    return (text->value + "Critical Error") + source->suffix->value;
 }

@@ -1,10 +1,8 @@
+// from server: 100% by colin
 // from server: 91% by colin
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-#include <string>
-extern "C" {
-}
 
 
 
@@ -13,6 +11,12 @@ extern "C" {
 
 
 struct Service;
+
+struct FunctionRef {
+    unsigned char data[0x24];
+    FunctionRef(const FunctionRef&);
+    ~FunctionRef();
+};
 
 struct Shared {
     void* object;
@@ -30,11 +34,11 @@ struct Callback {
 void __cdecl callback();
 
 struct Bind {
-    unsigned char data[64];
+    unsigned char data[56];
     Bind(const Bind&);
 };
 
-Bind __cdecl makeBind(Callback, Shared, std::string);
+Bind __cdecl makeBind(Callback, Shared, FunctionRef);
 
 struct FunctionTable {
     void (__cdecl *manager)(void*, void*, int);
@@ -55,10 +59,10 @@ struct Queue {
 extern Queue* queue;
 
 struct Service {
-    void submit(std::string);
+    void submit(FunctionRef);
 };
 
-void Service::submit(std::string text)
+void Service::submit(FunctionRef text)
 {
     Callback target = { callback, 0 };
     queue->append(Function(makeBind(target, getShared(this), text), 0));
