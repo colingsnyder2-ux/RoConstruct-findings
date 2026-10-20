@@ -1,8 +1,5 @@
-// from server: 96% by colin
-//
-// library boost-1.40.0/libs\regex\src\instances.cpp (function ??0?$named_subexpressions@D@re_detail@boost@@QAE@XZ)
-
+// from server: 100% by Espeon
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: boost-1.40.0 libs/regex/src/instances.cpp
+// roc-lib: rbxgs-dll roc_espeon_vectorctortailsaf2f5d73f288bd37.cpp

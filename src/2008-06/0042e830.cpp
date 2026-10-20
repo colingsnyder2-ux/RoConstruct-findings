@@ -1,52 +1,5 @@
-// from server: 89% by colin
-//
-
-//
-
-struct Str;
-extern bool (__thiscall* str_empty)(const Str*);
-extern Str* (__thiscall* str_text)(Str*, const char*);
-extern Str* (__thiscall* str_copy)(Str*, const Str*) throw();
-extern void (__thiscall* str_destroy)(Str*) throw();
-
-struct Str {
-    char* data;
-    Str(const char*);
-    Str(const Str&) throw();
-    __declspec(dllimport) ~Str() throw();
-    bool empty() const;
-};
-
-inline Str::Str(const char* text)
-{
-    str_text(this, text);
-}
-
-inline Str::Str(const Str& other) throw()
-{
-    str_copy(this, &other);
-}
-
-inline bool Str::empty() const
-{
-    return str_empty(this);
-}
-
-struct X {
-    Str copy();
-};
-
-struct S {
-    char padding[0xec];
-    Str caption;
-    char padding2[0x6c];
-    X* parent;
-    Str getCaption();
-};
-
-Str S::getCaption()
-{
-    return !caption.empty()
-        ? caption
-        : (parent ? parent->copy() : Str(">Authoring"));
-}
+// from server: 100% by Espeon
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: rbxgs-dll roc_espeon_captionsiblingemptyeb12a16194f96370.cpp
