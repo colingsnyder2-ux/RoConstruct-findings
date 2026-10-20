@@ -1,6 +1,6 @@
-// from server: 96% by intel
+// from server: 100% by intel
 struct GuiTextButton {
-    char pad[0x360];
+    char pad[0x35c];
     int field_360;
     void sub_414da0(const void*);
     void set(int);

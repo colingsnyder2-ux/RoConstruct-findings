@@ -1,8 +1,8 @@
-// from server: 94% by atomic.potato
+// from server: 100% by intel
 struct VGuiObject {
     char pad[0x194];
     int field_194;
-    char pad2[0x1dd - 0x198];
+    char pad2[0x1dc - 0x198];
     unsigned char field_1dd;
     void setFlag(unsigned char value);
 };
