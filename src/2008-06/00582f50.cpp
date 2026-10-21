@@ -1,13 +1,28 @@
-// from server: 42% by colin
-extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
-#pragma intrinsic(_InterlockedExchangeAdd)
+// from server: 77% by EspClaude
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast
+// roc-lib: rbxgs-dll roc_espclaude_72726d850d2443e8.cpp
 
-extern "C" void __cdecl _invalid_parameter_noinfo();
+// Candidate translation unit (score above; library headers required).
+#include <string>
+#include <vector>
+#include <boost/shared_ptr.hpp>
 
-struct Vec3 { float x, y, z; };
-struct Vec6 { float a, b, c, d, e, f; };
+#include <G3D/Vector3.h>
+#include <G3D/Rect2D.h>
 
-struct RefCounted {
+namespace RBX {
+class Name { public: int id; std::string name; const char* c_str() const { return name.c_str(); } };
+class IDataState { public: virtual void setDirty(bool) = 0; };
+class Extents {
+public:
+    G3D::Vector3 low, high;
+    Extents() : low(G3D::Vector3::inf()), high(-G3D::Vector3::inf()) {}
+    void unionWith(const Extents& other);
+};
+class PVInstance {
+public:
     virtual void v0();
     virtual void v1();
     virtual void v2();
@@ -29,159 +44,90 @@ struct RefCounted {
     virtual void v18();
     virtual void v19();
     virtual void v20();
-    virtual Vec6* v21(Vec6* out);
-    volatile long refcount1;
-    volatile long refcount2;
+    virtual Extents getExtents() const;
 };
-
-struct ArrayOfPtrs {
-    RefCounted** begin;
-    RefCounted** end;
+class Selection {
+public:
+    char pad[0x13c];
+    std::vector<PVInstance*> selection;
+    size_t size() const { return selection.size(); }
+    PVInstance* operator[](size_t i) const { return selection[i]; }
 };
-
-struct Obj {
-    char pad0[0x148];
-    RefCounted** arrBegin;
-    RefCounted** arrEnd;
+class Camera {
+public:
+    void setCameraType(int type);
+    void zoomExtents(Extents extents, const G3D::Rect2D& viewPort, int zoomType);
+    bool zoomExtents(const G3D::Rect2D& viewPort);
 };
-
-struct Inner {
-    char pad0[0x288];
-    virtual void* v0();
-    virtual void* v1();
+class ICameraOwner { public: virtual void v0(); virtual Camera* getCamera() const = 0; };
+class Instance { public: virtual ~Instance(); };
+class ServiceProvider { public: void playSound(int id); };
+ServiceProvider* findServiceProvider(Instance* context);
+class InstancePad : public Instance { public: char pad[0x288 - 4]; };
+class Workspace : public InstancePad, public ICameraOwner {
+public:
     char pad2[0x2d4 - 0x28c];
-    Vec6 field2d4;
+    G3D::Rect2D viewPort;
+    virtual Camera* getCamera() const;
 };
+void trackVerb(const char* name, Workspace* workspace);
 
-struct Camera {
-    char pad0[0xc];
-    Inner* inner;
-};
-
-struct Command {
-    char pad0[4];
-    void* field4;
-    Camera* camera;
-    virtual bool isEnabled();
-    virtual void doIt(void* dataState);
-};
-
-extern Vec3* __cdecl func_00510960();
-extern void __cdecl func_0057dee0(Vec6* dst, Vec6* src);
-extern void* __cdecl func_005807b0(void* p);
-extern void* __cdecl func_00581d80(ArrayOfPtrs* arr, int idx);
-extern void __cdecl func_0058c5c0(void* a, void* b);
-extern void* __cdecl func_005bd820(void* p);
-extern void* __cdecl func_005cddd0(void* p);
-extern void* __cdecl func_005ce0d0(void* p, Vec6* v);
-extern void* __cdecl func_005ce400(void* p, Vec6* v);
-
-extern float g_96f044;
-extern float g_96f048;
-extern float g_96f04c;
-extern int g_96f050;
-
-bool Command::isEnabled()
+template<class Class>
+class ServiceClient
 {
-    return true;
+    Instance* context;
+    mutable boost::shared_ptr<Class> service;
+public:
+    ServiceClient(Instance* context) : context(context) {}
+    Class* operator->() { return createService(true); }
+    Class* createService(bool create);
+};
+
+class Verb {
+public:
+    virtual ~Verb();
+    const Name* name;
+};
+class CameraVerb : public Verb {
+public:
+    void* pad;
+    Workspace* workspace;
+};
+class CameraZoomExtentsCommand : public CameraVerb {
+public:
+    void doIt(IDataState* dataState);
+};
+
+void CameraZoomExtentsCommand::doIt(IDataState* dataState)
+{
+    ServiceClient<Selection> selection(workspace);
+    Extents extents;
+
+    if (selection->size() >= 1)
+    {
+        Selection* s = selection.operator->();
+        extents = s->selection[0]->getExtents();
+        size_t i = 1;
+        if (i < s->selection.size())
+            do
+            {
+                extents.unionWith(s->selection[i]->getExtents());
+                ++i;
+            } while (i < s->selection.size());
+
+        workspace->getCamera()->setCameraType(0);
+        workspace->getCamera()->zoomExtents(extents, workspace->viewPort, 0);
+        findServiceProvider(workspace)->playSound(11);
+        dataState->setDirty(true);
+        trackVerb(name->c_str(), workspace);
+        dataState->setDirty(true);
+    }
+    else
+    {
+        G3D::Vector3::zero();
+        workspace->getCamera()->zoomExtents(workspace->viewPort);
+        findServiceProvider(workspace)->playSound(11);
+        dataState->setDirty(true);
+    }
 }
-
-void Command::doIt(void* dataState)
-{
-    Camera* cam = this->camera;
-    Inner* inner = cam->inner;
-
-    Vec3* p1 = func_00510960();
-    Vec3 v1;
-    v1.x = p1->x;
-    v1.y = p1->y;
-    v1.z = p1->z;
-
-    Vec3* p2 = func_00510960();
-    Vec6 box;
-    box.a = -p2->x;
-    box.b = -p2->y;
-    box.c = -p2->z;
-    box.d = v1.x;
-    box.e = v1.y;
-    box.f = v1.z;
-
-    ArrayOfPtrs arr;
-    arr.begin = 0;
-    arr.end = 0;
-
-    ArrayOfPtrs* a = (ArrayOfPtrs*)func_00581d80((ArrayOfPtrs*)&arr, 1);
-    Obj* obj = (Obj*)a;
-    int count = (int)((obj->arrEnd - obj->arrBegin));
-    if (count < 1) {
-        _invalid_parameter_noinfo();
-    }
-
-    ArrayOfPtrs* a2 = (ArrayOfPtrs*)func_00581d80((ArrayOfPtrs*)&arr, 1);
-    Obj* obj2 = (Obj*)a2;
-    int count2 = (int)((obj2->arrEnd - obj2->arrBegin));
-    if (count2 == 0) {
-        _invalid_parameter_noinfo();
-    }
-
-    RefCounted* first = obj2->arrBegin[0];
-    Vec6 tmp;
-    Vec6* r = first->v21(&tmp);
-    box.a = r->a;
-    box.b = r->b;
-    box.c = r->c;
-    box.d = r->d;
-    box.e = r->e;
-    box.f = r->f;
-
-    int total = (int)((obj2->arrEnd - obj2->arrBegin));
-    if (total > 1) {
-        int i = 1;
-        while (i < total) {
-            if (i >= total) {
-                _invalid_parameter_noinfo();
-            }
-            RefCounted* item = obj2->arrBegin[i];
-            Vec6 tmp2;
-            Vec6* r2 = item->v21(&tmp2);
-            func_0057dee0(&box, r2);
-            total = (int)((obj2->arrEnd - obj2->arrBegin));
-            i++;
-        }
-    }
-
-    Inner* inner2 = cam->inner;
-    void* q = inner2->v1();
-    func_005cddd0(q);
-
-    Inner* inner3 = cam->inner;
-    void* q2 = inner3->v1();
-    func_005ce0d0(q2, &box);
-
-    void* sp = func_005807b0(cam);
-    func_005bd820(sp);
-
-    Command* self = this;
-    self->isEnabled();
-
-    void* f4 = this->field4;
-    void* str;
-    if (*(int*)((char*)f4 + 0x1c) < 0x10) {
-        str = (char*)f4 + 8;
-    } else {
-        str = *(void**)((char*)f4 + 8);
-    }
-    func_0058c5c0(str, cam);
-
-    self->isEnabled();
-
-    RefCounted* rc = (RefCounted*)arr.begin;
-    if (rc) {
-        if (_InterlockedExchangeAdd(&rc->refcount1, -1) == 1) {
-            rc->v1();
-            if (_InterlockedExchangeAdd(&rc->refcount2, -1) == 1) {
-                rc->v2();
-            }
-        }
-    }
 }

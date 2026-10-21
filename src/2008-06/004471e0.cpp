@@ -1,7 +1,8 @@
+// from server: 100% by colin
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs roc_unit_1819d05611c25ca5.cpp
+// roc-lib: rbxgs roc_manual_enum_36228d39c1066b69.cpp
 
 // Candidate translation unit (score above; library headers required).
 #pragma include_alias("reflection/enumconverter.h", "../roc_enum_native_owner_header_b9f24b80cd6bff22.cpp")
@@ -255,13 +256,15 @@ addPair(HopperBin::LASER_TOOL,"Laser");
 }
 } }
 namespace RBX { namespace Reflection {
-template<> EnumDesc<CRenderSettings::AASamples>::EnumDesc()
-			:EnumDescriptor("AASamples",typeid(::CRenderSettings::AASamples))
-		{
-			addPair(CRenderSettings::NONE, "None");
-			addPair(CRenderSettings::AA4, "4");
-			addPair(CRenderSettings::AA8, "8");
-		}
+template<> EnumDesc<CRenderSettings::GraphicsMode>::EnumDesc()
+            :EnumDescriptor("GraphicsMode",typeid(::CRenderSettings::GraphicsMode))
+        {
+            addPair(CRenderSettings::AutoGraphicsMode, "Automatic");
+            addPair(CRenderSettings::Direct3D11, "OpenGL stable");
+            addPair(CRenderSettings::Direct3D9, "Direct3D experimental");
+            addPair(CRenderSettings::OpenGL, "OpenGL experimental");
+            addPair(CRenderSettings::NoGraphics, "No Graphics");
+        }
 template<> EnumDesc<CRenderSettings::FrameRateManagerMode>::EnumDesc()
 			:EnumDescriptor("Framerate Manager",typeid(::CRenderSettings::FrameRateManagerMode))
 		{

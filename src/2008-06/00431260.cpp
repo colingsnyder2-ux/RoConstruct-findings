@@ -1,166 +1,160 @@
-// from server: 40% by colin
-extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
-#pragma intrinsic(_InterlockedExchangeAdd)
+// from server: 100% by EspClaude
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
+#include <intrin.h>
 
-struct S_func_0044de00 {
-    char pad0[384];
-    int m_x;
-    int f();
-};
-
-struct Control {
-    virtual void reserved();
-    virtual void dispose();
+class sp_counted_base {
+public:
+    virtual ~sp_counted_base();
+    virtual void dispose() = 0;
     virtual void destroy();
-    volatile long strong;
-    volatile long weak;
-};
-
-struct Shared {
-    Control* ctrl;
-};
-
-struct RefCounted {
-    virtual void reserved();
-    virtual void dispose();
-    virtual void destroy();
-    volatile long strong;
-    volatile long weak;
-};
-
-struct Obj {
-    char pad0[0x1c8];
-};
-
-struct Obj2 {
-    char pad0[0x1f0];
-};
-
-struct S_func_00430e10 {
-    void f(int);
-};
-
-struct S_func_004306c0 {
-    void* f(void*);
-};
-
-struct S_func_005b62a0 {
-    void* f(void*);
-};
-
-struct S_func_00583380 {
-    void* f();
-};
-
-struct S_func_005773c0 {
-    void f();
-};
-
-struct S_func_00411b40 {
-    void f();
-};
-
-struct S_func_00431260 {
-    int f(int, int);
-};
-
-extern S_func_00430e10 g_976fa0;
-extern int g_976fc0;
-
-int S_func_00431260::f(int a, int b) {
-    S_func_0044de00* p = *(S_func_0044de00**)((char*)&a + 0xc);
-    unsigned char c0 = (unsigned char)p->f();
-    unsigned char c1 = (unsigned char)(p->f() >> 8);
-    unsigned char c2 = (unsigned char)(p->f() >> 16);
-    unsigned char color[3];
-    color[0] = c0;
-    color[1] = c1;
-    color[2] = c2;
-    int* r = (int*)S_func_005b62a0().f(color);
-    int v = *r;
-    if (g_976fc0 != v) {
-        g_976fc0 = v;
-        g_976fa0.f(v);
-    }
-    void* q = S_func_004306c0().f(&a);
-    bool bl = (*(int*)q != 0);
-    RefCounted* rc = *(RefCounted**)((char*)&a + 8);
-    if (rc) {
-        if (_InterlockedExchangeAdd(&rc->strong, -1) == 1) {
-            rc->dispose();
-            if (_InterlockedExchangeAdd(&rc->weak, -1) == 1) {
-                rc->destroy();
-            }
+    void add_ref_copy() { _InterlockedIncrement(&use_count_); }
+    void release()
+    {
+        if (_InterlockedDecrement(&use_count_) == 0)
+        {
+            dispose();
+            weak_release();
         }
     }
-    if (!bl) {
-        *(int*)((char*)&a + 0x44) = 1;
-        return 1;
+    void weak_release()
+    {
+        if (_InterlockedDecrement(&weak_count_) == 0)
+            destroy();
     }
-    void* q2 = S_func_004306c0().f(&a);
-    int* src = (int*)q2;
-    int v0 = src[0];
-    int v1 = src[1];
-    *(int*)((char*)&a + 0x40) = 0;
-    *(int*)((char*)&a + 0x48) = (int)&a;
-    *(int*)((char*)&a + 0x4) = v0;
-    *(int*)((char*)&a + 0x8) = v1;
-    if (v1) {
-        _InterlockedExchangeAdd((volatile long*)(v1 + 4), 1);
-    }
-    S_func_00411b40().f();
-    RefCounted* rc2 = *(RefCounted**)((char*)&a + 0x10);
-    *(unsigned char*)((char*)&a + 0x38) = 2;
-    if (rc2) {
-        if (_InterlockedExchangeAdd(&rc2->strong, -1) == 1) {
-            rc2->dispose();
-            if (_InterlockedExchangeAdd(&rc2->weak, -1) == 1) {
-                rc2->destroy();
-            }
+    long use_count_;
+    long weak_count_;
+};
+
+class shared_count {
+public:
+    sp_counted_base* pi_;
+    shared_count(const shared_count& r) : pi_(r.pi_) { if (pi_ != 0) pi_->add_ref_copy(); }
+    ~shared_count() { if (pi_ != 0) pi_->release(); }
+};
+
+template<class T> class shared_ptr {
+public:
+    typedef T* shared_ptr::*unspecified_bool_type;
+    T* px;
+    shared_count pn;
+    template<class Y> shared_ptr(shared_ptr<Y> const& r) : px(r.px), pn(r.pn) {}
+    T* operator->() const { return px; }
+    T* get() const { return px; }
+    operator unspecified_bool_type() const { return px == 0 ? 0 : &shared_ptr::px; }
+};
+
+class String {
+public:
+    __declspec(dllimport) String(const char* s);
+    __declspec(dllimport) String(const String& s);
+    __declspec(dllimport) ~String();
+    char storage[0x1c];
+};
+
+struct NMHDR { void* hwndFrom; unsigned int idFrom; unsigned int code; };
+typedef long LRESULT;
+
+namespace G3D {
+class Color3uint8 {
+public:
+    unsigned char r, g, b;
+};
+}
+
+class ColorPicker {
+public:
+    unsigned long GetColor() const;
+};
+
+struct NMCOLORPICKER {
+    NMHDR hdr;
+    ColorPicker* picker;
+};
+
+namespace RBX {
+class BrickColor {
+public:
+    int number;
+    BrickColor() {}
+    bool operator!=(const BrickColor& other) const { return number != other.number; }
+    static BrickColor closest(G3D::Color3uint8 color);
+};
+
+class ColorSetting {
+public:
+    char pad[0x20];
+    BrickColor color;
+    void raiseChanged(BrickColor value);
+    void setColor(BrickColor value)
+    {
+        if (color != value)
+        {
+            color = value;
+            raiseChanged(value);
         }
     }
-    char buf[0x1c];
-    S_func_00583380* str = (S_func_00583380*)buf;
-    str->f();
-    void* q3 = S_func_004306c0().f(&a);
-    int* o = (int*)q3;
-    Obj* obj = (Obj*)(*o);
-    void* res = S_func_00583380().f();
-    *(unsigned char*)((char*)&a + 0x54) = 3;
-    RefCounted* rc3 = *(RefCounted**)((char*)&a + 0x18);
-    *(unsigned char*)((char*)&a + 0x38) = 2;
-    if (rc3) {
-        if (_InterlockedExchangeAdd(&rc3->strong, -1) == 1) {
-            rc3->dispose();
-            if (_InterlockedExchangeAdd(&rc3->weak, -1) == 1) {
-                rc3->destroy();
-            }
-        }
+};
+extern ColorSetting fillColor;
+
+class IDataState {
+public:
+    virtual void a();
+};
+
+class Verb {
+public:
+    virtual void v0();
+    virtual void v1();
+    virtual void v2();
+    virtual void v3();
+    virtual void doIt(IDataState* dataState);
+};
+
+class VerbContainer {
+public:
+    virtual ~VerbContainer();
+    char vpad[0x24];
+    Verb* getVerb(String name);
+};
+
+class DataModelBase {
+public:
+    virtual ~DataModelBase();
+    char pad[0x1c4];
+};
+
+class DataModel : public DataModelBase, public VerbContainer, public IDataState {
+public:
+    class scoped_lock {
+    public:
+        scoped_lock(shared_ptr<const DataModel> dm);
+        ~scoped_lock();
+        int a, b, c;
+    };
+};
+}
+
+class CDataModelPropGrid {
+public:
+    static shared_ptr<RBX::DataModel> getDataModel() throw();
+    void OnFillColorChanged(NMHDR* pNMHDR, LRESULT* pResult);
+};
+
+void CDataModelPropGrid::OnFillColorChanged(NMHDR* pNMHDR, LRESULT* pResult)
+{
+    ColorPicker* picker = reinterpret_cast<NMCOLORPICKER*>(pNMHDR)->picker;
+    G3D::Color3uint8 color;
+    color.r = (unsigned char)(picker->GetColor());
+    color.g = (unsigned char)(((unsigned short)picker->GetColor()) >> 8);
+    color.b = (unsigned char)(picker->GetColor() >> 16);
+    RBX::fillColor.setColor(RBX::BrickColor::closest(color));
+    if (getDataModel())
+    {
+        RBX::DataModel::scoped_lock lock(getDataModel());
+        RBX::Verb* verb = getDataModel()->getVerb("FillTool");
+        verb->doIt(getDataModel().get());
     }
-    void* q4 = S_func_004306c0().f(&a);
-    int* o2 = (int*)q4;
-    int* obj2 = (int*)(*o2);
-    *(unsigned char*)((char*)&a + 0x38) = 4;
-    int* arg;
-    if (obj2) {
-        arg = (int*)((char*)obj2 + 0x1f0);
-    } else {
-        arg = 0;
-    }
-    void** vt = *(void***)res;
-    void (*fn)(void*, int*) = (void (*)(void*, int*))vt[4];
-    fn(res, arg);
-    RefCounted* rc4 = *(RefCounted**)((char*)&a + 0x20);
-    *(unsigned char*)((char*)&a + 0x38) = 2;
-    if (rc4) {
-        if (_InterlockedExchangeAdd(&rc4->strong, -1) == 1) {
-            rc4->dispose();
-            if (_InterlockedExchangeAdd(&rc4->weak, -1) == 1) {
-                rc4->destroy();
-            }
-        }
-    }
-    S_func_005773c0().f();
-    *(int*)((char*)&a + 0x44) = 1;
-    return 1;
+    *pResult = 1;
 }

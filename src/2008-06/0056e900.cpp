@@ -1,137 +1,102 @@
-// from server: 36% by colin
-extern "C" void* __cdecl sub_6A0920(unsigned int size);
-
-struct Vec3 {
-    float x;
-    float y;
-    float z;
+// from server: 100% by EspClaude
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+namespace G3D { class Vector3 { public: float x, y, z; }; }
+namespace RBX { class Name; }
+extern const RBX::Name& tag_X;
+extern const RBX::Name& tag_Y;
+extern const RBX::Name& tag_Z;
+namespace RBX {
+template<class T> class Sibling {
+public:
+    T* next;
+    Sibling() : next(0) {}
+    T* nextSibling() const { return next; }
 };
-
-struct Vec3Helper {
-    int f();
+template<class T> class Parent {
+public:
+    T* first;
+    T* last;
+    Parent() : first(0), last(0) {}
+    void pushBackChild(T* child)
+    {
+        if (!last)
+            first = child;
+        else
+            last->next = child;
+        last = child;
+    }
 };
-
-struct Node {
-    Node* next;
-    Node* prev;
-    Node* parent;
-    int pad0C;
-    void* type;
-    int pad14;
-    int pad18;
-    int pad1C;
-    int pad20;
-    int pad24;
-};
-
-struct List {
-    int pad0;
-    Node* head;
-    Node* tail;
-};
-
-struct VTable {
-    void* pad0;
-    void* pad4;
-    void* slot8;
-};
-
-struct Obj {
-    int pad0;
-    int pad4;
-    int pad8;
-    int padC;
-    int pad10;
-    int pad14;
-    VTable* vtbl;
-};
-
-struct S {
-    int f(Obj* a, Obj* b);
-};
-
-extern void* g_975334;
-extern void* g_975380;
-extern void* g_975318;
-
-int Vec3Helper::f()
-{
-    return 0;
 }
-
-int S::f(Obj* a, Obj* b)
+class XmlNameValuePair
 {
-    List* list = (List*)a;
-    Node* n1 = (Node*)sub_6A0920(0x28);
-    if (n1) {
-        n1->next = 0;
-        n1->prev = 0;
-        n1->parent = 0;
-        n1->type = g_975334;
-        n1->pad14 = 0;
-        n1->pad20 = 0;
-        n1->pad24 = 0;
+public:
+    enum ValueType { NONE = 0, STRING, CONTENTID, BOOL, INT, UINT, NAME, FLOAT };
+    XmlNameValuePair(const RBX::Name& tag) : tag(tag), valueType(NONE) {}
+    const RBX::Name& tag;
+    mutable ValueType valueType;
+    union {
+        void* stringValue;
+        mutable float floatValue;
+        mutable int intValue;
+        mutable double doubleValue;
+    };
+    void clearValue() const;
+    void setValue(float value)
+    {
+        clearValue();
+        floatValue = value;
+        valueType = FLOAT;
     }
-    if (list->tail)
-        list->tail->next = n1;
-    else
-        list->head = n1;
-    list->tail = n1;
+};
+class XmlAttribute;
+class XmlElement : public RBX::Sibling<XmlElement>, public RBX::Parent<XmlElement>, public XmlNameValuePair
+{
+    RBX::Parent<XmlAttribute> attributes;
+public:
+    XmlElement(const RBX::Name& tag) : XmlNameValuePair(tag) {}
+};
+namespace RBX { namespace Reflection {
+class DescribedBase;
+class PropertyDescriptor {
+public:
+    virtual ~PropertyDescriptor();
+    char pad[0x14];
+};
+template<class PropType>
+class TypedPropertyDescriptor : public PropertyDescriptor
+{
+public:
+    class GetSet {
+    public:
+        virtual ~GetSet();
+        virtual bool isReadOnly() const = 0;
+        virtual PropType getValue(const DescribedBase*) const = 0;
+    };
+    GetSet* getset;
+    PropType getValue(const DescribedBase* object) const { return getset->getValue(object); }
+    virtual void writeValue(const DescribedBase* instance, XmlElement* element) const;
+};
+template<>
+void TypedPropertyDescriptor<G3D::Vector3>::writeValue(const DescribedBase* instance, XmlElement* element) const
+{
+    const Name* xName = &tag_X;
+    XmlElement* xElement = new XmlElement(*xName);
+    element->pushBackChild(xElement);
 
-    Node* n2 = (Node*)sub_6A0920(0x28);
-    if (n2) {
-        n2->next = 0;
-        n2->prev = 0;
-        n2->parent = 0;
-        n2->type = g_975380;
-        n2->pad14 = 0;
-        n2->pad20 = 0;
-        n2->pad24 = 0;
-    }
-    if (list->tail)
-        list->tail->next = n2;
-    else
-        list->head = n2;
-    list->tail = n2;
+    const Name* yName = &tag_Y;
+    XmlElement* yElement = new XmlElement(*yName);
+    element->pushBackChild(yElement);
 
-    Node* n3 = (Node*)sub_6A0920(0x28);
-    if (n3) {
-        n3->next = 0;
-        n3->prev = 0;
-        n3->parent = 0;
-        n3->type = g_975318;
-        n3->pad14 = 0;
-        n3->pad20 = 0;
-        n3->pad24 = 0;
-    }
-    if (list->tail)
-        list->tail->next = n3;
-    else
-        list->head = n3;
-    list->tail = n3;
+    const Name* zName = &tag_Z;
+    XmlElement* zElement = new XmlElement(*zName);
+    element->pushBackChild(zElement);
 
-    VTable* vt = a->vtbl;
-    void* fn = vt->slot8;
-    Vec3 vals;
-    ((void (__thiscall*)(void*, Vec3*, Obj*))fn)(a, &vals, b);
+    G3D::Vector3 value = getValue(instance);
 
-    float v0 = vals.x;
-    Vec3Helper* p1 = (Vec3Helper*)((char*)n1 + 0x10);
-    p1->f();
-    *((float*)((char*)n1 + 0x18)) = v0;
-    *((int*)((char*)n1 + 0x14)) = 7;
-
-    float v1 = vals.y;
-    Vec3Helper* p2 = (Vec3Helper*)((char*)n2 + 0x10);
-    p2->f();
-    *((float*)((char*)n2 + 0x18)) = v1;
-    *((int*)((char*)n2 + 0x14)) = 7;
-
-    float v2 = vals.z;
-    Vec3Helper* p3 = (Vec3Helper*)((char*)n3 + 0x10);
-    p3->f();
-    *((float*)((char*)n3 + 0x18)) = v2;
-    *((int*)((char*)n3 + 0x14)) = 7;
-
-    return 0;
+    xElement->setValue(value.x);
+    yElement->setValue(value.y);
+    zElement->setValue(value.z);
 }
+}}

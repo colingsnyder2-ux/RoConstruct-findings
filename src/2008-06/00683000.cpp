@@ -1,7 +1,6 @@
-// from server: 100% by Espeon
 // roc-lang: cpp
 // roc-cl: 21022
-// roc-flags: /O2 /GS- /EHsc /MD /fp:fast
+// roc-flags: /O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MD /fp:fast
 // roc-lib: ogre-1.4.5 roc_espeon_renderprimitive6529969e3c0e9a10.cpp
 
 // Candidate translation unit (score above; library headers required).

@@ -1,179 +1,126 @@
-// from server: 38% by colin
-struct BitStream;
+// from server: 100% by EspClaude
+// roc 2008-06 004c8150  unit: RBX::Network
+// roc-cl: 21022
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+#include <string>
+#include <vector>
+#include <stdexcept>
 
-struct EnumDescriptor;
+namespace boost {
+template<class T>
+class shared_ptr {
+public:
+    T* px;
+    void* pn;
+    T* operator->() const { return px; }
+    ~shared_ptr();
+};
+}
 
-struct EnumItem
-{
-    int value;
-    char padding0[0x24];
-    unsigned int index;
-    char padding1[0x24];
+namespace G3D {
+class Vector3 { public: float x, y, z; };
+class Matrix3 { public: float elt[3][3]; };
+class Quat {
+public:
+    float x, y, z, w;
+    Quat() : x(0), y(0), z(0), w(1) {}
+    void toRotationMatrix(Matrix3& rot) const;
+};
+}
+
+namespace RakNet {
+class BitStream {
+public:
+    bool ReadNormQuat(float& w, float& x, float& y, float& z);
+};
+}
+RakNet::BitStream& operator>>(RakNet::BitStream& stream, G3D::Vector3& v);
+RakNet::BitStream& operator>>(RakNet::BitStream& stream, unsigned char& v);
+
+namespace RBX {
+enum MessageType { MESSAGE_OUTPUT, MESSAGE_INFO, MESSAGE_WARNING, MESSAGE_ERROR };
+class StandardOut {
+public:
+    static boost::shared_ptr<StandardOut> singleton();
+    void print(MessageType type, const char* format, ...);
+};
+class Instance {
+public:
+    bool isAncestorOf(const Instance* descendant) const;
+};
+class PVInstance;
+namespace Network {
+class NetworkSettings {
+public:
+    char pad[0x130];
+    bool printPhysicsErrors;
+    static NetworkSettings* singleton();
+};
+float decodeAngle(unsigned char value);
+
+class PhysicsReceiver {
+public:
+    struct Item {
+        unsigned int time;
+        G3D::Matrix3 rotation;
+        G3D::Vector3 position;
+        std::vector<float> motorAngles;
+    };
+    struct Owner { char pad[0x104]; Instance* character; };
+    Owner* owner;
+    char pad[0xc];
+    double averageInterval;
+    int index;
+    int count;
+    Item items[8];
+
+    void readItem(RakNet::BitStream* stream, unsigned int time, Instance* part);
 };
 
-struct Instance
+void PhysicsReceiver::readItem(RakNet::BitStream* stream, unsigned int time, Instance* part)
 {
-    char padding0[0x104];
-    Instance* parent;
-    bool isDescendantOf(Instance* node);
-};
+    index = (index + 9) % 8;
+    if (count < 8)
+        count++;
 
-struct MotorAngles
-{
-    float* begin;
-    float* end;
-    float* capacity;
-};
+    Item& item = items[index];
+    item.time = time;
 
-struct PhysicsItem
-{
-    char padding0[0x10];
-    MotorAngles motorAngles;
-};
+    *stream >> item.position;
 
-struct S
-{
-    Instance* instance;
-    char padding0[0x8];
-    double accumulated;
-    unsigned int head;
-    unsigned int count;
-    EnumItem items[8];
+    G3D::Quat q;
+    if (!stream->ReadNormQuat(q.w, q.x, q.y, q.z))
+        throw std::runtime_error("Failed to read Quaternion");
+    q.toRotationMatrix(item.rotation);
 
-    void readMotorAngles(BitStream& bitStream, PhysicsItem& item, unsigned char compactNum);
-};
+    unsigned char numMotors;
+    *stream >> numMotors;
+    if (numMotors > 50 && NetworkSettings::singleton()->printPhysicsErrors)
+        StandardOut::singleton()->print(MESSAGE_WARNING, "Physics-in has %d motors", numMotors);
 
-extern "C" void __stdcall sub_4ca5c0(const char* name, void* dest);
-extern "C" bool __stdcall sub_4a5f20(void* self, float* a, float* b, float* c, float* d);
-extern "C" void __stdcall sub_409d50(void* self, const char* str);
-extern "C" void __stdcall sub_6a158c(void* self, const char* str);
-extern "C" void __stdcall sub_5dd6d0(void* self, void* dest);
-extern "C" void __stdcall sub_4a6380(void* self, void* dest, unsigned char* out);
-extern "C" void* __cdecl sub_49e890();
-extern "C" void __stdcall sub_569620(void* self);
-extern "C" void __stdcall sub_5693a0(void* self, int a, const char* fmt, unsigned char b);
-extern "C" void __stdcall sub_600660(void* self);
-extern "C" void __stdcall sub_4c7d20(void* self, unsigned char count, float zero);
-extern "C" float __stdcall sub_5dda30(void* self);
-extern "C" void __cdecl sub_802890();
-
-void S::readMotorAngles(BitStream& bitStream, PhysicsItem& item, unsigned char compactNum)
-{
-    unsigned int idx = (this->head + 9) & 0x80000007;
-    if ((int)idx < 0)
+    int n = numMotors;
+    item.motorAngles.resize(n, 0.0f);
+    for (int i = 0; i < n; i++)
     {
-        idx = (idx - 1) | 0xfffffff8;
-        idx = idx + 1;
-    }
-    unsigned int cnt = this->count;
-    if ((int)cnt < 8)
-    {
-        cnt = cnt + 1;
-        this->count = cnt;
-    }
-    this->head = idx;
-
-    EnumItem* slot = &this->items[idx];
-    slot->value = (int)(unsigned int)compactNum;
-
-    sub_4ca5c0((const char*)slot, (char*)slot + 0x28);
-
-    float f0 = 0.0f;
-    float f1 = 0.0f;
-    float f2 = 0.0f;
-    float f3 = 1.0f;
-
-    if (!sub_4a5f20(&bitStream, &f0, &f1, &f2, &f3))
-    {
-        void* str = 0;
-        sub_409d50(&str, "Failed to read Quaternion");
-        sub_6a158c(&str, "Failed to read Quaternion");
+        unsigned char value;
+        *stream >> value;
+        float angle = decodeAngle(value);
+        item.motorAngles[i] = angle;
     }
 
-    sub_5dd6d0((char*)slot + 4, (char*)slot + 4);
-
-    unsigned char out;
-    sub_4a6380(&bitStream, &out, &out);
-
-    if (out > 0x32)
+    if (part && owner && (part == owner->character || (owner->character && owner->character->isAncestorOf(part))))
     {
-        void* settings = sub_49e890();
-        if (*(unsigned char*)((char*)settings + 0x130) != 0)
-        {
-            void* stream = 0;
-            sub_569620(&stream);
-            unsigned char v = out;
-            void* p = *(void**)&stream;
-            sub_5693a0(p, 2, "Physics-in has %d motors", v);
-            sub_600660(&stream);
-        }
+        averageInterval = 0.0;
     }
-
-    sub_4c7d20((char*)slot + 0x34, out, 0.0f);
-
-    int n = (int)out;
-    for (int i = 0; i < n; ++i)
+    else if (count >= 2)
     {
-        unsigned char dummy;
-        sub_4a6380(&bitStream, &dummy, &dummy);
-        float val = sub_5dda30(&dummy);
-        float* b = item.motorAngles.begin;
-        float* e = item.motorAngles.end;
-        unsigned int sz = (unsigned int)(e - b);
-        if ((unsigned int)i >= sz)
-        {
-            sub_802890();
-        }
-        item.motorAngles.begin[i] = val;
+        const Item& previous = items[(index + 7) % 8];
+        double interval = (unsigned int)(item.time - previous.time);
+        if (interval > averageInterval)
+            averageInterval = averageInterval * 0.2 + interval * 0.8;
+        else
+            averageInterval = averageInterval * 0.8 + interval * 0.2;
     }
-
-    if (compactNum != 0)
-    {
-        Instance* inst = this->instance;
-        if (inst != 0)
-        {
-            Instance* p = *(Instance**)((char*)inst + 0x104);
-            if (compactNum == (unsigned char)(unsigned int)p)
-            {
-                this->accumulated = 0.0;
-                return;
-            }
-            if (p != 0)
-            {
-                if (inst->isDescendantOf(p))
-                {
-                    this->accumulated = 0.0;
-                    return;
-                }
-            }
-        }
-    }
-
-    if ((int)this->count < 2)
-        return;
-
-    unsigned int prev = (this->head + 7) & 0x80000007;
-    if ((int)prev < 0)
-    {
-        prev = (prev - 1) | 0xfffffff8;
-        prev = prev + 1;
-    }
-    EnumItem* prevSlot = &this->items[prev];
-    int diff = slot->value - prevSlot->value;
-    double d = (double)diff;
-    if (diff < 0)
-        d += 4294967296.0;
-
-    double w = this->accumulated;
-    if (d > w)
-    {
-        d = d * 0.5;
-        w = w * 0.5;
-    }
-    else
-    {
-        d = d * 0.5;
-        w = w * 0.5;
-    }
-    this->accumulated = d + w;
+}
+}
 }

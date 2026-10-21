@@ -1,8 +1,9 @@
+// from server: 100% by EspClaude
 // from server: 84% by EspClaude
 // roc-lang: cpp
-// roc-cl: 50727
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs roc_espclaude_906efc8dc9a4be16.cpp
+// roc-cl: 21022
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast
+// roc-lib: rbxgs roc_espclaude_34ee53b85132d5c0.cpp
 
 // Candidate translation unit (score above; library headers required).
 #define _DLL
@@ -409,7 +410,7 @@ namespace RBX
 
 namespace RBX
 {
-	struct BodyExe : public Body { char exePad[0xc]; };
+	struct BodyExe : public Body { BodyExe(); char exePad[0xc]; };
 
 	#pragma warning (push)
 	#pragma warning (disable : 4355)
@@ -446,3 +447,4 @@ namespace RBX
 	}
 	#pragma warning (pop)
 }
+

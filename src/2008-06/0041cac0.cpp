@@ -1,50 +1,36 @@
-// from server: 55% by king_originala
-struct Service;
+// from server: 81% by colin
+// from server: 56% by colin
+// roc-cl: 21022
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+// roc-lang: cpp
+// roc-lib: rbxgs-dll roc_espclaude_cb4ac364beeaaffd.cpp
 
-struct Pair
-{
-    unsigned int data[2];
-    Pair(const Pair&);
-    ~Pair();
+// Candidate translation unit (score above; library headers required).
+#include <boost/function.hpp>
+#include <boost/bind.hpp>
+#include <boost/shared_ptr.hpp>
+
+template<class Class>
+boost::shared_ptr<Class> shared_from(Class* r);
+
+struct lua_State;
+class Service {
+public:
+    void setCallback(boost::function0<void> f);
+};
+extern Service* theService;
+
+class BinderBase0 { public: virtual ~BinderBase0(); };
+class BinderBase1 { public: virtual ~BinderBase1(); };
+class Binder : public BinderBase0, public BinderBase1 {
+public:
+    static bool enabled;
+    void onBind();
+    void bind();
 };
 
-struct Bound
+void Binder::bind()
 {
-    unsigned int data[6];
-    Bound(const Bound&);
-    ~Bound();
-};
-
-struct Wrapper
-{
-    unsigned int data[8];
-    Wrapper(const Wrapper&);
-    Wrapper(Bound value, int tag);
-    ~Wrapper();
-};
-
-inline Pair::~Pair() {}
-inline Bound::~Bound() {}
-inline Wrapper::~Wrapper() {}
-
-struct Receiver
-{
-    void submit(Wrapper value);
-};
-
-extern Receiver* receiver;
-
-void __cdecl callback();
-Pair __cdecl acquire(Service* object);
-Bound __cdecl bind(void (__cdecl* function)(), int tag, Pair object,
-                   int first, int second);
-
-struct Service
-{
-    void invoke(int first, int second);
-};
-
-void Service::invoke(int first, int second)
-{
-    receiver->submit(Wrapper(bind(callback, 0, acquire(this), first, second), 0));
+    if (enabled)
+        theService->setCallback(boost::bind(&Binder::onBind, shared_from(this)));
 }

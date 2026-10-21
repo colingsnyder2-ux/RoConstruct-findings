@@ -1,131 +1,95 @@
-// from server: 41% by colin
-//
+// from server: 100% by colin
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+// roc-lib: rbxgs-dll roc_espclaude_1d61d29842ff4973.cpp
 
-//
+// Candidate translation unit (score above; library headers required).
+#include <RenderLib/Mesh.h>
+#include <util/NormalId.h>
 
-#pragma float_control(precise, off)
-
-extern "C" void __cdecl free_node(void*);
-extern "C" void __cdecl aligned_free(void*);
-extern "C" void __stdcall destroy_value(void*);
-extern "C" void __stdcall destroy_array(
-    void*, unsigned int, int, void (__stdcall *)(void*));
-
-extern "C" long __stdcall InterlockedIncrement(long*);
-extern "C" long __stdcall InterlockedDecrement(long*);
-
-void* __cdecl operator new(unsigned int);
-void __cdecl operator delete(void*);
-
-struct Vector3 {
-    float x, y, z;
-    unsigned int hashCode() const;
-};
-
-struct Node {
-    unsigned int hash;
-    Vector3 key;
-    void* value;
-    Node* next;
-};
-
-struct Block {
-    unsigned char padding[8];
-    Node** buckets;
-    unsigned int capacity;
-    unsigned char padding2[0x48];
-    int count;
-};
-
-struct Texture {
-    unsigned char padding[8];
-    Block* block;
-    void __cdecl insert(unsigned int, const void*);
-};
-
-struct Guard {
-    void* vtable;
-    void* prev;
-    int state;
-    Guard();
-    ~Guard();
-};
-
-struct HashEntry {
-    unsigned int a;
-    unsigned int b;
-    unsigned char padding[0x10];
-    HashEntry* next;
-};
-
-struct HashTable {
-    unsigned char padding[8];
-    HashEntry** buckets;
-    unsigned int capacity;
-    unsigned char padding2[0x4c];
-    int count;
-    void* find(unsigned int);
-    void insert(unsigned int, const void*);
-};
-
-struct Value {
-    void* ptr;
-    Value();
-    __declspec(dllimport) ~Value() throw();
-};
-
-struct Holder {
-    void* ptr;
-    void* get();
-};
-
-struct RefCounted {
-    void* vtable;
-    void* refptr;
-    void release();
-};
-
-extern "C" void __cdecl destroy_value_cdecl(void*);
-
-void Texture::insert(unsigned int key, const void* value)
+namespace RBX { namespace View {
+class RenderSurfaceTypes
 {
-    Guard guard;
-    HashTable* table = (HashTable*)this->block;
+public:
+    size_t data;
+    RenderSurfaceTypes() : data(0) {}
+    unsigned int hashCode() const { return data; }
+    bool operator==(const RenderSurfaceTypes& other) const { return data == other.data; }
+};
+}}
+inline unsigned int hashCode(const RBX::View::RenderSurfaceTypes& t) { return t.hashCode(); }
 
-    HashEntry* entry = (HashEntry*)table->find(key);
-    if (!entry) {
-        Value v;
-        table->insert(key, value);
-        entry = (HashEntry*)table->find(key);
-    }
+#include <G3D/Table.h>
+#include <boost/thread/recursive_mutex.hpp>
+#include <boost/thread/once.hpp>
+#include <map>
 
-    if (!((Holder*)&entry->a)->get()) {
-        void* p = operator new(4);
-        ((Holder*)&entry->a)->ptr = p;
-    }
+void flushUnusedMeshCache();
 
-    void* slot = ((Holder*)&entry->a)->get();
-    if (!slot) {
-        Node* node = (Node*)operator new(0x8c);
-        if (node) {
-            node->hash = key;
-            node->key.x = 0;
-            node->key.y = 0;
-            node->key.z = 0;
-            node->value = 0;
-            node->next = 0;
+namespace RBX {
+namespace View {
+
+class WedgeMesh : public Render::Mesh
+{
+public:
+    WedgeMesh(const G3D::Vector3& size, RenderSurfaceTypes surfaceTypes);
+    char pad[0x8c - sizeof(Render::Mesh)];
+};
+
+template<class Mesh, size_t numMeshes>
+class MeshFactory
+{
+public:
+    struct Variations
+    {
+        G3D::ReferenceCountedPointer<Render::Mesh> meshes[numMeshes];
+    };
+    struct Cache
+    {
+        G3D::Table<RenderSurfaceTypes, G3D::Table<G3D::Vector3, Variations> > cache1;
+        boost::recursive_mutex mutex;
+        std::map<int, int> decalCache;
+        std::map<int, int> textureCache;
+        int count;
+    };
+    static Cache* cache;
+    static boost::once_flag cacheOnce;
+    static void initCache();
+    static Mesh* create(const G3D::Vector3& size, RenderSurfaceTypes surfaceTypes);
+};
+
+template<class Mesh, size_t numMeshes>
+Mesh* MeshFactory<Mesh, numMeshes>::create(const G3D::Vector3& size, RenderSurfaceTypes surfaceTypes)
+{
+    boost::call_once(initCache, cacheOnce);
+    Cache* c = cache;
+    boost::recursive_mutex::scoped_lock lock(c->mutex);
+
+    if (!c->cache1.containsKey(surfaceTypes))
+        c->cache1.set(surfaceTypes, G3D::Table<G3D::Vector3, Variations>());
+
+    G3D::Table<G3D::Vector3, Variations>& sizeCache = c->cache1.get(surfaceTypes);
+
+    if (!sizeCache.containsKey(size))
+        sizeCache.set(size, Variations());
+
+    Variations& variation = sizeCache.get(size);
+
+    Mesh* mesh = static_cast<Mesh*>(variation.meshes[0].getPointer());
+    if (!mesh)
+    {
+        mesh = new Mesh(size, surfaceTypes);
+        variation.meshes[0] = mesh;
+        if (++c->count % 100 == 0)
+        {
+            G3D::ReferenceCountedPointer<Render::Mesh> keep = variation.meshes[0];
+            flushUnusedMeshCache();
         }
-        ((Holder*)&entry->a)->ptr = node;
-        InterlockedIncrement((long*)&table->count);
-        if (table->count % 100 == 0) {
-            RefCounted* r = (RefCounted*)entry->next;
-            if (r) {
-                InterlockedDecrement((long*)&r->refptr);
-                if (!InterlockedDecrement((long*)&r->refptr)) {
-                    r->release();
-                    (*(void (__thiscall**)(RefCounted*, int))r->vtable)(r, 1);
-                }
-            }
-        }
     }
+    return mesh;
+}
+
+template class MeshFactory<WedgeMesh, 1>;
+}
 }

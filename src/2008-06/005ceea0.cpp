@@ -1,8 +1,9 @@
+// from server: 96% by colin
 // from server: 93% by Espeon
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD /fp:fast
-// roc-lib: openrbx-client-dll roc_espeon_rectaligncenter_440a25e0fa6606ca.cpp
+// roc-lib: openrbx-client-dll roc_manual_rect_231a728845bf9969.cpp
 
 // Candidate translation unit (score above; library headers required).
 #include <G3D/Vector2.h>
@@ -50,7 +51,7 @@ typedef G3D::Vector2 Vec2;
 
 struct S
 {
-    float x0, y0, x1, y1;
+    float x0, y0; volatile float x1; float y1;
     Vec2 f(int horizontal, int vertical);
 };
 

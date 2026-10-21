@@ -1,78 +1,113 @@
-// from server: 41% by colin
-extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
-#pragma intrinsic(_InterlockedExchangeAdd)
+// from server: 100% by EspClaude
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
+#include <intrin.h>
 
-struct Vec3 {
+class sp_counted_base {
+public:
+    virtual ~sp_counted_base();
+    virtual void dispose() = 0;
+    virtual void destroy();
+    void add_ref_copy() { _InterlockedIncrement(&use_count_); }
+    void release()
+    {
+        if (_InterlockedDecrement(&use_count_) == 0)
+        {
+            dispose();
+            weak_release();
+        }
+    }
+    void weak_release()
+    {
+        if (_InterlockedDecrement(&weak_count_) == 0)
+            destroy();
+    }
+    long use_count_;
+    long weak_count_;
+};
+
+class shared_count {
+public:
+    sp_counted_base* pi_;
+    shared_count(const shared_count& r) : pi_(r.pi_) { if (pi_ != 0) pi_->add_ref_copy(); }
+    ~shared_count() { if (pi_ != 0) pi_->release(); }
+};
+
+template<class T> class shared_ptr {
+public:
+    typedef T* shared_ptr::*unspecified_bool_type;
+    T* px;
+    shared_count pn;
+    T* operator->() const { return px; }
+    T* get() const { return px; }
+    operator unspecified_bool_type() const { return px == 0 ? 0 : &shared_ptr::px; }
+};
+
+template<class T> class weak_ptr {
+public:
+    T* px;
+    sp_counted_base* pn;
+    shared_ptr<T> lock() const;
+};
+
+namespace G3D {
+class Vector3 {
+public:
     float x, y, z;
+    Vector3() {}
+    Vector3(float _x, float _y, float _z) : x(_x), y(_y), z(_z) {}
+    Vector3(const Vector3& v) : x(v.x), y(v.y), z(v.z) {}
+    Vector3& operator=(const Vector3& v) { x = v.x; y = v.y; z = v.z; return *this; }
+};
+class Matrix3 { public: float elt[3][3]; };
+class CoordinateFrame {
+public:
+    Matrix3 rotation;
+    Vector3 translation;
+    Vector3 pointToObjectSpace(const Vector3& v) const;
+};
+}
+
+namespace RBX {
+class IFirst {
+public:
+    virtual void first();
+};
+class ICoordinateFrame {
+public:
+    virtual G3D::CoordinateFrame getCoordinateFrame() const = 0;
+};
+class InstanceBase {
+public:
+    virtual ~InstanceBase();
+    char pad[0x130];
+};
+class PartInstance : public InstanceBase, public virtual IFirst, public virtual ICoordinateFrame {
 };
 
-struct Mat34 {
-    float m[12];
+class Joint {
+public:
+    char pad[0x18];
+    weak_ptr<PartInstance> part0;
+    char pad2[0x5c - 0x20];
+    weak_ptr<PartInstance> part1;
+    G3D::Vector3 getOffset() const;
 };
 
-extern void G1_func_005cab00(void* out, void* self);
-extern void G1_func_00501ca0(void* out, void* a, void* b);
-
-struct VControllerService {
-    char pad0[0x18];
-    char field18[0x44];
-    char field5c[0x44];
-    void getPosition(Vec3* out);
-};
-
-void VControllerService::getPosition(Vec3* out)
+G3D::Vector3 Joint::getOffset() const
 {
-    void* p1 = 0;
-    void* p2 = 0;
-    out->x = 0.0f;
-    out->y = 0.0f;
-    out->z = 0.0f;
-
-    G1_func_005cab00(&p1, &this->field18);
-    G1_func_005cab00(&p2, &this->field5c);
-
-    if (p1 != 0 && p2 != 0) {
-        Mat34 m1;
-        Mat34 m2;
-        void** vtbl1 = *(void***)((char*)p1 + 0x134);
-        void* fn1 = vtbl1[2];
-        ((void (__thiscall*)(void*, void*))fn1)((char*)p1 + 0x134, &m1);
-
-        void** vtbl2 = *(void***)((char*)p2 + 0x134);
-        void* fn2 = vtbl2[2];
-        ((void (__thiscall*)(void*, void*))fn2)((char*)p2 + 0x134, &m2);
-
-        Vec3 pos;
-        pos.x = *(float*)((char*)&m2 + 0x24);
-        pos.y = *(float*)((char*)&m2 + 0x28);
-        pos.z = *(float*)((char*)&m2 + 0x2c);
-
-        Vec3 result;
-        G1_func_00501ca0(&result, &m1, &pos);
-        out->x = result.x;
-        out->y = result.y;
-        out->z = result.z;
+    G3D::Vector3 result(0.0f, 0.0f, 0.0f);
+    shared_ptr<PartInstance> p0 = part0.lock();
+    shared_ptr<PartInstance> p1 = part1.lock();
+    if (p0 && p1)
+    {
+        PartInstance* a = p0.get();
+        PartInstance* b = p1.get();
+        G3D::CoordinateFrame c0 = a->getCoordinateFrame();
+        G3D::Vector3 pos = b->getCoordinateFrame().translation;
+        result = c0.pointToObjectSpace(pos);
     }
-
-    if (p2 != 0) {
-        if (_InterlockedExchangeAdd((volatile long*)((char*)p2 + 4), -1) == 1) {
-            void** vtbl = *(void***)p2;
-            ((void (__thiscall*)(void*))vtbl[1])(p2);
-            if (_InterlockedExchangeAdd((volatile long*)((char*)p2 + 8), -1) == 1) {
-                void** vtbl2 = *(void***)p2;
-                ((void (__thiscall*)(void*))vtbl2[2])(p2);
-            }
-        }
-    }
-
-    if (p1 != 0) {
-        if (_InterlockedExchangeAdd((volatile long*)((char*)p1 + 4), -1) == 1) {
-            void** vtbl = *(void***)p1;
-            ((void (__thiscall*)(void*))vtbl[1])(p1);
-            if (_InterlockedExchangeAdd((volatile long*)((char*)p1 + 8), -1) == 1) {
-                void** vtbl2 = *(void***)p1;
-                ((void (__thiscall*)(void*))vtbl2[2])(p1);
-            }
-        }
-    }
+    return result;
+}
 }

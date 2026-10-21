@@ -1,95 +1,105 @@
-// from server: 39% by colin
-struct S {
-    char pad[0x1c];
-    float f1c;
-    char pad2[0xbc - 0x20];
-    int m_bc;
-    char pad3[0xcc - 0xc0];
-    int m_cc;
-    char pad4[0xd4 - 0xd0];
-    int m_d4;
-    int m_d8;
-    void f();
+// from server: 95% by EspClaude
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast
+// roc-lib: rbxgs-dll roc_espclaude_4995aa312e880a55.cpp
+
+// Candidate translation unit (score above; library headers required).
+#include <G3D/Vector3.h>
+#include <G3D/ReferenceCount.h>
+#include <G3D/g3dmath.h>
+#include "RenderLib/Mesh.h"
+#include <math.h>
+
+namespace RBX {
+namespace ViewNew {
+
+typedef RBX::Render::Mesh Mesh;
+
+class SurfaceTypes {
+public:
+    unsigned int data;
 };
 
-extern "C" int __cdecl func_00598cd0(int);
-extern "C" int __cdecl func_00598fa0(int, int);
-extern "C" int __cdecl func_004ef2b0(int, int, int);
-extern "C" int __cdecl func_004edeb0(int, int, int);
-extern "C" int __cdecl func_004eedb0(int, int, int);
-extern "C" int __cdecl func_004ee3b0(int, int, int);
-extern "C" int __cdecl func_004ef7b0(int, int, int);
-extern "C" int __cdecl func_004ee8b0(int, int, int);
-extern "C" int __cdecl func_004dc4e0(int, int);
+Mesh* createHead(const G3D::Vector3& size, SurfaceTypes surfaces, const void* extra);
+Mesh* createTorso(const G3D::Vector3& size, SurfaceTypes surfaces, const void* extra);
+Mesh* createWedge(const G3D::Vector3& size, SurfaceTypes surfaces, const void* extra);
+Mesh* createBall(const G3D::Vector3& size, SurfaceTypes surfaces, const void* extra);
+Mesh* createCylinder(const G3D::Vector3& size, SurfaceTypes surfaces, const void* extra);
+Mesh* createBrick(const G3D::Vector3& size, SurfaceTypes surfaces, const void* extra);
 
-extern float g_819bac;
-extern double g_826fd0;
+class PartInstance {
+public:
+    char pad[0x1dc];
+    int shape;
+    const G3D::Vector3& getPartSizeUi() const;
+};
 
-void S::f()
+class SpecialShape {
+public:
+    char pad[0x130];
+    int meshType;
+    G3D::Vector3 scale;
+};
+
+class Appearance {
+public:
+    char pad[0x140];
+    SurfaceTypes surfaces;
+    SurfaceTypes getSurfaces() const { return surfaces; }
+    char pad2[0x16c - 0x144];
+    int extra;
+};
+
+class PartView {
+public:
+    char pad[0x1c];
+    float radius;
+    char pad2[0xbc - 0x20];
+    PartInstance* part;
+    char pad3[0xcc - 0xc0];
+    G3D::ReferenceCountedPointer<Mesh> mesh;
+    char pad4[0xd4 - 0xd0];
+    SpecialShape* specialShape;
+    Appearance* appearance;
+    void updateMesh();
+};
+
+void PartView::updateMesh()
 {
-    float a, b, c;
-    if (m_bc == 0)
+    if (!part)
         return;
-    int p = func_00598cd0(m_bc);
-    a = *(float*)(p);
-    b = *(float*)(p + 4);
-    c = *(float*)(p + 8);
-    int d = m_d4;
-    if (d != 0) {
-        a = a * *(float*)(d + 0x134);
-        b = b * *(float*)(d + 0x138);
-        c = c * *(float*)(d + 0x13c);
-    }
-    if (d == 0) {
-        int t = *(int*)(m_bc + 0x1dc);
-        int e = m_d8;
-        if (t == 0) {
-            int r = func_004eedb0(*(int*)(e + 0x140), e + 0x16c, (int)&a);
-            func_00598fa0(m_cc, r);
-        } else if (t == 1) {
-            int r = func_004edeb0(*(int*)(e + 0x140), e + 0x16c, (int)&a);
-            func_00598fa0(m_cc, r);
-        } else if (t == 2) {
-            int r = func_004ef2b0(*(int*)(e + 0x140), e + 0x16c, (int)&a);
-            func_00598fa0(m_cc, r);
-        }
-    } else {
-        int t = *(int*)(d + 0x130);
-        if (t <= 6) {
-            int e = m_d8;
-            int r;
-            switch (t) {
-            case 0:
-                r = func_004ee3b0(*(int*)(e + 0x140), e + 0x16c, (int)&a);
-                break;
-            case 1:
-                r = func_004ef7b0(*(int*)(e + 0x140), e + 0x16c, (int)&a);
-                break;
-            case 2:
-                r = func_004ee8b0(*(int*)(e + 0x140), e + 0x16c, (int)&a);
-                break;
-            case 3:
-                r = func_004eedb0(*(int*)(e + 0x140), e + 0x16c, (int)&a);
-                break;
-            case 4:
-                r = func_004ef2b0(*(int*)(e + 0x140), e + 0x16c, (int)&a);
-                break;
-            case 5:
-                r = func_004edeb0(*(int*)(e + 0x140), e + 0x16c, (int)&a);
-                break;
-            default:
-                r = 0;
-                break;
-            }
-            func_004dc4e0(m_cc, r);
+    G3D::Vector3 size = part->getPartSizeUi();
+    if (specialShape)
+        size *= specialShape->scale;
+    if (!specialShape)
+    {
+        switch (part->shape)
+        {
+        case 0: mesh = createBall(size, appearance->getSurfaces(), &appearance->extra); break;
+        case 1: mesh = createBrick(size, appearance->getSurfaces(), &appearance->extra); break;
+        case 2: mesh = createCylinder(size, appearance->getSurfaces(), &appearance->extra); break;
         }
     }
-    float sq = (float)g_826fd0;
-    float fa = a < 0 ? -a : a;
-    float fb = b < 0 ? -b : b;
-    float fc = c < 0 ? -c : c;
-    float m = fa;
-    if (fb > m) m = fb;
-    if (fc > m) m = fc;
-    f1c = m * sq * g_819bac;
+    else
+    {
+        switch (specialShape->meshType)
+        {
+        case 0: mesh = createHead(size, appearance->getSurfaces(), &appearance->extra); break;
+        case 1: mesh = createTorso(size, appearance->getSurfaces(), &appearance->extra); break;
+        case 2: mesh = createWedge(size, appearance->getSurfaces(), &appearance->extra); break;
+        case 3: mesh = createBall(size, appearance->getSurfaces(), &appearance->extra); break;
+        case 4: mesh = createCylinder(size, appearance->getSurfaces(), &appearance->extra); break;
+        case 6: mesh = createBrick(size, appearance->getSurfaces(), &appearance->extra); break;
+        }
+    }
+    float ax = fabs(size.x);
+    float ay = fabs(size.y);
+    float az = fabs(size.z);
+    float m = ax > ay ? ax : ay;
+    m = m > az ? m : az;
+    radius = (float)sqrt(2.0) * m * 0.5f;
+}
+
+}
 }

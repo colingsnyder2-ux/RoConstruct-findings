@@ -1,11 +1,13 @@
+// from server: 100% by EspClaude
 // from server: 95% by Espeon
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: openrbx-client-dll roc_espeon_markerreload_a04750112ff6941c.cpp
+// roc-lib: openrbx-client-dll roc_espclaude_75b06e686af54303.cpp
 
 // Candidate translation unit (score above; library headers required).
 #include <intrin.h>
+#include <deque>
 #include <boost/shared_ptr.hpp>
 
 struct Log {
@@ -28,20 +30,7 @@ struct Address {
     const char* text(int);
 };
 
-struct Iterator {
-    void* owner;
-    unsigned int position;
-    void** value();
-};
-
-struct Queue {
-    void* owner;
-    char padding[0x14];
-    unsigned int position;
-    unsigned int size;
-    void advance();
-};
-
+struct Item;
 struct Signal {
     void notify(void**);
 };
@@ -59,7 +48,7 @@ extern Registry registry;
 
 struct S {
     char padding[0x2cdc];
-    Queue queue;
+    std::deque<boost::shared_ptr<Item> > queue;
     char gap[0x58];
     Address address;
     void f(void*);
@@ -73,18 +62,9 @@ void S::f(void* argument)
     if (settings()->logging)
         logger()->report(1, markerFormat, marker, address.text(1));
 
-    Queue* q = &queue;
-    unsigned int position = q->position;
-    if (position > position + q->size)
-        _invalid_parameter_noinfo();
-
-    Iterator iterator;
-    iterator.owner = q->owner;
-    iterator.position = position;
-
-    Entry* entry = registry.find(*iterator.value());
+    Entry* entry = registry.find(queue.front().get());
     if (entry)
         entry->signal.notify(&argument);
 
-    q->advance();
+    queue.pop_front();
 }

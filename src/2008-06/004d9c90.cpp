@@ -1,9 +1,9 @@
-// from server: 90% by EspClaude
+// from server: 100% by EspClaude
 // from server: 62% by colin
 // roc-lang: cpp
 // roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs-view roc_espclaude_ac35ddf63c5b2f43.cpp
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast
+// roc-lib: rbxgs-view roc_espclaude_5ad92cb9b0b5593a.cpp
 
 // Candidate translation unit (score above; library headers required).
 #include <boost/shared_ptr.hpp>
@@ -47,7 +47,7 @@ public:
 	G3D::Color4 clearColor;
 	G3D::Color4 clearColor2;
 	const G3D::LightingParameters& getSkyParameters() const { return skyParameters; }
-	const G3D::Color4& getClearColor() const { return clearColor; }
+	G3D::Color4 getClearColor() const { return clearColor; }
 	G3D::Color4 getClearColor2() const { return clearColor2; }
 	G3D::Color3 getAmbientTop() const { return ambientTop; }
 	G3D::Color3 getAmbientBottom() const { return ambientBottom; }

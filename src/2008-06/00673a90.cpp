@@ -1,215 +1,173 @@
-// from server: 23% by colin
-struct Mesh;
-struct String;
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MD /fp:fast
+// roc-lib: rbxgs-dll roc_adorn_owner_native_particle_localb0ade42fadd1538d.cpp
 
-extern void (__thiscall *destroyMesh)(Mesh *);
-extern void (__thiscall *destroyString)(String *);
-
-struct Mesh {
-    char data[28];
-    ~Mesh();
+// Candidate translation unit (score above; library headers required).
+// Native324B allocation0045b425, ctor674210, dtor673a90.
+#undef OGRE_NONCLIENT_BUILD
+#include "roc_adorn_native_novtable_interface91b88275e0007f5c.cpp"
+#include "../../../libs/ogre-1.4.5/ogrenew/OgreMain/include/Ogre.h"
+#include <vector>
+#include <map>
+#include <cstdio>
+#include <exception>
+namespace Ogre {
+class VisualEngine;
+class RbxSubEntity : public SubEntity, public ShadowCaster {
+public:
+    virtual ~RbxSubEntity();
+    // 0084e90c slots 48/4c; bodies 00685820/00685830.
+    virtual void setFloat138(float);
+    virtual float getFloat138() const;
+    void setLodMesh(unsigned int, SubMesh*); // 006850b0
+    SubMesh* getLodMesh(unsigned int);       // 006850d0
+    void setLod(unsigned int);              // 006850f0
 };
-
-struct String {
-    char data[12];
-    ~String();
+class RbxSceneNode : public SceneNode {
+    typedef std::map<unsigned long, Matrix4*> TransformMap;
+    mutable TransformMap transforms;
+public:
+    RbxSceneNode(SceneManager*, const String&);
+    virtual ~RbxSceneNode();
+    virtual void setTransform(unsigned long, const Matrix4&);
+    virtual const Matrix4& getTransform(unsigned long) const;
+    virtual bool hasTransform(unsigned long) const;
+    virtual void setSphere(unsigned long, const Sphere&);
+    virtual const Sphere& getSphere(unsigned long) const;
 };
-
-extern "C" void __stdcall _invalid_parameter_noinfo();
-extern "C" void* __stdcall mfc800();
-extern "C" void __stdcall OgreMaterialPtrDtor(void*);
-extern "C" void* __stdcall OgreNodeGetName(void*);
-
-struct ListBase {
-    void* next;
-    void* prev;
+class RbxEntityEntry; // Native 2a4 member is a vector; element never instantiated here.
+class RbxEntity : public Entity {
+    void* field274;
+    bool field278, field279, field27a;
+    AxisAlignedBox field27c;
+    float field29c;
+    int field2a0;
+    std::vector<RbxEntityEntry> field2a4;
+public:
+    RbxEntity();
+    virtual ~RbxEntity();
+    void setMesh(MeshPtr);                 // 0067c520
+    void setContext18(void*);              // 0067c510
+    RbxSubEntity* addSubEntity(SubMesh*, unsigned int); // 0067d9b0
+    void mergeBounds(AxisAlignedBox);      // 007a9c40
 };
+}
 
-struct ListHead {
-    ListBase* sentinel;
-    int count;
+namespace Ogre {
+// Opaque pointee only.684b10 initializes character metrics at0; no font vptr.
+class RbxFont { public: ~RbxFont(); };
+SharedPtr<RbxFont> loadRbxFont(const std::string&); //684eb0 cdecl hidden result.
+}
+namespace RBX {
+extern Ogre::SharedPtr<Ogre::RbxFont> nativeAdornFont; //962da8.
+extern int nativeAdornCount; //97db28.
+std::string nativeResolveFile(const char*); //55d0b0.
+class AdornRbxGfx : public Adorn {
+public:
+
+    void* engine;                         // 04, constructor arg.
+    std::string label;                    // 08.
+    Ogre::MaterialPtr textureMaterial;    // 24.
+    Ogre::SceneNode* root;                // 30.
+    Ogre::RbxSceneNode* renderNode;        // 34.
+    Ogre::MaterialPtr solidMaterial;      // 38.
+    int particleCount;                    // 44,670d50 count sum.
+    std::vector<Ogre::RbxSubEntity*> freeSubEntities; //48,671d60.
+    std::vector<Ogre::RbxSubEntity*> activeSubEntities; //60.
+    typedef std::map<std::string,Ogre::MeshPtr> MeshCache;
+    MeshCache meshes;                     // 78.
+    Ogre::RbxEntity* entity;               // 98.
+    Ogre::SceneNode* explosionRoot;        // 9c.
+    std::vector<Ogre::SceneNode*> explosionNodes; //a0.
+    typedef std::map<std::string,Ogre::SceneNode*> NodeCache;
+    NodeCache explosions;                 // b8.
+    Ogre::SceneNode* sparkleRoot;          // d8.
+    std::vector<Ogre::SceneNode*> sparkleNodes; //dc.
+    NodeCache sparkles;                    // f4.
+    G3D::CoordinateFrame coordinateFrame; // 114.
+
+    AdornRbxGfx(void*);
+    virtual ~AdornRbxGfx();
+		virtual G3D::ReferenceCountedPointer<TextureProxyBase> createTextureProxy(const std::string& filename);
+		virtual void prepareRenderPass();
+		virtual void finishRenderPass();
+		virtual G3D::Rect2D getViewport() const;
+		virtual int getWidth() const;
+		virtual int getHeight() const;
+		virtual void setTexture(int id, G3D::ReferenceCountedPointer<TextureProxyBase> _texture);
+		virtual G3D::Rect2D getTextureSize(G3D::ReferenceCountedPointer<TextureProxyBase> _texture) const;
+		virtual void line2d(const G3D::Vector2& p0, const G3D::Vector2& p1, const G3D::Color4& color) const;
+		virtual void outlineRect2d(const G3D::Rect2D& rect, float thick, const G3D::Color4& color) const;
+		virtual void rect2d(const G3D::Rect2D& rect, const G3D::Color4& color) const;
+		virtual G3D::Vector2 get2DStringBounds(const std::string& s, double size, Spacing spacing) const;
+		virtual G3D::Vector2 drawFont2D(const std::string& s, const G3D::Vector2& pos2d, double size, const G3D::Color4& color, const G3D::Color4& outline, XAlign xalign, YAlign yalign, Spacing spacing) const;
+		virtual void setObjectToWorldMatrix(const G3D::CoordinateFrame& c);
+		virtual void setColor(const G3D::Color4& color);
+		virtual void box(const G3D::AABox& box, const G3D::Color4& solidColor, const G3D::Color4& wireColor);
+		virtual void sphere(const G3D::Sphere& sphere, const G3D::Color4& solidColor, const G3D::Color4& wireColor);
+		virtual void explosion(const G3D::Sphere& sph, const G3D::Color4& solidColor, const G3D::Color4& wireColor);
+		virtual void sparkle(); // Native00674790, vtable4c.
+		virtual void cylinderAlongX(float radius, float length, const G3D::Color4& solidColor, const G3D::Color4& wireColor);
+		virtual void ray(const G3D::Ray& ray, const G3D::Color4& color, float scale);
+		virtual void lineSegment(const G3D::LineSegment& lineSegment, const G3D::Color4& color, float scale);
+		virtual void axes(const G3D::Color4& xColor, const G3D::Color4& yColor, const G3D::Color4& zColor, float scale);
+		virtual void quad(const G3D::Vector3& v0, const G3D::Vector3& v1, const G3D::Vector3& v2, const G3D::Vector3& v3, const G3D::Color4& color);
+    Ogre::SceneManager* sceneManager() {return *(Ogre::SceneManager**)((char*)engine+4);}
 };
-
-struct Obj {
-    void** vtable;
-};
-
-struct S {
-    void** vtable;
-    char pad0[0x20];
-    ListHead list24;
-    char pad1[0x10];
-    ListHead list38;
-    char pad2[0x0c];
-    void* ptr48;
-    char pad3[0x08];
-    void** vec54;
-    void** vec54end;
-    void** vec54cap;
-    char pad4[0x08];
-    void* ptr60;
-    char pad5[0x08];
-    void** vec6c;
-    void** vec6cend;
-    void** vec6ccap;
-    char pad6[0x04];
-    ListHead list78;
-    char pad7[0x14];
-    void* ptr90;
-    char pad8[0x04];
-    void* ptr98;
-    void* ptr9c;
-    char pad9[0x04];
-    void** vecac;
-    void** vecacend;
-    char pad10[0x04];
-    ListHead listb8;
-    char pad11[0x18];
-    ListHead listdc;
-    char pad12[0x0c];
-    ListHead listf4;
-    char pad13[0x14];
-    ListHead list10c;
-
-    void f();
-};
-
-void S::f()
-{
-    vtable = (void**)0x84d2a4;
-
-    void* p90 = ptr90;
-    int v = *(int*)((char*)p90 + 4);
-    destroyMesh((Mesh*)((char*)&list78 + 0));
-    (void)v;
-
-    ListBase* s = (ListBase*)list78.sentinel;
-    s->next = s;
-    list78.count = 0;
-    s->prev = s;
-    ListBase* s2 = (ListBase*)list78.sentinel;
-    s2->prev = s2;
-
-    void* p4 = *(void**)((char*)this + 4);
-    void* p4b = *(void**)((char*)p4 + 4);
-    void** vt = *(void***)p4b;
-    void* (__thiscall *fn)(void*) = (void* (__thiscall *)(void*))vt[0xb4/4];
-    void* r = fn(p4b);
-
-    void* p30 = *(void**)((char*)this + 0x30);
-    void** rvt = *(void***)r;
-    void* (__thiscall *fn2)(void*, void*) = (void* (__thiscall *)(void*, void*))*(void**)((char*)rvt + 0x170);
-    void* name = OgreNodeGetName(p30);
-    fn2(r, name);
-
-    void* p4c = *(void**)((char*)this + 4);
-    void* p4d = *(void**)((char*)p4c + 4);
-    void** vt2 = *(void***)p4d;
-    void* (__thiscall *fn3)(void*) = (void* (__thiscall *)(void*))vt2[0xb4/4];
-    void* r2 = fn3(p4d);
-
-    void* p34 = *(void**)((char*)this + 0x34);
-    void** vt3 = *(void***)r2;
-    void (__thiscall *fn4)(void*, void*) = (void (__thiscall *)(void*, void*))vt3[0xe4/4];
-    fn4(r2, p34);
-
-    void* p34b = *(void**)((char*)this + 0x34);
-    if (p34b) {
-        void** vt4 = *(void***)p34b;
-        void (__thiscall *fn5)(void*, int) = (void (__thiscall *)(void*, int))vt4[0];
-        fn5(p34b, 1);
+typedef char NativeAdornSize[sizeof(AdornRbxGfx)==0x144?1:-1];
+typedef char NativeEntitySize[sizeof(Ogre::RbxEntity)==0x2bc?1:-1];
+typedef char NativeSceneNodeSize[sizeof(Ogre::RbxSceneNode)==0x248?1:-1];
+AdornRbxGfx::AdornRbxGfx(void* context)
+    : label(""), meshes(MeshCache::key_compare(),MeshCache::allocator_type()),
+      explosionRoot(0), explosions(NodeCache::key_compare(),NodeCache::allocator_type()),
+      sparkleRoot(0), sparkles(NodeCache::key_compare(),NodeCache::allocator_type()) {
+    engine=context;
+    if(nativeAdornFont.isNull()) {
+        try { nativeAdornFont=Ogre::loadRbxFont(nativeResolveFile("Fonts\\comics.fnt")); }
+        catch(std::exception&) {}
     }
-
-    void* p98 = *(void**)((char*)this + 0x98);
-    if (p98) {
-        void** vt5 = *(void***)p98;
-        void (__thiscall *fn6)(void*, int) = (void (__thiscall *)(void*, int))vt5[0];
-        fn6(p98, 1);
+    char name[8];
+    _snprintf(name,8,"a3dr%d",nativeAdornCount++);
+    root=sceneManager()->createSceneNode(name);
+    sceneManager()->getRootSceneNode()->addChild(root);
+    renderNode=new Ogre::RbxSceneNode(*(Ogre::SceneManager**)((char*)context+4),std::string(name)+"opt");
+    sceneManager()->getRootSceneNode()->addChild(renderNode);
+    entity=new Ogre::RbxEntity;
+    *(bool*)((char*)entity+0x278)=false;
+    *(bool*)((char*)entity+0x27a)=false;
+    entity->setContext18((char*)engine+0x18);
+    renderNode->attachObject(entity);
+    Ogre::MeshPtr mesh=Ogre::MeshManager::getSingleton().getByName("rbxdummymesh");
+    if(mesh.isNull()) mesh=Ogre::MeshManager::getSingleton().create("rbxdummymesh","General");
+    entity->setMesh(mesh);
+    _snprintf(name,8,"loff%d",nativeAdornCount-1);
+    solidMaterial=Ogre::MaterialManager::getSingleton().create(name,"General");
+    solidMaterial->setLightingEnabled(false);
+}
+AdornRbxGfx::~AdornRbxGfx() {
+    meshes.clear();
+    sceneManager()->getRootSceneNode()->removeAndDestroyChild(root->getName());
+    sceneManager()->getRootSceneNode()->removeChild(renderNode);
+    delete renderNode;
+    delete entity;
+    for(int i=0;i<(int)freeSubEntities.size();++i) delete freeSubEntities[i];
+    for(int i=0;i<(int)activeSubEntities.size();++i) delete activeSubEntities[i];
+    for(int i=0;i<(int)explosionNodes.size();++i) {
+        Ogre::ParticleSystem* system=static_cast<Ogre::ParticleSystem*>(explosionNodes[i]->getAttachedObject(0));
+        sceneManager()->destroyParticleSystem(system->getName());
+        sceneManager()->destroySceneNode(explosionNodes[i]->getName());
     }
-
-    int n = (int)((char*)vec54end - (char*)vec54);
-    if ((n & 0xfffffffc) > 0) {
-        int i = 0;
-        do {
-            int cnt = (int)((char*)vec54end - (char*)vec54) >> 2;
-            if ((unsigned)i >= (unsigned)cnt) _invalid_parameter_noinfo();
-            void* e = vec54[i];
-            if (e) {
-                void** vt6 = *(void***)e;
-                void (__thiscall *fn7)(void*, int) = (void (__thiscall *)(void*, int))vt6[0];
-                fn7(e, 1);
-            }
-            i++;
-            int cnt2 = (int)((char*)vec54end - (char*)vec54) >> 2;
-            if (i >= cnt2) break;
-        } while (true);
+    if(explosionRoot) sceneManager()->destroySceneNode(explosionRoot->getName());
+    for(int i=0;i<(int)sparkleNodes.size();++i) {
+        Ogre::ParticleSystem* system=static_cast<Ogre::ParticleSystem*>(sparkleNodes[i]->getAttachedObject(0));
+        sceneManager()->destroyParticleSystem(system->getName());
+        sceneManager()->destroySceneNode(sparkleNodes[i]->getName());
     }
-
-    int n2 = (int)((char*)vec6cend - (char*)vec6c);
-    if ((n2 & 0xfffffffc) > 0) {
-        int i = 0;
-        do {
-            int cnt = (int)((char*)vec6cend - (char*)vec6c) >> 2;
-            if ((unsigned)i >= (unsigned)cnt) _invalid_parameter_noinfo();
-            void* e = vec6c[i];
-            if (e) {
-                void** vt7 = *(void***)e;
-                void (__thiscall *fn8)(void*, int) = (void (__thiscall *)(void*, int))vt7[0];
-                fn8(e, 1);
-            }
-            i++;
-            int cnt2 = (int)((char*)vec6cend - (char*)vec6c) >> 2;
-            if (i >= cnt2) break;
-        } while (true);
-    }
-
-    int n3 = (int)((char*)vecacend - (char*)vecac);
-    if ((n3 & 0xfffffffc) > 0) {
-        int i = 0;
-        do {
-            int cnt = (int)((char*)vecacend - (char*)vecac) >> 2;
-            if ((unsigned)i >= (unsigned)cnt) _invalid_parameter_noinfo();
-            void* e = vecac[i];
-            void** vt8 = *(void***)e;
-            void* (__thiscall *fn9)(void*, int) = (void* (__thiscall *)(void*, int))*(void**)((char*)vt8 + 0x13c);
-            void* r3 = fn9(e, 0);
-            void* adj = r3 ? (void*)((char*)r3 - 0x20) : 0;
-            void* p4e = *(void**)((char*)this + 4);
-            void* p4f = *(void**)((char*)p4e + 4);
-            void** vt9 = *(void***)p4f;
-            void* (__thiscall *fn10)(void*) = (void* (__thiscall *)(void*))*(void**)((char*)vt9 + 0x134);
-            void* nm = fn10((char*)adj + 0x20);
-            void** vt10 = *(void***)p4f;
-            void (__thiscall *fn11)(void*, void*) = (void (__thiscall *)(void*, void*))*(void**)((char*)vt10 + 0x134);
-            fn11(p4f, nm);
-
-            void* p4g = *(void**)((char*)this + 4);
-            void* p4h = *(void**)((char*)p4g + 4);
-            void** vt11 = *(void***)p4h;
-            void* (__thiscall *fn12)(void*) = (void* (__thiscall *)(void*))*(void**)((char*)vt11 + 0xb0);
-            void* nm2 = fn12(e);
-            void** vt12 = *(void***)p4h;
-            void (__thiscall *fn13)(void*, void*) = (void (__thiscall *)(void*, void*))*(void**)((char*)vt12 + 0xb0);
-            fn13(p4h, nm2);
-
-            i++;
-            int cnt2 = (int)((char*)vecacend - (char*)vecac) >> 2;
-            if (i >= cnt2) break;
-        } while (true);
-    }
-
-    void* p9c = *(void**)((char*)this + 0x9c);
-    if (p9c) {
-        void* p4i = *(void**)((char*)this + 4);
-        void* p4j = *(void**)((char*)p4i + 4);
-        void** vt13 = *(void***)p4j;
-        void* (__thiscall *fn14)(void*) = (void* (__thiscall *)(void*))*(void**)((char*)vt13 + 0xb0);
-        void* nm3 = fn14(p9c);
-        void** vt14 = *(void***)p4j;
-        void (__thiscall *fn15)(void*, void*) = (void (__thiscall *)(void*, void*))*(void**)((char*)vt14 + 0xb0);
-        fn15(p4j, nm3);
-    }
-
-    int n4 = (int)((char*)listdc.count - (char*)listdc.sentinel);
-    (void)n4;
+    if(sparkleRoot) sceneManager()->destroySceneNode(sparkleRoot->getName());
+    explosionNodes.clear();
+    explosions.clear();
+    sparkleNodes.clear();
+    sparkles.clear();
+}
 }

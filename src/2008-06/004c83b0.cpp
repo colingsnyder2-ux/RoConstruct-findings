@@ -1,214 +1,139 @@
-// from server: 20% by colin
-extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
-#pragma intrinsic(_InterlockedExchangeAdd)
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MD /fp:fast
+// roc-lib: rbxgs-net-dll roc_physics_receiver_native_motor_count_snapshotb8c8e2039fe6c79c.cpp
 
-extern "C" long __cdecl _InterlockedDecrement(volatile long*);
-#pragma intrinsic(_InterlockedDecrement)
+// Candidate translation unit (score above; library headers required).
+// Native004c83b0 full1890B, DirectPhysicsReceiver::receivePacket.
+// Typed public SDK values plus binary-backed opaque pointer APIs.
+#include <BitStream.h>
+#include <G3D/CoordinateFrame.h>
+#include "util/Quaternion.h"
+#include "util/Guid.h"
+#include "util/Association.h"
+#include "util/standardout.h"
+#include <boost/shared_ptr.hpp>
+#include <boost/enable_shared_from_this.hpp>
+#include <stdexcept>
 
-struct RefCounted
-{
-    void* vptr;
-    volatile long refCount;
-    volatile long weakCount;
+template<class T> static inline T& physicsField(void* p,unsigned offset) {
+    return *reinterpret_cast<T*>(static_cast<char*>(p)+offset);
+}
+// Actual native Association<Instance>::TItem<TimeStamp> RTTI and8B allocation.
+struct TimeStamp { unsigned value; TimeStamp():value(0) {} };
+namespace RBX {
+class Instance;
+class NativePhysicsSettings {
+public:
+    static NativePhysicsSettings& singleton(); //0049e890
+    bool printErrors() const { return physicsField<bool>(const_cast<NativePhysicsSettings*>(this),0x130); }
 };
-
-struct String
-{
-    void* alloc;
-    union
-    {
-        char buf[16];
-        char* ptr;
-    };
-    unsigned int size;
-    unsigned int capacity;
+class NativePhysicsMotor {
+public:
+    void setCurrentAngle(float); //005e5da0 ret4
 };
-
-struct BitStream
-{
-    void* data;
+class NativePhysicsAssembly {
+public:
+    int getNumMotors(); //005e62d0
+    NativePhysicsMotor* getMotor(unsigned); //005e6400 ret4
 };
-
-struct CoordinateFrame
-{
-    float r0[3];
-    float r1[3];
-    float r2[3];
-    float r3[3];
+class NativePhysicsClump {
+public:
+    bool getAnchored() const; //005e60e0
 };
-
-struct Velocity
-{
-    float v[3];
+class NativePhysicsPrimitive {
+public:
+    NativePhysicsAssembly* getAssembly() const; //005e7570
 };
-
-struct MechanismItem
-{
-    void* part;
-    void* assembly;
-    int motorCount;
+class NativePhysicsPart {
+public:
+    static bool nonNullInWorkspace(boost::shared_ptr<NativePhysicsPart>); //005995f0 cdecl value8
+    void setCoordinateFrame(const G3D::CoordinateFrame&); //005997f0 ret4
+    NativePhysicsPrimitive& primitive() { return physicsField<NativePhysicsPrimitive>(this,0x228); }
+    NativePhysicsClump* clump() { return physicsField<NativePhysicsClump*>(this,0x284); }
+    Association<Instance>& association() { return physicsField<Association<Instance> >(this,0xec); }
 };
-
-struct PhysicsReceiver
-{
-    void* vptr;
-    void* replicator;
+// 004c7530: cdecl hidden shared_ptr result, one enable_shared_from_this pointer.
+// Native helper uses static/polymorphic downcast, no runtime dynamic cast.
+boost::shared_ptr<NativePhysicsPart> __cdecl recoverPhysicsPart(boost::enable_shared_from_this<Instance>*);
+namespace Network {
+class NativePhysicsReplicator {
+public:
+    bool deserializeInstanceRef(RakNet::BitStream&,Instance*&,Guid::Data&); //004a8b60 ret12
 };
-
-struct DirectPhysicsReceiver : PhysicsReceiver
-{
-    void __cdecl receivePacket(BitStream& bitstream, unsigned int timeStamp, void* stats);
+class IPhysicsSender {
+public:
+    static void readPosition(RakNet::BitStream&,G3D::Vector3&); //004ca5c0 cdecl
 };
+RakNet::BitStream& operator>>(RakNet::BitStream&,unsigned char&); //004a6380 cdecl
+float decodePhysicsAngle(unsigned char); //005dda30 cdecl
+class DirectPhysicsReceiver {
+public:
+    void receivePacket(RakNet::BitStream&,unsigned);
+};
+}}
+typedef char NativeGuidDataSize[sizeof(RBX::Guid::Data)==8?1:-1];
+typedef char NativeQuaternionSize[sizeof(RBX::Quaternion)==16?1:-1];
+typedef char NativeSharedPartSize[sizeof(boost::shared_ptr<RBX::NativePhysicsPart>)==8?1:-1];
+typedef char NativeCoordinateFrameSize[sizeof(G3D::CoordinateFrame)==48?1:-1];
+typedef char NativeAssociationSize[sizeof(RBX::Association<RBX::Instance>)==24?1:-1];
 
-extern void* __cdecl sub_49e890();
-extern void* __cdecl sub_513e20();
-extern void __cdecl sub_6a158c(void*, void*);
-extern void* __cdecl sub_5a8440(void*, void*, int);
-extern void* __cdecl sub_569620(void*);
-extern void* __cdecl sub_5693a0(void*, const char*, int, void*);
-extern void __cdecl sub_600660(void*);
-extern void* __cdecl sub_5dd6d0(void*, void*);
-extern float __cdecl sub_5dda30(void*);
-extern void* __cdecl sub_5e7570(void*);
-extern void* __cdecl sub_5e60e0(void*);
-extern void* __cdecl sub_5e62d0(void*);
-extern void* __cdecl sub_5e6400(void*, int);
-extern void* __cdecl sub_5e5da0(void*);
-extern void* __cdecl sub_5997f0(void*, void*);
-extern void* __cdecl sub_5995f0(void*, void*);
-extern void* __cdecl sub_4a8b60(void*, void*, void*, void*);
-extern void* __cdecl sub_4c7530(void*, void*);
-extern void* __cdecl sub_4c7ef0(void*);
-extern void* __cdecl sub_4ca5c0(void*, void*, void*);
-extern void* __cdecl sub_4a5f20(void*, void*, void*, void*, void*);
-extern void* __cdecl sub_4a6380(void*, void*);
-extern void* __cdecl sub_4025b0(void*, void*);
-extern void* __cdecl sub_456e80(void*);
-extern void* __cdecl sub_513220(void*, void*);
-
-extern void* g_802468;
-extern void* g_802458;
-extern void* g_80245c;
-extern void* g_802898;
-extern float g_96f044;
-extern float g_96f048;
-extern float g_96f04c;
-extern int g_96f050;
-
-void DirectPhysicsReceiver::receivePacket(BitStream& bitstream, unsigned int timeStamp, void* stats)
-{
-    void* part = 0;
-    void* assembly = 0;
-    void* local = 0;
-
-    for (;;)
-    {
-        void* bs = &bitstream;
-        void* out = &local;
-        void* tmp = &part;
-        void* rep = *(void**)((char*)this + 4);
-        char ok = (char)(int)sub_4a8b60(rep, (void*)timeStamp, out, tmp);
-        if (!ok)
-        {
-            void* s = sub_49e890();
-            if (*(char*)((char*)s + 0x130) == 0)
-                goto done;
-            void* str = sub_5a8440(0, 0, 4);
-            sub_569620(str);
-            void* p = *(void**)str;
-            sub_5693a0(p, "Physics-in of unidentified %s", 1, 0);
-            goto done;
-        }
-
-        if (part == 0)
-            goto done;
-
-        void* item = sub_4c7530((char*)part + 0xe4, &local);
-        void* ref = *(void**)item;
-        item = (char*)item + 4;
-        part = ref;
-        sub_4025b0(&local, item);
-
-        if (local)
-        {
-            RefCounted* rc = (RefCounted*)local;
-            if (_InterlockedExchangeAdd(&rc->refCount, -1) == 1)
-            {
-                void* vt = *(void**)rc;
-                ((void(__thiscall*)(void*))*(void**)((char*)vt + 4))(rc);
-                if (_InterlockedExchangeAdd(&rc->weakCount, -1) == 1)
-                {
-                    void* vt2 = *(void**)rc;
-                    ((void(__thiscall*)(void*))*(void**)((char*)vt2 + 8))(rc);
-                }
+void RBX::Network::DirectPhysicsReceiver::receivePacket(RakNet::BitStream& stream,unsigned timestamp) {
+    while(true) {
+        boost::shared_ptr<NativePhysicsPart> part;
+        Instance* instance;
+        Guid::Data id;
+        if(physicsField<NativePhysicsReplicator*>(this,4)->deserializeInstanceRef(stream,instance,id)) {
+            if(!instance) return;
+            part=recoverPhysicsPart(reinterpret_cast<boost::enable_shared_from_this<Instance>*>(reinterpret_cast<char*>(instance)+0xe4));
+        } else if(NativePhysicsSettings::singleton().printErrors())
+            StandardOut::singleton()->print(MESSAGE_WARNING,"Physics-in of unidentified %s",id.readableString(4).c_str());
+        if(part) {
+            if(!NativePhysicsPart::nonNullInWorkspace(part)) {
+                if(NativePhysicsSettings::singleton().printErrors())
+                    StandardOut::singleton()->print(MESSAGE_INFO,"Physics-in of part not in workspace %s",id.readableString(4).c_str());
+                part.reset();
+            } else if(!part->primitive().getAssembly()) {
+                if(NativePhysicsSettings::singleton().printErrors())
+                    StandardOut::singleton()->print(MESSAGE_INFO,"Physics-in of primitive with no assembly %s",id.readableString(4).c_str());
+                part.reset();
+            } else if(part->clump()->getAnchored()) {
+                if(NativePhysicsSettings::singleton().printErrors())
+                    StandardOut::singleton()->print(MESSAGE_INFO,"Physics-in of anchored primitive %s",id.readableString(4).c_str());
+                part.reset();
+            } else {
+                unsigned& partTime=part->association().get<TimeStamp>().value;
+                if(partTime>timestamp) {
+                    if(NativePhysicsSettings::singleton().printErrors())
+                        StandardOut::singleton()->print(MESSAGE_INFO,"Physics-in old packet");
+                    part.reset();
+                } else partTime=timestamp;
             }
         }
-
-        if (part == 0)
-            goto done;
-
-        {
-            void* a = part;
-            void* b = assembly;
-            if (b)
-                _InterlockedExchangeAdd((volatile long*)((char*)b + 4), 1);
-            char r = (char)(int)sub_5995f0(a, b);
-            if (r)
-            {
-                void* m = sub_5e7570((char*)part + 0x228);
-                if (m == 0)
-                {
-                    void* s = sub_49e890();
-                    if (*(char*)((char*)s + 0x130) == 0)
-                        goto done;
-                    void* str = sub_5a8440(0, 0, 4);
-                    sub_569620(str);
-                    void* p = *(void**)str;
-                    sub_5693a0(p, "Physics-in of primitive with no assembly %s", 1, 0);
-                    goto done;
-                }
-                void* asmObj = *(void**)((char*)part + 0x284);
-                char anchored = (char)(int)sub_5e60e0(asmObj);
-                if (!anchored)
-                {
-                    void* s = sub_49e890();
-                    if (*(char*)((char*)s + 0x130) == 0)
-                        goto done;
-                    void* str = sub_5a8440(0, 0, 4);
-                    sub_569620(str);
-                    void* p = *(void**)str;
-                    sub_5693a0(p, "Physics-in of anchored primitive %s", 1, 0);
-                    goto done;
-                }
-                void* r2 = sub_4c7ef0((char*)part + 0xec);
-                if (*(unsigned int*)r2 > timeStamp)
-                {
-                    void* s = sub_49e890();
-                    if (*(char*)((char*)s + 0x130) != 0)
-                    {
-                        void* str = sub_569620(0);
-                        void* p = *(void**)str;
-                        sub_5693a0(p, "Physics-in old packet", 1, 0);
-                        sub_600660(str);
-                    }
-                    goto done;
-                }
-                *(unsigned int*)r2 = timeStamp;
+        G3D::CoordinateFrame frame;
+        IPhysicsSender::readPosition(stream,frame.translation);
+        Quaternion rotation;
+        if(!stream.ReadNormQuat(rotation.w,rotation.x,rotation.y,rotation.z))
+            throw std::runtime_error("Failed to read Quaternion");
+        rotation.toRotationMatrix(frame.rotation);
+        if(part && !part->clump()->getAnchored()) part->setCoordinateFrame(frame);
+        unsigned char motorCount;
+        stream>>motorCount;
+        if(motorCount>50 && NativePhysicsSettings::singleton().printErrors())
+            StandardOut::singleton()->print(MESSAGE_WARNING,"Physics-in of %s has %d motors",id.readableString(4).c_str(),motorCount);
+        const int count=motorCount;
+        NativePhysicsAssembly* assembly;
+        if(part && (assembly=part->primitive().getAssembly()) && assembly->getNumMotors()==count) {
+            for(int i=0;i<count;++i) {
+                unsigned char angle;
+                stream>>angle;
+                assembly->getMotor(i)->setCurrentAngle(decodePhysicsAngle(angle));
             }
-        }
-
-        {
-            void* s = sub_49e890();
-            if (*(char*)((char*)s + 0x130) == 0)
-                goto done;
-            void* str = sub_5a8440(0, 0, 4);
-            sub_569620(str);
-            void* p = *(void**)str;
-            sub_5693a0(p, "Physics-in of part not in workspace %s", 1, 0);
-            goto done;
+        } else {
+            for(int remaining=count;remaining>0;--remaining) {
+                unsigned char discard;
+                stream>>discard;
+            }
         }
     }
-
-done:
-    return;
 }

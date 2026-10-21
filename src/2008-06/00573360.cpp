@@ -1,8 +1,8 @@
-// from server: 99% by colin
+// from server: 100% by colin
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast
-// roc-lib: openrbx-client roc_unit_3cba727f5c652102.cpp
+// roc-lib: openrbx-client roc_manual_gui_5169e2e566c140cf.cpp
 
 // Candidate translation unit (score above; library headers required).
 #include "util/Rect.h"
@@ -47,7 +47,7 @@ void GuiTarget::render(Renderer* renderer,Text* text,void* color,unsigned long s
  if(text->length) {
   Rect rectangle=bounds();
   Point dimensions=rectangle.size();
-  Point position=rectangle.center();
+  Point position=Point(rectangle.low.x+rectangle.high.x,rectangle.low.y+rectangle.high.y)*0.5f;
   switch(alignment) {
   case 0:position.x=rectangle.high.x-dimensions.x*0.1f;break;
   case 2:break;

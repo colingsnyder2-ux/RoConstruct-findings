@@ -23341,5 +23341,232 @@
       "local_exact": 0,
       "evidence": "work\\big-mining-2008-20261020\\view-initial-update-native-family-hits.json"
     }
+  },
+  "native-physics-receiver-sdk-gates-2008": {
+    "op": "grid",
+    "client": "2008-06",
+    "library": "Native DirectPhysicsReceiver packet decoder with SDK G3D/RakNet/Boost",
+    "hypothesis": "Full1890B native decoder20to71, E4 frame and full native parse/discard paths recovered. Gate precise/inlining before remaining temporary register context. Native checked Association24 pins VC9 container ABI.",
+    "targets": {
+      "addresses": [
+        "004c83b0"
+      ],
+      "scores": [
+        0,
+        99
+      ]
+    },
+    "seed_sources": {
+      "2008-06": {
+        "004c83b0": "work\\big-mining-2008-20261020\\physics-receiver-native-motor-count-snapshot.cpp"
+      }
+    },
+    "builds": [
+      21022
+    ],
+    "profiles": [
+      "/O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MD",
+      "/O2 /Ob1 /Oi /Ot /Oy /GF /GS- /EHsc /MD /fp:fast",
+      "/O2 /GS- /EHsc /MD /fp:fast",
+      "/O1 /Ob1 /GS- /EHsc /MD /fp:fast"
+    ],
+    "keep_partials": true,
+    "reuse_history": true,
+    "reuse_objects": true,
+    "improvement_only": true,
+    "output": "work\\big-mining-2008-20261020\\physics-receiver-native-gates",
+    "verification": "Local retention only; actual-model manual Player Mining submissions.",
+    "result": {
+      "stats": {
+        "checks": 4,
+        "skipped": 0,
+        "errors": 0,
+        "finished_targets": 1,
+        "verified_exacts": 0,
+        "verified_partial_gains": 0,
+        "object_reuses": 0,
+        "seconds": 8.672
+      },
+      "evidence": "work\\big-mining-2008-20261020\\physics-receiver-native-gates\\summary.json"
+    }
+  },
+  "native-physics-receiver-sdk-family-2008": {
+    "op": "fanout",
+    "client": "2008-06",
+    "library": "Native DirectPhysicsReceiver typed RakNet/Boost/G3D family",
+    "hypothesis": "Full1890B native physics decoder20to71 emits genuine NormQuat<float>, Boost shared control and runtime_error helpers; propagate one retained object.",
+    "sources": [
+      {
+        "recipe": "rbxgs-net-dll",
+        "files": [
+          "roc_physics_receiver_native_motor_count_snapshotb8c8e2039fe6c79c.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MD /fp:fast"
+        ]
+      }
+    ],
+    "output": "work\\big-mining-2008-20261020\\physics-receiver-native-family",
+    "verification": "Local retention only; actual-model manual Player Mining submissions.",
+    "result": {
+      "date": "2026-10-21T05:50:01.431813+00:00",
+      "objects": 1,
+      "local_exact": 0,
+      "evidence": "work\\big-mining-2008-20261020\\physics-receiver-native-family-hits.json"
+    }
+  },
+  "native-adorn-box-lifetimes-gates-2008": {
+    "op": "grid",
+    "client": "2008-06",
+    "library": "Native AdornRbxGfx box with genuine Ogre and IndexBox values",
+    "hypothesis": "Named matrix product and genuine inline AABox center raise51to57. Gate both original historical compilers and x87/inlining; main body does not allocate native container layouts.",
+    "targets": {
+      "addresses": [
+        "00671fd0"
+      ],
+      "scores": [
+        0,
+        99
+      ]
+    },
+    "seed_sources": {
+      "2008-06": {
+        "00671fd0": "work\\big-mining-2008-20261020\\adorn-box-native-typed-submesh.cpp"
+      }
+    },
+    "builds": [
+      50727,
+      21022
+    ],
+    "profiles": [
+      "/O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MD /fp:fast",
+      "/O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MD",
+      "/O2 /Ob1 /Oi /Ot /Oy /GF /GS- /EHsc /MD /fp:fast",
+      "/O2 /GS- /EHsc /MD /fp:fast"
+    ],
+    "keep_partials": true,
+    "reuse_history": true,
+    "reuse_objects": true,
+    "improvement_only": true,
+    "output": "work\\big-mining-2008-20261020\\adorn-box-native-gates",
+    "verification": "Local retention only; actual-model manual Player Mining submissions.",
+    "result": {
+      "stats": {
+        "checks": 8,
+        "skipped": 0,
+        "errors": 0,
+        "finished_targets": 1,
+        "verified_exacts": 0,
+        "verified_partial_gains": 0,
+        "object_reuses": 0,
+        "seconds": 12.625
+      },
+      "evidence": "work\\big-mining-2008-20261020\\adorn-box-native-gates\\summary.json"
+    }
+  },
+  "native-adorn-box-lifetimes-family-2008": {
+    "op": "fanout",
+    "client": "2008-06",
+    "library": "Native Adorn box value lifetimes and genuine Ogre family",
+    "hypothesis": "New named matrix/inline AABox center57 context emits genuine Ogre/G3D and inherited Adorn sibling functions; propagate one retained object.",
+    "sources": [
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_adorn_box_native_typed_submesh7d62b272d8604508.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MD /fp:fast"
+        ]
+      }
+    ],
+    "output": "work\\big-mining-2008-20261020\\adorn-box-native-family",
+    "verification": "Local retention only; actual-model manual Player Mining submissions.",
+    "result": {
+      "date": "2026-10-21T06:11:21.509812+00:00",
+      "objects": 1,
+      "local_exact": 0,
+      "evidence": "work\\big-mining-2008-20261020\\adorn-box-native-family-hits.json"
+    }
+  },
+  "native-adorn-box-sphere-context-gates-2008": {
+    "op": "grid",
+    "client": "2008-06",
+    "library": "Native Adorn box genuine RbxSceneNode Sphere API",
+    "hypothesis": "New typed RbxSceneNode584 and named OgreSphere16 context57to58 differs from previous Vector4 bridge; gate precision/inlining once. Actual SceneNode/map ABI assertion pins21022.",
+    "targets": {
+      "addresses": [
+        "00671fd0"
+      ],
+      "scores": [
+        0,
+        99
+      ]
+    },
+    "seed_sources": {
+      "2008-06": {
+        "00671fd0": "work\\big-mining-2008-20261020\\adorn-box-native-named-sphere.cpp"
+      }
+    },
+    "builds": [
+      21022
+    ],
+    "profiles": [
+      "/O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MD",
+      "/O2 /Ob1 /Oi /Ot /Oy /GF /GS- /EHsc /MD /fp:fast"
+    ],
+    "keep_partials": true,
+    "reuse_history": true,
+    "reuse_objects": true,
+    "improvement_only": true,
+    "output": "work\\big-mining-2008-20261020\\adorn-box-native-sphere-gates",
+    "verification": "Local retention only; actual-model manual Player Mining submissions.",
+    "result": {
+      "stats": {
+        "checks": 2,
+        "skipped": 0,
+        "errors": 0,
+        "finished_targets": 1,
+        "verified_exacts": 0,
+        "verified_partial_gains": 0,
+        "object_reuses": 0,
+        "seconds": 4.953
+      },
+      "evidence": "work\\big-mining-2008-20261020\\adorn-box-native-sphere-gates\\summary.json"
+    }
+  },
+  "native-adorn-box-sphere-context-family-2008": {
+    "op": "fanout",
+    "client": "2008-06",
+    "library": "Native Adorn box with real RbxSceneNode Sphere contract",
+    "hypothesis": "New native RbxSceneNode virtual Sphere API replaces prior opaque Vector4 bridge; propagate genuine new value/context object once.",
+    "sources": [
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_adorn_box_native_named_sphere454e2d1c423b9e2b.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MD /fp:fast"
+        ]
+      }
+    ],
+    "output": "work\\big-mining-2008-20261020\\adorn-box-native-sphere-family",
+    "verification": "Local retention only; actual-model manual Player Mining submissions.",
+    "result": {
+      "date": "2026-10-21T06:20:35.744253+00:00",
+      "objects": 1,
+      "local_exact": 0,
+      "evidence": "work\\big-mining-2008-20261020\\adorn-box-native-sphere-family-hits.json"
+    }
   }
 }

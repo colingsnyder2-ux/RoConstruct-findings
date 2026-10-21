@@ -1,112 +1,118 @@
-// from server: 50% by king_originala
-struct Vector3 {
-    float x, y, z;
-    Vector3(float a, float b, float c) : x(a), y(b), z(c) {}
-    Vector3(const Vector3& v) : x(v.x), y(v.y), z(v.z) {}
+// from server: 100% by EspClaude
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+// roc-lib: rbxgs-dll roc_espclaude_3e5353d5d40b465b.cpp
+
+// Candidate translation unit (score above; library headers required).
+#define _DLL
+#include <boost/shared_ptr.hpp>
+#include <boost/weak_ptr.hpp>
+#include <G3D/Vector3.h>
+#include <G3D/Color3.h>
+#include <G3D/Color4.h>
+#include <G3D/CoordinateFrame.h>
+#include <G3D/LineSegment.h>
+namespace RBX {
+class Adorn {
+public:
+	virtual ~Adorn();
+	virtual void a1(); virtual void a2(); virtual void a3(); virtual void a4(); virtual void a5();
+	virtual void a6(); virtual void a7(); virtual void a8(); virtual void a9(); virtual void a10();
+	virtual void a11(); virtual void a12(); virtual void a13();
+	virtual void setObjectToWorldMatrix(const G3D::CoordinateFrame& c) = 0;
+	virtual void a15(); virtual void a16(); virtual void a17(); virtual void a18(); virtual void a19();
+	virtual void a20(); virtual void a21();
+	virtual void lineSegment(const G3D::LineSegment& lineSegment, const G3D::Color4& color, float thick) = 0;
 };
-
-struct Color4 {
-    float r, g, b, a;
-    Color4(const Vector3& v, float alpha)
-        : r(v.x), g(v.y), b(v.z), a(alpha) {}
+class Primitive;
+class Edge {
+public:
+	enum EdgeType { JOINT, CONTACT };
+	virtual ~Edge();
+	virtual void e1();
+	virtual void e2();
+	virtual EdgeType getEdgeType() const = 0;
+	virtual void setPrimitive(int i, Primitive* p);
 };
-
-struct Transform {
-    float rotation[9];
-    Vector3 position;
+class IJointOwner;
+class Joint : public Edge {
+public:
+	enum JointType { NO_JOINT, ROTATE_JOINT, ROTATE_P_JOINT, ROTATE_V_JOINT, GLUE_JOINT, ANCHOR_JOINT };
+private:
+	char pad4[0x20 - 4];
+	IJointOwner* jointOwner;
+protected:
+	bool active;
+public:
+	virtual JointType getJointType() const;
+	bool getActive() const { return active; }
+	static JointType getJointType(Edge* e)
+	{
+		return (e->getEdgeType() == Edge::JOINT) ? static_cast<Joint*>(e)->getJointType() : NO_JOINT;
+	}
+	static bool isAssemblyJoint(Edge* e)
+	{
+		return getJointType(e) >= ANCHOR_JOINT;
+	}
 };
-
-struct Primitive {
-    const Transform& getTransform();
+class PartPrimitive {
+public:
+	const G3D::CoordinateFrame& getCoordinateFrame() const;
 };
-
-struct Part {
-    char padding[0x228];
-    Primitive primitive;
+class PartInstance {
+public:
+	char pad[0x228];
+	PartPrimitive primitive;
+	PartPrimitive* getPrimitive() { return &primitive; }
 };
-
-struct Joint {
-    Part* getPart0();
-    Part* getPart1();
+class InstanceStub { public: virtual ~InstanceStub(); char pad[0x12c]; };
+class __declspec(novtable) IRenderable {
+public:
+	virtual bool shouldRender3dAdorn() const;
+	virtual void render3dAdorn(Adorn* adorn);
+	int index2d;
+	int index3d;
 };
-
-struct State {
-    virtual void slot0();
-    virtual void slot1();
-    virtual void slot2();
-    virtual int disabled();
-    virtual void slot4();
-    virtual int kind();
-    char padding[0x20];
-    unsigned char selected;
+class __declspec(novtable) IJointOwner { public: virtual void jo0(); };
+class JointInstance : public InstanceStub, public IRenderable, public IJointOwner {
+protected:
+	boost::weak_ptr<PartInstance> part[2];
+	Joint* joint;
+	virtual void render3dAdorn(Adorn* adorn);
+public:
+	PartInstance* getPart0();
+	PartInstance* getPart1();
 };
-
-struct Frame {
-    char data[48];
-    Frame();
-    ~Frame() {}
-};
-
-struct Segment {
-    char data[28];
-    ~Segment() {}
-};
-
-extern const Vector3& red();
-extern const Vector3& green();
-extern Segment makeSegment(const Vector3&, const Vector3&);
-
-struct Renderer {
-    virtual void slot0();
-    virtual void slot1();
-    virtual void slot2();
-    virtual void slot3();
-    virtual void slot4();
-    virtual void slot5();
-    virtual void slot6();
-    virtual void slot7();
-    virtual void slot8();
-    virtual void slot9();
-    virtual void slot10();
-    virtual void slot11();
-    virtual void slot12();
-    virtual void slot13();
-    virtual void setFrame(const Frame&);
-    virtual void slot15();
-    virtual void slot16();
-    virtual void slot17();
-    virtual void slot18();
-    virtual void slot19();
-    virtual void slot20();
-    virtual void slot21();
-    virtual void drawSegment(const Segment&, const Color4&, float);
-};
-
-struct S {
-    char padding[0x20];
-    State* state;
-    void render(Renderer*);
-};
-
-void S::render(Renderer* renderer)
+void JointInstance::render3dAdorn(Adorn* adorn)
 {
-    State* s = state;
-    if (s->disabled() || s->kind() < 5)
-        return;
+	if (Joint::isAssemblyJoint(joint))
+	{
+		G3D::Color3 color3;
 
-    Joint* joint = reinterpret_cast<Joint*>(
-        reinterpret_cast<char*>(this) - 0x130);
+		PartPrimitive* prim0 = getPart0() ? getPart0()->getPrimitive() : NULL;
+		PartPrimitive* prim1 = getPart1() ? getPart1()->getPrimitive() : NULL;
 
-    Primitive* p0 = joint->getPart0()
-        ? &joint->getPart0()->primitive : 0;
-    Primitive* p1 = joint->getPart1()
-        ? &joint->getPart1()->primitive : 0;
+		G3D::Vector3 vec0 = prim0
+			? prim0->getCoordinateFrame().translation
+			: G3D::Vector3::zero();
 
-    static const Vector3 zero(0.0f, 0.0f, 0.0f);
-    Vector3 a(p0 ? p0->getTransform().position : zero);
-    Vector3 b(p1 ? p1->getTransform().position : zero);
-    Vector3 color(state->selected ? green() : red());
+		G3D::Vector3 vec1 = prim1
+			? prim1->getCoordinateFrame().translation
+			: G3D::Vector3::zero();
 
-    renderer->setFrame(Frame());
-    renderer->drawSegment(makeSegment(a, b), Color4(color, 1.0f), 0.1f);
+		if (joint->getActive())
+			color3 = G3D::Color3::green();
+		else
+			color3 = G3D::Color3::red();
+
+		adorn->setObjectToWorldMatrix(G3D::CoordinateFrame());
+
+		G3D::Color4 color4(color3);
+		adorn->lineSegment(
+			G3D::LineSegment::fromTwoPoints(vec0, vec1),
+			color4,
+			20.0);
+	}
+}
 }

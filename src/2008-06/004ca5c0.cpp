@@ -1,32 +1,48 @@
-// from server: 100% by colin
+// from server: 96% by EspClaude
 // roc-lang: cpp
 // roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast
-// roc-lib: rbxgs-net-dll roc_unit_8d3c72e65ee3d2c3.cpp
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+// roc-lib: rbxgs-net-dll roc_espclaude_8d7926d34454cc7a.cpp
 
 // Candidate translation unit (score above; library headers required).
-#undef _RELEASEASSERT
 #include <BitStream.h>
-#include "Streaming.h"
 #include <stdexcept>
-namespace RBX { namespace Network {
-void readBrickVector(RakNet::BitStream& stream, G3D::Vector3& value) {
+#include <G3D/Vector3.h>
+
+namespace RBX {
+namespace Network {
+
+RakNet::BitStream& operator>>(RakNet::BitStream& stream, bool& value);
+
+class IPhysicsSender {
+public:
+    static void readPosition(RakNet::BitStream& bitStream, G3D::Vector3& position);
+};
+
+void IPhysicsSender::readPosition(RakNet::BitStream& bitStream, G3D::Vector3& position)
+{
     bool compressed;
-    stream >> compressed;
-    if (compressed) {
-        unsigned int x = 0, y = 0, z = 0;
-        if (!stream.ReadBits((unsigned char*)&x,11)) throw std::runtime_error("readBrickVector x failed");
-        if (!stream.ReadBits((unsigned char*)&y,11)) throw std::runtime_error("readBrickVector y failed");
-        if (!stream.ReadBits((unsigned char*)&z,11)) throw std::runtime_error("readBrickVector z failed");
-        if (x & 0x400) x |= 0xfffffc00;
-        if (z & 0x400) z |= 0xfffffc00;
-        value.x = (short)x * 0.5f;
-        value.y = (unsigned short)y * 0.1f;
-        value.z = (short)z * 0.5f;
-    } else {
-        stream >> value.x;
-        stream >> value.y;
-        stream >> value.z;
+    bitStream >> compressed;
+    if (compressed)
+    {
+        unsigned short x, y;
+        unsigned int z = 0;
+        if (!bitStream.ReadBits((unsigned char*)&x, 15))
+            throw std::runtime_error("IPhysicsSender::readPosition failed reading x");
+        if (!bitStream.ReadBits((unsigned char*)&y, 14))
+            throw std::runtime_error("IPhysicsSender::readPosition failed reading y");
+        if (!bitStream.ReadBits((unsigned char*)&z, 15))
+            throw std::runtime_error("IPhysicsSender::readPosition failed reading z");
+        position.x = x * 0.0625f - 1024.0f;
+        position.y = y * 0.0625f - 512.0f;
+        position.z = (unsigned short)z * 0.0625f - 1024.0f;
+    }
+    else
+    {
+        if (!bitStream.ReadVector(position.x, position.y, position.z))
+            throw std::runtime_error("IPhysicsSender::readPosition failed reading vector");
     }
 }
-}}
+
+}
+}

@@ -1,170 +1,130 @@
-// from server: 88% by king_originala
-extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
-#pragma intrinsic(_InterlockedExchangeAdd)
-extern "C" long __cdecl _InterlockedDecrement(volatile long*);
-#pragma intrinsic(_InterlockedDecrement)
+// from server: 100% by EspClaude
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+// roc-lib: rbxgs-dll roc_espclaude_a3684b884100130e.cpp
 
-void __cdecl operator delete(void *) throw();
-
-extern unsigned long table_0[];
-extern unsigned long table_10[];
-extern unsigned long table_14[];
-extern unsigned long table_20[];
-extern unsigned long table_24[];
-extern unsigned long table_44[];
-extern unsigned long table_64[];
-extern unsigned long table_84[];
-extern unsigned long table_A4[];
-extern unsigned long table_C4[];
-extern unsigned long table_130[];
-extern unsigned long table_134[];
-
-struct Counted {
-    virtual void unused();
-    virtual void dispose();
-    virtual void destroy();
-    volatile long strong;
-    volatile long weak;
+// Candidate translation unit (score above; library headers required).
+#define _DLL
+#include <stddef.h>
+#include <memory>
+#include <windows.h>
+#include <string>
+#include <vector>
+#include <set>
+#include <boost/shared_ptr.hpp>
+#include <boost/enable_shared_from_this.hpp>
+namespace RBX {
+class Name;
+class Instance;
+struct DebugMember { DebugMember(); ~DebugMember(); int a, b; };
+class __declspec(novtable) Debugable {
+public:
+	virtual void dump();
+	bool validating;
+	DebugMember member;
+	Debugable() : validating(false) {}
 };
-
-struct Shared {
-    void *object;
-    Counted *count;
-    ~Shared();
+class Object {
+public:
+	virtual ~Object() {}
 };
-
-inline Shared::~Shared()
+template<class T> class Creatable : public Object { };
+template<class T> class AbstractFactoryProduct : public Creatable<T> {
+protected:
+	AbstractFactoryProduct() {}
+public:
+	virtual const Name& getClassName() const = 0;
+};
+class DescribedBase0 { public: virtual ~DescribedBase0(); int a, b; };
+class DescribedBase1 { public: virtual ~DescribedBase1(); };
+class Described : public DescribedBase0, public DescribedBase1 {
+public:
+	Described();
+	virtual ~Described();
+};
+template<int N> class Notifier {
+public:
+	Notifier();
+	virtual ~Notifier();
+	char pad[0x1c];
+};
+template<class T> class Association {
+	std::vector<boost::shared_ptr<T> > v;
+};
+extern long instanceCount;
+class Instance : public boost::enable_shared_from_this<Instance>,
+                 public Debugable,
+                 public AbstractFactoryProduct<Instance>,
+                 public Described,
+                 public Notifier<0>,
+                 public Notifier<1>,
+                 public Notifier<2>,
+                 public Notifier<3>,
+                 public Notifier<4>,
+                 public Notifier<5>
 {
-    Counted *p = count;
-    if (p && _InterlockedDecrement(&p->strong) == 0) {
-        p->dispose();
-        if (_InterlockedDecrement(&p->weak) == 0)
-            p->destroy();
-    }
+private:
+	Association<Instance> assoc;
+	Instance* parent;
+	boost::shared_ptr<std::vector<boost::shared_ptr<Instance> > > children;
+	std::string name;
+	bool archivable;
+protected:
+	Instance();
+public:
+	virtual ~Instance();
+public:
+	virtual const Name& getClassName() const;
+};
+
+template<class Class, class Base> class DescribedCreatable : public Base {
+protected:
+	DescribedCreatable();
+	virtual ~DescribedCreatable();
+};
+class RunService;
+class RunTransition;
+class Heartbeat;
+template<class Class, class Event> class Listener {
+public:
+	virtual void onEvent(const Class* source, const Event& event) {}
+};
+class Script;
+struct lua_State;
+namespace Stats { class Item; }
+namespace Lua {
+class ThreadRef { public: ~ThreadRef(); char pad[0x20]; };
+class YieldEvent { public: ~YieldEvent(); };
+class YieldingThreads { public: int a; YieldEvent event; };
 }
-
-struct Resource {
-    char storage[4];
-    ~Resource();
-};
-
-struct Owned {
-    char storage[4];
-    Resource resource;
-    ~Owned();
-};
-
-inline Owned::~Owned()
+class LuaAllocator { public: ~LuaAllocator(); };
+class Member1D0 { public: ~Member1D0(); int a, b; };
+class Member1D8Inner { public: ~Member1D8Inner(); char pad[0x18]; };
+class ScriptContext : public DescribedCreatable<ScriptContext, Instance>,
+                      public Listener<RunService, RunTransition>,
+                      public Listener<RunService, Heartbeat>
 {
-}
-
-struct Thread {
-    void *handle;
-    int field_4;
-    char flag_8;
-    ~Thread();
+private:
+	lua_State* globalState;
+	Lua::ThreadRef commandLineSandbox;
+	std::set<Script*> scripts;
+	__int64 nextPendingScripts;
+	std::vector<boost::shared_ptr<Script> > pendingScripts;
+	boost::shared_ptr<RunService> runService;
+	std::auto_ptr<Lua::YieldingThreads> yieldEvent;
+	bool scriptsDisabled;
+	boost::shared_ptr<Stats::Item> statsItem;
+	char pad1b8[0x14];
+public:
+	std::auto_ptr<LuaAllocator> allocator;
+	Member1D0 m1d0;
+	Member1D8Inner m1d8;
+	char* buffer;
+	virtual ~ScriptContext();
 };
-
-struct OwnedPointer {
-    Owned *pointer;
-    ~OwnedPointer();
-};
-
-inline OwnedPointer::~OwnedPointer()
-{
-    delete pointer;
-}
-
-struct ThreadPointer {
-    Thread *pointer;
-    ~ThreadPointer();
-};
-
-inline ThreadPointer::~ThreadPointer()
-{
-    delete pointer;
-}
-
-struct Member13C {
-    char storage[0x20];
-    ~Member13C();
-};
-
-struct Member15C {
-    char storage[0x2c];
-    ~Member15C();
-};
-
-struct Member188 {
-    char storage[0x18];
-    ~Member188();
-};
-
-struct Member1D0 {
-    void *object;
-    bool criticalSection;
-    ~Member1D0();
-};
-
-struct Member1D8 {
-    char storage[0x18];
-    ~Member1D8();
-};
-
-struct Base {
-    unsigned long *volatile table0;
-    char pad04[0x0c];
-    unsigned long *volatile table10;
-    unsigned long *volatile table14;
-    char pad18[8];
-    unsigned long *volatile table20;
-    unsigned long *volatile table24;
-    char pad28[0x1c];
-    unsigned long *volatile table44;
-    char pad48[0x1c];
-    unsigned long *volatile table64;
-    char pad68[0x1c];
-    unsigned long *volatile table84;
-    char pad88[0x1c];
-    unsigned long *volatile tableA4;
-    char padA8[0x1c];
-    unsigned long *volatile tableC4;
-    char padC8[0x68];
-    unsigned long *volatile table130;
-    unsigned long *volatile table134;
-    char pad138[4];
-    ~Base();
-};
-
-struct ScriptContext : Base {
-    Member13C member13C;
-    Member15C member15C;
-    Member188 member188;
-    Shared member1A0;
-    OwnedPointer member1A8;
-    char pad1AC[4];
-    Shared member1B0;
-    char pad1B8[0x14];
-    ThreadPointer member1CC;
-    Member1D0 member1D0;
-    Member1D8 member1D8;
-    void *volatile memory;
-    ~ScriptContext();
-};
-
 ScriptContext::~ScriptContext()
 {
-    table0 = table_0;
-    table10 = table_10;
-    table14 = table_14;
-    table20 = table_20;
-    table24 = table_24;
-    table44 = table_44;
-    table64 = table_64;
-    table84 = table_84;
-    tableA4 = table_A4;
-    tableC4 = table_C4;
-    table130 = table_130;
-    table134 = table_134;
-    operator delete(memory);
+	delete buffer;
+}
 }

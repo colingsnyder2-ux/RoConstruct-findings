@@ -1,3 +1,4 @@
+// from server: 100% by colin
 // from server: 99% by EspClaude
 // from server: 63% by colin
 // roc 2008-06 004c9e30  unit: RBX::VInstance::?$NonFactoryProduct  size: 472 bytes
@@ -457,7 +458,7 @@ bool Sender::update(const CoordinateFrame& reference, Part* other, int newSequen
         return false;
 
     float radius;
-    Sphere* sphere = part->ball.getSphere();
+    Part* current = part; Sphere* sphere = current->ball.getSphere();
     if (sphere) {
         scale = clamp(sphere->getRadius() * 2.0f, scale, maxScale);
         radius = sphere->getRadius();
