@@ -1,85 +1,53 @@
-// from server: 55% by colin
-extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
-#pragma intrinsic(_InterlockedExchangeAdd)
+// from server: 100% by EspClaude
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: atl-9.0-dll-rtm roc_espclaude_720efa37bcc08351.cpp
 
-extern "C" void* __cdecl G_func_6a0968();
-extern "C" void __cdecl G_func_6a0962(void*);
-extern "C" void __cdecl G_func_6a095c(void*, void*);
-extern "C" void __cdecl G_func_6a067a(void*);
+// Candidate translation unit (score above; library headers required).
+#ifndef _CPPUNWIND
+#define _CPPUNWIND 1
+#endif
+#ifndef _AFXDLL
+#define _AFXDLL
+#endif
+#include <new>
+#include <afxwin.h>
+#include <fstream>
+#include <memory>
+#include <intrin.h>
 
-extern "C" void* __stdcall G_imp_802360(void*, int);
-extern "C" void* __stdcall G_imp_802364(void*, void*);
-extern "C" void* __stdcall G_imp_8023d4(void*);
-extern "C" void* __stdcall G_imp_803ed8(void*, const char*, int, int);
-extern "C" void* __stdcall G_imp_803ee0(void*);
-extern "C" void* __stdcall G_imp_803f14(void*);
+struct sp_counted_base { void* vtbl; long use_count_; long weak_count_; };
+template<class T> struct shared_ptr {
+    T* px; sp_counted_base* pn;
+    shared_ptr(const shared_ptr& r) : px(r.px), pn(r.pn) { if (pn) _InterlockedIncrement(&pn->use_count_); }
+    ~shared_ptr();
+};
+struct DataModel;
+struct PathString {
+    char* m_pszData;
+    __declspec(dllimport) PathString(const wchar_t* psz);
+    __declspec(dllimport) operator const char*() const throw();
+    __declspec(dllimport) ~PathString() throw();
+};
+struct Lock { Lock(shared_ptr<DataModel> dm); ~Lock(); int a, b, c; };
+struct Writer { ~Writer(); int x; };
 
-void __cdecl G_func_411b40(void*);
-void __cdecl G_func_413a70(void*);
-void __cdecl G_func_5773c0(void*);
-
-struct S {
-    void* field00;
-    void* field04;
-    void* field08;
-    void* field0C;
-    void* field10;
-    void* field14;
-    void* field18;
-    void* field1C;
-    void* field20;
-    void* field24;
-    void* field28;
-
-    void f(void* a, void* b);
-    void* g1();
-    void g2(void*, void*);
+class VCWorkspace {
+public:
+    char pad[0x24];
+    shared_ptr<DataModel> dm;
+    std::auto_ptr<Writer> createWriter();
+    void write(Writer* w, std::ostream& s);
+    HRESULT __stdcall Save(BSTR path) throw();
 };
 
-void S::f(void* a, void* b)
+HRESULT __stdcall VCWorkspace::Save(BSTR path) throw()
 {
-    char buf[0xA8];
-
-    void* v1 = G_func_6a0968();
-    G_func_6a0962(v1);
-
-    G_imp_802360(buf + 0x1C, 1);
-
-    void* h = G_imp_803ed8(buf + 0x04, (const char*)a, 0x22, 0x40);
-    void* r = G_imp_803ee0(h);
-    G_imp_802364(buf + 0x24, r);
-
-    G_imp_803f14(buf + 0x04);
-
-    void* p24 = field24;
-    void* p28 = field28;
-    *(void**)(buf + 0x18) = p24;
-    *(void**)(buf + 0x1C) = p28;
-    if (p28) {
-        _InterlockedExchangeAdd((volatile long*)((char*)p28 + 4), 1);
-    }
-
-    G_func_411b40(buf + 0x14);
-
-    void* q = g1();
-    void* v = *(void**)q;
-    g2(v, buf + 0x18);
-
-    void* c = *(void**)(buf + 0x04);
-    if (c) {
-        G_func_413a70(c);
-        G_func_6a067a(c);
-    }
-
-    G_func_5773c0(buf + 0x0C);
-    G_imp_8023d4(buf + 0x18);
-
-    void* e = *(void**)(buf + 0x0C);
-    if (e) {
-        *(void**)((char*)e + 4) = *(void**)(buf + 0x08);
-    }
-
-    if (*(void**)(buf + 0x14)) {
-        G_func_6a095c(0, *(void**)(buf + 0x10));
-    }
+    AFX_MANAGE_STATE(AfxGetAppModuleState());
+    std::ofstream stream;
+    stream.open(PathString(path), std::ios::out | std::ios::binary);
+    Lock lock(dm);
+    write(createWriter().get(), stream);
+    return S_OK;
 }

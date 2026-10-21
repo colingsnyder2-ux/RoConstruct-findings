@@ -1,19 +1,8 @@
+// from server: 70% by EspClaude
 // from server: 61% by atomic.potato
-struct CXTIconHandle {
-    char pad0[0x14];
-    char field14[0x18];
-    int field2c;
-    int field30;
-    int field34;
-    CXTIconHandle();
-};
-
-extern "C" void __fastcall sub_401840(void*);
-
-CXTIconHandle::CXTIconHandle()
-{
-    sub_401840(&field14);
-    field2c = 0;
-    field30 = 0;
-    field34 = 0;
-}
+// roc 2008-06 007a5c4f  unit: CXTIconHandle  size: 52 bytes
+// Make this compile to the exact bytes below, then: roc check 2008-06 007a5c4f
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /MD
+// roc-archive: msvc-atlmfc-rtm atls.lib/f:/dd/vctools/vc7libs/ship/atlmfc/src/atl/atls/staticrelease/obj1r/i386/atlbase.obj

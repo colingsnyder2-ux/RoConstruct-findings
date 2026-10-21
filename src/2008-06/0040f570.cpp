@@ -1,50 +1,84 @@
-// from server: 88% by colin
-// from server: 86% by colin
-//
+// from server: 100% by EspClaude
+// roc 2008-06 0040f570  unit: VCBrowserViewExternal::?$CComObject  size: 103 bytes
 
-struct Entry {
-    void* object;
+struct IUnknown {
+    virtual long __stdcall QueryInterface(const void*, void**) = 0;
+    virtual unsigned long __stdcall AddRef() = 0;
+    virtual unsigned long __stdcall Release() = 0;
 };
+
+struct CException {
+    void Delete();
+};
+
+__declspec(noreturn) void __stdcall AtlThrow(long);
+
+struct CopyInterface {
+    static long copy(IUnknown** p1, IUnknown** p2)
+    {
+        int cond = !!(p1 != 0 && p2 != 0);
+        if (!cond)
+            AtlThrow((long)0x80004005);
+        *p1 = *p2;
+        if (*p1)
+            (*p1)->AddRef();
+        return 0;
+    }
+};
+
+struct CComPtrUnk {
+    IUnknown* p;
+    IUnknown* operator=(IUnknown* lp)
+    {
+        if (p != lp) {
+            if (lp)
+                lp->AddRef();
+            if (p)
+                p->Release();
+            p = lp;
+        }
+        return p;
+    }
+};
+
+typedef IUnknown* Entry;
 
 struct S {
     void* vtable;
-    long references;
-    Entry* begin;
-    Entry* end;
-    Entry* current;
-    unsigned long flags;
-    void* owner;
+    CComPtrUnk m_spUnk;
+    Entry* m_begin;
+    Entry* m_end;
+    Entry* m_iter;
+    unsigned long m_dwFlags;
 
-    long Init(Entry* first, Entry* last, void* source, unsigned long mode);
+    long Init(Entry* begin, Entry* end, IUnknown* pUnk, unsigned long flags);
 };
 
-long S::Init(Entry* first, Entry* last, void* source, unsigned long mode)
+long S::Init(Entry* begin, Entry* end, IUnknown* pUnk, unsigned long flags)
 {
-    if (mode == 3) {
+    if (flags == 3) {
         try {
-            begin = new Entry[last - first];
+            m_begin = new Entry[end - begin];
         }
-        catch (...) {
-            begin = 0;
+        catch (CException* e) {
+            e->Delete();
         }
-
-        if (!begin)
+        m_iter = m_begin;
+        if (m_begin == 0)
             return (long)0x8007000E;
-
-        end = begin;
-        while (first != last) {
-            *end = *first;
-            ++end;
-            ++first;
+        for (Entry* i = begin; i != end; i++) {
+            long hr = CopyInterface::copy(m_iter, i);
+            if (hr < 0)
+                return hr;
+            m_iter++;
         }
+        m_end = m_begin + (end - begin);
     } else {
-        begin = first;
-        end = last;
+        m_begin = begin;
+        m_end = end;
     }
-
-    current = begin;
-    flags = mode;
-    owner = source;
+    m_spUnk = pUnk;
+    m_iter = m_begin;
+    m_dwFlags = flags;
     return 0;
 }
-

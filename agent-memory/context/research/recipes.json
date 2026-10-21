@@ -22604,5 +22604,95 @@
     ],
     "output": "work\\big-mining-2008-20261020\\twod-native-guarded-postfix-family",
     "next": "Only server verified exact gains. Do not reuse failing arrow-wide or all-Texture-member import substitutions; genuine get-only import ties44."
+  },
+  "native-standard-verbs-family-2008": {
+    "op": "fanout",
+    "client": "2008-06",
+    "library": "Native StandardVerbs60-member command composition and genuine public Name/Boost once helpers",
+    "hypothesis": "005c7ea02676B verified14to100 with full0x704 owner and native bases. Scan unchanged emitted constructors/destructors and Name helper bodies against all unresolved functions.",
+    "sources": [
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_standard_verbs_native_be96e67eb3737148.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MD"
+        ]
+      }
+    ],
+    "output": "work/big-mining-2008-20261020/standard-verbs-native-family",
+    "verification": "Retain local hits, then submit through Player Mining with actual model gpt-6.1-sol; no roc stage attribution for LLM-authored source.",
+    "next": "Preserve exact parent; use proven full owner to rebuild native document commands without fake padding."
+  },
+  "native-doc-command-gates-2008": {
+    "op": "grid",
+    "client": "2008-06",
+    "library": "Native document command initializer with exact StandardVerbs owner and real MFC90 public CString boundary",
+    "hypothesis": "New native00451b603108B source verified15to67; native frame64 and all object/command contracts retained. Bound inlining/space defaults only after complete body recovery.21022 only: MFC90 original SDK and parent constructor exact use this compiler.",
+    "targets": {
+      "addresses": [
+        "00451b60"
+      ],
+      "scores": [
+        0,
+        99
+      ]
+    },
+    "seed_sources": {
+      "2008-06": {
+        "00451b60": "work/big-mining-2008-20261020/doc-native-cppunwind.cpp"
+      }
+    },
+    "builds": [
+      21022
+    ],
+    "profiles": [
+      "/O2 /GS- /EHsc /MD",
+      "/O2 /Ob1 /Oi /Ot /Oy /GF /GS- /EHsc /MD",
+      "/O2 /Ob2 /Oi /Os /Oy /GF /GS- /EHsc /MD",
+      "/O1 /Ob2 /Oy /GF /GS- /EHsc /MD"
+    ],
+    "keep_partials": true,
+    "reuse_history": true,
+    "reuse_objects": true,
+    "improvement_only": true,
+    "output": "work/big-mining-2008-20261020/doc-native-gates",
+    "verification": "Local retention only; manual Player Mining submission with model gpt-6.1-sol, preserving actual source authorship.",
+    "next": "Preserve verified67 or higher; no repeated unchanged gate/source pairs.",
+    "result": {
+      "date": "2026-10-21",
+      "status": "parked",
+      "checks": 4,
+      "errors": 0,
+      "improvements_above67": 0,
+      "evidence": "work/big-mining-2008-20261020/doc-native-gates/summary.json"
+    }
+  },
+  "native-doc-command-family-2008": {
+    "op": "fanout",
+    "client": "2008-06",
+    "library": "Native document command/MFC90 and actual StandardVerbs lifecycle family",
+    "hypothesis": "00451b603108B verified15to67 after actual command/COM/public-CString recovery; scan unchanged emitted genuine SDK and command helpers once.",
+    "sources": [
+      {
+        "recipe": "rbxgs-atl90-dll",
+        "files": [
+          "roc_doc_native_factory_nothrow_72f2eb7fcd5d8f26.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MD"
+        ]
+      }
+    ],
+    "output": "work/big-mining-2008-20261020/doc-native-family",
+    "verification": "Local retention then actual-model gpt-6.1-sol Player Mining for gains; no automatic roc-stage source attribution.",
+    "next": "Preserve best native document source; no unchanged family/gate repeats."
   }
 }

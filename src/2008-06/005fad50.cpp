@@ -1,33 +1,21 @@
-// from server: 86% by colin
-struct S_func_005fa610 {
-    char pad0[4];
-    int m_x;
-    int* f();
-};
+// from server: 100% by Espeon
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+// roc-lib: rbxgs-dll roc_espeon_kernelindexoffset_1f119e5d97fd81c5.cpp
 
-struct Buffer {
-    S_func_005fa610** data;
-    int size;
-    void append(S_func_005fa610* const*);
+// Candidate translation unit (score above; library headers required).
+#undef _RELEASEASSERT
+#undef _DEBUG
+#include "v8kernel/Connector.h"
+#include "util/IndexArray.h"
+struct KernelDataRecovered {
+ char preceding[0x30];
+ RBX::IndexArray<RBX::Connector,&RBX::Connector::getKernelIndex> connectors;
 };
-
-struct Storage {
-    char pad0[0x30];
-    Buffer buffer;
+struct KernelRecovered {
+ char preceding[0x10];
+ KernelDataRecovered* kernelData;
+ void insertConnector(RBX::Connector*);
 };
-
-struct S {
-    char pad0[0x10];
-    Storage* storage;
-    void f(S_func_005fa610* value);
-};
-
-void S::f(S_func_005fa610* value)
-{
-    Storage* st = storage;
-    Buffer* buffer = &st->buffer;
-    int size = buffer->size;
-    S_func_005fa610* copy = value;
-    *copy->f() = size;
-    buffer->append(&copy);
-}
+void KernelRecovered::insertConnector(RBX::Connector*c){kernelData->connectors.fastAppend(c);}

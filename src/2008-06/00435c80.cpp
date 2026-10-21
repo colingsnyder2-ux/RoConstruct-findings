@@ -1,132 +1,18 @@
-// from server: 70% by king_originala
-extern "C" {
-extern long (__stdcall *SendMessageA)(void *, unsigned int, unsigned int, long);
-extern void (__cdecl *_invalid_parameter_noinfo)();
-}
+// from server: 100% by Espeon
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: rbxgs-dll roc_espeon_declarationviewnative5f28cccaa2e0ec62.cpp
 
-struct Mutex {
-    void *handle;
-    bool criticalSection;
-    unsigned int count;
-    void lock();
-    void unlock();
-};
-
-Mutex *__cdecl getMutex();
-
-struct Lock {
-    Mutex *mutex;
-    bool active;
-
-    Lock(Mutex *p) : mutex(p), active(false) {
-        mutex->lock();
-        active = true;
-    }
-
-    ~Lock() {
-        if (active)
-            mutex->unlock();
-    }
-};
-
-struct Iterator {
-    void *owner;
-    unsigned int position;
-};
-
-struct Range {
-    void *owner;
-    char padding[8];
-    unsigned int first;
-    unsigned int last;
-
-    Iterator begin();
-    Iterator end();
-};
-
-inline Iterator Range::begin()
-{
-    Iterator result;
-    result.position = first;
-    if (result.position > last)
-        _invalid_parameter_noinfo();
-    result.owner = owner;
-    return result;
-}
-
-inline Iterator Range::end()
-{
-    Iterator result;
-    result.position = last;
-    if (first > result.position)
-        _invalid_parameter_noinfo();
-    result.owner = owner;
-    return result;
-}
-
-struct Source {
-    char padding0[8];
-    Range firstRange;
-    char padding1[0x20];
-    Range secondRange;
-    char padding2[0x20];
-    Range thirdRange;
-};
-
-struct CDeclarationView;
-
-typedef void (__cdecl *MemberFunction)(CDeclarationView *, void *);
-
-struct Function {
-    MemberFunction function;
-    int adjustment;
-    CDeclarationView *object;
-    int unused;
-
-    Function(MemberFunction f, CDeclarationView *p);
-};
-
-inline Function::Function(MemberFunction f, CDeclarationView *p)
-    : function(f), adjustment(0), object(p)
-{
-}
-
-Function __cdecl traverse(Iterator first, Iterator last, Function function);
-
-void __cdecl firstCallback(CDeclarationView *, void *);
-void __cdecl secondCallback(CDeclarationView *, void *);
-void __cdecl thirdCallback(CDeclarationView *, void *);
-int __stdcall compareItems(long, long, long);
-
-struct Sort {
-    long parameter;
-    int (__stdcall *compare)(long, long, long);
-};
-
-struct CDeclarationView {
-    char padding0[0x20];
-    void *window;
-    char padding1[0x88];
-    Source *source;
-
-    void update(Source *);
-};
-
-void CDeclarationView::update(Source *p)
-{
-    SendMessageA(window, 0x1101, 0, (long)0xffff0000);
-    source = p;
-    Lock lock(getMutex());
-
-    traverse(p->firstRange.begin(), p->firstRange.end(),
-             Function(firstCallback, this));
-    traverse(p->thirdRange.begin(), p->thirdRange.end(),
-             Function(thirdCallback, this));
-    traverse(p->secondRange.begin(), p->secondRange.end(),
-             Function(secondCallback, this));
-
-    Sort sort;
-    sort.parameter = (long)0xffff0000;
-    sort.compare = compareItems;
-    SendMessageA(window, 0x1115, 0, (long)&sort);
-}
+// Candidate translation unit (score above; library headers required).
+#include "reflection/object.h"
+#include <boost/bind.hpp>
+#include <boost/thread/recursive_mutex.hpp>
+#include <algorithm>
+#include <windows.h>
+#include <commctrl.h>
+using namespace RBX::Reflection;
+extern boost::recursive_mutex&getMutex();
+struct First{virtual ~First();};struct Second{virtual ~Second();};
+struct View:First,Second{char prefix[0x18];HWND window;char gap[0x88];const ClassDescriptor*source;void update(const ClassDescriptor*);void addProperty(PropertyDescriptor*);void addFunction(FunctionDescriptor*);void addSignal(SignalDescriptor*);static int __stdcall compare(LPARAM,LPARAM,LPARAM);};
+void View::update(const ClassDescriptor*p){::SendMessageA(window,TVM_DELETEITEM,0,(LPARAM)TVI_ROOT);source=p;boost::recursive_mutex::scoped_lock lock(getMutex());std::for_each(p->PropertyContainer::descriptors_begin(),p->PropertyContainer::descriptors_end(),boost::bind(&View::addProperty,this,_1));std::for_each(p->FunctionContainer::descriptors_begin(),p->FunctionContainer::descriptors_end(),boost::bind(&View::addFunction,this,_1));std::for_each(p->SignalContainer::descriptors_begin(),p->SignalContainer::descriptors_end(),boost::bind(&View::addSignal,this,_1));TVSORTCB sort;sort.hParent=TVI_ROOT;sort.lpfnCompare=&View::compare;::SendMessageA(window,TVM_SORTCHILDRENCB,0,(LPARAM)&sort);}

@@ -1,58 +1,92 @@
-// from server: 45% by colin
-struct VCContent_CComObject {
-    int ProcessUrl(int a, int b);
+// from server: 89% by EspClaude
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: atl-9.0-dll-rtm roc_espclaude_af979041c543280d.cpp
+
+// Candidate translation unit (score above; library headers required).
+#ifndef _CPPUNWIND
+#define _CPPUNWIND 1
+#endif
+#ifndef _AFXDLL
+#define _AFXDLL
+#endif
+#include <new>
+#include <afxwin.h>
+#include <atlbase.h>
+#include <atlcom.h>
+#include <sstream>
+#include <string>
+
+extern const GUID IID_IContent;
+extern const GUID CLSID_Content;
+extern const GUID LIBID_RobloxLib;
+
+struct __declspec(uuid("00000000-0000-0000-0000-000000000001")) IContent : public IDispatch
+{
+    virtual HRESULT STDMETHODCALLTYPE Load(BSTR url) = 0;
 };
 
-extern "C" int __cdecl sub_41DCD0(int);
-extern "C" int __cdecl sub_429330(int, int, int);
-extern "C" int __cdecl sub_6A0968();
-extern "C" int __cdecl sub_6A0962(int, int);
-extern "C" int __cdecl sub_6A095C(int, int);
-extern "C" int __cdecl sub_409750(int);
-extern "C" int __cdecl sub_569A40(int, int, int, int);
-extern "C" int __cdecl sub_5DF620(int);
+class ATL_NO_VTABLE CContent :
+    public ATL::CComObjectRootEx<ATL::CComSingleThreadModel>,
+    public ATL::CComCoClass<CContent, &CLSID_Content>,
+    public ATL::ISupportErrorInfoImpl<&IID_IContent>,
+    public ATL::IDispatchImpl<IContent, &IID_IContent, &LIBID_RobloxLib, 1, 0>
+{
+public:
+    std::stringstream stream;
 
-struct Str {
-    char buf[0x20];
-    Str();
-    ~Str();
+DECLARE_PROTECT_FINAL_CONSTRUCT()
+
+BEGIN_COM_MAP(CContent)
+    COM_INTERFACE_ENTRY(IContent)
+    COM_INTERFACE_ENTRY(IDispatch)
+    COM_INTERFACE_ENTRY(ISupportErrorInfo)
+END_COM_MAP()
+
+    virtual HRESULT STDMETHODCALLTYPE Load(BSTR url);
 };
 
-struct Str2 {
-    char buf[0x38];
-    Str2();
-    ~Str2();
+
+struct CStr {
+    char* m_pszData;
+    __declspec(dllimport) CStr() throw();
+    __declspec(dllimport) CStr(const wchar_t* psz);
+    __declspec(dllimport) ~CStr() throw();
+    __declspec(dllimport) operator const char*() const throw();
+    __declspec(dllimport) void __cdecl Format(const char* fmt, ...);
 };
 
-extern "C" void __stdcall mfc_1087(void*);
-extern "C" int __stdcall mfc_1117(void*, int);
-extern "C" int __stdcall mfc_2539(void*, int, int, int);
-extern "C" int __stdcall mfc_306(void*, int);
-extern "C" int __stdcall mfc_316(void*, int);
-extern "C" int __stdcall mfc_321(void*);
-extern "C" int __stdcall mfc_601(void*, int);
-extern "C" int __stdcall mfc_910(void*);
+HRESULT __cdecl CheckUrl(BSTR url);
+HRESULT __cdecl ReportError(const GUID& iid, const char* msg, HRESULT hr);
+HRESULT __cdecl ReportError(const GUID& iid, const std::exception& e);
 
-int VCContent_CComObject::ProcessUrl(int a, int b) {
-    Str s1;
-    int r = sub_41DCD0(b);
-    if (r == 0) {
-        Str2 s2;
-        int p = mfc_316(&a, b);
-        int q = sub_409750(p);
-        sub_569A40(q, a + 8, 1, (int)&s2);
-        sub_5DF620((int)&s2);
-        mfc_321(&a);
-        mfc_910(&s2);
-        return 0;
+class UrlContent {
+public:
+    UrlContent(const char* url);
+    ~UrlContent();
+    void load(std::iostream& stream, bool binary, std::string& error);
+private:
+    char data[0x38];
+};
+
+HRESULT STDMETHODCALLTYPE CContent::Load(BSTR url)
+{
+    AFX_MANAGE_STATE(AfxGetAppModuleState());
+    if (HRESULT hr = CheckUrl(url))
+    {
+        CStr msg;
+        msg.Format("Untrusted Url: %s", CStr(url));
+        return ReportError(IID_IContent, msg, hr);
     }
-    mfc_1087(&a);
-    int p1 = mfc_306(&a, b);
-    int p2 = mfc_1117(&a, 0x80EA80);
-    mfc_2539(&a, p2, p1, 0);
-    mfc_321(&a);
-    int p3 = mfc_601(&a, r);
-    int res = sub_429330(0x816518, p3, 0);
-    mfc_321(&a);
-    return res;
+    try
+    {
+        std::string error;
+        UrlContent(CStr(url)).load(stream, true, error);
+    }
+    catch (std::exception& e)
+    {
+        return ReportError(IID_IContent, e);
+    }
+    return S_OK;
 }

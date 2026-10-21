@@ -11,10 +11,10 @@ struct Frame {
 struct Body {
     unsigned char padding[0xc4];
     Vector3 value;
-    void updatePV();
+    void updatePV(int);
 };
 
-extern "C" int __cdecl sub_69fbdc(int, unsigned char *);
+extern "C" int __stdcall sub_69fbdc(int, unsigned char *);
 
 struct SoundChannel {
     unsigned char padding[0xc];
@@ -25,14 +25,16 @@ struct SoundChannel {
 
 void SoundChannel::sub_5ba3d0(int, int, int)
 {
-    unsigned char local = 0;
-    int v = field_c;
+    unsigned char local;
     Body *body = (Body *)((unsigned char *)this - 0x130);
+    int v = *(int*)((char*)body + 0x13c);
     if (v != 0) {
         if (sub_69fbdc(v, &local) == 0x24)
             return;
         if (local != 0)
             return;
-        body->updatePV();
+        body->updatePV(field_c);
     }
 }
+
+

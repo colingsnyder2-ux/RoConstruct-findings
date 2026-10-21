@@ -1,9 +1,7 @@
-// from server: 100% by EspClaude
-// from server: 93% by Espeon
 // roc-lang: cpp
 // roc-cl: 21022
-// roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: openrbx-client-dll roc_espclaude_338b4b802b570a5c.cpp
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+// roc-lib: openrbx-client roc_espclaude_338b4b802b570a5c.cpp
 
 // Candidate translation unit (score above; library headers required).
 #include <boost/shared_ptr.hpp>

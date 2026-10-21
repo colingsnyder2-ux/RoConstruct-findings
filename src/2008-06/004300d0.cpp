@@ -1,65 +1,16 @@
-// from server: 69% by colin
-struct RGB
-{
-    unsigned char r, g, b;
-};
+// from server: 96% by Espeon
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: rbxgs-dll roc_espeon_colorwrapperstdcallc35ca0bb947d16c0.cpp
 
-struct Color
-{
-    unsigned int value;
-    RGB getRGB() const;
-};
-
-struct Color3uint8
-{
-    unsigned char r, g, b;
-};
-
-struct CWrapperView
-{
-    void destroy(int);
-};
-
-struct Item
-{
-    void setRGB(unsigned int rgb);
-};
-
-extern unsigned int g_colorValue;
-
-extern "C" void *__cdecl sub_5b6270(void *destination, unsigned int value);
-extern "C" void *__cdecl sub_5106a0(void *destination, void *source);
-
-void CWrapperView::destroy(int param)
-{
-    int *view = (int *)param;
-    int *obj = (int *)view[5];
-    if (obj)
-    {
-        int *container = (int *)obj[0xfc / 4];
-        int idx = view[2];
-        Item *item;
-        if (idx >= 0 && idx < container[0x2c / 4])
-        {
-            int *arr = (int *)container[0x28 / 4];
-            item = (Item *)arr[idx];
-        }
-        else
-        {
-            item = 0;
-        }
-
-        unsigned int tmp = g_colorValue;
-        Color3uint8 c;
-        sub_5b6270(&c, tmp);
-        Color3uint8 c2;
-        sub_5106a0(&c2, &c);
-
-        unsigned int packed = ((unsigned int)c2.b << 16) | ((unsigned int)c2.g << 8) | (unsigned int)c2.r;
-        item->setRGB(packed);
-    }
-
-    int *vtable = (int *)view[0];
-    void (__thiscall *fn)(void *) = (void (__thiscall *)(void *))vtable[0];
-    fn(view);
-}
+// Candidate translation unit (score above; library headers required).
+#include "v8datamodel/BrickColor.h"
+#include "G3D/Color3uint8.h"
+struct Item {void setColor(unsigned);};
+struct Container {char prefix[0x28];Item** items;int count;};
+struct Owner {char prefix[0xfc];Container* container;};
+struct View {virtual void* dispose(unsigned);int reserved;int index;char gap[8];Owner* owner;};
+extern RBX::BrickColor selectedColor;
+struct Wrapper {void destroy(View*);};
+void __stdcall destroy(View* view){if(view->owner){Container* c=view->owner->container;Item* item=(view->index>=0 && view->index<c->count)?c->items[view->index]:0;RBX::BrickColor color=selectedColor;G3D::Color3uint8 rgb(color.color3());item->setColor(((unsigned(rgb.b)<<8|rgb.g)<<8)|rgb.r);}view->dispose(1);}

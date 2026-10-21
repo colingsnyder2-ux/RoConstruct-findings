@@ -1,8 +1,7 @@
-// from server: 100% by Espeon
 // roc-lang: cpp
 // roc-cl: 21022
-// roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: openrbx-client-dll roc_espeon_boundpropertyvirtual7ef855fee181828f.cpp
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+// roc-lib: openrbx-client roc_espeon_boundpropertyvirtual7ef855fee181828f.cpp
 
 // Candidate translation unit (score above; library headers required).
 #include "v8tree/Instance.h"

@@ -1,32 +1,27 @@
-// from server: 57% by colin
+#include <list>
+#include <algorithm>
+
 struct Link {
+    virtual void slot0();
+    virtual void slot1();
+    virtual Link* get();
     void update();
-};
-
-struct Item {
-    char padding[4];
-    Link *link;
-};
-
-struct List {
-    Item *head;
 };
 
 struct SimJobStage {
     char padding[0x24];
-    List *list;
+    std::list<Link*> links;
     void f();
+};
+
+struct Notify {
+    void operator()(Link* link) const {
+        if (link->get())
+            link->get()->update();
+    }
 };
 
 void SimJobStage::f()
 {
-    List *l = list;
-    Item *it = l->head;
-    while (it != (Item *)l) {
-        Link *link = it->link;
-        if (link->update(), link->update(), link != 0) {
-            link->update();
-        }
-        it = (Item *)it->padding;
-    }
+    std::for_each(links.begin(), links.end(), Notify());
 }

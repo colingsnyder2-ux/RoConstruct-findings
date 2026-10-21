@@ -1,23 +1,17 @@
-// from server: 80% by colin
-// from server: 55% by colin
-// roc 2008-06 004e5ff0  unit: RBX::ViewNew::PartChunk  size: 52 bytes
-struct Vector3 {
-    float x, y, z;
-    Vector3& operator=(const Vector3& o) { x = o.x; y = o.y; z = o.z; return *this; }
-};
-struct Matrix3 { float m[9]; };
-struct CoordinateFrame {
-    Matrix3 rotation;
-    Vector3 translation;
-};
-struct Body { const CoordinateFrame& getFrame(); };
+// from server: 100% by Espeon
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD /fp:fast
+// roc-lib: rbxgs-dll roc_espeon_partchunkcframe_bd1a1158d696da97.cpp
+
+// Candidate translation unit (score above; library headers required).
+#include "G3D/CoordinateFrame.h"
+struct Body { const G3D::CoordinateFrame& getFrame(); };
 struct PartChunk {
-    char pad0[0x28];
-    CoordinateFrame frame;
-    char pad58[0xbc - 0x58];
-    Body* body;
-    void copyFrom();
+ char reserved0[0x28];
+ G3D::CoordinateFrame frame;
+ char reserved58[0xbc-0x58];
+ Body* body;
+ const G3D::CoordinateFrame& cframe();
 };
-void PartChunk::copyFrom() {
-    frame = body->getFrame();
-}
+const G3D::CoordinateFrame& PartChunk::cframe() {frame=body->getFrame();return frame;}

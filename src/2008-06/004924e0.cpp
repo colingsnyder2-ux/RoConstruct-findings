@@ -1,67 +1,13 @@
-// from server: 68% by colin
-struct Subject {
-    void changed();
-    void assign();
-    void setFloat();
-    void finishFloat();
-};
+// from server: 100% by Espeon
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: rbxgs-dll roc_espeon_playercameraa3ca3ecaabfe7e3f.cpp
 
-struct Property;
-
-struct PropertyTable {
-    void* unused;
-    union {
-        Subject* (__thiscall *integer)(Property*, int);
-        Subject* (__thiscall *real)(Property*, float);
-        Subject* (__thiscall *pointer)(Property*, void*);
-    } access;
-};
-
-struct Property {
-    PropertyTable* table;
-};
-
-namespace RBX {
-    class Instance;
-    class ServiceProvider {
-    public:
-        char padding[0x288];
-        Property property;
-        void rebuild();
-    };
-}
-
-extern RBX::ServiceProvider* __cdecl func_00491e50(RBX::Instance*);
-extern void* __cdecl func_0049ac80(void*);
-extern void* __cdecl func_005d9a20(void*);
-extern const float value_0081c3b8;
-extern const float value_00821ca8;
-
-struct S {
-    char padding[0x170];
-    void* value;
-    void f();
-};
-
-void S::f()
-{
-    if (this != func_0049ac80(this))
-        return;
-
-    RBX::ServiceProvider* provider =
-        func_00491e50(reinterpret_cast<RBX::Instance*>(this));
-    void* current = value;
-    Property* property = &provider->property;
-
-    if (!current) {
-        property->table->access.integer(property, 0)->changed();
-        property->table->access.real(property, 0.0f)->setFloat();
-        property->table->access.real(property, value_0081c3b8)->finishFloat();
-    } else {
-        property->table->access.pointer(property, func_005d9a20(current))->assign();
-        property->table->access.integer(property, 5)->changed();
-        property->table->access.real(property, value_00821ca8)->setFloat();
-        property->table->access.real(property, value_0081c3b8)->finishFloat();
-        provider->rebuild();
-    }
-}
+// Candidate translation unit (score above; library headers required).
+#include "v8datamodel/Camera.h"
+struct CameraOwner{virtual void unused();virtual RBX::Camera*getCamera()const;};
+struct Workspace{char prefix[0x288];CameraOwner owner;void setDefaultMouseCommand();};
+struct Player{char prefix[0x170];void*character;void onCharacterChanged();};
+extern Player*findLocalPlayer(Player*);extern Workspace*findWorkspace(Player*);extern RBX::Instance*modelIsCharacter(void*);
+void Player::onCharacterChanged(){if(this==findLocalPlayer(this)){Workspace*w=findWorkspace(this);if(!character){w->owner.getCamera()->setCameraType(RBX::Camera::FIXED_CAMERA);w->owner.getCamera()->setDistanceFromTarget(0.0f);w->owner.getCamera()->zoom(-1.0f);}else{w->owner.getCamera()->setCameraSubject(modelIsCharacter(character));w->owner.getCamera()->setCameraType(RBX::Camera::CUSTOM_CAMERA);w->owner.getCamera()->setDistanceFromTarget(13.0f);w->owner.getCamera()->zoom(-1.0f);w->setDefaultMouseCommand();}}}

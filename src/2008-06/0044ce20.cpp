@@ -1,28 +1,23 @@
-// from server: 61% by colin
-extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
-#pragma intrinsic(_InterlockedExchangeAdd)
+struct Target {
+    virtual void invoke(int);
+};
 
 struct CRobloxModule {
-    void f(int);
+    void f(Target*);
 };
 
 extern "C" void* __cdecl sub_407BE0();
+extern "C" bool __cdecl sub_4061e0();
 
-void CRobloxModule::f(int a) {
-    void* v = sub_407BE0();
-    int state = *(int*)((char*)v + 0x134) - 1;
-    if (state == 0) {
-        int* p = (int*)a;
-        int* vt = (int*)*p;
-        void (*fn)() = (void (*)())*vt;
-        fn();
-    } else {
-        state -= 1;
-        if (state == 0) {
-            int* p = (int*)a;
-            int* vt = (int*)*p;
-            void (*fn)() = (void (*)())*vt;
-            fn();
-        }
+void CRobloxModule::f(Target* target)
+{
+    switch (*(int*)((char*)sub_407BE0() + 0x134)) {
+    case 1:
+        if (sub_4061e0())
+            target->invoke(1);
+        break;
+    case 2:
+        target->invoke(1);
+        break;
     }
 }
