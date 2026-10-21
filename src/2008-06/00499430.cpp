@@ -56,3 +56,5 @@ Result __cdecl reconstruct(int a, int b, Small c, volatile int d, Container e)
 {
     return Result(a, b, Temporary(c, d, e));
 }
+
+

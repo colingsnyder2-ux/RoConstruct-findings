@@ -1,20 +1,17 @@
-// from server: 82% by king_originala
-struct Callback {
-    virtual void invoke(void* root, int value) = 0;
-};
-
-struct S {
-    void f(int value, Callback* callback);
-};
-
-void S::f(int value, Callback* callback)
+// roc-cl: 21022
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+struct Source;
+struct Event { void* value; };
+struct Listener { virtual void onEvent(const Source*, Event) = 0; };
+struct Padding { char bytes[0x364]; };
+template <class T, class E> struct Notifier { void raise(E event, Listener* listener) const; int state; };
+struct Source : Padding, Notifier<Source, Event> {};
+template <class T, class E> void Notifier<T,E>::raise(E event, Listener* listener) const
 {
+    volatile char scratch[40];
     try {
-        void* root = this ? reinterpret_cast<char*>(this) - 0x364 : 0;
-        callback->invoke(root, value);
+        listener->onEvent(static_cast<const T*>(this), event);
     }
-    catch (...) {
-        volatile char scratch[40];
-        scratch[0] = 0;
-    }
+    catch (...) { scratch[0] = 0; }
 }
+template void Notifier<Source,Event>::raise(Event,Listener*) const;

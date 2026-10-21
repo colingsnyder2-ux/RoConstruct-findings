@@ -1,8 +1,8 @@
-// from server: 78% by Espeon
+// from server: 79% by EspClaude
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: rbxgs-dll roc_espeon_gridleveldelta270112a100926be7.cpp
+// roc-lib: rbxgs-dll roc_espclaude_3496249b694d5d18.cpp
 
 // Candidate translation unit (score above; library headers required).
 #include "util/Vector3int32.h"
@@ -29,7 +29,7 @@ void __cdecl selectLevel(int *level, const RBX::MotorJoint *joint,
     calculateBounds(0, input, minimum, maximum);
 
     Vec3i delta=Vec3i(maximum->x-minimum->x,maximum->y-minimum->y,maximum->z-minimum->z);
-    int volume=(delta.x+1)*(delta.y+1)*(delta.z+1);
+    int volume=(delta.x+1)*(delta.z+1)*(delta.y+1);
 
     while (volume > 100) {
         int current = *level;
@@ -45,6 +45,7 @@ void __cdecl selectLevel(int *level, const RBX::MotorJoint *joint,
         calculateBounds(current, input, minimum, maximum);
 
         delta=Vec3i(maximum->x-minimum->x,maximum->y-minimum->y,maximum->z-minimum->z);
-        volume=(delta.x+1)*(delta.y+1)*(delta.z+1);
+        volume=(delta.x+1)*(delta.z+1)*(delta.y+1);
     }
 }
+

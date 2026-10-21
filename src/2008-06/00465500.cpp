@@ -34,3 +34,4 @@ void CScriptEditor::close(int, int, int, int canceled)
         PostMessageA(window->handle, 0x10, 0, 0);
     }
 }
+

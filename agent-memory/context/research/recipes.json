@@ -22876,6 +22876,222 @@
       ""
     ],
     "keep_partials": true,
-    "output": "work/big-mining-2008-20261020/shadow-native-sdk-gates"
+    "output": "work/big-mining-2008-20261020/shadow-native-sdk-gates",
+    "result": {
+      "date": "2026-10-21T04:11:02.930940+00:00",
+      "checks": 3,
+      "errors": 0,
+      "improvements_above70": 0,
+      "scores": [
+        65,
+        70,
+        65
+      ],
+      "status": "parked",
+      "evidence": "work\\big-mining-2008-20261020\\shadow-native-sdk-gates"
+    }
+  },
+  "native-shadow-rank-family-2008": {
+    "op": "fanout",
+    "client": "2008-06",
+    "library": "Native RbxEntity shadow rank/plane/caster STL family",
+    "hypothesis": "New server70 genuine shadow collector emits authentic checked vector8 ranked values with observed floatsecond ordering and actual Plane/Caster APIs; propagate compiled helpers to all unresolved functions.",
+    "sources": [
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_shadow_native_minimum_referenced609de8660cb65e5.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MD /fp:fast"
+        ]
+      }
+    ],
+    "output": "work/big-mining-2008-20261020/shadow-native-family-fanout",
+    "result": {
+      "date": "2026-10-21T04:11:02.930940+00:00",
+      "objects": 1,
+      "new_exacts": 0,
+      "evidence": "work\\big-mining-2008-20261020\\shadow-native-family-fanout"
+    }
+  },
+  "native-cull-sdk-float-inline-gates-2008": {
+    "op": "grid",
+    "client": "2008-06",
+    "library": "Native Ogre RbxEntity adaptive visibility with binary-proven history contracts",
+    "hypothesis": "New native culling24to78, exact frame60, real SDK layouts and value growth clamp. Gate x87 inlining/size defaults once on this body before parking.",
+    "targets": {
+      "addresses": [
+        "0067daf0"
+      ],
+      "scores": [
+        0,
+        99
+      ]
+    },
+    "seed_sources": {
+      "2008-06": {
+        "0067daf0": "work\\big-mining-2008-20261020\\cull-native-value-growth-select.cpp"
+      }
+    },
+    "builds": [
+      21022
+    ],
+    "profiles": [
+      "/O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MD",
+      "/O2 /Ob1 /Oi /Ot /Oy /GF /GS- /EHsc /MD /fp:fast",
+      "/O2 /Ob2 /Oi /Os /Oy /GF /GS- /EHsc /MD /fp:fast"
+    ],
+    "keep_partials": true,
+    "reuse_history": true,
+    "reuse_objects": true,
+    "improvement_only": true,
+    "output": "work\\big-mining-2008-20261020\\cull-native-sdk-gates",
+    "verification": "Local retention only; manual Player Mining submissions with actual model gpt-6.1-sol.",
+    "result": {
+      "status": "parked",
+      "checks": 3,
+      "errors": 0,
+      "improvements_above78": 0,
+      "evidence": "work\\big-mining-2008-20261020\\cull-native-sdk-gates\\summary.json"
+    }
+  },
+  "native-cull-sdk-family-2008": {
+    "op": "fanout",
+    "client": "2008-06",
+    "library": "Native adaptive culling checked STL rank/state vectors",
+    "hypothesis": "Propagate new complete2039B culling78 SDK body helpers including vector8 index+float and byte states to unresolved code.",
+    "sources": [
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_cull_native_value_growth_selectd1e618c65f87b800.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MD /fp:fast"
+        ]
+      }
+    ],
+    "output": "work\\big-mining-2008-20261020\\cull-native-family-fanout",
+    "verification": "Local retention; manual actual-model submissions only.",
+    "result": {
+      "date": "2026-10-21T04:22:47.402117+00:00",
+      "objects": 1,
+      "new_exacts": 0,
+      "evidence": "work\\big-mining-2008-20261020\\cull-native-family-local-hits.json"
+    }
+  },
+  "native-part-material-context-gates-2008": {
+    "op": "grid",
+    "client": "2008-06",
+    "library": "Native ViewNew Part material generation with correct2849B owner",
+    "hypothesis": "New full typed Part material8to49, genuine G3D values/RCPs and native vtable/ContentId contracts. Gate inlining, x87 and packaged catch layout before further source lifetime recovery.",
+    "targets": {
+      "addresses": [
+        "004eb190"
+      ],
+      "scores": [
+        0,
+        99
+      ]
+    },
+    "seed_sources": {
+      "2008-06": {
+        "004eb190": "work\\big-mining-2008-20261020\\part-material-native-white-global.cpp"
+      }
+    },
+    "builds": [
+      21022
+    ],
+    "profiles": [
+      "/O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MD",
+      "/O2 /Ob1 /Oi /Ot /Oy /GF /GS- /EHsc /MD /fp:fast",
+      "/O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MD /fp:fast /Gy-"
+    ],
+    "keep_partials": true,
+    "reuse_history": true,
+    "reuse_objects": true,
+    "improvement_only": true,
+    "output": "work\\big-mining-2008-20261020\\part-material-native-gates",
+    "verification": "Local retention only; manual actual-model Player Mining submission.",
+    "result": {
+      "checks": 3,
+      "errors": 0,
+      "improvements_above49": 0,
+      "evidence": "work\\big-mining-2008-20261020\\part-material-native-gates\\summary.json"
+    }
+  },
+  "native-part-material-const-child-gates-2008": {
+    "op": "grid",
+    "client": "2008-06",
+    "library": "Native ViewNew Part material generation with correct2849B owner",
+    "hypothesis": "New const child-vector/cached end body49to57 has native exact frame0xc8. Gate new typed body with precise and Ob1; earlier49-body gates are separate evidence.",
+    "targets": {
+      "addresses": [
+        "004eb190"
+      ],
+      "scores": [
+        0,
+        99
+      ]
+    },
+    "seed_sources": {
+      "2008-06": {
+        "004eb190": "work\\big-mining-2008-20261020\\part-material-native-const-child-view.cpp"
+      }
+    },
+    "builds": [
+      21022
+    ],
+    "profiles": [
+      "/O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MD",
+      "/O2 /Ob1 /Oi /Ot /Oy /GF /GS- /EHsc /MD /fp:fast"
+    ],
+    "keep_partials": true,
+    "reuse_history": true,
+    "reuse_objects": true,
+    "improvement_only": true,
+    "output": "work\\big-mining-2008-20261020\\part-material-const-child-gates",
+    "verification": "Local retention only; manual actual-model Player Mining submission.",
+    "result": {
+      "checks": 2,
+      "errors": 0,
+      "improvements_above57": 0,
+      "evidence": "work\\big-mining-2008-20261020\\part-material-const-child-gates\\summary.json"
+    }
+  },
+  "native-part-material-sdk-family-2008": {
+    "op": "fanout",
+    "client": "2008-06",
+    "library": "Native Part material SDK value/reference and checked child iterators",
+    "hypothesis": "Complete native2849B Part material57 emits genuine G3D RCP/ContentId/string/checked vector APIs. Propagate once against unresolved code.",
+    "sources": [
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_part_material_native_const_child_view06f7e4a5fc831498.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MD /fp:fast"
+        ]
+      }
+    ],
+    "output": "work\\big-mining-2008-20261020\\part-material-native-family",
+    "verification": "Local retention only; manual actual-model Player Mining submissions.",
+    "result": {
+      "date": "2026-10-21T04:36:06.466360+00:00",
+      "objects": 1,
+      "new_exacts": 0,
+      "evidence": "work\\big-mining-2008-20261020\\part-material-native-family-hits.json"
+    }
   }
 }

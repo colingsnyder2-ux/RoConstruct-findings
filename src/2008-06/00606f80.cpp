@@ -2,7 +2,7 @@
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD /fp:fast
-// roc-lib: openrbx-client-dll roc_espeon_contactcreatebothloads_6894a10e0f014907.cpp
+// roc-lib: openrbx-client-dll roc_manual_contact_820ece28fd48f7e1.cpp
 
 // Candidate translation unit (score above; library headers required).
 extern "C" void _ReadWriteBarrier();
@@ -67,8 +67,8 @@ bool Contact::update()
                 result = create(left, right);
             }
 
-            Body* firstBody = part1->body;
             Body* secondBody = part2->body;
+            Body* firstBody = part1->body;
             Result* output = result;
             _ReadWriteBarrier();
             float first = firstBody->measure();
@@ -83,3 +83,4 @@ bool Contact::update()
     reset();
     return false;
 }
+

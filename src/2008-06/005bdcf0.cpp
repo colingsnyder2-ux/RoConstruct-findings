@@ -1,88 +1,77 @@
-// from server: 49% by colin
-extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
-#pragma intrinsic(_InterlockedExchangeAdd)
+// from server: 100% by EspClaude
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: rbxgs-dll roc_espclaude_a3cda7efa8cef2ca.cpp
 
-struct RefCounted {
-    virtual void destroy();
-    virtual void release();
-    long refs;
-    long weakRefs;
+// Candidate translation unit (score above; library headers required).
+#include <boost/shared_ptr.hpp>
+namespace RBX {
+class Instance {
+public:
+    virtual ~Instance();
+    char pad[0x12c];
+    void setParent(Instance* p);
 };
-
-struct Listener {
-    char padding[0x130];
-    void* slot;
+class RunService;
+class Heartbeat;
+template<class N, class E> class Listener {
+public:
+    virtual void onEvent(const N*, E);
 };
-
-struct SoundService {
-    char padding[0x130];
-    void* field130;
-    char padding2[0x34];
-    void* field168;
-    void update(void*, void*);
+template<class N, class E> class Notifier {
+public:
+    void addListener(Listener<N, E>* l) const;
+    void removeListener(Listener<N, E>* l) const;
 };
-
-extern void* (__thiscall *getInstance)(void*);
-extern void (__thiscall *removeListener)(void*, void*);
-extern void (__thiscall *addListener)(void*, void*);
-extern void (__thiscall *clearSlot)(void*, void*);
-extern void (__thiscall *destroySlot)(void*);
-extern void (__thiscall *resetService)(SoundService*);
-extern void (__thiscall *stopService)(SoundService*);
-extern void (__thiscall *refreshService)(SoundService*);
-extern void* (__thiscall *getSource)(void*);
-extern void (__thiscall *buildListener)(void*, SoundService*);
-extern void (__thiscall *assignSlot)(void*, void*);
-extern void (__thiscall *releaseRef)(RefCounted*);
-
-void SoundService::update(void* a, void* b)
+class RunService : public Instance, public Notifier<RunService, Heartbeat> { };
+class ServiceProvider {
+public:
+    RunService* findRunService() const;
+    Instance* createStats() const;
+};
+namespace Soundscape {
+class SoundService;
+}
+}
+class SoundServiceStatsItem : public RBX::Instance { };
+namespace RBX {
+boost::shared_ptr<SoundServiceStatsItem> createStatsItem(const Soundscape::SoundService* s);
+namespace Soundscape {
+class SoundService : public Instance, public Listener<RunService, Heartbeat>
 {
-    Listener* self = this ? (Listener*)((char*)this + 0x130) : 0;
-
-    if (a) {
-        void* inst = getInstance(a);
-        if (inst) {
-            removeListener((char*)inst + 0x130, self);
+public:
+    char pad2[0x168 - 0x134];
+    boost::shared_ptr<Instance> statsItem;
+    void openFmod();
+    void closeFmod();
+    void loadStockSounds();
+    virtual void onServiceProvider(const ServiceProvider* oldProvider, const ServiceProvider* newProvider);
+};
+void SoundService::onServiceProvider(const ServiceProvider* oldProvider, const ServiceProvider* newProvider)
+{
+    Listener<RunService, Heartbeat>* listener = this;
+    if (oldProvider) {
+        if (RunService* rs = oldProvider->findRunService())
+            rs->removeListener(listener);
+    }
+    if (statsItem) {
+        statsItem->setParent(NULL);
+        statsItem.reset();
+    }
+    if (oldProvider)
+        closeFmod();
+    Listener<RunService, Heartbeat>& listenerRef = *this;
+    if (newProvider) {
+        if (RunService* rs = newProvider->findRunService())
+            rs->addListener(&listenerRef);
+        openFmod();
+        loadStockSounds();
+        if (Instance* stats = newProvider->createStats()) {
+            statsItem = createStatsItem(this);
+            statsItem->setParent(stats);
         }
     }
-
-    if (field168) {
-        clearSlot(field168, 0);
-        destroySlot(&field168);
-    }
-
-    if (a) {
-        stopService(this);
-    }
-
-    if (b) {
-        void* inst = getInstance(b);
-        if (inst) {
-            addListener((char*)inst + 0x130, (char*)this + 0x130);
-        }
-
-        refreshService(this);
-        resetService(this);
-
-        void* src = getSource(b);
-        if (src) {
-            void* tmp;
-            buildListener(&tmp, this);
-
-            field168 = *(void**)tmp;
-            assignSlot(&field168, (char*)tmp + 4);
-
-            if (tmp) {
-                RefCounted* rc = (RefCounted*)tmp;
-                if (_InterlockedExchangeAdd(&rc->refs, -1) == 1) {
-                    rc->destroy();
-                    if (_InterlockedExchangeAdd(&rc->weakRefs, -1) == 1) {
-                        rc->release();
-                    }
-                }
-            }
-
-            clearSlot(field168, src);
-        }
-    }
+}
+}
 }

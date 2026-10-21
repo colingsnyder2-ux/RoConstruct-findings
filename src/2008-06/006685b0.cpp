@@ -1,10 +1,15 @@
-// from server: 56% by colin
+// from server: 86% by EspClaude
 // roc-lang: cpp
 // roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: openrbx-client App/v8world/JointStage.cpp
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast
+// roc-lib: openrbx-client-dll roc_espclaude_a4c2f15cc9ffe4ec.cpp
 
 // Candidate translation unit (score above; library headers required).
+#include <vector>
+#include <set>
+#include <map>
+#define private public
+#define protected public
 #include "v8world/JointStage.h"
 
 #include "decomp.h"
@@ -14,6 +19,8 @@
 
 #include <cstddef>
 #include <vector>
+#undef private
+#undef protected
 
 namespace RBX {
 ClumpStage* JointStage::getClumpStage()
@@ -48,13 +55,21 @@ void JointStage::insertToMap(Joint* j, Primitive* p)
 	}
 }
 
+static inline bool exDownstreamOfStage(IPipelined* p, IStage* iStage)
+{
+	IStage* current = p->currentStage;
+	IStage::StageType other = iStage->getStageType();
+	IStage::StageType mine = current->getStageType();
+	return mine > other;
+}
+
 bool JointStage::edgeHasPrimitivesDownstream(Edge* e)
 {
 	Primitive* prim0 = e->getPrimitive(0);
 	Primitive* prim1 = e->getPrimitive(1);
 
-	return prim0 != NULL && prim1 != NULL && prim0->inPipeline() && prim1->inPipeline() &&
-		   prim0->downstreamOfStage(this) && prim1->downstreamOfStage(this);
+	return prim0->inPipeline() && prim1->inPipeline() &&
+		   exDownstreamOfStage(prim0, this) && prim1->downstreamOfStage(this);
 }
 
 // FUNCTION: WEBSERVICE 0x10118350

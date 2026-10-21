@@ -1,113 +1,136 @@
-// from server: 49% by colin
-struct CMainFrame
+// from server: 100% by EspClaude
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: atl-9.0-dll-rtm roc_espclaude_92ffea660fe41891.cpp
+
+// Candidate translation unit (score above; library headers required).
+#include <memory>
+#include <atlbase.h>
+
+struct MfcString {
+    __declspec(dllimport) MfcString() throw();
+    __declspec(dllimport) ~MfcString();
+    __declspec(dllimport) void __cdecl Format(const char* fmt, ...);
+    char* p;
+};
+struct StdString {
+    __declspec(dllimport) ~StdString();
+    __declspec(dllimport) unsigned int size() const;
+    __declspec(dllimport) const char* c_str() const;
+    char storage[0x1c];
+};
+StdString getAppPath(bool a, bool b);
+
+class FrameBase {
+public:
+    FrameBase();
+    virtual ~FrameBase();
+    char pad[0xec];
+};
+namespace RBX {
+class RunService;
+class Heartbeat;
+template<class N, class E> class __declspec(novtable) Listener {
+public:
+    virtual void onEvent(const N*, E) = 0;
+    virtual ~Listener() {}
+};
+template<class N, class E> class Notifier {
+public:
+    void addListener(Listener<N, E>* l) const;
+};
+}
+extern RBX::Notifier<RBX::RunService, RBX::Heartbeat> heartbeatNotifier;
+
+class CCmdTargetLike {
+public:
+    virtual ~CCmdTargetLike();
+    long m_dwRef;
+    void InternalAddRef() { InterlockedIncrement(&m_dwRef); }
+};
+CCmdTargetLike* XTPImageManager();
+
+class Thing { public: ~Thing(); };
+class Poly { public: virtual ~Poly(); };
+struct WindowPos { WindowPos(); char pad[0x2c]; };
+struct DockingPaneManager { DockingPaneManager(); ~DockingPaneManager(); void SetImageManager(CCmdTargetLike*); char pad[0x14c]; };
+struct TabClientWnd { TabClientWnd(); ~TabClientWnd(); char pad[0x124]; };
+struct ThemeManager { ThemeManager(); ~ThemeManager(); char pad[0x2c]; };
+struct StatusBar { StatusBar(); ~StatusBar(); char pad[0x10]; };
+
+class RegKey {
+public:
+    HKEY m_hKey;
+    RegKey() throw() : m_hKey(NULL) {}
+    ~RegKey() throw() { Close(); }
+    LONG Close() throw()
+    {
+        LONG lRes = ERROR_SUCCESS;
+        if (m_hKey != NULL) {
+            lRes = RegCloseKey(m_hKey);
+            m_hKey = NULL;
+        }
+        return lRes;
+    }
+    LONG Open(HKEY hKeyParent, LPCTSTR lpszKeyName, REGSAM samDesired) throw()
+    {
+        HKEY hKey = NULL;
+        LONG lRes = RegOpenKeyEx(hKeyParent, lpszKeyName, 0, samDesired, &hKey);
+        if (lRes == ERROR_SUCCESS) {
+            lRes = Close();
+            m_hKey = hKey;
+        }
+        return lRes;
+    }
+    LONG QueryDWORDValue(LPCTSTR pszValueName, DWORD& dwValue) throw()
+    {
+        DWORD dwType;
+        ULONG nBytes = sizeof(DWORD);
+        LONG lRes = RegQueryValueEx(m_hKey, pszValueName, NULL, &dwType, reinterpret_cast<LPBYTE>(&dwValue), &nBytes);
+        if (lRes != ERROR_SUCCESS)
+            return lRes;
+        if (dwType != REG_DWORD)
+            return ERROR_INVALID_DATA;
+        return ERROR_SUCCESS;
+    }
+};
+extern bool g_lockA, g_lockB, g_lockC;
+
+class CMainFrame : public FrameBase, public RBX::Listener<RBX::RunService, RBX::Heartbeat>
 {
-    char pad0[0xf0];
-    int f0;
-    int f4;
-    char f8;
-    char f9;
-    char fa;
-    char pad_fb[1];
-    int fc;
-    int f100;
-    char f104;
-    char f105;
-    char pad_106[2];
-    char f108[0x30];
-    char f138[0x14c];
-    char f284[0x124];
-    int f3a8;
-    int f3ac;
-    int f3b0;
-    char f3b4[0x2c];
-    char f3e0[0x10];
-    void f();
+public:
+    std::auto_ptr<Thing> m_f4;
+    bool m_f8, m_f9, m_fa;
+    int m_fc, m_100;
+    bool m_104, m_105;
+    MfcString m_settingsFile;
+    WindowPos m_wndPos;
+    DockingPaneManager m_paneManager;
+    TabClientWnd m_tabClient;
+    std::auto_ptr<Poly> m_3a8, m_3ac, m_3b0;
+    ThemeManager m_theme;
+    StatusBar m_statusBar;
+    CMainFrame();
+    virtual ~CMainFrame();
+    virtual void onEvent(const RBX::RunService*, RBX::Heartbeat);
 };
 
-extern "C" {
-    int __stdcall RegOpenKeyExA(void*, const char*, unsigned long, unsigned long, void**);
-    int __stdcall RegQueryValueExA(void*, const char*, unsigned long*, unsigned long*, unsigned char*, unsigned long*);
-    int __stdcall RegCloseKey(void*);
-    void* __stdcall InterlockedIncrement(long*);
-}
-
-void __stdcall sub_6e1980(void*);
-void __stdcall sub_6e4a80(void*);
-void __stdcall sub_6e6b80(void*);
-void __stdcall sub_703600(void*);
-void __stdcall sub_70dbb0(void*);
-void __stdcall sub_70ea60(void*);
-void __stdcall sub_5a7ac0(void*, int, void*);
-void __stdcall sub_4218a0(void*, void*);
-void* __stdcall sub_6c0e80();
-void __stdcall sub_6e4f50(void*, void*);
-
-extern void* g_803f04;
-extern void* g_802010;
-extern void* g_802020;
-extern void* g_802008;
-extern void* g_8023f4;
-extern void* g_802464;
-extern void* g_803edc;
-extern void* g_8021b0;
-extern void* g_802468;
-
-extern char g_96d139;
-extern char g_976cad;
-extern char g_96cc49;
-
-void CMainFrame::f()
+CMainFrame::CMainFrame()
+    : m_f8(false), m_f9(false), m_fa(false), m_fc(0), m_100(0), m_104(false), m_105(false)
 {
-    sub_6e1980(this);
-    *(int*)this = 0x811a1c;
-    *(int*)((char*)this + 0xf0) = 0x811a0c;
-    f0 = 0;
-    f4 = 0;
-    f8 = 0;
-    f9 = 0;
-    fa = 0;
-    fc = 0;
-    f100 = 0;
-    f104 = 0;
-    f105 = 0;
-    ((void (__stdcall*)(void*))g_803f04)((char*)this + 0x108);
-    sub_6e4a80((char*)this + 0x10c);
-    sub_6e6b80((char*)this + 0x138);
-    sub_703600((char*)this + 0x284);
-    f3a8 = 0;
-    f3ac = 0;
-    f3b0 = 0;
-    sub_70dbb0((char*)this + 0x3b4);
-    sub_70ea60((char*)this + 0x3e0);
-
-    void* hkey = 0;
-    unsigned long type = 0;
-    unsigned long size = 0;
-    int result = RegOpenKeyExA((void*)0x80000001, "Software\\ROBLOX Corporation\\Roblox", 0, 0x20019, &hkey);
-    if (result == 0)
     {
-        size = 4;
-        RegQueryValueExA(hkey, "OverrideLockViewGamelayout", 0, &type, (unsigned char*)&result, &size);
-    }
-    char val = (size == 1);
-    g_96d139 = val;
-    g_976cad = val;
-    g_96cc49 = val;
-    if (hkey)
-        RegCloseKey(hkey);
-
-    sub_5a7ac0((char*)this + 0x108, 1, 0);
-
-    if (((unsigned long (__stdcall*)(void*))g_8023f4)((char*)this + 0x108) > 0)
-    {
-        void* p = ((void* (__stdcall*)(void*))g_802464)((char*)this + 0x108);
-        ((void (__stdcall*)(void*, const char*, void*))g_803edc)((char*)this + 0x108, "%s\\IDESettings.xml", p);
+        DWORD value = 0;
+        RegKey key;
+        if (key.Open(HKEY_CURRENT_USER, "Software\\ROBLOX Corporation\\Roblox", KEY_READ) == ERROR_SUCCESS)
+            key.QueryDWORDValue("OverrideLockViewGamelayout", value);
+        g_lockA = g_lockB = g_lockC = (value == 1);
     }
 
-    sub_4218a0((void*)0x976fa0, (char*)this + 0xf0);
-    void* p2 = sub_6c0e80();
-    ((void (__stdcall*)(void*))g_8021b0)((char*)p2 + 4);
-    void* p3 = sub_6c0e80();
-    sub_6e4f50((char*)this + 0x138, p3);
-    ((void (__stdcall*)(void*))g_802468)((char*)this + 0x108);
+    StdString path = getAppPath(true, false);
+    if (path.size() > 0)
+        m_settingsFile.Format("%s\\IDESettings.xml", path.c_str());
+    heartbeatNotifier.addListener(this);
+    XTPImageManager()->InternalAddRef();
+    m_paneManager.SetImageManager(XTPImageManager());
 }

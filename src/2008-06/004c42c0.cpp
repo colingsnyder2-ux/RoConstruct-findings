@@ -1,5 +1,3 @@
-// from server: 100% by EspClaude
-// from server: 71% by colin
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD

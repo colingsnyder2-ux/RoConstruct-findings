@@ -1,4 +1,4 @@
-// from server: 70% by colin
+// from server: 0% by colin
 //
 
 //

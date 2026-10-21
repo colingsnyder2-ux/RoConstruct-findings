@@ -16,3 +16,4 @@ template<class K,class V> struct Entry {K key;V value;};
 template<class K,class V> struct Node {unsigned hash;Entry<K,V> entry;Node* next;
 Node(K k,V v,unsigned h,Node* n){this->entry.key=k;this->entry.value=v;this->hash=h;this->next=n;}};
 template struct Node<SurfaceTypes,Table>;
+

@@ -1,8 +1,9 @@
+// from server: 100% by EspClaude
 // from server: 92% by Espeon
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: openrbx-client-dll roc_espeon_registryconst_d056e7c5f9a4edc2.cpp
+// roc-lib: openrbx-client-dll roc_espclaude_f9f79afeaf76f4f4.cpp
 
 // Candidate translation unit (score above; library headers required).
 #include <boost/thread/mutex.hpp>
@@ -22,8 +23,7 @@ void* __cdecl lookup(const std::string& key) {
  initialize(initializeLock,&lockStorage);
  Guard guard(*getLock());
  Map::const_iterator it=getMap()->find(key);
- void* result;
- if(it!=getMap()->end()) result=it->second;
- else {initialize(initializeDefault,&defaultStorage);result=defaultValue;}
- return result;
+ if(it!=getMap()->end()) return it->second;
+ initialize(initializeDefault,&defaultStorage);
+ return defaultValue;
 }

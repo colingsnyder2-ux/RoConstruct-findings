@@ -1,55 +1,54 @@
-// from server: 83% by king_originala
-struct Matrix {
-    float values[9];
-};
+// from server: 100% by EspClaude
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast
+// roc-lib: openrbx-client roc_espclaude_872167d21248def9.cpp
 
-struct Frame {
-    Matrix rotation;
-    float x, y, z;
-    bool differs(const Frame& other) const;
-};
+// Candidate translation unit (score above; library headers required).
+#define private public
+#include "v8world/Joint.h"
+#include "v8world/World.h"
+#include "v8world/IWorldStage.h"
+#undef private
+#include "decomp.h"
+#include <cstddef>
 
-struct Joint;
+namespace RBX {
 
-struct Manager {
-    void remove(Joint* joint);
-    void insert(Joint* joint);
-};
-
-struct Node {
-    virtual void unused();
-    virtual int kind();
-    Node* child;
-    unsigned int reserved;
-    Manager* manager;
-};
-
-struct Joint {
-    unsigned int reserved0;
-    Node* node;
-    unsigned char reserved1[32];
-    Frame first;
-    Frame second;
-
-    void setFrame(int index, const Frame& frame);
-};
-
-void Joint::setFrame(int index, const Frame& frame)
+// exe build has one stage fewer than OpenRBX: KERNEL_STAGE == 7
+static inline World* exGetWorld(IPipelined* p)
 {
-    if (frame.differs(index == 0 ? first : second)) {
-        Frame& destination = index == 0 ? first : second;
-        destination.rotation = frame.rotation;
-        destination.x = frame.x;
-        destination.y = frame.y;
-        destination.z = frame.z;
+	if (p->currentStage == NULL) {
+		return NULL;
+	}
 
-        if (node) {
-            Node* owner = node->kind() == 7 ? node->child : node;
-            Manager* manager = owner->manager;
-            if (manager) {
-                manager->remove(this);
-                manager->insert(this);
-            }
-        }
-    }
+	IStage* stage;
+
+	if (p->currentStage->getStageType() != (IStage::StageType)7) {
+		stage = p->currentStage;
+	}
+	else {
+		stage = p->currentStage->getUpstream();
+	}
+
+	return static_cast<IWorldStage*>(stage)->getWorld();
+}
+
+void Joint::setJointCoord(int i, const CoordinateFrame& c)
+{
+	if (c != getJointCoord(i)) {
+		if (i == 0) {
+			jointCoord0 = c;
+		}
+		else {
+			jointCoord1 = c;
+		}
+
+		if (World* world = exGetWorld(this)) {
+			world->removeJoint(this);
+			world->insertJoint(this);
+		}
+	}
+}
+
 }

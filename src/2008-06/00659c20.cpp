@@ -1,88 +1,88 @@
-// from server: 40% by colin
-struct Vector3 {
-    float x, y, z;
-};
+// from server: 93% by EspClaude
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast
+// roc-lib: openrbx-client-dll roc_espclaude_5b00cb9af2999d06.cpp
 
-struct Vector3int16 {
-    short x, y, z;
-};
+// Candidate translation unit (score above; library headers required).
+#include "v8world/SpatialHash.h"
 
-struct Contact {
-    char pad[0x10];
-    float radius0;
-    float radius1;
-    float radius2;
-};
+#include "decomp.h"
+#include "v8world/Assembly2.h"
+#include "v8world/Primitive.h"
+#include "v8world/World.h"
 
-extern "C" float __stdcall floor(double);
-extern "C" bool __stdcall g3d_intersect(const Vector3& a, const Vector3& b, const Vector3& c, const Vector3& d, Vector3* out, Vector3* out2);
+#include <G3D/AABox.h>
+#include <G3D/CollisionDetection.h>
+#include <G3D/Ray.h>
+#include <algorithm>
+#include <cstdlib>
 
-extern int g_9625ac;
+namespace RBX {
 
-struct BallBallContact : public Contact {
-    bool computeIsColliding(float overlapIgnored, int* gridPos, Vector3int16* out);
-};
+// exe: grid size is an int global, not a float constant
+extern int exHashGrid;
 
-bool BallBallContact::computeIsColliding(float overlapIgnored, int* gridPos, Vector3int16* out) {
-    int i0min, i0max, i1min, i1max, i2min, i2max;
+static inline float exHashGridSize() { return (float) exHashGrid; }
 
-    if (radius0 > 0.0f) i0min = 0; else i0min = -1;
-    if (radius0 >= 0.0f) i0max = 1; else i0max = 0;
-    if (radius1 > 0.0f) i1min = -1; else i1min = 0;
-    if (radius1 >= 0.0f) i1max = 1; else i1max = 0;
-    if (radius2 > 0.0f) i2min = -1; else i2min = 0;
-    if (radius2 >= 0.0f) i2max = 1; else i2max = 0;
+static inline Extents exHashGridToRealExtents(const Vector3& hashGrid)
+{
+	return Extents(
+		hashGrid * exHashGridSize(),
+		(hashGrid + Vector3(1.0f, 1.0f, 1.0f)) * exHashGridSize()
+	);
+}
 
-    Vector3 center;
-    center.x = (float)gridPos[0];
-    center.y = (float)gridPos[1];
-    center.z = (float)gridPos[2];
+// FUNCTION: WEBSERVICE 0x10123500
+bool SpatialHash::getNextGrid(Vector3int32& grid, const G3D::Ray& unitRay, float maxDistance)
+{
+	Vector3int32 low;
+	Vector3int32 high;
 
-    float r = (float)g_9625ac * 2.0f + overlapIgnored;
-    float r2 = r * r;
+	for (int a = 0; a < 3; a++) {
+		low[a] = unitRay.direction[a] < 0.0f ? -1 : 0;
+		high[a] = unitRay.direction[a] > 0.0f ? 1 : 0;
+	}
 
-    for (int k = 1; k <= 3; ++k) {
-        for (int i = i0min; i <= i0max; ++i) {
-            for (int j = i1min; j <= i1max; ++j) {
-                for (int l = i2min; l <= i2max; ++l) {
-                    int ax = i < 0 ? -i : i;
-                    int ay = j < 0 ? -j : j;
-                    int az = l < 0 ? -l : l;
-                    if (ax + ay + az != k) continue;
+	Vector3 gridF = grid.toVector3();
 
-                    Vector3 p;
-                    p.x = (float)i;
-                    p.y = (float)j;
-                    p.z = (float)l;
+	float maxCheck = maxDistance + 2.0f * exHashGridSize();
 
-                    Vector3 q;
-                    q.x = p.x + center.x;
-                    q.y = p.y + center.y;
-                    q.z = p.z + center.z;
+	float maxDistanceSquared = maxCheck * maxCheck;
 
-                    Vector3 dir;
-                    dir.x = (float)g_9625ac * p.x;
-                    dir.y = (float)g_9625ac * p.y;
-                    dir.z = (float)g_9625ac * p.z;
+	for (int nz = 1; nz <= 3; nz++) {
+		for (int i = low.x; i <= high.x; i++) {
+			for (int j = low.y; j <= high.y; j++) {
+				for (int k = low.z; k <= high.z; k++) {
+					if (abs(i) + abs(j) + abs(k) == nz) {
+						Vector3 offset((float) i, (float) j, (float) k);
 
-                    Vector3 out1, out2;
-                    if (g3d_intersect(center, q, dir, dir, &out1, &out2)) {
-                        float dx = out1.x - center.x;
-                        float dy = out1.y - center.y;
-                        float dz = out1.z - center.z;
-                        if (dx*dx + dy*dy + dz*dz <= r2) {
-                            float fx = out1.x + dir.x;
-                            float fy = out1.y + dir.y;
-                            float fz = out1.z + dir.z;
-                            out->x = (short)floor((double)fx);
-                            out->y = (short)floor((double)fy);
-                            out->z = (short)floor((double)fz);
-                            return true;
-                        }
-                    }
-                }
-            }
-        }
-    }
-    return false;
+						Extents box = exHashGridToRealExtents(gridF + offset);
+
+						G3D::AABox aaBox(box.min(), box.max());
+
+						Vector3 location;
+
+						if (G3D::CollisionDetection::collisionLocationForMovingPointFixedAABox(
+								unitRay.origin,
+								unitRay.direction,
+								aaBox,
+								location
+							)) {
+							if ((location - unitRay.origin).squaredLength() < maxDistanceSquared) {
+								grid = Vector3int32::floor(gridF + offset);
+
+								return true;
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+
+	return false;
+}
+
+
 }

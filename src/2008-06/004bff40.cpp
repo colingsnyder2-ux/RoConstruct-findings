@@ -1,8 +1,7 @@
-// from server: 89% by colin
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: openrbx-raknet roc_try_handle_rpc_2027b516af994a10.cpp
+// roc-lib: openrbx-raknet roc_espclaude_74a6e31c3da6b639.cpp
 
 // Candidate translation unit (score above; library headers required).
 /// \file
@@ -51,6 +50,8 @@
 
 #if !defined ( __APPLE__ ) && !defined ( __APPLE_CC__ )
 #include <malloc.h>
+#undef alloca
+#define alloca _malloca
 #endif
 
 #ifdef _COMPATIBILITY_1
@@ -3218,30 +3219,15 @@ bool RakPeer::HandleRPCPacket( const char *data, int length, SystemAddress syste
 
 		// We have to copy into a new data chunk because the user data might not be byte aligned.
 		bool usedAlloca=false;
-		if (BITS_TO_BYTES( incomingBitStream.GetNumberOfUnreadBits() ) >= 0x100000)
+#if !defined(_COMPATIBILITY_1)
+		if (BITS_TO_BYTES( incomingBitStream.GetNumberOfUnreadBits() ) < MAX_ALLOCA_STACK_ALLOCATION)
 		{
-			userData = new unsigned char[BITS_TO_BYTES(incomingBitStream.GetNumberOfUnreadBits())];
-		}
-		else if (BITS_TO_BYTES( incomingBitStream.GetNumberOfUnreadBits() ) + 8 <= 0x400)
-		{
-			userData = ( unsigned char* ) alloca( BITS_TO_BYTES( incomingBitStream.GetNumberOfUnreadBits() ) + 8 );
-			if (userData)
-			{
-				*(unsigned int*)userData = 0xcccc;
-				userData += 8;
-			}
+			userData = ( unsigned char* ) alloca( BITS_TO_BYTES( incomingBitStream.GetNumberOfUnreadBits() ) );
 			usedAlloca=true;
 		}
 		else
-		{
-			userData = ( unsigned char* ) malloc( BITS_TO_BYTES( incomingBitStream.GetNumberOfUnreadBits() ) + 8 );
-			if (userData)
-			{
-				*(unsigned int*)userData = 0xdddd;
-				userData += 8;
-			}
-			usedAlloca=true;
-		}
+#endif
+			userData = new unsigned char[BITS_TO_BYTES(incomingBitStream.GetNumberOfUnreadBits())];
 
 
 		// The false means read out the internal representation of the bitstream data rather than

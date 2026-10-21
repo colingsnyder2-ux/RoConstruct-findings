@@ -1,56 +1,43 @@
-// from server: 22% by colin
-struct SignalInstance {
-    void f();
+// from server: 100% by EspClaude
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: rbxgs-dll roc_espclaude_a491fb17a36c2cb7.cpp
+
+// Candidate translation unit (score above; library headers required).
+#include <exception>
+#define BOOST_NO_EXCEPTIONS
+namespace boost { __declspec(noreturn) void throw_exception(std::exception const &); }
+#include <deque>
+#include <boost/function.hpp>
+#include <boost/thread/mutex.hpp>
+#include "util/standardout.h"
+
+namespace RBX {
+class Worker {
+public:
+    char pad[0x2ac];
+    boost::mutex mutex;
+    std::deque<boost::function0<void> > queue;
+    void run();
 };
 
-struct SignalDesc {
-    char pad0[0x2ac];
-    int field_2ac;
-    int field_2b0;
-    int field_2b4;
-    char pad2[0x2c4 - 0x2bc];
-    int field_2c4;
-    int field_2c8;
-    int field_2cc;
-    int field_2d0;
-};
-
-extern "C" void __stdcall _invalid_parameter_noinfo();
-
-void SignalInstance::f()
+void Worker::run()
 {
-    SignalDesc* desc = (SignalDesc*)((char*)this - 0x2ac);
-    desc->field_2ac = 0;
-    if (desc->field_2d0 == 0)
-    {
-        return;
-    }
-    int idx = desc->field_2cc;
-    int count = desc->field_2d0;
-    if ((unsigned int)idx > (unsigned int)(idx + count))
-    {
-        _invalid_parameter_noinfo();
-    }
-    int* arr = (int*)desc->field_2c4;
-    int* slot = (int*)(arr[idx]);
-    int* vtbl = (int*)*slot;
-    if (vtbl != 0)
-    {
-        int* fn = (int*)*vtbl;
-        if (fn != 0)
+    while (true) {
+        boost::function0<void> item;
         {
-            ((void (__stdcall*)(int*, int*, int))fn)(slot + 2, slot + 2, 1);
+            boost::mutex::scoped_lock lock(mutex);
+            if (queue.empty())
+                return;
+            item = queue.front();
+            queue.pop_front();
         }
-        *slot = 0;
+        try {
+            item();
+        } catch (std::exception& e) {
+            StandardOut::singleton()->print(MESSAGE_ERROR, "%s", e.what());
+        }
     }
-    desc->field_2cc++;
-    if (desc->field_2c8 <= desc->field_2cc)
-    {
-        desc->field_2cc = 0;
-    }
-    desc->field_2d0--;
-    if (desc->field_2d0 == 0)
-    {
-        desc->field_2cc = 0;
-    }
+}
 }

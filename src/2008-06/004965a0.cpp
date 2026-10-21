@@ -1,3 +1,4 @@
+// from server: 100% by colin
 // from server: 84% by colin
 // from server: 83% by colin
 // roc 2008-06 004965a0  unit: RBX::Network::Players::Plugin  size: 79 bytes
@@ -70,7 +71,7 @@
 struct Message {
     char data[72];
     Message(const Message&);
-    __declspec(dllimport) ~Message() throw();
+    ~Message();
 };
 
 struct Callback {
@@ -94,3 +95,5 @@ void Plugin::dispatch(Message message, Callback* callback)
     catch (Exception exception) {
     }
 }
+
+

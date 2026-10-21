@@ -1,78 +1,93 @@
-// from server: 30% by colin
-#pragma optimize("", off)
+// from server: 100% by EspClaude
+// roc 2008-06 00552bb0  unit: RBX::RenderBase::AggregateChunk  size: 406 bytes
+// roc-flags: /Od /GS /EHsc /MD
+#include <algorithm>
+#include <stdlib.h>
 
-struct Bucket;
+namespace RBX {
+namespace RenderBase {
 
-struct Result
-{
-    void initialize(void* value, Bucket* owner);
+struct Primitive {
+    char pad[0x24];
+    int bounds;
 };
-
-struct Bucket
-{
-    unsigned char padding[12];
-    void* value;
-    Result* f(Result* result);
+struct Part {
+    virtual void v0();
+    virtual void v1();
+    virtual void v2();
+    virtual void v3();
+    virtual void v4();
+    virtual void v5();
+    virtual void v6();
+    virtual Primitive* getPrimitive();
 };
-
-struct Iterator
-{
+struct PartVector {
+    unsigned int size() const;
+    Part*& operator[](unsigned int i);
+};
+struct Extents {
+    float x, y, z;
+    void expand(const int& b);
+};
+struct Entry {
+    Extents extents;
+    PartVector parts;
+};
+struct Iterator {
+    void* cont;
     void* node;
-    Bucket* owner;
-    Iterator(void* n, Bucket* o);
+    Iterator();
+    Entry* operator->() const;
+    Iterator& operator++();
+    bool operator!=(const Iterator& other) const;
 };
+struct Map {
+    Iterator begin();
+    Iterator end();
+};
+struct Pred {
+    void (*fn)(Entry&, bool);
+    bool flag;
+    Pred();
+};
+Pred makePred(void (*fn)(Entry&, bool), bool flag);
+Pred for_each(Iterator first, Iterator last, Pred pred);
 
-struct AggregateChunk
-{
-    unsigned char padding[4];
+class AggregateChunk {
+public:
+    unsigned int total;
     unsigned int count;
-    void* container;
-    void process(unsigned int arg);
+    Map chunks;
+    unsigned int numChunks();
+    static bool showAll;
+    static void sweep(Entry& e, bool all);
+    Map& update(int maxIterations);
 };
 
-extern "C" int __cdecl rand();
-extern "C" void __cdecl initialize(void*, void*);
-extern "C" void __cdecl f(void*);
-
-void AggregateChunk::process(unsigned int arg)
+Map& AggregateChunk::update(int maxIterations)
 {
-    if (count > 1)
-    {
-        Iterator it(container, (Bucket*)this);
-        while (true)
-        {
-            if (!it.node)
-                break;
-            if (it.node)
-            {
-                unsigned int r = rand();
-                unsigned int d = *(unsigned int*)((char*)it.node + 12);
-                if (d > 0)
-                {
-                    unsigned int idx = r % d;
-                    void* p = (void*)((char*)it.node + 12);
-                    void* q = (void*)((char*)p + idx * 4);
-                    void* v = *(void**)q;
-                    void* w = *(void**)v;
-                    void* x = (void*)((char*)w + 0x1c);
-                    void* y = (void*)((char*)x + 0x24);
-                    initialize(y, this);
-                }
+    if (count > 1) {
+        Iterator w = chunks.begin();
+        Iterator n = chunks.end();
+        for (; w != n; ++w) {
+            if (w->parts.size() > 0) {
+                unsigned int r = rand() % w->parts.size();
+                w->extents.expand(w->parts[r]->getPrimitive()->bounds);
             }
         }
-    }
-    else
-    {
-        unsigned int n = count / 20;
-        unsigned int i = 1;
-        unsigned int m = n;
-        while (true)
-        {
-            if (i > m)
+        unsigned int y = std::max((unsigned int)1, total / 20);
+        int v = 0;
+        while (true) {
+            v++;
+            if (numChunks() <= y)
                 break;
-            if (i == arg)
+            if (v == maxIterations)
                 break;
-            i++;
+            for_each(chunks.begin(), chunks.end(), makePred(&sweep, showAll));
         }
     }
+    return chunks;
+}
+
+}
 }

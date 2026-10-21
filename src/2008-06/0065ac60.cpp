@@ -1,109 +1,99 @@
-// from server: 40% by colin
-struct Vec3 { float x, y, z; };
+// from server: 70% by EspClaude
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast
+// roc-lib: openrbx-client-dll roc_espclaude_1432eb70d5b2d444.cpp
 
-struct Box {
-    float x0, y0, z0;
-    float x1, y1, z1;
+// Candidate translation unit (score above; library headers required).
+#include "v8world/Primitive.h"
+#include "decomp.h"
+#include "util/Extents.h"
+#include "util/Vector3int32.h"
+#include <G3D/Array.h>
+#include <vector>
+#include <cstddef>
+
+namespace RBX {
+
+struct ExBucket {
+	void* head;
+	int count;
 };
 
-struct Source {
-    char reserved[0x90];
-    unsigned int version;
-    const void* get();
+struct ExBucketVector {
+	ExBucket* first;
+	ExBucket* last;
+	ExBucket* end;
+
+	unsigned int size() const { return last - first; }
 };
 
-struct Geometry {
-    char reserved0[0x80];
-    volatile Box bounds;
+struct ExLevel {
+	int field0;
+	int field4;
+	int field8;
+	ExBucketVector nodes;           // 0x0c
 };
 
-struct IntArray {
-    int* data;
-    int count;
-    int cap;
-    void push_back(int v);
-    void reserve(int n);
-};
+extern int exNumLevels;
 
-struct Contact {
-    char pad0[0x18];
-    IntArray* m_array;
-};
-
-extern int g_count;
-extern "C" void __cdecl alignedFree(void* p);
-extern "C" void __cdecl arrayInit(IntArray* a, int n, int v);
-extern "C" void __cdecl arrayGrow(IntArray* a, int n);
-extern "C" void __cdecl arrayInsert(IntArray* a, int* pos);
-
-struct BallBallContact {
-    char pad0[0x18];
-    IntArray m_list;
-    void generateDataForMovingAssemblyStage(Vec3* p, IntArray* out, int a3);
-};
-
-void BallBallContact::generateDataForMovingAssemblyStage(Vec3* p, IntArray* out, int a3)
+// exe inlines Extents::overlapsOrTouches here
+static inline bool exOverlapsOrTouches(const Extents& self, const Extents& other)
 {
-    int i;
-    char* base = (char*)this + 0x18;
-    for (i = 0; i < g_count; i++) {
-        char* entry = base + i * 0x18;
-        int diff = *(int*)(entry + 4) - *(int*)entry;
-        if ((diff & 0xfffffff8) == 0)
-            continue;
-        Box box;
-        int lo[3], hi[3];
-        arrayInit((IntArray*)&lo, 0, 0);
-        arrayInit((IntArray*)&hi, 0, 0);
-        // compute box from entry
-        {
-            int* e = (int*)entry;
-            (void)e;
-        }
-        // iterate
-        int x;
-        for (x = lo[0]; x <= hi[0]; x++) {
-            int y;
-            for (y = lo[1]; y <= hi[1]; y++) {
-                int z;
-                for (z = lo[2]; z <= hi[2]; z++) {
-                    IntArray tmp;
-                    arrayInit(&tmp, 0, 0);
-                    // append
-                    {
-                        int idx = 0;
-                        (void)idx;
-                    }
-                    int k;
-                    for (k = 0; k < tmp.count; k++) {
-                        int id = tmp.data[k];
-                        if (id == a3)
-                            continue;
-                        int j;
-                        bool found = false;
-                        for (j = 0; j < out->count; j++) {
-                            if (out->data[j] == id) { found = true; break; }
-                        }
-                        if (found)
-                            continue;
-                        const void* g = ((Source*)id)->get();
-                        const Box* b = (const Box*)((char*)g + 0x80);
-                        if (b->x0 == p->x) continue;
-                        if (b->y0 == p->y) continue;
-                        if (b->z0 == p->z) continue;
-                        if (b->x1 <= p->x) continue;
-                        if (b->y1 <= p->y) continue;
-                        if (b->z1 <= p->z) continue;
-                        if (out->count < out->cap) {
-                            out->data[out->count] = id;
-                            out->count++;
-                        } else {
-                            arrayGrow(out, out->count + 1);
-                            out->data[out->count - 1] = id;
-                        }
-                    }
-                }
-            }
-        }
-    }
+	const Vector3& low = self.min();
+	const Vector3& high = self.max();
+
+	if (!(low.x > other.max().x) && !(low.y > other.max().y) && !(low.z > other.max().z) && !(high.y < other.min().y) &&
+		!(high.x < other.min().x) && !(high.z < other.min().z)) {
+		return true;
+	}
+
+	return false;
+}
+
+class ExSpatialHash {
+public:
+	char pad[0x0c];
+	ExLevel levels[4];              // 0x0c
+
+	static void computeMinMax(int level, const Extents& extents, Vector3int32& min, Vector3int32& max);
+	void getPrimitivesInGrid(int level, const Vector3int32& grid, G3D::Array<Primitive*>& found);
+	void getPrimitivesTouchingExtents(const Extents& extents, const Primitive* ignore, G3D::Array<Primitive*>& answer);
+};
+
+void ExSpatialHash::getPrimitivesTouchingExtents(
+	const Extents& extents,
+	const Primitive* ignore,
+	G3D::Array<Primitive*>& answer
+)
+{
+	G3D::Array<Primitive*> foundThisGrid;
+	Vector3int32 min;
+	Vector3int32 max;
+
+	for (int level = 0; level < exNumLevels; level++) {
+		if (levels[level].nodes.size() != 0) {
+			computeMinMax(level, extents, min, max);
+
+			for (int i = min.x; i <= max.x; i++) {
+				for (int j = min.y; j <= max.y; j++) {
+					for (int k = min.z; k <= max.z; k++) {
+						foundThisGrid.resize(0, false);
+
+						getPrimitivesInGrid(level, Vector3int32(i, j, k), foundThisGrid);
+
+						for (int index = 0; index < foundThisGrid.size(); index++) {
+							Primitive* p = foundThisGrid[index];
+
+							if (p != ignore && !answer.contains(p) && exOverlapsOrTouches(extents, p->getFastFuzzyExtents())) {
+								answer.append(p);
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+}
+
 }

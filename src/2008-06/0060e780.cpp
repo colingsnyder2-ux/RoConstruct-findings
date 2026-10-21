@@ -163,3 +163,4 @@ void BlockBlockContact::update()
     }
     updated = 1;
 }
+
