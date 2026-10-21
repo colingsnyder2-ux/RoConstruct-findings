@@ -1,89 +1,17 @@
-// from server: 92% by Espeon
+// from server: 100% by Espeon
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: openrbx-client-dll roc_espeon_historyiters_4d78403504774e51.cpp
+// roc-lib: rbxgs-dll roc_espeon_historycaptureparentgetterb0184755a4b4368c.cpp
 
 // Candidate translation unit (score above; library headers required).
-
+#define private public
+#define protected public
+#include <reflection/object.h>
+#include <boost/bind.hpp>
 #include <boost/shared_ptr.hpp>
-extern "C" __declspec(dllimport) void __cdecl invalid_parameter_noinfo();
-typedef boost::shared_ptr<void> Shared;
-
-struct Container {
-    unsigned char padding[8];
-    void* map;
-    unsigned char padding2[8];
-    unsigned int first;
-    unsigned int last;
-};
-
-struct Owner {
-    unsigned char padding[8];
-    Container* container;
-};
-
-struct Iterator {
-    Owner* owner;
-    void* map;
-    unsigned int offset;
-};
-
-struct S;
-
-struct Action {
-    void (__cdecl *callback)(S*);
-    S* object;
-    Action(void (__cdecl *)(S*), S*);
-};
-
-extern void __cdecl callback(S*);
-extern Action __cdecl traverse(Iterator, Iterator, Action);
-extern Shared __cdecl acquire(void*);
-
-struct Data {
-    unsigned char padding[20];
-    Owner owner;
-    unsigned char remainder[228];
-    void* handle;
-};
-
-struct S {
-    void* reserved;
-    Data* data;
-    unsigned int reserved2;
-    unsigned int state;
-    Shared value;
-    void f();
-};
-
-__forceinline Action::Action(void (__cdecl *fn)(S*), S* objectValue)
-    : callback(fn), object(objectValue)
-{
-}
-
-inline Iterator getEnd(Data* data) {
-    Iterator end;
-    end.owner = &data->owner;
-    Container* c = end.owner->container;
-    unsigned int last = c->last;
-    if (c->first > last) invalid_parameter_noinfo();
-    end.map = c->map;
-    end.offset = last;
-    return end;
-}
-inline Iterator getBegin(Data* data) {
-    Iterator begin;
-    begin.owner = &data->owner;
-    Container* c = begin.owner->container;
-    unsigned int first = c->first;
-    if (first > c->last) invalid_parameter_noinfo();
-    begin.map = c->map;
-    begin.offset = first;
-    return begin;
-}
-void S::f() {
-    traverse(getBegin(data), getEnd(data), Action(callback, this));
-    value = acquire(data->handle);
-    state = 1;
-}
+#include <algorithm>
+struct Instance{char prefix[0x14];RBX::Reflection::DescribedBase described;char gap[0x104-0x14-sizeof(RBX::Reflection::DescribedBase)];Instance*parent;Instance*getParent()const{return parent;}boost::shared_ptr<Instance> shared_from_this();};
+extern boost::shared_ptr<Instance> acquire(Instance*);
+struct Record{void*service;boost::shared_ptr<Instance>object;int kind;boost::shared_ptr<Instance>parent;void capture(const RBX::Reflection::Property&);void captureAll();};
+void Record::captureAll(){std::for_each(object->described.properties_begin(),object->described.properties_end(),boost::bind(&Record::capture,this,_1));parent=RBX::shared_from(object->getParent());kind=1;}

@@ -1,4 +1,3 @@
-// from server: 68% by king_originala
 extern "C" double __cdecl sqrt(double);
 #pragma intrinsic(sqrt)
 #pragma float_control(precise, off)
@@ -22,30 +21,31 @@ bool S::readQuaternion(float& w, float& x, float& y, float& z)
     if (readOffset + 1 <= bitCount)
     {
         negativeW = (data[readOffset >> 3] &
-                     (0x80 >> (readOffset & 7))) != 0;
+                     (unsigned char)(1 << (7 - (readOffset & 7)))) != 0;
         ++readOffset;
     }
 
     if (readOffset + 1 <= bitCount)
     {
         negativeX = (data[readOffset >> 3] &
-                     (0x80 >> (readOffset & 7))) != 0;
+                     (unsigned char)(1 << (7 - (readOffset & 7)))) != 0;
         ++readOffset;
     }
 
     if (readOffset + 1 <= bitCount)
     {
         negativeY = (data[readOffset >> 3] &
-                     (0x80 >> (readOffset & 7))) != 0;
+                     (unsigned char)(1 << (7 - (readOffset & 7)))) != 0;
         ++readOffset;
     }
 
     if (readOffset + 1 <= bitCount)
     {
         negativeZ = (data[readOffset >> 3] &
-                     (0x80 >> (readOffset & 7))) != 0;
+                     (unsigned char)(1 << (7 - (readOffset & 7)))) != 0;
         ++readOffset;
     }
+
 
     readBits((unsigned char*)&encodedX, 16, true);
     readBits((unsigned char*)&encodedY, 16, true);

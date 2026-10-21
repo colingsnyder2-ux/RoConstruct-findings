@@ -1,15 +1,21 @@
+// from server: 100% by EspClaude
 // from server: 81% by Espeon
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: openrbx-client-dll roc_espeon_docexecutetemp_ded166d8447d3533.cpp
+// roc-lib: openrbx-client-dll roc_espclaude_5e226d55ea09768e.cpp
 
 // Candidate translation unit (score above; library headers required).
 #include <boost/shared_ptr.hpp>
 #include <string>
+#include <memory>
 struct String { char storage[28]; __declspec(dllimport) ~String(); __declspec(dllimport) const char* c_str() const; };
-struct Owner {
-    Owner** proxy;
+struct OwnerBase {
+    void* proxy;
+    OwnerBase();
+    ~OwnerBase();
+};
+struct Owner : OwnerBase {
     unsigned int reserved[2];
     unsigned int first;
     unsigned int last;
@@ -18,10 +24,7 @@ struct Owner {
     ~Owner();
 };
 
-struct Holder {
-    Owner* value;
-    ~Holder();
-};
+typedef std::auto_ptr<Owner> Holder;
 
 struct Runner {
     Holder run(int, const char*, const char*, Owner*);
@@ -51,39 +54,38 @@ struct S {
     int execute(String);
 };
 
+inline OwnerBase::OwnerBase()
+{
+    void** p = new void*(this);
+    proxy = p;
+}
+
+void lengthError();
+inline void checkCapacity(unsigned int count)
+{
+    if (count > 0x3fffffff)
+        lengthError();
+}
+
 inline Owner::Owner()
 {
-    Owner** p = new Owner*(this);
-    proxy = p;
+    checkCapacity(0);
     first = 0;
     last = 0;
     end = 0;
 }
 
-inline Holder::~Holder()
-{
-    Owner* p = value;
-    if (p) {
-        p->~Owner();
-        operator delete(p);
-    }
-}
 
 int S::execute(String text)
 {
+    Lock lock(f());
+    Owner owner;
     try {
-        Lock lock(f());
-        Owner owner;
-        {
-            Returned temporary = f();
-            Model* model = temporary.get();
-            const char* script = text.c_str();
-            Runner* runner = model->runner();
-            runner->run(1, script, "Doc script", &owner);
-        }
+        f()->runner()->run(1, text.c_str(), "Doc script", &owner);
         return 1;
     }
     catch (...) {
         return 0;
     }
 }
+

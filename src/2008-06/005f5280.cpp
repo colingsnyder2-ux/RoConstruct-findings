@@ -1,4 +1,7 @@
-// from server: 69% by king_originala
+// from server: 78% by EspClaude
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
 struct Buffer {
     char padding[0x14];
     int begin;
@@ -7,10 +10,12 @@ struct Buffer {
     int end;
     int state;
     void close(int, int);
+    void reset() { current = begin; end = begin; }
 };
 
 struct Holder {
     Buffer* buffer;
+    Buffer* operator->() const { return buffer; }
 };
 
 struct S {
@@ -20,14 +25,11 @@ struct S {
 
 void S::f()
 {
-    Holder* h = holder;
-    h->buffer->state = 0;
+    Holder& h = *holder;
+    h->state = 0;
     try {
-        Buffer* b = h->buffer;
-        int value = b->begin;
-        b->current = value;
-        b->end = value;
-        h->buffer->close(1, 1);
+        h->current = h->end = h->begin;
+        h->close(1, 1);
     } catch (...) {
     }
 }

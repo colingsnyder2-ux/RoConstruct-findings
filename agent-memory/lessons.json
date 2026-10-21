@@ -767,5 +767,19 @@
     "outcome": "server_verified",
     "evidence": "work/goal-native-driver-info-20261015/receipts.json",
     "next": "20successfulcontexts totalincludes8ContentIdcontainer0and12driverdrafts1; parkedlosingcontexts. Allunresolvedfanoutalreadydone; donotclaimnativefullDebugSettingslayoutfromunusedreceiver."
+  },
+  {
+    "id": "native-checked-postfix-return-before-stack-alignment",
+    "client": "2008-06",
+    "library": "MSVC2008 genuine checked stdlist iterator",
+    "hypothesis": "A missing real outofline iterator call can explain native stack alignment and frame size; establish the SDK method boundary before tuning storage.",
+    "change": "TwoDManager native68430b calls Batch iterator postfix++682ad0, including discarded hidden8-byte return. Selective noinline specialization of unchanged SDK public postfix body changes unalignede0 candidate frame into exact native EBP/aligned8/f4. No alignment attributes or padding. Native guarded inner group loop then raises32to44 server.",
+    "exacts_gained": 0,
+    "verified_partial_targets": 1,
+    "before": 32,
+    "after": 44,
+    "outcome": "server_verified_partial",
+    "evidence": "work\\big-mining-2008-20261020\\twod-native-guarded-group-receipt.json",
+    "next": "Do not mark every iterator accessor noinline: whole Command arrow9, combined-key while31, postfix-only34; correct loop+postfix44. Keep true checked SDK bodies and native Command48/Batch16. Three gates34/34/6 and oneobjectfanout0extra complete."
   }
 ]

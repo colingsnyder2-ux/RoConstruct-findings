@@ -1,7 +1,9 @@
+// from server: 100% by EspClaude
+// from server: 71% by colin
 // roc-lang: cpp
 // roc-cl: 21022
-// roc-flags: /O2 /EHsc /MD
-// roc-lib: openrbx-raknet RakPeer.cpp
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: openrbx-raknet roc_espclaude_74a6e31c3da6b639.cpp
 
 // Candidate translation unit (score above; library headers required).
 /// \file
@@ -50,6 +52,8 @@
 
 #if !defined ( __APPLE__ ) && !defined ( __APPLE_CC__ )
 #include <malloc.h>
+#undef alloca
+#define alloca _malloca
 #endif
 
 #ifdef _COMPATIBILITY_1

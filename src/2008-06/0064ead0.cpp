@@ -1,8 +1,9 @@
+// from server: 80% by EspClaude
 // from server: 75% by Espeon
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: openrbx-client-dll roc_espeon_chatmessage_18aeb5249630bd44.cpp
+// roc-lib: openrbx-client-dll roc_espclaude_f5773df1ed38c4af.cpp
 
 // Candidate translation unit (score above; library headers required).
 #include <string>
@@ -77,7 +78,10 @@ Result* ChatWidget::f(Result* result, Event* event) {
 
     if (owner->enabled()) {
         int type = event->type;
-        if (type >= 1 && type <= 7 && type == 4) {
+        switch (type) {
+        case 1: case 2: case 3: case 5: case 6: case 7:
+            break;
+        case 4:
             if (owner->hit(event->position).contains()) {
                 RBX::ServiceProvider* service = func_00491d50(owner);
                 if (service) {
@@ -89,9 +93,11 @@ Result* ChatWidget::f(Result* result, Event* event) {
                     return result;
                 }
             }
+            break;
         }
     }
 
     fallback(result, event);
     return result;
 }
+

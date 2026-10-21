@@ -1,18 +1,34 @@
-// from server: 76% by king_originala
+// from server: 98% by EspClaude
+#include <list>
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
-
-extern "C" void __cdecl _invalid_parameter_noinfo();
+extern "C" long __cdecl _InterlockedIncrement(volatile long*);
+#pragma intrinsic(_InterlockedIncrement)
+extern "C" long __cdecl _InterlockedDecrement(volatile long*);
+#pragma intrinsic(_InterlockedDecrement)
 
 struct S;
 struct Buffer;
 
 struct Control {
-    virtual void unused();
-    virtual void dispose();
-    virtual void destroy();
+    virtual ~Control();
+    virtual void dispose() = 0;
+    virtual void destroy() = 0;
     volatile long strong;
     volatile long weak;
+    void add_ref() { _InterlockedExchangeAdd(&strong, 1); }
+    void release()
+    {
+        if (_InterlockedDecrement(&strong) == 0) {
+            dispose();
+            weak_release();
+        }
+    }
+    void weak_release()
+    {
+        if (_InterlockedDecrement(&weak) == 0)
+            destroy();
+    }
 };
 
 struct Item {
@@ -23,49 +39,8 @@ struct Item {
 struct Shared {
     Item* object;
     Control* control;
-
-    __forceinline Shared(Item* p, Control* c) : object(p), control(c) {
-        if (control)
-            _InterlockedExchangeAdd(&control->strong, 1);
-    }
-
-    __forceinline ~Shared() {
-        if (control && _InterlockedExchangeAdd(&control->strong, -1) == 0) {
-            control->dispose();
-            if (_InterlockedExchangeAdd(&control->weak, -1) == 0)
-                control->destroy();
-        }
-    }
-};
-
-struct Node {
-    Node* next;
-    Node* previous;
-    Item* object;
-    Control* control;
-};
-
-struct List;
-
-struct Iterator {
-    List** owner;
-    Node* node;
-};
-
-struct List {
-    List** proxy;
-    unsigned char padding[16];
-    Node* head;
-    unsigned int count;
-
-    Iterator erase(Iterator);
-
-    __forceinline List* checkedOwner() {
-        if (proxy)
-            return *proxy;
-        _invalid_parameter_noinfo();
-        return 0;
-    }
+    Shared(const Shared& r) : object(r.object), control(r.control) { if (control) control->add_ref(); }
+    ~Shared() { if (control) control->release(); }
 };
 
 struct Guard {
@@ -80,13 +55,15 @@ struct Buffer {
     unsigned int limit;
 };
 
+struct Addr { unsigned int v; };
+
 struct Stream {
     unsigned char prefix[8];
     Buffer buffer;
     bool result;
     unsigned char tail[3];
 
-    Stream(S*, unsigned int);
+    Stream(S*, Addr);
     ~Stream();
 };
 
@@ -117,11 +94,11 @@ struct S {
     virtual bool ready();
 
     unsigned char prefix[0x2c70];
-    List pending;
-    unsigned char middle[0x98];
+    std::list<Shared> pending;
+    unsigned char pad2[0x2d28-0x2c74-0x1c];
     void* context;
     unsigned char suffix[0x24];
-    unsigned int parameter;
+    Addr parameter;
 
     bool f();
 };
@@ -133,31 +110,20 @@ bool S::f() {
     Guard guard(context, 0);
     Stream stream(this, parameter);
 
-    if (pending.count > 0) {
-        List& list = pending;
-        do {
-            Node* node = list.head->next;
-            if (node == list.checkedOwner()->head)
-                _invalid_parameter_noinfo();
+    while (pending.size() > 0) {
+        Shared item = pending.front();
+        if (item.object) {
+            if (static_cast<unsigned int>((stream.buffer.bits + 7) >> 3)
+                >= stream.buffer.limit)
+                break;
 
-            Shared item(node->object, node->control);
-            if (item.object) {
-                if (static_cast<unsigned int>((stream.buffer.bits + 7) >> 3)
-                    >= stream.buffer.limit)
-                    break;
+            if (!stream.buffer.bits)
+                putByte(&stream.buffer, 78);
 
-                if (!stream.buffer.bits)
-                    putByte(&stream.buffer, 78);
-
-                item.object->write(&stream.buffer);
-                stream.result = true;
-            }
-
-            Iterator position;
-            position.owner = list.proxy;
-            position.node = list.head->next;
-            list.erase(position);
-        } while (pending.count > 0);
+            item.object->write(&stream.buffer);
+            stream.result = true;
+        }
+        pending.pop_front();
     }
 
     return stream.result;

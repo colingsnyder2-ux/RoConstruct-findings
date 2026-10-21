@@ -1,36 +1,33 @@
-// from server: 74% by colin
-// from server: 73% by colin
-// roc 2008-06 00467440  unit: CSettingsDialog  size: 89 bytes
-// Make this compile to the exact bytes below, then: roc check 2008-06 00467440
-
+// from server: 100% by EspClaude
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD /fp:fast
 struct Vector2int16 {
     short x;
     short y;
+    Vector2int16(short x, short y) : x(x), y(y) {}
 };
 
-struct G3D_Rect {
-    int x1;
-    int y1;
-    int x2;
-    int y2;
+struct Vector2 {
+    float x, y;
+    Vector2(float x, float y) : x(x), y(y) {}
 };
 
-extern "C" __declspec(dllimport) int __stdcall GetClientRect(void* hwnd, G3D_Rect* rect);
-extern "C" short __cdecl round_to_short(float value);
+struct WinRect { int left, top, right, bottom; };
+
+extern "C" __declspec(dllimport) int __stdcall GetClientRect(void* hwnd, WinRect* rect);
+
+struct Window { char pad[0x20]; void* m_hWnd; };
 
 struct CSettingsDialog {
     char pad[0x16c];
-    void* field_16c;
+    Window* view;
     Vector2int16 getSize();
 };
 
 Vector2int16 CSettingsDialog::getSize() {
-    G3D_Rect rect;
-    GetClientRect(*(void**)((char*)field_16c + 0x20), &rect);
-    int w = rect.x2 - rect.x1;
-    int h = rect.y2 - rect.y1;
-    Vector2int16 result;
-    result.x = round_to_short((float)w);
-    result.y = round_to_short((float)h);
-    return result;
+    WinRect rect;
+    GetClientRect(view->m_hWnd, &rect);
+    Vector2 size((float)(rect.right - rect.left), (float)(rect.bottom - rect.top));
+    return Vector2int16((short)size.x, (short)size.y);
 }

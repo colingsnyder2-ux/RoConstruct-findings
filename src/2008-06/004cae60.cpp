@@ -1,69 +1,45 @@
-// from server: 77% by colin
-struct Node {
-    char pad[8];
-    double val;
+// from server: 100% by EspClaude
+// roc 2008-06 004cae60  unit: RBX::Network::RoundRobinPhysicsSender  size: 212 bytes
+struct Hook {
+    Hook* prev;
+    Hook* next;
 };
 
-struct Container {
-    char pad[4];
-    Node* head;
+struct ItemBase {
+    char pad[8];
+    double val;
+    char pad2[0x50];
+};
+
+struct Item : ItemBase, Hook {};
+
+extern void __cdecl decrement(Hook** it);
+extern void __cdecl increment(Hook** it);
+
+struct Pad12 {
+    void* a;
+    Item* container;
+    void* b;
 };
 
 struct Sender {
-    char pad[4];
-    Container* container;
-    bool compare(Node* a, Node* b, Node* c);
+    void* s;
+    bool compare(Item* key, Item* item, Item* unused);
 };
 
-extern "C" Node* __cdecl sub_4c6710(Node** p);
-extern "C" Node* __cdecl sub_4c66c0(Node** p);
+struct Outer : Pad12, Sender {};
 
-bool Sender::compare(Node* a, Node* b, Node* c) {
-    Node* first;
-    if (this) {
-        Container* cont = *(Container**)((char*)this - 12 + 4);
-        Node* n = *(Node**)((char*)cont + 0x64);
-        first = n ? (Node*)((char*)n - 0x60) : 0;
-    } else {
-        first = 0;
-    }
-
-    if (c != first) {
-        Node* tmp;
-        if (c) {
-            tmp = (Node*)((char*)c + 0x60);
-        } else {
-            tmp = 0;
-        }
-        Node* r = sub_4c6710(&tmp);
-        Node* rr = r ? (Node*)((char*)r - 0x60) : 0;
-        if (!(b->val < rr->val)) {
+bool Sender::compare(Item* key, Item* item, Item*)
+{
+    Hook* h;
+    if (item != static_cast<Item*>(static_cast<Outer*>(this)->container->next)) {
+        h = item;
+        decrement(&h);
+        if (key->val > static_cast<Item*>(h)->val)
             return false;
-        }
     }
-
-    Node* tmp2;
-    if (c) {
-        tmp2 = (Node*)((char*)c + 0x60);
-    } else {
-        tmp2 = 0;
-    }
-    Node* r2 = sub_4c66c0(&tmp2);
-    Node* rr2 = r2 ? (Node*)((char*)r2 - 0x60) : 0;
-
-    Node* first2;
-    if (this) {
-        Container* cont = *(Container**)((char*)this - 12 + 4);
-        first2 = (Node*)cont;
-    } else {
-        first2 = 0;
-    }
-
-    if (rr2 != first2) {
-        if (!(rr2->val < b->val)) {
-            return false;
-        }
-    }
-
-    return true;
+    h = item;
+    increment(&h);
+    Item* n = static_cast<Item*>(h);
+    return n == static_cast<Outer*>(this)->container || !(n->val > key->val);
 }

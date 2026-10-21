@@ -1,85 +1,20 @@
-// from server: 96% by king_originala
-extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
-#pragma intrinsic(_InterlockedExchangeAdd)
-extern "C" long __cdecl _InterlockedDecrement(volatile long*);
-#pragma intrinsic(_InterlockedDecrement)
+// from server: 100% by Espeon
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: rbxgs-dll roc_espeon_historyupdatenativegetter84b03300b09671ad.cpp
 
-struct Control
-{
-    virtual ~Control();
-    virtual void dispose() = 0;
-    virtual void destroy() = 0;
-    volatile long strong;
-    volatile long weak;
-};
+// Candidate translation unit (score above; library headers required).
+#define private public
+#define protected public
+#include <reflection/object.h>
+#include <boost/bind.hpp>
+#include <boost/shared_ptr.hpp>
+#include <algorithm>
+struct Instance{char prefix[0x14];RBX::Reflection::DescribedBase described;char gap[0x104-0x14-sizeof(RBX::Reflection::DescribedBase)];Instance*parent;Instance*getParent()const{return parent;}boost::shared_ptr<Instance> shared_from_this();};
+extern boost::shared_ptr<Instance> acquire(Instance*);
+struct Record{void*service;boost::shared_ptr<Instance>object;int kind;boost::shared_ptr<Instance>parent;void capture(const RBX::Reflection::Property&);void captureAll();void notify(const void*);void update(const void*);};
+void Record::captureAll(){std::for_each(object->described.properties_begin(),object->described.properties_end(),boost::bind(&Record::capture,this,_1));parent=RBX::shared_from(object->getParent());kind=1;}
 
-struct Reference
-{
-    Control* control;
-    Reference& operator=(const Reference&);
-    ~Reference();
-};
-
-struct Pair
-{
-    void* value;
-    Reference reference;
-    Pair& operator=(const Pair&);
-    ~Pair();
-};
-
-struct Owner
-{
-    unsigned char padding[0x104];
-    void* source;
-};
-
-extern Pair __cdecl fetch(void*);
-extern unsigned char property;
-
-struct S
-{
-    void* first;
-    Owner* owner;
-    unsigned long reserved;
-    int state;
-    Pair cached;
-
-    void notify(const void*);
-    void update(const void*);
-};
-
-__forceinline Reference::~Reference()
-{
-    Control* p = control;
-    if (p && _InterlockedDecrement(&p->strong) == 0)
-    {
-        p->dispose();
-        if (_InterlockedDecrement(&p->weak) == 0)
-            p->destroy();
-    }
-}
-
-__forceinline Pair::~Pair()
-{
-}
-
-__forceinline Pair& Pair::operator=(const Pair& other)
-{
-    value = other.value;
-    reference = other.reference;
-    return *this;
-}
-
-void S::update(const void* key)
-{
-    notify(key);
-    if (state != 1)
-    {
-        state = 2;
-        return;
-    }
-
-    if (key == &property)
-        cached = fetch(owner->source);
-}
+extern char parentProperty;
+void Record::update(const void*key){notify(key);if(kind!=1){kind=2;return;}if(key==&parentProperty)parent=RBX::shared_from(object->getParent());}

@@ -1,47 +1,23 @@
-extern "C" int (__stdcall *lstrlenA)(const char*);
+// from server: 100% by EspClaude
+// from server: 75% by king_originala
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: atl-9.0-dll-rtm roc_espclaude_acf6ced398afe108.cpp
 
-struct Exception
+// Candidate translation unit (score above; library headers required).
+#ifndef _CPPUNWIND
+#define _CPPUNWIND 1
+#endif
+#ifndef _AFXDLL
+#define _AFXDLL
+#endif
+#include <new>
+#include <afx.h>
+#include <atlbase.h>
+#include <statreg.h>
+
+BOOL roc_expansion_add(ATL::CExpansionVector* v, LPCTSTR key, LPCOLESTR value)
 {
-    int result;
-    char reserved[20];
-};
-
-struct S
-{
-    int f(const char* source, char** result);
-};
-
-int S::f(const char* source, char** result)
-{
-    S* volatile self = this;
-
-    if (!source || !result)
-        return (int)0x80070057;
-
-    int status = 0;
-    int length = lstrlenA(source) + 1;
-    char* buffer = 0;
-
-    try
-    {
-        buffer = new char[length];
-    }
-    catch (Exception error)
-    {
-        status = error.result;
-    }
-    catch (...)
-    {
-        status = (int)0x8007000E;
-    }
-
-    if (status < 0)
-        return status;
-
-    for (int i = 0; i < length; ++i)
-        buffer[i] = source[i];
-
-    *result = buffer;
-    (void)self;
-    return status;
+    return v->Add(key, value);
 }

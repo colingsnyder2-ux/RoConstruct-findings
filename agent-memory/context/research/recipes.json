@@ -22552,5 +22552,57 @@
     ],
     "output": "work\\big-mining-2008-20261020\\renderer-native-sdk-flat-family",
     "next": "Preserve server verified exact gains only. Largest remaining renderer residue stack reuse and live context register; gates exhausted."
+  },
+  "big-twod-native-postfix-gates-2008": {
+    "op": "grid",
+    "client": "2008-06",
+    "library": "Native Ogre TwoDManager checked-list postfix boundary",
+    "hypothesis": "New exact native aligned8 f4 frame restored by genuine noinline Batch postfix SDK accessor,32->34 local. Bound both inline profiles and space preference under supported21022; avoid VS2005 incompatible list layout and unchanged prior O2 body gates.",
+    "targets": {
+      "addresses": [
+        "006832b0"
+      ],
+      "scores": [
+        0,
+        99
+      ]
+    },
+    "seed_sources": {
+      "2008-06": {
+        "006832b0": "work\\big-mining-2008-20261020\\twod-native-postfix.cpp"
+      }
+    },
+    "builds": [
+      21022
+    ],
+    "profiles": [
+      "/O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MD /fp:fast",
+      "/O2 /Ob1 /Oi /Ot /Oy /GF /GS- /EHsc /MD /fp:fast",
+      "/O2 /Ob2 /Oi /Os /Oy /GF /GS- /EHsc /MD /fp:fast"
+    ],
+    "keep_partials": true,
+    "output": "work\\big-mining-2008-20261020\\twod-native-postfix-gates"
+  },
+  "native-twod-guarded-postfix-family-2008": {
+    "op": "fanout",
+    "client": "2008-06",
+    "library": "Native TwoDManager guarded batching with genuine checked-list boundary",
+    "hypothesis": "4309B native function verified32to44. Real Command48 and Batch16 values and checked stdlist, actual outofline postfix hiddenresult boundary recovers exact f4 aligned frame; propagate unchanged emitted SDK bodies.",
+    "sources": [
+      {
+        "recipe": "ogre-1.4.5-dll",
+        "files": [
+          "roc_twod_native_guarded_group_2c3be5e84e25f563.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MD /fp:fast"
+        ]
+      }
+    ],
+    "output": "work\\big-mining-2008-20261020\\twod-native-guarded-postfix-family",
+    "next": "Only server verified exact gains. Do not reuse failing arrow-wide or all-Texture-member import substitutions; genuine get-only import ties44."
   }
 }

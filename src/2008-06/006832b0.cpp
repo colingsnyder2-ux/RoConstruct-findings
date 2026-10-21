@@ -1,7 +1,8 @@
+// from server: 44% by colin
+// roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MD /fp:fast
-// roc-lang: cpp
-// roc-lib: ogre-1.4.5-dll roc_twod_state_936a24b1546195a2.cpp
+// roc-lib: ogre-1.4.5-dll roc_twod_native_guarded_group_2c3be5e84e25f563.cpp
 
 // Candidate translation unit (score above; library headers required).
 // Native 006832b0. Names are behavioral analogues; owner layout is opaque.
@@ -258,6 +259,15 @@ namespace Ogre {
 using namespace Ogre;
 struct Command { float x1,y1,x2,y2,u1,v1,u2,v2; unsigned colour; ResourceHandle texture; RenderOperation::OperationType points; int mode; };
 struct Batch {ResourceHandle texture; RenderOperation::OperationType points; int mode; unsigned count;};
+
+// Genuine SDK postfix iterator method; native 00682ad0 is a separate call.
+template<> template<> __declspec(noinline)
+std::list<Batch>::_Iterator<true> std::list<Batch>::_Iterator<true>::operator++(int) {
+    _Myt_iter result = *this;
+    ++*this;
+    return result;
+}
+
 class TwoDManager {public: void draw(); void allocate(unsigned); void setup();};
 #define OP (*reinterpret_cast<RenderOperation*>(reinterpret_cast<char*>(this)+0x10))
 #define BUFFER (*reinterpret_cast<HardwareVertexBufferSharedPtr*>(reinterpret_cast<char*>(this)+0x24))
@@ -281,7 +291,7 @@ void TwoDManager::draw() {
  i=COMMANDS.begin();
  while(i!=end) {
   Batch batch={i->texture,i->points,i->mode,0};
-  do {
+  while(i!=end) {
    if(batch.points==4) {
     VERTEX(x1,y2,u1,v2) VERTEX(x2,y1,u2,v1) VERTEX(x1,y1,u1,v1)
     VERTEX(x1,y2,u1,v2) VERTEX(x2,y1,u2,v1) VERTEX(x2,y2,u2,v2)
@@ -295,7 +305,8 @@ void TwoDManager::draw() {
     } else {VERTEX(x2,y2,u1,v1) batch.count+=2;}
    }
    ++i;
-  }while(i!=end && batch.texture==i->texture && batch.points==i->points);
+   if(i==end || batch.texture!=i->texture || batch.points!=i->points) break;
+  }
   batches.push_back(batch);
  }
  BUFFER->unlock(); setup();

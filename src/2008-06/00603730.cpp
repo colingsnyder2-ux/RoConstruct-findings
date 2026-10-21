@@ -1,8 +1,9 @@
+// from server: 100% by EspClaude
 // from server: 80% by Espeon
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: openrbx-client-dll roc_espeon_guiobject_b027bcb51163db5f.cpp
+// roc-lib: openrbx-client-dll roc_espclaude_4c227f07be7ebc39.cpp
 
 // Candidate translation unit (score above; library headers required).
 #include <boost/shared_ptr.hpp>
@@ -342,12 +343,12 @@ struct Object {
 
 struct Vector2 {
     float x, y;
-    Vector2(float, float);
-    ~Vector2();
+    Vector2(const float&, const float&);
+    Vector2(const Vector2& o) : x(o.x), y(o.y) {}
+    ~Vector2() {}
 };
 
-inline Vector2::Vector2(float a, float b) : x(a), y(b) {}
-inline Vector2::~Vector2() {}
+inline Vector2::Vector2(const float& a, const float& b) : x(a), y(b) {}
 
 extern const float initialX;
 extern const float initialY;
@@ -367,7 +368,7 @@ struct S {
 Shared S::f(void* p)
 {
     Shared result = createObject(2, true, Vector2(initialX, initialY));
-    result->setName(String(objectName));
+    { String name(objectName); result->setName(name); }
     Shared parent = findObject(p, lookupName);
     result->setParent(parent);
     int context = *getContext();
@@ -375,3 +376,4 @@ Shared S::f(void* p)
     configure(context, image, parent);
     return Shared(result);
 }
+

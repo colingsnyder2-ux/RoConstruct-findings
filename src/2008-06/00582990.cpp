@@ -1,8 +1,9 @@
+// from server: 82% by EspClaude
 // from server: 80% by Espeon
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: rbxgs-dll roc_espeon_weldinlineiteration9f4703b5564ac23c.cpp
+// roc-lib: rbxgs-dll roc_espclaude_591afcf031e1552a.cpp
 
 // Candidate translation unit (score above; library headers required).
 #include <string>
@@ -81,9 +82,12 @@ struct Iterator {
 };
 
 extern void __cdecl operation();
+struct Functor {
+    void (__cdecl *function)();
+    void* context;
+};
 extern Iterator* __cdecl apply(
-    Iterator*, void*, unsigned int, void*, unsigned int,
-    void (__cdecl *)(), void*);
+    Iterator*, void*, unsigned int, void*, unsigned int, Functor);
 extern void __cdecl handle(const char*, unsigned int);
 
 struct S {
@@ -114,8 +118,8 @@ __forceinline void weldSelection(Accessor& accessor)
     if (first > beginSequence->last)
         invalid_parameter_noinfo();
 
-    apply(&result, beginSequence->owner, first, result.owner, last,
-          operation, result.context);
+    Functor functor = { operation, result.context };
+    apply(&result, beginSequence->owner, first, result.owner, last, functor);
 
 }
 
@@ -139,3 +143,4 @@ int S::run(Argument* argument)
 
     return argument->finish(1);
 }
+

@@ -1,69 +1,56 @@
-// from server: 70% by colin
-extern "C" void __cdecl free_6a067a(void* p);
-extern "C" void __cdecl sub_6a0a1c(void* p);
+// from server: 91% by EspClaude
+// roc 2008-06 00451940  unit: VCRobloxDoc::?$VerbBinder  size: 198 bytes
+struct Inner74 { char d[4]; ~Inner74(); };
+struct Inner90 { char d[4]; ~Inner90(); };
 
-struct Opaque28 { char data[0x28]; ~Opaque28(); };
-struct Opaque24 { char data[0x24]; ~Opaque24(); };
-
-struct Inner90 {
-    void sub_450450();
-    ~Inner90();
+template<class T> struct ScopedPtr {
+    T* p;
+    ~ScopedPtr() { delete p; }
 };
 
-struct Inner74 {
-    void sub_413a70();
-    ~Inner74();
+struct Buffer {
+    void* p;
+    void* a;
+    void* b;
+    void release() { operator delete(p); }
 };
 
-struct Inner54 {
-    void sub_553d80();
+struct Vec {
+    void* first;
+    void* last;
+    void* end;
+    void tidy()
+    {
+        if (first)
+            operator delete(first);
+        first = 0;
+        last = 0;
+        end = 0;
+    }
 };
 
-struct VCRobloxDoc {
-    void* vtable;              // 0x00
-    Opaque28 m0;               // 0x04
-    Opaque28 m1;               // 0x2c
-    Inner54 m2;                // 0x54
-    char pad58[0x1c];          // 0x58
-    Inner74* p74;              // 0x74
-    void* p78;                 // 0x78
-    char pad7c[8];             // 0x7c
-    void* p84;                 // 0x84
-    void* p88;                 // 0x88
-    void* p8c;                 // 0x8c
-    Inner90* p90;              // 0x90
+struct Base {
+    virtual ~Base();
+    char pad[0x50];
+};
 
-    ~VCRobloxDoc();
+struct Member54 {
+    char d[0x20];
+    ~Member54();
+};
+
+struct VCRobloxDoc : Base {
+    Member54 m54;
+    ScopedPtr<Inner74> p74;
+    Buffer m78;
+    Vec v84;
+    Inner90* p90;
+    virtual ~VCRobloxDoc();
 };
 
 VCRobloxDoc::~VCRobloxDoc()
 {
-    this->vtable = (void*)0x817ce4;
-
-    Inner90* p90 = this->p90;
-    if (p90 != 0) {
-        p90->sub_450450();
-        free_6a067a(p90);
-    }
-
-    void* p84 = this->p84;
-    if (p84 != 0) {
-        free_6a067a(p84);
-    }
-
-    void* p78 = this->p78;
-    this->p84 = 0;
-    this->p88 = 0;
-    this->p8c = 0;
-    free_6a067a(p78);
-
-    Inner74* p74 = this->p74;
-    if (p74 != 0) {
-        p74->sub_413a70();
-        free_6a067a(p74);
-    }
-
-    this->m2.sub_553d80();
-
-    sub_6a0a1c(this);
+    delete p90;
+    v84.tidy();
+    m78.release();
 }

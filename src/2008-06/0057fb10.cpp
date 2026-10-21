@@ -1,7 +1,5 @@
-// from server: 79% by king_originala
-extern "C" void __cdecl _ReadWriteBarrier();
-#pragma intrinsic(_ReadWriteBarrier)
-
+// from server: 100% by EspClaude
+// roc 2008-06 0057fb10  unit: RBX::VModelInstance::?$FilteredSelection  size: 136 bytes
 extern "C" {
     extern void (__cdecl *invalid_parameter_noinfo)();
 }
@@ -17,12 +15,21 @@ struct Children {
     char reserved[12];
     Entry* first;
     Entry* last;
+    unsigned int size() const { return (unsigned int)(last - first); }
+    Entry& operator[](unsigned int i)
+    {
+        if (i >= size())
+            invalid_parameter_noinfo();
+        return first[i];
+    }
 };
 
 struct Node {
     char reserved[0x108];
     Children* children;
 
+    unsigned int numChildren() const { return children ? children->size() : 0; }
+    Node* getChild(unsigned int i) { return (*children)[i].object; }
     void finish();
     void reset(int);
 };
@@ -35,34 +42,17 @@ struct Selection {
     Listener* listener;
     unsigned char* changed;
 
-    void process(Node**);
+    void process(Node** object);
 };
 
 void Selection::process(Node** object)
 {
-    Children* children = (*object)->children;
-    if (children && (unsigned int)(children->last - children->first) > 0) {
-        unsigned int i = 0;
-        Node* node;
-        for (;;) {
-            _ReadWriteBarrier();
-            node = *object;
-            children = node->children;
-            if (!children ||
-                i >= (unsigned int)(children->last - children->first))
-                break;
-
-            Children* current = children;
-            _ReadWriteBarrier();
-            if (i >= (unsigned int)(current->last - current->first))
-                invalid_parameter_noinfo();
-
-            Node* child = current->first[i].object;
+    if ((*object)->numChildren() > 0) {
+        for (unsigned int i = 0; i < (*object)->numChildren(); ++i) {
+            Node* child = (*object)->getChild(i);
             listener->invoke(&child);
-            ++i;
         }
-
-        node->finish();
+        (*object)->finish();
         (*object)->reset(0);
         *changed = 1;
     }

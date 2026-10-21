@@ -21,7 +21,7 @@ struct Event {
     short zeroX;
     short zeroY;
     Vector2int16 value;
-    Event(int t,S* s,const Vector2int16& p,const Vector2int16& v){value=v;position=p;zeroX=0;zeroY=0;type=t;source=s;}
+    Event(int t,S* s,const Vector2int16& p,const Vector2int16& v){value=v;position=p;zeroX=0;type=t;source=s;zeroY=0;}
 };
 
 struct S {

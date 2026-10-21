@@ -1,3 +1,5 @@
+// from server: 100% by EspClaude
+// from server: 98% by colin
 // roc 2008-06 004e5300  unit: seg_004e0000  size: 89 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 004e5300
 //
@@ -27,22 +29,24 @@
 // 004e5355  83c414               add esp, 0x14
 // 004e5358  c3                   ret 
 
-struct Compare { Compare() {} };
-struct Alloc { Alloc() {} };
-struct Set {
-    char data[0x20];
-    Set(const Compare&, const Alloc&);
-    ~Set();
+#include <set>
+
+struct Member {
+    void* data;
+    bool enabled;
+    int count;
+
+    Member();
 };
-struct Sub {
-    char data[12];
-    Sub();
-};
-struct S {
-    Set set;
-    Sub sub;
+
+struct S : std::set<int> {
+    Member member;
     int flag;
+
     S();
 };
 
-S::S() : set(Compare(), Alloc()), sub(), flag(0) {}
+S::S()
+    : member(), flag(0)
+{
+}

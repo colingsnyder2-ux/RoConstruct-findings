@@ -1,25 +1,16 @@
-// from server: 79% by king_originala
-struct String {
-    unsigned int proxy;
-    union {
-        char small[16];
-        char* heap;
-    } data;
-    unsigned int length;
-    unsigned int capacity;
+// from server: 100% by EspClaude
+#include <string>
+typedef std::string String;
 
-    String(const char*);
-    ~String();
-};
+extern unsigned char errorType;
+extern "C" __declspec(noreturn)
+void __stdcall throwException(void*, void*);
 
 struct Error {
     char storage[40];
     Error(const String&);
 };
 
-extern unsigned char errorType;
-extern "C" __declspec(noreturn)
-void __stdcall throwException(void*, void*);
 
 struct BitStream {
     unsigned int used;
@@ -51,15 +42,17 @@ struct Settings {
     unsigned char logging;
 };
 
+struct Log;
 struct Logger {
-    unsigned int handle;
-    unsigned int owner;
+    Log* handle;
+    void* owner;
     ~Logger();
+    Log* operator->() const { return handle; }
 };
 
 Settings* __cdecl getSettings();
 Logger __cdecl getLogger();
-void __cdecl writeLog(unsigned int, int, const char*, const char*);
+void __cdecl writeLog(Log*, int, const char*, const char*);
 void __cdecl writeByte(BitStream*, unsigned char);
 
 struct Connection {
@@ -135,11 +128,9 @@ void S::requestCharacter()
         Name name;
         name.first = player->nameFirst;
         name.second = player->nameSecond;
-        const String& text = name.format(4);
-        const Logger& logger = getLogger();
-        writeLog(logger.handle, 1,
+        writeLog(getLogger().operator->(), 1,
                  "Replicator: Requesting character for %s",
-                 text.capacity < 16 ? text.data.small : text.data.heap);
+                 name.format(4).c_str());
     }
 
     connection->send(&stream, 2, 3, 0,

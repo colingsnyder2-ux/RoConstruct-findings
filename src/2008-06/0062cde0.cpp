@@ -1,99 +1,73 @@
-// from server: 72% by king_originala
-extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
-#pragma intrinsic(_InterlockedExchangeAdd)
+// from server: 100% by EspClaude
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: openrbx-client-dll roc_espclaude_12fb1623c20ba0ae.cpp
 
-struct Control {
-    virtual void slot0() = 0;
-    virtual void dispose() = 0;
-    virtual void destroy() = 0;
-    volatile long strong;
-    volatile long weak;
+// Candidate translation unit (score above; library headers required).
+#include <boost/shared_ptr.hpp>
+namespace RBX {
+struct BrickColor { int number; BrickColor(int n) : number(n) {} };
+class Player;
+class Instance {
+public:
+    virtual ~Instance();
+    char padding[0x100];
+    Instance* parent;
+    Player* getPlayer();
 };
-
-struct Actor;
-
-struct Child {
-    Actor *getActor();
-};
-
-struct Object {
-    unsigned char padding[0x104];
-    Child *child;
-};
-
-struct Shared {
-    Object *object;
-    Control *control;
-    Shared(const Shared &);
-    ~Shared();
-};
-
-inline Shared::~Shared()
-{
-    Control *p = control;
-    if (p && _InterlockedExchangeAdd(&p->strong, -1) == 1) {
-        p->dispose();
-        if (_InterlockedExchangeAdd(&p->weak, -1) == 1)
-            p->destroy();
-    }
-}
-
-struct Flag {
-    unsigned char padding[0x178];
-    int team;
+class Flag : public Instance {
+public:
+    char more[0x178 - 0x108];
+    BrickColor teamColor;
     bool inactive;
 };
-
-struct Actor {
-    int *getTeam(int *);
+class Player {
+public:
+    BrickColor getTeamColor() const;
 };
-
-struct Receiver {
-    void accept(Actor *);
+class Teams {
+public:
+    Teams* findTeam(Player*);
+    void captured(Player*);
 };
-
-struct Context {
-    Receiver *find(Actor *);
+struct Source { char data[4]; };
+struct FlagSignal {
+    void operator()(Source* source, boost::shared_ptr<Instance> flag);
 };
-
-struct Signal {
-    void invoke(void *, Shared);
+extern FlagSignal flagCaptured;
+int __cdecl isPart(Instance*);
+Flag* __cdecl findFlag(Instance*);
+boost::shared_ptr<Flag> __cdecl sharedFrom(Flag*);
+Teams* __cdecl findTeams(void*);
+class FlagStand {
+public:
+    char padding[0x14];
+    Source source;
+    char more[0x3fc - 0x18];
+    BrickColor teamColor;
+    void onTouched(boost::shared_ptr<Instance> other);
 };
-
-extern int __cdecl checkChild(Child *);
-extern Flag *__cdecl getFlag(Child *);
-extern Shared __cdecl makeShared(Flag *);
-extern Context *__cdecl getContext(void *);
-
-struct Stand {
-    unsigned char padding[0x3fc];
-    int team;
-    void touch(Shared);
-};
-
-void Stand::touch(Shared object)
+void FlagStand::onTouched(boost::shared_ptr<Instance> other)
 {
-    Child *child = object.object->child;
-    if (!checkChild(child))
+    Instance* part = other->parent;
+    if (!isPart(part))
         return;
-
-    Actor *actor = child->getActor();
-    if (!actor)
+    Player* player = part->getPlayer();
+    if (!player)
         return;
-
-    Flag *flag = getFlag(child);
-    if (flag && !flag->inactive) {
-        int currentTeam = team;
-        if (flag->team == currentTeam) {
-            int actorTeam;
-            if (*actor->getTeam(&actorTeam) != currentTeam) {
-                reinterpret_cast<Signal *>(0x97c060)->invoke(
-                    reinterpret_cast<unsigned char *>(this) + 0x14,
-                    makeShared(flag));
-                Receiver *receiver = getContext(this)->find(actor);
-                if (receiver)
-                    receiver->accept(actor);
-            }
-        }
-    }
+    Flag* flag = findFlag(part);
+    if (!flag || flag->inactive)
+        return;
+    int myColor = teamColor.number;
+    if (flag->teamColor.number != myColor)
+        return;
+    if (player->getTeamColor().number == myColor)
+        return;
+    Source* src = &source;
+    flagCaptured(src, sharedFrom(flag));
+    Teams* all = findTeams(this);
+    if (Teams* teams = all->findTeam(player))
+        teams->captured(player);
+}
 }

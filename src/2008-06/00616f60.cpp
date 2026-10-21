@@ -1,151 +1,103 @@
-// from server: 79% by king_originala
-#pragma float_control(precise, off)
+// from server: 100% by EspClaude
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD /fp:fast
+// roc-lib: openrbx-client-dll roc_espclaude_16516c3533c1d74c.cpp
 
-struct Vector2 {
+// Candidate translation unit (score above; library headers required).
+#include <boost/shared_ptr.hpp>
+#include <vector>
+#include <set>
+namespace G3D {
+class Vector2 {
+public:
     float x, y;
 };
-
-struct Vector3 {
+class Vector3 {
+public:
     float x, y, z;
-    Vector2* xy(Vector2*) const;
+    Vector3() {}
+    Vector3(const Vector3& v) : x(v.x), y(v.y), z(v.z) {}
+    Vector2 xy() const;
 };
-
-struct Rect {
-    float x0, y0, x1, y1;
+class Rect2D {
+public:
+    Vector2 min, max;
+    static Rect2D xywh(float x, float y, float w, float h);
+    bool contains(const Vector2& v) const {
+        return (v.x >= min.x) && (v.y >= min.y) && (v.x <= max.x) && (v.y <= max.y);
+    }
 };
-
-struct Frame {
+class CoordinateFrame {
+public:
     float rotation[9];
-    Vector3 position;
+    Vector3 translation;
 };
-
-struct Camera {
-    Vector3* project(Vector3*, const Vector3&, const Rect&) const;
+class GCamera {
+public:
+    Vector3 project(const Vector3& point, const Rect2D& viewport) const;
 };
-
-struct RenderDevice {
-    char padding[0x130];
-    Camera camera;
-};
-
-struct DeviceProvider {
-    virtual void unused();
-    virtual RenderDevice* getDevice();
-};
-
-struct Location {
-    virtual Frame* getFrame(Frame*) const;
-};
-
-struct Selectable {
-    virtual void unused();
-};
-
-struct Instance;
-
-struct Entry {
-    Instance* object;
-    void* control;
-};
-
-struct Children {
-    char padding[12];
-    Entry* first;
-    Entry* last;
-};
-
-struct Instance {
-    virtual void unused();
+}
+namespace RBX {
+using namespace G3D;
+class Instance;
+typedef std::vector<boost::shared_ptr<Instance> > Instances;
+class Instance {
+public:
+    virtual ~Instance();
     char padding[0x104];
-    Children* children;
-    char reserved[0x17c];
-    DeviceProvider provider;
+    boost::shared_ptr<Instances> children;
+    size_t numChildren() const { return children ? children->size() : 0; }
+    Instance* getChild(size_t i) const { return (*children)[i].get(); }
 };
-
-struct Event {
-    char padding[0x10];
-    short x, y;
+class ILocation {
+public:
+    virtual const CoordinateFrame getLocation() const = 0;
 };
-
-struct Iterator {
-    void* container;
-    void* proxy;
-    void* node;
+class ISelectable3d {
+public:
+    virtual void s0();
 };
-
-struct Selection {
-    Iterator* insert(Iterator*, Instance* const&);
+class RenderDevice {
+public:
+    char padding[0x130];
+    GCamera camera;
 };
-
-extern Rect* __cdecl makeRect(Rect*, float, float, float, float);
-extern bool __cdecl excluded(Instance*);
-extern "C" void (__cdecl* _invalid_parameter_noinfo)();
-
-struct Command {
+class IRenderableProvider {
+public:
+    virtual void p0();
+    virtual RenderDevice* getRenderDevice();
+};
+class Workspace : public Instance {
+public:
+    char more[0x288 - 0x110];
+    IRenderableProvider provider;
+};
+struct Vector2int16 { short x, y; };
+struct UIEvent { char padding[0x10]; Vector2int16 mousePosition; };
+bool __cdecl isLocked(Instance*);
+class BoxSelectCommand {
+public:
     char padding[0x18];
-    Instance* owner;
-    void select(Selection*, const Event*, const Rect*);
+    Workspace* workspace;
+    void select(std::set<Instance*>& result, const UIEvent& event, const Rect2D& box);
 };
-
-void Command::select(Selection* output, const Event* event, const Rect* bounds)
+void BoxSelectCommand::select(std::set<Instance*>& result, const UIEvent& event, const Rect2D& box)
 {
-    RenderDevice* device = owner->provider.getDevice();
-    Rect viewport;
-    makeRect(&viewport, 0.0f, 0.0f, float(event->x), float(event->y));
-
-    for (unsigned i = 0; ; ++i) {
-        Children* children = owner->children;
-        if (!children)
-            break;
-        if (i >= unsigned(
-                ((const volatile Children*)children)->last -
-                ((const volatile Children*)children)->first))
-            break;
-
-        if (i >= unsigned(children->last - children->first))
-            _invalid_parameter_noinfo();
-
-        Location* location =
-            dynamic_cast<Location*>(children->first[i].object);
-
-        children = owner->children;
-        if (i >= unsigned(children->last - children->first))
-            _invalid_parameter_noinfo();
-
-        Selectable* selectable =
-            dynamic_cast<Selectable*>(children->first[i].object);
-
-        if (!location || !selectable)
-            continue;
-
-        children = owner->children;
-        if (i >= unsigned(children->last - children->first))
-            _invalid_parameter_noinfo();
-
-        Instance* object = children->first[i].object;
-        if (excluded(object))
-            continue;
-
-        Frame frame;
-        const Vector3& source = location->getFrame(&frame)->position;
-        Vector3 position;
-        position.x = source.x;
-        position.y = source.y;
-        position.z = source.z;
-
-        Vector3 projected;
-        device->camera.project(&projected, position, viewport);
-
-        Vector2 pointStorage;
-        const Vector2* point = projected.xy(&pointStorage);
-        const volatile Rect* rectangle = bounds;
-
-        if (rectangle->x0 <= point->x &&
-            rectangle->y0 <= point->y &&
-            rectangle->x1 >= point->x &&
-            rectangle->y1 >= point->y) {
-            Iterator result;
-            output->insert(&result, object);
+    RenderDevice* device = workspace->provider.getRenderDevice();
+    Rect2D viewport = Rect2D::xywh(0, 0, event.mousePosition.x, event.mousePosition.y);
+    for (size_t i = 0; i < workspace->numChildren(); ++i) {
+        ILocation* location = dynamic_cast<ILocation*>(workspace->getChild(i));
+        ISelectable3d* selectable = dynamic_cast<ISelectable3d*>(workspace->getChild(i));
+        if (location && selectable) {
+            Instance* child = workspace->getChild(i);
+            if (!isLocked(child)) {
+                Vector3 pos = location->getLocation().translation;
+                Vector3 projected = device->camera.project(pos, viewport);
+                if (box.contains(projected.xy()))
+                    result.insert(child);
+            }
         }
     }
+}
 }
