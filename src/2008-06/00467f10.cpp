@@ -1,8 +1,8 @@
-// from server: 93% by Espeon
+// from server: 100% by EspClaude
 // roc-lang: cpp
 // roc-cl: 50727
 // roc-flags: /O2 /GS- /EHsc /MD /fp:fast
-// roc-lib: rbxgs-dll roc_espeon_dxinputpositionrefs7d5b6775964c6c2f.cpp
+// roc-lib: rbxgs-dll roc_espclaude_afc4a3b2cbb2c51e.cpp
 
 // Candidate translation unit (score above; library headers required).
 #pragma float_control(precise,off)
@@ -35,25 +35,13 @@ void DxUserInput::f(float* x, float* y)
     switch (mode)
     {
     case 0:
-        if (keyMode() || flag)
-        {
-            const Vec2& p=Vec2(getPosition());
-            absolutePosition(x, y, position, p);
-        }
-        else if (specialMode())
-        {
-            modeZero(x, y, position);
-        }
-        else if (inside())
-        {
-            const Vec2& p=Vec2(getPosition());
-            insidePosition(x, y, position, p);
-        }
-        else
-        {
-            const Vec2& p=Vec2(getPosition());
-            outsidePosition(x, y, position, p);
-        }
+        (keyMode() || flag)
+            ? absolutePosition(x, y, position, getPosition())
+            : specialMode()
+                ? modeZero(x, y, position)
+                : inside()
+                    ? insidePosition(x, y, position, getPosition())
+                    : outsidePosition(x, y, position, getPosition());
         break;
 
     case 1:
@@ -61,3 +49,4 @@ void DxUserInput::f(float* x, float* y)
         break;
     }
 }
+

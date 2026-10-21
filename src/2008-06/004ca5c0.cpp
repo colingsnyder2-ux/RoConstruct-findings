@@ -1,10 +1,12 @@
-// from server: 96% by EspClaude
+// from server: 100% by Espeon
 // roc-lang: cpp
 // roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs-net-dll roc_espclaude_8d7926d34454cc7a.cpp
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast
+// roc-lib: rbxgs-net-dll roc_espeon_readpositionexternalbias4519eb6d5746f7f9.cpp
 
 // Candidate translation unit (score above; library headers required).
+extern const float horizontalPositionBias;
+extern const float verticalPositionBias;
 #include <BitStream.h>
 #include <stdexcept>
 #include <G3D/Vector3.h>
@@ -33,9 +35,9 @@ void IPhysicsSender::readPosition(RakNet::BitStream& bitStream, G3D::Vector3& po
             throw std::runtime_error("IPhysicsSender::readPosition failed reading y");
         if (!bitStream.ReadBits((unsigned char*)&z, 15))
             throw std::runtime_error("IPhysicsSender::readPosition failed reading z");
-        position.x = x * 0.0625f - 1024.0f;
-        position.y = y * 0.0625f - 512.0f;
-        position.z = (unsigned short)z * 0.0625f - 1024.0f;
+        position.x = x * 0.0625f - horizontalPositionBias;
+        position.y = y * 0.0625f - verticalPositionBias;
+        position.z = (unsigned short)z * 0.0625f - horizontalPositionBias;
     }
     else
     {

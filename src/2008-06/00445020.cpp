@@ -1,88 +1,64 @@
-// from server: 93% by Espeon
+// from server: 100% by EspClaude
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: openrbx-client-dll roc_espeon_metadatacache_b2842be62adde624.cpp
+// roc-lib: openrbx-client-dll roc_espclaude_80d1ffb284fd9ea1.cpp
 
 // Candidate translation unit (score above; library headers required).
-
+#include <string>
 #include <boost/shared_ptr.hpp>
 
-struct CString;
-extern void (__thiscall *stringConstruct)(CString*);
-extern void (__thiscall *stringConstructText)(CString*, const char*);
-extern void (__thiscall *stringDestroy)(CString*);
-extern const char* (__thiscall *stringText)(const CString*);
-extern int (__thiscall *stringLength)(const CString*);
-extern char* (__thiscall *stringBuffer)(CString*, int);
-extern void (__thiscall *stringRelease)(CString*, int);
-extern int (__stdcall *PathRemoveFileSpecA)(char*);
+template<class T>
+class CStringT {
+    T* m_pszData;
+public:
+    __declspec(noinline) CStringT() { m_pszData = 0; }
+    __declspec(noinline) CStringT(const T* s) { m_pszData = (T*)s; }
+    __declspec(noinline) ~CStringT() throw() { m_pszData = 0; }
+    __declspec(noinline) operator const T*() const throw() { return m_pszData; }
+    __declspec(noinline) int GetLength() const throw() { return 0; }
+    __declspec(noinline) T* GetBuffer(int n) { return m_pszData + n; }
+    __declspec(noinline) void ReleaseBuffer(int n = -1) { m_pszData += n; }
+};
+extern template class __declspec(dllimport) CStringT<char>;
+typedef CStringT<char> CString;
 
-struct CString {
-    void* data;
-    CString();
-    CString(const char*);
-    __declspec(dllimport) ~CString() throw();
-    const char* text() const;
-    int length() const;
-    char* buffer(int);
-    void release(int);
+extern "C" __declspec(dllimport) int __stdcall PathRemoveFileSpecA(char*);
+
+struct CWinApp {
+    unsigned char padding[0x44];
+    void* m_hInstance;
 };
 
-inline CString::CString() { stringConstruct(this); }
-inline CString::CString(const char* s) { stringConstructText(this, s); }
-inline const char* CString::text() const { return stringText(this); }
-inline int CString::length() const { return stringLength(this); }
-inline char* CString::buffer(int n) { return stringBuffer(this, n); }
-inline void CString::release(int n) { stringRelease(this, n); }
-
-struct StringValue;
-extern void (__thiscall *valueConstruct)(StringValue*, const char*);
-
-struct StringValue {
-    unsigned char data[28];
-    StringValue(const char*);
+struct AFX_MODULE_STATE {
+    void* reserved;
+    CWinApp* m_pCurrentWinApp;
 };
 
-inline StringValue::StringValue(const char* s) {
-    valueConstruct(this, s);
-}
+AFX_MODULE_STATE* __stdcall AfxGetModuleState();
+inline CWinApp* AfxGetApp() { return AfxGetModuleState()->m_pCurrentWinApp; }
+void __stdcall AfxGetModuleFileName(void* hInst, CString& strFileName);
+CString __cdecl operator+(const CString&, const char*);
 
 struct Metadata {
-    void load(StringValue);
+    void load(std::string);
 };
 
-typedef boost::shared_ptr<Metadata> Shared;
+extern boost::shared_ptr<Metadata> __cdecl createMetadata();
 
-struct ModuleState {
-    unsigned char padding[68];
-    void* module;
-};
-
-struct RuntimeState {
-    unsigned char padding[4];
-    ModuleState* state;
-};
-
-extern RuntimeState* __cdecl runtimeState();
-extern void __stdcall moduleFileName(void*, CString*);
-extern Shared __cdecl createMetadata();
-extern CString __cdecl operator+(const CString&, const char*);
-
-Shared __cdecl getMetadata()
+boost::shared_ptr<Metadata> __cdecl getMetadata()
 {
-    static Shared cached;
+    static boost::shared_ptr<Metadata> cached;
 
     if (!cached.get()) {
         cached = createMetadata();
 
         CString filename;
-        void* module = runtimeState()->state->module;
-        moduleFileName(module, &filename);
-        CString directory(filename.text());
-        PathRemoveFileSpecA(directory.buffer(directory.length()));
-        directory.release(-1);
-        cached->load((directory + "\\ReflectionMetadata.xml").text());
+        AfxGetModuleFileName(AfxGetApp()->m_hInstance, filename);
+        CString directory((const char*)filename);
+        PathRemoveFileSpecA(directory.GetBuffer(directory.GetLength()));
+        directory.ReleaseBuffer();
+        cached->load((const char*)(directory + "\\ReflectionMetadata.xml"));
     }
 
     return cached;

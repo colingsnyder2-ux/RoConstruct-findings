@@ -1,69 +1,74 @@
-// from server: 99% by colin
-extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
-#pragma intrinsic(_InterlockedExchangeAdd)
-extern "C" long __cdecl _InterlockedDecrement(volatile long*);
-#pragma intrinsic(_InterlockedDecrement)
+// from server: 100% by EspClaude
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+// roc-lib: rbxgs roc_espclaude_14ee547c5af4b561.cpp
 
-struct Counter
+// Candidate translation unit (score above; library headers required).
+#define _DLL
+#define private public
+#include "util/IRenderable.h"
+#undef private
+#include "util/Object.h"
+#define hasListeners() hasListeners() const { return listeners.size() > 0; } bool hasListenersEmpty()
+#include "util/Events.h"
+#undef hasListeners
+namespace RBX { template<class T> class GuidItem { public: virtual ~GuidItem() {} char guidPad[0xc]; }; }
+#define AbstractFactoryProduct GuidItem<Instance>, public AbstractFactoryProduct
+#include "util/Guid.h"
+namespace RBX { class GuidStub { public: typedef Guid::Data Data; void assign(const Data&) {} operator const Guid&() const { return *(const Guid*)0; } }; }
+#define Guid GuidStub
+#include "v8tree/Instance.h"
+#undef Guid
+#undef AbstractFactoryProduct
+#include "util/StateStack.h"
+namespace RBX { template<class T> class __declspec(novtable) StateStackStub { public: virtual void setDirty(bool) = 0; virtual bool isDirty() const = 0; size_t getStackSize() const; }; }
+#define StateStack StateStackStub
+#include "v8tree/Verb.h"
+#undef StateStack
+#include <boost/scoped_ptr.hpp>
+namespace RBX { class TimeState; }
+namespace boost { template<> class scoped_ptr<RBX::TimeState> { public: RBX::TimeState* operator->() const; RBX::TimeState* get() const; }; }
+#define tempMetric tempMetric; bool exeFlag
+#include "v8datamodel/Lighting.h"
+#include "v8datamodel/DataModel.h"
+#undef tempMetric
+#include "v8datamodel/TimeState.h"
+#include "v8datamodel/Workspace.h"
+#include "v8datamodel/Hopper.h"
+#include "v8datamodel/Teams.h"
+#include "v8datamodel/JointsService.h"
+#include "v8datamodel/LocalBackpack.h"
+#include "v8datamodel/GuiBuilder.h"
+#include "script/ScriptContext.h"
+#include "gui/GUI.h"
+#include "util/Log.h"
+#include "util/IMetric.h"
+#include "util/standardout.h"
+#include "util/Http.h"
+#include "util/Sound.h"
+
+namespace RBX
 {
-    virtual void unused() = 0;
-    virtual void dispose() = 0;
-    virtual void destroy() = 0;
-
-    volatile long strong;
-    volatile long weak;
-};
-
-struct Shared
-{
-    void* object;
-    Counter* counter;
-
-    Shared(const Shared&);
-    ~Shared();
-};
-
-inline Shared::Shared(const Shared& other)
-    : object(other.object), counter(other.counter)
-{
-    if (counter)
-    {
-        volatile long* strong = &counter->strong;
-        _InterlockedExchangeAdd(strong, 1);
-    }
+#pragma warning (push)
+#pragma warning (disable : 4355)
+	DataModel::DataModel()
+		: VerbContainer(NULL),
+		  workspace(Creatable::create<Workspace>(this)),
+		  guiRoot(Creatable::create<GuiRoot>()),
+		  guiHooks(Creatable::create<GuiRoot>()),
+		  mutex(new boost::recursive_mutex),
+		  guiTarget(NULL),
+		  forceArrowCursor(true),
+		  exeFlag(false),
+		  dirty(false),
+		  drawId(0)
+	{
+		setName("Level");
+	}
+#pragma warning (pop)
 }
-
-inline Shared::~Shared()
+namespace RBX
 {
-    Counter* p = counter;
-    if (p && _InterlockedDecrement(&p->strong) == 0)
-    {
-        p->dispose();
-        if (_InterlockedDecrement(&p->weak) == 0)
-            p->destroy();
-    }
-}
-
-struct Signal
-{
-    void invoke(void**, Shared, void*);
-};
-
-struct Result
-{
-    char padding[16];
-    Signal signal;
-};
-
-struct S
-{
-    Result* lookup(void*);
-    void func_0057b570(void*, Shared, void*);
-};
-
-void S::func_0057b570(void* key, Shared value, void* argument)
-{
-    Result* result = lookup(key);
-    if (result)
-        result->signal.invoke(&key, value, argument);
+	template class Reflection::SignalDescImpl<2, void(boost::shared_ptr<Instance>, const Reflection::PropertyDescriptor*)>;
 }

@@ -1,162 +1,75 @@
-// from server: 95% by Espeon
+// from server: 100% by EspClaude
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: openrbx-client-dll roc_espeon_treehitmanager_bc450e10e1317cd9.cpp
+// roc-lib: atl-9.0-dll-rtm roc_espclaude_da5a2b380f6d46c8.cpp
 
 // Candidate translation unit (score above; library headers required).
-#include <boost/shared_ptr.hpp>
-// from server: 81% by king_originala
-typedef boost::shared_ptr<void> Shared;
-struct Result : Shared {};
+#ifndef _CPPUNWIND
+#define _CPPUNWIND 1
+#endif
+#ifndef _AFXDLL
+#define _AFXDLL
+#endif
+#include <new>
+#include <afxwin.h>
+#include <afxcmn.h>
 
-struct Selection
-{
-    unsigned char storage[12];
-
-    Selection(Shared);
-    ~Selection();
+namespace RBX { class Instance; }
+template<class T> class SharedPtr {
+	T* px;
+	void* pn;
+public:
+	SharedPtr(const SharedPtr& other);
+	template<class Y> SharedPtr(const SharedPtr<Y>& other);
+	~SharedPtr();
+	operator bool() const { return px != 0; }
 };
-
-struct Point
-{
-    int x;
-    int y;
+template<class T> class WeakPtr {
+	T* px;
+	void* pn;
 };
-
-struct Tree;
-
-
-
-struct Tree
-{
-    virtual void slot0();
-virtual void slot1();
-virtual void slot2();
-virtual void slot3();
-virtual void slot4();
-virtual void slot5();
-virtual void slot6();
-virtual void slot7();
-virtual void slot8();
-virtual void slot9();
-virtual void slot10();
-virtual void slot11();
-virtual void slot12();
-virtual void slot13();
-virtual void slot14();
-virtual void slot15();
-virtual void slot16();
-virtual void slot17();
-virtual void slot18();
-virtual void slot19();
-virtual void slot20();
-virtual void slot21();
-virtual void slot22();
-virtual void slot23();
-virtual void slot24();
-virtual void slot25();
-virtual void slot26();
-virtual void slot27();
-virtual void slot28();
-virtual void slot29();
-virtual void slot30();
-virtual void slot31();
-virtual void slot32();
-virtual void slot33();
-virtual void slot34();
-virtual void slot35();
-virtual void slot36();
-virtual void slot37();
-virtual void slot38();
-virtual void slot39();
-virtual void slot40();
-virtual void slot41();
-virtual void slot42();
-virtual void slot43();
-virtual void slot44();
-virtual void slot45();
-virtual void slot46();
-virtual void slot47();
-virtual void slot48();
-virtual void slot49();
-virtual void slot50();
-virtual void slot51();
-virtual void slot52();
-virtual void slot53();
-virtual void slot54();
-virtual void slot55();
-virtual void slot56();
-virtual void slot57();
-virtual void slot58();
-virtual void slot59();
-virtual void slot60();
-virtual void slot61();
-virtual void slot62();
-virtual void slot63();
-virtual void slot64();
-virtual void slot65();
-virtual void slot66();
-virtual void slot67();
-virtual void slot68();
-virtual void slot69();
-virtual void slot70();
-virtual void slot71();
-virtual void slot72();
-virtual void slot73();
-virtual void slot74();
-virtual void slot75();
-virtual void slot76();
-virtual void slot77();
-virtual void slot78();
-virtual void slot79();
-virtual void slot80();
-virtual void slot81();
-virtual void slot82();
-virtual void slot83();
-virtual void slot84();
-virtual Result getSelection();
-
-    void focus();
-    void* hitTest(Point, unsigned int*);
-    char* itemData(void*);
-    void func_004237d0(unsigned int, Point);
+template<class T> SharedPtr<T> make_shared(const WeakPtr<T>& r);
+class SelectionState;
+class SelectionLock {
+	unsigned char storage[12];
+public:
+	SelectionLock(SharedPtr<RBX::Instance> state);
+	~SelectionLock();
 };
-
-struct Manager
-{
-    void select(Shared);
+struct TreeItemData {
+	int reserved[3];
+	WeakPtr<RBX::Instance> instance;
 };
-
-struct Context
-{
-    void* unused;
-    Manager* volatile manager;
+class CRobloxApp : public CWinApp {
+public:
+	void selectInstance(SharedPtr<RBX::Instance> instance);
 };
-
-extern Shared __cdecl func_004236d0(void*);
-extern Context* __cdecl func_006a0926();
-
-void Tree::func_004237d0(unsigned int flags, Point point)
+class CObjectTree : public CTreeCtrl {
+public:
+	virtual void reserved0();
+	virtual void reserved1();
+	virtual void reserved2();
+	virtual void reserved3();
+	virtual SharedPtr<SelectionState> getSelectionState();
+	afx_msg void OnLButtonDown(UINT nFlags, CPoint point);
+};
+void CObjectTree::OnLButtonDown(UINT nFlags, CPoint point)
 {
-    focus();
-    if (flags & 0x0c)
-        return;
-
-    void* item = hitTest(point, &flags);
-    if (!item)
-        return;
-    if (!(flags & 0x46))
-        return;
-
-    char* data = itemData(item);
-    if (!data)
-        return;
-
-    Shared value = func_004236d0(data + 12);
-    if (value.get())
-    {
-        Selection selection(getSelection());
-        func_006a0926()->manager->select(value);
-    }
+	CTreeCtrl::OnLButtonDown(nFlags, point);
+	if (nFlags & (MK_SHIFT | MK_CONTROL))
+		return;
+	HTREEITEM hItem = HitTest(point, &nFlags);
+	if (hItem && (nFlags & TVHT_ONITEM))
+	{
+		if (TreeItemData* data = (TreeItemData*)GetItemData(hItem))
+		{
+			SharedPtr<RBX::Instance> instance = make_shared(data->instance);
+			if (instance)
+			{
+				SelectionLock lock(getSelectionState());
+				static_cast<CRobloxApp*>(AfxGetApp())->selectInstance(instance);
+			}
+		}
+	}
 }

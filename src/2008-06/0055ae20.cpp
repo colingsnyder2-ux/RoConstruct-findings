@@ -1,20 +1,29 @@
-// from server: 95% by Espeon
+// from server: 100% by EspClaude
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs-dll roc_espeon_descendentaddedctorbodyf6569e83b6b7a030.cpp
+// roc-lib: rbxgs roc_espclaude_ae23b208edf49e74.cpp
 
 // Candidate translation unit (score above; library headers required).
-#include <vector>
-#include <boost/shared_ptr.hpp>
-struct Instance;
-struct SignalSource {virtual ~SignalSource();};
-struct Prefix {virtual ~Prefix();char padding[0x10];};
-struct Event {boost::shared_ptr<Instance> child,parent;Event(Instance*,Instance*);};
-struct Notifier {virtual ~Notifier();std::vector<void*> listeners;void* range;void raise(Event)const;};
-struct Instance:Prefix,SignalSource {char gap[0x4c];Notifier notifier;char rest[0x80];Instance* parent;void onAdded(Instance*);};
-struct Signal {void fire(SignalSource*,boost::shared_ptr<Instance>)const;};extern Signal addedSignal;
-extern boost::shared_ptr<Instance> sharedInstance(Instance*);
-void Instance::onAdded(Instance* child){if(notifier.listeners.size()>0)notifier.raise(Event(child,child->parent));addedSignal.fire(this,sharedInstance(child));}
+#include "util/Object.h"
+#define hasListeners() hasListeners() const { return listeners.size() > 0; } bool hasListenersEmpty()
+#include "util/Events.h"
+#undef hasListeners
+namespace RBX { template<class T> class GuidItem { public: virtual ~GuidItem() {} char guidPad[0xc]; }; }
+#define AbstractFactoryProduct GuidItem<Instance>, public AbstractFactoryProduct
+#include "util/Guid.h"
+namespace RBX { class GuidStub { public: typedef Guid::Data Data; void assign(const Data&) {} operator const Guid&() const { return *(const Guid*)0; } }; }
+#define Guid GuidStub
+#include "v8tree/Instance.h"
+#undef Guid
+#undef AbstractFactoryProduct
+namespace RBX
+{
+	void Instance::onDescendentAdded(Instance* instance)
+	{
+		if (Notifier<Instance, DescendentAdded>::hasListeners())
+			Notifier<Instance, DescendentAdded>::raise(DescendentAdded(instance, instance->getParent()));
 
-Event::Event(Instance* c,Instance* p):child(sharedInstance(c)),parent(sharedInstance(p)){}
+		event_descendentAdded.fire(this, shared_from(instance));
+	}
+}

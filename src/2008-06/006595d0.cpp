@@ -1,4 +1,4 @@
-// from server: 95% by EspClaude
+// from server: 100% by colin
 // from server: 73% by king_originala
 // roc 2008-06 006595d0  unit: RBX::BallBallContact  size: 159 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 006595d0
@@ -99,9 +99,7 @@ inline Vector minimum(const Vector& a, const Vector& b)
 
 inline Vector maximum(const Vector& a, const Vector& b)
 {
-    return Vector(maximum(a.x, b.x),
-                  maximum(a.y, b.y),
-                  maximum(a.z, b.z));
+    return Vector(b.x < a.x ? a.x : b.x, b.y < a.y ? a.y : b.y, b.z < a.z ? a.z : b.z);
 }
 
 struct Bounds

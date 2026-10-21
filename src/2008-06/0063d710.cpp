@@ -1,74 +1,62 @@
-// from server: 96% by king_originala
-struct Matrix;
-extern const Matrix& __cdecl identityMatrix();
+// from server: 100% by EspClaude
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+// roc-lib: rbxgs-dll roc_espclaude_c51be8ad36632363.cpp
 
-struct Matrix {
-    float elements[9];
-    Matrix(const Matrix& source = identityMatrix());
-};
-
-struct Vector {
-    float x, y, z;
-};
-
-struct Frame {
-    Matrix rotation;
-    Vector position;
-};
-
-struct Part {
-    const Frame& getFrame();
-};
-
-extern char sourceType;
-extern char targetType;
-
-extern "C" void* __cdecl runtimeCast(
-    void* object, long displacement, const void* sourceType,
-    const void* targetType, int isReference);
-
-struct Renderer {
-    virtual void slot0();
-    virtual void slot1();
-    virtual void slot2();
-    virtual void slot3();
-    virtual void slot4();
-    virtual void slot5();
-    virtual void slot6();
-    virtual void slot7();
-    virtual void slot8();
-    virtual void slot9();
-    virtual void slot10();
-    virtual void slot11();
-    virtual void slot12();
-    virtual void slot13();
-    virtual void setFrame(const Frame&);
-    virtual void slot15();
-    virtual void slot16();
-    virtual void slot17();
-    virtual void slot18();
-    virtual void finish();
-};
-
-struct S {
-    char reserved[20];
-    bool enabled;
-    void draw(Renderer* renderer);
-};
-
-void S::draw(Renderer* renderer)
+// Candidate translation unit (score above; library headers required).
+#define _DLL
+#include "RbxGraphics/Adorn.h"
+#include "AppDraw/SelectState.h"
+#include "util/IndexArray.h"
+#define private public
+#include "util/IRenderable.h"
+#undef private
+#include "util/Object.h"
+namespace RBX { template<class T> class GuidItem { public: virtual ~GuidItem() {} char guidPad[0xc]; }; }
+#define AbstractFactoryProduct GuidItem<Instance>, public AbstractFactoryProduct
+#include "util/Guid.h"
+namespace RBX { class GuidStub { public: typedef Guid::Data Data; void assign(const Data&) {} operator const Guid&() const { return *(const Guid*)0; } }; }
+#define Guid GuidStub
+#include "v8tree/Instance.h"
+#undef Guid
+#undef AbstractFactoryProduct
+#include "v8datamodel/Hopper.h"
+#include "v8datamodel/PartInstance.h"
+namespace RBX
 {
-    Part* part = static_cast<Part*>(runtimeCast(
-        *reinterpret_cast<void**>(reinterpret_cast<char*>(this) - 44),
-        0, &sourceType, &targetType, 0));
-
-    if (part && enabled) {
-        const Vector& position = part->getFrame().position;
-        Frame frame;
-        frame.position.x = position.x;
-        frame.position.y = position.y;
-        frame.position.z = position.z;
-        renderer->setFrame(frame);
-        renderer->finish();
-    }
+	class SparkleAdorn
+	{
+	public:
+		virtual void a0(); virtual void a1(); virtual void a2(); virtual void a3(); virtual void a4();
+		virtual void a5(); virtual void a6(); virtual void a7(); virtual void a8(); virtual void a9();
+		virtual void a10(); virtual void a11(); virtual void a12(); virtual void a13();
+		virtual void setObjectToWorldMatrix(const G3D::CoordinateFrame& c) = 0;
+		virtual void a15(); virtual void a16(); virtual void a17(); virtual void a18();
+		virtual void sparkles() = 0;
+	};
+	class SparkleRenderable
+	{
+	public:
+		virtual void render3dAdorn(SparkleAdorn* adorn);
+		int index2d, index3d, bucket;
+	};
+	class Sparkles : public Instance, public SparkleRenderable
+	{
+		int unk;
+		bool enabled;
+	public:
+		void render3dAdorn(SparkleAdorn* adorn);
+	};
+	void Sparkles::render3dAdorn(SparkleAdorn* adorn)
+	{
+		if (PartInstance* part = dynamic_cast<PartInstance*>(getParent()))
+		{
+			if (enabled)
+			{
+				adorn->setObjectToWorldMatrix(G3D::CoordinateFrame(part->getCoordinateFrame().translation));
+				adorn->sparkles();
+			}
+		}
+	}
 }

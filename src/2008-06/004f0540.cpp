@@ -1,8 +1,8 @@
-// from server: 95% by EspClaude
+// from server: 100% by Espeon
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast
-// roc-lib: rbxgs-dll roc_espclaude_4995aa312e880a55.cpp
+// roc-lib: rbxgs-dll roc_espeon_meshcomponentscale3f635359db2a846f.cpp
 
 // Candidate translation unit (score above; library headers required).
 #include <G3D/Vector3.h>
@@ -71,7 +71,7 @@ void PartView::updateMesh()
         return;
     G3D::Vector3 size = part->getPartSizeUi();
     if (specialShape)
-        size *= specialShape->scale;
+        { size.x = specialShape->scale.x * size.x; size.y = specialShape->scale.y * size.y; size.z = specialShape->scale.z * size.z; }
     if (!specialShape)
     {
         switch (part->shape)
@@ -93,12 +93,13 @@ void PartView::updateMesh()
         case 6: mesh = createBrick(size, appearance->getSurfaces(), &appearance->extra); break;
         }
     }
+    double root = sqrt(2.0);
     float ax = fabs(size.x);
     float ay = fabs(size.y);
     float az = fabs(size.z);
     float m = ax > ay ? ax : ay;
-    m = m > az ? m : az;
-    radius = (float)sqrt(2.0) * m * 0.5f;
+    if (m > az) radius = (float)root * m * 0.5f;
+    else radius = (float)root * az * 0.5f;
 }
 
 }

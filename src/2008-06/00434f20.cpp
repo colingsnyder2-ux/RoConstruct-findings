@@ -1,63 +1,34 @@
-// from server: 95% by Espeon
+// from server: 100% by EspClaude
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: openrbx-client-dll roc_espeon_variantcopyphase6ac481552a4501ec.cpp
+// roc-lib: openrbx-client-dll roc_espclaude_a4a5133839b14b11.cpp
 
 // Candidate translation unit (score above; library headers required).
-// from server: 89% by king_originala
- #include <intrin.h>
-struct TypeInfo {
-    __declspec(dllimport) bool operator==(const TypeInfo&) const;
-};
-
+#define _CPPUNWIND 1
+#include <typeinfo>
 #include <string>
-typedef std::string String;
-
-struct Holder {
-    virtual ~Holder();
-    virtual void reserved();
-    virtual Holder* clone() const;
+#include <boost/any.hpp>
+namespace RBX { namespace Reflection {
+class Type {
+	unsigned int reserved[2];
+public:
+	const std::type_info& info;
+	const std::type_info& getInfo() const { return info; }
 };
-
-struct TypeDescriptor {
-    unsigned int reserved[2];
-    const TypeInfo* info;
+class Variant {
+	const Type* type;
+	boost::any value;
+public:
+	template<class T> const T& convert() const;
+	template<class T> T get() const;
 };
-
-extern const TypeInfo stringType;
-extern const String& __cdecl getString(Holder* const*);
-
-struct Value {
-    const TypeDescriptor* type;
-    Holder* holder;
-
-    Value(const Value&);
-    ~Value();
-    const String& convert() const;
-    String getStringValue() const;
-};
-
-inline Value::Value(const Value& other)
+const std::string& getStringFromAny(const boost::any* value);
+template<> std::string Variant::get<std::string>() const
 {
-    type = other.type;
-    _ReadWriteBarrier();
-    Holder* source = other.holder;
-    Holder* copy = source ? source->clone() : 0;
-    holder = copy;
+	if (typeid(std::string) == type->getInfo())
+		return getStringFromAny(&value);
+	Variant copy(*this);
+	return copy.convert<std::string>();
 }
-
-inline Value::~Value()
-{
-    if (holder)
-        delete holder;
-}
-
-String Value::getStringValue() const
-{
-    if (stringType == *type->info)
-        return String(getString(&holder));
-
-    Value temporary(*this);
-    return String(temporary.convert());
-}
+}}

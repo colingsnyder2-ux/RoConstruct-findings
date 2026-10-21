@@ -1,4 +1,10 @@
-// from server: 90% by EspClaude
+// from server: 100% by Espeon
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: rbxgs-dll roc_espeon_outputqueuenativelock7ef21b1281c34c21.cpp
+
+// Candidate translation unit (score above; library headers required).
 // roc-flags: /O2 /GS- /EHsc /MD
 #include <deque>
 #include <time.h>
@@ -17,21 +23,9 @@ public:
 extern template class __declspec(dllimport) bstr<char>;
 typedef bstr<char> string_;
 
-struct lock_error { lock_error(); };
-struct mutex {
-    void* m_mutex;
-    bool m_critical_section;
-    void do_lock();
-    void do_unlock();
-};
-struct scoped_lock {
-    mutex& m_mutex;
-    bool m_locked;
-    explicit scoped_lock(mutex& mx) : m_mutex(mx), m_locked(false) { lock(); }
-    ~scoped_lock() { if (m_locked) unlock(); }
-    void lock() { if (m_locked) throw lock_error(); m_mutex.do_lock(); m_locked = true; }
-    void unlock() { if (!m_locked) throw lock_error(); m_mutex.do_unlock(); m_locked = false; }
-};
+#include <boost/thread/mutex.hpp>
+typedef boost::mutex mutex;
+typedef boost::mutex::scoped_lock scoped_lock;
 
 struct OutputItem {
     int type;

@@ -1,12 +1,28 @@
-// from server: 93% by king_originala
+// from server: 100% by EspClaude
+// roc 2008-06 00559350  unit: RBX::VInstance::?$NonFactoryProduct  size: 149 bytes
+// Make this compile to the exact bytes below, then: roc check 2008-06 00559350
+//
+
 struct Node {
     Node* next;
 };
 
-struct Root {
-    int reserved;
+struct List {
     Node* first;
     Node* last;
+    void add(Node* node)
+    {
+        if (!last)
+            first = node;
+        else
+            last->next = node;
+        last = node;
+    }
+};
+
+struct Root {
+    int reserved;
+    List children;
     ~Root();
 };
 
@@ -60,12 +76,7 @@ Result Instance::build()
     Root* root = makeRoot();
     Node* node = makeNode();
 
-    if (!root->last)
-        root->first = node;
-    else
-        root->last->next = node;
-
-    root->last = node;
+    root->children.add(node);
 
     Owner owner(root);
     return convertRoot(root);
