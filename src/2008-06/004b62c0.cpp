@@ -1,8 +1,9 @@
+// from server: 100% by EspClaude
 // from server: 99% by Espeon
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: rbxgs-dll roc_espeon_menubranchphase036987608f47cd68.cpp
+// roc-lib: rbxgs-dll roc_espclaude_b43d317ef6c442d8.cpp
 
 // Candidate translation unit (score above; library headers required).
 #include <intrin.h>
@@ -30,20 +31,22 @@ struct Control {
     volatile long weak;
 };
 
+struct CodeProfiler;
+template<class T> struct SP { T* px; T& operator*() const { return *px; } };
 struct Source {
     char padding[0x2d1c];
-    void* item1c;
-    void* item20;
-    void* item24;
-    void* item28;
-    void* item2c;
-    void* item30;
-    void* item34;
-    void* item38;
-    void* item3c;
-    void* item40;
-    void* item44;
-    void* item48;
+    SP<CodeProfiler> item1c;
+    SP<CodeProfiler> item20;
+    SP<CodeProfiler> item24;
+    SP<CodeProfiler> item28;
+    SP<CodeProfiler> item2c;
+    SP<CodeProfiler> item30;
+    SP<CodeProfiler> item34;
+    SP<CodeProfiler> item38;
+    SP<CodeProfiler> item3c;
+    SP<CodeProfiler> item40;
+    SP<CodeProfiler> item44;
+    SP<CodeProfiler> item48;
 };
 
 typedef boost::shared_ptr<Source> Shared;
@@ -58,7 +61,7 @@ struct Base {
     Base();
     ~Base();
     void* lookup(const char*);
-    Base* attach(void*);
+    Base* attach(CodeProfiler&);
     void bind(const char*, void*);
 };
 
@@ -92,27 +95,28 @@ Receiver::Receiver(const Shared* argument, void* other)
       owner(other), value174(0), value178(0)
 {
     value160 = lookup("Ping");
-    Base* initial = attach(argument->get()->item40);
+    Base* initial = attach(*(*argument)->item40);
     initial->bind("Bandwidth Exceeded",
                   static_cast<char*>(other) + 0xc4);
 
     value15c = lookup("Packet Loss");
-    attach(argument->get()->item3c);
-    attach(argument->get()->item44);
-    attach(argument->get()->item48);
+    attach(*(*argument)->item3c);
+    attach(*(*argument)->item44);
+    attach(*(*argument)->item48);
 
     _ReadWriteBarrier();
-    Base* branch = attach(argument->get()->item1c);
-    branch->attach(argument->get()->item20);
-    branch->attach(argument->get()->item28);
+    Base* branch = attach(*(*argument)->item1c);
+    branch->attach(*(*argument)->item20);
+    branch->attach(*(*argument)->item28);
 
-    Base* nested = branch->attach(argument->get()->item30);
-    nested->attach(argument->get()->item34);
-    nested->attach(argument->get()->item38);
+    Base* nested = branch->attach(*(*argument)->item30);
+    nested->attach(*(*argument)->item34);
+    nested->attach(*(*argument)->item38);
 
-    branch->attach(argument->get()->item24);
-    branch->attach(argument->get()->item2c);
+    branch->attach(*(*argument)->item24);
+    branch->attach(*(*argument)->item2c);
 
     value164 = branch->lookup("Instance size (In)");
     value158 = branch->lookup("Waiting Refs");
 }
+

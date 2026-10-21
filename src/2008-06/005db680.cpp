@@ -1,214 +1,307 @@
-// from server: 37% by colin
-struct Vec3 { float x, y, z; };
+// from server: 85% by Espeon
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast
+// roc-lib: openrbx-client-dll roc_espeon_humanoidrendercornertempse392468dffbe760c.cpp
 
-struct Obj {
-    virtual void v0();
-    virtual void v1();
-    virtual void v2();
-    virtual void v3();
-    virtual void v4();
-    virtual void v5();
-    virtual void v6();
-    virtual void v7();
-    virtual void v8();
-    virtual void v9();
-    virtual void v10();
-    virtual void v11();
-    virtual void v12();
-    virtual void v13();
-    virtual void v14();
-    virtual void v15();
-    virtual void v16();
-    virtual void v17();
-    virtual void v18();
-    virtual void v19();
-    virtual void v20();
-    virtual void v21();
-    virtual void v22();
-    virtual void v23();
-    virtual void v24();
-    virtual void v25();
-    virtual void v26();
-    virtual void v27();
-    virtual void v28();
-    virtual void v29();
-    virtual void v30();
-    virtual void v31();
-    virtual void v32();
-    virtual void v33();
-    virtual void v34();
-    virtual void v35();
-    virtual void v36();
-    virtual void v37();
-    virtual void v38();
-    virtual void v39();
-    virtual void v40();
-    virtual void v41();
-    virtual void v42();
-    virtual void v43();
-    virtual void v44();
-    virtual void v45();
-    virtual void v46();
-    virtual void v47();
-    virtual void v48();
-    virtual void v49();
-    virtual void v50();
-    virtual void v51();
-    virtual void v52();
-    virtual void v53();
-    virtual void v54();
-    virtual void v55();
-    virtual void v56();
-    virtual void v57();
-    virtual void v58();
-    virtual void v59();
-    virtual void v60();
-    virtual void v61();
-    virtual void v62();
-    virtual void v63();
+// Candidate translation unit (score above; library headers required).
+#ifndef HUMANOID_HUMANOID_H
+#define HUMANOID_HUMANOID_H
+
+#include "decomp.h"
+#include "util/Handle.h"
+#include "util/IControllable.h"
+#include "util/IRenderable.h"
+#include "util/Name.h"
+#include "util/RunStateOwner.h"
+#include "v8datamodel/ICharacterSubject.h"
+#include "v8datamodel/PartInstance.h"
+#include "v8kernel/Connector.h"
+#include "v8tree/Instance.h"
+
+#include <boost/shared_ptr.hpp>
+#include <memory>
+
+namespace RBX {
+
+class __declspec(novtable) IModelModifier { public: virtual ~IModelModifier() {} };
+class Body;
+class Controller;
+class World;
+
+extern char sHumanoid[];
+
+// SIZE 0x1f0
+class Humanoid : public DescribedCreatable<Humanoid, Instance, sHumanoid>,
+				 public Connector,
+				 public IControllable,
+				 public IRenderable,
+				 public ICharacterSubject,
+				 public IModelModifier, public Listener<RunService, Stepped>
+{
+
+public:
+	enum WalkMode
+	{
+		HAS_PART = 0,
+		HAS_POINT = 1,
+		CLICK_TO_MOVE = 2,
+		DIRECTION_MOVE = 3
+	};
+
+	// SIZE 0x08
+	class __declspec(novtable) State : public INamed
+	{
+	public:
+		virtual ~State() {} // vtable+0x04
+
+		virtual void onComputeForce(const float stepDt) = 0;                   // vtable+0x08
+		virtual State* onStep(const float stepDt, Controller& controller) = 0; // vtable+0x0c
+
+		// FUNCTION: WEBSERVICE 0x100a0710 FOLDED
+		virtual float getIntendedRotationAboutYAxis() const // vtable+0x10
+		{
+			return 0;
+		}
+
+	protected:
+		State(Humanoid* humanoid) : humanoid(humanoid) {}
+
+		Humanoid* const humanoid; // 0x04
+	};
+
+	static Reflection::SignalDesc<Humanoid, void()> event_Died;
+	static Reflection::SignalDesc<Humanoid, void(float)> event_Running;
+	static Reflection::SignalDesc<Humanoid, void(float)> event_Climbing;
+	static Reflection::SignalDesc<Humanoid, void(bool)> event_Jumping;
+	static Reflection::SignalDesc<Humanoid, void(bool)> event_FreeFalling;
+	static Reflection::SignalDesc<Humanoid, void(bool)> event_GettingUp;
+	static Reflection::SignalDesc<Humanoid, void(bool)> event_FallingDown;
+	static Reflection::SignalDesc<Humanoid, void(bool)> event_Seated;
+
+	virtual ~Humanoid();
+
+	Body* getTorsoBody();
+	Body* getRootBody();
+
+	float getHealth() const { return health; }
+
+	void setMaxHealth(float value);
+	// FUNCTION: WEBSERVICE 0x100a0750
+	float getMaxHealth() const { return maxHealth; }
+
+	G3D::Vector3 getWalkDirection() const { return walkDirection; }
+
+	void setWalkRotationalVelocity(const float& value);
+	// FUNCTION: WEBSERVICE 0x100a0790
+	float getWalkRotationalVelocity() const { return walkRotationalVelocity; }
+
+	const G3D::Vector3& getWalkToPoint() const { return walkToPoint; }
+
+	PartInstance* getWalkToPart() const { return walkToPart.get(); }
+
+	void setJump(bool value);
+	// FUNCTION: WEBSERVICE 0x100a07b0
+	bool getJump() const { return jump; }
+
+	void setSit(bool value);
+	// FUNCTION: WEBSERVICE 0x100a07c0
+	bool getSit() const { return sit; }
+
+	const G3D::Vector3& getTargetPoint() const { return targetPoint; }
+
+	G3D::Vector3 updateWalkDirection();
+
+	Primitive* getTorsoPrimitive() const;
+	Primitive* getLeftLegPrimitive();
+	Primitive* getRightLegPrimitive();
+
+	PartInstance* getHead() const;
+	PartInstance* getTorso() const;
+	PartInstance* getLeftLeg() const;
+	PartInstance* getRightLeg() const;
+	PartInstance* getLeftArm() const;
+	PartInstance* getRightArm() const;
+
+private:
+	bool hasWalkToPoint(G3D::Vector3& worldPosition) const;
+
+	virtual bool shouldRender2d() const;
+	virtual bool shouldRender3dAdorn() const;
+	virtual void render2d(Adorn* adorn);
+	virtual void render3dAdorn(Adorn* adorn);
+	void renderMultiplayer(Adorn* adorn, const G3D::GCamera& camera);
+	virtual bool isControllable() const;
+	virtual void onEvent(const RunService* source, Stepped event);
+	virtual void computeForce(float dt, bool throttling);
+	virtual const CoordinateFrame getLocation() const;
+	virtual ContactManager* getContactManager();
+	virtual void tellCameraNear(float distance);
+	virtual float getIntendedRotationAboutYAxis();
+	virtual void cameraSetWalkOrientation(float rad, bool noAdjust);
+
+public:
+	virtual void getIgnorePrims(std::vector<const Primitive*>& ignore);
+
+	Humanoid();
+
+private:
+	G3D::Vector3 getIntendedMovementVector(bool setWalkMode);
+	virtual G3D::Vector3 getIntendedMovementVector();
+
+private:
+	float health;                                     // 0x16c
+	float maxHealth;                                  // 0x170
+	float walkRotationalVelocity;                     // 0x174
+	int walkTimer;                                    // 0x178
+	WalkMode walkMode;                                // 0x17c
+	shared_ptr<PartInstance> walkToPart;              // 0x180
+	G3D::Vector3 walkToPoint;                         // 0x188
+	G3D::Vector3 walkDirection;                       // 0x194
+	G3D::Vector3 targetPoint;                         // 0x1a0
+	bool jump : 1;                                    // 0x1ac
+	bool imDead : 1;                                  // 0x1ac
+	bool hadHeadJoint : 1;                            // 0x1ac
+	bool observedFlag : 1;
+	bool sit : 1;                                     // 0x1ac
+	mutable boost::shared_ptr<PartInstance> head;     // 0x1b0
+	mutable boost::shared_ptr<PartInstance> torso;    // 0x1b8
+	mutable boost::shared_ptr<PartInstance> leftLeg;  // 0x1c0
+	mutable boost::shared_ptr<PartInstance> rightLeg; // 0x1c8
+	mutable boost::shared_ptr<PartInstance> rightArm; // 0x1d0
+	mutable boost::shared_ptr<PartInstance> leftArm;  // 0x1d8
+	World* world;                                     // 0x1e0
+	std::auto_ptr<State> currentState;                // 0x1e4
 };
 
-struct Humanoid {
-    char pad0[0x104];
-    Obj* obj104;
-    char pad1[0x1a8 - 0x108];
-    float f1a8;
-    float f1ac;
-    void func(Obj* a, Obj* b);
-};
+DECOMP_SIZE_ASSERT(Humanoid, 0x1f0)
+DECOMP_SIZE_ASSERT(Humanoid::State, 0x08)
 
-extern "C" {
-    float g_8163a4;
-    float g_819ba4;
-    float g_819bac;
-    float g_81e37c;
-    float g_8222f0;
-    float g_83d7e0;
+// clang-format off
+// SYNTHETIC: WEBSERVICE 0x1021b310
+// RBX::`dynamic initializer for 'propWalkRotationalVelocity''
+// SYNTHETIC: WEBSERVICE 0x1021b370
+// RBX::`dynamic initializer for 'propJump''
+// SYNTHETIC: WEBSERVICE 0x1021b430
+// RBX::`dynamic initializer for 'propSit''
+// SYNTHETIC: WEBSERVICE 0x1021b4f0
+// RBX::`dynamic initializer for 'propMaxHealth''
+// SYNTHETIC: WEBSERVICE 0x1021b5e0
+// `dynamic initializer for 'RBX::Humanoid::event_Died''
+// SYNTHETIC: WEBSERVICE 0x1021b610
+// `dynamic initializer for 'RBX::Humanoid::event_Running''
+// SYNTHETIC: WEBSERVICE 0x1021b630
+// `dynamic initializer for 'RBX::Humanoid::event_Climbing''
+// SYNTHETIC: WEBSERVICE 0x1021b650
+// `dynamic initializer for 'RBX::Humanoid::event_Jumping''
+// SYNTHETIC: WEBSERVICE 0x1021b670
+// `dynamic initializer for 'RBX::Humanoid::event_FreeFalling''
+// SYNTHETIC: WEBSERVICE 0x1021b690
+// `dynamic initializer for 'RBX::Humanoid::event_GettingUp''
+// SYNTHETIC: WEBSERVICE 0x1021b6b0
+// `dynamic initializer for 'RBX::Humanoid::event_FallingDown''
+// SYNTHETIC: WEBSERVICE 0x1021b6d0
+// `dynamic initializer for 'RBX::Humanoid::event_Seated''
+// SYNTHETIC: WEBSERVICE 0x10223400
+// RBX::`dynamic atexit destructor for 'propSit''
+// SYNTHETIC: WEBSERVICE 0x10223420
+// RBX::`dynamic atexit destructor for 'propMaxHealth''
+// SYNTHETIC: WEBSERVICE 0x10223480
+// RBX::`dynamic atexit destructor for 'propJump''
+// SYNTHETIC: WEBSERVICE 0x102234a0
+// RBX::`dynamic atexit destructor for 'propWalkRotationalVelocity''
+// SYNTHETIC: WEBSERVICE 0x10223500
+// `dynamic atexit destructor for 'RBX::Humanoid::event_Climbing''
+// SYNTHETIC: WEBSERVICE 0x10223510
+// `dynamic atexit destructor for 'RBX::Humanoid::event_FreeFalling''
+// SYNTHETIC: WEBSERVICE 0x10223520
+// `dynamic atexit destructor for 'RBX::Humanoid::event_GettingUp''
+// SYNTHETIC: WEBSERVICE 0x10223530
+// `dynamic atexit destructor for 'RBX::Humanoid::event_FallingDown''
+// SYNTHETIC: WEBSERVICE 0x10223540
+// `dynamic atexit destructor for 'RBX::Humanoid::event_Seated''
+// SYNTHETIC: WEBSERVICE 0x10223560
+// `dynamic atexit destructor for 'RBX::Humanoid::event_Running''
+// SYNTHETIC: WEBSERVICE 0x10223570
+// `dynamic atexit destructor for 'RBX::Humanoid::event_Jumping''
+// SYNTHETIC: WEBSERVICE 0x10223590
+// `dynamic atexit destructor for 'RBX::Humanoid::event_Died''
+// clang-format on
+
+} // namespace RBX
+
+#endif // HUMANOID_HUMANOID_H
+
+namespace RBX {
+Humanoid::Humanoid()
+	: health(100), maxHealth(100), walkRotationalVelocity(0), walkTimer(0), walkMode(DIRECTION_MOVE), jump(false),
+	  imDead(false), hadHeadJoint(false), observedFlag(false), sit(false), world(NULL)
+{
+	setName("Humanoid");
 }
 
-double __cdecl sqrt(double);
 
-Obj* func_5d8a10();
-Obj* func_598cb0(Obj*);
-void func_510d00(Obj*, Vec3*, Vec3*, Vec3*);
-Obj* func_5107b0(Obj*, Vec3*);
-Obj* func_49ab50(Obj*);
-void func_5d6180(Obj*, Vec3*, Obj*);
-Obj* func_514a60();
-Obj* func_5149f0();
-Obj* func_5185d0(Vec3*, Vec3*, Vec3*, int, int, int, int, double, Vec3*);
-Obj* func_5d7560();
-void func_4f35d0(Vec3*, Vec3*, Vec3*, Vec3*);
-Obj* func_5148b0();
-
-void Humanoid::func(Obj* a, Obj* b)
+}
+#include "rbxgraphics/Adorn.h"
+#include "util/Color.h"
+#include "v8datamodel/Teams.h"
+namespace RBX {
+void Humanoid::renderMultiplayer(Adorn* adorn, const G3D::GCamera& camera)
 {
-    Obj* o = func_5d8a10();
-    if (!o) return;
+	PartInstance* headPart = getHead();
+ if (headPart != NULL) {
+		const CoordinateFrame& headCoord = headPart->getCoordinateFrame();
 
-    Obj* r = func_598cb0(o);
-    Vec3 p;
-    p.x = *(float*)((char*)r + 0x24);
-    p.y = *(float*)((char*)r + 0x28);
-    p.z = *(float*)((char*)r + 0x2c);
-    p.z += g_81e37c;
+		Vector3 headPosition = headCoord.translation;
+ headPosition.y += 1.5f;
 
-    Vec3 tmp;
-    (*(void (__thiscall**)(Obj*, Vec3*))(*(char**)a + 0x10))(a, &tmp);
+		Vector3 projected = camera.project(headPosition, adorn->getViewport());
 
-    Vec3 v1, v2;
-    func_510d00(b, &v1, &p, &tmp);
-    Obj* q = func_5107b0(b, &v2);
+		float distance = (camera.getCoordinateFrame().translation - headPosition).magnitude();
 
-    float dx = *(float*)((char*)q + 0x24) - p.x;
-    float dy = *(float*)((char*)q + 0x28) - p.y;
-    float dz = *(float*)((char*)q + 0x2c) - p.z;
-    float dist = dx*dx + dy*dy + dz*dz;
-    dist = (float)sqrt(dist);
+		if (distance < 100.0f && headPart->getTransparencyXml() < 0.99f) {
+			int fontSize = 8;
 
-    if (g_8163a4 >= dist) return;
-    if (g_83d7e0 >= *(float*)((char*)o + 0x1e8)) return;
+			if (distance < 20.0f) fontSize = 12;
+			else if (distance < 50.0f) fontSize = 10;
 
-    int mode = 8;
-    if (g_8222f0 < dist) {
-        mode = 0xc;
-    } else if (g_819ba4 == dist) {
-        mode = 0xa;
-    }
+			Teams* teams = ServiceProvider::find<Teams>(this);
 
-    Obj* sp = func_49ab50(a);
-    Vec3 v3;
-    if (sp) {
-        func_5d6180(sp, &v3, a);
-    } else {
-        Obj* t = func_514a60();
-        v3 = *(Vec3*)t;
-    }
+			G3D::Color3 nameColor = teams != NULL ? teams->getTeamColorForHumanoid(this) : G3D::Color3::white();
 
-    Obj* t2 = func_5149f0();
-    Vec3 v4 = *(Vec3*)t2;
+			adorn->drawFont2D(
+				getParent()->getName(),
+				projected.xy(),
+				fontSize,
+				G3D::Color4(nameColor, 1.0f),
+				G3D::Color4(G3D::Color3::black(), 1.0f),
+				Adorn::XALIGN_CENTER,
+				Adorn::YALIGN_BOTTOM,
+				Adorn::PROPORTIONAL_SPACING
+			);
 
-    Vec3 v9;
-    v9.x = 1.0f;
-    v9.y = 1.0f;
-    v9.z = 1.0f;
+			float width = (float) (fontSize * 4);
 
-    Vec3 v10;
-    func_5185d0(&v10, &v1, &v2, mode, 2, 3, 0, (double)mode, &v9);
+            float left = projected.x - 0.5f * width;
+            float height = (float)(fontSize / 2);
+            Vector2 barLow(left, projected.y);
+            Vector2 barHigh(left + width, projected.y + height);
+            Vector2 healthHigh(left + (health / maxHealth) * width, barHigh.y);
+            Vector2 healthLow(healthHigh.x, barLow.y);
+            {
+                G3D::Color4 color(Color::lightGreen(), 1.0f);
+                G3D::Rect2D rect = G3D::Rect2D::xyxy(barLow, healthHigh);
+                adorn->rect2d(rect, color);
+            }
+            {
+                G3D::Color4 color(G3D::Color3::red(), 1.0f);
+                G3D::Rect2D rect = G3D::Rect2D::xyxy(healthLow, barHigh);
+                adorn->rect2d(rect, color);
+            }
 
-    Obj* o2 = *(Obj**)a;
-    void (__thiscall* fn)(Obj*, Vec3*, Obj*, Vec3*) = *(void (__thiscall**)(Obj*, Vec3*, Obj*, Vec3*))((char*)o2 + 0x34);
-    fn(a, &v10, obj104, &v4);
+		}
+	}
+}
 
-    float f = (float)mode;
-    float half = f * g_819bac;
-    float ratio = f1a8 / f1ac;
 
-    Vec3 v11;
-    v11.x = v1.x - half;
-    v11.y = v1.y + half;
-    v11.z = v1.z;
-
-    Vec3 v12;
-    v12.x = v2.x - half;
-    v12.y = v2.y + half;
-    v12.z = v2.z;
-
-    Vec3 v13;
-    v13.x = v11.x + ratio;
-    v13.y = v11.y + ratio;
-    v13.z = v11.z + ratio;
-
-    Vec3 v14;
-    v14.x = v12.x + ratio;
-    v14.y = v12.y + ratio;
-    v14.z = v12.z + ratio;
-
-    Obj* t3 = func_5d7560();
-    Vec3 v15 = *(Vec3*)t3;
-
-    Vec3 v17;
-    v17.x = 1.0f;
-    v17.y = 1.0f;
-    v17.z = 1.0f;
-
-    Vec3 v18;
-    func_4f35d0(&v18, &v15, &v13, &v17);
-
-    void (__thiscall* fn2)(Obj*, Vec3*, Vec3*) = *(void (__thiscall**)(Obj*, Vec3*, Vec3*))((char*)*(Obj**)a + 0x2c);
-    fn2(a, &v18, &v14);
-
-    Obj* t4 = func_5148b0();
-    Vec3 v19 = *(Vec3*)t4;
-
-    Vec3 v21;
-    v21.x = 1.0f;
-    v21.y = 1.0f;
-    v21.z = 1.0f;
-
-    Vec3 v22;
-    func_4f35d0(&v22, &v19, &v11, &v21);
-
-    void (__thiscall* fn3)(Obj*, Vec3*, Vec3*) = *(void (__thiscall**)(Obj*, Vec3*, Vec3*))((char*)*(Obj**)a + 0x2c);
-    fn3(a, &v22, &v12);
 }

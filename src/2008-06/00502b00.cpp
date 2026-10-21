@@ -1,4 +1,11 @@
-// from server: 98% by colin
+// from server: 100% by Espeon
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: rbxgs-dll roc_espeon_shadowgeometrybool8be85f1e5c42e020.cpp
+
+// Candidate translation unit (score above; library headers required).
+struct Light;
 struct VertexArray {
     char data[72];
 };
@@ -15,7 +22,7 @@ struct RenderDevice {
 struct RenderItem {
     virtual void slot0();
     virtual void slot1();
-    virtual void render(RenderDevice*, void*, void*, float);
+    virtual void render(RenderDevice*, const Light&, bool, float);
 };
 
 struct S {
@@ -27,10 +34,10 @@ struct S {
     const void* arrayData;
     int arrayCount;
 
-    void render(RenderDevice*, void*, void*, float);
+    void render(RenderDevice*, const Light&, bool, float);
 };
 
-void S::render(RenderDevice* device, void* arg2, void* arg3, float arg4)
+void S::render(RenderDevice* device, const Light& arg2, bool arg3, float arg4)
 {
     device->beginIndexedPrimitives();
     device->setVertexArray(vertices);
@@ -41,5 +48,5 @@ void S::render(RenderDevice* device, void* arg2, void* arg3, float arg4)
     device->endIndexedPrimitives();
 
     for (int i = 0; i < itemCount; ++i)
-        items[i]->render(device, arg3, arg2, arg4);
+        items[i]->render(device, arg2, arg3, arg4);
 }

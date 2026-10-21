@@ -1,69 +1,34 @@
-// from server: 47% by atomic.potato
-struct Vec3 { float x, y, z; };
+// from server: 100% by Espeon
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast
+// roc-lib: rbxgs-dll roc_espeon_characterzoomminexpression0441686f39f83997.cpp
 
-struct Obj {
-    char pad0[0x24];
-    Vec3 pos;
-    char pad1[0x10];
-    char flag3d;
-    char pad2[0x2];
-    float dist;
-};
+// Candidate translation unit (score above; library headers required).
+#include "v8datamodel/ICharacterSubject.h"
+#include "v8datamodel/Camera.h"
+namespace RBX {
+	bool ICharacterSubject::zoom(const float in, G3D::CoordinateFrame& cameraGoal, G3D::CoordinateFrame& cameraFocus)
+	{
+		G3D::CoordinateFrame adjustedGoal = wasOccluded ? goalFromDistance(cameraFocus, cameraGoal, unoccludedDistance) : cameraGoal;
+		G3D::Vector3 focusToGoal = adjustedGoal.translation - cameraFocus.translation;
 
-struct C9 { void copy9(const void* src); };
-struct F { void f_518470(float v); };
+		float currentDistance = focusToGoal.magnitude();
+		float newDistance = G3D::min(400.0f, Camera::getNewZoomDistance(currentDistance, in));
 
-extern "C" float __cdecl f_5cc240(float a, float b);
-extern "C" void* __cdecl f_641280(void* dst, void* other, float dt, float dist);
+		if (newDistance == currentDistance)
+			return false;
 
-extern float g_83a31c;
-extern float g_826e70;
-extern float g_837900;
+		focusToGoal.y = 0.0f;
+		focusToGoal.unitize();
+		focusToGoal.y = newDistance * 0.03f;
 
-struct Humanoid {
-    bool check(Obj* other, Obj* out, float dt);
-};
+		adjustedGoal.translation = focusToGoal.direction() * newDistance + cameraFocus.translation;
 
-bool Humanoid::check(Obj* other, Obj* out, float dt)
-{
-    Obj* self = (Obj*)this;
-    char buf[0x78];
-    Obj* src;
-    if (self->flag3d) {
-        src = (Obj*)f_641280(buf + 0x50, other, dt, self->dist);
-    } else {
-        src = other;
-    }
-    ((C9*)(buf + 0x14))->copy9(src);
-    float dx = src->pos.x - other->pos.x;
-    float dy = src->pos.y - other->pos.y;
-    float dz = src->pos.z - other->pos.z;
-    float len = dx*dx + dy*dy + dz*dz;
-    float dist = f_5cc240(len, dt);
-    float t = g_83a31c;
-    float* sel = (t < dist) ? &t : &dist;
-    float v = *sel;
-    if (v == dist) {
-        return false;
-    }
-    ((F*)(buf + 0x14))->f_518470(g_826e70);
-    float scale = g_837900 * v;
-    float nx = dx * scale;
-    float ny = dy * scale;
-    float nz = dz * scale;
-    float ox = other->pos.x + nx;
-    float oy = other->pos.y + ny;
-    float oz = other->pos.z + nz;
-    if (self->flag3d) {
-        float ddx = ox - other->pos.x;
-        float ddy = oy - other->pos.y;
-        float ddz = oz - other->pos.z;
-        self->dist = ddx*ddx + ddy*ddy + ddz*ddz;
-        return true;
-    }
-    ((C9*)out)->copy9(buf + 0x14);
-    out->pos.x = ox;
-    out->pos.y = oy;
-    out->pos.z = oz;
-    return true;
+		if (wasOccluded) unoccludedDistance = (adjustedGoal.translation - cameraFocus.translation).magnitude();
+		else cameraGoal = adjustedGoal;
+		return true;
+	}
+
+
 }

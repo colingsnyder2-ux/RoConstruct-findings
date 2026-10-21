@@ -1,51 +1,25 @@
-// from server: 98% by EspClaude
-#include <list>
-extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
-#pragma intrinsic(_InterlockedExchangeAdd)
-extern "C" long __cdecl _InterlockedIncrement(volatile long*);
-#pragma intrinsic(_InterlockedIncrement)
-extern "C" long __cdecl _InterlockedDecrement(volatile long*);
-#pragma intrinsic(_InterlockedDecrement)
+// from server: 100% by EspClaude
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: rbxgs-dll roc_espclaude_049e9d88cc7b9efa.cpp
 
+// Candidate translation unit (score above; library headers required).
+#include <list>
+#include <boost/shared_ptr.hpp>
 struct S;
 struct Buffer;
-
-struct Control {
-    virtual ~Control();
-    virtual void dispose() = 0;
-    virtual void destroy() = 0;
-    volatile long strong;
-    volatile long weak;
-    void add_ref() { _InterlockedExchangeAdd(&strong, 1); }
-    void release()
-    {
-        if (_InterlockedDecrement(&strong) == 0) {
-            dispose();
-            weak_release();
-        }
-    }
-    void weak_release()
-    {
-        if (_InterlockedDecrement(&weak) == 0)
-            destroy();
-    }
-};
 
 struct Item {
     virtual void unused();
     virtual void write(Buffer*);
 };
 
-struct Shared {
-    Item* object;
-    Control* control;
-    Shared(const Shared& r) : object(r.object), control(r.control) { if (control) control->add_ref(); }
-    ~Shared() { if (control) control->release(); }
-};
-
+struct CodeProfiler;
+template<class T> struct SP { T* px; T& operator*() const { return *px; } };
 struct Guard {
     unsigned char storage[24];
-    Guard(void*, int);
+    Guard(CodeProfiler&, bool);
     ~Guard();
 };
 
@@ -94,9 +68,9 @@ struct S {
     virtual bool ready();
 
     unsigned char prefix[0x2c70];
-    std::list<Shared> pending;
+    std::list<boost::shared_ptr<Item> > pending;
     unsigned char pad2[0x2d28-0x2c74-0x1c];
-    void* context;
+    SP<CodeProfiler> context;
     unsigned char suffix[0x24];
     Addr parameter;
 
@@ -107,12 +81,12 @@ bool S::f() {
     if (!ready())
         return false;
 
-    Guard guard(context, 0);
+    Guard guard(*context, false);
     Stream stream(this, parameter);
 
     while (pending.size() > 0) {
-        Shared item = pending.front();
-        if (item.object) {
+        boost::shared_ptr<Item> item = pending.front();
+        if (item) {
             if (static_cast<unsigned int>((stream.buffer.bits + 7) >> 3)
                 >= stream.buffer.limit)
                 break;
@@ -120,7 +94,7 @@ bool S::f() {
             if (!stream.buffer.bits)
                 putByte(&stream.buffer, 78);
 
-            item.object->write(&stream.buffer);
+            item->write(&stream.buffer);
             stream.result = true;
         }
         pending.pop_front();

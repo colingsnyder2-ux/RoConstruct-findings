@@ -1,8 +1,8 @@
-// from server: 97% by Espeon
+// from server: 100% by EspClaude
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD /fp:fast
-// roc-lib: openrbx-client-dll roc_espeon_modelprimaryinlinearead68863a88a273a65.cpp
+// roc-lib: openrbx-client-dll roc_espclaude_07090bbce10d86b5.cpp
 
 // Candidate translation unit (score above; library headers required).
 #ifndef V8DATAMODEL_MODELINSTANCE_H
@@ -146,6 +146,7 @@ PartInstance* ModelInstance::getPrimaryPartInternal() const
 namespace RBX {
 inline float Extents::areaXZ() const
 {
-	return (high.x - low.x) * (high.z - low.z);
+	G3D::Vector3 delta = this->high - this->low;
+	return delta.x * delta.z;
 }
 }

@@ -1,155 +1,88 @@
-// from server: 50% by atomic.potato
-extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
-#pragma intrinsic(_InterlockedExchangeAdd)
+// from server: 100% by EspClaude
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast
+// roc-lib: rbxgs-dll roc_espclaude_e84ed7184b496457.cpp
 
-extern "C" void* (__cdecl *allocate)(unsigned int);
-inline void* __cdecl operator new(unsigned int size) { return allocate(size); }
-void __cdecl operator delete(void*);
-
-struct std_string {
-    char storage[28];
-    std_string(const char*);
-    ~std_string();
-};
-
-extern "C" void __stdcall constructString(std_string*, const char*);
-extern "C" void __stdcall destroyString(std_string*);
-
-struct Product168 {
-    unsigned char storage[0x168];
-    Product168(void**);
-};
-
-struct Product164 {
-    unsigned char storage[0x164];
-    Product164(void*, void*, void*);
-};
-
-struct SharedPtr {
-    void* ptr;
-    void* ref;
-};
-
-struct RefCounted {
-    virtual ~RefCounted();
-    virtual void destroy();
-    virtual void dealloc();
-};
-
-struct UnifiedImageWidget {
-    void* field0;
-    void* field4;
-    char pad8[0x30];
-    std_string imageName;
-    unsigned imageState;
-    SharedPtr result;
-
-    SharedPtr* construct(const std_string& name, int state, int arg3);
-};
-
-extern "C" void* __cdecl getVector3();
-extern "C" void __cdecl func601db0(void*);
-extern "C" SharedPtr* __cdecl func602650(SharedPtr*, void*, int, int);
-extern "C" SharedPtr* __cdecl func6026e0(SharedPtr*, float, float);
-extern "C" void __cdecl func600f10(RefCounted*);
-
-extern "C" void __stdcall stringCtor(std_string*, const char*);
-extern void stringDtor(std_string*);
-
-extern float g_81ccbc;
-
-SharedPtr* __thiscall UnifiedImageWidget::construct(const std_string& name, int state, int arg3)
+// Candidate translation unit (score above; library headers required).
+#define _DLL
+#include <boost/shared_ptr.hpp>
+#include <map>
+#include "util/Name.h"
+#define private public
+#define protected public
+#include "util/Object.h"
+#undef protected
+#undef private
+namespace RBX
 {
-    void* v = getVector3();
-    float f0 = *(float*)((char*)v + 0);
-    float f1 = *(float*)((char*)v + 4);
-    float f2 = *(float*)((char*)v + 8);
-    float f3 = *(float*)((char*)v + 12);
+	template<typename Class, typename Parameter1>
+	boost::shared_ptr<Class> exeCreate(Parameter1 p1)
+	{
+		return boost::shared_ptr<Class>(new Class(p1), Creatable<Instance>::Deleter());
+	}
+	template<typename Class, typename Parameter1, typename Parameter2>
+	boost::shared_ptr<Class> exeCreate(Parameter1 p1, Parameter2 p2)
+	{
+		return boost::shared_ptr<Class>(new Class(p1, p2), Creatable<Instance>::Deleter());
+	}
+	template<typename Class, typename Parameter1, typename Parameter2, typename Parameter3>
+	boost::shared_ptr<Class> exeCreate(Parameter1 p1, Parameter2 p2, Parameter3 p3)
+	{
+		return boost::shared_ptr<Class>(new Class(p1, p2, p3), Creatable<Instance>::Deleter());
+	}
+}
+#define private public
+#include "util/IRenderable.h"
+#undef private
+#include "util/Object.h"
+#define hasListeners() hasListeners() const { return listeners.size() > 0; } bool hasListenersEmpty()
+#include "util/Events.h"
+#undef hasListeners
+namespace RBX { template<class T> class GuidItem { public: virtual ~GuidItem() {} char guidPad[0xc]; }; }
+namespace RBX { template<class T> class GuidAFP : public AbstractFactoryProduct<T> { protected: virtual void onGuidChanged() {} }; }
+#define AbstractFactoryProduct GuidItem<Instance>, public GuidAFP
+#include "util/Guid.h"
+namespace RBX { class GuidStub { public: typedef Guid::Data Data; void assign(const Data&) {} operator const Guid&() const { return *(const Guid*)0; } }; }
+#define Guid GuidStub
+#include "v8tree/Instance.h"
+#undef Guid
+#undef AbstractFactoryProduct
+#include "v8datamodel/GuiBuilder.h"
+#include "v8datamodel/DataModel.h"
+#include "v8datamodel/Workspace.h"
+#include "gui/Gui.h"
+#include "v8world/Controller.h"
+namespace RBX
+{
+	class DataModel;
+	class ArrowPanel : public TopMenuBar
+	{
+	protected:
+		DataModel* dataModel;
+		Controller::ControllerType controller;
+	public:
+		ArrowPanel(Adorn* adorn, DataModel* dataModel, Controller::ControllerType controller);
+		virtual bool isVisible() const;
+		virtual G3D::Vector2 getSize() const;
+	};
+}
+namespace RBX
+{
+	boost::shared_ptr<TopMenuBar> GuiBuilder::buildControlHud(Adorn* adorn, int yOffset)
+	{
+		Layout panelLayout;
+		panelLayout.offset.y = yOffset;
+		panelLayout.xLocation = Rect::RIGHT;
+		panelLayout.yLocation = Rect::TOP;
+		panelLayout.layoutStyle = Layout::VERTICAL;
+		boost::shared_ptr<RelativePanel> panel = exeCreate<RelativePanel>(panelLayout);
+		panel->setName("ControlHud");
 
-    struct { int a; int b; int c; int d; float e; float f; float g; float h; } local;
-    local.a = 3;
-    local.b = 0;
-    local.c = state;
-    local.d = 1;
-    local.e = f3;
-    local.f = f1;
-    local.g = f2;
-    local.h = f0;
+		panel->addGuiItem(exeCreate<ArrowPanel>(adorn, dataModel, Controller::PRIMARY_CONTROLLER));
+		panel->addGuiItem(exeCreate<MenuSpacer>(5.0f, 5.0f));
+		panel->addGuiItem(exeCreate<ArrowPanel>(adorn, dataModel, Controller::SECONDARY_CONTROLLER));
 
-    func601db0(&local);
-
-    std_string str("ControlHud");
-
-    void* obj = field0;
-    void** vt = *(void***)obj;
-    void (*fn)(void*, std_string*) = (void (*)(void*, std_string*))vt[1];
-    fn(obj, &str);
-
-    destroyString(&str);
-
-    SharedPtr r1;
-    func602650(&r1, field0, arg3, 1);
-    RefCounted* p1b = (RefCounted*)r1.ref;
-    if (p1b) {
-        _InterlockedExchangeAdd((volatile long*)((char*)p1b + 4), 1);
-    }
-    func600f10((RefCounted*)r1.ptr);
-    RefCounted* old = (RefCounted*)r1.ref;
-    if (old) {
-        if (_InterlockedExchangeAdd((volatile long*)((char*)old + 4), -1) == 1) {
-            old->destroy();
-            if (_InterlockedExchangeAdd((volatile long*)((char*)old + 8), -1) == 1) {
-                old->dealloc();
-            }
-        }
-    }
-
-    float g = g_81ccbc;
-    SharedPtr r2;
-    func6026e0(&r2, g, g);
-    RefCounted* p2b = (RefCounted*)r2.ref;
-    if (p2b) {
-        _InterlockedExchangeAdd((volatile long*)((char*)p2b + 4), 1);
-    }
-    func600f10((RefCounted*)r2.ptr);
-    RefCounted* old2 = (RefCounted*)r2.ref;
-    if (old2) {
-        if (_InterlockedExchangeAdd((volatile long*)((char*)old2 + 4), -1) == 1) {
-            old2->destroy();
-            if (_InterlockedExchangeAdd((volatile long*)((char*)old2 + 8), -1) == 1) {
-                old2->dealloc();
-            }
-        }
-    }
-
-    SharedPtr r3;
-    func602650(&r3, field0, arg3, 2);
-    RefCounted* p3b = (RefCounted*)r3.ref;
-    if (p3b) {
-        _InterlockedExchangeAdd((volatile long*)((char*)p3b + 4), 1);
-    }
-    func600f10((RefCounted*)r3.ptr);
-    RefCounted* old3 = (RefCounted*)r3.ref;
-    if (old3) {
-        if (_InterlockedExchangeAdd((volatile long*)((char*)old3 + 4), -1) == 1) {
-            old3->destroy();
-            if (_InterlockedExchangeAdd((volatile long*)((char*)old3 + 8), -1) == 1) {
-                old3->dealloc();
-            }
-        }
-    }
-
-    result.ptr = r1.ptr;
-    result.ref = r1.ref;
-    RefCounted* rb = (RefCounted*)result.ref;
-    if (rb) {
-        if (_InterlockedExchangeAdd((volatile long*)((char*)rb + 4), -1) == 1) {
-            rb->destroy();
-            if (_InterlockedExchangeAdd((volatile long*)((char*)rb + 8), -1) == 1) {
-                rb->dealloc();
-            }
-        }
-    }
-
-    return &result;
+		return panel;
+	}
 }

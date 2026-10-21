@@ -1,46 +1,43 @@
-// from server: 96% by king_originala
-struct Source {
-    unsigned int unused;
-    char* data;
-};
-
-struct ChatEnter {
-    unsigned int words[83];
-    ChatEnter(unsigned int value);
-    ~ChatEnter();
-    ChatEnter* construct(unsigned int value);
-    void initialize();
-    void finish(unsigned int value);
-};
-
-struct Member {
-    unsigned int data;
-    Member(unsigned int value, char* source);
-    ~Member();
-};
-
-struct UnifiedImageWidget : ChatEnter {
-    Member member;
-    UnifiedImageWidget(unsigned int value, Source* source, unsigned int option);
-};
-
-UnifiedImageWidget::UnifiedImageWidget(
-    unsigned int value, Source* source, unsigned int option)
-    : ChatEnter((unsigned int)source),
-      member(
-          (words[0] = 0x84b91c,
-           words[4] = 0x84b90c,
-           words[5] = 0x84b904,
-           words[8] = 0x84b8fc,
-           words[9] = 0x84b8ec,
-           words[17] = 0x84b8dc,
-           words[25] = 0x84b8cc,
-           words[33] = 0x84b8bc,
-           words[41] = 0x84b8ac,
-           words[49] = 0x84b89c,
-           words[76] = 0x84b894,
-           value),
-          source->data + 4)
+// from server: 100% by EspClaude
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
+#define _DLL
+#include <string>
+namespace RBX {
+class Adorn;
+class Name { public: int id; std::string str; const std::string& toString() const { return str; } };
+class Verb { public: virtual ~Verb(); const Name& name; const Name& getName() const { return name; } };
+template<class T> class GuidItem { public: virtual ~GuidItem(); char guidPad[0xc]; };
+class Object { public: virtual ~Object(); };
+class DescribedBase { public: virtual ~DescribedBase(); int a, b; };
+class Debugable { public: virtual void dump(); };
+template<int N> class Notifier { public: virtual ~Notifier(); char pad[0x1c]; };
+class Instance : public GuidItem<Instance>, public Object, public DescribedBase, public Debugable,
+	public Notifier<0>, public Notifier<1>, public Notifier<2>, public Notifier<3>, public Notifier<4>, public Notifier<5>
 {
-    finish(option);
+	char ipad[0x130 - 0xe4];
+public:
+	virtual ~Instance();
+	virtual void setName(const std::string& name);
+};
+class GuiTarget { public: virtual ~GuiTarget(); char gpad[0x8]; };
+class GuiItem : public Instance, public GuiTarget { public: virtual ~GuiItem(); };
+class Widget : public GuiItem { public: virtual ~Widget(); char wpad[0x10]; };
+class VerbWidget : public Widget { public: VerbWidget(Verb* verb); virtual ~VerbWidget(); };
+class GuiDrawImage { public: GuiDrawImage(Adorn* adorn, const std::string& image); ~GuiDrawImage(); char dpad[0x20]; };
+class ImageButton : public VerbWidget
+{
+protected:
+	GuiDrawImage guiImageDraw;
+public:
+	ImageButton(Adorn* adorn, Verb* verb, const std::string& name);
+	virtual void render2d(Adorn* adorn);
+};
+ImageButton::ImageButton(Adorn* adorn, Verb* verb, const std::string& name)
+	: VerbWidget(verb),
+	guiImageDraw(adorn, verb->getName().toString())
+{
+	setName(name);
+}
 }

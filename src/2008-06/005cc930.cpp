@@ -1,37 +1,24 @@
-// from server: 76% by colin
+// from server: 100% by Espeon
+// roc-lang: cpp
 // roc-cl: 21022
-// roc-flags: /O2 /GS- /EHsc /MD /fp:fast
-extern float directionScale;
-extern float inversePeriod;
-extern float period;
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast
+// roc-lib: rbxgs-dll roc_espeon_camerapanatanorderf135b3a292526f28.cpp
 
-extern "C" double __cdecl atan2(double, double);
+// Candidate translation unit (score above; library headers required).
+#include "G3D/CoordinateFrame.h"
+#include "G3D/g3dmath.h"
+#include <math.h>
 #pragma intrinsic(atan2)
-
-struct Vector3 {
-    float x, y, z;
-};
-
-struct Matrix3 {
-    float elements[9];
-    Vector3 column(int index) const;
-};
-
+extern const float inversePeriod;
+extern const float period;
 struct Camera {
-    char padding[0x174];
-    Matrix3 rotation;
-
-    void adjust(float angle);
-    void turn(int steps);
+ char prefix[0x174]; G3D::CoordinateFrame cameraGoal;
+ void panRadians(float);
+ void panSteps(int);
 };
-
-void Camera::turn(int steps)
-{
-    float scale = directionScale;
-    Vector3 direction = rotation.column(2);
-    float angle = (float)atan2(-direction.z * scale,
-                              -direction.x * scale);
-    float turns = angle * inversePeriod + steps;
-    int rounded = (int)turns;
-    adjust(angle - rounded * period);
+void Camera::panSteps(int steps) {
+ G3D::Vector3 look = cameraGoal.lookVector();
+ float heading = atan2(-look.z, -look.x);
+ int current = G3D::iRound(heading * inversePeriod + steps);
+ panRadians(heading - current * period);
 }

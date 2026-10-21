@@ -1,60 +1,22 @@
-// from server: 51% by colin
-extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
-#pragma intrinsic(_InterlockedExchangeAdd)
+// from server: 100% by Espeon
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+// roc-lib: boost-1.35.0-dll roc_espeon_dhtmlnativefunction034ab6d87e50f0c3f.cpp
 
-struct Control {
-    virtual void unused() = 0;
-    virtual void dispose() = 0;
-    virtual void destroy() = 0;
-    volatile long strong;
-    volatile long weak;
+// Candidate translation unit (score above; library headers required).
+#include <boost/function.hpp>
+#include <boost/bind.hpp>
+#include <boost/shared_ptr.hpp>
+class CLuaHtmlView {public:void callback();};
+struct A {virtual ~A();}; struct B {virtual ~B();};
+class DHTMLWindowService : public A,public B {
+ public: void run(boost::function<void(CLuaHtmlView*)>);
+ void append();
 };
-
-struct FunctionTable {
-    void (__cdecl *manager)(void*, void*, int);
-};
-
-struct Function {
-    FunctionTable* table;
-    unsigned int reserved;
-    unsigned int storage[6];
-    ~Function();
-};
-
-extern "C" void __cdecl sub_618a40(void*, void*, void*);
-extern "C" void __cdecl sub_419620(void*, void*, void*);
-extern "C" void* __cdecl sub_41b090(void*);
-extern "C" void __cdecl sub_41a530(void*);
-
-struct DHTMLWindowService {
-    void append();
-};
-
-void DHTMLWindowService::append()
-{
-    char buf1[8];
-    char buf2[8];
-    void* v3;
-    void* v4;
-    Control* ctrl;
-    long old;
-
-    sub_618a40(buf1, buf2, (void*)0x42b5f0);
-    sub_419620(buf1, (void*)0x4185c0, 0);
-    v3 = 0;
-    v4 = sub_41b090(&v3);
-
-    ctrl = (Control*)v4;
-    if (ctrl) {
-        old = _InterlockedExchangeAdd(&ctrl->strong, -1);
-        if (old == 1) {
-            ctrl->dispose();
-            old = _InterlockedExchangeAdd(&ctrl->weak, -1);
-            if (old == 1) {
-                ctrl->destroy();
-            }
-        }
-    }
-
-    sub_41a530(*(void**)0x96cc4c);
+boost::shared_ptr<DHTMLWindowService> __cdecl sharedFrom(DHTMLWindowService*);
+class Queue {public:void invoke(boost::function0<void>);};
+extern Queue* queue;
+void DHTMLWindowService::append() {
+ queue->invoke(boost::bind(&DHTMLWindowService::run,sharedFrom(this),&CLuaHtmlView::callback));
 }

@@ -1,8 +1,9 @@
+// from server: 100% by EspClaude
 // from server: 99% by Espeon
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD /fp:fast
-// roc-lib: rbxgs-dll roc_espeon_controllerboostbool4d26a8fcf4d3f3e4.cpp
+// roc-lib: rbxgs-dll roc_espclaude_c72a6fc53d306842.cpp
 
 // Candidate translation unit (score above; library headers required).
 #pragma float_control(precise, off)
@@ -39,12 +40,8 @@ struct RefCount
 #include <boost/shared_ptr.hpp>
 typedef boost::shared_ptr<Object> Shared;
 
-struct Weak
-{
-    Object* object;
-    RefCount* count;
-    Shared lock();
-};
+#include <boost/weak_ptr.hpp>
+typedef boost::weak_ptr<Object> Weak;
 
 struct __declspec(align(8)) Transform
 {
