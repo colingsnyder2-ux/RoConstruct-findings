@@ -1,99 +1,62 @@
-// from server: 34% by colin
-// roc-cl: 50727
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+// from server: 100% by EspClaude
 // roc-lang: cpp
-// roc-lib: rbxgs util/RunStateOwner.cpp
+// roc-cl: 21022
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+// roc-lib: rbxgs-dll roc_espclaude_696ed0a6cdbdaf74.cpp
 
 // Candidate translation unit (score above; library headers required).
-#include "util/RunStateOwner.h"
-#include "v8datamodel/DataModel.h"
-
-namespace RBX
+#define _DLL
+#include <string>
+#include <vector>
+#include <memory>
+#include <istream>
+#include <boost/shared_ptr.hpp>
+class XmlElement {
+public:
+    ~XmlElement();
+    int data[10];
+};
+class TextXmlParser {
+public:
+    TextXmlParser(std::streambuf* buffer);
+    ~TextXmlParser();
+    std::auto_ptr<XmlElement> parse();
+    char data[0x48];
+};
+namespace RBX {
+class Instance;
+class ContentId {
+public:
+    std::string id;
+    int flags;
+};
+class ContentProvider {
+public:
+    std::auto_ptr<std::istream> getContent(ContentId id);
+};
+class SerializerV2 {
+public:
+    void loadInstances(XmlElement* root, std::vector<boost::shared_ptr<Instance> >& result);
+    int state;
+};
+class DataModel {
+public:
+    ContentProvider* createContentProvider();
+    boost::shared_ptr<const std::vector<boost::shared_ptr<Instance> > > get(ContentId contentId);
+};
+template<class T> inline T* create(DataModel* dm) { return dm ? dm->createContentProvider() : 0; }
+boost::shared_ptr<const std::vector<boost::shared_ptr<Instance> > > DataModel::get(ContentId contentId)
 {
-	static Reflection::BoundFuncDesc<RunService, void(void), 0> runFunction(&RunService::run, "Run", Reflection::FunctionDescriptor::NeedTrustedCaller);
-	static Reflection::BoundFuncDesc<RunService, void(void), 0> pauseFunction(&RunService::pause, "Pause", Reflection::FunctionDescriptor::NeedTrustedCaller);
-	static Reflection::BoundFuncDesc<RunService, void(void), 0> resetFunction(&RunService::reset, "Reset", Reflection::FunctionDescriptor::NeedTrustedCaller);
+    std::auto_ptr<std::istream> stream = create<ContentProvider>(this)->getContent(contentId);
 
-	static Reflection::SignalDesc<RunService, void(float)> event_Heartbeat("Heartbeat", "interval");
+    TextXmlParser machine(stream->rdbuf());
+    std::auto_ptr<XmlElement> root = machine.parse();
 
-	RunService::RunService()
-		: framePeriod(1.0f/30.0f),
-		  runState(RS_NORMAL),
-		  invalidRunViewCount(0),
-		  stopRequested(false),
-		  runDisabled(false)
-	{
-		setName("Run Service");
-	}
+    boost::shared_ptr<std::vector<boost::shared_ptr<Instance> > > result(new std::vector<boost::shared_ptr<Instance> >);
 
-	RunService::~RunService()
-	{
-		RBXASSERT(views.empty());
-	}
+    SerializerV2 serializer;
+    serializer.loadInstances(root.get(), *result);
 
-	void RunService::endRunThread(bool join)
-	{
-		stopRequested = true;
-		stateChangedCondition.notify_all();
-
-		if (join)
-			runThread->join();
-	}
-
-	void RunService::onAncestorChanged(const AncestorChanged& event)
-	{
-		if (!getParent())
-		{
-			stopRequested = true;
-			stateChangedCondition.notify_all();
-		}
-	}
-
-	void RunService::setRunState(RunState newState)
-	{
-		RunTransition transition(runState, newState);
-		runState = newState;
-
-		Notifier<RunService, RunState>::raise(newState);
-		Notifier<RunService, RunTransition>::raise(transition);
-	}
-
-	void RunService::raiseStepped(float time, float step)
-	{
-		Notifier<RunService, Stepped>::raise(Stepped(time, step));
-		event_Stepped.fire(this, time, step);
-	}
-
-	void RunService::raiseHeartbeat(float time, float step)
-	{
-		Notifier<RunService, Heartbeat>::raise(Heartbeat(time, step));
-		event_Heartbeat.fire(this, step);
-	}
-
-	void RunService::invalidateRunViews()
-	{
-		boost::mutex::scoped_lock lock(viewMutex);
-
-		if (invalidRunViewCount == 0)
-		{
-			invalidRunViewCount = (int)views.size();
-			if (invalidRunViewCount > 0)
-			{
-				for (std::map<IRunView*, bool>::iterator iter = views.begin(); iter != views.end(); iter++)
-				{
-					iter->first->InvalidateRunView();
-					iter->second = false;
-				}
-				runViewsDoneCondition.notify_all();
-			}
-		}
-	}
-
-	void RunService::start()
-	{
-		RBXASSERT(!runThread);
-
-		boost::shared_ptr<DataModel> dataModel = shared_from(dynamic_cast<DataModel*>(getParent()));
-		runThread.reset(new boost::thread(background_function(boost::bind(&RunService::runProc, shared_from(this), dataModel), "rbx_runProc")));
-	}
+    return result;
+}
 }

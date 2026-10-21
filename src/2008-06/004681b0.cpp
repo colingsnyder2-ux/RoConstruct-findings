@@ -1,6 +1,17 @@
-// from server: 28% by colin
+// from server: 58% by EspClaude
+// from server: 56% by coldek
+// roc 2008-06 004681b0  unit: DxUserInput  size: 738 bytes
+// Make this compile to the exact bytes below, then: roc check 2008-06 004681b0
+//
+
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
+
+extern "C" __declspec(dllimport) void __stdcall EnterCriticalSection(void*);
+extern "C" __declspec(dllimport) void __stdcall LeaveCriticalSection(void*);
+extern "C" __declspec(dllimport) void* __stdcall GetKeyboardLayout(unsigned long);
+extern "C" __declspec(dllimport) unsigned int __stdcall MapVirtualKeyExA(unsigned int, unsigned int, void*);
+extern "C" __declspec(dllimport) int __stdcall PostMessageA(void*, unsigned int, unsigned int, long);
 
 struct Control {
     virtual void reserved();
@@ -10,147 +21,169 @@ struct Control {
     volatile long weak;
 };
 
-struct SharedPtr {
+struct Shared {
     void* object;
     Control* control;
+    Shared(const Shared& other);
+    ~Shared();
 };
 
-struct InputObject {
-    void* vtable;
-    unsigned short keyCode;
-    unsigned short reserved;
+inline Shared::Shared(const Shared& other)
+    : object(other.object), control(other.control)
+{
+    if (control)
+        _InterlockedExchangeAdd(&control->strong, 1);
+}
+
+struct Guard {
+    void* data[3];
+    Guard(Shared);
+    ~Guard();
 };
+
+struct Lock {
+    void* section;
+    Lock(void*);
+    ~Lock();
+};
+
+inline Lock::Lock(void* p) : section(p)
+{
+    EnterCriticalSection(section);
+}
+
+inline Lock::~Lock()
+{
+    LeaveCriticalSection(section);
+}
+
+struct InputRecord {
+    unsigned int key;
+    unsigned int data;
+    unsigned int time;
+    unsigned int sequence;
+    unsigned int extra;
+};
+
+struct Event {
+    int type;
+    void* sender;
+    int key;
+    int modifiers;
+    unsigned short character;
+    unsigned short unused;
+};
+
+struct Accelerator {
+    unsigned char flags;
+    unsigned char padding;
+    unsigned short key;
+    unsigned short command;
+};
+
+struct Window {
+    char padding[32];
+    void* handle;
+};
+
+struct Settings {
+    char padding[260];
+    unsigned char enabled;
+};
+
+struct SettingsHolder {
+    char padding[32];
+    Settings* settings;
+};
+
+struct Runtime {
+    char padding[4];
+    SettingsHolder* holder;
+};
+
+extern Runtime* __cdecl getRuntime();
+extern int __cdecl getModifiers(void*);
+extern int __cdecl translateKey(unsigned int);
+extern int __cdecl getKeyCode(int);
 
 struct S {
-    unsigned char pad0[0x34];
-    unsigned char critSection[0x18];
-    unsigned char pad1[0x1c];
-    void* window;
-    unsigned char pad2[0x14];
-    InputObject* map;
-    unsigned long mapSize;
-    unsigned char pad3[0x10];
-    unsigned char pad4[0x114];
-    unsigned long field17c;
-    SharedPtr shared;
-    unsigned char field193;
+    char pad0[52];
+    char criticalSection[24];
+    Window* window;
+    Accelerator* accelerators;
+    unsigned int acceleratorCount;
+    char pad1[16];
+    char keyboardState[276];
+    unsigned int device;
+    Shared shared;
+    char pad2[11];
+    unsigned char active;
+
+    bool readInput(InputRecord*, unsigned int*, unsigned int);
+    void dispatch(Event*);
     void f();
 };
 
-extern "C" void __stdcall EnterCriticalSection(void*);
-extern "C" void __stdcall LeaveCriticalSection(void*);
-extern "C" void* __stdcall GetKeyboardLayout(unsigned long);
-extern "C" unsigned int __stdcall MapVirtualKeyExA(unsigned int, unsigned int, void*);
-extern "C" int __stdcall PostMessageA(void*, unsigned int, unsigned int, long);
-
-extern "C" void __cdecl func_6a1520();
-extern "C" char __cdecl func_467880(S*, void*, void*);
-extern "C" void __cdecl func_411b40(SharedPtr*);
-extern "C" int __cdecl func_469f50(void*);
-extern "C" int __cdecl func_469360(int);
-extern "C" int __cdecl func_469c60(int);
-extern "C" void* __cdecl func_6a0926();
-extern "C" void __cdecl func_467a00(S*, void*);
-extern "C" void __cdecl func_5773c0(void*);
-
-extern unsigned long g_96dfe8;
-extern void* g_96dfe4;
-
 void S::f()
 {
-    func_6a1520();
-
-    EnterCriticalSection(critSection);
-
-    unsigned long local20 = 0x800;
-    void* local2c = critSection;
-
-    char result = func_467880(this, &local20, &field17c);
-    if (!result) {
-        field193 = 0;
-        LeaveCriticalSection(critSection);
-        return;
-    }
-
-    LeaveCriticalSection(critSection);
-
-    SharedPtr sp;
-    sp.object = shared.object;
-    sp.control = shared.control;
-    if (sp.control != 0) {
-        _InterlockedExchangeAdd(&sp.control->strong, 1);
-    }
-
-    func_411b40(&sp);
-
-    if (mapSize == 0)
-        goto done;
-
+    InputRecord records[2048];
+    unsigned int count = 2048;
     {
-        InputObject* entry = map;
-        unsigned long i = 0;
-        do {
-            unsigned long flags = *(unsigned long*)((char*)entry + 0);
-            int keyCode = *(int*)((char*)entry - 4);
-            int isDown = (flags >> 7) & 1;
-
-            int mapped = func_469f50(&pad0[0x34]);
-            int vk = func_469360(keyCode);
-
-            if (isDown && window != 0) {
-                if ((g_96dfe8 & 1) == 0) {
-                    g_96dfe8 |= 1;
-                    g_96dfe4 = GetKeyboardLayout(0);
-                }
-                int scan = MapVirtualKeyExA(keyCode, 1, g_96dfe4);
-                if (scan == 0) {
-                    scan = func_469c60(vk);
-                }
-                if (scan == 0x2c) {
-                    PostMessageA(window, 0x111, 0x180fc, 0);
-                } else if (scan == 0x70 || scan == 0x73) {
-                    MapVirtualKeyExA(keyCode, 2, g_96dfe4);
-                    int mods = 0;
-                    if ((mapped & 0x300) != 0) mods |= 0x10;
-                    if ((mapped & 0xc0) != 0) mods |= 8;
-                    if ((mapped & 3) != 0) mods |= 4;
-                    unsigned long j = 0;
-                    if (mapSize != 0) {
-                        InputObject* e2 = map;
-                        do {
-                            if (e2->keyCode == (unsigned short)vk) {
-                                if (((unsigned long)e2->vtable & 0x1c) == mods) {
-                                    unsigned short w = *(unsigned short*)((char*)e2 + 4);
-                                    PostMessageA(window, 0x111, w | 0x10000, 0);
-                                    goto next;
-                                }
-                            }
-                            j++;
-                            e2 = (InputObject*)((char*)e2 + 6);
-                        } while (j < mapSize);
-                    }
-                } else {
-                    void* p = func_6a0926();
-                    void* q = *(void**)((char*)p + 4);
-                    void* r = *(void**)((char*)q + 0x20);
-                    if (*(unsigned char*)((char*)r + 0x104) == 0) {
-                        MapVirtualKeyExA(keyCode, 2, g_96dfe4);
-                    }
-                }
-            }
-
-            {
-                int a = isDown ? 0 : 1;
-                int b = a + 0xa;
-                func_467a00(this, 0);
-            }
-
-        next:
-            entry = (InputObject*)((char*)entry + 0x14);
-            i++;
-        } while (i < mapSize);
+        Lock lock(criticalSection);
+        if (!readInput(records, &count, device)) {
+            active = 0;
+            return;
+        }
     }
 
-done:
-    func_5773c0(&sp);
+    Guard guard(shared);
+    for (unsigned int i = 0; i < count; ++i) {
+        unsigned int key = records[i].key;
+        bool down = ((records[i].data >> 7) & 1) != 0;
+        int modifiers = getModifiers(keyboardState);
+        int code = translateKey(key);
+
+        if (down && window) {
+            static void* layout = GetKeyboardLayout(0);
+            unsigned int virtualKey = MapVirtualKeyExA(key, 1, layout);
+            if (!virtualKey)
+                virtualKey = getKeyCode(code);
+
+            if (virtualKey == 44) {
+                PostMessageA(window->handle, 273, 98556, 0);
+            } else if (virtualKey == 112 || virtualKey == 115 ||
+                       !getRuntime()->holder->settings->enabled) {
+                unsigned int character = MapVirtualKeyExA(virtualKey, 2, layout);
+                unsigned int flags =
+                    ((modifiers & 0x300) ? 16 : 0) |
+                    ((static_cast<signed char>(modifiers & 0xc0)) ? 8 : 0) |
+                    ((static_cast<signed char>(modifiers & 3)) ? 4 : 0);
+
+                unsigned int j;
+                for (j = 0; j < acceleratorCount; ++j) {
+                    Accelerator* a = accelerators + j;
+                    if (a->key == ((a->flags & 1)
+                                     ? virtualKey
+                                     : static_cast<int>(static_cast<signed char>(character))) &&
+                        flags == (a->flags & 28))
+                        break;
+                }
+
+                if (j < acceleratorCount) {
+                    PostMessageA(window->handle, 273,
+                                 accelerators[j].command | 0x10000, 0);
+                    continue;
+                }
+            }
+        }
+
+        Event event;
+        event.type = !down + 10;
+        event.sender = this;
+        event.key = code;
+        event.modifiers = modifiers;
+        event.character = 0;
+        event.unused = 0;
+        dispatch(&event);
+    }
 }

@@ -1,8 +1,9 @@
+// from server: 100% by EspClaude
 // from server: 95% by Espeon
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD /fp:fast
-// roc-lib: rbxgs-dll roc_espeon_rootinsertvector8fe752572c1105fc.cpp
+// roc-lib: rbxgs-dll roc_espclaude_d0bf53d1422c39d6.cpp
 
 // Candidate translation unit (score above; library headers required).
 #pragma float_control(precise, off)
@@ -25,14 +26,10 @@ class Tool : public Instance {};
 extern RBX::ServiceProvider* __cdecl func_00590d80(RBX::Instance*);
 extern "C" int (__stdcall *messageBox)(void*, const char*, const char*, unsigned int);
 
-struct RawVector {
-    float x, y, z;
-    G3D::Vector3 operator+(const RawVector& b) const { return G3D::Vector3(x+b.x,y+b.y,z+b.z); }
-};
-
 struct Bounds {
-    RawVector minimum;
-    RawVector maximum;
+    G3D::Vector3 low;
+    G3D::Vector3 high;
+    G3D::Vector3 center() const { return (this->high + this->low) * 0.5f; }
 };
 
 struct Collection {
@@ -41,27 +38,24 @@ struct Collection {
     RBX::Instance** last;
 };
 
-struct UpdateTarget {
-    void update();
-};
-
-struct PositionProperty {
-    virtual void unused();
-    virtual UpdateTarget* set(const G3D::Vector3&);
+struct Camera { void lookAt(const G3D::Vector3&); };
+struct ICameraOwner {
+    virtual ~ICameraOwner();
+    virtual Camera* getCamera();
 };
 
 struct Item : RBX::Instance {
     void assign(RBX::ServiceProvider*);
 };
 
-extern void __cdecl getBounds(Bounds*, Collection*);
+extern Bounds __cdecl computeExtents(Collection*);
 extern const float midpointScale;
 extern const char insertionCaption[];
 extern const char insertionQuestion[];
 
 struct RootInstance : RBX::Instance {
     char reserved[0x180];
-    PositionProperty position;
+    ICameraOwner position;
 
     void insert(Collection*, Collection*, int);
     void process(Collection*, RootInstance*, Collection*);
@@ -87,10 +81,9 @@ void RootInstance::insert(Collection* input, Collection* output, int suppressPro
     process(input, this, output);
     if (((unsigned int)((char*)output->last - (char*)output->first) & ~7U) != 0) {
         prepare(output);
-        Bounds bounds;
-        getBounds(&bounds, output);
+        Bounds bounds = computeExtents(output);
 
-        G3D::Vector3 center = (bounds.minimum + bounds.maximum) * 0.5f;
-        position.set(center)->update();
+        position.getCamera()->lookAt(bounds.center());
     }
 }
+

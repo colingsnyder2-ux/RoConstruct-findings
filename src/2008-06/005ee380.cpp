@@ -1,4 +1,4 @@
-// from server: 90% by king_originala
+// from server: 100% by colin
 struct EnumDescriptor {
     char padding0[0x28];
     unsigned int count;
@@ -28,13 +28,14 @@ extern "C" void (__cdecl * const __imp__invalid_parameter_noinfo)();
 
 bool S::f(void* object, unsigned int index)
 {
+    int value;
     ensureInitialized(initializeDescriptor, &initializationState);
     EnumDescriptor* descriptor = getDescriptor();
     if (index < descriptor->count) {
         if (index >= static_cast<unsigned int>(descriptor->end - descriptor->begin))
             __imp__invalid_parameter_noinfo();
 
-        int value = descriptor->begin[index];
+        value = descriptor->begin[index];
         setter->set(object, value);
         return true;
     }

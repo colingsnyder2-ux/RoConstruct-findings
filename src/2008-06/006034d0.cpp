@@ -1,92 +1,94 @@
-// from server: 31% by colin
-extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
-#pragma intrinsic(_InterlockedExchangeAdd)
+// from server: 76% by EspClaude
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+#include <intrin.h>
+#include <vector>
 
-extern "C" void __cdecl _invalid_parameter_noinfo();
-
-struct StdString {
-    unsigned char storage[28];
-    StdString(const StdString &);
-    StdString(const char *);
-    ~StdString();
+template <class T> class bstr {
+public:
+    __declspec(noinline) bstr() { _Mysize = 0; }
+    __declspec(noinline) bstr(const bstr& r) { _Mysize = r._Mysize; }
+    __declspec(noinline) ~bstr() { _Mysize = 0; }
+    __declspec(noinline) bstr& operator=(const bstr& r) { _Mysize = r._Mysize; return *this; }
+    __declspec(noinline) bstr& operator=(const T* r) { _Mysize = 0; return *this; }
+    __declspec(noinline) const T* c_str() const { return _Buf; }
+    __declspec(noinline) unsigned int size() const { return _Mysize; }
+    void* _Myaux;
+    T _Buf[16];
+    unsigned int _Mysize;
+    unsigned int _Myres;
 };
+extern template class __declspec(dllimport) bstr<char>;
+typedef bstr<char> string_;
+__declspec(dllimport) string_ operator+(const string_&, const char*);
+__declspec(dllimport) string_ operator+(const string_&, const string_&);
 
-extern "C" StdString * __cdecl string_concat_cstr(StdString *out, const StdString *a, const char *b);
-extern "C" StdString * __cdecl string_concat(StdString *out, const StdString *a, const StdString *b);
-
-struct RefCounted {
-    void *vptr;
-    volatile long refcount;
-    volatile long weakrefcount;
-};
-
-struct SharedPtr {
-    void *object;
-    void *control;
-};
-
-struct Widget {
-    unsigned char pad[0x18];
-    StdString name;
-};
-
-struct WidgetList {
-    Widget **begin;
-    Widget **end;
-};
-
-struct UnifiedImageWidget {
-    unsigned char pad[0x18];
-    StdString imageName;
-    unsigned imageState;
-    void render(const WidgetList &list);
-};
-
-extern void __cdecl widget_render_helper(void *self, Widget *w);
-
-void UnifiedImageWidget::render(const WidgetList &list)
-{
-    int count = (int)(list.end - list.begin);
-    unsigned i = 0;
-    if (count <= 0)
-        return;
-    do {
-        if (i >= (unsigned)count)
-            _invalid_parameter_noinfo();
-        Widget *w = list.begin[i];
-
-        StdString tmp1((const char *)0);
-        StdString tmp2((const char *)0);
-        StdString tmp3((const char *)0);
-        StdString tmp4((const char *)0);
-
-        string_concat_cstr(&tmp1, &w->name, (const char *)0x812e58);
-        string_concat(&tmp2, &tmp1, &this->imageName);
-        string_concat(&tmp3, &tmp2, &tmp1);
-
-        SharedPtr sp;
-        sp.object = 0;
-        sp.control = 0;
-
-        widget_render_helper(this, w);
-
-        if (sp.object) {
-            RefCounted *rc = (RefCounted *)sp.object;
-            if (_InterlockedExchangeAdd(&rc->refcount, -1) == 1) {
-                void (__cdecl *dtor)(void *) = *(void (__cdecl **)(void *))((char *)rc->vptr + 4);
-                dtor(rc);
-                if (_InterlockedExchangeAdd(&rc->weakrefcount, -1) == 1) {
-                    void (__cdecl *wdtor)(void *) = *(void (__cdecl **)(void *))((char *)rc->vptr + 8);
-                    wdtor(rc);
-                }
-            }
+namespace boost {
+struct lock_error { lock_error(); };
+namespace detail {
+struct sp_counted_base {
+    virtual ~sp_counted_base() {}
+    virtual void dispose() = 0;
+    virtual void destroy() { delete this; }
+    long use_count_;
+    long weak_count_;
+    void release() {
+        if (_InterlockedDecrement(&use_count_) == 0) {
+            dispose();
+            weak_release();
         }
+    }
+    void weak_release() {
+        if (_InterlockedDecrement(&weak_count_) == 0)
+            destroy();
+    }
+};
+struct shared_count {
+    sp_counted_base* pi_;
+    shared_count() : pi_(0) {}
+    shared_count(const shared_count& r) : pi_(r.pi_) { if (pi_ != 0) _InterlockedIncrement(&pi_->use_count_); }
+    ~shared_count() { if (pi_ != 0) pi_->release(); }
+    shared_count& operator=(const shared_count& r);
+};
+}
+template<class T> class shared_ptr {
+public:
+    T* px;
+    detail::shared_count pn;
+    shared_ptr() : px(0), pn() {}
+    template<class Y> shared_ptr(const shared_ptr<Y>& r) : px(r.px), pn(r.pn) {}
+    void reset();
+    T* get() const { return px; }
+    T* operator->() const { return px; }
+    T& operator*() const { return *px; }
+    typedef T* shared_ptr::*unspecified_bool_type;
+    operator unspecified_bool_type() const { return px == 0 ? 0 : &shared_ptr::px; }
+};
 
-        tmp4.~StdString();
-        tmp3.~StdString();
-        tmp2.~StdString();
-        tmp1.~StdString();
+}
 
-        i++;
-    } while (i < (unsigned)count);
+namespace RBX {
+struct ImageNode {
+    std::vector<ImageNode*> children;
+    string_ name;
+};
+
+class GuiItem { public: void addChild(boost::shared_ptr<GuiItem> item); };
+string_ intToString(const unsigned int& i);
+boost::shared_ptr<GuiItem> createItem(string_ name, string_ path);
+
+class UnifiedImageWidget {
+public:
+    void buildTree(ImageNode* node, string_ prefix, boost::shared_ptr<GuiItem> parent);
+};
+
+void UnifiedImageWidget::buildTree(ImageNode* node, string_ prefix, boost::shared_ptr<GuiItem> parent)
+{
+    for (unsigned int i = 0; i < node->children.size(); ++i) {
+        ImageNode* child = node->children[i];
+        string_ path = prefix + " " + intToString(i);
+        boost::shared_ptr<GuiItem> item = createItem(child->name, path);
+        parent->addChild(item);
+        buildTree(child, path, item);
+    }
+}
 }

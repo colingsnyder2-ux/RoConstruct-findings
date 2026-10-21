@@ -1,127 +1,158 @@
-// from server: 41% by colin
-struct Vector2 { float x, y; };
-struct Vector3 { float x, y, z; };
+// from server: 74% by coldek
+extern "C" double __cdecl fabs(double);
+#pragma intrinsic(fabs)
 
-extern "C" double __stdcall ceil(double);
+extern double (__cdecl *ceilCall)(double);
+extern const float unitScale;
+extern const float segmentLength;
+extern const float remainderScale;
 
-extern float g_819bac;
-extern float g_826e6c;
-extern float g_83a3e4;
-
-float sub_4f1ff0(int);
-void sub_5185d0(Vector2* out, Vector2* in);
-void sub_4f35d0(Vector3* a, Vector2* b, Vector2* c, Vector3* d, Vector3* e, int f, int g);
-void sub_4f54d0(void* self, int a, int b);
-
-struct PBBBuilder {
-    int field0;
-    Vector2 field4;
-    int fieldC;
-    unsigned int field10;
-    void build(Vector3* a, Vector3* b, int c, int d, int e, int f);
+struct V2 {
+    float x, y;
+    V2();
+    V2(float, float);
+    V2(const V2&);
+    V2 operator-() const;
+    float& operator[](int);
 };
 
-void PBBBuilder::build(Vector3* a, Vector3* b, int c, int d, int e, int f)
+inline V2::V2() : x(0.0f), y(0.0f) {}
+inline V2::V2(float a, float b) : x(a), y(b) {}
+inline V2::V2(const V2& a) : x(a.x), y(a.y) {}
+inline V2 V2::operator-() const { return V2(-x, -y); }
+inline float& V2::operator[](int i) { return (&x)[i]; }
+
+struct V3 {
+    float x, y, z;
+    V3();
+    V3(float, float, float);
+    V2 xy() const;
+    float& operator[](int);
+};
+
+inline V3::V3() {}
+inline V3::V3(float a, float b, float c) : x(a), y(b), z(c) {}
+inline float& V3::operator[](int i) { return (&x)[i]; }
+
+struct Pair {
+    short x, y;
+    short& operator[](int);
+};
+
+inline short& Pair::operator[](int i) { return (&x)[i]; }
+
+struct Rect {
+    float data[4];
+};
+
+extern void __cdecl makeBox(Rect*, const V2*, const V2*);
+extern void __cdecl getDimensions(V3*, const void*);
+extern float __cdecl textureScale(unsigned int);
+
+struct Box {
+    Rect rect;
+    float z;
+    Box(const V2&, const V2&, float);
+    Box(const Box&);
+};
+
+inline Box::Box(const V2& a, const V2& b, float depth) : z(depth)
 {
-    float arr[4];
-    float arr2[4];
-    float arr3[4];
-    float arr4[4];
-    int idx;
-    int i;
-    int count;
+    makeBox(&rect, &a, &b);
+}
 
-    unsigned int bits = this->field10 >> 9;
-    int sel = bits & 7;
+inline Box::Box(const Box& b) : rect(b.rect), z(b.z) {}
 
-    Vector2 tmp;
-    sub_5185d0(&tmp, &this->field4);
+template<class T>
+const T& maximum(const T& a, const T& b)
+{
+    return a < b ? b : a;
+}
 
-    float f0 = a->x; if (f0 < 0) f0 = -f0;
-    float f1 = a->y; if (f1 < 0) f1 = -f1;
-    float f2 = a->z; if (f2 < 0) f2 = -f2;
+struct Builder {
+    unsigned int reserved;
+    float dimensions[3];
+    unsigned int flags;
+    unsigned int reserved2;
+    float u, v;
 
-    arr[0] = f0;
-    arr[1] = f1;
-    arr[2] = f2;
+    void build(void*, void*, Pair, int);
+    void emit(void*, void*, Box, V2, V2, int, Pair);
+};
 
-    bool flag;
-    if (f != 0) {
-        flag = (f0 == f1);
+void Builder::build(void* first, void* second, Pair count, int mode)
+{
+    unsigned int surface = (flags >> 9) & 7;
+    V3 dimensionsValue;
+    getDimensions(&dimensionsValue, dimensions);
+    V3 extent((float)fabs(dimensionsValue.x),
+              (float)fabs(dimensionsValue.y),
+              (float)fabs(dimensionsValue.z));
+
+    bool useFirst = mode == 0 && extent.x <= extent.y;
+    int axis = !useFirst;
+    int segments;
+    if (mode == 0 && surface != 0) {
+        float n = (float)ceilCall(extent[axis] * unitScale);
+        segments = (int)n;
     } else {
-        flag = false;
-    }
-    idx = flag ? 0 : 1;
-
-    if (f == 0 && sel != 0) {
-        double dv = (double)arr[idx] * (double)g_819bac;
-        float cf = (float)ceil(dv);
-        count = (int)cf;
-    } else {
-        count = 1;
+        segments = 1;
     }
 
-    short sval = *(short*)((char*)&tmp + (idx * 2));
-    int q = (int)sval / count;
-    unsigned short qq = (unsigned short)q;
-    unsigned short one = 1;
-    unsigned short chosen = (one < qq) ? qq : one;
+    Pair subdivisions;
+    subdivisions.y = 0;
+    subdivisions.x = 0;
+    short other = count[1 - axis];
+    subdivisions[axis] = maximum<short>(1, (short)(other / segments));
+    float depth = extent.z;
+    subdivisions[1 - axis] = other;
 
-    *(unsigned short*)((char*)&idx + 0) = chosen;
-    *(unsigned short*)((char*)&tmp + idx * 2) = (unsigned short)sval;
+    V2 start = -extent.xy();
+    V2 end = extent.xy();
+    V2 offset;
+    V2 scale;
 
-    Vector2 p0, p1;
-    sub_5185d0(&p0, (Vector2*)a);
-    p0.x = -p0.x;
-    p0.y = -p0.y;
-    sub_5185d0(&p1, (Vector2*)b);
-    p1.x = -p1.x;
-    p1.y = -p1.y;
-
-    if (f == 0) {
-        if (sel == 0) {
-            arr2[0] = g_83a3e4;
-            arr2[1] = g_819bac;
-            arr2[2] = g_819bac;
-            arr2[3] = g_819bac;
+    switch (mode) {
+    case 0:
+        if (surface == 0) {
+            offset.x = remainderScale;
+            offset.y = unitScale;
+            scale[1 - axis] = 0.0f;
+            scale[axis] = 0.0f;
         } else {
-            arr2[idx] = 0.0f;
-            arr2[idx] = sub_4f1ff0(sel);
-            arr3[idx] = arr[idx] * 2.0f;
-            arr4[idx] = g_819bac;
-            if (idx == 1) {
-                arr4[1] = -arr4[1];
-            }
+            offset[1 - axis] = 0.0f;
+            offset[axis] = textureScale(surface);
+            scale[1 - axis] = extent[1 - axis] * 2.0f;
+            scale[axis] = unitScale;
+            if (axis == 1)
+                scale.x = -scale.x;
         }
-    } else if (f == 1) {
-        arr2[0] = 0.0f;
-        arr2[1] = b->y;
-        arr2[2] = b->x;
-        arr2[3] = -b->y;
-    } else if (f == 2) {
-        arr2[0] = 0.0f;
-        arr2[1] = 0.0f;
-        arr2[2] = 0.0f;
-        arr2[3] = 0.0f;
+        break;
+    case 1:
+        offset.x = 0.0f;
+        offset.y = v;
+        scale.x = u;
+        scale.y = -v;
+        break;
+    case 2:
+        offset.x = 0.0f;
+        offset.y = 0.0f;
+        scale.x = 0.0f;
+        scale.y = 0.0f;
+        break;
     }
 
-    for (i = 0; i < count; i++) {
-        if (i == count - 1) {
-            arr3[idx] = arr[idx];
-            if (f == 0 && c != 0) {
-                arr4[idx] = (arr[idx] - arr3[idx]) * arr4[idx] * g_83a3e4;
-            }
+    for (int i = 0; i < segments; ++i) {
+        if (i == segments - 1) {
+            end[axis] = extent[axis];
+            if (mode == 0 && surface != 0)
+                scale[axis] = ((end[axis] - start[axis]) *
+                              scale[axis]) * remainderScale;
         } else {
-            arr3[idx] = arr[idx] + g_826e6c;
+            end[axis] = start[axis] + segmentLength;
         }
-
-        Vector3 vv;
-        vv.x = arr4[0];
-        vv.y = arr4[1];
-        vv.z = arr4[2];
-
-        sub_4f35d0(&vv, &p0, &p1, (Vector3*)&arr3, (Vector3*)&arr2, sel, (int)this);
-        sub_4f54d0(this, d, e);
-        arr2[idx] = arr3[idx];
+        emit(first, second, Box(start, end, depth),
+             offset, scale, axis, subdivisions);
+        start[axis] = end[axis];
     }
 }

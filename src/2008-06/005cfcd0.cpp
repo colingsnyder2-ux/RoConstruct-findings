@@ -1,37 +1,26 @@
+// from server: 97% by EspClaude
 // from server: 94% by Espeon
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: openrbx-client-dll roc_espeon_starterlabel_61f7c71491a0feee.cpp
+// roc-lib: openrbx-client-dll roc_espclaude_26f742d4bcd7556a.cpp
 
 // Candidate translation unit (score above; library headers required).
 #include <string>
 #pragma float_control(precise, off)
-
-struct Vec2 {
-    float x, y;
-    Vec2(float, float);
-};
-
-__forceinline Vec2::Vec2(float xx, float yy)
-    : x(xx), y(yy)
-{
-}
-
-struct Rect {
-    float x, y, z, w;
-};
-
-struct Color {
-    float r, g, b, a;
-};
+#include "G3D/Rect2D.h"
+#include "G3D/Color4.h"
+#include "G3D/Color3.h"
 
 struct Context {
+    enum XAlign { XALIGN_RIGHT, XALIGN_LEFT };
+    enum YAlign { YALIGN_TOP, YALIGN_BASELINE, YALIGN_CENTER, YALIGN_BOTTOM };
+    enum Spacing { PROPORTIONAL_SPACING, MONOSPACE };
     virtual void slot0();
     virtual void slot1();
     virtual void slot2();
     virtual void slot3();
-    virtual Rect bounds();
+    virtual G3D::Rect2D getViewport();
     virtual void slot5();
     virtual void slot6();
     virtual void slot7();
@@ -40,14 +29,11 @@ struct Context {
     virtual void slot10();
     virtual void slot11();
     virtual void slot12();
-    virtual Vec2 text(const std::string&, const Vec2&, double,
-                      const Color&, int, int, int, int);
+    virtual G3D::Vector2 drawFont2D(const std::string&, const G3D::Vector2&, double,
+                      const G3D::Color4&, const G3D::Color4&, XAlign, YAlign, Spacing);
 };
 
-extern float inset;
-extern const Color& __cdecl white();
-extern int __cdecl fontSize(int);
-extern int __cdecl textOptions();
+extern int __cdecl normalizedFontSize(int);
 
 struct S {
     void base(Context*);
@@ -55,24 +41,14 @@ struct S {
     void draw(Context*);
 };
 
-void S::draw(Context* context)
+void S::draw(Context* adorn)
 {
-    base(context);
+    base(adorn);
     if (check()) {
-        Rect rect = context->bounds();
-        int size = fontSize(12);
-        Vec2 position(inset + rect.x, rect.w - inset);
-
-        const Color& source = white();
-        Color color;
-        color.r = source.r;
-        color.g = source.g;
-        color.b = source.b;
-        color.a = 1.0f;
-
-        std::string label(
-            "StarterPack - these items will be given to each new player");
-        context->text(label, position, double(size), color,
-                      textOptions(), 1, 3, 0);
+        G3D::Rect2D viewPort = adorn->getViewport();
+        int fontSize = normalizedFontSize(12);
+        G3D::Vector2 pos2d = viewPort.x0y1() + G3D::Vector2(4.0f, -4.0f);
+        adorn->drawFont2D("StarterPack - these items will be given to each new player",
+            pos2d, fontSize, G3D::Color3::white(), G3D::Color4::clear(), Context::XALIGN_LEFT, Context::YALIGN_BOTTOM, Context::PROPORTIONAL_SPACING);
     }
 }

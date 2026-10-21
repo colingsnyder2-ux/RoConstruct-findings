@@ -1,4 +1,4 @@
-// from server: 90% by king_originala
+// from server: 100% by colin
 struct EnumTable {
     unsigned char padding0[40];
     unsigned int count;
@@ -29,6 +29,7 @@ struct Descriptor {
 
 bool Descriptor::setValue(void* object, unsigned int index)
 {
+    int value;
     registerInitializer(initialize, &registrationState);
     EnumTable* table = getEnumTable();
 
@@ -36,7 +37,7 @@ bool Descriptor::setValue(void* object, unsigned int index)
         if (index >= static_cast<unsigned int>(table->end - table->begin))
             _invalid_parameter_noinfo();
 
-        int value = table->begin[index];
+        value = table->begin[index];
         setter->set(object, value);
         return true;
     }

@@ -1,204 +1,149 @@
-// from server: 33% by colin
-extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
-#pragma intrinsic(_InterlockedExchangeAdd)
+// from server: 100% by EspClaude
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+#include <intrin.h>
+#include <vector>
+#include <set>
+#include <algorithm>
 
-extern "C" void __cdecl _invalid_parameter_noinfo();
-extern "C" int __stdcall PostMessageA(void*, unsigned int, unsigned int, int);
+extern "C" __declspec(dllimport) int __stdcall PostMessageA(void* hWnd, unsigned int Msg, unsigned int wParam, long lParam);
 
-struct S_func_00442650;
-
-struct S_563090 {
-    void f();
-    void g();
+namespace boost {
+struct lock_error { lock_error(); };
+namespace detail {
+struct sp_counted_base {
+    virtual ~sp_counted_base() {}
+    virtual void dispose() = 0;
+    virtual void destroy() { delete this; }
+    long use_count_;
+    long weak_count_;
+    void release() {
+        if (_InterlockedDecrement(&use_count_) == 0) {
+            dispose();
+            weak_release();
+        }
+    }
+    void weak_release() {
+        if (_InterlockedDecrement(&weak_count_) == 0)
+            destroy();
+    }
+};
+struct shared_count {
+    sp_counted_base* pi_;
+    shared_count() : pi_(0) {}
+    ~shared_count() { if (pi_ != 0) pi_->release(); }
+    shared_count& operator=(const shared_count& r);
+};
+}
+template<class T> class shared_ptr {
+public:
+    T* px;
+    detail::shared_count pn;
+    shared_ptr() : px(0), pn() {}
+    void reset();
+    T* get() const { return px; }
+    T* operator->() const { return px; }
+    T& operator*() const { return *px; }
+    typedef T* shared_ptr::*unspecified_bool_type;
+    operator unspecified_bool_type() const { return px == 0 ? 0 : &shared_ptr::px; }
 };
 
-struct S_5630e0 {
-    void f();
+class recursive_mutex {
+public:
+    void do_lock();
+    void do_unlock();
+    void* m_mutex;
+    bool m_critical_section;
+    unsigned long m_count;
 };
-
-struct S_5e5a80 {
-    void f(void*);
+template<class M> class scoped_lock {
+public:
+    explicit scoped_lock(M& mx) : m_mutex(mx), m_locked(false) { lock(); }
+    ~scoped_lock() { if (m_locked) unlock(); }
+    void lock() { if (m_locked) throw lock_error(); m_mutex.do_lock(); m_locked = true; }
+    void unlock() { if (!m_locked) throw lock_error(); m_mutex.do_unlock(); m_locked = false; }
+    M& m_mutex;
+    bool m_locked;
 };
+}
 
-struct S_669050 {
-    void f(void*);
+namespace RBX {
+template<class A, class B> class Listener { public: virtual void onEvent(const A*, B) = 0; };
+template<class A, class B> class Notifier {
+public:
+    void addListener(Listener<A, B>* l) const;
+    void removeListener(Listener<A, B>* l) const;
+    char pad[0x20];
 };
-
-struct S_442100 {
-    void f(void*);
+struct E1 {};
+class Instance;
+struct PadI { char pad0[0x130]; };
+class Instance : public PadI, public Notifier<Instance, E1> {
+public:
+    int pad150;
+    std::vector<boost::shared_ptr<Instance> >* children;
 };
+template<class C, class E, class P> inline void removeL(const boost::shared_ptr<P>& p, Listener<C, E>* l)
+{ if (p) p->Notifier<C, E>::removeListener(l); }
+template<class C, class E, class P> inline void addL(const boost::shared_ptr<P>& p, Listener<C, E>* l)
+{ if (p) p->Notifier<C, E>::addListener(l); }
+template<class T> boost::shared_ptr<T> shared_from(T* p);
+}
 
-struct S_4025b0 {
-    void f(void*);
+template<int I> struct arg {};
+static arg<1> _1;
+template<class C> struct bind_t {
+    typedef void (C::*F)(boost::shared_ptr<RBX::Instance>);
+    F f;
+    C* p;
+    arg<1> a;
+    bind_t(F f_, C* p_, arg<1> a_) : f(f_), p(p_), a(a_) {}
+    void operator()(boost::shared_ptr<RBX::Instance> i) { (p->*f)(i); }
 };
-
-struct S_4218a0 {
-    void f(void*);
-};
-
-struct S_438d40 {
-    void f(void*, void*, void*, void*, void*, void*);
-};
-
-struct S_618a40 {
-    void* f(void*, void*);
-};
-
-struct S_func_00442650 {
-    char pad0[0x18c];
-    S_563090 m_18c;
-    char pad1[0x1f4 - 0x190];
-    char m_1f4;
-    char m_1f5;
-    char pad2[0x1f8 - 0x1f6];
-    char m_1f8[0x20];
-    char m_218[0x20];
-    char m_238[4];
-    void* m_23c;
-    char m_240[4];
-    char pad3[0x20 - 4];
-    void* m_20;
-    void f(int);
-};
-
-void S_func_00442650::f(int arg)
+template<class C> inline bind_t<C> bind(void (C::*f)(boost::shared_ptr<RBX::Instance>), C* p, arg<1> a2)
 {
-    S_563090* p = &m_18c;
-    p->f();
+    return bind_t<C>(f, p, a2);
+}
 
-    if (m_23c != 0) {
-        void* v = m_23c;
-        if (v != 0) {
-            S_5e5a80* q = (S_5e5a80*)((char*)v + 0x130);
-            q->f(&m_238);
-        }
+class PadA { public: virtual ~PadA(); char pad0[0x1c]; void* m_hWnd; char pad1[0x18c - 0x24];
+public:
+    boost::recursive_mutex mutex;   // 0x18c
+    char pad2[0x1f4 - 0x198];
+    bool posted;                    // 0x1f4
+    bool dirty;                     // 0x1f5
+    std::set<int> set1;             // 0x1f8
+    std::set<void*> set2;           // 0x218
+};
 
-        void* obj = m_23c;
-        void* edi = *(void**)((char*)obj + 0x154);
-        unsigned int ebx = *(unsigned int*)((char*)edi + 0x10);
-        if (*(unsigned int*)((char*)edi + 0xc) > ebx) {
-            _invalid_parameter_noinfo();
-        }
-        void* eax = *(void**)edi;
+class CSelectionPropGrid : public PadA, public RBX::Listener<RBX::Instance, RBX::E1>
+{
+public:
+    boost::shared_ptr<RBX::Instance> instance; // 0x23c? 
+    void onChildRemoved(boost::shared_ptr<RBX::Instance> i);
+    void onChildAdded(boost::shared_ptr<RBX::Instance> i);
+    void setInstance(RBX::Instance* inst);
+};
 
-        void* obj2 = m_23c;
-        void* ebp = *(void**)((char*)obj2 + 0x154);
-        unsigned int edi2 = *(unsigned int*)((char*)ebp + 0xc);
-        if (edi2 > *(unsigned int*)((char*)ebp + 0x10)) {
-            _invalid_parameter_noinfo();
-        }
-        void* ebp2 = *(void**)ebp;
-
-        void* tmp[4];
-        tmp[0] = (void*)0x439cd0;
-        tmp[1] = 0;
-        tmp[2] = this;
-        tmp[3] = (void*)arg;
-
-        S_438d40* call = (S_438d40*)0x438d40;
-        call->f(&m_23c, ebp2, (void*)edi2, (void*)eax, (void*)ebx, tmp);
+void CSelectionPropGrid::setInstance(RBX::Instance* inst)
+{
+    boost::scoped_lock<boost::recursive_mutex> lock(mutex);
+    if (instance) {
+        RBX::removeL<RBX::Instance, RBX::E1>(instance, this);
+        std::for_each(instance->children->begin(), instance->children->end(), bind(&CSelectionPropGrid::onChildRemoved, this, _1));
     }
-
-    void* e1 = *(void**)((char*)this + 0x210);
-    void* e1b = *(void**)((char*)e1 + 4);
-    S_669050* c1 = (S_669050*)0x669050;
-    c1->f(e1b);
+    set1.clear();
+    set2.clear();
+    instance = RBX::shared_from(inst);
+    if (instance) {
+        std::for_each(instance->children->begin(), instance->children->end(), bind(&CSelectionPropGrid::onChildAdded, this, _1));
+        RBX::addL<RBX::Instance, RBX::E1>(instance, this);
+    }
+    dirty = true;
     {
-        char* edi = (char*)this + 0x1f8;
-        void* a = *(void**)(edi + 0x18);
-        *(void**)((char*)a + 4) = a;
-        void* b = *(void**)(edi + 0x18);
-        *(void**)(edi + 0x1c) = 0;
-        *(void**)b = b;
-        void* c = *(void**)(edi + 0x18);
-        *(void**)((char*)c + 8) = c;
-    }
-
-    void* e2 = *(void**)((char*)this + 0x230);
-    void* e2b = *(void**)((char*)e2 + 4);
-    S_442100* c2 = (S_442100*)0x442100;
-    c2->f(e2b);
-    {
-        char* edi = (char*)this + 0x218;
-        void* a = *(void**)(edi + 0x18);
-        *(void**)((char*)a + 4) = a;
-        void* b = *(void**)(edi + 0x18);
-        *(void**)(edi + 0x1c) = 0;
-        *(void**)b = b;
-        void* c = *(void**)(edi + 0x18);
-        *(void**)((char*)c + 8) = c;
-    }
-
-    void* tmp2[1];
-    S_618a40* c3 = (S_618a40*)0x618a40;
-    void* r = c3->f(&tmp2[0], (void*)arg);
-    void* rv = *(void**)r;
-    r = (char*)r + 4;
-    m_23c = rv;
-    S_4025b0* c4 = (S_4025b0*)0x4025b0;
-    c4->f(r);
-
-    void* ref = tmp2[0];
-    if (ref != 0) {
-        void* p2 = ref;
-        void* cnt = (char*)p2 + 4;
-        if (_InterlockedExchangeAdd((volatile long*)cnt, -1) == 1) {
-            void** vt = *(void***)p2;
-            void (*fn)(void*) = (void (*)(void*))vt[1];
-            fn(p2);
-            void* cnt2 = (char*)p2 + 8;
-            if (_InterlockedExchangeAdd((volatile long*)cnt2, -1) == 1) {
-                void** vt2 = *(void***)p2;
-                void (*fn2)(void*) = (void (*)(void*))vt2[2];
-                fn2(p2);
-            }
+        boost::scoped_lock<boost::recursive_mutex> lock2(mutex);
+        if (!posted) {
+            if (m_hWnd)
+                PostMessageA(m_hWnd, 0x465, 0, 0);
+            posted = true;
         }
     }
-
-    if (m_23c != 0) {
-        void* obj = m_23c;
-        void* edi = *(void**)((char*)obj + 0x154);
-        unsigned int ebp = *(unsigned int*)((char*)edi + 0x10);
-        if (*(unsigned int*)((char*)edi + 0xc) > ebp) {
-            _invalid_parameter_noinfo();
-        }
-        void* ecx = *(void**)edi;
-
-        void* obj2 = m_23c;
-        void* edi2 = *(void**)((char*)obj2 + 0x154);
-        unsigned int ebx = *(unsigned int*)((char*)edi2 + 0xc);
-        if (ebx > *(unsigned int*)((char*)edi2 + 0x10)) {
-            _invalid_parameter_noinfo();
-        }
-        void* edi3 = *(void**)edi2;
-
-        void* tmp3[4];
-        tmp3[0] = (void*)0x4423f0;
-        tmp3[1] = 0;
-        tmp3[2] = this;
-        tmp3[3] = (void*)arg;
-
-        S_438d40* call = (S_438d40*)0x438d40;
-        call->f(&m_23c, edi3, (void*)ebx, ecx, (void*)ebp, tmp3);
-
-        void* v = m_23c;
-        if (v != 0) {
-            S_4218a0* q = (S_4218a0*)((char*)v + 0x130);
-            q->f(&m_238);
-        }
-    }
-
-    m_1f5 = 1;
-    p->f();
-
-    if (m_1f4 == 0) {
-        void* hwnd = m_20;
-        if (hwnd != 0) {
-            PostMessageA(hwnd, 0x465, 0, 0);
-        }
-        m_1f4 = 1;
-    }
-
-    p->g();
-    p->g();
 }

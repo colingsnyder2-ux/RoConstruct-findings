@@ -1,133 +1,121 @@
-// from server: 31% by colin
-extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
-#pragma intrinsic(_InterlockedExchangeAdd)
+// from server: 100% by EspClaude
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+typedef void* HWND; typedef void* HMONITOR; typedef unsigned long DWORD; typedef int BOOL; typedef long LONG; typedef unsigned int UINT;
+#define NULL 0
+struct RECT { LONG left, top, right, bottom; };
+struct MONITORINFOEXA { DWORD cbSize; RECT rcMonitor; RECT rcWork; DWORD dwFlags; char szDevice[32]; };
+struct DEVMODEA { char data[156]; };
+extern "C" __declspec(dllimport) BOOL __stdcall GetMonitorInfoA(HMONITOR, MONITORINFOEXA*);
+extern "C" __declspec(dllimport) LONG __stdcall ChangeDisplaySettingsExA(const char*, DEVMODEA*, HWND, DWORD, void*);
+extern "C" __declspec(dllimport) int __stdcall GetSystemMetrics(int);
+#define WS_CAPTION 0x00C00000L
+#define WS_THICKFRAME 0x00040000L
+#define SM_CXBORDER 5
+#define SM_CYBORDER 6
+#define SWP_NOZORDER 4
+#define CDS_FULLSCREEN 4
+#define DISP_CHANGE_SUCCESSFUL 0
+#include <intrin.h>
 
-struct Control {
-    virtual ~Control();
+namespace boost {
+namespace detail {
+struct sp_counted_base {
+    virtual ~sp_counted_base() {}
     virtual void dispose() = 0;
-    virtual void destroy() = 0;
-    volatile long strong;
-    volatile long weak;
-    void release();
+    virtual void destroy() { delete this; }
+    long use_count_;
+    long weak_count_;
+    void release() {
+        if (_InterlockedDecrement(&use_count_) == 0) {
+            dispose();
+            weak_release();
+        }
+    }
+    void weak_release() {
+        if (_InterlockedDecrement(&weak_count_) == 0)
+            destroy();
+    }
+};
+struct shared_count {
+    sp_counted_base* pi_;
+    shared_count() : pi_(0) {}
+    ~shared_count() { if (pi_ != 0) pi_->release(); }
+};
+}
+template<class T> class shared_ptr {
+public:
+    T* px;
+    detail::shared_count pn;
+    T* operator->() const { return px; }
+};
+}
+
+namespace RBX {
+enum MessageType { MESSAGE_OUTPUT, MESSAGE_INFO, MESSAGE_WARNING, MESSAGE_ERROR };
+class StandardOut {
+public:
+    static boost::shared_ptr<StandardOut> singleton();
+    void __cdecl print(MessageType type, const char* format, ...);
+};
+struct Vector2int16 {
+    short x, y;
+    Vector2int16() {}
+};
+}
+
+struct Settings { RBX::Vector2int16 getResolution(); };
+Settings* __cdecl settings();
+DEVMODEA findDisplayMode(const char* device, int pixels);
+struct RectSource { RECT getRect(void* wnd); };
+RectSource* rectSource();
+
+template<class T> class ScopedAssign {
+public:
+    ScopedAssign(T& t, T v) : target(t), oldValue(t) { t = v; }
+    ~ScopedAssign() { target = oldValue; }
+private:
+    T& target;
+    T oldValue;
 };
 
-struct CDataModelPropGrid {
+class CMainFrame {
+public:
+    virtual ~CMainFrame();
+    char pad0[0x1c];
+    HWND m_hWnd;
+    char pad1[0xfa - 0x24];
+    bool m_changingResolution;
+    HMONITOR m_hMonitor;
+    BOOL ModifyStyle(DWORD dwRemove, DWORD dwAdd, UINT nFlags = 0);
+    BOOL SetWindowPos(const CMainFrame* pWndInsertAfter, int x, int y, int cx, int cy, UINT nFlags);
     void ChangeResolution();
-    char padding[0xf8];
-    unsigned char field_0xf8;
-    unsigned char field_0xf9;
-    unsigned char field_0xfa;
-    char pad2;
-    void* field_0xfc;
 };
 
-extern "C" int (__thiscall *GetMonitorInfoA)(void*, void*);
-extern "C" long __stdcall ChangeDisplaySettingsExA(void*, void*, void*, unsigned long, void*);
-extern "C" int __stdcall GetSystemMetrics(int);
-
-struct CString {
-    void* data;
-};
-
-struct CStringHolder {
-    CString str;
-};
-
-extern "C" void* __cdecl sub_569620(void*);
-extern "C" void __cdecl sub_5693a0(void*, int, void*);
-extern "C" void* __cdecl sub_412d50(void*);
-extern "C" void __cdecl sub_445250(void*);
-extern "C" void* __cdecl sub_430bf0(void*, void*, int);
-extern "C" void __cdecl sub_600660(void*);
-extern "C" void __cdecl sub_6a0e12(void*, int, int, int);
-extern "C" void* __cdecl sub_6e9080(void*, void*);
-extern "C" void __cdecl sub_6e8a90(void*);
-extern "C" void __cdecl sub_6a0a46(void*, int, int, int, int, int, int);
-
-void CDataModelPropGrid::ChangeResolution() {
-    if (field_0xfc == 0) {
-        void* p = sub_569620((char*)this + 0x18);
-        void* v = *(void**)p;
-        sub_5693a0(v, 3, (void*)0x8115fc);
-        Control* c = *(Control**)((char*)this + 0x2c);
-        if (c != 0) {
-            if (_InterlockedExchangeAdd(&c->strong, -1) == 1) {
-                c->dispose();
-                if (_InterlockedExchangeAdd(&c->weak, -1) == 1) {
-                    c->destroy();
-                }
-            }
-        }
+void CMainFrame::ChangeResolution()
+{
+    if (m_hMonitor == NULL) {
+        RBX::StandardOut::singleton()->print(RBX::MESSAGE_ERROR, "CMainFrame::ChangeResolution hm is NULL");
         return;
     }
-
-    unsigned char old = field_0xfa;
-    field_0xfa = 1;
-
-    struct {
-        int cbSize;
-        int rc[4];
-        int rcWork[4];
-        int dwFlags;
-    } mi;
-    mi.cbSize = 0x48;
-
-    if (GetMonitorInfoA(field_0xfc, &mi) == 0) {
-        void* p = sub_569620((char*)this + 0x20);
-        void* v = *(void**)p;
-        sub_5693a0(v, 3, (void*)0x8115e4);
-        Control* c = *(Control**)((char*)this + 0x34);
-        if (c != 0) {
-            if (_InterlockedExchangeAdd(&c->strong, -1) == 1) {
-                c->dispose();
-                if (_InterlockedExchangeAdd(&c->weak, -1) == 1) {
-                    c->destroy();
-                }
-            }
-        }
-        field_0xfa = old;
+    ScopedAssign<bool> assign(m_changingResolution, true);
+    MONITORINFOEXA mi;
+    mi.cbSize = sizeof(mi);
+    if (!GetMonitorInfoA(m_hMonitor, &mi)) {
+        RBX::StandardOut::singleton()->print(RBX::MESSAGE_ERROR, "GetMonitorInfo failed");
         return;
     }
-
-    int dims[2];
-    sub_412d50(dims);
-    sub_445250(dims);
-    int w = (short)dims[0];
-    int h = (short)dims[1];
-    int total = w * h;
-
-    char buf[0x27 * 4];
-    void* res = sub_430bf0((char*)this + 0x120, (char*)this + 0x5c, total);
-    for (int i = 0; i < 0x27; i++) {
-        ((int*)buf)[i] = ((int*)res)[i];
+    RBX::Vector2int16 res = settings()->getResolution();
+    DEVMODEA dm;
+    dm = findDisplayMode(mi.szDevice, res.x * res.y);
+    LONG result = ChangeDisplaySettingsExA(mi.szDevice, &dm, NULL, CDS_FULLSCREEN, NULL);
+    if (result == DISP_CHANGE_SUCCESSFUL) {
+        ModifyStyle(WS_CAPTION | WS_THICKFRAME, 0, 0);
+        RECT r = rectSource()->getRect(this);
+        int cxBorder = GetSystemMetrics(SM_CXBORDER);
+        int cyBorder = GetSystemMetrics(SM_CYBORDER);
+        SetWindowPos(NULL, r.left - cxBorder, r.top - cyBorder,
+                     r.right - r.left + 2 * cxBorder, r.bottom - r.top + 2 * cyBorder, SWP_NOZORDER);
+    } else {
+        RBX::StandardOut::singleton()->print(RBX::MESSAGE_ERROR, "ChangeDisplaySettings == %d", result);
     }
-
-    int r = ChangeDisplaySettingsExA(0, (void*)buf, 0, 4, 0);
-    if (r != 0) {
-        void* p = sub_569620((char*)this + 0x20);
-        void* v = *(void**)p;
-        sub_5693a0(v, 3, (void*)0x8115c8);
-        sub_600660((char*)this + 0x20);
-        field_0xfa = old;
-        return;
-    }
-
-    sub_6a0e12(this, 0xc40000, 0, 0);
-    void* q = sub_6e9080((char*)this + 0x20, this);
-    sub_6e8a90(q);
-
-    int a = GetSystemMetrics(5);
-    int b = GetSystemMetrics(6);
-
-    int x1 = mi.rc[0];
-    int y1 = mi.rc[1];
-    int x2 = mi.rc[2];
-    int y2 = mi.rc[3];
-
-    int nx = (b * 2) - x1 + x2;
-    int ny = (a * 2) - y1 + y2;
-
-    sub_6a0a46(this, 0, x1 - a, y1 - b, nx, ny, 4);
-
-    field_0xfa = old;
 }

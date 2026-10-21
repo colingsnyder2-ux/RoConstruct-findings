@@ -1,37 +1,32 @@
+// from server: 100% by EspClaude
 // from server: 94% by Espeon
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: openrbx-client-dll roc_espeon_physics_1c33a65e5bc652c3.cpp
+// roc-lib: openrbx-client-dll roc_espclaude_4dc607117a83a1d6.cpp
 
 // Candidate translation unit (score above; library headers required).
+#include <set>
 #include <boost/shared_ptr.hpp>
-struct Object {};
-struct Derived : Object {};
-typedef boost::shared_ptr<Derived> FactoryShared;
-typedef boost::shared_ptr<Object> Shared;
-FactoryShared __cdecl makeShared(void*);
-
-struct Event {
-    void invoke(void*, Shared);
+namespace RBX {
+class Instance;
+class PartInstance;
+template<typename Class> boost::shared_ptr<Class> shared_from(Class* r);
+class Described { public: virtual ~Described(); };
+struct SignalDesc { void fire(Described* source, boost::shared_ptr<Instance> arg) const; };
+extern SignalDesc event_removed;
+class Instance { public: virtual ~Instance(); char pad0[0x10]; Described described; char pad[0x130 - 0x18]; };
+class PartInstance : public Instance {};
+class PhysicsService : public Instance {
+	char pad2[8];
+	std::set<PartInstance*> parts;
+public:
+	void onRemoved(PartInstance* part);
+	operator Described*() { return &described; }
 };
-
-extern Event event;
-
-struct Collection {
-    void remove(void**);
-};
-
-struct S {
-    char padding[0x138];
-    Collection collection;
-
-    void f(void*);
-};
-
-void S::f(void* value)
+void PhysicsService::onRemoved(PartInstance* part)
 {
-    collection.remove(&value);
-    void* owner = this ? reinterpret_cast<char*>(this) + 0x14 : 0;
-    event.invoke(owner, makeShared(value));
+	parts.erase(part);
+	event_removed.fire(this ? &described : 0, shared_from(part));
+}
 }

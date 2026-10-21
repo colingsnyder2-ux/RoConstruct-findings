@@ -1,106 +1,214 @@
-// from server: 16% by colin
-//
+// from server: 46% by coldek
+extern "C" void (__cdecl* invalid_parameter)();
 
-struct GuardData {
-    int first;
-    int second;
-    int third;
-    GuardData();
-    void acquire(void*);
-    ~GuardData();
+struct Proxy {
+    void* container;
 };
 
-extern "C" void __stdcall invalid_parameter_noinfo();
-
-struct VecNode {
-    VecNode* next;
-    VecNode* prev;
+struct Bounds {
+    char padding[0x10];
+    void* last;
 };
 
-struct VecIter {
-    VecNode* node;
+template<class T> struct VectorIterator {
+    Proxy* owner;
+    T* position;
+    T& operator*() const;
+    VectorIterator& operator++();
+    bool operator!=(const VectorIterator&) const;
 };
 
-struct VecBase {
-    VecNode* first;
-    VecNode* last;
-    VecNode* end;
+template<class T>
+__forceinline T& VectorIterator<T>::operator*() const
+{
+    Bounds* v;
+    if (owner)
+        v = static_cast<Bounds*>(owner->container);
+    else {
+        invalid_parameter();
+        v = 0;
+    }
+    if (position >= static_cast<T*>(v->last))
+        invalid_parameter();
+    return *position;
+}
+
+template<class T>
+__forceinline VectorIterator<T>& VectorIterator<T>::operator++()
+{
+    Bounds* v;
+    if (owner)
+        v = static_cast<Bounds*>(owner->container);
+    else {
+        invalid_parameter();
+        v = 0;
+    }
+    if (position >= static_cast<T*>(v->last))
+        invalid_parameter();
+    ++position;
+    return *this;
+}
+
+template<class T>
+__forceinline bool VectorIterator<T>::operator!=(const VectorIterator& other) const
+{
+    if (!owner || owner != other.owner)
+        invalid_parameter();
+    return position != other.position;
+}
+
+template<class T> struct Vector {
+    unsigned int unused;
+    Proxy* owner;
+    unsigned int reserved[2];
+    T* first;
+    T* last;
+    T* limit;
+    VectorIterator<T> begin();
+    VectorIterator<T> end();
+};
+
+template<class T>
+__forceinline VectorIterator<T> Vector<T>::begin()
+{
+    T* p = first;
+    if (p > last)
+        invalid_parameter();
+    VectorIterator<T> result = { owner, p };
+    return result;
+}
+
+template<class T>
+__forceinline VectorIterator<T> Vector<T>::end()
+{
+    T* p = last;
+    if (first > p)
+        invalid_parameter();
+    VectorIterator<T> result = { owner, p };
+    return result;
+}
+
+struct Entry {
+    void* value;
+    unsigned int unused;
+};
+
+struct Node {
+    unsigned int links[3];
+    Vector<Entry> values;
+};
+
+struct Map;
+
+struct MapIterator {
+    Proxy* owner;
+    Node* position;
+    Node& operator*() const;
+    bool operator!=(const MapIterator&) const;
+};
+
+struct Map {
+    Proxy* owner;
+    unsigned int unused[5];
+    Node* sentinel;
+    MapIterator find(void* const*);
+};
+
+__forceinline Node& MapIterator::operator*() const
+{
+    Map* m;
+    if (owner)
+        m = static_cast<Map*>(owner->container);
+    else {
+        invalid_parameter();
+        m = 0;
+    }
+    if (position == m->sentinel)
+        invalid_parameter();
+    return *position;
+}
+
+__forceinline bool MapIterator::operator!=(const MapIterator& other) const
+{
+    if (!owner || owner != other.owner)
+        invalid_parameter();
+    return position != other.position;
+}
+
+struct Text;
+extern Text* (__thiscall* construct_text)(Text*, const char*);
+
+struct Text {
+    void* value;
+    Text(const char*);
+    Text(const Text&);
+};
+
+inline Text::Text(const char* s)
+{
+    construct_text(this, s);
+}
+
+struct Item;
+
+struct ItemTable {
+    void* unused[62];
+    void (__thiscall* assign)(Item*, const int*);
+    bool (__thiscall* combine)(Item*, int*, const int*);
 };
 
 struct Item {
-    void* vtable;
+    ItemTable* table;
+    int convert(void*);
+    void caption(Text);
+    void hidden(int);
+};
+
+extern const char caption_text[];
+
+struct Selection : Vector<void*> {
+    void update(Map*);
+};
+
+void Selection::update(Map* map)
+{
+    bool haveValue = false;
     int value;
-    int index;
-};
+    MapIterator mapEnd = { map->owner, map->sentinel };
+    VectorIterator<void*> current = begin();
+    VectorIterator<void*> finish = end();
 
-struct EnumDescriptor;
-
-struct ItemOwner {
-    EnumDescriptor* owner;
-};
-
-struct EnumDescriptor {
-    char pad[0x10];
-    VecBase items;
-    int count;
-    int countMSB;
-};
-
-struct Outer {
-    char pad0[0x10];
-    VecBase vec;
-    char pad1[0x100];
-};
-
-struct Target {
-    char pad0[4];
-    VecNode* first;
-    char pad1[8];
-    VecNode* last;
-    VecNode* end;
-    char pad2[0x100];
-    int setHidden(int);
-    int convertToValue(int, void*);
-    int convertToString(int, void*);
-    int process(void*);
-};
-
-extern "C" int __stdcall sub_43a320(void*, void*);
-extern "C" int __stdcall sub_43abc0(void*, void*);
-extern "C" int __stdcall sub_7119f0(void*);
-extern "C" int __stdcall sub_7110d0(void*, int);
-
-int Target::process(void* arg) {
-    int* p = (int*)arg;
-    int v0 = p[0];
-    int v1 = p[6];
-    VecNode* it = this->first;
-    VecNode* endNode = this->last;
-    char flag = 0;
-    int saved0 = v0;
-    int saved1 = v1;
-    VecNode* savedIt = it;
-    VecNode* savedEnd = endNode;
-    while (it != endNode) {
-        Item* item = (Item*)it;
-        int val = item->value;
-        int idx = item->index;
-        if (flag == 0) {
-            int r = this->convertToValue(val, &idx);
-            int* pr = &r;
-            this->convertToString(r, pr);
-        } else {
-            int r = this->convertToValue(val, &idx);
-            int out;
-            if (!this->convertToString(r, &out)) {
-                sub_7119f0(this);
-                sub_7110d0(this, 0);
-                return 0;
+    for (; current != finish; ++current) {
+        void* key = *current;
+        MapIterator found = map->find(&key);
+        if (found != mapEnd) {
+            VectorIterator<Entry> entry = (*found).values.begin();
+            VectorIterator<Entry> entryEnd = (*found).values.end();
+            for (; entry != entryEnd; ++entry) {
+                if (!haveValue) {
+                    void* source = (*entry).value;
+                    Item* item = reinterpret_cast<Item*>(
+                        reinterpret_cast<char*>(this) - 0x114);
+                    value = item->convert(source);
+                    item->table->assign(item, &value);
+                } else {
+                    void* source = (*entry).value;
+                    Item* item = reinterpret_cast<Item*>(
+                        reinterpret_cast<char*>(this) - 0x114);
+                    int nextValue = item->convert(source);
+                    if (!item->table->combine(item, &value, &nextValue)) {
+                        reinterpret_cast<Item*>(
+                            reinterpret_cast<char*>(this) - 0x114)->caption(
+                                Text(caption_text));
+                        reinterpret_cast<Item*>(
+                            reinterpret_cast<char*>(this) - 0x114)->hidden(0);
+                        return;
+                    }
+                }
+                haveValue = true;
             }
         }
-        flag = 1;
-        it = (VecNode*)((char*)it + 8);
     }
-    sub_7110d0(this, flag == 0 ? 1 : 0);
-    return 0;
+    reinterpret_cast<Item*>(
+        reinterpret_cast<char*>(this) - 0x114)->hidden(!haveValue);
 }

@@ -1,101 +1,39 @@
-// from server: 30% by colin
-struct HumanoidState;
-
-extern "C" void* __cdecl operator_new(unsigned int size);
-
-struct StateBase {
-    void* vfptr;
-    void* vfptr2;
-    int field8;
-    float fieldC;
-    StateBase(void* arg);
-};
-
-struct State0 : StateBase { State0(void* arg); };
-struct State1 : StateBase { State1(void* arg); };
-struct State2 : StateBase { State2(void* arg); };
-struct State3 : StateBase { State3(void* arg); };
-struct State4 : StateBase { State4(void* arg); };
-struct State5 : StateBase { State5(void* arg); };
-struct State6 : StateBase { State6(void* arg); };
-struct State7 : StateBase { State7(void* arg); };
-struct State8 : StateBase { State8(void* arg); };
-struct State9 : StateBase { State9(void* arg); };
-struct State10 : StateBase { State10(void* arg); };
-struct State11 : StateBase { State11(void* arg); };
-struct State12 : StateBase { State12(void* arg); };
-
-struct Landed {
-    StateBase* create(int type, void* arg);
-};
-
-StateBase* Landed::create(int type, void* arg)
+// from server: 100% by EspClaude
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+namespace RBX {
+class Humanoid;
+namespace HUMAN {
+class HumanoidState { public: virtual ~HumanoidState(); char pad[0x9c]; };
+class FallingDown : public HumanoidState { public: FallingDown(Humanoid* h); char pad2[0x0]; };
+class Ragdoll : public HumanoidState { public: Ragdoll(Humanoid* h); char pad2[0x8]; };
+class GettingUp : public HumanoidState { public: GettingUp(Humanoid* h); char pad2[0x8]; };
+class Jumping : public HumanoidState { public: Jumping(Humanoid* h); char pad2[0x20]; };
+class Swimming : public HumanoidState { public: Swimming(Humanoid* h); char pad2[0x8]; };
+class Freefall : public HumanoidState { public: Freefall(Humanoid* h); char pad2[0x2c]; };
+class Flying : public HumanoidState { public: Flying(Humanoid* h); char pad2[0x2c]; };
+class Running : public HumanoidState { public: Running(Humanoid* h); char pad2[0x74]; };
+class RunningNoPhysics : public HumanoidState { public: RunningNoPhysics(Humanoid* h); char pad2[0x74]; };
+class StrafingNoPhysics : public HumanoidState { public: StrafingNoPhysics(Humanoid* h); char pad2[0x2c]; };
+class Climbing : public HumanoidState { public: Climbing(Humanoid* h); char pad2[0x0]; };
+class Dead : public HumanoidState { public: Dead(Humanoid* h); char pad2[0x0]; };
+class Landed : public HumanoidState { public: Landed(Humanoid* h); char pad2[0x2c]; };
+HumanoidState* create(int type, Humanoid* h)
 {
     switch (type) {
-    case 0: {
-        State0* p = (State0*)operator_new(0xa0);
-        if (p) p->State0::State0(arg);
-        return p;
+    case 0: return new FallingDown(h);
+    case 1: return new Ragdoll(h);
+    case 2: return new GettingUp(h);
+    case 3: return new Jumping(h);
+    case 4: return new Swimming(h);
+    case 5: return new Freefall(h);
+    case 6: return new Landed(h);
+    case 7: return new Running(h);
+    case 8: return new RunningNoPhysics(h);
+    case 9: return new StrafingNoPhysics(h);
+    case 10: return new Climbing(h);
+    case 11: return new Dead(h);
+    default: return new Landed(h);
     }
-    case 1: {
-        State1* p = (State1*)operator_new(0xa8);
-        if (p) p->State1::State1(arg);
-        return p;
-    }
-    case 2: {
-        State2* p = (State2*)operator_new(0xa8);
-        if (p) p->State2::State2(arg);
-        return p;
-    }
-    case 3: {
-        State3* p = (State3*)operator_new(0xc0);
-        if (p) p->State3::State3(arg);
-        return p;
-    }
-    case 4: {
-        State4* p = (State4*)operator_new(0xa8);
-        if (p) p->State4::State4(arg);
-        return p;
-    }
-    case 5: {
-        State5* p = (State5*)operator_new(0xcc);
-        if (p) p->State5::State5(arg);
-        return p;
-    }
-    case 6: {
-        State6* p = (State6*)operator_new(0xcc);
-        if (p) p->State6::State6(arg);
-        return p;
-    }
-    case 7: {
-        State7* p = (State7*)operator_new(0x114);
-        if (p) p->State7::State7(arg);
-        return p;
-    }
-    case 8: {
-        State8* p = (State8*)operator_new(0x114);
-        if (p) p->State8::State8(arg);
-        return p;
-    }
-    case 9: {
-        State9* p = (State9*)operator_new(0xcc);
-        if (p) p->State9::State9(arg);
-        return p;
-    }
-    case 10: {
-        State10* p = (State10*)operator_new(0xa0);
-        if (p) p->State10::State10(arg);
-        return p;
-    }
-    case 11: {
-        State11* p = (State11*)operator_new(0xa0);
-        if (p) p->State11::State11(arg);
-        return p;
-    }
-    default: {
-        State12* p = (State12*)operator_new(0xcc);
-        if (p) p->State12::State12(arg);
-        return p;
-    }
-    }
+}
+}
 }

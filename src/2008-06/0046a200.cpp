@@ -1,40 +1,77 @@
-// from server: 93% by colin
-// from server: 86% by king_originala
-// roc 2008-06 0046a200  unit: DxUserInput  size: 31 bytes
-// Make this compile to the exact bytes below, then: roc check 2008-06 0046a200
-//
-// 0046a200  8bc1                 mov eax, ecx
-// 0046a202  33d2                 xor edx, edx
-// 0046a204  33c9                 xor ecx, ecx
-// 0046a206  668910               mov word ptr [eax], dx
-// 0046a209  bae4040000           mov edx, 0x4e4
-// 0046a20e  894804               mov dword ptr [eax + 4], ecx
-// 0046a211  894810               mov dword ptr [eax + 0x10], ecx
-// 0046a214  66895002             mov word ptr [eax + 2], dx
-// 0046a218  894808               mov dword ptr [eax + 8], ecx
-// 0046a21b  89480c               mov dword ptr [eax + 0xc], ecx
-// 0046a21e  c3                   ret 
-#include <intrin.h>
+// from server: 100% by EspClaude
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: atl-9.0-dll-rtm roc_espclaude_819913a7344f1e19.cpp
 
-struct DxUserInput
+// Candidate translation unit (score above; library headers required).
+#ifndef _CPPUNWIND
+#define _CPPUNWIND 1
+#endif
+#ifndef _AFXDLL
+#define _AFXDLL
+#endif
+#include <new>
+#include <afxwin.h>
+
+class CFileVersionInfo
 {
-    unsigned short field0;
-    unsigned short field2;
-    unsigned int field4;
-    unsigned int field8;
-    unsigned int fieldC;
-    unsigned int field10;
+public:
+    WORD m_wLang;
+    WORD m_wCodePage;
+    LPBYTE m_lpVersionData;
+    LPVOID m_lpTranslation;
+    UINT m_nTranslations;
+    VS_FIXEDFILEINFO* m_pFixedInfo;
 
-    DxUserInput();
+    CFileVersionInfo() : m_wLang(0), m_lpVersionData(NULL) { Reset(); }
+    ~CFileVersionInfo() { Reset(); }
+    void Reset()
+    {
+        m_pFixedInfo = NULL;
+        if (m_lpVersionData)
+        {
+            delete[] m_lpVersionData;
+            m_lpVersionData = NULL;
+        }
+        m_wLang = 0;
+        m_wCodePage = 1252;
+        m_lpTranslation = NULL;
+        m_nTranslations = 0;
+    }
+    BOOL Create(const CString& strFileName);
 };
 
-DxUserInput::DxUserInput()
+BOOL CFileVersionInfo::Create(const CString& strFileName)
 {
-    field0 = 0;
-    _ReadWriteBarrier();
-    field4 = 0;
-    field10 = 0;
-    field2 = 0x4E4;
-    field8 = 0;
-    fieldC = 0;
+    Reset();
+    CString strPath(strFileName);
+    BOOL bRet = FALSE;
+    DWORD dwHandle = 0;
+    DWORD dwSize = GetFileVersionInfoSize(strPath.GetBuffer(), &dwHandle);
+    if (dwSize)
+    {
+        m_lpVersionData = new BYTE[dwSize];
+        if (GetFileVersionInfo(strPath.GetBuffer(), dwHandle, dwSize, m_lpVersionData))
+        {
+        UINT uLen = 0;
+        if (VerQueryValue(m_lpVersionData, "\\", (LPVOID*)&m_pFixedInfo, &uLen))
+        {
+            if (VerQueryValue(m_lpVersionData, "\\VarFileInfo\\Translation", &m_lpTranslation, &uLen) && uLen >= 4)
+            {
+                m_nTranslations = uLen / 4;
+                m_wLang = ((WORD*)m_lpTranslation)[0];
+                m_wCodePage = ((WORD*)m_lpTranslation)[1];
+            }
+            bRet = TRUE;
+        }
+        }
+    }
+    if (!bRet && m_lpVersionData)
+    {
+        delete[] m_lpVersionData;
+        m_lpVersionData = NULL;
+    }
+    return bRet;
 }
+CFileVersionInfo* makeInfo(void* p) { return new (p) CFileVersionInfo; }

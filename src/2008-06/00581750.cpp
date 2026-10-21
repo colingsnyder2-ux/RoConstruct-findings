@@ -1,8 +1,9 @@
+// from server: 100% by EspClaude
 // from server: 94% by Espeon
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: rbxgs-dll roc_espeon_movedownpermissioncb83376138907fc2.cpp
+// roc-lib: rbxgs-dll roc_espclaude_2087b00cce08ed56.cpp
 
 // Candidate translation unit (score above; library headers required).
 #include <string>
@@ -31,14 +32,13 @@ void verify(Instance* instance)
 }
 }
 
-struct Vector3 {
-    float x, y, z;
-};
-
+#pragma float_control(precise,off)
+#include "G3D/Vector3.h"
+typedef G3D::Vector3 Vector3;
+#include <vector>
+#include <boost/shared_ptr.hpp>
 struct Selection {
-    char padding[12];
-    void** first;
-    void** last;
+    std::vector<void*> items;
 };
 
 struct SelectionOwner {
@@ -46,102 +46,100 @@ struct SelectionOwner {
     Selection selection;
 };
 
-struct ActionTarget {
-    void apply(int);
+struct History {
+    void mark(int);
 };
 
 struct Context {
     SelectionOwner* getSelection();
-    ActionTarget* getTarget();
+    History* getHistory();
 };
 
-struct UpdateState {
-    char storage[44];
-    UpdateState(int, Selection*, void*);
-    ~UpdateState();
-    void begin();
-    Vector3 transform(const Vector3&);
-    void finish();
+struct Flag {
+    bool value;
 };
 
-struct Notification {
-    virtual void notify(int);
+struct NotificationList {
+    void notify(Flag);
+};
+
+struct WBase { char padding[0x344]; };
+struct DrawChanged { bool value; };
+struct NotifierDC { void raise(DrawChanged) const; };
+struct DataModel : WBase, NotifierDC {
 };
 
 struct Name {
     char padding[8];
     union {
-        char buffer[16];
+        char text[16];
         char* pointer;
-    } text;
-    unsigned length;
+    };
+    unsigned size;
     unsigned capacity;
 };
 
-struct UpdateFlag {
-    bool value;
+struct Operation {
+    char storage[44];
+    Operation(int, Selection*, DataModel*);
+    ~Operation();
+    void begin();
+    Vector3 translate(const Vector3&);
+    void finish();
 };
 
-struct ModelPart {
-    void update(UpdateFlag);
-};
-
-struct Model {
-    char padding[0x344];
-    ModelPart part;
+struct Callback {
+    virtual void complete(bool);
 };
 
 extern const float direction;
-extern void __cdecl handle(const char*, Model*);
+extern void __cdecl handle(const char*, DataModel*);
 
-struct S {
-    char padding0[4];
+struct MoveUpSelectionVerb {
+    void* vtable;
     Name* name;
-    char padding1[4];
-    Model* model;
-    char padding2[16];
+    char padding0[4];
+    boost::shared_ptr<DataModel> workspace;
+    char padding1[12];
     Context* context;
+    float distance;
 
     void prepare();
-    void execute(Notification*);
+    void execute(Callback*);
 };
 
-void S::execute(Notification* notification)
+void MoveUpSelectionVerb::execute(Callback* callback)
 {
     RBX::checkPermissions(reinterpret_cast<RBX::Instance*>(context));
 
     SelectionOwner* owner = context ? context->getSelection() : 0;
     Selection* selection = &owner->selection;
 
-    if (static_cast<unsigned>(selection->last - selection->first) > 0) {
-        UpdateState state(0, selection, model);
-        state.begin();
+    if (selection->items.size() > 0) {
+        Operation operation(0, selection, workspace.get());
+        operation.begin();
 
-        Vector3 directionVector;
-        directionVector.x = 0.0f;
-        directionVector.y = direction;
-        directionVector.z = 0.0f;
+        Vector3 displacement(0.0f,direction,0.0f);
+        Vector3 result = operation.translate(displacement);
+        operation.finish();
 
-        Vector3 result = state.transform(directionVector);
-        state.finish();
+        int action = result.y ? 4 : 1;
+        History* history = context ? context->getHistory() : 0;
+        history->mark(action);
 
-        int action = 4;
-        if (!result.y)
-            action = 1;
-
-        ActionTarget* target = context ? context->getTarget() : 0;
-        target->apply(action);
-
-        UpdateFlag flag;
+        DrawChanged flag;
         flag.value = false;
-        model->part.update(flag);
+        workspace->NotifierDC::raise(flag);
 
-        Model* currentModel = model;
+        DataModel* currentModel = workspace.get();
         Name* currentName = name;
-        const char* text = currentName->capacity >= 16
-            ? currentName->text.pointer
-            : currentName->text.buffer;
+        const char* text;
+        if (currentName->capacity >= 16)
+            text = currentName->pointer;
+        else
+            text = currentName->text;
+
         handle(text, currentModel);
-        notification->notify(1);
+        callback->complete(true);
     }
 }

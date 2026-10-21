@@ -1,143 +1,54 @@
-// from server: 34% by colin
-struct Value {
-    int fields[5];
-};
-
-struct S {
-    char pad[0x130];
-    Value value;
-    void set(const Value& source);
-};
-
-namespace std {
-template<class T> struct char_traits;
-template<class T> class allocator;
-template<class T, class Traits, class Alloc>
-class __declspec(dllimport) basic_string {
-    char storage[28];
+// from server: 100% by EspClaude
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+#include <string>
+namespace RBX {
+namespace Reflection {
+class DescribedBase { public: virtual ~DescribedBase(); };
+template<class Sig> class SignalDesc {
 public:
-    basic_string(const T*);
-    basic_string(const basic_string&);
-    basic_string(unsigned int, char);
-    ~basic_string();
+    void fireEvent(DescribedBase* instance) const;
 };
-typedef basic_string<char, char_traits<char>, allocator<char> > string;
+template<class Sig> class SignalDesc1 {
+public:
+    void fireEvent(DescribedBase* instance, std::string arg) const;
+};
 }
-
-struct Arg0 {
-    int type;
-    char pad[4];
-    unsigned char flag;
+struct UIEvent {
+    int eventType;
+    int a;
+    unsigned char key;
+    int b, c;
 };
-
-struct GetSetImpl {
-    char pad[0x14];
-    Value value;
-    void set(const Value& source);
-    void invoke(Arg0* arg);
+struct Pad14 { virtual ~Pad14(); char p[0x10]; };
+extern const Reflection::SignalDesc<void(int)> event_1;
+extern const Reflection::SignalDesc<void(int)> event_2;
+extern const Reflection::SignalDesc<void(int)> event_3;
+extern const Reflection::SignalDesc<void(int)> event_4;
+extern const Reflection::SignalDesc<void(int)> event_5;
+extern const Reflection::SignalDesc<void(int)> event_7;
+extern const Reflection::SignalDesc<void(int)> event_8;
+extern const Reflection::SignalDesc<void(int)> event_9;
+extern const Reflection::SignalDesc1<void(std::string)> event_key;
+class Mouse : public Pad14, public Reflection::DescribedBase {
+public:
+    void update(const UIEvent& event);
+    void onEvent(const UIEvent& event);
 };
-
-void GetSetImpl::invoke(Arg0* arg)
+void Mouse::onEvent(const UIEvent& event)
 {
-    int t = arg->type;
-    switch (t) {
-    case 1:
-        set(*(Value*)arg);
-        if (this) {
-            std::string s((const char*)((char*)this + 0x14));
-            (void)s;
-        } else {
-            std::string s((const char*)0);
-            (void)s;
-        }
-        break;
-    case 2:
-        set(*(Value*)arg);
-        if (this) {
-            std::string s((const char*)((char*)this + 0x14));
-            (void)s;
-        } else {
-            std::string s((const char*)0);
-            (void)s;
-        }
-        break;
-    case 3:
-        set(*(Value*)arg);
-        if (this) {
-            std::string s((const char*)((char*)this + 0x14));
-            (void)s;
-        } else {
-            std::string s((const char*)0);
-            (void)s;
-        }
-        break;
-    case 4:
-        set(*(Value*)arg);
-        if (this) {
-            std::string s((const char*)((char*)this + 0x14));
-            (void)s;
-        } else {
-            std::string s((const char*)0);
-            (void)s;
-        }
-        break;
-    case 5:
-        set(*(Value*)arg);
-        if (this) {
-            std::string s((const char*)((char*)this + 0x14));
-            (void)s;
-        } else {
-            std::string s((const char*)0);
-            (void)s;
-        }
-        break;
-    case 6:
-        set(*(Value*)arg);
-        if (this) {
-            std::string s((const char*)((char*)this + 0x14));
-            (void)s;
-        } else {
-            std::string s((const char*)0);
-            (void)s;
-        }
-        break;
-    case 7:
-        if (this) {
-            std::string s((const char*)((char*)this + 0x14));
-            (void)s;
-        } else {
-            std::string s((const char*)0);
-            (void)s;
-        }
-        break;
-    case 8:
-        if (this) {
-            std::string s((const char*)((char*)this + 0x14));
-            (void)s;
-        } else {
-            std::string s((const char*)0);
-            (void)s;
-        }
-        break;
-    case 9:
-        if (this) {
-            std::string s((const char*)((char*)this + 0x14));
-            (void)s;
-        } else {
-            std::string s((const char*)0);
-            (void)s;
-        }
-        break;
-    case 10:
-        {
-            char* p = this ? ((char*)this + 0x14) : 0;
-            unsigned char f = arg->flag;
-            std::string s((unsigned int)f, (char)1);
-            (void)s;
-            (void)p;
-        }
-        break;
-    default:
-        break;
+    switch (event.eventType)
+    {
+    case 5: update(event); event_5.fireEvent(this); break;
+    case 7: update(event); event_7.fireEvent(this); break;
+    case 3: update(event); event_3.fireEvent(this); break;
+    case 4: update(event); event_4.fireEvent(this); break;
+    case 1: update(event); event_1.fireEvent(this); break;
+    case 2: update(event); event_2.fireEvent(this); break;
+    case 8: event_8.fireEvent(this); break;
+    case 9: event_9.fireEvent(this); break;
+    case 10: event_key.fireEvent(this, std::string(1, event.key)); break;
     }
+}
 }

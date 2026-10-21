@@ -1,93 +1,85 @@
-// from server: 34% by colin
-struct S_func_00444dd0 {
-    char pad[0x130];
-    int m_field130;
-    void f(int a1, int a2, int a3, int a4, int a5, int a6, int a7);
+// from server: 100% by EspClaude
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+// roc-lib: rbxgs-dll roc_espclaude_e1d1810476b7be09.cpp
+
+// Candidate translation unit (score above; library headers required).
+#define _DLL
+#include <string>
+#include <fstream>
+#include <memory>
+template<class C> class basic_str {
+public:
+    __declspec(dllimport) unsigned int size() const;
+    __declspec(dllimport) const C* c_str() const;
+    __declspec(dllimport) ~basic_str();
+    int d[7];
 };
-
-extern "C" int __stdcall sub_8023f4(int);
-extern "C" void __stdcall sub_802468(int);
-extern "C" void* __stdcall sub_802464(int, int, int);
-extern "C" void __stdcall sub_802404(void*, int);
-extern "C" void __stdcall sub_802408(void*);
-
-void sub_415350(void*, void*);
-void sub_58f6c0(void*, void*);
-void sub_413a70(void*);
-void sub_6a067a(void*);
-void sub_443e50(void*);
-void sub_55b6a0(void*, void*, void*);
-void sub_443d60(void*);
-int sub_4436e0(void*);
-void sub_444cf0(void*, void*);
-void sub_4147c0(void*);
-void sub_443cf0(void*);
-
-void* sub_40ad20();
-void* sub_40ad80();
-void* sub_444550();
-void* sub_40b6c0();
-void* sub_40ba70();
-void* sub_40bae0();
-void* sub_40c760();
-void* sub_40be10();
-void* sub_40c0d0();
-void* sub_40c3c0();
-
-void S_func_00444dd0::f(int a1, int a2, int a3, int a4, int a5, int a6, int a7)
+typedef basic_str<char> rstring;
+class XmlElement {
+public:
+    ~XmlElement();
+    int data[10];
+};
+class TextXmlParser {
+public:
+    TextXmlParser(std::streambuf* buffer);
+    ~TextXmlParser();
+    std::auto_ptr<XmlElement> parse();
+    char data[0x48];
+};
+namespace RBX {
+namespace Reflection { class ClassDescriptor; }
+template<int N> Reflection::ClassDescriptor* descriptorOf();
+class IReferenceBinder { public: virtual void announce(); };
+class BinderItems {
+public:
+    ~BinderItems();
+    int data[6];
+};
+class __declspec(novtable) MergeBinder : public IReferenceBinder {
+public:
+    MergeBinder();
+    ~MergeBinder() {}
+    void resolveRefs();
+    BinderItems items;
+};
+class ClassList {
+public:
+    void add(Reflection::ClassDescriptor* d);
+};
+class Metadata {
+public:
+    char pad[0x130];
+    ClassList* classes;
+    void readProperties(const XmlElement* element, IReferenceBinder& binder);
+    ClassList* findClasses();
+    void load(rstring fileName);
+};
+void Metadata::load(rstring fileName)
 {
-    char buf1[0x100];
-    char buf2[0x100];
-    int local1 = 0;
-    int local2 = 0;
-    int local3 = 0;
-    void* p = 0;
-
-    if (sub_8023f4((int)buf1) == 0) {
-        sub_802468((int)buf1);
+    if (fileName.size() == 0)
         return;
+    std::ifstream stream(fileName.c_str(), std::ios::in | std::ios::binary);
+    TextXmlParser parser(stream.rdbuf());
+    std::auto_ptr<XmlElement> root(parser.parse());
+    MergeBinder binder;
+    readProperties(root.get(), binder);
+    binder.resolveRefs();
+    classes = findClasses();
+    if (classes)
+    {
+        classes->add(descriptorOf<0>());
+        classes->add(descriptorOf<1>());
+        classes->add(descriptorOf<2>());
+        classes->add(descriptorOf<3>());
+        classes->add(descriptorOf<4>());
+        classes->add(descriptorOf<5>());
+        classes->add(descriptorOf<6>());
+        classes->add(descriptorOf<7>());
+        classes->add(descriptorOf<8>());
+        classes->add(descriptorOf<9>());
     }
-
-    void* h = sub_802464(0x21, 0x40, 1);
-    sub_802404(buf2, (int)h);
-
-    sub_415350(buf2, buf1);
-
-    sub_58f6c0(buf2, &local2);
-    p = *(void**)&local2;
-    local2 = 0;
-
-    if (local3) {
-        sub_413a70((void*)local3);
-        sub_6a067a((void*)local3);
-    }
-
-    sub_443e50(&local1);
-    sub_55b6a0(this, p, &local1);
-    sub_443d60(&local1);
-
-    m_field130 = sub_4436e0(this);
-    if (m_field130) {
-        sub_444cf0((void*)m_field130, sub_40ad20());
-        sub_444cf0((void*)m_field130, sub_40ad80());
-        sub_444cf0((void*)m_field130, sub_444550());
-        sub_444cf0((void*)m_field130, sub_40b6c0());
-        sub_444cf0((void*)m_field130, sub_40ba70());
-        sub_444cf0((void*)m_field130, sub_40bae0());
-        sub_444cf0((void*)m_field130, sub_40c760());
-        sub_444cf0((void*)m_field130, sub_40be10());
-        sub_444cf0((void*)m_field130, sub_40c0d0());
-        sub_444cf0((void*)m_field130, sub_40c3c0());
-    }
-
-    sub_443cf0(&local1);
-
-    if (p) {
-        sub_413a70(p);
-        sub_6a067a(p);
-    }
-
-    sub_4147c0(buf2);
-    sub_802408(buf1);
-    sub_802468((int)buf1);
+}
 }

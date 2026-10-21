@@ -1,12 +1,76 @@
-// from server: 33% by colin
-extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
-#pragma intrinsic(_InterlockedExchangeAdd)
-
-struct Vec3 {
-    float x, y, z;
+// from server: 73% by EspClaude
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast
+#include <intrin.h>
+#include <vector>
+namespace boost {
+namespace detail {
+struct sp_counted_base {
+    virtual ~sp_counted_base() {}
+    virtual void dispose() = 0;
+    virtual void destroy() { delete this; }
+    long use_count_;
+    long weak_count_;
+    void release() {
+        if (_InterlockedDecrement(&use_count_) == 0) {
+            dispose();
+            weak_release();
+        }
+    }
+    void weak_release() {
+        if (_InterlockedDecrement(&weak_count_) == 0)
+            destroy();
+    }
 };
+struct shared_count {
+    sp_counted_base* pi_;
+    shared_count() : pi_(0) {}
+    ~shared_count() { if (pi_ != 0) pi_->release(); }
+};
+}
+template<class T> class shared_ptr {
+public:
+    T* px;
+    detail::shared_count pn;
+    shared_ptr() : px(0), pn() {}
+    T* operator->() const { return px; }
+};
+}
 
-struct RefCounted {
+namespace G3D {
+class Vector3 {
+public:
+    float x, y, z;
+    Vector3() {}
+    Vector3(float _x, float _y, float _z) : x(_x), y(_y), z(_z) {}
+    Vector3(const Vector3& v) : x(v.x), y(v.y), z(v.z) {}
+    Vector3& operator=(const Vector3& v) { x = v.x; y = v.y; z = v.z; return *this; }
+    Vector3 operator+(const Vector3& v) const { return Vector3(x + v.x, y + v.y, z + v.z); }
+    Vector3 operator*(float s) const { return Vector3(x * s, y * s, z * s); }
+    static const Vector3& zero() { static Vector3 v(0, 0, 0); return v; }
+};
+class Matrix3 {
+public:
+    float elt[3][3];
+    Matrix3(const Matrix3& r);
+    static const Matrix3& identity();
+};
+class CoordinateFrame {
+public:
+    Matrix3 rotation;
+    Vector3 translation;
+    CoordinateFrame(const Vector3& _translation) : rotation(Matrix3::identity()), translation(_translation) {}
+};
+}
+namespace RBX {
+class Extents {
+public:
+    G3D::Vector3 low;
+    G3D::Vector3 high;
+    void unionWith(const Extents& other);
+    G3D::Vector3 center() const { return (this->high + this->low) * 0.5f; }
+};
+class PVInstance {
+public:
     virtual void v0();
     virtual void v1();
     virtual void v2();
@@ -28,149 +92,60 @@ struct RefCounted {
     virtual void v18();
     virtual void v19();
     virtual void v20();
-    virtual void v21();
-    volatile long refCount;
-    volatile long weakCount;
+    virtual Extents getExtentsWorld() const;
 };
-
-struct Camera {
-    char pad0[0x148];
-    RefCounted** begin;
-    RefCounted** end;
+class Selection {
+public:
+    char pad[0x13c];
+    std::vector<PVInstance*> items;
+    size_t size() const { return items.size(); }
+    PVInstance* operator[](size_t i) const { return items[i]; }
 };
-
-struct CameraHolder {
-    virtual Camera* getCamera();
+class Instance;
+class ServiceProvider { public: void raiseChanged(int what); };
+ServiceProvider* __cdecl findServiceProvider(const Instance* context);
+template<class T> class ServiceClient {
+public:
+    explicit ServiceClient(Instance* c) : context(c) {}
+    T* get(bool create);
+    Instance* context;
+    boost::shared_ptr<T> service;
 };
-
-struct Instance {
-    virtual ~Instance();
-    char pad[0x100];
-    Instance* next;
+class Camera {
+public:
+    enum CameraType { FIXED_CAMERA = 0 };
+    void setCameraType(CameraType t);
+    void setCameraCoordinateFrame(const G3D::CoordinateFrame& cf);
 };
+class ICameraOwner { public: virtual ~ICameraOwner(); virtual Camera* getCamera(); };
+class Workspace { public: char pad[0x288]; ICameraOwner cameraOwner; };
+class IDataState { public: virtual void setDirty(bool dirty) = 0; };
 
-struct ServiceProvider : Instance {
-    ServiceProvider* finish();
-};
-
-struct Workspace : Instance {
-    char pad0[0x288 - 0x108];
-    virtual CameraHolder* getCameraHolder();
-};
-
-struct Command {
-    char pad0[0xc];
+class CameraCenterCommand {
+public:
+    void* vptr;
+    char pad[8];
     Workspace* workspace;
-    virtual bool isEnabled() const;
-    virtual void doIt(void* dataState);
+    void doIt(IDataState& dataState);
 };
 
-struct CameraCenterCommand : Command {
-    virtual bool isEnabled() const;
-    virtual void doIt(void* dataState);
-};
-
-extern float g_centerX;
-extern float g_centerY;
-extern float g_centerZ;
-extern int g_centerInit;
-extern float g_scale;
-
-extern "C" void _invalid_parameter_noinfo();
-
-Camera* func_00581d80(Camera* cam, int);
-
-void func_0057dee0(Vec3* dst, const Vec3* src);
-
-void func_00513220(Vec3* dst, const Vec3* src);
-
-Vec3* func_00513e20();
-
-void func_005cddd0(Camera* cam);
-
-void func_005cdf00(Camera* cam);
-
-ServiceProvider* func_005807b0(Instance* p);
-
-void func_005bd820(void* p);
-
-bool CameraCenterCommand::isEnabled() const {
-    return true;
-}
-
-void CameraCenterCommand::doIt(void* dataState) {
-    Camera* cam = this->workspace->getCameraHolder()->getCamera();
-    Vec3 center;
-    center.x = 0.0f;
-    center.y = 0.0f;
-    center.z = 0.0f;
-
-    Camera* c = func_00581d80(cam, 1);
-    int count = (int)((c->end - c->begin) >> 2);
-    if (count >= 1) {
-        Camera* c2 = func_00581d80(cam, 1);
-        int count2 = (int)((c2->end - c2->begin) >> 2);
-        if (count2 == 0) {
-            _invalid_parameter_noinfo();
-        }
-        RefCounted* first = c2->begin[0];
-        Vec3 tmp;
-        first->v21();
-        center = tmp;
-
-        for (int i = 1; i < count2; ++i) {
-            RefCounted* item = c2->begin[i];
-            Vec3 tmp2;
-            item->v21();
-            func_0057dee0(&center, &tmp2);
-        }
-
-        float sx = center.x + center.x;
-        float sy = center.y + center.y;
-        float sz = center.z + center.z;
-        float s = g_scale;
-        center.x = sx * s;
-        center.y = sy * s;
-        center.z = sz * s;
+void CameraCenterCommand::doIt(IDataState& dataState)
+{
+    ServiceClient<Selection> selection((Instance*)workspace);
+    G3D::Vector3 center;
+    if (selection.get(true)->size() >= 1) {
+        const Selection* s = selection.get(true);
+        Extents extents = (*s)[0]->getExtentsWorld();
+        for (size_t i = 1; i < s->size(); ++i)
+            extents.unionWith((*s)[i]->getExtentsWorld());
+        center = extents.center();
     } else {
-        if (!(g_centerInit & 1)) {
-            g_centerInit |= 1;
-            g_centerX = 0.0f;
-            g_centerY = 0.0f;
-            g_centerZ = 0.0f;
-        }
-        center.x = g_centerX;
-        center.y = g_centerY;
-        center.z = g_centerZ;
+        center = G3D::Vector3::zero();
     }
-
-    Camera* cam2 = this->workspace->getCameraHolder()->getCamera();
-    func_005cddd0(cam2);
-
-    Vec3* def = func_00513e20();
-    Vec3 tmp3;
-    func_00513220(&tmp3, def);
-
-    Camera* cam3 = this->workspace->getCameraHolder()->getCamera();
-    Vec3 out;
-    out.x = center.x;
-    out.y = center.y;
-    out.z = center.z;
-    func_005cdf00(cam3);
-
-    ServiceProvider* sp = func_005807b0(this->workspace);
-    func_005bd820(sp);
-
-    RefCounted* rc = (RefCounted*)dataState;
-    rc->v0();
-    rc->v0();
-
-    if (rc) {
-        if (_InterlockedExchangeAdd(&rc->refCount, -1) == 1) {
-            rc->v1();
-            if (_InterlockedExchangeAdd(&rc->weakCount, -1) == 1) {
-                rc->v2();
-            }
-        }
-    }
+    workspace->cameraOwner.getCamera()->setCameraType(Camera::FIXED_CAMERA);
+    workspace->cameraOwner.getCamera()->setCameraCoordinateFrame(G3D::CoordinateFrame(center));
+    findServiceProvider((Instance*)workspace)->raiseChanged(11);
+    dataState.setDirty(true);
+    dataState.setDirty(true);
+}
 }

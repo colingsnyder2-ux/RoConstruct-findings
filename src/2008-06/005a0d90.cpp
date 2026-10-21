@@ -1,4 +1,4 @@
-// from server: 87% by king_originala
+// from server: 98% by colin
 struct Node
 {
     char padding[0x104];
@@ -8,7 +8,7 @@ struct Node
 Node* __cdecl f(Node* node)
 {
     Node* current = node->next;
-    Node* previous = current;
+    Node* previous = node->next;
     Node* following = previous->next;
 
     while (following->next)

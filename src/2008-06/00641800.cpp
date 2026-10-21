@@ -1,150 +1,139 @@
-// from server: 14% by colin
-struct Vector3 {
-    float x, y, z;
-};
+// from server: 25% by coldek
+typedef unsigned char byte;
+typedef unsigned long DWORD;
 
-struct CFrame {
-    float rotation[9];
-    Vector3 translation;
-};
-
-struct GCamera {
-    float m[9];
-    Vector3 translation;
-    void getCoordinateFrame(CFrame* out);
-    void setCoordinateFrame(const CFrame& cf);
-    void lookAt(const Vector3& target, const Vector3& up);
-    void setPosition(const Vector3& pos);
-    Vector3 getPosition() const;
-    Vector3 getLookVector() const;
-    void setLookVector(const Vector3& v);
-};
-
-extern "C" {
-    void __cdecl func_5183c0(float);
-    void __cdecl func_513240(void*, int);
-    void __cdecl func_5185f0(void*, const Vector3*);
-    void __cdecl func_5cbe70(void*, const Vector3*);
-    void __cdecl func_5dec60(void*, const Vector3*);
-    void __cdecl func_501ca0(void*, const Vector3*);
-    double __cdecl sqrt(double);
-}
-
-extern float g_826918;
-extern float g_874d88;
-extern float g_84a5f8;
+extern "C" double __cdecl sqrt(double);
+extern "C" void __cdecl fn501ca0(void *, void *);
+extern "C" void __cdecl fn5183c0(void *, float);
+extern "C" void __cdecl fn5cbe70(void *, void *);
+extern "C" void __cdecl fn5dec60(void *, void *, void *);
+extern "C" void __cdecl fn5185f0(void *, void *);
+extern "C" void __cdecl fn513220(void *, void *);
+extern "C" void __cdecl fn513240(void *, void *, int);
+extern "C" void __cdecl fn666250(void *, float);
+extern "C" double __cdecl fn666270(void *);
+extern "C" void __cdecl fn666290(void *, void *, void *);
+extern "C" void __cdecl fn6662d0(void *, void *);
+extern "C" byte __cdecl fn641530(void *, void *, void *, void *);
+extern "C" void *__cdecl fn641280(void *, void *, void *, void *, float);
 
 struct Humanoid {
-    char pad0[4];
-    void* ptr4;
-    char pad8[0x2c];
-    unsigned char flag3d;
-    float field40;
-    unsigned char flag44;
-    Vector3 field48;
-    char pad54[0x24];
-    GCamera camera;
+    DWORD *vtable;
+    DWORD *vtable2;
+    byte pad08[0x35];
+    byte flag3d;
+    byte pad3e[2];
+    float value40;
+    byte pad44[4];
+    float result48[3];
 
-    bool computeForce(const Vector3& pos, const Vector3& dir, float dt, void* out);
-    void updateCamera(const Vector3& pos, const Vector3& dir, float dt, void* out);
+    void update(void *, void *, void *);
 };
 
-bool Humanoid::computeForce(const Vector3& pos, const Vector3& dir, float dt, void* out)
+void Humanoid::update(void *arg1, void *arg2, void *arg3)
 {
-    Vector3 delta;
-    delta.x = dir.x - pos.x;
-    delta.y = dir.y - pos.y;
-    delta.z = dir.z - pos.z;
+    float *out = (float *)arg2;
+    float *position = (float *)((char *)out + 0x24);
+    float *origin = (float *)((char *)arg1 + 0x24);
+    float delta[3];
+    float distance;
+    float oldPosition[3];
+    float local[9];
+    float saved[9];
+    float a[3];
+    float b[3];
+    float c[3];
+    float d[3];
+    float e[3];
+    float f[3];
+    float g[3];
+    float h[3];
+    float scratch[9];
+    float extra[12];
+    byte success;
+    int i;
+    DWORD *v;
+    DWORD *m;
+    void *camera;
+    void *result;
+    float angle;
 
-    Vector3 negDelta;
-    negDelta.x = pos.x - dir.x;
-    negDelta.y = pos.y - dir.y;
-    negDelta.z = pos.z - dir.z;
+    delta[0] = position[0] - origin[0];
+    delta[1] = position[1] - origin[1];
+    delta[2] = position[2] - origin[2];
+    distance = (float)sqrt((double)(delta[0] * delta[0] +
+                                    delta[1] * delta[1] +
+                                    delta[2] * delta[2]));
 
-    float dist = (float)sqrt(negDelta.x * negDelta.x + negDelta.y * negDelta.y + negDelta.z * negDelta.z);
+    oldPosition[0] = position[0];
+    oldPosition[1] = position[1];
+    oldPosition[2] = position[2];
 
-    void* vtable = *(void**)this;
-    void* obj = *(void**)((char*)this + 4);
-    void* vtable2 = *(void**)((char*)obj + 4);
-    void* fn = *(void**)((char*)vtable2 + (int)this + 4);
-    void* fnptr = *(void**)fn;
+    v = (DWORD *)*(DWORD **)((char *)this + 4);
+    m = (DWORD *)*(DWORD **)((char *)v + 4);
+    camera = (void *)((char *)m + 4);
 
-    if (dist > g_84a5f8) {
-        CFrame cf;
-        ((void (__thiscall*)(void*, CFrame*))fnptr)((char*)vtable2 + (int)this + 4, &cf);
-        Vector3 oldPos = cf.translation;
-        Vector3 newPos = pos;
-        Vector3 diff;
-        diff.x = newPos.x - oldPos.x;
-        diff.y = newPos.y - oldPos.y;
-        diff.z = newPos.z - oldPos.z;
-        Vector3* p = (Vector3*)out;
-        p->x = diff.x + pos.x;
-        p->y = diff.y + pos.y;
-        p->z = diff.z + pos.z;
+    if (distance >= 0.0001f) {
+        fn666290(camera, out, extra);
+        position[0] = ((float *)extra)[9];
+        position[1] = ((float *)extra)[10];
+        position[2] = ((float *)extra)[11];
+        delta[0] += position[0] - oldPosition[0];
+        delta[1] += position[1] - oldPosition[1];
+        delta[2] += position[2] - oldPosition[2];
     } else {
-        CFrame cf;
-        ((void (__thiscall*)(void*, CFrame*))fnptr)((char*)vtable2 + (int)this + 4, &cf);
-        Vector3 oldPos = cf.translation;
-        Vector3 newPos = pos;
-        Vector3 diff;
-        diff.x = newPos.x - oldPos.x;
-        diff.y = newPos.y - oldPos.y;
-        diff.z = newPos.z - oldPos.z;
-        Vector3* p = (Vector3*)out;
-        p->x = diff.x + pos.x;
-        p->y = diff.y + pos.y;
-        p->z = diff.z + pos.z;
+        fn666290(camera, out, extra);
+        position[0] = ((float *)extra)[9];
+        position[1] = ((float *)extra)[10];
+        position[2] = ((float *)extra)[11];
     }
 
-    return true;
-}
+    result = ((void *(__thiscall *)(void *, void *))(*(DWORD *)this + 0x24))(this, a);
+    fn5183c0(b, 1.0f);
+    fn6662d0((char *)this + 8, b);
+    fn666290((char *)this + 8, c, d);
+    fn666290((char *)this + 8, e, f);
+    fn666270(this);
+    fn666250(this, 0.0f);
+    fn5dec60(this, g, h);
+    fn5185f0(g, a);
+    fn5185f0((char *)this + 8, b);
+    fn5185f0((char *)this + 0x18, c);
+    fn5cbe70(d, e);
+    fn501ca0(d, extra);
 
-void Humanoid::updateCamera(const Vector3& pos, const Vector3& dir, float dt, void* out)
-{
-    Vector3 delta;
-    delta.x = dir.x - pos.x;
-    delta.y = dir.y - pos.y;
-    delta.z = dir.z - pos.z;
+    result48[0] = d[0];
+    result48[1] = d[1];
+    result48[2] = d[2];
+    flag3d = 1;
 
-    Vector3 negDelta;
-    negDelta.x = pos.x - dir.x;
-    negDelta.y = pos.y - dir.y;
-    negDelta.z = pos.z - dir.z;
+    if (flag3d)
+        fn641280(this, local, arg1, arg2, value40);
 
-    float dist = (float)sqrt(negDelta.x * negDelta.x + negDelta.y * negDelta.y + negDelta.z * negDelta.z);
+    fn513240(extra, local, 2);
+    fn513220(extra, arg1);
+    success = fn641530(this, saved, local, arg3);
 
-    void* vtable = *(void**)this;
-    void* obj = *(void**)((char*)this + 4);
-    void* vtable2 = *(void**)((char*)obj + 4);
-    void* fn = *(void**)((char*)vtable2 + (int)this + 4);
-    void* fnptr = *(void**)fn;
-
-    if (dist > g_84a5f8) {
-        CFrame cf;
-        ((void (__thiscall*)(void*, CFrame*))fnptr)((char*)vtable2 + (int)this + 4, &cf);
-        Vector3 oldPos = cf.translation;
-        Vector3 newPos = pos;
-        Vector3 diff;
-        diff.x = newPos.x - oldPos.x;
-        diff.y = newPos.y - oldPos.y;
-        diff.z = newPos.z - oldPos.z;
-        Vector3* p = (Vector3*)out;
-        p->x = diff.x + pos.x;
-        p->y = diff.y + pos.y;
-        p->z = diff.z + pos.z;
-    } else {
-        CFrame cf;
-        ((void (__thiscall*)(void*, CFrame*))fnptr)((char*)vtable2 + (int)this + 4, &cf);
-        Vector3 oldPos = cf.translation;
-        Vector3 newPos = pos;
-        Vector3 diff;
-        diff.x = newPos.x - oldPos.x;
-        diff.y = newPos.y - oldPos.y;
-        diff.z = newPos.z - oldPos.z;
-        Vector3* p = (Vector3*)out;
-        p->x = diff.x + pos.x;
-        p->y = diff.y + pos.y;
-        p->z = diff.z + pos.z;
+    if (success) {
+        if (!flag3d)
+            value40 = (float)sqrt((double)(delta[0] * delta[0] +
+                                            delta[1] * delta[1] +
+                                            delta[2] * delta[2]));
+        result = fn641280(this, local, arg1, arg2, distance);
+        for (i = 0; i != 9; ++i)
+            out[i] = ((float *)result)[i];
+        position[0] = ((float *)result)[9];
+        position[1] = ((float *)result)[10];
+        position[2] = ((float *)result)[11];
+    } else if (flag3d) {
+        for (i = 0; i != 9; ++i)
+            out[i] = saved[i];
+        position[0] = oldPosition[0];
+        position[1] = oldPosition[1];
+        position[2] = oldPosition[2];
     }
+
+    angle = distance;
+    flag3d = success;
+    ((void (__thiscall *)(Humanoid *, float))vtable[8])(this, angle);
 }

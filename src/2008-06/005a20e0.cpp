@@ -1,8 +1,9 @@
+// from server: 90% by EspClaude
 // from server: 95% by Espeon
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: rbxgs-dll roc_espeon_workspaceoriginalresponse175e04d6fecee9b0.cpp
+// roc-lib: rbxgs-dll roc_espclaude_cb3252ba35937d6e.cpp
 
 // Candidate translation unit (score above; library headers required).
 #include <gui/GuiEvent.h>
@@ -48,12 +49,14 @@ struct Signal {
     void fire(Boolean);
 };
 
-struct Base {
+struct WBase {
+    virtual ~WBase();
+    char padding[0x2e8 - 4];
     void update(int);
 };
 
-struct Workspace {
-    char padding0[92];
+struct Workspace : WBase, RBX::GuiTarget {
+    char padding0[92 - 4];
     Signal signal;
     Controller* controller;
     int padding1;
@@ -61,11 +64,12 @@ struct Workspace {
     char padding2[44];
     bool active;
 
-    Result process(Event*);
+    virtual Result process(const RBX::GuiEvent&);
 };
 
-Result Workspace::process(Event* event)
+Result Workspace::process(const RBX::GuiEvent& guiEvent)
 {
+    Event* event = (Event*)&guiEvent;
     if (event->type >= 1 && event->type <= 7) {
         saved = *event;
         saved.type = 7;
@@ -87,8 +91,7 @@ Result Workspace::process(Event* event)
         controller->process(event);
         if (!controller->active)
             return Result::notUsed();
-        reinterpret_cast<Base*>(reinterpret_cast<char*>(this) - 744)
-            ->update(controller->finish(event));
+        update(controller->finish(event));
         break;
 
     case 1:
@@ -97,8 +100,7 @@ Result Workspace::process(Event* event)
 
     case 3:
         if (!controller->active)
-            reinterpret_cast<Base*>(reinterpret_cast<char*>(this) - 744)
-                ->update(controller->begin(event));
+            update(controller->begin(event));
         break;
 
     case 5:
@@ -114,8 +116,7 @@ Result Workspace::process(Event* event)
         break;
 
     case 4:
-        reinterpret_cast<Base*>(reinterpret_cast<char*>(this) - 744)
-            ->update(controller->select(event));
+        update(controller->select(event));
         break;
 
     default:
@@ -123,11 +124,9 @@ Result Workspace::process(Event* event)
     }
 
     if (controller->active) {
-        Base* base = reinterpret_cast<Base*>(
-            reinterpret_cast<char*>(this) - 744);
-        if (base)
-            return Result::used(reinterpret_cast<RBX::GuiTarget*>(
-                reinterpret_cast<char*>(base) + 744));
+        Workspace* w = this;
+        if (w)
+            return Result::used(w);
     }
     return Result::used();
 }

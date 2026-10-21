@@ -1,8 +1,9 @@
+// from server: 99% by EspClaude
 // from server: 94% by Espeon
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD /fp:fast
-// roc-lib: openrbx-client-dll roc_espeon_rayvectorarithmetic_c8f88ffeee6a890f.cpp
+// roc-lib: openrbx-client-dll roc_espclaude_d40ea3df4156baef.cpp
 
 // Candidate translation unit (score above; library headers required).
 #include <boost/shared_ptr.hpp>
@@ -25,19 +26,21 @@ inline Ray::~Ray()
 
 struct Geometry
 {
-    int intersect(const Ray&, List&, const Shared&, Vector&, const void*);
+    struct Primitive* intersect(const Ray&, List&, const Shared&, Vector&, const void*);
 };
 
 struct World
 {
     unsigned char padding[0x84];
     Geometry* geometry;
+    Geometry* getContactManager() { return geometry; }
 };
 
 struct Context
 {
     unsigned char padding[0x2e4];
     World* world;
+    World* getWorld() { return world; }
 };
 
 extern const Vector defaultVector;
@@ -57,7 +60,7 @@ Vector S::f(const Shared& input, Ray ray)
         return defaultVector;
 
     Shared shared(input);
-    Geometry* geometry = context->world->geometry;
+    Geometry* geometry = context->getWorld()->getContactManager();
     Vector result;
     result.x = 0.0f;
     result.y = 0.0f;
@@ -71,3 +74,4 @@ Vector S::f(const Shared& input, Ray ray)
 
     return result;
 }
+

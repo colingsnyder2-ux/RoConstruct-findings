@@ -23568,5 +23568,167 @@
       "local_exact": 0,
       "evidence": "work\\big-mining-2008-20261020\\adorn-box-native-sphere-family-hits.json"
     }
+  },
+  "native-adorn-owner-sdk-exact-family-2008": {
+    "op": "fanout",
+    "client": "2008-06",
+    "library": "Native Adorn owner exact constructor and destructor SDK family",
+    "hypothesis": "Full1401B constructor and1613B destructor exact with genuine324B owner, STL containers, typed SDK; propagate emitted genuine helpers once after embedded catch extraction fix.",
+    "sources": [
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_adorn_owner_native_context_snapshote7de5a5d309ab388.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MD /fp:fast"
+        ]
+      }
+    ],
+    "output": "work\\big-mining-2008-20261020\\adorn-owner-native-exact-family",
+    "verification": "Local retention only; actual-model manual Player Mining submissions.",
+    "result": {
+      "objects": 1,
+      "local_exact": 0,
+      "evidence": "work\\big-mining-2008-20261020\\adorn-owner-native-exact-family-hits.json"
+    }
+  },
+  "native-adorn-quad-sdk-gates-2008": {
+    "op": "grid",
+    "client": "2008-06",
+    "library": "Native Adorn quad typed SDK owner and imported vector boundary",
+    "hypothesis": "Full1614B quad67to94, native168frame and prologue recovered. Bounded precision/inlining gates before remaining cached sphere and copy scheduling; full owner ABI pins21022.",
+    "targets": {
+      "addresses": [
+        "00672f50"
+      ],
+      "scores": [
+        0,
+        99
+      ]
+    },
+    "seed_sources": {
+      "2008-06": {
+        "00672f50": "work\\big-mining-2008-20261020\\adorn-quad-native-scene-reload.cpp"
+      }
+    },
+    "builds": [
+      21022
+    ],
+    "profiles": [
+      "/O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MD",
+      "/O2 /Ob1 /Oi /Ot /Oy /GF /GS- /EHsc /MD /fp:fast",
+      "/O2 /GS- /EHsc /MD /fp:fast",
+      "/O1 /Ob1 /GS- /EHsc /MD /fp:fast"
+    ],
+    "keep_partials": true,
+    "reuse_history": true,
+    "reuse_objects": true,
+    "improvement_only": true,
+    "output": "work\\big-mining-2008-20261020\\adorn-quad-native-gates",
+    "verification": "Local retention only; actual-model manual Player Mining submissions.",
+    "result": {
+      "stats": {
+        "checks": 4,
+        "skipped": 0,
+        "errors": 0,
+        "finished_targets": 1,
+        "verified_exacts": 0,
+        "verified_partial_gains": 0,
+        "object_reuses": 0,
+        "seconds": 8.203
+      },
+      "evidence": "work\\big-mining-2008-20261020\\adorn-quad-native-gates\\summary.json"
+    }
+  },
+  "native-app-init-sdk-gates-2008": {
+    "op": "grid",
+    "client": "2008-06",
+    "library": "Native full App initializer MFC90 ATL Boost SDK",
+    "hypothesis": "Full1467B App initializer22to73 with native80 frame and complete source semantics; gate native inlining before owner-register/zero-sharing differences. Actual CommandLineInfo72 and uploader28 layouts pin21022.",
+    "targets": {
+      "addresses": [
+        "0044d810"
+      ],
+      "scores": [
+        0,
+        99
+      ]
+    },
+    "seed_sources": {
+      "2008-06": {
+        "0044d810": "work\\big-mining-2008-20261020\\app-init-native-sdk.cpp"
+      }
+    },
+    "builds": [
+      21022
+    ],
+    "profiles": [
+      "/O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MD /fp:fast",
+      "/O2 /Ob1 /Oi /Ot /Oy /GF /GS- /EHsc /MD",
+      "/O2 /GS- /EHsc /MD",
+      "/O1 /Ob1 /GS- /EHsc /MD"
+    ],
+    "keep_partials": true,
+    "reuse_history": true,
+    "reuse_objects": true,
+    "improvement_only": true,
+    "output": "work\\big-mining-2008-20261020\\app-init-native-gates",
+    "verification": "Local retention only; actual-model manual Player Mining submissions.",
+    "result": {
+      "stats": {
+        "checks": 4,
+        "skipped": 0,
+        "errors": 0,
+        "finished_targets": 1,
+        "verified_exacts": 0,
+        "verified_partial_gains": 0,
+        "object_reuses": 0,
+        "seconds": 8.359
+      },
+      "evidence": "work\\big-mining-2008-20261020\\app-init-native-gates\\summary.json"
+    }
+  },
+  "native-large-quad-app-sdk-family-2008": {
+    "op": "fanout",
+    "client": "2008-06",
+    "library": "Native Adorn quad and App init SDK helper contexts",
+    "hypothesis": "Propagate two newly recovered complete native SDK objects after typed owner/ABI and full catch repair.",
+    "sources": [
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_adorn_quad_native_scene_reloaddcd00740492b2088.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MD /fp:fast"
+        ]
+      },
+      {
+        "recipe": "rbxgs-atl90-dll",
+        "files": [
+          "roc_app_init_native_sdk9de03a2731abfc4a.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MD"
+        ]
+      }
+    ],
+    "output": "work\\big-mining-2008-20261020\\quad-app-native-family",
+    "verification": "Local retention only; actual-model manual Player Mining submissions.",
+    "result": {
+      "objects": 2,
+      "local_exact": 0,
+      "evidence": "work\\big-mining-2008-20261020\\quad-app-native-family-hits.json"
+    }
   }
 }

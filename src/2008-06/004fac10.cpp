@@ -1,132 +1,136 @@
-// from server: 29% by colin
-//
+// from server: 98% by coldek
+extern "C" double __cdecl fabs(double);
 
-struct Vector3 { float x, y, z; };
-
-struct TorsoBuilder {
-    int f(int a, int b, int c, int d, int e, int f, int g, int h, int i, int j, int k, int l);
+struct Vec2 {
+    float x, y;
 };
 
-extern "C" void __cdecl sub_5EC220(float* out, float* in);
-extern "C" void* __cdecl sub_6A0956(int size);
-extern "C" float* __cdecl sub_509BA0();
-extern "C" void* __cdecl sub_548000(float* a, float* b, float* c, int d);
-extern "C" void __cdecl sub_500EB0(void* self, void* a, void* b, void* c, void* d);
-extern "C" void __cdecl sub_548640(void* p);
-extern "C" void __cdecl sub_6A094A(void* p);
+struct Vec3 {
+    float x, y, z;
+};
 
-extern float g_819bac;
+struct GridSize {
+    short x, y;
+};
 
-int TorsoBuilder::f(int a, int b, int c, int d, int e, int f, int g, int h, int i, int j, int k, int l)
+extern void __cdecl copyVector(Vec3*, const Vec3*);
+extern const Vec2& __cdecl currentTextureSize();
+extern int __cdecl allocateVertex(const Vec3*, const Vec3*, const Vec2*, int);
+extern void __cdecl releaseVertex(int);
+extern const float textureScale;
+
+typedef void (__cdecl *VertexCallback)(
+    Vec3*, Vec3*, Vec2*, const Vec3*, const GridSize*);
+
+struct TorsoBuilder {
+    char prefix[4];
+    Vec3 dimensions;
+
+    void build(VertexCallback, Vec2, Vec2, float, Vec2, Vec2, int, GridSize);
+    void quad(int, int, int, int);
+};
+
+#pragma float_control(precise, off, push)
+
+void TorsoBuilder::build(
+    VertexCallback callback,
+    Vec2 minimum,
+    Vec2 maximum,
+    float depth,
+    Vec2 textureOrigin,
+    Vec2 textureExtent,
+    int axis,
+    GridSize divisions)
 {
-    float v[3];
-    sub_5EC220(v, (float*)((char*)this + 4));
+    Vec3 absoluteDimensions;
+    {
+        Vec3 copiedDimensions;
+        copyVector(&copiedDimensions, &dimensions);
+        absoluteDimensions.x = (float)fabs(copiedDimensions.x);
+        absoluteDimensions.y = (float)fabs(copiedDimensions.y);
+        absoluteDimensions.z = (float)fabs(copiedDimensions.z);
+    }
 
-    float ax = v[0]; if (ax < 0) ax = -ax;
-    float ay = v[1]; if (ay < 0) ay = -ay;
-    float az = v[2]; if (az < 0) az = -az;
+    Vec2 positionStep;
+    positionStep.x = (maximum.x - minimum.x) / divisions.x;
+    positionStep.y = (maximum.y - minimum.y) / divisions.y;
 
-    int n1 = (short)i;
-    int n2 = (short)j;
-    int w1 = n1 + 1;
-    int w2 = n2 + 1;
-    int total = w1 * w2;
+    Vec2 textureStep;
+    textureStep.x = textureExtent.x / divisions.x;
+    textureStep.y = textureExtent.y / divisions.y;
 
-    float stepX = (float)((float)e - (float)a) / (float)w1;
-    float stepY = (float)((float)f - (float)b) / (float)w2;
-    float stepZ = (float)((float)g - (float)c) / (float)w1;
+    unsigned count = (divisions.x + 1) * (divisions.y + 1);
+    int* vertices = new int[count];
 
-    void** arr = (void**)sub_6A0956(total * 4);
+    float x = minimum.x;
+    float u = textureOrigin.x;
 
-    float curX = (float)a;
-    float curY = (float)b;
-    float curZ = (float)c;
+    for (int i = 0; i <= divisions.x; ++i) {
+        float y = minimum.y;
+        float v = textureOrigin.y;
 
-    int row = 0;
-    while (row <= n1) {
-        float rowX = (float)a;
-        float rowZ = (float)c;
-        int col = 0;
-        while (col <= n2) {
-            float px = rowX;
-            float py = curY;
-            float pz = rowZ;
+        for (int j = 0; j <= divisions.y; ++j) {
+            Vec3 position;
+            position.x = x;
+            position.y = y;
+            position.z = depth;
 
-            float out1[3];
-            float out2[3];
-            float out3[3];
+            Vec2 texture;
+            texture.x = 0.0f;
+            texture.y = 0.0f;
+            (&texture.y)[-axis] = u;
+            (&texture.x)[axis] = v;
 
-            float tmp[3];
-            tmp[0] = px;
-            tmp[1] = py;
-            tmp[2] = pz;
-            sub_5EC220(out1, tmp);
+            Vec3 normal;
+            normal.x = 0.0f;
+            normal.y = 0.0f;
+            normal.z = 1.0f;
 
-            float tmp2[3];
-            tmp2[0] = px;
-            tmp2[1] = py;
-            tmp2[2] = pz;
-            sub_5EC220(out2, tmp2);
+            GridSize index;
+            index.x = (short)i;
+            index.y = (short)j;
 
-            float tmp3[3];
-            tmp3[0] = px;
-            tmp3[1] = py;
-            tmp3[2] = pz;
-            sub_5EC220(out3, tmp3);
+            callback(&position, &normal, &texture, &absoluteDimensions, &index);
 
-            void* res = sub_548000(out1, out2, out3, 1);
-
-            float* shader = sub_509BA0();
-            if (shader[0] == g_819bac && shader[1] == g_819bac) {
-                px = curX;
-                pz = curZ;
+            const Vec2& size = currentTextureSize();
+            if (textureExtent.x == size.x && textureExtent.y == size.y) {
+                texture.x = textureOrigin.x;
+                texture.y = textureOrigin.y;
             }
 
-            float sx = px * g_819bac;
-            float sz = pz * g_819bac;
+            Vec2 scaledTexture;
+            scaledTexture.x = texture.x * textureScale;
+            scaledTexture.y = texture.y * textureScale;
 
-            float p1[3];
-            p1[0] = sx;
-            p1[1] = py;
-            p1[2] = sz;
-            float p2[3];
-            sub_5EC220(p2, p1);
+            Vec3 copiedNormal;
+            Vec3 copiedPosition;
+            copyVector(&copiedNormal, &normal);
+            copyVector(&copiedPosition, &position);
 
-            float p3[3];
-            sub_5EC220(p3, p2);
+            vertices[i * (divisions.y + 1) + j] =
+                allocateVertex(&copiedPosition, &copiedNormal, &scaledTexture, 1);
 
-            void* res2 = sub_548000(p3, p2, p1, 1);
-
-            rowX += stepX;
-            rowZ += stepZ;
-
-            int idx = (n2 + 1) * row + col;
-            arr[idx] = res2;
-
-            col++;
+            y += positionStep.y;
+            v += textureStep.y;
         }
-        curY += stepY;
-        row++;
+
+        x += positionStep.x;
+        u += textureStep.x;
     }
 
-    int r = 0;
-    while (r < n1) {
-        int cc = 0;
-        while (cc < n2) {
-            int base = (n2 + 1) * r + cc;
-            int base2 = base + (n2 + 1);
-            sub_500EB0(this, arr[base], arr[base + 1], arr[base2], arr[base2 + 1]);
-            cc++;
+    for (int i = 0; i < divisions.x; ++i) {
+        for (int j = 0; j < divisions.y; ++j) {
+            int index = (divisions.y + 1) * i + j;
+            int next = index + divisions.y;
+            quad(vertices[index + 1], vertices[index],
+                 vertices[next + 1], vertices[next + 2]);
         }
-        r++;
     }
 
-    int q = 0;
-    while (q < total) {
-        sub_548640(arr[q]);
-        q++;
-    }
+    for (unsigned i = 0; i < count; ++i)
+        releaseVertex(vertices[i]);
 
-    sub_6A094A(arr);
-    return 0;
+    delete[] vertices;
 }
+
+#pragma float_control(pop)

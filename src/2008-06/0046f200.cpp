@@ -1,112 +1,117 @@
-// from server: 29% by atomic.potato
-// roc 2010-06 00483080  unit: RBX::LDraw2Lua::LDrawParser  size: 922 bytes
+// from server: 100% by EspClaude
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
+#include <string>
+#include <vector>
+#include <fstream>
+#include <ostream>
 
-struct LDrawParser {
-    char pad0[4];
-    void* stream;
-    void parse(const char* filename);
+template <class T> class bstr {
+public:
+    __declspec(noinline) bstr(const T* p) { _Mysize = 0; }
+    __declspec(noinline) bstr(const bstr& r) { _Mysize = r._Mysize; }
+    __declspec(noinline) ~bstr() { _Mysize = 0; }
+    __declspec(noinline) const T* c_str() const { return _Buf; }
+    __declspec(noinline) unsigned int find_first_not_of(const T*, unsigned int) const { return _Mysize; }
+    __declspec(noinline) bstr substr(unsigned int, unsigned int) const { return *this; }
+    __declspec(noinline) bstr& operator=(const bstr& r) { _Mysize = r._Mysize; return *this; }
+    unsigned int size() const { return _Mysize; }
+    void* _Myaux;
+    T _Buf[16];
+    unsigned int _Mysize;
+    unsigned int _Myres;
+};
+extern template class __declspec(dllimport) bstr<char>;
+typedef bstr<char> Str;
+
+template <class T> struct IosBaseT { __declspec(noinline) bool eof() const { return sizeof(T) == 1; } int x; };
+extern template struct __declspec(dllimport) IosBaseT<char>;
+inline bool isEof(std::ios_base& b) { return reinterpret_cast<IosBaseT<char>&>(b).eof(); }
+
+namespace RBX {
+namespace LDraw2Lua {
+
+class LDrawItem {
+public:
+    virtual ~LDrawItem();
 };
 
-struct LDrawModel {
-    int refs;
+class LDrawPart : public LDrawItem {
+public:
+    void* output;
     int type;
-    double v[13];
-    char name[0x10];
+    int color;
+    double values[12];
+    Str name;
+
+    LDrawPart(void* output);
+    void setName(Str n) { name = n; }
 };
 
-extern "C" void* __cdecl operator_new(unsigned int);
-extern "C" void __cdecl operator_delete(void*);
+class LDrawModel {
+public:
+    std::string name;
+    std::vector<LDrawItem*> items;
 
-extern "C" void* __stdcall sub_44DF20(void*, const char*, const char*);
-extern "C" void* __stdcall sub_4828B0(void*, void*);
-extern "C" void __stdcall sub_4834B0(void*, const char*);
-extern "C" void __stdcall sub_483530(void*, const char*);
-extern "C" void __stdcall sub_4836A0(void*);
-extern "C" void __stdcall sub_4837A0(void*, void*);
-extern "C" void* __stdcall sub_7A79A0(unsigned int);
+    LDrawModel(const char* name);
+    virtual ~LDrawModel();
+    void add(LDrawItem* item);
+    void writeLua(std::ostream& out) const;
+};
 
-extern "C" void* __stdcall ifstream_ctor(void*, const char*, int, int);
-extern "C" void __stdcall ifstream_dtor(void*);
-extern "C" void* __stdcall string_ctor(void*, const char*);
-extern "C" void __stdcall string_dtor(void*);
-extern "C" void* __stdcall string_assign(void*, const void*);
-extern "C" void* __stdcall istream_int(void*, int*);
-extern "C" void* __stdcall istream_double(void*, double*);
-extern "C" const char* __stdcall string_c_str(void*);
-extern "C" bool __stdcall ios_eof(void*);
-extern "C" unsigned int __stdcall string_find_first_not_of(void*, const char*, unsigned int);
-extern "C" void* __stdcall istream_getline(void*, char*, int);
-extern "C" void* __stdcall string_substr(void*, void*, unsigned int, unsigned int);
+extern void* luaOutput;
 
-void LDrawParser::parse(const char* filename)
+class LDrawParser {
+public:
+    virtual ~LDrawParser();
+    Str fileName;
+
+    void parse(std::ostream& out);
+};
+
+void LDrawParser::parse(std::ostream& out)
 {
-    void* s = sub_44DF20(0, "Roblox LDraw2Lua Conversion", "LDrawModel");
-    s = sub_44DF20(s, "FileName: ", filename);
-    s = sub_44DF20(s, "m.Parent = w", 0);
-    s = sub_44DF20(s, "SUVW", 0);
+    out << "-- " << "Roblox LDraw2Lua Conversion" << "\n";
+    out << "-- " << "FileName: " << fileName.c_str() << "\n";
+    out << "\n";
 
-    char buf[0x900];
-    sub_4834B0(buf, "LDrawModel");
-
-    void* fs[0x30];
-    ifstream_ctor(fs, filename, 1, 0x40);
-
-    char line[0x400];
-    while (!ios_eof(fs)) {
-        istream_getline(fs, line, 0x400);
-        if (string_find_first_not_of(line, " \t\r\n", 0) == -1)
-            continue;
-
-        int tok;
-        istream_int(fs, &tok);
-        if (tok != 1) {
-            istream_getline(fs, line, 0x400);
-            continue;
-        }
-
-        LDrawModel* m = (LDrawModel*)operator_new(0x90);
-        if (m) {
-            m = (LDrawModel*)sub_4828B0(m, (void*)0xc0308c);
-        } else {
-            m = 0;
-        }
-        m->refs = 1;
-        m->type = tok;
-
-        double d;
-        istream_double(fs, &d);
-        m->v[0] = d;
-        istream_double(fs, &d);
-        m->v[1] = d;
-        istream_double(fs, &d);
-        m->v[2] = d;
-        istream_double(fs, &d);
-        m->v[3] = d;
-        istream_double(fs, &d);
-        m->v[4] = d;
-        istream_double(fs, &d);
-        m->v[5] = d;
-        istream_double(fs, &d);
-        m->v[6] = d;
-        istream_double(fs, &d);
-        m->v[7] = d;
-        istream_double(fs, &d);
-        m->v[8] = d;
-        istream_double(fs, &d);
-        m->v[9] = d;
-        istream_double(fs, &d);
-        m->v[10] = d;
-        istream_double(fs, &d);
-        m->v[11] = d;
-        istream_double(fs, &d);
-        m->v[12] = d;
-
-        istream_getline(fs, line, 0x7d0);
-        string_ctor(m->name, line);
-        sub_4837A0(buf, m);
+    LDrawModel model("LDrawModel");
+    {
+        std::ifstream file(fileName.c_str());
+        char buffer[2048];
+        if (!isEof(file)) do {
+            int type;
+            file >> type;
+            if (type == 1) {
+                LDrawPart* part = new LDrawPart(luaOutput);
+                part->type = 1;
+                int color = -1;
+                file >> color;
+                part->color = color;
+                double value = 0.0;
+                file >> value; part->values[0] = value;
+                file >> value; part->values[1] = value;
+                file >> value; part->values[2] = value;
+                file >> value; part->values[3] = value;
+                file >> value; part->values[4] = value;
+                file >> value; part->values[5] = value;
+                file >> value; part->values[6] = value;
+                file >> value; part->values[7] = value;
+                file >> value; part->values[8] = value;
+                file >> value; part->values[9] = value;
+                file >> value; part->values[10] = value;
+                file >> value; part->values[11] = value;
+                file.getline(buffer, 2000);
+                Str line(buffer);
+                part->setName(line.substr(line.find_first_not_of(" ", 0), line.size()));
+                model.add(part);
+            } else {
+                file.getline(buffer, 2000);
+            }
+        } while (!isEof(file));
     }
+    model.writeLua(out);
+}
 
-    ifstream_dtor(fs);
-    sub_483530(buf, filename);
-    sub_4836A0(buf);
+}
 }

@@ -1,4 +1,4 @@
-// from server: 79% by EspClaude
+// from server: 88% by colin
 // from server: 66% by atomic.potato
 // roc 2008-06 0066ed50  unit: RBX::HUMAN::MovingNoPhysicsBase  size: 103 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 0066ed50
@@ -86,13 +86,14 @@ struct MovingNoPhysicsBase : Base0, Sub5 {
 };
 
 void MovingNoPhysicsBase::func() {
-    Inner* q = &field_c4.p->inner;
+    Holder* holder = field_c4.p;
+    Inner* q = &holder->inner;
     if (q)
         q->method(0);
     field_d0.method();
     Sub5* a = static_cast<Sub5*>(this);
     Sub4* s = getWorld()->sub;
     s->method(a)->method();
-    field_cc->method(field_c4.p);
+    field_cc->method(holder);
     field_c4.reset();
 }

@@ -1,142 +1,112 @@
-// from server: 34% by colin
-extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
-#pragma intrinsic(_InterlockedExchangeAdd)
+// from server: 100% by EspClaude
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+// roc-lib: rbxgs-dll roc_espclaude_3c5ef1110f0fff6f.cpp
 
-struct RefCounted {
-    void* vptr;
-    volatile long refcount;
-    volatile long refcount2;
+// Candidate translation unit (score above; library headers required).
+#define _DLL
+#include <boost/shared_ptr.hpp>
+#include <boost/scoped_ptr.hpp>
+namespace RBX {
+namespace Profiling {
+class CodeProfiler { public: ~CodeProfiler(); int x; };
+class Mark {
+public:
+    Mark(CodeProfiler& profiler, bool enabled);
+    ~Mark();
+    CodeProfiler* profiler;
+    void* prev;
+    bool enabled;
+    double start;
 };
-
-struct SmartPtr {
-    void* ptr;
+}
+namespace Reflection {
+class DescribedBase { public: virtual ~DescribedBase(); };
+class PropertyDescriptor {
+public:
+    char pad[0x10];
+    unsigned int canReplicate : 1;
+    unsigned int streamWrite : 1;
+    bool canStreamWrite() const { return streamWrite; }
 };
-
-struct ChangePropertyItem {
-    void* vptr;
-    void* field4;
+class Property {
+public:
+    const PropertyDescriptor* descriptor;
+    DescribedBase* instance;
+    Property(const PropertyDescriptor& d, DescribedBase* i) : descriptor(&d), instance(i) {}
+    bool operator==(const Property& o) const { return descriptor == o.descriptor && instance == o.instance; }
 };
-
-struct List {
-    void* field0;
-    void* field4;
+}
+struct InstPad { virtual ~InstPad(); char p[0x10]; };
+class Instance : public InstPad, public Reflection::DescribedBase {
+public:
+    static const Reflection::PropertyDescriptor propParent;
+    bool isDescendentOf(const Instance* ancestor) const;
 };
-
-struct Replicator {
-    char pad0[0x2c74];
-    List list;
-    char pad1[0x2cd4 - 0x2c74 - 8];
-    void* field2cd4;
-    void* field2cd8;
-    char pad2[0x2d1c - 0x2cd8 - 4];
-    void* field2d1c;
-    void* field2d20;
-
-    void NewInstanceItem(void* a, void* b, void* c);
-    bool check_fn(void* p);
-    void call_4b01e0(SmartPtr* sp, void* arg);
-    void* get_something();
-    void ctor_cpi(ChangePropertyItem* self, SmartPtr* sp, void* arg);
-    void ctor_cpi2(ChangePropertyItem* self, SmartPtr* sp, void* arg);
-    void add_item(ChangePropertyItem* item);
-    void add_item2(ChangePropertyItem* item);
+namespace Network {
+class Player {
+public:
+    char pad[0x170];
+    Instance* character;
+    Instance* getCharacter() const { return character; }
 };
-
-void __stdcall ctor_smartptr(SmartPtr* self, void* p, int zero);
-void __stdcall ctor_smartptr2(SmartPtr* self, void* p, int zero);
-void __stdcall dtor_smartptr(SmartPtr* self);
-void __stdcall dtor_smartptr2(SmartPtr* self);
-bool __cdecl check_422ae0(void* a, void* b);
-void* __cdecl operator_new(unsigned int);
-void* __cdecl operator_new2(unsigned int);
-
-void Replicator::NewInstanceItem(void* a, void* b, void* c)
+class Item { public: virtual ~Item(); };
+class Replicator;
+class ChangePropertyItem : public Item {
+public:
+    ChangePropertyItem(Replicator& replicator, const boost::shared_ptr<const Instance>& instance, const Reflection::PropertyDescriptor& desc) throw();
+    char pad[0x10];
+};
+class ItemQueue {
+public:
+    void push_front(const boost::shared_ptr<Item>& item);
+    void push_back(const boost::shared_ptr<Item>& item);
+};
+class Replicator {
+public:
+    virtual void v0(); virtual void v1(); virtual void v2(); virtual void v3(); virtual void v4(); virtual void v5();
+    virtual void v6(); virtual void v7(); virtual void v8(); virtual void v9(); virtual void v10(); virtual void v11();
+    virtual void v12(); virtual void v13(); virtual void v14(); virtual void v15(); virtual void v16();
+    virtual Player* findTargetPlayer();
+    char pad[0x2c74 - 4];
+    ItemQueue pendingItems;
+    char pad2[0x2cd4 - 0x2c75];
+    Reflection::Property* deserializeProperty;
+    Instance* removingInstance;
+    char pad3[0x2d1c - 0x2cdc];
+    boost::scoped_ptr<Profiling::CodeProfiler> profileReplication;
+    boost::scoped_ptr<Profiling::CodeProfiler> profileDataListening;
+    bool isSerializePending(Instance* instance);
+    void onParentChanged(boost::shared_ptr<Instance> instance);
+    void onPropertyChanged(boost::shared_ptr<Instance> instance, const Reflection::PropertyDescriptor* descriptor);
+};
+void Replicator::onPropertyChanged(boost::shared_ptr<Instance> instance, const Reflection::PropertyDescriptor* descriptor)
 {
-    SmartPtr sp1;
-    SmartPtr sp2;
-    SmartPtr sp3;
-    SmartPtr sp4;
-    SmartPtr sp5;
-    SmartPtr sp6;
+    Profiling::Mark mark(*profileReplication, false);
+    Profiling::Mark mark2(*profileDataListening, false);
 
-    ctor_smartptr(&sp1, field2d1c, 0);
-    ctor_smartptr2(&sp2, field2d20, 0);
-
-    if (sp1.ptr == field2cd8) {
-        dtor_smartptr(&sp3);
-        dtor_smartptr(&sp4);
-        if (sp1.ptr) {
-            RefCounted* r = (RefCounted*)sp1.ptr;
-            if (_InterlockedExchangeAdd(&r->refcount, -1) == 1) {
-                void** vt = (void**)r->vptr;
-                ((void(__thiscall*)(void*))vt[1])(r);
-            }
-            if (_InterlockedExchangeAdd(&r->refcount2, -1) == 1) {
-                void** vt = (void**)r->vptr;
-                ((void(__thiscall*)(void*))vt[2])(r);
-            }
-        }
+    if (instance.get() == removingInstance)
+        return;
+    if (deserializeProperty)
+    {
+        Reflection::Property prop(*descriptor, instance.get());
+        if (prop == *deserializeProperty)
+            return;
+    }
+    if (isSerializePending(instance.get()))
+        return;
+    if (descriptor == &Instance::propParent)
+    {
+        onParentChanged(instance);
         return;
     }
-
-    void* p2cd4 = field2cd4;
-    void* arg = c;
-    if (p2cd4 != 0) {
-        void* edx = 0;
-        if (sp1.ptr != 0) {
-            edx = (char*)sp1.ptr + 0x14;
-        }
-        if (arg == *(void**)p2cd4 && edx == *(void**)((char*)p2cd4 + 4)) {
-            goto cleanup;
-        }
-    }
-
-    if (check_fn(sp1.ptr)) {
-        goto cleanup;
-    }
-
-    if (arg == (void*)0x973d34) {
-        SmartPtr tmp;
-        tmp.ptr = sp1.ptr;
-        if (sp1.ptr) {
-            _InterlockedExchangeAdd((volatile long*)((char*)sp1.ptr + 4), 1);
-        }
-        call_4b01e0(&tmp, arg);
-        goto cleanup;
-    }
-
-    {
-        unsigned int flags = *(unsigned int*)((char*)arg + 0x10);
-        flags >>= 1;
-        if (!(flags & 1)) {
-            goto cleanup;
-        }
-    }
-
-    {
-        void* r = get_something();
-        if (r != 0) {
-            void* p170 = *(void**)((char*)r + 0x170);
-            if (p170 != 0) {
-                if (check_422ae0(sp1.ptr, p170)) {
-                    ChangePropertyItem* item = (ChangePropertyItem*)operator_new(0x14);
-                    if (item != 0) {
-                        ctor_cpi(item, &sp1, arg);
-                    }
-                    add_item(item);
-                    goto cleanup;
-                }
-            }
-        }
-        ChangePropertyItem* item = (ChangePropertyItem*)operator_new2(0x14);
-        if (item != 0) {
-            ctor_cpi2(item, &sp1, arg);
-        }
-        add_item2(item);
-    }
-
-cleanup:
-    dtor_smartptr2(&sp3);
-    dtor_smartptr2(&sp4);
-    dtor_smartptr2(&sp1);
+    if (!descriptor->canStreamWrite())
+        return;
+    Player* targetPlayer = findTargetPlayer();
+    if (targetPlayer && targetPlayer->getCharacter() && instance->isDescendentOf(targetPlayer->getCharacter()))
+        pendingItems.push_front(boost::shared_ptr<Item>(new ChangePropertyItem(*this, instance, *descriptor)));
+    else
+        pendingItems.push_back(boost::shared_ptr<Item>(new ChangePropertyItem(*this, instance, *descriptor)));
 }
+}}

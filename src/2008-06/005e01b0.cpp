@@ -1,20 +1,13 @@
-// from server: 97% by Espeon
+// from server: 100% by colin
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: openrbx-client-dll roc_espeon_lexicalnoreturn_e5982741c99eb8d1.cpp
+// roc-lib: openrbx-client-dll roc_manual_lexical_08dcad64789e8cca.cpp
 
 // Candidate translation unit (score above; library headers required).
+#include <exception>
+#define BOOST_NO_EXCEPTIONS
+namespace boost{__declspec(noreturn) void throw_exception(const std::exception&);}
 #include <boost/lexical_cast.hpp>
-#include <sstream>
 #include <string>
-__declspec(noreturn) void __cdecl raise(const boost::bad_lexical_cast&);
-unsigned short convert(const std::string& text) {
- unsigned short value;
- std::stringstream stream(std::ios::in | std::ios::out);
- stream.unsetf(std::ios::skipws);
- stream.precision(5);
- if (!(stream << text).fail() && (stream >> value) && stream.get() == -1) return value;
- boost::bad_lexical_cast error(typeid(std::string), typeid(unsigned short));
- raise(error);
-}
+unsigned short convertShort(const std::string&s){return boost::lexical_cast<unsigned short>(s);}

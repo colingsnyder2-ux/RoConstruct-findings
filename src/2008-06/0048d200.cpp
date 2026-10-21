@@ -1,8 +1,8 @@
-// from server: 93% by Espeon
+// from server: 98% by colin
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: openrbx-client-dll roc_espeon_reflectionpair_363320449af7c44e.cpp
+// roc-lib: openrbx-client-dll roc_manual_pair_e8f0db97bfa5affe.cpp
 
 // Candidate translation unit (score above; library headers required).
 #include <boost/shared_ptr.hpp>
@@ -10,6 +10,7 @@ typedef boost::shared_ptr<void> Shared;
 struct Temporary {
     Shared first;
     Shared second;
+    int extra;
 
     Temporary(Shared firstValue, Shared secondValue, int a, int b);
     ~Temporary();

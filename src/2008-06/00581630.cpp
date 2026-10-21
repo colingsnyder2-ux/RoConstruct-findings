@@ -1,8 +1,9 @@
+// from server: 100% by EspClaude
 // from server: 94% by Espeon
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: rbxgs-dll roc_espeon_moveupvectorlayout35675fbf40e5a49d.cpp
+// roc-lib: rbxgs-dll roc_espclaude_0e9864ff1abe19dd.cpp
 
 // Candidate translation unit (score above; library headers required).
 #include <string>
@@ -35,6 +36,7 @@ void verify(Instance* instance)
 #include "G3D/Vector3.h"
 typedef G3D::Vector3 Vector3;
 #include <vector>
+#include <boost/shared_ptr.hpp>
 struct Selection {
     std::vector<void*> items;
 };
@@ -61,9 +63,10 @@ struct NotificationList {
     void notify(Flag);
 };
 
-struct DataModel {
-    char padding[0x344];
-    NotificationList notifications;
+struct WBase { char padding[0x344]; };
+struct DrawChanged { bool value; };
+struct NotifierDC { void raise(DrawChanged) const; };
+struct DataModel : WBase, NotifierDC {
 };
 
 struct Name {
@@ -95,8 +98,8 @@ struct MoveUpSelectionVerb {
     void* vtable;
     Name* name;
     char padding0[4];
-    DataModel* model;
-    char padding1[16];
+    boost::shared_ptr<DataModel> workspace;
+    char padding1[12];
     Context* context;
     float distance;
 
@@ -112,7 +115,7 @@ void MoveUpSelectionVerb::execute(Callback* callback)
     Selection* selection = &owner->selection;
 
     if (selection->items.size() > 0) {
-        Operation operation(0, selection, model);
+        Operation operation(0, selection, workspace.get());
         operation.begin();
 
         Vector3 displacement(0.0f,distance,0.0f);
@@ -122,11 +125,11 @@ void MoveUpSelectionVerb::execute(Callback* callback)
         History* history = context ? context->getHistory() : 0;
         history->mark(4);
 
-        Flag flag;
+        DrawChanged flag;
         flag.value = false;
-        model->notifications.notify(flag);
+        workspace->NotifierDC::raise(flag);
 
-        DataModel* currentModel = model;
+        DataModel* currentModel = workspace.get();
         Name* currentName = name;
         const char* text;
         if (currentName->capacity >= 16)
