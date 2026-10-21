@@ -1,8 +1,8 @@
-// from server: 92% by EspClaude
+// from server: 100% by Espeon
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD /fp:fast
-// roc-lib: atl-9.0-dll-rtm roc_espclaude_ccd3babbca8042f8.cpp
+// roc-lib: atl-9.0-dll-rtm roc_espeon_varianttypeaccessor21691409a28158c7.cpp
 
 // Candidate translation unit (score above; library headers required).
 #ifndef _CPPUNWIND
@@ -37,7 +37,9 @@ class Value {
 public:
     const Type* type;
     boost::any value;
-    template<class T> bool isType() const { return typeid(T) == type->type; }
+    const Type& getType() const { return *type; }
+    template<class T> bool isType() const { return typeid(T) == getType().type; }
+    bool isVoid() const { return isType<void>(); }
     bool isString() const;
     bool isContent() const;
     bool isInstances() const;
@@ -55,7 +57,7 @@ public:
 };
 void CopyVerb::toVariant(const RBX::Reflection::Value& value, VARIANT* result)
 {
-    if (value.isType<void>()) {
+    if (value.isVoid()) {
         result->vt = VT_NULL;
         return;
     }

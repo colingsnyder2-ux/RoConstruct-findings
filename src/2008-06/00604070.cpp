@@ -1,83 +1,44 @@
-// from server: 94% by Espeon
+// from server: 100% by EspClaude
 // roc-lang: cpp
 // roc-cl: 21022
-// roc-flags: /O2 /GS- /EHsc /MD /fp:fast
-// roc-lib: openrbx-client-dll roc_espeon_imagepoint_83d357d8fda704d8.cpp
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast
+// roc-lib: rbxgs-dll roc_espclaude_a308dcb0634c0895.cpp
 
 // Candidate translation unit (score above; library headers required).
-
-#include <boost/shared_ptr.hpp>
-struct String { char storage[28]; __declspec(dllimport) String(const char*); __declspec(dllimport) ~String(); };
-
-struct Object {
-    virtual void reserved();
-    virtual void setName(const String&);
-};
-
-typedef boost::shared_ptr<Object> Shared;
-
-struct Point {
-    unsigned short x;
-    unsigned short y;
-    Point();
-};
-
-inline Point::Point() : x(0), y(0)
+#define _DLL
+#define private public
+#include "util/IRenderable.h"
+#undef private
+#include "util/Object.h"
+#define hasListeners() hasListeners() const { return listeners.size() > 0; } bool hasListenersEmpty()
+#include "util/Events.h"
+#undef hasListeners
+namespace RBX { template<class T> class GuidItem { public: virtual ~GuidItem() {} char guidPad[0xc]; }; }
+namespace RBX { template<class T> class GuidAFP : public AbstractFactoryProduct<T> { protected: virtual void onGuidChanged() {} }; }
+#define AbstractFactoryProduct GuidItem<Instance>, public GuidAFP
+#include "util/Guid.h"
+namespace RBX { class GuidStub { public: typedef Guid::Data Data; void assign(const Data&) {} operator const Guid&() const { return *(const Guid*)0; } }; }
+#define Guid GuidStub
+#include "v8tree/Instance.h"
+#undef Guid
+#undef AbstractFactoryProduct
+#include "v8datamodel/GuiBuilder.h"
+#include "v8datamodel/DataModel.h"
+#include "v8datamodel/Workspace.h"
+#include "gui/Gui.h"
+namespace RBX
 {
-}
+	boost::shared_ptr<TopMenuBar> GuiBuilder::buildRightPalette(Adorn* adorn)
+	{
+		Layout panelLayout;
+		panelLayout.xLocation = Rect::RIGHT;
+		panelLayout.yLocation = Rect::BOTTOM;
+		panelLayout.layoutStyle = Layout::VERTICAL;
+		boost::shared_ptr<RelativePanel> panel = Creatable<Instance>::create<RelativePanel>(panelLayout);
+		panel->setName("RightPalette");
 
-struct Color {
-    float r, g, b, a;
-    Color(float, float, float, float);
-    Color(const Color&);
-};
+		buildRightPaletteItems(adorn, panel);
 
-inline Color::Color(float red, float green, float blue, float alpha)
-    : r(red), g(green), b(blue), a(alpha)
-{
-}
-
-inline Color::Color(const Color& other)
-    : r(other.r), g(other.g), b(other.b), a(other.a)
-{
-}
-
-struct Description {
-    int type;
-    int enabled;
-    Point point;
-    int mode;
-    Color color;
-
-    Description(int, int, Point, int, Color);
-};
-
-inline Description::Description(int t, int e, Point p, int m,
-                                Color c)
-    : type(t), enabled(e), point(p), mode(m),
-      color(c.r, c.g, c.b, c.a)
-{
-}
-
-const Color& __cdecl sub_7baf10();
-Shared __cdecl sub_601db0(Description);
-
-struct UnifiedImageWidget {
-    Shared method(int);
-    void sub_602cb0(int, Shared);
-};
-
-Shared UnifiedImageWidget::method(int argument)
-{
-    Point point;
-    Shared result = sub_601db0(
-        Description(3, 1, point, 1, sub_7baf10()));
-
-    {
-        String name("RightPalette");
-        result->setName(name);
-    }
-
-    sub_602cb0(argument, result);
-    return Shared(result);
+		return panel;
+	}
 }

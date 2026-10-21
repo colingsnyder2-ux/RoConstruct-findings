@@ -1,9 +1,8 @@
-// from server: 81% by colin
-// from server: 56% by colin
+// from server: 100% by Espeon
+// roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lang: cpp
-// roc-lib: rbxgs-dll roc_espclaude_cb4ac364beeaaffd.cpp
+// roc-lib: rbxgs-dll roc_espeon_bindertwoargumentsc5c11600994c9e82.cpp
 
 // Candidate translation unit (score above; library headers required).
 #include <boost/function.hpp>
@@ -25,12 +24,11 @@ class BinderBase1 { public: virtual ~BinderBase1(); };
 class Binder : public BinderBase0, public BinderBase1 {
 public:
     static bool enabled;
-    void onBind();
-    void bind();
+    void onBind(void* first, void* second);
+    void bind(void* first, void* second);
 };
 
-void Binder::bind()
+void Binder::bind(void* first, void* second)
 {
-    if (enabled)
-        theService->setCallback(boost::bind(&Binder::onBind, shared_from(this)));
+    theService->setCallback(boost::bind(&Binder::onBind, shared_from(this), first, second));
 }

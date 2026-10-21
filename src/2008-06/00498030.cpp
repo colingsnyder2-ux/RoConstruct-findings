@@ -1,50 +1,16 @@
-// from server: 75% by EspClaude
+// from server: 91% by Espeon
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: rbxgs-dll roc_espeon_playerlookupendfirst9c557fa6cb2e3993.cpp
+
+// Candidate translation unit (score above; library headers required).
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD
 #include <vector>
-#include <intrin.h>
-
-class sp_counted_base {
-public:
-    virtual ~sp_counted_base();
-    virtual void dispose() = 0;
-    virtual void destroy();
-    void add_ref_copy() { _InterlockedIncrement(&use_count_); }
-    void release()
-    {
-        if (_InterlockedDecrement(&use_count_) == 0)
-        {
-            dispose();
-            weak_release();
-        }
-    }
-    void weak_release()
-    {
-        if (_InterlockedDecrement(&weak_count_) == 0)
-            destroy();
-    }
-    long use_count_;
-    long weak_count_;
-};
-
-class shared_count {
-public:
-    sp_counted_base* pi_;
-    shared_count() : pi_(0) {}
-    shared_count(const shared_count& r) : pi_(r.pi_) { if (pi_ != 0) pi_->add_ref_copy(); }
-    ~shared_count() { if (pi_ != 0) pi_->release(); }
-};
-
-template<class T> class shared_ptr {
-public:
-    T* px;
-    shared_count pn;
-    shared_ptr() : px(0), pn() {}
-    T* get() const { return px; }
-    T* operator->() const { return px; }
-};
-
+#include <boost/shared_ptr.hpp>
+using boost::shared_ptr;
 namespace RBX {
 class Instance {
 public:
@@ -70,8 +36,8 @@ shared_ptr<Instance> Players::playerFromCharacter(shared_ptr<Instance> character
     shared_ptr<const std::vector<shared_ptr<Instance> > > myPlayers = getPlayers();
 
     const std::vector<shared_ptr<Instance> >* v = myPlayers.get();
-    std::vector<shared_ptr<Instance> >::const_iterator iter = v->begin();
     std::vector<shared_ptr<Instance> >::const_iterator end = v->end();
+    std::vector<shared_ptr<Instance> >::const_iterator iter = v->begin();
 
     for (; iter != end; iter++)
     {

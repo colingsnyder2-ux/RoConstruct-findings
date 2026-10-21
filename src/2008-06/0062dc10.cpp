@@ -1,9 +1,10 @@
+// from server: 100% by EspClaude
 // from server: 99% by EspClaude
 // from server: 94% by Espeon
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD /fp:fast
-// roc-lib: openrbx-client-dll roc_espclaude_d40ea3df4156baef.cpp
+// roc-lib: openrbx-client-dll roc_espclaude_53f7087b0addb13e.cpp
 
 // Candidate translation unit (score above; library headers required).
 #include <boost/shared_ptr.hpp>
@@ -67,11 +68,13 @@ Vector S::f(const Shared& input, Ray ray)
     result.z = 0.0f;
     List list;
 
-    if (!geometry->intersect(ray, list, shared, result, &intersectionOption))
+    Primitive* hit = geometry->intersect(ray, list, shared, result, &intersectionOption);
+    if (hit == NULL)
     {
         result = ray.transformed().direction + ray.origin;
     }
 
     return result;
 }
+
 

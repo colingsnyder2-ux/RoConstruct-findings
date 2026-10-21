@@ -1,117 +1,148 @@
-// from server: 96% by king_originala
-struct String {
-    char storage[28];
+// from server: 100% by EspClaude
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: rbxgs-dll roc_espclaude_a9f31f8e657914eb.cpp
+
+// Candidate translation unit (score above; library headers required).
+#define _DLL
+#include <stddef.h>
+#include <windows.h>
+#include <string>
+#include <vector>
+#include <boost/shared_ptr.hpp>
+#include <boost/enable_shared_from_this.hpp>
+#include <boost/scoped_ptr.hpp>
+#include <map>
+#include <stddef.h>
+namespace RBX {
+class Name;
+class Instance;
+struct DebugMember { DebugMember(); ~DebugMember(); int a, b; };
+class __declspec(novtable) Debugable {
+public:
+	virtual void dump();
+	bool validating;
+	DebugMember member;
+	Debugable() : validating(false) {}
 };
-
-extern String* (__thiscall *stringConstruct)(String*, const char*);
-extern void (__thiscall *stringDestroy)(String*);
-
-struct TemporaryString : String {
-    TemporaryString(const char*);
-    ~TemporaryString();
+class Object {
+public:
+	virtual ~Object() {}
 };
-
-inline TemporaryString::TemporaryString(const char* text)
+template<class T> class Creatable : public Object { };
+template<class T> class AbstractFactoryProduct : public Creatable<T> {
+protected:
+	AbstractFactoryProduct() {}
+public:
+	virtual const Name& getClassName() const = 0;
+};
+class DescribedBase0 { public: virtual ~DescribedBase0(); int a, b; };
+class DescribedBase1 { public: virtual ~DescribedBase1(); };
+class Described : public DescribedBase0, public DescribedBase1 {
+public:
+	Described();
+	virtual ~Described();
+};
+template<int N> class Notifier {
+public:
+	Notifier();
+	virtual ~Notifier();
+	char pad[0x1c];
+};
+template<class T> class Association {
+	std::vector<boost::shared_ptr<T> > v;
+};
+extern long instanceCount;
+class Instance : public boost::enable_shared_from_this<Instance>,
+                 public Debugable,
+                 public AbstractFactoryProduct<Instance>,
+                 public Described,
+                 public Notifier<0>,
+                 public Notifier<1>,
+                 public Notifier<2>,
+                 public Notifier<3>,
+                 public Notifier<4>,
+                 public Notifier<5>
 {
-    stringConstruct(this, text);
+private:
+	Association<Instance> assoc;
+	Instance* parent;
+	boost::shared_ptr<std::vector<boost::shared_ptr<Instance> > > children;
+	std::string name;
+	bool archivable;
+protected:
+	Instance();
+	virtual ~Instance();
+public:
+	virtual const Name& getClassName() const;
+	void setName(const std::string& value);
+};
+class Service {};
+template<class Class, class Event> class Listener {
+public:
+	virtual void onEvent(const Class* source, const Event& event) {}
+};
+class RunService;
+class Heartbeat;
+class Players;
+class worker_thread { public: ~worker_thread(); };
 }
-
-inline TemporaryString::~TemporaryString()
+class RakPeerInterface {
+public:
+	virtual ~RakPeerInterface();
+	virtual bool Startup();
+	virtual void InitializeSecurity();
+	virtual void DisableSecurity();
+	virtual void SetMaximumIncomingConnections(unsigned short numberAllowed);
+	virtual unsigned short GetMaximumIncomingConnections() const;
+	virtual unsigned short NumberOfConnections() const;
+	virtual void SetIncomingPassword(const char* passwordData, int passwordDataLength);
+};
+class PluginInterface {
+public:
+	virtual ~PluginInterface();
+};
+namespace RBX {
+namespace API { extern std::string version; }
+namespace Network {
+class Peer : public Instance, public PluginInterface, public Listener<RunService, Heartbeat> {
+	int pad138[2];
+protected:
+	boost::scoped_ptr<RakPeerInterface> rakPeer;
+	Peer();
+	virtual ~Peer();
+};
+struct PingWorker {
+	int handle;
+	int count;
+	int pending;
+	bool busy;
+	char pad0d[3];
+	bool stopped;
+	PingWorker() : count(0), pending(0), busy(false), stopped(false) {}
+	~PingWorker();
+};
+class Server : public Peer, public Service {
+	int outgoingPort;
+	boost::shared_ptr<Players> players;
+	PingWorker pingWorker;
+	std::map<int, std::string> clients;
+public:
+	Server();
+	virtual ~Server();
+	friend struct Check;
+};
+struct Check {
+	typedef char c1[(offsetof(Server, players) == 0x148 && offsetof(Server, pingWorker) == 0x150) ? 1 : -1];
+	typedef char c2[(offsetof(Server, clients) == 0x164) ? 1 : -1];
+};
+Server::Server()
+	: outgoingPort(0)
 {
-    stringDestroy(this);
+	setName("NetworkServer");
+	rakPeer->SetMaximumIncomingConnections(64);
+	rakPeer->SetIncomingPassword(API::version.c_str(), (int)API::version.size());
 }
-
-struct Base {
-    unsigned long words[81];
-    Base();
-    ~Base();
-    void setValue(const String&);
-};
-
-struct PointerPair {
-    void* pointer;
-    void* owner;
-    PointerPair(int);
-    ~PointerPair();
-};
-
-inline PointerPair::PointerPair(int) : pointer(0), owner(0)
-{
 }
-
-struct Pointer {
-    void* pointer;
-    Pointer();
-    ~Pointer();
-};
-
-inline Pointer::Pointer() : pointer(0)
-{
-}
-
-struct Tag {
-    Tag();
-};
-
-inline Tag::Tag()
-{
-}
-
-struct Table {
-    unsigned long storage[4];
-    Table(const Tag&, const Tag&);
-    ~Table();
-};
-
-struct Interface {
-    void** functions;
-};
-
-struct S : Base {
-    PointerPair first;
-    Pointer second;
-    unsigned long unused;
-    unsigned long low;
-    unsigned long high;
-    bool flag1;
-    char padding1[3];
-    bool flag2;
-    char padding2[3];
-    Table table;
-    S();
-};
-
-S::S()
-    : Base(),
-      first((
-          words[0] = 0x82367c,
-          words[4] = 0x823670,
-          words[5] = 0x823668,
-          words[8] = 0x823660,
-          words[9] = 0x823650,
-          words[17] = 0x823640,
-          words[25] = 0x823630,
-          words[33] = 0x823620,
-          words[41] = 0x823610,
-          words[49] = 0x823600,
-          words[76] = 0x8235d0,
-          words[77] = 0x8235c4,
-          0)),
-      second(), low(0), high(0),
-      flag1(false), flag2(false), table(Tag(), Tag())
-{
-    setValue(TemporaryString("NetworkServer"));
-
-    Interface* object = reinterpret_cast<Interface*>(words[80]);
-    typedef void (__thiscall *SetCapacity)(Interface*, unsigned int);
-    reinterpret_cast<SetCapacity>(object->functions[4])(object, 64);
-
-    object = reinterpret_cast<Interface*>(words[80]);
-    const char* text = *reinterpret_cast<const char* const*>(0x970b8c);
-    if (*reinterpret_cast<const unsigned int*>(0x970ba0) < 16)
-        text = reinterpret_cast<const char*>(0x970b8c);
-    unsigned int length = *reinterpret_cast<const unsigned int*>(0x970b9c);
-
-    typedef void (__thiscall *SetText)(Interface*, const char*, unsigned int);
-    reinterpret_cast<SetText>(object->functions[7])(object, text, length);
 }

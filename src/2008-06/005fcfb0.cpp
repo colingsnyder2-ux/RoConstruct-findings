@@ -1,31 +1,16 @@
-// from server: 94% by colin
-extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
-#pragma intrinsic(_InterlockedExchangeAdd)
-extern "C" long __cdecl _InterlockedIncrement(volatile long*);
-extern "C" long __cdecl _InterlockedDecrement(volatile long*);
-#pragma intrinsic(_InterlockedIncrement)
-#pragma intrinsic(_InterlockedDecrement)
+// from server: 100% by EspClaude
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: openrbx-client-dll roc_espclaude_7466319d2a89dd39.cpp
 
+// Candidate translation unit (score above; library headers required).
+#include <boost/shared_ptr.hpp>
 
 namespace RBX {
     class Instance;
     class ServiceProvider;
 }
-
-struct Control {
-    virtual void unused();
-    virtual void dispose();
-    virtual void destroy();
-    volatile long strong;
-    volatile long weak;
-
-    __forceinline void release();
-};
-
-struct Handle {
-    Control* control;
-    void assign(const Handle&);
-};
 
 struct Listener {
     unsigned char storage[4];
@@ -39,15 +24,10 @@ struct Event {
 };
 
 struct Object {
-    unsigned char storage[0x64];
-};
-
-struct Pair {
-    Object* object;
-    Handle handle;
-
-    __forceinline Pair& operator=(const Pair&);
-    __forceinline ~Pair();
+    unsigned char storage[0x24];
+    Event first;
+    unsigned char storage2[0x1f];
+    Event second;
 };
 
 struct Padding {
@@ -56,36 +36,19 @@ struct Padding {
 
 struct S : Padding, FirstListener, SecondListener {
     unsigned char padding[0x10];
-    Pair value;
+    boost::shared_ptr<Object> value;
 
     void reset();
     void update(int, int);
 };
 
 RBX::ServiceProvider* __cdecl func_005fcc80(RBX::Instance*);
-Pair __cdecl func_00618a40(RBX::ServiceProvider*);
+boost::shared_ptr<Object> __cdecl func_00618a40(RBX::ServiceProvider*);
 
-__forceinline void Control::release()
+static inline void attach(const boost::shared_ptr<Object>& o, Event Object::*ev, Listener* l)
 {
-    if (_InterlockedDecrement(&strong) == 1) {
-        dispose();
-        if (_InterlockedDecrement(&weak) == 1)
-            destroy();
-    }
-}
-
-__forceinline Pair& Pair::operator=(const Pair& p)
-{
-    object = p.object;
-    handle.assign(p.handle);
-    return *this;
-}
-
-__forceinline Pair::~Pair()
-{
-    Control* p = handle.control;
-    if (p)
-        p->release();
+    if (o)
+        ((*o).*ev).connect(l);
 }
 
 void S::update(int a, int b)
@@ -97,14 +60,7 @@ void S::update(int a, int b)
         value = func_00618a40(
             func_005fcc80(reinterpret_cast<RBX::Instance*>(this)));
 
-        Listener* p = static_cast<FirstListener*>(this);
-        if (value.object)
-            reinterpret_cast<Event*>(
-                reinterpret_cast<unsigned char*>(value.object) + 0x24)->connect(p);
-
-        p = static_cast<SecondListener*>(this);
-        if (value.object)
-            reinterpret_cast<Event*>(
-                reinterpret_cast<unsigned char*>(value.object) + 0x44)->connect(p);
+        attach(value, &Object::first, static_cast<FirstListener*>(this));
+        attach(value, &Object::second, static_cast<SecondListener*>(this));
     }
 }

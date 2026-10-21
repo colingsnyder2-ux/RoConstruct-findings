@@ -1,12 +1,15 @@
-// from server: 94% by king_originala
-extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
-#pragma intrinsic(_InterlockedExchangeAdd)
-extern "C" long __cdecl _InterlockedDecrement(volatile long*);
-#pragma intrinsic(_InterlockedDecrement)
-#pragma float_control(precise, off)
+// from server: 100% by EspClaude
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: openrbx-client-dll roc_espclaude_212d4950c50f93ed.cpp
 
-extern "C" void (__cdecl *invalid_parameter_noinfo)();
-extern float adjustment;
+// Candidate translation unit (score above; library headers required).
+#pragma float_control(precise, off)
+#include <boost/shared_ptr.hpp>
+#include <boost/weak_ptr.hpp>
+
+extern "C" __declspec(dllimport) void __cdecl _invalid_parameter_noinfo();
 
 struct Matrix
 {
@@ -27,86 +30,37 @@ struct Part
     void setTransform(const Transform&);
 };
 
-struct Control
-{
-    virtual void reserved();
-    virtual void dispose();
-    virtual void destroy();
-    volatile long strong;
-    volatile long weak;
-};
-
-struct Shared
-{
-    Part* object;
-    Control* control;
-    __forceinline ~Shared();
-};
-
-struct Weak
-{
-    Part* object;
-    Control* control;
-    Shared lock() const;
-};
-
-struct Container
-{
-    unsigned int reserved[3];
-    Weak* begin;
-    Weak* end;
-    Weak* capacity;
-    __forceinline const Weak& operator[](unsigned int) const;
-};
-
-extern void __cdecl adjustTransform(Transform*, const Transform*, float);
-
-__forceinline Shared::~Shared()
-{
-    Control* p = control;
-    if (p)
+struct Container {
+    unsigned reserved[3];
+    boost::weak_ptr<Part>* first;
+    boost::weak_ptr<Part>* last;
+    unsigned size() const { return (unsigned)(last - first); }
+    const boost::weak_ptr<Part>& operator[](unsigned pos) const
     {
-        if (_InterlockedDecrement(&p->strong) == 0)
-        {
-            p->dispose();
-            if (_InterlockedDecrement(&p->weak) == 0)
-                p->destroy();
-        }
+        if (pos >= size())
+            _invalid_parameter_noinfo();
+        return *(first + pos);
     }
-}
+};
 
-__forceinline const Weak& Container::operator[](unsigned int i) const
-{
-    return begin[i];
-}
+extern float adjustment;
+extern void __cdecl adjustTransform(Transform*, const Transform*, float);
 
 void __cdecl updateParts(const Container* parts)
 {
-    unsigned int i = 0;
-    if (static_cast<unsigned int>(parts->end - parts->begin) > 0)
-    {
-        do
+    for (unsigned i = 0; i < parts->size(); ++i) {
+        boost::shared_ptr<Part> part = (*parts)[i].lock();
+        Part* object = part.get();
+        if (object && object->enabled())
         {
-            if (i >= static_cast<unsigned int>(parts->end - parts->begin))
-                invalid_parameter_noinfo();
-
-            {
-                Shared part = (*parts)[i].lock();
-                Part* object = part.object;
-                if (object && object->enabled())
-                {
-                    const Transform* current = object->getTransform();
-                    Transform next;
-                    adjustTransform(&next, current, adjustment);
-                    if (!(next.x == current->x &&
-                          next.y == current->y &&
-                          next.z == current->z &&
-                          next.rotation.equals(current->rotation)))
-                        object->setTransform(next);
-                }
-            }
-            ++i;
+            const Transform* current = object->getTransform();
+            Transform next;
+            adjustTransform(&next, current, adjustment);
+            if (!(next.x == current->x &&
+                  next.y == current->y &&
+                  next.z == current->z &&
+                  next.rotation.equals(current->rotation)))
+                object->setTransform(next);
         }
-        while (i < static_cast<unsigned int>(parts->end - parts->begin));
     }
 }

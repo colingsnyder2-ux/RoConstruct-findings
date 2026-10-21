@@ -1,74 +1,48 @@
-// from server: 93% by Espeon
+// from server: 100% by EspClaude
 // roc-lang: cpp
 // roc-cl: 21022
-// roc-flags: /O2 /GS- /EHsc /MD /fp:fast
-// roc-lib: openrbx-client-dll roc_espeon_chathudsize_2dc67214634728de.cpp
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast
+// roc-lib: rbxgs-dll roc_espclaude_fb5eba5bc7902a07.cpp
 
 // Candidate translation unit (score above; library headers required).
-#include <string>
-#include <boost/shared_ptr.hpp>
-struct Color {
-    float r, g, b, a;
-    Color(const Color&);
-};
-
-inline Color::Color(const Color& c)
-    : r(c.r), g(c.g), b(c.b), a(c.a)
+#define _DLL
+#define private public
+#include "util/IRenderable.h"
+#undef private
+#include "util/Object.h"
+#define hasListeners() hasListeners() const { return listeners.size() > 0; } bool hasListenersEmpty()
+#include "util/Events.h"
+#undef hasListeners
+namespace RBX { template<class T> class GuidItem { public: virtual ~GuidItem() {} char guidPad[0xc]; }; }
+namespace RBX { template<class T> class GuidAFP : public AbstractFactoryProduct<T> { protected: virtual void onGuidChanged() {} }; }
+#define AbstractFactoryProduct GuidItem<Instance>, public GuidAFP
+#include "util/Guid.h"
+namespace RBX { class GuidStub { public: typedef Guid::Data Data; void assign(const Data&) {} operator const Guid&() const { return *(const Guid*)0; } }; }
+#define Guid GuidStub
+#include "v8tree/Instance.h"
+#undef Guid
+#undef AbstractFactoryProduct
+#include "v8datamodel/GuiBuilder.h"
+#include "v8datamodel/DataModel.h"
+#include "v8datamodel/Workspace.h"
+#include "gui/Gui.h"
+#include "gui/ChatOutput.h"
+namespace RBX
 {
-}
+	boost::shared_ptr<TopMenuBar> GuiBuilder::buildChatHud()
+	{
+		Layout panelLayout;
+		panelLayout.offset.x = 25;
+		panelLayout.offset.y = 100;
+		panelLayout.xLocation = Rect::LEFT;
+		panelLayout.yLocation = Rect::TOP;
+		panelLayout.layoutStyle = Layout::VERTICAL;
+		boost::shared_ptr<RelativePanel> panel = Creatable<Instance>::create<RelativePanel>(panelLayout);
+		panel->setName("ChatHud");
 
-const Color& __cdecl defaultColor();
+		panel->addGuiItem(Creatable<Instance>::create<ChatOutput>());
 
-struct Size {
-    short width, height;
-    Size(short, short);
-};
+		return panel;
+	}
 
-inline Size::Size(short w, short h)
-    : width(w), height(h)
-{
-}
-
-struct Style {
-    int kind;
-    int flags;
-    Size size;
-    int enabled;
-    Color color;
-
-    Style(int, int, const Size&, int, Color);
-    Style(const Style&);
-};
-
-inline Style::Style(int k, int f, const Size& s, int e, Color c)
-    : kind(k), flags(f), size(s), enabled(e), color(c)
-{
-}
-
-inline Style::Style(const Style& s)
-    : kind(s.kind), flags(s.flags), size(s.size),
-      enabled(s.enabled), color(s.color)
-{
-}
-
-typedef std::string String;
-struct Object;
-typedef boost::shared_ptr<Object> Pointer;
-struct Object {
-    virtual void unused();
-    virtual void setName(const String&);
-    void attach(Pointer);
-};
-
-Pointer __cdecl createWidget(Style);
-Pointer __cdecl createChild();
-
-inline const Pointer& reference(const Pointer& p){return p;}
-Pointer __stdcall createChatHud()
-{
-    Pointer widget = createWidget(Style(2, 0, Size(25, 100), 1,
-                                       defaultColor()));
-    {String name("ChatHud");widget->setName(name);}
-    widget->attach(reference(createChild()));
-    return Pointer(widget);
 }

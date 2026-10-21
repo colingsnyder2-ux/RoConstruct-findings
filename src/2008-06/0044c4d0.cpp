@@ -1,8 +1,8 @@
-// from server: 94% by Espeon
+// from server: 95% by EspClaude
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: openrbx-client-dll roc_espeon_settings_b6bcd6cd263c18d5.cpp
+// roc-lib: openrbx-client-dll roc_espclaude_196bcf2f1ef2b6ea.cpp
 
 // Candidate translation unit (score above; library headers required).
 #include <boost/shared_ptr.hpp>
@@ -67,14 +67,15 @@ extern "C" void (__cdecl *invalid_parameter_noinfo)();
 void __cdecl visitElement(void*);
 void __cdecl visitRange(Iterator, Iterator, void (__cdecl *)(void*));
 
+inline void print(int type, const String& message) {
+    Stream* stream = streamSource ? streamSource->getStream() : 0;
+    stream->write(type, message.c_str());
+}
+
 void __cdecl process(Shared value) {
-    {
-        const String& message = formatText(
+    print(0, formatText(
             "End GlobalSettings -----------------------------------",
-            value.get()->text.c_str());
-        Stream* stream = streamSource ? streamSource->getStream() : 0;
-        stream->write(0, message.c_str());
-    }
+            value.get()->text.c_str()));
 
     Range* endOwner = &value.get()->range;
     RangeData* endData = endOwner->data;
@@ -93,3 +94,4 @@ void __cdecl process(Shared value) {
     Iterator begin = { beginOwner, beginData->map, beginOffset };
     visitRange(begin, end, visitElement);
 }
+

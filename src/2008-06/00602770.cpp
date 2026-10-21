@@ -1,61 +1,81 @@
-// from server: 48% by colin
+// from server: 99% by EspClaude
 // roc-lang: cpp
 // roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs-dll roc_guibuilder_native_palette_9d2f31ec2bed2e23.cpp
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast
+// roc-lib: rbxgs-dll roc_espclaude_1966845c8646c6c4.cpp
 
 // Candidate translation unit (score above; library headers required).
-#include <v8datamodel/GuiBuilder.h>
-#include <gui/Button.h>
-#include <gui/MenuItem.h>
-namespace RBX {
-// Native601fd0/601f00/601e30/601db0: genuine constructor argument types
-// and native copies/cleanup establish these external factory prototypes.
-boost::shared_ptr<TopMenuBar> nativeBuilderPanel(const char*,Layout::Style);
-boost::shared_ptr<ImageButton> nativeBuilderImageButton(Adorn*,Verb*,const char*);
-boost::shared_ptr<MenuItem> nativeBuilderMenuItem(Verb*,const char*);
-boost::shared_ptr<TopMenuBar> nativeBuilderRelativePanel(Layout);
-class BuilderGuiApi {
-public:
-    unsigned numChildren() const {
-        const boost::shared_ptr<Instances>& children=*(const boost::shared_ptr<Instances>*)((const char*)this+0x108);
-        return children ? children->size() : 0;
-    }
-    void setGuiSize(const G3D::Vector2& value) { *(G3D::Vector2*)((char*)this+0x13c)=value; }
-};
-// Actual Workspace VerbContainer base begins at2ec in every native lookup.
-// Genuine public getVerb(std::string) performs the lookup, not a substitute map.
-__forceinline Verb* GuiBuilder::getVerb(const std::string& name) {
-    return ((VerbContainer*)((char*)workspace+0x2ec))->getVerb(name);
-}
-void GuiBuilder::buildRightPaletteItems(Adorn* adorn,boost::shared_ptr<TopMenuBar> palette) {
-    palette->addGuiItem(nativeBuilderImageButton(adorn,getVerb("FirstPersonIndicator"),"FirstPersonIndicator"));
-    palette->addGuiItem(nativeBuilderImageButton(adorn,getVerb("ReportAbuse"),"ReportAbuse"));
-    boost::shared_ptr<TopMenuBar> left=nativeBuilderPanel("CameraLeft",Layout::VERTICAL);
-    left->addGuiItem(nativeBuilderImageButton(adorn,getVerb("CameraTiltUp"),"Tilt Up"));
-    left->addGuiItem(nativeBuilderImageButton(adorn,getVerb("CameraTiltDown"),"Tilt Down"));
-    boost::shared_ptr<TopMenuBar> right=nativeBuilderPanel("CameraRight",Layout::VERTICAL);
-    right->addGuiItem(nativeBuilderImageButton(adorn,getVerb("CameraZoomIn"),"Zoom In"));
-    right->addGuiItem(nativeBuilderImageButton(adorn,getVerb("CameraZoomOut"),"Zoom Out"));
-    boost::shared_ptr<TopMenuBar> camera=nativeBuilderPanel("CameraPanel",Layout::HORIZONTAL);
-    camera->addGuiItem(left);
-    camera->addGuiItem(right);
-    palette->addGuiItem(camera);
-}
-boost::shared_ptr<TopMenuBar> GuiBuilder::buildMenu() {
-    Layout layout;
-    layout.backdropColor=GuiItem::translucentBackdrop();
-    boost::shared_ptr<TopMenuBar> menu=nativeBuilderRelativePanel(layout);
-    menu->setName("MainMenu");
-    menu->addGuiItem(nativeBuilderMenuItem(getVerb("TogglePlayMode"),"Tools"));
-    menu->addGuiItem(nativeBuilderMenuItem(getVerb("ToggleToolbox"),"Insert"));
-    menu->addGuiItem(nativeBuilderMenuItem(getVerb("ToggleFullScreen"),"Fullscreen"));
-    menu->addGuiItem(nativeBuilderMenuItem(getVerb("Help"),"Help..."));
-    menu->addGuiItem(nativeBuilderMenuItem(getVerb("Exit"),"   Exit"));
-    for(unsigned i=0;i<((BuilderGuiApi*)menu.get())->numChildren();++i) {
-        GuiItem* item=menu->getGuiItem(i);
-        if(item) ((BuilderGuiApi*)item)->setGuiSize(G3D::Vector2(100.0f,20.0f));
-    }
-    return menu;
-}
+#define _DLL
+#define private public
+#include "util/IRenderable.h"
+#undef private
+#include "util/Object.h"
+#define hasListeners() hasListeners() const { return listeners.size() > 0; } bool hasListenersEmpty()
+#include "util/Events.h"
+#undef hasListeners
+namespace RBX { template<class T> class GuidItem { public: virtual ~GuidItem() {} char guidPad[0xc]; }; }
+namespace RBX { template<class T> class GuidAFP : public AbstractFactoryProduct<T> { protected: virtual void onGuidChanged() {} }; }
+#define AbstractFactoryProduct GuidItem<Instance>, public GuidAFP
+#include "util/Guid.h"
+namespace RBX { class GuidStub { public: typedef Guid::Data Data; void assign(const Data&) {} operator const Guid&() const { return *(const Guid*)0; } }; }
+#define Guid GuidStub
+#include "v8tree/Instance.h"
+#undef Guid
+#undef AbstractFactoryProduct
+#include "v8datamodel/PVInstance.h"
+#define candidatePrimaryPart candidatePrimaryPart; std::vector<boost::shared_ptr<PartInstance> > exeModelVector
+#include "v8datamodel/ModelInstance.h"
+#undef candidatePrimaryPart
+#include "v8datamodel/RootInstance.h"
+#include "v8datamodel/Stats.h"
+#include "v8tree/Verb.h"
+#include "script/Script.h"
+#include "v8world/IMoving.h"
+#include "gui/GuiEvent.h"
+#include "util/RunStateOwner.h"
+#include "util/ContentProvider.h"
+#include "util/Profiling.h"
+#include "util/UIEvent.h"
+#define render3dSelect(a, b) render3dSelect(a, b) { return; } void exeCheckCamera(); void exeUnusedSelect(a, b)
+#include "v8datamodel/Workspace.h"
+#undef render3dSelect
+#include "v8datamodel/GuiBuilder.h"
+#include "v8datamodel/DataModel.h"
+#include "v8datamodel/Workspace.h"
+#include "gui/Gui.h"
+#include "gui/MenuItem.h"
+namespace RBX
+{
+	Verb* GuiBuilder::getVerb(const std::string& name)
+	{
+		Verb* verb = workspace->getVerb(name);
+		return verb;
+	}
+
+	boost::shared_ptr<TopMenuBar> GuiBuilder::buildMenu()
+	{
+		Layout panelLayout;
+		panelLayout.xLocation = Rect::LEFT;
+		panelLayout.yLocation = Rect::TOP;
+		panelLayout.layoutStyle = Layout::HORIZONTAL;
+		panelLayout.backdropColor = GuiItem::translucentBackdrop();
+		boost::shared_ptr<RelativePanel> panel = Creatable<Instance>::create<RelativePanel>(panelLayout);
+		panel->setName("MainMenu");
+
+		panel->addGuiItem(Creatable<Instance>::create<MenuItem>(getVerb("TogglePlayMode"), "Tools"));
+		panel->addGuiItem(Creatable<Instance>::create<MenuItem>(getVerb("ToggleToolbox"), "Insert"));
+		panel->addGuiItem(Creatable<Instance>::create<MenuItem>(getVerb("ToggleFullScreen"), "Fullscreen"));
+		panel->addGuiItem(Creatable<Instance>::create<MenuItem>(getVerb("Help"), "Help..."));
+		panel->addGuiItem(Creatable<Instance>::create<MenuItem>(getVerb("Exit"), "   Exit"));
+
+		for (size_t i = 0; i < panel->numChildren(); ++i)
+		{
+			if (GuiItem* guiItem = panel->getGuiItem((int)i))
+			{
+				guiItem->setGuiSize(G3D::Vector2(100.0f, 20.0f));
+			}
+		}
+
+		return panel;
+	}
 }

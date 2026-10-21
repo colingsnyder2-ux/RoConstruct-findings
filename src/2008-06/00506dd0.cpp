@@ -1,4 +1,10 @@
-// from server: 84% by colin
+// from server: 88% by Espeon
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: rbxgs-dll roc_espeon_effectsnativearraysort03ddb657438ac3db.cpp
+
+// Candidate translation unit (score above; library headers required).
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast
@@ -10,126 +16,9 @@ extern "C" __declspec(dllimport) long __stdcall InterlockedIncrement(volatile lo
 extern "C" __declspec(dllimport) long __stdcall InterlockedDecrement(volatile long*);
 extern void __cdecl sub_6a067a(void*);
 
-namespace G3D {
-
-inline double inf()
-{
-    static double i = HUGE_VAL;
-    return i;
-}
-
-class AtomicInt32 {
-    volatile long _value;
-public:
-    void increment() { InterlockedIncrement(&_value); }
-    unsigned int decrement() { return InterlockedDecrement(&_value) != 0; }
-};
-
-class WeakPtrBase {
-public:
-    virtual void unused();
-    virtual void objectCollected();
-};
-
-struct WeakPtrLinkedList {
-    WeakPtrBase* weakPtr;
-    WeakPtrLinkedList* next;
-};
-
-class ReferenceCountedObject {
-public:
-    AtomicInt32 ReferenceCountedObject_refCount;
-    WeakPtrLinkedList* ReferenceCountedObject_weakPointer;
-    void ReferenceCountedObject_zeroWeakPointers() {
-        WeakPtrLinkedList* node = ReferenceCountedObject_weakPointer;
-        while (node != 0) {
-            node->weakPtr->objectCollected();
-            WeakPtrLinkedList* tmp = node;
-            node = node->next;
-            sub_6a067a(tmp);
-        }
-    }
-    virtual ~ReferenceCountedObject() {}
-};
-
-template <class T>
-class ReferenceCountedPointer {
-private:
-    T* m_pointer;
-    void zeroPointer() {
-        if (m_pointer != 0) {
-            if (m_pointer->ReferenceCountedObject_refCount.decrement() == 0) {
-                m_pointer->ReferenceCountedObject_zeroWeakPointers();
-                delete m_pointer;
-            }
-            m_pointer = 0;
-        }
-    }
-    void setPointer(T* x) {
-        if (x != m_pointer) {
-            zeroPointer();
-            if (x != 0) {
-                m_pointer = x;
-                m_pointer->ReferenceCountedObject_refCount.increment();
-            }
-        }
-    }
-public:
-    ReferenceCountedPointer() : m_pointer(0) {}
-    ReferenceCountedPointer(T* p) : m_pointer(0) { setPointer(p); }
-    ReferenceCountedPointer(const ReferenceCountedPointer& r) : m_pointer(0) { setPointer(r.m_pointer); }
-    ~ReferenceCountedPointer() { zeroPointer(); }
-    ReferenceCountedPointer& operator=(const ReferenceCountedPointer& r) { setPointer(r.m_pointer); return *this; }
-    T* operator->() const { return m_pointer; }
-    T& operator*() const { return *m_pointer; }
-};
-
-class GLight {
-public:
-    char data[0x50];
-};
-
-template <class T>
-class Array {
-public:
-    T* data;
-    int num;
-    int numAllocated;
-    int size() const { return num; }
-    T* begin() { return data; }
-    T* end() { return data + num; }
-    T& operator[](int i) { return data[i]; }
-    void append(const T& v);
-    void resize(int n, bool shrink);
-};
-
-class Lighting : public ReferenceCountedObject {
-public:
-    char pad[0x40 - sizeof(ReferenceCountedObject)];
-    Array<GLight> lightArray;
-    Array<GLight> shadowedLightArray;
-    char more[0x20];
-    static ReferenceCountedPointer<Lighting> create();
-    Lighting& operator=(const Lighting&);
-};
-
-class LightingParameters {
-public:
-    char data[0xf8];
-    LightingParameters& operator=(const LightingParameters&);
-};
-
-class ToneMap {
-public:
-    void setEnabled(bool);
-    ReferenceCountedPointer<Lighting> prepareLighting(const ReferenceCountedPointer<Lighting>&);
-    LightingParameters prepareLightingParameters(const LightingParameters&);
-};
-
-int glGetInteger(int);
-
-}
-
+#include <GLG3D/LightingParameters.h>
+#include <GLG3D/ToneMap.h>
+#include <GLG3D/glcalls.h>
 bool brighter(const G3D::GLight& A, const G3D::GLight& B);
 
 namespace RBX {
@@ -198,13 +87,13 @@ G3D::ReferenceCountedPointer<G3D::Lighting> EffectSettings::update(
         _skyBox = true;
     }
 
-    _groundLOD = shadingDetail * 0.01f;
+    _groundLOD = meshDetail * 0.01f;
 
     if (shadingDetail >= 30.0f) {
         _hemisphereLighting = true;
     }
 
-    _LODShift = shadingDetail * 0.02f - 1.0f;
+    _LODShift = meshDetail * 0.02f - 1.0f;
 
     if (shadows && numShadowLights > 0) {
         _stencilShadows = true;
@@ -215,7 +104,7 @@ G3D::ReferenceCountedPointer<G3D::Lighting> EffectSettings::update(
         }
     }
 
-    std::sort(lighting->shadowedLightArray.begin(), lighting->shadowedLightArray.end(), brighter);
+    lighting->shadowedLightArray.sort(brighter);
 
     int excessShadowLights = lighting->shadowedLightArray.size() - numShadowLights;
 
@@ -228,7 +117,7 @@ G3D::ReferenceCountedPointer<G3D::Lighting> EffectSettings::update(
         lighting->shadowedLightArray.resize(lighting->shadowedLightArray.size() - excessShadowLights, true);
     }
 
-    std::sort(lighting->lightArray.begin(), lighting->lightArray.end(), brighter);
+    lighting->lightArray.sort(brighter);
 
     int excessLights = lighting->lightArray.size() - numNonShadowLights;
 

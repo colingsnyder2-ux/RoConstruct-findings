@@ -1,99 +1,55 @@
-// from server: 96% by Espeon
+// from server: 100% by EspClaude
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: openrbx-client-dll roc_espeon_scriptdocnativeguardb95e9b77c6290561.cpp
+// roc-lib: openrbx-client-dll roc_espclaude_74998b13fc66ee74.cpp
 
 // Candidate translation unit (score above; library headers required).
-// from server: 91% by colin
-struct Control {
-    int modified(int);
-    int length(int);
-    void text(int, char*);
-    void savePoint(int);
-};
-
 #include <boost/thread/mutex.hpp>
-typedef boost::mutex Mutex;
-extern void (__thiscall *stringCreate)(void*, const char*);
-extern void (__thiscall *stringDestroy)(void*);
-extern void (__thiscall *bufferCreate)(void*);
-extern void (__thiscall *bufferDestroy)(void*);
-extern char* (__thiscall *bufferGet)(void*, int, int);
-extern void (__thiscall *bufferRelease)(void*, int);
-extern const char* (__thiscall *bufferData)(void*);
-
-struct String {
-    char storage[28];
-    String(const char*);
-    ~String();
+#include <string>
+class CScintillaCtrl {
+public:
+    int GetModify(int bDirect = 1);
+    int GetLength(int bDirect = 1);
+    void GetText(int length, char* text);
+    void SetSavePoint(int bDirect = 1);
 };
-
-inline String::String(const char* s){stringCreate(this,s);}
-
-inline String::~String()
-{
-    stringDestroy(this);
-}
-
-struct Buffer {
-    char* storage;
-    Buffer();
-    __declspec(dllimport) ~Buffer() throw();
-    char* get(int, int);
-    void release(int);
-    const char* data();
+class CStringA {
+    char* m_pszData;
+public:
+    __declspec(dllimport) CStringA() throw();
+    __declspec(dllimport) ~CStringA() throw();
+    __declspec(dllimport) char* GetBuffer(int nMinBufferLength, int flag);
+    __declspec(dllimport) void ReleaseBuffer(int nNewLength = -1);
+    __declspec(dllimport) operator const char*() const throw();
 };
-
-inline Buffer::Buffer()
-{
-    bufferCreate(this);
-}
-
-inline char* Buffer::get(int n, int flag)
-{
-    return bufferGet(this, n, flag);
-}
-
-inline void Buffer::release(int n)
-{
-    bufferRelease(this, n);
-}
-
-inline const char* Buffer::data()
-{
-    return bufferData(this);
-}
-
-typedef boost::mutex::scoped_lock Lock;
-struct Script {
-    void update(const String&);
+class Script {
+public:
+    void setSource(const std::string& source);
 };
-
-struct CScriptDoc {
+class CScriptDoc {
     char padding0[0x138];
-    Mutex* mutex;
+    boost::mutex* mutex;
     char padding1[8];
     Script* script;
     char padding2[12];
     bool busy;
-
-    Control* control();
+public:
+    CScintillaCtrl& GetCtrl();
     void f();
 };
-
 void CScriptDoc::f()
 {
-    if (control()->modified(1) && !busy) {
+    if (GetCtrl().GetModify() && !busy) {
         if (script) {
-            Lock lock(*mutex);
-            int n = control()->length(1);
-            Buffer buffer;
-            ++n;
-            control()->text(n, buffer.get(n, 1));
-            buffer.release(-1);
-            script->update(String(buffer.data()));
+            boost::mutex::scoped_lock lock(*mutex);
+            int length = GetCtrl().GetLength();
+            CStringA text;
+            GetCtrl().GetText(length + 1, text.GetBuffer(length + 1, 1));
+            text.ReleaseBuffer();
+            std::string source(text);
+            script->setSource(source);
         }
-        control()->savePoint(1);
+        GetCtrl().SetSavePoint();
     }
 }

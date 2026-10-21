@@ -1,8 +1,8 @@
-// from server: 95% by EspClaude
+// from server: 100% by Espeon
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: openrbx-client roc_espclaude_f18f0809002cd795.cpp
+// roc-lib: openrbx-client roc_espeon_schedulerinitialactive8c5062d2646ae3f9.cpp
 
 // Candidate translation unit (score above; library headers required).
 #define NOMINMAX
@@ -27,8 +27,9 @@ struct S {
 };
 void S::run()
 {
+    int active = running;
     double wait = interval;
-    while (running) {
+    while (active) {
         {
             boost::mutex::scoped_lock lock(mutex);
             if (wait > 0) {
@@ -59,5 +60,6 @@ void S::run()
                 wait = -1.0;
             }
         }
+        active = running;
     }
 }

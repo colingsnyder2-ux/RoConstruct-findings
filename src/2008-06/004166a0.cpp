@@ -1,8 +1,8 @@
-// from server: 89% by EspClaude
+// from server: 92% by Espeon
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: atl-9.0-dll-rtm roc_espclaude_af979041c543280d.cpp
+// roc-lib: atl-9.0-dll-rtm roc_espeon_contentdistinctstringtemps61ed3b750b05af46.cpp
 
 // Candidate translation unit (score above; library headers required).
 #ifndef _CPPUNWIND
@@ -57,6 +57,15 @@ struct CStr {
     __declspec(dllimport) void __cdecl Format(const char* fmt, ...);
 };
 
+struct TemporaryCStr {
+    char* m_pszData;
+    __declspec(dllimport) TemporaryCStr() throw();
+    __declspec(dllimport) TemporaryCStr(const wchar_t* psz);
+    __declspec(dllimport) ~TemporaryCStr() throw();
+    __declspec(dllimport) operator const char*() const throw();
+    __declspec(dllimport) void __cdecl Format(const char* fmt, ...);
+};
+
 HRESULT __cdecl CheckUrl(BSTR url);
 HRESULT __cdecl ReportError(const GUID& iid, const char* msg, HRESULT hr);
 HRESULT __cdecl ReportError(const GUID& iid, const std::exception& e);
@@ -76,13 +85,13 @@ HRESULT STDMETHODCALLTYPE CContent::Load(BSTR url)
     if (HRESULT hr = CheckUrl(url))
     {
         CStr msg;
-        msg.Format("Untrusted Url: %s", CStr(url));
+        msg.Format("Untrusted Url: %s", TemporaryCStr(url));
         return ReportError(IID_IContent, msg, hr);
     }
     try
     {
         std::string error;
-        UrlContent(CStr(url)).load(stream, true, error);
+        UrlContent(TemporaryCStr(url)).load(stream, true, error);
     }
     catch (std::exception& e)
     {

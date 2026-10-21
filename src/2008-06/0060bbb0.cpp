@@ -1,86 +1,41 @@
-// from server: 94% by king_originala
-void* __cdecl operator new(unsigned int);
-void __cdecl operator delete(void*);
+// from server: 100% by EspClaude
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+// roc-lib: rbxgs-dll roc_espclaude_518ebf69a098e554.cpp
 
-struct Joint {
-    char storage[0x98];
-    Joint();
-};
-
-struct String {
-    char storage[28];
-    String(const char*);
-    ~String();
-};
-
-extern String* (__thiscall *stringConstruct)(String*, const char*);
-extern void (__thiscall *stringDestroy)(String*);
-
-__forceinline String::String(const char* text) {
-    stringConstruct(this, text);
-}
-
-__forceinline String::~String() {
-    stringDestroy(this);
-}
-
-extern const unsigned int table0[];
-extern const unsigned int table10[];
-extern const unsigned int table14[];
-extern const unsigned int table20[];
-extern const unsigned int table24[];
-extern const unsigned int table44[];
-extern const unsigned int table64[];
-extern const unsigned int table84[];
-extern const unsigned int tableA4[];
-extern const unsigned int tableC4[];
-extern const unsigned int table130[];
-
-struct Reference {
-    void* object;
-    void* control;
-    Reference(int = 0);
-    ~Reference();
-};
-
-__forceinline Reference::Reference(int) : control(0) {}
-
-struct Base {
-    unsigned int slots[0x154 / 4];
-    Base(Joint*);
-    ~Base();
-    void setValue(const String&);
-};
-
-struct S : Base {
-    Reference first;
-    float unused;
-    Reference second;
-    volatile bool flag;
-    char padding[3];
-    volatile bool enabled;
-    S();
-};
-
-S::S()
-    : Base(new Joint),
-      first((
-          slots[0] = (unsigned int)table0,
-          slots[0x10 / 4] = (unsigned int)table10,
-          slots[0x14 / 4] = (unsigned int)table14,
-          slots[0x20 / 4] = (unsigned int)table20,
-          slots[0x24 / 4] = (unsigned int)table24,
-          slots[0x44 / 4] = (unsigned int)table44,
-          slots[0x64 / 4] = (unsigned int)table64,
-          slots[0x84 / 4] = (unsigned int)table84,
-          slots[0xa4 / 4] = (unsigned int)tableA4,
-          slots[0xc4 / 4] = (unsigned int)tableC4,
-          slots[0x130 / 4] = (unsigned int)table130,
-          first.object = 0,
-          0)),
-      second((second.object = 0, 0)),
-      flag(false),
-      enabled(false)
+// Candidate translation unit (score above; library headers required).
+#define _DLL
+#include "RbxGraphics/Adorn.h"
+#include "AppDraw/SelectState.h"
+#include "util/IndexArray.h"
+#define private public
+#include "util/IRenderable.h"
+#undef private
+#include "util/Object.h"
+namespace RBX { template<class T> class GuidItem { public: virtual ~GuidItem() {} char guidPad[0xc]; }; }
+#define AbstractFactoryProduct GuidItem<Instance>, public AbstractFactoryProduct
+#include "util/Guid.h"
+namespace RBX { class GuidStub { public: typedef Guid::Data Data; void assign(const Data&) {} operator const Guid&() const { return *(const Guid*)0; } }; }
+#define Guid GuidStub
+#include "v8tree/Instance.h"
+#undef Guid
+#undef AbstractFactoryProduct
+#include "v8datamodel/Hopper.h"
+#define polarity polarity(); typedef int polarityNotInExe
+#include "v8world/MotorJoint.h"
+#undef polarity
+#include "v8datamodel/PartInstance.h"
+namespace RBX { class IJointOwnerExe : public IJointOwner { protected: boost::shared_ptr<PartInstance> exeParts[2]; }; }
+#define IJointOwner IJointOwnerExe
+#include "v8datamodel/JointInstance.h"
+#undef IJointOwner
+#include "v8datamodel/Feature.h"
+namespace RBX
 {
-    setValue(String("VelocityMotor"));
+	VelocityMotor::VelocityMotor()
+		: DescribedCreatable(new MotorJoint())
+	{
+		setName("VelocityMotor");
+	}
 }

@@ -1,38 +1,31 @@
-// from server: 91% by king_originala
-void __cdecl operator delete(void*);
+// from server: 100% by EspClaude
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: openrbx-client-dll roc_espclaude_aa5beb2fee5fee7e.cpp
 
-struct Link {
-    Link* next;
+// Candidate translation unit (score above; library headers required).
+#define _CPPUNWIND 1
+#define BOOST_MULTI_INDEX_DISABLE_COMPRESSED_ORDERED_INDEX_NODES
+#include <cstddef>
+#include <boost/multi_index_container.hpp>
+#include <boost/multi_index/hashed_index.hpp>
+#include <boost/multi_index/ordered_index.hpp>
+#include <boost/multi_index/member.hpp>
+#include <boost/multi_index/identity.hpp>
+namespace RBX { class PVInstance; }
+struct Item {
+	RBX::PVInstance* instance;
+	char data[0x278];
+	int order;
+	~Item();
+	bool operator==(const Item& other) const { return instance == other.instance; }
 };
-
-struct Node {
-    char padding[0x290];
-    Link link;
-    ~Node();
-};
-
-struct S {
-    char padding0[8];
-    unsigned count;
-    char padding1[8];
-    Link* buckets;
-
-    void clear();
-};
-
-void S::clear()
-{
-    Link* bucket = buckets;
-    Link* end = bucket + count;
-    for (; bucket != end; ++bucket) {
-        Link* current = bucket->next;
-        while (current != bucket) {
-            Link* next = current->next;
-            Node* node = reinterpret_cast<Node*>(
-                reinterpret_cast<char*>(current) - 0x290);
-            node->~Node();
-            operator delete(node);
-            current = next;
-        }
-    }
-}
+std::size_t hash_value(const Item& item);
+typedef boost::multi_index_container<Item,
+	boost::multi_index::indexed_by<
+		boost::multi_index::hashed_unique<boost::multi_index::identity<Item> >,
+		boost::multi_index::ordered_non_unique<boost::multi_index::member<Item, int, &Item::order> >
+	> > Items;
+typedef Items::nth_index<0>::type HashIndex;
+template void HashIndex::delete_all_nodes_();

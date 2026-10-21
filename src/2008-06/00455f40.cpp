@@ -1,33 +1,20 @@
-// from server: 91% by king_originala
-struct Storage {
-    Storage(const void *);
-    ~Storage();
-};
+// from server: 100% by EspClaude
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: atl-9.0-dll-rtm roc_espclaude_7e1dea9a7966a33a.cpp
 
-struct S : Storage {
-    S(const S &, const S &);
-};
-
-extern const void *(__thiscall *get_allocator)(const S *);
-extern void (__thiscall *construct)(Storage *, const void *);
-extern unsigned int (__thiscall *get_size)(const S *);
-extern const char *(__thiscall *get_data)(const S *);
-extern void (__cdecl *compose)(S *, const char *, unsigned int,
-                              const char *, unsigned int);
-
-__forceinline Storage::Storage(const void *allocator)
+// Candidate translation unit (score above; library headers required).
+#ifndef _CPPUNWIND
+#define _CPPUNWIND 1
+#endif
+#ifndef _AFXDLL
+#define _AFXDLL
+#endif
+#include <new>
+#include <afx.h>
+#pragma inline_depth(0)
+CString rocConcat(const CString& a, const CString& b)
 {
-    construct(this, allocator);
-}
-
-__forceinline S::S(const S &left, const S &right)
-    : Storage(get_allocator(&left))
-{
-    compose(this, get_data(&left), get_size(&left),
-            get_data(&right), get_size(&right));
-}
-
-S operator+(const S &left, const S &right)
-{
-    return S(left, right);
+	return a + b;
 }

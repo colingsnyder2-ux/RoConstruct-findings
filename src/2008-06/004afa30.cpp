@@ -1,61 +1,125 @@
-// from server: 98% by king_originala
-typedef void (__thiscall *StringConstruct)(void *, const char *);
-typedef void (__thiscall *StringDestroy)(void *);
+// from server: 100% by EspClaude
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: rbxgs-dll roc_espclaude_e4de95bcbafa2a17.cpp
 
-extern StringConstruct stringConstruct;
-extern StringDestroy stringDestroy;
-
-struct String {
-    unsigned char storage[32];
-
-    String(const char *text) { stringConstruct(this, text); }
-    ~String() { stringDestroy(this); }
+// Candidate translation unit (score above; library headers required).
+#define _DLL
+#include <stddef.h>
+#include <windows.h>
+#include <string>
+#include <vector>
+#include <boost/shared_ptr.hpp>
+#include <boost/enable_shared_from_this.hpp>
+#include <boost/scoped_ptr.hpp>
+#include "G3D/Array.h"
+#include <stddef.h>
+namespace RBX {
+class Name;
+class Instance;
+struct DebugMember { DebugMember(); ~DebugMember(); int a, b; };
+class __declspec(novtable) Debugable {
+public:
+	virtual void dump();
+	bool validating;
+	DebugMember member;
+	Debugable() : validating(false) {}
 };
-
-struct Base {
-    unsigned int slots[78];
-
-    Base();
-    ~Base();
-    void setName(const String &);
+class Object {
+public:
+	virtual ~Object() {}
 };
-
-struct PointerRange {
-    void *first;
-    void *last;
-    void *limit;
-
-    PointerRange() {
-        last = 0;
-        limit = 0;
-        first = 0;
-    }
-
-    ~PointerRange();
+template<class T> class Creatable : public Object { };
+template<class T> class AbstractFactoryProduct : public Creatable<T> {
+protected:
+	AbstractFactoryProduct() {}
+public:
+	virtual const Name& getClassName() const = 0;
 };
-
-struct S : Base {
-    PointerRange range1;
-    PointerRange range2;
-    unsigned int value;
-
-    S();
+class DescribedBase0 { public: virtual ~DescribedBase0(); int a, b; };
+class DescribedBase1 { public: virtual ~DescribedBase1(); };
+class Described : public DescribedBase0, public DescribedBase1 {
+public:
+	Described();
+	virtual ~Described();
 };
-
-S::S() : Base(), range1(), range2() {
-    slots[0] = 0x824acc;
-    slots[4] = 0x824ac0;
-    slots[5] = 0x824ab8;
-    slots[8] = 0x824ab0;
-    slots[9] = 0x824aa0;
-    slots[17] = 0x824a90;
-    slots[25] = 0x824a80;
-    slots[33] = 0x824a70;
-    slots[41] = 0x824a60;
-    slots[49] = 0x824a50;
-    slots[76] = 0x824a44;
-    slots[77] = 0x824a38;
-    value = 0;
-    String name(reinterpret_cast<const char *>(0x824b0c));
-    setName(name);
+template<int N> class Notifier {
+public:
+	Notifier();
+	virtual ~Notifier();
+	char pad[0x1c];
+};
+template<class T> class Association {
+	std::vector<boost::shared_ptr<T> > v;
+};
+extern long instanceCount;
+class Instance : public boost::enable_shared_from_this<Instance>,
+                 public Debugable,
+                 public AbstractFactoryProduct<Instance>,
+                 public Described,
+                 public Notifier<0>,
+                 public Notifier<1>,
+                 public Notifier<2>,
+                 public Notifier<3>,
+                 public Notifier<4>,
+                 public Notifier<5>
+{
+private:
+	Association<Instance> assoc;
+	Instance* parent;
+	boost::shared_ptr<std::vector<boost::shared_ptr<Instance> > > children;
+	std::string name;
+	bool archivable;
+protected:
+	Instance();
+	virtual ~Instance();
+public:
+	virtual const Name& getClassName() const;
+	void setName(const std::string& value);
+};
+class Service {};
+template<class Class, class Event> class __declspec(novtable) Listener {
+protected:
+	virtual void onEvent(const Class*, Event) = 0;
+	virtual ~Listener() {}
+};
+template<class Base, int N> class NonFactoryProduct : public Base {
+protected:
+	NonFactoryProduct();
+};
+class World;
+class AutoJoin {};
+class AutoDestroy {};
+class IRenderable;
+template<class T> class IndexArray {
+	G3D::Array<T*> array;
+};
+class IRenderableBucket {
+	IndexArray<IRenderable> renderable2ds;
+	IndexArray<IRenderable> renderable3ds;
+public:
+	~IRenderableBucket();
+};
+class JointsService : public NonFactoryProduct<Instance, 0>,
+                      public Service,
+                      public IRenderableBucket,
+                      public Listener<World, AutoJoin>,
+                      public Listener<World, AutoDestroy>
+{
+public:
+	World* world;
+	virtual void onEvent(const World* source, AutoDestroy event);
+	virtual void onEvent(const World* source, AutoJoin event);
+	JointsService();
+	friend struct Check;
+};
+struct Check {
+	typedef char c1[(offsetof(JointsService, world) == 0x150) ? 1 : -1];
+};
+JointsService::JointsService()
+	: world(NULL)
+{
+	setName("JointsService");
+}
 }

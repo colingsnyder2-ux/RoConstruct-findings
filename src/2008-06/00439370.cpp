@@ -1,8 +1,9 @@
+// from server: 100% by EspClaude
 // from server: 97% by Espeon
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: openrbx-client-dll roc_espeon_selectionkeylocal_9d3a3b31cf152d7e.cpp
+// roc-lib: openrbx-client-dll roc_espclaude_576de34493420f37.cpp
 
 // Candidate translation unit (score above; library headers required).
 #include <map>
@@ -11,13 +12,13 @@
 extern "C" __declspec(dllimport) int __stdcall PostMessageA(void*,unsigned int,unsigned int,long);
 struct S {
  int reserved;boost::recursive_mutex mutex;char lockTail[28];std::map<unsigned int,int> tree;char padding[32];bool pending,disabled;char alignment[2];std::set<int> collection;
- void f(int,int,int);
+struct Ev{int key;int other;};
+ void f(const void*,Ev);
 };
-void S::f(int,int key,int) {
+void S::f(const void*,Ev ev) {
  boost::recursive_mutex::scoped_lock guard(mutex);
  if(!disabled) {
-  unsigned int lookup=key;
-  std::map<unsigned int,int>::const_iterator found=tree.find(lookup);
+  std::map<unsigned int,int>::const_iterator found=tree.find(ev.key);
   if(found!=tree.end())collection.insert(found->second);
   boost::detail::thread::lock_ops<boost::recursive_mutex>::lock(mutex);
   if(!pending) {
@@ -28,3 +29,4 @@ void S::f(int,int key,int) {
   boost::detail::thread::lock_ops<boost::recursive_mutex>::unlock(mutex);
  }
 }
+

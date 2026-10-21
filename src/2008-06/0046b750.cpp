@@ -1,35 +1,21 @@
-// from server: 94% by Espeon
+// from server: 100% by EspClaude
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: openrbx-client-dll roc_espeon_callbacknonpod_a7874ff86c5df17f.cpp
+// roc-lib: openrbx-client-dll roc_espclaude_a0b85ce62e1e81da.cpp
 
 // Candidate translation unit (score above; library headers required).
+#include <vector>
+#include <algorithm>
 #include <boost/shared_ptr.hpp>
-// from server: 90% by king_originala
-extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
-#pragma intrinsic(_InterlockedExchangeAdd)
-
-
+#include <boost/bind.hpp>
 
 namespace RBX {
-class Instance {
-public:
-    virtual ~Instance();
-    char pad[0x100];
-    Instance* next;
-};
-
-class ServiceProvider : public Instance {
-public:
-    ServiceProvider* finish();
-};
+class Instance;
+class ServiceProvider;
 }
 
-struct RefCount {
-    void* vtable;
-    volatile long count;
-};
+typedef std::vector<boost::shared_ptr<RBX::Instance> > Instances;
 
 struct Object {
     char pad[0x204];
@@ -44,63 +30,26 @@ struct Guard {
     ~Guard();
 };
 
+struct List;
+
 struct Result {
-    void* value;
-    explicit Result(void*);
+    List* value;
+    explicit Result(List* p) : value(p) {}
     ~Result();
 };
 
-inline Result::Result(void* p) : value(p) {}
-
-struct Iterator {
-    void* owner;
-    unsigned index;
-};
-
-struct Range {
-    void* owner;
-    unsigned char pad[8];
-    unsigned first;
-    unsigned last;
-    Iterator begin();
-    Iterator end();
-};
-
-inline Iterator Range::begin() {
-    unsigned index = first;
-    if (index > last)
-        _invalid_parameter_noinfo();
-    Iterator result;
-    result.owner = owner;
-    result.index = index;
-    return result;
-}
-
-inline Iterator Range::end() {
-    unsigned index = last;
-    if (first > index)
-        _invalid_parameter_noinfo();
-    Iterator result;
-    result.owner = owner;
-    result.index = index;
-    return result;
-}
-
-struct Callback {
-    void (__cdecl* function)(void*);
-    void* destination;
-    Callback() {}
-
+struct Provider {
+    char pad[0x154];
+    const Instances* children;
 };
 
 RBX::ServiceProvider* __cdecl func_00421cb0(RBX::Instance*);
-void __cdecl callback(void*);
-Callback __cdecl transform(Iterator, Iterator, Callback);
+void __cdecl collect(List*, boost::shared_ptr<RBX::Instance>);
 
 struct S {
     unsigned char pad[0x24];
     Shared object;
-    void* create();
+    List* create();
     Result f();
 };
 
@@ -109,19 +58,10 @@ Result S::f() {
     Guard guard(object);
 
     Object* p = object.get();
-    RBX::ServiceProvider* provider =
-        func_00421cb0(p ? p->parent : 0);
+    Provider* provider = reinterpret_cast<Provider*>(func_00421cb0(p ? p->parent : 0));
 
-    Callback action;
-    action.function = callback;
-    action.destination = result.value;
-
-    transform(
-        (*reinterpret_cast<Range**>(
-            reinterpret_cast<char*>(provider) + 0x154))->begin(),
-        (*reinterpret_cast<Range**>(
-            reinterpret_cast<char*>(provider) + 0x154))->end(),
-        action);
+    std::for_each(provider->children->begin(), provider->children->end(),
+                  boost::bind(&collect, result.value, _1));
 
     return result;
 }
