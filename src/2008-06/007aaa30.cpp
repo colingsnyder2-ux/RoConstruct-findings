@@ -1,126 +1,183 @@
-// from server: 51% by colin
-struct RenderScene {
-    void dtor();
+// from server: 100% by EspClaude
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: rbxgs-dll roc_espclaude_1a5d26efebba0026.cpp
+
+// Candidate translation unit (score above; library headers required).
+#include <string>
+#include <G3D/Array.h>
+#include <G3D/ReferenceCount.h>
+namespace G3D { class GModule : public ReferenceCountedObject { public: virtual ~GModule(); }; }
+namespace Ogre {
+class MaterialPtr { public: __declspec(dllimport) virtual ~MaterialPtr(); void* pRep; void* pUseCount; };
+class MeshPtr { public: __declspec(dllimport) virtual ~MeshPtr(); void* pRep; void* pUseCount; };
+class SceneNode;
+class SceneManager;
+class Node {
+public:
+    virtual ~Node();
+    __declspec(dllimport) const std::string& getName() const;
 };
-
-extern "C" void __cdecl alignedFree(void*);
-extern "C" void __cdecl sub_45AD90(void*);
-extern "C" void __cdecl sub_475F20(void*);
-extern "C" void __cdecl sub_7AA980(void*);
-extern "C" int __stdcall InterlockedDecrement(int*);
-extern "C" void __cdecl sub_804CA4(void*);
-extern "C" void __cdecl sub_804E70(void*);
-extern "C" void* __stdcall sub_8021AC(void*);
-extern "C" void __cdecl sub_804484(void);
-
-void RenderScene::dtor()
+}
+namespace RBX {
+namespace Render {
+class RenderSurface { public: ~RenderSurface(); int x; };
+}
+namespace RenderNew {
+struct NodeContainer {
+    virtual void nv0();
+};
+struct RootNode {
+    virtual void rn0();
+    virtual void rn1();
+    virtual void rn2();
+    virtual void rn3();
+    virtual void rn4();
+    virtual void rn5();
+    virtual void rn6();
+    virtual void rn7();
+    virtual void rn8();
+    virtual void rn9();
+    virtual void rn10();
+    virtual void rn11();
+    virtual void rn12();
+    virtual void rn13();
+    virtual void rn14();
+    virtual void rn15();
+    virtual void rn16();
+    virtual void rn17();
+    virtual void rn18();
+    virtual void rn19();
+    virtual void rn20();
+    virtual void rn21();
+    virtual void rn22();
+    virtual void rn23();
+    virtual void rn24();
+    virtual void rn25();
+    virtual void rn26();
+    virtual void rn27();
+    virtual void rn28();
+    virtual void rn29();
+    virtual void rn30();
+    virtual void rn31();
+    virtual void rn32();
+    virtual void rn33();
+    virtual void rn34();
+    virtual void rn35();
+    virtual void rn36();
+    virtual void rn37();
+    virtual void rn38();
+    virtual void rn39();
+    virtual void rn40();
+    virtual void rn41();
+    virtual void rn42();
+    virtual void rn43();
+    virtual void rn44();
+    virtual void rn45();
+    virtual void rn46();
+    virtual void rn47();
+    virtual void rn48();
+    virtual void rn49();
+    virtual void rn50();
+    virtual void rn51();
+    virtual void rn52();
+    virtual void rn53();
+    virtual void rn54();
+    virtual void rn55();
+    virtual void removeAndDestroyChild(const std::string& name);
+};
+struct Creator {
+    virtual void cr0();
+    virtual void cr1();
+    virtual void cr2();
+    virtual void cr3();
+    virtual void cr4();
+    virtual void cr5();
+    virtual void cr6();
+    virtual void cr7();
+    virtual void cr8();
+    virtual void cr9();
+    virtual void cr10();
+    virtual void cr11();
+    virtual void cr12();
+    virtual void cr13();
+    virtual void cr14();
+    virtual void cr15();
+    virtual void cr16();
+    virtual void cr17();
+    virtual void cr18();
+    virtual void cr19();
+    virtual void cr20();
+    virtual void cr21();
+    virtual void cr22();
+    virtual void cr23();
+    virtual void cr24();
+    virtual void cr25();
+    virtual void cr26();
+    virtual void cr27();
+    virtual void cr28();
+    virtual void cr29();
+    virtual void cr30();
+    virtual void cr31();
+    virtual void cr32();
+    virtual void cr33();
+    virtual void cr34();
+    virtual void cr35();
+    virtual void cr36();
+    virtual void cr37();
+    virtual void cr38();
+    virtual void cr39();
+    virtual void cr40();
+    virtual void cr41();
+    virtual void cr42();
+    virtual void cr43();
+    virtual void cr44();
+    virtual RootNode* getRootSceneNode();
+};
+class SceneNodeEx : public Ogre::Node {
+public:
+    char pad[0x1d0];
+    Creator* creator;
+};
+class RenderBase {
+public:
+    virtual ~RenderBase() {}
+    int x4;
+    G3D::Array<G3D::ReferenceCountedPointer<G3D::GModule> > modules;
+};
+class Obj { public: virtual ~Obj(); };
+class RCObj : public G3D::ReferenceCountedObject { public: virtual ~RCObj(); };
+class RenderScene : public RenderBase {
+public:
+    char pad0[0x268 - 0x14];
+    SceneNodeEx* sceneNode;
+    Obj* obj;
+    Ogre::MaterialPtr material;
+    Ogre::MeshPtr mesh;
+    G3D::Array<Render::RenderSurface> surfacesA;
+    G3D::Array<int*> listA;
+    G3D::Array<int*> listB;
+    G3D::Array<int*> listC;
+    G3D::Array<Render::RenderSurface> surfacesB;
+    G3D::Array<G3D::ReferenceCountedPointer<G3D::GModule> > modules2;
+    G3D::ReferenceCountedPointer<RCObj> refA;
+    char pad1[0x1c];
+    G3D::ReferenceCountedPointer<RCObj> refB;
+    char pad2[0x14];
+    G3D::ReferenceCountedPointer<RCObj> refC;
+    G3D::ReferenceCountedPointer<RCObj> refD;
+    char pad3[8];
+    G3D::Array<int> indices;
+    virtual ~RenderScene();
+};
+}
+}
+RBX::RenderNew::RenderScene::~RenderScene()
 {
-    *(int*)this = 0x8749dc;
-    int* p = *(int**)((char*)this + 0x268);
-    if (p != 0) {
-        int* q = *(int**)((char*)p + 0x1d4);
-        int* r = *(int**)q;
-        void* (__thiscall *fn)(void*) = (void* (__thiscall *)(void*))*(int*)((char*)r + 0xb4);
-        int* ret = (int*)fn(q);
-        int* s = *(int**)((char*)this + 0x268);
-        int* t = *(int**)ret;
-        sub_804484();
-        void (__thiscall *fn2)(void*, void*) = (void (__thiscall *)(void*, void*))*(int*)((char*)t + 0xe0);
-        fn2(ret, 0);
-        int* u = *(int**)((char*)this + 0x268);
-        if (u != 0) {
-            int* v = *(int**)u;
-            void (__thiscall *fn3)(void*, int) = (void (__thiscall *)(void*, int))*(int*)v;
-            fn3(u, 1);
-        }
+    if (sceneNode) {
+        sceneNode->creator->getRootSceneNode()->removeAndDestroyChild(sceneNode->getName());
+        delete sceneNode;
     }
-    int* w = *(int**)((char*)this + 0x26c);
-    if (w != 0) {
-        int* x = *(int**)w;
-        void (__thiscall *fn4)(void*, int) = (void (__thiscall *)(void*, int))*(int*)x;
-        fn4(w, 1);
-    }
-    void* y = *(void**)((char*)this + 0x318);
-    alignedFree(y);
-    *(int*)((char*)this + 0x318) = 0;
-    *(int*)((char*)this + 0x31c) = 0;
-    *(int*)((char*)this + 0x320) = 0;
-    int* z = *(int**)((char*)this + 0x30c);
-    if (z != 0) {
-        int* aa = (int*)((char*)z + 4);
-        if (InterlockedDecrement(aa) == 0) {
-            sub_45AD90(z);
-            int* ab = *(int**)((char*)this + 0x30c);
-            if (ab != 0) {
-                int* ac = *(int**)ab;
-                void (__thiscall *fn5)(void*, int) = (void (__thiscall *)(void*, int))*(int*)ac;
-                fn5(ab, 1);
-            }
-        }
-        *(int*)((char*)this + 0x30c) = 0;
-    }
-    int* ad = *(int**)((char*)this + 0x308);
-    if (ad != 0) {
-        int* ae = (int*)((char*)ad + 4);
-        if (InterlockedDecrement(ae) == 0) {
-            sub_45AD90(ad);
-            int* af = *(int**)((char*)this + 0x308);
-            if (af != 0) {
-                int* ag = *(int**)af;
-                void (__thiscall *fn6)(void*, int) = (void (__thiscall *)(void*, int))*(int*)ag;
-                fn6(af, 1);
-            }
-        }
-        *(int*)((char*)this + 0x308) = 0;
-    }
-    int* ah = *(int**)((char*)this + 0x2f0);
-    if (ah != 0) {
-        int* ai = (int*)((char*)ah + 4);
-        if (InterlockedDecrement(ai) == 0) {
-            sub_45AD90(ah);
-            int* aj = *(int**)((char*)this + 0x2f0);
-            if (aj != 0) {
-                int* ak = *(int**)aj;
-                void (__thiscall *fn7)(void*, int) = (void (__thiscall *)(void*, int))*(int*)ak;
-                fn7(aj, 1);
-            }
-        }
-        *(int*)((char*)this + 0x2f0) = 0;
-    }
-    int* al = *(int**)((char*)this + 0x2d0);
-    if (al != 0) {
-        int* am = (int*)((char*)al + 4);
-        if (InterlockedDecrement(am) == 0) {
-            sub_45AD90(al);
-            int* an = *(int**)((char*)this + 0x2d0);
-            if (an != 0) {
-                int* ao = *(int**)an;
-                void (__thiscall *fn8)(void*, int) = (void (__thiscall *)(void*, int))*(int*)ao;
-                fn8(an, 1);
-            }
-        }
-        *(int*)((char*)this + 0x2d0) = 0;
-    }
-    sub_475F20((char*)this + 0x2c4);
-    sub_7AA980((char*)this + 0x2b8);
-    void* ap = *(void**)((char*)this + 0x2ac);
-    alignedFree(ap);
-    *(int*)((char*)this + 0x2ac) = 0;
-    *(int*)((char*)this + 0x2b0) = 0;
-    *(int*)((char*)this + 0x2b4) = 0;
-    void* aq = *(void**)((char*)this + 0x2a0);
-    alignedFree(aq);
-    *(int*)((char*)this + 0x2a0) = 0;
-    *(int*)((char*)this + 0x2a4) = 0;
-    *(int*)((char*)this + 0x2a8) = 0;
-    void* ar = *(void**)((char*)this + 0x294);
-    alignedFree(ar);
-    *(int*)((char*)this + 0x294) = 0;
-    *(int*)((char*)this + 0x298) = 0;
-    *(int*)((char*)this + 0x29c) = 0;
-    sub_7AA980((char*)this + 0x288);
-    sub_804CA4((char*)this + 0x27c);
-    sub_804E70((char*)this + 0x270);
-    *(int*)this = 0x827424;
-    sub_475F20((char*)this + 8);
+    delete obj;
 }

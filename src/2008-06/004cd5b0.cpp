@@ -1,14 +1,36 @@
-// from server: 77% by colin
+// roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lang: cpp
-// roc-lib: rbxgs-dll roc_unit_2b7f27069e95e1ff.cpp
+// roc-lib: openrbx-client-dll App/v8datamodel/GlobalSettings.cpp
 
 // Candidate translation unit (score above; library headers required).
-#undef _RELEASEASSERT
-#pragma include_alias("util/IRenderable.h", "roc_unit_b8671ae8d3010f90.cpp")
-#pragma include_alias("v8tree/Instance.h", "roc_unit_b34763c2f3d3f398.cpp")
-#include "v8datamodel/Visit.h"
+#include "v8datamodel/GlobalSettings.h"
+
+#include "util/Name.h"
+
 namespace RBX {
-Visit::Visit() : uploadUrl("NoVisit") { setName("Visit"); }
+
+const char sGlobalSettings[] = "GlobalSettings";
+
+boost::recursive_mutex GlobalSettings::mutex;
+
+// FUNCTION: WEBSERVICE 0x100b7370
+GlobalSettings::GlobalSettings()
+{
+	setName("Global Settings");
 }
+
+// FUNCTION: WEBSERVICE 0x100b74f0
+boost::shared_ptr<GlobalSettings> GlobalSettings::singleton()
+{
+	boost::recursive_mutex::scoped_lock lock(mutex);
+
+	static boost::shared_ptr<GlobalSettings> sing = Creatable<Instance>::create<GlobalSettings>();
+
+	return sing;
+}
+
+} // namespace RBX
+
+template const RBX::Name& RBX::Name::doDeclare<RBX::sGlobalSettings>();
+template void RBX::Name::callDoDeclare<RBX::sGlobalSettings>();

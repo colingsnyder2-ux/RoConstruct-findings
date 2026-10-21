@@ -1,8 +1,8 @@
-// from server: 76% by Espeon
+// from server: 100% by EspClaude
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: rbxgs-dll roc_espeon_contactpoolinteger5b64fd5f1e0c62cd.cpp
+// roc-lib: rbxgs-dll roc_espclaude_8bcd28e9235df2a2.cpp
 
 // Candidate translation unit (score above; library headers required).
 #include <vector>
@@ -13,14 +13,20 @@ struct Vector3 {
     unsigned int x, y, z;
 };
 
+struct Grid {
+    unsigned int x, y, z;
+    Grid() : x(0), y(0), z(0) {}
+    Grid& operator=(const Vector3& v) { x = v.x; y = v.y; z = v.z; return *this; }
+};
+
 struct Node {
-    unsigned int keys[4];
+    unsigned short children[8];
     unsigned short category;
     unsigned char flag;
     unsigned char padding;
     unsigned int state;
     unsigned int index;
-    Vector3 position;
+    Grid position;
     Node* next;
 
     Node();
@@ -35,19 +41,12 @@ inline void Node::reset()
     index = ~0u;
     next = 0;
     flag = 0;
-    unsigned int packed = static_cast<unsigned int>(invalid);
-    packed |= static_cast<unsigned int>(invalid) << 16;
-    keys[0] = packed;
-    keys[1] = packed;
-    keys[2] = packed;
-    keys[3] = packed;
+    for (int i = 0; i < 8; i++)
+        children[i] = invalid;
 }
 
 inline Node::Node()
 {
-    position.x = 0;
-    position.y = 0;
-    position.z = 0;
     reset();
 }
 
@@ -92,3 +91,4 @@ Node* S::f(unsigned int category, unsigned int index,
     group[index].head = node;
     return node;
 }
+

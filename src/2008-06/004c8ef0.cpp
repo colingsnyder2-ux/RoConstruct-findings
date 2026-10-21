@@ -1,61 +1,57 @@
-// from server: 94% by king_originala
-void* __cdecl operator new(unsigned int size);
-void __cdecl operator delete(void* p);
+// from server: 100% by king_originala
+typedef unsigned int UInt;
 
-struct Node
-{
-    Node* next;
+void* __cdecl operator new(unsigned int);
+void __cdecl operator delete(void*) throw();
+
+struct Link {
+    Link* next;
 };
 
-struct Object
-{
-    char padding[0x290];
-    Node link;
-    unsigned int extra;
+struct Payload {
+    UInt key;
+    char padding[108];
 };
 
-struct Result
-{
-    Object* object;
+struct Node : Payload, Link {
+};
+
+struct Result {
+    Node* node;
     bool inserted;
 
-    Result(Object* p, bool b) : object(p), inserted(b) {}
+    Result(Node* p, bool b);
 };
 
-struct Table
-{
-    char padding[0x24];
-
-    Object* receive(unsigned int* key, Object* object);
+struct Table {
+    char padding[36];
+    Node* reserve(const Payload& value, Node* node);
 };
 
-struct Receiver
-{
-    char padding[0x0c];
+struct S {
+    char padding[12];
     Table table;
-    unsigned int count;
+    UInt count;
 
-    Result insert(unsigned int* key);
+    Result insert(const Payload& value);
 };
 
-Result Receiver::insert(unsigned int* key)
-{
-    Object* object = static_cast<Object*>(operator new(0x298));
-    try
-    {
-        Object* result = table.receive(key, object);
-        if (result == object)
-        {
+inline Result::Result(Node* p, bool b)
+    : node(p), inserted(b) {
+}
+
+Result S::insert(const Payload& value) {
+    Node* allocated = static_cast<Node*>(operator new(0x298));
+    try {
+        Node* result = table.reserve(value, allocated);
+        if (result == allocated) {
             ++count;
             return Result(result, true);
         }
-
-        operator delete(object);
+        operator delete(allocated);
         return Result(result, false);
-    }
-    catch (...)
-    {
-        operator delete(object);
+    } catch (...) {
+        operator delete(allocated);
         throw;
     }
 }

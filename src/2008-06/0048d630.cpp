@@ -1,103 +1,98 @@
-// roc 2008-06 0048d630  unit: RBX::VBrickColor::?$TypedPropertyDescriptor  size: 355 bytes
-// Draft 1: make_entry + for_each over a Shared range, releases after.
-extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
-#pragma intrinsic(_InterlockedExchangeAdd)
-extern "C" long __cdecl _InterlockedDecrement(volatile long*);
-#pragma intrinsic(_InterlockedDecrement)
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+// roc-lib: rbxgs util/RunStateOwner.cpp
 
-__forceinline void add_reference(volatile long* count)
+// Candidate translation unit (score above; library headers required).
+#include "util/RunStateOwner.h"
+#include "v8datamodel/DataModel.h"
+
+namespace RBX
 {
-    _InterlockedExchangeAdd(count, 1);
-}
+	static Reflection::BoundFuncDesc<RunService, void(void), 0> runFunction(&RunService::run, "Run", Reflection::FunctionDescriptor::NeedTrustedCaller);
+	static Reflection::BoundFuncDesc<RunService, void(void), 0> pauseFunction(&RunService::pause, "Pause", Reflection::FunctionDescriptor::NeedTrustedCaller);
+	static Reflection::BoundFuncDesc<RunService, void(void), 0> resetFunction(&RunService::reset, "Reset", Reflection::FunctionDescriptor::NeedTrustedCaller);
 
-struct Control
-{
-    virtual void unused() = 0;
-    virtual void dispose() = 0;
-    virtual void destroy() = 0;
-    volatile long strong;
-    volatile long weak;
+	static Reflection::SignalDesc<RunService, void(float)> event_Heartbeat("Heartbeat", "interval");
 
-    void release();
-};
+	RunService::RunService()
+		: framePeriod(1.0f/30.0f),
+		  runState(RS_NORMAL),
+		  invalidRunViewCount(0),
+		  stopRequested(false),
+		  runDisabled(false)
+	{
+		setName("Run Service");
+	}
 
-__forceinline void Control::release()
-{
-    if (_InterlockedDecrement(&strong) == 0)
-    {
-        dispose();
-        if (_InterlockedDecrement(&weak) == 0)
-            destroy();
-    }
-}
+	RunService::~RunService()
+	{
+		RBXASSERT(views.empty());
+	}
 
-struct Shared
-{
-    void* object;
-    Control* control;
+	void RunService::endRunThread(bool join)
+	{
+		stopRequested = true;
+		stateChangedCondition.notify_all();
 
-    Shared(void* object, Control* control) : object(object), control(control) {}
-    Shared(const Shared&);
-    ~Shared();
-};
+		if (join)
+			runThread->join();
+	}
 
-__forceinline Shared::Shared(const Shared& other)
-    : object(other.object), control(other.control)
-{
-    if (control)
-        add_reference(&control->strong);
-}
+	void RunService::onAncestorChanged(const AncestorChanged& event)
+	{
+		if (!getParent())
+		{
+			stopRequested = true;
+			stateChangedCondition.notify_all();
+		}
+	}
 
-__forceinline Shared::~Shared()
-{
-    if (control)
-    {
-        Control* p = control;
-        if (_InterlockedDecrement(&p->strong) == 0)
-        {
-            p->dispose();
-            if (_InterlockedDecrement(&p->weak) == 0)
-                p->destroy();
-        }
-    }
-}
+	void RunService::setRunState(RunState newState)
+	{
+		RunTransition transition(runState, newState);
+		runState = newState;
 
-struct Iterator
-{
-    void* owner;
-    Shared* position;
+		Notifier<RunService, RunState>::raise(newState);
+		Notifier<RunService, RunTransition>::raise(transition);
+	}
 
-    Iterator(void* owner, Shared* position) : owner(owner), position(position) {}
-};
+	void RunService::raiseStepped(float time, float step)
+	{
+		Notifier<RunService, Stepped>::raise(Stepped(time, step));
+		event_Stepped.fire(this, time, step);
+	}
 
-struct Function
-{
-    void (__cdecl *invoke)(Shared, Shared);
-    Shared context;
-};
+	void RunService::raiseHeartbeat(float time, float step)
+	{
+		Notifier<RunService, Heartbeat>::raise(Heartbeat(time, step));
+		event_Heartbeat.fire(this, step);
+	}
 
-extern Function __cdecl for_each(Iterator first, Iterator last, Function function);
-extern Function __cdecl make_entry(const void* tag, Shared s, bool flag);
-extern unsigned char global_byte;
-extern "C" void (__cdecl* _invalid_parameter_noinfo)();
+	void RunService::invalidateRunViews()
+	{
+		boost::mutex::scoped_lock lock(viewMutex);
 
-struct Range
-{
-    void* owner;
-    int reserved1;
-    int reserved2;
-    Shared* first;
-    Shared* last;
-};
+		if (invalidRunViewCount == 0)
+		{
+			invalidRunViewCount = (int)views.size();
+			if (invalidRunViewCount > 0)
+			{
+				for (std::map<IRunView*, bool>::iterator iter = views.begin(); iter != views.end(); iter++)
+				{
+					iter->first->InvalidateRunView();
+					iter->second = false;
+				}
+				runViewsDoneCondition.notify_all();
+			}
+		}
+	}
 
-void func_0048d630(void* arg1, Control* arg2, Range* arg3, Control* arg4)
-{
-    bool flag = global_byte;
-    Shared s(arg1, arg2);
-    Function fn = make_entry((const void*)0x48a690, s, flag);
-    if (arg3->first > arg3->last) _invalid_parameter_noinfo();
-    if (arg3->first > arg3->last) _invalid_parameter_noinfo();
-    for_each(Iterator(arg3->owner, arg3->first), Iterator(arg3->owner, arg3->last), fn);
-    if (arg2) arg2->release();
-    if (arg4) arg4->release();
+	void RunService::start()
+	{
+		RBXASSERT(!runThread);
+
+		boost::shared_ptr<DataModel> dataModel = shared_from(dynamic_cast<DataModel*>(getParent()));
+		runThread.reset(new boost::thread(background_function(boost::bind(&RunService::runProc, shared_from(this), dataModel), "rbx_runProc")));
+	}
 }

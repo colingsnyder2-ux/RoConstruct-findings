@@ -1,58 +1,32 @@
-// from server: 30% by colin
-extern "C" void __stdcall sub_4A5B30(int, char*);
-extern "C" bool __stdcall sub_4A5210(int, int, int, int);
-extern "C" void __stdcall sub_409D50(int, int);
-extern "C" void __stdcall sub_6A158C(int, int);
-extern "C" void __stdcall sub_802458(int, int);
-extern "C" bool __stdcall sub_4CA0F0(int, int, int, int);
+// from server: 100% by colin
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast
+// roc-lib: rbxgs-net-dll roc_unit_8d3c72e65ee3d2c3.cpp
 
-extern const float scale;
-extern const float offset;
-
-struct S
-{
-    bool read(void* destination, int bits, bool rightAligned);
-    bool f(float& x, float& y, float& z);
-};
-
-bool S::f(float& x, float& y, float& z)
-{
-    char ok;
-    sub_4A5B30((int)this, &ok);
-    if (ok != 0)
-    {
-        int vx = 0;
-        int vy = 0;
-        int vz = 0;
-        if (!sub_4A5210((int)this, 0xf, 1, (int)&vx))
-        {
-            sub_802458(0x8268e8, (int)&vx);
-            sub_409D50((int)&vx, 0);
-            sub_6A158C(0x8d1bc8, (int)&vx);
-        }
-        if (!sub_4A5210((int)this, 0xe, 1, (int)&vy))
-        {
-            sub_802458(0x8268b8, (int)&vy);
-            sub_409D50((int)&vy, 1);
-            sub_6A158C(0x8d1bc8, (int)&vy);
-        }
-        if (!sub_4A5210((int)this, 0xf, 1, (int)&vz))
-        {
-            sub_802458(0x826888, (int)&vz);
-            sub_409D50((int)&vz, 2);
-            sub_6A158C(0x8d1bc8, (int)&vz);
-        }
-        x = (float)(unsigned short)vx * scale - offset;
-        y = (float)(unsigned short)vy * scale - offset;
-        z = (float)(unsigned short)vz * scale - offset;
-        return true;
+// Candidate translation unit (score above; library headers required).
+#undef _RELEASEASSERT
+#include <BitStream.h>
+#include "Streaming.h"
+#include <stdexcept>
+namespace RBX { namespace Network {
+void readBrickVector(RakNet::BitStream& stream, G3D::Vector3& value) {
+    bool compressed;
+    stream >> compressed;
+    if (compressed) {
+        unsigned int x = 0, y = 0, z = 0;
+        if (!stream.ReadBits((unsigned char*)&x,11)) throw std::runtime_error("readBrickVector x failed");
+        if (!stream.ReadBits((unsigned char*)&y,11)) throw std::runtime_error("readBrickVector y failed");
+        if (!stream.ReadBits((unsigned char*)&z,11)) throw std::runtime_error("readBrickVector z failed");
+        if (x & 0x400) x |= 0xfffffc00;
+        if (z & 0x400) z |= 0xfffffc00;
+        value.x = (short)x * 0.5f;
+        value.y = (unsigned short)y * 0.1f;
+        value.z = (short)z * 0.5f;
+    } else {
+        stream >> value.x;
+        stream >> value.y;
+        stream >> value.z;
     }
-    if (sub_4CA0F0((int)this, (int)&x, (int)&y, (int)&z))
-    {
-        return true;
-    }
-    sub_802458(0x826850, (int)&x);
-    sub_409D50((int)&x, 3);
-    sub_6A158C(0x8d1bc8, (int)&x);
-    return false;
 }
+}}

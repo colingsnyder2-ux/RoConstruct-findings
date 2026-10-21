@@ -1,91 +1,57 @@
-// from server: 60% by king_originala
-extern "C" void __cdecl _invalid_parameter_noinfo();
+#include <vector>
+extern "C" void (__cdecl * const invalid_parameter_noinfo)();
 
-struct Registry;
-
-struct Proxy {
-    Registry* owner;
+struct Empty {
+    Empty();
 };
 
-struct Registry {
-    Proxy* proxy;
-    unsigned reserved[2];
-    unsigned* first;
-    unsigned* last;
+struct Empty2 {
+    Empty2();
 };
 
-extern unsigned registryGuard;
-extern void __cdecl initializeRegistry();
+inline Empty::Empty() {}
+inline Empty2::Empty2() {}
+
+typedef std::vector<unsigned> Vector;
+typedef Vector::iterator Iterator;
+extern Vector* __cdecl getValues();
 extern void __cdecl ensureInitialized(void (__cdecl*)(), unsigned*);
-extern Registry* __cdecl getRegistry();
+extern void __cdecl initializeRegistry();
+extern unsigned registryGuard;
 
 struct Base {
     unsigned storage[7];
+    unsigned count;
+    unsigned bits;
+struct BothEmpty : Empty, Empty2 { BothEmpty() {} };
 
-    Base(const char*, const char*);
+
+    Base(const Empty&, const Empty2&);
     ~Base();
     unsigned* lookup(const unsigned*);
 };
 
 struct S : Base {
-    unsigned count;
-    unsigned bits;
-
     S();
 };
 
-S::S() : Base((const char*)&count, (const char*)&count)
+S::S() : Base(BothEmpty(), BothEmpty())
 {
     ensureInitialized(initializeRegistry, &registryGuard);
-    Registry* registry = getRegistry();
-    unsigned* current = registry->first;
-    if (current > registry->last)
-        _invalid_parameter_noinfo();
-    Proxy* proxy = registry->proxy;
-
+    Iterator current = getValues()->begin();
     ensureInitialized(initializeRegistry, &registryGuard);
-    registry = getRegistry();
-    unsigned* finish = registry->last;
-    if (registry->first > finish)
-        _invalid_parameter_noinfo();
-    Proxy* finishProxy = registry->proxy;
-
-    for (;;) {
-        if (!proxy || proxy != finishProxy)
-            _invalid_parameter_noinfo();
-        if (current == finish)
-            break;
-
-        Registry* owner;
-        if (!proxy) {
-            _invalid_parameter_noinfo();
-            owner = 0;
-        } else {
-            owner = proxy->owner;
-        }
-        if (current >= owner->last)
-            _invalid_parameter_noinfo();
-
+    Iterator end = getValues()->end();
+    for (; !(current == end); ++current) {
         unsigned key = *current;
         unsigned value = count;
         *lookup(&key) = value;
 
         unsigned n = count;
-        int bit = -1;
+        unsigned result = ~0u;
         while (n > 0) {
             n >>= 1;
-            ++bit;
+            ++result;
         }
-        bits = bit + 1;
-
-        if (!proxy) {
-            _invalid_parameter_noinfo();
-            owner = 0;
-        } else {
-            owner = proxy->owner;
-        }
-        if (current >= owner->last)
-            _invalid_parameter_noinfo();
-        ++current;
+        bits = result + 1;
     }
 }

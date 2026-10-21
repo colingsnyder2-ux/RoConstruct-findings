@@ -1,95 +1,127 @@
-// from server: 53% by atomic.potato
-struct CDataModelPropGrid {
-    char pad0[0x20];
-    unsigned int m_hwnd;
-    char pad1[0xec - 0x24];
-    void* m_ptr_ec;
-    char pad2[0xf4 - 0xf0];
-    char m_set[0x104 - 0xf4];
-    unsigned char m_flag;
-    char pad3[0x138 - 0x105];
-    char m_obj138[0x230 - 0x138];
-    int m_field230;
-    int m_field234;
-    char pad4[0x284 - 0x238];
-    char m_obj284[0x3b4 - 0x284];
-    char m_obj3b4[0x3e0 - 0x3b4];
-    char m_obj3e0[0x100];
+// from server: 100% by EspClaude
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
+extern "C" __declspec(dllimport) int __stdcall PostMessageA(void* hWnd, unsigned int msg, unsigned int wParam, long lParam);
 
-    int f(unsigned int);
-    int sub_42ef40(const char*);
-    void sub_430f50(int);
-    void sub_4302b0();
-    void sub_431b40(int);
-    void sub_430ec0(void*);
+struct CREATESTRUCTA;
+struct CRuntimeClass;
+extern CRuntimeClass commandBarsClass;
+extern const unsigned int indicators[6];
+
+class CWinAppLike {
+public:
+    unsigned int GetProfileIntA(const char* section, const char* entry, int def);
+};
+struct ModuleState { void* pad; CWinAppLike* m_pCurrentWinApp; };
+ModuleState* __stdcall AfxGetModuleState();
+inline CWinAppLike* AfxGetApp() { return AfxGetModuleState()->m_pCurrentWinApp; }
+
+extern "C" __declspec(dllimport) long __stdcall InterlockedIncrement(long volatile*);
+class ImageManager { public: virtual ~ImageManager(); long m_dwRef; int SetIcons(unsigned int id, int state); void InternalAddRef() { InterlockedIncrement(&m_dwRef); } };
+ImageManager* XTPImageManager();
+void initImages(ImageManager* m);
+
+class ToolTipContext { public: void SetStyle(int style); };
+class CommandBarsOptions { public: void ShowKeyboardCues(int show); };
+class CommandBars {
+public:
+    char pad[0x74];
+    CommandBarsOptions* m_pOptions;
+    ImageManager* GetImageManager() const;
+    ToolTipContext* GetToolTipContext() const;
+    void SetImageManager(ImageManager* m);
+    CommandBarsOptions* GetCommandBarsOptions() const { return m_pOptions; }
 };
 
-extern "C" int __stdcall sub_6a105e(unsigned int);
-extern "C" int __stdcall sub_70ec40(void*, unsigned int, unsigned int);
-extern "C" int __stdcall sub_70fcd0(void*, const char*, int);
-extern "C" void __stdcall sub_70dc00(void*, int);
-extern "C" void __stdcall sub_6af0a0(int);
-extern "C" void __stdcall sub_6e57f0(void*, void*, int);
-extern "C" void __stdcall sub_6e6620(void*, int);
-extern "C" void __stdcall sub_702c00(void*, void*, int);
-extern "C" void* __stdcall sub_710e30(void*);
-extern "C" void __stdcall sub_701860(void*, int);
-extern "C" void* __stdcall sub_6a2f80(void*, int, int);
-extern "C" void __stdcall sub_6c0f70(void*);
-extern "C" void __stdcall sub_6a2810(void*, int);
-extern "C" void* __stdcall sub_6a2f90(void*, int);
-extern "C" void __stdcall sub_70bb30(void*);
-extern "C" void* __stdcall sub_6c0e80();
-extern "C" void __stdcall sub_6a38f0(void*, void*);
-extern "C" void __stdcall sub_42f490(void*);
-extern "C" void* __stdcall sub_6a0926();
-extern "C" int __stdcall sub_6a1058(void*, const char*, const char*, int);
-extern "C" void* __stdcall sub_6a0920(int);
-extern "C" void __stdcall sub_4277d0(void*);
-extern "C" void __stdcall sub_42ef40_impl();
-extern "C" void __stdcall InterlockedIncrement(long*);
-extern "C" int __stdcall PostMessageA(void*, unsigned int, unsigned int, int);
+class FrameBase {
+public:
+    virtual ~FrameBase();
+    char pad0[0x1c];
+    void* m_hWnd;
+    char pad1[0xc8];
+    CommandBars* m_pCommandBars;
+    int OnCreate(CREATESTRUCTA* lpCreateStruct);
+    int InitCommandBars(CRuntimeClass* cls);
+    CommandBars* GetCommandBars() const { return m_pCommandBars; }
+};
 
-int CDataModelPropGrid::f(unsigned int a) {
-    if (sub_6a105e(a) == -1)
+class Thing { public: Thing(); ~Thing(); char pad[0x14]; };
+template<class T> class Owned { public: T* p; void reset(T* q); };
+struct StatusBar { int Create(void* parent, unsigned long style, unsigned int id); int SetIndicators(const unsigned int* ids, int n); char pad[0x10]; };
+struct ThemeManager { void SetTheme(int t); char pad[0x2c]; };
+struct PaintManager { static void SetTheme(int t); };
+struct DockingPaneManager {
+    void InstallDockingPanes(void* site, int clipChildren);
+    void SetTheme(int t);
+    char pad[0xf8];
+    int m_bShowContents;
+    int m_bAlpha;
+    char pad2[0x4c];
+};
+struct TabPaintManager { char pad[0x24]; int m_24; };
+struct TabClientWnd {
+    int Attach(void* frame, int autoTheme);
+    TabPaintManager* GetPaintManager();
+    void EnableToolTips(int behaviour);
+    char pad[0x124];
+};
+
+class __declspec(novtable) HeartbeatListener { public: virtual void onEvent(const void*, int) = 0; };
+class CMainFrame : public FrameBase, public HeartbeatListener
+{
+public:
+    Owned<Thing> m_f4;
+    char pad_f8[0x0c];
+    bool m_104;
+    char pad_105[0x33];
+    DockingPaneManager m_paneManager;
+    TabClientWnd m_tabClient;
+    char pad_3a8[0xc];
+    ThemeManager m_theme;
+    StatusBar m_statusBar;
+    int OnCreate(CREATESTRUCTA* lpCreateStruct);
+    void ShowFrame(int show);
+    void LoadLayout();
+    void SetFullScreen(int on);
+    virtual void onEvent(const void*, int);
+};
+
+int CMainFrame::OnCreate(CREATESTRUCTA* lpCreateStruct)
+{
+    if (FrameBase::OnCreate(lpCreateStruct) == -1)
         return -1;
-    if (!sub_70ec40(m_obj3e0, 0x50008200, 0xe801))
+    if (!m_statusBar.Create(this, 0x50008200, 0xe801))
         return 0;
-    if (!sub_70fcd0(m_obj3e0, (const char*)0x92ec48, 6))
+    if (!m_statusBar.SetIndicators(indicators, sizeof(indicators) / sizeof(unsigned int)))
         return 0;
-    if (!sub_42ef40((const char*)0x8107c4))
+    if (!InitCommandBars(&commandBarsClass))
         return -1;
-    sub_70dc00(m_obj3b4, 2);
-    sub_6af0a0(4);
-    sub_6e57f0(m_obj138, this, 1);
-    sub_6e6620(m_obj138, 9);
-    sub_702c00(m_obj284, this, 0);
-    *(int*)((char*)sub_710e30(m_obj284) + 0x24) = 0;
-    sub_701860(m_obj284, 1);
-    void* p = m_ptr_ec;
-    if (!p)
+    m_theme.SetTheme(2);
+    PaintManager::SetTheme(4);
+    m_paneManager.InstallDockingPanes(this, 1);
+    m_paneManager.SetTheme(9);
+    m_tabClient.Attach(this, 0);
+    m_tabClient.GetPaintManager()->m_24 = 0;
+    m_tabClient.EnableToolTips(1);
+    CommandBars* pCommandBars = GetCommandBars();
+    if (!pCommandBars)
         return 0;
-    sub_6c0f70(sub_6a2f80(p, 0x91, 0));
-    m_field230 = 1;
-    m_field234 = 1;
-    sub_6a2810(*(void**)((char*)p + 0x74), 2);
-    sub_70bb30(sub_6a2f90(p, 2));
-    PostMessageA((void*)((char*)sub_6c0e80() + 4), 0, 0, 0);
-    sub_6a38f0(p, sub_6c0e80());
-    sub_6c0f70(sub_6a2f80(0, 0x91, 0));
-    m_flag = 1;
-    sub_430f50(1);
-    sub_42f490(sub_6c0e80());
-    sub_4302b0();
-    void* q = *(void**)((char*)sub_6a0926() + 4);
-    if (sub_6a1058(q, (const char*)0x811218, (const char*)0x811224, 0) == 1)
-        sub_431b40(1);
-    PostMessageA((void*)m_hwnd, 0x111, 0x8101, 0);
-    void* r = sub_6a0920(0x14);
-    if (r)
-        sub_4277d0(r);
-    else
-        r = 0;
-    sub_430ec0(r);
+    pCommandBars->GetImageManager()->SetIcons(0x91, 0);
+    m_paneManager.m_bShowContents = 1;
+    m_paneManager.m_bAlpha = 1;
+    pCommandBars->GetCommandBarsOptions()->ShowKeyboardCues(2);
+    pCommandBars->GetToolTipContext()->SetStyle(2);
+    XTPImageManager()->InternalAddRef();
+    pCommandBars->SetImageManager(XTPImageManager());
+    XTPImageManager()->SetIcons(0x91, 0);
+    m_104 = true;
+    ShowFrame(1);
+    initImages(XTPImageManager());
+    LoadLayout();
+    if (AfxGetApp()->GetProfileIntA("Settings", "fullscreen", 0) == 1)
+        SetFullScreen(1);
+    PostMessageA(m_hWnd, 0x111, 0x8101, 0);
+    m_f4.reset(new Thing());
     return 0;
 }

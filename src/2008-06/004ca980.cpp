@@ -1,112 +1,109 @@
-// from server: 33% by colin
-struct Stream {
-    void write(const void* data, int bits, bool flag);
+// from server: 100% by Espeon
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD /fp:fast
+// roc-lib: openrbx-client-dll roc_espeon_serializefallbackvalue_5e6df75397af6d7a.cpp
+
+// Candidate translation unit (score above; library headers required).
+// from server: 96% by colin
+struct Stream;
+struct Part;
+struct Body;
+struct Source;
+struct State;
+struct World;
+
+struct StateVTable {
+    void *reserved[17];
+    World *(__thiscall *getWorld)(State *);
 };
 
-struct Source {
-    unsigned char padding[8];
-    unsigned char* data;
-    unsigned int value;
-    void prepare();
+struct Filter {
+    bool contains(Part *);
+};
+
+struct World {
+    unsigned char padding[0x170];
+    Filter *filter;
 };
 
 struct State {
-    bool encode(Stream* stream, const void* data);
-    void encodeDefault(Stream* stream, const void* data);
+    StateVTable *vtable;
+    bool excluded(Part *);
+    bool encode(Stream *, const void *);
 };
 
-struct PhysicsSender {
-    char pad0[0x3c];
-    State* state;
+struct Stream {
+    void write(float, float, float, float);
 };
 
-struct SimJob {
-    char pad0[0x24];
-    float value24;
+struct Body {
+    unsigned char padding[0x24];
+    float position[3];
 };
 
-struct JobSender {
-    char pad0[0x8c];
-    float value8c;
+struct Part {
+    Body *getBody();
 };
 
-struct Tracker {
-    char pad0[0x228];
+struct Link {
+    unsigned char padding[0x1c];
+    void *object;
 };
 
-struct RoundRobinPhysicsSender : PhysicsSender {
-    float field48;
-    char pad4c[0x228 - 0x4c];
-    Tracker tracker;
-
-    bool sendPacket(int maxPackets, void* stats);
+struct Item {
+    unsigned char padding[0x8c];
+    float value;
 };
 
-extern float g_float_8222f0;
+struct Source {
+    unsigned char padding[0x24];
+    Link *link;
+    int count();
+    Item *get(int);
+};
 
-extern "C" bool __cdecl sub_4aeac0(State* self, void* arg);
-extern "C" bool __cdecl sub_4a8cc0(State* self, void* a, void* b);
-extern "C" SimJob* __cdecl sub_598cb0(void* self);
-extern "C" void __cdecl sub_4ca7b0(void* a, void* b, bool c);
-extern "C" void __cdecl sub_5dd570(void* self, void* out);
-extern "C" void __cdecl sub_4a5dd0(void* self, float x, float y, float z, float w);
-extern "C" void* __cdecl sub_5e7570(Tracker* self);
-extern "C" void* __cdecl sub_5e62d0(void* self);
-extern "C" void __cdecl sub_4a6350(void* a, void* b);
-extern "C" void* __cdecl sub_5e6400(void* self, int index);
-extern "C" bool __cdecl sub_5ded60(float value);
+struct Values {
+    float x, y, z, w;
+    Values(Body *);
+    void prepare();
+};
 
-extern "C" double __cdecl sqrt(double);
+extern "C" Part *__cdecl resolve(void *);
+extern "C" void __cdecl writePosition(Stream *, const void *, bool);
+extern "C" void __cdecl writeByte(Stream *, unsigned char);
+extern "C" unsigned char __cdecl quantize(float);
 
-bool RoundRobinPhysicsSender::sendPacket(int maxPackets, void* stats)
+struct S {
+    void *reserved;
+    State *state;
+    void f(Stream *, Source *);
+};
+
+void S::f(Stream *stream, Source *source)
 {
-    void* arg0 = *(void**)stats;
-    if (sub_4aeac0(state, arg0))
-        return false;
+    if (source) {
+        Link *lk = source->link;
+        Part *part = resolve(lk->object);
+        if (part && !state->excluded(part) && state->encode(stream, part)) {
+            Body *body = part->getBody();
+            World *world = state->vtable->getWorld(state);
+            writePosition(stream, body->position,
+                          world && world->filter && world->filter->contains(part));
 
-    void* arg1 = *(void**)((char*)stats + 4);
-    if (!sub_4a8cc0(state, arg0, arg1))
-        return false;
+            Values values(body);
+            values.prepare();
+            stream->write(values.w, values.x, values.y, values.z);
 
-    SimJob* job = sub_598cb0(arg0);
-    bool flag = g_float_8222f0 > field48;
-    sub_4ca7b0(arg1, (char*)job + 0x24, flag);
-
-    float out[4];
-    sub_5dd570(out, job);
-
-    float x = out[0];
-    float y = out[1];
-    float z = out[2];
-    float w = out[3];
-    float len = x * x + y * y + z * z + w * w;
-    float inv = 1.0f / (float)sqrt((double)len);
-    x *= inv;
-    y *= inv;
-    z *= inv;
-    w *= inv;
-
-    sub_4a5dd0(arg1, x, y, z, w);
-
-    void* p = sub_5e7570(&tracker);
-    void* q;
-    if (p) {
-        q = sub_5e62d0(p);
-    } else {
-        q = 0;
+            int count = source->count();
+            writeByte(stream, (unsigned char)count);
+            for (int i = 0; i < count; ++i) {
+                float value = 0.0f;
+                Item *item = source->get(i);
+                if (item) value = item->value;
+                unsigned char encoded = quantize(value);
+                writeByte(stream, encoded);
+            }
+        }
     }
-
-    sub_4a6350(arg1, q);
-
-    int count = (int)q;
-    for (int i = 0; i < count; ++i) {
-        float v = 0.0f;
-        void* item = sub_5e6400(p, i);
-        if (item)
-            v = *(float*)((char*)item + 0x8c);
-        bool b = sub_5ded60(v);
-        sub_4a6350(arg1, (void*)(int)b);
-    }
-
-    return true;
 }

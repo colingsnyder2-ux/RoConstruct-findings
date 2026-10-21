@@ -1,102 +1,166 @@
-// from server: 34% by colin
-extern "C" void __stdcall freeMemory(void *);
-extern "C" void *__stdcall allocateMemory(unsigned int);
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+// roc-lib: openrbx-client App/util/RunStateOwner.cpp
 
-struct ThreadProfiler {
-    ThreadProfiler(const char *);
-};
+// Candidate translation unit (score above; library headers required).
+#include "util/RunStateOwner.h"
 
-struct RakPeer {
-    RakPeer();
-    void AttachPlugin(void *);
-};
+#include "util/Timer.h"
+#include "v8datamodel/DataModel.h"
 
-struct Base {
-    Base();
-    virtual void v0();
-    virtual void v1();
-    virtual void v2();
-    virtual void v3();
-    virtual void v4();
-    virtual void v5();
-    virtual void v6();
-    virtual void v7();
-    virtual void v8();
-    virtual void v9();
-    virtual void v10();
-    virtual void v11();
-    virtual void v12();
-    virtual void v13();
-    virtual void v14();
-    virtual void v15();
-    virtual void v16();
-    virtual void v17();
-    virtual void v18();
-    virtual void v19();
-    virtual void v20();
-    virtual void v21();
-    virtual void v22();
-    virtual void v23();
-    virtual void v24();
-    virtual void v25();
-    virtual void v26();
-    virtual void v27();
-    virtual void v28();
-    virtual void v29();
-    virtual void v30();
-    virtual void v31();
-    virtual void v32();
-    virtual void v33();
-    virtual void v34();
-    virtual void v35();
-    virtual void v36();
-    virtual void v37();
-    virtual void v38();
-    virtual void v39();
-    virtual void v40();
-    virtual void v41();
-    virtual void v42();
-    virtual void v43();
-    virtual void v44();
-    virtual void v45();
-    virtual void v46();
-    virtual void v47();
-    virtual void v48();
-    virtual void v49();
-    virtual void v50();
-    virtual void v51();
-    virtual void v52();
-    virtual void v53();
-    virtual void v54();
-    virtual void v55();
-    virtual void v56();
-    virtual void v57();
-    virtual void v58();
-    virtual void v59();
-    virtual void v60();
-    virtual void v61();
-    virtual void v62();
-    virtual void v63();
-};
+#include <algorithm>
+#include <boost/thread/thread.hpp>
+#include <boost/thread/xtime.hpp>
 
-struct Peer : Base {
-    unsigned char pad0[0x1C - 4];
-    ThreadProfiler *profilePacketsThread;
-    unsigned char pad1[0x130 - 0x20];
-    RakPeer *rakPeer;
-    unsigned char pad2[0x138 - 0x134];
-    void *field138;
-    void *field13c;
-    void *field140;
-    Peer();
-};
+namespace RBX {
 
-Peer::Peer()
+const char sRunService[] = "RunService";
+
+Reflection::SignalDesc<RunService, void(float, float)> RunService::event_Stepped("Stepped", "time", "step");
+
+static Reflection::SignalDesc<RunService, void(float)> event_Heartbeat("Heartbeat", "step");
+
+// FUNCTION: WEBSERVICE 0x10054320
+void RunService::endRunThread(bool join)
 {
-    profilePacketsThread = new ThreadProfiler("Packets Thread");
-    rakPeer = new RakPeer();
-    field138 = 0;
-    field13c = 0;
-    field140 = 0;
-    rakPeer->AttachPlugin(this);
+	stopRequested = true;
+	stateChangedCondition.notify_all();
+
+	if (join) {
+		runThread->join();
+	}
 }
+
+// FUNCTION: WEBSERVICE 0x100543b0
+void RunService::onAncestorChanged(const AncestorChanged& event)
+{
+	if (getParent() == NULL) {
+		endRunThread(false);
+	}
+}
+
+// FUNCTION: WEBSERVICE 0x10054cb0
+void RunService::runProc(boost::shared_ptr<DataModel> dataModel)
+{
+	double desiredTime = getRealTime();
+
+	while (true) {
+		const double timeLeft = desiredTime - getRealTime();
+
+		{
+			boost::mutex::scoped_lock lock(viewMutex);
+
+			for (Views::iterator iter = views.begin(); iter != views.end(); ++iter) {
+				iter->first->AdjustThrottle(timeLeft);
+			}
+		}
+
+		const double waitTime = std::max(0.0, timeLeft);
+
+		boost::xtime xt;
+
+		boost::xtime_get(&xt, boost::TIME_UTC);
+		xt.nsec += (int) (waitTime * 1000000000.0);
+
+		bool signalled;
+
+		{
+			boost::mutex::scoped_lock lock(runMutex);
+
+			signalled = stateChangedCondition.timed_wait(lock, xt);
+		}
+
+		if (!signalled) {
+			boost::xtime xt;
+
+			boost::xtime_get(&xt, boost::TIME_UTC);
+			xt.sec += 1;
+
+			boost::mutex::scoped_lock lock(runMutex);
+
+			if (invalidRunViewCount != 0) {
+				runViewsDoneCondition.timed_wait(lock, xt);
+			}
+		}
+
+		if (timeLeft <= 0.0) {
+			desiredTime = getRealTime();
+		}
+
+		{
+			DataModel::Lock lock(dataModel);
+
+			if (stopRequested) {
+				break;
+			}
+
+			dataModel->step(framePeriod);
+		}
+
+		desiredTime += framePeriod;
+	}
+}
+
+// FUNCTION: WEBSERVICE 0x10054fd0
+void RunService::invalidateRunViews()
+{
+	boost::mutex::scoped_lock lock(viewMutex);
+
+	if (invalidRunViewCount != 0) {
+		return;
+	}
+
+	invalidRunViewCount = views.size();
+
+	if (invalidRunViewCount > 0) {
+		for (Views::iterator iter = views.begin(); iter != views.end(); ++iter) {
+			iter->first->InvalidateRunView();
+			iter->second = false;
+		}
+
+		runViewsDoneCondition.notify_all();
+	}
+}
+
+// FUNCTION: WEBSERVICE 0x10055380
+RunService::~RunService()
+{
+}
+
+// FUNCTION: WEBSERVICE 0x10056950
+RunService::RunService()
+	: runState(RS_NORMAL), stopRequested(false), framePeriod(1.0f / 30.0f), runThread(NULL), invalidRunViewCount(0),
+	  runDisabled(false)
+{
+	setName("Run Service");
+}
+
+// STUB: WEBSERVICE 0x100573e0
+void RunService::start()
+{
+	STUB(0x100573e0);
+}
+
+// FUNCTION: WEBSERVICE 0x100577f0
+void RunService::raiseHeartbeat(float time, float step)
+{
+	Notifier<RunService, Heartbeat>::raise(Heartbeat(time, step));
+	event_Heartbeat.fire(this, step);
+}
+
+// FUNCTION: WEBSERVICE 0x10057860
+void RunService::raiseStepped(float time, float step)
+{
+	Notifier<RunService, Stepped>::raise(Stepped(time, step));
+	event_Stepped.fire(this, time, step);
+}
+
+} // namespace RBX
+
+template class RBX::FactoryProduct<RBX::RunService, RBX::Instance, RBX::sRunService>;
+template class RBX::Reflection::Described<
+	RBX::RunService,
+	RBX::sRunService,
+	RBX::FactoryProduct<RBX::RunService, RBX::Instance, RBX::sRunService> >;
+template class RBX::DescribedCreatable<RBX::RunService, RBX::Instance, RBX::sRunService>;

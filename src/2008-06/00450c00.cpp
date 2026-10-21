@@ -1,75 +1,83 @@
-// from server: 24% by colin
+// from server: 100% by king_originala
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
-
-extern "C" int __cdecl sprintf(char*, const char*, ...);
-
-struct Result {
-    unsigned int first;
-    unsigned int second;
-};
-
-struct Source {
-    Result* copy(Result* output);
-};
+extern "C" long __cdecl _InterlockedDecrement(volatile long*);
+#pragma intrinsic(_InterlockedDecrement)
 
 struct Control {
-    virtual void reserved();
+    virtual ~Control();
     virtual void dispose();
     virtual void destroy();
     volatile long strong;
     volatile long weak;
 };
 
-struct RBX_DataModel {
-    char pad[0x20c];
-    void* field_214;
-    double get() const;
+struct Interface {
+    virtual void unused();
+    virtual bool query();
 };
 
-struct CRobloxDoc {
+struct Object {
+    unsigned char padding[0x1f0];
+    Interface interfaceValue;
+};
+
+struct Pointer {
+    Object* object;
+    Control* control;
+
+    Pointer() throw();
+    Pointer(const Pointer& other);
+    ~Pointer();
+    const Pointer& reference() const throw();
+};
+
+inline Pointer::Pointer() throw() {
+}
+
+inline Pointer::Pointer(const Pointer& other)
+    : object(other.object), control(other.control) {
+    if (control) {
+        volatile long* count = &control->strong;
+        _InterlockedExchangeAdd(count, 1);
+    }
+}
+
+inline Pointer::~Pointer() {
+    if (control) {
+        Control* p = control;
+        if (_InterlockedDecrement(&p->strong) == 0) {
+            p->dispose();
+            if (_InterlockedDecrement(&p->weak) == 0)
+                p->destroy();
+        }
+    }
+}
+
+inline const Pointer& Pointer::reference() const throw() {
+    return *this;
+}
+
+struct Guard {
+    unsigned char storage[12];
+    Guard(Pointer value);
+    ~Guard();
+};
+
+struct Source;
+
+struct S {
     unsigned char padding[0x94];
     Source* source;
-    void func(Result* out);
+    Pointer get() throw();
+    int f();
 };
 
-void CRobloxDoc::func(Result* out)
-{
-    Result local;
-    Result* p = source->copy(&local);
-    bool has = (p->first != 0);
-
-    Control* c = (Control*)p->second;
-    if (c != 0) {
-        if (_InterlockedExchangeAdd(&c->strong, -1) == 1) {
-            c->dispose();
-            if (_InterlockedExchangeAdd(&c->weak, -1) == 1) {
-                c->destroy();
-            }
-        }
+int S::f() {
+    if (get().object != 0) {
+        Guard guard(get().reference());
+        int result = get().object->interfaceValue.query();
+        return result;
     }
-
-    if (has) {
-        Result r;
-        Result* q = source->copy(&r);
-        Control* c2 = (Control*)q->second;
-        if (c2 != 0) {
-            _InterlockedExchangeAdd(&c2->strong, 1);
-        }
-        double fps = ((RBX_DataModel*)0)->get();
-        char buf[32];
-        sprintf(buf, "%.3gfps", 1000.0 / fps);
-        if (c2 != 0) {
-            if (_InterlockedExchangeAdd(&c2->strong, -1) == 1) {
-                c2->dispose();
-                if (_InterlockedExchangeAdd(&c2->weak, -1) == 1) {
-                    c2->destroy();
-                }
-            }
-        }
-        if (out != 0) {
-            out->first = q->first;
-            out->second = q->second;
-        }
-    }
+    return 0;
 }

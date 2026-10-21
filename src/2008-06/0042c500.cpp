@@ -1,8 +1,8 @@
-// from server: 81% by EspClaude
+// from server: 100% by EspClaude
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: rbxgs-dll roc_espclaude_e867c8fe7f88f141.cpp
+// roc-lib: rbxgs-dll roc_espclaude_9613e5a148134ff1.cpp
 
 // Candidate translation unit (score above; library headers required).
 #include <boost/function.hpp>
@@ -26,14 +26,14 @@ class Binder : public BinderBase, public boost::enable_shared_from_this<Binder> 
 public:
     char pad[0x28 - 0xc];
     bool bound;
-    static void onBind(lua_State* L, boost::shared_ptr<Binder> self);
+    void unbind();
     void bind();
 };
 
 void Binder::bind()
 {
     if (!bound) {
-        theService->setCallback(boost::bind(&Binder::onBind, (lua_State*)0, shared_from_this()));
+        theService->setCallback(boost::bind(&Binder::unbind, shared_from_this()));
         bound = true;
     }
 }

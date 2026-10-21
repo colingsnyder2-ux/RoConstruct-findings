@@ -1,50 +1,47 @@
-// from server: 42% by colin
-// roc 2008-06 00459420  unit: CRobloxView  size: 291 bytes
+// from server: 100% by EspClaude
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /Ob0 /GS- /EHsc /MD
+// roc-lib: atl-9.0-dll-rtm roc_espclaude_dd992e6b9a44b58d.cpp
 
-struct CRobloxView {
-    char pad0[0x54];
-    void* field54;
-    void Load(const char* name);
+// Candidate translation unit (score above; library headers required).
+#ifndef _CPPUNWIND
+#define _CPPUNWIND 1
+#endif
+#ifndef _AFXDLL
+#define _AFXDLL
+#endif
+#include <new>
+#include <afxwin.h>
+#include <afxdlgs.h>
+#include <fstream>
+
+class RobloxDocument {
+public:
+    void insertModel(std::istream& stream, bool select);
 };
 
-extern "C" {
-    void* __stdcall sub_803F04();
-    void* __stdcall sub_8032C0();
-    void* __stdcall sub_803EE0();
-    void* __stdcall sub_803F14();
-    void* __stdcall sub_802404(void* self, void* arg);
-    void* __stdcall sub_802408(void* self);
-}
-
-struct FileStream {
-    char pad[0x98];
+class CRobloxDoc : public CDocument {
+public:
+    char pad[0x94 - sizeof(CDocument)];
+    RobloxDocument* document;
 };
 
-void __stdcall sub_6A0E72(void* self, int a, const char* s, int b, int c, int d, void* e);
-int __stdcall sub_6A0E6C(void* self);
-void __stdcall sub_6A0E66(void* self, void* out);
-void __stdcall sub_6A0E5A(void* self);
-void __stdcall sub_46B9D0(void* self, void* out, int flag);
+class CRobloxView : public CView {
+public:
+    CRobloxDoc* GetDocument() const { return reinterpret_cast<CRobloxDoc*>(m_pDocument); }
+    void OnInsertModel(int unused);
+};
 
-void CRobloxView::Load(const char* name)
+void CRobloxView::OnInsertModel(int unused)
 {
-    void* v1 = sub_803F04();
-    (void)v1;
-    FileStream fs;
-    sub_8032C0();
-    void* v2 = sub_803EE0();
-    sub_6A0E72(&fs, 1, "rbxm", 0, 6, 1, v2);
-    int r = sub_6A0E6C(&fs);
-    if (r == 1) {
-        void* out;
-        sub_6A0E66(&fs, &out);
-        void* v3 = sub_803EE0();
-        sub_802404(&out, v3);
-        sub_803F14();
-        void* f = *(void**)((char*)field54 + 0x94);
-        sub_46B9D0(f, &out, 0);
-        sub_802408(&out);
+    CString filter;
+    filter.LoadString(0xb8);
+    CFileDialog dialog(TRUE, "rbxm", NULL, OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT, filter, this);
+    if (dialog.DoModal() == IDOK)
+    {
+        std::ifstream stream(dialog.GetPathName(), std::ios::in | std::ios::binary);
+        CRobloxDoc* doc = static_cast<CRobloxDoc*>(m_pDocument);
+        doc->document->insertModel(stream, false);
     }
-    sub_6A0E5A(&fs);
-    sub_803F14();
 }

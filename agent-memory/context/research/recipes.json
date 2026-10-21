@@ -23093,5 +23093,253 @@
       "new_exacts": 0,
       "evidence": "work\\big-mining-2008-20261020\\part-material-native-family-hits.json"
     }
+  },
+  "native-part-mesh-sdk-gates-2008": {
+    "op": "grid",
+    "client": "2008-06",
+    "library": "Native ViewNew Part updateMesh with genuine SDK value types",
+    "hypothesis": "New complete2508B typed updateMesh26to50; native surface chain and six masks now exact in main prefix. Gate x87/inlining before further lifetime recovery. Native VC9 checked vector24 limits build to21022.",
+    "targets": {
+      "addresses": [
+        "004ef930"
+      ],
+      "scores": [
+        0,
+        99
+      ]
+    },
+    "seed_sources": {
+      "2008-06": {
+        "004ef930": "work\\big-mining-2008-20261020\\part-mesh-native-float-extents.cpp"
+      }
+    },
+    "builds": [
+      21022
+    ],
+    "profiles": [
+      "/O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MD",
+      "/O2 /Ob1 /Oi /Ot /Oy /GF /GS- /EHsc /MD /fp:fast"
+    ],
+    "keep_partials": true,
+    "reuse_history": true,
+    "reuse_objects": true,
+    "improvement_only": true,
+    "output": "work\\big-mining-2008-20261020\\part-mesh-native-gates",
+    "verification": "Local retention only; actual-model manual Player Mining submissions.",
+    "result": {
+      "checks": 2,
+      "errors": 0,
+      "improvements_above50": 0,
+      "evidence": "work\\big-mining-2008-20261020\\part-mesh-native-gates\\summary.json"
+    }
+  },
+  "native-part-mesh-sdk-family-2008": {
+    "op": "fanout",
+    "client": "2008-06",
+    "library": "Native Part mesh surfaces and typed SDK reference family",
+    "hypothesis": "New full2508B native Part updateMesh50 emits genuine G3D Mesh RCP and checked child iterator helpers; propagate once to unresolved code.",
+    "sources": [
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_part_mesh_native_float_extents9dff256d484cc2eb.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MD /fp:fast"
+        ]
+      }
+    ],
+    "output": "work\\big-mining-2008-20261020\\part-mesh-native-family",
+    "verification": "Local retention; manual actual-model Player Mining submissions only.",
+    "result": {
+      "date": "2026-10-21T04:55:35.340567+00:00",
+      "objects": 1,
+      "new_exacts": 0,
+      "evidence": "work\\big-mining-2008-20261020\\part-mesh-native-family-hits.json"
+    }
+  },
+  "native-render-proxies-sdk-family-2008": {
+    "op": "fanout",
+    "client": "2008-06",
+    "library": "Native RenderScene proxy allocation and genuine G3D helpers",
+    "hypothesis": "Server exact2147B proxy allocator emits real G3D Array RenderSurface and RCP helpers; propagate one object to unresolved code.",
+    "sources": [
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_render_proxies_native_shadow_array_ref40cd72f4949d224e.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MD /fp:fast"
+        ]
+      }
+    ],
+    "output": "work\\big-mining-2008-20261020\\render-proxies-native-family",
+    "verification": "Local retention; manual actual-model Player Mining submissions only.",
+    "result": {
+      "date": "2026-10-21T05:07:46.885820+00:00",
+      "objects": 1,
+      "local_exact": 0,
+      "evidence": "work\\big-mining-2008-20261020\\render-proxies-native-family-hits.json"
+    }
+  },
+  "native-ldraw-map-root-sdk-gates-2008": {
+    "op": "grid",
+    "client": "2008-06",
+    "library": "Native LDraw2RobloxMapRoot constructor",
+    "hypothesis": "Full native string28 argument, XmlParser72 and checked maps32 restore204 frame; gate actual VC9 inline contexts before further register/lifetime recovery. VC8 different checked container ABI excluded by native proof.",
+    "targets": {
+      "addresses": [
+        "0046d710"
+      ],
+      "scores": [
+        0,
+        99
+      ]
+    },
+    "seed_sources": {
+      "2008-06": {
+        "0046d710": "work\\big-mining-2008-20261020\\ldraw-map-root-native-color-init-scope.cpp"
+      }
+    },
+    "builds": [
+      21022
+    ],
+    "profiles": [
+      "/O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MD /fp:fast",
+      "/O2 /Ob1 /Oi /Ot /Oy /GF /GS- /EHsc /MD",
+      "/O2 /GS- /EHsc /MD",
+      "/O1 /Ob1 /GS- /EHsc /MD"
+    ],
+    "keep_partials": true,
+    "reuse_history": true,
+    "reuse_objects": true,
+    "improvement_only": true,
+    "output": "work\\big-mining-2008-20261020\\ldraw-map-root-native-gates",
+    "verification": "Local retention only; actual-model manual Player Mining submissions.",
+    "result": {
+      "stats": {
+        "checks": 4,
+        "skipped": 0,
+        "errors": 0,
+        "finished_targets": 1,
+        "verified_exacts": 0,
+        "verified_partial_gains": 0,
+        "object_reuses": 0,
+        "seconds": 5.703
+      },
+      "evidence": "work\\big-mining-2008-20261020\\ldraw-map-root-native-gates\\summary.json"
+    }
+  },
+  "native-ldraw-map-root-sdk-family-2008": {
+    "op": "fanout",
+    "client": "2008-06",
+    "library": "Native LDraw map root typed XML and checked map family",
+    "hypothesis": "New full1950B LDrawMapRoot15to72 emits real checked std::map<int,ColorMap*> and std::map<string,PartMap*> helpers; propagate one retained object.",
+    "sources": [
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_ldraw_map_root_native_color_init_scope23ca6a3a55397ba9.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MD"
+        ]
+      }
+    ],
+    "output": "work\\big-mining-2008-20261020\\ldraw-map-root-native-family",
+    "verification": "Local retention; manual actual-model Player Mining submissions only.",
+    "result": {
+      "date": "2026-10-21T05:17:57.252246+00:00",
+      "objects": 1,
+      "local_exact": 0,
+      "evidence": "work\\big-mining-2008-20261020\\ldraw-map-root-native-family-hits.json"
+    }
+  },
+  "native-view-initial-update-sdk-gates-2008": {
+    "op": "grid",
+    "client": "2008-06",
+    "library": "Native full CRobloxView OnInitialUpdate MFC90 and Boost SDK",
+    "hypothesis": "Full1915B native initializer rebuilt25to62, proper catch proved and native24-byte EBP frame. Gate inline and catch section placement; genuine native CView88/checked STL requires VC9 21022.",
+    "targets": {
+      "addresses": [
+        "0045a4a0"
+      ],
+      "scores": [
+        0,
+        99
+      ]
+    },
+    "seed_sources": {
+      "2008-06": {
+        "0045a4a0": "work\\big-mining-2008-20261020\\view-initial-update-native-binding-references.cpp"
+      }
+    },
+    "builds": [
+      21022
+    ],
+    "profiles": [
+      "/O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MD /Gy-",
+      "/O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MD /fp:fast",
+      "/O2 /Ob1 /Oi /Ot /Oy /GF /GS- /EHsc /MD",
+      "/O2 /GS- /EHsc /MD",
+      "/O1 /Ob1 /GS- /EHsc /MD"
+    ],
+    "keep_partials": true,
+    "reuse_history": true,
+    "reuse_objects": true,
+    "improvement_only": true,
+    "output": "work\\big-mining-2008-20261020\\view-initial-update-native-gates",
+    "verification": "Local retention only; actual-model manual Player Mining submissions.",
+    "result": {
+      "stats": {
+        "checks": 5,
+        "skipped": 0,
+        "errors": 0,
+        "finished_targets": 1,
+        "verified_exacts": 0,
+        "verified_partial_gains": 0,
+        "object_reuses": 0,
+        "seconds": 12.047
+      },
+      "evidence": "work\\big-mining-2008-20261020\\view-initial-update-native-gates\\summary.json"
+    }
+  },
+  "native-view-initial-update-sdk-family-2008": {
+    "op": "fanout",
+    "client": "2008-06",
+    "library": "Native full view initializer genuine MFC/Boost and command templates",
+    "hypothesis": "Full1915B native OnInitialUpdate25to62 emits genuine checked notifier, shared_ptr, scoped_ptr and command map helpers; propagate one retained object.",
+    "sources": [
+      {
+        "recipe": "rbxgs-atl90-dll",
+        "files": [
+          "roc_view_initial_update_native_binding_references87dfa9b141cffd25.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MD"
+        ]
+      }
+    ],
+    "output": "work\\big-mining-2008-20261020\\view-initial-update-native-family",
+    "verification": "Local retention only; actual-model manual Player Mining submissions.",
+    "result": {
+      "date": "2026-10-21T05:36:20.056954+00:00",
+      "objects": 1,
+      "local_exact": 0,
+      "evidence": "work\\big-mining-2008-20261020\\view-initial-update-native-family-hits.json"
+    }
   }
 }

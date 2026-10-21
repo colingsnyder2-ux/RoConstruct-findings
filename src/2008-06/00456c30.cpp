@@ -1,100 +1,263 @@
-// from server: 45% by colin
-extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
-#pragma intrinsic(_InterlockedExchangeAdd)
+// from server: 75% by EspClaude
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: rbxgs-dll roc_espclaude_64f6518e3e545213.cpp
 
-extern "C" double __cdecl func_00455d70();
-extern "C" void __cdecl func_00411b40();
-extern "C" void* __cdecl func_0044f220(void*, const char*, void*);
-extern "C" void* __cdecl func_0040e160(void*, void*, const char*);
-extern "C" void* __cdecl func_00456120(void*, int);
-extern "C" void __cdecl func_00456820(void*, void*);
-extern "C" void __cdecl func_005773c0(void*);
-extern "C" void __cdecl func_006a158c(void*, void*);
-extern "C" void __cdecl func_006cbf30(void*);
+// Candidate translation unit (score above; library headers required).
+#include <stdio.h>
+#include <exception>
 
-extern "C" void* __stdcall mfc_802814(void*, const char*);
-extern "C" int __stdcall mfc_802818(void*);
-extern "C" int __stdcall mfc_80281c(void*, const char*, const char*);
-extern "C" void* __stdcall mfc_8028a4(void*, void*);
-extern "C" void* __stdcall mfc_803ee0(void*, const char*);
-extern "C" void* __stdcall mfc_803f10(void*, const char*);
-extern "C" void __stdcall mfc_803f14(void*);
+class CStr {
+public:
+    __declspec(dllimport) CStr(const char* s);
+    __declspec(dllimport) CStr(const CStr& s);
+    __declspec(dllimport) ~CStr() throw();
+    __declspec(dllimport) operator const char*() const;
+    char* m_pszData;
+};
+CStr operator+(const char* a, const CStr& b);
+CStr operator+(const CStr& a, const char* b);
+CStr getTimeString(bool full);
+double now();
 
-struct RefCounted {
-    void* vptr;
-    volatile long strong;
-    volatile long weak;
+#include <boost/shared_ptr.hpp>
+struct StatsRoot;
+struct StatsScope {
+    StatsScope(boost::shared_ptr<StatsRoot> root);
+    ~StatsScope();
+    char pad[0xc];
 };
 
-struct CValueItem {
-    char pad[0x3c4];
-    RefCounted* ptr3c4;
-    RefCounted* ptr3c8;
+struct ReportControl {
+    virtual void rv0();
+    virtual void rv1();
+    virtual void rv2();
+    virtual void rv3();
+    virtual void rv4();
+    virtual void rv5();
+    virtual void rv6();
+    virtual void rv7();
+    virtual void rv8();
+    virtual void rv9();
+    virtual void rv10();
+    virtual void rv11();
+    virtual void rv12();
+    virtual void rv13();
+    virtual void rv14();
+    virtual void rv15();
+    virtual void rv16();
+    virtual void rv17();
+    virtual void rv18();
+    virtual void rv19();
+    virtual void rv20();
+    virtual void rv21();
+    virtual void rv22();
+    virtual void rv23();
+    virtual void rv24();
+    virtual void rv25();
+    virtual void rv26();
+    virtual void rv27();
+    virtual void rv28();
+    virtual void rv29();
+    virtual void rv30();
+    virtual void rv31();
+    virtual void rv32();
+    virtual void rv33();
+    virtual void rv34();
+    virtual void rv35();
+    virtual void rv36();
+    virtual void rv37();
+    virtual void rv38();
+    virtual void rv39();
+    virtual void rv40();
+    virtual void rv41();
+    virtual void rv42();
+    virtual void rv43();
+    virtual void rv44();
+    virtual void rv45();
+    virtual void rv46();
+    virtual void rv47();
+    virtual void rv48();
+    virtual void rv49();
+    virtual void rv50();
+    virtual void rv51();
+    virtual void rv52();
+    virtual void rv53();
+    virtual void rv54();
+    virtual void rv55();
+    virtual void rv56();
+    virtual void rv57();
+    virtual void rv58();
+    virtual void rv59();
+    virtual void rv60();
+    virtual void rv61();
+    virtual void rv62();
+    virtual void rv63();
+    virtual void rv64();
+    virtual void rv65();
+    virtual void rv66();
+    virtual void rv67();
+    virtual void rv68();
+    virtual void rv69();
+    virtual void rv70();
+    virtual void rv71();
+    virtual void rv72();
+    virtual void rv73();
+    virtual void rv74();
+    virtual void rv75();
+    virtual void rv76();
+    virtual void rv77();
+    virtual void rv78();
+    virtual void rv79();
+    virtual void rv80();
+    virtual void rv81();
+    virtual void rv82();
+    virtual void rv83();
+    virtual void rv84();
+    virtual void rv85();
+    virtual void rv86();
+    virtual void rv87();
+    virtual void Populate();
+    char pad[0xe4];
+    int m_e8;
+    void RedrawControl();
+};
+extern bool g_benchmark;
+extern double g_lastBenchmark;
+extern float g_benchmarkInterval;
+extern FILE* g_benchmarkFile;
 
-    void method();
+class CRobloxReportView {
+public:
+    virtual void vv0();
+    virtual void vv1();
+    virtual void vv2();
+    virtual void vv3();
+    virtual void vv4();
+    virtual void vv5();
+    virtual void vv6();
+    virtual void vv7();
+    virtual void vv8();
+    virtual void vv9();
+    virtual void vv10();
+    virtual void vv11();
+    virtual void vv12();
+    virtual void vv13();
+    virtual void vv14();
+    virtual void vv15();
+    virtual void vv16();
+    virtual void vv17();
+    virtual void vv18();
+    virtual void vv19();
+    virtual void vv20();
+    virtual void vv21();
+    virtual void vv22();
+    virtual void vv23();
+    virtual void vv24();
+    virtual void vv25();
+    virtual void vv26();
+    virtual void vv27();
+    virtual void vv28();
+    virtual void vv29();
+    virtual void vv30();
+    virtual void vv31();
+    virtual void vv32();
+    virtual void vv33();
+    virtual void vv34();
+    virtual void vv35();
+    virtual void vv36();
+    virtual void vv37();
+    virtual void vv38();
+    virtual void vv39();
+    virtual void vv40();
+    virtual void vv41();
+    virtual void vv42();
+    virtual void vv43();
+    virtual void vv44();
+    virtual void vv45();
+    virtual void vv46();
+    virtual void vv47();
+    virtual void vv48();
+    virtual void vv49();
+    virtual void vv50();
+    virtual void vv51();
+    virtual void vv52();
+    virtual void vv53();
+    virtual void vv54();
+    virtual void vv55();
+    virtual void vv56();
+    virtual void vv57();
+    virtual void vv58();
+    virtual void vv59();
+    virtual void vv60();
+    virtual void vv61();
+    virtual void vv62();
+    virtual void vv63();
+    virtual void vv64();
+    virtual void vv65();
+    virtual void vv66();
+    virtual void vv67();
+    virtual void vv68();
+    virtual void vv69();
+    virtual void vv70();
+    virtual void vv71();
+    virtual void vv72();
+    virtual void vv73();
+    virtual void vv74();
+    virtual void vv75();
+    virtual void vv76();
+    virtual void vv77();
+    virtual void vv78();
+    virtual void vv79();
+    virtual void vv80();
+    virtual void vv81();
+    virtual void vv82();
+    virtual void vv83();
+    virtual void vv84();
+    virtual void vv85();
+    virtual void vv86();
+    virtual void vv87();
+    virtual void vv88();
+    virtual void vv89();
+    virtual void vv90();
+    virtual void vv91();
+    virtual void vv92();
+    virtual void vv93();
+    virtual void vv94();
+    virtual void vv95();
+    virtual void vv96();
+    virtual void vv97();
+    virtual void vv98();
+    virtual void vv99();
+    virtual void vv100();
+    virtual ReportControl& GetReportCtrl();
+    char pad[0x3c0];
+    boost::shared_ptr<StatsRoot> m_stats;
+    void writeBenchmark(int records, CStr extra);
+    void refresh();
 };
 
-void CValueItem::method()
+void CRobloxReportView::refresh()
 {
-    RefCounted* p = ptr3c8;
-    if (p) {
-        _InterlockedExchangeAdd(&p->strong, 1);
-    }
-
-    func_00411b40();
-
-    void* vb = (void*)this;
-    void* r = ((void* (__thiscall*)(void*))((void**)*(void**)vb)[0x194/4])(vb);
-    void* r2 = ((void* (__thiscall*)(void*))((void**)*(void**)r)[0x160/4])(r);
-
-    vb = (void*)this;
-    void* r3 = ((void* (__thiscall*)(void*))((void**)*(void**)vb)[0x194/4])(vb);
-    func_006cbf30(r3);
-
-    if (*(unsigned char*)0x96dbb1 != 0) {
-        double now = func_00455d70();
-        if (now > *(double*)0x932028) {
-            *(double*)0x932028 = now;
-        } else {
-            double diff = now - *(double*)0x932028;
-            double limit = (double)(*(float*)0x931800) * *(double*)0x8187a0;
-            if (diff > limit) {
-                if (*(void**)0x96dd84 == 0) {
-                    char buf1[16];
-                    func_00456120(buf1, 0);
-                    char buf2[16];
-                    func_0044f220(buf2, (const char*)0x818788, buf1);
-                    char buf3[16];
-                    func_0040e160(buf3, buf2, (const char*)0x8103c8);
-                    mfc_803f14(buf3);
-                    mfc_803f14(buf2);
-                    void* s = mfc_803ee0(buf1, (const char*)0x818784);
-                    void* f = mfc_802814(s, "c:\\roblox_bench_");
-                    *(void**)0x96dd84 = f;
-                    if (f == 0) {
-                        char ebuf[16];
-                        func_0044f220(ebuf, (const char*)0x818768, buf1);
-                        void* e = mfc_803ee0(ebuf, (const char*)0);
-                        void* ep = mfc_8028a4(ebuf, &e);
-                        func_006a158c(ep, (void*)0x8d997c);
-                    }
-                    mfc_803f14(buf1);
-                }
-                vb = (void*)this;
-                void* r4 = ((void* (__thiscall*)(void*))((void**)*(void**)vb)[0x194/4])(vb);
-                void* edi = *(void**)((char*)r4 + 0xe8);
-                char nbuf[16];
-                func_00456120(nbuf, 0);
-                void* f = *(void**)0x96dd84;
-                mfc_80281c(f, "WallTime = %s\n", *(const char**)nbuf);
-                mfc_803f14(nbuf);
-                char tbuf[16];
-                mfc_803f10(tbuf, (const char*)0x80b716);
-                func_00456820(this, edi);
-                mfc_802818(*(void**)0x96dd84);
+    StatsScope scope(m_stats);
+    GetReportCtrl().Populate();
+    GetReportCtrl().RedrawControl();
+    if (g_benchmark) {
+        if (g_lastBenchmark < 0.0) {
+            g_lastBenchmark = now();
+        }
+        else if (now() - g_lastBenchmark > g_benchmarkInterval * 60.0) {
+            if (g_benchmarkFile == NULL) {
+                CStr name = "c:\\roblox_bench_" + getTimeString(false) + ".txt";
+                g_benchmarkFile = fopen(name, "wt");
+                if (g_benchmarkFile == NULL)
+                    throw std::exception("Cannot open benchmark file " + name);
             }
+            int records = GetReportCtrl().m_e8;
+            fprintf(g_benchmarkFile, "WallTime = %s\n", getTimeString(false));
+            writeBenchmark(records, "");
+            fflush(g_benchmarkFile);
         }
     }
-
-    func_005773c0(this);
 }

@@ -1,28 +1,30 @@
-// from server: 57% by colin
+// from server: 100% by EspClaude
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs v8datamodel/Visit.cpp
+// roc-lib: rbxgs-dll roc_espclaude_17f11b1fc4d80591.cpp
 
 // Candidate translation unit (score above; library headers required).
-#include "v8datamodel/Visit.h"
+#include "v8tree/Instance.h"
+#include "v8tree/Service.h"
 #include "util/Http.h"
 #include "util/standardout.h"
 #include <G3D/format.h>
 #include <boost/thread.hpp>
 
-static RBX::Reflection::BoundFuncDesc<RBX::Visit, void(std::string), 1> UploadUrlFunction(&RBX::Visit::setUploadUrl, "SetUploadUrl", "url", RBX::Reflection::FunctionDescriptor::NeedTrustedCaller);
-static RBX::Reflection::BoundFuncDesc<RBX::Visit, std::string(void), 0> getUploadUrl(&RBX::Visit::getUploadUrl, "GetUploadUrl", RBX::Reflection::FunctionDescriptor::NeedTrustedCaller);
-static RBX::Reflection::BoundFuncDesc<RBX::Visit, void(std::string, int), 2> desc_setPing(&RBX::Visit::setPing, "SetPing", "pingUrl", "interval", RBX::Reflection::FunctionDescriptor::NeedTrustedCaller);
-
 namespace RBX
 {
-	Visit::Visit()
-		: uploadUrl("NoVisit")
+	class Visit
 	{
-	}
+	private:
+		char instanceLayoutPad[0x130];
+		std::string uploadUrl;
+		boost::scoped_ptr<worker_thread> pingThread;
 
-	Visit::~Visit() {}
+	public:
+		void setPing(std::string url, int interval);
+		static worker_thread::work_result ping(std::string url, int interval);
+	};
 
 	void Visit::setPing(std::string url, int interval)
 	{
@@ -34,28 +36,5 @@ namespace RBX
 		{
 			pingThread.reset();
 		}
-	}
-
-	worker_thread::work_result Visit::ping(std::string url, int interval)
-	{
-		try
-		{
-			std::string message;
-			Http(url).get(message);
-		}
-		catch (std::exception& exp)
-		{
-			std::string failMessage = G3D::format("ping %s failed: %s", url.c_str(), exp.what());
-			StandardOut::singleton()->print(MESSAGE_WARNING, failMessage.c_str());
-		}
-
-		boost::xtime xt;
-		boost::xtime_get(&xt, boost::TIME_UTC);
-
-		xt.sec += interval;
-
-		boost::thread::sleep(xt);
-
-		return worker_thread::more;
 	}
 }

@@ -1,170 +1,108 @@
-// from server: 59% by colin
+// from server: 76% by EspClaude
 // roc-lang: cpp
-// roc-cl: 50727
+// roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs-net Client.cpp
+#include <string>
+#include <stdexcept>
+#include <intrin.h>
 
-// Candidate translation unit (score above; library headers required).
-#include <RakNetTypes.h>
-#include <RakPeer.h>
-#include <MessageIdentifiers.h>
-#include "API.h"
-#include "Client.h"
-#include "util/standardout.h"
-
-static RBX::Reflection::BoundFuncDesc<RBX::Network::Client, void(std::string, int, int, int), 4> f_connect(&RBX::Network::Client::connect, "Connect", "server", "serverPort", "clientPort", "threadSleepTime", RBX::Reflection::FunctionDescriptor::NeedTrustedCaller);
-static RBX::Reflection::BoundFuncDesc<RBX::Network::Client, void(int), 1> f_disconnect(&RBX::Network::Client::disconnect, "Disconnect", "blockDuration", RBX::Reflection::FunctionDescriptor::NeedTrustedCaller);
-
-class Exposer : protected PacketLogger
-{
+class sp_counted_base {
 public:
-	static const char* IDTOString(int id)
-	{
-		Exposer exposer;
-		return exposer.PacketLogger::IDTOString((unsigned char)id);
-	}
+    virtual ~sp_counted_base();
+    virtual void dispose() = 0;
+    virtual void destroy();
+    void release()
+    {
+        if (_InterlockedDecrement(&use_count_) == 0)
+        {
+            dispose();
+            weak_release();
+        }
+    }
+    void weak_release()
+    {
+        if (_InterlockedDecrement(&weak_count_) == 0)
+            destroy();
+    }
+    long use_count_;
+    long weak_count_;
 };
 
-namespace RBX
+class shared_count {
+public:
+    sp_counted_base* pi_;
+    ~shared_count() { if (pi_ != 0) pi_->release(); }
+};
+
+template<class T> class shared_ptr {
+public:
+    T* px;
+    shared_count pn;
+    T* operator->() const { return px; }
+};
+
+class Logger {
+public:
+    void log(int level, const char* fmt, ...);
+};
+shared_ptr<Logger> __cdecl getLogger();
+
+struct SocketDescriptor {
+    SocketDescriptor(unsigned short port, const char* hostAddress);
+    unsigned short port;
+    char hostAddress[32];
+};
+
+class RakPeerInterface {
+public:
+    virtual ~RakPeerInterface();
+    virtual bool Startup(unsigned short maxConnections, int threadSleepTimer, SocketDescriptor* socketDescriptors, unsigned socketDescriptorCount);
+    virtual void f2();
+    virtual void f3();
+    virtual void f4();
+    virtual void f5();
+    virtual void f6();
+    virtual void f7();
+    virtual void f8();
+    virtual bool Connect(const char* host, unsigned short remotePort, const char* passwordData, int passwordDataLength, unsigned connectionSocketIndex);
+};
+
+namespace RBX {
+enum MessageType { MESSAGE_OUTPUT, MESSAGE_INFO, MESSAGE_WARNING, MESSAGE_ERROR, MESSAGE_SEVERE };
+class StandardOut {
+public:
+    static StandardOut* singleton();
+    void print(MessageType type, const char* message);
+};
+
+namespace API {
+extern std::string version;
+}
+
+namespace Network {
+class Client {
+public:
+    char pad[0x140];
+    RakPeerInterface* rakPeer;
+    void updateNetworkSimulator();
+    void connect(std::string server, int serverPort, int clientPort, int threadSleepTime);
+};
+
+void Client::connect(std::string server, int serverPort, int clientPort, int threadSleepTime)
 {
-	namespace Network
-	{
-		Client::Client()
-		{
-			setName("NetworkClient");
-			updateLogger();
-		}
+    if (server != "localhost" && server.find_first_of("192.168", 0, 7) != 0)
+        StandardOut::singleton()->print(MESSAGE_SEVERE, " connect to an extranet game");
 
-		Client::~Client()
-		{
-			rakPeer->CloseConnection(serverId, true, 0);
-		}
+    SocketDescriptor d(clientPort, "");
+    if (!rakPeer->Startup(1, threadSleepTime, &d, 1))
+        throw std::runtime_error("Failed to start network client");
 
-		void Client::disconnect(int blockDuration)
-		{
-			removeAllChildren();
-			rakPeer->CloseConnection(serverId, true, 0);
-			rakPeer->Shutdown(blockDuration, 0);
-		}
+    if (!rakPeer->Connect(server.c_str(), serverPort, API::version.c_str(), (int)API::version.size(), 0))
+        throw std::runtime_error("Failed to connect to server");
 
-		void Client::onEvent(const ServiceProvider* source, Closing event)
-		{
-			disconnect(3000);
-		}
+    getLogger()->log(1, "Connecting to %s:%d", server.c_str(), serverPort);
 
-		void Client::connect(std::string server, int serverPort, int clientPort, int threadSleepTime)
-		{
-			SocketDescriptor d(clientPort, "");
-			if (!rakPeer->Startup(1, threadSleepTime, &d, 1))
-				throw std::runtime_error("Failed to start network client");
-
-			if (!rakPeer->Connect(server.c_str(), serverPort, API::version.c_str(), (int)API::version.size()))
-				throw std::runtime_error("Failed to connect to server");
-
-			StandardOut::singleton()->print(MESSAGE_INFO, "Connecting to %s:%d", server.c_str(), serverPort);
-
-			updateNetworkSimulator();
-		}
-
-		void Client::onServiceProvider(const ServiceProvider* oldProvider, const ServiceProvider* newProvider)
-		{
-			Notifier<ServiceProvider, Closing>::disconnect(oldProvider, this);
-
-			if (oldProvider)
-			{
-				RunService* runService = oldProvider->find<RunService>();
-				if (runService)
-					runService->runDisabled = false;
-
-				disconnect(3000);
-
-				Players* p = oldProvider->find<Players>();
-				p->setConnection(NULL);
-			}
-
-			Instance::onServiceProvider(oldProvider, newProvider);
-
-			if (newProvider)
-			{
-				Players* p = newProvider->create<Players>();
-				p->setConnection(rakPeer.get());
-
-				RunService* runService = newProvider->find<RunService>();
-				if (runService)
-					runService->runDisabled = true;
-			}
-
-			Notifier<ServiceProvider, Closing>::connect(newProvider, this);
-		}
-
-		bool Client::clientIsPresent(const Instance* context, bool testInDatamodel)
-		{
-			const ServiceProvider* sp = ServiceProvider::findServiceProvider(context);
-			RBXASSERT(!testInDatamodel || sp);
-
-			return ServiceProvider::find<Client>(sp) != NULL;
-		}
-
-		PluginReceiveResult Client::OnReceive(RakPeerInterface* peer, Packet* packet)
-		{
-			PluginReceiveResult result = PluginInterface::OnReceive(peer, packet);
-			if (result != RR_CONTINUE_PROCESSING)
-				return result;
-
-			switch(packet->data[0])
-			{
-			case ID_CONNECTION_REQUEST_ACCEPTED:
-				try
-				{
-					StandardOut::singleton()->print(MESSAGE_INFO, "Connection accepted from %s\n", packet->systemAddress.ToString());
-					serverId = packet->systemAddress;
-					
-					boost::shared_ptr<Replicator> proxy = Creatable::create<Replicator>(packet->systemAddress, this->rakPeer.get());
-					proxy->setParent(this);
-					
-					event_ConnectionAccepted.fire(this, packet->systemAddress.ToString(), proxy);
-				}
-				catch (std::exception& e)
-				{
-					StandardOut::singleton()->print(MESSAGE_ERROR, "Client::OnReceive packet %d: %s", packet->data[0], e.what());
-				}
-				break;
-
-			case ID_CONNECTION_ATTEMPT_FAILED:
-			case ID_NO_FREE_INCOMING_CONNECTIONS:
-			case ID_CONNECTION_BANNED:
-				try
-				{
-					StandardOut::singleton()->print(MESSAGE_ERROR, "Failed to connect to %s. %s\n", packet->systemAddress.ToString(), Exposer::IDTOString(packet->data[0]));
-					event_ConnectionFailed.fire(this, packet->systemAddress.ToString(), packet->data[0]);
-				}
-				catch (std::exception& e)
-				{
-					StandardOut::singleton()->print(MESSAGE_ERROR, "Client::OnReceive packet %d: %s", packet->data[0], e.what());
-				}
-				break;
-			
-			case ID_INVALID_PASSWORD:
-				try
-				{
-					StandardOut::singleton()->print(MESSAGE_ERROR, "Invalid version from %s", packet->systemAddress.ToString());
-					event_ConnectionFailed.fire(this, packet->systemAddress.ToString(), packet->data[0]);
-					event_ConnectionRejected.fire(this, packet->systemAddress.ToString());
-				}
-				catch (std::exception& e)
-				{
-					StandardOut::singleton()->print(MESSAGE_ERROR, "Client::OnReceive packet %d: %s", packet->data[0], e.what());
-				}
-				break;
-
-			case ID_DISCONNECTION_NOTIFICATION:
-			case ID_CONNECTION_LOST:
-				RBXASSERT(packet->systemAddress == serverId);
-				serverId = UNASSIGNED_SYSTEM_ADDRESS;
-				break;
-			}
-
-			return RR_CONTINUE_PROCESSING;
-		}
-	}
+    updateNetworkSimulator();
+}
+}
 }

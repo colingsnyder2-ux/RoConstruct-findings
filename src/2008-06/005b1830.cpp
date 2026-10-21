@@ -1,70 +1,67 @@
-// from server: 97% by Espeon
 // roc-lang: cpp
 // roc-cl: 21022
-// roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: openrbx-client-dll roc_espeon_headweldcollection_e1f26ffb346eee78.cpp
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+// roc-lib: openrbx-client-dll roc_manual_toolgrip_bd8cbdf63fa82ccf.cpp
 
 // Candidate translation unit (score above; library headers required).
-#include <string>
 #include <vector>
+#include <string>
 #include <boost/shared_ptr.hpp>
+typedef std::vector<boost::shared_ptr<void> > Collection;
 typedef std::string String;
-typedef std::vector<boost::shared_ptr<void> > Root;
 struct Transform {
     float data[12];
 };
 
-struct Argument {
-    char data[48];
+struct Connection {
+    char storage[4];
+    void disconnect();
 };
 
 struct Part {
-    void detach(int);
+    void setParent(void*);
 };
 
 struct Context {
-    void* get();
-    Transform calculate(const Argument&, const String&);
+    void* getState();
+    Transform getTransform(const Transform*, const String*);
 };
 
-struct Receiver {
-    char data[40];
-    void assign(void*, Part*, const Transform&);
+struct Grip {
+    char storage[4];
+    void update(void*, Part*, const Transform&);
 };
 
-struct Resettable {
-    void reset();
-};
-
-struct S {
+struct Tool {
     char padding0[0x104];
-    void* context;
+    void* parent;
     char padding1[0x28];
-    Receiver receiver;
-    Argument argument;
-    Resettable resettable;
+    Grip grip;
+    char padding2[0x24];
+    Transform transform;
+    Connection connection;
 
     Part* getPart();
-    void f();
+    void updateGrip();
 };
 
-void __cdecl initialize(S*, Root*);
-void __cdecl finish(void*);
-Context* __cdecl getContext(void*);
+extern "C" void __cdecl collect(Tool*, Collection&);
+extern "C" void __cdecl prepare(const Collection&);
+extern "C" Context* __cdecl getContext(void*);
 
-void S::f()
+void Tool::updateGrip()
 {
-    resettable.reset();
-    Root root;
-    initialize(this, &root);
-    finish(&root);
-
-    Context* c = getContext(context);
-    void* value = c->get();
+    connection.disconnect();
+    Collection objects;
+    collect(this, objects);
+    prepare(objects);
+    void* p = parent;
+    Context* context = getContext(p);
+    void* state = context->getState();
     Part* part = getPart();
     if (part)
-        part->detach(0);
-
+        part->setParent(0);
     String name("HeadWeld");
-    receiver.assign(value, part, c->calculate(argument, name));
+    grip.update(state, part, context->getTransform(&transform, &name));
 }
+

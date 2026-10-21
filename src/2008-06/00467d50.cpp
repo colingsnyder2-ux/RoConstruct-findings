@@ -1,115 +1,83 @@
-// from server: 39% by colin
+// from server: 100% by king_originala
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
+extern "C" long __cdecl _InterlockedDecrement(volatile long*);
+#pragma intrinsic(_InterlockedDecrement)
 
 struct Control {
-    virtual void reserved();
+    virtual ~Control();
     virtual void dispose();
     virtual void destroy();
     volatile long strong;
     volatile long weak;
 };
 
-struct Shared {
-    Control* ctrl;
+struct Interface {
+    virtual void unused();
+    virtual bool query();
 };
 
-struct ContentProvider {
-    int value;
-    unsigned char flag;
-    int count;
-    void f();
+struct Object {
+    unsigned char padding[0x1f0];
+    Interface interfaceValue;
 };
 
-struct Verb {
-    virtual void v0();
-    virtual void v1();
-    virtual void v2();
-    virtual bool v3();
+struct Pointer {
+    Object* object;
+    Control* control;
+
+    Pointer() throw();
+    Pointer(const Pointer& other);
+    ~Pointer();
+    const Pointer& reference() const throw();
 };
 
-struct String {
-    void* buf[4];
-    String(const char*);
-    ~String();
-};
+inline Pointer::Pointer() throw() {
+}
 
-extern "C" void* __cdecl sub_6a0926();
-extern "C" void* __cdecl sub_4306c0(void*);
-extern "C" void __cdecl sub_411b40(void*);
-extern "C" void __cdecl sub_5773c0(void*);
-extern "C" Verb* __cdecl sub_583380(void*);
-extern "C" void* __cdecl mfc_call_1137(void*, const char*);
+inline Pointer::Pointer(const Pointer& other)
+    : object(other.object), control(other.control) {
+    if (control) {
+        volatile long* count = &control->strong;
+        _InterlockedExchangeAdd(count, 1);
+    }
+}
 
-struct DxUserInput {
-    bool check();
-};
-
-bool DxUserInput::check()
-{
-    void* a = sub_6a0926();
-    void* b = *(void**)((char*)a + 4);
-    void* c = *(void**)((char*)b + 0x20);
-    unsigned char flag = *(unsigned char*)((char*)c + 0x104);
-    if (!flag)
-        return true;
-
-    void* r1 = sub_4306c0(0);
-    bool has = *(void**)r1 != 0;
-
-    Shared* s = *(Shared**)((char*)r1 + 4);
-    if (s) {
-        Control* ctrl = s->ctrl;
-        if (_InterlockedExchangeAdd(&ctrl->strong, -1) == 1) {
-            ctrl->dispose();
-            if (_InterlockedExchangeAdd(&ctrl->weak, -1) == 1)
-                ctrl->destroy();
+inline Pointer::~Pointer() {
+    if (control) {
+        Control* p = control;
+        if (_InterlockedDecrement(&p->strong) == 0) {
+            p->dispose();
+            if (_InterlockedDecrement(&p->weak) == 0)
+                p->destroy();
         }
     }
+}
 
-    if (!has)
-        return true;
+inline const Pointer& Pointer::reference() const throw() {
+    return *this;
+}
 
-    void* r2 = sub_4306c0(0);
-    Shared* s2 = *(Shared**)((char*)r2 + 4);
-    if (s2) {
-        Control* ctrl = s2->ctrl;
-        _InterlockedExchangeAdd(&ctrl->strong, 1);
+struct Guard {
+    unsigned char storage[12];
+    Guard(Pointer value);
+    ~Guard();
+};
+
+struct Source;
+
+struct S {
+    unsigned char padding[0x94];
+    Source* source;
+    Pointer get() throw();
+    int f();
+};
+
+int S::f() {
+    if (get().object != 0) {
+        Guard guard(get().reference());
+        int result = get().object->interfaceValue.query();
+        return result;
     }
-
-    sub_411b40(0);
-
-    Shared* s3 = *(Shared**)((char*)r2 + 4);
-    if (s3) {
-        Control* ctrl = s3->ctrl;
-        if (_InterlockedExchangeAdd(&ctrl->strong, -1) == 1) {
-            ctrl->dispose();
-            if (_InterlockedExchangeAdd(&ctrl->weak, -1) == 1)
-                ctrl->destroy();
-        }
-    }
-
-    String str("ToggleToolbox");
-    void* r3 = sub_4306c0(0);
-    void* obj = *(void**)r3;
-    Verb* v = sub_583380((char*)obj + 0x1c8);
-
-    Shared* s4 = *(Shared**)((char*)r2 + 4);
-    if (s4) {
-        Control* ctrl = s4->ctrl;
-        if (_InterlockedExchangeAdd(&ctrl->strong, -1) == 1) {
-            ctrl->dispose();
-            if (_InterlockedExchangeAdd(&ctrl->weak, -1) == 1)
-                ctrl->destroy();
-        }
-    }
-
-    if (!v) {
-        sub_5773c0(0);
-        return true;
-    }
-
-    bool result = v->v3();
-    sub_5773c0(0);
-    return result;
+    return 0;
 }

@@ -1,235 +1,146 @@
-// from server: 12% by colin
-struct Vtbl;
-struct Obj {
-    Vtbl* vt;
-    char pad[0x2d8];
-    float f2dc;
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MD /fp:fast
+// roc-lib: rbxgs-dll roc_render_proxies_native_shadow_array_ref40cd72f4949d224e.cpp
+
+// Candidate translation unit (score above; library headers required).
+// Native00504290, allocate render proxies. Names are codegen analogues.
+// Actual G3D values/containers; opaque owner storage comes from native accesses.
+#include <RenderLib/Mesh.h>
+#include <G3D/GCamera.h>
+#include <G3D/CoordinateFrame.h>
+#include <G3D/ReferenceCount.h>
+#include <G3D/Array.h>
+#include <GLG3D/Texture.h>
+#include <algorithm>
+#include <cmath>
+#include <cstddef>
+
+template<class T> static inline T& proxyField(void* p,unsigned offset) {
+    return *reinterpret_cast<T*>(static_cast<char*>(p)+offset);
+}
+namespace RBX { namespace RenderBase {
+class MaterialBase : public G3D::ReferenceCountedObject {
+public:
+    class Level {
+    public:
+        virtual bool isEmptyLevel() const;
+        virtual ~Level();
+        // MSVC reverses each overload group: engine form is native slot8.
+        virtual TextureProxyBaseRef baseTexture() const;
+        virtual G3D::TextureRef baseTexture(G3D::RenderDevice*) const;
+        virtual void setBaseTexture(TextureProxyBaseRef);
+        virtual G3D::TextureRef matte(G3D::RenderDevice*) const;
+        virtual const G3D::Color3& color() const;
+        virtual float specular() const;
+        virtual float shiny() const;
+        virtual float reflect() const;
+        virtual float transparent() const;
+    };
+    virtual ~MaterialBase();
+    virtual const Level& appendEmptyLevel();
+    virtual const Level& appendLevel(TextureProxyBaseRef,G3D::Color3,float,float,float,float);
+    virtual const Level& appendLevel(G3D::Color3,float,float,float,float);
+    virtual size_t levelCount() const;
+    virtual Level& getLevel(int);
+    virtual const Level* detailLevel(float) const;
+    virtual bool veryTransparent() const;
 };
-
-struct Vtbl {
-    void* m0;
-    void* m1;
-    void* m2;
-    void* m3;
-    void* m4;
-    void* m5;
-    void* m6;
-    void* m7;
+// Proven primary virtual prefix only; no complete Chunk layout/allocation claim.
+class Chunk : public G3D::ReferenceCountedObject {
+public:
+    virtual ~Chunk();
+    virtual bool cachesShadows() const;
+    virtual void renderShadows(G3D::RenderDevice*,const G3D::GLight&,bool,float);
+    virtual bool castsShadows() const;
+    virtual bool cullable() const;
+    virtual G3D::ReferenceCountedPointer<MaterialBase> getMaterial();
+    virtual G3D::ReferenceCountedPointer<Render::Mesh> getMesh();
+    virtual const G3D::CoordinateFrame& cframe();
 };
-
-struct Scene {
-    char pad0[8];
-    void* arr;
-    int count;
-    char pad1[0x2c0];
-    float f2dc;
-    char pad2[0x10];
-    float f2e4;
-    char pad3[0x10];
-    void* list298;
-    int count29c;
-
-    void renderScene(void* a, void* b);
+}}
+namespace RBX { namespace Render {
+// Genuine RenderSurface field order, with2008 MaterialBase::Level interface.
+class RenderSurface {
+public:
+    G3D::CoordinateFrame cframe;
+    float z;
+    const RenderBase::MaterialBase::Level* material;
+    float polygonOffset;
+    const Mesh::Level* mesh;
+    G3D::ReferenceCountedPointer<Mesh> fullMesh;
+    RenderSurface():material(0),mesh(0) {}
 };
+class RenderScene {
+public:
+    float farCullZ() const { return proxyField<float>(const_cast<RenderScene*>(this),0x2dc); }
+    void allocateProxies(G3D::RenderDevice*,const G3D::GCamera&);
+};
+}}
+typedef char NativeRenderSurfaceSize[sizeof(RBX::Render::RenderSurface)==68?1:-1];
+typedef char NativeRenderSurfaceMaterial[offsetof(RBX::Render::RenderSurface,material)==0x34?1:-1];
+typedef char NativeRenderSurfaceMesh[offsetof(RBX::Render::RenderSurface,mesh)==0x3c?1:-1];
+typedef char NativeRenderSurfaceFullMesh[offsetof(RBX::Render::RenderSurface,fullMesh)==0x40?1:-1];
+typedef char NativeProxyArraySize[sizeof(G3D::Array<RBX::Render::RenderSurface>)==12?1:-1];
 
-extern "C" int __stdcall InterlockedDecrement(void*);
-extern "C" int __stdcall InterlockedIncrement(void*);
-extern "C" int __stdcall mfc800(void*);
+static inline float proxyDetailLevel(float x,float low,float high) {
+    return G3D::clamp(1.0f-(x-low)/(high-low),0.0f,1.0f);
+}
 
-void __cdecl sub_4782d0(void*);
-void __cdecl sub_510b50(void*, void*);
-void __cdecl sub_6a067a(void*);
-void __cdecl sub_45ad90(void*);
-void __cdecl sub_4d7ae0(void*, void*);
-void __cdecl sub_502a40(void*, void*);
-void __cdecl sub_502a70(void*);
-void __cdecl sub_5035e0(void*, int, int);
-void __cdecl sub_503ea0(void*, void*);
-void __cdecl sub_548f80(void*, void*, float);
-void __cdecl sub_598fa0(void*, void*);
-
-void Scene::renderScene(void* a, void* b) {
-    char buf[0x100];
-    sub_4782d0(buf);
-    sub_510b50(a, buf);
-    float v = -((float*)a)[4];
-    float w = f2dc;
-    float x = (v > w) ? v : w;
-    if (count > 0) {
-        for (int i = 0; i < count; i++) {
-            void* p = ((void**)arr)[i];
-            if (!p) continue;
-            void* vt = *(void**)p;
-            void* r;
-            ((void(__thiscall*)(void*, void**))((void**)vt)[6])(p, &r);
-            bool b1 = (r != 0);
-            if (r) {
-                if (InterlockedDecrement((char*)r + 4) == 0) {
-                    void* n = *((void**)((char*)r + 8));
-                    while (n) {
-                        void* nn = *(void**)n;
-                        ((void(__thiscall*)(void*))((void**)nn)[1])(n);
-                        void* nx = *((void**)((char*)n + 4));
-                        sub_6a067a(n);
-                        n = nx;
-                    }
-                    if (r) ((void(__thiscall*)(void*, int))**(void***)r)(r, 1);
-                }
-                r = 0;
+void RBX::Render::RenderScene::allocateProxies(G3D::RenderDevice* rd,const G3D::GCamera& camera) {
+    typedef G3D::ReferenceCountedPointer<RenderBase::Chunk> ChunkRef;
+#define chunks proxyField<G3D::Array<ChunkRef> >(this,8)
+#define proxies proxyField<G3D::Array<RenderSurface> >(this,0x268)
+#define shadowProxies proxyField<G3D::Array<RenderSurface> >(this,0x298)
+#define shadowChunks proxyField<G3D::Array<ChunkRef> >(this,0x2a4)
+    G3D::CoordinateFrame cameraFrame;
+    camera.getCoordinateFrame(cameraFrame);
+    float farZ=std::max(farCullZ(),camera.getFarPlaneZ());
+    float nearZ=camera.getNearPlaneZ();
+    for(int p=0;p<chunks.size();++p) {
+        RenderBase::Chunk* chunk=chunks[p].getPointer();
+        if(!chunk) continue;
+        bool hasMesh=chunk->getMesh().notNull();
+        bool hasMaterial=chunk->getMaterial().notNull();
+        if(!hasMesh || !hasMaterial) continue;
+        const G3D::CoordinateFrame& frame=chunk->cframe();
+        G3D::Vector3 cspace=cameraFrame.pointToObjectSpace(frame.translation);
+        bool farCulled=cspace.z+proxyField<float>(chunk,0x1c)<farZ && chunk->cullable();
+        bool nearCulled=cspace.z-proxyField<float>(chunk,0x1c)>nearZ;
+        bool shadowFarCulled=cspace.z+proxyField<float>(chunk,0x1c)<farZ*1.2f && chunk->cullable();
+        if(chunk->castsShadows() && !shadowFarCulled && !chunk->getMaterial()->veryTransparent()) {
+            if(chunk->cachesShadows()) shadowChunks.append(chunks[p]);
+            else {
+                G3D::Array<RenderSurface>& shadows=shadowProxies;
+                shadows.resize(shadows.size()+1,false);
+                RenderSurface& proxy=shadows.last();
+                proxy.material=0;
+                proxy.cframe=frame;
+                proxy.mesh=chunk->getMesh()->dropShadowMesh().getPointer();
+                proxy.fullMesh=chunk->getMesh();
             }
-            void* r2;
-            ((void(__thiscall*)(void*, void**))((void**)vt)[5])(p, &r2);
-            bool b2 = (r2 != 0);
-            if (r2) {
-                if (InterlockedDecrement((char*)r2 + 4) == 0) {
-                    void* n = *((void**)((char*)r2 + 8));
-                    while (n) {
-                        void* nn = *(void**)n;
-                        ((void(__thiscall*)(void*))((void**)nn)[1])(n);
-                        void* nx = *((void**)((char*)n + 4));
-                        sub_6a067a(n);
-                        n = nx;
-                    }
-                    if (r2) ((void(__thiscall*)(void*, int))**(void***)r2)(r2, 1);
+        }
+        if(!farCulled && !nearCulled) {
+            for(int level=0;level<(int)chunk->getMaterial()->levelCount();++level) {
+                if(chunk->getMaterial()->getLevel(level).isEmptyLevel()) continue;
+                RenderSurface proxy;
+                proxy.cframe=frame;
+                proxy.polygonOffset=proxyField<float>(chunk,0x18);
+                proxy.z=cspace.z-proxyField<float>(chunk,0x18);
+                proxy.fullMesh=chunk->getMesh();
+                proxy.material=&chunk->getMaterial()->getLevel(level);
+                if(proxy.material) {
+                    proxy.material->baseTexture(rd);
+                    float raw=proxyDetailLevel(fabsf(proxy.z),-nearZ,-farZ)+proxyField<float>(this,0x2e4);
+                    float lod=G3D::clamp(raw,0.0f,1.0f);
+                    proxy.mesh=chunk->getMesh()->detailLevel(lod).getPointer();
+                    proxies.append(proxy);
                 }
-                r2 = 0;
-            }
-            if (!b1 || !b2) continue;
-            void* ext = ((void*(__thiscall*)(void*))((void**)vt)[7])(p);
-            float px = ((float*)ext)[9] - ((float*)b)[0];
-            float py = ((float*)ext)[10] - ((float*)b)[1];
-            float pz = ((float*)ext)[11] - ((float*)b)[2];
-            float d = px * ((float*)b)[3] + py * ((float*)b)[4] + pz * ((float*)b)[5];
-            bool c1 = (d + ((float*)p)[7] > ((float*)b)[6]);
-            bool c2 = (d - ((float*)p)[7] < ((float*)b)[7]);
-            bool c3 = (d + ((float*)p)[7] > ((float*)b)[6] * 0.5f);
-            bool c4 = false;
-            if (c3) {
-                c4 = ((char(__thiscall*)(void*))((void**)vt)[4])(p) != 0;
-            }
-            bool c5 = ((char(__thiscall*)(void*))((void**)vt)[3])(p) != 0;
-            bool c6 = false;
-            if (c5 && !c4) {
-                void* r3;
-                ((void(__thiscall*)(void*, void**))((void**)vt)[5])(p, &r3);
-                void* inner = *(void**)r3;
-                c6 = ((char(__thiscall*)(void*))((void**)inner)[7])(inner) == 0;
-                if (r3) {
-                    if (InterlockedDecrement((char*)r3 + 4) == 0) {
-                        sub_45ad90(r3);
-                        if (r3) ((void(__thiscall*)(void*, int))**(void***)r3)(r3, 1);
-                    }
-                    r3 = 0;
-                }
-            }
-            if (c6) {
-                if (((char(__thiscall*)(void*))((void**)vt)[1])(p)) {
-                    sub_4d7ae0((char*)b + 0x2a4, (char*)arr + i * 4);
-                } else {
-                    sub_5035e0((char*)b + 0x298, count29c + 1, 0);
-                    void* slot = (char*)list298 + (count29c * 17 - 17) * 4;
-                    *(int*)((char*)slot + 0x34) = 0;
-                    for (int k = 0; k < 9; k++) ((int*)slot)[k] = ((int*)ext)[k];
-                    ((float*)slot)[9] = ((float*)ext)[9];
-                    ((float*)slot)[10] = ((float*)ext)[10];
-                    ((float*)slot)[11] = ((float*)ext)[11];
-                    void* r4;
-                    ((void(__thiscall*)(void*, void**))((void**)vt)[6])(p, &r4);
-                    void* inner = *(void**)r4;
-                    void* r5;
-                    sub_502a40(inner, &r5);
-                    *(void**)((char*)slot + 0x3c) = *(void**)r5;
-                    sub_502a70(&r5);
-                    sub_502a70(&r4);
-                    void* r6;
-                    ((void(__thiscall*)(void*, void**))((void**)vt)[6])(p, &r6);
-                    void* inner2 = *(void**)r6;
-                    sub_598fa0((char*)slot + 0x40, inner2);
-                    sub_502a70(&r6);
-                }
-            }
-            if (c1 || c2) continue;
-            int idx = 0;
-            void* r7;
-            ((void(__thiscall*)(void*, void**))((void**)vt)[5])(p, &r7);
-            void* inner3 = *(void**)r7;
-            int n = ((int(__thiscall*)(void*))((void**)inner3)[4])(inner3);
-            bool has = (idx < n);
-            if (r7) {
-                if (InterlockedDecrement((char*)r7 + 4) == 0) {
-                    sub_45ad90(r7);
-                    if (r7) ((void(__thiscall*)(void*, int))**(void***)r7)(r7, 1);
-                }
-                r7 = 0;
-            }
-            if (!has) continue;
-            void* r8;
-            ((void(__thiscall*)(void*, void**))((void**)vt)[5])(p, &r8);
-            void* inner4 = *(void**)r8;
-            void* item = ((void*(__thiscall*)(void*, int))((void**)inner4)[5])(inner4, idx);
-            bool flag = ((char(__thiscall*)(void*))**(void***)item)(item) != 0;
-            if (r8) {
-                if (InterlockedDecrement((char*)r8 + 4) == 0) {
-                    sub_45ad90(r8);
-                    if (r8) ((void(__thiscall*)(void*, int))**(void***)r8)(r8, 1);
-                }
-                r8 = 0;
-            }
-            if (flag) continue;
-            char buf2[0x100];
-            sub_4782d0(buf2);
-            *(int*)(buf2 + 0x34) = 0;
-            *(int*)(buf2 + 0x3c) = 0;
-            *(int*)(buf2 + 0x40) = 0;
-            for (int k = 0; k < 9; k++) ((int*)buf2)[k] = ((int*)ext)[k];
-            ((float*)buf2)[9] = ((float*)ext)[9];
-            ((float*)buf2)[10] = ((float*)ext)[10];
-            ((float*)buf2)[11] = ((float*)ext)[11];
-            ((float*)buf2)[12] = ((float*)p)[6];
-            ((float*)buf2)[13] = d - ((float*)p)[6];
-            void* r9;
-            ((void(__thiscall*)(void*, void**))((void**)vt)[6])(p, &r9);
-            void* inner5 = *(void**)r9;
-            void* r10;
-            ((void(__thiscall*)(void*, void**))((void**)vt)[5])(p, &r10);
-            void* inner6 = *(void**)r10;
-            void* item2 = ((void*(__thiscall*)(void*, int))((void**)inner6)[5])(inner6, idx);
-            *(void**)(buf2 + 0x3c) = item2;
-            sub_502a70(&r10);
-            sub_502a70(&r9);
-            if (item2) {
-                void* r11;
-                ((void(__thiscall*)(void*, void**))((void**)vt)[2])(p, &r11);
-                void* inner7 = *(void**)r11;
-                void* r12;
-                ((void(__thiscall*)(void*, void**))((void**)inner7)[2])(inner7, &r12);
-                sub_502a70(&r12);
-                sub_502a70(&r11);
-                float f = ((float*)buf2)[13];
-                float g = -((float*)buf2)[12];
-                float h = (1.0f - (f - g) / (w - g));
-                if (h < 0.0f) h = 0.0f;
-                if (h > 1.0f) h = 1.0f;
-                if (h + f2e4 <= w) {
-                    ((float*)buf2)[14] = h;
-                    void* r13;
-                    ((void(__thiscall*)(void*, void**))((void**)vt)[6])(p, &r13);
-                    void* inner8 = *(void**)r13;
-                    void* r14;
-                    sub_548f80(inner8, &r14, h);
-                    *(void**)(buf2 + 0x38) = *(void**)r14;
-                    sub_502a70(&r14);
-                    sub_502a70(&r13);
-                    sub_503ea0((char*)b + 0x268, buf2);
-                }
-            }
-            if (buf2[0x40]) {
-                if (InterlockedDecrement((char*)buf2 + 0x44) == 0) {
-                    sub_45ad90(buf2 + 0x40);
-                    if (*(void**)(buf2 + 0x40)) ((void(__thiscall*)(void*, int))**(void***)(buf2 + 0x40))(buf2 + 0x40, 1);
-                }
-                *(int*)(buf2 + 0x40) = 0;
             }
         }
     }
+#undef chunks
+#undef proxies
+#undef shadowProxies
+#undef shadowChunks
 }

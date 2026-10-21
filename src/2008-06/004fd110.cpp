@@ -1,8 +1,9 @@
+// from server: 99% by colin
 // from server: 95% by Espeon
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD /fp:fast
-// roc-lib: rbxgs-dll roc_espeon_spheredecalinlinefc809a8b6864ec7e.cpp
+// roc-lib: rbxgs-dll roc_manual_cylinder_d910398abac86202.cpp
 
 // Candidate translation unit (score above; library headers required).
 #pragma float_control(precise,off)
@@ -65,6 +66,9 @@ public:
 };
 class RenderDevice { public: enum Primitive { QUADS = 5 }; };
 }
+struct Dummy1 { Dummy1() {} ~Dummy1(); };
+struct Dummy2 { Dummy2() {} ~Dummy2(); };
+struct Dummy3 { Dummy3() {} ~Dummy3(); };
 namespace RBX {
 enum NormalId { NORM_X };
 namespace Render {
@@ -102,7 +106,7 @@ public:
         : LevelBuilder(level, size, surfaceTypes), sides(6) {}
     virtual void buildFace(NormalId face, Usage usage);
 };
-class CylinderAlongXMesh : public Render::Mesh {
+class CylinderAlongXMesh : public Render::Mesh, public Dummy1, public Dummy2, public Dummy3 {
 public:
     CylinderAlongXMesh(const G3D::Vector3& size, NormalId textureFace);
 };

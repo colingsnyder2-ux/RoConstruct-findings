@@ -1,483 +1,359 @@
-// from server: 26% by colin
-struct Part {
-    char pad0[0x1c];
-    float field_1c;
-    char pad1[0xbc - 0x20];
-    int field_bc;
-    char pad2[0xcc - 0xc0];
-    int field_cc;
-    char pad3[0xd4 - 0xd0];
-    int field_d4;
-    char pad4[0x130 - 0xd8];
-    int field_130;
-    float field_134;
-    float field_138;
-    float field_13c;
-    char pad5[0x1dc - 0x140];
-    int field_1dc;
-    char pad6[0x1e4 - 0x1e0];
-    int field_1e4;
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MD /fp:fast
+// roc-lib: rbxgs-dll roc_part_mesh_native_float_extents9dff256d484cc2eb.cpp
 
-    void method();
-};
+// Candidate translation unit (score above; library headers required).
+// Native004eb190, complete2849B owner. Names are codegen analogues.
+// Opaque receivers have no allocation/sizeof claims; views use native accesses.
+#include <G3D/ReferenceCount.h>
+#include <G3D/Color3.h>
+#include <G3D/Vector3.h>
+#include <G3D/Vector4.h>
+#include <G3D/g3dmath.h>
+#include <util/NormalId.h>
+#include <util/SurfaceType.h>
+#include <v8datamodel/BrickColor.h>
+#include <util/Name.h>
+#include <util/StandardOut.h>
+#include <boost/shared_ptr.hpp>
+#include <vector>
+#include <string>
+#include <exception>
 
-struct Obj {
-    char pad0[0x104];
-    int field_104;
-    int field_108;
-    char pad2[0x130 - 0x10c];
-    int field_130;
-    float field_134;
-    float field_138;
-    float field_13c;
-    char pad3[0x148 - 0x140];
-    int field_148;
-    char pad4[0x154 - 0x14c];
-    char field_154[0x14];
-    int field_168;
-};
-
-struct Vec3 {
-    float x, y, z;
-};
-
-extern "C" {
-    int __stdcall InterlockedDecrement(int*);
-    void __cdecl _invalid_parameter_noinfo();
+template<class T> static inline T& partField(void* p,unsigned offset) {
+    return *reinterpret_cast<T*>(static_cast<char*>(p)+offset);
 }
+namespace RBX {
+// ContentId's genuine historical32B declaration: checked string28 + Name*4.
+class ContentId {
+    std::string id;
+    const Name* mimeTypePtr;
+public:
+    ContentId(); // Native0043d050, observed noninline boundary.
+    ContentId& operator=(const ContentId&); // Native0043d0a0.
+    bool isNull() const {return id.empty();}
+    const Name& mimeType() const {return *mimeTypePtr;}
+};
+typedef char NativeContentIdSize[sizeof(ContentId)==32?1:-1];
+// RTTI selectors only; no invented base offsets or complete object storage.
+class Instance {public:virtual ~Instance();};
+class ModelInstance {public:virtual ~ModelInstance();};
+class Clothing {public:virtual ~Clothing();};
+class SurfaceView {public:SurfaceType getSurfaceType() const;};
+class SurfacesView {public:const SurfaceView& operator[](NormalId) const;};
+class PartInstance {public:const SurfacesView& getSurfaces() const;const G3D::Vector3& getPartSizeXml() const;};
+class ModelModifierQuery {public:void* findModelModifier();}; //004e7ff0, thiscall
+class Humanoid {
+public:
+    static Humanoid* fromInstance(Instance*);
+    PartInstance* getLeftArm() const;
+    PartInstance* getRightArm() const;
+    PartInstance* getTorso() const;
+    PartInstance* getLeftLeg() const;
+    PartInstance* getRightLeg() const;
+};
+class ContentProviderView {
+public:
+    static ContentProviderView* find(Instance*); //00465210, cdecl
+    void requestFile(const ContentId&,int*,std::string&); //00562670, ret0xc
+};
+class SpecialShapeView {
+public:
+    ContentId getMeshId() const;
+    ContentId getTextureId() const; //004e5f50, hidden result
+    float getAlpha() const; //0059eca0
+};
+class TextureProxyBase : public G3D::ReferenceCountedObject {
+public:
+    virtual ~TextureProxyBase();
+    // Native551c70/90 and551cb0/d0 establish these four accessors.
+    virtual void setValue28(unsigned);
+    virtual unsigned getValue28() const;
+    virtual void setFloat2c(float);
+    virtual float getFloat2c() const;
+};
+typedef G3D::ReferenceCountedPointer<TextureProxyBase> TextureProxyBaseRef;
+namespace RenderBase {
+class MaterialBase : public G3D::ReferenceCountedObject {
+public:
+    class Level {
+    public:
+        virtual bool isEmptyLevel() const;
+        virtual ~Level();
+    }; // Proven native virtual prefix; returned references only.
+    virtual ~MaterialBase();
+    virtual const Level& appendEmptyLevel();
+    virtual const Level& appendLevel(TextureProxyBaseRef,G3D::Color3,float,float,float,float);
+    virtual const Level& appendLevel(G3D::Color3,float,float,float,float);
+};
+}
+typedef G3D::ReferenceCountedPointer<RenderBase::MaterialBase> PartMaterialRef;
+class PartMaterialFactoryView {
+public:
+    struct Attributes {
+        const BrickColor color;
+        const float transparency;
+        const float reflectance;
+    };
+    PartMaterialRef getMegaMaterial(Attributes);
+    PartMaterialRef getMaterial(Attributes);
+};
+namespace ViewNew {
+class Part {
+public:
+    PartMaterialRef getMaterial();
+    void updateMesh();
+    bool usesMegaTexture() const; //004e5f80
+};
+}
+}
+extern RBX::PartMaterialRef nativeEmptyPartMaterial;
+extern RBX::RenderBase::MaterialBase* createPartMaterial(); //00551730
+extern RBX::TextureProxyBase* createPartTexture(void*,const std::string&,bool); //00551920
+extern std::string migrateAtlas(std::string,const RBX::Name&,bool,float); //005ef840
 
-void* __cdecl func_598de0(int, int);
-void* __cdecl func_5ecc00(void*);
-int __cdecl func_5f1290(void*);
-void* __cdecl func_598cd0(void*);
-int __cdecl func_4e5f80(void*);
-void* __cdecl func_6a17c6(void*, void*, void*, void*, void*);
-int __cdecl func_4e7ff0(void*);
-void* __cdecl func_5d9a20(void*);
-void __cdecl func_43d050(void*);
-void __cdecl func_43d0a0(void*, void*);
-void __cdecl func_68ff20(void*, void*);
-void __cdecl func_68fef0(void*, void*);
-void __cdecl func_5d8b10(void*);
-void __cdecl func_5d8c10(void*);
-void __cdecl func_5d8d10(void*);
-void __cdecl func_5d8e10(void*);
-void __cdecl func_5d8f10(void*);
-void __cdecl func_4e54e0(void*, void*, void*, void*, void*, void*, void*, void*);
-void __cdecl func_598fa0(void*, void*);
-void __cdecl func_4d7560(void*, void*);
-void __cdecl func_4e58b0(void*, void*, void*, void*);
-void __cdecl func_502a70(void*);
-void __cdecl func_45ad90(void*);
-void __cdecl func_4e5f20(void*, void*);
-void __cdecl func_465210(void*, void*);
-void __cdecl func_500b90(void*, void*);
-void __cdecl func_4eef30(void*, void*);
-void __cdecl func_4edb20(void*, void*);
-void __cdecl func_4eea30(void*, void*);
-void __cdecl func_4ee030(void*, void*);
-void __cdecl func_4ef430(void*, void*);
-void __cdecl func_4ee530(void*, void*);
-void __cdecl func_4dc4e0(void*, void*);
-
-void Part::method()
-{
-    int ebp;
-    int eax_val;
-    int edi_val;
-    int ebx_val;
-    Vec3 vec;
-    int local_10;
-    int local_14;
-    int local_18;
-    int local_1c;
-    int local_20;
-    int local_24;
-    char local_34[0x20];
-    char local_54[0x20];
-    int local_68;
-    int local_48;
-    int local_7c;
-
-    int* pbc = (int*)field_bc;
-
-    void* r1 = func_598de0((int)pbc, 0);
-    void* r2 = func_5ecc00(r1);
-    int r3 = func_5f1290(r2);
-    r3--;
-    if (r3 <= 3) {
-        switch (r3) {
-        case 0: ebp = 1; break;
-        case 1: ebp = 2; break;
-        case 2: ebp = 3; break;
-        case 3: ebp = 4; break;
-        }
-    } else {
-        ebp = 0;
+RBX::PartMaterialRef RBX::ViewNew::Part::getMaterial() {
+#define part partField<PartInstance*>(this,0xbc)
+#define material partField<PartMaterialRef>(this,0xc4)
+#define invalid partField<bool>(this,0xc8)
+#define view partField<void*>(this,0xd0)
+#define special partField<SpecialShapeView*>(this,0xd4)
+#define factory partField<PartMaterialFactoryView*>(view,0x10)
+#define engine partField<void*>(view,0xc)
+#define alpha (1.0f-(1.0f-partField<float>(part,0x1e8))*partField<float>(part,0x328))
+#define reflectance partField<float>(part,0x1ec)
+    if(nativeEmptyPartMaterial.isNull()) {
+        nativeEmptyPartMaterial=createPartMaterial();
+        nativeEmptyPartMaterial->appendLevel(TextureProxyBaseRef(),G3D::Color3::WHITE,0,0,0,0);
     }
-
-    pbc = (int*)field_bc;
-    void* r4 = func_598de0((int)pbc, 1);
-    void* r5 = func_5ecc00(r4);
-    int r6 = func_5f1290(r5);
-    r6--;
-    if (r6 <= 3) {
-        switch (r6) {
-        case 0: eax_val = 1; break;
-        case 1: eax_val = 2; break;
-        case 2: eax_val = 3; break;
-        case 3: eax_val = 4; break;
-        }
-    } else {
-        eax_val = 0;
-    }
-
-    pbc = (int*)field_bc;
-    edi_val = eax_val * 8;
-    ebp &= 0xffc7;
-    void* r7 = func_598de0((int)pbc, 2);
-    edi_val |= ebp;
-    void* r8 = func_5ecc00(r7);
-    int r9 = func_5f1290(r8);
-    r9--;
-    if (r9 <= 3) {
-        switch (r9) {
-        case 0: eax_val = 1; break;
-        case 1: eax_val = 2; break;
-        case 2: eax_val = 3; break;
-        case 3: eax_val = 4; break;
-        }
-    } else {
-        eax_val = 0;
-    }
-
-    pbc = (int*)field_bc;
-    eax_val <<= 6;
-    edi_val &= 0xfe3f;
-    void* r10 = func_598de0((int)pbc, 3);
-    edi_val |= eax_val;
-    void* r11 = func_5ecc00(r10);
-    int r12 = func_5f1290(r11);
-    r12--;
-    if (r12 <= 3) {
-        switch (r12) {
-        case 0: eax_val = 1; break;
-        case 1: eax_val = 2; break;
-        case 2: eax_val = 3; break;
-        case 3: eax_val = 4; break;
-        }
-    } else {
-        eax_val = 0;
-    }
-
-    pbc = (int*)field_bc;
-    eax_val <<= 9;
-    edi_val &= 0xf1ff;
-    void* r13 = func_598de0((int)pbc, 4);
-    edi_val |= eax_val;
-    void* r14 = func_5ecc00(r13);
-    int r15 = func_5f1290(r14);
-    r15--;
-    if (r15 <= 3) {
-        switch (r15) {
-        case 0: eax_val = 1; break;
-        case 1: eax_val = 2; break;
-        case 2: eax_val = 3; break;
-        case 3: eax_val = 4; break;
-        }
-    } else {
-        eax_val = 0;
-    }
-
-    pbc = (int*)field_bc;
-    eax_val <<= 12;
-    edi_val &= 0x8fff;
-    eax_val |= edi_val;
-    void* r16 = func_598de0((int)pbc, 5);
-    edi_val = eax_val;
-    void* r17 = func_5ecc00(r16);
-    int r18 = func_5f1290(r17);
-    r18--;
-    if (r18 <= 3) {
-        switch (r18) {
-        case 0: eax_val = 1; break;
-        case 1: eax_val = 2; break;
-        case 2: eax_val = 3; break;
-        case 3: eax_val = 4; break;
-        }
-    } else {
-        eax_val = 0;
-    }
-
-    pbc = (int*)field_bc;
-    eax_val <<= 15;
-    edi_val &= 0x7fff;
-    eax_val |= edi_val;
-    ebx_val = eax_val;
-    local_14 = ebx_val;
-
-    void* r19 = func_598cd0(pbc);
-    vec.x = *(float*)r19;
-    vec.y = *(float*)((char*)r19 + 4);
-    vec.z = *(float*)((char*)r19 + 8);
-
-    if (func_4e5f80(this)) {
-        Obj* obj = (Obj*)((char*)this + 0xbc);
-        int* pobj = (int*)obj;
-        int edi2 = *(int*)((char*)pobj + 0x104);
-        if (edi2 != 0) {
-            void* r20 = func_6a17c6((void*)edi2, 0, (void*)0x92907c, (void*)0x932a40, 0);
-            int ebp2 = 0;
-            if (r20 != 0) {
-                ebp2 = func_4e7ff0(r20);
-            }
-            void* r21 = func_5d9a20((void*)edi2);
-            local_10 = (int)r21;
-            if (ebp2 != 0 && r21 != 0) {
-                func_43d050(local_54);
-                func_43d050(local_34);
-                local_7c = 1;
-                local_7c = 2;
-
-                int ecx2 = *(int*)((char*)pobj + 0x108);
-                if (ecx2 != 0) {
-                    func_68ff20((void*)ecx2, &local_20);
-                    func_68fef0((void*)ecx2, &local_18);
-                    int ebx2 = local_18;
-                    int ebp3 = local_1c;
-                    while (1) {
-                        if (ebx2 != 0 && ebx2 == local_20) {
-                        } else {
-                            _invalid_parameter_noinfo();
-                        }
-                        if (ebp3 == local_24) break;
-                        int eax2;
-                        if (ebx2 != 0) {
-                            eax2 = *(int*)ebx2;
-                        } else {
-                            _invalid_parameter_noinfo();
-                            eax2 = 0;
-                            if (ebp3 >= *(int*)((char*)0 + 0x10)) {
-                                _invalid_parameter_noinfo();
+    try {
+        if(invalid) {
+            PartMaterialFactoryView::Attributes attributes={partField<BrickColor>(part,0x1e4),alpha,reflectance};
+            G3D::Color3 color=attributes.color.color3();
+            std::string filename;
+            Instance* parent=partField<Instance*>(part,0x104);
+            if(parent) {
+                ModelInstance* model=dynamic_cast<ModelInstance*>(parent);
+                if(model && reinterpret_cast<ModelModifierQuery*>(model)->findModelModifier()) {
+                    ContentId shirt,pants;
+                    typedef std::vector<boost::shared_ptr<Instance> > Children;
+                    const Children* children=partField<const Children*>(parent,0x108);
+                    if(children) {
+                        Children::const_iterator end=children->end();
+                        for(Children::const_iterator it=children->begin();it!=end;++it) {
+                            Clothing* clothing=dynamic_cast<Clothing*>(it->get());
+                            if(clothing) {
+                                if(shirt.isNull() && !partField<ContentId>(clothing,0x134).isNull())
+                                    shirt=partField<ContentId>(clothing,0x134);
+                                if(pants.isNull() && !partField<ContentId>(clothing,0x154).isNull())
+                                    pants=partField<ContentId>(clothing,0x154);
                             }
-                        }
-                        int* peax = (int*)eax2;
-                        void* r22 = func_6a17c6((void*)*peax, 0, (void*)0x92907c, (void*)0x936980, 0);
-                        int edi3 = (int)r22;
-                        if (edi3 != 0) {
-                            if (local_68 == 0 && *(int*)((char*)edi3 + 0x148) != 0) {
-                                func_43d0a0(local_54, (void*)(edi3 + 0x134));
-                            }
-                            if (local_48 == 0 && *(int*)((char*)edi3 + 0x168) != 0) {
-                                func_43d0a0(local_34, (void*)(edi3 + 0x154));
-                            }
-                        }
-                        if (ebx2 == 0) {
-                            _invalid_parameter_noinfo();
-                            if (ebp3 >= *(int*)((char*)0 + 0x10)) {
-                                _invalid_parameter_noinfo();
-                            }
-                            ebp3 += 8;
-                        } else {
-                            ebp3 += 8;
                         }
                     }
-                }
-
-                ebx_val = local_10;
-                int edi4 = field_bc;
-                func_5d8b10((void*)ebx_val);
-                if (edi4 == eax_val || local_68 != 0 || local_48 != 0) {
-                    goto L_fd5a;
-                }
-                edi4 = field_bc;
-                func_5d8e10((void*)ebx_val);
-                if (edi4 == eax_val && local_48 != 0) goto L_fd5a;
-                edi4 = field_bc;
-                func_5d8f10((void*)ebx_val);
-                if (edi4 == eax_val && local_48 != 0) goto L_fd5a;
-                edi4 = field_bc;
-                func_5d8c10((void*)ebx_val);
-                if (edi4 == eax_val && local_68 != 0) goto L_fd5a;
-                edi4 = field_bc;
-                func_5d8d10((void*)ebx_val);
-                if (edi4 != eax_val || local_68 == 0) goto L_ff49;
-
-            L_fd5a:
-                {
-                    int ebp4 = field_bc;
-                    func_5d8b10((void*)ebx_val);
-                    int edi5 = 0;
-                    if (ebp4 == eax_val) {
-                        float f = *(float*)0x826fd8;
-                        int eax3 = *(int*)((char*)field_bc + 0x1e4);
-                        func_4e54e0(&local_20, &local_18, (void*)edi5, (void*)eax3, (void*)0x941568, (void*)0x941448, (void*)0x9415e0, &f);
-                        local_7c = 3;
-                        func_598fa0((void*)((char*)this + 0xcc), (void*)*(int*)&local_18);
-                        func_502a70(&local_10);
-                    } else {
-                        ebp4 = field_bc;
-                        func_5d8e10((void*)ebx_val);
-                        if (ebp4 == eax_val) {
-                            float f = *(float*)0x826fd8;
-                            int eax3 = *(int*)((char*)field_bc + 0x1e4);
-                            func_4e54e0(&local_20, &local_18, (void*)edi5, (void*)eax3, (void*)0x941598, (void*)0x941448, (void*)0x941610, &f);
-                            local_7c = 4;
-                            func_598fa0((void*)((char*)this + 0xcc), (void*)*(int*)&local_18);
-                            func_502a70(&local_10);
-                        } else {
-                            ebp4 = field_bc;
-                            func_5d8f10((void*)ebx_val);
-                            if (ebp4 == eax_val) {
-                                float f = *(float*)0x826fd8;
-                                int eax3 = *(int*)((char*)field_bc + 0x1e4);
-                                func_4e54e0(&local_20, &local_18, (void*)edi5, (void*)eax3, (void*)0x941580, (void*)0x941448, (void*)0x9415f8, &f);
-                                local_7c = 5;
-                                func_4d7560((void*)((char*)this + 0xcc), (void*)*(int*)&local_18);
-                                func_502a70(&local_10);
-                            } else {
-                                ebp4 = field_bc;
-                                func_5d8c10((void*)ebx_val);
-                                if (ebp4 == eax_val) {
-                                    float f = *(float*)0x826fd8;
-                                    int eax3 = *(int*)((char*)field_bc + 0x1e4);
-                                    func_4e54e0(&local_20, &local_18, (void*)edi5, (void*)eax3, (void*)0x9415c8, (void*)0x941448, (void*)0x941640, &f);
-                                    local_7c = 6;
-                                    func_4d7560((void*)((char*)this + 0xcc), (void*)*(int*)&local_18);
-                                    func_502a70(&local_10);
-                                } else {
-                                    ebp4 = field_bc;
-                                    func_5d8d10((void*)ebx_val);
-                                    if (ebp4 == eax_val) {
-                                        float f = *(float*)0x826fd8;
-                                        int eax3 = *(int*)((char*)field_bc + 0x1e4);
-                                        func_4e54e0(&local_20, &local_18, (void*)edi5, (void*)eax3, (void*)0x9415b0, (void*)0x941448, (void*)0x941628, &f);
-                                        local_7c = 7;
-                                        func_4d7560((void*)((char*)this + 0xcc), (void*)*(int*)&local_18);
-                                        func_502a70(&local_10);
+                    if(!shirt.isNull() || !pants.isNull()) {
+                        Humanoid* humanoid=Humanoid::fromInstance(parent);
+                        if(humanoid) {
+                            bool shirtPart=!shirt.isNull() && (part==humanoid->getLeftArm() || part==humanoid->getRightArm() || part==humanoid->getTorso());
+                            bool pantsPart=!pants.isNull() && (part==humanoid->getLeftLeg() || part==humanoid->getRightLeg() || part==humanoid->getTorso());
+                            int shirtStatus=1,pantsStatus=1;
+                            if(shirtPart || pantsPart) {
+                                material=0;
+                                if(shirtPart) {
+                                    ContentProviderView::find(reinterpret_cast<Instance*>(part))->requestFile(shirt,&shirtStatus,filename);
+                                    if(shirtStatus==1) {
+                                        std::string migrated=migrateAtlas(filename,shirt.mimeType(),false,1.0f);
+                                        material=createPartMaterial();
+                                        material->appendLevel(TextureProxyBaseRef(),color,0.9f,50.0f,reflectance,alpha);
+                                        TextureProxyBase* texture=createPartTexture(engine,migrated,false);
+                                        material->appendLevel(TextureProxyBaseRef(texture),G3D::Color3::WHITE,0.9f,50.0f,reflectance,alpha+0.001f);
+                                        texture->setFloat2c(1.0f);
+                                        if(pants.isNull() || part!=humanoid->getTorso()) invalid=false;
+                                    }
+                                }
+                                if(pantsPart) {
+                                    ContentProviderView::find(reinterpret_cast<Instance*>(part))->requestFile(pants,&pantsStatus,filename);
+                                    if(pantsStatus==1) {
+                                        std::string migrated=migrateAtlas(filename,pants.mimeType(),false,1.0f);
+                                        if(part==humanoid->getTorso() && material.notNull()) {
+                                            TextureProxyBase* texture=createPartTexture(engine,migrated,false);
+                                            material->appendLevel(TextureProxyBaseRef(texture),G3D::Color3::WHITE,0.9f,50.0f,reflectance,alpha);
+                                            texture->setFloat2c(1.0f);
+                                        } else {
+                                            material=createPartMaterial();
+                                            material->appendLevel(TextureProxyBaseRef(),color,0.9f,50.0f,reflectance,alpha);
+                                            TextureProxyBase* texture=createPartTexture(engine,migrated,false);
+                                            material->appendLevel(TextureProxyBaseRef(texture),G3D::Color3::WHITE,0.9f,50.0f,reflectance,alpha+0.001f);
+                                            texture->setFloat2c(1.0f);
+                                        }
+                                        invalid=false;
                                     }
                                 }
                             }
+                            if(!invalid) return material;
+                            if((shirtPart && shirtStatus==0) || (pantsPart && pantsStatus==0)) {
+                                if(material!=nativeEmptyPartMaterial) material=nativeEmptyPartMaterial;
+                                return material;
+                            }
                         }
                     }
                 }
-                goto L_ff91;
-
-            L_ff49:
-                {
-                    int eax3 = *(int*)((char*)field_bc + 0x1e4);
-                    func_4e58b0(&local_20, &local_18, (void*)local_14, (void*)eax3);
-                    local_7c = 8;
-                    func_598fa0((void*)((char*)this + 0xcc), (void*)*(int*)&local_18);
-                    func_502a70(&local_14);
-                }
-                goto L_ff91;
-
-            L_ff91:
-                local_7c = 1;
-                func_502a70(&local_34);
-                local_7c = 0xffffffff;
-                func_502a70(&local_54);
-                goto L_0225;
             }
+            if(usesMegaTexture()) material=factory->getMegaMaterial(attributes);
+            else if(special && partField<int>(special,0x130)==5) {
+                std::string textureFile;
+                int status;
+                ContentProviderView::find(reinterpret_cast<Instance*>(part))->requestFile(special->getTextureId(),&status,textureFile);
+                if(status!=1) {
+                    material=factory->getMaterial(attributes);
+                    return material;
+                }
+                G3D::Vector3 vertexColor=partField<G3D::Vector3>(special,0x180);
+                float transparency=special->getAlpha();
+                material=createPartMaterial();
+                material->appendLevel(TextureProxyBaseRef(createPartTexture(engine,textureFile,false)),G3D::Color3(vertexColor),0,0.1f,0,transparency);
+            } else material=factory->getMaterial(attributes);
+            invalid=false;
         }
+    } catch(const std::exception& error) {
+        StandardOut::singleton()->print(MESSAGE_WARNING,error);
+    }
+    return material;
+#undef part
+#undef material
+#undef invalid
+#undef view
+#undef special
+#undef factory
+#undef engine
+#undef alpha
+#undef reflectance
+}
 
-        {
-            int eax3 = *(int*)((char*)field_bc + 0x1e4);
-            func_4e58b0(&local_20, &local_18, (void*)ebx_val, (void*)eax3);
-            local_7c = 0;
-            func_598fa0((void*)((char*)this + 0xcc), (void*)*(int*)&local_18);
-            int eax4 = local_10;
-            local_7c = 0xffffffff;
-            if (eax4 != 0) {
-                if (InterlockedDecrement((int*)(eax4 + 4)) == 0) {
-                    func_45ad90((void*)local_10);
-                    if (local_10 != 0) {
-                        void* v = *(void**)local_10;
-                        void (*fn)(void*, int) = *(void (**)(void*, int))v;
-                        fn((void*)local_10, 1);
+// Native004ef930: update geometry, preserving observed source-level dispatch.
+// Native surface setter clears a16-bit mask before inserting the3-bit value.
+namespace RBX { namespace ViewNew {
+enum RenderSurfaceType {FLAT,STUDS,INLET,WELD,GLUE};
+class RenderSurfaceTypes {
+public:
+    unsigned data;
+    RenderSurfaceTypes():data(0) {}
+    void setSurfaceType(NormalId id,RenderSurfaceType type) {
+        data=(data&static_cast<unsigned short>(~(7u<<(3*id))))|(type<<(3*id));
+    }
+};
+static inline RenderSurfaceType renderSurfaceType(SurfaceType type) {
+    switch(type) {
+    case RBX::STUDS:return STUDS;
+    case RBX::INLET:return INLET;
+    case RBX::WELD:return WELD;
+    case RBX::GLUE:return GLUE;
+    default:return FLAT;
+    }
+}
+}}
+namespace RBX { namespace RenderBase {
+class Mesh : public G3D::ReferenceCountedObject {public:virtual ~Mesh();};
+}}
+typedef G3D::ReferenceCountedPointer<RBX::RenderBase::Mesh> NativePartMeshRef;
+extern RBX::RenderBase::Mesh* createPartBlockMesh(const G3D::Vector3&,RBX::ViewNew::RenderSurfaceTypes);
+extern RBX::RenderBase::Mesh* createPartSphereMesh(const G3D::Vector3&,RBX::ViewNew::RenderSurfaceTypes);
+extern RBX::RenderBase::Mesh* createPartCylinderMesh(const G3D::Vector3&,RBX::ViewNew::RenderSurfaceTypes);
+extern RBX::RenderBase::Mesh* createPartWedgeMesh(const G3D::Vector3&,RBX::ViewNew::RenderSurfaceTypes);
+extern RBX::RenderBase::Mesh* createPartTorsoMesh(const G3D::Vector3&,RBX::ViewNew::RenderSurfaceTypes);
+extern RBX::RenderBase::Mesh* createPartHeadMesh(const G3D::Vector3&,RBX::ViewNew::RenderSurfaceTypes);
+extern NativePartMeshRef createPartBrickMesh(const G3D::Vector3&,RBX::ViewNew::RenderSurfaceTypes,RBX::BrickColor);
+extern NativePartMeshRef createPartClothedMesh(const G3D::Vector3&,RBX::ViewNew::RenderSurfaceTypes,RBX::BrickColor,
+                                            const unsigned*,const G3D::Vector4*,const unsigned*,float);
+extern NativePartMeshRef createPartFileMesh(RBX::ContentProviderView*,const G3D::Vector3&,RBX::ContentId);
+// Native six-face indices/flags and shared18 atlas rectangles, not encoded code.
+extern const unsigned nativeTorsoAtlasIndices[6],nativeLeftLegAtlasIndices[6],nativeRightLegAtlasIndices[6];
+extern const unsigned nativeLeftArmAtlasIndices[6],nativeRightArmAtlasIndices[6];
+extern const unsigned nativeTorsoAtlasFlags[6],nativeLeftLegAtlasFlags[6],nativeRightLegAtlasFlags[6];
+extern const unsigned nativeLeftArmAtlasFlags[6],nativeRightArmAtlasFlags[6];
+extern const G3D::Vector4 nativeClothingAtlasRectangles[18];
+
+void RBX::ViewNew::Part::updateMesh() {
+#define part partField<PartInstance*>(this,0xbc)
+#define mesh partField<NativePartMeshRef>(this,0xcc)
+#define special partField<SpecialShapeView*>(this,0xd4)
+    RenderSurfaceTypes surfaces;
+    surfaces.setSurfaceType(NORM_X,renderSurfaceType(part->getSurfaces()[NORM_X].getSurfaceType()));
+    surfaces.setSurfaceType(NORM_Y,renderSurfaceType(part->getSurfaces()[NORM_Y].getSurfaceType()));
+    surfaces.setSurfaceType(NORM_Z,renderSurfaceType(part->getSurfaces()[NORM_Z].getSurfaceType()));
+    surfaces.setSurfaceType(NORM_X_NEG,renderSurfaceType(part->getSurfaces()[NORM_X_NEG].getSurfaceType()));
+    surfaces.setSurfaceType(NORM_Y_NEG,renderSurfaceType(part->getSurfaces()[NORM_Y_NEG].getSurfaceType()));
+    surfaces.setSurfaceType(NORM_Z_NEG,renderSurfaceType(part->getSurfaces()[NORM_Z_NEG].getSurfaceType()));
+    G3D::Vector3 size=part->getPartSizeXml();
+    if(usesMegaTexture()) {
+        Instance* parent=partField<Instance*>(part,0x104);
+        if(parent) {
+            ModelInstance* model=dynamic_cast<ModelInstance*>(parent);
+            void* modifier=model?reinterpret_cast<ModelModifierQuery*>(model)->findModelModifier():0;
+            Humanoid* humanoid=Humanoid::fromInstance(parent);
+            if(modifier && humanoid) {
+                ContentId shirt,pants;
+                typedef std::vector<boost::shared_ptr<Instance> > Children;
+                const Children* children=partField<const Children*>(parent,0x108);
+                if(children) {
+                    Children::const_iterator end=children->end();
+                    for(Children::const_iterator it=children->begin();it!=end;++it) {
+                        Clothing* clothing=dynamic_cast<Clothing*>(it->get());
+                        if(clothing) {
+                            if(shirt.isNull() && !partField<ContentId>(clothing,0x134).isNull())
+                                shirt=partField<ContentId>(clothing,0x134);
+                            if(pants.isNull() && !partField<ContentId>(clothing,0x154).isNull())
+                                pants=partField<ContentId>(clothing,0x154);
+                        }
                     }
                 }
-            }
+                if((part==humanoid->getTorso() && (!shirt.isNull() || !pants.isNull())) ||
+                   (part==humanoid->getLeftLeg() && !pants.isNull()) ||
+                   (part==humanoid->getRightLeg() && !pants.isNull()) ||
+                   (part==humanoid->getLeftArm() && !shirt.isNull()) ||
+                   (part==humanoid->getRightArm() && !shirt.isNull())) {
+                    if(part==humanoid->getTorso())
+                        mesh=createPartClothedMesh(size,RenderSurfaceTypes(),partField<BrickColor>(part,0x1e4),
+                            nativeTorsoAtlasIndices,nativeClothingAtlasRectangles,nativeTorsoAtlasFlags,0.0063725486397743225f);
+                    else if(part==humanoid->getLeftLeg())
+                        mesh=createPartClothedMesh(size,RenderSurfaceTypes(),partField<BrickColor>(part,0x1e4),
+                            nativeLeftLegAtlasIndices,nativeClothingAtlasRectangles,nativeLeftLegAtlasFlags,0.0063725486397743225f);
+                    else if(part==humanoid->getRightLeg())
+                        mesh=createPartClothedMesh(size,RenderSurfaceTypes(),partField<BrickColor>(part,0x1e4),
+                            nativeRightLegAtlasIndices,nativeClothingAtlasRectangles,nativeRightLegAtlasFlags,0.0063725486397743225f);
+                    else if(part==humanoid->getLeftArm())
+                        mesh=createPartClothedMesh(size,RenderSurfaceTypes(),partField<BrickColor>(part,0x1e4),
+                            nativeLeftArmAtlasIndices,nativeClothingAtlasRectangles,nativeLeftArmAtlasFlags,0.0063725486397743225f);
+                    else if(part==humanoid->getRightArm())
+                        mesh=createPartClothedMesh(size,RenderSurfaceTypes(),partField<BrickColor>(part,0x1e4),
+                            nativeRightArmAtlasIndices,nativeClothingAtlasRectangles,nativeRightArmAtlasFlags,0.0063725486397743225f);
+                } else mesh=createPartBrickMesh(size,surfaces,partField<BrickColor>(part,0x1e4));
+            } else mesh=createPartBrickMesh(size,surfaces,partField<BrickColor>(part,0x1e4));
+        } else mesh=createPartBrickMesh(size,surfaces,partField<BrickColor>(part,0x1e4));
+    } else if(!special) {
+        switch(partField<int>(part,0x1dc)) {
+        case 0:mesh=createPartSphereMesh(size,surfaces);break;
+        case 1:mesh=createPartBlockMesh(size,surfaces);break;
+        case 2:mesh=createPartCylinderMesh(size,surfaces);break;
         }
     } else {
-        int ecx3 = field_d4;
-        if (ecx3 == 0) {
-            int eax3 = *(int*)((char*)field_bc + 0x1dc);
-            eax3 -= ecx3;
-            if (eax3 == 0) {
-                func_4eea30(&vec, (void*)ebx_val);
-                func_598fa0((void*)((char*)this + 0xcc), (void*)eax3);
-            } else if (eax3 == 1) {
-                func_4edb20(&vec, (void*)ebx_val);
-                func_598fa0((void*)((char*)this + 0xcc), (void*)eax3);
-            } else if (eax3 == 2) {
-                func_4eef30(&vec, (void*)ebx_val);
-                func_598fa0((void*)((char*)this + 0xcc), (void*)eax3);
-            }
-        } else {
-            vec.x *= *(float*)(ecx3 + 0x134);
-            vec.y *= *(float*)(ecx3 + 0x138);
-            vec.z *= *(float*)(ecx3 + 0x13c);
-            int eax3 = *(int*)(ecx3 + 0x130);
-            if (eax3 <= 6) {
-                switch (eax3) {
-                case 0:
-                    func_4ee030(&vec, (void*)ebx_val);
-                    func_4dc4e0((void*)((char*)this + 0xcc), (void*)eax3);
-                    break;
-                case 1:
-                    func_4ef430(&vec, (void*)ebx_val);
-                    func_4dc4e0((void*)((char*)this + 0xcc), (void*)eax3);
-                    break;
-                case 2:
-                    func_4ee530(&vec, (void*)ebx_val);
-                    func_4dc4e0((void*)((char*)this + 0xcc), (void*)eax3);
-                    break;
-                case 3:
-                    func_4eea30(&vec, (void*)ebx_val);
-                    func_4dc4e0((void*)((char*)this + 0xcc), (void*)eax3);
-                    break;
-                case 4:
-                    func_4eef30(&vec, (void*)ebx_val);
-                    func_4dc4e0((void*)((char*)this + 0xcc), (void*)eax3);
-                    break;
-                case 5:
-                    func_4edb20(&vec, (void*)ebx_val);
-                    func_4dc4e0((void*)((char*)this + 0xcc), (void*)eax3);
-                    break;
-                case 6:
-                    {
-                        char buf[0x20];
-                        func_4e5f20(buf, &vec);
-                        int eax4 = field_d4 + 0x134;
-                        func_465210((void*)field_bc, (void*)eax4);
-                        local_7c = 9;
-                        func_500b90(&local_18, (void*)eax4);
-                        local_7c = 0xffffffff;
-                        func_4d7560((void*)((char*)this + 0xcc), (void*)eax4);
-                        func_502a70(&local_18);
-                    }
-                    break;
-                }
-            }
+        size.x=partField<float>(special,0x134)*size.x;
+        size.y=partField<float>(special,0x138)*size.y;
+        size.z=partField<float>(special,0x13c)*size.z;
+        switch(partField<int>(special,0x130)) {
+        case 0:mesh=createPartHeadMesh(size,surfaces);break;
+        case 1:mesh=createPartTorsoMesh(size,surfaces);break;
+        case 2:mesh=createPartWedgeMesh(size,surfaces);break;
+        case 3:mesh=createPartSphereMesh(size,surfaces);break;
+        case 4:mesh=createPartCylinderMesh(size,surfaces);break;
+        case 5:mesh=createPartFileMesh(ContentProviderView::find(reinterpret_cast<Instance*>(part)),
+                                     partField<G3D::Vector3>(special,0x134),special->getMeshId());break;
+        case 6:mesh=createPartBlockMesh(size,surfaces);break;
         }
     }
-
-L_0225:
-    {
-        float f1 = *(float*)0x826fd0;
-        float f2 = *(float*)0x826fd4;
-        float sq = f1 * f2;
-        float a = vec.x < 0 ? -vec.x : vec.x;
-        float b = vec.y < 0 ? -vec.y : vec.y;
-        float c = vec.z < 0 ? -vec.z : vec.z;
-        float m;
-        if (a > b) {
-            m = a > c ? a : c;
-        } else {
-            m = b > c ? b : c;
-        }
-        field_1c = m * sq * *(float*)0x819bac;
-    }
+    float x=G3D::abs(size.x),y=G3D::abs(size.y),z=G3D::abs(size.z);
+    partField<float>(this,0x1c)=G3D::max(G3D::max(x,y),z)*sqrt(2.0)*0.5f;
+#undef part
+#undef mesh
+#undef special
 }

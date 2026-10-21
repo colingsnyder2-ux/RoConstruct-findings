@@ -1,37 +1,15 @@
-// from server: 76% by king_originala
-struct Stream;
+// from server: 100% by colin
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: templates-boost-1_34_1-dll roc_boost_resume_e8ec57138b7c1e28.cpp
 
-extern void __stdcall flush_buffer(void*, Stream*, char*, int);
-typedef int (__thiscall *SyncFunction)(Stream*);
-extern SyncFunction sync_stream;
-
-struct S
-{
-    char padding0[0x14];
-    char** begin;
-    char padding1[0x0c];
-    char** end;
-    char padding2[0x78];
-    Stream* stream;
-
-    void f();
-};
-
-void S::f()
-{
-    char* last = *end;
-    char* first = *begin;
-    int count = static_cast<int>(last - first);
-
-    try
-    {
-        if (count > 0)
-            flush_buffer(reinterpret_cast<char*>(this) + 0x40,
-                         stream, first, count);
-        if (stream)
-            sync_stream(stream);
-    }
-    catch (...)
-    {
-    }
-}
+// Candidate translation unit (score above; library headers required).
+#define NDEBUG 1
+#include <string>
+#include <boost/iostreams/device/null.hpp>
+#include <boost/iostreams/filter/gzip.hpp>
+#include <boost/iostreams/stream_buffer.hpp>
+template class boost::iostreams::stream_buffer<boost::iostreams::null_source>;
+template class boost::iostreams::stream_buffer<boost::iostreams::null_sink>;
+template class boost::iostreams::detail::indirect_streambuf<boost::iostreams::gzip_decompressor,std::char_traits<char>,std::allocator<char>,boost::iostreams::input>;

@@ -1,63 +1,42 @@
-// from server: 24% by colin
-struct ControllerService {
-    char pad[0x138];
-    int field138;
-    int field13c;
-    int field140;
-    int method(int, int*);
+// from server: 100% by colin
+extern "C" __declspec(dllimport) long __stdcall InterlockedDecrement(volatile long *);
+
+struct ControlBlock {
+    virtual ~ControlBlock();
+    volatile long references;
+    void dispose();
 };
 
-extern "C" void* __cdecl operator_new(unsigned int);
-extern "C" void __stdcall sub_598fa0(int*, int);
-extern "C" void* __stdcall sub_5cb3e0(void*, int, int);
-extern "C" void* __stdcall sub_5cb990(void*, int);
-extern "C" void* __stdcall sub_5cb9b0(void*, int);
+struct Reference {
+    ControlBlock *pointer;
+    ~Reference();
+};
 
-int ControllerService::method(int a, int* out)
+__forceinline Reference::~Reference()
 {
-    int result = 0;
-    switch (a - 1) {
-    case 0: {
-        void* mem = operator_new(0x2c);
-        if (mem) {
-            result = (int)sub_5cb3e0(mem, (int)this, a);
-        } else {
-            result = 0;
+    if (pointer) {
+        if (InterlockedDecrement(&pointer->references) == 0) {
+            pointer->dispose();
+            if (pointer)
+                delete pointer;
         }
-        break;
+        pointer = 0;
     }
-    case 1: {
-        void* mem = operator_new(0x64);
-        if (mem) {
-            result = (int)sub_5cb990(mem, a);
-        } else {
-            result = 0;
-        }
-        break;
-    }
-    case 2: {
-        void* mem = operator_new(0x64);
-        if (mem) {
-            result = (int)sub_5cb9b0(mem, a);
-        } else {
-            result = 0;
-        }
-        break;
-    }
-    case 3:
-        result = this->field138;
-        break;
-    case 4:
-        result = this->field13c;
-        break;
-    case 5:
-        result = this->field140;
-        break;
-    default:
-        result = this->field140;
-        break;
-    }
-    *out = 0;
-    sub_598fa0(out, result);
-    return (int)out;
+}
+
+struct Base {
+    char storage[0x134];
+    ~Base();
+};
+
+struct ControllerService : Base {
+    Reference first;
+    Reference second;
+    Reference third;
+    Reference fourth;
+    ~ControllerService();
+};
+
+ControllerService::~ControllerService()
+{
 }

@@ -1,137 +1,88 @@
-// from server: 45% by colin
-extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
-#pragma intrinsic(_InterlockedExchangeAdd)
+// from server: 100% by EspClaude
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: rbxgs-dll roc_espclaude_f740c1278594c036.cpp
 
-struct Part {
-    char pad0[0x28];
-    char field28[0x30];
-    char field58[0x14];
-    char field6c[0x14];
-    char field80[0x14];
-    char field94[0x14];
-    char fielda8[0x14];
-    char fieldbc[0x14];
-    char fieldd0[0x8];
-    Part(float, int, int);
+// Candidate translation unit (score above; library headers required).
+#include <boost/shared_ptr.hpp>
+#include <boost/bind.hpp>
+#include <boost/function.hpp>
+#include <boost/signals.hpp>
+#include <G3D/ReferenceCount.h>
+namespace RBX {
+namespace Reflection { class PropertyDescriptor; }
+class SignalSource { public: virtual ~SignalSource(); };
+class InstanceBase0 { public: virtual ~InstanceBase0(); char pad[0x10]; };
+class Instance : public InstanceBase0, public SignalSource {
+public:
+    template<class F> void visitChildren(F f);
 };
-
-struct RefCounted {
-    int refs;
+class PartInstance : public Instance { };
+template<class Sig> class TSignalDesc {
+public:
+    boost::signals::connection connect(SignalSource* source, const boost::slot<boost::function<Sig> >& slot, int pos);
 };
-
-struct Obj {
-    void* vptr;
-    RefCounted* ref;
+extern TSignalDesc<void(boost::shared_ptr<Instance>)> event_childAdded;
+extern TSignalDesc<void(boost::shared_ptr<Instance>)> event_childRemoved;
+extern TSignalDesc<void(boost::shared_ptr<Instance>)> event_ancestryChanged;
+extern TSignalDesc<void(const Reflection::PropertyDescriptor*)> event_propertyChanged;
+namespace Render {
+class Chunk : public G3D::ReferenceCountedObject {
+public:
+    Chunk(float polygonOffset);
+    virtual ~Chunk();
+    char pad[0x1c];
 };
-
-struct Inner {
-    char pad[4];
-    Obj* obj;
+class Material : public G3D::ReferenceCountedObject { };
+class Mesh : public G3D::ReferenceCountedObject { };
+class SceneManager {
+public:
+    virtual void v0();
+    virtual void addModel(const G3D::ReferenceCountedPointer<Chunk>& chunk);
 };
-
-struct Arg {
-    Obj* obj;
+}
+namespace ViewNew {
+struct CFrame { CFrame(); float m[12]; };
+class View { public: int pad; Render::SceneManager* sceneManager; };
+class SpecialShape;
+class PartChunk : public Render::Chunk {
+private:
+    CFrame coordinateFrame;
+    boost::signals::scoped_connection childAddedConnection;
+    boost::signals::scoped_connection childRemovedConnection;
+    boost::signals::scoped_connection ancestorChangedConnection;
+    boost::signals::scoped_connection propertyChangedConnection;
+    boost::signals::scoped_connection shapePropertyChangedConnection;
+protected:
+    boost::shared_ptr<PartInstance> partInstance;
+    G3D::ReferenceCountedPointer<Render::Material> material;
+    bool materialInvalid;
+    G3D::ReferenceCountedPointer<Render::Mesh> mesh;
+    View* view;
+    SpecialShape* specialShape;
+public:
+    PartChunk(float polygonOffset, const boost::shared_ptr<PartInstance>& partInstance, View* view);
+    virtual ~PartChunk();
+    void onAncestorChanged(boost::shared_ptr<Instance> ancestor);
+    void onChildAdded(boost::shared_ptr<Instance> child);
+    void onChildRemoved(boost::shared_ptr<Instance> child);
+    virtual void onPropertyChanged(const Reflection::PropertyDescriptor* descriptor);
 };
-
-extern "C" void __stdcall sub_4e8160(float);
-extern "C" void __stdcall sub_4782d0();
-extern "C" void __stdcall sub_4ea720();
-extern "C" void __stdcall sub_4ea7c0();
-extern "C" void __stdcall sub_4a3340();
-extern "C" void __stdcall sub_595540();
-extern "C" void __stdcall sub_595370();
-extern "C" void __stdcall sub_49f710();
-extern "C" void __stdcall sub_4e7ed0();
-extern "C" void __stdcall sub_45ad90();
-extern "C" void __stdcall sub_42b680();
-
-extern "C" void* __stdcall sub_8021b0(void*);
-extern "C" int __stdcall sub_8021ac(void*);
-
-Part::Part(float f, int a, int b)
+PartChunk::PartChunk(float polygonOffset, const boost::shared_ptr<PartInstance>& partInstance, View* view)
+    : Render::Chunk(polygonOffset),
+      partInstance(partInstance),
+      view(view),
+      materialInvalid(true),
+      specialShape(NULL)
 {
-    sub_4e8160(f);
-    *(void**)this = (void*)0x826ec4;
-    sub_4782d0();
-    char* p58 = (char*)this + 0x58;
-    *(int*)(p58 + 4) = 0;
-    *(int*)(p58 + 8) = 0;
-    *(char*)(p58 + 0xc) = 0;
-    *(char*)(p58 + 0x10) = 0;
-    *(int*)((char*)this + 0x70) = 0;
-    *(int*)((char*)this + 0x74) = 0;
-    *(char*)((char*)this + 0x78) = 0;
-    *(char*)((char*)this + 0x7c) = 0;
-    *(int*)((char*)this + 0x84) = 0;
-    *(int*)((char*)this + 0x88) = 0;
-    *(char*)((char*)this + 0x8c) = 0;
-    *(char*)((char*)this + 0x90) = 0;
-    *(int*)((char*)this + 0x98) = 0;
-    *(int*)((char*)this + 0x9c) = 0;
-    *(char*)((char*)this + 0xa0) = 0;
-    *(char*)((char*)this + 0xa4) = 0;
-    *(int*)((char*)this + 0xac) = 0;
-    *(int*)((char*)this + 0xb0) = 0;
-    *(char*)((char*)this + 0xb4) = 0;
-    *(char*)((char*)this + 0xb8) = 0;
-
-    Arg* arg = (Arg*)a;
-    *(int*)((char*)this + 0xbc) = *(int*)arg->obj;
-    RefCounted* rc = (RefCounted*)arg->obj->ref;
-    *(RefCounted**)((char*)this + 0xc0) = rc;
-    if (rc != 0) {
-        _InterlockedExchangeAdd((volatile long*)((char*)rc + 4), 1);
-    }
-    *(int*)((char*)this + 0xc4) = 0;
-    *(char*)((char*)this + 0xc8) = 1;
-    *(int*)((char*)this + 0xcc) = 0;
-    *(int*)((char*)this + 0xd0) = b;
-    *(int*)((char*)this + 0xd4) = 0;
-
-    sub_8021b0((char*)this + 4);
-
-    Inner* inner = (Inner*)b;
-    void* vt = *(void**)inner->obj;
-    void (*fn)(void*) = *(void (**)(void*))((char*)vt + 4);
-    void* tmp = 0;
-    fn(&tmp);
-
-    if (tmp != 0) {
-        if (sub_8021ac((char*)tmp + 4) == 0) {
-            sub_45ad90();
-            if (tmp != 0) {
-                void* vt2 = *(void**)tmp;
-                void (*fn2)(void*, int) = *(void (**)(void*, int))vt2;
-                fn2(tmp, 1);
-            }
-        }
-    }
-
-    sub_4ea720();
-    sub_4a3340();
-    sub_595540();
-    sub_595370();
-    sub_49f710();
-
-    sub_4ea720();
-    sub_4a3340();
-    sub_595540();
-    sub_595370();
-    sub_49f710();
-
-    sub_4ea720();
-    sub_4a3340();
-    sub_595540();
-    sub_595370();
-    sub_49f710();
-
-    sub_4ea7c0();
-    sub_42b680();
-    sub_595540();
-    sub_595370();
-    sub_49f710();
-
-    if (arg->obj != 0) {
-        sub_4e7ed0();
-    }
+    view->sceneManager->addModel(this);
+    childAddedConnection = event_childAdded.connect(partInstance.get(), boost::bind(&PartChunk::onChildAdded, this, _1), 10);
+    childRemovedConnection = event_childRemoved.connect(partInstance.get(), boost::bind(&PartChunk::onChildRemoved, this, _1), 10);
+    ancestorChangedConnection = event_ancestryChanged.connect(partInstance.get(), boost::bind(&PartChunk::onAncestorChanged, this, _1), 10);
+    propertyChangedConnection = event_propertyChanged.connect(partInstance.get(), boost::bind(&PartChunk::onPropertyChanged, this, _1), 10);
+    if (partInstance)
+        partInstance->visitChildren(boost::bind(&PartChunk::onChildAdded, this, _1));
+}
+}
 }

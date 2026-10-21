@@ -1,99 +1,84 @@
-// from server: 51% by colin
+// from server: 100% by EspClaude
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs util/RunStateOwner.cpp
+// roc-lib: openrbx-client roc_espclaude_2389c4f105995135.cpp
 
 // Candidate translation unit (score above; library headers required).
 #include "util/RunStateOwner.h"
-#include "v8datamodel/DataModel.h"
-
-namespace RBX
+#include "reflection/signal.h"
+#include <string>
+namespace RBX {
+namespace Reflection {
+template <class Signature>
+class __declspec(novtable) SignalDescImpl<3, Signature> : public TSignalDesc<Signature>
 {
-	static Reflection::BoundFuncDesc<RunService, void(void), 0> runFunction(&RunService::run, "Run", Reflection::FunctionDescriptor::NeedTrustedCaller);
-	static Reflection::BoundFuncDesc<RunService, void(void), 0> pauseFunction(&RunService::pause, "Pause", Reflection::FunctionDescriptor::NeedTrustedCaller);
-	static Reflection::BoundFuncDesc<RunService, void(void), 0> resetFunction(&RunService::reset, "Reset", Reflection::FunctionDescriptor::NeedTrustedCaller);
-
-	static Reflection::SignalDesc<RunService, void(float)> event_Heartbeat("Heartbeat", "interval");
-
-	RunService::RunService()
-		: framePeriod(1.0f/30.0f),
-		  runState(RS_NORMAL),
-		  invalidRunViewCount(0),
-		  stopRequested(false),
-		  runDisabled(false)
+protected:
+	class GenericSlotAdapter
 	{
-		setName("Run Service");
-	}
-
-	RunService::~RunService()
-	{
-		RBXASSERT(views.empty());
-	}
-
-	void RunService::endRunThread(bool join)
-	{
-		stopRequested = true;
-		stateChangedCondition.notify_all();
-
-		if (join)
-			runThread->join();
-	}
-
-	void RunService::onAncestorChanged(const AncestorChanged& event)
-	{
-		if (!getParent())
+	public:
+		GenericSlotAdapter(GenericSlotWrapper* wrapper) : wrapper(wrapper) {}
+		void operator()(
+			typename boost::function_traits<Signature>::arg1_type arg1,
+			typename boost::function_traits<Signature>::arg2_type arg2,
+			typename boost::function_traits<Signature>::arg3_type arg3
+		) const
 		{
-			stopRequested = true;
-			stateChangedCondition.notify_all();
+			std::vector<boost::any> arguments(3);
+			arguments[0] = arg1;
+			arguments[1] = arg2;
+			arguments[2] = arg3;
+			wrapper->execute(arguments);
 		}
-	}
-
-	void RunService::setRunState(RunState newState)
+	private:
+		boost::shared_ptr<GenericSlotWrapper> wrapper;
+	};
+	virtual boost::signals::connection connectGeneric(
+		SignalInstance* instance,
+		GenericSlotWrapper* wrapper,
+		boost::signals::connect_position position
+	) const
 	{
-		RunTransition transition(runState, newState);
-		runState = newState;
-
-		Notifier<RunService, RunState>::raise(newState);
-		Notifier<RunService, RunTransition>::raise(transition);
+		return static_cast<typename TSignalDesc<Signature>::TSignalInstance*>(instance)->connect(
+			GenericSlotAdapter(wrapper),
+			position
+		);
 	}
-
-	void RunService::raiseStepped(float time, float step)
+	virtual SignalInstance* newSignalInstance(SignalSource& source) const
 	{
-		Notifier<RunService, Stepped>::raise(Stepped(time, step));
-		event_Stepped.fire(this, time, step);
+		return new typename TSignalDesc<Signature>::TSignalInstance(&source, *this);
 	}
-
-	void RunService::raiseHeartbeat(float time, float step)
+	SignalDescImpl(ClassDescriptor& classDescriptor, const char* name) : TSignalDesc<Signature>(classDescriptor, name)
 	{
-		Notifier<RunService, Heartbeat>::raise(Heartbeat(time, step));
-		event_Heartbeat.fire(this, step);
 	}
-
-	void RunService::invalidateRunViews()
+};
+template <class Class, class Signature>
+class SignalDesc3 : public SignalDescImpl<boost::function_traits<Signature>::arity, Signature>
+{
+public:
+	SignalDesc3(const char* name, const char* arg1name, const char* arg2name, const char* arg3name)
+		: SignalDescImpl<boost::function_traits<Signature>::arity, Signature>(Class::classDescriptor(), name)
 	{
-		boost::mutex::scoped_lock lock(viewMutex);
-
-		if (invalidRunViewCount == 0)
-		{
-			invalidRunViewCount = (int)views.size();
-			if (invalidRunViewCount > 0)
-			{
-				for (std::map<IRunView*, bool>::iterator iter = views.begin(); iter != views.end(); iter++)
-				{
-					iter->first->InvalidateRunView();
-					iter->second = false;
-				}
-				runViewsDoneCondition.notify_all();
-			}
-		}
+		SignatureDescriptor::Item arg1 = {
+			&Name::declare(arg1name, -1),
+			&Type::singleton<typename boost::function_traits<Signature>::arg1_type>(),
+			Value()
+		};
+		this->signature.arguments.push_back(arg1);
+		SignatureDescriptor::Item arg2 = {
+			&Name::declare(arg2name, -1),
+			&Type::singleton<typename boost::function_traits<Signature>::arg2_type>(),
+			Value()
+		};
+		this->signature.arguments.push_back(arg2);
+		SignatureDescriptor::Item arg3 = {
+			&Name::declare(arg3name, -1),
+			&Type::singleton<typename boost::function_traits<Signature>::arg3_type>(),
+			Value()
+		};
+		this->signature.arguments.push_back(arg3);
 	}
-
-	void RunService::start()
-	{
-		RBXASSERT(!runThread);
-
-		boost::shared_ptr<DataModel> dataModel = shared_from(dynamic_cast<DataModel*>(getParent()));
-		runThread.reset(new boost::thread(background_function(boost::bind(&RunService::runProc, shared_from(this), dataModel), "rbx_runProc")));
-	}
+};
+template class SignalDesc3<Instance, void(std::string, int, std::string)>;
+}
 }

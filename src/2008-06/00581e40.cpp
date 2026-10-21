@@ -1,30 +1,18 @@
-// from server: 97% by Espeon
+// from server: 100% by Espeon
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: openrbx-client-dll roc_espeon_filteredconnection_e1c23ad221007ccd.cpp
+// roc-lib: rbxgs-dll roc_manual_pvfilter_05d333a88131e87f.cpp
 
 // Candidate translation unit (score above; library headers required).
+#include "v8datamodel/PVInstance.h"
 #include <vector>
 #include <boost/shared_ptr.hpp>
-namespace RBX { class Instance { public: virtual ~Instance(); }; class PVInstance : public Instance {}; class ServiceProvider : public Instance {}; }
-typedef std::vector<boost::shared_ptr<RBX::Instance> > Vector;
-struct Source { char pad[0x154]; Vector* children; void connect(unsigned*); };
-struct Listener { void append(RBX::PVInstance* const&); };
-struct Argument { unsigned reserved[2]; RBX::Instance* object; };
-RBX::ServiceProvider* __cdecl service(RBX::Instance*);
-boost::shared_ptr<Source> __cdecl convert(RBX::ServiceProvider*);
-struct S { char pad[0x130]; unsigned connection; boost::shared_ptr<Source> source; Listener listener; void base(Argument*); void f(Argument*); };
-void S::f(Argument* arg) {
- base(arg);
- if(!source) {
- source=convert(service(arg->object));
- if(source) {
- for(Vector::iterator i=source->children->begin();i!=source->children->end();++i) {
- RBX::PVInstance* object=dynamic_cast<RBX::PVInstance*>(i->get());
- if(object) listener.append(object);
- }
- source->connect(&connection);
- }
- }
-}
+typedef std::vector<boost::shared_ptr<RBX::Instance> > Children;
+struct Listener {virtual ~Listener();};
+struct Prefix {virtual ~Prefix();char padding[0x12c];};
+struct State {char prefix[0x154];Children* selected;void addFilteredSelection(Listener*);};
+extern State* createSelection(RBX::Instance*);
+extern boost::shared_ptr<State> sharedSelection(State*);
+struct Filter:Prefix,Listener {boost::shared_ptr<State> root;std::vector<RBX::PVInstance*> selected;void initialize(const RBX::AncestorChanged&);void update(const RBX::AncestorChanged&);};
+void Filter::update(const RBX::AncestorChanged& event){initialize(event);if(!root){root=sharedSelection(createSelection(event.newParent));if(root){for(Children::const_iterator i=root->selected->begin();i!=root->selected->end();i++){RBX::PVInstance* c=dynamic_cast<RBX::PVInstance*>(i->get());if(c)selected.push_back(c);}root->addFilteredSelection(this);}}}

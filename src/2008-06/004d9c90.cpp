@@ -1,102 +1,83 @@
+// from server: 90% by EspClaude
 // from server: 62% by colin
 // roc-lang: cpp
-// roc-cl: 50727
+// roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs-view View.cpp
+// roc-lib: rbxgs-view roc_espclaude_ac35ddf63c5b2f43.cpp
 
 // Candidate translation unit (score above; library headers required).
-#include "RbxView/View.h"
-#include "BrickMesh.h"
-#include "CylinderMesh.h"
-#include "SphereMesh.h"
-#include "PBBMesh.h"
-#include "Part.h"
-#include "RenderLib/AggregatingSceneManager.h"
-#include "v8datamodel/Lighting.h"
-#include "v8datamodel/DataModel.h"
-#include "v8datamodel/Workspace.h"
-#include "v8datamodel/Decal.h"
-
-namespace RBX
+#include <boost/shared_ptr.hpp>
+#include <G3D/Color3.h>
+#include <G3D/Color4.h>
+#include <G3D/ReferenceCount.h>
+namespace G3D {
+class Sky : public ReferenceCountedObject { };
+class LightingParameters {
+public:
+	LightingParameters(const LightingParameters&);
+	~LightingParameters();
+	char data[0xf8];
+};
+}
+namespace RBX {
+namespace RenderBase {
+class RenderSceneBase {
+public:
+	virtual ~RenderSceneBase();
+	virtual void presetLighting(G3D::ReferenceCountedPointer<G3D::Sky> sky, G3D::LightingParameters skyParameters, G3D::Color3 ambientTop, G3D::Color3 ambientBottom) = 0;
+	char pad[0x10];
+	G3D::Color4 colorClearValue;
+	void setClearColor(G3D::Color4 c) { colorClearValue = c; }
+};
+}
+namespace RenderNew {
+class RenderScene : public RenderBase::RenderSceneBase {
+public:
+	char pad2[0x328 - 0x24];
+	G3D::Color4 clearColor2;
+};
+}
+class Lighting {
+public:
+	char pad[0x130];
+	G3D::LightingParameters skyParameters;
+	G3D::Color3 ambientTop;
+	G3D::Color3 ambientBottom;
+	bool hasSky;
+	G3D::Color4 clearColor;
+	G3D::Color4 clearColor2;
+	const G3D::LightingParameters& getSkyParameters() const { return skyParameters; }
+	const G3D::Color4& getClearColor() const { return clearColor; }
+	G3D::Color4 getClearColor2() const { return clearColor2; }
+	G3D::Color3 getAmbientTop() const { return ambientTop; }
+	G3D::Color3 getAmbientBottom() const { return ambientBottom; }
+};
+class DataModel {
+public:
+	Lighting* createLighting();
+};
+namespace ServiceProvider {
+template<class Class> inline Class* create(DataModel* context)
 {
-	namespace View
-	{
-		View::View(boost::shared_ptr<DataModel> dataModel)
-			: dataModel(dataModel),
-			  renderLibScene(new Render::RenderScene),
-			  textureManager(new G3D::TextureManager),
-			  lightingValid(false)
-		{
-			sceneManager.reset(new Render::AggregatingSceneManager(renderLibScene.get()));
-			materialFactory.reset(new MaterialFactory(textureManager.get()));
+	return context ? context->createLighting() : NULL;
+}
+}
+namespace View {
+class View {
+public:
+	virtual void suppressSkybox();
+	int unk4;
+	boost::shared_ptr<RenderBase::RenderSceneBase> renderLibScene;
+	int unk10;
+	boost::shared_ptr<DataModel> dataModel;
+};
+void View::suppressSkybox()
+{
+	Lighting* lighting = ServiceProvider::create<Lighting>(dataModel.get());
 
-			renderLibScene->setThrottle(0.0f, 0.0f, false, 0.0f);
-
-			Lighting* lighting = ServiceProvider::find<Lighting>(dataModel.get());
-			lightingChangedConnection = Lighting::event_LightingChanged.connect(lighting, boost::bind(&View::invalidateLighting, this, _1));
-
-			dataModel->getWorkspace()->visitDescendents(boost::bind(&View::onWorkspaceDescendentAdded, this, _1));
-			workspaceDescendentAddedConnection = Instance::event_descendentAdded.connect(dataModel->getWorkspace(), boost::bind(&View::onWorkspaceDescendentAdded, this, _1));
-		}
-
-		View::~View()
-		{
-			sceneManager->clear();
-
-			Lighting* unused = ServiceProvider::create<Lighting>(dataModel.get());
-
-			MeshFactory<CylinderAlongXMesh, 1>::flushCache();
-			MeshFactory<SphereMesh, 1>::flushCache();
-			MeshFactory<PBBMesh, 4>::flushCache();
-			BrickMesh::flushCache();
-		}
-
-		void View::suppressSkybox()
-		{
-			Lighting* lighting = ServiceProvider::create<Lighting>(dataModel.get());
-
-			renderLibScene->presetLighting(NULL, lighting->getSkyParameters(), lighting->getAmbientTop(), lighting->getAmbientBottom());
-			sky = NULL;
-			renderLibScene->colorClearValue = lighting->getClearColor();
-		}
-
-		Instance* View::getWorkspace()
-		{
-			return dataModel->getWorkspace();
-		}
-
-		float View::getMeshDetail() const
-		{
-			return renderLibScene->getMeshDetail();
-		}
-
-		float View::getShadingQuality() const
-		{
-			return renderLibScene->getShadingQuality();
-		}
-
-		RenderStats& View::getRenderStats()
-		{
-			return renderLibScene->renderStats;
-		}
-
-		void View::invalidateLighting(bool updateSkybox)
-		{
-			lightingValid = false;
-			if (updateSkybox)
-				sky = NULL;
-		}
-
-		void View::render(void* rd)
-		{
-			updateLighting();
-			sceneManager->prerender(0.1f); // intentional type mismatch! causes value of constant to be different
-			renderLibScene->render((G3D::RenderDevice*)rd, dataModel->getWorkspace()->getGCamera());
-		}
-
-		void View::updateSettings(float shadingQuality, float meshDetail, bool shadows, float cameraDistance)
-		{
-			renderLibScene->setThrottle(shadingQuality, meshDetail, shadows, cameraDistance);
-		}
-	}
+	renderLibScene->presetLighting(NULL, lighting->getSkyParameters(), lighting->getAmbientTop(), lighting->getAmbientBottom());
+	renderLibScene->colorClearValue = lighting->getClearColor();
+	dynamic_cast<RenderNew::RenderScene*>(renderLibScene.get())->clearColor2 = lighting->getClearColor2();
+}
+}
 }

@@ -1,75 +1,75 @@
-// from server: 45% by colin
-extern "C" long __cdecl _InterlockedDecrement(volatile long*);
-#pragma intrinsic(_InterlockedDecrement)
+// from server: 100% by king_originala
+extern "C" long (__stdcall *InterlockedDecrement)(volatile long *);
 
-extern "C" void* __stdcall InterlockedCompareExchangePtr(void* volatile*, void*, void*);
-
-struct RefCounted {
-    void* pad0;
-    void* pad4;
-    void* ptr8;
-    void* release();
+struct Interface {
+    virtual void slot0();
+    virtual void slot1();
+    virtual void slot2();
+    virtual void close();
 };
 
-struct ViewG3D {
-    char pad0[0x14];
-    void* field14;
-    char pad18[0x2c];
-    char field44;
-    char pad45[3];
-    void* field48;
-    void update();
+struct Auxiliary {
+    void destroy();
 };
 
-struct Other {
-    char pad0[0x240];
-    char flag240;
-    char pad241[0x93];
-    void* field2d4;
+struct Image {
+    virtual ~Image();
+    volatile long references;
+    void releaseResources();
 };
 
-struct Holder {
-    void* p;
-    ~Holder();
+struct ImageReference {
+    Image *pointer;
+    ~ImageReference();
 };
 
-extern "C" void* __cdecl func5ebbb0(void* out, void* arg);
-extern "C" void __cdecl func502a70(void* p);
-extern "C" void __cdecl func598fa0(void* self, void* val);
-extern "C" void __cdecl func45ad90(void* p);
-
-void ViewG3D::update() {
-    if (field44 != 0)
-        return;
-
-    Other* o;
-    if (field14 != 0) {
-        o = (Other*)((RefCounted*)field14)->release();
-    } else {
-        o = 0;
-    }
-
-    if (o->flag240 == 0) {
-        if (field48 != 0) {
-            if (InterlockedCompareExchangePtr((void* volatile*)((char*)field48 + 4), 0, 0) == 0) {
-                func45ad90(field48);
-                if (field48 != 0) {
-                    void** vt = *(void***)field48;
-                    ((void (__thiscall*)(void*, int))vt[0])(field48, 1);
-                }
-            }
-            field48 = 0;
+inline ImageReference::~ImageReference() {
+    if (pointer) {
+        if (InterlockedDecrement(&pointer->references) == 0) {
+            pointer->releaseResources();
+            if (pointer)
+                delete pointer;
         }
-        return;
+        pointer = 0;
     }
+}
 
-    if (field48 != 0)
-        return;
+struct Resource {
+    ~Resource();
+};
 
-    Holder h;
-    h.p = 0;
-    func5ebbb0(&h, o->field2d4);
-    void* val = *(void**)h.p;
-    func598fa0(&field48, val);
-    h.~Holder();
+struct Base {
+    virtual ~Base();
+};
+
+void shutdown1();
+void shutdown2();
+void shutdown3();
+void shutdown4();
+void shutdown5();
+void shutdown6();
+void shutdown7();
+
+struct S : Base {
+    Interface *interfacePointer;
+    unsigned char padding08[12];
+    Auxiliary *auxiliary;
+    unsigned char padding18[48];
+    ImageReference image;
+    Resource resource;
+
+    virtual ~S();
+};
+
+S::~S() {
+    interfacePointer->close();
+    if (auxiliary)
+        auxiliary->destroy();
+    shutdown1();
+    shutdown2();
+    shutdown3();
+    shutdown4();
+    shutdown5();
+    shutdown6();
+    shutdown7();
 }

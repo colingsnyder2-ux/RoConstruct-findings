@@ -1,76 +1,44 @@
-// from server: 29% by colin
-struct Vector3 {
-    float x, y, z;
-};
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast
+// roc-lib: rbxgs-dll v8world/Ball.cpp
 
-struct CoordinateFrame {
-    float r00, r01, r02;
-    float r10, r11, r12;
-    float r20, r21, r22;
-    float tx, ty, tz;
-};
+// Candidate translation unit (score above; library headers required).
+#include "v8world/Ball.h"
+#include "util/Math.h"
+#include <G3D/Sphere.h>
+#include <G3D/CollisionDetection.h>
 
-struct Plane {
-    Vector3 normal;
-    float d;
-};
-
-struct Geometry {
-    char pad[0x24];
-    Vector3 size;
-    char pad2[0x0c];
-    CoordinateFrame cf;
-};
-
-struct Ball : Geometry {
-    bool hitTest(const CoordinateFrame& myCf, size_t& myFaceId, const Geometry& otherGeom, const CoordinateFrame& otherCf, size_t& otherFaceId) const;
-};
-
-extern "C" void __fastcall Plane_ctor(Plane* p, void*, const Vector3* a, const Vector3* b);
-extern "C" void __fastcall Plane_getNormal(Plane* p, void*, Vector3* out);
-extern "C" void __fastcall Ball_getSurfaceCoordInBody(const Ball* b, void*, CoordinateFrame* out, size_t id);
-
-bool Ball::hitTest(const CoordinateFrame& myCf, size_t& myFaceId, const Geometry& otherGeom, const CoordinateFrame& otherCf, size_t& otherFaceId) const
+namespace RBX
 {
-    for (int i = 0; i < 2; i++) {
-        const Geometry* a;
-        const Geometry* b;
-        if (i == 0) {
-            a = this;
-            b = &otherGeom;
-        } else {
-            a = &otherGeom;
-            b = this;
-        }
+	G3D::Matrix3 Ball::getMomentSolid(float mass) const
+	{
+		float value = this->realRadius * this->realRadius * mass * 0.4f;
+		return Math::fromDiagonal(G3D::Vector3(value, value, value));
+	}
 
-        Plane plane;
-        Plane_ctor(&plane, 0, &a->size, &b->size);
+	void Ball::onSetSize()
+	{
+		this->realRadius = this->gridSize.x * 0.5f;
+	}
 
-        Vector3 normal;
-        Plane_getNormal(&plane, 0, &normal);
+	float Ball::getGridVolume() const
+	{
+		// volume of a sphere = 4/3 * pi * radius^3
+		float radius = this->gridSize.x * 0.5f;
+		return (4.0f/3.0f) * Math::pi() * radius * radius * radius;
+	}
 
-        CoordinateFrame surfCf;
-        Ball_getSurfaceCoordInBody((const Ball*)a, 0, &surfCf, 0);
+	bool Ball::hitTest(const G3D::Ray& rayInMe, G3D::Vector3& localHitPoint, bool& inside)
+	{
+		float mag = rayInMe.origin.squaredMagnitude();
+		inside = this->realRadius * this->realRadius >= mag;
 
-        float px = surfCf.tx;
-        float py = surfCf.ty;
-        float pz = surfCf.tz;
-
-        float nx = normal.x;
-        float ny = normal.y;
-        float nz = normal.z;
-
-        float d = plane.d;
-
-        float dot = nx * px + ny * py + nz * pz + d;
-
-        float radius = a->size.x * 0.5f;
-
-        if (dot < 0) dot = -dot;
-
-        if (dot < radius) {
-            return false;
-        }
-    }
-    return true;
+		G3D::Sphere sphere(G3D::Vector3::zero(), this->realRadius);
+		return G3D::CollisionDetection::collisionTimeForMovingPointFixedSphere(
+			rayInMe.origin,
+			rayInMe.direction,
+			sphere,
+			localHitPoint) != G3D::inf();
+	}
 }

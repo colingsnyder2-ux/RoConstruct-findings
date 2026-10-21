@@ -1,39 +1,67 @@
-// from server: 46% by king_originala
+// from server: 100% by EspClaude
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: boost-1.34.1 libs/regex/src/instances.cpp
+// roc-lib: rbxgs-dll roc_espclaude_a5ea428152578063.cpp
 
 // Candidate translation unit (score above; library headers required).
-/*
- *
- * Copyright (c) 1998-2002
- * John Maddock
- *
- * Use, modification and distribution are subject to the 
- * Boost Software License, Version 1.0. (See accompanying file 
- * LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
- *
- */
+#include <boost/shared_ptr.hpp>
 
- /*
-  *   LOCATION:    see http://www.boost.org for most recent version.
-  *   FILE:        instances.cpp
-  *   VERSION:     see <boost/version.hpp>
-  *   DESCRIPTION: regex narrow character template instances.
-  */
+namespace RBX {
+class DataModel;
+class Listener {};
+class ListenerList {
+public:
+    void add(Listener* l);
+    void remove(Listener* l);
+};
+class Workspace {
+public:
+    char pad[0x130];
+    ListenerList listeners;
+};
+class Selection {
+public:
+    char pad[0x130];
+    ListenerList listeners;
+};
+class DataModel {
+public:
+    class scoped_lock {
+    public:
+        scoped_lock(boost::shared_ptr<DataModel> dataModel);
+        ~scoped_lock();
+        void* p;
+        void* q;
+        void* r;
+    };
+    Workspace* getWorkspace();
+    Selection* getSelection();
+};
+}
 
-#define BOOST_REGEX_SOURCE
+class ViewBase {
+public:
+    char pad[0xd4];
+};
+class CRobloxView : public ViewBase, public RBX::Listener {
+public:
+    char pad2[0x124 - 0xd4];
+    boost::shared_ptr<RBX::DataModel> dataModel;
+    void setDataModel(boost::shared_ptr<RBX::DataModel> dm);
+};
 
-#include <boost/regex/config.hpp>
-
-#if !defined(BOOST_REGEX_NO_EXTERNAL_TEMPLATES)
-#define BOOST_REGEX_NARROW_INSTANTIATE
-
-#ifdef __BORLANDC__
-#pragma hrdstop
-#endif
-
-#include <boost/regex.hpp>
-
-#endif
+static inline void detach(RBX::Workspace* w, RBX::Listener* l) { if (w) w->listeners.remove(l); }
+static inline void attach(RBX::Selection* s, RBX::Listener* l) { if (s) s->listeners.add(l); }
+void CRobloxView::setDataModel(boost::shared_ptr<RBX::DataModel> dm)
+{
+    if (dataModel) {
+        RBX::DataModel::scoped_lock lock(dataModel);
+        detach(dataModel->getWorkspace(), this);
+    }
+    dataModel = dm;
+    if (dataModel) {
+        RBX::DataModel::scoped_lock lock(dataModel);
+        attach(dataModel->getSelection(), this);
+    }
+}

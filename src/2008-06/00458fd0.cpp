@@ -1,42 +1,34 @@
-// from server: 56% by colin
+// from server: 100% by EspClaude
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
 #include <string>
-struct Context {
-    int value;
+
+namespace RBX {
+class Debugable {
+public:
+    virtual ~Debugable() {}
+};
+class VerbContainer;
+class Verb : public Debugable {
+public:
+    Verb(VerbContainer* container, std::string name);
+    virtual ~Verb();
+    int data[2];
+};
+}
+
+double __cdecl readTime();
+
+class ToggleIDEModeVerb : public RBX::Verb {
+public:
+    double lastToggle;
+    ToggleIDEModeVerb(RBX::VerbContainer* container);
+    virtual ~ToggleIDEModeVerb() {}
 };
 
-struct OwnerPadding {
-    char storage[0x1c8];
-};
-
-struct Owner : OwnerPadding, Context {
-};
-
-extern double __cdecl readTime();
-
-struct Base {
-    int storage[2];
-
-    Base(Context*, std::string);
-    virtual ~Base();
-};
-
-struct CRobloxView : Base {
-    void* argument;
-    Owner* owner;
-    int reserved;
-    double timestamp;
-
-    CRobloxView(void*, Owner*);
-    virtual ~CRobloxView();
-};
-
-CRobloxView::CRobloxView(void* value, Owner* source)
-    : Base(static_cast<Context*>(source), "ToggleToolbox")
+ToggleIDEModeVerb::ToggleIDEModeVerb(RBX::VerbContainer* container)
+    : RBX::Verb(container, "TogglePlayMode")
 {
-    argument = value;
-    owner = source;
-    timestamp = readTime();
+    lastToggle = readTime();
 }

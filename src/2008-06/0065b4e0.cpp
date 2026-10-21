@@ -1,75 +1,53 @@
-// from server: 83% by king_originala
-struct Entry {
-    unsigned int value[2];
+// from server: 100% by EspClaude
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+// roc-lib: rbxgs-dll roc_espclaude_9332e769ecffde93.cpp
+
+// Candidate translation unit (score above; library headers required).
+#include <vector>
+#include <cstring>
+#include <G3D/Array.h>
+
+namespace RBX {
+
+class World;
+class ContactManager;
+class Primitive;
+struct SpatialNode;
+struct ContactNode;
+
+struct SpatialBucket {
+	ContactNode* contacts;
+	SpatialNode* nodes;
 };
 
-struct Block {
-    unsigned int data[3];
-    Entry* first;
-    Entry* last;
-    Entry* limit;
+extern int numSpatialLevels;
 
-    Block();
-    ~Block();
-    void resize(int count, int value1, int value2);
+class SpatialHash {
+public:
+	int field0;
+	World* world;
+	ContactManager* contactManager;
+	std::vector<SpatialBucket> levels[4];   // 0x0c
+	ContactNode* extraContacts;             // 0x6c
+	ContactNode* extraContacts2;            // 0x70
+	SpatialNode* extraNodes;                // 0x74
+	int nodesOut;                           // 0x78
+	int maxBucket;                          // 0x7c
+	G3D::Array<Primitive*> found;           // 0x80
+
+	SpatialHash(World* world, ContactManager* contactManager);
 };
 
-struct Tail {
-    unsigned int data[5];
-
-    Tail();
-};
-
-inline Tail::Tail()
+SpatialHash::SpatialHash(World* world, ContactManager* contactManager)
+	: field0(0), world(world), contactManager(contactManager),
+	  extraContacts(NULL), extraContacts2(NULL), extraNodes(NULL), nodesOut(0), maxBucket(0)
 {
-    data[0] = 0;
-    data[1] = 0;
-    data[2] = 0;
-    data[3] = 0;
-    data[4] = 0;
+	for (int i = 0; i < numSpatialLevels; i++) {
+		levels[i].resize(0x10000 >> i);
+		memset(&levels[i][0], 0, levels[i].size() * sizeof(SpatialBucket));
+	}
 }
 
-struct Vector {
-    Entry* first;
-    Entry* last;
-    Entry* limit;
-
-    Vector();
-    ~Vector();
-};
-
-inline Vector::Vector()
-{
-    last = 0;
-    limit = 0;
-    first = 0;
-}
-
-extern int blockCount;
-extern "C" void (__cdecl* _invalid_parameter_noinfo)();
-extern "C" void* __cdecl memset(void* destination, int value, unsigned int size);
-
-struct S {
-    int state;
-    int argument1;
-    int argument2;
-    Block blocks[4];
-    Tail tail;
-    Vector vector;
-
-    S(int a, int b);
-};
-
-S::S(int a, int b)
-    : state(0), argument1(a), argument2(b)
-{
-    for (int i = 0; i < blockCount; ++i) {
-        blocks[i].resize(0x10000 >> i, 0, 0);
-
-        unsigned int count = blocks[i].last - blocks[i].first;
-        if (count <= 0U)
-            _invalid_parameter_noinfo();
-
-        memset(blocks[i].first, 0, count * sizeof(Entry));
-    }
 }
