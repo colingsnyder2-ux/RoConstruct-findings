@@ -1,65 +1,57 @@
-// from server: 88% by king_originala
-struct Signal {
-    char data[32];
-    void disconnect(void*);
-};
+// from server: 100% by EspClaude
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+// roc-lib: rbxgs-dll roc_espclaude_1d1dc8be5ba96da0.cpp
 
-struct Object {
-    char pad0[36];
-    Signal signal24;
-    Signal signal44;
-    Signal signal64;
-    Signal signal84;
-};
-
-struct ObjectPtr {
-    Object* ptr;
-    void* control;
-    void reset();
-};
-
-struct Connection {
-    int value;
-    void disconnect(ObjectPtr&, Signal Object::*);
-};
-
-__forceinline void Connection::disconnect(ObjectPtr& object, Signal Object::* signal)
+// Candidate translation unit (score above; library headers required).
+#undef _RELEASEASSERT
+#undef _DEBUG
+#define _DLL
+#define private public
+#include "util/IRenderable.h"
+#undef private
+#include "util/Object.h"
+#define hasListeners() hasListeners() const { return listeners.size() > 0; } bool hasListenersEmpty()
+#include "util/Events.h"
+#undef hasListeners
+namespace RBX { template<class T> class GuidItem { public: virtual ~GuidItem() {} char guidPad[0xc]; }; }
+namespace RBX { template<class T> class GuidAFP : public AbstractFactoryProduct<T> { protected: virtual void onGuidChanged() {} }; }
+#define AbstractFactoryProduct GuidItem<Instance>, public GuidAFP
+#include "util/Guid.h"
+namespace RBX { class GuidStub { public: typedef Guid::Data Data; void assign(const Data&) {} operator const Guid&() const { return *(const Guid*)0; } }; }
+#define Guid GuidStub
+#include "v8tree/Instance.h"
+#undef Guid
+#undef AbstractFactoryProduct
+#include "v8datamodel/GuiBuilder.h"
+#include "v8datamodel/LocalBackpack.h"
+#include "v8datamodel/Backpack.h"
+namespace RBX
 {
-    Object* p = *reinterpret_cast<Object* volatile*>(&object.ptr);
-    if (p)
-        (p->*signal).disconnect(this);
-}
+	void LocalBackpack::clearLocalCharacter()
+	{
+		if (localCharacter)
+		{
+			Notifier<Instance, DescendentAdded>::disconnect(localCharacter, this);
+			Notifier<Instance, DescendentRemoving>::disconnect(localCharacter, this);
 
-struct S {
-    char pad0[360];
-    Connection connection168;
-    Connection connection16c;
-    Connection connection170;
-    Connection connection174;
-    char pad178[8];
-    ObjectPtr object180;
-    char pad188[16];
-    ObjectPtr object198;
+			localCharacter.reset();
+		}
+	}
 
-    void update1();
-    void update2();
-    void f();
-};
+	void LocalBackpack::clearAll()
+	{
+		clearLocalCharacter();
+		clearLocalPlayer();
+		clearLocalBackpack();
 
-void S::f()
-{
-    if (object198.ptr) {
-        connection170.disconnect(object198, &Object::signal64);
-        connection174.disconnect(object198, &Object::signal84);
-        object198.reset();
-    }
+		if (players)
+		{
+			Notifier<Instance, ChildAdded>::disconnect(players.get(), this);
+			Notifier<Instance, ChildRemoved>::disconnect(players.get(), this);
 
-    update1();
-    update2();
-
-    if (object180.ptr) {
-        object180.ptr->signal24.disconnect(&connection168);
-        connection16c.disconnect(object180, &Object::signal44);
-        object180.reset();
-    }
+			players.reset();
+		}
+	}
 }

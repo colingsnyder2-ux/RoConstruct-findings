@@ -1,10 +1,12 @@
-// from server: 77% by EspClaude
+// from server: 89% by Espeon
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast
-// roc-lib: rbxgs-dll roc_espclaude_72726d850d2443e8.cpp
+// roc-lib: rbxgs-dll roc_espeon_cameranativeextentsacf1c6b49cd9bc8a.cpp
 
 // Candidate translation unit (score above; library headers required).
+#include "util/Extents.h"
+#include "util/Name.h"
 #include <string>
 #include <vector>
 #include <boost/shared_ptr.hpp>
@@ -13,14 +15,8 @@
 #include <G3D/Rect2D.h>
 
 namespace RBX {
-class Name { public: int id; std::string name; const char* c_str() const { return name.c_str(); } };
+
 class IDataState { public: virtual void setDirty(bool) = 0; };
-class Extents {
-public:
-    G3D::Vector3 low, high;
-    Extents() : low(G3D::Vector3::inf()), high(-G3D::Vector3::inf()) {}
-    void unionWith(const Extents& other);
-};
 class PVInstance {
 public:
     virtual void v0();
@@ -106,14 +102,15 @@ void CameraZoomExtentsCommand::doIt(IDataState* dataState)
     if (selection->size() >= 1)
     {
         Selection* s = selection.operator->();
-        extents = s->selection[0]->getExtents();
+        const std::vector<PVInstance*>& selected=s->selection;
+        extents = selected[0]->getExtents();
         size_t i = 1;
-        if (i < s->selection.size())
+        if (i < selected.size())
             do
             {
-                extents.unionWith(s->selection[i]->getExtents());
+                extents.unionWith(selected[i]->getExtents());
                 ++i;
-            } while (i < s->selection.size());
+            } while (i < selected.size());
 
         workspace->getCamera()->setCameraType(0);
         workspace->getCamera()->zoomExtents(extents, workspace->viewPort, 0);

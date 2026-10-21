@@ -1,34 +1,21 @@
-// from server: 63% by colin
-extern float g828b60;
-extern float g83a310;
-extern float g81e704;
-extern float g83a3ec;
+// from server: 100% by Espeon
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast
+// roc-lib: rbxgs-dll roc_espeon_cameratiltconstantc267f6dc5c411473.cpp
 
-extern "C" double __cdecl acos(double);
-
-struct GCamera {
-    void getAxis(int index, float* out);
+// Candidate translation unit (score above; library headers required).
+#include "G3D/CoordinateFrame.h"
+#include "G3D/g3dmath.h"
+extern const float radiansToDegrees;
+namespace RBX { namespace Math { float getElevation(const G3D::Vector3&); } }
+struct Camera {
+ char prefix[0x174]; G3D::CoordinateFrame cameraGoal;
+ bool tiltRadians(float);
+ void tiltSteps(int steps);
 };
-
-struct S {
-    char pad[0x174];
-    GCamera cam;
-    void method(float arg);
-};
-
-void GCamera_getAxis(GCamera* self, float* out, int index);
-
-void S::method(float arg) {
-    float v = g828b60;
-    float tmp[3];
-    GCamera_getAxis(&cam, tmp, 2);
-    float x = tmp[0] * v;
-    float y = tmp[1] * v;
-    float z = tmp[2] * v;
-    float a = (float)acos((double)v);
-    float r = a * g83a310 * g81e704;
-    int i = (int)r;
-    int total = i + *(int*)((char*)&arg + 4);
-    float f = (float)total * g83a3ec - v;
-    ((void (__thiscall*)(S*, float))0x5cc740)(this, f);
+void Camera::tiltSteps(int steps) {
+ float elevation = RBX::Math::getElevation(cameraGoal.lookVector());
+ int current = G3D::iRound(elevation * radiansToDegrees * 0.1f);
+ tiltRadians((current + steps) * 0.1745329350233078f - elevation);
 }

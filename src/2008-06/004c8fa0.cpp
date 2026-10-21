@@ -1,135 +1,34 @@
-// from server: 82% by king_originala
-struct Link {
-    Link* next;
+// from server: 100% by Espeon
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: openrbx-client roc_espeon_interpolationindexaccess72cd7888f66fb005.cpp
+
+// Candidate translation unit (score above; library headers required).
+#include <boost/multi_index_container.hpp>
+#include <boost/multi_index/hashed_index.hpp>
+#include <boost/multi_index/ordered_index.hpp>
+#include <boost/multi_index/identity.hpp>
+struct __declspec(align(8)) S {
+ char storage[0x280];
+ ~S();
+ bool keep(unsigned value) const;
 };
-
-struct TreeHook {
-    void* left;
-    void* parent;
-    void* right;
-};
-
-struct Node {
-    char padding[0x280];
-    TreeHook tree;
-    unsigned reserved;
-    Link link;
-
-    bool keep(unsigned value);
-    void destroy();
-};
-
-struct BucketRange {
-    unsigned count;
-    unsigned reserved[2];
-    Link* buckets;
-};
-
-struct Iterator {
-    Node* node;
-    BucketRange* range;
-
-    void advance();
-};
-
-struct Table {
-    unsigned reserved[2];
-    BucketRange range;
-    unsigned reserved2[2];
-    unsigned firstBucket;
-    unsigned size;
-
-    Iterator erase(Iterator position);
-};
-
-struct Container {
-    unsigned reserved0;
-    Node* sentinel;
-    unsigned reserved1;
-    Table table;
-};
-
+struct Key { typedef const S& result_type; const S& operator()(const S& s) const { return s; } };
+struct Hash { size_t operator()(const S&) const; };
+struct Equal { bool operator()(const S&,const S&) const; };
+struct Less { bool operator()(const S&,const S&) const; };
+typedef boost::multi_index_container<S, boost::multi_index::indexed_by<boost::multi_index::hashed_unique<Key,Hash,Equal>,boost::multi_index::ordered_non_unique<Key,Less> > > Table;
 struct Receiver {
-    unsigned reserved[2];
-    Container container;
-
-    void update(unsigned value);
+ char prefix[8];
+ Table table;
+ void update(unsigned value);
 };
-
-extern void __cdecl removeTree(TreeHook*, void**, void**, void**);
-extern void __cdecl operator delete(void*);
-
-__forceinline void Iterator::advance()
-{
-    Link* buckets = range->buckets;
-    Link* limit = buckets + range->count;
-    Link* hook = node ? &node->link : 0;
-    Link* next = hook->next;
-    if (buckets <= next && next <= limit) {
-        do {
-            ++next;
-        } while (next->next == next);
-        next = next->next;
-    }
-    node = next
-        ? reinterpret_cast<Node*>(reinterpret_cast<char*>(next) - 0x290)
-        : 0;
-}
-
-__forceinline Iterator Table::erase(Iterator position)
-{
-    Iterator next = position;
-    next.advance();
-    next.range = &range;
-
-    Link* hook = position.node ? &position.node->link : 0;
-    Link* following = hook->next;
-    Link* previous = following;
-    while (previous->next != hook)
-        previous = previous->next;
-    previous->next = following;
-
-    unsigned index = firstBucket;
-    Link* bucket = range.buckets + index;
-    if (bucket->next == bucket) {
-        bucket = *reinterpret_cast<Link* volatile*>(&range.buckets) + index;
-        do {
-            ++bucket;
-            ++index;
-        } while (bucket->next == bucket);
-    }
-    firstBucket = index;
-
-    Node* sentinel =
-        *reinterpret_cast<Node**>(reinterpret_cast<char*>(this) - 8);
-    TreeHook* left = &sentinel->tree;
-    void** parent = &sentinel->tree.parent;
-    void** right = &sentinel->tree.right;
-    TreeHook* tree = position.node ? &position.node->tree : 0;
-    removeTree(tree, &left->left, parent, right);
-    position.node->destroy();
-    operator delete(position.node);
-    --size;
-    return next;
-}
-
-void Receiver::update(unsigned value)
-{
-    Container* c = &container;
-    Table* t = c ? &c->table : 0;
-    Link* first = t->range.buckets[t->firstBucket].next;
-    Iterator current;
-    current.node = first
-        ? reinterpret_cast<Node*>(reinterpret_cast<char*>(first) - 0x290)
-        : 0;
-    current.range = &t->range;
-    Node* end =
-        *reinterpret_cast<Node**>(reinterpret_cast<char*>(t) - 8);
-
-    while (current.node != end) {
-        if (!current.node->keep(value))
-            current = t->erase(current);
-        else
-            current.advance();
-    }
+void Receiver::update(unsigned value) {
+ Table::nth_index<0>::type& index=table.get<0>();
+ Table::iterator it=index.begin(), end=index.end();
+ while(it!=end) {
+  if(!it->keep(value)) it=index.erase(it);
+  else ++it;
+ }
 }

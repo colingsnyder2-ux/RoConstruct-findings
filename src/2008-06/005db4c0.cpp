@@ -1,60 +1,49 @@
-// from server: 89% by king_originala
-struct S;
-struct Model;
-
-struct State {
-    char pad[0x1d4];
-    int kind;
-    int method();
-    void setOwner(S*);
-};
-
-struct StateRef {
-    virtual void unused();
-    virtual State* get();
-};
-
-struct ServiceProvider {
-    char pad[0x288];
-    StateRef state;
-};
-
-struct Model {
-    S* owner();
-};
-
-struct S {
-    void update();
-};
-
-ServiceProvider* __cdecl func_00491e50(S*);
-Model* __cdecl func_0049aca0(S*);
-
-extern char g92907c[], g932a40[];
-extern "C" int __cdecl sub_6A17C6(int, int, void*, void*, int);
-
-void S::update()
+// from server: 100% by EspClaude
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
+namespace RBX {
+class Instance { public: virtual ~Instance(); char pad[0x12c]; };
+class Humanoid;
+class ModelInstance : public Instance { public: template<class T> T* findFirstChildOfType() const; };
+class ICameraSubject { public: virtual ~ICameraSubject(); };
+class Camera
 {
-    ServiceProvider* service = func_00491e50(this);
-    Model* character = func_0049aca0(this);
-    S* owner;
+public:
+	enum CameraType { FIXED, ATTACH, WATCH, TRACK, FOLLOW, CUSTOM_CAMERA };
+	char pad[0x1d4];
+	CameraType cameraType;
+	CameraType getCameraType() const { return cameraType; }
+	ICameraSubject* getCameraSubject() const;
+	void setCameraSubject(Instance* subject);
+};
+class ICameraOwner { public: virtual ~ICameraOwner(); virtual Camera* getCamera() const = 0; };
+class WorkspaceBase { public: virtual ~WorkspaceBase(); char pad[0x284]; };
+class Workspace : public WorkspaceBase, public ICameraOwner {};
+class HumanoidBase : public Instance { public: char hpad[0x1c]; };
+class Humanoid : public HumanoidBase, public ICameraSubject
+{
+public:
+	static Humanoid* modelIsCharacter(const ModelInstance* testModel)
+	{
+		return testModel ? testModel->findFirstChildOfType<Humanoid>() : 0;
+	}
+	void onLocalHumanoidEnteringWorkspace();
+};
+class ServiceProvider { public: template<class T> static T* find(const Instance* context); };
+namespace Network { class Players { public: static Instance* findLocalCharacter(const Instance* context); }; }
 
-    if (character &&
-        (character = reinterpret_cast<Model*>(
-            sub_6A17C6(reinterpret_cast<int>(character), 0,
-                       g92907c, g932a40, 0))))
-        owner = character->owner();
-    else
-        owner = 0;
-
-    if (this == owner) {
-        StateRef* state = &service->state;
-        if (state->get()->kind == 5) {
-            int identity = this
-                ? reinterpret_cast<int>(reinterpret_cast<char*>(this) + 0x14c)
-                : 0;
-            if (state->get()->method() != identity)
-                state->get()->setOwner(this);
-        }
-    }
+void Humanoid::onLocalHumanoidEnteringWorkspace()
+{
+	Workspace* workspace = ServiceProvider::find<Workspace>(this);
+	Instance* character = Network::Players::findLocalCharacter(this);
+	ModelInstance* model = character ? dynamic_cast<ModelInstance*>(character) : 0;
+	if (this == modelIsCharacter(model))
+	{
+		if (workspace->getCamera()->getCameraType() == Camera::CUSTOM_CAMERA && workspace->getCamera()->getCameraSubject() != this)
+		{
+			workspace->getCamera()->setCameraSubject(this);
+		}
+	}
+}
 }

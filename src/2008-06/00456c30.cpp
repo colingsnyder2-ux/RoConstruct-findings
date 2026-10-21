@@ -1,18 +1,21 @@
-// from server: 75% by EspClaude
+// from server: 90% by Espeon
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: rbxgs-dll roc_espclaude_64f6518e3e545213.cpp
+// roc-lib: rbxgs-dll roc_espeon_statsstringcleanup6150262ee5f22672.cpp
 
 // Candidate translation unit (score above; library headers required).
 #include <stdio.h>
 #include <exception>
 
+class CStr;
+typedef void (__thiscall *StringDestroy)(CStr*);
+extern StringDestroy destroyString;
 class CStr {
 public:
     __declspec(dllimport) CStr(const char* s);
     __declspec(dllimport) CStr(const CStr& s);
-    __declspec(dllimport) ~CStr() throw();
+    ~CStr() throw() { destroyString(this); }
     __declspec(dllimport) operator const char*() const;
     char* m_pszData;
 };

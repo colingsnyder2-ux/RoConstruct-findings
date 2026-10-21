@@ -1,8 +1,8 @@
-// from server: 91% by Espeon
+// from server: 100% by EspClaude
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: openrbx-client-dll roc_espeon_skin_a6872c36b04abbce.cpp
+// roc-lib: openrbx-client-dll roc_espclaude_d02dc6c2a37b661d.cpp
 
 // Candidate translation unit (score above; library headers required).
 #include <boost/shared_ptr.hpp>
@@ -42,10 +42,12 @@ __forceinline String::~String()
 void* S::f()
 {
     Shared result;
-    if (node) {
+    Node* p = node;
+    if (p) {
         String name("Right Arm");
         Node* found = node->find(name);
         result = acquire(found ? reinterpret_cast<char*>(found) + 0xe4 : 0);
     }
     return result.get();
 }
+

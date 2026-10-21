@@ -1,17 +1,16 @@
-// from server: 76% by king_originala
+// from server: 78% by Espeon
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+// roc-lib: rbxgs-dll roc_espeon_newinstancewriterstdstring32ac812dfa988aaf.cpp
+
+// Candidate translation unit (score above; library headers required).
+#include <string>
+#include <boost/shared_ptr.hpp>
 extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
 #pragma intrinsic(_InterlockedExchangeAdd)
 
-struct Text {
-    unsigned allocator;
-    union {
-        char buffer[16];
-        char* pointer;
-    };
-    unsigned length;
-    unsigned capacity;
-    ~Text();
-};
+typedef std::string Text;
 
 struct NamedText {
     unsigned prefix[2];
@@ -21,6 +20,7 @@ struct NamedText {
     };
     unsigned length;
     unsigned capacity;
+    const char* c_str() const { return capacity < 16 ? buffer : pointer; }
 };
 
 struct NameInterface {
@@ -39,30 +39,10 @@ struct Object {
 };
 
 struct TextPart {
-    Text* format(Text*, int);
+    Text format(int);
 };
 
-struct Control {
-    virtual void unused();
-    virtual void dispose();
-    virtual void destroy();
-    volatile long strong;
-    volatile long weak;
-};
-
-struct Shared {
-    unsigned* object;
-    Control* control;
-    ~Shared()
-    {
-        Control* p = control;
-        if (p && _InterlockedExchangeAdd(&p->strong, -1) == 0) {
-            p->dispose();
-            if (_InterlockedExchangeAdd(&p->weak, -1) == 0)
-                p->destroy();
-        }
-    }
-};
+typedef boost::shared_ptr<unsigned> Shared;
 
 struct Lookup {
     int find(Object**);
@@ -115,8 +95,8 @@ struct Settings {
 
 extern Settings* __cdecl settings();
 extern void __cdecl writeKind(void*, int);
-extern Shared* __cdecl acquire(Shared*);
-extern void __cdecl report(unsigned, int, const char*, const char*, const char*, const char*);
+extern Shared __cdecl acquire();
+extern void __cdecl report(unsigned*, int, const char*, const char*, const char*, const char*);
 extern void* __cdecl writeFlag(void*, bool);
 extern const char message[];
 extern const char callbackTag[];
@@ -143,31 +123,9 @@ void Item::write(void* stream)
         NameInterface* names = &instance->namePart;
         instance->prepare();
 
-        Text text;
-        Text* formatted = reinterpret_cast<TextPart*>(
-            reinterpret_cast<char*>(instance) + 8)->format(&text, 4);
-
-        Shared shared;
-        Shared* acquired = acquire(&shared);
-
-        const char* value;
-        if (formatted->capacity >= 16)
-            value = formatted->pointer;
-        else
-            value = formatted->buffer;
-
-        NamedText* name = names->name();
-        const char* nameValue;
-        if (name->capacity >= 16)
-            nameValue = name->pointer;
-        else
-            nameValue = name->buffer;
-
-        unsigned destination = *acquired->object;
-        const char* label = reinterpret_cast<LabelProvider*>(
-            reinterpret_cast<char*>(owner) + 0x2d54)->get(1);
-
-        report(destination, 1, message, nameValue, value, label);
+        report(acquire().get(), 1, message, names->name()->c_str(),
+            reinterpret_cast<TextPart*>(reinterpret_cast<char*>(instance)+8)->format(4).c_str(),
+            reinterpret_cast<LabelProvider*>(reinterpret_cast<char*>(owner)+0x2d54)->get(1));
     }
 
     reinterpret_cast<IdentifierWriter*>(

@@ -1,71 +1,35 @@
-// from server: 69% by colin
-extern unsigned char table[];
+// from server: 100% by Espeon
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: openrbx-client roc_espeon_senderobservedgap99130102c930ce05.cpp
 
-struct Pair {
-    unsigned short first;
-    unsigned short second;
-    unsigned int unused;
-};
-
-struct Input {
-    unsigned int zero;
-    Pair pair;
-};
-
-struct Base {
-    unsigned char storage[0x38];
-    Base(Input*, unsigned int*);
-};
-
+// Candidate translation unit (score above; library headers required).
+#define _CPPUNWIND 1
+#include <boost/multi_index_container.hpp>
+#include <boost/multi_index/hashed_index.hpp>
+#include <boost/multi_index/ordered_index.hpp>
+#include <boost/multi_index/member.hpp>
+#include <functional>
 struct S {
-    void* vtable;
-    Base base;
-    unsigned int value;
-    unsigned int field40;
-    unsigned int field44;
-    unsigned int field48;
-    unsigned int field4c;
-    unsigned int field50;
-    unsigned int field54;
-    unsigned char field58;
-    unsigned char padding59[3];
-    unsigned char field5c;
-    unsigned char padding5d[3];
-    unsigned int field60;
-    unsigned int field64;
-    unsigned int field68;
-    unsigned char field6c;
-    unsigned char padding6d[3];
-    unsigned char field70;
-
-    S* initialize(unsigned int, unsigned short, unsigned short);
+ void* key;
+ unsigned control;
+ double priority;
+ char storage[52];
+ void* secondary;
+ char tail[8];
+ ~S();
 };
-
-S* S::initialize(unsigned int argument, unsigned short arg2, unsigned short arg3)
-{
-    Pair pair;
-    pair.first = arg2;
-    pair.second = arg3;
-    pair.unused = 0;
-
-    Input input;
-    input.zero = 0;
-    input.pair = pair;
-
-    vtable = table;
-    base.Base::Base(&input, &argument);
-
-    value = argument;
-    field40 = 0;
-    field44 = 0;
-    field48 = 0;
-    field50 = 0;
-    field54 = 0;
-    field58 = 0;
-    field5c = 0;
-    field64 = 0;
-    field68 = 0;
-    field6c = 0;
-    field70 = 0;
-    return this;
-}
+typedef boost::multi_index_container<S,boost::multi_index::indexed_by<boost::multi_index::hashed_unique<boost::multi_index::member<S,void*,&S::key> >,boost::multi_index::ordered_non_unique<boost::multi_index::member<S,double,&S::priority>,std::greater<double> >,boost::multi_index::ordered_unique<boost::multi_index::member<S,void*,&S::secondary> > > > Table;
+struct Sender {
+ virtual ~Sender();
+ Table table;
+ // Target constructs table at +4 and stores owner at +0x3c; table occupies 0x34 bytes.
+ char tableTail[4];
+ void* owner;
+ unsigned a40,a44,a48,a4c,a50,a54;
+ bool a58; char p59[3]; bool a5c; char p5d[3];
+ unsigned a60,a64,a68; bool a6c; char p6d[3]; bool a70;
+ Sender(void*);
+};
+Sender::Sender(void* p):owner(p),a40(0),a44(0),a48(0),a50(0),a54(0),a58(false),a5c(false),a64(0),a68(0),a6c(false),a70(false) {}

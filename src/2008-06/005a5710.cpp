@@ -1,8 +1,8 @@
-// from server: 90% by Espeon
+// from server: 100% by EspClaude
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: openrbx-client-dll roc_espeon_workspaceupdate_1a3893e04fd93646.cpp
+// roc-lib: openrbx-client-dll roc_espclaude_5b5c0b802f1d05c7.cpp
 
 // Candidate translation unit (score above; library headers required).
 #include <boost/shared_ptr.hpp>
@@ -19,7 +19,7 @@ struct Provider {
 };
 
 extern Pointer __cdecl resolve(void*);
-extern Pointer __cdecl convert(const Pointer&);
+extern Pointer __cdecl convert(const Pointer&) throw();
 
 struct S {
     unsigned char prefix[0x104];
@@ -44,8 +44,10 @@ void S::update() {
 
     Pointer result = resolve(lookup());
     if (!result.get()) {
-        result = convert(provider->get());
+        Provider* pr = provider;
+        result = convert(pr->get());
         result.get()->attach(this);
     }
     set(result.get());
 }
+

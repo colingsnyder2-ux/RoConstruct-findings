@@ -1,57 +1,47 @@
-// from server: 89% by EspClaude
-// from server: 83% by Espeon
+// from server: 100% by EspClaude
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: openrbx-client-dll roc_espclaude_35d249eb159fb31e.cpp
+// roc-lib: rbxgs-dll roc_espclaude_6abdbefd3adf2a5b.cpp
 
 // Candidate translation unit (score above; library headers required).
-#include <boost/shared_ptr.hpp>
-// from server: 81% by king_originala
-extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
-#pragma intrinsic(_InterlockedExchangeAdd)
-
-extern "C" void* __cdecl __RTDynamicCast(void*, long, void*, void*, int);
-extern char instanceType;
-extern char scriptType;
-
-struct Instance {virtual ~Instance();char padding[0x12c];};
-typedef boost::shared_ptr<Instance> Shared;
-
-struct Script:Instance
+#undef _RELEASEASSERT
+#undef _DEBUG
+#define _DLL
+#define private public
+#include "util/IRenderable.h"
+#undef private
+#include "util/Object.h"
+#define hasListeners() hasListeners() const { return listeners.size() > 0; } bool hasListenersEmpty()
+#include "util/Events.h"
+#undef hasListeners
+namespace RBX { template<class T> class GuidItem { public: virtual ~GuidItem() {} char guidPad[0xc]; }; }
+namespace RBX { template<class T> class GuidAFP : public AbstractFactoryProduct<T> { protected: virtual void onGuidChanged() {} }; }
+#define AbstractFactoryProduct GuidItem<Instance>, public GuidAFP
+#include "util/Guid.h"
+namespace RBX { class GuidStub { public: typedef Guid::Data Data; void assign(const Data&) {} operator const Guid&() const { return *(const Guid*)0; } }; }
+#define Guid GuidStub
+#include "v8tree/Instance.h"
+#undef Guid
+#undef AbstractFactoryProduct
+#include "script/Script.h"
+#include <set>
+namespace RBX { namespace Network {
+class ClientProxyX
 {
-    const char* external;
-    char gap[4];
-    char internal[0x14];
-    int discriminator;
-    const char* name() const { return discriminator == 0 ? external : internal; }
+public:
+	char pad[0x164];
+	std::set<std::string> scripts;
+	void onScript(boost::shared_ptr<Instance> instance);
 };
-
-struct Result
+void ClientProxyX::onScript(boost::shared_ptr<Instance> instance)
 {
-    void* iterator[2];
-    bool inserted;
-};
-
-struct Collection
-{
-    Result insert(const char*);
-};
-
-struct ClientProxy
-{
-    char padding[0x164];
-    Collection collection;
-    void process(Shared value);
-};
-
-void ClientProxy::process(Shared value)
-{
-    Script* script = dynamic_cast<Script*>(value.get());
-
-    if (script)
-    {
-        collection.insert(script->name());
-    }
+	if (Script* script = dynamic_cast<Script*>(instance.get()))
+	{
+		if (script->getScriptId().isNull())
+			scripts.insert(script->getEmbeddedCode());
+		else
+			scripts.insert(script->getScriptId().toString());
+	}
 }
-
+} }

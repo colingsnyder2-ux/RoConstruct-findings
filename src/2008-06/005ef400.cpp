@@ -1,43 +1,46 @@
-// from server: 89% by king_originala
-struct Vector3 {
-    float x, y, z;
-};
+// from server: 100% by EspClaude
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: rbxgs-dll roc_espclaude_0273d3be2b1c5160.cpp
 
-struct Vector4 {
-    float x, y, z, w;
-};
-
-struct Part {
-    void* get();
-};
-
-extern "C" void* __cdecl __RTDynamicCast(void*, long, void*, void*, int);
-extern char instanceType[];
-extern char partType[];
-extern const Vector3& __cdecl getVector();
-extern void __cdecl submit(void*, int, int, const Vector4*);
-
-struct S {
-    char padding[16];
-    int value;
-    void f(int, int);
-};
-
-void S::f(int argument, int)
+// Candidate translation unit (score above; library headers required).
+#define _DLL
+#include "G3D/Color3.h"
+#include "G3D/Color4.h"
+namespace RBX {
+class Adorn;
+class Primitive;
+enum SelectState { SELECT_NORMAL };
+enum NormalId { NORM_X };
+class Instance
 {
-    Part* part = static_cast<Part*>(
-        __RTDynamicCast(reinterpret_cast<void**>(this)[-11],
-                        0, instanceType, partType, 0));
-
-    if (part) {
-        const Vector3& source = getVector();
-        int savedArgument = argument;
-        int savedValue = value;
-        Vector4 vector;
-        vector.x = source.x;
-        vector.y = source.y;
-        vector.z = source.z;
-        vector.w = 1.0f;
-        submit(part->get(), savedValue, savedArgument, &vector);
-    }
+public:
+	virtual ~Instance();
+	char pad[0x100];
+	Instance* parent;
+	char pad2[0x28];
+	Instance* getParent() const { return parent; }
+};
+class IRenderable
+{
+public:
+	int index2d, index3d;
+	void* bucket;
+	virtual void render3dSelect(Adorn* adorn, SelectState selectState);
+};
+class PartInstance : public Instance { public: Primitive* getPrimitive() const; };
+class Draw { public: static const G3D::Color3& selectColor(); };
+class DrawAdorn { public: static void surfaceBorder(Primitive* prim, NormalId face, Adorn* adorn, const G3D::Color4& color); };
+class FaceInstance : public Instance, public IRenderable
+{
+public:
+	NormalId face;
+	virtual void render3dSelect(Adorn* adorn, SelectState selectState);
+};
+void FaceInstance::render3dSelect(Adorn* adorn, SelectState selectState)
+{
+	if (PartInstance* part = dynamic_cast<PartInstance*>(getParent()))
+		DrawAdorn::surfaceBorder(part->getPrimitive(), face, adorn, G3D::Color4(Draw::selectColor(), 1.0f));
+}
 }

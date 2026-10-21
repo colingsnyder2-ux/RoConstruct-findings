@@ -1,41 +1,110 @@
-// from server: 89% by colin
+// from server: 100% by EspClaude
+// roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lang: cpp
-// roc-lib: rbxgs-dll roc_mesh_cache_flush_9679ea4a46335872.cpp
+// roc-lib: rbxgs-dll roc_espclaude_4dc978efef2737d1.cpp
 
 // Candidate translation unit (score above; library headers required).
 #include <RenderLib/Mesh.h>
+#include <util/NormalId.h>
+
+namespace RBX { namespace View {
+class RenderSurfaceTypes
+{
+public:
+    size_t data;
+    RenderSurfaceTypes() : data(0) {}
+    unsigned int hashCode() const { return data; }
+    bool operator==(const RenderSurfaceTypes& other) const { return data == other.data; }
+};
+}}
+inline unsigned int hashCode(const RBX::View::RenderSurfaceTypes& t) { return t.hashCode(); }
+
 #include <G3D/Table.h>
 #include <boost/thread/recursive_mutex.hpp>
 #include <boost/thread/once.hpp>
-#include <util/NormalId.h>
 #include <map>
-// Key declarations mirror authentic RbxView/MeshFactory.h. This prefix is never
-// allocated here; native 004d9560 proves table/mutex/maps at 0/10/1c/3c.
-struct DecalKeyProof {G3D::Vector3 size;RBX::NormalId face;bool operator<(const DecalKeyProof&) const;};
-struct TextureKeyProof:DecalKeyProof {G3D::Vector2 studsPerTile;bool operator<(const TextureKeyProof&) const;};
-typedef G3D::ReferenceCountedPointer<RBX::Render::Mesh> MeshRef;
-typedef G3D::Table<G3D::Vector3,MeshRef> MeshSizeCache;
-typedef G3D::Table<unsigned,MeshSizeCache> MeshSurfaceCache;
-struct MeshCachePrefix {
- MeshSurfaceCache meshes;
- boost::recursive_mutex mutex;
- std::map<DecalKeyProof,MeshRef> decals;
- std::map<TextureKeyProof,MeshRef> textures;
+
+void flushUnusedMeshCache();
+namespace RBX {
+namespace View {
+
+class SphereMesh : public Render::Mesh
+{
+public:
+    SphereMesh(const G3D::Vector3& size, RenderSurfaceTypes surfaceTypes);
 };
-extern MeshCachePrefix* meshCache;
-extern boost::once_flag meshCacheOnce;
-void initializeMeshCache();
-void flushUnusedMeshCache() {
- boost::call_once(initializeMeshCache,meshCacheOnce);
- MeshCachePrefix* cache=meshCache;
- boost::recursive_mutex::scoped_lock lock(cache->mutex);
- for(MeshSurfaceCache::Iterator group=cache->meshes.begin();group!=cache->meshes.end();group++)
-  for(MeshSizeCache::Iterator item=group->value.begin();item!=group->value.end();item++)
-   if(item->value.notNull()&&item->value.isLastReference()) item->value=NULL;
- for(std::map<DecalKeyProof,MeshRef>::iterator item=cache->decals.begin();item!=cache->decals.end();++item)
-  if(item->second.notNull()&&item->second.isLastReference()) item->second=NULL;
- for(std::map<TextureKeyProof,MeshRef>::iterator item=cache->textures.begin();item!=cache->textures.end();++item)
-  if(item->second.notNull()&&item->second.isLastReference()) item->second=NULL;
+
+template<class Mesh, size_t numMeshes>
+class MeshFactory
+{
+public:
+    class DecalKey
+    {
+    private:
+        G3D::Vector3 size;
+        NormalId face;
+    public:
+        bool operator<(const DecalKey&) const;
+    };
+    class TextureKey : protected DecalKey
+    {
+    private:
+        G3D::Vector2 studsPerTile;
+    public:
+        bool operator<(const TextureKey&) const;
+    };
+    struct Variations
+    {
+        G3D::ReferenceCountedPointer<Render::Mesh> meshes[numMeshes];
+    };
+    struct Cache
+    {
+        G3D::Table<RenderSurfaceTypes, G3D::Table<G3D::Vector3, Variations> > cache1;
+        boost::recursive_mutex mutex;
+        std::map<DecalKey, G3D::ReferenceCountedPointer<Render::Mesh> > decalCache;
+        std::map<TextureKey, G3D::ReferenceCountedPointer<Render::Mesh> > textureCache;
+        int count;
+    };
+    static Cache* cache;
+    static boost::once_flag cacheOnce;
+    static void initCache();
+    static void flushUnused();
+};
+
+template<class Mesh, size_t numMeshes>
+void MeshFactory<Mesh, numMeshes>::flushUnused()
+{
+    boost::call_once(initCache, cacheOnce);
+    Cache* c = cache;
+    boost::recursive_mutex::scoped_lock lock(c->mutex);
+
+    for (typename G3D::Table<RenderSurfaceTypes, G3D::Table<G3D::Vector3, Variations> >::Iterator it = c->cache1.begin(); it != c->cache1.end(); it++)
+    {
+        G3D::Table<G3D::Vector3, Variations>& sizeCache = it->value;
+        for (typename G3D::Table<G3D::Vector3, Variations>::Iterator it2 = sizeCache.begin(); it2 != sizeCache.end(); it2++)
+        {
+            for (size_t i = 0; i < numMeshes; ++i)
+            {
+                if (it2->value.meshes[i].notNull() && it2->value.meshes[i].isLastReference())
+                    it2->value.meshes[i] = NULL;
+            }
+        }
+    }
+
+    for (typename std::map<DecalKey, G3D::ReferenceCountedPointer<Render::Mesh> >::iterator it = c->decalCache.begin(); it != c->decalCache.end(); ++it)
+    {
+        if (it->second.notNull() && it->second.isLastReference())
+            it->second = NULL;
+    }
+
+    for (typename std::map<TextureKey, G3D::ReferenceCountedPointer<Render::Mesh> >::iterator it = c->textureCache.begin(); it != c->textureCache.end(); ++it)
+    {
+        if (it->second.notNull() && it->second.isLastReference())
+            it->second = NULL;
+    }
+}
+
+template class MeshFactory<SphereMesh, 1>;
+}
 }

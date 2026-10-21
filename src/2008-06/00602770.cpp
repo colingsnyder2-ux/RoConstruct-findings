@@ -1,8 +1,8 @@
-// from server: 99% by EspClaude
+// from server: 100% by Espeon
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast
-// roc-lib: rbxgs-dll roc_espclaude_1966845c8646c6c4.cpp
+// roc-lib: rbxgs-dll roc_espeon_guimenuaccessorcount6054553ba0d6e8b9.cpp
 
 // Candidate translation unit (score above; library headers required).
 #define _DLL
@@ -68,7 +68,7 @@ namespace RBX
 		panel->addGuiItem(Creatable<Instance>::create<MenuItem>(getVerb("Help"), "Help..."));
 		panel->addGuiItem(Creatable<Instance>::create<MenuItem>(getVerb("Exit"), "   Exit"));
 
-		for (size_t i = 0; i < panel->numChildren(); ++i)
+		for (size_t i = 0; i < (panel->getChildren() ? panel->getChildren()->size() : 0); ++i)
 		{
 			if (GuiItem* guiItem = panel->getGuiItem((int)i))
 			{

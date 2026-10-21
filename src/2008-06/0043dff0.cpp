@@ -1,4 +1,4 @@
-// from server: 61% by EspClaude
+// from server: 98% by Espeon
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD
@@ -28,7 +28,10 @@ public:
 
 void CKeyItem::onMapChanged(const ElemMap* map)
 {
-    for (std::vector<int>::const_iterator it = keys.begin(); it != keys.end(); ++it)
+    _SCL_SECURE_VALIDATE(map != 0);
+    std::vector<int>::const_iterator it = keys.begin();
+    std::vector<int>::const_iterator end = keys.end();
+    for (; it != end; ++it)
     {
         ElemMap::const_iterator found = map->find(*it);
         if (found != map->end() && found->second.size() > 0)
@@ -39,3 +42,6 @@ void CKeyItem::onMapChanged(const ElemMap* map)
     }
     SetHidden(1);
 }
+
+
+

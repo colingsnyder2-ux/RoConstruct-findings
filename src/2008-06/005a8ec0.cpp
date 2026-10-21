@@ -1,60 +1,40 @@
-// from server: 90% by king_originala
-struct String {
-    unsigned int proxy;
-    union {
-        char buffer[16];
-        char* pointer;
-    } data;
-    unsigned int length;
-    unsigned int capacity;
-};
+// from server: 100% by EspClaude
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: rbxgs-dll roc_espclaude_fb47ff865e3edb17.cpp
 
-struct Named {
-    unsigned int reserved;
-    String name;
-};
-
-struct Info {
-    unsigned int reserved;
-    Named* named;
-};
-
-struct Base {
-    unsigned int reserved[2];
-    Info* info;
-};
-
-struct Instance {
-    char reserved[0x110];
-    String name;
-};
-
-extern char baseType[];
-extern char instanceType[];
-
-extern "C" void* __cdecl __RTDynamicCast(
-    void*, long, void*, void*, int);
-extern "C" void __cdecl pushString(void*, const char*);
-
-int __cdecl getName(Base** object, void* state)
+// Candidate translation unit (score above; library headers required).
+#undef _RELEASEASSERT
+#undef _DEBUG
+#define _DLL
+#define private public
+#include "util/IRenderable.h"
+#undef private
+#include "util/Object.h"
+#define hasListeners() hasListeners() const { return listeners.size() > 0; } bool hasListenersEmpty()
+#include "util/Events.h"
+#undef hasListeners
+namespace RBX { template<class T> class GuidItem { public: virtual ~GuidItem() {} char guidPad[0xc]; }; }
+namespace RBX { template<class T> class GuidAFP : public AbstractFactoryProduct<T> { protected: virtual void onGuidChanged() {} }; }
+#define AbstractFactoryProduct GuidItem<Instance>, public GuidAFP
+#include "util/Guid.h"
+namespace RBX { class GuidStub { public: typedef Guid::Data Data; void assign(const Data&) {} operator const Guid&() const { return *(const Guid*)0; } }; }
+#define Guid GuidStub
+#include "v8tree/Instance.h"
+#undef Guid
+#undef AbstractFactoryProduct
+#include "script/LuaInstanceBridge.h"
+namespace RBX { namespace Lua {
+int exe_on_tostring(const boost::shared_ptr<Reflection::DescribedBase>& object, lua_State* L)
 {
-    Instance* instance = (Instance*)__RTDynamicCast(
-        *object, 0, baseType, instanceType, 0);
+    Instance* instance = dynamic_cast<Instance*>(object.get());
 
-    if (instance) {
-        if (instance->name.capacity >= 16) {
-            pushString(state, instance->name.data.pointer);
-            return 1;
-        }
-        pushString(state, instance->name.data.buffer);
-        return 1;
-    }
+    if (instance)
+        lua_pushstring(L, instance->getName().c_str());
+    else
+        lua_pushstring(L, object->getDescriptor().name.c_str());
 
-    String* name = &(*object)->info->named->name;
-    if (name->capacity >= 16) {
-        pushString(state, name->data.pointer);
-        return 1;
-    }
-    pushString(state, name->data.buffer);
     return 1;
 }
+} }

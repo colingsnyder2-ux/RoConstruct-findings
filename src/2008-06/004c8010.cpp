@@ -1,66 +1,26 @@
-// from server: 74% by king_originala
-struct Owner;
+// from server: 82% by Espeon
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: openrbx-client roc_espeon_receiverobjectkey8992be7ceeac3de8.cpp
 
-struct Tag {
-    char value;
-    Tag();
-    ~Tag();
+// Candidate translation unit (score above; library headers required).
+#define _CPPUNWIND 1
+#include <boost/multi_index_container.hpp>
+#include <boost/multi_index/hashed_index.hpp>
+#include <boost/multi_index/ordered_index.hpp>
+#include <boost/multi_index/identity.hpp>
+#include <boost/multi_index/member.hpp>
+struct __declspec(align(8)) S {
+ char before[8]; void* object; char after[0x274];
+ ~S();
+ bool keep(unsigned value) const;
 };
-
-Tag::Tag() : value(0) {}
-Tag::~Tag() {}
-
-struct Item {
-    char storage;
-    bool prepare(Owner*, Owner*, Tag);
-    bool attach(void*, void**, Tag);
-    bool insert(Owner*);
-};
-
-struct Header {
-    void* reserved;
-    Owner* owner;
-    void* extra;
-};
-
-struct Association : Header, Item {
-};
-
-struct Owner {
-    char reserved[8];
-    void* object;
-    char padding[0x274];
-    Association association;
-    void release();
-};
-
-extern void __cdecl transfer(void*, void*, void*, void*);
-
-bool Item::insert(Owner* value)
-{
-    if (prepare(value, value, Tag()))
-        return true;
-
-    Owner* last = static_cast<Association*>(this)->owner;
-    Owner* middle = static_cast<Association*>(this)->owner;
-    Owner* first = static_cast<Association*>(this)->owner;
-
-    transfer(value ? &value->association : 0,
-             (char*)first + 0x280,
-             (char*)middle + 0x284,
-             (char*)last + 0x288);
-
-    void* result;
-    try {
-        if (attach(value->object, &result, Tag()))
-            return true;
-        else {
-            value->release();
-            return false;
-        }
-    }
-    catch (...) {
-        value->release();
-        throw;
-    }
-}
+struct Key { typedef const S& result_type; const S& operator()(const S& s) const { return s; } };
+struct Hash { size_t operator()(const S&) const; };
+struct Equal { bool operator()(const S&,const S&) const; };
+struct Less { bool operator()(const S&,const S&) const; };
+struct ObjectKey { typedef void* result_type; void* operator()(const S& s) const { return s.object; } };
+typedef boost::multi_index_container<S, boost::multi_index::indexed_by<boost::multi_index::hashed_unique<Key,Hash,Equal>,boost::multi_index::ordered_non_unique<ObjectKey > > > Table;
+struct Modifier { void operator()(S&) const; };
+bool modifyReceiver(Table& t, Table::iterator it) { return t.modify(it,Modifier()); }

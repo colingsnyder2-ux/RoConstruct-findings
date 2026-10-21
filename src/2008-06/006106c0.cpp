@@ -1,3 +1,4 @@
+// from server: 100% by EspClaude
 // from server: 91% by colin
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD /fp:fast
@@ -48,7 +49,7 @@ Vector __cdecl reconstruct(
         return Vector::zero();
 
     Vector result(Vector::zero());
-    if (Vector::zero() != target)
+    if (target != Vector::zero())
         calculate(data, &Vector::zero(), &target, &result, parameter);
 
     return result;
