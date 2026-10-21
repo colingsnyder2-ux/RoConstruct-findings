@@ -1,3 +1,5 @@
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /MD /hotpatch
 // from server: 57% by king_originala
 #pragma optimize("s", on)
 
@@ -5,7 +7,7 @@ extern char byte_96dcf8;
 extern int dword_97f2ac;
 
 struct Tail {
-    ~Tail();
+    ~Tail() {}
 };
 
 struct Item {
@@ -76,3 +78,5 @@ void CXTIconHandle::method_7a61d8()
         field0 = 0;
     }
 }
+
+

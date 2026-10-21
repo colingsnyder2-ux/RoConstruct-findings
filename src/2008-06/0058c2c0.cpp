@@ -1,65 +1,15 @@
-// from server: 95% by Espeon
+// from server: 100% by Espeon
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: openrbx-client-dll roc_espeon_historyendctor_0c2f650a85faa6e2.cpp
+// roc-lib: rbxgs-dll roc_espeon_historycommitnative0a62f5b584aac21f.cpp
 
 // Candidate translation unit (score above; library headers required).
+#include <map>
+#include <list>
 #include <string>
-struct S;
-
-struct Record {
-    char padding[0x24];
-    std::basic_string<char, std::char_traits<char>, std::allocator<char> > name;
-
-    Record(S*);
-    bool empty();
-};
-
-struct Iterator {
-    void* owner;
-    void* node;
-
-    __forceinline Iterator(void* p, void* n) : owner(p), node(n) {}
-    Iterator() {}
-    Iterator& operator++();
-};
-
-struct History {
-    void* owner;
-    char padding[0x10];
-    void* head;
-    char tail[4];
-
-    void append(Record**);
-    __forceinline Iterator end() { return Iterator(owner, head); }
-};
-
-struct S {
-    char padding[0x134];
-    Record* current;
-    History history;
-    Iterator position;
-    Iterator nextPosition;
-    char reserved;
-    bool enabled;
-
-    void prepare();
-    void commit(const char*);
-};
-
-void S::commit(const char* name)
-{
-    if (enabled) {
-        prepare();
-        if (current && !current->empty()) {
-            current->name = name;
-            history.append(&current);
-
-            position = history.end();
-            nextPosition = ++history.end();
-
-            current = new Record(this);
-        }
-    }
-}
+#include <boost/shared_ptr.hpp>
+struct Instance{};struct Service;struct Record{char data[56];};
+struct Records:std::map<Instance*,Record>{Service*owner;std::string name;Records(Service*);bool empty();};
+struct Service{char prefix[0x134];Records*current;std::list<Records*>records;std::list<Records*>::iterator forward,backward;bool blocked,enabled;void prepare();void commit(const char*);};
+void Service::commit(const char*name){if(enabled){prepare();if(current&&!current->empty()){current->name=name;records.push_back(current);forward=records.end();backward=++records.end();current=new Records(this);}}}

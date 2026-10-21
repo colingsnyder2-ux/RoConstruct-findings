@@ -1,71 +1,74 @@
-// from server: 87% by colin
-// roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+// from server: 88% by EspClaude
 // roc-lang: cpp
-// roc-lib: openrbx-client App/v8datamodel/Selection.cpp
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
+#include <string>
+#include <exception>
 
-// Candidate translation unit (score above; library headers required).
-#include "v8datamodel/Selection.h"
+extern "C" long __cdecl _InterlockedIncrement(volatile long*);
+#pragma intrinsic(_InterlockedIncrement)
 
-#include "util/object.h"
-#include "util/standardout.h"
-
-#include <algorithm>
-
-namespace RBX {
-
-const char sSelection[] = "Selection";
-
-// FUNCTION: WEBSERVICE 0x1005d440
-void Selection::raiseRemoved(boost::shared_ptr<Instance> item)
+struct Control
 {
-	SelectionChanged event(boost::shared_ptr<Instance>(), item);
+    long reserved;
+    volatile long references;
+};
 
-	for (std::vector<ISelectionBase*>::iterator iter = filteredSelections.begin(); iter != filteredSelections.end();
-		 ++iter) {
-		(*iter)->VTable0x00(event);
-	}
+struct Shared
+{
+    void* object;
+    Control* control;
 
-	Notifier<Selection, SelectionChanged>::raise(event);
+    Shared(const Shared& other);
+};
+
+inline Shared::Shared(const Shared& other)
+    : object(other.object), control(other.control)
+{
+    if (control)
+        _InterlockedIncrement(&control->references);
 }
 
-// FUNCTION: WEBSERVICE 0x1005d5e0
-Selection::~Selection()
+struct Arguments
 {
-}
+    Shared first;
+    Shared second;
+    ~Arguments();
+};
 
-// STUB: WEBSERVICE 0x1005e1f0
-void Selection::removeFromSelection(const Instance* instance)
+struct Callback
 {
-	boost::shared_ptr<std::vector<boost::shared_ptr<Instance> > > items = selection.write();
+    virtual void invoke(void* owner, Arguments arguments) = 0;
+};
 
-	std::vector<boost::shared_ptr<Instance> >::iterator iter =
-		std::find(items->begin(), items->end(), shared_from(instance));
+struct StandardOut {
+    void print(int, const char *, ...);
+};
 
-	if (iter != items->end()) {
-		boost::shared_ptr<Instance> removedItem = *iter;
+struct OutHandle {
+    StandardOut *pointer;
+    void *count;
+    ~OutHandle();
+    StandardOut *operator->() const { return pointer; }
+};
 
-		items->erase(iter);
+OutHandle __cdecl singleton();
 
-		instance->Notifier<Instance, AncestorChanged>::removeListener(this);
-
-		raiseRemoved(removedItem);
-	}
-}
-
-// FUNCTION: WEBSERVICE 0x1005e870
-void Selection::onEvent(const Instance* source, AncestorChanged event)
+struct S
 {
-	const Instance* sourceRoot = source->getParent() != NULL ? source->getParent()->getRootAncestor() : source;
+    void f(Arguments arguments, Callback* callback);
+};
 
-	if (sourceRoot != getRootAncestor()) {
-		removeFromSelection(source);
-	}
+void S::f(Arguments arguments, Callback* callback)
+{
+    try
+    {
+        void* owner = this ? reinterpret_cast<char*>(this) - 0x84 : 0;
+        callback->invoke(owner, arguments);
+    }
+    catch (std::exception &e)
+    {
+        std::string message(e.what());
+        singleton()->print(2, "%s", message.c_str());
+    }
 }
-
-} // namespace RBX
-
-template class RBX::FactoryProduct<RBX::Selection, RBX::Instance, RBX::sSelection>;
-template class RBX::Reflection::
-	Described<RBX::Selection, RBX::sSelection, RBX::FactoryProduct<RBX::Selection, RBX::Instance, RBX::sSelection> >;
-template class RBX::DescribedCreatable<RBX::Selection, RBX::Instance, RBX::sSelection>;

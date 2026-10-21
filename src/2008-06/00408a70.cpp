@@ -1,110 +1,123 @@
-// from server: 40% by colin
-extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
-#pragma intrinsic(_InterlockedExchangeAdd)
+// from server: 96% by EspClaude
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: atl-9.0-dll-rtm roc_espclaude_1aee858c13f1ad84.cpp
 
-struct CRefCounted
-{
-    virtual void unknown0();
-    virtual void unknown1();
-    virtual void unknown2();
-    long refCount;
-    long refCount2;
-};
+// Candidate translation unit (score above; library headers required).
+#ifndef _CPPUNWIND
+#define _CPPUNWIND 1
+#endif
+#ifndef _AFXDLL
+#define _AFXDLL
+#endif
+#ifndef _MBCS
+#define _MBCS
+#endif
+#include <new>
+#include <afxwin.h>
+#include <atlutil.h>
+#include <string>
+#include <exception>
+#include <intrin.h>
 
-struct CComObject
-{
-    int f(int a, int b, int c);
-};
-
-extern "C" void* __cdecl sub_6A1520(int);
-extern "C" void* __cdecl sub_6A0968();
-extern "C" void* __cdecl sub_6A0962(void*, void*);
-extern "C" void* __cdecl sub_569620(void*);
-extern "C" void* __cdecl sub_5693A0(void*, void*, void*, void*, void*);
-extern "C" void __cdecl sub_6A095C(void*, int);
-extern "C" void* __cdecl sub_4060D0(void*);
-extern "C" void __cdecl sub_68B7E0(void*);
-extern "C" void __cdecl sub_4097A0(void*, void*);
-extern "C" void __cdecl sub_4097C0(void*, void*, void*, void*);
-extern "C" int __cdecl sub_408960(void*, void*);
-extern "C" void __cdecl sub_406650(void*);
-
-extern void* (__thiscall *p_803ED8)(void*);
-extern void* (__stdcall *p_803EE0)(void*);
-extern void (__stdcall *p_803F14)(void*);
-extern void* (__stdcall *p_802468)(void*);
-extern void* (__stdcall *p_8028B8)(void*, void*, int, void*, int);
-extern void* (__stdcall *p_401680)(int);
-
-extern void* g_80B370;
-extern char g_80B648[];
-
-int CComObject::f(int a, int b, int c)
-{
-    void* mem = sub_6A1520(0x12a0);
-    void* v1 = sub_6A0968();
-    void* v2 = sub_6A0962(v1, 0);
-
-    void* s1 = p_803ED8((void*)c);
-    void* s2 = p_803ED8((void*)b);
-
-    void* tmp = sub_569620(0);
-    void* v3 = *(void**)tmp;
-
-    void* e1 = p_803EE0(s1);
-    void* e2 = p_803EE0(s2);
-
-    sub_5693A0(v3, (void*)1, g_80B648, e2, e1);
-
-    CRefCounted* rc = (CRefCounted*)0;
-    if (rc)
+class sp_counted_base {
+public:
+    virtual ~sp_counted_base();
+    virtual void dispose() = 0;
+    virtual void destroy();
+    void add_ref_copy() { _InterlockedIncrement(&use_count_); }
+    void release()
     {
-        if (_InterlockedExchangeAdd(&rc->refCount, -1) == 1)
+        if (_InterlockedDecrement(&use_count_) == 0)
         {
-            rc->unknown1();
-            if (_InterlockedExchangeAdd(&rc->refCount2, -1) == 1)
-            {
-                rc->unknown2();
-            }
+            dispose();
+            weak_release();
         }
     }
+    void weak_release()
+    {
+        if (_InterlockedDecrement(&weak_count_) == 0)
+            destroy();
+    }
+    long use_count_;
+    long weak_count_;
+};
 
-    p_803F14(s2);
-    p_803F14(s1);
+class shared_count {
+public:
+    sp_counted_base* pi_;
+    ~shared_count() { if (pi_ != 0) pi_->release(); }
+};
 
-    char buf[0x1220];
-    sub_406650(buf);
+template<class T> class shared_ptr {
+public:
+    T* px;
+    shared_count pn;
+    T* operator->() const { return px; }
+};
 
-    *(short*)(buf + 0x1226) = 0x50;
-    *(int*)(buf + 0x1228) = 2;
-    *(int*)(buf + 0x122c) = 4;
+struct BStr;
+extern BStr* (__thiscall* BStr_ctor)(BStr*, const wchar_t*);
+extern const char* (__thiscall* BStr_conv)(const BStr*);
+extern void (__thiscall* BStr_dtor)(BStr*);
+struct BStr {
+    char* m_pszData;
+    BStr() {}
+    BStr(const wchar_t* psz, BStr*& out) { out = BStr_ctor(this, psz); }
+    operator const char*() const { return BStr_conv(this); }
+    __declspec(dllimport) ~BStr() throw();
+};
+struct BStr2 {
+    char* m_pszData;
+    BStr2(const wchar_t* psz, BStr*& out) { out = BStr_ctor((BStr*)this, psz); }
+    __declspec(dllimport) ~BStr2() throw();
+};
+struct UrlStr {
+    char* m_pszData;
+    __declspec(dllimport) operator const char*() const throw();
+    __declspec(dllimport) ~UrlStr() throw();
+};
 
-    void* r = p_8028B8(g_80B370, buf, 0x21, (void*)4, 0);
-    p_401680((int)r);
+class Logger {
+public:
+    void log(int level, const char* fmt, ...);
+};
+shared_ptr<Logger> __cdecl getLogger();
+UrlStr __cdecl getBaseUrl();
 
-    void* ex = sub_4060D0(0);
-    void* str = p_803EE0(ex);
-    sub_408960(buf, str);
-    p_803F14(ex);
+class Authenticator {
+public:
+    Authenticator(const char* host);
+    ~Authenticator();
+    std::string authenticate(const char* user, const char* password);
+    std::string host;
+};
 
-    char buf2[0x40];
-    sub_4097A0(buf2, buf + 0x1221);
+HRESULT __cdecl ReportException(const GUID& iid, std::exception& e);
+extern const GUID IID_IApp;
 
-    void* s3 = p_803ED8((void*)c);
-    void* s4 = p_803ED8((void*)b);
+class CApp {
+public:
+    HRESULT __stdcall RobloxAuthenticate(BSTR user, BSTR password) throw();
+};
 
-    void* e3 = p_803EE0(s3);
-    void* e4 = p_803EE0(s4);
-
-    char buf3[0x40];
-    sub_4097C0(buf2, buf3, e4, e3);
-
-    p_802468(buf3);
-
-    p_803F14(s4);
-    p_803F14(s3);
-
-    sub_68B7E0(buf2);
-
-    return 0;
+HRESULT __stdcall CApp::RobloxAuthenticate(BSTR user, BSTR password) throw()
+{
+    AFX_MANAGE_STATE(AfxGetAppModuleState());
+    BStr* pp;
+    BStr* pu;
+    (BStr(password, pp), BStr2(user, pu), getLogger())->log(1, "CApp::RobloxAuthenticate %s %s", BStr_conv(pu), BStr_conv(pp));
+    try
+    {
+        ATL::CUrl url;
+        url.CrackUrl(getBaseUrl());
+        Authenticator auth(url.GetHostName());
+        (BStr(password, pp), BStr2(user, pu), auth).authenticate(BStr_conv(pu), BStr_conv(pp));
+    }
+    catch (std::exception& e)
+    {
+        return ReportException(IID_IApp, e);
+    }
+    return S_OK;
 }

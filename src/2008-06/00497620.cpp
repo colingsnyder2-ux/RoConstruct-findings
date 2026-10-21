@@ -1,103 +1,106 @@
-// from server: 54% by colin
-struct Players;
+// from server: 100% by EspClaude
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+// roc-lib: rbxgs-dll roc_espclaude_837df9e66657a287.cpp
 
-struct Node {
-    Node* next;
-    Node* prev;
-    void* data;
-    int pad0;
-    void* field10;
-    int pad1;
-    int pad2;
-    Node* field20;
-    Node* field24;
-};
+// Candidate translation unit (score above; library headers required).
+#include "util/Name.h"
+#include <string>
 
-struct List {
-    Node* head;
-    Node* tail;
-};
+template<typename Class> class Parent;
 
-struct ChatMessage {
-    int field0;
-    int field4;
-    void* field8;
-    int fieldC;
-    void* field10;
-};
-
-extern "C" void* __stdcall sub_553F90(int a, int b);
-extern "C" void* __stdcall sub_6A0920(unsigned int size);
-extern "C" void __stdcall sub_495DD0(void* p);
-extern "C" void __stdcall sub_497120(void* p, void* q);
-extern "C" void __stdcall sub_80245C(void* dst, void* src);
-
-struct Players {
-    void method(void* arg1, void* arg2);
-};
-
-void Players::method(void* arg1, void* arg2)
+template<typename Class>
+class Sibling
 {
-    void* esi_val;
-    void* eax_val;
-    void* edi_val;
-    void* ebx_val;
-    void* ebp_val;
-    void* ecx_val;
-    void* edx_val;
-    void* tmp;
+    template<typename C> friend class Parent;
+private:
+    Class* next;
+protected:
+    Sibling() : next(NULL) {}
+public:
+    Class* nextSibling() { return next; }
+private:
+    void setNextSibling(Class* sibling) { next = sibling; }
+};
 
-    esi_val = sub_553F90(0x82256c, -1);
-    eax_val = sub_6A0920(0x28);
-    if (eax_val != 0) {
-        *(int*)((char*)eax_val + 0) = 0;
-        *(int*)((char*)eax_val + 4) = 0;
-        *(int*)((char*)eax_val + 8) = 0;
-        *(void**)((char*)eax_val + 0x10) = esi_val;
-        *(int*)((char*)eax_val + 0x14) = 0;
-        *(int*)((char*)eax_val + 0x20) = 0;
-        *(int*)((char*)eax_val + 0x24) = 0;
-        esi_val = eax_val;
-    } else {
-        esi_val = 0;
+template<typename Class>
+class Parent
+{
+private:
+    Class* first;
+    Class* last;
+public:
+    Parent() : first(NULL), last(NULL) {}
+    void pushBackChild(Class* child)
+    {
+        if (!last)
+            first = child;
+        else
+            last->setNextSibling(child);
+        last = child;
     }
+};
 
-    eax_val = arg1;
-    edx_val = *(void**)((char*)eax_val + 8);
-    if (edx_val != 0) {
-        *(void**)edx_val = esi_val;
-    } else {
-        *(void**)((char*)eax_val + 4) = esi_val;
-    }
-    *(void**)((char*)eax_val + 8) = esi_val;
+class XmlNameValuePair
+{
+public:
+    enum ValueType { NONE = 0, NAME = 1, STRING = 2, CONTENTID = 3, BOOL = 4, INT = 5, UINT = 6, FLOAT = 7, HANDLE = 8 };
+private:
+    const RBX::Name& tag;
+    mutable ValueType valueType;
+    union
+    {
+        std::string* stringValue;
+        mutable int intValue;
+        mutable double doubleValue;
+    };
+    void clearValue() const;
+public:
+    XmlNameValuePair(const RBX::Name& tag, const int value) : tag(tag), valueType(INT), intValue(value) {}
+    XmlNameValuePair(const RBX::Name& tag, const std::string& text) : tag(tag), valueType(STRING), stringValue(new std::string(text)) {}
+    XmlNameValuePair(const RBX::Name& tag) : tag(tag), valueType(NONE) {}
+    ~XmlNameValuePair() { clearValue(); }
+    void setValue(std::string value);
+};
 
-    edi_val = arg2;
-    sub_80245C((char*)edi_val + 4, (char*)edi_val + 4);
-    sub_495DD0((char*)esi_val + 0x10);
+class XmlAttribute : public Sibling<XmlAttribute>, public XmlNameValuePair
+{
+public:
+    template<typename T>
+    XmlAttribute(const RBX::Name& tag, T value) : XmlNameValuePair(tag, value) {}
+};
 
-    ebx_val = *(void**)edi_val;
-    ebp_val = sub_553F90(0x822708, -1);
-    eax_val = sub_6A0920(0x18);
-    if (eax_val != 0) {
-        *(int*)((char*)eax_val + 0) = 0;
-        *(void**)((char*)eax_val + 8) = ebp_val;
-        *(int*)((char*)eax_val + 0xc) = 5;
-        *(void**)((char*)eax_val + 0x10) = ebx_val;
-    } else {
-        eax_val = 0;
-    }
+class XmlElement : public Sibling<XmlElement>, public Parent<XmlElement>, public XmlNameValuePair
+{
+private:
+    Parent<XmlAttribute> attributes;
+public:
+    XmlElement(const RBX::Name& tag) : XmlNameValuePair(tag) {}
+protected:
+    void addAttribute(XmlAttribute* attribute) { attributes.pushBackChild(attribute); }
+public:
+    template<typename T>
+    void addAttribute(const RBX::Name& _tag, T value) { addAttribute(new XmlAttribute(_tag, value)); }
+    XmlElement* addChild(const RBX::Name& _tag) { return addChild(new XmlElement(_tag)); }
+    XmlElement* addChild(XmlElement* element) { pushBackChild(element); return element; }
+};
 
-    ecx_val = *(void**)((char*)esi_val + 0x24);
-    if (ecx_val != 0) {
-        *(void**)ecx_val = eax_val;
-    } else {
-        *(void**)((char*)esi_val + 0x20) = eax_val;
-    }
-    *(void**)((char*)esi_val + 0x24) = eax_val;
+namespace RBX {
+namespace Network {
+struct Message
+{
+    int userID;
+    std::string text;
+    std::string guid;
+};
 
-    edi_val = (char*)edi_val + 0x20;
-    sub_80245C(edi_val, edi_val);
-
-    tmp = sub_553F90(0x822700, -1);
-    sub_497120(esi_val, tmp);
+void writeMessage(const Message& m, XmlElement* parent)
+{
+    XmlElement* e = parent->addChild(RBX::Name::declare("message", -1));
+    e->setValue(m.text);
+    e->addAttribute(RBX::Name::declare("userID", -1), m.userID);
+    e->addAttribute(RBX::Name::declare("guid", -1), m.guid);
+}
+}
 }

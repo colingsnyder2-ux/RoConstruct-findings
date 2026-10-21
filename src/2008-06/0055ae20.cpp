@@ -1,52 +1,20 @@
-// from server: 49% by colin
-struct VInstance {
-    char pad[0x64];
-    int field64;
-    char pad2[0x74 - 0x68];
-    int field74;
-    int field78;
-};
+// from server: 95% by Espeon
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+// roc-lib: rbxgs-dll roc_espeon_descendentaddedctorbodyf6569e83b6b7a030.cpp
 
-struct ArgType {
-    char pad[0x104];
-    int field104;
-};
+// Candidate translation unit (score above; library headers required).
+#include <vector>
+#include <boost/shared_ptr.hpp>
+struct Instance;
+struct SignalSource {virtual ~SignalSource();};
+struct Prefix {virtual ~Prefix();char padding[0x10];};
+struct Event {boost::shared_ptr<Instance> child,parent;Event(Instance*,Instance*);};
+struct Notifier {virtual ~Notifier();std::vector<void*> listeners;void* range;void raise(Event)const;};
+struct Instance:Prefix,SignalSource {char gap[0x4c];Notifier notifier;char rest[0x80];Instance* parent;void onAdded(Instance*);};
+struct Signal {void fire(SignalSource*,boost::shared_ptr<Instance>)const;};extern Signal addedSignal;
+extern boost::shared_ptr<Instance> sharedInstance(Instance*);
+void Instance::onAdded(Instance* child){if(notifier.listeners.size()>0)notifier.raise(Event(child,child->parent));addedSignal.fire(this,sharedInstance(child));}
 
-struct Helper1 {
-    void method(int, ArgType*);
-};
-
-struct Helper2 {
-    void method(ArgType*);
-};
-
-struct Helper3 {
-    void method(ArgType*);
-};
-
-extern "C" void __stdcall func_49d200(void*, void*);
-extern "C" void __stdcall func_618a40(void*, void*);
-
-struct VInstance_NonFactoryProduct : VInstance {
-    void func(ArgType* arg);
-};
-
-void VInstance_NonFactoryProduct::func(ArgType* arg) {
-    int count = (this->field78 - this->field74) >> 2;
-    if (count > 0) {
-        int val = arg->field104;
-        Helper1 h1;
-        h1.method(val, arg);
-        Helper2* h2 = (Helper2*)((char*)this + 0x64);
-        h2->method(arg);
-    }
-    VInstance* base;
-    if (this != 0) {
-        base = (VInstance*)((char*)this + 0x14);
-    } else {
-        base = 0;
-    }
-    Helper3 h3;
-    h3.method(arg);
-    func_49d200((void*)0x973e40, base);
-}
+Event::Event(Instance* c,Instance* p):child(sharedInstance(c)),parent(sharedInstance(p)){}

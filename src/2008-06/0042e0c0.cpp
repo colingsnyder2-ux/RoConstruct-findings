@@ -1,206 +1,164 @@
-// from server: 33% by colin
-extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
-#pragma intrinsic(_InterlockedExchangeAdd)
+// from server: 100% by EspClaude
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: atl-9.0-dll-rtm roc_espclaude_ef514ace34b2232d.cpp
 
-typedef long HRESULT;
-__declspec(noreturn) void __stdcall AfxThrowMemoryException();
-__declspec(noreturn) void __stdcall AfxThrowOleException(HRESULT sc);
-namespace ATL {
-void __stdcall AtlThrowImpl(HRESULT hr);
-}
+// Candidate translation unit (score above; library headers required).
+#ifndef _CPPUNWIND
+#define _CPPUNWIND 1
+#endif
+#ifndef _AFXDLL
+#define _AFXDLL
+#endif
+#include <new>
+#include <afxwin.h>
+#include <atlbase.h>
+#include <atlcom.h>
+#include <vector>
+#include <memory>
+#include <exception>
+#include <intrin.h>
 
-struct Variant {
-    unsigned short vt;
-    unsigned short wReserved1;
-    unsigned short wReserved2;
-    unsigned short wReserved3;
-    int data[4];
+class sp_counted_base {
+public:
+    virtual ~sp_counted_base();
+    virtual void dispose() = 0;
+    virtual void destroy();
+    void add_ref_copy() { _InterlockedIncrement(&use_count_); }
+    void release()
+    {
+        if (_InterlockedDecrement(&use_count_) == 0)
+        {
+            dispose();
+            weak_release();
+        }
+    }
+    void weak_release()
+    {
+        if (_InterlockedDecrement(&weak_count_) == 0)
+            destroy();
+    }
+    long use_count_;
+    long weak_count_;
 };
 
-struct VariantArray {
-    Variant* begin;
-    Variant* end;
-    Variant* cap;
+class shared_count {
+public:
+    sp_counted_base* pi_;
+    shared_count(const shared_count& r) : pi_(r.pi_) { if (pi_ != 0) pi_->add_ref_copy(); }
+    ~shared_count() { if (pi_ != 0) pi_->release(); }
 };
 
-struct DescribedBase;
-
-struct Function {
-    void* field0;
-    void* field4;
-    void* field8;
-    void* fieldC;
-    void* field10;
-    char pad14[0x20];
-    void* field34;
+template<class T> class shared_ptr {
+public:
+    T* px;
+    shared_count pn;
+    T* get() const { return px; }
+    T* operator->() const { return px; }
 };
 
-struct VCLuaFunction {
-    int __thiscall execute(
-        DescribedBase* instance,
-        Variant* arg1,
-        Variant* arg2,
-        Variant* arg3,
-        Variant* arg4,
-        Variant* result);
+class tss {
+public:
+    void* get() const;
+    void set(void* p);
+    void cleanup(void* p);
 };
 
-extern "C" void* __cdecl sub_6A0968();
-extern "C" void __cdecl sub_6A0962(void*, void*);
-extern "C" void* __cdecl sub_6A0920(int);
-extern "C" void __cdecl sub_6A067A(void*);
-extern "C" void __cdecl sub_401000(long);
-extern "C" void __cdecl sub_42DB20(void*);
-extern "C" void __cdecl sub_42D630(void*);
-extern "C" void* __cdecl sub_42DFD0(void*);
-extern "C" void __cdecl sub_42BC10(void*, void*);
-extern "C" void* __cdecl sub_42BBB0();
-extern "C" void __cdecl sub_5773C0(void*);
-extern "C" void* __cdecl sub_5AF830(void*, void*, void*);
-extern "C" void* __cdecl sub_5A7570(void*);
-extern "C" void __cdecl sub_5A76B0(void*, void*);
-extern "C" void __cdecl sub_5A6FF0(void*, void*);
-extern "C" void __cdecl sub_416370(void*, void*);
-extern "C" void __cdecl sub_411B40(void*);
+template<class T> class thread_specific_ptr {
+public:
+    T* get() const { return static_cast<T*>(m_tss.get()); }
+    void reset(T* p = 0)
+    {
+        T* cur = get();
+        if (cur == p)
+            return;
+        m_tss.set(p);
+        if (cur)
+            m_tss.cleanup(cur);
+    }
+    tss m_tss;
+};
 
-extern void* g_8028D8;
-extern void* g_802890;
+struct Identity;
+class Impersonator {
+public:
+    Impersonator(int identity);
+    ~Impersonator() { current().reset(previous); }
+    static thread_specific_ptr<Identity>& current();
+    Identity* previous;
+};
 
-int VCLuaFunction::execute(
-    DescribedBase* instance,
-    Variant* arg1,
-    Variant* arg2,
-    Variant* arg3,
-    Variant* arg4,
-    Variant* result)
+struct Value { void* type; void* data; };
+
+class LuaArgs {
+public:
+    ~LuaArgs();
+    void push(ATL::CComVariant value);
+    std::vector<Value> values;
+};
+
+void __cdecl toVariant(const Value& value, VARIANT* result);
+
+struct FunctionRef { int data[9]; };
+
+class ScriptContext {
+public:
+    std::auto_ptr<LuaArgs> callFunction(const FunctionRef& function, LuaArgs& args);
+};
+
+class DataModel {
+public:
+    ScriptContext* createScriptContext();
+};
+
+inline ScriptContext* getScriptContext(DataModel* dm) { return dm ? dm->createScriptContext() : 0; }
+
+struct Lock { Lock(shared_ptr<DataModel> dm); ~Lock(); int a, b, c; };
+
+class Logger {
+public:
+    void log(int level, const char* fmt, ...);
+};
+shared_ptr<Logger> __cdecl getLogger();
+
+HRESULT __cdecl ReportException(const GUID& iid, std::exception& e);
+extern const GUID IID_ILuaFunction;
+
+class CLuaFunction {
+public:
+    void* vtbl;
+    int ref;
+    shared_ptr<DataModel> dm;
+    FunctionRef function;
+    int identity;
+    HRESULT __stdcall Call(VARIANT arg1, VARIANT arg2, VARIANT arg3, VARIANT arg4, VARIANT* result) throw();
+};
+
+HRESULT __stdcall CLuaFunction::Call(VARIANT arg1, VARIANT arg2, VARIANT arg3, VARIANT arg4, VARIANT* result) throw()
 {
-    VariantArray args;
-    args.begin = 0;
-    args.end = 0;
-    args.cap = 0;
-
-    Variant* pv = (Variant*)sub_6A0968();
-    sub_6A0962(&args, pv);
-
-    Variant* slot = (Variant*)sub_6A0920(4);
-    if (slot) {
-        *(Variant**)slot = (Variant*)&args;
-    } else {
-        slot = 0;
-    }
-    args.begin = slot;
-    args.end = 0;
-    args.cap = 0;
-
-    void* fn = g_8028D8;
-
+    AFX_MANAGE_STATE(AfxGetAppModuleState());
+    try
     {
-        Variant tmp;
-        tmp.vt = 0;
-        long hr = ((long (__stdcall*)(Variant*, Variant*))fn)(&tmp, arg1);
-        if (hr < 0) {
-            tmp.vt = 10;
-            tmp.data[0] = hr;
-            sub_401000(hr);
+        LuaArgs args;
+        args.push(arg1);
+        args.push(arg2);
+        args.push(arg3);
+        args.push(arg4);
+        std::auto_ptr<LuaArgs> ret;
+        {
+            Lock lock(dm);
+            ScriptContext* context = getScriptContext(dm.get());
+            Impersonator impersonate(identity);
+            ret = context->callFunction(function, args);
         }
-        sub_42DB20(&args);
+        if (!ret->values.empty())
+            toVariant(ret->values.front(), result);
     }
+    catch (std::exception& e)
     {
-        Variant tmp;
-        tmp.vt = 0;
-        long hr = ((long (__stdcall*)(Variant*, Variant*))fn)(&tmp, arg2);
-        if (hr < 0) {
-            tmp.vt = 10;
-            tmp.data[0] = hr;
-            sub_401000(hr);
-        }
-        sub_42DB20(&args);
+        getLogger()->log(2, "CLuaFunction::Call failed, %s", e.what());
+        return ReportException(IID_ILuaFunction, e);
     }
-    {
-        Variant tmp;
-        tmp.vt = 0;
-        long hr = ((long (__stdcall*)(Variant*, Variant*))fn)(&tmp, arg3);
-        if (hr < 0) {
-            tmp.vt = 10;
-            tmp.data[0] = hr;
-            sub_401000(hr);
-        }
-        sub_42DB20(&args);
-    }
-    {
-        Variant tmp;
-        tmp.vt = 0;
-        long hr = ((long (__stdcall*)(Variant*, Variant*))fn)(&tmp, arg4);
-        if (hr < 0) {
-            tmp.vt = 10;
-            tmp.data[0] = hr;
-            sub_401000(hr);
-        }
-        sub_42DB20(&args);
-    }
-
-    Function* self = (Function*)instance;
-    void* p8 = self->field8;
-    void* pC = self->fieldC;
-
-    void* local8 = p8;
-    void* localC = pC;
-    if (pC) {
-        _InterlockedExchangeAdd((volatile long*)((char*)pC + 4), 1);
-    }
-
-    sub_411B40(&local8);
-
-    void* obj = 0;
-    if (self->field8) {
-        obj = sub_42DFD0(self->field8);
-    }
-
-    void* holder = 0;
-    sub_42BC10(&holder, self->field34);
-
-    void* tmpOut = 0;
-    void* r = sub_5AF830(obj, &local8, &args);
-    void* inner = *(void**)r;
-    tmpOut = inner;
-    *(void**)r = 0;
-
-    if (local8) {
-        sub_42D630(local8);
-        sub_6A067A(local8);
-    }
-
-    void* h = holder;
-    void* v = sub_42BBB0();
-    void* res = sub_5A7570(v);
-    if (res != h) {
-        sub_5A76B0(v, h);
-        if (res) {
-            sub_5A6FF0(v, res);
-        }
-    }
-
-    sub_5773C0(&local8);
-
-    void* out = tmpOut;
-    void* b = *(void**)((char*)out + 0xC);
-    void* e = *(void**)((char*)out + 0x10);
-    if ((unsigned)((char*)e - (char*)b) & 0xFFFFFFF8) {
-        if (b > e) {
-            ((void (__cdecl*)())g_802890)();
-        }
-        if (*(void**)out) {
-            *(void**)out = *(void**)out;
-        } else {
-            ((void (__cdecl*)())g_802890)();
-        }
-        sub_416370(b, result);
-    }
-
-    sub_42D630(out);
-    sub_6A067A(out);
-
-    sub_42D630(&args);
-
-    return 0;
+    return S_OK;
 }

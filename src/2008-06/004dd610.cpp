@@ -1,102 +1,47 @@
-// from server: 60% by colin
-// from server: 59% by colin
+// from server: 77% by EspClaude
+// roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD /fp:fast
-#include <intrin.h>
-extern "C" void (__cdecl *_invalid_parameter_noinfo)();
+#include <map>
+
+struct Vector3 { float x, y, z; };
+
+static inline int __fastcall compareVec(const Vector3& p, const Vector3& q)
+{
+    if (q.x < p.x) return -1;
+    if (q.x > p.x) return 1;
+    if (q.y < p.y) return -1;
+    if (q.y > p.y) return 1;
+    if (q.z < p.z) return -1;
+    if (q.z > p.z) return 1;
+    return 0;
+}
 
 struct Key {
-    float x, y, z;
+    Vector3 pos;
     unsigned int index;
     int value;
 };
 
-struct Node {
-    Node *left, *parent, *right;
-    Key key;
-    unsigned char padding[20];
-    unsigned char color, nil;
+struct KeyLess {
+    bool operator()(const Key& a, const Key& b) const
+    {
+        int c = compareVec(b.pos, a.pos);
+        if (c < 0) return true;
+        if (c > 0) return false;
+        if (a.index < b.index) return true;
+        if (a.index > b.index) return false;
+        return a.value < b.value;
+    }
 };
 
-struct Iterator {
-    void *owner;
-    Node *node;
-    void decrement();
+struct Level {
+    int data[5];
 };
 
-struct Result {
-    Iterator position;
-    bool inserted;
-};
+typedef std::map<Key, Level, KeyLess> LevelMap;
 
-struct Compare {
-    bool less(const Key &, const Key &) const;
-};
-
-struct S {
-    void *owner;
-    unsigned int reserved;
-    Compare compare;
-    unsigned char padding[15];
-    Node *head;
-    unsigned int count;
-
-    Iterator *insert(Iterator *, bool, Node *, const Key &);
-    Result *f(Result *, const Key &);
-};
-
-Result *S::f(Result *result, const Key &key)
+std::pair<LevelMap::iterator, bool> insertLevel(LevelMap& m, const LevelMap::value_type& v)
 {
-    Node *parent = head;
-    Node *current = head->parent;
-    _ReadWriteBarrier();
-    bool left = true;
-
-    while (!current->nil) {
-        parent = current;
-        left =
-            key.x < current->key.x ? true :
-            key.x > current->key.x ? false :
-            key.y < current->key.y ? true :
-            key.y > current->key.y ? false :
-            key.z < current->key.z ? true :
-            key.z > current->key.z ? false :
-            key.index < current->key.index ? true :
-            key.index > current->key.index ? false :
-            key.value < current->key.value;
-        current = left ? current->left : current->right;
-    }
-
-    Iterator position;
-    position.owner = owner;
-    position.node = parent;
-
-    if (left) {
-        Iterator first;
-        first.owner = owner;
-        first.node = head->left;
-
-        if (!position.owner || position.owner != first.owner)
-            _invalid_parameter_noinfo();
-
-        if (parent == first.node) {
-            Iterator temporary;
-            result->position = *insert(&temporary, true, parent, key);
-            result->inserted = true;
-            return result;
-        }
-
-        position.decrement();
-    }
-
-    if (compare.less(position.node->key, key)) {
-        Iterator temporary;
-        result->position = *insert(&temporary, left, parent, key);
-        result->inserted = true;
-        return result;
-    }
-
-    result->position = position;
-    result->inserted = false;
-    return result;
+    return m.insert(v);
 }

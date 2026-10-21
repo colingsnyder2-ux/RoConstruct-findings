@@ -22694,5 +22694,188 @@
     "output": "work/big-mining-2008-20261020/doc-native-family",
     "verification": "Local retention then actual-model gpt-6.1-sol Player Mining for gains; no automatic roc-stage source attribution.",
     "next": "Preserve best native document source; no unchanged family/gate repeats."
+  },
+  "native-sparkle-reuse-layout-gates-2008": {
+    "op": "grid",
+    "client": "2008-06",
+    "library": "Ogre1.4.5 native sparkle cache",
+    "hypothesis": "Recovered native reuse-in-loop source changes prior compiler evidence. Native map owner sentinel offset18 and vector fields c/10/14 require VC9 checked STL layout; gate21022 normal/fast over new native body.",
+    "targets": {
+      "addresses": [
+        "00674790"
+      ],
+      "scores": [
+        0,
+        99
+      ]
+    },
+    "seed_sources": {
+      "2008-06": {
+        "00674790": "work/big-mining-2008-20261020/sparkle-native-reuse-loop.cpp"
+      }
+    },
+    "builds": [
+      21022
+    ],
+    "profiles": [
+      "/O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MD"
+    ],
+    "append": [
+      "",
+      " /fp:fast"
+    ],
+    "keep_partials": true,
+    "output": "work/big-mining-2008-20261020/sparkle-reuse-layout-gates",
+    "result": {
+      "date": "2026-10-21T03:10:08.919327+00:00",
+      "checks": 2,
+      "errors": 0,
+      "best": 62,
+      "status": "complete",
+      "note": "Native21022 fast62 manually submitted with actualmodel; ordinary21022 48. Later body recovery reaches100."
+    }
+  },
+  "native-sparkle-final-boundaries-2008": {
+    "op": "grid",
+    "client": "2008-06",
+    "library": "Ogre1.4.5 native sparkle reconstructed lifetimes",
+    "hypothesis": "New native source99 has matching3012B length/frame/data;2 opcode differences are independent literal-push/name-address-add scheduling. Bounded native21022 explicit/default inline profiles over recovered body.",
+    "targets": {
+      "addresses": [
+        "00674790"
+      ],
+      "scores": [
+        0,
+        99
+      ]
+    },
+    "seed_sources": {
+      "2008-06": {
+        "00674790": "work/big-mining-2008-20261020/sparkle-native-node-member-access.cpp"
+      }
+    },
+    "builds": [
+      21022
+    ],
+    "profiles": [
+      "/O2 /Ob1 /Oi /Ot /Oy /GF /GS- /EHsc /MD /fp:fast",
+      "/O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast"
+    ],
+    "append": [
+      ""
+    ],
+    "keep_partials": true,
+    "output": "work/big-mining-2008-20261020/sparkle-final-gates",
+    "result": {
+      "date": "2026-10-21T03:10:08.919327+00:00",
+      "checks": 2,
+      "errors": 0,
+      "best": 99,
+      "exacts": 0,
+      "status": "complete"
+    }
+  },
+  "native-sparkle-cache-family-2008": {
+    "op": "fanout",
+    "client": "2008-06",
+    "library": "Native Ogre sparkle cache family",
+    "hypothesis": "Propagate complete3012B server-exact native sparkle TU with genuine checked map/vector APIs and imported Quaternion ctor, without changing body or compiler context.",
+    "sources": [
+      {
+        "recipe": "ogre-1.4.5-dll",
+        "files": [
+          "roc_sparkle_native_context_accessord3483aed579e6edb.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MD /fp:fast"
+        ]
+      }
+    ],
+    "output": "work/big-mining-2008-20261020/sparkle-family-fanout",
+    "result": {
+      "date": "2026-10-21T03:10:08.919327+00:00",
+      "objects": 1,
+      "additional_exacts": 0,
+      "status": "complete"
+    }
+  },
+  "native-explosion-reuse-pose-float-gates-2008": {
+    "op": "grid",
+    "client": "2008-06",
+    "library": "Ogre native explosion new reuse/pose/cache/iterator source",
+    "hypothesis": "Correct native inline Quaternion pose source63 has144 frame vs148 native; native pow result has2float spills vs1 source. Test precise float and explicit inline profile over materially new body, not old59 source.",
+    "targets": {
+      "addresses": [
+        "00675360"
+      ],
+      "scores": [
+        0,
+        99
+      ]
+    },
+    "seed_sources": {
+      "2008-06": {
+        "00675360": "work/big-mining-2008-20261020/explosion-native-node-member-access.cpp"
+      }
+    },
+    "builds": [
+      21022
+    ],
+    "profiles": [
+      "/O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MD",
+      "/O2 /Ob1 /Oi /Ot /Oy /GF /GS- /EHsc /MD /fp:fast"
+    ],
+    "append": [
+      ""
+    ],
+    "keep_partials": true,
+    "output": "work/big-mining-2008-20261020/explosion-native-float-gates",
+    "result": {
+      "date": "2026-10-21T03:16:24.512118+00:00",
+      "checks": 2,
+      "errors": 0,
+      "best": 63,
+      "precise": 62,
+      "Ob1fast": 63,
+      "new_verified": 0,
+      "status": "complete",
+      "note": "Keep server67 alternative; correct native inline-pose63 scratch retained."
+    }
+  },
+  "native-shadow-sdk-float-inline-gates-2008": {
+    "op": "grid",
+    "client": "2008-06",
+    "library": "Native RbxEntity shadow collector with genuine Ogre1.4.5 SDK",
+    "hypothesis": "New full native3arg shadow collector26->70 with actual layout proofs/planes/rays/casters/ranking. Native frameec vs sourcef0 and4float spill/lifetime differences; gate precise/fast inline boundaries on this new body before further source edits.",
+    "targets": {
+      "addresses": [
+        "0067e2f0"
+      ],
+      "scores": [
+        0,
+        99
+      ]
+    },
+    "seed_sources": {
+      "2008-06": {
+        "0067e2f0": "work/big-mining-2008-20261020/shadow-native-minimum-ranked-lifetime.cpp"
+      }
+    },
+    "builds": [
+      21022
+    ],
+    "profiles": [
+      "/O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MD",
+      "/O2 /Ob1 /Oi /Ot /Oy /GF /GS- /EHsc /MD /fp:fast",
+      "/O2 /Ob1 /Oi /Ot /Oy /GF /GS- /EHsc /MD"
+    ],
+    "append": [
+      ""
+    ],
+    "keep_partials": true,
+    "output": "work/big-mining-2008-20261020/shadow-native-sdk-gates"
   }
 }

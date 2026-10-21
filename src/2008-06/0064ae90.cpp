@@ -1,104 +1,106 @@
-// from server: 68% by colin
+// from server: 89% by Espeon
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: rbxgs-dll roc_espeon_sleepstagecompareorder_a7e607808b355395.cpp
+
+// Candidate translation unit (score above; library headers required).
 
 
 
 
-struct SleepStageArg;
 
-struct SleepStage {
-    void* vtbl;
-    char pad[4];
-    void* field8;
-    char pad2[0x10];
-    void* field1c;
-    char pad3[4];
-    void* field24;
-    int someFunc(SleepStageArg* arg, int param2);
+#include <set>
+
+struct Stage {
+    virtual void v0();
+    virtual int level();
+};
+
+struct State {
+    int stage;
+    int extra;
+};
+
+struct Thing13 {
+    void method();
+};
+struct Holder10 {
+    char pad[0x2c];
+    Thing13 *thing;
+};
+struct Thing {
+    Thing() throw();
+};
+struct HolderA0 {
+    char pad[0x10];
+    Holder10 *holder;
+    void apply(const Thing &);
+};
+struct Holder1c {
+    char pad[0xa0];
+    HolderA0 *holder;
+};
+struct Holder24 {
+    char pad[0x1c];
+    Holder1c *holder;
 };
 
 struct SleepStageArg {
     char pad0[4];
-    void* field4;
+    Stage *stage;
     char pad2[0x10];
-    int* field18;
+    State *state;
     char pad3[8];
-    void* field24;
+    Holder24 *holder;
 };
 
-extern "C" {
-    int __stdcall sub_5e8c40(void* a, void* b, void* c);
-    int __stdcall sub_5e9f60(void* a, void* b);
-    int __stdcall sub_613e80(void* a);
-    int __stdcall sub_614040(void* a, void* b);
-    int __stdcall sub_614170(void* a);
-    int __stdcall sub_64a550(void* a, int b, void* c);
-    int __stdcall sub_64d200(void* a, void* b);
-    int __stdcall sub_64d2a0(void* a, void* b);
-}
+typedef std::set<SleepStageArg *> ArgSet;
 
-extern int g_97d580;
-extern char g_97d568;
+struct Manager {
+    void wake(SleepStageArg *);
+    void sleep(SleepStageArg *);
+};
 
-int SleepStage::someFunc(SleepStageArg* arg, int param2) {
-    int edi;
-    if (arg->field4 != 0) {
-        int t1 = ((int (__thiscall*)(void*))((*(void***)arg->field4)[1]))(arg->field4);
-        int t2 = ((int (__thiscall*)(SleepStage*))((*(void***)this)[1]))(this);
-        if (t1 >= t2) {
-            edi = *arg->field18;
-        } else {
-            edi = 0;
-        }
-    } else {
-        edi = 0;
+struct SleepStage : Stage {
+    char pad[4];
+    Manager *manager;
+    ArgSet *getSet(int);
+    void step(SleepStageArg *arg, int newStage);
+};
+
+void SleepStage::step(SleepStageArg *arg, int newStage)
+{
+    int oldStage;
+    if (arg->stage && arg->stage->level() >= level())
+        oldStage = arg->state->stage;
+    else
+        oldStage = 0;
+
+    getSet(oldStage)->erase(arg);
+    getSet(newStage)->insert(arg);
+
+    if ((oldStage == 4 || oldStage == 5) && newStage != 4 && newStage != 5) {
+        Thing13 *t = arg->holder->holder->holder->holder->thing;
+        if (t)
+            t->method();
     }
 
-    int local20;
-    int r1 = sub_64a550(this, edi, &local20);
-    sub_5e9f60((void*)r1, &local20);
-
-    int ebp = param2;
-    int local14;
-    int r2 = sub_64a550(this, ebp, &local14);
-    sub_5e8c40((void*)r2, &local14, &local20);
-
-    if ((edi == 4 || edi == 5) && ebp != 4 && ebp != 5) {
-        void* p = *(void**)((char*)arg->field24 + 0x1c);
-        void* q = *(void**)((char*)p + 0xa0);
-        void* r = *(void**)((char*)q + 0x10);
-        void* s = *(void**)((char*)r + 0x2c);
-        if (s != 0) {
-            sub_613e80(s);
-        }
+    if (newStage == 3) {
+        if (arg->stage->level() <= level())
+            manager->wake(arg);
+    } else if (newStage == 4 || newStage == 5) {
+        static Thing thing;
+        arg->holder->holder->holder->apply(thing);
     }
 
-    if (ebp == 3) {
-        int t1 = ((int (__thiscall*)(void*))((*(void***)arg->field4)[1]))(arg->field4);
-        int t2 = ((int (__thiscall*)(SleepStage*))((*(void***)this)[1]))(this);
-        if (t1 <= t2) {
-            sub_64d200(this->field8, arg);
-        }
-    } else if (ebp == 4 || ebp == 5) {
-        if (!(g_97d580 & 1)) {
-            g_97d580 |= 1;
-            sub_614170(&g_97d568);
-        }
-        void* p = *(void**)((char*)arg->field24 + 0x1c);
-        void* q = *(void**)((char*)p + 0xa0);
-        sub_614040(q, &g_97d568);
+    if (newStage == 4 || newStage == 5 || newStage == 6) {
+        Stage *other = arg->stage;
+        int mine = level();
+        if (other->level() > mine)
+            manager->sleep(arg);
     }
 
-    if (ebp == 4 || ebp == 5 || ebp == 6) {
-        int t1 = ((int (__thiscall*)(SleepStage*))((*(void***)this)[1]))(this);
-        void* f4 = arg->field4;
-        int t2 = ((int (__thiscall*)(void*))((*(void***)f4)[1]))(f4);
-        if (t2 > t1) {
-            sub_64d2a0(this->field8, arg);
-        }
-    }
-
-    int* p18 = arg->field18;
-    p18[1] = 0;
-    *p18 = ebp;
-    return 0;
+    arg->state->extra = 0;
+    arg->state->stage = newStage;
 }

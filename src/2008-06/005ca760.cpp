@@ -1,4 +1,10 @@
-// from server: 69% by colin
+// from server: 100% by Espeon
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD /fp:fast
+// roc-lib: rbxgs-dll roc_espeon_secondaryswitch63cef399ef22e360.cpp
+
+// Candidate translation unit (score above; library headers required).
 struct InputObject
 {
     virtual void v0();
@@ -7,6 +13,7 @@ struct InputObject
     virtual void v3();
     virtual void v4();
     virtual bool check(int value);
+    bool ctrlKeyDown()const;
 };
 
 struct InputObject2
@@ -21,23 +28,16 @@ struct KeyboardSecondaryController
     float getValue(int key);
 };
 
-extern float g_float_81c3b8;
+
 
 float KeyboardSecondaryController::getValue(int key)
 {
     void* p = this->field_c;
-    if (p == 0)
-        return 0.0f;
-    InputObject* obj = *(InputObject**)((char*)p + 0x130);
+    InputObject* obj = p ? *(InputObject**)((char*)p + 0x130):0;
     if (obj == 0)
         return 0.0f;
 
-    if (key == 6)
-    {
-        if (obj->check(0x12f))
-            return 1.0f;
-        return 0.0f;
-    }
+    switch(key){case 6:return obj->check(0x12f)?1.0f:0.0f;default: {
 
     if (obj->check(0x133))
         return 0.0f;
@@ -45,12 +45,12 @@ float KeyboardSecondaryController::getValue(int key)
         return 0.0f;
 
     void* p2 = this->field_c;
-    InputObject2* obj2;
+    InputObject* obj2;
     if (p2 != 0)
-        obj2 = *(InputObject2**)((char*)p2 + 0x130);
+        obj2 = *(InputObject**)((char*)p2 + 0x130);
     else
         obj2 = 0;
-    if (obj2->check(0))
+    if (obj2->ctrlKeyDown())
         return 0.0f;
 
     void* p3 = this->field_c;
@@ -85,55 +85,15 @@ float KeyboardSecondaryController::getValue(int key)
         obj6 = 0;
     bool b64 = obj6->check(0x64);
 
-    switch (key)
-    {
-    case 1:
-        if (b61)
-            return 1.0f;
-        return 0.0f;
-    case 2:
-        if (b73)
-            return 1.0f;
-        if (b77)
-            return g_float_81c3b8;
-        return 0.0f;
-    case 3:
-        if (b73 && !b61)
-            return 1.0f;
-        if (b77 && !b64)
-            return 1.0f;
-        if (b73 && b77)
-            return 1.0f;
-        if (b64 && !b77)
-            return g_float_81c3b8;
-        if (b61 && !b73)
-            return g_float_81c3b8;
-        if (b64)
-        {
-            if (!b61)
-                return 0.0f;
-            return g_float_81c3b8;
-        }
-        return 0.0f;
-    case 4:
-        if (b73 && !b77)
-            return 1.0f;
-        if (b61 && !b64)
-            return 1.0f;
-        if (b73 && b61)
-            return 1.0f;
-        if (b64 && !b61)
-            return g_float_81c3b8;
-        if (b77 && !b73)
-            return g_float_81c3b8;
-        if (b64)
-        {
-            if (!b77)
-                return 0.0f;
-            return g_float_81c3b8;
-        }
-        return 0.0f;
-    default:
-        return 0.0f;
-    }
+    switch(key){
+    case 1:if(b61)return 1.0f;if(b64)return -1.0f;return 0.0f;
+    case 2:if(b77)return 1.0f;if(b73)return -1.0f;return 0.0f;
+    case 3:if((b77&&!b61)||(b64&&!b73)||(b77&&b64))return 1.0f;
+           if((b73&&!b64)||(b61&&!b77)||(b73&&b61))return -1.0f;return 0.0f;
+    case 4:if((b77&&!b64)||(b61&&!b73)||(b77&&b61))return 1.0f;
+           if((b73&&!b61)||(b64&&!b77)||(b73&&b64))return -1.0f;return 0.0f;
+    default:return 0.0f;}
+}
+
+}
 }

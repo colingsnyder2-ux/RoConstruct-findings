@@ -9,10 +9,10 @@ struct S {
     StreamBuffer* buffer;
 
     void finish();
-    void f();
+    bool f();
 };
 
-void S::f()
+bool S::f()
 {
     try {
         finish();
@@ -22,4 +22,5 @@ void S::f()
     catch (...) {
         throw;
     }
+    return false;
 }

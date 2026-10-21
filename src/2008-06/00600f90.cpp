@@ -1,37 +1,75 @@
-// from server: 88% by colin
-extern char table00[], table10[], table14[], table20[], table24[];
-extern char table44[], table64[], table84[], tablea4[], tablec4[];
-extern char table130[];
+// from server: 100% by EspClaude
+// roc 2008-06 00600f90  size: 180 bytes
 
-struct B {
-    void* volatile slots[0x164 / 4];
-    unsigned short value164;
-    volatile unsigned short value166;
+struct P0 {
+    virtual void f0();
+    char pad[12];
+};
 
+struct P10 {
+    virtual void f10();
+};
+
+struct P14 {
+    virtual void f14();
+    char pad[8];
+};
+
+struct P20 {
+    virtual void f20();
+};
+
+struct P24 {
+    virtual void f24();
+    char pad[28];
+};
+
+struct P44 {
+    virtual void f44();
+    char pad[28];
+};
+
+struct P64 {
+    virtual void f64();
+    char pad[28];
+};
+
+struct P84 {
+    virtual void f84();
+    char pad[28];
+};
+
+struct Pa4 {
+    virtual void fa4();
+    char pad[28];
+};
+
+struct Pc4 {
+    virtual void fc4();
+    char pad[104];
+};
+
+struct P130 {
+    virtual void f130();
+    char pad[48];
+};
+
+struct B : P0, P10, P14, P20, P24, P44, P64, P84, Pa4, Pc4, P130 {
     B();
     ~B();
-    void g(int);
 };
 
 struct S : B {
+    struct Flags {
+        unsigned short a, b;
+        Flags() : a(0), b(0) {}
+    } flags;
     S(int);
+    void g(int);
 };
 
 S::S(int argument)
     : B()
 {
-    slots[0x00 / 4] = table00;
-    slots[0x10 / 4] = table10;
-    slots[0x14 / 4] = table14;
-    slots[0x20 / 4] = table20;
-    slots[0x24 / 4] = table24;
-    slots[0x44 / 4] = table44;
-    slots[0x64 / 4] = table64;
-    slots[0x84 / 4] = table84;
-    slots[0xa4 / 4] = tablea4;
-    slots[0xc4 / 4] = tablec4;
-    slots[0x130 / 4] = table130;
-    value164 = 0;
-    value166 = 0;
     g(argument);
 }

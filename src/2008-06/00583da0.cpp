@@ -1,95 +1,14 @@
-// from server: 64% by colin
+// from server: 100% by Espeon
+// roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD /fp:fast
-struct Vec3 {
-    float x, y, z;
-    Vec3();
-    Vec3(float a, float b, float c);
-};
+// roc-lib: rbxgs-dll roc_espeon_modelselectionextentslayoutdd41eeb2c1b69c2d.cpp
 
-inline Vec3::Vec3() {}
-inline Vec3::Vec3(float a, float b, float c) : x(a), y(b), z(c) {}
-
-struct Vec4 {
-    float x, y, z, w;
-    Vec4(const Vec3& v, float a);
-};
-
-inline Vec4::Vec4(const Vec3& v, float a)
-    : x(v.x), y(v.y), z(v.z), w(a) {}
-
-struct Box {
-    Vec3 low, high;
-};
-
-extern const float half;
-
-struct Frame {
-    float rotation[3][3];
-    Vec3 translation;
-    Frame& center(const Box& box);
-};
-
-__forceinline Frame& Frame::center(const Box& box)
-{
-    double x = (box.high.x + box.low.x) * half;
-    double y = (box.high.y + box.low.y) * half;
-    double z = (box.high.z + box.low.z) * half;
-
-    double a = rotation[0][0] * x
-             + rotation[0][1] * y
-             + rotation[0][2] * z + translation.x;
-    double b = rotation[1][0] * x
-             + rotation[1][1] * y
-             + rotation[1][2] * z + translation.y;
-    double c = rotation[2][0] * x
-             + rotation[2][1] * y
-             + rotation[2][2] * z + translation.z;
-
-    translation.x = (float)a;
-    translation.y = (float)b;
-    translation.z = (float)c;
-    return *this;
-}
-
-struct RenderData {
-    char storage[100];
-    RenderData(int, const Vec3&, Vec4, const Frame&);
-};
-
-extern const Vec3& __cdecl alternateColor();
-extern void __cdecl render(const RenderData*, void*, void*);
-
-struct S {
-    void draw(void*, void*);
-};
-
-void S::draw(void* a, void* b)
-{
-    typedef void (__thiscall *GetBox)(void*, Box*);
-    typedef void (__thiscall *GetFrame)(void*, Frame*);
-
-    Box box;
-    Frame frame;
-
-    char* base = reinterpret_cast<char*>(this) - 0x1a0;
-    reinterpret_cast<GetBox>(
-        (*reinterpret_cast<void***>(base))[22])(base, &box);
-
-    char* frameBase = reinterpret_cast<char*>(this) - 0x6c
-        + (*reinterpret_cast<int**>(
-            reinterpret_cast<char*>(this) - 0x6c))[2];
-
-    reinterpret_cast<GetFrame>(
-        (*reinterpret_cast<void***>(frameBase))[0])(frameBase, &frame);
-
-    RenderData data(
-        1,
-        Vec3(box.high.x - box.low.x,
-             box.high.y - box.low.y,
-             box.high.z - box.low.z),
-        Vec4(alternateColor(), 1.0f),
-        frame.center(box));
-
-    render(&data, a, b);
-}
+// Candidate translation unit (score above; library headers required).
+#pragma float_control(precise,off,push)
+#define private public
+#define protected public
+#include "v8datamodel/ModelInstance.h"
+#include "AppDraw/Draw.h"
+struct ExtentsInterface{virtual void slot0();virtual void slot1();virtual void slot2();virtual void slot3();virtual void slot4();virtual void slot5();virtual void slot6();virtual void slot7();virtual void slot8();virtual void slot9();virtual void slot10();virtual void slot11();virtual void slot12();virtual void slot13();virtual void slot14();virtual void slot15();virtual void slot16();virtual void slot17();virtual void slot18();virtual void slot19();virtual void slot20();virtual void slot21();virtual RBX::Extents extents()const;};
+void RBX::ModelInstance::render3dSelect(Adorn*adorn,SelectState state){Extents local=reinterpret_cast<ExtentsInterface*>(reinterpret_cast<char*>(this)-8)->extents();G3D::CoordinateFrame location=getLocation();location.translation=location.pointToWorldSpace(local.center());Part part(Part::BLOCK_PART,local.size(),G3D::Color3::white(),location);Draw::selectionBox(part,adorn,state);}

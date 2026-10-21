@@ -1,9 +1,11 @@
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MD /fp:fast
-// roc-lib: rbxgs-dll roc_particle_explosion_f866194e7e522c7f.cpp
+// roc-lib: rbxgs-dll roc_explosion_native_iterator_assignment39edd632f894cb3f.cpp
 
 // Candidate translation unit (score above; library headers required).
+#undef OGRE_NONCLIENT_BUILD
+#include "../../../libs/ogre-1.4.5/ogrenew/OgreMain/src/roc_particle_native_quaternion_portable2cd547b37aee2f44.cpp"
 // Partial binary-derived 00675360 body. Opaque owner; observed offsets only.
 #undef OGRE_NONCLIENT_BUILD
 #include "../../../libs/ogre-1.4.5/ogrenew/OgreMain/include/Ogre.h"
@@ -37,31 +39,35 @@ public:
     }
 };
 void ExplosionAdornRecovery::explosion(const G3D::Sphere& sphere,const G3D::Color4&,const G3D::Color4&) {
-    Quaternion orientation(1,0,0,0);
-    orientation.FromRotationMatrix(field<Matrix3>(0x114));
-    Vector3 position=field<SceneNode*>(0x30)->createChildSceneNode(field<Vector3>(0x138),orientation)->getPosition();
+    Vector3 position;
+    {
+        const Matrix3& rotation=field<Matrix3>(0x114);
+        Quaternion orientation(1,0,0,0);
+        orientation.FromRotationMatrix(rotation);
+        position=field<SceneNode*>(0x30)->createChildSceneNode(field<Vector3>(0x138),orientation)->getPosition();
+    }
     char name[64];
     _snprintf(name,64,"%.3f %.3f %.3f",position.x,position.y,position.z);
     LogManager::getSingleton().logMessage(String("RBX expl ")+" r="+StringConverter::toString(sphere.radius));
     typedef std::map<String,SceneNode*> Cache;
-    Cache& active=field<Cache>(0xb8);
-    if(active.find(name)!=active.end()) {
-        ParticleSystem* system=static_cast<ParticleSystem*>(active[name]->getAttachedObject(0));
+    if(field<Cache>(0xb8).find(name)!=field<Cache>(0xb8).end()) {
+        ParticleSystem* system=static_cast<ParticleSystem*>(field<Cache>(0xb8)[name]->getAttachedObject(0));
         if(system->getNumParticles()) return;
         ParticleEmitter* emitter=system->getEmitter(0);
         explosionParameters(system,emitter,1.0f);
         emitter->setEnabled(false);
-        active.erase(active.find(name));
+        field<Cache>(0xb8).erase(field<Cache>(0xb8).find(name));
         return;
     }
     std::vector<Cache::iterator> retired;
-    for(Cache::iterator it=active.begin();it!=active.end();++it)
+    Cache::iterator it;
+    for(it=field<Cache>(0xb8).begin();it!=field<Cache>(0xb8).end();++it)
         if(!static_cast<ParticleSystem*>(it->second->getAttachedObject(0))->getNumParticles()) retired.push_back(it);
     for(unsigned i=0;i<retired.size();++i) {
         ParticleSystem* system=static_cast<ParticleSystem*>(retired[i]->second->getAttachedObject(0));
         ParticleEmitter* emitter=system->getEmitter(0);
         emitter->setEnabled(false);
-        active.erase(retired[i]);
+        field<Cache>(0xb8).erase(retired[i]);
         LogManager::getSingleton().logMessage("RBX retired "+system->getName());
         explosionParameters(system,emitter,1.0f);
     }
@@ -69,9 +75,21 @@ void ExplosionAdornRecovery::explosion(const G3D::Sphere& sphere,const G3D::Colo
     if(scale>3.0f) scale=3.0f;
     std::vector<SceneNode*>& nodes=field<std::vector<SceneNode*> >(0xa0);
     unsigned index;
-    for(index=0;index<nodes.size();++index)
-        if(!static_cast<ParticleSystem*>(nodes[index]->getAttachedObject(0))->getEmitter(0)->getEnabled()) break;
     SceneNode* selected;
+    for(index=0;index<nodes.size();++index) {
+        if(!static_cast<ParticleSystem*>(nodes[index]->getAttachedObject(0))->getEmitter(0)->getEnabled()) {
+            selected=nodes[index];
+            field<Cache>(0xb8)[name]=selected;
+            selected->setPosition(position.x,position.y,position.z);
+            ParticleSystem* system=static_cast<ParticleSystem*>(selected->getAttachedObject(0));
+            ParticleEmitter* emitter=system->getEmitter(0);
+            explosionParameters(system,emitter,scale);
+            emitter->setEnabled(true);
+            system->_update(0.001f);
+            LogManager::getSingleton().logMessage("RBX use "+system->getName());
+            break;
+        }
+    }
     if(index==nodes.size()) {
         if(!MaterialManager::getSingleton().resourceExists("explosion/explosionMatl")) {
             DataStreamPtr script(new MemoryDataStream(const_cast<char*>(explosionMaterialScript.c_str()),explosionMaterialScript.size()+1,false));
@@ -95,18 +113,8 @@ void ExplosionAdornRecovery::explosion(const G3D::Sphere& sphere,const G3D::Colo
         selected=field<SceneNode*>(0x9c)->createChildSceneNode();
         selected->attachObject(system);
         nodes.push_back(selected);
-        active[name]=selected;
+        field<Cache>(0xb8)[name]=selected;
         LogManager::getSingleton().logMessage("RBX created "+system->getName());
-    } else {
-        selected=nodes[index];
-        active[name]=selected;
-        selected->setPosition(position.x,position.y,position.z);
-        ParticleSystem* system=static_cast<ParticleSystem*>(selected->getAttachedObject(0));
-        ParticleEmitter* emitter=system->getEmitter(0);
-        explosionParameters(system,emitter,scale);
-        emitter->setEnabled(true);
-        system->_update(0.001f);
-        LogManager::getSingleton().logMessage("RBX use "+system->getName());
     }
     selected->setPosition(position.x,position.y,position.z);
 }

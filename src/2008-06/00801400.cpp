@@ -13,7 +13,7 @@ void** g_pptr_0097d944 = &g_ptr_0097d944;
 
 void func_00801400()
 {
-    void* p = *g_pptr_0097d944;
+    void*& p = g_ptr_0097d944;
     void* edi = p;
     if (p)
     {

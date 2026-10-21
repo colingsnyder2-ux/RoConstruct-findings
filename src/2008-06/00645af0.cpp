@@ -1,3 +1,4 @@
+// from server: 97% by EspClaude
 // from server: 61% by colin
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD /fp:fast
@@ -148,91 +149,79 @@
 // 00645c97  0505050505           add eax, 0x5050505
 // 00645c9c  0505050503           add eax, 0x3050505
 
-struct Joint {
-    char pad[0xc];
-    void* kernel;
-    char pad2[0xe8 - 0x10];
-    void* constraint;
+#include <math.h>
+
+enum InputType { NO_INPUT = 0 };
+
+struct Entry {
+    InputType type;
+    float paramA;
+    float paramB;
+    Entry(InputType t, float a, float b) : type(t), paramA(a), paramB(b) {}
 };
 
-extern "C" int __cdecl G1_func_005ec310(void*);
-extern "C" float __cdecl G1_func_006492f0();
+struct InputSource {
+    virtual void unused();
+    virtual float getValue(InputType type);
+};
 
-extern float G1_float_008282dc;
-extern float G1_float_00819bac;
-extern double G1_double_0084ae00;
-extern double G1_double_00811230;
-extern int G1_int_0097abd0;
-extern int G1_int_0097abc4;
-extern float G1_float_0097abc8;
-extern float G1_float_0097abcc;
+struct Kernel {
+    char pad[0xd0];
+    Entry* entries[6];
+    InputSource* input;
+    InputSource* getInput() const { return input; }
+};
 
-extern "C" double __cdecl sin(double);
-extern "C" double __cdecl fabs(double);
+int lookup(const int* id);
+float getTime();
 
 struct RotatePJoint {
     char pad[0xc];
-    void* kernel;
+    Kernel* kernel;
     char pad2[0x28 - 0x10];
     int axleId;
-    char pad3[0xe8 - 0x2c];
-    void* constraint;
-    float stepWorld(float dt);
+    Kernel* getKernel() const { return kernel; }
+    float stepWorld(int steps);
 };
 
-float RotatePJoint::stepWorld(float dt)
+float RotatePJoint::stepWorld(int steps)
 {
-    int idx = G1_func_005ec310(&this->axleId);
-    void* c = *(void**)((char*)this->kernel + idx * 4 + 0xd0);
+    Entry* c = kernel->entries[lookup(&axleId)];
     if (c == 0) {
-        if (!(G1_int_0097abd0 & 1)) {
-            G1_int_0097abd0 |= 1;
-            G1_float_0097abc8 = G1_float_008282dc;
-            G1_int_0097abc4 = 0;
-            G1_float_0097abcc = G1_float_00819bac;
-        }
-        c = &G1_int_0097abc4;
+        static Entry def(NO_INPUT, -0.5f, 0.5f);
+        c = &def;
     }
-    void* obj = *(void**)((char*)this->kernel + 0xe8);
-    void** vtbl = *(void***)obj;
-    float (*fn)(void*, int) = (float (*)(void*, int))vtbl[1];
-    float a = fn(obj, *(int*)c);
-    float b = *(float*)((char*)c + 4);
-    float d = *(float*)((char*)c + 8);
-    float inf = G1_func_006492f0();
-    float r = a * dt;
-    int type = *(int*)c;
-    if (type > 0xd) {
-        if (r == G1_double_0084ae00) {
-            return -(b * d);
-        }
-        if (r != G1_double_00811230) {
-            return b * d;
-        }
-        return 0.0f;
-    }
-    switch (type) {
+    float value = kernel->input->getValue(c->type);
+    float a = c->paramA;
+    float b = c->paramB;
+    float t = getTime() * steps;
+    switch (c->type) {
     case 0:
-        return d;
+        return 0.0f;
+    case 12:
+        return b;
+    case 13:
+        return a * sinf(t * b);
     case 1:
-        return b * d * (float)sin((double)r);
+        if (value < -0.1)
+            return value * fabsf(a);
+        else if (value > 0.1)
+            return value * fabsf(b);
+        else
+            return 0.0f;
     case 2:
-        if (r == G1_double_0084ae00) {
-            return b * (float)fabs(d);
-        }
-        if (r != G1_double_00811230) {
-            return d * (float)fabs(b);
-        }
-        return 0.0f;
-    case 3:
-        if (r == G1_double_0084ae00) {
-            return -(b * (float)fabs(d));
-        }
-        if (r != G1_double_00811230) {
-            return -(d * (float)fabs(b));
-        }
-        return 0.0f;
+        if (value < -0.1)
+            return -(value * fabsf(a));
+        else if (value > 0.1)
+            return -(value * fabsf(b));
+        else
+            return 0.0f;
     default:
-        return 0.0f;
+        if (value < -0.1)
+            return -(value * a);
+        else if (value > 0.1)
+            return value * b;
+        else
+            return 0.0f;
     }
 }

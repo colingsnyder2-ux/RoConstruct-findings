@@ -1,4 +1,10 @@
-// from server: 76% by colin
+// from server: 100% by Espeon
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD /fp:fast
+// roc-lib: rbxgs-dll roc_espeon_keyboardternary554cc2e96725a2f3.cpp
+
+// Candidate translation unit (score above; library headers required).
 struct Item
 {
     int get() const;
@@ -14,10 +20,10 @@ struct S
     virtual void v3();
     virtual void v4();
     virtual bool check(int value);
-    int f();
+    bool f()const;
 };
 
-extern float g_float;
+
 
 struct KeyboardPrimaryController
 {
@@ -29,34 +35,22 @@ struct KeyboardPrimaryController
 float KeyboardPrimaryController::method(int key)
 {
     int* p = (int*)this->field_c;
-    if (p == 0)
-        return 0.0f;
-    S* s = (S*)p[0x130 / 4];
+    S* s = p ? (S*)p[0x130 / 4] : 0;
     if (s == 0)
         return 0.0f;
 
     switch (key)
     {
     case 6:
-        if (s->check(0x20))
-            return 1.0f;
-        return 0.0f;
+        return s->check(0x20) ? 1.0f : 0.0f;
     case 7:
-        if (s->check(0x31))
-            return 1.0f;
-        return 0.0f;
+        return s->check(0x31) ? 1.0f : 0.0f;
     case 8:
-        if (s->check(0x32))
-            return 1.0f;
-        return 0.0f;
+        return s->check(0x32) ? 1.0f : 0.0f;
     case 9:
-        if (s->check(0x33))
-            return 1.0f;
-        return 0.0f;
+        return s->check(0x33) ? 1.0f : 0.0f;
     case 10:
-        if (s->check(0x34))
-            return 1.0f;
-        return 0.0f;
+        return s->check(0x34) ? 1.0f : 0.0f;
     case 11:
         if (s->check(0x33))
             return 1.0f;
@@ -65,7 +59,7 @@ float KeyboardPrimaryController::method(int key)
             int* q = (int*)it->get();
             S* s2 = (S*)q;
             if (s2->check(0x34))
-                return g_float;
+                return -1.0f;
         }
         return 0.0f;
     default:
@@ -93,48 +87,18 @@ float KeyboardPrimaryController::method(int key)
             S* s7 = r4 ? (S*)r4[0x130 / 4] : 0;
             bool b6b = s7->check(0x6b);
 
-            switch (key - 1)
-            {
-            case 0:
-                if (b68)
-                    return 1.0f;
-                return 0.0f;
-            case 1:
-                if (b75)
-                    return 1.0f;
-                if (b6a)
-                    return g_float;
-                return 0.0f;
+            switch(key-1){
+            case 0: if(b68)return 1.0f;if(b6b)return -1.0f;return 0.0f;
+            case 1: if(b75)return 1.0f;if(b6a)return -1.0f;return 0.0f;
             case 2:
-                if (b75 && !b68)
-                    return 1.0f;
-                if (b6a && !b6b)
-                    return 1.0f;
-                if (b75 && b6b)
-                    return 1.0f;
-                if (b6b && !b75)
-                    return g_float;
-                if (b6a && !b75)
-                    return g_float;
-                if (b6b && !b6a)
-                    return g_float;
-                return 0.0f;
+             if((b75&&!b68)||(b6b&&!b6a)||(b75&&b6b))return 1.0f;
+             if((b6a&&!b6b)||(b68&&!b75)||(b6a&&b68))return -1.0f;
+             return 0.0f;
             case 3:
-                if (b75 && !b6b)
-                    return 1.0f;
-                if (b68 && !b6b)
-                    return 1.0f;
-                if (b75 && !b68)
-                    return 1.0f;
-                if (b6b && !b68)
-                    return g_float;
-                if (b6a && !b75)
-                    return g_float;
-                if (b6b && !b6a)
-                    return g_float;
-                return 0.0f;
-            default:
-                return 0.0f;
+             if((b75&&!b6b)||(b68&&!b6a)||(b75&&b68))return 1.0f;
+             if((b6a&&!b68)||(b6b&&!b75)||(b6a&&b6b))return -1.0f;
+             return 0.0f;
+            default:return 0.0f;
             }
         }
     }
