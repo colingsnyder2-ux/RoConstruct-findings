@@ -1,130 +1,143 @@
-// from server: 25% by colin
-extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
-#pragma intrinsic(_InterlockedExchangeAdd)
+// from server: 59% by EspClaude
+// roc-lang: cpp
+// roc-cl: 50727
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+// roc-lib: rbxgs tool/ToolsArrow.cpp
 
-struct RefCounted {
-    void* vptr;
-    volatile long refCount;
-    volatile long weakCount;
-};
+// Candidate translation unit (score above; library headers required).
+#include "tool/ToolsArrow.h"
+#include "tool/DragTool.h"
+#include "v8datamodel/Camera.h"
+#include "v8datamodel/PartInstance.h"
+#include "v8datamodel/Selection.h"
+#include "v8datamodel/Workspace.h"
+#include <G3D/Rect2D.h>
 
-struct InputObject {
-    void* vptr;
-    bool isKeyDown(int key);
-};
-
-struct SharedPtr {
-    void* ptr;
-    RefCounted* control;
-};
-
-struct ArrowTool {
-    char pad[0x18];
-    void* field18;
-    SharedPtr* method(void* a, void* b);
-    int run(void* arg);
-};
-
-extern "C" void* __cdecl sub_616080(void* a, void* b);
-extern "C" void* __cdecl sub_6157A0(void* a);
-extern "C" void* __cdecl sub_581CC0(void* a, int b);
-extern "C" bool __cdecl sub_424EB0(void* a, void* b);
-extern "C" void* __cdecl sub_616C90(void* a, void* b, void* c);
-extern "C" void* __cdecl sub_618A40(void* a, void* b);
-extern "C" void __cdecl sub_4025B0(void* a, void* b);
-extern "C" void __cdecl sub_600660(void* a);
-extern "C" void __cdecl sub_567770(void* a);
-extern "C" void __cdecl sub_567C10(void* a);
-extern "C" void __cdecl sub_567420(void* a);
-extern "C" void* __cdecl sub_617530(void* a, int b);
-extern "C" void* __cdecl sub_660550(void* a, void* b, void* c, void* d, void* e, void* f, void* g);
-extern "C" void __cdecl sub_628F80(void* a);
-extern "C" void* __cdecl sub_6A0920(int size);
-extern "C" void* __cdecl sub_617150(void* a, void* b);
-
-int ArrowTool::run(void* arg)
+namespace RBX
 {
-    void* local2c = 0;
-    void* result = sub_616080(arg, &local2c);
-    if (!result) {
-        void* mem = sub_6A0920(0x54);
-        void* obj = 0;
-        if (mem) {
-            obj = sub_617150(mem, field18);
-        }
-        void** vt = *(void***)obj;
-        typedef void (__thiscall *Fn)(void*, void*);
-        ((Fn)vt[1])(obj, arg);
-        return 0;
-    }
-    void* ebp = sub_6157A0(result);
-    void* edi = *(void**)((char*)arg + 4);
-    void* local20 = field18;
-    void* local24 = 0;
-    void* local28 = 0;
-    void* local4c = 0;
+	const std::string ArrowToolBase::getCursorName() const
+	{
+		return overInstance ? "DragCursor" : "ArrowCursor";
+	}
 
-    void** vt = *(void***)edi;
-    typedef bool (__thiscall *KeyFn)(void*, int);
-    KeyFn keyFn = (KeyFn)vt[5];
-    if (keyFn(edi, 0x12f)) goto handle_key;
-    if (keyFn(edi, 0x130)) goto handle_key;
-    if (keyFn(edi, 0x131)) goto handle_key;
-    if (keyFn(edi, 0x132)) goto handle_key;
+	void ArrowToolBase::onMouseIdle(const UIEvent& uiEvent)
+	{
+		overInstance = getUnlockedPart(uiEvent) != NULL;
+	}
 
-    {
-        void* local18 = 0;
-        void* local1c = 0;
-        void* tmp = sub_581CC0(&local18, 1);
-        if (sub_424EB0(tmp, ebp)) {
-            void* r = sub_616C90(this, result, arg);
-            void* r2 = sub_618A40(&local18, r);
-            local18 = *(void**)r2;
-            r2 = (char*)r2 + 4;
-            sub_4025B0(&local1c, r2);
-            sub_600660(&local18);
-            edi = local1c;
-        } else {
-            void* tmp2 = sub_581CC0(&local18, 1);
-            sub_567770(tmp2);
-        }
-        void* local38 = field18;
-        void* local3c = 0;
-        void* local40 = 0;
-        void* local18b = local18;
-        void* local1cb = edi;
-        if (edi) {
-            _InterlockedExchangeAdd((volatile long*)((char*)edi + 4), 1);
-        }
-        void* r3 = sub_617530(&local38, 1);
-        void* r4 = sub_660550(result, &local38, (char*)r3 + 0x13c, arg, field18, 0, 0);
-        sub_628F80(&local38);
-        sub_600660(&local18);
-        sub_628F80(&local20);
-        return (int)r4;
-    }
+	void ArrowToolBase::onMouseHover(const UIEvent& uiEvent)
+	{
+		onMouseIdle(uiEvent);
+	}
 
-handle_key:
-    {
-        void* tmp = sub_581CC0(&local20, 1);
-        if (sub_424EB0(tmp, ebp)) {
-            void* tmp2 = sub_581CC0(&local20, 1);
-            sub_567C10(tmp2);
-        } else {
-            void* tmp2 = sub_581CC0(&local20, 1);
-            sub_567420(tmp2);
-        }
-        RefCounted* rc = (RefCounted*)local24;
-        if (rc) {
-            if (_InterlockedExchangeAdd(&rc->refCount, -1) == 1) {
-                void** v = *(void***)rc;
-                typedef void (__thiscall *Dtor)(void*);
-                ((Dtor)v[1])(rc);
-                if (_InterlockedExchangeAdd(&rc->weakCount, -1) == 1) {
-                    ((Dtor)v[2])(rc);
-                }
-            }
-        }
-        return 0;
-    }
+	MouseCommand* ArrowToolBase::onMouseDown(const UIEvent& uiEvent)
+	{
+		RBXASSERT(uiEvent.eventType == UIEvent::MOUSE_LEFT_BUTTON_DOWN);
+
+		G3D::Vector3 hitWorld;
+
+		PartInstance* part = getUnlockedPart(uiEvent, hitWorld);
+		if (part)
+		{
+			Instance* top = getTopSelectable3d(part);
+			UserInputBase* input = uiEvent.userInput;
+
+			ServiceClient<Selection> selection(workspace);
+
+			if (!input->keyDown(SDLK_RSHIFT) && !input->keyDown(SDLK_LSHIFT) &&
+				!input->keyDown(SDLK_RCTRL) && !input->keyDown(SDLK_LCTRL))
+			{
+				if (!selection->isSelected(top))
+				{
+					selection->setSelection(top);
+				}
+
+				if (uiEvent.eventType == UIEvent::MOUSE_LEFT_BUTTON_DOWN)
+				{
+					ServiceClient<FilteredSelection<Instance>> instanceSelection(workspace);
+					return DragTool::onMouseDown(part, hitWorld, instanceSelection->items(), uiEvent, workspace);
+				}
+			}
+			else
+			{
+				if (selection->isSelected(top))
+					selection->removeFromSelection(top);
+				else
+					selection->addToSelection(top);
+			}
+
+			return NULL;
+		}
+		else
+		{
+			MouseCommand* newCommand = new BoxSelectCommand(workspace);
+			return newCommand->onMouseDown(uiEvent);
+		}
+	}
+
+	BoxSelectCommand::BoxSelectCommand(Workspace* workspace)
+		: Base(workspace),
+		  selection((Instance*)workspace)
+	{
+	}
+
+	MouseCommand* BoxSelectCommand::onMouseDown(const UIEvent& uiEvent)
+	{
+		previousItemsInBox.clear();
+		capture();
+
+		UserInputBase* input = uiEvent.userInput;
+		reverseSelecting = input->keyDown(SDLK_RSHIFT) || input->keyDown(SDLK_LSHIFT);
+
+		if (!reverseSelecting)
+			selection->clearSelection();
+
+		mouseDownView = uiEvent.mousePosition;
+		mouseCurrentView = uiEvent.mousePosition;
+		return this;
+	}
+
+	void BoxSelectCommand::onMouseMove(const UIEvent& uiEvent)
+	{
+		mouseCurrentView = uiEvent.mousePosition;
+
+		std::set<Instance*> instances;
+		getMouseInstances(instances, uiEvent, G3D::Rect2D::xyxy(mouseDownView.x, mouseDownView.y, mouseCurrentView.x, mouseCurrentView.y));
+
+		if (reverseSelecting)
+			selectReverse(instances);
+		else
+			selectAnd(instances);
+	}
+
+	void BoxSelectCommand::render2d(Adorn* adorn)
+	{
+		G3D::Rect2D temp = G3D::Rect2D::xyxy(mouseDownView.x, mouseDownView.y, mouseCurrentView.x, mouseCurrentView.y);
+		adorn->outlineRect2d(temp, 0.5f, G3D::Color3::gray());
+	}
+
+	void BoxSelectCommand::getMouseInstances(std::set<Instance*>& instances, const UIEvent& uiEvent, G3D::Rect2D& selectBox)
+	{
+		Camera* camera = workspace->getCamera();
+		G3D::Rect2D viewport = G3D::Rect2D::xyxy(0.0f, 0.0f, uiEvent.windowSize.x, uiEvent.windowSize.y);
+
+		for (size_t i = 0; i < workspace->numChildren(); i++)
+		{
+			ILocation* location = workspace->queryTypedChild<ILocation>((int)i);
+			ISelectable3d* selectable3d = workspace->queryTypedChild<ISelectable3d>((int)i);
+
+			if (location && selectable3d)
+			{
+				Instance* instance = workspace->getChild(i);
+				if (!PartInstance::getLocked(instance))
+				{
+					G3D::Vector3 gridPos = location->getLocation().translation;
+					G3D::Vector3 projection = camera->getGCamera().project(gridPos, viewport);
+
+					if (selectBox.contains(projection.xy()))
+						instances.insert(instance);
+				}
+			}
+		}
+	}
 }

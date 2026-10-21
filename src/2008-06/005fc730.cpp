@@ -1,101 +1,46 @@
-extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
-#pragma intrinsic(_InterlockedExchangeAdd)
-extern "C" long __cdecl _InterlockedDecrement(volatile long*);
-#pragma intrinsic(_InterlockedDecrement)
+// from server: 100% by EspClaude
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: openrbx-client-dll roc_espclaude_5a1a70e3cf173fbe.cpp
 
-struct Control
-{
-    virtual void unused();
-    virtual void dispose();
-    virtual void destroy();
-    volatile long strong;
-    volatile long weak;
-
-    void release();
+// Candidate translation unit (score above; library headers required).
+#include <boost/shared_ptr.hpp>
+namespace RBX {
+class ChildAdded {};
+class ChildRemoved {};
+template<class Class, class Event> class Listener {
+public:
+    virtual void onEvent(const Class* source, Event event) = 0;
 };
-
-__forceinline void Control::release()
-{
-    if (_InterlockedDecrement(&strong) == 0)
+template<class Class, class Event> class Notifier {
+    char pad[0x20];
+public:
+    void addListener(Listener<Class, Event>* listener);
+    template<typename T>
+    static void connect(const T& notifier, Listener<Class, Event>* listener)
     {
-        dispose();
-        if (_InterlockedDecrement(&weak) == 0)
-            destroy();
+        if (notifier)
+            notifier->Notifier<Class, Event>::addListener(listener);
     }
-}
-
-struct Listener
-{
-    void* vptr;
 };
-
-struct FirstHook : Listener {};
-struct SecondHook : Listener {};
-
-struct Notifier
-{
-    void attach(Listener*);
-};
-
-struct Hub
-{
-    char pad0[0x64];
-    Notifier first;
-    char pad1[0x1f];
-    Notifier second;
-};
-
-struct Holder
-{
-    Control* pointer;
-    Holder& operator=(const Holder&);
-};
-
-struct Shared
-{
-    Hub* pointer;
-    Holder owner;
-    Shared& operator=(const Shared&);
-    ~Shared();
-};
-
-__forceinline Shared& Shared::operator=(const Shared& value)
-{
-    pointer = value.pointer;
-    owner = value.owner;
-    return *this;
-}
-
-__forceinline Shared::~Shared()
-{
-    if (owner.pointer)
-        owner.pointer->release();
-}
-
-extern Shared __cdecl acquire(void*);
-
-struct HubPad
-{
-    char pad[0x170];
-};
-
-struct LocalBackpack : HubPad, FirstHook, SecondHook
-{
+class InstanceHead { public: virtual ~InstanceHead(); char pad[0x60]; };
+class Instance : public InstanceHead, public Notifier<Instance, ChildAdded>, public Notifier<Instance, ChildRemoved> {};
+class Backpack : public Instance {};
+template<class T> boost::shared_ptr<T> shared_from(T* r);
+class GuiBase { public: virtual ~GuiBase(); char pad[0x16c]; };
+class LocalBackpack : public GuiBase, public Listener<Instance, ChildAdded>, public Listener<Instance, ChildRemoved> {
+public:
     char mid[0x198 - 0x178];
-    Shared hub;
-
-    void init(void* argument);
+    boost::shared_ptr<Backpack> localBackpack;
+    virtual void onEvent(const Instance* source, ChildAdded event);
+    virtual void onEvent(const Instance* source, ChildRemoved event);
+    void onLocalBackpackAdded(Backpack* added);
 };
-
-void LocalBackpack::init(void* argument)
+void LocalBackpack::onLocalBackpackAdded(Backpack* added)
 {
-    hub = acquire(argument);
-
-    FirstHook* first = this ? static_cast<FirstHook*>(this) : 0;
-    if (hub.pointer)
-        hub.pointer->first.attach(first);
-
-    SecondHook* second = first ? static_cast<SecondHook*>(this) : 0;
-    if (hub.pointer)
-        hub.pointer->second.attach(second);
+    localBackpack = shared_from(added);
+    Notifier<Instance, ChildAdded>::connect(localBackpack, this);
+    Notifier<Instance, ChildRemoved>::connect(localBackpack, this);
+}
 }

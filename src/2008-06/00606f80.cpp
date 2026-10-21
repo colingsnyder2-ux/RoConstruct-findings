@@ -1,87 +1,85 @@
-// from server: 98% by colin
-// from server: 97% by Espeon
+// from server: 100% by EspClaude
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD /fp:fast
-// roc-lib: openrbx-client-dll roc_manual_contact_820ece28fd48f7e1.cpp
-
-// Candidate translation unit (score above; library headers required).
-extern "C" void _ReadWriteBarrier();
-#pragma intrinsic(_ReadWriteBarrier)
-
-struct Shape {
-    virtual void reserved0();
-    virtual int kind();
+namespace RBX {
+class Body;
+class IStage { public: virtual ~IStage(); virtual int getStageType() const; };
+class Geometry {
+public:
+    virtual ~Geometry();
+    virtual void g1(); virtual void g2(); virtual void g3();
+    virtual float getRadius() const;
 };
-
-struct Body {
-    virtual void reserved0();
-    virtual void reserved1();
-    virtual void reserved2();
-    virtual void reserved3();
-    virtual float measure();
-};
-
-struct Part {
-    char reserved[0x9c];
+class Ball : public Geometry {};
+class Primitive {
+public:
+    char pad[0x9c];
+    Geometry* geometry;
     Body* body;
-    void* data;
+    Geometry* getGeometry() const { return geometry; }
+    Body* getBody() const { return body; }
 };
-
-struct Result {
-    char reserved0[8];
-    int state;
-    char reserved1[0x14];
-    float first;
-    float total;
+class GeoPair {
+public:
+    char pad0[8];
+    int geoPairType;
+    char pad1[0x14];
+    float radius0;
+    float radiusSum;
+    void setBallBall(float r0, float rs) { radius0 = r0; radiusSum = rs; geoPairType = 0; }
 };
-
-struct Contact {
-    virtual void reserved0();
-    virtual void reserved1();
-    virtual void reserved2();
-    virtual void reserved3();
-    virtual void reserved4();
-    virtual void reset();
-
-    Shape* shape;
-    int reserved6;
-    Part* part1;
-    Part* part2;
-    char reserved7[0x20];
-    Result* result;
-
-    bool check(float value);
-    Result* create(void* first, void* second);
-    bool update();
+class ContactConnector : public GeoPair {};
+class IPipelined {
+public:
+    virtual ~IPipelined();
+    IStage* currentStage;
+    bool inKernel() const { return currentStage->getStageType() == 7; }
 };
-
-bool Contact::update()
+class Edge : public IPipelined {
+public:
+    int pad8;
+    Primitive* prim0;
+    Primitive* prim1;
+    Primitive* getPrimitive(int index) const { return (&prim0)[index]; }
+};
+class Contact : public Edge {
+public:
+    char pad14[0x20];
+protected:
+    Body* getBody(int index) const { return getPrimitive(index)->getBody(); }
+    ContactConnector* createConnector(Body* b0, Body* b1);
+    virtual void x1(); virtual void x2(); virtual void x3(); virtual void x4();
+    virtual void deleteAllConnectors() = 0;
+    virtual bool stepContact() = 0;
+public:
+    virtual bool computeIsColliding(float overlapIgnored) = 0;
+};
+class BallBallContact : public Contact {
+public:
+    ContactConnector* ballBallConnector;
+    Ball* ball(int index) { return static_cast<Ball*>(getPrimitive(index)->getGeometry()); }
+    virtual void deleteAllConnectors();
+    virtual bool stepContact();
+    virtual bool computeIsColliding(float overlapIgnored);
+};
+bool BallBallContact::stepContact()
 {
-    if (check(0.0f)) {
-        if (shape->kind() == 7) {
-            if (!result) {
-                void* right = part2->data;
-                _ReadWriteBarrier();
-                void* left = part1->data;
-                _ReadWriteBarrier();
-                result = create(left, right);
+    if (BallBallContact::computeIsColliding(0.0f)) {
+        if (inKernel()) {
+            if (ballBallConnector == 0) {
+                ballBallConnector = createConnector(getBody(0), getBody(1));
             }
-
-            Body* secondBody = part2->body;
-            Body* firstBody = part1->body;
-            Result* output = result;
-            _ReadWriteBarrier();
-            float first = firstBody->measure();
-            double second = secondBody->measure();
-            output->first = first;
-            output->state = 0;
-            output->total = first + second;
+            Ball* ball1 = ball(1);
+            Ball* ball0 = ball(0);
+            ContactConnector* connector = ballBallConnector;
+            float radius0 = ball0->getRadius();
+            float radius1 = ball1->getRadius();
+            connector->setBallBall(radius0, radius0 + radius1);
         }
         return true;
     }
-
-    reset();
+    deleteAllConnectors();
     return false;
 }
-
+}

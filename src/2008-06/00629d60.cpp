@@ -1,8 +1,9 @@
+// from server: 100% by EspClaude
 // from server: 98% by Espeon
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD /fp:fast
-// roc-lib: rbxgs-dll roc_espeon_explosionnativevectord89d61f061308fcf.cpp
+// roc-lib: rbxgs-dll roc_espclaude_082fafcb387d2616.cpp
 
 // Candidate translation unit (score above; library headers required).
 
@@ -18,6 +19,7 @@ struct Body
     char pad1[0x9f];
     Vec3 accumulated;
     void update();
+    void addForce(Vec3 f) { if (dirty) update(); accumulated += f; }
     void apply(const Vec3*, const Vec3*);
 };
 
@@ -114,11 +116,13 @@ void Explosion::explode(Parts* parts)
             float limit = radius + radius;
             if (part->size() < limit)
             {
+                Vec3 delta(0,0,0);
                 context->insert(part, 1);
-                Vec3 delta = part->transform()->position - position;
+                delta = part->transform()->position - position;
 
                 Vec3 unit = delta == Vec3::zero() ? Vec3::unitY() : delta.direction();
                 float size = part->size();
+                Vec3 impulse(0,0,0);
                 Attachment* attachment = part->attachment;
                 float square = size * size;
                 Vec3 force = ((unit * pressure) * square) * forceScale;
@@ -129,14 +133,10 @@ void Explosion::explode(Parts* parts)
                     body->apply(&force, point);
 
                 Body* secondary = part->attachment->link->body;
-                Vec3 impulse = (force * secondaryScale) * size;
+                impulse = (force * secondaryScale) * size;
                 if (secondary)
                 {
-                    if (secondary->dirty)
-                        secondary->update();
-                    secondary->accumulated.x += impulse.x;
-                    secondary->accumulated.y += impulse.y;
-                    secondary->accumulated.z += impulse.z;
+                    secondary->addForce(impulse);
                 }
             }
         }

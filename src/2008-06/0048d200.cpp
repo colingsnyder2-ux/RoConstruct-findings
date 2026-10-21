@@ -1,33 +1,15 @@
-// from server: 98% by colin
+// from server: 100% by EspClaude
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: openrbx-client-dll roc_manual_pair_e8f0db97bfa5affe.cpp
+// roc-lib: openrbx-client-dll roc_espclaude_008b0497e9ea3b3b.cpp
 
 // Candidate translation unit (score above; library headers required).
 #include <boost/shared_ptr.hpp>
-typedef boost::shared_ptr<void> Shared;
-struct Temporary {
-    Shared first;
-    Shared second;
-    int extra;
-
-    Temporary(Shared firstValue, Shared secondValue, int a, int b);
-    ~Temporary();
-};
-
-struct Result {
-    int value;
-    Shared first;
-    Shared second;
-
-    Result(int v, const Temporary& source)
-        : value(v), first(source.first), second(source.second)
-    {
-    }
-};
-
-Result __cdecl f(int value, Shared first, Shared second, int a, int b)
-{
-    return Result(value, Temporary(first, second, a, b));
-}
+#include <boost/bind.hpp>
+namespace RBX { class RunService; class DataModel; }
+typedef boost::shared_ptr<RBX::RunService> SA;
+typedef boost::shared_ptr<RBX::DataModel> SB;
+typedef void (*Fn)(SA, SB, int, int);
+template boost::_bi::bind_t<void, Fn, boost::_bi::list_av_4<SA, SB, boost::arg<1>, boost::arg<2> >::type>
+boost::bind<void, SA, SB, int, int, SA, SB, boost::arg<1>, boost::arg<2> >(Fn, SA, SB, boost::arg<1>, boost::arg<2>);

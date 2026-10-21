@@ -1,4 +1,5 @@
-// from server: 89% by king_originala
+// from server: 100% by colin
+#include <intrin.h>
 struct S_func_00609a30 {
     char pad0[320];
     int m_x;
@@ -18,7 +19,7 @@ extern char table_8233f4[];
 extern char table_8233c4[];
 
 struct S {
-    volatile unsigned int data[0x2d74 / 4];
+    unsigned int data[0x2d74 / 4];
     void initialize(int a, int b, int c);
     S* construct(int a, int b, S_func_00609a30* p);
 };
@@ -39,8 +40,9 @@ S* S::construct(int a, int b, S_func_00609a30* p)
     data[0xa4 / 4] = reinterpret_cast<unsigned int>(table_823404);
     data[0xc4 / 4] = reinterpret_cast<unsigned int>(table_8233f4);
     data[0x2b74 / 4] = reinterpret_cast<unsigned int>(table_8233c4);
-    data[0x2d68 / 4] = 0;
-    data[0x2d6c / 4] = 0;
+    *reinterpret_cast<volatile unsigned int*>(&data[0x2d68 / 4]) = 0;
+    *reinterpret_cast<volatile unsigned int*>(&data[0x2d6c / 4]) = 0;
+    _ReadWriteBarrier();
     data[0x2d70 / 4] = reinterpret_cast<unsigned int>(p);
     return this;
 }

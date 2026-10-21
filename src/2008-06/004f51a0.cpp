@@ -1,3 +1,4 @@
+// from server: 100% by EspClaude
 // from server: 93% by EspClaude
 // roc-flags: /O2 /fp:fast /GS- /EHsc /MD
 // from server: 98% by coldek
@@ -320,6 +321,8 @@ void TorsoBuilder::build(
         absoluteDimensions.z = (float)fabs(copiedDimensions.z);
     }
 
+    float x = 0, u = 0, y = 0, v = 0;
+
     Vec2 positionStep;
     positionStep.x = (maximum.x - minimum.x) / divisions.x;
     positionStep.y = (maximum.y - minimum.y) / divisions.y;
@@ -331,12 +334,12 @@ void TorsoBuilder::build(
     unsigned count = (divisions.x + 1) * (divisions.y + 1);
     int* vertices = new int[count];
 
-    float x = minimum.x;
-    float u = textureOrigin.x;
+    x = minimum.x;
+    u = textureOrigin.x;
 
     for (int i = 0; i <= divisions.x; ++i) {
-        float y = minimum.y;
-        float v = textureOrigin.y;
+        y = minimum.y;
+        v = textureOrigin.y;
         GridSize index;
         index.x = (short)i;
 

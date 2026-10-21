@@ -1,214 +1,126 @@
-// from server: 46% by coldek
-extern "C" void (__cdecl* invalid_parameter)();
+// from server: 100% by EspClaude
+// roc-flags: /O2 /GS- /EHsc /MD
+#include <vector>
+#include <map>
+#include <intrin.h>
 
-struct Proxy {
-    void* container;
-};
-
-struct Bounds {
-    char padding[0x10];
-    void* last;
-};
-
-template<class T> struct VectorIterator {
-    Proxy* owner;
-    T* position;
-    T& operator*() const;
-    VectorIterator& operator++();
-    bool operator!=(const VectorIterator&) const;
-};
-
-template<class T>
-__forceinline T& VectorIterator<T>::operator*() const
-{
-    Bounds* v;
-    if (owner)
-        v = static_cast<Bounds*>(owner->container);
-    else {
-        invalid_parameter();
-        v = 0;
+namespace boost {
+namespace detail {
+struct sp_counted_base {
+    virtual ~sp_counted_base() {}
+    virtual void dispose() = 0;
+    virtual void destroy() { delete this; }
+    long use_count_;
+    long weak_count_;
+    void release() {
+        if (_InterlockedDecrement(&use_count_) == 0) {
+            dispose();
+            weak_release();
+        }
     }
-    if (position >= static_cast<T*>(v->last))
-        invalid_parameter();
-    return *position;
-}
-
-template<class T>
-__forceinline VectorIterator<T>& VectorIterator<T>::operator++()
-{
-    Bounds* v;
-    if (owner)
-        v = static_cast<Bounds*>(owner->container);
-    else {
-        invalid_parameter();
-        v = 0;
+    void weak_release() {
+        if (_InterlockedDecrement(&weak_count_) == 0)
+            destroy();
     }
-    if (position >= static_cast<T*>(v->last))
-        invalid_parameter();
-    ++position;
-    return *this;
+};
+}
+template <class T> class shared_ptr {
+public:
+    T* px;
+    detail::sp_counted_base* pn;
+    shared_ptr(const shared_ptr& r) : px(r.px), pn(r.pn) { if (pn) _InterlockedIncrement(&pn->use_count_); }
+    ~shared_ptr() { if (pn) pn->release(); }
+    T* get() const { return px; }
+};
 }
 
-template<class T>
-__forceinline bool VectorIterator<T>::operator!=(const VectorIterator& other) const
-{
-    if (!owner || owner != other.owner)
-        invalid_parameter();
-    return position != other.position;
+namespace RBX {
+class Instance {
+public:
+    virtual ~Instance();
+};
+class Script : public Instance {
+};
+template <class T> boost::shared_ptr<T> shared_from(T* p);
 }
 
-template<class T> struct Vector {
-    unsigned int unused;
-    Proxy* owner;
-    unsigned int reserved[2];
-    T* first;
-    T* last;
-    T* limit;
-    VectorIterator<T> begin();
-    VectorIterator<T> end();
+
+template <class T> class CStringT_ {
+public:
+    __declspec(noinline) CStringT_(const T* p) { m_pszData = 0; }
+    __declspec(noinline) CStringT_(const CStringT_& p) { m_pszData = 0; }
+    __declspec(noinline) ~CStringT_() throw() { m_pszData = 0; }
+    T* m_pszData;
+};
+extern template class __declspec(dllimport) CStringT_<wchar_t>;
+typedef CStringT_<wchar_t> CString;
+
+struct KeyBase { int x; };
+struct KeyDerived : KeyBase {};
+typedef std::vector<boost::shared_ptr<RBX::Instance> > Instances;
+typedef std::map<KeyBase*, Instances> InstanceMap;
+
+class CXTPPropertyGridItem {
+public:
+    virtual ~CXTPPropertyGridItem();
+    void SetValue(CString value);
+    void SetHidden(int hidden);
 };
 
-template<class T>
-__forceinline VectorIterator<T> Vector<T>::begin()
+class HVCXTPPropertyGridItemEnum : public CXTPPropertyGridItem {
+public:
+    virtual void v1(); virtual void v2(); virtual void v3(); virtual void v4(); virtual void v5();
+    virtual void v6(); virtual void v7(); virtual void v8(); virtual void v9(); virtual void v10();
+    virtual void v11(); virtual void v12(); virtual void v13(); virtual void v14(); virtual void v15();
+    virtual void v16(); virtual void v17(); virtual void v18(); virtual void v19(); virtual void v20();
+    virtual void v21(); virtual void v22(); virtual void v23(); virtual void v24(); virtual void v25();
+    virtual void v26(); virtual void v27(); virtual void v28(); virtual void v29(); virtual void v30();
+    virtual void v31(); virtual void v32(); virtual void v33(); virtual void v34(); virtual void v35();
+    virtual void v36(); virtual void v37(); virtual void v38(); virtual void v39(); virtual void v40();
+    virtual void v41(); virtual void v42(); virtual void v43(); virtual void v44(); virtual void v45();
+    virtual void v46(); virtual void v47(); virtual void v48(); virtual void v49(); virtual void v50();
+    virtual void v51(); virtual void v52(); virtual void v53(); virtual void v54(); virtual void v55();
+    virtual void v56(); virtual void v57(); virtual void v58(); virtual void v59(); virtual void v60();
+    virtual void v61();
+    virtual void setValue(const int& value);
+    virtual bool same(const int& a, const int& b);
+    int getValue(RBX::Instance* instance);
+
+    class XItem {
+    public:
+        void* vptr;
+        std::vector<KeyDerived*> keys;
+        void update(InstanceMap& instances);
+    };
+    char pad[0x110];
+    XItem m_xItem;
+};
+
+#define OUTER ((HVCXTPPropertyGridItemEnum*)((char*)this - 0x114))
+
+void HVCXTPPropertyGridItemEnum::XItem::update(InstanceMap& instances)
 {
-    T* p = first;
-    if (p > last)
-        invalid_parameter();
-    VectorIterator<T> result = { owner, p };
-    return result;
-}
-
-template<class T>
-__forceinline VectorIterator<T> Vector<T>::end()
-{
-    T* p = last;
-    if (first > p)
-        invalid_parameter();
-    VectorIterator<T> result = { owner, p };
-    return result;
-}
-
-struct Entry {
-    void* value;
-    unsigned int unused;
-};
-
-struct Node {
-    unsigned int links[3];
-    Vector<Entry> values;
-};
-
-struct Map;
-
-struct MapIterator {
-    Proxy* owner;
-    Node* position;
-    Node& operator*() const;
-    bool operator!=(const MapIterator&) const;
-};
-
-struct Map {
-    Proxy* owner;
-    unsigned int unused[5];
-    Node* sentinel;
-    MapIterator find(void* const*);
-};
-
-__forceinline Node& MapIterator::operator*() const
-{
-    Map* m;
-    if (owner)
-        m = static_cast<Map*>(owner->container);
-    else {
-        invalid_parameter();
-        m = 0;
-    }
-    if (position == m->sentinel)
-        invalid_parameter();
-    return *position;
-}
-
-__forceinline bool MapIterator::operator!=(const MapIterator& other) const
-{
-    if (!owner || owner != other.owner)
-        invalid_parameter();
-    return position != other.position;
-}
-
-struct Text;
-extern Text* (__thiscall* construct_text)(Text*, const char*);
-
-struct Text {
-    void* value;
-    Text(const char*);
-    Text(const Text&);
-};
-
-inline Text::Text(const char* s)
-{
-    construct_text(this, s);
-}
-
-struct Item;
-
-struct ItemTable {
-    void* unused[62];
-    void (__thiscall* assign)(Item*, const int*);
-    bool (__thiscall* combine)(Item*, int*, const int*);
-};
-
-struct Item {
-    ItemTable* table;
-    int convert(void*);
-    void caption(Text);
-    void hidden(int);
-};
-
-extern const char caption_text[];
-
-struct Selection : Vector<void*> {
-    void update(Map*);
-};
-
-void Selection::update(Map* map)
-{
-    bool haveValue = false;
+    bool found = false;
+    InstanceMap::iterator mapEnd = instances.end();
     int value;
-    MapIterator mapEnd = { map->owner, map->sentinel };
-    VectorIterator<void*> current = begin();
-    VectorIterator<void*> finish = end();
-
-    for (; current != finish; ++current) {
-        void* key = *current;
-        MapIterator found = map->find(&key);
-        if (found != mapEnd) {
-            VectorIterator<Entry> entry = (*found).values.begin();
-            VectorIterator<Entry> entryEnd = (*found).values.end();
-            for (; entry != entryEnd; ++entry) {
-                if (!haveValue) {
-                    void* source = (*entry).value;
-                    Item* item = reinterpret_cast<Item*>(
-                        reinterpret_cast<char*>(this) - 0x114);
-                    value = item->convert(source);
-                    item->table->assign(item, &value);
+    for (std::vector<KeyDerived*>::iterator it = keys.begin(), end = keys.end(); it != end; ++it) {
+        InstanceMap::iterator f = instances.find(*it);
+        if (f != mapEnd) {
+            for (Instances::iterator j = f->second.begin(), jEnd = f->second.end(); j != jEnd; ++j) {
+                if (!found) {
+                    value = OUTER->getValue(j->get());
+                    OUTER->setValue(value);
                 } else {
-                    void* source = (*entry).value;
-                    Item* item = reinterpret_cast<Item*>(
-                        reinterpret_cast<char*>(this) - 0x114);
-                    int nextValue = item->convert(source);
-                    if (!item->table->combine(item, &value, &nextValue)) {
-                        reinterpret_cast<Item*>(
-                            reinterpret_cast<char*>(this) - 0x114)->caption(
-                                Text(caption_text));
-                        reinterpret_cast<Item*>(
-                            reinterpret_cast<char*>(this) - 0x114)->hidden(0);
+                    int other = OUTER->getValue(j->get());
+                    if (!OUTER->same(value, other)) {
+                        OUTER->SetValue(CString(L""));
+                        OUTER->SetHidden(0);
                         return;
                     }
                 }
-                haveValue = true;
+                found = true;
             }
         }
     }
-    reinterpret_cast<Item*>(
-        reinterpret_cast<char*>(this) - 0x114)->hidden(!haveValue);
+    OUTER->SetHidden(!found);
 }

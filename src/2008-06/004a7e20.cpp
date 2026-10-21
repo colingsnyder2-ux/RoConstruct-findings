@@ -1,111 +1,53 @@
-// from server: 98% by EspClaude
-// from server: 95% by Espeon
+// from server: 100% by EspClaude
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: rbxgs-dll roc_espclaude_bd7f3bcf02400e3e.cpp
+// roc-lib: rbxgs-dll roc_espclaude_af0fac983d599754.cpp
 
 // Candidate translation unit (score above; library headers required).
 #include <map>
-// roc-cl: 21022
-// roc-flags: /O2 /GS- /EHsc /MD
-struct String;
-
-extern bool (__cdecl *stringEqual)(const String&, const char*);
-extern void (__thiscall *stringCopy)(String*, const String&);
-extern void (__thiscall *stringDestroy)(String*);
-extern String& (__thiscall *stringAssign)(String*, const String&);
-
-
-struct String {
-    unsigned int storage[7];
-    __declspec(dllimport) String(const String&);
-    ~String();
-    String& operator=(const String&);
-};
-
-inline String::~String() {
-    stringDestroy(this);
-}
-
-inline String& String::operator=(const String& other) {
-    return stringAssign(this, other);
-}
-
-struct Key {
-    String text;
-    unsigned char index;
-    Key(const String&, unsigned char);
-};
-
-inline Key::Key(const String& textValue, unsigned char indexValue)
-    : text(textValue), index(indexValue) {
-}
-
-__declspec(dllimport) void __cdecl invalidParameter();
-struct Node {
-    unsigned char padding[40];
-    unsigned char index;
-};
-
-struct Container {
-    unsigned char padding[24];
-    Node* sentinel;
-};
-
-struct Proxy {
-    Container* container;
-};
-
-struct Result {
-    Proxy* proxy;
-    Node* node;
-    bool inserted;
-    Node& deref() const {
-        if (!proxy) invalidParameter();
-        if (node == (proxy ? proxy->container : 0)->sentinel) invalidParameter();
-        return *node;
+#include <string>
+namespace RakNet {
+class BitStream {
+public:
+    void WriteBits(const unsigned char* input, int numberOfBitsToWrite, const bool rightAlignedBits = true);
+    template <class templateType> void Write(templateType var)
+    {
+        WriteBits((unsigned char*)&var, sizeof(templateType) * 8, true);
     }
 };
-
-struct Stream {
-    void writeBits(const unsigned char*, int, bool);
-    void write(unsigned char value) { writeBits(&value,8,true); }
-};
-
-extern void __cdecl writeString(Stream*, const String&);
-
-struct S {
-    unsigned char padding[32];
-    String strings[128];
-    int next;
-    void encode(Stream*, const String&);
-    Result insert(const Key&);
-    void remove(const String*);
-};
-
-void S::encode(Stream* stream, const String& text) {
-    if (stringEqual(text, "")) {
-        stream->write(0);
-        return;
-    }
-
-    Result result = insert(Key(text, (unsigned char)next));
-
-    if (!result.inserted) {
-        Node* node=result.node;
-        Proxy* proxy=result.proxy;
-        if (!proxy) invalidParameter();
-        Container* container=proxy ? proxy->container : 0;
-        if(node==container->sentinel) invalidParameter();
-        stream->write(node->index);
-        return;
-    }
-
-    remove(&strings[next]);
-    strings[next] = text;
-    stream->write((unsigned char)next | 0x80);
-    writeString(stream, text);
-    next = next % 127 + 1;
 }
-
+namespace RBX { namespace Network {
+inline RakNet::BitStream& operator<<(RakNet::BitStream& stream, unsigned char value) { stream.Write(value); return stream; }
+RakNet::BitStream& operator<<(RakNet::BitStream& stream, const std::string& value);
+class StringSender {
+    std::map<std::string, unsigned char> dictionary;
+    std::string strings[128];
+    int lastIndex;
+public:
+    void send(RakNet::BitStream& stream, const std::string& value);
+};
+void StringSender::send(RakNet::BitStream& stream, const std::string& value)
+{
+    if (value == "")
+    {
+        stream << (unsigned char)0;
+    }
+    else
+    {
+        std::pair<std::map<std::string, unsigned char>::iterator, bool> pair = dictionary.insert(std::pair<const std::string, unsigned char>(value, (unsigned char)lastIndex));
+        if (!pair.second)
+        {
+            stream << pair.first->second;
+        }
+        else
+        {
+            dictionary.erase(strings[lastIndex]);
+            strings[lastIndex] = value;
+            stream << (unsigned char)(lastIndex | 0x80);
+            stream << value;
+            lastIndex = lastIndex % 127 + 1;
+        }
+    }
+}
+}}

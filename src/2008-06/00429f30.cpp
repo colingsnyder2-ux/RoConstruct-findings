@@ -1,90 +1,108 @@
-// from server: 23% by colin
-struct String {
-    unsigned char data[28];
-    const char *c_str() const;
-    ~String();
+// from server: 81% by EspClaude
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+typedef unsigned long DWORD;
+typedef void* HANDLE;
+typedef int BOOL;
+struct FILETIME { DWORD dwLowDateTime; DWORD dwHighDateTime; };
+struct WIN32_FIND_DATAA {
+	DWORD dwFileAttributes;
+	FILETIME ftCreationTime;
+	FILETIME ftLastAccessTime;
+	FILETIME ftLastWriteTime;
+	DWORD nFileSizeHigh;
+	DWORD nFileSizeLow;
+	DWORD dwReserved0;
+	DWORD dwReserved1;
+	char cFileName[260];
+	char cAlternateFileName[14];
 };
-
-struct Path {
-    unsigned char data[28];
-    Path(const char *);
-};
-
-struct ThreadLogManager;
-
+#define INVALID_HANDLE_VALUE ((HANDLE)(long)-1)
+#define FILE_ATTRIBUTE_DIRECTORY 0x10
 extern "C" {
-    void *__stdcall FindFirstFileA(const char *, void *);
-    int __stdcall FindNextFileA(void *, void *);
-    int __stdcall DeleteFileA(const char *);
-    char *__stdcall PathAddBackslashA(char *);
-    int __stdcall PathAppendA(char *, const char *);
+__declspec(dllimport) HANDLE __stdcall FindFirstFileA(const char*, WIN32_FIND_DATAA*);
+__declspec(dllimport) BOOL __stdcall FindNextFileA(HANDLE, WIN32_FIND_DATAA*);
+__declspec(dllimport) BOOL __stdcall DeleteFileA(const char*);
+__declspec(dllimport) BOOL __stdcall PathAppendA(char*, const char*);
+__declspec(dllimport) char* __stdcall PathAddBackslashA(char*);
 }
+#include <list>
 
-extern void (__thiscall *string_assign)(String *, const char *);
-extern void (__thiscall *string_append)(String *, const char *);
-extern void (__thiscall *string_insert)(String *, unsigned int, const char *);
-extern void (__thiscall *string_destroy)(String *);
-extern const char *(__thiscall *string_c_str)(const String *);
-extern unsigned int (__thiscall *string_size)(const String *);
-extern void (__thiscall *path_construct)(Path *, const char *);
-extern void (__thiscall *path_destroy)(Path *);
-extern void (__thiscall *path_append)(Path *, const char *);
-extern const char *(__thiscall *path_c_str)(const Path *);
+template <class T> class CStringT_ {
+public:
+    __declspec(noinline) CStringT_() { m_pszData = 0; }
+    __declspec(noinline) ~CStringT_() throw() { m_pszData = 0; }
+    __declspec(noinline) operator const T*() const throw() { return m_pszData; }
+    __declspec(noinline) int GetLength() const { return 0; }
+    __declspec(noinline) T* GetBuffer(int n) { return m_pszData; }
+    __declspec(noinline) void ReleaseBuffer(int n = -1) { }
+    static __declspec(noinline) int __cdecl StringLength(const T* psz) { return 0; }
+    T* m_pszData;
+};
+extern template class __declspec(dllimport) CStringT_<char>;
+typedef CStringT_<char> CString;
+CString operator+(const CString& str1, const char* psz2);
 
-extern void *__stdcall GetCurrentThreadId();
-extern void *__stdcall GetCurrentProcess();
-extern void *__stdcall GetCurrentThread();
-
-struct LogManager {
-    void *log;
-    unsigned int threadID;
-    String name;
-    LogManager(const char *);
-    virtual ~LogManager();
-    virtual String getLogFileName();
+class LogDirectory
+{
+public:
+	CString getPath();
 };
 
-struct ThreadLogManager : LogManager {
-    ThreadLogManager(const char *);
-    virtual ~ThreadLogManager();
-    virtual String getLogFileName();
+class ThreadLogManager
+{
+public:
+	int pad;
+	LogDirectory logDirectory;
+	void deleteOldLogs(const char* subdir, unsigned int keep);
 };
 
-extern ThreadLogManager *mainLogManager;
-
-ThreadLogManager::ThreadLogManager(const char *n)
-    : LogManager(n)
+class FileList : public std::list<WIN32_FIND_DATAA>
 {
-}
-
-String ThreadLogManager::getLogFileName()
+public:
+	__declspec(noinline) FileList() {}
+	iterator insert(const_iterator where, const WIN32_FIND_DATAA& value);
+};
+#include <algorithm>
+struct OlderThan
 {
-    String fileName = mainLogManager->getLogFileName();
-    String id;
-    char buf[64];
-    char *p = buf;
-    *p++ = '_';
-    const char *nm = name.c_str();
-    while (*nm)
-        *p++ = *nm++;
-    *p++ = '_';
-    unsigned int tid = threadID;
-    char tmp[16];
-    int i = 0;
-    if (tid != 0) {
-        tmp[i++] = '0';
-    } else {
-        while (tid) {
-            tmp[i++] = (char)('0' + tid % 10);
-            tid /= 10;
-        }
-    }
-    while (i)
-        *p++ = tmp[--i];
-    *p = 0;
-    string_assign(&id, buf);
-    unsigned int sz = string_size(&fileName);
-    string_insert(&fileName, sz - 4, id.c_str());
-    string_destroy(&id);
-    return fileName;
+	FILETIME time;
+	OlderThan(const FILETIME& t) : time(t) {}
+	bool operator()(const WIN32_FIND_DATAA& data) const
+	{
+		return data.ftCreationTime.dwHighDateTime < time.dwHighDateTime || (data.ftCreationTime.dwHighDateTime == time.dwHighDateTime && data.ftCreationTime.dwLowDateTime < time.dwLowDateTime);
+	}
+};
+void insertAt(FileList&, FileList::iterator, const WIN32_FIND_DATAA&);
+namespace std { template<> FileList::iterator find_if(FileList::iterator, FileList::iterator, OlderThan); }
+
+
+void ThreadLogManager::deleteOldLogs(const char* subdir, unsigned int keep)
+{
+	CString path = logDirectory.getPath();
+	char* buffer = path.GetBuffer(path.GetLength() + CString::StringLength(subdir) + 1);
+	PathAppendA(buffer, subdir);
+	path.ReleaseBuffer();
+	PathAddBackslashA(path.GetBuffer(path.GetLength() + 1));
+	path.ReleaseBuffer();
+
+	FileList files;
+	WIN32_FIND_DATAA findData;
+	HANDLE hFind = FindFirstFileA(path + "*.*", &findData);
+	if (hFind != INVALID_HANDLE_VALUE)
+	{
+		do
+		{
+			if (!(findData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY))
+				insertAt(files, std::find_if(files.begin(), files.end(), OlderThan(findData.ftCreationTime)), findData);
+		} while (FindNextFileA(hFind, &findData));
+	}
+
+	FileList::iterator iter = files.begin();
+	for (unsigned int i = keep; i < files.size(); ++i)
+	{
+		DeleteFileA(path + iter->cFileName);
+		++iter;
+	}
 }

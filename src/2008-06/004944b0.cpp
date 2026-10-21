@@ -1,121 +1,72 @@
-// from server: 98% by king_originala
-extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
-#pragma intrinsic(_InterlockedExchangeAdd)
-extern "C" long __cdecl _InterlockedDecrement(volatile long*);
-#pragma intrinsic(_InterlockedDecrement)
+// from server: 100% by EspClaude
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: openrbx-client-dll roc_espclaude_bc0a39e5770e439f.cpp
 
-struct Control
-{
-    virtual ~Control();
-    virtual void dispose();
-    virtual void destroy();
-    volatile long strong;
-    volatile long weak;
+// Candidate translation unit (score above; library headers required).
+#include <boost/shared_ptr.hpp>
+#include <boost/signals/connection.hpp>
+namespace RBX {
+class Instance {
+public:
+    virtual ~Instance();
+    void setParent(Instance* instance);
 };
-
-struct Count
-{
-    Control* control;
-    Count& operator=(const Count&);
+class ModelInstance : public Instance {};
+template<class T> boost::shared_ptr<T> shared_from(T* r);
+namespace Reflection { class PropertyDescriptor; }
+template<class Class, class Event> class Notifier {
+    char pad[0x20];
+public:
+    __declspec(nothrow) void raise(Event event) const;
 };
-
-struct Object
-{
-    void set(int);
+namespace Network {
+struct CharacterAdded {
+    const boost::shared_ptr<Instance> character;
+    CharacterAdded(Instance* character) : character(shared_from(character)) {}
 };
-
-struct Shared
-{
-    Object* object;
-    Count count;
-
-    Shared(const Shared&);
-    ~Shared();
-    Shared& operator=(const Shared&);
-    void reset();
+struct CharacterRemoving {
+    const boost::shared_ptr<Instance> character;
+    CharacterRemoving(Instance* character) : character(shared_from(character)) {}
 };
-
-__forceinline Shared::~Shared()
+class PlayerHead : public Instance { char pad[0x12c]; };
+extern const Reflection::PropertyDescriptor prop_Character;
+class Players {
+public:
+    static bool backendProcessing(const Instance* context, bool testInDatamodel);
+    static bool frontendProcessing(const Instance* context, bool testInDatamodel);
+};
+class Player : public PlayerHead, public Notifier<Player, CharacterAdded>, public Notifier<Player, CharacterRemoving> {
+public:
+    boost::shared_ptr<ModelInstance> character;
+    char pad2[8];
+    boost::signals::connection characterDiedConnection;
+    void setCharacter(ModelInstance* value);
+    void onCharacterChangedFrontend();
+    void raisePropertyChanged(const Reflection::PropertyDescriptor& desc);
+};
+void Player::setCharacter(ModelInstance* value)
 {
-    if (count.control)
+    if (value != character.get())
     {
-        Control* p = count.control;
-        if (_InterlockedDecrement(&p->strong) == 0)
+        if (character.get())
         {
-            p->dispose();
-            if (_InterlockedDecrement(&p->weak) == 0)
-                p->destroy();
+            characterDiedConnection.disconnect();
+            Notifier<Player, CharacterRemoving>::raise(character.get());
+            if (Players::backendProcessing(this, false))
+                character->setParent(NULL);
+            character.reset();
         }
+        if (value)
+        {
+            character = shared_from(value);
+            Notifier<Player, CharacterAdded>::raise(character.get());
+            if (Players::frontendProcessing(this, false))
+                onCharacterChangedFrontend();
+        }
+        raisePropertyChanged(prop_Character);
     }
 }
-
-__forceinline Shared& Shared::operator=(const Shared& other)
-{
-    object = other.object;
-    count = other.count;
-    return *this;
 }
-
-extern Shared __cdecl makeShared(Object*);
-
-struct AddedSignal
-{
-    char data[32];
-    void notify(Shared);
-};
-
-struct RemovedSignal
-{
-    char data[32];
-    void notify(Shared);
-};
-
-struct Connection
-{
-    void disconnect();
-};
-
-struct Player
-{
-    char data[0x130];
-    AddedSignal added;
-    RemovedSignal removed;
-    Shared current;
-    char padding[8];
-    Connection connection;
-
-    void change(Object*);
-    void update();
-    void notify(const void*);
-};
-
-extern bool __cdecl shouldDetach(Player*, int);
-extern bool __cdecl shouldUpdate(Player*, int);
-extern char propertyDescriptor;
-
-void Player::change(Object* value)
-{
-    if (value == current.object)
-        return;
-
-    if (current.object)
-    {
-        connection.disconnect();
-        Object* oldObject = current.object;
-        removed.notify(makeShared(oldObject));
-        if (shouldDetach(this, 0))
-            current.object->set(0);
-        current.reset();
-    }
-
-    if (value)
-    {
-        current = makeShared(value);
-        Object* newObject = current.object;
-        added.notify(makeShared(newObject));
-        if (shouldUpdate(this, 0))
-            update();
-    }
-
-    notify(&propertyDescriptor);
 }

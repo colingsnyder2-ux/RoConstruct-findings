@@ -1,75 +1,38 @@
-// from server: 98% by colin
-// from server: 92% by colin
+// from server: 100% by EspClaude
+// roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD /fp:fast
-#include <intrin.h>
-struct Frame {
-    float data[12];
-    Frame();
+// roc-lib: openrbx-client-dll roc_espclaude_4bb330cc49725021.cpp
+
+// Candidate translation unit (score above; library headers required).
+#include <G3D/Array.h>
+#include <G3D/AABox.h>
+#include <G3D/Color4.h>
+#include <G3D/CoordinateFrame.h>
+#include <G3D/Rect2D.h>
+using namespace G3D;
+class Adorn {
+public:
+    virtual ~Adorn();
+    virtual void a1(); virtual void a2(); virtual void a3(); virtual void a4(); virtual void a5();
+    virtual void a6(); virtual void a7(); virtual void a8(); virtual void a9(); virtual void a10();
+    virtual void a11(); virtual void a12(); virtual void a13();
+    virtual void setObjectToWorldMatrix(const CoordinateFrame& cframe);
+    virtual void a15();
+    virtual void box(const AABox& box, const Color4& solid, const Color4& wire);
 };
-
-struct Color {
-    float r, g, b, a;
+class RegionRenderer {
+public:
+    Array<Rect2D> regions;
+    void render(Adorn* adorn);
 };
-
-struct Box {
-    float x0, y0, z0;
-    float x1, y1, z1;
-};
-
-struct Entry {
-    float x, y, z, w;
-};
-
-struct Renderer;
-
-struct RendererTable {
-    void* reserved0[14];
-    void (__thiscall *setFrame)(Renderer*, const Frame&);
-    void* reserved1;
-    void (__thiscall *drawBox)(Renderer*, const Box&, const Color&, const Color&);
-};
-
-struct Renderer {
-    RendererTable* table;
-};
-
-extern float colorComponent;
-extern float colorAlpha;
-extern float boxHeight;
-extern const Color& __cdecl defaultColor();
-
-struct S {
-    Entry* entries;
-    int count;
-    void draw(Renderer* renderer);
-};
-
-void S::draw(Renderer* renderer)
+void RegionRenderer::render(Adorn* adorn)
 {
-    renderer->table->setFrame(renderer, Frame());
-
-    for (int i = 0; i < count; ++i) {
-        double c = colorComponent;
-        _ReadWriteBarrier();
-        double x = entries[i].x;
-        double y = entries[i].y;
-        double z = entries[i].z;
-        double w = entries[i].w;
-
-        Color color;
-        color.r = 1.0f;
-        color.b = color.g = (float)c;
-        color.a = colorAlpha;
-
-        Box box;
-        box.x0 = (float)x;
-        box.y0 = 0.0f;
-        box.z0 = (float)y;
-        box.x1 = (float)z;
-        box.y1 = boxHeight;
-        box.z1 = (float)w;
-
-        renderer->table->drawBox(renderer, box, color, defaultColor());
+    adorn->setObjectToWorldMatrix(CoordinateFrame());
+    for (int i = 0; i < regions.size(); ++i) {
+        Vector3 lo(regions[i].x0(), 0, regions[i].y0());
+        Vector3 hi(regions[i].x1(), 20, regions[i].y1());
+        Color4 color(1, 0.2f, 0.2f, 0.5f);
+        adorn->box(AABox(lo, hi), color, Color4::zero());
     }
 }

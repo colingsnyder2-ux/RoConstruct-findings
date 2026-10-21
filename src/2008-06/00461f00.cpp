@@ -1,4 +1,4 @@
-// from server: 96% by Espeon
+// from server: 98% by colin
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD
 extern char symbol[];
@@ -28,11 +28,11 @@ struct S : Base {
     volatile int field_c8;
     volatile int field_cc;
     volatile int field_d0;
-    volatile int field_d4;
-    volatile int field_d8;
-    volatile int field_dc;
-    volatile int field_e0;
-    volatile int field_e4;
+    int field_d4;
+    int field_d8;
+    int field_dc;
+    int field_e0;
+    int field_e4;
     volatile int field_e8;
 
     S();
@@ -56,6 +56,7 @@ S::S()
     field_e0 = 1;
     field_e4 = 1;
 
+    _ReadWriteBarrier();
     char buffer[3];
     GetLocaleInfoA(0x400, 0x0d, buffer, 3);
     field_e8 = buffer[0] == '0';

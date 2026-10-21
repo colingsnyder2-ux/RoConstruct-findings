@@ -1,66 +1,71 @@
-// from server: 98% by king_originala
-extern char instanceType;
-extern char modelType;
-
-extern "C" void* __cdecl __RTDynamicCast(
-    void*, long, void*, void*, int);
-
-struct Model {
-    void* get();
+// from server: 100% by EspClaude
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD /fp:fast
+namespace RBX {
+class Controller;
+class Instance {
+public:
+    virtual ~Instance();
+    char pad[0x100];
+    Instance* parent;
+    Instance* getParent() const { return parent; }
 };
-
-struct Prim {
-    void setCanSleep(bool);
+class PVInstance : public Instance {
+public:
+    Controller* getTopPVController() const;
 };
-
-struct Part {
-    char reserved[0x228];
-    Prim primitive;
+class ModelInstance : public PVInstance {};
+class Primitive { public: void setCanSleep(bool); };
+class PartInstance : public PVInstance {
+public:
+    char ppad[0x228 - 0x108];
+    Primitive primitive;
+    Primitive* getPrimitive() { return &primitive; }
 };
-
-struct Base {
-    Part* getPart();
-    void reset();
+class RunService;
+class Stepped {
+public:
+    const float time;
+    const float step;
 };
-
-extern void __cdecl update(void*, float, void*);
-
-struct S {
-    char reserved0[0x10];
-    int count;
-    int state;
-    char reserved1[0x78 - 0x18];
-    int enabled;
-    char data[1];
-
-    void f(int unused0, int unused1, float value);
+template<class S, class E> class Listener {
+public:
+    virtual void onEvent(const S* source, E event) = 0;
 };
-
-void S::f(int unused0, int unused1, float value)
+namespace HUMAN { class State; class StateHolder { public: State* state; };
+    void stepState(StateHolder* holder, float step, Controller* controller); }
+class HBase : public Instance { char hpad[0x1a4 - 0x108]; };
+class Humanoid : public HBase, public Listener<RunService, Stepped> {
+public:
+    char p1[0x1b4 - 0x1a8];
+    int walkTimer;
+    int walkMode;
+    char p2[0x21c - 0x1bc];
+    HUMAN::State* currentState;
+    HUMAN::StateHolder holder;
+    PartInstance* getTorso() const;
+    Primitive* getTorsoPrimitive() const
+    {
+        PartInstance* part = getTorso();
+        return part ? part->getPrimitive() : 0;
+    }
+    void checkForJointDeath();
+    virtual void onEvent(const RunService* source, Stepped event);
+};
+void Humanoid::onEvent(const RunService* source, Stepped event)
 {
-    if (enabled) {
-        Model* model = static_cast<Model*>(__RTDynamicCast(
-            *reinterpret_cast<void**>(reinterpret_cast<char*>(this) - 0xa0),
-            0, &instanceType, &modelType, 0));
-
-        if (model)
-            update(data, value, model->get());
-
-        Base* base = reinterpret_cast<Base*>(
-            reinterpret_cast<char*>(this) - 0x1a4);
-
-        Part* part = base->getPart();
-        if (part && &part->primitive) {
-            part = base->getPart();
-            Prim* primitive = part ? &part->primitive : 0;
-            primitive->setCanSleep(false);
-        }
-
-        base->reset();
-
-        if (count > 0) {
-            if (--count == 0)
-                state = 3;
+    if (currentState) {
+        if (ModelInstance* model = dynamic_cast<ModelInstance*>(getParent()))
+            HUMAN::stepState(&holder, event.step, model->getTopPVController());
+        if (getTorsoPrimitive())
+            getTorsoPrimitive()->setCanSleep(false);
+        checkForJointDeath();
+        if (walkTimer > 0) {
+            walkTimer--;
+            if (walkTimer == 0)
+                walkMode = 3;
         }
     }
+}
 }

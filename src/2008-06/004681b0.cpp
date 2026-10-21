@@ -1,4 +1,4 @@
-// from server: 58% by EspClaude
+// from server: 64% by EspClaude
 // from server: 56% by coldek
 // roc 2008-06 004681b0  unit: DxUserInput  size: 738 bytes
 // Make this compile to the exact bytes below, then: roc check 2008-06 004681b0
@@ -43,6 +43,7 @@ struct Guard {
 
 struct Lock {
     void* section;
+    bool locked;
     Lock(void*);
     ~Lock();
 };
@@ -50,11 +51,13 @@ struct Lock {
 inline Lock::Lock(void* p) : section(p)
 {
     EnterCriticalSection(section);
+    locked = true;
 }
 
 inline Lock::~Lock()
 {
-    LeaveCriticalSection(section);
+    if (locked)
+        LeaveCriticalSection(section);
 }
 
 struct InputRecord {

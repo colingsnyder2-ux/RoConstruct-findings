@@ -1,35 +1,46 @@
-// from server: 98% by king_originala
-struct Vector {
+// from server: 100% by EspClaude
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: openrbx-client-dll roc_espclaude_242988241b41be39.cpp
+
+// Candidate translation unit (score above; library headers required).
+#include <boost/shared_ptr.hpp>
+namespace G3D {
+class Vector3 {
+public:
     float x, y, z;
-    const Vector& value() const;
+    Vector3& operator=(const Vector3& r) { x = r.x; y = r.y; z = r.z; return *this; }
 };
-
-struct Object {
-    Vector transform(const Vector& input);
+class CoordinateFrame {
+public:
+    Vector3 pointToWorldSpace(const Vector3& v) const;
 };
-
-struct S {
-    char padding[0x1bc];
-    Object* object;
-    char gap[4];
-    Vector input;
-
-    bool f(Vector* output);
+}
+namespace RBX {
+class Instance { public: char padding[0x1bc]; };
+class PartInstance : public Instance {
+public:
+    const G3D::CoordinateFrame& getCoordinateFrame() const;
 };
-
-extern int __cdecl checkControl(S*);
-extern bool __cdecl checkObject(Object*);
-
-bool S::f(Vector* output)
+class Workspace : public Instance {
+public:
+    static Workspace* findWorkspace(const Instance* context);
+    static bool contextInWorkspace(const Instance* context);
+};
+class Humanoid : public Instance {
+public:
+    boost::shared_ptr<PartInstance> walkToPart;
+    G3D::Vector3 walkToPoint;
+    bool hasWalkToPoint(G3D::Vector3& worldPosition) const;
+};
+bool Humanoid::hasWalkToPoint(G3D::Vector3& worldPosition) const
 {
-    if (object && checkControl(this) && checkObject(object)) {
-        Object* receiver = object;
-        Vector* source = &input;
-        const Vector& result = receiver->transform(*source).value();
-        output->x = result.x;
-        output->y = result.y;
-        output->z = result.z;
+    if (walkToPart != NULL && Workspace::findWorkspace(this) != NULL &&
+        Workspace::contextInWorkspace(walkToPart.get())) {
+        worldPosition = walkToPart->getCoordinateFrame().pointToWorldSpace(walkToPoint);
         return true;
     }
     return false;
+}
 }

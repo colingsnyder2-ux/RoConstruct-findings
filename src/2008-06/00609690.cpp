@@ -1,90 +1,148 @@
-// from server: 23% by colin
-struct Object;
-
-struct ObjPtr {
-    Object* p;
-    ObjPtr() : p(0) {}
-    ObjPtr(const ObjPtr& o) : p(o.p) {}
-    ~ObjPtr() {}
-    ObjPtr& operator=(const ObjPtr& o) { p = o.p; return *this; }
+// from server: 76% by EspClaude
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+extern "C" __declspec(dllimport) long __stdcall InterlockedIncrement(volatile long*);
+extern "C" __declspec(dllimport) long __stdcall InterlockedDecrement(volatile long*);
+#define NULL 0
+namespace G3D {
+class AtomicInt32 {
+	volatile long _value;
+public:
+	void increment() { InterlockedIncrement(&_value); }
+	unsigned int decrement() { return InterlockedDecrement(&_value) != 0; }
 };
-
-struct Ret {
-    ObjPtr val;
+class ReferenceCountedObject {
+public:
+	AtomicInt32 ReferenceCountedObject_refCount;
+	void* ReferenceCountedObject_weakPointer;
+	void ReferenceCountedObject_zeroWeakPointers();
+	virtual ~ReferenceCountedObject() {}
 };
-
-extern "C" int __stdcall InterlockedIncrement(int*);
-extern "C" int __stdcall InterlockedDecrement(int*);
-
-struct Controller {
-    char pad[0x104];
-    void* field104;
-    char pad2[0x194 - 0x108];
-    void* field194;
-
-    void* getSomething();
-    Ret* getSomething2(Ret* out, void* arg);
+template <class T>
+class ReferenceCountedPointer {
+private:
+	T* m_pointer;
+	void zeroPointer() {
+		if (m_pointer != 0) {
+			if (m_pointer->ReferenceCountedObject_refCount.decrement() == 0) {
+				m_pointer->ReferenceCountedObject_zeroWeakPointers();
+				delete m_pointer;
+			}
+			m_pointer = 0;
+		}
+	}
+	void setPointer(T* x) {
+		if (x != m_pointer) {
+			zeroPointer();
+			if (x != 0) {
+				m_pointer = x;
+				m_pointer->ReferenceCountedObject_refCount.increment();
+			}
+		}
+	}
+public:
+	inline ReferenceCountedPointer() : m_pointer(0) {}
+	inline ReferenceCountedPointer(const ReferenceCountedPointer<T>& p) : m_pointer(0) { setPointer(p.m_pointer); }
+	inline ReferenceCountedPointer(T* p) : m_pointer(0) { setPointer(p); }
+	inline ~ReferenceCountedPointer() { zeroPointer(); }
+	inline const ReferenceCountedPointer<T>& operator=(const ReferenceCountedPointer<T>& p) { setPointer(p.m_pointer); return *this; }
+	inline T* operator->() const { return m_pointer; }
+	inline bool notNull() const { return m_pointer != 0; }
 };
+}
 
-extern "C" void* __stdcall func_6a17c6(void*, void*, void*, void*, void*);
-extern "C" void* __stdcall func_5a3330(void*);
-extern "C" void* __stdcall func_5cbd10(void*, void*, void*, void*);
-extern "C" void __stdcall func_608e70(void*, void*);
-extern "C" void __stdcall func_45ad90(void*);
-extern "C" void __stdcall func_502a70(void*);
-extern "C" void __stdcall func_598fa0(void*, void*);
+namespace RBX
+{
+	class Controller : public G3D::ReferenceCountedObject
+	{
+	public:
+		enum ControllerType { NO_CONTROLLER };
+		virtual void v1();
+		virtual ControllerType getControllerType() const;
+		virtual void v3();
+		virtual bool isUserController() const;
+	};
 
-Ret* Controller::getSomething2(Ret* out, void* arg) {
-    void* a = func_6a17c6(field104, (void*)0x92907c, (void*)0x947f1c, 0, 0);
-    if (a == 0) goto fallback;
-    {
-        void* b = field104;
-        void* c = getSomething();
-        if (c == b) goto fallback;
-    }
-    {
-        void* d = field104;
-        void* e = (char*)d + 0x170;
-        func_608e70(e, out);
-        Object* obj = out->val.p;
-        if (obj) {
-            InterlockedIncrement((int*)((char*)obj + 4));
-        }
-        if (obj) {
-            if (InterlockedDecrement((int*)((char*)obj + 4)) == 0) {
-                func_45ad90(obj);
-                ((void(__thiscall*)(Object*,int))(*(void***)obj)[0])(obj, 1);
-            }
-        }
-        if (obj) {
-            if (((bool(__thiscall*)(Object*))(*(void***)obj)[2])(obj)) {
-                if (!((bool(__thiscall*)(Object*))(*(void***)obj)[4])(obj)) {
-                    out->val.p = 0;
-                    func_598fa0(out, obj);
-                    return out;
-                }
-            }
-        }
-        if (obj) {
-            if (InterlockedDecrement((int*)((char*)obj + 4)) == 0) {
-                func_45ad90(obj);
-                ((void(__thiscall*)(Object*,int))(*(void***)obj)[0])(obj, 1);
-            }
-        }
-    }
-fallback:
-    {
-        void* f = func_5a3330(this);
-        if (f) {
-            void* g = field194;
-            func_5cbd10(f, out, g, this);
-            out->val.p = 0;
-            func_598fa0(out, out->val.p);
-            return out;
-        } else {
-            out->val.p = 0;
-            func_598fa0(out, 0);
-            return out;
-        }
-    }
+	template<class T, class U>
+	class ComputeProp
+	{
+	private:
+		mutable T val;
+		mutable bool dirty;
+		U* object;
+		T(U::* getFunc)() const;
+	public:
+		T getValue() const;
+		operator T() const;
+	};
+
+	class Instance
+	{
+	public:
+		virtual ~Instance();
+		char pad04[0x100];
+		Instance* parent;
+
+		template<typename Type>
+		const Type* getTypedRoot() const;
+
+		template<typename Type>
+		const Type* queryTypedParent() const
+		{
+			return dynamic_cast<Type*>(parent);
+		}
+		template<typename Type>
+		Type* getTypedParent() const
+		{
+			return static_cast<Type*>(parent);
+		}
+	};
+
+	class PVInstance;
+	class ControllerService
+	{
+	public:
+		G3D::ReferenceCountedPointer<Controller> getController(Controller::ControllerType type, const PVInstance* controlledInstance);
+	};
+
+	class ServiceProvider
+	{
+	public:
+		template<class Class>
+		static Class* create(const Instance* context);
+	};
+
+	class PVInstance : public Instance
+	{
+	public:
+		char pad108[0x170 - 0x108];
+		ComputeProp<G3D::ReferenceCountedPointer<Controller>, PVInstance> TopPVController;
+		char pad[0x194 - 0x170 - sizeof(ComputeProp<G3D::ReferenceCountedPointer<Controller>, PVInstance>)];
+		Controller::ControllerType controllerType;
+
+		bool isTopLevelPVInstance() const
+		{
+			return !queryTypedParent<PVInstance>() || getTypedRoot<PVInstance>() == getTypedParent<PVInstance>();
+		}
+		G3D::ReferenceCountedPointer<Controller> computeTopPVController() const;
+	};
+
+	G3D::ReferenceCountedPointer<Controller> PVInstance::computeTopPVController() const
+	{
+		if (!isTopLevelPVInstance())
+		{
+			G3D::ReferenceCountedPointer<RBX::Controller> controller;
+			controller = getTypedParent<PVInstance>()->TopPVController.getValue();
+
+			if (controller.notNull())
+			{
+				if (controller->getControllerType() != Controller::NO_CONTROLLER && !controller->isUserController())
+					return controller;
+			}
+		}
+
+		ControllerService* controllerService = ServiceProvider::create<ControllerService>(this);
+		return controllerService ? controllerService->getController(controllerType, this) : NULL;
+	}
 }

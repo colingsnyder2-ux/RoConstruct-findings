@@ -23730,5 +23730,92 @@
       "local_exact": 0,
       "evidence": "work\\big-mining-2008-20261020\\quad-app-native-family-hits.json"
     }
+  },
+  "native-adorn-cylinder-sdk-gates-2008": {
+    "op": "grid",
+    "client": "2008-06",
+    "library": "Native full Adorn cylinder SDK",
+    "hypothesis": "Native324B owner and Ogre ABI produce82; gate inlining before residual temporary stack reuse and cached Sphere copy differences.",
+    "targets": {
+      "addresses": [
+        "006726a0"
+      ],
+      "scores": [
+        0,
+        99
+      ]
+    },
+    "seed_sources": {
+      "2008-06": {
+        "006726a0": "work\\big-mining-2008-20261020\\adorn-cylinder-native-orientation-scope.cpp"
+      }
+    },
+    "builds": [
+      21022
+    ],
+    "profiles": [
+      "/O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MD /fp:precise",
+      "/O2 /Ob1 /Oi /Ot /Oy /GF /GS- /EHsc /MD /fp:fast",
+      "/O2 /GS- /EHsc /MD /fp:fast",
+      "/O1 /Ob1 /GS- /EHsc /MD /fp:fast"
+    ],
+    "keep_partials": true,
+    "reuse_history": true,
+    "reuse_objects": true,
+    "improvement_only": true,
+    "output": "work\\big-mining-2008-20261020\\adorn-cylinder-native-gates",
+    "verification": "Local retention only; actual-model manual Player Mining submissions.",
+    "result": {
+      "stats": {
+        "checks": 4,
+        "skipped": 0,
+        "errors": 0,
+        "finished_targets": 1,
+        "verified_exacts": 0,
+        "verified_partial_gains": 0,
+        "object_reuses": 0,
+        "seconds": 7.844
+      },
+      "evidence": "work\\big-mining-2008-20261020\\adorn-cylinder-native-gates\\summary.json"
+    }
+  },
+  "native-adorn-ray-cylinder-sdk-family-2008": {
+    "op": "fanout",
+    "client": "2008-06",
+    "library": "Native Adorn ray and cylinder SDK helpers",
+    "hypothesis": "Propagate exact ray and82 cylinder full native324B owner objects across unresolved functions.",
+    "sources": [
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_adorn_ray_native_orientation4aeecbaf163133f1.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MD /fp:fast"
+        ]
+      },
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_adorn_cylinder_native_orientation_scope14263bc31d680a4e.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MD /fp:fast"
+        ]
+      }
+    ],
+    "output": "work\\big-mining-2008-20261020\\adorn-ray-cylinder-native-family",
+    "verification": "Local retention only; actual-model manual Player Mining submissions.",
+    "result": {
+      "objects": 2,
+      "local_exact": 0,
+      "evidence": "work\\big-mining-2008-20261020\\adorn-ray-cylinder-native-family-hits.json"
+    }
   }
 }
