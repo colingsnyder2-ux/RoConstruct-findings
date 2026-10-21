@@ -1,116 +1,108 @@
-// from server: 100% by EspClaude
-// from server: 83% by colin
+// from server: 100% by Espeon
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: rbxgs-dll roc_espclaude_37f081dfa0d6ed2b.cpp
+// roc-lib: openrbx-client-dll roc_espeon_modeldestructorvector0083ddf424376082.cpp
 
 // Candidate translation unit (score above; library headers required).
+#ifndef V8DATAMODEL_MODELINSTANCE_H
+#define V8DATAMODEL_MODELINSTANCE_H
+
+#include "decomp.h"
+#include "util/ComputeProp.h"
+#include "util/Extents.h"
+#include "util/ICameraSubject.h"
+#include "util/IRenderable.h"
+#include "util/ISelectable3d.h"
+#include "v8datamodel/IPrimaryPart.h"
+#include "v8datamodel/PVInstance.h"
+
+#include <G3D/CoordinateFrame.h>
 #include <boost/shared_ptr.hpp>
-#include <boost/signals/connection.hpp>
-#include <string>
-//
+#include <vector>
 
-typedef std::string String;
+namespace RBX {
 
-struct Base {
-    int data[250];
-    Base(int);
-    ~Base();
-};
+class PartInstance;
 
-extern int table134[];
-extern int table420[];
-extern int table000[];
-extern int table010[];
-extern int table014[];
-extern int table020[];
-extern int table024[];
-extern int table044[];
-extern int table064[];
-extern int table084[];
-extern int table0a4[];
-extern int table0c4[];
-extern int table130[];
-extern int table1a0[];
-extern int table1c0[];
-extern int table1cc[];
-extern int virtualTable1[];
-extern int virtualTable2[];
-extern int virtualTable3[];
-extern const char spawnName[];
+extern char sModel[];
 
-struct X;
-struct Conn0 { char e[4]; boost::shared_ptr<X> con; bool ctrl; Conn0(int) : con(), ctrl(false) {} };
-struct Conn : Conn0 { bool released; Conn(int v) : Conn0(v), released(false) {} ~Conn(); };
-struct S : Base {
-    Conn connection;
-    int unk;
-    struct P { boost::shared_ptr<X> p1; bool b3; char pad3[3]; bool b4; char pad4[3]; P() : b3(false), b4(false) {} } p;
-    double d;
-    boost::shared_ptr<X> p2;
-    char tail[0x18];
-
-    S(int);
-    int prepare(int);
-    int initializeTables();
-    void fixOffset(int index,int delta) {int offset=((int*)data[0x134/4])[index];*(int*)((char*)this+0x130+offset)=offset-delta;}
-    void setName(const String&);
-};
-
-__forceinline int S::prepare(int initialize) {
-    volatile int constructionState = 0;
-    if (initialize) {
-        data[0x134 / 4] = reinterpret_cast<int>(table134);
-        *reinterpret_cast<int*>(reinterpret_cast<char*>(this) + 0x438) =
-            reinterpret_cast<int>(table420);
-    }
-    return 0;
-}
-
-__forceinline int S::initializeTables() {
-    int* table = reinterpret_cast<int*>(data[0x134 / 4]);
-
-    data[0x000 / 4] = reinterpret_cast<int>(table000);
-    data[0x010 / 4] = reinterpret_cast<int>(table010);
-    data[0x014 / 4] = reinterpret_cast<int>(table014);
-    data[0x020 / 4] = reinterpret_cast<int>(table020);
-    data[0x024 / 4] = reinterpret_cast<int>(table024);
-    data[0x044 / 4] = reinterpret_cast<int>(table044);
-    data[0x064 / 4] = reinterpret_cast<int>(table064);
-    data[0x084 / 4] = reinterpret_cast<int>(table084);
-    data[0x0a4 / 4] = reinterpret_cast<int>(table0a4);
-    data[0x0c4 / 4] = reinterpret_cast<int>(table0c4);
-    data[0x130 / 4] = reinterpret_cast<int>(table130);
-    data[0x1a0 / 4] = reinterpret_cast<int>(table1a0);
-    data[0x1c0 / 4] = reinterpret_cast<int>(table1c0);
-    data[0x1cc / 4] = reinterpret_cast<int>(table1cc);
-
-    *reinterpret_cast<int*>(reinterpret_cast<char*>(this) + 0x134 + table[1]) =
-        reinterpret_cast<int>(virtualTable1);
-    table = reinterpret_cast<int*>(data[0x134 / 4]);
-    *reinterpret_cast<int*>(reinterpret_cast<char*>(this) + 0x134 + table[2]) =
-        reinterpret_cast<int>(virtualTable2);
-    table = reinterpret_cast<int*>(data[0x134 / 4]);
-    *reinterpret_cast<int*>(reinterpret_cast<char*>(this) + 0x134 + table[3]) =
-        reinterpret_cast<int>(virtualTable3);
-
-    table=reinterpret_cast<int*>(data[0x134/4]);
-    int offset=table[1];
-    *reinterpret_cast<int*>(reinterpret_cast<char*>(this)+0x130+offset)=offset-0x2f0;
-    fixOffset(2,0x2f8);
-    fixOffset(3,0x300);
-
-    return 194;
-}
-
-S::S(int initialize)
-    : Base(prepare(initialize)),
-      connection(initializeTables()),
-      p(),
-      d(0)
+// SIZE 0x254
+class ModelInstance : public PVInstance,
+					  public IRenderable,
+					  public virtual IPrimaryPart,
+					  public virtual ICameraSubject,
+					  public virtual ISelectable3d
 {
-    String name("Seat");
-    setName(name);
-}
+public:
+	static bool showModelCoord;
 
+private:
+	mutable CoordinateFrame modelInPrimary;               // 0x178
+	mutable PartInstance* primaryPart;                    // 0x1a8
+	boost::shared_ptr<PartInstance> candidatePrimaryPart; // 0x1ac
+
+	void updatePrimaryPart(PartInstance* part) const;
+
+	// Binary has a native vector at +0x1ec, before the remaining cached properties.
+	std::vector<void*> cachedItems;
+	ComputeProp<float, ModelInstance> FlagHeight;         // 0x1b8
+	ComputeProp<Extents, ModelInstance> LocalGridExtents; // 0x1d8
+	ComputeProp<Extents, ModelInstance> WorldGridExtents; // 0x208
+
+	float computeFlagHeight() const;
+	Extents computeLocalGridExtents() const;
+	Extents computeWorldGridExtents() const;
+	void dirtyAll() const;
+
+	virtual bool shouldRender3dAdorn() const;
+	virtual void render3dAdorn(Adorn* adorn);
+	virtual void render3dSelect(Adorn* adorn, SelectState selectState);
+
+protected:
+	virtual void onDescendentAdded(Instance* instance);
+	virtual void onDescendentRemoving(const shared_ptr<Instance>& instance);
+	virtual bool askSetParent(const Instance* instance) const;
+
+private:
+	virtual void onLastChildRemoved();
+
+public:
+	ModelInstance();
+	virtual ~ModelInstance();
+
+	PartInstance* getPrimaryPartInternal() const;
+	void setPrimaryPart(PartInstance* value);
+
+	const CoordinateFrame& getModelInPrimary() const;
+	void setModelInPrimary(const CoordinateFrame& value);
+
+	virtual void onExtentsChanged() const;
+
+	virtual const Primitive* getBiggestPrimitive() const;
+	virtual bool hitTest(const G3D::Ray& worldRay, G3D::Vector3& worldHitPoint);
+
+	virtual Extents getExtentsWorld() const;
+	virtual Extents getExtentsLocal() const;
+
+	virtual const CoordinateFrame getLocation() const;
+
+	virtual void onCameraNear(float distance);
+	virtual void getCameraIgnorePrimitives(std::vector<const Primitive*>& primitives);
+
+	virtual PartInstance* getPrimaryPart();
+	virtual const PartInstance* getPrimaryPartConst() const;
+
+protected:
+	virtual void legacyTraverseState(const CoordinateFrame& parentState);
+
+public:
+};
+
+DECOMP_SIZE_ASSERT(ModelInstance, 0x254)
+
+} // namespace RBX
+
+#endif // V8DATAMODEL_MODELINSTANCE_H
+
+namespace RBX { ModelInstance::~ModelInstance() {} }

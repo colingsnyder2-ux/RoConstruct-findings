@@ -1,79 +1,70 @@
-// from server: 80% by king_originala
-extern "C" long __cdecl _InterlockedExchangeAdd(volatile long*, long);
-#pragma intrinsic(_InterlockedExchangeAdd)
-extern "C" long __cdecl _InterlockedDecrement(volatile long*);
-#pragma intrinsic(_InterlockedDecrement)
+// from server: 100% by EspClaude
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: rbxgs-dll roc_espclaude_b83817ce1c2ae7a8.cpp
 
-struct Instance {
-    virtual ~Instance();
-    char padding[0x100];
-    Instance* next;
-};
+// Candidate translation unit (score above; library headers required).
+#undef _RELEASEASSERT
+#undef _DEBUG
+#define _DLL
+#define private public
+#include "util/IRenderable.h"
+#undef private
+#include "util/Object.h"
+#define hasListeners() hasListeners() const { return listeners.size() > 0; } bool hasListenersEmpty()
+#include "util/Events.h"
+#undef hasListeners
+namespace RBX { template<class T> class GuidItem { public: virtual ~GuidItem() {} char guidPad[0xc]; }; }
+namespace RBX { template<class T> class GuidAFP : public AbstractFactoryProduct<T> { protected: virtual void onGuidChanged() {} }; }
+#define AbstractFactoryProduct GuidItem<Instance>, public GuidAFP
+#include "util/Guid.h"
+namespace RBX { class GuidStub { public: typedef Guid::Data Data; void assign(const Data&) {} operator const Guid&() const { return *(const Guid*)0; } }; }
+#define Guid GuidStub
+#include "v8tree/Instance.h"
+#undef Guid
+#undef AbstractFactoryProduct
+#include "v8datamodel/Hopper.h"
+#include "util/IRenderable.h"
+#include "v8datamodel/IEquipable.h"
+namespace RBX { struct ExePad8 { virtual void exePadV(); char exePad[0x2c]; }; }
+#include "v8datamodel/Tool.h"
+#include "v8datamodel/Flag.h"
+#define SurfacesNeedAdorn SurfacesNeedAdorn; char exePartPad[0x118]
+#include "v8datamodel/PartInstance.h"
+#undef SurfacesNeedAdorn
+#include "v8datamodel/FlagStand.h"
+#include "humanoid/Humanoid.h"
+#include "Network/Player.h"
+#include "Network/Players.h"
+namespace RBX
+{
+	void Flag::onEvent_flagTouched(boost::shared_ptr<Instance> other)
+	{
+		Instance* parent = other->getParent();
 
-struct Control {
-    virtual void unused() = 0;
-    virtual void dispose() = 0;
-    virtual void destroy() = 0;
-    volatile long strong;
-    volatile long weak;
-};
+		Humanoid* humanoid = Humanoid::modelIsCharacter(parent);
+		if (!humanoid)
+			return;
 
-struct Shared {
-    Instance* pointer;
-    Control* control;
-    ~Shared();
-};
+		Network::Player* player = Network::Players::getPlayerFromCharacter(parent);
+		if (!player)
+			return;
 
-inline Shared::~Shared() {
-    Control* p = control;
-    if (p) {
-        if (_InterlockedDecrement(&p->strong) == 0) {
-            p->dispose();
-            if (_InterlockedDecrement(&p->weak) == 0)
-                p->destroy();
-        }
-    }
-}
+		if (player->getNeutral() != false)
+			return;
 
-struct Flag;
+		BrickColor current = teamColor;
+		if (player->getTeamColor() != current)
+			return;
 
-struct ServiceProvider : Instance {
-    int query(Flag*);
-    ServiceProvider* find(Flag*);
-    void update(Flag*);
-};
-
-struct State {
-    char padding[0x178];
-    int value;
-    unsigned char disabled;
-};
-
-extern int __cdecl check(Instance*);
-extern State* __cdecl getState(Instance*);
-extern ServiceProvider* __cdecl func_00619450(Instance*);
-
-struct Flag : Instance {
-    char padding108[0x184];
-    int value;
-    void process(Shared);
-};
-
-void Flag::process(Shared object) {
-    Instance* parent = object.pointer->next;
-    if (!check(parent))
-        return;
-
-    State* state = getState(parent);
-    if (!state)
-        return;
-
-    if (!state->disabled && value == state->value) {
-        ServiceProvider* provider = func_00619450(this);
-        if (!provider->query(this)) {
-            ServiceProvider* found = provider->find(this);
-            if (found)
-                found->update(this);
-        }
-    }
+		FlagStandService* fss = ServiceProvider::create<FlagStandService>(this);
+		if (!fss->FindStandWithFlag(this))
+		{
+			if (FlagStand* fs = fss->FindClosestEmptyStandForFlag(this))
+			{
+				fs->AffixFlag(this);
+			}
+		}
+	}
 }

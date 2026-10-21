@@ -1,53 +1,44 @@
-// from server: 99% by EspClaude
+// from server: 100% by EspClaude
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: openrbx-client-dll roc_espclaude_81571be15c03be5e.cpp
+// roc-lib: rbxgs-dll roc_espclaude_b6bbefe7dee2c832.cpp
 
 // Candidate translation unit (score above; library headers required).
-#include <boost/signals/slot.hpp>
-#include <boost/shared_ptr.hpp>
-#include <boost/function.hpp>
-#include <boost/bind.hpp>
-
-struct Source {
-    char padding[20];
-    int target;
-};
-
-struct VirtualBase {
-    int value;
-};
-
-typedef boost::signals::connection Result;
-typedef boost::signals::scoped_connection Connection;
-typedef boost::slot<boost::function<void()> > Function;
-
-struct ManagerA {
-    Result connect(void*, const Function&, int);
-};
-
-struct ManagerB {
-    Result connect(void*, const Function&, int);
-};
-
-extern ManagerA managerA;
-extern ManagerB managerB;
-
-struct Tool : virtual VirtualBase {
-    char padding0[0x104 - 4];
-    Source* source;
-    char padding1[0x19c - 0x108];
-    Connection firstConnection;
-    Connection secondConnection;
-
-    void firstCallback();
-    void secondCallback();
-    void connectSignals();
-};
-
-void Tool::connectSignals()
+#undef _RELEASEASSERT
+#undef _DEBUG
+#define _DLL
+#define private public
+#include "util/IRenderable.h"
+#undef private
+#include "util/Object.h"
+#define hasListeners() hasListeners() const { return listeners.size() > 0; } bool hasListenersEmpty()
+#include "util/Events.h"
+#undef hasListeners
+namespace RBX { template<class T> class GuidItem { public: virtual ~GuidItem() {} char guidPad[0xc]; }; }
+namespace RBX { template<class T> class GuidAFP : public AbstractFactoryProduct<T> { protected: virtual void onGuidChanged() {} }; }
+#define AbstractFactoryProduct GuidItem<Instance>, public GuidAFP
+#include "util/Guid.h"
+namespace RBX { class GuidStub { public: typedef Guid::Data Data; void assign(const Data&) {} operator const Guid&() const { return *(const Guid*)0; } }; }
+#define Guid GuidStub
+#include "v8tree/Instance.h"
+#undef Guid
+#undef AbstractFactoryProduct
+#include "v8datamodel/Hopper.h"
+#include "util/IRenderable.h"
+#include "v8datamodel/IEquipable.h"
+#include "v8datamodel/Accoutrement.h"
+namespace RBX
 {
-    firstConnection = managerA.connect(source ? &source->target : 0, boost::bind(&Tool::firstCallback, this), 10);
-    secondConnection = managerB.connect(source ? &source->target : 0, boost::bind(&Tool::secondCallback, this), 10);
+	class ExeChildSignal
+	{
+	public:
+		boost::signals::connection connect(Reflection::SignalSource* source, const boost::slot<boost::function<void(boost::shared_ptr<Instance>)> >& slot, int priority);
+	};
+
+	void Accoutrement::upTo_InCharacter()
+	{
+		characterChildAdded = reinterpret_cast<ExeChildSignal&>(Instance::event_childAdded).connect(getParent(), boost::bind(&Accoutrement::onEvent_AddedBackend, this, _1), 10);
+		characterChildRemoved = reinterpret_cast<ExeChildSignal&>(Instance::event_childRemoved).connect(getParent(), boost::bind(&Accoutrement::onEvent_RemovedBackend, this, _1), 10);
+	}
 }

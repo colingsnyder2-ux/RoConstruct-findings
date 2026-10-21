@@ -1,8 +1,8 @@
-// from server: 88% by Espeon
+// from server: 89% by EspClaude
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD /fp:fast
-// roc-lib: rbxgs-dll roc_espeon_hatdropgetcolumn_4fa0705359af426f.cpp
+// roc-lib: rbxgs-dll roc_espclaude_55d42ad2b2b14cc6.cpp
 
 // Candidate translation unit (score above; library headers required).
 #pragma float_control(precise, off)
@@ -10,6 +10,7 @@
 #include "G3D/Vector3.h"
 typedef G3D::Vector3 Vec3;
 typedef G3D::CoordinateFrame Frame;
+struct VBase0 { virtual void v0(); };
 struct FrameInterface {
     virtual Frame getFrame();
 };
@@ -35,9 +36,8 @@ struct LinkHolder {
     void reset();
 };
 
-struct Model {
-    char padding[0x134];
-    int* baseOffsets;
+struct ModelBase { virtual ~ModelBase(); char padding[0x130]; };
+struct Model : ModelBase, virtual VBase0, virtual FrameInterface {
 };
 
 struct Part {
@@ -59,11 +59,13 @@ extern const float horizontalOffset;
 extern const float distanceMultiplier;
 extern const float finalValue;
 
-struct S {
-    char padding[0x134];
+struct SBase {
+    virtual ~SBase();
+    char padding[0x130];
     LinkHolder link;
     char gap[0x14];
-    int* valueBaseOffsets;
+};
+struct S : SBase, virtual VBase0, virtual FloatInterface {
 
     Part* getPart();
     void finish();
@@ -86,16 +88,12 @@ void S::update()
     }
 
     if (usable(model)) {
-        FrameInterface* frameInterface =
-            reinterpret_cast<FrameInterface*>(
-                reinterpret_cast<char*>(model) + 0x134 +
-                model->baseOffsets[2]);
-
-        Frame frame = frameInterface->getFrame();
+Frame frame = model->getFrame();
         Vec3 position=frame.translation;
-        position.y+=verticalOffset;
+        position.y+=4.0f;
         float distance=horizontalOffset;
-        position+=frame.rotation.getColumn(2)*distance*distanceMultiplier;
+        Vec3 look = frame.rotation.getColumn(2)*distance;
+        position+=look*distanceMultiplier;
 
         Part* part = getPart();
         if (part) {
@@ -108,10 +106,7 @@ void S::update()
         }
     }
 
-    FloatInterface* valueInterface =
-        reinterpret_cast<FloatInterface*>(
-            reinterpret_cast<char*>(this) + 0x150 +
-            valueBaseOffsets[2]);
-    valueInterface->setValue(finalValue);
+    setValue(finalValue);
     finish();
 }
+

@@ -1,77 +1,42 @@
-// from server: 87% by king_originala
-#pragma float_control(precise, off)
+// from server: 100% by EspClaude
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast
+// roc-lib: rbxgs-dll roc_espclaude_228eb1d10142a247.cpp
 
-extern const float lengthFactor;
-extern const float widthFactor;
-extern const float crossOffset;
-extern const float shade;
+// Candidate translation unit (score above; library headers required).
+#define _DLL
+#define lineSegment(a, b, c) lineSegment(a, b, c) = 0; virtual void exeAdornExtra()
+#include "RbxGraphics/Adorn.h"
+#undef lineSegment
+#include "AppDraw/Draw.h"
+#include "util/Math.h"
 
-struct Vector3 {
-    float x, y, z;
-    Vector3(float, float, float);
-};
-
-inline Vector3::Vector3(float a, float b, float c)
-    : x(a), y(b), z(c) {}
-
-struct Color4 {
-    float r, g, b, a;
-    Color4(float, float, float, float);
-};
-
-inline Color4::Color4(float red, float green, float blue, float alpha)
-    : r(red), g(green), b(blue), a(alpha) {}
-
-struct Renderer;
-
-typedef void (__thiscall *QuadFunction)(
-    Renderer *,
-    const Vector3 &,
-    const Vector3 &,
-    const Vector3 &,
-    const Vector3 &,
-    const Color4 &
-);
-
-struct Renderer {
-    QuadFunction *vtable;
-};
-
-void __cdecl drawCross(float width, float length, Renderer *renderer)
+namespace RBX
 {
-    float extent = lengthFactor * length;
-    length = widthFactor * width;
+	void Draw::spokes(float radius, float axis, Adorn* adorn)
+    {
+        float halfAxis = axis*0.51f;
+        float subRadius = radius*0.7f;
 
-    for (int face = 0; face < 2; ++face) {
-        float direction;
-        if (face == 0) {
-            width = extent;
-            direction = 1.0f;
-        } else {
-            width = -extent;
-            direction = -1.0f;
-        }
+        for (int i = 0; i < 2; i++)
+        {
+            float x = (i == 0) ? halfAxis : -halfAxis;
+            float ccw = i ? -1.0f : 1.0f;
 
-        for (int plane = 0; plane < 2; ++plane) {
-            float y = length;
-            float z = crossOffset;
-            float color = shade;
+            for (int j = 0; j < 2; j++)
+            {
+                float y = (j == 0) ? subRadius : 0.1f;
+                float z = (j == 0) ? 0.1f : subRadius;
 
-            if (plane != 0) {
-                float temporary = y;
-                y = z;
-                z = temporary;
+                adorn->quad(
+                    G3D::Vector3(x, y * ccw, z),
+                    G3D::Vector3(x, -y * ccw, z),
+                    G3D::Vector3(x, -y * ccw, -z),
+                    G3D::Vector3(x, y * ccw, -z),
+                    G3D::Color4(0.5f, 0.5f, 0.5f, 1.0f)
+                );
             }
-
-            QuadFunction quad = renderer->vtable[24];
-            quad(
-                renderer,
-                Vector3(width, y * direction, z),
-                Vector3(width, -(y * direction), z),
-                Vector3(width, -(y * direction), -z),
-                Vector3(width, y * direction, -z),
-                Color4(color, color, color, 1.0f)
-            );
         }
     }
 }

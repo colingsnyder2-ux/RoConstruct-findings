@@ -1,68 +1,62 @@
-// from server: 88% by king_originala
-void* __cdecl operator new(unsigned int);
-void __cdecl operator delete(void*) throw();
+// from server: 100% by EspClaude
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: openrbx-client-dll roc_espclaude_73850220e0cd261c.cpp
 
-struct Link;
-
-struct State {
-    Link* owner;
-    char dirty;
-    char padding[3];
-    float values[3];
-    char reserved[0x28];
-
-    State(Link*);
-};
-
-struct Fallback {
-    char reserved[8];
-    char dirty;
-};
-
-struct Node {
-    char reserved[0x18];
-    int index;
-};
-
-struct Child : Node {
-};
-
-struct Children {
-    Node** data;
-    int size;
-    int capacity;
-
-    void append(Node* const&);
-};
-
-struct Link {
-    char reserved0[0x14];
-    Link* parent;
-    char reserved1[4];
-    Children children;
-    State* state;
-    Fallback* fallback;
-
-    void reset();
-    void f(Child*);
-};
-
-void Link::f(Child* child)
+// Candidate translation unit (score above; library headers required).
+#include "v8kernel/KernelIndex.h"
+#define SimBody SimBodyHeader
+#include "v8kernel/SimBody.h"
+#undef SimBody
+namespace RBX {
+class SimBody
 {
-    if (!state || !state->dirty) {
-        char dirty = 1;
-        if (parent)
-            parent->reset();
-        else if (fallback)
-            fallback->dirty = dirty;
-
-        if (state)
-            state->dirty = dirty;
-    }
-
-    child->index = children.size;
-    children.append(child);
-
-    if (!state)
-        state = new State(this);
+public:
+	Body* body;
+	int exePad;
+	bool dirty;
+	void makeDirty() { dirty = true; }
+	const G3D::Vector3& getForce() const;
+	const G3D::Vector3& getTorque() const;
+	void accumulateForceCofm(const G3D::Vector3&);
+	void accumulateForce(const G3D::Vector3&, const G3D::Vector3&);
+	void accumulateTorque(const G3D::Vector3&);
+	void resetAccumulators();
+};
+struct ExeKernelIndex : KernelIndex { int exePad[3]; };
+}
+#define KernelIndex ExeKernelIndex
+#include "v8kernel/Body.h"
+#undef KernelIndex
+#include "decomp.h"
+#include "util/Math.h"
+#include "v8kernel/Link.h"
+#include "v8kernel/SimBody.h"
+#include <cstddef>
+namespace RBX {
+void Body::makeCofmDirty()
+{
+	if (cofm == NULL || !cofm->getIsDirty()) {
+		if (parent != NULL) {
+			parent->makeCofmDirty();
+		}
+		else {
+			if (simBody != NULL) {
+				simBody->makeDirty();
+			}
+		}
+		if (cofm != NULL) {
+			cofm->makeDirty();
+		}
+	}
+}
+void Body::onChildAdded(Body* child)
+{
+	makeCofmDirty();
+	children.fastAppend(child);
+	if (cofm == NULL) {
+		cofm = new Cofm(this);
+	}
+}
 }

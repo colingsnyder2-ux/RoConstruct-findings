@@ -1,63 +1,34 @@
-// from server: 43% by king_originala
-struct Vector3 {
-    float x, y, z;
-};
+// from server: 95% by Espeon
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast
+// roc-lib: rbxgs-dll roc_espeon_blocknativehollowf0d5220051dea82c.cpp
 
-extern "C" void* __cdecl sub_5ddbd0(void*, const Vector3*);
+// Candidate translation unit (score above; library headers required).
+#include "v8world/Block.h"
+namespace RBX {
+__declspec(noinline) G3D::Matrix3 Block::getMomentHollow(float mass) const
+	{
+		G3D::Vector3 grid = gridSize;
+		G3D::Vector3 I;
 
-struct GlueJoint {
-    unsigned int reserved;
-    float x, y, z;
-    void* func(void* out, float mass);
-};
+		float area = ((grid.x * grid.z + grid.y * grid.z) + grid.x * grid.y) * 2;
 
-void* GlueJoint::func(void* out, float mass)
-{
-    double a = x;
-    double b = y;
-    double c = z;
-    double ab = a * b;
-    float area = (ab + (b + a) * c) * *(const float*)0x81c434;
-    double k = *(const float*)0x81c434;
+		for (int i = 0; i < 3; i++)
+		{
+			float X = grid[(i    ) % 3];
+			float Y = grid[(i + 1) % 3];
+			float Z = grid[(i + 2) % 3];
 
-    float c2 = c * c;
-    float c3 = c * c * c;
-    double t = *(const float*)0x826e68;
-    float c3bt = c * c * c * b * t;
-    double cb2 = c * b * b;
-    float cb2f = cb2;
-    float b2 = b * b;
-    float b3 = b * b * b;
-    float ab3t = b * b * b * a * t;
-    double scale = mass / (area * k);
+			float scaling = mass / (2 * area);
 
-    Vector3 value;
-    value.x = (c2 * b * a
-             + t * b * cb2
-             + c3 * a * cb2
-             + cb2f * a
-             + ab3t
-             + c3bt) * scale;
+			float temp = (Z*Z*Y)*X + (Y*Y*Y*Z)/3 + (Z*Z*Z*Y)/3 + (Y*Y*Z)*X + (X*Y*Y*Y)/3 + (X*Z*Z*Z)/3;
 
-    double a2 = a * a;
-    float a3 = a2 * a;
-    float a3cs = a2 * a * c * scale;
-    float c2a = c * c * a;
+			I[i] = temp * scaling;
+		}
 
-    value.y = (a2 * b * a
-             + c2a * b * cb2
-             + a3 * b * cb2
-             + c2a * a
-             + a3cs
-             + c3bt) * scale;
+		return Math::fromDiagonal(I);
+	}
 
-    value.z = (ab * b
-             + b2 * c * a
-             + ab * a * cb2
-             + a3cs * cb2
-             + a3 * c * a
-             + ab3t) * scale;
-
-    sub_5ddbd0(out, &value);
-    return out;
+	
 }

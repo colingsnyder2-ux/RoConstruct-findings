@@ -1,4 +1,11 @@
-// from server: 53% by king_originala
+// from server: 57% by Espeon
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: rbxgs-dll roc_espeon_spatialchildnamedlookupc47d340cf2fce1b9.cpp
+
+// Candidate translation unit (score above; library headers required).
+#include <vector>
 extern "C" void (__cdecl *invalid_parameter_noinfo)();
 extern "C" int __cdecl compare_objects(void*, void*);
 
@@ -27,12 +34,7 @@ struct BucketEntry {
     unsigned int value;
 };
 
-struct Bucket {
-    char padding[12];
-    BucketEntry* begin;
-    BucketEntry* end;
-    BucketEntry* capacity;
-};
+struct Bucket { std::vector<BucketEntry> nodes; };
 
 struct Manager {
     void process(void*, void*);
@@ -62,10 +64,7 @@ void S::visit(Node* node, void* object)
             Key key = { x, y, z };
 
             Bucket* bucket = &buckets[node->level - 1];
-            if (index >= static_cast<unsigned int>(bucket->end - bucket->begin))
-                invalid_parameter_noinfo();
-
-            Record* record = bucket->begin[index].node;
+            Record* record = bucket->nodes[index].node;
             while (record) {
                 void* other = record->object;
                 if (other != object &&
@@ -78,8 +77,10 @@ void S::visit(Node* node, void* object)
                 record = record->next;
             }
 
-            if (node->level > 1)
-                visit(find(node->level - 1, node->indices[i], &key), object);
+            if (node->level > 1) {
+                Node* child = find(node->level - 1, node->indices[i], &key);
+                visit(child, object);
+            }
         }
     }
 }

@@ -1,10 +1,11 @@
-// from server: 93% by Espeon
+// from server: 99% by EspClaude
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: openrbx-client-dll roc_espeon_connectionassign_9c16584cc999c488.cpp
+// roc-lib: rbxgs-dll roc_espclaude_ec29278c295eeeec.cpp
 
 // Candidate translation unit (score above; library headers required).
+#define _DLL
 #include <boost/signals/slot.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/function.hpp>
@@ -33,7 +34,7 @@ struct S : Base {
     void secondCallback();
 };
 
-typedef boost::slot<boost::function<void()> > Function;
+typedef boost::slot<boost::function<void(Shared)> > Function;
 struct ManagerA {
     Result connect(void*, const Function&, int);
 };
@@ -50,16 +51,10 @@ S::S(void* object, void* baseObject, void* argument)
     : Base(initialValue, makeShared(baseObject), argument),
       owner(makeShared(object))
 {
-    {
-        Function function(boost::bind(&S::firstCallback,this));
-        assign(firstConnection, managerA.connect(
+    firstConnection = managerA.connect(
             object ? static_cast<unsigned char*>(object) + 20 : 0,
-            function, 10));
-    }
-    {
-        Function function(boost::bind(&S::secondCallback,this));
-        assign(secondConnection, managerB.connect(
+            boost::bind(&S::firstCallback,this), 10);
+    secondConnection = managerB.connect(
             object ? static_cast<unsigned char*>(object) + 20 : 0,
-            function, 10));
-    }
+            boost::bind(&S::secondCallback,this), 10);
 }

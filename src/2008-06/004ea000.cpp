@@ -1,9 +1,14 @@
-// from server: 94% by colin
+// from server: 100% by EspClaude
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+// roc-lib: rbxgs-dll roc_espclaude_4f8d4db74da0eac9.cpp
+
+// Candidate translation unit (score above; library headers required).
+#define _DLL
+#include <G3D/ReferenceCount.h>
 #include <map>
-extern "C" __declspec(dllimport) long __stdcall InterlockedDecrement(volatile long*);
+
 namespace G3D {
 class Vector3 {
 public:
@@ -20,49 +25,6 @@ public:
     Vector2(const Vector2& v) { x = v.x; y = v.y; }
     operator float*() { return (float*)this; }
     operator const float*() const { return (const float*)this; }
-};
-class AtomicInt32 {
-    volatile long _value;
-public:
-    unsigned int decrement() { return InterlockedDecrement(&_value) != 0; }
-};
-class ReferenceCountedObject {
-public:
-    AtomicInt32 ReferenceCountedObject_refCount;
-    void* ReferenceCountedObject_weakPointer;
-    void ReferenceCountedObject_zeroWeakPointers();
-    virtual ~ReferenceCountedObject() {}
-};
-template <class T>
-class ReferenceCountedPointer {
-private:
-    T* m_pointer;
-    void zeroPointer() {
-        if (m_pointer != 0) {
-            if (m_pointer->ReferenceCountedObject_refCount.decrement() == 0) {
-                m_pointer->ReferenceCountedObject_zeroWeakPointers();
-                delete m_pointer;
-            }
-            m_pointer = 0;
-        }
-    }
-    void setPointer(T* x);
-public:
-    ReferenceCountedPointer() : m_pointer(0) {}
-    ReferenceCountedPointer(const ReferenceCountedPointer<T>& p) : m_pointer(0) { setPointer(p.m_pointer); }
-    ~ReferenceCountedPointer() {
-        T* pointer = m_pointer;
-        if (pointer != 0) {
-            if (pointer->ReferenceCountedObject_refCount.decrement() == 0) {
-                pointer->ReferenceCountedObject_zeroWeakPointers();
-                delete pointer;
-            }
-        }
-    }
-    const ReferenceCountedPointer<T>& operator=(const ReferenceCountedPointer<T>& p) {
-        setPointer(p.m_pointer);
-        return *this;
-    }
 };
 }
 namespace RBX {

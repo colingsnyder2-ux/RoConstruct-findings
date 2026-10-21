@@ -1,50 +1,63 @@
-// from server: 98% by king_originala
-struct Scope {
+// from server: 100% by EspClaude
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
+namespace boost { template<class T> class scoped_ptr { T* px; public: T& operator*() const { return *px; } T* get() const { return px; } }; }
+namespace RBX {
+class CodeProfiler;
+namespace Profiling {
+class Mark {
     char storage[24];
-    Scope(void*, int);
-    ~Scope();
+public:
+    Mark(CodeProfiler&, bool);
+    ~Mark();
 };
-
-struct Stage {
+}
+class AssemblyList { char d[0x20]; };
+class Contacts { char d[0x0c]; };
+class SleepStage {
     char pad0[0xe0];
-    char first[0x20];
-    char second[0xa0];
-    char third[0x0c];
-    char fourth[0x34];
-    void* context0;
-    void* context1;
-    void* context2;
+    AssemblyList recursiveWakePending;
+    char wakePending[0xa0];
+    Contacts steppingContacts;
+    char touchingContacts[0x34];
+    boost::scoped_ptr<CodeProfiler> profilingCollision;
+    boost::scoped_ptr<CodeProfiler> profilingWake;
+    boost::scoped_ptr<CodeProfiler> profilingSleep;
 
-    void process(void*, int, int);
-    void prepare(void*);
-    void update();
-    void periodic();
-    void finish();
-    void f(int);
+    void stepAssemblies(void*, int, int);
+    void stepContacts(void*);
+    void stepAssembliesAwake();
+    void stepAssembliesSleepingChecking();
+    void stepDownstream();
+    void stepAssembliesRecursiveWakePending() { stepAssemblies(&recursiveWakePending, 8, 1); }
+    void stepAssembliesWakePending() { stepAssemblies(wakePending, 0, 2); }
+public:
+    void stepWorld(int worldStepId);
 };
 
-void Stage::f(int count)
+void SleepStage::stepWorld(int worldStepId)
 {
     {
-        Scope scope(context1, 0);
-        process(first, 8, 1);
-        process(second, 0, 2);
+        Profiling::Mark mark(*profilingWake, false);
+        stepAssembliesRecursiveWakePending();
+        stepAssembliesWakePending();
     }
     {
-        Scope scope(context0, 0);
-        prepare(third);
-        process(first, 8, 1);
-        process(second, 0, 2);
+        Profiling::Mark mark(*profilingCollision, false);
+        stepContacts(&steppingContacts);
+        stepAssembliesRecursiveWakePending();
+        stepAssembliesWakePending();
     }
     {
-        Scope scope(context2, 0);
-        update();
-        if (count % 4 == 0)
-            periodic();
-        process(second, 0, 2);
+        Profiling::Mark mark(*profilingSleep, false);
+        stepAssembliesAwake();
+        if (worldStepId % 4 == 0)
+            stepAssembliesSleepingChecking();
+        stepAssembliesWakePending();
     }
-    prepare(fourth);
-    process(first, 8, 1);
-    process(second, 0, 2);
-    finish();
+    stepContacts(touchingContacts);
+    stepAssembliesRecursiveWakePending();
+    stepAssembliesWakePending();
+    stepDownstream();
+}
 }

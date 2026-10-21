@@ -1,36 +1,55 @@
+// from server: 100% by EspClaude
 // roc-lang: cpp
 // roc-cl: 21022
-// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: openrbx-client-dll App/v8datamodel/GlobalSettings.cpp
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast
+// roc-lib: rbxgs-dll roc_espclaude_8a8912a8f8ce25f9.cpp
 
 // Candidate translation unit (score above; library headers required).
-#include "v8datamodel/GlobalSettings.h"
-
-#include "util/Name.h"
-
-namespace RBX {
-
-const char sGlobalSettings[] = "GlobalSettings";
-
-boost::recursive_mutex GlobalSettings::mutex;
-
-// FUNCTION: WEBSERVICE 0x100b7370
-GlobalSettings::GlobalSettings()
+#undef _RELEASEASSERT
+#undef _DEBUG
+#define _DLL
+#define private public
+#include "util/IRenderable.h"
+#undef private
+#include "util/Object.h"
+#define hasListeners() hasListeners() const { return listeners.size() > 0; } bool hasListenersEmpty()
+#include "util/Events.h"
+#undef hasListeners
+namespace RBX { template<class T> class GuidItem { public: virtual ~GuidItem() {} char guidPad[0xc]; }; }
+namespace RBX { template<class T> class GuidAFP : public AbstractFactoryProduct<T> { protected: virtual void onGuidChanged() {} }; }
+#define AbstractFactoryProduct GuidItem<Instance>, public GuidAFP
+#include "util/Guid.h"
+namespace RBX { class GuidStub { public: typedef Guid::Data Data; void assign(const Data&) {} operator const Guid&() const { return *(const Guid*)0; } }; }
+#define Guid GuidStub
+#include "v8tree/Instance.h"
+#undef Guid
+#undef AbstractFactoryProduct
+#include "reflection/reflection.h"
+#include "util/NormalId.h"
+#define FaceInstance FaceInstanceOrig
+#include "v8datamodel/FaceInstance.h"
+#undef FaceInstance
+namespace RBX
 {
-	setName("Global Settings");
+	class FaceInstance : public Reflection::Described<FaceInstance, &sFaceInstance, Instance>, public IRenderable
+	{
+	private:
+		NormalId face;
+	public:
+		static const Reflection::EnumPropDescriptor<FaceInstance,NormalId> prop_Face;
+		FaceInstance();
+		NormalId getFace() const;
+		void setFace(NormalId);
+	protected:
+		virtual bool askSetParent(const Instance*) const;
+	};
 }
-
-// FUNCTION: WEBSERVICE 0x100b74f0
-boost::shared_ptr<GlobalSettings> GlobalSettings::singleton()
+#include "v8datamodel/Decal.h"
+namespace RBX
 {
-	boost::recursive_mutex::scoped_lock lock(mutex);
-
-	static boost::shared_ptr<GlobalSettings> sing = Creatable<Instance>::create<GlobalSettings>();
-
-	return sing;
+	Texture::Texture()
+		: studsPerTile(2.0f, 2.0f)
+	{
+		setName("Texture");
+	}
 }
-
-} // namespace RBX
-
-template const RBX::Name& RBX::Name::doDeclare<RBX::sGlobalSettings>();
-template void RBX::Name::callDoDeclare<RBX::sGlobalSettings>();

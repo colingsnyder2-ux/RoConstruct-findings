@@ -1,86 +1,28 @@
-// from server: 87% by king_originala
-typedef unsigned int size_t;
+// from server: 100% by EspClaude
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: rbxgs-dll roc_espclaude_fb5f53f9882dbe52.cpp
 
-void* __cdecl operator new(size_t);
-
-extern void* (__thiscall *constructString)(void*);
-
-namespace std {
-    template<class T> struct char_traits;
-    template<class T> struct allocator;
-
-    template<class T, class Traits, class Alloc>
-    struct basic_string {
-        unsigned char storage[28];
-        basic_string();
-        ~basic_string();
-    };
-
-    template<class T, class Traits, class Alloc>
-    __forceinline basic_string<T, Traits, Alloc>::basic_string()
-    {
-        constructString(this);
-    }
-}
-
-const void* __cdecl getLocalScope();
-
-struct Guid {
-    std::basic_string<char, std::char_traits<char>, std::allocator<char> > text;
-    const void* scope;
-
-    Guid();
-    ~Guid();
+// Candidate translation unit (score above; library headers required).
+#define _DLL
+#include <string>
+#include <vector>
+namespace RBX {
+class Name { public: static const Name& getNullName(); };
+class ContentId
+{
+	std::string id;
+	const Name* mimeTypePtr;
+public:
+	ContentId() : id(), mimeTypePtr(&Name::getNullName()) {}
 };
-
-__forceinline Guid::Guid()
-    : scope(getLocalScope())
+class ContentList
 {
-}
-
-struct ContainerBase {
-    struct Proxy {
-        ContainerBase* owner;
-        Proxy(ContainerBase*);
-    };
-
-    Proxy* proxy;
-    unsigned int reserved[2];
-
-    ContainerBase();
-    ~ContainerBase();
+public:
+	ContentId id;
+	std::vector<int> items;
+	ContentList();
 };
-
-__forceinline ContainerBase::Proxy::Proxy(ContainerBase* p)
-    : owner(p)
-{
-}
-
-__forceinline ContainerBase::ContainerBase()
-    : proxy(new Proxy(this))
-{
-}
-
-struct Container : ContainerBase {
-    void* first;
-    void* last;
-    void* end;
-
-    Container();
-};
-
-__forceinline Container::Container()
-    : first(0), last(0), end(0)
-{
-}
-
-struct S {
-    Guid guid;
-    Container container;
-
-    S();
-};
-
-S::S()
-{
+ContentList::ContentList() {}
 }

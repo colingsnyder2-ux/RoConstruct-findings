@@ -1,44 +1,39 @@
+// from server: 100% by Espeon
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast
-// roc-lib: rbxgs-dll v8world/Ball.cpp
+// roc-lib: rbxgs-dll roc_espeon_faceoverlapinlineaccess16b5b005730c3cc8.cpp
 
 // Candidate translation unit (score above; library headers required).
-#include "v8world/Ball.h"
-#include "util/Math.h"
-#include <G3D/Sphere.h>
-#include <G3D/CollisionDetection.h>
-
-namespace RBX
-{
-	G3D::Matrix3 Ball::getMomentSolid(float mass) const
+#include "util/Face.h"
+#include <G3D/Plane.h>
+namespace RBX {
+inline G3D::Vector3& Face::operator[](int i) {return ((G3D::Vector3*)this)[i];}
+inline const G3D::Vector3& Face::operator[](int i) const {return ((G3D::Vector3*)this)[i];}
+bool Face::overlapWithinPlanes(const Face& f0, const Face& f1, float tolerance)
 	{
-		float value = this->realRadius * this->realRadius * mass * 0.4f;
-		return Math::fromDiagonal(G3D::Vector3(value, value, value));
+		for (int i = 0; i < 2; ++i)
+		{
+			const Face& face = i == 0 ? f0 : f1;
+			const Face& otherFace = i == 0 ? f1 : f0;
+
+			G3D::Plane p0(face.c0, face.c1, face.c3);
+			
+			G3D::Vector3 normal;
+			float distance;
+			p0.getEquation(normal, distance);
+
+			Face overlapOn1 = otherFace.projectOverlapOnMe(face);
+
+			for (int j = 0; j < 4; ++j)
+			{
+				if (fabs(overlapOn1[j].dot(normal) + distance) > tolerance)
+					return false;
+			}
+		}
+
+		return true;
 	}
 
-	void Ball::onSetSize()
-	{
-		this->realRadius = this->gridSize.x * 0.5f;
-	}
-
-	float Ball::getGridVolume() const
-	{
-		// volume of a sphere = 4/3 * pi * radius^3
-		float radius = this->gridSize.x * 0.5f;
-		return (4.0f/3.0f) * Math::pi() * radius * radius * radius;
-	}
-
-	bool Ball::hitTest(const G3D::Ray& rayInMe, G3D::Vector3& localHitPoint, bool& inside)
-	{
-		float mag = rayInMe.origin.squaredMagnitude();
-		inside = this->realRadius * this->realRadius >= mag;
-
-		G3D::Sphere sphere(G3D::Vector3::zero(), this->realRadius);
-		return G3D::CollisionDetection::collisionTimeForMovingPointFixedSphere(
-			rayInMe.origin,
-			rayInMe.direction,
-			sphere,
-			localHitPoint) != G3D::inf();
-	}
+	
 }

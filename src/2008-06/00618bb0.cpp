@@ -1,36 +1,62 @@
-// from server: 83% by Espeon
+// from server: 85% by colin
 // roc-lang: cpp
 // roc-cl: 21022
-// roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: openrbx-client-dll roc_espeon_flagfactory_6e81c5d830ad0ea9.cpp
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+// roc-lib: rbxgs roc_espclaude_277ac2163fb35fc7.cpp
 
 // Candidate translation unit (score above; library headers required).
+#include <vector>
+#include <stddef.h>
 #include <boost/shared_ptr.hpp>
-typedef boost::shared_ptr<void> Shared;
-struct Temporary {
-    Shared pointer;
-    int value;
-
-    Temporary(Shared);
-};
-
-struct Result {
-    int first;
-    int second;
-    int third;
-    int value;
-    Shared pointer;
-
-    Result(int, int, int, const Temporary&);
-};
-
-__forceinline Result::Result(int a, int b, int c, const Temporary& temporary)
-    : first(a), second(b), third(c), value(temporary.value),
-      pointer(temporary.pointer)
+#include <boost/enable_shared_from_this.hpp>
+#include <boost/bind.hpp>
+#include <boost/function.hpp>
+namespace RBX {
+template<class Class>
+boost::shared_ptr<Class> shared_from(Class* r)
 {
+	return r ? boost::shared_static_cast<Class>(r->shared_from_this()) : boost::shared_ptr<Class>();
 }
-
-Result __cdecl reconstruct(int a, int b, int c, Shared pointer)
+class Instance;
+struct ChildrenHolder { std::vector<boost::shared_ptr<Instance> > v; };
+struct VEmpty {};
+class Instance : public boost::enable_shared_from_this<Instance>, public virtual VEmpty {
+public:
+	virtual ~Instance();
+	char pad0[0x108 - 0x10];
+	ChildrenHolder* children;
+	char pad1[0x268 - 0x10c];
+	boost::shared_ptr<Instance> clone();
+	size_t numChildren() const
+	{
+		if (children)
+			return children->v.size();
+		else
+			return 0;
+	}
+};
+class TimerService {
+public:
+	void delay(boost::function0<void> func, double seconds);
+};
+class Flag : public Instance {
+public:
+	boost::shared_ptr<Instance> evilClone;
+	char pad2[0x288 - 0x270];
+	TimerService* timer;
+private:
+	void doUglyPeriodicCloneHack();
+};
+typedef char chk1[(offsetof(Flag, evilClone) == 0x268) ? 1 : -1];
+typedef char chk2[(offsetof(Flag, timer) == 0x288) ? 1 : -1];
+typedef char chk3[(offsetof(Instance, children) == 0x108) ? 1 : -1];
+void Flag::doUglyPeriodicCloneHack()
 {
-    return Result(a, b, c, Temporary(pointer));
+	evilClone = clone();
+
+	if (timer && numChildren() == 0)
+	{
+		timer->delay(boost::bind(&Flag::doUglyPeriodicCloneHack, shared_from(this)), 2.0f);
+	}
+}
 }

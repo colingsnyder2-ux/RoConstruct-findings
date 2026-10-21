@@ -1,21 +1,52 @@
-// from server: 85% by Espeon
+// from server: 100% by EspClaude
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: boost-1.35.0 roc_espeon_tooldirectmemberbindea57c37dbe0cdfc2.cpp
+// roc-lib: rbxgs-dll roc_espclaude_f69d01038bd218bf.cpp
 
 // Candidate translation unit (score above; library headers required).
-#include <boost/function.hpp>
-#include <boost/bind.hpp>
-#include <boost/shared_ptr.hpp>
-#include <boost/signals/slot.hpp>
-#include <boost/signals/connection.hpp>
-struct Instance;struct Tool;
-typedef void (Tool::*Callback)(boost::shared_ptr<Instance>);
-typedef boost::slot<boost::function<void(boost::shared_ptr<Instance>)> > Slot;
-struct Signal{boost::signals::connection connect(void*,const Slot&,int);};
-struct Context{void* getObject();};Context* getContext(void*);extern Signal signal1,signal2;
-struct Location{virtual void location();};struct Selectable{virtual void select();};
-struct Primary{virtual ~Primary();};
-struct Tool:Primary,virtual Location,virtual Selectable{char prefix[0xfc];void* context;char gap[0x138];boost::signals::scoped_connection first,second;void callback1(boost::shared_ptr<Instance>);void callback2(boost::shared_ptr<Instance>);void connect();};
-void Tool::connect(){void* object=getContext(context)->getObject();first=signal1.connect(object?static_cast<char*>(object)+0x14:0,boost::bind(&Tool::callback1,this,_1),10);second=signal2.connect(object?static_cast<char*>(object)+0x14:0,boost::bind(&Tool::callback2,this,_1),10);}
+#undef _RELEASEASSERT
+#undef _DEBUG
+#define _DLL
+#define private public
+#include "util/IRenderable.h"
+#undef private
+#include "util/Object.h"
+#define hasListeners() hasListeners() const { return listeners.size() > 0; } bool hasListenersEmpty()
+#include "util/Events.h"
+#undef hasListeners
+namespace RBX { template<class T> class GuidItem { public: virtual ~GuidItem() {} char guidPad[0xc]; }; }
+namespace RBX { template<class T> class GuidAFP : public AbstractFactoryProduct<T> { protected: virtual void onGuidChanged() {} }; }
+#define AbstractFactoryProduct GuidItem<Instance>, public GuidAFP
+#include "util/Guid.h"
+namespace RBX { class GuidStub { public: typedef Guid::Data Data; void assign(const Data&) {} operator const Guid&() const { return *(const Guid*)0; } }; }
+#define Guid GuidStub
+#include "v8tree/Instance.h"
+#undef Guid
+#undef AbstractFactoryProduct
+#include "v8datamodel/Hopper.h"
+#include "util/IRenderable.h"
+#include "v8datamodel/IEquipable.h"
+#define SurfacesNeedAdorn SurfacesNeedAdorn; char exePartPad[0x118]
+#include "v8datamodel/PartInstance.h"
+#undef SurfacesNeedAdorn
+namespace RBX { struct ExePad8 { virtual void exePadV(); char exePad[0x2c]; }; }
+#include "v8datamodel/Tool.h"
+#include "humanoid/Humanoid.h"
+namespace RBX
+{
+	class ExeChildSignal
+	{
+	public:
+		boost::signals::connection connect(Reflection::SignalSource* source, const boost::slot<boost::function<void(boost::shared_ptr<Instance>)> >& slot, int priority);
+	};
+
+	void Tool::upTo_HasTorso()
+	{
+		Humanoid* humanoid = Humanoid::modelIsCharacter(getParent());
+		PartInstance* torso = humanoid->getTorso();
+
+		torsoChildAdded = reinterpret_cast<ExeChildSignal&>(Instance::event_childAdded).connect(torso, boost::bind(&Tool::onEvent_AddedBackend, this, _1), 10);
+		torsoChildRemoved = reinterpret_cast<ExeChildSignal&>(Instance::event_childRemoved).connect(torso, boost::bind(&Tool::onEvent_RemovedBackend, this, _1), 10);
+	}
+}

@@ -1,38 +1,51 @@
-// from server: 86% by colin
-// from server: 78% by king_originala
-// roc 2008-06 00618390  unit: RBX::Flag  size: 36 bytes
-// Make this compile to the exact bytes below, then: roc check 2008-06 00618390
-//
-// 00618390  8b542404             mov edx, dword ptr [esp + 4]
-// 00618394  80ba7c01000000       cmp byte ptr [edx + 0x17c], 0
-// 0061839b  7405                 je 0x6183a2
-// 0061839d  32c0                 xor al, al
-// 0061839f  c20400               ret 4
-// 006183a2  8b818c020000         mov eax, dword ptr [ecx + 0x28c]
-// 006183a8  398278010000         cmp dword ptr [edx + 0x178], eax
-// 006183ae  0f95c0               setne al
-// 006183b1  c20400               ret 4
+// from server: 100% by EspClaude
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: rbxgs-dll roc_espclaude_87574d89f0035cf6.cpp
 
-struct Argument
+// Candidate translation unit (score above; library headers required).
+#undef _RELEASEASSERT
+#undef _DEBUG
+#define _DLL
+#define private public
+#include "util/IRenderable.h"
+#undef private
+#include "util/Object.h"
+#define hasListeners() hasListeners() const { return listeners.size() > 0; } bool hasListenersEmpty()
+#include "util/Events.h"
+#undef hasListeners
+namespace RBX { template<class T> class GuidItem { public: virtual ~GuidItem() {} char guidPad[0xc]; }; }
+namespace RBX { template<class T> class GuidAFP : public AbstractFactoryProduct<T> { protected: virtual void onGuidChanged() {} }; }
+#define AbstractFactoryProduct GuidItem<Instance>, public GuidAFP
+#include "util/Guid.h"
+namespace RBX { class GuidStub { public: typedef Guid::Data Data; void assign(const Data&) {} operator const Guid&() const { return *(const Guid*)0; } }; }
+#define Guid GuidStub
+#include "v8tree/Instance.h"
+#undef Guid
+#undef AbstractFactoryProduct
+#include "v8datamodel/Hopper.h"
+#include "util/IRenderable.h"
+#include "v8datamodel/IEquipable.h"
+namespace RBX { struct ExePad8 { virtual void exePadV(); char exePad[0x2c]; }; }
+#include "v8datamodel/Tool.h"
+#include "v8datamodel/Flag.h"
+#include "Network/Player.h"
+namespace RBX
 {
-    char padding[0x178];
-    unsigned long value;
-    bool disabled;
-};
+	bool Flag::canBePickedUpByPlayer(Network::Player* p)
+	{
+		if (p->getNeutral() != false)
+			return false;
 
-struct S
-{
-    char padding[0x28c];
-    unsigned long value;
-
-    bool f(const Argument* argument);
-};
-
-bool S::f(const Argument* argument)
-{
-    if (argument->disabled)
-        return false;
-    if (value != argument->value)
-        return true;
-    return false;
+		BrickColor current = teamColor;
+		if (p->getTeamColor() != current)
+		{
+			return true;
+		}
+		else
+		{
+			return false;
+		}
+	}
 }

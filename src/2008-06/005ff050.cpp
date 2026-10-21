@@ -1,96 +1,69 @@
-// from server: 92% by Espeon
+// from server: 100% by EspClaude
 // roc-lang: cpp
 // roc-cl: 21022
-// roc-flags: /O2 /GS- /EHsc /MD /fp:fast
-// roc-lib: rbxgs-dll roc_espeon_toolorderedmultiply89790b7943505da7.cpp
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast
+// roc-lib: rbxgs-dll roc_espclaude_032a4906dcd22147.cpp
 
 // Candidate translation unit (score above; library headers required).
-#pragma float_control(precise, off)
-#include "G3D/CoordinateFrame.h"
-typedef G3D::Vector3 Vector;
-typedef G3D::CoordinateFrame Frame;
-inline Vector multiply(const Vector& v,float scale) {return Vector(v.x*scale,v.y*scale,v.z*scale);}
-struct FrameProvider {
-    virtual Frame getFrame();
-};
-
-struct Parent {
-    char padding[0x104];
-    void* instance;
-};
-
-struct Attachment {
-    Parent* getParent();
-    void setParent(Parent*);
-};
-
-struct AttachmentPtr {
-    Attachment* pointer;
-    void* control;
-    void reset();
-};
-
-struct Part {
-    void setValue(bool);
-    void setPosition(Vector);
-    void setSize(const Vector&);
-};
-
-struct Model {
-    char padding[0x134];
-    int* virtualBaseTable;
-};
-
-extern "C" void* __cdecl func_006a17c6(
-    void*, int, const void*, const void*, int);
-extern int __cdecl func_005d9a20(Model*);
-
-extern char type_0092907c[];
-extern char type_00932a40[];
-const float constant_00826e6c = 4.0f;
-extern const float constant_00828b60;
-extern const float constant_0082ca40;
-
-struct Tool {
-    char padding[0x1a4];
-    AttachmentPtr attachment;
-
-    Part* getPart();
-    void finish();
-    void func_005ff050();
-};
-
-void Tool::func_005ff050()
+#undef _RELEASEASSERT
+#undef _DEBUG
+#define _DLL
+#define private public
+#include "util/IRenderable.h"
+#undef private
+#include "util/Object.h"
+#define hasListeners() hasListeners() const { return listeners.size() > 0; } bool hasListenersEmpty()
+#include "util/Events.h"
+#undef hasListeners
+namespace RBX { template<class T> class GuidItem { public: virtual ~GuidItem() {} char guidPad[0xc]; }; }
+namespace RBX { template<class T> class GuidAFP : public AbstractFactoryProduct<T> { protected: virtual void onGuidChanged() {} }; }
+#define AbstractFactoryProduct GuidItem<Instance>, public GuidAFP
+#include "util/Guid.h"
+namespace RBX { class GuidStub { public: typedef Guid::Data Data; void assign(const Data&) {} operator const Guid&() const { return *(const Guid*)0; } }; }
+#define Guid GuidStub
+#include "v8tree/Instance.h"
+#undef Guid
+#undef AbstractFactoryProduct
+#include "v8datamodel/Hopper.h"
+#include "util/IRenderable.h"
+#include "v8datamodel/IEquipable.h"
+#define SurfacesNeedAdorn SurfacesNeedAdorn; char exePartPad[0x118]
+#include "v8datamodel/PartInstance.h"
+#undef SurfacesNeedAdorn
+#define candidatePrimaryPart candidatePrimaryPart; std::vector<boost::shared_ptr<PartInstance> > exeModelVector
+#include "v8datamodel/ModelInstance.h"
+#undef candidatePrimaryPart
+namespace RBX { struct ExePad8 { virtual void exePadV(); char exePad[0x2c]; }; }
+#include "v8datamodel/Tool.h"
+#include "v8datamodel/JointInstance.h"
+#include "humanoid/Humanoid.h"
+namespace RBX
 {
-    Model* model = 0;
-    if (attachment.pointer) {
-        Parent* parent = attachment.pointer->getParent();
-        if (parent)
-            model = static_cast<Model*>(func_006a17c6(
-                parent->instance, 0, type_0092907c, type_00932a40, 0));
-        attachment.pointer->setParent(0);
-        attachment.reset();
-    }
+	void Tool::downFrom_Equipped()
+	{
+		ModelInstance* character = NULL;
+		if (weld)
+		{
+			if (PartInstance* part0 = weld->getPart0())
+				character = dynamic_cast<ModelInstance*>(part0->getParent());
+			weld->setParent(NULL);
+			weld.reset();
+		}
 
-    Part* part = getPart();
-    if (part) {
-        part->setValue(true);
-        if (func_005d9a20(model)) {
-            FrameProvider* provider = reinterpret_cast<FrameProvider*>(
-                reinterpret_cast<char*>(model) + 0x134 +
-                model->virtualBaseTable[2]);
-            Frame frame = provider->getFrame();
-            Vector position;
-            position.x = frame.translation.x;
-            position.z = frame.translation.z;
-            position.y = frame.translation.y + constant_00826e6c;
-            float scale = constant_00828b60;
-            part->setPosition(multiply(multiply(frame.rotation.getColumn(2), scale), constant_0082ca40) + position);
-            position.x = 1.0f;
-            position.y = 1.0f;
-            position.z = 1.0f;
-            part->setSize(position);
-        }
-    }
-    finish();
+		if (PartInstance* handle = getHandle())
+		{
+			handle->setCanCollide(true);
+			if (Humanoid::modelIsCharacter(character))
+			{
+				G3D::CoordinateFrame location = character->getLocation();
+				G3D::Vector3 pos = location.translation;
+				pos.y += 4;
+				G3D::Vector3 dest = location.lookVector() * 8 + pos;
+				handle->moveToPoint(dest);
+				handle->setRotationalVelocity(G3D::Vector3(1, 1, 1));
+			}
+		}
+
+		onUnequipped();
+	}
 }
