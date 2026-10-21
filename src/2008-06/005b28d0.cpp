@@ -1,4 +1,8 @@
-// from server: 94% by colin
+// from server: 100% by EspClaude
+// roc 2008-06 005b28d0  unit: RBX::Accoutrement  size: 366 bytes
+// Make this compile to the exact bytes below, then: roc check 2008-06 005b28d0
+//
+
 //
 
 extern "C" double __cdecl sqrt(double);
@@ -7,6 +11,18 @@ extern "C" double __cdecl sqrt(double);
 
 struct Vector3 {
     float x, y, z;
+    Vector3() {}
+    Vector3(float _x, float _y, float _z) : x(_x), y(_y), z(_z) {}
+    float squaredMagnitude() const { return x * x + y * y + z * z; }
+    Vector3 direction() const {
+        const float lenSquared = squaredMagnitude();
+        const float invSqrt = 1.0f / (float)sqrt(lenSquared);
+        return Vector3(x * invSqrt, y * invSqrt, z * invSqrt);
+    }
+    Vector3 cross(const Vector3& rkVector) const {
+        return Vector3(y * rkVector.z - z * rkVector.y, z * rkVector.x - x * rkVector.z,
+                       x * rkVector.y - y * rkVector.x);
+    }
     float unitize(float);
 };
 
@@ -44,29 +60,10 @@ void Tool::orient(const Vector3& direction) {
     Vector3 right = result.rotation.column(0);
     Vector3 back = result.rotation.column(2);
 
-    float inverseLength = 1.0f / (float)sqrt(
-        direction.x * direction.x +
-        direction.y * direction.y +
-        direction.z * direction.z);
-
-    Vector3 up = {
-        direction.x * inverseLength,
-        direction.y * inverseLength,
-        direction.z * inverseLength
-    };
-
-    Vector3 newBack = {
-        right.y * up.z - right.z * up.y,
-        right.z * up.x - right.x * up.z,
-        right.x * up.y - right.y * up.x
-    };
+    Vector3 up = direction.direction();
+    Vector3 newBack = right.cross(up);
     newBack.unitize(normalizationTolerance);
-
-    Vector3 newRight = {
-        up.y * newBack.z - up.z * newBack.y,
-        up.z * newBack.x - up.x * newBack.z,
-        up.x * newBack.y - up.y * newBack.x
-    };
+    Vector3 newRight = up.cross(newBack);
     newRight.unitize(normalizationTolerance);
 
     result.rotation.setColumn(0, newRight);

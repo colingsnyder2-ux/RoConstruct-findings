@@ -1,40 +1,27 @@
-// from server: 93% by king_originala
-struct Source;
+// from server: 100% by EspClaude
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
+struct Count
+{
+    unsigned int pi;
+    Count() : pi(0) {}
+    Count(const Count& o) : pi(o.pi) {}
+    ~Count() {}
+};
 
 struct Result
 {
-    unsigned int first;
-    unsigned int second;
+    unsigned int px;
+    Count pn;
 
-    Result(Source* source);
-    Result(const Result& other);
-    ~Result();
+    Result() : px(0), pn() {}
 };
 
 struct Source
 {
-    void copy(Result* output);
+    Result get();
 };
-
-inline Result::Result(Source* source)
-{
-    if (source)
-        source->copy(this);
-    else
-    {
-        first = 0;
-        second = 0;
-    }
-}
-
-inline Result::Result(const Result& other)
-    : first(other.first), second(other.second)
-{
-}
-
-inline Result::~Result()
-{
-}
 
 struct S
 {
@@ -49,5 +36,8 @@ struct S
 void S::f()
 {
     baseCall();
-    consume(Result(source));
+    if (source)
+        consume(source->get());
+    else
+        consume(Result());
 }
