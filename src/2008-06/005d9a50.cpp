@@ -1,209 +1,288 @@
-// from server: 98% by colin
+// from server: 100% by Espeon
+// roc-lang: cpp
 // roc-cl: 21022
-// roc-flags: /O2 /GS- /EHsc /MD /fp:fast
-// from server: 94% by king_originala
-// roc 2008-06 005d9a50  unit: RBX::Humanoid  size: 337 bytes
-// Make this compile to the exact bytes below, then: roc check 2008-06 005d9a50
-//
-// 005d9a50  d9ee                 fldz 
-// 005d9a52  83ec18               sub esp, 0x18
-// 005d9a55  56                   push esi
-// 005d9a56  b801000000           mov eax, 1
-// 005d9a5b  57                   push edi
-// 005d9a5c  8bf9                 mov edi, ecx
-// 005d9a5e  840550f09600         test byte ptr [0x96f050], al
-// 005d9a64  751a                 jne 0x5d9a80
-// 005d9a66  090550f09600         or dword ptr [0x96f050], eax
-// 005d9a6c  d91544f09600         fst dword ptr [0x96f044]
-// 005d9a72  d91548f09600         fst dword ptr [0x96f048]
-// 005d9a78  d91d4cf09600         fstp dword ptr [0x96f04c]
-// 005d9a7e  eb02                 jmp 0x5d9a82
-// 005d9a80  ddd8                 fstp st(0)
-// 005d9a82  8b742424             mov esi, dword ptr [esp + 0x24]
-// 005d9a86  d90544f09600         fld dword ptr [0x96f044]
-// 005d9a8c  8b87b8010000         mov eax, dword ptr [edi + 0x1b8]
-// 005d9a92  d91e                 fstp dword ptr [esi]
-// 005d9a94  d90548f09600         fld dword ptr [0x96f048]
-// 005d9a9a  d95e04               fstp dword ptr [esi + 4]
-// 005d9a9d  d9054cf09600         fld dword ptr [0x96f04c]
-// 005d9aa3  d95e08               fstp dword ptr [esi + 8]
-// 005d9aa6  83f803               cmp eax, 3
-// 005d9aa9  7524                 jne 0x5d9acf
-// 005d9aab  d987d0010000         fld dword ptr [edi + 0x1d0]
-// 005d9ab1  8bc6                 mov eax, esi
-// 005d9ab3  d91e                 fstp dword ptr [esi]
-// 005d9ab5  d987d4010000         fld dword ptr [edi + 0x1d4]
-// 005d9abb  d95e04               fstp dword ptr [esi + 4]
-// 005d9abe  d987d8010000         fld dword ptr [edi + 0x1d8]
-// 005d9ac4  5f                   pop edi
-// 005d9ac5  d95e08               fstp dword ptr [esi + 8]
-// 005d9ac8  5e                   pop esi
-// 005d9ac9  83c418               add esp, 0x18
-// 005d9acc  c20800               ret 8
-// 005d9acf  83f802               cmp eax, 2
-// 005d9ad2  0f85bf000000         jne 0x5d9b97
-// 005d9ad8  53                   push ebx
-// 005d9ad9  e832f0ffff           call 0x5d8b10
-// 005d9ade  d9ee                 fldz 
-// 005d9ae0  d954240c             fst dword ptr [esp + 0xc]
-// 005d9ae4  8bd8                 mov ebx, eax
-// 005d9ae6  d9542410             fst dword ptr [esp + 0x10]
-// 005d9aea  d95c2414             fstp dword ptr [esp + 0x14]
-// 005d9aee  85db                 test ebx, ebx
-// 005d9af0  0f84a0000000         je 0x5d9b96
-// 005d9af6  8d44240c             lea eax, [esp + 0xc]
-// 005d9afa  50                   push eax
-// 005d9afb  8bcf                 mov ecx, edi
-// 005d9afd  e8aedeffff           call 0x5d79b0
-// 005d9b02  84c0                 test al, al
-// 005d9b04  0f848c000000         je 0x5d9b96
-// 005d9b0a  8bcb                 mov ecx, ebx
-// 005d9b0c  e89ff1fbff           call 0x598cb0
-// 005d9b11  d944240c             fld dword ptr [esp + 0xc]
-// 005d9b15  d86024               fsub dword ptr [eax + 0x24]
-// 005d9b18  83c024               add eax, 0x24
-// 005d9b1b  d9442410             fld dword ptr [esp + 0x10]
-// 005d9b1f  d86004               fsub dword ptr [eax + 4]
-// 005d9b22  d9442414             fld dword ptr [esp + 0x14]
-// 005d9b26  d86008               fsub dword ptr [eax + 8]
-// 005d9b29  d9ca                 fxch st(2)
-// 005d9b2b  d954240c             fst dword ptr [esp + 0xc]
-// 005d9b2f  d9c9                 fxch st(1)
-// 005d9b31  d80580e38100         fadd dword ptr [0x81e380]
-// 005d9b37  d9ca                 fxch st(2)
-// 005d9b39  d9542414             fst dword ptr [esp + 0x14]
-// 005d9b3d  dcc8                 fmul st(0), st(0)
-// 005d9b3f  d9c1                 fld st(1)
-// 005d9b41  deca                 fmulp st(2)
-// 005d9b43  dec1                 faddp st(1)
-// 005d9b45  d9c1                 fld st(1)
-// 005d9b47  deca                 fmulp st(2)
-// 005d9b49  dec1                 faddp st(1)
-// 005d9b4b  d9ee                 fldz 
-// 005d9b4d  d95c2410             fstp dword ptr [esp + 0x10]
-// 005d9b51  d9fa                 fsqrt 
-// 005d9b53  d81d34c48100         fcomp dword ptr [0x81c434]
-// 005d9b59  dfe0                 fnstsw ax
-// 005d9b5b  f6c405               test ah, 5
-// 005d9b5e  7a18                 jp 0x5d9b78
-// 005d9b60  807c242c00           cmp byte ptr [esp + 0x2c], 0
-// 005d9b65  740a                 je 0x5d9b71
-// 005d9b67  c787b801000003000000 mov dword ptr [edi + 0x1b8], 3
-// 005d9b71  e82ae7e9ff           call 0x4782a0
-// 005d9b76  eb0e                 jmp 0x5d9b86
-// 005d9b78  8d4c2418             lea ecx, [esp + 0x18]
-// 005d9b7c  51                   push ecx
-// 005d9b7d  8d4c2410             lea ecx, [esp + 0x10]
-// 005d9b81  e8ea0ff2ff           call 0x4fab70
-// 005d9b86  d900                 fld dword ptr [eax]
-// 005d9b88  d91e                 fstp dword ptr [esi]
-// 005d9b8a  d94004               fld dword ptr [eax + 4]
-// 005d9b8d  d95e04               fstp dword ptr [esi + 4]
-// 005d9b90  d94008               fld dword ptr [eax + 8]
-// 005d9b93  d95e08               fstp dword ptr [esi + 8]
-// 005d9b96  5b                   pop ebx
-// 005d9b97  5f                   pop edi
-// 005d9b98  8bc6                 mov eax, esi
-// 005d9b9a  5e                   pop esi
-// 005d9b9b  83c418               add esp, 0x18
-// 005d9b9e  c20800               ret 8
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD /fp:fast
+// roc-lib: openrbx-client-dll roc_espeon_walknativehumanoidlayoutefa12ae2d470dac4.cpp
 
-extern "C" double __cdecl sqrt(double);
-#pragma intrinsic(sqrt)
-#pragma float_control(precise, off, push)
+// Candidate translation unit (score above; library headers required).
+#ifndef HUMANOID_HUMANOID_H
+#define HUMANOID_HUMANOID_H
 
-extern const float threshold;
-struct Vector3
+#include "decomp.h"
+#include "util/Handle.h"
+#include "util/IControllable.h"
+#include "util/IRenderable.h"
+#include "util/Name.h"
+#include "util/RunStateOwner.h"
+#include "v8datamodel/ICharacterSubject.h"
+#include "v8datamodel/PartInstance.h"
+#include "v8kernel/Connector.h"
+#include "v8tree/Instance.h"
+
+#include <boost/shared_ptr.hpp>
+#include <memory>
+
+namespace RBX {
+
+class __declspec(novtable) IModelModifier { public: virtual ~IModelModifier() {} };
+class Body;
+class Controller;
+class World;
+
+extern char sHumanoid[];
+
+// SIZE 0x1f0
+class Humanoid : public DescribedCreatable<Humanoid, Instance, sHumanoid>,
+				 public Connector,
+				 public IControllable,
+				 public IRenderable,
+				 public ICharacterSubject,
+				 public IModelModifier, public Listener<RunService, Stepped>
 {
-    float x, y, z;
 
-    Vector3(float a = 0.0f, float b = 0.0f, float c = 0.0f)
-        : x(a), y(b), z(c) {}
+public:
+	enum WalkMode
+	{
+		HAS_PART = 0,
+		HAS_POINT = 1,
+		CLICK_TO_MOVE = 2,
+		DIRECTION_MOVE = 3
+	};
 
-    Vector3(const Vector3& v) : x(v.x), y(v.y), z(v.z) {}
+	// SIZE 0x08
+	class __declspec(novtable) State : public INamed
+	{
+	public:
+		virtual ~State() {} // vtable+0x04
 
-    Vector3& operator=(const Vector3& v)
-    {
-        x = v.x;
-        y = v.y;
-        z = v.z;
-        return *this;
-    }
+		virtual void onComputeForce(const float stepDt) = 0;                   // vtable+0x08
+		virtual State* onStep(const float stepDt, Controller& controller) = 0; // vtable+0x0c
 
-    static const Vector3& zero();
-    Vector3 unit() const;
+		// FUNCTION: WEBSERVICE 0x100a0710 FOLDED
+		virtual float getIntendedRotationAboutYAxis() const // vtable+0x10
+		{
+			return 0;
+		}
+
+	protected:
+		State(Humanoid* humanoid) : humanoid(humanoid) {}
+
+		Humanoid* const humanoid; // 0x04
+	};
+
+	static Reflection::SignalDesc<Humanoid, void()> event_Died;
+	static Reflection::SignalDesc<Humanoid, void(float)> event_Running;
+	static Reflection::SignalDesc<Humanoid, void(float)> event_Climbing;
+	static Reflection::SignalDesc<Humanoid, void(bool)> event_Jumping;
+	static Reflection::SignalDesc<Humanoid, void(bool)> event_FreeFalling;
+	static Reflection::SignalDesc<Humanoid, void(bool)> event_GettingUp;
+	static Reflection::SignalDesc<Humanoid, void(bool)> event_FallingDown;
+	static Reflection::SignalDesc<Humanoid, void(bool)> event_Seated;
+
+	virtual ~Humanoid();
+
+	Body* getTorsoBody();
+	Body* getRootBody();
+
+	float getHealth() const { return health; }
+
+	void setMaxHealth(float value);
+	// FUNCTION: WEBSERVICE 0x100a0750
+	float getMaxHealth() const { return maxHealth; }
+
+	G3D::Vector3 getWalkDirection() const { return walkDirection; }
+
+	void setWalkRotationalVelocity(const float& value);
+	// FUNCTION: WEBSERVICE 0x100a0790
+	float getWalkRotationalVelocity() const { return walkRotationalVelocity; }
+
+	const G3D::Vector3& getWalkToPoint() const { return walkToPoint; }
+
+	PartInstance* getWalkToPart() const { return walkToPart.get(); }
+
+	void setJump(bool value);
+	// FUNCTION: WEBSERVICE 0x100a07b0
+	bool getJump() const { return jump; }
+
+	void setSit(bool value);
+	// FUNCTION: WEBSERVICE 0x100a07c0
+	bool getSit() const { return sit; }
+
+	const G3D::Vector3& getTargetPoint() const { return targetPoint; }
+
+	G3D::Vector3 updateWalkDirection();
+
+	Primitive* getTorsoPrimitive() const;
+	Primitive* getLeftLegPrimitive();
+	Primitive* getRightLegPrimitive();
+
+	PartInstance* getHead() const;
+	PartInstance* getTorso() const;
+	PartInstance* getLeftLeg() const;
+	PartInstance* getRightLeg() const;
+	PartInstance* getLeftArm() const;
+	PartInstance* getRightArm() const;
+
+private:
+	bool hasWalkToPoint(G3D::Vector3& worldPosition) const;
+
+	virtual bool shouldRender2d() const;
+	virtual bool shouldRender3dAdorn() const;
+	virtual void render2d(Adorn* adorn);
+	virtual void render3dAdorn(Adorn* adorn);
+	void renderMultiplayer(Adorn* adorn, const G3D::GCamera& camera);
+	virtual bool isControllable() const;
+	virtual void onEvent(const RunService* source, Stepped event);
+	virtual void computeForce(float dt, bool throttling);
+	virtual const CoordinateFrame getLocation() const;
+	virtual ContactManager* getContactManager();
+	virtual void tellCameraNear(float distance);
+	virtual float getIntendedRotationAboutYAxis();
+	virtual void cameraSetWalkOrientation(float rad, bool noAdjust);
+
+public:
+	virtual void getIgnorePrims(std::vector<const Primitive*>& ignore);
+
+	Humanoid();
+
+private:
+	G3D::Vector3 getIntendedMovementVector(bool setWalkMode);
+	virtual G3D::Vector3 getIntendedMovementVector();
+
+private:
+	float health;                                     // 0x16c
+	float maxHealth;                                  // 0x170
+	float walkRotationalVelocity;                     // 0x174
+	int walkTimer;                                    // 0x178
+	WalkMode walkMode;                                // 0x17c
+	shared_ptr<PartInstance> walkToPart;              // 0x180
+	G3D::Vector3 walkToPoint;                         // 0x188
+	G3D::Vector3 walkDirection;                       // 0x194
+	G3D::Vector3 targetPoint;                         // 0x1a0
+	bool jump : 1;                                    // 0x1ac
+	bool imDead : 1;                                  // 0x1ac
+	bool hadHeadJoint : 1;                            // 0x1ac
+	bool observedFlag : 1;
+	bool sit : 1;                                     // 0x1ac
+	mutable boost::shared_ptr<PartInstance> head;     // 0x1b0
+	mutable boost::shared_ptr<PartInstance> torso;    // 0x1b8
+	mutable boost::shared_ptr<PartInstance> leftLeg;  // 0x1c0
+	mutable boost::shared_ptr<PartInstance> rightLeg; // 0x1c8
+	mutable boost::shared_ptr<PartInstance> rightArm; // 0x1d0
+	mutable boost::shared_ptr<PartInstance> leftArm;  // 0x1d8
+	World* world;                                     // 0x1e0
+	std::auto_ptr<State> currentState;                // 0x1e4
 };
 
-inline const Vector3& Vector3::zero()
+DECOMP_SIZE_ASSERT(Humanoid, 0x1f0)
+DECOMP_SIZE_ASSERT(Humanoid::State, 0x08)
+
+// clang-format off
+// SYNTHETIC: WEBSERVICE 0x1021b310
+// RBX::`dynamic initializer for 'propWalkRotationalVelocity''
+// SYNTHETIC: WEBSERVICE 0x1021b370
+// RBX::`dynamic initializer for 'propJump''
+// SYNTHETIC: WEBSERVICE 0x1021b430
+// RBX::`dynamic initializer for 'propSit''
+// SYNTHETIC: WEBSERVICE 0x1021b4f0
+// RBX::`dynamic initializer for 'propMaxHealth''
+// SYNTHETIC: WEBSERVICE 0x1021b5e0
+// `dynamic initializer for 'RBX::Humanoid::event_Died''
+// SYNTHETIC: WEBSERVICE 0x1021b610
+// `dynamic initializer for 'RBX::Humanoid::event_Running''
+// SYNTHETIC: WEBSERVICE 0x1021b630
+// `dynamic initializer for 'RBX::Humanoid::event_Climbing''
+// SYNTHETIC: WEBSERVICE 0x1021b650
+// `dynamic initializer for 'RBX::Humanoid::event_Jumping''
+// SYNTHETIC: WEBSERVICE 0x1021b670
+// `dynamic initializer for 'RBX::Humanoid::event_FreeFalling''
+// SYNTHETIC: WEBSERVICE 0x1021b690
+// `dynamic initializer for 'RBX::Humanoid::event_GettingUp''
+// SYNTHETIC: WEBSERVICE 0x1021b6b0
+// `dynamic initializer for 'RBX::Humanoid::event_FallingDown''
+// SYNTHETIC: WEBSERVICE 0x1021b6d0
+// `dynamic initializer for 'RBX::Humanoid::event_Seated''
+// SYNTHETIC: WEBSERVICE 0x10223400
+// RBX::`dynamic atexit destructor for 'propSit''
+// SYNTHETIC: WEBSERVICE 0x10223420
+// RBX::`dynamic atexit destructor for 'propMaxHealth''
+// SYNTHETIC: WEBSERVICE 0x10223480
+// RBX::`dynamic atexit destructor for 'propJump''
+// SYNTHETIC: WEBSERVICE 0x102234a0
+// RBX::`dynamic atexit destructor for 'propWalkRotationalVelocity''
+// SYNTHETIC: WEBSERVICE 0x10223500
+// `dynamic atexit destructor for 'RBX::Humanoid::event_Climbing''
+// SYNTHETIC: WEBSERVICE 0x10223510
+// `dynamic atexit destructor for 'RBX::Humanoid::event_FreeFalling''
+// SYNTHETIC: WEBSERVICE 0x10223520
+// `dynamic atexit destructor for 'RBX::Humanoid::event_GettingUp''
+// SYNTHETIC: WEBSERVICE 0x10223530
+// `dynamic atexit destructor for 'RBX::Humanoid::event_FallingDown''
+// SYNTHETIC: WEBSERVICE 0x10223540
+// `dynamic atexit destructor for 'RBX::Humanoid::event_Seated''
+// SYNTHETIC: WEBSERVICE 0x10223560
+// `dynamic atexit destructor for 'RBX::Humanoid::event_Running''
+// SYNTHETIC: WEBSERVICE 0x10223570
+// `dynamic atexit destructor for 'RBX::Humanoid::event_Jumping''
+// SYNTHETIC: WEBSERVICE 0x10223590
+// `dynamic atexit destructor for 'RBX::Humanoid::event_Died''
+// clang-format on
+
+} // namespace RBX
+
+#endif // HUMANOID_HUMANOID_H
+
+namespace RBX {
+Humanoid::Humanoid()
+	: health(100), maxHealth(100), walkRotationalVelocity(0), walkTimer(0), walkMode(DIRECTION_MOVE), jump(false),
+	  imDead(false), hadHeadJoint(false), observedFlag(false), sit(false), world(NULL)
 {
-    static const Vector3 value;
-    return value;
+	setName("Humanoid");
 }
 
-struct Transform
+
+}
+namespace RBX {
+G3D::Vector3 Humanoid::getIntendedMovementVector(bool setWalkMode)
 {
-    float rotation[9];
-    Vector3 position;
-};
+	G3D::Vector3 result = G3D::Vector3::zero();
 
-struct Part
-{
-    const Transform& getTransform() const;
-};
+	if (walkMode == DIRECTION_MOVE) {
+		result = walkDirection;
+	}
+	else if (walkMode == CLICK_TO_MOVE) {
+		PartInstance* torso = getTorso();
+		G3D::Vector3 worldPosition;
 
-struct Humanoid
-{
-    char padding0[0x1b8];
-    int mode;
-    char padding1[0x14];
-    Vector3 direction;
+		if (torso != NULL && hasWalkToPoint(worldPosition)) {
+			const G3D::Vector3& translation = torso->getCoordinateFrame().translation;
 
-    Part* getPart();
-    bool getTarget(Vector3& target);
-    Vector3 getDirection(bool update);
-};
+			G3D::Vector3 delta = worldPosition - translation;
 
-Vector3 Humanoid::getDirection(bool update)
-{
-    Vector3 result = Vector3::zero();
+			worldPosition.x = delta.x;
+			worldPosition.y = delta.y + 3.0f;
+			worldPosition.z = delta.z;
 
-    if (mode == 3)
-    {
-        result = direction;
-        return result;
-    }
+			float distance = (worldPosition.z * worldPosition.z + worldPosition.x * worldPosition.x) +
+							 worldPosition.y * worldPosition.y;
 
-    if (mode == 2)
-    {
-        Part* part = getPart();
-        Vector3 target;
+			worldPosition.y = 0;
 
-        if (part && getTarget(target))
-        {
-            const Vector3& position = part->getTransform().position;
-            target = Vector3(target.x - position.x,
-                             target.y - position.y,
-                             target.z - position.z);
+			if (sqrtf(distance) < 2.0f) {
+				if (setWalkMode) {
+					walkMode = DIRECTION_MOVE;
+				}
 
-            target.y += 3.0f;
-            float sum = target.y * target.y; sum += target.z * target.z; sum += target.x * target.x;
- target.y = 0.0f;
- float distance = static_cast<float>(sqrt(sum));
+				result = G3D::Vector3::zero();
+			}
+			else {
+				result = worldPosition.unit();
+			}
+		}
+	}
 
-            if (distance < threshold)
-            {
-                if (update)
-                    mode = 3;
-                result = Vector3::zero();
-            }
-            else
-            {
-                result = target.unit();
-            }
-        }
-    }
-
-    return result;
+	return result;
 }
 
-#pragma float_control(pop)
+
+}
