@@ -1,8 +1,9 @@
+// from server: 87% by EspClaude
 // from server: 84% by Espeon
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: rbxgs-dll roc_espeon_clumpnativef2bac2941a1203fd.cpp
+// roc-lib: rbxgs-dll roc_espclaude_c7175c917dd06ab9.cpp
 
 // Candidate translation unit (score above; library headers required).
 #include <vector>
@@ -113,7 +114,7 @@ typedef std::vector<void*> Links;
 
 struct Base {
     int references;
-    Base() : references(0) {}
+    Base() { references = 0; }
     virtual ~Base();
 };
 
@@ -141,7 +142,7 @@ struct BindingA {
     BindingA(Clump* p, void (Clump::*f)()) : owner(p) {
         function = f;
     }
-    ~BindingA();
+
 };
 
 struct BindingB {
@@ -197,3 +198,4 @@ Clump::Clump(Ball* p)
     if (pending)
         pending->refresh();
 }
+

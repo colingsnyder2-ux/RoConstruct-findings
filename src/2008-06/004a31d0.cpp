@@ -1,8 +1,9 @@
+// from server: 89% by EspClaude
 // from server: 83% by Espeon
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: openrbx-client-dll roc_espeon_scriptcast_dcc0ef00cbdfd465.cpp
+// roc-lib: openrbx-client-dll roc_espclaude_35d249eb159fb31e.cpp
 
 // Candidate translation unit (score above; library headers required).
 #include <boost/shared_ptr.hpp>
@@ -23,6 +24,7 @@ struct Script:Instance
     char gap[4];
     char internal[0x14];
     int discriminator;
+    const char* name() const { return discriminator == 0 ? external : internal; }
 };
 
 struct Result
@@ -49,9 +51,7 @@ void ClientProxy::process(Shared value)
 
     if (script)
     {
-        if (script->discriminator == 0)
-            collection.insert(script->external);
-        else
-            collection.insert(script->internal);
+        collection.insert(script->name());
     }
 }
+

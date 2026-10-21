@@ -1,90 +1,20 @@
-// from server: 74% by colin
-struct FlagStand;
+// from server: 100% by Espeon
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD
+// roc-lib: rbxgs-dll roc_espeon_flagstandservicelocalaa4966d7c1be1498.cpp
 
-struct Node {
-    Node *next;
-    Node *prev;
-};
-
-struct Container {
-    unsigned char padding[20];
-    Node *head;
-    Node *insert(Node *, Node *, FlagStand *const *);
-    void grow(unsigned int);
-    void remove(FlagStand *const *);
-};
-
-struct Owner {
-    unsigned char padding[0x130];
-    Container objects;
-};
-
-struct Argument {
-    Owner *getOwner();
-};
-
-struct Bind {
-    void (FlagStand::*function)();
-    unsigned long padding;
-    unsigned long extra;
-    FlagStand *object;
-};
-
-struct Function {
-    unsigned char data[40];
-    Function(const Bind &);
-    ~Function();
-};
-
-struct Connection {
-    unsigned char data[12];
-    ~Connection();
-    Connection &assign(const Connection &);
-    void disconnect();
-};
-
-struct Dispatcher {
-    Connection connect(void *, const Function &, int);
-};
-
+// Candidate translation unit (score above; library headers required).
+#define private public
+#define protected public
+#include <v8datamodel/FlagStand.h>
+#include <boost/bind.hpp>
+#include <boost/function.hpp>
+struct Provider {RBX::FlagStandService* get()const;};
+static RBX::FlagStandService* findService(const RBX::ServiceProvider* p){return p?reinterpret_cast<const Provider*>(p)->get():0;}
+struct Dispatcher{boost::signals::connection connect(void*,const boost::slot<boost::function<void(boost::shared_ptr<RBX::Instance>)> >&,int);};
 extern Dispatcher dispatcher;
-
-struct FlagStand {
-    unsigned char padding[0x3e8];
-    Connection connection;
-    void callback();
-    void changed(Argument *oldValue, Argument *newValue);
-};
-
-void FlagStand::changed(Argument *oldValue, Argument *newValue)
-{
-    if (!oldValue) {
-        Owner *owner = newValue ? newValue->getOwner() : 0;
-        Container *container = &owner->objects;
-        Node *head = container->head;
-        FlagStand *value = this;
-        Node *node = container->insert(head, head->prev, &value);
-        container->grow(1);
-        head->prev = node;
-        node->prev->next = node;
-
-        Bind bind;
-        bind.function = &FlagStand::callback;
-        bind.padding = 0;
-        bind.extra = 0;
-        bind.object = this;
-
-        Function function(bind);
-        connection.assign(dispatcher.connect(
-            this ? reinterpret_cast<unsigned char *>(this) + 0x14 : 0,
-            function, 10));
-    }
-
-    if (!newValue) {
-        Owner *owner = oldValue ? oldValue->getOwner() : 0;
-        oldValue = reinterpret_cast<Argument *>(this);
-        owner->objects.remove(
-            reinterpret_cast<FlagStand *const *>(&oldValue));
-        connection.disconnect();
-    }
+void RBX::FlagStand::onServiceProvider(const ServiceProvider* oldProvider,const ServiceProvider* newProvider){
+ if(!oldProvider){FlagStandService* service=findService(newProvider);(*reinterpret_cast<std::list<FlagStand*>*>(reinterpret_cast<char*>(service)+0x130)).push_back(this);(*reinterpret_cast<boost::signals::scoped_connection*>(reinterpret_cast<char*>(this)+0x3e8))=dispatcher.connect(this?reinterpret_cast<char*>(this)+0x14:0,boost::bind(&FlagStand::onEvent_standTouched,this,_1),10);}
+ if(!newProvider){FlagStandService* service=findService(oldProvider);(*reinterpret_cast<std::list<FlagStand*>*>(reinterpret_cast<char*>(service)+0x130)).remove(this);(*reinterpret_cast<boost::signals::scoped_connection*>(reinterpret_cast<char*>(this)+0x3e8)).disconnect();}
 }

@@ -1,42 +1,16 @@
-// from server: 95% by Espeon
+// from server: 100% by Espeon
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: openrbx-client-dll roc_espeon_historyctor_0c027b735aa5dc08.cpp
+// roc-lib: rbxgs-dll roc_espeon_historygetnative9b52452d98cd5fa6.cpp
 
 // Candidate translation unit (score above; library headers required).
+#include <map>
 #include <boost/shared_ptr.hpp>
-typedef boost::shared_ptr<void> Shared;
-struct Vector {
-    void* first;
-    void* last;
-    void* end;
-
-    Vector();
-    ~Vector();
-};
-
-__forceinline Vector::Vector() : first(0), last(0), end(0) {}
-
-struct AllocatorA {};
-struct AllocatorB {};
-
-struct Helper {
-    unsigned long data;
-    Helper(const AllocatorA&, const AllocatorB&);
-};
-
-struct S {
-    int value;
-    Shared shared;
-    Vector vector;
-    Helper helper;
-
-    S(int, Shared);
-};
-
-S::S(int n, Shared p)
-    : value(n), shared(p), vector(),
-      helper(reinterpret_cast<const AllocatorA&>(n),
-             reinterpret_cast<const AllocatorB&>(n)) {
-}
+#include <boost/any.hpp>
+struct Instance{};struct Service{};struct Descriptor{};
+struct Variant{const void*type;boost::any content;};
+struct Record{Service*service;boost::shared_ptr<Instance>object;int kind;boost::shared_ptr<Instance>parent;std::map<const Descriptor*,Variant>values;Record(Service*,boost::shared_ptr<Instance>);Record(const Record&);~Record();};
+Record::Record(Service*s,boost::shared_ptr<Instance>p):service(s),object(p),kind(0){}
+struct Records:std::map<Instance*,Record>{Service*service;Record*get(boost::shared_ptr<Instance>);};
+Record*Records::get(boost::shared_ptr<Instance>p){iterator i=find(p.get());if(i==end())i=insert(std::make_pair(p.get(),Record(service,p))).first;return &i->second;}

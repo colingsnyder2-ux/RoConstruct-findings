@@ -1,8 +1,9 @@
+// from server: 87% by EspClaude
 // from server: 85% by Espeon
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: openrbx-client-dll roc_espeon_bindpayload_c29d08ca0c467191.cpp
+// roc-lib: openrbx-client-dll roc_espclaude_8fda9c6852c9301e.cpp
 
 // Candidate translation unit (score above; library headers required).
 #include <boost/shared_ptr.hpp>
@@ -12,17 +13,16 @@ struct Shared {
     Payload* value;
     CountHandle count;
     Shared(Payload*);
-    Shared(const Shared&);
 };
+
+extern "C" void __cdecl prepare(CountHandle*, Payload*, Payload*);
 
 Shared::Shared(Payload* p) : value(p), count(p)
 {
+    prepare(&count, p, p);
 }
 
-Shared::Shared(const Shared& p) : value(p.value), count(p.count)
-{
 
-}
 
 struct Binder;
 
@@ -30,8 +30,6 @@ struct Payload {
     char storage[32];
     Payload(Shared, int, Binder*);
 };
-
-extern "C" void __cdecl prepare(CountHandle*, Payload*, Payload*);
 
 struct Node {
     Node* next;
@@ -55,9 +53,7 @@ struct Binder {
 void Binder::bind(Shared source, int argument)
 {
     {
-        Payload* p = new Payload(source, argument, this);
-        Shared item(p);
-        prepare(&item.count, p, p);
+        Shared item(new Payload(source, argument, this));
 
         Node* head = list.head;
         Node* node = list.insert(head, head->previous, &item);
@@ -67,3 +63,4 @@ void Binder::bind(Shared source, int argument)
     }
     update();
 }
+

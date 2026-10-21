@@ -1,10 +1,10 @@
-// from server: 96% by intel
+// from server: 97% by intel
 extern "C" unsigned int (__cdecl *strnlen)(const char* s, unsigned int maxlen);
 extern "C" int (__cdecl *_mbsnbcpy_s)(char* dest, unsigned int destSize, const char* src, unsigned int count);
 extern "C" void __cdecl sub_404020(int code);
 
 struct TeleportCallback {
-    char pad0[0xa25];
+    char pad0[0x224];
     char m_name[0x801];
     char pad1[0x1a];
     int m_nameLen;

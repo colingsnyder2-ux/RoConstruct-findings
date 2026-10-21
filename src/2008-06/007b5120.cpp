@@ -1,8 +1,7 @@
-// from server: 69% by colin
-// roc-cl: 21022
-// roc-flags: /O2 /GS- /EHsc /MD
 // roc-lang: cpp
-// roc-lib: rbxgs-g3d-dll GLG3Dcpp/Sky.cpp
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD /fp:fast
+// roc-lib: rbxgs-g3d-dll roc_g3d_sky_native_minimal_face_remap_8f4bae03351de51d.cpp
 
 // Candidate translation unit (score above; library headers required).
 /** 
@@ -151,9 +150,11 @@ SkyRef Sky::fromFile(
                     1.0, Texture::DEPTH_NORMAL, 1.0, 1.0f / scaleDownFactor);
             }
         } else {
+            // Native875ac0 fallback face order.
+            static const int faceOrder[6] = {2, 5, 4, 1, 0, 3};
             // Specified six textures
             for (int t = 0; t < 6; ++t) {
-                faceTextures[t] = Texture::fromFile(_filename[t], 
+                faceTextures[t] = Texture::fromFile(_filename[faceOrder[t]], 
                     format, Texture::CLAMP, Texture::BILINEAR_NO_MIPMAP, Texture::DIM_2D,
                     1.0, Texture::DEPTH_NORMAL, 1.0, 1.0f / scaleDownFactor);
             }

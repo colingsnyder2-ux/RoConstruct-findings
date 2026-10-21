@@ -1,5 +1,6 @@
 // from server: 68% by colin
-extern "C" void __cdecl G1_func_006a165b(void*, int, int, void*);
+extern "C" void __stdcall G1_func_006a165b(void*, int, int, void*);
+extern "C" void func_00502a70();
 
 struct S {
     void f();
@@ -7,6 +8,5 @@ struct S {
 
 void S::f()
 {
-    G1_func_006a165b(this, 4, 4, (void*)0x502a70);
-    G1_func_006a165b(this, 4, 1, (void*)0x502a70);
+    G1_func_006a165b(this, 4, 4, (void*)func_00502a70);
 }

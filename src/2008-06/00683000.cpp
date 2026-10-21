@@ -1,67 +1,16 @@
-// from server: 48% by colin
-struct Root {
-    static Root& getSingleton();
-    void* getRenderSystem();
-};
+// from server: 100% by Espeon
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD /fp:fast
+// roc-lib: ogre-1.4.5 roc_espeon_renderprimitive6529969e3c0e9a10.cpp
 
-struct RenderSystem {
-    void* vtable;
-};
-
-struct Vec4 {
-    float x, y, z, w;
-};
-
-struct Node {
-    char pad[0x3c];
-    struct List {
-        struct Node2 {
-            char pad[4];
-            Node2* next;
-        };
-        Node2* head;
-        Node2* insert(Node2* pos, Node2* val);
-        void erase(Node2* pos);
-    } list;
-    char pad2[0x50 - 0x3c - 4];
-    List::Node2* node;
-};
-
-struct RbxSceneNode {
-    char pad[0x50];
-    Node::List::Node2* node;
-    void setPosition(float x, float y, float z, float w, const Vec4& v, void* arg);
-};
-
-extern "C" {
-    extern void* (__stdcall* getSingletonFn)();
-    extern void* (__stdcall* getRenderSystemFn)(void*);
-}
-
-void RbxSceneNode::setPosition(float x, float y, float z, float w, const Vec4& v, void* arg) {
-    float a = x;
-    float b = y;
-    float c = z;
-    float d = w;
-
-    Root& root = Root::getSingleton();
-    RenderSystem* rs = (RenderSystem*)root.getRenderSystem();
-
-    Vec4 tmp;
-    tmp.x = v.x;
-    tmp.y = v.y;
-    tmp.z = v.z;
-    tmp.w = v.w;
-
-    void* vt = rs->vtable;
-    typedef void (__thiscall* Fn)(RenderSystem*, Vec4*, Vec4*);
-    Fn fn = *(Fn*)((char*)vt + 0x108);
-    fn(rs, &tmp, &tmp);
-
-    Node::List::Node2* n = this->node;
-    Node::List* lst = (Node::List*)((char*)this + 0x3c);
-    Node::List::Node2* result = lst->insert(n, (Node::List::Node2*)arg);
-    lst->erase((Node::List::Node2*)1);
-    this->node = result;
-    result->next->next = result;
-}
+// Candidate translation unit (score above; library headers required).
+#undef OGRE_NONCLIENT_BUILD
+#include <OgreRoot.h>
+#include <OgreRenderSystem.h>
+#include <OgreColourValue.h>
+#include <list>
+struct Color {float r,g,b,a;};
+struct DrawCommand {float left,top,right,bottom;float textureCoordinates[4];Ogre::RGBA color;int texture;int primitive;int mode;};
+struct Renderer {char prefix[0x3c];std::list<DrawCommand> commands;void rectangle(int,float,float,float,float,const Color&);};
+void Renderer::rectangle(int primitive,float left,float top,float right,float bottom,const Color&color){DrawCommand command;command.left=left;command.top=top;command.right=right;command.bottom=bottom;Ogre::RenderSystem* rs=Ogre::Root::getSingleton().getRenderSystem();rs->convertColourValue(Ogre::ColourValue(color.r,color.g,color.b,color.a),&command.color);command.texture=0;command.primitive=primitive;command.mode=0;commands.push_back(command);}

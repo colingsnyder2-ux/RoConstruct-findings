@@ -22443,5 +22443,114 @@
     ],
     "output": "work\\big-mining-2008-20261020\\statistics-hud-genuine-fields-family-fanout",
     "next": "Preserve independently verified gains and continue largest remaining native functions."
+  },
+  "native-xtp-mbcs-portable-family-2008": {
+    "op": "fanout",
+    "client": "2008-06",
+    "library": "Verified native XTP MBCS tooltip and report painting",
+    "hypothesis": "Unchanged objects have separately verified1796B tooltip and1440B report text fullcode/data exacts. Native MBCS CRT and genuine vendor prelude restore TChar/CString lifetimes; scan all unresolved code for same family gains.",
+    "sources": [
+      {
+        "recipe": "xtp-11.2.2-lib",
+        "files": [
+          "roc_tooltip_native_mbcs_compare_56c2ddd2d5b0e4ac.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /MD /GS /EHsc /Ob1"
+        ]
+      },
+      {
+        "recipe": "xtp-11.2.2-shared-mfc-string-calls",
+        "files": [
+          "roc_report_paint_native_mbcs_build_prelude_238cbffbc32a0a3a.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /MD /GS /EHsc /Ob1"
+        ]
+      }
+    ],
+    "output": "work\\big-mining-2008-20261020\\xtp-mbcs-portable-family-fanout",
+    "next": "Keep only independently verified fullcode/data exacts. Existing supported recipes preserve verifier compatibility; do not require server restart."
+  },
+  "native-g3d-sky-face-remap-family-2008": {
+    "op": "fanout",
+    "client": "2008-06",
+    "library": "Native G3D sky fallback face-order revision",
+    "hypothesis": "Unchanged originalSky.cpp with only binary-proven2,5,4,1,0,3 fallback face remap andnativefpfast has1917B server100. Propagate emitted real SDK helper bodies without changing other functions.",
+    "sources": [
+      {
+        "recipe": "rbxgs-g3d-dll",
+        "files": [
+          "roc_g3d_sky_native_minimal_face_remap_8f4bae03351de51d.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /GS- /EHsc /MD /fp:fast"
+        ]
+      }
+    ],
+    "output": "work\\big-mining-2008-20261020\\g3d-sky-face-remap-family-fanout",
+    "next": "Preserve only independently verified exact gains; continue largest native application functions."
+  },
+  "big-renderer-native-sdk-flat-gates-2008": {
+    "op": "grid",
+    "client": "2008-06",
+    "library": "Native Ogre1.4.5 RenderScene complete typed revision",
+    "hypothesis": "New whole7199B RenderScene source61 after removing one-use helper scopes. Native constructors prove RbxSceneNode248 and RbxEntity2bc; byte vector, actual virtual interfaces, SDK values, correct geometry receivers. Both historical compilers and bounded floating/optimization gates. No invented frame padding.",
+    "targets": {
+      "addresses": [
+        "007ab0a0"
+      ],
+      "scores": [
+        0,
+        99
+      ]
+    },
+    "seed_sources": {
+      "2008-06": {
+        "007ab0a0": "work\\big-mining-2008-20261020\\renderer-native-flat.cpp"
+      }
+    },
+    "builds": [
+      21022,
+      50727
+    ],
+    "profiles": [
+      "/O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MD /fp:fast",
+      "/O2 /Ob2 /Oi /Ot /Oy /GF /GS- /EHsc /MD",
+      "/O1 /Ob1 /Oy /GF /GS- /EHsc /MD /fp:fast"
+    ],
+    "keep_partials": true,
+    "output": "work\\big-mining-2008-20261020\\renderer-native-sdk-flat-gates"
+  },
+  "native-renderer-sdk-flat-family-2008": {
+    "op": "fanout",
+    "client": "2008-06",
+    "library": "Native Ogre1.4.5 renderer SDK caller family",
+    "hypothesis": "Whole genuine typed renderer improved41to61 server. Propagate unchanged emitted genuine SDK/template bodies from accepted complete translation unit; no further shape guessing or raw virtual calls.",
+    "sources": [
+      {
+        "recipe": "rbxgs-dll",
+        "files": [
+          "roc_renderer_native_flat_c65c7427dfe74679.cpp"
+        ],
+        "builds": [
+          21022
+        ],
+        "flags": [
+          "/O2 /GS- /EHsc /MD /fp:fast"
+        ]
+      }
+    ],
+    "output": "work\\big-mining-2008-20261020\\renderer-native-sdk-flat-family",
+    "next": "Preserve server verified exact gains only. Largest remaining renderer residue stack reuse and live context register; gates exhausted."
   }
 }

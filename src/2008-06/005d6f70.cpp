@@ -1,82 +1,78 @@
-// from server: 87% by colin
-extern "C" double __cdecl currentTime();
-extern "C" void __cdecl invalidParameter();
+// from server: 100% by EspClaude
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
+// roc-lib: rbxgs-dll roc_espclaude_2288805745349030.cpp
 
-struct Exception {
-    char data[56];
-    Exception();
-    ~Exception();
-};
+// Candidate translation unit (score above; library headers required).
+#include <exception>
+#define BOOST_NO_EXCEPTIONS
+namespace boost { __declspec(noreturn) void throw_exception(std::exception const &); }
+#include "v8datamodel/TimerService.h"
+#include "util/standardout.h"
 
-__declspec(noreturn) void __cdecl throwException(const Exception &);
-
-struct Callback {
-    void *unused;
-    void (__cdecl *invoke)(void *);
-};
-
-struct Entry {
-    char unused[8];
-    double time;
-    Callback *callback;
-    unsigned long reserved;
-    char argument[1];
-};
-
-struct Container {
-    char unused[20];
-    Entry *end;
-};
-
-struct Proxy {
-    Container *container;
-};
-
-struct TimerService {
-    char unused0[12];
-    Proxy *proxy;
-    char unused1[16];
-    Entry **entries;
-    unsigned int count;
-
-    void update();
-};
-
-void TimerService::update()
+namespace RBX
 {
-    double now = currentTime();
-    void (__cdecl *reportInvalid)() = invalidParameter;
 
-    while (count != 0) {
-        Entry *entry = *entries;
-        Proxy *p = proxy;
-        Container *container;
+	TimerService::TimerService() {}
 
-        if (!p) {
-            reportInvalid();
-            container = 0;
-        }
-        else {
-            container = p->container;
-        }
+	void TimerService::delay(boost::function0<void> func, double seconds)
+	{
+		Item item;
+		item.time = G3D::System::getLocalTime() + seconds;
+		item.func = func;
 
-        if (entry == container->end)
-            reportInvalid();
+		std::list<Item>::iterator pos = items.end();
 
-        if (!(now >= entry->time))
-            return;
+		std::list<Item>::reverse_iterator iter = items.rbegin();
+		std::list<Item>::reverse_iterator end = items.rend();
 
-        try {
-            Callback *callback = entry->callback;
-            if (!callback)
-                throwException(Exception());
-            void (__cdecl *invoke)(void *) = callback->invoke;
-            invoke(entry->argument);
-        }
-        catch (...) {
-        }
+		for (; iter != end; iter++)
+		{
+			if (iter->time > item.time)
+				pos = iter.base();
+			else
+				break;
+		}
 
-        ++entries;
-        --count;
-    }
+		items.insert(pos, item);
+	}
+
+	void TimerService::onEvent(const RunService* source, Heartbeat event)
+	{
+		G3D::RealTime time = G3D::System::getLocalTime();
+
+		while (items.size() > 0)
+		{
+			Item& item = items.front();
+
+			if (time >= item.time)
+			{
+				try
+				{
+					item.func();
+				}
+				catch (std::exception& e)
+				{
+					StandardOut::singleton()->print(MESSAGE_WARNING, e);
+				}
+
+				items.pop_front();
+			}
+			else
+			{
+				break;
+			}
+		}
+	}
+
+	void TimerService::onServiceProvider(const ServiceProvider* oldProvider, const ServiceProvider* newProvider)
+	{
+		Notifier<RunService, Heartbeat>::disconnect(runService, this);
+
+		Instance::onServiceProvider(oldProvider, newProvider);
+		runService = shared_from(ServiceProvider::create<RunService>(newProvider));
+
+		Notifier<RunService,Heartbeat>::connect(runService, this);
+	}
 }

@@ -1,8 +1,9 @@
+// from server: 100% by EspClaude
 // from server: 87% by Espeon
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: openrbx-client-dll roc_espeon_backpackinsert_c0e0575ea62c6fe6.cpp
+// roc-lib: openrbx-client-dll roc_espclaude_139f42ae2cb89588.cpp
 
 // Candidate translation unit (score above; library headers required).
 
@@ -48,6 +49,7 @@ struct S {
     int insertionIndex;
 
     void setValue(void*);
+    void* getValue() const { return value; }
     void insert(void*);
 };
 
@@ -57,20 +59,19 @@ void S::insert(void* valueToInsert) {
 
     Array* array = children;
     int lastIndex = (array ? static_cast<int>(array->last - array->first) : 0) - 1;
-    int* index = &insertionIndex;
     int position;
-    if (*index >= 0)
-        position = minimum(*index, lastIndex);
+    if (insertionIndex >= 0)
+        position = minimum(insertionIndex, lastIndex);
     else
         position = lastIndex;
 
     for (int i = lastIndex; i > position; --i) {
         S* previous = children->at(i - 1);
         S* current = children->at(i);
-        current->setValue(previous->value);
+        current->setValue(previous->getValue());
     }
 
     S* destination = children->at(position);
     destination->setValue(valueToInsert);
-    *index = -1;
+    insertionIndex = -1;
 }

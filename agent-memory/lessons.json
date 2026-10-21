@@ -17,6 +17,31 @@
     "next": "16campaign exacts2912bytes:2seed,2first8dtor cores,3heldout cores (oneGuiDrawImage header helper, no sole hierarchy causality),1fullInstance and8reflection replay.34reflection contexts8gains.8release contexts0, original fullInstance assert mode0; parked. No global recipe change/full program layout certification. getGuid/assignGuid remain external genuine API declarations because new private GuidItem field is not accessed through old bodies."
   },
   {
+    "id": "native-sky-fallback-face-order-before-stack-tuning",
+    "client": "2008-06",
+    "library": "G3D Sky six-face fallback revision",
+    "hypothesis": "Wrong indexing semantics can change receiver retention, induction variables and stack slots throughout a large function; recover native constant tables before forcing code generation.",
+    "change": "007b51201917B69->100. Native875ac0 int6{2,5,4,1,0,3} indexes supplied filenames before sizeofstring28 scaling. Original source_filename[t] wrong. Minimal originalSky.cpp plus remap and /fpfast naturally hoists reciprocal and allocates native10/14 reused slots. Explicit float/bool hoists reached98 but left slots swapped. Fastalone68, explicitresize79/84, declarationmovement98tie rejected. Fullcode/data/server verified, originalclasslayouts untouched.",
+    "exacts_gained": 1,
+    "outcome": "server_verified",
+    "evidence": "work\\big-mining-2008-20261020\\g3d-sky-native-minimal-face-remap-exact-receipt.json",
+    "next": "UnchangedSkyobject fanout0extra. Prefer semantic constant-table corrections; do not keep manual compiler-hoist locals or stack padding."
+  },
+  {
+    "id": "native-xtp-mbcs-prelude-before-mfc-and-gs-cookie",
+    "client": "2008-06",
+    "library": "XTP11.2.2 native TCHAR build configuration",
+    "hypothesis": "Native CRT imports identify MBCS source mode; preserve vendor prelude before MFC headers and enable observed GS protection before changing algorithm or layout.",
+    "change": "0070c4101796B83->100 imports_mbscmp. 0074b1a01440B80->100 imports_mbsspnp and nativeGScookie: genuineMBCS+GS100, MBCS+GS-63, scopedspanmacro90. Actualearly_MBCS also changes CDC DrawText CString temporary overload/lifetimes. Existing shared-mfc-string-calls recipe with early_MBCS/_LIB/vendorheaders and managed real publicGetLengthnoinline annotation reproduces native100 and works on unchanged verifier. Temporary localMBCS recipevariants verified100 but verifierlacksnames; archivedcontexts then removedentries, avoiding globally unsupported recipes.",
+    "exacts_gained": 2,
+    "outcome": "server_verified",
+    "evidence": [
+      "work\\big-mining-2008-20261020\\tooltip-native-mbcs-compare-exact-receipt.json",
+      "work\\big-mining-2008-20261020\\report-paint-native-mbcs-build-prelude-exact-receipt.json"
+    ],
+    "next": "Unchanged2objectall-unresolvedfanout0extra. Broader XTP residuals need per-target import and GS evidence; existing recipes unchanged. Use source-local earlyprelude via no-preinclude supported recipe."
+  },
+  {
     "id": "native-hud-layout-field-lifetimes-and-real-member-math",
     "client": "2008-06",
     "library": "GuiBuilder statistics HUD and genuine TextDisplay",

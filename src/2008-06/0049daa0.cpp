@@ -1,10 +1,12 @@
+// from server: 99% by EspClaude
 // from server: 89% by colin
 // roc-lang: cpp
-// roc-cl: 50727
+// roc-cl: 21022
 // roc-flags: /O2 /Ob2 /Oy /GF /GS- /EHsc /MD
-// roc-lib: rbxgs-net Players.cpp
+// roc-lib: rbxgs-net-dll roc_espclaude_3dc121bfd140a40e.cpp
 
 // Candidate translation unit (score above; library headers required).
+#define private public
 #include <RakPeer.h>
 #include <BitStream.h>
 #include "Client.h"
@@ -48,10 +50,13 @@ static RBX::Reflection::PropDescriptor<RBX::Network::Players, int> propPlayerMax
 static RBX::Reflection::BoundFuncDesc<RBX::Network::Players, boost::shared_ptr<RBX::Instance>(int), 1> func_GetPlayerByID(&RBX::Network::Players::getPlayerByID, "GetPlayerByID", "userID", RBX::Reflection::FunctionDescriptor::NeedTrustedCaller);
 static RBX::Reflection::BoundFuncDesc<RBX::Network::Players, void(std::string), 1> funcChat(&RBX::Network::Players::chat, "Chat", "message", RBX::Reflection::FunctionDescriptor::NeedTrustedCaller);
 
+RBX::Reflection::RefPropDescriptor<RBX::Network::Players, RBX::Network::Player> RBX::Network::Players::propLocalPlayer("LocalPlayer", "Data", &RBX::Network::Players::getLocalPlayer, NULL, RBX::Reflection::PropertyDescriptor::STANDARD);
+
 namespace RBX
 {
 	namespace Network
 	{
+
 		class Players::Plugin : public PluginInterfaceAdapter<Players>
 		{
 		public:

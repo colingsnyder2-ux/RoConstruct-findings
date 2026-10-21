@@ -1,621 +1,441 @@
-// from server: 41% by colin
+// from server: 62% by colin
 // roc-lang: cpp
 // roc-cl: 21022
-// roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: ogre-1.4.9 roc_unit_105bb71c3c1d10f4.cpp
+// roc-flags: /O2 /GS- /EHsc /MD /fp:fast
+// roc-lib: rbxgs-dll roc_renderer_native_shared_failure_46f8131dcf09fb6c.cpp
 
 // Candidate translation unit (score above; library headers required).
-/*
- * Reconstructed high-level C++ from Roblox RenderScene (2008), 0x007AB0A0.
- * Real C++ only: no inline assembly or embedded machine code.
- * The Ogre declarations below are *interface placeholders* for a syntax check;
- * replace them with the correct versioned Ogre SDK headers before linking.
- * Roblox sub_... symbols require implementations/address bindings.
- * Not a verified byte-exact recreation.
- */
-
-#include <string>
+// Caller-side 2008 declarations. Storage views below use native instruction offsets.
+#undef OGRE_NONCLIENT_BUILD
+#include "../../../libs/ogre-1.4.5/ogrenew/OgreMain/include/Ogre.h"
+#include <G3D/GCamera.h>
+#include <G3D/ReferenceCount.h>
+#include <G3D/Color3.h>
+#include <GLG3D/Texture.h>
+#include <map>
+#include <vector>
 #include <cstdio>
 #include <cmath>
 #include <cstring>
-#include <stdexcept>
+#include <exception>
 
-#if defined(_MSC_VER) && defined(_M_IX86)
-#define __thiscall
-#define RS_STDCALL __stdcall
-#elif defined(__clang__) && defined(__i386__)
-#define __attribute__((thiscall))
-#define RS_STDCALL __attribute__((stdcall))
-#else
-#define RS_THISCALL
-#define RS_STDCALL
-#endif
+namespace G3D { class RenderDevice; class GLight; }
 
-#ifdef OGRE_NONCLIENT_BUILD
-#undef OGRE_NONCLIENT_BUILD
-#endif
-#include <Ogre.h>
-
-#if defined(_MSC_VER)
-#define RS_FORCEINLINE __forceinline
-#elif defined(__GNUC__) || defined(__clang__)
-#define RS_FORCEINLINE inline __attribute__((always_inline))
-#else
-#define RS_FORCEINLINE inline
-#endif
-
-
-namespace rs {
-
-typedef unsigned char u8;
-typedef unsigned int u32;
-
-template<class T>
-inline T& At(void* p, unsigned offset) {
-    return *reinterpret_cast<T*>(static_cast<unsigned char*>(p) + offset);
+template<class T> inline T& nativeField(void* p, unsigned offset) {
+    return *reinterpret_cast<T*>(static_cast<char*>(p) + offset);
 }
 
-inline void* Addr(void* p, unsigned offset) {
-    return static_cast<unsigned char*>(p) + offset;
-}
-
-struct VObj {};
-
-template<class F>
-inline F VSlot(void* p, unsigned slot) {
-    union { void* raw; F fn; } u;
-    u.raw = (*reinterpret_cast<void***>(p))[slot / 4];
-    return u.fn;
-}
-
-template<class R>
-inline R VCall(void* p, unsigned slot) {
-    typedef R (VObj::*Fn)();
-    return (static_cast<VObj*>(p)->*VSlot<Fn>(p, slot))();
-}
-
-template<class R, class A>
-inline R VCall(void* p, unsigned slot, A a) {
-    typedef R (VObj::*Fn)(A);
-    return (static_cast<VObj*>(p)->*VSlot<Fn>(p, slot))(a);
-}
-
-template<class R, class A, class B>
-inline R VCall(void* p, unsigned slot, A a, B b) {
-    typedef R (VObj::*Fn)(A, B);
-    return (static_cast<VObj*>(p)->*VSlot<Fn>(p, slot))(a, b);
-}
-
-template<class R, class A, class B, class C, class D, class E>
-inline R VCall(void* p, unsigned slot, A a, B b, C c, D d, E e) {
-    typedef R (VObj::*Fn)(A, B, C, D, E);
-    return (static_cast<VObj*>(p)->*VSlot<Fn>(p, slot))(a, b, c, d, e);
-}
-
-template<class T>
-class Ref {
+namespace Ogre {
+class VisualEngine;
+class RbxSubEntity : public SubEntity, public ShadowCaster {
 public:
-    T* m_pointer;
-    Ref() : m_pointer(0) {}
-    ~Ref() { zeroPointer(); }
-    T* pointer() const { return m_pointer; }
-    void zeroPointer() {
-        if (m_pointer != 0) {
-            if (m_pointer->refCount.decrement() == 0) {
-                m_pointer->zeroWeakPointers();
-                delete m_pointer;
-            }
-            m_pointer = 0;
-        }
-    }
+    virtual ~RbxSubEntity();
+    // 0084e90c slots 48/4c; bodies 00685820/00685830.
+    virtual void setFloat138(float);
+    virtual float getFloat138() const;
+    void setLodMesh(unsigned int, SubMesh*); // 006850b0
+    SubMesh* getLodMesh(unsigned int);       // 006850d0
+    void setLod(unsigned int);              // 006850f0
 };
-
-struct V3 { float x, y, z; V3(float a, float b, float c) : x(a), y(b), z(c) {} };
-
-struct WeakPtr { virtual ~WeakPtr(); virtual void objectCollected() = 0; };
-struct WeakPtrLinkedList { WeakPtr* weakPtr; WeakPtrLinkedList* next; };
-struct AtomicInt32 {
-    long value;
-    unsigned decrement() { return InterlockedDecrement(&value) != 0; }
-};
-class RefObject {
+class RbxSceneNode : public SceneNode {
+    typedef std::map<unsigned long, Matrix4*> TransformMap;
+    mutable TransformMap transforms;
 public:
-    AtomicInt32 refCount;
-    WeakPtrLinkedList* weakPointer;
-    void zeroWeakPointers() {
-        WeakPtrLinkedList* node = weakPointer;
-        while (node != 0) {
-            node->weakPtr->objectCollected();
-            WeakPtrLinkedList* tmp = node;
-            node = node->next;
-            delete tmp;
-        }
-    }
-    virtual ~RefObject() {}
+    RbxSceneNode(SceneManager*, const String&);
+    virtual ~RbxSceneNode();
+    virtual void setTransform(unsigned long, const Matrix4&);
+    virtual const Matrix4& getTransform(unsigned long) const;
+    virtual bool hasTransform(unsigned long) const;
+    virtual void setSphere(unsigned long, const Sphere&);
+    virtual const Sphere& getSphere(unsigned long) const;
 };
+class RbxEntity : public Entity {
+    void* field274;
+    bool field278, field279, field27a;
+    AxisAlignedBox field27c;
+    float field29c;
+    int field2a0;
+    // 0067daf0 indexes one byte per entry, stores states 0..3.
+    std::vector<unsigned char> field2a4;
+public:
+    RbxEntity();
+    virtual ~RbxEntity();
+    // Native 0084e45c tail after inherited SDK slots.
+    virtual void method67daf0(void*);
+    virtual void setSubEntitiesVisible(bool); // 0067c6a0
+    void setMesh(MeshPtr);                 // 0067c520
+    void setContext18(void*);              // 0067c510
+    RbxSubEntity* addSubEntity(SubMesh*, unsigned int); // 0067d9b0
+    void mergeBounds(AxisAlignedBox);      // 007a9c40
+};
+}
 
-} // namespace rs
 namespace RBX {
-class TextureProxyBase : public rs::RefObject {};
-namespace RenderNew { class TextureProxy : public TextureProxyBase {}; }
-namespace RenderBase { class MaterialBase { public: class Level { public: virtual ~Level(); }; }; }
-namespace RenderNew { class Material { public: class Level : public RenderBase::MaterialBase::Level {}; }; }
-class AdornRbxGfx { public: AdornRbxGfx(void* renderer, const std::string& name); };
-class RbxEntity { public: RbxEntity(); };
-}
-namespace rs {
-
-typedef Ref<RefObject> ObjRef;
-typedef Ref<RBX::TextureProxyBase> TexRef;
-
-template<class T>
-inline Ref<T> GetRef(void* obj, unsigned slot) {
-    typedef Ref<T> (VObj::*Fn)();
-    return (static_cast<VObj*>(obj)->*VSlot<Fn>(obj, slot))();
-}
-
-struct Ext {
-    void m5107B0(void* m);
-    void m510B50(void* t);
-    void m513220(void* v);
-    void m67C520(Ogre::MeshPtr mesh);
-    void m67C510(void* f);
-    void* m67D9B0(void* mesh, int v);
-    void m7A9C40(Ogre::AxisAlignedBox box);
-    float* m7A9CE0(void* key);
-    float* m7A9C90(void* key);
-    void m548F80(void** result, float value);
-    void m549A50(void* ctx, Ogre::AxisAlignedBox* box);
-    void m549610(void* ctx, Ogre::AxisAlignedBox* box);
-    void m54A920(void* ctx);
-    int m6850D0(int d);
-    void m6850B0(int d, void* mesh);
-    void m6850F0(int d);
+class TextureProxyBase : public G3D::ReferenceCountedObject {
+public:
+    virtual ~TextureProxyBase();
+}; // Opaque: no direct TextureProxyBase virtual calls or allocations in this TU.
+typedef G3D::ReferenceCountedPointer<TextureProxyBase> TextureProxyBaseRef;
+namespace RenderBase {
+class MaterialBase : public G3D::ReferenceCountedObject {
+public:
+    class Level {
+    public:
+        virtual bool isEmptyLevel() const;
+        virtual ~Level();
+        virtual G3D::ReferenceCountedPointer<G3D::Texture> baseTexture(Ogre::VisualEngine*) const;
+        virtual TextureProxyBaseRef baseTexture() const;
+        virtual void setBaseTexture(TextureProxyBaseRef);
+        virtual G3D::ReferenceCountedPointer<G3D::Texture> matte(Ogre::VisualEngine*) const;
+        virtual const G3D::Color3& color() const;
+        virtual float specular() const;
+        virtual float shiny() const;
+        virtual float reflect() const;
+        virtual float transparent() const;
+    };
+    virtual ~MaterialBase();
+    virtual const Level& appendEmptyLevel();
+    virtual const Level& appendLevel(G3D::Color3, float, float, float, float);
+    virtual const Level& appendLevel(TextureProxyBaseRef, G3D::Color3, float, float, float, float);
+    virtual size_t levelCount() const;
+    virtual Level& getLevel(int);
+    virtual const Level* detailLevel(float) const;
+    virtual bool veryTransparent() const;
 };
-inline Ext* X(void* p) { return static_cast<Ext*>(p); }
-extern void sub_5493E0(void* context);
-extern void* sub_513E20();
-extern std::string sub_55C4C0();
-
-#if defined(_M_IX86) || defined(__i386__)
-typedef char CheckAABBSize[(sizeof(Ogre::AxisAlignedBox) == 0x20) ? 1 : -1];
-typedef char CheckMaterialHandleSize[(sizeof(Ogre::MaterialPtr) == 0x0c) ? 1 : -1];
-typedef char CheckMeshHandleSize[(sizeof(Ogre::MeshPtr) == 0x0c) ? 1 : -1];
-#endif
-
-// These correspond to globals at 0x942EBC, 0x97F36C and 0x9738BC.
-extern u8 gDebugRender;
-extern unsigned gMaterialId;
-extern Ogre::Mesh* gBaseMesh;
-
-RS_FORCEINLINE Ogre::SubMesh* FindSubMesh(void* data) {
-    if (!data || At<u8>(data, 0x1c) != 0)
-        return 0;
-
-    int index = At<int>(data, 0x20);
-    if (index < 0 || !gBaseMesh)
-        return 0;
-    return gBaseMesh->getSubMesh(static_cast<unsigned short>(index));
+class Mesh : public G3D::ReferenceCountedObject {
+public:
+    class Level : public G3D::ReferenceCountedObject {
+    public:
+        // Native 549610/549a50 receive Level, not Mesh.
+        void updateSpecialGeometry(Ogre::VisualEngine*, Ogre::AxisAlignedBox*);
+        void updateGeometry(Ogre::VisualEngine*, Ogre::AxisAlignedBox*);
+    };
+    const G3D::ReferenceCountedPointer<Level> detailLevel(float) const;
+    void updateShadowGeometry(Ogre::VisualEngine*);
+    G3D::Vector3& position(unsigned int); // 007a9c90, static backing array
+    G3D::Vector3& normal(unsigned int);   // 007a9ce0, static backing array
+};
+class Chunk : public G3D::ReferenceCountedObject {
+public:
+    virtual ~Chunk();
+    virtual bool cachesShadows() const;
+    virtual void renderShadows(G3D::RenderDevice*, const G3D::GLight&, bool, float);
+    virtual bool castsShadows() const;
+    virtual bool cullable() const;
+    virtual G3D::ReferenceCountedPointer<MaterialBase> getMaterial();
+    virtual G3D::ReferenceCountedPointer<Mesh> getMesh();
+    virtual const G3D::CoordinateFrame& cframe();
+    // PartChunk and AggregateChunk vtables share these native accessors.
+    virtual void setFloat14(float); // 004e5b60
+    virtual float getFloat14() const; // 004e5b70
+};
+}
+namespace RenderNew {
+class TextureProxy : public TextureProxyBase {}; // RTTI-only concrete receiver.
+class Material {
+public:
+    class Level : public RenderBase::MaterialBase::Level {}; // RTTI + field2c view only.
+};
+class RenderScene {
+public:
+    void render(Ogre::VisualEngine*, const G3D::GCamera*);
+    void updateLights(Ogre::VisualEngine*, bool); // 007a9d30
+};
+}
 }
 
-// The virtual material-container method has five stack arguments in the
-// original disassembly (index, 0, global, global, 0).
-inline void* SelectMaterialEntry(void* container, int index) {
-    return VCall<void*>(container, 0x14,
-        index, 0,
-        reinterpret_cast<void*>(0x96BDFCu),
-        reinterpret_cast<void*>(0x96BE2Cu), 0);
+typedef char CheckSceneNode[(sizeof(Ogre::RbxSceneNode) == 0x248) ? 1 : -1];
+typedef char CheckEntity[(sizeof(Ogre::RbxEntity) == 0x2bc) ? 1 : -1];
+extern bool nativeDebugRender; // 00942ebc
+extern unsigned nativeMaterialId; // 0097f36c
+extern Ogre::MeshPtr nativeBaseMesh; // 009738b8
+extern Ogre::Root* nativeRoot; // 0097db48
+extern void nativeFlushGeometry(Ogre::VisualEngine*); // 005493e0
+extern std::string nativeAssetPath(); // 0055c4c0
+
+// Whole native renderer candidate. Binary-backed opaque views retain actual SDK value types.
+using namespace Ogre;
+using namespace G3D;
+using RBX::RenderBase::Chunk;
+typedef RBX::RenderBase::Mesh NativeMesh;
+typedef RBX::RenderBase::MaterialBase NativeMaterial;
+typedef RBX::RenderNew::Material::Level NativeLevel;
+
+static __forceinline SubMesh* nativeSubMesh(NativeMesh::Level* level) {
+    if (!nativeField<bool>(level, 0x1c) && nativeField<int>(level, 0x20) >= 0)
+        return nativeBaseMesh->getSubMesh((unsigned short)nativeField<int>(level, 0x20));
+    return 0;
 }
 
-inline RBX::RenderNew::Material::Level* GetLevel(void* item, int index) {
-    return dynamic_cast<RBX::RenderNew::Material::Level*>(
-        VCall<RBX::RenderBase::MaterialBase::Level*>(GetRef<RefObject>(item, 0x14).pointer(), 0x14, index));
-}
-
-RS_FORCEINLINE Ogre::TexturePtr GetSkyTexture() {
-    Ogre::TextureManager& textures = Ogre::TextureManager::getSingleton();
-    Ogre::TexturePtr texture = textures.getByName("skysphmap");
-    if (texture.isNull()) {
-        std::string rootPath = sub_55C4C0();
-        Ogre::Image image;
-        image.load(rootPath + "Sky\\skyspheremap.jpg", "General");
-        texture = textures.create("skysphmap", "General");
-        if (!texture.isNull())
-            texture->loadImage(image);
+void RBX::RenderNew::RenderScene::render(VisualEngine* ctx, const GCamera* pose) {
+#define chunks nativeField<Chunk**>(this, 8)
+#define count nativeField<int>(this, 0xc)
+#define manager nativeField<SceneManager*>(ctx, 4)
+#define root nativeField<RbxSceneNode*>(this, 0x268)
+#define entity nativeField<RbxEntity*>(this, 0x26c)
+#define shadows nativeField<bool>(this, 0x2f4)
+#define dummy nativeField<MeshPtr>(this, 0x27c)
+#define baseMaterial nativeField<MaterialPtr>(this, 0x270)
+    Camera* camera = nativeField<Camera*>(ctx, 8);
+    CoordinateFrame frame = pose->getCoordinateFrame();
+    if (shadows) {
+        manager->setShadowTechnique(SHADOWTYPE_STENCIL_MODULATIVE);
+        manager->setShadowColour(ColourValue(nativeField<float>(this, 0x328),
+            nativeField<float>(this, 0x32c), nativeField<float>(this, 0x330)));
+    } else manager->setShadowTechnique(SHADOWTYPE_NONE);
+    Ogre::Quaternion orientation;
+    orientation.FromRotationMatrix(*reinterpret_cast<const Ogre::Matrix3*>(&frame.rotation));
+    camera->setOrientation(orientation);
+    camera->setPosition(frame.translation.x, frame.translation.y, frame.translation.z);
+    nativeField<Camera*>(ctx, 8)->setNearClipDistance(-pose->getNearPlaneZ());
+    nativeField<Camera*>(ctx, 8)->setFarClipDistance(-pose->getFarPlaneZ());
+    nativeField<Camera*>(ctx, 8)->setFOVy(Radian((float)pose->getFieldOfView()));
+    Timer timer;
+    timer.reset();
+    if (!root) {
+        root = new RbxSceneNode(manager, "rbxroot");
+        manager->getRootSceneNode()->addChild(root);
     }
-    return texture;
-}
-
-RS_FORCEINLINE void ConfigureSky(Ogre::Material* material, float intensity) {
-    Ogre::Pass* pass = material->getTechnique(0)->createPass();
-    pass->setDiffuse(intensity, intensity, intensity, intensity * 0.8f);
-    pass->setAmbient(intensity, intensity, intensity);
-    pass->setSceneBlending((Ogre::SceneBlendFactor)0, (Ogre::SceneBlendFactor)9);
-
-    Ogre::TexturePtr sky = GetSkyTexture();
-    if (!sky.isNull()) {
-        Ogre::TextureUnitState* unit = pass->createTextureUnitState();
-        unit->setTextureName(sky->getName(), (Ogre::TextureType)2);
-        unit->setEnvironmentMap(true, (Ogre::TextureUnitState::EnvMapType)1);
+    updateLights(ctx, nativeField<bool>(this, 0x2f6));
+    bool special = nativeField<bool>(ctx, 0x7f5);
+    if (baseMaterial.isNull()) baseMaterial = MaterialManager::getSingleton().getByName("BaseWhite");
+    if (dummy.isNull()) dummy = MeshManager::getSingleton().load("rbxdummymesh", "General");
+    if (!entity && count != 0) {
+        entity = new RbxEntity;
+        root->attachObject(entity);
+        entity->setMesh(dummy);
     }
-}
+    for (int i = 0; i < count; ++i) if (chunks[i]) chunks[i]->getMesh();
+    if (nativeDebugRender && count != 0 && special) {
+        nativeFlushGeometry(ctx);
+        entity->setMesh(nativeBaseMesh);
+        if (nativeField<AxisAlignedBox>(entity, 0x27c).isNull())
+            entity->mergeBounds(nativeBaseMesh->getBounds());
+    }
+    CoordinateFrame cameraFrame;
+    pose->getCoordinateFrame(cameraFrame);
+    for (int i = 0; i < count; ++i) {
+        Chunk* chunk = chunks[i];
+        if (!chunk) continue;
+        bool hasMesh = chunk->getMesh().notNull();
+        bool hasMaterial = chunk->getMaterial().notNull();
+        if (!hasMesh || !hasMaterial) continue;
+        bool rejected = chunk->getMaterial()->detailLevel(0.0f) == 0;
+        if (rejected) continue;
+        G3D::ReferenceCountedPointer<NativeMesh> mesh = chunk->getMesh();
+        if (shadows && nativeField<int>(mesh.pointer(), 0x80) == 0) mesh->updateShadowGeometry(ctx);
+        int lod = 0;
+        if (nativeField<int>(mesh.pointer(), 0x10) == 2) {
+            const G3D::Vector3& p = chunk->cframe().translation;
+            float depth = -((p.x - cameraFrame.translation.x) * cameraFrame.rotation[0][2]
+                + (p.y - cameraFrame.translation.y) * cameraFrame.rotation[1][2]
+                + (p.z - cameraFrame.translation.z) * cameraFrame.rotation[2][2]);
+            if (!(depth < 80.0f)) lod = 1;
+        }
+        G3D::ReferenceCountedPointer<NativeMesh::Level> geometry = mesh->detailLevel((float)lod);
+        bool boundsChanged = false;
+        if (nativeField<int>(mesh.pointer(), 0x84) == 4 && !nativeField<bool>(ctx, 0x806)
+            && nativeField<bool>(geometry.pointer(), 0x1c)) {
+            G3D::ReferenceCountedPointer<NativeMesh::Level> base = mesh->detailLevel(0.0f);
+            if (nativeField<int>(base.pointer(), 0x18) == 5 && nativeField<int>(base.pointer(), 0x10) == 4) {
+                unsigned* indices = nativeField<unsigned*>(base.pointer(), 0xc);
+                const G3D::Vector3& normal = mesh->normal(indices[0]);
+                for (int j = 0; j < 4; ++j) {
+                    G3D::Vector3& p = mesh->position(nativeField<unsigned*>(base.pointer(), 0xc)[j]);
+                    p += normal * 0.06f;
+                }
+            }
+        }
+        if (!special) {
+            if (nativeField<bool>(geometry.pointer(), 0x1c)) {
+                AxisAlignedBox box;
+                geometry->updateGeometry(ctx, &box);
+                float radius = box.getHalfSize().length();
+                root->setSphere((unsigned long)nativeField<SubMesh*>(geometry.pointer(), 0x24), Ogre::Sphere(box.getCenter(), radius));
+                boundsChanged = true;
+            }
+        } else if (nativeField<bool>(geometry.pointer(), 0x1c)) {
+            AxisAlignedBox box;
+            geometry->updateSpecialGeometry(ctx, &box);
+            float radius = box.getHalfSize().length();
+            root->setSphere((unsigned long)nativeSubMesh(geometry.pointer()), Ogre::Sphere(box.getCenter(), radius));
+            boundsChanged = true;
+        }
+        NativeLevel* material = dynamic_cast<NativeLevel*>(&chunk->getMaterial()->getLevel(0));
+        bool materialCreated = false;
+        if (material && nativeField<MaterialPtr>(material, 0x2c).isNull()) {
 
-RS_FORCEINLINE void ConfigurePass(Ogre::Pass* pass, void* layer, void* item, void* info) {
-    float* color = VCall<float*>(layer, 0x18);
-    float alpha = 1.0f - VCall<float>(layer, 0x28);
-    pass->setDiffuse(color[0], color[1], color[2], alpha);
-    pass->setAmbient(color[0], color[1], color[2]);
-
-    int type = At<int>(info, 0x84);
-    if (type >= 1 && type <= 3) {
-        float b = VCall<float>(layer, 0x1c, 1.0f);
-        float g = VCall<float>(layer, 0x1c, b);
-        float r = VCall<float>(layer, 0x1c, g);
-        pass->setSpecular(r, g, b, 1.0f);
+    char name[8];
+    _snprintf(name, 8, "m%d", nativeMaterialId++);
+    nativeField<MaterialPtr>(material, 0x2c) = MaterialManager::getSingleton().create(name, "General");
+    for (int i = 0; i < chunk->getMaterial()->levelCount(); ++i) {
+        NativeLevel* level = dynamic_cast<NativeLevel*>(&chunk->getMaterial()->getLevel(i));
+        if (level) {
+            level->baseTexture(ctx);
+            Pass* pass = i == 0 ? nativeField<MaterialPtr>(material, 0x2c)->getTechnique(0)->getPass(0)
+                               : nativeField<MaterialPtr>(material, 0x2c)->getTechnique(0)->createPass();
+            {
+    const Color3& color = level->color();
+    pass->setDiffuse(color.r, color.g, color.b, 1.0f - level->transparent());
+    pass->setAmbient(color.r, color.g, color.b);
+    int type = nativeField<int>(mesh.pointer(), 0x84);
+    if (type == 1 || type == 2 || type == 3) {
+        pass->setSpecular(level->specular(), level->specular(), level->specular(), 1.0f);
         pass->setShininess(type == 2 ? 40.0f : 18.0f);
     } else {
         pass->setSpecular(0.75f, 0.75f, 0.75f, 1.0f);
         pass->setShininess(10.0f);
     }
-
-    pass->setDepthBias(At<float>(item, 0x18) * -16.0f, 0.0f);
-    if (VCall<float>(layer, 0x28) > 0.0f || type == 4) {
-        pass->setSceneBlending((Ogre::SceneBlendFactor)7, (Ogre::SceneBlendFactor)9);
+    pass->setDepthBias(nativeField<float>(chunk, 0x18) * -16.0f, 0.0f);
+    if (level->transparent() > 0.0f || nativeField<int>(mesh.pointer(), 0x84) == 4) {
+        pass->setSceneBlending((SceneBlendFactor)7, (SceneBlendFactor)9);
         pass->setDepthWriteEnabled(false);
     }
-
-    if (GetRef<RBX::TextureProxyBase>(layer, 0x0c).pointer() != 0) {
-        Ogre::TexturePtr texture = *reinterpret_cast<Ogre::TexturePtr*>(Addr(
-            dynamic_cast<RBX::RenderNew::TextureProxy*>(GetRef<RBX::TextureProxyBase>(layer, 0x0c).pointer()), 0x54));
+    if (level->baseTexture().notNull()) {
+        TexturePtr texture = nativeField<TexturePtr>(
+            dynamic_cast<RBX::RenderNew::TextureProxy*>(level->baseTexture().pointer()), 0x54);
         if (!texture.isNull()) {
-            Ogre::TextureUnitState* unit = pass->createTextureUnitState();
-            unit->setColourOperation((Ogre::LayerBlendOperation)2);
-            unit->setTextureFiltering((Ogre::FilterOptions)2, (Ogre::FilterOptions)2, (Ogre::FilterOptions)2);
-            unit->setTextureAddressingMode((Ogre::TextureUnitState::TextureAddressingMode)0, (Ogre::TextureUnitState::TextureAddressingMode)0, (Ogre::TextureUnitState::TextureAddressingMode)0);
-            unit->setTextureBorderColour(Ogre::ColourValue(VCall<float*>(layer, 0x18)[0], VCall<float*>(layer, 0x18)[1], VCall<float*>(layer, 0x18)[2], 1.0f));
-            unit->setTextureName(texture->getName(), (Ogre::TextureType)2);
-            if (texture->isLoaded() && VCall<float>(layer, 0x28) > 0.0f && type == 2) {
-                pass->setSceneBlending((Ogre::SceneBlendType)4);
-                pass->setDepthWriteEnabled(true);
-                pass->setAlphaRejectSettings((Ogre::CompareFunction)6, 1);
-            }
+            TextureUnitState* unit = pass->createTextureUnitState();
+            unit->setColourOperation((LayerBlendOperation)2);
+            unit->setTextureFiltering((FilterOptions)2, (FilterOptions)2, (FilterOptions)2);
+            unit->setTextureAddressingMode((TextureUnitState::TextureAddressingMode)0,
+                (TextureUnitState::TextureAddressingMode)0, (TextureUnitState::TextureAddressingMode)0);
+            unit->setTextureBorderColour(ColourValue(level->color().r, level->color().g, level->color().b));
+            unit->setTextureName(texture->getName(), (TextureType)2);
+        }
+        bool loaded = !texture.isNull() && texture->isLoaded();
+        if (level->transparent() > 0.0f && loaded && nativeField<int>(geometry.pointer(), 0x18) == 2) {
+            pass->setSceneBlending((SceneBlendType)4);
+            pass->setDepthWriteEnabled(true);
+            pass->setAlphaRejectSettings((CompareFunction)6, 1);
         }
     }
+
 }
-
-// materialData is the internal engine material object returned by sub_6A17C6.
-// Its Ogre::MaterialPtr is embedded at +0x2C, underlying pointer at +0x30.
-RS_FORCEINLINE bool BuildItemMaterial(void* item, void* info, void* materialData) {
-    if (!materialData || At<void*>(materialData, 0x30))
-        return false;
-
-    Ogre::MaterialPtr* material = reinterpret_cast<Ogre::MaterialPtr*>(Addr(materialData, 0x2c));
-    char name[8];
-#if defined(_MSC_VER)
-    _snprintf(name, sizeof(name), "m%d", static_cast<int>(gMaterialId++));
-#else
-    std::snprintf(name, sizeof(name), "m%d", static_cast<int>(gMaterialId++));
-#endif
-    *material = Ogre::MaterialManager::getSingleton().create(name, "General");
-    if (material->isNull())
-        return false;
-
-    for (int i = 0; i < VCall<int>(GetRef<RefObject>(item, 0x14).pointer(), 0x10); ++i) {
-        RBX::RenderNew::Material::Level* layer = GetLevel(item, i);
-        if (!layer)
-            continue;
-        GetRef<RBX::TextureProxyBase>(layer, 0x08);
-        Ogre::Pass* pass = i == 0 ? (*material)->getTechnique(0)->getPass(0)
-                                  : (*material)->getTechnique(0)->createPass();
-        ConfigurePass(pass, layer, item, info);
-    }
-
-    float intensity = VCall<float>(materialData, 0x24);
-    if (intensity > 0.0f)
-        ConfigureSky(material->operator->(), VCall<float>(materialData, 0x24));
-    return true;
-}
-
-// The pair passed to the backend has radius at +0 and center at +4.
-// The previous conversion reversed these, changing the parameter layout.
-struct BoundsInfo {
-    float radius;
-    Ogre::Vector3 center;
-};
-
-RS_FORCEINLINE void UpdateItemBounds(void* backend, void* itemRef, void* data,
-                             void* ctx, bool special) {
-    if (!data || At<u8>(data, 0x1c) == 0)
-        return;
-
-    Ogre::AxisAlignedBox box;
-    if (special)
-        X(itemRef)->m549610(ctx, &box);
-    else
-        X(itemRef)->m549A50(ctx, &box);
-
-    BoundsInfo b = {box.getHalfSize().length(), box.getCenter()};
-    void* mesh = special ? static_cast<void*>(FindSubMesh(data)) : At<void*>(data, 0x24);
-    VCall<void>(backend, 0x1c4, mesh, &b);
-}
-
-RS_FORCEINLINE Ogre::Vector3 WorldPosition(void* item) {
-    float* m = VCall<float*>(item, 0x1c);
-    return Ogre::Vector3(m[9], m[10], m[11]);
-}
-
-// At 7AC6C0..7AC8C9 the original builds one of two AABBs, then merges
-// it with the target's existing bounds. This was missing from the old code.
-RS_FORCEINLINE void MergeItemBounds(void* backend, void* target, void* item,
-                            void* data, void* selectedMesh) {
-    Ogre::Vector3 pos = WorldPosition(item);
-    if (std::fabs(pos.x) >= 10000.0f ||
-        std::fabs(pos.y) >= 10000.0f ||
-        std::fabs(pos.z) >= 10000.0f)
-        return;
-
-    Ogre::AxisAlignedBox box;
-    if (selectedMesh != At<void*>(data, 0x24)) {
-        float* bounds = VCall<float*>(backend, 0x1c8, selectedMesh);
-        float r = bounds[0];
-        Ogre::Vector3 center(pos.x + bounds[1], pos.y + bounds[2], pos.z + bounds[3]);
-        box = Ogre::AxisAlignedBox(
-            Ogre::Vector3(center.x-r, center.y-r, center.z-r),
-            Ogre::Vector3(center.x+r, center.y+r, center.z+r));
-    } else {
-        void* mesh = At<void*>(data, 0x24);
-        box = Ogre::AxisAlignedBox(
-            Ogre::Vector3(pos.x + At<float>(mesh, 0xcc),
-                          pos.y + At<float>(mesh, 0xd0),
-                          pos.z + At<float>(mesh, 0xd4)),
-            Ogre::Vector3(pos.x + At<float>(mesh, 0xd8),
-                          pos.y + At<float>(mesh, 0xdc),
-                          pos.z + At<float>(mesh, 0xe0)));
-    }
-    X(target)->m7A9C40(box);
-}
-
-inline float DetermineItemDistanceFlag(void* item, const unsigned char* poseData) {
-    float* m = VCall<float*>(item, 0x1c);
-    float x = m[9]  - At<float>(const_cast<unsigned char*>(poseData), 0x24);
-    float y = m[10] - At<float>(const_cast<unsigned char*>(poseData), 0x28);
-    float z = m[11] - At<float>(const_cast<unsigned char*>(poseData), 0x2c);
-    float depth = -(x * At<float>(const_cast<unsigned char*>(poseData), 0x08) +
-                    y * At<float>(const_cast<unsigned char*>(poseData), 0x14) +
-                    z * At<float>(const_cast<unsigned char*>(poseData), 0x20));
-    return !(depth < 80.0f) ? 1.0f : 0.0f;
-}
-
-RS_FORCEINLINE void AddPerVertexOffsets(void* info, void* data) {
-    if (At<int>(data, 0x18) != 5 || At<int>(data, 0x10) != 4)
-        return;
-    void* raw = At<void*>(data, 0x0c);
-    if (!raw)
-        return;
-    float* offset = X(info)->m7A9CE0(At<void*>(raw, 0));
-    for (int i = 0; i < 4; ++i) {
-        void* key = At<void*>(raw, i * 4);
-        float* pos = X(info)->m7A9C90(key);
-        pos[0] += offset[0] * 0.06f;
-        pos[1] += offset[1] * 0.06f;
-        pos[2] += offset[2] * 0.06f;
-    }
-}
-
-RS_FORCEINLINE void UpdateEntityTransform(void* entity, void* item) {
-    float* m = VCall<float*>(item, 0x1c);
-    Ogre::Matrix3 rotation;
-    std::memcpy(&rotation, m, sizeof(rotation));
-    Ogre::Quaternion orientation;
-    orientation.FromRotationMatrix(rotation);
-
-    m = VCall<float*>(item, 0x1c);
-    Ogre::Matrix4 transform;
-    transform.makeTransform(
-        Ogre::Vector3(m[9], m[10], m[11]),
-        Ogre::Vector3(1.0f, 1.0f, 1.0f), orientation);
-    std::memcpy(Addr(entity, 0xf0), &transform, sizeof(transform));
-}
-
-class RenderScene {
-public:
-    void Render(void* ctx, void* pose);
-    void m7A9D30(void* ctx, bool flag);
-};
-
-void RenderScene::Render(void* ctx, void* pose) {
-#define items At<void**>(this, 0x08)
-#define count At<int>(this, 0x0c)
-#define renderer At<void*>(ctx, 0x04)
-#define enabled At<bool>(this, 0x2f4)
-#define backend At<void*>(this, 0x268)
-#define target At<void*>(this, 0x26c)
-    Ogre::Camera* camera = At<Ogre::Camera*>(ctx, 0x08);
-
-    unsigned char matrixData[0x80];
-    X(pose)->m5107B0(matrixData);
-
-    if (enabled) {
-        VCall<void>(renderer, 0x268, 0x12);
-        VCall<void, const Ogre::ColourValue&>(renderer, 0x278, Ogre::ColourValue(At<float>(this, 0x328),
-            At<float>(this, 0x32c), At<float>(this, 0x330)));
-    } else {
-        VCall<void>(renderer, 0x268, 0);
-    }
-
-    Ogre::Quaternion cameraOrientation;
-    cameraOrientation.FromRotationMatrix(*reinterpret_cast<Ogre::Matrix3*>(matrixData));
-    camera->setOrientation(cameraOrientation);
-    camera->setPosition(At<float>(matrixData, 0x24), At<float>(matrixData, 0x28),
-                        At<float>(matrixData, 0x2c));
-
-    VCall<void>(camera, 0x11c, At<float>(pose, 0x0c));
-    VCall<void>(camera, 0x124, At<float>(pose, 0x10));
-    VCall<void, const Ogre::Radian&>(At<void*>(ctx, 0x08), 0x114, Ogre::Radian(At<float>(pose, 0x04)));
-
-    Ogre::Timer timer;
-    timer.reset();
-
-    if (!backend) {
-        backend = new RBX::AdornRbxGfx(renderer, "rbxroot");
-        void* registration = VCall<void*>(renderer, 0xb4);
-        VCall<void>(registration, 0xc8, backend);
-    }
-
-    m7A9D30(ctx, At<bool>(this, 0x2f6));
-    bool special = At<u8>(ctx, 0x7f5) != 0;
-
-    Ogre::MaterialPtr* baseMaterial = reinterpret_cast<Ogre::MaterialPtr*>(Addr(this, 0x270));
-    if (At<void*>(this, 0x274) == 0)
-        *baseMaterial = Ogre::MaterialManager::getSingleton().getByName("BaseWhite");
-
-    Ogre::MeshPtr* dummyMesh = reinterpret_cast<Ogre::MeshPtr*>(Addr(this, 0x27c));
-    if (At<void*>(this, 0x280) == 0)
-        *dummyMesh = Ogre::MeshManager::getSingleton().load("rbxdummymesh", "General");
-
-    if (!target && count != 0) {
-        target = new RBX::RbxEntity();
-        VCall<void>(backend, 0x130, target);
-        X(target)->m67C520(*dummyMesh);
-    }
-
-    // The first pass only obtains and releases each item's 0x18 reference.
-    for (int i = 0; i < count; ++i) {
-        if (!items[i])
-            continue;
-        GetRef<RefObject>(items[i], 0x18);
-    }
-
-    if (gDebugRender && count != 0 && special) {
-        sub_5493E0(ctx);
-        X(target)->m67C520(*dummyMesh);
-        if (target && gBaseMesh && At<int>(target, 0x294) == 0)
-            X(target)->m7A9C40(gBaseMesh->getBounds());
-    }
-
-    // Pose update and lazily initialized zero-vector cache at 0x96F044.
-    unsigned char poseData[0x80];
-    X(poseData)->m513220(sub_513E20());
-    static const V3 zero(0.0f, 0.0f, 0.0f);
-    At<V3>(poseData, 0x24) = zero;
-    X(pose)->m510B50(poseData);
-
-    for (int i = 0; i < count; ++i) {
-        void* item = items[i];
-        if (!item)
-            continue;
-
-        bool hasVisual = GetRef<RefObject>(item, 0x18).pointer() != 0;
-        bool hasGeometry = GetRef<RefObject>(item, 0x14).pointer() != 0;
-        if (!hasVisual || !hasGeometry)
-            continue;
-
-        bool rejected = VCall<int>(GetRef<RefObject>(item, 0x14).pointer(), 0x18, 0.0f) == 0;
-        if (rejected)
-            continue;
-
-        ObjRef detail = GetRef<RefObject>(item, 0x18);
-        void* info = detail.pointer();
-
-        if (enabled && At<int>(info, 0x80) == 0)
-            X(info)->m54A920(ctx);
-
-        int distanceFlag = 0;
-        if (At<int>(info, 0x10) == 2 && DetermineItemDistanceFlag(item, poseData) != 0.0f)
-            distanceFlag = 1;
-
-        void* data = 0;
-        X(info)->m548F80(&data, static_cast<float>(distanceFlag));
-        bool specialMaterial = At<int>(info, 0x84) == 4 && At<u8>(ctx, 0x806) == 0;
-        if (specialMaterial && data && At<u8>(data, 0x1c)) {
-            X(info)->m548F80(&data, 0.0f);
-            AddPerVertexOffsets(info, data);
         }
+    }
+    if (material->reflect() > 0.0f) {
+    TexturePtr texture = TextureManager::getSingleton().getByName("skysphmap");
+    if (texture.isNull()) {
+        texture = TextureManager::getSingleton().create("skysphmap", "General");
+        Image image;
+        std::string filename = nativeAssetPath() + "Sky\\" + "skyspheremap.jpg";
+        image.load(filename, "General");
+        texture->loadImage(image);
+    }
+    Pass* pass = nativeField<MaterialPtr>(material, 0x2c)->getTechnique(0)->createPass();
+    float reflect = material->reflect();
+    pass->setDiffuse(reflect, reflect, reflect, reflect * 0.8f);
+    pass->setAmbient(reflect, reflect, reflect);
+    pass->setSceneBlending((SceneBlendFactor)0, (SceneBlendFactor)9);
+    TextureUnitState* unit = pass->createTextureUnitState();
+    unit->setTextureName(texture->getName(), (TextureType)2);
+    unit->setEnvironmentMap(true, (TextureUnitState::EnvMapType)1);
 
-        bool boundsUpdated = data && At<u8>(data, 0x1c) != 0;
-        if (boundsUpdated)
-            UpdateItemBounds(backend, info, data, ctx, special);
+}
+    materialCreated = true;
 
-        void* materialData = GetLevel(item, 0);
-        bool materialCreated = BuildItemMaterial(item, info, materialData);
-        void* entity = At<void*>(item, 0x10);
-
-        if (!entity) {
-            void* mesh = special ? static_cast<void*>(FindSubMesh(data))
-                                 : (data ? At<void*>(data, 0x24) : 0);
-            if (!mesh) {
+        }
+        if (!nativeField<RbxSubEntity*>(chunk, 0x10)) {
+            if ((special && !nativeSubMesh(geometry.pointer())) ||
+                (!special && !nativeField<SubMesh*>(geometry.pointer(), 0x24)))
                 throw std::exception("Please restart ROBLOX, if you changed your settings but have not restarted");
-            }
+            SubMesh* selected;
+            RbxSubEntity* sub;
+            if (special) {
+                selected = nativeSubMesh(geometry.pointer());
+                sub = entity->addSubEntity(selected, lod);
+                nativeField<bool>(sub, 0x13c) = false;
+            } else {
+                selected = nativeField<SubMesh*>(geometry.pointer(), 0x24);
 
-            entity = X(target)->m67D9B0(mesh, distanceFlag);
-            if (entity) {
-                if (special)
-                    At<u8>(entity, 0x13c) = 0;
-                At<u32>(entity, 0x140) = At<u32>(info, 0x80);
-                if ((At<int>(info, 0x80) == 0 && At<int>(info, 0x84) == 1) ||
-                     At<int>(info, 0x84) == 4)
-                    At<u8>(entity, 0x13c) = 0;
-                At<void*>(item, 0x10) = entity;
-                At<void*>(item, 0x0c) = target;
-
-                VCall<void>(entity, 0x48, VCall<float>(item, 0x24));
-                MergeItemBounds(backend, target, item, data, mesh);
+                sub = entity->addSubEntity(selected, lod);
             }
+            sub->setFloat138(chunk->getFloat14());
+            nativeField<int>(sub, 0x140) = nativeField<int>(mesh.pointer(), 0x80);
+            if (nativeField<int>(mesh.pointer(), 0x80) == 0 && nativeField<int>(mesh.pointer(), 0x84) == 1)
+                nativeField<bool>(sub, 0x13c) = false;
+            if (nativeField<int>(mesh.pointer(), 0x84) == 4) nativeField<bool>(sub, 0x13c) = false;
+            nativeField<RbxSubEntity*>(chunk, 0x10) = sub;
+            nativeField<RbxEntity*>(chunk, 0xc) = entity;
+            {
+    const G3D::Vector3& pos = chunk->cframe().translation;
+    AxisAlignedBox bounds = nativeField<AxisAlignedBox>(entity, 0x27c);
+    if (std::fabs(pos.x) < 10000.0f && std::fabs(pos.y) < 10000.0f && std::fabs(pos.z) < 10000.0f) {
+        if (selected != nativeField<SubMesh*>(geometry.pointer(), 0x24)) {
+            const Ogre::Sphere& sphere = root->getSphere((unsigned long)selected);
+            float radius = sphere.getRadius();
+            const G3D::Vector3& position = chunk->cframe().translation;
+            AxisAlignedBox merged = nativeField<AxisAlignedBox>(entity, 0x27c);
+            merged.merge(AxisAlignedBox(
+                Ogre::Vector3(position.x + sphere.getCenter().x - radius,
+                    position.y + sphere.getCenter().y - radius, position.z + sphere.getCenter().z - radius),
+                Ogre::Vector3(position.x + sphere.getCenter().x + radius,
+                    position.y + sphere.getCenter().y + radius, position.z + sphere.getCenter().z + radius)));
+            entity->mergeBounds(merged);
         } else {
-            if (boundsUpdated || !X(entity)->m6850D0(distanceFlag)) {
-                void* mesh = special ? static_cast<void*>(FindSubMesh(data))
-                                     : (data ? At<void*>(data, 0x24) : 0);
-                if (mesh)
-                    X(entity)->m6850B0(distanceFlag, mesh);
-            }
-        }
-
-        if (entity) {
-            X(entity)->m6850F0(distanceFlag);
-            VCall<void>(entity, 0x48, VCall<float>(item, 0x24));
-            if (materialData && (materialCreated ||
-                    At<void*>(VCall<void*>(entity, 0x04), 0x04) == At<void*>(this, 0x274))) {
-                Ogre::Material* mat = At<Ogre::Material*>(materialData, 0x30);
-                if (mat) {
-                    Ogre::SubEntity* part = reinterpret_cast<Ogre::SubEntity*>(entity);
-                    part->setMaterialName(mat->getName());
-                }
-            }
-            UpdateEntityTransform(entity, item);
+            SubMesh* sub = nativeField<SubMesh*>(geometry.pointer(), 0x24);
+            AxisAlignedBox box(
+                Ogre::Vector3(pos.x + nativeField<float>(sub, 0xcc), pos.y + nativeField<float>(sub, 0xd0),
+                    pos.z + nativeField<float>(sub, 0xd4)),
+                Ogre::Vector3(pos.x + nativeField<float>(sub, 0xd8), pos.y + nativeField<float>(sub, 0xdc),
+                    pos.z + nativeField<float>(sub, 0xe0)));
+            bounds.merge(box);
+            entity->mergeBounds(bounds);
         }
     }
 
-    if (special && gDebugRender) {
-        sub_5493E0(ctx);
-        if (target)
-            X(target)->m67C520(*dummyMesh);
+            }
+        } else if (boundsChanged || !nativeField<RbxSubEntity*>(chunk, 0x10)->getLodMesh(lod)) {
+            if (special) {
+                if (nativeSubMesh(geometry.pointer()))
+                    nativeField<RbxSubEntity*>(chunk, 0x10)->setLodMesh(lod, nativeSubMesh(geometry.pointer()));
+            } else if (nativeField<SubMesh*>(geometry.pointer(), 0x24))
+                nativeField<RbxSubEntity*>(chunk, 0x10)->setLodMesh(lod, nativeField<SubMesh*>(geometry.pointer(), 0x24));
+        }
+        nativeField<RbxSubEntity*>(chunk, 0x10)->setLod(lod);
+        nativeField<RbxSubEntity*>(chunk, 0x10)->setFloat138(chunk->getFloat14());
+        RbxSubEntity* sub = nativeField<RbxSubEntity*>(chunk, 0x10);
+        if (material && (materialCreated || sub->getMaterial().getPointer() == baseMaterial.getPointer())) {
+            Ogre::Material* mat = nativeField<MaterialPtr>(material, 0x2c).getPointer();
+            if (mat) sub->setMaterialName(mat->getName());
+        }
+        Ogre::Quaternion q;
+        q.FromRotationMatrix(*reinterpret_cast<const Ogre::Matrix3*>(&chunk->cframe().rotation));
+        const G3D::Vector3& p = chunk->cframe().translation;
+        Ogre::Matrix4 transform;
+        transform.makeTransform(Ogre::Vector3(p.x, p.y, p.z), Ogre::Vector3(1, 1, 1), q);
+        nativeField<Ogre::Matrix4>(nativeField<RbxSubEntity*>(chunk, 0x10), 0xf0) = transform;
     }
-
+    if (special && nativeDebugRender) {
+        nativeFlushGeometry(ctx);
+        if (entity) entity->setMesh(nativeBaseMesh);
+    }
     timer.getMicroseconds();
     timer.reset();
-    if (target) {
-        X(target)->m67C510(Addr(ctx, 0x18));
-        At<u8>(target, 0x279) = 0;
-        VCall<void>(target, 0xd8, 1);
-        At<float>(target, 0x29c) = enabled ? 15.0f : 20.0f;
-        At<int>(target, 0x2a0) = enabled ? 0x258 : 0x28a;
+    if (entity) {
+        entity->setContext18(&nativeField<char>(ctx, 0x18));
+        nativeField<bool>(entity, 0x279) = false;
+        entity->setSubEntitiesVisible(true);
+        if (shadows) {
+            nativeField<float>(entity, 0x29c) = 15.0f;
+            nativeField<int>(entity, 0x2a0) = 0x258;
+        } else {
+            nativeField<float>(entity, 0x29c) = 20.0f;
+            nativeField<int>(entity, 0x2a0) = 0x28a;
+        }
     }
-
-    Ogre::Root& root = Ogre::Root::getSingleton();
-    if (root._fireFrameStarted()) {
-        VCall<void>(At<void*>(ctx, 0x0c), 0x18);
-        root._fireFrameEnded();
+    if (nativeRoot->_fireFrameStarted()) {
+        nativeField<RenderTarget*>(ctx, 0xc)->update();
+        nativeRoot->_fireFrameEnded();
         timer.getMicroseconds();
     }
-}
-
-#undef items
+#undef chunks
 #undef count
-#undef renderer
-#undef enabled
-#undef backend
-#undef target
-} // namespace rs
-
-// Byte-match status: unmeasured; requires the original MSVC compiler and `roc check`.
-
+#undef manager
+#undef root
+#undef entity
+#undef shadows
+#undef dummy
+#undef baseMaterial
+}

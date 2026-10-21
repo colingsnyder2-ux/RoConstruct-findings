@@ -1,8 +1,9 @@
+// from server: 93% by EspClaude
 // from server: 86% by Espeon
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD /fp:fast
-// roc-lib: openrbx-client-dll roc_espeon_negativecofm_bad54b93d325352e.cpp
+// roc-lib: openrbx-client-dll roc_espclaude_bc8bb2fd7e7b88fd.cpp
 
 // Candidate translation unit (score above; library headers required).
 #include <G3D/Vector3.h>
@@ -38,6 +39,7 @@ Vector3 S::f() const
         value = &zero;
     }
 
-    Vector3 negative = -*value;
+    Vector3 v = *value;
+    Vector3 negative = -v;
     return transform.apply(negative);
 }

@@ -1,8 +1,9 @@
+// from server: 84% by EspClaude
 // from server: 83% by Espeon
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: openrbx-client-dll roc_espeon_toolobject_03fc58e8a3982365.cpp
+// roc-lib: openrbx-client-dll roc_espclaude_ba5b43d683515aa8.cpp
 
 // Candidate translation unit (score above; library headers required).
 #include <boost/shared_ptr.hpp>
@@ -79,9 +80,8 @@ void Tool::execute(int argument)
             stored = createObject();
 
         Shared selected = convert(stored.get()->getObject());
-        Object* object=selected.get();
-        object->setParent(parent);
-        object->transform.assign(
+        selected->setParent(parent);
+        selected->transform.assign(
             makeTransform(argument, actor->getTransform()));
         func_005807b0(parent)->notify(getNotification());
     }

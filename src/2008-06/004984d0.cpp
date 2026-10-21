@@ -1,8 +1,9 @@
+// from server: 88% by EspClaude
 // from server: 86% by Espeon
 // roc-lang: cpp
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD
-// roc-lib: openrbx-client-dll roc_espeon_callbackvector_5d81fe415eb64e1b.cpp
+// roc-lib: openrbx-client-dll roc_espclaude_242edecce036a7fd.cpp
 
 // Candidate translation unit (score above; library headers required).
 #include <boost/shared_ptr.hpp>
@@ -19,6 +20,7 @@ void S::f(Operation operation,unsigned long argument,Buffer buffer){
   boost::shared_ptr<Vector> snapshot=children.get();
   Vector::iterator end=snapshot->end();
   Vector::iterator current=snapshot->begin();
-  for(;current!=end;++current)operation.apply(argument,*current,&buffer);
+  for(;current!=end;++current){const Shared& item=*current;operation.apply(argument,item,&buffer);}
  }
 }
+

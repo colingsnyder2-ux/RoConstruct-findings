@@ -25,6 +25,9 @@ struct ForceField : Instance {};
 struct Workspace : Instance {};
 
 extern void (__cdecl *invalidParameter)();
+extern char instanceType;
+extern char forceFieldType;
+extern "C" void *__cdecl __RTDynamicCast(void *, long, void *, void *, int);
 
 __declspec(noinline) bool __cdecl hasForceField(Instance *object)
 {
@@ -36,7 +39,7 @@ __declspec(noinline) bool __cdecl hasForceField(Instance *object)
             if (i >= static_cast<unsigned int>(children->last - children->first))
                 handler();
 
-            if (dynamic_cast<ForceField *>(children->first[i].object))
+            if (__RTDynamicCast(children->first[i].object, 0, &instanceType, &forceFieldType, 0))
                 return true;
 
             ++i;
@@ -45,17 +48,3 @@ __declspec(noinline) bool __cdecl hasForceField(Instance *object)
     return false;
 }
 
-__declspec(dllexport) bool __cdecl protectedByForceField(Instance *object)
-{
-    if (hasForceField(object))
-        return true;
-
-    while ((object = object->parent) != 0) {
-        if (dynamic_cast<Workspace *>(object))
-            return false;
-
-        if (hasForceField(object))
-            return true;
-    }
-    return false;
-}
