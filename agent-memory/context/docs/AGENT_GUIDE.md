@@ -99,7 +99,11 @@ remain available. `unrecorded` means evidence is missing; it is not a model diag
 | Preview the ranking | `roc agent claude --plan` | analyze | areas, eligible targets, parking |
 | Shared single function | `roc agent claude --jobs 5` | CLI, server | one function at a time; best verified result wins |
 | List clients / pick next function | `roc work` / `roc work CLIENT` | server, user | server progress per client; selects+claims the next unmatched function and prints concise context |
+| Read-only candidate scouting (no claim) | `roc scout CLIENT [--profile quick] [--limit 20] [--max-size N]` | server | ranked open targets; no reservation |
+| Compact evidence packet | `roc packet CLIENT ADDR --json --max-tokens 2000` | analyze | target asm/source/siblings/lessons/failed hypotheses; token-bounded |
+| Release/park a stored claim | `roc release CLIENT ADDR [--reason TEXT]` or `roc work CLIENT --skip ADDR --reason TEXT` | server, user | uses the persisted lease token; cooldown prevents immediate re-claim |
 | Submit gains | `roc submit 2008-06 [addr ...]` | server, user | server-verified receipt |
+| Baseline benchmark A/B split/report | `roc benchmark-models --ab` / `--ab-compare SESSION_A SESSION_B` | telemetry | fixed split by target hash; reports recorded sessions only |
 | Keep generated units portable | `roc research capture-units` | sources in `src/` | `local/units/generated-units.json` |
 
 LLM-written gains belong in **Player Mining**. Submit with the actual model:
@@ -112,6 +116,15 @@ shown as Unknown model, never guessed from another worker's settings.
 `roc --help` groups every command; specialist tools sit under *advanced*.
 Use `agent-check-batch --summary` to omit diffs from console output, or `--json`
 for structured trial results. Full trial journals remain unchanged.
+
+**Optional Remill / LLVM.** Remill is never required. `roc remill.py` resolves tools in this
+order: `ROC_REMILL_EXE`, `ROC_LLVM_OPT` (and optional `ROC_LLVM_BIN`), repository-local
+`tools/...` paths relative to the repo root, then `shutil.which()` (`remill-lift-17`,
+platform suffix, LLVM 17 `opt`). Missing tools report `not available` and leave other
+mining phases unaffected. `roc doctor` reports Remill status; `roc lift` exits 2 with the
+same message when tools are absent. Lifts are cached by target-byte hash, lifter identity/
+version, LLVM identity and options; the verifier checks IR well-formedness, not semantic
+equivalence to the original C++.
 
 ## Order of work
 

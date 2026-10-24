@@ -27,7 +27,7 @@ All rules below still apply; the wrapper handles submissions and propagation.
 
 ## Get set up (downloads are fine)
 
-1. `roc doctor` - lists what is missing and how to fix it.
+1. `roc doctor` - lists what is missing and how to fix it. (Remill/LLVM is optional; env overrides are documented in `docs/AGENT_GUIDE.md`.)
 2. `roc install --yes` - exact historical compilers.
 3. `roc client-fetch <client>` then `roc analyze <client>` - binary and function list.
 4. `roc pull <client>` - everyone's current sources, so you never redo matched work.
