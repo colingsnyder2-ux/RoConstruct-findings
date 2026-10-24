@@ -1,32 +1,27 @@
+// from server: 88% by king_originala
+// roc-lang: cpp
+// roc-cl: 21022
+// roc-flags: /O2 /GS- /EHsc /MD /fp:fast
+// roc-lib: rbxgs-dll roc_king_originala_gui_bounds_453eb5946ebe4077.cpp
+
+// Candidate translation unit (score above; library headers required).
 // from server: 87% by colin
 // roc-cl: 21022
 // roc-flags: /O2 /GS- /EHsc /MD /fp:fast
-struct Vector2 {
-    float x, y;
-};
+#include <G3D/CoordinateFrame.h>
+using G3D::Vector2;
 
-struct Rect {
-    float x0, y0, x1, y1;
-    Rect() {}
-    Rect(double a, double b, double c, double d)
-        : x0((float)a), y0((float)b), x1((float)c), y1((float)d) {}
-};
+#include "util/Rect.h"
+using RBX::Rect;
 
 namespace RBX {
-    class Instance {
+    class Instance;
+    // Existing-pointer provider view: only native rate1c0 and scale1c8 are read.
+    class ServiceProvider {
     public:
-        virtual ~Instance();
-        char pad[0x100];
-        Instance* next;
-    };
-
-    class ServiceProvider : public Instance {
-    public:
-        char padding[0xB8];
+        char prefix[0x1c0];
         float rate;
-        char alignment[4];
         double scale;
-        ServiceProvider* finish();
     };
 }
 
@@ -35,20 +30,12 @@ extern const double lowerBound;
 extern const double upperBound;
 extern const float multiplier;
 extern const float expansion;
-extern unsigned char color1;
-extern unsigned char color2;
-
-struct TransformPart {
-    void finish();
-};
-
-struct Transform {
-    char padding[0x24];
-    TransformPart part;
-};
+struct NativeColor;
+extern const NativeColor color1;
+extern const NativeColor color2;
 
 struct Object {
-    Transform* position(Vector2*);
+    const G3D::CoordinateFrame& getCoordinateFrame() const;
 };
 
 extern Object* findObject(RBX::Instance*);
@@ -57,17 +44,17 @@ struct Receiver {
     void submit(const Rect*);
 };
 
-struct S : RBX::Instance {
-    char padding[0x68];
+struct S {
+    char prefix[0x170];
     RBX::Instance* object;
-    void bounds(Rect*);
+    Rect bounds() const;
     void draw(const Rect*, const void*, const void*);
     void f(Receiver*);
 };
 
 void S::f(Receiver* receiver)
 {
-    RBX::ServiceProvider* provider = func_00492e00(this);
+    RBX::ServiceProvider* provider = func_00492e00(reinterpret_cast<RBX::Instance*>(this));
     if (!provider)
         return;
     if (!object)
@@ -77,35 +64,27 @@ void S::f(Receiver* receiver)
     if (!target)
         return;
 
-    Rect original;
-    bounds(&original);
-    float width = original.x1 - original.x0;
-    float height = original.y1 - original.y0;
+    Rect original=bounds();
+    const Vector2 dimensions=original.size();
 
-    Vector2 center;
-    target->position(&center)->part.finish();
+    Vector2 center=target->getCoordinateFrame().translation.xz();
 
     double scale = 1.0;
     scale /= provider->rate;
     scale *= provider->scale;
 
-    double dx, dy;
-    if (scale > lowerBound) {
-        dx = width * (double)multiplier;
-        dy = height * (double)multiplier;
-    } else if (scale < upperBound) {
-        dx = width + (double)expansion;
-        dy = height + (double)expansion;
+    Vector2 adjusted;
+    if(scale>lowerBound) {
+        adjusted=dimensions*multiplier;
+    } else if(scale<upperBound) {
+        adjusted=dimensions+Vector2(expansion,expansion);
     } else {
-        dx = width;
-        dy = height;
+        adjusted=dimensions;
     }
-
-    dx *= multiplier;
-    dy *= multiplier;
-
-    Rect result(center.x - dx, center.y - dy,
-                center.x + dx, center.y + dy);
+    Vector2 halfSize=adjusted*multiplier;
+    const Vector2 high=center+halfSize;
+    const Vector2 low=center-halfSize;
+    Rect result(low,high);
     draw(&result, &color2, &color1);
     receiver->submit(&result);
 }
